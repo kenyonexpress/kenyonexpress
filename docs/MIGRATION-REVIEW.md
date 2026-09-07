@@ -190,6 +190,61 @@ Not a defect and not a blocker. Recorded because 162 is the approved migration,
 the change is trivial, and the alternative is discovering it from a latency
 graph at four in the morning.
 
+### 1.3a Risk 1 is unmitigated, checked rather than assumed
+
+Risk 1 says nothing reads pg_net's responses back. Verified across the whole
+repository: **no `.ts`, `.sql` or `.mjs` outside 162 itself and its preflight
+reads `net._http_response` or `cron.job_run_details`.** The only other mention
+is a commented-out example query in `supabase/schedules/analytics_cron.sql`.
+
+There **is** a `scheduler` health check (`src/lib/health/checks.ts:239`, surfaced
+by `/api/cron/health`), and it is worth knowing exactly how far it goes:
+
+```
+configured = Boolean(env.CRON_SECRET)
+status     = configured ? 'ok' : 'not_configured'
+detail     = 'אין CRON_SECRET; כל ה-cron מחזיר 401 ואף תור לא מתנקז'
+```
+
+It checks that the **secret is set**. It does not check that a job ran, that
+pg_net delivered, or that any response was a 2xx. So a deployment with
+`CRON_SECRET` present and every one of the twelve jobs POSTing into a dead host
+reports `scheduler: ok`.
+
+Its `not_configured` message is accurate and useful in the other direction: no
+secret means every cron returns 401 and **no queue drains**, which matches the
+fail-closed `bearerMatches` behaviour in section 1.2.
+
+Risk 1 therefore stands at **High**, and the gap is specific: something must read
+`net._http_response` and alarm on non-2xx. Until it does, "the crons are green"
+means the scheduler fired and the secret exists.
+
+### 1.3b 162 routes network jobs through pg_cron, against the documented split
+
+`supabase/schedules/analytics_cron.sql` is a second pg_cron file, deliberately
+kept out of `supabase/migrations/` because "schedules are environment state, not
+schema". It states the project's cron split, citing
+`ARCHITECTURE-ANALYTICS-BI.md` section 8:
+
+```
+pg_cron      -> pure in-database SQL: rollup, matviews, partitions, purges
+Vercel cron  -> anything that talks to the network: alerts, digest emails
+```
+
+**Migration 162 puts twelve `net.http_post` jobs on pg_cron.** Every one of them
+talks to the network, which the split assigns to Vercel cron.
+
+This is not an oversight. `STATE.md` records that the Vercel project is gone and
+`vercel.json` declares no crons, so there is no Vercel cron to schedule on; 162
+is the workaround for its absence. But the review should say plainly what the
+workaround costs, and risk 1 is exactly that cost: Vercel cron surfaces a
+non-2xx as a failed invocation in its own dashboard, and pg_net does not surface
+it anywhere.
+
+So the two files now describe two different cron models, and only one of them is
+written down as the architecture. Whichever survives, they should not both
+remain as the description.
+
 ### 1.4 Blocker
 
 Approved by Ofir (CLOSEOUT section 7) as the only migration cleared for
