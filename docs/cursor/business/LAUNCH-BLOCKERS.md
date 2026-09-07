@@ -23,4 +23,4 @@ Not blockers: 169 ads honesty, 150 deletion RPC, EN locale, reviews marketing, p
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Human only. DNS last. H2 rotate key. H6 real pay+scan. H8 172 stock 0. H9 CHECKOUT_ENABLED=true exact.
