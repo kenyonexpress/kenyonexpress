@@ -280,12 +280,12 @@ do not currently use anywhere.
 
 | Token | 1440 | 768 | 380 | Source selector |
 |---|---|---|---|---|
-| `--card-w` / `-tablet` / `-mobile` | `234px` | `230px` | `175px` | `div.product-outer` |
-| `--card-h` / `-tablet` / `-mobile` | `437.52px` | `424.69px` | `369.69px` | `div.product-outer` |
-| `--card-pad` / `-handheld` | `23.98px` | `14px` | `14px` | `div.product-loop-header` x offset from `div.product-outer` |
-| `--card-pad-top` / `-handheld` | `20px` | `14px` | `14px` | same, y offset |
-| `--card-thumb` / `-tablet` / `-mobile` | `186.03px` | `202px` | `147px` | `div.product-thumbnail` (square) |
-| `--card-footer-h` / `-handheld` | `114.94px` | `107.94px` | `107.94px` | `div.product-loop-footer` |
+| `--card-w` / `--card-w-tablet` / `--card-w-mobile` | `234px` | `230px` | `175px` | `div.product-outer` |
+| `--card-h` / `--card-h-tablet` / `--card-h-mobile` | `437.52px` | `424.69px` | `369.69px` | `div.product-outer` |
+| `--card-pad` / `--card-pad-handheld` | `23.98px` | `14px` | `14px` | `div.product-loop-header` x offset from `div.product-outer` |
+| `--card-pad-top` / `--card-pad-handheld` | `20px` | `14px` | `14px` | same, y offset |
+| `--card-thumb` / `--card-thumb-tablet` / `--card-thumb-mobile` | `186.03px` | `202px` | `147px` | `div.product-thumbnail` (square) |
+| `--card-footer-h` / `--card-footer-h-handheld` | `114.94px` | `107.94px` | `107.94px` | `div.product-loop-footer` |
 
 ### 3.3 Measured spacing
 
@@ -294,8 +294,8 @@ not read off `margin`, so they are what the page actually renders.
 
 | Token | 1440 | 768 | 380 | Between |
 |---|---|---|---|---|
-| `--card-gap-cats-price` / `-handheld` | `7.98px` | `4.47px` | `4.48px` | `span.loop-product-categories` -> `span.price` |
-| `--card-gap-price-title` / `-handheld` | `0.99px` | `1.98px` | `1.98px` | `span.price` -> `h2...__title` |
+| `--card-gap-cats-price` / `--card-gap-cats-price-handheld` | `7.98px` | `4.47px` | `4.48px` | `span.loop-product-categories` -> `span.price` |
+| `--card-gap-price-title` / `--card-gap-price-title-handheld` | `0.99px` | `1.98px` | `1.98px` | `span.price` -> `h2...__title` |
 | `--card-gap-title-thumb` | `8px` | `8px` | `8px` | `h2...__title` -> `div.product-thumbnail` |
 | `--card-gap-thumb-footer` | `9.98px` | `9.99px` | `9.98px` | `div.product-thumbnail` -> `div.product-loop-footer` |
 
@@ -303,14 +303,14 @@ not read off `margin`, so they are what the page actually renders.
 
 | Token | 1440 | 768 | 380 | Source selector |
 |---|---|---|---|---|
-| `--card-title-size` / `-handheld` | `14px` | `11.998px` | `11.998px` | `h2.woocommerce-loop-product__title` |
-| `--card-title-h` / `-handheld` | `36px` | `28px` | `28px` | same (two lines) |
-| `--card-cats-size` / `-handheld` | `11.998px` | `11.2px` | `11.2px` | `span.loop-product-categories` |
-| `--card-price-size` / `-handheld` | `20.006px` | `16.002px` | `16.002px` | `span.price` |
-| `--card-price-del-size` / `-handheld` | `12.0036px` | `9.6012px` | `9.6012px` | `del > span.amount` |
+| `--card-title-size` / `--card-title-size-handheld` | `14px` | `11.998px` | `11.998px` | `h2.woocommerce-loop-product__title` |
+| `--card-title-h` / `--card-title-h-handheld` | `36px` | `28px` | `28px` | same (two lines) |
+| `--card-cats-size` / `--card-cats-size-handheld` | `11.998px` | `11.2px` | `11.2px` | `span.loop-product-categories` |
+| `--card-price-size` / `--card-price-size-handheld` | `20.006px` | `16.002px` | `16.002px` | `span.price` |
+| `--card-price-del-size` / `--card-price-del-size-handheld` | `12.0036px` | `9.6012px` | `9.6012px` | `del > span.amount` |
 | `--card-badge-w` | `47.81px` | `47.81px` | `47.81px` | `span.onsale` |
 | `--card-badge-h` | `28px` | `28px` | `28px` | `span.onsale` |
-| `--card-badge-size` / weight | `11.998px` / `700` | same | same | `span.onsale` |
+| `--card-badge-size` / `--card-badge-weight` | `11.998px` / `700` | same | same | `span.onsale` |
 
 **The title is smaller at 768 than at 1440**, which is live's own ramp and not a
 misreading: 14px at 1440, 11.998px at both 768 and 380.
@@ -349,9 +349,9 @@ Source: `rs-module#rev_slider_6_1` on `home`.
 |---|---|---|---|
 | `--hero-module-w` / `--hero-module-h` | `727.89px` / `370px` | `rs-module#rev_slider_6_1` | 1440 |
 | `--hero-aspect` | `1.9673` | computed from the two above | 1440 |
-| `--hero-module-w-tablet` / `-h-tablet` | `729px` / `304px` | `rs-module` | 768 |
+| `--hero-module-w-tablet` / `--hero-module-h-tablet` | `729px` / `304px` | `rs-module` | 768 |
 | `--hero-aspect-tablet` | `2.3980` | computed | 768 |
-| `--hero-module-w-mobile` / `-h-mobile` | `350px` / `193px` | `rs-module` | 380 |
+| `--hero-module-w-mobile` / `--hero-module-h-mobile` | `350px` / `193px` | `rs-module` | 380 |
 | `--hero-aspect-mobile` | `1.8135` | computed | 380 |
 
 ### 4.3 The row and its columns
@@ -404,6 +404,31 @@ The one place the existing codebase does rely on Electro is
 replaces those values (section 4.3), with one exception recorded in section 6.
 
 ---
+
+## 5a. Every token name in this file is greppable (pass 16)
+
+The premise of this document is one row per token. Fourteen rows abbreviated
+their variants (`--card-w` / `-tablet` / `-mobile`), so **18 of the 94 tokens in
+`packages/ui/tokens.css` could not be found by searching their own name.** The
+values were present; the names were not. Both are now spelled out.
+
+The invariant, and the one-line check that holds it:
+
+```bash
+python3 -c "
+import re
+css = re.sub(r'/\*.*?\*/', '', open('packages/ui/tokens.css').read(), flags=re.S)
+doc = open('docs/TOKEN-PROVENANCE.md').read()
+missing = [t for t in sorted(set(re.findall(r'(--[a-z0-9-]+)\s*:', css))) if t not in doc]
+print(len(missing), 'tokens missing from provenance:', missing)
+"
+```
+
+Expected output: `0 tokens missing from provenance: []`.
+
+Also verified this pass: `packages/ui/tokens.css` still declares 94 tokens, is
+still imported by `src/styles/tokens.css:55`, and shares **zero** token names
+with it, so every token still has exactly one physical definition.
 
 ## 6. Findings: where the measurement contradicts what ships
 
