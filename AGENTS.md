@@ -43,3 +43,8 @@ Install with `pnpm add -D <pkg>`.
 PORT=3311 pnpm start &
 LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
 ```
+
+### 🔒 Execution Format
+כל דבר שניתן להריץ בטרמינל — טרמינל בלבד.
+אין הפניות חיצוניות, אין artifact, אין links.
+Output ישר בטקסט או בפקודה הבאה.
