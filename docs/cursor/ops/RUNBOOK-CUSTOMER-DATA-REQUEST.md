@@ -6,3 +6,9 @@
 4. Gift columns: conservative hash (Q24) if 150 does not.
 5. Export: staff via admin, not a self-serve dump of other people.
 6. 157: IPs in audit after 365 days NULL. Redemption IPs not in 157.
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
