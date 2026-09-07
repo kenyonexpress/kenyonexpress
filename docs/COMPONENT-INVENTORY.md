@@ -8,7 +8,7 @@ Judgements are based on the actual file contents (with `file:line` references wh
 
 - ~~Total component files: 72 `.tsx`~~ **Stale as of pass 15. Recounted: `138` `.tsx` excluding tests (148 including them).** The six one-line re-export shims (`admin/CouponForm`, `layout/SiteHeader`, `store/CategorySidebar`, `store/HeroSlider`, `store/HomeHeroSection`, `store/PromoBanners`) are unchanged. **25 components are not listed anywhere below**; see "Pass 15".
 - ~~NOT token compliant (hardcoded hex or arbitrary values): 33 components.~~ **Stale as of pass 13. Recounted: zero raw hex, 24 components with arbitrary sizes. See "Pass 13" below.**
-- RTL risky (physical direction utilities that can break in `dir="rtl"`): 7 components (`CouponCard`, `admin/CouponDealForm`, `admin/ProductForm`, `home/BenefitBar`, `ui/dialog`, `ui/dropdown-menu`, `ui/select`).
+- ~~RTL risky: 7 components (`CouponCard`, `admin/CouponDealForm`, `admin/ProductForm`, `home/BenefitBar`, `ui/dialog`, `ui/dropdown-menu`, `ui/select`).~~ **Re-verified in pass 21: 9 hits, of which 7 are unexplained. `CouponCard` and `home/BenefitBar` are now CLEAN; four components were missing from the list.** See "Pass 21".
 - ~~`src/components/features/` and `src/components/shared/` contain only `.gitkeep`.~~ **Half stale as of pass 15.** `features/` is still only `.gitkeep`. **`shared/` now holds six components**: `FacebookIcon`, `FacebookShareButton`, `GoogleLogo`, `WhatsAppFloat`, `WhatsAppIcon`, `WhatsAppShareButton`.
 - Note: many "NOT compliant" cases mix valid tokens (`bg-brand`, `text-[#333e48]`-equivalent heading) with the raw hex of that same token, so the fix is usually swapping `[#fed700]` for `brand-primary`, `[#333e48]` for `heading`, etc.
 
@@ -1202,6 +1202,55 @@ Weight is rendered via `toLocaleString('he-IL', { maximumFractionDigits: 2 })`
 in kilograms. Not money, so the integer-agorot rule does not apply, and the
 Hebrew locale is right for a decimal a shopper reads.
 
+## Pass 21: the RTL-risky list re-verified
+
+The Summary's list of seven dates from the original scan and had never been
+re-run. Re-run with comments stripped.
+
+### The corrected list
+
+| Component | Hit | Verdict |
+|---|---|---|
+| `ui/dropdown-menu.tsx` | `left-2`, `pl-8`, `pr-2` | **real**, vendored Radix default |
+| `ui/select.tsx` | `left-2`, `pl-8`, `pr-2` | **real**, vendored Radix default |
+| `ui/dialog.tsx` | `right-4` | **real**, the close button |
+| `admin/CouponDealForm.tsx` | `right-2` | **real**, the preview card's badge |
+| `admin/ProductForm.tsx` | `text-right` | **real**, a table header row |
+| `admin/ReferralQueueRow.tsx` | `mr-2` | **real, and new to this list** |
+| `storefront/SupplierLeadForm.tsx` | `text-right` | **real, and new to this list** |
+| `admin/CategoryDialog.tsx` | `right-1/2` | **not a defect**: centring, paired with `translate-x-1/2`. The table above this section already said so |
+| `layout/MobileDrawer.tsx` | `right-0` | **not a defect**: deliberate and commented — "RTL: the drawer slides in from the right, so it is anchored right and translated +100% when closed" |
+
+**Seven real, two explained.** Two of the original seven, `CouponCard` and
+`home/BenefitBar`, no longer contain any physical direction utility: they were
+fixed at some point after the scan and the Summary never caught up.
+
+Two components were **missing** from the original list entirely
+(`admin/ReferralQueueRow`, `storefront/SupplierLeadForm`).
+
+### `MobileDrawer`'s `right-0` is worth keeping as written
+
+`docs/DESIGN-SYSTEM.md` 5.1 forbids `right-*` in favour of `end-*`. This is the
+documented exception, and the comment carries the reasoning: the drawer is
+`xl:hidden` inside a `dir="rtl"` document and slides from the visual right,
+where the hamburger is. `start-0` would be equivalent today and more robust to a
+direction change the app does not have. Either is defensible; what matters is
+that it is a decision with a comment rather than a leftover.
+
+### And the scan that produced "38"
+
+The first run of this re-verification reported **38** components. Every one of
+the extra 29 was `rounded-lg` matched by a `rounded-l` pattern: a **size**
+utility caught by a **direction** pattern.
+
+That is the fourth false-positive class this document set has recorded, after
+the RTL lint's comment prose, the buttons with visible Hebrew labels, and the
+`<h1>` matches inside comments. The pattern needed
+`rounded-l(?![a-z])` to exclude `rounded-lg`, `rounded-lb` and friends.
+
+`docs/QA-SCRIPTS.md` 0.2 states the rule this keeps proving: **open the thing
+before you write it down. A count is a lead, not a finding.**
+
 ## Revision
 
 | Date | Change |
@@ -1224,3 +1273,4 @@ Hebrew locale is right for a decimal a shopper reads.
 | 2026-09-07 | Pass 18: the PWA pair. Capturing beforeinstallprompt creates an obligation, and a dev-registered service worker produces the same symptom as a stale next start |
 | 2026-09-07 | Pass 19: the admin table and navigation cluster. CommandPalette is a shortcut over an authorised query and holds no credentials; TablePagination is the best-labelled control in the panel |
 | 2026-09-07 | Pass 20: the storefront supplier pair. SupplierInfo exists because the address used to appear only after payment, and it records a wrong-union-member bug that selected a valid branch instead of throwing |
+| 2026-09-07 | Pass 21: RTL-risky list re-verified. Nine hits, seven real; CouponCard and BenefitBar are now clean and two components were missing. The first run said 38, all extras being rounded-lg matched by a rounded-l pattern |
