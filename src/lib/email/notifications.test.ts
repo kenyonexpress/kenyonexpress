@@ -339,3 +339,54 @@ describe('the welcome mail, which is (21) closing', () => {
     expect(built?.html).toContain('/account/coupons')
   })
 })
+
+describe('buildOrderShippedEmail', () => {
+  const payload = {
+    order_id: '79f488aa-549a-40dd-af80-eb66d886668f',
+    order_ref: '79F488AA',
+    customer_name: 'דנה',
+    item_count: 2,
+    fulfilled_at: '2026-09-08T10:00:00.000Z',
+  }
+
+  it('dispatches through buildNotification under the order_shipped kind', () => {
+    expect(buildNotification('order_shipped', payload, SITE)).not.toBeNull()
+  })
+
+  it('states the reference and links the orders page', () => {
+    const mail = buildNotification('order_shipped', payload, SITE)
+    expect(mail?.subject).toContain('79F488AA')
+    expect(mail?.text).toContain('79F488AA')
+    expect(mail?.html).toContain('https://kenyonexpress.co.il/account/orders')
+    expect(mail?.text).toContain('https://kenyonexpress.co.il/account/orders')
+  })
+
+  it('greets by name when there is one and stays polite when there is not', () => {
+    expect(buildNotification('order_shipped', payload, SITE)?.text).toContain('שלום דנה')
+    expect(
+      buildNotification('order_shipped', { ...payload, customer_name: null }, SITE)?.text,
+    ).toContain('שלום,')
+  })
+
+  it('promises no delivery date', () => {
+    // Fulfilment means the goods left; arrival is the courier's business, and
+    // a named day generates a support ticket on that day. Same rule as the
+    // refund mail about the card issuer.
+    const mail = buildNotification('order_shipped', payload, SITE)
+    for (const forbidden of ['יגיע ב', 'תאריך אספקה', 'ימי עסקים']) {
+      expect(mail?.text).not.toContain(forbidden)
+    }
+  })
+
+  it('survives an empty payload rather than throwing at send time', () => {
+    const mail = buildNotification('order_shipped', {}, SITE)
+    expect(mail?.subject).toBeTruthy()
+    expect(mail?.text).toContain('שלום,')
+  })
+
+  it('never renders Invalid Date for a broken timestamp', () => {
+    const mail = buildNotification('order_shipped', { ...payload, fulfilled_at: 'garbage' }, SITE)
+    expect(mail?.text).not.toContain('Invalid Date')
+    expect(mail?.html).not.toContain('Invalid Date')
+  })
+})

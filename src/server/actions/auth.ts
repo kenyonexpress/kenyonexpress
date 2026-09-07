@@ -27,6 +27,7 @@ import {
   signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -216,14 +217,21 @@ async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthS
   const parsed = magicLinkSchema.safeParse({ email: formData.get('email') })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data.email,
-    options: {
-      emailRedirectTo: authRedirect('/auth/callback'),
-    },
-  })
-  if (error) return { error: toHebrew(error.message) }
+  // The branded Hebrew mail via Resend, when it can be sent (existing user,
+  // keys configured). Falls back to Supabase's own mail otherwise, so a login
+  // is never blocked by the pretty path; the success copy is identical on both
+  // legs and reveals nothing about whether the address exists.
+  const branded = await trySendBrandedMagicLink(parsed.data.email)
+  if (!branded) {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.signInWithOtp({
+      email: parsed.data.email,
+      options: {
+        emailRedirectTo: authRedirect('/auth/callback'),
+      },
+    })
+    if (error) return { error: toHebrew(error.message) }
+  }
   return { success: 'שלחנו קישור כניסה לאימייל שלך — בדקו את תיבת הדואר' }
 }
 
