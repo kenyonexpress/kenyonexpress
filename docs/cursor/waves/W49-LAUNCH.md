@@ -66,3 +66,9 @@ Launch banner only if needed: האתר במעבר. Prefer none; WP until cutover
 | Q | Best answer |
 |---|---|
 | Does Vercel track this repo? | Confirm dashboard. Live `*.vercel.app` is not proof `main` deploys. |
+
+---
+
+## Second pass
+
+Human list is `business/LAUNCH-BLOCKERS.md`. DNS last (`ops/RUNBOOK-DNS-CUTOVER.md`). Rotate leaked key before H6. 172 before claiming no test deals. ntfy topic unguessable. This docs branch does not tag `v7.0.0-rc1`.
