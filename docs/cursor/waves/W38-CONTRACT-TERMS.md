@@ -71,6 +71,10 @@ Physical residual mentioned as accounting, not a wire promise.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (copy = money)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Checkbox: קראתי. אין נאמנות. עמלת הפלטפורמה נקבעת לכל מוצר.
+- Coupon: on-site payment is platform. Remainder at till. Matches W07 / W25 / W26.
+- Do not mention `default_split_percent` as a rate.
+- Legal pages H10 before DNS (`business/LAUNCH-BLOCKERS.md`).
+
