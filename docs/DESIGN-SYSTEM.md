@@ -519,6 +519,56 @@ does not invent a sixth.
 | `--radius-pill` | `22px` | 188 | The search/newsletter pill and tags. |
 | `--radius-round` | `200px` | 96 | Avatars and icon buttons. |
 
+#### 2.4.1 Recounted against the committed capture (pass 15)
+
+Third of the three scale recounts, after spacing (2.0) and type (3.0). Same
+source, same method.
+
+```
+22740  0px                94.94%      45  0px 0px 7px 7px    0.19%
+  611  22px                2.55%      42  7px                0.18%
+  138  4px                 0.58%      21  0px 22px 22px 0px  0.09%
+   96  200px               0.40%      21  22px 0px 0px 22px  0.09%
+   55  50%                 0.23%      21  25px               0.09%
+   45  50px                0.19%      21  8px                0.09%
+```
+
+23952 elements, **25 distinct values**, **94.94% square**.
+
+**The proportion is confirmed; the absolute numbers are not.** The table above
+says 11863 square against 519 rounded, which is 95.8% square. The recount gives
+22740 against 1212, which is 94.9%. Same site, same conclusion, roughly double
+the element count, so the two counts covered different element sets. As with the
+spacing recount in 2.0, **the ratio is the durable fact and the raw counts are
+not comparable across methods.**
+
+Per-token, the recount confirms every one of the six and moves two of the
+occurrence figures materially:
+
+| Token | Table says | Recount | Note |
+|---|---|---|---|
+| `--radius-none` | 11863 | **22740** | proportion holds |
+| `--radius-pill` | 188 | **611** | still the most common non-zero radius |
+| `--radius-sm` | 127 | **138** | close |
+| `--radius-round` | 96 | **96** | **identical** |
+| `--radius-md` | 28 | **42** | |
+| `--radius-lg` | 14 | **21** | |
+
+`--radius-round` matching exactly at 96 in both counts is a useful signal: it
+means the two counts agree on at least one whole class of element, so the gap is
+scope rather than error.
+
+**Three values above ten occurrences have no token here**, and all three are
+already declared in `packages/ui/tokens.css` from the 2026-09-04 derivation:
+`50%` (55, `--radius-half`), `50px` (45, `--radius-order`) and `8px` (21,
+`--radius-panel`). The sentence above saying "these five are every rounded value
+that appears more than ten times" is therefore **no longer true of this file
+alone**; it is true of the two files together.
+
+`0px 0px 7px 7px` at 45 is a dropdown's bottom corners composed from
+`--radius-md`, not a sixth value, and the two split search-pill radii are
+`--radius-pill-start` / `-end`.
+
 ### 2.5 Breakpoints
 
 The three widths `compare.mjs` measures at, declared so the responsive gate and
