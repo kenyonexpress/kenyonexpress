@@ -78,3 +78,10 @@ Multi-supplier cart: one mail per supplier, not one dump of the whole order's PI
 - Click-to-chat is not opt-in (W06). Marketing WA is W30 leftover, skipped for v7.
 - Kill switch notifications parks this leg too.
 
+---
+
+## Third pass
+
+Hebrew subjects: מכירה חדשה בקינון אקספרס / קופון מומש אצלך. No SMS by default. Existing CHECK kinds only.
+
+
