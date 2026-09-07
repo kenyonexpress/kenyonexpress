@@ -432,6 +432,38 @@ never disagree.
   escalated rather than narrated.
 - `platform_percent` never appears in customer-visible refund copy.
 
+## 10d. Crawl and indexability checks (pre-launch)
+
+None of this is visible in a browser at a glance, and every row below is a
+**verified finding** from the pass 13 audits, not a hypothetical. Run these
+against the production build before launch.
+
+`{base}` is the deployed origin.
+
+| # | Check | Command / where | Pass |
+|---|---|---|---|
+| 1 | `robots.txt` serves and names the sitemap | `curl {base}/robots.txt` | 12 disallow lines; `Sitemap: {base}/sitemap.xml`; `Host:` present |
+| 2 | `/redeem/` is the **first** disallow | same output | It is a signed voucher token. An indexed one is somebody's coupon in a search result |
+| 3 | `/products` is **not** disallowed | same output | Absent from the list |
+| 4 | Sitemap parses and is non-empty | `curl {base}/sitemap.xml` | valid XML, `<urlset>` |
+| 5 | **`/city/{slug}` appears in the sitemap** | grep the sitemap for `/city/` | **Known gap:** it does not today (SEO-PLAN 5.1 finding 1). Seventeen indexable pages are missing. Fails until fixed or until the plan changes |
+| 6 | **`/offline` is noindex** | `curl -s {base}/offline \| grep -i 'name="robots"'` | **Known gap:** no robots directive anywhere in its chain (SEO-PLAN 5.1 finding 3). Either add `robots: { index: false }` or stop calling it noindex |
+| 7 | `/search` is noindex | `curl -s "{base}/search?q=test" \| grep -i robots` | `noindex` present. It must **not** be in robots.txt: a blocked crawl never sees the noindex |
+| 8 | `/gift/{token}` is noindex, nofollow | same method | both present |
+| 9 | Every sitemap URL returns 200 | loop the sitemap | no 404, no redirect chain |
+| 10 | No sitemap URL is also disallowed | cross the two lists | empty intersection |
+| 11 | **Home `SearchAction`** | `curl -s {base}/ \| grep -c SearchAction` | **Unresolved conflict** (SEO-PLAN 3.9 finding 1): the code emits it, section 3.1 forbids it. Whichever way it is settled, this check must agree with the doc |
+| 12 | If `SearchAction` stays, `/search?q=x` answers | `curl -sI "{base}/search?q=x"` | 200. A sitelinks searchbox pointing at a dead route is a promise broken in front of the user |
+| 13 | `/s/{id}` JSON-LD | view source | **Known gap:** emits none (SEO-PLAN 3.9 finding 2). `LocalBusiness` is specified and unimplemented |
+| 14 | Product JSON-LD price | view source on a coupon PDP | `Offer.price` is the **on-site** amount, `ILS`, and `platform_percent` appears nowhere |
+| 15 | One canonical per page, self-referencing | any indexable route | exactly one `<link rel="canonical">` |
+| 16 | No `hreflang` anywhere | `curl -s {base}/ \| grep -c hreflang` | `0`, deliberately (SEO-PLAN 1.1). Do not "restore" it |
+| 17 | `api/debug/sentry` | `curl -sI {base}/api/debug/sentry` | **Known gap:** unguarded and exists to throw (ROLE-MATRIX 11.4). Confirm removed or gated |
+
+Rows 5, 6, 13 and 17 are expected to **fail today**. They are listed as checks
+rather than as a to-do so that the launch pass produces a decision on each,
+rather than rediscovering them.
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -450,3 +482,4 @@ never disagree.
 | 2026-09-07 | Scan flow: all nine redemption outcomes with statuses, the 409 collision trap, DB-side authorization checks; a11y sweep gains announce and voice-control rows |
 | 2026-09-07 | Pass 12: refund flow script (8b). Fourteen cases, the legal fee cap (lower of 5% or 100 ILS), idempotency, and the six post-conditions |
 | 2026-09-07 | Pass 12: refund flow added (8b). It is one of the five flows the brief names and had no section; three blockers with two distinct "nothing to refund" strings, the statutory cancellation fee, card vs wallet, and the queued-not-called property |
+| 2026-09-07 | Pass 13: crawl and indexability checks (10d). Seventeen rows, four of them expected to FAIL today, each tied to a verified pass-13 finding |
