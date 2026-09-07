@@ -4,6 +4,7 @@ import { requireSection } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
+import { adminOverridableTargets } from '@/server/domain/orders/order-transitions'
 import { describeRefundBlockers } from '@/server/domain/orders/refund'
 import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
@@ -242,7 +243,11 @@ export default async function OrderDetailPage({ params }: Props) {
         refundBlockers={blockers.map((b) => b.message)}
       />
 
-      <OrderStatusClient orderId={order.id} currentStatus={order.status} />
+      <OrderStatusClient
+        orderId={order.id}
+        currentStatus={order.status}
+        overridableTargets={[...adminOverridableTargets(order.status)]}
+      />
     </div>
   )
 }
