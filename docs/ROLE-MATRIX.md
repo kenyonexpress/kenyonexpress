@@ -1167,6 +1167,42 @@ list.
 automating the route-table check should either give every route its own row or
 teach the parser about combined cells, or it will report six false gaps forever.
 
+### 11a.2 The supplier routes, extended (pass 23)
+
+The third and last route family, completing the drift check.
+
+| | Count |
+|---|---|
+| `page.tsx` under `(supplier)` and `(supplier-public)` | **9** |
+| Documented in section 4 | **9** |
+| Guard drift | **0** |
+
+All nine still carry the guard section 4 records: `requireSupplierMember` on
+`/scan`, `/supplier` and `/supplier/redemptions`; `requireSupplierRole('manager')`
+on `/supplier/orders` and `/supplier/products`; `requireSupplierRole('owner')` on
+`/supplier/payouts`; a bare `redirect` on the `/supplier/scan` alias;
+`getSupplierSession()` on `/supplier/login`; and nothing on
+`/supplier/access-denied`, which is correct because a page that explains a
+denial must be reachable by the denied.
+
+### 11a.3 Coverage of the drift check, complete
+
+| Family | Routes | Drift |
+|---|---|---|
+| `/admin/*` pages | 41 | 0 |
+| `/api/*` handlers | 34 | 0 |
+| supplier pages | 9 | 0 |
+| **Total** | **84** | **0** |
+
+Eighty-four route guards, all matching what this document claims. Together with
+the section matrix (20 cells, pass 21) that is every enforceable claim in the
+document verified against source in one pass.
+
+What is **not** covered by any of it: the customer surfaces in section 5, whose
+"guard" is a layout redirect plus RLS, and the RLS predicates in section 7,
+which need a live database. Those remain read-and-reasoned rather than
+drift-checked.
+
 **This is the one check in this document that can be automated**, and it is the
 one worth automating: the route table is 41 rows of exactly the kind of detail
 that rots. A test asserting it would fail the moment someone adds an admin page
@@ -1196,3 +1232,4 @@ visible.
 | 2026-09-07 | Pass 20: traced current_user_role(). It answers the support-reads concern: it returns the enum so a policy can name a SET, and refunds and payment_events already include support |
 | 2026-09-07 | Pass 21: drift check. The section matrix is unchanged in all 20 cells and all 41 route guards match character for character |
 | 2026-09-07 | Pass 22: extended the drift check to all 34 API routes. Zero drift; a naive parse reported six false gaps because they are documented in combined rows |
+| 2026-09-07 | Pass 23: completed the drift check with the 9 supplier routes. 84 route guards across three families, zero drift |
