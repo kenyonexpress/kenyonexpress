@@ -27,6 +27,12 @@ Missing Upstash: Postgres path, not "unlimited".
 
 ---
 
-## Second pass
+## Second pass (ops)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Redis down: Postgres `check_rate_limit` is service_role only. If that RPC is missing, **fail closed on scan and PIN**, never unlimited (`ops/RUNBOOK-REDIS-DOWN.md`).
+- Scan 30/min is an **outcome** `rate_limited`, not HTTP 429 on the till HTML.
+- PIN 15/hour is per staff id, not per shop. Do not lock the whole restaurant on one bad PIN.
+- Webhook `?s=` is constant-time compare, **not** a rate bucket. Do not 429 Cardcom.
+- Review 5/hour is already in `submitReview`. Shared limiter belongs in the same helper as login, not a second table.
+- Checkout `RATE_LIMITED` Hebrew: יותר מדי ניסיונות. נסה שוב מאוחר יותר.
+
