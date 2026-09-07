@@ -33,3 +33,9 @@ Approve does not grant a global split. Products still unsellable without per-pro
 | Q | Best answer |
 |---|---|
 | Exact supplier status enum? | Read `suppliers` in `database.ts`. Do not invent `kyc_pending`. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
