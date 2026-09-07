@@ -879,6 +879,65 @@ hydration.
 Nothing in section 7 needs changing. It is recorded as audited so a later pass
 does not re-derive it.
 
+## 5.2 Correction to 5.1, and the read pattern that protects the sitemap (pass 18)
+
+### 5.2.1 `lastModified` is on every dynamic entry, not three
+
+Pass 5.1 said `lastModified` "is set on `/` (from `catalogueTouched`), on blog
+posts, and on the legal pages". **That was incomplete.** It is set on the
+dynamic entries too, from each row's `updated_at`:
+
+```
+categoryEntries   lastModified: c.updated_at ? new Date(c.updated_at) : now
+productEntries    lastModified: p.updated_at ? new Date(p.updated_at) : now
+supplierEntries   lastModified: s.updated_at ? new Date(s.updated_at) : now
+```
+
+So section 5's plan line, "`lastmod` from product `updated_at` where cheap", is
+**fully implemented**, not partially. `now` is the fallback when a row carries
+no timestamp.
+
+The listing pages take the newest thing on them rather than `new Date()`, and
+the file says why: "The listing pages change when the CATALOGUE changes, so
+their lastmod is the newest thing on them."
+
+### 5.2.2 An empty sitemap is a deindexing request
+
+All three catalogue reads go through `orFail` (`src/lib/catalogue-read.ts:39`),
+which **throws** on a query error instead of returning `data: null`. The
+sitemap's own comment explains what discarding the error used to cost:
+
+> a failed query yields `data: null`, the `?? []` below turns it into an empty
+> list, and the enclosing `use cache` scope stores THAT as the good answer, so
+> the failure did not fall back to the last good sitemap, it replaced it for the
+> full cache life, silently.
+>
+> A sitemap that lists nothing is a **deindexing request**.
+
+That is the sharpest statement of the principle in this document set, and it is
+an SEO fact rather than an engineering one: the difference between "I have no
+URLs" and "I could not read my URLs" is invisible to a crawler, and only one of
+them is true.
+
+`orFail` exempts two PostgREST codes that are genuine answers rather than
+failures: `PGRST116` (`.single()` found no row) and `PGRST103` (range past the
+last row).
+
+### 5.2.3 The same discipline, in a third place
+
+This is now the third independent instance of one rule in this document set:
+
+| Where | Rule |
+|---|---|
+| `orFail`, sitemap and 14 other files | a failed read must not become an empty list |
+| `membershipReadOrFail`, supplier rbac | an unreadable membership must not read as "staffs nobody" (`docs/ROLE-MATRIX.md` 4.2) |
+| `cancellationNotice`, subscriptions | an unparseable date must not read as "no date" (`docs/ERROR-COPY.md` 15.2) |
+
+Three teams of the same idea in three layers: query, authorization, and copy.
+**An error and an empty answer are different facts, and collapsing them always
+produces a confident lie.** Worth naming, because each was reached separately
+and none of the three references the others.
+
 ## Revision
 
 | Date | Change |
@@ -898,3 +957,4 @@ does not re-derive it.
 | 2026-09-07 | Pass 15: section 4 audited. City pages have exactly one inbound link, RegionMenu, and it is desktop-only; below xl they have neither a link nor a sitemap entry |
 | 2026-09-07 | Pass 16: section 6 audited. The one-H1 rule holds across 82 pages; all nine multi-token files are branches, and the category "second h1" is text inside a comment |
 | 2026-09-07 | Pass 17: section 7 audited. All four CWV claims hold; preload:false is a deliberate LCP trade and the consent banner uses display:none specifically to leave the LCP candidate set |
+| 2026-09-07 | Pass 18: corrected 5.1 (lastModified is on every dynamic entry, not three) and recorded orFail: an empty sitemap is a deindexing request |
