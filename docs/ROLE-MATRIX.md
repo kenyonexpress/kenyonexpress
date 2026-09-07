@@ -750,6 +750,28 @@ state without one".
    membership check lives deeper, in the redemption path itself, which is where
    `redeem_voucher()` matches against the caller's full membership set.
 
+### 10.2 Money tables vs the brief's four names (pass 15)
+
+Section 7.1 says the money block is client-read-only. This is that rule in the
+brief's four columns. Writes are `service_role` or `SECURITY DEFINER` with
+`auth.uid()` pinned. `is_admin()` in a **write** policy is the wrong door.
+
+| Table / command | customer | content-uploader (browser) | coupon-partner (membership) | admin (browser) |
+|---|---|---|---|---|
+| `payments` SELECT | own rows only | own as buyer | own as buyer | **no client write;** staff read via server / `service_role` |
+| `payments` INSERT/UPDATE | **deny** | deny | deny | deny (audited server path) |
+| `wallet_entries` SELECT | own | own as buyer | own as buyer | staff read via server |
+| `wallet_entries` INSERT | **deny** (QA §5.1 row 8) | deny | deny | deny in the browser |
+| `vouchers` SELECT | own | own as buyer | **lookup/redeem via RPC**, not a table dump of the shop book | staff via server |
+| `vouchers` UPDATE redeem | deny | deny | **`redeem_voucher()` only** | deny in the browser |
+| `order_items.platform_percent` in customer DOM | **deny** | deny | deny | allow on admin product form |
+| `wishlist_items` INSERT from PDP | **no UI caller today** (`WishlistButton` unimported) | same | same | same |
+| Direct PostgREST to `wallet_entries` | fail | fail | fail | fail |
+
+The wishlist row is access and product: RLS may allow own INSERT, but the
+storefront does not mount the control. Do not QA "add from PDP" as if it
+shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
+
 ## 12. Revision
 
 | Date | Change |
@@ -762,3 +784,4 @@ state without one".
 | 2026-09-07 | Pass 13: the fourteen customer-facing action files section 6 omitted; refund is the only admin-gated action outside admin/ |
 | 2026-09-07 | Pass 13: the DB-side role model from the function bodies. has_role() is a hierarchy that excludes support, is_admin() is the same predicate, and the 24 policies this repo can show are not the whole surface |
 | 2026-09-07 | Pass 14: auth, MFA, gift GET-vs-POST, redeem membership, checkout empty-cart bounce. Panel role does not widen shopper routes |
+| 2026-09-07 | Pass 15: money tables vs the brief's four names; wallet_entries client-write deny; PDP wishlist has no UI caller |
