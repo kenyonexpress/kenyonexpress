@@ -68,3 +68,11 @@ Physical clawback on refund via `supplierDebits` (payout adjustment, not a live 
 | Q | Best answer |
 |---|---|
 | Build payout_statements? | **Only after a product decision that reverses coupon 100/0.** Not to silence 42P01. |
+
+---
+
+## Second pass
+
+- Coupon `supplier_payable` is 0. Physical residual is snapshot. Admin 42P01 is honest.
+- See `contracts/LEDGER.md`, `business/PRICING-EXAMPLES.md`, `business/SUPPLIER-FAQ.md`.
+- Do not add bank details on onboarding (W07).
