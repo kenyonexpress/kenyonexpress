@@ -953,6 +953,62 @@ That is not a reason to distrust the log. It is the reason section 19 exists,
 and the reason a row should say what it measured rather than only what it
 scored.
 
+## 21. Section 2.2's landmarks, re-measured (pass 20)
+
+Section 2.2 lists landmarks that "must not regress". Ten of the twelve numbers
+reproduce exactly against `refs/ke_live_computed.json`. Two do not, and the
+reason is a gap in the table rather than a defect in the numbers.
+
+| Landmark | 380 | 768 | 1440 |
+|---|---|---|---|
+| Hero row, claimed | 213 | 495 | 613 |
+| Hero row, **measured** | **213** | **495** | **613** |
+| Columns, claimed | 1 | 2 | 4 |
+| Columns, **measured** | **1** | **2** | **4** |
+| Grid starts, claimed | 444 | 754 | 898 |
+| Grid starts, **measured** (`jet-listing-grid__items`) | **409** | **719** | **898** |
+
+Hero heights and column counts are exact at all three widths. Grid start is
+exact at 1440 and **35px lower at both handheld widths** — the same 35 twice,
+which is the signature of a different element rather than of drift.
+
+### 21.1 The table does not name its selectors, so two numbers cannot be checked
+
+At 1440, `jet-listing-grid__items` sits at y898 and the claim is 898. At 380 the
+same selector sits at y409 against a claim of 444, and what is actually near y441
+is a `jet-listing` label row 24px tall, with a link at y450 — a heading area, not
+the card container.
+
+So the original 444 measured *something*, consistently, 35px below the grid
+container at both handheld widths. Without the selector there is no way to say
+which element, and therefore no way to re-measure it or to know whether it has
+regressed.
+
+**That is the finding: a "must not regress" table whose rows carry no selector
+is not enforceable.** The hero and column rows survived only because "the hero
+row" and "how many cards fit across" are unambiguous.
+
+### 21.2 What to do with it
+
+Do **not** change 444 and 754 to 409 and 719. They may well be the right numbers
+for the right element, and this pass cannot tell.
+
+Add the selector to each row instead:
+
+| Landmark | Selector to record |
+|---|---|
+| Hero row | `div.elementor-section.elementor-top-section` |
+| Grid start | **unknown at 380/768**; `div.jet-listing-grid__items` gives 409 / 719 / 898 |
+| Columns | first-row card count, `div.jet-listing-grid__item` |
+| Feature bar | `div.feature` wrapper (31 empty strip at 380, 134 from 768) |
+
+Then a later pass can settle 444 and 754 by measuring the named element rather
+than guessing which one was meant.
+
+This is the same lesson as `docs/QA-SCRIPTS.md` 0.2 and section 17.2a, in a
+third costume: **a number without its provenance is not reproducible, and a
+number nobody can reproduce cannot gate anything.**
+
 ## Revision
 
 | Date | Change |
@@ -973,3 +1029,4 @@ scored.
 | 2026-09-07 | Pass 17: RETRACTED the 22px scroll claim from pass 16. With scrollY verified at 0, nothing moves; the earlier reading was mid-scroll. Also: live is position:static, ours is sticky |
 | 2026-09-07 | Pass 18: consolidated the systematic contributors (19). Five page-wide differences, three of which reach the shutter, ordered by scope; letter-spacing is per character and therefore the diffuse one |
 | 2026-09-07 | Pass 19: the procedure for adding a trustworthy row (20). Five pre-run checks, five output signals that invalidate a score, and what a row must carry beyond a percentage |
+| 2026-09-07 | Pass 20: re-measured the section 2.2 landmarks. Hero heights and column counts exact at all three widths; grid start exact at 1440 and 35px off at both handheld widths because the table names no selectors |
