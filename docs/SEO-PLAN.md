@@ -938,6 +938,53 @@ Three teams of the same idea in three layers: query, authorization, and copy.
 produces a confident lie.** Worth naming, because each was reached separately
 and none of the three references the others.
 
+## 3.10 The four money rules in JSON-LD, verified (pass 19)
+
+The header of this document states four rules about money in structured data.
+All four hold. Checked in `src/lib/seo/json-ld.ts`.
+
+| Rule | Verdict |
+|---|---|
+| Never publish `platform_percent` | **holds.** It appears nowhere under `src/lib/seo` or in any `generateMetadata`. Its five occurrences in `src/` are the supplier products page and the subscriptions cron, none of which emits schema. |
+| Coupon `Offer.price` is the **on-site** amount, never face value alone | **holds.** `price: price(input.couponOffer.paidOnlineIls)` |
+| No second `Offer` for the remainder | **holds.** The compare-at is expressed as `highPrice` on the same Offer, not as a second one |
+| Prices in ILS | **holds.** `priceCurrency: 'ILS'` on every branch |
+
+### 3.10.1 The unsellable branch omits the price rather than zeroing it
+
+```
+if (!input.couponOffer.sellable) {
+  return { '@type': 'Offer', url, priceCurrency: 'ILS',
+           availability: OUT_OF_STOCK, ...(seller ? { seller } : {}) }
+}
+```
+
+No `price` key at all. That is the right call and it is the same discipline
+`docs/SEO-PLAN.md` 5.2.2 records for the sitemap: **an Offer with no price is
+"I am not selling this", and an Offer priced at 0 is "this is free".** Emitting
+the face value here would advertise a number the shopper cannot pay, and
+emitting `0.00` would advertise a giveaway.
+
+### 3.10.2 One thing to watch: `price()` is `toFixed(2)`
+
+`function price(value: number): string { return value.toFixed(2) }`
+
+This is the one place in the customer-visible money path where a **float** is
+formatted, and it is correct here: Schema.org wants a decimal string, and the
+comment says so. But it means the value handed to it must already be a safe
+number.
+
+The rule everywhere else in this project is integer agorot end to end, with
+`shekels()` doing integer division rather than touching a float
+(`docs/ERROR-COPY.md` section 2.2 of `docs/RTL-PITFALLS.md`). `price()` takes
+`paidOnlineIls`, a **shekel** value, so the conversion has already happened
+upstream.
+
+Not a defect. Worth a line here because "never `toFixed` on money" is stated as
+an absolute elsewhere in this document set, and this is the documented exception:
+**structured data is a document, not a page**, and the same distinction that
+makes `formatIls` right for an invoice and wrong for a cart applies.
+
 ## Revision
 
 | Date | Change |
@@ -958,3 +1005,4 @@ and none of the three references the others.
 | 2026-09-07 | Pass 16: section 6 audited. The one-H1 rule holds across 82 pages; all nine multi-token files are branches, and the category "second h1" is text inside a comment |
 | 2026-09-07 | Pass 17: section 7 audited. All four CWV claims hold; preload:false is a deliberate LCP trade and the consent banner uses display:none specifically to leave the LCP candidate set |
 | 2026-09-07 | Pass 18: corrected 5.1 (lastModified is on every dynamic entry, not three) and recorded orFail: an empty sitemap is a deindexing request |
+| 2026-09-07 | Pass 19: the four money rules in JSON-LD verified. platform_percent absent, Offer.price is the on-site amount, no second Offer, and the unsellable branch omits price rather than zeroing it |
