@@ -255,6 +255,9 @@ Companions:
 9. R5 / R13 / R14 accepted or deferred in writing
 10. R16 (live Cloudflare zone only) before any DNS click
 11. R17 (no surprise SQL) during the freeze
+12. R20 (do not use admin redeem on the H6 proof)
+13. R23 (re-measure RLS snapshot) before apex money, not after
+14. R21 / R22 / R25 watch (do not edit proxy, wallet policies, or cashback writers in the launch window)
 
 ---
 
@@ -293,3 +296,88 @@ Companions:
   on vercel.app. Remainder is cash at the partner. 14 days is
   `distance_sale_14d`.
   No hold, no J5.
+
+---
+
+## R20. Admin redeem drifts off `redeem_voucher`
+
+- **Likelihood:** Medium the first time ops uses
+  `/admin/coupons/lookup`
+  under load.
+- **Impact:** High.
+  `redeemAdminVoucher`
+  is a service_role
+  `UPDATE ... WHERE status = 'issued'`
+  plus a manual
+  `voucher_redemptions`
+  insert. It does not call the RPC. Extra RPC side effects (settlement_status, till audit) will not run.
+- **Mitigation:** H6 scan must use
+  `/supplier/scan`
+  or
+  `/scan`,
+  not the admin override. Treat admin redeem as incident-only. Contract test G5 in
+  `docs/cursor/TEST-MAP.md`
+  before relying on the admin path in production.
+
+---
+
+## R21. `/scan` is outside the proxy `/supplier*` gate
+
+- **Likelihood:** Medium if a future proxy cleanup assumes all till URLs live under
+  `/supplier`.
+- **Impact:** High (unauthenticated till page) to Low (page still self-gates today).
+- **Mitigation:** Page must require session + membership. Do not add a JSON
+  `supplier_id`.
+  Route-guard test G8.
+
+---
+
+## R22. Live wallet pair untested against anon in CI
+
+- **Likelihood:** Low for a current hole (zero write policies on
+  `wallet_accounts`
+  /
+  `wallet_entries`).
+  Medium for a regression nobody notices because
+  `wallet-rls.test.ts`
+  only hits the fossil pair.
+- **Impact:** Catastrophic if a write policy is added to the live pair with
+  `USING (true)`.
+- **Mitigation:** G1. Until then, do not merge fossil and live names in a migration.
+
+---
+
+## R23. RLS snapshot is 53 tables (2026-08-19); later notes say 61
+
+- **Likelihood:** Certain that CI cannot see
+  `refunds`,
+  `payment_events`,
+  and other post-snapshot tables.
+- **Impact:** Critical if a new table landed with a wide write policy. Low if those tables are deny-all or service_role only.
+- **Mitigation:** Human re-run
+  `node scripts/check-rls.mjs`
+  (not this agent) and commit the snapshot before taking money on the apex. Freeze policy edits in the launch window (R6 / R17).
+
+---
+
+## R24. Funnel analytics still silent (`purchase` and friends)
+
+- **Likelihood:** Named certain in older STATUS notes until migration 169 is applied and
+  `/api/a`
+  ingest exists.
+- **Impact:** High for operators (zero reported sales). Not a charge bug. Can hide R7 (you think nobody is paying).
+- **Mitigation:** After H6, query the analytics table / Axiom / the ingest path. Do not use "zero purchases in the dashboard" as proof the till is closed.
+
+---
+
+## R25. Cashback double-credit if a later writer ignores idempotency
+
+- **Likelihood:** Low while only
+  `finalizeOrder`
+  calls
+  `fn_wallet_transfer`
+  with
+  `order:<id>:cashback`.
+  Medium if someone "fixes" delayed-credit briefs by adding a second credit at scan.
+- **Impact:** High (platform pays cashback twice).
+- **Mitigation:** One writer. Replay finalize must no-op. Do not credit at redeem. G6.
