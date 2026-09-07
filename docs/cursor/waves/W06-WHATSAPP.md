@@ -84,3 +84,12 @@ Float hidden when env unset. `whatsapp_click` schema. No send to test-store numb
 - Twilio down: click-to-chat still works. `ops/RUNBOOK-TWILIO-DOWN.md` is mostly no-op if Meta is unused.
 - Amounts in templates: snapshot `*_agorot`, format with `formatIls`. Never let Meta round (`contracts/LEDGER.md`).
 - `profiles.role = vendor` does not enable the float. Product `whatsapp_enabled` plus env number.
+
+---
+
+## Third pass
+
+H4: production number, never
+`972524635550`.
+Three senders (float + Twilio + Meta) forbidden. Campaigns are not this wave.
+
