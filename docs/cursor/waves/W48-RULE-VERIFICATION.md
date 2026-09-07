@@ -69,6 +69,15 @@ N/A.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (rules)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Money: integer agorot,
+  `src/lib/money.ts`.
+- No `db push`. Pending by full filename. 165 cancelled.
+- `vendor` ≠ till.
+  `supplier_members`.
+- Cookie split. Cashback at finalize. No escrow writers.
+- This worktree: markdown under
+  `docs/cursor/`
+  only.
+
