@@ -171,6 +171,35 @@ Card geometry (ours / live), verified without a score:
 
 Columns implied: **2 / 3 / 5**. Header in the category snapshot is a collapsed sticky (40px at 380) vs home’s 84px masthead. Shell stays tuned to **home**. Do not collapse the header to match a mid-scroll category PNG.
 
+#### 3.1 The live column verified, and one word in it qualified (pass 15)
+
+Read off `refs/ke_live_computed.json`, `div.product-outer` in
+`/product-category/hot-deals/`:
+
+| Width | Doc's live column | Capture | Verdict |
+|---|---|---|---|
+| 380 | x190 w175 | **x190 w175** h369.7 | exact |
+| 768 | x499 w230 | **x499 w230** h424.7 | exact |
+| 1440 | x1071 w234 | **x1071 w234** h437.5 | exact |
+
+All three match to the pixel, so the 768 delta the table records (ours x519 w234
+against live x499 w230, a 20px x and 4px w gap) is a real and current parity
+defect, not a stale note.
+
+**"Columns implied" is doing real work in that sentence and should stay.** The
+capture shows **2 cards in the first row at every width**, including 1440, because
+the live `hot-deals` category holds only two products. Five columns are inferred
+from card width against container width; they are not observed anywhere in this
+capture and cannot be, from a two-product category.
+
+That is the same discipline 2.2.1 ends on. The card **width** is measured. The
+column **count** is arithmetic. A future reader checking "5-up at 1440" against
+this reference will find two cards and should not read that as a regression.
+
+To observe the count rather than infer it, measure a category with at least five
+active products on both sides. That is also what would let `--page=category`
+stop refusing.
+
 ---
 
 ## 4. Product `/product/[slug]`
