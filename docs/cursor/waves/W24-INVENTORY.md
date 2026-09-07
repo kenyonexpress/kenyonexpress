@@ -73,6 +73,11 @@ Id `9bb347f8-03ec-48ce-8ff2-2503fb74c895`. Three real products named מאסטר 
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (money)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Reservation TTL 15 min must stay **shorter** than pending-order expiry. Cron `/api/cron/stock` releases. If consume-after-pay fails, the order stays `paid` (G11). Do not un-pay to "fix stock".
+- Coupon stock is units issued at finalize, not a warehouse pick. Physical uses `stock_reservations` (zero-policy; admin client to inspect).
+- Master SKU id `9bb347f8-03ec-48ce-8ff2-2503fb74c895`: app guard on `full_price` **and** pending `172_hide_master_product_test_row.sql` (stock 0). The other 172 is `172_rls_zero_policy_tables.sql`. Do not delete by name מאסטר.
+- Scanner `member_role` cannot raise stock. Uploader cannot either (W08).
+- Hebrew cart: אזל מהמלאי. Never "test product".
+
