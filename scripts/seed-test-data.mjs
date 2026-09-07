@@ -75,6 +75,12 @@ const SUPPLIER_PASSWORD = env.E2E_SUPPLIER_PASSWORD ?? 'E2eSupplier!pass1'
 // grant, and the test should prove the WEAKEST role that may refund can.
 const ADMIN_EMAIL = env.E2E_ADMIN_EMAIL ?? 'e2e-admin@test.kenyonexpress.local'
 const ADMIN_PASSWORD = env.E2E_ADMIN_PASSWORD ?? 'E2eAdmin!pass1'
+// The content_uploader fixture, for the RLS boundary suite. It is the only
+// role besides admin with policies of its own (12 of the 146 in production),
+// and it was the one role with no fixture at all, which is why nothing had
+// ever asserted where its reach ends.
+const UPLOADER_EMAIL = env.E2E_UPLOADER_EMAIL ?? 'e2e-uploader@test.kenyonexpress.local'
+const UPLOADER_PASSWORD = env.E2E_UPLOADER_PASSWORD ?? 'E2eUploader!pass1'
 
 const SUPPLIER = {
   id: IDS.supplier,
@@ -241,6 +247,7 @@ async function main() {
       await reportUser(CUSTOMER_EMAIL, 'customer user'),
       await reportUser(SUPPLIER_EMAIL, 'supplier user'),
       await reportUser(ADMIN_EMAIL, 'admin user'),
+      await reportUser(UPLOADER_EMAIL, 'content_uploader user'),
     ]
     process.exit(results.every(Boolean) ? 0 : 1)
   }
@@ -251,6 +258,7 @@ async function main() {
     await deleteAuthUser(CUSTOMER_EMAIL, 'customer user')
     await deleteAuthUser(SUPPLIER_EMAIL, 'supplier user')
     await deleteAuthUser(ADMIN_EMAIL, 'admin user')
+    await deleteAuthUser(UPLOADER_EMAIL, 'content_uploader user')
     await remove('products', IDS.couponProduct, 'coupon product')
     await remove('products', IDS.physicalProduct, 'physical product')
     await remove('categories', IDS.category, 'category')
@@ -273,8 +281,21 @@ async function main() {
     email: SUPPLIER_EMAIL,
     password: SUPPLIER_PASSWORD,
     fullName: 'ספק בדיקות E2E',
+    // `vendor` is the label; `supplier_members` below is the authorisation.
+    // Seeding both, in that order, is what lets the boundary suite prove they
+    // are not the same thing: zero of the 146 production policies read
+    // `vendor`, and `redeem_voucher` derives the supplier from membership
+    // through auth.uid() without ever reading profiles.role.
+    // See docs/DECISION-LOG.md D-001.
+    role: 'vendor',
   })
   await ensureSupplierMember(supplierUserId)
+  await ensureAuthUser({
+    email: UPLOADER_EMAIL,
+    password: UPLOADER_PASSWORD,
+    fullName: 'מעלה תוכן בדיקות E2E',
+    role: 'content_uploader',
+  })
   await ensureAuthUser({
     email: ADMIN_EMAIL,
     password: ADMIN_PASSWORD,
@@ -285,6 +306,7 @@ async function main() {
   console.log(`  customer: ${CUSTOMER_EMAIL}`)
   console.log(`  supplier: ${SUPPLIER_EMAIL}`)
   console.log(`  admin:    ${ADMIN_EMAIL}`)
+  console.log(`  uploader: ${UPLOADER_EMAIL}`)
 }
 
 main().catch((error) => {
