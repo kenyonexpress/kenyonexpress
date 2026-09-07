@@ -172,6 +172,30 @@ file or a prior document.
 | [ARCHITECTURE-ADMIN.md](ARCHITECTURE-ADMIN.md) · [ADMIN-DASHBOARD](ARCHITECTURE-ADMIN-DASHBOARD.md) · [ADMIN-ANALYTICS](ARCHITECTURE-ADMIN-ANALYTICS.md) | ⚠️ | Admin. |
 | [ARCHITECTURE-SUPPLIER-PORTAL.md](ARCHITECTURE-SUPPLIER-PORTAL.md) | ⚠️ | Supplier portal design; see `SUPPLIER-PAGE.md`. |
 
+### The `docs/ui-design-system` set (added 2026-09-07)
+
+Eight reference documents built by reading the source and the committed live
+capture, plus three companions. Each states what it verified and what it could
+not, so an unverified claim is labelled rather than implied.
+
+| Document | Status | What it is |
+|---|---|---|
+| [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) | ✅ | The token layer: every colour with its measured contrast, spacing, type, radius, breakpoints, component anatomy, RTL rules, and the `compare.mjs` gate with all eight refusals. |
+| [TOKEN-PROVENANCE.md](TOKEN-PROVENANCE.md) | ✅ | One row per derived token: measured value, source selector, source width. An untraceable token is marked UNMEASURED rather than guessed. |
+| [COMPONENT-INVENTORY.md](COMPONENT-INVENTORY.md) | ⚠️ | Every component with props, states, RTL and a11y notes. |
+| [UI-PARITY-LOG.md](UI-PARITY-LOG.md) | ✅ | `compare.mjs` history per route per breakpoint, the eight refusals, and the band-to-region map. |
+| [UI-QA-CHECKLIST.md](UI-QA-CHECKLIST.md) | ✅ | The manual visual pass across the purchase funnel. |
+| [QA-SCRIPTS.md](QA-SCRIPTS.md) | ✅ | Manual QA per flow: coupon and physical checkout, redemption, refund, admin CRUD. |
+| [ROLE-MATRIX.md](ROLE-MATRIX.md) | ✅ | Six roles plus supplier membership; every page, server action and `/api/*` route, allow or deny, against the RLS predicates. |
+| [ERROR-COPY.md](ERROR-COPY.md) | ✅ | Hebrew UX strings by situation, with a coverage count against the source. |
+| [RTL-PITFALLS.md](RTL-PITFALLS.md) | ✅ | Hebrew typography, number and currency direction, icon mirroring, bidi isolation. |
+| [SEO-PLAN.md](SEO-PLAN.md) | ✅ | Schema per page, meta templates, linking map, `hreflang` `he-IL`, each audited against source. |
+| [MIGRATION-REVIEW.md](MIGRATION-REVIEW.md) | ✅ | `migrations/pending/` read as text, with risk notes and apply-order rationale. Nothing executed. |
+
+`ARCHITECTURE-DESIGN-SYSTEM.md` above is the earlier Hebrew design-language
+note and is **superseded on token values** by `DESIGN-SYSTEM.md`, which carries
+the measurements. Where the two disagree, prefer the measured one.
+
 ## Growth, content, legal
 
 | Document | Status | What it is |
