@@ -77,3 +77,12 @@ None (ops).
 - Dump that disables RLS is an incident (`ops/RUNBOOK-DB-DOWN.md`).
 - Do not `pg_dump` into git. Do not restore `wp_import` over `public`.
 
+---
+
+## Third pass
+
+Keep three Desktop tars only. Production project
+`ixvwfbuvfxxsjiywhbbb`.
+PITR is a dashboard human action.
+
+
