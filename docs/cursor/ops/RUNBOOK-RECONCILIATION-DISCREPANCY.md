@@ -23,4 +23,4 @@ Trust a spreadsheet. Insert a fake purchase analytics event. Replay captured JSO
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Cardcom terminal vs `payments`, never webhook POST. Corrections are `reversal` journals. Israel calendar day for CancelOnly.
