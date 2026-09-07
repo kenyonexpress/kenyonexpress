@@ -82,3 +82,14 @@ Same Israel calendar day: Cardcom `CancelOnly` vs credit. `en-CA` format Asia/Je
 - Catch-and-set past `23514` is forbidden. Application mirror must match 137 / 166 guards.
 - Hebrew till strings come from server outcomes, not a client map that invents statuses.
 
+---
+
+## Third pass
+
+Hebrew labels: ממתין לתשלום / שולם / זוכה / טרם מומש / מומש. Do not add
+`disputed`
+to the enum from this pack.
+`paid → pending`
+is forbidden even during a deploy rollback.
+
+
