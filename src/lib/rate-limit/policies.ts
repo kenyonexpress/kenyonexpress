@@ -52,6 +52,21 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'OTP SMS to one number: the measured lockout vector',
   },
   'phone-verify': { limit: 20, windowSeconds: 3600, reason: 'OTP code guessing' },
+  'passkey-register': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'WebAuthn enrolment ceremonies; a real person adds one key, not eleven',
+  },
+  'passkey-login': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'challenge issuance, per IP; cheap but each one sets a cookie',
+  },
+  'passkey-login-finish': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'assertion verification plus admin calls; one per real login',
+  },
   reset: { limit: 5, windowSeconds: 3600, reason: 'reset mail, per IP' },
   'reset-address': {
     limit: 5,

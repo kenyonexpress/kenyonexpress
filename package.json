@@ -46,6 +46,8 @@
     "@radix-ui/react-toast": "^1.2.6",
     "@sentry/nextjs": "^10.68.0",
     "@sentry/node": "^10.68.0",
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.0.1",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.105.3",
     "@types/mdx": "^2.0.14",
