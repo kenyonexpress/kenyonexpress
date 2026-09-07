@@ -478,3 +478,15 @@ If
 is empty, the storefront falls back to
 `972524635550`
 (Test Store on the WordPress site). Set the real business number in Production and **Redeploy** before H8, even if campaigns (P4) are months away. This is a one-line env paste, still a human.
+
+---
+
+## H6 addendum. Analytics zero is not a closed till
+
+After the shekel purchase, if the marketing dashboard still shows 0
+`purchase`
+events, that is R24 (ingest / migration 169), not proof Cardcom failed. You already proved pay with SQL in H6 step 1. Do not kill
+`CHECKOUT_ENABLED`
+only because ads report nothing.
+
+Do not install a "debug" service role into the TestFlight / Play till app as part of H6. The phone uses the anon key.
