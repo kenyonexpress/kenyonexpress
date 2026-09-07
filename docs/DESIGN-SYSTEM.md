@@ -731,6 +731,69 @@ That is the same conclusion the spacing recount reached about `19.418px`, by the
 same method: count, then **trace the carrier** before deciding whether a
 frequent value is a missing token or someone else's furniture.
 
+### 3.0b Letter-spacing: live sets it globally and we do not (pass 18)
+
+This section has never mentioned `letter-spacing`. The capture does, and the
+answer is not "unused".
+
+| Count | `letter-spacing` | Share |
+|---|---|---|
+| **22140** | **`-0.14px`** | **92.4%** |
+| 1746 | `normal` | 7.3% |
+| 17 / 17 / 17 | `-0.6031px` / `-0.9492px` / `-0.8759px` | RevSlider `rs-layer`, one per width |
+| 9 | `-0.175px` | a checkout paragraph |
+| 6 | `-0.99995px` | a cart `entry-title` |
+
+**Live applies `-0.14px` to 92.4% of every element on every template at every
+width.** `-0.14px` is `-0.01em` computed at the 14px body size, so this is the
+same `-0.01em` section 3.5 records against hero line 2, except it is not
+hero-only: it is set once near the root and inherited.
+
+The uniformity is the tell. Inherited `letter-spacing` inherits the **computed
+px value**, not the em, so a 25px heading under a 14px body keeps `-0.14px`
+rather than recomputing to `-0.25px`. That is why one number covers every size.
+
+#### Ours is `normal`
+
+There is no global `letter-spacing` in this project. Grepped across
+`src/styles/*.css` and `src/app/globals.css`: three local declarations only, all
+deliberate and none global.
+
+| Where | Value | Purpose |
+|---|---|---|
+| `account.css:576` | `2px` | a code display |
+| `account.css:638` | `4px` | a code display |
+| `checkout-page.css:487` | `0.2em` | a label |
+
+Plus a handful of Tailwind `tracking-tight` on individual components. Everything
+else runs at the browser default, `normal`, which is `0`.
+
+#### What the difference costs
+
+Every text run on our side is **0.14px per character wider than live's**. On a
+40-character line that is 5.6px; on a paragraph it is enough to change where
+text wraps, and a changed wrap changes the line count, which changes the block
+height, which moves everything below it.
+
+That makes this a **systematic, page-wide contributor to the pixel gate that no
+document has named**, and it is the kind of difference the band report shows as
+a diffuse mismatch rather than as one wrong element. It sits in the same class
+as the shell offset in `docs/UI-PARITY-LOG.md` section 17: small per instance,
+compounding down the page.
+
+#### What this section previously implied, and why it was wrong
+
+Section 3.5 lists `-0.01em` only against hero line 2, and section 1 of
+`docs/RTL-PITFALLS.md` advises against adding tracking to Hebrew body text. The
+second is sound typographic advice **and live does the opposite**, on 92.4% of
+its elements.
+
+Both facts should stand as stated: live's choice is measured, our absence is
+measured, and adopting live's would be a pixel-gate improvement that a
+typographer might reasonably argue against. This section records the trade
+rather than resolving it, because it has never been a conscious decision. It is
+currently a difference nobody chose.
+
 ### 3.1 Body and UI
 
 | Token | Value | Usage |
@@ -1988,3 +2051,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 15: 21.994px is an icon-font size AND a cart radius, do not merge; Heebo swap means Arial LCP and a Heebo shutter |
 | 2026-09-07 | Pass 16: live cards are flat; `--shadow-card-hover` is Electro; do not diagnose home@380 from elevation |
 | 2026-09-07 | Pass 17: counted the gap column. Eight values, exhaustive; the 15px gutter is used 862 times as padding and ZERO times as a gap, and 16/20px invert between the two scales |
+| 2026-09-07 | Pass 18: letter-spacing counted. Live sets -0.14px on 92.4% of elements, inherited from the root; ours is normal everywhere. A page-wide gate contributor no document had named |
