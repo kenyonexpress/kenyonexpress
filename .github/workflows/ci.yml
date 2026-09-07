@@ -318,6 +318,107 @@ jobs:
           path: .next/
           retention-days: 3
 
+  # The pixel gate. compare.mjs screenshots this build and the live site at the
+  # same width and reports the diff over the first 2600px; the ceiling is 11%.
+  #
+  # THREE THINGS MAKE THIS DIFFERENT FROM THE OTHER JOBS, and each one is why a
+  # line below looks the way it does.
+  #
+  # It needs a BOOTED server, not just a build, and `src/lib/env.ts` refuses to
+  # boot without SUPABASE_SECRET_KEY of at least 20 characters. Measured on
+  # 2026-09-07: the build passes and `next start` dies in the instrumentation
+  # hook. So this job carries the same credential guard as e2e.
+  #
+  # It compares against kenyonexpress.co.il, which is a third party from CI's
+  # point of view. A gate that fails because someone else's site is down is a
+  # gate people learn to re-run rather than read, so an unreachable reference
+  # WARNS and the job passes; only a measured number over the ceiling fails it.
+  #
+  # It runs at all three design widths because a regression is usually at one.
+  # 380 is the one that has historically sat closest to the ceiling: 10.68%
+  # against a limit of 11.
+  pixel-gate:
+    name: Pixel parity (380 / 768 / 1440)
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
+      NEXT_PUBLIC_APP_URL: http://localhost:3311
+      LOCAL_BASE: http://localhost:3311
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check whether Supabase credentials are configured
+        id: creds
+        run: |
+          if [ -n "${{ secrets.CI_SUPABASE_URL }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Pixel gate skipped::CI_SUPABASE_URL is not set, so the built server cannot boot. Add the CI_SUPABASE_* repository secrets to enable it."
+          fi
+
+      - uses: pnpm/action-setup@v4
+        if: steps.creds.outputs.present == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.creds.outputs.present == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.creds.outputs.present == 'true'
+
+      - uses: actions/download-artifact@v4
+        if: steps.creds.outputs.present == 'true'
+        with:
+          name: next-build
+          path: .next/
+
+      - name: Install the browser compare.mjs drives
+        if: steps.creds.outputs.present == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Start the built server
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          PORT=3311 pnpm start &
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://localhost:3311/; then
+              echo "server up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error title=Pixel gate::the built server never answered on 3311"
+          exit 1
+
+      - name: Compare against the live site at three widths
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          # `|| true` on the reachability probe only. A live site that is down
+          # must not fail this job; a measured regression must.
+          if ! curl -sf -o /dev/null --max-time 20 https://kenyonexpress.co.il/; then
+            echo "::warning title=Pixel gate skipped::the reference site did not answer, so there is nothing to compare against"
+            exit 0
+          fi
+          fail=0
+          for width in 380 768 1440; do
+            if ! node scripts/compare.mjs --page=home --width="$width"; then
+              echo "::error title=Pixel gate::home at ${width}px is over the 11% ceiling"
+              fail=1
+            fi
+          done
+          exit "$fail"
+
+      - name: Publish the parity report
+        if: steps.creds.outputs.present == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-parity-report
+          path: docs/UI-PARITY-REPORT.md
+          retention-days: 7
+
   # E2E drives a real browser against a real database, so it needs a Supabase
   # project. Until CI_SUPABASE_URL exists as a repository secret this job skips
   # rather than failing - a permanently red required check teaches people to
