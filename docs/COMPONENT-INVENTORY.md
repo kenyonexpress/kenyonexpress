@@ -1251,6 +1251,66 @@ the RTL lint's comment prose, the buttons with visible Hebrew labels, and the
 `docs/QA-SCRIPTS.md` 0.2 states the rule this keeps proving: **open the thing
 before you write it down. A count is a lead, not a finding.**
 
+## Pass 22: the last summary number, and what "not token compliant" actually means
+
+The Summary's three headline numbers have now all been re-verified: total files
+(pass 15), RTL-risky (pass 21), and token compliance here.
+
+### Raw hex: one component, and it is allowlisted
+
+| | Count |
+|---|---|
+| Components containing a raw hex, comments stripped | **1** |
+| Of those, allowlisted | **1** |
+| **Unallowlisted raw hex** | **0** |
+
+The one is `shared/GoogleLogo.tsx` (`#4285F4`, `#EA4335`, `#FBBC05`,
+`#34A853`), and `src/styles/tokens.test.ts:208` names it explicitly:
+
+```
+const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx',
+                               'src/app/global-error.tsx'])
+```
+
+Those are Google's own brand colours in a vendor mark, which is the same
+exemption `docs/DESIGN-SYSTEM.md` 1.4 gives WhatsApp and Facebook: **never
+rebrand a third-party mark with `--color-brand-*`**. So the original "33 not
+token compliant" has resolved to **zero real violations**, and the test is why.
+
+### Arbitrary sizes: 19 components, and most are measured values
+
+Nineteen components use a `[Npx]` / `[Nrem]` arbitrary value. **Four of the
+values duplicate an existing token:**
+
+| Value | Uses | Token that exists |
+|---|---|---|
+| `15px` | **11** | `--spacing-gutter`, i.e. `p-gutter` / `gap-gutter` |
+| `10px` | 1 | `--spacing-md` |
+| `14px` | 1 | `--spacing-lg` |
+| `22px` | 1 | `--radius-pill` |
+
+**`[15px]` at eleven uses is the one worth fixing.** It is the site's single most
+common padding (862 occurrences on live, `DESIGN-SYSTEM` 2.0), it has a named
+token generated as a Tailwind utility, and writing it as an arbitrary value
+makes it ungreppable as the gutter. `Header`, `MobileDrawer`, `SiteFooter`,
+`CartPageView` and others each spell it out.
+
+The other 36 distinct values have **no token, and mostly should not have one**:
+
+- `534px`, `41px`, `22px` (`search/HeaderSearch`) are live's search field, in a
+  component `docs/COMPONENT-INVENTORY.md` pass 15 records as **unmounted**.
+- `43px`, `51px`, `38px`, `110px`, `13px`, `11px` (`home/HeroSlider`) are the
+  hero display ramp, and `DESIGN-SYSTEM` 3.4 explains which of those were
+  promoted to tokens and which deliberately were not: "the sizes that really are
+  used once stay in that file's `RS` constant".
+- `0.929em` (`layout/Header`) is the top bar's font size, measured.
+- `9999px` is an inset shadow idiom, not a size.
+
+So "arbitrary value" is not a synonym for "unprincipled". The distinction the
+Summary needs, and now has, is between **a value that has a token and ignores
+it** (four, of which `[15px]` x11 is the real one) and **a measured one-off with
+its provenance in a comment** (the rest).
+
 ## Revision
 
 | Date | Change |
@@ -1274,3 +1334,4 @@ before you write it down. A count is a lead, not a finding.**
 | 2026-09-07 | Pass 19: the admin table and navigation cluster. CommandPalette is a shortcut over an authorised query and holds no credentials; TablePagination is the best-labelled control in the panel |
 | 2026-09-07 | Pass 20: the storefront supplier pair. SupplierInfo exists because the address used to appear only after payment, and it records a wrong-union-member bug that selected a valid branch instead of throwing |
 | 2026-09-07 | Pass 21: RTL-risky list re-verified. Nine hits, seven real; CouponCard and BenefitBar are now clean and two components were missing. The first run said 38, all extras being rounded-lg matched by a rounded-l pattern |
+| 2026-09-07 | Pass 22: token compliance re-verified. Zero unallowlisted raw hex; of 19 components with arbitrary sizes, only four duplicate an existing token and [15px] x11 is the one worth fixing |
