@@ -291,10 +291,11 @@ These are not taste. They are load-bearing.
   `is_admin()`.
 - Do not forward the browser
   `Cookie`
-  jar to PostgREST for guests. Guest RLS reads
-  `session_id`
-  (not
-  `ke_session_id`).
+  jar to PostgREST for guests. The browser cookie is
+  `ke_session_id`.
+  RLS reads a constructed
+  `session_id=`
+  header. Mixing the names empties the cart or leaks the refresh token.
 - Do not disable RLS "just for this table". Zero-policy tables are catalogued in
   `docs/cursor/RLS-CATALOG.md`.
   Adding a table without policies is a launch bug.
