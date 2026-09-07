@@ -1194,3 +1194,42 @@ compare.mjs, commit, push, עדכון STATE.md.
 
 **‏W50 מסתיים אחרת מהגרסאות הקודמות:** כשסבב מלא מוצא אפס בעיות פעמיים
 ברצף, לתייג את גרסת ה-patch הבאה ולהמשיך.
+
+---
+
+## ‏backlog של worktree התיעוד: פריטים 11 עד 20 (התקבל 07.09.2026)
+
+**הגיע ממוען לסשן `ke-arch` על `docs/ui-design-system`, שכבר אינו רץ.**
+אופיר עצמו הוריד אותו ב-`launchctl bootout com.kenyonexpress.docs` ואישר
+"‏must be 2". הפריטים נרשמים כאן כדי שלא ילכו לאיבוד. הם **Markdown בלבד**
+ולא נוגעים ב-`.ts/.tsx/.sql/.json`, ולכן אפשר לבצע אותם מכאן בלי להתנגש
+בקוד, אבל **לא במקום ‏W1**: התור המאסטר אומר גל אחד בכל פעם.
+
+הקדימות: פריטים 1 עד 10 של אותו goal (‏DESIGN-SYSTEM, ‏COMPONENT-INVENTORY,
+‏UI-PARITY-LOG, ‏ROLE-MATRIX, ‏ERROR-COPY, ‏SEO-PLAN, ‏QA-SCRIPTS,
+‏MIGRATION-REVIEW, ‏RISK-REGISTER, ‏POST-LAUNCH-ROADMAP) ואז:
+
+11. `docs/UI-WAVES.md` — לכל גל ‏W3 עד W49 עם משטח UI: מסכים שנוספים, רכיבים
+    קיימים מ-COMPONENT-INVENTORY, רכיבים חדשים, הערות RTL, הערות a11y,
+    ומסלולי `compare.mjs` שחייבים להישאר מתחת ל-11%.
+12. `docs/ADMIN-UI-SPEC.md` — כל מסך אדמין: ‏CRUD מוצר עם תצוגת פיצול חיה,
+    מודרציה, אישור ספקים, מציג ביקורת, דגלי פיצ'רים, קונפיג, סקדיולר,
+    התחזות, אנליטיקה. פריסה, מצבים, קופי עברי, גידור תפקידים.
+13. `docs/SUPPLIER-UI-SPEC.md` — דשבורד, סריקה, סניפים, צוות, דוחות,
+    אנליטיקה, התראות, קבלת תנאים. ‏mobile-first ‏380px.
+14. `docs/CUSTOMER-UI-SPEC.md` — חשבון, הזמנות, שוברים, ארנק, רשימת משאלות,
+    ביקורות, הפניות, נאמנות, מתנה, העברה. ‏mobile-first.
+15. `docs/EMPTY-AND-ERROR-STATES.md` — לכל רשימה וזרימה, מצב ריק ומצב שגיאה
+    מעוצבים בעברית, עם פעולה הבאה.
+16. `docs/MOTION-SPEC.md` — טעינה, הצלחה, שגיאה, ‏reduced-motion, אפס
+    ‏layout shift.
+17. `docs/PRINT-SPEC.md` — שובר, קבלה, דוח ספק: פריסות הדפסה, ‏RTL.
+18. `docs/HEBREW-STYLE-GUIDE.md` — טון, דקדוק, מגדר, מונחים לפי GLOSSARY,
+    דוגמאות טובות ורעות.
+19. `docs/DESIGN-TOKENS-AUDIT.md` — כל hex/px/font גולמי שנשאר בקוד וצריך
+    להיות token, עם קובץ ושורה.
+20. `docs/UI-PARITY-PLAN.md` — כל מסלול, צילום ייחוס, אחוז ההפרש הנוכחי,
+    ותוכנית להגיע מתחת ל-11.
+
+**‏`docs/ROLE-MATRIX.md` (פריט 4) כבר נכתב מכאן**, מתוך המדיניויות החיות,
+כי בלוק 10 היה צריך אותו. שאר הפריטים ממתינים.
