@@ -399,3 +399,61 @@ Companions:
 - **Likelihood:** Low unless a future patch "tightens" error handling.
 - **Impact:** Critical. Card charged, order not `paid`, no voucher. Same shape as R7.
 - **Mitigation:** Current code logs and continues. Tests G11. Do not invert that in the launch window.
+
+---
+
+## R28. Default ntfy topic is guessable
+
+- **Likelihood:** Medium if Production leaves
+  `NTFY_TOPIC`
+  unset (code default
+  `kenyon-ofir-limit`
+  on
+  `ntfy.sh`).
+- **Impact:** High for privacy of incident **identifiers** (order ids). Amounts are omitted by design. Not a card-data leak.
+- **Mitigation:** Set an unguessable topic +
+  `NTFY_BASE_URL`
+  if self-hosted. Confirm
+  `ALERTS_ENABLED`
+  is not
+  `false`
+  in Production. Q15.
+
+## R29. GitHub Actions quota stops all twelve crons
+
+- **Likelihood:** Medium on a busy org; Low if this is the only workflow set.
+- **Impact:** Critical for voucher email and stranded-payment recovery; High for expire/reap. Storefront still charges.
+- **Mitigation:** Do not "fix" by enabling Hobby Vercel cron (silent two-job cap). Watch Actions billing. 162 pg_cron is blocked on vault; do not enable both.
+
+## R30. Nested `sharp` serves original AVIF
+
+- **Likelihood:** Low while
+  `pnpm.overrides`
+  holds; High if Vercel install ignores the workspace override.
+- **Impact:** High (LCP, bandwidth). Not a money bug.
+- **Mitigation:** Keep
+  `sharp: ^0.35.3`.
+  After first Production deploy, pick one PDP AVIF and confirm Content-Length is a resized derivative.
+
+## R31. `/en` half-translation
+
+- **Likelihood:** Low until someone "turns on" the second locale already declared in
+  `next-intl`.
+- **Impact:** Medium (trust, legal).
+- **Mitigation:** i18n is P5. Do not prefix routes with `en` at launch.
+
+## R32. Vercel Git link vs this repository
+
+- **Likelihood:** Unknown without opening the dashboard (Q20). 2026-09-01 essays said the project watched a different repo.
+- **Impact:** Critical if
+  `main`
+  merges deploy nothing.
+- **Mitigation:** Human confirms the Vercel project watches
+  `kenyonexpress/kenyonexpress`,
+  root directory empty, install
+  `pnpm`.
+  Live
+  `*.vercel.app`
+  is evidence *a* deploy exists; it is not evidence
+  `main`
+  is the branch.
