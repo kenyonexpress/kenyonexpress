@@ -1,0 +1,104 @@
+# Quarterly restore drill: prove the newest R2 dump actually restores.
+# docs/ARCHITECTURE-BACKUP-DR.md §9 ("Restore is not real until a quarterly
+# drill proved it") and docs/DB-RESTORE-RUNBOOK.md §drill.
+#
+# What it proves: the newest dump downloads, matches its sha256 sidecar,
+# pg_restores into a clean Postgres 17, and passes scripts/dr/verify-restore.sql
+# (table floors, money-path tables, catalog rows, auth.users present). That is
+# dump integrity + restorability, the two things a backup can silently lose.
+# What it does NOT prove: a full app bring-up on a scratch Supabase project.
+# That stays a manual Mode-A drill in the runbook, because a throwaway
+# container is free and a scratch Supabase project is not.
+#
+# Fires on the 2nd day of each quarter; run it any time with workflow_dispatch
+# (do that once right after enabling db-backup.yml rather than waiting three
+# months to learn the dumps are bad). Gated on the same DB_BACKUP_ENABLED
+# variable as the backup itself: a drill without backups can only fail.
+#
+# Notifies ntfy on BOTH outcomes: a drill nobody hears about did not happen.
+name: DB restore drill
+
+on:
+  schedule:
+    - cron: '0 5 2 1,4,7,10 *' # 05:00 UTC, Jan/Apr/Jul/Oct 2nd
+  workflow_dispatch:
+
+concurrency:
+  group: db-restore-drill
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: vars.DB_BACKUP_ENABLED == 'true'
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      TARGET_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install postgresql-client-17
+        run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Download + verify latest dump from R2
+        id: fetch
+        env:
+          BACKUP_R2_ACCOUNT_ID: ${{ secrets.BACKUP_R2_ACCOUNT_ID }}
+          BACKUP_R2_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+          BACKUP_R2_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+          BACKUP_R2_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+        run: node scripts/dr/restore-latest.mjs --out="$RUNNER_TEMP/restore"
+
+      - name: Restore into scratch Postgres
+        env:
+          DUMP_FILE: ${{ steps.fetch.outputs.dump_file }}
+          PREPARE_SCRATCH: '1'
+        run: bash scripts/dr/pg-restore.sh
+
+      - name: Verify restored database
+        run: psql "$TARGET_DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/dr/verify-restore.sql
+
+      - name: Scorecard
+        if: always()
+        env:
+          DUMP_KEY: ${{ steps.fetch.outputs.dump_key }}
+        run: |
+          {
+            echo "## DR drill $(date -u +%Y-Q%q 2>/dev/null || date -u +%Y-%m)"
+            echo "- dump: \`${DUMP_KEY:-none}\`"
+            echo "- verdict: **${{ job.status }}**"
+            echo "- restored into: postgres:17-alpine service container"
+            echo "- gate: scripts/dr/verify-restore.sql (see step log for row counts)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Notify result
+        if: always()
+        env:
+          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC }}
+        run: |
+          [ -n "$NTFY_TOPIC" ] || exit 0
+          curl -sS -H "Title: KE restore drill ${{ job.status }}" \
+            -d "Quarterly DB restore drill: ${{ job.status }}. ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "ntfy.sh/${NTFY_TOPIC}" || true

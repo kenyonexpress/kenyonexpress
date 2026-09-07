@@ -42,6 +42,7 @@ export default defineConfig({
       // include glob is a test that silently does not run.
       'scripts/*.test.mjs',
       'scripts/seed/**/*.test.ts',
+      'scripts/dr/**/*.test.mjs',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {
