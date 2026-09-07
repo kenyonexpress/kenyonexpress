@@ -24,4 +24,4 @@ Apply 169–172 by number. Forward guest Cookie jar. Mock Cardcom. Open a replic
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Restore is orders + payments + vouchers + wallet together. No `db push`. After PITR run stranded then reconcile. Never INSERT fake `payment_events`.
