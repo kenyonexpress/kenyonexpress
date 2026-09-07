@@ -618,3 +618,60 @@ After 171: app **may** call
 (INVOKER). That is still this same route, not a new public REST. Meili remains stage 3. Do not add
 `/api/search/v2`.
 
+---
+
+## 22. Deepen after items 11–20
+
+Full failure-code map:
+`docs/cursor/ERROR-TAXONOMY.md`.
+Threats per surface:
+`docs/cursor/SECURITY-REVIEW.md`.
+
+### 22.1 Guest cookie on two different APIs
+
+| Surface | Cookie | Meaning |
+|---|---|---|
+| Guest cart (actions + RLS) | Browser
+`ke_session_id`;
+PostgREST
+`session_id=` | Cart row |
+| Analytics ingest / `trackServerEvent` | Same browser
+`ke_session_id`
+parsed →
+`anonymous_id` | Funnel identity |
+
+§19's "guest cookie `ke_session_id` becomes `anonymous_id`" is the **analytics** mapping. It is not the RLS cookie name. Collapsing them in a client is G17.
+
+### 22.2 Deletion is an action, not a route
+
+`deleteAccount`
+in
+`src/server/actions/account.ts`.
+No public REST
+`DELETE /api/users/me`.
+Auth: signed-in + typed phrase. Failure modes:
+`not_signed_in`,
+`confirmation_mismatch`,
+RPC error Hebrew, auth soft-delete fail after data gone. See
+`DATA-RETENTION.md`.
+
+### 22.3 Health vs ready vs cron health
+
+| Route | Job |
+|---|---|
+| `/api/health` | Process up |
+| `/api/ready` | Dependencies |
+| `/api/cron/health` | Scheduler probe, Bearer
+`CRON_SECRET` |
+
+Do not protect `/api/health` with the cron secret (load balancers). Do not leave cron health open (scanner of jobs).
+
+### 22.4 Surfaces that still do not exist
+
+No
+`/api/wallet/google`.
+No Cardcom v11 JSON client.
+No public payout REST (CSV route is dead
+`42P01`).
+No Meilisearch keys in the browser.
+
