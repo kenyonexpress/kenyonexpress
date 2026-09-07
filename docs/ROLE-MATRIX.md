@@ -549,6 +549,60 @@ they are not. Any audit of this must resolve the wrapper.
 
 ---
 
+## 6a. The non-admin server actions
+
+Section 6 covered `src/server/actions/admin/`. The twelve actions outside it
+were never audited, and they split cleanly into two groups.
+
+### 6a.1 Session-guarded: eight
+
+| Action | Guard |
+|---|---|
+| `account.ts` | `requireUser` / `auth.getUser` |
+| `cart.ts` | `auth.getUser` |
+| `gifts.ts` | `auth.getUser` |
+| `newsletter.ts` | `auth.getUser` |
+| `orders.ts` | `auth.getUser` |
+| `referrals.ts` | `auth.getUser` |
+| `reviews.ts` | `auth.getUser` |
+| `subscriptions.ts` | `auth.getUser` |
+
+No role check on any of them, correctly: these are **owner-scoped**, not
+role-scoped. `auth.getUser` establishes who, and RLS on `auth.uid()` decides
+what (section 7.2). A role check here would be the wrong question.
+
+### 6a.2 Deliberately public: four, and three carry a rate limit
+
+| Action | Auth | Rate limit | Why public |
+|---|---|---|---|
+| `auth.ts` | none | **yes** | it *is* the sign-in path; requiring a session would be circular |
+| `contact.ts` | none | **yes** | a contact form a signed-out visitor must be able to send |
+| `supplier-lead.ts` | none | **yes** | the join-us form on `/suppliers`, aimed at people with no account |
+| `consent.ts` | none | **no** | records a cookie choice, which must work before anything else does |
+
+All four use `withActionContext`, so they are observable even without a session.
+
+**`consent.ts` is the only public action with no rate limit**, and that is
+defensible: it writes a cookie preference for the caller and nothing else, it
+takes no free-text input, and rate-limiting the consent banner would mean a
+visitor who clicks Accept twice is refused the thing the law requires be easy.
+Worth being deliberate about rather than incidental, which is why it is recorded
+here.
+
+### 6a.3 There are no supplier server actions
+
+The supplier portal has **no** entry under `src/server/actions/`. Every write it
+performs goes through a route handler under `/api/supplier/*`, documented in
+section 11.2.
+
+That is a real architectural split and worth knowing before looking for a guard
+in the wrong place: the till is a client that posts to an API, not a React form
+calling a server action. It also explains why the supplier authorization checks
+live in `src/lib/supplier/rbac.ts` and in `redeem_voucher()` rather than beside
+the other action guards.
+
+---
+
 ## 7. Where the database agrees, and where it is the real control
 
 The application guards are four deep, and none of them is the boundary that
@@ -997,3 +1051,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 15: guard layer 1 in full. Four more prefixes beyond /admin, and the two exclusions (guest checkout, and the Cardcom frame-return path) with the reasoning that makes them load-bearing |
 | 2026-09-07 | Pass 16: layer 2 sits inside a Suspense boundary in both staff groups, with children as a pass-through slot. Awaiting at the top of the layout cost 78 prerender errors once |
 | 2026-09-07 | Pass 17: finding 5 traced to its cause. Not a loop but a bounce to /login, and the fix is in adminLandingPath, not in the guard, which currently prevents a worse loop |
+| 2026-09-07 | Pass 18: the twelve non-admin server actions. Eight owner-scoped via auth.getUser, four deliberately public with three rate-limited, and no supplier actions at all |
