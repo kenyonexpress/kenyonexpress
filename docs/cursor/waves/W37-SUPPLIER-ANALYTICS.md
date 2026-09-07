@@ -69,3 +69,9 @@ Admin "0 sales" vs shop's local scan count can disagree until 169. Teach operato
 | Q | Best answer |
 |---|---|
 | Real-time dashboard? | Cron/admin reports 170 if applied. Do not add a parallel table. |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
