@@ -79,3 +79,10 @@ None.
 - `default_split_percent` is not a fill-in (`contracts/MIGRATION-PLAYBOOK.md`).
 - Master SKU: app guard plus 172 stock 0. Duplicate 172_rls is a different file.
 - Types-ahead `payout_statements` / `escrow_holds` must not gain writers.
+
+---
+
+## Third pass
+
+Missing split Hebrew: למוצר "X" לא הוגדר פיצול עמלה. Missing coupon price: לא הוגדר מחיר קופון. Never invent 10%.
+
