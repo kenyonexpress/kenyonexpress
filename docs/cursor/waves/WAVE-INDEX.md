@@ -82,3 +82,15 @@ Skip on purpose for v7: W10, W32, W40, W03 as a marketed feature, W07 self-serve
 ## Also in this 100
 
 `docs/cursor/contracts/` items 50–64, `ops/` 65–79, `quality/` 80–87, `business/` 88–95, meta 96–100.
+
+---
+
+## Second pass: critical path notes
+
+- **H6 paid orders** unblock W03 as a marketed feature. Until then reviews stay an empty museum.
+- **172 hide master SKU** is on the inventory path before W49 copy can claim "no ₪1 test deals".
+- **Key rotation** (W11) is human; this pack only documents. `ops/RUNBOOK-SECRET-ROTATION.md`.
+- **DNS last** (`ops/RUNBOOK-DNS-CUTOVER.md`). Apex is WordPress until cutover.
+- **v7.0.0-rc1** is not a git tag on this docs branch. Code worktree tags after H0–H8 human list in `business/LAUNCH-BLOCKERS.md`.
+- Leftover wave filenames (`W06-NEWSLETTER.md`, `W16-ACCOUNT.md`, …) are extra briefs from an earlier numbering. Canonical names are this index.
+
