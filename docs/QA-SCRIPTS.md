@@ -470,6 +470,23 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 | 5 | JSON-LD | one BreadcrumbList. No invented LocalBusiness |
 | 6 | Count of landings | seventeen. Fail if a new thin city was added without `REGIONS` |
 
+### 10b.1 Reachability, which is where these pages actually fail
+
+A city page renders correctly and is still effectively invisible. Both findings
+below are recorded in `docs/SEO-PLAN.md` sections 4.1 and 5.1; these are the
+manual steps that confirm or clear them.
+
+| # | Step | Pass |
+|---|---|---|
+| 7 | **At 1440**, open the region dropdown in the masthead | seventeen regions, each linking `/city/{hebrew-slug}` percent-encoded |
+| 8 | **At 380 and 768**, open the hamburger drawer | **currently there is no region entry at all.** Record whether that is intended. Below `xl` the pages have no inbound link |
+| 9 | Fetch `/sitemap.xml` and search for `city` | **currently zero entries.** Seventeen indexable pages with self-canonicals are absent |
+| 10 | With JS disabled, or as a crawler at a mobile viewport, find any path to a city page | none exists today. Steps 8 and 9 are the two independent fixes and neither substitutes for the other |
+| 11 | Copy a city URL from the dropdown and paste it into a plain-text editor | the Hebrew slug is percent-encoded, and the encoding matches the page's own `canonical` (`encodeURIComponent`). A mismatch makes any future sitemap entry useless |
+
+Step 11 is the one that is easy to get wrong later: the slug is Hebrew, so the
+sitemap and the canonical must encode it identically or they describe two URLs.
+
 ---
 
 ## 10c. Legal and `/offline`
@@ -681,3 +698,4 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 2026-09-07 | Pass 13: admin CRUD flow added (7b). Every mutation audited with three exemptions, delete is soft everywhere except one hard-delete category path with no UI caller, and the three-layer guard on role assignment |
 | 2026-09-07 | Pass 15: PDP wishlist heart marked not shipped; QA §3 row 7 cannot pass until a caller exists |
 | 2026-09-07 | Pass 16: deals card hover lift is allowed Electro; fail a radius, not a missing shadow |
+| 2026-09-07 | Pass 15: city reachability steps (10b.1). The pages render fine and have no mobile link and no sitemap entry; also the Hebrew-slug encoding check |
