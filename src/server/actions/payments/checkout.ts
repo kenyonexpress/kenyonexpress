@@ -31,6 +31,7 @@ import {
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
+import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
@@ -49,6 +50,7 @@ import {
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
+import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
@@ -122,6 +124,14 @@ function supplierIdentityOf(
  * A decline leaves the order `pending` on purpose rather than cancelling it:
  * the customer is still on the checkout page and the ordinary next move is to
  * try another card, which reuses this same order.
+ *
+ * One decline is not like the others: an issuer that answers "come back with a
+ * 3DS challenge" has not refused the card, it has refused the CHANNEL, and no
+ * server-to-server call can satisfy it because there is no browser here to
+ * show the challenge in. That outcome is returned as its own variant so the
+ * caller can fall back to the hosted page, where Cardcom runs the challenge
+ * itself; surfacing it as a decline would tell the shopper their valid card
+ * was refused.
  */
 async function chargeSavedToken(args: {
   admin: ReturnType<typeof createAdminClient>
@@ -132,7 +142,7 @@ async function chargeSavedToken(args: {
   walletAppliedAgorot: ReturnType<typeof agorot>
   idempotencyKey: string
   now: Date
-}): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
+}): Promise<CheckoutActionResult<BeginCheckoutOutput> | { ok: false; threeDSChallenge: true }> {
   const { admin, tokenId, userId, orderId, amountAgorot, walletAppliedAgorot, now } = args
 
   const { data: token, error: tokenError } = await admin
@@ -179,12 +189,28 @@ async function chargeSavedToken(args: {
       ),
       idempotency_key: args.idempotencyKey,
       cardcom_account_id: token.cardcom_account_id,
+      // The FK that ties the charge to the card it rode on. 026 created it and
+      // nothing ever wrote it, so "which saved card was this?" could only be
+      // answered by joining through Cardcom's own token string.
+      token_id: token.id,
     })
     .select('id')
     .single()
   if (paymentError || !payment) {
     return { ok: false, error: `יצירת תשלום נכשלה: ${paymentError?.message}`, code: 'INTERNAL' }
   }
+
+  // The journal entry the reserved vocabulary was waiting for: this is the one
+  // charge path with no webhook and no Low Profile trail, so without these
+  // rows a token charge is invisible in payment_events by construction.
+  await recordPaymentEvent({
+    eventType: 'token_charge_requested',
+    stage: 'checkout_token_charge',
+    orderId,
+    paymentId: payment.id,
+    amountAgorot,
+    detail: { token_id: token.id },
+  })
 
   let charged: Awaited<ReturnType<PaymentProvider['chargeWithToken']>>
   try {
@@ -221,12 +247,40 @@ async function chargeSavedToken(args: {
         failed_at: now.toISOString(),
       })
       .eq('id', payment.id)
+    const challenge = isThreeDSChallengeRequired({
+      failureCode: charged.failureCode,
+      failureMessage: charged.failureMessage,
+    })
+    await recordPaymentEvent({
+      eventType: 'token_charge_declined',
+      stage: 'checkout_token_charge',
+      orderId,
+      paymentId: payment.id,
+      amountAgorot,
+      detail: {
+        failure_code: charged.failureCode,
+        failure_message: charged.failureMessage,
+        threeds_challenge_required: challenge,
+      },
+    })
+    if (challenge) {
+      return { ok: false, threeDSChallenge: true }
+    }
     return {
       ok: false,
       error: charged.failureMessage ?? 'החיוב נדחה',
       code: 'PAYMENT_PROVIDER_ERROR',
     }
   }
+
+  await recordPaymentEvent({
+    eventType: 'token_charge_succeeded',
+    stage: 'checkout_token_charge',
+    orderId,
+    paymentId: payment.id,
+    amountAgorot,
+    transactionId: charged.transactionId,
+  })
 
   const finalized = await finalizeOrder({
     orderId,
@@ -325,10 +379,17 @@ async function runBeginCheckout(
   // the payment could not be created. So this fails closed: retrying is safe
   // precisely because the key is stable.
   const idempotencyKey = `lp:${input.client_ref}`
+  // A 3DS fallback creates a SECOND payment for the same client_ref under this
+  // key (the first one, the declined token charge, holds `lp:`). The replay
+  // lookup reads both and takes the newest row, so a shopper who refreshes
+  // mid-challenge gets the hosted page back rather than "duplicate request".
+  const threeDSIdempotencyKey = `lp3ds:${input.client_ref}`
   const { data: existingPayment, error: existingPaymentError } = await admin
     .from('payments')
     .select('id, order_id, status, raw_response')
-    .eq('idempotency_key', idempotencyKey)
+    .in('idempotency_key', [idempotencyKey, threeDSIdempotencyKey])
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
   if (existingPaymentError) {
     log.error('checkout.replay_read_failed', {
@@ -751,8 +812,16 @@ async function runBeginCheckout(
   // `token_id` has been in the input schema since checkout was written and was
   // never read, so a customer with a saved card was still sent through the full
   // redirect every time.
+  //
+  // The one outcome that does not return is the 3DS challenge: the issuer will
+  // take this charge only from a surface that can show its challenge, and the
+  // only such surface here is Cardcom's hosted page. Fall through to it, under
+  // a distinct idempotency key (the declined token payment holds `lp:` and the
+  // column is UNIQUE), and mint a fresh token while the shopper is there so the
+  // next 1-click charge is made with a card that has passed the challenge.
+  let threeDSFallback = false
   if (input.token_id) {
-    return await chargeSavedToken({
+    const charged = await chargeSavedToken({
       admin,
       tokenId: input.token_id,
       userId: user.id,
@@ -762,6 +831,10 @@ async function runBeginCheckout(
       idempotencyKey,
       now,
     })
+    if (!('threeDSChallenge' in charged)) {
+      return charged
+    }
+    threeDSFallback = true
   }
 
   // 6. Payment row + hosted page.
@@ -804,7 +877,7 @@ async function runBeginCheckout(
       kind: 'charge',
       status: 'initiated',
       currency: 'ILS',
-      idempotency_key: idempotencyKey,
+      idempotency_key: threeDSFallback ? threeDSIdempotencyKey : idempotencyKey,
       cardcom_account_id: account.id,
       ...paymentMoneyWrite(money, {
         amountAgorot: settlement.cardCharge,
@@ -824,7 +897,11 @@ async function runBeginCheckout(
       orderId: order.id,
       orderNumber: order.id.slice(0, 8).toUpperCase(),
       amountAgorot: settlement.cardCharge,
-      saveToken: input.save_card,
+      // After a 3DS fallback the token is re-minted regardless of the checkbox:
+      // the saved card that sent us here demands a challenge on every
+      // server-to-server charge, and only a token created through the hosted
+      // page's challenge can replace it.
+      saveToken: threeDSFallback ? true : input.save_card,
       // Both return into the framable stub, never straight into a page that
       // needs a session: Cardcom's navigation into our iframe is cross-site and
       // the Lax session cookie is withheld on it. The stub moves the top window
