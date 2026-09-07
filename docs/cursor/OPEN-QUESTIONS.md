@@ -103,13 +103,22 @@ still implement C11(a) (supplier gets nothing) as a bug?
 ## Security / RLS
 
 ### Q12. Guest cookie name?
-**Best answer:** RLS and the guest client use
-`session_id`.
-Not
+**Best answer (measured in
+`guest-session-cookie.ts`
++
+`anon.ts`):** two names. The **browser** cookie is
 `ke_session_id`.
-Not the browser
-`Cookie`
-jar forwarded to PostgREST. G17 is the missing contract test on the SQL side.
+The **PostgREST** header
+`createGuestCartClient`
+sends is
+`Cookie: session_id=<uuid>`.
+RLS reads
+`request.cookies->>'session_id'`.
+Analytics maps
+`ke_session_id`
+→
+`anonymous_id`.
+Not the browser jar. G17/G21.
 
 ### Q13. Can the admin webhooks tab read
 `payment_webhook_events`?
