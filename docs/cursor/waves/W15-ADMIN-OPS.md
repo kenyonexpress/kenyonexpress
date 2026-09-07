@@ -82,3 +82,10 @@ Kill switch report page. Cannot flip env from the UI.
 - Audit actor is the staff uid (`contracts/AUDIT-LOG.md`).
 - Duplicate pending 169–172: show **filename**, not the number, if the UI lists pending files.
 
+---
+
+## Third pass
+
+Stub copy: אין תשלומי ספק במודל הקופון. Unsellable: אין ברירת מחדל לעמלה. No apply-migration button in the admin UI.
+
+
