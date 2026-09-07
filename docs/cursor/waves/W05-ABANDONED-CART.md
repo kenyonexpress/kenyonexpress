@@ -81,6 +81,30 @@ Existing: `src/app/api/cron/abandoned-cart/route.test.ts`, `cron-schedule-invent
 
 ---
 
+## Hebrew UX strings
+
+| Key | Copy |
+|---|---|
+| Subject (recommend) | שכחת משהו בעגלה בקינון אקספרס |
+| CTA | חזרה לעגלה |
+| Do not quote ₪ | Never put a unit price in the body. Name the products, link `/cart`. |
+| Unsellable skip | (no email) |
+| Unsub footer | להסרה מרשימת הדיוור |
+
+Abandoned cart is **marketing** (30א'), not transactional. The footer must not look like an order confirmation.
+
+---
+
+## Open questions
+
+| Q | Best answer |
+|---|---|
+| Second email at 24h with 5% wallet? | **No.** Unique `cart_id`, 30א', wallet enum. MEGA-BLOCK STEP 15. |
+| New outbox kind? | Only if CHECK + `buildNotification` move together (contract OUTBOX). If today's cron calls Resend directly, do not invent a kind in this wave. |
+| Guest without email? | **No send.** |
+
+---
+
 ## Depends on / close
 
 Depends on H1 (Resend delivers) and H5 (cron 200). Does not block W49 storefront. Close: consent, re-price, unique, tests, no wallet incentive.
