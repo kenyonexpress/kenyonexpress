@@ -113,6 +113,34 @@ The application already refuses to **sell** it (implausible-discount ceiling 95%
 
 ---
 
+## H3b. Re-measure RLS (human, read-only) before H4
+
+CI still ships
+`supabase/rls-manifest.json`
+from
+**2026-08-19**
+(53 tables). Later notes say 61. That gap is R23.
+
+1. **Terminal** (from this repo, you run it, not an agent in this pack):
+
+```bash
+node scripts/check-rls.mjs
+```
+
+2. If the script asks for MCP / a DB URL, use the **read-only** production path you already use for audits. Do not apply SQL.
+3. Diff the printed table list against the committed JSON. New tables must have RLS on. Zero-policy tables must be deny-all on purpose.
+4. If
+   `refunds`
+   or
+   `payment_events`
+   exist with a write policy whose predicate is
+   `true`,
+   **stop launch**. That is a code/SQL incident, not H8.
+
+This pack does not commit the JSON (file type is forbidden here). A different session on a code branch commits the snapshot.
+
+---
+
 ## H4. Cardcom production terminal + Vercel Production env
 
 **Phone: 03-9436100.** Ask for a **production** terminal (test terminals take real cards and settle nowhere), tokenization, and invoice/receipt API.
@@ -212,6 +240,32 @@ Expect
 
 **Stop if:** health with secret is not 200. Buyers will pay and never get mail.
 
+### H5 addendum. Count the jobs you actually have
+
+This tree has **twelve** GET cron routes, not ten. After health is 200, hit (still on vercel.app, still with the same Bearer):
+
+```
+/api/cron/notifications
+/api/cron/invoices
+/api/cron/stock
+/api/cron/stranded-payments
+/api/cron/abandoned-cart
+/api/cron/subscriptions
+/api/cron/reap-carts
+/api/cron/reconcile
+/api/cron/expire-vouchers
+/api/cron/retention
+/api/cron/weekly-digest
+```
+
+Each must be 200 with the secret and 401 without it. 200 without a secret is a stop: the till will look healthy and every job is public.
+
+Confirm
+`.github/workflows/cron.yml`
+lists the same set. Do **not** add a `crons` key to
+`vercel.json`.
+Do **not** enable cron-job.org while Actions is on.
+
 ---
 
 ## H6. One real shekel on vercel.app (before DNS)
@@ -238,10 +292,24 @@ and one voucher
 3. `/account/orders` shows the order.
 4. `/account/coupons` shows the QR.
 5. `/supplier/scan` (or `/scan`) accepts **once** and refuses the second scan.
+   Do **not** use
+   `redeemAdminVoucher`
+   for this proof. That path skips
+   `redeem_voucher`
+   (R20).
 6. Cardcom dashboard amount equals
    `coupon_price`
    (absolute, not 10% of face).
 7. Refund that charge from the **Cardcom dashboard** and confirm the refund lands.
+8. **Supabase > SQL Editor:** cashback (if the product had a snapshot > 0) is one
+   `wallet_entries`
+   row with reason
+   `order_cashback`
+   and must not appear a second time after a webhook replay.
+9. Chrome >
+   `https://kenyonexpress.vercel.app/legal/returns`
+   : remainder is cash at the partner. No escrow. No "we will release money to the supplier".
+10. Chrome > homepage: the master test row may still render until 172. Do not buy it. If you can add it to cart, H3 is not done **and** the implausible-discount guard is broken. Stop.
 
 **Rollback of till only:** set
 `CHECKOUT_ENABLED=false`,
@@ -377,6 +445,10 @@ If anything money-shaped fails: till kill switch first (
 - Meilisearch (optional degrade to ILIKE).
 - Physical-product commercial push (no live payout ledger).
 - i18n, Twilio campaigns, wishlist polish (post-launch).
+- Closing test gaps G1–G10 (that is code on another branch).
+- Calling
+  `redeemAdminVoucher`
+  as the launch proof of scan.
 
 ---
 
