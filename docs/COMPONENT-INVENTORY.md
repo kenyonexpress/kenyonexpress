@@ -547,6 +547,114 @@ print('raw hex:', len(hexoff), 'arbitrary:', len(arboff))
 PY
 ```
 
+## Pass 14: the original 72-file scan never listed the conversion components
+
+The opening tables scanned `src/components` and stopped. The storefront
+contract in `docs/ui-design-system/COMPONENTS.md` includes files that live
+under `src/app/` and under directories the 72-file count never opened. Those
+are the components that take money, consent, or a gift token. Binding props
+and states are copied from COMPONENTS, not invented here.
+
+States every interactive control must still consider: default, hover,
+focus-visible, active, disabled, loading, error, empty. Tokens:
+`docs/DESIGN-SYSTEM.md` §4.0 and §11. Copy: `docs/ERROR-COPY.md`.
+
+### Directories the 72-file scan never opened
+
+| Directory / area | Why it was missed | Components that matter |
+|---|---|---|
+| `src/components/a11y/` | not in the original subdirectory list | `SkipLink` |
+| `src/components/analytics/` | same | `ConsentBanner` |
+| `src/components/gifts/` | same | `GiftClaimForm` |
+| `src/components/coupon/` | same | `WalletButtons` (QR page, not the ledger) |
+| `src/components/geo/` | same | `CityTags` |
+| `src/components/growth/` | same | `NewsletterSignup` |
+| `src/components/product/` | same | `WishlistButton`, `Reviews`, `ReviewForm` |
+| `src/components/search/` | same, and must **not** mount in chrome | `HeaderSearch` exists in the tree and stays unmounted |
+| `src/app/(store)/checkout/` | lives under `app/`, not `components/` | `CheckoutShell`, `CheckoutForm` |
+| `src/app/(account)/` | pages, not `src/components` | wallet / coupons / wishlist contracts in Pass 8 |
+
+### SkipLink
+
+- **File:** `src/components/a11y/SkipLink.tsx`
+- **Props:** none
+- **States:** default visually hidden; focus-visible `fixed`, paper white, 2px black ring, `z-skip` (100). Other states n/a
+- **RTL:** `right-4` is the reading origin in RTL. Do not "fix" to `left-4`
+- **A11y:** `<a href="#main-content">דילוג לתוכן הראשי</a>`. Target `#main-content` needs `tabIndex={-1}` or focus stays on the link
+- **Electro:** none (WCAG 2.4.1 / Israeli 5568)
+
+### ConsentBanner
+
+- **File:** `src/components/analytics/ConsentBanner.tsx`
+- **Props:** none (reads consent cookie / `html[data-consent]`)
+- **States:** default undecided, two equal-weight actions `אישור` / `לא תודה`; hidden after decide. Hover/focus on both actions. Loading n/a. Error n/a
+- **RTL:** full. Fill `#fed700`, ink `#333e48`. Hairline `--color-overlay-hairline`
+- **A11y:** `aria-label="הסכמה לאיסוף נתוני שימוש"`. Accept and decline must both be reachable at 380. An undecided banner steals the passwordless toggle on `/login` (QA §0)
+- **Electro:** none (legal)
+- **Stacking:** not a z-index fight. `fixed bottom-0` plus `padding-bottom` on `body`
+
+### CheckoutShell
+
+- **File:** `src/app/(store)/checkout/CheckoutShell.tsx`
+- **Props:** none
+- **States:** loading only. Reserves guest notice + stepper + two columns (560 / 992). `aria-hidden` scenery, not focusable
+- **RTL:** same classes as the real form
+- **A11y:** no tab stops. A 0-height fallback is a CLS fail
+- **Electro:** checkout layout, unpainted
+
+### CheckoutForm
+
+- **File:** `src/app/(store)/checkout/CheckoutForm.tsx`
+- **Props:** `{ cart, clientRef, needsAddress, address, walletBalance, savedCards?, isAuthenticated, resuming?, channel?: 'web' | 'app' }`
+- **Variants:** guest vs auth; physical (address required) vs coupon-only (address skipped); web vs app return; resume-from-Google
+- **States:**
+  - default: `ol.checkout-steps` current / done / upcoming
+  - hover: place-order family goes **black**, not `#fedd26` (DESIGN-SYSTEM §4.0)
+  - focus-visible: 2px heading ink, offset 2px
+  - active: place-order UNMEASURED (cart checkout measured `#a78e00`)
+  - disabled: next until `validateStep`; empty cart does not render, bounce `/cart`
+  - loading: `useActionState` / `aria-busy` on place-order (today: listed silent in Pass 12 if it shares the pending pattern)
+  - error: `StepErrors` per field + `classifyCheckoutFailure` banner `role="alert"`
+  - empty: not painted; redirect
+- **RTL:** stepper arrows mirror. Phone, email, zip, last4 `dir="ltr"`. Place-order radius **50px**, type 19.418px / 700, fill `#fed700`, ink `#333e48`
+- **A11y:** `aria-current="step"`. Iframe titled. Escape from a failed iframe. Terms tick is the confirmation, not a second dialog
+- **RLS:** cart scoped to session / `auth.uid()`. `platform_percent` snapshotted server-side, never painted
+- **Electro:** `#place_order`
+
+### GiftClaimForm
+
+- **File:** `src/components/gifts/GiftClaimForm.tsx`
+- **Props:** token from the URL, never claimed on GET
+- **States:** default `קבלת הקופון לחשבון שלי` on yellow; pending `מעביר את הקופון...`; error under the button (today a red `<p>`, not yet `role="alert"`); already claimed `המתנה כבר נאספה`
+- **RTL:** full. Codes LTR
+- **A11y:** one-shot. Second press must no-op. Mail scanners hitting GET must not claim
+- **RLS:** claim writes the voucher to `auth.uid()`. Forged token is a Hebrew error, not a 500 stack
+
+### HeaderSearch (unmounted on purpose)
+
+- **File:** `src/components/search/HeaderSearch.tsx`
+- **Props:** n/a on the storefront. Must not mount in the header or the drawer
+- **States:** n/a while unmounted
+- **RTL:** n/a
+- **A11y:** the live 534×41 yellow-border field is the pixel cost we accept
+- **Electro:** header search. Standing rule vs live. See UI-PARITY-LOG §10
+
+### State × token cheat sheet (purchase family)
+
+Copied from COMPONENTS §12 so this inventory holds it too.
+
+| Control | 380 rest | 768+ rest | Hover | Radius |
+|---|---|---|---|---|
+| PDP add-to-cart | `#333e48` / white, 6px, full width | `#fed700` / `#333e48`, 25.2px | black / white | family, not `--radius-*` |
+| Card add-to-cart | transparent / heading | same | black | 22px pill |
+| Cart checkout | `#fed700` / heading | same | black | 21.994px |
+| Place order | `#fed700` / heading, 50px, 19.418px/700 | same | black | 50px |
+| Account coupon CTA | `#fed700` / heading | same | **`#fedd26`** (this list is not a Woo twin) | 22px |
+| Wishlist heart | 13px heading link | same | heading | n/a |
+| Consent accept | `#fed700` / heading | same | `#fedd26` or black, either is legal (not scored) | pill |
+
+White on `#fed700` is forbidden on every row.
+
 ## Revision
 
 | Date | Change |
@@ -558,3 +666,4 @@ PY
 | 2026-09-07 | Pass 12: tree-wide states and a11y sweep; 24 of 38 in-flight states unannounced; three form-field false positives retired |
 | 2026-09-07 | Pass 12: busy-state sweep across all 72 components; 24 silent while pending, one unlabelled field, and the false-positive lists recorded so they are not re-reported |
 | 2026-09-07 | Pass 13: token-compliance recount. Raw hex is ZERO and gated; 24 components hold arbitrary SIZES only, none a colour; the eleven [15px] are the one group worth changing |
+| 2026-09-07 | Pass 14: conversion components the 72-file scan never opened (SkipLink, ConsentBanner, CheckoutForm, GiftClaimForm, unmounted HeaderSearch) plus the purchase-family hover split |
