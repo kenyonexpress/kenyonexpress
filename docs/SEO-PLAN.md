@@ -191,62 +191,39 @@ character the same document forbids elsewhere.
 
 Recorded, not changed: the fix is in `.tsx`.
 
-## 2.1 Section 2 audited against `generateMetadata` (pass 14)
+### 2.1.4 The other rows: category and product inherit the generic template
 
-Completing the set: section 5 was audited in pass 12, section 3 in pass 13, this
-is section 2. Read off the root layout and the per-route `generateMetadata`.
+2.1.3 settles Home. Two more rows in section 2 specify a keyword-bearing suffix
+and do not get one, for the same mechanical reason.
 
-**The root template is confirmed exactly:**
-
-```
-title.default   קניון אקספרס | קופונים ומבצעים
-title.template  %s | קניון אקספרס
-description     קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.
-```
-
-So every inner route that sets a bare `title` gets `… | קניון אקספרס` appended
-by Next automatically. That is what section 2's "Root: `'%s | קניון אקספרס'`
-except home" describes, and it holds.
-
-### Three rows do not match
-
-| Route | Section 2 says | Actually ships |
+| Route | Section 2 specifies | Actually renders |
 |---|---|---|
-| Home `/` | live: `קניון אקספרס` | **`קניון אקספרס \| קופונים ומבצעים`** (the root `default`) |
 | Category | `{cat} \| קופונים ומבצעים` | `category.name_he` + root template = **`{cat} \| קניון אקספרס`** |
-| Product | `seo_title` or `{name} \| קופון {cat}` | `seo_title \|\| name_he \|\| 'מוצר'` + root template = **`{name} \| קניון אקספרס`**. There is no `קופון {cat}` suffix, and no coupon/physical split in the title at all |
+| Product | `seo_title` or `{name} \| קופון {cat}` | `seo_title \|\| name_he \|\| 'מוצר'` + root template = **`{name} \| קניון אקספרס`**. No `קופון {cat}` suffix, and no coupon/physical split in the title at all |
 
-`/products` **does** match: `PAGE_TITLE = 'חנות'` plus the template gives
-`חנות | קניון אקספרס`, exactly as specified.
+`/products` is the control case and it **matches**: `PAGE_TITLE = 'חנות'` plus
+the template gives exactly the specified `חנות | קניון אקספרס`.
 
-### What to make of each
+Neither is broken; both are **less specific than planned**. The cause is the same
+in both: the route returns a bare string, so Next appends the generic root
+template. Closing the gap means returning a full title per route, since the
+template applies to whatever is returned.
 
-**Home** is the only one with a live-parity dimension. Section 0 measured the
-live `<title>` as the bare `קניון אקספרס` and said to keep it *or* use the
-template on inner pages. We ship the longer form. That is a defensible choice
-(the suffix carries two keywords the bare brand does not) and it **is** a
-divergence from live, so it belongs in section 0's table rather than being
-discovered later as a regression.
+### 2.1.5 One place the code is better than the plan
 
-**Category and product** are the same shape of gap: section 2 specifies a
-keyword-bearing suffix, and the code relies on the generic root template.
-Neither is broken; both are less specific than planned. Fixing them means
-setting a full `title` string per route rather than a bare one, since the
-template appends to whatever is returned.
-
-### One thing the code does better than the plan
-
-The product description is a **fallback chain**, not a single field:
+The product description is a **fallback chain**, not the single field section 2
+specifies:
 
 ```
-seo_description  ->  short_description_he  ->  (a generated fallback)
+seo_description  ->  short_description_he  ->  a generated fallback
 ```
 
 Its comment records why: Lighthouse SEO fails the whole page when
 `<meta name="description">` is absent, and the chain guarantees every active PDP
-has one **without inventing marketing copy**. Section 2 specifies only the first
-option. The chain is the better rule and should be written into section 2 rather
-than the other way round.
+has one **without inventing marketing copy**.
+
+Section 2 lists only the first option. **The chain is the better rule and
+section 2 should adopt it**, rather than the code being narrowed to match.
 
 ## 3. Schema (JSON-LD) per page
 
@@ -776,4 +753,4 @@ row 13). Do not mint a second Organization to fill that gap.
 | 2026-09-07 | Pass 13: section 3 audited against src/lib/seo/json-ld.ts. SearchAction ships though 3.1 forbids it; LocalBusiness does not ship at all; three routes emit undocumented JSON-LD |
 | 2026-09-07 | Pass 15: SearchAction vs no header search is a settle-or-drop, not a restore-the-field; one Organization @id |
 | 2026-09-07 | Pass 14: section 2 audited against source. Coverage is near-total (one redirect alias aside), and the shipped home title is the exact string section 0 says is not live, with the U+2014 section 0 forbids |
-| 2026-09-07 | Pass 14: section 2 audited against generateMetadata. Root template confirmed; home, category and product titles differ from plan; the product description fallback chain is better than the spec |
+| 2026-09-07 | Pass 14: merged a duplicate 2.1. A concurrent audit had already covered home (including the em-dash); my Home row was WRONG (root default, not the page's own title) and is removed. Kept 2.1.4 category/product and 2.1.5 the description chain |
