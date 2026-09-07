@@ -22,6 +22,7 @@ SQL, and a production-safety verdict per file.
 | `174_wallet_topups.sql` | **yes** | approval | `preflight_174.sql` (new) |
 | `175_referral_program_settings.sql` | **yes** | approval, and the three amounts | `preflight_175.sql` (new) |
 | `176_supplier_pin_rate_limit_per_staff.sql` | **yes** | approval. Land it BEFORE the first supplier onboards staff | `preflight_176.sql` (new, all six blocks run 07.09) |
+| `177_set_updated_at_search_path.sql` | **yes** | approval. Config only; body byte-identical | `preflight_177.sql` (new, all four blocks run 08.09) |
 
 Two findings from that audit that change how the files should be read:
 

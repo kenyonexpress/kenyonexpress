@@ -184,6 +184,12 @@ describe('the pending migration inventory', () => {
     //                                       production, so it is unreachable
     //                                       today and must land before the
     //                                       first supplier onboards staff
+
+    //   177                                 set_updated_at has no search_path
+    //                                       and 52 triggers use it. Found by
+    //                                       the advisor; round 1 of the audit
+    //                                       missed it because it counted only
+    //                                       SECURITY DEFINER functions
     //
     // 166, 167 and 168 were found ALREADY APPLIED by the 2026-09-04 audit
     // (schema_migrations versions 20260903232445/232455/232504, live
@@ -202,6 +208,7 @@ describe('the pending migration inventory', () => {
       '174_wallet_topups.sql',
       '175_referral_program_settings.sql',
       '176_supplier_pin_rate_limit_per_staff.sql',
+      '177_set_updated_at_search_path.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -211,6 +218,7 @@ describe('the pending migration inventory', () => {
       'preflight_174.sql',
       'preflight_175.sql',
       'preflight_176.sql',
+      'preflight_177.sql',
     ])
   })
 

@@ -1,5 +1,28 @@
 # `migrations/pending/`
 
+## 2026-09-08: 177 added — the one advisor finding my own audit missed
+
+`177_set_updated_at_search_path.sql` sets `search_path` on
+`public.set_updated_at`, which 52 triggers use. **Not applied.**
+
+Found by the Supabase security advisor, and it is worth saying why the audit
+in `docs/ADVISORS-LOG.md` round 1 did not find it. That round asked "how many
+SECURITY DEFINER functions lack a pinned search_path" and answered zero, which
+is true. `set_updated_at` is `prosecdef = false`, so it was never in the set
+being counted, and the summary line read as a clean bill of health for
+search_path generally when it was a clean bill for definer functions only.
+
+Severity is lower than the lint name suggests and the file says so. The
+dangerous form is a DEFINER function with a mutable path, because it runs as
+its owner. This one runs as the caller, so a hijacked name resolution grants
+the attacker only what they already had. It is worth fixing because 52 triggers
+is the widest blast radius of any function in the schema, and because an
+advisor that keeps reporting trains people to skim.
+
+`SET search_path = pg_catalog`, not `''`: the body calls `now()`, which lives
+there. An empty path would raise `function now() does not exist` on the next
+write to any of those 52 tables.
+
 ## 2026-09-07: 176 added — one known PIN buys unlimited guesses at the others
 
 `176_supplier_pin_rate_limit_per_staff.sql` replaces
