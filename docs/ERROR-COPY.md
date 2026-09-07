@@ -489,6 +489,107 @@ print(len(out), "undocumented")
 PY
 ```
 
+## 12. The money path, documented in full
+
+Section 11.3 named `payments/checkout.ts` and `payments/refund.ts` as the two
+files to take first, because a shopper who meets one of their strings has
+already tried to pay. Both are done here.
+
+### 12.1 `src/server/actions/payments/checkout.ts`
+
+Already in this document: `לא ניתן לאמת את הכרטיס השמור כרגע, נסו שוב`,
+`שגיאה בחיבור לספק הסליקה`, `התשלום מושבת כרגע, נסו שוב מאוחר יותר`,
+`יש להתחבר לפני התשלום`, `יותר מדי ניסיונות תשלום, המתינו דקה`,
+`נדרשת כתובת למשלוח`, `לא ניתן לאמת את הכתובת כרגע, נסו שוב`,
+`כתובת לא תקינה`, `לא ניתן לאמת את בקשת התשלום כרגע, נסו שוב`,
+`בקשת תשלום כפולה`, `מוצר בעגלה אינו קיים עוד`,
+`לא ניתן לטעון את פרטי המוצרים כרגע, נסו שוב`,
+`לא ניתן לטעון את פרטי בתי העסק כרגע, נסו שוב`, `יתרת הארנק אינה מספיקה`,
+`לא הצלחנו לשריין את המלאי, נסו שוב`,
+`יש למלא שם, עיר, רחוב ומספר בית למשלוח`, `שמירת הכתובת נכשלה, נסו שוב`.
+
+Newly documented:
+
+| Line | Copy | Code |
+|---|---|---|
+| 154 | `הכרטיס השמור לא נמצא` | |
+| 160 | `תוקף הכרטיס השמור פג` | |
+| 226 | `החיוב נדחה` | `PAYMENT_PROVIDER_ERROR` (fallback only, see 12.3) |
+| 273 | `נתוני תשלום לא תקינים` | |
+| 285 | `העגלה אינה תקינה` | |
+| 393 | `מנוי נרכש בהזמנה נפרדת. סיימו קודם את רכישת המנוי או הסירו אותו מהעגלה` | |
+| 472 | `לא הוגדר מחיר קופון` | `INTERNAL` |
+| 495 | `לא הוגדר מחיר` | `INTERNAL` |
+| 728 | `אחד הפריטים אזל מהמלאי` / `אין מספיק במלאי לאחד הפריטים` | |
+| 197, 861 | `הזמנה {first 8 of order id}` | payment description, not an error |
+
+### 12.2 `src/server/actions/payments/refund.ts`
+
+| Line | Copy |
+|---|---|
+| 78 | `אין הרשאה` |
+| 92 | `הזמנה לא נמצאה` |
+| 104 | `לא ניתן לזכות הזמנה במצב {status}` |
+| 134 | `לא נמצא תשלום לזיכוי` |
+| 138 | `לתשלום אין מזהה עסקה ב-Cardcom` |
+| 143 | `לתשלום אין סכום קריא` |
+| 151 | `להזמנה אין פריטים` |
+| 182 | `שוברים שכבר מומשו או פגו דורשים טיפול ידני` |
+| 218 | `סכום הזיכוי הוא אפס` |
+| 231 | `זיכוי הזמנה {first 8 of order id}: {reason}` (the Cardcom description, not UI copy) |
+| 244 | `הזיכוי נדחה על ידי Cardcom` |
+
+Refund strings are admin-facing, so naming Cardcom in `לתשלום אין מזהה עסקה ב-Cardcom`
+is correct there. The same word in a customer-facing string would not be.
+
+### 12.3 Five strings break this document's own rule
+
+Rule 10 at the top of this file says: **say what happened and what to do, no
+SQL, no Cardcom codes.** Five strings on the money path interpolate a raw
+upstream message into Hebrew and return it as the action's `error`:
+
+| Line | Copy | What gets appended |
+|---|---|---|
+| 186 | `יצירת תשלום נכשלה: ${paymentError?.message}` | a **PostgREST/Postgres** error |
+| 598 | `יצירת הזמנה נכשלה: ${orderError?.message}` | a **Postgres** error |
+| 689 | `שמירת פריטי הזמנה נכשלה: ${itemsError.message}` | a **Postgres** error |
+| 462 | `למוצר "{name}" לא הוגדר פיצול עמלה: ${split.message}` | an internal split message |
+| 226 | `charged.failureMessage ?? 'החיוב נדחה'` | the **provider's own** failure text |
+
+**These reach the customer.** Traced one hop at a time rather than assumed:
+
+```
+checkout.ts        return { ok: false, error: `…: ${err.message}`, code: 'INTERNAL' }
+CheckoutForm.tsx   const formError = state && 'error' in state ? state.error : null   (:354)
+CheckoutForm.tsx   <div className="checkout-error" role="alert"><span>{formError}</span>  (:920-922)
+```
+
+`{formError}` is rendered verbatim. So a Postgres constraint message, or
+whatever Cardcom returns as `failureMessage`, is painted into a `role="alert"`
+on the checkout page and announced to a screen reader.
+
+Line 226 is the subtlest of the five: `'החיוב נדחה'` is only the **fallback**.
+When the provider supplies any `failureMessage`, that is what the shopper sees,
+and this document has no control over its wording, language or content.
+
+The shape a fix would take, for whoever takes it: keep the Hebrew sentence, log
+the upstream message with the request id, and show the shopper the sentence
+alone. `code: 'INTERNAL'` is already on four of the five, so the classifier has
+what it needs to choose the retry affordance without the raw text.
+
+Recorded, not changed: this file is documentation and the fix is in `.ts`.
+
+### 12.4 Two vague strings worth a decision
+
+- **Line 728**, `אחד הפריטים אזל מהמלאי` and `אין מספיק במלאי לאחד הפריטים`.
+  "One of the items" names nothing. The cart already has per-line availability
+  messages (section 2, `cart.unavailable`), so the shopper is told precisely on
+  one screen and vaguely on the next.
+- **Line 104**, `לא ניתן לזכות הזמנה במצב {status}`. `status` is an English
+  enum value interpolated into a Hebrew sentence. Admin-facing, so it is
+  legible to its reader, but it is also the one refund string a support agent
+  is most likely to quote to a customer.
+
 ## Revision
 
 | Date | Change |
@@ -500,3 +601,4 @@ PY
 | 2026-09-07 | Redemption copy audited against source: 6/6 match, 3 outcomes were missing, HTTP status map added |
 | 2026-09-07 | Pass 12: coverage map counted against source (1075 Hebrew literals, 196 undocumented error strings); validations completed in full; two wording inconsistencies |
 | 2026-09-07 | Pass 13: the money path complete (11.2a). checkout.ts and refund.ts verbatim; the double-submit string is success-adjacent; refund copy is operator-facing and may name Cardcom |
+| 2026-09-07 | Pass 13: the money path documented in full (checkout.ts, refund.ts). Five strings interpolate a raw Postgres or Cardcom message and are rendered verbatim to the shopper, breaking rule 10 of this file |
