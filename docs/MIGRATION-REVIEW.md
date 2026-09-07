@@ -151,7 +151,44 @@ re-migration.
 | 2 | **`app_url` may point at a host that no longer exists.** Preflight block 4 asserts the value looks like `https://%.vercel.app` and is not the domain. It cannot assert the alias still resolves, and `STATE.md` records the Vercel project itself as gone. Seeding a stale alias would schedule twelve jobs that POST into the void, the most frequent every five minutes. | **High** | Combined with risk 1, this fails silently and indefinitely. Add a manual `curl` of one path before applying. |
 | 3 | A missing vault row **after** scheduling is a different failure from a missing one before. The `DO` block's two guards only cover apply time. If a secret is later deleted, `url := NULL \|\| path` is `NULL` and `net.http_post` errors, which at least surfaces in `cron.job_run_details`. | Low | The header's claim that a missing row "makes the job fail loudly instead of calling with an empty bearer" is correct, and the mechanism is the NULL url rather than the header. |
 | 4 | 55s timeout against a `*/5` schedule leaves no overlap risk for the frequent jobs, but pg_cron does not prevent a second run starting while the first is in flight. | Low | Only relevant if a job's own work outlives its interval. None of the twelve is close. |
-| 5 | Twelve jobs land at once. `ke-notifications` and `ke-health` share `*/5`; three more share `*/10`. On the hour, five jobs fire together. | Low | Consider staggering the minute offsets if the app is latency-sensitive at those instants. Not a correctness issue. |
+| 5 | **Eight jobs fire in the same minute at the worst instant**, and 1036 firings a day. See 1.3.1 for the computed schedule. | Low to **Medium** | Not a correctness issue, but larger than first estimated and worth one minute of staggering. |
+
+### 1.3.1 The collision schedule, computed
+
+Risk 5 originally said "on the hour, five jobs fire together". That was an
+estimate. Simulated minute by minute over a full day from the twelve cron
+expressions:
+
+| Day | Firings per day | Peak minute | Jobs in that minute |
+|---|---|---|---|
+| Ordinary (15th, Monday) | **1036** | **04:00** | **7** |
+| Worst case (1st, Friday) | **1038** | **04:00** | **8** |
+
+At 04:00 on the 1st of a month that falls on a Friday:
+
+```
+notifications  health  invoices  stock  stranded-payments
+abandoned-cart reconcile  weekly-digest
+```
+
+Seven of those eight are the routine `*/5` and `*/10` jobs colliding with the
+two daily ones; `weekly-digest` (`0 4 * * 5`) and `retention` (`0 5 1 * *`) are
+what make the first-Friday case worse.
+
+**Why this is worth a line rather than a shrug.** Each job is an HTTP POST with a
+55 second timeout, so eight simultaneous requests hold up to eight connections
+against the app for up to 55 seconds each. Combined with **risk 1** (pg_net is
+fire-and-forget, so failures record as successes), a thundering-herd timeout at
+04:00 would leave no trace in `cron.job_run_details` at all.
+
+**The fix is one minute of arithmetic and costs nothing.** `reconcile` at
+`0 4 * * *` and `weekly-digest` at `0 4 * * 5` both sit exactly on the hour,
+where the `*/5` and `*/10` jobs always are. Moving them to `7 4 * * *` and
+`23 4 * * 5` drops the peak from 8 to 5 without changing any job's cadence.
+
+Not a defect and not a blocker. Recorded because 162 is the approved migration,
+the change is trivial, and the alternative is discovering it from a latency
+graph at four in the morning.
 
 ### 1.4 Blocker
 
@@ -434,6 +471,64 @@ trustworthy, and the statuses in sections 1 to 3 rest on it safely.
 That is a positive result and is recorded as one. A future audit that re-runs
 the naive comparison will get the same ten hits; this table is here so it does
 not spend its budget rediscovering that all ten are fine.
+
+## 3b. The operator-facing document is stale, and the test cannot see it
+
+Section 3a checked the *applied* bookkeeping and found it sound. This checks the
+*pending* bookkeeping, and it is not.
+
+**Three documents give three different answers to "what is pending".**
+
+| Source | Says | Reality |
+|---|---|---|
+| `migrations/pending/APPLY-ORDER.md`, heading and table | **"ONE PENDING FILE — 162"**. Its table lists 162, 166, 167, 168 and never mentions 169 or 170 | wrong: 169 and 170 are absent entirely |
+| `migrations/pending/README.md`, H2 heading | "two files pending — 162 (blocked on vault) and 169" | wrong count |
+| `migrations/pending/README.md`, body | documents all three, including `### 170_composite_indexes_top_queries.sql — PENDING, not approved` | **correct** |
+| the directory | `162`, `169`, `170` | **correct** |
+
+### 3b.1 Why the body is right and the summaries are wrong
+
+`src/__tests__/pending-migrations-inventory.test.ts` enforces the manifest in
+**both directions**: every `.sql` on disk appears in `README.md`, and every
+`.sql` the README names exists on disk. It also asserts `supabase/migrations/`
+holds no `PENDING-` file, so the split location cannot come back.
+
+That test is why the README's body is current: 170 could not be added to the
+directory without being added to the manifest.
+
+**Its blind spot is the prose above the manifest.** The test compares filenames
+to filenames. A human-readable heading that says "two files pending" contains no
+filename, so nothing checks it, and it has drifted one migration behind. The
+same is true of `APPLY-ORDER.md`, which the test does not read at all.
+
+### 3b.2 Why this one matters more than a stale heading usually does
+
+`APPLY-ORDER.md` is the **operator-facing** file. It is what someone opens
+before applying anything, and its own first line is "Nothing here is applied by
+an agent. Each file goes to production through MCP `apply_migration`, one at a
+time, after Ofir approves it."
+
+So the document that exists to tell an operator what to apply, and in what
+order, currently tells them there is one pending migration when there are three,
+and does not mention two of them at all. An operator who trusts it applies 162,
+sees the vault blocker, and stops, never learning that 169 is sitting there
+discarding four funnel events.
+
+This does not change any verdict in sections 1 to 3: those were read from the
+`.sql` files themselves, not from the summaries. It changes who can be trusted
+to route the work.
+
+### 3b.3 The cheap fix, and the durable one
+
+- **Cheap:** update the `APPLY-ORDER.md` heading and table to carry 169 and 170,
+  and correct the README's H2 to three.
+- **Durable:** extend `pending-migrations-inventory.test.ts` to assert that both
+  summary lines agree with the directory count. It already reads the directory
+  and the README; comparing a count to a number in a heading is a small
+  addition, and it is the only thing that stops this drifting again.
+
+Both are out of scope here (one is `.md` in a directory this document only
+reads, the other is `.ts`), so they are recorded rather than made.
 
 ## 4. The preflights
 
