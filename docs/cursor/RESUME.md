@@ -2,8 +2,8 @@
 
 **Queue of 100:** first write complete; deepen pass in progress.
 
-**Next item:** 42 (`docs/cursor/waves/W44-ADMIN-PLATFORM.md`).
+**Next item:** 49 (`docs/cursor/waves/WAVE-INDEX.md`) then contracts still on generic second-pass (AUDIT, FEATURE-FLAGS, CONSENT, SCHEDULER) then ops, quality, business, meta 96–100, then return to item 1.
 
-Just deepened: W41–W43. Continue 1→100. Markdown only under `docs/cursor/`. Never `-A`.
+Just deepened: W44–W48, W50. Continue. Markdown only under `docs/cursor/`. Never `-A`.
 
 **Branch:** `ke-cursor-docs`
