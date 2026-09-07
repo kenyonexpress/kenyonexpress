@@ -47,3 +47,9 @@ None. Missing R2 public base: image 404s (launch trap with WP `wp-content` URLs)
 ## Close
 
 Share a coupon PDP in WhatsApp (human or documented curl of og tags). No test-store number in production env (H4 addendum).
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
