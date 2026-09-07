@@ -273,5 +273,13 @@ still say "hold" | Do not revive writers |
 wins |
 | Production on
 `*.vercel.app` | 2026-09-01 "no deployment" essays | Launch blockers still human; the site exists |
+| One guest cookie | Two names on purpose | Browser
+`ke_session_id`
+vs PostgREST
+`session_id=` |
+
+### D40. Guest identity uses two cookie names
+**Measured 2026-09-07.** Alternative: one cookie forwarded as-is. Consequence: the Next cookie can stay httpOnly and named for the app; PostgREST sees only a UUID under the name the policy was written for; analytics still parses the Next cookie into
+`anonymous_id`.
 
 When a leftover wins in **runtime**, file a code-branch bug. When it wins only in a root markdown, ignore the markdown.
