@@ -646,6 +646,17 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 3 | 1440 `/` | same as 1280, hero 613, deals 4-up |
 | 4 | 1024 `/checkout` | still one column if below 992; at 1024 the Electro two-column may appear while the **header** is still handheld. That mix is live's, keep it |
 
+### 12.6 Heebo shutter vs Arial LCP (pass 15)
+
+`docs/DESIGN-SYSTEM.md` §12.2. These are two different questions.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | `compare.mjs --page=home` at 380 | Heebo metrics (script waits for fonts). Not an Arial picture |
+| 2 | Lighthouse LCP on home | may name Arial. `display: swap`, `preload: false`. Do not preload Heebo just to make this row say Heebo |
+| 3 | USP bar at 374 | items stack. Longest Hebrew word, not a round 400 |
+| 4 | Live slider English | `SIMPLY THE BEST` reversed is the reference's content debt. Our Hebrew headlines stay |
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -667,3 +678,4 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 2026-09-07 | Pass 14: auth/MFA/consent click-tests; support `/admin` login loop; uploader coupon parent vs codes; header still handheld at 1024 |
 | 2026-09-07 | Pass 13: crawl and indexability checks (10d). Seventeen rows, four of them expected to FAIL today, each tied to a verified pass-13 finding |
 | 2026-09-07 | Pass 13: admin CRUD flow added (7b). Every mutation audited with three exemptions, delete is soft everywhere except one hard-delete category path with no UI caller, and the three-layer guard on role assignment |
+| 2026-09-07 | Pass 15: PDP wishlist heart marked not shipped; QA §3 row 7 cannot pass until a caller exists |
