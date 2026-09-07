@@ -68,3 +68,9 @@ Offline batch: mixed success/already_redeemed in one drain is OK. Do not abort t
 | Q | Best answer |
 |---|---|
 | Value-off coupon? | **Not in v1.** Absolute meal deal, one scan, done. |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
