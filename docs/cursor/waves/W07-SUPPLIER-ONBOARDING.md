@@ -90,3 +90,10 @@ Public lead form off by default until legal copy is ready. Off: hide form, keep 
 - After approve: insert `supplier_members` owner. Then scanners. `vendor` enum alone never opens `/scan`.
 - WhatsApp number is H4, not this form. Do not store a second payout IBAN "for later".
 
+---
+
+## Third pass
+
+Hebrew brief on the lead form: התשלום באתר נשאר אצל הפלטפורמה. היתרה נגבית אצלך במעמד המימוש. אין נאמנות.
+
+
