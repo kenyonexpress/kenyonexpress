@@ -838,6 +838,55 @@ because nothing is misspelled, nothing is wrong, and each file is internally
 consistent. They are only visible to someone who meets them in sequence, which
 is exactly what a shopper does and what a per-file review does not.
 
+## 15. Open findings across the eight documents (pass 23)
+
+Eleven passes have recorded findings in eight files. Nothing has been changed in
+`.ts`, `.tsx`, `.sql` or `.json` by those passes, by design, so every item below
+is **open**. This is the one place they are together, ordered by what it costs to
+leave them.
+
+### 15.1 Reaches a customer
+
+| # | Finding | Where | Fix |
+|---|---|---|---|
+| 1 | **Raw Postgres and Cardcom messages render on the checkout page.** Five strings interpolate `${err.message}` and `CheckoutForm.tsx:920` prints `{formError}` verbatim inside `role="alert"` | `ERROR-COPY` 12.3 | keep the Hebrew sentence, log the upstream text |
+| 2 | **The supplier-lead honeypot is detectable.** The decoy success differs from the real one by `בהקדם` | `ERROR-COPY` 16.3 | make the two byte-identical |
+| 3 | **Two password minimums.** `auth.ts` says 6, `validations/auth.ts` says 8 | `ERROR-COPY` 13.1 | one number |
+| 4 | **Seventeen region pages are unreachable below `xl`** and absent from the sitemap | `SEO-PLAN` 4.1, 5.1 | a mobile link **and** a sitemap entry; neither substitutes |
+| 5 | **`/products` has no canonical** while indexable at sitemap priority 0.9 and taking `sort` params | `SEO-PLAN` 1.2.2 | one line |
+| 6 | **PDP add-to-cart is yellow at 380 where live is slate** with a 6px corner | `DESIGN-SYSTEM` 4.0 | real pixel cost at `--width=380` |
+
+### 15.2 Reaches an operator
+
+| # | Finding | Where |
+|---|---|---|
+| 7 | **`APPLY-ORDER.md` says "ONE PENDING FILE"** and never mentions 169 or 170 | `MIGRATION-REVIEW` 3b |
+| 8 | **`analytics_cron.sql` would run its rollup five minutes before 162's expiry sweep**, inverting its own precondition | `MIGRATION-REVIEW` 3d |
+| 9 | **162's failures are invisible**: nothing reads `net._http_response`, and the `scheduler` check only asserts the secret exists | `MIGRATION-REVIEW` 1.3a |
+| 10 | **Support has no landing path.** `adminLandingPath` sends every non-admin to `/admin/products`, which support cannot open | `ROLE-MATRIX` 3.2 |
+| 11 | **`api/debug/sentry` is unguarded** and exists to throw | `ROLE-MATRIX` 11.4 |
+
+### 15.3 Costs a future pass rather than a user
+
+| # | Finding | Where |
+|---|---|---|
+| 12 | **Section 2.2's landmarks name no selectors**, so two of twelve cannot be re-measured | `UI-PARITY-LOG` 21 |
+| 13 | **Letter-spacing and shell height are unpriced**, so an unknown part of every score belongs to them | `UI-PARITY-LOG` 19 |
+| 14 | **`pending/` has no checksum file**, so an approval cannot be pinned to bytes | `MIGRATION-REVIEW` 3f |
+| 15 | **`idx_orders_user_status` must survive** the 170 contract migration; the other six singles must not | `MIGRATION-REVIEW` 3.2b |
+| 16 | **Wishlist copy is specified one way and implemented another**; `מועדפים` versus `רשימת המשאלות` | `ERROR-COPY` 19 |
+| 17 | **`[15px]` is written by hand eleven times** where `p-gutter` exists | `COMPONENT-INVENTORY` pass 22 |
+| 18 | **The home title contradicts section 0 of its own document**, with a U+2014 that document forbids | `SEO-PLAN` 2.1.3, 9.1 |
+
+### 15.4 How to use this
+
+Items 1 to 6 are the ones a shopper can meet. Items 7 to 11 change what a
+person does. Items 12 to 18 make the next pass cheaper.
+
+**Every one is recorded with its evidence at the reference given**, so none needs
+re-deriving. What none of them has is a decision, and most are one line of code
+or one line of Hebrew.
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -869,3 +918,4 @@ is exactly what a shopper does and what a per-file review does not.
 | 2026-09-07 | Pass 20: crawl rows 18 and 19, the /products canonical gap. Row 15 does not catch it because checking "any indexable route" passes on the eighteen that have one |
 | 2026-09-07 | Pass 21: named the strings WishlistButton will actually produce if wired in, which are not the ones ERROR-COPY specifies |
 | 2026-09-07 | Pass 22: JSX-fragment steps (14.3). A fragment boundary is a bidi run boundary, invisible in the source and obvious on screen |
+| 2026-09-07 | Pass 23: consolidated all open findings from eleven passes across the eight documents into one list (15), ordered by what it costs to leave them |
