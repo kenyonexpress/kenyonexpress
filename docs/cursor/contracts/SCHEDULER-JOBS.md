@@ -31,6 +31,14 @@ Double scheduler: unique keys / locks must hold; still duplicate **mail**. Do no
 
 ---
 
-## Second pass
+## Second pass (Hobby silence)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Source:
+  `scripts/cron-jobs.json`
+  plus Actions
+  `.github/workflows/cron.yml`.
+- `vercel.json` has no `crons`. Hobby would run two jobs and ignore the rest with no error.
+- Notifications cron is the **only** voucher email sender. Finalize does not mail.
+- Expire cron does not call Cardcom. Stranded cron retries finalize from GetLpResult.
+- Do not enable 162 while Actions is live (duplicate mail).
+
