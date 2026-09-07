@@ -45,3 +45,9 @@ Issued to recipient after pay. Claim does not new-purchase. Transfer wave skippe
 | Q | Best answer |
 |---|---|
 | Partial balance on one QR? | **Forbidden** (W31). |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
