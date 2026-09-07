@@ -71,6 +71,9 @@ Refund: any unit left `issued` vs any unit redeemed. Card refund illegal if any 
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (qty)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Qty 3 → three `issued` rows, cap on `order_item_id` (`issue.test.ts`).
+- Scan one unit at a time. Refund of one issued unit is partial, never CancelOnly.
+- Mixed coupon+physical: two product types, still one order. Cashback on `customerPaysNow` of the order, at finalize.
+
