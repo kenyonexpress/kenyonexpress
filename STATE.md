@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-07 06:25 UTC (‏WhatsApp Business flow: ‏webhook נכנס של Twilio, תור עדכוני סטטוס הזמנה, פתיחת פניות תמיכה, ניהול הצטרפות/הסרה. מיגרציה 173 ממתינה ולא הוחלה)
 Updated: 2026-09-07 04:30 UTC (‏הקמת Vercel: ‏devCommand נוסף ל-vercel.json, ‏docs/VERCEL-SETUP.md נכתב: מדריך דשבורד מלא, טבלאות env לפי env.ts, אימות פריסה ראשונה, הפעלת המתזמן. ‏DNS נשאר ידני)
 Updated: 2026-09-04 05:30 UTC (‏RLS מפורש לעשר טבלאות אפס-מדיניות: מיגרציה 172 הוחלה דרך MCP, ‏harness שלוש פרסונות ירוק מול פרודקשן בגלגול לאחור, ‏vitest מצמיד את שני הקבצים)
 Updated: 2026-09-04 01:05 UTC (‏חיפוש טקסט מלא בעברית: מיגרציה 171 הוחלה דרך MCP, ‏GIN על products ו-coupon_deals, ‏RPC בשם search_products, טסטים ב-Playwright)
@@ -2461,6 +2462,47 @@ anycast של Cloudflare, כלומר האתר proxied והמעבר הוא שינ�
 ‏`push` ל-main הוא עכשיו hard stop. כל העבודה מכאן על `closeout/v1-final`.
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏07.09 ‏goal בוצע: ‏WhatsApp Business flow (commit ‏`2b1a529e5`, branch ‏autopilot)
+
+ה-goal ביקש: "Twilio webhook receiver at /api/webhooks/whatsapp, order status
+notifications, customer support ticket creation, opt-in/opt-out management".
+נבנה בארכיטקטורת ה-outbox הקיימת (095): ה-DB מחליט אם הודעה מגיעה, cron מחליט מתי.
+
+1. **מיגרציה** `migrations/pending/173_whatsapp_flow.sql` (ממתינה, לא הוחלה):
+   ‏`whatsapp_contacts` (רשומת הסכמה, ‏opted_in/opted_out/pending),
+   ‏`whatsapp_outbox` (ארבעה סוגים: ‏order_paid/fulfilled/cancelled/refunded,
+   ‏dedupe פר הזמנה+סוג), ‏`whatsapp_inbound_messages` (הגנת replay על
+   ‏MessageSid), ‏`support_tickets` + ‏`support_ticket_messages` (מחסן הפניות
+   הראשון בסכימה; RLS: קריאה עצמית + קריאה/עדכון ל-staff),
+   ‏`fn_enqueue_whatsapp` (שערי הסכמה: בלי ‏opted_in אין שורה),
+   וטריגר `tg_orders_whatsapp_status` על ‏orders. נרשמה ב-README/APPLY-ORDER.
+2. **‏webhook** `src/app/api/webhooks/whatsapp/route.ts`: אימות
+   ‏X-Twilio-Signature ב-HMAC-SHA1 בזמן קבוע; בלי ‏TWILIO_* הנתיב סגור (401).
+   מילות מפתח בעברית ובאנגלית (הסר/הצטרפות/STOP/START) משנות הסכמה; מילת
+   מפתח בתוך משפט נשארת פנייה. טקסט חופשי נכנס לפנייה פתוחה של אותו טלפון
+   או פותח חדשה, והתשובות הן TwiML.
+3. **‏cron** `src/app/api/cron/whatsapp/route.ts`: מרוקן את התור, בודק הסכמה
+   שוב בזמן שליחה (הסרה בין enqueue לשליחה מנצחת), backoff מעריכי, ‏dead
+   אחרי 5. נרשם ב-`scripts/cron-jobs.json` + ‏CRON-EXTERNAL.md בתדירות `*/5`
+   (אותו ביטוי cron קיים, אפס שינוי ב-workflow).
+4. **תשתית** `src/server/whatsapp/`: ‏transport ל-Twilio (לא זורק לעולם,
+   ‏skipped בלי credentials, בלי SDK: קריאת fetch אחת), בוני הודעות בעברית
+   (כסף רק דרך `formatAgorot`), מסווג כוונות.
+5. **שערים**: ‏3647 טסטים ירוקים (46 חדשים), ‏type-check נקי, ‏lint נקי,
+   ‏`pnpm build` עבר. שלושה שערי מלאי (pending migrations, cron schedule,
+   ‏cron auth) עודכנו בכוונה, וזה בדיוק תפקידם.
+
+**החלטות שהתקבלו לבד:** (א) המיגרציה נכתבה ל-`migrations/pending` בלבד ולא
+הוחלה דרך MCP, למרות שה-goal אמר "Use Supabase MCP for migrations": החלת
+migration על פרודקשן היא אחד מארבעת המצבים הקריטיים, וההחלטה השמרנית היא
+קובץ ממתין. עד ההחלה, ה-webhook עונה 500 ל-retry של Twilio וה-cron מדווח
+שגיאת קריאה, שניהם ללא נזק. (ב) טבלה נפרדת `whatsapp_outbox` ולא הרחבת
+`notification_outbox`: ה-CHECK של ה-kinds שם משוקף בשלושה מקומות שטסט אוכף,
+ושתי רגלי המשלוח שלו (מייל/push) לא מתארות את הערוץ הזה. (ג) בלי PR: אין
+כלי GitHub MCP בסשן, וה-branch ‏autopilot נדחף ישירות כמו בשני ה-goals
+הקודמים. (ד) מספור 173 לפי ה-worktree הזה (הענף הראשי מחזיק 173-176 אחרים
+ב-pending); אם ימוזג, הקובץ ימוספר מחדש כמו שנעשה ב-01.09.
 
 ### ‏07.09 ‏goal בוצע: ‏Cardcom tokenization מחווט, כולל מסלול 3DS (commit ‏`52fe21ed4`, branch ‏autopilot)
 

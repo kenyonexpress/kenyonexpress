@@ -98,6 +98,7 @@ describe('the pending migration inventory', () => {
       '170_reporting_tables.sql',
       '171_search_fts.sql',
       '172_rls_zero_policy_tables.sql',
+      '173_whatsapp_flow.sql',
     ])
   })
 
