@@ -71,6 +71,10 @@ Multi-supplier cart: one mail per supplier, not one dump of the whole order's PI
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (kinds)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- `supplier_sale` / `voucher_redeemed` only if already in CHECK (`OUTBOX.md`).
+- Amounts in payload are `*_agorot`. Format with `formatIls`. No float ILS.
+- Click-to-chat is not opt-in (W06). Marketing WA is W30 leftover, skipped for v7.
+- Kill switch notifications parks this leg too.
+
