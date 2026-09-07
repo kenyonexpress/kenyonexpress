@@ -2,8 +2,8 @@
 
 **Queue of 100:** first write complete; deepen pass in progress.
 
-**Next item:** 1 (`docs/cursor/waves/W03-REVIEWS.md`) already has a second pass. Continue deepening from **item 2** `W04-WISHLIST.md` (second pass started) through 100, then loop again.
+**Next item:** 5 (`docs/cursor/waves/W07-SUPPLIER-ONBOARDING.md`).
 
-Commit remaining `docs/cursor/**` with explicit paths, never `-A`, push after each.
+Items 50–64 contracts and W14/W24 received a second money/auth pass this turn. Continue 1→100. Markdown only under `docs/cursor/`. Never `-A`.
 
 **Branch:** `ke-cursor-docs`
