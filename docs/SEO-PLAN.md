@@ -774,6 +774,40 @@ Include (corrected): `/`, `/products`, `/coupons`, `/suppliers`, `/blog`,
 Exclude: account, cart, checkout, QR, gift, redeem, admin, supplier portal,
 scan, auth, search (via noindex), filtered category and `?city=` (via noindex).
 
+## 6.1 Section 6 audited against source (pass 16)
+
+**The one-H1 rule holds.** 82 page files carry an inline `<h1>`. Nine contain
+more than one `<h1>` token, and every one of the nine was opened: all are
+**mutually exclusive branches**, not two headings on a page.
+
+| Page | Why more than one token |
+|---|---|
+| `(store)/checkout/return` | three: the Suspense shell pending state, the settled pending state, and success. One renders. |
+| `(store)/category/[slug]` | **one real `<h1>`.** The second match is text *inside a comment* |
+| `(store)/search`, `(store)/checkout`, `(main)/newsletter/confirm`, `(main)/newsletter/unsubscribe`, `redeem/[token]`, `(admin)/admin/reports`, `(admin)/admin/reviews` | empty state versus result state |
+
+The category page's comment is worth quoting, because it records a decision the
+rule depends on:
+
+> A div, not an empty `<h1>`. The heading's text is the category name…
+
+So the page renders `<h1 class="category-page__title">{category.name_he}</h1>`
+when it has a name and a `div` when it does not, rather than an empty `<h1>`.
+That is the correct reading of "one H1": an empty one is worse than none.
+
+Section 6's other clause, "live category/product names, not English slugs", also
+holds: the category H1 is `category.name_he`, not the slug.
+
+### 6.1.1 A grep trap worth recording
+
+A scan for `<h1[^>]*>` matches the string inside a **comment**. That is how the
+category page first read as having two. Any future H1 audit should either strip
+comments first or open every hit. Both `docs/DESIGN-SYSTEM.md` section 5.4 and
+`docs/COMPONENT-INVENTORY.md` pass 12 record the same class of false positive
+from the same cause, in CSS and in Tailwind class scans respectively.
+
+---
+
 ## 7. Core Web Vitals vs pixel gate
 
 `compare.mjs` under 11 percent is **not** a CWV gate. LCP/CLS/INP still apply. Heebo `display: swap`, `preload: false` so the LCP paragraph can stay Arial on purpose. Consent banner is a known LCP risk on home.
@@ -813,3 +847,4 @@ row 13). Do not mint a second Organization to fill that gap.
 | 2026-09-07 | Pass 14: section 2 audited against source. Coverage is near-total (one redirect alias aside), and the shipped home title is the exact string section 0 says is not live, with the U+2014 section 0 forbids |
 | 2026-09-07 | Pass 14: merged a duplicate 2.1. A concurrent audit had already covered home (including the em-dash); my Home row was WRONG (root default, not the page's own title) and is removed. Kept 2.1.4 category/product and 2.1.5 the description chain |
 | 2026-09-07 | Pass 15: section 4 audited. City pages have exactly one inbound link, RegionMenu, and it is desktop-only; below xl they have neither a link nor a sitemap entry |
+| 2026-09-07 | Pass 16: section 6 audited. The one-H1 rule holds across 82 pages; all nine multi-token files are branches, and the category "second h1" is text inside a comment |
