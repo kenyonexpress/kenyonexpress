@@ -67,6 +67,12 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'assertion verification plus admin calls; one per real login',
   },
+  'push-subscribe': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason:
+      'service-role upserts to push_subscriptions; a browser re-posts one per page load at most',
+  },
   reset: { limit: 5, windowSeconds: 3600, reason: 'reset mail, per IP' },
   'reset-address': {
     limit: 5,
