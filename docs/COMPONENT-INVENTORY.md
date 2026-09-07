@@ -818,11 +818,29 @@ is why the gap is worth closing rather than noting:
 - **`cart/HeaderCart`** is the cart badge in the masthead. `docs/DESIGN-SYSTEM.md`
   section 4.1 specifies its geometry (21x21, `#fed700`, `#333e48` at 12px) and
   the component behind that spec is not inventoried.
-- **`search/SearchBox` and `search/DeferredHeaderSearch` exist.** Every other
-  document in this set records "no search UI anywhere" as a standing rule and a
-  known pixel cost. Two search components being present in the tree does not
-  break that rule (a component can exist unmounted) but it does mean the rule is
-  a rendering decision rather than an absence, and nothing here said so.
+- **`search/SearchBox` and `search/DeferredHeaderSearch` exist**, and the two
+  are in different states. Traced rather than assumed, because the first
+  version of this note overstated it:
+
+  | Component | Mounted? |
+  |---|---|
+  | `search/DeferredHeaderSearch` | **nowhere.** `MastheadNav.tsx` deleted the slot; the only remaining reference is the comment explaining why |
+  | `search/SearchBox` | **yes, twice**, both on `/search` itself (`page.tsx:159` empty state, `:215` results) |
+
+  So the standing rule is precisely **"no search UI in the site chrome"**, not
+  "no search component anywhere". The `/search` route exists, carries
+  `robots: { index: false }`, and has its own box. That is not a violation of
+  the rule and never was.
+
+  `MastheadNav.tsx` states the reasoning and it is worth keeping: the slot is
+  **gone rather than hidden**, because "a CSS-hidden field is still in the DOM,
+  still in the tab order, and still ships its client chunk". `justify-end`
+  closes the gap, and that is named as the one place the component knowingly
+  departs from the measured layout.
+
+  `DeferredHeaderSearch` is therefore **unreferenced code**: it survives the
+  removal of its only call site. Worth knowing before someone concludes from
+  its existence that the chrome search is coming back.
 - **`shared/WhatsAppShareButton` and `shared/FacebookShareButton`** carry the
   third-party marks whose colour rules `docs/DESIGN-SYSTEM.md` section 1.4 sets
   out (`--color-whatsapp-ink` at 7.67:1, `--color-facebook` `#166fe5`, and the
