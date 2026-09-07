@@ -72,3 +72,13 @@ None. Role is the gate.
 |---|---|
 | Can uploader set stock? | **No** by default (fraud via infinite coupon stock). Admin only unless product reverses W24 leftover. |
 | Can uploader publish? | **No.** Status `active` is admin. |
+
+---
+
+## Second pass (after contracts)
+
+- Role: `content_uploader` is not vendor, not till (`contracts/ROLE-VENDOR.md`).
+- Cache: new images invalidate catalogue CDN; never cache signed upload URLs (`contracts/CACHE-POLICY.md`).
+- Rate limit: MIME allowlist plus size cap; no money fields on the form (`contracts/RATE-LIMITS.md`).
+- Audit every publish/reject (`contracts/AUDIT-LOG.md`).
+- Alt text Hebrew required before `active` (`quality/A11Y-CHECKLIST.md`).
