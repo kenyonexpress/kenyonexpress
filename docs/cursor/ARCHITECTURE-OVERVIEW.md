@@ -1048,3 +1048,58 @@ plus views plus later notes is how "61" appeared. Do not treat 61 as a live
 count until a human re-runs
 `node scripts/check-rls.mjs`.
 This pack still does not run it (that script talks to the database; this pack does not).
+
+---
+
+## 26. Deepen after items 11–20 (same worktree)
+
+Index of the rest of the pack:
+`docs/cursor/README.md`.
+
+| Fact learned later | Where it lives |
+|---|---|
+| First-week never-touch list | `ONBOARDING.md` |
+| `drizzle-orm` / `postgres` / `@dnd-kit` are not the runtime data path | `DEPENDENCY-AUDIT.md` |
+| Twelve cron jobs, GitHub Actions, not Hobby Vercel cron | `scripts/cron-jobs.json`, `PERFORMANCE-NOTES.md` §5 |
+| Account deletion exists (`fn_anonymize_user` + fallback) | `DATA-RETENTION.md` (root `docs/DATA-RETENTION.md` is stale) |
+| Browser cookie `ke_session_id` ≠ PostgREST cookie `session_id=` | §26.1 below; `SECURITY-REVIEW.md` G1 |
+| Wire errors vs scan outcomes vs SQLSTATE | `ERROR-TAXONOMY.md` |
+| 03:00 greps | `OBSERVABILITY-MAP.md` |
+| ADRs + leftovers | `DECISION-LOG.md` |
+| Types-ahead vs 42P01, duplicate pending 169–172 | `OPEN-QUESTIONS.md` |
+
+Meilisearch, Upstash, Cardcom, Resend, ntfy, Axiom, PostHog are **HTTP**, not npm (except Sentry). The Next 16 / `src/proxy.ts` row in §1 stands.
+
+### 26.1 Two cookies named "session"
+
+Do not collapse these in a diagram.
+
+| Name | Where | Job |
+|---|---|---|
+| `ke_session_id` | Browser, httpOnly, 30d, minted in
+`src/proxy.ts`
+and
+`ensureGuestSessionId`.
+Constant
+`GUEST_SESSION_COOKIE`. | Identifies the guest to **this Next app**. Analytics parses it into
+`anonymous_id`. |
+| `Cookie: session_id=<uuid>` | Constructed in
+`createGuestCartClient`
+only. **Not** the visitor's jar. | PostgREST
+`request.cookies->>'session_id'`
+for
+`carts` RLS. |
+
+Forwarding the browser jar to PostgREST would put refresh tokens on the database. Sending `ke_session_id` as the PostgREST cookie name would miss the policy (empty cart). Renaming either without both sides is G17.
+
+### 26.2 Google Wallet, dnd-kit, English locale
+
+Still no
+`/api/wallet/google`
+route.
+`@dnd-kit/*`
+has zero
+`src/`
+imports.
+`next-intl`
+declares `en`; copy is Hebrew literals. None of these are launch architecture. They are footguns.
