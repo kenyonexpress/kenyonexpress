@@ -2,6 +2,6 @@
 
 **Queue of 100:** first write complete; deepen pass looping.
 
-**Next item:** 12 (`docs/cursor/waves/W14-BACKUP.md`) third pass.
+**Next item:** 13 (`docs/cursor/waves/W15-ADMIN-OPS.md`) third pass.
 
 **Branch:** `ke-cursor-docs`
