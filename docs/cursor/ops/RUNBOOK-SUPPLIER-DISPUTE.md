@@ -10,4 +10,4 @@
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Coupon prepaid is platform. Physical residual is snapshot. Do not create `payout_statements` for goodwill. Escrow language is a copy bug.
