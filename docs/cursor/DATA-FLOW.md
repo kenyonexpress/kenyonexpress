@@ -90,8 +90,11 @@ Same prelude. Differences are the snapshot and the post-pay work, not the Cardco
 `admin/payouts.ts`
 target tables that do not exist in production (`42P01`). Do not document a payout ledger as live.
 
-Cashback snapshot sits on the line (`cashback_amount_agorot`) and is **not** credited at pay. Lifecycle after shipment (or coupon redeem) credits the wallet. See
-`docs/MONEY-MODEL.md`.
+Cashback snapshot sits on the line (`cashback_amount_agorot`). **Live code credits it inside `finalizeOrder`** via
+`fn_wallet_transfer`
+(idempotency
+`order:<id>:cashback`).
+Older briefs that delay credit until scan or shipment are describing a model this tree does not run. See §11.
 
 ---
 
@@ -121,7 +124,7 @@ wins. There is **no** transition trigger on
 | 1. Session | proxy + membership | none | `unauthorized` if no session or no `supplier_members` row | Route requires session. Supplier id is taken from `auth.uid()` **inside the RPC**, never from the body |
 | 2. Rate limit | Upstash or `check_rate_limit` | `rate_limits` / Redis | `rate_limited` (30/min/user) | `rate_limits` server-only |
 | 3. Lookup (optional) | `POST .../lookup` | none | Inspect without consume | same auth. Does not write `voucher_redemptions` |
-| 4. Redeem | `redeem_voucher` | `vouchers.status` `issued` → `redeemed`; `redeemed_by_supplier_id`, `redeemed_at`; `voucher_redemptions` insert (staff id if PIN was set); `order_items.settlement_status` may move to `redeemed`; `orders` may move to `partially_fulfilled` / `fulfilled`; `settlement_events` | `success`. Replay same idempotency key returns the first answer verbatim. Same key, different body → `invalid_request` (not an oracle). | RPC is DEFINER: it bypasses the caller's INSERT denial on `vouchers` / `voucher_redemptions`. After success, supplier SELECT on that voucher becomes true because `redeemed_by_supplier_id` is now set. **Before** success the partner cannot enumerate issued liability |
+| 4. Redeem | `redeem_voucher` **or** `redeemAdminVoucher` | `vouchers.status` `issued` → `redeemed`; `redeemed_by_supplier_id`, `redeemed_at`; `voucher_redemptions` insert (staff id if PIN was set; admin path inserts `scan_method = 'manual'` and audit `manual_override`); `order_items.settlement_status` may move to `redeemed` **on the RPC path**; `orders` may move to `partially_fulfilled` / `fulfilled`; `settlement_events` | `success`. Replay same idempotency key returns the first answer verbatim. Same key, different body → `invalid_request` (not an oracle). Admin path uses `WHERE status = 'issued'` without the RPC. | RPC is DEFINER: it bypasses the caller's INSERT denial on `vouchers` / `voucher_redemptions`. After success, supplier SELECT on that voucher becomes true because `redeemed_by_supplier_id` is now set. **Before** success the partner cannot enumerate issued liability. Admin path is service_role. See §12 |
 | 5. Wrong shop | same RPC | none (no update) | `wrong_supplier` | Compare voucher.supplier_id to membership, not to a client-supplied id |
 | 6. Past expiry / already used / cancelled / refunded | same | none | `expired`, `already_redeemed`, `cancelled`, `refunded`, `not_found`, `invalid_signature` | Terminal states stay terminal |
 | 7. Staff PIN (optional) | `POST /api/supplier/app/pin` → `verify_supplier_staff_pin` | `supplier_staff.failed_attempts` / `locked_until` | PIN is **not a login**. Wrong PIN does not hide the scanner; the scan is recorded unnamed. 15 attempts/hour/staff | `supplier_staff` member read, PIN set via DEFINER |
@@ -283,3 +286,124 @@ is append-only (no rewrite trigger). Clients read split rows; they cannot read s
 Physical: `supplier` column on the split is
 `supplier_immediate_agorot`.
 Coupon: that column is 0. There is still a split row. Do not skip writing it on coupons "because payout is zero".
+
+---
+
+## 11. Correction: cashback credits at finalize, not at scan
+
+Older money briefs (and an earlier revision of this pack) said cashback is snapshotted at pay and credited after coupon redeem or physical shipment.
+
+Live writer
+`src/server/payments/finalize.ts`
+credits in the same
+`finalizeOrder`
+transaction, after lines reach
+`split_executed`
+and **before**
+`completeReferralForOrder`:
+
+| Step | Writer | Tables | Gate |
+|---|---|---|---|
+| Sum line snapshots | finalize | none (read `order_items.cashback_amount_agorot`) | service_role |
+| Ensure user account | `getOrCreateUserWalletAccount` | `wallet_accounts` | service_role. No client insert policy |
+| Transfer | RPC `fn_wallet_transfer` | `wallet_entries` debit `platform:cashback_reserve`, credit user account; reason `order_cashback`; idempotency `order:<id>:cashback` | DEFINER. Replay of finalize must not double-pay. Amount 0 is a no-op |
+| Notify | after the ledger commit | `notification_outbox` | Must not enqueue before the transfer (that would promise money the RPC can still refuse) |
+
+Referral credit is a **separate** wallet move and is allowed to fail without failing finalize (the card is already charged). Cashback failure **throws** and leaves finalize incomplete: stranded-payments cron retries.
+
+Do not "fix" a missing cashback by inserting a
+`wallet_entries`
+row from an admin page. Use the same
+`fn_wallet_transfer`
+idempotency key or you double-pay.
+
+---
+
+## 12. Second consume path: `redeemAdminVoucher`
+
+Partner scan goes through
+`redeem_voucher`.
+Support / ops also have a **manual** consume:
+
+| | Partner RPC | Admin action |
+|---|---|---|
+| File | SQL `redeem_voucher` | `src/server/actions/admin/vouchers.ts` |
+| Auth | session + `supplier_members` | `requireSection('orders', 'write')` |
+| Writer | DEFINER | service_role `UPDATE ... WHERE status = 'issued'` then INSERT `voucher_redemptions` |
+| Supplier id | taken from `auth.uid()` inside the RPC | copied from the voucher row (`redeemed_by_supplier_id = before.supplier_id`) |
+| Reason | none | mandatory Hebrew reason, audited `manual_override` |
+| Lookup sibling | `/api/supplier/vouchers/lookup` | `lookupAdminVoucher` uses `requireSection('catalog', 'read')` so content_uploader can **inspect** a code. They must not redeem. |
+
+There is **no** voucher status trigger. Both paths rely on
+`WHERE status = 'issued'`
+for the race. A third writer that omits that predicate can double-consume.
+
+Admin redeem does **not** call the RPC. If the RPC later grows extra side effects (settlement_status, cash-at-counter disclosure, till audit), this action will drift unless a human wires it. Treat that drift as a money bug.
+
+`/scan`
+is **not** covered by the proxy
+`/supplier*`
+gate. The page must require session + membership itself. Body must never carry
+`supplier_id`.
+
+---
+
+## 13. Guest identity and referral click (prelude, expanded)
+
+| Cookie | Set where | Table it later keys |
+|---|---|---|
+| Guest session UUID | `src/proxy.ts` when no user and cookie absent | `carts` owner predicate for `anon`. **The only table anon may write.** |
+| Referral code | same proxy, GET, last well-formed 8-char `?ref=` wins | `referral_signals` / `referrals` at claim. URL is **not** stripped (canonical already collapses it) |
+
+`/auth/callback`
+calls
+`mergeGuestCart`.
+Double-merge must not duplicate lines (tested). After merge the guest cookie is cleared.
+
+A broken guest-cookie log line is a session-fixation report waiting to happen. Do not print it in Sentry breadcrumbs.
+
+---
+
+## 14. Gift claim (adjacent to coupon purchase)
+
+| Step | Writer | Tables | RLS |
+|---|---|---|---|
+| Preview | `loadGiftPreview` | none (read by token) | Invalid token: Hebrew empty copy, **not** a leak of whether the token existed |
+| Claim | `claimGift` | voucher `user_id` moves to claimant | Session required. Token in URL is the capability. After claim, owner SELECT applies |
+
+Gift issue happens at finalize when the checkout marked the line as a gift (see
+`src/server/payments/gift-vouchers.ts`).
+It is still one voucher per unit. Claiming is not a second purchase.
+
+---
+
+## 15. What `deleteAccount` must not do
+
+`deleteAccount`
+in
+`account.ts`
+is erasure, not a refund. It must not call Cardcom, must not insert
+`wallet_entries`,
+must not flip
+`vouchers`
+to
+`refunded`.
+Outstanding issued vouchers on a deleted account are an ops problem (H-class), not a silent money path.
+
+---
+
+## 16. `refunds` and `payment_events` vs the 53-table snapshot
+
+The 2026-08-19
+`rls-manifest.json`
+does **not** list
+`refunds`
+or
+`payment_events`.
+This file still traces them because the application writes them. Until a human re-measures
+`pg_policies`,
+treat their RLS rows in
+`RLS-CATALOG.md`
+as **documented from code and later notes**, not from that snapshot. A missing policy on a newly created
+`refunds`
+table would be a live hole: authenticated still holds I/U/D grants on money relations.
