@@ -344,6 +344,63 @@ Lighthouse 01.08 (מובייל, אחרי תיקון הירו): בית perf 75 / 
 
 ---
 
+## 9א. ‏07.09: ארבעה צעדים אנושיים שבלוקים 9 עד 13 חשפו
+
+הסעיף הזה נוסף אחרי סגירת ‏W1 בלוקים 9–13. כל שורה כאן היא דבר ש**רק אדם**
+יכול לעשות, ולכל אחת פקודת אימות.
+
+### 9א.1 ‏`SUPABASE_SECRET_KEY` המקומי הוא מחרוזת בת 4 תווים
+
+‏`src/lib/env.ts` דורש 20 תווים לפחות. **הבילד עובר והשרת לא עולה**: הוא
+מת ב-`instrumentation hook` עם `invalid environment: String must contain at
+least 20 character(s)`. המשמעות היא ששער הפיקסלים, ‏Lighthouse וכל בדיקה
+שדורשת שרת בנוי **אינם ניתנים להרצה על מכונה נקייה**.
+
+```bash
+# אימות: אמור להדפיס מספר גדול מ-20
+awk -F= '/^SUPABASE_SECRET_KEY=/{print length($2)}' .env.local
+```
+
+### 9א.2 שלושה ‏secrets ב-GitHub, שבלעדיהם שני שערים מדלגים בשקט
+
+‏`CI_SUPABASE_URL`, ‏`CI_SUPABASE_ANON_KEY`, ‏`CI_SUPABASE_SECRET_KEY`.
+בלעדיהם ה-job של ‏E2E **וה-job של שער הפיקסלים** מזהירים ועוברים.
+נמדד ב-07.09 על ריצה ‏34089435748: שער הפיקסלים היה ירוק **ולא השווה כלום**.
+כלומר רגרסיה חזותית עוברת ב-CI היום.
+
+```bash
+gh secret list --repo kenyonexpress/kenyonexpress | grep CI_SUPABASE
+# שלוש שורות = השערים מודדים. אפס שורות = הם מדלגים.
+```
+
+### 9א.3 שלוש טבלאות שבלעדיהן אף הסכמה של אף משתמש לא נשמרת
+
+‏`legal_document_versions`, ‏`user_legal_acceptances`, ‏`user_cookie_consent`
+**אינן קיימות בפרודקשן** (נמדד 07.09). הקוד המשפטי יכול להיות מוכן; שורת
+ההסכמה לא תיכתב לשום מקום עד שהטבלאות קיימות. הן ייכתבו ל-`migrations/pending`
+עם preflight, ו**אני לעולם לא מחיל אותן**.
+
+```sql
+-- אימות דרך MCP: אמור להחזיר שלוש שורות
+select table_name from information_schema.tables
+ where table_schema='public'
+   and table_name in ('legal_document_versions','user_legal_acceptances','user_cookie_consent');
+```
+
+### 9א.4 מיגרציה 176 לפני שהספק הראשון מוסיף עובדים
+
+‏`verify_supplier_staff_pin` מוחקת את שורת ההגבלה בהצלחה, והמפתח הוא פר
+קורא ולא פר עובד, כך שמי שמכיר ‏PIN תקף אחד מקבל ניחושים בלתי מוגבלים על
+השאר. **לא ניתן לניצול היום**, כי `active_staff = 0`. זו הסיבה שזה תיקון
+שנוחת מראש ולא אירוע.
+
+```sql
+-- אימות: false אחרי ההחלה
+select pg_get_functiondef(p.oid) like '%DELETE FROM public.rate_limits WHERE key = v_key%'
+  from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+ where n.nspname='public' and p.proname='verify_supplier_staff_pin';
+```
+
 ## 10. ניתוח פער מול המצב הנוכחי (סיכום)
 
 נכון ל-19.08, מול מדידות 01.08 / 07.08 / 10.08.
