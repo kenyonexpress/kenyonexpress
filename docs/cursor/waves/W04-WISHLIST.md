@@ -110,3 +110,13 @@ None. Logged-out heart works on vercel.app without H6.
 ## Depends on / close
 
 Depends on `mergeGuestCart` behaviour. Does not block W49. Close: heart, badge, merge, cap, tests, no money columns.
+
+---
+
+## Second pass (after contracts)
+
+- Guest identity stays `localStorage`. Do not invent a wishlist cookie; cart already splits `ke_session_id` vs constructed `session_id=` (`contracts/ROLE-VENDOR.md` cookie note in ARCHITECTURE).
+- Cache: wishlist page is private. `noindex` plus `Cache-Control: private` (`contracts/CACHE-POLICY.md`).
+- Rate limits: toggle must share a user-keyed limiter so a script cannot flood unique pairs (`contracts/RATE-LIMITS.md`).
+- Consent: hearts are not marketing. Abandoned-cart later must not harvest wishlist emails (`contracts/CONSENT-MODEL.md`).
+- `profiles.role = vendor` does not list other shoppers' hearts. Owner RLS only.
