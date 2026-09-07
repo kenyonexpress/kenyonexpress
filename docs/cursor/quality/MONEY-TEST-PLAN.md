@@ -27,4 +27,4 @@ Fixtures: 1₪=100 agorot. Example 40000 face, 4000 coupon on-site, 1000 bp phys
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Cashback at finalize key order:<id>:cashback. Coupon 100/0. Missing platform_percent unsellable. is_coupon_enabled wins. Implausible on full_price only.
