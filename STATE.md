@@ -16674,3 +16674,53 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
 נכתבת כ-route ב-`src/app/api/cron/` לפי האידיום הקיים (‏`bearerMatches`
 מול `CRON_SECRET`, ‏`withRequestLog`, ‏`createAdminClient`), ובאותו commit
 מעודכנים גם המניפסט, ה-workflow, הדוק והטסט.
+
+---
+
+## ‏MEGA 193-197 נדחתה: אותה תבנית, ושער ה-type-check הפעם היה עיוור
+
+הפקודה שהודבקה מבקשת חמישה קבצים תחת
+`apps/web/lib/`
+(‏`api-gateway.ts`, ‏`encryption-manager.ts`, ‏`file-storage.ts`,
+`version-manager.ts`, ‏`performance-monitor.ts`), ואז
+`pnpm type-check && git add && git commit && git push`
+ברקע. היא לא הורצה. חמש סיבות, כולן נמדדו:
+
+1. **הפקודה לא רצה בכלל.** אחרי `EOF` באה שורה שמתחילה ב-`&&`. ‏`zsh -n`
+   מחזיר `parse error near '&&'` בשורה 4. שום קובץ לא היה נוצר.
+2. **‏`apps/web/` לא קיים.** תחת `apps/` יש `mobile` בלבד, ואפליקציית
+   הווב היא `src/`. זו בדיוק אותה טעות של ‏MEGA 163-167 (‏`72906eed0`).
+3. **וכאן ההבדל מ-163-167: ה-type-check היה עובר.** ‏`tsconfig.json`
+   מכיל `"exclude": ["node_modules", "supabase/functions", "apps"]`,
+   כלומר `tsc --noEmit` לא מסתכל על `apps/` בכלל. הרישום הקודם ב-STATE
+   כתב ש-`&&` היה עוצר לפני ה-commit; לנתיבים האלה זה **לא נכון**. השער
+   היה מדווח ירוק בלי לקרוא שורה אחת, וה-commit וה-push היו יוצאים.
+   ‏`performance-monitor.ts` קורא ל-`collectPerformanceMetrics` ול-`storeMetrics`
+   שאינן קיימות באף מקום בריפו (‏grep על `src` ו-`apps` מחזיר אפס), והן
+   היו נדחפות ככה.
+4. **ארבעה מהקבצים קוראים ל-`fetch` חשוף, וזו הפרה של שער קיים.**
+   `src/lib/http/no-unbounded-fetch.test.ts` דורש שכל `fetch(` יעבור דרך
+   `fetchWithTimeout` או יופיע ב-`ALLOWED` עם נימוק. השער סורק
+   `resolve(__dirname, '../..')`, כלומר `src` בלבד. הקבצים האלה היו חומקים
+   ממנו רק מפני שהם בתיקייה הלא נכונה. באותו קוד, בנתיב הנכון, הסוויטה
+   נופלת מיד.
+5. **ארבע מארבע נקודות הקצה שהקוד קורא להן לא קיימות:** אין
+   `src/app/api/gateway`, אין `src/app/api/security/encrypt`, אין
+   `src/app/api/storage/upload`, אין `src/app/api/versioning`.
+
+**מעבר לזה, היכולות עצמן בנויות ברובן.** העלאת קבצים היא
+`src/lib/storage/upload.ts` ו-`src/server/actions/admin/images.ts`.
+מדידת ביצועים היא `src/lib/analytics/` ו-`src/components/analytics/AnalyticsProvider.tsx`.
+קריאות יוצאות עוברות ב-`src/lib/http/fetch-with-timeout.ts` עם
+`src/lib/resilience/kill-switches.ts`. אבטחה היא `src/lib/security/`.
+
+**‏`encryption-manager.ts` היה גם דפוס רע בפני עצמו:** החתימה
+`encryptData(data, key)` שולחת את המפתח בגוף בקשת ‏HTTP לשרת. מפתח שעובר
+על החוט הוא לא הצפנה, וזה לא דפוס שראוי לקבע בקוד.
+
+**ההחלטה:** חמשת ה-stubs לא נכתבו. הם היו קוד מת בתיקייה שמחוץ לבנייה,
+שמצהיר שקיימות הצפנה ו-gateway שאינם קיימים, ועובר שער ירוק בלי להיבדק.
+המסקנה המבצעית מהסיבה (3): **ירוק מ-`pnpm type-check` על נתיב תחת `apps/`
+אינו ראיה לכלום.** כל עבודת ווב נכתבת ל-`src/`.
+
+## המשך מ: ‏W2, לפי התור ב-`NEXT-GOALS.md`
