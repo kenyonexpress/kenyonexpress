@@ -58,3 +58,9 @@ Per-product `whatsapp_enabled`, campaign `is_active`, public lead form hide. Not
 | Q | Best answer |
 |---|---|
 | Admin toggle without deploy? | Needs a table + human migration. Not this pack. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
