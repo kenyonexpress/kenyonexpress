@@ -26,3 +26,9 @@ Set unguessable `NTFY_TOPIC`. Stop using `kenyon-ofir-limit` in production.
 ## R2 / Resend / Sentry
 
 Rotate in vendor dashboards; rebuild if `NEXT_PUBLIC_` involved (Sentry DSN public is expected).
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
