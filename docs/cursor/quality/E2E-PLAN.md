@@ -25,4 +25,4 @@ Existing specs: `e2e/*.spec.ts` listed in pack TEST-MAP. Close gaps: support 403
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Fresh pnpm start. Never production Cardcom. Never buy master SKU. Support 403 refund. Frame-return ungated. RTL three widths.
