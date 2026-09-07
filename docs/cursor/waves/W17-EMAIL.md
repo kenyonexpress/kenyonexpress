@@ -81,3 +81,12 @@ Guest order: no profile email; refund mail may have no recipient. Invoice kinds 
 - `email_suppressions` wins. Dead after 5: admin requeue. Do not Gmail a QR.
 - `KILL_SWITCH_NOTIFICATIONS` parks email **and** WhatsApp. Too coarse for Twilio-only incidents.
 
+---
+
+## Third pass
+
+Subject: הקופון שלך מקינון אקספרס. Dead letter: נכשל אחרי 5 ניסיונות. Unique
+`dedupe_key`
+makes replay safe.
+
+
