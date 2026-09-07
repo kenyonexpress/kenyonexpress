@@ -48,15 +48,43 @@ async function runUpsertVendor(
   const supabase = await createClient()
   const { id, ...fields } = parsed.data
 
+  // Bank details stay out of the audit row on purpose: the trail needs who
+  // changed which vendor, not a copy of the account number.
+  const auditChanges = {
+    business_name: fields.business_name,
+    business_id: fields.business_id,
+    contact_email: fields.contact_email,
+    commission_rate: fields.commission_rate,
+    status: fields.status,
+  }
+
   if (id) {
     const { error } = await supabase.from('vendors').update(fields).eq('id', id)
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'updated',
+      entityType: 'vendors',
+      entityId: id,
+      changes: auditChanges,
+    })
   } else {
     // parseVendorForm guarantees profile_id is present on creation.
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('vendors')
       .insert(fields as typeof fields & { profile_id: string })
+      .select('id')
+      .single()
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'created',
+      entityType: 'vendors',
+      entityId: data.id,
+      changes: auditChanges,
+    })
   }
 
   revalidatePath('/admin/vendors')
@@ -76,8 +104,9 @@ async function runUpdateVendorStatus(
   _: VendorActionState,
   formData: FormData,
 ): Promise<VendorActionState> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -90,6 +119,15 @@ async function runUpdateVendorStatus(
   const { error } = await supabase.from('vendors').update({ status: parsed.data }).eq('id', id)
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { status: parsed.data },
+  })
+
   revalidatePath('/admin/vendors')
   revalidatePath(`/admin/vendors/${id}`)
   return { success: 'סטטוס עודכן' }
@@ -99,24 +137,42 @@ async function runUpdateVendorCommission(
   _: VendorActionState,
   _formData: FormData,
 ): Promise<VendorActionState> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
 
-  // `vendors.commission_rate` was ARCHIVED by migration 112 into
-  // `legacy_percent_archive_112`; the live table has no such column, so the
-  // UPDATE this used to run failed 42703 in production on every call. The
-  // stale generated types hid that for five weeks. Commission now lives
-  // per-product (`products.platform_percent`, snapshotted to order_items at
-  // checkout), so a per-vendor rate is not a thing this model has.
-  return { error: 'עמלה אינה נקבעת ברמת הספק. העמלה מוגדרת פר מוצר בשדה platform_percent.' }
+  const id = formData.get('id') as string
+  const rate = z.coerce.number().min(0).max(100).safeParse(formData.get('commission_rate'))
+  if (!rate.success) return { error: 'עמלה לא תקינה' }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('vendors')
+    .update({ commission_rate: rate.data })
+    .eq('id', id)
+  if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { commission_rate: rate.data },
+  })
+
+  revalidatePath('/admin/vendors')
+  revalidatePath(`/admin/vendors/${id}`)
+  return { success: 'עמלה עודכנה' }
 }
 
 async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -127,6 +183,15 @@ async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {
     .update({ deleted_at: new Date().toISOString(), status: 'suspended' })
     .eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { status: 'suspended' },
+  })
 
   revalidatePath('/admin/vendors')
   return {}

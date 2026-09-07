@@ -1,7 +1,7 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
-import { requireSection } from '@/lib/admin/rbac'
+import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -40,8 +40,12 @@ async function runUpsertCategory(
   _: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
@@ -73,9 +77,29 @@ async function runUpsertCategory(
   if (id) {
     const { error } = await supabase.from('categories').update(fields).eq('id', id)
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'updated',
+      entityType: 'categories',
+      entityId: id,
+      changes: { ...fields },
+    })
   } else {
-    const { error } = await supabase.from('categories').insert({ ...fields, created_by: user!.id })
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({ ...fields, created_by: user!.id })
+      .select('id')
+      .single()
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'created',
+      entityType: 'categories',
+      entityId: data.id,
+      changes: { ...fields },
+    })
   }
 
   await writeAuditLog({
@@ -93,8 +117,12 @@ async function runUpsertCategory(
 }
 
 async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase
@@ -109,7 +137,6 @@ async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
     action: 'deleted',
     entityType: 'categories',
     entityId: id,
-    changes: { old: { id }, new: { id, deleted: true } },
   })
 
   revalidatePath('/admin/categories')
@@ -118,8 +145,12 @@ async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
 }
 
 async function runDeleteCategory(id: string): Promise<{ error?: string }> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase.from('categories').delete().eq('id', id)
@@ -131,7 +162,7 @@ async function runDeleteCategory(id: string): Promise<{ error?: string }> {
     action: 'deleted',
     entityType: 'categories',
     entityId: id,
-    changes: { old: { id }, new: null },
+    metadata: { hard_delete: true },
   })
 
   revalidatePath('/admin/categories')
@@ -143,8 +174,12 @@ async function runUpdateCategorySortOrder(
   id: string,
   sort_order: number,
 ): Promise<{ error?: string }> {
-  const session = await requireCatalogWriter()
-  if (!session) return { error: 'אין הרשאה' }
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase.from('categories').update({ sort_order }).eq('id', id)
@@ -156,7 +191,7 @@ async function runUpdateCategorySortOrder(
     action: 'updated',
     entityType: 'categories',
     entityId: id,
-    changes: { old: { id }, new: { id, sort_order } },
+    changes: { sort_order },
   })
 
   revalidatePath('/admin/categories')

@@ -57,6 +57,21 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'WebAuthn enrolment ceremonies; a real person adds one key, not eleven',
   },
+  'mfa-enrol': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'TOTP factor creation, per user; one authenticator, not a pile of abandoned factors',
+  },
+  'mfa-verify': {
+    limit: 10,
+    windowSeconds: 900,
+    reason: 'six digits are brute forceable; per-user bound is what actually protects the account',
+  },
+  'mfa-verify-ip': {
+    limit: 30,
+    windowSeconds: 900,
+    reason: 'the same guesses spread across accounts from one address',
+  },
   'passkey-login': {
     limit: 30,
     windowSeconds: 3600,

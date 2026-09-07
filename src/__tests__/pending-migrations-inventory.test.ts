@@ -103,6 +103,7 @@ describe('the pending migration inventory', () => {
       '178_webauthn_credentials.sql',
       '179_push_subscriptions.sql',
       '180_analytics_server_event_names.sql',
+      '181_admin_rbac_hardening.sql',
     ])
   })
 

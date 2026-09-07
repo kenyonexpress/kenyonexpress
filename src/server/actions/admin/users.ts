@@ -7,12 +7,21 @@ import { authorizeRoleChange } from '@/lib/admin/role-change'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import type { UserRole } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 const updateRoleSchema = z.object({
   user_id: z.string().uuid({ message: 'מזהה משתמש לא תקין' }),
-  role: z.enum(['customer', 'vendor', 'content_uploader', 'support', 'admin', 'super_admin']),
+  role: z.enum([
+    'customer',
+    'vendor',
+    'content_uploader',
+    'support',
+    'read_only',
+    'admin',
+    'super_admin',
+  ]),
 })
 
 export type UserActionState = { error: string } | { success: string } | null
@@ -33,8 +42,9 @@ async function runUpdateUserRole(_: UserActionState, formData: FormData): Promis
   const { user_id: targetUserId, role: newRole } = parsed.data
 
   // Both guard layers run: the QA-hardened rule set (self-lock, enumeration)
-  // and the section matrix (admin assigns up to content_uploader/support;
-  // only super_admin grants admin tier, re-enforced by the DB trigger from 035).
+  // and the section matrix (admin assigns up to content_uploader/support/
+  // read_only; only super_admin grants admin tier, re-enforced in the DB by
+  // the trigger hardened in 181).
   const authz = authorizeRoleChange({
     callerId: session.userId,
     callerRole: session.role,
@@ -63,9 +73,13 @@ async function runUpdateUserRole(_: UserActionState, formData: FormData): Promis
     return { error: 'רק מנהל-על יכול לשנות תפקיד של מנהל' }
   }
 
+  // The cast covers 'read_only' until 181 is applied and the types
+  // regenerated (see AppRole in lib/admin/roles.ts). Before apply-day,
+  // assigning it fails loudly here with Postgres "invalid input value for
+  // enum user_role", which is the honest pre-migration behavior.
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({ role: newRole })
+    .update({ role: newRole as UserRole })
     .eq('id', targetUserId)
 
   if (profileError) return { error: profileError.message }

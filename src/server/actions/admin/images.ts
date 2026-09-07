@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { processImage } from '@/lib/images/process'
 import {
@@ -58,10 +59,9 @@ async function putToR2(key: string, buffer: Buffer, contentType: string): Promis
  * counting bytes. Deleting the fallback the same week would be optimism.
  */
 async function runProcessAndUploadImage(formData: FormData): Promise<UploadImageResult> {
-  let userId: string
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    const session = await requireStaffSession()
-    userId = session.userId
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -125,22 +125,40 @@ async function runProcessAndUploadImage(formData: FormData): Promise<UploadImage
   const main = webp[0]
   if (!main) return { error: 'שגיאה פנימית: לא נוצרה תמונה ראשית' }
 
-  const { error: insertError } = await admin.from('media_assets').insert({
-    url: main.url,
-    alt_he: altHe,
-    blur_data_url: processed.blurDataURL,
-    width: processed.width,
-    height: processed.height,
-    renditions: {
-      webp: webp.map(({ w, url }) => ({ w, url })),
-      avif: avif.map(({ w, url }) => ({ w, url })),
-    },
-    provider: useR2 ? 'r2' : 'supabase',
-    bucket: useR2 ? process.env.R2_BUCKET : bucket,
-    base_path: basePath,
-    created_by: userId,
-  })
+  const { data: asset, error: insertError } = await admin
+    .from('media_assets')
+    .insert({
+      url: main.url,
+      alt_he: altHe,
+      blur_data_url: processed.blurDataURL,
+      width: processed.width,
+      height: processed.height,
+      renditions: {
+        webp: webp.map(({ w, url }) => ({ w, url })),
+        avif: avif.map(({ w, url }) => ({ w, url })),
+      },
+      provider: useR2 ? 'r2' : 'supabase',
+      bucket: useR2 ? process.env.R2_BUCKET : bucket,
+      base_path: basePath,
+      created_by: session.userId,
+    })
+    .select('id')
+    .single()
   if (insertError) return { error: `שגיאת רישום: ${insertError.message}` }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'created',
+    entityType: 'media_assets',
+    entityId: asset?.id ?? null,
+    changes: {
+      url: main.url,
+      alt_he: altHe,
+      provider: useR2 ? 'r2' : 'supabase',
+      base_path: basePath,
+    },
+  })
 
   return {
     url: main.url,

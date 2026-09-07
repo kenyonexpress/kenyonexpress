@@ -1,5 +1,4 @@
-import { isAdminRole } from '@/lib/admin/roles'
-import type { UserRole } from '@/types/database'
+import { type AppRole, isAdminRole } from '@/lib/admin/roles'
 
 // Pure RBAC decisions for the admin panel. No IO here: everything is
 // unit-testable. Matrix source: ARCHITECTURE-ADMIN.md section 3.2, which is
@@ -9,6 +8,7 @@ import type { UserRole } from '@/types/database'
 //   admin / super_admin : full access
 //   content_uploader    : catalog only (products, categories, coupons, approvals)
 //   support             : operational reads (orders, users, affiliates), no money
+//   read_only           : observer tier (181): reads every section, writes nothing
 
 export type AdminSection =
   | 'dashboard'
@@ -55,45 +55,57 @@ const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
 }
 
 export function sectionAccess(
-  role: UserRole | null | undefined,
+  role: AppRole | null | undefined,
   section: AdminSection,
 ): SectionAccess {
   if (isAdminRole(role)) return 'write'
   if (role === 'content_uploader') return CONTENT_UPLOADER_ACCESS[section]
   if (role === 'support') return SUPPORT_ACCESS[section]
+  // The observer tier: every section readable, none writable. A matrix of
+  // constant 'read' would only invite drift when sections are added.
+  if (role === 'read_only') return 'read'
   return 'none'
 }
 
-export function canReadSection(role: UserRole | null | undefined, section: AdminSection): boolean {
+export function canReadSection(role: AppRole | null | undefined, section: AdminSection): boolean {
   return sectionAccess(role, section) !== 'none'
 }
 
-export function canWriteSection(role: UserRole | null | undefined, section: AdminSection): boolean {
+export function canWriteSection(role: AppRole | null | undefined, section: AdminSection): boolean {
   return sectionAccess(role, section) === 'write'
 }
 
-// Money numbers (revenue, payments amounts) are admin-tier only; support sees
-// the dashboard without them (V2 rule 2.2.1).
-export function canSeeMoney(role: UserRole | null | undefined): boolean {
+// Money numbers (revenue, payments amounts) are admin-tier only; support and
+// read_only see the dashboard without them (V2 rule 2.2.1).
+export function canSeeMoney(role: AppRole | null | undefined): boolean {
   return isAdminRole(role)
 }
 
 // Which roles may this caller assign to other users?
-// super_admin: everything. admin: up to content_uploader/support, never
-// admin+ (enforced again inside the server action and by DB trigger 035).
-export function assignableRoles(callerRole: UserRole | null | undefined): UserRole[] {
+// super_admin: everything. admin: up to content_uploader/support/read_only,
+// never admin+ (enforced again inside the server action and by the DB trigger
+// hardened in 181).
+export function assignableRoles(callerRole: AppRole | null | undefined): AppRole[] {
   if (callerRole === 'super_admin') {
-    return ['customer', 'vendor', 'content_uploader', 'support', 'admin', 'super_admin']
+    return [
+      'customer',
+      'vendor',
+      'content_uploader',
+      'support',
+      'read_only',
+      'admin',
+      'super_admin',
+    ]
   }
   if (callerRole === 'admin') {
-    return ['customer', 'vendor', 'content_uploader', 'support']
+    return ['customer', 'vendor', 'content_uploader', 'support', 'read_only']
   }
   return []
 }
 
 export function canAssignRole(
-  callerRole: UserRole | null | undefined,
-  targetRole: UserRole,
+  callerRole: AppRole | null | undefined,
+  targetRole: AppRole,
 ): boolean {
   return assignableRoles(callerRole).includes(targetRole)
 }
