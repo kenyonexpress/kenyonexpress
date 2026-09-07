@@ -105,6 +105,7 @@ describe('the pending migration inventory', () => {
       '180_analytics_server_event_names.sql',
       '181_admin_rbac_hardening.sql',
       '182_coupon_qr_batches.sql',
+      '183_order_shipped_notification.sql',
     ])
   })
 
