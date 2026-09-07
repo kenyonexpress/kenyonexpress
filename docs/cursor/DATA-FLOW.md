@@ -407,3 +407,27 @@ treat their RLS rows in
 as **documented from code and later notes**, not from that snapshot. A missing policy on a newly created
 `refunds`
 table would be a live hole: authenticated still holds I/U/D grants on money relations.
+
+---
+
+## 17. Finalize after-pay writers (coupon and physical)
+
+After
+`orders.status → paid`
+inside
+`finalizeOrder`,
+in this order (failure notes matter):
+
+| Step | RPC / write | May fail finalize? |
+|---|---|---|
+| Cashback | `fn_wallet_transfer` `order:<id>:cashback` | Yes (throws) |
+| Referral | `fn_complete_referral` | No (logged) |
+| Stock consume | `consume_order_stock` | No (logged). Idempotent `consumed_at` |
+| Purchase report | `reportPurchase` | Must not invent a second charge |
+| Save card | `payment_tokens` insert | No (logged). Recurring needs the row |
+| Subscription create | `subscriptions` insert | Loud if a recurring line has no product |
+| Notification outbox | voucher email / receipt | Cron is the sender |
+
+Per-unit voucher split: first unit absorbs the remainder agora so unit CHECKs still sum to the line.
+
+Mobile offline scans enqueue locally and drain through the same HTTP redeem. The device must not delete a queued code on a timeout; only on a settled outcome.
