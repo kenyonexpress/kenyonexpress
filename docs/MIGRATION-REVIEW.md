@@ -833,6 +833,61 @@ only place it would surface** as a non-zero `foreign_jobs` count.
 change in whichever file is applied second. Doing nothing means the rollup's
 stated precondition is false from the first night both are live.
 
+## 3e. The applied set is byte-intact, verified (pass 20)
+
+Section 3a checked that the README's manifest and the `applied/` directory
+describe the same **set of files**. This checks something stronger: that the
+files themselves have not changed since they were applied.
+
+`migrations/applied/CHECKSUMS.sha256` carries one SHA-256 per file. Run:
+
+```bash
+cd migrations/applied && shasum -a 256 -c CHECKSUMS.sha256
+```
+
+**Result: 45 of 45 OK, zero FAILED.**
+
+| | Count |
+|---|---|
+| `.sql` files in `migrations/applied/` | 45 |
+| Lines in `CHECKSUMS.sha256` | 45 |
+| Verified `OK` | **45** |
+| `FAILED` | **0** |
+
+Coverage is total: every applied migration **and every preflight** carries a
+checksum, and every one matches.
+
+### 3e.1 Why this matters more than it looks
+
+An applied migration is a record of what production received. If the file is
+edited afterwards, the record silently becomes fiction, and the edit is
+invisible in `git log` to anyone reading the file rather than its history. That
+is not hypothetical here: the 2026-09-04 audit found 166, 167 and 168 already
+applied by a parallel agent, and the thing that made "the file matches what is
+live" checkable at all was a hash.
+
+So this verification underwrites every "APPLIED" status in section 0.2 and in
+`APPLY-ORDER.md`. Those statuses say a file was applied; the checksums say the
+file still says what it said when it was.
+
+### 3e.2 What it does not prove
+
+It proves the **files** are unchanged. It does not prove **production** matches
+them. A hash cannot see a hand-run `ALTER TABLE`, and this session has no
+database access.
+
+The pairing to keep in mind:
+
+| Question | Answered by |
+|---|---|
+| Is the file what was applied? | `CHECKSUMS.sha256` — **yes, all 45** |
+| Does the manifest list the right files? | `pending-migrations-inventory.test.ts` and section 3a — **yes** |
+| Does production match the file? | **nothing in this repository.** Only a live query |
+
+The third row is the one the 2026-09-04 audit had to answer by hand, by reading
+live definitions back and comparing them. There is no automated equivalent, and
+this document should not imply there is.
+
 ## 4. The preflights
 
 All three follow the same shape: numbered blocks, each with an `EXPECT` comment,
@@ -993,3 +1048,4 @@ STATE.md                            "חסמים לאופיר", where 162's block
 | 2026-09-07 | Pass 17: reviewed analytics_cron.sql. It honours the cron split, its names cannot be hit by 162 rollback, and its rollup would run five minutes BEFORE 162 expire-vouchers, inverting its own stated precondition |
 | 2026-09-07 | Pass 18: traced what fn_ingest_analytics_events actually returns. It counts whitelisted names, so a mixed batch reads as partial success and the discard is invisible. Same anti-pattern three other files refuse |
 | 2026-09-07 | Pass 19: named the seven indexes 170 makes redundant and paired each with its superseding composite. Six are redundant, one (idx_orders_user_status) is NOT and must be kept |
+| 2026-09-07 | Pass 20: verified CHECKSUMS.sha256. 45 of 45 OK, zero failed, covering every applied migration and preflight; and named the one question no checksum can answer |
