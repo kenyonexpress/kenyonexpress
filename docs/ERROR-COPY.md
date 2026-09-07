@@ -1056,6 +1056,75 @@ five verbs for "fill this in" (16.4), the two password minimums (13.1) and the
 copy written file by file without a sheet to check against, and this document is
 now that sheet.
 
+## 18. Milestone: every customer-facing cluster is documented
+
+As of pass 20, the undocumented error and validation strings remaining under
+`src/server/actions/` are **entirely admin-facing**:
+
+```
+10  admin/products.ts    6  admin/coupon-deals.ts   5  admin/orders.ts
+ 9  admin/vouchers.ts    6  admin/images.ts         5  admin/users.ts
+ 8  admin/discounts.ts   5  admin/shipping.ts
+```
+
+Every string a **shopper or a cashier** can meet is now in this file: checkout
+and refund (12), auth and account (13), cart (14), subscriptions (15), the three
+public forms (16), reviews and wishlist (17), plus the empty states, page
+errors, redemption outcomes and validation already in sections 1 to 10.
+
+That changes what this document is for. It is no longer a partial lookup with a
+backlog; for customer copy it is **the** lookup, and a string on a customer
+screen that is not in here is either new or wrong.
+
+### 18.1 The two admin money paths, documented anyway
+
+`admin/vouchers.ts` and `admin/orders.ts` move money or void it, so they are
+worth the same treatment even though only staff read them.
+
+`src/server/actions/admin/vouchers.ts`
+
+| Line | Copy |
+|---|---|
+| 91 | `יותר מדי בדיקות, נסו שוב בעוד רגע` |
+| 94 | `קוד שובר לא תקין` |
+| 117 | `יותר מדי מימושים, נסו שוב בעוד רגע` |
+| 122 | `חובה לציין סיבה למימוש ידני` |
+| 129 | `לא ניתן לקרוא את השובר כרגע` |
+| 135 | `השובר אינו ניתן למימוש` |
+| 152 | `מימוש השובר נכשל` |
+| 153 | `השובר כבר לא ניתן למימוש` |
+| 178 | `השובר מומש ידנית` |
+
+**Line 122 is the important one.** A manual redemption *requires* a reason, so
+an admin cannot silently redeem someone's voucher. That is an audit control
+expressed as a validation message, and it pairs with the `audit_log` row every
+admin mutation writes (`docs/QA-SCRIPTS.md` 7b.1).
+
+Lines 129 and 135 are correctly distinct: **"cannot read" is not "not
+redeemable"**, which is the same rule as `orFail` and `membershipReadOrFail`
+(`docs/SEO-PLAN.md` 5.2.3), here in the copy layer for the third time.
+
+`src/server/actions/admin/orders.ts`
+
+| Line | Copy |
+|---|---|
+| 14 | `מזהה הזמנה לא תקין` |
+| 18 | `חובה לציין סיבת ביטול (לפחות 3 תווים)` |
+| 19 | `סיבת הביטול ארוכה מדי` |
+| 57 | `הזמנה ששולמה אינה מבוטלת ידנית; החזר כספי מתבצע דרך מסלול ההחזרים` |
+| 58 | `רק הזמנה בסטטוס ממתין ניתנת לביטול ידני` |
+| 62 | `ביטול אדמין: {reason}` |
+| 102 | `ההזמנה בוטלה` |
+| 107 | `ההערה ריקה` / `ההערה ארוכה מדי` |
+| 160 | `ההערה נוספה` |
+
+**Line 57 is the best-written refusal in the codebase.** It refuses *and routes*:
+a paid order is not cancelled by hand, and the refund path is named in the same
+sentence. Compare with `הפעולה נכשלה.`, which refuses and strands.
+
+Line 18 mirrors 122 above: a cancellation needs a stated reason, minimum three
+characters, so `.` will not pass.
+
 ## Revision
 
 | Date | Change |
@@ -1128,3 +1197,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 17: subscriptions in full, and cancellationNotice three branches. The unparseable-date branch drops "immediately" rather than guessing, which is the same discipline as the membership-read rule |
 | 2026-09-07 | Pass 18: the three public forms. The supplier-lead honeypot answers one word differently from real success, which makes it detectable; plus a fourth and fifth verb for "fill this in" |
 | 2026-09-07 | Pass 19: reviews and wishlist, and the person split counted. 50 plural against 20 singular, with reviews.ts the largest singular source |
+| 2026-09-07 | Pass 20: milestone, every customer-facing cluster is documented; the remaining backlog is entirely admin. Plus the two admin money paths, vouchers and orders |
