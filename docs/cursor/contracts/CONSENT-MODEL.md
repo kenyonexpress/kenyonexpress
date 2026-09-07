@@ -29,6 +29,18 @@ Analytics `session_id` in the event payload is client-owned; `anonymous_id` is t
 
 ---
 
-## Second pass
+## Second pass (two session words)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Browser
+  `ke_session_id`
+  vs PostgREST constructed
+  `session_id=`.
+  Analytics
+  `anonymous_id`
+  parses the Next cookie. Do not forward the jar.
+- Transactional voucher mail: no marketing checkbox. Abandoned cart: confirmed newsletter + suppressions.
+- Click-to-chat is not WhatsApp marketing opt-in.
+- Withdraw marketing: unsubscribe +
+  `email_suppressions`
+  wins.
+
