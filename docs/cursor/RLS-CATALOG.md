@@ -595,3 +595,51 @@ content-uploader still must not
 (
 `orders`
 write). Catalog-read lookup of codes stays the documented split (G7).
+
+---
+
+## 22. Deepen after items 11–20
+
+### 22.1 Guest cart policy cookie name
+
+Policy SQL:
+
+```
+session_id = (current_setting('request.cookies', true)::json ->> 'session_id')
+```
+
+The Next cookie is
+`ke_session_id`.
+The header PostgREST sees is **built**:
+`Cookie: session_id=<uuid>`.
+These are two names on purpose (
+`ARCHITECTURE-OVERVIEW.md`
+§26.1). A policy edit to
+`ke_session_id`
+breaks every guest cart. A client that forwards the browser jar is a session leak (not an RLS widen).
+
+### 22.2 Deletion vs RLS
+
+`fn_anonymize_user`
+and the TS fallback use
+**service_role**.
+They must not be callable with the user JWT as a generic RPC from the browser. If 150 is granted to
+`authenticated`,
+that is over-permissive (self-delete is the action; the function is the kernel). Confirm grants on apply.
+
+### 22.3 Zero-policy / pending 172_rls
+
+`payment_webhook_events`
+admin tab: user client + zero policies = empty. Not proof of silence. G18: tab must
+`createAdminClient`.
+Applying
+`172_rls_zero_policy_tables.sql`
+is a **different** 172 from hiding the master SKU.
+
+### 22.4 Observability tables
+
+`analytics_events`
+ingest is SECURITY DEFINER with a **name whitelist**. Missing 169 is not an RLS hole; it is a dropped write. `ai_usage`
+(153) is server-only. Do not grant
+`anon`
+INSERT.
