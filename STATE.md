@@ -16580,3 +16580,24 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
   עמוד מוצר ודף הבית מראה את הכפתור הצף ואת כפתור השיתוף.
 
 ## Previous Last Completed
+
+---
+
+## ‏08.09.2026 — ‏MEGA 51-52 נבדק ולא הורץ
+
+**החלטה שהתקבלה לבד.** סקריפט ‏MEGA 51 (supplier onboarding) ו-MEGA 52
+(launch checklist) לא הורץ. הסיבות מדודות ב-`docs/MEGA-51-52-REVIEW.md`,
+בקצרה: `apps/web/` אינו קיים ולכן ‏51 לא היה מבצע commit כלל; `ENCRYPTED`
+הוא ‏SQLSTATE 42601 בפרודקשן והמיגרציה נופלת עליו; הטבלאות משכפלות את
+`suppliers` (12 שורות חיות) ואת `payout_statements`; ‏`NUMERIC(12,2)` לכסף
+מפר את חוק האגורות; פרטי בנק ו-KYC נשללו בכוונה עם ביטול ה-escrow ב-085;
+ו-onboarding כבר קיים ב-`/suppliers` דרך `submitSupplierLead`.
+
+**מה שהיה נהרס:** שתי הפקודות היחידות בסקריפט שהיו מצליחות הן
+`cat > docs/LAUNCH-CHECKLIST.md` (478 שורות קיימות) ו-`cat > claude_STATE.md`
+(יומן הסקציות של `closeout/v1-final`), ואחריהן `git push`. שניהם מנוהלים
+ב-git ולא נגעתי בהם.
+
+**נשאר פתוח, בלי שינוי:** עשר מיגרציות ב-`migrations/pending/`
+(‏162 חסומה על vault, ‏169 עד ‏177 מוכנות לאישור), רוטציית
+`SUPABASE_SECRET_KEY`, ו-delta של Elementor.
