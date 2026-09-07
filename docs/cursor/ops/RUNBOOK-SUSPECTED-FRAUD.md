@@ -11,4 +11,4 @@
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Referral refuse stays in SQL. Master SKU: guard + 172. Rotate leaked service role. Support cannot refund. Actor is the human uid.
