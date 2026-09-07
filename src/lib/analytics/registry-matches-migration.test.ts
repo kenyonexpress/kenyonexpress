@@ -13,10 +13,10 @@ import { describe, expect, it } from 'vitest'
  * disappears, and the only symptom is a dashboard that is quietly missing a
  * funnel step.
  *
- * That is not hypothetical. Migration 151 shipped the whitelist with the eight
- * CLIENT names only, and all four SERVER names have been discarded ever since,
- * while `trackServerEvent` has been emitting them since 29f74812e. Read off the
- * deployed function body on 2026-09-06, the live list is:
+ * That is not hypothetical. The deployed whitelist carries the eight CLIENT
+ * names only, so all four SERVER names are discarded on arrival. Read off the
+ * deployed function body on 2026-09-07 (MCP, preflight block 2 in the file
+ * below), the live list is:
  *
  *   page_view, view_product, view_category, add_to_cart,
  *   remove_from_cart, checkout_step, web_vital, whatsapp_click
@@ -24,22 +24,22 @@ import { describe, expect, it } from 'vitest'
  * `begin_checkout`, `purchase`, `voucher_redeemed` and `order_refunded` are on
  * none of it. Every server-side money event the funnel emits goes nowhere.
  *
- * `migrations/pending/169` is the fix and it needs approval before it touches
+ * `migrations/pending/180` is the fix and it needs approval before it touches
  * production. This test does not assert the live database -- it cannot, and a
  * test that needed production to be right would fail for the next month. What
  * it pins is the thing that is actually in this repo's control: **the pending
  * migration must cover every name the registry can emit.** If someone adds a
- * ninth client event or a fifth server event and does not widen 169, this goes
+ * ninth client event or a fifth server event and does not widen 180, this goes
  * red at the moment the name is added rather than silently after it deploys.
  *
- * When 169 is applied, move this to read `migrations/applied/` and it keeps
+ * When 180 is applied, move this to read `migrations/applied/` and it keeps
  * working unchanged. The invariant is the same either way.
  */
 
-const MIGRATION = 'migrations/pending/169_analytics_server_event_names.sql'
+const MIGRATION = 'migrations/pending/180_analytics_server_event_names.sql'
 
 /**
- * The quoted names inside the whitelist of the `CREATE OR REPLACE` in 169.
+ * The quoted names inside the whitelist of the `CREATE OR REPLACE` in 180.
  *
  * Parsed from the `NOT IN (...)` list rather than from the whole file, so a
  * name that happens to appear in a comment cannot make this pass.

@@ -4,6 +4,7 @@ import 'server-only'
 import { ATTRIBUTION_COOKIE, type Attribution, parseAttribution } from '@/lib/analytics/attribution'
 import type { ServerEventName } from '@/lib/analytics/events'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
+import { POSTHOG_ID_COOKIE, isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 
@@ -22,6 +23,56 @@ type ServerEventInput = {
 }
 
 /**
+ * WHICH IDENTITY A SERVER EVENT IS FILED UNDER, in one place.
+ *
+ * The browser's PostHog id first, because that is the ONLY value that makes a
+ * funnel join: the client half of the funnel is keyed on it, and matching it
+ * here is the whole reason `posthog.ts` mirrors it into a readable cookie.
+ *
+ * Then the guest session id, for a visitor whose browser blocked the mirror,
+ * and last the user id. The user id is deliberately the fallback and not the
+ * first choice: PostHog joins a funnel on `distinct_id` alone, so preferring it
+ * would split every logged-in shopper's journey into an anonymous browsing half
+ * and a separate purchasing half. `linkAnalyticsIdentity` already records the
+ * guest-to-user link for the first-party tables, which is where that question
+ * gets answered properly.
+ *
+ * A cookie value is attacker-controllable, so it is length-capped and used for
+ * nothing but bucketing. Nothing here authorises anything.
+ */
+function serverDistinctId(
+  postHogCookie: string | undefined,
+  fallbacks: { anonymousId: string | null; userId: string | null },
+): string | undefined {
+  const mirrored = postHogCookie?.trim()
+  if (mirrored && mirrored.length > 0 && mirrored.length <= 128) return mirrored
+  return fallbacks.anonymousId ?? fallbacks.userId ?? undefined
+}
+
+/**
+ * Scalars only, and never money.
+ *
+ * `EventProperties` is typed to scalars precisely so a whole order or profile
+ * cannot be attached by accident, and rule 3 at the top of this file says
+ * revenue is read from `orders` / `order_items` rather than written here. What
+ * travels is the join keys an analyst needs to get from a PostHog funnel back
+ * to the row that holds the money.
+ */
+function postHogProps(input: ServerEventInput): Record<string, string | number | boolean | null> {
+  const props: Record<string, string | number | boolean | null> = {
+    source: 'server',
+    user_id: input.userId,
+  }
+  for (const key of ['order_id', 'code', 'product_id', 'payment_id', 'step'] as const) {
+    const value = input.props[key]
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      props[key] = value
+    }
+  }
+  return props
+}
+
+/**
  * Emits a server-origin event through the same validated ingest path the
  * browser uses, so the registry stays the single gate for every write.
  */
@@ -30,6 +81,33 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     const cookieStore = await cookies()
     const anonymousId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
     const attribution = parseAttribution(cookieStore.get(ATTRIBUTION_COOKIE)?.value)
+
+    // POSTHOG GETS THESE FOUR OR IT HAS NO CONVERSION EVENT AT ALL.
+    //
+    // Measured 2026-09-07. `trackCommerce` fans the BROWSER's commerce events
+    // out to PostHog, and the four names this function emits are the only ones
+    // that say money moved. None of them can arrive that way:
+    // `purchase` is deliberately not fired from the browser (a tab closing on
+    // the payment redirect loses it), and `voucher_redeemed` happens on a
+    // supplier's till through an API route with no browser of ours in it. So
+    // PostHog's funnel ended at `checkout_step` and had nothing to convert to.
+    //
+    // This is also the half that works TODAY. The Supabase write below is
+    // discarded in production by the `fn_ingest_analytics_events` whitelist
+    // until 180 is approved, and 180 needs an approval this cannot wait on.
+    // PostHog needs no migration.
+    //
+    // Fired before the awaited RPC rather than after it, because `trackEvent`
+    // returns synchronously and a slow or failing database round trip must not
+    // decide whether the funnel event was sent.
+    if (isPostHogEnabled()) {
+      trackEvent(input.eventName, postHogProps(input), {
+        distinctId: serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
+          anonymousId,
+          userId: input.userId,
+        }),
+      })
+    }
 
     const admin = createAdminClient()
     const { data: accepted, error } = await admin.rpc('fn_ingest_analytics_events', {
@@ -72,15 +150,14 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // then returns the number it kept. One event in, zero back, means this one
     // was discarded at the door.
     //
-    // MEASURED against production on 2026-09-06 by reading the deployed
+    // MEASURED against production on 2026-09-07 by reading the deployed
     // function body: the live whitelist is page_view, view_product,
     // view_category, add_to_cart, remove_from_cart, checkout_step, web_vital
     // and whatsapp_click. `begin_checkout`, `purchase`, `voucher_redeemed` and
     // `order_refunded` are on none of it, so EVERY server-side money event this
-    // file emits is currently going nowhere, and has been since migration 151
-    // narrowed the list.
+    // file emits is currently going nowhere.
     //
-    // `migrations/pending/169` adds the four names and is the actual fix; it
+    // `migrations/pending/180` adds the four names and is the actual fix; it
     // needs approval before it touches production. This does not fix the loss.
     // It makes the loss visible, which is the part that can be done without
     // approval -- silent data loss on the money funnel is indistinguishable
@@ -90,7 +167,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
       log.error('analytics.event_rejected', {
         eventName: input.eventName,
         detail:
-          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/169.',
+          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/180.',
       })
     }
   } catch (error) {

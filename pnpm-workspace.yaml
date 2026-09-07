@@ -7,6 +7,9 @@ allowBuilds:
   # 1 on, so `pnpm start` could not even reach the deps check.
   '@sentry/cli': false
   '@swc/core': true
+  # Arrived with posthog-js (session replay). Its postinstall only prints the
+  # funding banner; nothing needs it to run.
+  core-js: false
   esbuild: true
   sharp: true
 

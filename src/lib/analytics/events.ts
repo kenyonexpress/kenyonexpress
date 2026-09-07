@@ -11,23 +11,24 @@ export const CLIENT_EVENT_NAMES = [
   'remove_from_cart',
   'checkout_step',
   'web_vital',
-  // A WhatsApp tap is an exit the funnel cannot see otherwise: the shopper
-  // leaves for a chat and any purchase happens off-platform. Counted with the
-  // product when the tap came from a PDP. Lands with migration 151, which is
-  // also what turns the REST of this pipeline on -- fn_ingest_analytics_events
-  // did not exist in production until it, so every event above was silently
-  // failing too.
+  // In the DEPLOYED fn_ingest_analytics_events whitelist (read off production
+  // 2026-09-07), so it belongs in the mirror even though this branch has no
+  // emitter for it yet: a WhatsApp tap is an exit the funnel cannot see
+  // otherwise, and the name must not be reinvented differently when the
+  // button starts reporting.
   'whatsapp_click',
 ] as const
 
 export type ClientEventName = (typeof CLIENT_EVENT_NAMES)[number]
 
 // Emitted server-side only, never accepted from a browser. begin_checkout
-// comes from beginCheckout; the other three are the funnel's money moments
-// (marathon step 14): finalize, the voucher scan, and the admin refund.
+// comes from beginCheckout; the other three are the funnel's money moments:
+// finalize, the voucher scan, and the admin refund.
 // NOTE: the DB whitelist in fn_ingest_analytics_events must carry the same
-// names -- draft migration 169 widens it (151 shipped with only the client
-// eight, so server events were silently skipped until it applies).
+// names -- draft migration 180 widens it (the deployed function carries only
+// the client names, so server events are silently skipped until it applies).
+// PostHog receives all four regardless: the fan-out in track.ts needs no
+// migration.
 export const SERVER_EVENT_NAMES = [
   'begin_checkout',
   'purchase',

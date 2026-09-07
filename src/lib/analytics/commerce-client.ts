@@ -1,12 +1,15 @@
 'use client'
 
+import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
 import {
   type CommerceEventInput,
   type GaEventName,
   buildGaPayload,
   buildMetaPayload,
   metaEventFor,
+  toCurrencyAmount,
 } from '@/lib/analytics/ecommerce'
+import { isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 
 /**
  * Firing a commerce event at both vendors from the browser.
@@ -21,6 +24,21 @@ import {
  * them on Accept would mean collecting behaviour before permission and
  * transmitting it after, which is the thing consent is for. Events that happen
  * before the banner is answered are lost, and that is the correct outcome.
+ *
+ * POSTHOG IS FANNED OUT FROM HERE TOO, AND IT NEEDS ITS OWN CONSENT CHECK.
+ * GA4 and Meta are self-gating: their globals do not exist until ThirdPartyTags
+ * mounts them, which is after consent, so a call from a shopper who declined
+ * finds nothing and does nothing. PostHog has no SDK and no global -- it is a
+ * bare `fetch` to /capture/ -- so there is no absent global to find, and
+ * without the explicit check below it would transmit for a visitor who declined
+ * while the two vendors that DO have SDKs stayed silent. The gate reads the
+ * same cookie the banner writes.
+ *
+ * That is also the bug this fan-out closes. `NEXT_PUBLIC_POSTHOG_KEY` has been
+ * a supported variable with a whole module behind it, and measured on
+ * 2026-09-07 `trackEvent` had ZERO callers anywhere in the repo: setting the
+ * key produced no events and no error, which is the most expensive kind of
+ * silence.
  *
  * THE PURCHASE IS NOT FIRED FROM HERE. `finalizeOrder` reports it server-side,
  * because a browser-side purchase is lost every time a tab closes on the
@@ -51,6 +69,39 @@ function fbq(): Fbq | null {
   return typeof fn === 'function' ? fn : null
 }
 
+/**
+ * The banner's decision, read from the cookie it writes. Denied unless granted.
+ * Exported because every OTHER client-side PostHog call site (the pageview in
+ * AnalyticsProvider, the referral landing, the replay recorder) needs exactly
+ * this gate, and a second implementation is a second place to get it wrong.
+ */
+export function trackingAllowed(): boolean {
+  if (typeof document === 'undefined') return false
+  const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
+  return isTrackingAllowed(match ? decodeURIComponent(match[1] ?? '') : null)
+}
+
+/**
+ * PostHog takes flat properties only, so the item list is summarised rather
+ * than nested: a funnel is built on the event and its value, and the per-item
+ * detail already goes to GA4 and to the first-party `analytics_events`, which
+ * is where the catalogue questions are answered.
+ */
+function postHogProperties(input: CommerceEventInput): Record<string, string | number | null> {
+  return {
+    currency: CURRENCY_CODE,
+    // Shekels, converted once, by the same helper both vendors use. The agorot
+    // integer is the source and stays the source.
+    value: toCurrencyAmount(input.valueAgorot),
+    value_agorot: Math.round(input.valueAgorot),
+    item_count: input.items.length,
+    transaction_id: input.transactionId ?? null,
+    coupon: input.coupon ?? null,
+  }
+}
+
+const CURRENCY_CODE = 'ILS'
+
 export function trackCommerce(name: GaEventName, input: CommerceEventInput): void {
   if (typeof window === 'undefined') return
 
@@ -80,5 +131,11 @@ export function trackCommerce(name: GaEventName, input: CommerceEventInput): voi
     } catch {
       // Same reasoning as above.
     }
+  }
+
+  // Last, and behind its own gate. Fire and forget by construction: trackEvent
+  // never throws and never rejects.
+  if (isPostHogEnabled() && trackingAllowed()) {
+    trackEvent(name, postHogProperties(input))
   }
 }

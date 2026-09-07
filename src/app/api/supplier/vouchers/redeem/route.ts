@@ -316,6 +316,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       await reportRedemption(result)
     }
 
+    // Funnel event, replays excluded so one scan is one event. Swallows its
+    // own errors; the first-party copy is skipped by the DB whitelist until
+    // pending 180 applies, PostHog receives it today.
+    if (!replayed) {
+      await trackServerEvent({
+        eventName: 'voucher_redeemed',
+        userId: user.id,
+        props: { code: (result.code as string) ?? shortCode },
+      })
+    }
+
     return respond(
       {
         outcome,

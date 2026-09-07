@@ -412,24 +412,9 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       }
     }
 
-    await writeAuditLog({
-      actorId: session.userId,
-      actorRole: session.role,
-      action: 'manual_override',
-      entityType: 'orders',
-      entityId: order.id,
-      changes: {
-        old: { status: 'paid' },
-        new: {
-          status: 'refunded',
-          reason: input.reason,
-          refunded_agorot: plan.refundAmountAgorot,
-        },
-      },
-    })
-
-    // Funnel event (marathon step 14). Swallows its own errors; the card is
-    // already credited. Skipped by the DB whitelist until draft 169 applies.
+    // Funnel event. Swallows its own errors; the card is already credited.
+    // The first-party copy is skipped by the DB whitelist until pending 180
+    // applies, PostHog receives it today.
     await trackServerEvent({
       eventName: 'order_refunded',
       userId: order.user_id,
