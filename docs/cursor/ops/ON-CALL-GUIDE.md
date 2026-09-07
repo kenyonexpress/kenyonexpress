@@ -22,3 +22,9 @@
 5. Do not apply migrations. Do not mock Cardcom. Do not forward guest Cookie jar as a "fix".
 
 Topic must be unguessable in production. `ALERTS_ENABLED` must not be false.
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
