@@ -10,6 +10,7 @@ import {
   BarChart3,
   ClipboardList,
   CreditCard,
+  Database,
   FileSpreadsheet,
   FileText,
   Flag,
@@ -79,6 +80,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
+  // Same gate as the audit log: a schema change is the same class of fact, and
+  // the page is a read of the repository with no apply button on it.
+  { href: '/admin/migrations', label: 'מיגרציות', icon: Database, section: 'audit-log' },
 ]
 
 export default function AdminSidebar({ role }: { role: UserRole }) {

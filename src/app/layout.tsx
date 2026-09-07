@@ -67,6 +67,22 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+    /**
+     * Self-referencing, and that is all it can honestly be: the site exists in
+     * one language. Google requires a self-reference from any page that carries
+     * hreflang at all, so a single `he-IL` entry is the correct shape rather
+     * than a stub for a translation that does not exist. It states the language
+     * AND the region, which is the part `<html lang="he">` alone leaves open --
+     * Hebrew is spoken in one country but a search engine still has to be told
+     * which market this catalogue prices for, and every price on it is in ILS.
+     *
+     * It does NOT create alternates. The day a second language exists, this map
+     * gains a row per language and an `x-default`; until then adding either
+     * would point at a page that answers in Hebrew.
+     */
+    languages: {
+      'he-IL': '/',
+    },
     // How a reader finds the feed at all. `robots.txt` advertises the sitemap
     // and has no field for a feed, and nothing on the page links to one, so
     // without this tag `/feed.xml` exists and is undiscoverable. Deliberately
