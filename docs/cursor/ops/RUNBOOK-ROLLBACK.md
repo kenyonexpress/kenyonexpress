@@ -19,3 +19,9 @@ Do not roll back the deploy to "unpay". Run stranded cron. Rollback will not unc
 ## Git
 
 Do not force-push `main`. Do not checkout `closeout/v1-final` from this worktree to "fix" prod.
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
