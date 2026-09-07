@@ -48,4 +48,4 @@ Claw `supplierDebits` 18000 or platform double-pays. Snapshot 10% not today's 15
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+1₪=100 agorot. Coupon example 40000/4000. Physical fee then subtract. Cashback on on-site only. Implausible 1 vs 400 refuses sale.
