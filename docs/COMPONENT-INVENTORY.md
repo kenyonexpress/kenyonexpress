@@ -905,6 +905,57 @@ affected by the list being short.
 What is affected is any reader who treats the tables as exhaustive. They are
 not, and the header said 72 while the tree held 138.
 
+## Pass 16: the four load-bearing components from pass 15
+
+Pass 15 named 25 components absent from this file and singled out four as
+load-bearing for claims other documents already make. Those four are documented
+here; the remaining 21 stay listed in pass 15 as known-absent.
+
+| Component | File | Props | Used in | Tokens | RTL / a11y |
+|---|---|---|---|---|---|
+| HeaderCart | `cart/HeaderCart.tsx` | none | `layout/Header.tsx` (handheld row) | `.mini-cart` class; colours from `mini-cart.css` | wraps `CartNavLink` + `MiniCartDropdown` |
+| SearchBox | `search/SearchBox.tsx` | `{ defaultValue?: string }` | `/search` only, twice (`:159` empty, `:215` results) | Tailwind utilities | `aria-label="חיפוש מוצרים"` on the form, `aria-label="חיפוש"` on the field |
+| WhatsAppShareButton | `shared/WhatsAppShareButton.tsx` | `{ message, appendCurrentUrl?, label?, className?, productId? }` | PDP and coupon shares | `text-whatsapp-ink` / `hover:text-whatsapp-ink-hover` | button with visible Hebrew label `שתפו בוואטסאפ` |
+| FacebookShareButton | `shared/FacebookShareButton.tsx` | `{ …, label?, className? }` | share rows | Facebook token | visible label `שיתוף בפייסבוק` |
+
+### What each one settles
+
+**`HeaderCart` is a positioning decision, not a wrapper.** Its comment: the icon
+and the mini-cart panel are wrapped together *because the panel is positioned
+against this element*. Rendering the dropdown higher up, beside `CartDrawer`,
+would anchor it to the page rather than the icon, "which is the whole difference
+between a dropdown and a sheet."
+
+It also carries a `<Suspense fallback={null}>` around the panel for a reason
+worth keeping: the panel calls `usePathname`, which under `cacheComponents` is
+runtime data on any route with a dynamic param. Without the boundary the
+masthead takes `/product/[slug]`, `/category/[slug]` and every admin and account
+`[id]` route out of the static shell, **which is the whole site**. The null
+fallback costs nothing to look at, because the panel renders nothing until the
+icon is pressed.
+
+**`SearchBox` confirms the search rule's real scope.** It is labelled twice
+(form and field) and lives only on `/search`, which is `noindex`. See pass 15
+for why "no search UI" means "no search UI in the chrome".
+
+**The two share buttons are the missing consumers of the third-party mark
+tokens.** `docs/DESIGN-SYSTEM.md` section 1.4 documents
+`--color-whatsapp-ink` (`#075e54`, 7.67:1) and `--color-whatsapp-ink-hover`
+(`#043c36`, 12.32:1) as WhatsApp's own darker teal, chosen so the mark is not
+rebranded with a colour this project invented. `WhatsAppShareButton` uses
+exactly `text-whatsapp-ink hover:text-whatsapp-ink-hover`. The token and its
+only consumer now appear in the same set of documents.
+
+Both share buttons carry a **visible Hebrew label** beside the icon
+(`שתפו בוואטסאפ`, `שיתוף בפייסבוק`), so they are named by their content and
+belong in the pass-12 false-positive list rather than the icon-only set.
+
+**One behaviour worth a QA step:** `WhatsAppShareButton` fires its
+`whatsapp_click` event *before* `window.open`, and says why: "an exit to a chat
+is precisely the moment the page loses the shopper, so the event must not wait
+for a return." A test that asserts the event after the window opens will look
+correct and measure nothing.
+
 ## Revision
 
 | Date | Change |
@@ -922,3 +973,4 @@ not, and the header said 72 while the tree held 138.
 | 2026-09-07 | Pass 14: dead-code sweep. Eleven components never imported, including WishlistButton, so the PDP wishlist heart does not ship despite three documents describing it |
 | 2026-09-07 | Pass 15: recounted the tree. 138 components not 72, shared/ is no longer empty, and 25 components are absent from the file entirely |
 | 2026-09-07 | Pass 15: dead-code count corrected from 11 to 23. Five of six ui/ primitives are dead (descopes two RTL risks), both search components are dead by design, NewsletterSignup was a pass-14 false positive |
+| 2026-09-07 | Pass 16: documented the four load-bearing components pass 15 flagged (HeaderCart, SearchBox, the two share buttons); 21 of the 25 remain known-absent |
