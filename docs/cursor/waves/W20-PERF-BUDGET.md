@@ -78,3 +78,15 @@ None.
 - Checkout must not load a Meili SDK. Kill switch cache is slower, not a budget cheat.
 - This pack does not run `pnpm` or the compare script.
 
+---
+
+## Third pass
+
+Do not raise the 11% Hebrew gate for unused
+`/en`.
+`KILL_SWITCH_CACHE`
+is slower-correct, not a budget cheat.
+`NEXT_PUBLIC_*`
+needs a rebuild.
+
+
