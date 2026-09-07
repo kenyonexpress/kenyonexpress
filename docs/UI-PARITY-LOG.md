@@ -852,6 +852,53 @@ for w in (380, 768, 1440):
 PY
 ```
 
+## 19. Systematic contributors: differences that are on every page at once
+
+The per-route sections above record scores. This is the orthogonal list: known
+differences between our page and live's that are **not** confined to one
+element, so they appear in every band rather than in one. Each was measured in
+the passes named.
+
+| # | Difference | Live | Ours | Scope | Where measured |
+|---|---|---|---|---|---|
+| 1 | **Letter-spacing** | `-0.14px` on **92.4%** of elements, inherited from the root | `normal` (0) everywhere except three local declarations | every text run on every page | `docs/DESIGN-SYSTEM.md` 3.0b, pass 18 |
+| 2 | **Shell height** | three families below 1440 (home / app / catalogue) | one shell | every band below the header, on every page | §17, pass 15 |
+| 3 | **Header search field** | 534x41 at 1440, yellow top border | none, slot deleted | header band, every page | standing rule, §2.1 |
+| 4 | **Card elevation** | flat: 99.1% of elements carry no `box-shadow` | Electro's `--shadow-card` pair | every card grid | `docs/DESIGN-SYSTEM.md` 1.5, pass 14 |
+| 5 | **Header position** | `position: static` at every width | `sticky top-0 z-40` | mid-page only; not at the shutter | §17.2a, pass 17 |
+
+### 19.1 Only three of the five reach the shutter
+
+`compare.mjs` screenshots at `scrollTop 0`, so **#5 costs nothing in the gate**:
+a sticky header at scroll 0 sits exactly where a static one does. It matters for
+the manual sweep and for anything measured mid-page, and it is listed here so
+nobody spends a pass chasing it in a band report.
+
+**#3 is a decision, not a defect.** The standing rule is that there is no search
+UI in the chrome, the pixel cost is accepted, and `MastheadNav.tsx` deleted the
+slot rather than hiding it precisely so the cost is honest rather than a
+DOM-shaped lie.
+
+That leaves **#1, #2 and #4** as differences that are currently unpriced.
+
+### 19.2 Why #1 is the one to look at first
+
+The others are bounded. The shell offset is a fixed number of pixels at the top
+of the page; the card shadow is confined to card edges. **Letter-spacing is
+per character.**
+
+A 40-character line is 5.6px wider on our side. That is usually invisible, and
+occasionally it is the difference between a Hebrew paragraph wrapping to two
+lines and to three, and a changed line count moves every block below it. So its
+effect is not a uniform small offset, it is **zero on most elements and large on
+the ones that happen to be near a wrap boundary**, which is exactly the profile
+of a diffuse, hard-to-localise band mismatch.
+
+None of this is a claim about how many points any of them is worth. **No number
+here is measured, because the gate cannot run in this worktree.** They are
+listed so that whoever can run it has a hypothesis list ordered by scope rather
+than by how visible each one looks in a screenshot.
+
 ## Revision
 
 | Date | Change |
@@ -870,3 +917,4 @@ PY
 | 2026-09-07 | Pass 15: shell offset measured across all 21 captures (§17). Three shell families below 1440, a flat 17px at 1440, and the 40px catalogue header flagged as a probable scroll artifact of the capture method. Band map renumbered to §18 |
 | 2026-09-07 | Pass 16: settled 17.2 against live. The 40px catalogue header is REAL and not a capture artifact; the header is position:static everywhere, not sticky; and home alone loses 22px above the masthead on scroll |
 | 2026-09-07 | Pass 17: RETRACTED the 22px scroll claim from pass 16. With scrollY verified at 0, nothing moves; the earlier reading was mid-scroll. Also: live is position:static, ours is sticky |
+| 2026-09-07 | Pass 18: consolidated the systematic contributors (19). Five page-wide differences, three of which reach the shutter, ordered by scope; letter-spacing is per character and therefore the diffuse one |
