@@ -80,3 +80,12 @@ User with `profiles.role = vendor` and no membership: access-denied. User with m
 - Owner invite writes audit. Do not grant `admin` to run a restaurant.
 - `vendor` on profile without membership: access-denied.
 
+---
+
+## Third pass
+
+Hebrew: בעלים / מנהל / סורק / הוספת צוות.
+`vendor`
+is leftover. Membership is the till.
+
+
