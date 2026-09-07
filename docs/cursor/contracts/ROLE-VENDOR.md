@@ -49,6 +49,12 @@ Redeem RPC, supplier order SELECT, redemptions SELECT, branch writes (133), prod
 
 ---
 
-## Second pass
+## Second pass (auth)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Till HTTP redeem keys on `supplier_members`, never on `profiles.role`.
+- `vendor` without membership: `/supplier/access-denied`. Membership with `customer` profile: till still works.
+- `content_uploader` is not a till. `support` is not a refund. `scanner` cannot UPDATE members or stock.
+- Guest cart: browser cookie `ke_session_id`; PostgREST sees constructed `Cookie: session_id=<uuid>`. Never forward the jar.
+- PIN staff (`supplier_staff`) is not `auth.users` login. 15/hour (`RATE-LIMITS.md`).
+- Anon EXECUTE on `is_supplier_member` returns false on purpose. Do not apply cancelled 165.
+
