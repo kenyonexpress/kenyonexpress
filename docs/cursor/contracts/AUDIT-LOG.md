@@ -41,3 +41,9 @@ If a later apply adds `row_hash` / `prev_hash`: verification procedure is `SELEC
 | Q | Best answer |
 |---|---|
 | Hash chain live? | **Unverified.** Do not tell an auditor there is a hash chain until the applied SQL is read. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
