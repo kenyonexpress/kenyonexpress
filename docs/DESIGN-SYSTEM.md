@@ -211,11 +211,55 @@ in a component the same way it refuses a raw hex.
 | `--shadow-card` | `0px 2px 8px rgba(0, 0, 0, 0.08)` | Card rest. |
 | `--shadow-card-hover` | `0px 4px 16px rgba(0, 0, 0, 0.12)` | Card hover. |
 
-The two card shadows are **not measured**. The reference dump records geometry,
-colour, type and radius, and carries no `box-shadow` key, so there is nothing in
-it to copy. These are the two the Electro template ships and they are the only
-two any component may use. If a shadow ever needs to be 1:1 with live it has to
-be measured first. Do not guess a third value.
+The two card shadows are **not measured**. They are the two the Electro template
+ships, and they are the only two any component may use. Do not guess a third
+value.
+
+#### That paragraph used to say shadows could not be measured. It can now.
+
+Until this pass this section read: "the reference dump records geometry, colour,
+type and radius, and carries no `box-shadow` key, so there is nothing in it to
+copy." **That was true of the old dump and is false of the committed one.**
+`refs/ke_live_computed.json` captures fifteen properties and `box-shadow` is one
+of them. So the measurement exists, and here it is.
+
+Across all 23952 elements, **live carries `box-shadow: none` on 23736 of them,
+99.1%.** Nine distinct non-`none` values remain, none of them a card:
+
+| Count | Value | First seen on |
+|---|---|---|
+| 75 | `rgba(0,0,0,0) 0px 0px 0px 9999px inset` | `product-remove` (cart) — a transparent inset, paints nothing |
+| 45 | `rgba(0,0,0,0.28) 0px 2px 4.992px 0px` | `dropdown-menu` |
+| 21 | `rgb(153,153,153) 2px 2px 3px 0px` | `float` |
+| 21 | `rgba(255,255,255,0) 0px 0px 0px 0px` | `btn` — fully transparent, paints nothing |
+| 21 | `rgba(1,1,1,0.1) 0px 4px 3px 0px` | `site-search` |
+| 18 | `rgba(0,0,0,0.2) 0px 5px 10px 0px` | `tt-menu` (typeahead) |
+| 9 | `rgba(0,0,0,0.3) 0px 0px 15px 0px` | shop page container |
+| 3 | `rgba(0,0,0,0.15) 0px 0px 20px 0px` | RevSlider `spinner0` |
+| 3 | `rgba(0,0,0,0.25) 0px 2px 5px 0px` | PhotoSwipe share tooltip |
+
+What this changes, and what it does not:
+
+- **The site is flat.** 99.1% of elements carry no shadow at all, which is the
+  same story the radius recount tells (94.9% square). Any design instinct to add
+  elevation is working against the reference.
+- **Neither `--shadow-card` nor `--shadow-card-hover` appears anywhere in the
+  capture.** Live paints no card shadow, because live's product cards have none.
+  The two tokens remain Electro's, and using them is a deliberate departure, not
+  a match. Section 6 records that the 11% budget is what makes such departures
+  affordable; this is one of them, and it was previously undocumented as a
+  departure at all.
+- **Two of the nine paint nothing** (`rgba(0,0,0,0)` and `rgba(255,255,255,0)`),
+  so the count of visible shadow treatments on live is **seven**, and four of
+  those seven are third-party widget chrome (typeahead, RevSlider spinner,
+  PhotoSwipe, the mini-cart dropdown) rather than page design.
+- **The nearest live value to a card shadow** is the dropdown's
+  `rgba(0,0,0,0.28) 0 2px 4.992px`. If a shadow ever does need to be 1:1 with
+  live, that is the one to start from, not the Electro pair.
+
+The instruction not to guess a third value stands. What has changed is that a
+fourth is no longer unmeasurable: re-run
+`node scripts/measure-live-computed.mjs` and read the `box-shadow` column.
 
 ### 1.6 Measured ink-on-surface pairs
 
@@ -1273,7 +1317,7 @@ build measured **11.07%**. Nothing in the output said which number to believe,
 and the wrong one is the one that looks like a catastrophic regression worth a
 day of chasing.
 
-### 6.4 The seven refusals
+### 6.4 The eight refusals
 
 A percentage between two pages that are not the same page is not a low score, it
 is no measurement. The script exits **3** (or **4** for the hero) rather than
@@ -1646,14 +1690,14 @@ Returns copy: remainder at the business, no escrow, redeemed = done. No numbered
 
 ---
 
-## 11. Pass 14: the three compare widths are not the CSS cascade
+## 8b. The three compare widths are not the CSS cascade (pass 14)
 
 The brief names breakpoints `380`, `768` and `1440`. Those three numbers are
 the **`compare.mjs` viewports**. They are not the cascade the layout switches
 on, and treating them as if they were is how a component grows a
 `min-[380px]` that nobody can grep for.
 
-### 11.1 Three layers of "where the layout changes"
+### 8b.1 Three layers of "where the layout changes"
 
 | Layer | Stops | What it is for |
 |---|---|---|
@@ -1673,7 +1717,7 @@ stops. Price red does not either: storefront stays live `#dc3545` (home-grid
 sale `#c93636`). Brief `#E4002B` remains wallet-pass chrome only. Container
 `1320px` remains a named brief value that live never paints (§0, §2.1).
 
-### 11.2 Button radii sit outside the five-token scale
+### 8b.2 Button radii sit outside the five-token scale
 
 §2.4 counted every `border-radius` that appears more than ten times and froze
 five tokens (`0`, `4`, `7`, `25`, `22`, `200`). Purchase controls do not use
@@ -1698,7 +1742,7 @@ the four family radii on the button tokens in `packages/ui/tokens.css`. Do not
 Cards and category tiles stay `--radius-none` (`0px`). Live storefront cards
 are square. A 8px card radius is an invention and it shows in the grid bands.
 
-### 11.3 Electro home-v7 boxes at 1440, so 1320 has nowhere to go
+### 8b.3 Electro home-v7 boxes at 1440, so 1320 has nowhere to go
 
 Electro home-v7 is a **three-column hero** plus a category strip that shares the
 slider's x, plus a feature bar, plus a deals grid. At the 1440 compare width
@@ -1730,7 +1774,7 @@ the hero is 350 × 213, the feature bar is a 31px empty strip, deals 1 column.
 Heebo paints every string. Latin demo lines on the live slider (`SIMPLY THE
 BEST`) are content debt on the reference, not a type-token miss.
 
-### 11.4 Stacking (absent from this file until now)
+### 8b.4 Stacking (absent from this file until now)
 
 Named layers, copied from `docs/ui-design-system/TOKENS.md` §6 so a reviewer
 does not invent `z-[999]` on a storefront overlay. Consent is not in this
@@ -1751,6 +1795,54 @@ table: it is `fixed bottom-0` with `padding-bottom` on `body`, not a z fight.
 
 A sticky pay bar under an undecided consent banner on a phone is a known miss
 (`docs/QA-SCRIPTS.md` §0). The banner steals the click, not the z-index.
+
+## 12. Pass 15: `21.994px` is two things, and Heebo is allowed to miss the first paint
+
+### 12.1 The same number, two jobs, do not merge them
+
+§3.0 (type recount) lists `21.994px` 191 times and traces it to **FontAwesome
+`fab` glyphs** plus the phone widget. §11.2 lists cart-checkout radius as
+`21.994px`. They are equal today by coincidence of measurement.
+
+| Use | What it is | Token |
+|---|---|---|
+| `21.994px` on `fab` / hamburger-adjacent chrome | Icon-font glyph size on live WooCommerce | **none.** This project paints lucide SVGs by prop. Do not add `--text-21` |
+| `21.994px` on cart checkout | Button corner radius | family radius, near `--radius-pill` (`22px`) |
+| `19.418px` on place-order | Button **type** size (700) | `--btn-order-size`, also the odd padding in §2.0 |
+| `22px` section title | `--text-section-title` | type, not radius |
+| `22px` pill | `--radius-pill` | radius, not type |
+
+A pass that "unifies 22" would change either the place-order type, the cart
+radius, or the section title, and only one of those is a corner. Leave them
+named where they live.
+
+`11.998px` is the real type finding from §3.0: it is **second** in frequency
+(2539), not fourth. It is the card title at 380 and 768, the category tag, and
+the sale badge. `--text-micro` is `11px` and is ours; live's 11.998 sits on
+`--card-cats-size` / `--card-badge-size`. Rounding it to 12 (`--text-tiny`)
+moves those three components. Do not.
+
+### 12.2 Heebo is allowed to miss the first paint
+
+`--font-sans: var(--font-heebo), Arial, sans-serif`. Heebo loads via
+`next/font/google`, subsets `latin` and `hebrew`, `display: swap`,
+`preload: false`. The LCP paragraph is **Arial on purpose** so the first paint
+does not wait on a font file. `compare.mjs` waits for fonts (and for zero
+pending images) before the shutter, so a gate pass is a Heebo picture, not an
+Arial one.
+
+Consequences:
+
+| Surface | What to expect |
+|---|---|
+| Pixel gate at 380 / 768 / 1440 | Heebo metrics. Hebrew strings are wider than Open Sans fallback on live, which is the standing type exception in §0 |
+| Lighthouse LCP | May name Arial. That is the swap. Do not preload Heebo to chase LCP if it delays the first paint |
+| 374px USP bar | A Hebrew word cannot hyphenate. The breakpoint is the longest label, not a round 400 |
+| Electro English on the live slider | `SIMPLY THE BEST` reversed by RTL. Content debt on the reference. Our Heebo Hebrew headlines stay |
+
+Brand tokens that do not care about the first-paint face: `#fed700` / `#fedd26`
+surfaces, `#dc3545` storefront price (not brief `#E4002B`), `#0062bd` links,
+1200 / 1170 containers (not brief 1320).
 
 ## 9. Related documents
 
@@ -1777,3 +1869,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 10: `/city/[slug]` seventeen regions, empty is a real answer |
 | 2026-09-07 | Pass 11: legal aliases + offline tile (no fetch, ink on yellow) |
 | 2026-09-07 | Pass 14: 380/768/1440 are compare viewports, not the CSS cascade; header stays handheld through 1024; four purchase radii sit outside the five-token scale; Electro home-v7 241+728+201=1170 so 1320 has nowhere to go; stacking layers |
+| 2026-09-07 | Pass 15: 21.994px is an icon-font size AND a cart radius, do not merge; Heebo swap means Arial LCP and a Heebo shutter |
