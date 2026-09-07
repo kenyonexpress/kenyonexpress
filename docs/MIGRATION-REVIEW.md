@@ -530,6 +530,74 @@ to route the work.
 Both are out of scope here (one is `.md` in a directory this document only
 reads, the other is `.ts`), so they are recorded rather than made.
 
+## 3c. The cancelled file, and why it must stay cancelled
+
+`migrations/cancelled/` holds one migration and its preflight:
+
+```
+165_revoke_anon_helpers.sql
+preflight_165.sql
+```
+
+Section 0 calls the directory out of scope. That was right for its contents and
+wrong for its lesson, because **165 is the kind of change someone will propose
+again.** "Revoke `anon` EXECUTE on `is_admin()`" reads as obvious hardening. It
+would take the storefront down.
+
+### 3c.1 The mechanism
+
+Eighteen RLS policies on public and anon-readable tables call `is_admin()` or
+`is_supplier_member()` **inside their `USING` / `WITH CHECK`**:
+
+```
+product_images   coupon_deals   suppliers     seo_redirects
+cashback_rules   categories     wallet_*      split_executions
+escrow_holds     payments       carts         notification_outbox
+```
+
+**RLS quals run as the caller.** So revoking `anon`'s EXECUTE does not merely
+stop anonymous users calling the helper directly, it makes every policy that
+names the helper fail for them. Every anonymous `SELECT` on the public catalogue
+returns `42501 permission denied for function`, and the site goes dark for
+logged-out visitors, which is most of them.
+
+`anon` EXECUTE on those two helpers is **by design**: both return `false` for a
+caller with no `auth.uid()` (verified in section 7.4 of `docs/ROLE-MATRIX.md`),
+and they appear in public policies precisely so a public policy can express
+"admins additionally".
+
+### 3c.2 The regression net, and its one blind spot
+
+`src/db/__tests__/anon-catalog.test.ts` exists for this, and it is a **live**
+test: it talks to the real project with the anon key only.
+
+Its guard is:
+
+```
+const configured = Boolean(url && anonKey && !url.includes('<project-ref>'))
+describe.skipIf(!configured)('the anonymous catalogue survives', ...)
+```
+
+So the net **silently skips** when `SUPABASE_ANON_KEY` /
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` is not in the environment. A CI run without that
+key reports green having asserted nothing.
+
+That is a reasonable design for a test that needs a real database, and it means
+"the anon-catalogue test passed" and "the anon catalogue was checked" are two
+different statements. Before trusting it as the gate on any future revoke,
+confirm it actually ran.
+
+### 3c.3 The rule to carry forward
+
+**Do not revoke `anon` EXECUTE from a function that appears in a policy on a
+publicly readable table.** Check `pg_policies` for the function name first. The
+same trap applies to any helper added later with the same shape, not only to
+these two.
+
+`164` remains deliberately unused. The number is kept stable because CLOSEOUT
+section 8c named this file 165, and a stable reference in conversation beats a
+dense sequence.
+
 ## 4. The preflights
 
 All three follow the same shape: numbered blocks, each with an `EXPECT` comment,
