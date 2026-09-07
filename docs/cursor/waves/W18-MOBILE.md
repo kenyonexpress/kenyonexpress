@@ -68,6 +68,11 @@ Till copy comes from server outcomes: לא נמצא / כבר מומש / פג / �
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (no service_role)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- `apps/mobile` must not ship
+  `SUPABASE_SECRET_KEY`.
+- Auth is membership + PIN, not `profiles.role = vendor`.
+- Offline queue: drain to `/api/supplier/vouchers/redeem`. Local UI cannot say "מומש" until the RPC says so.
+- Camera/wallet extras are W42. This wave is till + no secrets.
+
