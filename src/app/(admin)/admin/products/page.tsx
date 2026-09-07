@@ -2,7 +2,7 @@ import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable
 import { productListParamsSchema } from '@/lib/admin/page-params'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
-import { Plus } from 'lucide-react'
+import { FileUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'מוצרים' }
@@ -19,6 +19,9 @@ const STATUS_FILTERS = [
 
 const adminBtn =
   'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover'
+
+const adminBtnGhost =
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50'
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -86,10 +89,16 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink">מוצרים</h1>
-        <Link href="/admin/products/new" className={adminBtn}>
-          <Plus size={15} />
-          מוצר חדש
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/products/import" className={adminBtnGhost}>
+            <FileUp size={15} />
+            ייבוא מקובץ
+          </Link>
+          <Link href="/admin/products/new" className={adminBtn}>
+            <Plus size={15} />
+            מוצר חדש
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
