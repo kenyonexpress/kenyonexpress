@@ -626,10 +626,18 @@ against the production build before launch.
 | 15 | One canonical per page, self-referencing | any indexable route | exactly one `<link rel="canonical">` |
 | 16 | No `hreflang` anywhere | `curl -s {base}/ \| grep -c hreflang` | `0`, deliberately (SEO-PLAN 1.1). Do not "restore" it |
 | 17 | `api/debug/sentry` | `curl -sI {base}/api/debug/sentry` | **Known gap:** unguarded and exists to throw (ROLE-MATRIX 11.4). Confirm removed or gated |
+| 18 | **`/products` has a canonical** | `curl -s {base}/products \| grep -c 'rel="canonical"'` | **Known gap:** it has none (SEO-PLAN 1.2.2). Nineteen routes set one and this is not among them |
+| 19 | `/products?sort=…` canonicalises to `/products` | `curl -s "{base}/products?sort=price-asc" \| grep canonical` | Follows from 18. Until 18 is fixed, every sort URL is its own indexable page |
 
-Rows 5, 6, 13 and 17 are expected to **fail today**. They are listed as checks
-rather than as a to-do so that the launch pass produces a decision on each,
-rather than rediscovering them.
+Rows 5, 6, 13, 17, 18 and 19 are expected to **fail today**. They are listed as
+checks rather than as a to-do so that the launch pass produces a decision on
+each, rather than rediscovering them.
+
+Row 18 is the cheapest of the six: `/products` is indexable, sits at sitemap
+priority 0.9 (joint-highest after `/`), reads `sort` from `searchParams`, and the
+fix is one line of the same shape `/category/[slug]` already uses. Row 15 above
+does not catch it, because "check any indexable route" passes on the eighteen
+routes that do have one.
 
 ## 12. Auth, MFA, consent, and the two panel traps (pass 14)
 
@@ -834,3 +842,4 @@ is exactly what a shopper does and what a per-file review does not.
 | 2026-09-07 | Pass 17: perceived-performance steps by eye (13), plus the three ways to undo the LCP work while believing you are cleaning up |
 | 2026-09-07 | Pass 18: added the stale-service-worker check to 0.1. It produces the same symptom as a stale next start and has a different fix |
 | 2026-09-07 | Pass 19: copy consistency as one walked purchase (14), including the two-submission honeypot check |
+| 2026-09-07 | Pass 20: crawl rows 18 and 19, the /products canonical gap. Row 15 does not catch it because checking "any indexable route" passes on the eighteen that have one |
