@@ -807,7 +807,31 @@ sentence **plus `בהקדם`**.
 They currently are not, and that is the whole finding: a decoy that answers
 differently is a decoy that can be identified, after which it catches nothing.
 
-### 14.3 Why this is a QA pass and not a lint
+### 14.3 Sentences assembled from JSX fragments
+
+`docs/ERROR-COPY.md` 20 found that **655 Hebrew strings exist only as JSX text**,
+not as quoted literals, and that JSX splits a sentence around every
+interpolation. The extracted fragments include things like `או`,
+`, או לבטל את המנוי.` and `(שולמו לו כבר`.
+
+That has three consequences a manual pass is the only way to catch:
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Read every sentence containing an interpolated value **out loud, in full** | it is a sentence, not three fragments that happen to sit together |
+| 2 | Check the **space** either side of an interpolation | JSX strips whitespace at a tag boundary. `הזמנה{id}אושרה` and `הזמנה {id} אושרה` look identical in the source and different on screen |
+| 3 | Check the **bidi boundary** at each fragment edge | a fragment edge is exactly where a Latin or numeric run meets Hebrew, which is where `docs/RTL-PITFALLS.md` section 4 says punctuation migrates |
+
+Step 3 is the one that connects the two documents. A fragment boundary is not a
+typographic detail: it is a **bidi run boundary**, and the trailing period of a
+Hebrew sentence that ends on an interpolated order id will move to the wrong end
+without isolation. That defect is invisible in the JSX, invisible to a grep, and
+obvious on screen to anyone reading Hebrew.
+
+So: for every screen in the walk above, if the sentence contains `{`, read the
+rendered output rather than the source.
+
+### 14.4 Why this is a QA pass and not a lint
 
 Every one of these is a **correct** string in isolation. No scan can flag them,
 because nothing is misspelled, nothing is wrong, and each file is internally
@@ -844,3 +868,4 @@ is exactly what a shopper does and what a per-file review does not.
 | 2026-09-07 | Pass 19: copy consistency as one walked purchase (14), including the two-submission honeypot check |
 | 2026-09-07 | Pass 20: crawl rows 18 and 19, the /products canonical gap. Row 15 does not catch it because checking "any indexable route" passes on the eighteen that have one |
 | 2026-09-07 | Pass 21: named the strings WishlistButton will actually produce if wired in, which are not the ones ERROR-COPY specifies |
+| 2026-09-07 | Pass 22: JSX-fragment steps (14.3). A fragment boundary is a bidi run boundary, invisible in the source and obvious on screen |
