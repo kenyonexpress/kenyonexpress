@@ -1,6 +1,7 @@
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import { buildLocalBusinessJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import {
   SUPPLIER_PAGE_SIZE,
   isSupplierId,
@@ -60,8 +61,30 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
   const supplier = await loadSupplierStorefrontCached(id)
   if (!supplier) notFound()
 
+  // A supplier page is the one page on this site that describes a place a
+  // customer physically walks into: the whole coupon model is "pay part here,
+  // pay the rest at the counter". LocalBusiness is the type whose address and
+  // telephone Google treats as somewhere you can visit, and the page already
+  // renders both, so the node is built from the same values rather than from a
+  // second read that could drift from them.
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const localBusinessLd = buildLocalBusinessJsonLd({
+    id,
+    name: supplier.name,
+    address: supplier.address,
+    city: supplier.city,
+    telephone: supplier.contactPhone,
+    logoUrl: supplier.logoUrl,
+    siteUrl,
+  })
+
   return (
     <div className="category-page mx-auto max-w-6xl px-4 py-8">
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(localBusinessLd) }}
+      />
       <header className="mb-6 space-y-2">
         <p className="text-sm text-black/50">ספק</p>
         <h1 className="text-2xl font-bold text-heading">{supplier.name}</h1>

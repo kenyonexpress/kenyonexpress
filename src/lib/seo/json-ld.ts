@@ -196,6 +196,71 @@ export function buildBreadcrumbJsonLd(entries: readonly BreadcrumbEntry[], siteU
   }
 }
 
+export interface LocalBusinessJsonLdInput {
+  /** Supplier id; the page is `/s/<id>`. */
+  id: string
+  name: string
+  /** Street address as the supplier gave it, or null when unknown. */
+  address: string | null
+  city: string | null
+  telephone: string | null
+  logoUrl: string | null
+  /** Origin with no trailing slash. */
+  siteUrl: string
+}
+
+/**
+ * `LocalBusiness` for a supplier storefront.
+ *
+ * WHY THIS TYPE AND NOT `Organization`. A supplier here is a physical shop a
+ * customer walks into to redeem a coupon: the whole model is "pay part online,
+ * pay the rest at the counter". `LocalBusiness` is the type whose address and
+ * telephone Google treats as a place someone can visit, which is exactly the
+ * claim being made.
+ *
+ * EVERY FIELD IS OMITTED RATHER THAN GUESSED. `suppliers.address` is null for
+ * most rows today, and a `PostalAddress` carrying only a country would assert
+ * that this business is somewhere in Israel and nothing more, which is a
+ * structured-data claim with no content. So `address` appears only when there
+ * is a street or a city to put in it, `telephone` only when there is a number,
+ * and `image` only when there is a logo. A node with a name and a URL is
+ * honest and small; a node padded with empty strings is neither.
+ *
+ * NO `priceRange`, NO `openingHours`, NO `geo`. The database holds none of the
+ * three. Google shows `priceRange` verbatim, so inventing one would put a
+ * fabricated figure in a search result, and inventing opening hours would send
+ * somebody to a closed shop. `supplier_branches` carries hours and W34 is the
+ * wave that models branches properly; that is where those belong.
+ *
+ * Pure and synchronous, like every builder in this file.
+ */
+export function buildLocalBusinessJsonLd(input: LocalBusinessJsonLdInput): JsonLdNode {
+  const site = trimSite(input.siteUrl)
+  const node: JsonLdNode = {
+    '@context': SCHEMA,
+    '@type': 'LocalBusiness',
+    name: input.name,
+    url: absolute(site, `/s/${encodeURIComponent(input.id)}`),
+  }
+
+  const street = input.address?.trim()
+  const city = input.city?.trim()
+  if (street || city) {
+    const address: Record<string, string> = { '@type': 'PostalAddress', addressCountry: 'IL' }
+    if (street) address.streetAddress = street
+    if (city) address.addressLocality = city
+    node.address = address
+  }
+
+  const phone = input.telephone?.trim()
+  if (phone) node.telephone = phone
+
+  const logo = input.logoUrl?.trim()
+  if (logo) node.image = logo
+
+  return node
+}
+
 /**
  * `Organization` and `WebSite` for the home page.
  *
