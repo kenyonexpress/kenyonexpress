@@ -66,6 +66,9 @@ export const FILTERABLE_ATTRIBUTES = [
   'city',
   'tags',
   'supplier_id',
+  // A brand facet on the results page, and the join key back from the brands
+  // index: a brand document's `name` is exactly this attribute's value.
+  'brand',
   'kenyon_price',
   'in_stock',
   // Enables `_geoRadius(lat, lng, metres)`. Filtering by distance and sorting
@@ -104,6 +107,34 @@ export const RANKING_RULES = [
  */
 export const STOP_WORDS = ['של', 'עם', 'את', 'או', 'גם', 'זה', 'הוא', 'היא'] as const
 
+/**
+ * Tokenizer locale hints (Meilisearch >= 1.10, `localizedAttributes`).
+ *
+ * Charabia detects scripts per token, but detection is a guess on short
+ * fields: a two-word product name gives it almost nothing to vote on.
+ * Declaring the Hebrew-content attributes as `heb` pins segmentation and
+ * normalisation to the Hebrew tokenizer instead of the guess.
+ *
+ * `name_en`, `brand`, `sku` and `slug` are deliberately absent: their content
+ * is Latin or mixed, and a wrong pin is worse than detection.
+ *
+ * On a Meilisearch older than 1.10 the settings PATCH would reject the key,
+ * so the setup script applies it separately and degrades to a warning.
+ */
+export const HEBREW_LOCALES = ['heb'] as const
+export const HEBREW_ATTRIBUTE_PATTERNS = [
+  'name_he',
+  'short_description_he',
+  'description_he',
+  'category_name_he',
+  'city',
+  'tags',
+  'supplier_name',
+] as const
+export const LOCALIZED_ATTRIBUTES = [
+  { attributePatterns: [...HEBREW_ATTRIBUTE_PATTERNS], locales: [...HEBREW_LOCALES] },
+]
+
 export const INDEX_SETTINGS = {
   searchableAttributes: [...SEARCHABLE_ATTRIBUTES],
   // Hebrew has no stemmer in Meilisearch, so plurals and attached prefixes are
@@ -119,6 +150,120 @@ export const INDEX_SETTINGS = {
     minWordSizeForTypos: { ...TYPO_TOLERANCE.minWordSizeForTypos },
     disableOnAttributes: [...TYPO_TOLERANCE.disableOnAttributes],
   },
+  localizedAttributes: LOCALIZED_ATTRIBUTES,
+}
+
+// ---------------------------------------------------------------------------
+// The brands index.
+//
+// There is no brands table: `products.brand` is free text, so the index is
+// derived, one document per distinct brand, rebuilt by
+// scripts/setup-meilisearch.mjs from the same product read that fills the
+// products index. It serves brand autocomplete and the brand landing facet;
+// coupons stay inside the products index as the `type` facet, per
+// ARCHITECTURE-SEARCH-DISCOVERY.md section 8 ("a coupon is a product").
+// ---------------------------------------------------------------------------
+
+export const BRANDS_INDEX = process.env.MEILISEARCH_BRANDS_INDEX ?? 'brands'
+
+export interface BrandDocument {
+  /**
+   * base64url of the brand name. Meilisearch accepts only [A-Za-z0-9_-] in a
+   * document id, and brand names here are Hebrew; base64url is the smallest
+   * stable, reversible encoding that fits the alphabet.
+   */
+  id: string
+  name: string
+  /** How many active products carry the brand, coupons included. */
+  product_count: number
+  /** How many of those are coupons, so a brand chip can say "3 קופונים". */
+  coupon_count: number
+  /** Distinct category slugs the brand appears in, for a category facet. */
+  categories: string[]
+}
+
+/**
+ * Same Hebrew typo budget as the products index, and the same reasoning:
+ * brand names written without vowels are short. Nothing is exempted, because
+ * a brand document has no identifier-like searchable field.
+ */
+export const BRANDS_INDEX_SETTINGS = {
+  searchableAttributes: ['name'],
+  filterableAttributes: ['categories'],
+  sortableAttributes: ['product_count'],
+  // `product_count:desc` where the products index puts `in_stock:desc`: with
+  // one searchable word per document, the bigger brand is the better tiebreak.
+  rankingRules: [
+    'words',
+    'typo',
+    'product_count:desc',
+    'proximity',
+    'attribute',
+    'sort',
+    'exactness',
+  ],
+  stopWords: [] as string[],
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: { ...TYPO_TOLERANCE.minWordSizeForTypos },
+    disableOnAttributes: [] as string[],
+  },
+  localizedAttributes: [{ attributePatterns: ['name'], locales: [...HEBREW_LOCALES] }],
+}
+
+export function brandDocumentId(name: string): string {
+  return Buffer.from(name, 'utf8').toString('base64url')
+}
+
+type BrandSource = {
+  brand?: string | null
+  type?: string | null
+  category_slug?: string | null
+}
+
+/**
+ * Aggregates product rows into brand documents.
+ *
+ * Grouping is case- and whitespace-insensitive so "LG" and " lg " are one
+ * brand, but the displayed name keeps the first spelling seen: the shopper
+ * should read what the catalogue writes, not a normalisation of it.
+ * Rows with an empty brand simply do not contribute; most of the catalogue
+ * has no brand, and an "unbranded" bucket is not a brand.
+ */
+export function toBrandDocuments(rows: BrandSource[]): BrandDocument[] {
+  const byKey = new Map<string, BrandDocument>()
+  const categories = new Map<string, Set<string>>()
+
+  for (const row of rows) {
+    const name = typeof row.brand === 'string' ? row.brand.trim() : ''
+    if (!name) continue
+    const key = name.toLowerCase().replace(/\s+/g, ' ')
+
+    let doc = byKey.get(key)
+    if (!doc) {
+      doc = {
+        id: brandDocumentId(key),
+        name,
+        product_count: 0,
+        coupon_count: 0,
+        categories: [],
+      }
+      byKey.set(key, doc)
+      categories.set(key, new Set())
+    }
+
+    doc.product_count += 1
+    // `type` is the already-resolved document type (toProductDocument folded
+    // `is_coupon_enabled` in), so this agrees with the products facet.
+    if (row.type === 'coupon') doc.coupon_count += 1
+    if (row.category_slug) categories.get(key)?.add(row.category_slug)
+  }
+
+  for (const [key, doc] of byKey) {
+    doc.categories = [...(categories.get(key) ?? [])].sort()
+  }
+
+  return [...byKey.values()].sort((a, b) => b.product_count - a.product_count)
 }
 
 /** The row shape pushed into the index. */

@@ -105,6 +105,7 @@ export const RATE_LIMIT_POLICIES = {
   // -- Read paths. Large, because they are cheap and a human browsing hits them.
   search: { limit: 120, windowSeconds: 300, reason: 'search queries hit Meilisearch' },
   'search-suggest': { limit: 300, windowSeconds: 300, reason: 'typeahead fires per keystroke' },
+  'search-facets': { limit: 60, windowSeconds: 300, reason: 'faceted search, filters + counts' },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
   // -- Public write forms. Five an hour, because these reach a human inbox.
