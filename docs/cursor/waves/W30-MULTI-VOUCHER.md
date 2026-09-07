@@ -77,3 +77,10 @@ Refund: any unit left `issued` vs any unit redeemed. Card refund illegal if any 
 - Scan one unit at a time. Refund of one issued unit is partial, never CancelOnly.
 - Mixed coupon+physical: two product types, still one order. Cashback on `customerPaysNow` of the order, at finalize.
 
+---
+
+## Third pass
+
+Hebrew: יש לך N קופונים בהזמנה זו. One code per unit, never one QR for qty. Partial refund of one issued unit is not CancelOnly.
+
+
