@@ -406,6 +406,64 @@ no entry for.
 | `--spacing-xl` | `20px` | `p-xl` |
 | `--spacing-2xl` | `24px` | `p-2xl` |
 
+### 2.0b The gap scale is not the padding scale (pass 17)
+
+The spacing scale in 2.0 was counted from `padding`. `gap` was never counted,
+and it turns out to use a **different set of values**.
+
+All 23952 elements, `gap` column of the committed capture. The eight values
+below are exhaustive: they sum to 23952.
+
+| Count | `gap` | In the named scale? |
+|---|---|---|
+| 22782 | `normal` (unset) | 95.1% of elements set no gap at all |
+| 451 | `0px` | |
+| 252 | `8px` | yes, `--spacing-sm` |
+| 207 | `20px` | yes, `--spacing-xl` |
+| 194 | `16px` | **no** named token; Tailwind `gap-4` |
+| 45 | `7px` | **no** |
+| 15 | `5px` | **no** |
+| 6 | `10px` | yes, `--spacing-md` |
+
+#### The gutter is a padding value and never a gap
+
+`--spacing-gutter` (15px) is the single most common non-zero **padding** on the
+site, 862 occurrences. As a `gap` it appears **zero times**. So do `4px`
+(`--spacing-xs`), `14px` (`--spacing-lg`) and `24px` (`--spacing-2xl`).
+
+That is worth stating because the two scales look interchangeable in a token
+file and are not on this site:
+
+| Value | As padding | As gap |
+|---|---|---|
+| 15px (gutter) | 862 | **0** |
+| 10px | 652 | 6 |
+| 24px | 387 | **0** |
+| 8px | 337 | 252 |
+| 14px | 281 | **0** |
+| 20px | 144 | 207 |
+| 16px | 104 | 194 |
+| 4px | 66 | **0** |
+
+**`16px` and `20px` invert.** They are the two least common of the listed
+paddings and the two most common gaps after `8px`. A component that reaches for
+`gap-gutter` because 15 is "the site's spacing value" is using a number live
+never uses for that property.
+
+#### Three unnamed gaps, and whether they need tokens
+
+`16px` (194), `7px` (45) and `5px` (15) have no named token.
+
+- **`16px` does not need one.** Tailwind's `gap-4` is exactly 16px and is
+  already the idiomatic way to write it. Naming it would add a second spelling.
+- **`7px` and `5px` are widget-local**: `option` elements on the shop page and
+  an `elementor-button-content-wrapper`. Both are below the ten-occurrence
+  threshold section 2.4 uses for radii, so by the same rule they stay unnamed.
+
+No new token is proposed. What the section adds is the reason `gap-gutter` is
+the wrong reach, which was previously invisible because only padding had been
+counted.
+
 ### 2.1 Containers
 
 | Token | Value | What it is |
@@ -1929,3 +1987,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 14: 380/768/1440 are compare viewports, not the CSS cascade; header stays handheld through 1024; four purchase radii sit outside the five-token scale; Electro home-v7 241+728+201=1170 so 1320 has nowhere to go; stacking layers |
 | 2026-09-07 | Pass 15: 21.994px is an icon-font size AND a cart radius, do not merge; Heebo swap means Arial LCP and a Heebo shutter |
 | 2026-09-07 | Pass 16: live cards are flat; `--shadow-card-hover` is Electro; do not diagnose home@380 from elevation |
+| 2026-09-07 | Pass 17: counted the gap column. Eight values, exhaustive; the 15px gutter is used 862 times as padding and ZERO times as a gap, and 16/20px invert between the two scales |
