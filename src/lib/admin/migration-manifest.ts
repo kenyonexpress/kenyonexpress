@@ -332,4 +332,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '177',
+    file: '177_set_updated_at_search_path.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const
