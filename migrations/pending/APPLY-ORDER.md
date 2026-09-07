@@ -13,7 +13,7 @@ SQL, and a production-safety verdict per file.
 
 | File | Ready | Waiting on | Preflight |
 | --- | --- | --- | --- |
-| `162_cron_schedule.sql` | no | vault seeding (`cron_secret`, `app_url` — still 0 of 2 on 07.09) | `preflight_162.sql` |
+| `162_cron_schedule.sql` | **yes, corrected 08.09** | ONE decision: has the DNS cutover landed? The vault was never empty — it holds `CRON_SECRET` and `APP_BASE_URL`, seeded 03.09, and the file was reading `cron_secret`/`app_url`. See D-007 | `preflight_162.sql` (block 4 rewritten) |
 | `169_analytics_server_event_names.sql` | **yes** | approval | `preflight_169.sql` |
 | `170_composite_indexes_top_queries.sql` | **yes** | approval | `preflight_170.sql` |
 | `171_category_name_shekel_order.sql` | **yes** | approval | `preflight_171.sql` (new) |
