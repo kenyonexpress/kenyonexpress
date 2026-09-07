@@ -77,3 +77,38 @@ export function appendParityRow(row) {
     `| ${when} | ${row.page} | ${row.width} | ${row.pct.toFixed(2)}% | ${verdict} | \`${commit}\` | ${notes} |\n`,
   )
 }
+
+/**
+ * RECORDS A RUN THAT COULD NOT PRODUCE A NUMBER AT ALL.
+ *
+ * `appendParityRow` takes a percentage, so it can only be called once the diff
+ * exists. That left a hole the exact shape of the one this file was written to
+ * close: a run that dies BEFORE measuring writes nothing, and the newest row in
+ * the report stays whatever last succeeded.
+ *
+ * CAUGHT ON 2026-09-08. Two `--page=home` runs died on
+ * `net::ERR_CONNECTION_CLOSED` against the live reference, which no longer
+ * serves TLS. Neither wrote a row, so the file's last word was six PASS rows
+ * from 2026-09-07 and the gate looked green while it was in fact incapable of
+ * running. Stale green is worse than red: red gets fixed.
+ *
+ * So a failure is a result and gets a row too. It carries no percentage,
+ * because inventing one would be worse than the silence it replaces.
+ */
+export function appendParityFailure(row) {
+  const path = resolve(process.cwd(), REPORT)
+  if (!existsSync(path) || !readFileSync(path, 'utf8').includes('| when (UTC) |')) {
+    writeFileSync(path, HEADER)
+  }
+  const when = row.when ?? new Date().toISOString().replace('T', ' ').slice(0, 16)
+  const commit = row.commit ?? commitHash()
+  const reason = String(row.reason ?? 'unknown')
+    .replace(/\s+/g, ' ')
+    .replace(/\|/g, '/')
+    .trim()
+    .slice(0, 160)
+  appendFileSync(
+    path,
+    `| ${when} | ${row.page} | ${row.width} | n/a | **UNMEASURED** | \`${commit}\` | ${reason} |\n`,
+  )
+}

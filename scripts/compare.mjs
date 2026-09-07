@@ -3,6 +3,7 @@ import { copyFileSync, existsSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
+import { appendParityFailure } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
 //                                 [--live=<url>] [--mine=<url>]
@@ -815,8 +816,25 @@ if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
 // every note in STATE.md refers to them.
 const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 
-await shoot(liveUrl, runShot('live'))
-await shoot(mineUrl, runShot('mine'))
+// A RUN THAT CANNOT SHOOT IS A RESULT, AND IT GETS RECORDED LIKE ONE.
+//
+// Everything below this point assumes two screenshots exist. When the live
+// reference refuses the connection, `shoot` throws here and the process dies
+// with a stack trace, having written nothing to the report. The newest row in
+// docs/UI-PARITY-REPORT.md then stays whatever last succeeded, which is how two
+// dead runs on 2026-09-08 left six PASS rows from the day before standing as
+// the gate's latest word. See appendParityFailure in parity-log.mjs.
+try {
+  await shoot(liveUrl, runShot('live'))
+  await shoot(mineUrl, runShot('mine'))
+} catch (err) {
+  appendParityFailure({
+    page,
+    width: VIEW.width,
+    reason: `screenshot failed: ${err?.message ?? err}`,
+  })
+  throw err
+}
 
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
