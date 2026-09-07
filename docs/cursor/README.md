@@ -162,3 +162,11 @@ Reading order: `ONBOARDING.md` → `GLOSSARY.md` → `waves/WAVE-INDEX.md` → `
 
 Leftover `waves/W06-NEWSLETTER.md` and similar names from an earlier pass are extra, not canonical.
 
+---
+
+## Third pass
+
+Deepen order after the 100 files exist: waves 1→48, WAVE-INDEX, contracts 50–64, ops 65–79, quality 80–87, business 88–95, meta 96–100, then loop to W03. Resume file:
+`docs/cursor/RESUME.md`.
+
+
