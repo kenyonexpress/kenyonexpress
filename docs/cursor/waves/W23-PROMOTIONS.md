@@ -81,3 +81,10 @@ Wallet + code: wallet is payment source, does not change campaign snapshot.
 - Wallet / cashback already have paths. Do not add `abandoned_cart_incentive` (W05 rejected).
 - Checkout ignores client-applied discounts unless the server re-derives them in agorot.
 
+---
+
+## Third pass
+
+Hebrew: הקוד לא תקף / ההנחה הוחלה. The live SKU **is** the deal. A code must not invent a percent of face.
+
+
