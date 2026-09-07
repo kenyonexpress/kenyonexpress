@@ -46,3 +46,9 @@ Redeem RPC, supplier order SELECT, redemptions SELECT, branch writes (133), prod
 | Q | Best answer |
 |---|---|
 | Drop `vendor` from enum? | Human migration. Not required for v7 if membership is the gate. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
