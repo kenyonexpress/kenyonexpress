@@ -847,6 +847,70 @@ typographer might reasonably argue against. This section records the trade
 rather than resolving it, because it has never been a conscious decision. It is
 currently a difference nobody chose.
 
+### 3.0c The font stack, counted (pass 20)
+
+Section 0 records that live renders Hebrew through "an unnamed browser fallback
+behind Open Sans, which has no Hebrew glyphs at all", citing 12024 elements from
+the pre-commit dump. Recounted against the committed capture, the picture is
+both larger and worse.
+
+| Count | `font-family` | Share |
+|---|---|---|
+| **20553** | **`"Open Sans"`** | **85.8%** |
+| 2238 | `"Open Sans", sans-serif` | 9.3% |
+| 351 | `font-electro` | icon font |
+| 315 | `"Font Awesome 5 Brands"` | icon font |
+| 264 | `star` | the star-rating glyph font |
+| 65 | `Times` | `html` on the product page |
+| 51 | `FontAwesome` | icon font |
+| 48 | `Roboto, sans-serif` | `elementor-tab-title` |
+| 40 | `"Times New Roman"` | `html` on other templates |
+| 15 | `"Font Awesome 5 Free"` | icon font |
+
+Open Sans in either form covers **22791 elements, 95.2%**.
+
+#### 85.8% declare a Latin-only font with no fallback at all
+
+The number that matters is not 95.2%, it is **20553**: the elements whose
+`font-family` is the bare string `"Open Sans"`, with **no generic and no second
+family**.
+
+Open Sans ships no Hebrew glyphs. A declaration with no fallback leaves the
+browser's **last-resort** font to paint every Hebrew character, and that font
+differs by operating system, by version, and by installed fonts. So live's
+Hebrew is not rendered in a chosen typeface on any platform; it is rendered in
+whatever each visitor's browser reaches for after the declared family fails.
+
+Only 2238 elements (9.3%) name `sans-serif` as a fallback, which at least
+constrains the choice to a category.
+
+#### This is the strongest form of the argument section 0 already makes
+
+Section 0 keeps Heebo **against** the reference and calls it "the one place the
+token layer departs from the measurement for a reason that is not a WCAG
+correction". The recount sharpens why:
+
+- Matching live's font-family exactly would mean shipping a Hebrew storefront
+  whose Hebrew has **no declared typeface**.
+- The pixel gate would not even reward it consistently, because the glyphs that
+  paint depend on the machine running the comparison.
+
+`--font-sans: var(--font-heebo), Arial, sans-serif` names a Hebrew-capable
+family first and two fallbacks after it. That is three declared steps where live
+has one, and it is why this departure costs pixels and buys correctness.
+
+#### Two incidental findings
+
+- **`Times` and `"Times New Roman"` appear on `html`** (105 elements across
+  templates). The root element sets no font-family, so the UA default shows
+  through; every visible element gets Open Sans from a lower selector. Harmless,
+  and a reminder that a root-level token is a choice live never made.
+- **Five icon fonts** (`font-electro`, three Font Awesome variants, `star`) total
+  996 elements. `src/styles/electro-icons.css` already carries our replacement
+  for the first. The Font Awesome families are theme chrome we do not ship, and
+  the `star` font is the rating widget's, which is worth knowing before anyone
+  tries to match a star glyph by character rather than by SVG.
+
 ### 3.1 Body and UI
 
 | Token | Value | Usage |
@@ -2106,3 +2170,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 17: counted the gap column. Eight values, exhaustive; the 15px gutter is used 862 times as padding and ZERO times as a gap, and 16/20px invert between the two scales |
 | 2026-09-07 | Pass 18: letter-spacing counted. Live sets -0.14px on 92.4% of elements, inherited from the root; ours is normal everywhere. A page-wide gate contributor no document had named |
 | 2026-09-07 | Pass 19: border widths counted. 93.5% carry none; the dominant shape is bottom-only hairline, and with radius and shadow this completes one statement: the reference is flat, square and line-separated |
+| 2026-09-07 | Pass 20: font stack counted. 85.8% of live declares bare "Open Sans" with NO fallback, so its Hebrew has no declared typeface on any platform; the strongest form of the Heebo argument |
