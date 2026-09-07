@@ -830,6 +830,55 @@ Do not "fix" this by restoring header search. That costs the home pixel gate
 faq, blog. One node. `LocalBusiness` still does not ship on `/s/{id}` (QA 10d
 row 13). Do not mint a second Organization to fill that gap.
 
+## 7.1 Section 7 audited against source (pass 17)
+
+Every claim in section 7 checked. All four hold, and two carry reasoning worth
+keeping.
+
+| Claim | Source | Verdict |
+|---|---|---|
+| Heebo `display: 'swap'` | `src/app/layout.tsx:41` | **confirmed** |
+| Heebo `preload: false` | `layout.tsx:43` | **confirmed**, with the reason inline: "LCP paragraph is Arial on purpose; do not preload Heebo onto that path" |
+| Subsets include Hebrew | `layout.tsx:40`, `subsets: ['latin', 'hebrew']` | **confirmed**, and load-bearing: `docs/DESIGN-SYSTEM.md` section 0 records that live renders Hebrew through a fallback behind Open Sans, which has no Hebrew glyphs. Ours declares the subset. |
+| Consent banner is an LCP risk on home | `src/app/globals.css:51` | **confirmed and already mitigated**, see below |
+
+### 7.1.1 `preload: false` is a deliberate trade, not an omission
+
+The pairing is the point: `display: 'swap'` means text paints immediately in the
+fallback and re-renders when Heebo arrives, and `preload: false` means Heebo is
+not fetched on the critical path. Together they let the LCP paragraph paint in
+Arial and stay there until the font is ready.
+
+That is a **worse-looking first paint traded for a faster measured LCP**, taken
+knowingly. Anyone "fixing" the flash of Arial by setting `preload: true` will
+move LCP the wrong way, and the comment in `layout.tsx` is there to stop them.
+
+### 7.1.2 The consent banner was the home LCP element, and the fix is `display: none`
+
+`globals.css` records it plainly: the banner "IS the homepage's LCP element and
+it used to arrive 3.4s after first paint". A visitor who has already answered
+gets it hidden at first paint, off an attribute a pre-paint snippet sets on
+`<html>`.
+
+The comment names why the property matters:
+
+> `display:none` and not `opacity`/`visibility` on purpose: only `display:none`
+> keeps it out of the LCP candidate set and out of the accessibility tree.
+
+Both halves are real. `opacity: 0` leaves an element in the LCP candidate set,
+so the banner would still be the largest paint; and `visibility: hidden` keeps
+it out of the accessibility tree but not out of layout. Only `display: none`
+does both.
+
+The complementary half is the reserved body padding in three tiers
+(14.5rem below 640, 8rem from 640, 7rem from 768), which holds CLS at 0 for a
+visitor who has **not** answered. So the banner costs layout space when it is
+shown and nothing at all when it is not, and neither state moves content after
+hydration.
+
+Nothing in section 7 needs changing. It is recorded as audited so a later pass
+does not re-derive it.
+
 ## Revision
 
 | Date | Change |
@@ -848,3 +897,4 @@ row 13). Do not mint a second Organization to fill that gap.
 | 2026-09-07 | Pass 14: merged a duplicate 2.1. A concurrent audit had already covered home (including the em-dash); my Home row was WRONG (root default, not the page's own title) and is removed. Kept 2.1.4 category/product and 2.1.5 the description chain |
 | 2026-09-07 | Pass 15: section 4 audited. City pages have exactly one inbound link, RegionMenu, and it is desktop-only; below xl they have neither a link nor a sitemap entry |
 | 2026-09-07 | Pass 16: section 6 audited. The one-H1 rule holds across 82 pages; all nine multi-token files are branches, and the category "second h1" is text inside a comment |
+| 2026-09-07 | Pass 17: section 7 audited. All four CWV claims hold; preload:false is a deliberate LCP trade and the consent banner uses display:none specifically to leave the LCP candidate set |
