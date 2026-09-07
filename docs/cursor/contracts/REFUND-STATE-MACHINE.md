@@ -44,6 +44,11 @@ Provider error after we decided: `PROVIDER_ERROR` / `MANUAL_RESOLUTION` + ntfy. 
 
 ---
 
-## Second pass
+## Second pass (consumed value)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Any unit that left `issued` blocks card refund of that unit. Qty 3: refund remaining issued only; not CancelOnly.
+- Fee: `applyBp` 500bp, cap 10000 agorot, zero if defect. Integer only.
+- Physical after `split_executed`: claw `supplierDebits` or the platform double-pays. Use the **snapshot** percent, not today's product row.
+- Provider error after decide: ntfy, `PROVIDER_ERROR`, never `ok: true`.
+- Support and uploader 403. Actor in `audit_log` is the human uid.
+
