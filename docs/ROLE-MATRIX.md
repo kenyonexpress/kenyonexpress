@@ -569,6 +569,42 @@ Section 5 lists guards. This table is the product brief's four columns against t
 
 Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404, matching `docs/ERROR-COPY.md`.
 
+### 10.1 Auth, MFA, gift, redeem, checkout (pass 14)
+
+Section 10 listed storefront URLs. These are the remaining customer-facing
+routes the brief's four names actually hit, with the two orthogonal dimensions
+kept separate (§0.3).
+
+| Route / action | customer | content-uploader (as shopper) | coupon-partner (membership) | admin (as shopper) |
+|---|---|---|---|---|
+| `GET /login` `/signup` `/forgot-password` `/reset-password` | allow | allow | allow | allow |
+| `POST` password / OTP / magic | allow (rate-limited) | same | same | same |
+| `GET /auth/mfa` | **deny** (customers have no staff TOTP gate) | **allow if staff session half-passed** | deny unless that person is also staff | allow (staff) |
+| Staff page without `aal2` | n/a | redirect `/auth/mfa`, **not** `/login` | n/a | same |
+| `GET /checkout` empty cart | deny, bounce `/cart` | same | same | same |
+| `GET /checkout` with cart | allow (guest or auth) | allow | allow | allow |
+| `POST` place order | allow; terms tick required | allow | allow | allow |
+| Read `platform_percent` in checkout DOM | **deny** | deny | deny | deny on this route (admin form only) |
+| `GET /checkout/failed` | allow, cart **kept** | same | same | same |
+| `GET /checkout/return` missing `order_id` | deny 404 | same | same | same |
+| `GET /gift/[token]` | allow, **must not claim** | same | same | same |
+| `POST` gift claim, signed out | deny, copy `יש להתחבר כדי לקבל את המתנה` | same | same | same |
+| `POST` gift claim, signed in | allow, voucher → `auth.uid()` | allow as buyer | allow as buyer | allow as buyer |
+| `GET /redeem/[token]` signed out | deny → `/login?next=` | deny | deny | deny |
+| `GET /redeem/[token]` member of another shop | deny 404 / `not_found` (no hint it exists elsewhere) | same | deny (wrong shop) | deny unless also a member |
+| `GET /redeem/[token]` member of this shop | deny (customer) | deny | **allow** scanner+ | deny unless also a member |
+| `POST` redeem | deny | deny | **allow**, DB `redeem_voucher()` on `auth.uid()` | deny unless also a member |
+| `GET /coupon/[id]` other user's UUID | deny 404, no leak | 404 | 404 (portal is `/scan`) | 404 on this customer route |
+| `GET /scan` no membership | deny `/supplier/access-denied` (not a login loop) | same | n/a (they have membership) | same unless also a member |
+
+`content-uploader` and `admin` shop as `customer` on these routes. Their panel
+role does not widen gift claim, checkout, or voucher QR. A `super_admin` with
+no `supplier_members` row still cannot redeem at a till.
+
+MFA is **staff-only**. `requireStaffMfa()` runs inside the panel guards
+(section 1.1). A customer TOTP factor, if one were ever enrolled, is not what
+those guards look at today; do not build a customer MFA story from this table.
+
 ## 11. The `/api/*` surface, which the earlier passes missed entirely
 
 Passes 1 to 11 covered pages and server actions. There are **34 route handlers**
@@ -725,3 +761,4 @@ state without one".
 | 2026-09-07 | Pass 12: the /api/* surface, 34 route handlers, six authorization mechanisms; four that read as unguarded and are not; CRON_SECRET blast radius |
 | 2026-09-07 | Pass 13: the fourteen customer-facing action files section 6 omitted; refund is the only admin-gated action outside admin/ |
 | 2026-09-07 | Pass 13: the DB-side role model from the function bodies. has_role() is a hierarchy that excludes support, is_admin() is the same predicate, and the 24 policies this repo can show are not the whole surface |
+| 2026-09-07 | Pass 14: auth, MFA, gift GET-vs-POST, redeem membership, checkout empty-cart bounce. Panel role does not widen shopper routes |
