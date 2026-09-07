@@ -85,6 +85,35 @@ none trusts the one before it.
 Layer 1 reads the role from **`profiles`, not `app_metadata`**, because
 `app_metadata` can be stale. Its own comment calls it an optimistic check.
 
+### 1.0a Layer 2 verified: every layout, and what it gates
+
+The table above named layer 2 as `requirePanelSession()`. Checked across all
+eight layouts, because an asserted guard is not a guard.
+
+| Layout | Guard | Effect |
+|---|---|---|
+| `(admin)/layout.tsx` | `requirePanelSession` **plus** `auth.getUser` | panel entry + MFA, for all four panel roles |
+| `(supplier)/layout.tsx` | `requireSupplierMember` | **membership gate at the layout**, not only per page |
+| `(account)/layout.tsx` | `auth.getUser` then `redirect` | signed-in only; the data underneath is separately RLS-scoped |
+| `(auth)/layout.tsx` | none | correct: it *is* the sign-in surface |
+| `(legal)/layout.tsx` | none | public |
+| `(main)/layout.tsx` | none | public |
+| `(store)/layout.tsx` | none | public |
+| `layout.tsx` (root) | none | correct: a root guard would gate `/login` too |
+
+Two things this adds to section 4.
+
+**The supplier portal is gated twice, and section 4's table only showed the
+inner one.** `requireSupplierMember` at the layout means a non-member never
+reaches any `/supplier/*` page body, and the per-page
+`requireSupplierRole('manager' | 'owner')` calls are a *second*, narrower gate
+on top. So the portal matches the admin panel's shape: broad entry at the
+layout, specific rank per page.
+
+**Four layouts having no guard is a design decision, not an omission.** A guard
+on `(store)` would gate the catalogue; a guard on the root would gate `/login`
+and make signing in impossible. The absence is load-bearing in both cases.
+
 ### 1.1 MFA is part of every staff guard
 
 `requireStaffMfa()` runs inside `requireAdminSession`, `requireStaffSession`,
@@ -785,3 +814,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 13: the DB-side role model from the function bodies. has_role() is a hierarchy that excludes support, is_admin() is the same predicate, and the 24 policies this repo can show are not the whole surface |
 | 2026-09-07 | Pass 14: auth, MFA, gift GET-vs-POST, redeem membership, checkout empty-cart bounce. Panel role does not widen shopper routes |
 | 2026-09-07 | Pass 15: money tables vs the brief's four names; wallet_entries client-write deny; PDP wishlist has no UI caller |
+| 2026-09-07 | Pass 14: guard layer 2 verified across all eight layouts; the supplier portal is gated at the layout as well as per page |
