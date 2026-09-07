@@ -1074,6 +1074,47 @@ in a markdown file expires, so a gap list is only worth what its last check is
 worth. Recording the date and the exact command makes the next check cheap and
 makes a silently-fixed gap visible rather than merely absent.
 
+## 9. Title drift check (pass 22)
+
+Section 2.1.2 tabulated the shipped `title` of every static route in pass 14.
+Re-checked against source: **nine of nine still match**, including the home
+title that section 2.1.3 flags as contradicting section 0.
+
+| Route | Title | |
+|---|---|---|
+| `/` | `קניון EXPRESS — מסדרים לך בילוי` | unchanged, **still with U+2014** |
+| `/cart` | `סל הקניות` | unchanged |
+| `/checkout` | `תשלום` | unchanged |
+| `/coupons` | `קופונים` | unchanged |
+| `/suppliers` | `הצטרפו כספקים` | unchanged |
+| `/about` | `אודות` | unchanged |
+| `/faq` | `שאלות נפוצות` | unchanged |
+| `/contact` | `צור קשר` | unchanged |
+| `/blog` | `הבלוג` | unchanged |
+
+Zero drift. Section 2.1's audit still describes the software.
+
+### 9.1 The home title is the oldest open item in this document
+
+It has now been recorded across three passes without changing:
+
+- Section 0 (earlier) says `קניון EXPRESS: מסדרים לך בילוי` "is **not** the
+  current `<title>`" and separately forbids U+2014 in titles.
+- Section 2.1.3 (pass 14) measured that the shipped title **is** that string,
+  with U+2014, verified by codepoint.
+- This check (pass 22) confirms it is unchanged.
+
+Three values remain in play — the live WordPress title, the root default in
+`layout.tsx`, and what `/` renders — and no document says which should win. It
+is one string and the cheapest open decision in this file.
+
+### 9.2 A note on what this check can see
+
+It compares the **literal** in each `page.tsx`. Per `docs/ERROR-COPY.md` 20, a
+literal scan cannot see JSX text — but a `title` is always a metadata literal,
+never JSX, so this particular check has no blind spot. H1s do, which is why
+section 6.1 audited them by opening the files rather than by counting.
+
 ## Revision
 
 | Date | Change |
@@ -1097,3 +1138,4 @@ makes a silently-fixed gap visible rather than merely absent.
 | 2026-09-07 | Pass 19: the four money rules in JSON-LD verified. platform_percent absent, Offer.price is the on-site amount, no second Offer, and the unsellable branch omits price rather than zeroing it |
 | 2026-09-07 | Pass 20: canonicals audited. No canonical interpolates searchParams anywhere, but /products is indexable at priority 0.9, takes sort params, and has no canonical at all |
 | 2026-09-07 | Pass 21: re-verified all six known gaps against source. Six of six unchanged, with the exact command for each |
+| 2026-09-07 | Pass 22: title drift check, nine of nine unchanged including the home title with its U+2014. Noted that titles are always metadata literals so this check has no JSX blind spot |
