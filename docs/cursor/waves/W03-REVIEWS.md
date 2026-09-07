@@ -149,3 +149,14 @@ Gender: use mixed/neutral where possible (`נסה/י` only if the rest of the sh
 ## Close
 
 PDP shows only published stars, unpaid users cannot insert, admin can reject, tests above green, no money path touched.
+
+---
+
+## Second pass (after contracts 50-64)
+
+- No `review_published` outbox kind. CHECK list is closed (`contracts/OUTBOX.md`). Do not enqueue from moderate.
+- Till staff (`supplier_members`) who also shop as customers review only via paid `order_items`. `profiles.role = vendor` is not a shortcut (`contracts/ROLE-VENDOR.md`).
+- Refunded orders: same refusal as `contracts/REFUND-STATE-MACHINE.md` (consumed value is not a verified purchase).
+- Admin moderate writes `audit_log`. Hash chain is unverified; still append (`contracts/AUDIT-LOG.md`).
+- Cache: review HTML may be cached as public catalogue; never cache pending moderation payloads (`contracts/CACHE-POLICY.md`).
+- Rate limit: 5/hour is action-level; also list in `contracts/RATE-LIMITS.md` when the code branch adds a shared limiter.
