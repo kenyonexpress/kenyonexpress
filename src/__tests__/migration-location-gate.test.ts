@@ -38,10 +38,23 @@ const ALLOWED_NEW = [
   'scripts/wp-import/sql/',
   'supabase/seed/',
   'supabase/seed-fixes/',
+  // See ALLOWED_MOVE: a quarantined file is usually untracked when found, so
+  // the move lands as an add.
+  'migrations/quarantine/',
 ]
 
-/** Where a file may MOVE to, since approval moves it out of pending. */
-const ALLOWED_MOVE = ['migrations/applied/', 'migrations/cancelled/']
+/**
+ * Destinations a file may end up in besides `pending/`. Approval moves a file
+ * to `applied/`, a rejected one to `cancelled/`, and one that arrived breaking
+ * the directory's rules to `quarantine/`.
+ *
+ * `quarantine/` is in ALLOWED_NEW as well as here, and that is deliberate. A
+ * file put there is usually UNTRACKED when it is found, so git records the move
+ * as an add rather than a rename, and a destination that only accepted renames
+ * would fail the gate for doing exactly what the gate wants. Nothing in
+ * `quarantine/` is applicable by definition; see its README.
+ */
+const ALLOWED_MOVE = ['migrations/applied/', 'migrations/cancelled/', 'migrations/quarantine/']
 
 function git(args: readonly string[]): string {
   try {
