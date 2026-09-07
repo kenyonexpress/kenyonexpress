@@ -81,6 +81,32 @@ None. Logged-out heart works on vercel.app without H6.
 
 ---
 
+## Hebrew UX strings
+
+| Key | Copy |
+|---|---|
+| Add | הוסף למועדפים |
+| Remove | הסר ממועדפים |
+| Empty | עדיין אין מוצרים במועדפים |
+| Need login | צריך להתחבר כדי לשמור מוצרים. |
+| Bad id | מוצר לא תקין. |
+| Cap | אפשר לשמור עד 100 מוצרים במועדפים. |
+| Inactive prune (silent) | (no toast; card simply absent) |
+| Header badge | count only, `aria-label` מועדפים |
+
+---
+
+## Open questions
+
+| Q | Best answer |
+|---|---|
+| One table or `wishlists` + `wishlist_items`? | Read live schema first. Do not add the second table if a unique pair already exists (RLS trap 15). |
+| Guest storage? | **localStorage** `ke_wishlist`. Not a cookie. |
+| Variant-level hearts? | **No** in v1. Product id only. |
+| Share URL? | **No.** |
+
+---
+
 ## Depends on / close
 
 Depends on `mergeGuestCart` behaviour. Does not block W49. Close: heart, badge, merge, cap, tests, no money columns.
