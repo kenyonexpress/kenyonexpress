@@ -79,3 +79,10 @@ Counsel for EN legal (W10). Cardcom merchant of record is the platform.
 - Coupon prepaid is platform revenue, not a hold for the shop (`LEDGER.md`).
 - Do not machine-translate legal for `/en` (W10 off).
 
+---
+
+## Third pass
+
+Returns title: מדיניות ביטול עסקה. No escrow: אין חשבון נאמנות. התשלום באתר הוא לפלטפורמה. H10 before DNS.
+
+
