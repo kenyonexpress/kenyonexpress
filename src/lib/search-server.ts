@@ -4,6 +4,7 @@
 
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cache } from 'react'
@@ -39,7 +40,7 @@ async function searchMeili(
   try {
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const index = process.env.MEILISEARCH_INDEX ?? 'products'
-    const res = await fetch(`${host}/indexes/${index}/search`, {
+    const res = await fetchWithTimeout(`${host}/indexes/${index}/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

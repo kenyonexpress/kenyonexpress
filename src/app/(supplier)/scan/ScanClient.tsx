@@ -1,5 +1,6 @@
 'use client'
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { formatAgorot, formatCouponCode, formatCouponDate } from '@/lib/vouchers/coupon-view'
 import { parseScanInput } from '@/lib/vouchers/scan-input'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -136,8 +137,12 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       setError(null)
       setChecking(true)
       try {
-        const res = await fetch('/api/supplier/vouchers/lookup', {
+        // Bounded, unlike the redeem call below, because a lookup READS. A
+        // counter staring at a spinner learns nothing; an error it can act on
+        // is strictly better, and repeating a read costs nothing.
+        const res = await fetchWithTimeout('/api/supplier/vouchers/lookup', {
           method: 'POST',
+          timeoutMs: 15_000,
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             code: token ? undefined : code,
@@ -225,6 +230,16 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
     // no path does today; it is here so a future entry point cannot send null.
     const idempotencyKey = redeemKey ?? newIdempotencyKey()
     try {
+      // DELIBERATELY UNBOUNDED, and the reason is the same one cardcom.ts
+      // gives for refusing to retry a charge. This POST BURNS a voucher. A
+      // timeout here does not cancel it -- the request may have arrived and
+      // only the response may be lost -- so the timeout's only effect is to
+      // hand the counter an error next to a voucher that may already be spent.
+      // Within one scan a retry is safe, because `redeemKey` is fixed at scan
+      // time and the route is idempotent on it; but a reset clears that key
+      // (see setRedeemKey(null) below), so the retry a visible error invites is
+      // the one that can burn twice. Bounding this needs a server-side
+      // idempotency window that survives the reset, not a client timer.
       const res = await fetch('/api/supplier/redeem', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

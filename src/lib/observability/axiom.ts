@@ -15,6 +15,8 @@
  * save requests nobody is charged meaningfully for. Revisit if volume grows.
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+
 const API = 'https://api.axiom.co/v1/datasets'
 
 type Env = { token: string; dataset: string }
@@ -38,7 +40,7 @@ export async function shipAxiomEvent(event: Record<string, unknown>): Promise<vo
   const config = env()
   if (!config) return
   try {
-    await fetch(`${API}/${encodeURIComponent(config.dataset)}/ingest`, {
+    await fetchWithTimeout(`${API}/${encodeURIComponent(config.dataset)}/ingest`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${config.token}`,

@@ -18,6 +18,8 @@ import 'server-only'
  * configured-but-templateless and still skips.
  */
 
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+
 const API = 'https://api.twilio.com/2010-04-01'
 
 export type WhatsappSendResult =
@@ -73,7 +75,7 @@ export async function sendWhatsappTemplate(args: {
     ContentVariables: JSON.stringify(args.variables),
   })
 
-  const res = await fetch(`${API}/Accounts/${c.accountSid}/Messages.json`, {
+  const res = await fetchWithTimeout(`${API}/Accounts/${c.accountSid}/Messages.json`, {
     method: 'POST',
     headers: {
       Authorization: `Basic ${Buffer.from(`${c.accountSid}:${c.authToken}`).toString('base64')}`,

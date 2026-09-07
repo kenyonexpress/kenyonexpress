@@ -1,6 +1,7 @@
 'use server'
 
 import { requireStaffSession } from '@/lib/admin/rbac'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { processImage } from '@/lib/images/process'
 import {
   ALLOWED_IMAGE_TYPES,
@@ -25,10 +26,16 @@ export type UploadImageResult = UploadedAsset | { error: string }
 
 async function putToR2(key: string, buffer: Buffer, contentType: string): Promise<string> {
   const { uploadUrl } = await createR2PresignedPutUrl(key)
-  const res = await fetch(uploadUrl, {
+  // 30s rather than the 10s default: this leg carries image bytes, not a JSON
+  // body, and an admin uploading a large original over a slow uplink is a real
+  // slow case rather than a stall. It is still bounded -- an R2 endpoint that
+  // accepts the connection and never answers used to hold this action open
+  // until the platform killed it, with the admin watching a spinner.
+  const res = await fetchWithTimeout(uploadUrl, {
     method: 'PUT',
     body: new Uint8Array(buffer),
     headers: { 'Content-Type': contentType },
+    timeoutMs: 30_000,
   })
   if (!res.ok) throw new Error(`R2 upload failed (${res.status})`)
   return r2PublicUrl(key)

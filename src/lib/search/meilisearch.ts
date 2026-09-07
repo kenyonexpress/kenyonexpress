@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import { log } from '@/lib/observability/log'
 import {
   INDEX_SETTINGS,
@@ -112,7 +113,7 @@ function meiliEnv(): { host: string; key: string } | null {
 async function meiliRequest<T = unknown>(path: string, method: string, body?: unknown): Promise<T> {
   const env = meiliEnv()
   if (!env) throw new Error('meilisearch not configured')
-  const res = await fetch(`${env.host}${path}`, {
+  const res = await fetchWithTimeout(`${env.host}${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
@@ -144,7 +145,7 @@ async function meiliRequest<T = unknown>(path: string, method: string, body?: un
 async function ensureIndex(uid: string, settings: MeiliIndexSettings): Promise<void> {
   const env = meiliEnv()
   if (!env) return
-  const res = await fetch(`${env.host}/indexes`, {
+  const res = await fetchWithTimeout(`${env.host}/indexes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.key}` },
     body: JSON.stringify({ uid, primaryKey: PRIMARY_KEY }),

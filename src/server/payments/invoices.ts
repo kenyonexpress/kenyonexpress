@@ -5,6 +5,7 @@ import {
   resolveOrderGeneration,
 } from '@/lib/commerce/order-money-columns'
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
+import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
 import {
   type InvoiceDocument,
   type InvoiceDocumentType,
@@ -533,6 +534,9 @@ async function loadPaymentDeal(
  * fact that matters. A copy that could not be made is logged and the provider's
  * URL is kept, which is strictly better than failing an issued document.
  */
+/** Both legs of the PDF mirror. Longer than an API call, still bounded. */
+const PDF_TRANSFER_TIMEOUT_MS = 30_000
+
 async function mirrorPdf(documentUrl: string, key: string): Promise<string | null> {
   try {
     // Imported here rather than at the top of the file: `lib/storage/r2` is
@@ -543,14 +547,21 @@ async function mirrorPdf(documentUrl: string, key: string): Promise<string | nul
       '@/lib/storage/r2'
     )
     if (!isR2Configured()) return null
-    const source = await fetch(documentUrl)
+    // A ceiling of 30s rather than the 10s default on both legs: these two move
+    // a PDF rather than exchange a small JSON body, so the honest slow case is
+    // slower than an API call's. It is still a ceiling. Without one, an invoice
+    // host that accepts the connection and stalls holds this request until the
+    // platform kills it, and the mirror is a best-effort copy whose failure is
+    // already handled two lines down -- it must never be what pins the caller.
+    const source = await fetchWithTimeout(documentUrl, { timeoutMs: PDF_TRANSFER_TIMEOUT_MS })
     if (!source.ok) return null
     const body = await source.arrayBuffer()
     const { uploadUrl, publicUrl } = await createR2PresignedPutUrl(key)
-    const put = await fetch(uploadUrl, {
+    const put = await fetchWithTimeout(uploadUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/pdf' },
       body,
+      timeoutMs: PDF_TRANSFER_TIMEOUT_MS,
     })
     if (!put.ok) {
       log.warn('invoices.mirror_failed', { key, status: put.status })
