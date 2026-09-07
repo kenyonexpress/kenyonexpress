@@ -28,3 +28,9 @@ Double scheduler: unique keys / locks must hold; still duplicate **mail**. Do no
 | Q | Best answer |
 |---|---|
 | Older docs say ten jobs? | **Twelve.** JSON is the contract. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
