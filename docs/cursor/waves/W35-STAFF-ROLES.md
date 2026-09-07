@@ -73,6 +73,10 @@ User with `profiles.role = vendor` and no membership: access-denied. User with m
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (membership)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Till = `supplier_members` (`owner` | `manager` | `scanner`). See `ROLE-VENDOR.md`.
+- Scanner cannot UPDATE stock or members. PIN 15/hour, not a website login.
+- Owner invite writes audit. Do not grant `admin` to run a restaurant.
+- `vendor` on profile without membership: access-denied.
+
