@@ -80,3 +80,10 @@ The four kill switches. `ALERTS_ENABLED`. `CHECKOUT_ENABLED`.
 - Redis down: scan fail closed (`ops/RUNBOOK-REDIS-DOWN.md`).
 - Cache kill may miss LCP; not a money fix (`contracts/CACHE-POLICY.md`).
 - Cron health twice in a row wakes a human (`ops/ON-CALL-GUIDE.md`).
+
+---
+
+## Third pass
+
+Hebrew: הרכישה סגורה זמנית when checkout is killed. Search killed returns empty, not 500. Outbox rows remain when notifications are killed.
+
