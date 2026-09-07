@@ -847,6 +847,57 @@ precise on the cart line, terse on the cart action, vague at checkout. The
 information available at each point runs the other way, since checkout knows
 exactly which line failed.
 
+## 15. Subscriptions, and the one string that changes with the data
+
+`gifts.ts` is already covered in full by sections 3 and 5. `subscriptions.ts`
+was not.
+
+### 15.1 `src/server/actions/subscriptions.ts`
+
+| Line | Copy | Kind |
+|---|---|---|
+| 41 | `מזהה מנוי לא תקין` | validation |
+| 55 | `יש להתחבר` | auth |
+| 74 | `המנויים אינם זמינים כרגע` | feature off |
+| 77 | `ביטול המנוי נכשל` | failure |
+| 84 | `המנוי לא נמצא` | not found |
+| 87 | `המנוי כבר בוטל` | idempotent repeat |
+| 111 | `המנוי בוטל. לא יבוצע חיוב נוסף.` | **success** |
+
+Line 87 is the one worth keeping deliberately: cancelling an already-cancelled
+subscription is a **repeat, not an error**, and the copy says so without
+implying the shopper did something wrong. That is the same shape as
+`השובר כבר מומש` in section 6.
+
+### 15.2 `cancellationNotice()` has three branches, and only one names a date
+
+`src/lib/commerce/recurring.ts:354` builds the notice shown **before** the
+shopper confirms:
+
+| Condition | Copy |
+|---|---|
+| `paidThroughIso === null` | `המנוי יבוטל מיידית ולא יבוצע חיוב נוסף.` |
+| date unparseable | `המנוי יבוטל ולא יבוצע חיוב נוסף.` |
+| normal | `לא יבוצע חיוב נוסף. המנוי פעיל עד {date}, ואין החזר על התקופה ששולמה.` |
+
+Three things about this are right and are recorded so they are not "simplified":
+
+1. **The unparseable-date branch drops the word `מיידית`.** An unreadable date is
+   not the same fact as no date, and the copy refuses to claim immediate
+   cancellation when it does not know. That is the same discipline as
+   `docs/ROLE-MATRIX.md` section 4.2's "an unreadable membership must not read
+   as no membership".
+2. **The normal branch states the no-refund term up front**, before confirmation,
+   rather than after. Section 5 requires exactly this.
+3. **The date is `toLocaleDateString('he-IL')`**, a Hebrew-locale string that
+   already carries its own ordering. Per `docs/RTL-PITFALLS.md` section 2.5 it
+   must **not** be wrapped in `dir="ltr"`, which would reverse day, month and
+   year.
+
+The rule this file states at the top ("Missing date: `לא זמין`, never
+`Invalid Date`") is honoured here by a different and better route: the branch
+does not print a placeholder date, it prints a sentence that does not need one.
+
 ## Revision
 
 | Date | Change |
@@ -916,3 +967,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 15: auth chrome from COPY-HE; PDP wishlist heart is not a shipped path (`WishlistButton` unimported) |
 | 2026-09-07 | Pass 15: auth.ts and account.ts in full. Password minimum is 6 in one string and 8 in another, and U+2014 counted at 27 occurrences across 7 files |
 | 2026-09-07 | Pass 16: the cart cluster in full. Five distinct per-line warnings behind one table row, and three levels of precision for the same stock condition across cart line, cart action and checkout |
+| 2026-09-07 | Pass 17: subscriptions in full, and cancellationNotice three branches. The unparseable-date branch drops "immediately" rather than guessing, which is the same discipline as the membership-read rule |
