@@ -81,3 +81,11 @@ Debug Sentry route 404 when off (not 403). `connection()` because `cacheComponen
 - Audit: admin mutations append; hash chain unverified (`contracts/AUDIT-LOG.md`).
 - Secret rotation: `ops/RUNBOOK-SECRET-ROTATION.md`. Compromised SHA-256 denylist stays.
 - `vendor` is not an admin bypass (`contracts/ROLE-VENDOR.md`).
+
+---
+
+## Third pass
+
+`CHECKOUT_ENABLED=true`
+exact. Debug Sentry 404 when off. Frame-return ungated on purpose. Mobile still has no service_role.
+
