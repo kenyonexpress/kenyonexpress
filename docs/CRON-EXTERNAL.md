@@ -101,7 +101,7 @@ Base URL is `https://kenyonexpress.vercel.app`, the Vercel production origin.
 It is deliberately NOT the apex domain: `kenyonexpress.co.il` still points at
 the old WordPress install, so a job pointed there today would be calling
 WordPress and getting a 404 that looks like a broken route. **After the DNS
-cutover, change all ten to `https://kenyonexpress.co.il/...`** (the Vercel URL
+cutover, change all eleven to `https://kenyonexpress.co.il/...`** (the Vercel URL
 keeps working, but the apex is the canonical origin and is what the redirects,
 the sitemap and the cookies are scoped to). Times are UTC, which
 is what every scheduler means by default; Israel is UTC+2 in winter and UTC+3
@@ -120,12 +120,16 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
+| 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
 
 ### What each one does, in the order it matters if you are triaging
 
+- **`whatsapp`** drains `whatsapp_outbox` (migration 173) through Twilio: the
+  order-status messages for phones that opted in. Until 173 is applied and the
+  TWILIO_* credentials exist, every run is a cheap no-op.
 - **`notifications`** drains `notification_outbox` and retries what failed. This
   is the only path by which a customer receives their voucher, an order
   confirmation, or a supplier a sale alert. If exactly one job is running, make

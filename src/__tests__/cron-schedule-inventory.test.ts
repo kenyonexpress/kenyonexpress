@@ -56,6 +56,7 @@ describe('the scheduled job inventory', () => {
       'reap-carts',
       'reconcile',
       'expire-vouchers',
+      'whatsapp',
     ])
   })
 
