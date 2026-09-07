@@ -1844,6 +1844,14 @@ Brand tokens that do not care about the first-paint face: `#fed700` / `#fedd26`
 surfaces, `#dc3545` storefront price (not brief `#E4002B`), `#0062bd` links,
 1200 / 1170 containers (not brief 1320).
 
+### 12.3 Flat cards, restated for the home crop (pass 16)
+
+§1.5 now measures `box-shadow`. Live cards have none. `--shadow-card-hover` is
+Electro. At `home@380` the shutter sees three deal cards (`docs/UI-PARITY-LOG.md`
+§16). Do not spend the 11% budget inventing a third shadow, and do not chase a
+home percent by flattening or lifting cards. Catalogue images still dominate
+those bands.
+
 ## 9. Related documents
 
 ```
@@ -1870,3 +1878,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 11: legal aliases + offline tile (no fetch, ink on yellow) |
 | 2026-09-07 | Pass 14: 380/768/1440 are compare viewports, not the CSS cascade; header stays handheld through 1024; four purchase radii sit outside the five-token scale; Electro home-v7 241+728+201=1170 so 1320 has nowhere to go; stacking layers |
 | 2026-09-07 | Pass 15: 21.994px is an icon-font size AND a cart radius, do not merge; Heebo swap means Arial LCP and a Heebo shutter |
+| 2026-09-07 | Pass 16: live cards are flat; `--shadow-card-hover` is Electro; do not diagnose home@380 from elevation |
