@@ -505,6 +505,45 @@ earlier, and the data underneath is separately scoped by RLS on `auth.uid()`,
 so the shell is not the security boundary. The layout is convenience; RLS is
 the control.
 
+### 5.1 Completeness check (pass 24)
+
+Section 5's table groups the storefront under one "public" row. Walked every
+`page.tsx` under the customer route groups: **52 routes**, of which **10** are
+not referenced anywhere in this document.
+
+Eight are public content pages and belong under the existing catch-all:
+`/about`, `/accessibility`, `/blog`, `/contact`, `/faq`, `/privacy-policy`,
+`/refund_returns`, `/terms-and-conditions`.
+
+**Two are token-bearing and deserve their own row**, alongside `/gift/[token]`
+and `/redeem/[token]`:
+
+| Route | Auth | Token | `robots` | In `robots.txt`? |
+|---|---|---|---|---|
+| `/newsletter/confirm` | none | `?token=` in the query | `{ index: false, follow: false }` | **no** |
+| `/newsletter/unsubscribe` | none | `?token=` in the query | `{ index: false, follow: false }` | **no** |
+
+Both are correct to be public: a confirmation link is followed by someone who is
+not signed in, which is the whole point of it, and both carry `noindex, nofollow`
+in their own metadata.
+
+### 5.2 They differ from the other token routes in one way
+
+`/redeem/` and `/coupon/` are **also** in `robots.txt`'s disallow list; the
+newsletter pair is not. `docs/SEO-PLAN.md` 5.1 records why that distinction
+matters generally: a `Disallow` and a `noindex` are not interchangeable, and a
+disallowed URL is never crawled so its `noindex` is never read.
+
+Here the exposure is smaller than for `/redeem/`. The token is in a **query
+string** rather than a path segment, it grants a newsletter subscription change
+rather than a paid voucher, and both routes carry `follow: false` so a crawler
+that does reach one does not walk on from it.
+
+Worth a decision rather than a change: if the rule is "every token-bearing route
+gets both layers", these two are the exception. If the rule is "the outer layer
+is for tokens that are worth money", they are correctly outside it. **Nothing
+currently states which rule applies.**
+
 ---
 
 ## 6. Action matrix: server actions
@@ -1233,3 +1272,4 @@ visible.
 | 2026-09-07 | Pass 21: drift check. The section matrix is unchanged in all 20 cells and all 41 route guards match character for character |
 | 2026-09-07 | Pass 22: extended the drift check to all 34 API routes. Zero drift; a naive parse reported six false gaps because they are documented in combined rows |
 | 2026-09-07 | Pass 23: completed the drift check with the 9 supplier routes. 84 route guards across three families, zero drift |
+| 2026-09-07 | Pass 24: completeness check on the customer routes. 52 walked, 10 unreferenced, of which two are token-bearing newsletter pages that carry noindex but no robots.txt Disallow |
