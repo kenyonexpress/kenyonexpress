@@ -991,6 +991,71 @@ Section 11.2 recorded three (`יש למלא`, `יש להזין`, `שדה חוב�
 
 `supplier-lead.ts` uses **both** `נא למלא` and `נא להזין` within one file.
 
+## 17. Reviews and wishlist, and the person split counted
+
+### 17.1 `src/server/actions/reviews.ts`
+
+| Line | Copy |
+|---|---|
+| 27 | `צריך להתחבר כדי לכתוב ביקורת.` |
+| 30 | `יותר מדי ביקורות בשעה האחרונה. נסה שוב מאוחר יותר.` |
+| 39 | `קלט לא תקין.` |
+| 52 | `ביקורת אפשר לכתוב רק על מוצר שרכשת.` |
+| 55 | `כבר כתבת ביקורת על הרכישה הזו.` |
+| 58 | `הביקורות עוד לא פתוחות. נסה שוב בקרוב.` |
+| 60 | `שמירת הביקורת נכשלה. נסה שוב.` |
+| 74 | `מוצר לא תקין.` |
+| 80 | `צריך להתחבר כדי לשמור מוצרים.` |
+| 83 | `יותר מדי פעולות. נסה שוב בעוד רגע.` |
+| 92 | `רשימת המשאלות עוד לא פתוחה.` |
+| 94 | `הפעולה נכשלה. נסה שוב.` |
+
+Two are worth keeping as written:
+
+- **`ביקורת אפשר לכתוב רק על מוצר שרכשת.`** states the verified-purchase rule as
+  a fact about the product rather than an accusation. The DB enforces the same
+  rule in the `reviews` INSERT policy (`docs/ROLE-MATRIX.md` 7.4), so this is
+  the copy half of a two-layer control.
+- **`הביקורות עוד לא פתוחות.`** and **`רשימת המשאלות עוד לא פתוחה.`** are
+  feature-flag messages that say "not yet", not "error". Correct: a disabled
+  feature is not a failure.
+
+### 17.2 The person split, counted
+
+Rule 1 at the top of this document says: *second person, do not mix `אתה` and
+`אתם` in one paragraph without a reason.* Counted across `src/`, inside string
+literals:
+
+| Form | Occurrences | Files |
+|---|---|---|
+| `נסו` (plural) | **50** | 19 |
+| `נסה` (singular) | **20** | 8 |
+
+The plural is the site's voice by a factor of 2.5. The singular is concentrated:
+
+| Count | File |
+|---|---|
+| 7 | `src/server/actions/reviews.ts` |
+| 3 | `src/server/actions/referrals.ts` |
+| 3 | `account/security/SecurityClient.tsx` |
+| 2 | `scan/ScanClient.tsx` |
+| 2 | `(auth)/mfa/MfaChallengeForm.tsx` |
+| 1 each | `queries/reports.ts`, `api/supplier/vouchers/redeem/route.ts`, `admin/queues/RetryButton.tsx` |
+
+**`reviews.ts` is the largest single source**, and a shopper meets it on a
+product page immediately after meeting `cart.ts` and `checkout.ts`, both plural.
+
+Two of the eight have a defensible reason to differ: `ScanClient` and the
+supplier redeem route address **a cashier**, one person at a till, and
+`MfaChallengeForm` addresses one account holder. The remaining five have no
+stated reason.
+
+This is the fourth voice inconsistency this document has counted, alongside the
+five verbs for "fill this in" (16.4), the two password minimums (13.1) and the
+27 em-dashes (13.3). None is a defect on its own. Together they are the shape of
+copy written file by file without a sheet to check against, and this document is
+now that sheet.
+
 ## Revision
 
 | Date | Change |
@@ -1062,3 +1127,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 16: the cart cluster in full. Five distinct per-line warnings behind one table row, and three levels of precision for the same stock condition across cart line, cart action and checkout |
 | 2026-09-07 | Pass 17: subscriptions in full, and cancellationNotice three branches. The unparseable-date branch drops "immediately" rather than guessing, which is the same discipline as the membership-read rule |
 | 2026-09-07 | Pass 18: the three public forms. The supplier-lead honeypot answers one word differently from real success, which makes it detectable; plus a fourth and fifth verb for "fill this in" |
+| 2026-09-07 | Pass 19: reviews and wishlist, and the person split counted. 50 plural against 20 singular, with reviews.ts the largest singular source |
