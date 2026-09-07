@@ -311,3 +311,12 @@ does not list it; do not sneak it into launch).
 - Never log PAN, tokens, webhook secrets (scrubber is substring; do not name a field
   `payload`
   and stuff a card into it).
+
+Guest cart correlation: the browser shows
+`ke_session_id`.
+`analytics_events.anonymous_id`
+is that UUID. The database
+`carts.session_id`
+is the same UUID, reached via a **different** cookie name on the PostgREST call. Grepping Vercel for
+`ke_session_id`
+will not hit Postgres logs.
