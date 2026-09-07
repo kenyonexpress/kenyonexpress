@@ -383,10 +383,60 @@ Recorded, not silently resolved.
 | 2 | **`permissions.ts` documents a section that does not exist.** Its header says `content_uploader` covers "products, categories, coupons, approvals". `approvals` is not a member of `AdminSection`, and `/admin/approvals` is `requireAdminSession()`, so approvals are admin-only. The comment describes an intent the matrix does not implement. | `src/lib/admin/permissions.ts:10` against `/admin/approvals/page.tsx` |
 | 3 | **Support can read growth and referrals.** Both gate on `discounts:read`, which the matrix grants support. Whether that was intended for these two pages specifically is not stated anywhere. | `/admin/growth`, `/admin/referrals` |
 | 4 | **Three pages are admin-only by arithmetic, not by intent.** `/admin/feature-flags`, `/admin/queues` and `/admin/search` gate on `analytics`, which happens to be `none` for both non-admin roles. If `analytics` is ever opened to `support`, all three open with it silently. `/admin/analytics` itself uses `requireAdminPage()` and would not. | four routes, two mechanisms, same intent |
-| 5 | **`/admin` root excludes support.** It uses `requireStaffSession()`, which is catalogue-writers only. A support user who lands on `/admin` (which is exactly where `requireSection` redirects them on denial) is sent to `/login`. That is a redirect loop for support on any denied deep link. | `/admin/page.tsx` against `requireSection`'s redirect target |
+| 5 | **Support has no landing path in the panel.** Refined in pass 17; see 3.2 below. | `/admin/page.tsx`, `src/lib/admin/nav.ts:36` |
 
 Finding 5 is the one worth acting on first: it is reachable by a support user
 doing something ordinary.
+
+### 3.2 Finding 5, traced to its cause (pass 17)
+
+Pass 1 called this "a redirect loop for support". It is not a loop, it
+terminates, and the precise shape is more useful than the label.
+
+`/admin/page.tsx` is three lines:
+
+```
+const { role } = await requireStaffSession()
+redirect(adminLandingPath(role))
+```
+
+and `src/lib/admin/nav.ts:36` is two:
+
+```
+export function adminLandingPath(role: UserRole): string {
+  return isAdminRole(role) ? '/admin/dashboard' : '/admin/products'
+}
+```
+
+**The sequence for a support user who deep-links to `/admin/payments`:**
+
+```
+/admin/payments   requireSection('payments')   support is `none`  -> /admin
+/admin            requireStaffSession()        support is not staff -> /login
+```
+
+An authenticated support user, doing something ordinary, lands on the login
+page. It terminates rather than looping, but the destination is wrong: they are
+signed in.
+
+**And the deeper cause is one line up.** `adminLandingPath` has two branches:
+admin gets `/admin/dashboard`, *everything else* gets `/admin/products`. Support
+has `catalog: none`, so `/admin/products` is a page it cannot open. If `/admin`
+were "fixed" by relaxing its guard to `requirePanelSession()`, support would be
+sent to `/admin/products`, denied by `requireSection('catalog')`, redirected
+back to `/admin`, and **that** would be the infinite loop pass 1 named.
+
+So `requireStaffSession()` on `/admin` is currently what *prevents* the loop, by
+bouncing to `/login` before the second hop. Relaxing it alone would make things
+worse.
+
+**The actual fix is in `adminLandingPath`, not in the guard.** Support has
+`dashboard: read` and `/admin/dashboard` gates on `requireSection('dashboard')`,
+so it is a page support can open. A three-way branch (admin -> dashboard,
+support -> dashboard, content_uploader -> products) gives every panel role a
+landing page, and only then does relaxing `/admin`'s guard become safe.
+
+Recorded, not changed: both files are `.ts`.
 
 ---
 
@@ -946,3 +996,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 15: what layer 1 runs on (the matcher covers /api too), the two decisions it makes, and four paths outside needsAuth that are deliberate rather than gaps |
 | 2026-09-07 | Pass 15: guard layer 1 in full. Four more prefixes beyond /admin, and the two exclusions (guest checkout, and the Cardcom frame-return path) with the reasoning that makes them load-bearing |
 | 2026-09-07 | Pass 16: layer 2 sits inside a Suspense boundary in both staff groups, with children as a pass-through slot. Awaiting at the top of the layout cost 78 prerender errors once |
+| 2026-09-07 | Pass 17: finding 5 traced to its cause. Not a loop but a bounce to /login, and the fix is in adminLandingPath, not in the guard, which currently prevents a worse loop |
