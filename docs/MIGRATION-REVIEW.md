@@ -888,6 +888,57 @@ The third row is the one the 2026-09-04 audit had to answer by hand, by reading
 live definitions back and comparing them. There is no automated equivalent, and
 this document should not imply there is.
 
+## 3f. The reviewed files, pinned (pass 21)
+
+Section 3e verified that `migrations/applied/` is byte-intact against its own
+checksum file. `migrations/pending/` has **no checksum file**, so nothing
+records that the three files reviewed in sections 1 to 3 are the three files a
+reader will open.
+
+Byte sizes are unchanged from section 0 (3397 / 3194 / 3626), and here are the
+hashes, so a later reader can tell whether a pending file moved under the
+review:
+
+```
+1ddd4597a29474b7b070b16cc1dbd1f529335d19e36b3b24c72b44652b409088  162_cron_schedule.sql
+2de904bf7ef401e0a131dde58e450f7924452980f6058bb28de63975d1771078  169_analytics_server_event_names.sql
+6ccbe9c59df64c00ebc3386e3a53bf48e3c22d6dba13b3d79820b5740c5645c9  170_composite_indexes_top_queries.sql
+60911d1c32a515e1c9940c50ddea1ee4180483e299f457779cebfd4b3f729095  preflight_162.sql
+46cca0b88c67a13e020838336e784a242c0dcd0bbf41a42581b880015e1659ea  preflight_169.sql
+a71b27418b9709eb863e6e24101452d92fb93a96cb05ed7db1b0fed53ec2542e  preflight_170.sql
+```
+
+Re-check with:
+
+```bash
+cd migrations/pending && shasum -a 256 *.sql
+```
+
+### 3f.1 Why pending needs this more than applied does
+
+`applied/` has `CHECKSUMS.sha256` because an applied file is a **record**: it
+must not change. A pending file is expected to change — it is a draft.
+
+The value here is different and narrower: it pins **which version this review
+describes**. Every risk, every line number and every verdict in sections 1 to 3
+is about these exact bytes. If a hash moves, the review has not necessarily
+become wrong, but it has become **unverified**, and that distinction is
+invisible without a pin.
+
+That matters most for **162**, the one file already approved for production. An
+approval attaches to a file, and a file with no hash is a file an approval
+cannot be pinned to.
+
+### 3f.2 The cheap improvement
+
+`migrations/applied/CHECKSUMS.sha256` exists and is verified in CI-adjacent
+tooling. A `migrations/pending/CHECKSUMS.sha256` regenerated whenever a draft
+changes would let `APPLY-ORDER.md` record **which hash Ofir approved**, so that
+"162 is approved" becomes a statement about bytes rather than about a filename.
+
+Recorded, not made: writing that file is a change to `migrations/pending/`,
+which this document only reads.
+
 ## 4. The preflights
 
 All three follow the same shape: numbered blocks, each with an `EXPECT` comment,
@@ -1049,3 +1100,4 @@ STATE.md                            "חסמים לאופיר", where 162's block
 | 2026-09-07 | Pass 18: traced what fn_ingest_analytics_events actually returns. It counts whitelisted names, so a mixed batch reads as partial success and the discard is invisible. Same anti-pattern three other files refuse |
 | 2026-09-07 | Pass 19: named the seven indexes 170 makes redundant and paired each with its superseding composite. Six are redundant, one (idx_orders_user_status) is NOT and must be kept |
 | 2026-09-07 | Pass 20: verified CHECKSUMS.sha256. 45 of 45 OK, zero failed, covering every applied migration and preflight; and named the one question no checksum can answer |
+| 2026-09-07 | Pass 21: pinned the reviewed pending files by hash. applied/ has CHECKSUMS.sha256 and pending/ has none, so an approval cannot currently be attached to bytes |
