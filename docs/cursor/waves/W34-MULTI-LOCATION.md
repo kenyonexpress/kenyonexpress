@@ -72,6 +72,9 @@ One legal entity, two brands: two `suppliers` rows, not two branches, if till is
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (one supplier_id)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Redeem keys on membership `supplier_id`, not a branch body field.
+- Hours/maps are display. They do not change money or voucher state.
+- Do not promise "כל הסניפים" in supplier onboarding copy (W07 FAQ).
+
