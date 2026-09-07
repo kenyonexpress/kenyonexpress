@@ -70,3 +70,14 @@ Debug Sentry route 404 when off (not 403). `connection()` because `cacheComponen
 | Q | Best answer |
 |---|---|
 | Is the leaked service key still in Vercel? | Human must check. Preflight refuses the hash if it is. |
+
+---
+
+## Second pass (after contracts)
+
+- Payment boundary: webhook `?s=` constant-time, body is not money, GetLpResult (`contracts/PAYMENT-BOUNDARY.md`).
+- Cookie: never forward the browser jar (`contracts/CACHE-POLICY.md` / ARCHITECTURE D40).
+- Rate limits: scan 30/min, PIN 15/hour must stay (`contracts/RATE-LIMITS.md`).
+- Audit: admin mutations append; hash chain unverified (`contracts/AUDIT-LOG.md`).
+- Secret rotation: `ops/RUNBOOK-SECRET-ROTATION.md`. Compromised SHA-256 denylist stays.
+- `vendor` is not an admin bypass (`contracts/ROLE-VENDOR.md`).
