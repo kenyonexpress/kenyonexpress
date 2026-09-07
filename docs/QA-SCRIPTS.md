@@ -37,6 +37,13 @@ document set, and each fails **silently**.
 | 3 | Brand colours resolve | a yellow newsletter bar in the footer, not a white one | Turbopack caches compiled CSS by **content hash**. A dev server started before a `@theme` colour was added keeps serving CSS without that colour's utilities, and `touch` does not clear it. If `bg-brand-secondary` is transparent, restart the server; do not go looking for the bug in a component. |
 | 4 | Fonts have settled | reload and watch for a reflow | A capture taken before the stylesheet parsed scored 95.07% on a page whose layout was fine. |
 | 5 | You know which consent state you are in | check `html[data-consent]` in the inspector | The banner is `fixed bottom-0` and tall on a phone; it made an enabled `/login` control unclickable. Body padding is reserved in three tiers (14.5rem, 8rem, 7rem). |
+| 6 | **No stale service worker is answering** | DevTools > Application > Service Workers. Unregister anything registered, then hard-reload | A worker that claimed the origin keeps answering for chunk URLs that no longer exist, **and it survives switching branches**. `ServiceWorkerRegistrar` registers only in production for exactly this reason, so a worker on a dev origin was left by an earlier session. |
+
+**Checks 1 and 6 produce identical symptoms and have different fixes.** A stale
+`next start` and a stale service worker both serve you a build that is not the
+one you just made. Restarting the server fixes the first and does nothing for
+the second. If a change you can see in the source is not on the page after a
+restart, unregister the worker before you look anywhere else.
 
 **Findings recorded without steps 1 to 3 confirmed are not findings.** Note the
 width against every one, as the header of this file already requires, and note
@@ -770,3 +777,4 @@ If any of the three is proposed, the evidence against it is in
 | 2026-09-07 | Pass 15: city reachability steps (10b.1). The pages render fine and have no mobile link and no sitemap entry; also the Hebrew-slug encoding check |
 | 2026-09-07 | Pass 16: environment verification before a QA session (0.1) and the three false-positive patterns this set has already paid for (0.2) |
 | 2026-09-07 | Pass 17: perceived-performance steps by eye (13), plus the three ways to undo the LCP work while believing you are cleaning up |
+| 2026-09-07 | Pass 18: added the stale-service-worker check to 0.1. It produces the same symptom as a stale next start and has a different fix |
