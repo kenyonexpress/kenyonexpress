@@ -73,6 +73,13 @@ export const RATE_LIMIT_POLICIES = {
   'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
 
+  // Keyed on the user, never on IP, and deliberately generous rather than tight:
+  // this is a STATUTORY notice under Consumer Protection Law 14ה, and a limit
+  // that turns away a genuine cancellation is worse than one that lets a few
+  // duplicates through. `refunds_one_open_per_order` already makes the duplicate
+  // harmless; this only bounds a script.
+  'refund-request': { limit: 5, windowSeconds: 3600, reason: 'cancellation notice, per user' },
+
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.
   redeem: { limit: 60, windowSeconds: 3600, reason: 'customer-facing redeem page, per IP' },
