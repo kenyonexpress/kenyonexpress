@@ -1021,6 +1021,62 @@ So these components work and the funnel's money moments do not arrive. The
 client half is not the problem, and this table is here so nobody debugs it as
 though it were.
 
+## Pass 18: the PWA pair
+
+Two more of the 25. Neither renders on the first paint, and both carry a
+constraint that is easy to undo.
+
+| Component | File | Props | Renders | a11y |
+|---|---|---|---|---|
+| InstallPrompt | `pwa/InstallPrompt.tsx` | none | a banner, conditionally | a real banner with buttons |
+| ServiceWorkerRegistrar | `pwa/ServiceWorkerRegistrar.tsx` | none | nothing | none |
+
+### InstallPrompt: capturing the event creates an obligation
+
+Chrome fires `beforeinstallprompt` and lets the page defer it. **The moment we
+call `preventDefault`, the native mini-infobar is suppressed**, so once the
+event is captured we are obliged to offer the install ourselves or the visitor
+loses the option entirely.
+
+That is why the banner renders **off a captured event and never off a guess
+about the browser**. A UA-sniffing version of this component would show a banner
+where no install is possible, and suppress nothing where it is.
+
+Two constraints in the same file:
+
+- **Not shown on the money paths.** "A bar sliding up over the checkout during
+  payment costs an order, and the install is worth less than the order." That is
+  a business decision encoded in a render condition; a refactor that moves the
+  banner into a global layout would break it silently.
+- **A dismissal is remembered** in `localStorage` under `ke:pwa-install-dismissed`.
+  "Re-asking every visit is how a prompt gets ignored permanently, and there is
+  no second chance after that."
+
+For QA: the dismissal key must be cleared to see the banner again, and the
+banner must **not** appear on `/checkout` or `/cart`.
+
+### ServiceWorkerRegistrar: production only, and after `load`
+
+Registers `public/sw.js` at scope `/`, and **only in production**.
+
+Registering in development is not merely pointless, it is harmful: `next dev`
+serves uncompiled chunk URLs that change on every edit, and a worker that has
+claimed the origin keeps answering for them. It also **survives switching
+branches**, which turns "the dev server is serving the wrong build" into a bug
+that takes an afternoon to find.
+
+That is the same failure mode `docs/QA-SCRIPTS.md` section 0.1 step 1 guards
+against from the other direction, and it is worth connecting: a stale service
+worker and a stale `next start` produce identical symptoms, and only one of them
+is fixed by restarting the server.
+
+Registration is deferred to the `load` event, because it competes with hydration
+for the main thread and this page group's LCP was fought for deliberately.
+Nothing it does is needed on the first paint.
+
+It deliberately does **not** capture `beforeinstallprompt`; that is
+`InstallPrompt`'s concern. The two are separate on purpose.
+
 ## Revision
 
 | Date | Change |
@@ -1040,3 +1096,4 @@ though it were.
 | 2026-09-07 | Pass 15: dead-code count corrected from 11 to 23. Five of six ui/ primitives are dead (descopes two RTL risks), both search components are dead by design, NewsletterSignup was a pass-14 false positive |
 | 2026-09-07 | Pass 16: documented the four load-bearing components pass 15 flagged (HeaderCart, SearchBox, the two share buttons); 21 of the 25 remain known-absent |
 | 2026-09-07 | Pass 17: the analytics trio. ThirdPartyTags is the consent boundary and is stricter than Consent Mode; the client half works while the server events are still discarded by the DB |
+| 2026-09-07 | Pass 18: the PWA pair. Capturing beforeinstallprompt creates an obligation, and a dev-registered service worker produces the same symptom as a stale next start |
