@@ -44,6 +44,13 @@ If a later apply adds `row_hash` / `prev_hash`: verification procedure is `SELEC
 
 ---
 
-## Second pass
+## Second pass (two journals)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- `audit_log`: staff. `payment_events`: money. Do not merge.
+- Pending
+  `169_audit_full_coverage.sql`
+  is not
+  `169_analytics_server_event_names.sql`.
+- Actor is the staff uid, not the service_role uuid.
+- 157 NULLs IPs after 365 days. WHO/WHAT remain. Redemption IPs are not in 157.
+
