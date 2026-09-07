@@ -543,6 +543,92 @@ for w in (380, 768, 1440):
 PY
 ```
 
+## 14. Crop arithmetic: what 2600px actually scores, per route
+
+Section 11 pinned live body heights. Section 13 mapped home bands. This is the
+orthogonal cut: `diff-bands.mjs` crops at `min(live.h, mine.h, 2600)`, so a
+"pass" is never a statement about the whole page unless the live body is
+shorter than 2600.
+
+Heights from the 2026-09-04 capture (section 11.1). Crop = 2600.
+
+| `--page` | live@380 | live@768 | live@1440 | Fraction scored @380 | @768 | @1440 |
+|---|---|---|---|---|---|---|
+| `home` | 17791 | 9409 | 5492 | **15%** | 28% | 47% |
+| `products` (shop twin) | 5642 | 4861 | 3730 | 46% | 54% | 70% |
+| `product` | 2242 | 1924 | 1967 | **100%** | 100% | 100% |
+| `category` | 1506 | 1389 | 1396 | **100%** | 100% | 100% |
+| `cart` | 1445 | 1244 | 1458 | **100%** | 100% | 100% |
+| `checkout` | 3116 | 2949 | 2294 | 83% | 88% | **100%** |
+| `account` | 1325 | 1192 | 1408 | **100%** | 100% | 100% |
+
+### 14.1 What this changes about the log above
+
+**Home @380 can pass while the footer is unmeasured.** 2600px of 17791 is the
+hero, the empty 31px feature strip, and the first three deal cards (section
+13.3). The handheld footer accordion that D10 fixed on cart never appears in a
+home@380 score. Manual QA still has to open the footer (`docs/QA-SCRIPTS.md` §1
+row 9).
+
+**Cart, category and PDP scores are whole-page.** If those routes fail, the
+defect is in the picture, not below the crop. Cart's remaining 380 miss (D10
+14.81%) cannot be excused as "below the fold".
+
+**Checkout @1440 is whole-page; checkout @380 is not.** 3116 vs 2600 leaves
+516px off the bottom at 380, which is where the place-order pill and the
+terms tick live if the form is long (physical address + iframe). A 380 pass
+that never reached `#place_order` is a pass of the stepper and the identity
+step. Manual QA §4 row 7 still has to scroll.
+
+**Shop / products @380 scores the first 2600 of 5642.** That is the control bar
+plus roughly the first two card rows of a 2-up grid (card ~370 tall). A refuse
+on card-count still fires before the crop; a forced percent after
+`COMPARE_ALLOW_GRID_MISMATCH` is a picture of those first rows only.
+
+### 14.2 Band maps for the routes that fit in the crop
+
+Home is section 13. These are the routes whose live body is under 2600 at
+every width, so every band that exists is scored. Coordinates are live's, from
+the same capture. A band map is not a fidelity claim (section 13.4).
+
+#### `cart@1440` (body 1458)
+
+| Bands | Region |
+|---|---|
+| 0 | top bar 38 + masthead 110 (inner-page shell, not home's 113+50) |
+| 1-2 | cart table header + first lines |
+| 2-4 | totals / proceed (Electro two-column from ~992) |
+| 4-14 | store footer 1200 (`--container-store-footer`, not the 1430 home footer) |
+
+Handheld cart (380) uses the 76+83 inner shell and the 355px footer without
+newsletter. Scoring 380 against a 1440 cart PNG is a different footer.
+
+#### `product@1440` (body 1967)
+
+| Bands | Region |
+|---|---|
+| 0-1 | inner shell |
+| 1-8 | gallery 470 + summary 700 (15px gap). ATC and buy-now sit here |
+| 8-12 | tabs / description |
+| 12-19 | related row. Live related carousel is **1** card; ours paints 4. That is a refuse (section 12.2 #5), not a band to restyle |
+
+#### `category@1440` (body 1396)
+
+| Bands | Region |
+|---|---|
+| 0 | collapsed sticky header in some snapshots (40px). Do not retune the home masthead to match a mid-scroll PNG |
+| 1-2 | H1 + control bar |
+| 2-13 | 5-up grid, card 234 × ~438 |
+
+### 14.3 Standing rule, restated with the crop in mind
+
+A refuse is still not a fail. Cropping does not turn a refuse into a number.
+`COMPARE_ALLOW_GRID_MISMATCH=1` produces a forced percent of the **cropped**
+picture, which for home@380 is three product photographs. Do not append that
+number to section 2.1 as if it were geometry.
+
+No `pnpm` in this worktree. No `compare.mjs` re-run this pass.
+
 ## Revision
 
 | Date | Change |
@@ -555,3 +641,4 @@ PY
 | 2026-09-07 | Pass 12: refusal reference. All eight refusals with exit codes 2/3/4 and escape hatches, plus the three warnings that print an untrustworthy number instead of exiting |
 | 2026-09-07 | Pass 13: band map derived from refs/ke_live_computed.json. Band to region at all three widths, and why one wrong product costs six of the twenty-six scored bands at 380 |
 | 2026-09-07 | Pass 13: landmarks re-verified against the committed capture. Hero and feature bar confirmed exactly; bar-to-grid gap is 2.00px not 3px; "a landmark without a named element is not a landmark" |
+| 2026-09-07 | Pass 14: crop arithmetic per route. Home@380 scores 15% of the page; cart/category/PDP are whole-page; checkout@380 can pass without reaching place-order |
