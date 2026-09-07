@@ -72,6 +72,9 @@ Duplicate 171 numbers. Full filename. `wp_import.categories` shadow.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (bidi)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- `171_category_name_shekel_order.md` is a **name** fix for under-99, not FTS. Do not apply the wrong 171.
+- Categories are not prices. Soft-delete hides; historical `order_items` keep the name snapshot if present.
+- Empty state: אין מוצרים בקטגוריה הזו. Do not show the ₪1 master as a deal.
+
