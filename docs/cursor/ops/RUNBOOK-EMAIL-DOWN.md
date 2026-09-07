@@ -22,4 +22,4 @@ Send voucher codes from personal Gmail. Codes are capabilities. That is a leak. 
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Pay and vouchers exist without mail. Drain retries then `dead`. Do not Gmail a QR. `email_suppressions` still wins.
