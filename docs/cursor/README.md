@@ -120,7 +120,7 @@ still contain a 2026-09-01 "no deployment" ranking. Prefer this pack +
 - One file per commit, explicit path, never
   `-A`.
 - Push after each commit.
-- After a pass through 1–20, deepen 1–10 with what 11–20 learned.
+- After a pass through 1–20, deepen 1–10 with what 11–20 learned (done: cookie split, deletion vs ledger, G21–G25, R28–R32, H6 ntfy, P3/P5/P6 notes, glossary §11).
 - Code fixes belong on the code worktree.
 
 Production project:
