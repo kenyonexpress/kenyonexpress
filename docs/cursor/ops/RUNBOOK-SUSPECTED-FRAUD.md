@@ -6,3 +6,9 @@
 4. Redeem spike: rate_limited outcomes; check `voucher_redemptions` IPs (not aged by 157).
 5. Leaked service_role: rotate immediately (`RUNBOOK-SECRET-ROTATION.md`), denylist hash.
 6. Support must not refund without admin. Audit actor must be the human.
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
