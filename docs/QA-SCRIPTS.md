@@ -176,6 +176,115 @@ Roles: `docs/ROLE-MATRIX.md` §4.
 
 ---
 
+## 7b. Admin CRUD, the fifth flow the brief names
+
+Section 7 is a six-row smoke test. The brief lists admin CRUD as a flow of its
+own, so this is create, read, update and delete across the entities staff
+actually manage.
+
+**Roles:** `content_uploader` for catalogue (products, categories, reviews),
+`admin` for everything else. Full matrix in `docs/ROLE-MATRIX.md` sections 2, 3
+and 6.
+
+### 7b.1 The invariant that spans every entity: every mutation is audited
+
+`src/server/actions/admin/audit-required.test.ts` asserts that **every** module
+under `src/server/actions/admin/` calls `writeAuditLog`, with exactly three
+exemptions:
+
+```
+quick-search.ts    upload.ts    images.ts
+```
+
+Those three are read-only or produce no domain change. Everything else writes a
+row carrying `actorId`, `actorRole`, `action` and `entityType`.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Perform any create, update or delete below | one `audit_log` row appears |
+| 2 | Read the row | `actorId` is the signed-in staff member, not a service account |
+| 3 | Perform a **read** (open a list, run quick-search) | **no** audit row. Reads are not mutations |
+| 4 | Try to edit or delete an `audit_log` row | refused. It is append-only for every role, `service_role` included |
+
+Step 4 is the one people skip. The append-only trigger is the reason the log is
+worth anything in a dispute.
+
+### 7b.2 Delete is soft, except for one entity
+
+This is the asymmetry to test deliberately.
+
+| Entity | Delete behaviour |
+|---|---|
+| Products | **soft only.** `deleted_at` plus `status: 'archived'` or `is_active: false`. Zero `.delete()` calls in `admin/products.ts` |
+| Categories | **both exist.** `softDeleteCategory` sets `deleted_at`; `deleteCategory` issues a real `.delete()` |
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Delete a product from the table | row disappears from listings; `deleted_at` set; the product still resolves for any historical order line |
+| 2 | Bulk-delete products | same, via `admin.product.bulk_soft_delete`. Still soft |
+| 3 | Delete a category from `CategoriesTable` or `CategoryTree` | the UI calls **`softDeleteCategory`**. Confirm it is the soft one |
+| 4 | A category with children | decide and record what happens to the children. Do not assume cascade |
+| 5 | A category holding active products | the products must not vanish from `/products` without a decision |
+| 6 | Restore path | there is no restore UI. `deleted_at` is cleared in SQL only. Record that before deleting anything in a demo |
+
+**`deleteCategory` (the hard one) is exported and has no UI caller.** Every
+component path goes through `softDeleteCategory`. It remains a live server
+action with a guard and no visible affordance, so it can still be invoked. Worth
+knowing it exists; worth not wiring a button to it without deciding step 4
+first.
+
+### 7b.3 Products
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Create as `content_uploader` | allowed. `requireSection('catalog','write')` |
+| 2 | Create a **physical** product with no commission percent | blocked. No silent 5% default |
+| 3 | Create a **coupon** product with no `kenyon_price` | blocked: `לא הוגדר מחיר קופון` |
+| 4 | Money fields | integer agorot. A price typed as `19.99` must not become a float anywhere |
+| 5 | Edit an existing product's percent | applies to **future** checkouts only. Existing `order_items` keep their captured value |
+| 6 | Upload images | `admin/images.ts` and `upload.ts` are the two audit-exempt modules. Confirm no domain row changes |
+| 7 | Save with an implausible discount (₪1 against ₪400) | see the guard in `src/lib/commerce/implausible-discount.ts`. It refuses at sale time; confirm the admin screen says something too |
+| 8 | Same page as `support` | denied. `catalog` is `none` for support |
+
+### 7b.4 Categories
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Create with a parent | tree renders at the right depth |
+| 2 | Reorder | `updateCategorySortOrder` writes an audit row |
+| 3 | Hebrew name containing a price (`עד ₪99`) | the shekel sign must not migrate left of the digits. See `docs/RTL-PITFALLS.md` |
+| 4 | Duplicate slug | refused with Hebrew copy, not a Postgres unique-violation string |
+
+Step 4 is worth performing on every entity in this section: `docs/ERROR-COPY.md`
+section 12.3 records five money-path strings that interpolate a raw Postgres
+message into Hebrew and render it verbatim. Check the admin forms are not doing
+the same.
+
+### 7b.5 Coupons, suppliers, vendors, discounts
+
+| # | Entity | Guard | Step |
+|---|---|---|---|
+| 1 | Coupon deals | `requireAdminSession` | create, edit, and confirm `content_uploader` is refused on `/admin/coupons` while **allowed** on `/admin/coupons/codes` (recorded inconsistency, ROLE-MATRIX 3.1 finding 1) |
+| 2 | Suppliers | `suppliers:write` = admin | create; confirm `support` can **read** the list and not the new-supplier form |
+| 3 | Vendors | `requireAdminPage` | admin only at every step |
+| 4 | Discounts | `discounts:write` = admin | create; confirm `support` sees the list (`discounts:read`) and cannot open `/admin/discounts/new` |
+| 5 | Reviews | `catalog:write` | `content_uploader` may moderate. Confirm approving a review updates any `AggregateRating` only when approved count > 0 |
+
+### 7b.6 Users, the one CRUD with a three-layer guard
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | `admin` assigns `content_uploader` | allowed |
+| 2 | `admin` assigns `admin` | **refused**, three times over: `assignableRoles`, the action's own check, and a DB trigger from migration 035 |
+| 3 | `super_admin` assigns `admin` | allowed |
+| 4 | Any staff changes **their own** role | refused |
+| 5 | `support` opens `/admin/users` | allowed, read only |
+| 6 | `support` attempts a role change | refused: `users` is `read` for support |
+
+Step 2 is the one to actually attempt at all three layers if the environment
+allows, because two of the three are application code and only the trigger
+survives a bug in the other two.
+
 ## 8. coupon-partner scan
 
 | # | Step | Pass |
@@ -464,6 +573,79 @@ Rows 5, 6, 13 and 17 are expected to **fail today**. They are listed as checks
 rather than as a to-do so that the launch pass produces a decision on each,
 rather than rediscovering them.
 
+## 12. Auth, MFA, consent, and the two panel traps (pass 14)
+
+These are click-tests the earlier flows assumed. Widths 380, 768, 1440 plus
+1024 (handheld header) and 640 (consent row). Production build. Consent once
+undecided and once decided.
+
+### 12.1 Sign-in (`/login`, `/signup`, passwordless)
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Skip link first | `דילוג לתוכן הראשי` |
+| 2 | H1 | `כניסה לחשבון` / `יצירת חשבון` (COPY-HE `auth.login` / `auth.signup`) |
+| 3 | Google / SMS / magic | all three present, Hebrew labels. Email placeholder `you@example.com` LTR |
+| 4 | **Undecided consent at 380** | passwordless toggle is clickable. Fail if the banner steals the hit target (QA §0) |
+| 5 | Fail copy | `הכניסה נכשלה` then retry. Do not copy U+2014 from source comments |
+| 6 | Guest cart survives | add a line while signed out, log in, cart still has the line (merge, no wipe) |
+| 7 | `next=` open redirect | `//evil.example` does not leave the site (`safeNextPath`) |
+| 8 | Customer never sees MFA | after login, land on `next` or `/account`, **not** `/auth/mfa` |
+
+### 12.2 Staff MFA (`/auth/mfa`)
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Staff with TOTP, session `aal1` | `/admin/*` redirects to `/auth/mfa`, **not** `/login` (password half already passed) |
+| 2 | Help copy | `הזן את הקוד מאפליקציית האימות שלך כדי להמשיך לפאנל.` |
+| 3 | Unreadable MFA levels | gate **closed**, `/login` (ROLE-MATRIX §1.1) |
+| 4 | Customer account | `/auth/mfa` is not in the shopper journey (ROLE-MATRIX §10.1) |
+| 5 | Code field | `aria-label` `קוד אימות`, digits LTR |
+
+### 12.3 Panel trap A: support and `/admin`
+
+ROLE-MATRIX §3.1 finding 5. A support user denied a deep link is sent to
+`/admin`, and `/admin` uses `requireStaffSession()`, which **excludes**
+support, so they land on `/login`.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Sign in as `support` | can open `/admin/dashboard`, `/admin/orders` |
+| 2 | Open `/admin/payments` | denied, should land somewhere useful inside the panel |
+| 3 | **Fail if** the URL becomes `/login` while the session is still valid | that is the loop. Record route, width, expected `/admin/dashboard` or `/admin/orders`, seen `/login` |
+| 4 | Sign in as `content_uploader` | `/admin` itself is allowed (catalogue). `/admin/dashboard` is **none**. Confirm they are not bounced to login |
+
+This is a UX defect with an access-control cause. Do not "fix" it in this
+worktree (markdown only). Do not close the finding because dashboard happens
+to load when they bookmark it.
+
+### 12.4 Panel trap B: coupon parent vs coupon codes
+
+ROLE-MATRIX §3.1 finding 1. `/admin/coupons` is `requireAdminPage()`.
+`/admin/coupons/codes` is `catalog`, which `content_uploader` holds as write.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Uploader opens `/admin/coupons` | denied (admin-only parent) |
+| 2 | Uploader opens `/admin/coupons/codes` | **allowed** today. Record as the inconsistency, not as a product requirement |
+| 3 | Uploader cannot refund, cannot assign `profiles.role`, cannot open `/admin/payments` | §7 |
+| 4 | Uploader publish physical without `platform_percent` | blocked, no silent 5% |
+
+Do not treat step 2 passing as a green catalogue test. It is the documented
+inconsistency.
+
+### 12.5 Header chrome at 1024 vs 1440
+
+DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
+(1280). Compare shots 1440, so they never see this.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | 1024 `/` | hamburger at visual right, no desktop nav row |
+| 2 | 1280 `/` | masthead 110, no hamburger |
+| 3 | 1440 `/` | same as 1280, hero 613, deals 4-up |
+| 4 | 1024 `/checkout` | still one column if below 992; at 1024 the Electro two-column may appear while the **header** is still handheld. That mix is live's, keep it |
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -482,4 +664,6 @@ rather than rediscovering them.
 | 2026-09-07 | Scan flow: all nine redemption outcomes with statuses, the 409 collision trap, DB-side authorization checks; a11y sweep gains announce and voice-control rows |
 | 2026-09-07 | Pass 12: refund flow script (8b). Fourteen cases, the legal fee cap (lower of 5% or 100 ILS), idempotency, and the six post-conditions |
 | 2026-09-07 | Pass 12: refund flow added (8b). It is one of the five flows the brief names and had no section; three blockers with two distinct "nothing to refund" strings, the statutory cancellation fee, card vs wallet, and the queued-not-called property |
+| 2026-09-07 | Pass 14: auth/MFA/consent click-tests; support `/admin` login loop; uploader coupon parent vs codes; header still handheld at 1024 |
 | 2026-09-07 | Pass 13: crawl and indexability checks (10d). Seventeen rows, four of them expected to FAIL today, each tied to a verified pass-13 finding |
+| 2026-09-07 | Pass 13: admin CRUD flow added (7b). Every mutation audited with three exemptions, delete is soft everywhere except one hard-delete category path with no UI caller, and the three-layer guard on role assignment |
