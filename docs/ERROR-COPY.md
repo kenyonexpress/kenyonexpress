@@ -1187,6 +1187,69 @@ Recorded, not resolved: which word is right is a brand decision, not a
 documentation one. What is settled is that the two cannot both be correct and
 the code has already voted.
 
+## 20. Correction: every count in this document is literal-only (pass 22)
+
+Sections 11 and 19 both count Hebrew strings by scanning for **quoted literals**
+(`'…'`, `"…"`, `` `…` ``). That misses an entire class, and the miss was found
+by accident: pass 19 listed `אין חיבור לאינטרנט` as "not found in src", then a
+manual grep found it immediately at `src/app/offline/page.tsx:27`.
+
+It is written as **JSX text**:
+
+```jsx
+<h1 className="mt-5 font-bold text-2xl text-heading">אין חיבור לאינטרנט</h1>
+```
+
+Not a literal. Invisible to every count in this file.
+
+### 20.1 The size of the blind spot
+
+Across `src/app` and `src/components`:
+
+| | Count |
+|---|---|
+| Distinct Hebrew strings in **quoted literals** | 905 |
+| Distinct Hebrew strings in **JSX text** | 816 |
+| **Only** in JSX text, invisible to a literal scan | **655** |
+
+### 20.2 What this does and does not invalidate
+
+**It does not invalidate the drift finding.** Pass 19 found the two wishlist
+labels by comparing this document's quotes against source; those two were real
+and remain real. A blind spot causes **false "not found"**, not false
+"mismatch".
+
+**It does qualify the coverage numbers.** Section 11's headline — "1075 distinct
+Hebrew literals under `src/server` and `src/lib`" — is accurate *as literals* and
+is not the size of the corpus. Section 11 is mostly safe because `src/server`
+and `src/lib` are `.ts`, where JSX text does not occur; the exposure is in
+`src/app` and `src/components`, which section 11 did not count anyway.
+
+**It does qualify section 19's "194 of 196 verified".** That is 194 of 196
+*quoted* strings. Any specification in this file whose implementation is JSX
+text was neither confirmed nor refuted.
+
+### 20.3 Why the raw 655 overstates the problem
+
+JSX splits a sentence around every interpolation, so the extracted fragments
+include `או`, `, או לבטל את המנוי.`, `(שולמו לו כבר` and `/ ניהול`. Those are
+pieces of messages, not messages. A count of distinct *user-visible sentences*
+would be far lower.
+
+That is itself worth knowing: **a sentence assembled from JSX fragments cannot
+be grepped, cannot be drift-checked, and cannot be found by a translator.** It is
+the same property that makes `docs/RTL-PITFALLS.md` section 4 care about where a
+Hebrew run ends and a Latin one begins — the fragment boundaries are real, and
+they are where bidi problems appear.
+
+### 20.4 The fix for a future pass
+
+Extend the scan to JSX text with a `>([^<>{}]+)<` pattern, deduplicate against
+the literal set, and re-run section 19's comparison over the union. Expect more
+false "not found" from fragments, so the result needs reading rather than
+counting — which is the same rule `docs/QA-SCRIPTS.md` 0.2 states for every
+other scan in this set.
+
 ## Revision
 
 | Date | Change |
@@ -1261,3 +1324,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 19: reviews and wishlist, and the person split counted. 50 plural against 20 singular, with reviews.ts the largest singular source |
 | 2026-09-07 | Pass 20: milestone, every customer-facing cluster is documented; the remaining backlog is entirely admin. Plus the two admin money paths, vouchers and orders |
 | 2026-09-07 | Pass 21: drift check on all 196 quoted strings. Two are real drift: the wishlist labels specified here are not the ones in WishlistButton, and the toast does not exist |
+| 2026-09-07 | Pass 22: correction. Every count here is literal-only and misses JSX text; 655 Hebrew strings exist only as JSX. Qualifies the coverage numbers, does not invalidate the drift finding |
