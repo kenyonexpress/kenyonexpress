@@ -435,3 +435,57 @@ It is not coverage %. It is not permission to delete a "misc" test because this 
 
 `src/lib/account/saved-cards.test.ts`
 already pins G12. G11/G13/G14 are still holes.
+
+---
+
+## 10. Third-pass gaps (from the rest of this pack)
+
+| Id | Missing protection | Evidence | What would catch it |
+|---|---|---|---|
+| **G15** | Pending SQL numbers must be unique | Four numbers (169, 170, 171, 172) each have **two** files in `migrations/pending/` | Extend `pending-migrations-inventory.test.ts` to fail on duplicate `\d{3}_` prefixes. Today it only checks README ↔ directory names |
+| **G16** | `percentageOf` ≡ `applyBp` on non-negative integers | `commission.ts` calls commerce `percentageOf`. Settlement docs tell people to use `applyBp`. No test that they match on a table of `(amount, bp)` | Shared fixture: both functions on the same vectors, including `bp=5000` half-up |
+| **G17** | Guest cookie rename | `anon.test.ts` pins `Cookie: session_id=`. Nothing fails if RLS is edited to `ke_session_id` or if the client starts forwarding the browser jar | Contract test: policy SQL contains `->>'session_id'` **and** guest client sends that name **and** does not forward `Cookie` from the request |
+| **G18** | Admin webhooks tab vs zero-policy | 172_rls comments the bug. No test that `/admin/payments` webhooks uses `createAdminClient` | Source scan: webhooks tab must not call `createClient()` (user-scoped) for `payment_webhook_events` |
+| **G19** | Payout types-ahead | `database.ts` has `payout_statements`. Actions still 42P01 against historical production | Test that `admin/payouts.ts` is treated as dead, **or** a live probe (not this pack) that the tables exist before UI calls them |
+| **G20** | 169 whitelist vs `SERVER_EVENT_NAMES` | `registry-matches-migration.test.ts` exists. Confirm it fails if 169 is not applied **or** only if the SQL file drifts. Silent skip of `purchase` is R24 | If the test only diffs the pending file, CI is green while production still drops the four names |
+
+`pending-migrations-inventory.test.ts`
+protects README ↔ files, **not** uniqueness of the numeric prefix, **not** "has this been applied". Deleting it lets the README lie again (already happened three times per its own header).
+
+`src/lib/supabase/anon.test.ts`
+is the closest pin for G17. It is not enough if someone edits only the SQL policy.
+
+`src/__tests__/money-no-float.test.ts`
+allowlists
+`percentToBp`
+and
+`ilsToAgorot`.
+It does **not** allowlist a new
+`parseFloat`
+in
+`commission.ts`.
+G16 is the remaining money-math fork.
+
+Pixel
+`e2e/price-bidi.spec.ts`
+protects the shekel glyph side. It does **not** replace 171_category (datum vs render). Deleting the e2e ships a category name with the sign on the wrong side **in Chromium**; the read-path repair in
+`getAllCategories`
+is the other pin.
+
+---
+
+## 11. Tests this pass adds to the inventory (already on disk, previously folded into "misc")
+
+| File | Protects | If deleted |
+|---|---|---|
+| `src/lib/supabase/anon.test.ts` | Guest client sends `session_id` cookie, not the browser jar | G17 becomes a comment |
+| `src/__tests__/pending-migrations-inventory.test.ts` | README names every pending/applied/cancelled SQL file | Ghost migrations in the launch README |
+| `src/lib/analytics/registry-matches-migration.test.ts` | Event names vs 169 SQL list | Four funnel events 0 rows and nobody notices |
+| `e2e/price-bidi.spec.ts` | Shekel bidi at 380/768/1440 | Category `under-99` paints ₪ on the wrong side |
+| `src/lib/money-format.test.ts` | Display isolates. Not arithmetic | (already in §1 as display-only) |
+
+Closing G1–G20 is a **code** branch. This pack still does not run
+`pnpm`
+and still does not edit
+`.ts`.
+
