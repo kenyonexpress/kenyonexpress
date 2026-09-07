@@ -181,6 +181,15 @@ Heebo({ variable: '--font-heebo', subsets: ['latin','hebrew'],
 
 **כל שינוי חזותי נמדד בשלושה רוחבים מול ההפניה, ותקרה של ‏11%.**
 
+> ‏**⚠️ עודכן 08.09.2026, ‏05:40: המספרים בטבלה הזו הם המדידה האחרונה
+> שהצליחה, והשער אינו מדיד כרגע.** ‏`compare.mjs` מצלם את הצד החי מ-
+> ‏`https://kenyonexpress.co.il/`, ולדומיין **אין תעודת ‏TLS**. השורה
+> האחרונה ב-`docs/UI-PARITY-REPORT.md` היא ‏`UNMEASURED` עם
+> ‏`net::ERR_CONNECTION_CLOSED`. ‏**ובנוסף, גם כשהתעודה תחזור:** הנתיבים
+> בשער הם ‏WooCommerce (`/shop/`, ‏`/product-category/`), והדומיין יגיש
+> את אפליקציית ‏Next שלנו. ‏`docs/incidents/2026-09-08-production-tls-down.md` §3.
+
+
 **המרווח האמיתי הוא כשליש אחוז:**
 
 | מסלול | רוחב | הפרש |

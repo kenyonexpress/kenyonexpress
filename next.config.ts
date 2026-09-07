@@ -46,7 +46,28 @@ const headersWithPolicy = (
   permissions: string,
 ) => [
   { key: 'Content-Security-Policy', value: csp },
-  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  /*
+   * `preload` REMOVED 2026-09-08, and this is not a downgrade of the policy.
+   *
+   * `max-age` and `includeSubDomains` are unchanged and still enforce
+   * HTTPS-only for two years. What is gone is the REQUEST to be added to the
+   * browsers' preload list, and the reason is measured: on 2026-09-08 the apex
+   * and www both answered `no peer certificate available` on :443, while
+   * `http://kenyonexpress.co.il` 308-redirected into that same dead endpoint.
+   * DNS is already pointed at Vercel.
+   *
+   * Being on the preload list means a browser refuses plain HTTP for the
+   * domain BEFORE it has ever contacted it, and leaving that list takes
+   * months. Asking to be added while the certificate does not exist is asking
+   * to be locked out of our own domain for every new visitor, permanently
+   * rather than until the cert is fixed.
+   *
+   * Put it back once the certificate has served cleanly for two weeks. Until
+   * then the header still hardens every browser that reaches us over TLS; it
+   * just no longer volunteers us for a list we cannot currently satisfy.
+   * See docs/incidents/2026-09-08-production-tls-down.md section 5.1.
+   */
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
   // Moves in step with frame-ancestors. Browsers that honour both enforce both,
   // so a DENY left behind on a framable path blocks the frame anyway.
   { key: 'X-Frame-Options', value: frameOptions },
