@@ -82,3 +82,10 @@ Transfer then refund to original card: still the original payer, not the new hol
 - Do not add a `transferred` voucher status without a human enum migration.
 - WAVE-INDEX skips W32 on purpose for v7.0.0-rc1.
 
+---
+
+## Third pass
+
+Skip for v7. FAQ only: אי אפשר להעביר קופון באפליקציה. אפשר לשלוח במתנה בקופה.
+
+
