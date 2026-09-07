@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-07 11:35 UTC (‏Passkeys: כניסה והרשמה עם WebAuthn (טביעת אצבע / Face ID) דרך @simplewebauthn v14. מיגרציה 178 ממתינה ולא הוחלה: טבלת webauthn_credentials עם RLS קריאה/מחיקה עצמית וכתיבה רק ב-service role. האתגר נחתם ב-HMAC בעוגיית httpOnly ולא נשמר ב-DB, כך שהפיצ'ר עונה "לא זמין עדיין" עד להחלת 178. כניסה ללא שם משתמש ממירה assertion מאומת לסשן Supabase מלא (generateLink ואז verifyOtp בצד שרת) עם רענון טוקנים, מיזוג עגלת אורח ותביעת הפניה כמו כל מסלול כניסה אחר. נפילה אוטומטית לקישור קסם בטופס הכניסה, ניהול מפתחות ב-/account/security. כל השערים ירוקים: 3691 טסטים, type-check, lint, build)
 Updated: 2026-09-07 11:00 UTC (‏יומן קאשבק: טבלת ‏cashback_ledger הוספה-בלבד, בונוס 10% לרכישה ראשונה ו-5% לכל חמישית, מסך התאמות אדמין עם שובל ביקורת. מיגרציה 177 ממתינה ולא הוחלה)
 Updated: 2026-09-07 06:25 UTC (‏WhatsApp Business flow: ‏webhook נכנס של Twilio, תור עדכוני סטטוס הזמנה, פתיחת פניות תמיכה, ניהול הצטרפות/הסרה. מיגרציה 173 ממתינה ולא הוחלה)
 Updated: 2026-09-07 04:30 UTC (‏הקמת Vercel: ‏devCommand נוסף ל-vercel.json, ‏docs/VERCEL-SETUP.md נכתב: מדריך דשבורד מלא, טבלאות env לפי env.ts, אימות פריסה ראשונה, הפעלת המתזמן. ‏DNS נשאר ידני)

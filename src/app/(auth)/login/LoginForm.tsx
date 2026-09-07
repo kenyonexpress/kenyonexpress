@@ -9,6 +9,7 @@ import {
 } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
+import PasskeyLoginButton from './PasskeyLoginButton'
 import PhoneOtpForm from './PhoneOtpForm'
 
 function getError(state: AuthState): string | null {
@@ -78,6 +79,13 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           {googlePending ? 'מתחברים...' : 'כניסה עם Google'}
         </button>
       </form>
+
+      {/*
+        Passkey, directly under Google: renders only on browsers that support
+        WebAuthn, and its failure path opens the magic-link form below, which
+        is the fallback that works on every device and every account.
+      */}
+      <PasskeyLoginButton next={next} onFallback={() => setShowMagic(true)} />
 
       {/*
         Directly under Google, not buried below the password form. This is the

@@ -60,7 +60,7 @@ function manifestFilenames(): string[] {
 }
 
 describe('the pending migration inventory', () => {
-  it('holds the thirty-one renumbered files and nothing else', () => {
+  it('holds the thirty-two renumbered files and nothing else', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     // The list moved wholesale into `applied/` on 2026-09-03; the assertion is
@@ -100,6 +100,7 @@ describe('the pending migration inventory', () => {
       '172_rls_zero_policy_tables.sql',
       '173_whatsapp_flow.sql',
       '177_cashback_ledger.sql',
+      '178_webauthn_credentials.sql',
     ])
   })
 

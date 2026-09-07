@@ -16,7 +16,7 @@ const ITEMS = [
   { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },
-  { href: '/account/security', label: 'אבטחה' },
+  { href: '/account/security', label: 'אבטחה וכניסה' },
 ] as const
 
 // This file carried its OWN copy of `formatIls`, a second

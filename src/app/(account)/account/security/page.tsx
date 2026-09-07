@@ -1,30 +1,31 @@
-import { isStaffRole } from '@/lib/admin/roles'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import SecurityClient from './SecurityClient'
+import PasskeyManager from '@/components/account/PasskeyManager'
+import { listPasskeys } from '@/server/actions/passkeys'
 
-export const metadata = { title: 'אבטחת החשבון' }
+export const metadata = { title: 'אבטחה וכניסה' }
 
 export default async function SecurityPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login?next=/account/security')
-
-  // A failed role read renders the page as a plain customer's -- the staff
-  // flag only changes copy, and the rbac gates re-derive the truth anyway.
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-  const isStaff = !profileError && profile != null && isStaffRole(profile.role)
+  // The same action the client refreshes with, called in-process here for the
+  // first paint. `available: false` means migration 178 has not been applied;
+  // the page still renders, with an empty list the manager can explain.
+  const result = await listPasskeys()
+  const initial = 'available' in result && result.available ? result.passkeys : []
+  const available = 'available' in result && result.available
 
   return (
     <>
-      <h1 className="account-title">אבטחת החשבון</h1>
-      <SecurityClient isStaff={isStaff} />
+      <h1 className="account-title">אבטחה וכניסה</h1>
+      <p className="account-subtitle">ניהול הדרכים להתחבר לחשבון שלך</p>
+      {available ? (
+        <PasskeyManager initial={initial} />
+      ) : (
+        <section className="account-card">
+          <h2 className="account-card__title">מפתחות כניסה (Passkeys)</h2>
+          <p className="account-row__meta">
+            כניסה עם טביעת אצבע או Face ID עדיין לא זמינה בחשבון הזה. בינתיים אפשר להתחבר עם סיסמה,
+            עם קישור לאימייל או עם קוד ב-SMS.
+          </p>
+        </section>
+      )}
     </>
   )
 }
