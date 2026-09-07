@@ -74,7 +74,17 @@ Duplicate 171 numbers. Full filename. `wp_import.categories` shadow.
 
 ## Second pass (bidi)
 
-- `171_category_name_shekel_order.md` is a **name** fix for under-99, not FTS. Do not apply the wrong 171.
+- `171_category_name_shekel_order.sql` is a **name** fix for under-99, not FTS. Do not apply the wrong 171.
 - Categories are not prices. Soft-delete hides; historical `order_items` keep the name snapshot if present.
 - Empty state: אין מוצרים בקטגוריה הזו. Do not show the ₪1 master as a deal.
+
+---
+
+## Third pass
+
+`171_category_name_shekel_order.sql`
+is the name/bidi file, not FTS. All:
+כל המוצרים.
+Do not apply pending SQL from this worktree.
+
 
