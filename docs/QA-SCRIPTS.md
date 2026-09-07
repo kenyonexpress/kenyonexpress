@@ -853,7 +853,7 @@ leave them.
 | 2 | **The supplier-lead honeypot is detectable.** The decoy success differs from the real one by `בהקדם` | `ERROR-COPY` 16.3 | make the two byte-identical |
 | 3 | **Two password minimums.** `auth.ts` says 6, `validations/auth.ts` says 8 | `ERROR-COPY` 13.1 | one number |
 | 4 | **Seventeen region pages are unreachable below `xl`** and absent from the sitemap | `SEO-PLAN` 4.1, 5.1 | a mobile link **and** a sitemap entry; neither substitutes |
-| 5 | **`/products` has no canonical** while indexable at sitemap priority 0.9 and taking `sort` params | `SEO-PLAN` 1.2.2 | one line |
+| 5 | **`/products` has no canonical, no JSON-LD and no title of its own**, while indexable at sitemap priority 0.9 and taking `sort` params. It is the least-instrumented indexable page on the site | `SEO-PLAN` 1.2.2, 10 | copy `/category/[slug]`, which is the same shape and does all three |
 | 6 | **PDP add-to-cart is yellow at 380 where live is slate** with a 6px corner | `DESIGN-SYSTEM` 4.0 | real pixel cost at `--width=380` |
 
 ### 15.2 Reaches an operator

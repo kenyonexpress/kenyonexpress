@@ -356,6 +356,37 @@ The right shape is a follow-up: return a row rather than an integer
 believed complete. Recorded here so the option is not lost, and explicitly
 **not** folded into 169.
 
+### 2.4b The whitelist coupling, drift-checked (pass 23)
+
+Risk 1 of section 2.4 is that the SQL whitelist and
+`src/lib/analytics/events.ts` must move together with **no automated gate**
+holding them. Re-checked, since an ungated coupling is exactly the kind that
+drifts:
+
+| | Names |
+|---|---|
+| 169's `v_name NOT IN (...)` list | **12** |
+| `CLIENT_EVENT_NAMES` + `SERVER_EVENT_NAMES` | **12** |
+| In SQL and not the registry | **0** |
+| In the registry and not SQL | **0** |
+
+Exact match, both directions:
+
+```
+add_to_cart      begin_checkout   checkout_step    order_refunded
+page_view        purchase         remove_from_cart view_category
+view_product     voucher_redeemed web_vital        whatsapp_click
+```
+
+**Still consistent.** The risk is unchanged, though: nothing enforces it, so
+this check is the enforcement until a test exists, and the next person to add an
+event has no reason to know both places need editing.
+
+The test that would close it is small: parse the `IN (...)` list out of the
+migration file, compare it to the two exported arrays, fail on any difference.
+`src/__tests__/pending-migrations-inventory.test.ts` already reads
+`migrations/pending/`, so it has the file-reading half.
+
 ### 2.5 Safety properties worth keeping
 
 - `SECURITY DEFINER` with `SET search_path TO ''` and every object
@@ -1136,3 +1167,4 @@ STATE.md                            "חסמים לאופיר", where 162's block
 | 2026-09-07 | Pass 20: verified CHECKSUMS.sha256. 45 of 45 OK, zero failed, covering every applied migration and preflight; and named the one question no checksum can answer |
 | 2026-09-07 | Pass 21: pinned the reviewed pending files by hash. applied/ has CHECKSUMS.sha256 and pending/ has none, so an approval cannot currently be attached to bytes |
 | 2026-09-07 | Pass 22: refreshed the summary to gather all findings from passes 12-21. Four are decision-shaped before anything is applied; the recommended order is unchanged |
+| 2026-09-07 | Pass 23: drift-checked the 169 whitelist against events.ts. Twelve names, exact match both directions; still ungated |
