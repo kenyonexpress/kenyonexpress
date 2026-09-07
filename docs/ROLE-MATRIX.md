@@ -1113,6 +1113,39 @@ The wishlist row is access and product: RLS may allow own INSERT, but the
 storefront does not mount the control. Do not QA "add from PDP" as if it
 shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 
+## 11a. Drift check (pass 21)
+
+Sections 2 and 3 were read in pass 1. Both re-verified against source, because a
+matrix nobody re-checks is a matrix that quietly stops being true.
+
+| Claim | Result |
+|---|---|
+| The section matrix (10 sections x 2 non-admin roles) | **unchanged**, all 20 cells |
+| `AdminSection` members | **10**, unchanged |
+| Admin routes on disk | **41** |
+| Rows in section 3's table | **41** |
+| Guard drift | **zero** |
+
+Every one of the 41 routes still carries the guard section 3 records, character
+for character. No route was added without a doc row, and no doc row points at a
+route that no longer exists.
+
+### How to re-run it
+
+Parse the route/guard pairs out of section 3's table, walk every `page.tsx`
+under `src/app/(admin)`, extract the first `requireSection(...)` /
+`requireAdminPage()` / `requireAdminSession()` / `requireStaffSession()` /
+`requirePanelSession()` in each, and print any route where the two disagree or
+where either side is missing.
+
+Expected output: nothing.
+
+**This is the one check in this document that can be automated**, and it is the
+one worth automating: the route table is 41 rows of exactly the kind of detail
+that rots. A test asserting it would fail the moment someone adds an admin page
+without a guard, which is the failure this whole document exists to make
+visible.
+
 ## 12. Revision
 
 | Date | Change |
@@ -1134,3 +1167,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 18: the twelve non-admin server actions. Eight owner-scoped via auth.getUser, four deliberately public with three rate-limited, and no supplier actions at all |
 | 2026-09-07 | Pass 19: the supplier helper family. is_active is honoured app-side and DB-side so revocation takes effect at the next query; and these are the counter-example to the 7.3 definer caution |
 | 2026-09-07 | Pass 20: traced current_user_role(). It answers the support-reads concern: it returns the enum so a policy can name a SET, and refunds and payment_events already include support |
+| 2026-09-07 | Pass 21: drift check. The section matrix is unchanged in all 20 cells and all 41 route guards match character for character |
