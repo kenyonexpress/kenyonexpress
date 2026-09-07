@@ -489,3 +489,16 @@ You can stay without babysitting if you can answer these out loud:
   a vulnerability, not a check?
 
 If any answer is "escrow" or "the global 10%", read hour 1 again.
+
+---
+
+## Third pass (docs pack)
+
+Week-one reading now includes
+`docs/cursor/waves/WAVE-INDEX.md`
+and
+`docs/cursor/contracts/ROLE-VENDOR.md`
+before any till work. Never open
+`/Users/ofir/kenyonexpress-web/kenyonexpress`
+from this worktree.
+
