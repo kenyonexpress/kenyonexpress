@@ -1077,6 +1077,60 @@ Nothing it does is needed on the first paint.
 It deliberately does **not** capture `beforeinstallprompt`; that is
 `InstallPrompt`'s concern. The two are separate on purpose.
 
+## Pass 19: the admin table and navigation cluster
+
+Three more of the 25. All three are staff-facing and all three carry a11y work
+worth recording, which the summary tables' RTL/tokens columns do not capture.
+
+| Component | File | Props | a11y |
+|---|---|---|---|
+| CommandPalette | `admin/CommandPalette.tsx` | none | `aria-label="חיפוש מהיר"`, Escape closes, arrow-key navigation |
+| ServerDataTable | `admin/ServerDataTable.tsx` | `ServerColumn<T>[]` + rows | `aria-label="בחירת שורה"` on the row checkbox |
+| TablePagination | `admin/TablePagination.tsx` | page, total, etc. | `<nav aria-label="ניווט עמודים">`, `aria-current="page"`, `aria-hidden` on the inert ellipsis |
+
+### CommandPalette holds no credentials, and says so
+
+Cmd+K anywhere in the panel: find an order by invoice number, email or phone.
+
+The important line is about **where the authorization lives**:
+
+> The search itself is a server action behind `requireSection('orders','read')`,
+> so this component holds no credentials and can reach nothing an admin could
+> not already read. It is a keyboard shortcut over an authorised query.
+
+That is the correct shape for a global search box, and it is why the component
+does not appear in `docs/ROLE-MATRIX.md`'s guard tables: the guard is on
+`quick-search.ts`, which section 6 already lists at `requireSection('orders','read')`
+— the one admin action with a **read** rather than a write gate. Support can use
+it; `content_uploader` cannot.
+
+It is "mounted once in the admin layout rather than per page, because the whole
+point is that it works from wherever the operator happens to be standing when
+the phone rings."
+
+Behaviour worth testing: `metaKey || ctrlKey` plus `k`, with `preventDefault`,
+so it works on both platforms and does not fight the browser. Escape closes.
+`DEBOUNCE_MS = 250` and `MIN_TERM = 2`, so a single character does not query.
+
+### TablePagination is the best-labelled control in the panel
+
+It carries all three of the things pagination usually omits:
+
+- `<nav aria-label="ניווט עמודים">` — the region is named
+- `aria-current={p === page ? 'page' : undefined}` — the current page is
+  programmatically current, not merely styled
+- `aria-hidden` on the ellipsis span — the gap is decorative and is not read out
+
+`docs/QA-SCRIPTS.md` section 2 step 5 asks for exactly this ("arrows mirror;
+current page `aria-current`"). This component satisfies it; the check is worth
+keeping for the storefront pagination, which is a different implementation.
+
+### ServerDataTable names its row selector
+
+`aria-label="בחירת שורה"` on the per-row checkbox. Without it a bulk-select
+table gives a screen reader a column of unnamed checkboxes, which is the most
+common failure in an admin grid.
+
 ## Revision
 
 | Date | Change |
@@ -1097,3 +1151,4 @@ It deliberately does **not** capture `beforeinstallprompt`; that is
 | 2026-09-07 | Pass 16: documented the four load-bearing components pass 15 flagged (HeaderCart, SearchBox, the two share buttons); 21 of the 25 remain known-absent |
 | 2026-09-07 | Pass 17: the analytics trio. ThirdPartyTags is the consent boundary and is stricter than Consent Mode; the client half works while the server events are still discarded by the DB |
 | 2026-09-07 | Pass 18: the PWA pair. Capturing beforeinstallprompt creates an obligation, and a dev-registered service worker produces the same symptom as a stale next start |
+| 2026-09-07 | Pass 19: the admin table and navigation cluster. CommandPalette is a shortcut over an authorised query and holds no credentials; TablePagination is the best-labelled control in the panel |
