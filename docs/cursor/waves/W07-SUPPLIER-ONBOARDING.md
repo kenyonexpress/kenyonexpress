@@ -85,3 +85,8 @@ Public lead form off by default until legal copy is ready. Off: hide form, keep 
 - `default_split_percent` must not prefill products (`contracts/MIGRATION-PLAYBOOK.md`). Unsellable until per-product `platform_percent`.
 - No payout tables. Admin 42P01 is correct until a human ships schema (`contracts/LEDGER.md`).
 - Legal copy in the brief: prepaid stays on platform, remainder at till (`business/SUPPLIER-FAQ.md`).
+- PIN staff is not a website login. 15 attempts per hour (`contracts/RATE-LIMITS.md`).
+- Self-serve product publish is out. Admin sets `platform_percent` and `coupon_price_ils`. Missing either → unsellable Hebrew, not a silent 10%.
+- After approve: insert `supplier_members` owner. Then scanners. `vendor` enum alone never opens `/scan`.
+- WhatsApp number is H4, not this form. Do not store a second payout IBAN "for later".
+
