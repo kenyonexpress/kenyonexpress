@@ -82,12 +82,15 @@ function InfoItem({ Icon, label, href }: InfoItemProps) {
       {label}
     </>
   )
-  // The row is 37px, which already clears the 44px floor only for the link;
-  // `min-h` on the anchor keeps the tappable one honest at any type size.
+  // The row is 37px. The comment here used to say a `min-h` on the anchor kept
+  // the tappable one honest, and there was no `min-h` in the class list: the
+  // link measured 77.8x37.3 at every width, 7px under the floor. Growing the
+  // row would move the whole masthead down, so the anchor carries `hit-44`,
+  // which centres a transparent 44px overlay on it and paints nothing.
   return href ? (
     <Link
       href={href}
-      className="flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
+      className="hit-44 flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
     >
       {body}
     </Link>

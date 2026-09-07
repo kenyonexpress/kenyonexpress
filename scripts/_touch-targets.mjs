@@ -78,12 +78,14 @@ for (const width of WIDTHS) {
         for (const pseudo of ['::before', '::after']) {
           const ps = getComputedStyle(el, pseudo)
           if (ps.content === 'none' || ps.position !== 'absolute') continue
-          const nums = ['top', 'right', 'bottom', 'left'].map((s) => Number.parseFloat(ps[s]))
-          if (nums.some((n) => !Number.isNaN(n) && n < 0)) {
-            const [t, ri, b, l] = nums.map((n) => (Number.isNaN(n) ? 0 : n))
-            w = Math.max(w, r.width - l - ri)
-            h = Math.max(h, r.height - t - b)
-          }
+          // The used width/height of the overlay IS the hit box, whatever the
+          // insets say. Reading them directly covers both the negative-inset
+          // idiom and the centred `.hit-44` overlay, which has no negative
+          // inset at all and which an inset-only heuristic scored as absent.
+          const pw = Number.parseFloat(ps.width)
+          const ph = Number.parseFloat(ps.height)
+          if (!Number.isNaN(pw)) w = Math.max(w, pw)
+          if (!Number.isNaN(ph)) h = Math.max(h, ph)
         }
         if (w >= MIN && h >= MIN) continue
         const label = (el.getAttribute('aria-label') || el.textContent || '')

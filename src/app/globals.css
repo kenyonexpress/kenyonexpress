@@ -411,3 +411,38 @@ body:has([data-home]) .topbar-greeting {
   inline-size: 0;
   overflow: hidden;
 }
+
+/* A 44px HIT AREA THAT PAINTS NOTHING AND MOVES NOTHING.
+ *
+ * The standing rule is a 44px minimum touch target. The obvious fix, growing
+ * the control, is not available here: every visual step is scored against an
+ * 11% pixel gate whose real margin is about a third of a percent, so making a
+ * 30px control 44px spends the entire budget on one icon.
+ *
+ * So the control keeps its painted size and gets a transparent overlay that is
+ * at least 44px square, centred on it. `content-box` geometry is untouched, no
+ * sibling moves, and the diff against the reference is unchanged, because the
+ * overlay has no background, no border and no text.
+ *
+ * `top`/`left` with `translate` rather than `inset-inline`: the overlay is
+ * centred, so it needs no direction awareness, and physical centring is correct
+ * in both RTL and LTR. `max()` and not a flat 44px, so a control that is
+ * already larger than 44 in one axis is not shrunk in that axis.
+ *
+ * WHERE NOT TO USE IT. The overlay extends past the control and sits above
+ * whatever is next to it, so on controls packed closer than 44px apart the
+ * later sibling in the DOM captures the overlap. Use it on isolated controls;
+ * for a tight row, space the row first. */
+.hit-44 {
+  position: relative;
+}
+
+.hit-44::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: max(100%, 44px);
+  block-size: max(100%, 44px);
+}

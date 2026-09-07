@@ -308,7 +308,7 @@ export default function SiteFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
-                className="flex size-touch-min items-center justify-center rounded-full bg-footer-bg text-white transition-colors hover:bg-brand-secondary hover:text-heading lg:h-10 lg:w-10"
+                className="hit-44 flex size-touch-min items-center justify-center rounded-full bg-footer-bg text-white transition-colors hover:bg-brand-secondary hover:text-heading lg:h-10 lg:w-10"
               >
                 <SocialGlyph path={s.path} />
               </a>

@@ -49,7 +49,7 @@ export default function MastheadNav() {
         <Link
           href="/account/wishlist"
           aria-label="המועדפים שלי"
-          className="-m-1 p-1 transition-opacity hover:opacity-70"
+          className="hit-44 -m-1 p-1 transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}
         >
           <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
