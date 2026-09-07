@@ -286,6 +286,24 @@ hears nothing at all until the page happens to change under them.
 |---|---|
 | 14 components | **24 components** |
 
+**Corrected in pass 23.** Those two numbers count different sets and should not
+be added together. Re-counted:
+
+| | Count |
+|---|---|
+| Components with `isPending` / `useTransition` / a `pending` flag | **33** |
+| Of those, announcing | **9** |
+| Of those, **silent** | **24** |
+| Components that announce but are **not** stateful | 5 |
+
+So the figure is **24 of 33 stateful components, 73%**, not 24 of 38. The five
+extra announcers (`CouponCardSkeleton`, `CategoryGridSkeleton`,
+`account/TokenManager`, `geo/CityTags`, `storefront/StockScarcity`) announce
+something other than a pending action — a skeleton announcing load state via
+`aria-busy` is correct and is a different use.
+
+The silent list below is unchanged and still accurate: all 24 are still silent.
+
 Silent (`pending` state, no announcement):
 
 ```
@@ -1335,3 +1353,4 @@ its provenance in a comment** (the rest).
 | 2026-09-07 | Pass 20: the storefront supplier pair. SupplierInfo exists because the address used to appear only after payment, and it records a wrong-union-member bug that selected a valid branch instead of throwing |
 | 2026-09-07 | Pass 21: RTL-risky list re-verified. Nine hits, seven real; CouponCard and BenefitBar are now clean and two components were missing. The first run said 38, all extras being rounded-lg matched by a rounded-l pattern |
 | 2026-09-07 | Pass 22: token compliance re-verified. Zero unallowlisted raw hex; of 19 components with arbitrary sizes, only four duplicate an existing token and [15px] x11 is the one worth fixing |
+| 2026-09-07 | Pass 23: corrected the busy-state figure. 24 of 33 stateful components are silent (73%), not 24 of 38; the earlier pair counted two different sets |

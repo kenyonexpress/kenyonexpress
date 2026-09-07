@@ -477,7 +477,7 @@ failed refund.
 | 5 | Icons | arrows mirror; logo, WhatsApp, QR, hearts do **not** |
 | 6 | 404 / 500 | Hebrew only |
 | 7 | Consent | Accept / Decline equal weight |
-| 8 | **In-flight state is announced** | press any submit with a screen reader on: the busy state must be spoken, not only shown. 24 of 38 stateful components currently do not announce (`docs/COMPONENT-INVENTORY.md` 12.1); `cart/AddToCartButton` is the highest-traffic one |
+| 8 | **In-flight state is announced** | press any submit with a screen reader on: the busy state must be spoken, not only shown. 24 of 33 stateful components (73%) currently do not announce (`docs/COMPONENT-INVENTORY.md` 12.1); `cart/AddToCartButton` is the highest-traffic one |
 | 9 | **Visible label is the accessible name** | say the words on a button with voice control and it must activate. An `aria-label` that differs from the visible text breaks this |
 
 ---
