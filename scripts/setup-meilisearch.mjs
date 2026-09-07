@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
- * Creates the Meilisearch products index, applies the settings from
- * src/lib/search/meili-settings.ts, and syncs every active product into it.
+ * Creates the Meilisearch products and brands indexes, applies the settings
+ * from src/lib/search/meili-settings.ts (Hebrew typo budget, synonyms, facets,
+ * and the `heb` tokenizer locale pin), syncs every active product, and
+ * rebuilds the derived brands index from the same read.
  *
  * Idempotent: re-running updates settings and re-pushes documents. Meilisearch
  * upserts on the primary key, so a re-sync never duplicates.
@@ -29,28 +31,68 @@ function loadSettings() {
   const pick = (name) => {
     const match = src.match(new RegExp(`export const ${name} = (\\[[\\s\\S]*?\\]) as const`))
     if (!match) throw new Error(`could not read ${name} from meili-settings.ts`)
-    return JSON.parse(match[1].replace(/'/g, '"').replace(/,(\s*])/g, '$1'))
+    // Strip the // comments first: the arrays carry rationale comments, and a
+    // comment inside the literal is a syntax error to JSON.parse. Safe here
+    // because none of the string values contains a slash.
+    const literal = match[1]
+      .replace(/\/\/[^\n]*/g, '')
+      .replace(/'/g, '"')
+      .replace(/,(\s*])/g, '$1')
+    return JSON.parse(literal)
   }
   const typo = src.match(/minWordSizeForTypos: \{ oneTypo: (\d+), twoTypos: (\d+) \}/)
   if (!typo) throw new Error('could not read minWordSizeForTypos from meili-settings.ts')
 
+  const typoTolerance = {
+    enabled: true,
+    minWordSizeForTypos: { oneTypo: Number(typo[1]), twoTypos: Number(typo[2]) },
+    disableOnAttributes: ['sku', 'slug', 'barcode'],
+  }
+
   return {
-    searchableAttributes: pick('SEARCHABLE_ATTRIBUTES'),
-    filterableAttributes: pick('FILTERABLE_ATTRIBUTES'),
-    sortableAttributes: pick('SORTABLE_ATTRIBUTES'),
-    rankingRules: pick('RANKING_RULES'),
-    stopWords: pick('STOP_WORDS'),
-    typoTolerance: {
-      enabled: true,
-      minWordSizeForTypos: { oneTypo: Number(typo[1]), twoTypos: Number(typo[2]) },
-      disableOnAttributes: ['sku', 'slug', 'barcode'],
+    settings: {
+      searchableAttributes: pick('SEARCHABLE_ATTRIBUTES'),
+      filterableAttributes: pick('FILTERABLE_ATTRIBUTES'),
+      sortableAttributes: pick('SORTABLE_ATTRIBUTES'),
+      rankingRules: pick('RANKING_RULES'),
+      stopWords: pick('STOP_WORDS'),
+      typoTolerance,
     },
+    // Applied in a separate PATCH: localizedAttributes needs Meilisearch 1.10,
+    // and an older engine must degrade to a warning, not fail the whole setup.
+    localizedAttributes: [
+      { attributePatterns: pick('HEBREW_ATTRIBUTE_PATTERNS'), locales: pick('HEBREW_LOCALES') },
+    ],
+    // Mirrors BRANDS_INDEX_SETTINGS in meili-settings.ts; the typo budget is
+    // parsed from the same source so the two cannot drift on the numbers.
+    brandsSettings: {
+      searchableAttributes: ['name'],
+      filterableAttributes: ['categories'],
+      sortableAttributes: ['product_count'],
+      rankingRules: [
+        'words',
+        'typo',
+        'product_count:desc',
+        'proximity',
+        'attribute',
+        'sort',
+        'exactness',
+      ],
+      stopWords: [],
+      typoTolerance: {
+        enabled: true,
+        minWordSizeForTypos: { ...typoTolerance.minWordSizeForTypos },
+        disableOnAttributes: [],
+      },
+    },
+    brandsLocalizedAttributes: [{ attributePatterns: ['name'], locales: pick('HEBREW_LOCALES') }],
   }
 }
 
 const HOST = (process.env.MEILISEARCH_HOST ?? '').replace(/\/$/, '')
 const KEY = process.env.MEILISEARCH_API_KEY ?? ''
 const INDEX = process.env.MEILISEARCH_INDEX ?? 'products'
+const BRANDS_INDEX = process.env.MEILISEARCH_BRANDS_INDEX ?? 'brands'
 const SETTINGS_ONLY = process.argv.includes('--settings-only')
 
 if (!HOST) {
@@ -108,7 +150,7 @@ async function loadProducts() {
     .select(
       `id, slug, name_he, name_en, brand, short_description_he, description_he, sku,
        type, is_coupon_enabled, kenyon_price, full_price, images, stock_quantity,
-       category_id, supplier_id, created_at, categories(name_he, slug)`,
+       category_id, supplier_id, city, tags, created_at, categories(name_he, slug)`,
     )
     .eq('status', 'active')
     .is('deleted_at', null)
@@ -119,12 +161,16 @@ async function loadProducts() {
   // only the public-safe name is indexed (no contact details ever reach Meili).
   const supplierIds = [...new Set((data ?? []).map((p) => p.supplier_id).filter(Boolean))]
   const names = new Map()
+  const cities = new Map()
   if (supplierIds.length > 0) {
     const { data: suppliers } = await supabase
       .from('suppliers')
-      .select('id, name')
+      .select('id, name, city')
       .in('id', supplierIds)
-    for (const s of suppliers ?? []) names.set(s.id, s.name)
+    for (const s of suppliers ?? []) {
+      names.set(s.id, s.name)
+      if (typeof s.city === 'string' && s.city.trim()) cities.set(s.id, s.city.trim())
+    }
   }
 
   return (data ?? []).map((row) => {
@@ -149,36 +195,107 @@ async function loadProducts() {
       category_name_he: category?.name_he ?? null,
       supplier_id: row.supplier_id ?? null,
       supplier_name: row.supplier_id ? (names.get(row.supplier_id) ?? null) : null,
+      // The same COALESCE the indexer resolves: the product's own city wins,
+      // the supplier's carries the rest. Tags index as a clean string array.
+      city:
+        (typeof row.city === 'string' && row.city.trim()) ||
+        (row.supplier_id ? (cities.get(row.supplier_id) ?? null) : null) ||
+        null,
+      tags: Array.isArray(row.tags)
+        ? row.tags.filter((t) => typeof t === 'string' && t.trim().length > 0)
+        : [],
       created_at: row.created_at ?? null,
     }
   })
+}
+
+async function ensureIndex(uid) {
+  const existing = await meili('/indexes').then((r) => (r.results ?? []).some((i) => i.uid === uid))
+  if (!existing) {
+    await awaitTask(
+      await meili('/indexes', { method: 'POST', body: { uid, primaryKey: 'id' } }),
+      `create index ${uid}`,
+    )
+    console.log(`setup-meilisearch: created index "${uid}"`)
+  } else {
+    console.log(`setup-meilisearch: index "${uid}" already exists`)
+  }
+}
+
+/**
+ * `localizedAttributes` pins the tokenizer's language detection to Hebrew for
+ * the Hebrew-content fields. The setting exists from Meilisearch 1.10; an
+ * older engine rejects the key, and that must cost a warning, not the setup.
+ */
+async function applyLocalized(uid, localizedAttributes) {
+  try {
+    await awaitTask(
+      await meili(`/indexes/${uid}/settings`, { method: 'PATCH', body: { localizedAttributes } }),
+      `apply localizedAttributes to ${uid}`,
+    )
+    console.log(`setup-meilisearch: Hebrew tokenizer locales pinned on "${uid}" (heb)`)
+  } catch (error) {
+    console.warn(
+      `setup-meilisearch: WARNING, localizedAttributes not applied to "${uid}" ` +
+        `(needs Meilisearch >= 1.10): ${error.message}`,
+    )
+  }
+}
+
+/**
+ * One document per distinct brand, aggregated from the product documents.
+ * Mirrors toBrandDocuments in meili-settings.ts, which the test suite covers;
+ * grouping is case- and whitespace-insensitive, the first spelling wins, and
+ * the id is base64url because Meilisearch ids only allow [A-Za-z0-9_-].
+ */
+function toBrandDocuments(products) {
+  const byKey = new Map()
+  for (const row of products) {
+    const name = typeof row.brand === 'string' ? row.brand.trim() : ''
+    if (!name) continue
+    const key = name.toLowerCase().replace(/\s+/g, ' ')
+    let doc = byKey.get(key)
+    if (!doc) {
+      doc = {
+        id: Buffer.from(key, 'utf8').toString('base64url'),
+        name,
+        product_count: 0,
+        coupon_count: 0,
+        categories: new Set(),
+      }
+      byKey.set(key, doc)
+    }
+    doc.product_count += 1
+    if (row.type === 'coupon') doc.coupon_count += 1
+    if (row.category_slug) doc.categories.add(row.category_slug)
+  }
+  return [...byKey.values()]
+    .map((d) => ({ ...d, categories: [...d.categories].sort() }))
+    .sort((a, b) => b.product_count - a.product_count)
 }
 
 async function main() {
   const health = await meili('/health')
   console.log(`setup-meilisearch: ${HOST} is ${health.status}`)
 
-  const existing = await meili('/indexes').then((r) =>
-    (r.results ?? []).some((i) => i.uid === INDEX),
-  )
-  if (!existing) {
-    await awaitTask(
-      await meili('/indexes', { method: 'POST', body: { uid: INDEX, primaryKey: 'id' } }),
-      `create index ${INDEX}`,
-    )
-    console.log(`setup-meilisearch: created index "${INDEX}"`)
-  } else {
-    console.log(`setup-meilisearch: index "${INDEX}" already exists`)
-  }
+  await ensureIndex(INDEX)
+  await ensureIndex(BRANDS_INDEX)
 
-  const settings = loadSettings()
+  const { settings, localizedAttributes, brandsSettings, brandsLocalizedAttributes } =
+    loadSettings()
   await awaitTask(
     await meili(`/indexes/${INDEX}/settings`, { method: 'PATCH', body: settings }),
     'apply settings',
   )
   console.log(
-    `setup-meilisearch: settings applied (typo tolerance oneTypo=${settings.typoTolerance.minWordSizeForTypos.oneTypo}, twoTypos=${settings.typoTolerance.minWordSizeForTypos.twoTypos} — tuned for Hebrew)`,
+    `setup-meilisearch: settings applied (typo tolerance oneTypo=${settings.typoTolerance.minWordSizeForTypos.oneTypo}, twoTypos=${settings.typoTolerance.minWordSizeForTypos.twoTypos}: tuned for Hebrew)`,
   )
+  await awaitTask(
+    await meili(`/indexes/${BRANDS_INDEX}/settings`, { method: 'PATCH', body: brandsSettings }),
+    'apply brands settings',
+  )
+  await applyLocalized(INDEX, localizedAttributes)
+  await applyLocalized(BRANDS_INDEX, brandsLocalizedAttributes)
 
   if (SETTINGS_ONLY) {
     console.log('setup-meilisearch: --settings-only, skipping product sync.')
@@ -196,6 +313,22 @@ async function main() {
     'index documents',
   )
   console.log(`setup-meilisearch: indexed ${documents.length} product(s).`)
+
+  // The brands index is derived, so it is REBUILT rather than merged: a brand
+  // whose last product left the catalogue must leave the index too, and an
+  // upsert alone would keep it forever.
+  const brands = toBrandDocuments(documents)
+  await awaitTask(
+    await meili(`/indexes/${BRANDS_INDEX}/documents`, { method: 'DELETE' }),
+    'clear brands index',
+  )
+  if (brands.length > 0) {
+    await awaitTask(
+      await meili(`/indexes/${BRANDS_INDEX}/documents`, { method: 'PUT', body: brands }),
+      'index brand documents',
+    )
+  }
+  console.log(`setup-meilisearch: indexed ${brands.length} brand(s).`)
 }
 
 main().catch((error) => {
