@@ -1115,6 +1115,55 @@ literal scan cannot see JSX text — but a `title` is always a metadata literal,
 never JSX, so this particular check has no blind spot. H1s do, which is why
 section 6.1 audited them by opening the files rather than by counting.
 
+## 10. JSON-LD coverage against section 3 (pass 23)
+
+Section 3 specifies structured data per page. This is which pages emit any.
+
+| Route | Section 3 specifies | Emits? |
+|---|---|---|
+| `/` | Organization + WebSite | **yes** |
+| `/category/[slug]` | BreadcrumbList + CollectionPage + ItemList | **yes** |
+| `/product/[slug]` | Product + Offer + BreadcrumbList | **yes** |
+| `/city/[slug]` | BreadcrumbList | **yes** |
+| `/faq` | FAQPage | **yes** — `FAQPage`, `Question`, `Answer` inline |
+| `/blog` | Blog / ItemList | **yes** — `Blog`, `BlogPosting` inline |
+| **`/products`** | BreadcrumbList + CollectionPage + ItemList | **NO** |
+| `/s/[id]` | LocalBusiness with `@id … #business` | **NO** (already gap 5) |
+
+Six of eight. `/s/{id}` was already recorded. **`/products` is new.**
+
+### 10.1 `/products` is the least-instrumented indexable page on the site
+
+It now carries **three** gaps, all found in the last four passes:
+
+| Gap | Where | Consequence |
+|---|---|---|
+| No canonical | 1.2.2, pass 20 | every `?sort=` URL competes as its own page |
+| No JSON-LD | here, pass 23 | no `CollectionPage`, no `ItemList`, no breadcrumb in structured data |
+| Not in section 2's title table with a title of its own | 2.1.2 | falls back to the root default |
+
+And it is not a minor route:
+
+- `sitemap.ts` lists it at **priority 0.9**, joint-highest with `/coupons` and
+  second only to `/` at 1.0
+- section 5.1 confirms it is emitted with `changeFrequency: daily`
+- `robots.txt` deliberately does **not** disallow it, and section 5 states that
+  as a rule
+- it is the archive `docs/UI-PARITY-LOG.md` scores as `--page=products`
+
+So the page the sitemap promotes hardest is the one carrying the least
+structured data and the weakest canonicalisation. Nothing in this document
+argues for that; it reads as three separate omissions on the same route rather
+than a decision.
+
+### 10.2 The fix is `/category/[slug]`'s, applied twice
+
+`/category/[slug]` already does all three correctly and is the same shape: an
+archive of product cards with sort params. Copying its canonical line and its
+JSON-LD call is the whole of it.
+
+Recorded, not changed: `.tsx`.
+
 ## Revision
 
 | Date | Change |
@@ -1139,3 +1188,4 @@ section 6.1 audited them by opening the files rather than by counting.
 | 2026-09-07 | Pass 20: canonicals audited. No canonical interpolates searchParams anywhere, but /products is indexable at priority 0.9, takes sort params, and has no canonical at all |
 | 2026-09-07 | Pass 21: re-verified all six known gaps against source. Six of six unchanged, with the exact command for each |
 | 2026-09-07 | Pass 22: title drift check, nine of nine unchanged including the home title with its U+2014. Noted that titles are always metadata literals so this check has no JSX blind spot |
+| 2026-09-07 | Pass 23: JSON-LD coverage. Six of eight pages emit; /products emits none, which with the missing canonical makes it the least-instrumented indexable page while sitting at sitemap priority 0.9 |
