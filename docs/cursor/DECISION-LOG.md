@@ -283,3 +283,13 @@ vs PostgREST
 `anonymous_id`.
 
 When a leftover wins in **runtime**, file a code-branch bug. When it wins only in a root markdown, ignore the markdown.
+
+### D41. Pack slang "coupon-partner" is wrong
+**Measured 2026-09-07.** Alternative: keep teaching four pack roles. Consequence: till is `supplier_members`; `vendor` is optional leftover. See `contracts/ROLE-VENDOR.md`.
+
+### D42. Canonical wave numbers are the 100-item prompt
+Alternative: keep W06-NEWSLETTER numbering from the prior pass. Consequence: leftover files remain extra briefs; `waves/WAVE-INDEX.md` is canonical for v7.
+
+### D43. `default_split_percent` must be removed
+Alternative: prefill new products from the supplier column. Consequence: looks like a global rate (C1). Strip from forms; drop column after a deploy that does not read it.
+
