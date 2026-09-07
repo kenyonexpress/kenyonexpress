@@ -467,6 +467,107 @@ Largest first, so a later pass can take them in order of reach:
 are the money path, and a shopper who meets one of those strings has already
 tried to pay.
 
+## 13. Checkout failure family and gift claim family (pass 14)
+
+Section 4 named three checkout slots. The live voice source (`docs/COPY-HE.md`)
+and the anatomy (`docs/ui-design-system/PAGE-ANATOMY.md` §6.5) carry more, and
+two of them look interchangeable and are not.
+
+### 13.1 Three different "payment failed" strings
+
+| Slot | Id | Copy | Where |
+|---|---|---|---|
+| Document title | `co.failed.title` | התשלום נכשל | `/checkout/failed` metadata |
+| H1 | `co.failed.h1` | התשלום לא הושלם | same page, visible |
+| Body | (ERROR-COPY §4) | החיוב לא בוצע. אפשר לנסות שוב, העגלה שלך נשמרה. | same page |
+| CTA | `btn.payRetry` | חזרה לעגלה | → `/cart` |
+
+Do not collapse these into one sentence. The title is a tab label, the H1 is
+the outcome, the body is the recovery. A page that prints only `התשלום נכשל`
+hides that the cart survived.
+
+### 13.2 Two different "we are checking" strings
+
+| Slot | Id | Copy |
+|---|---|---|
+| Return metadata helper | `co.return.checking` | בודקים את התשלום… |
+| Return pending H1 | `ret.pending.h1` | מאמתים את התשלום... |
+| Return pending body | `ret.pending.body` | ההזמנה נקלטה ואנחנו ממתינים לאישור הסליקה. העמוד יתעדכן אוטומטית. |
+| Return success H1 | `ret.ok.h1` | התשלום הצליח! |
+| Return success sub | `ret.ok.sub` | הזמנה `{ref}` · שולם באתר `{price}` |
+
+Pending is **not** failed. Webhook lost while capture succeeded stays on the
+pending pair. Never reuse the failed body on return.
+
+### 13.3 Retryable vs terminal (classify, Hebrew, no provider codes)
+
+From PAGE-ANATOMY §6.5. Provider codes stay off-screen.
+
+| Class | When | Copy already in this file | What the shopper may do |
+|---|---|---|---|
+| Retryable | `PAYMENT_PROVIDER_ERROR`, `RATE_LIMITED`, saved-card `NOT_FOUND` / `VALIDATION` | `val.card.verify` / `val.pay.verify` | stay on the step, retry |
+| Terminal | stock, missing address, checkout disabled, missing `platform_percent` | banner, no fake retry | fix the cart or wait |
+| Empty pay | no cart | do not render | bounce `/cart` |
+| Verify address | physical step | `val.address.verify` | retry |
+| Catalogue / suppliers load | begin-checkout prefetch | `val.products.load` / `val.suppliers.load` | retry |
+
+Forbidden on every row: escrow language, `platform_percent`, "you were charged"
+unless Cardcom captured (then pending, not this banner).
+
+Admin refund blockers (already in QA-SCRIPTS 8b, listed here so a writer does
+not invent a customer-facing twin):
+
+| Copy | Audience |
+|---|---|
+| `{n} שוברים כבר מומשו בבית העסק. הערך נצרך ולא ניתן להחזיר אותו לכרטיס.` | admin only |
+| `{n} שוברים פגו. ערכם נזקף כפחת ולא חוזר לכרטיס.` | admin only |
+| `אין שורות שניתן להחזיר: כולן כבר מומשו או שוחררו לספק.` | admin only |
+| `אין שורות שניתן להחזיר בהזמנה הזו.` | admin only |
+| `אין הרשאה` | anyone else calling `refundOrder` |
+
+Those four must never appear on `/checkout/failed`. A redeemed voucher is a
+cashier fact, not a shopper error during pay.
+
+### 13.4 Gift claim, complete
+
+GET `/gift/[token]` is inert. POST claims. Errors paint under the button
+(today a red `<p>`; add `role="alert"`).
+
+| Id | Copy |
+|---|---|
+| gift.title | קיבלת מתנה |
+| gift.helloNamed | `{name}, קיבלת מתנה` |
+| gift.loading | רגע, טוענים את המתנה… |
+| gift.unusable | לא ניתן לקבל את הקופון הזה. אם לדעתכם מדובר בטעות, פנו אלינו. |
+| gift.claimed | המתנה כבר נאספה. אם אתם אספתם אותה, היא נמצאת בקופונים שלי. |
+| gift.needAuth | כדי לקבל את הקופון לחשבון שלכם צריך להתחבר או להירשם. הקופון יישמר בחשבון שאיתו תתחברו. |
+| gift.loginCta | התחברות וקבלת הקופון |
+| gift.claimCta | קבלת הקופון לחשבון שלי |
+| gift.claimPending | מעביר את הקופון... |
+| gift.err.bad | קישור המתנה אינו תקין |
+| gift.err.auth | יש להתחבר כדי לקבל את המתנה |
+| gift.err.claimed | המתנה כבר נאספה |
+| gift.err.unusable | לא ניתן לקבל את הקופון הזה |
+| gift.err.expired | תוקף הקופון פג |
+| gift.err.retry | קבלת המתנה נכשלה, נסו שוב |
+
+`gift.claimed` (page) is longer than `gift.err.claimed` (under the button).
+Keep both. The page version is the only one that points at `/account/coupons`.
+
+Signed redeem URL refusals (cashier, not shopper), already in §6 for scan
+outcomes; the landing page variants from COPY-HE §16:
+
+| Id | Copy |
+|---|---|
+| redeem.rate | יותר מדי נסיונות / בוצעו יותר מדי סריקות מכתובת זו בשעה האחרונה. המתינו מעט ונסו שוב, או הזינו את הקוד ידנית במסך הסריקה. |
+| redeem.forged | קוד השובר אינו תקין / הקישור אינו נושא חתימה תקפה. אם סרקתם QR מהטלפון של הלקוח, בקשו ממנו לפתוח מחדש את השובר באזור האישי. |
+| redeem.readFail | לא ניתן לבדוק את השובר כרגע / התרחשה תקלה זמנית בקריאת השובר. נסו לסרוק שוב בעוד רגע; לא בוצע שום שינוי בשובר. |
+| redeem.notFound | השובר לא נמצא / הקוד אינו משויך לבית העסק שלכם, או שאינו קיים. |
+| redeem.net | אין חיבור לרשת. בדקו את החיבור ונסו שוב |
+| redeem.sys | שגיאת מערכת, נסו שוב |
+
+`redeem.notFound` must not hint that the code is valid at another shop.
+
 ### 11.4 How to re-run the count
 
 ```bash
@@ -602,3 +703,4 @@ Recorded, not changed: this file is documentation and the fix is in `.ts`.
 | 2026-09-07 | Pass 12: coverage map counted against source (1075 Hebrew literals, 196 undocumented error strings); validations completed in full; two wording inconsistencies |
 | 2026-09-07 | Pass 13: the money path complete (11.2a). checkout.ts and refund.ts verbatim; the double-submit string is success-adjacent; refund copy is operator-facing and may name Cardcom |
 | 2026-09-07 | Pass 13: the money path documented in full (checkout.ts, refund.ts). Five strings interpolate a raw Postgres or Cardcom message and are rendered verbatim to the shopper, breaking rule 10 of this file |
+| 2026-09-07 | Pass 14: three failed-payment strings are not one; two pending strings are not one; gift claim catalogue from COPY-HE; admin refund blockers must never paint on `/checkout/failed` |
