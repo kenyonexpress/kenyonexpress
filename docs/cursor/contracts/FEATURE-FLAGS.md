@@ -61,6 +61,12 @@ Per-product `whatsapp_enabled`, campaign `is_active`, public lead form hide. Not
 
 ---
 
-## Second pass
+## Second pass (in-flight)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- `CHECKOUT_ENABLED` not exactly `true`: no new Low Profile. Pending expire; reservations release. Already-charged orders still need stranded cron.
+- `KILL_SWITCH_NOTIFICATIONS`: rows stay, send skips. Replay later. Also kills WhatsApp.
+- `CARDCOM_USE_MOCK` in production is a launch fail. Sandbox `true` boot-fails.
+- `NEXT_PUBLIC_*` needs rebuild. Kill switches are per-request env.
+- ntfy default topic is guessable. Must set
+  `NTFY_TOPIC`.
+
