@@ -773,6 +773,15 @@ as a live control until something imports `WishlistButton`.
 - **RTL:** mark does **not** mirror. `z-sticky` (40)
 - **A11y:** named link, not icon-only without a name
 
+### ProductCard (deals): stay flat
+
+- **File:** `src/components/ProductCard.tsx` variant `deals`
+- **Props:** `{ product, variant?: 'default' | 'deals' }`
+- **States:** default square (`--radius-none`); hover may use Electro `--shadow-card-hover` (`docs/DESIGN-SYSTEM.md` §1.5). Live does not. Focus-visible 2px heading. Price `#dc3545` or home-grid `#c93636`, never yellow text
+- **RTL:** title `#0062bd`. Price `<bdi>`
+- **A11y:** name is the product title. ATC in the footer. No percent
+- **Electro:** home-v7 deals grid. Elevation is the documented departure
+
 ## Revision
 
 | Date | Change |
@@ -786,4 +795,5 @@ as a live control until something imports `WishlistButton`.
 | 2026-09-07 | Pass 13: token-compliance recount. Raw hex is ZERO and gated; 24 components hold arbitrary SIZES only, none a colour; the eleven [15px] are the one group worth changing |
 | 2026-09-07 | Pass 14: conversion components the 72-file scan never opened (SkipLink, ConsentBanner, CheckoutForm, GiftClaimForm, unmounted HeaderSearch) plus the purchase-family hover split |
 | 2026-09-07 | Pass 15: CouponPricing (split amounts, never percent), RegionMenu (seventeen regions), WhatsAppFloat (mark not yellow) |
+| 2026-09-07 | Pass 16: ProductCard deals stay radius 0; hover lift is Electro, live is flat |
 | 2026-09-07 | Pass 14: dead-code sweep. Eleven components never imported, including WishlistButton, so the PDP wishlist heart does not ship despite three documents describing it |
