@@ -49,3 +49,9 @@ Checkout `idempotencyKey`. Wallet `order:<id>:cashback`. Referral inside RPC. Vo
 | Q | Best answer |
 |---|---|
 | Multi-terminal? | `cardcom` accounts helper exists; do not cross-charge (`CardcomAccountError`). |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
