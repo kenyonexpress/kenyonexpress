@@ -85,6 +85,56 @@ none trusts the one before it.
 Layer 1 reads the role from **`profiles`, not `app_metadata`**, because
 `app_metadata` can be stale. Its own comment calls it an optimistic check.
 
+### 1.0 Layer 1 in full: what the middleware gates besides `/admin`
+
+The table above describes layer 1 only for `/admin`. `src/proxy.ts` gates four
+more prefixes, and the exclusions are the interesting part.
+
+```
+matcher: /((?!_next/static|_next/image|favicon.ico|.*\.(svg|png|jpg|jpeg|gif|webp)$).*)
+```
+
+Everything except static assets. Then:
+
+| `needsAuth` when the path | Exclusion |
+|---|---|
+| starts with `/account` | none |
+| starts with `/coupon/` | none: it is the shopper's own voucher, code and QR on screen |
+| starts with `/checkout/` | **`/checkout/frame-return`**, via `isPaymentFramePath` |
+| starts with `/supplier` | `/supplier/login` and `/supplier/access-denied`, by exact name |
+
+Plus `/monitoring`, which returns before any of this.
+
+#### The two exclusions are load-bearing, and the file says why
+
+**`/checkout` itself is not in the list, only `/checkout/`.** That is deliberate:
+requiring a session on `/checkout` "breaks guest checkout outright". The
+sub-routes do need one, because `/checkout/return` and `/checkout/failed` read
+the shopper's own order and there is no such thing as a guest's order.
+
+**`/checkout/frame-return` must not require a session**, and the reasoning is
+the sharpest in the file:
+
+> it is where Cardcom navigates the payment iframe, that navigation is
+> cross-site, and browsers withhold `SameSite=Lax` cookies on those. Requiring a
+> session there would show a login form inside the payment box of a shopper who
+> has just paid.
+
+It is safe to leave open because **it carries no order data of its own**: it
+hands the top window a URL, and the real confirmation route does the
+authenticating. A one-path allowlist (`PAYMENT_FRAME_PATHS`) rather than a
+pattern, so widening it is a deliberate edit.
+
+**The two supplier doors are excluded by exact name** so a supplier can reach a
+login form at all. Anything else under `/supplier` needs a session before the
+layout's `requireSupplierMember` (1.0a) even runs.
+
+The file also records what was **rejected** from an earlier branch: that version
+listed `pathname === '/checkout'` and a bare `/checkout/` prefix. The first kills
+guest checkout; the second catches `frame-return` and puts a login form inside
+Cardcom's iframe. Both are the kind of change that looks like tightening and is
+an outage.
+
 ### 1.0a Layer 2 verified: every layout, and what it gates
 
 The table above named layer 2 as `requirePanelSession()`. Checked across all
@@ -858,3 +908,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 15: money tables vs the brief's four names; wallet_entries client-write deny; PDP wishlist has no UI caller |
 | 2026-09-07 | Pass 14: guard layer 2 verified across all eight layouts; the supplier portal is gated at the layout as well as per page |
 | 2026-09-07 | Pass 15: what layer 1 runs on (the matcher covers /api too), the two decisions it makes, and four paths outside needsAuth that are deliberate rather than gaps |
+| 2026-09-07 | Pass 15: guard layer 1 in full. Four more prefixes beyond /admin, and the two exclusions (guest checkout, and the Cardcom frame-return path) with the reasoning that makes them load-bearing |
