@@ -616,7 +616,7 @@ against the production build before launch.
 | 5 | **`/city/{slug}` appears in the sitemap** | grep the sitemap for `/city/` | **Known gap:** it does not today (SEO-PLAN 5.1 finding 1). Seventeen indexable pages are missing. Fails until fixed or until the plan changes |
 | 6 | **`/offline` is noindex** | `curl -s {base}/offline \| grep -i 'name="robots"'` | **Known gap:** no robots directive anywhere in its chain (SEO-PLAN 5.1 finding 3). Either add `robots: { index: false }` or stop calling it noindex |
 | 7 | `/search` is noindex | `curl -s "{base}/search?q=test" \| grep -i robots` | `noindex` present. It must **not** be in robots.txt: a blocked crawl never sees the noindex |
-| 8 | `/gift/{token}` is noindex, nofollow | same method | both present |
+| 8 | **All three token routes** are noindex, nofollow: `/gift/{token}`, `/newsletter/confirm?token=`, `/newsletter/unsubscribe?token=` | same method | both present on each. None of the three is in `robots.txt`, unlike `/redeem/` and `/coupon/`, which carry both layers (SEO-PLAN 11.1). That is three omissions that agree, not a rule |
 | 9 | Every sitemap URL returns 200 | loop the sitemap | no 404, no redirect chain |
 | 10 | No sitemap URL is also disallowed | cross the two lists | empty intersection |
 | 11 | **Home `SearchAction`** | `curl -s {base}/ \| grep -c SearchAction` | **Unresolved conflict** (SEO-PLAN 3.9 finding 1): the code emits it, section 3.1 forbids it. Whichever way it is settled, this check must agree with the doc |
@@ -919,3 +919,4 @@ or one line of Hebrew.
 | 2026-09-07 | Pass 21: named the strings WishlistButton will actually produce if wired in, which are not the ones ERROR-COPY specifies |
 | 2026-09-07 | Pass 22: JSX-fragment steps (14.3). A fragment boundary is a bidi run boundary, invisible in the source and obvious on screen |
 | 2026-09-07 | Pass 23: consolidated all open findings from eleven passes across the eight documents into one list (15), ordered by what it costs to leave them |
+| 2026-09-07 | Pass 24: extended crawl row 8 to all three token routes |

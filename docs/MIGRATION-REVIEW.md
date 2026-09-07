@@ -983,6 +983,19 @@ recorded under the blockers heading in `STATE.md`.
 | `preflight_169.sql` | 4 | the function exists with the 151 signature; the whitelist is still the eight-name one (the "before" picture); grants are `service_role` only; a row count as a scale note |
 | `preflight_170.sql` | 4 | none of the ten index names exists; all 14 columns exist with the expected types; `product_status` carries `'active'`; and a near-duplicate scan over existing indexes |
 
+### 4.0a Block counts, drift-checked (pass 24)
+
+Section 4's table claims a block count per preflight. Re-counted:
+
+| Preflight | Section 4 claims | Actual `-- (n)` blocks |
+|---|---|---|
+| `preflight_162.sql` | 5 | **5** |
+| `preflight_169.sql` | 4 | **4** |
+| `preflight_170.sql` | 4 | **4** |
+
+Match. Together with the file hashes in 3f, the preflights this review describes
+are the preflights on disk.
+
 ### 4.1 What the preflights do well
 
 - **Block 3 of 162 selects `name` only, never `decrypted_secret`.** The secret
@@ -1168,3 +1181,4 @@ STATE.md                            "חסמים לאופיר", where 162's block
 | 2026-09-07 | Pass 21: pinned the reviewed pending files by hash. applied/ has CHECKSUMS.sha256 and pending/ has none, so an approval cannot currently be attached to bytes |
 | 2026-09-07 | Pass 22: refreshed the summary to gather all findings from passes 12-21. Four are decision-shaped before anything is applied; the recommended order is unchanged |
 | 2026-09-07 | Pass 23: drift-checked the 169 whitelist against events.ts. Twelve names, exact match both directions; still ungated |
+| 2026-09-07 | Pass 24: drift-checked the preflight block counts, 5/4/4, all matching |
