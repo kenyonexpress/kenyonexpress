@@ -898,6 +898,99 @@ The rule this file states at the top ("Missing date: `לא זמין`, never
 `Invalid Date`") is honoured here by a different and better route: the branch
 does not print a placeholder date, it prints a sentence that does not need one.
 
+## 16. The three public forms, and a honeypot that answers differently
+
+`contact.ts`, `newsletter.ts` and `supplier-lead.ts` are the actions a
+**signed-out** visitor can reach (`docs/ROLE-MATRIX.md` 6a.2). Their copy is
+therefore the first Hebrew many visitors read.
+
+### 16.1 `contact.ts`
+
+| Line | Copy |
+|---|---|
+| 16 | `נא למלא שם` / `השם ארוך מדי` |
+| 17 | `כתובת מייל לא תקינה` |
+| 18 | `ההודעה קצרה מדי` / `ההודעה ארוכה מדי` |
+| 49 | `בדקו את הפרטים ונסו שוב.` |
+| 54 | `תודה. ההודעה התקבלה ונחזור אליך בהקדם.` |
+| 59 | `יותר מדי ניסיונות. נסו שוב מאוחר יותר.` |
+| 81 | `השליחה נכשלה. נסו שוב, או פנו בוואטסאפ.` |
+
+Line 81 is the model for a failed submission: it offers a **second channel**
+rather than only asking the visitor to try again.
+
+### 16.2 `newsletter.ts`
+
+| Line | Copy |
+|---|---|
+| 32 | `כתובת מייל לא תקינה` |
+| 60 | `יותר מדי ניסיונות. נסו שוב מאוחר יותר.` |
+| 78 | `אם הכתובת תקינה, שלחנו אליה מייל לאישור ההרשמה.` |
+| 102 | `ההרשמה נכשלה. נסו שוב.` |
+| 122 | `קישור לא תקין` |
+| 136 | `הקישור אינו תקף או שכבר נעשה בו שימוש` |
+| 145 | `ההרשמה אושרה. תודה!` |
+| 157 | `ההסרה נכשלה. נסו שוב.` |
+| 173 | `הוסרת מרשימת הדיוור.` |
+
+**Line 78 is deliberately non-committal and should stay that way.**
+"*If* the address is valid, we sent it a confirmation" does not reveal whether
+the address is already subscribed or even exists. Rewriting it to
+`שלחנו לך מייל` would turn the newsletter form into an address-enumeration
+oracle. Line 136 does the same job for a consumed token: expired and
+already-used are one message.
+
+### 16.3 `supplier-lead.ts`, and the honeypot that is one word away from silent
+
+| Line | Copy |
+|---|---|
+| 33 | `נא למלא שם עסק` / `שם העסק ארוך מדי` |
+| 34 | `נא למלא שם איש קשר` / `השם ארוך מדי` |
+| 35 | `כתובת מייל לא תקינה` |
+| 36 | `נא למלא טלפון` / `מספר לא תקין` |
+| 40 | `ההודעה ארוכה מדי` |
+| 72 | `בדקו את הפרטים ונסו שוב.` |
+| 81 | `נא להזין מספר טלפון נייד ישראלי (05X).` |
+| 86 | `יותר מדי ניסיונות. נסו שוב מאוחר יותר.` |
+| 105 | `לא הצלחנו לשמור את הפרטים. נסו שוב או פנו אלינו בוואטסאפ.` |
+
+**The finding.** There are two success strings, and they are not a duplication:
+
+```
+:76   honeypot hit   תודה, קיבלנו את הפרטים ונחזור אליכם.
+:136  real success   תודה, קיבלנו את הפרטים ונחזור אליכם בהקדם.
+```
+
+The comment at `:75` states the intent exactly: "Honeypot hit: pretend success so
+the bot does not retry with a new shape."
+
+**The pretence is one word short.** The decoy omits `בהקדם`. A bot that submits
+twice, once with the honeypot field (`company`) filled and once without, gets two
+different strings and learns which field is the trap. After that the honeypot
+catches nothing, and the form's only spam defence is the rate limit.
+
+The fix is to make the two responses **byte-identical**. That is the whole
+requirement of a honeypot: an indistinguishable answer. As written, the decoy
+announces itself to anyone who compares.
+
+This is copy, not logic, which is why it belongs here: the security property is
+carried entirely by the string.
+
+### 16.4 A fourth verb for "fill this in"
+
+Section 11.2 recorded three (`יש למלא`, `יש להזין`, `שדה חובה`). These forms add
+**`נא למלא`** and **`נא להזין`**. So the same instruction now appears as:
+
+```
+יש למלא    checkout.ts
+יש להזין   account.ts, auth.ts
+נא למלא    contact.ts, supplier-lead.ts
+נא להזין   supplier-lead.ts
+שדה חובה   steps.ts
+```
+
+`supplier-lead.ts` uses **both** `נא למלא` and `נא להזין` within one file.
+
 ## Revision
 
 | Date | Change |
@@ -968,3 +1061,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 15: auth.ts and account.ts in full. Password minimum is 6 in one string and 8 in another, and U+2014 counted at 27 occurrences across 7 files |
 | 2026-09-07 | Pass 16: the cart cluster in full. Five distinct per-line warnings behind one table row, and three levels of precision for the same stock condition across cart line, cart action and checkout |
 | 2026-09-07 | Pass 17: subscriptions in full, and cancellationNotice three branches. The unparseable-date branch drops "immediately" rather than guessing, which is the same discipline as the membership-read rule |
+| 2026-09-07 | Pass 18: the three public forms. The supplier-lead honeypot answers one word differently from real success, which makes it detectable; plus a fourth and fifth verb for "fill this in" |
