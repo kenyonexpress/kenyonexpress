@@ -709,6 +709,41 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 4 | Live slider English | `SIMPLY THE BEST` reversed is the reference's content debt. Our Hebrew headlines stay |
 | 5 | Deals card hover at 1440 | live stays flat (`box-shadow: none`). Ours may lift (`--shadow-card-hover`). Do not fail the pixel log for that lift. Fail if the card grows a radius |
 
+## 13. Perceived performance, by eye (pass 17)
+
+Lighthouse on localhost simulates LCP over a graph and has already reported a
+real 2.7s improvement as noise, so it is not the instrument here. These are the
+things a person can see, each tied to a decision recorded in
+`docs/SEO-PLAN.md` section 7.1.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Hard-reload `/` and watch the first paint | Text paints in **Arial**, then re-renders in Heebo. That is `display: 'swap'` plus `preload: false` working as intended. **A flash of Arial is not a defect here**; it is the trade that keeps Heebo off the critical path |
+| 2 | Reload with the consent banner **undecided** | The banner is present and body padding is reserved for it. Nothing below it jumps once it appears: CLS stays 0 |
+| 3 | Reload with `html[data-consent="decided"]` | The banner is **absent from layout entirely**, not transparent. Inspect it: `display: none`. If it is `opacity: 0` or `visibility: hidden` the LCP fix has been undone |
+| 4 | Compare the two states' first paint | The undecided state's largest element must not be the banner after the reserved padding is applied |
+| 5 | Throttle to slow 3G and reload `/` | Nothing above the fold waits on a font. Product images below the fold may lazy-load; the hero must not |
+| 6 | Reload a PDP at 380 | The gallery reserves its box before the image arrives. A collapsing image block is the same defect that shortened a live capture by 1762px |
+
+### 13.1 The three ways to undo the LCP work without noticing
+
+Each of these looks like a cleanup and is a regression:
+
+1. **`preload: true` on Heebo.** Removes the Arial flash and puts the font back
+   on the critical path. `layout.tsx:42` carries a comment specifically to stop
+   this.
+2. **`opacity: 0` or `visibility: hidden` on the decided consent banner.** Looks
+   equivalent to `display: none` and is not: an element at `opacity: 0` stays in
+   the **LCP candidate set**, so the banner becomes the largest paint again.
+3. **Removing the reserved body padding** because "the banner is fixed, it does
+   not affect layout". It does not affect layout; the padding exists so the
+   *rest of the page* is not underneath a control the shopper needs. Removing it
+   reintroduces the phone bug where an enabled `/login` toggle was unclickable.
+
+If any of the three is proposed, the evidence against it is in
+`src/app/globals.css` around the `data-consent` rules and in
+`docs/SEO-PLAN.md` 7.1.2.
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -734,3 +769,4 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 2026-09-07 | Pass 16: deals card hover lift is allowed Electro; fail a radius, not a missing shadow |
 | 2026-09-07 | Pass 15: city reachability steps (10b.1). The pages render fine and have no mobile link and no sitemap entry; also the Hebrew-slug encoding check |
 | 2026-09-07 | Pass 16: environment verification before a QA session (0.1) and the three false-positive patterns this set has already paid for (0.2) |
+| 2026-09-07 | Pass 17: perceived-performance steps by eye (13), plus the three ways to undo the LCP work while believing you are cleaning up |
