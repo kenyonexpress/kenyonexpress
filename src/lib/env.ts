@@ -58,6 +58,16 @@ const schema = z
     CRON_SECRET: z.string().optional(),
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
 
+    /**
+     * The Axiom log leg. OPTIONAL EVERYWHERE and inert unless BOTH are set,
+     * same contract as Upstash above: half a configuration degrades to the
+     * console transport rather than failing anything. `lib/observability/
+     * axiom.ts` is the only reader; log.ts ships every structured line there
+     * when enabled. Retention and dashboards: scripts/axiom/setup.mjs.
+     */
+    AXIOM_TOKEN: z.string().min(10).optional().or(z.literal('')),
+    AXIOM_DATASET: z.string().optional().or(z.literal('')),
+
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
   })

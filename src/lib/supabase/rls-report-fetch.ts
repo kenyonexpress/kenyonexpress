@@ -1,5 +1,5 @@
 import { log } from '@/lib/observability/log'
-import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
+import { queryLogFetch } from '@/lib/supabase/query-log-fetch'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -53,7 +53,7 @@ function isRlsDenialBody(body: unknown): body is { code?: string; message?: stri
  * Exported as a factory so a test can inject its own `fetch`, matching the
  * other two wrappers in this directory.
  */
-export function createRlsReportFetch(baseFetch: typeof fetch = requestIdFetch): typeof fetch {
+export function createRlsReportFetch(baseFetch: typeof fetch = queryLogFetch): typeof fetch {
   return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const response = await baseFetch(input, init)
 
@@ -100,5 +100,5 @@ export function createRlsReportFetch(baseFetch: typeof fetch = requestIdFetch): 
   }
 }
 
-/** The shared instance, outermost over request-id and timeout: it must see the final response. */
+/** The shared instance, outermost over query-log, request-id and timeout: it must see the final response. */
 export const rlsReportFetch: typeof fetch = createRlsReportFetch()
