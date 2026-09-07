@@ -72,6 +72,10 @@ Timezone: display Israel. Cron UTC 23:15 is 01:15/02:15 Israel (DST). Document. 
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (cron not Cardcom)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- `/api/cron/expire-vouchers` is `issued → expired` with a lock. It does not refund the card.
+- Money was taken at pay. Expiry is breakage unless admin wallet goodwill.
+- Mail `voucher_expiring` only if that kind is in CHECK and consent allows transactional.
+- Israel calendar, not UTC midnight, if the column is a date.
+
