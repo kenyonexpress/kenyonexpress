@@ -490,3 +490,43 @@ events, that is R24 (ingest / migration 169), not proof Cardcom failed. You alre
 only because ads report nothing.
 
 Do not install a "debug" service role into the TestFlight / Play till app as part of H6. The phone uses the anon key.
+
+---
+
+## H6 addendum. ntfy topic and Sentry DSN (same day as first charge)
+
+1. **Chrome > Vercel > Production env.** Set
+   `SENTRY_DSN`
+   (and tunnel already in
+   `src/proxy.ts`).
+   Set
+   `NTFY_TOPIC`
+   to a **new unguessable** string. Do not ship the code default.
+2. After the H6 ₪ charge, confirm a money-path line is optional; confirm a **failed** finalize in staging ntfy'd when you last tested. If
+   `ALERTS_ENABLED=false`,
+   the phone stays dark.
+3. This is not DNS. It is so H6 failures page a human.
+
+---
+
+## Not commercial-launch blockers (do not insert before H8)
+
+These are real, and they are **not** H0–H8:
+
+| Item | Why it waits |
+|---|---|
+| Apply 150
+`fn_anonymize_user` | Deletion already has a TS fallback. Privacy completeness, not charges. |
+| Apply 157 audit IP sweep | Policy line D. Cron stays green with
+`pending`. |
+| Apply 169 analytics whitelist | Till works; ads dashboards lie (H6 addendum already). |
+| Apply 172_* (either file) | Guard already blocks the ₪1 SKU; webhooks tab empty is an admin UX bug. |
+| Drop duplicate indexes / add
+`refunds.payment_id`
+index | Pre-traffic. |
+| Enable
+`AI_AGENTS_*` | Off is the safe default. |
+| English locale | P5. |
+| Wishlist/reviews PDP polish | P1/P2. |
+
+Do not apply pending SQL as a "while we wait for Cardcom" activity. Human apply is still a hard stop.
