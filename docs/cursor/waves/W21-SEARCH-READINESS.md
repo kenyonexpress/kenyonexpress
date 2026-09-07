@@ -73,6 +73,11 @@ QStash retries 5 then DLQ. Meili 404 DELETE is success.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (not a product)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Unset Meili → ILIKE / FTS. Empty query must not dump the catalogue.
+- `KILL_SWITCH_SEARCH` returns empty, not 500.
+- 171 has two files: `171_search_fts.sql` vs `171_category_name_shekel_order.sql`. Full filename.
+- Checkout must not import a Meili SDK. QStash missing → inline index, not Redis.
+- Prices in hits are display. Checkout re-prices (`LEDGER.md`).
+
