@@ -1302,6 +1302,54 @@ So the cheap check stays cheap: search raw file content for each quoted string,
 read the misses rather than counting them, and expect the misses to be
 placeholders and hypotheticals. Three real ones in 191 is the current state.
 
+## 22. Copy outside `src/`: the service worker's last-resort string (pass 24)
+
+Every count in this document has scanned `src/`. One user-visible Hebrew string
+lives outside it.
+
+`public/sw.js:121`:
+
+```js
+new Response('אין חיבור לאינטרנט', {
+  status: 503,
+  headers: { 'content-type': 'text/plain; charset=utf-8' },
+})
+```
+
+It is the **last resort of the last resort**. The chain:
+
+1. the network fails
+2. the service worker looks for the cached `/offline` page
+3. if even that is not cached, this 503 is what the visitor gets
+
+So the string is the same text as `/offline`'s H1 (`src/app/offline/page.tsx:27`)
+but delivered as **`text/plain`, with no layout, no `dir`, and no stylesheet.**
+
+### 22.1 Two things follow from `text/plain`
+
+**It is not RTL-marked.** A plain-text 503 has no `dir="rtl"`, so the browser
+renders it with its own default direction. For a string that is entirely Hebrew
+letters and no digits or Latin, the bidi algorithm resolves it correctly from
+the first strong character, so this particular string is safe. **A longer message
+with a number or a Latin word in it would not be**, and that is worth knowing
+before anyone extends it.
+
+**It carries `charset=utf-8` explicitly**, which is necessary: without it a
+browser may fall back to Latin-1 and render the Hebrew as mojibake. That is
+correctly set here.
+
+### 22.2 Why it was invisible to every earlier count
+
+Sections 11, 19 and 21 all scanned `src/`. Pass 23's run added `public/` and
+found it, which is why it appears as "found" there and would have appeared as
+missing in pass 21 had the document quoted it.
+
+The lesson is small and worth stating once: **a Hebrew string can live anywhere
+that ships**, including a service worker, a manifest, an email template or a
+JSON fixture. This project has no `public/manifest.json`, so the usual second
+offender does not apply, but the scan boundary should be "what ships" rather
+than "what is `src/`".
+
 ## Revision
 
 | Date | Change |
@@ -1378,3 +1426,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 21: drift check on all 196 quoted strings. Two are real drift: the wishlist labels specified here are not the ones in WishlistButton, and the toast does not exist |
 | 2026-09-07 | Pass 22: correction. Every count here is literal-only and misses JSX text; 655 Hebrew strings exist only as JSX. Qualifies the coverage numbers, does not invalidate the drift finding |
 | 2026-09-07 | Pass 23: ran the extended drift check over raw file content. 187 of 191 found; the JSX blind spot hid no additional drift, and the three wishlist labels remain the whole of it |
+| 2026-09-07 | Pass 24: the one user-visible Hebrew string outside src/, in the service worker. text/plain with charset set correctly, and safe only because it contains no digits or Latin |
