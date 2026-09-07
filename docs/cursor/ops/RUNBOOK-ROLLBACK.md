@@ -24,4 +24,4 @@ Do not force-push `main`. Do not checkout `closeout/v1-final` from this worktree
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Promote previous Vercel deploy. `NEXT_PUBLIC_*` is baked. Migrations are forward-only. Do not roll back a deploy to unpay Cardcom. Do not force-push `main`.
