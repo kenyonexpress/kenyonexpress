@@ -655,3 +655,46 @@ is per **voucher row**. A line of qty N is N rows. First unit absorbs the leftov
 | `applyBp` in commerce/money | **not there** | It is in `src/lib/money.ts` |
 | Commission engine | `percentageOf` in `src/lib/commerce/money.ts` | Grandfathered. Do not add a third |
 | `platform_bp` column | **does not exist** | Whole percent numeric → `percentToBp` at the boundary |
+
+---
+
+## 22. Deepen after items 11–20
+
+### 22.1 `percentageOf` vs `applyBp` (G16)
+
+Both are integer half-up. Docs and cancellation fees use
+`applyBp`
+(
+`src/lib/money.ts`).
+Commission still calls
+`percentageOf`
+(
+`src/lib/commerce/money.ts`).
+There is **no** test that they are identical on a shared vector table. Do not add a third helper. Do not "simplify" commission onto
+`Math.round(x * p / 100)`.
+
+### 22.2 Dependencies that look like money and are not
+
+| Package | Money? |
+|---|---|
+| `recharts` | Display of agorot in admin. Must remain a safe integer. |
+| `@anthropic-ai/sdk` | Pricing advisor **must not write**
+`platform_percent`.
+Off by default. |
+| `drizzle-orm` | Schema sketch. Not a place to compute splits. |
+| Generated `payout_statements.gross_ils: number` | Types-ahead. If ever real: integer agorot + CHECK, not numeric ILS. |
+
+### 22.3 Deletion must not "clean" snapshots
+
+Anonymize may hash the buyer. It must not rewrite
+`order_items.platform_percent`
+or commission columns. That would be destroying books, not honouring privacy.
+
+### 22.4 Error
+`23514`
+is a money error, not an RLS error
+
+Catalogued in
+`ERROR-TAXONOMY.md`
+§6. Operator action: fix the writer. `service_role`
+does not waive conservation.
