@@ -73,6 +73,11 @@ vi.mock('@/lib/observability/sentry', () => ({
   capturePaymentError: (...a: unknown[]) => capturePaymentError(...a),
 }))
 
+const trackServerEvent = vi.fn()
+vi.mock('@/server/analytics/track', () => ({
+  trackServerEvent: (...a: unknown[]) => trackServerEvent(...a),
+}))
+
 import { refundOrderToWallet } from './refund-to-wallet'
 
 const NO_AGOROT_COLUMN: Result = { data: null, error: { code: '42703', message: 'no such column' } }
@@ -120,6 +125,7 @@ beforeEach(() => {
   requireAdminSession.mockReset().mockResolvedValue({ userId: 'admin-1', role: 'admin' })
   writeAuditLog.mockReset().mockResolvedValue(undefined)
   capturePaymentError.mockReset()
+  trackServerEvent.mockReset().mockResolvedValue(undefined)
   __resetPaymentMoneySchemaCache()
 })
 
@@ -326,5 +332,48 @@ describe('a live voucher and the money going back', () => {
     seed({ existingEntry: { id: 'entry-1' } })
     await refundOrderToWallet({ orderId: 'order-1', reason: 'שוב' })
     expect(find('vouchers', 'update')).toBeUndefined()
+  })
+})
+
+describe('the funnel event the other instrument already sent', () => {
+  it('reports order_refunded with the wallet as the destination', async () => {
+    // `refundOrder` emits this for a card credit. Without it here, a refund
+    // rate measured from the funnel counts only the instrument that happens to
+    // go back to a card, and undercounts by exactly the goodwill credits
+    // somebody opens the report to look at.
+    seed({ amountIls: 100 })
+    await refundOrderToWallet({ orderId: 'order-1', reason: 'ויתור' })
+
+    expect(trackServerEvent).toHaveBeenCalledTimes(1)
+    expect(trackServerEvent.mock.calls[0]?.[0]).toEqual({
+      eventName: 'order_refunded',
+      userId: 'user-1',
+      props: {
+        order_id: 'order-1',
+        refunded_agorot: 10_000,
+        destination: 'wallet',
+        cancel_only: false,
+      },
+    })
+  })
+
+  it('reports the amount actually credited on a partial', async () => {
+    seed({ amountIls: 100 })
+    await refundOrderToWallet({ orderId: 'order-1', reason: 'חלקי', partialAmountIls: 25 })
+    expect(trackServerEvent.mock.calls[0]?.[0]).toMatchObject({
+      props: expect.objectContaining({ refunded_agorot: 2500 }),
+    })
+  })
+
+  it('stays silent on a replay, so one credit is one event', async () => {
+    seed({ existingEntry: { id: 'entry-1' } })
+    await refundOrderToWallet({ orderId: 'order-1', reason: 'שוב' })
+    expect(trackServerEvent).not.toHaveBeenCalled()
+  })
+
+  it('sends nothing when the credit never happened', async () => {
+    seed({ houseAccount: null })
+    await refundOrderToWallet({ orderId: 'order-1', reason: 'החזר' })
+    expect(trackServerEvent).not.toHaveBeenCalled()
   })
 })

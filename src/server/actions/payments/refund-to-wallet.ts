@@ -8,6 +8,7 @@ import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { trackServerEvent } from '@/server/analytics/track'
 import { type RefundRecordAdmin, recordRefund } from '@/server/payments/refund-record'
 import { planWalletCredit, walletRefundGround } from '@/server/payments/refund-wallet'
 
@@ -332,6 +333,35 @@ async function runRefundOrderToWallet(input: WalletRefundInput): Promise<WalletR
       credited_agorot: plan.amountAgorot,
       reason: input.reason,
       ground: walletRefundGround({ isDefectClaim: input.isDefectClaim }),
+    },
+  })
+
+  // THE OTHER REFUND INSTRUMENT REPORTED ITSELF AND THIS ONE DID NOT.
+  //
+  // `refundOrder` emits `order_refunded` for a card credit. This path moves
+  // real money -- the adjustments house account is debited and a customer's
+  // wallet credited -- and emitted nothing, so a refund rate measured from the
+  // funnel counted only the instrument that happens to go back to a card, and
+  // undercounted by exactly the goodwill credits somebody would open the report
+  // to look at.
+  //
+  // `order_refunded` and not a new name: the event vocabulary is mirrored by a
+  // database whitelist, adding a fifth server name would need `169` widened
+  // before it could ever be accepted, and this IS an order being refunded. The
+  // instrument is a property, which is what `destination` on the `refunds` row
+  // says too.
+  //
+  // Last, and after the money and the statutory record, for the same reason
+  // every line above it is best effort: the wallet is already credited, and an
+  // analytics failure must not read as a refund that did not happen.
+  await trackServerEvent({
+    eventName: 'order_refunded',
+    userId,
+    props: {
+      order_id: order.id,
+      refunded_agorot: plan.amountAgorot,
+      destination: 'wallet',
+      cancel_only: false,
     },
   })
 
