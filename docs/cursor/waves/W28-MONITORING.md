@@ -81,3 +81,10 @@ Operator ntfy is Hebrew one-liners without ₪ amounts. Example: תשלום נג
   `vercel.json`
   silence is an incident class of its own.
 
+---
+
+## Third pass
+
+Operator ntfy without ₪: תשלום נגבה ולא סוכם. Axiom must not fail checkout. Topic unguessable.
+
+
