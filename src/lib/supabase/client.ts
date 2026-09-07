@@ -1,3 +1,4 @@
+import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
 import { createBrowserClient } from '@supabase/ssr'
 
@@ -7,9 +8,7 @@ export function createClient() {
   // execution ceiling -- but "every Supabase call has a timeout" is only true
   // if this one does too, and `AbortController` and `fetch` are both native
   // here. `log` writes through `console`, so it is safe in this runtime.
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { global: { fetch: requestIdFetch } },
-  )
+  return createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    global: { fetch: requestIdFetch },
+  })
 }

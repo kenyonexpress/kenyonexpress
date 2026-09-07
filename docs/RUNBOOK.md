@@ -80,6 +80,66 @@ failure to reach the provider, and it is returned as-is.
 3. Two `succeeded` payment rows for one order is a real double charge. One row
    with two journal entries is not.
 
+## Rotating the Supabase anon (publishable) key
+
+The key is public by design (it ships in every page), so "exposed" is its
+normal condition. Rotate it when it was committed somewhere it should not be,
+when a scraper is abusing it past the rate limits, or on schedule.
+
+Every anon client in this repo reads the key through one module:
+`src/lib/supabase/anon-key.ts`. It prefers `SUPABASE_ANON_KEY` (a plain
+server-side variable, picked up by the next serverless instance after an env
+change) and falls back to `NEXT_PUBLIC_SUPABASE_ANON_KEY` (inlined into the
+client bundle at BUILD time, so the browser only moves on the next build).
+That split is what makes the swap zero-downtime: the server can move first.
+
+### Precondition
+
+The project must be on the new-format keys (`sb_publishable_...`). Two of
+those can be live at once, which is the overlap the procedure depends on. A
+legacy JWT-shaped anon key cannot be rotated alone: it is derived from the
+project JWT secret, and rotating THAT invalidates the anon key, the
+service_role key and every signed user session in one stroke. If the project
+still runs on the JWT key, migrate to publishable keys first (Supabase
+Dashboard > Project Settings > API Keys > "Create new API keys"), which is
+itself zero-downtime because the legacy keys keep working alongside.
+
+### Procedure
+
+1. Supabase Dashboard > Project Settings > API Keys: create a NEW publishable
+   key. Do not revoke the old one yet. Both are now accepted.
+2. Vercel > Project > Settings > Environment Variables: set
+   `SUPABASE_ANON_KEY` to the new key, and update
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` to the new key as well.
+3. Redeploy. From the first new instance the server runs on the new key via
+   `SUPABASE_ANON_KEY`; the rebuilt client bundle inlines the new
+   `NEXT_PUBLIC_` value. Browsers still holding pre-deploy HTML keep working
+   because the old key is still accepted. That window is why step 5 waits.
+4. Update the other consumers of the same key:
+   - GitHub Actions: `vars.PUBLIC_SUPABASE_ANON_KEY` and
+     `secrets.CI_SUPABASE_ANON_KEY` (`.github/workflows/ci.yml`).
+   - The mobile app: `EXPO_PUBLIC_SUPABASE_ANON_KEY` is baked into the binary
+     at build time. Ship an app build before the old key dies, or accept that
+     older app versions break at step 5.
+   - `.env.local` on the development machine.
+5. Verify, then revoke. With the old and new keys in hand:
+   ```
+   curl -s -o /dev/null -w '%{http_code}\n' \
+     -H "apikey: $KEY" "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/products?select=id&limit=1"
+   ```
+   The new key must answer 200. Wait out the CDN/ISR window for deployed HTML
+   (plus the app-store lag if step 4 shipped a mobile build), then delete the
+   old key in the dashboard and re-run the curl with it: 401 means the
+   rotation is closed.
+6. Optional cleanup: remove `SUPABASE_ANON_KEY` from Vercel. It exists for
+   the overlap; once both names carry the same value it is redundant, and the
+   fallback keeps working without it.
+
+What NOT to do: do not rotate the JWT secret to rotate this key (see
+precondition), and do not put the new key anywhere in the repo. The
+hardcoded-key gate (`pnpm gate:hardcoded`) and `.env.test`'s own history both
+exist because that has been tried.
+
 ## Open
 
 - The kill switches are env-based. A DB-backed override needs a table and a

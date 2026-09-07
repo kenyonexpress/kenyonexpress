@@ -106,7 +106,8 @@ await b.close()
 
 // 3) Supabase products
 const supaUrl = env.NEXT_PUBLIC_SUPABASE_URL
-const supaKey = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supaKey =
+  env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const res = await fetch(
   `${supaUrl}/rest/v1/products?select=slug,name_he,kenyon_price,full_price,images,status,deleted_at&order=created_at.desc&limit=200`,
   { headers: { apikey: supaKey, Authorization: `Bearer ${supaKey}` } },
