@@ -69,6 +69,15 @@ Operator ntfy is Hebrew one-liners without ₪ amounts. Example: תשלום נג
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (pages a human)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- ntfy: charged-not-finalized, voucher issue failed after pay, refund provider error, redeem RPC failed after valid QR (`ops/ON-CALL-GUIDE.md`).
+- Topic must be unguessable. No amounts in the payload.
+- Analytics ingest 169 is honesty, not H0. Four funnel events can be 0 while money works.
+- `ALERTS_ENABLED` must not be false in production. Sentry money events must not drop.
+- Twelve crons in
+  `scripts/cron-jobs.json`.
+  Hobby
+  `vercel.json`
+  silence is an incident class of its own.
+
