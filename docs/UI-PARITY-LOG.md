@@ -1216,6 +1216,60 @@ chromatic.** Section 2.1's honest statement — geometry within 1-2px at every
 landmark while the percentage stays high — is consistent with exactly these two
 compounding.
 
+## 26. Pricing contributor #4: card elevation costs nothing (pass 25)
+
+Section 19 lists card elevation as an unpriced systematic contributor: live is
+flat on 99.1% of elements (`DESIGN-SYSTEM` 1.5) and our cards carry Electro's
+`--shadow-card`. Priced, and the answer is **zero**.
+
+`diff-bands.mjs` counts a pixel as different only when a channel differs by more
+than `TOL = 24`. A shadow on a white surface produces its darkest pixel at
+`255 x (1 - alpha)`:
+
+| Token | Value | Darkest pixel | Delta | vs `TOL = 24` |
+|---|---|---|---|---|
+| `--shadow-card` | `0 2px 8px rgba(0,0,0,0.08)` | 234.6 | **20.4** | **below tolerance** |
+| `--shadow-consent-banner` | `0 -4px 16px rgba(0,0,0,0.08)` | 234.6 | **20.4** | **below tolerance** |
+| `--shadow-card-hover` | `0 4px 16px rgba(0,0,0,0.12)` | 224.4 | 30.6 | counted — but hover is never captured |
+
+**`--shadow-card` is invisible to the gate.** Not "small": below the threshold,
+so it contributes exactly zero counted pixels.
+
+And 20.4 is the **darkest** pixel, directly under the card edge. Blur spreads
+the rest across the falloff, so a pixel at half intensity is 10.2 and at a
+quarter 5.1. Every pixel of that shadow is under tolerance, not merely the
+average.
+
+### 26.1 What this settles and what it does not
+
+**Settles:** contributor #4 can be removed from any hypothesis list for a band
+mismatch. A card shadow cannot be the cause of a percentage, at any width, on
+any route. Section 19's ordering was right to put it below letter-spacing and
+shell height; this makes it not a contributor at all.
+
+**Does not settle:** whether the shadow should exist. It is still a **visible**
+departure from a flat reference — a human sees 20/255 easily, which is exactly
+why `TOL = 24` exists, to ignore antialiasing rather than to ignore design. The
+manual pass in `docs/QA-SCRIPTS.md` is where that question lives, and
+`DESIGN-SYSTEM` 1.5 records it as a deliberate departure.
+
+### 26.2 The five contributors, now fully priced
+
+| # | Contributor | Cost at the shutter |
+|---|---|---|
+| 1 | letter-spacing | ~2.3% of text width, discrete at wrap boundaries (§24) |
+| 2 | shell height | up to **+47px** at `category@380`, sign-changing (§25) |
+| 3 | search field | one 534x41 region at 1440; **decided, accepted** |
+| 4 | card elevation | **zero** — below `TOL` (here) |
+| 5 | header position | **zero** — both sides shoot at `scrollTop 0` (§17.2a) |
+
+**Two of the five cost nothing, one is an accepted decision, and two carry the
+weight.** Both of those two are largest at 380.
+
+That is the whole systematic picture, and it says something a percentage cannot:
+**the remaining 380 gap is geometry and text metrics, not colour, not
+elevation, and not chrome.**
+
 ## Revision
 
 | Date | Change |
@@ -1241,3 +1295,4 @@ compounding.
 | 2026-09-07 | Pass 22: drift check on the refusal reference. Seven exit(3), one exit(4), one exit(2), four escape hatches, two warnings: all still match |
 | 2026-09-07 | Pass 23: priced contributor #1. Our text is ~2.3% wider at body size, measured in a browser on real Hebrew strings; the effect shrinks as type grows and fails discretely at wrap boundaries |
 | 2026-09-07 | Pass 24: priced contributor #2. Shell offset is +47px worst case at category@380 and CHANGES SIGN across widths, so no single tuning constant fixes it |
+| 2026-09-07 | Pass 25: priced contributor #4 at ZERO. --shadow-card produces a 20.4 delta against TOL 24, so every pixel of it is below tolerance. All five contributors are now priced |
