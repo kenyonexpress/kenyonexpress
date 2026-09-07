@@ -23,6 +23,13 @@ const PAGE_TITLE = 'חנות'
 export const metadata = {
   title: PAGE_TITLE,
   description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  // Same reasoning as the category route, and this page had it missing. The
+  // shop is reachable with sort, page and type query strings, and without a
+  // canonical every permutation competes as its own page: `?sort=price&page=3`
+  // and `?sort=new&page=3` are the same catalogue in a different order, not two
+  // documents. Static rather than computed, because the canonical is `/products`
+  // whatever the query says, which is the whole point of declaring it.
+  alternates: { canonical: '/products' },
 }
 
 type Props = {

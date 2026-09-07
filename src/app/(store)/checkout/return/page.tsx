@@ -28,6 +28,12 @@ import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
   title: 'אישור הזמנה',
+  // The one on this list that matters most: this URL carries `order_id` and
+  // renders "התשלום הצליח". An indexed confirmation URL puts somebody's order
+  // id in a search result. robots.txt disallows the path, and a disallow stops
+  // the crawl rather than the indexing, so the meta is the half that actually
+  // says "not this one".
+  robots: { index: false, follow: false },
 }
 
 type Props = {

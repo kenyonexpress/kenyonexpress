@@ -1,5 +1,15 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
+
+/**
+ * It only ever redirects, and it still needs the meta: a redirect is followed
+ * by a crawler, and the alias URL itself is what would be listed. Same reason
+ * as `/checkout/return`, which this forwards to.
+ */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 
 /**
  * Alias for the payment-return page. `/checkout/return` is the real

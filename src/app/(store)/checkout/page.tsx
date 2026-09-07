@@ -15,6 +15,12 @@ import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
   title: 'תשלום',
+  // Disallowed in robots.txt too, and that is not enough on its own: a
+  // disallow stops the crawl, not the indexing, so a URL linked from anywhere
+  // can still be listed without a snippet. `app-return` and `frame-return`
+  // beside this file already carry the meta; three pages in the same directory
+  // did not, which is why there is now a gate.
+  robots: { index: false, follow: false },
 }
 
 const EMPTY_ADDRESS: CheckoutAddressPrefill = {
