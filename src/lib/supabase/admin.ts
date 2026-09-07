@@ -1,6 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { checkAdminKey } from '@/lib/supabase/admin-key'
-import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
+import { rlsReportFetch } from '@/lib/supabase/rls-report-fetch'
 import { createClient } from '@supabase/supabase-js'
 
 let warned = false
@@ -32,6 +32,6 @@ export function createAdminClient() {
   if (!verdict.ok) warnOnce(verdict.message)
 
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key as string, {
-    global: { fetch: requestIdFetch },
+    global: { fetch: rlsReportFetch },
   })
 }

@@ -1,5 +1,5 @@
 import { getAnonKey } from '@/lib/supabase/anon-key'
-import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
+import { rlsReportFetch } from '@/lib/supabase/rls-report-fetch'
 import { createClient } from '@supabase/supabase-js'
 
 // Server-side clients that carry NO elevated key.
@@ -56,7 +56,7 @@ export function createPublicClient() {
   const { url, key } = anonEnv()
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { fetch: requestIdFetch },
+    global: { fetch: rlsReportFetch },
   })
 }
 
@@ -81,6 +81,6 @@ export function createGuestCartClient(sessionId: string) {
   const { url, key } = anonEnv()
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Cookie: `session_id=${sessionId}` }, fetch: requestIdFetch },
+    global: { headers: { Cookie: `session_id=${sessionId}` }, fetch: rlsReportFetch },
   })
 }

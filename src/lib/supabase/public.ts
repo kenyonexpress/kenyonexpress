@@ -1,5 +1,5 @@
 import { getAnonKey } from '@/lib/supabase/anon-key'
-import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
+import { rlsReportFetch } from '@/lib/supabase/rls-report-fetch'
 import type { Database } from '@/types/database'
 import { createClient } from '@supabase/supabase-js'
 
@@ -20,6 +20,6 @@ export function createPublicClient() {
   }
   return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { fetch: requestIdFetch },
+    global: { fetch: rlsReportFetch },
   })
 }

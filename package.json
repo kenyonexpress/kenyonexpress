@@ -26,6 +26,8 @@
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
+    "sentry:alerts": "node scripts/sentry-alert-rules.mjs",
+    "sentry:alerts:dry": "node scripts/sentry-alert-rules.mjs --dry",
     "prepare": "husky || true"
   },
   "dependencies": {
