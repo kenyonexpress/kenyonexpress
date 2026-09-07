@@ -684,6 +684,23 @@ checked against 11.1. Treat search percents as refuse-or-forced only
 exit-2 list (section 12.1). Quote an `--page=account` run as a gate result
 only after reading the script.
 
+## 16. Live cards are flat, so elevation in the home crop is a known departure
+
+`docs/DESIGN-SYSTEM.md` §1.5: 99.1% of live elements carry `box-shadow: none`.
+Product cards have no shadow and `--radius-none` (`0px`). `--shadow-card` and
+`--shadow-card-hover` are Electro, not live. They do not appear in the capture.
+
+At `home@380` the 2600px crop is the hero plus **three deal cards** (section
+13.3, section 14). Those three photographs are where a card lift would score.
+A 28% home@380 is still catalogue images (section 2.1), not missing elevation.
+Do not "fix" a home percent by adding or removing card shadows.
+
+Diagnosis shortcut, added to section 13.4:
+
+| Worst bands | Also look at |
+|---|---|
+| 9 and below at 1440, 12 and below at 768, 9 and below at 380 | Catalogue first. Then, only if geometry already matches, whether ours paints `--shadow-card-hover` on a card live leaves flat |
+
 ## Revision
 
 | Date | Change |
@@ -698,3 +715,4 @@ only after reading the script.
 | 2026-09-07 | Pass 13: landmarks re-verified against the committed capture. Hero and feature bar confirmed exactly; bar-to-grid gap is 2.00px not 3px; "a landmark without a named element is not a landmark" |
 | 2026-09-07 | Pass 14: crop arithmetic per route. Home@380 scores 15% of the page; cart/category/PDP are whole-page; checkout@380 can pass without reaching place-order |
 | 2026-09-07 | Pass 15: shutter is Heebo, LCP may be Arial; search has no pinned live height; `--page=account` is not in the script's page list |
+| 2026-09-07 | Pass 16: live cards are flat; card hover lift is an Electro departure inside the 11% budget, not a home@380 diagnosis |
