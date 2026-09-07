@@ -109,8 +109,8 @@ Legend: **R** read (SELECT), **C** insert, **U** update, **D** delete.
 |---|---|---|---|---|---|
 | `wallet_accounts` | R own | own | own | R | **Live.** No client C/U/D. |
 | `wallet_entries` | R own | own | own | R | **Live.** Signed amounts. Server write only. |
-| `wallet_balances` | R/C/U/D own (policies exist) | same | same | R + DML | **Fossil, 0 rows.** **OVER-PERMISSIVE:** authenticated DML policies on a ledger that must not be the source of truth. A future writer using this pair bypasses the live append-only style of `wallet_entries`. |
-| `wallet_transactions` | R/C/U/D own | same | same | R + DML | **Fossil, 0 rows.** Same flag as balances. |
+| `wallet_balances` | R (admin / as measured) | same | same | R + **admin** C/U/D (`is_admin()`, snapshot 2026-08-19) | **Fossil, 0 rows.** **OVER-PERMISSIVE vs live ledger:** a second writable wallet. Not owner DML. Anon insert is refused (tested). |
+| `wallet_transactions` | R | same | same | R + **admin** C/U/D | **Fossil, 0 rows.** Same flag as balances. Live pair has **zero** write policies. |
 
 ---
 
@@ -146,7 +146,7 @@ Legend: **R** read (SELECT), **C** insert, **U** update, **D** delete.
 | # | Finding | Why it matters | Direction |
 |---|---|---|---|
 | 1 | authenticated I/U/D **grants** on 56 tables including `orders`, `order_items`, `vouchers`, wallet | RLS is single-layer. One bad `USING (true)` is a money incident | Do not "simplify" unified policies. Revoke remaining grants only with a measured follow-up (125 already taught that over-revoke breaks the anonymous catalogue) |
-| 2 | Fossil `wallet_balances` / `wallet_transactions` still have client DML policies | Two ledgers. Drift view `v_wallet_balance_drift` exists because disagreement was expected | Deny client DML on the fossil pair; keep live pair read-only to clients |
+| 2 | Fossil `wallet_balances` / `wallet_transactions` still have **admin** DML policies | Two ledgers. A staff client can write the fossil pair while finalize writes the live pair. Drift view `v_wallet_balance_drift` exists because disagreement was expected | Deny client DML on the fossil pair; keep live pair at zero write policies |
 | 3 | `product_images` / `categories` DML policies attached to `public` | Relies entirely on inner `is_admin()` / membership. Easy to copy-paste wrong | Prefer authenticated-only DML policies even if inner checks exist |
 | 4 | `has_role('customer')` is true for every profile | A policy written as "customers only" grants staff | Use `user_id = (SELECT auth.uid())` for ownership |
 | 5 | `has_role` hierarchy omits `support` | Staff-wide policies that use `has_role('vendor')` silently drop support; `is_support()` silently includes admins | Pick the helper on purpose |
@@ -246,3 +246,147 @@ for money.
 `vouchers_conservation`,
 `subscription_charges_split_is_exact`
 will 23514 a service_role writer. Pack roles cannot bypass them. Do not "open RLS" to fix a CHECK failure.
+
+---
+
+## 14. Measured write policies (2026-08-19 snapshot), corrections to §1–§4
+
+Source:
+`supabase/rls-manifest.json`
+`write_policies`.
+CI:
+`src/lib/auth/rls-write-policies.test.ts`.
+This is **not** a live query. It is the last committed measurement.
+
+### 14.1 Tables with **zero** non-SELECT policies (client write denied)
+
+`abandoned_cart_nudges`,
+`coupon_codes`,
+`coupons`,
+`discount_campaigns`,
+`discount_redemptions`,
+`email_suppressions`,
+`escrow_holds`,
+`invoices`,
+`legacy_percent_archive_112`,
+`newsletter_subscribers`,
+`notification_outbox`,
+`payment_webhook_events`,
+`payments`,
+`rate_limits`,
+`referral_program_settings`,
+`referral_signals`,
+`search_events`,
+`search_index_dlq`,
+`seo_redirects`,
+`settlement_events`,
+`split_executions`,
+`stock_reservations`,
+`supplier_staff`,
+`user_rate_limits`,
+`voucher_redemptions`,
+`vouchers`,
+`wallet_accounts`,
+`wallet_entries`.
+
+The live wallet pair is in this list. **Clients cannot INSERT/UPDATE/DELETE it.** Admin cashback/referral/refund must use
+`fn_wallet_transfer`
+or service_role (BYPASSRLS).
+
+### 14.2 Fossil wallet is **admin DML**, not owner DML
+
+Earlier pack text said
+`wallet_balances`
+/
+`wallet_transactions`
+had authenticated owner C/U/D. The snapshot says the write predicates are
+`is_admin()`
+on INSERT/UPDATE/DELETE. That is still **over-permissive relative to the live ledger** (a second writable wallet), but it is not a shopper write door. Anon tests in
+`wallet-rls.test.ts`
+only hit this fossil pair.
+
+### 14.3 `referrals` INSERT is admin-only
+
+`referrals_insert_unified`
+WITH CHECK
+`is_admin()`.
+Customer
+`ensureMyReferralCode`
+cannot insert a row through PostgREST. It must go through a DEFINER helper. A new "client insert my code" policy would be a hole (self-referral, fake completions).
+
+### 14.4 Catalogue write is not uniform
+
+| Table | Write predicate (snapshot) | Pack implication |
+|---|---|---|
+| `categories` | `is_admin()` | content-uploader **cannot** write categories through RLS. Admin actions that use service_role still can. |
+| `product_images` | `is_admin()` | Uploader cannot attach images via the user client. `processAndUploadImage` uses the admin client. |
+| `product_variants` | `is_admin() OR has_role('content_uploader')` | Uploader **can** mutate variants on the user client. |
+| `products` | (see snapshot; typically same OR uploader) | |
+| `popular_searches` | `has_role('admin')` not `is_admin()` | `has_role('admin')` may **drop** `super_admin` depending on the helper. Confirm before assuming super_admin can edit popular searches through PostgREST. |
+| `supplier_leads` UPDATE | `has_role('admin')` | Same helper trap. |
+
+The earlier flag "product_images / categories DML policies attached to `public`" is about **which Postgres role the policy is granted to**, not about a `USING (true)` inner check. Inner checks on the snapshot are
+`is_admin()`.
+If someone copies the policy onto `anon` **and** changes the inner check to
+`true`,
+that is the incident. The snapshot inner checks are not
+`true`.
+
+### 14.5 `carts` ALL (the widest anon write)
+
+```
+USING:  profile_id = auth.uid()
+     OR session_id = request.cookies->>'session_id'
+     OR is_admin()
+WITH CHECK: profile_id = auth.uid()
+     OR profile_id IS NULL
+     OR is_admin()
+```
+
+Guest identity is the cookie named in the policy (must match
+`GUEST_SESSION_COOKIE`
+in
+`src/proxy.ts`).
+Mismatch means guests can read nothing and write nothing, or worse, write into a shared session id.
+
+### 14.6 `orders` / `order_items` client writes are `is_admin()`
+
+Checkout does **not** use those policies. It uses service_role. A shopper PostgREST insert into
+`orders`
+is denied. The remaining risk is the GRANT plus a future policy that widens
+`is_admin()`
+to
+`true`.
+
+### 14.7 Tables this snapshot never saw
+
+`refunds`,
+`payment_events`,
+`banners`,
+`homepage_sections`,
+`search_index_outbox`,
+`subscriptions`,
+`subscription_charges`,
+`supplier_branches`,
+wishlist tables if any.
+
+Until re-measured, do not claim their policy names. Application writes to
+`refunds`
+go through service_role in
+`refundOrder`.
+If a later migration created
+`refunds`
+with RLS on and **no** policy, clients are denied (safe). If it created a
+`USING (true)`
+write policy, that is R6.
+
+### 14.8 Application bypass: `lookupAdminVoucher`
+
+`requireSection('catalog', 'read')`
+then
+`createAdminClient()`
+SELECT on
+`vouchers`.
+content_uploader can **inspect any code** even though RLS would hide issued vouchers from coupon-partners. Redeem still needs
+`requireSection('orders', 'write')`.
+That split is load-bearing. Do not "simplify" lookup to the same section as redeem without noticing uploader can then consume.
