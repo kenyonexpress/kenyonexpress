@@ -210,11 +210,13 @@ on a deal description. |
 
 | # | Attempt | What stops it today | Residual |
 |---|---|---|---|
-| G1 | Steal guest cart by cookie name mixup | Guest client sends
-`session_id`,
-**not** the browser jar, **not**
-`ke_session_id`.
-`anon.test.ts`. | Policy SQL drift (G17). |
+| G1 | Steal guest cart by cookie name mixup | Browser
+`ke_session_id`;
+PostgREST
+`session_id=`
+constructed in
+`createGuestCartClient`.
+`anon.test.ts`. | Policy SQL drift to the browser name, or forwarding the jar (G17/G21). |
 | G2 | `has_role('customer')` as allow | Documented footgun: true for every profile | One new policy using it. |
 | G3 | Disable RLS on a new table | Lint / catalog; 0 disabled measured historically | "Just this once" for a report table. |
 | G4 | DEFINER function with caller-controlled uid | Known class; memory + reviews 154 as the model (policy is the gate) | New RPC that takes
