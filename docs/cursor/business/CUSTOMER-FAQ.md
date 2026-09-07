@@ -56,4 +56,4 @@
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Paid on-site is coupon price. Remainder at the shop. After scan, no card refund of consumed value. Cashback at pay close, not at scan.
