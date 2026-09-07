@@ -25,6 +25,49 @@ const HOST = (process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com'
 /** localStorage key for the anonymous id, stable across visits in one browser. */
 const STORAGE_KEY = 'ke_ph_distinct_id'
 
+/**
+ * THE SAME ID, MIRRORED WHERE THE SERVER CAN READ IT.
+ *
+ * A PostHog funnel is a sequence of events sharing one `distinct_id`. The
+ * browser's half of the commerce funnel (`view_product`, `add_to_cart`,
+ * `checkout_step`) is keyed on the localStorage id above. The half that says
+ * money moved is emitted SERVER-side and always will be: `purchase` is
+ * deliberately not fired from the browser, because a browser purchase is lost
+ * every time a tab closes on the payment redirect.
+ *
+ * The server cannot read localStorage, and the id it does have -- the guest
+ * session cookie -- is `httpOnly`, so the BROWSER cannot read that one. Two
+ * halves of one funnel, each holding an id the other cannot see, is a funnel
+ * that reports a hundred checkouts and zero purchases.
+ *
+ * So the id is mirrored into a cookie the server can read on the next request.
+ * Deliberately NOT httpOnly: this is the value JavaScript owns and writes, and
+ * a flag that stopped the browser reading its own id would only mean two
+ * sources of truth again. It carries no authority - nothing is authorised by
+ * it, it selects an analytics bucket - and `SameSite=Lax` keeps it off
+ * cross-site requests.
+ */
+export const POSTHOG_ID_COOKIE = 'ke_ph_id'
+
+/** Thirty days, matching the guest session cookie so the two expire together. */
+const ID_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
+
+/**
+ * Best effort by construction. `document.cookie` throws in a sandboxed frame
+ * and is a silent no-op when the user blocks storage; in both cases the server
+ * simply falls back to the guest session id and the funnel degrades to two
+ * halves rather than failing.
+ */
+function mirrorIdToCookie(id: string): void {
+  if (typeof document === 'undefined') return
+  try {
+    const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `${POSTHOG_ID_COOKIE}=${encodeURIComponent(id)}; Max-Age=${ID_COOKIE_MAX_AGE}; Path=/; SameSite=Lax${secure}`
+  } catch {
+    // Storage blocked. See above.
+  }
+}
+
 /** Fallback id when there is no browser storage: one per server process. */
 let processDistinctId: string | null = null
 
@@ -49,9 +92,17 @@ function distinctId(): string {
   if (typeof window !== 'undefined') {
     try {
       const existing = window.localStorage.getItem(STORAGE_KEY)
-      if (existing) return existing
+      if (existing) {
+        // Re-mirrored on every read, not only on creation: the cookie expires
+        // on its own schedule and can be cleared without localStorage going
+        // with it, and a returning visitor whose cookie lapsed would otherwise
+        // keep an id the server never sees again.
+        mirrorIdToCookie(existing)
+        return existing
+      }
       const created = randomId()
       window.localStorage.setItem(STORAGE_KEY, created)
+      mirrorIdToCookie(created)
       return created
     } catch {
       // Storage can be unavailable (private mode, blocked cookies). Best effort.
