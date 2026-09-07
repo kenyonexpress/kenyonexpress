@@ -433,116 +433,6 @@ No `pnpm`. No `compare.mjs`. No checkout of `closeout/v1-final`. No files under 
 
 If a later agent can run the gate from the main checkout, append a dated row. Do not overwrite history.
 
-## 13. Band map: turning a band percentage into a diagnosis
-
-`diff-bands.mjs` prints a percentage per 100px band and the twelve worst. The
-log above records overall scores, so a reader who sees `y900-1000 42%` has no
-way to know what is at y900. This maps band to page region, derived from
-`refs/ke_live_computed.json` (committed 2026-09-04, live geometry at all three
-widths), so a band number becomes a place.
-
-Bands are 100px. The diff crops at **2600px**, so everything below band 25 is
-never scored at any width.
-
-### 13.1 `home@1440`, live body 5492px
-
-| Bands | y | Region | Size |
-|---|---|---|---|
-| 0 | 0-38 | top bar | 1440x38 |
-| 0-1 | 38-147 | masthead | 1200x109 |
-| 1-7 | 148-761 | **hero row** | 1170x613 |
-| 1-7 | 148-741 | side banners, 3 stacked | 201x197 each |
-| 5-6 | 518-688 | category strip, 5-up | 728x170 |
-| 7-8 | 761-895 | feature bar row | 1170x134 |
-| 7-8 | 791-872 | feature bar content | 1170x81 |
-| **8-25** | **898-2600** | **deal grid** (`jet-listing-grid__items grid-col-desk-4`) | 1150 wide, 4008px deep |
-
-The grid begins at y898 and runs 4008px, so **every band from 9 to the 2600
-crop is deal grid**. Eighteen of the twenty-six scored bands are catalogue.
-
-### 13.2 `home@768`, live body 9409px
-
-| Bands | y | Region | Size |
-|---|---|---|---|
-| 0 | 0-38 | top bar | |
-| 0 | 38-87 | masthead (handheld) | 768x50 |
-| 0-5 | 88-583 | **hero row** | 690x495 |
-| 3-5 | 392-562 | category strip | 729x170 |
-| 5-7 | 583-717 | feature bar row | 690x134 |
-| 6 | 613-694 | feature bar content | 690x81 |
-| 12-17 | 1220-1721 | deal card 1 | 335x501 |
-| 17-22 | 1721-2222 | deal card 2 | 335x501 |
-| 22-25+ | 2222-2723 | deal card 3 | 335x501 |
-
-### 13.3 `home@380`, live body 17791px
-
-| Bands | y | Region | Size |
-|---|---|---|---|
-| 1 | 113-162 | masthead (handheld) | 380x50 |
-| 1-3 | 163-376 | **hero row** | 350x213 |
-| 9-14 | 957-1505 | deal card 1 | 330x548 |
-| 11 | 1109-1354 | card 1 image | 281x245 |
-| 13 | 1386-1473 | card 1 price (`₪50 ₪20`) | 281x87 |
-| 15-20 | 1505-2053 | deal card 2 | 330x548 |
-| 16 | 1657-1902 | card 2 image | 281x245 |
-| 19 | 1934-2021 | card 2 price (`₪5600 ₪3900`) | 281x87 |
-| 20-25 | 2054-2602 | deal card 3 | 330x548 |
-| 22 | 2206-2451 | card 3 image | 281x245 |
-| 24 | 2483-2570 | card 3 price (`₪500 ₪250`) | 281x87 |
-
-### 13.4 What the map explains
-
-**One wrong product costs five or six whole bands at 380.** A card is 548px
-tall there, which is 5.5 bands, and its image alone is 245px. Only three cards
-fit inside the 2600px crop. So if card 2 differs between the two catalogues,
-bands 15 to 20 go dark at once, and that is **six of the twenty-six scored
-bands from a single product**.
-
-That is the mechanism behind the home@380 row in section 2.1 reading "11.0% at
-the line then 28.29%", and behind the honest statement under it that geometry
-is within 1-2px at every landmark while the percentage lives in image bands. It
-is not a hypothesis any more: three cards, six bands each, is most of the page.
-
-**Shell offsets are cheap; grid offsets are not.** At 1440 the entire chrome
-(top bar, masthead, hero, strip, feature bar) occupies bands 0 to 8. Everything
-from band 9 down is catalogue. A one-band shell error moves 8 bands of chrome;
-a one-row grid error moves 17.
-
-**Diagnosis shortcuts:**
-
-| Worst bands | Look at |
-|---|---|
-| 0-1 | top bar rows / masthead height. At 380 remember home has **three** top-bar rows and inner pages two |
-| 1-7 (1440), 0-5 (768), 1-3 (380) | hero row height, then the slider inside it. Check the freeze took |
-| 5-6 (1440), 3-5 (768) | category strip. Absent at 380 by design; if it appears there, that is the defect |
-| 7-8 | feature bar. 31px empty strip at 380, flat 134px at both 768 and 1440 |
-| 9 and below | **catalogue, not design.** Check the refusal guards in section 12 before touching a token |
-
-**A band map is not a fidelity claim.** These are live's coordinates. If our
-page puts the same element at a different y, the band that reports the
-difference is where the element *should* be, not where ours is. Read the map to
-find what region a band covers, then compare the two screenshots at that y.
-
-### 13.5 Re-deriving it
-
-```bash
-python3 - <<'PY'
-import json
-d = json.load(open('refs/ke_live_computed.json'))
-for w in (380, 768, 1440):
-    c = d['captures'][f'home@{w}']
-    print(f"--- home@{w}  body {c['document']['bodyScrollHeight']}px ---")
-    for e in c['elements']:
-        x, y, ww, hh = e['r']
-        if y > 2600 or hh < 60 or ww < w * 0.35: continue
-        cl = (e.get('c') or '')
-        if any(k in cl for k in ('masthead','elementor-top-section','rs-module',
-                                 'product-categories-list','feature',
-                                 'jet-listing-grid__item','colophon')):
-            print(f"  bands {int(y)//100:2}-{int(y+hh)//100:<3} y{int(y):5} {cl.split()[0][:34]:34} {int(ww)}x{int(hh)}")
-PY
-```
-
 ## 14. Crop arithmetic: what 2600px actually scores, per route
 
 Section 11 pinned live body heights. Section 13 mapped home bands. This is the
@@ -701,6 +591,187 @@ Diagnosis shortcut, added to section 13.4:
 |---|---|
 | 9 and below at 1440, 12 and below at 768, 9 and below at 380 | Catalogue first. Then, only if geometry already matches, whether ours paints `--shadow-card-hover` on a card live leaves flat |
 
+## 17. The shell offset, measured across all 21 captures
+
+Sections 3 and 6 both invoke a "shell offset" between home and inner pages
+without ever giving the numbers. Here they are, read off
+`refs/ke_live_computed.json`: top bar height plus masthead height, per template
+per width, on **live**.
+
+| Template | 380 | 768 | 1440 |
+|---|---|---|---|
+| `home` | 113 + 50 = **163** | 38 + 50 = **88** | 38 + 110 = **148** |
+| `cart` | 76 + 83 = **159** | 38 + 83 = **121** | 38 + 127 = **165** |
+| `checkout` | 76 + 83 = **159** | 38 + 83 = **121** | 38 + 127 = **165** |
+| `account` | 76 + 83 = **159** | 38 + 83 = **121** | 38 + 127 = **165** |
+| `category` | 76 + 40 = **116** | 38 + 40 = **78** | 38 + 127 = **165** |
+| `product` | 76 + 40 = **116** | 38 + 40 = **78** | 38 + 127 = **165** |
+| `shop` | 76 + 40 = **116** | 38 + 40 = **78** | 38 + 127 = **165** |
+
+### 17.1 There are three shell families, not two
+
+At 380 and 768 the templates split three ways: home, the app pages
+(cart / checkout / account), and the catalogue pages (category / product /
+shop). Only at 1440 do they collapse to two.
+
+**At 1440 the offset is a flat 17px**: home's masthead is 110 and every inner
+page's is 127. That is the same 17px `docs/DESIGN-SYSTEM.md` records against
+`--spacing-header-masthead`, arrived at from the other direction, so the two
+agree.
+
+**At 380 home is the tallest shell** (163) because of its three top-bar rows,
+while the catalogue pages are the shortest (116). A page tuned to home's shell
+starts 47px low on a category page at 380, which is half a band before anything
+else has happened.
+
+### 17.2 The 40px catalogue header is probably an artifact of the capture
+
+`category`, `product` and `shop` all read a **40px** masthead at 380 and 768,
+six captures agreeing. Section 3 already notes this and calls it "a collapsed
+sticky (40px at 380) vs home's 84px masthead", and instructs: shell stays tuned
+to **home**, do not collapse the header to match a mid-scroll category PNG.
+
+That instruction is right, and there is now a mechanism for it.
+
+`scripts/measure-live-computed.mjs` scrolls the entire page in viewport steps to
+force lazy images, then returns to the top with `window.scrollTo(0, 0)` and a
+400ms settle before the shutter. **If live's header collapses on scroll and does
+not restore on the way back up, the capture records the collapsed state.** Six
+captures reading exactly 40 while home reads 50 is the signature of a
+scroll-triggered class, not of three templates independently choosing 40.
+
+So treat the 40 as **unconfirmed**. Two ways to settle it, neither run here:
+
+1. Load a live category page at 380 and read the masthead height **without
+   scrolling at all**.
+2. Re-run the capture with the sweep disabled and compare.
+
+Until then, section 3's guidance stands and this is the reason to keep it: the
+number a component should be built against is home's, and the catalogue
+captures may be measuring a state the shopper only sees after scrolling.
+
+### 17.3 Why the offset matters more than its size
+
+Every band below the shell inherits it. A 47px error at 380 does not stay 47px
+of difference in one band; it shifts **the whole page** by half a band, so every
+subsequent landmark lands in the wrong 100px bucket and the band report reads as
+a diffuse page-wide mismatch rather than as one wrong number.
+
+That is why section 2.1's honest statement for home@380 ("geometry is within
+1-2px at every landmark") and its high percentage are not in conflict. Landmark
+geometry and band alignment are different measurements, and the shell is what
+converts a small error in the first into a large one in the second.
+
+## 18. Band map: turning a band percentage into a diagnosis
+
+`diff-bands.mjs` prints a percentage per 100px band and the twelve worst. The
+log above records overall scores, so a reader who sees `y900-1000 42%` has no
+way to know what is at y900. This maps band to page region, derived from
+`refs/ke_live_computed.json` (committed 2026-09-04, live geometry at all three
+widths), so a band number becomes a place.
+
+Bands are 100px. The diff crops at **2600px**, so everything below band 25 is
+never scored at any width.
+
+### 18.1 `home@1440`, live body 5492px
+
+| Bands | y | Region | Size |
+|---|---|---|---|
+| 0 | 0-38 | top bar | 1440x38 |
+| 0-1 | 38-147 | masthead | 1200x109 |
+| 1-7 | 148-761 | **hero row** | 1170x613 |
+| 1-7 | 148-741 | side banners, 3 stacked | 201x197 each |
+| 5-6 | 518-688 | category strip, 5-up | 728x170 |
+| 7-8 | 761-895 | feature bar row | 1170x134 |
+| 7-8 | 791-872 | feature bar content | 1170x81 |
+| **8-25** | **898-2600** | **deal grid** (`jet-listing-grid__items grid-col-desk-4`) | 1150 wide, 4008px deep |
+
+The grid begins at y898 and runs 4008px, so **every band from 9 to the 2600
+crop is deal grid**. Eighteen of the twenty-six scored bands are catalogue.
+
+### 18.2 `home@768`, live body 9409px
+
+| Bands | y | Region | Size |
+|---|---|---|---|
+| 0 | 0-38 | top bar | |
+| 0 | 38-87 | masthead (handheld) | 768x50 |
+| 0-5 | 88-583 | **hero row** | 690x495 |
+| 3-5 | 392-562 | category strip | 729x170 |
+| 5-7 | 583-717 | feature bar row | 690x134 |
+| 6 | 613-694 | feature bar content | 690x81 |
+| 12-17 | 1220-1721 | deal card 1 | 335x501 |
+| 17-22 | 1721-2222 | deal card 2 | 335x501 |
+| 22-25+ | 2222-2723 | deal card 3 | 335x501 |
+
+### 18.3 `home@380`, live body 17791px
+
+| Bands | y | Region | Size |
+|---|---|---|---|
+| 1 | 113-162 | masthead (handheld) | 380x50 |
+| 1-3 | 163-376 | **hero row** | 350x213 |
+| 9-14 | 957-1505 | deal card 1 | 330x548 |
+| 11 | 1109-1354 | card 1 image | 281x245 |
+| 13 | 1386-1473 | card 1 price (`₪50 ₪20`) | 281x87 |
+| 15-20 | 1505-2053 | deal card 2 | 330x548 |
+| 16 | 1657-1902 | card 2 image | 281x245 |
+| 19 | 1934-2021 | card 2 price (`₪5600 ₪3900`) | 281x87 |
+| 20-25 | 2054-2602 | deal card 3 | 330x548 |
+| 22 | 2206-2451 | card 3 image | 281x245 |
+| 24 | 2483-2570 | card 3 price (`₪500 ₪250`) | 281x87 |
+
+### 18.4 What the map explains
+
+**One wrong product costs five or six whole bands at 380.** A card is 548px
+tall there, which is 5.5 bands, and its image alone is 245px. Only three cards
+fit inside the 2600px crop. So if card 2 differs between the two catalogues,
+bands 15 to 20 go dark at once, and that is **six of the twenty-six scored
+bands from a single product**.
+
+That is the mechanism behind the home@380 row in section 2.1 reading "11.0% at
+the line then 28.29%", and behind the honest statement under it that geometry
+is within 1-2px at every landmark while the percentage lives in image bands. It
+is not a hypothesis any more: three cards, six bands each, is most of the page.
+
+**Shell offsets are cheap; grid offsets are not.** At 1440 the entire chrome
+(top bar, masthead, hero, strip, feature bar) occupies bands 0 to 8. Everything
+from band 9 down is catalogue. A one-band shell error moves 8 bands of chrome;
+a one-row grid error moves 17.
+
+**Diagnosis shortcuts:**
+
+| Worst bands | Look at |
+|---|---|
+| 0-1 | top bar rows / masthead height. At 380 remember home has **three** top-bar rows and inner pages two |
+| 1-7 (1440), 0-5 (768), 1-3 (380) | hero row height, then the slider inside it. Check the freeze took |
+| 5-6 (1440), 3-5 (768) | category strip. Absent at 380 by design; if it appears there, that is the defect |
+| 7-8 | feature bar. 31px empty strip at 380, flat 134px at both 768 and 1440 |
+| 9 and below | **catalogue, not design.** Check the refusal guards in section 12 before touching a token |
+
+**A band map is not a fidelity claim.** These are live's coordinates. If our
+page puts the same element at a different y, the band that reports the
+difference is where the element *should* be, not where ours is. Read the map to
+find what region a band covers, then compare the two screenshots at that y.
+
+### 18.5 Re-deriving it
+
+```bash
+python3 - <<'PY'
+import json
+d = json.load(open('refs/ke_live_computed.json'))
+for w in (380, 768, 1440):
+    c = d['captures'][f'home@{w}']
+    print(f"--- home@{w}  body {c['document']['bodyScrollHeight']}px ---")
+    for e in c['elements']:
+        x, y, ww, hh = e['r']
+        if y > 2600 or hh < 60 or ww < w * 0.35: continue
+        cl = (e.get('c') or '')
+        if any(k in cl for k in ('masthead','elementor-top-section','rs-module',
+                                 'product-categories-list','feature',
+                                 'jet-listing-grid__item','colophon')):
+            print(f"  bands {int(y)//100:2}-{int(y+hh)//100:<3} y{int(y):5} {cl.split()[0][:34]:34} {int(ww)}x{int(hh)}")
+PY
+```
+
 ## Revision
 
 | Date | Change |
@@ -716,3 +787,4 @@ Diagnosis shortcut, added to section 13.4:
 | 2026-09-07 | Pass 14: crop arithmetic per route. Home@380 scores 15% of the page; cart/category/PDP are whole-page; checkout@380 can pass without reaching place-order |
 | 2026-09-07 | Pass 15: shutter is Heebo, LCP may be Arial; search has no pinned live height; `--page=account` is not in the script's page list |
 | 2026-09-07 | Pass 16: live cards are flat; card hover lift is an Electro departure inside the 11% budget, not a home@380 diagnosis |
+| 2026-09-07 | Pass 15: shell offset measured across all 21 captures (§17). Three shell families below 1440, a flat 17px at 1440, and the 40px catalogue header flagged as a probable scroll artifact of the capture method. Band map renumbered to §18 |
