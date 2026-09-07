@@ -2262,6 +2262,56 @@ document is still describing the software.
 
 ---
 
+## 8d. Every published contrast ratio recomputed (pass 23)
+
+Sections 1.1 to 1.4 publish a WCAG ratio against white and against `#111111` for
+each colour token, and section 1.6 publishes 21 ink-on-surface pairs. Those
+numbers get used to justify accessibility decisions, so they were recomputed
+from the hexes rather than trusted.
+
+| | Checked | Mismatches |
+|---|---|---|
+| Token rows (vs `#ffffff` and `#111111`) | **44** | **0** |
+| Ink-on-surface pairs (section 1.6) | **21** | **0** |
+
+Tolerance 0.015, which is tighter than the two decimal places published.
+**Zero mismatches.**
+
+### 8d.1 Why this was worth re-running rather than assuming
+
+Pass 22's token drift check confirmed the **hexes** match `tokens.css`. It said
+nothing about the ratios, which are a separate derivation and could have been
+wrong from the start — a transcription slip, a wrong formula, or a value edited
+after its ratio was computed.
+
+They are derived deterministically from the sRGB relative-luminance formula:
+
+```
+lin(c) = c/12.92                      if c <= 0.03928
+         ((c + 0.055) / 1.055) ** 2.4 otherwise
+L      = 0.2126*lin(R) + 0.7152*lin(G) + 0.0722*lin(B)
+ratio  = (max(L1,L2) + 0.05) / (min(L1,L2) + 0.05)
+```
+
+So the two checks together now cover the whole chain: **the hex is what ships,
+and the ratio is what the hex gives.** Either alone leaves a gap.
+
+### 8d.2 What this confirms about the seven WCAG corrections
+
+Section 1.6 lists seven values that deliberately depart from live for
+accessibility. Their ratios are among the 65 recomputed, so the departures are
+now arithmetically confirmed rather than asserted:
+
+`#328614` carries white at 4.61 where live's `#44b81b` carries it at **2.59**;
+`#c24d00` at 4.82 where `#ff6b00` is **2.86**; `#6f6f6f` at 5.02 where `#9ca3af`
+is **2.54**. Each clears 4.5 and each replaced a value that did not.
+
+The one pairing this document forbids outright is also confirmed: white on
+`#fed700` is **1.41:1**, and `src/lib/a11y/brand-contrast.test.ts` fails the
+build on it.
+
+---
+
 ## 9. Related documents
 
 ```
@@ -2295,3 +2345,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 20: font stack counted. 85.8% of live declares bare "Open Sans" with NO fallback, so its Hebrew has no declared typeface on any platform; the strongest form of the Heebo argument |
 | 2026-09-07 | Pass 21: weights and line-heights counted, completing all fifteen capture columns. 400 and 700 are 97.5% of the site, Heebo loads as a variable font so no weight is synthesised, and 104 line-heights is arithmetic rather than a scale |
 | 2026-09-07 | Pass 22: drift check against the token files. 117 of 117 rows match exactly, against 194 of 196 for ERROR-COPY, and the difference is enforcement rather than diligence |
+| 2026-09-07 | Pass 23: recomputed all 65 published contrast ratios from their hexes. Zero mismatches at 0.015 tolerance; with pass 22 this covers the whole chain from shipped hex to published ratio |
