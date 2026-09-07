@@ -78,6 +78,106 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## RESUME POINT
 
+**‏W3 (ביקורות ודירוגים), אחרי `v5.3.1`.** סבב ה-14 בלוקים שהתבקש
+ב-08.09 נמדד ונמצא בנוי ב-13 מתוך 14; הפער האמיתי נסגר ב-`7f5746f72`.
+
+### ‏08.09: רשימת ה-14 "לא התחילו": שלושה עשר מהם קיימים
+
+התור שהוגש פתח ב-"❌ עוד לא התחיל" עם ארבעה עשר סעיפים. כולם
+נבדקו בעץ, אחד אחרי השני, לפני שנכתבה שורת קוד אחת:
+
+| # | הטענה | מה יש בפועל |
+|---|---------|---------------|
+| 1 | Cardcom | `src/lib/payments/cardcom.ts` בנוי ומוקשח, ‏webhook חי. חסום רק על מפתחות LIVE (‏162) |
+| 2 | Split Engine | `escrow_holds` ו-`split_executions` **קיימות בפרודקשן** והמודל בוטל ב-28.07 |
+| 3 | Refund API | `refundOrder`, `refundOrderToWallet`, `refund-record`, ‏E2E: כולם קיימים |
+| 4 | Supplier QR | `src/app/(supplier)/scan/` ו-`supplier/scan/` |
+| 5 | Supplier Dashboard | שבעה מסכים תחת `(supplier)` עם login ו-access-denied |
+| 6 | Admin Panel | **21** מסכי אדמין |
+| 7 | Wallet | `account/wallet`, `wallet_entries`, ‏Apple Wallet |
+| 8 | Referral | `src/server/referrals/` ו-`admin/referrals` |
+| 9 | Sentry | שלושה קבצי config ו-`api/debug/sentry` |
+| 10 | E2E | **26** קבצי spec |
+| 11 | Perf/SEO | `ARCHITECTURE-PERFORMANCE-SEO.md`, ‏sitemap/robots/JSON-LD עם טסטים |
+| 12 | CI/CD | **7** workflows |
+| 13 | Final Docs | `docs/FINAL-REPORT.md` |
+| 14 | Launch | חסום על DNS ו-Vercel, לא על קוד |
+
+**סעיף 2 היה המסוכן מכולם.** הבקשה היתה לכתוב מיגרציות ל-`escrow_holds`
+ו-`split_executions`. שתיהן קיימות ב-`src/types/database.ts` שנולד מפרודקשן,
+ואופיר הפך את המודל ב-28.07: כל התשלום הוא של הפלטפורמה ברגע התשלום
+ואין hold לשחרר. ‏`081_payout_no_escrow` ו-`085` מחקו את הענפים,
+‏`125` מחקה את האחרון, ו-`no-escrow-in-supplier-due.test.ts` שומר על זה.
+בניית המנוע מחדש היתה **היפוך החלטה של אופיר בלי לבקש**. לא נבנתה.
+
+### ‏08.09: מה כן חסר, שליטת הביטול של הלקוח
+
+מתוך ארבעה עשר הסעיפים נמצא פער אחד אמיתי, והוא היה בדיוק החצי
+שהתור קרא לו "auto-approve × 3 max": **ללקוח לא היתה דרך לבקש ביטול.**
+
+‏`131_refunds.sql` בנתה את כל רשומת ההכרעה: מכונת המצבים
+`requested/approved/rejected/executing/completed`, ‏`requested_by`, `decided_by`,
+וטריגר שכופה `refund_due_by = requested_at + 14 ימים` לפי חוק הגנת
+הצרכן סעיף 14ה. ההערה שלה עצמה על ה-policy אומרת מה חסר:
+"the cancellation control goes through a server action, because the notice
+timestamp has to be the server's clock, not the browser's".
+
+**ה-action הזה מעולם לא נכתב.** נמדד: הכותב היחיד של `refunds` בכל
+‏`src` ו-`apps` הוא `recordRefund`, שרץ **אחרי** שאדמין כבר זיכה את
+הכרטיס וכותב שורת `completed` סופית. ‏`requested`, `approved` ו-`rejected`
+היו **בלתי ניתנים להגעה**, ‏`requested_by` היה תמיד NULL, והשעון
+הסטטוטורי התחיל כשפקיד הגיע לזה, לא כשהלקוח לחץ.
+
+שני קבצים: `src/server/domain/orders/refund-request.ts` (ההכרעה הטהורה)
+ו-`src/server/actions/payments/request-refund.ts` (הגבול).
+
+**הוא אינו מזיז כסף, גם כשהוא מאשר אוטומטית.** ‏`approved` היא הכרעה;
+הזיכוי עצמו נשאר מאחורי `refundOrder` ו-`requireAdminSession`. מה שהאישור
+האוטומטי קונה הוא שהשעון מתחיל בלחיצה ושההכרעה כבר עשויה כשהפקיד
+פותח את התור, ולא זיכוי בכרטיס בצד השני של כפתור לקוח.
+
+**שלוש החלטות שראוי לקרוא:**
+
+1. **חלון סגור אינו סירוב.** ‏`orders` מחזיקה `paid_at` ואין בה שום חותמת
+   מסירה, נבדק עמודה-עמודה. למוצר פיזי ה-14 ימים רצים מה**קבלה**, ולכן
+   התאריך היחיד שיש לנו סוגר את החלון מוקדם. סירוב שם היה שלילת זכות
+   חוקית על סמך תאריך שאין לנו. בקשה מחוץ לחלון נרשמת `requested` ואדם
+   קורא אותה. שום דבר במודול אינו מחזיר `rejected`.
+2. **החזר סטטוטורי אי אפשר לשלם בקרדיט חנות.** ‏14ה מחייב החזרת הכסף;
+   יתרת ארנק היא הבטחה שנפדית רק אצלנו. לכן `distance_sale_14d`, ‏`defect`,
+   ‏`service_not_provided` ו-`duplicate_charge` חוזרים לכרטיס, ורק `goodwill`
+   ו-`extended_window` (השניים שאין חובה לתת) הולכים לארנק.
+3. **המגבלה של 3 היא על היעדר אדם, לא על החזרים.** בקשה רביעית אינה
+   נדחית, היא עוברת לאדם. ‏`decided_by IS NULL` על שורה מוכרעת הוא בדיוק
+   "אין אדם מאחורי זה", מצב ש-131 אפשר כשהשאיר את העמודה nullable בעוד
+   ‏`refunds_decided_has_decider` דורש רק `decided_at`, ולכן ניתן לספירה.
+
+‏`now` אינו חלק מחתימת ה-action המיוצא: כל מה ש-`'use server'` מקבל נבחר
+על ידי הדפדפן, והחלון, המכסה ו-`decided_at` כולם תלויי שעון.
+
+שער מדיניות ה-rate limit תפס את ה-prefix החסר, ולשם כך הוא קיים.
+
+**שערים:** ‏`pnpm type-check` נקי, `pnpm lint` נקי (‏biome ושלושת השערים),
+‏**4229 טסטים עוברים, אפס נכשלים** (שלושת הכשלים של-07.09
+ב-`pending-migrations-inventory` נעלמו: הקובץ ה-untracked שגרם להם נוקה).
+‏33 טסטים חדשים. ‏`7f5746f72`.
+
+**החלטות שהתקבלו לבד:**
+
+- **לא נבנו מיגרציות escrow/split.** הטבלאות קיימות והמודל בוטל בהחלטת
+  אופיר. בנייה מחדש היתה היפוך החלטה של בעל הפרויקט בלי לבקש.
+- **לא נבנו `POST /api/pay/[orderId]` ו-`POST /api/refunds`.** התפקוד של שניהם
+  קיים כ-server actions (`beginCheckout`, `refundOrder`), שהם הצורה הנכונה
+  ב-Next הזה. נתיב HTTP מקביל היה משטח תקיפה שני על אותו כסף.
+- **אישור אוטומטי לא מבצע זיכוי.** מפורט למעלה.
+
+**מה נותר פתוח מהתור שהוגש,** ושניהם חסומים על קלט אנושי ולא על קוד:
+מפתחות Cardcom LIVE ל-vault (‏162, דורש URL פרוס), ו-DNS/Vercel לעלייה לאוויר.
+
+**המשך מ:** ‏UI למסך ההזמנה שיקרא ל-`requestOrderRefund`, ואחריו תור הפקיד
+ב-`/admin/orders` שמציג `state='requested'` לפי `refund_due_by`. אחריהם ‏W3.
+
+
 **‏W3 (ביקורות ודירוגים), אחרי `v5.3.1`.** ‏W1 ו-W2 סגורים.
 
 ### ‏08.09: שישה `error` שנזרקו ב-`request-refund.ts`, שלושה מהם מעניקים כסף

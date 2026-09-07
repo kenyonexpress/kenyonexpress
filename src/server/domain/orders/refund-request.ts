@@ -7,7 +7,7 @@ import { canTransition } from './state-machine'
  * The customer's cancellation notice, and whether it needs a human.
  *
  * WHY THIS EXISTS. Migration 131 built `public.refunds` as a full adjudication
- * record -- `requested -> approved/rejected -> executing -> completed/failed`,
+ * record: `requested -> approved/rejected -> executing -> completed/failed`,
  * `requested_by`, `decided_by`, and a trigger forcing `refund_due_by =
  * requested_at + 14 days` because Consumer Protection Law section 14ה gives the
  * money back inside 14 days. Its own comment names the missing half:
@@ -27,9 +27,9 @@ import { canTransition } from './state-machine'
  * WHAT IT DELIBERATELY DOES NOT DO. It never moves money and never authorises
  * moving money. `autoApproved` writes `state = 'approved'` and nothing else;
  * the card credit stays behind `refundOrder`, which requires
- * `requireAdminSession`. Auto-approval buys the two things worth buying -- the
+ * `requireAdminSession`. Auto-approval buys the two things worth buying (the
  * statutory clock starts at the customer's click, and the adjudication is
- * already made when the operator opens the queue -- without putting a card
+ * already made when the operator opens the queue) without putting a card
  * credit on the far side of a customer button. This project has twice shipped a
  * money path that looked alive and was not; it should not now ship one that is
  * more alive than intended.
@@ -41,8 +41,8 @@ export const STATUTORY_CANCELLATION_WINDOW_DAYS = 14
 /**
  * How many cancellations one customer may have decided by machine.
  *
- * NOT a cap on refunds. A customer whose fourth request arrives is not refused
- * -- their request is recorded as `requested` and a person reads it. The cap is
+ * NOT a cap on refunds. A customer whose fourth request arrives is not refused:
+ * their request is recorded as `requested` and a person reads it. The cap is
  * on the ABSENCE of a person, which is the only thing automation can safely
  * ration: the fraud shape this guards against is one account cancelling
  * repeatedly, and it is a shape a human should look at, not one the customer
@@ -59,7 +59,7 @@ export const AUTO_APPROVAL_WINDOW_DAYS = 365
 
 const MS_PER_DAY = 86_400_000
 
-/** Structural refusals. A refusal is never "we decided no" -- that is a `rejected` row. */
+/** Structural refusals. A refusal is never "we decided no": that is a `rejected` row. */
 export type RefundRequestRefusalCode =
   | 'NOT_FOUND'
   | 'NOT_YOURS'
@@ -78,7 +78,7 @@ export type ManualReviewReason =
 export interface RefundRequestInput {
   /** What the card was actually charged for this order, in agorot. */
   cardChargedAgorot: number
-  /** When the charge succeeded. Undefined reads as "cannot date it" -- manual. */
+  /** When the charge succeeded. Undefined reads as "cannot date it": manual. */
   paidAt?: Date
   lines: RefundLineInput[]
   vouchers: RefundVoucherInput[]
@@ -94,7 +94,7 @@ export interface RefundRequestInput {
 }
 
 export interface RefundRequestDecision {
-  /** The row to write. Only ever `requested` or `approved` -- never a rejection. */
+  /** The row to write. Only ever `requested` or `approved`, never a rejection. */
   state: Extract<RefundState, 'requested' | 'approved'>
   ground: RefundGround
   destination: RefundDestination
@@ -145,8 +145,8 @@ export function isInsideStatutoryWindow(paidAt: Date, now: Date): boolean {
  * A STATUTORY REFUND CANNOT BE PAID IN STORE CREDIT. Section 14ה obliges the
  * return of the money paid; a wallet balance is not money, it is a promise
  * redeemable only here, and discharging the obligation with one would not
- * discharge it. So every ground that names a legal right -- the 14-day
- * cancellation, a defect, a service never delivered, a charge taken twice --
+ * discharge it. So every ground that names a legal right (the 14-day
+ * cancellation, a defect, a service never delivered, a charge taken twice)
  * returns to the card.
  *
  * `goodwill` and `extended_window` are the two that are ours to give: nothing
@@ -176,7 +176,7 @@ function countRecentAutoApprovals(
 /**
  * Decide the customer's cancellation notice.
  *
- * Throws `RefundRequestRefusal` only for the structural cases -- an order that
+ * Throws `RefundRequestRefusal` only for the structural cases: an order that
  * was never paid, an order with no line a refund could touch. Everything else
  * returns a row: either decided by machine, or `requested` with the reasons a
  * person needs. Refusing is not adjudicating, and this function never

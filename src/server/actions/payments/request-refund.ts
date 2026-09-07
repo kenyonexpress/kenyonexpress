@@ -214,7 +214,7 @@ async function runRequestOrderRefund(input: {
   }
 
   // The auto-approval budget. `decided_by IS NULL` on a decided row is exactly
-  // "no person stood behind this" -- 131 leaves `decided_by` nullable while
+  // "no person stood behind this". 131 leaves `decided_by` nullable while
   // `refunds_decided_has_decider` requires only `decided_at`, so a machine
   // decision is recordable and, more to the point, countable.
   const cutoff = new Date(now.getTime() - AUTO_APPROVAL_WINDOW_DAYS * 86_400_000).toISOString()

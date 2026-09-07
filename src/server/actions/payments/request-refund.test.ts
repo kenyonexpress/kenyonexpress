@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 /**
  * The customer cancellation control, driven through fake Supabase clients.
  *
- * What is worth catching here is not the arithmetic -- `refund-request.test.ts`
- * owns that -- but the shape: WHICH client read the order (the user's, so RLS
+ * What is worth catching here is not the arithmetic (`refund-request.test.ts`
+ * owns that) but the shape: WHICH client read the order (the user's, so RLS
  * is the ownership check rather than a comparison this file has to remember),
  * what the written row actually contains, and that the row is a notice and
  * never a money movement.
@@ -161,7 +161,7 @@ describe('requestOrderRefund', () => {
   it('leaves decided_by unset on a machine decision, and decided_at set', async () => {
     // This pair IS the auto-approval record: 131 requires `decided_at` on an
     // approved row and leaves `decided_by` nullable, so "decided with nobody
-    // behind it" is representable -- and countable next time.
+    // behind it" is representable, and countable next time.
     seed()
     await requestOrderRefund({ orderId: 'order-1', ground: 'distance_sale_14d' })
     const payload = find('refunds', 'insert')?.payload as Record<string, unknown>
