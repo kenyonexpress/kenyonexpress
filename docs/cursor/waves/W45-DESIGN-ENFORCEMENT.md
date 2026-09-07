@@ -69,6 +69,11 @@ N/A (enforcement). Bad copy to reject: נאמנות, עמלה 10% כברירת �
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (11%)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Gate: 380 / 768 / 1440, under 11%, write
+  `docs/UI-PARITY-REPORT.md`
+  with commit and `-dirty`.
+- Live content from WP. Geometry from Electro. `refs/` is gate output (`REFS-POLICY.md`).
+- Do not raise the Hebrew threshold for unused `/en`.
+
