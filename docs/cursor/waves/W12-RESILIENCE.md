@@ -70,3 +70,13 @@ The four kill switches. `ALERTS_ENABLED`. `CHECKOUT_ENABLED`.
 | Q | Best answer |
 |---|---|
 | DB-backed flags? | **Not until a human migration.** Env is the incident switch. |
+
+---
+
+## Second pass (after contracts)
+
+- Kill switches are env, not a flags table (`contracts/FEATURE-FLAGS.md`).
+- Payment down: stranded cron, never mock (`ops/RUNBOOK-PAYMENT-DOWN.md`).
+- Redis down: scan fail closed (`ops/RUNBOOK-REDIS-DOWN.md`).
+- Cache kill may miss LCP; not a money fix (`contracts/CACHE-POLICY.md`).
+- Cron health twice in a row wakes a human (`ops/ON-CALL-GUIDE.md`).
