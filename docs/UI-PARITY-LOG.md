@@ -682,16 +682,48 @@ Three corrections fall out:
    the number is right and the mechanism is not. Nothing is sticking or
    collapsing. These are different templates with different masthead heights.
 
-3. **Something on home does move on scroll, and it is not the masthead.**
-   `home@380`'s masthead keeps h=50 while its `y` drops from 113 to 91, so the
-   22px lost is above it, in the top bar. That is the real scroll effect on live,
-   it affects only home, and it changes the offset every band below inherits by
-   22px depending on scroll position.
+3. ~~Something on home moves on scroll.~~ **RETRACTED, see 17.2a.** Nothing
+   moves. The `y=91` reading behind this claim was taken before the scroll had
+   settled.
 
-Point 3 is the one with teeth for this log: a home capture taken after a sweep
-sits 22px higher than one taken cold. `compare.mjs` sweeps both sides, so it is
-consistent run to run, but any home measurement quoted from a **cold** load is
-22px out from the gate's own reference.
+### 17.2a Point 3 above was wrong, and the reason is worth keeping
+
+The first probe read the masthead `y` as 113 cold and **91** after the sweep,
+and concluded live's home top bar loses 22px on scroll. It does not.
+
+Re-run with `window.scrollY` captured in the same evaluate as the geometry:
+
+| | `scrollY` | masthead `y` | masthead `h` | top bar `h` | body |
+|---|---|---|---|---|---|
+| cold | 0 | 113 | 50 | 113 | 17791 |
+| after sweep | 0 | **113** | 50 | 113 | 17791 |
+
+Identical. The earlier `91` was read while the return to top was still settling:
+the first probe slept 500ms after `scrollTo(0, 0)` and **did not record
+`scrollY`**, so it had no way to know it was measuring mid-scroll.
+
+**The methodological rule, which cost two retractions in this section to
+learn: capture `scrollY` in the same `evaluate()` as any geometry read after a
+scroll.** A `y` without its `scrollY` is not a position, and 500ms is not a
+guarantee.
+
+What survives from 17.2 is points 1 and 2, both of which were measured *before*
+any scroll and are unaffected: the 40px catalogue header is real, and every
+masthead measured is `position: static`.
+
+#### A real asymmetry, found while checking this
+
+Live's masthead is `position: static` at every width measured. **Ours is
+`sticky top-0 z-40`** (`src/components/layout/Header.tsx:140`).
+
+That is a genuine structural difference and it is *not* a systematic offset at
+the shutter: `compare.mjs` returns both sides to `scrollTop 0` before the
+screenshot, and a sticky header at scroll 0 sits exactly where a static one
+does. It matters for anything measured **mid-page**, and for the manual QA
+sweep, where our header overlays content on scroll and live's does not.
+
+It is recorded here rather than in a defect list because sticky is very likely
+the better behaviour; the point is that the two differ and no document said so.
 
 Section 3's guidance ("shell stays tuned to home, do not collapse the header to
 match a mid-scroll category PNG") survives all three corrections, for a better
@@ -837,3 +869,4 @@ PY
 | 2026-09-07 | Pass 16: live cards are flat; card hover lift is an Electro departure inside the 11% budget, not a home@380 diagnosis |
 | 2026-09-07 | Pass 15: shell offset measured across all 21 captures (§17). Three shell families below 1440, a flat 17px at 1440, and the 40px catalogue header flagged as a probable scroll artifact of the capture method. Band map renumbered to §18 |
 | 2026-09-07 | Pass 16: settled 17.2 against live. The 40px catalogue header is REAL and not a capture artifact; the header is position:static everywhere, not sticky; and home alone loses 22px above the masthead on scroll |
+| 2026-09-07 | Pass 17: RETRACTED the 22px scroll claim from pass 16. With scrollY verified at 0, nothing moves; the earlier reading was mid-scroll. Also: live is position:static, ours is sticky |
