@@ -301,6 +301,61 @@ The twelve names in the SQL `IN` list are exactly
 | 3 | `CREATE OR REPLACE FUNCTION` takes a lock on the function, not on `analytics_events`. No table is touched and no rewrite happens. | None | Preflight block 4 counts the table only as a scale note; it is not a lock concern. |
 | 4 | If the function is currently mid-call from `/api/a` when the replace lands, the in-flight call finishes against the old definition. | None | Normal PostgreSQL behaviour, no partial state. |
 
+### 2.4a What `fn_ingest_analytics_events` returns, and what it cannot tell you
+
+Section 2.4 risk 2 notes that `v_inserted` overcounts because it increments past
+`ON CONFLICT DO NOTHING`. Traced fully, the return value is less informative
+than that even:
+
+```
+unknown name   ->  CONTINUE          not counted
+known name     ->  INSERT ... ON CONFLICT (event_id) DO NOTHING
+                   v_inserted := v_inserted + 1     counted either way
+```
+
+So the integer returned is **"events whose name was on the whitelist"**. It is
+not "rows written", and it is not "events received".
+
+| Batch of 20 | Returns | Reality |
+|---|---|---|
+| all names known, all new | 20 | 20 rows written |
+| all names known, all duplicates | **20** | **0 rows written** |
+| 10 known, 10 unknown | **10** | 10 written, **10 discarded silently** |
+| all names unknown | 0 | nothing written, nothing said |
+
+The third row is the one that matters, and it is exactly today's situation: the
+client sends a mixed batch, the four server event names are not on the list, and
+the caller receives a number that looks like a partial success. **Nothing in the
+response distinguishes "you sent 10 events" from "you sent 20 and I threw half
+away."**
+
+#### This is the same anti-pattern three other files in this repository refuse
+
+`docs/SEO-PLAN.md` 5.2.3 names the rule, reached independently in three layers:
+
+| Where | Refuses to |
+|---|---|
+| `orFail` (query) | turn a failed read into an empty list |
+| `membershipReadOrFail` (authorization) | turn an unreadable membership into "staffs nobody" |
+| `cancellationNotice` (copy) | turn an unparseable date into "no date" |
+
+`fn_ingest_analytics_events` does the thing all three refuse: it collapses
+"discarded" into "fine". That is why the loss went unnoticed from migration 151
+until it was found by probing, rather than being reported by the pipeline that
+was losing the data.
+
+#### It is not a reason to change 169
+
+169's value is that it is **byte-identical to 151 except the name list**, which
+is what makes it a five-minute review and a one-statement rollback. Widening the
+list *and* changing the return contract in the same migration would forfeit
+that, and the return value is not what is losing the events.
+
+The right shape is a follow-up: return a row rather than an integer
+(`accepted`, `skipped`, `written`), or raise on a skip once the whitelist is
+believed complete. Recorded here so the option is not lost, and explicitly
+**not** folded into 169.
+
 ### 2.5 Safety properties worth keeping
 
 - `SECURITY DEFINER` with `SET search_path TO ''` and every object
@@ -887,3 +942,4 @@ docs/DECISIONS.md                   why the in-place money conversion was delete
 STATE.md                            "חסמים לאופיר", where 162's blocker lives
 ```
 | 2026-09-07 | Pass 17: reviewed analytics_cron.sql. It honours the cron split, its names cannot be hit by 162 rollback, and its rollup would run five minutes BEFORE 162 expire-vouchers, inverting its own stated precondition |
+| 2026-09-07 | Pass 18: traced what fn_ingest_analytics_events actually returns. It counts whitelisted names, so a mixed batch reads as partial success and the discard is invisible. Same anti-pattern three other files refuse |
