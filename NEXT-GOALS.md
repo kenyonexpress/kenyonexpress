@@ -1209,30 +1209,19 @@ compare.mjs, commit, push, עדכון STATE.md.
 ‏UI-PARITY-LOG, ‏ROLE-MATRIX, ‏ERROR-COPY, ‏SEO-PLAN, ‏QA-SCRIPTS,
 ‏MIGRATION-REVIEW, ‏RISK-REGISTER, ‏POST-LAUNCH-ROADMAP) ואז:
 
-11. `docs/UI-WAVES.md` — לכל גל ‏W3 עד W49 עם משטח UI: מסכים שנוספים, רכיבים
-    קיימים מ-COMPONENT-INVENTORY, רכיבים חדשים, הערות RTL, הערות a11y,
-    ומסלולי `compare.mjs` שחייבים להישאר מתחת ל-11%.
-12. `docs/ADMIN-UI-SPEC.md` — כל מסך אדמין: ‏CRUD מוצר עם תצוגת פיצול חיה,
-    מודרציה, אישור ספקים, מציג ביקורת, דגלי פיצ'רים, קונפיג, סקדיולר,
-    התחזות, אנליטיקה. פריסה, מצבים, קופי עברי, גידור תפקידים.
-13. `docs/SUPPLIER-UI-SPEC.md` — דשבורד, סריקה, סניפים, צוות, דוחות,
-    אנליטיקה, התראות, קבלת תנאים. ‏mobile-first ‏380px.
-14. `docs/CUSTOMER-UI-SPEC.md` — חשבון, הזמנות, שוברים, ארנק, רשימת משאלות,
-    ביקורות, הפניות, נאמנות, מתנה, העברה. ‏mobile-first.
-15. `docs/EMPTY-AND-ERROR-STATES.md` — לכל רשימה וזרימה, מצב ריק ומצב שגיאה
-    מעוצבים בעברית, עם פעולה הבאה.
-16. `docs/MOTION-SPEC.md` — טעינה, הצלחה, שגיאה, ‏reduced-motion, אפס
-    ‏layout shift.
-17. `docs/PRINT-SPEC.md` — שובר, קבלה, דוח ספק: פריסות הדפסה, ‏RTL.
-18. `docs/HEBREW-STYLE-GUIDE.md` — טון, דקדוק, מגדר, מונחים לפי GLOSSARY,
-    דוגמאות טובות ורעות.
-19. `docs/DESIGN-TOKENS-AUDIT.md` — כל hex/px/font גולמי שנשאר בקוד וצריך
-    להיות token, עם קובץ ושורה.
-20. `docs/UI-PARITY-PLAN.md` — כל מסלול, צילום ייחוס, אחוז ההפרש הנוכחי,
-    ותוכנית להגיע מתחת ל-11.
+11. ✅ `docs/UI-WAVES.md` (בלוק 14, 07.09)
+12. ✅ `docs/ADMIN-UI-SPEC.md` (בלוק 14, 07.09)
+13. ✅ `docs/SUPPLIER-UI-SPEC.md` (בלוק 14, 07.09)
+14. ✅ `docs/CUSTOMER-UI-SPEC.md` (בלוק 14, 07.09)
+15. ✅ `docs/EMPTY-AND-ERROR-STATES.md` (בלוק 14, 07.09)
+16. ✅ `docs/MOTION-SPEC.md` (בלוק 14, 07.09)
+17. ✅ `docs/PRINT-SPEC.md` (בלוק 14, 07.09)
+18. ✅ `docs/HEBREW-STYLE-GUIDE.md` (בלוק 14, 07.09)
+19. ✅ `docs/DESIGN-TOKENS-AUDIT.md` (בלוק 14, 07.09)
+20. ✅ `docs/UI-PARITY-PLAN.md` (בלוק 14, 07.09)
 
-**‏`docs/ROLE-MATRIX.md` (פריט 4) כבר נכתב מכאן**, מתוך המדיניויות החיות,
-כי בלוק 10 היה צריך אותו. שאר הפריטים ממתינים.
+**‏`docs/ROLE-MATRIX.md` (פריט 4) נכתב בבלוק 10.** פריטים 11 עד 20 נסגרו
+בבלוק 14.
 
 ---
 
