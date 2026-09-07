@@ -390,3 +390,23 @@ SELECT on
 content_uploader can **inspect any code** even though RLS would hide issued vouchers from coupon-partners. Redeem still needs
 `requireSection('orders', 'write')`.
 That split is load-bearing. Do not "simplify" lookup to the same section as redeem without noticing uploader can then consume.
+
+---
+
+## 15. Mobile till and RLS
+
+`apps/mobile`
+holds the **anon** key. Session in SecureStore. RPCs
+`redeem_voucher`,
+`verify_supplier_staff_pin`,
+`supplier_app_context`
+run as
+`authenticated`
+DEFINER. HTTP redeem goes through Next.js (
+session bearer
+) which then calls the same RPC. The phone is not
+`service_role`.
+A future "simplify the till" that ships the service key in Expo config is R3 catastrophic.
+
+Offline queue: the device stores codes and idempotency keys, not a local "success" flag that skips the RPC. RLS still applies when the drain runs; a queued scan for the wrong shop is still
+`wrong_supplier`.
