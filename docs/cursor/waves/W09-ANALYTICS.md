@@ -66,3 +66,13 @@ None on the storefront. Admin empty state: אין אירועי רכישה עדי
 | Q | Best answer |
 |---|---|
 | Has 169 been applied? | **Treat as no** until a live `purchase` row exists. |
+
+---
+
+## Second pass (after contracts)
+
+- Pending 169 collision: analytics vs audit. Apply by **full filename** (`contracts/MIGRATION-PLAYBOOK.md`).
+- Consent: `ke_consent` is not newsletter confirm (`contracts/CONSENT-MODEL.md`).
+- Four funnel events (`purchase`, `begin_checkout`, `voucher_redeemed`, `order_refunded`) must not be invented as outbox kinds.
+- Analytics is not the ledger. Money truth stays journals (`contracts/LEDGER.md`).
+- Flag: ingest may be silent-zero. Do not treat PostHog as launch H0.
