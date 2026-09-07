@@ -21,4 +21,4 @@ Disable rate limits "so the till works". The till must fail closed.
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Scan and PIN fail closed. Postgres `check_rate_limit` is service_role only. QStash is not Redis. Do not disable limiters so the till "works".
