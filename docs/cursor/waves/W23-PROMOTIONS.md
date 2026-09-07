@@ -72,6 +72,12 @@ Wallet + code: wallet is payment source, does not change campaign snapshot.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (not a percent of face)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Coupon SKU is absolute
+  `coupon_price_ils`.
+  A promo code must not invent a percent-of-face.
+- Missing `platform_percent` stays unsellable. Codes cannot fill C1.
+- Wallet / cashback already have paths. Do not add `abandoned_cart_incentive` (W05 rejected).
+- Checkout ignores client-applied discounts unless the server re-derives them in agorot.
+
