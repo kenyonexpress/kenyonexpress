@@ -293,3 +293,7 @@ Alternative: keep W06-NEWSLETTER numbering from the prior pass. Consequence: lef
 ### D43. `default_split_percent` must be removed
 Alternative: prefill new products from the supplier column. Consequence: looks like a global rate (C1). Strip from forms; drop column after a deploy that does not read it.
 
+### D44. Twelve crons live in JSON + Actions
+Alternative: Hobby `vercel.json` crons. Consequence: two jobs run, the rest silent. Do not enable 162 while Actions is live.
+
+
