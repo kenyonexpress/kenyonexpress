@@ -68,3 +68,9 @@ None.
 | Q | Best answer |
 |---|---|
 | Offline add-to-cart? | **No** as source of truth. IDB mirror at most (`ke_cart_mirror_v1` already a cookie name in legal tests: confirm it is not a second cart). |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
