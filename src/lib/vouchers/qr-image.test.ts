@@ -58,6 +58,11 @@ describe('one module owns voucher QR rendering', () => {
   it('calls the QR encoder nowhere but lib/vouchers/qr-image.ts', () => {
     const offenders = sourceFiles(SRC)
       .filter((file) => !file.endsWith('qr-image.ts') && !file.endsWith('qr-image.test.ts'))
+      // lib/coupons/qr-pdf.ts is the OTHER QR domain: printed discount-coupon
+      // sheets, whose payload is buildCouponApplyUrl and never a voucher
+      // token. It owns its encoding for the same reason this file owns the
+      // voucher's; the invariant here stays about voucher rendering.
+      .filter((file) => !file.endsWith(join('coupons', 'qr-pdf.ts')))
       .filter((file) => /QRCode\.toDataURL|from 'qrcode'/.test(readFileSync(file, 'utf8')))
       .map((file) => relative(process.cwd(), file))
 
