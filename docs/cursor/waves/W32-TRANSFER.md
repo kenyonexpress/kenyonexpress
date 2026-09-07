@@ -75,6 +75,10 @@ Transfer then refund to original card: still the original payer, not the new hol
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (skip)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- v7 FAQ: אי אפשר להעביר קופון באפליקציה. אפשר לשלוח במתנה בקופה.
+- Screenshot is not a transfer product. Gift is W29 (one claim).
+- Do not add a `transferred` voucher status without a human enum migration.
+- WAVE-INDEX skips W32 on purpose for v7.0.0-rc1.
+
