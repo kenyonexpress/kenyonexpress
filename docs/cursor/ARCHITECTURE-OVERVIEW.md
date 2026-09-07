@@ -552,9 +552,11 @@ Money, RLS, APIs, risks, human launch steps, and post-launch work have their own
 | `MONEY-INVARIANTS.md` | Agorot contract. There is no `packages/money.ts` |
 | `RLS-CATALOG.md` | Four pack roles × every public table |
 | `API-SURFACE.md` | Handlers, actions, auth, failures |
+| `TEST-MAP.md` | Every test file, the invariant it pins, what deleting it would allow |
 | `RISK-REGISTER.md` | Ranked launch breakage |
 | `LAUNCH-BLOCKERS.md` | Human-only ordered steps. DNS last |
 | `POST-LAUNCH-ROADMAP.md` | Reviews, wishlist, abandoned cart, Twilio WhatsApp, i18n, self-serve partners |
+| `GLOSSARY.md` | Hebrew and English domain terms as this tree uses them |
 
 ---
 
@@ -614,3 +616,176 @@ plus storefront aliases
 is the PWA tile,
 `noindex`.
 Neither legal nor offline is in the pixel compare set. Returns copy must not mention escrow.
+
+---
+
+## 16. Layout groups (the parentheses are not URLs)
+
+App Router route groups do not appear in the path. They only choose a layout.
+
+| Group | Layout file | Who it wraps |
+|---|---|---|
+| `(store)` | storefront chrome (header, footer, WhatsApp float) | Home, catalogue, cart, checkout, legal aliases, city, search, gift |
+| `(main)` | lighter storefront | `/coupons`, newsletter confirm/unsubscribe |
+| `(legal)` | legal chrome | Canonical `/legal/*` |
+| `(account)` | signed-in account shell | Every `/account/*` page |
+| `(admin)` | admin shell + optimistic proxy gate | Every `/admin/*` page |
+| `(supplier)` | partner portal chrome | Dashboard, scan, orders, products, payouts, redemptions |
+| `(supplier-public)` | no portal chrome | `/supplier/login`, `/supplier/access-denied` |
+| `(auth)` | auth chrome | login, signup, MFA, password reset |
+
+Root
+`src/app/layout.tsx`
+sets
+`dir="rtl"`,
+`lang="he"`,
+Heebo, and the canonical host. There is no
+`(marketing)`
+group.
+
+Pages that sit **outside** those groups on purpose:
+
+| Path | Why it is ungrouped |
+|---|---|
+| `/coupon/[id]` | Signed voucher surface. Gated by proxy (`/coupon/*`). Not the public `/coupons` listing. |
+| `/redeem/[token]` | Signed URL, not a session. Token is the credential. |
+| `/offline` | PWA tile. `noindex`. |
+| `/debug/sentry`, `/debug/sentry/render` | Must stay dark unless `SENTRY_DEBUG_ROUTES` equals the expected phrase. |
+
+---
+
+## 17. Proxy details the brief skips
+
+File:
+`src/proxy.ts`.
+Exported name must be
+`proxy`
+(Next.js 16). Matcher skips `_next/static`, `_next/image`, favicon, and image extensions.
+
+Load-bearing extras beyond §2:
+
+1. **Request id.** Minted here, attached inbound and outbound. An inbound well-formed `x-request-id` wins so a load-balancer trace stays one trace.
+2. **WordPress redirects are GET/HEAD only.** A 301 on a Cardcom POST would drop the body. 410 is used when the path is gone on purpose (Search Console treats 410 as a decision, 404 as an oversight). Query strings are stripped on redirect so `?ref=` and stale Woo `?product=` do not duplicate canonical URLs.
+3. **Admin optimistic roles** include `support` and `content_uploader`. The page still calls `requireSection`. If a money page forgets that call, support can see the HTML even though the action should 403.
+4. **`?ref=` cookie.** Written on every GET that carries a well-formed eight-character code. Last-click wins. The URL is not rewritten (canonical already collapses `/?ref=` to `/`). Claim happens later at signup/pay, not here.
+5. **Guest cart cookie.** UUID, `Secure` from the shared builder. The **only** anon identity for `carts`. Never log it.
+6. **`/scan` is not prefixed `/supplier`.** Proxy auth for partners is `pathname.startsWith('/supplier')` plus the two public doors. `/scan` must be gated by the page itself (session + membership). Do not assume the proxy covers it.
+
+`/checkout` itself is ungated. Sub-routes need a session **except**
+`/checkout/frame-return`
+(Cardcom iframe, cross-site, browsers withhold `SameSite=Lax` cookies).
+
+---
+
+## 18. Tables the 2026-08-19 RLS manifest does not list
+
+`supabase/rls-manifest.json`
+was measured 2026-08-19 against
+`ixvwfbuvfxxsjiywhbbb`
+and holds **53** base tables. Later notes (2026-09-01) say **61**. CI trusts the committed snapshot via
+`src/lib/auth/rls-manifest.test.ts`.
+It does **not** query production. Drift that nobody re-measured is invisible to CI.
+
+Tables this pack talks about that are **absent from that 53-row snapshot** (they may exist live after later migrations; the snapshot does not prove they do):
+
+| Name | Why the pack still names it |
+|---|---|
+| `banners` / `homepage_sections` | CMS for the home grid. Live views `v_banners_live`, `v_homepage_sections_live`. |
+| `search_index_outbox` | Floor indexer. Sister `search_index_dlq` **is** in the snapshot. |
+| `refunds` | Refund row. CHECKs encode Israeli consumer law. |
+| `payment_events` | Append-only journal. Sister `payment_webhook_events` **is** in the snapshot. |
+| `subscriptions` / `subscription_charges` | Recurring (migration 135). |
+| `supplier_branches` | Multi-location partners. |
+| `wishlists` / `wishlist_items` | Account wishlist. Guest list is `localStorage` only (`ke_wishlist`). |
+
+When a human re-runs
+`node scripts/check-rls.mjs`
+the snapshot must be updated in the same commit as any new table. Adding a table with RLS off fails the manifest test. Adding a table with zero policies is allowed only if it is named in
+`service_role_only`.
+
+---
+
+## 19. Wishlist and reviews already have actions
+
+Post-launch P1/P2 are not greenfield. This tree already exports:
+
+| Action | Module | Meaning |
+|---|---|---|
+| `toggleWishlist` / `getWishlistSaved` | `src/server/actions/reviews.ts` | Heart. Not money. |
+| `submitReview` / `getMyReviewableItem` | same | Review create. Paid-buyer join is the remaining honesty check. |
+| `moderateReview` | `admin/reviews.ts` | Staff. Not a refund. |
+| `deleteAccount` | `account.ts` | Account erasure. Must not silently refund. |
+
+`/account/wishlist`
+is a live route. Architecture
+`docs/ARCHITECTURE-WISHLIST.md`
+is the binding. Do not invent a second wishlist table in a later brief.
+
+---
+
+## 20. Invoice is a route, not a page
+
+`/account/orders/[id]/invoice`
+is
+`src/app/(account)/account/orders/[id]/invoice/route.ts`
+(GET). It is not
+`page.tsx`.
+Owner session required. Other people's ids must 404, not 403.
+
+Apple Wallet:
+`/api/wallet/apple/[id]`
+is RLS-gated on the voucher UUID. Missing Apple credentials return **404 not 500** so a misconfigured env does not look like an outage to the shopper.
+
+---
+
+## 21. What "Meilisearch with no search UI" actually means
+
+Three facts that look contradictory and are not:
+
+1. Engine:
+   `src/lib/search-server.ts`
+   returns
+   `{ engine: 'meilisearch' | 'database' }`.
+2. Storefront:
+   `/search`
+   plus a header field (ADR 0010, restored because Electro pixel refs contain it). Test
+   `src/components/layout/no-search-ui.test.ts`
+   pins the **product** decision (no facet chrome, no typeahead destination, no Meili branding).
+3. Operator:
+   `/admin/search`
+   is an index debugger behind `requireSection`.
+
+Unconfigured Meili: every index job is a successful no-op. ILIKE is the engine. Catalogue of ~80 SKUs can launch that way.
+
+---
+
+## 22. Env topology (build-time vs runtime)
+
+| Kind | When it binds | Trap |
+|---|---|---|
+| `NEXT_PUBLIC_*` | **Build**. Inlined into the client bundle | Dashboard change without Redeploy is a no-op. WhatsApp number, site URL, anon key. |
+| Server secrets | Process start (`src/lib/env.ts` via `instrumentation.ts`) | Missing Cardcom must fail boot, not the first charge. |
+| `ALLOW_INCOMPLETE_ENV` | Laptop `next start` is `NODE_ENV=production` | Must not be set on Vercel Production. |
+| Leaky-name regex | Boot | `NEXT_PUBLIC_.*(SECRET\|PASSWORD\|SERVICE_ROLE\|PRIVATE_KEY\|API_KEY)` refuses to start |
+
+Cardcom sandbox in Production is a boot-fail.
+`CHECKOUT_ENABLED`
+must equal the exact string
+`true`
+or the till is closed.
+
+---
+
+## 23. `wp_import` vs `public`
+
+Import tables in schema
+`wp_import`
+reuse names
+`orders`,
+`products`,
+`vouchers`.
+A query that omits the schema near an import script will hit the wrong table. Production application code must stay on
+`public`.
+This pack does not treat
+`wp_import`
+as a money path.
