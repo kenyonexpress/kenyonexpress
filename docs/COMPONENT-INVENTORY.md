@@ -2,7 +2,7 @@
 
 Read-only scan of `src/components`. Every `.tsx` component is listed, grouped by subdirectory.
 
-Judgements are based on the actual file contents (with `file:line` references where useful). The token system lives in `src/app/globals.css` `@theme` (brand `#fed700`, heading `#333e48`, etc.). Any hardcoded hex or arbitrary Tailwind value (`[#...]` or `[NNpx]`) counts as NOT token compliant. The app renders `dir="rtl"`, so physical direction utilities (`ml-`, `mr-`, `pl-`, `pr-`, `left-`, `right-`, `text-left`, `text-right`, `border-l`, `border-r`) are RTL risks; logical / symmetric utilities are safe.
+Judgements are based on the actual file contents (with `file:line` references where useful). The token system lives in `src/styles/tokens.ts` mirrored to `src/styles/tokens.css` `@theme` (imported from `globals.css`; brand `#fed700`, heading `#333e48`, etc.). Any hardcoded hex or arbitrary Tailwind value (`[#...]` or `[NNpx]`) counts as NOT token compliant. The app renders `dir="rtl"`, so physical direction utilities (`ml-`, `mr-`, `pl-`, `pr-`, `left-`, `right-`, `text-left`, `text-right`, `border-l`, `border-r`) are RTL risks; logical / symmetric utilities are safe. Re-scan note 07.09 (block 14): raw `[#hex]` in component `.tsx` files is cleared; remaining debt is page CSS and `lib/*tokens*` (see `docs/DESIGN-TOKENS-AUDIT.md`).
 
 ## Summary
 
