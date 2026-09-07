@@ -81,3 +81,12 @@ QStash retries 5 then DLQ. Meili 404 DELETE is success.
 - Checkout must not import a Meili SDK. QStash missing → inline index, not Redis.
 - Prices in hits are display. Checkout re-prices (`LEDGER.md`).
 
+---
+
+## Third pass
+
+Empty copy: לא נמצאו תוצאות. Admin engine label: meilisearch / database. There is no search product for v7. Empty
+`q`
+must not list the ₪1 master as a deal.
+
+
