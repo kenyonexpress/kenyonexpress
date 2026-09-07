@@ -313,5 +313,9 @@ export name on Next 16. Not
 | CancelOnly | ביטול לפני שידור | Same Israel calendar day as charge |
 | types-ahead | טיפוסים לפני הסכימה | `escrow_holds`, `payout_statements` may exist in types only |
 | wave index | מדד גלים | `docs/cursor/waves/WAVE-INDEX.md` toward v7.0.0-rc1 |
+| cashback at finalize | קאשבק בסגירת תשלום | `fn_wallet_transfer` key `order:<id>:cashback`. Not at scan. |
+| Hobby cron silence | שתיקת cron ב-Hobby | Twelve jobs in `scripts/cron-jobs.json` via Actions. |
+| GetLpResult | תוצאת Low Profile | Only trusted Cardcom amount. Webhook body is not money. |
+
 
 Typed, trimmed, not fuzzed. |
