@@ -629,6 +629,61 @@ number to section 2.1 as if it were geometry.
 
 No `pnpm` in this worktree. No `compare.mjs` re-run this pass.
 
+### 14.4 Independently re-derived, and one inference it licenses
+
+The section 14 table was re-derived from `refs/ke_live_computed.json` directly
+(`document.bodyScrollHeight` per capture, `min(2600, h) / h`), by a different
+reader than the one who wrote it. **Every figure agrees**, to the percentage
+point: 15 / 28 / 47 for home, 46 / 54 / 70 for shop, 83 / 88 / 100 for
+checkout, 100 across the board for product, category, cart and account.
+
+That is worth recording because the numbers are load-bearing for four
+conclusions in 14.1 and they now have two independent derivations.
+
+**The inference 14.1 stops short of: the crop is why 380 reads as volatile.**
+
+Section 2.1 records `home@380` swinging between 11 and 28 percent and explains
+it as "cards 3 and 4 are different products". True, and the deeper reason is
+the crop:
+
+| Width | Crop covers | What lives there |
+|---|---|---|
+| 380 | 14.6% of the page | shell, hero, the 31px strip, **and the first grid rows** |
+| 1440 | 47.3% of the page | shell, hero, category strip, feature bar |
+
+At 1440 the 2600px window lands almost entirely on **fixed chrome**, which is
+stable between runs. At 380 the same window reaches the **catalogue**, which is
+different products on the two sides. So:
+
+> The home route did not become more volatile at 380. The window moved onto the
+> volatile part of the page.
+
+Two consequences:
+
+1. **A 380 home score and a 1440 home score are not the same measurement**, and
+   a rise from 8% to 42% between them is partly a change of subject rather than
+   a responsive defect. Section 2.1's 2026-09-02 row should be read that way.
+2. **Improving `home@380` means changing the first grid rows or seeding the
+   catalogue**, not tuning the shell. The shell is barely a third of what that
+   score sees, and it is already within 1 to 2px at every landmark (2.2.1).
+
+## 15. Font swap vs the shutter, and search crop
+
+`compare.mjs` waits for fonts and for zero pending images. A home pass is a
+**Heebo** picture (`docs/DESIGN-SYSTEM.md` §12.2). Lighthouse LCP may still
+name Arial (`display: swap`, `preload: false`). Those two numbers answering
+different questions is not a regression.
+
+`--page=search` live body is not in the 2026-09-04 seven-template capture
+(section 11.1 lists home, shop, product, category, cart, checkout, account).
+There is no pinned live height for search, so a search score cannot be
+checked against 11.1. Treat search percents as refuse-or-forced only
+(section 8). Do not invent a crop fraction.
+
+`--page=account` is named in section 1 and **absent** from the script's
+exit-2 list (section 12.1). Quote an `--page=account` run as a gate result
+only after reading the script.
+
 ## Revision
 
 | Date | Change |
@@ -642,3 +697,4 @@ No `pnpm` in this worktree. No `compare.mjs` re-run this pass.
 | 2026-09-07 | Pass 13: band map derived from refs/ke_live_computed.json. Band to region at all three widths, and why one wrong product costs six of the twenty-six scored bands at 380 |
 | 2026-09-07 | Pass 13: landmarks re-verified against the committed capture. Hero and feature bar confirmed exactly; bar-to-grid gap is 2.00px not 3px; "a landmark without a named element is not a landmark" |
 | 2026-09-07 | Pass 14: crop arithmetic per route. Home@380 scores 15% of the page; cart/category/PDP are whole-page; checkout@380 can pass without reaching place-order |
+| 2026-09-07 | Pass 15: shutter is Heebo, LCP may be Arial; search has no pinned live height; `--page=account` is not in the script's page list |
