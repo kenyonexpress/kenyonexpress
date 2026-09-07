@@ -22,6 +22,10 @@ Refund from a spreadsheet. Double-finalize. Enable sandbox.
 
 ---
 
-## Second pass
+## Second pass (boundary)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Webhook body is not money. GetLpResult only (`PAYMENT-BOUNDARY.md`).
+- `CHECKOUT_ENABLED` off if new charges would strand. Wait for new instances.
+- Cashback and voucher issue happen in finalize, not in the POST body.
+- ntfy: charged-not-finalized. Topic unguessable. No amounts.
+
