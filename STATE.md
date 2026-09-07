@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-07 15:05 UTC (‏יסודות PWA: ‏sw.js גרסה ke-v2 עם cache חסום-גודל (40) לדפי קטלוג לגלישה לא מקוונת, network-first נשמר; מטפלי push ו-notificationclick עם ריסון יעד לחיצה ל-path מקומי בלבד. מיגרציה 179 ממתינה ולא הוחלה: טבלת push_subscriptions עם RLS קריאה/מחיקה עצמית וכתיבה רק ב-service role. זרימת הרשאת התראות ב-/account/notifications: בקשת ההרשאה רק בלחיצת כפתור, מנוי שנכשל בשמירה בשרת מבוטל בדפדפן כדי שלא יישאר מנוי יתום. זוג מפתחות VAPID נטבע ל-.env.local ותועד ב-.env.example. כל השערים ירוקים: 3708 טסטים, type-check, lint, build)
 Updated: 2026-09-07 11:35 UTC (‏Passkeys: כניסה והרשמה עם WebAuthn (טביעת אצבע / Face ID) דרך @simplewebauthn v14. מיגרציה 178 ממתינה ולא הוחלה: טבלת webauthn_credentials עם RLS קריאה/מחיקה עצמית וכתיבה רק ב-service role. האתגר נחתם ב-HMAC בעוגיית httpOnly ולא נשמר ב-DB, כך שהפיצ'ר עונה "לא זמין עדיין" עד להחלת 178. כניסה ללא שם משתמש ממירה assertion מאומת לסשן Supabase מלא (generateLink ואז verifyOtp בצד שרת) עם רענון טוקנים, מיזוג עגלת אורח ותביעת הפניה כמו כל מסלול כניסה אחר. נפילה אוטומטית לקישור קסם בטופס הכניסה, ניהול מפתחות ב-/account/security. כל השערים ירוקים: 3691 טסטים, type-check, lint, build)
 Updated: 2026-09-07 11:00 UTC (‏יומן קאשבק: טבלת ‏cashback_ledger הוספה-בלבד, בונוס 10% לרכישה ראשונה ו-5% לכל חמישית, מסך התאמות אדמין עם שובל ביקורת. מיגרציה 177 ממתינה ולא הוחלה)
 Updated: 2026-09-07 06:25 UTC (‏WhatsApp Business flow: ‏webhook נכנס של Twilio, תור עדכוני סטטוס הזמנה, פתיחת פניות תמיכה, ניהול הצטרפות/הסרה. מיגרציה 173 ממתינה ולא הוחלה)
@@ -76,6 +77,29 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏07.09 ‏goal בוצע: יסודות PWA (commit ‏`8aa57ce0b`, branch ‏autopilot)
+
+מה שכבר היה קיים ולא נגעתי בו: manifest.ts (אייקונים, צבעים מ-tokens, RTL),
+מעטפת ה-offline, ‏InstallPrompt ו-ServiceWorkerRegistrar. מה שנוסף:
+
+- ‏`public/sw.js` הוקפץ ל-ke-v2: ‏cache דפי גלישה (בית, ‏/products, ‏/product/*,
+  ‏/category/*) חסום ל-40 רשומות, רק URL בלי query string. ‏network-first נשמר
+  בדיוק כמו שהיה; ה-cache משמש רק כשהרשת נופלת, לפני הנפילה למעטפת offline.
+- מטפל push: מפיל payload בלי JSON או בלי title (התראה ריקה מלמדת לחסום),
+  יעד לחיצה מרוסן ל-path מקומי (כולל חסימת `//host`). ‏notificationclick
+  ממקד טאב פתוח לפני שהוא פותח חדש.
+- מיגרציה `179_push_subscriptions.sql` ממתינה: endpoint ייחודי https בלבד,
+  ‏p256dh/auth כ-base64url, ‏RLS קריאה/מחיקה עצמית, אפס policy לכתיבה.
+- ‏actions ב-`src/server/actions/push.ts`: מאומתי סשן, ולידציה לצורת החוט
+  (87/22 תווים), ‏upsert על endpoint, "לא זמין עדיין" חינני עד החלת 179,
+  ‏rate limit ‏push-subscribe נרשם ב-policies.ts.
+- ‏`/account/notifications` + כניסה בניווט; ‏PushOptIn מבקש הרשאה רק בלחיצה,
+  ומבטל את המנוי בדפדפן אם השמירה בשרת נכשלה.
+- זוג VAPID נטבע (07.09) ל-`.env.local`; המפתח הפרטי בלי קורא עדיין, אבל
+  חייב להישמר עם הציבורי או שכל המנויים יתייתמו. תועד ב-`.env.example`.
+- הטסט "thirty-two renumbered files" בתיאור המלאי כבר היה לא מדויק (33 קבצים
+  לפני 179); הנוסח שונה כך שלא יסחוף שוב.
 
 ### ‏07.09 ‏goal בוצע: יומן קאשבק (commit ‏`1281b9cfb`, branch ‏autopilot)
 
