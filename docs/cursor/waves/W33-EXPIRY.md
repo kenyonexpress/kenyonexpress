@@ -79,3 +79,10 @@ Timezone: display Israel. Cron UTC 23:15 is 01:15/02:15 Israel (DST). Document. 
 - Mail `voucher_expiring` only if that kind is in CHECK and consent allows transactional.
 - Israel calendar, not UTC midnight, if the column is a date.
 
+---
+
+## Third pass
+
+Hebrew: בתוקף עד / פג תוקף / הקופון שלך עומד לפוג. Expire cron does not call Cardcom. No auto wallet on expiry.
+
+
