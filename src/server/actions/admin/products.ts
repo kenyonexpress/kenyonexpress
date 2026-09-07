@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
@@ -23,8 +24,9 @@ async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
 ): Promise<ProductFormState> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -257,6 +259,17 @@ async function runUpsertProduct(
 
   let productId = id
 
+  const auditChanges = {
+    slug: fields.slug,
+    name_he: fields.name_he,
+    type: fields.type,
+    status: fields.status,
+    supplier_id: fields.supplier_id,
+    category_id: fields.category_id,
+    kenyon_price: fields.kenyon_price,
+    platform_percent: fields.platform_percent,
+  }
+
   if (id) {
     const { error } = await writeWithWhatsAppFallback(async (extra) =>
       supabase
@@ -274,6 +287,14 @@ async function runUpsertProduct(
           error.message,
       }
     }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'updated',
+      entityType: 'products',
+      entityId: id,
+      changes: auditChanges,
+    })
   } else {
     const { data, error } = await writeWithWhatsAppFallback<{ id: string }>(async (extra) =>
       supabase
@@ -292,6 +313,14 @@ async function runUpsertProduct(
       }
     }
     productId = data.id
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'created',
+      entityType: 'products',
+      entityId: data.id,
+      changes: auditChanges,
+    })
   }
 
   // Soft-delete variants removed in the editor (edit flow only). New products
@@ -312,6 +341,14 @@ async function runUpsertProduct(
         .update({ deleted_at: new Date().toISOString(), is_active: false })
         .in('id', toRemove)
       if (error) return { error: error.message }
+      await writeAuditLog({
+        actorId: session.userId,
+        actorRole: session.role,
+        action: 'deleted',
+        entityType: 'product_variants',
+        entityId: id,
+        changes: { removed_variant_ids: toRemove },
+      })
     }
   }
 
@@ -324,6 +361,14 @@ async function runUpsertProduct(
         await supabase.from('product_variants').insert({ ...vfields, product_id: productId })
       }
     }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'updated',
+      entityType: 'product_variants',
+      entityId: productId,
+      changes: { variant_ids: variants.map((v) => v.id ?? null) },
+    })
   }
 
   revalidatePath('/admin/products')
@@ -332,8 +377,9 @@ async function runUpsertProduct(
 }
 
 async function runDeleteProduct(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -345,6 +391,15 @@ async function runDeleteProduct(id: string): Promise<{ error?: string }> {
     .eq('id', id)
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'products',
+    entityId: id,
+    changes: { status: 'archived' },
+  })
+
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
   return {}
@@ -354,8 +409,9 @@ async function runBulkUpdateProductStatus(
   ids: string[],
   status: 'draft' | 'active' | 'paused' | 'archived',
 ): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -363,6 +419,14 @@ async function runBulkUpdateProductStatus(
   const supabase = await createClient()
   const { error } = await supabase.from('products').update({ status }).in('id', ids)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'products',
+    changes: { ids, status },
+  })
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
@@ -373,8 +437,9 @@ async function runBulkAssignCategory(
   ids: string[],
   categoryId: string | null,
 ): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -389,6 +454,14 @@ async function runBulkAssignCategory(
     .update({ category_id: categoryId })
     .in('id', ids)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'products',
+    changes: { ids, category_id: categoryId },
+  })
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
@@ -418,8 +491,9 @@ async function runBulkAdjustPrices(
   ids: string[],
   input: BulkPriceInput,
 ): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -464,14 +538,23 @@ async function runBulkAdjustPrices(
     }
   }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'products',
+    changes: { ids, mode: parsed.data.mode, value: parsed.data.value, updated, skipped },
+  })
+
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
   return { updated, skipped }
 }
 
 async function runBulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -484,14 +567,23 @@ async function runBulkSoftDeleteProducts(ids: string[]): Promise<{ error?: strin
     .in('id', ids)
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'products',
+    changes: { ids, status: 'archived' },
+  })
+
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
   return {}
 }
 
 async function runDeleteVariant(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -502,6 +594,14 @@ async function runDeleteVariant(id: string): Promise<{ error?: string }> {
     .update({ deleted_at: new Date().toISOString(), is_active: false })
     .eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'product_variants',
+    entityId: id,
+  })
 
   return {}
 }

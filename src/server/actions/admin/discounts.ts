@@ -1,9 +1,11 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { normalizeDiscountCode } from '@/lib/growth/discount'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { PostgrestError } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -141,14 +143,41 @@ async function runSaveDiscountCampaign(
   // fn_claim_discount, which holds a row lock while it moves; an admin form
   // writing it would be the read-then-write race the ledger exists to prevent,
   // reintroduced from a different direction.
-  const { error } = v.id
-    ? await admin.from('discount_campaigns').update(row).eq('id', v.id)
-    : await admin.from('discount_campaigns').insert(row)
+  let campaignId = v.id ?? null
+  let error: PostgrestError | null
+  if (v.id) {
+    ;({ error } = await admin.from('discount_campaigns').update(row).eq('id', v.id))
+  } else {
+    const inserted = await admin.from('discount_campaigns').insert(row).select('id').single()
+    error = inserted.error
+    campaignId = inserted.data?.id ?? null
+  }
 
   if (error) {
     if (error.code === '23505') return { ok: false, error: 'קוד ההנחה הזה כבר קיים' }
     return { ok: false, error: `שמירה נכשלה: ${error.message}` }
   }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: v.id ? 'updated' : 'created',
+    entityType: 'discount_campaigns',
+    entityId: campaignId,
+    changes: {
+      code: row.code,
+      name: row.name,
+      kind: row.kind,
+      percent_bp: row.percent_bp,
+      amount_agorot: row.amount_agorot,
+      max_discount_agorot: row.max_discount_agorot,
+      min_order_agorot: row.min_order_agorot,
+      max_uses: row.max_uses,
+      max_uses_per_user: row.max_uses_per_user,
+      allow_stacking: row.allow_stacking,
+      is_active: row.is_active,
+    },
+  })
 
   revalidatePath('/admin/discounts')
   return { ok: true }
@@ -161,7 +190,7 @@ async function runSaveDiscountCampaign(
  * order was cheaper than its lines.
  */
 async function runArchiveDiscountCampaign(id: string): Promise<DiscountActionState> {
-  await requireSection('discounts', 'write')
+  const session = await requireSection('discounts', 'write')
   const admin = createAdminClient()
 
   const { error } = await admin
@@ -170,6 +199,16 @@ async function runArchiveDiscountCampaign(id: string): Promise<DiscountActionSta
     .eq('id', id)
 
   if (error) return { ok: false, error: `ארכוב נכשל: ${error.message}` }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'discount_campaigns',
+    entityId: id,
+    changes: { is_active: false },
+  })
+
   revalidatePath('/admin/discounts')
   return { ok: true }
 }
@@ -185,7 +224,7 @@ async function runSetDiscountCampaignActive(
   id: string,
   isActive: boolean,
 ): Promise<DiscountActionState> {
-  await requireSection('discounts', 'write')
+  const session = await requireSection('discounts', 'write')
   const admin = createAdminClient()
 
   const { error } = await admin
@@ -193,6 +232,15 @@ async function runSetDiscountCampaignActive(
     .update({ is_active: isActive })
     .eq('id', id)
   if (error) return { ok: false, error: `עדכון נכשל: ${error.message}` }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'discount_campaigns',
+    entityId: id,
+    changes: { is_active: isActive },
+  })
 
   revalidatePath('/admin/discounts')
   return { ok: true }

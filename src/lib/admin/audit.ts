@@ -1,7 +1,8 @@
+import type { AppRole } from '@/lib/admin/roles'
 import { log } from '@/lib/observability/log'
 import { getRequestId } from '@/lib/observability/request-context'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { AuditAction, Json, UserRole } from '@/types/database'
+import type { AuditAction, Json } from '@/types/database'
 import { headers } from 'next/headers'
 
 // Every admin mutation writes an audit_log row through this single helper
@@ -42,7 +43,7 @@ async function requestContext(): Promise<{ ip: string | null; userAgent: string 
 
 export async function writeAuditLog(entry: {
   actorId: string
-  actorRole: UserRole
+  actorRole: AppRole
   action: AuditAction
   entityType: string
   entityId?: string | null

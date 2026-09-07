@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
@@ -31,8 +32,9 @@ async function runUpsertCategory(
   _: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -60,9 +62,29 @@ async function runUpsertCategory(
   if (id) {
     const { error } = await supabase.from('categories').update(fields).eq('id', id)
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'updated',
+      entityType: 'categories',
+      entityId: id,
+      changes: { ...fields },
+    })
   } else {
-    const { error } = await supabase.from('categories').insert({ ...fields, created_by: user!.id })
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({ ...fields, created_by: user!.id })
+      .select('id')
+      .single()
     if (error) return { error: error.message }
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'created',
+      entityType: 'categories',
+      entityId: data.id,
+      changes: { ...fields },
+    })
   }
 
   revalidatePath('/admin/categories')
@@ -71,8 +93,9 @@ async function runUpsertCategory(
 }
 
 async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -84,14 +107,23 @@ async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
     .eq('id', id)
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'categories',
+    entityId: id,
+  })
+
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)
   return {}
 }
 
 async function runDeleteCategory(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -99,6 +131,15 @@ async function runDeleteCategory(id: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { error } = await supabase.from('categories').delete().eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'categories',
+    entityId: id,
+    metadata: { hard_delete: true },
+  })
 
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)
@@ -109,8 +150,9 @@ async function runUpdateCategorySortOrder(
   id: string,
   sort_order: number,
 ): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -118,6 +160,15 @@ async function runUpdateCategorySortOrder(
   const supabase = await createClient()
   const { error } = await supabase.from('categories').update({ sort_order }).eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'categories',
+    entityId: id,
+    changes: { sort_order },
+  })
 
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)

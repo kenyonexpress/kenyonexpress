@@ -80,6 +80,44 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
 
+### ‏07.09 ‏goal בוצע: ‏Admin RBAC hardening (branch ‏autopilot)
+
+‏goal שהוזרק ב-/goal, מחוץ לתור. ארבעת הרכיבים:
+
+- **תפקיד ‏read_only:** ‏migration ‏`181_admin_rbac_hardening.sql` (ב-pending,
+  לפי הכלל הקבוע) מוסיף את הערך ל-enum ומרחיב את ‏`is_support()` כך שהתפקיד
+  יורש את כל משטח ה-SELECT של support ואפס policies של כתיבה. באפליקציה:
+  ‏`AppRole = UserRole | 'read_only'` ב-`roles.ts` (אותו חוזה כמו 178: למחוק
+  אחרי apply ו-regenerate), מטריצת `sectionAccess` נותנת לו read על כל
+  section, ‏sidebar ו-users UI עודכנו. עד ה-apply, שיוך התפקיד נכשל בקול
+  (invalid enum) וזה מתועד בפעולה עצמה.
+- **RLS/DB:** נמדד מול פרודקשן דרך MCP לפני הכתיבה: הפונקציה של 035
+  (‏`enforce_role_change_privilege`) **לא קיימת בפרודקשן**; השומר החי הוא של
+  090. לכן 181 מקשיח את 090 עצמו: אסור לשנות role לעצמך, הענקה/שלילה של
+  admin-tier רק ל-super_admin, ורק עם JWT ברמת ‏aal2. בנוסף policy
+  ‏RESTRICTIVE על UPDATE של profiles: ‏super_admin בסשן aal1 לא כותב כלום
+  דרך ה-user client (וזה המסלול האמיתי: הפעולה ב-users.ts כותבת דרכו).
+- **audit מלא:** שבעה קבצי actions מוטציה בלי אף ‏`writeAuditLog` קיבלו
+  קריאות (categories, coupon-deals, discounts, images, products, referrals,
+  vendors), וטסט כיסוי סטטי חדש
+  ‏`audit-call-coverage.test.ts` מפיל כל קובץ עתידי שמוטציה בלי audit.
+  ‏trigger על profiles כבר חי בפרודקשן (‏`audit_profiles`, נמדד), אז אין
+  כפילות DB.
+- **MFA ל-super_admin:** ‏TOTP נייטיב של Supabase, לא passkeys (כניסת passkey
+  מייצרת סשן רגיל דרך generateLink/verifyOtp בלי שום סימון, נמדד בקוד).
+  שער ‏`enforceSuperAdminMfa` בכל ארבעת ה-require* ב-`rbac.ts`: ‏super_admin
+  בלי aal2 מופנה ל-`/admin-mfa` (מחוץ ל-(admin) כדי לא ללולאה), שם enrol
+  (QR + secret) או challenge, דרך ‏`src/server/actions/mfa.ts` עם rate limit
+  על user+IP (רשומים ב-policies.ts). ההחלטה טהורה ב-`mfa-gate.ts` עם טסטים,
+  ‏fail-closed כשה-AAL לא ידוע.
+
+החלטות שהתקבלו לבד: ‏read_only רואה הכול חוץ ממספרי כסף (‏canSeeMoney נשאר
+admin-tier, חשיפה מינימלית); ‏bulk ops כותבות שורת audit מסכמת אחת עם ids;
+ההקשחה נכתבה על גוף הפונקציה הפרוס של 090 ולא על 035 כי כך נמדד.
+
+שערים: ‏3828 טסטים ירוקים (כולל 26 חדשים), ‏type-check, ‏lint, ‏build נקיים.
+‏181 ממתין לאישור לפי הכלל הקבוע; עד אז MFA נאכף בשכבת האפליקציה בלבד.
+
 ### ‏07.09 ‏goal בוצע: ‏PostHog מקצה לקצה (commit ‏`847be07da`, branch ‏autopilot)
 
 ארבעה commits נקטפו מ-`closeout/v1-final` (מודול capture בלי SDK, ‏fan-out
