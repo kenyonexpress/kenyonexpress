@@ -65,3 +65,9 @@ None.
 | Q | Best answer |
 |---|---|
 | Raise 11% for EN pages? | Exclude EN from the Hebrew Electro gate (W10). Do not raise the Hebrew threshold. |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
