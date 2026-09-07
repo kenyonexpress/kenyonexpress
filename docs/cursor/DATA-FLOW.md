@@ -431,3 +431,171 @@ in this order (failure notes matter):
 Per-unit voucher split: first unit absorbs the remainder agora so unit CHECKs still sum to the line.
 
 Mobile offline scans enqueue locally and drain through the same HTTP redeem. The device must not delete a queued code on a timeout; only on a settled outcome.
+
+---
+
+## 18. Guest cart identity (the cookie that is not the cookie)
+
+Two names, one UUID:
+
+| Where | Name |
+|---|---|
+| Browser Set-Cookie | `ke_session_id` (httpOnly) |
+| PostgREST `request.cookies` that RLS reads | `session_id` |
+
+Writer of the mapping:
+`createGuestCartClient`
+in
+`src/lib/supabase/anon.ts`.
+It interpolates
+`Cookie: session_id=<uuid>`
+and **does not** forward the browser jar. Auth cookies never reach PostgREST on this path.
+
+| Step | Writer | Tables | RLS |
+|---|---|---|---|
+| Mint UUID | `src/proxy.ts` when no user and no `ke_session_id` | none (cookie only) | n/a |
+| Add line as guest | `addToCart` → guest client | `carts` | `profile_id IS NULL` WITH CHECK plus `session_id = request.cookies->>'session_id'` |
+| Sign-in | `/auth/callback` → `mergeGuestCart` | user `carts` row; guest cookie cleared | owner. Double-merge must not duplicate (tested) |
+| Mobile WebView | `POST /api/app/session` | none (cookies only) | `setSession` of tokens the app already holds. 30/10min/IP. 401 unspecific |
+
+A policy change to
+`ke_session_id`
+without changing the client makes every guest cart empty. Forwarding the real Cookie header to PostgREST would put refresh tokens on a third-party request.
+
+---
+
+## 19. Analytics ingest (not money, lies like money)
+
+| Step | Writer | Tables | Gate |
+|---|---|---|---|
+| Browser beacon | `POST /api/a` | `analytics_events` via `fn_ingest_analytics_events` | Rate limited. Must not 200-swallow. Unknown names are **skipped**, not raised |
+| Server events | `finalizeOrder` / refund / redeem via `trackServerEvent` | same RPC | Same whitelist |
+
+151's whitelist is eight **client** names. Four **server** names (
+`begin_checkout`,
+`purchase`,
+`voucher_redeemed`,
+`order_refunded`
+) wait on
+`169_analytics_server_event_names.sql`.
+Until that apply, finalize can charge a card and the dashboard still shows 0 purchases. That is R24. Prove pay with SQL on
+`orders`,
+not with ads.
+
+Client names today:
+`page_view`,
+`view_product`,
+`view_category`,
+`add_to_cart`,
+`remove_from_cart`,
+`checkout_step`,
+`web_vital`,
+`whatsapp_click`.
+
+---
+
+## 20. Mobile offline scan drain (same RPC, extra persistence)
+
+Queue:
+`ke.supplier.scan_queue.v1`
+in AsyncStorage. Not SecureStore (size). FIFO. Idempotency key minted **at enqueue**, not at drain.
+
+| Step | Writer | Tables | RLS |
+|---|---|---|---|
+| Enqueue | device | none (local) | n/a. Must not set a local `success` flag |
+| Drain | `POST /api/supplier/vouchers/redeem-batch` or per-code redeem | same as §3.4 | Same RPC. `wrong_supplier` still applies offline |
+| Remove local row | device, **only** for keys the JSON said settled | none | Timeout must leave the item queued |
+| Sign-out | `clearQueue` + `DELETE /api/app/session` | none | Next cashier must not inherit the previous queue |
+
+Two offline scans of the same code: first `success`, second `already_redeemed`, in cashier order.
+
+---
+
+## 21. Wishlist and reviews (tables exist, still not money)
+
+Generated types on this branch:
+
+| Table | Shape | Writer | RLS (until re-measured) |
+|---|---|---|---|
+| `wishlists` | `(user_id, product_id)` **one table**, no `wishlist_items` | `toggleWishlist` | Owner. Guest list is `localStorage` `ke_wishlist` only |
+| `reviews` | `order_item_id` UNIQUE, `rating`, `status`, `user_id` | `submitReview`; `moderateReview` | Paid-buyer join is the honesty check. Public SELECT should be `published` only |
+
+Neither path writes agorot. A 1-star review is not
+`refund_ground`.
+`deleteAccount`
+must not delete these as a side effect of a refund (there is no refund).
+
+---
+
+## 22. Reporting snapshots (170) and FTS (171)
+
+Not money paths. Named so nobody "fixes" revenue by joining live
+`products.platform_percent`.
+
+`170_reporting_tables.sql`
+header on this branch **claims applied 2026-09-04** while the file still sits in
+`migrations/pending/`.
+Four tables:
+`report_orders_daily`,
+`report_revenue_daily`,
+`report_top_products`,
+`report_cohort_retention`.
+Money columns are bigint agorot. Days are
+`Asia/Jerusalem`,
+not UTC midnight. Refunded orders are excluded from revenue, still counted in order-flow. Access: RLS on, zero policies, admin DEFINER RPCs. Pending
+`172_rls_zero_policy_tables.sql`
+would add admin SELECT so dashboards can read without the RPC.
+
+`171_search_fts.sql`:
+`search_products`
+SECURITY INVOKER. Caller sees only rows their catalogue SELECT already allows. No agorot.
+
+---
+
+## 23. Admin payments tabs that look like writers and are not
+
+`/admin/payments`
+tabs:
+`reconcile`,
+`payments`,
+`webhooks`,
+`escrow`,
+`splits`.
+
+| Tab | Reads | Writes |
+|---|---|---|
+| webhooks | `payment_webhook_events` via **request-scoped** client | none. Zero policies → empty for every admin until 172_rls admin SELECT |
+| escrow | `escrow_holds` (2 legacy rows) | none. Fossil. Label still says נאמנות |
+| splits | `split_executions` | none (written at finalize) |
+| reconcile | `payments` vs Cardcom | `retryFinalizePayment` is the mutation, not this page |
+
+Empty webhooks tab is not "Cardcom is down". Check
+`payment_events`
+with the admin client, or apply 172_rls (human SQL, not this pack).
+
+---
+
+## 24. Numbered pending files that a human can apply in the wrong order
+
+Applying "172" without the rest of the filename:
+
+- `172_hide_master_product_test_row.sql` writes
+  `products.stock_quantity = 0`
+  for one id (catalogue, not money).
+- `172_rls_zero_policy_tables.sql`
+  creates policies (RLS, not money). Admin SELECT on
+  `payment_webhook_events`
+  is the one behavioural change.
+
+Neither refunds a customer. Neither finalizes an order. Mixing them up still matters: one hides a SKU, the other opens an admin read. Use the full filename. This pack does not apply either.
+
+---
+
+## 25. Conservation writers that are CHECKs, not RLS
+
+When a step in §1–§6 fails with
+`23514`,
+the transaction did not commit. Do not retry with a client policy change. The failing CHECK is listed in
+`MONEY-INVARIANTS.md`
+§5. service_role does not escape it. The only honest retry is to send a row that conserves.
+
