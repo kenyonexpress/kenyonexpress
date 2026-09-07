@@ -76,3 +76,12 @@ Public lead form off by default until legal copy is ready. Off: hide form, keep 
 |---|---|
 | Self-publish products? | **No** in v1. Admin publish. |
 | Payout bank details? | **Not** on coupon path. Do not add `payout_statements` to unbreak a 500. |
+
+---
+
+## Second pass (after contracts)
+
+- State machine: lead → approved → membership (`contracts/SUPPLIER-STATE-MACHINE.md`). `vendor` on profile without `supplier_members` is access-denied.
+- `default_split_percent` must not prefill products (`contracts/MIGRATION-PLAYBOOK.md`). Unsellable until per-product `platform_percent`.
+- No payout tables. Admin 42P01 is correct until a human ships schema (`contracts/LEDGER.md`).
+- Legal copy in the brief: prepaid stays on platform, remainder at till (`business/SUPPLIER-FAQ.md`).
