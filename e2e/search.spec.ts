@@ -20,14 +20,14 @@ import { type APIRequestContext, expect, test } from '@playwright/test'
  */
 function supabaseEnv(): { url: string; anonKey: string } | null {
   let url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  let anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  let anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !anonKey) {
     try {
       const raw = fs.readFileSync(path.join(__dirname, '..', '.env.local'), 'utf8')
       const read = (name: string) =>
         new RegExp(`^${name}=(.+)$`, 'm').exec(raw)?.[1]?.trim() ?? undefined
       url = url || read('NEXT_PUBLIC_SUPABASE_URL')
-      anonKey = anonKey || read('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+      anonKey = anonKey || read('SUPABASE_ANON_KEY') || read('NEXT_PUBLIC_SUPABASE_ANON_KEY')
     } catch {
       return null
     }

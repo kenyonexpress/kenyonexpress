@@ -19,6 +19,15 @@ const schema = z
 
     NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20).optional(),
+    /**
+     * Server-side override for the anon key, read first by
+     * `lib/supabase/anon-key.ts`. Exists for rotation: an env change moves the
+     * server to a new key without waiting for the rebuild that updates the
+     * inlined NEXT_PUBLIC_ value. Optional everywhere, because the NEXT_PUBLIC_
+     * variant above remains the required baseline: the browser bundle can only
+     * ever see that one.
+     */
+    SUPABASE_ANON_KEY: z.string().min(20).optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(40).optional(),
     SUPABASE_SECRET_KEY: z.string().min(20).optional(),
 

@@ -1,3 +1,4 @@
+import { getAnonKey } from '@/lib/supabase/anon-key'
 import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
 import { createClient } from '@supabase/supabase-js'
 
@@ -27,9 +28,11 @@ import { createClient } from '@supabase/supabase-js'
 
 function anonEnv(): { url: string; key: string } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const key = getAnonKey()
   if (!url || !key) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)',
+    )
   }
   return { url, key }
 }

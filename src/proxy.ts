@@ -5,6 +5,7 @@ import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/cod
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { lookupRedirect } from '@/lib/seo/redirects'
+import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -87,23 +88,19 @@ export async function proxy(request: NextRequest) {
 
   let supabaseResponse = forward(request, requestId)
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
-          supabaseResponse = forward(request, requestId)
-          for (const { name, value, options } of cookiesToSet)
-            supabaseResponse.cookies.set(name, value, options)
-        },
+  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
+        supabaseResponse = forward(request, requestId)
+        for (const { name, value, options } of cookiesToSet)
+          supabaseResponse.cookies.set(name, value, options)
       },
     },
-  )
+  })
 
   // Refresh the Supabase session — do not remove, required for cookie rotation.
   const {

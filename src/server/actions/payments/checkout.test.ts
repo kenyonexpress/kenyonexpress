@@ -85,16 +85,29 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { getUser: () => getUser() } }),
 }))
 vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: async () => true }))
+// One controllable provider instance, so the saved-card tests can steer the
+// charge outcome and assert what the hosted-page fallback asked for.
+const provider = vi.hoisted(() => ({
+  chargeWithToken: vi.fn(),
+  createLowProfile: vi.fn(),
+  verifyLowProfile: vi.fn(),
+}))
 vi.mock('@/lib/payments', () => ({
-  loadCardcomEnv: () => ({ checkoutEnabled: true, terminalNumber: '1000' }),
+  loadCardcomEnv: () => ({
+    checkoutEnabled: true,
+    terminalNumber: '1000',
+    appUrl: 'https://ke.example',
+    webhookSecret: 'test-webhook-secret',
+  }),
   getCardcomAccounts: () => [],
-  getPaymentProvider: () => ({ createLowProfile: vi.fn(), verifyLowProfile: vi.fn() }),
+  getPaymentProvider: () => provider,
 }))
 vi.mock('@/lib/payments/accounts', () => ({
   selectAccountForSuppliers: () => ({ id: 'platform', terminalNumber: '1000' }),
 }))
 vi.mock('@/lib/observability/sentry', () => ({ capturePaymentError: vi.fn() }))
-vi.mock('@/server/payments/finalize', () => ({ finalizeOrder: vi.fn() }))
+const finalizeOrderMock = vi.hoisted(() => vi.fn())
+vi.mock('@/server/payments/finalize', () => ({ finalizeOrder: finalizeOrderMock }))
 vi.mock('@/server/analytics/track', () => ({
   linkAnalyticsIdentity: vi.fn(),
   stampOrderAttribution: vi.fn(),
@@ -191,7 +204,22 @@ beforeEach(() => {
   calls.length = 0
   queues.clear()
   getCart.mockResolvedValue(cartWithOnePhysicalLine())
+  provider.chargeWithToken.mockReset()
+  provider.createLowProfile.mockReset()
+  provider.verifyLowProfile.mockReset()
+  finalizeOrderMock.mockReset()
 })
+
+/** Everything up to and including the stock reservation, so 5b is reached. */
+function queueThroughReservation(): void {
+  queue('user_addresses.select', { data: { id: ADDRESS_ID, user_id: USER_ID }, error: null })
+  queue('payments.select', { data: null, error: null })
+  queue('products.select', { data: [PRODUCT_ROW], error: null })
+  queue('suppliers.select', { data: [{ id: SUPPLIER_ID, name: 'בית עסק' }], error: null })
+  queue('orders.insert', { data: { id: ORDER_ID }, error: null })
+  queue('order_items.insert', { data: null, error: null })
+  queue('rpc:reserve_order_stock.rpc', { data: [], error: null })
+}
 
 /** Did anything get written? The reads under test all run before the order. */
 function wrote(table: string): boolean {
@@ -286,17 +314,6 @@ describe('beginCheckout: a read that failed is not an answer', () => {
     expect(wrote('order_items')).toBe(false)
   })
 
-  /** Everything up to and including the stock reservation, so 5b is reached. */
-  function queueThroughReservation(): void {
-    queue('user_addresses.select', { data: { id: ADDRESS_ID, user_id: USER_ID }, error: null })
-    queue('payments.select', { data: null, error: null })
-    queue('products.select', { data: [PRODUCT_ROW], error: null })
-    queue('suppliers.select', { data: [{ id: SUPPLIER_ID, name: 'בית עסק' }], error: null })
-    queue('orders.insert', { data: { id: ORDER_ID }, error: null })
-    queue('order_items.insert', { data: null, error: null })
-    queue('rpc:reserve_order_stock.rpc', { data: [], error: null })
-  }
-
   it('does not tell the shopper their saved card does not exist when it could not be read', async () => {
     queueThroughReservation()
     queue('payment_tokens.select', READ_FAILED)
@@ -337,6 +354,114 @@ describe('beginCheckout: a read that failed is not an answer', () => {
     expect(items).toBeDefined()
     const rows = items?.payload as { supplier_id: string; supplier_name: string | null }[]
     expect(rows[0]).toMatchObject({ supplier_id: SUPPLIER_ID, supplier_name: null })
+  })
+})
+
+describe('beginCheckout: the saved-card charge and its 3DS fallback', () => {
+  const TOKEN_ID = '77777777-7777-4777-8777-777777777777'
+
+  function queueTokenRow(): void {
+    queue('payment_tokens.select', {
+      data: {
+        id: TOKEN_ID,
+        profile_id: USER_ID,
+        cardcom_token: 'tok-1',
+        cardcom_account_id: null,
+        expiry_month: 12,
+        expiry_year: 2099,
+      },
+      error: null,
+    })
+  }
+
+  function journalled(): string[] {
+    return calls
+      .filter((c) => c.table === 'payment_events' && c.op === 'insert')
+      .map((c) => (c.payload as { event_type: string }).event_type)
+  }
+
+  it('journals the charge and ties the payment row to the card it rode on', async () => {
+    queueThroughReservation()
+    queueTokenRow()
+    queue('payments.insert', { data: { id: 'pay-tok' }, error: null })
+    provider.chargeWithToken.mockResolvedValue({
+      success: true,
+      transactionId: 'txn-9',
+      failureCode: null,
+      failureMessage: null,
+      raw: {},
+    })
+    finalizeOrderMock.mockResolvedValue({ ok: true, orderId: ORDER_ID })
+
+    const result = await beginCheckout(input({ token_id: TOKEN_ID }))
+
+    expect(result).toMatchObject({ ok: true, data: { kind: 'paid', order_id: ORDER_ID } })
+    // payments.token_id: the FK 026 created and nothing ever wrote.
+    const paymentInsert = calls.find((c) => c.table === 'payments' && c.op === 'insert')
+    expect(paymentInsert?.payload).toMatchObject({ token_id: TOKEN_ID })
+    // The one charge path with no webhook must leave its own journal trail.
+    expect(journalled()).toEqual(['token_charge_requested', 'token_charge_succeeded'])
+  })
+
+  it('reports an ordinary decline as a decline, with no hosted-page detour', async () => {
+    queueThroughReservation()
+    queueTokenRow()
+    queue('payments.insert', { data: { id: 'pay-tok' }, error: null })
+    provider.chargeWithToken.mockResolvedValue({
+      success: false,
+      transactionId: null,
+      failureCode: '33',
+      failureMessage: 'אין כיסוי',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input({ token_id: TOKEN_ID }))
+
+    expect(result).toMatchObject({ ok: false, code: 'PAYMENT_PROVIDER_ERROR', error: 'אין כיסוי' })
+    expect(provider.createLowProfile).not.toHaveBeenCalled()
+    expect(journalled()).toEqual(['token_charge_requested', 'token_charge_declined'])
+  })
+
+  it('falls back to the hosted page when the issuer demands a 3DS challenge', async () => {
+    queueThroughReservation()
+    queueTokenRow()
+    queue(
+      'payments.insert',
+      { data: { id: 'pay-tok' }, error: null },
+      { data: { id: 'pay-lp' }, error: null },
+    )
+    provider.chargeWithToken.mockResolvedValue({
+      success: false,
+      transactionId: null,
+      failureCode: '9993',
+      failureMessage: 'ThreeDSecure challenge required',
+      raw: {},
+    })
+    provider.createLowProfile.mockResolvedValue({
+      lowProfileId: 'lp-77',
+      redirectUrl: 'https://pay.example/lp-77',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input({ token_id: TOKEN_ID, save_card: false }))
+
+    // The shopper gets the page that can show the challenge, not a decline.
+    expect(result).toMatchObject({
+      ok: true,
+      data: { kind: 'redirect', order_id: ORDER_ID, redirect_url: 'https://pay.example/lp-77' },
+    })
+    // Two payment rows, distinct idempotency keys: the column is UNIQUE and
+    // the declined token charge is already holding `lp:`.
+    const keys = calls
+      .filter((c) => c.table === 'payments' && c.op === 'insert')
+      .map((c) => (c.payload as { idempotency_key: string }).idempotency_key)
+    expect(keys).toEqual([`lp:${CLIENT_REF}`, `lp3ds:${CLIENT_REF}`])
+    // The token is re-minted even though save_card was off: the old one
+    // demands a challenge on every server-to-server charge.
+    expect(provider.createLowProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ saveToken: true }),
+    )
+    expect(journalled()).toEqual(['token_charge_requested', 'token_charge_declined'])
   })
 })
 

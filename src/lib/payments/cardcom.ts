@@ -7,6 +7,7 @@ import {
   parseTerminalAmountAgorot,
   terminalAmountToAgorot,
 } from '@/lib/payments/terminal-reconciliation'
+import { threeDSecureLowProfileFields } from '@/lib/payments/threeds'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -190,6 +191,10 @@ export class CardcomProvider implements PaymentProvider {
         ReturnValue: input.paymentId,
         Operation: input.saveToken ? 'ChargeAndCreateToken' : 'ChargeOnly',
         Codepage: '65001',
+        // The hosted page is the only surface that can show an issuer
+        // challenge; absent configuration this adds nothing and the terminal's
+        // own 3DS setting stands. See lib/payments/threeds.ts.
+        ...threeDSecureLowProfileFields(),
       },
       // Creating a hosted page charges nothing. A duplicate page is abandoned
       // rather than billed, and the customer is waiting at checkout, so this is

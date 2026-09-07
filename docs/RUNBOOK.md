@@ -645,58 +645,65 @@ failure to reach the provider, and it is returned as-is.
 3. Two `succeeded` payment rows for one order is a real double charge. One row
    with two journal entries is not.
 
-## Health versus ready
+## Rotating the Supabase anon (publishable) key
 
-| Route | Meaning | 503 when |
-| --- | --- | --- |
-| `/api/health` | Liveness plus one HEAD count on `categories`. For an uptime ping. | Database probe fails. |
-| `/api/ready` | The five named dependencies: database, redis (the rate limiter), meilisearch, r2, cardcom. Status only, no details, no terminal numbers. | Any mapped check is `down`. `not_configured` is not an outage. |
+The key is public by design (it ships in every page), so "exposed" is its
+normal condition. Rotate it when it was committed somewhere it should not be,
+when a scraper is abusing it past the rate limits, or on schedule.
 
-JSON logs and request ids go through Next, not Hono. This app is App Router. `src/proxy.ts` mints the id. `src/lib/observability/with-request-log.ts` binds it onto every wrapped route. `src/lib/observability/log.ts` emits one JSON object per line with `request_id`. There is no Hono process.
+Every anon client in this repo reads the key through one module:
+`src/lib/supabase/anon-key.ts`. It prefers `SUPABASE_ANON_KEY` (a plain
+server-side variable, picked up by the next serverless instance after an env
+change) and falls back to `NEXT_PUBLIC_SUPABASE_ANON_KEY` (inlined into the
+client bundle at BUILD time, so the browser only moves on the next build).
+That split is what makes the swap zero-downtime: the server can move first.
 
-## Sentry
+### Precondition
 
-Three runtimes, one DSN, release from `SENTRY_RELEASE` or `VERCEL_GIT_COMMIT_SHA`.
+The project must be on the new-format keys (`sb_publishable_...`). Two of
+those can be live at once, which is the overlap the procedure depends on. A
+legacy JWT-shaped anon key cannot be rotated alone: it is derived from the
+project JWT secret, and rotating THAT invalidates the anon key, the
+service_role key and every signed user session in one stroke. If the project
+still runs on the JWT key, migrate to publishable keys first (Supabase
+Dashboard > Project Settings > API Keys > "Create new API keys"), which is
+itself zero-downtime because the legacy keys keep working alongside.
 
-| Runtime | Loaded by | Covers |
-| --- | --- | --- |
-| Node | `src/instrumentation.ts` then `sentry.server.config.ts` | Pages, server actions, cron routes (`src/app/api/cron/*`). Those cron routes are the workers. |
-| Edge | `src/instrumentation.ts` then `sentry.edge.config.ts` | `src/proxy.ts` |
-| Browser | `@sentry/nextjs` via `withSentryConfig` in `next.config.ts` | Client errors, tunnel `/monitoring` |
+### Procedure
 
-Source maps upload when `SENTRY_AUTH_TOKEN` is set, then delete from the deploy unless `SENTRY_KEEP_SOURCEMAPS=1`.
+1. Supabase Dashboard > Project Settings > API Keys: create a NEW publishable
+   key. Do not revoke the old one yet. Both are now accepted.
+2. Vercel > Project > Settings > Environment Variables: set
+   `SUPABASE_ANON_KEY` to the new key, and update
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` to the new key as well.
+3. Redeploy. From the first new instance the server runs on the new key via
+   `SUPABASE_ANON_KEY`; the rebuilt client bundle inlines the new
+   `NEXT_PUBLIC_` value. Browsers still holding pre-deploy HTML keep working
+   because the old key is still accepted. That window is why step 5 waits.
+4. Update the other consumers of the same key:
+   - GitHub Actions: `vars.PUBLIC_SUPABASE_ANON_KEY` and
+     `secrets.CI_SUPABASE_ANON_KEY` (`.github/workflows/ci.yml`).
+   - The mobile app: `EXPO_PUBLIC_SUPABASE_ANON_KEY` is baked into the binary
+     at build time. Ship an app build before the old key dies, or accept that
+     older app versions break at step 5.
+   - `.env.local` on the development machine.
+5. Verify, then revoke. With the old and new keys in hand:
+   ```
+   curl -s -o /dev/null -w '%{http_code}\n' \
+     -H "apikey: $KEY" "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/products?select=id&limit=1"
+   ```
+   The new key must answer 200. Wait out the CDN/ISR window for deployed HTML
+   (plus the app-store lag if step 4 shipped a mobile build), then delete the
+   old key in the dashboard and re-run the curl with it: 401 means the
+   rotation is closed.
+6. Optional cleanup: remove `SUPABASE_ANON_KEY` from Vercel. It exists for
+   the overlap; once both names carry the same value it is redundant, and the
+   fallback keeps working without it.
 
-## Alerts
-
-| Channel | What fires it | Who it is for |
-| --- | --- | --- |
-| Sentry | Any server exception. Money path tagged `area=payments`. | Searchable record. |
-| ntfy money | `alertMoneyFailure` on the payment / voucher / checkout path only. | Phone. |
-| ntfy health | `buildHealthAlert` when a dependency is `down`. Unconfigured never pages. | Phone. |
-| `/api/health` 503 | Database unreachable. | Uptime monitor. |
-| `/api/ready` 503 | A mapped dependency is down. | Deploy gate / load balancer. |
-
-Kill switch state is on `/admin/feature-flags` (read-only) and in this file.
-
-## Rollback
-
-A bad deploy on `main` is reverted, not patched forward, unless the revert itself is known broken.
-
-```bash
-git revert --no-edit <sha>
-git push origin main
-```
-
-Vercel ships the revert. Cron and serverless pick it up on the next instance.
-
-If the bad change is a merge with many commits:
-
-```bash
-git revert --no-edit -m 1 <merge-sha>
-git push origin main
-```
-
-Do not `db push`. Do not apply a pending migration from an agent. Schema rollback is a pending SQL file and an owner apply.
+What NOT to do: do not rotate the JWT secret to rotate this key (see
+precondition), and do not put the new key anywhere in the repo. The
+hardcoded-key gate (`pnpm gate:hardcoded`) and `.env.test`'s own history both
+exist because that has been tried.
 
 ## Open
 
