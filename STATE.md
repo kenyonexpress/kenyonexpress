@@ -74,6 +74,39 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
 
+### ‏07.09 ‏goal בוצע: ‏Cardcom tokenization מחווט, כולל מסלול 3DS (commit ‏`52fe21ed4`, branch ‏autopilot)
+
+ה-goal ביקש: "Wire Cardcom tokenization: 1-click checkout, store token per
+user, 3DS challenge flow, webhook handler". מיפוי מלא לפני כתיבה מצא ששלושה
+מארבעת הרכיבים כבר קיימים ועובדים (טוקן נטבע ב-ChargeAndCreateToken, נשמר
+פר-משתמש ב-`payment_tokens` דרך `finalizeOrder`, נטען ב-1-click דרך
+`chargeSavedToken`, וה-webhook המלא ב-`api/payments/cardcom/webhook`).
+מה שחסר באמת ונבנה:
+
+1. **‏3DS challenge flow** (`src/lib/payments/threeds.ts` חדש): חיוב טוקן
+   שרת-לשרת שנדחה עם דרישת challenge לא מוצג כסירוב אלא נופל חזרה לדף
+   ה-Low Profile המתארח, היחיד שיכול להציג את ה-ACS (נשארים SAQ-A). המפתח
+   `lp3ds:<client_ref>` כי המפתח `lp:` כבר תפוס על ידי החיוב שנדחה
+   (העמודה UNIQUE), וה-replay lookup קורא את שניהם ולוקח את החדש. הטוקן
+   נטבע מחדש בדף, גם אם save_card כבוי, כי הטוקן הישן ידרוש challenge בכל
+   חיוב שרת-לשרת. זיהוי הדרישה: רשימת קודים ב-`CARDCOM_3DS_REQUIRED_CODES`
+   (ריקה כברירת מחדל, שמרני: סירוב לא מזוהה נשאר סירוב) + זיהוי טקסט 3DS.
+   ‏`CARDCOM_3DS_STATE` (auto/enabled/disabled) שולח `ThreeDSecureState`
+   ל-LowProfile.aspx; לא מוגדר = לא נשלח דבר והמסוף מחליט. שמות השדות הם
+   ניחוש legacy באותו מעמד כמו BillGoldPost, מרוכזים במקום אחד.
+2. **יומן חיובי טוקן**: `chargeSavedToken` כותב עכשיו את
+   `token_charge_requested/succeeded/declined` שהוגדרו ב-130 ולא נכתבו
+   מעולם (המסלול היחיד בלי webhook, היה בלתי נראה ב-`payment_events`).
+3. **`payments.token_id`**: ה-FK מ-026 שאף אחד לא כתב, מאוכלס בחיוב טוקן.
+4. **שערים**: ‏3598 טסטים ירוקים (57 בקבצים שנגעו, כולל 3 תרחישי 1-click
+   חדשים), ‏type-check נקי, ‏lint נקי, ‏`pnpm build` עבר.
+
+**החלטות שהתקבלו לבד:** (א) בלי migration: הסכימה הקיימת מכסה הכל, בהתאם
+לזיכרון "refund needs no migration". (ב) קבצי ה-R2/anon-key שנמצאו staged
+בעץ מ-goal קודם לא נגעו ב-commit שלי (commit עם paths מפורשים); תוקנו בהם
+רק שגיאות lint מכניות (פורמט + `Reflect.deleteProperty` במקום `delete`)
+כדי שהשער יהיה ירוק, והם מחכים ל-commit של ה-goal שלהם.
+
 ### ‏07.09 ‏goal בוצע: הקמת פריסת Vercel (commit ‏`1b049ec65`, branch ‏autopilot)
 
 ה-goal ביקש: "Set up Vercel deployment: create vercel.json with build/dev
