@@ -16,4 +16,4 @@ RTL pitfalls: `space-between` mirroring, sticky header height, `left`/`right` vs
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+he-IL RTL. No נאמנות. Coupon price absolute. Gender נסה. formatIls from agorot. latin-field-direction for email/phone.
