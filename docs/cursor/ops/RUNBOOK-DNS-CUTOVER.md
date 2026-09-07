@@ -20,3 +20,9 @@ Registrar NS: **live** Cloudflare `derek` / `elma`. Account also has staged `ign
 ## Verify
 
 Home Hebrew, checkout frame-return, one webhook 200, images not WP 404.
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
