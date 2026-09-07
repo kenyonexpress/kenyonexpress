@@ -560,6 +560,59 @@ Live collapses the feature bar to an empty 31px strip at 380 (the five
 **both** 768 and 1440. Ours was 223 at 768 and 76 at 1440, because it was sized
 by its content instead of by the measurement.
 
+### 2.3b Border widths, counted (pass 19)
+
+Section 1.3 tokenises three border **colours** (`--color-border`,
+`--color-border-alt`, `--color-rule`). Widths were never counted. Fifteen
+distinct values across all 23952 elements:
+
+| Count | `border-width` | Where |
+|---|---|---|
+| 22406 | `0px` | 93.5% carry no border at all |
+| **683** | `0px 0px 1px` | `top-bar`, `site-header` — **bottom only** |
+| **503** | `1px` | `sign-in-button`, `features-list` — all four sides |
+| 125 | `0px 0px 0px 1px` | `off-canvas-navigation` — inline-start only |
+| 60 | `1px 0px 0px` | `register`, `da` — top only |
+| 45 | `2px 0px 0px` | `dropdown-menu` — top only |
+| 42 | `2px` | `btn`, `woocommerce-product-search` |
+| 24 | `1px 1px 0px` | `elementor-tab-title` |
+| 21 | `2px 2px 2px 0px` | `form-control` |
+| 16 | `0px 1px 1px` | `elementor-tab-content` |
+| 12 | `0px 1px 0px 0px` | `feature` |
+| 6 | `3px` | `elementor-button` |
+| 3 each | `0px 1px`, `0px 8px 0px 0px`, `3px 0px 0px` | one-off widget chrome |
+
+#### Two shapes carry 96% of the borders on the site
+
+`0px 0px 1px` (683) and `1px` (503) are 1186 of the 1546 non-zero borders,
+**76.7%**, and with `0px 0px 0px 1px` (125) the top three reach 84.8%.
+
+The dominant one is **bottom-only**, and it is the site's structural rule rather
+than a decoration: the top bar and the header are separated from what follows by
+a single hairline, and almost nothing is boxed. That matches the radius recount
+(94.9% square) and the shadow recount (99.1% flat). **Live separates with lines,
+not with boxes or elevation.**
+
+#### The 2px top border is already a token, by a different name
+
+`2px 0px 0px` (45) on `dropdown-menu` is the region menu's top border.
+`--spacing-region-menu`'s comment in `src/styles/tokens.css` already records it:
+"a flat 200px wide with `8px 0` padding on a **2px `rgb(254,215,0)` top
+border**, which is `--color-brand-primary` exactly". So the width was measured
+once for one component and never generalised.
+
+#### No width tokens are proposed
+
+`1px` and `2px` are already the Tailwind defaults (`border`, `border-2`), and a
+`--border-hairline: 1px` token would be a second spelling for a number the
+framework already names. What was missing is not a token but the **fact**: the
+default border on this site is one hairline on the bottom edge, and any
+component that boxes itself is departing from the reference.
+
+That is the same conclusion sections 2.4 and 1.5 reach for radius and shadow,
+and the three together are one statement: **the reference is flat, square and
+line-separated.**
+
 ### 2.4 Radii
 
 Counted across all seven templates at all three widths. The live site is
@@ -2052,3 +2105,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 16: live cards are flat; `--shadow-card-hover` is Electro; do not diagnose home@380 from elevation |
 | 2026-09-07 | Pass 17: counted the gap column. Eight values, exhaustive; the 15px gutter is used 862 times as padding and ZERO times as a gap, and 16/20px invert between the two scales |
 | 2026-09-07 | Pass 18: letter-spacing counted. Live sets -0.14px on 92.4% of elements, inherited from the root; ours is normal everywhere. A page-wide gate contributor no document had named |
+| 2026-09-07 | Pass 19: border widths counted. 93.5% carry none; the dominant shape is bottom-only hairline, and with radius and shadow this completes one statement: the reference is flat, square and line-separated |
