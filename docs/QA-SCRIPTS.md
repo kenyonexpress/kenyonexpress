@@ -656,6 +656,7 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 2 | Lighthouse LCP on home | may name Arial. `display: swap`, `preload: false`. Do not preload Heebo just to make this row say Heebo |
 | 3 | USP bar at 374 | items stack. Longest Hebrew word, not a round 400 |
 | 4 | Live slider English | `SIMPLY THE BEST` reversed is the reference's content debt. Our Hebrew headlines stay |
+| 5 | Deals card hover at 1440 | live stays flat (`box-shadow: none`). Ours may lift (`--shadow-card-hover`). Do not fail the pixel log for that lift. Fail if the card grows a radius |
 
 ## 11. What not to test here
 
@@ -679,3 +680,4 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 2026-09-07 | Pass 13: crawl and indexability checks (10d). Seventeen rows, four of them expected to FAIL today, each tied to a verified pass-13 finding |
 | 2026-09-07 | Pass 13: admin CRUD flow added (7b). Every mutation audited with three exemptions, delete is soft everywhere except one hard-delete category path with no UI caller, and the three-layer guard on role assignment |
 | 2026-09-07 | Pass 15: PDP wishlist heart marked not shipped; QA §3 row 7 cannot pass until a caller exists |
+| 2026-09-07 | Pass 16: deals card hover lift is allowed Electro; fail a radius, not a missing shadow |
