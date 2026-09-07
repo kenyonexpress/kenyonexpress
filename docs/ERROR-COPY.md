@@ -1250,6 +1250,58 @@ false "not found" from fragments, so the result needs reading rather than
 counting — which is the same rule `docs/QA-SCRIPTS.md` 0.2 states for every
 other scan in this set.
 
+## 21. The extended drift check, run (pass 23)
+
+Section 20.4 recommended re-running the drift check over JSX text as well as
+quoted literals. Done, by searching raw file content across `src/` and
+`public/` rather than parsing string literals, so JSX text, `.json` and the
+service worker are all included.
+
+| | Count |
+|---|---|
+| Hebrew strings this document quotes, placeholders excluded | **191** |
+| Found in source | **187** |
+| **Not found** | **4** |
+
+The four:
+
+| String | Verdict |
+|---|---|
+| `הוסף למועדפים` | **real drift** — the code says `הוסף לרשימת המשאלות` (section 19) |
+| `הסר ממועדפים` | **real drift** — the code says `הסר מרשימת המשאלות` |
+| `נוסף למועדפים` | **real drift** — there is no toast at all |
+| `שלחנו לך מייל` | **intentional.** Section 16.2 quotes it as the wording that *would* turn the newsletter form into an address-enumeration oracle. It should not exist in source, and it does not |
+
+### 21.1 The JSX blind spot hid nothing
+
+That is the finding. Section 20 established that a literal-only scan misses 655
+Hebrew strings, and the honest worry was that the "194 of 196" result had been
+flattered by it.
+
+**It had not.** Extending the search to raw file content moved the count from
+194/196 to 187/191 — a different denominator, because this run excludes
+placeholder-bearing strings the earlier one counted — and turned up **no new
+drift**. The three wishlist labels were the whole of it.
+
+So the two runs agree on substance:
+
+| Run | Method | Real drift found |
+|---|---|---|
+| Pass 21 | quoted literals only | 3 (wishlist) |
+| Pass 23 | raw file content, all of `src/` and `public/` | **3 (wishlist)** |
+
+### 21.2 What that means for maintaining this file
+
+The blind spot is real and worth knowing, and it turns out **not** to be the
+limiting factor on this document's accuracy. A specification that is wrong tends
+to be wrong about a string someone *changed*, and a changed string is usually a
+literal — labels, messages and errors live in props and returns, not in prose
+nodes.
+
+So the cheap check stays cheap: search raw file content for each quoted string,
+read the misses rather than counting them, and expect the misses to be
+placeholders and hypotheticals. Three real ones in 191 is the current state.
+
 ## Revision
 
 | Date | Change |
@@ -1325,3 +1377,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 20: milestone, every customer-facing cluster is documented; the remaining backlog is entirely admin. Plus the two admin money paths, vouchers and orders |
 | 2026-09-07 | Pass 21: drift check on all 196 quoted strings. Two are real drift: the wishlist labels specified here are not the ones in WishlistButton, and the toast does not exist |
 | 2026-09-07 | Pass 22: correction. Every count here is literal-only and misses JSX text; 655 Hebrew strings exist only as JSX. Qualifies the coverage numbers, does not invalidate the drift finding |
+| 2026-09-07 | Pass 23: ran the extended drift check over raw file content. 187 of 191 found; the JSX blind spot hid no additional drift, and the three wishlist labels remain the whole of it |
