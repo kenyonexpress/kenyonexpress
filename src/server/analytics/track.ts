@@ -94,7 +94,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     //
     // This is also the half that works TODAY. The Supabase write below is
     // discarded in production by the `fn_ingest_analytics_events` whitelist
-    // until 169 is approved, and 169 needs an approval this cannot wait on.
+    // until 180 is approved, and 180 needs an approval this cannot wait on.
     // PostHog needs no migration.
     //
     // Fired before the awaited RPC rather than after it, because `trackEvent`
@@ -150,15 +150,14 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // then returns the number it kept. One event in, zero back, means this one
     // was discarded at the door.
     //
-    // MEASURED against production on 2026-09-06 by reading the deployed
+    // MEASURED against production on 2026-09-07 by reading the deployed
     // function body: the live whitelist is page_view, view_product,
     // view_category, add_to_cart, remove_from_cart, checkout_step, web_vital
     // and whatsapp_click. `begin_checkout`, `purchase`, `voucher_redeemed` and
     // `order_refunded` are on none of it, so EVERY server-side money event this
-    // file emits is currently going nowhere, and has been since migration 151
-    // narrowed the list.
+    // file emits is currently going nowhere.
     //
-    // `migrations/pending/169` adds the four names and is the actual fix; it
+    // `migrations/pending/180` adds the four names and is the actual fix; it
     // needs approval before it touches production. This does not fix the loss.
     // It makes the loss visible, which is the part that can be done without
     // approval -- silent data loss on the money funnel is indistinguishable
@@ -168,7 +167,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
       log.error('analytics.event_rejected', {
         eventName: input.eventName,
         detail:
-          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/169.',
+          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/180.',
       })
     }
   } catch (error) {

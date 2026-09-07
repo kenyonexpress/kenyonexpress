@@ -12,6 +12,7 @@ import {
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { trackServerEvent } from '@/server/analytics/track'
 import {
   RefundError,
   type RefundLineInput,
@@ -373,6 +374,19 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
         log.warn('refund.notify_not_queued', { order_id: order.id, err: notifyError.message })
       }
     }
+
+    // Funnel event. Swallows its own errors; the card is already credited.
+    // The first-party copy is skipped by the DB whitelist until pending 180
+    // applies, PostHog receives it today.
+    await trackServerEvent({
+      eventName: 'order_refunded',
+      userId: order.user_id,
+      props: {
+        order_id: order.id,
+        refunded_agorot: plan.refundAmountAgorot,
+        cancel_only: plan.cancelOnly,
+      },
+    })
 
     return {
       ok: true,

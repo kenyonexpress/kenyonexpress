@@ -1,5 +1,6 @@
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
+import PostHogReplay from '@/components/analytics/PostHogReplay'
 import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
 import InstallPrompt from '@/components/pwa/InstallPrompt'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
@@ -172,6 +173,13 @@ export default function RootLayout({
           reports nothing.
         */}
         <ThirdPartyTags config={validatedConfig(readThirdPartyConfig())} />
+        {/*
+          Session replay for support debugging. Same consent gate as the tags
+          above; without NEXT_PUBLIC_POSTHOG_KEY or before Accept it downloads
+          nothing at all. Event capture stays on the SDK-free fetch path in
+          lib/observability/posthog.ts; this mounts only the DOM recorder.
+        */}
+        <PostHogReplay />
         {/*
           Vercel's own two. First-party by design - they are served from this
           origin through Vercel's rewrite, so no third-party request leaves the

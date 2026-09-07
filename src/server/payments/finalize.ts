@@ -10,6 +10,7 @@ import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { trackServerEvent } from '@/server/analytics/track'
 import { awardOrderCountBonus } from '@/server/cashback/bonus'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import { readGiftIntent, sendOrderGifts } from '@/server/payments/gift-vouchers'
@@ -652,6 +653,18 @@ export async function finalizeOrder(input: {
       entity_id: order.id,
       changes: { status: { from: 'pending', to: 'paid' } } as unknown as Json,
       metadata: { source: 'checkout_finalize', payment_id: input.paymentId } as unknown as Json,
+    })
+
+    // The funnel's conversion event, emitted server-side ON PURPOSE: a browser
+    // purchase is lost every time a tab closes on the payment redirect, and
+    // this is the only place that knows the charge settled. Swallows its own
+    // errors, and PostHog receives it even while the DB whitelist (pending 180)
+    // still discards the first-party copy. Fired after the paid_at stamp so a
+    // replayed finalize, which returns above, cannot emit it twice.
+    await trackServerEvent({
+      eventName: 'purchase',
+      userId: order.user_id,
+      props: { order_id: order.id, payment_id: input.paymentId },
     })
 
     // Best-effort: the purchased cart is done; leftovers confuse the header badge.

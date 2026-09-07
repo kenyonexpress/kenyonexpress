@@ -69,8 +69,13 @@ function fbq(): Fbq | null {
   return typeof fn === 'function' ? fn : null
 }
 
-/** The banner's decision, read from the cookie it writes. Denied unless granted. */
-function trackingAllowed(): boolean {
+/**
+ * The banner's decision, read from the cookie it writes. Denied unless granted.
+ * Exported because every OTHER client-side PostHog call site (the pageview in
+ * AnalyticsProvider, the referral landing, the replay recorder) needs exactly
+ * this gate, and a second implementation is a second place to get it wrong.
+ */
+export function trackingAllowed(): boolean {
   if (typeof document === 'undefined') return false
   const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
   return isTrackingAllowed(match ? decodeURIComponent(match[1] ?? '') : null)

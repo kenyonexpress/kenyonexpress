@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { expireWalletPasses } from '@/lib/wallet/notify'
+import { trackServerEvent } from '@/server/analytics/track'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
@@ -303,6 +304,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // value is the business's list price and was never our revenue.
     if (!replayed) {
       await reportRedemption(result)
+    }
+
+    // Funnel event, replays excluded so one scan is one event. Swallows its
+    // own errors; the first-party copy is skipped by the DB whitelist until
+    // pending 180 applies, PostHog receives it today.
+    if (!replayed) {
+      await trackServerEvent({
+        eventName: 'voucher_redeemed',
+        userId: user.id,
+        props: { code: (result.code as string) ?? shortCode },
+      })
     }
 
     return respond(
