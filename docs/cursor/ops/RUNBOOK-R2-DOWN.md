@@ -22,4 +22,4 @@ Hotlink random CDNs. Change `next/image` remotePatterns mid-incident without a d
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Money path does not need R2. pkpass may 404; on-site QR still works. Do not git-commit binaries. WP `wp-content` can mask the outage until cutover.
