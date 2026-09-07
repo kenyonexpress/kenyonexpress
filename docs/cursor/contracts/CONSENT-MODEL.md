@@ -26,3 +26,9 @@ Analytics `session_id` in the event payload is client-owned; `anonymous_id` is t
 | Q | Best answer |
 |---|---|
 | Google/Meta tags? | Load only after consent (`ThirdPartyTags.test.tsx`). Script itself leaks IP if loaded early; architecture prefers not to load denied. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
