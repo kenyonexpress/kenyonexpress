@@ -956,6 +956,71 @@ is precisely the moment the page loses the shopper, so the event must not wait
 for a return." A test that asserts the event after the window opens will look
 correct and measure nothing.
 
+## Pass 17: the analytics trio
+
+Three of the 25 from pass 15. They are grouped because together they are the
+consent boundary, and because `docs/MIGRATION-REVIEW.md` section 2 records that
+four of the events they emit are currently discarded by the database.
+
+| Component | File | Props | Client? | Tokens | a11y |
+|---|---|---|---|---|---|
+| AnalyticsProvider | `analytics/AnalyticsProvider.tsx` | none | yes | none (renders nothing) | none (renders nothing) |
+| ViewTracker | `analytics/ViewTracker.tsx` | `{ event, props }` | yes | none | none |
+| ThirdPartyTags | `analytics/ThirdPartyTags.tsx` | none | yes | none | none |
+
+None of the three renders visible output, so they carry no tokens and no RTL or
+a11y surface. What they carry is policy.
+
+### ThirdPartyTags is the consent boundary, and it is stricter than the vendor pattern
+
+**Nothing renders before consent.** Not a script tag, not a stub, not a
+consent-mode-denied bootstrap. `<Script>` is not in the tree at all until
+`allowed` is true, so there is **no third-party request of any kind** before
+agreement.
+
+The file states why this beats Google's recommended Consent Mode, which loads
+`gtag.js` immediately with everything denied: fetching the script already hands
+Google the visitor's IP, "and that transfer is the thing consent exists for".
+The stricter version is also the one "that can be checked in a network log
+rather than taken on a vendor's word", which is what makes it testable.
+
+Two implementation details that look like bugs and are not:
+
+- **The cookie is read in an effect, not during render.** `document` does not
+  exist on the server, and reading it while rendering hydrates a different tree
+  than the server produced. So the first client paint has no tags even for a
+  visitor who consented months ago; they arrive one tick later.
+- **A `ke:consent-granted` window event** is what makes Accept take effect
+  immediately. Without it the tags would wait for a navigation, and "the visit
+  that consented would be the one visit never measured".
+
+### AnalyticsProvider normalises the route before it reports it
+
+`routeTemplate(pathname)` maps dynamic paths onto templates
+(`/checkout/[step]`, `/account/[section]`) before `page_view` is emitted, so the
+event stream groups by route shape rather than exploding one row per id. It also
+emits sampled Web Vitals.
+
+"Every call is a no-op without consent, so this can sit in" the tree
+unconditionally: the gate is in the tracker, not in the mounting.
+
+### ViewTracker is keyed by its event props
+
+`key = JSON.stringify(props)`, so navigating between two products of the same
+type re-fires rather than being deduplicated into one view. That is the intended
+behaviour and the reason the key is the props rather than the pathname.
+
+### The open loop these three sit on
+
+`AnalyticsProvider` emits `page_view` and `web_vital`; both are on the database
+whitelist. The **server** events (`begin_checkout`, `purchase`,
+`voucher_redeemed`, `order_refunded`) are not, until migration 169 applies, and
+`fn_ingest_analytics_events` skips unknown names silently with an HTTP 200.
+
+So these components work and the funnel's money moments do not arrive. The
+client half is not the problem, and this table is here so nobody debugs it as
+though it were.
+
 ## Revision
 
 | Date | Change |
@@ -974,3 +1039,4 @@ correct and measure nothing.
 | 2026-09-07 | Pass 15: recounted the tree. 138 components not 72, shared/ is no longer empty, and 25 components are absent from the file entirely |
 | 2026-09-07 | Pass 15: dead-code count corrected from 11 to 23. Five of six ui/ primitives are dead (descopes two RTL risks), both search components are dead by design, NewsletterSignup was a pass-14 false positive |
 | 2026-09-07 | Pass 16: documented the four load-bearing components pass 15 flagged (HeaderCart, SearchBox, the two share buttons); 21 of the 25 remain known-absent |
+| 2026-09-07 | Pass 17: the analytics trio. ThirdPartyTags is the consent boundary and is stricter than Consent Mode; the client half works while the server events are still discarded by the DB |
