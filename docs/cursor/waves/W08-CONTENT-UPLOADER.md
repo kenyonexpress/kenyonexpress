@@ -82,3 +82,13 @@ None. Role is the gate.
 - Rate limit: MIME allowlist plus size cap; no money fields on the form (`contracts/RATE-LIMITS.md`).
 - Audit every publish/reject (`contracts/AUDIT-LOG.md`).
 - Alt text Hebrew required before `active` (`quality/A11Y-CHECKLIST.md`).
+
+---
+
+## Third pass
+
+Uploader shopping as customer uses the storefront client. Never staff JWT on public catalogue (
+`createPublicClient`
+stays anon). Bulk CSV cannot import
+`platform_percent`.
+
