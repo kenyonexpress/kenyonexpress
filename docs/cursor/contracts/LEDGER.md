@@ -66,6 +66,13 @@ Coupon `supplier_payable` is **0**. Do not post escrow holds. `escrow_holds` tab
 
 ---
 
-## Second pass
+## Second pass (cash paths)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Cashback: `finalizeOrder` → `fn_wallet_transfer` from `platform:cashback_reserve`, key `order:<id>:cashback`. Not at scan. Stale comments in commission.ts lose.
+- Coupon: platform keeps 100% of on-site (`customerPaysNow`). `supplier_payable` 0. Cash at till never journals.
+- Physical: fee = `percentageOf(face, snapshot bp)`, residual = face − fee. Snapshot lives on the order line.
+- Wallet spend cannot exceed `customerPaysNow` and does not change the line fee.
+- Fossil `wallet_balances` / `wallet_transactions`: deny. UI uses `v_wallet_ledger`; if columns are `*_ils`, parse, do not ×100.
+- Loyalty/top-up: no second credit engine. `manual_adjustment` + audit only.
+- Reconcile Cardcom terminal vs `payments`, never vs webhook POST.
+
