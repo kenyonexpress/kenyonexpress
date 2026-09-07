@@ -24,6 +24,40 @@ RTL: hamburger is visual **right** at 380 (inline-start). Cart is visual left. S
 
 Extra widths: 320 (PDP buy row), 374/375 (USP stack), 560 (checkout labels), 640 (consent row), 992 (checkout column), 1024 (still **handheld** header; live switches at `xl`).
 
+### 0.1 Prove the environment before you trust a single finding
+
+Section 0 says what to run. This is how to confirm it happened, because every
+trap below has already produced a believed-but-wrong result somewhere in this
+document set, and each fails **silently**.
+
+| # | Check | How | Why |
+|---|---|---|---|
+| 1 | The server is serving **this** build | compare the server process start time against `.next/BUILD_ID` mtime | A stale `next start` held the port and served an older build. The same commit scored **45.53%** against it and **11.07%** against a current server, and nothing in the output said which to believe. |
+| 2 | It is a production build | no `nextjs-portal` route badge in the corner | The dev overlay renders a ~150x45 box that exists on no production page. |
+| 3 | Brand colours resolve | a yellow newsletter bar in the footer, not a white one | Turbopack caches compiled CSS by **content hash**. A dev server started before a `@theme` colour was added keeps serving CSS without that colour's utilities, and `touch` does not clear it. If `bg-brand-secondary` is transparent, restart the server; do not go looking for the bug in a component. |
+| 4 | Fonts have settled | reload and watch for a reflow | A capture taken before the stylesheet parsed scored 95.07% on a page whose layout was fine. |
+| 5 | You know which consent state you are in | check `html[data-consent]` in the inspector | The banner is `fixed bottom-0` and tall on a phone; it made an enabled `/login` control unclickable. Body padding is reserved in three tiers (14.5rem, 8rem, 7rem). |
+
+**Findings recorded without steps 1 to 3 confirmed are not findings.** Note the
+width against every one, as the header of this file already requires, and note
+the build too.
+
+### 0.2 Three false-positive patterns this document set has already paid for
+
+Not QA steps, but the same mistake in three costumes. Each looked like a defect
+and was not, and each was found by a scan that did not open the file:
+
+| Scan | Reported | Reality |
+|---|---|---|
+| RTL lint over CSS | two `.css` violations | both were **comment prose**: `right-edge-to-icon`, and a comment saying a physical `margin-left` there *would be* the bug |
+| Buttons without `aria-label` | 22 components | every one carries a **visible Hebrew label**, which is an accessible name |
+| `<h1>` per page | nine pages with two or more | all **mutually exclusive branches**, and one match was inside a comment |
+
+The rule that falls out, and it applies to manual QA as much as to a grep:
+**open the thing before you write it down.** A count is a lead, not a finding.
+
+
+
 ---
 
 ## 1. Home (Electro home-v7)
@@ -699,3 +733,4 @@ DESIGN-SYSTEM §11.1: handheld masthead through `lg` (1024). Desktop at `xl`
 | 2026-09-07 | Pass 15: PDP wishlist heart marked not shipped; QA §3 row 7 cannot pass until a caller exists |
 | 2026-09-07 | Pass 16: deals card hover lift is allowed Electro; fail a radius, not a missing shadow |
 | 2026-09-07 | Pass 15: city reachability steps (10b.1). The pages render fine and have no mobile link and no sitemap entry; also the Hebrew-slug encoding check |
+| 2026-09-07 | Pass 16: environment verification before a QA session (0.1) and the three false-positive patterns this set has already paid for (0.2) |
