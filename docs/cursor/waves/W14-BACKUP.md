@@ -69,6 +69,11 @@ None (ops).
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (DR unit)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Production restore is orders + payments + vouchers + wallet **together**. Catalogue-only restore leaves charged-not-issued.
+- Workstation tar to Desktop is not DR. Exclude `node_modules`, `.next`, reports.
+- After PITR: stranded-payments then reconcile. Never INSERT fake `payment_events`.
+- Dump that disables RLS is an incident (`ops/RUNBOOK-DB-DOWN.md`).
+- Do not `pg_dump` into git. Do not restore `wp_import` over `public`.
+
