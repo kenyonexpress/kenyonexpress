@@ -10,4 +10,4 @@
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+No `disputed` order status. Redeemed blocks card refund of consumed value. Do not re-issue the QR. Journal `chargeback` if the event exists.
