@@ -216,7 +216,13 @@ Wallet never mutates commission, supplier due, or the cashback snapshot.
 `walletApplied > customerPaysNow`
 throws.
 
-Cashback is snapshotted, not credited, at pay. Credit happens after redeem (coupon) or shipment (physical).
+Cashback is snapshotted on the line at checkout. **Live `finalizeOrder` credits it immediately** via
+`fn_wallet_transfer`
+(idempotency
+`order:<id>:cashback`)
+from
+`platform:cashback_reserve`.
+Older briefs that delay credit until scan or shipment are not this tree. A second credit that ignores that idempotency key double-pays.
 
 ---
 
@@ -323,3 +329,200 @@ Refund fee is integer-only:
 is 5% (rounded) or ₪100. JS that uses
 `requested * 0.05`
 is a §7 violation and can disagree with the CHECK (`23514` on insert).
+
+---
+
+## 12. Correct vs incorrect (copy-paste shapes)
+
+**Incorrect: invent a 10% coupon prepayment**
+
+```ts
+const paid = face * 0.1
+```
+
+**Correct:** refuse to sell if
+`coupon_price_ils`
+is missing (
+`buildCouponOffer`
+→
+`sellable: false, reason: 'missing-price'`
+). Display and charge that absolute column only.
+
+**Incorrect: global take**
+
+```ts
+const fee = applyBp(face, env.PLATFORM_PERCENT ?? 10)
+```
+
+**Correct:** read
+`products.platform_percent`
+at checkout, convert with
+`percentToBp`
+/
+`percentToBasisPoints`,
+snapshot onto
+`order_items`,
+never read the live product again.
+
+**Incorrect: two roundings of a split**
+
+```ts
+supplierDue = applyBp(face, 10000 - platformBp)
+```
+
+**Correct:**
+
+```ts
+platformFee = applyBp(faceValue, platformPercentBp)
+supplierImmediate = faceValue - platformFee
+```
+
+**Incorrect: ILS to agorot with float**
+
+```ts
+Math.round(price * 100)
+```
+
+**Correct boundary** (catalogue numeric shekels must cross once):
+
+```ts
+ilsToAgorot(parsed.toFixed(2))
+```
+
+`toFixed(2)` pins two decimals as a **string**.
+`ilsToAgorot`
+parses that string. That is the only sanctioned
+`Math.round`
+neighbourhood on the money path, plus
+`percentToBp`
+which uses
+`Number.parseFloat`
+on a Postgres
+`numeric`
+that arrived as text, then integer half-up into
+`Bp`.
+Those two sites are allowlisted in
+`src/__tests__/money-no-float.test.ts`.
+A new
+`parseFloat`
+in
+`src/server/payments/`
+fails CI.
+
+**Incorrect: credit cashback twice**
+
+```sql
+insert into wallet_entries (order_id, amount) values ($1, $2);
+```
+
+No idempotency key. Replay double-pays.
+
+**Correct:**
+
+```sql
+select fn_wallet_transfer(
+  p_debit_account := reserve_id,
+  p_credit_account := user_account_id,
+  p_amount_ils := amount,
+  p_reason := 'order_cashback',
+  p_idempotency := 'order:' || id || ':cashback'
+);
+```
+
+**Incorrect: settlement joins live products**
+
+```sql
+select p.platform_percent
+from order_items i
+join products p on p.id = i.product_id;
+```
+
+**Correct:**
+
+```sql
+select i.platform_percent
+from order_items i
+where i.order_id = $1;
+```
+
+Pinned by
+`src/lib/commerce/platform-percent-snapshot.test.ts`.
+
+---
+
+## 13. Coupon reporting vs physical reporting
+
+`commission.ts`
+still **requires**
+`platformPercent`
+on a coupon line (no default). It then **reports**
+
+```ts
+platformPercentBps: isCoupon ? 10_000 : platformPercentBps
+```
+
+because the platform kept 100% of the prepayment. The snapshotted column on
+`order_items`
+is still the catalogue whole-percent. Downstream that prints the line's
+`platform_percent`
+as "the take on this charge" lies on coupons. Print
+`commission_agorot / paid_on_site_agorot`
+or the engine's
+`platformPercentBps`.
+
+---
+
+## 14. Two generations of column names
+
+`src/lib/commerce/order-money-columns.ts`
+probes at runtime whether the database is the
+`ils`
+generation or the
+`agorot`
+generation. Production is
+`ils`:
+write
+`cashback_applied_ils`,
+read generated
+`cashback_applied_ils_agorot`.
+Selecting the literal
+`orders.cashback_applied_agorot`
+or
+`order_items.unit_price_agorot`
+raises
+`42703`
+and dead-letters the first real payment.
+
+`applyBp`
+accepts
+`Bp | number`.
+The
+`number`
+overload exists so tests and call sites that already asserted an integer can pass a raw count. Passing a float still throws inside
+`assertSafeInteger`.
+Do not use that overload to smuggle a percent.
+
+---
+
+## 15. Wallet transfer is the only legal ledger write
+
+Live credits (cashback, referral, refund-to-wallet) go through
+`fn_wallet_transfer`
+(debit account, credit account, amount, reason, idempotency, optional order id). Direct
+`INSERT`
+into
+`wallet_entries`
+from a new admin page skips conservation and the floor trigger.
+
+Fossil pair
+`wallet_balances`
+/
+`wallet_transactions`
+must stay at 0 rows. Tests in
+`src/db/__tests__/wallet-rls.test.ts`
+hit **that fossil pair as anon**, not
+`wallet_accounts`
+/
+`wallet_entries`.
+That is a coverage gap: see
+`docs/cursor/TEST-MAP.md`.
