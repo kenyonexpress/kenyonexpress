@@ -316,3 +316,55 @@ Physical residual is accounting. A real payout ledger is a new migration pack wi
 Also on a code branch, not this pack: G11 (stock consume must not un-pay), G12 (already pinned), G13 (mobile queue), G14 (`reportPurchase` dedupe). None of those are launch blockers if the current finalize code is what Production runs. They become blockers the moment someone "hardens" them without the tests.
 
 P6 must not ship a partner-facing issued-voucher export. The till app already scans; self-serve is onboarding, not a liability dump.
+
+---
+
+## Deepen after items 11–20
+
+### P3 is already half-scheduled
+
+`/api/cron/abandoned-cart`
+runs hourly (
+`scripts/cron-jobs.json`).
+The missing piece is Resend (H1) + copy that does not promise cashback it will not credit until
+`finalizeOrder`.
+Do not add a second scheduler.
+
+### P5 i18n: the plugin is already there
+
+`next-intl`
+is wired (
+`locales: ['he','en']`).
+The work is **message catalogs replacing Hebrew literals**, legal pages, and not inventing a second money format. Estimate stands; the trap is shipping `/en` with 10% of strings. Dependency: none of H1–H8; still post-launch.
+
+### P1 reviews: RLS pattern already exists
+
+Customer
+`reviews.ts`
+and admin
+`admin/reviews.ts`
+are in the tree. 154-style INSERT policy is the model (ADR 0005). Remaining work is PDP chrome + paid-order join, not a greenfield table. Estimate 5–8 days still holds if photos are out.
+
+### P6 vs `@dnd-kit`
+
+Do not pull abandoned
+`@dnd-kit`
+into supplier onboarding "to sort branches". Zero imports today (
+`DEPENDENCY-AUDIT.md`).
+Onboarding is forms + membership rows, not a kanban.
+
+### New items this pack will not start
+
+| | Estimate | Depends on |
+|---|---|---|
+| P7. Age
+`voucher_redemptions.ip_address`
+(like 157) | 1–2 days SQL + cron | Human migration. Legal: C vs D clock (Q25). |
+| P8. Gift-recipient hash on sender deletion | 2–3 days | 150 list vs
+`DELETION_EFFECTS`
+(Q24). |
+| P9. Drop unused npm (
+`@dnd-kit`,
+maybe Radix toast) | 0.5 day | Bundle gate + grep. Code branch. |
+| P10. Datadog / Prometheus | not this year | `OBSERVABILITY-MAP.md`
+says the trio (log, Sentry, ntfy) is enough. |
