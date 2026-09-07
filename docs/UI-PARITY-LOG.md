@@ -899,6 +899,60 @@ here is measured, because the gate cannot run in this worktree.** They are
 listed so that whoever can run it has a hypothesis list ordered by scope rather
 than by how visible each one looks in a screenshot.
 
+## 20. How to add a trustworthy row to this log
+
+Section 13 says "append a dated row". This is what has to be true before that
+row means anything. Every item is a trap this document already records, gathered
+into the order you meet them.
+
+### 20.1 Before the run
+
+| # | Check | If it fails |
+|---|---|---|
+| 1 | Production build (`pnpm build`, then `PORT=3311 pnpm start`) | a dev build scores its own overlay |
+| 2 | The server is **this** build: compare its start time to `.next/BUILD_ID` mtime | 45.53% and 11.07% were the same commit against two servers |
+| 3 | No service worker registered on the origin | it survives branch switches and serves old chunks |
+| 4 | Both catalogues seeded so the grids match | otherwise the run refuses (refusals 5 and 6) and refusing is correct |
+| 5 | For `cart` / `checkout`, both sides seeded | refusals 2 and 3 |
+
+### 20.2 During the run
+
+Read the output, do not just take the last number.
+
+| Signal | Meaning |
+|---|---|
+| `REFUSING to measure: …` + exit 3 or 4 | **not a score.** Record the refusal and its reason, never a percentage |
+| `WARNING: styles never confirmed` | discard the run |
+| `WARNING: the scroll/settle sweep … did not finish` | suspect; re-run |
+| `!! HEIGHT RATIO Nx` | the two captures are different pages; the percentage is not a gate result |
+| any `COMPARE_ALLOW_*` set | a **forced** number. Usable for reading unaffected bands, never against the 11% threshold |
+
+### 20.3 What the row must carry
+
+A percentage alone is not a row. The minimum:
+
+```
+| date | page | width | percent | build | notes |
+```
+
+- **All three widths, or say which are missing.** A 1440-only number has been
+  presented as "the score" before, and 380 is the width that fails.
+- **The build**, because check 2 above is the one that silently invalidates
+  everything.
+- **Whether any escape hatch was set.**
+
+### 20.4 What a number cannot tell you
+
+Before concluding a score is a design problem, rule out the five entries in
+section 19. Three of them are on every page at once, and two of those three
+(letter-spacing and shell height) are currently unpriced, so **some unknown part
+of every score in this log belongs to them rather than to the route being
+measured**.
+
+That is not a reason to distrust the log. It is the reason section 19 exists,
+and the reason a row should say what it measured rather than only what it
+scored.
+
 ## Revision
 
 | Date | Change |
@@ -918,3 +972,4 @@ than by how visible each one looks in a screenshot.
 | 2026-09-07 | Pass 16: settled 17.2 against live. The 40px catalogue header is REAL and not a capture artifact; the header is position:static everywhere, not sticky; and home alone loses 22px above the masthead on scroll |
 | 2026-09-07 | Pass 17: RETRACTED the 22px scroll claim from pass 16. With scrollY verified at 0, nothing moves; the earlier reading was mid-scroll. Also: live is position:static, ours is sticky |
 | 2026-09-07 | Pass 18: consolidated the systematic contributors (19). Five page-wide differences, three of which reach the shutter, ordered by scope; letter-spacing is per character and therefore the diffuse one |
+| 2026-09-07 | Pass 19: the procedure for adding a trustworthy row (20). Five pre-run checks, five output signals that invalidate a score, and what a row must carry beyond a percentage |
