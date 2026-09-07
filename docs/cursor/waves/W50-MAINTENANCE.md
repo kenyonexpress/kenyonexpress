@@ -70,6 +70,10 @@ N/A.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (after launch)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Watch stranded, reconcile, cron 200, scan `error`, Actions minutes (`POST-LAUNCH-30-DAYS.md`).
+- Workstation tar is not PITR. Keep three Desktop backups only.
+- Do not add global 10%, escrow, or payout tables to silence 500.
+- ntfy topic unguessable. No amounts.
+
