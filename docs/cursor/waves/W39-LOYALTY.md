@@ -71,6 +71,16 @@ Wallet-only pay: cashback of zero on-site is zero. Referral min uses on-site cas
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (one credit path)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Cashback at
+  `finalizeOrder`
+  key
+  `order:<id>:cashback`
+  from
+  `platform:cashback_reserve`.
+  Not at scan.
+- Percent of `customerPaysNow`, not of face. Integer agorot.
+- Do not add a second loyalty top-up engine. Manual `manual_adjustment` + audit only (`LEDGER.md`).
+- WAVE-INDEX skips extra tiers (W40) for v7.
+
