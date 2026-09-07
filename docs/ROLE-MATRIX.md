@@ -1140,6 +1140,33 @@ where either side is missing.
 
 Expected output: nothing.
 
+### 11a.1 The `/api/*` table, extended (pass 22)
+
+The same check over `src/app/api`:
+
+| | Count |
+|---|---|
+| `route.ts` files on disk | **34** |
+| Documented in section 11.2 | **34** |
+| On disk and undocumented | **0** |
+| Documented and gone | **0** |
+
+A naive parse reported six as missing (`api/health`, `api/ready`, `api/search`,
+`api/search/suggest`, `api/app/session`, `api/app/push-tokens`). All six are
+documented in **combined rows** — `api/health`, `api/ready` share one cell, as do
+the two `api/search` entries and the two `api/app` entries — and the parse
+expected one route per row.
+
+That is the fifth time in this document set a scan has reported a gap that
+opening the file dismissed, after the RTL lint's comment prose, the buttons with
+visible Hebrew labels, the `<h1>` matches inside comments, and `rounded-lg`
+caught by a `rounded-l` pattern. `docs/QA-SCRIPTS.md` 0.2 keeps the running
+list.
+
+**A drift check is itself a scan, and inherits the same failure mode.** Anyone
+automating the route-table check should either give every route its own row or
+teach the parser about combined cells, or it will report six false gaps forever.
+
 **This is the one check in this document that can be automated**, and it is the
 one worth automating: the route table is 41 rows of exactly the kind of detail
 that rots. A test asserting it would fail the moment someone adds an admin page
@@ -1168,3 +1195,4 @@ visible.
 | 2026-09-07 | Pass 19: the supplier helper family. is_active is honoured app-side and DB-side so revocation takes effect at the next query; and these are the counter-example to the 7.3 definer caution |
 | 2026-09-07 | Pass 20: traced current_user_role(). It answers the support-reads concern: it returns the enum so a policy can name a SET, and refunds and payment_events already include support |
 | 2026-09-07 | Pass 21: drift check. The section matrix is unchanged in all 20 cells and all 41 route guards match character for character |
+| 2026-09-07 | Pass 22: extended the drift check to all 34 API routes. Zero drift; a naive parse reported six false gaps because they are documented in combined rows |
