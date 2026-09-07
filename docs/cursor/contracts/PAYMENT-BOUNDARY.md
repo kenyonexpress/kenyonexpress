@@ -52,6 +52,12 @@ Checkout `idempotencyKey`. Wallet `order:<id>:cashback`. Referral inside RPC. Vo
 
 ---
 
-## Second pass
+## Second pass (ledger)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Webhook body is never money. GetLpResult amount must match the **server** order total in agorot.
+- `finalizeOrder` is the only `paid` writer. Cashback credits here (`order:<id>:cashback` from `platform:cashback_reserve`), **not** at scan.
+- CancelOnly is the same **Israel calendar day** as the charge. After redeem, card refund of consumed value is forbidden (`REFUND-STATE-MACHINE.md`).
+- Wallet spend is internal: never sent to Cardcom as a second capture. Card amount = customerPaysNow − wallet.
+- `CHECKOUT_ENABLED` must equal the string `true`. Mock never in production. Sandbox boot-fail.
+- Stranded path: `/api/cron/stranded-payments` retries finalize, not a captured POST (`ops/RUNBOOK-PAYMENT-DOWN.md`).
+
