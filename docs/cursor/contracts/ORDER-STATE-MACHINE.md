@@ -39,3 +39,9 @@ Forbidden: `paid → pending`, client-set status, catch-and-set past `23514`.
 | Q | Best answer |
 |---|---|
 | Exact enum list? | Generated `database.ts` `order_status`. Do not copy from May architecture briefs. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
