@@ -655,6 +655,90 @@ Copied from COMPONENTS §12 so this inventory holds it too.
 
 White on `#fed700` is forbidden on every row.
 
+## Pass 14: eleven components are never imported
+
+The tables above mark a handful of components "unused" one row at a time. This
+is the sweep: every `.tsx` under `src/components`, checked for an actual
+`import` site anywhere in `src/`.
+
+**Eleven of 138 have zero import sites.**
+
+```
+category/CategorySort           store/CategoryNav
+home/FeaturedProducts           store/CategoryProductSection
+home/HeroExact                  store/DealsSection
+layout/InfoBar                  store/HomeHeroSection
+legal/LegalDocumentView         storefront/BlogPostHeader
+product/WishlistButton
+```
+
+### The headline: the PDP wishlist heart does not ship
+
+`product/WishlistButton.tsx` exists, is 59 lines, and **nothing imports it**.
+There is no `WishlistToggle` anywhere in the tree either. `storefront/ProductInfo.tsx`
+mentions a wishlist exactly once, in a **comment**, describing a star rating and
+a wishlist link as things live has.
+
+Three documents describe this as shipped:
+
+| Document | Claim |
+|---|---|
+| this file, pass 8 | a `WishlistToggle (PDP / card)` component section |
+| `docs/QA-SCRIPTS.md` section 3 row 7 | "Wishlist heart on PDP, not header. `הוסף למועדפים` / toast `נוסף למועדפים`" |
+| `docs/ERROR-COPY.md` section 1 | two wishlist empty states, and "Heart is on the PDP, not in the header" |
+
+The account page `/account/wishlist` **does** exist and render. What does not
+exist is any way for a shopper to add to it from a product page. So the QA row
+is a test that cannot pass, and the empty state is the only state reachable.
+
+Either wire `WishlistButton` into the PDP, or mark the feature as not shipped in
+all three documents. It should not stay documented as working.
+
+### The rest, and what each probably is
+
+| Component | Likely status |
+|---|---|
+| `home/FeaturedProducts` | dead chain: its only plausible caller `home/FeaturedProductsTabs` is **also** unimported, so both ends are orphaned |
+| `home/HeroExact` | a superseded hero variant; `HeroSlider` is the live one |
+| `store/HomeHeroSection`, `store/PromoBanners`, `store/CategorySidebar` | re-export shims. Note that `PromoBanners` and `CategorySidebar` **do** have import sites and are live; only `HomeHeroSection` is orphaned |
+| `store/CategoryNav`, `store/CategoryProductSection`, `store/DealsSection` | superseded by the `category/` and `home/` implementations |
+| `layout/InfoBar` | the top bar was folded into `layout/Header.tsx` directly |
+| `legal/LegalDocumentView` | legal pages render their document inline |
+| `storefront/BlogPostHeader` | blog post header is inline |
+| `category/CategorySort` | sorting lives in `category/CategoryControlBar` |
+
+None of these is a defect on its own. Dead components are a maintenance cost,
+not a bug, and several are deliberate leftovers from a rebuild. They are listed
+so that:
+
+1. a reader does not "fix" a component nothing renders, and
+2. the busy-state and token findings in passes 12 and 13 can be **descoped**:
+   `category/CategorySort` appears in the pass 12 silent-while-pending list and
+   is unreachable, so it is not worth fixing.
+
+### Method, and the false positives it produced first
+
+The first attempt matched import **paths** and reported **27**. That was wrong:
+`NewsletterSignup` (used by `LoginForm` and `SiteFooter`) and `ReviewForm` (used
+by `Reviews` and `ReviewFormGate`) were both flagged and both are live.
+
+The second attempt matched the component **name** with a word boundary and
+reported 13. That was closer but still caught `CategorySidebar` and
+`PromoBanners`, which have three import sites each and are imported under
+different local names.
+
+Only the third method is reliable: grep for an actual `import` statement naming
+the component.
+
+```bash
+for c in <ComponentName>; do
+  echo "$c: $(grep -rE "import[^;]*\b$c\b|from '[^']*$c'" \
+    --include='*.tsx' --include='*.ts' src/ | grep -vc '\.test\.')"
+done
+```
+
+Three methods, three answers (27, 13, 11). **Quote the method with the number.**
+
 ## Revision
 
 | Date | Change |
@@ -667,3 +751,5 @@ White on `#fed700` is forbidden on every row.
 | 2026-09-07 | Pass 12: busy-state sweep across all 72 components; 24 silent while pending, one unlabelled field, and the false-positive lists recorded so they are not re-reported |
 | 2026-09-07 | Pass 13: token-compliance recount. Raw hex is ZERO and gated; 24 components hold arbitrary SIZES only, none a colour; the eleven [15px] are the one group worth changing |
 | 2026-09-07 | Pass 14: conversion components the 72-file scan never opened (SkipLink, ConsentBanner, CheckoutForm, GiftClaimForm, unmounted HeaderSearch) plus the purchase-family hover split |
+| 2026-09-07 | Pass 15: CouponPricing (split amounts, never percent), RegionMenu (seventeen regions), WhatsAppFloat (mark not yellow) |
+| 2026-09-07 | Pass 14: dead-code sweep. Eleven components never imported, including WishlistButton, so the PDP wishlist heart does not ship despite three documents describing it |
