@@ -402,6 +402,20 @@ Conventions already enforced by tests (you will fail them; that is the point):
   without extending the CHECK
 - Float on the money path (
   `money-no-float.test.ts`)
+- Treat `profiles.role = vendor` as till access (it is `supplier_members`)
+- Apply pending SQL by number 169–172
+- Read `default_split_percent` at checkout
+- Forward the browser Cookie jar to PostgREST
+- Credit cashback at scan
+- Enable `/en` or Hobby Vercel cron
+- Open
+  `/Users/ofir/kenyonexpress-web/kenyonexpress`
+  or
+  `ke-arch`
+  from this worktree
+
+Wave specs: `docs/cursor/waves/WAVE-INDEX.md`. Contracts: `docs/cursor/contracts/`. Ops: `docs/cursor/ops/ON-CALL-GUIDE.md`.
+
 
 ---
 
