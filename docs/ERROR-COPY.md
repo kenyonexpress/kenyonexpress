@@ -1125,6 +1125,68 @@ sentence. Compare with `הפעולה נכשלה.`, which refuses and strands.
 Line 18 mirrors 122 above: a cancellation needs a stated reason, minimum three
 characters, so `.` will not pass.
 
+## 19. Drift check: the wishlist strings specified here are not the ones in the code
+
+Pass 21 checked every Hebrew string this document quotes against the source.
+**196 quoted, 19 not found verbatim.** Fourteen of the nineteen are this
+document's own notation (`{max_quantity}`, `{date}`, `{reason}`, trailing `…`)
+or a code fragment quoted with its surrounding expression, and three more exist
+in files the scan did not reach. Those are not drift.
+
+**Two are.**
+
+| This document says | The code says |
+|---|---|
+| `הוסף למועדפים` (245) | `הוסף לרשימת המשאלות` |
+| `הסר ממועדפים` (246) | `הסר מרשימת המשאלות` |
+| `נוסף למועדפים` (247, 280) | **nothing. There is no toast.** |
+
+`src/components/product/WishlistButton.tsx:45` carries the whole of it:
+
+```
+aria-label={saved ? 'הסר מרשימת המשאלות' : 'הוסף לרשימת המשאלות'}
+```
+
+plus `'הפעולה נכשלה.'` for the error. Three Hebrew strings in the file, and none
+of them is the one this document specifies.
+
+### 19.1 This is a different fact from the pass-14 finding
+
+Section 1's note already records that the heart "ships in neither" the PDP nor
+the header, and concludes: "Keep the strings; they are correct for when the
+control is wired in."
+
+That conclusion no longer holds as written. The control that would be wired in
+**already has strings**, and they are not these. So wiring it in would not
+produce `הוסף למועדפים`; it would produce `הוסף לרשימת המשאלות`.
+
+The decision is therefore not "wire it in and the copy appears". It is:
+
+1. **Change the component** to match this document, or
+2. **Change this document** to match the component, or
+3. Decide the vocabulary question underneath, which is the real one.
+
+### 19.2 The vocabulary question
+
+Two words are in play for one feature:
+
+| Word | Where |
+|---|---|
+| `רשימת המשאלות` | `WishlistButton` labels; the page H1 `רשימת המשאלות שלי`; the long empty state |
+| `מועדפים` | this document's rows 245-247 and 280; the short empty variant `עדיין אין מוצרים במועדפים`; `MastheadNav.tsx:51` `aria-label="המועדפים שלי"` |
+
+**`מועדפים` appears exactly once in the entire source**, on that
+`MastheadNav` `aria-label`. Everywhere else the code says `רשימת המשאלות`.
+
+Section 1 already warns "do not mix on the same screen". The stronger statement
+is now available: the codebase has effectively chosen `רשימת המשאלות`, by 3
+strings plus an H1 plus an empty state against 1 `aria-label`, and this document
+is the main thing still carrying the other word.
+
+Recorded, not resolved: which word is right is a brand decision, not a
+documentation one. What is settled is that the two cannot both be correct and
+the code has already voted.
+
 ## Revision
 
 | Date | Change |
@@ -1198,3 +1260,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 18: the three public forms. The supplier-lead honeypot answers one word differently from real success, which makes it detectable; plus a fourth and fifth verb for "fill this in" |
 | 2026-09-07 | Pass 19: reviews and wishlist, and the person split counted. 50 plural against 20 singular, with reviews.ts the largest singular source |
 | 2026-09-07 | Pass 20: milestone, every customer-facing cluster is documented; the remaining backlog is entirely admin. Plus the two admin money paths, vouchers and orders |
+| 2026-09-07 | Pass 21: drift check on all 196 quoted strings. Two are real drift: the wishlist labels specified here are not the ones in WishlistButton, and the toast does not exist |
