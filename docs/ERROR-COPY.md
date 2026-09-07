@@ -691,6 +691,102 @@ Recorded, not changed: this file is documentation and the fix is in `.ts`.
   legible to its reader, but it is also the one refund string a support agent
   is most likely to quote to a customer.
 
+## 13. Auth and account, documented in full
+
+Continuing section 11.3's order of reach. After the money path, `auth.ts` is
+the file every customer meets and `account.ts` is the one they meet repeatedly.
+
+### 13.1 `src/server/actions/auth.ts`
+
+| Line | Copy |
+|---|---|
+| 37 | `כתובת אימייל או סיסמה שגויים` |
+| 38 | `כתובת האימייל טרם אומתה — בדקו את תיבת הדואר` |
+| 39 | `כתובת האימייל כבר רשומה במערכת` |
+| 40 | `הסיסמה חייבת להכיל לפחות 6 תווים` |
+| 41 | `ההרשמה סגורה כרגע` |
+| 42 | `יותר מדי ניסיונות — נסו שוב מאוחר יותר` |
+| 51 | `אירעה שגיאה, נסו שוב` |
+| 60 | `קישור האיפוס פג או שכבר נעשה בו שימוש — בקשו קישור חדש` |
+| 137 | `יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה` |
+| 143 | `נתונים לא תקינים` |
+| 186 | `יותר מדי ניסיונות הרשמה — נסו שוב בעוד שעה` |
+| 214 | `יותר מדי ניסיונות — נסו שוב בעוד שעה` |
+| 227 | `שלחנו קישור כניסה לאימייל שלך — בדקו את תיבת הדואר` |
+| 302 | `כניסה בטלפון אינה זמינה כרגע` |
+| 316 | `יש להזין מספר טלפון נייד ישראלי (05X)` |
+| 322 | `יותר מדי בקשות למספר הזה — נסו שוב בעוד שעה` |
+| 352 | `מספר הטלפון אינו תקין` |
+
+**A password minimum of 6 here, 8 in validation.** Line 40 says
+`הסיסמה חייבת להכיל לפחות 6 תווים`; `src/lib/validations/auth.ts` (section 11.2)
+says `הסיסמה חייבת להכיל לפחות 8 תווים`. Both are shipped strings and a shopper
+can be told two different minimums for the same field. Worth one decision.
+
+**Four rate-limit messages, three different windows.** `מאוחר יותר` (42),
+`בעוד שעה` (137, 186, 214, 322). Line 42 is the only one that does not say how
+long, and it is the generic one.
+
+### 13.2 `src/server/actions/account.ts`
+
+Errors:
+
+| Line | Copy |
+|---|---|
+| 52 | `הפרטים אינם תקינים` |
+| 62 | `שמירת הפרטים נכשלה` |
+| 92 | `הכתובת אינה תקינה` |
+| 139 | `מזהה כתובת לא תקין` |
+| 148 | `מחיקת הכתובת נכשלה` |
+| 176 | `עדכון ברירת המחדל נכשל` |
+| 190 | `מזהה כרטיס לא תקין` |
+| 196 | `מחיקת הכרטיס נכשלה` |
+| 312 | `מחיקת החשבון נכשלה. פנו לתמיכה.` |
+| 326 | `מחיקת החשבון נכשלה באמצע. פנו לתמיכה.` |
+| 347 | `הנתונים נמחקו אך ההתנתקות נכשלה. פנו לתמיכה.` |
+
+Success confirmations, a category section 5 covers and did not hold these:
+
+| Line | Copy |
+|---|---|
+| 66 | `הפרטים נשמרו` |
+| 128 | `הכתובת עודכנה` / `הכתובת נוספה` |
+| 151 | `הכתובת נמחקה` |
+| 179 | `הכתובת נקבעה כברירת מחדל` |
+| 199 | `הכרטיס הוסר` |
+| 223 | `הכרטיס נקבע כברירת מחדל` |
+| 331 | `משתמש שנמחק` (the anonymised display name, not a message) |
+
+**The three account-deletion failures are the best-written strings in the
+codebase and should be the model.** Each says which stage failed and what to do:
+failed outright, failed part-way, and succeeded-but-logout-failed are three
+different facts and a shopper needs to know which one happened. Compare with
+`הפעולה נכשלה.` (section 3), which says none of the three.
+
+### 13.3 The em-dash, counted
+
+`auth.ts` uses **U+2014** as a sentence separator in 14 strings. Repository-wide,
+inside Hebrew string literals:
+
+| Occurrences | File |
+|---|---|
+| 14 | `src/server/actions/auth.ts` |
+| 5 | `src/server/actions/cart.ts` |
+| 3 | `src/lib/cart/format.ts` |
+| 2 | `src/server/actions/admin/shipping.ts` |
+| 1 | `src/lib/auth/password-reset.ts` |
+| 1 | `src/lib/images/validate.ts` |
+| | **27 total across 7 files** |
+
+Every other string in this document uses a comma or a full stop for the same
+pause. `docs/SEO-PLAN.md` section 0 already carries a "do not copy U+2014" rule,
+scoped to **titles**, so there is precedent for the character being unwanted and
+no rule covering body copy.
+
+This document does not invent one. It records that the separator is used in 27
+places and nowhere else, so whoever sets the voice can settle it once rather
+than meeting it a file at a time.
+
 ## Revision
 
 | Date | Change |
@@ -758,3 +854,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 13: the money path documented in full (checkout.ts, refund.ts). Five strings interpolate a raw Postgres or Cardcom message and are rendered verbatim to the shopper, breaking rule 10 of this file |
 | 2026-09-07 | Pass 14: three failed-payment strings are not one; two pending strings are not one; gift claim catalogue from COPY-HE; admin refund blockers must never paint on `/checkout/failed` |
 | 2026-09-07 | Pass 15: auth chrome from COPY-HE; PDP wishlist heart is not a shipped path (`WishlistButton` unimported) |
+| 2026-09-07 | Pass 15: auth.ts and account.ts in full. Password minimum is 6 in one string and 8 in another, and U+2014 counted at 27 occurrences across 7 files |
