@@ -114,7 +114,7 @@ Gate refuses when related-card counts differ. Do not delete related cards to pas
 | 4 | ATC 768+ | `#fed700` / `#333e48` (not white on yellow), radius 25.2 |
 | 5 | Qty | plain number, no fake +/- if live has none |
 | 6 | Unsellable | `המבצע הסתיים` or `הקופון אינו זמין לרכישה` or `אזל מהמלאי`; ATC dead |
-| 7 | Wishlist heart | **DOES NOT SHIP (pass 14).** `product/WishlistButton.tsx` exists and nothing imports it; there is no `WishlistToggle` in the tree. There is no way to add to the wishlist from a PDP, so this row cannot pass. Verify it is still absent, then either wire the component in or delete this row. `/account/wishlist` itself does render |
+| 7 | Wishlist heart | **DOES NOT SHIP (pass 14).** `product/WishlistButton.tsx` exists and nothing imports it; there is no `WishlistToggle` in the tree. There is no way to add to the wishlist from a PDP, so this row cannot pass. Verify it is still absent, then either wire the component in or delete this row. `/account/wishlist` itself does render. **If it is wired in, it will say `הוסף לרשימת המשאלות` / `הסר מרשימת המשאלות`, not the `מועדפים` wording ERROR-COPY specifies, and it raises no toast at all** (pass 21, ERROR-COPY 19) |
 | 8 | WhatsApp share | coupon share must not use sticker face as the only price; no `{code}` to the business |
 | 9 | Supplier | Waze, phone LTR, mark not recoloured |
 
@@ -843,3 +843,4 @@ is exactly what a shopper does and what a per-file review does not.
 | 2026-09-07 | Pass 18: added the stale-service-worker check to 0.1. It produces the same symptom as a stale next start and has a different fix |
 | 2026-09-07 | Pass 19: copy consistency as one walked purchase (14), including the two-submission honeypot check |
 | 2026-09-07 | Pass 20: crawl rows 18 and 19, the /products canonical gap. Row 15 does not catch it because checking "any indexable route" passes on the eighteen that have one |
+| 2026-09-07 | Pass 21: named the strings WishlistButton will actually produce if wired in, which are not the ones ERROR-COPY specifies |
