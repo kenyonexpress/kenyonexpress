@@ -155,8 +155,12 @@ Payout **actions** are dead at runtime: production has no `payout_statements` ta
 Membership in
 `supplier_members`
 (`owner` | `manager` | `scanner`).
-This is the coupon-partner layer. It is orthogonal to
+This is the till. It is orthogonal to
 `profiles.role`.
+The pack slang "coupon-partner" was a naming error;
+`vendor`
+is only an enum leftover. See
+`docs/cursor/contracts/ROLE-VENDOR.md`.
 
 `/supplier/login`, `/supplier/access-denied` (public). `/supplier`, `/supplier/orders`, `/supplier/products`, `/supplier/payouts`, `/supplier/redemptions`, `/supplier/scan`, `/scan`.
 
