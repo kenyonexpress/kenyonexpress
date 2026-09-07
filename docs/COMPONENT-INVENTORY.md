@@ -1329,6 +1329,47 @@ Summary needs, and now has, is between **a value that has a token and ignores
 it** (four, of which `[15px]` x11 is the real one) and **a measured one-off with
 its provenance in a comment** (the rest).
 
+## Pass 24: DOM order verified for the three components that carry it
+
+`docs/DESIGN-SYSTEM.md` 8e.1 named header, product card and cart line as the
+anatomy sections that **cannot** be machine-checked from CSS, because what they
+describe is JSX structure. They can be checked from the JSX, and now are.
+
+DOM order matters in exactly these three because **DOM order is side order**
+(`DESIGN-SYSTEM` 5.2): each sits in a `justify-between` or `ms-auto` row where
+reordering the JSX moves an element to the other side of the screen in RTL,
+with every class still correctly logical.
+
+| Component | Claimed order | Actual | |
+|---|---|---|---|
+| `layout/Header.tsx` | MobileDrawer, logo, cart+account, MastheadNav | same | **match** |
+| `cart/CartLineItem.tsx` footer | remove, price, qty | same | **match** |
+| `ProductCard.tsx` deals variant | category, title, image+badge, price, add-to-cart | same | **match** |
+
+**Three of three.** The two orders that were previously mirrored on live and
+fixed — the header's hamburger/cart pair, and the cart footer's remove/qty pair —
+are still in their corrected order.
+
+### The pattern that got it wrong first
+
+The initial run reported ProductCard's order as
+`atc, category, title, image` — add-to-cart *first*. It matched
+`CartPlusIcon|add` against the **function definition** of `CartPlusIcon` near
+the top of the file rather than its use inside the card, and the file defines
+the icon before the component that renders it.
+
+Scoping the search to the body of `DealsProductCard` and matching `<CartPlusIcon`
+gave the real order.
+
+That is the **sixth** false positive of the same family recorded in this document
+set, after the RTL lint's comment prose, the buttons with visible Hebrew labels,
+the `<h1>` inside comments, `rounded-lg` caught by `rounded-l`, and the API
+routes documented in combined rows.
+
+Every one had the same shape: **a pattern that matched the right string in the
+wrong place.** `docs/QA-SCRIPTS.md` 0.2 keeps the list, and the rule it states
+has now been proved six times: open the thing before you write it down.
+
 ## Revision
 
 | Date | Change |
@@ -1354,3 +1395,4 @@ its provenance in a comment** (the rest).
 | 2026-09-07 | Pass 21: RTL-risky list re-verified. Nine hits, seven real; CouponCard and BenefitBar are now clean and two components were missing. The first run said 38, all extras being rounded-lg matched by a rounded-l pattern |
 | 2026-09-07 | Pass 22: token compliance re-verified. Zero unallowlisted raw hex; of 19 components with arbitrary sizes, only four duplicate an existing token and [15px] x11 is the one worth fixing |
 | 2026-09-07 | Pass 23: corrected the busy-state figure. 24 of 33 stateful components are silent (73%), not 24 of 38; the earlier pair counted two different sets |
+| 2026-09-07 | Pass 24: verified DOM order in the three components where DOM order is side order. Three of three match; the sixth same-family false positive recorded |
