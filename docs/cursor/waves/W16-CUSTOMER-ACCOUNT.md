@@ -74,6 +74,11 @@ Frame-return ungated. `/coupon/[id]` gated. Gift claim token is a capability.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (deletion)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Delete phrase exact: מחק את החשבון שלי (`ops/RUNBOOK-CUSTOMER-DATA-REQUEST.md`).
+- Prefer `fn_anonymize_user` (150). Fallback TS if `PGRST202`. Soft-delete auth. Hard-delete orphans orders.
+- Keep orders/payments/invoices. Erase A-class PII. Gift columns: conservative hash if 150 does not.
+- Wallet display: `v_wallet_ledger`. If `*_ils`, parse, do not ×100. Cashback already posted at finalize.
+- Guest merge: cart + wishlist in the same login callback (W04). Two cookie names stay split.
+
