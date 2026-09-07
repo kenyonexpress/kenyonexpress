@@ -138,6 +138,7 @@ touches that path and the failure is in the runtime log:
 | `SENTRY_DSN` | Error reporting is inert. |
 | `SENTRY_AUTH_TOKEN` | Source-map upload is skipped; the build still succeeds. |
 | `AXIOM_TOKEN` / `AXIOM_DATASET` | The Axiom log leg is inert. |
+| `NEXT_PUBLIC_POSTHOG_KEY` | PostHog receives nothing. Since 2026-09-07 the key is what turns the fan-out in `lib/analytics/commerce-client.ts` on; before that date the variable was read by a module with no callers, so setting it produced no events and no error. `NEXT_PUBLIC_POSTHOG_HOST` defaults to `https://us.i.posthog.com`. Events are sent only after the consent banner is answered `granted`, on the same cookie GA4 and Meta are gated by. |
 | `RESEND_API_KEY` | Email sending is inert and reports `skipped`, which the abandoned-cart job relies on so it does not burn its one-per-cart allowance. |
 | `TWILIO_*` | WhatsApp is inert. |
 | `MEILISEARCH_*` | The search backend and its drain are inert. |
