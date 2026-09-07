@@ -1131,6 +1131,77 @@ keeping for the storefront pagination, which is a different implementation.
 table gives a screen reader a column of unnamed checkboxes, which is the most
 common failure in an admin grid.
 
+## Pass 20: the storefront supplier pair
+
+Two more of the 25, both on the PDP, both carrying reasoning that is easy to
+lose in a refactor.
+
+| Component | File | Props | a11y |
+|---|---|---|---|
+| SupplierInfo | `storefront/SupplierInfo.tsx` | `{ supplier: SupplierSummary, type: SupplierInfoProductType, ... }` | conditional rows; links are real links |
+| ShippingInfo | `storefront/ShippingInfo.tsx` | `{ requiresShipping, weightGrams, warrantyMonths }` | `<section aria-label="משלוח ואספקה">` |
+
+### SupplierInfo exists because the address used to appear only after payment
+
+`docs/BUSINESS-MODEL.md` section 2 requires address plus Waze and phone plus
+WhatsApp on every product page. The component's own header records why that
+mattered:
+
+> Fifteen of the live products are coupons, redeemed in person at a counter, and
+> until now the address only appeared on `/coupon/[id]` — **AFTER paying**. A
+> shopper deciding whether to buy could not see where the business is or ask it
+> a question.
+
+This is also the component that satisfies the PDP -> `/s/{id}` edge in
+`docs/SEO-PLAN.md` section 4's linking map, verified there in 4.1.3.
+
+**Every field is conditional, and that is the design, not laziness.** Measured
+against production: **11 of 11 suppliers have no address and 6 have no phone at
+all.** An unconditional row would print `כתובת:` followed by nothing on most
+pages. A missing field renders nothing; a present one renders a working link.
+
+### The product-type bug this component records is worth reading twice
+
+`SupplierInfoProductType` has four members and the file explains a defect that
+shipped:
+
+> `recurring`, not `subscription`. […] this prop used to say `subscription` — a
+> string no product row ever holds. **Nothing failed loudly**: the union simply
+> never matched, so a monthly subscription fell through to the physical branch
+> and told the customer their subscription `נשלח ומסופק על ידי הספק`.
+
+Two things make it instructive:
+
+1. **The compiler could not catch it**, because `products.type` is typed from
+   unmigrated production where the member does not exist.
+2. A wrong union member did not throw; it selected a **wrong-but-valid** branch,
+   so the only symptom was one sentence of Hebrew that made no sense for a
+   subscription.
+
+The four fulfilment notes are the strings that branch:
+
+| Type | Note |
+|---|---|
+| `coupon` | `מימוש הקופון מתבצע ישירות מול הספק בבית העסק.` |
+| `physical` | `המוצר נשלח ומסופק על ידי הספק.` |
+| `service` | `השירות ניתן על ידי הספק.` |
+| `recurring` | `המנוי מתחדש אוטומטית ומסופק על ידי הספק. אפשר לבטל בכל עת מהאזור האישי.` |
+
+There is a second trap named in the same comment: a caller that hands over
+`products.type` raw picks the wrong note for the **five live products whose
+`type` says physical and whose `is_coupon_enabled` says coupon**. The resolver
+in `lib/commerce/product-type.ts` is the correct source, not the column.
+
+### ShippingInfo is defined by what it omits
+
+Its first comment: "What is deliberately absent: the platform/supplier split.
+`platform_percent`…" — the same rule `docs/SEO-PLAN.md` 3.10 verifies for
+JSON-LD, enforced here in the DOM.
+
+Weight is rendered via `toLocaleString('he-IL', { maximumFractionDigits: 2 })`
+in kilograms. Not money, so the integer-agorot rule does not apply, and the
+Hebrew locale is right for a decimal a shopper reads.
+
 ## Revision
 
 | Date | Change |
@@ -1152,3 +1223,4 @@ common failure in an admin grid.
 | 2026-09-07 | Pass 17: the analytics trio. ThirdPartyTags is the consent boundary and is stricter than Consent Mode; the client half works while the server events are still discarded by the DB |
 | 2026-09-07 | Pass 18: the PWA pair. Capturing beforeinstallprompt creates an obligation, and a dev-registered service worker produces the same symptom as a stale next start |
 | 2026-09-07 | Pass 19: the admin table and navigation cluster. CommandPalette is a shortcut over an authorised query and holds no credentials; TablePagination is the best-labelled control in the panel |
+| 2026-09-07 | Pass 20: the storefront supplier pair. SupplierInfo exists because the address used to appear only after payment, and it records a wrong-union-member bug that selected a valid branch instead of throwing |
