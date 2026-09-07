@@ -1089,6 +1089,70 @@ and the internal `COMPARE_LIVE_PNG` / `COMPARE_MINE_PNG` / `COMPARE_PAGE` passed
 to the child process) are documented in section 6.6 or are implementation
 detail of the per-process shot isolation.
 
+## 24. Pricing contributor #1: letter-spacing (pass 23)
+
+Section 19 lists letter-spacing as the first systematic contributor and calls it
+unpriced. Measured, in a browser, on real Hebrew strings from this codebase at
+14px:
+
+| Sample | Chars | `normal` | `-0.14px` | Delta | |
+|---|---|---|---|---|---|
+| card title `תיק עור JEEP יוקרתי` | 19 | 119.02 | 116.38 | 2.64px | 2.22% |
+| category `דילים חמים, עד 99` | 17 | 103.19 | 100.80 | 2.39px | 2.32% |
+| cart empty `סל הקניות שלך ריק כרגע.` | 23 | 139.13 | 135.91 | 3.22px | 2.31% |
+| checkout error (41 chars) | 41 | 253.17 | 247.42 | 5.75px | 2.27% |
+| pending paragraph (65 chars) | 65 | 402.28 | 393.19 | 9.09px | 2.26% |
+
+**Our text runs about 2.3% wider than live's at body size.** The delta is
+`0.14px x character count`, so the percentage is stable across lengths and the
+absolute number is not.
+
+### 24.1 The effect shrinks as type grows
+
+`-0.14px` is a **fixed px value inherited as computed** (`DESIGN-SYSTEM` 3.0b),
+not an em. So it is 1% of the em at 14px and about 0.56% at the 25px PDP title.
+
+| Role | Size | Spacing as % of em |
+|---|---|---|
+| body, cards, most UI | 14px | **1.0%** |
+| section heading, PDP title | 25px | 0.56% |
+| hero headline | 51px | 0.27% |
+
+So the difference is **largest exactly where there is most text** and smallest on
+the few large headings. That is the opposite of convenient: body copy is both
+the most affected and the most likely to wrap.
+
+### 24.2 Why 2.3% is not the same as 2.3% of the score
+
+A 2.3% width difference does not produce a 2.3% pixel difference. It produces:
+
+- **zero** difference on any line that still wraps identically, because the text
+  starts at the same edge in RTL and the glyphs land within a couple of pixels;
+- a **whole-line** difference wherever the extra 2.3% pushes a word past the
+  wrap boundary, because one line becomes two and everything below shifts.
+
+On a 186px card title column, 2.3% is about 4.3px, and a Hebrew word is
+roughly 40px. So a wrap changes only where a line already ended within ~4px of
+the edge. Most lines are unaffected; the ones that are not are affected
+completely.
+
+**That is the profile section 19 predicted** — "zero on most elements and large
+on the ones near a wrap boundary" — now with a number behind it rather than an
+argument.
+
+### 24.3 What this does not settle
+
+It prices the **input**, not the output. Turning 2.3% into points of the pixel
+gate needs the gate, which this worktree cannot run. What it does establish:
+
+- the difference is real and measurable, not theoretical;
+- it is bounded — 2.3% at body size, less at every larger size;
+- it cannot be dismissed as sub-pixel noise, because its failure mode is
+  discrete (a wrap) rather than continuous.
+
+Contributor #2, shell height, remains unpriced and is the more tractable of the
+two: it is a fixed offset per template and section 17 already tabulates it.
+
 ## Revision
 
 | Date | Change |
@@ -1112,3 +1176,4 @@ detail of the per-process shot isolation.
 | 2026-09-07 | Pass 20: re-measured the section 2.2 landmarks. Hero heights and column counts exact at all three widths; grid start exact at 1440 and 35px off at both handheld widths because the table names no selectors |
 | 2026-09-07 | Pass 21: section 3 card geometry re-verified, three of three exact. It reproduced where section 2.2 could not, because it names an element rather than a boundary |
 | 2026-09-07 | Pass 22: drift check on the refusal reference. Seven exit(3), one exit(4), one exit(2), four escape hatches, two warnings: all still match |
+| 2026-09-07 | Pass 23: priced contributor #1. Our text is ~2.3% wider at body size, measured in a browser on real Hebrew strings; the effect shrinks as type grows and fails discretely at wrap boundaries |
