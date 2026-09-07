@@ -71,6 +71,10 @@ Offline batch: mixed success/already_redeemed in one drain is OK. Do not abort t
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (atomic QR)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- One QR is one unit. Qty 3 = three vouchers, not a balance of 3 meals on one code.
+- Partial value on one QR is forbidden. Do not store remaining agorot on `vouchers`.
+- Mixed cart: review/refund per `order_item` / unit (`VOUCHER-STATE-MACHINE.md`).
+- Hebrew: אי אפשר לממש חלק מהקופון.
+
