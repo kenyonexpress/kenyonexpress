@@ -653,31 +653,50 @@ while the catalogue pages are the shortest (116). A page tuned to home's shell
 starts 47px low on a category page at 380, which is half a band before anything
 else has happened.
 
-### 17.2 The 40px catalogue header is probably an artifact of the capture
+### 17.2 The 40px catalogue header is REAL. My artifact hypothesis was wrong.
 
-`category`, `product` and `shop` all read a **40px** masthead at 380 and 768,
-six captures agreeing. Section 3 already notes this and calls it "a collapsed
-sticky (40px at 380) vs home's 84px masthead", and instructs: shell stays tuned
-to **home**, do not collapse the header to match a mid-scroll category PNG.
+An earlier revision of this section argued the 40px reading was probably a
+scroll artifact: `measure-live-computed.mjs` sweeps the page before returning to
+top, so a header that collapses on scroll and does not restore would be captured
+collapsed. It named two ways to settle it. **One of them was run, against live,
+on 2026-09-07.** The hypothesis does not survive.
 
-That instruction is right, and there is now a mechanism for it.
+Loaded the live category page and the live home page, read `#masthead` at
+`scrollTop 0` **before scrolling at all**, then swept and re-read:
 
-`scripts/measure-live-computed.mjs` scrolls the entire page in viewport steps to
-force lazy images, then returns to the top with `window.scrollTo(0, 0)` and a
-400ms settle before the shutter. **If live's header collapses on scroll and does
-not restore on the way back up, the capture records the collapsed state.** Six
-captures reading exactly 40 while home reads 50 is the signature of a
-scroll-triggered class, not of three templates independently choosing 40.
+| Page | No scroll | After sweep | `position` |
+|---|---|---|---|
+| `category@380` | **h=40**, y=76 | h=40, y=76 | `static` |
+| `category@1440` | h=127, y=38 | h=127, y=38 | `static` |
+| `home@380` | h=50, y=113 | h=50, **y=91** | `static` |
+| `home@1440` | h=110, y=38 | h=110, y=38 | `static` |
 
-So treat the 40 as **unconfirmed**. Two ways to settle it, neither run here:
+Three corrections fall out:
 
-1. Load a live category page at 380 and read the masthead height **without
-   scrolling at all**.
-2. Re-run the capture with the sweep disabled and compare.
+1. **The 40px is genuine.** Identical before and after the sweep. Live really
+   does serve a 40px masthead on the catalogue pages at 380, against home's 50.
+   The table in section 17 stands as measured.
 
-Until then, section 3's guidance stands and this is the reason to keep it: the
-number a component should be built against is home's, and the catalogue
-captures may be measuring a state the shopper only sees after scrolling.
+2. **It is not a sticky header.** All four read `position: static`. Section 3
+   describes this as "a collapsed sticky (40px at 380) vs home's 84px masthead";
+   the number is right and the mechanism is not. Nothing is sticking or
+   collapsing. These are different templates with different masthead heights.
+
+3. **Something on home does move on scroll, and it is not the masthead.**
+   `home@380`'s masthead keeps h=50 while its `y` drops from 113 to 91, so the
+   22px lost is above it, in the top bar. That is the real scroll effect on live,
+   it affects only home, and it changes the offset every band below inherits by
+   22px depending on scroll position.
+
+Point 3 is the one with teeth for this log: a home capture taken after a sweep
+sits 22px higher than one taken cold. `compare.mjs` sweeps both sides, so it is
+consistent run to run, but any home measurement quoted from a **cold** load is
+22px out from the gate's own reference.
+
+Section 3's guidance ("shell stays tuned to home, do not collapse the header to
+match a mid-scroll category PNG") survives all three corrections, for a better
+reason than the one it was given: the category header is not mid-scroll, it is
+simply a different template, and matching it would break home.
 
 ### 17.3 Why the offset matters more than its size
 
@@ -817,3 +836,4 @@ PY
 | 2026-09-07 | Pass 15: shutter is Heebo, LCP may be Arial; search has no pinned live height; `--page=account` is not in the script's page list |
 | 2026-09-07 | Pass 16: live cards are flat; card hover lift is an Electro departure inside the 11% budget, not a home@380 diagnosis |
 | 2026-09-07 | Pass 15: shell offset measured across all 21 captures (§17). Three shell families below 1440, a flat 17px at 1440, and the 40px catalogue header flagged as a probable scroll artifact of the capture method. Band map renumbered to §18 |
+| 2026-09-07 | Pass 16: settled 17.2 against live. The 40px catalogue header is REAL and not a capture artifact; the header is position:static everywhere, not sticky; and home alone loses 22px above the masthead on scroll |
