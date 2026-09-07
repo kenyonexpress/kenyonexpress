@@ -1,4 +1,4 @@
-# KenyonExpress — אסטרטגיית אפליקציה ומערכת עיצוב
+# KenyonExpress: אסטרטגיית אפליקציה ומערכת עיצוב
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`apps/mobile/`, ‏`src/lib/push/`, ‏`src/lib/app/`, ‏`src/app/api/app/`,

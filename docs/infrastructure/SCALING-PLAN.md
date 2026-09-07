@@ -1,4 +1,4 @@
-# KenyonExpress — תוכנית הרחבה של התשתית
+# KenyonExpress: תוכנית הרחבה של התשתית
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`next.config.ts`, ‏`vercel.json`, ‏פרודקשן Supabase, ‏08.09.2026.

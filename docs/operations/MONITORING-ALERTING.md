@@ -1,4 +1,4 @@
-# KenyonExpress — ניטור והתראות
+# KenyonExpress: ניטור והתראות
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`src/lib/health/checks.ts`, ‏`src/lib/observability/`, ‏08.09.2026.

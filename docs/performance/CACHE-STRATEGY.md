@@ -1,4 +1,4 @@
-# KenyonExpress — אסטרטגיית ‏cache ו-CDN
+# KenyonExpress: אסטרטגיית ‏cache ו-CDN
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`next.config.ts`, ‏`src/lib/catalogue-cache.ts`, ‏16 קבצי `'use cache'`,

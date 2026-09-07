@@ -1,4 +1,4 @@
-# KenyonExpress — שותפויות ‏B2B ומיתוג לבן
+# KenyonExpress: שותפויות ‏B2B ומיתוג לבן
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 

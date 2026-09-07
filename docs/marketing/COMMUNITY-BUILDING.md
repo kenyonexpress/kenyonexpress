@@ -1,4 +1,4 @@
-# KenyonExpress — בניית קהילה ומשוב משתמשים
+# KenyonExpress: בניית קהילה ומשוב משתמשים
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 

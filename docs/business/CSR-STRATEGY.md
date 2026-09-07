@@ -1,4 +1,4 @@
-# KenyonExpress — אחריות תאגידית
+# KenyonExpress: אחריות תאגידית
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 

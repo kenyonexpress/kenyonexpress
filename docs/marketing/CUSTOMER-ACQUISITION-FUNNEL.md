@@ -1,4 +1,4 @@
-# KenyonExpress — משפך רכישת לקוחות
+# KenyonExpress: משפך רכישת לקוחות
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 

@@ -1,4 +1,4 @@
-# KenyonExpress — אסטרטגיית בינאום ‏(i18n)
+# KenyonExpress: אסטרטגיית בינאום ‏(i18n)
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`src/i18n/`, ‏`messages/`, ‏`src/app/layout.tsx`, ‏`next.config.ts`, ‏08.09.2026.

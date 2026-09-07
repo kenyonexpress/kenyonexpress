@@ -1,4 +1,4 @@
-# KenyonExpress — מלאי אינטגרציות והערכת סיכון
+# KenyonExpress: מלאי אינטגרציות והערכת סיכון
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`package.json`, ‏`.env.example`, ‏`src/lib/health/checks.ts`, ‏08.09.2026.

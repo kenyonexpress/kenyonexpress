@@ -1,4 +1,4 @@
-# KenyonExpress — פרטיות והגנת מידע: מצב וצ'קליסט
+# KenyonExpress: פרטיות והגנת מידע, מצב וצ'קליסט
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`src/app/(legal)/_content/privacy.ts`, ‏`src/server/actions/account.ts`,

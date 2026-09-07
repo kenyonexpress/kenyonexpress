@@ -1,4 +1,4 @@
-# KenyonExpress — אסטרטגיית הגבלת קצב
+# KenyonExpress: אסטרטגיית הגבלת קצב
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`src/lib/rate-limit/`, ‏`src/lib/utils/rate-limit.ts`, ‏08.09.2026.

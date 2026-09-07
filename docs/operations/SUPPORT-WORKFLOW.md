@@ -1,4 +1,4 @@
-# KenyonExpress — ספר תפעול תמיכה
+# KenyonExpress: ספר תפעול תמיכה
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 

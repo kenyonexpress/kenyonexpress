@@ -1,4 +1,4 @@
-# KenyonExpress — זהות מותג ושפת עיצוב
+# KenyonExpress: זהות מותג ושפת עיצוב
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`src/styles/tokens.css`, ‏`src/app/globals.css`, ‏`src/app/layout.tsx`,

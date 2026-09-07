@@ -1,4 +1,4 @@
-# KenyonExpress — ביקורת ‏SEO טכנית
+# KenyonExpress: ביקורת ‏SEO טכנית
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 מקור: ‏`src/app/sitemap.ts`, ‏`src/app/robots.ts`, ‏`src/lib/seo/json-ld.ts`,

@@ -1,4 +1,4 @@
-# KenyonExpress — ניהול קשרי ספקים
+# KenyonExpress: ניהול קשרי ספקים
 
 תאריך: 2026-09-08. ענף: `closeout/v1-final`. היקף: docs בלבד.
 
