@@ -1054,6 +1054,41 @@ So the 768 delta section 3 records — ours x519 w234 against live x499 w230, "2
 x, 4px w" — is **half verified**: live's side of it is exactly right, and
 whether ours still differs by that amount is unknown. It was true when written.
 
+## 23. Drift check on the refusal reference (pass 22)
+
+Section 12 was read off `scripts/compare.mjs` in pass 12. Re-counted against the
+script as it stands:
+
+| Claim in section 12 | Script now | |
+|---|---|---|
+| Seven refusals at exit **3** | `process.exit(3)` x **7** | match |
+| One refusal at exit **4** | `process.exit(4)` x **1** | match |
+| One argument error at exit **2** | `process.exit(2)` x **1** | match |
+| Four escape hatches | `COMPARE_ALLOW_GRID_MISMATCH`, `COMPARE_ALLOW_MOVING_HERO`, `COMPARE_ALLOW_PENDING_IMAGES`, `COMPARE_CART_EMPTY` | match |
+| Two `WARNING:` lines in `compare.mjs` | **2** | match |
+| One height-ratio banner in `diff-bands.mjs` | **1** | match |
+
+**Zero drift.** The refusal reference still describes the script.
+
+### 23.1 One naming detail, so a reader does not chase it
+
+The script contains both `COMPARE_QUERY` and `COMPARE_SEARCH_Q`. They are not
+two settings:
+
+```
+const COMPARE_QUERY = process.env.COMPARE_SEARCH_Q ?? 'אוזניות'
+```
+
+`COMPARE_SEARCH_Q` is the **environment variable**; `COMPARE_QUERY` is the local
+constant holding its resolved value. Sections 6.6 and 12 document the former,
+correctly. Setting `COMPARE_QUERY` in the environment does nothing.
+
+The other four `COMPARE_*` names in the script
+(`COMPARE_CATEGORY_SLUG`, `COMPARE_PRODUCT_SLUG`, `COMPARE_STORAGE_STATE`,
+and the internal `COMPARE_LIVE_PNG` / `COMPARE_MINE_PNG` / `COMPARE_PAGE` passed
+to the child process) are documented in section 6.6 or are implementation
+detail of the per-process shot isolation.
+
 ## Revision
 
 | Date | Change |
@@ -1076,3 +1111,4 @@ whether ours still differs by that amount is unknown. It was true when written.
 | 2026-09-07 | Pass 19: the procedure for adding a trustworthy row (20). Five pre-run checks, five output signals that invalidate a score, and what a row must carry beyond a percentage |
 | 2026-09-07 | Pass 20: re-measured the section 2.2 landmarks. Hero heights and column counts exact at all three widths; grid start exact at 1440 and 35px off at both handheld widths because the table names no selectors |
 | 2026-09-07 | Pass 21: section 3 card geometry re-verified, three of three exact. It reproduced where section 2.2 could not, because it names an element rather than a boundary |
+| 2026-09-07 | Pass 22: drift check on the refusal reference. Seven exit(3), one exit(4), one exit(2), four escape hatches, two warnings: all still match |
