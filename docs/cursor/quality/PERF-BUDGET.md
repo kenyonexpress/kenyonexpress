@@ -18,4 +18,4 @@ Per route: `/` lightest; PDP images; checkout no Meili SDK (HTTP). `/admin` rech
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Home <11% at 380/768/1440. sharp 0.35.3. No @dnd-kit on storefront. Checkout no Meili SDK. Kill cache is slower-correct.
