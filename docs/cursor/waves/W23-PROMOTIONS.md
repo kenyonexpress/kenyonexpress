@@ -69,3 +69,9 @@ Wallet + code: wallet is payment source, does not change campaign snapshot.
 | Q | Best answer |
 |---|---|
 | Automatic sale price without code? | **No.** The product is the deal. |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
