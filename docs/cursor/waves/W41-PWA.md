@@ -71,6 +71,9 @@ None.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (cache)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Service worker must not cache pay, webhook, pkpass, account (`CACHE-POLICY.md`).
+- Manifest Hebrew, RTL. Install copy: הוספה למסך הבית.
+- Guest cart remains server `carts` + constructed cookie, not IndexedDB money.
+
