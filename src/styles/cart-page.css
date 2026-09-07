@@ -628,6 +628,22 @@
   border-color: #fed700;
 }
 
+/* WCAG 1.4.11. `outline: none` above leaves `border-color` as the ONLY focus
+   indicator, and that border is #fed700 on a white field: 1.41:1, where the
+   focus-indicator floor is 3:1. The border it replaces is #ddd at 1.36, so the
+   change a keyboard user is meant to notice is a shift between two values that
+   are both invisible against white. The brand dark is 10.6:1 on white and is
+   what makes the ring actually visible.
+
+   `:focus-visible` rather than `:focus`, and placed AFTER the rule above so
+   source order wins: a mouse click keeps the quiet yellow border, and only
+   keyboard focus draws the ring. That is the behaviour `outline: none` was
+   reaching for, done in the way that does not cost the keyboard user. */
+.cart-coupon__input:focus-visible {
+  outline: 2px solid #333e48;
+  outline-offset: 2px;
+}
+
 .cart-coupon__input[aria-invalid="true"] {
   border-color: #dc3545;
 }

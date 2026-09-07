@@ -426,7 +426,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
           autoComplete="off"
           placeholder="XXXXX-XXXXX"
           dir="ltr"
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-widest text-gray-900 placeholder:text-gray-300 focus:border-gray-900 focus:outline-none"
+          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-widest text-gray-900 placeholder:text-gray-300 focus:border-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
         />
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <button
