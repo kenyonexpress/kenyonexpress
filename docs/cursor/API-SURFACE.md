@@ -514,3 +514,107 @@ or prices.
 | `reportPurchase` | finalize | Must not double-count on thank-you |
 | `consume_order_stock` | finalize | Must not run from a browser |
 | `fn_wallet_transfer` | finalize, refund-wallet, referral approve | No admin "adjust balance" form |
+
+---
+
+## 15. Session bridge (`/api/app/session`) expanded
+
+| Method | In | Out | Auth | Failure |
+|---|---|---|---|---|
+| POST | `{ access_token, refresh_token }` (zod min 20/10, max 4000) | `{ ok: true, user_id }` plus Set-Cookie | none (the tokens **are** the auth) | 429 at 30/10min/IP. 400 invalid_request. 401 `unauthorized` **unspecific** (must not tell which half of a stolen pair is live) |
+| DELETE | none | `{ ok: true }` | session cookie | Signs the **WebView** out. Pair with `clearQueue` on the device |
+
+Does **not** mint tokens.
+`setSession`
+validates a pair the app already holds. WebView needs
+`sharedCookiesEnabled`.
+This exists so checkout is not rebuilt as a second money API.
+
+---
+
+## 16. Metadata routes (not in the 38 `route.ts` files)
+
+| Module | Method | Auth | Failure |
+|---|---|---|---|
+| `src/app/sitemap.ts` | GET `/sitemap.xml` | none | Public URLs only. Same catalogue predicate as RLS |
+| `src/app/robots.ts` | GET `/robots.txt` | none | Must not allow `/admin`, `/account`, `/checkout/frame-return` as a destination |
+| `src/app/manifest.ts` | GET `/manifest.webmanifest` | none | PWA. `/offline` is `noindex` separately |
+| `src/app/opengraph-image.tsx` | GET | none | Home OG |
+| `src/app/(store)/product/[slug]/opengraph-image.tsx` | GET | none | PDP OG. Inactive slug must not leak a draft product |
+
+---
+
+## 17. Surfaces that look missing and are missing on purpose
+
+| Guessed URL | Reality |
+|---|---|
+| `/api/wallet/google` | **No route.** `src/lib/wallet/google-wallet.ts` is a library (`pushGoogleObjectState`) |
+| `/api/mobile/*` | **No tree.** Till uses §1.3 + §15 |
+| `/api/scan` | **No.** Redeem is `POST /api/supplier/vouchers/redeem` |
+| `/api/refund` | **No.** Mutation is `refundOrder` |
+| `/api/payouts` | Dead CSV at `/api/supplier/payouts/csv` plus dead actions. 42P01 |
+| `search_products` RPC | Pending 171 FTS. Today `/api/search` is ILIKE or Meili |
+
+---
+
+## 18. Pages that are operator UI, not HTTP APIs
+
+| Path | Auth | Mutation? |
+|---|---|---|
+| `/admin/queues` | `requireSection` | Reads `v_admin_pending_queues`. Not a drain button for money |
+| `/admin/growth` | staff | Reads. Abandoned-cart blast UI is **out** of v1 (P3) |
+| `/admin/feature-flags` | admin | Flags. content-uploader 403 |
+| `/admin/payments?tab=webhooks` | payments read | Empty until 172_rls. Not an ingest endpoint |
+| `/admin/payments?tab=escrow` | payments read | Fossil. 2 rows. No write |
+| `/admin/search` | search section | Index debugger. Not storefront search chrome |
+| `/blog/how-coupons-work` | public MDX | Only blog post on this branch. Not a table |
+| `/account/tokens` | session | Lists `payment_tokens`. Revoke via `deletePaymentToken`. Insert still finalize-only |
+| `/account/my-vouchers`, `/account/vouchers`, `/account/coupons` | session | Same owner SELECT, three shells |
+
+---
+
+## 19. Analytics beacon contract
+
+`POST /api/a`
+
+In: batch of events, max 20 (RPC raises
+`22023`
+above that). Client names in
+`REQUIRED_PROPS`.
+Server names in
+`SERVER_EVENT_NAMES`
+are **dropped by 151** until 169 applies.
+
+Out: 204/200. Must not throw. Must not 200-swallow a missing ingest function (measured bug).
+
+Auth: guest cookie
+`ke_session_id`
+becomes
+`anonymous_id`.
+Session-aware. Rate limited.
+
+---
+
+## 20. Cron 162 vs GitHub Actions (do not double-schedule)
+
+`162_cron_schedule.sql`
+is approved and **blocked on vault** (
+`cron_secret`,
+`app_url`
+unset). Until a human seeds vault, the HTTP surface in §1.5 is invoked by
+`.github/workflows/cron.yml`.
+Enabling pg_cron **and** Actions **and** cron-job.org triple-fires expire/notifications/stranded. Failure mode is duplicate mail and duplicate
+`expire_vouchers`
+attempts (the SQL lock still holds; the page-out is the damage).
+
+---
+
+## 21. `GET /api/search` vs pending FTS
+
+Today: sanitised terms, rate limited, engine tag in JSON. Empty `q` → empty results, not 400.
+
+After 171: app **may** call
+`search_products`
+(INVOKER). That is still this same route, not a new public REST. Meili remains stage 3. Do not add
+`/api/search/v2`.
+
