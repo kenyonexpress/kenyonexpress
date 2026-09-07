@@ -410,3 +410,188 @@ A future "simplify the till" that ships the service key in Expo config is R3 cat
 
 Offline queue: the device stores codes and idempotency keys, not a local "success" flag that skips the RPC. RLS still applies when the drain runs; a queued scan for the wrong shop is still
 `wrong_supplier`.
+
+---
+
+## 16. The 53 tables in the committed snapshot (2026-08-19)
+
+CI reads this list from
+`supabase/rls-manifest.json`.
+Re-verified 2026-08-20, zero drift that day. **This is the catalog CI can see.**
+
+`abandoned_cart_nudges`,
+`affiliates`,
+`audit_log`,
+`carts`,
+`cashback_rules`,
+`categories`,
+`coupon_codes`,
+`coupon_deals`,
+`coupons`,
+`discount_campaigns`,
+`discount_redemptions`,
+`email_suppressions`,
+`escrow_holds`,
+`invoices`,
+`legacy_percent_archive_112` (0 policies),
+`media_assets`,
+`newsletter_subscribers`,
+`notification_outbox`,
+`order_items`,
+`orders`,
+`payment_tokens`,
+`payment_webhook_events` (0 policies),
+`payments`,
+`popular_searches`,
+`product_images`,
+`product_variants`,
+`products`,
+`profiles`,
+`push_tokens`,
+`rate_limits` (0 policies),
+`referral_program_settings`,
+`referral_signals` (0 policies),
+`referrals`,
+`search_events`,
+`search_index_dlq` (0 policies),
+`seo_redirects`,
+`settlement_events` (0 policies),
+`split_executions`,
+`stock_reservations` (0 policies),
+`supplier_leads`,
+`supplier_members`,
+`supplier_staff`,
+`suppliers`,
+`user_addresses`,
+`user_rate_limits` (0 policies),
+`user_recent_searches`,
+`vendors`,
+`voucher_redemptions`,
+`vouchers`,
+`wallet_accounts`,
+`wallet_balances`,
+`wallet_entries`,
+`wallet_transactions`.
+
+Zero-policy set in the snapshot
+`service_role_only`:
+`legacy_percent_archive_112`,
+`payment_webhook_events`,
+`rate_limits`,
+`referral_signals`,
+`search_index_dlq`,
+`settlement_events`,
+`stock_reservations`,
+`user_rate_limits`.
+
+Zero-policy is deny for
+`anon`
+and
+`authenticated`.
+It is **not** a missing-RLS hole. Adding a
+`USING (true)`
+policy to "satisfy the advisor" would loosen it.
+
+---
+
+## 17. Types-ahead tables (not in the 53)
+
+`src/types/database.ts`
+names these extra base tables. Until H3b, do not invent policy names for them. Application behaviour on this branch:
+
+| Table | How the app treats it | Flag |
+|---|---|---|
+| `refunds` | `refundOrder` uses service_role | If live with RLS on and no policy: clients denied (safe). If `USING (true)` write: R6 catastrophic |
+| `payment_events` | trigger append-only | Owner/staff SELECT in later notes |
+| `banners` / `homepage_sections` | public read via live views | |
+| `search_index_outbox` | trigger insert, 0 policies intended | Pending 172_rls would add restrictive deny |
+| `subscriptions` / `subscription_charges` | owner SELECT; cron writes | Split CHECK on charges |
+| `supplier_branches` | public active read | |
+| `reviews` | `order_item_id` UNIQUE | Paid-buyer insert. Not money. `has_role('customer')` would let staff review |
+| `wishlists` | `(user_id, product_id)` **one** table | Owner. No `wishlist_items` on this branch |
+| `ai_usage` / `analytics_events` | service ingest | 172_rls would add admin SELECT |
+| `report_*` (four) | 170; RLS on, zero policies | Admin DEFINER RPCs. 172_rls admin SELECT optional |
+| `payout_statements` / `payout_statement_lines` | Types exist. Runtime historically `42P01` | **Do not** grant client DML "because the types file has them". Coupon path owes 0 |
+
+---
+
+## 18. `carts` cookie names (load-bearing mismatch)
+
+Snapshot USING (already in §14.5):
+`session_id = request.cookies->>'session_id'`.
+
+Browser cookie:
+`ke_session_id`.
+
+The anon guest client **renames** the UUID onto
+`Cookie: session_id=...`.
+It never forwards the visitor Cookie header.
+
+| Pack role | Effect on `carts` |
+|---|---|
+| customer (guest) | ALL via session cookie mapping |
+| customer (signed-in) | ALL via `profile_id = auth.uid()` |
+| content-uploader shopping | same as customer |
+| coupon-partner shopping | same as customer |
+| admin | `is_admin()` in the policy can read/write any cart. Do not use that for support tooling that dumps carts |
+
+**OVER-PERMISSIVE trap:** changing the policy to
+`ke_session_id`
+without changing
+`createGuestCartClient`
+locks every guest out. Forwarding the real jar to PostgREST leaks refresh tokens.
+
+---
+
+## 19. Pending 172_rls (the empty webhooks tab)
+
+`payment_webhook_events`
+is correctly deny-all for clients today. The **bug** is product, not RLS: `/admin/payments` tab `webhooks` uses the **request-scoped** user client, so admins see zero rows even when Cardcom is firing.
+
+`172_rls_zero_policy_tables.sql`
+would add
+`payment_webhook_events_admin_read`
+(`is_admin()` SELECT). Writes stay service_role. That is a deliberate loosen of **read**, not of write.
+
+Same file would add restrictive
+`deny_all_client_roles`
+on
+`rate_limits`,
+`user_rate_limits`,
+`search_index_outbox`
+(already deny by absence; this makes intent visible).
+
+It is a **different file** from
+`172_hide_master_product_test_row.sql`.
+Do not apply "172" by number.
+
+---
+
+## 20. `search_products` (pending 171 FTS)
+
+SECURITY **INVOKER**, STABLE, grantable to
+`anon`.
+It cannot return a product the caller could not already SELECT. That is the opposite of DEFINER catalogue dumps. Rate limit stays on
+`/api/search`.
+Not a money table.
+
+---
+
+## 21. Extra over-permissive / trap items
+
+| # | Finding | Direction |
+|---|---|---|
+| 11 | Admin payments escrow tab still labelled נאמנות | Fossil UI. Read of 2 rows is harmless. Do not add a write |
+| 12 | Generated `payout_*` types with `gross_ils: number` | Types-ahead. If created, integer agorot + RLS deny client write |
+| 13 | `createPublicClient` must stay `anon` | Visitor JWT on catalogue reads would let an admin's session see drafts the shopper cannot buy |
+| 14 | Dual 169/170/171/172 filenames | Human apply hazard. Full filename only |
+| 15 | Wishlist is one table | A migration that adds `wishlist_items` without dropping the current unique pair duplicates state |
+
+`support`
+still must not
+`refundOrder`.
+content-uploader still must not
+`redeemAdminVoucher`
+(
+`orders`
+write). Catalog-read lookup of codes stays the documented split (G7).
