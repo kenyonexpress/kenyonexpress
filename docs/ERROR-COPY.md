@@ -787,6 +787,66 @@ This document does not invent one. It records that the separator is used in 27
 places and nowhere else, so whoever sets the voice can settle it once rather
 than meeting it a file at a time.
 
+## 14. The cart cluster, documented in full
+
+Section 2 carries `cart.unavailable` as a single row saying "per-line warning".
+There are **five distinct per-line messages**, and the distinction between them
+is the whole value: each names a different cause and a different action.
+
+### 14.1 `src/lib/cart/format.ts`, the per-line warnings
+
+| Line | Copy | Cause | Action it asks for |
+|---|---|---|---|
+| 37 | `המוצר כבר לא נמכר — הסירו מהעגלה כדי להמשיך` | delisted | remove |
+| 39 | `המוצר אזל מהמלאי — הסירו מהעגלה כדי להמשיך` | out of stock | remove |
+| 42 | `המוצר אינו זמין בכמות המבוקשת` | quantity too high, ceiling unknown | (none stated) |
+| 43 | `נותרו {max_quantity} במלאי — הפחיתו את הכמות כדי להמשיך` | quantity too high, ceiling known | **reduce**, and it says to what |
+| 45 | `המוצר אינו זמין להזמנה כרגע — הסירו מהעגלה כדי להמשיך` | not orderable now | remove |
+
+Line 43 is the model: it is the only one that gives the shopper the number they
+need. Line 42 is its fallback for when `max_quantity` is unknown, and it is the
+one line in the set that asks for nothing.
+
+This set is also the answer to the vagueness flagged in section 12.4: the cart
+names the line and the cause precisely, and then
+`payments/checkout.ts:728` says only `אחד הפריטים אזל מהמלאי` one screen later.
+The good copy already exists; the checkout does not reuse it.
+
+### 14.2 `src/server/actions/cart.ts`
+
+| Line | Copy |
+|---|---|
+| 321 | `המוצר לא זמין` |
+| 334 | `גרסה לא תקינה` |
+| 339 | `אין מספיק במלאי` |
+| 378 | `נתונים לא תקינים` |
+| 383 | `יותר מדי פעולות — נסו שוב מאוחר יותר` |
+| 448 | `העגלה ריקה` |
+| 467 | `פריט לא נמצא בעגלה` |
+| 651 | `יש להזין קוד קופון` |
+| 652 | `קוד הקופון ארוך מדי` |
+| 658 | `יותר מדי ניסיונות — נסו שוב מאוחר יותר` |
+
+Two rate-limit strings in one file with different nouns: `יותר מדי פעולות`
+(383, cart mutations) and `יותר מדי ניסיונות` (658, coupon attempts). The split
+is defensible, since they limit different things, and it is worth being
+deliberate about rather than incidental.
+
+### 14.3 Three ways to say the same thing about stock
+
+Collected across the three files a shopper meets in one purchase:
+
+| Where | Copy |
+|---|---|
+| `lib/cart/format.ts:39` | `המוצר אזל מהמלאי — הסירו מהעגלה כדי להמשיך` |
+| `actions/cart.ts:339` | `אין מספיק במלאי` |
+| `payments/checkout.ts:728` | `אחד הפריטים אזל מהמלאי` / `אין מספיק במלאי לאחד הפריטים` |
+
+Same condition, three levels of precision, in the order the shopper meets them:
+precise on the cart line, terse on the cart action, vague at checkout. The
+information available at each point runs the other way, since checkout knows
+exactly which line failed.
+
 ## Revision
 
 | Date | Change |
@@ -855,3 +915,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 14: three failed-payment strings are not one; two pending strings are not one; gift claim catalogue from COPY-HE; admin refund blockers must never paint on `/checkout/failed` |
 | 2026-09-07 | Pass 15: auth chrome from COPY-HE; PDP wishlist heart is not a shipped path (`WishlistButton` unimported) |
 | 2026-09-07 | Pass 15: auth.ts and account.ts in full. Password minimum is 6 in one string and 8 in another, and U+2014 counted at 27 occurrences across 7 files |
+| 2026-09-07 | Pass 16: the cart cluster in full. Five distinct per-line warnings behind one table row, and three levels of precision for the same stock condition across cart line, cart action and checkout |
