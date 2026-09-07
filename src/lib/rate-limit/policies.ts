@@ -99,6 +99,10 @@ export const RATE_LIMIT_POLICIES = {
   // -- Commerce. Higher, because a real shopper trips these by shopping.
   cart_write: { limit: 120, windowSeconds: 3600, reason: 'cart mutation, user or IP' },
   coupon: { limit: 10, windowSeconds: 3600, reason: 'coupon code guessing' },
+  // Higher than `coupon` because the Luhn check in the route rejects malformed
+  // codes before the counter is spent, so only well-formed probes count; a
+  // genuine shopper scans one flyer.
+  coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
 
   // Added when this layer was rebased onto main: `referral-code` landed on main

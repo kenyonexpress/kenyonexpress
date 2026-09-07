@@ -2,6 +2,11 @@
 
 import { type CouponRecord, evaluateCoupon, normalizeCouponCode } from '@/lib/cart/coupon'
 import {
+  CART_COUPON_COOKIE,
+  CART_EXPIRY_DAYS,
+  COUPON_COOKIE_MAX_AGE,
+} from '@/lib/cart/coupon-cookie'
+import {
   GUEST_SESSION_COOKIE,
   ensureGuestSessionId,
   getGuestSessionId,
@@ -10,6 +15,7 @@ import { loadCartProductData } from '@/lib/cart/load-products'
 import { buildCartView } from '@/lib/cart/pricing'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
+import { isValidUnitCode } from '@/lib/coupons/unit-codes'
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -21,8 +27,6 @@ import { addToCartSchema, updateCartItemSchema } from '@/lib/validations/cart'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 
-const CART_EXPIRY_DAYS = 30
-
 /**
  * The applied discount code lives in a cookie, not in a `carts` column.
  *
@@ -33,9 +37,11 @@ const CART_EXPIRY_DAYS = 30
  * render and again at checkout, so a shopper who edits it can only name a
  * different code, never a different amount, and a code that expires or runs out
  * stops working the moment it does.
+ *
+ * The constants themselves moved to lib/cart/coupon-cookie.ts when the printed
+ * QR landing route became a second writer of the cookie: a 'use server' file
+ * cannot export them.
  */
-const CART_COUPON_COOKIE = 'ke_cart_coupon'
-const COUPON_COOKIE_MAX_AGE = CART_EXPIRY_DAYS * 24 * 60 * 60
 
 function itemKey(item: CartStorageItem): string {
   return `${item.product_id}::${item.variant_id ?? 'null'}`
@@ -83,7 +89,16 @@ async function evaluateCampaignCode(
   code: string,
   view: CartView,
 ): Promise<{ code: string; label: string; discountAgorot: number } | null> {
-  const { data } = await growthClient().campaigns().byCode(code)
+  const campaigns = growthClient().campaigns()
+  let { data } = await campaigns.byCode(code)
+  // A printed QR batch code (182): 8 digits with a Luhn check digit, resolving
+  // to its campaign. The Luhn gate runs first so a random 8-digit typo fails
+  // here instead of costing a lookup that can only miss. The campaign is then
+  // judged by the exact evaluation below that a typed code gets; the unit adds
+  // a per-unit spent check (inside byUnitCode) and loosens nothing.
+  if (!data && isValidUnitCode(code)) {
+    ;({ data } = await campaigns.byUnitCode(code))
+  }
   if (!data) return null
 
   const evaluation = evaluateDiscount(
@@ -104,7 +119,12 @@ async function evaluateCampaignCode(
 
   if (!evaluation.ok) return null
   return {
-    code: evaluation.code,
+    // The code as ENTERED, not the campaign's. For a typed campaign code the
+    // two are identical (byCode is an equality on the normalised column). For
+    // a scanned unit code they differ, and the cookie must keep the unit code:
+    // it is the per-unit identity the redeemed_at gate and any future claim
+    // wiring key on, and re-resolution already handles it.
+    code,
     label: evaluation.label,
     discountAgorot: evaluation.discountAgorot,
   }
