@@ -20,4 +20,4 @@ This pack does not run axe. Code branch `e2e/a11y.spec.ts`.
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+dir=rtl lang=he. 4.5:1. 44px targets. Checkout errors tied to inputs. Rating not color-only. Skip link + one h1.
