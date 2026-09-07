@@ -73,6 +73,12 @@ Kill switch report page. Cannot flip env from the UI.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (admin money)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Payouts screen: Hebrew stub or empty, **not** a 500 from missing `payout_statements`.
+- Webhooks tab: zero-policy table. Must `createAdminClient`. Empty is honest.
+- Feature flags page reports env, does not write a table.
+- `requireSection` on every mutation. Uploader never refunds. Support never refunds.
+- Audit actor is the staff uid (`contracts/AUDIT-LOG.md`).
+- Duplicate pending 169–172: show **filename**, not the number, if the UI lists pending files.
+
