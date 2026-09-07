@@ -45,8 +45,8 @@ The live contract:
 
 | Path | Role |
 |---|---|
-| `src/lib/commerce/money.ts` | Branded primitives, constructors, `divRoundHalfUp`, `applyBp`, VAT extract |
-| `src/lib/money.ts` | Re-export. **The only import surface the rest of the app may use.** |
+| `src/lib/commerce/money.ts` | `Agorot` brand, `ilsToAgorot`, `agorotToIls`, `percentageOf`, `percentToBasisPoints`. **Does not** define `applyBp` or `VAT_RATE_BP`. |
+| `src/lib/money.ts` | Re-exports the brand. **Defines** `Bp`, `applyBp`, `divRoundHalfUp`, `VAT_RATE_BP`, `extractVat`, `percentToBp`. **The only import surface feature code may use.** |
 | `src/lib/commerce/commission.ts` | Cart / line split |
 | `src/lib/commerce/coupon-offer.ts` | Coupon sellability. Missing `coupon_price_ils` → `{ sellable: false, reason: 'missing-price' }` |
 | `src/lib/commerce/product-money.ts` | Product-side reads of generated twins |
@@ -145,7 +145,7 @@ Snapshotted (non-exhaustive, money-bearing):
 | `balance_due_agorot` | Cash at the business (coupon) or 0 (physical) |
 | `commission_agorot` | Platform take |
 | `supplier_immediate_agorot` | 0 on coupon; face − fee on physical |
-| `cashback_amount_agorot` | Snapshot only. Credited later |
+| `cashback_amount_agorot` | Snapshot at checkout. **Credited in `finalizeOrder`** (`order:<id>:cashback`). Not at scan. |
 | `unit_price_ils` / generated `unit_price_ils_agorot` | Sticker |
 | `coupon_price_ils` / generated twin | Absolute prepaid |
 | `supplier_name`, `supplier_phone`, `supplier_address`, `supplier_logo_url` | Identity by value |
@@ -545,3 +545,113 @@ because "stock failed so the customer needs compensation" is a double-pay. Ops g
 wallet path with a new
 `refunds`
 row.
+
+---
+
+## 17. Two rounding functions that must not fork
+
+`applyBp`
+lives in
+`src/lib/money.ts`:
+
+```
+divRoundHalfUp(amount * points, 10_000)
+```
+
+`percentageOf`
+lives in
+`src/lib/commerce/money.ts`
+and is what
+`commission.ts`
+calls:
+
+```
+floor((product + 5000) / 10000)   // non-negative
+```
+
+On non-negative integers they agree (half-up). They are still **two implementations**. A future "cleanup" that changes only one of them splits quote from charge by 1 agora.
+
+**Incorrect: commission importing applyBp from a path that does not export it**
+
+```ts
+import { applyBp } from '@/lib/commerce/money'
+```
+
+That module has no
+`applyBp`.
+The live commission file imports
+`percentageOf`
+from
+`./money`.
+
+**Correct for new feature code:**
+
+```ts
+import { applyBp, percentToBp, type Agorot } from '@/lib/money'
+```
+
+`percentToBp`
+is the allowlisted
+`Number.parseFloat`
++
+`Math.round`
+site (Postgres
+`numeric`
+arrives as text). A new
+`parseFloat`
+under
+`src/server/payments/`
+fails
+`money-no-float.test.ts`.
+
+`agorotToIls`
+returns
+`value / 100`
+for **display**. It is not an input to settlement. Using it as a charge amount is a §7 violation.
+
+---
+
+## 18. What a violation looks like in this tree (extra smells)
+
+| Smell | Why |
+|---|---|
+| `import { percentageOf } from '@/lib/commerce/money'` in a **new** payments file | Second door. Use `applyBp` from `@/lib/money`. Leave commission.ts as the one grandfathered caller until a code branch unifies them. |
+| `createGuestCartClient` with the visitor's full Cookie header | Puts refresh tokens on PostgREST. Not rounding; it is a session leak adjacent to the money cart. |
+| Writing `payout_statements.gross_ils` as a float because generated types name `number` | Types-ahead tables. If a human ever creates them, columns must be integer agorot + conservation CHECK, not a revival of numeric ILS. |
+| Nightly report that joins `products.platform_percent` | 170's reporting SQL reads generated `*_ils_agorot` on **orders / order_items**. That is the snapshot. A rewrite that "simplifies" to live products lies after a rate change. |
+| UTC-midnight buckets on revenue | 170 is Israel days (`ts AT TIME ZONE 'Asia/Jerusalem'`). UTC splits 02:00 Israel into yesterday. |
+| Treating empty `/admin/payments?tab=webhooks` as "no charges" | Request-scoped SELECT on a zero-policy table returns `[]`. Money still happened. |
+
+---
+
+## 19. 170 reporting money (integer, Israel day, no live join)
+
+Pending file (header on this branch claims applied, file still in
+`pending/`):
+`report_revenue_daily`
+and siblings store **bigint agorot**. Source reads are generated twins
+(`orders.total_ils_agorot`,
+`order_items.total_price_ils_agorot`,
+…). Refunded / cancelled orders are out of revenue, still in
+`report_orders_daily`
+counts. That split is conservative: the refund console owns refunded money.
+
+A dashboard number that is not a safe integer is not a money number. Same rule as storefront analytics.
+
+---
+
+## 20. Coupon remainder agora (issue time, not scan)
+
+`face = coupon_price + remaining_due`
+is per **voucher row**. A line of qty N is N rows. First unit absorbs the leftover agora so each CHECK passes and the N rows still sum to the line. Scan does not re-split. Refund of one unit uses that row's frozen amounts, not `line / N` in JS.
+
+---
+
+## 21. Mapping the brief again (after the module split)
+
+| Brief name | Live name | Do this |
+|---|---|---|
+| `packages/money.ts` | `src/lib/money.ts` | Import rates and VAT from here |
+| `applyBp` in commerce/money | **not there** | It is in `src/lib/money.ts` |
+| Commission engine | `percentageOf` in `src/lib/commerce/money.ts` | Grandfathered. Do not add a third |
+| `platform_bp` column | **does not exist** | Whole percent numeric → `percentToBp` at the boundary |
