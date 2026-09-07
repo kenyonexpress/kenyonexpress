@@ -106,6 +106,91 @@ Do not put money floats or percent into title/description.
 
 ---
 
+## 2.1 Section 2 audited against source (pass 14)
+
+The table above is the plan. This is what `generateMetadata` and the static
+`metadata` exports actually ship.
+
+### 2.1.1 Coverage is near-total
+
+| Mechanism | Routes |
+|---|---|
+| `generateMetadata` (dynamic) | `category/[slug]`, `product/[slug]`, `s/[id]`, `city/[slug]`, `search`, `coupons/[id]` |
+| `export const metadata` (static) | 24 routes, including all twelve account pages, all four checkout pages, `/`, `/about`, `/blog`, `/cart`, `/coupons` |
+| **Neither** | `checkout/confirmation` only |
+
+`checkout/confirmation` is a redirect alias to `/checkout/return`, so inheriting
+the root default is harmless. **Every route that renders has its own title.**
+
+Root template, `src/app/layout.tsx:50`:
+
+```
+default:  קניון אקספרס | קופונים ומבצעים
+template: '%s | קניון אקספרס'
+```
+
+### 2.1.2 Shipped titles
+
+| Route | Shipped `title` |
+|---|---|
+| `/` | **`קניון EXPRESS — מסדרים לך בילוי`** (see 2.1.3) |
+| `/products` | none of its own; root default |
+| `/category/[slug]` | `category.name_he`, and `קטגוריה לא נמצאה` on the miss branch |
+| `/product/[slug]` | product name, `מוצר לא נמצא` on the miss branch |
+| `/s/[id]` | supplier name, `ספק לא נמצא` on the miss branch |
+| `/city/[slug]` | `` `דילים ב${region.name}` `` |
+| `/cart` | `סל הקניות` |
+| `/checkout` | `תשלום` |
+| `/coupons` | `קופונים` |
+| `/suppliers` | `הצטרפו כספקים` |
+| `/about` | `אודות` |
+| `/faq` | `שאלות נפוצות` |
+| `/contact` | `צור קשר` |
+| `/blog` | `הבלוג` |
+
+`robots: { index: false }` ships on `search`, and `{ index: false, follow: true }`
+on the three not-found branches, which is the correct pairing: do not index a
+miss, do keep crawling its links.
+
+### 2.1.3 The home title contradicts section 0 twice
+
+Section 0 of this document says, of `קניון EXPRESS: מסדרים לך בילוי`:
+
+> Older plan guessed `קניון EXPRESS: מסדרים לך בילוי`. That string is **not**
+> the current `<title>`.
+
+and separately:
+
+> Do not copy U+2014 into new titles (use a colon).
+
+**The shipped home title is that string, with the em-dash.** From
+`src/app/(store)/page.tsx`:
+
+```
+קניון EXPRESS — מסדרים לך בילוי
+```
+
+The separator is **U+2014**, verified by codepoint, not U+002D and not a colon.
+
+So three values are in play and the document should stop implying there are two:
+
+| | Value |
+|---|---|
+| Live WordPress today | `קניון אקספרס` |
+| Root default in `layout.tsx` | `קניון אקספרס \| קופונים ומבצעים` |
+| **What `/` actually renders** | `קניון EXPRESS — מסדרים לך בילוי` |
+
+Section 0's table has a "Next template" column recommending the live short title
+or the `'%s | קניון אקספרס'` pattern. Neither is what ships on the home page.
+Section 2's own row for Home says "live: `קניון אקספרס`", which describes
+WordPress rather than this app.
+
+This is the one row in section 2 where plan and implementation disagree
+outright. It is also cheap to settle, being one string, and it carries a
+character the same document forbids elsewhere.
+
+Recorded, not changed: the fix is in `.tsx`.
+
 ## 3. Schema (JSON-LD) per page
 
 Inject via the existing `jsonLdScript` helper (JSON, not a string-concat of user HTML). One graph. Absolute `url`. Currency `ILS`.
@@ -601,6 +686,24 @@ scan, auth, search (via noindex), filtered category and `?city=` (via noindex).
 
 `compare.mjs` under 11 percent is **not** a CWV gate. LCP/CLS/INP still apply. Heebo `display: swap`, `preload: false` so the LCP paragraph can stay Arial on purpose. Consent banner is a known LCP risk on home.
 
+### 7.1 `SearchAction` vs no header search (pass 15)
+
+Pass 13 on this file found `SearchAction` **ships** in JSON-LD while section
+3.1 forbids it. QA 10d rows 11-12 track the conflict. Until a code agent
+settles it:
+
+| If | Then |
+|---|---|
+| Keep `SearchAction` | `/search?q=` must 200, stay **noindex**, and must not grow a header field. The target is the page-level form |
+| Drop `SearchAction` | section 3.1 already matches the standing chrome rule (no masthead search). Update QA 10d row 11 to expect 0 |
+
+Do not "fix" this by restoring header search. That costs the home pixel gate
+(534×41 yellow field) for a noindex route.
+
+`Organization.@id` stays `{origin}/#organization` on home, about, contact,
+faq, blog. One node. `LocalBusiness` still does not ship on `/s/{id}` (QA 10d
+row 13). Do not mint a second Organization to fill that gap.
+
 ## Revision
 
 | Date | Change |
@@ -614,3 +717,5 @@ scan, auth, search (via noindex), filtered category and `?city=` (via noindex).
 | 2026-09-07 | Pass 12: sitemap and robots audited against source. /city/{slug} indexable but absent from sitemap.ts (17 Hebrew slugs); /gift/[token] has noindex but no Disallow, unlike /redeem/ |
 | 2026-09-07 | Pass 14: silo graph; FAQPage/AboutPage/ContactPage/BlogPosting; city stays indexable until sitemap.ts emits it; gift Disallow is a code-agent follow-up matching `/redeem/` |
 | 2026-09-07 | Pass 13: section 3 audited against src/lib/seo/json-ld.ts. SearchAction ships though 3.1 forbids it; LocalBusiness does not ship at all; three routes emit undocumented JSON-LD |
+| 2026-09-07 | Pass 15: SearchAction vs no header search is a settle-or-drop, not a restore-the-field; one Organization @id |
+| 2026-09-07 | Pass 14: section 2 audited against source. Coverage is near-total (one redirect alias aside), and the shipped home title is the exact string section 0 says is not live, with the U+2014 section 0 forbids |
