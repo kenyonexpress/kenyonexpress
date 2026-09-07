@@ -468,7 +468,7 @@ except by crawl. The map's own instruction not to orphan them argues for both.
 
 Include: `/`, indexable categories, active products, `/s/{id}` public, `/city/{slug}` with suppliers, legal, about, contact, faq, blog index, `/products`.
 
-Exclude: `/search`, `/cart`, `/checkout*`, `/account/**`, `/coupon/*`, `/gift/*`, `/redeem/*`, `/admin/**`, `/supplier/**`, `/scan`, `/login*`, `/offline`, filtered category URLs.
+Exclude: `/search`, `/cart`, `/checkout*`, `/account/**`, `/coupon/*`, `/gift/*`, `/redeem/*`, `/admin/**`, `/supplier/**`, `/scan`, `/login*`, `/offline`, **`/newsletter/confirm`**, **`/newsletter/unsubscribe`** (added pass 24), filtered category URLs.
 
 `lastmod` from product `updated_at` where cheap. Money fields never appear as sitemap metadata.
 
@@ -1164,6 +1164,44 @@ JSON-LD call is the whole of it.
 
 Recorded, not changed: `.tsx`.
 
+## 11. The newsletter token pages (pass 24)
+
+`docs/ROLE-MATRIX.md` 5.1 found two customer routes this document's exclude list
+did not name: `/newsletter/confirm` and `/newsletter/unsubscribe`. Both take a
+`?token=` query parameter and both are unauthenticated by design, because a
+confirmation link is followed by someone who is not signed in.
+
+Their current state, checked:
+
+| | `/newsletter/confirm` | `/newsletter/unsubscribe` |
+|---|---|---|
+| `robots` metadata | `{ index: false, follow: false }` | `{ index: false, follow: false }` |
+| In `sitemap.ts` | **no** | **no** |
+| In `robots.txt` disallow | **no** | **no** |
+
+**Two of the three are already right.** They are noindex/nofollow in their own
+metadata and correctly absent from the sitemap. Section 5's exclude list has been
+updated to name them, which it should have done already: an exclude list that
+omits a route it agrees should be excluded is a list that cannot be checked.
+
+### 11.1 The `robots.txt` question, and why this document does not answer it
+
+`/redeem/` and `/coupon/` carry **both** layers: a `Disallow` and a page-level
+`noindex`. Section 5.1 explains why both matter, and 5.1's own table records
+`/gift/[token]` as having only the inner layer.
+
+So the newsletter pair joins `/gift/` as token-bearing routes with `noindex` and
+no `Disallow`. That is now **three** routes on one side of a line nobody has
+drawn.
+
+The exposure genuinely differs — a newsletter token changes a subscription, a
+gift token transfers a paid coupon, a redeem token *is* a paid voucher — so a
+single rule may be wrong. But the current state is not a rule, it is three
+separate omissions that happen to agree.
+
+`docs/QA-SCRIPTS.md` 10d row 8 already checks `/gift/{token}`. If a rule is
+settled, that row should grow to cover all three.
+
 ## Revision
 
 | Date | Change |
@@ -1189,3 +1227,4 @@ Recorded, not changed: `.tsx`.
 | 2026-09-07 | Pass 21: re-verified all six known gaps against source. Six of six unchanged, with the exact command for each |
 | 2026-09-07 | Pass 22: title drift check, nine of nine unchanged including the home title with its U+2014. Noted that titles are always metadata literals so this check has no JSX blind spot |
 | 2026-09-07 | Pass 23: JSON-LD coverage. Six of eight pages emit; /products emits none, which with the missing canonical makes it the least-instrumented indexable page while sitting at sitemap priority 0.9 |
+| 2026-09-07 | Pass 24: named the newsletter token pages in the exclude list and recorded that three token routes now carry noindex without a Disallow, on one side of a line nobody has drawn |
