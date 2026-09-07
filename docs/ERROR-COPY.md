@@ -16,6 +16,39 @@ Rules:
 
 ---
 
+## Contents
+
+26 sections. Written across many passes, so the numbering has letters in it (`8b`, `3.0c`); the order below is the order in the file.
+
+- [1. Empty states](#1-empty-states)
+- [2. Validation (forms)](#2-validation-forms)
+- [3. Page and inline errors](#3-page-and-inline-errors)
+- [4. Checkout failures](#4-checkout-failures)
+- [5. Confirmations (destructive and spend)](#5-confirmations-destructive-and-spend)
+- [6. Redemption outcomes (cashier)](#6-redemption-outcomes-cashier)
+- [7. Wallet and coupons (account siblings)](#7-wallet-and-coupons-account-siblings)
+- [8. Auth chrome (short)](#8-auth-chrome-short)
+- [9. Offline PWA and legal H1s](#9-offline-pwa-and-legal-h1s)
+- [10. Toasts](#10-toasts)
+- [11. Coverage map: what this document does and does not hold](#11-coverage-map-what-this-document-does-and-does-not-hold)
+- [13. Checkout failure family and gift claim family (pass 14)](#13-checkout-failure-family-and-gift-claim-family-pass-14)
+- [12. The money path, documented in full](#12-the-money-path-documented-in-full)
+- [13. Auth and account, documented in full](#13-auth-and-account-documented-in-full)
+- [14. The cart cluster, documented in full](#14-the-cart-cluster-documented-in-full)
+- [15. Subscriptions, and the one string that changes with the data](#15-subscriptions-and-the-one-string-that-changes-with-the-data)
+- [16. The three public forms, and a honeypot that answers differently](#16-the-three-public-forms-and-a-honeypot-that-answers-differently)
+- [17. Reviews and wishlist, and the person split counted](#17-reviews-and-wishlist-and-the-person-split-counted)
+- [18. Milestone: every customer-facing cluster is documented](#18-milestone-every-customer-facing-cluster-is-documented)
+- [19. Drift check: the wishlist strings specified here are not the ones in the code](#19-drift-check-the-wishlist-strings-specified-here-are-not-the-ones-in-the-code)
+- [20. Correction: every count in this document is literal-only (pass 22)](#20-correction-every-count-in-this-document-is-literal-only-pass-22)
+- [21. The extended drift check, run (pass 23)](#21-the-extended-drift-check-run-pass-23)
+- [22. Copy outside `src/`: the service worker's last-resort string (pass 24)](#22-copy-outside-src-the-service-workers-last-resort-string-pass-24)
+- [Revision](#revision)
+- [14. Auth chrome, and the wishlist empty that cannot be filled from the PDP (pass 15)](#14-auth-chrome-and-the-wishlist-empty-that-cannot-be-filled-from-the-pdp-pass-15)
+- [Revision](#revision)
+
+---
+
 ## 1. Empty states
 
 | Surface | Copy | CTA |
@@ -1427,3 +1460,4 @@ defect; a QA script that requires adding from the PDP cannot pass.
 | 2026-09-07 | Pass 22: correction. Every count here is literal-only and misses JSX text; 655 Hebrew strings exist only as JSX. Qualifies the coverage numbers, does not invalidate the drift finding |
 | 2026-09-07 | Pass 23: ran the extended drift check over raw file content. 187 of 191 found; the JSX blind spot hid no additional drift, and the three wishlist labels remain the whole of it |
 | 2026-09-07 | Pass 24: the one user-visible Hebrew string outside src/, in the service worker. text/plain with charset set correctly, and safe only because it contains no digits or Latin |
+| 2026-09-07 | Pass 25: added a table of contents |

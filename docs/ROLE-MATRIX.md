@@ -8,6 +8,28 @@ them. Pass 1.
 
 ---
 
+## Contents
+
+15 sections. Written across many passes, so the numbering has letters in it (`8b`, `3.0c`); the order below is the order in the file.
+
+- [0. The four roles in the brief are not the four roles in the system](#0-the-four-roles-in-the-brief-are-not-the-four-roles-in-the-system)
+- [1. The four guard layers](#1-the-four-guard-layers)
+- [2. The admin section matrix](#2-the-admin-section-matrix)
+- [3. Route matrix: `/admin/*`](#3-route-matrix-admin)
+- [4. Route matrix: `/supplier/*` and `/scan`](#4-route-matrix-supplier-and-scan)
+- [5. Route matrix: customer surfaces](#5-route-matrix-customer-surfaces)
+- [6. Action matrix: server actions](#6-action-matrix-server-actions)
+- [6a. The non-admin server actions](#6a-the-non-admin-server-actions)
+- [7. Where the database agrees, and where it is the real control](#7-where-the-database-agrees-and-where-it-is-the-real-control)
+- [8. How to re-derive this document](#8-how-to-re-derive-this-document)
+- [9. Related documents](#9-related-documents)
+- [10. Storefront allow/deny (customer surfaces, deepened)](#10-storefront-allowdeny-customer-surfaces-deepened)
+- [11. The `/api/*` surface, which the earlier passes missed entirely](#11-the-api-surface-which-the-earlier-passes-missed-entirely)
+- [11a. Drift check (pass 21)](#11a-drift-check-pass-21)
+- [12. Revision](#12-revision)
+
+---
+
 ## 0. The four roles in the brief are not the four roles in the system
 
 This document was asked for `customer`, `content-uploader`, `coupon-partner`
@@ -1273,3 +1295,4 @@ visible.
 | 2026-09-07 | Pass 22: extended the drift check to all 34 API routes. Zero drift; a naive parse reported six false gaps because they are documented in combined rows |
 | 2026-09-07 | Pass 23: completed the drift check with the 9 supplier routes. 84 route guards across three families, zero drift |
 | 2026-09-07 | Pass 24: completeness check on the customer routes. 52 walked, 10 unreferenced, of which two are token-bearing newsletter pages that carry noindex but no robots.txt Disallow |
+| 2026-09-07 | Pass 25: added a table of contents |

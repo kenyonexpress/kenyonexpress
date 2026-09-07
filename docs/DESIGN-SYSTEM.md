@@ -11,6 +11,28 @@ describes is `src/styles/tokens.css`, and that file is the source of truth.
 
 ---
 
+## Contents
+
+15 sections. Written across many passes, so the numbering has letters in it (`8b`, `3.0c`); the order below is the order in the file.
+
+- [0. Provenance, and one correction to this document's own brief](#0-provenance-and-one-correction-to-this-documents-own-brief)
+- [1. Colour](#1-colour)
+- [2. The spacing scale](#2-the-spacing-scale)
+- [3. The type scale](#3-the-type-scale)
+- [4. Component anatomy](#4-component-anatomy)
+- [5. RTL](#5-rtl)
+- [6. The `compare.mjs` gate](#6-the-comparemjs-gate)
+- [8. Account sibling tokens (wallet, coupons, wishlist)](#8-account-sibling-tokens-wallet-coupons-wishlist)
+- [8b. The three compare widths are not the CSS cascade (pass 14)](#8b-the-three-compare-widths-are-not-the-css-cascade-pass-14)
+- [12. Pass 15: `21.994px` is two things, and Heebo is allowed to miss the first paint](#12-pass-15-21994px-is-two-things-and-heebo-is-allowed-to-miss-the-first-paint)
+- [8c. Drift check: this document against the token files (pass 22)](#8c-drift-check-this-document-against-the-token-files-pass-22)
+- [8d. Every published contrast ratio recomputed (pass 23)](#8d-every-published-contrast-ratio-recomputed-pass-23)
+- [8e. Component anatomy re-verified (pass 24)](#8e-component-anatomy-re-verified-pass-24)
+- [9. Related documents](#9-related-documents)
+- [10. Revision](#10-revision)
+
+---
+
 ## 0. Provenance, and one correction to this document's own brief
 
 The brief for this document named two sources:
@@ -2400,3 +2422,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 22: drift check against the token files. 117 of 117 rows match exactly, against 194 of 196 for ERROR-COPY, and the difference is enforcement rather than diligence |
 | 2026-09-07 | Pass 23: recomputed all 65 published contrast ratios from their hexes. Zero mismatches at 0.015 tolerance; with pass 22 this covers the whole chain from shipped hex to published ratio |
 | 2026-09-07 | Pass 24: re-verified component anatomy. 11 stepper values and 24 PDP variables, zero mismatches; named the three anatomy sections that cannot be machine-checked |
+| 2026-09-07 | Pass 25: added a table of contents |

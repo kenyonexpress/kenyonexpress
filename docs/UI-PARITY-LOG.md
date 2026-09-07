@@ -19,6 +19,41 @@ Companions: `docs/DESIGN-SYSTEM.md` §6, `docs/design/COMPARE-RESULTS.md`, `docs
 
 ---
 
+## Contents
+
+28 sections. Written across many passes, so the numbering has letters in it (`8b`, `3.0c`); the order below is the order in the file.
+
+- [0. How to read a cell](#0-how-to-read-a-cell)
+- [1. Routes the script knows](#1-routes-the-script-knows)
+- [2. Home `/`](#2-home)
+- [3. Category `/category/[slug]`](#3-category-categoryslug)
+- [4. Product `/product/[slug]`](#4-product-productslug)
+- [5. Products archive `/products`](#5-products-archive-products)
+- [6. Cart `/cart`](#6-cart-cart)
+- [7. Checkout `/checkout`](#7-checkout-checkout)
+- [8. Search `/search`](#8-search-search)
+- [9. Account `/account` and siblings](#9-account-account-and-siblings)
+- [10. Brief vs live (why some tokens look "wrong" in a screenshot)](#10-brief-vs-live-why-some-tokens-look-wrong-in-a-screenshot)
+- [11. The reference side, pinned (2026-09-04)](#11-the-reference-side-pinned-2026-09-04)
+- [12. The refusal reference](#12-the-refusal-reference)
+- [13. What this pass did not re-run](#13-what-this-pass-did-not-re-run)
+- [14. Crop arithmetic: what 2600px actually scores, per route](#14-crop-arithmetic-what-2600px-actually-scores-per-route)
+- [15. Font swap vs the shutter, and search crop](#15-font-swap-vs-the-shutter-and-search-crop)
+- [16. Live cards are flat, so elevation in the home crop is a known departure](#16-live-cards-are-flat-so-elevation-in-the-home-crop-is-a-known-departure)
+- [17. The shell offset, measured across all 21 captures](#17-the-shell-offset-measured-across-all-21-captures)
+- [18. Band map: turning a band percentage into a diagnosis](#18-band-map-turning-a-band-percentage-into-a-diagnosis)
+- [19. Systematic contributors: differences that are on every page at once](#19-systematic-contributors-differences-that-are-on-every-page-at-once)
+- [20. How to add a trustworthy row to this log](#20-how-to-add-a-trustworthy-row-to-this-log)
+- [21. Section 2.2's landmarks, re-measured (pass 20)](#21-section-22s-landmarks-re-measured-pass-20)
+- [22. Section 3's card geometry re-verified (pass 21)](#22-section-3s-card-geometry-re-verified-pass-21)
+- [23. Drift check on the refusal reference (pass 22)](#23-drift-check-on-the-refusal-reference-pass-22)
+- [24. Pricing contributor #1: letter-spacing (pass 23)](#24-pricing-contributor-1-letter-spacing-pass-23)
+- [25. Pricing contributor #2: shell height (pass 24)](#25-pricing-contributor-2-shell-height-pass-24)
+- [26. Pricing contributor #4: card elevation costs nothing (pass 25)](#26-pricing-contributor-4-card-elevation-costs-nothing-pass-25)
+- [Revision](#revision)
+
+---
+
 ## 0. How to read a cell
 
 | Mark | Meaning |
@@ -1296,3 +1331,4 @@ elevation, and not chrome.**
 | 2026-09-07 | Pass 23: priced contributor #1. Our text is ~2.3% wider at body size, measured in a browser on real Hebrew strings; the effect shrinks as type grows and fails discretely at wrap boundaries |
 | 2026-09-07 | Pass 24: priced contributor #2. Shell offset is +47px worst case at category@380 and CHANGES SIGN across widths, so no single tuning constant fixes it |
 | 2026-09-07 | Pass 25: priced contributor #4 at ZERO. --shadow-card produces a 20.4 delta against TOL 24, so every pixel of it is below tolerance. All five contributors are now priced |
+| 2026-09-07 | Pass 25: added a table of contents |
