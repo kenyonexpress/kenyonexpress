@@ -48,6 +48,13 @@ Issued to recipient after pay. Claim does not new-purchase. Transfer wave skippe
 
 ---
 
-## Second pass
+## Second pass (till)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Lookup must not consume. Redeem is `WHERE status = 'issued'`. Double scan is `already_redeemed`, not a second meal.
+- `wrong_supplier` comes from membership `supplier_id`, never from the request body.
+- Outcomes: retry only `error` and `rate_limited`. Do not retry success.
+- Expire cron `issued → expired` does **not** call Cardcom. Money already taken at pay.
+- After `redeemed`, card refund of consumed value is planner refuse. Wallet goodwill is admin only.
+- Gift claim is not a second purchase. W32 transfer is skipped for v7.
+- Scanner is `supplier_members.member_role`, not `profiles.role = vendor`.
+
