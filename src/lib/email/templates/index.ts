@@ -30,6 +30,11 @@ export {
   buildCashbackCreditedEmail,
   type CashbackCreditedInput,
 } from './cashback-credited'
+export {
+  buildRefundCompletedEmail,
+  type RefundCompletedInput,
+} from './refund-completed'
+export { buildWelcomeEmail, type WelcomeInput } from './welcome'
 
 export { sendEmail, mailFrom } from '@/lib/email/resend'
 export type { SendEmailInput, SendEmailResult } from '@/lib/email/resend'
