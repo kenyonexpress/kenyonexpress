@@ -1,8 +1,23 @@
 # `migrations/pending/`
 
-## 2026-09-08: 178 added — the cart uniqueness the code compensates for
+## 2026-09-08: READ docs/MIGRATION-NUMBER-COLLISIONS.md BEFORE APPLYING ANYTHING
 
-`178_carts_one_row_per_owner.sql` adds the two partial UNIQUE indexes that stop
+`origin/main` has been numbering migrations from the same counter as this
+branch, without either side seeing the other. **Seven numbers name two
+unrelated schema changes, and four of `main`'s are already applied to
+production** (`audit_full_coverage_169`, `reporting_tables_170`,
+`search_fts_171`, `rls_zero_policy_tables_172`, plus `coupon_qr_batches_182`).
+
+This branch's 169-172 are still genuinely unapplied - the applied rows with
+those numbers are `main`'s files. But "apply 170" no longer identifies a
+migration, so the apply order across the two branches is undefined.
+
+Until the owner picks a mainline branch, **apply nothing from either side.**
+The full measured table is in `docs/MIGRATION-NUMBER-COLLISIONS.md`.
+
+## 2026-09-08: 184 added — the cart uniqueness the code compensates for
+
+`184_carts_one_row_per_owner.sql` adds the two partial UNIQUE indexes that stop
 a shopper ever having two cart rows. **Not applied.**
 
 Found while triaging Sentry. `src/server/actions/cart.ts` carries a long comment

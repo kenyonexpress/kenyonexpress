@@ -1,4 +1,4 @@
--- preflight_178.sql -- read-only. Run each block before 178.
+-- preflight_184.sql -- read-only. Run each block before 184.
 
 -- (1) The gap is still real: no unique index on carts except the primary key.
 --     EXPECT (08.09): carts_pkey unique; the other three not unique.
@@ -12,7 +12,7 @@ select i.relname as indexname, ix.indisunique as is_unique,
  order by 1;
 
 -- (2) THE BLOCKING CHECK. Both counts must be 0 or the CREATE UNIQUE INDEX in
---     178 will fail and roll back. A non-zero here is not a reason to weaken
+--     184 will fail and roll back. A non-zero here is not a reason to weaken
 --     the migration; it means duplicates exist and a human has to decide which
 --     row survives before this can be applied.
 --     EXPECT (08.09): 0 and 0.
@@ -38,7 +38,7 @@ select
 from public.carts;
 
 -- (4) Size, because it is the whole argument for not using CONCURRENTLY.
---     If this is no longer small, rewrite 178 with CREATE UNIQUE INDEX
+--     If this is no longer small, rewrite 184 with CREATE UNIQUE INDEX
 --     CONCURRENTLY and drop the BEGIN/COMMIT.
 --     EXPECT (08.09): 2129 rows.
 select count(*) as cart_rows from public.carts;

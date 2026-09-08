@@ -338,4 +338,10 @@ export const MIGRATION_MANIFEST: readonly MigrationEntry[] = [
     state: 'pending',
     hasPreflight: true,
   },
+  {
+    number: '184',
+    file: '184_carts_one_row_per_owner.sql',
+    state: 'pending',
+    hasPreflight: true,
+  },
 ] as const

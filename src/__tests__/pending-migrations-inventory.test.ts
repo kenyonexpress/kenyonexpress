@@ -209,7 +209,7 @@ describe('the pending migration inventory', () => {
       '175_referral_program_settings.sql',
       '176_supplier_pin_rate_limit_per_staff.sql',
       '177_set_updated_at_search_path.sql',
-      '178_carts_one_row_per_owner.sql',
+      '184_carts_one_row_per_owner.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -220,7 +220,7 @@ describe('the pending migration inventory', () => {
       'preflight_175.sql',
       'preflight_176.sql',
       'preflight_177.sql',
-      'preflight_178.sql',
+      'preflight_184.sql',
     ])
   })
 
