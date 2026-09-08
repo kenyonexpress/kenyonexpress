@@ -24,6 +24,20 @@ if (specs.length === 0) {
 }
 
 console.log(`e2e-no-database: ${specs.length} spec file(s), no database required`)
-execFileSync('pnpm', ['exec', 'playwright', 'test', ...specs, '--project=chromium'], {
-  stdio: 'inherit',
-})
+
+// EXIT WITH PLAYWRIGHT'S CODE, NOT WITH A SPAWN OBJECT.
+//
+// `execFileSync` throws on a non-zero child, and an uncaught throw prints the
+// whole result object - pid, null stdio handles, a Node banner - after the test
+// output that actually says what failed. In a CI log the reader sees the dump
+// last and the failures scrolled off above it. Observed here on a run that
+// failed once and passed twice.
+try {
+  execFileSync('pnpm', ['exec', 'playwright', 'test', ...specs, '--project=chromium'], {
+    stdio: 'inherit',
+  })
+} catch (error) {
+  const code = typeof error?.status === 'number' ? error.status : 1
+  console.error(`e2e-no-database: playwright exited ${code}. The failures are above this line.`)
+  process.exit(code)
+}
