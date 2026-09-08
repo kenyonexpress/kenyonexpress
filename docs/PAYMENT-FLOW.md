@@ -3,7 +3,8 @@
 How money moves through KenyonExpress, from the cart to a settled order line.
 
 **Every state name and every arrow in this document is copied from the live
-production database** (`ixvwfbuvfxxsjiywhbbb`, verified 2026-09-01). The enums
+production database** (`ixvwfbuvfxxsjiywhbbb`, verified 2026-09-01, guards and
+migration state re-verified 2026-09-09). The enums
 come from `pg_type`; the transitions come from the bodies of the three guard
 functions that production is running right now. Where a state machine in the
 code admits fewer values than the enum carries, that is stated explicitly rather
@@ -14,16 +15,32 @@ confusion in the older documents.
 by the application.** Migration `137_order_transition_guard.sql` is **applied**.
 Three `BEFORE UPDATE ... FOR EACH ROW` triggers are live:
 
-| Trigger | Table | Function |
-|---|---|---|
-| `tg_orders_status_guard` | `orders` | `fn_orders_status_guard()` |
-| `tg_order_items_settlement_status_guard` | `order_items` | `fn_order_items_settlement_status_guard()` |
-| `tg_payments_status_guard` | `payments` | `fn_payments_status_guard()` |
+| Trigger | Table | Function | From |
+|---|---|---|---|
+| `tg_orders_status_guard` | `orders` | `fn_orders_status_guard()` | 137 |
+| `tg_order_items_settlement_status_guard` | `order_items` | `fn_order_items_settlement_status_guard()` | 137 |
+| `tg_payments_status_guard` | `payments` | `fn_payments_status_guard()` | 137 |
+| `tg_vouchers_status_guard` | `vouchers` | `fn_vouchers_status_guard()` | **166** |
 
 An illegal move raises `23514` with the message
 `illegal <table>.<column> transition: <old> -> <new>`. The service role does not
-escape it: a trigger is not a policy. `migrations/pending/` is empty and
-everything through 146 is in production.
+escape it: a trigger is not a policy.
+
+> **Re-measured 2026-09-09, and the count was wrong.** `pg_trigger` returns
+> **four** guard triggers, not three: `166_voucher_transition_guard.sql` applied
+> on 2026-09-03 as `voucher_transition_guard_166` and added the voucher one.
+> The repo's mirror, `src/server/domain/orders/status-transitions.json`, did not
+> mention `vouchers.status` at all, so for six days the newest live guard was
+> the one with no drift test. That is the same gap 137 nearly shipped on: a
+> guard whose transition table has no test raises `23514` at runtime, on a path
+> where the customer has already been charged. Both are covered now, and
+> `status-transitions.test.ts` fails if a fifth guard appears without a mirror.
+>
+> The migration statement below it was also stale. `migrations/pending/` is
+> **not** empty: it holds `162_cron_schedule` (blocked on vault seeding),
+> `184_orders_monthly_partitioning` (deliberately unapplied, needs a maintenance
+> window) and `188_pin_invoker_search_path` (written 2026-09-09, unapplied).
+> Everything through **187** is in production, not everything through 146.
 
 Companion documents: `docs/ARCHITECTURE-OVERVIEW.md` (§3 money, §4 coupon
 lifecycle), `docs/CARDCOM-ARCHITECTURE.md` (provider specifics),
@@ -503,25 +520,40 @@ Recorded rather than fixed, because this is a documentation branch.
    Re-verified absent from production on 2026-09-01: the live names are
    `orders.cashback_applied_ils`, `order_items.unit_price_ils_agorot` and
    `order_items.total_price_ils_agorot`. Those selects raise `42703` against the
-   live schema. This is a code defect on the money path and the highest priority
-   item outside this branch's scope.
+   live schema.
+
+   **FIXED, re-measured 2026-09-09.** `queries/orders.ts` no longer names the
+   post-059 columns bare: it resolves the generation with
+   `resolveOrderItemGeneration` and builds the list through
+   `orderItemPriceSelect`, which aliases the generated `*_ils_agorot` twins back
+   to the short names. The bare literals survive only in the TypeScript row
+   type, which describes the ALIASED shape and is therefore correct.
 
 3. **`status-transitions.ts` still calls 137 pending in its docstring.** The
-   header comment says `migrations/pending/137_order_transition_guard.sql`. The
-   table it ships is correct and matches production exactly; only the prose
-   around it is stale. Not fixed here, because this branch does not touch `.ts`.
+   header comment said `migrations/pending/137_order_transition_guard.sql`.
+   **FIXED 2026-09-09**: the file moved to `applied/` on 2026-09-03 and the
+   docstring now says so. The table it ships was correct throughout.
 
-4. **`migrations/pending/` still holds 23 `.sql` files on disk.** Nothing in it
-   is outstanding: everything through 146, 137 included, is in production. The
-   directory is empty as a statement of work remaining and non-empty as a fact
-   about the filesystem, and `ls` is therefore not evidence. Read
-   `docs/MIGRATION-BACKLOG.md` first.
+4. **`migrations/pending/` still holds 23 `.sql` files on disk.**
+
+   **NO LONGER TRUE, re-measured 2026-09-09.** The applied files moved to
+   `migrations/applied/`, and `pending/` now holds three migrations and two
+   preflights. All three are genuinely outstanding, which is the opposite of
+   the situation this note was written about: `162_cron_schedule` (approved,
+   blocked on vault seeding), `184_orders_monthly_partitioning` (deliberately
+   unapplied, needs a maintenance window) and `188_pin_invoker_search_path`
+   (written 2026-09-09). `ls` on that directory IS evidence again.
 
 5. **138 shipped as a collapsed variant, and two of its columns did not ship.**
    Six of the eight `_ils_agorot` columns in `138_money_agorot_money_path.sql`
    exist in production; `orders.discount_ils_agorot` and
    `order_items.supplier_payout_ils_agorot` do not (re-verified against
-   `information_schema` on 2026-09-01). Consequently four money columns still
+   `information_schema` on 2026-09-01).
+
+   **BOTH EXIST NOW, re-measured 2026-09-09** against `information_schema`, so
+   all eight of 138's columns are live. The four JavaScript conversions named
+   below are worth re-checking against that: two of them had no generated twin
+   to read, and now they do. Consequently four money columns still
    convert in JavaScript rather than in Postgres: `orders.discount_ils`,
    `orders.cashback_applied_ils`, `order_items.supplier_payout_ils` and
    `order_items.cashback_earned_ils`. The header of the migration file itself

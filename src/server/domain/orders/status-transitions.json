@@ -26,5 +26,12 @@
     "redirected": ["succeeded", "failed"],
     "refunded": [],
     "succeeded": ["refunded", "platform_settled"]
+  },
+  "vouchers.status": {
+    "cancelled": [],
+    "expired": [],
+    "issued": ["redeemed", "expired", "cancelled", "refunded"],
+    "redeemed": [],
+    "refunded": []
   }
 }

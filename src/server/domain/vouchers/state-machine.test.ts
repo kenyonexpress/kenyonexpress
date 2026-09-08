@@ -1,3 +1,8 @@
+import {
+  STATUS_TRANSITIONS,
+  isLegalTransition,
+  terminalStatesOf,
+} from '@/server/domain/orders/status-transitions'
 import { describe, expect, it } from 'vitest'
 import {
   TERMINAL_VOUCHER_STATES,
@@ -173,5 +178,62 @@ describe('edge cases from the brief', () => {
     expect(canTransition('issued', 'REDEEM')).toBe(false)
     expect(canTransition('issued', 'EXPIRE')).toBe(false)
     expect(() => transition('issued', 'REDEEM')).toThrow(VoucherTransitionError)
+  })
+})
+
+/**
+ * THE MODULE AND THE DATABASE DESCRIBE THE SAME MACHINE.
+ *
+ * `tg_vouchers_status_guard` has been live since 2026-09-03 and this module has
+ * existed for longer, and until 2026-09-09 nothing compared them. That is the
+ * same gap 137 nearly shipped on the order side: a guard whose transition table
+ * had no test, which would have raised 23514 on every voucher scan in
+ * production after the customer had already been charged.
+ *
+ * The comparison is one-way on purpose. This module may legally be STRICTER
+ * than the trigger, because it carries WRONG_SUPPLIER and PAST_EXPIRY, which no
+ * status pair can express. It may never be LOOSER: a move this module permits
+ * and the database refuses is a 23514 at runtime, on a path where money has
+ * already moved.
+ */
+describe('the database guard and this module describe the same machine', () => {
+  const inDatabase = STATUS_TRANSITIONS['vouchers.status']
+
+  it('names the same states', () => {
+    expect([...VOUCHER_STATES].sort()).toEqual(Object.keys(inDatabase).sort())
+  })
+
+  it('permits no move the trigger would reject with 23514', () => {
+    const illegal: string[] = []
+    for (const from of VOUCHER_STATES) {
+      for (const event of VOUCHER_EVENTS) {
+        const to = nextVoucherState(from, event)
+        if (to && !isLegalTransition('vouchers.status', from, to)) {
+          illegal.push(`${event}: ${from} -> ${to}`)
+        }
+      }
+    }
+    expect(illegal, 'this module permits a move the database guard refuses').toEqual([])
+  })
+
+  it('has an event for every move the trigger allows', () => {
+    // The other direction. A pair the database permits and no event reaches is
+    // not a crash, it is a dead rule -- but on this machine every pair is a
+    // real business move (redeem, expire, cancel, refund), so an unreachable
+    // one means an event was dropped from the module.
+    const unreachable: string[] = []
+    for (const [from, tos] of Object.entries(inDatabase)) {
+      for (const to of tos) {
+        const reached = VOUCHER_EVENTS.some(
+          (event) => nextVoucherState(from as VoucherState, event) === to,
+        )
+        if (!reached) unreachable.push(`${from} -> ${to}`)
+      }
+    }
+    expect(unreachable, 'the database allows a move no event here produces').toEqual([])
+  })
+
+  it('agrees on which states are terminal', () => {
+    expect([...TERMINAL_VOUCHER_STATES].sort()).toEqual([...terminalStatesOf('vouchers.status')])
   })
 })

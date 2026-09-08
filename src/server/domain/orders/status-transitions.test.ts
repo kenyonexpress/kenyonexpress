@@ -24,44 +24,57 @@ import { describe, expect, it } from 'vitest'
  */
 
 /**
- * 137 is APPLIED in production (verified 2026-09-01: all three triggers present
- * and enabled on orders, order_items and payments). An applied migration
- * eventually moves out of `migrations/pending/`, and this test reads the file
- * to prove the table below has not drifted from it. So look in both places and
- * say which one was missing if neither is there, rather than failing with a
- * bare ENOENT that reads like the test is broken.
+ * 137 and 166 are both APPLIED in production. 137 guards orders, order_items
+ * and payments (verified 2026-09-01); 166 guards vouchers, applied 2026-09-03
+ * as `voucher_transition_guard_166` and re-verified 2026-09-09, when
+ * `pg_trigger` returned FOUR guard triggers and this file knew about three.
+ *
+ * An applied migration eventually moves out of `migrations/pending/`, and this
+ * test reads the files to prove the table below has not drifted from them. So
+ * look in every place a file can be and say which one was missing if it is in
+ * none of them, rather than failing with a bare ENOENT that reads like the test
+ * is broken.
  */
-const MIGRATION_CANDIDATES = [
+const MIGRATION_CANDIDATES: Record<string, string[]> = {
   // Applied through MCP on 2026-09-03 and moved out of `pending/`.
-  'migrations/applied/137_order_transition_guard.sql',
-  'migrations/pending/137_order_transition_guard.sql',
-  'supabase/migrations/137_order_transition_guard.sql',
-]
+  '137_order_transition_guard.sql': [
+    'migrations/applied/137_order_transition_guard.sql',
+    'migrations/pending/137_order_transition_guard.sql',
+    'supabase/migrations/137_order_transition_guard.sql',
+  ],
+  '166_voucher_transition_guard.sql': [
+    'migrations/applied/166_voucher_transition_guard.sql',
+    'migrations/pending/166_voucher_transition_guard.sql',
+    'supabase/migrations/166_voucher_transition_guard.sql',
+  ],
+}
 
-const MIGRATION = (() => {
-  for (const candidate of MIGRATION_CANDIDATES) {
+const MIGRATIONS = Object.entries(MIGRATION_CANDIDATES).map(([name, candidates]) => {
+  for (const candidate of candidates) {
     const full = resolve(process.cwd(), candidate)
     if (existsSync(full)) return full
   }
   throw new Error(
-    `137_order_transition_guard.sql is in neither ${MIGRATION_CANDIDATES.join(' nor ')}. The guards are live in production; this test needs the file to compare them against.`,
+    `${name} is in none of ${candidates.join(', ')}. The guard is live in production; this test needs the file to compare it against.`,
   )
-})()
+})
 
-/** The `('from','to')` pairs the migration actually contains, per column. */
+/** The `('from','to')` pairs the migrations actually contain, per guard. */
 function pairsInMigration(): Record<string, Set<string>> {
-  const sql = readFileSync(MIGRATION, 'utf8')
   const out: Record<string, Set<string>> = {}
-  // Each guard body is one IN (...) list, preceded by its function name.
-  const blocks = sql.split('CREATE OR REPLACE FUNCTION public.fn_').slice(1)
-  for (const block of blocks) {
-    const name = block.slice(0, block.indexOf('_guard'))
-    const list = block.slice(block.indexOf('IN ('), block.indexOf('  ) THEN'))
-    const found = new Set<string>()
-    for (const m of list.matchAll(/\('([a-z_]+)','([a-z_]+)'\)/g)) {
-      found.add(`${m[1]}->${m[2]}`)
+  for (const file of MIGRATIONS) {
+    const sql = readFileSync(file, 'utf8')
+    // Each guard body is one IN (...) list, preceded by its function name.
+    const blocks = sql.split('CREATE OR REPLACE FUNCTION public.fn_').slice(1)
+    for (const block of blocks) {
+      const name = block.slice(0, block.indexOf('_guard'))
+      const list = block.slice(block.indexOf('IN ('), block.indexOf('  ) THEN'))
+      const found = new Set<string>()
+      for (const m of list.matchAll(/\('([a-z_]+)','([a-z_]+)'\)/g)) {
+        found.add(`${m[1]}->${m[2]}`)
+      }
+      out[name] = found
     }
-    out[name] = found
   }
   return out
 }
@@ -70,10 +83,46 @@ const FN_NAME: Record<GuardedColumn, string> = {
   'orders.status': 'orders_status',
   'order_items.settlement_status': 'order_items_settlement_status',
   'payments.status': 'payments_status',
+  'vouchers.status': 'vouchers_status',
 }
+
+/**
+ * Every guard live in production, so a fifth one cannot arrive unmirrored the
+ * way the fourth did. Read from `pg_trigger` on 2026-09-09:
+ *
+ *   tg_orders_status_guard                   orders
+ *   tg_order_items_settlement_status_guard   order_items
+ *   tg_payments_status_guard                 payments
+ *   tg_vouchers_status_guard                 vouchers
+ *
+ * Re-measure with:
+ *   select c.relname, tg.tgname from pg_trigger tg
+ *     join pg_class c on c.oid = tg.tgrelid
+ *    where not tg.tgisinternal and tg.tgname like '%status_guard%';
+ */
+const GUARD_TRIGGERS_IN_PRODUCTION = [
+  'order_items.settlement_status',
+  'orders.status',
+  'payments.status',
+  'vouchers.status',
+]
 
 describe('the SQL guard and this table describe the same machine', () => {
   const inSql = pairsInMigration()
+
+  it('covers every guard trigger production is running', () => {
+    // The one this catches: a migration adds a fifth guard, nothing here
+    // changes, and the new machine has no mirror and no drift test. That is
+    // exactly what happened between 166 (2026-09-03) and 2026-09-09.
+    expect([...GUARDED_COLUMNS].sort()).toEqual([...GUARD_TRIGGERS_IN_PRODUCTION].sort())
+  })
+
+  it('parses a rule set for each of them out of the migrations', () => {
+    for (const column of GUARDED_COLUMNS) {
+      expect(inSql[FN_NAME[column]], `no IN (...) list parsed for ${column}`).toBeDefined()
+      expect((inSql[FN_NAME[column]] ?? new Set()).size).toBeGreaterThan(0)
+    }
+  })
 
   for (const column of GUARDED_COLUMNS) {
     it(`${column}: every rule here is in the migration, and vice versa`, () => {
@@ -115,7 +164,7 @@ describe('every transition that is not declared is refused', () => {
 
 describe('a status that does not move is always legal', () => {
   // An UPDATE that sets some other column leaves the status equal to itself.
-  // Rejecting that would fail every unrelated write to these three tables.
+  // Rejecting that would fail every unrelated write to these four tables.
   for (const column of GUARDED_COLUMNS) {
     for (const state of statesOf(column)) {
       it(`${column}: ${state} -> ${state}`, () => {
@@ -168,6 +217,15 @@ describe('terminal states', () => {
       'refunded',
     ])
     expect(terminalStatesOf('payments.status')).toEqual(['failed', 'refunded'])
+    // Every non-issued voucher state is terminal, which is the whole model:
+    // once a voucher leaves `issued` the value was consumed at the counter or
+    // the money went back, and there is nothing left to move.
+    expect(terminalStatesOf('vouchers.status')).toEqual([
+      'cancelled',
+      'expired',
+      'redeemed',
+      'refunded',
+    ])
   })
 
   it('redeemed is terminal: consumed value is not refunded to the card', () => {

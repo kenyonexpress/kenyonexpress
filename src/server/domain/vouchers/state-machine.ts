@@ -7,9 +7,26 @@
  * payout, so once a voucher leaves `issued` there is nothing left to move: the
  * value was consumed at the business or the money went back to the customer.
  *
- * That is why every non-issued state is terminal. This table is mirrored by the
- * predicates in supabase/migrations/054_voucher_redemption.sql; the SQL is the
- * arbiter under concurrency, this module is the arbiter of what is legal.
+ * That is why every non-issued state is terminal.
+ *
+ * TWO PIECES OF SQL ENFORCE THIS, and they answer different questions.
+ * `054_voucher_redemption.sql` carries the predicates inside the conditional
+ * UPDATE, which is the arbiter under CONCURRENCY: two tills scanning the same
+ * code at once, only one of which may win. `166_voucher_transition_guard.sql`
+ * added `tg_vouchers_status_guard`, a BEFORE UPDATE trigger, on 2026-09-03 and
+ * it is the arbiter of the PAIR: no path at all, including the service role,
+ * may move a voucher out of a terminal state. A trigger is not a policy and not
+ * a predicate in one statement.
+ *
+ * This module is the arbiter of what the application may attempt, and it is the
+ * richest of the three because WRONG_SUPPLIER and PAST_EXPIRY are conditions no
+ * status pair can express.
+ *
+ * The pairs are mirrored in `status-transitions.json` under `vouchers.status`,
+ * where `status-transitions.test.ts` diffs them against 166 itself.
+ * `state-machine.test.ts` checks this module against that table, so the three
+ * cannot drift apart quietly. They were apart from 2026-09-03 to 2026-09-09,
+ * when 166 was live in production and the table here did not mention vouchers.
  */
 
 export type VoucherState = 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
