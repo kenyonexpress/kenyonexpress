@@ -185,15 +185,37 @@ been set since 2026-09-02 and the schedules fire.
 
 ## 5. Gate status
 
+Re-measured 2026-09-08, maintenance pass 40, on `73707279a` plus this pass's own tests:
+
 ```
 type-check   clean
 lint         clean
-tests        4321 passing, 25 skipped
+tests        4583 passing, 25 skipped, 1 red (below)
+build        exit 0
+bundle       per route: 323.4 / 324.2 / 321.8 / 327.4 KB gz, all under ratchet
+CI           green on e5c4dfa09, every job, the per-route gate verified to run
 ```
 
-One test is red and it is not from this work: a second agent holds uncommitted
-edits to `src/styles/tokens.ts` and `tokens.css`. Verified by stashing only
-those two files - 24/24 green without them, and their work restored intact.
+**The one red test, correctly attributed this time.** Earlier revisions of this
+section blamed "a second agent". There is no second agent. Established in pass
+37 by walking this process's own PPID chain: the `claude` process whose `-p`
+prompt matched this session's was this session's **parent**, because
+`kenyon-loop.sh` launches the agent with the queue line as its prompt. Twenty
+passes of "blocked on a parallel agent" were blocked on nothing, and `pnpm
+build` - deferred all that time - takes four minutes and exits 0.
+
+The dirty files are an abandoned edit from an **earlier iteration of this same
+loop**: mtime 13:50, loop started 11:28. It moved `SITE.functional.price` from
+`#dc3545` to `#E4002B` and `--container-page` from 1200 to 1320, and did not
+update `PDP.color.sale`. Re-verified in pass 40 by restoring HEAD's two files
+and running the suite: **24/24 green**, and the working copies restored
+byte-identical (md5 checked before and after).
+
+It is deliberately neither finished nor discarded. It is a colour and container
+change, so it needs the pixel gate at three widths, and `compare.mjs` targets a
+domain that now serves our own application - which is what the untracked
+`scripts/localize-live-refs.mjs` (11:10, same loop) was the attempt to fix. **A
+change that cannot be gated must not be decided here.**
 
 ---
 

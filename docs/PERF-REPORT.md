@@ -263,11 +263,38 @@ Not skipped. So the page where money changes hands has cover, and it is under
 
 **`/cart` shifted 0.357 and that is a real number on a real page.** It is not
 the money page, so it does not carry the severity the original entry claimed,
-but it is seven times the budget on the last step before checkout. It has not
-been re-measured here: doing so needs `pnpm build` plus Lighthouse, and a
-parallel agent is holding uncommitted work in this checkout, where concurrent
-builds are recorded as OOMing each other. Measuring `/cart` properly is the
-next performance task.
+but it is seven times the budget on the last step before checkout.
+
+**The reason it stayed unmeasured was wrong, and the real reason is different**
+(corrected 2026-09-08, maintenance pass 40). This section blamed a parallel
+agent holding uncommitted work. There is no parallel agent: the process was this
+session's own parent, established in pass 37 by walking the PPID chain. `pnpm
+build` runs fine.
+
+Measured on the 2026-09-08 build with a `layout-shift` PerformanceObserver,
+which reports actual shifts rather than Lighthouse's simulation:
+
+```
+ 380  /cart     -> /cart      CLS 0.0000
+1440  /cart     -> /cart      CLS 0.0000
+1440  /          -> /          CLS 0.0011
+1440  /products -> /products  CLS 0.0002
+```
+
+**This does not clear the 0.357, and must not be read as clearing it.** With the
+stale `SUPABASE_SECRET_KEY` the server's own env probe reports the guest cart
+among the paths that fail silently, so `/cart` renders EMPTY. An empty cart has
+almost nothing that can shift, and 0.0000 on it is a measurement of a different
+page from the one that scored 0.357. Recording it as a pass would be the exact
+error this document was already corrected for once.
+
+So the item is still open, and its blocker is now stated accurately: **it is
+MANUAL item 5, rotating `SUPABASE_SECRET_KEY`, not a concurrency problem.**
+Nothing in this checkout can populate a cart without it.
+
+The run did confirm one thing outright: **`/checkout` still redirects to
+`/cart`** at both widths, which is the mechanism that made the original sweep
+attribute the cart's number to checkout.
 
 ### Fixed at the source
 
