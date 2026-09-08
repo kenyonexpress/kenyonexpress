@@ -20,6 +20,71 @@ rather than estimating.
 
 ---
 
+## Verdict, re-derived after 22 maintenance passes
+
+This document has been amended in six separate passes since it was written, and
+a verdict assembled from eight corrections is not a verdict. Re-derived here
+from what is now known.
+
+### The corrected tally
+
+```
+                     as written    now
+step verdicts   ✅        11         7
+                ⚠️         4         8
+open risks                 8         8
+MANUAL items               8        10
+```
+
+**NOTHING REGRESSED.** Not one of those four steps got worse; the measurements
+got better. STEP 13 was ticked on a check that read `/api/health` being
+database-only as a shortfall when it is a reasoned decision. STEP 16 was ticked
+without noticing that `/api/account/export` does not exist. STEP 17 was ticked
+while every one of the suite's 25 skipped tests was an RLS test that skipped in
+CI as well. STEP 18 was ticked with the secrets audit it names never written.
+STEP 19 moved the other way and is genuinely closed.
+
+Each tick was honest about what it had checked. None of them had checked
+everything the step asks for.
+
+### The one line, sharpened
+
+> **NOT READY. Two decisions block the rest, and neither of them is code:
+> which host serves production, and which branch is the mainline.**
+
+The first was already risk 1. The second was risk-free bookkeeping when it was
+found in pass 7 and is not any more:
+
+- seven migration numbers name two different schema changes, and **four of
+  `main`'s are already applied in production**;
+- the cron scheduler runs from the default branch, so it calls a `whatsapp` job
+  that 404s (**20% of runs red, ongoing**) and **has never once called
+  `retention`**, whose migration is applied and whose function therefore exists
+  and is never invoked.
+
+That is one undecided question producing three live failures in three unrelated
+subsystems.
+
+### One correction to this document's own opening
+
+It opened with "the blocker is not the code". For LAUNCH that is still true and
+144 commits still have not reached a customer. As a statement about code
+quality it was too generous: the passes since found roughly a dozen genuine
+defects, including three admin mutations writing no audit row, a `slugify` that
+returned the empty string for every Hebrew name, and the two most important
+audit rows in the money path swallowing their own write failures.
+
+The launch blocker is not the code. The code was not as finished as the ticks
+implied. Both are true and the document should say both.
+
+### Not re-tagged
+
+`v1.0.0-rc1` still points at `77d81c95c` and is still not an ancestor of this
+branch. Moving a published tag rewrites history other clones hold. The
+repository is at `v5.5.3`.
+
+---
+
 ## 1. The blocker that outranks the rest
 
 Production serves a build from **before 2026-09-02 12:03**.
