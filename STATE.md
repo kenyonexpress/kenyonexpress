@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS third source pass. R-8 corrected: GitHub Actions scheduler is live; whatsapp 404 on kenyonexpress.vercel.app; 13 jobs not 10; two files numbered 172; Sentry workers = Next instrumentation; rate windows mixed.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS second source pass. Header names 172 admin SELECT on payment_webhook_events; two R2 modules; vercel.json has no crons key; R-16 added.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS audited against `kenyonexpress` source. Root trio is the target contract. Header table now names Next ingest of originals, exact live rate windows, GET TTL 3600s, Hebrew typo 4/7. RLS map is role × table × action.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS. Root `ARCHITECTURE.md` + `DECISIONS.md` + `RISKS.md` written as the target contract; live gaps named; INDEX updated.)
@@ -82,19 +83,27 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-09. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-ARCHITECTURE-DOCS-DECISIONS-RISKS. Root trio, second source pass 2026-09-09 against `kenyonexpress` (not only against other markdown):
+ARCHITECTURE-DOCS-DECISIONS-RISKS. Root trio, third source pass 2026-09-09 against `kenyonexpress` source plus GitHub Actions:
 
-- `ARCHITECTURE.md`: nine surfaces, markdown only, no code fences. Header names live vs contract including Next ingest, `RATE_LIMIT_POLICIES` windows, GET TTL 3600s, Hebrew typo 4/7, **172 admin SELECT** on `payment_webhook_events`, two R2 modules. RLS map is role × table × action (S/I/U/D).
-- `DECISIONS.md`: eight why-choices. Truncated "acceptable" completed as **acceptable lag**. D-5 names two R2 clients. D-7 names 172. D-8 names `vercel.json` with no `crons` key.
-- `RISKS.md`: sixteen design risks. R-8 cron unscheduled (vercel.json evidence). R-16 raw webhook payloads in the admin UI.
+- `ARCHITECTURE.md`: nine surfaces, markdown only, no code fences. Header now names the live GitHub scheduler (13 jobs, `whatsapp` 404), mixed rate windows (`begin_checkout` 10/60s), two files numbered 172, Sentry Node+Edge (not Cloudflare Workers), drift checker on `/api/cron/health`.
+- `DECISIONS.md`: eight why-choices. D-1 names the stale Drizzle wide-table projection. D-8: lag is acceptable; Vercel has no `crons` key on purpose; Actions is the clock.
+- `RISKS.md`: seventeen design risks. R-8 rewritten (scheduler live; certain failure is `whatsapp` 404). R-17: two 172 files.
 
-`docs/INDEX.md` and `docs/ARCHITECTURE-DOCS-INDEX.md` point at the trio. Overview remains live counts.
+`docs/INDEX.md` line 9 no longer claims nothing is scheduled.
 
 ### In progress
 nothing (this goal).
 
 ### Next
 Keep deepening every document. Repeat. Never stop.
+
+### החלטות שהתקבלו אוטומטית (2026-09-09, third source pass)
+1. R-8 in the second pass used `vercel.json` with no `crons` key as proof that nothing calls cron. That key is empty on purpose. GitHub Actions workflow `Scheduled jobs` is enabled (`CRON_SCHEDULER_ENABLED=true`, `CRON_SECRET` set). Measured 2026-09-08 22:44 UTC: notifications 200, health 200, whatsapp 404.
+2. Job count is 13 in `scripts/cron-jobs.json`, not ten.
+3. Sentry "workers" in `src/instrumentation.ts` means cron on the Node process, not Cloudflare Workers. No `wrangler.toml`.
+4. Live rate limits are mixed windows, not hour-scale. `begin_checkout` is 10 per 60 seconds.
+5. Two applied SQL files share the number 172. Cite filenames.
+6. Truncated "acceptable" remains **acceptable lag**.
 
 ### החלטות שהתקבלו אוטומטית (2026-09-09, second source pass)
 1. Goal name includes RISKS so `RISKS.md` is a deliverable.

@@ -26,11 +26,15 @@ For someone who will read nothing else.
    E2E fixtures, and **zero vouchers have ever been issued**.
 8. **There is no production site.** The Vercel project points at a different,
    abandoned repository, and all 11 of its deployments failed.
-9. **Nothing scheduled runs.** Ten cron routes exist and nothing calls them, so
-   vouchers do not expire and no voucher email is ever sent.
+9. **A scheduler runs. It does not hit every current job.** GitHub Actions
+   workflow `Scheduled jobs` is enabled. Thirteen jobs sit in
+   `scripts/cron-jobs.json`. Measured 2026-09-08: `notifications` and `health`
+   return 200 on `https://kenyonexpress.vercel.app`; `whatsapp` returns 404.
+   Vercel itself has no `crons` key, on purpose.
 10. **Three defects stand between this and taking real money**: the deployment
-    (8), the scheduler (9), and four column names on the money path that
-    production does not have, which make the first real payment raise `42703`.
+    (8), a cron route the production URL does not serve (9), and four column
+    names on the money path that production does not have, which make the first
+    real payment raise `42703`.
 
 **In one sentence:** the system is substantially built and carefully
 constrained, and it has never been switched on.
@@ -72,7 +76,7 @@ running.
 |---|---|---|
 | [ARCHITECTURE.md](../ARCHITECTURE.md) | ⚠️ | **Target contract.** Nine surfaces (stack, CTI, RLS, payments, search, images, rate limits, observability, security). Live gaps named in the header table. |
 | [DECISIONS.md](../DECISIONS.md) | ⚠️ | Why those eight structural choices (CTI, Meilisearch, ledger split, idempotency table, R2, Upstash, supplier RLS, daily recon). |
-| [RISKS.md](../RISKS.md) | ⚠️ | Design risks of that contract, including certain live gaps (cron not scheduled, contract vs overview, 172 admin SELECT on webhook payloads). |
+| [RISKS.md](../RISKS.md) | ⚠️ | Design risks of that contract, including certain live gaps (whatsapp cron 404, contract vs overview, admin SELECT on webhook payloads). |
 | [ARCHITECTURE-OVERVIEW.md](ARCHITECTURE-OVERVIEW.md) | ✅ | **The system as it runs.** Data model, money, coupon lifecycle, roles, search, deployment. Live counts. |
 | [ONBOARDING.md](ONBOARDING.md) | ✅ | Clone to running locally, and the four traps that cost hours. |
 | [ONBOARDING-DAY-ONE.md](ONBOARDING-DAY-ONE.md) | ✅ | The first day hour by hour, clone to first merged PR, with a cut order for when it runs long. |

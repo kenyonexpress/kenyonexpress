@@ -140,6 +140,7 @@ the corpus:
 
 | Date | Change |
 |---|---|
+| 2026-09-09 | Third source pass: GitHub Actions is the live cron clock; `whatsapp` 404 on the Vercel URL. Trio header table names that. |
 | 2026-09-09 | Root trio named as target contract (`ARCHITECTURE.md`, `DECISIONS.md`, `RISKS.md`). Overview remains live counts. |
 | 2026-09-01 | Rewritten against production. `ARCHITECTURE-OVERVIEW.md` named as master; 22 documents banded with their specific contradicted claims; branch reference to `arch/docs-queue` removed. |
 | 2026-07-31 | Index after docs-queue continuous run |

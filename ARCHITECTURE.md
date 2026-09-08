@@ -24,10 +24,12 @@ Live production currently differs on several numbers and on hosting. Those gaps 
 | `coupon_products` + `physical_products` child tables | `product_type` column on `products`. No child tables. |
 | Coupon path: ledger escrow until redemption | No writer for `escrow_held`. Coupon prepayment stays with the platform. Supplier is paid in cash at the counter. |
 | Browser PUTs the original to R2; Next never sees the bytes. Original under 50 MB. Renditions AVIF+WebP at 480 / 768 / 1200 / 1440. Signed PUT and private GET last 24 hours. | Original arrives as FormData on Next, `sharp` runs on the server, then renditions are PUT. Cap is 8 MB. Widths 400 / 800 / 1600, AVIF only at 1600. PUT TTL 600 seconds, GET TTL 3600 seconds. Delivery today is `/_next/image` on the largest WebP, not the rendition set. |
-| Sign-in 5/min, signup 3/min, refresh 10/min, redemption 1/10 sec | `RATE_LIMIT_POLICIES`: login 10/hour, signup 5/hour, no session-refresh 10/min row (`app-session` is 30 per 10 min for the mobile exchange). Customer redeem 60/hour per IP; till `voucher-redeem` 120/hour per supplier user. |
-| Meilisearch is the query engine | Meilisearch env unset in production. Queries fall back to Postgres `ILIKE`. |
-| `payment_webhook_events`: no client policy, admin included | Migration 172: admin SELECT so the payments webhooks tab is not an empty table. Writes stay service-role. Raw Cardcom payloads therefore reach the browser for any `is_admin()` session. See `RISKS.md` R-16. |
-| One R2 client; browser PUTs the original | Two modules: hand-rolled SigV4 in `src/lib/storage/r2.ts` (admin image path, default PUT 600s) and AWS SDK in `r2-service.ts` (multi-bucket, default PUT 600s / GET 3600s). Live ingest still runs `sharp` on Next, then the server PUTs renditions. |
+| Sign-in 5/min, signup 3/min, refresh 10/min, redemption 1/10 sec | Live windows are mixed, not one scale. Auth is mostly hour-scale (login 10/hour, signup 5/hour). Money-path minutes exist: `begin_checkout` is 10 per 60 seconds. Search is 120 per 5 minutes. `mfa-verify` is 10 per 15 minutes. `app-session` is 30 per 10 minutes (mobile exchange, not cookie rotation). Customer redeem 60/hour per IP; till `voucher-redeem` 120/hour per supplier user. There is no policy named refresh 10/min. About forty named rows in `RATE_LIMIT_POLICIES`. |
+| Meilisearch is the query engine | Meilisearch env unset in production. Queries fall back to Postgres `ILIKE`. Drift checker (`checkSearchDrift`) still runs from `/api/cron/health` and returns `skipped`. |
+| `payment_webhook_events`: no client policy, admin included | File `172_rls_zero_policy_tables.sql`: admin SELECT so the payments webhooks tab is not an empty table. Writes stay service-role. Raw Cardcom payloads therefore reach the browser for any `is_admin()` session. See `RISKS.md` R-16. A second file, `172_hide_master_product_test_row.sql`, shares the number and is a different change. |
+| One R2 client; browser PUTs the original | Two modules: hand-rolled SigV4 in `src/lib/storage/r2.ts` (admin image path, default PUT 600s; comments still describe browser PUT) and AWS SDK in `r2-service.ts` (multi-bucket, default PUT 600s / GET 3600s). Live ingest still runs `sharp` on Next, then the server PUTs renditions. |
+| Daily recon and the other money jobs run on a clock | Vercel does not schedule them: `vercel.json` has no `crons` key, on purpose (Hobby silently drops all but two daily jobs). GitHub Actions workflow `Scheduled jobs` is the clock. Live 2026-09-09: `CRON_SCHEDULER_ENABLED=true`, `CRON_SECRET` set, workflow active. Thirteen jobs in `scripts/cron-jobs.json`. Measured 2026-09-08 22:44 UTC against `https://kenyonexpress.vercel.app`: `notifications` 200, `health` 200, `whatsapp` 404 (the route exists on current main). See `RISKS.md` R-8. |
+| Sentry on web + Cloudflare Workers + edge | Live Sentry is `@sentry/nextjs` on Node (`sentry.server.config.ts`, including cron routes on that same process) and Edge (`sentry.edge.config.ts` for `src/proxy.ts`). The word "workers" in `src/instrumentation.ts` means those cron routes, not a Cloudflare Worker. No `wrangler.toml`. PostHog is product analytics and is inert without `NEXT_PUBLIC_POSTHOG_KEY`. |
 
 Where this file and `docs/ARCHITECTURE-OVERVIEW.md` disagree on a **live count**, the overview wins. Where they disagree on **what the system is supposed to be**, this file wins, and `DECISIONS.md` / `RISKS.md` explain why.
 
@@ -169,7 +171,7 @@ Redemption is not an UPDATE policy on `vouchers`. It is `redeem_voucher()`, whic
 
 Contract: RLS on, zero useful **client** policies (no policy, or RESTRICTIVE `false`). Admin forensics of money events belongs in a redacting SECURITY DEFINER RPC, not a table grant of raw provider payloads.
 
-Live (172, measured in source): admin SELECT on `payment_webhook_events` plus reporting/telemetry tables (`ai_usage`, `analytics_events`, `report_*`). `rate_limits`, `user_rate_limits`, and `search_index_outbox` stay restrictive deny. That admin SELECT on webhook rows is the gap in the header table and `RISKS.md` R-16. `docs/DB-SECURITY-MODEL.md` still describes the pre-172 "zero policy" inventory; the live grant wins over that file.
+Live (`172_rls_zero_policy_tables.sql`, measured in source): admin SELECT on `payment_webhook_events` plus reporting/telemetry tables (`ai_usage`, `analytics_events`, `report_*`). `rate_limits`, `user_rate_limits`, and `search_index_outbox` stay restrictive deny. That admin SELECT on webhook rows is the gap in the header table and `RISKS.md` R-16. A second applied file, `172_hide_master_product_test_row.sql`, hides a one-shekel test product; it is not this grant. `docs/DB-SECURITY-MODEL.md` still describes the pre-grant "zero policy" inventory; the live grant wins over that file.
 
 ---
 
@@ -195,7 +197,7 @@ Cardcom LowProfile charges **one** amount on **one** account. Cardcom does not a
 ### 4.2 Failure and replay
 
 - Cardcom retries IndicatorUrl. Idempotency table plus `paid_at` short-circuit make retries safe.
-- `GetLpResult` disagrees with the callback: do not finalize. Alarm. Daily reconciliation catches the rest (`DECISIONS.md` §8).
+- `GetLpResult` disagrees with the callback: do not finalize. Alarm. Daily reconciliation catches the rest (`DECISIONS.md` §8). The live recon job diffs a **48-hour** Cardcom window on purpose so a midnight-edge charge is seen twice rather than never.
 - Refund of a coupon is legal only while every voucher is still `issued`. After redemption the value was consumed at the business.
 
 ### 4.3 What this flow refuses
@@ -232,7 +234,9 @@ Facets live on the index (`type`, category, city, tags, brand, supplier, price, 
 
 ### 5.3 Drift checker
 
-Count of `products` that are `active` and not deleted must equal the index document count. The checker cannot prove the documents are *right*; it proves none are missing or stale-extra, which is the failure both transports can be "healthy" through (bulk import that skipped the trigger, index wiped and recreated, filter predicate changed). Drift is an alarm, not a silent fallback to wrong results. A nightly (or cron) run is the floor; a mismatch pages.
+Count of `products` that are `active` and not deleted must equal the index document count. The checker cannot prove the documents are *right*; it proves none are missing or stale-extra, which is the failure both transports can be "healthy" through (bulk import that skipped the trigger, index wiped and recreated, filter predicate changed). Drift is an alarm, not a silent fallback to wrong results.
+
+Live: `checkSearchDrift` is called from `/api/cron/health` (every five minutes on the GitHub schedule). When Meilisearch env is unset it returns `skipped`, not `ok`. A mismatch pages. The checker existing in source is not the same as Meili being on.
 
 Query path: if Meilisearch is configured, it answers. If not, Postgres `ILIKE` answers the same card shape and the response names the engine. Production today is on the fallback. That is a working search with no typos, no synonyms, and no facets.
 
@@ -244,7 +248,7 @@ Product, category, and hero bytes do not live in git or on the Next disk.
 
 ### 6.1 Ingest
 
-1. Admin (or content uploader) requests a signed PUT. Original must be under **50 MB**, MIME allowlisted (JPEG, PNG, WebP, AVIF; GIF only if the pipeline can still emit still renditions). Hebrew `alt` is required before publish.
+1. Admin (or content uploader) requests a signed PUT. Original must be under **50 MB**, MIME allowlisted (JPEG, PNG, WebP, AVIF; GIF only if the pipeline can still emit still renditions). Hebrew `alt` is required before publish (live gate: at least three characters and at least one Hebrew letter). Live also refuses originals under 800 px wide and aspect ratios outside 0.5 to 2.
 2. Browser PUTs **directly to R2**. Bytes do not transit the Next server. A 50 MB cap is only safe on this path. (Live today: the original arrives as FormData, `sharp` runs on Next, then renditions are PUT. That path stays at 8 MB. Raising the live cap without switching ingest is an outage. See `RISKS.md` R-15. Two R2 modules exist: the hand-rolled SigV4 signer used by the admin image action, and the AWS SDK multi-bucket service. They must keep the same account credentials and must not grow a third backend.)
 3. Signed URL TTL is **24 hours** for the upload grant and for a private GET. That is long enough for a bad mobile network and short enough that a leaked URL is not a standing write token. (Live today: PUT 600 seconds, GET 3600 seconds.)
 4. After PUT, the server records `media_assets` (path, width, height, `alt_he`) and kicks the rendition job. Public product delivery is the hashed rendition URL with immutable cache headers, not an on-the-fly optimizer as the only copy. (Live today: `/_next/image` on the largest WebP; the 400/800/1600 files are an archive.)
@@ -274,6 +278,8 @@ Limits are enforced in **Upstash Redis** (REST), O(1) per request, not in Postgr
 | Session refresh | **10 per minute** | IP / session. Live: no row by this name; `app-session` is 30 per 10 minutes for the mobile exchange only. Cookie rotation on `src/proxy.ts` is not this limiter. |
 | Redemption (till or customer-facing redeem) | **1 per 10 seconds** | supplier user (till) or IP (public redeem). Never a shop-floor NAT sharing one IP bucket with every scanner. Live: customer 60 per hour per IP; till 120 per hour per supplier user. |
 
+Live also meters money-adjacent paths the contract table does not name. The one that is already minute-scale: `begin_checkout` 10 per 60 seconds (LowProfile deal creation). OTP is per IP **and** per destination number. MFA verify is 10 per 15 minutes per user. The rest of `RATE_LIMIT_POLICIES` (about forty named rows) is the inventory; a new call site that is not in that table is a hole the unit test is written to catch.
+
 Fail **closed** on money (checkout, redeem) when both Upstash and the Postgres fallback are unavailable. Fail **open** on read-only search would hide an outage as "no results"; search has its own budget and is not this table.
 
 Key prefixes are part of the policy. Sign-in and signup must not share a counter. The caller never passes a raw Redis key; the policy name derives it.
@@ -286,13 +292,15 @@ Postgres `check_rate_limit` remains the fallback so an Upstash outage does not r
 
 ### 8.1 Errors
 
-Sentry on **three runtimes**:
+Sentry on **three runtimes** in the contract:
 
 - **Web (browser + Next server).** Storefront, Server Actions, Route Handlers, cron.
 - **Workers.** Hono and any IndicatorUrl / rate-limit Worker. A Worker that swallows exceptions is an outage with no ticket.
 - **Edge.** Session proxy / Next edge entry. Same DSN, EU ingest (`de.sentry.io`). A US host 404 looks like a bad token and is not.
 
-No session replay. Traces sampled low. Money-path failures also push ntfy (`kenyon-ofir-limit`) at SEV1/SEV2.
+Live today those three names map to two Next runtimes. `src/instrumentation.ts` loads `sentry.server.config.ts` on Node (cron routes are this process; there is no separate worker binary) and `sentry.edge.config.ts` on Edge (`src/proxy.ts`). There is no Cloudflare Workers Sentry project. PostHog is a separate product-analytics sink and is inert without `NEXT_PUBLIC_POSTHOG_KEY`. It is not the error channel.
+
+No session replay. Traces sampled low. Money-path failures also push ntfy (`kenyon-ofir-limit`) at SEV1/SEV2. The phone is `alertMoneyFailure`, not every Sentry event.
 
 ### 8.2 Logs
 
@@ -315,7 +323,8 @@ A cached health check is a lie with a timestamp. Both routes are unauthenticated
 
 - **PKCE** for OAuth (Google). The auth code is worthless without the verifier that stays in the cookie. `@supabase/ssr` default.
 - Email OTP / magic link as backup. OTP is rate-limited per IP **and** per destination number (the measured lockout vector was number-only or IP-only, not both).
-- Session cookies: **httpOnly**, **Secure**, **SameSite=Lax** (Strict breaks the Cardcom return and OAuth bounce). Never readable by JavaScript. Guest cart session is the same cookie flags so `/api/a` can treat the anonymous id as server-set.
+- Session cookies: **httpOnly**, **Secure**, **SameSite=Lax** (Strict breaks the Cardcom return and OAuth bounce). Never readable by JavaScript. Guest cart session is the same cookie flags so `/api/a` can treat the anonymous id as server-set. The consent cookie is the exception: it is **not** httpOnly, because the banner must write it from the browser. Do not copy those flags onto the session.
+- Passkeys (WebAuthn) and TOTP MFA exist as additional factors, with their own rows in `RATE_LIMIT_POLICIES`. They do not replace PKCE on the Google bounce.
 
 ### 9.2 Session rotation
 
@@ -341,3 +350,4 @@ Route guards (`requirePanelSession`, `requireSection`, supplier RBAC) stop a URL
 | 2026-09-09 | Contract written: nine surfaces, live gaps named in the header table. Replaces the May-2026 pointer that lived in this path. |
 | 2026-09-09 | Audit against `kenyonexpress` source: RLS map is role × table × action (S/I/U/D); header names Next ingest of originals, exact live rate-limit windows, GET TTL 3600s, Hebrew typo floors 4/7. |
 | 2026-09-09 | Second source pass: header names 172 admin SELECT on `payment_webhook_events`; two R2 modules; `vercel.json` still has no `crons` key (R-8). |
+| 2026-09-09 | Third source pass: GitHub Actions scheduler is live (13 jobs; `whatsapp` 404 on the Vercel URL). Sentry "workers" is Next instrumentation, not Cloudflare. Rate-limit live windows are mixed. Two files numbered 172. Drift checker runs from `/api/cron/health` and skips when Meili is unset. |

@@ -20,6 +20,8 @@ Shared identity (slug, supplier, status, `platform_percent`, images) stays on th
 
 **Cost:** every new product kind is a migration (new child, new CHECK, new union member), not a JSON key. That is the point. A third kind (`service`, `recurring`) must not be stuffed into `physical_products` with nulls; that is the wide table again.
 
+Live Drizzle is not this contract. `src/db/schema/commerce.ts` is a query projection over the wide table: column `type` (not `product_type`), numeric `price_ils`, no child tables. The generated `src/types/database.ts` is the live shape (`product_type` on `products`, nullable coupon money on the same row). Until CTI exists, Drizzle does not give the type safety this decision claims. That is R-2 on the type layer, not a reason to keep the wide table.
+
 **ADR:** `docs/adr/0004-class-table-inheritance.md`.
 
 ---
@@ -106,7 +108,7 @@ Postgres stays as fallback so an Upstash outage does not **reset** every bucket 
 
 **Cost:** two backends can disagree for one window after a failover. Keys must be the same string in both (`postgresKey` / `redisKey` discipline). Fail closed on redeem and checkout if **both** are down. Fail open on those paths is how a Cardcom-less brute force looks like success.
 
-Live windows are **hour-scale**, not the contract minutes: login 10/hour, signup 5/hour, customer redeem 60/hour, till 120/hour. There is no `refresh` 10/min policy. Shipping the contract numbers is a policy-table change, not a docs-only edit (`RISKS.md` R-10).
+Live windows are **mixed**, not one scale. Auth is mostly hour-scale (login 10/hour, signup 5/hour). `begin_checkout` is already 10 per 60 seconds. Search is 120 per 5 minutes. `mfa-verify` is 10 per 15 minutes. There is no `refresh` 10/min policy. Shipping the contract numbers (5/min, 3/min, 10/min, 1/10 sec) is a policy-table change, not a docs-only edit (`RISKS.md` R-10).
 
 ---
 
@@ -122,7 +124,7 @@ Live windows are **hour-scale**, not the contract minutes: login 10/hour, signup
 
 **Cost:** policies are harder to read than an `eq`. Helpers (`is_supplier_member`, `is_supplier_order`) must stay `STABLE SECURITY DEFINER` with a pinned `search_path`, or the policy becomes recursive or attacker-writable. CI must keep a manifest of policies so a drop does not ship as "all tests passed, the page still renders".
 
-Live 172 granted **admin SELECT** on `payment_webhook_events` because the payments tab used the request-scoped client and returned zero rows under deny-all. That is the right *symptom* (operators need to see callbacks) solved with the wrong *object* (raw provider payloads in the browser). The contract in `ARCHITECTURE.md` §3 still denies client roles on that table; a redacting RPC is the compatible fix. See `RISKS.md` R-16.
+Live file `172_rls_zero_policy_tables.sql` granted **admin SELECT** on `payment_webhook_events` because the payments tab used the request-scoped client and returned zero rows under deny-all. That is the right *symptom* (operators need to see callbacks) solved with the wrong *object* (raw provider payloads in the browser). The contract in `ARCHITECTURE.md` §3 still denies client roles on that table; a redacting RPC is the compatible fix. See `RISKS.md` R-16. A second applied file, `172_hide_master_product_test_row.sql`, shares the number and is unrelated.
 
 **ADR:** `docs/adr/0005-rls-everywhere.md`.
 
@@ -138,7 +140,9 @@ Live 172 granted **admin SELECT** on `payment_webhook_events` because the paymen
 
 Real-time reconciliation would couple availability: if the reconsumer is down, do we freeze checkout? If we do not freeze, we do not have real-time. If we freeze, Cardcom being slow becomes our outage. Daily-plus-alarm (`verified_against_api = true AND processed_at IS NULL` is already a live DLQ shape) is the same catch with a bounded window.
 
-**Cost:** a missed webhook can sit until the job runs. That is why finalize is idempotent and why `/api/ready` plus ntfy exist: the window is hours, not "we will never know". The live certain failure is worse than lag: **nothing currently calls the cron routes**. Evidence on 2026-09-09: `vercel.json` has framework, install, build, regions (`fra1`), and **no `crons` key**. A daily job that is not scheduled is not a daily job. See `RISKS.md` R-8.
+**Cost:** a missed webhook can sit until the job runs. That is why finalize is idempotent and why `/api/ready` plus ntfy exist: the window is hours, not "we will never know". GitHub cron is best-effort (delay under load, a run can be dropped). The live recon job diffs a 48-hour Cardcom window so a midnight-edge charge is seen twice rather than never.
+
+Vercel is **not** that clock. `vercel.json` has no `crons` key on purpose: Hobby registers two daily jobs and silently ignores the rest. The clock is GitHub Actions workflow `Scheduled jobs`, gated on `CRON_SCHEDULER_ENABLED=true` plus `CRON_SECRET`. Both are set. Thirteen jobs live in `scripts/cron-jobs.json`. Measured 2026-09-08 22:44 UTC: `notifications` 200, `health` 200, `whatsapp` 404 on `https://kenyonexpress.vercel.app` (the route exists on current main). The remaining certain failure is a job inventory the production URL does not serve, not an absent scheduler. See `RISKS.md` R-8.
 
 ---
 
