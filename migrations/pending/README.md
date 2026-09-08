@@ -1,5 +1,31 @@
 # `migrations/pending/`
 
+## 2026-09-08: 178 added — the cart uniqueness the code compensates for
+
+`178_carts_one_row_per_owner.sql` adds the two partial UNIQUE indexes that stop
+a shopper ever having two cart rows. **Not applied.**
+
+Found while triaging Sentry. `src/server/actions/cart.ts` carries a long comment
+about the 2026-08-20 incident: a duplicate cart row made postgrest synthesise
+PGRST116, that error was discarded as "no cart", the cart showed empty on every
+request, and every write inserted yet another row. The application half of that
+is fixed — `cartRowOrFail` throws instead of discarding.
+
+The database half was never done. Measured against production 2026-09-08:
+`carts` has four indexes and only `carts_pkey` is unique, so the second row can
+still be created. The code now turns that into a loud error rather than silent
+corruption, which is the right order, but the shopper's cart is still broken
+until somebody deletes a row by hand.
+
+Safe to apply as measured: 2129 rows, **zero** duplicate groups on either arm,
+all rows guest-owned. If duplicates exist by the time this is applied the CREATE
+fails and rolls back, which is correct — that needs a human decision, not a
+merge chosen by a migration.
+
+Note for whoever applies it: the unique partial index on the guest arm serves
+the same read as entry (9) of `170_composite_indexes_top_queries.sql`, which may
+then be dropped. 170 is deliberately not edited, having already been audited.
+
 ## 2026-09-08: 177 added — the one advisor finding my own audit missed
 
 `177_set_updated_at_search_path.sql` sets `search_path` on

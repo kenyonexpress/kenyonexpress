@@ -162,10 +162,42 @@ and `compare.mjs` rather than as a footnote to a performance report.
 
 ---
 
-## 6. Not measured
+## 6. Query plans, measured 2026-09-08
 
-`EXPLAIN ANALYZE` over the top ten queries, and therefore the "covering
-indexes only if measured" rule, needs a database connection. The Supabase MCP
-tool was disconnected for this pass and `.env.local` carries a stale key, so
-no query plan was read. Nothing was added to the schema on the strength of a
-guess, which is the outcome that rule is there to force.
+This section previously read "not measured": `EXPLAIN ANALYZE` needs a database
+connection, the Supabase MCP tool was disconnected, and `.env.local` carries a
+stale key. The MCP tool reconnected, so the plans below are real, read from
+production, read-only.
+
+They were chosen by evidence rather than by guess. Sentry held six
+`SupabaseTimeoutError: Supabase request exceeded 10000ms` issues; these are the
+three distinct queries behind them.
+
+| Query | Plan | Execution |
+| --- | --- | --- |
+| product by slug (`product_detail.read_failed`) | Index Scan `products_slug_key`, 2 buffers | **0.176 ms** |
+| related products by category (`related_products.by_category_failed`) | Bitmap Index Scan `products_category_id_idx` -> sort, 15 buffers | **2.085 ms** |
+| guest cart by session (`cart.row_read_failed`) | Index Scan `carts_session_id_idx`, 5 buffers | **2.051 ms** |
+
+**Every one is an index scan in single-digit milliseconds. None of the three
+timeouts was query cost.** All seven product-detail events landed inside a
+thirteen-minute window on 2026-09-05 against `localhost:3311` — the port the
+pixel gate runs `pnpm start` on — from a laptop in Bangkok reaching a database
+in `eu-north-1`. That is the network path, not the plan.
+
+So no index was added on performance grounds, which is what the "covering
+indexes only if measured" rule exists to force. One migration was written this
+pass, `178_carts_one_row_per_owner.sql`, and it is deliberately **not** a
+performance change: it is a uniqueness constraint the application already
+compensates for at runtime. It is in `migrations/pending/` and unapplied.
+
+One honest footnote: planning cost is the same order as execution here
+(planning 1.3-3.8 ms, reading 144-458 buffers, against 0.2-2.1 ms of execution).
+On these three that is hidden behind `use cache`, so it is recorded rather than
+acted on.
+
+### Still not measured
+
+The remaining seven of the "top ten" queries. The three above were picked
+because Sentry named them; ranking the rest needs `pg_stat_statements` over a
+period with real traffic, and production has none yet.
