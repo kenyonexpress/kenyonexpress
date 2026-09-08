@@ -65,13 +65,17 @@ describe('the ILIKE fallback', () => {
     expect(recorded.orGroups).toHaveLength(2)
     expect(recorded.orGroups[0]).toContain('name_he.ilike.%צימר%')
     expect(recorded.orGroups[0]).toContain('name_he.ilike.%מלון%')
-    expect(recorded.orGroups[1]).toBe('name_he.ilike.%צפון%,description_he.ilike.%צפון%')
+    expect(recorded.orGroups[1]).toBe(
+      'name_he.ilike.%צפון%,description_he.ilike.%צפון%,city.ilike.%צפון%',
+    )
   })
 
   it('leaves a word with no synonyms exactly as it was', async () => {
     await searchProductsServer('צפון')
 
-    expect(recorded.orGroups).toEqual(['name_he.ilike.%צפון%,description_he.ilike.%צפון%'])
+    expect(recorded.orGroups).toEqual([
+      'name_he.ilike.%צפון%,description_he.ilike.%צפון%,city.ilike.%צפון%',
+    ])
   })
 
   it('still searches the typed word when it does expand', async () => {
@@ -110,7 +114,10 @@ describe('the ILIKE fallback', () => {
       const clauses = group.split(',')
       expect(clauses.length).toBeGreaterThanOrEqual(2)
       for (const clause of clauses) {
-        expect(clause).toMatch(/^(name_he|description_he)\.ilike\.%[^,()"\\%_*]*%$/)
+        // `city` joined this list on 2026-09-08. It is enumerated, not
+        // loosened: a new searched column has to be added here on purpose,
+        // which is the whole value of pinning the shape.
+        expect(clause).toMatch(/^(name_he|description_he|city)\.ilike\.%[^,()"\\%_*]*%$/)
       }
     }
   })

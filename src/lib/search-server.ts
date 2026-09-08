@@ -147,10 +147,25 @@ async function searchDb(
   //
   // expandQueryWord always returns the typed word first, so this can only ever
   // widen a result set, never narrow one. See db-expansion.ts.
+  // CITY IS SEARCHED HERE BECAUSE IT IS SEARCHED IN THE ENGINE WE DO NOT RUN.
+  //
+  // `meili-settings.ts` puts `city` in SEARCHABLE_ATTRIBUTES above the
+  // descriptions, and says why in a comment: a place-and-thing query is a real
+  // shopper shape and a city hit means more than the same word buried in
+  // marketing copy. This path read `name_he` and `description_he` only, so the
+  // signal the engine ranks second could not be matched at all.
+  //
+  // Measured 2026-09-08 by running the golden set through this path's own
+  // semantics: eight of the nine canonical journeys passed and
+  // `קפה תל אביב -> coffee-tlv` returned nothing. The deal is named
+  // "בית קפה — מאפה ושתייה" and sits in תל אביב, so `קפה` matched the name and
+  // neither `תל` nor `אביב` could match anywhere. The words are ANDed, so the
+  // shopper got zero results. golden-queries-db.test.ts holds that journey now.
   for (const word of queryWords(q)) {
     const clauses = expandQueryWord(word).flatMap((spelling) => [
       `name_he.ilike.%${spelling}%`,
       `description_he.ilike.%${spelling}%`,
+      `city.ilike.%${spelling}%`,
     ])
     if (clauses.length > 0) query = query.or(clauses.join(','))
   }
