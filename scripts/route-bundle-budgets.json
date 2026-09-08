@@ -1,0 +1,10 @@
+{
+  "specTargetKb": 180,
+  "note": "Ratchets, not targets. Measured 2026-09-08 on commit 3cc349f65 and set 2 KB above each, so a regression fails and normal churn does not. STEP 14 asks for 180 KB; the Next 16 client runtime alone is 130 KB, so 180 is not reachable by trimming app code and re-deriving it is an owner decision. Lower a number here whenever a real cut lands; never raise one without a line in docs/PERF-REPORT.md saying what grew and why.",
+  "routes": {
+    "/": 326,
+    "/products": 327,
+    "/cart": 324,
+    "/checkout": 330
+  }
+}
