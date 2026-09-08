@@ -83,7 +83,7 @@ export default function BlogIndexPage() {
                 <p className="mt-1.5 text-base leading-relaxed text-heading/80">
                   {post.description}
                 </p>
-                <p className="mt-2 text-sm text-heading/60">
+                <p className="mt-2 text-sm text-heading/75">
                   {hebrewDate(post.publishedAt)} · {post.readingMinutes} דקות קריאה
                 </p>
               </Link>

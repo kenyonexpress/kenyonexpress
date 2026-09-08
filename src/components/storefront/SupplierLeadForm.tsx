@@ -6,7 +6,7 @@ import { useActionState } from 'react'
 const INITIAL: SupplierLeadState = { ok: false }
 
 const FIELD =
-  'w-full rounded-lg border border-heading/20 px-3 py-2.5 text-base text-heading placeholder:text-heading/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
+  'w-full rounded-lg border border-heading/20 px-3 py-2.5 text-base text-heading placeholder:text-heading/75 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40'
 const LABEL = 'mb-1 block text-sm font-medium text-heading'
 
 /**
@@ -173,7 +173,7 @@ export default function SupplierLeadForm() {
         {pending ? 'שולח...' : 'שליחת פרטים'}
       </button>
 
-      <p className="text-xs text-heading/60">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
+      <p className="text-xs text-heading/75">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
     </form>
   )
 }

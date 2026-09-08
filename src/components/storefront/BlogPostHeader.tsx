@@ -67,7 +67,7 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
       </nav>
 
       <h1 className="text-3xl font-bold text-heading">{post.title}</h1>
-      <p className="mt-2 text-sm text-heading/60">
+      <p className="mt-2 text-sm text-heading/75">
         {published} · {post.readingMinutes} דקות קריאה
       </p>
     </>

@@ -74,7 +74,7 @@ export default function FaqPage() {
           // survives the page being read before any script runs.
           <details key={entry.question} className="group py-4">
             <summary className="cursor-pointer list-none text-base font-semibold text-heading marker:content-none">
-              <span className="inline-block w-5 text-heading/60 transition-transform group-open:rotate-90">
+              <span className="inline-block w-5 text-heading/75 transition-transform group-open:rotate-90">
                 ‹
               </span>
               {entry.question}
