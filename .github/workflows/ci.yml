@@ -317,6 +317,25 @@ jobs:
           name: next-build
           path: .next/
           retention-days: 3
+          # `.next` IS A HIDDEN DIRECTORY, AND v4 EXCLUDES THOSE BY DEFAULT.
+          #
+          # Without this the step logs
+          #   "No files were found with the provided path: .next/.
+          #    No artifacts will be uploaded."
+          # and then SUCCEEDS, because `if-no-files-found` defaults to `warn`.
+          # Measured on run 34193528439: the Build job was green, its upload step
+          # was green, and the run produced exactly one artifact - `coverage`.
+          #
+          # Nothing noticed for as long as it has been true, because the only
+          # consumer was `pixel-gate`, whose download is guarded by a
+          # credentials check that is currently false - so it skipped the
+          # download and every step after it and reported success. The pixel
+          # gate has been passing without comparing anything.
+          include-hidden-files: true
+          # An empty upload must be a failure, not a warning. That default is
+          # what let this hide: the producer was green and the consumer was
+          # skipped, so the only symptom was a gate that never ran.
+          if-no-files-found: error
 
   # The pixel gate. compare.mjs screenshots this build and the live site at the
   # same width and reports the diff over the first 2600px; the ceiling is 11%.
