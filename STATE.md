@@ -17636,4 +17636,83 @@ WITHDRAWAL_RULE = { withdrawable: false, ... }
 and there is not meant to be one". תואם למה שהתקנון אומר ללקוח: "אינה ניתנת
 למשיכה, להעברה או להמרה למזומן".
 
-**המשך מ: ‏STEP 12 (‏VOUCHERS).**
+**המשך מ: ‏STEP 12 — נבדק. ראה למטה.**
+
+
+## ‏STEP 12 VOUCHERS — בנוי. ובדרך נמצא אזעקת פרודקשן חיה, ‏08.09.2026 ‏14:30
+
+### מה שנבדק ותקין
+
+| דרישה | ראיה |
+| --- | --- |
+| קודים אקראיים קריפטוגרפית | ‏`randomBytes`, ‏Crockford base32 בלי `I L O U`, ‏`2^50` צירופים, דגימת דחייה |
+| מימוש חד-פעמי | ‏`vouchers_code_format` + מצב `redeemed` |
+| הקלדה ידנית מוגבלת בקצב | ‏`checkRateLimit` → 429 עם טקסט עברי |
+| יומן מימוש | ‏`voucher_redemptions` עם outcome, סורק, חותמת זמן ו-IP (‏073/085) |
+| ‏`docs/VOUCHER-LIFECYCLE.md` | קיים |
+
+### ‏**ממצא: ‏20% מריצות ה-cron נכשלות, וזה מסתיר כל כשל אחר**
+
+בניגוד למה שהנחתי, **המתזמן דווקא עובד**: ‏`CRON_SCHEDULER_ENABLED=true` ו-
+‏`CRON_SECRET` מוגדרים מ-02.09, והריצות יורות.
+
+מתוך 30 הריצות האחרונות: ‏**24 הצלחות, 6 כשלים.** הכשל האחרון (‏04:53 היום):
+
+```
+schedule '*/5 * * * *' -> notifications health whatsapp
+base: https://kenyonexpress.vercel.app
+  notifications -> 200
+  health        -> 200
+  whatsapp      -> 404
+##[error]cron failed (schedule '*/5 * * * *'): whatsapp=404
+```
+
+**החדשות הטובות:** ‏`notifications` מחזיר 200. תור הדואר כן מתנקז, ולכן אישורי
+הזמנה, שוברים והחזרים כן נשלחים.
+
+**החדשות הרעות:** ‏`whatsapp` מחזיר 404 בכל ריצה של ‏`*/5`, ולכן ה-workflow
+מדווח כשל כל חמש דקות. **אזעקה שצועקת תמיד היא אזעקה שאיש לא קורא**, וכשל
+אמיתי ב-`notifications` ייראה בדיוק אותו דבר.
+
+#### שורש הבעיה: סטייה בין ‏main לבין מה שפרוס
+
+- ‏`origin/main` מכיל גם את העבודה `whatsapp` ב-`scripts/cron-jobs.json` וגם את
+  המסלול `src/app/api/cron/whatsapp/`. שניהם הגיעו מקומיט אחד:
+  ‏`2b1a529e5 [autopilot] feat(whatsapp): Twilio WhatsApp flow`.
+- הענף הזה (‏`closeout/v1-final`) מכיל **12 מסלולי cron ואין בהם whatsapp**.
+- ‏`main` ו-`closeout/v1-final` התפצלו: ‏**66 קומיטים רק ב-main, ‏113 רק כאן.**
+- ה-workflow קורא את רשימת העבודות מ-**main**, אבל האפליקציה הפרוסה אינה
+  מגישה את המסלול. נמדד ישירות:
+
+```
+prod /api/cron/whatsapp -> 404
+```
+
+#### למה לא תיקנתי
+
+הוספת המסלול לענף הזה היא החלטה על **מיזוג**, לא על באג. ‏`main` מוגן, הקומיט
+שייך לאוטופיילוט, וגרירת פיצ'ר Twilio שלם לענף הסגירה כדי להשתיק 404 היא
+בדיוק סוג ההחלטה שצריכה להתקבל במודע. **הסתירה תיפתר בעת המיזוג של שני
+הענפים, וזה הדבר שצריך להחליט לגביו.**
+
+**‏`cron-schedule-inventory.test.ts` לא יכול לתפוס את זה:** הוא משווה את
+‏`cron-jobs.json` ל-workflow ולמסלולים **באותו ריפו**, ובכל אחד משני הענפים
+בנפרד הוא עקבי. מה שלא עקבי הוא הריפו מול הפרודקשן.
+
+---
+
+## ‏MANUAL — פעולות שרק אתה יכול לבצע
+
+הסעיף הזה נדרש ב-`AGENT-RULES.md` ולא היה קיים. כל שורה נמדדה בריצה הזאת.
+
+| # | מה | ראיה שזה חסום | השפעה |
+| --- | --- | --- | --- |
+| 1 | **הכרעה: ‏`whatsapp` בתוך main או בחוץ** | ‏`prod /api/cron/whatsapp -> 404` | ‏20% מריצות ה-cron אדומות, ומסתירות כשלים אמיתיים |
+| 2 | **הפעלת R2 בדשבורד Cloudflare** | ‏`403 {"code":10042}` | אין יעד לתמונות; ‏`upload-r2.mjs` ו-`import-images.ts` מוכנים |
+| 3 | **הקמת מופע Meilisearch** | ‏`MEILISEARCH_HOST` לא מוגדר בשום מקום | חיפוש רץ על ‏ILIKE; ‏drift checker לא ניתן לאימות |
+| 4 | **‏`SUPABASE_SECRET_KEY` — רוטציה** | מסומן ב-`scripts/compromised-keys.mjs` | המפתח עוקף כל RLS |
+| 5 | **מפתח Resend תקין** | המקומי מחזיר `API key is invalid` | לא ניתן לאמת שהדומיין מאומת |
+| 6 | **‏URL פרוס ל-vault עבור מיגרציה 162** | ‏162 ב-`migrations/pending/` | ‏pg_cron כגיבוי ל-Actions |
+| 7 | ‏box.co.il NS, ‏Cardcom prod keys, ‏Vercel Pro | מ-`AGENT-RULES` | עלייה לאוויר |
+
+**המשך מ: ‏STEP 13 (‏OBSERVABILITY).**
