@@ -69,6 +69,14 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
   ['מתנה', 'מתנות', 'שובר', 'שוברים', 'גיפט', 'קופון', 'קופונים'],
   ['יום הולדת', 'יומולדת', 'הולדת'],
   ['זוגי', 'זוגית', 'רומנטי', 'רומנטית', 'לזוג'],
+
+  // Physical goods. Hebrew's construct form (סמיכות) is what breaks these: the
+  // catalogue says "חיתולי פמפרס" and a shopper types the plain plural
+  // "חיתולים", which shares no substring with it. Measured against production
+  // 2026-09-08: "חיתולים" returned 0 rows while two active products were
+  // diapers. Same both-directions test as every group above - somebody
+  // searching either spelling wants the other's results.
+  ['חיתול', 'חיתולים', 'חיתולי'],
 ] as const
 
 /**

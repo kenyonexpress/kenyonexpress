@@ -59,16 +59,29 @@ describe('the ILIKE fallback', () => {
   it('asks for every word of the query, not the phrase as one substring', async () => {
     await searchProductsServer('צימר צפון')
 
-    expect(recorded.orGroups).toEqual([
-      'name_he.ilike.%צימר%,description_he.ilike.%צימר%',
-      'name_he.ilike.%צפון%,description_he.ilike.%צפון%',
-    ])
+    // One group per word, still ANDed. צימר is in a synonym group so its group
+    // now carries the whole group; צפון is in none, so its group is the pair it
+    // always was. That contrast is the point: expansion is per word.
+    expect(recorded.orGroups).toHaveLength(2)
+    expect(recorded.orGroups[0]).toContain('name_he.ilike.%צימר%')
+    expect(recorded.orGroups[0]).toContain('name_he.ilike.%מלון%')
+    expect(recorded.orGroups[1]).toBe('name_he.ilike.%צפון%,description_he.ilike.%צפון%')
   })
 
-  it('is unchanged for a single word', async () => {
+  it('leaves a word with no synonyms exactly as it was', async () => {
+    await searchProductsServer('צפון')
+
+    expect(recorded.orGroups).toEqual(['name_he.ilike.%צפון%,description_he.ilike.%צפון%'])
+  })
+
+  it('still searches the typed word when it does expand', async () => {
+    // The property the expansion rests on: the original pattern is always in
+    // the group, so no query can return fewer rows than it did before.
     await searchProductsServer('צימר')
 
-    expect(recorded.orGroups).toEqual(['name_he.ilike.%צימר%,description_he.ilike.%צימר%'])
+    expect(recorded.orGroups).toHaveLength(1)
+    expect(recorded.orGroups[0]).toContain('name_he.ilike.%צימר%')
+    expect(recorded.orGroups[0]).toContain('description_he.ilike.%צימר%')
   })
 
   it('caps how many groups one query can AND together', async () => {
@@ -85,14 +98,20 @@ describe('the ILIKE fallback', () => {
   it('never lets PostgREST syntax out of a word', async () => {
     await searchProductsServer('צימר,or(id.gt.0) %_*"\\ צפון')
 
-    // Every group is exactly the two-column shape and nothing else, so the
+    // Every CLAUSE is exactly the one-column shape and nothing else, so the
     // injected text can only have landed INSIDE a pattern - where it is a
     // search term for a product nobody sells, not a filter.
+    //
+    // Checked clause by clause rather than group by group, because a group is
+    // now a comma-joined list of them. The comma is the separator PostgREST
+    // reads, which is exactly why no single clause may contain one.
     expect(recorded.orGroups.length).toBeGreaterThan(0)
     for (const group of recorded.orGroups) {
-      expect(group).toMatch(
-        /^name_he\.ilike\.%[^,()"\\%_*]*%,description_he\.ilike\.%[^,()"\\%_*]*%$/,
-      )
+      const clauses = group.split(',')
+      expect(clauses.length).toBeGreaterThanOrEqual(2)
+      for (const clause of clauses) {
+        expect(clause).toMatch(/^(name_he|description_he)\.ilike\.%[^,()"\\%_*]*%$/)
+      }
     }
   })
 

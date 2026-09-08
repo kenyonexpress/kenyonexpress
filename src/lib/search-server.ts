@@ -5,6 +5,7 @@
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { fetchWithTimeout } from '@/lib/http/fetch-with-timeout'
+import { expandQueryWord } from '@/lib/search/db-expansion'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cache } from 'react'
@@ -112,6 +113,15 @@ function queryWords(q: string): string[] {
  * "צימר שוויץ בצפון" and "! צימר מאסטר", the two groups returned the first
  * alone.
  *
+ * SYNONYMS APPLY HERE NOW, NOT ONLY IN MEILISEARCH. `hebrew-synonyms.ts` was
+ * imported by `meili-settings.ts` and by tests, and by nothing else - so the
+ * golden query set was green in CI against an engine that is not configured
+ * (`MEILISEARCH_HOST` appears nowhere outside `.env.example`) while every real
+ * shopper hit this function, which had no synonyms and no morphology.
+ * `expandQueryWord` closes that: same declared groups, adapted to substring
+ * matching. Measured against production, `המסעדה` went from 0 rows to the
+ * restaurant group.
+ *
  * This is still the stage-1 ILIKE fallback and is not trying to be a search
  * engine: no stemming, no ranking, no typo tolerance. Meilisearch is stage 3
  * and takes over above.
@@ -131,8 +141,18 @@ async function searchDb(
     .eq('status', 'active')
     .is('deleted_at', null)
 
+  // Each word becomes ONE or= group listing every spelling it can match, and
+  // PostgREST ANDs the groups. So "עיסוי זוגי" still requires both concepts,
+  // but either may appear as any member of its synonym group.
+  //
+  // expandQueryWord always returns the typed word first, so this can only ever
+  // widen a result set, never narrow one. See db-expansion.ts.
   for (const word of queryWords(q)) {
-    query = query.or(`name_he.ilike.%${word}%,description_he.ilike.%${word}%`)
+    const clauses = expandQueryWord(word).flatMap((spelling) => [
+      `name_he.ilike.%${spelling}%`,
+      `description_he.ilike.%${spelling}%`,
+    ])
+    if (clauses.length > 0) query = query.or(clauses.join(','))
   }
 
   // Same coupon/physical facet the archives expose, applied in the query so the
