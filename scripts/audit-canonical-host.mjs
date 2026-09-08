@@ -73,13 +73,31 @@ async function head(url) {
 async function main() {
   const base = process.env.BASE ?? DEFAULT_BASE
 
+  // A NON-2xx IS NOT A PAGE WITHOUT A CANONICAL, AND THE DIFFERENCE IS THE
+  // WHOLE POINT OF THIS SCRIPT.
+  //
+  // Measured 2026-09-08: after enough probing from one client, the custom
+  // domain began answering 403 with Vercel's Security Checkpoint - a 32 KB
+  // interstitial carrying no rel=canonical. This block caught only network
+  // errors, so it parsed the challenge, found no canonical, and printed "the
+  // page declares no canonical host at all". That reads as a finding about the
+  // site. It was a finding about not having seen the site.
+  //
+  // The alias kenyonexpress.vercel.app answered 200 at the same moment, so the
+  // protection sits on the custom domain and the cron scheduler, which uses the
+  // alias, is unaffected. The challenge expired on its own within the hour.
   let html
   let robots
   try {
-    html = await (await fetch(base, { signal: AbortSignal.timeout(25_000) })).text()
-    robots = await (
-      await fetch(`${base}/robots.txt`, { signal: AbortSignal.timeout(25_000) })
-    ).text()
+    const page = await fetch(base, { signal: AbortSignal.timeout(25_000) })
+    if (!page.ok) {
+      console.error(`audit-canonical-host: ${base} answered ${page.status}, not a page.`)
+      console.error('Nothing can be concluded about its canonical host from that.')
+      process.exit(2)
+    }
+    html = await page.text()
+    const robotsRes = await fetch(`${base}/robots.txt`, { signal: AbortSignal.timeout(25_000) })
+    robots = robotsRes.ok ? await robotsRes.text() : ''
   } catch (error) {
     console.error(`audit-canonical-host: ${base} did not answer (${error}). Nothing checked.`)
     process.exit(2)
@@ -94,7 +112,9 @@ async function main() {
   ].filter(([, value]) => value)
 
   if (declared.length === 0) {
-    console.error('audit-canonical-host: the page declares no canonical host at all.')
+    // Reached only for a 2xx page that genuinely declares nothing, which IS a
+    // finding. A non-2xx exits 2 above and never arrives here.
+    console.error('audit-canonical-host: the page answered 2xx and declares no canonical host.')
     process.exit(1)
   }
 
