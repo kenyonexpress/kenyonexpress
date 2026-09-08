@@ -1,10 +1,10 @@
 {
   "specTargetKb": 180,
-  "note": "Ratchets, not targets. Measured 2026-09-08 on commit 3cc349f65 and set 2 KB above each, so a regression fails and normal churn does not. The ubuntu-latest runner reads consistently ~0.4 KB HIGHER than macOS for the same commit (CI on e5c4dfa09: 323.8 / 324.7 / 322.2 / 327.9), so real headroom is about 1.6 KB, not 2. That is still a regression ratchet and widening it would weaken it. STEP 14 asks for 180 KB; the Next 16 client runtime alone is 130 KB, so 180 is not reachable by trimming app code and re-deriving it is an owner decision. Lower a number here whenever a real cut lands; never raise one without a line in docs/PERF-REPORT.md saying what grew and why.",
+  "note": "Ratchets, not targets. Set 2 KB above each measured value, so a regression fails and normal churn does not. The ubuntu-latest runner reads consistently ~0.4 KB HIGHER than macOS for the same commit, so real headroom is about 1.6 KB, not 2. That is still a regression ratchet and widening it would weaken it. LOWERED 2026-09-08 after the dependency sweep and next 16.2.12 -> 16.3.4: measured 312.7 / 313.5 / 311.1 / 316.7 against the 324 / 325 / 322 / 328 the previous numbers were derived from, a cut of about 11 KB gz on every route. Not attributed to a single package - the same build carries the framework bump, @sentry/nextjs 10.71 and @supabase/supabase-js 2.115 - so it is recorded as what it is, a measured drop across the sweep. STEP 14 asks for 180 KB; the Next 16 client runtime alone is 130 KB, so 180 is not reachable by trimming app code and re-deriving it is an owner decision. Lower a number here whenever a real cut lands; never raise one without a line in docs/PERF-REPORT.md saying what grew and why.",
   "routes": {
-    "/": 326,
-    "/products": 327,
-    "/cart": 324,
-    "/checkout": 330
+    "/": 315,
+    "/products": 316,
+    "/cart": 314,
+    "/checkout": 319
   }
 }

@@ -121,3 +121,10 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-08 13:02 | home | 1440 | 8.29% | PASS | `5df534cdb-dirty` |  |
 | 2026-09-08 13:04 | home | 768 | 28.99% | **FAIL** | `5df534cdb-dirty` |  |
 | 2026-09-08 13:06 | home | 380 | 30.26% | **FAIL** | `5df534cdb-dirty` |  |
+| 2026-09-08 14:47 | home | 1440 | 8.29% | PASS | `3e4529810-dirty` | next 16.2.12, baseline before the bump |
+| 2026-09-08 14:49 | home | 1440 | 8.29% | PASS | `3e4529810-dirty` | next 16.2.12, baseline before the bump, repeat run |
+| 2026-09-08 14:51 | home | 380 | 30.26% | **FAIL** | `3e4529810-dirty` | next 16.2.12, baseline before the bump; KNOWN-ISSUES 3 |
+| 2026-09-08 14:53 | home | 768 | 28.99% | **FAIL** | `3e4529810-dirty` | next 16.2.12, baseline before the bump; KNOWN-ISSUES 3 |
+| 2026-09-08 14:59 | home | 380 | 30.26% | **FAIL** | `3e4529810-dirty` | next 16.3.4, same numbers to the hundredth; KNOWN-ISSUES 3 |
+| 2026-09-08 15:01 | home | 768 | 28.99% | **FAIL** | `3e4529810-dirty` | next 16.3.4, same numbers to the hundredth; KNOWN-ISSUES 3 |
+| 2026-09-08 15:03 | home | 1440 | 8.29% | PASS | `3e4529810-dirty` | next 16.3.4, same numbers to the hundredth |

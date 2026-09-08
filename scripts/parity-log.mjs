@@ -60,7 +60,32 @@ function commitHash() {
   }
 }
 
+/** Table cells cannot contain a pipe or a newline, whatever the caller passes. */
+function cell(value) {
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .replace(/\|/g, '/')
+    .trim()
+    .slice(0, 160)
+}
+
 /**
+ * WHY THE NOTE COMES FROM THE ENVIRONMENT.
+ *
+ * `notes` has been a parameter of this function since it was written and NO
+ * CALLER HAS EVER PASSED ONE, so the column the header calls the place "the
+ * cause belongs" has only ever been empty. It could not be filled without
+ * threading an argument through compare.mjs and diff-bands.mjs to get here.
+ *
+ * MEASURED, 2026-09-08: seven rows written in one session, four from a
+ * next 16.2.12 build and three from 16.3.4, every one labelled with the same
+ * `-dirty` commit because the version bump was uncommitted while it was being
+ * measured. Identical rows, and nothing in the file able to say that two of
+ * them are the before and after of the thing the session existed to measure.
+ *
+ * PARITY_NOTE is read here rather than parsed as a flag so it reaches this
+ * function no matter which script above it did the measuring.
+ *
  * @param {{page: string, width: number, pct: number, notes?: string, when?: string, commit?: string}} row
  */
 export function appendParityRow(row) {
@@ -71,7 +96,7 @@ export function appendParityRow(row) {
   const when = row.when ?? new Date().toISOString().replace('T', ' ').slice(0, 16)
   const verdict = row.pct <= GATE_CEILING ? 'PASS' : '**FAIL**'
   const commit = row.commit ?? commitHash()
-  const notes = row.notes ?? ''
+  const notes = cell(row.notes ?? process.env.PARITY_NOTE ?? '')
   appendFileSync(
     path,
     `| ${when} | ${row.page} | ${row.width} | ${row.pct.toFixed(2)}% | ${verdict} | \`${commit}\` | ${notes} |\n`,
@@ -102,11 +127,8 @@ export function appendParityFailure(row) {
   }
   const when = row.when ?? new Date().toISOString().replace('T', ' ').slice(0, 16)
   const commit = row.commit ?? commitHash()
-  const reason = String(row.reason ?? 'unknown')
-    .replace(/\s+/g, ' ')
-    .replace(/\|/g, '/')
-    .trim()
-    .slice(0, 160)
+  const note = cell(process.env.PARITY_NOTE ?? '')
+  const reason = cell(row.reason ?? 'unknown') + (note ? ` -- ${note}` : '')
   appendFileSync(
     path,
     `| ${when} | ${row.page} | ${row.width} | n/a | **UNMEASURED** | \`${commit}\` | ${reason} |\n`,
