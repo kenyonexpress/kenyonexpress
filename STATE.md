@@ -18232,4 +18232,66 @@ if-no-files-found: error
 השני חשוב לא פחות מהראשון: **העלאה ריקה חייבת להיות כישלון ולא אזהרה.** בדיוק
 ברירת המחדל הזאת היא שאפשרה לזה להתחבא.
 
-**המשך מ: ‏STEP 21 — סבב תחזוקה 2 (לאמת שהתיקון עובד ב-CI).**
+**המשך מ: ‏STEP 21 — סבב תחזוקה 2 בוצע. ראה למטה.**
+
+
+## ‏STEP 21 — סבב תחזוקה 2, ‏08.09.2026 ‏18:40
+
+### ‏1. תיקון ה-CI אומת, לא הונח
+
+ריצה `34194328403`: **כל שמונת ה-jobs ירוקים**, ולראשונה:
+
+```
+לפני:  coverage בלבד
+אחרי:  next-build  43,204,953 bytes  +  coverage
+```
+
+שער הפיקסלים מקבל סוף סוף את הבילד שהוא אמור להשוות.
+
+### ‏2. אבטחת תלויות: נקי
+
+```
+pnpm audit --audit-level=low  ->  No known vulnerabilities found
+```
+
+### ‏3. ‏שבעה PR פתוחים של Dependabot, ושלושה מהם לעולם לא ימוזגו
+
+| ‏PR | יעד | מצב |
+| --- | --- | --- |
+| ‏#31 | ‏main | ‏lucide-react |
+| ‏#14 | **‏phase5/homepage** | ‏@types/node |
+| ‏#13 | **‏phase5/homepage** | ‏@vitest/coverage-v8 |
+| ‏#12 | **‏phase5/homepage** | ‏@radix-ui/react-select |
+| ‏#11, #9, #7 | ‏main | ישנים (‏#7 מ-21.08) |
+
+שלושת אלה נוצרו ב-31.08, **לפני** שה-override של `target-branch` נמחק
+ב-02.09. הם מסומנים `MERGEABLE` ולכן ימוזגו לענף שאיש לא ממזג ולא יגיעו
+ל-main לעולם.
+
+**זו בדיוק המלכודת ש-`dependabot.yml` מזהיר מפניה בהערה שלו:**
+
+> ‏"bot PRs kept opening against a branch nobody merges, resolving a lockfile
+> nobody runs... the day the override outlives its branch, Dependabot stops
+> silently."
+
+ה-override נמחק, ולכן הריצה הבאה של Dependabot כבר תפתח מול main. שלושת
+האלה יתומים שהבוט לא ינקה בעצמו.
+
+**לא סגרתי אותם.** סגירת PR היא פעולה בתור של מישהו אחר, והאבחנה היא
+התוצר. הפקודה, אם תרצה:
+
+```
+gh pr close 12 13 14 --comment "targets the retired phase5/homepage"
+```
+
+### ‏4. לא נבדק
+
+‏Supabase advisors ו-Sentry issues: שרתי ה-MCP היו מנותקים בסבב הזה.
+
+### ‏5. עדכוני תלויות ידניים: לא בוצעו במכוון
+
+יש עדכוני minor זמינים, אבל **Dependabot הוא הבעלים של הנתיב הזה** ויש לו
+‏auto-merge ל-patch. ‏bump ידני היה מתנגש עם שבעת ה-PR הפתוחים ויוצר עבודת
+מיזוג במקום להסיר אותה.
+
+**המשך מ: ‏STEP 21 — סבב תחזוקה 3.**
