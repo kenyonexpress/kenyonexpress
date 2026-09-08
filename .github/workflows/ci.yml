@@ -432,6 +432,36 @@ jobs:
       - name: Migration lint (pending migrations)
         run: node scripts/migration-lint.mjs
 
+      # WHAT THE PLATFORM READS FROM THE DEFAULT BRANCH, WHICH IS NOT THIS ONE.
+      #
+      # Dependabot's config, the cron job list, and the scripts a `schedule:`
+      # trigger executes are all read from the default branch. An edit to any of
+      # them on a feature branch is correct in the file, passes review, passes
+      # every job here, and does nothing. Two fixes from this loop were inert
+      # for exactly that reason before anything noticed.
+      #
+      # IT RUNS HERE AND NOT IN THE NIGHTLY on purpose: the nightly is itself a
+      # scheduled workflow, so it executes the default branch's copy of
+      # everything and could never report this about a feature branch.
+      #
+      # REPORT-ONLY, and not because the finding is unimportant. On a pull
+      # request this drift is EXPECTED - the branch is ahead, that is what a
+      # branch is - so failing on it would fail every PR that touches one of
+      # these files. Printed, it tells the author the one thing they cannot see
+      # in their own diff: this takes effect on merge, not now.
+      # Explicit refspec. actions/checkout@v4 narrows `remote.origin.fetch` to the
+      # single ref it checked out, so a bare `git fetch origin main` lands in
+      # FETCH_HEAD and never creates `origin/main` - and the audit would then
+      # refuse, correctly but uselessly, on every run.
+      - name: Fetch the default branch to compare against
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git fetch --depth=1 origin \
+            "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+      - name: Config the platform reads from the default branch
+        run: node scripts/audit-default-branch-config.mjs || true
+
       - uses: actions/download-artifact@v4
         with:
           name: next-build
