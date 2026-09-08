@@ -432,7 +432,24 @@ body:has([data-home]) .topbar-greeting {
  * WHERE NOT TO USE IT. The overlay extends past the control and sits above
  * whatever is next to it, so on controls packed closer than 44px apart the
  * later sibling in the DOM captures the overlap. Use it on isolated controls;
- * for a tight row, space the row first. */
+ * for a tight row, space the row first.
+ *
+ * ALL FOUR USES WERE CHECKED AGAINST THAT CAVEAT ON 2026-09-08, and the margin
+ * in the tightest one is 2px:
+ *
+ *   MastheadNav heart + CartNavLink cart   icon 22 + p-1 = 30px box, so the
+ *     44px overlay extends 7px each side, 14px combined, into `gap-4` = 16px.
+ *     CLEARANCE 2px below `lg`. At `lg` the gap is --spacing-nav-gap = 38px.
+ *   SiteFooter social row   box is size-touch-min = 44px, so the overlay adds
+ *     nothing at all; at `lg` the box is 40px and the overlay adds 2px a side
+ *     into `gap-3` = 12px. CLEARANCE 8px.
+ *   TopBar anchor   isolated.
+ *
+ * So dropping the masthead cluster to `gap-3`, removing `p-1`, or adding a
+ * third icon to it makes the earlier icon partly untappable - and it would
+ * still MEASURE as 44x44, because a probe that looks at one element at a time
+ * cannot see a neighbour's overlay on top of it. `scripts/_touch-targets.mjs`
+ * reports `overlayCollisions` per page for exactly this. */
 .hit-44 {
   position: relative;
 }

@@ -85,6 +85,13 @@ for (const width of WIDTHS) {
       const SEL =
         'a[href], button, input:not([type=hidden]), select, textarea, [role=button], [role=link], [role=tab], [role=checkbox], [role=switch], summary, [tabindex]:not([tabindex="-1"])'
       const out = []
+      // Every hit-area overlay, so collisions between them can be found. An
+      // overlay that reaches 44px by extending past its control sits ABOVE
+      // whatever is beside it, and the later element in the DOM wins the
+      // overlap - so a control can measure 44x44 and still be untappable
+      // because its neighbour's overlay covers it. Measuring elements one at a
+      // time cannot see that, which is why this list exists.
+      const overlays = []
       for (const el of document.querySelectorAll(SEL)) {
         const cs = getComputedStyle(el)
         if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') continue
@@ -109,6 +116,20 @@ for (const width of WIDTHS) {
           if (!Number.isNaN(pw)) w = Math.max(w, pw)
           if (!Number.isNaN(ph)) h = Math.max(h, ph)
         }
+        // Record the overlay's own rect when it is bigger than the control.
+        if (w > r.width + 0.5 || h > r.height + 0.5) {
+          overlays.push({
+            id: `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''}`,
+            label: (el.getAttribute('aria-label') || el.textContent || '')
+              .trim()
+              .replace(/\s+/g, ' ')
+              .slice(0, 30),
+            left: r.left + r.width / 2 - w / 2,
+            top: r.top + r.height / 2 - h / 2,
+            right: r.left + r.width / 2 + w / 2,
+            bottom: r.top + r.height / 2 + h / 2,
+          })
+        }
         if (w >= MIN && h >= MIN) continue
         const label = (el.getAttribute('aria-label') || el.textContent || '')
           .trim()
@@ -130,10 +151,42 @@ for (const width of WIDTHS) {
           href: el.getAttribute('href') || undefined,
         })
       }
-      return out
+      return { violations: out, overlays }
     }, MIN)
 
-    rows.push({ width, path, finalPath, redirected, status, violations: found })
+    // Pairwise, on the overlays only. The list is small (a handful per page),
+    // so the quadratic scan costs nothing and needs no spatial index.
+    const collisions = []
+    for (let i = 0; i < found.overlays.length; i++) {
+      for (let j = i + 1; j < found.overlays.length; j++) {
+        const a = found.overlays[i]
+        const b = found.overlays[j]
+        const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left)
+        const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)
+        if (overlapX > 0.5 && overlapY > 0.5) {
+          collisions.push({
+            a: `${a.id} ${a.label}`,
+            b: `${b.id} ${b.label}`,
+            overlapPx: Math.round(Math.min(overlapX, overlapY) * 10) / 10,
+          })
+        }
+      }
+    }
+    if (collisions.length) {
+      console.error(`  ${width}px  ${path}  ${collisions.length} overlapping hit area(s):`)
+      for (const c of collisions) {
+        console.error(`    ${c.a}  vs  ${c.b}   ${c.overlapPx}px - the later one wins`)
+      }
+    }
+    rows.push({
+      width,
+      path,
+      finalPath,
+      redirected,
+      status,
+      violations: found.violations,
+      overlayCollisions: collisions,
+    })
   }
   await ctx.close()
 }
