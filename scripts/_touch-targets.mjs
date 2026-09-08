@@ -26,6 +26,21 @@
  * It prints JSON and asserts nothing. It is a probe, not a gate: turning it
  * into a gate means agreeing first on which of the current violations are
  * defects and which are deliberate, and that list does not exist yet.
+ *
+ * EVERY ROW RECORDS WHERE THE BROWSER LANDED, NOT WHERE IT WAS SENT.
+ * Added 2026-09-08. `/checkout` is in PAGES below and it redirects to `/cart`
+ * when the cart is empty, which it always is here - this probe seeds nothing.
+ * So its `/checkout` rows were the CART's controls under checkout's path, and
+ * the "90 violations at 380px" figure in the launch readiness document
+ * inherited that.
+ *
+ * `response.status()` could not have revealed it either: Playwright follows the
+ * redirect and reports the FINAL 200, never the 307.
+ *
+ * Three sibling tools already guard this in almost these words - compare.mjs
+ * refuses a checkout run that did not land on /checkout, and a11y.spec.ts and
+ * layout-stability.spec.ts both seed a cart and assert the URL first. This
+ * probe and lighthouse-sweep.mjs were the two that did not.
  */
 import { chromium } from '@playwright/test'
 
@@ -53,8 +68,15 @@ for (const width of WIDTHS) {
       rows.push({ width, path, error: String(e).slice(0, 120) })
       continue
     }
+    // Where the browser actually ended up, after any redirect.
+    const landed = page.url()
+    const finalPath = landed.startsWith(BASE) ? landed.slice(BASE.length) || '/' : landed
+    const redirected = finalPath !== path
+    if (redirected) {
+      console.error(`  ${width}px  ${path}  ->  MEASURED ${finalPath}, NOT ${path}`)
+    }
     if (status >= 400) {
-      rows.push({ width, path, status })
+      rows.push({ width, path, finalPath, redirected, status })
       continue
     }
     await page.waitForTimeout(600)
@@ -111,9 +133,16 @@ for (const width of WIDTHS) {
       return out
     }, MIN)
 
-    rows.push({ width, path, status, violations: found })
+    rows.push({ width, path, finalPath, redirected, status, violations: found })
   }
   await ctx.close()
 }
 await browser.close()
 console.log(JSON.stringify(rows, null, 2))
+
+const bounced = rows.filter((r) => r.redirected)
+if (bounced.length) {
+  console.error(`\n${bounced.length} row(s) redirected; their violations belong to the FINAL path:`)
+  for (const r of bounced) console.error(`  ${r.width}px  ${r.path}  ->  ${r.finalPath}`)
+  console.error('Do not total these under the requested path. See the header note.')
+}

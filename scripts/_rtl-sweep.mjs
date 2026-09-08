@@ -96,7 +96,16 @@ for (const width of WIDTHS) {
           offenders: offenders.slice(-8),
         }
       }, width)
-      rows.push({ width, route, status, ...result })
+      // Where the browser LANDED. /checkout redirects an empty cart to /cart,
+      // and this probe seeds nothing, so its checkout row is the cart's. Two
+      // sibling tools reported the wrong page under the right name before this
+      // field existed - see scripts/lighthouse-sweep.mjs.
+      const landed = page.url()
+      const finalPath = landed.startsWith(BASE) ? landed.slice(BASE.length) || '/' : landed
+      if (finalPath !== route) {
+        console.error(`  ${width}px  ${route}  ->  MEASURED ${finalPath}, NOT ${route}`)
+      }
+      rows.push({ width, route, finalPath, redirected: finalPath !== route, status, ...result })
     } catch (err) {
       rows.push({ width, route, status, error: String(err).split('\n')[0] })
     }

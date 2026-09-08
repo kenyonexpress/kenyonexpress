@@ -90,7 +90,7 @@ deploy is at least visible.
 | 4 | medium | Cron alarm red on 20% of runs, masking any real failure | 6 of last 30 runs; `whatsapp=404` every time |
 | 5 | medium | Shared JS 42% over budget | 255.8 KB vs 180 KB |
 | 6 | medium | 8 active products whose slug and name describe different products | `/product/שעון-אפל...` renders "ארוחת בוקר זוגית" |
-| 7 | low | 90 touch targets still under 44px, 32 of them one homepage label | measured at 380px |
+| 7 | low | 90 touch targets still under 44px, 32 of them one homepage label. **Corrected 2026-09-08:** the probe that produced this includes `/checkout`, which bounces to `/cart` unseeded, so part of that total is the cart counted twice. `scripts/_touch-targets.mjs` now records `finalPath`; the figure needs one re-run to be exact | measured at 380px |
 | 8 | low | `set_updated_at` has no pinned `search_path` (52 triggers) | migration 177, pending |
 
 Risk 1 makes risks 2, 3 and 5 undeployable rather than unfixed. **The fixes exist

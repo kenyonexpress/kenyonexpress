@@ -41,8 +41,17 @@ for (const route of ROUTES) {
       }
       return { docH, painted: Math.round(painted), owner, url: location.pathname }
     })
+    // `r.url` is location.pathname AFTER any redirect. /checkout sends an
+    // empty cart to /cart and this probe seeds nothing, so the checkout line
+    // measures the cart. The value was already being collected and never
+    // compared; two sibling tools published the wrong page under the right
+    // name before this line existed.
+    const finalPath = r.url
+    const requestedPath = route.split('?')[0]
+    const suffix =
+      finalPath === requestedPath ? '' : `   <- MEASURED ${finalPath}, NOT ${requestedPath}`
     console.log(
-      `${String(r.docH).padStart(6)} ${String(r.painted).padStart(10)} ${String(r.docH - r.painted).padStart(6)}  ${route}  ${r.owner}`,
+      `${String(r.docH).padStart(6)} ${String(r.painted).padStart(10)} ${String(r.docH - r.painted).padStart(6)}  ${route}  ${r.owner}${suffix}`,
     )
   } catch (error) {
     console.log(`  ERR ${route}: ${String(error.message).split('\n')[0]}`)
