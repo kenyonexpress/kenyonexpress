@@ -202,3 +202,57 @@ DELETE FROM public.rate_limits WHERE key = v_key;
 | ‏definer בלי search_path | 0 | 0 | — |
 | **‏non-definer בלי search_path** | **לא נבדק** | **1** | **חדש** |
 | ‏ERROR-level | 0 | 0 | — |
+
+---
+
+## Round 3 — 2026-09-08, after `main` applied five migrations to production
+
+Rounds 1 and 2 predate the autopilot branch applying `audit_full_coverage_169`,
+`reporting_tables_170`, `search_fts_171`, `rls_zero_policy_tables_172` and
+`coupon_qr_batches_182` to production. New DDL is exactly when this should be
+re-read, so it was.
+
+### Security: 23 findings, none actionable
+
+| lint | count | verdict |
+| --- | --- | --- |
+| `function_search_path_mutable` | 1 | `set_updated_at` — **migration 177, already written and pending.** Unchanged. |
+| `anon_security_definer_function_executable` | 2 | `is_admin`, `is_supplier_member`. **Deliberate:** migration 165 was CANCELLED because revoking these 42501s every anonymous catalogue read — eighteen public RLS policies call them. |
+| `authenticated_security_definer_function_executable` | 20 | see below |
+
+**NINE OF THE TWENTY HAD NEVER BEEN ASSESSED** — the five `admin_report_*`
+functions from `170_reporting_tables` and the four `payout` functions. They are
+the ones worth looking at, because `authenticated` means *any signed-in
+customer* can POST to `/rest/v1/rpc/approve_payout_statement`.
+
+All nine authorize internally. Verified by reading the highest-stakes one in
+full rather than trusting the regex:
+
+```sql
+CREATE OR REPLACE FUNCTION public.approve_payout_statement(p_statement_id uuid)
+ SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+BEGIN
+  IF NOT public.is_admin() THEN RAISE EXCEPTION 'admin only'; END IF;
+  ...
+```
+
+First statement, blocking, before any write, with `search_path` pinned. The
+Supabase linter cannot see internal authorization, so it reports every one of
+them; that is the linter being correct about what it can observe and not a
+finding.
+
+### Performance: 191 findings, and the big group must NOT be acted on
+
+| lint | count | verdict |
+| --- | --- | --- |
+| `unused_index` | **174** | **Do not act.** "Never used" on a database with 45 products, no orders and no traffic means the queries that need them have not run yet. Dropping them would be removing the indexes for the launch. |
+| `multiple_permissive_policies` | 15 | Every pair is the standard `admin-all` + `owner-read` shape. Merging into one `OR` policy is faster and less readable, and at this volume the difference is unmeasurable. |
+| `unindexed_foreign_keys` | 1 | `coupon_qr_batches.created_by`, new from `main`'s 182. Real, trivial, and on a branch this one has not merged. |
+| `auth_db_connections_absolute` | 1 | Auth capped at 10 connections; a percentage strategy is the recommendation. Infrastructure setting, owner-level. |
+
+**The 174 is the entry that matters for whoever reads this next.** It is the
+largest number in the report, it looks like an obvious cleanup, and acting on it
+would be the single most damaging thing available in this document. Recorded so
+that the next pass does not "fix" it.
+
