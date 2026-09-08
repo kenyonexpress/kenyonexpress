@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { listOperationalFlags } from './feature-flags'
+import { listCapabilities, listOperationalFlags } from './feature-flags'
 
 /**
  * THE FLAGS PAGE SHOWED FOUR SWITCHES AND THE SYSTEM HAS ELEVEN.
@@ -106,5 +106,52 @@ describe('on is a deliberate value', () => {
       const flags = listOperationalFlags(env({ CARDCOM_USE_MOCK: value }))
       expect(flags.find((f) => f.envName === 'CARDCOM_USE_MOCK')?.on, value).toBe(true)
     }
+  })
+})
+
+describe('the observability stack reports its own status', () => {
+  /**
+   * /api/ready checks seven dependencies and deliberately checks neither Sentry
+   * nor Axiom: a readiness probe answers "can this instance serve traffic", and
+   * a reporting outage does not stop the shop working. Correct, and it leaves
+   * both silently inert with nowhere to look. axiom.ts opens with "ENTIRELY
+   * INERT without AXIOM_TOKEN + AXIOM_DATASET"; an unset DSN produces no error
+   * either. The thing that tells you everything else is broken is the one thing
+   * nothing tells you about.
+   */
+  it('reports Axiom and both Sentry DSNs', () => {
+    const names = listCapabilities(env()).flatMap((c) => c.envNames)
+    expect(names).toContain('AXIOM_TOKEN')
+    expect(names).toContain('SENTRY_DSN')
+    expect(names).toContain('NEXT_PUBLIC_SENTRY_DSN')
+  })
+
+  it('needs every variable a capability depends on, not just one', () => {
+    // A token without a dataset ships nothing, so half-configured must not read
+    // as configured.
+    const half = listCapabilities(env({ AXIOM_TOKEN: 'x' }))
+    expect(half.find((c) => c.envNames.includes('AXIOM_TOKEN'))?.configured).toBe(false)
+
+    const whole = listCapabilities(env({ AXIOM_TOKEN: 'x', AXIOM_DATASET: 'y' }))
+    expect(whole.find((c) => c.envNames.includes('AXIOM_TOKEN'))?.configured).toBe(true)
+  })
+
+  it('never carries the value, only whether it is set', () => {
+    // AXIOM_TOKEN is a credential. The view is rendered in the admin panel.
+    const view = listCapabilities(env({ AXIOM_TOKEN: 'secret-token', AXIOM_DATASET: 'logs' }))
+    expect(JSON.stringify(view)).not.toContain('secret-token')
+  })
+
+  it('says what silence means for each, since that is the whole problem', () => {
+    for (const capability of listCapabilities(env())) {
+      expect(capability.whenAbsentHe.length, capability.labelHe).toBeGreaterThan(20)
+    }
+  })
+
+  it('stays out of the readiness probe', () => {
+    // Adding them there would take the shop out of rotation for a reporting
+    // outage, which is the opposite of what readiness is for.
+    const checks = readFileSync(join(ROOT, 'src/lib/health/checks.ts'), 'utf8')
+    expect(/sentry|axiom/i.test(checks)).toBe(false)
   })
 })

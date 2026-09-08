@@ -125,3 +125,60 @@ export function listOperationalFlags(env: NodeJS.ProcessEnv = process.env): Oper
     value === '1' || value === 'true' || value === 'on' || value === 'yes'
   return OPERATIONAL.map((flag) => ({ ...flag, on: isOn(env[flag.envName]) }))
 }
+
+/**
+ * THE OBSERVABILITY STACK'S OWN STATUS, WHICH NOTHING ELSE REPORTS.
+ *
+ * `/api/ready` checks seven dependencies - database, search, storage, cardcom,
+ * email, rate_limiter, scheduler - and deliberately checks neither Sentry nor
+ * Axiom. That is correct: a readiness probe answers "can this instance serve
+ * traffic", and error reporting being down does not stop the shop working.
+ * Putting them there would take the shop out of rotation for a reporting
+ * outage.
+ *
+ * But it leaves both silently inert with nowhere to look. `axiom.ts` says so in
+ * its own opening line - "ENTIRELY INERT without AXIOM_TOKEN + AXIOM_DATASET" -
+ * and an unset Sentry DSN produces no error either, only silence where the
+ * reports would be. The thing that tells you everything else is broken is the
+ * one thing nothing tells you about.
+ *
+ * So they are reported here, where an operator already reads the environment,
+ * and NOT in the readiness probe.
+ *
+ * PRESENCE ONLY, NEVER THE VALUE. `AXIOM_TOKEN` is a credential and the DSNs
+ * are semi-public but still not this page's business. Every entry below renders
+ * as configured or not, and the value never leaves the process.
+ */
+export type CapabilityView = {
+  labelHe: string
+  envNames: string[]
+  configured: boolean
+  whenAbsentHe: string
+}
+
+const CAPABILITIES: { labelHe: string; envNames: string[]; whenAbsentHe: string }[] = [
+  {
+    labelHe: 'שילוח לוגים ל-Axiom',
+    envNames: ['AXIOM_TOKEN', 'AXIOM_DATASET'],
+    whenAbsentHe:
+      'הלוגים נכתבים ל-console בלבד, כלומר ל-log drain של Vercel. שום שגיאה לא נזרקת, ולכן היעדר הגדרה נראה בדיוק כמו הצלחה.',
+  },
+  {
+    labelHe: 'דיווח שגיאות שרת (Sentry)',
+    envNames: ['SENTRY_DSN'],
+    whenAbsentHe: 'שגיאות שרת אינן מדווחות. הן עדיין נכתבות ללוג.',
+  },
+  {
+    labelHe: 'דיווח שגיאות דפדפן (Sentry)',
+    envNames: ['NEXT_PUBLIC_SENTRY_DSN'],
+    whenAbsentHe: 'שגיאות בדפדפן אינן מדווחות כלל, גם לא ללוג.',
+  },
+]
+
+/** Configured means every variable the capability needs is non-empty. */
+export function listCapabilities(env: NodeJS.ProcessEnv = process.env): CapabilityView[] {
+  return CAPABILITIES.map((capability) => ({
+    ...capability,
+    configured: capability.envNames.every((name) => Boolean(env[name])),
+  }))
+}

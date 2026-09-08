@@ -1,4 +1,4 @@
-import { listFeatureFlags, listOperationalFlags } from '@/lib/admin/feature-flags'
+import { listCapabilities, listFeatureFlags, listOperationalFlags } from '@/lib/admin/feature-flags'
 import { requireSection } from '@/lib/admin/rbac'
 
 export const metadata = { title: 'דגלי מערכת' }
@@ -12,6 +12,7 @@ export default async function AdminFeatureFlagsPage() {
   await requireSection('analytics')
   const flags = listFeatureFlags()
   const operational = listOperationalFlags()
+  const capabilities = listCapabilities()
 
   return (
     <div className="space-y-6">
@@ -113,6 +114,60 @@ export default async function AdminFeatureFlagsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-600">{flag.effectHe}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* /api/ready checks seven dependencies and deliberately checks neither
+          Sentry nor Axiom: a readiness probe answers "can this instance serve
+          traffic", and a reporting outage does not stop the shop working.
+          Putting them there would take the shop out of rotation for it. But
+          that leaves both silently inert with nowhere to look - axiom.ts opens
+          with "ENTIRELY INERT without AXIOM_TOKEN + AXIOM_DATASET", and an
+          unset DSN produces no error either, only silence where the reports
+          would be. The thing that tells you everything else is broken is the
+          one thing nothing tells you about. Presence only; no value is ever
+          rendered. */}
+      <header>
+        <h2 className="text-xl font-bold text-gray-900">יכולות תצפית</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          אלה אינם מתגים אלא הגדרות שקיומן שקט: בלעדיהן שום דבר אינו נכשל, פשוט אין דיווח.{' '}
+          <span dir="ltr">/api/ready</span> אינו בודק אותן בכוונה — תקלה בדיווח אינה סיבה להוציא את
+          החנות מרוטציה. מוצג קיום בלבד, לעולם לא הערך.
+        </p>
+      </header>
+
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <table className="w-full text-start text-sm">
+          <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+            <tr>
+              <th className="px-4 py-3 font-medium">יכולת</th>
+              <th className="px-4 py-3 font-medium">משתנים</th>
+              <th className="px-4 py-3 font-medium">מצב</th>
+              <th className="px-4 py-3 font-medium">מה קורה בלעדיה</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {capabilities.map((capability) => (
+              <tr key={capability.labelHe}>
+                <td className="px-4 py-3 font-medium text-gray-900">{capability.labelHe}</td>
+                <td className="px-4 py-3 font-mono text-xs" dir="ltr">
+                  {capability.envNames.join(' + ')}
+                </td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`rounded-lg border px-2 py-0.5 text-xs font-medium ${
+                      capability.configured
+                        ? 'border-green-200 bg-green-50 text-green-800'
+                        : 'border-amber-200 bg-amber-50 text-amber-900'
+                    }`}
+                  >
+                    {capability.configured ? 'מוגדר' : 'לא מוגדר'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-gray-600">{capability.whenAbsentHe}</td>
               </tr>
             ))}
           </tbody>
