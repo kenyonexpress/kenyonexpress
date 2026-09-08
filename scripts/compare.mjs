@@ -3,10 +3,12 @@ import { copyFileSync, existsSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
+import { REFERENCE, classifyReference, refusalMessage } from './live-reference.mjs'
+import { appendParityRefusal } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
 //                                 [--live=<url>] [--mine=<url>]
-// home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
+// home     : live = LIVE_HOME below                  mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
 // coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
@@ -51,9 +53,22 @@ const LIVE_CART = 'https://kenyonexpress.co.il/cart/'
 // the same id refs/checkout-measured.json was measured against, so the order
 // panel holds one line on both runs.
 const LIVE_ATC_ID = process.env.LIVE_ATC_ID ?? '6166'
-// The saved refs/ke_live_singlefile.html renders a collapsed header (masthead 1px,
-// no 110px header row), so it under-represents the real site. Default the home
-// reference to the live site; pass --live=<file url> to use the single-file.
+// EVERY LIVE_* ABOVE NAMES A HOST THAT IS NOW OUR OWN DEPLOYMENT.
+//
+// Measured 2026-09-09: kenyonexpress.co.il resolves to our Vercel build (0
+// woocommerce markers, 125 `_next` references, our Hebrew title). None of these
+// constants points at the reference any more, and no run against them can
+// produce a fidelity number. They are left in place, unchanged, because the
+// guard in enforceReference() reads what they return and refuses on it, and
+// because they are the addresses to restore if the old site ever answers again.
+//
+// The escape hatch this comment used to offer -- "pass --live=<file url> to use
+// refs/ke_live_singlefile.html" -- names a file that does not exist: not in the
+// tree, not under $HOME, not in the recent backups. The archives that DO exist
+// (refs/ke_live_*.html) pass the identity guard and still cannot be used: their
+// URLs were saved protocol-relative, so 143 subresources fail under file:, and
+// their one stylesheet answers 403. The measurements, and what it would take to
+// have a reference again, are in docs/PARITY-REFERENCE.md.
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright')
@@ -213,6 +228,82 @@ const seedCart = async (target) => {
   }
 }
 
+/** A `file:` archive or the old host: the two shapes the reference has ever had. */
+const isExternal = (url) => url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+
+/**
+ * Read in the page. Kept as one function so the pre-seeding probe and the shot
+ * itself cannot drift into asking two different questions.
+ */
+const READ_REFERENCE_MARKERS = () => {
+  const urlsOf = (sel, attr) =>
+    Array.from(document.querySelectorAll(sel))
+      .map((el) => el.getAttribute(attr) ?? '')
+      .filter(Boolean)
+  // Stylesheets and scripts only. Our own catalogue still serves product photos
+  // from wp-content paths, so counting IMAGES here would classify our own build
+  // as the reference -- the exact miss this guard exists to prevent.
+  const wpAssets = [
+    ...urlsOf('link[rel~="stylesheet"][href]', 'href'),
+    ...urlsOf('script[src]', 'src'),
+  ].filter((u) => /wp-content|wp-includes/i.test(u))
+  const nextAssets = [...urlsOf('script[src]', 'src'), ...urlsOf('link[href]', 'href')].filter(
+    (u) => u.includes('/_next/'),
+  )
+  return {
+    wpStyleOrScript: wpAssets.length,
+    wooBodyClass: /woocommerce|wordpress/i.test(document.body?.className ?? ''),
+    generator: document.querySelector('meta[name="generator"]')?.getAttribute('content') ?? null,
+    nextAssets: nextAssets.length,
+    nextRuntime: Boolean(
+      document.querySelector('#__next, next-route-announcer, script#__NEXT_DATA__'),
+    ),
+  }
+}
+
+/**
+ * EVERY OTHER REFUSAL IN THIS FILE CATCHES A NUMBER THAT WOULD COME OUT TOO
+ * HIGH. A 404, two catalogues, a carousel mid-spin: all of them score badly and
+ * a bad score gets investigated. This one catches the opposite, and that is why
+ * it matters more than the rest of them put together.
+ *
+ * Measured 2026-09-09. `https://kenyonexpress.co.il/cart/` follows to
+ * `www.kenyonexpress.co.il/cart` and answers 200 with ZERO woocommerce markers,
+ * 125 `_next` references and our own Hebrew title. DNS was cut over to Vercel,
+ * so every `LIVE_*` constant at the top of this file now names OUR build. A run
+ * against it photographs this project twice and reports a near-zero diff, and
+ * nobody investigates a pass. `scripts/live-reference.mjs` holds the rule and
+ * the wording; `docs/PARITY-REFERENCE.md` holds what it costs and what would
+ * lift it.
+ *
+ * THIS GUARD ANSWERS IDENTITY AND NOTHING ELSE, ON PURPOSE. The obvious next
+ * question -- does the reference still RENDER -- was written here first and
+ * removed, because the version that inferred it from `document.styleSheets`
+ * passed `refs/ke_live_home.html`, which does not render. Measured 2026-09-09
+ * at 380px: 143 subresources failed, every one of them to
+ * `file://kenyonexpress.co.il/...`, because the capture saved its URLs
+ * protocol-relative and `//host/x` under `file:` is a host called
+ * kenyonexpress.co.il; its one real stylesheet answers 403; and Chromium keeps
+ * the failed sheet in `document.styleSheets` anyway, so the probe read it as
+ * loaded. An inference that green-lights a page with no images on it is worse
+ * than no check. What such an archive costs is written down in
+ * docs/PARITY-REFERENCE.md instead, where it can be read before somebody points
+ * `--live=` at one.
+ *
+ * @param {string} url
+ * @param {object} markers  from READ_REFERENCE_MARKERS
+ */
+const enforceReference = async (url, markers) => {
+  const verdict = classifyReference(markers)
+  if (verdict.kind !== REFERENCE) {
+    console.error(refusalMessage({ url, ...verdict }))
+    appendParityRefusal({ page, width: VIEW.width, reason: `live side is ${verdict.kind}` })
+    await b.close()
+    process.exit(5)
+  }
+  console.log(`  reference ok: ${verdict.why}`)
+}
+
 const shoot = async (url, out) => {
   const p = await ctx.newPage()
   // The live host intermittently drops a navigation into chrome-error, which
@@ -281,7 +372,14 @@ const shoot = async (url, out) => {
     })
   await p.evaluate(() => document.fonts?.ready).catch(() => {})
 
-  const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+  const external = isExternal(url)
+
+  // IS THE LEFT-HAND SIDE STILL THE REFERENCE? See enforceReference above. The
+  // page is already loaded here, so the check costs no extra navigation.
+  if (external) {
+    await enforceReference(url, await p.evaluate(READ_REFERENCE_MARKERS))
+  }
+
   // Local pages proxy remote product images through /_next/image on first
   // request, which is slower than the 2s this used to allow: cards were being
   // screenshotted mid-load and their broken-image glyphs scored as layout
@@ -785,6 +883,20 @@ const heroStability = { live: null, mine: null }
 // buttons and the tag line in the same places, offset by about 58px.
 const COUNTED_GRIDS = new Set(['category', 'products', 'search', 'product'])
 const pendingImages = { live: 0, mine: 0 }
+
+// ASK BEFORE SEEDING, NOT AFTER. `seedCart('live')` drives an add-to-cart
+// against whatever the live host is, and the live host is our own production
+// deployment now. Refusing at shot time would already have sent a WooCommerce
+// add-to-cart GET at the real site and paid for two cart seedings first. This
+// probe answers identity only -- the archive-renders-unstyled half needs a
+// settled page, and it gets one in shoot().
+if ((page === 'checkout' || page === 'cart') && isExternal(liveUrl)) {
+  const probe = await ctx.newPage()
+  await probe.goto(liveUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
+  const markers = await probe.evaluate(READ_REFERENCE_MARKERS)
+  await probe.close()
+  await enforceReference(liveUrl, markers)
+}
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
