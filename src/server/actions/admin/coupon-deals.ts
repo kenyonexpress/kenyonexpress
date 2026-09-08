@@ -125,18 +125,32 @@ async function runUpsertCouponDeal(
 }
 
 async function runSoftDeleteCouponDeal(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
 
   const supabase = await createClient()
+  const deletedAt = new Date().toISOString()
   const { error } = await supabase
     .from('coupon_deals')
-    .update({ deleted_at: new Date().toISOString(), status: 'archived' })
+    .update({ deleted_at: deletedAt, status: 'archived' })
     .eq('id', id)
   if (error) return { error: error.message }
+
+  // Archiving a deal pulls a live offer. The save above was audited and this
+  // was not, which is the wrong way round: a delete is harder to reconstruct
+  // afterwards than an edit.
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'coupon_deals',
+    entityId: id,
+    changes: { old: null, new: { deleted_at: deletedAt, status: 'archived' } },
+  })
 
   // Same contract as the save above, and it matters more here: an archived deal
   // that stays readable on the storefront is a coupon still being advertised.

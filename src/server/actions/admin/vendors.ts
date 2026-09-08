@@ -76,8 +76,9 @@ async function runUpdateVendorStatus(
   _: VendorActionState,
   formData: FormData,
 ): Promise<VendorActionState> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -92,6 +93,18 @@ async function runUpdateVendorStatus(
 
   revalidatePath('/admin/vendors')
   revalidatePath(`/admin/vendors/${id}`)
+  // Suspending a vendor takes their whole catalogue off the storefront. It was
+  // the one vendor mutation with no audit row, and the file-level coverage test
+  // could not see that because `runUpsertVendor` above satisfies it for the
+  // whole module.
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { old: null, new: { status: parsed.data } },
+  })
   return { success: 'סטטוס עודכן' }
 }
 
@@ -115,20 +128,31 @@ async function runUpdateVendorCommission(
 }
 
 async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
 
   const supabase = await createClient()
+  const deletedAt = new Date().toISOString()
   const { error } = await supabase
     .from('vendors')
-    .update({ deleted_at: new Date().toISOString(), status: 'suspended' })
+    .update({ deleted_at: deletedAt, status: 'suspended' })
     .eq('id', id)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/vendors')
+  // A delete is the mutation an audit row exists for. This one had none.
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { old: null, new: { deleted_at: deletedAt, status: 'suspended' } },
+  })
   return {}
 }
 
