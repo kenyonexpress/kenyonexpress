@@ -19,10 +19,30 @@
 -- to surprise somebody later. And the advisor will keep reporting it on every
 -- pass, which trains the reader to skim a list that should be empty.
 --
--- `SET search_path = pg_catalog` rather than `''`: the body calls `now()`,
--- which lives in pg_catalog. An empty path would make the function raise
--- `function now() does not exist` on the next write to any of those 52 tables,
--- which would be a far worse outcome than the warning.
+-- `SET search_path = pg_catalog` rather than `''`, AND THE REASON FIRST GIVEN
+-- HERE WAS WRONG. It said an empty path "would make the function raise
+-- `function now() does not exist` on the next write to any of those 52 tables".
+-- That is not how Postgres resolves names: pg_catalog is searched implicitly
+-- and always, whatever search_path says, so `''` cannot hide `now()`.
+--
+-- Measured 2026-09-09 against this database, in a DO block that raised at the
+-- end so nothing committed. Two pg_temp functions with the same body as this
+-- one, one at `SET search_path TO ''` and one at `SET search_path TO
+-- 'pg_catalog'`:
+--
+--   search_path = ''          -> 2026-09-08 19:03:18.836716+00
+--   search_path = 'pg_catalog' -> 2026-09-08 19:03:18.836716+00
+--
+-- Both return. Neither raises. Supabase's own guidance is `''`, and it would
+-- have been just as safe here.
+--
+-- The VALUE below is unchanged, because both are correct for a body whose only
+-- unqualified name is `now()`, and because preflight_177 was measured against
+-- `pg_catalog`. Naming it explicitly also documents what the body depends on.
+-- What changes is the justification: this is a style choice, not a rescue from
+-- a breakage that was never going to happen. A future function that touches a
+-- `public` table needs `''` plus full qualification, and would have been
+-- steered wrong by the sentence that used to be here.
 --
 -- The body is unchanged, character for character. Only the config is added.
 

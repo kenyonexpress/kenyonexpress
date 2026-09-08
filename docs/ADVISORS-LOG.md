@@ -284,3 +284,65 @@ has had no escrow since 2026-07-28. Chasing that found a live admin surface
 still promising a release. It is written up in `STATE.md` under maintenance pass
 39; the short version is that `escrow_holds` holds two real rows, they are
 history, they stay, and the labels around them no longer describe a future.
+
+---
+
+## Round 5 — 2026-09-09, maintenance pass 89
+
+**No delta, third flat reading.** Security 23, performance 191. Same counts and
+same items as rounds 3 and 4.
+
+| lint | round 3 | round 4 | round 5 |
+| --- | --- | --- | --- |
+| `function_search_path_mutable` | 1 | 1 | 1 (`set_updated_at`, 177 still pending) |
+| `anon_security_definer_function_executable` | 2 | 2 | 2 |
+| `authenticated_security_definer_function_executable` | 20 | 20 | 20 |
+| `unused_index` | 174 | 174 | 174 |
+| `multiple_permissive_policies` | 15 | 15 | 15 |
+| `unindexed_foreign_keys` | 1 | 1 | 1 |
+| `auth_db_connections_absolute` | 1 | 1 | 1 |
+
+### The definer-function findings were re-derived once more, from the bodies
+
+Rounds 3 and 4 assessed these; this round checked the assessment rather than
+inheriting it, because 20 of the 23 findings are on the money path and
+"assessed before" is not evidence. Every function named by lints 0028 and 0029
+was read out of `pg_proc`:
+
+- **Nine are role-guarded in the body.** `admin_refresh_reports`, the four
+  `admin_report_*`, `approve_payout_statement`, `cancel_payout_statement`,
+  `generate_payout_statement` and `mark_payout_statement_paid` all call
+  `is_admin`, `has_role`, `current_user_role` or `is_support` before doing
+  anything. The advisor cannot see inside a body, which is why it reports them.
+- **Eight are the RLS helpers themselves** (`is_admin`, `has_role`,
+  `is_supplier_member`, `is_supplier_owner`, `is_supplier_order`,
+  `is_supplier_shipping_order`, `is_support`, `current_user_role`). They must be
+  definer and must be callable, or every policy that calls them stops working.
+  A caller learns only facts about their own session.
+- **Three guard on membership rather than on role**, and were read in full:
+  - `redeem_voucher` returns `unauthorized` unless `auth.uid()` is non-null AND
+    has an active `supplier_members` row, logs the failed attempt to
+    `voucher_redemptions` either way, and carries an idempotency replay guard.
+  - `verify_supplier_staff_pin` returns empty unless the caller is an active
+    supplier member, scopes the PIN check to that supplier's own staff, and
+    rate-limits to 5 attempts per 15 minutes keyed on the caller's uid.
+    A malformed PIN counts as an attempt, which closes the obvious bypass.
+  - `supplier_app_context` returns the caller's own context.
+
+**Verdict unchanged, now on evidence rather than on inheritance: none of the 22
+definer findings is an open door.** The remaining one is `set_updated_at`, and
+migration 177 has been waiting for it since 2026-09-08.
+
+### What this round did surface
+
+**Migration 177's stated reason for its `search_path` value was false.** It
+claimed `SET search_path = ''` would make the function raise `function now()
+does not exist`. pg_catalog is searched implicitly whatever search_path holds,
+so an empty path cannot hide `now()`. Proven against this database in a DO
+block that raised at the end so nothing committed: `''` and `'pg_catalog'`
+returned the same timestamp, neither raised.
+
+The migration's SQL is unchanged, because both values are correct for a body
+whose only unqualified name is `now()`. The header and preflight now say why,
+and no longer teach the next author that `''` is dangerous when it is the value
+Supabase actually recommends.

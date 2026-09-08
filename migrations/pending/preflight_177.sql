@@ -27,6 +27,12 @@ select pg_get_functiondef(p.oid) as current_definition
 -- (4) `now()` resolves under the new path. If this returns a row, setting
 --     search_path to pg_catalog cannot break the function body.
 --     EXPECT: one row, pg_catalog.
+--     NOTE: this check is weaker than it looks, and 177's header now says so.
+--     pg_catalog is searched implicitly whatever search_path holds, so `now()`
+--     would resolve under an EMPTY path too. Proven 2026-09-09 in a rolled-back
+--     DO block: both `''` and `'pg_catalog'` returned the same timestamp. The
+--     query below confirms which schema owns the name, not that the choice of
+--     path is load-bearing.
 select n.nspname as schema_holding_now
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
  where p.proname = 'now' and p.pronargs = 0;
