@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 import { copyFileSync, existsSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 import { appendParityFailure } from './parity-log.mjs'
 
@@ -52,9 +53,67 @@ const LIVE_CART = 'https://kenyonexpress.co.il/cart/'
 // the same id refs/checkout-measured.json was measured against, so the order
 // panel holds one line on both runs.
 const LIVE_ATC_ID = process.env.LIVE_ATC_ID ?? '6166'
-// The saved refs/ke_live_singlefile.html renders a collapsed header (masthead 1px,
-// no 110px header row), so it under-represents the real site. Default the home
-// reference to the live site; pass --live=<file url> to use the single-file.
+// THE LIVE REFERENCE NO LONGER EXISTS, AND THE CONSTANTS ABOVE ARE NOW ARCHIVE
+// LABELS RATHER THAN FETCH TARGETS.
+//
+// kenyonexpress.co.il stopped serving WordPress: the DNS was cut to Vercel and
+// the host now serves THIS app. Measured 2026-09-08 - zero `wp-content`
+// markers, 158 `_next/static` ones, and every /wp-content/uploads/ path
+// answering 403. Left pointing at the network, this gate compared our local
+// build against our own production deployment and still printed a percentage:
+// 39.76% at 380px, with the height-ratio guard firing at 1.80x.
+//
+// A fidelity score against yourself is worse than no score, so the default is
+// now the snapshot taken while the site WAS live, localized by
+// scripts/localize-live-refs.mjs so its imagery resolves from refs/live-assets/
+// instead of from a host that 403s.
+//
+// `--live=<url>` still overrides, and `COMPARE_USE_NETWORK=1` restores the old
+// behaviour for the day the reference is hosted somewhere again.
+//
+// THE SNAPSHOT IS DEGRADED, AND THE NUMBER IT PRODUCES IS NOT THE OLD NUMBER.
+// Measured 2026-09-08 by loading refs/localized/ke_live_home.html in Chromium:
+// 49 images, ZERO broken - the localizer did its job on imagery - but 96 failed
+// requests, every one a font. `localize-live-refs.mjs` rewrites only
+// `IMAGE_EXT`, so Open Sans and two Font Awesome families still resolve to
+// kenyonexpress.co.il/wp-content/, which 403s. `refs/live-assets/` holds no
+// .woff, .woff2 or .ttf at all, and the origin is gone, so those bytes are not
+// recoverable. The reference therefore renders in fallback type with tofu where
+// the icons were.
+//
+// Three numbers exist for home at 380 and none of them is interchangeable:
+//   10.68%  historical, against the real WordPress site while it was live
+//   39.76%  network mode today: our build against our own production
+//   30.26%  this snapshot: our build against a reference missing its fonts
+// Read the third as a floor on the diff, not as the gate's 11%.
+const localizedRef = (name) => {
+  const file = resolve(`refs/localized/${name}`)
+  return existsSync(file) ? pathToFileURL(file).href : null
+}
+
+// NO SILENT FALLBACK TO THE NETWORK. `?? networkUrl` was the first shape of this
+// and it re-created the exact bug the block above describes: refs/ is gitignored
+// in its entirety, so refs/localized/ cannot exist on a CI runner, and the
+// fallback would have quietly pointed the gate back at kenyonexpress.co.il -
+// which serves THIS app - and printed a fidelity score against ourselves.
+//
+// That was not hypothetical. The pixel-gate job skips today only because
+// CI_SUPABASE_URL is unset, and setting it is an open MANUAL item. The trap was
+// armed to spring on the day someone did the thing they are being asked to do.
+const REFERENCE = (name, networkUrl) => {
+  if (process.env.COMPARE_USE_NETWORK === '1') return networkUrl
+  const local = localizedRef(name)
+  if (local) return local
+  // One template literal, not concatenated pieces: joining them with `+` is a
+  // recorded way to lose text in this repo.
+  throw new Error(
+    `compare: refs/localized/${name} is missing, so there is nothing to compare against.
+refs/ is gitignored, so this is the expected state on a fresh checkout or a CI runner.
+Rebuild it with scripts/localize-live-refs.mjs, or pass --live=<url> explicitly.
+COMPARE_USE_NETWORK=1 restores the old behaviour, but ${networkUrl} now serves THIS app,
+so that measures the build against its own deployment and the percentage is meaningless.`,
+  )
+}
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright')
@@ -74,10 +133,10 @@ let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)
 
 if (page === 'home') {
-  liveUrl ??= LIVE_HOME
+  liveUrl ??= REFERENCE('ke_live_home.html', LIVE_HOME)
   mineUrl ??= `${LOCAL}/`
 } else if (page === 'product') {
-  liveUrl ??= LIVE_PRODUCT
+  liveUrl ??= REFERENCE('ke_live_product.html', LIVE_PRODUCT)
   if (!mineUrl) {
     const probe = await ctx.newPage()
     // Pin the local product, the way the category run pins its slug. Falling
@@ -109,7 +168,7 @@ if (page === 'home') {
     await probe.close()
   }
 } else if (page === 'category') {
-  liveUrl ??= LIVE_CATEGORY
+  liveUrl ??= REFERENCE('ke_live_category.html', LIVE_CATEGORY)
   if (!mineUrl) {
     // hot-deals is the live archive's slug and does not exist in the local
     // database, whose categories are baby-kids / vacation / pets / ... . Hard
@@ -132,10 +191,10 @@ if (page === 'home') {
     await probe.close()
   }
 } else if (page === 'products') {
-  liveUrl ??= LIVE_PRODUCTS
+  liveUrl ??= REFERENCE('ke_live_products.html', LIVE_PRODUCTS)
   mineUrl ??= `${LOCAL}/products`
 } else if (page === 'search') {
-  liveUrl ??= LIVE_SEARCH
+  liveUrl ??= REFERENCE('ke_live_search.html', LIVE_SEARCH)
   mineUrl ??= `${LOCAL}/search?q=${encodeURIComponent(COMPARE_QUERY)}`
 } else if (page === 'checkout') {
   // Both checkouts redirect an empty cart away, so neither side can be
@@ -143,7 +202,7 @@ if (page === 'home') {
   // below refuses anything that did not land on /checkout: a picture of the
   // cart scored against a picture of the cart is a low number and no
   // measurement.
-  liveUrl ??= LIVE_CHECKOUT
+  liveUrl ??= REFERENCE('ke_live_checkout.html', LIVE_CHECKOUT)
   mineUrl ??= `${LOCAL}/checkout`
 } else if (page === 'cart') {
   // Unlike checkout, neither cart REDIRECTS when it is empty: both render an
@@ -153,7 +212,7 @@ if (page === 'home') {
   // to score the two states against each other. COMPARE_CART_EMPTY=1 measures
   // the empty state on purpose, which is the only run available while the
   // local add-to-cart is blocked by the stock Supabase demo key.
-  liveUrl ??= LIVE_CART
+  liveUrl ??= REFERENCE('ke_live_cart.html', LIVE_CART)
   mineUrl ??= `${LOCAL}/cart`
 } else {
   console.error(
