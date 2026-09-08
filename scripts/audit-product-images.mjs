@@ -52,9 +52,39 @@ const fail = (msg) => {
   process.exit(2)
 }
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
-if (!url || !key) fail('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY are required')
+/**
+ * ADMIN KEY PREFERRED, ANON ACCEPTED, COVERAGE REPORTED EITHER WAY.
+ *
+ * This demanded a service key and refused to start without one. Measured
+ * 2026-09-08: the only admin key in this checkout answers `401 Invalid API
+ * key`, and rotating it is a MANUAL item nobody has done - so the one tool
+ * written to notice a broken product image could not be run by anybody here.
+ *
+ * Most of what it reads is public. `products.images` is anon-readable; it is
+ * the catalogue every visitor loads. Refusing to check ANYTHING because it
+ * cannot check EVERYTHING is the wrong trade for an audit whose whole subject
+ * is "nothing noticed".
+ *
+ * So anon is accepted, and the cost is stated rather than hidden: a table anon
+ * cannot read is reported as UNCHECKED and the run exits non-zero. It never
+ * reports clean for a column it could not see - the same rule
+ * `audit-role-separation.mjs` states for the same reason.
+ */
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+const adminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const key = adminKey || anonKey
+const usingAnon = !adminKey && Boolean(anonKey)
+if (!url || !key) {
+  fail('NEXT_PUBLIC_SUPABASE_URL and one of SUPABASE_SECRET_KEY / SUPABASE_ANON_KEY are required')
+}
+if (usingAnon) {
+  console.warn('audit-product-images: no admin key; running with the ANON key.')
+  console.warn('  Tables anon cannot read are reported UNCHECKED, never clean.\n')
+}
+
+/** Tables this run could not read, so the summary can refuse to claim them. */
+const unchecked = []
 
 /**
  * PostgREST rather than a pg client: this script has to run in CI, where the
@@ -64,7 +94,16 @@ const rest = async (path) => {
   const res = await fetch(`${url}/rest/v1/${path}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   })
-  if (!res.ok) fail(`${path} -> ${res.status} ${await res.text()}`)
+  if (!res.ok) {
+    // 401/403 under the anon key means RLS hid the table, which is a coverage
+    // gap and not a fault. Anything else, or any failure with an admin key, is
+    // still fatal: a broken audit must not look like a passing one.
+    if (usingAnon && (res.status === 401 || res.status === 403)) {
+      unchecked.push(`${path.split('?')[0]} (${res.status} as anon)`)
+      return []
+    }
+    fail(`${path} -> ${res.status} ${await res.text()}`)
+  }
   return res.json()
 }
 
@@ -181,10 +220,18 @@ const main = async () => {
     console.log(
       `audit-product-images: ${refs.length} references checked${OFFLINE ? ' (offline: relative half only)' : ''}`,
     )
-    if (problems.length === 0) console.log('  all resolve')
+    if (problems.length === 0 && unchecked.length === 0) console.log('  all resolve')
+    else if (problems.length === 0) console.log('  everything READ resolves')
     for (const p of problems) console.error(`  ${p.verdict.padEnd(40)} ${p.source}  ${p.url}`)
+    if (unchecked.length) {
+      console.error(`\n  UNCHECKED (${unchecked.length}) - anon could not read these:`)
+      for (const t of unchecked) console.error(`    ${t}`)
+      console.error('  This run did NOT clear them. Rerun with an admin key.')
+    }
   }
-  process.exit(problems.length === 0 ? 0 : 1)
+  // Non-zero when anything is broken OR when anything went unread. A partial
+  // audit that exits 0 is the shape this script exists to catch.
+  process.exit(problems.length === 0 && unchecked.length === 0 ? 0 : 1)
 }
 
 main().catch((e) => fail(e.stack ?? String(e)))
