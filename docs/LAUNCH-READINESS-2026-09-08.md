@@ -76,7 +76,7 @@ deploy is at least visible.
 | 16 LEGAL | ✅ | No PAN in schema or data, verified by counting matches without selecting values. Five Hebrew RTL policies. GDPR deliberately not claimed. |
 | 17 TESTS | ✅ | Every named journey has a spec; k6 present with a real threshold table. The `access-control-allow-origin: *` seen in production is on Vercel's edge-cached HTML only, never on an API route. |
 | 18 CICD | ✅ fixed | `bundle-gate`, `migration-lint` and `lighthouse` existed and appeared in no workflow. The first two are now a CI job. |
-| 19 BI | ⚠️ | Four of six metrics. Refund rate is shown as an amount, not a rate; redemption rate is absent. Neither is derivable from `loadSalesLines`, which loads paid order lines only. |
+| 19 BI | ✅ **closed 2026-09-08** | Six of six. Refund rate and redemption rate added as `src/lib/analytics/rates.ts` + `loadRateCounts`, windowed on `paid_at` and `issued_at` respectively. A zero denominator renders `—`, never `0%`. Redemption is read from `vouchers.status`/`redeemed_at` and deliberately NOT from `voucher_redemptions`, which records refused scans and would put failures in a success numerator. |
 
 ---
 

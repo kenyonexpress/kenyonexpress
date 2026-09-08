@@ -166,3 +166,79 @@ export async function loadFunnel(days: number): Promise<FunnelLoad> {
 
   return { available: true, row, days }
 }
+
+/**
+ * The counts behind the two rate tiles.
+ *
+ * Six `head: true` counts rather than one join: PostgREST cannot express
+ * "count rows grouped by status" in a single call without a view, and six
+ * indexed counts on a catalogue this size cost less than the view would cost to
+ * maintain. Each one returns a number and no rows.
+ *
+ * WINDOWED ON DIFFERENT COLUMNS ON PURPOSE. Orders are windowed on `paid_at`,
+ * because an order enters the refund denominator when it is paid. Vouchers are
+ * windowed on `issued_at`, because a voucher enters the redemption denominator
+ * when it is issued. Using one column for both would put a voucher issued last
+ * month and redeemed today on the wrong side of the boundary.
+ */
+export interface RateCounts {
+  paidOrders: number
+  refundedOrders: number
+  vouchersIssued: number
+  vouchersRedeemed: number
+  vouchersCancelled: number
+  vouchersRefunded: number
+}
+
+export async function loadRateCounts(days: number): Promise<RateCounts> {
+  const admin = createAdminClient()
+  const since = windowStart(days)
+
+  // Written out rather than built by a helper: a generic that returns a
+  // PostgREST builder makes tsc give up with TS2589 (type instantiation
+  // excessively deep), and six plain statements are clearer than the generic
+  // that would have saved four lines.
+  const paidOrders = () =>
+    admin
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .is('deleted_at', null)
+      .not('paid_at', 'is', null)
+      .gte('paid_at', since)
+  const vouchers = () =>
+    admin.from('vouchers').select('id', { count: 'exact', head: true }).gte('issued_at', since)
+
+  const [paid, refunded, issued, redeemed, cancelled, vRefunded] = await Promise.all([
+    paidOrders(),
+    paidOrders().eq('status', 'refunded'),
+    vouchers(),
+    vouchers().not('redeemed_at', 'is', null),
+    vouchers().eq('status', 'cancelled'),
+    vouchers().eq('status', 'refunded'),
+  ])
+
+  // A failed count is reported as zero and logged, never as a confident
+  // number: `loadRateCounts` feeding 0 into a denominator makes the rate null,
+  // which renders as a dash. That is the honest outcome for a count that did
+  // not happen.
+  for (const [name, result] of [
+    ['paid', paid],
+    ['refunded', refunded],
+    ['issued', issued],
+    ['redeemed', redeemed],
+    ['cancelled', cancelled],
+    ['voucher_refunded', vRefunded],
+  ] as const) {
+    if (result.error)
+      log.error('analytics.rate_count_failed', { count: name, reason: result.error.message })
+  }
+
+  return {
+    paidOrders: paid.count ?? 0,
+    refundedOrders: refunded.count ?? 0,
+    vouchersIssued: issued.count ?? 0,
+    vouchersRedeemed: redeemed.count ?? 0,
+    vouchersCancelled: cancelled.count ?? 0,
+    vouchersRefunded: vRefunded.count ?? 0,
+  }
+}

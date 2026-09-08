@@ -12,12 +12,13 @@ import {
   topSuppliers,
   totalsOf,
 } from '@/lib/analytics/aggregate'
+import { formatRate, redemptionRate, refundRate } from '@/lib/analytics/rates'
 import {
   shekelsFromIls as sharedShekelsFromIls,
   shekelsFromIlsRounded as sharedShekelsFromIlsRounded,
 } from '@/lib/money-format'
-import { loadFunnel, loadSalesLines } from '@/server/analytics/queries'
-import { Coins, Receipt, ShoppingCart, TrendingUp } from 'lucide-react'
+import { loadFunnel, loadRateCounts, loadSalesLines } from '@/server/analytics/queries'
+import { Coins, Receipt, RotateCcw, ShoppingCart, TicketCheck, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'אנליטיקה' }
@@ -87,15 +88,23 @@ export default async function AnalyticsPage({
   const { period: rawPeriod } = await searchParams
   const period = resolvePeriod(rawPeriod)
 
-  const [{ lines, truncated }, funnel] = await Promise.all([
+  const [{ lines, truncated }, funnel, rateCounts] = await Promise.all([
     loadSalesLines(period.days),
     loadFunnel(period.days),
+    loadRateCounts(period.days),
   ])
 
   const buckets = bucketSales(lines, period.value)
   const totals = totalsOf(buckets)
   const products = topProducts(lines, 10)
   const suppliers = topSuppliers(lines, 10)
+  const refunds = refundRate(rateCounts)
+  const redemptions = redemptionRate({
+    issued: rateCounts.vouchersIssued,
+    redeemed: rateCounts.vouchersRedeemed,
+    cancelled: rateCounts.vouchersCancelled,
+    refunded: rateCounts.vouchersRefunded,
+  })
   const typeSplit = splitByProductType(lines)
   const takeRates = takeRateByPlatformPercent(lines)
 
@@ -139,7 +148,7 @@ export default async function AnalyticsPage({
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatsCard
           label="מחזור"
           value={shortShekels(totals.gmvIls)}
@@ -162,6 +171,28 @@ export default async function AnalyticsPage({
           label="ממוצע להזמנה"
           value={shortShekels(totals.aovIls)}
           icon={Receipt}
+          variant="admin"
+        />
+        {/* THE TWO RATES STEP 19 NAMES, AND THE DASH IS THE POINT.
+            Both render "—" when their denominator is zero. A tile that printed
+            "0%" for a window with no orders would read as a perfect month and
+            mean no data - the same shape of silent nothing this project keeps
+            finding elsewhere.
+
+            NO `trend` ON EITHER. That prop renders `+{value}% {label}`, which
+            means change over time; feeding it "7 of 200" would print "+7%" and
+            state something false. The counts stay out of the KPI row rather
+            than being bent into a prop that means something else. */}
+        <StatsCard
+          label="שיעור החזרים"
+          value={formatRate(refunds)}
+          icon={RotateCcw}
+          variant="admin"
+        />
+        <StatsCard
+          label="שיעור מימוש"
+          value={formatRate(redemptions)}
+          icon={TicketCheck}
           variant="admin"
         />
       </div>
