@@ -21,6 +21,51 @@ import { execFileSync } from 'node:child_process'
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+/**
+ * IS TODAY WORSE THAN THE BEST THIS REFERENCE HAS EVER ALLOWED?
+ *
+ * At 380 and 768 the 11% gate is not reachable and never will be: the reference
+ * dropped 57 scripts and 37 fonts, refs/live-assets captured none of either,
+ * and the origin answers 403. Those rows have therefore read **FAIL** on every
+ * run since the snapshot was localized, which is the kind of permanent red that
+ * teaches a reader to skip the column.
+ *
+ * So the ceiling verdict is left exactly as it was - it is the project's rule
+ * and not this file's to soften - and a second question is asked beside it,
+ * which a permanent FAIL cannot answer. The numbers are stable to the hundredth
+ * across separate builds, so half a point is a wide tolerance and still catches
+ * a real layout regression.
+ *
+ * Advisory on purpose. It writes a note and prints a warning; it does not
+ * change an exit code. Promoting it to a failing gate is worth doing once the
+ * pixel job actually runs in CI, and that is blocked on the reference being
+ * reachable there at all.
+ */
+function baselines() {
+  try {
+    const path = resolve(process.cwd(), 'scripts/parity-baselines.json')
+    if (!existsSync(path)) return null
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+/**
+ * @param {string} page
+ * @param {number} width
+ * @param {number} pct
+ * @returns {string} '' when there is no baseline or no regression
+ */
+export function regressionNote(page, width, pct) {
+  const data = baselines()
+  const best = data?.pages?.[page]?.[String(width)]
+  if (typeof best !== 'number') return ''
+  const tolerance = typeof data.tolerance === 'number' ? data.tolerance : 0.5
+  if (pct <= best + tolerance) return ''
+  return `WORSE than the ${best}% best known for ${page}/${width} (tolerance ${tolerance})`
+}
+
 const REPORT = 'docs/UI-PARITY-REPORT.md'
 
 /** The 11% ceiling every visual step is scored against. */
@@ -105,7 +150,12 @@ export function appendParityRow(row) {
   const when = row.when ?? new Date().toISOString().replace('T', ' ').slice(0, 16)
   const verdict = row.pct <= GATE_CEILING ? 'PASS' : '**FAIL**'
   const commit = row.commit ?? commitHash()
-  const notes = firstNote(row.notes, process.env.COMPARE_NOTES)
+  const regression = regressionNote(row.page, row.width, row.pct)
+  if (regression) console.warn(`  parity: ${regression}`)
+  const notes = firstNote(
+    [regression, row.notes].filter(Boolean).join('; '),
+    process.env.COMPARE_NOTES,
+  )
   appendFileSync(
     path,
     `| ${when} | ${row.page} | ${row.width} | ${row.pct.toFixed(2)}% | ${verdict} | \`${commit}\` | ${notes} |\n`,
