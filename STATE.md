@@ -17965,4 +17965,70 @@ src/app/(account)/account/details/DeleteAccountSection.tsx
 ‏PostHog, ‏Sentry, ‏Axiom). נגישות לפי ת"י 5568 ו-WCAG AA. ביטולים לפי חוק
 הגנת הצרכן. קטגוריות הסכמה לעוגיות נבנו בריצה הזאת.
 
-**המשך מ: ‏STEP 17 (‏TESTS).**
+**המשך מ: ‏STEP 17 — נבדק. ראה למטה.**
+
+
+## ‏STEP 17 TESTS — נבדק, ‏08.09.2026 ‏16:40
+
+**לא שונה קוד.**
+
+| דרישה | מצב |
+| --- | --- |
+| ‏Playwright: כל המסעות | קיימים |
+| ‏k6 | קיים, עם טבלת ספים אמיתית |
+| ‏XSS | מכוסה |
+| ‏RLS bypass | מכוסה בשלושה קבצים |
+| ‏CSRF | אין טסט ייעודי, וזה סביר |
+| ‏CORS | **נמדד**, ראה למטה |
+
+### ‏Playwright
+
+```
+coupons.spec.ts  physical-purchase.spec.ts  full-purchase-redeem.spec.ts
+admin-refund.spec.ts  admin-refund-to-wallet.spec.ts  category.spec.ts
+rtl-three-widths.spec.ts  rtl-mobile.spec.ts
+```
+
+### ‏k6
+
+‏`load/` מכיל ‏browse, ‏checkout, ‏redeem, ‏search, ‏webhooks, ‏pool.
+‏`load/lib/thresholds.js` גוזר את הספים מ-`ARCHITECTURE-TESTING.md §5.3`, עם
+**שני** ערכים לכל שורה: יעד כשער, ונקודת כשל עם `abortOnFail`. שלוש השורות
+האחרונות הן מוני נכונות שחייבים להסתיים באפס, ו"ריצה שמסתיימת עם חיוב כפול
+אחד היא ריצה כושלת גם אם כל ה-p95 ירוקים".
+
+### ‏CORS — נראה מפחיד במבט ראשון, ואינו
+
+בבדיקה הראשונה שלי היום ראיתי בפרודקשן:
+
+```
+access-control-allow-origin: *
+```
+
+מדדתי מחדש עם ‏`Origin: https://evil.example`:
+
+```
+prod /             access-control-allow-origin: *   age: 13306  content-disposition: inline
+prod /api/health   <אין כותרת CORS>                 age: 0
+```
+
+הכותרת מופיעה **רק על HTML סטטי שנשמר במטמון הקצה של Vercel** ולא על אף מסלול
+‏API. נבדקו מקומית `/`, ‏`/api/health`, ‏`/api/cart` ו-`/api/search` — **אף אחד
+לא מחזיר כותרת CORS**, ואין בקוד שלנו שום `Access-Control-Allow-Origin`.
+
+כלומר ברירת המחדל של same-origin חלה, וקריאה חוצת-מקור לכל API חסומה בדפדפן.
+תוכן ה-HTML הציבורי הוא ממילא ציבורי.
+
+### ‏CSRF
+
+אין טסט ייעודי, וזה הגיוני: ‏server actions ב-Next מוגנות מובנה בבדיקת
+‏Origin. זה אפילו הפיל אותנו פעם — הרשומה על מלכודת ה-127.0.0.1 מול localhost.
+טסט כזה היה בודק את המסגרת.
+
+### ‏"‏All tests green"
+
+‏**4321 עוברים.** אחד אדום, ואינו שלי: עריכה לא-מקומיטת של סוכן שני ב-
+‏`src/styles/tokens.ts`. אומת בהחבאת שני הקבצים בלבד — בלעדיהם 24/24 ירוקים,
+והעבודה שלו הוחזרה שלמה.
+
+**המשך מ: ‏STEP 18 (‏CICD).**
