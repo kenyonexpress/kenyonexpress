@@ -18348,4 +18348,71 @@ coupon_qr_batches:  0 שורות,  24 kB,  2 אינדקסים קיימים
 | ‏2 | ‏audit נקי; שלושה PR של Dependabot יתומים על ענף שהוצא משימוש |
 | ‏3 | ‏214 lints; **אף אחד לא דורש פעולה**, ואחד נוסף ל-MANUAL |
 
-**המשך מ: ‏STEP 21 — סבב תחזוקה 4.**
+**המשך מ: ‏STEP 21 — סבב תחזוקה 4 בוצע. ראה למטה.**
+
+
+## ‏STEP 21 — סבב תחזוקה 4: תיקון להצהרה שלי מסבב 1, ‏08.09.2026 ‏19:25
+
+### מה שכתבתי בסבב 1 היה חצי נכון
+
+כתבתי ש"שער הפיקסלים מקבל סוף סוף את הבילד שהוא אמור להשוות". **הארטיפקט
+אכן מגיע. השער עדיין לא משווה כלום.**
+
+בדקתי את שלבי ה-job בריצה `34194328403`, זו שהייתה ירוקה **אחרי** התיקון שלי:
+
+```
+success    Check whether Supabase credentials are configured
+skipped    Run pnpm/action-setup@v4
+skipped    Run actions/setup-node@v4
+skipped    Run pnpm install --frozen-lockfile
+skipped    Run actions/download-artifact@v4
+skipped    Install the browser compare.mjs drives
+skipped    Start the built server
+skipped    Compare against the live site at three widths
+skipped    Publish the parity report
+==> Pixel parity (380 / 768 / 1440) -> success
+```
+
+**שמונה שלבים דילגו, וה-job ירוק.** הסיבה שונה מזו של סבב 1: לא הארטיפקט, אלא
+‏`secrets.CI_SUPABASE_URL` שאינו מוגדר.
+
+לעומת זאת ה-job `gates` שהוספתי **כן** רץ באמת: הוריד ארטיפקט והריץ את שער
+הבנדל. התיקון של סבב 1 עבד — הוא פשוט לא היה מספיק.
+
+### למה לא פשוט להפעיל את השער
+
+שתי סיבות, ושתיהן נמדדו:
+
+**‏1.** הסוד לא מוגדר **בכוונה**. ה-job של ה-build מתעד את זה באריכות: הגדרת
+‏`CI_SUPABASE_URL` הייתה מפעילה גם את ה-E2E, שהשלב הראשון שלו הוא
+‏`pnpm seed:test` — **כתיבת fixtures למסד היחיד שקיים, פרודקשן.**
+
+**‏2.** גם אילו הופעל, הוא היה **מאדים**. ‏STEP 05 מדד ‏30.33% ב-380 ו-29.55%
+ב-768 מול תקרה של 11%, כי ה-hero בקובץ הייחוס הוא slider שלא אותחל. **הפעלת
+שער שנכשל היא בדיוק טעות ה-whatsapp** — אזעקה שצועקת תמיד.
+
+### מה כן נעשה
+
+‏`jobs.<id>.if` **לא יכול לגשת ל-`secrets`** (רק ל-`github`, `needs`, `vars`,
+‏`inputs`), ולכן אי אפשר לגרום ל-job לדווח `skipped` ברמת ה-job.
+
+הדבר הבא הכי טוב: השער כותב עכשיו ל-`$GITHUB_STEP_SUMMARY`, במקום שבן אדם
+באמת מסתכל בו:
+
+> **‏Pixel parity: SKIPPED.** ‏No comparison was performed... This job being
+> green means it did not run, not that the pages matched.
+
+### הדפוס, בפעם השישית
+
+|מה|התסמין|
+|---|---|
+|‏`/suppliers`|‏307 ולא שגיאה|
+|‏hreflang|מוגדר ולא מוגש|
+|שלושה שערים|קיימים ולא מחווטים|
+|העלאת הארטיפקט|‏`warn` ולא `error`|
+|‏PR של Dependabot|‏`MERGEABLE` לענף מת|
+|**שער הפיקסלים**|**‏`success` בלי להשוות**|
+
+**כולם מדווחים הצלחה.** זו הסיבה היחידה ששרדו.
+
+**המשך מ: ‏STEP 21 — סבב תחזוקה 5.**

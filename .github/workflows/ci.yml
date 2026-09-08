@@ -422,6 +422,25 @@ jobs:
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
             echo "::warning title=Pixel gate skipped::CI_SUPABASE_URL is not set, so the built server cannot boot. Add the CI_SUPABASE_* repository secrets to enable it."
+            # A GREEN JOB THAT COMPARED NOTHING IS INDISTINGUISHABLE FROM A PASS.
+            #
+            # Every step below is `if: steps.creds.outputs.present == 'true'`, so
+            # when the secret is absent they all skip and the JOB still reports
+            # success. Measured on run 34194328403: checkout and this check ran,
+            # the other eight steps skipped, and the job was green.
+            #
+            # The status cannot be made honest at the job level - GitHub does not
+            # expose `secrets` to `jobs.<id>.if`, only `github`, `needs`, `vars`
+            # and `inputs`. So the next best thing is to say so where a human
+            # actually looks: the run summary, not just an annotation.
+            {
+              echo "## Pixel parity: SKIPPED"
+              echo
+              echo "**No comparison was performed.** \`CI_SUPABASE_URL\` is unset, so"
+              echo "the built server cannot boot and every step below the guard was"
+              echo "skipped. This job being green means it did not run, not that the"
+              echo "pages matched."
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - uses: pnpm/action-setup@v4
