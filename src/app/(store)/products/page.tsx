@@ -1,3 +1,4 @@
+import { ogImage } from '@/app/api/og/url'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
@@ -20,9 +21,21 @@ import '@/styles/category-page.css'
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
 
+const DESCRIPTION = 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.'
+
 export const metadata = {
   title: PAGE_TITLE,
-  description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  description: DESCRIPTION,
+  // The shop archive has no single row to draw, so it shares as the brand card
+  // rather than as the blank grey rectangle a `summary_large_image` with no
+  // image renders to.
+  openGraph: {
+    title: PAGE_TITLE,
+    description: DESCRIPTION,
+    type: 'website',
+    locale: 'he_IL',
+    images: [ogImage({ template: 'default' }, 'קניון אקספרס')],
+  },
 }
 
 type Props = {
