@@ -1,5 +1,39 @@
 # Apply order
 
+## 2026-09-09: 181 APPLIED, as 181a + 181b
+
+The only security file left in the queue, and establishing that it was
+unapplied took reading a comment rather than a name: `is_support()` and
+`enforce_profile_privilege_columns()` both already exist in production from the
+053/090 lineage. The deployed guard body was
+`IF public.is_admin() THEN RETURN NEW; END IF;` with nothing between, so any
+admin could grant themselves `super_admin` through the user client.
+
+Split the way production already recorded 135, because an enum member is
+permanent and cannot be dropped:
+
+| Order | File | Applied as |
+| --- | --- | --- |
+| 1 | `181a_read_only_enum.sql` | `read_only_enum_181a` |
+| 2 | `181b_admin_rbac_hardening.sql` | `admin_rbac_hardening_181b` |
+
+181a must commit before 181b: a value added by `ALTER TYPE ... ADD VALUE`
+cannot be referenced by the transaction that adds it. 181a alone is inert.
+
+Proven in a rolled-back transaction, acting as the real super_admin at aal1:
+self role change refused, admin grant from aal1 refused for want of MFA, and
+the service-role path still succeeded and assigned `read_only`. `profiles`
+read 9 customer + 1 super_admin before and after.
+
+**Operator note.** The single super_admin has no verified MFA factor, so until
+it enrols TOTP it cannot update its own `profiles` row through the user client.
+No deadlock: enrolment writes to `auth.mfa_factors`, never `profiles`, and
+`rbac.ts` already redirects that account to `/admin-mfa?mode=enrol` anyway.
+
+**What is still pending after this:** 162 (approved, blocked on vault seeding),
+173, 177, 178, 179, 183, 184, 185.
+
+
 ## 2026-09-09: the numbering tangle, then 186 and 187 APPLIED
 
 **Two 170s and two 171s were sitting in `pending/` at once**, written by
@@ -49,8 +83,8 @@ rewrites only `₪<digits>`, so it now leaves this name alone, and a database
 without 187 (a branch, a local reset, a preview project) still renders it the
 right way round.
 
-**What is still pending after this:** 162 (approved, blocked on vault seeding),
-173, 177, 178, 179, 181, 183, 184, 185.
+**What was still pending after that step:** 162 (approved, blocked on vault
+seeding), 173, 177, 178, 179, 181, 183, 184, 185.
 
 
 ## 2026-09-08: 169 / 180 (the four money events) APPLIED

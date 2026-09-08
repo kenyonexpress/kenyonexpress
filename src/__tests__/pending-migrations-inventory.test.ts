@@ -133,6 +133,8 @@ describe('the pending migration inventory', () => {
       '172_hide_master_product_test_row.sql',
       '172_rls_zero_policy_tables.sql',
       '180_analytics_server_event_names.sql',
+      '181a_read_only_enum.sql',
+      '181b_admin_rbac_hardening.sql',
       '182_coupon_qr_batches.sql',
       '186_composite_indexes_top_queries.sql',
       '187_category_name_shekel_order.sql',
@@ -189,14 +191,17 @@ describe('the pending migration inventory', () => {
     //   177_cashback_ledger              cashback_ledger: absent
     //   178_webauthn_credentials         webauthn_credentials: absent
     //   179_push_subscriptions           push_subscriptions: absent
-    //   181_admin_rbac_hardening         profiles_super_admin_mfa policy absent, and
-    //                                    enforce_profile_privilege_columns still
-    //                                    carries the pre-181 comment (the function
-    //                                    EXISTS from the 053/090 lineage, so probing
-    //                                    the name alone would have said "applied")
     //   183_order_shipped_notification   tg_orders_notify_shipped: absent
     //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
     //   185_soft_delete_user_facing_...  the four deleted_at indexes: absent
+    //
+    // 181 APPLIED 2026-09-09 and split in two on the way in, the shape
+    // production already recorded for 135: `181a_read_only_enum` carries the
+    // `ALTER TYPE ... ADD VALUE` alone so nothing can reference the new member
+    // in the transaction that adds it, and `181b_admin_rbac_hardening` carries
+    // everything that uses it. Splitting also gives the pair a safe stopping
+    // point, which matters because an enum member is permanent: 181a on its own
+    // is inert, referenced by no policy and no function until 181b lands.
     //
     // 184 and 185 were 148 and 149 until 2026-09-09. Production had already
     // spent both numbers on different migrations (148_refund_destination
@@ -208,7 +213,6 @@ describe('the pending migration inventory', () => {
       '177_cashback_ledger.sql',
       '178_webauthn_credentials.sql',
       '179_push_subscriptions.sql',
-      '181_admin_rbac_hardening.sql',
       '183_order_shipped_notification.sql',
       '184_orders_monthly_partitioning.sql',
       '185_soft_delete_user_facing_remainder.sql',

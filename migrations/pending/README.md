@@ -1,5 +1,77 @@
 # `migrations/pending/`
 
+## 2026-09-09: 181 APPLIED, as 181a + 181b
+
+**181 was the only security file left in the queue and it was NOT applied**,
+which took reading a comment to establish. Both functions it touches,
+`is_support()` and `enforce_profile_privilege_columns()`, already exist in
+production from the 053/090 lineage, so a probe that asks "does the name exist"
+calls 181 applied and drops a live hardening out of the queue. What settled it
+is the comment production reported on the trigger function (still the pre-181
+text) and the absence of the `profiles_super_admin_mfa` policy.
+
+**The hole was real and was read off production, not inferred.** The deployed
+`enforce_profile_privilege_columns` body was literally
+`IF public.is_admin() THEN RETURN NEW; END IF;` with nothing between it and the
+return, so any admin could grant themselves or anyone else `super_admin`
+through the user client. The "only super_admin grants admin roles" rule existed
+only in application code on the service-role path.
+
+**Split in two on the way in**, the shape production already recorded for 135
+(`135a` the enum, `135b` everything using it):
+
+| File | Applied as | What |
+| --- | --- | --- |
+| `181a_read_only_enum.sql` | `read_only_enum_181a` | `ALTER TYPE public.user_role ADD VALUE IF NOT EXISTS 'read_only'`, alone |
+| `181b_admin_rbac_hardening.sql` | `admin_rbac_hardening_181b` | `is_support()` learns the new value; the admin-tier ladder on the guard; the RESTRICTIVE `profiles_super_admin_mfa` policy |
+
+An enum member is permanent — PostgreSQL cannot drop one — so the split buys a
+safe stopping point: 181a on its own is inert, referenced by no policy and no
+function until 181b lands. It also removes the same-transaction hazard entirely
+rather than dodging it with `role::text` comparisons.
+
+**PROVEN in a transaction that was then rolled back**, so production kept no
+probe rows (`profiles` reads 9 customer + 1 super_admin before and after).
+Acting as the real super_admin with an `aal1` claim, which is that account's
+actual session shape today:
+
+```
+self role change              -> cannot change your own role
+grant admin from aal1         -> admin-tier role changes require an
+                                 MFA-verified session (aal2)
+service-role path (uid NULL)  -> succeeded, and assigned 'read_only',
+                                 which also proves 181a's member is usable
+```
+
+**THE ONE THING 181 DID NOT KNOW, and the operator should.** Production holds
+exactly one super_admin and it has **no verified MFA factor** (zero rows in
+`auth.mfa_factors` with `status = 'verified'`). So the file's claim that "a
+super_admin's session is aal2 in practice" was not true: it is aal1, because no
+factor exists at all. Until that account enrols TOTP it cannot UPDATE its own
+`profiles` row through the user client — `updateProfile` in
+`src/server/actions/account.ts` (full_name, phone) is the only such path.
+
+That was checked for a deadlock and there is none: enrolment runs entirely
+through `supabase.auth.mfa.enroll/challenge/verify` and writes to
+`auth.mfa_factors`, never to `profiles`, so the policy cannot block the ceremony
+that lifts it. And `enforceSuperAdminMfa` in `src/lib/admin/rbac.ts` already
+redirects that account away from every admin page to `/admin-mfa?mode=enrol`,
+so this adds no lockout that was not already there.
+
+**No recursion, checked rather than assumed.** The RESTRICTIVE policy on
+`profiles` calls `current_user_role()`, which selects FROM `profiles` — the
+shape 077 had to undo. It is safe only because the deployed function is
+SECURITY DEFINER (`prosecdef = true`, read off production), so its own read
+bypasses RLS and never re-enters the policy. If anyone makes it INVOKER, this
+policy deadlocks every authenticated `profiles` UPDATE.
+
+**Follow-up, not blocking:** `src/types/database.ts` is now stale on
+`user_role` — production has `read_only` and the generated type does not.
+`src/lib/admin/roles.ts` carries `AppRole = UserRole | 'read_only'`, which is
+still load-bearing and self-healing: regenerate the types and the union
+collapses to `UserRole` with no type error.
+
+
 ## 2026-09-09: the numbering was a tangle, and it was measured, not guessed
 
 **`pending/` held two 170s and two 171s.** Two sessions that could not see each
@@ -22,7 +94,7 @@ round.
 | `184_orders_monthly_partitioning.sql` (was 148) | `orders_flat`, `orders_invoice_numbers` absent | not applied → renumbered **184** |
 | `185_soft_delete_user_facing_remainder.sql` (was 149) | none of its 4 `deleted_at` indexes exist | not applied → renumbered **185** |
 | `173`, `177`, `178`, `179`, `183` | every table, function and trigger they create is absent | not applied, numbers unchanged |
-| `181_admin_rbac_hardening.sql` | `profiles_super_admin_mfa` absent, and `enforce_profile_privilege_columns` still carries its **pre-181** comment | not applied, number unchanged |
+| `181_admin_rbac_hardening` (now `181a`+`181b`) | `profiles_super_admin_mfa` absent, and `enforce_profile_privilege_columns` still carries its **pre-181** comment | not applied at the time, number unchanged; **applied later the same day**, see the top of this file |
 
 **181 is why the probe reads comments and not just names.** Both functions it
 touches (`is_support`, `enforce_profile_privilege_columns`) exist in production
@@ -458,7 +530,7 @@ running. Order is the position in the apply sequence.
 | 178 | `178_webauthn_credentials.sql` | Passkey (WebAuthn) credentials: `webauthn_credentials` (one row per registered authenticator: base64url credential id as PK, COSE public key, signature counter, transports, device type, backup flag, friendly name; FK to `auth.users` because phone-only accounts have no lazy `profiles` row yet). RLS: select-own + delete-own for `authenticated`, no INSERT/UPDATE policy so writes happen only through the service role after `verifyRegistrationResponse`/`verifyAuthenticationResponse` prove the ceremony. Challenges are not stored: they travel in an HMAC-sealed httpOnly cookie (`src/lib/auth/passkeys/challenge.ts`) | **Low.** One new table; touches nothing existing. Callers tolerate absence: login/register actions and `/account/security` answer "not available yet" on 42P01/PGRST205 (`isMissingPasskeyRelation`) | any | none | in file header |
 | 180 | `180_analytics_server_event_names.sql` | `CREATE OR REPLACE` of `fn_ingest_analytics_events`, byte-identical to the deployed body except the name whitelist, which gains the four server names of `SERVER_EVENT_NAMES` (`begin_checkout`, `purchase`, `voucher_redeemed`, `order_refunded`). Until it applies, every server-side money event is silently discarded by the deployed eight-name list (verified against production 2026-09-07); PostHog receives them regardless through the fan-out in `src/server/analytics/track.ts` | **None.** Function replacement only; no table, grant, or policy changes. Unknown names are still skipped, so a rollback loses nothing already stored | any | none | in file header (re-run with the eight-name list) |
 | 179 | `179_push_subscriptions.sql` | Web push subscriptions: `push_subscriptions` (one row per browser that granted notification permission: unique https `endpoint`, browser-minted `p256dh`/`auth` keys as base64url text, optional user agent; FK to `auth.users`, same lazy-profiles reasoning as 178). RLS: select-own + delete-own for `authenticated`, no INSERT/UPDATE policy so rows are written only by the service role in `src/server/actions/push.ts` after the caller is authenticated and the subscription shape validated | **Low.** One new table; touches nothing existing. Callers tolerate absence: the subscribe/remove actions and `/account/notifications` answer "not available yet" on 42P01/PGRST205 (`isMissingPushRelation`) | any | none | in file header |
-| 181 | `181_admin_rbac_hardening.sql` | Admin RBAC hardening: `read_only` enum value on `user_role` (observer tier: sees every panel section through the service-role reads in `permissions.ts`, writes nothing); `is_support()` gains the name so read_only inherits support's whole SELECT surface DB-side; `enforce_profile_privilege_columns()` (the deployed 090 guard; 035's function was measured absent from production 2026-09-07) gains the admin-tier ladder: no self role change, admin-tier grants/revocations only by super_admin, and only with an aal2 (MFA-verified) JWT; RESTRICTIVE `profiles_super_admin_mfa` policy so an aal1 super_admin session updates no profiles row through the user client | **Low.** One permanent enum member, two function replacements on their deployed bodies, one restrictive policy. Behavioral edge: a super_admin editing their own profile through the user client needs an aal2 session once this applies; the rbac.ts gate forces enrol+verify at panel entry, so a super_admin's session is aal2 in practice. Until it applies, assigning `read_only` fails loudly at the enum (`invalid input value`), and MFA is enforced app-side only | any | none | in file header |
+| 181 | `181a_read_only_enum.sql` + `181b_admin_rbac_hardening.sql` | Admin RBAC hardening: `read_only` enum value on `user_role` (observer tier: sees every panel section through the service-role reads in `permissions.ts`, writes nothing); `is_support()` gains the name so read_only inherits support's whole SELECT surface DB-side; `enforce_profile_privilege_columns()` (the deployed 090 guard; 035's function was measured absent from production 2026-09-07) gains the admin-tier ladder: no self role change, admin-tier grants/revocations only by super_admin, and only with an aal2 (MFA-verified) JWT; RESTRICTIVE `profiles_super_admin_mfa` policy so an aal1 super_admin session updates no profiles row through the user client | **Low.** One permanent enum member, two function replacements on their deployed bodies, one restrictive policy. Behavioral edge: a super_admin editing their own profile through the user client needs an aal2 session once this applies; the rbac.ts gate forces enrol+verify at panel entry, so a super_admin's session is aal2 in practice. Until it applies, assigning `read_only` fails loudly at the enum (`invalid input value`), and MFA is enforced app-side only | any | none | in file header |
 | 177 | `177_cashback_ledger.sql` | Cashback ledger: `cashback_ledger` (append-only decision record: entry per item-cashback credit, order-count bonus, admin adjustment; integer agorot, signed; RLS own-read + admin-read, no client writes; UPDATE/DELETE blocked by trigger), `fn_cashback_order_bonus` (first purchase 10%, every fifth purchase 5% of the order total, per-user advisory lock, idempotent on `order:<id>:count_bonus`, pays through `fn_wallet_transfer` from `platform:cashback_reserve`), `fn_cashback_admin_adjust` (signed adjustment, re-checks `is_admin()`, idempotent, records `auth.uid()`). Numbered 177 because 174-176 are taken by files on `closeout/v1-final` | **Low.** All new objects; touches no existing table. Callers tolerate absence: finalize logs-and-continues on 42883, `/admin/cashback` shows a not-installed notice | after 046 (applied); attaches the 169 audit trigger only if present | none | in file header |
 | 182 | `182_coupon_qr_batches.sql` | Printed QR coupon batches: `coupon_qr_batches` (one print run per discount campaign) and `coupon_qr_codes` (one 8-digit Luhn-checked unit code each, unique, `redeemed_at` as the per-unit single-use gate). RLS: admin-read only on both, no client writes, no shopper read — a code is validated server-side by the cart, never listed. `redeemed_order_id` is a bare uuid, not an FK, because `orders` is headed for partitioning (184, renumbered from 148) | **✅ APPLIED 2026-09-07** via MCP as `coupon_qr_batches_182` (version `20260907163213`), on the explicit instruction of the /goal that requested it. Additive only: two new tables, no existing object touched. The file stays here as the record, like 169-172 | any | 096 (applied; FK to `discount_campaigns`) | `drop table if exists public.coupon_qr_codes; drop table if exists public.coupon_qr_batches;` |
 | 183 | `183_order_shipped_notification.sql` | Shipping notification: widens `notification_outbox_kind_check` with `order_shipped` and adds `tg_orders_notify_shipped`, an AFTER UPDATE OF status trigger that enqueues one customer mail on the transition into `fulfilled` (dedupe `order-shipped:<order_id>`). The renderer (`buildOrderShippedEmail`) is already in `src/lib/email/notifications.ts`, so the drain can render rows the moment this applies. After applying, re-measure the constraint and move `order_shipped` into `CHECK_ACCEPTS` in `src/lib/email/outbox-kinds.test.ts` | **Low.** One constraint widened (additive), one new trigger; the trigger body is EXCEPTION-guarded like its 102 sibling, so a failed enqueue warns and never fails the status UPDATE | any | 095, 102, 114 (all applied) | in file header |

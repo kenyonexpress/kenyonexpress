@@ -1,4 +1,6 @@
--- 181: admin RBAC hardening: read_only role, super_admin MFA at the DB layer.
+-- 181b: admin RBAC hardening: read_only's read surface, the admin-tier ladder,
+-- super_admin MFA at the DB layer. The enum member itself is 181a, which must
+-- be committed first -- see that file for why the pair is split.
 --
 -- WHY. Three findings, all measured against production via MCP on 2026-09-07:
 --
@@ -18,7 +20,7 @@
 --       the whole kingdom.
 --
 -- WHAT.
---   1. `ALTER TYPE user_role ADD VALUE 'read_only'`.
+--   1. (moved to 181a) `ALTER TYPE user_role ADD VALUE 'read_only'`.
 --   2. `is_support()` learns the new value, so read_only inherits support's
 --      entire SELECT surface (14 policies in 053, 2 in 119) in one function
 --      body. It appears in no write policy and no staff branch, so it is
@@ -43,7 +45,59 @@
 -- quoted in the PREFLIGHT expectations (deployed 053 / 090 bodies), and
 -- `DROP POLICY IF EXISTS profiles_super_admin_mfa ON public.profiles;`.
 --
--- NOT APPLIED. `migrations/pending/` is unapplied by definition.
+-- THE ONE THING THIS FILE DID NOT KNOW, measured 2026-09-09. Production holds
+-- exactly ONE super_admin and it has NO verified MFA factor (zero rows in
+-- `auth.mfa_factors` with `status = 'verified'` for that user; 9 customers,
+-- likewise none). So the claim above that "a super_admin's session is aal2 in
+-- practice" is not true today: it is aal1, because no factor exists at all.
+--
+-- That was checked for a deadlock and there is none. Enrolment runs entirely
+-- through `supabase.auth.mfa.enroll/challenge/verify` (src/server/actions/mfa.ts,
+-- SecurityClient.tsx) and writes to `auth.mfa_factors`, never to `profiles`, so
+-- the RESTRICTIVE policy below cannot block the very ceremony that lifts it.
+--
+-- What it does mean, and the operator should know it: until that super_admin
+-- enrols TOTP, they cannot UPDATE their own `profiles` row through the user
+-- client -- `updateProfile` in src/server/actions/account.ts (full_name, phone)
+-- is the only such path. The admin server actions are unaffected: they run on
+-- the service role, where `auth.uid()` is NULL and RLS does not apply at all.
+-- And the app already blocks that account from every admin page for the same
+-- reason -- `enforceSuperAdminMfa` in src/lib/admin/rbac.ts redirects to
+-- /admin-mfa?mode=enrol -- so this adds no lockout that is not already there.
+--
+-- NO RECURSION, checked rather than assumed. The RESTRICTIVE policy on
+-- `profiles` calls `current_user_role()`, which selects FROM `profiles`. That
+-- is the shape 077 had to undo. It is safe here only because the deployed
+-- `current_user_role()` is SECURITY DEFINER (read off production 2026-09-09,
+-- `prosecdef = true`), so its own read bypasses RLS and never re-enters the
+-- policy. If anyone ever makes it INVOKER, this policy deadlocks every
+-- authenticated profiles UPDATE.
+--
+-- THE HOLE THIS CLOSES IS REAL AND WAS READ OFF PRODUCTION, not inferred: the
+-- deployed `enforce_profile_privilege_columns` body is literally
+-- `IF public.is_admin() THEN RETURN NEW; END IF;` with nothing between, so any
+-- admin can grant themselves or anyone else super_admin through the user
+-- client today.
+--
+-- APPLIED 2026-09-09 via MCP as `admin_rbac_hardening_181b`, after 181a had
+-- committed. All four preflight blocks returned exactly what the expectations
+-- below predict.
+--
+-- PROVEN, not assumed, in a transaction that was then rolled back so
+-- production kept no probe rows (`profiles` reads 9 customer + 1 super_admin
+-- before and after, unchanged). Acting as the real super_admin with an aal1
+-- claim -- which is that account's actual session shape today:
+--
+--   self role change            -> 'cannot change your own role'
+--   grant admin from aal1       -> 'admin-tier role changes require an
+--                                   MFA-verified session (aal2)'
+--   service-role path (uid NULL) -> succeeded, and assigned 'read_only',
+--                                   which also proves 181a's enum member is
+--                                   usable
+--
+-- Read back after apply: is_support() names read_only, the guard body carries
+-- both the ladder and the aal2 check, the trigger is attached, and
+-- profiles_super_admin_mfa exists as RESTRICTIVE / UPDATE.
 
 -- PREFLIGHT (inline; this branch keeps one file per pending change).
 -- Run each block through MCP execute_sql BEFORE applying:
@@ -76,10 +130,9 @@
 -- select count(*) from pg_trigger where tgname = 'audit_profiles';
 
 -- ---------------------------------------------------------------------------
--- 1. read_only enum value
+-- 1. read_only enum value: MOVED TO 181a. Apply that file, and let it commit,
+--    before this one.
 -- ---------------------------------------------------------------------------
-
-ALTER TYPE public.user_role ADD VALUE IF NOT EXISTS 'read_only';
 
 -- ---------------------------------------------------------------------------
 -- 2. is_support(): support's read surface now includes read_only.
