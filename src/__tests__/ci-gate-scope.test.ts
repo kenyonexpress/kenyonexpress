@@ -76,3 +76,45 @@ describe('diff-scoped typecheck ambient roots', () => {
     expect(read('vitest.setup.ts')).toContain('jest-dom')
   })
 })
+
+/**
+ * A GATE THAT COVERS ONLY PART OF WHAT IT IS NAMED AFTER.
+ *
+ * `scripts/bundle-gate.mjs` sums `rootMainFiles + polyfills`, which is the
+ * floor every route pays, and CI called that step "Bundle budget". It is all
+ * that script can measure: Turbopack emits no `app-build-manifest.json`, so
+ * per-route sums come from no manifest. The consequence held until 2026-09-08 -
+ * a heavy client import added to ONE route lands in that route's own chunk,
+ * never in `rootMainFiles`, so the gate stayed green while the page grew. The
+ * shared floor was 255.8 KB that day and `/` was 323.4 KB; the 68 KB in between
+ * had no gate on it.
+ *
+ * This repository has twice shipped a gate that ran on nothing (the three
+ * unreferenced scripts in the `gates` job, and the artifact upload that warned
+ * instead of failing). So the wiring is pinned, not just the script.
+ */
+describe('per-route bundle gate', () => {
+  it('is wired into CI, not merely present in scripts/', () => {
+    const ci = read('.github', 'workflows', 'ci.yml')
+    expect(ci).toContain('node scripts/route-bundle-gate.mjs')
+  })
+
+  it('runs in the same job as the shared gate, which has the build artifact', () => {
+    const ci = read('.github', 'workflows', 'ci.yml')
+    const gatesJob = ci.slice(ci.indexOf('\n  gates:'), ci.indexOf('\n  pixel-gate:'))
+    expect(gatesJob).toContain('node scripts/bundle-gate.mjs')
+    expect(gatesJob).toContain('node scripts/route-bundle-gate.mjs')
+    // Both read `.next/`, which reaches this job only as a downloaded artifact.
+    expect(gatesJob).toContain('download-artifact')
+  })
+
+  it('keeps the artifact upload able to carry .next/server/app', () => {
+    // The gate reads prerendered HTML from `.next/server/app/*.html`. `.next`
+    // is hidden, and actions/upload-artifact@v4 drops hidden paths by default
+    // while still reporting success - which is how this repo previously shipped
+    // a pixel gate that compared nothing.
+    const ci = read('.github', 'workflows', 'ci.yml')
+    expect(ci).toContain('include-hidden-files: true')
+    expect(ci).toContain('if-no-files-found: error')
+  })
+})

@@ -443,6 +443,22 @@ jobs:
       - name: Bundle budget (shared first-load JS)
         run: node scripts/bundle-gate.mjs 260
 
+      # THE SHARED GATE ABOVE CANNOT SEE MOST OF THE BUNDLE, and until
+      # 2026-09-08 nothing else did either. It sums rootMainFiles + polyfills,
+      # because Turbopack emits no app-build-manifest.json and per-route sums
+      # are not available from any manifest. So a heavy client import added to
+      # ONE route lands in that route's own chunk, never in rootMainFiles, and
+      # this job stays green while the page grows without limit. Measured that
+      # day: shared floor 255.8 KB, `/` 323.4 KB. The 68 KB in between had no
+      # gate on it at all.
+      #
+      # Unlike Lighthouse two steps up, this belongs in CI: it reads the
+      # prerendered HTML in .next/server/app/, needs no booted server and no
+      # browser, and gzip of a fixed byte string is the same number on every
+      # runner. It is a measurement, not a timing.
+      - name: Bundle budget (per route, first load)
+        run: node scripts/route-bundle-gate.mjs
+
   pixel-gate:
     name: Pixel parity (380 / 768 / 1440)
     needs: [build]

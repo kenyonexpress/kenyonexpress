@@ -17,6 +17,14 @@ describe('isRouteJs', () => {
     expect(isRouteJs('http://x/_next/static/chunks/a.js?v=2')).toBe(true)
   })
 
+  it('excludes third-party scripts that happen to end in .js', () => {
+    // These 404 locally and cost 0 bytes, so counting them is invisible here
+    // and only surfaces as a vendor's bytes inside an app-code budget in
+    // production.
+    expect(isRouteJs('http://x/_vercel/insights/script.js')).toBe(false)
+    expect(isRouteJs('https://cdn.example.com/tag.js')).toBe(false)
+  })
+
   it('excludes documents, fonts and images', () => {
     for (const url of ['http://x/cart', 'http://x/f/heebo.woff2', 'http://x/a.png']) {
       expect(isRouteJs(url)).toBe(false)

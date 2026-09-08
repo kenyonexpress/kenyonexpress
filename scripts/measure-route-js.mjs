@@ -20,6 +20,14 @@ export const BUDGET_GZ_BYTES = 180 * 1024
 
 export const ROUTES = ['/', '/products', '/cart', '/checkout']
 
+// WHAT THIS NUMBER IS NOT. It is smaller than scripts/route-bundle-gate.mjs
+// reports for the same route, and both are correct. A modern browser skips the
+// nomodule polyfill bundle (38.5 KB on 2026-09-08) that the prerendered HTML
+// names, and it also fetches chunks imported after hydration (18.4 KB) that the
+// HTML does not. Measured that day on `/`: 323.4 - 38.5 + 18.4 = 303.3. Use the
+// static gate for CI, which needs no browser and is byte-deterministic, and
+// this one to see what a real browser on a real page actually pays.
+//
 // Gzip is computed here rather than read off the wire on purpose. Playwright
 // reports `responseBodySize` inconsistently across transports, the dev server
 // and `pnpm start` negotiate different encodings, and a browser that asks for
@@ -33,11 +41,17 @@ export async function gzipBytes(response) {
   }
 }
 
-// `.js` and nothing else. Turbopack writes CSS into /_next/static/chunks/ too,
-// so a directory test charges 22 KB of stylesheet to a JavaScript budget --
-// which it did, in the first run of this script.
+// This build's own JavaScript, and nothing else. Two traps, both hit here:
+//   - Turbopack writes CSS into /_next/static/chunks/, so a directory test
+//     charges 22 KB of stylesheet to a JavaScript budget. It did, in the first
+//     run of this script.
+//   - a bare `.js` test picks up /_vercel/insights/script.js and friends. Those
+//     404 locally and cost nothing, so the mistake is invisible here and only
+//     shows up as a third party's bytes inside an app-code budget in
+//     production.
 export function isRouteJs(url) {
-  return /\.js(\?|$)/.test(url)
+  const path = url.startsWith('http') ? new URL(url).pathname : url
+  return path.startsWith('/_next/static/') && path.endsWith('.js')
 }
 
 export function verdict(bytes) {
