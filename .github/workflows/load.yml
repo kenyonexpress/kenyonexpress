@@ -57,9 +57,16 @@ jobs:
       # rather than logging inside a run that has already started sending load.
       - name: Refuse to point at production
         run: |
+          # The vercel.app alias is here for the same reason it is in
+          # load/lib/guard.js: it serves the SAME deployment as the custom
+          # domains, and it is the host the cron scheduler drives production
+          # traffic through. Naming only the custom domains left the real
+          # production host unguarded. Preview deployments carry a branch or
+          # hash in the subdomain and stay allowed, because a preview is what
+          # this job is for.
           case "${{ inputs.base }}" in
-            *kenyonexpress.co.il*)
-              echo "::error::${{ inputs.base }} is the production domain. Load tests run against a preview deployment."
+            *kenyonexpress.co.il*|*//kenyonexpress.vercel.app*)
+              echo "::error::${{ inputs.base }} is production. Load tests run against a preview deployment."
               exit 1
               ;;
           esac
