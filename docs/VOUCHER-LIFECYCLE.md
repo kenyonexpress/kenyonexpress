@@ -4,7 +4,8 @@ A voucher is what the customer actually buys. It is created when an order is
 finalized, it is scanned once at the supplier's counter, and every state it can
 reach after `issued` is terminal.
 
-Verified against production (`ixvwfbuvfxxsjiywhbbb`) on **2026-09-01**. The
+Verified against production (`ixvwfbuvfxxsjiywhbbb`) on **2026-09-01**, and
+§1's guard paragraph re-measured and **corrected on 2026-09-09**. The
 `voucher_status` values below are the live enum, not a design.
 
 Companion documents: `docs/PAYMENT-FLOW.md` (how the money got here),
@@ -34,13 +35,41 @@ stateDiagram-v2
 `voucher_status` in production is exactly: `issued`, `redeemed`, `expired`,
 `cancelled`, `refunded`.
 
-**There is no transition guard on `vouchers`.** Migration 137 is applied and
-guards `orders`, `order_items` and `payments`; it never covered this table and
-production carries no trigger on it (checked against `pg_trigger`, 2026-09-01).
-The diagram above is therefore an application contract, held up by the atomic
-`UPDATE ... WHERE status = 'issued'` in §3 and by the cron in §5, not by
-anything the database will refuse on your behalf. A `service_role` statement can
-put a voucher into any state the enum carries.
+> ‏**‏CORRECTED 2026-09-09. The paragraph this replaces said the opposite, and
+> it was the sentence in this file most likely to make somebody write a broken
+> repair script.**
+>
+> It read: *"There is no transition guard on `vouchers` ... production carries
+> no trigger on it (checked against `pg_trigger`, 2026-09-01) ... A
+> `service_role` statement can put a voucher into any state the enum carries."*
+>
+> That was true when it was written and stopped being true two days later.
+> **`166_voucher_transition_guard.sql` applied on 2026-09-03** as
+> `voucher_transition_guard_166`. Re-measured against `pg_trigger` on
+> 2026-09-09: `tg_vouchers_status_guard` is live on `vouchers`.
+
+**There IS a transition guard on `vouchers`, and the service role does not
+escape it.** `tg_vouchers_status_guard` is a `BEFORE UPDATE ... FOR EACH ROW`
+trigger running `fn_vouchers_status_guard()`. It permits exactly four moves,
+all out of `issued`:
+
+```
+('issued','redeemed'), ('issued','expired'), ('issued','cancelled'), ('issued','refunded')
+```
+
+Anything else raises `23514` with `illegal vouchers.status transition: <old> ->
+<new>`. A trigger is not a policy: a repair statement run on the service key is
+refused the same as a client write. **If you are here to write one, that is the
+sentence that changed** — a script that moved a `redeemed` voucher back to
+`issued` would have worked on 2026-09-01 and raises today.
+
+Migration 137 guards `orders`, `order_items` and `payments` and never covered
+this table; 166 is what did, three days later. The diagram above is therefore
+enforced in two independent places: the atomic
+`UPDATE ... WHERE status = 'issued'` in §3, which decides who wins a race
+between two tills, and the trigger, which decides which pairs exist at all.
+`src/server/domain/orders/status-transitions.json` mirrors the trigger and
+`status-transitions.test.ts` fails if the two drift.
 
 **Every non-`issued` state is terminal, and that is a deliberate property rather
 than an omission.** Once a voucher leaves `issued` there is nothing left to
