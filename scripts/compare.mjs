@@ -4,6 +4,7 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
+import { loadShortfall } from './load-shortfall.mjs'
 import { appendParityFailure } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
@@ -74,12 +75,27 @@ const LIVE_ATC_ID = process.env.LIVE_ATC_ID ?? '6166'
 // THE SNAPSHOT IS DEGRADED, AND THE NUMBER IT PRODUCES IS NOT THE OLD NUMBER.
 // Measured 2026-09-08 by loading refs/localized/ke_live_home.html in Chromium:
 // 49 images, ZERO broken - the localizer did its job on imagery - but 96 failed
-// requests, every one a font. `localize-live-refs.mjs` rewrites only
-// `IMAGE_EXT`, so Open Sans and two Font Awesome families still resolve to
-// kenyonexpress.co.il/wp-content/, which 403s. `refs/live-assets/` holds no
-// .woff, .woff2 or .ttf at all, and the origin is gone, so those bytes are not
-// recoverable. The reference therefore renders in fallback type with tofu where
-// the icons were.
+// requests. `localize-live-refs.mjs` rewrites only `IMAGE_EXT`, so everything
+// else still resolves to kenyonexpress.co.il/wp-content/, which is gone.
+//
+// CORRECTED 2026-09-08, same day, by counting them instead of describing them.
+// This block said all 96 were fonts. The count was right and the attribution
+// was not. Deterministic over four runs at 380 and 1440:
+//
+//   37  font        Open Sans and two Font Awesome families
+//   57  script      Elementor Pro element-handlers, Electro's theme bundles,
+//                   handlebars, typeahead, iziModal, the minified cache bundles
+//    1  stylesheet  the cached Google-Fonts CSS
+//    1  xhr
+//
+// So the reference does not merely render in fallback type: IT RUNS NONE OF THE
+// THEME'S JAVASCRIPT. Carousels, tabs, the mega-menu and the sticky header
+// never initialise, and the body measures 18146px at 380 against 5492px at
+// 1440. A layout difference read off this snapshot is partly OUR layout and
+// partly a page that never finished becoming itself, and nothing here can say
+// how the two divide. Every run now prints the shortfall next to its
+// percentage, and writes it into the report row, so the figure cannot be
+// quoted bare.
 //
 // Three numbers exist for home at 380 and none of them is interchangeable:
 //   10.68%  historical, against the real WordPress site while it was live
@@ -273,8 +289,34 @@ const seedCart = async (target) => {
   }
 }
 
-const shoot = async (url, out) => {
+/**
+ * What each side FAILED to load while it was being photographed.
+ *
+ * Filled by `shoot` and printed with the percentage, because a fidelity score
+ * against a reference that did not finish rendering is not the number it looks
+ * like, and the caveat has to travel with the figure rather than live in a
+ * comment nobody reads at the moment of quoting.
+ *
+ * MEASURED 2026-09-08, and it corrects the note above. The reference drops 96
+ * requests, which that note recorded correctly and then described as "every one
+ * a font". Deterministic across four runs at two widths: 37 fonts, 57 SCRIPTS,
+ * 1 stylesheet, 1 xhr. Elementor Pro's element handlers and the Electro theme's
+ * bundles are among the 57, so the reference renders with none of the theme's
+ * JavaScript - carousels, tabs and the sticky header never initialise. That is
+ * a much larger degradation than missing type, and it is the reason the mobile
+ * figure cannot be attributed to our layout on this evidence alone.
+ */
+const missedLoads = { live: [], mine: [] }
+
+const shoot = async (url, out, side = null) => {
   const p = await ctx.newPage()
+  if (side) {
+    const note = (type, url) => missedLoads[side]?.push({ type, url })
+    p.on('requestfailed', (r) => note(r.resourceType(), r.url()))
+    p.on('response', (r) => {
+      if (r.status() >= 400) note(r.request().resourceType(), r.url())
+    })
+  }
   // The live host intermittently drops a navigation into chrome-error, which
   // used to abort the whole run after the seeding had already been paid for.
   // A transport flake is not a measurement failure; a page that will not load
@@ -884,8 +926,8 @@ const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 // dead runs on 2026-09-08 left six PASS rows from the day before standing as
 // the gate's latest word. See appendParityFailure in parity-log.mjs.
 try {
-  await shoot(liveUrl, runShot('live'))
-  await shoot(mineUrl, runShot('mine'))
+  await shoot(liveUrl, runShot('live'), 'live')
+  await shoot(mineUrl, runShot('mine'), 'mine')
 } catch (err) {
   appendParityFailure({
     page,
@@ -1050,7 +1092,19 @@ for (const side of ['live', 'mine']) {
 
 await b.close()
 
+/**
+ * One line per side, naming what did not load while it was photographed.
+ *
+ * A percentage is only a fidelity score if both sides finished rendering, and
+ * the reference does not: it is a snapshot of a host that no longer exists, so
+ * every absolute URL in it now 404s. Printing the shortfall next to the figure
+ * is the same rule measure-live-vitals follows for its build bracket - the
+ * caveat travels with the number, because a number quoted without it reads as
+ * "our layout differs by this much" when part of it is the reference failing.
+ */
 console.log(`=== compare --page=${page} ===`)
+console.log(`  reference: ${loadShortfall(missedLoads.live)}`)
+console.log(`  ours     : ${loadShortfall(missedLoads.mine)}`)
 await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
@@ -1067,6 +1121,13 @@ await new Promise((resolvePromise, reject) => {
       // whatever refs/live.png happens to hold by the time the child starts.
       COMPARE_LIVE_PNG: runShot('live'),
       COMPARE_MINE_PNG: runShot('mine'),
+      // The reference's shortfall rides into docs/UI-PARITY-REPORT.md with the
+      // row, after a caller's own note rather than instead of it. A row saying
+      // 30.26% with nothing beside it has been read as our layout's divergence
+      // before, and the reference was missing 57 scripts at the time.
+      COMPARE_NOTES: [process.env.COMPARE_NOTES, `ref ${loadShortfall(missedLoads.live)}`]
+        .filter(Boolean)
+        .join('; '),
     },
   })
   child.on('exit', (code) =>
