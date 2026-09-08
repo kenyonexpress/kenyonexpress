@@ -314,6 +314,42 @@ tracked.
 
 ---
 
+## 5a. Two verbs the brief names that this system does not have
+
+STEP 12 lists `issue / deliver / redeem / partial / expire / refund / resend`.
+Five exist. Two do not, and both absences are decisions rather than omissions -
+recorded here 2026-09-08 because neither had been written down and a reader
+comparing the brief against the code would otherwise have to guess.
+
+### `partial` - the voucher is not stored value
+
+A partial redemption presumes a balance that survives being spent. This model
+has none: the customer prepays an absolute coupon price on the site, and **the
+remainder of the sticker price is paid in cash at the business on scan and never
+passes through us** (see `server/domain/orders/settlement.ts`). There is nothing
+held here to draw down, so a voucher is used once and wholly. That is also why
+"every non-`issued` state is terminal" in §1 is a property and not a gap.
+
+### `resend` - the email is a convenience, not the delivery
+
+The voucher email is sent once at the end of `finalizeOrder` and deduplicated by
+Resend's own idempotency key `voucher-email:<orderId>`. There is no admin or
+customer action that sends it again.
+
+That is tolerable **only because checkout requires an account**, and it does:
+`beginCheckout` refuses an anonymous caller with `יש להתחבר לפני התשלום` at both
+entry points. So every voucher belongs to a signed-in customer and is reachable
+without the email at `/account/my-vouchers` and `/coupon/[id]`, both of which
+`src/proxy.ts` gates behind a session. A customer who loses the email logs in.
+
+**The two facts are one decision.** If guest checkout is ever added, a buyer with
+a lost email has no account to look in and no way to ask for it again, and the
+missing `resend` stops being a convenience gap and becomes a lost purchase.
+`src/server/domain/vouchers/delivery-pairing.test.ts` fails if checkout stops
+requiring an account while there is still no resend path.
+
+---
+
 ## 6. Cancellation and refund
 
 `cancel_vouchers_for_order(order_id)` and `refund_vouchers_for_order(order_id)`
