@@ -37,7 +37,48 @@ type OutboxJob = {
   attempts: number
 }
 
-export type DrainResult = { claimed: number; done: number; failed: number }
+export type DrainResult = {
+  claimed: number
+  done: number
+  failed: number
+  /**
+   * Rows still waiting, whether or not this run could touch any of them.
+   *
+   * WHY A FOURTH NUMBER. `{claimed: 0, done: 0, failed: 0}` is what an
+   * unconfigured deploy returns and it is also what an empty queue returns,
+   * and those are opposite facts. Production today is the first one:
+   * `search_index_outbox` held 21 rows on 2026-09-09 and the health endpoint
+   * reported three zeros, which reads as "nothing to do".
+   *
+   * That backlog is correct -- the comment below says to leave it, and it is
+   * the replay stage 2 will run -- but "correct and 21" and "correct and
+   * 21,000" are answered the same way by three zeros, and the first anyone
+   * would learn of the difference is the day Meilisearch is switched on.
+   *
+   * `null` means the depth could not be read, which is again not zero.
+   */
+  pending: number | null
+}
+
+/**
+ * How many rows are still owed to the index. Counted, never claimed: this runs
+ * on the unconfigured path too, where claiming would mark rows done that no
+ * index ever heard about.
+ *
+ * A count failure is not a drain failure. The caller gets `null` and the drain
+ * carries on, because losing the depth reading must not cost the sweep.
+ */
+async function pendingDepth(admin: SupabaseClient): Promise<number | null> {
+  const { count, error } = await admin
+    .from('search_index_outbox')
+    .select('id', { count: 'exact', head: true })
+    .is('done_at', null)
+  if (error) {
+    log.warn('search.outbox_depth_failed', { reason: error.message })
+    return null
+  }
+  return count ?? 0
+}
 
 /**
  * Claims up to `limit` eligible jobs and runs each through the same
@@ -49,7 +90,7 @@ export async function drainSearchOutbox(admin: SupabaseClient, limit = 50): Prom
   // index ever heard about (the executor no-ops successfully). The rows ARE
   // the backlog stage 2 will replay; leave them.
   if (!process.env.MEILISEARCH_HOST || !process.env.MEILISEARCH_API_KEY) {
-    return { claimed: 0, done: 0, failed: 0 }
+    return { claimed: 0, done: 0, failed: 0, pending: await pendingDepth(admin) }
   }
 
   const { data, error } = await admin.rpc('claim_search_index_jobs', { p_limit: limit })
@@ -100,5 +141,7 @@ export async function drainSearchOutbox(admin: SupabaseClient, limit = 50): Prom
     }
   }
 
-  return { claimed: jobs.length, done, failed }
+  // Read AFTER the batch, so the number is what is still owed rather than what
+  // was owed before this run started.
+  return { claimed: jobs.length, done, failed, pending: await pendingDepth(admin) }
 }

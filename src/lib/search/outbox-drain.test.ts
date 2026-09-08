@@ -15,7 +15,11 @@ import { BACKOFF_CAP_MINUTES, drainSearchOutbox, searchBackoffMinutes } from './
 
 type Update = { id: number; patch: Record<string, unknown> }
 
-function adminMock(jobs: unknown[], rpcError: { message: string } | null = null) {
+function adminMock(
+  jobs: unknown[],
+  rpcError: { message: string } | null = null,
+  depth: { count: number | null; error: { message: string } | null } = { count: 0, error: null },
+) {
   const updates: Update[] = []
   const rpc = vi.fn().mockResolvedValue({ data: jobs, error: rpcError })
   const admin = {
@@ -26,6 +30,10 @@ function adminMock(jobs: unknown[], rpcError: { message: string } | null = null)
           updates.push({ id, patch })
           return Promise.resolve({ error: null })
         },
+      }),
+      // The depth count: .select(id, {count, head}).is('done_at', null)
+      select: () => ({
+        is: () => Promise.resolve({ count: depth.count, error: depth.error }),
       }),
     }),
   } as never
@@ -68,14 +76,14 @@ describe('drainSearchOutbox', () => {
   it('claims nothing at all while Meilisearch is unconfigured', async () => {
     vi.stubEnv('MEILISEARCH_HOST', '')
     const { admin, rpc } = adminMock([JOB(1)])
-    expect(await drainSearchOutbox(admin)).toEqual({ claimed: 0, done: 0, failed: 0 })
+    expect(await drainSearchOutbox(admin)).toEqual({ claimed: 0, done: 0, failed: 0, pending: 0 })
     expect(rpc).not.toHaveBeenCalled()
   })
 
   it('runs each claimed job through the same executor the webhook uses and marks it done', async () => {
     const { admin, rpc, updates } = adminMock([JOB(1), JOB(2, 1, 'delete')])
     const result = await drainSearchOutbox(admin, 10)
-    expect(result).toEqual({ claimed: 2, done: 2, failed: 0 })
+    expect(result).toEqual({ claimed: 2, done: 2, failed: 0, pending: 0 })
     expect(rpc).toHaveBeenCalledWith('claim_search_index_jobs', { p_limit: 10 })
     expect(runSearchIndexJob).toHaveBeenCalledWith({ op: 'upsert', productId: 'p-1' })
     expect(runSearchIndexJob).toHaveBeenCalledWith({ op: 'delete', productId: 'p-2' })
@@ -91,7 +99,7 @@ describe('drainSearchOutbox', () => {
     const { admin, updates } = adminMock([JOB(1, 3), JOB(2)])
     const before = Date.now()
     const result = await drainSearchOutbox(admin)
-    expect(result).toEqual({ claimed: 2, done: 1, failed: 1 })
+    expect(result).toEqual({ claimed: 2, done: 1, failed: 1, pending: 0 })
 
     const failed = updates.find((u) => u.id === 1)
     expect(failed?.patch.last_error).toBe('meilisearch down')
@@ -106,5 +114,59 @@ describe('drainSearchOutbox', () => {
   it('throws when the claim itself fails, because that is the drain being down', async () => {
     const { admin } = adminMock([], { message: 'permission denied' })
     await expect(drainSearchOutbox(admin)).rejects.toThrow(/claim failed: permission denied/)
+  })
+})
+
+/**
+ * The fourth number, and why three were not enough.
+ *
+ * `{claimed: 0, done: 0, failed: 0}` is what an unconfigured deploy returned
+ * and it is also what an empty queue returned. Those are opposite facts, and
+ * the health endpoint printed the same three zeros for both. Production is the
+ * first one: `search_index_outbox` held 21 rows on 2026-09-09.
+ *
+ * The backlog itself is correct and deliberate -- the drain leaves those rows
+ * on purpose, because claiming them while there is no index to write to would
+ * mark them done. What was missing is any way to tell 21 from 21,000 before
+ * the day somebody turns Meilisearch on.
+ */
+describe('the pending depth', () => {
+  it('is reported even when nothing could be drained', async () => {
+    vi.stubEnv('MEILISEARCH_HOST', '')
+    vi.stubEnv('MEILISEARCH_API_KEY', '')
+    const { admin, rpc } = adminMock([], null, { count: 21, error: null })
+
+    const result = await drainSearchOutbox(admin)
+
+    expect(result).toEqual({ claimed: 0, done: 0, failed: 0, pending: 21 })
+    // Still claims nothing: the depth is a count, not a claim.
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('is null when it cannot be read, which is not zero', async () => {
+    // A failed count must not read as an empty queue, and must not take the
+    // drain down with it either.
+    vi.stubEnv('MEILISEARCH_HOST', '')
+    vi.stubEnv('MEILISEARCH_API_KEY', '')
+    const { admin } = adminMock([], null, { count: null, error: { message: 'timeout' } })
+
+    expect(await drainSearchOutbox(admin)).toEqual({
+      claimed: 0,
+      done: 0,
+      failed: 0,
+      pending: null,
+    })
+  })
+
+  it('is read after the batch, so it is what is still owed', async () => {
+    vi.stubEnv('MEILISEARCH_HOST', 'http://localhost:7700')
+    vi.stubEnv('MEILISEARCH_API_KEY', 'k')
+    runSearchIndexJob.mockResolvedValue('upserted')
+    const { admin } = adminMock([JOB(1), JOB(2)], null, { count: 3, error: null })
+
+    const result = await drainSearchOutbox(admin)
+
+    expect(result.done).toBe(2)
+    expect(result.pending).toBe(3)
   })
 })

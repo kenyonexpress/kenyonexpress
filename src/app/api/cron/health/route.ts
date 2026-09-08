@@ -36,6 +36,17 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 const DEFAULT_TOPIC = 'kenyon-ofir-limit'
 
+/**
+ * Rows owed to the search index before the sweep says so out loud.
+ *
+ * Not zero: the queue is meant to be non-empty between a product edit and the
+ * next five-minute sweep, and it is meant to hold a backlog for as long as
+ * Meilisearch is unconfigured (`outbox-drain.ts` explains why those rows are
+ * deliberately left). Production held 21 on 2026-09-09. The number worth waking
+ * on is one that says the replay is no longer a replay.
+ */
+const OUTBOX_BACKLOG_WARN = 500
+
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
   if (!bearerMatches(request.headers.get('authorization'), secret ?? '')) {
@@ -50,7 +61,15 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   // are inert while Meilisearch is unconfigured, and neither may take the
   // health answer down with it -- a broken floor sweep is a log line and a
   // field in the response, not a 500 on the probe.
-  let searchOutbox: DrainResult | { error: string } = { claimed: 0, done: 0, failed: 0 }
+  // `pending: null` rather than 0 as the pre-run value: not measured is not the
+  // same fact as nothing waiting, and if the try block below throws before the
+  // drain returns, this is what ships in the response.
+  let searchOutbox: DrainResult | { error: string } = {
+    claimed: 0,
+    done: 0,
+    failed: 0,
+    pending: null,
+  }
   let searchDrift: SearchDrift = { status: 'skipped', reason: 'not attempted' }
   try {
     const admin = createAdminClient()
@@ -61,6 +80,16 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         db_count: searchDrift.dbCount,
         index_count: searchDrift.indexCount,
         gap: searchDrift.gap,
+      })
+    }
+    // Logged on its own, because the drift check above cannot see this. Drift
+    // compares the index against the catalogue and SKIPS entirely while
+    // Meilisearch is unconfigured, which is precisely when the backlog grows.
+    if (searchOutbox.pending != null && searchOutbox.pending > OUTBOX_BACKLOG_WARN) {
+      log.warn('search.outbox_backlog', {
+        pending: searchOutbox.pending,
+        drained: searchOutbox.done,
+        configured: Boolean(process.env.MEILISEARCH_HOST),
       })
     }
   } catch (error) {
