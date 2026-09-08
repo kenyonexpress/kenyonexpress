@@ -1,5 +1,81 @@
 # Apply order
 
+## 2026-09-09: 177 / 178 / 179 APPLIED, as one batch of new tables
+
+`cashback_ledger_177`, `webauthn_credentials_178`, `push_subscriptions_179`.
+Three files that only ever CREATE: `cashback_ledger` (+ two functions and the
+append-only guard), `webauthn_credentials`, `push_subscriptions`. None of the
+three touched an object that already existed, which is why they could go in
+one batch.
+
+**What was measured first, because 183 is the reason to measure.** All three
+restate `set_updated_at` with `CREATE OR REPLACE`, so the live body was read
+with `pg_get_functiondef` before anything ran: byte-identical to the
+replacement, so the replace was a no-op rather than a silent global change to
+every table that uses the trigger. The rest of 177's assumptions were read off
+production too, and two of them were wrong in the file's favour only by luck:
+`wallet_accounts` has **no** `owner_type` column, so both of 177's branches
+take the ELSE path, and its `ON CONFLICT (user_id)` / `ON CONFLICT (code)`
+targets are real unique constraints. `wallet_entries.reason` carries **no**
+CHECK constraint, so `cashback_bonus` and `cashback_adjustment` are accepted
+(a reason list would have 23514'd every bonus, 183's failure one table over).
+`orders.total_ils_agorot` turned out to be a GENERATED column derived from
+`total_ils`; 177 only reads it, so the generation-agnostic COALESCE is right.
+
+Proven against production in transactions that were then rolled back, zero
+residue (`cashback_ledger` 0 rows before and after, orders still 4 / paid 2,
+`wallet_entries` still 2, reserve balance back to -1.80):
+
+    rank 1, basis 81700 agorot     awarded 8170 = exactly 10%, bp 1000,
+                                   first_purchase_bonus, plus the order_item
+                                   mirror row -> 2 ledger rows
+    the wallet movement            reason cashback_bonus, amount_ils 81.70,
+                                   user 1.80 -> 83.50, reserve -1.80 -> -83.50
+    169's audit trigger            2 audit_log rows, one per insert
+    replay of the same order       returns 0, no second row, no second movement
+    rank 5 (four clones, rolled    awarded 4085 = exactly 5%, bp 500,
+    back)                          fifth_purchase_bonus
+    UPDATE / DELETE on a row       both refused: "cashback_ledger is
+                                   append-only"
+    fn_cashback_admin_adjust       refused with "admin only" for a caller
+    without an admin JWT           that is not an admin
+
+Applying 177 cannot break checkout: `awardOrderCountBonus` catches every error
+and logs it, because the card is already charged by the time finalize reaches
+that line. The two passkey/push tables were checked column by column against
+the code that had been dark while they were missing (`passkeys.ts` inserts
+id, user_id, public_key, counter, transports, device_type, backed_up, aaguid,
+friendly_name; `push.ts` upserts endpoint, user_id, p256dh, auth, user_agent
+`onConflict: 'endpoint'`) and every column and conflict target exists.
+
+**Recorded, not fixed, two of them:**
+
+1. 177 pairs `ON DELETE CASCADE` from `profiles` with a `BEFORE DELETE ...
+   RAISE` append-only guard, and those two contradict each other: a cascade
+   fires the child's row trigger, so the parent delete fails. Measured, not
+   reasoned: a throwaway parent/child model reproduced both halves, cascade
+   **and** the `ON DELETE SET NULL` on `order_id` / `wallet_entry_id` /
+   `created_by`, which fires the guard as an UPDATE. It is latent and not a
+   fire because nothing hard-deletes a profile: `fn_anonymize_user` (150)
+   deletes five satellite tables and **updates** `profiles`, and
+   `account.ts` calls `deleteUser(id, true)` -- a soft delete, deliberately,
+   so orders keep resolving. `audit_log` carries the same contradiction
+   already (`actor_id -> auth.users ON DELETE SET NULL` under
+   `tg_audit_log_append_only`), so this is the house pattern and not a new
+   mistake. Tracked as `CASCADE_MEETS_APPEND_ONLY` in
+   `src/__tests__/cashback-ledger-cascade.test.ts`, with an assertion that
+   goes red the day anything starts hard-deleting a profile.
+2. `fn_cashback_ledger_block_mutation` ships with a mutable `search_path`, a
+   new WARN from the Supabase advisor. Its body is a bare `RAISE EXCEPTION`
+   that references no object, so there is nothing to hijack, and
+   `set_updated_at` has carried the identical WARN through every migration to
+   date. Left matching the file rather than silently improved on the way in.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 173, 184, 185.
+
+
+
 ## 2026-09-09: 183 APPLIED, after the preflight stopped it breaking 150
 
 `order_shipped_notification_183`. The trigger enqueues one `order_shipped` mail
@@ -240,9 +316,9 @@ independent and may be applied in any sequence, or not at all.
 | 15 | `184_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
 | 16 | `185_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
 | 17 | `173_whatsapp_flow.sql` | WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
-| 18 | `177_cashback_ledger.sql` | append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
-| 19 | `178_webauthn_credentials.sql` | passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
-| 20 | `179_push_subscriptions.sql` | web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |
+| — | `177_cashback_ledger.sql` | **already applied 2026-09-09** (MCP, `cashback_ledger_177`): append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
+| — | `178_webauthn_credentials.sql` | **already applied 2026-09-09** (MCP, `webauthn_credentials_178`): passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
+| — | `179_push_subscriptions.sql` | **already applied 2026-09-09** (MCP, `push_subscriptions_179`): web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |
 | — | `169_audit_full_coverage.sql` | **already applied 2026-09-04** (MCP, `audit_full_coverage_169`): audit_log before/after/request_id + triggers on all financial/user tables | — | in file header |
 | — | `170_reporting_tables.sql` | **already applied 2026-09-04** (MCP, `reporting_tables_170`): 4 reporting tables + nightly pg_cron rebuild + 5 admin-only RPCs | — | in file header |
 

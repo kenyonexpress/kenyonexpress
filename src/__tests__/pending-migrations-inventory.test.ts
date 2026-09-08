@@ -132,6 +132,9 @@ describe('the pending migration inventory', () => {
       '171_search_fts.sql',
       '172_hide_master_product_test_row.sql',
       '172_rls_zero_policy_tables.sql',
+      '177_cashback_ledger.sql',
+      '178_webauthn_credentials.sql',
+      '179_push_subscriptions.sql',
       '180_analytics_server_event_names.sql',
       '181a_read_only_enum.sql',
       '181b_admin_rbac_hardening.sql',
@@ -189,11 +192,23 @@ describe('the pending migration inventory', () => {
     //                                    seeding -- see "## חסמים לאופיר" in STATE.md
     //   173_whatsapp_flow                whatsapp_contacts/outbox/inbound,
     //                                    support_tickets: none present
-    //   177_cashback_ledger              cashback_ledger: absent
-    //   178_webauthn_credentials         webauthn_credentials: absent
-    //   179_push_subscriptions           push_subscriptions: absent
     //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
     //   185_soft_delete_user_facing_...  the four deleted_at indexes: absent
+    //
+    // 177 / 178 / 179 APPLIED 2026-09-09 as one batch, because all three only
+    // ever CREATE and none of them touched an object that already existed.
+    // The measurement that mattered was the one 183 taught: all three restate
+    // `set_updated_at` with CREATE OR REPLACE, so the live body was read with
+    // pg_get_functiondef first and found byte-identical -- a replace that
+    // changes nothing, rather than a silent edit to every table using it.
+    // Two of 177's assumptions about existing objects were also read rather
+    // than believed: `wallet_accounts` has no `owner_type` column (so both of
+    // its branches take the ELSE path) and `wallet_entries.reason` carries no
+    // CHECK constraint (so `cashback_bonus` is accepted -- a reason list would
+    // have been 183's 23514 one table over). Proven in rolled-back
+    // transactions: rank 1 paid exactly 10% (8170 of 81700 agorot), rank 5
+    // exactly 5%, replay returned 0, and UPDATE and DELETE were both refused
+    // by the append-only trigger.
     //
     // 183 APPLIED 2026-09-09, and its preflight is the argument for having
     // one. The file restated `notification_outbox_kind_check` in full, the
@@ -218,9 +233,6 @@ describe('the pending migration inventory', () => {
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '173_whatsapp_flow.sql',
-      '177_cashback_ledger.sql',
-      '178_webauthn_credentials.sql',
-      '179_push_subscriptions.sql',
       '184_orders_monthly_partitioning.sql',
       '185_soft_delete_user_facing_remainder.sql',
       'preflight_162.sql',
