@@ -1,3 +1,4 @@
+import { deriveDiscountPercent } from '@/lib/commerce/product-money'
 import { buildSynonyms } from '@/lib/search/hebrew-synonyms'
 
 /**
@@ -67,6 +68,10 @@ export const FILTERABLE_ATTRIBUTES = [
   'tags',
   'supplier_id',
   'kenyon_price',
+  // The saving, as a whole-percent number, so the archives can offer
+  // "20% off and better" as a range filter rather than a set of buckets
+  // somebody has to keep in step with the catalogue.
+  'discount_percent',
   'in_stock',
   // Enables `_geoRadius(lat, lng, metres)`. Filtering by distance and sorting
   // by it are separate permissions in Meilisearch, so `_geo` has to appear in
@@ -80,7 +85,15 @@ export const FILTERABLE_ATTRIBUTES = [
  * `{lat, lng}`; a document without it is simply never returned by a geo sort,
  * which is the correct behaviour for a product whose supplier has no coordinates.
  */
-export const SORTABLE_ATTRIBUTES = ['kenyon_price', 'created_at', '_geo'] as const
+// `discount_percent` is sortable as well as filterable so "biggest saving
+// first" is one request rather than a filter plus a client-side sort over a
+// truncated page, which would rank only what happened to come back.
+export const SORTABLE_ATTRIBUTES = [
+  'kenyon_price',
+  'discount_percent',
+  'created_at',
+  '_geo',
+] as const
 
 /**
  * Ranking rules. The Meilisearch default, plus `in_stock:desc` ahead of
@@ -134,6 +147,17 @@ export interface ProductDocument {
   type: string
   kenyon_price: number | null
   full_price: number | null
+  /**
+   * The saving the two prices imply, never a stored badge.
+   *
+   * DERIVED, and by the same function the product page uses. `products` also
+   * carries a `discount_percent` COLUMN, and indexing that instead would let
+   * the facet disagree with the badge a shopper is looking at - which is the
+   * quote-versus-charge split `product-money.ts` exists to prevent. Null when
+   * either price is missing or the "was" price is not higher, because there is
+   * no saving to state.
+   */
+  discount_percent: number | null
   images: unknown
   stock_quantity: number | null
   in_stock: boolean
@@ -250,6 +274,10 @@ export function toProductDocument(
     type: row.type === 'coupon' || row.is_coupon_enabled ? 'coupon' : (row.type ?? 'physical'),
     kenyon_price: row.kenyon_price ?? null,
     full_price: row.full_price ?? null,
+    // full_price is the "was", kenyon_price is the "now". Argument order
+    // matters: deriveDiscountPercent returns null when the second exceeds the
+    // first, which is exactly the "no saving to show" case.
+    discount_percent: deriveDiscountPercent(row.full_price, row.kenyon_price),
     images: row.images ?? [],
     stock_quantity: row.stock_quantity ?? null,
     in_stock: row.stock_quantity == null || row.stock_quantity > 0,

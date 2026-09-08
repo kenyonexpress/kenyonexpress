@@ -17354,4 +17354,47 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
 הזה כבר סוחב סקריפטים שנכתבו ומעולם לא רצו. ‏`--publish` קיים לרגע שבו יוחלט
 מי מגיש אותם.
 
-**המשך מ: ‏STEP 07 (‏CATALOG).**
+**המשך מ: ‏STEP 07 — בוצע. ראה למטה.**
+
+
+## ‏STEP 07 CATALOG — הפער היחיד היה facet אחד, ‏08.09.2026 ‏12:20
+
+חמש הדרישות נבדקו אחת-אחת מול הקוד. ארבע היו בנויות:
+
+| דרישה | מצב | היכן |
+| --- | --- | --- |
+| ‏union מובחן coupon/physical | קיים | ‏`productType` enum ב-`db/schema/commerce.ts`, ‏`StorefrontProductType` ב-`lib/commerce/product-type.ts` |
+| סינונים בעברית | קיים | ‏`hebrew-synonyms.ts`, וחובר גם למנוע ה-DB בצעד קודם |
+| ‏typo tolerance | קיים ומכוון | ‏`oneTypo:4, twoTypos:7`, מבוטל על `sku/slug/barcode` |
+| ‏sync worker + reindex + drift | קיים | ‏`outbox-drain.ts` + `qstash.ts`, ‏`reindexAll()`, ‏`drift.ts` |
+| **facets** | **חסר אחד** | ראה למטה |
+
+### מה היה חסר: ‏facet ההנחה
+
+מתוך חמשת ה-facets שהצעד דורש — ‏category / price / supplier / city /
+‏**discount** — ארבעה היו מוצהרים ב-`FILTERABLE_ATTRIBUTES`. ‏`discount` לא היה
+קיים כלל: **אפס אזכורים של `discount` בכל `src/lib/search/`.**
+
+נוסף `discount_percent`, גם filterable וגם sortable.
+
+**הוא מחושב ולא נלקח מהעמודה, וזו כל הנקודה.** ל-`products` יש עמודת
+‏`discount_percent`, ואינדוקס שלה היה הדבר המתבקש והשגוי: על קופון התג מחושב
+משני המחירים בדיוק כדי שאדמין לא יוכל להקליד חיסכון שסותר את מה שהלקוח מחויב
+בו (‏`deriveDiscountPercent` ב-`product-money.ts`). ‏facet שניזון מהעמודה היה
+מסנן קונה ל"30% הנחה" על מוצר שבדף שלו כתוב 20% — אותו פיצול quote-מול-charge
+במקום חדש.
+
+שישה טסטים חדשים מקבעים את זה, כולל שהעמודה **לא** מנצחת, ושהערך הוא `null`
+ולא מספר שלילי כשהמחיר הנוכחי גבוה מה"היה" (‏facet עם ‏-25% היה מדורג ראשון
+תחת "החיסכון הגדול ביותר").
+
+‏`SORTABLE_ATTRIBUTES` קיבל אותו גם כן: מיון "חיסכון גדול תחילה" חייב לקרות
+במנוע, אחרת הוא ממיין רק את מה שבמקרה חזר בעמוד.
+
+### ‏BLOCKED
+
+**"drift checker 0" אינו ניתן לאימות.** אין מופע Meilisearch —
+‏`MEILISEARCH_HOST` אינו מוגדר בשום מקום מלבד `.env.example` — ולכן אין אינדקס
+לספור מולו. הקוד קיים ונבדק ביחידות; המספר עצמו ימדד ביום שיהיה מופע.
+
+**המשך מ: ‏STEP 08 (‏STOREFRONT).**

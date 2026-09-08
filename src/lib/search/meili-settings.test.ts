@@ -189,3 +189,71 @@ describe('index settings carry the Hebrew synonyms', () => {
     expect(at(INDEX_SETTINGS.synonyms, 'מסעדות')).toContain('מסעדה')
   })
 })
+
+/**
+ * THE DISCOUNT FACET IS DERIVED, AND THAT IS THE WHOLE POINT.
+ *
+ * `products` carries a `discount_percent` COLUMN. Indexing that would be the
+ * obvious thing and it would be wrong: on a coupon the badge is computed from
+ * the two prices precisely so an admin cannot type a saving that disagrees with
+ * what the customer is billed (`product-money.ts`, deriveDiscountPercent). A
+ * facet fed from the column could filter a shopper into "30% off" on a product
+ * whose page says 20%, which is the quote-versus-charge split in a new place.
+ */
+describe('the discount facet', () => {
+  const base = {
+    id: 'p1',
+    slug: 'x',
+    name_he: 'מוצר',
+  }
+
+  it('derives the saving from the two prices', () => {
+    const doc = toProductDocument({ ...base, full_price: 1000, kenyon_price: 800 })
+    expect(doc.discount_percent).toBe(20)
+  })
+
+  it('is null when there is no "was" price to save against', () => {
+    expect(toProductDocument({ ...base, kenyon_price: 800 }).discount_percent).toBeNull()
+    expect(
+      toProductDocument({ ...base, full_price: null, kenyon_price: 800 }).discount_percent,
+    ).toBeNull()
+  })
+
+  it('is null rather than negative when the current price is higher', () => {
+    // A "saving" of -25% is not a discount, and a facet that carried one would
+    // sort it above every real offer under "biggest saving first".
+    const doc = toProductDocument({ ...base, full_price: 800, kenyon_price: 1000 })
+    expect(doc.discount_percent).toBeNull()
+  })
+
+  it('ignores the stored column, so the facet cannot contradict the badge', () => {
+    const doc = toProductDocument({
+      ...base,
+      full_price: 1000,
+      kenyon_price: 900,
+      // A column value that disagrees with the prices. It must not win.
+      discount_percent: 75,
+    } as Parameters<typeof toProductDocument>[0])
+    expect(doc.discount_percent).toBe(10)
+  })
+
+  it('is declared filterable and sortable, or the facet does not exist to Meili', () => {
+    // Declaring the field on the document is not enough: Meilisearch rejects a
+    // filter or a sort on an attribute that is not in these lists, so a facet
+    // that is only in the payload 400s at query time.
+    expect(FILTERABLE_ATTRIBUTES).toContain('discount_percent')
+    expect(SORTABLE_ATTRIBUTES).toContain('discount_percent')
+  })
+
+  it('covers every facet STEP 07 names', () => {
+    for (const facet of [
+      'category_id',
+      'kenyon_price',
+      'supplier_id',
+      'city',
+      'discount_percent',
+    ]) {
+      expect(FILTERABLE_ATTRIBUTES, `missing facet: ${facet}`).toContain(facet)
+    }
+  })
+})
