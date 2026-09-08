@@ -16,6 +16,7 @@ import {
 import { type SortValue, parseSort } from '@/lib/category-tokens'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
+import { alternatesFor } from '@/lib/seo/alternates'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
@@ -29,7 +30,7 @@ export const metadata = {
   // and `?sort=new&page=3` are the same catalogue in a different order, not two
   // documents. Static rather than computed, because the canonical is `/products`
   // whatever the query says, which is the whole point of declaring it.
-  alternates: { canonical: '/products' },
+  alternates: alternatesFor('/products'),
 }
 
 type Props = {

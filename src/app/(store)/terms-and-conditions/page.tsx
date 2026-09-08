@@ -1,3 +1,4 @@
+import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import LegalArticle from '../../(legal)/_components/LegalArticle'
 import LegalContactBlock from '../../(legal)/_components/LegalContactBlock'
@@ -24,7 +25,7 @@ const doc = getLegalDoc('terms')
 export const metadata: Metadata = {
   title: doc.title,
   description: doc.description,
-  alternates: { canonical: '/terms-and-conditions' },
+  alternates: alternatesFor('/terms-and-conditions'),
 }
 
 export default function Page() {

@@ -1,4 +1,5 @@
 import { FAQ_UPDATED_AT, faqEntries } from '@/content/legal/faq'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { jsonLdScript } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   title: 'שאלות נפוצות',
   description:
     'שאלות נפוצות על קניון אקספרס: איך עובד קופון, מה משלמים בבית העסק, תוקף, ביטולים, החזרים, ארנק וחשבוניות.',
-  alternates: { canonical: '/faq' },
+  alternates: alternatesFor('/faq'),
 }
 
 /**

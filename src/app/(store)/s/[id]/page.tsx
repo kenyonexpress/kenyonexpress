@@ -13,6 +13,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
+import { alternatesFor } from '@/lib/seo/alternates'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: alternatesFor(path),
     openGraph: { title, description, url: path, locale: 'he_IL', type: 'website' },
   }
 }

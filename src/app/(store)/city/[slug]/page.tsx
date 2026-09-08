@@ -1,5 +1,6 @@
 import { cityBySlug } from '@/lib/geo/cities'
 import { REGIONS, findRegion } from '@/lib/regions'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `דילים ב${region.name}`,
     description: `קופונים ומבצעים מבתי עסק ב${region.name}. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.`,
-    alternates: { canonical: `/city/${encodeURIComponent(region.slug)}` },
+    alternates: alternatesFor(`/city/${encodeURIComponent(region.slug)}`),
   }
 }
 

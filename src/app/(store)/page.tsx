@@ -2,6 +2,7 @@ import BenefitBar from '@/components/home/BenefitBar'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
@@ -10,7 +11,7 @@ import { Suspense } from 'react'
 export const metadata = {
   title: 'קניון EXPRESS — מסדרים לך בילוי',
   description: 'קופונים, דילים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
-  alternates: { canonical: '/' },
+  alternates: alternatesFor('/'),
 }
 
 /**

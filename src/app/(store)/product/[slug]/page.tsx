@@ -18,6 +18,7 @@ import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/s
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { getProductReviews } from '@/server/queries/reviews'
 import '@/styles/product-page.css'
+import { alternatesFor } from '@/lib/seo/alternates'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -71,7 +72,7 @@ export async function generateMetadata({ params }: Props) {
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: alternatesFor(path),
     openGraph: {
       title,
       description,

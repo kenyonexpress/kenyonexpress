@@ -1,4 +1,5 @@
 import { sortedPosts } from '@/content/blog'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { jsonLdScript } from '@/lib/seo/json-ld'
 import { siteUrl } from '@/lib/site-url'
 import type { Metadata } from 'next'
@@ -7,7 +8,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'הבלוג',
   description: 'מדריכים והסברים על קופונים, מימוש בבתי עסק, תוקף, ביטולים והזמנות.',
-  alternates: { canonical: '/blog' },
+  alternates: alternatesFor('/blog'),
 }
 
 function hebrewDate(iso: string): string {

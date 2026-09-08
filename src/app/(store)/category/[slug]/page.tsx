@@ -28,6 +28,7 @@ import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
+import { alternatesFor } from '@/lib/seo/alternates'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -91,7 +92,7 @@ export async function generateMetadata({ params }: Props) {
     description,
     // The same category is reachable with sort, page, price and city query
     // strings, and without a canonical each of those competes as its own page.
-    alternates: { canonical: `/category/${encodeURIComponent(category.slug)}` },
+    alternates: alternatesFor(`/category/${encodeURIComponent(category.slug)}`),
     openGraph: {
       title: category.name_he,
       description,

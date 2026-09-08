@@ -17835,4 +17835,65 @@ replayIntegration 0   rrweb 0   session-replay 0   maskAllText 0
 מחזיק מפתח לא תקף. **לא נוסף שום אינדקס על סמך ניחוש** — וזה בדיוק מה שהכלל
 "‏covering indexes only if measured" נועד לכפות.
 
-**המשך מ: ‏STEP 15 (‏SEO).**
+**המשך מ: ‏STEP 15 — בוצע. ראה למטה.**
+
+
+## ‏STEP 15 SEO — ‏hreflang והפיד נעלמו מ-16 מסלולים, ‏08.09.2026 ‏15:50
+
+### הבאג
+
+‏`src/app/layout.tsx` מגדיר `alternates` עם:
+
+```
+languages: { 'he-IL': '/' }
+types:     { 'application/rss+xml': [{ url: '/feed.xml', ... }] }
+```
+
+שניהם מתועדים היטב בקובץ. **שניהם לא הוגשו.** נמדד ב-HTML של בילד פרודקשן:
+בראש הדף היה `canonical` בלבד, בלי אף `<link rel="alternate">`.
+
+**הסיבה:** ‏Next ממזג `metadata` **שדה-שדה**, ו-`alternates` הוא שדה אחד. דף
+שכותב
+
+```ts
+alternates: { canonical: '/products' }
+```
+
+**מחליף את כל האובייקט של ה-layout**, לא רק את ה-canonical שלו. ‏**16 קבצי
+מסלול** עשו בדיוק את זה, ולכן 16 מסלולים איבדו גם את ה-hreflang וגם את קישור
+הפיד.
+
+**ושום דבר לא נכשל.** כל דף רונדר, לכל דף היה canonical, והחבילה הייתה ירוקה.
+
+### התיקון
+
+‏`src/lib/seo/alternates.ts` — ‏`alternatesFor(canonical)` בונה את שלושת
+המפתחות. כל 16 המסלולים הומרו, כולל ארבעה דינמיים.
+
+**ה-hreflang מצביע על הדף עצמו ולא על `/`.** גוגל דורש הפניה עצמית מכל דף
+שנושא hreflang, ודף שה-hreflang היחיד שלו מצביע על הבית מכריז שדף הבית הוא
+החלופה העברית שלו — וזה דף אחר.
+
+אומת אחרי בילד, על ארבעה מסלולים:
+
+```
+/           canonical + hrefLang he-IL + rss  ✅
+/products   canonical + hrefLang he-IL + rss  ✅
+/faq        canonical + hrefLang he-IL + rss  ✅
+/product/<slug>  שלושתם, עם ה-slug המקודד     ✅
+```
+
+### השער
+
+‏`src/lib/seo/alternates.test.ts` אוסר על כל מסלול לכתוב את האובייקט ידנית
+שוב. הוכח בשני הכיוונים: החזרת הצורה הישנה ב-`faq` מאדימה אותו.
+
+‏`content-pages.test.ts` בדק `canonical:` כמחרוזת ונשבר בצדק. עודכן לבדוק
+‏`alternatesFor(` — טענה **חזקה יותר**, כי כתיבה ידנית היא בדיוק מה שגרם לבאג.
+
+### מה שכבר היה תקין
+
+‏JSON-LD (‏Product, ‏Offer, ‏Organization, ‏LocalBusiness, ‏BreadcrumbList),
+‏canonical, ‏OG מלא כולל `og:locale: he_IL`, ‏Twitter card, ‏sitemap ו-robots.
+
+**המשך מ: ‏STEP 16 (‏LEGAL).**

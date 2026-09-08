@@ -1,4 +1,5 @@
 import ContactForm from '@/components/storefront/ContactForm'
+import { alternatesFor } from '@/lib/seo/alternates'
 import { formatIsraeliPhoneDisplay, storeWhatsAppLink, storeWhatsAppNumber } from '@/lib/whatsapp'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -6,7 +7,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'צור קשר',
   description: 'צרו קשר עם קניון אקספרס: שאלות, הצעות והערות על קופונים, הזמנות ומשלוחים.',
-  alternates: { canonical: '/contact' },
+  alternates: alternatesFor('/contact'),
 }
 
 /**

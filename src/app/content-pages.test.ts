@@ -65,9 +65,15 @@ describe('content pages carry the SEO fields a crawler needs', () => {
     it(`${name} declares a canonical URL`, () => {
       // Without it, a page reachable at both /about and /about/ is two pages to
       // a crawler and neither ranks.
+      //
+      // The canonical now arrives through `alternatesFor()` rather than a
+      // literal `canonical:` key. That is not a weaker assertion: writing the
+      // object by hand is what silently dropped hreflang and the feed link on
+      // sixteen routes, because Next replaces the whole `alternates` field
+      // rather than merging it. `lib/seo/alternates.test.ts` holds the rule
+      // that no route may write it literally again.
       const text = source(...path)
-      expect(text).toContain('alternates:')
-      expect(text).toContain('canonical:')
+      expect(text).toContain('alternatesFor(')
     })
 
     it(`${name} declares a description`, () => {

@@ -1,4 +1,5 @@
 import { ABOUT_UPDATED_AT, aboutIntro, aboutSections } from '@/content/about'
+import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -6,7 +7,7 @@ export const metadata: Metadata = {
   title: 'אודות',
   description:
     'מי אנחנו וכיצד עובדת רכישת קופון בקניון אקספרס: תשלום מקדים, שובר עם QR, יתרה בבית העסק, תוקף וזיכוי אוטומטי בפקיעה.',
-  alternates: { canonical: '/about' },
+  alternates: alternatesFor('/about'),
 }
 
 /**

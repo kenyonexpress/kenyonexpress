@@ -1,3 +1,4 @@
+import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import LegalArticle from '../../(legal)/_components/LegalArticle'
 import LegalContactBlock from '../../(legal)/_components/LegalContactBlock'
@@ -20,7 +21,7 @@ const doc = getLegalDoc('cookies')
 export const metadata: Metadata = {
   title: doc.title,
   description: doc.description,
-  alternates: { canonical: '/cookie-policy' },
+  alternates: alternatesFor('/cookie-policy'),
 }
 
 export default function Page() {

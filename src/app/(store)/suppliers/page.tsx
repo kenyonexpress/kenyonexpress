@@ -1,4 +1,5 @@
 import SupplierLeadForm from '@/components/storefront/SupplierLeadForm'
+import { alternatesFor } from '@/lib/seo/alternates'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -6,7 +7,7 @@ export const metadata: Metadata = {
   title: 'הצטרפו כספקים',
   description:
     'בית עסק שרוצה למכור קופונים ומוצרים בקניון אקספרס: איך זה עובד, מה נדרש, ואיך משאירים פרטים.',
-  alternates: { canonical: '/suppliers' },
+  alternates: alternatesFor('/suppliers'),
 }
 
 /**
