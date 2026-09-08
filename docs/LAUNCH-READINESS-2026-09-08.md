@@ -151,6 +151,7 @@ deploy is at least visible.
 | --- | --- | --- | --- |
 | 1 | **critical, sharpened 2026-09-08 pass 50** | **The host serves. Nothing has deployed to it since before 2026-09-02.** Measured with `scripts/audit-deployed-build.mjs`: `/` and `/api/health` answer 200, `/api/cron/health` answers **401** — a live Next build refusing an unauthenticated cron call — and `/api/ready`, added 2026-09-02, present on BOTH branches and carrying no auth, answers 404. So the deployed build sits between 2026-08-20 and 2026-09-02, and every commit since is unshipped. This also explains the cron picture: the scheduler's 200s are real, and they are hitting that old build. | `node scripts/audit-deployed-build.mjs` — present 200 `/`, 200 `/api/health`, 401 `/api/cron/health`; ABSENT 404 `/api/ready` |
 | 2 | **high** | `/suppliers` turns away every prospective supplier, live now | prod 307 → `/login` |
+| 2b | **high, new 2026-09-08 pass 52** | Every canonical the site declares names the apex `kenyonexpress.co.il`, which **308-redirects to `www.`** — so the effective canonical is the host the code never names. Affects `rel=canonical`, `og:url`, `robots.txt` Host and Sitemap, and every sitemap `<loc>` | `node scripts/audit-canonical-host.mjs`; KNOWN-ISSUES #11 |
 | 3 | ~~high~~ **medium, CORRECTED 2026-09-08** | The 0.357 is **`/cart`**, not checkout. An unseeded sweep follows `/checkout` -> `/cart` (empty-cart redirect) and files the cart's metrics under checkout's name. Real checkout CLS is covered by a seeded test at < 0.1 and was fixed by `CheckoutShell` | `checkout/page.tsx:109`; `e2e/layout-stability.spec.ts`; `docs/PERF-REPORT.md` §4 |
 | 4 | **high, rediagnosed 2026-09-08** | The scheduler runs from the DEFAULT branch, so it uses `main`'s job list, not this one's. Two effects: `whatsapp` is called and 404s (6 of last 30, exactly 20%, latest 04:53 today), and **`retention` and `weekly-digest` are never called at all** — `main`'s list omits them. `retention` ages `audit_log` IPs past 365 days via `fn_audit_retention_sweep()`, and migration 157 IS applied, so the function exists and has simply never been invoked. The red alarm was at least visible; the unscheduled job is silent. `scripts/audit-cron-drift.mjs`; the fix is the mainline decision. |
 | 5 | medium | Per-route JS 69% over budget | 303.2 KB browser / 323.4 KB first-load vs 180 KB (shared floor 255.8 KB; framework runtime alone is 130 KB). Ratcheted in CI since pass 38 so it cannot grow. |
@@ -160,6 +161,17 @@ deploy is at least visible.
 
 Risk 1 makes risks 2, 3 and 5 undeployable rather than unfixed. **The fixes exist
 and cannot ship.**
+
+---
+
+### Corrected in pass 52: the customer-facing domain is up
+
+`www.kenyonexpress.co.il` serves the app over TLS and the apex redirects to it
+with a valid certificate (`ssl_verify_result=0`). Earlier notes in this project
+recorded production TLS as down; that is no longer true. What IS true is that
+`www` serves the same stale build as `kenyonexpress.vercel.app` — `/api/ready`
+404s on both — so risk 1 applies to the real domain and not only to the
+`vercel.app` alias.
 
 ---
 
