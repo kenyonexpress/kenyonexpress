@@ -40,11 +40,16 @@ const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   // at a business rather than a shopper, and burying it under four legal pages
   // is where it stops being found.
   { label: 'הצטרפו כספקים', href: '/suppliers' },
-  // The flag is gone from all four because the pages exist now ([58]). The two
+  // The flag is gone from all five because the pages exist now ([58]). The two
   // long ones are the site's OWN published Hebrew text, migrated out of the
   // WordPress export rather than rewritten.
+  //
+  // The cookie policy is linked here rather than left as a section inside the
+  // privacy policy because a consent banner has to point somewhere specific,
+  // and "see the privacy policy" is not that.
   { label: 'תקנון', href: '/terms-and-conditions' },
   { label: 'מדיניות פרטיות', href: '/privacy-policy' },
+  { label: 'מדיניות עוגיות', href: '/cookie-policy' },
   { label: 'ביטולים והחזרות', href: '/refund_returns' },
   { label: 'הצהרת נגישות', href: '/accessibility' },
 ]

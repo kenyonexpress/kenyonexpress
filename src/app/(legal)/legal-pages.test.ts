@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { LEGAL_DOCS } from './_content'
@@ -38,8 +38,14 @@ describe('every legal document is reachable', () => {
     expect(directories).toEqual(LEGAL_DOCS.map((d) => d.slug).sort())
   })
 
-  it('lists the four documents the launch checklist names', () => {
-    expect(LEGAL_DOCS.map((d) => d.slug)).toEqual(['terms', 'privacy', 'returns', 'accessibility'])
+  it('lists the five documents the launch checklist names', () => {
+    expect(LEGAL_DOCS.map((d) => d.slug)).toEqual([
+      'terms',
+      'privacy',
+      'cookies',
+      'returns',
+      'accessibility',
+    ])
   })
 })
 
@@ -200,5 +206,75 @@ describe('the accessibility statement names its standard and its gaps', () => {
 
   it('says no external audit has been done, while that is true', () => {
     expect(accessibility).toContain('מורשה נגישות שירות')
+  })
+})
+
+/**
+ * THE COOKIE TABLE MUST EQUAL THE COOKIES THE CODE ACTUALLY SETS.
+ *
+ * This is the only legal text in the repo that goes stale by editing a
+ * different file. Nobody re-reads a policy when they add a cookie, and the
+ * privacy policy's own table proved it: it disclosed four of the nine `ke_*`
+ * identifiers that existed in `src/`, and the five it missed included a
+ * measurement id readable by any script on the page.
+ *
+ * So the disclosure is checked against the source rather than trusted. The
+ * source of truth is every `'ke_*'` string literal under `src/`, excluding the
+ * legal content itself (which quotes them) and the tests (which assert on
+ * them). Adding a cookie without disclosing it fails here, by name.
+ */
+describe('the cookie policy discloses every identifier the code stores', () => {
+  const SRC = join(process.cwd(), 'src')
+
+  function walk(dir: string, out: string[] = []): string[] {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) walk(full, out)
+      else if (/\.(ts|tsx)$/.test(entry.name)) out.push(full)
+    }
+    return out
+  }
+
+  /** Identifiers the code writes to a cookie, localStorage or sessionStorage. */
+  function identifiersInSource(): Set<string> {
+    const found = new Set<string>()
+    for (const file of walk(SRC)) {
+      // The policy quotes these; the tests assert on them. Neither defines one.
+      if (file.includes(`${join('(legal)', '_content')}`)) continue
+      if (/\.(test|spec)\.tsx?$/.test(file)) continue
+      for (const match of readFileSync(file, 'utf8').matchAll(/'(ke_[a-zA-Z0-9_]+)'/g)) {
+        found.add(match[1] as string)
+      }
+    }
+    return found
+  }
+
+  const disclosed = new Set(
+    [...textOf(doc('cookies')).matchAll(/\bke_[a-zA-Z0-9_]+/g)].map((m) => m[0]),
+  )
+
+  it('discloses every ke_* identifier that exists in src/', () => {
+    const missing = [...identifiersInSource()].filter((id) => !disclosed.has(id)).sort()
+    expect(missing, `undisclosed browser storage: ${missing.join(', ')}`).toEqual([])
+  })
+
+  it('does not disclose an identifier the code no longer sets', () => {
+    const inSource = identifiersInSource()
+    const stale = [...disclosed].filter((id) => !inSource.has(id)).sort()
+    expect(stale, `disclosed but gone from the code: ${stale.join(', ')}`).toEqual([])
+  })
+
+  it('gives every disclosed identifier a lifetime, not just a name', () => {
+    // A four-column table whose rows are name/kind/purpose/lifetime. A row that
+    // names a cookie and leaves the retention blank is the half-disclosure the
+    // Privacy Protection Regulations are specifically about.
+    for (const section of doc('cookies').sections) {
+      for (const block of section.blocks) {
+        if (block.type !== 'table') continue
+        for (const row of block.rows) {
+          expect(row.at(-1)?.trim(), `${section.id}: ${row[0]}`).toBeTruthy()
+        }
+      }
+    }
   })
 })

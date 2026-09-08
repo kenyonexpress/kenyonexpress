@@ -31,6 +31,7 @@ import { describe, expect, it } from 'vitest'
 
 const CANONICAL = [
   'src/app/(store)/accessibility/page.tsx',
+  'src/app/(store)/cookie-policy/page.tsx',
   'src/app/(store)/privacy-policy/page.tsx',
   'src/app/(store)/refund_returns/page.tsx',
   'src/app/(store)/terms-and-conditions/page.tsx',
@@ -42,6 +43,7 @@ const CANONICAL = [
  */
 const UNLINKED = [
   'src/app/(legal)/legal/accessibility/page.tsx',
+  'src/app/(legal)/legal/cookies/page.tsx',
   'src/app/(legal)/legal/privacy/page.tsx',
   'src/app/(legal)/legal/returns/page.tsx',
   'src/app/(legal)/legal/terms/page.tsx',
@@ -63,11 +65,17 @@ function walk(dir: string): string[] {
 /** Every page that renders a legal document, found rather than listed. */
 function legalPages(): string[] {
   const cwd = process.cwd()
-  return walk(resolve(cwd, 'src/app'))
-    .map((file) => relative(cwd, file).split('\\').join('/'))
-    .filter((file) => /terms|privacy|accessib|refund_returns|legal\//.test(file))
-    .filter((file) => !file.includes('/checkout/'))
-    .sort()
+  return (
+    walk(resolve(cwd, 'src/app'))
+      .map((file) => relative(cwd, file).split('\\').join('/'))
+      // `cookie` earns its place the hard way: the cookie policy was added at
+      // `(store)/cookie-policy/` and this filter did not match it, so the
+      // inventory that exists to notice a new legal page did not notice one.
+      // A pattern that silently under-matches is worse here than no pattern.
+      .filter((file) => /terms|privacy|accessib|cookie|refund_returns|legal\//.test(file))
+      .filter((file) => !file.includes('/checkout/'))
+      .sort()
+  )
 }
 
 describe('the legal document inventory', () => {
