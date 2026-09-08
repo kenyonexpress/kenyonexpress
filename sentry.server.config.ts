@@ -1,15 +1,40 @@
 import { redact } from '@/lib/observability/scrub'
+import { isClientDisconnect, shouldReportToSentry } from '@/lib/observability/sentry-filter'
 import * as Sentry from '@sentry/nextjs'
 
 /**
  * Server runtime (Node). Loaded by instrumentation.ts register().
  *
- * Inert without SENTRY_DSN: init is skipped entirely, so tests, CI and local
- * development make no network call and need no credential.
+ * Inert without SENTRY_DSN, AND inert on a developer machine that has one.
+ *
+ * This block used to claim the first half alone, and read as though it covered
+ * local development. It did not: `.env.local` sets SENTRY_DSN, so this laptop
+ * had been reporting into the shared project all along - measured 2026-09-08,
+ * 42 `The destination stream closed early` events in 41 minutes from browser
+ * tests aborting RSC streams. The rule is now the environment name, checked in
+ * `shouldReportToSentry`, so tests, CI and local runs stay silent while a
+ * self-hosted production build still reports.
  */
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+
+  /**
+   * WHO IS ALLOWED TO REPORT, decided before init rather than inside beforeSend.
+   *
+   * `enabled` is false on a developer machine unless SENTRY_ALLOW_LOCAL=true. The
+   * header above says this file is "inert without SENTRY_DSN ... local
+   * development makes no network call", and that is true only while the DSN is
+   * unset - .env.local sets it, and on 2026-09-08 this laptop put 42 stream
+   * aborts into the money-path project in 41 minutes. A self-hosted PRODUCTION
+   * build still reports: the test is the environment name, not the presence of
+   * Vercel.
+   */
+  enabled: shouldReportToSentry({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+    allowLocal: process.env.SENTRY_ALLOW_LOCAL,
+  }),
 
   // Tied to the deployed commit so a stack trace can be read against the exact
   // source it came from. Vercel injects VERCEL_GIT_COMMIT_SHA; the local
@@ -40,6 +65,18 @@ Sentry.init({
   sendDefaultPii: false,
 
   beforeSend(event) {
+    // A CLIENT THAT WENT AWAY IS NOT AN ERROR AT THIS END.
+    //
+    // A visitor who navigates mid-stream, closes the tab, or loses signal makes
+    // Next's app-page runtime throw "The destination stream closed early" from
+    // a PassThrough. Nothing is broken and nobody can act on it. Dropped by
+    // exact message so a genuinely new streaming failure still reports.
+    //
+    // This one is not hypothetical in production: it is what a back button
+    // during a streamed render looks like, and it arrived here at 42 events in
+    // 41 minutes from a single laptop running browser tests.
+    if (isClientDisconnect(event.exception?.values?.[0]?.value)) return null
+
     // The single scrubber (R39). Headers and cookies carry the Supabase session
     // and the Cardcom shared secret, so they are dropped wholesale rather than
     // filtered key by key.
