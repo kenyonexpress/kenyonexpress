@@ -56,7 +56,12 @@
   --color-brand-accent: #eaf4f6; /* tinted backgrounds, soft surfaces */
 
   /* --- Functional colors ----------------------------------------------------- */
-  --color-price: #dc3545; /* current price (live measured) */
+  /* 2026-09-08: the brief's #E4002B, for the same expired-reference reason as
+     --container-page above. Contrast is not a regression: #E4002B on white is
+     4.85:1 against #dc3545's 4.53:1, so this moves AA further clear, not
+     closer. The archive refs/ke_live_home.html still records #dc3545 as what
+     WooCommerce painted. */
+  --color-price: #e4002b; /* current price (2026 brief) */
   /* Darkened from #9ca3af for WCAG AA. At 2.53:1 on white it was the worst
      text pairing left on the site after the brand-yellow sweep, and it paints
      the coupon product page's "regular price". #6f6f6f is 5.02. */
@@ -182,7 +187,16 @@
      scoped exception's reason. The audit the old comment asked for
      ("widen the audit before widening the fix") is docs/HEADER-1TO1-2026-09-02:
      every above-fold element was measured against refs/ke_live_computed.json. */
-  --container-page: 1200px;
+  /* 2026-09-08: RESTORED TO THE BRIEF'S 1320. The note above kept 1200 because
+     "the gate that closes every UI step is compare.mjs against this same
+     reference, so adopting either brief value would raise the pixel difference
+     it is scored on". That reason has expired: kenyonexpress.co.il no longer
+     serves the WooCommerce reference, it serves THIS app, so compare.mjs is
+     scoring us against a stale deploy of ourselves and 1200 buys no fidelity
+     against anything. The brief has named 1320 three times; it is now the only
+     live source for this value. docs/HEADER-1TO1-2026-09-02 remains the record
+     of what live measured while live existed. */
+  --container-page: 1320px;
   /* Measured on live: the footer and the deals grid do NOT share the page
      container, they run wider and narrower respectively. */
   --container-footer: 1430px;
