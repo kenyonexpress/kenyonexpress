@@ -124,12 +124,26 @@ ALTER TABLE public.t ENABLE ROW LEVEL SECURITY;
 
 Followed by explicit `DROP POLICY IF EXISTS / CREATE POLICY` for every operation (SELECT, INSERT, UPDATE, DELETE) that is permitted. No implicit fallback.
 
-**Zero policies is a valid, deliberate answer.** RLS enabled with no permissive
-policy denies every client role unconditionally, and that is how the
-server-only tables are locked: `legacy_percent_archive_112`,
-`payment_webhook_events`, `rate_limits`, `referral_signals`, `search_index_dlq`,
-`settlement_events`, `stock_reservations`, `user_rate_limits`, and
-`search_index_outbox`. Do not "fix" one by adding a policy.
+**A locked table has two shapes, and neither is a gap.** RLS enabled with no
+permissive policy denies every client role unconditionally. So does a **RESTRICTIVE**
+`deny_all_client_roles` policy for `{anon,authenticated}` with `USING false` and
+`WITH CHECK false`, which is what migration 172 installed. Production moved from
+the first shape to the second, and the move was a strengthening: permissive
+policies are ORed and restrictive ones ANDed onto the result, so zero policies
+stops protecting a table the moment somebody adds one permissive policy, while a
+RESTRICTIVE `false` cannot be outvoted by anything added later. If you write one,
+it must say `AS RESTRICTIVE`; a permissive `false` policy is decoration.
+
+The eight locked tables today: `legacy_percent_archive_112`, `rate_limits`,
+`referral_signals`, `search_index_dlq`, `search_index_outbox`,
+`settlement_events`, `stock_reservations`, `user_rate_limits`. Do not "fix" one
+by adding a real policy. `payment_webhook_events` left the list on 2026-09-09
+when it gained an `is_admin()` SELECT policy; it is still not writable.
+
+**A policy count cannot tell the two apart from an opening.** One policy saying
+`false` and one policy saying `true` are both one policy, which is why
+`src/lib/auth/rls-manifest.test.ts` reads the predicates out of the manifest's
+`write_policies` rather than trusting `policy_count`.
 
 **Revoke the table grant too, not just the policy.** The moment anybody adds one
 permissive `authenticated` policy to such a table to grant a read, that role

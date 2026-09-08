@@ -1,11 +1,7 @@
 'use server'
 
 import { type CouponRecord, evaluateCoupon, normalizeCouponCode } from '@/lib/cart/coupon'
-import {
-  CART_COUPON_COOKIE,
-  CART_EXPIRY_DAYS,
-  COUPON_COOKIE_MAX_AGE,
-} from '@/lib/cart/coupon-cookie'
+import { CART_COUPON_COOKIE, CART_EXPIRY_DAYS, couponCookieOptions } from '@/lib/cart/coupon-cookie'
 import {
   GUEST_SESSION_COOKIE,
   ensureGuestSessionId,
@@ -26,7 +22,7 @@ import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { addToCartSchema, updateCartItemSchema } from '@/lib/validations/cart'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 /**
  * The applied discount code lives in a cookie, not in a `carts` column.
@@ -708,12 +704,11 @@ async function runApplyCouponCode(rawCode: string): Promise<CouponActionResult> 
   const campaign = await evaluateCampaignCode(code, priced)
   if (campaign) {
     const cookieStore = await cookies()
-    cookieStore.set(CART_COUPON_COOKIE, campaign.code, {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: COUPON_COOKIE_MAX_AGE,
-      path: '/',
-    })
+    cookieStore.set(
+      CART_COUPON_COOKIE,
+      campaign.code,
+      couponCookieOptions((await headers()).get('x-forwarded-proto')),
+    )
     revalidateCartPaths()
     return { ok: true, cart: await runGetCart() }
   }
@@ -737,12 +732,11 @@ async function runApplyCouponCode(rawCode: string): Promise<CouponActionResult> 
   if (!evaluation.ok) return fail(evaluation.message, 'COUPON_INVALID')
 
   const cookieStore = await cookies()
-  cookieStore.set(CART_COUPON_COOKIE, evaluation.code, {
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: COUPON_COOKIE_MAX_AGE,
-    path: '/',
-  })
+  cookieStore.set(
+    CART_COUPON_COOKIE,
+    evaluation.code,
+    couponCookieOptions((await headers()).get('x-forwarded-proto')),
+  )
 
   revalidateCartPaths()
   return {

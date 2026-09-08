@@ -50,7 +50,7 @@ const QUERY = `select c.relname as table_name,
  where n.nspname = 'public' and c.relkind = 'r'
  order by c.relname`
 
-const WRITE_QUERY = `select tablename, policyname, cmd,
+const WRITE_QUERY = `select tablename, policyname, cmd, permissive,
        coalesce(qual, '') as qual,
        coalesce(with_check, '') as with_check
   from pg_policies
@@ -203,6 +203,30 @@ const measured = (await measure())
   }))
   .sort((a, b) => a.table_name.localeCompare(b.table_name))
 
+/**
+ * The one policy shape that keeps a table shut while still being visible in
+ * `pg_policies`: RESTRICTIVE, every command, every client role, `false` on both
+ * sides. Anything else on a service_role_only table is an opening, not a lock.
+ */
+function isDenyAll(policy) {
+  const no = (predicate) =>
+    (predicate ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/^\(|\)$/g, '') === 'false'
+  // RESTRICTIVE, not merely `false`. Permissive policies are ORed, so a
+  // PERMISSIVE policy saying `false` contributes nothing and stops mattering
+  // the moment a second permissive policy lands. A RESTRICTIVE one is ANDed
+  // with whatever else exists and cannot be outvoted later. That is the
+  // difference between "locked today" and "locked".
+  return (
+    policy.cmd === 'ALL' &&
+    policy.permissive === 'RESTRICTIVE' &&
+    no(policy.qual) &&
+    no(policy.with_check)
+  )
+}
+
 const exempt = new Set(Object.keys(manifest.service_role_only).filter((k) => !k.startsWith('$')))
 const problems = []
 
@@ -222,11 +246,32 @@ for (const row of measured) {
 }
 
 // Rule 3: an exemption that no longer describes reality is worse than none.
+//
+// A LOCKED TABLE HAS TWO SHAPES, and this rule accepts both, because production
+// moved from one to the other between 2026-08-19 and 2026-09-09. Zero policies
+// denies every non-superuser role implicitly. A `deny_all_client_roles` policy
+// with USING false and WITH CHECK false denies them explicitly. Same denial;
+// the second one is legible in `pg_policies` instead of inferred from an
+// absence, which is why the migration was worth making.
+//
+// What a COUNT alone cannot tell apart is "one deny-all policy" from "one
+// policy that opened the table up", and those are opposite facts. So the count
+// on this side is reconciled against the predicates on the write side: an
+// exempt table may hold deny-all policies and nothing else.
 for (const name of exempt) {
   const row = measured.find((r) => r.table_name === name)
-  if (!row) problems.push(`service_role_only names ${name}, which no longer exists`)
-  else if (row.policy_count > 0) {
-    problems.push(`${name} now has ${row.policy_count} policies; drop the exemption`)
+  if (!row) {
+    problems.push(`service_role_only names ${name}, which no longer exists`)
+    continue
+  }
+  if (row.policy_count === 0) continue
+  const denyAll = (manifest.write_policies?.policies ?? []).filter(
+    (p) => p.tablename === name && isDenyAll(p),
+  )
+  if (denyAll.length !== row.policy_count) {
+    problems.push(
+      `${name} has ${row.policy_count} policies but only ${denyAll.length} are deny-all; either it was opened up (drop the exemption) or write_policies is stale`,
+    )
   }
 }
 

@@ -30,6 +30,56 @@
 > ו-127, ובקבצים תחת `migrations/pending/` הן **143**, **144** ו-**145**.
 > הטבלה המלאה: `docs/ARCHITECTURE-OVERVIEW.md` סעיף 8.1.
 
+<!-- v1-final-banner:2026-09-09 -->
+
+> ‏**נמדד מחדש 09.09.2026, ‏21 יום אחרי המדידה שהמניפסט נשען עליה. ‏53 טבלאות
+> הפכו ל-81, וצורת "טבלה נעולה" התחלפה. שלושה ממצאים, כולם מ-`pg_policies`
+> ומ-`pg_proc` ולא מקובץ בריפו:**
+>
+> ‏1. ‏**שמונה הטבלאות שהיו ב-אפס policies מחזיקות עכשיו policy מפורשת אחת
+>    כל אחת:** ‏`deny_all_client_roles`, ‏**‏RESTRICTIVE**, ‏`ALL`,
+>    ל-`{anon,authenticated}`, ‏`USING false` ו-`WITH CHECK false`. **זה הידוק
+>    ולא ניסוח מחדש,** וה-RESTRICTIVE הוא כל ההבדל: ‏Postgres מאחד policies
+>    מסוג ‏PERMISSIVE ב-OR ומצליב את ה-RESTRICTIVE ב-AND על התוצאה. ‏policy
+>    מתירנית שאומרת ‏`false` לא מוסיפה כלום ל-OR ומפסיקה לשנות משהו ברגע שמישהו
+>    מוסיף מתירנית שנייה. ‏policy מגבילה שאומרת `false` לא ניתנת להצבעה נגד.
+>    אפס policies גם הוא בלתי-ניתן להבסה, אבל רק עד שנוחתת המתירנית הראשונה,
+>    והסיבה השכיחה שהיא נוחתת היא ניקוי ה-INFO ‏`rls_enabled_no_policy`
+>    של ה-advisor. **השער הישן קרא את זה כ"יש לה policies, תוריד את הפטור"**
+>    והיה מוביל למחיקת התיעוד של הטבלאות ההדוקות בסכימה. ‏policy אחת שאומרת
+>    ‏`false` ו-policy אחת שאומרת `true` הן שתיהן policy אחת, ולכן השער לא סופר
+>    יותר: הוא קורא את הפרדיקטים ואת ‏`permissive` מ-`write_policies`. אומת
+>    אדום בשני הכיוונים, גם על הפרדיקט וגם על ‏RESTRICTIVE לבדו.
+>
+>    ‏**‏172 היא שהתקינה אותן** ‏(04.09), ו-`profiles_super_admin_mfa` היא
+>    התשיעית מסוג ‏RESTRICTIVE ואינה deny-all: היא מצליבה דרישת ‏`aal2` על כל
+>    ‏UPDATE של פרופיל ‏super_admin.
+> ‏2. ‏**‏`wallet_balances` ו-`wallet_transactions` איבדו את שלוש מדיניות
+>    הכתיבה `is_admin()` שלהן** ונשארו עם ‏SELECT בלבד. זו הידוק, לא רגרסיה:
+>    שתיהן ‏0 שורות, אף קוד לא כותב אליהן, והפנקס החי הוא `wallet_entries`
+>    שמעולם לא הייתה לו מדיניות כתיבה. הן עברו ב-`rls-write-policies.test.ts`
+>    מרשימת "כתיב מאחורי is_admin()" לרשימת "לא כתיב בכלל".
+> ‏3. ‏**‏`payment_webhook_events` יצאה מרשימת service-role-only:** יש לה עכשיו
+>    ‏`SELECT` מאחורי `is_admin()`. היא נשארת בלתי-כתיבה דרך ‏PostgREST.
+>
+> ‏**‏`search_index_outbox` נוספה לרשימה**, עם אותה policy של deny-all.
+>
+> ‏**מה שלא השתנה:** ‏RLS דלוק על **כל** ‏81 הטבלאות, אפס טבלאות בלי הגנה,
+> וכל ‏61 פונקציות ה-`SECURITY DEFINER` עדיין מצמידות `search_path`.
+>
+> ‏**ה-advisor מדווח על שלוש פונקציות בלי `search_path` מוצמד, וכל השלוש הן
+> ‏`SECURITY INVOKER`.** ‏`set_updated_at`, ‏`fn_cashback_ledger_block_mutation`
+> ו-`fn_il_phone_digits`. ‏search_path משתנה הוא וקטור הסלמת הרשאות ב-`SECURITY
+> DEFINER`, כי התוקף שולט בפענוח שמות בגוף שרץ כבעלים. גוף ‏INVOKER רץ כקורא
+> ומפענח שמות עם ה-search_path של הקורא עצמו, ולכן הצללה של שם לא קונה כלום.
+> הגופים נקראו ולא הונחו: ‏`now()` ו-`regexp_replace` יושבות ב-`pg_catalog`,
+> שנסרקת במפורש ראשונה. ‏`migrations/pending/188` מצמיד אותן בכל זאת, כי
+> "שלוש לא מוצמדות, כולן לא מזיקות" הוא משפט שצריך לגזור מחדש בכל קריאה של
+> ה-advisor, והרביעית תיקרא כלא-מזיקה כברירת מחדל. **הוא נכתב ולא הוחל.**
+>
+> ‏**מדידה חוזרת:** ‏`node scripts/check-rls.mjs --sql` ו-`--sql-writes` דרך
+> ‏MCP, ואז ‏`--from` על שני הצדדים.
+
 ---
 
 ## 1. ארבע שכבות, וכל אחת עונה על שאלה אחרת

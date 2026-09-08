@@ -271,9 +271,18 @@ describe('the pending migration inventory', () => {
     // spent both numbers on different migrations (148_refund_destination
     // 20260902182227, 149_audit_log_append_only 20260902182235), so the
     // unapplied file is the one that moved.
+    // 188 ADDED 2026-09-09, unapplied and low-stakes. It pins `search_path` on
+    // the three functions Supabase's `function_search_path_mutable` lint
+    // reports. All three are SECURITY INVOKER, so the mutable path is not the
+    // escalation the lint name suggests: an INVOKER body runs as the caller and
+    // resolves names with the caller's own path. It is here so the number of
+    // unpinned functions can be zero rather than three-with-a-paragraph. Probed
+    // for what it creates the same way as the two above: `proconfig` on all
+    // three is `(none)` in production.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
+      '188_pin_invoker_search_path.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

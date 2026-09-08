@@ -1,4 +1,4 @@
-import { CART_COUPON_COOKIE, COUPON_COOKIE_MAX_AGE } from '@/lib/cart/coupon-cookie'
+import { CART_COUPON_COOKIE, couponCookieOptions } from '@/lib/cart/coupon-cookie'
 import { isValidUnitCode } from '@/lib/coupons/unit-codes'
 import { growthClient } from '@/lib/growth/client'
 import { log } from '@/lib/observability/log'
@@ -48,14 +48,15 @@ async function handleGET(request: NextRequest, ctx: { params: Promise<{ code: st
 
   log.info('coupon_qr.applied', { campaignId: campaign.id })
 
-  // Same attributes as the cart's own cookie writes in cart.ts. The cart will
-  // show the campaign's label the moment anything priceable is in it.
-  home.cookies.set(CART_COUPON_COOKIE, code, {
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: COUPON_COOKIE_MAX_AGE,
-    path: '/',
-  })
+  // Same attributes as the cart's own cookie writes in cart.ts, and now the
+  // same OBJECT: "same attributes" was true of all three writers while all
+  // three were missing `secure`. The cart will show the campaign's label the
+  // moment anything priceable is in it.
+  home.cookies.set(
+    CART_COUPON_COOKIE,
+    code,
+    couponCookieOptions(request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol),
+  )
   return home
 }
 

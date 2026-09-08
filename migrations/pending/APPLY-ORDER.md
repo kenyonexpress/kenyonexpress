@@ -567,3 +567,32 @@ removed as migrations were applied, so a row's number is a stable reference in
 conversation rather than a position. What is authoritative is the file list, and as of
 2026-09-03 that list is empty: every migration this directory ever described now
 lives in `migrations/applied/`.
+
+## 2026-09-09: 188 written, not applied, and it is the smallest file here
+
+`188_pin_invoker_search_path.sql` pins `search_path` on the three functions
+Supabase's `function_search_path_mutable` lint reports: `set_updated_at`,
+`fn_cashback_ledger_block_mutation` and `fn_il_phone_digits`.
+
+**It is not the escalation the advisor's name suggests, and the file says so
+at length rather than letting a future reader assume the worst.** All three are
+`SECURITY INVOKER`, read from `pg_proc.prosecdef`. A mutable `search_path` is a
+privilege-escalation vector on a `SECURITY DEFINER` function, because the
+attacker controls name resolution inside a body running as the owner. An
+INVOKER body runs as the caller and resolves names with the caller's own path,
+so shadowing a name buys nothing. The 61 `SECURITY DEFINER` functions in
+production all pin it and zero are unpinned; that property is untouched.
+
+The reason to apply it anyway is that "three unpinned, all harmless" is a
+sentence somebody has to re-derive every time they read the advisor, and the
+fourth unpinned function will be read as harmless by default. Zero is a number
+a gate can hold.
+
+**Verified without applying.** The three statements ran inside one `DO` block
+ending in an unconditional `RAISE`, so the statement rolled back. It parses,
+and the pinned `fn_il_phone_digits` returned `972541234567`, `972541234567` and
+`NULL` for the three inputs in the file, matching the unpinned function.
+`proconfig` was re-read afterwards: still `(none)` on all three. Nothing was
+left in production.
+
+Order: independent of 162 and 184. It touches no table and no policy.

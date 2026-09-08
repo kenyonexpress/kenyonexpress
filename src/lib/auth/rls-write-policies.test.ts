@@ -133,6 +133,10 @@ describe('the write side of RLS', () => {
       split_executions: 'the executed money split, per order item. Immutable once written.',
       escrow_holds:
         'abolished model, two historical rows. Nothing may write here again, by any path.',
+      wallet_balances:
+        'the superseded single-entry wallet from migration 006, and NOT the ledger the site runs on. It held is_admin() INSERT/UPDATE/DELETE policies at the 2026-08-19 measurement and holds none at the 2026-09-09 one, leaving a SELECT policy alone. Nothing regressed: an admin-gated write path was removed from a table with 0 rows that no code writes to, so the tightest state and the used state now agree.',
+      wallet_transactions:
+        'the other half of that superseded wallet, and it lost the same three admin-gated write policies on the same date. Recorded here rather than left as a diff line because a table moving from "writable behind is_admin()" to "not writable at all" is the direction this file exists to notice, and the next re-measure should read it as the new floor rather than as drift to undo.',
       wallet_entries:
         'the live cashback ledger, and the one step (19) calls append-only. Double-entry: every row names a debit_account and a credit_account, so a balance is the sum of its entries and nothing else. An UPDATE path would let a corrected row silently restate a balance that was already shown to a customer; the correction a ledger allows is a second, compensating entry. Written only by the service role, from the checkout return path.',
     }
@@ -174,14 +178,15 @@ describe('the write side of RLS', () => {
     /**
      * Admin-gated, deliberately: an operator has to be able to fix a bad row.
      *
-     * `wallet_transactions` and `wallet_balances` are here for a narrower
-     * reason than the other two, and it is worth not misreading them as the
-     * wallet. They are the superseded single-entry wallet from migration 006.
-     * Both hold 0 rows, no code writes to either, and the only reader left is
-     * the admin user page. The ledger the site actually runs on is
-     * `wallet_entries`, which is asserted above to have no write policy at all.
+     * `wallet_transactions` and `wallet_balances` used to be on this list, for
+     * a narrower reason than the other two: they are the superseded
+     * single-entry wallet from migration 006, 0 rows apiece, read only by the
+     * admin user page. The 2026-09-09 measurement found their write policies
+     * gone, so they moved up to IMMUTABLE_TO_THE_API. The ledger the site
+     * actually runs on has always been `wallet_entries`, which has never had a
+     * write policy.
      */
-    const ADMIN_ONLY = ['order_items', 'orders', 'wallet_transactions', 'wallet_balances']
+    const ADMIN_ONLY = ['order_items', 'orders']
 
     it.each(ADMIN_ONLY)('%s is writable only behind is_admin()', (table) => {
       const policies = writes.policies.filter((p) => p.tablename === table)
