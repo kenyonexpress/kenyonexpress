@@ -12,6 +12,7 @@ Read the caveat section before quoting any number here.
 | Budget | Target | Measured | Verdict |
 | --- | --- | --- | --- |
 | Shared first-load JS | < 180 KB gz | **255.8 KB gz** | ❌ over by 42% |
+| Per-route JS, actually downloaded | < 180 KB gz | **303.3 KB home, 314.5 KB `/products`, 299.9 KB `/cart`, 308.8 KB `/checkout`** | ❌ over by 67–75% |
 | LCP | < 2.0 s | 1.2 s home, 0.9 s product, 1.2 s checkout | ✅ (see caveat) |
 | CLS | < 0.05 | 0.011 home, 0.012 product, **0.357 `/cart`** | ❌ on `/cart` (see §4: this was misreported as checkout) |
 | TTFB | < 200 ms | 10 ms | ✅ (see caveat) |
@@ -37,7 +38,64 @@ canonical, so Lighthouse is scoring a document it was never meant to score.
 
 ---
 
-## 3. The bundle: 255.8 KB against a 180 KB target
+## 3a. The 255.8 KB is a floor, not the number the budget asks for
+
+Corrected 2026-09-08, maintenance pass 37, after the first `pnpm build` this
+session succeeded.
+
+`scripts/bundle-gate.mjs` measures `rootMainFiles + polyfills` -- the JS every
+route pays before it loads any of its own. It is honest about this in its own
+header: Turbopack emits no `app-build-manifest.json`, so per-route sums are not
+available to it. **This document then reported that floor as though it were the
+budget.** STEP 14 budgets "product JS < 180 KB gz", which is what a page
+downloads, not the part of it that is shared.
+
+Measured in a browser against `pnpm start` on the 2026-09-08 build,
+`node scripts/measure-route-js.mjs`, gzip computed locally over each response
+body rather than read off the wire:
+
+```
+  /              303.3 KB   24 chunks  FAIL
+  /products      314.5 KB   25 chunks  FAIL
+  /cart          299.9 KB   24 chunks  FAIL
+  /checkout      308.8 KB   26 chunks  FAIL
+```
+
+So the overage is **67-75%, not 42%.** The gap is the ~48 KB of route-owned
+code the shared gate never counted.
+
+Two measurement errors were made and fixed before these numbers were believed:
+
+1. The first run reported 1165 KB for `/products` against 357 KB for `/`. That
+   spread was compression negotiation, not code -- Playwright's
+   `responseBodySize` is not consistently the encoded size. The script now
+   gzips the decoded body itself, which is the same arithmetic every time.
+2. The second run charged a 22.4 KB stylesheet to a JavaScript budget, because
+   Turbopack writes CSS into `/_next/static/chunks/` and the filter tested the
+   directory. `isRouteJs` now tests `.js`, and
+   `scripts/measure-route-js.test.mjs` holds that case.
+
+### The budget itself was never checked against the framework floor
+
+The 130.1 KB chunk is `next/dist/compiled/*` and `react-dom` -- the Next 16
+client runtime, before a single line of this application. That is **72% of the
+180 KB budget consumed by the framework**, leaving ~50 KB for an RTL storefront
+with a cart, a checkout, a consent gate and an analytics client.
+
+`/products` carries only 11 KB more than `/cart`. The routes are within 5% of
+each other because almost all of it is shared. **Trimming app code cannot reach
+180 KB; the number needs re-deriving against the floor.** Recorded here rather
+than acted on, because changing a budget is an owner decision, not a
+maintenance one.
+
+`product` itself is still unmeasured: with the stale `SUPABASE_SECRET_KEY` the
+catalogue does not resolve locally, every product URL 404s, and the not-found
+tree is not the product tree. The script reports `UNMEASURED` rather than a
+number for any route it could not load.
+
+---
+
+## 3. The shared floor: 255.8 KB against a 180 KB target
 
 Nine shared chunks:
 
