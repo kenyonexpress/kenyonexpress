@@ -114,6 +114,28 @@ export const metadata: Metadata = {
  * --color-brand-primary. If the three drift, the splash screen flashes one
  * colour and the browser chrome settles on another.
  */
+/**
+ * NO `viewportFit`, AND THAT IS WHY THERE IS NO `env(safe-area-inset-*)`
+ * ANYWHERE. The two go together, and only together.
+ *
+ * STEP 09 asks for safe-area handling. Checked 2026-09-08: this project has
+ * zero `safe-area-inset` declarations, and that is correct rather than missing.
+ * Without `viewport-fit=cover` a browser uses `contain`, which letterboxes the
+ * viewport so `position: fixed; inset: 0` already stops at the safe area. The
+ * notch and the home indicator are avoided by the browser, and padding them
+ * again would push content away from an edge it never reached.
+ *
+ * THE TRAP IS ADDING ONE WITHOUT THE OTHER. `viewportFit: 'cover'` is the
+ * ordinary thing to reach for when a PWA should render edge to edge, and the
+ * moment it appears the two fixed elements in this app land in the unsafe area:
+ * the consent banner is `fixed bottom-0` with its two buttons at the bottom
+ * edge - globals.css already records a Pixel 5 measurement where it made a
+ * control unclickable - and `.checkout-frame` is `inset: 0` with 24px of
+ * padding, which is less than the ~47px notch.
+ *
+ * `src/__tests__/safe-area-pairing.test.ts` fails if `cover` is ever added
+ * without the insets, so the pair cannot come apart.
+ */
 export const viewport: Viewport = {
   themeColor: SITE.brand.primary,
 }
