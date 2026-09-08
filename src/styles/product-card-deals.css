@@ -284,6 +284,36 @@
   appearance: none;
 }
 
+/* A 44px THUMB TARGET ON A 40px CIRCLE.
+ *
+ * The 40px width above is not arbitrary: it is what kenyonexpress.co.il paints,
+ * measured, and the pixel gate compares that geometry. WCAG 2.5.8 asks for 44.
+ * Those conflict only if the layout box has to grow, and it does not - the
+ * requirement is on the TARGET.
+ *
+ * Same technique as `.hit-44` in globals.css, whose caveat is that the overlay
+ * must not cover a neighbouring control. Satisfied here: this circle sits in
+ * `.p_con__footer` opposite the price, which is text.
+ *
+ * `position: relative` goes on the control itself rather than `.atc`, because
+ * the overlay has to be centred on the circle and `.atc` is a wrapper that can
+ * be wider than it. */
+.p_con .atc a,
+.p_con .atc button {
+  position: relative;
+}
+
+.p_con .atc a::after,
+.p_con .atc button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: max(100%, 44px);
+  block-size: max(100%, 44px);
+}
+
 .p_con .atc a svg,
 .p_con .atc button svg {
   width: 20px;

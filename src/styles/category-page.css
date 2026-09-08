@@ -552,6 +552,37 @@
   cursor: pointer;
 }
 
+/* A 44px THUMB TARGET WITHOUT A 44px BOX.
+ *
+ * The circle above is 37x34 because that is what the live site paints, and the
+ * pixel gate measures that geometry. WCAG 2.5.8 wants 44px. Those two are only
+ * in conflict if the LAYOUT BOX has to grow, and it does not: what has to be
+ * 44px is the target, not the border.
+ *
+ * Growing the box would also reopen a bug this file already documents at
+ * length below - the card footer cannot hold price plus circle on one row at
+ * 320px, and the fix was to let the row wrap. Adding 7px to the circle would
+ * push it back over.
+ *
+ * So the hit area is extended by a centred overlay, the same technique as
+ * `.hit-44` in globals.css. Its caveat applies here and is satisfied: the
+ * overlay must not sit over a NEIGHBOURING control, and this circle's only
+ * neighbour in the card footer is the price, which is text.
+ */
+.category-card__atc {
+  position: relative;
+}
+
+.category-card__atc::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: max(100%, 44px);
+  block-size: max(100%, 44px);
+}
+
 .category-card__atc:hover {
   background: var(--cat-brand-hover);
   border-color: var(--cat-brand-hover);

@@ -185,13 +185,20 @@ export default function LegalArticle({
         <h2 id="legal-toc" className="text-lg font-bold text-heading">
           תוכן העניינים
         </h2>
-        <ol className="mt-3 space-y-1 text-base">
+        {/* Each row is a 44px tap target.
+            A table of contents is navigation, not prose, so WCAG 2.5.8's
+            exemption for inline links in a sentence does not cover it - and
+            measured at 380px these rows were 24px tall, the smallest targets on
+            the page. The padding is on BOTH the number and the link so the two
+            keep the same box and stay aligned; putting it on the link alone
+            drops the number to the top of a taller row. */}
+        <ol className="mt-3 text-base">
           {doc.sections.map((section, index) => (
             <li key={section.id} className="flex gap-2">
-              <span className="shrink-0 text-heading/75 tabular-nums">{index + 1}.</span>
+              <span className="shrink-0 py-2.5 text-heading/75 tabular-nums">{index + 1}.</span>
               <a
                 href={`#${section.id}`}
-                className="text-heading/85 underline underline-offset-4 hover:text-heading"
+                className="block py-2.5 text-heading/85 underline underline-offset-4 hover:text-heading"
               >
                 {section.title}
               </a>
