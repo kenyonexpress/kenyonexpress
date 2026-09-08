@@ -92,6 +92,35 @@ describe('and widening to city did not widen the lanes', () => {
   })
 })
 
+describe('the synonym map covers what a fourth column would', () => {
+  /**
+   * Checked 2026-09-08, and the hypothesis failed, which is why it is written
+   * down. The gym fixture puts its text in `short_description_he` - a column
+   * Meilisearch indexes and `searchDb` does not read - so a shopper typing
+   * "אימונים" looked like a guaranteed miss on the path that actually serves.
+   *
+   * It is not. `expandQueryWord` maps אימונים onto כושר through the shipped
+   * synonym map, and כושר is in the name. The expansion does the work the extra
+   * column would have done, so adding the column would have been a change with
+   * no failing journey behind it.
+   */
+  it('finds the gym deal from a word that lives only in its short description', () => {
+    expect(dbSearch('אימונים')).toContain('gym-membership')
+  })
+
+  it('because the expansion reaches the name, not because of the column', () => {
+    // The claim is about the MECHANISM, and the first version of this test got
+    // it wrong: it asserted the fixture row carries the word in no searched
+    // column, but this harness stores the gym text in `description_he`, so the
+    // row proves nothing either way. What actually makes the match is that the
+    // typed word expands onto a spelling the NAME contains.
+    const spellings = expandQueryWord('אימונים')
+    const gym = ROWS.find((row) => row.slug === 'gym-membership')
+    expect(gym).toBeDefined()
+    expect(spellings.some((spelling) => gym?.name_he.includes(spelling))).toBe(true)
+  })
+})
+
 describe('the harness stays honest about what it models', () => {
   it('searches the same three columns the query does', () => {
     const source = readFileSync('src/lib/search-server.ts', 'utf8')

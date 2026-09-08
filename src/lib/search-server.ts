@@ -161,6 +161,34 @@ async function searchDb(
   // "בית קפה — מאפה ושתייה" and sits in תל אביב, so `קפה` matched the name and
   // neither `תל` nor `אביב` could match anywhere. The words are ANDed, so the
   // shopper got zero results. golden-queries-db.test.ts holds that journey now.
+  // WHY THREE COLUMNS AND NOT THE NINE MEILISEARCH INDEXES.
+  //
+  // `meili-settings.ts` declares nine searchable attributes: name_he, name_en,
+  // brand, category_name_he, city, tags, supplier_name, short_description_he,
+  // description_he. This path reads three. That gap was examined on 2026-09-08
+  // rather than left implicit, and it is smaller than the count suggests.
+  //
+  //   short_description_he  NOT NEEDED, and this was the hypothesis that
+  //     failed. The golden fixture puts "אימונים ללא הגבלה" there, so a shopper
+  //     typing אימונים looked like it would miss - and it does not, because
+  //     `expandQueryWord` maps אימונים onto כושר through the shipped synonym
+  //     map and כושר is in the name. The expansion is doing the work the extra
+  //     column would.
+  //   name_en, brand         Plain columns, cheap to add, and NO golden journey
+  //     fails without them. Pass 44 added `city` because a canonical journey
+  //     returned zero; adding a column on a hunch is the opposite of that, and
+  //     "FitCenter finds nothing" is a query nobody has said a shopper types.
+  //   tags                   An array column. ILIKE does not apply to it the
+  //     way it applies to text, so this is a different query shape, not a
+  //     longer clause list.
+  //   category_name_he, supplier_name
+  //     Live on joined tables. PostgREST `or=` across an embedded resource
+  //     changes what the whole query returns, so this is a rewrite rather than
+  //     an addition.
+  //
+  // The column list is pinned by search-server.test.ts, including a check that
+  // no PostgREST syntax escapes a clause, so a fourth column is a deliberate
+  // edit in two places rather than a quiet widening.
   for (const word of queryWords(q)) {
     const clauses = expandQueryWord(word).flatMap((spelling) => [
       `name_he.ilike.%${spelling}%`,
