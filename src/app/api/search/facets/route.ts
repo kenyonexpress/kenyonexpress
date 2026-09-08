@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import {
   FACET_ATTRIBUTES,
   type FacetDistribution,
@@ -17,7 +18,7 @@ import {
   toProductDocument,
 } from '@/lib/search/meili-settings'
 import { createClient } from '@/lib/supabase/server'
-import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { getClientIp } from '@/lib/utils/rate-limit'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -187,10 +188,11 @@ async function handleGET(request: NextRequest) {
   // Separate bucket from /api/search: this route carries filters and facet
   // counting, so its honest ceiling is lower than the type-ahead-adjacent one.
   const ip = await getClientIp()
-  if (!(await checkRateLimit(`search-facets:${ip}`, 60, 300))) {
+  const decision = await rateLimit('search-facets', ip)
+  if (!decision.allowed) {
     return NextResponse.json(
       { query: params.q, results: [], facets: {}, error: 'rate_limited' },
-      { status: 429 },
+      { status: 429, headers: rateLimitHeaders(decision) },
     )
   }
 

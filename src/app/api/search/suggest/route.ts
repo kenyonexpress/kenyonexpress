@@ -1,6 +1,7 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { searchProductsCached } from '@/lib/search-server'
-import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { getClientIp } from '@/lib/utils/rate-limit'
 import { NextResponse } from 'next/server'
 
 /**
@@ -36,8 +37,12 @@ async function handleGET(request: Request) {
   // `searchProductsCached` and reaches the engine (or the ILIKE fallback)
   // every time. Per IP, since this route has no session. Fails open.
   const ip = await getClientIp()
-  if (!(await checkRateLimit(`search-suggest:${ip}`, 300, 300))) {
-    return NextResponse.json({ results: [], engine: null, error: 'rate_limited' }, { status: 429 })
+  const decision = await rateLimit('search-suggest', ip)
+  if (!decision.allowed) {
+    return NextResponse.json(
+      { results: [], engine: null, error: 'rate_limited' },
+      { status: 429, headers: rateLimitHeaders(decision) },
+    )
   }
 
   try {
