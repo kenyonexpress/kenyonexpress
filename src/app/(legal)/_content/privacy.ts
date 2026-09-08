@@ -21,6 +21,13 @@ import type { LegalDoc } from './types'
  *    denied-mode stub (`src/lib/analytics/third-party.ts` explains why), so the
  *    cookie section can state that and be checkable in a network log.
  *  - The cookie names listed are the literal constants in `src/lib`.
+ *  - EVERY PROCESSOR THAT RECEIVES PERSONAL DATA IS IN THE TABLE. Upstash was
+ *    added 2026-09-08: the rate limiter keys are `login:<ip>`,
+ *    `cart_write:user:<uuid>` and the like, so an IP address and a user
+ *    identifier reach a third party, and the table listed ten vendors and not
+ *    that one. The table has no catch-all row, so its shape claims to be
+ *    exhaustive. `privacy-processors.test.ts` derives the vendor list from
+ *    `src/lib/env.ts` and fails when a named vendor is missing here.
  *
  * A claim here that the code does not honour is worse than a missing sentence:
  * it is the sentence a regulator quotes back.
@@ -249,6 +256,11 @@ export const privacyDoc: LegalDoc = {
               'ספק ריכוז יומנים (Axiom)',
               'שורות יומן מובנות של השרת אחרי סינון שדות רגישים',
               'תפעול, חקירת תקלות ובקרת אבטחה',
+            ],
+            [
+              'ספק הגבלת קצב (Upstash)',
+              'מונה בקשות לפי כתובת IP או מזהה משתמש. תוכן הבקשה עצמה אינו נשלח',
+              'מניעת ניצול לרעה והגבלת קצב על התחברות, קודי אימות וטפסים ציבוריים',
             ],
             [
               'ספק הודעות (Twilio)',
