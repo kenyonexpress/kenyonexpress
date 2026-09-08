@@ -21,10 +21,40 @@ export const productSchema = z
     id: z.string().uuid().optional(),
     supplier_id: z.string().uuid().nullable().optional(),
     category_id: z.string().uuid().nullable().optional(),
+    /**
+     * THIS RULE WAS STRICTER THAN THE CATALOGUE IT VALIDATES.
+     *
+     * It read `/^[a-z0-9-]+$/` - Latin only. Measured 2026-09-08 against the
+     * live catalogue: 36 of 45 active products have a Hebrew slug, because the
+     * WordPress import preserved the slugs WordPress had published.
+     *
+     * The form initialises this field from the stored slug and only
+     * auto-generates on CREATE (`if (!product) setSlugVal(...)`), so opening
+     * any imported product and changing its price resubmitted a Hebrew slug
+     * into a Latin-only regex. **80% of the catalogue could not be saved at
+     * all**, and the error pointed at a field the editor had never touched.
+     *
+     * The character class is now the exact inverse of the one
+     * `scripts/wp-import/lib/wxr.mjs` used to mint those slugs -
+     * `/[^\p{L}\p{N}-]/gu` - so what the import produced is what this accepts.
+     * Spaces, `₪`, `/`, `?`, `#` and `%` are still refused: those break a URL.
+     *
+     * THIS DOES NOT CHANGE WHAT NEW PRODUCTS GET. `slugify()` transliterates to
+     * Latin and is what fills the field on create; relaxing the check only lets
+     * an EXISTING slug survive an edit. That matters beyond convenience -
+     * changing a slug is an SEO event, and a validation rule that forces one on
+     * every edit is a rule that quietly rewrites URLs.
+     *
+     * Two products still fail, and correctly: the `₪` twins in
+     * `docs/` and pass 10's notes, whose slugs carry a currency sign.
+     */
     slug: z
       .string()
       .min(2, 'קישור חייב להכיל לפחות 2 תווים')
-      .regex(/^[a-z0-9-]+$/, 'קישור יכול להכיל אותיות לועזיות, מספרים ומקפים בלבד'),
+      .regex(
+        /^[\p{L}\p{N}-]+$/u,
+        'קישור יכול להכיל אותיות, מספרים ומקפים בלבד, בלי רווחים ובלי סימנים',
+      ),
     name_he: z.string().min(2, 'שם חייב להכיל לפחות 2 תווים'),
     name_en: z.string().nullable().optional(),
     description_he: z.string().nullable().optional(),
