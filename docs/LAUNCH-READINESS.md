@@ -8,8 +8,9 @@
 > was measured and decided then, and it is **not** maintained against
 > production. Numbers, table names and statuses in it may since have changed.
 >
-> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
-> `docs/INDEX.md` for which document is authoritative on a given subject.
+> For the current state see `docs/LAUNCH-READINESS-2026-09-08.md`, then
+> `docs/ARCHITECTURE-OVERVIEW.md`, and `docs/INDEX.md` for which document is
+> authoritative on a given subject.
 
 Measured on `main` at `dd10a9504`, 2026-09-01. Every number below is command
 output or a live query against the production database, not a recollection.
