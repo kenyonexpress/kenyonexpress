@@ -235,7 +235,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Run unit tests with per-file coverage floors
         run: pnpm test:coverage
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         if: always()
         with:
           name: coverage
@@ -584,6 +592,14 @@ jobs:
 
       - name: Publish the parity report
         if: steps.creds.outputs.present == 'true' && always()
+        # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+        # downloaded by four jobs and its failure is fatal on purpose; this one is
+        # read by a human afterwards. On 2026-09-08 the coverage upload hit
+        # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+        # tests had passed, which failed the job, skipped `build`, and with it the
+        # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+        # step; this is a convenience.
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: ui-parity-report
@@ -656,7 +672,15 @@ jobs:
         if: steps.creds.outputs.present == 'true'
         run: pnpm exec playwright test
 
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         if: always() && steps.creds.outputs.present == 'true'
         with:
           name: playwright-report
@@ -712,7 +736,15 @@ jobs:
       - name: Run the specs that need no database
         run: pnpm test:e2e:nodb
 
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         if: always()
         with:
           name: playwright-report-no-database
@@ -857,7 +889,15 @@ jobs:
             e2e/category.spec.ts \
             e2e/render-mode.spec.ts
 
+      # A DIAGNOSTIC ARTIFACT MUST NOT DECIDE THE PIPELINE. `next-build` is
+      # downloaded by four jobs and its failure is fatal on purpose; this one is
+      # read by a human afterwards. On 2026-09-08 the coverage upload hit
+      # `FinalizeArtifact: (403) Forbidden` from GitHub's blob storage AFTER the
+      # tests had passed, which failed the job, skipped `build`, and with it the
+      # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
+      # step; this is a convenience.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         if: always() && steps.gate.outputs.run == 'true'
         with:
           name: playwright-report-preview
