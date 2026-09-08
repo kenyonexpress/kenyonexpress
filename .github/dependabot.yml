@@ -8,6 +8,21 @@ version: 2
 # its own comment warned about: bot PRs kept opening against a branch nobody
 # merges, resolving a lockfile nobody runs. Deleted 2026-09-02; the day the
 # override outlives its branch, Dependabot stops silently.
+#
+# 2026-09-08: the two "DELETE THIS LINE" comments that annotated that override
+# were still here, five days after the line itself went. Each had drifted onto
+# the `schedule:` key below it, so a reader following the instruction literally
+# would have deleted the schedule - and a Dependabot entry with no schedule is
+# exactly the silent stop the paragraph above warns about. Removed; the history
+# lives here, which is where it belongs. An instruction is not a place to keep
+# one.
+#
+# STILL OPEN AND UNMERGEABLE, measured 2026-09-08: PRs #12, #13 and #14 target
+# `phase5/homepage`. That branch was NOT deleted - it is still on the remote at
+# 9d92080 - so GitHub never auto-closed them and they read as three live
+# dependency updates. Nothing merges that branch. Left open rather than closed:
+# closing a Dependabot PR suppresses that version, and which branch is the
+# mainline is an open question (docs/MIGRATION-NUMBER-COLLISIONS.md).
 
 updates:
   # ---------------------------------------------------------------------------
@@ -27,9 +42,6 @@ updates:
   # ---------------------------------------------------------------------------
   - package-ecosystem: npm
     directory: /
-    # DELETE THIS LINE THE DAY phase5/homepage MERGES INTO main. See the note at
-    # the top of the file: a target-branch naming a branch that no longer exists
-    # stops Dependabot silently - no pull requests, and no error anyone sees.
     schedule:
       interval: weekly
       day: monday
@@ -88,9 +100,6 @@ updates:
   # ---------------------------------------------------------------------------
   - package-ecosystem: github-actions
     directory: /
-    # DELETE THIS LINE TOO on the same day, for the same reason. Both entries
-    # carry it, so both have to be removed - deleting one leaves half of
-    # Dependabot pointed at a branch that is gone.
     schedule:
       interval: weekly
       day: monday
