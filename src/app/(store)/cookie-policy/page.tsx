@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import LegalArticle from '../../(legal)/_components/LegalArticle'
 import LegalContactBlock from '../../(legal)/_components/LegalContactBlock'
 import { getLegalDoc } from '../../(legal)/_content'
+import ConsentResetBlock from './ConsentResetBlock'
 
 /**
  * The canonical cookie policy.
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <LegalArticle doc={doc}>
+      <ConsentResetBlock />
       <LegalContactBlock intro="לשאלות על העוגיות שנשמרות אצלכם או על שינוי החלטת ההסכמה, אנחנו זמינים בערוצים הבאים:" />
     </LegalArticle>
   )
