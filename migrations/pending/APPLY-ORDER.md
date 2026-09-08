@@ -1,5 +1,73 @@
 # Apply order
 
+## 2026-09-09: 173 APPLIED, after two guards it claimed to have were added
+
+`whatsapp_flow_173` plus `whatsapp_flow_173_revoke_client_execute`. Five new
+tables (`whatsapp_contacts`, `whatsapp_outbox`, `whatsapp_inbound_messages`,
+`support_tickets`, `support_ticket_messages`), three functions, one trigger on
+`orders`. Every column the trigger reads was verified present first
+(`orders.address_id`, `user_addresses.phone/full_name`, `profiles.phone/
+full_name`), all four statuses it switches on are real enum members, and
+`fn_il_phone_digits` was checked against `normalizeIsraeliPhone` on ten inputs
+including `+972`, `9720…`, `03-…` and junk: identical on all ten.
+
+**The header made two claims the file did not honour, and both were fixed
+before it landed.**
+
+1. **The order trigger had no EXCEPTION guard.** It fires on four transitions
+   and one of them is `paid`, which finalize sets AFTER Cardcom has charged
+   the card. An AFTER trigger that raises takes the UPDATE with it. Proven on
+   two orders that both started `paid`, enqueue forced to fail, rolled back:
+
+       with the guard (as applied)       UPDATE SUCCEEDED, order -> fulfilled
+       without it (as the file shipped)  UPDATE FAILED, order stayed paid
+
+   So the file as written would have rolled back a paid order because a
+   WhatsApp message could not be queued. Both live siblings on this table end
+   with the guard (`tg_orders_notify_paid` 102, `tg_orders_notify_shipped`
+   183), and finalize.ts makes the same judgement in TypeScript.
+
+2. **`fn_enqueue_whatsapp` was executable by `anon`.** A new function is
+   EXECUTE-able by PUBLIC by default and 173 carried no REVOKE, so it was
+   reachable at `/rest/v1/rpc/fn_enqueue_whatsapp` by anyone. It is SECURITY
+   DEFINER, so it inserts past RLS. Proven, rolled back: `SET ROLE anon`, one
+   call, and a `whatsapp_outbox` row appeared for an opted-in customer's phone
+   with an attacker-chosen kind and payload -- a message the drain would then
+   have sent over WhatsApp from the store to a real customer. The consent gate
+   is no defence: it checks that the DESTINATION opted in, not who asked for
+   the send. 095's `fn_enqueue_notification` already had exactly the grants
+   this file was missing (postgres + service_role, anon false, authenticated
+   false), which is the shape the header claimed to copy.
+
+   After the REVOKEs: anon and authenticated both get "permission denied" and
+   plant zero rows, while the trigger path still enqueues normally, because
+   Postgres does not check EXECUTE on trigger dispatch. Verified both ways.
+
+The rest, proven against production and rolled back with zero residue (all
+five tables 0 rows before and after, orders still cancelled=2 paid=2, the test
+profile's phone back to NULL):
+
+    no consent row        0 queued
+    status 'pending'      0 queued   (seen is not consent)
+    status 'opted_out'    0 queued
+    status 'opted_in'     1 queued
+    same dedupe twice     still 1
+    paid -> fulfilled     1 row, kind order_fulfilled,
+                          dedupe wa:order_fulfilled:<uuid>, payload carrying
+                          order_ref, total_agorot 81700 and the Hebrew name
+
+Both fixes are pinned in `src/__tests__/whatsapp-migration-guards.test.ts`,
+because each is a single line whose absence is invisible in review.
+
+**Recorded, not fixed:** `fn_il_phone_digits` keeps a mutable `search_path`
+(new advisor WARN). It is IMMUTABLE, pure, references no object, and is now
+unreachable by any client role.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 184, 185.
+
+
+
 ## 2026-09-09: 177 / 178 / 179 APPLIED, as one batch of new tables
 
 `cashback_ledger_177`, `webauthn_credentials_178`, `push_subscriptions_179`.
@@ -295,7 +363,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The fourteen that remain, in order
+## The thirteen that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -315,7 +383,7 @@ independent and may be applied in any sequence, or not at all.
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
 | 15 | `184_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
 | 16 | `185_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
-| 17 | `173_whatsapp_flow.sql` | WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
+| — | `173_whatsapp_flow.sql` | **already applied 2026-09-09** (MCP, `whatsapp_flow_173` + `whatsapp_flow_173_revoke_client_execute`): WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
 | — | `177_cashback_ledger.sql` | **already applied 2026-09-09** (MCP, `cashback_ledger_177`): append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
 | — | `178_webauthn_credentials.sql` | **already applied 2026-09-09** (MCP, `webauthn_credentials_178`): passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
 | — | `179_push_subscriptions.sql` | **already applied 2026-09-09** (MCP, `push_subscriptions_179`): web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |

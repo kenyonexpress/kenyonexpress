@@ -132,6 +132,7 @@ describe('the pending migration inventory', () => {
       '171_search_fts.sql',
       '172_hide_master_product_test_row.sql',
       '172_rls_zero_policy_tables.sql',
+      '173_whatsapp_flow.sql',
       '177_cashback_ledger.sql',
       '178_webauthn_credentials.sql',
       '179_push_subscriptions.sql',
@@ -190,10 +191,19 @@ describe('the pending migration inventory', () => {
     //
     //   162_cron_schedule                approved (CLOSEOUT §7), blocked on vault
     //                                    seeding -- see "## חסמים לאופיר" in STATE.md
-    //   173_whatsapp_flow                whatsapp_contacts/outbox/inbound,
-    //                                    support_tickets: none present
     //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
     //   185_soft_delete_user_facing_...  the four deleted_at indexes: absent
+    //
+    // 173 APPLIED 2026-09-09, after two guards its own header claimed it had
+    // were added to the file first. Its order trigger fires on `paid`, which
+    // finalize sets after the card is charged, and it shipped with no
+    // EXCEPTION clause: proven on two paid orders with the enqueue forced to
+    // fail, the guarded version let the UPDATE through and the unguarded one
+    // rolled it back and left the order `paid`. And `fn_enqueue_whatsapp`
+    // shipped EXECUTE-able by PUBLIC, so `SET ROLE anon` plus one call planted
+    // a whatsapp_outbox row for an opted-in customer with an attacker-chosen
+    // payload. 095's fn_enqueue_notification already had the grants 173 was
+    // missing. Both fixes are pinned in whatsapp-migration-guards.test.ts.
     //
     // 177 / 178 / 179 APPLIED 2026-09-09 as one batch, because all three only
     // ever CREATE and none of them touched an object that already existed.
@@ -232,7 +242,6 @@ describe('the pending migration inventory', () => {
     // unapplied file is the one that moved.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
-      '173_whatsapp_flow.sql',
       '184_orders_monthly_partitioning.sql',
       '185_soft_delete_user_facing_remainder.sql',
       'preflight_162.sql',
