@@ -121,9 +121,32 @@ another:
 | 39.76% | our build against our own production |
 | 30.26% | our build against a snapshot missing its fonts |
 
-**The 11% gate in `CLAUDE.md` refers to the first.** It cannot currently be
-reproduced, and 30.26% should be read as a floor on the difference rather than
-as a failure against that ceiling.
+**The 11% gate in `CLAUDE.md` refers to the first.**
+
+### How much the missing fonts actually cost: about one point (pass 59)
+
+The paragraph that used to sit here said 30.26% should be read as a floor
+"rather than as a failure against that ceiling", which implied the font loss
+explained a large part of it. **Measured across all three widths on one build,
+it does not.**
+
+```
+width   localized reference   historical, live site   delta
+ 380          30.26%                 10.68%           +19.6
+ 768          28.99%                 -                 -
+1440           8.29%                  7.08%            +1.2
+```
+
+`1440` is the one width where a historical figure exists for home, and the
+degraded reference costs **1.2 points** there. A reference that costs one point
+at desktop cannot be costing twenty at mobile.
+
+So the mobile numbers are very largely REAL divergence, and it is already
+recorded: KNOWN-ISSUES #3, "mobile layouts diverge structurally from live, a
+layout project, not a tuning pass". The snapshot is not what makes 380 read 30%.
+
+**And 1440 passes the gate at 8.29%** - on a reference known to be missing its
+fonts, which makes it a conservative pass rather than a generous one.
 
 ### The trap that was armed, and is now disarmed
 

@@ -63,6 +63,20 @@ describe('the snapshot is degraded and says so', () => {
     }
   })
 
+  it('records what the degradation actually costs, measured at 1440', () => {
+    // Pass 42 said 30.26% should be read as a floor "rather than as a failure
+    // against that ceiling", which implied the missing fonts explained much of
+    // it. Pass 59 measured all three widths on one build: 380 30.26%, 768
+    // 28.99%, 1440 8.29%. Against the historical 7.08% at 1440 the reference
+    // costs 1.2 points - and a reference costing one point at desktop is not
+    // costing twenty at mobile. The mobile numbers are KNOWN-ISSUES #3, the
+    // structural divergence, not an artefact of the snapshot.
+    const policy = readFileSync('docs/REFS-POLICY.md', 'utf8')
+    expect(policy).toContain('8.29%')
+    expect(policy).toMatch(/about one point/)
+    expect(policy).toContain('conservative pass')
+  })
+
   it('does not widen the image regex to fonts it cannot fetch', () => {
     // Widening turns silence into noise and recovers nothing: the bytes are
     // gone and the origin 403s.
