@@ -64,14 +64,35 @@ always safe - it costs a cache miss, never a wrong answer. It is worth revisitin
 when the catalogue is large enough that a full cold rebuild is expensive, and
 not before.
 
-**Who invalidates.** Four modules, all admin:
+**Who invalidates.** Seven modules, and **not all of them are admin**:
 
 ```
 server/actions/admin/products.ts        6 calls
 server/actions/admin/categories.ts      4
+server/actions/admin/suppliers.ts       4
+server/actions/admin/approvals.ts       2
 server/actions/admin/coupon-deals.ts    2
 server/actions/admin/reviews.ts         1
+server/actions/supplier/profile.ts      1
+                                       20
 ```
+
+**Corrected 2026-09-08.** This list said "four modules, all admin" and totalled
+13. Two things were wrong with it. `admin/approvals.ts` was missing although the
+prose further down already relies on it - "the approval action *does* call
+`updateTag`" - and the five supplier calls were added in maintenance pass 62,
+after supplier writes were found never to invalidate at all, without this list
+being updated with them.
+
+**"All admin" is the part worth noticing.** `supplier/profile.ts` is a business
+editing its own name, address and phone, and it renders inside the product
+page's supplier block. The invalidating set is no longer an admin-only concern,
+and a reader who took "all admin" as a boundary would look in the wrong place
+for the next one.
+
+`src/lib/cache-policy.test.ts` counted `cacheLife` and `cacheTag` - the READ
+side - and never `updateTag`, which is why the document could drift here while
+the drift test stayed green. It counts both sides now.
 
 ---
 

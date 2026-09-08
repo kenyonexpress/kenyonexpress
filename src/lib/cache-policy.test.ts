@@ -41,6 +41,7 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const measured = (() => {
   const cached: string[] = []
   const lives: Record<string, number> = {}
+  const invalidators: Record<string, number> = {}
   let tags = 0
   for (const file of sourceFiles(SRC)) {
     const src = code(readFileSync(file, 'utf8'))
@@ -50,8 +51,18 @@ const measured = (() => {
       lives[name] = (lives[name] ?? 0) + 1
     }
     tags += [...src.matchAll(/cacheTag\(CATALOGUE_TAG\)/g)].length
+    // THE WRITE SIDE, WHICH THIS TEST USED TO IGNORE.
+    //
+    // It counted cacheLife and cacheTag and nothing else, so the document could
+    // drift about WHO INVALIDATES while every assertion here stayed green -
+    // and it did. CACHE-POLICY.md said "four modules, all admin" and totalled
+    // 13 calls; the real figure was 20 across seven modules, one of which is
+    // not admin at all. Five of those calls were added in maintenance pass 62
+    // and the list was not updated with them.
+    const updates = [...src.matchAll(/updateTag\(CATALOGUE_TAG\)/g)].length
+    if (updates > 0) invalidators[relative(SRC, file)] = updates
   }
-  return { cached: cached.sort(), lives, tags }
+  return { cached: cached.sort(), lives, tags, invalidators }
 })()
 
 const DOC = readFileSync(resolve(process.cwd(), 'docs/CACHE-POLICY.md'), 'utf8')
@@ -110,5 +121,42 @@ describe('a stale catalogue page cannot oversell', () => {
   it('re-reads stock in the cart action', () => {
     const cart = code(readFileSync(resolve(SRC, 'server/actions/cart.ts'), 'utf8'))
     expect(/available_stock|readLiveStock|stock_quantity/.test(cart)).toBe(true)
+  })
+})
+
+describe('the document matches the WRITE side too', () => {
+  /**
+   * Added 2026-09-08. Everything above measures reads. The document also claims
+   * who invalidates, and that claim drifted unnoticed: it said "four modules,
+   * all admin" and totalled 13 calls, while the code had 20 across seven
+   * modules - one of them `supplier/profile.ts`, which is a business editing
+   * its own details and not admin at all.
+   *
+   * The five supplier calls were added in maintenance pass 62, by the same work
+   * that found supplier writes never invalidated. The list was not updated with
+   * them, and nothing here looked.
+   */
+  it('lists every module that invalidates, and no others', () => {
+    for (const module of Object.keys(measured.invalidators)) {
+      expect(DOC, `${module} invalidates and the document does not list it`).toContain(module)
+    }
+  })
+
+  it('agrees on the call count per module', () => {
+    for (const [module, count] of Object.entries(measured.invalidators)) {
+      const row = DOC.split('\n').find((line) => line.includes(module))
+      expect(row, `${module} has no row`).toBeDefined()
+      expect(row, `${module} is listed with the wrong count`).toMatch(new RegExp(`\\b${count}\\b`))
+    }
+  })
+
+  it('does not still call the set admin-only', () => {
+    // supplier/profile.ts is a supplier editing its own business details. A
+    // reader who took "all admin" as a boundary would look in the wrong place.
+    const hasNonAdmin = Object.keys(measured.invalidators).some(
+      (module) => !module.includes('admin/'),
+    )
+    expect(hasNonAdmin).toBe(true)
+    expect(DOC).not.toContain('Four modules, all admin')
   })
 })

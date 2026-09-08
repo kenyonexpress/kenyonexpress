@@ -366,8 +366,9 @@ property of the ten data modules a route awaits.
 
 The headline numbers: one lifetime and one tag across the whole product surface
 (19 x `cacheLife('hours')`, 19 x `cacheTag(CATALOGUE_TAG)`), with
-`CopyrightYear` at `'days'` as the single exception. Four admin modules
-invalidate. Stock and the cart are deliberately uncached, so a stale catalogue
+`CopyrightYear` at `'days'` as the single exception. **Seven modules invalidate,
+20 calls, and one of them is not admin** - corrected 2026-09-08; it read "four
+admin modules" while the drift test watched only the read side. Stock and the cart are deliberately uncached, so a stale catalogue
 page cannot oversell.
 
 `src/lib/cache-policy.test.ts` recomputes those figures on comment-stripped
