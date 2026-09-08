@@ -1,4 +1,4 @@
-import { listFeatureFlags } from '@/lib/admin/feature-flags'
+import { listFeatureFlags, listOperationalFlags } from '@/lib/admin/feature-flags'
 import { requireSection } from '@/lib/admin/rbac'
 
 export const metadata = { title: 'דגלי מערכת' }
@@ -11,13 +11,14 @@ export const metadata = { title: 'דגלי מערכת' }
 export default async function AdminFeatureFlagsPage() {
   await requireSection('analytics')
   const flags = listFeatureFlags()
+  const operational = listOperationalFlags()
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold text-gray-900">דגלי מערכת</h1>
         <p className="mt-1 text-sm text-gray-600">
-          ארבעה מתגים שקוראים משתני סביבה בזמן הקריאה, לא בטעינת המודול. כיבוי הוא ערך מפורש בלבד:{' '}
+          מתגי כיבוי שקוראים משתני סביבה בזמן הקריאה, לא בטעינת המודול. כיבוי הוא ערך מפורש בלבד:{' '}
           <span dir="ltr">1 / true / on / yes</span>. שינוי ב-Vercel חל על המופע הבא, לא על זה שכבר
           מגיש את הבקשה שהעירה אתכם. פירוט והחזרה לאחור ב-
           <span dir="ltr">docs/RUNBOOK.md</span>.
@@ -53,6 +54,65 @@ export default async function AdminFeatureFlagsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-600">{flag.degradedHe}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* The second table exists because the first one read as the whole flag
+          surface and was not. Measured 2026-09-08: seven environment variables
+          gate real behaviour and none of them appeared here - including
+          CARDCOM_USE_MOCK, which decides whether a charge is real money, and
+          which KNOWN-ISSUES #1 records as the launch blocker. A page titled
+          "system flags" that omits it is not merely incomplete, it is
+          reassuring. They are separate because none has a degraded path in the
+          kill-switch sense: turning phone sign-in off removes a feature, and
+          turning the payment mock ON replaces real money with pretend money. */}
+      <header>
+        <h2 className="text-xl font-bold text-gray-900">מתגים תפעוליים</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          אלה אינם מתגי-כיבוי: אין להם מסלול מנוון תקין, הם פשוט מפעילים או מכבים התנהגות. גם הם
+          משתני סביבה ב-Vercel.
+        </p>
+      </header>
+
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <table className="w-full text-start text-sm">
+          <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+            <tr>
+              <th className="px-4 py-3 font-medium">מתג</th>
+              <th className="px-4 py-3 font-medium">משתנה</th>
+              <th className="px-4 py-3 font-medium">מצב</th>
+              <th className="px-4 py-3 font-medium">מה זה עושה</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {operational.map((flag) => (
+              <tr key={flag.envName}>
+                <td className="px-4 py-3 font-medium text-gray-900">
+                  {flag.labelHe}
+                  {flag.money && (
+                    <span className="ms-2 rounded-lg border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-800">
+                      כסף
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 font-mono text-xs" dir="ltr">
+                  {flag.envName}
+                </td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`rounded-lg border px-2 py-0.5 text-xs font-medium ${
+                      flag.on
+                        ? 'border-amber-200 bg-amber-50 text-amber-900'
+                        : 'border-gray-200 bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    {flag.on ? 'דולק' : 'כבוי'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-gray-600">{flag.effectHe}</td>
               </tr>
             ))}
           </tbody>
