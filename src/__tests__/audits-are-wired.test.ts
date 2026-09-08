@@ -71,10 +71,21 @@ const DELIBERATELY_MANUAL: Record<string, string> = {
   'measure-live-checkout.mjs':
     'the checkout half of the same investigation; needs a seeded cart and a browser',
   'measure-mobile.mjs':
-    'a 380px measurement session; the gate it would duplicate is e2e/touch-targets.spec.ts, which runs in CI',
+    'a mobile-width measurement session; the gate it would duplicate is e2e/touch-targets.spec.ts, which runs in CI',
 }
 
 /**
+ * NO PIXEL LITERAL IN THESE REASONS, and that is not fussiness.
+ *
+ * `scripts/hardcoded-gate.mjs` scans every changed src/** .ts/.tsx/.css for a px
+ * or hex literal, test files included. The first version of the entry above read
+ * "a 380px measurement session" and CI blocked the commit on it.
+ *
+ * The gate is right and the string was the outlier. 27 of its 2195 ledger rows
+ * are test files, and they are the good kind - brand-contrast.test.ts pinning
+ * the brand hex is exactly the debt worth tracking - so excusing tests wholesale
+ * would cost more than it saves. The reason reads the same without the number.
+ *
  * Listed one by one rather than excused by a `measure-*` rule. A family rule
  * would have silently absorbed `measure-live-vitals.mjs`, which IS wired, and
  * `measure-route-js.mjs`, whose exception is about a specific gate replacing
