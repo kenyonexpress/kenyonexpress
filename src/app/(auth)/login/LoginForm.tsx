@@ -139,7 +139,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               סיסמה
             </label>
-            <Link href="/forgot-password" className="text-xs text-link hover:underline">
+            <Link href="/forgot-password" className="-my-2 py-2 text-xs text-link hover:underline">
               שכחתם סיסמה?
             </Link>
           </div>
@@ -175,7 +175,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           <button
             type="button"
             onClick={() => setShowMagic(true)}
-            className="w-full text-sm text-center text-gray-500 hover:text-link"
+            className="w-full py-3 text-sm text-center text-gray-500 hover:text-link"
           >
             כניסה ללא סיסמה (קישור מאובטח לאימייל)
           </button>

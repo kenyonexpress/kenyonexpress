@@ -11,7 +11,12 @@ export default function ConfirmPage() {
       <p className="text-sm text-gray-500 mb-6">
         שלחנו לכם קישור לאימות. לחצו עליו כדי להפעיל את החשבון.
       </p>
-      <Link href="/login" className="text-link text-sm font-medium hover:underline">
+      {/* Isolated: last element in a centred card, nothing beside it, so the
+          hit-44 overlay cannot cover a neighbouring control. */}
+      <Link
+        href="/login"
+        className="hit-44 inline-block text-link text-sm font-medium hover:underline"
+      >
         חזרה לכניסה
       </Link>
     </div>

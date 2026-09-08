@@ -51,13 +51,13 @@ export default function BlogPostHeader({ slug }: { slug: string }) {
       />
 
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hover:text-heading">
+        <Link href="/" className="hit-44 hover:text-heading">
           בית
         </Link>
         <span aria-hidden="true" className="mx-2">
           /
         </span>
-        <Link href="/blog" className="hover:text-heading">
+        <Link href="/blog" className="hit-44 hover:text-heading">
           הבלוג
         </Link>
         <span aria-hidden="true" className="mx-2">

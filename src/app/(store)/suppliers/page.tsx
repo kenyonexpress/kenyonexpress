@@ -64,7 +64,7 @@ export default function SuppliersPage() {
   return (
     <main className="mx-auto w-full max-w-page px-4 py-10">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hover:text-heading">
+        <Link href="/" className="hit-44 hover:text-heading">
           בית
         </Link>
         <span aria-hidden="true" className="mx-2">
