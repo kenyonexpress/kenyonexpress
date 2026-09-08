@@ -18031,4 +18031,54 @@ prod /api/health   <אין כותרת CORS>                 age: 0
 ‏`src/styles/tokens.ts`. אומת בהחבאת שני הקבצים בלבד — בלעדיהם 24/24 ירוקים,
 והעבודה שלו הוחזרה שלמה.
 
-**המשך מ: ‏STEP 18 (‏CICD).**
+**המשך מ: ‏STEP 18 — בוצע. ראה למטה.**
+
+
+## ‏STEP 18 CICD — שלושה שערים היו בריפו ואף אחד לא הריץ אותם, ‏08.09.2026 ‏17:05
+
+### מה CI כן הריץ
+
+```
+lint  typecheck  test  build  pixel-gate  e2e  e2e-preview
+```
+
+### מה הוא לא הריץ
+
+‏`grep` על כל `.github/workflows/`: **אפס מופעים** של `bundle-gate`,
+‏`migration` או `lighthouse`. שלושת הסקריפטים קיימים, רצים, ולא היו מוזכרים
+באף workflow:
+
+```
+scripts/bundle-gate.mjs        exit 0 מול 260
+scripts/migration-lint.mjs     exit 0, 20 קבצים, 0 hard
+scripts/lighthouse-smoke.mjs   קיים
+```
+
+**‏ratchet שאף אחד לא מושך הוא מספר בקובץ.** שער הבנדל הוא החשוב מביניהם: הוא
+מחזיק את ה-JS המשותף על בסיס נמדד של 255.6KB, ובלי שער המספר יכול רק לטפס,
+‏import אחד לא-מורגש בכל פעם.
+
+### מה נוסף
+
+‏job בשם `gates` ב-`ci.yml`, אחרי `build`:
+
+- ‏`migration-lint` — לא צריך בילד, קורא את `migrations/pending/` מה-checkout
+- ‏`bundle-gate 260` — מוריד את ארטיפקט `next-build` ומודד
+
+**הסף הוא ה-ratchet ולא היעד.** ‏180KB הוא לאן זה צריך להגיע, ‏255.8 זה איפה
+שזה נמצא. שער על השאיפה היה נכשל בכל ריצה, כלומר לא שער בכלל. הוא נכשל רק על
+**רגרסיה**, וזו העבודה.
+
+### ‏Lighthouse — במכוון לא נוסף
+
+הוא דורש שרת מורם, והמספרים שלו על runner משותף הם רעש מול סף 95. ‏
+‏`docs/PERF-REPORT.md` מסביר למה ‏LCP על localhost הוא סימולציה. שער נדרש
+שמאדים באקראי מלמד את כולם להתעלם ממנו — בדיוק מה שקורה עכשיו עם ה-404 של
+‏whatsapp. נשאר `pnpm lighthouse:smoke` ידני.
+
+### שאר הסעיפים
+
+‏preview per PR קיים (`e2e-preview`). ‏rollback מתועד ב-`docs/RUNBOOK.md`.
+‏`scripts/set-github-secrets.sh` קיים לניהול הסודות.
+
+**המשך מ: ‏STEP 19 (‏BI).**

@@ -337,6 +337,51 @@ jobs:
   # It runs at all three design widths because a regression is usually at one.
   # 380 is the one that has historically sat closest to the ceiling: 10.68%
   # against a limit of 11.
+  gates:
+    name: Bundle budget and migration lint
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      # THREE GATES THAT EXISTED AND NOTHING RAN.
+      #
+      # scripts/bundle-gate.mjs, scripts/migration-lint.mjs and
+      # scripts/lighthouse-smoke.mjs are all in the repo, all runnable, and were
+      # named in no workflow. Measured 2026-09-08: zero occurrences of
+      # "bundle-gate", "migration" or "lighthouse" anywhere under
+      # .github/workflows/. A ratchet nothing pulls is a number in a file.
+      #
+      # The bundle one matters most: it holds the shared first-load JS at a
+      # measured 255.6 KB baseline, and without a gate that figure can only
+      # drift upward, one unnoticed import at a time.
+      #
+      # Lighthouse is deliberately NOT here. It needs a booted server and its
+      # numbers on a shared runner are noise against a 95 threshold - see
+      # docs/PERF-REPORT.md on why localhost LCP is a simulation. Running it as
+      # a required check would teach everyone to ignore a red one. It stays a
+      # manual `pnpm lighthouse:smoke`.
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Needs no build: it reads migrations/pending/ from the checkout.
+      - name: Migration lint (pending migrations)
+        run: node scripts/migration-lint.mjs
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+
+      # The ratchet, not the spec target. 180 KB is where this should end up and
+      # 255.8 KB is where it is; gating at the aspiration would fail every run
+      # and gate at nothing. This fails only on a REGRESSION, which is the job.
+      - name: Bundle budget (shared first-load JS)
+        run: node scripts/bundle-gate.mjs 260
+
   pixel-gate:
     name: Pixel parity (380 / 768 / 1440)
     needs: [build]
