@@ -1,5 +1,30 @@
 # Apply order
 
+## 2026-09-08: 169 / 180 (the four money events) APPLIED
+
+**The funnel was reporting nothing, on a live site.** Read off production
+before touching it: `fn_ingest_analytics_events` carried a whitelist of exactly
+the eight client names, so `begin_checkout`, `purchase`, `voucher_redeemed` and
+`order_refunded` were skipped with a `CONTINUE`, an HTTP 200 and no log. The
+harm was counted rather than assumed: `orders` held 4 rows, 2 of them paid,
+while `analytics_events` held **zero** `purchase` rows. Only `page_view` (12)
+and `web_vital` (16) had ever landed, spanning 02.09 to 06.09.
+
+`169_analytics_server_event_names.sql` and
+`180_analytics_server_event_names.sql` are byte-identical SQL written by two
+sessions that could not see each other. One `CREATE OR REPLACE` applied both,
+and both moved to `migrations/applied/` together with `preflight_169.sql` --
+deleting one would free a number that production has now used.
+
+Verified with a rolled-back `DO` block so no probe rows were left behind: five
+events in, `returned=4`, the four written names were `begin_checkout`,
+`order_refunded`, `purchase`, `voucher_redeemed`, a made-up name was still
+skipped, and `residue = 0` afterwards.
+
+`src/lib/analytics/registry-matches-migration.test.ts` now reads the whitelist
+out of `migrations/applied/` instead of `pending/`, which is exactly what its
+own comment said to do on the day this applied. Green.
+
 ## 2026-09-08: 172 (the ₪1 test row) APPLIED — blocker 0 is not what it says
 
 **`172_hide_master_product_test_row.sql` moved to `migrations/applied/`.** It

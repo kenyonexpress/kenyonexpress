@@ -614,6 +614,8 @@ effect, not by trusting this list. The version string is from
 | `167_order_items_money_constraints.sql` | `20260903232455` | `order_items_money_constraints_167` | all 8 `order_items_*_nonneg` constraints + `order_items_money_conservation` exist, expressions match |
 | `168_wallet_ledger_client_readonly.sql` | `20260903232504` | `wallet_ledger_client_readonly_168` | the six write policies are gone; only the two SELECT policies remain, RLS enabled on both tables |
 | `172_hide_master_product_test_row.sql` | none — DML, not DDL | applied 2026-09-08 via MCP `execute_sql` | `products` row `9bb347f8-…c895` reads `stock_quantity = 0`; it read `10` immediately before |
+| `169_analytics_server_event_names.sql` | `analytics_server_event_names_169` | applied 2026-09-08 via MCP `apply_migration` | rolled-back `DO` probe: five events in, `returned=4`, rows written `begin_checkout, order_refunded, purchase, voucher_redeemed`, unknown name still skipped, `residue = 0` |
+| `180_analytics_server_event_names.sql` | same statement | byte-identical duplicate of 169, written by a session that could not see it | applied by the same `CREATE OR REPLACE`; kept rather than deleted so its number stays burned |
 
 **`172_hide_master_product_test_row.sql` has no version string on purpose.**
 It is a one-row `UPDATE`, not DDL, so it went through MCP `execute_sql` rather
