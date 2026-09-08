@@ -32,6 +32,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # THE LABEL HAS TO EXIST FIRST, AND IT DID NOT.
+          #
+          # `gh issue create --label auto` does not degrade to an unlabelled
+          # issue when the label is missing: it prints "could not add label:
+          # 'auto' not found" and creates NOTHING. The `|| true` below then
+          # swallowed the exit code, so the step went green while opening no
+          # issue at all. This gate failed on 2026-09-06, 09-07 and 09-08 and
+          # the repository has zero issues to show for it -- the only surviving
+          # signal was the ntfy line under it.
+          #
+          # production-smoke.yml already learned this (see the comment at its
+          # label block); nightly-health never got the same treatment.
+          gh label create auto --repo "$GITHUB_REPOSITORY" \
+            --description "Opened automatically by a workflow" \
+            --color ededed 2>/dev/null || true
           gh issue create --repo "$GITHUB_REPOSITORY" \
             --title "nightly-health failed $(date -u +%F)" \
             --label auto \

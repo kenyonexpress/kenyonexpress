@@ -193,6 +193,20 @@ export function validateImportRow(row: RawImportRow): ValidatedImportRow {
   const r = row.record
   const errors: string[] = []
 
+  // A missing required column is named HERE, by its spreadsheet label, before
+  // anything downstream gets a chance to describe it in its own vocabulary.
+  // productSchema carries defaults for some of these, so a blank cell parses
+  // clean and the complaint surfaces much later from buildProductMoneyWrite as
+  // "חייב להגדיר מחיר רגיל חיובי" -- true, Hebrew, and useless to someone
+  // holding a 500-row CSV, because it names no column and no row can be found
+  // from it.
+  for (const column of IMPORT_COLUMNS) {
+    if (!column.required) continue
+    if ((r[column.key] ?? '').trim() === '') {
+      errors.push(`${column.label}: ערך חסר`)
+    }
+  }
+
   const rawType = r.type?.trim().toLowerCase() ?? ''
   const type = rawType === '' ? 'physical' : (TYPE_ALIASES[rawType] ?? null)
   if (type === null) {

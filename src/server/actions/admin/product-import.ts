@@ -7,7 +7,7 @@ import {
   markInFileDuplicates,
   validateImportRow,
 } from '@/lib/admin/product-import/import-rows'
-import { requireStaffSession } from '@/lib/admin/rbac'
+import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { excludeDeleted } from '@/lib/soft-delete'
@@ -132,7 +132,7 @@ function toResult(row: ValidatedImportRow): ImportRowResult {
 
 async function runPreview(raw: RawImportRow[]): Promise<ImportPreviewResult> {
   try {
-    await requireStaffSession()
+    await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -154,9 +154,9 @@ async function runPreview(raw: RawImportRow[]): Promise<ImportPreviewResult> {
 }
 
 async function runImportBatch(raw: RawImportRow[]): Promise<ImportBatchResult> {
-  let session: Awaited<ReturnType<typeof requireStaffSession>>
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    session = await requireStaffSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }

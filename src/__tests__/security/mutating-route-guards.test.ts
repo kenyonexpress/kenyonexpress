@@ -21,7 +21,14 @@ const API_DIR = resolve(process.cwd(), 'src/app/api')
 const MUTATING = /export\s+(?:const|async\s+function)\s+(POST|PUT|PATCH|DELETE)\b/
 const GATES = [
   /checkRateLimit|enforceRateLimit/, // human callers
-  /timingSafeEqual|bearerMatches|verifyQstashSignature/, // machine callers
+  // Machine callers. Every name here is a constant-time compare or a wrapper
+  // around one; the wrappers are listed because this test reads the ROUTE
+  // file, and a route that delegates its verification to a helper still holds
+  // the gate. twilioSignatureValid is Twilio's HMAC-SHA1 over the public URL
+  // plus the sorted form params, compared with timingSafeEqual in
+  // server/whatsapp/twilio.ts -- the WhatsApp webhook was reported naked here
+  // purely because that call sits one module away.
+  /timingSafeEqual|bearerMatches|verifyQstashSignature|twilioSignatureValid/,
 ]
 
 function routeFiles(dir: string): string[] {

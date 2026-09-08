@@ -97,7 +97,7 @@ function trimSite(siteUrl: string): string {
 
 function shell(bodyHtml: string, footer: string): string {
   return `
-    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#f5f5f5;padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
+    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">KenyonExpress</div>
         ${bodyHtml}
@@ -186,7 +186,7 @@ export function buildOrderPaidEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">התשלום התקבל</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -248,7 +248,7 @@ export function buildOrderShippedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">ההזמנה שלך נשלחה</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -314,7 +314,7 @@ export function buildSupplierSaleEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">מכירה חדשה</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -380,11 +380,11 @@ export function buildVoucherRedeemedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">הקופון מומש</div>
         <div style="font-size:14px;color:${INK};margin-top:8px">${escapeHtml(product)}</div>
         ${supplier ? `<div style="font-size:13px;color:${MUTED};margin-top:2px">${escapeHtml(supplier)}</div>` : ''}
-        ${code ? `<div dir="ltr" style="${LTR_ISOLATE_STYLE};font-family:monospace;font-size:22px;font-weight:700;letter-spacing:3px;color:${INK};text-align:center;margin:16px 0;padding:12px;background:#f9fafb;border-radius:10px">${escapeHtml(code)}</div>` : ''}
+        ${code ? `<div dir="ltr" style="${LTR_ISOLATE_STYLE};font-family:monospace;font-size:22px;font-weight:700;letter-spacing:3px;color:${INK};text-align:center;margin:16px 0;padding:12px;background:${PANEL};border-radius:10px">${escapeHtml(code)}</div>` : ''}
         <div style="font-size:14px;color:${INK};line-height:2">
           ${when ? `<div style="color:${MUTED}">מומש ב-${escapeHtml(when)}</div>` : ''}
           ${collected > 0 ? `<div>נגבה בבית העסק: <strong>${escapeHtml(formatAgorot(collected))}</strong></div>` : ''}
@@ -489,7 +489,7 @@ export function buildVoucherGiftedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(
           sender ? `${sender} שלח לך מתנה` : 'קיבלת מתנה',
         )}</div>
@@ -547,7 +547,7 @@ export function buildVoucherExpiringEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(`הקופון פג ${when}`)}</div>
         <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
         ${supplier ? `<div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>` : ''}
@@ -594,7 +594,7 @@ export function buildCashbackCreditedEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">זיכינו את הארנק שלך${ref ? ` על הזמנה ${escapeHtml(ref)}` : ''}. אפשר להשתמש בסכום בקנייה הבאה.</div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
@@ -642,7 +642,7 @@ export function buildInvoiceDeadEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};margin-top:10px">${escapeHtml(`הנפקת ${documentType} נכשלה ${attempts} פעמים והפסיקה לנסות.`)}</div>
         <div style="font-size:13px;color:${MUTED};margin-top:10px;padding:12px;background:${PANEL};border-radius:8px;border:1px solid ${RULE}">${escapeHtml(reason)}</div>
@@ -693,7 +693,7 @@ export function buildLowStockEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:12px">
           <div>זמין למכירה: <strong>${available}</strong></div>
@@ -750,7 +750,7 @@ export function buildReconciliationGapEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};margin-top:10px">פער מסוג "אין אצלנו רישום" פירושו לקוח שחויב ואין לו הזמנה, והוא לא ייפתח פנייה כי אין לו מספר הזמנה לצטט.</div>
         <div style="font-size:13px;color:${MUTED};margin-top:12px;line-height:2">
@@ -812,7 +812,7 @@ export function buildRefundCompletedEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(headline)}</div>
         ${feeAgorot > 0 ? `<div style="font-size:14px;color:${MUTED};margin-top:8px">נוכו דמי ביטול בסך ${escapeHtml(formatAgorot(feeAgorot))} לפי התקנון.</div>` : ''}
@@ -859,7 +859,7 @@ export function buildWelcomeEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)} החשבון שלך מוכן.</div>
         <div style="font-size:14px;color:${MUTED};margin-top:8px">הקופונים שתקנו יחכו לך באזור האישי, עם קוד לסריקה בבית העסק.</div>
