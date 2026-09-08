@@ -780,9 +780,8 @@ export async function finalizeOrder(input: {
     // The funnel's conversion event, emitted server-side ON PURPOSE: a browser
     // purchase is lost every time a tab closes on the payment redirect, and
     // this is the only place that knows the charge settled. Swallows its own
-    // errors, and PostHog receives it even while the DB whitelist (pending 180)
-    // still discards the first-party copy. Fired after the paid_at stamp so a
-    // replayed finalize, which returns above, cannot emit it twice.
+    // errors. Fired after the paid_at stamp so a replayed finalize, which
+    // returns above, cannot emit it twice.
     await trackServerEvent({
       eventName: 'purchase',
       userId: order.user_id,

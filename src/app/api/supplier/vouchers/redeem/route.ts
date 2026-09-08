@@ -297,7 +297,9 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Funnel event (marathon step 14), replays excluded so one scan is one
-    // event. Swallows its own errors; skipped by the DB whitelist until 169.
+    // event. Swallows its own errors. The DB whitelist accepts it since 180;
+    // what kept it out of the table until 2026-09-09 was the NOT NULL
+    // `session_id`, since a till has no browser session of ours.
     if (!replayed) {
       await trackServerEvent({
         eventName: 'voucher_redeemed',
@@ -321,8 +323,8 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Funnel event, replays excluded so one scan is one event. Swallows its
-    // own errors; the first-party copy is skipped by the DB whitelist until
-    // pending 180 applies, PostHog receives it today.
+    // own errors. Both destinations work now: PostHog always did, and the
+    // first-party copy needed 180 (applied) plus the `session_id` fix.
     if (!replayed) {
       await trackServerEvent({
         eventName: 'voucher_redeemed',

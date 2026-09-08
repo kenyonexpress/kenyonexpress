@@ -418,8 +418,9 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     }
 
     // Funnel event. Swallows its own errors; the card is already credited.
-    // The first-party copy is skipped by the DB whitelist until pending 180
-    // applies, PostHog receives it today.
+    // An admin browser carries no guest-session cookie, which is why the
+    // first-party copy needed the `session_id` fallback in track.ts and not
+    // only 180's widened whitelist.
     await trackServerEvent({
       eventName: 'order_refunded',
       userId: order.user_id,

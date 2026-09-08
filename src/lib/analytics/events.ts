@@ -24,10 +24,10 @@ export type ClientEventName = (typeof CLIENT_EVENT_NAMES)[number]
 // Emitted server-side only, never accepted from a browser. begin_checkout
 // comes from beginCheckout; the other three are the funnel's money moments:
 // finalize, the voucher scan, and the admin refund.
-// NOTE: the DB whitelist in fn_ingest_analytics_events must carry the same
-// names -- draft migration 180 widens it (the deployed function carries only
-// the client names, so server events are silently skipped until it applies).
-// PostHog receives all four regardless: the fan-out in track.ts needs no
+// The DB whitelist in fn_ingest_analytics_events must carry the same names.
+// 180 widened it and IS APPLIED: read off production 2026-09-09, the deployed
+// function accepts all four, and a rolled-back probe took 1 of 1 for each.
+// PostHog receives all four regardless -- the fan-out in track.ts needs no
 // migration.
 export const SERVER_EVENT_NAMES = [
   'begin_checkout',

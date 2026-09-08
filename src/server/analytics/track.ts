@@ -92,11 +92,6 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // supplier's till through an API route with no browser of ours in it. So
     // PostHog's funnel ended at `checkout_step` and had nothing to convert to.
     //
-    // This is also the half that works TODAY. The Supabase write below is
-    // discarded in production by the `fn_ingest_analytics_events` whitelist
-    // until 180 is approved, and 180 needs an approval this cannot wait on.
-    // PostHog needs no migration.
-    //
     // Fired before the awaited RPC rather than after it, because `trackEvent`
     // returns synchronously and a slow or failing database round trip must not
     // decide whether the funnel event was sent.
@@ -109,17 +104,41 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
       })
     }
 
+    // `analytics_events.session_id` IS NOT NULL, AND A SERVER EVENT OFTEN HAS
+    // NO SESSION TO NAME.
+    //
+    // `session_id: anonymousId` sent NULL whenever the guest cookie was absent,
+    // and `fn_ingest_analytics_events` inserts it straight through. MEASURED
+    // against production 2026-09-09, in a transaction that was rolled back:
+    // the insert raises 23502 and the whole RPC fails, which arrives here as
+    // `{ error }`, is logged as `analytics.track_failed`, and loses the event.
+    //
+    // WHICH EVENTS THAT IS: exactly the ones with no browser of ours in the
+    // request. `voucher_redeemed` fires on a supplier's till through an API
+    // route, `purchase` fires from finalize behind the Cardcom return, and
+    // `order_refunded` fires from an admin action. `begin_checkout` is the one
+    // that had a guest cookie and therefore the one that worked. So three of
+    // the four money events could not land, for a reason unrelated to the
+    // whitelist that 180 fixed.
+    //
+    // The fallback is per EVENT and not per user: a marker keyed on the user
+    // would collapse months of unrelated server events into one "session".
+    // `server:` prefixed so nobody reads it as a real browsing session, and
+    // `anonymous_id` stays honestly null. Nothing groups by `session_id` today
+    // -- no view or matview in production reads this table at all -- so this
+    // cannot skew an existing query.
+    const eventId = crypto.randomUUID()
     const admin = createAdminClient()
     const { data: accepted, error } = await admin.rpc('fn_ingest_analytics_events', {
       p_events: [
         {
-          event_id: crypto.randomUUID(),
+          event_id: eventId,
           event_name: input.eventName,
           occurred_at: new Date().toISOString(),
           source: 'server',
           source_app: 'shop',
           anonymous_id: anonymousId,
-          session_id: anonymousId,
+          session_id: anonymousId ?? `server:${eventId}`,
           path: input.path ?? null,
           utm: attribution?.last ?? null,
           props: input.props,
@@ -150,24 +169,32 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // then returns the number it kept. One event in, zero back, means this one
     // was discarded at the door.
     //
-    // MEASURED against production on 2026-09-07 by reading the deployed
-    // function body: the live whitelist is page_view, view_product,
-    // view_category, add_to_cart, remove_from_cart, checkout_step, web_vital
-    // and whatsapp_click. `begin_checkout`, `purchase`, `voucher_redeemed` and
-    // `order_refunded` are on none of it, so EVERY server-side money event this
-    // file emits is currently going nowhere.
+    // 180 IS APPLIED AND THIS GUARD IS NO LONGER ABOUT THESE FOUR NAMES.
     //
-    // `migrations/pending/180` adds the four names and is the actual fix; it
-    // needs approval before it touches production. This does not fix the loss.
-    // It makes the loss visible, which is the part that can be done without
-    // approval -- silent data loss on the money funnel is indistinguishable
-    // from no data at all, and the version of this that logs nothing is how it
-    // survived from 151 until now.
+    // The comment here used to say the live whitelist held only the client
+    // names and that every server money event was going nowhere, and to point
+    // at `migrations/pending/180` -- in the log line itself, which shipped that
+    // path into production logs. MEASURED 2026-09-09 by reading the deployed
+    // `fn_ingest_analytics_events`: the whitelist now carries all four, and a
+    // rolled-back probe accepted 1 of 1 for each of `begin_checkout`,
+    // `purchase`, `voucher_redeemed` and `order_refunded`, and 0 of 1 for an
+    // invented name. The whitelist half is fixed; the loss that survived it was
+    // the NOT NULL `session_id` handled above.
+    //
+    // The guard stays, because it is the only signal that an event name was
+    // dropped at the door: the function `CONTINUE`s past an unknown name with
+    // no error, no log and HTTP 200. It now means what it says rather than
+    // naming a file that is no longer pending.
+    //
+    // NOT A PROOF OF A WRITE. The deployed function increments its counter
+    // after `ON CONFLICT (event_id) DO NOTHING`, so a duplicate `event_id`
+    // would return 1 with nothing inserted. Every id here is a fresh
+    // `randomUUID`, which is why that is recorded rather than worked around.
     if (typeof accepted === 'number' && accepted < 1) {
       log.error('analytics.event_rejected', {
         eventName: input.eventName,
         detail:
-          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/180.',
+          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded.',
       })
     }
   } catch (error) {
