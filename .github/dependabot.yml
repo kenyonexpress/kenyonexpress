@@ -47,7 +47,33 @@ updates:
       day: monday
       time: '04:00'
       timezone: Asia/Jerusalem
-    open-pull-requests-limit: 5
+    # RAISED FROM 5 TO 10 ON 2026-09-08, BECAUSE THE QUEUE WAS STARVED.
+    #
+    # The limit counts every open pull request Dependabot holds for this
+    # ecosystem and directory, across target branches - including ones opened by
+    # a configuration that no longer exists. Measured that day: six open npm
+    # PRs against a limit of five. #31, #11 and #7 target `main`; #12, #13 and
+    # #14 target `phase5/homepage`, which nothing merges and which the block at
+    # the top of this file already records as unmergeable and deliberately left
+    # open.
+    #
+    # So the three stranded ones were holding the cap, and the Monday 2026-09-07
+    # run - the scheduled one - opened nothing. The newest PR was #31 from the
+    # Saturday. Meanwhile `pnpm outdated` listed patch updates waiting across
+    # react, react-dom, @sentry/*, tailwindcss and a dozen more: exactly the
+    # `patch` group below, the one the auto-merge workflow lands unattended.
+    #
+    # Dependabot looked alive - a PR three days old - while the thing it exists
+    # to do had stopped.
+    #
+    # Raising the limit rather than closing the three: closing a Dependabot PR
+    # tells it to stop offering that version, and `@radix-ui/react-select
+    # 2.2.6 -> 2.3.7` in #12 is wanted on `main` too. Deleting
+    # `phase5/homepage` would close them as a side effect, but which branch is
+    # the mainline is an open question (docs/MIGRATION-NUMBER-COLLISIONS.md) and
+    # a branch deletion is not a maintenance decision. Ten leaves room for the
+    # three strays plus a full weekly grouping.
+    open-pull-requests-limit: 10
     labels:
       - dependencies
     commit-message:
