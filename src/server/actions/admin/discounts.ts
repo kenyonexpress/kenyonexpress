@@ -192,13 +192,12 @@ async function runSaveDiscountCampaign(
 async function runArchiveDiscountCampaign(id: string): Promise<DiscountActionState> {
   const session = await requireSection('discounts', 'write')
   const admin = createAdminClient()
-  const { data: before, error: beforeError } = await admin
-    .from('discount_campaigns')
-    .select('id, code, is_active, deleted_at')
-    .eq('id', id)
-    .maybeSingle()
-  if (beforeError) return { ok: false, error: `ארכוב נכשל: ${beforeError.message}` }
-
+  // The old row is captured by the database, not here: 169 attached an audit
+  // trigger to discount_campaigns that snapshots before/after on every UPDATE
+  // (pinned by audit-coverage.test.ts). What the trigger cannot record on this
+  // path is WHO, because the admin client has no auth.uid(), and that is what
+  // the writeAuditLog call below is for. A read whose result went nowhere is
+  // not a second trail.
   const deletedAt = new Date().toISOString()
   const { error } = await admin
     .from('discount_campaigns')
@@ -233,13 +232,8 @@ async function runSetDiscountCampaignActive(
 ): Promise<DiscountActionState> {
   const session = await requireSection('discounts', 'write')
   const admin = createAdminClient()
-  const { data: before, error: beforeError } = await admin
-    .from('discount_campaigns')
-    .select('id, code, is_active')
-    .eq('id', id)
-    .maybeSingle()
-  if (beforeError) return { ok: false, error: `עדכון נכשל: ${beforeError.message}` }
-
+  // Same as the archive path above: 169's trigger holds the before/after, and
+  // the writeAuditLog call below holds the actor the service-role client hides.
   const { error } = await admin
     .from('discount_campaigns')
     .update({ is_active: isActive })

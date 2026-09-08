@@ -1,6 +1,11 @@
 'use server'
 
-import { writeAuditLog } from '@/lib/admin/audit'
+// No writeAuditLog import: this action writes its audit_log row inline, after
+// the persistence block, so it can carry a metadata object (payment id, refund
+// transaction id, both amounts, the supplier debits, the reason) that the
+// helper's signature does not take. The actor is written there from the session
+// requireAdminSession() proved, which the 169 trigger cannot supply on this
+// path because the refund runs on the service-role client.
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { withActionContext } from '@/lib/observability/action-context'
