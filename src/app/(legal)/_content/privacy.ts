@@ -8,8 +8,15 @@ import type { LegalDoc } from './types'
  *
  * WHAT IS SAID HERE IS WHAT THE CODE DOES.
  *  - Login is Google OAuth. The Google password never reaches this system.
- *  - Card numbers are never stored here. `src/lib/payments` sends the customer
- *    to Cardcom and keeps a token; the PAN lives at the processor.
+ *  - Card numbers and CVVs are never stored here. `src/lib/payments` sends the
+ *    customer to Cardcom and keeps a token; the PAN lives at the processor.
+ *    CORRECTED 2026-09-08: this section used to list the card's EXPIRY among
+ *    the things kept "at the clearing company only", and `payment_tokens`
+ *    stores `expiry_month` and `expiry_year` - written by
+ *    `server/payments/finalize.ts` and read by the checkout to avoid offering a
+ *    saved card that has already expired. Also `last_4` and `card_brand`. The
+ *    claim was false about three columns while being true about the PAN, which
+ *    is exactly the failure the paragraph below warns about.
  *  - GA4 and the Meta Pixel are not loaded at all before consent, not even as a
  *    denied-mode stub (`src/lib/analytics/third-party.ts` explains why), so the
  *    cookie section can state that and be checkable in a network log.
@@ -116,14 +123,14 @@ export const privacyDoc: LegalDoc = {
         {
           type: 'unordered',
           items: [
-            'מספר כרטיס אשראי מלא, תוקף הכרטיס וקוד האבטחה שבגבו. פרטים אלה נמסרים ישירות לחברת הסליקה ונשמרים אצלה בלבד. במערכות האתר נשמר אסימון (טוקן) המאפשר חיוב חוזר בהסכמתכם, ולא מספר הכרטיס.',
+            'מספר כרטיס אשראי מלא וקוד האבטחה שבגבו (CVV). פרטים אלה נמסרים ישירות לחברת הסליקה, נשמרים אצלה בלבד, ואינם מגיעים למערכות האתר בשום שלב.',
             'סיסמת חשבון Google שלכם. ההתחברות מתבצעת מול Google, ואנחנו מקבלים ממנה אישור זהות ופרטי פרופיל בסיסיים בלבד.',
             'מידע רגיש כהגדרתו בחוק, כגון מצב בריאותי, דעות פוליטיות או אמונה דתית. אין לכלול מידע כזה בפניות אלינו.',
           ],
         },
         {
           type: 'note',
-          text: 'הפלטפורמה אינה שומרת מספרי כרטיס אשראי. חיוב חוזר, ככל שאישרתם אותו, מתבצע באמצעות אסימון המוחזק אצל חברת הסליקה.',
+          text: 'הפלטפורמה אינה שומרת מספרי כרטיס אשראי ואינה שומרת את קוד האבטחה. חיוב חוזר, ככל שאישרתם אותו, מתבצע באמצעות אסימון המוחזק אצל חברת הסליקה. על כרטיס ששמרתם נשמרים אצלנו ארבע הספרות האחרונות, סוג הכרטיס וחודש ושנת התוקף — כדי שנוכל להציג לכם איזה כרטיס זה ולא להציע בקופה כרטיס שכבר פג. אין באלה כדי לחייב כרטיס.',
         },
       ],
     },
