@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -33,8 +34,14 @@ const src = readFileSync(resolve(process.cwd(), 'src/proxy.ts'), 'utf8')
  * explain why it is gone. An assertion that cannot tell an explanation from a
  * declaration would forbid recording the reason - and the reason is the most
  * useful thing in that file.
+ *
+ * The seventeenth copy of this helper, and the one that proves the inventory
+ * behind the shared module was short: it was found by grepping for
+ * `startsWith('//')`, and this spelling is a regex, so it was not in the count
+ * of sixteen. It also stripped `//` ANYWHERE on a line rather than at the
+ * start, which silently truncates any line holding a URL literal.
  */
-const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+const code = stripComments(src)
 
 describe('the supplier guard covers the portal and nothing else', () => {
   it('does not gate on a bare /supplier prefix', () => {

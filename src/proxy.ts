@@ -95,11 +95,25 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        // `headers` is the SECOND argument and it is not decoration. A response
+        // that carries a rotated session cookie must not be stored by a CDN or
+        // a reverse proxy: a cached one is served to the next visitor, session
+        // token included. @supabase/ssr 0.12 passes
+        // `Cache-Control: private, no-cache, no-store, must-revalidate,
+        // max-age=0` plus `Expires` and `Pragma` here, and an adapter that
+        // takes one parameter drops them silently - ours did, and so did the
+        // example in every version of this file before 0.12.
+        //
+        // Only on the FIRST cookie write per client, by the library's design;
+        // the object is empty afterwards. That is fine here because the proxy
+        // builds a client per request.
+        setAll(cookiesToSet, headers) {
           for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
           supabaseResponse = forward(request, requestId)
           for (const { name, value, options } of cookiesToSet)
             supabaseResponse.cookies.set(name, value, options)
+          for (const [key, value] of Object.entries(headers ?? {}))
+            supabaseResponse.headers.set(key, value)
         },
       },
     },
