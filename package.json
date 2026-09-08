@@ -32,7 +32,8 @@
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "prepare": "husky || true",
-    "deploy:preflight": "node scripts/deploy-preflight.mjs"
+    "deploy:preflight": "node scripts/deploy-preflight.mjs",
+    "test:e2e:nodb": "node scripts/e2e-no-database.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

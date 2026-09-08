@@ -665,6 +665,62 @@ jobs:
             test-results/
           retention-days: 7
 
+  # THE BROWSER TESTS THAT NEED NO DATABASE, WHICH IS MOST OF THEM.
+  #
+  # The `e2e` job above has never executed a single test. Its guard is right -
+  # its first step writes fixture rows, and the only database CI can reach is
+  # production - but the conclusion drawn from it was that no browser test can
+  # run here, and that was never measured. It is now: 261 specs pass against a
+  # production build whose every Supabase read fails with `Invalid API key`,
+  # which is exactly what the public demo key below produces. They render pages,
+  # check RTL at three widths and run axe. None of them writes.
+  #
+  # So this job takes the same env as `build` - public names, demo key,
+  # ALLOW_INCOMPLETE_ENV - and runs the list in e2e/database-need.ts. It needs
+  # no secret and asks nothing of anyone. `e2e` keeps its guard and keeps
+  # skipping until CI_SUPABASE_URL exists.
+  e2e-no-database:
+    name: E2E without a database
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
+      ALLOW_INCOMPLETE_ENV: 'true'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # The production build, for the same reason the other job uses it: dev and
+      # prod differ on RTL, caching and server actions.
+      E2E_WEB_COMMAND: pnpm start
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run the specs that need no database
+        run: pnpm test:e2e:nodb
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-no-database
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
   # E2E AGAINST THE PULL REQUEST'S VERCEL PREVIEW. This is a different thing
   # from the `e2e` job above and does not replace it.
   #
