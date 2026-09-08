@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -40,13 +41,7 @@ function walk(dir: string, out: string[] = []): string[] {
 const SOURCES = walk(join(ROOT, 'src')).map((path) => ({ path, text: readFileSync(path, 'utf8') }))
 
 /** Comments stripped: a paragraph explaining the pair is not the pair. */
-function code(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*'))
-    .join('\n')
-}
+const code = stripComments
 
 const declaresCover = SOURCES.filter((f) =>
   /viewportFit:\s*['"]cover['"]|viewport-fit=cover/.test(code(f.text)),

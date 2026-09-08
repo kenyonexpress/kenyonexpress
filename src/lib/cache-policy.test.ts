@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -21,13 +22,7 @@ import { describe, expect, it } from 'vitest'
 const SRC = resolve(process.cwd(), 'src')
 
 /** Comments removed, so a module that only writes ABOUT caching is not counted. */
-function code(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//'))
-    .join('\n')
-}
+const code = stripComments
 
 function sourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

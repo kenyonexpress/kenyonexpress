@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { blankCommentLines } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -32,13 +33,7 @@ function tsxFiles(dir: string): string[] {
 }
 
 /** Block and line comments out, so only real markup is scanned. */
-function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .map((line) => (line.trim().startsWith('//') ? '' : line))
-    .join('\n')
-}
+const stripComments = (source: string) => blankCommentLines(source).join('\n')
 
 describe('every image has an alt attribute', () => {
   const offenders: string[] = []

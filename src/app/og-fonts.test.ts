@@ -1,5 +1,6 @@
 import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -52,14 +53,12 @@ describe('the product page does not claim og:image itself', () => {
     // Next only fills the field when metadata has not already claimed it, so
     // the generated card built, appeared in the route list, and reached nothing.
     const src = readFileSync(resolve(__dirname, '(store)/product/[slug]/page.tsx'), 'utf8')
-    const metadata = src
-      .slice(src.indexOf('generateMetadata'), src.indexOf('generateStaticParams'))
-      .split('\n')
-      // Comments are stripped: the paragraph explaining this rule quotes the
-      // very expression it forbids, and a test that its own explanation trips
-      // is a test that gets deleted.
-      .filter((line) => !line.trim().startsWith('//'))
-      .join('\n')
+    // Comments are stripped: the paragraph explaining this rule quotes the
+    // very expression it forbids, and a test that its own explanation trips is
+    // a test that gets deleted.
+    const metadata = stripComments(
+      src.slice(src.indexOf('generateMetadata'), src.indexOf('generateStaticParams')),
+    )
     expect(metadata).not.toContain('images:')
   })
 })

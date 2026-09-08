@@ -14,6 +14,7 @@
 
 import { existsSync, readFileSync } from 'node:fs'
 import { extname } from 'node:path'
+import { blankCommentLines, hasBlockComments } from '../src/lib/source-scan/strip-comments.mjs'
 import { changedFiles, git, resolveRange } from './ci-diff-files.mjs'
 
 const LEDGER = 'docs/hardcoded-audit.md'
@@ -31,13 +32,16 @@ const ADVISORY_FILES = new Set([
 
 const isAdvisory = (file) => ADVISORY_FILES.has(file)
 
-function isTrivialComment(line) {
-  const t = line.trim()
-  if (t.startsWith('//')) return true
-  if (t.startsWith('*')) return true
-  if (t.startsWith('/*') && t.endsWith('*/')) return true
-  return false
-}
+/**
+ * Comment text removed, LINE NUMBERING KEPT, because this gate prints file:line.
+ *
+ * Was a per-line classifier, which cannot see that a line sits inside a block
+ * that opened earlier: a literal on a continuation line not beginning with a
+ * star was reported as hardcoded code. Shared with every other scanner here,
+ * after eight guards had each matched their own prose - see the module header.
+ */
+const scannableLines = (file, content) =>
+  blankCommentLines(content.split(/\r?\n/).join('\n'), { block: hasBlockComments(file) })
 
 function collectMatches(re, line) {
   const out = []
@@ -58,10 +62,9 @@ function scanFile(file) {
     return []
   }
   const hits = []
-  const lines = content.split(/\r?\n/)
+  const lines = scannableLines(file, content)
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
-    if (isTrivialComment(line)) continue
     for (const value of collectMatches(HEX_RE, line)) hits.push({ line: i + 1, value })
     for (const value of collectMatches(PX_RE, line)) hits.push({ line: i + 1, value })
   }

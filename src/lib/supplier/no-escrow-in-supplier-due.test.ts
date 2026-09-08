@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 import { supplierDueAgorot } from './dashboard'
 
@@ -38,13 +39,7 @@ function source(relative: string): string {
 }
 
 /** Comments explain the abolished model at length; only real code counts. */
-function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*'))
-    .join('\n')
-}
+const codeOnly = stripComments
 
 describe('the supplier is never credited from escrow', () => {
   /**

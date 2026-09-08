@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+import { stripComments } from '../src/lib/source-scan/strip-comments.mjs'
 import {
   LCP_BUDGET_MS,
   ROUTES,
@@ -69,10 +70,7 @@ describe('the script says what it measured, not just what it got', () => {
     // `arrayBuffer()`, so a raw index finds the PROSE before the code and the
     // assertion inverts - which is what happened writing this, and is the same
     // mistake migration-lint.mjs once made against its own documentation.
-    const code = source
-      .split('\n')
-      .filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*'))
-      .join('\n')
+    const code = stripComments(source)
     const body = code.slice(code.indexOf('for (let i = 0'))
     expect(body.indexOf('wire.push(')).toBeLessThan(body.indexOf('arrayBuffer()'))
   })

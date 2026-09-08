@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { stripCommentsFor } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -27,26 +28,21 @@ const read = (...parts: string[]) => readFileSync(join(ROOT, ...parts), 'utf8')
  * so the consistency check below flagged it as excused-and-wired. That is the
  * same prose-versus-directive mistake `migration-lint.mjs` once made against
  * its own documentation, caught here by an assertion I wrote in the same pass.
+ *
+ * Stripped PER FILE, not with one rule for all five. These are shell, YAML and
+ * JSON, and applying C block-comment rules to them destroys them: `ci.yml`
+ * contains `hashFiles('src/**', ...)`, whose glob reads as a comment that opens
+ * and never closes, blanking every line below it. That made this file report
+ * two wired audits as unwired - measured while extracting the shared stripper.
  */
-function code(text: string): string {
-  return text
-    .split('\n')
-    .filter((line) => {
-      const trimmed = line.trim()
-      return !trimmed.startsWith('#') && !trimmed.startsWith('//') && !trimmed.startsWith('*')
-    })
-    .join('\n')
-}
-
-/** Every place that could invoke one. */
 const RUNNERS = [
-  read('scripts', 'nightly-health.sh'),
-  read('.github', 'workflows', 'ci.yml'),
-  read('.github', 'workflows', 'cron.yml'),
-  read('.github', 'workflows', 'nightly-health.yml'),
-  read('package.json'),
+  ['scripts', 'nightly-health.sh'],
+  ['.github', 'workflows', 'ci.yml'],
+  ['.github', 'workflows', 'cron.yml'],
+  ['.github', 'workflows', 'nightly-health.yml'],
+  ['package.json'],
 ]
-  .map(code)
+  .map((parts) => stripCommentsFor(parts.at(-1) ?? '', read(...parts)))
   .join('\n')
 
 /**

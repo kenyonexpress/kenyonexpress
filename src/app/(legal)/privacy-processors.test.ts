@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -37,13 +38,7 @@ const ROOT = resolve(__dirname, '..', '..', '..')
  * Eighth occurrence of this shape in this stretch of work, and the first inside
  * a guard written in the same pass that found it.
  */
-function code(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//'))
-    .join('\n')
-}
+const code = stripComments
 
 const privacy = code(readFileSync(join(ROOT, 'src/app/(legal)/_content/privacy.ts'), 'utf8'))
 const env = readFileSync(join(ROOT, 'src/lib/env.ts'), 'utf8')

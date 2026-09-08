@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { stripComments } from '@/lib/source-scan/strip-comments.mjs'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -41,13 +42,7 @@ function actionFiles(): string[] {
     .sort()
 }
 
-function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('//') && !line.trim().startsWith('*'))
-    .join('\n')
-}
+const codeOnly = stripComments
 
 describe('content_uploader prohibitions', () => {
   const files = actionFiles()
