@@ -194,6 +194,20 @@ describe('the pending migration inventory', () => {
     //                                    seeding -- see "## חסמים לאופיר" in STATE.md
     //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
     //
+    // 184 IS NOT APPLIED AND THAT IS THE DECISION, not a pending question.
+    // It rebuilds the table every order lives in, and the project recorded it
+    // as needing a maintenance window on 09-04. Reading production on 09-09
+    // also found it stale in two ways that would have destroyed things
+    // silently, because step 3.2 drops the original table and anything the
+    // file does not name goes with it: it recreated three triggers where
+    // production carries six, and named sixteen inbound FKs where there are
+    // seventeen. The worst of the three was `audit_orders` from 169 (applied
+    // 09-04), so the file would have removed the audit trail from orders
+    // with no error anywhere. All four gaps are closed in the file, and
+    // `preflight_184.sql` re-checks both lists against live catalogs at
+    // window time, because every migration landing between now and then can
+    // make it stale again the same way.
+    //
     // 185 APPLIED 2026-09-09. It REWRITES existing policies from texts it
     // quotes, the shape that nearly broke 183, so all six were read off
     // production first: all six matched verbatim, roles included, so the
@@ -261,6 +275,7 @@ describe('the pending migration inventory', () => {
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
       'preflight_162.sql',
+      'preflight_184.sql',
     ])
   })
 

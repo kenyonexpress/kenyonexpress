@@ -1,5 +1,54 @@
 # Apply order
 
+## 2026-09-09: 184 NOT APPLIED, corrected, and given a preflight
+
+184 is the last file in the queue and it stays unapplied. It rebuilds the
+table every order lives in, on a live database, and the project recorded it as
+needing a maintenance window on 09-04. That constraint is the decision; this
+section is what was done instead.
+
+**Reading production first found it stale in two ways, and both would have
+destroyed something silently.** Step 3.2 drops the original `orders` table, so
+anything attached to it that the file does not name is gone with no error at
+any point -- not a failed migration, just a database that quietly stopped
+doing something.
+
+    triggers on public.orders   file recreated 3, production carries 6
+    inbound foreign keys        file named 16, production has 17
+
+The three unnamed triggers were `audit_orders` (169), `trg_orders_notify_shipped`
+(183) and `tg_orders_whatsapp_status` (173). Two of those landed on 09-09, but
+**`audit_orders` came from 169 on 09-04, so the file had been wrong for five
+days**: applying it in a window would have removed the audit trail from the
+orders table and nothing would have reported it. The seventeenth foreign key
+is `cashback_ledger` from 177.
+
+**All four gaps are closed in the file.** The two UPDATE-only triggers sit
+with their siblings in 3.6. `audit_orders` is deliberately NOT there and is
+recreated after the copy as 3.7b: it fires on INSERT, so creating it before
+the backfill would have written one fabricated `created` audit row per
+pre-existing order and turned a structural conversion into invented history.
+The `cashback_ledger` tuple was added to the referencing-table array, and all
+seventeen were then compared against production name by name, column by
+column, and action by action -- they match exactly. The three added CREATE
+TRIGGER statements were parsed and bound against a scratch clone of `orders`
+in a transaction that was rolled back.
+
+**`preflight_184.sql` is the durable half.** Patching the file fixes today;
+`orders` is the most-attached-to table in the schema, and every migration
+landing between now and the window can make it stale again in exactly the same
+silent way. Blocks (1) and (2) of the preflight compare production's trigger
+list and inbound-FK list against what the file names, so drift refuses loudly
+instead of deleting something. Blocks (3) to (7) cover the invoice-number
+uniqueness that moves to the registry, duplicate invoice numbers that would
+fail the backfill halfway, rows dated outside the provisioned partition range,
+the row count to check the copy against, and pg_cron for the partition job.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 184 (this file, maintenance window).
+
+
+
 ## 2026-09-09: 185 APPLIED, and the restore it documented does not exist
 
 `soft_delete_user_facing_remainder_185` plus
@@ -43,14 +92,25 @@ Nothing else differed between the two runs. It is worse than a dead restore:
 the PK is `(user_id, product_id)`, so a soft-deleted row also blocks re-adding
 the same product.
 
-**Recorded, not redesigned.** Nothing writes `wishlists` -- there is no
-`from('wishlists')` anywhere in `src/` -- so no row can reach `deleted_at`
-today and the feature does not exist yet. Choosing an RLS design for an
-unbuilt feature would be guessing; leaving a comment promising a capability
-the database does not have is the failure this repo keeps paying for. The
-comment now states the measured truth both in the file and on the column
-itself, and `src/__tests__/wishlist-soft-delete-restore.test.ts` holds the
-finding until someone builds the wishlist and picks a restore path on purpose.
+**Recorded, not redesigned -- but the reason first given for that was
+wrong.** This section originally said nothing writes `wishlists` and the
+feature did not exist. It does exist and ships today: `toggleWishlist` and
+`getWishlistSaved` in `src/server/actions/reviews.ts`, `getMyWishlist` in
+`src/server/queries/wishlist.ts`, `/account/wishlist`, `WishlistButton`, a
+header entry and a rate-limit policy. The grep behind the original claim
+searched for `from('wishlists')` and the code writes `from('wishlists' as
+never)`, so it matched nothing and the absence was read as proof.
+
+What is actually true is narrower and is the thing worth guarding: **no `src/`
+file sets `deleted_at` on `wishlists`** -- the toggle removes with a hard
+DELETE -- so no row can reach the state 185 cannot get it out of, and
+production holds none. That is why the dead restore is not a live customer
+bug today. Choosing the restore path is a product decision (a service-role
+un-delete, or an owner SELECT branch that can see its own deleted rows and a
+list that then filters them), and nothing needs one while nothing sets the
+column. The comment now states the measured truth in the file and on the
+column itself, and `src/__tests__/wishlist-soft-delete-restore.test.ts` guards
+the reachability by reading `src/` rather than asserting it in prose.
 
 **The other half of this change is in the application.** The service role
 bypasses RLS, so `src/lib/soft-delete.ts` carries the predicate for
