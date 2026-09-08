@@ -1,3 +1,4 @@
+import { getLegalDoc } from '@/app/(legal)/_content'
 import { sortedPosts } from '@/content/blog'
 import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
@@ -167,6 +168,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'yearly' as const,
       priority: 0.3,
     })),
+    // The cookie policy, listed from the OTHER legal registry.
+    //
+    // This site serves two sets of legal documents - the state
+    // `legal-duplication.test.ts` records and deliberately does not fail the
+    // build over, because choosing which text binds is a decision with counsel
+    // and a red CI does not make it arrive sooner. `LEGAL_PAGE_SLUGS` above is
+    // the `src/content/legal` set; the cookie policy is the newer
+    // `(legal)/_content` set, which has no entry there.
+    //
+    // Listing it explicitly rather than adding it to that map keeps the two
+    // registries separate until somebody unifies them, and is better than the
+    // alternative that was in force until now: a live, linked, indexable legal
+    // page absent from the sitemap entirely.
+    {
+      url: `${base}/cookie-policy`,
+      lastModified: new Date(getLegalDoc('cookies').updatedAt),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    },
   ]
 
   return [...staticEntries, ...categoryEntries, ...productEntries, ...supplierEntries]
