@@ -46,7 +46,6 @@ const FROM = arg('from')
 /** table -> the columns whose combination must be unique. */
 const REQUIRED = [
   ['payments', ['idempotency_key'], 'a retried charge would create a second payment row'],
-  ['ledger_journals', ['event_key'], 'a replayed journal would double-post the ledger'],
   [
     'payment_webhook_events',
     ['provider', 'external_event_id'],
@@ -54,6 +53,28 @@ const REQUIRED = [
   ],
   ['wallet_entries', ['idempotency_key'], 'a replayed wallet write would credit twice'],
 ]
+
+/**
+ * `ledger_journals.event_key` IS NOT ON THAT LIST, AND THE REASON IS MEASURED.
+ *
+ * Migration 060's header names it as one of four defences that "already exist".
+ * Checked against production on 2026-09-08 through the Supabase MCP tool:
+ * `ledger_journals` and `ledger_entries` DO NOT EXIST there - `pg_class`
+ * returns no row for either - and nothing references them, in `src`, in `apps`,
+ * or in the generated types that describe production.
+ *
+ * It is an unbuilt design from LEDGER-DESIGN.md, not a missing guard. Listing it
+ * as REQUIRED would make this script report a money defence missing on every
+ * run for a table no code can reach, and a gate that cries wolf is the failure
+ * this whole audit family exists to remove. If the ledger is ever built, add
+ * the row back with the rest of it.
+ */
+const NOT_BUILT = new Map([
+  [
+    'ledger_journals.event_key',
+    'table absent from production and referenced by no code (2026-09-08)',
+  ],
+])
 
 const SQL = `
 select c.conrelid::regclass::text as table_name,
@@ -91,6 +112,7 @@ function report(rows) {
     if (have.has(key)) console.log(`  OK       ${table}(${cols.join(', ')})  -> ${have.get(key)}`)
     else missing.push([table, cols, consequence])
   }
+  for (const [what, why] of NOT_BUILT) console.log(`  n/a      ${what}  -> ${why}`)
   if (missing.length === 0) {
     console.log(`\naudit-money-constraints: all ${REQUIRED.length} replay defences are in place`)
     process.exit(0)

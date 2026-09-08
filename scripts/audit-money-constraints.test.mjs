@@ -33,9 +33,9 @@ function run(args = [], env = { PATH: process.env.PATH }) {
   }
 }
 
+/** The real shape of production, read 2026-09-08. */
 const PRESENT = [
   { table_name: 'payments', constraint_name: 'a', columns: ['idempotency_key'] },
-  { table_name: 'ledger_journals', constraint_name: 'b', columns: ['event_key'] },
   {
     table_name: 'payment_webhook_events',
     constraint_name: 'payment_webhook_events_dedup',
@@ -75,7 +75,7 @@ describe('it reads the catalogue result correctly', () => {
   it('passes when all four are present', () => {
     const { code, out } = run(['--from', withRows(PRESENT)])
     expect(code).toBe(0)
-    expect(out).toContain('all 4 replay defences are in place')
+    expect(out).toContain('all 3 replay defences are in place')
   })
 
   it('fails, and names the consequence, when the webhook dedup is gone', () => {
@@ -84,6 +84,16 @@ describe('it reads the catalogue result correctly', () => {
     expect(code).toBe(1)
     expect(out).toContain('payment_webhook_events(provider, external_event_id)')
     expect(out).toContain('already charged')
+  })
+
+  it('reports the unbuilt ledger as n/a rather than as a missing defence', () => {
+    // Migration 060 lists ledger_journals.event_key among four existing
+    // defences. Production has no such table and no code reaches for one, so
+    // calling it MISSING would be a gate crying wolf on every run.
+    const { code, out } = run(['--from', withRows(PRESENT)])
+    expect(code).toBe(0)
+    expect(out).toContain('n/a')
+    expect(out).toContain('ledger_journals.event_key')
   })
 
   it('is not fooled by the right columns on the wrong table', () => {
