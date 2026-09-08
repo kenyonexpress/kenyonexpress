@@ -421,6 +421,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Needs no build: it reads migrations/pending/ from the checkout.
+      - name: Secrets audit (tracked files)
+        # STEP 18 names a secrets audit and there was none. `compromised-keys`
+        # checks the ENVIRONMENT at deploy for keys already known to be exposed;
+        # nothing looked at what is committed. A service_role JWT reached
+        # `.env.test` once already and did no harm only because it belonged to a
+        # different project and had expired.
+        run: node scripts/audit-secrets.mjs
+
       - name: Migration lint (pending migrations)
         run: node scripts/migration-lint.mjs
 
