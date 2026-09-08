@@ -191,6 +191,40 @@ jobs:
   test:
     name: Unit tests + money coverage floors
     runs-on: ubuntu-latest
+    env:
+      # THE 25 SKIPPED TESTS ARE ALL DATABASE AUTHORIZATION TESTS, AND THEY SKIP
+      # HERE TOO. Measured 2026-09-08: rls-role-boundaries (13 of 13),
+      # anon-catalog (8 of 9) and wallet-rls (4 of 5) are the only skips in the
+      # whole suite, and every one of them gates on
+      # `SUPABASE_URL ?? NEXT_PUBLIC_SUPABASE_URL`. This job passed neither, so
+      # STEP 17's "OWASP: RLS bypass" had no automated coverage anywhere, while
+      # the suite reported green.
+      #
+      # STATE.md said on 2026-09-03 that anon-catalog "runs in CI with
+      # SUPABASE_URL+ANON_KEY". It never did. The variables were never added to
+      # this job.
+      #
+      # WHY `vars` AND NOT `secrets`. The anon key is PUBLIC by construction -
+      # it is compiled into the client bundle of every page and anyone can read
+      # it out of the served JavaScript. Putting it in a repo variable leaks
+      # nothing that is not already published.
+      #
+      # WHY THIS DOES NOT REOPEN THE E2E SEEDING PROBLEM. `secrets.CI_SUPABASE_*`
+      # stays unset on purpose, because setting it un-skips the E2E job whose
+      # first step writes fixtures to the only database that exists. These three
+      # suites do the opposite: they sign in as nobody and READ, asserting that
+      # anon cannot reach what it must not reach. They create nothing.
+      #
+      # DELIBERATELY NEW NAMES, not the PUBLIC_SUPABASE_* pair the build job
+      # uses - those are the Supabase DEMO project (see the note in `build`),
+      # and pointing an RLS assertion at a different schema would be worse than
+      # skipping it.
+      #
+      # UNSET TODAY, so `describe.skipIf(!configured)` still skips and nothing
+      # changes until somebody sets the two repository variables. That is the
+      # MANUAL step, and it is one paste of already-public values.
+      SUPABASE_URL: ${{ vars.RLS_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ vars.RLS_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
