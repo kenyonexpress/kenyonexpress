@@ -14,11 +14,12 @@
  *   - `SOFT_DELETE_LIVE_TABLES` carry `deleted_at` in production, measured
  *     2026-09-04 via information_schema over MCP. `excludeDeleted` filters.
  *   - `SOFT_DELETE_PENDING_TABLES` gain the column only when
- *     `migrations/pending/149_soft_delete_user_facing_remainder.sql` is
+ *     `migrations/pending/185_soft_delete_user_facing_remainder.sql` is
  *     applied. Until then `excludeDeleted` is deliberately a no-op for them.
- *     After 149 is applied, move the four names into the live list; every
+ *     After 185 is applied, move the four names into the live list; every
  *     call site turns on in that one edit. A drift test pins these four to
- *     the tables 149 actually alters.
+ *     the tables 185 actually alters. (It was numbered 149 until 2026-09-09,
+ *     when production turned out to have spent 149 on a different migration.)
  *
  * WHERE NOT TO USE IT. Post-sale reads on the money path (invoice line
  * names, finalize's fulfillment reads, gift-voucher emails, subscription

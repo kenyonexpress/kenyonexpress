@@ -247,6 +247,18 @@ export default async function OrderDetailPage({ params }: Props) {
         refundBlockers={blockers.map((b) => b.message)}
       />
 
+      {physicalLines.length > 0 ? (
+        <ShipmentClient
+          lines={physicalLines.map((item) => ({
+            id: item.id,
+            productName: `${item.supplier_name ?? 'שורה'} × ${item.quantity}`,
+            itemStatus: item.item_status,
+            carrier: item.carrier ?? null,
+            trackingNumber: item.tracking_number ?? null,
+          }))}
+        />
+      ) : null}
+
       <OrderStatusClient
         orderId={order.id}
         currentStatus={order.status}

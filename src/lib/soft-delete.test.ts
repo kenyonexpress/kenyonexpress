@@ -35,9 +35,13 @@ function fakeQuery() {
 }
 
 // Applied files move directories; resolve like status-transitions.test.ts does.
+// Renumbered 149 -> 185 on 2026-09-09: production had already spent 149 on
+// `149_audit_log_append_only`. Both directories are still searched because an
+// applied file moves out of `pending/`.
 const MIGRATION_CANDIDATES = [
-  'migrations/pending/149_soft_delete_user_facing_remainder.sql',
-  'supabase/migrations/149_soft_delete_user_facing_remainder.sql',
+  'migrations/pending/185_soft_delete_user_facing_remainder.sql',
+  'migrations/applied/185_soft_delete_user_facing_remainder.sql',
+  'supabase/migrations/185_soft_delete_user_facing_remainder.sql',
 ]
 
 function migration149(): string {
@@ -45,7 +49,7 @@ function migration149(): string {
     const path = resolve(process.cwd(), candidate)
     if (existsSync(path)) return readFileSync(path, 'utf8')
   }
-  throw new Error('149_soft_delete_user_facing_remainder.sql found in neither location')
+  throw new Error('185_soft_delete_user_facing_remainder.sql found in none of the three locations')
 }
 
 /** Null when the table has no generated type at all (reviews, wishlists). */

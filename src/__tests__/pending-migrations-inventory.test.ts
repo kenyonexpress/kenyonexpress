@@ -50,6 +50,13 @@ function sqlFilesIn(dir: string, filter: (name: string) => boolean = () => true)
 }
 
 /** Every `NNN_name.sql` the manifest names, deduplicated, in file order. */
+/** The `NNN` prefix of every SQL file in `dir`, letters (135a/135b) trimmed. */
+function numbersOf(dir: string): string[] {
+  return sqlFilesIn(dir)
+    .map((n) => n.slice(0, 3))
+    .filter((n) => /^\d{3}$/.test(n))
+}
+
 function manifestFilenames(): string[] {
   // `\d{3}[a-z]?_` and not `\d{3}_`: a migration that has to be split keeps its
   // number and takes a letter, the way production recorded 135 as
@@ -64,9 +71,18 @@ describe('the pending migration inventory', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     // The list moved wholesale into `applied/` on 2026-09-03; the assertion is
-    // still "these thirty-four and nothing else", now against that directory,
-    // because the alternative -- deleting the list -- would drop the only
-    // record of which numbers exist.
+    // still "these and nothing else", now against that directory, because the
+    // alternative -- deleting the list -- would drop the only record of which
+    // numbers exist.
+    //
+    // TWO NUMBERS APPEAR TWICE HERE AND THAT IS HISTORY, NOT A DEFECT.
+    // Production spent 169 on `audit_full_coverage_169` (20260904001341) and
+    // AGAIN on `analytics_server_event_names_169` (20260908200555), and spent
+    // 172 on `rls_zero_policy_tables_172` plus the ad-hoc write that hid the
+    // one-shekel test row. A number production has burned cannot be reclaimed
+    // by renaming the file, so both members of each pair stay. The invariant
+    // that IS enforceable is one directory down: no number may be shared
+    // between `pending/` and `applied/` -- see the numbering test below.
     expect(sqlFilesIn(APPLIED_DIR, (n) => !n.startsWith('preflight_'))).toEqual([
       '122_deny_all_on_server_only_tables.sql',
       '123_products_whatsapp_enabled.sql',
@@ -92,20 +108,34 @@ describe('the pending migration inventory', () => {
       '145_revoke_check_rate_limit_execute.sql',
       '146_wallet_balance_floor.sql',
       '147_money_agorot_remaining_twins.sql',
-      '148_orders_monthly_partitioning.sql',
-      '149_soft_delete_user_facing_remainder.sql',
+      '148_refund_destination.sql',
+      '149_audit_log_append_only.sql',
+      '150_account_deletion.sql',
+      '151_analytics_ingest.sql',
+      '152_payout_machinery.sql',
+      '153_ai_usage.sql',
+      '154_reviews_wishlist.sql',
+      '155_shipment_tracking.sql',
+      '156_analytics_indexes.sql',
+      '157_audit_ip_retention.sql',
+      '158_revoke_anon_public_on_new_functions.sql',
+      '159_pin_search_path_and_revoke_enqueue.sql',
+      '160_fk_indexes.sql',
+      '161_enable_pg_cron_pg_net.sql',
+      '163_orders_indexes.sql',
+      '166_voucher_transition_guard.sql',
+      '167_order_items_money_constraints.sql',
+      '168_wallet_ledger_client_readonly.sql',
+      '169_analytics_server_event_names.sql',
       '169_audit_full_coverage.sql',
       '170_reporting_tables.sql',
       '171_search_fts.sql',
+      '172_hide_master_product_test_row.sql',
       '172_rls_zero_policy_tables.sql',
-      '173_whatsapp_flow.sql',
-      '177_cashback_ledger.sql',
-      '178_webauthn_credentials.sql',
-      '179_push_subscriptions.sql',
       '180_analytics_server_event_names.sql',
-      '181_admin_rbac_hardening.sql',
       '182_coupon_qr_batches.sql',
-      '183_order_shipped_notification.sql',
+      '186_composite_indexes_top_queries.sql',
+      '187_category_name_shekel_order.sql',
     ])
   })
 
@@ -148,29 +178,41 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // ONE pending migration as of the 2026-09-04 audit, with its preflight
-    // audit beside it (a CLOSEOUT §5 requirement: no migration file without
-    // the execute_sql audit that has to pass before it).
+    // WHAT IS ACTUALLY UNAPPLIED, read off production on 2026-09-09 rather
+    // than inferred from the directory. Every file below was probed for the
+    // objects it creates and production has none of them:
     //
-    //   162_cron_schedule.sql               approved (CLOSEOUT §7), blocked on vault
-    //                                       seeding -- see "## חסמים לאופיר" in STATE.md
+    //   162_cron_schedule                approved (CLOSEOUT §7), blocked on vault
+    //                                    seeding -- see "## חסמים לאופיר" in STATE.md
+    //   173_whatsapp_flow                whatsapp_contacts/outbox/inbound,
+    //                                    support_tickets: none present
+    //   177_cashback_ledger              cashback_ledger: absent
+    //   178_webauthn_credentials         webauthn_credentials: absent
+    //   179_push_subscriptions           push_subscriptions: absent
+    //   181_admin_rbac_hardening         profiles_super_admin_mfa policy absent, and
+    //                                    enforce_profile_privilege_columns still
+    //                                    carries the pre-181 comment (the function
+    //                                    EXISTS from the 053/090 lineage, so probing
+    //                                    the name alone would have said "applied")
+    //   183_order_shipped_notification   tg_orders_notify_shipped: absent
+    //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
+    //   185_soft_delete_user_facing_...  the four deleted_at indexes: absent
     //
-    // 166, 167 and 168 were found ALREADY APPLIED by the 2026-09-04 audit
-    // (schema_migrations versions 20260903232445/232455/232504, live
-    // definitions matching the files) and moved with their preflights to
-    // migrations/applied/. 164 stays unused; 165 was written under §8c and
-    // CANCELLED under §13 (eighteen public-role RLS policies call the
-    // helpers, so the revoke would 42501 every anonymous catalogue read) --
-    // it burned its number and sits in migrations/cancelled/, asserted below.
+    // 184 and 185 were 148 and 149 until 2026-09-09. Production had already
+    // spent both numbers on different migrations (148_refund_destination
+    // 20260902182227, 149_audit_log_append_only 20260902182235), so the
+    // unapplied file is the one that moved.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
-      '169_analytics_server_event_names.sql',
-      '170_composite_indexes_top_queries.sql',
-      '171_category_name_shekel_order.sql',
-      '172_hide_master_product_test_row.sql',
+      '173_whatsapp_flow.sql',
+      '177_cashback_ledger.sql',
+      '178_webauthn_credentials.sql',
+      '179_push_subscriptions.sql',
+      '181_admin_rbac_hardening.sql',
+      '183_order_shipped_notification.sql',
+      '184_orders_monthly_partitioning.sql',
+      '185_soft_delete_user_facing_remainder.sql',
       'preflight_162.sql',
-      'preflight_169.sql',
-      'preflight_170.sql',
     ])
   })
 
@@ -206,11 +248,6 @@ describe('the pending migration inventory', () => {
 
   // ---- numbering ---------------------------------------------------------
   it('repeats no migration number across the two directories', () => {
-    const numbersOf = (dir: string) =>
-      sqlFilesIn(dir)
-        .map((n) => n.slice(0, 3))
-        .filter((n) => /^\d{3}$/.test(n))
-
     const historical = new Set(numbersOf(SUPABASE_DIR))
     const clash = [...new Set([...numbersOf(PENDING_DIR), ...numbersOf(APPLIED_DIR)])].filter((n) =>
       historical.has(n),
@@ -219,6 +256,34 @@ describe('the pending migration inventory', () => {
     expect(
       clash,
       `these numbers mean two different things in the two directories: ${clash.join(', ')}`,
+    ).toEqual([])
+  })
+
+  // ---- the tangle this file did not catch --------------------------------
+  it('lets no unapplied migration squat on a number production has spent', () => {
+    // MEASURED 2026-09-09. `pending/` held TWO 170s and TWO 171s, written by
+    // sessions that could not see each other, while production had already
+    // applied one of each pair (`reporting_tables_170` 20260904003703,
+    // `search_fts_171` 20260904005239). It also held a 148 and a 149 whose
+    // numbers production spent back on 2026-09-02. Nothing was red: the only
+    // numbering assertion here compared pending+applied against
+    // `supabase/migrations/`, so a collision INSIDE the pair of directories
+    // this file is named after went unseen for five days.
+    //
+    // The asymmetry is the whole point. A duplicate number inside `applied/`
+    // is history and cannot be undone -- production really did spend 169 and
+    // 172 twice, and both members of each pair are recorded above. A number
+    // shared between `pending/` and `applied/` is different: it means a file
+    // nobody has run is wearing a number that already means something in the
+    // database, so "apply 170" is an ambiguous instruction at the one moment
+    // ambiguity is most expensive. The unapplied file is the one that moves;
+    // 148/149/170/171 became 184/185/186/187 on the day this test was written.
+    const spent = new Set(numbersOf(APPLIED_DIR))
+    const squatting = sqlFilesIn(PENDING_DIR).filter((n) => spent.has(n.slice(0, 3)))
+
+    expect(
+      squatting,
+      `these unapplied files carry a number already applied to production: ${squatting.join(', ')}`,
     ).toEqual([])
   })
 

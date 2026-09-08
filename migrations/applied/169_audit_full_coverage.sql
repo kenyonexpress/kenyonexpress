@@ -45,7 +45,8 @@
 -- untouched and keep working: the carve-out compares to_jsonb(NEW/OLD) minus
 -- ip_address, which is shape-agnostic.
 --
--- NOTE for 148_orders_monthly_partitioning (pending, unapplied): if orders is
+-- NOTE for 184_orders_monthly_partitioning (pending, unapplied; numbered 148
+-- until 2026-09-09): if orders is
 -- ever recreated as a partitioned table, audit_orders must be recreated on
 -- the new parent. Row triggers on a partitioned parent propagate to
 -- partitions, so `create trigger audit_orders ... on public.orders` again is

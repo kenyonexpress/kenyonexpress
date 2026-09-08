@@ -1,5 +1,58 @@
 # Apply order
 
+## 2026-09-09: the numbering tangle, then 186 and 187 APPLIED
+
+**Two 170s and two 171s were sitting in `pending/` at once**, written by
+sessions that could not see each other, and one of each pair had been applied
+to production on 2026-09-04. "Apply 170" therefore named two different files.
+Rather than guess, every pending migration was probed against production for
+the objects it creates.
+
+Five turned out to be already applied and moved to `migrations/applied/`:
+`169_audit_full_coverage` (`audit_full_coverage_169`, `20260904001341`),
+`170_reporting_tables` (`reporting_tables_170`, `20260904003703`),
+`171_search_fts` (`search_fts_171`, `20260904005239`),
+`172_rls_zero_policy_tables` (`rls_zero_policy_tables_172`, `20260904010757`,
+plus `_report_grants` `20260904010826`) and
+`182_coupon_qr_batches` (`coupon_qr_batches_182`, `20260907163213`).
+
+**181 is the one that had to be read carefully.** Both functions
+`181_admin_rbac_hardening` touches already exist in production from the 053/090
+lineage, so a probe on the name alone would have called a live security
+hardening "applied" and dropped it out of the queue. What settles it is the
+comment production reports on `enforce_profile_privilege_columns`, which is
+still the pre-181 text, and the RESTRICTIVE `profiles_super_admin_mfa` policy,
+which is absent. 181 stays pending.
+
+**The four squatters were renumbered, because a number production has spent
+cannot be reclaimed.** 148 → 184, 149 → 185, 170 → 186, 171 → 187, with
+`preflight_170` following its migration to `preflight_186`. Each file carries
+the rename and the reason in its own header.
+
+**`186_composite_indexes_top_queries.sql` APPLIED** as
+`composite_indexes_top_queries_186`. `preflight_186.sql` ran first and all four
+blocks passed: none of the ten index names existed, all fourteen columns were
+present with the expected types, `product_status` carried `active`, and no
+existing index already covered a pattern (the near-duplicates are prefix-only
+singles without the composite key plus sort column). Expand-only —
+`CREATE INDEX IF NOT EXISTS` and nothing else. All ten were read back after and
+every `indexdef` matches the file.
+
+**`187_category_name_shekel_order.sql` APPLIED** as
+`category_name_shekel_order_187`. One row, one text column, matched on the
+exact broken string. `categories.name_he` for `under-99` went
+`1506,1491,32,8362,57,57` → `1506,1491,32,8294,57,57,160,8362,8297`, which is
+`עד ` + U+2066 LRI + `99` + NBSP + `₪` + U+2069 PDI — exactly what `isolate()`
+in `src/lib/money-format.ts` emits for every other price on the site. Zero rows
+still match the broken shape. `repairPriceOrder` stays at the render edge: it
+rewrites only `₪<digits>`, so it now leaves this name alone, and a database
+without 187 (a branch, a local reset, a preview project) still renders it the
+right way round.
+
+**What is still pending after this:** 162 (approved, blocked on vault seeding),
+173, 177, 178, 179, 181, 183, 184, 185.
+
+
 ## 2026-09-08: 169 / 180 (the four money events) APPLIED
 
 **The funnel was reporting nothing, on a live site.** Read off production
@@ -122,8 +175,8 @@ independent and may be applied in any sequence, or not at all.
 | 12 | `140_money_agorot_catalog.sql` | `_agorot` columns on products, variants, coupons | — | `drop column <col>_agorot` |
 | 13 | `141_money_agorot_growth.sql` | `_agorot` columns on affiliates, referrals | — | `drop column <col>_agorot` |
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
-| 15 | `148_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
-| 16 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
+| 15 | `184_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
+| 16 | `185_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
 | 17 | `173_whatsapp_flow.sql` | WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
 | 18 | `177_cashback_ledger.sql` | append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
 | 19 | `178_webauthn_credentials.sql` | passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |

@@ -1,4 +1,9 @@
--- 148_orders_monthly_partitioning.sql
+-- 184_orders_monthly_partitioning.sql
+--
+-- RENUMBERED 148 -> 184 on 2026-09-09. Production had already used
+-- 148 for a different migration (see migrations/applied/), so the number
+-- is burned and this unapplied file had to move rather than the applied one.
+-- The measurement that established it is in migrations/pending/APPLY-ORDER.md.
 --
 -- Convert public.orders to a table partitioned BY RANGE (created_at), one
 -- partition per UTC calendar month, with partitions always provisioned twelve

@@ -1,4 +1,9 @@
--- 149: soft delete on the four user-facing tables that still lack it.
+-- 185: soft delete on the four user-facing tables that still lack it.
+--
+-- RENUMBERED 149 -> 185 on 2026-09-09. Production had already used
+-- 149 for a different migration (see migrations/applied/), so the number
+-- is burned and this unapplied file had to move rather than the applied one.
+-- The measurement that established it is in migrations/pending/APPLY-ORDER.md.
 --
 -- MEASURED on production 2026-09-04 (pg_policies + information_schema):
 --

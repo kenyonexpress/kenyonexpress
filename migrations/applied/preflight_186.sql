@@ -1,4 +1,6 @@
--- preflight_170.sql -- run each block through MCP execute_sql BEFORE 170.
+-- preflight_186.sql -- run each block through MCP execute_sql BEFORE 186.
+-- (Renumbered from preflight_170 on 2026-09-09 with its migration; 170 is
+-- burned by 170_reporting_tables, applied to production on 2026-09-04.)
 
 -- (1) None of the ten index names exists yet.
 --     EXPECT: zero rows (any row means a name collision, stop).
