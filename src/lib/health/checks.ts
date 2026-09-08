@@ -211,18 +211,41 @@ function checkCardcom(env: NodeJS.ProcessEnv): DependencyReport {
   }
 }
 
-/** Email delivery. Without it the outbox drains into nothing. */
+/**
+ * Email delivery. Without it the outbox drains into nothing.
+ *
+ * Configuration-only. A key that is PRESENT is not a key that WORKS - the one
+ * in .env.local answers `API key is invalid`, recorded in STATE.md - so the
+ * detail states what was checked.
+ */
 function checkEmail(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(env.RESEND_API_KEY)
   return {
     name: 'email',
     status: configured ? 'ok' : 'not_configured',
     latencyMs: null,
-    detail: configured ? 'Resend מוגדר' : 'אין מפתח Resend; אף מייל לא יישלח',
+    detail: configured ? 'מפתח Resend קיים; לא אומת' : 'אין מפתח Resend; אף מייל לא יישלח',
   }
 }
 
-/** Object storage for the image pipeline and the invoice PDFs. */
+/**
+ * Object storage for the image pipeline and the invoice PDFs.
+ *
+ * CONFIGURATION-ONLY, and unlike Cardcom this one has a measured reason to say
+ * so loudly. On 2026-09-08 the Cloudflare ACCOUNT API - authenticated as the
+ * account owner, with no R2 keys involved at all - answered
+ * `403 {"code":10042,"message":"Please enable R2 through the Cloudflare
+ * Dashboard."}` to a plain bucket list. R2 has never been switched on for this
+ * account.
+ *
+ * So the two states this check cannot tell apart are not hypothetical here:
+ * the day somebody pastes the four variables in, this returns `ok` while every
+ * single upload 403s. That is why the detail says what was actually verified
+ * rather than naming the vendor.
+ *
+ * Not probed for the same reason Cardcom is not: a HeadBucket on every call to
+ * an UNAUTHENTICATED readiness route is an outbound request anyone can trigger.
+ */
 function checkStorage(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(
     env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET,
@@ -231,11 +254,15 @@ function checkStorage(env: NodeJS.ProcessEnv): DependencyReport {
     name: 'storage',
     status: configured ? 'ok' : 'not_configured',
     latencyMs: null,
-    detail: configured ? 'Cloudflare R2' : 'R2 לא מוגדר; נופלים ל-Supabase Storage',
+    detail: configured ? 'R2 מוגדר; נגישות לא נבדקה' : 'R2 לא מוגדר; נופלים ל-Supabase Storage',
   }
 }
 
-/** The cron secret. Without it every scheduled job answers 401 and nothing runs. */
+/**
+ * The cron secret. Without it every scheduled job answers 401 and nothing runs.
+ *
+ * Configuration-only: this compares nothing against what the scheduler sends.
+ */
 function checkScheduler(env: NodeJS.ProcessEnv): DependencyReport {
   const configured = Boolean(env.CRON_SECRET)
   return {

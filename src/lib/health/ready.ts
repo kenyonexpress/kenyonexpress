@@ -6,6 +6,22 @@ import { type DependencyStatus, type HealthReport, runHealthChecks } from '@/lib
  * `/api/health` is liveness plus one database probe. This is the deeper check:
  * Postgres, the rate limiter (Postgres RPC, and Upstash when it is configured),
  * Meilisearch, R2, and Cardcom configuration. It never returns a detail string,
+ *
+ * WHICH OF THE FIVE ARE ACTUALLY CONTACTED, because the word "ready" implies
+ * more than this route can deliver and the difference matters:
+ *
+ *   database     PROBED   select on `categories`
+ *   redis        PROBED   Postgres RPC, plus an Upstash PING when configured
+ *   meilisearch  PROBED   GET /health
+ *   r2           config   four environment variables, nothing contacted
+ *   cardcom      config   terminal + API name present, nothing contacted
+ *
+ * The last two are deliberate and `checks.ts` argues each one where it lives:
+ * Cardcom has no side-effect-free endpoint, and probing R2 from an
+ * UNAUTHENTICATED route would hand anyone an outbound request. But a green
+ * `r2` means "four variables are set", not "storage works" - measured
+ * 2026-09-08, R2 is not even enabled on this Cloudflare account.
+ *
  * a terminal number, or an upstream error: the route is unauthenticated, so
  * everything it says is public.
  *
