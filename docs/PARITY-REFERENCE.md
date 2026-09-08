@@ -106,14 +106,56 @@ Nothing here is free, and the choice is a real one rather than a formality.
    was, and `scripts/capture-live-singlefile.mjs` is the tool that made it -- pointed at
    `kenyonexpress.co.il`, which no longer serves that site. The tool cannot regenerate its
    own input.
-2. **A third-party archive.** The Wayback Machine holds captures of the WooCommerce site.
-   A snapshot serves its own rewritten assets, so it renders. It would have to be pinned by
-   timestamp, and it is someone else's uptime.
+2. **A third-party archive. Investigated on 2026-09-09, and it does not work. Do not
+   re-run this.** The Wayback Machine does hold the WooCommerce site, and on paper it is
+   the obvious answer: a snapshot serves its own rewritten assets, so unlike our local
+   captures it renders. What it cannot serve is the images.
+
+   The last capture of the home page before the cutover is `20260612042909`. Rendered at
+   1440 through the no-banner modifier:
+
+   ```
+   http://web.archive.org/web/20260612042909if_/https://kenyonexpress.co.il/
+   ```
+
+   | measurement | value |
+   |---|---|
+   | title | קניון אקספרס |
+   | document height | **5492px** |
+   | wp-content stylesheets and scripts | 16, so the identity guard accepts it |
+   | Wayback toolbar with `if_` | absent |
+   | images | 54 |
+   | broken **and rendered** | **31** |
+   | failed subresource requests | 132 |
+   | time to `domcontentloaded` | 110s, and 150s+ on a later run |
+
+   The height is the encouraging part and it is not a coincidence: 5492px is exactly what
+   the live home page measured on 2026-08-19, in the run recorded in `compare.mjs`'s own
+   comments. It is the right page.
+
+   The images are the disqualifying part, and the cause is specific. **The archived HTML
+   contains zero `<img>` tags** (3 mentions of `uploads` in the whole file): the home page
+   builds its images at runtime, and the site's optimizer then rewrites each `src` to an
+   `.avif` variant that the crawler never requested and therefore never stored. Blocking
+   `*.avif` does not recover them, measured: the plugin assigns `img.src` directly rather
+   than offering a `<picture>` fallback, so 30 of the 31 stay broken.
+
+   The originals are in the archive under their own extensions (`m2.avif` is absent,
+   `m2.jpeg` is there from `20250703001730`), so a mirror could in principle guess an
+   extension per image. That is 31 guesses against an archive that takes over two minutes
+   per page load, and what it produces is an image set assembled by guesswork rather than
+   the page as it was. It is not a reference.
 3. **Change what the gate means.** Freeze our current build as the baseline and gate future
    changes against drift from it. This is a regression gate, not a fidelity gate: it can
    never again answer *"does this look like the site we are replacing"*, and the 11%
    ceiling stops meaning what it has meant in every row of `docs/UI-PARITY-REPORT.md` so
    far. It is the only option that does not depend on recovering something.
 
-Until one of those is done, **a step whose exit criterion is "compare.mjs < 11%" cannot be
-satisfied**, and the honest record of an attempt is a `REFUSED` row rather than a number.
+With route 1 impossible (the tool cannot regenerate its own input) and route 2 measured and
+rejected, **route 3 is the only one left**, and it is not a technical decision. It changes
+what the mandated gate in `CLAUDE.md` measures, from *"does this look like the site we are
+replacing"* to *"has this changed since we froze it"*. That is the project owner's call, not
+a refactor, and it is why this document stops here rather than implementing it.
+
+Until it is made, **a step whose exit criterion is "compare.mjs < 11%" cannot be satisfied**,
+and the honest record of an attempt is a `REFUSED` row rather than a number.
