@@ -253,6 +253,8 @@ export class CardcomProvider implements PaymentProvider {
     // Legacy credit/refund. ApiPassword is mandatory for money-moving-back calls.
     // TODO(cardcom): confirm the exact legacy refund endpoint + field names against
     // the live terminal before go-live; kept legacy to match the rest of this client.
+    // Tracked in #41 -- blocked on production Cardcom keys, which no environment
+    // this repo can reach currently holds.
     //
     // CancelOnly is sent as a field rather than a different endpoint. Cardcom's
     // v11 doc models it that way (`RefundByTransactionId` + `CancelOnly: true`)
@@ -316,6 +318,7 @@ export class CardcomProvider implements PaymentProvider {
    *
    * TODO(cardcom): confirm endpoint + field names against the live terminal
    * before go-live, exactly as the refund path above still says.
+   * Tracked in #42, the document half of the same blocker as #41.
    *
    * WHY A WRONG GUESS HERE IS NOT A SILENT WRONG DOCUMENT. A response is only
    * treated as success when `ResponseCode` is 0 AND a document number comes

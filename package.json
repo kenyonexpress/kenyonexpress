@@ -15,6 +15,7 @@
     "typecheck:changed": "node scripts/typecheck-changed.mjs",
     "gate:hardcoded": "node scripts/hardcoded-gate.mjs",
     "audit:hardcoded": "node scripts/audit-hardcoded.mjs",
+    "audit:final": "node scripts/final-audit.mjs",
     "ci:diff-gates": "pnpm lint:changed && pnpm typecheck:changed && pnpm gate:hardcoded",
     "format": "biome format --write .",
     "check": "biome check --write .",

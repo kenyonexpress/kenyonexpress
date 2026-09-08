@@ -26,6 +26,7 @@ run() {
 run "type-check" pnpm type-check
 run "lint" pnpm biome check src scripts
 run "vitest" pnpm test
+run "final-audit" node scripts/final-audit.mjs
 run "build" pnpm build
 run "audit" bash -c "pnpm audit --prod --audit-level high || true"  # report-only:
 # the fix for a transitive advisory is a dependency PR, not a red nightly that
