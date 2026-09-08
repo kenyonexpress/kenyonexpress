@@ -183,6 +183,23 @@ row, prints `-> MEASURED /cart, NOT /checkout` inline, and lists every bounced
 route at the end. The sweep could not previously tell anyone which page it had
 measured.
 
+## 4b. Per-route cache policy
+
+STEP 14 asks for one and there was none. Written 2026-09-08 as
+`docs/CACHE-POLICY.md`, from measurement rather than from the route files -
+because **no route declares its own caching at all**: zero `page.tsx` set
+`dynamic` or `revalidate`, and zero use `'use cache'` in code. Caching is a
+property of the ten data modules a route awaits.
+
+The headline numbers: one lifetime and one tag across the whole product surface
+(19 x `cacheLife('hours')`, 19 x `cacheTag(CATALOGUE_TAG)`), with
+`CopyrightYear` at `'days'` as the single exception. Four admin modules
+invalidate. Stock and the cart are deliberately uncached, so a stale catalogue
+page cannot oversell.
+
+`src/lib/cache-policy.test.ts` recomputes those figures on comment-stripped
+source and fails if the document drifts.
+
 ## 5. Caveats, so these numbers are not quoted as production truth
 
 - **LCP and TTFB are localhost figures.** Lighthouse's LCP under Lantern is a
