@@ -613,6 +613,12 @@ effect, not by trusting this list. The version string is from
 | `166_voucher_transition_guard.sql` | `20260903232445` | `voucher_transition_guard_166` | `tg_vouchers_status_guard` trigger + `fn_vouchers_status_guard` body match the file (compared 2026-09-04) |
 | `167_order_items_money_constraints.sql` | `20260903232455` | `order_items_money_constraints_167` | all 8 `order_items_*_nonneg` constraints + `order_items_money_conservation` exist, expressions match |
 | `168_wallet_ledger_client_readonly.sql` | `20260903232504` | `wallet_ledger_client_readonly_168` | the six write policies are gone; only the two SELECT policies remain, RLS enabled on both tables |
+| `172_hide_master_product_test_row.sql` | none — DML, not DDL | applied 2026-09-08 via MCP `execute_sql` | `products` row `9bb347f8-…c895` reads `stock_quantity = 0`; it read `10` immediately before |
+
+**`172_hide_master_product_test_row.sql` has no version string on purpose.**
+It is a one-row `UPDATE`, not DDL, so it went through MCP `execute_sql` rather
+than `apply_migration` and never touched `supabase_migrations`. Its evidence is
+the row itself, which is what the Verify block in the file selects.
 
 **`124_categories_sort_order.sql` is a different case.** `categories.sort_order`
 exists in production, so the migration must not be run again, but there is **no
