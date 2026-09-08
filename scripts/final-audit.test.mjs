@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   PLATFORM_ENV,
+  SUBJECT_MAX,
+  classifyCommitSubject,
   commentLineNumbers,
   parseEnvExample,
   scanAnyTypes,
@@ -154,5 +156,84 @@ describe('PLATFORM_ENV', () => {
     expect(PLATFORM_ENV.has('NODE_ENV')).toBe(true)
     expect(PLATFORM_ENV.has('VERCEL_ENV')).toBe(true)
     expect(PLATFORM_ENV.has('CRON_SECRET')).toBe(false)
+  })
+})
+
+/**
+ * Every subject below is a real one from this repo's history, chosen because it
+ * sits on a boundary the gate has to get right.
+ */
+describe('classifyCommitSubject', () => {
+  it('accepts a conventional subject with a scope', () => {
+    const v = classifyCommitSubject(
+      'feat(audit): FINAL-AUDIT gate, 43 undocumented env vars closed',
+    )
+    expect(v.ok).toBe(true)
+    expect(v.type).toBe('feat')
+  })
+
+  it('exempts the subject the GitHub merge button writes', () => {
+    // 3fbf461c5. Nobody typed this and nobody can change it, so grading it would
+    // only produce a permanently red gate.
+    const v = classifyCommitSubject(
+      'Merge pull request #43 from kenyonexpress/docs/nightly-health-green',
+    )
+    expect(v.kind).toBe('generated')
+    expect(v.ok).toBe(true)
+  })
+
+  it('exempts the subject git revert writes', () => {
+    expect(classifyCommitSubject('Revert "feat(cart): optimistic quantity"').ok).toBe(true)
+  })
+
+  it('names the bot prefix rather than calling the subject unrecognised', () => {
+    // 39 commits look like this. The conventional subject is intact underneath,
+    // so "drop the prefix" is the actionable report and "not type(scope):" is not.
+    const v = classifyCommitSubject(
+      '[autopilot] docs(state): backup strategy done, all my gates green',
+    )
+    expect(v.ok).toBe(false)
+    expect(v.type).toBe('docs')
+    expect(v.reasons).toEqual(['bot prefix [autopilot]'])
+  })
+
+  it('rejects the merge bot subject on both counts', () => {
+    const v = classifyCommitSubject('[auto-merger] merge autopilot (3 commits, 2026-09-08T03:36)')
+    expect(v.reasons).toEqual(['bot prefix [auto-merger]', 'not type(scope): description'])
+  })
+
+  it('rejects a bare sentence with no type at all', () => {
+    expect(classifyCommitSubject('autopilot residual').ok).toBe(false)
+    expect(classifyCommitSubject('update STATE.md').ok).toBe(false)
+  })
+
+  it('reports the ad-hoc types this repo invented, by name', () => {
+    // 57 `merge...:` and 12 `wip...:` are the two biggest. Naming the type in the
+    // reason is what makes the report tell you which convention to fix.
+    expect(
+      classifyCommitSubject('merge(docs): the v1-final documentation branch, 170 files').reasons,
+    ).toEqual(['unknown type "merge"'])
+    expect(classifyCommitSubject('wip(autosave): periodic save 20260902-1957').reasons).toEqual([
+      'unknown type "wip"',
+    ])
+  })
+
+  it('does not fight the house style at 72 characters', () => {
+    // 2539853c5 is 105 chars. p50 here is 70 and p95 is 104: long descriptive
+    // subjects are the convention, not the exception, and a 72 ceiling would fail
+    // a quarter of the history for conforming to it.
+    const subject =
+      'docs(state): nightly-health was red three nights, and the written explanation covered three of four gates'
+    expect(subject.length).toBeGreaterThan(72)
+    expect(subject.length).toBeLessThanOrEqual(SUBJECT_MAX)
+    expect(classifyCommitSubject(subject).ok).toBe(true)
+  })
+
+  it('rejects a paragraph pasted into the subject line', () => {
+    // The longest subject in this history is 946 characters. That is the thing
+    // that actually makes `git log --oneline` unreadable.
+    const v = classifyCommitSubject(`feat(dr): ${'x'.repeat(SUBJECT_MAX)}`)
+    expect(v.ok).toBe(false)
+    expect(v.reasons[0]).toMatch(/over 120/)
   })
 })

@@ -2,9 +2,11 @@
 /**
  * Repo-wide hygiene sweep for SECTIONS 23 (FINAL-AUDIT).
  *
- * Six dimensions, each one measured by `final-audit-lib.mjs` rather than by a
+ * Seven dimensions, each one measured by `final-audit-lib.mjs` rather than by a
  * grep, for the reasons written at the top of that file. Reports counts and,
- * with --verbose, every hit.
+ * with --verbose, every hit. The seventh is the only one that is not about a
+ * file: SECTIONS 23 also asks for a git log that is clean and readable, and that
+ * is graded from GIT_BASELINE forward for the reason written there.
  *
  *   node scripts/final-audit.mjs            human table
  *   node scripts/final-audit.mjs --json     machine readable
@@ -16,10 +18,12 @@
  * logging layer itself are not debt, and the code that follows says so.
  */
 
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import {
   PLATFORM_ENV,
+  classifyCommitSubject,
   parseEnvExample,
   scanAnyTypes,
   scanConsole,
@@ -53,7 +57,25 @@ const BUDGET = {
   undocumentedEnv: 0,
   documentedButUnread: 0,
   missingScriptFiles: 0,
+  malformedSubjects: 0,
 }
+
+/**
+ * Where the commit-subject gate starts counting, and why it is a fixed SHA and
+ * not "the whole history".
+ *
+ * 227 of the 1394 commits behind this point do not conform, and rewriting them
+ * is off the table: `main` is protected, the history is shared with parallel
+ * agents, and 60 of the offenders came from two loops that have been dead since
+ * 2026-09-08. Rebasing 1394 commits to prettify 227 subjects is real risk for
+ * zero behaviour change. Freezing them and refusing the next one is the only
+ * disposition that changes anything.
+ *
+ * `16983ef6c` is the merge of PR #40, which is the same commit docs/FINAL-AUDIT.md
+ * names as its measurement point, so the report and the gate agree on where the
+ * line is. Override with FINAL_AUDIT_GIT_BASE to measure a different range.
+ */
+const GIT_BASELINE = process.env.FINAL_AUDIT_GIT_BASE || '16983ef6c'
 
 function walk(dir, exts, out = []) {
   if (!existsSync(dir)) return out
@@ -179,6 +201,39 @@ function auditScripts() {
   return { missing, total: Object.keys(scripts).length }
 }
 
+/**
+ * Commit subjects added since GIT_BASELINE.
+ *
+ * Degrades to `skipped` rather than to a failure when the baseline is not in the
+ * object store, because a shallow CI checkout is a missing measurement and not a
+ * dirty history, and a gate that cannot tell those apart teaches people to
+ * ignore it. `skipped` carries a reason and is printed either way.
+ */
+function auditGitLog() {
+  const git = (...args) =>
+    execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+
+  try {
+    git('cat-file', '-e', `${GIT_BASELINE}^{commit}`)
+  } catch {
+    return { skipped: `baseline ${GIT_BASELINE} is not in this checkout`, malformed: [], total: 0 }
+  }
+
+  let subjects = []
+  try {
+    subjects = git('log', '--format=%s', `${GIT_BASELINE}..HEAD`).split('\n').filter(Boolean)
+  } catch (err) {
+    return { skipped: `git log failed: ${err.message.trim()}`, malformed: [], total: 0 }
+  }
+
+  const malformed = []
+  for (const subject of subjects) {
+    const verdict = classifyCommitSubject(subject)
+    if (!verdict.ok) malformed.push({ subject, reasons: verdict.reasons })
+  }
+  return { skipped: null, malformed, total: subjects.length }
+}
+
 function main() {
   const argv = process.argv.slice(2)
   const verbose = argv.includes('--verbose')
@@ -187,6 +242,7 @@ function main() {
   const { markers, anyTypes, consoleCalls } = auditCode()
   const env = auditEnv()
   const scripts = auditScripts()
+  const gitLog = auditGitLog()
 
   const untrackedMarkers = markers.filter((m) => !m.tracked)
   const undirectedAnyTypes = anyTypes.filter((h) => !h.accepted)
@@ -203,6 +259,8 @@ function main() {
     indirectEnvNames: env.indirectNames.length,
     packageScripts: scripts.total,
     missingScriptFiles: scripts.missing.length,
+    commitsSinceBaseline: gitLog.total,
+    malformedSubjects: gitLog.malformed.length,
   }
 
   const failures = Object.entries(BUDGET).filter(([key, max]) => counts[key] > max)
@@ -210,7 +268,7 @@ function main() {
   if (asJson) {
     console.log(
       JSON.stringify(
-        { counts, untrackedMarkers, undirectedAnyTypes, consoleCalls, env, scripts },
+        { counts, untrackedMarkers, undirectedAnyTypes, consoleCalls, env, scripts, gitLog },
         null,
         2,
       ),
@@ -228,6 +286,11 @@ function main() {
       'package.json scripts naming a missing file',
       counts.missingScriptFiles,
       counts.packageScripts,
+    ],
+    [
+      `commit subjects since ${GIT_BASELINE}`,
+      counts.malformedSubjects,
+      counts.commitsSinceBaseline,
     ],
   ]
 
@@ -249,6 +312,15 @@ function main() {
     )
     show('documented but unread env', env.documentedButUnread, (h) => h.name)
     show('missing script files', scripts.missing, (h) => `${h.script}  -> ${h.path}`)
+    show(
+      'malformed commit subjects',
+      gitLog.malformed,
+      (h) => `${h.reasons.join('; ')}\n      ${h.subject.slice(0, 100)}`,
+    )
+  }
+
+  if (gitLog.skipped) {
+    console.log(`\n  note  commit subjects not measured: ${gitLog.skipped}`)
   }
 
   if (counts.indirectEnvNames > 0) {

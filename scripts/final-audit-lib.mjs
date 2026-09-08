@@ -262,3 +262,97 @@ export const PLATFORM_ENV = new Set([
   'VERCEL_GIT_COMMIT_SHA',
   'VERCEL_URL',
 ])
+
+/**
+ * The one dimension of SECTIONS 23 that is not about a file: "git log clean and
+ * readable".
+ *
+ * Measured over all 1394 commits reachable from `origin/main` on 2026-09-09,
+ * not assumed. 1167 already conform. What the other 227 are, and why the rules
+ * below are shaped the way they are:
+ *
+ *   `Merge ...`      7 commits. Git and the GitHub merge button write this
+ *                    subject; a developer never types it. It is exempt because
+ *                    failing it would only teach people to pass --no-verify.
+ *   `Revert "..."`   same argument, `git revert` writes it.
+ *   `merge...: `     57 commits, the largest single group and a house habit
+ *                    rather than a bot: `merge(docs): the v1-final branch`. It
+ *                    is a real type name that no conventional-commit tool knows,
+ *                    so it reports as an unknown type; `chore(merge):` says the
+ *                    same thing and groups.
+ *   `[autopilot] `   39 commits, and `[auto-merger] ` another 21. Every
+ *                    `[autopilot]` one is a valid conventional subject with a
+ *                    bracket bolted on the front, so the useful report is "drop
+ *                    the prefix", not "unrecognised". That is why the prefix
+ *                    gets its own reason string. Both loops are dead as of
+ *                    2026-09-08; nothing is still generating these.
+ *   ad-hoc types     `wip`, `architecture`, `sec`, `security`, `state`, `refs`,
+ *                    `db`, `supplier` and nine more, 40 commits between them.
+ *                    Readable, but they defeat every tool that groups by type.
+ *
+ * SUBJECT_MAX is 120 and not the classic 72 because 72 is not this repo's
+ * house style and never has been: the length distribution runs p50=70, p75=79,
+ * p90=91, p95=104. A 72 ceiling would fail a quarter of the history's
+ * deliberately descriptive subjects, which is a gate arguing with a convention
+ * rather than enforcing one. 120 sits above p95 and still catches the 32
+ * subjects that are a paragraph pasted into the subject line -- the longest is
+ * 946 characters, which is the thing that actually makes `git log --oneline`
+ * unreadable.
+ */
+export const COMMIT_TYPES = new Set([
+  'build',
+  'chore',
+  'ci',
+  'docs',
+  'feat',
+  'fix',
+  'perf',
+  'refactor',
+  'revert',
+  'style',
+  'test',
+])
+
+export const SUBJECT_MAX = 120
+
+const GENERATED_SUBJECT = /^(Merge |Revert ")/
+const CONVENTIONAL = /^([a-z]+)(\(([^)]+)\))?(!)?: (.+)$/
+
+/**
+ * @param {string} subject  a commit subject line, without the trailing newline
+ * @returns {{kind: 'generated'|'conventional'|'malformed', ok: boolean, type: string|null, reasons: string[]}}
+ */
+export function classifyCommitSubject(subject) {
+  const text = String(subject).trim()
+  if (GENERATED_SUBJECT.test(text)) {
+    return { kind: 'generated', ok: true, type: null, reasons: [] }
+  }
+
+  const reasons = []
+  let body = text
+
+  const prefix = body.match(/^(\[[a-z0-9-]+\]\s*)/)
+  if (prefix) {
+    reasons.push(`bot prefix ${prefix[1].trim()}`)
+    body = body.slice(prefix[1].length)
+  }
+
+  const match = body.match(CONVENTIONAL)
+  if (!match) {
+    reasons.push('not type(scope): description')
+    return { kind: 'malformed', ok: false, type: null, reasons }
+  }
+
+  const [, type, , scope, , description] = match
+  if (!COMMIT_TYPES.has(type)) reasons.push(`unknown type "${type}"`)
+  if (scope !== undefined && scope.trim() === '') reasons.push('empty scope')
+  if (description.trim() === '') reasons.push('empty description')
+  if (text.length > SUBJECT_MAX) reasons.push(`${text.length} chars, over ${SUBJECT_MAX}`)
+
+  return {
+    kind: reasons.length === 0 ? 'conventional' : 'malformed',
+    ok: reasons.length === 0,
+    type,
+    reasons,
+  }
+}
