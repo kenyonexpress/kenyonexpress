@@ -73,6 +73,35 @@ Replay is not in the bundle. Neither is `browserTracingIntegration`. What is
 left is Sentry core, and getting from 255.8 to 180 needs a real investigation
 rather than a flag.
 
+### Addendum, 2026-09-08: the Sentry bundle is currently pure cost
+
+Measured against the deployed site rather than a local build — the 18 client
+chunks `kenyonexpress.vercel.app` actually links from its homepage, 1,079,737
+bytes downloaded and grepped:
+
+```
+sentry              305 markers
+captureException      9
+ingest.sentry.io      0     <- no DSN was baked in at build time
+posthog               0
+phc_                  0
+```
+
+So production **ships the whole Sentry browser SDK and gives it nowhere to
+report.** This is the same measurement from the other side of the wire as the
+Sentry finding in STATE.md: the project's issue stream holds 49 events over 90
+days and every one is from `MacBook-Air.local`.
+
+That reframes section 3 rather than contradicting it. The 130 KB chunk is
+Sentry-dominated and the SDK is not removable by a flag — both still true. What
+is new is that today the bundle pays for it and buys nothing. The fix is not to
+strip the SDK, which would be the wrong lever the moment reporting is switched
+on; it is to set the DSN, which `scripts/deploy-preflight.mjs` now refuses to
+deploy without.
+
+PostHog is absent from the bundle entirely, so there is no browser analytics
+payload to weigh either way.
+
 `scripts/bundle-gate.mjs` currently ratchets at 260 KB against a 255.6 KB
 baseline taken 2026-09-02. Today's build is 255.8 KB - a 0.2 KB rise from the
 CSS added for the 44px hit areas. The ratchet is doing its job; the gap to the

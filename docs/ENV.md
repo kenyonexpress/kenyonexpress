@@ -135,7 +135,7 @@ touches that path and the failure is in the runtime log:
 |---|---|
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | Rate limiting falls back to the Postgres `check_rate_limit`. Both are needed; either alone is treated as absent, so a half-finished configuration degrades rather than failing every request. |
 | `UPSTASH_REDIS_REST_TIMEOUT_MS` | Defaults to 1000. |
-| `SENTRY_DSN` | Error reporting is inert. |
+| `SENTRY_DSN` | Error reporting is inert. Optional here means *locally* optional: tests, CI and `next start` all need to run without a Sentry account. On a **deploy** it is required, and `scripts/deploy-preflight.mjs` refuses the build without it. Measured 2026-09-08: Sentry held 49 events over 90 days and every one came from `MacBook-Air.local` — production had never reported once, and an unmonitored deployment answers every request correctly, so nothing else notices. |
 | `SENTRY_AUTH_TOKEN` | Source-map upload is skipped; the build still succeeds. |
 | `AXIOM_TOKEN` / `AXIOM_DATASET` | The Axiom log leg is inert. |
 | `NEXT_PUBLIC_POSTHOG_KEY` | PostHog receives nothing. Since 2026-09-07 the key is what turns the fan-out in `lib/analytics/commerce-client.ts` on; before that date the variable was read by a module with no callers, so setting it produced no events and no error. `NEXT_PUBLIC_POSTHOG_HOST` defaults to `https://us.i.posthog.com`. Events are sent only after the consent banner is answered `granted`, on the same cookie GA4 and Meta are gated by. |
