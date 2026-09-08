@@ -251,8 +251,65 @@ One honest footnote: planning cost is the same order as execution here
 On these three that is hidden behind `use cache`, so it is recorded rather than
 acted on.
 
-### Still not measured
+### The rest of the top ten, measured 2026-09-08 from `pg_stat_statements`
 
-The remaining seven of the "top ten" queries. The three above were picked
-because Sentry named them; ranking the rest needs `pg_stat_statements` over a
-period with real traffic, and production has none yet.
+The three above were picked because Sentry named them. The ranking itself was
+recorded as unmeasurable "until there is real traffic". `pg_stat_statements` IS
+enabled on this project and already holds a usable history, so it was read.
+
+**Most of the top of the list is Supabase's own infrastructure, not this app** -
+`SELECT name FROM pg_timezone_names` alone is 239 calls at a 489 ms mean, which
+is the dashboard. Filtered to the application (PostgREST wraps every call in a
+`pgrst_source` CTE):
+
+| what | calls | mean | max | total |
+| --- | --- | --- | --- | --- |
+| `products` read | 48,154 | 0.22 ms | 105 ms | 10.8 s |
+| an RPC | 2,911 | 2.86 ms | 267 ms | 8.3 s |
+| an RPC | 3,249 | 2.49 ms | 64 ms | 8.1 s |
+| `products` read | 45,010 | 0.14 ms | 19 ms | 6.1 s |
+| `products` read | 27,404 | 0.22 ms | 22 ms | 6.1 s |
+| `products` read | 11,496 | 0.50 ms | 13 ms | 5.7 s |
+| `coupon_deals` read | 778 | 6.81 ms | 73 ms | 5.3 s |
+| `fn_due_abandoned_carts` | 41 | **116.4 ms** | 210 ms | 4.8 s |
+| `fn_reap_expired_carts` | 8 | 82.5 ms | 131 ms | 0.7 s |
+
+`products` is read about 138,000 times across five shapes, every one of them at
+or under 1.16 ms. That is the storefront's hot path and it is not a problem.
+
+### The one outlier, and why it does NOT get an index
+
+`fn_due_abandoned_carts` is 25x slower per call than anything else, so it was
+worth a plan. The hypothesis was a sequential scan: its predicate is
+`c.profile_id IS NOT NULL`, and every one of the 2,129 carts in production has
+`profile_id` NULL, so it can only ever return zero rows.
+
+**Measured, and the hypothesis is wrong:**
+
+```
+Index Scan using carts_profile_id_idx on carts c
+  Index Cond: (profile_id IS NOT NULL)
+  rows=0  Buffers: shared hit=2  actual time=1.756..1.756
+
+Planning Time:  6.339 ms   (306 buffers)
+Execution Time: 1.921 ms
+```
+
+The existing index already answers it in under 2 ms with three buffers. The
+116 ms in `pg_stat_statements` is the whole PostgREST call - `json_to_record`,
+the LATERAL, SECURITY DEFINER setup and first-call planning - across a sample of
+only 41 invocations whose 210 ms maximum says most of them were cold.
+
+So: **no covering index is justified anywhere in the top ten**, which is the
+outcome the "only if measured" rule exists to produce. Planning cost exceeding
+execution shows up here as it did in section 6's first three plans.
+
+### A correction to how "no traffic" has been described
+
+Earlier passes, including the advisor round in `docs/ADVISORS-LOG.md`, describe
+this database as having "no traffic". PostgREST's per-request `set_config` has
+**458,815 calls**. What is true is narrower and should be said that way: **no
+CUSTOMER traffic** - zero orders, zero carts with a `profile_id`. The request
+volume is builds, prerenders, E2E runs and audits. The conclusion it was used
+for still holds (an index unused under synthetic load is not an index to drop
+before launch), but the phrase was too broad.
