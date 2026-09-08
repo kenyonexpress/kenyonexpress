@@ -32,6 +32,32 @@ run "audit" bash -c "pnpm audit --prod --audit-level high || true"  # report-onl
 # trains everyone to ignore red nightlies. High/critical findings appear in the
 # log above and in Dependabot.
 
+# THE PRODUCT-IMAGE AUDIT: WRITTEN, AND UNTIL NOW RUN BY NOTHING.
+#
+# scripts/audit-product-images.mjs was added after thirty-six product image URLs
+# in production were found still pointing at kenyonexpress.co.il/wp-content/,
+# which answers 403 since the DNS was cut to Vercel. Every one was a broken
+# image on a live product page and nothing noticed, because a dead absolute URL
+# is indistinguishable from a live one to type-check, lint and vitest.
+#
+# It was then referenced by no workflow and no package script. This repo has
+# shipped that exact shape before - see the "THREE GATES THAT EXISTED AND
+# NOTHING RAN" block in .github/workflows/ci.yml.
+#
+# It belongs HERE and not in ci.yml because it reads the real catalogue, and no
+# workflow in this repository carries production Supabase credentials: the
+# CI_SUPABASE_* secrets name a disposable database that `pnpm seed:test` writes
+# to, so auditing it would audit fixtures. So the nightly runs it when a key is
+# present in the environment and says out loud when there is none, rather than
+# printing nothing and leaving a green run to mean "clean".
+if [ -n "${SUPABASE_SECRET_KEY:-}" ] && [ -n "${NEXT_PUBLIC_SUPABASE_URL:-}" ]; then
+  run "product-images" node scripts/audit-product-images.mjs
+else
+  echo "=== product-images ==="
+  echo "--- product-images SKIPPED: no SUPABASE_SECRET_KEY/NEXT_PUBLIC_SUPABASE_URL in the"
+  echo "    environment, so the catalogue could not be read. This is NOT a pass."
+fi
+
 echo
 if [ ${#FAILED[@]} -eq 0 ]; then
   echo "NIGHTLY HEALTH: all green"

@@ -68,3 +68,28 @@ describe('coverage is reported, never assumed', () => {
     )
   })
 })
+
+describe('something actually runs this audit', () => {
+  // It was written after thirty-six production image URLs were found pointing
+  // at a host that 403s, and was then referenced by no workflow and no package
+  // script. This repo has shipped that shape before: the "THREE GATES THAT
+  // EXISTED AND NOTHING RAN" block in .github/workflows/ci.yml.
+  const nightly = readFileSync('scripts/nightly-health.sh', 'utf8')
+
+  it('is invoked by the nightly health loop', () => {
+    expect(nightly).toContain('node scripts/audit-product-images.mjs')
+  })
+
+  it('says out loud when it could not read the catalogue', () => {
+    // A nightly that prints nothing and stays green would mean "clean" to a
+    // reader, which is the failure this whole file exists to prevent.
+    expect(nightly).toContain('This is NOT a pass')
+  })
+
+  it('records why it is not in ci.yml', () => {
+    // No workflow here carries production credentials; CI_SUPABASE_* names a
+    // disposable database that pnpm seed:test writes to, so auditing it in CI
+    // would audit fixtures.
+    expect(nightly).toMatch(/disposable database/)
+  })
+})
