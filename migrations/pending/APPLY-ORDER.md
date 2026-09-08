@@ -1,5 +1,442 @@
 # Apply order
 
+## 2026-09-09: 184 NOT APPLIED, corrected, and given a preflight
+
+184 is the last file in the queue and it stays unapplied. It rebuilds the
+table every order lives in, on a live database, and the project recorded it as
+needing a maintenance window on 09-04. That constraint is the decision; this
+section is what was done instead.
+
+**Reading production first found it stale in two ways, and both would have
+destroyed something silently.** Step 3.2 drops the original `orders` table, so
+anything attached to it that the file does not name is gone with no error at
+any point -- not a failed migration, just a database that quietly stopped
+doing something.
+
+    triggers on public.orders   file recreated 3, production carries 6
+    inbound foreign keys        file named 16, production has 17
+
+The three unnamed triggers were `audit_orders` (169), `trg_orders_notify_shipped`
+(183) and `tg_orders_whatsapp_status` (173). Two of those landed on 09-09, but
+**`audit_orders` came from 169 on 09-04, so the file had been wrong for five
+days**: applying it in a window would have removed the audit trail from the
+orders table and nothing would have reported it. The seventeenth foreign key
+is `cashback_ledger` from 177.
+
+**All four gaps are closed in the file.** The two UPDATE-only triggers sit
+with their siblings in 3.6. `audit_orders` is deliberately NOT there and is
+recreated after the copy as 3.7b: it fires on INSERT, so creating it before
+the backfill would have written one fabricated `created` audit row per
+pre-existing order and turned a structural conversion into invented history.
+The `cashback_ledger` tuple was added to the referencing-table array, and all
+seventeen were then compared against production name by name, column by
+column, and action by action -- they match exactly. The three added CREATE
+TRIGGER statements were parsed and bound against a scratch clone of `orders`
+in a transaction that was rolled back.
+
+**`preflight_184.sql` is the durable half.** Patching the file fixes today;
+`orders` is the most-attached-to table in the schema, and every migration
+landing between now and the window can make it stale again in exactly the same
+silent way. Blocks (1) and (2) of the preflight compare production's trigger
+list and inbound-FK list against what the file names, so drift refuses loudly
+instead of deleting something. Blocks (3) to (7) cover the invoice-number
+uniqueness that moves to the registry, duplicate invoice numbers that would
+fail the backfill halfway, rows dated outside the provisioned partition range,
+the row count to check the copy against, and pg_cron for the partition job.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 184 (this file, maintenance window).
+
+
+
+## 2026-09-09: 185 APPLIED, and the restore it documented does not exist
+
+`soft_delete_user_facing_remainder_185` plus
+`soft_delete_185_correct_wishlists_comment`. `deleted_at` + the house partial
+index on `categories`, `product_images`, `reviews`, `wishlists`, and the
+client-facing SELECT policies rewritten so a soft-deleted row is invisible to
+shoppers while admin keeps seeing it.
+
+**This file REWRITES existing policies from texts it quotes, which is exactly
+how 183 nearly went wrong, so all six were read off production first.** All
+six matched the quoted "pre-149" texts verbatim, roles included -- the
+2026-09-04 measurement was still current on 09-09. That is the good outcome of
+the check, not a reason to have skipped it.
+
+Prerequisites verified rather than assumed: `products.deleted_at` exists (the
+new `product_images` policy depends on it), the four target tables had no
+`deleted_at`, `reviews.status` is text, `categories` has `is_active` and
+`created_by`, and the `user_role` / `product_status` enums carry the labels
+the policies name.
+
+**Blast radius measured before applying: zero.** No soft-deleted products, so
+no image changed visibility; no inactive categories; `reviews` and `wishlists`
+are empty. Proven against real data, rolled back:
+
+    categories visible to anon        12 -> 11 after soft-deleting one
+    images of a soft-deleted product   1 -> 0  (the hole the header describes
+                                       closing: status alone did not hide them)
+    the soft-deleted category          still present for the service role,
+                                       so admin can restore it
+
+**THE FINDING: the wishlist restore the file documented cannot happen.** The
+file said UPDATE is left unfiltered "so an un-delete stays possible". Postgres
+applies SELECT policies to the rows an `UPDATE ... WHERE` reads, so the
+filtered SELECT policy hides the row before the unfiltered UPDATE policy is
+consulted. Measured as the owner with the correct `auth.uid()`, rolled back:
+
+    restore UPDATE, policies exactly as 185 applies them      0 rows
+    same UPDATE, SELECT policy swapped for an unfiltered one  1 row
+
+Nothing else differed between the two runs. It is worse than a dead restore:
+the PK is `(user_id, product_id)`, so a soft-deleted row also blocks re-adding
+the same product.
+
+**Recorded, not redesigned -- but the reason first given for that was
+wrong.** This section originally said nothing writes `wishlists` and the
+feature did not exist. It does exist and ships today: `toggleWishlist` and
+`getWishlistSaved` in `src/server/actions/reviews.ts`, `getMyWishlist` in
+`src/server/queries/wishlist.ts`, `/account/wishlist`, `WishlistButton`, a
+header entry and a rate-limit policy. The grep behind the original claim
+searched for `from('wishlists')` and the code writes `from('wishlists' as
+never)`, so it matched nothing and the absence was read as proof.
+
+What is actually true is narrower and is the thing worth guarding: **no `src/`
+file sets `deleted_at` on `wishlists`** -- the toggle removes with a hard
+DELETE -- so no row can reach the state 185 cannot get it out of, and
+production holds none. That is why the dead restore is not a live customer
+bug today. Choosing the restore path is a product decision (a service-role
+un-delete, or an owner SELECT branch that can see its own deleted rows and a
+list that then filters them), and nothing needs one while nothing sets the
+column. The comment now states the measured truth in the file and on the
+column itself, and `src/__tests__/wishlist-soft-delete-restore.test.ts` guards
+the reachability by reading `src/` rather than asserting it in prose.
+
+**The other half of this change is in the application.** The service role
+bypasses RLS, so `src/lib/soft-delete.ts` carries the predicate for
+service-role call sites. The four names moved from `SOFT_DELETE_PENDING_TABLES`
+into `SOFT_DELETE_LIVE_TABLES`, which turns the filter on at every call site
+in one edit. `src/types/database.ts` was regenerated to make that safe, and
+its hand-written alias tail was re-appended afterwards -- the file's own
+comment warns that a regeneration drops it, which is what happened in
+d7906bcec and happened again here before type-check caught it.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 184.
+
+
+
+## 2026-09-09: 173 APPLIED, after two guards it claimed to have were added
+
+`whatsapp_flow_173` plus `whatsapp_flow_173_revoke_client_execute`. Five new
+tables (`whatsapp_contacts`, `whatsapp_outbox`, `whatsapp_inbound_messages`,
+`support_tickets`, `support_ticket_messages`), three functions, one trigger on
+`orders`. Every column the trigger reads was verified present first
+(`orders.address_id`, `user_addresses.phone/full_name`, `profiles.phone/
+full_name`), all four statuses it switches on are real enum members, and
+`fn_il_phone_digits` was checked against `normalizeIsraeliPhone` on ten inputs
+including `+972`, `9720…`, `03-…` and junk: identical on all ten.
+
+**The header made two claims the file did not honour, and both were fixed
+before it landed.**
+
+1. **The order trigger had no EXCEPTION guard.** It fires on four transitions
+   and one of them is `paid`, which finalize sets AFTER Cardcom has charged
+   the card. An AFTER trigger that raises takes the UPDATE with it. Proven on
+   two orders that both started `paid`, enqueue forced to fail, rolled back:
+
+       with the guard (as applied)       UPDATE SUCCEEDED, order -> fulfilled
+       without it (as the file shipped)  UPDATE FAILED, order stayed paid
+
+   So the file as written would have rolled back a paid order because a
+   WhatsApp message could not be queued. Both live siblings on this table end
+   with the guard (`tg_orders_notify_paid` 102, `tg_orders_notify_shipped`
+   183), and finalize.ts makes the same judgement in TypeScript.
+
+2. **`fn_enqueue_whatsapp` was executable by `anon`.** A new function is
+   EXECUTE-able by PUBLIC by default and 173 carried no REVOKE, so it was
+   reachable at `/rest/v1/rpc/fn_enqueue_whatsapp` by anyone. It is SECURITY
+   DEFINER, so it inserts past RLS. Proven, rolled back: `SET ROLE anon`, one
+   call, and a `whatsapp_outbox` row appeared for an opted-in customer's phone
+   with an attacker-chosen kind and payload -- a message the drain would then
+   have sent over WhatsApp from the store to a real customer. The consent gate
+   is no defence: it checks that the DESTINATION opted in, not who asked for
+   the send. 095's `fn_enqueue_notification` already had exactly the grants
+   this file was missing (postgres + service_role, anon false, authenticated
+   false), which is the shape the header claimed to copy.
+
+   After the REVOKEs: anon and authenticated both get "permission denied" and
+   plant zero rows, while the trigger path still enqueues normally, because
+   Postgres does not check EXECUTE on trigger dispatch. Verified both ways.
+
+The rest, proven against production and rolled back with zero residue (all
+five tables 0 rows before and after, orders still cancelled=2 paid=2, the test
+profile's phone back to NULL):
+
+    no consent row        0 queued
+    status 'pending'      0 queued   (seen is not consent)
+    status 'opted_out'    0 queued
+    status 'opted_in'     1 queued
+    same dedupe twice     still 1
+    paid -> fulfilled     1 row, kind order_fulfilled,
+                          dedupe wa:order_fulfilled:<uuid>, payload carrying
+                          order_ref, total_agorot 81700 and the Hebrew name
+
+Both fixes are pinned in `src/__tests__/whatsapp-migration-guards.test.ts`,
+because each is a single line whose absence is invisible in review.
+
+**Recorded, not fixed:** `fn_il_phone_digits` keeps a mutable `search_path`
+(new advisor WARN). It is IMMUTABLE, pure, references no object, and is now
+unreachable by any client role.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 184, 185.
+
+
+
+## 2026-09-09: 177 / 178 / 179 APPLIED, as one batch of new tables
+
+`cashback_ledger_177`, `webauthn_credentials_178`, `push_subscriptions_179`.
+Three files that only ever CREATE: `cashback_ledger` (+ two functions and the
+append-only guard), `webauthn_credentials`, `push_subscriptions`. None of the
+three touched an object that already existed, which is why they could go in
+one batch.
+
+**What was measured first, because 183 is the reason to measure.** All three
+restate `set_updated_at` with `CREATE OR REPLACE`, so the live body was read
+with `pg_get_functiondef` before anything ran: byte-identical to the
+replacement, so the replace was a no-op rather than a silent global change to
+every table that uses the trigger. The rest of 177's assumptions were read off
+production too, and two of them were wrong in the file's favour only by luck:
+`wallet_accounts` has **no** `owner_type` column, so both of 177's branches
+take the ELSE path, and its `ON CONFLICT (user_id)` / `ON CONFLICT (code)`
+targets are real unique constraints. `wallet_entries.reason` carries **no**
+CHECK constraint, so `cashback_bonus` and `cashback_adjustment` are accepted
+(a reason list would have 23514'd every bonus, 183's failure one table over).
+`orders.total_ils_agorot` turned out to be a GENERATED column derived from
+`total_ils`; 177 only reads it, so the generation-agnostic COALESCE is right.
+
+Proven against production in transactions that were then rolled back, zero
+residue (`cashback_ledger` 0 rows before and after, orders still 4 / paid 2,
+`wallet_entries` still 2, reserve balance back to -1.80):
+
+    rank 1, basis 81700 agorot     awarded 8170 = exactly 10%, bp 1000,
+                                   first_purchase_bonus, plus the order_item
+                                   mirror row -> 2 ledger rows
+    the wallet movement            reason cashback_bonus, amount_ils 81.70,
+                                   user 1.80 -> 83.50, reserve -1.80 -> -83.50
+    169's audit trigger            2 audit_log rows, one per insert
+    replay of the same order       returns 0, no second row, no second movement
+    rank 5 (four clones, rolled    awarded 4085 = exactly 5%, bp 500,
+    back)                          fifth_purchase_bonus
+    UPDATE / DELETE on a row       both refused: "cashback_ledger is
+                                   append-only"
+    fn_cashback_admin_adjust       refused with "admin only" for a caller
+    without an admin JWT           that is not an admin
+
+Applying 177 cannot break checkout: `awardOrderCountBonus` catches every error
+and logs it, because the card is already charged by the time finalize reaches
+that line. The two passkey/push tables were checked column by column against
+the code that had been dark while they were missing (`passkeys.ts` inserts
+id, user_id, public_key, counter, transports, device_type, backed_up, aaguid,
+friendly_name; `push.ts` upserts endpoint, user_id, p256dh, auth, user_agent
+`onConflict: 'endpoint'`) and every column and conflict target exists.
+
+**Recorded, not fixed, two of them:**
+
+1. 177 pairs `ON DELETE CASCADE` from `profiles` with a `BEFORE DELETE ...
+   RAISE` append-only guard, and those two contradict each other: a cascade
+   fires the child's row trigger, so the parent delete fails. Measured, not
+   reasoned: a throwaway parent/child model reproduced both halves, cascade
+   **and** the `ON DELETE SET NULL` on `order_id` / `wallet_entry_id` /
+   `created_by`, which fires the guard as an UPDATE. It is latent and not a
+   fire because nothing hard-deletes a profile: `fn_anonymize_user` (150)
+   deletes five satellite tables and **updates** `profiles`, and
+   `account.ts` calls `deleteUser(id, true)` -- a soft delete, deliberately,
+   so orders keep resolving. `audit_log` carries the same contradiction
+   already (`actor_id -> auth.users ON DELETE SET NULL` under
+   `tg_audit_log_append_only`), so this is the house pattern and not a new
+   mistake. Tracked as `CASCADE_MEETS_APPEND_ONLY` in
+   `src/__tests__/cashback-ledger-cascade.test.ts`, with an assertion that
+   goes red the day anything starts hard-deleting a profile.
+2. `fn_cashback_ledger_block_mutation` ships with a mutable `search_path`, a
+   new WARN from the Supabase advisor. Its body is a bare `RAISE EXCEPTION`
+   that references no object, so there is nothing to hijack, and
+   `set_updated_at` has carried the identical WARN through every migration to
+   date. Left matching the file rather than silently improved on the way in.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 173, 184, 185.
+
+
+
+## 2026-09-09: 183 APPLIED, after the preflight stopped it breaking 150
+
+`order_shipped_notification_183`. The trigger enqueues one `order_shipped` mail
+on the transition INTO `fulfilled`, best-effort, EXCEPTION-guarded like its 102
+sibling `trg_orders_notify_paid`.
+
+**What the preflight caught.** The file restated
+`notification_outbox_kind_check` in full from a twelve-name list. Production's
+live constraint already held **fourteen**, including `account_deleted` (150).
+Applying it verbatim would have dropped that name and 23514'd every
+account-deletion notification. `account_deleted` was added to the file first;
+the live constraint still carries all fourteen. 155 already guarded against
+exactly this with a `RAISE EXCEPTION` if the check lacks `account_deleted`; 183
+had no such guard, and the measurement stood in for it.
+
+Proven in a rolled-back transaction, zero residue: `paid -> fulfilled` enqueued
+one row with dedupe `order-shipped:<uuid>` and a Hebrew customer name; a second
+UPDATE on the already-fulfilled row enqueued nothing; the bounce-out path is
+refused by the 137 status guard anyway.
+
+**Recorded, not fixed:** the constraint accepts `account_deleted` and nothing
+renders it. Tracked as `CHECK_ACCEPTS_BUT_RENDERS_NOTHING` in
+`src/lib/email/outbox-kinds.test.ts`.
+
+**What is still pending after this:** 162 (approved, blocked on vault seeding),
+173, 177, 178, 179, 184, 185.
+
+
+## 2026-09-09: 181 APPLIED, as 181a + 181b
+
+The only security file left in the queue, and establishing that it was
+unapplied took reading a comment rather than a name: `is_support()` and
+`enforce_profile_privilege_columns()` both already exist in production from the
+053/090 lineage. The deployed guard body was
+`IF public.is_admin() THEN RETURN NEW; END IF;` with nothing between, so any
+admin could grant themselves `super_admin` through the user client.
+
+Split the way production already recorded 135, because an enum member is
+permanent and cannot be dropped:
+
+| Order | File | Applied as |
+| --- | --- | --- |
+| 1 | `181a_read_only_enum.sql` | `read_only_enum_181a` |
+| 2 | `181b_admin_rbac_hardening.sql` | `admin_rbac_hardening_181b` |
+
+181a must commit before 181b: a value added by `ALTER TYPE ... ADD VALUE`
+cannot be referenced by the transaction that adds it. 181a alone is inert.
+
+Proven in a rolled-back transaction, acting as the real super_admin at aal1:
+self role change refused, admin grant from aal1 refused for want of MFA, and
+the service-role path still succeeded and assigned `read_only`. `profiles`
+read 9 customer + 1 super_admin before and after.
+
+**Operator note.** The single super_admin has no verified MFA factor, so until
+it enrols TOTP it cannot update its own `profiles` row through the user client.
+No deadlock: enrolment writes to `auth.mfa_factors`, never `profiles`, and
+`rbac.ts` already redirects that account to `/admin-mfa?mode=enrol` anyway.
+
+**What is still pending after this:** 162 (approved, blocked on vault seeding),
+173, 177, 178, 179, 183, 184, 185.
+
+
+## 2026-09-09: the numbering tangle, then 186 and 187 APPLIED
+
+**Two 170s and two 171s were sitting in `pending/` at once**, written by
+sessions that could not see each other, and one of each pair had been applied
+to production on 2026-09-04. "Apply 170" therefore named two different files.
+Rather than guess, every pending migration was probed against production for
+the objects it creates.
+
+Five turned out to be already applied and moved to `migrations/applied/`:
+`169_audit_full_coverage` (`audit_full_coverage_169`, `20260904001341`),
+`170_reporting_tables` (`reporting_tables_170`, `20260904003703`),
+`171_search_fts` (`search_fts_171`, `20260904005239`),
+`172_rls_zero_policy_tables` (`rls_zero_policy_tables_172`, `20260904010757`,
+plus `_report_grants` `20260904010826`) and
+`182_coupon_qr_batches` (`coupon_qr_batches_182`, `20260907163213`).
+
+**181 is the one that had to be read carefully.** Both functions
+`181_admin_rbac_hardening` touches already exist in production from the 053/090
+lineage, so a probe on the name alone would have called a live security
+hardening "applied" and dropped it out of the queue. What settles it is the
+comment production reports on `enforce_profile_privilege_columns`, which is
+still the pre-181 text, and the RESTRICTIVE `profiles_super_admin_mfa` policy,
+which is absent. 181 stays pending.
+
+**The four squatters were renumbered, because a number production has spent
+cannot be reclaimed.** 148 → 184, 149 → 185, 170 → 186, 171 → 187, with
+`preflight_170` following its migration to `preflight_186`. Each file carries
+the rename and the reason in its own header.
+
+**`186_composite_indexes_top_queries.sql` APPLIED** as
+`composite_indexes_top_queries_186`. `preflight_186.sql` ran first and all four
+blocks passed: none of the ten index names existed, all fourteen columns were
+present with the expected types, `product_status` carried `active`, and no
+existing index already covered a pattern (the near-duplicates are prefix-only
+singles without the composite key plus sort column). Expand-only —
+`CREATE INDEX IF NOT EXISTS` and nothing else. All ten were read back after and
+every `indexdef` matches the file.
+
+**`187_category_name_shekel_order.sql` APPLIED** as
+`category_name_shekel_order_187`. One row, one text column, matched on the
+exact broken string. `categories.name_he` for `under-99` went
+`1506,1491,32,8362,57,57` → `1506,1491,32,8294,57,57,160,8362,8297`, which is
+`עד ` + U+2066 LRI + `99` + NBSP + `₪` + U+2069 PDI — exactly what `isolate()`
+in `src/lib/money-format.ts` emits for every other price on the site. Zero rows
+still match the broken shape. `repairPriceOrder` stays at the render edge: it
+rewrites only `₪<digits>`, so it now leaves this name alone, and a database
+without 187 (a branch, a local reset, a preview project) still renders it the
+right way round.
+
+**What was still pending after that step:** 162 (approved, blocked on vault
+seeding), 173, 177, 178, 179, 181, 183, 184, 185.
+
+
+## 2026-09-08: 169 / 180 (the four money events) APPLIED
+
+**The funnel was reporting nothing, on a live site.** Read off production
+before touching it: `fn_ingest_analytics_events` carried a whitelist of exactly
+the eight client names, so `begin_checkout`, `purchase`, `voucher_redeemed` and
+`order_refunded` were skipped with a `CONTINUE`, an HTTP 200 and no log. The
+harm was counted rather than assumed: `orders` held 4 rows, 2 of them paid,
+while `analytics_events` held **zero** `purchase` rows. Only `page_view` (12)
+and `web_vital` (16) had ever landed, spanning 02.09 to 06.09.
+
+`169_analytics_server_event_names.sql` and
+`180_analytics_server_event_names.sql` are byte-identical SQL written by two
+sessions that could not see each other. One `CREATE OR REPLACE` applied both,
+and both moved to `migrations/applied/` together with `preflight_169.sql` --
+deleting one would free a number that production has now used.
+
+Verified with a rolled-back `DO` block so no probe rows were left behind: five
+events in, `returned=4`, the four written names were `begin_checkout`,
+`order_refunded`, `purchase`, `voucher_redeemed`, a made-up name was still
+skipped, and `residue = 0` afterwards.
+
+`src/lib/analytics/registry-matches-migration.test.ts` now reads the whitelist
+out of `migrations/applied/` instead of `pending/`, which is exactly what its
+own comment said to do on the day this applied. Green.
+
+## 2026-09-08: 172 (the ₪1 test row) APPLIED — blocker 0 is not what it says
+
+**`172_hide_master_product_test_row.sql` moved to `migrations/applied/`.** It
+was drafted as "awaiting approval" on the reading that our build had never been
+deployed, so a ₪1 template row could not actually be bought by anyone. That
+reading is now false, and it was measured rather than assumed: the custom
+domain serves THIS application (Hebrew title, our CSP carrying the Cardcom
+`frame-src`, `ke_session_id` cookie, `/api/health` → `{"ok":true,
+"database":"ok"}`), the homepage grid renders the row, and
+`/product/restaurants-meat-3` returned 200 with both `pdp-buy__atc` and
+`pdp-buy__now` present. Live values before the write: `status=active`,
+`kenyon_price=1.00`, `full_price=400.00`, `stock_quantity=10`.
+
+A stranger could therefore have completed a real payment for a row with nothing
+behind it. The write is one column of one row, reversible with the rollback in
+the file, so it went in. Full reasoning in `STATE.md` under the decisions taken
+alone.
+
+**Blocker 0 in STATE.md is stale in one direction and still true in another.**
+The application IS deployed and IS serving production traffic. What is still
+true is that the Vercel account reachable from here (`kenyonexpress-projects`,
+hobby) holds one project, `kenyonexpress-web`, linked to the OLD repo
+`kenyonexpress/kenyonexpress-web`, whose 11 deployments are all `ERROR` and
+whose last attempt was 2026-05-29. Production is being served by a Vercel
+account this session cannot see, so nothing here can trigger, inspect or roll
+back a deployment of it.
+
 **Nothing here is applied by an agent.** Each file goes to production through
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
@@ -52,7 +489,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The fourteen that remain, in order
+## The twelve that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -70,12 +507,12 @@ independent and may be applied in any sequence, or not at all.
 | 12 | `140_money_agorot_catalog.sql` | `_agorot` columns on products, variants, coupons | — | `drop column <col>_agorot` |
 | 13 | `141_money_agorot_growth.sql` | `_agorot` columns on affiliates, referrals | — | `drop column <col>_agorot` |
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
-| 15 | `148_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
-| 16 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
-| 17 | `173_whatsapp_flow.sql` | WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
-| 18 | `177_cashback_ledger.sql` | append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
-| 19 | `178_webauthn_credentials.sql` | passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
-| 20 | `179_push_subscriptions.sql` | web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |
+| 15 | `184_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
+| — | `185_soft_delete_user_facing_remainder.sql` | **already applied 2026-09-09** (MCP, `soft_delete_user_facing_remainder_185`): `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
+| — | `173_whatsapp_flow.sql` | **already applied 2026-09-09** (MCP, `whatsapp_flow_173` + `whatsapp_flow_173_revoke_client_execute`): WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
+| — | `177_cashback_ledger.sql` | **already applied 2026-09-09** (MCP, `cashback_ledger_177`): append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
+| — | `178_webauthn_credentials.sql` | **already applied 2026-09-09** (MCP, `webauthn_credentials_178`): passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
+| — | `179_push_subscriptions.sql` | **already applied 2026-09-09** (MCP, `push_subscriptions_179`): web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |
 | — | `169_audit_full_coverage.sql` | **already applied 2026-09-04** (MCP, `audit_full_coverage_169`): audit_log before/after/request_id + triggers on all financial/user tables | — | in file header |
 | — | `170_reporting_tables.sql` | **already applied 2026-09-04** (MCP, `reporting_tables_170`): 4 reporting tables + nightly pg_cron rebuild + 5 admin-only RPCs | — | in file header |
 

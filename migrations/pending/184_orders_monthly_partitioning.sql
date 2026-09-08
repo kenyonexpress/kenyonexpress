@@ -1,17 +1,22 @@
--- 148_orders_monthly_partitioning.sql
+-- 184_orders_monthly_partitioning.sql
+--
+-- RENUMBERED 148 -> 184 on 2026-09-09. Production had already used
+-- 148 for a different migration (see migrations/applied/), so the number
+-- is burned and this unapplied file had to move rather than the applied one.
+-- The measurement that established it is in migrations/pending/APPLY-ORDER.md.
 --
 -- Convert public.orders to a table partitioned BY RANGE (created_at), one
 -- partition per UTC calendar month, with partitions always provisioned twelve
 -- months ahead by pg_cron (installed, 1.6.4).
 --
--- WHY THE FILE IS THIS LONG. Partitioning a table with sixteen inbound foreign
+-- WHY THE FILE IS THIS LONG. Partitioning a table with seventeen inbound foreign
 -- keys is not a one-liner, because a partitioned table can only carry unique
 -- constraints that include the partition key. Two consequences follow, and
 -- both are handled here rather than dropped on the floor:
 --
 --   1. The primary key becomes (id, created_at). Every FK that used to say
 --      REFERENCES orders(id) must become a composite FK on
---      (<fk>, <fk's created_at twin>). Each of the sixteen referencing tables
+--      (<fk>, <fk's created_at twin>). Each of the seventeen referencing tables
 --      gains a timestamptz twin column, auto-filled by a BEFORE trigger, so
 --      **no application write path changes**: inserts that set only order_id
 --      keep working, the trigger fills the twin, and the composite FK keeps
@@ -27,9 +32,15 @@
 --      SQLSTATE 23505; no code in src/ matches on the old constraint name).
 --
 -- WHAT DOES NOT CHANGE. Column list, types, defaults, generated agorot twins,
--- CHECK constraints, the four RLS policies, grants, and the three triggers
--- (set_updated_at, tg_orders_status_guard, trg_orders_notify_paid) are
--- recreated verbatim on the parent. Row triggers and indexes created on a
+-- CHECK constraints, the four RLS policies, grants, and all six triggers
+-- (set_updated_at, tg_orders_status_guard, trg_orders_notify_paid,
+-- trg_orders_notify_shipped, tg_orders_whatsapp_status, audit_orders) are
+-- recreated verbatim on the parent. THAT LIST SAID THREE UNTIL 2026-09-09,
+-- when production was read and found to carry six: `audit_orders` (169,
+-- applied 09-04) plus `trg_orders_notify_shipped` (183) and
+-- `tg_orders_whatsapp_status` (173), both applied 09-09. Since step 3.2
+-- drops the original table, an unnamed trigger is silently gone -- the
+-- orders audit trail among them, with no error at any point. Row triggers and indexes created on a
 -- partitioned parent propagate to every partition automatically, including
 -- future ones. The asc/desc near-duplicate pair on created_at is kept as-is
 -- on purpose: this file is a structural conversion, not an index review.
@@ -317,6 +328,15 @@ BEGIN
 
   -- 3.6 Triggers, before the copy so the INSERTs below backfill the invoice
   -- registry through the same code path production writes will use.
+  --
+  -- EVERY TRIGGER ON THE OLD TABLE MUST BE LISTED HERE OR IT IS SILENTLY
+  -- LOST, because 3.2 drops the original table. This list was three names
+  -- when the file was written and production carries six; the three that
+  -- were missing are recreated below, and `preflight_184.sql` now refuses
+  -- to proceed if production ever holds a trigger this file does not name.
+  -- `audit_orders` is deliberately NOT here: it fires on INSERT, so creating
+  -- it before 3.7 would write one bogus 'created' audit row per existing
+  -- order. It is recreated after the copy instead.
   CREATE TRIGGER set_updated_at
     BEFORE UPDATE ON public.orders
     FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -326,6 +346,15 @@ BEGIN
   CREATE TRIGGER trg_orders_notify_paid
     AFTER UPDATE OF paid_at ON public.orders
     FOR EACH ROW EXECUTE FUNCTION public.tg_orders_notify_paid();
+  -- Added 2026-09-09. Both are UPDATE-only, so neither fires on the backfill
+  -- INSERT in 3.7 and both belong here with their siblings. 183 and 173
+  -- landed after this file was written; see the note above section 3.6.
+  CREATE TRIGGER trg_orders_notify_shipped
+    AFTER UPDATE OF status ON public.orders
+    FOR EACH ROW EXECUTE FUNCTION public.tg_orders_notify_shipped();
+  CREATE TRIGGER tg_orders_whatsapp_status
+    AFTER UPDATE ON public.orders
+    FOR EACH ROW EXECUTE FUNCTION public.tg_orders_whatsapp_status();
   CREATE TRIGGER trg_orders_sync_invoice_number
     AFTER INSERT OR DELETE OR UPDATE OF invoice_number ON public.orders
     FOR EACH ROW EXECUTE FUNCTION public.fn_orders_sync_invoice_number();
@@ -353,6 +382,16 @@ BEGIN
     RAISE EXCEPTION '148: row count mismatch after copy: % before, % after',
       v_count_before, v_count_after;
   END IF;
+
+  -- 3.7b The audit trigger (169), AFTER the copy on purpose. It fires on
+  -- INSERT, so creating it in 3.6 would have written one 'created' audit row
+  -- per pre-existing order and turned a structural conversion into a
+  -- fabricated history. Recreated here so the orders audit trail survives:
+  -- this file predates 169 and never named it, which would have removed
+  -- audit coverage from orders without a single error.
+  CREATE TRIGGER audit_orders
+    AFTER INSERT OR DELETE OR UPDATE ON public.orders
+    FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger_fn();
 
   -- 3.8 RLS, policies and grants, verbatim from the old table.
   ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
@@ -413,6 +452,9 @@ BEGIN
       ('discount_redemptions',  'order_id',                'order_created_at',                'discount_redemptions_order_id_fkey',            'RESTRICT'),
       ('settlement_events',     'order_id',                'order_created_at',                'settlement_events_order_id_fkey',               'RESTRICT'),
       ('wallet_entries',        'order_id',                'order_created_at',                'wallet_entries_order_id_fkey',                  'SET NULL'),
+      -- Added 2026-09-09: 177 created cashback_ledger after this file was
+      -- written, making seventeen inbound FKs where the header said sixteen.
+      ('cashback_ledger',       'order_id',                'order_created_at',                'cashback_ledger_order_id_fkey',                 'SET NULL'),
       ('payment_events',        'order_id',                'order_created_at',                'payment_events_order_id_fkey',                  'SET NULL'),
       ('wallet_transactions',   'related_order_id',        'related_order_created_at',        'wallet_transactions_related_order_id_fkey',     'SET NULL'),
       ('referrals',             'referred_first_order_id', 'referred_first_order_created_at', 'referrals_referred_first_order_id_fkey',        'SET NULL'),

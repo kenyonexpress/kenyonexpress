@@ -47,9 +47,35 @@ const CHECK_ACCEPTS = [
   'reconciliation_gap',
   'refund_completed',
   'welcome',
+  'account_deleted',
+  'order_shipped',
 ] as const
 
-const MEASURED_AT = '2026-08-19'
+/**
+ * Kinds the constraint accepts that `buildNotification` cannot render.
+ *
+ * This list is the disagreement made visible instead of hidden. Leaving
+ * `account_deleted` out of CHECK_ACCEPTS would have kept this file green while
+ * the mirror silently stopped describing production, which is the one failure
+ * mode the header is about.
+ *
+ * `account_deleted` entered the live constraint with 150 and no builder was
+ * ever written for it. Nothing enqueues it either -- the delete path in
+ * src/server/actions/account.ts deliberately sends no goodbye mail -- so no row
+ * can park today. It is a loaded gun on the shelf, not a fire.
+ *
+ * The inverted assertion below is what stops this list from rotting: write
+ * buildAccountDeletedEmail and this file goes red telling you to move the name
+ * up into CHECK_ACCEPTS.
+ */
+const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
+
+// Re-measured 2026-09-09, when 183 restated the constraint. The live list had
+// grown from twelve to fourteen since the 08-19 measurement: `account_deleted`
+// (150) and `order_shipped` (183). 183 as drafted restated only the twelve it
+// knew plus order_shipped, which would have DROPPED account_deleted; the
+// preflight caught it and the file was corrected before it was applied.
+const MEASURED_AT = '2026-09-09'
 
 /** A payload fat enough that every builder's own guards are satisfied. */
 const PAYLOAD: Record<string, unknown> = {
@@ -100,7 +126,22 @@ describe('the outbox kinds three lists have to agree on', () => {
     // A kind the CHECK lets in but no builder can render is a row the drain
     // parks forever: no mail, no error anyone reads.
     for (const kind of CHECK_ACCEPTS) {
+      if (CHECK_ACCEPTS_BUT_RENDERS_NOTHING.includes(kind)) continue
       expect(buildNotification(kind, PAYLOAD, SITE), `no builder for ${kind}`).not.toBeNull()
+    }
+  })
+
+  it('keeps the known-unrenderable list honest in both directions', () => {
+    // Every name on it must be a kind the constraint really accepts, so the
+    // list cannot quietly excuse a typo...
+    for (const kind of CHECK_ACCEPTS_BUT_RENDERS_NOTHING) {
+      expect(CHECK_ACCEPTS as readonly string[], `${kind} is not in the constraint`).toContain(kind)
+      // ...and must really have no builder, so the day somebody writes one this
+      // goes red and asks for the name to be moved up.
+      expect(
+        buildNotification(kind, PAYLOAD, SITE),
+        `${kind} renders now: move it out of CHECK_ACCEPTS_BUT_RENDERS_NOTHING`,
+      ).toBeNull()
     }
   })
 

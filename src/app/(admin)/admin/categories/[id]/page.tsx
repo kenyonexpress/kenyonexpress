@@ -1,5 +1,5 @@
 import CategoryForm from '@/components/admin/CategoryForm'
-import { requireAdminPage } from '@/lib/admin/rbac'
+import { requireSection } from '@/lib/admin/rbac'
 import { excludeDeleted } from '@/lib/soft-delete'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'

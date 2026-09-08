@@ -1,6 +1,11 @@
 'use server'
 
-import { writeAuditLog } from '@/lib/admin/audit'
+// No writeAuditLog import: this action writes its audit_log row inline, after
+// the persistence block, so it can carry a metadata object (payment id, refund
+// transaction id, both amounts, the supplier debits, the reason) that the
+// helper's signature does not take. The actor is written there from the session
+// requireAdminSession() proved, which the 169 trigger cannot supply on this
+// path because the refund runs on the service-role client.
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -413,8 +418,9 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     }
 
     // Funnel event. Swallows its own errors; the card is already credited.
-    // The first-party copy is skipped by the DB whitelist until pending 180
-    // applies, PostHog receives it today.
+    // An admin browser carries no guest-session cookie, which is why the
+    // first-party copy needed the `session_id` fallback in track.ts and not
+    // only 180's widened whitelist.
     await trackServerEvent({
       eventName: 'order_refunded',
       userId: order.user_id,

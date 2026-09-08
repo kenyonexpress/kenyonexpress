@@ -1,14 +1,29 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { identityScopedClient, checkRateLimit, rpc } = vi.hoisted(() => ({
+const { identityScopedClient, rateLimit, rpc } = vi.hoisted(() => ({
   identityScopedClient: vi.fn(),
-  checkRateLimit: vi.fn(),
+  rateLimit: vi.fn(),
   rpc: vi.fn(),
 }))
 
+/** `rateLimitHeaders` stays REAL, so the 429's headers cannot be mocked true. */
 vi.mock('@/lib/supabase/bearer', () => ({ identityScopedClient }))
-vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit }))
+vi.mock('@/lib/rate-limit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
+  rateLimit,
+}))
+
+function decision(allowed: boolean) {
+  return {
+    allowed,
+    limit: 15,
+    windowSeconds: 3600,
+    remaining: allowed ? 14 : 0,
+    resetAtMs: Date.now() + 3_600_000,
+    backend: 'upstash' as const,
+  }
+}
 
 import { POST } from './route'
 
@@ -31,13 +46,13 @@ function request(body: unknown): NextRequest {
 
 beforeEach(() => {
   identityScopedClient.mockReset()
-  checkRateLimit.mockReset()
+  rateLimit.mockReset()
   rpc.mockReset()
   identityScopedClient.mockResolvedValue({
     client: { rpc },
     identity: { user: { id: 'member-1' } },
   })
-  checkRateLimit.mockResolvedValue(true)
+  rateLimit.mockResolvedValue(decision(true))
   rpc.mockResolvedValue({
     data: [{ staff_id: 'staff-1', display_name: 'דנה', locked: false }],
     error: null,
@@ -48,14 +63,14 @@ describe('staff pin route', () => {
   it('answers 401 with no identity, before any rate or database work', async () => {
     identityScopedClient.mockResolvedValue(null)
     expect((await POST(request({ pin: '1234' }))).status).toBe(401)
-    expect(checkRateLimit).not.toHaveBeenCalled()
+    expect(rateLimit).not.toHaveBeenCalled()
     expect(rpc).not.toHaveBeenCalled()
   })
 
   it('caps the member at fifteen tries an hour', async () => {
-    checkRateLimit.mockResolvedValue(false)
+    rateLimit.mockResolvedValue(decision(false))
     expect((await POST(request({ pin: '1234' }))).status).toBe(429)
-    expect(checkRateLimit).toHaveBeenCalledWith('staff-pin:member-1', 15, 3600)
+    expect(rateLimit).toHaveBeenCalledWith('staff-pin', 'member-1')
     expect(rpc).not.toHaveBeenCalled()
   })
 

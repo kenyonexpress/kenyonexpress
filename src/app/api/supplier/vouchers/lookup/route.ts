@@ -1,7 +1,7 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { getSupplierMemberships } from '@/lib/supplier/rbac'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { toPublicOutcome, validateVoucherRedemption } from '@/server/domain/vouchers/redemption'
@@ -94,8 +94,8 @@ export interface LookupResponse {
   }
 }
 
-function respond(body: LookupResponse, status: number): NextResponse {
-  return NextResponse.json(body, { status })
+function respond(body: LookupResponse, status: number, headers?: Headers): NextResponse {
+  return NextResponse.json(body, { status, headers })
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
@@ -113,8 +113,14 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // because a member with a session could otherwise walk the code space of
   // their own supplier's vouchers at machine speed. checkRateLimit fails open,
   // which is the right direction at a till.
-  const allowed = await checkRateLimit(`voucher-lookup:${user.id}`, 300, 3600)
-  if (!allowed) return respond({ outcome: 'rate_limited', message: MESSAGES.rate_limited }, 429)
+  const decision = await rateLimit('voucher-lookup', user.id)
+  if (!decision.allowed) {
+    return respond(
+      { outcome: 'rate_limited', message: MESSAGES.rate_limited },
+      429,
+      rateLimitHeaders(decision),
+    )
+  }
 
   const parsed = lookupSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {

@@ -189,12 +189,14 @@ export function shekelsFromIlsCompactPlain(value: number | string | null | undef
  * sidebar, where `e2e/price-bidi.spec.ts` measured it at x=1259 against a digit
  * at x=1270.
  *
- * Correcting the row is a production data change, which this project does not
- * make without approval; `migrations/pending/171_category_name_shekel_order.sql`
- * is the draft, and it is not applied. Until it is, this repairs the string at
- * the render edge, which is also the safer place: a category name typed into
- * the admin form tomorrow gets the same treatment without anybody remembering
- * this rule.
+ * `migrations/applied/187_category_name_shekel_order.sql` (numbered 171 until
+ * 2026-09-09) repaired the row itself on 2026-09-09, so the datum and the
+ * render now agree. This stays anyway, and not as dead weight: it is the render
+ * edge, which is the safer place for the rule to live. A category name typed
+ * into the admin form tomorrow gets the same treatment without anybody
+ * remembering it, and a database that has not had 187 applied -- a branch, a
+ * local reset, a preview project -- still renders the price the right way
+ * round.
  *
  * It rewrites ONLY the exact shape `₪<digits>`. A label with no price in it
  * comes back untouched, and so does one already written the right way round.

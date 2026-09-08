@@ -1,9 +1,11 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import { catalogueIlsToAgorot, scaleCatalogueIls } from '@/lib/admin/bulk-price'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
-import { type AdminSessionInfo, requireSection } from '@/lib/admin/rbac'
+import { requireStaffSession } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
@@ -24,14 +26,6 @@ export type ProductFormState = { error: string } | { success: string } | null
 const PRODUCT_AUDIT_SELECT =
   'id, slug, name_he, status, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
 
-async function requireCatalogWriter(): Promise<AdminSessionInfo | null> {
-  try {
-    return await requireSection('catalog', 'write')
-  } catch {
-    return null
-  }
-}
-
 async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
@@ -42,6 +36,7 @@ async function runUpsertProduct(
   } catch {
     return { error: 'אין הרשאה' }
   }
+  const hidePricing = !canSeeMoney(session.role)
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
@@ -471,12 +466,12 @@ async function runDeleteProduct(id: string): Promise<{ error?: string }> {
   }
 
   const supabase = await createClient()
-  const { data: before, error: beforeError } = await supabase
-    .from('products')
-    .select(PRODUCT_AUDIT_SELECT)
-    .eq('id', id)
-    .maybeSingle()
-  if (beforeError) return { error: beforeError.message }
+  // No before-snapshot read here. `products` has carried an audit trigger since
+  // 011/149, upgraded in place by 169, and that trigger writes the full old row
+  // into audit_log.before on every UPDATE (see audit-coverage.test.ts). This
+  // action runs on the USER client, so auth.uid() inside the trigger is the
+  // admin doing it and the row is attributed. Re-reading the row here was a
+  // second round trip whose result was never used.
   const { error } = await supabase
     .from('products')
     .update({ deleted_at: new Date().toISOString(), status: 'archived' })

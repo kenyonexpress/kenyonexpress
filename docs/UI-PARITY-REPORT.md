@@ -66,3 +66,6 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-05 23:02 | home | 380 | 10.68% | PASS | `7662223fd-dirty` |  |
 | 2026-09-05 23:04 | home | 768 | 7.72% | PASS | `7662223fd-dirty` |  |
 | 2026-09-05 23:06 | home | 1440 | 8.12% | PASS | `d37a60d7d-dirty` |  |
+| 2026-09-08 20:51 | home | 380 | n/a | REFUSED | `5d24e06ab-dirty` | live side is unknown |
+| 2026-09-08 20:51 | home | 768 | n/a | REFUSED | `5d24e06ab-dirty` | live side is unknown |
+| 2026-09-08 20:51 | home | 1440 | n/a | REFUSED | `5d24e06ab-dirty` | live side is unknown |

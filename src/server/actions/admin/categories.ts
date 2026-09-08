@@ -28,14 +28,6 @@ const schema = z.object({
 
 export type CategoryFormState = { error: string } | { success: string } | null
 
-async function requireCatalogWriter() {
-  try {
-    return await requireSection('catalog', 'write')
-  } catch {
-    return null
-  }
-}
-
 async function runUpsertCategory(
   _: CategoryFormState,
   formData: FormData,

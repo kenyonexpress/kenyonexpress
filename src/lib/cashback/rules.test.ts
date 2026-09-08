@@ -57,8 +57,11 @@ describe('orderCountBonusAgorot', () => {
 describe('the SQL is the same rule', () => {
   // The migration owns the decision; this file is only its mirror. If someone
   // retunes one side, this fails before the two can drift apart in production.
+  // 177 was applied 2026-09-09 and moved to `applied/`; the mirror follows the
+  // file rather than the directory, because what it checks is that the rate in
+  // TypeScript still equals the rate the database is actually running.
   const sql = readFileSync(
-    join(process.cwd(), 'migrations/pending/177_cashback_ledger.sql'),
+    join(process.cwd(), 'migrations/applied/177_cashback_ledger.sql'),
     'utf8',
   )
 

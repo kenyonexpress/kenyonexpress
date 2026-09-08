@@ -21,7 +21,22 @@
 -- 'order_shipped' into CHECK_ACCEPTS in src/lib/email/outbox-kinds.test.ts,
 -- with the new measurement date.
 --
--- STATUS: PENDING. Apply via MCP apply_migration only, per project rules.
+-- APPLIED 2026-09-09 via MCP as `order_shipped_notification_183`.
+--
+-- PREFLIGHT, run against production first, and it earned its keep:
+--   * the live `notification_outbox_kind_check` already held fourteen kinds,
+--     not the twelve this file was drafted against -- see the note on the
+--     constraint below, which is the one change made to this file before it
+--     was applied.
+--   * `fn_enqueue_notification(text, text, text, jsonb)` exists (there is also
+--     a five-argument overload taking p_user_id; this file calls the four).
+--   * the 102 sibling is live as trigger `trg_orders_notify_paid` ->
+--     `tg_orders_notify_paid`, and its body is the same shape this one copies:
+--     SECURITY DEFINER, four-arg enqueue, EXCEPTION WHEN OTHERS -> RAISE
+--     WARNING -> RETURN NEW.
+--   * `tg_orders_notify_shipped` and `trg_orders_notify_shipped` were both
+--     absent, and `notification_outbox` held zero rows, so widening the
+--     constraint could not fail validation.
 --
 -- ROLLBACK:
 --   DROP TRIGGER IF EXISTS trg_orders_notify_shipped ON public.orders;
@@ -32,6 +47,15 @@
 
 -- 1. Widen the kind CHECK. Full list restated, same style as 121: the
 --    constraint is the loud-failure gate for typo'd kinds and must stay total.
+--
+--    RESTATING A CONSTRAINT MEANS RE-MEASURING IT FIRST, and this file is why.
+--    As drafted it listed twelve kinds plus `order_shipped`. Read off
+--    production 2026-09-09, the live constraint already carried FOURTEEN,
+--    including `account_deleted` (150's lineage) AND `order_shipped` itself.
+--    Applying the draft verbatim would have DROPPED `account_deleted` and
+--    turned every account-deletion notification into a constraint violation.
+--    A restated list is only ever as current as the day it was written, so
+--    `account_deleted` is added below and the count is now fourteen.
 ALTER TABLE public.notification_outbox
   DROP CONSTRAINT IF EXISTS notification_outbox_kind_check;
 
@@ -49,6 +73,8 @@ ALTER TABLE public.notification_outbox
     'reconciliation_gap',
     'refund_completed',
     'welcome',
+    -- (150 lineage, measured live 2026-09-09; absent from this file as drafted)
+    'account_deleted',
     -- (183): fulfilment complete, enqueued by tg_orders_notify_shipped below
     'order_shipped'
   ]::text[]));

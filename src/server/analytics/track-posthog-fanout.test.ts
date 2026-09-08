@@ -6,10 +6,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * WHY THIS FILE EXISTS. The four names `trackServerEvent` emits are the only
  * events in the product that say money moved, and until this fan-out they had
  * exactly one destination: `fn_ingest_analytics_events`, whose live whitelist
- * discards all four (measured 2026-09-06, still true). PostHog therefore had a
+ * discarded all four when this file was written. PostHog therefore had a
  * funnel that ended at `checkout_step` with nothing to convert to, and neither
  * `purchase` nor `voucher_redeemed` can ever arrive from the browser: the first
  * is deliberately server-side, the second happens on a supplier's till.
+ *
+ * THE FIRST-PARTY HALF WORKS NOW, and the reason it took two fixes rather than
+ * one is in `server-event-session-id.test.ts`: 180 widened the whitelist, and
+ * the NOT NULL `session_id` was still refusing three of the four. The fan-out
+ * is no longer the only destination, but it is still the only one that needs
+ * no migration, which is why these assertions stay.
  *
  * The identity assertions are the point of the rest. A PostHog funnel joins on
  * `distinct_id` and nothing else, so an event that arrives under the wrong id

@@ -1,10 +1,13 @@
 import type { UserRole } from '@/types/database'
 
-// Migration 181 (pending) adds 'read_only' to the user_role enum. Until it is
-// applied and database.ts regenerated, the generated UserRole cannot name it,
-// so the admin layer works in AppRole. WHEN 181 IS APPLIED: regenerate types,
-// replace AppRole with UserRole and delete this alias (same lifecycle contract
-// as lib/auth/passkeys/store.ts for 178).
+// Migration 181a APPLIED 2026-09-09 (`read_only_enum_181a`): production's
+// user_role now reads {customer,content_uploader,vendor,admin,super_admin,
+// support,read_only}. `src/types/database.ts` has NOT been regenerated yet, so
+// the generated UserRole still cannot name it and the union below is still
+// load-bearing. It is also self-healing: regenerate database.ts and
+// `UserRole | 'read_only'` collapses to UserRole with no type error, at which
+// point this alias can go (same lifecycle contract as
+// lib/auth/passkeys/store.ts for 178).
 export type AppRole = UserRole | 'read_only'
 
 export const ROLE_LABELS: Record<AppRole, string> = {

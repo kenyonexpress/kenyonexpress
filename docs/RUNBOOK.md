@@ -788,8 +788,14 @@ written at the foot of its own file.
 |---|---|---|---|
 | A1 | `172_hide_master_product_test_row.sql` | none | `select stock_quantity from products where id = '9bb347f8-03ec-48ce-8ff2-2503fb74c895';` → `0` |
 | A2 | `169_analytics_server_event_names.sql` | none | RPC `fn_ingest_analytics_events` with `{"event_name":"purchase"}` → inserts, does not return `0` |
-| A3 | `170_composite_indexes_top_queries.sql` | run `preflight_170.sql` first | `select count(*) from pg_indexes where indexname like 'products_active%';` → `4` |
-| A4 | `171_category_name_shekel_order.sql` | none | `select name_he from categories where slug = 'under-99';` → digits before the glyph |
+| A3 | `186_composite_indexes_top_queries.sql` (was 170) | run `preflight_186.sql` first | `select count(*) from pg_indexes where indexname like 'products_active%';` → `4` |
+| A4 | `187_category_name_shekel_order.sql` (was 171) | none | `select name_he from categories where slug = 'under-99';` → digits before the glyph |
+
+**All four steps are DONE.** A1 and A2 applied 2026-09-08, A3 and A4 applied
+2026-09-09. A3 and A4 were numbered 170 and 171 until 2026-09-09, when both
+numbers turned out to be already spent by production on different migrations
+(`reporting_tables_170`, `search_fts_171`); see the top of
+`migrations/pending/README.md` for the measurement.
 
 **A1 first, deliberately.** It is the only one with a live money consequence: the
 row is purchasable at ₪1 with ten in stock right now, and every hour it stays

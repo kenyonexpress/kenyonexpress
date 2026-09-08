@@ -260,6 +260,18 @@ $$;
 -- resolves the phone the same way support would: the profile first, then the
 -- shipping address on the order. total_agorot follows 095's coalesce so it
 -- keeps working whether or not 138's _agorot columns are applied.
+--
+-- BEST-EFFORT, AND THAT IS NOT DECORATION. One of the four transitions this
+-- fires on is `paid`, which finalize sets after Cardcom has already charged
+-- the card. An unguarded AFTER trigger that raises would roll that UPDATE back
+-- and leave a customer charged with no paid order -- the exact trade every
+-- other notification site in this schema has already refused. Its two live
+-- siblings on this table both end this way (`tg_orders_notify_paid` from 102
+-- and `tg_orders_notify_shipped` from 183, whose deployed bodies were read off
+-- production), and `awardOrderCountBonus` in finalize.ts makes the same
+-- judgement in TypeScript for the same stated reason. This file shipped
+-- without the guard while claiming to be "same shape as 095's email outbox";
+-- the guard is what makes that claim true.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.tg_orders_whatsapp_status()
 RETURNS trigger
@@ -323,6 +335,9 @@ BEGIN
   );
 
   RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RAISE WARNING 'tg_orders_whatsapp_status failed for order %: %', NEW.id, SQLERRM;
+  RETURN NEW;
 END;
 $$;
 
@@ -330,3 +345,39 @@ DROP TRIGGER IF EXISTS tg_orders_whatsapp_status ON public.orders;
 CREATE TRIGGER tg_orders_whatsapp_status
   AFTER UPDATE ON public.orders
   FOR EACH ROW EXECUTE FUNCTION public.tg_orders_whatsapp_status();
+
+-- ---------------------------------------------------------------------------
+-- Grants. WITHOUT THIS BLOCK THE HEADER'S "no client role can write any of
+-- this" IS FALSE, and measurably so: a new function is EXECUTE-able by PUBLIC
+-- by default, so `fn_enqueue_whatsapp` shipped reachable at
+-- /rest/v1/rpc/fn_enqueue_whatsapp by the anon role. It is SECURITY DEFINER,
+-- so it runs as the owner and inserts past RLS. Proven against production
+-- before this block existed, in a transaction that was rolled back: `SET ROLE
+-- anon` then one call planted a whatsapp_outbox row for an opted-in customer's
+-- phone with an attacker-chosen kind and payload -- a message the cron drain
+-- would then have sent over WhatsApp, from the store, to a real customer.
+--
+-- The consent gate does not help here. It only checks that the DESTINATION
+-- opted in; it says nothing about who asked for the send, and an opted-in
+-- phone is exactly the valuable target.
+--
+-- These are the grants 095's `fn_enqueue_notification` already has (measured:
+-- postgres + service_role, anon false, authenticated false), which is the
+-- shape this file's header claims to copy. `tg_orders_notify_paid` (102),
+-- `tg_orders_notify_shipped` (183) and `fn_orders_status_guard` all match it
+-- too, so this is the house rule and not a new opinion.
+-- ---------------------------------------------------------------------------
+REVOKE ALL ON FUNCTION public.fn_enqueue_whatsapp(text, text, text, jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.fn_enqueue_whatsapp(text, text, text, jsonb) FROM anon;
+REVOKE ALL ON FUNCTION public.fn_enqueue_whatsapp(text, text, text, jsonb) FROM authenticated;
+
+REVOKE ALL ON FUNCTION public.tg_orders_whatsapp_status() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.tg_orders_whatsapp_status() FROM anon;
+REVOKE ALL ON FUNCTION public.tg_orders_whatsapp_status() FROM authenticated;
+
+-- Pure, IMMUTABLE and side-effect free, so this one is surface reduction
+-- rather than a hole being closed. Its only callers are the two SECURITY
+-- DEFINER functions above, which run as the owner and keep EXECUTE.
+REVOKE ALL ON FUNCTION public.fn_il_phone_digits(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.fn_il_phone_digits(text) FROM anon;
+REVOKE ALL ON FUNCTION public.fn_il_phone_digits(text) FROM authenticated;

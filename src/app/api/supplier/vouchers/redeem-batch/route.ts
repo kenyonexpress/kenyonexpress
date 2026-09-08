@@ -1,7 +1,7 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { identityScopedClient } from '@/lib/supabase/bearer'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { settledKeys } from '@/lib/vouchers/offline-scan'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
@@ -77,8 +77,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   // How often a device may DRAIN. 40 an hour is a sync every 90 seconds
   // without pause.
-  const allowed = await checkRateLimit(`voucher-redeem-batch:${identity.user.id}`, 40, 3600)
-  if (!allowed) return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
+  const decision = await rateLimit('voucher-redeem-batch', identity.user.id)
+  if (!decision.allowed) {
+    return NextResponse.json(
+      { ok: false, error: 'rate_limited' },
+      { status: 429, headers: rateLimitHeaders(decision) },
+    )
+  }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {
@@ -98,12 +103,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // route uses, so a till cannot spend its allowance twice by alternating
   // between the two endpoints.
   for (let index = 0; index < parsed.data.items.length; index++) {
-    const withinCeiling = await checkRateLimit(`voucher-redeem:${identity.user.id}`, 120, 3600)
-    if (!withinCeiling) {
+    const withinCeiling = await rateLimit('voucher-redeem', identity.user.id)
+    if (!withinCeiling.allowed) {
       // Refused BEFORE the loop touches the database, so a batch is either
       // attempted or not - never half-burned with the rest rejected, which
       // would leave the queue holding items whose vouchers were already gone.
-      return NextResponse.json({ ok: false, error: 'rate_limited', settled: [] }, { status: 429 })
+      return NextResponse.json(
+        { ok: false, error: 'rate_limited', settled: [] },
+        { status: 429, headers: rateLimitHeaders(withinCeiling) },
+      )
     }
   }
 

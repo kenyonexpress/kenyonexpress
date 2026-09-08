@@ -40,6 +40,11 @@ The diff is the share of mismatched pixels over the first 2600px of the page,
 live against our build, at the stated viewport width. \`dirty\` on a commit means
 the tree had uncommitted changes when it was measured.
 
+A row reading \`n/a\` / \`REFUSED\` is a run that declined to produce a number, with
+the reason in the notes column. It is not a failure of the page: it means the
+comparison itself was not sound, most often because the left-hand side was not
+the reference. See \`docs/PARITY-REFERENCE.md\`.
+
 | when (UTC) | page | width | diff | verdict | commit | notes |
 |---|---|---:|---:|---|---|---|
 `
@@ -75,5 +80,35 @@ export function appendParityRow(row) {
   appendFileSync(
     path,
     `| ${when} | ${row.page} | ${row.width} | ${row.pct.toFixed(2)}% | ${verdict} | \`${commit}\` | ${notes} |\n`,
+  )
+}
+
+/**
+ * A RUN THAT REFUSED IS EVIDENCE, AND IT WAS THE ONE KIND THIS FILE DROPPED.
+ *
+ * The rule above is that no path measures parity without writing it down. Every
+ * refusal in compare.mjs took the other route: it printed to a terminal and
+ * exited, so the report shows the last run that produced a number and says
+ * nothing about the six after it that could not. Read a week later, a gap in
+ * this table is indistinguishable from nobody having run the gate -- which is
+ * exactly the wrong reading when the reason is that the reference is gone.
+ *
+ * A refusal has no percentage, so it does not get a made-up one. It occupies
+ * the same row shape with `n/a` in the diff column, and REFUSED is a verdict of
+ * its own: it is not a PASS, and calling it a FAIL would put our build in the
+ * dock for something that is not about our build.
+ *
+ * @param {{page: string, width: number, reason: string, when?: string, commit?: string}} row
+ */
+export function appendParityRefusal(row) {
+  const path = resolve(process.cwd(), REPORT)
+  if (!existsSync(path) || !readFileSync(path, 'utf8').includes('| when (UTC) |')) {
+    writeFileSync(path, HEADER)
+  }
+  const when = row.when ?? new Date().toISOString().replace('T', ' ').slice(0, 16)
+  const commit = row.commit ?? commitHash()
+  appendFileSync(
+    path,
+    `| ${when} | ${row.page} | ${row.width} | n/a | REFUSED | \`${commit}\` | ${row.reason} |\n`,
   )
 }

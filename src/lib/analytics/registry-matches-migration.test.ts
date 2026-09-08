@@ -24,19 +24,33 @@ import { describe, expect, it } from 'vitest'
  * `begin_checkout`, `purchase`, `voucher_redeemed` and `order_refunded` are on
  * none of it. Every server-side money event the funnel emits goes nowhere.
  *
- * `migrations/pending/180` is the fix and it needs approval before it touches
- * production. This test does not assert the live database -- it cannot, and a
- * test that needed production to be right would fail for the next month. What
- * it pins is the thing that is actually in this repo's control: **the pending
- * migration must cover every name the registry can emit.** If someone adds a
- * ninth client event or a fifth server event and does not widen 180, this goes
- * red at the moment the name is added rather than silently after it deploys.
+ * THAT PARAGRAPH IS NOW HISTORY. The widened function went to production on
+ * 2026-09-08 as `analytics_server_event_names_169`, and the file moved to
+ * `migrations/applied/` exactly as the previous revision of this comment said
+ * it should. Proved with a rolled-back `DO` block against production: five
+ * events in, `returned=4`, and the four rows written were `begin_checkout`,
+ * `order_refunded`, `purchase`, `voucher_redeemed`, while a made-up name was
+ * still skipped. The block raised, so it left nothing behind (`residue = 0`).
  *
- * When 180 is applied, move this to read `migrations/applied/` and it keeps
- * working unchanged. The invariant is the same either way.
+ * What was measured before applying, and what makes the whole thing worth
+ * pinning: production held 4 orders, 2 of them paid, and `analytics_events`
+ * held ZERO `purchase` rows. Only `page_view` and `web_vital` had ever landed.
+ *
+ * This test still does not assert the live database -- it cannot. What it pins
+ * is the thing that is in this repo's control: **the migration must cover
+ * every name the registry can emit.** If someone adds a ninth client event or
+ * a fifth server event and does not widen the whitelist, this goes red at the
+ * moment the name is added rather than silently after it deploys. That is the
+ * same invariant it always had; only the directory changed.
+ *
+ * TWO FILES CARRY THIS MIGRATION AND THAT IS NOT A MISTAKE TO FIX HERE. `169`
+ * and `180` are byte-identical SQL, written by two sessions that could not see
+ * each other. One `CREATE OR REPLACE` applied both. This reads 180 because
+ * that is the number it read before, and changing which one it points at would
+ * be churn with no invariant behind it.
  */
 
-const MIGRATION = 'migrations/pending/180_analytics_server_event_names.sql'
+const MIGRATION = 'migrations/applied/180_analytics_server_event_names.sql'
 
 /**
  * The quoted names inside the whitelist of the `CREATE OR REPLACE` in 180.
@@ -51,7 +65,7 @@ function migrationWhitelist(): string[] {
   return [...list.matchAll(/'([a-z_]+)'/g)].map((m) => m[1] as string)
 }
 
-describe('the analytics registry and the pending ingest migration', () => {
+describe('the analytics registry and the applied ingest migration', () => {
   it('parses a real whitelist out of the migration, not an empty match', () => {
     // Without this the whole file passes vacuously if the regex stops matching.
     const names = migrationWhitelist()

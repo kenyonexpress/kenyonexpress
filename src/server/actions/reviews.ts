@@ -108,10 +108,33 @@ async function runToggleWishlist(productId: string): Promise<WishlistActionState
   const { error } = await supabase
     .from('wishlists' as never)
     .insert({ user_id: user.id, product_id: productId } as never)
-  // A concurrent double-click races the read; the PK makes the second insert a
-  // 23505, which lands in the same place as "already saved".
-  if (error && error.code !== ALREADY_REVIEWED) {
-    return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
+
+  if (error) {
+    if (error.code !== ALREADY_REVIEWED) {
+      return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
+    }
+    // 23505 says the (user_id, product_id) pair is taken. It is taken by two
+    // different situations and the error code cannot tell them apart, so the
+    // re-read does. Measured against production 2026-09-09, both in
+    // transactions that were rolled back, as the owner with the real
+    // auth.uid():
+    //
+    //   concurrent double-click, live row       insert 23505, re-read 1 row
+    //   row soft-deleted (185's SELECT hides it) insert 23505, re-read 0 rows
+    //
+    // Only the first is "already saved". Answering the second the same way
+    // fills the heart while /account/wishlist stays empty -- a success the
+    // customer can see is false. See wishlist-soft-delete-restore.test.ts.
+    const { data: reread, error: rereadError } = await supabase
+      .from('wishlists' as never)
+      .select('product_id')
+      .eq('product_id', productId)
+      .maybeSingle()
+    // A re-read that failed proves nothing either, and this branch exists to
+    // stop reporting an unproven save, so it refuses on both.
+    if (rereadError != null || reread == null) {
+      return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
+    }
   }
   revalidatePath('/account/wishlist')
   return { ok: true, saved: true }
