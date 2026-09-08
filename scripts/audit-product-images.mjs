@@ -32,6 +32,7 @@
 
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const flag = (n) => process.argv.includes(`--${n}`)
 const OFFLINE = flag('offline')
@@ -75,9 +76,19 @@ const adminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE
 const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const key = adminKey || anonKey
 const usingAnon = !adminKey && Boolean(anonKey)
-if (!url || !key) {
-  fail('NEXT_PUBLIC_SUPABASE_URL and one of SUPABASE_SECRET_KEY / SUPABASE_ANON_KEY are required')
+/**
+ * Checked when the script RUNS, not when it is imported.
+ *
+ * At module scope this refused a test that only wanted the pure classifier
+ * below - importing the file was enough to exit the process. A credential
+ * check belongs on the path that needs a credential.
+ */
+function requireCredentials() {
+  if (!url || !key) {
+    fail('NEXT_PUBLIC_SUPABASE_URL and one of SUPABASE_SECRET_KEY / SUPABASE_ANON_KEY are required')
+  }
 }
+
 if (usingAnon) {
   console.warn('audit-product-images: no admin key; running with the ANON key.')
   console.warn('  Tables anon cannot read are reported UNCHECKED, never clean.\n')
@@ -139,9 +150,36 @@ const hostMatches = (hostname, pattern) => {
   return label.length > 0 && !label.includes('.')
 }
 
+/**
+ * ACTIVE PRODUCTS THAT REFERENCE NO IMAGE AT ALL.
+ *
+ * The blind spot this audit had. `collect` walks `p.images`, so a product whose
+ * array is empty contributes zero references, every reference that exists then
+ * resolves, and the run prints "all resolve" - a pass earned by having nothing
+ * to check, in the one audit whose subject is missing product imagery.
+ *
+ * Found 2026-09-09 by counting in the database instead: of 45 active and
+ * approved products, one has `images: []` and is published. A draft with no
+ * image is a draft; an ACTIVE one is a product page with an empty frame.
+ *
+ * @param {{slug?: string, status?: string, images?: unknown}[]} products
+ * @returns {string[]} slugs, sorted, so the report is stable run to run
+ */
+export function imagelessActiveProducts(products) {
+  return products
+    .filter((p) => (p.status ?? 'active') === 'active')
+    .filter((p) => !Array.isArray(p.images) || p.images.length === 0)
+    .map((p) => p.slug ?? '(no slug)')
+    .sort()
+}
+
+let imagelessActive = []
+
 const collect = async () => {
+  requireCredentials()
   const refs = []
-  const products = await rest('products?select=id,slug,images')
+  const products = await rest('products?select=id,slug,images,status')
+  imagelessActive = imagelessActiveProducts(products)
   for (const p of products) {
     if (!Array.isArray(p.images)) continue
     p.images.forEach((u, i) => refs.push({ source: `products.${p.slug}[${i}]`, url: u }))
@@ -215,23 +253,41 @@ const main = async () => {
   }
 
   if (JSON_OUT) {
-    console.log(JSON.stringify({ checked: refs.length, problems }, null, 2))
+    console.log(JSON.stringify({ checked: refs.length, problems, imagelessActive }, null, 2))
   } else {
     console.log(
       `audit-product-images: ${refs.length} references checked${OFFLINE ? ' (offline: relative half only)' : ''}`,
     )
-    if (problems.length === 0 && unchecked.length === 0) console.log('  all resolve')
-    else if (problems.length === 0) console.log('  everything READ resolves')
+    if (problems.length === 0 && unchecked.length === 0 && imagelessActive.length === 0) {
+      console.log('  all resolve')
+    } else if (problems.length === 0) {
+      console.log('  everything READ resolves')
+    }
     for (const p of problems) console.error(`  ${p.verdict.padEnd(40)} ${p.source}  ${p.url}`)
+    // Reported separately from a broken URL, because it is a different repair:
+    // nothing is pointing at the wrong place, there is nothing pointing at all.
+    if (imagelessActive.length) {
+      console.error(`\n  ACTIVE PRODUCTS WITH NO IMAGE (${imagelessActive.length}):`)
+      for (const slug of imagelessActive) console.error(`    /product/${slug}`)
+      console.error('  These render a product page with an empty frame.')
+    }
     if (unchecked.length) {
       console.error(`\n  UNCHECKED (${unchecked.length}) - anon could not read these:`)
       for (const t of unchecked) console.error(`    ${t}`)
       console.error('  This run did NOT clear them. Rerun with an admin key.')
     }
   }
-  // Non-zero when anything is broken OR when anything went unread. A partial
-  // audit that exits 0 is the shape this script exists to catch.
-  process.exit(problems.length === 0 && unchecked.length === 0 ? 0 : 1)
+  // Non-zero when anything is broken, when anything went unread, OR when an
+  // active product references no image at all. A partial audit that exits 0 is
+  // the shape this script exists to catch - and so is a complete one that
+  // passes because the thing it should have looked at contributed no rows.
+  process.exit(
+    problems.length === 0 && unchecked.length === 0 && imagelessActive.length === 0 ? 0 : 1,
+  )
 }
 
-main().catch((e) => fail(e.stack ?? String(e)))
+// Run only as a command. Imported - by its test, or by anything that wants
+// `imagelessActiveProducts` - this file must do nothing.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((e) => fail(e.stack ?? String(e)))
+}
