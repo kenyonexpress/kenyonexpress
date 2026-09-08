@@ -3,9 +3,10 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { type SupplierFormFields, parseSupplierForm } from '@/lib/admin/supplier-form'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 
 /**
  * CRUD for `public.suppliers`.
@@ -65,6 +66,12 @@ async function runUpsertSupplier(
   if (id) {
     const { error } = await admin.from('suppliers').update(parsed.data).eq('id', id)
     if (error) return { error: error.message }
+    // A supplier's name, address and phone render inside the product page's
+    // supplier block, and that read is cached under CATALOGUE_TAG. See
+    // lib/catalogue-cache.ts: without this the rename is invisible on the
+    // storefront for up to an hour while the admin panel, which is uncached,
+    // shows it immediately.
+    updateTag(CATALOGUE_TAG)
     await writeAuditLog({
       actorId: session.userId,
       actorRole: session.role,
@@ -79,6 +86,7 @@ async function runUpsertSupplier(
     // split lives per product (section 0.1).
     const { data, error } = await admin.from('suppliers').insert(parsed.data).select('id').single()
     if (error) return { error: error.message }
+    updateTag(CATALOGUE_TAG)
     await writeAuditLog({
       actorId: session.userId,
       actorRole: session.role,
@@ -108,6 +116,8 @@ async function runSetSupplierStatus(
   const admin = createAdminClient()
   const { error } = await admin.from('suppliers').update({ status }).eq('id', id)
   if (error) return { error: error.message }
+  // Status decides whether the business appears at all.
+  updateTag(CATALOGUE_TAG)
 
   await writeAuditLog({
     actorId: session.userId,
@@ -155,6 +165,7 @@ async function runSoftDeleteSupplier(id: string): Promise<{ error?: string }> {
     .update({ deleted_at: new Date().toISOString(), status: 'inactive' })
     .eq('id', id)
   if (error) return { error: error.message }
+  updateTag(CATALOGUE_TAG)
 
   await writeAuditLog({
     actorId: session.userId,

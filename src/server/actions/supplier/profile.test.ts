@@ -44,13 +44,17 @@ const adminClient = {
 const requireSupplierRole = vi.fn()
 const writeAuditLog = vi.fn()
 const revalidatePath = vi.fn()
+const updateTag = vi.fn()
 
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient }))
 vi.mock('@/lib/supplier/rbac', () => ({
   requireSupplierRole: (...a: unknown[]) => requireSupplierRole(...a),
 }))
 vi.mock('@/lib/admin/audit', () => ({ writeAuditLog: (...a: unknown[]) => writeAuditLog(...a) }))
-vi.mock('next/cache', () => ({ revalidatePath: (...a: unknown[]) => revalidatePath(...a) }))
+vi.mock('next/cache', () => ({
+  revalidatePath: (...a: unknown[]) => revalidatePath(...a),
+  updateTag: (...a: unknown[]) => updateTag(...a),
+}))
 
 import { updateSupplierProfile } from './profile'
 
@@ -137,5 +141,21 @@ describe('updateSupplierProfile', () => {
         entityId: 'sup-1',
       }),
     )
+  })
+})
+
+describe('the storefront is told', () => {
+  it('invalidates the catalogue tag, because the supplier block is cached under it', async () => {
+    // Added 2026-09-08. This path wrote the business's own name, address and
+    // phone and invalidated nothing, so the supplier block on its own product
+    // pages kept the old details for up to an hour while this form showed the
+    // new ones immediately - which reads exactly like the save having failed.
+    // lib/catalogue-cache.ts states the contract; supplier writes were in
+    // neither its compliant list nor its exception list.
+    await updateSupplierProfile(
+      null,
+      form({ name: 'שם חדש', address: 'רחוב חדש 5', contact_phone: '03-1234567' }),
+    )
+    expect(updateTag).toHaveBeenCalledWith('catalogue')
   })
 })

@@ -1,12 +1,13 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseSupplierProfileForm } from '@/lib/supplier/profile-form'
 import { requireSupplierRole } from '@/lib/supplier/rbac'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 
 /**
  * A supplier owner editing their own business details.
@@ -67,6 +68,13 @@ async function runUpdateSupplierProfile(
     })
     return { error: 'השמירה נכשלה, נסו שוב' }
   }
+
+  // The business's own name, address and phone render inside the product page's
+  // supplier block, and that read is cached under CATALOGUE_TAG. See
+  // lib/catalogue-cache.ts: without this, a supplier who corrects their address
+  // sees it in this form immediately and on their own product pages up to an
+  // hour later, which reads exactly like the save having failed.
+  updateTag(CATALOGUE_TAG)
 
   await writeAuditLog({
     actorId: session.userId,

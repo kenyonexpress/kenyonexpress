@@ -27,9 +27,28 @@
  * are. A route handler that ever needs this must use `revalidateTag`.
  *
  * The write paths that call it: `admin/products.ts` (save, archive, restore,
- * recategorise, bulk reprice, delete), `admin/categories.ts`, and
+ * recategorise, bulk reprice, delete), `admin/categories.ts`,
  * `admin/approvals.ts` - approval is the write that puts a product ON the
- * storefront, so it is the one that must never be missed.
+ * storefront, so it is the one that must never be missed - `admin/coupon-deals.ts`,
+ * and, ADDED 2026-09-08, the five supplier writes.
+ *
+ * THE SUPPLIER GAP, because it shows how this is missed. `admin/suppliers.ts`
+ * writes four ways (edit, create, status, soft delete) and
+ * `supplier/profile.ts` writes one - a business editing its own name, address
+ * and phone. None of the five invalidated, and none appeared in either list
+ * above: not as compliant, not as a reasoned exception. They were simply never
+ * considered, because the paragraph was written while thinking about PRODUCTS
+ * and a supplier is not a product.
+ *
+ * It matters because supplier fields render inside the product page's supplier
+ * block, which is one of the reads carrying this tag. A business that corrected
+ * its address saw the correction in its own form immediately and on its own
+ * product pages up to an hour later - which reads exactly like the save having
+ * failed, the same symptom this file warns about for products.
+ *
+ * `src/__tests__/catalogue-cache-invalidation.test.ts` is the counter now: a
+ * server action that touches a catalogue table and writes must either call this
+ * or be listed there with what it actually writes.
  *
  * ONE WRITE PATH DELIBERATELY DOES NOT INVALIDATE: `server/payments/finalize.ts`
  * decrements `stock_quantity` after every purchase. Invalidating the whole
