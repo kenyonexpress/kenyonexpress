@@ -71,7 +71,7 @@ deploy is at least visible.
 | 11 PAYMENTS | ✅ | State machine is `pending → paid → split_executed`; `authorized`/`captured` belong to the escrow model migration 085 removed. Cardcom sends no signature to verify. |
 | 12 VOUCHERS | ✅ | `randomBytes` Crockford base32, rate-limited manual entry, immutable redemption log. |
 | 13 OBSERVABILITY | ⚠️ | `/api/health` answers 200 but checks the DATABASE ONLY; `/api/ready` carries five checks and 404s in production. |
-| 14 PERFORMANCE | ⚠️ | LCP and TTFB pass. Bundle 255.8 KB against a 180 KB target (42% over). **Checkout CLS 0.357** against a 0.05 budget. |
+| 14 PERFORMANCE | ⚠️ | LCP and TTFB pass. Bundle 255.8 KB against a 180 KB target (42% over). **`/cart` CLS 0.357** against a 0.05 budget — corrected 2026-09-08, this was reported as checkout and was the cart all along. Query plans measured; no index warranted. |
 | 15 SEO | ✅ fixed | hreflang and the RSS feed link were configured in the root layout and served on ZERO routes: 16 pages replaced the whole `alternates` field. Fixed via `alternatesFor()` and verified in the served HTML. |
 | 16 LEGAL | ✅ | No PAN in schema or data, verified by counting matches without selecting values. Five Hebrew RTL policies. GDPR deliberately not claimed. |
 | 17 TESTS | ✅ | Every named journey has a spec; k6 present with a real threshold table. The `access-control-allow-origin: *` seen in production is on Vercel's edge-cached HTML only, never on an API route. |
@@ -86,7 +86,7 @@ deploy is at least visible.
 | --- | --- | --- | --- |
 | 1 | **critical** | Production runs a 6-day-old build; the deploying host is invisible from this account | `/api/ready` 404; 11 ERROR deploys; no `kenyonexpress` project in the team |
 | 2 | **high** | `/suppliers` turns away every prospective supplier, live now | prod 307 → `/login` |
-| 3 | **high** | Checkout CLS 0.357, on the page where a shift moves money to the wrong control | Lighthouse, 3 shifts, largest 0.345 |
+| 3 | ~~high~~ **medium, CORRECTED 2026-09-08** | The 0.357 is **`/cart`**, not checkout. An unseeded sweep follows `/checkout` -> `/cart` (empty-cart redirect) and files the cart's metrics under checkout's name. Real checkout CLS is covered by a seeded test at < 0.1 and was fixed by `CheckoutShell` | `checkout/page.tsx:109`; `e2e/layout-stability.spec.ts`; `docs/PERF-REPORT.md` §4 |
 | 4 | medium | Cron alarm red on 20% of runs, masking any real failure | 6 of last 30 runs; `whatsapp=404` every time |
 | 5 | medium | Shared JS 42% over budget | 255.8 KB vs 180 KB |
 | 6 | medium | 8 active products whose slug and name describe different products | `/product/שעון-אפל...` renders "ארוחת בוקר זוגית" |

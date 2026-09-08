@@ -13,7 +13,7 @@ Read the caveat section before quoting any number here.
 | --- | --- | --- | --- |
 | Shared first-load JS | < 180 KB gz | **255.8 KB gz** | ❌ over by 42% |
 | LCP | < 2.0 s | 1.2 s home, 0.9 s product, 1.2 s checkout | ✅ (see caveat) |
-| CLS | < 0.05 | 0.011 home, 0.012 product, **0.357 checkout** | ❌ on checkout |
+| CLS | < 0.05 | 0.011 home, 0.012 product, **0.357 `/cart`** | ❌ on `/cart` (see §4: this was misreported as checkout) |
 | TTFB | < 200 ms | 10 ms | ✅ (see caveat) |
 
 Two pass, two do not, and the two that fail fail for unrelated reasons.
@@ -28,11 +28,12 @@ Desktop preset, headless Chrome, production build.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `/` | 97 | 96 | 96 | 100 | 1.2 s | 0.011 | 0 ms |
 | `/product/<slug>` | 99 | 100 | 96 | 100 | 0.9 s | 0.012 | 0 ms |
-| `/checkout` | **80** | 100 | 96 | 69 | 1.2 s | **0.357** | 0 ms |
+| `/checkout` -> **actually `/cart`** | **80** | 100 | 96 | 69 | 1.2 s | **0.357** | 0 ms |
 
-The SEO 69 on `/checkout` is not a defect. That page is disallowed in
-`robots.txt` and carries no canonical by design; Lighthouse scores it as a
-document it was never meant to score.
+**That row is mislabelled and section 4 explains why:** an unseeded
+`/checkout` redirects to `/cart`, so these are the cart's numbers. The SEO 69
+is still not a defect - `robots.ts` disallows both routes and neither sets a
+canonical, so Lighthouse is scoring a document it was never meant to score.
 
 ---
 
@@ -109,41 +110,78 @@ spec target is a known, tracked shortfall and not a regression.
 
 ---
 
-## 4. The one real defect: CLS 0.357 on checkout
+## 4. CORRECTED 2026-09-08: the 0.357 is the CART's, not checkout's
 
-Home and product sit at 0.011 and 0.012. Checkout is **0.357**, seven times
-the budget, and it is the worst page in the product to have layout shift on: a
-form that jumps while somebody is entering payment details causes mis-taps on
-the controls that move money.
+**This section previously read "The one real defect: CLS 0.357 on checkout" and
+hypothesised the shared header logo. Both halves were wrong.** It is left
+rewritten rather than deleted, because the number reached
+`docs/LAUNCH-READINESS-2026-09-08.md` as a high-severity launch risk and the
+retraction has to be as findable as the claim.
 
-Lighthouse reports three shifts, and the first one is almost all of it:
+### What actually happened
 
+`src/app/(store)/checkout/page.tsx` line 109:
+
+```ts
+if (cart.items.length === 0) redirect('/cart')
 ```
-0.3452  Media element lacking an explicit size
-0.0112  Media element lacking an explicit size
-0.0006  Media element lacking an explicit size + three web fonts loading
+
+`scripts/lighthouse-sweep.mjs` runs unseeded, so its cart is always empty.
+Lighthouse followed the redirect and reported `/cart`'s metrics. The row was
+filed under the name `checkout`, and I quoted it as checkout's.
+
+Every number in the `/checkout` row of section 2 - perf 80, SEO 69, CLS 0.357 -
+is `/cart`'s. The SEO 69 explanation still holds, because `robots.ts` disallows
+both and neither sets a canonical; only the label was wrong.
+
+### The mechanism I guessed was wrong too
+
+I proposed the header logo: explicit `width={300} height={79}` plus
+`h-handheld-logo-h w-auto`. The arithmetic refutes it - the intrinsic ratio is
+300/79, so a CSS height of 79px with `w-auto` reproduces exactly 300x79 and
+cannot shift.
+
+### The real checkout CLS was already found and already fixed
+
+`src/app/(store)/checkout/CheckoutShell.tsx` is the Suspense fallback, and its
+docblock records the genuine defect: the fallback used to be the heading alone,
+the footer painted under the `h1`, and the form pushed it ~700px down -
+**measured at CLS 0.2190 on a seeded cart**. It now reserves the real boxes
+using the real classes.
+
+That docblock also names this exact trap, before I fell into it:
+
+> it survived here because the CLS sweep visits `/checkout` with an EMPTY cart,
+> which bounces to `/cart` and measures the cart under this route's name. The
+> gate that found it seeds first.
+
+`e2e/layout-stability.spec.ts` carries that gate. It adds a product through the
+UI, then asserts the URL before the budget:
+
+```ts
+expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain('/checkout')
+expect(cls, `/checkout shifted ${cls.toFixed(4)}`).toBeLessThan(CLS_GOOD)   // 0.1
 ```
 
-**WHAT IS NOT YET ESTABLISHED.** All three `<img>` elements on the page carry
-explicit `width` and `height` attributes, checked in the served HTML, so the
-cause is not a missing attribute. The likely mechanism is the shared header
-logo, which pairs those attributes with `class="h-handheld-logo-h w-auto"` -
-a CSS height plus an automatic width, which changes the box once CSS applies.
-The token values make that plausible: `--spacing-handheld-logo-h` is 26px and
-`--spacing-logo-h` is 79px against an intrinsic 300x79.
+Not skipped. So the page where money changes hands has cover, and it is under
+0.1.
 
-That mechanism is **not proven**, and it does not obviously explain why the
-same header costs 0.011 on the homepage and 0.345 here. The honest reading is
-that checkout's viewport is almost entirely form, so any header height change
-moves a much larger fraction of the page - CLS is impact fraction times
-distance fraction, and impact is what differs.
+### What is still open, stated narrowly
 
-It was left unfixed deliberately. The header is shared by every route and is
-measured by the pixel-parity gate, so changing it is a change to every page's
-geometry, and it should be done as a focused pass that re-measures both CLS
-and `compare.mjs` rather than as a footnote to a performance report.
+**`/cart` shifted 0.357 and that is a real number on a real page.** It is not
+the money page, so it does not carry the severity the original entry claimed,
+but it is seven times the budget on the last step before checkout. It has not
+been re-measured here: doing so needs `pnpm build` plus Lighthouse, and a
+parallel agent is holding uncommitted work in this checkout, where concurrent
+builds are recorded as OOMing each other. Measuring `/cart` properly is the
+next performance task.
 
----
+### Fixed at the source
+
+`scripts/lighthouse-sweep.mjs` now records `finalPath` and `redirected` on every
+row, prints `-> MEASURED /cart, NOT /checkout` inline, and lists every bounced
+route at the end. The sweep could not previously tell anyone which page it had
+measured.
 
 ## 5. Caveats, so these numbers are not quoted as production truth
 
