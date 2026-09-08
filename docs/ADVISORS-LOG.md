@@ -256,3 +256,31 @@ largest number in the report, it looks like an obvious cleanup, and acting on it
 would be the single most damaging thing available in this document. Recorded so
 that the next pass does not "fix" it.
 
+---
+
+## Round 4 — 2026-09-08, maintenance pass 39
+
+**No delta.** Security 23 findings, performance 191, the same counts and the same
+items as round 3, which assessed every one of them.
+
+| lint | round 3 | round 4 |
+| --- | --- | --- |
+| `function_search_path_mutable` | 1 | 1 (`set_updated_at`, migration 177 still pending) |
+| `anon_security_definer_function_executable` | 2 | 2 |
+| `authenticated_security_definer_function_executable` | 20 | 20 |
+| `unused_index` | 174 | 174 |
+| `multiple_permissive_policies` | 15 | 15 |
+| `unindexed_foreign_keys` | 1 | 1 |
+| `auth_db_connections_absolute` | 1 | 1 |
+
+Recorded because a round that finds nothing is a result, and because the next
+round should be able to see that these numbers have been flat across two
+readings rather than re-derive the verdicts a third time.
+
+### What the round did surface, indirectly
+
+The function list named `escrow_holds` and its indexes, and the business model
+has had no escrow since 2026-07-28. Chasing that found a live admin surface
+still promising a release. It is written up in `STATE.md` under maintenance pass
+39; the short version is that `escrow_holds` holds two real rows, they are
+history, they stay, and the labels around them no longer describe a future.
