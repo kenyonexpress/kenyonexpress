@@ -182,7 +182,28 @@ describe('voucher expiry cron', () => {
       // recover an email is the wrong trade in either direction.
       const response = await GET(request('Bearer s3cret'))
       expect(response.status).toBe(200)
-      expect(await response.json()).toEqual({ ok: true, expired: 5, credited: 6, reminders: 0 })
+      expect(await response.json()).toEqual({
+        ok: true,
+        expired: 5,
+        credited: 6,
+        reminders: 0,
+        reminders_error: 'outbox down',
+      })
+    })
+
+    it('is distinguishable from a night when nobody needed reminding', async () => {
+      // The point of `reminders_error`. Before it, this body and the healthy
+      // no-op body were the same object, and both were asserted to be, so a
+      // dashboard watching the JSON would have read a dead mailer as a quiet
+      // night for as long as it lasted.
+      const failed = await (await GET(request('Bearer s3cret'))).json()
+
+      rpc.mockImplementation(() => Promise.resolve({ data: 0, error: null }))
+      const quiet = await (await GET(request('Bearer s3cret'))).json()
+
+      expect(quiet.reminders).toBe(failed.reminders)
+      expect(quiet).not.toHaveProperty('reminders_error')
+      expect(failed.reminders_error).toBe('outbox down')
     })
   })
 

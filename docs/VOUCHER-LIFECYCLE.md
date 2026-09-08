@@ -271,20 +271,46 @@ Two deadlines, deliberately separate:
 The sweep is `expire_vouchers()`, reached through the Vercel cron route
 `/api/cron/expire-vouchers`. Two companions:
 
-- `enqueue_expiring_voucher_notices()` warns holders before the deadline, via
-  `notification_outbox`.
+- `enqueue_expiring_voucher_notices(p_buckets)` warns holders before the
+  deadline, via `notification_outbox`. The buckets are **7 and 1 days
+  remaining** - the function defaults to `ARRAY[7, 1]` and the route passes
+  `[7, 1]` explicitly - and the dedupe key carries the bucket, so a holder gets
+  each reminder once and never twice for the same one.
 - `credit_expired_vouchers()` handles the goodwill credit path for vouchers that
   expired unredeemed.
 
 Migration `125_expire_vouchers_drop_escrow` rewrote `expire_vouchers()` to drop
 the escrow leg, because there is no escrow to release.
 
-> **Operational warning.** No scheduler is currently running. The cron routes
-> exist and are correct, but they were removed from `vercel.json` on purpose
-> (see `docs/RUNBOOK.md` §2 and `docs/CRON-EXTERNAL.md`). Until a scheduler is
-> switched on, **vouchers do not expire on their own and expiry warnings are
-> never sent.** This is the highest-impact consequence of the unscheduled cron
-> situation on the voucher path.
+### The scheduler: corrected 2026-09-08
+
+This section carried an operational warning saying no scheduler was running, and
+that **"vouchers do not expire on their own and expiry warnings are never
+sent"**. That stopped being true on 2026-09-02 and the warning stayed. It named
+itself the highest-impact consequence on the voucher path, so it was the worst
+sentence here to leave stale.
+
+Measured on 2026-09-08, from the workflow's own run logs rather than from
+`vercel.json`:
+
+```
+scheduler          .github/workflows/cron.yml, vars.CRON_SCHEDULER_ENABLED = true
+job list           scripts/cron-jobs.json ON main - schedule: fires from the
+                   default branch, and the workflow checks out with no ref:
+expire-vouchers    present in main's list, cron '15 23 * * *'
+a real invocation  run 34175710698 -> `expire-vouchers -> 200`
+base url           CRON_BASE_URL is empty; the script falls back to
+                   https://kenyonexpress.vercel.app, which answers
+```
+
+So the sweep runs nightly and the T-7/T-1 notices are queued with it.
+
+**What IS still true, and is a different problem.** The list that runs is
+`main`'s. Two jobs exist only on `closeout/v1-final` and are therefore never
+called at all - `retention` and `weekly-digest` - and one exists only on `main`
+and 404s when called - `whatsapp`. Neither touches the voucher path.
+`scripts/audit-cron-drift.mjs` measures that divergence and is the place it is
+tracked.
 
 ---
 

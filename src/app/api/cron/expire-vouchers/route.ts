@@ -76,8 +76,31 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     { p_buckets: [7, 1] },
   )
   if (reminderError) {
+    // 200 IS RIGHT AND THE BARE `reminders: 0` WAS NOT.
+    //
+    // Answering 200 is deliberate and argued in the tests: a retry would re-run
+    // two money legs to recover a mailer. But this body used to be
+    // `{ ok: true, expired, credited, reminders: 0 }`, which is byte-identical
+    // to a healthy run on a night when no voucher was within seven days of
+    // expiry - and the suite pinned BOTH shapes to that same object, so the
+    // collision was asserted rather than noticed. A cron dashboard reading this
+    // JSON could not tell "nobody needed reminding" from "the reminder call
+    // failed", and the T-7/T-1 notices could stop for good while every run
+    // reported success.
+    //
+    // The leg directly above already does this correctly: the credit failure
+    // returns `credited: 0` AND `error`. This now follows that convention.
+    // `reminders` stays 0 rather than becoming null, because
+    // "reports zero rather than null" is its own deliberate decision one test
+    // below; the discriminator is added beside it, not in place of it.
     log.error('vouchers.expiry_reminders_failed', { reason: reminderError.message })
-    return NextResponse.json({ ok: true, expired, credited, reminders: 0 })
+    return NextResponse.json({
+      ok: true,
+      expired,
+      credited,
+      reminders: 0,
+      reminders_error: reminderError.message,
+    })
   }
 
   return NextResponse.json({ ok: true, expired, credited, reminders: reminders ?? 0 })
