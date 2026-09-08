@@ -69,22 +69,31 @@ function cell(value) {
     .slice(0, 160)
 }
 
+/** The first value that is actually there. An empty string is not a note. */
+function firstNote(...values) {
+  return values.map(cell).find((value) => value !== '') ?? ''
+}
+
 /**
- * WHY THE NOTE COMES FROM THE ENVIRONMENT.
+ * WHY THE NOTE IS RESOLVED HERE, AND WHY `??` WAS THE WRONG OPERATOR.
  *
- * `notes` has been a parameter of this function since it was written and NO
- * CALLER HAS EVER PASSED ONE, so the column the header calls the place "the
- * cause belongs" has only ever been empty. It could not be filled without
- * threading an argument through compare.mjs and diff-bands.mjs to get here.
+ * The column the header calls the place "the cause belongs" had never been
+ * filled in the file's history. `COMPARE_NOTES` existed the whole time -
+ * diff-bands.mjs reads it - but it passes `notes: process.env.COMPARE_NOTES ??
+ * ''`, so this function receives an explicit EMPTY STRING on every run, and an
+ * empty string is not null: any `??` fallback here is dead code the caller can
+ * never reach.
  *
- * MEASURED, 2026-09-08: seven rows written in one session, four from a
- * next 16.2.12 build and three from 16.3.4, every one labelled with the same
- * `-dirty` commit because the version bump was uncommitted while it was being
- * measured. Identical rows, and nothing in the file able to say that two of
- * them are the before and after of the thing the session existed to measure.
+ * MEASURED TWICE, 2026-09-08. First: seven rows in one session, four from a
+ * next 16.2.12 build and three from 16.3.4, every one carrying the same
+ * `-dirty` commit because the bump was uncommitted while being measured -
+ * identical rows, nothing able to say which was the before and which the after.
+ * Then, fixing that, five more empty rows - because the fallback added for it
+ * used `??` against the caller's empty string and was itself inert, while a
+ * second env var was invented for a job the first one already had.
  *
- * PARITY_NOTE is read here rather than parsed as a flag so it reaches this
- * function no matter which script above it did the measuring.
+ * So: one variable, the one that already existed, and emptiness treated as
+ * absence rather than as a value.
  *
  * @param {{page: string, width: number, pct: number, notes?: string, when?: string, commit?: string}} row
  */
@@ -96,7 +105,7 @@ export function appendParityRow(row) {
   const when = row.when ?? new Date().toISOString().replace('T', ' ').slice(0, 16)
   const verdict = row.pct <= GATE_CEILING ? 'PASS' : '**FAIL**'
   const commit = row.commit ?? commitHash()
-  const notes = cell(row.notes ?? process.env.PARITY_NOTE ?? '')
+  const notes = firstNote(row.notes, process.env.COMPARE_NOTES)
   appendFileSync(
     path,
     `| ${when} | ${row.page} | ${row.width} | ${row.pct.toFixed(2)}% | ${verdict} | \`${commit}\` | ${notes} |\n`,
@@ -127,7 +136,7 @@ export function appendParityFailure(row) {
   }
   const when = row.when ?? new Date().toISOString().replace('T', ' ').slice(0, 16)
   const commit = row.commit ?? commitHash()
-  const note = cell(process.env.PARITY_NOTE ?? '')
+  const note = firstNote(process.env.COMPARE_NOTES)
   const reason = cell(row.reason ?? 'unknown') + (note ? ` -- ${note}` : '')
   appendFileSync(
     path,

@@ -23,7 +23,7 @@ afterEach(() => {
   process.chdir(cwd)
   rmSync(dir, { recursive: true, force: true })
   // biome-ignore lint/performance/noDelete: unsetting an env var - assignment stores the string "undefined"
-  delete process.env.PARITY_NOTE
+  delete process.env.COMPARE_NOTES
 })
 
 const report = () => readFileSync(join(dir, 'docs/UI-PARITY-REPORT.md'), 'utf8')
@@ -39,22 +39,38 @@ describe('appendParityRow', () => {
 
   // The column the header calls the place "the cause belongs" was unreachable:
   // `notes` had no caller, so every row ever written left it empty.
-  it('fills the notes column from PARITY_NOTE', () => {
-    process.env.PARITY_NOTE = 'next 16.3.4'
+  it('fills the notes column from COMPARE_NOTES', () => {
+    process.env.COMPARE_NOTES = 'next 16.3.4'
     appendParityRow({ page: 'home', width: 1440, pct: 8.29 })
     expect(report()).toContain('| next 16.3.4 |')
   })
 
   it('lets an explicit note win over the environment', () => {
-    process.env.PARITY_NOTE = 'from the environment'
+    process.env.COMPARE_NOTES = 'from the environment'
     appendParityRow({ page: 'home', width: 1440, pct: 8.29, notes: 'from the caller' })
     expect(report()).toContain('from the caller')
     expect(report()).not.toContain('from the environment')
   })
 
+  // THE REGRESSION. diff-bands.mjs passes `notes: process.env.COMPARE_NOTES ??
+  // ''`, so this function is handed an empty string on every single run. A `??`
+  // fallback is unreachable behind it, which is exactly how the first version of
+  // this feature shipped inert and wrote five more blank rows.
+  it('reads the environment even when the caller passes an empty note', () => {
+    process.env.COMPARE_NOTES = 'next 16.3.4'
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29, notes: '' })
+    expect(report()).toContain('next 16.3.4')
+  })
+
+  it('is not fooled by a note that is only whitespace', () => {
+    process.env.COMPARE_NOTES = 'the real note'
+    appendParityRow({ page: 'home', width: 1440, pct: 8.29, notes: '   ' })
+    expect(report()).toContain('the real note')
+  })
+
   // A pipe or a newline in a note silently breaks the table it is written into.
   it('cannot break the table with a pipe or a newline', () => {
-    process.env.PARITY_NOTE = 'next 16.3.4 | rebuilt\nand restarted'
+    process.env.COMPARE_NOTES = 'next 16.3.4 | rebuilt\nand restarted'
     appendParityRow({ page: 'home', width: 1440, pct: 8.29 })
     const row = report().trim().split('\n').at(-1) ?? ''
     expect(row.split('|')).toHaveLength(9)
@@ -65,7 +81,7 @@ describe('appendParityRow', () => {
   // deletes instead - the state a machine that never set the variable is in.
   it('writes no note when none is set, rather than the string undefined', () => {
     // biome-ignore lint/performance/noDelete: unsetting an env var, which is the state under test
-    delete process.env.PARITY_NOTE
+    delete process.env.COMPARE_NOTES
     appendParityRow({ page: 'home', width: 1440, pct: 8.29 })
     expect(report()).not.toContain('undefined')
   })
@@ -81,7 +97,7 @@ describe('appendParityFailure', () => {
   })
 
   it('carries the note alongside the reason', () => {
-    process.env.PARITY_NOTE = 'next 16.3.4'
+    process.env.COMPARE_NOTES = 'next 16.3.4'
     appendParityFailure({ page: 'home', width: 380, reason: 'screenshot failed' })
     expect(report()).toContain('screenshot failed -- next 16.3.4')
   })

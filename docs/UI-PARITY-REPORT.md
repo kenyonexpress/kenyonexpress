@@ -128,3 +128,9 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-08 14:59 | home | 380 | 30.26% | **FAIL** | `3e4529810-dirty` | next 16.3.4, same numbers to the hundredth; KNOWN-ISSUES 3 |
 | 2026-09-08 15:01 | home | 768 | 28.99% | **FAIL** | `3e4529810-dirty` | next 16.3.4, same numbers to the hundredth; KNOWN-ISSUES 3 |
 | 2026-09-08 15:03 | home | 1440 | 8.29% | PASS | `3e4529810-dirty` | next 16.3.4, same numbers to the hundredth |
+| 2026-09-08 15:15 | home | 380 | 30.26% | **FAIL** | `1d52bba8c-dirty` | react 19.2.8 + radix + tailwind 4.3.3 + lucide 1.42 sweep; unchanged; KNOWN-ISSUES 3 |
+| 2026-09-08 15:17 | home | 768 | 29.00% | **FAIL** | `1d52bba8c-dirty` | react 19.2.8 + radix + tailwind 4.3.3 + lucide 1.42 sweep; +0.01 on 28.99; KNOWN-ISSUES 3 |
+| 2026-09-08 15:18 | home | 1440 | 8.29% | PASS | `1d52bba8c-dirty` | react 19.2.8 + radix + tailwind 4.3.3 + lucide 1.42 sweep; unchanged |
+| 2026-09-08 15:20 | home | 768 | 29.00% | **FAIL** | `1d52bba8c-dirty` | react 19.2.8 + radix + tailwind 4.3.3 + lucide 1.42 sweep; repeat 2 of 3, deterministic |
+| 2026-09-08 15:22 | home | 768 | 29.00% | **FAIL** | `1d52bba8c-dirty` | react 19.2.8 + radix + tailwind 4.3.3 + lucide 1.42 sweep; repeat 3 of 3, deterministic |
+| 2026-09-08 15:25 | home | 1440 | 8.29% | PASS | `1d52bba8c-dirty` | react 19.2.8 + radix + tailwind 4.3.3 + lucide 1.42 sweep |
