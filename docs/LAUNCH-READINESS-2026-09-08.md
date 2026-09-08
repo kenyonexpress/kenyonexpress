@@ -11,9 +11,16 @@ deliberately preserved.
 
 ## Verdict
 
-> **NOT READY — and the blocker is not the code. 121 commits on this branch have
-> never reached a customer, and the host that serves them is not visible from
-> this account.**
+> **NOT READY — and the blocker is not the code. 183 commits on this branch have
+> never reached a customer, and the host that would serve them has been serving
+> a build from before 2026-09-02 the whole time.**
+
+*Corrected 2026-09-08, pass 57. This paragraph said "121 commits" and "the host
+that serves them is not visible from this account". The count is now 183, and
+the second half was wrong in a way that pointed the owner at the wrong task:
+the HOST is visible and answering. What is not visible is the Vercel PROJECT
+behind it, which is a narrower thing and does not stop a deploy from being
+pointed at a host that already resolves.*
 
 Everything below is measured. Where a number could not be measured, it says so
 rather than estimating.
@@ -51,6 +58,45 @@ everything the step asks for.
 
 > **NOT READY. Two decisions block the rest, and neither of them is code:
 > which host serves production, and which branch is the mainline.**
+
+### Re-derived again, pass 57: the first decision is answered
+
+The line above was right when it was written and half of it is now closed.
+**Which host serves production is known**, measured from the terminal rather
+than from the dashboard:
+
+```
+https://kenyonexpress.co.il/       308 -> www, valid certificate
+https://www.kenyonexpress.co.il/   200, valid certificate
+https://kenyonexpress.vercel.app/  200, the same build
+```
+
+All three answer, all three carry TLS, and the cron scheduler has been driving
+production traffic through the third for weeks. The earlier reading - that no
+host was visible - came from `/api/ready` returning 404 and no project appearing
+in the Vercel team. **A 404 on `/api/ready` is not "no host". It is "old
+build":** that route landed 2026-09-02, exists on both branches, and needs no
+credential. `scripts/audit-deployed-build.mjs` brackets the running build
+between 2026-08-20 and 2026-09-02.
+
+So the question is no longer where to deploy. It is why nothing has.
+
+**The second decision did not move, and it grew a third consequence.** Beyond
+the seven colliding migration numbers and the cron job list, pass 56 measured
+that `.github/dependabot.yml` and `scripts/nightly-health.sh` also differ from
+`main` - and the platform reads both from the default branch. Two fixes made by
+this loop were therefore inert: a raised Dependabot limit that `main` still
+records as 5, and five newly wired audits the nightly does not run.
+`scripts/audit-default-branch-config.mjs` reports the class.
+
+### The one line, re-derived
+
+> **NOT READY. Two decisions block the rest, and neither of them is code: why
+> nothing deploys to the host that is already serving, and which branch is the
+> mainline.**
+
+The change is not cosmetic. "Find the host" is a search with no owner and no
+end; "point a deploy at a host that already resolves" is a task with both.
 
 The first was already risk 1. The second was risk-free bookkeeping when it was
 found in pass 7 and is not any more:
@@ -153,7 +199,7 @@ deploy is at least visible.
 | 2 | **high** | `/suppliers` turns away every prospective supplier, live now | prod 307 → `/login` |
 | 2b | **high, new 2026-09-08 pass 52** | Every canonical the site declares names the apex `kenyonexpress.co.il`, which **308-redirects to `www.`** — so the effective canonical is the host the code never names. Affects `rel=canonical`, `og:url`, `robots.txt` Host and Sitemap, and every sitemap `<loc>` | `node scripts/audit-canonical-host.mjs`; KNOWN-ISSUES #11 |
 | 3 | ~~high~~ **medium, CORRECTED 2026-09-08** | The 0.357 is **`/cart`**, not checkout. An unseeded sweep follows `/checkout` -> `/cart` (empty-cart redirect) and files the cart's metrics under checkout's name. Real checkout CLS is covered by a seeded test at < 0.1 and was fixed by `CheckoutShell` | `checkout/page.tsx:109`; `e2e/layout-stability.spec.ts`; `docs/PERF-REPORT.md` §4 |
-| 4 | **high, rediagnosed 2026-09-08** | The scheduler runs from the DEFAULT branch, so it uses `main`'s job list, not this one's. Two effects: `whatsapp` is called and 404s (6 of last 30, exactly 20%, latest 04:53 today), and **`retention` and `weekly-digest` are never called at all** — `main`'s list omits them. `retention` ages `audit_log` IPs past 365 days via `fn_audit_retention_sweep()`, and migration 157 IS applied, so the function exists and has simply never been invoked. The red alarm was at least visible; the unscheduled job is silent. `scripts/audit-cron-drift.mjs`; the fix is the mainline decision. |
+| 4 | **high, rediagnosed 2026-09-08** | The scheduler runs from the DEFAULT branch, so it uses `main`'s job list, not this one's. Two effects: `whatsapp` is called and 404s (6 of last 30, exactly 20%, latest 04:53 today), and **`retention` and `weekly-digest` are never called at all** — `main`'s list omits them. `retention` ages `audit_log` IPs past 365 days via `fn_audit_retention_sweep()`, and migration 157 IS applied, so the function exists and has simply never been invoked. The red alarm was at least visible; the unscheduled job is silent. `scripts/audit-cron-drift.mjs`; the fix is the mainline decision. **Widened 2026-09-08 pass 56:** the cron list is one file in a class. The platform reads `.github/dependabot.yml` and `scripts/nightly-health.sh` from the default branch too, and both differ here — so a raised Dependabot PR limit (`main` still records 5) and five newly wired audits (`main`'s nightly has 5 run steps to this branch's 9) are both inert. Each edit is correct in the file, passes review and passes CI; the failure is only in which copy the platform reads. `scripts/audit-default-branch-config.mjs`, report-only in CI. |
 | 5 | medium | Per-route JS 69% over budget | 303.2 KB browser / 323.4 KB first-load vs 180 KB (shared floor 255.8 KB; framework runtime alone is 130 KB). Ratcheted in CI since pass 38 so it cannot grow. |
 | 6 | medium | 8 active products whose slug and name describe different products | `/product/שעון-אפל...` renders "ארוחת בוקר זוגית". **Related, found 2026-09-08 and fixed:** the admin slug rule was `^[a-z0-9-]+$`, Latin only, while 36 of 45 active products carry a Hebrew slug from the WordPress import — so **80% of the catalogue could not be saved through the admin form at all**, failing on a field the editor never touched. |
 | 7 | low | 90 touch targets still under 44px, 32 of them one homepage label. **Corrected 2026-09-08:** the probe that produced this includes `/checkout`, which bounces to `/cart` unseeded, so part of that total is the cart counted twice. `scripts/_touch-targets.mjs` now records `finalPath`; the figure needs one re-run to be exact | measured at 380px |

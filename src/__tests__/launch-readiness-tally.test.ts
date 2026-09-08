@@ -78,7 +78,29 @@ describe('the verdict', () => {
     // measured it causing three live failures, so it is a blocker in its own
     // right and the one-line verdict has to carry both.
     expect(DOC).toContain('NOT READY')
+    expect(DOC).toContain('which branch is the mainline')
+  })
+
+  it('states the CURRENT first decision, not the one that was answered', () => {
+    // Pass 57. "Which host serves production" was the first decision until it
+    // was measured from the terminal: the apex, www and the vercel.app alias
+    // all answer 200 with valid TLS, and the cron scheduler has been driving
+    // production traffic through one of them for weeks. What looked like "no
+    // host" was a 404 on /api/ready, which landed 2026-09-02 and is simply
+    // absent from an older build.
+    //
+    // The distinction is the whole value of the line: "find the host" is a
+    // search with no owner and no end; "point a deploy at a host that already
+    // resolves" is a task with both.
+    expect(DOC).toContain('why\n> nothing deploys to the host that is already serving')
+  })
+
+  it('keeps the superseded line rather than overwriting it', () => {
+    // The earlier verdict stays as the record of what was believed and why it
+    // changed. Replacing it in place would hide that this document has been
+    // wrong about the most important sentence in it.
     expect(DOC).toContain('which host serves production, and which branch is the mainline')
+    expect(DOC).toContain('the first decision is answered')
   })
 
   it('keeps the correction to its own opening claim', () => {
