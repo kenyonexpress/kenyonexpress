@@ -754,7 +754,18 @@ export async function finalizeOrder(input: {
       return { ok: false, error: `order update failed: ${orderError.message}`, code: 'INTERNAL' }
     }
 
-    await admin.from('audit_log').insert({
+    // BEST EFFORT, BUT NOT SILENT. The card is already charged by this point,
+    // so a failed audit row must not turn a successful payment into an error an
+    // operator retries. What it must not do either is vanish: this is the row
+    // that records a customer's order becoming `paid`, and `audit_log` is
+    // append-only since migration 149, so a future constraint or policy change
+    // could start rejecting the insert with nothing anywhere to say so.
+    //
+    // `writeAuditLog` in lib/admin/audit.ts has logged this since it was
+    // written. The two raw inserts in the money path - here and in
+    // actions/payments/refund.ts - did not, which is the wrong way round: these
+    // are the two rows that matter most.
+    const { error: auditError } = await admin.from('audit_log').insert({
       actor_id: null,
       actor_role: null,
       action: 'status_change',
@@ -763,6 +774,13 @@ export async function finalizeOrder(input: {
       changes: { status: { from: 'pending', to: 'paid' } } as unknown as Json,
       metadata: { source: 'checkout_finalize', payment_id: input.paymentId } as unknown as Json,
     })
+    if (auditError) {
+      log.error('finalize.audit_write_failed', {
+        order_id: order.id,
+        payment_id: input.paymentId,
+        reason: auditError.message,
+      })
+    }
 
     // The funnel's terminal event (marathon step 14). Swallows its own
     // errors; a finalize that already charged a card must never fail on

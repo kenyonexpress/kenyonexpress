@@ -355,7 +355,13 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       log.warn('refund.credit_note_not_queued', { order_id: order.id, payment_id: paymentId })
     }
 
-    await admin.from('audit_log').insert({
+    // Best effort and NOT silent, for the same reason as finalize.ts: the card
+    // is already credited, so this must not fail the refund - but this is the
+    // one row that justifies a money reversal (BUSINESS-RULES section 10), and
+    // losing it without a word is worse than the null actor that was fixed here
+    // earlier. A refund with no audit row is indistinguishable from a refund
+    // nobody authorised.
+    const { error: auditError } = await admin.from('audit_log').insert({
       // requireAdminSession() proved WHO this is at the top of the action;
       // writing null here made the one log that justifies a money reversal
       // say "an admin, we don't know which" (BUSINESS-RULES §10, fixed
@@ -377,6 +383,14 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
         reason: input.reason,
       } as unknown as Json,
     })
+    if (auditError) {
+      log.error('refund.audit_write_failed', {
+        order_id: order.id,
+        payment_id: paymentId,
+        actor_id: session.userId,
+        reason: auditError.message,
+      })
+    }
 
     // Told last, and best-effort, for the same reason the credit note is
     // queued rather than called: the card has already been credited by the
