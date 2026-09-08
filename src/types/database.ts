@@ -1,16 +1,10 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: '14.5'
   }
   public: {
     Tables: {
@@ -56,25 +50,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "abandoned_cart_nudges_cart_id_fkey"
-            columns: ["cart_id"]
+            foreignKeyName: 'abandoned_cart_nudges_cart_id_fkey'
+            columns: ['cart_id']
             isOneToOne: true
-            referencedRelation: "carts"
-            referencedColumns: ["id"]
+            referencedRelation: 'carts'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "abandoned_cart_nudges_recovered_order_id_fkey"
-            columns: ["recovered_order_id"]
+            foreignKeyName: 'abandoned_cart_nudges_recovered_order_id_fkey'
+            columns: ['recovered_order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "abandoned_cart_nudges_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'abandoned_cart_nudges_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -90,7 +84,7 @@ export type Database = {
           id: string
           payout_details: Json
           payout_method: string | null
-          status: Database["public"]["Enums"]["affiliate_status"]
+          status: Database['public']['Enums']['affiliate_status']
           total_clicks: number
           total_conversions: number
           total_earnings_ils: number
@@ -109,7 +103,7 @@ export type Database = {
           id?: string
           payout_details?: Json
           payout_method?: string | null
-          status?: Database["public"]["Enums"]["affiliate_status"]
+          status?: Database['public']['Enums']['affiliate_status']
           total_clicks?: number
           total_conversions?: number
           total_earnings_ils?: number
@@ -128,7 +122,7 @@ export type Database = {
           id?: string
           payout_details?: Json
           payout_method?: string | null
-          status?: Database["public"]["Enums"]["affiliate_status"]
+          status?: Database['public']['Enums']['affiliate_status']
           total_clicks?: number
           total_conversions?: number
           total_earnings_ils?: number
@@ -233,7 +227,7 @@ export type Database = {
       }
       audit_log: {
         Row: {
-          action: Database["public"]["Enums"]["audit_action"]
+          action: Database['public']['Enums']['audit_action']
           actor_id: string | null
           actor_role: string | null
           after: Json | null
@@ -249,7 +243,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
-          action: Database["public"]["Enums"]["audit_action"]
+          action: Database['public']['Enums']['audit_action']
           actor_id?: string | null
           actor_role?: string | null
           after?: Json | null
@@ -265,7 +259,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
-          action?: Database["public"]["Enums"]["audit_action"]
+          action?: Database['public']['Enums']['audit_action']
           actor_id?: string | null
           actor_role?: string | null
           after?: Json | null
@@ -363,11 +357,92 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "carts_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'carts_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      cashback_ledger: {
+        Row: {
+          amount_agorot: number
+          basis_agorot: number | null
+          created_at: string
+          created_by: string | null
+          entry_type: string
+          id: string
+          idempotency_key: string
+          order_id: string | null
+          percent_bp: number | null
+          reason: string | null
+          user_id: string
+          wallet_entry_id: string | null
+        }
+        Insert: {
+          amount_agorot: number
+          basis_agorot?: number | null
+          created_at?: string
+          created_by?: string | null
+          entry_type: string
+          id?: string
+          idempotency_key: string
+          order_id?: string | null
+          percent_bp?: number | null
+          reason?: string | null
+          user_id: string
+          wallet_entry_id?: string | null
+        }
+        Update: {
+          amount_agorot?: number
+          basis_agorot?: number | null
+          created_at?: string
+          created_by?: string | null
+          entry_type?: string
+          id?: string
+          idempotency_key?: string
+          order_id?: string | null
+          percent_bp?: number | null
+          reason?: string | null
+          user_id?: string
+          wallet_entry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'cashback_ledger_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'cashback_ledger_order_id_fkey'
+            columns: ['order_id']
+            isOneToOne: false
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'cashback_ledger_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'cashback_ledger_wallet_entry_id_fkey'
+            columns: ['wallet_entry_id']
+            isOneToOne: false
+            referencedRelation: 'v_wallet_ledger'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'cashback_ledger_wallet_entry_id_fkey'
+            columns: ['wallet_entry_id']
+            isOneToOne: false
+            referencedRelation: 'wallet_entries'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -419,11 +494,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cashback_rules_category_id_fkey"
-            columns: ["category_id"]
+            foreignKeyName: 'cashback_rules_category_id_fkey'
+            columns: ['category_id']
             isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
+            referencedRelation: 'categories'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -431,6 +506,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           description_he: string | null
           icon_url: string | null
           id: string
@@ -446,6 +522,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description_he?: string | null
           icon_url?: string | null
           id?: string
@@ -461,6 +538,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           description_he?: string | null
           icon_url?: string | null
           id?: string
@@ -475,11 +553,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "categories_parent_id_fkey"
-            columns: ["parent_id"]
+            foreignKeyName: 'categories_parent_id_fkey'
+            columns: ['parent_id']
             isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
+            referencedRelation: 'categories'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -498,7 +576,7 @@ export type Database = {
           product_id: string | null
           qr_token: string
           redeemed_at: string | null
-          status: Database["public"]["Enums"]["coupon_status"]
+          status: Database['public']['Enums']['coupon_status']
           supplier_id: string | null
           updated_at: string
           user_id: string | null
@@ -517,7 +595,7 @@ export type Database = {
           product_id?: string | null
           qr_token: string
           redeemed_at?: string | null
-          status?: Database["public"]["Enums"]["coupon_status"]
+          status?: Database['public']['Enums']['coupon_status']
           supplier_id?: string | null
           updated_at?: string
           user_id?: string | null
@@ -536,46 +614,46 @@ export type Database = {
           product_id?: string | null
           qr_token?: string
           redeemed_at?: string | null
-          status?: Database["public"]["Enums"]["coupon_status"]
+          status?: Database['public']['Enums']['coupon_status']
           supplier_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "coupon_codes_order_item_id_fkey"
-            columns: ["order_item_id"]
+            foreignKeyName: 'coupon_codes_order_item_id_fkey'
+            columns: ['order_item_id']
             isOneToOne: false
-            referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedRelation: 'order_items'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "coupon_codes_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'coupon_codes_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "coupon_codes_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'coupon_codes_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "coupon_codes_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'coupon_codes_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "coupon_codes_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'coupon_codes_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -596,6 +674,7 @@ export type Database = {
           original_price: number
           original_price_agorot: number | null
           platform_price: number | null
+          search_vector: unknown
           status: string
           terms_he: string | null
           title_he: string
@@ -620,6 +699,7 @@ export type Database = {
           original_price: number
           original_price_agorot?: number | null
           platform_price?: number | null
+          search_vector?: unknown
           status?: string
           terms_he?: string | null
           title_he: string
@@ -644,6 +724,7 @@ export type Database = {
           original_price?: number
           original_price_agorot?: number | null
           platform_price?: number | null
+          search_vector?: unknown
           status?: string
           terms_he?: string | null
           title_he?: string
@@ -654,11 +735,118 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "coupon_deals_vendor_id_fkey"
-            columns: ["vendor_id"]
+            foreignKeyName: 'coupon_deals_vendor_id_fkey'
+            columns: ['vendor_id']
             isOneToOne: false
-            referencedRelation: "vendors"
-            referencedColumns: ["id"]
+            referencedRelation: 'vendors'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      coupon_qr_batches: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          quantity: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'coupon_qr_batches_campaign_id_fkey'
+            columns: ['campaign_id']
+            isOneToOne: false
+            referencedRelation: 'discount_campaigns'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'coupon_qr_batches_campaign_id_fkey'
+            columns: ['campaign_id']
+            isOneToOne: false
+            referencedRelation: 'v_discount_campaign_performance'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'coupon_qr_batches_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      coupon_qr_codes: {
+        Row: {
+          batch_id: string
+          campaign_id: string
+          code: string
+          created_at: string
+          id: string
+          redeemed_at: string | null
+          redeemed_order_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          batch_id: string
+          campaign_id: string
+          code: string
+          created_at?: string
+          id?: string
+          redeemed_at?: string | null
+          redeemed_order_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          batch_id?: string
+          campaign_id?: string
+          code?: string
+          created_at?: string
+          id?: string
+          redeemed_at?: string | null
+          redeemed_order_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'coupon_qr_codes_batch_id_fkey'
+            columns: ['batch_id']
+            isOneToOne: false
+            referencedRelation: 'coupon_qr_batches'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'coupon_qr_codes_campaign_id_fkey'
+            columns: ['campaign_id']
+            isOneToOne: false
+            referencedRelation: 'discount_campaigns'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'coupon_qr_codes_campaign_id_fkey'
+            columns: ['campaign_id']
+            isOneToOne: false
+            referencedRelation: 'v_discount_campaign_performance'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -722,11 +910,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "coupons_vendor_id_fkey"
-            columns: ["vendor_id"]
+            foreignKeyName: 'coupons_vendor_id_fkey'
+            columns: ['vendor_id']
             isOneToOne: false
-            referencedRelation: "vendors"
-            referencedColumns: ["id"]
+            referencedRelation: 'vendors'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -742,7 +930,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean
-          kind: Database["public"]["Enums"]["discount_kind"]
+          kind: Database['public']['Enums']['discount_kind']
           max_discount_agorot: number | null
           max_uses: number | null
           max_uses_per_user: number
@@ -764,7 +952,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
-          kind: Database["public"]["Enums"]["discount_kind"]
+          kind: Database['public']['Enums']['discount_kind']
           max_discount_agorot?: number | null
           max_uses?: number | null
           max_uses_per_user?: number
@@ -786,7 +974,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
-          kind?: Database["public"]["Enums"]["discount_kind"]
+          kind?: Database['public']['Enums']['discount_kind']
           max_discount_agorot?: number | null
           max_uses?: number | null
           max_uses_per_user?: number
@@ -826,32 +1014,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "discount_redemptions_campaign_id_fkey"
-            columns: ["campaign_id"]
+            foreignKeyName: 'discount_redemptions_campaign_id_fkey'
+            columns: ['campaign_id']
             isOneToOne: false
-            referencedRelation: "discount_campaigns"
-            referencedColumns: ["id"]
+            referencedRelation: 'discount_campaigns'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "discount_redemptions_campaign_id_fkey"
-            columns: ["campaign_id"]
+            foreignKeyName: 'discount_redemptions_campaign_id_fkey'
+            columns: ['campaign_id']
             isOneToOne: false
-            referencedRelation: "v_discount_campaign_performance"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_discount_campaign_performance'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "discount_redemptions_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'discount_redemptions_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "discount_redemptions_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'discount_redemptions_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -890,7 +1078,7 @@ export type Database = {
           release_agorot: number
           release_idempotency_key: string | null
           released_at: string | null
-          status: Database["public"]["Enums"]["escrow_status"]
+          status: Database['public']['Enums']['escrow_status']
           supplier_id: string
           updated_at: string
           voucher_id: string | null
@@ -908,7 +1096,7 @@ export type Database = {
           release_agorot: number
           release_idempotency_key?: string | null
           released_at?: string | null
-          status?: Database["public"]["Enums"]["escrow_status"]
+          status?: Database['public']['Enums']['escrow_status']
           supplier_id: string
           updated_at?: string
           voucher_id?: string | null
@@ -926,46 +1114,46 @@ export type Database = {
           release_agorot?: number
           release_idempotency_key?: string | null
           released_at?: string | null
-          status?: Database["public"]["Enums"]["escrow_status"]
+          status?: Database['public']['Enums']['escrow_status']
           supplier_id?: string
           updated_at?: string
           voucher_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "escrow_holds_coupon_code_id_fkey"
-            columns: ["coupon_code_id"]
+            foreignKeyName: 'escrow_holds_coupon_code_id_fkey'
+            columns: ['coupon_code_id']
             isOneToOne: true
-            referencedRelation: "coupon_codes"
-            referencedColumns: ["id"]
+            referencedRelation: 'coupon_codes'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "escrow_holds_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'escrow_holds_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "escrow_holds_order_item_id_fkey"
-            columns: ["order_item_id"]
+            foreignKeyName: 'escrow_holds_order_item_id_fkey'
+            columns: ['order_item_id']
             isOneToOne: false
-            referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedRelation: 'order_items'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "escrow_holds_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'escrow_holds_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "escrow_holds_voucher_id_fkey"
-            columns: ["voucher_id"]
+            foreignKeyName: 'escrow_holds_voucher_id_fkey'
+            columns: ['voucher_id']
             isOneToOne: false
-            referencedRelation: "vouchers"
-            referencedColumns: ["id"]
+            referencedRelation: 'vouchers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1080,18 +1268,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "invoices_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'invoices_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "invoices_payment_id_fkey"
-            columns: ["payment_id"]
+            foreignKeyName: 'invoices_payment_id_fkey'
+            columns: ['payment_id']
             isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            referencedRelation: 'payments'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1184,7 +1372,7 @@ export type Database = {
           resend_contact_id: string | null
           resend_synced_at: string | null
           source: string | null
-          status: Database["public"]["Enums"]["subscriber_status"]
+          status: Database['public']['Enums']['subscriber_status']
           unsubscribe_reason: string | null
           unsubscribe_token: string
           unsubscribed_at: string | null
@@ -1204,7 +1392,7 @@ export type Database = {
           resend_contact_id?: string | null
           resend_synced_at?: string | null
           source?: string | null
-          status?: Database["public"]["Enums"]["subscriber_status"]
+          status?: Database['public']['Enums']['subscriber_status']
           unsubscribe_reason?: string | null
           unsubscribe_token?: string
           unsubscribed_at?: string | null
@@ -1224,7 +1412,7 @@ export type Database = {
           resend_contact_id?: string | null
           resend_synced_at?: string | null
           source?: string | null
-          status?: Database["public"]["Enums"]["subscriber_status"]
+          status?: Database['public']['Enums']['subscriber_status']
           unsubscribe_reason?: string | null
           unsubscribe_token?: string
           unsubscribed_at?: string | null
@@ -1233,11 +1421,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "newsletter_subscribers_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'newsletter_subscribers_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1323,14 +1511,14 @@ export type Database = {
           face_value_agorot: number | null
           fulfilled_at: string | null
           id: string
-          item_status: Database["public"]["Enums"]["order_item_status"]
+          item_status: Database['public']['Enums']['order_item_status']
           order_id: string
           paid_on_site_agorot: number | null
           platform_percent: number | null
           product_id: string | null
-          product_type: Database["public"]["Enums"]["product_type"]
+          product_type: Database['public']['Enums']['product_type']
           quantity: number
-          settlement_status: Database["public"]["Enums"]["settlement_status"]
+          settlement_status: Database['public']['Enums']['settlement_status']
           shipped_at: string | null
           supplier_address: string | null
           supplier_id: string | null
@@ -1371,14 +1559,14 @@ export type Database = {
           face_value_agorot?: number | null
           fulfilled_at?: string | null
           id?: string
-          item_status?: Database["public"]["Enums"]["order_item_status"]
+          item_status?: Database['public']['Enums']['order_item_status']
           order_id: string
           paid_on_site_agorot?: number | null
           platform_percent?: number | null
           product_id?: string | null
-          product_type: Database["public"]["Enums"]["product_type"]
+          product_type: Database['public']['Enums']['product_type']
           quantity?: number
-          settlement_status?: Database["public"]["Enums"]["settlement_status"]
+          settlement_status?: Database['public']['Enums']['settlement_status']
           shipped_at?: string | null
           supplier_address?: string | null
           supplier_id?: string | null
@@ -1419,14 +1607,14 @@ export type Database = {
           face_value_agorot?: number | null
           fulfilled_at?: string | null
           id?: string
-          item_status?: Database["public"]["Enums"]["order_item_status"]
+          item_status?: Database['public']['Enums']['order_item_status']
           order_id?: string
           paid_on_site_agorot?: number | null
           platform_percent?: number | null
           product_id?: string | null
-          product_type?: Database["public"]["Enums"]["product_type"]
+          product_type?: Database['public']['Enums']['product_type']
           quantity?: number
-          settlement_status?: Database["public"]["Enums"]["settlement_status"]
+          settlement_status?: Database['public']['Enums']['settlement_status']
           shipped_at?: string | null
           supplier_address?: string | null
           supplier_id?: string | null
@@ -1448,39 +1636,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "order_items_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'order_items_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "order_items_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'order_items_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "order_items_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'order_items_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "order_items_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'order_items_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "order_items_variant_id_fkey"
-            columns: ["variant_id"]
+            foreignKeyName: 'order_items_variant_id_fkey'
+            columns: ['variant_id']
             isOneToOne: false
-            referencedRelation: "product_variants"
-            referencedColumns: ["id"]
+            referencedRelation: 'product_variants'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1506,7 +1694,7 @@ export type Database = {
           notes: string | null
           paid_at: string | null
           referral_code_used: string | null
-          status: Database["public"]["Enums"]["order_status"]
+          status: Database['public']['Enums']['order_status']
           subtotal_ils: number
           subtotal_ils_agorot: number | null
           total_ils: number
@@ -1535,7 +1723,7 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           referral_code_used?: string | null
-          status?: Database["public"]["Enums"]["order_status"]
+          status?: Database['public']['Enums']['order_status']
           subtotal_ils: number
           subtotal_ils_agorot?: number | null
           total_ils: number
@@ -1564,7 +1752,7 @@ export type Database = {
           notes?: string | null
           paid_at?: string | null
           referral_code_used?: string | null
-          status?: Database["public"]["Enums"]["order_status"]
+          status?: Database['public']['Enums']['order_status']
           subtotal_ils?: number
           subtotal_ils_agorot?: number | null
           total_ils?: number
@@ -1574,11 +1762,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "orders_address_id_fkey"
-            columns: ["address_id"]
+            foreignKeyName: 'orders_address_id_fkey'
+            columns: ['address_id']
             isOneToOne: false
-            referencedRelation: "user_addresses"
-            referencedColumns: ["id"]
+            referencedRelation: 'user_addresses'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1589,7 +1777,7 @@ export type Database = {
           amount_agorot: number | null
           detail: Json
           environment: string | null
-          event_type: Database["public"]["Enums"]["payment_event_type"]
+          event_type: Database['public']['Enums']['payment_event_type']
           external_event_id: string | null
           id: string
           low_profile_id: string | null
@@ -1606,7 +1794,7 @@ export type Database = {
           amount_agorot?: number | null
           detail?: Json
           environment?: string | null
-          event_type: Database["public"]["Enums"]["payment_event_type"]
+          event_type: Database['public']['Enums']['payment_event_type']
           external_event_id?: string | null
           id?: string
           low_profile_id?: string | null
@@ -1623,7 +1811,7 @@ export type Database = {
           amount_agorot?: number | null
           detail?: Json
           environment?: string | null
-          event_type?: Database["public"]["Enums"]["payment_event_type"]
+          event_type?: Database['public']['Enums']['payment_event_type']
           external_event_id?: string | null
           id?: string
           low_profile_id?: string | null
@@ -1636,18 +1824,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payment_events_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'payment_events_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payment_events_payment_id_fkey"
-            columns: ["payment_id"]
+            foreignKeyName: 'payment_events_payment_id_fkey'
+            columns: ['payment_id']
             isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            referencedRelation: 'payments'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1690,11 +1878,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payment_tokens_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'payment_tokens_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1734,11 +1922,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payment_webhook_events_payment_id_fkey"
-            columns: ["payment_id"]
+            foreignKeyName: 'payment_webhook_events_payment_id_fkey'
+            columns: ['payment_id']
             isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            referencedRelation: 'payments'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1756,11 +1944,11 @@ export type Database = {
           failure_message: string | null
           id: string
           idempotency_key: string | null
-          kind: Database["public"]["Enums"]["payment_kind"]
+          kind: Database['public']['Enums']['payment_kind']
           order_id: string
           raw_response: Json | null
           refund_of_payment_id: string | null
-          status: Database["public"]["Enums"]["payment_status"]
+          status: Database['public']['Enums']['payment_status']
           succeeded_at: string | null
           updated_at: string
           wallet_applied_ils: number
@@ -1778,11 +1966,11 @@ export type Database = {
           failure_message?: string | null
           id?: string
           idempotency_key?: string | null
-          kind?: Database["public"]["Enums"]["payment_kind"]
+          kind?: Database['public']['Enums']['payment_kind']
           order_id: string
           raw_response?: Json | null
           refund_of_payment_id?: string | null
-          status?: Database["public"]["Enums"]["payment_status"]
+          status?: Database['public']['Enums']['payment_status']
           succeeded_at?: string | null
           updated_at?: string
           wallet_applied_ils?: number
@@ -1800,29 +1988,29 @@ export type Database = {
           failure_message?: string | null
           id?: string
           idempotency_key?: string | null
-          kind?: Database["public"]["Enums"]["payment_kind"]
+          kind?: Database['public']['Enums']['payment_kind']
           order_id?: string
           raw_response?: Json | null
           refund_of_payment_id?: string | null
-          status?: Database["public"]["Enums"]["payment_status"]
+          status?: Database['public']['Enums']['payment_status']
           succeeded_at?: string | null
           updated_at?: string
           wallet_applied_ils?: number
         }
         Relationships: [
           {
-            foreignKeyName: "payments_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'payments_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payments_refund_of_payment_id_fkey"
-            columns: ["refund_of_payment_id"]
+            foreignKeyName: 'payments_refund_of_payment_id_fkey'
+            columns: ['refund_of_payment_id']
             isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            referencedRelation: 'payments'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1834,7 +2022,7 @@ export type Database = {
           description: string | null
           gross_ils: number
           id: string
-          line_type: Database["public"]["Enums"]["payout_line_type"]
+          line_type: Database['public']['Enums']['payout_line_type']
           order_item_id: string | null
           payout_ils: number
           platform_fee_ils: number
@@ -1850,7 +2038,7 @@ export type Database = {
           description?: string | null
           gross_ils?: number
           id?: string
-          line_type: Database["public"]["Enums"]["payout_line_type"]
+          line_type: Database['public']['Enums']['payout_line_type']
           order_item_id?: string | null
           payout_ils?: number
           platform_fee_ils?: number
@@ -1866,7 +2054,7 @@ export type Database = {
           description?: string | null
           gross_ils?: number
           id?: string
-          line_type?: Database["public"]["Enums"]["payout_line_type"]
+          line_type?: Database['public']['Enums']['payout_line_type']
           order_item_id?: string | null
           payout_ils?: number
           platform_fee_ils?: number
@@ -1877,32 +2065,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payout_statement_lines_coupon_code_id_fkey"
-            columns: ["coupon_code_id"]
+            foreignKeyName: 'payout_statement_lines_coupon_code_id_fkey'
+            columns: ['coupon_code_id']
             isOneToOne: false
-            referencedRelation: "coupon_codes"
-            referencedColumns: ["id"]
+            referencedRelation: 'coupon_codes'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payout_statement_lines_order_item_id_fkey"
-            columns: ["order_item_id"]
+            foreignKeyName: 'payout_statement_lines_order_item_id_fkey'
+            columns: ['order_item_id']
             isOneToOne: false
-            referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedRelation: 'order_items'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payout_statement_lines_statement_id_fkey"
-            columns: ["statement_id"]
+            foreignKeyName: 'payout_statement_lines_statement_id_fkey'
+            columns: ['statement_id']
             isOneToOne: false
-            referencedRelation: "payout_statements"
-            referencedColumns: ["id"]
+            referencedRelation: 'payout_statements'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "payout_statement_lines_voucher_id_fkey"
-            columns: ["voucher_id"]
+            foreignKeyName: 'payout_statement_lines_voucher_id_fkey'
+            columns: ['voucher_id']
             isOneToOne: false
-            referencedRelation: "vouchers"
-            referencedColumns: ["id"]
+            referencedRelation: 'vouchers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1923,7 +2111,7 @@ export type Database = {
           period_start: string
           rolled_over: boolean
           statement_number: string
-          status: Database["public"]["Enums"]["payout_status"]
+          status: Database['public']['Enums']['payout_status']
           supplier_id: string
           total_gross_ils: number
           total_payout_ils: number
@@ -1946,7 +2134,7 @@ export type Database = {
           period_start: string
           rolled_over?: boolean
           statement_number?: string
-          status?: Database["public"]["Enums"]["payout_status"]
+          status?: Database['public']['Enums']['payout_status']
           supplier_id: string
           total_gross_ils?: number
           total_payout_ils?: number
@@ -1969,7 +2157,7 @@ export type Database = {
           period_start?: string
           rolled_over?: boolean
           statement_number?: string
-          status?: Database["public"]["Enums"]["payout_status"]
+          status?: Database['public']['Enums']['payout_status']
           supplier_id?: string
           total_gross_ils?: number
           total_payout_ils?: number
@@ -1978,11 +2166,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payout_statements_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'payout_statements_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2020,6 +2208,7 @@ export type Database = {
         Row: {
           alt_he: string | null
           created_at: string
+          deleted_at: string | null
           id: string
           product_id: string
           sort_order: number
@@ -2029,6 +2218,7 @@ export type Database = {
         Insert: {
           alt_he?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           product_id: string
           sort_order?: number
@@ -2038,6 +2228,7 @@ export type Database = {
         Update: {
           alt_he?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           product_id?: string
           sort_order?: number
@@ -2109,25 +2300,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "product_variants_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'product_variants_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "product_variants_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'product_variants_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
         ]
       }
       products: {
         Row: {
           approval_note: string | null
-          approval_status: Database["public"]["Enums"]["product_approval_status"]
+          approval_status: Database['public']['Enums']['product_approval_status']
           approved_at: string | null
           approved_by: string | null
           attributes: Json
@@ -2140,7 +2331,7 @@ export type Database = {
           category_id: string | null
           city: string | null
           commission_percent: number
-          commission_type: Database["public"]["Enums"]["commission_type"]
+          commission_type: Database['public']['Enums']['commission_type']
           compare_at_price: number | null
           compare_at_price_agorot: number | null
           compare_at_price_ils: number | null
@@ -2185,20 +2376,21 @@ export type Database = {
           recurring_amount_agorot: number | null
           redemption_instructions_he: string | null
           requires_shipping: boolean
+          search_vector: unknown
           seo_description: string | null
           seo_keywords: string | null
           seo_title: string | null
           short_description_he: string | null
           sku: string | null
           slug: string
-          status: Database["public"]["Enums"]["product_status"]
+          status: Database['public']['Enums']['product_status']
           stock_initial: number | null
           stock_quantity: number | null
           submitted_at: string | null
           supplier_id: string | null
           supplier_split_percent: number | null
           tags: string[]
-          type: Database["public"]["Enums"]["product_type"]
+          type: Database['public']['Enums']['product_type']
           updated_at: string
           vat_exempt: boolean
           video_url: string | null
@@ -2210,7 +2402,7 @@ export type Database = {
         }
         Insert: {
           approval_note?: string | null
-          approval_status?: Database["public"]["Enums"]["product_approval_status"]
+          approval_status?: Database['public']['Enums']['product_approval_status']
           approved_at?: string | null
           approved_by?: string | null
           attributes?: Json
@@ -2223,7 +2415,7 @@ export type Database = {
           category_id?: string | null
           city?: string | null
           commission_percent: number
-          commission_type: Database["public"]["Enums"]["commission_type"]
+          commission_type: Database['public']['Enums']['commission_type']
           compare_at_price?: number | null
           compare_at_price_agorot?: number | null
           compare_at_price_ils?: number | null
@@ -2268,20 +2460,21 @@ export type Database = {
           recurring_amount_agorot?: number | null
           redemption_instructions_he?: string | null
           requires_shipping?: boolean
+          search_vector?: unknown
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
           short_description_he?: string | null
           sku?: string | null
           slug: string
-          status?: Database["public"]["Enums"]["product_status"]
+          status?: Database['public']['Enums']['product_status']
           stock_initial?: number | null
           stock_quantity?: number | null
           submitted_at?: string | null
           supplier_id?: string | null
           supplier_split_percent?: number | null
           tags?: string[]
-          type: Database["public"]["Enums"]["product_type"]
+          type: Database['public']['Enums']['product_type']
           updated_at?: string
           vat_exempt?: boolean
           video_url?: string | null
@@ -2293,7 +2486,7 @@ export type Database = {
         }
         Update: {
           approval_note?: string | null
-          approval_status?: Database["public"]["Enums"]["product_approval_status"]
+          approval_status?: Database['public']['Enums']['product_approval_status']
           approved_at?: string | null
           approved_by?: string | null
           attributes?: Json
@@ -2306,7 +2499,7 @@ export type Database = {
           category_id?: string | null
           city?: string | null
           commission_percent?: number
-          commission_type?: Database["public"]["Enums"]["commission_type"]
+          commission_type?: Database['public']['Enums']['commission_type']
           compare_at_price?: number | null
           compare_at_price_agorot?: number | null
           compare_at_price_ils?: number | null
@@ -2351,20 +2544,21 @@ export type Database = {
           recurring_amount_agorot?: number | null
           redemption_instructions_he?: string | null
           requires_shipping?: boolean
+          search_vector?: unknown
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
           short_description_he?: string | null
           sku?: string | null
           slug?: string
-          status?: Database["public"]["Enums"]["product_status"]
+          status?: Database['public']['Enums']['product_status']
           stock_initial?: number | null
           stock_quantity?: number | null
           submitted_at?: string | null
           supplier_id?: string | null
           supplier_split_percent?: number | null
           tags?: string[]
-          type?: Database["public"]["Enums"]["product_type"]
+          type?: Database['public']['Enums']['product_type']
           updated_at?: string
           vat_exempt?: boolean
           video_url?: string | null
@@ -2376,18 +2570,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
+            foreignKeyName: 'products_category_id_fkey'
+            columns: ['category_id']
             isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
+            referencedRelation: 'categories'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "products_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'products_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2401,7 +2595,7 @@ export type Database = {
           id: string
           phone: string | null
           referral_code: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
+          role: Database['public']['Enums']['user_role'] | null
           total_purchases: number | null
           updated_at: string | null
           wallet_balance: number | null
@@ -2416,7 +2610,7 @@ export type Database = {
           id: string
           phone?: string | null
           referral_code?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
+          role?: Database['public']['Enums']['user_role'] | null
           total_purchases?: number | null
           updated_at?: string | null
           wallet_balance?: number | null
@@ -2431,11 +2625,44 @@ export type Database = {
           id?: string
           phone?: string | null
           referral_code?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
+          role?: Database['public']['Enums']['user_role'] | null
           total_purchases?: number | null
           updated_at?: string | null
           wallet_balance?: number | null
           wallet_balance_agorot?: number | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -2574,11 +2801,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "referral_signals_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'referral_signals_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2602,7 +2829,7 @@ export type Database = {
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
-          status: Database["public"]["Enums"]["referral_status"]
+          status: Database['public']['Enums']['referral_status']
           updated_at: string
         }
         Insert: {
@@ -2624,7 +2851,7 @@ export type Database = {
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["referral_status"]
+          status?: Database['public']['Enums']['referral_status']
           updated_at?: string
         }
         Update: {
@@ -2646,16 +2873,16 @@ export type Database = {
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["referral_status"]
+          status?: Database['public']['Enums']['referral_status']
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "referrals_referred_first_order_id_fkey"
-            columns: ["referred_first_order_id"]
+            foreignKeyName: 'referrals_referred_first_order_id_fkey'
+            columns: ['referred_first_order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2667,9 +2894,9 @@ export type Database = {
           created_at: string
           decided_at: string | null
           decided_by: string | null
-          destination: Database["public"]["Enums"]["refund_destination"]
+          destination: Database['public']['Enums']['refund_destination']
           granted_agorot: number | null
-          ground: Database["public"]["Enums"]["refund_ground"]
+          ground: Database['public']['Enums']['refund_ground']
           id: string
           internal_note: string | null
           order_id: string
@@ -2679,7 +2906,7 @@ export type Database = {
           requested_agorot: number
           requested_at: string
           requested_by: string | null
-          state: Database["public"]["Enums"]["refund_state"]
+          state: Database['public']['Enums']['refund_state']
           updated_at: string
         }
         Insert: {
@@ -2689,9 +2916,9 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
-          destination?: Database["public"]["Enums"]["refund_destination"]
+          destination?: Database['public']['Enums']['refund_destination']
           granted_agorot?: number | null
-          ground: Database["public"]["Enums"]["refund_ground"]
+          ground: Database['public']['Enums']['refund_ground']
           id?: string
           internal_note?: string | null
           order_id: string
@@ -2701,7 +2928,7 @@ export type Database = {
           requested_agorot: number
           requested_at?: string
           requested_by?: string | null
-          state?: Database["public"]["Enums"]["refund_state"]
+          state?: Database['public']['Enums']['refund_state']
           updated_at?: string
         }
         Update: {
@@ -2711,9 +2938,9 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
-          destination?: Database["public"]["Enums"]["refund_destination"]
+          destination?: Database['public']['Enums']['refund_destination']
           granted_agorot?: number | null
-          ground?: Database["public"]["Enums"]["refund_ground"]
+          ground?: Database['public']['Enums']['refund_ground']
           id?: string
           internal_note?: string | null
           order_id?: string
@@ -2723,30 +2950,148 @@ export type Database = {
           requested_agorot?: number
           requested_at?: string
           requested_by?: string | null
-          state?: Database["public"]["Enums"]["refund_state"]
+          state?: Database['public']['Enums']['refund_state']
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "refunds_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'refunds_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "refunds_payment_id_fkey"
-            columns: ["payment_id"]
+            foreignKeyName: 'refunds_payment_id_fkey'
+            columns: ['payment_id']
             isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            referencedRelation: 'payments'
+            referencedColumns: ['id']
           },
         ]
+      }
+      report_cohort_retention: {
+        Row: {
+          active_users: number
+          cohort_month: string
+          cohort_size: number
+          month_offset: number
+          refreshed_at: string
+        }
+        Insert: {
+          active_users?: number
+          cohort_month: string
+          cohort_size?: number
+          month_offset: number
+          refreshed_at?: string
+        }
+        Update: {
+          active_users?: number
+          cohort_month?: string
+          cohort_size?: number
+          month_offset?: number
+          refreshed_at?: string
+        }
+        Relationships: []
+      }
+      report_orders_daily: {
+        Row: {
+          cancelled_count: number
+          day: string
+          paid_count: number
+          pending_count: number
+          refreshed_at: string
+          refunded_count: number
+          total_orders: number
+        }
+        Insert: {
+          cancelled_count?: number
+          day: string
+          paid_count?: number
+          pending_count?: number
+          refreshed_at?: string
+          refunded_count?: number
+          total_orders?: number
+        }
+        Update: {
+          cancelled_count?: number
+          day?: string
+          paid_count?: number
+          pending_count?: number
+          refreshed_at?: string
+          refunded_count?: number
+          total_orders?: number
+        }
+        Relationships: []
+      }
+      report_revenue_daily: {
+        Row: {
+          cashback_applied_agorot: number
+          day: string
+          discount_agorot: number
+          gross_agorot: number
+          net_agorot: number
+          orders_count: number
+          refreshed_at: string
+        }
+        Insert: {
+          cashback_applied_agorot?: number
+          day: string
+          discount_agorot?: number
+          gross_agorot?: number
+          net_agorot?: number
+          orders_count?: number
+          refreshed_at?: string
+        }
+        Update: {
+          cashback_applied_agorot?: number
+          day?: string
+          discount_agorot?: number
+          gross_agorot?: number
+          net_agorot?: number
+          orders_count?: number
+          refreshed_at?: string
+        }
+        Relationships: []
+      }
+      report_top_products: {
+        Row: {
+          product_id: string
+          product_name_he: string | null
+          rank: number
+          refreshed_at: string
+          revenue_agorot: number
+          supplier_id: string | null
+          units_sold: number
+          window_days: number
+        }
+        Insert: {
+          product_id: string
+          product_name_he?: string | null
+          rank: number
+          refreshed_at?: string
+          revenue_agorot?: number
+          supplier_id?: string | null
+          units_sold?: number
+          window_days: number
+        }
+        Update: {
+          product_id?: string
+          product_name_he?: string | null
+          rank?: number
+          refreshed_at?: string
+          revenue_agorot?: number
+          supplier_id?: string | null
+          units_sold?: number
+          window_days?: number
+        }
+        Relationships: []
       }
       reviews: {
         Row: {
           body: string | null
           created_at: string
+          deleted_at: string | null
           id: string
           order_item_id: string
           product_id: string
@@ -2759,6 +3104,7 @@ export type Database = {
         Insert: {
           body?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           order_item_id: string
           product_id: string
@@ -2771,6 +3117,7 @@ export type Database = {
         Update: {
           body?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           order_item_id?: string
           product_id?: string
@@ -2782,39 +3129,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "reviews_order_item_id_fkey"
-            columns: ["order_item_id"]
+            foreignKeyName: 'reviews_order_item_id_fkey'
+            columns: ['order_item_id']
             isOneToOne: true
-            referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedRelation: 'order_items'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "reviews_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'reviews_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "reviews_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'reviews_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "reviews_reviewed_by_fkey"
-            columns: ["reviewed_by"]
+            foreignKeyName: 'reviews_reviewed_by_fkey'
+            columns: ['reviewed_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "reviews_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'reviews_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3022,25 +3369,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "settlement_events_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'settlement_events_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "settlement_events_order_item_id_fkey"
-            columns: ["order_item_id"]
+            foreignKeyName: 'settlement_events_order_item_id_fkey'
+            columns: ['order_item_id']
             isOneToOne: false
-            referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedRelation: 'order_items'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "settlement_events_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'settlement_events_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3086,32 +3433,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "split_executions_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'split_executions_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "split_executions_order_item_id_fkey"
-            columns: ["order_item_id"]
+            foreignKeyName: 'split_executions_order_item_id_fkey'
+            columns: ['order_item_id']
             isOneToOne: true
-            referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedRelation: 'order_items'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "split_executions_payment_id_fkey"
-            columns: ["payment_id"]
+            foreignKeyName: 'split_executions_payment_id_fkey'
+            columns: ['payment_id']
             isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            referencedRelation: 'payments'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "split_executions_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'split_executions_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3154,32 +3501,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "stock_reservations_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'stock_reservations_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "stock_reservations_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'stock_reservations_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "stock_reservations_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'stock_reservations_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "stock_reservations_variant_id_fkey"
-            columns: ["variant_id"]
+            foreignKeyName: 'stock_reservations_variant_id_fkey'
+            columns: ['variant_id']
             isOneToOne: false
-            referencedRelation: "product_variants"
-            referencedColumns: ["id"]
+            referencedRelation: 'product_variants'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3225,11 +3572,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "subscription_charges_subscription_id_fkey"
-            columns: ["subscription_id"]
+            foreignKeyName: 'subscription_charges_subscription_id_fkey'
+            columns: ['subscription_id']
             isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["id"]
+            referencedRelation: 'subscriptions'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3296,46 +3643,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "subscriptions_origin_order_id_fkey"
-            columns: ["origin_order_id"]
+            foreignKeyName: 'subscriptions_origin_order_id_fkey'
+            columns: ['origin_order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "subscriptions_payment_token_id_fkey"
-            columns: ["payment_token_id"]
+            foreignKeyName: 'subscriptions_payment_token_id_fkey'
+            columns: ['payment_token_id']
             isOneToOne: false
-            referencedRelation: "payment_tokens"
-            referencedColumns: ["id"]
+            referencedRelation: 'payment_tokens'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "subscriptions_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'subscriptions_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "subscriptions_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'subscriptions_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "subscriptions_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'subscriptions_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'subscriptions_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3387,11 +3734,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "supplier_branches_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'supplier_branches_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3455,7 +3802,7 @@ export type Database = {
           id: string
           invited_by: string | null
           is_active: boolean
-          member_role: Database["public"]["Enums"]["supplier_member_role"]
+          member_role: Database['public']['Enums']['supplier_member_role']
           supplier_id: string
           updated_at: string
           user_id: string
@@ -3465,7 +3812,7 @@ export type Database = {
           id?: string
           invited_by?: string | null
           is_active?: boolean
-          member_role?: Database["public"]["Enums"]["supplier_member_role"]
+          member_role?: Database['public']['Enums']['supplier_member_role']
           supplier_id: string
           updated_at?: string
           user_id: string
@@ -3475,18 +3822,18 @@ export type Database = {
           id?: string
           invited_by?: string | null
           is_active?: boolean
-          member_role?: Database["public"]["Enums"]["supplier_member_role"]
+          member_role?: Database['public']['Enums']['supplier_member_role']
           supplier_id?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "supplier_members_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'supplier_members_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3532,11 +3879,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "supplier_staff_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'supplier_staff_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3609,6 +3956,77 @@ export type Database = {
           updated_at?: string
           website?: string | null
           whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      support_ticket_messages: {
+        Row: {
+          body: string
+          created_at: string
+          direction: string
+          id: string
+          message_sid: string | null
+          ticket_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          direction: string
+          id?: string
+          message_sid?: string | null
+          ticket_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          message_sid?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'support_ticket_messages_ticket_id_fkey'
+            columns: ['ticket_id']
+            isOneToOne: false
+            referencedRelation: 'support_tickets'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          channel: string
+          closed_at: string | null
+          created_at: string
+          id: string
+          phone: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          channel?: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          phone?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          phone?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3795,11 +4213,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "vendors_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: 'vendors_profile_id_fkey'
+            columns: ['profile_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3812,7 +4230,7 @@ export type Database = {
           idempotency_key: string | null
           ip_address: unknown
           metadata: Json
-          outcome: Database["public"]["Enums"]["voucher_scan_outcome"]
+          outcome: Database['public']['Enums']['voucher_scan_outcome']
           scan_method: string | null
           scanned_by: string | null
           staff_id: string | null
@@ -3828,7 +4246,7 @@ export type Database = {
           idempotency_key?: string | null
           ip_address?: unknown
           metadata?: Json
-          outcome: Database["public"]["Enums"]["voucher_scan_outcome"]
+          outcome: Database['public']['Enums']['voucher_scan_outcome']
           scan_method?: string | null
           scanned_by?: string | null
           staff_id?: string | null
@@ -3844,7 +4262,7 @@ export type Database = {
           idempotency_key?: string | null
           ip_address?: unknown
           metadata?: Json
-          outcome?: Database["public"]["Enums"]["voucher_scan_outcome"]
+          outcome?: Database['public']['Enums']['voucher_scan_outcome']
           scan_method?: string | null
           scanned_by?: string | null
           staff_id?: string | null
@@ -3854,25 +4272,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "voucher_redemptions_staff_id_fkey"
-            columns: ["staff_id"]
+            foreignKeyName: 'voucher_redemptions_staff_id_fkey'
+            columns: ['staff_id']
             isOneToOne: false
-            referencedRelation: "supplier_staff"
-            referencedColumns: ["id"]
+            referencedRelation: 'supplier_staff'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "voucher_redemptions_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'voucher_redemptions_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "voucher_redemptions_voucher_id_fkey"
-            columns: ["voucher_id"]
+            foreignKeyName: 'voucher_redemptions_voucher_id_fkey'
+            columns: ['voucher_id']
             isOneToOne: false
-            referencedRelation: "vouchers"
-            referencedColumns: ["id"]
+            referencedRelation: 'vouchers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -3906,7 +4324,7 @@ export type Database = {
           redeemed_by_user_id: string | null
           refunded_at: string | null
           remaining_amount_due_agorot: number
-          status: Database["public"]["Enums"]["voucher_status"]
+          status: Database['public']['Enums']['voucher_status']
           status_reason: string | null
           supplier_id: string
           updated_at: string
@@ -3941,7 +4359,7 @@ export type Database = {
           redeemed_by_user_id?: string | null
           refunded_at?: string | null
           remaining_amount_due_agorot: number
-          status?: Database["public"]["Enums"]["voucher_status"]
+          status?: Database['public']['Enums']['voucher_status']
           status_reason?: string | null
           supplier_id: string
           updated_at?: string
@@ -3976,7 +4394,7 @@ export type Database = {
           redeemed_by_user_id?: string | null
           refunded_at?: string | null
           remaining_amount_due_agorot?: number
-          status?: Database["public"]["Enums"]["voucher_status"]
+          status?: Database['public']['Enums']['voucher_status']
           status_reason?: string | null
           supplier_id?: string
           updated_at?: string
@@ -3984,46 +4402,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "vouchers_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'vouchers_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "vouchers_order_item_id_fkey"
-            columns: ["order_item_id"]
+            foreignKeyName: 'vouchers_order_item_id_fkey'
+            columns: ['order_item_id']
             isOneToOne: false
-            referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedRelation: 'order_items'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "vouchers_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'vouchers_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "vouchers_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'vouchers_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "vouchers_redeemed_by_supplier_id_fkey"
-            columns: ["redeemed_by_supplier_id"]
+            foreignKeyName: 'vouchers_redeemed_by_supplier_id_fkey'
+            columns: ['redeemed_by_supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "vouchers_supplier_id_fkey"
-            columns: ["supplier_id"]
+            foreignKeyName: 'vouchers_supplier_id_fkey'
+            columns: ['supplier_id']
             isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
+            referencedRelation: 'suppliers'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4057,11 +4475,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "wallet_accounts_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'wallet_accounts_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4137,39 +4555,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "wallet_entries_credit_account_fkey"
-            columns: ["credit_account"]
+            foreignKeyName: 'wallet_entries_credit_account_fkey'
+            columns: ['credit_account']
             isOneToOne: false
-            referencedRelation: "v_wallet_balance_drift"
-            referencedColumns: ["account_id"]
+            referencedRelation: 'v_wallet_balance_drift'
+            referencedColumns: ['account_id']
           },
           {
-            foreignKeyName: "wallet_entries_credit_account_fkey"
-            columns: ["credit_account"]
+            foreignKeyName: 'wallet_entries_credit_account_fkey'
+            columns: ['credit_account']
             isOneToOne: false
-            referencedRelation: "wallet_accounts"
-            referencedColumns: ["id"]
+            referencedRelation: 'wallet_accounts'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "wallet_entries_debit_account_fkey"
-            columns: ["debit_account"]
+            foreignKeyName: 'wallet_entries_debit_account_fkey'
+            columns: ['debit_account']
             isOneToOne: false
-            referencedRelation: "v_wallet_balance_drift"
-            referencedColumns: ["account_id"]
+            referencedRelation: 'v_wallet_balance_drift'
+            referencedColumns: ['account_id']
           },
           {
-            foreignKeyName: "wallet_entries_debit_account_fkey"
-            columns: ["debit_account"]
+            foreignKeyName: 'wallet_entries_debit_account_fkey'
+            columns: ['debit_account']
             isOneToOne: false
-            referencedRelation: "wallet_accounts"
-            referencedColumns: ["id"]
+            referencedRelation: 'wallet_accounts'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "wallet_entries_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'wallet_entries_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4186,8 +4604,8 @@ export type Database = {
           notes: string | null
           profit_share_cap_percent: number | null
           related_order_id: string | null
-          source: Database["public"]["Enums"]["wallet_tx_source"] | null
-          type: Database["public"]["Enums"]["wallet_tx_type"]
+          source: Database['public']['Enums']['wallet_tx_source'] | null
+          type: Database['public']['Enums']['wallet_tx_type']
           updated_at: string
           user_id: string
           wallet_id: string
@@ -4204,8 +4622,8 @@ export type Database = {
           notes?: string | null
           profit_share_cap_percent?: number | null
           related_order_id?: string | null
-          source?: Database["public"]["Enums"]["wallet_tx_source"] | null
-          type: Database["public"]["Enums"]["wallet_tx_type"]
+          source?: Database['public']['Enums']['wallet_tx_source'] | null
+          type: Database['public']['Enums']['wallet_tx_type']
           updated_at?: string
           user_id: string
           wallet_id: string
@@ -4222,66 +4640,216 @@ export type Database = {
           notes?: string | null
           profit_share_cap_percent?: number | null
           related_order_id?: string | null
-          source?: Database["public"]["Enums"]["wallet_tx_source"] | null
-          type?: Database["public"]["Enums"]["wallet_tx_type"]
+          source?: Database['public']['Enums']['wallet_tx_source'] | null
+          type?: Database['public']['Enums']['wallet_tx_type']
           updated_at?: string
           user_id?: string
           wallet_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "wallet_transactions_related_order_id_fkey"
-            columns: ["related_order_id"]
+            foreignKeyName: 'wallet_transactions_related_order_id_fkey'
+            columns: ['related_order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "wallet_transactions_wallet_id_fkey"
-            columns: ["wallet_id"]
+            foreignKeyName: 'wallet_transactions_wallet_id_fkey'
+            columns: ['wallet_id']
             isOneToOne: false
-            referencedRelation: "wallet_balances"
-            referencedColumns: ["id"]
+            referencedRelation: 'wallet_balances'
+            referencedColumns: ['id']
           },
         ]
+      }
+      webauthn_credentials: {
+        Row: {
+          aaguid: string | null
+          backed_up: boolean
+          counter: number
+          created_at: string
+          device_type: string
+          friendly_name: string | null
+          id: string
+          last_used_at: string | null
+          public_key: string
+          transports: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aaguid?: string | null
+          backed_up?: boolean
+          counter?: number
+          created_at?: string
+          device_type?: string
+          friendly_name?: string | null
+          id: string
+          last_used_at?: string | null
+          public_key: string
+          transports?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aaguid?: string | null
+          backed_up?: boolean
+          counter?: number
+          created_at?: string
+          device_type?: string
+          friendly_name?: string | null
+          id?: string
+          last_used_at?: string | null
+          public_key?: string
+          transports?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_contacts: {
+        Row: {
+          created_at: string
+          opted_in_at: string | null
+          opted_out_at: string | null
+          phone: string
+          source: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          opted_in_at?: string | null
+          opted_out_at?: string | null
+          phone: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          opted_in_at?: string | null
+          opted_out_at?: string | null
+          phone?: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_inbound_messages: {
+        Row: {
+          body: string
+          created_at: string
+          intent: string
+          message_sid: string
+          phone: string
+          ticket_id: string | null
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          intent?: string
+          message_sid: string
+          phone: string
+          ticket_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          intent?: string
+          message_sid?: string
+          phone?: string
+          ticket_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          dedupe_key: string
+          id: string
+          kind: string
+          last_error: string | null
+          next_attempt_at: string
+          payload: Json
+          phone: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          kind: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload?: Json
+          phone: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          kind?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload?: Json
+          phone?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: []
       }
       wishlists: {
         Row: {
           created_at: string
+          deleted_at: string | null
           product_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           product_id: string
           user_id: string
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           product_id?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "wishlists_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'wishlists_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedRelation: 'products'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "wishlists_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: 'wishlists_product_id_fkey'
+            columns: ['product_id']
             isOneToOne: false
-            referencedRelation: "v_low_stock"
-            referencedColumns: ["id"]
+            referencedRelation: 'v_low_stock'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "wishlists_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'wishlists_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4360,7 +4928,7 @@ export type Database = {
           expires_at: string | null
           id: string | null
           is_active: boolean | null
-          kind: Database["public"]["Enums"]["discount_kind"] | null
+          kind: Database['public']['Enums']['discount_kind'] | null
           last_redeemed_at: string | null
           max_uses: number | null
           max_uses_per_user: number | null
@@ -4410,7 +4978,7 @@ export type Database = {
           stock_quantity: number | null
           supplier_email: string | null
           supplier_name: string | null
-          type: Database["public"]["Enums"]["product_type"] | null
+          type: Database['public']['Enums']['product_type'] | null
         }
         Relationships: []
       }
@@ -4439,16 +5007,16 @@ export type Database = {
           referrer_email: string | null
           referrer_paid_count: number | null
           referrer_user_id: string | null
-          status: Database["public"]["Enums"]["referral_status"] | null
+          status: Database['public']['Enums']['referral_status'] | null
           total_bonus_agorot: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "referrals_referred_first_order_id_fkey"
-            columns: ["referred_first_order_id"]
+            foreignKeyName: 'referrals_referred_first_order_id_fkey'
+            columns: ['referred_first_order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4477,11 +5045,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "wallet_accounts_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'wallet_accounts_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4498,18 +5066,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "wallet_accounts_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'wallet_accounts_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "wallet_entries_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: 'wallet_entries_order_id_fkey'
+            columns: ['order_id']
             isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -4518,6 +5086,78 @@ export type Database = {
       add_business_days: {
         Args: { p_days: number; p_from: string }
         Returns: string
+      }
+      admin_refresh_reports: { Args: never; Returns: string }
+      admin_report_cohort_retention: {
+        Args: never
+        Returns: {
+          active_users: number
+          cohort_month: string
+          cohort_size: number
+          month_offset: number
+          refreshed_at: string
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'report_cohort_retention'
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_report_orders_daily: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          cancelled_count: number
+          day: string
+          paid_count: number
+          pending_count: number
+          refreshed_at: string
+          refunded_count: number
+          total_orders: number
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'report_orders_daily'
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_report_revenue_daily: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          cashback_applied_agorot: number
+          day: string
+          discount_agorot: number
+          gross_agorot: number
+          net_agorot: number
+          orders_count: number
+          refreshed_at: string
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'report_revenue_daily'
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_report_top_products: {
+        Args: { p_window_days?: number }
+        Returns: {
+          product_id: string
+          product_name_he: string | null
+          rank: number
+          refreshed_at: string
+          revenue_agorot: number
+          supplier_id: string | null
+          units_sold: number
+          window_days: number
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'report_top_products'
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       approve_payout_statement: {
         Args: { p_statement_id: string }
@@ -4570,8 +5210,8 @@ export type Database = {
           product_id: string
         }[]
         SetofOptions: {
-          from: "*"
-          to: "search_index_outbox"
+          from: '*'
+          to: 'search_index_outbox'
           isOneToOne: false
           isSetofReturn: true
         }
@@ -4583,7 +5223,7 @@ export type Database = {
       current_supplier_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
-        Returns: Database["public"]["Enums"]["user_role"]
+        Returns: Database['public']['Enums']['user_role']
       }
       enqueue_expiring_voucher_notices: {
         Args: { p_buckets?: number[] }
@@ -4596,6 +5236,16 @@ export type Database = {
         Returns: number
       }
       fn_audit_retention_sweep: { Args: never; Returns: number }
+      fn_cashback_admin_adjust: {
+        Args: {
+          p_amount_agorot: number
+          p_idempotency: string
+          p_reason: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      fn_cashback_order_bonus: { Args: { p_order_id: string }; Returns: number }
       fn_claim_discount: {
         Args: {
           p_amount_agorot: number
@@ -4653,7 +5303,17 @@ export type Database = {
             }
             Returns: undefined
           }
+      fn_enqueue_whatsapp: {
+        Args: {
+          p_dedupe: string
+          p_kind: string
+          p_payload: Json
+          p_phone: string
+        }
+        Returns: undefined
+      }
       fn_ensure_referral_code: { Args: { p_user_id: string }; Returns: string }
+      fn_il_phone_digits: { Args: { p_raw: string }; Returns: string }
       fn_ingest_analytics_events: {
         Args: {
           p_events: Json
@@ -4722,6 +5382,9 @@ export type Database = {
         }
         Returns: string
       }
+      fts_join: { Args: { items: string[] }; Returns: string }
+      fts_prefix_query: { Args: { q: string }; Returns: unknown }
+      fts_unaccent: { Args: { input: string }; Returns: string }
       generate_payout_statement: {
         Args: {
           p_as_of?: string
@@ -4774,6 +5437,7 @@ export type Database = {
         }
         Returns: Json
       }
+      refresh_report_tables: { Args: never; Returns: undefined }
       refund_vouchers_for_order: {
         Args: { p_order_id: string; p_reason?: string }
         Returns: number
@@ -4786,6 +5450,26 @@ export type Database = {
           available: number
           product_id: string
           requested: number
+        }[]
+      }
+      search_products: {
+        Args: {
+          category?: string
+          max_results?: number
+          product_type?: string
+          q: string
+        }
+        Returns: {
+          category_name_he: string
+          category_slug: string
+          full_price: number
+          id: string
+          images: Json
+          kenyon_price: number
+          name_he: string
+          rank: number
+          slug: string
+          stock_quantity: number
         }[]
       }
       set_supplier_staff_pin: {
@@ -4812,174 +5496,144 @@ export type Database = {
       }
       voucher_scan_ip: { Args: { p_raw: string }; Returns: unknown }
       voucher_success_payload: {
-        Args: { v: Database["public"]["Tables"]["vouchers"]["Row"] }
+        Args: { v: Database['public']['Tables']['vouchers']['Row'] }
         Returns: Json
       }
     }
     Enums: {
-      affiliate_status: "pending_review" | "approved" | "rejected" | "suspended"
+      affiliate_status: 'pending_review' | 'approved' | 'rejected' | 'suspended'
       audit_action:
-        | "created"
-        | "updated"
-        | "deleted"
-        | "restored"
-        | "login"
-        | "logout"
-        | "permission_change"
-        | "status_change"
-        | "manual_override"
-      commission_type: "coupon_absolute" | "physical_percent"
-      coupon_status: "issued" | "used" | "expired" | "refunded"
-      discount_kind: "percent" | "fixed"
-      dispute_status:
-        | "open"
-        | "in_review"
-        | "resolved_accepted"
-        | "resolved_rejected"
-      escrow_status: "held" | "released" | "refunded"
-      order_item_status:
-        | "pending"
-        | "issued"
-        | "shipped"
-        | "delivered"
-        | "cancelled"
-        | "refunded"
+        | 'created'
+        | 'updated'
+        | 'deleted'
+        | 'restored'
+        | 'login'
+        | 'logout'
+        | 'permission_change'
+        | 'status_change'
+        | 'manual_override'
+      commission_type: 'coupon_absolute' | 'physical_percent'
+      coupon_status: 'issued' | 'used' | 'expired' | 'refunded'
+      discount_kind: 'percent' | 'fixed'
+      dispute_status: 'open' | 'in_review' | 'resolved_accepted' | 'resolved_rejected'
+      escrow_status: 'held' | 'released' | 'refunded'
+      order_item_status: 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
       order_status:
-        | "pending"
-        | "paid"
-        | "partially_fulfilled"
-        | "fulfilled"
-        | "cancelled"
-        | "refunded"
-        | "platform_settled"
+        | 'pending'
+        | 'paid'
+        | 'partially_fulfilled'
+        | 'fulfilled'
+        | 'cancelled'
+        | 'refunded'
+        | 'platform_settled'
       payment_event_type:
-        | "checkout_started"
-        | "order_created"
-        | "stock_reserved"
-        | "stock_reservation_failed"
-        | "low_profile_requested"
-        | "low_profile_created"
-        | "low_profile_failed"
-        | "redirected"
-        | "token_charge_requested"
-        | "token_charge_succeeded"
-        | "token_charge_declined"
-        | "callback_received"
-        | "callback_replay"
-        | "callback_rejected"
-        | "callback_unknown_payment"
-        | "callback_provider_failure"
-        | "verify_requested"
-        | "verify_succeeded"
-        | "verify_failed"
-        | "verify_contradicted_callback"
-        | "amount_mismatch"
-        | "amount_unreadable"
-        | "finalize_started"
-        | "finalize_succeeded"
-        | "finalize_replay"
-        | "finalize_failed"
-        | "voucher_issued"
-        | "voucher_issue_refused"
-        | "refund_requested"
-        | "refund_succeeded"
-        | "refund_failed"
-        | "cancellation_fee_applied"
-        | "wallet_credited"
-        | "dlq_replay_started"
-        | "reconciliation_matched"
-        | "reconciliation_missing_locally"
-        | "reconciliation_missing_remotely"
-        | "reconciliation_amount_differs"
-      payment_kind: "charge" | "refund"
+        | 'checkout_started'
+        | 'order_created'
+        | 'stock_reserved'
+        | 'stock_reservation_failed'
+        | 'low_profile_requested'
+        | 'low_profile_created'
+        | 'low_profile_failed'
+        | 'redirected'
+        | 'token_charge_requested'
+        | 'token_charge_succeeded'
+        | 'token_charge_declined'
+        | 'callback_received'
+        | 'callback_replay'
+        | 'callback_rejected'
+        | 'callback_unknown_payment'
+        | 'callback_provider_failure'
+        | 'verify_requested'
+        | 'verify_succeeded'
+        | 'verify_failed'
+        | 'verify_contradicted_callback'
+        | 'amount_mismatch'
+        | 'amount_unreadable'
+        | 'finalize_started'
+        | 'finalize_succeeded'
+        | 'finalize_replay'
+        | 'finalize_failed'
+        | 'voucher_issued'
+        | 'voucher_issue_refused'
+        | 'refund_requested'
+        | 'refund_succeeded'
+        | 'refund_failed'
+        | 'cancellation_fee_applied'
+        | 'wallet_credited'
+        | 'dlq_replay_started'
+        | 'reconciliation_matched'
+        | 'reconciliation_missing_locally'
+        | 'reconciliation_missing_remotely'
+        | 'reconciliation_amount_differs'
+      payment_kind: 'charge' | 'refund'
       payment_status:
-        | "initiated"
-        | "redirected"
-        | "succeeded"
-        | "failed"
-        | "refunded"
-        | "platform_settled"
-      payout_line_type: "physical_delivery" | "coupon_redemption" | "adjustment"
-      payout_status:
-        | "draft"
-        | "pending_approval"
-        | "approved"
-        | "paid"
-        | "cancelled"
-      product_approval_status: "draft" | "pending" | "approved" | "rejected"
-      product_status: "draft" | "active" | "paused" | "sold_out" | "archived"
-      product_type: "coupon" | "physical" | "service" | "recurring"
-      referral_status: "pending" | "completed" | "rejected" | "flagged"
-      refund_destination: "original_method" | "wallet"
+        | 'initiated'
+        | 'redirected'
+        | 'succeeded'
+        | 'failed'
+        | 'refunded'
+        | 'platform_settled'
+      payout_line_type: 'physical_delivery' | 'coupon_redemption' | 'adjustment'
+      payout_status: 'draft' | 'pending_approval' | 'approved' | 'paid' | 'cancelled'
+      product_approval_status: 'draft' | 'pending' | 'approved' | 'rejected'
+      product_status: 'draft' | 'active' | 'paused' | 'sold_out' | 'archived'
+      product_type: 'coupon' | 'physical' | 'service' | 'recurring'
+      referral_status: 'pending' | 'completed' | 'rejected' | 'flagged'
+      refund_destination: 'original_method' | 'wallet'
       refund_ground:
-        | "distance_sale_14d"
-        | "defect"
-        | "service_not_provided"
-        | "duplicate_charge"
-        | "extended_window"
-        | "goodwill"
-      refund_state:
-        | "requested"
-        | "approved"
-        | "rejected"
-        | "executing"
-        | "completed"
-        | "failed"
+        | 'distance_sale_14d'
+        | 'defect'
+        | 'service_not_provided'
+        | 'duplicate_charge'
+        | 'extended_window'
+        | 'goodwill'
+      refund_state: 'requested' | 'approved' | 'rejected' | 'executing' | 'completed' | 'failed'
       scan_result:
-        | "success"
-        | "not_found"
-        | "already_used"
-        | "expired"
-        | "refunded"
-        | "wrong_supplier"
-        | "unauthorized"
-        | "rate_limited"
+        | 'success'
+        | 'not_found'
+        | 'already_used'
+        | 'expired'
+        | 'refunded'
+        | 'wrong_supplier'
+        | 'unauthorized'
+        | 'rate_limited'
       settlement_status:
-        | "pending"
-        | "paid"
-        | "split_executed"
-        | "escrow_held"
-        | "escrow_released"
-        | "redeemed"
-        | "refunded"
-        | "cancelled"
-        | "platform_settled"
-      subscriber_status:
-        | "pending"
-        | "subscribed"
-        | "unsubscribed"
-        | "bounced"
-        | "complained"
-      supplier_application_status: "pending" | "approved" | "rejected"
-      supplier_member_role: "owner" | "manager" | "scanner"
-      supplier_status: "active" | "suspended" | "closed"
+        | 'pending'
+        | 'paid'
+        | 'split_executed'
+        | 'escrow_held'
+        | 'escrow_released'
+        | 'redeemed'
+        | 'refunded'
+        | 'cancelled'
+        | 'platform_settled'
+      subscriber_status: 'pending' | 'subscribed' | 'unsubscribed' | 'bounced' | 'complained'
+      supplier_application_status: 'pending' | 'approved' | 'rejected'
+      supplier_member_role: 'owner' | 'manager' | 'scanner'
+      supplier_status: 'active' | 'suspended' | 'closed'
       user_role:
-        | "customer"
-        | "content_uploader"
-        | "vendor"
-        | "admin"
-        | "super_admin"
-        | "support"
+        | 'customer'
+        | 'content_uploader'
+        | 'vendor'
+        | 'admin'
+        | 'super_admin'
+        | 'support'
+        | 'read_only'
       voucher_scan_outcome:
-        | "success"
-        | "already_redeemed"
-        | "expired"
-        | "cancelled"
-        | "refunded"
-        | "wrong_supplier"
-        | "not_found"
-        | "invalid_signature"
-        | "invalid_request"
-        | "unauthorized"
-        | "rate_limited"
-      voucher_status:
-        | "issued"
-        | "redeemed"
-        | "expired"
-        | "cancelled"
-        | "refunded"
-      wallet_tx_source: "cashback" | "referral" | "manual"
-      wallet_tx_type: "earn" | "redeem" | "expire" | "refund"
+        | 'success'
+        | 'already_redeemed'
+        | 'expired'
+        | 'cancelled'
+        | 'refunded'
+        | 'wrong_supplier'
+        | 'not_found'
+        | 'invalid_signature'
+        | 'invalid_request'
+        | 'unauthorized'
+        | 'rate_limited'
+      voucher_status: 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
+      wallet_tx_source: 'cashback' | 'referral' | 'manual'
+      wallet_tx_type: 'earn' | 'redeem' | 'expire' | 'refund'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4987,33 +5641,31 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -5022,23 +5674,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -5047,23 +5699,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -5072,223 +5724,183 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
-      affiliate_status: ["pending_review", "approved", "rejected", "suspended"],
+      affiliate_status: ['pending_review', 'approved', 'rejected', 'suspended'],
       audit_action: [
-        "created",
-        "updated",
-        "deleted",
-        "restored",
-        "login",
-        "logout",
-        "permission_change",
-        "status_change",
-        "manual_override",
+        'created',
+        'updated',
+        'deleted',
+        'restored',
+        'login',
+        'logout',
+        'permission_change',
+        'status_change',
+        'manual_override',
       ],
-      commission_type: ["coupon_absolute", "physical_percent"],
-      coupon_status: ["issued", "used", "expired", "refunded"],
-      discount_kind: ["percent", "fixed"],
-      dispute_status: [
-        "open",
-        "in_review",
-        "resolved_accepted",
-        "resolved_rejected",
-      ],
-      escrow_status: ["held", "released", "refunded"],
-      order_item_status: [
-        "pending",
-        "issued",
-        "shipped",
-        "delivered",
-        "cancelled",
-        "refunded",
-      ],
+      commission_type: ['coupon_absolute', 'physical_percent'],
+      coupon_status: ['issued', 'used', 'expired', 'refunded'],
+      discount_kind: ['percent', 'fixed'],
+      dispute_status: ['open', 'in_review', 'resolved_accepted', 'resolved_rejected'],
+      escrow_status: ['held', 'released', 'refunded'],
+      order_item_status: ['pending', 'issued', 'shipped', 'delivered', 'cancelled', 'refunded'],
       order_status: [
-        "pending",
-        "paid",
-        "partially_fulfilled",
-        "fulfilled",
-        "cancelled",
-        "refunded",
-        "platform_settled",
+        'pending',
+        'paid',
+        'partially_fulfilled',
+        'fulfilled',
+        'cancelled',
+        'refunded',
+        'platform_settled',
       ],
       payment_event_type: [
-        "checkout_started",
-        "order_created",
-        "stock_reserved",
-        "stock_reservation_failed",
-        "low_profile_requested",
-        "low_profile_created",
-        "low_profile_failed",
-        "redirected",
-        "token_charge_requested",
-        "token_charge_succeeded",
-        "token_charge_declined",
-        "callback_received",
-        "callback_replay",
-        "callback_rejected",
-        "callback_unknown_payment",
-        "callback_provider_failure",
-        "verify_requested",
-        "verify_succeeded",
-        "verify_failed",
-        "verify_contradicted_callback",
-        "amount_mismatch",
-        "amount_unreadable",
-        "finalize_started",
-        "finalize_succeeded",
-        "finalize_replay",
-        "finalize_failed",
-        "voucher_issued",
-        "voucher_issue_refused",
-        "refund_requested",
-        "refund_succeeded",
-        "refund_failed",
-        "cancellation_fee_applied",
-        "wallet_credited",
-        "dlq_replay_started",
-        "reconciliation_matched",
-        "reconciliation_missing_locally",
-        "reconciliation_missing_remotely",
-        "reconciliation_amount_differs",
+        'checkout_started',
+        'order_created',
+        'stock_reserved',
+        'stock_reservation_failed',
+        'low_profile_requested',
+        'low_profile_created',
+        'low_profile_failed',
+        'redirected',
+        'token_charge_requested',
+        'token_charge_succeeded',
+        'token_charge_declined',
+        'callback_received',
+        'callback_replay',
+        'callback_rejected',
+        'callback_unknown_payment',
+        'callback_provider_failure',
+        'verify_requested',
+        'verify_succeeded',
+        'verify_failed',
+        'verify_contradicted_callback',
+        'amount_mismatch',
+        'amount_unreadable',
+        'finalize_started',
+        'finalize_succeeded',
+        'finalize_replay',
+        'finalize_failed',
+        'voucher_issued',
+        'voucher_issue_refused',
+        'refund_requested',
+        'refund_succeeded',
+        'refund_failed',
+        'cancellation_fee_applied',
+        'wallet_credited',
+        'dlq_replay_started',
+        'reconciliation_matched',
+        'reconciliation_missing_locally',
+        'reconciliation_missing_remotely',
+        'reconciliation_amount_differs',
       ],
-      payment_kind: ["charge", "refund"],
+      payment_kind: ['charge', 'refund'],
       payment_status: [
-        "initiated",
-        "redirected",
-        "succeeded",
-        "failed",
-        "refunded",
-        "platform_settled",
+        'initiated',
+        'redirected',
+        'succeeded',
+        'failed',
+        'refunded',
+        'platform_settled',
       ],
-      payout_line_type: [
-        "physical_delivery",
-        "coupon_redemption",
-        "adjustment",
-      ],
-      payout_status: [
-        "draft",
-        "pending_approval",
-        "approved",
-        "paid",
-        "cancelled",
-      ],
-      product_approval_status: ["draft", "pending", "approved", "rejected"],
-      product_status: ["draft", "active", "paused", "sold_out", "archived"],
-      product_type: ["coupon", "physical", "service", "recurring"],
-      referral_status: ["pending", "completed", "rejected", "flagged"],
-      refund_destination: ["original_method", "wallet"],
+      payout_line_type: ['physical_delivery', 'coupon_redemption', 'adjustment'],
+      payout_status: ['draft', 'pending_approval', 'approved', 'paid', 'cancelled'],
+      product_approval_status: ['draft', 'pending', 'approved', 'rejected'],
+      product_status: ['draft', 'active', 'paused', 'sold_out', 'archived'],
+      product_type: ['coupon', 'physical', 'service', 'recurring'],
+      referral_status: ['pending', 'completed', 'rejected', 'flagged'],
+      refund_destination: ['original_method', 'wallet'],
       refund_ground: [
-        "distance_sale_14d",
-        "defect",
-        "service_not_provided",
-        "duplicate_charge",
-        "extended_window",
-        "goodwill",
+        'distance_sale_14d',
+        'defect',
+        'service_not_provided',
+        'duplicate_charge',
+        'extended_window',
+        'goodwill',
       ],
-      refund_state: [
-        "requested",
-        "approved",
-        "rejected",
-        "executing",
-        "completed",
-        "failed",
-      ],
+      refund_state: ['requested', 'approved', 'rejected', 'executing', 'completed', 'failed'],
       scan_result: [
-        "success",
-        "not_found",
-        "already_used",
-        "expired",
-        "refunded",
-        "wrong_supplier",
-        "unauthorized",
-        "rate_limited",
+        'success',
+        'not_found',
+        'already_used',
+        'expired',
+        'refunded',
+        'wrong_supplier',
+        'unauthorized',
+        'rate_limited',
       ],
       settlement_status: [
-        "pending",
-        "paid",
-        "split_executed",
-        "escrow_held",
-        "escrow_released",
-        "redeemed",
-        "refunded",
-        "cancelled",
-        "platform_settled",
+        'pending',
+        'paid',
+        'split_executed',
+        'escrow_held',
+        'escrow_released',
+        'redeemed',
+        'refunded',
+        'cancelled',
+        'platform_settled',
       ],
-      subscriber_status: [
-        "pending",
-        "subscribed",
-        "unsubscribed",
-        "bounced",
-        "complained",
-      ],
-      supplier_application_status: ["pending", "approved", "rejected"],
-      supplier_member_role: ["owner", "manager", "scanner"],
-      supplier_status: ["active", "suspended", "closed"],
+      subscriber_status: ['pending', 'subscribed', 'unsubscribed', 'bounced', 'complained'],
+      supplier_application_status: ['pending', 'approved', 'rejected'],
+      supplier_member_role: ['owner', 'manager', 'scanner'],
+      supplier_status: ['active', 'suspended', 'closed'],
       user_role: [
-        "customer",
-        "content_uploader",
-        "vendor",
-        "admin",
-        "super_admin",
-        "support",
+        'customer',
+        'content_uploader',
+        'vendor',
+        'admin',
+        'super_admin',
+        'support',
+        'read_only',
       ],
       voucher_scan_outcome: [
-        "success",
-        "already_redeemed",
-        "expired",
-        "cancelled",
-        "refunded",
-        "wrong_supplier",
-        "not_found",
-        "invalid_signature",
-        "invalid_request",
-        "unauthorized",
-        "rate_limited",
+        'success',
+        'already_redeemed',
+        'expired',
+        'cancelled',
+        'refunded',
+        'wrong_supplier',
+        'not_found',
+        'invalid_signature',
+        'invalid_request',
+        'unauthorized',
+        'rate_limited',
       ],
-      voucher_status: [
-        "issued",
-        "redeemed",
-        "expired",
-        "cancelled",
-        "refunded",
-      ],
-      wallet_tx_source: ["cashback", "referral", "manual"],
-      wallet_tx_type: ["earn", "redeem", "expire", "refund"],
+      voucher_status: ['issued', 'redeemed', 'expired', 'cancelled', 'refunded'],
+      wallet_tx_source: ['cashback', 'referral', 'manual'],
+      wallet_tx_type: ['earn', 'redeem', 'expire', 'refund'],
     },
   },
 } as const

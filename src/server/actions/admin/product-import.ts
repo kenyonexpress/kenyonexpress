@@ -78,9 +78,10 @@ async function checkRows(
   // Category names -> ids, one query for the distinct names in the file.
   const names = [...new Set(rows.flatMap((r) => (r.categoryName ? [r.categoryName] : [])))]
   for (const nameChunk of chunk(names, IN_CHUNK)) {
-    // excludeDeleted, not a raw `.is('deleted_at', null)`: categories only
-    // gains that column with pending migration 149, and filtering on a column
-    // production lacks fails the whole query with 42703.
+    // excludeDeleted, not a raw `.is('deleted_at', null)`: the helper is the
+    // one place that knows whether a table's `deleted_at` exists in
+    // production yet, and filtering on a column production lacks fails the
+    // whole query with 42703. Live for categories since 185 (2026-09-09).
     const { data, error } = await excludeDeleted(
       supabase.from('categories').select('id, name_he').in('name_he', nameChunk),
       'categories',

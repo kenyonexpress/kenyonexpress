@@ -34,8 +34,22 @@
 --   reviews          public sees approved and not deleted; the owner branch
 --                    hides the owner's own deleted reviews as well.
 --   wishlists        the single owner-ALL policy becomes four per-command
---                    policies. SELECT filters deleted_at; UPDATE does not,
---                    so an un-delete (set deleted_at = null) stays possible.
+--                    policies. SELECT filters deleted_at; UPDATE does not.
+--                    THE RESTORE THIS WAS MEANT TO ALLOW DOES NOT WORK, and
+--                    the claim was measured rather than believed: Postgres
+--                    applies SELECT policies to the rows an UPDATE ... WHERE
+--                    reads, so the filtered SELECT policy hides the row
+--                    before the unfiltered UPDATE policy is consulted. On
+--                    production 2026-09-09, as the owner with the right
+--                    auth.uid(): restore matched 0 rows; with the SELECT
+--                    policy swapped for an unfiltered one and nothing else
+--                    changed, 1 row. Because the PK is (user_id,
+--                    product_id), a soft-deleted row also blocks re-adding
+--                    the same product. Nothing writes this table today, so
+--                    this is a trap for whoever builds the wishlist, not a
+--                    live fault -- design the restore path deliberately
+--                    (an admin/service-role un-delete, or an owner SELECT
+--                    branch that can see own deleted rows).
 --
 -- Not touched, and why:
 --
@@ -99,7 +113,7 @@ create policy categories_select_authenticated on public.categories
   );
 
 comment on column public.categories.deleted_at is
-  'Soft delete (149). Null = live. Set instead of DELETE so product rows keep their category and admin can restore.';
+  'Soft delete (185). Null = live. Set instead of DELETE so product rows keep their category and admin can restore.';
 
 -- ---------------------------------------------------------------------------
 -- product_images
@@ -130,7 +144,7 @@ create policy product_images_select_unified on public.product_images
   );
 
 comment on column public.product_images.deleted_at is
-  'Soft delete (149). Null = live. The select policy also requires the parent product to be live.';
+  'Soft delete (185). Null = live. The select policy also requires the parent product to be live.';
 
 -- ---------------------------------------------------------------------------
 -- reviews
@@ -155,7 +169,7 @@ create policy reviews_owner_read on public.reviews
   using (user_id = (select auth.uid()) and deleted_at is null);
 
 comment on column public.reviews.deleted_at is
-  'Soft delete (149). Null = live. A deleted review vanishes for everyone including its author; moderation keeps the row.';
+  'Soft delete (185). Null = live. A deleted review vanishes for everyone including its author; moderation keeps the row.';
 
 -- ---------------------------------------------------------------------------
 -- wishlists
@@ -194,4 +208,4 @@ create policy wishlists_owner_delete on public.wishlists
   using (user_id = (select auth.uid()));
 
 comment on column public.wishlists.deleted_at is
-  'Soft delete (149). Null = live. UPDATE is deliberately unfiltered so the owner can restore (set deleted_at back to null).';
+  'Soft delete (185). Null = live. THE OWNER CANNOT RESTORE ONE: the SELECT policy filters deleted_at, and Postgres applies SELECT policies to the rows an UPDATE ... WHERE reads, so the deliberately unfiltered UPDATE policy never sees the row. Measured 2026-09-09 (restore matched 0 rows; 1 row with an unfiltered SELECT policy, all else equal). With PK (user_id, product_id) the product cannot be re-added either. Nothing writes this table yet, so design the restore path before it does.';

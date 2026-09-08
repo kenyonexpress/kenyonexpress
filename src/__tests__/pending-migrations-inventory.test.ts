@@ -141,6 +141,7 @@ describe('the pending migration inventory', () => {
       '181b_admin_rbac_hardening.sql',
       '182_coupon_qr_batches.sql',
       '183_order_shipped_notification.sql',
+      '185_soft_delete_user_facing_remainder.sql',
       '186_composite_indexes_top_queries.sql',
       '187_category_name_shekel_order.sql',
     ])
@@ -192,7 +193,23 @@ describe('the pending migration inventory', () => {
     //   162_cron_schedule                approved (CLOSEOUT §7), blocked on vault
     //                                    seeding -- see "## חסמים לאופיר" in STATE.md
     //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
-    //   185_soft_delete_user_facing_...  the four deleted_at indexes: absent
+    //
+    // 185 APPLIED 2026-09-09. It REWRITES existing policies from texts it
+    // quotes, the shape that nearly broke 183, so all six were read off
+    // production first: all six matched verbatim, roles included, so the
+    // 09-04 measurement was still current. Blast radius measured as zero
+    // before applying (no soft-deleted products, no inactive categories,
+    // reviews and wishlists empty). The four names then moved from
+    // SOFT_DELETE_PENDING_TABLES into SOFT_DELETE_LIVE_TABLES, which is the
+    // application half of the same change.
+    //
+    // Its documented wishlist restore does NOT work: Postgres applies SELECT
+    // policies to the rows an UPDATE ... WHERE reads, so the filtered SELECT
+    // policy hides the row before the unfiltered UPDATE policy is consulted
+    // (measured: 0 rows restored, 1 with an unfiltered SELECT policy, all
+    // else equal). Nothing writes wishlists yet, so the claim was corrected
+    // rather than the policy redesigned; held by
+    // wishlist-soft-delete-restore.test.ts.
     //
     // 173 APPLIED 2026-09-09, after two guards its own header claimed it had
     // were added to the file first. Its order trigger fires on `paid`, which
@@ -243,7 +260,6 @@ describe('the pending migration inventory', () => {
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
-      '185_soft_delete_user_facing_remainder.sql',
       'preflight_162.sql',
     ])
   })

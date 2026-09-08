@@ -1,5 +1,71 @@
 # Apply order
 
+## 2026-09-09: 185 APPLIED, and the restore it documented does not exist
+
+`soft_delete_user_facing_remainder_185` plus
+`soft_delete_185_correct_wishlists_comment`. `deleted_at` + the house partial
+index on `categories`, `product_images`, `reviews`, `wishlists`, and the
+client-facing SELECT policies rewritten so a soft-deleted row is invisible to
+shoppers while admin keeps seeing it.
+
+**This file REWRITES existing policies from texts it quotes, which is exactly
+how 183 nearly went wrong, so all six were read off production first.** All
+six matched the quoted "pre-149" texts verbatim, roles included -- the
+2026-09-04 measurement was still current on 09-09. That is the good outcome of
+the check, not a reason to have skipped it.
+
+Prerequisites verified rather than assumed: `products.deleted_at` exists (the
+new `product_images` policy depends on it), the four target tables had no
+`deleted_at`, `reviews.status` is text, `categories` has `is_active` and
+`created_by`, and the `user_role` / `product_status` enums carry the labels
+the policies name.
+
+**Blast radius measured before applying: zero.** No soft-deleted products, so
+no image changed visibility; no inactive categories; `reviews` and `wishlists`
+are empty. Proven against real data, rolled back:
+
+    categories visible to anon        12 -> 11 after soft-deleting one
+    images of a soft-deleted product   1 -> 0  (the hole the header describes
+                                       closing: status alone did not hide them)
+    the soft-deleted category          still present for the service role,
+                                       so admin can restore it
+
+**THE FINDING: the wishlist restore the file documented cannot happen.** The
+file said UPDATE is left unfiltered "so an un-delete stays possible". Postgres
+applies SELECT policies to the rows an `UPDATE ... WHERE` reads, so the
+filtered SELECT policy hides the row before the unfiltered UPDATE policy is
+consulted. Measured as the owner with the correct `auth.uid()`, rolled back:
+
+    restore UPDATE, policies exactly as 185 applies them      0 rows
+    same UPDATE, SELECT policy swapped for an unfiltered one  1 row
+
+Nothing else differed between the two runs. It is worse than a dead restore:
+the PK is `(user_id, product_id)`, so a soft-deleted row also blocks re-adding
+the same product.
+
+**Recorded, not redesigned.** Nothing writes `wishlists` -- there is no
+`from('wishlists')` anywhere in `src/` -- so no row can reach `deleted_at`
+today and the feature does not exist yet. Choosing an RLS design for an
+unbuilt feature would be guessing; leaving a comment promising a capability
+the database does not have is the failure this repo keeps paying for. The
+comment now states the measured truth both in the file and on the column
+itself, and `src/__tests__/wishlist-soft-delete-restore.test.ts` holds the
+finding until someone builds the wishlist and picks a restore path on purpose.
+
+**The other half of this change is in the application.** The service role
+bypasses RLS, so `src/lib/soft-delete.ts` carries the predicate for
+service-role call sites. The four names moved from `SOFT_DELETE_PENDING_TABLES`
+into `SOFT_DELETE_LIVE_TABLES`, which turns the filter on at every call site
+in one edit. `src/types/database.ts` was regenerated to make that safe, and
+its hand-written alias tail was re-appended afterwards -- the file's own
+comment warns that a regeneration drops it, which is what happened in
+d7906bcec and happened again here before type-check caught it.
+
+**What is still pending after this:** 162 (approved, blocked on vault
+seeding), 184.
+
+
+
 ## 2026-09-09: 173 APPLIED, after two guards it claimed to have were added
 
 `whatsapp_flow_173` plus `whatsapp_flow_173_revoke_client_execute`. Five new
@@ -363,7 +429,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The thirteen that remain, in order
+## The twelve that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -382,7 +448,7 @@ independent and may be applied in any sequence, or not at all.
 | 13 | `141_money_agorot_growth.sql` | `_agorot` columns on affiliates, referrals | — | `drop column <col>_agorot` |
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
 | 15 | `184_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
-| 16 | `185_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
+| — | `185_soft_delete_user_facing_remainder.sql` | **already applied 2026-09-09** (MCP, `soft_delete_user_facing_remainder_185`): `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
 | — | `173_whatsapp_flow.sql` | **already applied 2026-09-09** (MCP, `whatsapp_flow_173` + `whatsapp_flow_173_revoke_client_execute`): WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
 | — | `177_cashback_ledger.sql` | **already applied 2026-09-09** (MCP, `cashback_ledger_177`): append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
 | — | `178_webauthn_credentials.sql` | **already applied 2026-09-09** (MCP, `webauthn_credentials_178`): passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
