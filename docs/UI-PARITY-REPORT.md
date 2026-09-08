@@ -137,3 +137,8 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-08 16:33 | home | 1440 | 8.29% | PASS | `3b1cc47bb-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
 | 2026-09-08 16:36 | home | 1440 | 8.29% | PASS | `3b1cc47bb-dirty` | ref 97 failed to load (57 script, 37 font, 1 stylesheet, 1 image, 1 xhr) |
 | 2026-09-08 16:39 | home | 380 | 30.26% | **FAIL** | `3b1cc47bb-dirty` | ref 96 failed to load (57 script, 37 font, 1 stylesheet, 1 xhr) |
+| 2026-09-08 18:44 | home | 1440 | 8.29% | PASS | `994f19348` | ref 153 failed to load (113 script, 37 font, 2 stylesheet, 1 xhr) |
+| 2026-09-08 18:47 | cart | 768 | 26.67% | **FAIL** | `994f19348-dirty` | ref 85 failed to load (54 script, 31 stylesheet) |
+| 2026-09-08 18:51 | cart | 768 | 26.67% | **FAIL** | `994f19348-dirty` | ref 85 failed to load (54 script, 31 stylesheet) |
+| 2026-09-08 18:53 | cart | 1440 | 16.34% | **FAIL** | `994f19348-dirty` | ref 85 failed to load (54 script, 31 stylesheet) |
+| 2026-09-08 18:56 | cart | 1440 | 16.29% | **FAIL** | `994f19348-dirty` | ref 85 failed to load (54 script, 31 stylesheet) |

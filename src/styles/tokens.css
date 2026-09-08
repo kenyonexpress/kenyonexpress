@@ -195,7 +195,24 @@
      scoring us against a stale deploy of ourselves and 1200 buys no fidelity
      against anything. The brief has named 1320 three times; it is now the only
      live source for this value. docs/HEADER-1TO1-2026-09-02 remains the record
-     of what live measured while live existed. */
+     of what live measured while live existed.
+
+     2026-09-09, MEASURED, because "RESTORED TO THE BRIEF'S 1320" above claims
+     more reach than the token has. Only cart-page.css and checkout-page.css
+     read this property, and both already carried 1320 as their var() fallback,
+     so the token and the fallback disagreed until now. The home page does not
+     consume it at all. It also cannot bind below 1200px of viewport. So the
+     change is visible on exactly two routes above 1200px wide, and the A/B is:
+
+       cart 1440   1200px -> 16.34%   1320px -> 16.29%   (1320 is better)
+       cart  768   1200px -> 26.67%   1320px -> 26.67%   (identical, no bind)
+       home 1440   8.29% either way   (does not read the token)
+       checkout    refuses to measure: the reference is a static snapshot and
+                   the gate's "cart did not stick" guard fires on it
+
+     Those percentages are against the degraded localized snapshot, not the
+     11% gate, and only the DELTA between the two columns is meaningful here.
+     Read the delta: 1320 does not cost fidelity, it buys 0.05pp. */
   --container-page: 1320px;
   /* Measured on live: the footer and the deals grid do NOT share the page
      container, they run wider and narrower respectively. */
