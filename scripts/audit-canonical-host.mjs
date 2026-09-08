@@ -43,6 +43,46 @@ export function canonicalFrom(html) {
   return href ? href[1] : null
 }
 
+/**
+ * EVERY TAG THAT NAMES A HOST, DISCOVERED RATHER THAN LISTED.
+ *
+ * The first version of this script checked three declarations - rel=canonical,
+ * robots Host, robots Sitemap - while calling the finding "every canonical the
+ * site declares". Measured 2026-09-08 against the built home page, there are
+ * five, and `og:url` was named in the write-up and never in the code:
+ *
+ *   rel="canonical"                       apex
+ *   rel="alternate" hrefLang="he-IL"      apex
+ *   og:url                                apex
+ *   twitter:image                         apex
+ *   robots.txt Host and Sitemap           apex
+ *
+ * Listing them would have the same failure again the next time a tag is added,
+ * so this reads the document: any absolute http(s) URL sitting in an `href` or
+ * `content` on a `<link>` or `<meta>` in the head is a declaration.
+ *
+ * CASE-INSENSITIVE ON PURPOSE. React serialises the prop as `hrefLang`, and it
+ * appears in the HTML that way. HTML attribute names are case-insensitive so
+ * crawlers read it correctly, and a case-sensitive grep for `hreflang=` finds
+ * nothing - which is exactly the wrong answer this file exists to avoid.
+ */
+export function hostDeclarations(html) {
+  const head = html.slice(0, html.search(/<\/head>/i) + 1 || html.length)
+  const out = []
+  for (const tag of head.matchAll(/<(?:link|meta)\s[^>]*>/gi)) {
+    const el = tag[0]
+    const url = el.match(/(?:href|content)=["'](https?:\/\/[^"']+)["']/i)
+    if (!url) continue
+    const label =
+      el.match(/rel=["']([^"']+)["']/i)?.[1] ??
+      el.match(/(?:property|name)=["']([^"']+)["']/i)?.[1] ??
+      'link'
+    const lang = el.match(/hreflang=["']([^"']+)["']/i)?.[1]
+    out.push({ label: lang ? `${label} ${lang}` : label, url: url[1] })
+  }
+  return out
+}
+
 /** `Host:` and `Sitemap:` as robots.txt declares them. */
 export function robotsHosts(robots) {
   const host = robots.match(/^Host:\s*(\S+)/im)
@@ -103,10 +143,9 @@ async function main() {
     process.exit(2)
   }
 
-  const canonical = canonicalFrom(html)
   const { host, sitemap } = robotsHosts(robots)
   const declared = [
-    ['rel=canonical', canonical],
+    ...hostDeclarations(html).map((d) => [d.label, d.url]),
     ['robots Host', host],
     ['robots Sitemap', sitemap],
   ].filter(([, value]) => value)

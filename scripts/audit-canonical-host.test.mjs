@@ -1,6 +1,12 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { canonicalFrom, isSelfServing, originOf, robotsHosts } from './audit-canonical-host.mjs'
+import {
+  canonicalFrom,
+  hostDeclarations,
+  isSelfServing,
+  originOf,
+  robotsHosts,
+} from './audit-canonical-host.mjs'
 
 /**
  * Measured 2026-09-08: the app declares the apex everywhere - rel=canonical,
@@ -110,5 +116,58 @@ describe('a page it did not receive is not a page without a canonical', () => {
     // robots is allowed to be empty, but only after a status check - otherwise
     // a 403 would read as "this site declares no Host and no Sitemap".
     expect(source).toContain('robotsRes.ok')
+  })
+})
+
+describe('every tag that names a host is found, not just the three I listed', () => {
+  /**
+   * The first version checked rel=canonical, robots Host and robots Sitemap
+   * while the write-up called the finding "every canonical the site declares".
+   * Measured 2026-09-08 against the built home page there are five, and `og:url`
+   * was named in the document and never in the code.
+   *
+   * So this discovers them from the head instead of listing them, because a
+   * list would fail the same way the next time a tag is added.
+   */
+  const HEAD = `<html><head>
+    <link rel="canonical" href="https://apex.test"/>
+    <link rel="alternate" hrefLang="he-IL" href="https://apex.test"/>
+    <meta property="og:url" content="https://apex.test"/>
+    <meta property="og:image" content="https://apex.test/og.png"/>
+    <meta name="twitter:image" content="https://apex.test/og.png"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <link rel="stylesheet" href="/a.css"/>
+  </head><body><a href="https://elsewhere.test">x</a></body></html>`
+
+  it('finds all five host-bearing declarations', () => {
+    expect(hostDeclarations(HEAD)).toHaveLength(5)
+  })
+
+  it('finds hreflang despite React serialising it as hrefLang', () => {
+    // A case-sensitive grep for `hreflang=` returns nothing here, which is
+    // exactly the wrong answer this file exists to avoid.
+    const labels = hostDeclarations(HEAD).map((d) => d.label)
+    expect(labels).toContain('alternate he-IL')
+  })
+
+  it('ignores a tag with no absolute URL', () => {
+    // twitter:card is "summary_large_image", not a host.
+    expect(hostDeclarations(HEAD).map((d) => d.label)).not.toContain('twitter:card')
+  })
+
+  it('ignores relative hrefs, which name no host', () => {
+    expect(hostDeclarations(HEAD).map((d) => d.url)).not.toContain('/a.css')
+  })
+
+  it('does not wander into the body, where a link is content and not a declaration', () => {
+    expect(hostDeclarations(HEAD).map((d) => d.url)).not.toContain('https://elsewhere.test')
+  })
+
+  it('covers the image tags, whose redirect costs more than the others', () => {
+    // Social scrapers frequently do not follow redirects for images, so a 308
+    // on og:image can mean no preview card at all rather than a slower one.
+    const labels = hostDeclarations(HEAD).map((d) => d.label)
+    expect(labels).toContain('og:image')
+    expect(labels).toContain('twitter:image')
   })
 })
