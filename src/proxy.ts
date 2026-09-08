@@ -136,11 +136,28 @@ export async function proxy(request: NextRequest) {
   // which is the whole point of the paragraph above, and the second would catch
   // `/checkout/frame-return` and put a login form inside Cardcom's iframe.
   const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
+
+  // THE PORTAL IS `/supplier` AND `/supplier/...`, NOT EVERY PATH THAT STARTS
+  // WITH THOSE EIGHT LETTERS.
+  //
+  // This was `pathname.startsWith('/supplier')`, which also matches
+  // `/suppliers` - the PUBLIC join-us page with the lead form. Measured: it
+  // answered 307 to /login. That page is linked from SiteFooter as the one
+  // entry aimed at a business rather than a shopper, and sitemap.ts lists it at
+  // priority 0.7 with the note "a business is worth more than a session". So
+  // the single page whose job is to win new suppliers demanded a login from
+  // every prospect, and Googlebot was sent to a login form for a URL we asked
+  // it to index.
+  //
+  // Exactly the failure the paragraph above already describes for `/checkout`,
+  // in the neighbouring clause, made with the same operator.
+  const isPortalPath = pathname === '/supplier' || pathname.startsWith('/supplier/')
+
   const needsAuth =
     pathname.startsWith('/account') ||
     pathname.startsWith('/coupon/') ||
     (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname)) ||
-    (pathname.startsWith('/supplier') && !supplierPublic)
+    (isPortalPath && !supplierPublic)
 
   if (needsAuth && !user) {
     return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)

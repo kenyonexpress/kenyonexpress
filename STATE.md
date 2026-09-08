@@ -17397,4 +17397,60 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
 ‏`MEILISEARCH_HOST` אינו מוגדר בשום מקום מלבד `.env.example` — ולכן אין אינדקס
 לספור מולו. הקוד קיים ונבדק ביחידות; המספר עצמו ימדד ביום שיהיה מופע.
 
-**המשך מ: ‏STEP 08 (‏STOREFRONT).**
+**המשך מ: ‏STEP 08 — בוצע. ראה למטה.**
+
+
+## ‏STEP 08 STOREFRONT — באג הרשאות אמיתי, ‏08.09.2026 ‏12:45
+
+כל המסלולים היו בנויים. הסריקה מצאה **מסלול ציבורי אחד שדרש התחברות.**
+
+### ‏`/suppliers` החזיר 307 ל-`/login`
+
+הדף הציבורי "הצטרפו כספקים", עם טופס יצירת הקשר, ‏canonical משלו, קישור
+ב-`SiteFooter` ורשומה ב-`sitemap.ts` בעדיפות 0.7 — **הפנה כל מבקר למסך
+התחברות.**
+
+הסיבה, ב-`src/proxy.ts` שורה 143:
+
+```ts
+pathname.startsWith('/supplier')   // תופס גם את /suppliers
+```
+
+‏"suppliers" מתחיל ב-"supplier". לכן הדף היחיד שתפקידו לגייס ספקים חדשים סירב
+לכל בעל עסק, ו-Googlebot קיבל הפניה ל-login על כתובת שה-sitemap שלנו מפרסם
+בעדיפות מוגברת.
+
+**זה בדיוק סוג הבאג שהקובץ עצמו מתעד בפסקה הצמודה** לגבי `/checkout` מול
+‏`/checkout/` — ונעשה שם עם אותו אופרטור.
+
+תוקן ל-`pathname === '/supplier' || pathname.startsWith('/supplier/')`.
+אומת על בילד פרודקשן:
+
+```
+/suppliers        200   (הטופס נטען: 4 <form>)
+/supplier         307   (עדיין חסום, כנדרש)
+/supplier/login   200   (הדלת הציבורית פתוחה)
+```
+
+‏`src/proxy-auth-paths.test.ts` מקבע את זה, כולל רשימה מפורשת של מסלולים
+ציבוריים שאסור לאף predicate לתפוס. הוכח בשני הכיוונים: עם החזרת הבאג —
+שני טסטים אדומים.
+
+### ‏18 מסלולים, ‏200 עם נתונים אמיתיים
+
+```
+/ /products /coupons /category/vacation /search /product/<slug> /cart /checkout
+/about /contact /faq /blog /suppliers /cookie-policy /privacy-policy
+/terms-and-conditions /refund_returns /accessibility
+```
+
+המסלולים המוגנים (‏`/account*`, `/supplier`, `/coupon/`) מחזירים 307 ל-login,
+וזו התשובה הנכונה למשתמש מנותק.
+
+### ‏BLOCKED
+
+‏`compare.mjs < 11%` לכל מסלול — אותו חסם של ‏STEP 05: הייחוס הוא snapshot
+שה-slider שלו לא אותחל וגופן האייקונים שלו חסר. לא נמדד כאן כדי לא לרשום
+מספרים שאינם ציון נאמנות.
+
+**המשך מ: ‏STEP 09 (‏MOBILE).**
