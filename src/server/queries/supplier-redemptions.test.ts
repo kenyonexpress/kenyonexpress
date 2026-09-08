@@ -6,7 +6,15 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminClient }))
 import { getSupplierRedemptions } from './supplier'
 
 /**
- * What a Coupon-Partner may SEE of redemptions (marathon step 12). The
+ * What a Coupon-Partner may SEE of redemptions (marathon step 12).
+ *
+ * "Coupon-Partner" is the queue's name for `vendor`, and the permission is a
+ * `supplier_members` row rather than the profile role - see
+ * `docs/DECISION-LOG.md` D-001 and the measured table in
+ * `docs/ROLE-MATRIX.md`. Which is why the scope below is supplier_id and not a
+ * role check.
+ *
+ * The
  * tenant-scope scan proves the query filters by supplier_id; this pins the
  * two visibility rules the scan cannot read:
  *  - only REDEEMED vouchers surface (an issued voucher's code in a list a

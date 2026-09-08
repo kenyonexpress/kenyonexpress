@@ -83,10 +83,27 @@ describe('every mutating admin action is behind a role guard', () => {
 })
 
 /**
- * `support` is the read-only role - the brief calls it "Coupon-Partner
- * read-only" - and read-only has to mean it cannot reach a writer guard.
+ * `support` is the read-only STAFF role, and read-only has to mean it cannot
+ * reach a writer guard.
+ *
+ * IT IS NOT THE BRIEF'S "COUPON-PARTNER", WHICH THIS COMMENT USED TO CLAIM.
+ * Corrected 2026-09-08: `docs/DECISION-LOG.md` D-001 decided that question a day
+ * earlier, against production, and `docs/ROLE-MATRIX.md` carries the measured
+ * table - wherever the queue says "coupon-partner" it means `vendor`, and the
+ * permission comes from a `supplier_members` row rather than the profile role.
+ * `src/db/__tests__/rls-role-boundaries.test.ts` tests that subject and says so.
+ *
+ * That re-labelling created exactly the second source of truth D-001 refused to
+ * create: two documents answering one question with two different roles, and
+ * the readiness assessment citing this file's label as evidence that a
+ * requirement about an entirely different subject had been met.
+ * `src/__tests__/coupon-partner-mapping.test.ts` is the guard against it
+ * forking again.
+ *
+ * The assertions below are unchanged and still worth having. Only the name was
+ * wrong.
  */
-describe('the read-only role cannot write', () => {
+describe('the read-only staff role cannot write', () => {
   const roles = readFileSync(join(process.cwd(), 'src/lib/admin/roles.ts'), 'utf8')
 
   it('is not an admin role, so requireAdminSession refuses it', () => {
