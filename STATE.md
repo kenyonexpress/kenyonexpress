@@ -17520,4 +17520,52 @@ pathname.startsWith('/supplier')   // תופס גם את /suppliers
 ‏`public/sw.js` ו-`src/app/manifest.ts` קיימים. ‏Lighthouse mobile > 95 לא הורץ
 בריצה הזאת.
 
-**המשך מ: ‏STEP 10 (‏ADMIN).**
+**המשך מ: ‏STEP 10 — נבדק, בנוי במלואו. ראה למטה.**
+
+
+## ‏STEP 10 ADMIN — נבדק סעיף-סעיף, לא נמצא פער, ‏08.09.2026 ‏13:55
+
+**לא שונה קוד.** כל דרישה אומתה מול המימוש בפועל.
+
+| דרישה | מצב | הראיה |
+| --- | --- | --- |
+| ‏CRUD מוצרים עם שלושת האחוזים | קיים | ‏`server/actions/admin/products.ts` |
+| עץ קטגוריות, ספקים, הזמנות | קיים | ‏`(admin)/admin/{categories,payouts,orders}` |
+| ‏**Content-Uploader בלי תמחור** | **נאכף בשרת** | ראה למטה |
+| ‏**החזר אוטומטי 100%, מקסימום 3** | **קיים** | ‏`AUTO_APPROVAL_LIMIT = 3` |
+| ‏voucher lookup + מימוש ידני | קיים | ‏`(admin)/admin/coupons`, ‏`redeem_voucher` |
+| תפקידים | קיים | ‏`lib/admin/permissions.ts` |
+| דגלי פיצ'רים | קיים | ‏`(admin)/admin/feature-flags`, ‏`lib/admin/feature-flags.ts` |
+| שורת audit לכל מוטציה | קיים ומגודר | ‏`audit-required.test.ts`, ‏25 קבצי actions |
+
+### ‏Content-Uploader: הגבול אמיתי ובשרת, לא בטופס
+
+‏`hidePricing = !canSeeMoney(session.role)` מחושב **מהסשן**, ואז:
+
+- שדות הכסף מפורקים מחוץ ל-`writeFields`, כך שהם לא מגיעים לכתיבה כלל
+- ‏`buildProductMoneyWrite` לא נקרא בכלל (‏`money = null`)
+- מוצר חדש נכפה ל-`status: 'draft'`
+- ובנוסף `applyUploaderPolicy` מסירה `platform_percent` ו-
+  ‏`supplier_split_percent` וכופה `approval_status='pending'`
+
+זו הגנה בשתי שכבות, ואף אחת מהן אינה תלויה ב-UI.
+
+### תיקון לדיווח שלי בתוך הריצה
+
+בסריקה ראשונה כתבתי ש**אין** תקרת החזרים. זה היה שגוי — חיפשתי ב-
+‏`refund.ts` ובדפוסים כמו `MAX_REFUND`, והקבוע יושב ב-
+‏`server/domain/orders/refund-request.ts`. הוא גם עדין יותר ממה שהמשימה ביקשה:
+
+> "‏NOT a cap on refunds. A customer whose fourth request arrives is not
+> refused: their request is recorded as `requested` and a person reads it. The
+> cap is on the ABSENCE of a person."
+
+כלומר התקרה מגבילה את האוטומציה ולא את הזכות הסטטוטורית של הלקוח. החלון הוא
+‏365 יום.
+
+### ‏Coupon-Partner
+
+‏`coupon_partner` אינו קיים ב-`user_role` ואינו מוזכר באף policy. תועד כבר
+כהחלטה ‏D-001/D-002. אין מה לממש.
+
+**המשך מ: ‏STEP 11 (‏PAYMENTS).**
