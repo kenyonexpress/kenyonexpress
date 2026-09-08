@@ -25,8 +25,8 @@ export default function NotFound() {
       <p className="text-6xl font-black text-brand-primary" aria-hidden="true">
         404
       </p>
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">הדף שחיפשתם לא נמצא</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
+      <h1 className="mt-4 text-2xl font-bold text-heading">הדף שחיפשתם לא נמצא</h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted">
         ייתכן שהקישור ישן, שהמוצר כבר לא במלאי, או שנפלה שגיאת הקלדה בכתובת.
       </p>
 
@@ -50,7 +50,7 @@ export default function NotFound() {
         </Link>
         <Link
           href="/"
-          className="rounded-xl px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:text-gray-900"
+          className="rounded-xl px-6 py-3 text-sm font-bold text-muted transition-colors hover:text-heading"
         >
           לדף הבית
         </Link>

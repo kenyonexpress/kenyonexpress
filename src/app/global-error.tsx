@@ -1,5 +1,6 @@
 'use client'
 
+import { SITE } from '@/styles/tokens'
 import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
 
@@ -15,6 +16,18 @@ import { useEffect } from 'react'
  *
  * Styles are inline for the same reason: a failure this deep may well be the
  * stylesheet not loading, so this page cannot depend on one.
+ *
+ * WHICH IS WHY THE YELLOW IS A LITERAL AND THE FONT IS NOT HEEBO.
+ *
+ * The brand colour survives a dead stylesheet - it is a value, and it is
+ * imported from `styles/tokens.ts`, which is plain data with no CSS import
+ * behind it, so this stays in step with the site without depending on anything
+ * loading. `tokens.test.ts` already pins that value against the stylesheet.
+ *
+ * The typeface cannot make the same trip. Heebo arrives through `next/font` as
+ * a class on <html> set by the ROOT LAYOUT - the very thing that just threw. A
+ * font-family naming it here would resolve to nothing and fall back anyway,
+ * so the fallback is named honestly instead.
  */
 export default function GlobalError({
   error,
@@ -40,8 +53,17 @@ export default function GlobalError({
         }}
       >
         <main style={{ maxWidth: '32rem', padding: '2rem', textAlign: 'center' }}>
-          <p style={{ fontSize: '3rem', margin: 0 }} aria-hidden="true">
-            ⚠️
+          <p
+            style={{
+              fontSize: '3.75rem',
+              lineHeight: 1,
+              fontWeight: 900,
+              margin: 0,
+              color: SITE.brand.primary,
+            }}
+            aria-hidden="true"
+          >
+            500
           </p>
           <h1 style={{ fontSize: '1.5rem', margin: '1rem 0 0.5rem' }}>משהו השתבש אצלנו</h1>
           <p style={{ color: '#666', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>

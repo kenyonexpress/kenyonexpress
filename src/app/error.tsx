@@ -50,11 +50,15 @@ export default function AppError({
 
   return (
     <main dir="rtl" className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
-      <p className="text-5xl" aria-hidden="true">
-        ⚠️
+      {/* 500 in the brand yellow, matching not-found.tsx's 404. The two error
+          pages used to look like they came from different sites: the 404 painted
+          its numeral brand-primary while this one led with a grey emoji. A
+          customer who hits both in one session sees one storefront. */}
+      <p className="text-6xl font-black text-brand-primary" aria-hidden="true">
+        500
       </p>
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">משהו השתבש אצלנו</h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500">
+      <h1 className="mt-4 text-2xl font-bold text-heading">משהו השתבש אצלנו</h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted">
         התקלה נרשמה אצלנו ואנחנו מטפלים בה. אפשר לנסות לטעון את הדף מחדש.
       </p>
 
@@ -67,15 +71,21 @@ export default function AppError({
           נסו שוב
         </button>
         <Link
+          href="/products"
+          className="rounded-xl border border-border px-6 py-3 text-sm font-bold text-heading transition-colors hover:bg-surface-hover"
+        >
+          לכל המוצרים
+        </Link>
+        <Link
           href="/"
-          className="rounded-xl border border-gray-300 px-6 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50"
+          className="rounded-xl px-6 py-3 text-sm font-bold text-muted transition-colors hover:text-heading"
         >
           לדף הבית
         </Link>
       </div>
 
       {error.digest && (
-        <p dir="ltr" className="mt-8 font-mono text-xs text-gray-400">
+        <p dir="ltr" className="mt-8 font-mono text-xs text-muted">
           {error.digest}
         </p>
       )}
