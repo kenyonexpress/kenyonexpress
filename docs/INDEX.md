@@ -39,8 +39,8 @@ constrained, and it has never been switched on.
 
 Every document in `docs/`, what it is for, and whether you can trust it.
 
-**170 documents.** 98 current, 50 carrying a correction banner, 22 marked as
-historical snapshots.
+**170 documents in `docs/`.** 98 current, 50 carrying a correction banner, 22 marked as
+historical snapshots. The root trio (`ARCHITECTURE.md`, `DECISIONS.md`, `RISKS.md`) is the **target contract** and sits outside that count.
 
 Last reconciled against production (`ixvwfbuvfxxsjiywhbbb`), the GitHub API and
 the Vercel API on **2026-09-01**.
@@ -55,9 +55,14 @@ the Vercel API on **2026-09-01**.
 | ⚠️ | Useful, but carries a banner: it names tables or numbers production contradicts. The design may still be sound; the schema it assumes is not what exists. |
 | 🕯️ | Historical snapshot. True on its date, **not maintained**. Evidence, not guidance. |
 
-**If two documents disagree, `ARCHITECTURE-OVERVIEW.md` wins**, because every
-number in it was read out of the live database rather than out of a migration
-file or a prior document.
+**If two documents disagree on a live count, `ARCHITECTURE-OVERVIEW.md` wins**,
+because every number in it was read out of the live database rather than out of
+a migration file or a prior document.
+
+**If two documents disagree on the target shape** (Workers, CTI children, coupon
+escrow, image widths, rate numbers), the root trio wins:
+`ARCHITECTURE.md`, `DECISIONS.md`, `RISKS.md`. The overview remains what is
+running.
 
 ---
 
@@ -65,7 +70,10 @@ file or a prior document.
 
 | Document | Status | What it is |
 |---|---|---|
-| [ARCHITECTURE-OVERVIEW.md](ARCHITECTURE-OVERVIEW.md) | ✅ | **The whole system in one document.** Data model, money, coupon lifecycle, roles, search, deployment. Start here. |
+| [ARCHITECTURE.md](../ARCHITECTURE.md) | ⚠️ | **Target contract.** Nine surfaces (stack, CTI, RLS, payments, search, images, rate limits, observability, security). Live gaps named in the header table. |
+| [DECISIONS.md](../DECISIONS.md) | ⚠️ | Why those eight structural choices (CTI, Meilisearch, ledger split, idempotency table, R2, Upstash, supplier RLS, daily recon). |
+| [RISKS.md](../RISKS.md) | ⚠️ | Design risks of that contract, including certain live gaps (cron not scheduled, contract vs overview, 172 admin SELECT on webhook payloads). |
+| [ARCHITECTURE-OVERVIEW.md](ARCHITECTURE-OVERVIEW.md) | ✅ | **The system as it runs.** Data model, money, coupon lifecycle, roles, search, deployment. Live counts. |
 | [ONBOARDING.md](ONBOARDING.md) | ✅ | Clone to running locally, and the four traps that cost hours. |
 | [ONBOARDING-DAY-ONE.md](ONBOARDING-DAY-ONE.md) | ✅ | The first day hour by hour, clone to first merged PR, with a cut order for when it runs long. |
 | [BUSINESS-RULES.md](BUSINESS-RULES.md) | ✅ | Every rule the code **refuses** to break, with the file and line that refuses. Plus the seven that are stated and enforced by nothing. |

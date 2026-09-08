@@ -9,21 +9,22 @@ document that production contradicts.
 
 ## Start here
 
-**`ARCHITECTURE-OVERVIEW.md` is the master document.** It describes the whole
-system in one file: data model, money in agorot, coupon lifecycle, roles and
-RLS, search pipeline, deployment topology. Every number in it was measured
-against production on 2026-09-01, and it carries the queries so they can be
-re-checked. Where any other document in this directory disagrees with it, the
-overview is right.
+**Live system:** `ARCHITECTURE-OVERVIEW.md` in this directory. Data model, money
+in agorot, coupon lifecycle, roles and RLS, search pipeline, deployment.
+Numbers measured against production on 2026-09-01.
 
-Read it before any other file here.
+**Target contract** (repo root, 2026-09-09): `ARCHITECTURE.md`, `DECISIONS.md`,
+`RISKS.md`. Use those for intended Workers/CTI/escrow/image/rate shape. Use the
+overview for what is running. Do not mix them in a migration without naming
+which one you are implementing.
 
 ## Authority order
 
-1. `ARCHITECTURE-OVERVIEW.md`: the system as it actually is
-2. The source files it names, especially `src/lib/money.ts`,
+1. `ARCHITECTURE-OVERVIEW.md`: the system as it actually is (live counts)
+2. Root `ARCHITECTURE.md` + `DECISIONS.md` + `RISKS.md`: the target contract
+3. The source files the overview names, especially `src/lib/money.ts`,
    `src/server/payments/README.md`, and the two state machines
-3. Everything else in this directory
+4. Everything else in this directory
 
 ## Status legend
 
@@ -139,6 +140,7 @@ the corpus:
 
 | Date | Change |
 |---|---|
+| 2026-09-09 | Root trio named as target contract (`ARCHITECTURE.md`, `DECISIONS.md`, `RISKS.md`). Overview remains live counts. |
 | 2026-09-01 | Rewritten against production. `ARCHITECTURE-OVERVIEW.md` named as master; 22 documents banded with their specific contradicted claims; branch reference to `arch/docs-queue` removed. |
 | 2026-07-31 | Index after docs-queue continuous run |
 | 2026-07-31 | Gap docs: env, flags, shipping, reconcile, onboarding, incident, a11y, design, cookies |

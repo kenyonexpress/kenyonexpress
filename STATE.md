@@ -1,5 +1,8 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS second source pass. Header names 172 admin SELECT on payment_webhook_events; two R2 modules; vercel.json has no crons key; R-16 added.)
+Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS audited against `kenyonexpress` source. Root trio is the target contract. Header table now names Next ingest of originals, exact live rate windows, GET TTL 3600s, Hebrew typo 4/7. RLS map is role × table × action.)
+Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS. Root `ARCHITECTURE.md` + `DECISIONS.md` + `RISKS.md` written as the target contract; live gaps named; INDEX updated.)
 Updated: 2026-09-04 (‏ביקורת מיגרציות אוטונומית: כל ארבעת ה-preflights הורצו מול פרודקשן דרך MCP. נמצא ש-166+167+168 **כבר הוחלו ונרשמו** ב-schema_migrations ב-2026-09-03 23:24 UTC בגרסאות ‏20260903232445/232455/232504, וההגדרות החיות זהות לקבצים (גוף פונקציה, טריגר, 9 constraints, סט policies). הקבצים וה-preflights שלהם הועברו ל-`migrations/applied/`, נוספו שורות לטבלת APPLIED IN PRODUCTION, ונוצר ‏`migrations/applied/CHECKSUMS.sha256` עם ‏SHA-256 לכל קובץ, מגובה בטסט חדש ב-inventory. ‏162 נשארה pending: בלוקים 1+2 של ה-preflight עוברים, בלוקים 3+4 נכשלים — ה-vault ריק משני הסודות, והזריעה חסומה על חסם 0 (פרויקט ה-Vercel איננו). לא הוחלה שום מיגרציה חדשה בריצה הזו)
 Updated: 2026-09-03 22:55 UTC (‏CLOSEOUT §13 בוצע: ‏165 בוטלה סופית והועברה ל-`migrations/cancelled/` עם הסיבה בראשה — ‏18 ‏policies ציבוריות קוראות לעזרים ו-revoke היה מפיל את כל הקטלוג האנונימי ל-42501; נוסף `src/db/__tests__/anon-catalog.test.ts` שהוכח חי מול פרודקשן 9/9 עם מפתח anon בלבד, ורץ ב-CI עם ‏SUPABASE_URL+ANON_KEY; ‏DB-SECURITY-MODEL עודכן "by design")
 Updated: 2026-09-03 22:15 UTC (‏מרתון 1+2: תיקון ה-42703 נדחף בסשן קודם בלי לעדכן מצביע; ניקוי ה-float ב-bulk price הושלם דרך מודול טהור `src/lib/admin/bulk-price.ts` עם 10 טסטים; ‏3696 ירוקים, build ירוק)
@@ -76,16 +79,38 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## Docs agent (ke-arch worktree, markdown only)
 
-Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
+Updated: 2026-09-09. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-Canonical seven files exist at `docs/DESIGN-SYSTEM.md`, `docs/COMPONENT-INVENTORY.md`, `docs/UI-PARITY-LOG.md`, `docs/ROLE-MATRIX.md`, `docs/ERROR-COPY.md`, `docs/SEO-PLAN.md`, `docs/QA-SCRIPTS.md`. Pass 8: wallet/coupons/wishlist + live title `קניון אקספרס`. Pass 9: `/s/[id]`. Pass 10: `/city/[slug]` seventeen regions.
+ARCHITECTURE-DOCS-DECISIONS-RISKS. Root trio, second source pass 2026-09-09 against `kenyonexpress` (not only against other markdown):
+
+- `ARCHITECTURE.md`: nine surfaces, markdown only, no code fences. Header names live vs contract including Next ingest, `RATE_LIMIT_POLICIES` windows, GET TTL 3600s, Hebrew typo 4/7, **172 admin SELECT** on `payment_webhook_events`, two R2 modules. RLS map is role × table × action (S/I/U/D).
+- `DECISIONS.md`: eight why-choices. Truncated "acceptable" completed as **acceptable lag**. D-5 names two R2 clients. D-7 names 172. D-8 names `vercel.json` with no `crons` key.
+- `RISKS.md`: sixteen design risks. R-8 cron unscheduled (vercel.json evidence). R-16 raw webhook payloads in the admin UI.
+
+`docs/INDEX.md` and `docs/ARCHITECTURE-DOCS-INDEX.md` point at the trio. Overview remains live counts.
 
 ### In progress
-Keep deepening the same seven files.
+nothing (this goal).
 
 ### Next
 Keep deepening every document. Repeat. Never stop.
+
+### החלטות שהתקבלו אוטומטית (2026-09-09, second source pass)
+1. Goal name includes RISKS so `RISKS.md` is a deliverable.
+2. User query truncated at "Daily cron reconciliation vs real-time (acceptable". Completed as **acceptable lag**.
+3. 172 admin SELECT on `payment_webhook_events` is a live grant the first pass missed. Named in the header, §3.5, D-7, and R-16. Contract stays deny-all client roles on that table.
+4. Dual R2 modules (`r2.ts` SigV4 vs `r2-service.ts` SDK) named. Third backend still forbidden.
+5. `vercel.json` has no `crons` key. That is the evidence for R-8, not only the older CRON-EXTERNAL note.
+
+### החלטות שהתקבלו אוטומטית (2026-09-09, audit pass)
+1. Root `ARCHITECTURE.md` is the **target contract**, not a rewrite of live production. Overview remains authoritative for live counts (Next 16 on Vercel, no coupon-escrow writer, no CTI child tables, Meili unset).
+2. User query truncated at "Daily cron reconciliation vs real-time (acceptable". Completed as **acceptable lag**.
+3. Goal name includes RISKS so `RISKS.md` is a deliverable, not optional.
+4. Coupon escrow is documented as contract (§4) and as risk R-4 against live D-2 (no writer). Did not pretend production holds escrow.
+5. Rate-limit numbers in the contract are the ones in the goal (5/min, 3/min, 10/min, 1/10sec). Live windows (login 10/hour, signup 5/hour, redeem 60/hour, till 120/hour, no refresh 10/min) named in the header, §7, D-6, R-10.
+6. Live image ingest still runs `sharp` on Next. Header, §6, D-5, R-15 name that. 50 MB stays contract-only until PUT is direct-to-R2.
+7. RLS "x action" means S/I/U/D, not a collapsed R/W. Collapsing writes hid append-only tables.
 
 ## המשך מ: תור המרתון, שלב 16
 
