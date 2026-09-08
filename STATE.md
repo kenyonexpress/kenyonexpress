@@ -23398,3 +23398,90 @@ tag          v5.11.11
 ```
 
 **המשך מ: ‏STEP 21 — סבב תחזוקה 90.**
+
+---
+
+## ‏STEP 21 — סבב תחזוקה 90: כל ה-actions רצו על runtime ש-GitHub כופה עליהן
+
+**כל תשע העבודות ב-CI הדפיסו את אותה הערה, בכל ריצה, וזה נקרא כרעש:**
+
+```
+Node.js 20 is deprecated. The following actions target Node.js 20 but are
+being forced to run on Node.js 24: actions/checkout@v4,
+actions/setup-node@v4, pnpm/action-setup@v4
+```
+
+‏**"being forced" היא המילה שנושאת את המשקל.** ההצמדות עדיין הכריזו
+‏`runs.using: node20`, וה-runner דרס אותן. הדריסה זמנית ומוכרזת, וביום שהיא
+נגמרת כל תשעת השערים כאן נופלים בבת אחת על משהו שהקוד הזה לא עשה.
+‏13 checkout, ‏10 setup-node, ‏10 התקנות pnpm, ‏7 העלאות, ‏4 הורדות, ‏1 cache,
+‏2 github-script ו-1 fetch-metadata, כולן על node20.
+
+**הסחיפה כבר הייתה שם ואי אפשר היה לקרוא אותה:** ‏`load.yml` ישב על
+‏`checkout@v5` בזמן שהשנים-עשר האחרים ישבו על ‏v4. שני majors של אותה action
+בריפו אחד אומרים שאחד מהם שגוי, ואף קובץ לא אומר איזה.
+
+**הגרסאות לא נבחרו ב-`@latest` עיוור.** ארבעה changelogs מכריזים על שינוי
+שובר, וכל אחד נבדק מול מה שהריפו הזה **באמת כותב** ולא מול הכותרת:
+
+- ‏`setup-node v6`, ‏"Limit automatic caching to npm", נקרא כאילו הוא שובר
+  ריפו pnpm ואינו שובר. הוא משנה את **ברירת המחדל** כשלא ניתן קלט `cache:`.
+  כל עשר ההצמדות כאן מעבירות ‏`cache: pnpm` במפורש.
+- ‏`checkout v7` חוסם checkout של PR מ-fork תחת ‏`pull_request_target`.
+  ה-workflow היחיד עם ‏`pull_request_target` הוא ‏dependabot-auto-merge.yml,
+  והוא לא עושה checkout לכלום.
+- ‏`checkout v6` מעביר את פרטי ההזדהות לקובץ נפרד. ה-`git fetch origin` הידני
+  היחיד (ביקורת ענף ברירת המחדל) הוא מה שהיה נשבר; **הריפו ציבורי**, ולכן
+  ה-fetch הזה לא צריך הזדהות ממילא.
+- ‏`github-script v9` מסיר את ‏`require('@actions/github')` ומזריק
+  ‏`getOctokit`. אף אחד משני הסקריפטים לא קורא לו ולא מכריז על השם.
+- ‏`download-artifact v8` הופך אי-התאמת digest לקטלנית ומפסיק לפרוס הורדות
+  שאינן zip. הראשון הוא הידוק שרוצים; השני חל רק על העלאות עם
+  ‏`archive: false`, ואין כאלה.
+
+**נבדק ולא הונח:** ‏`upload-artifact v7` עדיין מגדיר
+‏`include-hidden-files` כברירת מחדל ‏'false', ולכן ההעלאה של ‏`.next` ממשיכה
+לדרוש את ה-`true` המפורש ושער הפיקסלים ממשיך להשוות משהו.
+
+**מה שזה לא מתקן, ונאמר כדי שלא ייקרא כמתוקן:** ה-flake
+‏`FinalizeArtifact: (403)` שהאדים את ‏CI פעמיים ב-08.09 הוא אחסון ה-blob של
+‏GitHub ולא גרסת ה-action. ‏`continue-on-error` על ההעלאות הדיאגנוסטיות הוא
+עדיין מה שמכיל אותו, ו-`next-build` נשאר קטלני בכוונה כי ארבע עבודות קוראות
+אותו.
+
+**שני שומרים, שניהם נגזרים מה-workflows ולא מרשימה שהועתקה לטסט:**
+
+- ‏`ci-action-versions` מוודא שכל action מוצמדת לאותו ref בכל שבעת
+  ה-workflows. אומת בהחזרת ‏`checkout@v5` ל-`load.yml`: הוא נוקב בקובץ
+  ובשורה. הוא מסרב ל-bump חצי-גמור; הוא לא בוחר גרסאות.
+- ‏`node-version-alignment` מקבל מקרה רביעי. היה **מקום רביעי** ששמו גרסת
+  ‏Node והקובץ הזה לא ראה אותו: עבודת ביקורת הסודות אמרה
+  ‏`node-version: 22` כליטרל והסכימה עם ‏`env.NODE_VERSION` במקרה. העלאת
+  ‏NODE_VERSION הייתה משאירה את העבודה ההיא מאחור עם כל הבדיקות ירוקות.
+
+**סריקת ‏Sentry: אפס תקלות פתוחות ב-`environment:production`. תשע היו פתוחות
+וכולן ‏`development`, כלומר המחשב הזה.** ‏`server_name: MacBook-Air.local`,
+מסגרות מחסנית תחת ‏`/Users/ofir/kenyonexpress-web`. שער הסביבה
+ב-`sentry.server.config.ts` (‏`shouldReportToSentry`, ‏9130e74b9) נחת
+ב-08.09 בשעה ‏17:18Z, וכל תשע התקלות ראו את האירוע האחרון שלהן **לפניו**.
+נסגרו כ-resolved ולא כ-ignored בכוונה: אם אחת חוזרת, ה-regression הוא הסימן
+שהשער הפסיק להחזיק.
+
+**ה-CI על הדחיפה הזאת: תשע עבודות ירוקות, וההערה על ‏Node 20 נעלמה לגמרי.**
+נשארה רק ההערה המידעית על כך שדחיפה בלי PR אין לה preview לכוון אליו דפדפן.
+
+**תחזוקה שוטפת:** גיבוי ‏896MB נכתב לדסקטופ ואומת ב-`ls` (לא ב-exit code),
+הישן מבין הארבעה נמחק ונשארו שלושה. הלולאה חיה (‏`caffeinate -i bash -c
+while true; do claude ...`), ‏`SleepDisabled 1`.
+
+```
+type-check   נקי
+lint         נקי (‏tokens gate, copy gate, asset gate נקיים)
+tests        4941 עוברים, 25 מדולגים, 0 אדומים (+10)
+build        ירוק
+CI           34268480066, תשע עבודות ירוקות
+commit       9fc2e5b22
+tag          v5.11.12
+```
+
+**המשך מ: ‏STEP 21 — סבב תחזוקה 91.**
