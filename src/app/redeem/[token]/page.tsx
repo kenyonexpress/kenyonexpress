@@ -1,9 +1,10 @@
 import { agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
+import { capturePaymentError } from '@/lib/observability/sentry'
 import { getSupplierMemberships, getSupplierSession } from '@/lib/supplier/rbac'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
-import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
+import { classifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
 import { getVoucherForRedemption } from '@/server/queries/vouchers'
 import type { Metadata } from 'next'
@@ -120,7 +121,29 @@ async function RedeemTokenBody({ params }: Props) {
   // 1. Signature first, before anything reads the database. A tampered token is
   //    logged even from a visitor with no session at all - that is the attempt
   //    most worth having on record.
-  const verified = verifyVoucherQrPayload(decodeURIComponent(token))
+  const check = classifyVoucherQrPayload(decodeURIComponent(token))
+
+  // 1a. A verifier with no secret is not a token that failed verification.
+  //     Reported, because an operator has to fix it, and NOT recorded as a
+  //     refused scan: writing `invalid_signature` here would put our own
+  //     misconfiguration into the audit log as the customer's forgery. The
+  //     cashier is told the truth - the fault is ours and the voucher is
+  //     untouched - rather than shown the crash page this used to raise on
+  //     every scan.
+  if (check.status === 'unverifiable') {
+    capturePaymentError(check.error, {
+      stage: 'voucher_qr_verify',
+      detail: { route: '/redeem/[token]' },
+    })
+    return (
+      <Refusal
+        title="לא ניתן לאמת שוברים כרגע"
+        detail="התצורה בשרת חסרה ולכן אי אפשר לאמת את חתימת השובר. השובר לא נפגע ולא מומש. פנו לתמיכה של KenyonExpress."
+      />
+    )
+  }
+
+  const verified = check.status === 'verified' ? check.payload : null
   if (!verified) {
     await recordRefusedScan({
       codeEntered: '',

@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { VoucherQrSecretMissingError, signVoucherQrPayload, verifyVoucherQrPayload } from './qr'
+import {
+  VoucherQrSecretMissingError,
+  canVerifyVoucherQr,
+  classifyVoucherQrPayload,
+  signVoucherQrPayload,
+  verifyVoucherQrPayload,
+} from './qr'
 
 const SECRET = 'test-secret-at-least-16-bytes-long-000'
 
@@ -87,5 +93,84 @@ describe('voucher QR sign/verify', () => {
   it('refuses a too-short secret', () => {
     process.env.VOUCHER_QR_SECRET = 'short'
     expect(() => signVoucherQrPayload(base())).toThrow(VoucherQrSecretMissingError)
+  })
+})
+
+/**
+ * The distinction that keeps a till's queue alive.
+ *
+ * `forged` is a permanent property of the token and the till deletes it.
+ * `unverifiable` is a property of this server with no secret configured, and it
+ * becomes valid again the moment an operator sets one. A classifier that folds
+ * the second into the first discards paid-for redemptions.
+ */
+describe('classifyVoucherQrPayload', () => {
+  beforeEach(() => {
+    process.env.VOUCHER_QR_SECRET = SECRET
+    process.env.VOUCHER_QR_SECRET_PREVIOUS = undefined
+  })
+
+  afterEach(() => {
+    process.env.VOUCHER_QR_SECRET = SECRET
+    process.env.VOUCHER_QR_SECRET_PREVIOUS = undefined
+  })
+
+  it('verifies a real token and hands back the payload', () => {
+    const check = classifyVoucherQrPayload(signVoucherQrPayload(base()))
+    expect(check.status).toBe('verified')
+    expect(check.status === 'verified' && check.payload.c).toBe('ABCDEFGHJK')
+  })
+
+  it('calls a tampered token forged, not unverifiable', () => {
+    expect(classifyVoucherQrPayload('KEV1.ZmFrZQ.bm90LWEtc2lnbmF0dXJl').status).toBe('forged')
+  })
+
+  // The exact token from the 28 Sentry events, which used to raise a 500.
+  it('calls a well-formed token unverifiable when no secret is configured', () => {
+    process.env.VOUCHER_QR_SECRET = undefined
+    const check = classifyVoucherQrPayload('KEV1.ZmFrZQ.bm90LWEtc2lnbmF0dXJl')
+    expect(check.status).toBe('unverifiable')
+    expect(check.status === 'unverifiable' && check.error).toBeInstanceOf(
+      VoucherQrSecretMissingError,
+    )
+  })
+
+  it('never reports unverifiable as forged, on any input, when the secret is gone', () => {
+    process.env.VOUCHER_QR_SECRET = undefined
+    const real = 'KEV1.eyJ2IjoxfQ.c2ln'
+    expect(classifyVoucherQrPayload(real).status).not.toBe('forged')
+  })
+
+  // A token of the wrong SHAPE is refused before the secret is read, so it is
+  // forged even with no secret. Stated because it looks like an exception.
+  it('still calls a malformed token forged with no secret, because no secret is read', () => {
+    process.env.VOUCHER_QR_SECRET = undefined
+    expect(classifyVoucherQrPayload('not-a-token').status).toBe('forged')
+  })
+
+  it('does not swallow an unrelated error', () => {
+    expect(() => classifyVoucherQrPayload(null as unknown as string)).not.toThrow()
+  })
+})
+
+describe('canVerifyVoucherQr', () => {
+  it('is true with a configured secret', () => {
+    process.env.VOUCHER_QR_SECRET = SECRET
+    expect(canVerifyVoucherQr()).toBe(true)
+  })
+
+  it('is false with none, and false with one too short to be real', () => {
+    process.env.VOUCHER_QR_SECRET = undefined
+    expect(canVerifyVoucherQr()).toBe(false)
+    process.env.VOUCHER_QR_SECRET = 'short'
+    expect(canVerifyVoucherQr()).toBe(false)
+    process.env.VOUCHER_QR_SECRET = SECRET
+  })
+
+  it('agrees with verify: whenever it is false, a real-looking token is unverifiable', () => {
+    process.env.VOUCHER_QR_SECRET = undefined
+    expect(canVerifyVoucherQr()).toBe(false)
+    expect(classifyVoucherQrPayload('KEV1.ZmFrZQ.bm90LWEtc2lnbmF0dXJl').status).toBe('unverifiable')
+    process.env.VOUCHER_QR_SECRET = SECRET
   })
 })

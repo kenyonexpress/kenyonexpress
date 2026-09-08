@@ -1,10 +1,15 @@
 import { log } from '@/lib/observability/log'
+import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { settledKeys } from '@/lib/vouchers/offline-scan'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
-import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
+import {
+  VoucherQrSecretMissingError,
+  canVerifyVoucherQr,
+  verifyVoucherQrPayload,
+} from '@/server/domain/vouchers/qr'
 import { readScanContext } from '@/server/domain/vouchers/scan-context'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -105,6 +110,23 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       // would leave the queue holding items whose vouchers were already gone.
       return NextResponse.json({ ok: false, error: 'rate_limited', settled: [] }, { status: 429 })
     }
+  }
+
+  // A verifier with no secret refuses the WHOLE batch, before the loop, for the
+  // same reason the ceiling above does: a batch is either attempted or not.
+  // It must not fall through to the per-item `invalid_signature` below, which
+  // the till treats as settled and deletes - these are real redemptions from a
+  // real queue, and they become valid again the moment the secret is set. 503,
+  // so `drainQueue` sees a non-ok response and keeps every item.
+  if (parsed.data.items.some((item) => item.qr_payload) && !canVerifyVoucherQr()) {
+    capturePaymentError(new VoucherQrSecretMissingError(), {
+      stage: 'voucher_qr_verify',
+      detail: { route: '/api/supplier/vouchers/redeem-batch', items: parsed.data.items.length },
+    })
+    return NextResponse.json(
+      { ok: false, error: 'qr_verification_unavailable', results: [], settled: [] },
+      { status: 503 },
+    )
   }
 
   const results: ItemOutcome[] = []
