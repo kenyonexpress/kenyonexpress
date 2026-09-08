@@ -17568,4 +17568,72 @@ pathname.startsWith('/supplier')   // תופס גם את /suppliers
 ‏`coupon_partner` אינו קיים ב-`user_role` ואינו מוזכר באף policy. תועד כבר
 כהחלטה ‏D-001/D-002. אין מה לממש.
 
-**המשך מ: ‏STEP 11 (‏PAYMENTS).**
+**המשך מ: ‏STEP 11 — נבדק, בנוי במלואו. ראה למטה.**
+
+
+## ‏STEP 11 PAYMENTS — נבדק, אין פער. שתי הנחות בבריף שגויות, ‏08.09.2026 ‏14:10
+
+**לא שונה קוד.**
+
+| דרישה | מצב |
+| --- | --- |
+| מכונת מצבים | קיימת, **בשמות אחרים ובכוונה** |
+| ‏transactional + audit | קיים |
+| ‏webhook idempotency | קיים, ומטופל בעדינות |
+| אימות חתימה | **‏Cardcom לא שולחת חתימה** |
+| פיצול פיזי מיידי מאחוז מצולם | קיים |
+| קופון = כל ההכנסה לפלטפורמה | קיים |
+| ארנק פנימי בלבד | קיים ונאכף |
+| החזר 100% אוטומטי | קיים (‏`AUTO_APPROVAL_LIMIT`) |
+| ‏unit + mock + E2E לכל סוג | קיים |
+| ‏`docs/PAYMENT-FLOW.md` עם mermaid | קיים, ‏529 שורות, ‏5 דיאגרמות |
+
+### הנחה שגויה 1: ‏`pending→authorized→captured→settled`
+
+המימוש הוא:
+
+```
+pending -> paid -> split_executed
+pending -> cancelled
+paid | split_executed -> refunded
+```
+
+אין `authorized` ואין `captured`, **ואסור שיהיו**. הם שייכים למודל ה-escrow
+שמיגרציה `085` הסירה. הערכים `escrow_held` ו-`platform_settled` שורדים בלבד כי
+"‏dropping a Postgres enum value is not a thing", ו-`state-machine.ts` מציין
+שאין אף אירוע שמוביל אליהם.
+
+‏`docs/PAYMENT-FLOW.md` מסונכרן ולא מדביק: **אפס אזכורים של `authorized` או
+`captured`**, והוא כותב במפורש "‏Nothing ENTERS `escrow_held`. It appears only
+on the left-hand side."
+
+מימוש השמות שהבריף ביקש היה מחזיר את מודל הנאמנות שבוטל.
+
+### הנחה שגויה 2: "‏signature verify"
+
+‏Cardcom **לא שולחת** ‏HMAC או כותרת חתימה. מתועד ב-
+
+```
+src/app/api/payments/cardcom/webhook/route.ts
+```
+
+ובזיכרון הפרויקט. האותנטיות נשענת על סוד משותף ב-URL, והשדה `signature_valid`
+רושם את התוצאה של אותה בדיקה. אין מה "לאמת" מעבר לזה.
+
+### מה שכן ראוי לציון: ה-webhook מבדיל replay מכשל
+
+שגיאת חיבור **אינה** replay. קודם היא החזירה `{ok:true, replay:true}` עם 200,
+מה שאומר ל-Cardcom שהקריאה הצליחה — ואז ההזמנה נשארת פתוחה בלי ניסיון חוזר.
+תוקן, ומתועד בקוד.
+
+### הארנק
+
+```
+WITHDRAWAL_RULE = { withdrawable: false, ... }
+```
+
+ב-`src/server/payments/wallet-topup.ts`, עם ההערה "‏There is no withdrawal path
+and there is not meant to be one". תואם למה שהתקנון אומר ללקוח: "אינה ניתנת
+למשיכה, להעברה או להמרה למזומן".
+
+**המשך מ: ‏STEP 12 (‏VOUCHERS).**
