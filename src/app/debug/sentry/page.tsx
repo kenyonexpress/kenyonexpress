@@ -32,6 +32,21 @@ import { Suspense } from 'react'
  * `connection()` itself is what keeps the gate a runtime decision - without it
  * the env var is read while building and the 404 is baked into the output,
  * which would make SENTRY_DEBUG_ROUTES do nothing on an already-built deploy.
+ *
+ * WHAT THAT COSTS, MEASURED 2026-09-08 AND ACCEPTED. `notFound()` now fires
+ * after the shell has flushed, so the response is **200 carrying the 404 page**
+ * rather than a 404 status. The gate still holds - the body served is the
+ * not-found UI and never this panel - but the status line is soft.
+ *
+ * It is the right side of the trade for two routes that `robots.ts` excludes
+ * and `sitemap.ts` never lists, against a flag that has to work on a deploy
+ * nobody can rebuild. It is NOT acceptable anywhere a shopper or a crawler
+ * lands, and the same shape would appear the moment a product page's data read
+ * moved inside a boundary - an ordinary PPR optimisation. That is why
+ * `e2e/smoke-all-routes.spec.ts` pins a hard 404 status on the catalogue.
+ *
+ * `/api/debug/sentry` has no such excuse, being a Route Handler that sets its
+ * own status, and answers a real 404.
  */
 export default function SentryDebugPage() {
   return (
