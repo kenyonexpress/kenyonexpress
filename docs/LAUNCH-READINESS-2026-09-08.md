@@ -149,7 +149,7 @@ deploy is at least visible.
 
 | # | Severity | Risk | Evidence |
 | --- | --- | --- | --- |
-| 1 | **critical** | Production runs a 6-day-old build; the deploying host is invisible from this account | `/api/ready` 404; 11 ERROR deploys; no `kenyonexpress` project in the team |
+| 1 | **critical, sharpened 2026-09-08 pass 50** | **The host serves. Nothing has deployed to it since before 2026-09-02.** Measured with `scripts/audit-deployed-build.mjs`: `/` and `/api/health` answer 200, `/api/cron/health` answers **401** — a live Next build refusing an unauthenticated cron call — and `/api/ready`, added 2026-09-02, present on BOTH branches and carrying no auth, answers 404. So the deployed build sits between 2026-08-20 and 2026-09-02, and every commit since is unshipped. This also explains the cron picture: the scheduler's 200s are real, and they are hitting that old build. | `node scripts/audit-deployed-build.mjs` — present 200 `/`, 200 `/api/health`, 401 `/api/cron/health`; ABSENT 404 `/api/ready` |
 | 2 | **high** | `/suppliers` turns away every prospective supplier, live now | prod 307 → `/login` |
 | 3 | ~~high~~ **medium, CORRECTED 2026-09-08** | The 0.357 is **`/cart`**, not checkout. An unseeded sweep follows `/checkout` -> `/cart` (empty-cart redirect) and files the cart's metrics under checkout's name. Real checkout CLS is covered by a seeded test at < 0.1 and was fixed by `CheckoutShell` | `checkout/page.tsx:109`; `e2e/layout-stability.spec.ts`; `docs/PERF-REPORT.md` §4 |
 | 4 | **high, rediagnosed 2026-09-08** | The scheduler runs from the DEFAULT branch, so it uses `main`'s job list, not this one's. Two effects: `whatsapp` is called and 404s (6 of last 30, exactly 20%, latest 04:53 today), and **`retention` and `weekly-digest` are never called at all** — `main`'s list omits them. `retention` ages `audit_log` IPs past 365 days via `fn_audit_retention_sweep()`, and migration 157 IS applied, so the function exists and has simply never been invoked. The red alarm was at least visible; the unscheduled job is silent. `scripts/audit-cron-drift.mjs`; the fix is the mainline decision. |
@@ -167,7 +167,7 @@ and cannot ship.**
 
 | # | Action | Evidence it is blocked |
 | --- | --- | --- |
-| 1 | **Find who serves `kenyonexpress.vercel.app`** and deploy this branch | no such project in the visible team; 11 ERROR deploys in the one that is visible |
+| 1 | **Deploy to `kenyonexpress.vercel.app`, which is already serving** | Corrected pass 50. It was "find who serves it", which framed a search; the host answers 200 and its build predates 2026-09-02 (`scripts/audit-deployed-build.mjs`). The project is still not visible from this account, so pointing a deploy at it is the owner's action — but the thing to do is ship to a live host, not locate a missing one. |
 | 2 | Decide whether `whatsapp` belongs in `main` or out | `prod /api/cron/whatsapp → 404`; the route exists on main and not on this branch |
 | 3 | Enable R2 in the Cloudflare dashboard | `403 {"code":10042,"message":"Please enable R2..."}` |
 | 4 | Provision a Meilisearch instance | `MEILISEARCH_HOST` set nowhere outside `.env.example` |
