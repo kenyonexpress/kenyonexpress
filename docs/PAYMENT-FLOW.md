@@ -132,6 +132,33 @@ diverge.
 The lifecycle of one charge attempt against Cardcom. Enforced by
 `tg_payments_status_guard`.
 
+### Why there is no `authorized` and no `captured`
+
+The brief for this step names `pending -> authorized -> captured -> settled`.
+Three of those four are not states here, and the reason is the provider rather
+than a shortcut.
+
+**Cardcom's Low Profile flow authorises and captures in one step.** There is no
+hold to capture later, and the provider interface says so by omission: the verbs
+in `src/lib/payments/types.ts` are `createLowProfile`, `chargeWithToken`,
+`verifyLowProfile`, `refundByTransactionId`, `createDocument` and
+`listTransactions`. **There is no `capture`.** A state that no call can move a
+payment into would be a state nothing ever leaves.
+
+So the brief's vocabulary maps onto this enum:
+
+| brief | here | why |
+| --- | --- | --- |
+| `pending` | `initiated` | the row exists, no money has moved |
+| `authorized` + `captured` | `succeeded` | one step at the provider, so one state |
+| `settled` | `platform_settled` | our own split has been recorded |
+| `failed`, `refunded` | same | unchanged |
+
+**The transitions below are enforced, not merely drawn.** Migration 137 is
+applied and installs `payments_status_guard` on the table, so an illegal
+transition raises rather than being written - including from the service role,
+which every cron, webhook and repair script runs as.
+
 ```mermaid
 stateDiagram-v2
     direction LR
