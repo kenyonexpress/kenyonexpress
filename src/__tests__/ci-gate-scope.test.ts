@@ -110,9 +110,10 @@ describe('per-route bundle gate', () => {
 
   it('keeps the artifact upload able to carry .next/server/app', () => {
     // The gate reads prerendered HTML from `.next/server/app/*.html`. `.next`
-    // is hidden, and actions/upload-artifact@v4 drops hidden paths by default
+    // is hidden, and actions/upload-artifact drops hidden paths by default
     // while still reporting success - which is how this repo previously shipped
-    // a pixel gate that compared nothing.
+    // a pixel gate that compared nothing. Re-checked against v7's action.yml on
+    // the 2026-09-09 bump: `include-hidden-files` still defaults to 'false'.
     const ci = read('.github', 'workflows', 'ci.yml')
     expect(ci).toContain('include-hidden-files: true')
     expect(ci).toContain('if-no-files-found: error')

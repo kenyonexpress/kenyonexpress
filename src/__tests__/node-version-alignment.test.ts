@@ -19,6 +19,13 @@ import { describe, expect, it } from 'vitest'
  * @types/node 26 was available and would have been wrong: it describes APIs
  * that Node 22 does not have, and CI runs 22, so code could type-check here and
  * fail there - the drift inverted, and harder to see.
+ *
+ * 2026-09-09: there was a FOURTH place, and this file could not see it. The
+ * secrets-audit job named `node-version: 22` as a literal instead of reading
+ * `env.NODE_VERSION`, and agreed with the other three by coincidence. A bump to
+ * `NODE_VERSION` would have satisfied every assertion below while leaving one
+ * job on the old runtime. The last case now asserts that no job names a version
+ * of its own, which is why three names stay three.
  */
 const manifest = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')) as {
   engines: { node: string }
@@ -54,5 +61,20 @@ describe('the Node version named in three places', () => {
     expect(ciMajor, `ci.yml runs Node ${ciMajor} while engines.node requires ${engineMajor}.`).toBe(
       engineMajor,
     )
+  })
+
+  it('lets no job in ci.yml name a version of its own', () => {
+    const literals = workflow
+      .split('\n')
+      .map((text, index) => ({ text: text.trim(), line: index + 1 }))
+      .filter(({ text }) => /^node-version:\s*['"]?\d/.test(text))
+    expect(
+      literals,
+      `${literals
+        .map((l) => `ci.yml:${l.line} ${l.text}`)
+        .join(
+          ', ',
+        )}. A literal agrees with NODE_VERSION only until NODE_VERSION moves, and the three assertions above read NODE_VERSION - so they would stay green while that job ran the old runtime.`,
+    ).toEqual([])
   })
 })

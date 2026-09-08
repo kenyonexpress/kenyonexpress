@@ -142,7 +142,7 @@ jobs:
       # gets a comment instead.
       - name: Open or update the outage issue
         if: steps.probe.outputs.failed == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           BASE: ${{ steps.target.outputs.base }}
           FAILURES: ${{ steps.probe.outputs.failures }}

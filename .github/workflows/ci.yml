@@ -22,6 +22,46 @@ concurrency:
 env:
   NODE_VERSION: '22'
 
+# ACTION PINS, BUMPED OFF THE NODE 20 RUNTIME ON 2026-09-09.
+#
+# Every job here was printing the same annotation: "the following actions target
+# Node.js 20 but are being FORCED to run on Node.js 24". The pins still declared
+# `runs.using: node20` and the runner was overriding them, by announcement and
+# temporarily. The day that override ends, every gate in this repo fails at once
+# on nothing this code did.
+#
+# The majors are not a blind `@latest`. Four changelogs claim a breaking change
+# and each was checked against what this repo actually writes:
+#
+#   setup-node v6  "Limit automatic caching to npm" - reads worse than it is.
+#                  It changes the DEFAULT when no `cache:` input is given; pnpm
+#                  and yarn stop being auto-detected. All ten setup-node steps
+#                  here pass `cache: pnpm` explicitly, so none of them relied on
+#                  the default that went away.
+#   checkout v7    Blocks checking out a fork PR under `pull_request_target` and
+#                  `workflow_run`. The only `pull_request_target` workflow is
+#                  dependabot-auto-merge.yml, and it checks nothing out.
+#   checkout v6    Persists credentials to a separate file. The one manual
+#                  `git fetch origin` below (the default-branch audit) would be
+#                  the thing to break; this repository is public, so that fetch
+#                  needs no credential either way.
+#   github-script  v9 removes `require('@actions/github')` and injects
+#                  `getOctokit`. Neither script here requires it or declares a
+#                  binding by that name.
+#   download-artifact v8  A digest mismatch is now fatal instead of a warning,
+#                  and non-zipped downloads are no longer unzipped. The first is
+#                  a hardening we want; the second only applies to uploads that
+#                  set `archive: false`, and none here do.
+#
+# Not fixed by this, and worth being clear about: the `FinalizeArtifact: (403)`
+# flake that took CI red twice on 2026-09-08 is GitHub's blob storage, not the
+# action. `continue-on-error` on the diagnostic uploads is still what contains
+# it, and `next-build` is still fatal on purpose because four jobs read it.
+#
+# `src/__tests__/ci-action-versions.test.ts` refuses a HALF-finished bump: it
+# asserts every workflow pins each action to the same ref, which is the state
+# load.yml was already in (checkout@v5 against v4 everywhere else).
+
 jobs:
   # Diff-scoped gates. Default range is HEAD~1..HEAD (tip commit only).
   # Repo-wide lint debt and docs/hardcoded-audit.md hits do not block;
@@ -30,11 +70,11 @@ jobs:
     name: Diff-scoped lint gates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -170,11 +210,11 @@ jobs:
     name: Typecheck (changed files)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -226,9 +266,9 @@ jobs:
       SUPABASE_URL: ${{ vars.RLS_SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ vars.RLS_SUPABASE_ANON_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -242,7 +282,7 @@ jobs:
       # tests had passed, which failed the job, skipped `build`, and with it the
       # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
       # step; this is a convenience.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         continue-on-error: true
         if: always()
         with:
@@ -318,13 +358,13 @@ jobs:
       SENTRY_RELEASE: ${{ github.sha }}
       NEXT_PUBLIC_SENTRY_RELEASE: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The Sentry plugin reads git history to associate commits with the
           # release; a shallow clone gives it one commit and no association.
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -345,7 +385,7 @@ jobs:
       # Playwright served a server built from an older commit for four cycles.
       # Only `.next/cache/` is restored.
       - name: Restore Turbopack build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .next/cache
           key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'next.config.ts') }}
@@ -354,7 +394,7 @@ jobs:
             next-${{ runner.os }}-
 
       - run: pnpm build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: next-build
           path: .next/
@@ -420,11 +460,15 @@ jobs:
       # docs/PERF-REPORT.md on why localhost LCP is a simulation. Running it as
       # a required check would teach everyone to ignore a red one. It stays a
       # manual `pnpm lighthouse:smoke`.
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          # `env.NODE_VERSION`, not a literal. This job named its own `22` and
+          # agreed with the top of the file by coincidence; the guard test only
+          # reads `NODE_VERSION`, so a bump there would have left this job
+          # behind silently.
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
@@ -457,7 +501,7 @@ jobs:
       # branch is - so failing on it would fail every PR that touches one of
       # these files. Printed, it tells the author the one thing they cannot see
       # in their own diff: this takes effect on merge, not now.
-      # Explicit refspec. actions/checkout@v4 narrows `remote.origin.fetch` to the
+      # Explicit refspec. actions/checkout@v7 narrows `remote.origin.fetch` to the
       # single ref it checked out, so a bare `git fetch origin main` lands in
       # FETCH_HEAD and never creates `origin/main` - and the audit would then
       # refuse, correctly but uselessly, on every run.
@@ -470,7 +514,7 @@ jobs:
       - name: Config the platform reads from the default branch
         run: node scripts/audit-default-branch-config.mjs || true
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: next-build
           path: .next/
@@ -508,7 +552,7 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3311
       LOCAL_BASE: http://localhost:3311
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check whether Supabase credentials are configured
         id: creds
@@ -539,9 +583,9 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: steps.creds.outputs.present == 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.creds.outputs.present == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -549,7 +593,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         if: steps.creds.outputs.present == 'true'
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: steps.creds.outputs.present == 'true'
         with:
           name: next-build
@@ -600,7 +644,7 @@ jobs:
         # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
         # step; this is a convenience.
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ui-parity-report
           path: docs/UI-PARITY-REPORT.md
@@ -632,7 +676,7 @@ jobs:
       E2E_SUPPLIER_EMAIL: e2e-supplier@test.kenyonexpress.local
       E2E_SUPPLIER_PASSWORD: E2eSupplier!pass1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check whether Supabase credentials are configured
         id: creds
@@ -644,9 +688,9 @@ jobs:
             echo "::warning title=E2E skipped::CI_SUPABASE_URL is not set, so the E2E job cannot reach a database. Add the CI_SUPABASE_* repository secrets to enable it."
           fi
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: steps.creds.outputs.present == 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.creds.outputs.present == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -654,7 +698,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         if: steps.creds.outputs.present == 'true'
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: steps.creds.outputs.present == 'true'
         with:
           name: next-build
@@ -679,7 +723,7 @@ jobs:
       # tests had passed, which failed the job, skipped `build`, and with it the
       # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
       # step; this is a convenience.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         continue-on-error: true
         if: always() && steps.creds.outputs.present == 'true'
         with:
@@ -717,15 +761,15 @@ jobs:
       # prod differ on RTL, caching and server actions.
       E2E_WEB_COMMAND: pnpm start
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: next-build
           path: .next/
@@ -743,7 +787,7 @@ jobs:
       # tests had passed, which failed the job, skipped `build`, and with it the
       # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
       # step; this is a convenience.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         continue-on-error: true
         if: always()
         with:
@@ -820,7 +864,7 @@ jobs:
       - name: Wait for the Vercel preview deployment
         id: preview
         if: steps.gate.outputs.run == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const sha = context.payload.pull_request.head.sha
@@ -852,11 +896,11 @@ jobs:
             }
             core.setFailed(`No successful preview deployment appeared for ${sha} within 12 minutes.`)
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.gate.outputs.run == 'true'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: steps.gate.outputs.run == 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.gate.outputs.run == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -896,7 +940,7 @@ jobs:
       # tests had passed, which failed the job, skipped `build`, and with it the
       # bundle gate, pixel parity and both E2E jobs. The verdict is in the test
       # step; this is a convenience.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         continue-on-error: true
         if: always() && steps.gate.outputs.run == 'true'
         with:
