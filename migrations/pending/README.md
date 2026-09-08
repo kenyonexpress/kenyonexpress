@@ -1,5 +1,52 @@
 # `migrations/pending/`
 
+## 2026-09-09: 183 APPLIED, and the preflight is the whole story
+
+`183_order_shipped_notification.sql` enqueues `kind=order_shipped` when an
+order transitions INTO `fulfilled`. A trigger and not application code because
+`fulfilled` has at least three writers, and an enqueue in one of them silently
+skips the others.
+
+**The file would have broken account deletion if applied verbatim.** It restated
+`notification_outbox_kind_check` in full, the style 121 established, from a
+twelve-name list plus `order_shipped`. Read off production 2026-09-09, the live
+constraint already carried **fourteen** names, including `account_deleted` from
+150's lineage. `DROP CONSTRAINT` + `ADD CONSTRAINT` with the shorter list would
+have dropped `account_deleted` and turned every account-deletion notification
+into a 23514. `account_deleted` was added to the file before it was applied, and
+the live constraint still carries all fourteen. **A restated list is only ever as
+current as the day it was written**, which is exactly what 155 already knew: it
+carries a `RAISE EXCEPTION` refusing to run if the check has no `account_deleted`
+yet. 183 had no such guard.
+
+**Applied** as `order_shipped_notification_183`, then proven in a transaction
+that was rolled back (`notification_outbox` reads 0 rows before and after,
+orders still `cancelled=2, paid=2`):
+
+```
+paid -> fulfilled                   1 row enqueued
+UPDATE on an already-fulfilled row  still 1
+bounce out and back                 refused by the 137 guard anyway
+                                    (fulfilled -> partially_fulfilled illegal),
+                                    count held at 1
+dedupe_key    order-shipped:<order uuid>
+payload       order_id, order_ref D3A5AA99, item_count 1, fulfilled_at,
+              customer_name (Hebrew, resolved from profiles)
+```
+
+**A second finding, recorded rather than fixed.** The constraint accepts
+`account_deleted` and **no builder renders it** — there is no
+`buildAccountDeletedEmail`, so `buildNotification` returns null and the drain
+would park such a row forever. Nothing enqueues it today
+(`src/server/actions/account.ts` deliberately sends no goodbye mail), so it is a
+loaded gun on the shelf rather than a fire. It is now tracked as
+`CHECK_ACCEPTS_BUT_RENDERS_NOTHING` in `src/lib/email/outbox-kinds.test.ts`, with
+an inverted assertion so the list cannot rot: write the builder and the test goes
+red asking for the name to be moved. The stale comment in `account.ts` — which
+said the constraint was what blocked the goodbye mail — now says what actually
+blocks it.
+
+
 ## 2026-09-09: 181 APPLIED, as 181a + 181b
 
 **181 was the only security file left in the queue and it was NOT applied**,

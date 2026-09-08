@@ -347,15 +347,23 @@ async function runDeleteAccount(
     return { error: 'הנתונים נמחקו אך ההתנתקות נכשלה. פנו לתמיכה.' }
   }
 
-  // NO GOODBYE EMAIL YET, DELIBERATELY. The first draft enqueued an
-  // 'account_deleted' notification best-effort, and the outbox-kinds guard
-  // test refused it: the LIVE `notification_outbox_kind_check` does not carry
-  // that kind until migration 150 applies, so every enqueue would 23514 -- the
-  // exact silently-dead-notification pattern that killed five kinds before
-  // 2026-08-19 and that the guard exists to block. The email read above stays,
-  // so the day 150 applies the enqueue can be added here with the address
-  // still reachable. `emailBefore` is referenced below to keep that intent
-  // visible rather than dead.
+  // NO GOODBYE EMAIL YET, DELIBERATELY, AND THE REASON HAS CHANGED. The first
+  // draft enqueued an 'account_deleted' notification best-effort and the
+  // outbox-kinds guard refused it, because the live
+  // `notification_outbox_kind_check` did not carry that kind until 150.
+  //
+  // 150 IS APPLIED (measured 2026-09-09: the live constraint carries
+  // 'account_deleted'), so the constraint is no longer what stops this. What
+  // stops it now is the other half of the same three-way agreement: there is
+  // no `buildAccountDeletedEmail`, so `buildNotification` returns null and the
+  // drain would park the row forever -- the same silently-dead-notification
+  // shape, one list further along. It is tracked as
+  // CHECK_ACCEPTS_BUT_RENDERS_NOTHING in src/lib/email/outbox-kinds.test.ts,
+  // which goes red the day a builder appears.
+  //
+  // So: write the builder first, then enqueue here. The email read above stays
+  // so the address is still reachable at that point. `emailBefore` is
+  // referenced below to keep that intent visible rather than dead.
   void emailBefore
 
   const supabase = await createClient()

@@ -1,5 +1,33 @@
 # Apply order
 
+## 2026-09-09: 183 APPLIED, after the preflight stopped it breaking 150
+
+`order_shipped_notification_183`. The trigger enqueues one `order_shipped` mail
+on the transition INTO `fulfilled`, best-effort, EXCEPTION-guarded like its 102
+sibling `trg_orders_notify_paid`.
+
+**What the preflight caught.** The file restated
+`notification_outbox_kind_check` in full from a twelve-name list. Production's
+live constraint already held **fourteen**, including `account_deleted` (150).
+Applying it verbatim would have dropped that name and 23514'd every
+account-deletion notification. `account_deleted` was added to the file first;
+the live constraint still carries all fourteen. 155 already guarded against
+exactly this with a `RAISE EXCEPTION` if the check lacks `account_deleted`; 183
+had no such guard, and the measurement stood in for it.
+
+Proven in a rolled-back transaction, zero residue: `paid -> fulfilled` enqueued
+one row with dedupe `order-shipped:<uuid>` and a Hebrew customer name; a second
+UPDATE on the already-fulfilled row enqueued nothing; the bounce-out path is
+refused by the 137 status guard anyway.
+
+**Recorded, not fixed:** the constraint accepts `account_deleted` and nothing
+renders it. Tracked as `CHECK_ACCEPTS_BUT_RENDERS_NOTHING` in
+`src/lib/email/outbox-kinds.test.ts`.
+
+**What is still pending after this:** 162 (approved, blocked on vault seeding),
+173, 177, 178, 179, 184, 185.
+
+
 ## 2026-09-09: 181 APPLIED, as 181a + 181b
 
 The only security file left in the queue, and establishing that it was

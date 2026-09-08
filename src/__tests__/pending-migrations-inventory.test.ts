@@ -136,6 +136,7 @@ describe('the pending migration inventory', () => {
       '181a_read_only_enum.sql',
       '181b_admin_rbac_hardening.sql',
       '182_coupon_qr_batches.sql',
+      '183_order_shipped_notification.sql',
       '186_composite_indexes_top_queries.sql',
       '187_category_name_shekel_order.sql',
     ])
@@ -191,9 +192,16 @@ describe('the pending migration inventory', () => {
     //   177_cashback_ledger              cashback_ledger: absent
     //   178_webauthn_credentials         webauthn_credentials: absent
     //   179_push_subscriptions           push_subscriptions: absent
-    //   183_order_shipped_notification   tg_orders_notify_shipped: absent
     //   184_orders_monthly_partitioning  orders_flat, orders_invoice_numbers: absent
     //   185_soft_delete_user_facing_...  the four deleted_at indexes: absent
+    //
+    // 183 APPLIED 2026-09-09, and its preflight is the argument for having
+    // one. The file restated `notification_outbox_kind_check` in full, the
+    // way 121 does, from a twelve-name list. The LIVE constraint already
+    // carried fourteen: `account_deleted` (150) and `order_shipped` itself.
+    // Applying it verbatim would have DROPPED `account_deleted` and turned
+    // every account-deletion notification into a 23514. A restated list is
+    // only as current as the day it was written.
     //
     // 181 APPLIED 2026-09-09 and split in two on the way in, the shape
     // production already recorded for 135: `181a_read_only_enum` carries the
@@ -213,7 +221,6 @@ describe('the pending migration inventory', () => {
       '177_cashback_ledger.sql',
       '178_webauthn_credentials.sql',
       '179_push_subscriptions.sql',
-      '183_order_shipped_notification.sql',
       '184_orders_monthly_partitioning.sql',
       '185_soft_delete_user_facing_remainder.sql',
       'preflight_162.sql',
