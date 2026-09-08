@@ -102,6 +102,19 @@ run "deployed-build" bash -c "node scripts/audit-deployed-build.mjs || true"
 run "canonical-host" bash -c "node scripts/audit-canonical-host.mjs || true"
 run "live-vitals" bash -c "node scripts/measure-live-vitals.mjs || true"
 
+# IS THE PARITY REFERENCE STILL REBUILDABLE FROM ITS INPUTS?
+#
+# `refs/` is gitignored by policy: `refs/localized/` is a product, derived from
+# `refs/ke_live_*.html` plus `refs/live-assets/`. The policy is sound only while
+# the derivation still works, and nothing checked that until now. Verified by
+# hand once on 2026-09-08; this is the check that repeats.
+#
+# NOT `|| true`. The three exits mean different things and the script's own
+# `run` helper records them: 2 is "inputs are gone, no verdict possible", which
+# is the state worth waking up to, and swallowing it would make the audit
+# indistinguishable from a pass. It touches nothing outside a scratch directory.
+run "parity-inputs" node scripts/audit-parity-inputs.mjs
+
 # Compares this branch's cron list against the one `main` actually schedules.
 # Needs the remote, which the nightly checkout has.
 run "cron-drift" bash -c "node scripts/audit-cron-drift.mjs || true"

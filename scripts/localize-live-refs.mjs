@@ -57,7 +57,16 @@ const REPORT_ONLY = process.argv.includes('--report')
 
 const REFS = 'refs'
 const ASSETS = join(REFS, 'live-assets')
-const OUT = join(REFS, 'localized')
+/**
+ * Where the rewritten pages land.
+ *
+ * Overridable so a checker can regenerate into a scratch directory and compare,
+ * rather than overwriting the copy the gate is about to use. Without this the
+ * only way to verify that `refs/localized/` is still reproducible is to destroy
+ * it first and hope, which is not a check - it is the risk it was meant to
+ * measure.
+ */
+const OUT = process.env.LOCALIZE_OUT ?? join(REFS, 'localized')
 
 /** The live host, in every spelling a saved page uses. */
 const HOST = /(?:https?:)?\/\/(?:www\.)?kenyonexpress\.co\.il/g
@@ -118,8 +127,15 @@ const stats = { exact: 0, resized: 0, missing: 0, nonImage: 0 }
 // IMAGES ONLY, AND THE GAP IS FONTS, AND THE FONTS ARE NOT COMING BACK.
 //
 // Measured 2026-09-08 by loading the localized home page in Chromium: 49
-// images, ZERO broken - this works - alongside 96 failed requests, every one a
-// font. Open Sans and two Font Awesome families still point at
+// images, ZERO broken - this works - alongside 96 failed requests.
+//
+// CORRECTED THE SAME DAY. This block said those 96 were "every one a font",
+// and so did compare.mjs. The count was right and the attribution was not.
+// Counted rather than described, deterministic over four runs at 380 and 1440:
+// 37 fonts, 57 SCRIPTS, 1 stylesheet, 1 xhr. So imagery is sound and type is
+// missing, as this file always said - but the reference also runs NONE of the
+// theme's JavaScript, which is a much larger hole and is not this script's to
+// fill. Open Sans and two Font Awesome families still point at
 // kenyonexpress.co.il/wp-content/, which 403s since the DNS was cut to Vercel.
 //
 // They are not recoverable by extending this regex. `refs/live-assets/` holds
