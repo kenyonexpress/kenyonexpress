@@ -42,15 +42,19 @@ export const REMOTE_IMAGE_PATTERNS: readonly RemoteImagePattern[] = [
   // `www.` and `cdn.` and misses the bare domain (see hostnameMatches below,
   // and the test that pins this).
   //
-  // All 66 images in the WordPress export are on the bare host:
-  // https://kenyonexpress.co.il/wp-content/uploads/... Until the media stage
-  // can run - it needs a service_role key that this machine does not have, so
-  // the uploads have not happened - imported products carry those legacy URLs,
-  // and without this entry every one of them throws in next/image.
+  // THE WORDPRESS ORIGIN IS GONE, and the note that used to stand here is now
+  // false. It read: "Verified live 2026-08-07: the host answers 200 and
+  // content-length 33578 for greg_i.jpg". Re-measured 2026-09-08, every
+  // `/wp-content/uploads/...` path on this host answers 403: the DNS was cut
+  // over to Vercel and the apex now serves THIS app, which has no such route.
+  // Thirty-six product image URLs were still pointing there and were therefore
+  // thirty-six broken images in production; they were re-pointed at
+  // `/images/products/...` from the 2026-09-05 crawl in `refs/live-assets/`,
+  // and `products.images` now holds zero references to this host.
   //
-  // Verified live 2026-08-07: the host answers 200 and content-length 33578 for
-  // greg_i.jpg, which is byte-for-byte the size recorded in the export's
-  // media manifest. This is a real, serving origin, not an assumption.
+  // The entry stays because this IS our own production apex and will serve our
+  // own images again. It no longer licenses a legacy wp-content URL, and
+  // `scripts/audit-product-images.mjs` is what catches one if it comes back.
   { protocol: 'https', hostname: 'kenyonexpress.co.il' },
   { protocol: 'https', hostname: '*.r2.dev' },
 ] as const
