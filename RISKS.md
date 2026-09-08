@@ -116,7 +116,7 @@ Likelihood × impact is the ranking. **Certain** means it is the current state, 
 
 **Mitigation.** One scheduler. Manifest `scripts/cron-jobs.json` is the inventory; the workflow, the doc, and `src/app/api/cron/*` must agree (the unit test already fails if they do not). Every new cron route must exist on the URL `CRON_BASE_URL` / `defaultBaseUrl` points at **before** it is added to the five-minute schedule. `/api/ready` does not replace a clock.
 
-**Live evidence (2026-09-09).** Scheduler is **on**: variable `CRON_SCHEDULER_ENABLED=true`, secret `CRON_SECRET` present, workflow active. Thirteen jobs in the manifest, not ten. Measured 2026-09-08 22:44 UTC, schedule `*/5 * * * *`, base `https://kenyonexpress.vercel.app`: `notifications` 200, `health` 200, `whatsapp` 404. The `whatsapp` route exists on current main. Older paragraphs that say "nothing calls the cron routes" (including `docs/FAILURE-MODES.md` §2.1 and the 2026-09-01 body of `docs/CRON-EXTERNAL.md`) are stale relative to the 2026-09-02 banner on that same file and relative to this measurement.
+**Live evidence (2026-09-09).** Scheduler is **on**: variable `CRON_SCHEDULER_ENABLED=true`, secret `CRON_SECRET` present, workflow active. Count kenyonexpress `scripts/cron-jobs.json`: **13** jobs, including `whatsapp`. This worktree's copy of that file currently lists **12** and omits `whatsapp`; do not count it. Measured 2026-09-08 22:44 UTC, schedule `*/5 * * * *`, base `https://kenyonexpress.vercel.app`: `notifications` 200, `health` 200, `whatsapp` 404. The `whatsapp` route exists on kenyonexpress main. Older paragraphs that say "nothing calls the cron routes" (including `docs/FAILURE-MODES.md` §2.1 and the 2026-09-01 body of `docs/CRON-EXTERNAL.md`) are stale relative to the 2026-09-02 banner on that same file and relative to this measurement.
 
 ---
 
@@ -186,7 +186,7 @@ Likelihood × impact is the ranking. **Certain** means it is the current state, 
 
 ## R-15 Image pipeline contract vs live
 
-**Why it exists.** Contract: browser PUT of the original to R2, 50 MB cap, four widths, AVIF+WebP each, 24h signed URLs. Live: original arrives as FormData on Next, `sharp` on the server, then PUT renditions. Cap 8 MB. Widths 400/800/1600. AVIF at 1600 only. PUT 600 s, GET 3600 s. Storefront delivery is `/_next/image` on the largest WebP; the smaller files are an archive nobody reads on the PDP.
+**Why it exists.** Contract: browser PUT of the original to R2, 50 MB cap, four widths, AVIF+WebP each, 24h signed URLs. Live: original arrives as FormData on Next, `sharp` on the server, then Next PUTs renditions to a 600-second presigned URL. Cap 8 MB. WebP at 400/800/1600 (top slot is `min(original, 1600)`). AVIF only on that largest width, never on 800 or 400. PUT 600 s, GET 3600 s. Storefront delivery is `/_next/image` on the largest WebP; the smaller files are an archive nobody reads on the PDP.
 
 **What breaks.** Docs that say 1440 px while the gallery serves 800. An admin uploads 20 MB and is refused without the contract explaining why. A 50 MB cap on the **live** `sharp` path takes the Next instance down (CPU, memory, timeout). Mixing signed GET with `Cache-Control: public` lets a CDN cache a private invoice.
 
@@ -224,3 +224,4 @@ Likelihood × impact is the ranking. **Certain** means it is the current state, 
 | 2026-09-09 | R-10 and R-15 updated with live ingest path and exact `RATE_LIMIT_POLICIES` windows. |
 | 2026-09-09 | R-16 (172 admin SELECT on webhook payloads). R-8 evidence: `vercel.json` has no `crons` key. |
 | 2026-09-09 | R-8 rewritten: GitHub Actions scheduler is live; certain failure is `whatsapp` 404 on the Vercel URL, not an absent clock. R-17: two files numbered 172. R-1/R-7/R-10 live notes. |
+| 2026-09-09 | Fourth source pass: R-8 names kenyonexpress 13 jobs vs this worktree's 12; R-15 AVIF is largest-width only. |

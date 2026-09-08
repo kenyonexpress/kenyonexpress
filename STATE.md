@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS fourth source pass. 40 RATE_LIMIT_POLICIES rows in kenyonexpress; AVIF is largest-width only; ke-arch cron-jobs.json is 12 without whatsapp, kenyonexpress is 13 with it. Working-tree regression that rewrote R-8 as "scheduler absent" was discarded.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS third source pass. R-8 corrected: GitHub Actions scheduler is live; whatsapp 404 on kenyonexpress.vercel.app; 13 jobs not 10; two files numbered 172; Sentry workers = Next instrumentation; rate windows mixed.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS second source pass. Header names 172 admin SELECT on payment_webhook_events; two R2 modules; vercel.json has no crons key; R-16 added.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS audited against `kenyonexpress` source. Root trio is the target contract. Header table now names Next ingest of originals, exact live rate windows, GET TTL 3600s, Hebrew typo 4/7. RLS map is role × table × action.)
@@ -83,19 +84,27 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-09. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-ARCHITECTURE-DOCS-DECISIONS-RISKS. Root trio, third source pass 2026-09-09 against `kenyonexpress` source plus GitHub Actions:
+ARCHITECTURE-DOCS-DECISIONS-RISKS. Root trio, fourth source pass 2026-09-09 against `kenyonexpress` source:
 
-- `ARCHITECTURE.md`: nine surfaces, markdown only, no code fences. Header now names the live GitHub scheduler (13 jobs, `whatsapp` 404), mixed rate windows (`begin_checkout` 10/60s), two files numbered 172, Sentry Node+Edge (not Cloudflare Workers), drift checker on `/api/cron/health`.
-- `DECISIONS.md`: eight why-choices. D-1 names the stale Drizzle wide-table projection. D-8: lag is acceptable; Vercel has no `crons` key on purpose; Actions is the clock.
-- `RISKS.md`: seventeen design risks. R-8 rewritten (scheduler live; certain failure is `whatsapp` 404). R-17: two 172 files.
+- `ARCHITECTURE.md`: nine surfaces, markdown only, no code fences. Header names 40 rate-limit rows, AVIF on the largest width only, kenyonexpress 13 cron jobs vs this worktree's 12.
+- `DECISIONS.md`: eight why-choices. Truncated "acceptable" remains **acceptable lag**. D-8 counts kenyonexpress, not this worktree's copy of the manifest.
+- `RISKS.md`: seventeen design risks. R-8 certain failure remains `whatsapp` 404, not an absent clock. R-15 AVIF wording matches `process.ts`.
 
-`docs/INDEX.md` line 9 no longer claims nothing is scheduled.
+`docs/INDEX.md` item 9 names both inventories.
 
 ### In progress
 nothing (this goal).
 
 ### Next
 Keep deepening every document. Repeat. Never stop.
+
+### החלטות שהתקבלו אוטומטית (2026-09-09, fourth source pass)
+1. Uncommitted edits on DECISIONS/RISKS/INDEX had reverted R-8 to "scheduler absent". That contradicted kenyonexpress and HEAD. Discarded those edits; kept the GitHub Actions facts.
+2. `RATE_LIMIT_POLICIES` in kenyonexpress has **40** keys, not "about forty". This worktree's copy lacks `mfa-verify` and `search-facets`. Count kenyonexpress.
+3. Live AVIF is the largest produced width (`min(original, 1600)`), not a hard 1600-only encode. 800 and 400 stay WebP.
+4. This worktree `scripts/cron-jobs.json` has 12 jobs and no `whatsapp`. kenyonexpress has 13 including `whatsapp`. Docs name both so a local count cannot silently win.
+5. Truncated "acceptable" remains **acceptable lag**. Goal name includes RISKS; `RISKS.md` stays a deliverable.
+6. `ADMIN-WORKFLOWS.md` is deleted in the working tree from other work. Left untouched.
 
 ### החלטות שהתקבלו אוטומטית (2026-09-09, third source pass)
 1. R-8 in the second pass used `vercel.json` with no `crons` key as proof that nothing calls cron. That key is empty on purpose. GitHub Actions workflow `Scheduled jobs` is enabled (`CRON_SCHEDULER_ENABLED=true`, `CRON_SECRET` set). Measured 2026-09-08 22:44 UTC: notifications 200, health 200, whatsapp 404.

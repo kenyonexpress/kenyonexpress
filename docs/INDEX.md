@@ -27,9 +27,11 @@ For someone who will read nothing else.
 8. **There is no production site.** The Vercel project points at a different,
    abandoned repository, and all 11 of its deployments failed.
 9. **A scheduler runs. It does not hit every current job.** GitHub Actions
-   workflow `Scheduled jobs` is enabled. Thirteen jobs sit in
-   `scripts/cron-jobs.json`. Measured 2026-09-08: `notifications` and `health`
-   return 200 on `https://kenyonexpress.vercel.app`; `whatsapp` returns 404.
+   workflow `Scheduled jobs` is enabled. Kenyonexpress
+   `scripts/cron-jobs.json` lists thirteen jobs, including `whatsapp`. This
+   worktree's copy of that file currently lists twelve and omits `whatsapp`.
+   Measured 2026-09-08: `notifications` and `health` return 200 on
+   `https://kenyonexpress.vercel.app`; `whatsapp` returns 404.
    Vercel itself has no `crons` key, on purpose.
 10. **Three defects stand between this and taking real money**: the deployment
     (8), a cron route the production URL does not serve (9), and four column
