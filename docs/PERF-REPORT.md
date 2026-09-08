@@ -75,6 +75,41 @@ Two measurement errors were made and fixed before these numbers were believed:
    directory. `isRouteJs` now tests `.js`, and
    `scripts/measure-route-js.test.mjs` holds that case.
 
+### The 68 KB nobody was gating (added pass 38)
+
+The shared gate holds 255.8 KB. `/` is 323.4 KB by the same arithmetic on the
+prerendered HTML. **Everything between those two numbers had no gate on it at
+all** -- a heavy client import added to one route lands in that route's chunk,
+never in `rootMainFiles`, so `bundle-gate.mjs` stays green while the page grows.
+
+`scripts/route-bundle-gate.mjs` closes it. It reads `.next/server/app/*.html`,
+so it needs no booted server, no browser and no database, and gzip over a fixed
+byte string is identical on every runner -- which is why it belongs in CI where
+Lighthouse does not. Ratchets live in `scripts/route-bundle-budgets.json`, set
+2 KB above the 2026-09-08 measurement.
+
+Both failure modes were provoked before it was believed: a tightened budget
+exits 1, and a chunk removed from disk reports `UNMEASURED` and exits 1 rather
+than counting it as zero and passing.
+
+### The two scripts disagree by design, and reconcile exactly
+
+| | `/` | what it counts |
+| --- | --- | --- |
+| `route-bundle-gate.mjs` (static) | 323.4 KB | every chunk the prerendered HTML names, including the nomodule polyfill bundle |
+| `measure-route-js.mjs` (browser) | 303.2 KB | what Chromium actually fetched: no polyfills, plus post-hydration imports |
+
+`323.4 - 38.5 + 18.4 = 303.3`. Neither is wrong; they answer different
+questions. Use the static one for CI and the browser one to see what a real page
+pays.
+
+Fixing the browser script for pass 38 also removed a third error of the same
+family as the first two: `isRouteJs` accepted any URL ending in `.js`, so
+`/_vercel/insights/script.js` counted. It is 0 bytes locally because it 404s,
+which is precisely why the mistake was invisible here and would have shown up
+only in production, as a vendor's bytes inside an app-code budget. The headline
+figures move by 0.1 KB; the class of error is the point.
+
 ### The budget itself was never checked against the framework floor
 
 The 130.1 KB chunk is `next/dist/compiled/*` and `react-dom` -- the Next 16
