@@ -14,8 +14,10 @@ Read the caveat section before quoting any number here.
 | Shared first-load JS | < 180 KB gz | **255.8 KB gz** | ❌ over by 42% |
 | Per-route JS, actually downloaded | < 180 KB gz | **303.3 KB home, 314.5 KB `/products`, 299.9 KB `/cart`, 308.8 KB `/checkout`** | ❌ over by 67–75% |
 | LCP | < 2.0 s | 1.2 s home, 0.9 s product, 1.2 s checkout | ✅ (see caveat) |
+| LCP, **measured against the deployment** 2026-09-08 | < 2.0 s | **0.64 s home, 0.45 s `/coupons`, 0.34 s `/products`** at 1440; 0.38 / 0.40 / 0.37 at 380 | ✅ real network, real server |
 | CLS | < 0.05 | 0.011 home, 0.012 product, **0.357 `/cart`** | ❌ on `/cart` (see §4: this was misreported as checkout) |
 | TTFB | < 200 ms | 10 ms | ✅ (see caveat) |
+| TTFB, **measured against the deployment** 2026-09-08 | < 200 ms | **server 88 ms median; wire 207 ms median** including DNS+TCP+TLS | ✅ as a server figure, **at the budget** as a shopper figure |
 
 Two pass, two do not, and the two that fail fail for unrelated reasons.
 
@@ -35,6 +37,57 @@ Desktop preset, headless Chrome, production build.
 `/checkout` redirects to `/cart`, so these are the cart's numbers. The SEO 69
 is still not a defect - `robots.ts` disallows both routes and neither sets a
 canonical, so Lighthouse is scoring a document it was never meant to score.
+
+---
+
+## 2a. The two caveats, closed against a real deployment (pass 51)
+
+Both figures above carried an honest caveat that could not be resolved from this
+machine: the LCP was Lighthouse's Lantern SIMULATION over a localhost graph, and
+the 10 ms TTFB was a warm local server with no DNS, no TLS and no network. There
+was nothing deployed to measure. `scripts/audit-deployed-build.mjs` established
+in pass 50 that there is.
+
+### LCP, from a browser against `kenyonexpress.vercel.app`
+
+```
+ 1440  /           LCP 0.64s     380  /           LCP 0.38s
+ 1440  /coupons    LCP 0.45s     380  /coupons    LCP 0.40s
+ 1440  /products   LCP 0.34s     380  /products   LCP 0.37s
+```
+
+Every route is far inside the 2.0 s budget, and these are observed
+`largest-contentful-paint` entries rather than a model's output.
+
+### TTFB, three ways, because the budget does not say which it means
+
+```
+curl, full handshake    187-216 ms   median 207   DNS + TCP + TLS + server
+curl, minus appconnect   73-109 ms   median  88   the server alone
+node fetch, pooled       76- 92 ms   median  90   server + one RTT
+```
+
+The third agreeing with the second is the check that the tooling measures what
+it claims. **As a server figure the budget passes with room. As the number a
+shopper actually waits, 207 ms sits AT the 200 ms budget rather than under it**,
+and roughly 120 ms of that is the TLS handshake from this location - a
+deployment characteristic, not application code.
+
+### THE CAVEAT THAT REPLACES THEM, AND IT IS NOT SMALLER
+
+**These describe a build that predates 2026-09-02.** The deployment is stale
+(pass 50), so none of this work is in the thing measured - not the per-route
+bundle ratchet, not the search fix, not the touch targets.
+`scripts/measure-live-vitals.mjs` prints the build bracket above its numbers for
+exactly this reason: a real-looking figure attached to code that has never run
+in production is worse than a simulated one that is labelled as such.
+
+Two of my own measurement errors were corrected before these were believed. The
+first timed after `arrayBuffer()` and reported the whole download as TTFB, 1312
+ms against curl's 207. The second, once fixed, read LOWER than curl because
+Node pools connections and the build probe had already opened one - so it
+measures first byte on an established connection, and calling that "wire" was
+the same mislabelling a second time.
 
 ---
 
