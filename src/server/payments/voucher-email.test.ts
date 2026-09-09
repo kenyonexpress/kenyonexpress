@@ -163,3 +163,54 @@ describe('sendVoucherEmail', () => {
     expect(sent.html).toContain('ספא')
   })
 })
+
+describe('the idempotency key, which is the whole resend story', () => {
+  it('finalize sends the order key, unchanged', async () => {
+    // Byte for byte what it has always been. The replay protection on the
+    // finalize path is the point of the key and must not be weakened by the
+    // existence of a resend.
+    await sendVoucherEmail(client({ profile: { email: 'a@b.test' }, vouchers: [voucher()] }), {
+      ...CONTEXT,
+    })
+    expect(sendEmail.mock.calls[0]?.[0].idempotencyKey).toBe('voucher-email:order-1')
+  })
+
+  it('a resend sends a different key, so the provider does not drop it', async () => {
+    // Resend honours an idempotency key for 24 hours. A resend reusing the
+    // finalize key is accepted and delivers nothing, and the 24 hours are
+    // exactly the window in which a resend gets asked for.
+    await sendVoucherEmail(client({ profile: { email: 'a@b.test' }, vouchers: [voucher()] }), {
+      ...CONTEXT,
+      deliveryId: 'attempt-7',
+    })
+    expect(sendEmail.mock.calls[0]?.[0].idempotencyKey).toBe('voucher-email:order-1:attempt-7')
+  })
+
+  it('two resends of one order do not collide with each other either', async () => {
+    await sendVoucherEmail(client({ profile: { email: 'a@b.test' }, vouchers: [voucher()] }), {
+      ...CONTEXT,
+      deliveryId: 'first',
+    })
+    await sendVoucherEmail(client({ profile: { email: 'a@b.test' }, vouchers: [voucher()] }), {
+      ...CONTEXT,
+      deliveryId: 'second',
+    })
+    const keys = sendEmail.mock.calls.map((call) => call[0].idempotencyKey)
+    expect(new Set(keys).size).toBe(2)
+  })
+
+  it('a suppressed address is still not written to, resend or not', async () => {
+    // The reason the resend goes through this helper instead of composing its
+    // own mail: an operator pressing a button must not override a bounce.
+    const result = await sendVoucherEmail(
+      client({
+        profile: { email: 'a@b.test' },
+        suppression: { email: 'a@b.test' },
+        vouchers: [voucher()],
+      }),
+      { ...CONTEXT, deliveryId: 'attempt-1' },
+    )
+    expect(result).toEqual({ sent: false, reason: 'suppressed' })
+    expect(sendEmail).not.toHaveBeenCalled()
+  })
+})

@@ -152,6 +152,22 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'admin manual voucher burn, per staff user',
   },
+  'admin-voucher-resend': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'admin resend of the coupon email, per staff user',
+  },
+  // The second limit on the same action, and the one that protects the person
+  // who is not in the room. Counting only the operator still allows one
+  // customer to be mailed thirty times in an hour, and the harm there lands on
+  // the customer's inbox and on our sending reputation, not on the operator.
+  // Three is generous for "it did not arrive": the first resend is the fix and
+  // the second is the retry.
+  'voucher-resend': {
+    limit: 3,
+    windowSeconds: 3600,
+    reason: 'coupon email resend, per VOUCHER rather than per operator',
+  },
 
   // -- Image upload. Keyed on the staff user, and DELIBERATELY NOT EXEMPT
   // because it is staff.

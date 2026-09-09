@@ -5,13 +5,16 @@ import { agorot, formatAgorot } from '@/lib/money'
 import {
   type AdminVoucherLookupState,
   type AdminVoucherRedeemState,
+  type AdminVoucherResendState,
   lookupAdminVoucher,
   redeemAdminVoucher,
+  resendVoucherEmail,
 } from '@/server/actions/admin/vouchers'
 import { useActionState } from 'react'
 
 const LOOKUP_INITIAL: AdminVoucherLookupState = null
 const REDEEM_INITIAL: AdminVoucherRedeemState = null
+const RESEND_INITIAL: AdminVoucherResendState = null
 
 function ils(agorotValue: number): string {
   return formatAgorot(agorot(agorotValue))
@@ -20,6 +23,7 @@ function ils(agorotValue: number): string {
 export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean }) {
   const [lookup, lookupAction, lookupPending] = useActionState(lookupAdminVoucher, LOOKUP_INITIAL)
   const [redeem, redeemAction, redeemPending] = useActionState(redeemAdminVoucher, REDEEM_INITIAL)
+  const [resend, resendAction, resendPending] = useActionState(resendVoucherEmail, RESEND_INITIAL)
   const voucher = lookup && 'voucher' in lookup ? lookup.voucher : null
 
   return (
@@ -117,6 +121,47 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
                 : 'השובר אינו ניתן למימוש במצב הנוכחי.'}
             </p>
           )}
+
+          {/*
+            Deliberately NOT gated on `scannable`, unlike the redemption above.
+            Redemption spends the voucher and must refuse a spent or lapsed one;
+            resending is a delivery operation and changes nothing. What is
+            actually mailable is the server's call -- it reads the order's
+            `issued` vouchers and answers "no active vouchers" when there are
+            none -- and a UI that guessed at that would hide the button in
+            exactly the case where support most wants to press it.
+          */}
+          {canRedeem ? (
+            <form action={resendAction} className="space-y-3 border-t border-gray-100 pt-4">
+              <input type="hidden" name="code" value={voucher.code} />
+              <label htmlFor="resend-reason" className="block text-xs font-medium text-gray-700">
+                סיבת שליחה חוזרת
+              </label>
+              <input
+                id="resend-reason"
+                name="reason"
+                required
+                minLength={3}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              {resend && 'error' in resend ? (
+                <p className="text-sm text-red-600">{resend.error}</p>
+              ) : null}
+              {resend && 'success' in resend ? (
+                <p className="text-sm text-green-700">{resend.success}</p>
+              ) : null}
+              <button
+                type="submit"
+                disabled={resendPending}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 disabled:opacity-60"
+              >
+                {resendPending ? 'שולח...' : 'שליחת המייל שוב'}
+              </button>
+              <p className="text-xs text-gray-500">
+                שולח ללקוח את שוברי ההזמנה הפעילים. לא משנה את השובר. נרשמת בלוג הפעילות.
+              </p>
+            </form>
+          ) : null}
         </section>
       ) : null}
     </div>

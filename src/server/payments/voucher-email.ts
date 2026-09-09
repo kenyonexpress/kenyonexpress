@@ -18,6 +18,19 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * run is deduplicated by the provider rather than by a flag we would have to
  * store and keep correct.
  *
+ * AND WHY A RESEND MUST PASS `deliveryId`. That same key is a trap for anybody
+ * adding a "send it again" button: Resend honours an idempotency key for 24
+ * hours, so a resend reusing it returns ok and delivers NOTHING. The failure is
+ * intermittent by construction and in the worst possible direction -- the
+ * common case is a customer saying "it never arrived" minutes after buying,
+ * which is squarely inside the window, while a resend two days later works
+ * fine. Support would conclude the button is flaky rather than that it is off.
+ *
+ * So a caller that means "again, on purpose" passes `deliveryId` and the key
+ * becomes `voucher-email:<orderId>:<deliveryId>`. Absent, the key is byte for
+ * byte what finalize has always sent, because the replay protection there is
+ * the point and must not be weakened by this.
+ *
  * SUPPRESSIONS. `email_suppressions` is consulted first. An address that
  * bounced or complained must not be written to again, and sending anyway is how
  * a sending domain gets its reputation burned.
@@ -27,6 +40,19 @@ export interface VoucherEmailContext {
   orderId: string
   userId: string
   siteUrl: string
+  /**
+   * A deliberate re-send. Distinguishes this attempt from finalize's, so the
+   * provider does not silently drop it as a replay. Omit for finalize.
+   */
+  deliveryId?: string
+}
+
+/**
+ * Exported so the resend path and its test name the same rule rather than each
+ * spelling out a string that has to agree.
+ */
+export function voucherEmailIdempotencyKey(orderId: string, deliveryId?: string): string {
+  return deliveryId ? `voucher-email:${orderId}:${deliveryId}` : `voucher-email:${orderId}`
 }
 
 type VoucherRow = {
@@ -120,7 +146,7 @@ export async function sendVoucherEmail(
       subject: email.subject,
       html: email.html,
       text: email.text,
-      idempotencyKey: `voucher-email:${context.orderId}`,
+      idempotencyKey: voucherEmailIdempotencyKey(context.orderId, context.deliveryId),
     })
 
     if (!result.ok) return { sent: false, reason: result.reason }

@@ -288,6 +288,49 @@ See `docs/PAYMENT-FLOW.md` §2.1.
 
 ---
 
+## 4.1 Resend, and the key that made it silent
+
+**Added 2026-09-09.** SECTIONS 29 lists `resend` among the lifecycle verbs and
+there was no path for it: `sendVoucherEmail` ran at the end of `finalizeOrder`
+and nowhere else. The ordinary support request, "I bought it and nothing
+arrived", had no answer short of reading the code out over the phone.
+
+**The trap it had to step over is worth naming, because it would not have
+looked like a bug.** The finalize send carries the Resend idempotency key
+`voucher-email:<orderId>`, and that is correct there: the webhook and the return
+page both reconcile the same order, and neither should mail twice. A resend
+reusing that key is accepted by the provider, returns ok, and delivers nothing
+for 24 hours.
+
+Those 24 hours are exactly the window a resend gets asked for. A customer
+notices within minutes; a resend two days later would work fine. The button
+would have appeared flaky rather than off, and "it worked when I tried it
+yesterday" is the sentence that keeps a dead feature alive for months.
+
+So `VoucherEmailContext` takes an optional `deliveryId`, the admin action mints
+a fresh one per attempt, and the key becomes
+`voucher-email:<orderId>:<deliveryId>`. Absent, the key is byte for byte what
+finalize has always sent. Both halves are asserted in
+`src/server/payments/voucher-email.test.ts`.
+
+**What resend is not.** It does not reissue, extend or reopen anything, and it
+does not touch the voucher row. `sendVoucherEmail` reads the order's `issued`
+vouchers, so a redeemed code is not mailed out again and an order whose codes
+are all spent reports that there is nothing to send. Suppressions still win: an
+address that bounced or complained is not written to because an operator pressed
+a button, which is the reason the resend goes through the same helper rather
+than composing its own mail.
+
+**Two rate limits, and the second is the one that matters.**
+`admin-voucher-resend` is 30/hour per operator; `voucher-resend` is 3/hour per
+VOUCHER. A limit that counts only the operator still allows one customer to be
+mailed thirty times, and the person harmed by that is not the operator.
+
+Every attempt writes an `audit_log` row with the actor, the reason and the
+outcome, **including the attempts that sent nothing**. "We tried and the address
+is suppressed" is the answer support needs, and it is not recoverable from a
+table that records only successes.
+
 ## 5. Expiry
 
 Two deadlines, deliberately separate:
