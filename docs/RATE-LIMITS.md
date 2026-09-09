@@ -54,6 +54,9 @@
 | `coupon` | 10 | 1 h | coupon code guessing |
 | `coupon_qr_apply` | 30 | 1 h | printed QR landing, per IP |
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
+| `checkout-velocity-ip` | 30 | 24 h | new orders from one address in a day; carding rotates cards, not addresses |
+| `checkout-velocity-email` | 15 | 24 h | new orders on one email in a day; a stolen-card run batches on one login |
+| `checkout-velocity-phone` | 15 | 24 h | new orders naming one delivery phone in a day, across accounts |
 | `referral-code` | 10 | 1 h | referral code mint, per user |
 | `review-submit` | 5 | 1 h | review spam, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |

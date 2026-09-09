@@ -295,6 +295,10 @@ describe('the pending migration inventory', () => {
     // 224 IS applied (2026-09-10, `post059_price_cashback_twins_224`): the
     // generated agorot twins under the post-059 names `cashback_applied_agorot`
     // and `unit_price_agorot`, filed here as the record like 217 and 223.
+    // 226 IS applied (2026-09-10, `fraud_controls_226`): the two server-only
+    // fraud tables (fraud_flags, fraud_review_queue), proven first in a
+    // rolled-back DO block and filed here as the record like 217/223/224.
+    // Numbered 226 because 225 is taken by a pending file on another branch.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
@@ -302,6 +306,7 @@ describe('the pending migration inventory', () => {
       '217_coupon_qr_redemption.sql',
       '223_restock_on_refund.sql',
       '224_post059_price_cashback_twins.sql',
+      '226_fraud_controls.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

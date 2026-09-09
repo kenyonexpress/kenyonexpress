@@ -1,5 +1,30 @@
 # `migrations/pending/`
 
+## 2026-09-10: 226 APPLIED (fraud controls)
+
+`226_fraud_controls.sql` creates the two server-only tables behind the
+checkout fraud rail: `fraud_flags` (a live chargeback or manual flag blocks
+`beginCheckout` for that customer) and `fraud_review_queue` (what the velocity
+and coupon-stacking detectors file for a human). Applied as
+`fraud_controls_226` (`20260909192241`) under the 2026-09-10 fraud-abuse
+/goal, which names Supabase MCP as the migration route (the 217 protocol).
+Numbered 226 because 225 is taken by a supplier-contact-requests pending file
+on another branch (not on disk here, so it is deliberately not named in this
+manifest).
+
+Proven first in a rolled-back DO block over production: the pending-dedupe
+partial unique index refused a second `(user, kind)` pending row and allowed a
+new one after the first resolved, both CHECK lists refused an unknown kind,
+the blocking-flag read shape returned exactly the probe row, `authenticated`
+had no SELECT, and RLS was on. The deliberate RAISE at the end rolled all of
+it back; the identical file then went through `apply_migration`. Post-apply:
+2 tables, 4 indexes, RLS on with zero policies, `anon`/`authenticated` fully
+revoked, `service_role` writable, trigger present, 0 rows.
+
+The file does NOT restate `set_updated_at` (the 183 lesson): the live body
+pins `search_path TO 'public'`, so the file creates the function only if it
+is missing.
+
 ## 2026-09-09: 183 APPLIED, and the preflight is the whole story
 
 `183_order_shipped_notification.sql` enqueues `kind=order_shipped` when an

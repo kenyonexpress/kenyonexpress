@@ -20,6 +20,7 @@ import {
   ScanLine,
   Search,
   Share2,
+  ShieldAlert,
   ShoppingCart,
   Store,
   Tag,
@@ -71,6 +72,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },
   { href: '/admin/cashback', label: 'יומן קאשבק', icon: Coins, section: 'payments' },
+  { href: '/admin/fraud', label: 'בקרת הונאות', icon: ShieldAlert, section: 'payments' },
   // Reads settlement_events, which is the journal that actually exists here.
   // Separate from תשלומים לספקים above, which reads payout_statements (081,
   // never applied to this database).

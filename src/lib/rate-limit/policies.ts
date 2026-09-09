@@ -105,6 +105,28 @@ export const RATE_LIMIT_POLICIES = {
   coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
 
+  // -- Order velocity, one bucket per identity dimension (src/lib/fraud).
+  // `begin_checkout` above bounds a retry loop; these bound a fraud run, which
+  // rotates cards and accounts but keeps the address it ships to and the phone
+  // the courier calls. Spent after the idempotent-replay short-circuit, so a
+  // declined card retried against the same order costs nothing here. Exceeding
+  // one also enqueues a fraud review item for a human.
+  'checkout-velocity-ip': {
+    limit: 30,
+    windowSeconds: 86400,
+    reason: 'new orders from one address in a day; carding rotates cards, not addresses',
+  },
+  'checkout-velocity-email': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders on one email in a day; a stolen-card run batches on one login',
+  },
+  'checkout-velocity-phone': {
+    limit: 15,
+    windowSeconds: 86400,
+    reason: 'new orders naming one delivery phone in a day, across accounts',
+  },
+
   // Added when this layer was rebased onto main: `referral-code` landed on main
   // after the table was first written, and the static audit below is what
   // caught it. Keyed on the user, not the IP, because the action can only touch

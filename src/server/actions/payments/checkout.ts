@@ -16,6 +16,13 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { couponStackingViolations } from '@/lib/fraud/coupon-stacking'
+import { enqueueFraudReview, hasBlockingFraudFlag } from '@/lib/fraud/review-queue'
+import {
+  checkCheckoutVelocity,
+  normalizeVelocityEmail,
+  normalizeVelocityPhone,
+} from '@/lib/fraud/velocity'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -36,7 +43,7 @@ import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
   type BeginCheckoutOutput,
   type CheckoutActionResult,
@@ -346,10 +353,31 @@ async function runBeginCheckout(
 
   const admin = createAdminClient()
 
+  // A customer with an uncleared chargeback (or a manual block) on file does
+  // not get to start another charge. The read fails open like the rate
+  // limiter: the fraud rail must never be the reason a sale dies.
+  if (await hasBlockingFraudFlag(admin, user.id)) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      kind: 'chargeback-blocked',
+      details: { client_ref: input.client_ref },
+    })
+    return {
+      ok: false,
+      error: 'לא ניתן להשלים את התשלום. פנו לשירות הלקוחות',
+      code: 'REVIEW_REQUIRED',
+    }
+  }
+
+  // The delivery phone, for the velocity check below. Read off the address the
+  // shopper picked because that is the number the courier calls: the identity
+  // a reshipping run keeps while it rotates cards and accounts.
+  let addressPhone: string | null = null
+
   if (input.address_id) {
     const { data: address, error: addressReadError } = await admin
       .from('user_addresses')
-      .select('id, user_id')
+      .select('id, user_id, phone')
       .eq('id', input.address_id)
       .maybeSingle()
     // Separated from the ownership check below for the same reason as the card
@@ -365,6 +393,7 @@ async function runBeginCheckout(
     if (!address || address.user_id !== user.id) {
       return { ok: false, error: 'כתובת לא תקינה', code: 'ADDRESS_REQUIRED' }
     }
+    addressPhone = address.phone ?? null
   }
 
   // 2. Idempotent replay by client_ref
@@ -418,6 +447,30 @@ async function runBeginCheckout(
       return { ok: true, data: { kind: 'paid', order_id: existingPayment.order_id } }
     }
     return { ok: false, error: 'בקשת תשלום כפולה', code: 'IDEMPOTENT_REPLAY' }
+  }
+
+  // Order velocity, per identity dimension (IP, email, delivery phone). AFTER
+  // the replay short-circuit on purpose: a declined card retried against the
+  // same client_ref answers from the lookup above and spends nothing here, so
+  // only genuinely new order attempts count. Exceeding a bucket blocks the
+  // attempt and puts the customer in the fraud review queue once.
+  const clientIp = await getClientIp()
+  const velocity = await checkCheckoutVelocity({
+    ip: clientIp === 'unknown' ? null : clientIp,
+    email: normalizeVelocityEmail(user.email),
+    phone: normalizeVelocityPhone(addressPhone ?? user.phone),
+  })
+  if (!velocity.ok) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      kind: 'velocity',
+      details: { dimension: velocity.dimension, client_ref: input.client_ref },
+    })
+    return {
+      ok: false,
+      error: 'יותר מדי הזמנות בזמן קצר, נסו שוב מאוחר יותר',
+      code: 'RATE_LIMITED',
+    }
   }
 
   // 3. Settlement snapshot from product rows (never from the client)
@@ -681,6 +734,25 @@ async function runBeginCheckout(
     if (giftError) {
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
+  }
+
+  // Coupon stacking that the settlement clamps permit but a reviewer should
+  // see: an order minting more cashback than the card pays, or a code applied
+  // to an order the card never sees. Detection only, the order proceeds; see
+  // src/lib/fraud/coupon-stacking.ts for why blocking here would be wrong.
+  const stackingViolations = couponStackingViolations({
+    discountAgorot: settlement.discountApplied,
+    walletAppliedAgorot: settlement.walletApplied,
+    cardChargeAgorot: settlement.cardCharge,
+    cashbackAgorot: settlement.cashbackAmount,
+  })
+  if (stackingViolations.length > 0) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      orderId: order.id,
+      kind: 'coupon-stacking',
+      details: { violations: stackingViolations },
+    })
   }
 
   const itemGeneration = await resolveOrderItemGeneration(

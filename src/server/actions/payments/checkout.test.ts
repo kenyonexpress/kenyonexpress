@@ -84,7 +84,22 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient })
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { getUser: () => getUser() } }),
 }))
-vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: async () => true }))
+vi.mock('@/lib/utils/rate-limit', () => ({
+  checkRateLimit: async () => true,
+  getClientIp: async () => '203.0.113.9',
+}))
+// The velocity check rides the real fraud module; only the limiter underneath
+// is stubbed, and to "allowed" so these tests keep exercising the flow past it.
+vi.mock('@/lib/rate-limit/limiter', () => ({
+  rateLimit: async () => ({
+    allowed: true,
+    limit: 1,
+    windowSeconds: 1,
+    remaining: 1,
+    resetAtMs: null,
+    backend: 'upstash',
+  }),
+}))
 // One controllable provider instance, so the saved-card tests can steer the
 // charge outcome and assert what the hosted-page fallback asked for.
 const provider = vi.hoisted(() => ({

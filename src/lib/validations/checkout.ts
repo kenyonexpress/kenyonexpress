@@ -229,6 +229,7 @@ export type CheckoutActionErrorCode =
   | 'PAYMENT_PROVIDER_ERROR'
   | 'PAYMENT_DECLINED'
   | 'RATE_LIMITED'
+  | 'REVIEW_REQUIRED'
   | 'CHECKOUT_DISABLED'
   | 'INTERNAL'
 
