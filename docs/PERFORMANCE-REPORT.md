@@ -246,3 +246,78 @@ reason:
 
 What this pass produced is `scripts/bundle-report.mjs`, so the first number is
 reproducible, and a set of numbers to compare the next one against.
+
+---
+
+## 7. SECTIONS 36 (PERFORMANCE-SEO), measured 2026-09-10
+
+Sections 1-6 above were written for SECTIONS 62 on 2026-09-09. This section
+covers what SECTIONS 36 asks for that they did not, and every line is command
+output or a browser reading, against `pnpm start` on a **freshly built** server
+on a free port.
+
+### 7.1 Lighthouse, three routes, today
+
+`node scripts/lighthouse-smoke.mjs`, default (simulated) throttling:
+
+| route | performance | accessibility | SEO |
+|---|---|---|---|
+| `/` | 84 | **100** | **100** |
+| `/product/צימר-מאסטר` | 83 | **100** | **100** |
+| `/products` | **95** | **100** | **100** |
+
+**Accessibility 100 and SEO 100 on all three**, which are deterministic audits
+and are the part of "90+" this section can actually assert.
+
+The performance column is Lantern, and `docs/PERFORMANCE-BUDGET.md` section 2
+already settles what it is worth here: the same build measured with
+`--throttling-method=provided` scored 100 with LCP 0.2s, and the simulated
+number is a model being asked to extrapolate from a machine that is
+simultaneously building, serving and measuring. It moved from 70-75 on
+2026-09-06 to 83-95 today, which is the right direction and is not evidence of
+anything on its own.
+
+**The section's "~3s LCP" is therefore NOT claimed here.** A localhost Lantern
+LCP is not a field LCP, and asserting one would be exactly the sort of number
+that reads as measured and is not. The only honest source is field data, and
+Vercel Speed Insights is wired (section 5) into a deployment that is currently
+serving nothing to Sentry either.
+
+### 7.2 The SEO markup, read out of the served HTML
+
+Not from the builders, from the page. `/product/צימר-מאסטר`:
+
+| claim | reading |
+|---|---|
+| `Product` JSON-LD | present, parseable |
+| `BreadcrumbList` JSON-LD | present |
+| `AggregateRating` | **absent, and correct** - the builder refuses to publish a rating over zero approved reviews, and this product has none |
+| canonical | present, absolute, points at its own slug |
+| `meta robots` | absent, so indexable |
+| images | 9; the LCP image gets `<link rel="preload" as="image" imageSrcSet=...>` in the head, the 7 below the fold are `loading="lazy"` |
+
+**A false finding, caught before it was written down.** Six of the nine images
+carry no `width`/`height`, and the LCP image carries no `fetchpriority="high"`
+even though `ProductGallery.tsx` sets `priority` and its comment says that
+emits exactly that attribute. Both looked like real CLS and LCP defects.
+
+Neither is. The six are `next/image` with `fill`, whose parents carry
+`aspect-ratio: 1 / 1` and `position: relative`, so the box is reserved and
+there is no shift. And `priority` in this Next version expresses itself as the
+head preload above rather than as an attribute on the `<img>` - the
+optimisation is applied, only the comment's description of HOW is out of date.
+Reading the rendered DOM is what separated the two.
+
+### 7.3 What now guards it
+
+`e2e/seo-markup.spec.ts`. The builders were already unit-tested and nothing
+proved the page renders them: deleting the `jsonLdScript` line from the product
+page would have left every unit test green and every rich result gone. That is
+the third time this shape turned up today, after the 170 reporting layer and
+`fn_pay_referral`.
+
+The `noindex` direction is the one with teeth and is asserted separately: a
+missing `Product` block costs a rich result, a missing `noindex` on
+`/redeem/<token>` puts a live voucher URL into a search index.
+
+Five tests, all passing against a fresh build.
