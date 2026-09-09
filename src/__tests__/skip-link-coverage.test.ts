@@ -86,11 +86,11 @@ describe('WCAG 2.4.1: every layout with a navigation block can be bypassed', () 
 
     expect(source, `${file} renders a nav and no <SkipLink />`).toContain('<SkipLink />')
     expect(source, `${file} has no #main-content for the skip link to reach`).toMatch(
-      /<main[^>]*id="main-content"/s,
+      /<main[^>]*id="main-content"/,
     )
     // The load-bearing one. See the header of this file.
     expect(source, `${file}: <main id="main-content"> needs tabIndex={-1}`).toMatch(
-      /<main[^>]*id="main-content"[^>]*tabIndex=\{-1\}|<main[^>]*tabIndex=\{-1\}[^>]*id="main-content"/s,
+      /<main[^>]*id="main-content"[^>]*tabIndex=\{-1\}|<main[^>]*tabIndex=\{-1\}[^>]*id="main-content"/,
     )
   })
 })
