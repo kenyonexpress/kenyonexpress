@@ -1,3 +1,4 @@
+import OrderHelpForm from '@/components/account/OrderHelpForm'
 import RefundRequestForm from '@/components/account/RefundRequestForm'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
@@ -198,6 +199,8 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
         ))}
       </section>
+
+      <OrderHelpForm orderId={id} />
 
       <RefundRequestForm
         orderId={id}

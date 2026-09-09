@@ -17,6 +17,7 @@ const ITEMS = [
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },
   { href: '/account/notifications', label: 'התראות' },
+  { href: '/account/tickets', label: 'הפניות שלי' },
   { href: '/account/security', label: 'אבטחה וכניסה' },
 ] as const
 

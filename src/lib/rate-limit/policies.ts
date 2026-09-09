@@ -134,6 +134,15 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'refund requests across orders, per user',
   },
+  // Support. Both per user, because both require a session, and both are
+  // ceilings on a conversation rather than on abuse: the real bound on a
+  // ticket per order is the deduplication in `openOrderTicket`, which turns a
+  // second attempt into a message on the existing ticket instead of a refusal.
+  'support-open': { limit: 10, windowSeconds: 3600, reason: 'new support tickets, per user' },
+  // Higher than opening, because a real back-and-forth is many messages and
+  // one ticket. It is also the ONLY bound on reopening a closed ticket: the
+  // status deliberately does not refuse replies (see `customerMayReply`).
+  'support-reply': { limit: 30, windowSeconds: 3600, reason: 'messages on a ticket, per user' },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
   // Once per login per browser, and only when the browser arrives carrying a
   // guest list. Ten an hour is generous for a person signing in and out; it is

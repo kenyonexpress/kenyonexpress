@@ -57,6 +57,8 @@
 | `referral-code` | 10 | 1 h | referral code mint, per user |
 | `review-submit` | 5 | 1 h | review spam, per user |
 | `refund-request` | 10 | 1 h | refund requests across orders, per user |
+| `support-open` | 10 | 1 h | new support tickets, per user |
+| `support-reply` | 30 | 1 h | messages on a ticket, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest wishlist merge at login, per user |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |

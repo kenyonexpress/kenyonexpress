@@ -471,6 +471,38 @@ describe('the pending migration inventory', () => {
       // refused. pg_class, pg_proc and information_schema re-read afterwards:
       // nothing left behind.
       '202_fraud_abuse.sql',
+      // 203 WRITTEN 2026-09-09, not applied. The support tables are ALREADY
+      // live -- `support_tickets` and `support_ticket_messages`, RLS on, five
+      // policies, zero rows -- so this is what they are missing rather than a
+      // new feature's schema.
+      //
+      // The finding is in the CHECK constraint: `channel` has always permitted
+      // 'contact_form' and NOTHING HAS EVER WRITTEN IT. The contact form sends
+      // mail and creates no ticket, so a customer's message lived in an inbox
+      // with no status, no owner and no record that anybody answered.
+      //
+      // `email` is a bug fix, not a feature: a contact_form ticket has no
+      // user_id and no phone, so the table could hold a message from somebody
+      // we had no way to reply to. A CHECK now requires one of the three.
+      //
+      // The policy change is a LEAK FIX. `internal` becomes an expressible
+      // direction, and the existing owner-read policy returns every message on
+      // the ticket -- so the first internal note would have been handed to the
+      // customer it was written about. The new policy filters it in the same
+      // statement that introduces the direction.
+      //
+      // No SLA due-date column, deliberately: a stored deadline is computed
+      // under a policy that was not stored beside it, so it cannot be
+      // recomputed when the targets move. Derived in sla.ts instead. The
+      // contrast is disputes.respond_by (202), which IS stored because somebody
+      // else set it.
+      //
+      // Probed against production, rolled back: an unreachable ticket REFUSED,
+      // the new channels and categories accepted, `closed` without closed_at
+      // REFUSED and closed_at without `closed` REFUSED, a bogus priority and a
+      // bogus category REFUSED, the `internal` direction accepted and a bogus
+      // one REFUSED, and the owner policy confirmed to filter internal notes.
+      '203_support_center.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

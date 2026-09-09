@@ -15,6 +15,7 @@ import {
   FileText,
   Flag,
   LayoutDashboard,
+  LifeBuoy,
   Package,
   Plus,
   ScanLine,
@@ -58,6 +59,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/coupons/lookup', label: 'איתור שובר', icon: ScanLine, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
+  // `orders` and not `payments`: support has read on orders, and this console
+  // is what that role exists for.
+  { href: '/admin/support', label: 'פניות תמיכה', icon: LifeBuoy, section: 'orders' },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
   {
     href: '/admin/suppliers',

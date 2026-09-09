@@ -98,8 +98,28 @@ function bodyAt(lines: string[], start: number): string {
   return body
 }
 
+/**
+ * COMMENTS ARE NOT CODE, AND THIS AUDIT USED TO THINK THEY WERE.
+ *
+ * `bodyAt` returns the raw text of a function, comments included, and `GUARD`
+ * is a substring match over it. So a comment that merely MENTIONED a guard by
+ * name - "this deliberately does not call requireAdminSession", or a note
+ * explaining why `auth.getUser` is absent - satisfied the check, and the
+ * function was recorded as protected on the strength of prose. Measured: a
+ * comment in `contact.ts` naming `auth.getUser` was enough to make the public
+ * contact form read as guarded.
+ *
+ * That is the wrong direction for a security audit to fail in, so both `GUARD`
+ * and `callees` now run over the code with comments removed. Strings are left
+ * alone: no guard name has ever appeared inside one here, and stripping them
+ * correctly is a parser rather than a regex.
+ */
+function stripComments(body: string): string {
+  return body.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+}
+
 const callees = (body: string) =>
-  new Set([...body.matchAll(/\b(\w+)\s*\(/g)].map((m) => m[1] as string))
+  new Set([...stripComments(body).matchAll(/\b(\w+)\s*\(/g)].map((m) => m[1] as string))
 
 /** Exported actions that never reach a guard, keyed `file.ts:actionName`. */
 function unguardedActions(): string[] {
@@ -121,7 +141,7 @@ function unguardedActions(): string[] {
       if (m && !declared.has(m[1] as string)) declared.set(m[1] as string, i)
     })
     const bodies = new Map([...declared].map(([n, i]) => [n, bodyAt(lines, i)]))
-    const reaches = new Map([...bodies].map(([n, b]) => [n, GUARD.test(b)]))
+    const reaches = new Map([...bodies].map(([n, b]) => [n, GUARD.test(stripComments(b))]))
     for (let pass = 0; pass < 12; pass++) {
       let changed = false
       for (const [name, body] of bodies) {
@@ -143,7 +163,8 @@ function unguardedActions(): string[] {
       const name = m[1] as string
       const body = bodyAt(lines, i)
       const guarded =
-        GUARD.test(body) || [...callees(body)].some((c) => c !== name && reaches.get(c))
+        GUARD.test(stripComments(body)) ||
+        [...callees(body)].some((c) => c !== name && reaches.get(c))
       if (!guarded) unguarded.push(`${relative(SRC, file).replace('server/actions/', '')}:${name}`)
     })
   }

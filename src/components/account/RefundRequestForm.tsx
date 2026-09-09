@@ -18,14 +18,37 @@ const EMPTY: RefundRequestState = { ok: false }
  * order page is an invitation rather than a remedy.
  */
 
-const REASONS: Array<{ value: string; label: string }> = [
-  { value: 'not_received', label: 'לא קיבלתי את ההזמנה' },
-  { value: 'not_as_described', label: 'המוצר אינו כפי שתואר' },
-  { value: 'defective', label: 'המוצר פגום' },
-  { value: 'duplicate_charge', label: 'חויבתי פעמיים' },
-  { value: 'changed_mind', label: 'ביטול והתחרטות' },
-  { value: 'other', label: 'סיבה אחרת' },
+/**
+ * THE HUNDRED-PERCENT RULE, SHOWN NEXT TO THE REASON THAT TRIGGERS IT.
+ *
+ * `computeCancellationFee` returns ZERO when the claim is a defect or a
+ * non-conformity, and the lower of 5% or ₪100 otherwise. That is the Consumer
+ * Protection Law's distance-selling fee, and it is already implemented - what
+ * has never existed is the customer being TOLD which of the two they are in
+ * before they choose.
+ *
+ * It matters in both directions. Somebody whose item arrived broken and who
+ * picks "ביטול והתחרטות" out of politeness has just agreed to a fee the law
+ * does not make them pay. Somebody who genuinely changed their mind should see
+ * the fee before submitting rather than in the refund notification.
+ *
+ * `fullRefund` is therefore not a label, it is the same rule stated where the
+ * decision is made. If the statute moves, `computeCancellationFee` and this
+ * array move together, and the test beside the domain file is what keeps them
+ * honest about it.
+ */
+const REASONS: Array<{ value: string; label: string; fullRefund: boolean }> = [
+  { value: 'not_received', label: 'לא קיבלתי את ההזמנה', fullRefund: true },
+  { value: 'not_as_described', label: 'המוצר אינו כפי שתואר', fullRefund: true },
+  { value: 'defective', label: 'המוצר פגום', fullRefund: true },
+  { value: 'duplicate_charge', label: 'חויבתי פעמיים', fullRefund: true },
+  { value: 'changed_mind', label: 'ביטול והתחרטות', fullRefund: false },
+  { value: 'other', label: 'סיבה אחרת', fullRefund: false },
 ]
+
+const FULL_REFUND_NOTE = 'במקרה הזה ההחזר מלא: 100% מהסכום ששולם, בלי דמי ביטול.'
+const FEE_NOTE =
+  'בביטול מרצון נגבים דמי ביטול לפי חוק: הנמוך מבין 5% מסכום העסקה או ₪100. אם המוצר פגום או אינו כפי שתואר, בחרו באחת האפשרויות למעלה ולא ייגבו דמי ביטול.'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'ממתינה לבדיקה',
@@ -51,7 +74,10 @@ export default function RefundRequestForm({
 }: Props) {
   const [state, action, pending] = useActionState(requestRefund, EMPTY)
   const [open, setOpen] = useState(false)
+  const [reasonCode, setReasonCode] = useState(REASONS[0]?.value ?? 'other')
   const baseId = useId()
+
+  const fullRefund = REASONS.find((r) => r.value === reasonCode)?.fullRefund ?? false
 
   // After a successful submission the server's `remaining` is authoritative;
   // before one, the value the page was rendered with is.
@@ -101,13 +127,21 @@ export default function RefundRequestForm({
             <label htmlFor={`${baseId}-reason`} className="account-label">
               הסיבה
             </label>
-            <select id={`${baseId}-reason`} name="reason_code" required className="account-input">
+            <select
+              id={`${baseId}-reason`}
+              name="reason_code"
+              required
+              className="account-input"
+              value={reasonCode}
+              onChange={(event) => setReasonCode(event.target.value)}
+            >
               {REASONS.map((reason) => (
                 <option key={reason.value} value={reason.value}>
                   {reason.label}
                 </option>
               ))}
             </select>
+            <p className="account-note">{fullRefund ? FULL_REFUND_NOTE : FEE_NOTE}</p>
           </div>
 
           <div>

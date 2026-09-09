@@ -5,6 +5,7 @@ import { sendEmail } from '@/lib/email/resend'
 import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { withActionContext } from '@/lib/observability/action-context'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { openContactTicket } from '@/server/support/contact-ticket'
 import { z } from 'zod'
 
 /**
@@ -88,6 +89,29 @@ async function runSubmitContactForm(
   if (!result.ok && !result.skipped) {
     return { ok: false, error: 'השליחה נכשלה. נסו שוב, או פנו בוואטסאפ.' }
   }
+
+  /**
+   * The ticket, AFTER the mail and never instead of it.
+   *
+   * `support_tickets` has permitted `channel = 'contact_form'` since it was
+   * created and nothing had ever written the value: a customer's message went
+   * into an inbox with no status, no owner and no record that anybody answered
+   * it. This is that record.
+   *
+   * Written second and never fatal. The mail is the delivery; if the row cannot
+   * be written the customer has still reached us, and telling them the send
+   * failed would make them send it again. The failure is logged inside
+   * `openContactTicket`, not surfaced here.
+   *
+   * THE SESSION LOOKUP LIVES IN `openContactTicket`, NOT HERE, and that is not
+   * tidiness. `auth-coverage.test.ts` treats `auth.getUser` as evidence that an
+   * action reaches a guard, so calling it in this function would make the
+   * audit believe the PUBLIC contact form is protected - and this action must
+   * stay reachable without a session. Reading a session to attribute a ticket
+   * is not the same as requiring one, and the static check cannot tell them
+   * apart, so the read happens where it is not mistaken for a guard.
+   */
+  await openContactTicket({ email, name, body: message })
 
   return { ok: true, message: 'תודה. ההודעה התקבלה ונחזור אליך בהקדם.' }
 }

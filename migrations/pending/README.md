@@ -1,5 +1,52 @@
 # `migrations/pending/`
 
+## 2026-09-09: 203 WRITTEN, not applied — the tables were live and the code never arrived
+
+`203_support_center.sql`.
+
+**Measured first.** `support_tickets` and `support_ticket_messages` are already
+applied in production, with RLS on and five policies between them, holding
+**zero rows**. This file is what they are missing, not a new feature's schema.
+
+**The finding is in a CHECK constraint.** `channel` has permitted
+`'contact_form'` since the table was created and **nothing has ever written that
+value**. The contact form mails the shop inbox and creates no ticket, so a
+customer's message has no status, no owner and no record that anybody answered
+it. The only writer is the WhatsApp webhook.
+
+**`email` is a bug fix.** A `contact_form` ticket has no `user_id` (the sender
+may have no account) and no `phone`, so the table could hold a message from
+somebody we have **no way to reply to**. A CHECK now requires one of the three.
+
+**The policy change is a leak fix.** `internal` becomes an expressible message
+direction, and the existing owner-read policy returns every message on the
+ticket — so the first internal note would have been handed to the customer it
+was written about. The replacement filters it in the same statement that
+introduces the direction, so the two cannot be applied separately.
+
+**No SLA due-date column, deliberately.** A stored deadline is computed once
+under a policy that was not stored beside it, so it is wrong for every row the
+moment the targets change and cannot be recomputed. Derived in
+`server/domain/support/sla.ts` from `created_at` and `first_response_at`. The
+contrast is `disputes.respond_by` in 202, which **is** a column, because that
+deadline is set by the acquirer and we are only recording it.
+
+**No customer INSERT policies.** A policy can say "this row is yours"; it cannot
+check that the order asked about is the caller's, that the ticket is open, or
+that this is not the fortieth message this hour. Writes go through actions on
+the service-role client, as `refund_requests` does.
+
+**Verified against production without applying.** One `DO` block ran the whole
+file, exercised it, and ended in an unconditional `RAISE`. All of it passed: an
+unreachable ticket refused, the new channels and categories accepted, `closed`
+without `closed_at` refused **and** `closed_at` without `closed` refused, a
+bogus priority and category refused, the `internal` direction accepted and a
+bogus one refused, and the owner policy confirmed to filter internal notes.
+Nothing left behind.
+
+Order: independent of everything else pending. It touches only the two support
+tables.
+
 ## 2026-09-09: 202 WRITTEN, not applied — one column that is a live bug, and three tables
 
 `202_fraud_abuse.sql`.
