@@ -1,5 +1,44 @@
 # `migrations/pending/`
 
+## 2026-09-09: 192 WRITTEN, not applied — the redirect table has never held a row
+
+`192_seed_seo_redirects.sql`. `select count(*) from public.seo_redirects` returns
+**0** against production, so every URL the retired WordPress site served 404s
+today and has since the cutover. The machinery around the table is complete and
+careful -- proxy lookup ahead of the session, a five-minute in-memory map that
+fails open, `normalizePath` folding percent-encoding and NFC so Hebrew compares
+equal, an anon RLS policy, a hit counter -- and it has never been given a row.
+All twenty-two `wp_import` staging tables are empty too.
+
+**Data only. No DDL.** That is why it is a numbered file rather than a script:
+it is the same reviewable, once-approved artefact as any other change to
+production, and it is idempotent, so re-running it is a no-op.
+
+**Not projected by `wp_import.fn_project_redirects`, and the reason is the
+finding.** That function copies `url_inventory.mapped_new_path` and checks only
+that the path is non-empty, starts with a slash and differs from its source. Run
+today it emits 34 rows and **13 are wrong against production**: eleven category
+rows point at the Hebrew slugs WooCommerce used (`מסעדות-ובתי-קפה`) where this
+database has always used English ones (`restaurants-cafes`), so each is a 301
+into a 404 -- worse than the 404 it replaces, because Search Console files it
+under "redirect" and the broken destination never surfaces as a broken page.
+`/blog` is marked gone and `/blog` is a live route here with real posts; the
+proxy answers 410 before routing, so the row would have removed a working,
+indexed page with the one status code that tells a crawler not to return. And
+two `/product/...₪` rows redirect one live product at another -- the duplicate
+pair blocker #1 records, whose resolution is the operator's call.
+
+All three share a shape: the inventory was frozen on 2026-08-11 and used as a
+live predicate. `scripts/build-legacy-redirects.mjs` re-asks the question every
+run and refuses a row whose source is live or whose target is not, which is how
+33 correct rows replaced 34 rows containing 13 wrong ones.
+
+**It deactivates rather than deletes.** Rows not in the seed get
+`is_active = false`; dropping them would throw away `hits`, the only evidence of
+whether a retired URL still receives traffic. It ends in a `DO` block that
+raises unless exactly 33 rows are active, so a partial apply cannot pass
+quietly. Full measurement in `docs/WP-MIGRATION.md`.
+
 ## 2026-09-09: 191 WRITTEN, not applied — somewhere to put the reconciliation
 
 `191_payment_discrepancies.sql`. SECTIONS 28 names a daily reconciliation cron

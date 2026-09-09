@@ -310,6 +310,17 @@ describe('the pending migration inventory', () => {
       // The route runs unchanged without it, reading PGRST202 and 42883 as
       // "not applied yet".
       '191_payment_discrepancies.sql',
+      // 192 WRITTEN 2026-09-09, not applied, and the only DATA-only file in
+      // this list. `public.seo_redirects` holds 0 rows in production, so every
+      // URL the retired WordPress site served 404s today; this is the 33-row
+      // map that fills it. Generated, not hand-written:
+      // `node scripts/build-legacy-redirects.mjs --check` fails on any edit to
+      // either the SQL or the JSON it came from. It is not the projection
+      // `wp_import.fn_project_redirects` would write -- that one emits 34 rows
+      // of which 13 are wrong against production today, including a 410 on the
+      // live /blog route. Idempotent, deactivates rather than deletes so the
+      // hit counter survives, and raises unless exactly 33 rows end up active.
+      '192_seed_seo_redirects.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

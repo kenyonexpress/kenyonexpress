@@ -1,0 +1,135 @@
+{
+  "$what": "Every WooCommerce product category, with the Hebrew slug the old URLs used.",
+  "$source": "wp_import/normalized/categories.json",
+  "$crawled_at": "2026-08-11T13:09:23.210Z",
+  "$site": "https://kenyonexpress.co.il (WordPress + WooCommerce, retired)",
+  "$frozen": "Evidence of what the old site served. Never edit to fix a downstream problem; corrections belong in the consumer, with the reason recorded.",
+  "$raw_kept_in": "wp_import/normalized/categories.json",
+  "$stripped": [
+    "raw"
+  ],
+  "$count": 11,
+  "rows": [
+    {
+      "wp_term_id": 15,
+      "slug_raw": "uncategorized",
+      "slug_decoded": "uncategorized",
+      "name_he": "כללי",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 18,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/uncategorized"
+    },
+    {
+      "wp_term_id": 270,
+      "slug_raw": "%d7%9e%d7%a1%d7%a2%d7%93%d7%95%d7%aa-%d7%95%d7%91%d7%aa%d7%99-%d7%a7%d7%a4%d7%94",
+      "slug_decoded": "מסעדות-ובתי-קפה",
+      "name_he": "מסעדות ובתי קפה",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 6,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%9e%d7%a1%d7%a2%d7%93%d7%95%d7%aa-%d7%95%d7%91%d7%aa%d7%99-%d7%a7%d7%a4%d7%94"
+    },
+    {
+      "wp_term_id": 271,
+      "slug_raw": "%d7%99%d7%95%d7%a4%d7%99-%d7%91%d7%a8%d7%99%d7%90%d7%95%d7%aa-%d7%95%d7%98%d7%99%d7%a4%d7%95%d7%97",
+      "slug_decoded": "יופי-בריאות-וטיפוח",
+      "name_he": "יופי בריאות וטיפוח",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 10,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%99%d7%95%d7%a4%d7%99-%d7%91%d7%a8%d7%99%d7%90%d7%95%d7%aa-%d7%95%d7%98%d7%99%d7%a4%d7%95%d7%97"
+    },
+    {
+      "wp_term_id": 272,
+      "slug_raw": "%d7%98%d7%9c%d7%a4%d7%95%d7%a0%d7%99%d7%9d-%d7%9e%d7%97%d7%a9%d7%91%d7%99%d7%9d-%d7%95%d7%90%d7%91%d7%99%d7%96%d7%a8%d7%99%d7%9d",
+      "slug_decoded": "טלפונים-מחשבים-ואביזרים",
+      "name_he": "טלפונים מחשבים ואביזרים",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 5,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%98%d7%9c%d7%a4%d7%95%d7%a0%d7%99%d7%9d-%d7%9e%d7%97%d7%a9%d7%91%d7%99%d7%9d-%d7%95%d7%90%d7%91%d7%99%d7%96%d7%a8%d7%99%d7%9d"
+    },
+    {
+      "wp_term_id": 273,
+      "slug_raw": "%d7%aa%d7%99%d7%a0%d7%95%d7%a7%d7%95%d7%aa-%d7%95%d7%99%d7%9c%d7%93%d7%99%d7%9d",
+      "slug_decoded": "תינוקות-וילדים",
+      "name_he": "תינוקות וילדים",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 3,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%aa%d7%99%d7%a0%d7%95%d7%a7%d7%95%d7%aa-%d7%95%d7%99%d7%9c%d7%93%d7%99%d7%9d"
+    },
+    {
+      "wp_term_id": 274,
+      "slug_raw": "%d7%a6%d7%99%d7%9e%d7%a8%d7%99%d7%9d-%d7%9e%d7%9c%d7%95%d7%a0%d7%95%d7%aa-%d7%95%d7%a0%d7%95%d7%a4%d7%a9",
+      "slug_decoded": "צימרים-מלונות-ונופש",
+      "name_he": "צימרים מלונות ונופש",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 7,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%a6%d7%99%d7%9e%d7%a8%d7%99%d7%9d-%d7%9e%d7%9c%d7%95%d7%a0%d7%95%d7%aa-%d7%95%d7%a0%d7%95%d7%a4%d7%a9"
+    },
+    {
+      "wp_term_id": 275,
+      "slug_raw": "%d7%a6%d7%99%d7%95%d7%93-%d7%95%d7%9e%d7%96%d7%95%d7%9f-%d7%9c%d7%91%d7%a2%d7%9c%d7%99-%d7%97%d7%99%d7%99%d7%9d",
+      "slug_decoded": "ציוד-ומזון-לבעלי-חיים",
+      "name_he": "ציוד ומזון לבעלי חיים",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 0,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%a6%d7%99%d7%95%d7%93-%d7%95%d7%9e%d7%96%d7%95%d7%9f-%d7%9c%d7%91%d7%a2%d7%9c%d7%99-%d7%97%d7%99%d7%99%d7%9d"
+    },
+    {
+      "wp_term_id": 276,
+      "slug_raw": "%d7%91%d7%a2%d7%9c%d7%99-%d7%9e%d7%a7%d7%a6%d7%95%d7%a2",
+      "slug_decoded": "בעלי-מקצוע",
+      "name_he": "בעלי מקצוע",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 2,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%91%d7%a2%d7%9c%d7%99-%d7%9e%d7%a7%d7%a6%d7%95%d7%a2"
+    },
+    {
+      "wp_term_id": 277,
+      "slug_raw": "%d7%a7%d7%95%d7%a8%d7%a1%d7%99%d7%9d-express",
+      "slug_decoded": "קורסים-express",
+      "name_he": "קורסים EXPRESS",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 0,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%a7%d7%95%d7%a8%d7%a1%d7%99%d7%9d-express"
+    },
+    {
+      "wp_term_id": 310,
+      "slug_raw": "hot-deals",
+      "slug_decoded": "hot-deals",
+      "name_he": "דילים חמים",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 2,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/hot-deals"
+    },
+    {
+      "wp_term_id": 311,
+      "slug_raw": "%d7%a2%d7%93-99",
+      "slug_decoded": "עד-99",
+      "name_he": "עד 99",
+      "description": null,
+      "parent_wp_id": null,
+      "product_count": 2,
+      "thumbnail_wp_id": null,
+      "permalink": "/product-category/%d7%a2%d7%93-99"
+    }
+  ]
+}
