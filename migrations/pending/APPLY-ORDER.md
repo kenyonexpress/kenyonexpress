@@ -111,12 +111,12 @@ independent and may be applied in any sequence, or not at all.
 | 12 | `140_money_agorot_catalog.sql` | `_agorot` columns on products, variants, coupons | — | `drop column <col>_agorot` |
 | 13 | `141_money_agorot_growth.sql` | `_agorot` columns on affiliates, referrals | — | `drop column <col>_agorot` |
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
-| 15 | `184_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
-| — | `185_soft_delete_user_facing_remainder.sql` | **already applied 2026-09-09** (MCP, `soft_delete_user_facing_remainder_185`): `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
-| — | `173_whatsapp_flow.sql` | **already applied 2026-09-09** (MCP, `whatsapp_flow_173` + `whatsapp_flow_173_revoke_client_execute`): WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
-| — | `177_cashback_ledger.sql` | **already applied 2026-09-09** (MCP, `cashback_ledger_177`): append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
-| — | `178_webauthn_credentials.sql` | **already applied 2026-09-09** (MCP, `webauthn_credentials_178`): passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
-| — | `179_push_subscriptions.sql` | **already applied 2026-09-09** (MCP, `push_subscriptions_179`): web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |
+| 15 | `148_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
+| 16 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
+| 17 | `173_whatsapp_flow.sql` | WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
+| 18 | `177_cashback_ledger.sql` | append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
+| — | `178_webauthn_credentials.sql` | **already applied 2026-09-08** (MCP, `webauthn_credentials_178`, version `20260908210126`; verified against production 2026-09-09: table, RLS and both policies match the file): passkey (WebAuthn) credentials table, select/delete-own RLS, service-role-only writes | — | in file header |
+| 20 | `179_push_subscriptions.sql` | web push subscriptions table, select/delete-own RLS, service-role-only writes | — | in file header |
 | — | `169_audit_full_coverage.sql` | **already applied 2026-09-04** (MCP, `audit_full_coverage_169`): audit_log before/after/request_id + triggers on all financial/user tables | — | in file header |
 | — | `170_reporting_tables.sql` | **already applied 2026-09-04** (MCP, `reporting_tables_170`): 4 reporting tables + nightly pg_cron rebuild + 5 admin-only RPCs | — | in file header |
 
