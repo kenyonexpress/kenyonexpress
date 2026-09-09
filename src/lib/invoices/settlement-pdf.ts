@@ -181,6 +181,30 @@ export async function buildSettlementPdf(input: SettlementPdfInput): Promise<Uin
   })
   y -= 26
 
+  // The reversal line, and only when there is one. A statement whose payout
+  // column reads zero on a sale the supplier remembers making has to say where
+  // the money went, or the supplier calls to ask -- and the answer is not in
+  // the document. Printed as a separate row rather than folded into the total,
+  // because a refund is an event with its own date and not a smaller sale.
+  if (statement.reversedPayoutAgorot > 0) {
+    // The sign is carried by the WORD and not by a `-` glyph. `toVisual`
+    // resolves a leading neutral against the paragraph, which is RTL here, so a
+    // minus sign in front of an amount can land on the far side of it -- and a
+    // credit that renders as a charge is the one mistake this row exists to
+    // prevent. `בניכוי` says it in a character class that has a direction.
+    line(d, `בניכוי זיכויים (${statement.refundedCount} שורות)`, y, {
+      size: 10,
+      rightEdge: COL.product,
+      color: MUTED,
+    })
+    line(d, formatIls(agorot(statement.reversedPayoutAgorot)), y, {
+      size: 10,
+      rightEdge: COL.due,
+      color: MUTED,
+    })
+    y -= 20
+  }
+
   line(d, `${statement.lines.length} שורות, מתוכן ${statement.settledCount} סולקו`, y, {
     size: 9,
     color: MUTED,

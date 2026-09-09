@@ -554,10 +554,13 @@ with a time on it, alongside `order_items`, which records what was AGREED.
   of the percent it was computed under.
 - `refund_issued` -- written by `refundOrder`, keyed
   `refund_issued:<payment_id>`.
-- `supplier_debit` -- a supplier share that was already released and is being
-  clawed back by a refund. The amount sits POSITIVE and the direction is the
-  kind, because 094's CHECK refuses negatives on all four money columns on
-  purpose.
+- `supplier_debit` -- a supplier share a refund reverses. The amount sits
+  POSITIVE and the direction is the kind, because 094's CHECK refuses negatives
+  on all four money columns on purpose. `metadata.released` says whether the
+  share had actually been released (`split_executed`) or was only recorded as
+  owed (`paid`): both are debited, and the flag is what tells an operator
+  whether the money comes back by netting off the next payout or by simply
+  never being paid.
 
 **The journal write cannot throw.** It runs after the card has been charged and
 the order closed, and a journal row is not worth unwinding a payment for. A
@@ -572,12 +575,63 @@ whole reason a wrong split is expensive: the statement, `/admin/reports` and
 the payout that is actually wired are all downstream of the same three numbers,
 and all three agree with each other while being wrong together.
 
+**A reversed line is due nothing, and `supplierDueAgorot`
+(`src/lib/supplier/dashboard.ts`) is the single place that decides it.** Every
+supplier-facing money figure goes through that one function: the dashboard
+balance, `/supplier/payouts`, the all-time CSV, the monthly statement and its
+PDF, and the supplier revenue line in analytics.
+
+It has to decide, because nothing upstream filters these rows out.
+`getSupplierSales` selects on `orders.paid_at IS NOT NULL`, and a refunded
+order KEEPS its `paid_at` -- that is what makes it a refund rather than an
+abandoned cart. `refundOrder` writes `settlement_status = 'refunded'` and
+deliberately does not zero `supplier_immediate_agorot`, because that column is
+the snapshot of what was agreed at purchase and rewriting it would destroy the
+record of the original split. Reading the snapshot as a live receivable was the
+error, not the column.
+
+The reversed amount is not silently dropped. It moves to
+`reversedPayoutAgorot`, which the statement totals separately, the PDF prints
+as `בניכוי זיכויים`, both CSVs carry as their own column, and
+`/supplier/payouts` shows per line. A payout column that read zero on a sale
+the supplier remembers making, with no number anywhere accounting for the
+difference, is a statement they cannot reconcile and a phone call we cannot
+answer.
+
+This is the second time that rule has had to be written into this function. The
+first was escrow: it returned `immediate + held`, which told a supplier they
+were owed money that was never going to arrive. A refund is the same failure
+reached through a different column.
+
 ### Refunds reverse it
 
-`refundOrder` writes `refund_issued` and, where a supplier share had already
-been released, `supplier_debit`. The customer's credit and the ledger reversal
-are one path: a refund that credited the card and left the ledger alone would
-leave a supplier owed money for a sale that no longer exists.
+`refundOrder` writes `refund_issued` and one `supplier_debit` per reversed line
+that carries a recorded supplier share. The customer's credit and the ledger
+reversal are one path: a refund that credited the card and left the ledger
+alone would leave a supplier owed money for a sale that no longer exists.
+
+**Every reversed share is debited, not only the released ones.** The debit used
+to be written only for a line in `split_executed`, on the reasoning that a line
+refunded from `paid` had never released anything and so owed nothing back. That
+confuses money that has MOVED with money that is RECORDED. The liability is
+created by `charge_settled`, which is written for every paid line the moment the
+card clears, whatever its settlement state, and `supplierObligations`
+(`src/server/domain/reports/settlement-report.ts`) computes
+`earned - debited - settled`. With no debit, a refunded order left the
+supplier's open balance in `/admin/reports` at the full share -- a figure the
+platform pays out from. Since most refunds arrive within days of the sale,
+before any payout run moves a line to `split_executed`, that was the common
+case and not an edge one.
+
+A zero share still writes nothing. A coupon line splits 100/0 by the model, and
+a ledger row of 0 says nothing that its absence does not.
+
+**A partial refund reverses the whole line.** `planOrderRefund` transitions
+every refundable line to `refunded` regardless of `partialAmountAgorot`, and the
+debit is the line's full share. The card credit is partial; the line's supplier
+share is all-or-nothing. That is the existing shape of the state machine and not
+a decision taken here, but it means a partial refund currently zeroes the
+supplier's payout for the whole line.
 
 ---
 
@@ -592,7 +646,7 @@ leave a supplier owed money for a sale that no longer exists.
 Running the split check first would report a split as wrong while the total it
 is a split of was still unverified.
 
-**Seven checks**, in `src/lib/payments/settlement-reconciliation.ts`, which is
+**Eight checks**, in `src/lib/payments/settlement-reconciliation.ts`, which is
 pure and separate from the route so production numbers can be test fixtures
 rather than paragraphs:
 
@@ -603,8 +657,20 @@ rather than paragraphs:
 | `percent_missing` | no `platform_percent`, so nothing justifies the split |
 | `journal_drift` | journal and line both exist and disagree |
 | `refund_unjournalled` | a completed refund with no `refund_issued` row |
+| `supplier_debit_missing` | a reversed line whose supplier share is still standing in the journal |
 | `journal_missing` | a paid line with no `charge_settled` row, on or after the epoch |
 | `journal_orphan` | a `charge_settled` row whose line is not paid any more |
+
+**Why `supplier_debit_missing` is its own check and not an assertion inside the
+statement.** The rule "a reversed line is due nothing" is implemented twice, on
+purpose: once over `order_items.settlement_status` for what the supplier is
+shown, once over the journal for what the platform pays from. Two
+implementations reading two tables is exactly the arrangement in which a
+disagreement is invisible -- each side is internally consistent, and a supplier
+statement and an admin settlement report that differ by one refund both look
+correct on their own. This check is the thing that reads both. It is bounded by
+the epoch for the same reason `journal_missing` is: a line paid before 094 has
+no `charge_settled` to reverse, so there is nothing standing.
 
 **The epoch.** `settlement_events` arrived on 2026-07-31 and all four
 production orders were paid on 2026-07-21. Reporting those as unjournalled

@@ -4,6 +4,7 @@ import {
   type SupplierSaleLine,
   aggregateDashboard,
   sumPayoutBreakdown,
+  summarizeSettlement,
   supplierDueAgorot,
   toPayoutBreakdown,
 } from './dashboard'
@@ -116,6 +117,80 @@ describe('toPayoutBreakdown', () => {
       grossAgorot: 14000,
       platformFeeAgorot: 1400,
       supplierPayoutAgorot: 9000,
+      reversedPayoutAgorot: 0,
     })
+  })
+})
+
+describe('a refunded line is due nothing', () => {
+  // The line the supplier portal shows after a refund: `settlement_status`
+  // flips to `refunded` and `supplier_immediate_agorot` DOES NOT MOVE, because
+  // that column is the snapshot of what was agreed at purchase. Reading it as a
+  // live receivable is what was wrong. `getSupplierSales` filters on
+  // `orders.paid_at IS NOT NULL` and a refunded order keeps its `paid_at`, so
+  // these rows do reach the portal.
+  const refundedPhysical = sale({
+    orderItemId: 'oi-refunded',
+    productType: 'physical',
+    faceValueAgorot: 10_000,
+    paidOnSiteAgorot: 10_000,
+    platformFeeAgorot: 1_000,
+    supplierImmediateAgorot: 9_000,
+    supplierDueAgorot: 9_000,
+    settlementStatus: 'refunded',
+  })
+
+  it('pays zero and reports the reversal separately', () => {
+    expect(supplierDueAgorot(refundedPhysical)).toBe(0)
+    const [line] = toPayoutBreakdown([refundedPhysical])
+    expect(line?.supplierPayoutAgorot).toBe(0)
+    // Not silently dropped: a statement whose payout column reads zero on a
+    // sale the supplier remembers making has to name the difference somewhere.
+    expect(line?.reversedPayoutAgorot).toBe(9_000)
+  })
+
+  it('applies to a cancelled line too', () => {
+    expect(supplierDueAgorot({ ...refundedPhysical, settlementStatus: 'cancelled' })).toBe(0)
+  })
+
+  it('still pays a line that was not reversed', () => {
+    expect(supplierDueAgorot({ ...refundedPhysical, settlementStatus: 'split_executed' })).toBe(
+      9_000,
+    )
+  })
+
+  it('keeps the reversal out of the balance the supplier is told they are owed', () => {
+    const live = sale({
+      orderItemId: 'oi-live',
+      productType: 'physical',
+      faceValueAgorot: 10_000,
+      paidOnSiteAgorot: 10_000,
+      platformFeeAgorot: 1_000,
+      supplierImmediateAgorot: 9_000,
+      supplierDueAgorot: 9_000,
+      settlementStatus: 'split_executed',
+    })
+    const balance = summarizeSettlement({ sales: [live, refundedPhysical], redemptions: [] })
+    expect(balance.platformOwedAgorot).toBe(9_000)
+    expect(balance.reversedAgorot).toBe(9_000)
+    // The status breakdown still lists the refunded line, at zero: it happened,
+    // and a row that vanishes is a row a supplier asks about.
+    expect(balance.byStatus).toContainEqual({
+      status: 'refunded',
+      count: 1,
+      supplierDueAgorot: 0,
+    })
+  })
+
+  it('keeps it out of the dashboard headline as well', () => {
+    expect(
+      aggregateDashboard({ sales: [refundedPhysical], redemptions: [] }).supplierDueAgorot,
+    ).toBe(0)
+  })
+
+  it('totals the reversal alongside the payout', () => {
+    const totals = sumPayoutBreakdown(toPayoutBreakdown([refundedPhysical]))
+    expect(totals.supplierPayoutAgorot).toBe(0)
+    expect(totals.reversedPayoutAgorot).toBe(9_000)
   })
 })

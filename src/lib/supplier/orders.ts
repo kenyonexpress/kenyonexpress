@@ -152,7 +152,10 @@ export function lineFrom(input: {
     faceValueAgorot: toAgorot(input.faceValueAgorot),
     platformFeeAgorot: toAgorot(input.commissionAgorot),
     supplierDueAgorot: toAgorot(
-      supplierDueAgorot({ supplierImmediateAgorot: input.supplierImmediateAgorot ?? 0 }),
+      supplierDueAgorot({
+        supplierImmediateAgorot: input.supplierImmediateAgorot ?? 0,
+        settlementStatus: input.settlementStatus,
+      }),
     ),
     // A redeemed coupon has already been collected over the counter, so it is
     // no longer money the shop is waiting for. Leaving it in the total made the

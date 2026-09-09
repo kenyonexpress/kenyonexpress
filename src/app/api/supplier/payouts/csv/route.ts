@@ -35,6 +35,10 @@ async function handleGET(): Promise<NextResponse> {
     { header: 'עמלה (אגורות)', value: (row) => String(row.platformFeeAgorot) },
     { header: 'לתשלום לספק (₪)', value: (row) => formatIls(agorot(row.supplierPayoutAgorot)) },
     { header: 'לתשלום לספק (אגורות)', value: (row) => String(row.supplierPayoutAgorot) },
+    // Zero on every line that was not reversed. A refunded line reads 0 in the
+    // payout columns above and its original share here, so the file explains
+    // its own totals instead of looking like a line that was never paid.
+    { header: 'זיכוי (אגורות)', value: (row) => String(row.reversedPayoutAgorot) },
     {
       header: 'סטטוס סליקה',
       value: (row) =>

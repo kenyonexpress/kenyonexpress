@@ -59,6 +59,18 @@ export interface SupplierDebit {
   orderItemId: string
   supplierId: string
   amountAgorot: Agorot
+  /**
+   * Whether the share had already been RELEASED (`split_executed`) or was
+   * merely recorded as owed (`paid`).
+   *
+   * Both are debited, and the distinction is kept because it decides how the
+   * money comes back: a released share is netted off the next payout, a
+   * recorded one is simply never paid. It rides in the journal row's metadata
+   * so an operator reading the ledger can tell the two apart without
+   * reconstructing the line's state at the moment of the refund -- which is
+   * unrecoverable, since the line is `refunded` afterwards either way.
+   */
+  released: boolean
 }
 
 export interface RefundVoucherInput {
@@ -136,7 +148,7 @@ export interface RefundPlan {
    * a partial refund: half a deal cannot be un-transmitted.
    */
   cancelOnly: boolean
-  /** Supplier shares already released that this refund claws back. */
+  /** Supplier shares this refund reverses, released or not. */
   supplierDebits: SupplierDebit[]
 }
 
@@ -287,19 +299,31 @@ export function planOrderRefund(input: PlanRefundInput): RefundPlan {
     refundedIds.has(line.orderItemId) ? ('refunded' as SettlementState) : line.settlementStatus,
   )
 
-  // Only lines that were already split owe anything back. A line refunded from
-  // `paid` never released a supplier share, and a zero-value debit is a ledger
-  // row that says nothing, so it is not written.
+  // EVERY reversed line with a recorded share is debited, not only the ones
+  // that reached `split_executed`.
+  //
+  // This used to filter on `split_executed`, on the reasoning that a line
+  // refunded from `paid` never released a supplier share and so owed nothing
+  // back. That confuses money that has MOVED with money that is RECORDED. The
+  // journal's liability is created by `charge_settled`, which is written for
+  // every paid line the moment the card clears, whatever its settlement state.
+  // Leaving that entry unreversed means summing the journal per supplier
+  // returns the full share as a standing debt on an order that was refunded --
+  // and since most refunds happen within days of the sale, before any release,
+  // that was the COMMON case rather than an edge one.
+  //
+  // A zero share still writes nothing: a coupon line's supplier share is 0 by
+  // the model, and a ledger row of 0 says nothing that its absence does not.
   const supplierDebits: SupplierDebit[] = []
   for (const line of input.lines) {
     if (!refundedIds.has(line.orderItemId)) continue
-    if (line.settlementStatus !== 'split_executed') continue
     const owed = line.supplierReleasedAgorot ?? 0
     if (owed <= 0 || !line.supplierId) continue
     supplierDebits.push({
       orderItemId: line.orderItemId,
       supplierId: line.supplierId,
       amountAgorot: agorot(owed),
+      released: line.settlementStatus === 'split_executed',
     })
   }
 

@@ -276,6 +276,40 @@ describe('refundOrder: supplier debits', () => {
     })
   })
 
+  it('journals a debit for a line refunded BEFORE the split, marked unreleased', async () => {
+    // The common case, and the one that used to write no debit at all: a
+    // customer cancels days after paying, long before any payout run moves the
+    // line to `split_executed`. `charge_settled` had already credited the
+    // supplier's share, `supplierObligations` computes
+    // `earned - debited - settled`, and with no debit the supplier's open
+    // balance kept the full ₪70 on a sale that was refunded.
+    seedHappyPath({
+      items: [
+        {
+          id: 'line-1',
+          product_type: 'physical',
+          settlement_status: 'paid',
+          supplier_id: 'sup-1',
+          supplier_immediate_agorot: 7_000,
+        },
+      ],
+    })
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    const events = find('settlement_events', 'upsert')?.payload as Record<string, unknown>[]
+    const debit = events.find((e) => e.kind === 'supplier_debit')
+    expect(debit).toMatchObject({
+      order_item_id: 'line-1',
+      supplier_due_agorot: 7_000,
+      idempotency_key: 'supplier_debit:line-1',
+      // How the money comes back differs even though both are debited: an
+      // unreleased share is simply never paid, a released one is netted off the
+      // next payout. The ledger has to be able to tell them apart afterwards,
+      // because the line reads `refunded` in both cases.
+      metadata: { payment_id: 'pay-1', reason: 'refund', released: false },
+    })
+  })
+
   it('journals the refund itself even when nothing is owed back', async () => {
     seedHappyPath()
     await refundOrder({ orderId: 'order-1', reason: 'test' })

@@ -15,6 +15,7 @@ const line = (over: Partial<PayoutBreakdownLine> = {}): PayoutBreakdownLine => (
   grossAgorot: 10_000,
   platformFeeAgorot: 3_000,
   supplierPayoutAgorot: 7_000,
+  reversedPayoutAgorot: 0,
   settlementStatus: 'settled',
   paidAt: '2026-09-15T10:00:00Z',
   ...over,
@@ -113,5 +114,59 @@ describe('the month list offered to the picker', () => {
         line({ paidAt: null }),
       ]),
     ).toEqual(['2026-09', '2026-07'])
+  })
+})
+
+describe('a refund inside the month', () => {
+  const sold = line({
+    orderItemId: 'oi-sold',
+    grossAgorot: 10_000,
+    platformFeeAgorot: 3_000,
+    supplierPayoutAgorot: 7_000,
+    paidAt: '2026-09-10T10:00:00Z',
+  })
+  // What `toPayoutBreakdown` produces for a refunded line: the payout is zero
+  // and the share it would have paid moves to `reversedPayoutAgorot`.
+  const refunded = line({
+    orderItemId: 'oi-refunded',
+    grossAgorot: 4_000,
+    platformFeeAgorot: 1_200,
+    supplierPayoutAgorot: 0,
+    reversedPayoutAgorot: 2_800,
+    settlementStatus: 'refunded',
+    paidAt: '2026-09-12T10:00:00Z',
+  })
+
+  it('does not promise the supplier money that was handed back', () => {
+    const statement = buildSettlementStatement({
+      month: '2026-09',
+      supplierName: 'ספא',
+      lines: [sold, refunded],
+    })
+    expect(statement.supplierPayoutAgorot).toBe(7_000)
+    expect(statement.reversedPayoutAgorot).toBe(2_800)
+    expect(statement.refundedCount).toBe(1)
+  })
+
+  it('adds up: the payout total is exactly the payout column', () => {
+    // The property that makes the document reconcilable by a bookkeeper. A
+    // total that quietly excluded a listed line while the column still showed
+    // its amount would be read as an arithmetic error in our favour.
+    const statement = buildSettlementStatement({
+      month: '2026-09',
+      supplierName: 'ספא',
+      lines: [sold, refunded],
+    })
+    const columnSum = statement.lines.reduce((sum, row) => sum + row.supplierPayoutAgorot, 0)
+    expect(columnSum).toBe(statement.supplierPayoutAgorot)
+  })
+
+  it('still lists the refunded line, because it happened', () => {
+    const statement = buildSettlementStatement({
+      month: '2026-09',
+      supplierName: 'ספא',
+      lines: [sold, refunded],
+    })
+    expect(statement.lines.map((row) => row.orderItemId)).toEqual(['oi-sold', 'oi-refunded'])
   })
 })

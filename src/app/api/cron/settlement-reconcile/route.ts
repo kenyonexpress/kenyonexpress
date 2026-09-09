@@ -113,7 +113,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   const { data: itemRows, error: itemsError } = await admin
     .from('order_items')
     .select(
-      'id, order_id, supplier_id, platform_percent, paid_on_site_agorot, commission_agorot, supplier_immediate_agorot, escrow_release_agorot',
+      'id, order_id, supplier_id, platform_percent, settlement_status, paid_on_site_agorot, commission_agorot, supplier_immediate_agorot, escrow_release_agorot',
     )
     .is('deleted_at', null)
     .limit(ROW_LIMIT)
@@ -130,6 +130,9 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       orderId: String(row.order_id),
       supplierId: (row.supplier_id as string | null) ?? null,
       platformPercent: (row.platform_percent as string | number | null) ?? null,
+      // Feeds `supplier_debit_missing`: a refunded line whose share is still
+      // standing in the journal.
+      settlementStatus: (row.settlement_status as string | null) ?? null,
       paidOnSiteAgorot: Number(row.paid_on_site_agorot ?? 0),
       commissionAgorot: Number(row.commission_agorot ?? 0),
       supplierImmediateAgorot: Number(row.supplier_immediate_agorot ?? 0),

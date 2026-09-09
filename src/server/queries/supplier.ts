@@ -113,7 +113,13 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
       // the first caller to read it. Measured against production: two legacy
       // escrow_holds rows are still `held`, both against coupon codes, so this
       // was not hypothetical.
-      supplierDueAgorot: supplierDueAgorot({ supplierImmediateAgorot: immediate }),
+      // The status goes in because a refunded line is due nothing: the share
+      // was clawed back in the journal and `supplier_immediate_agorot` is the
+      // purchase-time snapshot, not a live receivable.
+      supplierDueAgorot: supplierDueAgorot({
+        supplierImmediateAgorot: immediate,
+        settlementStatus: row.settlement_status,
+      }),
       settlementStatus: row.settlement_status,
       paidAt: row.orders?.paid_at ?? null,
     }

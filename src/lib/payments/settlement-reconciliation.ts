@@ -70,6 +70,13 @@ export type SettlementFindingKind =
   | 'percent_contradiction'
   /** A completed refund with no `refund_issued` row. */
   | 'refund_unjournalled'
+  /**
+   * A reversed line whose supplier share is still standing in the journal: a
+   * `charge_settled` credited the supplier and no `supplier_debit` took it
+   * back. The supplier's statement and the journal then disagree about the
+   * same sale, and the journal is the one that over-owes.
+   */
+  | 'supplier_debit_missing'
 
 export type FindingSeverity = 'critical' | 'warning'
 
@@ -80,6 +87,13 @@ export interface SettledOrderLine {
   supplierId: string | null
   /** `order_items.platform_percent`, the percent snapshotted at purchase. */
   platformPercent: string | number | null
+  /**
+   * `order_items.settlement_status`. `refunded` and `cancelled` are the states
+   * in which the supplier is owed nothing, which is the fact the journal has to
+   * agree with. Optional so a caller that predates this check still compiles;
+   * absent reads as "not reversed", which is the state of almost every line.
+   */
+  settlementStatus?: string | null
   paidOnSiteAgorot: number
   commissionAgorot: number
   supplierImmediateAgorot: number
@@ -153,6 +167,17 @@ export interface ReconcileSettlementInput {
   known?: readonly string[]
 }
 
+/**
+ * Settlement states in which the supplier is owed nothing for the line.
+ *
+ * Kept here rather than imported from `lib/supplier/dashboard`: that module is
+ * the supplier PORTAL's view of the same fact, and this check exists precisely
+ * to catch the two disagreeing. A shared constant would make them agree by
+ * construction about the states while still letting the amounts drift, which is
+ * the failure that is easy to miss and expensive to find.
+ */
+const REVERSED_LINE_STATES: ReadonlySet<string> = new Set(['refunded', 'cancelled'])
+
 const CRITICAL: ReadonlySet<SettlementFindingKind> = new Set([
   'journal_missing',
   'journal_drift',
@@ -160,6 +185,7 @@ const CRITICAL: ReadonlySet<SettlementFindingKind> = new Set([
   'percent_missing',
   'percent_contradiction',
   'refund_unjournalled',
+  'supplier_debit_missing',
 ])
 
 /**
@@ -172,6 +198,7 @@ const KIND_ORDER: readonly SettlementFindingKind[] = [
   'percent_missing',
   'journal_drift',
   'refund_unjournalled',
+  'supplier_debit_missing',
   'journal_missing',
   'journal_orphan',
 ]
@@ -348,6 +375,38 @@ export function reconcileSettlement(
         orderId: event.orderId,
         orderItemId: event.orderItemId,
         actualAgorot: toFiniteInt(event.paidOnSiteAgorot),
+      }),
+    )
+  }
+
+  // THE REVERSAL CHECK. A line in a reversed settlement state whose
+  // `charge_settled` credited the supplier must have a `supplier_debit` against
+  // it, or the journal still carries the share as owed on a sale that was
+  // undone. This is the journal half of the same rule `supplierDueAgorot`
+  // applies to the supplier's statement; they are separate implementations
+  // reading separate tables, and this check is what keeps them from drifting
+  // apart silently.
+  //
+  // Bounded by the epoch for the same reason `journal_missing` is: a line paid
+  // before 094 has no `charge_settled` to reverse, so `chargeByItem` misses it
+  // and nothing here fires.
+  const debitedItems = new Set<string>()
+  for (const event of input.events) {
+    if (event.kind === 'supplier_debit' && event.orderItemId) debitedItems.add(event.orderItemId)
+  }
+
+  for (const line of input.lines) {
+    if (!REVERSED_LINE_STATES.has(line.settlementStatus ?? '')) continue
+    const charge = chargeByItem.get(line.orderItemId)
+    const credited = charge ? toFiniteInt(charge.supplierDueAgorot) : 0
+    if (credited <= 0) continue
+    if (debitedItems.has(line.orderItemId)) continue
+    findings.push(
+      finding('supplier_debit_missing', {
+        orderId: line.orderId,
+        orderItemId: line.orderItemId,
+        expectedAgorot: credited,
+        actualAgorot: 0,
       }),
     )
   }

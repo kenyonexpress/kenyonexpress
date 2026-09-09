@@ -30,6 +30,7 @@ type OrderItemRow = {
   commission_agorot: number | null
   supplier_immediate_agorot: number | null
   escrow_release_agorot: number | null
+  settlement_status: string | null
   products: { name_he: string } | { name_he: string }[] | null
   supplier_id: string | null
   suppliers: { name: string } | { name: string }[] | null
@@ -68,7 +69,7 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
     .select(
       `order_id, product_id, product_type, upfront_percent, platform_percent,
        face_value_agorot, paid_on_site_agorot, commission_agorot,
-       supplier_immediate_agorot, escrow_release_agorot,
+       supplier_immediate_agorot, escrow_release_agorot, settlement_status,
        products(name_he),
        supplier_id, suppliers(name),
        orders!inner(paid_at)`,
@@ -97,8 +98,13 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
     // happens. Two legacy order_items still carry a non-zero
     // escrow_release_agorot, so this line was inflating supplier revenue in
     // analytics by money that was never released.
+    //
+    // `settlement_status` for the same reason, one refund later: a refunded
+    // line keeps its `supplier_immediate_agorot` and its `paid_at`, so without
+    // the status this counted a reversed sale as supplier revenue forever.
     const supplierDue = supplierDueAgorot({
       supplierImmediateAgorot: row.supplier_immediate_agorot ?? 0,
+      settlementStatus: row.settlement_status,
     })
 
     lines.push({

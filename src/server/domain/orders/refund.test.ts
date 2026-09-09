@@ -264,13 +264,20 @@ describe('planOrderRefund: supplier debits', () => {
       now: new Date('2026-08-07T12:00:00Z'),
     })
     expect(plan.supplierDebits).toEqual([
-      { orderItemId: 'line-9', supplierId: 'sup-1', amountAgorot: 7_000 },
+      { orderItemId: 'line-9', supplierId: 'sup-1', amountAgorot: 7_000, released: true },
     ])
   })
 
-  it('claws back nothing from a line refunded before the split', () => {
-    // Nothing left for the supplier from `paid`, so a debit row here would
-    // invent a liability and cost the supplier money they never received.
+  it('claws back a line refunded before the split too, marked as unreleased', () => {
+    // This case used to produce NO debit, on the reasoning that nothing had
+    // been released so nothing was owed back. What that missed is where the
+    // liability comes from: `charge_settled` is written for every paid line the
+    // moment the card clears, and `supplierObligations` computes
+    // `earned - debited - settled`. With no debit, a refunded order left the
+    // supplier's open balance at the full share -- money the admin settlement
+    // report would go on to pay out on a sale that was reversed. The debit
+    // cancels a journal entry, it does not collect cash, and `released: false`
+    // is what says so.
     const plan = planOrderRefund({
       cardChargedAgorot: 10_000,
       lines: [{ ...splitPhysical, settlementStatus: 'paid' as const }],
@@ -278,7 +285,9 @@ describe('planOrderRefund: supplier debits', () => {
       isDefectClaim: false,
       now: new Date('2026-08-07T12:00:00Z'),
     })
-    expect(plan.supplierDebits).toEqual([])
+    expect(plan.supplierDebits).toEqual([
+      { orderItemId: 'line-9', supplierId: 'sup-1', amountAgorot: 7_000, released: false },
+    ])
   })
 
   it('writes no row for a split line whose supplier share was zero', () => {

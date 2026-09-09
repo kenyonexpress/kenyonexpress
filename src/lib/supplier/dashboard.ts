@@ -52,7 +52,10 @@ export type PayoutBreakdownLine = {
   platformPercent: number | null
   grossAgorot: number
   platformFeeAgorot: number
+  /** Payable now. Zero on a reversed line; see `supplierDueAgorot`. */
   supplierPayoutAgorot: number
+  /** What a reversed line would have paid. Zero on every other line. */
+  reversedPayoutAgorot: number
   settlementStatus: string | null
   paidAt: string | null
 }
@@ -76,14 +79,66 @@ export function isRedeemedToday(redeemedAt: string | null | undefined, now = new
 }
 
 /**
+ * Settlement states in which the line's supplier share has been reversed.
+ *
+ * `refunded` is written by `refundOrder` on every line it pulls back, and
+ * `cancelled` is the state a line that never completed lands in. Both mean the
+ * sale is undone, and neither is filtered out upstream: `getSupplierSales`
+ * selects on `orders.paid_at IS NOT NULL`, and a refunded order keeps its
+ * `paid_at` -- that is what makes it a refund rather than an abandoned cart.
+ * So the rows arrive here and something has to decide what they are worth.
+ */
+export const REVERSED_SETTLEMENT_STATUSES: ReadonlySet<string> = new Set(['refunded', 'cancelled'])
+
+/** Whether this line's supplier share has been reversed. */
+export function isReversedLine(settlementStatus: string | null | undefined): boolean {
+  return settlementStatus != null && REVERSED_SETTLEMENT_STATUSES.has(settlementStatus)
+}
+
+/**
  * Supplier due from the platform = immediate physical split only.
  * Coupon prepaid stays with the platform; till cash never enters our ledger.
  * Legacy `escrowHeldAgorot` columns are ignored (always 0 under 085).
+ *
+ * A REVERSED LINE IS DUE NOTHING, and this is the second time that sentence
+ * has had to be written here. The first was escrow: this function used to
+ * return `immediate + held`, which told a supplier they were owed money that
+ * was never going to arrive. A refund is the same failure with a different
+ * column. `refundOrder` writes `settlement_status = 'refunded'` and journals a
+ * `supplier_debit` clawing the share back, but it does NOT zero
+ * `supplier_immediate_agorot` -- deliberately, because that column is the
+ * snapshot of what was agreed at purchase and rewriting it would destroy the
+ * record of the original split. Reading it as a live receivable is what was
+ * wrong, not the column.
+ *
+ * Everything a supplier sees about money goes through here: the dashboard
+ * balance, the payouts page, the all-time CSV, the monthly statement and its
+ * PDF, and the supplier revenue line in analytics. One function, so the
+ * statement handed to a bookkeeper and the ledger the reconciliation cron
+ * reads cannot disagree about a refunded sale.
  */
 export function supplierDueAgorot(line: {
   supplierImmediateAgorot: number
   escrowHeldAgorot?: number
+  settlementStatus?: string | null
 }): number {
+  if (isReversedLine(line.settlementStatus)) return 0
+  return Math.max(0, line.supplierImmediateAgorot)
+}
+
+/**
+ * What a reversed line WOULD have paid, for the statement to show as a credit.
+ *
+ * Zeroing the payout without saying why produces a document a supplier cannot
+ * reconcile: a sale they remember, a line that reads zero, and no number
+ * anywhere that accounts for the difference. This is that number, and it is
+ * zero on a line that was not reversed.
+ */
+export function reversedPayoutAgorot(line: {
+  supplierImmediateAgorot: number
+  settlementStatus?: string | null
+}): number {
+  if (!isReversedLine(line.settlementStatus)) return 0
   return Math.max(0, line.supplierImmediateAgorot)
 }
 
@@ -137,6 +192,7 @@ export function toPayoutBreakdown(sales: SupplierSaleLine[]): PayoutBreakdownLin
     grossAgorot: Math.max(0, s.productType === 'coupon' ? s.paidOnSiteAgorot : s.faceValueAgorot),
     platformFeeAgorot: Math.max(0, s.platformFeeAgorot),
     supplierPayoutAgorot: supplierDueAgorot(s),
+    reversedPayoutAgorot: reversedPayoutAgorot(s),
     settlementStatus: s.settlementStatus,
     paidAt: s.paidAt,
   }))
@@ -146,20 +202,24 @@ export function sumPayoutBreakdown(lines: PayoutBreakdownLine[]): {
   grossAgorot: number
   platformFeeAgorot: number
   supplierPayoutAgorot: number
+  reversedPayoutAgorot: number
 } {
   return lines.reduce(
     (acc, line) => ({
       grossAgorot: acc.grossAgorot + line.grossAgorot,
       platformFeeAgorot: acc.platformFeeAgorot + line.platformFeeAgorot,
       supplierPayoutAgorot: acc.supplierPayoutAgorot + line.supplierPayoutAgorot,
+      reversedPayoutAgorot: acc.reversedPayoutAgorot + line.reversedPayoutAgorot,
     }),
-    { grossAgorot: 0, platformFeeAgorot: 0, supplierPayoutAgorot: 0 },
+    { grossAgorot: 0, platformFeeAgorot: 0, supplierPayoutAgorot: 0, reversedPayoutAgorot: 0 },
   )
 }
 
 export type SupplierSettlementBalance = {
   /** Owed by the platform. Physical residual only; a coupon never adds here. */
   platformOwedAgorot: number
+  /** Reversed by refunds, and therefore NOT part of `platformOwedAgorot`. */
+  reversedAgorot: number
   /** Already taken over the counter on redeemed coupons. Never our money. */
   tillCollectedAgorot: number
   /** What the platform kept, across both kinds. */
@@ -190,11 +250,13 @@ export function summarizeSettlement(input: {
 }): SupplierSettlementBalance {
   let platformOwed = 0
   let platformFee = 0
+  let reversed = 0
   const buckets = new Map<string, { count: number; supplierDueAgorot: number }>()
 
   for (const sale of input.sales) {
     const due = supplierDueAgorot(sale)
     platformOwed += due
+    reversed += reversedPayoutAgorot(sale)
     platformFee += Math.max(0, sale.platformFeeAgorot)
 
     const key = sale.settlementStatus ?? 'pending'
@@ -215,6 +277,7 @@ export function summarizeSettlement(input: {
 
   return {
     platformOwedAgorot: platformOwed,
+    reversedAgorot: reversed,
     tillCollectedAgorot: tillCollected,
     platformFeeAgorot: platformFee,
     byStatus: [...buckets.entries()]

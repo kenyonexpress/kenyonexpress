@@ -369,3 +369,77 @@ describe('reconcileSettlement', () => {
     })
   })
 })
+
+describe('the journal has to reverse what the statement reverses', () => {
+  // Two implementations of one rule, reading two tables: the supplier portal
+  // zeroes a refunded line's payout off `order_items.settlement_status`, and
+  // the journal zeroes it with a `supplier_debit` against the `charge_settled`
+  // that credited it. This check is what stops them drifting apart in silence,
+  // because a supplier statement and an admin settlement report that disagree
+  // by one refund look correct from either side alone.
+  const refundedLine = () => line({ settlementStatus: 'refunded' })
+  const debit = (overrides: Partial<JournalEvent> = {}): JournalEvent => ({
+    kind: 'supplier_debit',
+    orderId: 'order-1',
+    orderItemId: 'item-1',
+    paidOnSiteAgorot: 0,
+    commissionAgorot: 0,
+    supplierDueAgorot: 9_000,
+    idempotencyKey: 'supplier_debit:item-1',
+    ...overrides,
+  })
+
+  it('reports a refunded line whose supplier share is still standing', () => {
+    const report = run([refundedLine()], [charge()])
+    const found = report.findings.find((f) => f.kind === 'supplier_debit_missing')
+    expect(found).toMatchObject({
+      orderItemId: 'item-1',
+      expectedAgorot: 9_000,
+      actualAgorot: 0,
+    })
+    // Critical: the number it leaves wrong is one the admin settlement report
+    // pays out from.
+    expect(found?.severity).toBe('critical')
+  })
+
+  it('says nothing once the debit is there', () => {
+    const report = run([refundedLine()], [charge(), debit()])
+    expect(report.findings.map((f) => f.kind)).not.toContain('supplier_debit_missing')
+  })
+
+  it('says nothing about a line that was never credited', () => {
+    // A coupon splits 100/0. There is no supplier share to reverse, so the
+    // absence of a debit is correct rather than a gap.
+    const report = run(
+      [
+        line({
+          settlementStatus: 'refunded',
+          paidOnSiteAgorot: 1_800,
+          commissionAgorot: 1_800,
+          supplierImmediateAgorot: 0,
+          platformPercent: '100.00',
+        }),
+      ],
+      [charge({ paidOnSiteAgorot: 1_800, commissionAgorot: 1_800, supplierDueAgorot: 0 })],
+    )
+    expect(report.findings.map((f) => f.kind)).not.toContain('supplier_debit_missing')
+  })
+
+  it('says nothing about a line that is not reversed', () => {
+    const report = run([line({ settlementStatus: 'split_executed' })], [charge()])
+    expect(report.findings).toEqual([])
+  })
+
+  it('covers a cancelled line by the same rule', () => {
+    const report = run([line({ settlementStatus: 'cancelled' })], [charge()])
+    expect(report.findings.map((f) => f.kind)).toContain('supplier_debit_missing')
+  })
+
+  it('does not fire on a line paid before the journal existed', () => {
+    // No `charge_settled` to reverse, so there is nothing standing. The line is
+    // already counted as `beforeJournal` and accusing it twice would be noise.
+    const report = run([line({ settlementStatus: 'refunded', paidAtIso: BEFORE })], [])
+    expect(report.findings.map((f) => f.kind)).not.toContain('supplier_debit_missing')
+    expect(report.beforeJournal).toBe(1)
+  })
+})

@@ -459,7 +459,10 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
  * The journal rows a refund produces, per 094 and 106.
  *
  * One `refund_issued` for the order and one `supplier_debit` per supplier share
- * that was already released. Both carry POSITIVE amounts: 094's CHECK refuses
+ * the refund reverses -- whether or not it had been released, because the
+ * liability the debit cancels was created by `charge_settled` and that is
+ * written for every paid line. `metadata.released` keeps the two apart.
+ * Both carry POSITIVE amounts: 094's CHECK refuses
  * negatives on all four money columns on purpose, so the direction lives in the
  * `kind`, which is the column that is constrained to a known set.
  *
@@ -508,7 +511,7 @@ function buildRefundEvents(
       discount_agorot: 0,
       platform_percent_snapshot: null,
       supplier_split_percent_snapshot: null,
-      metadata: { payment_id: paymentId, reason: 'refund' },
+      metadata: { payment_id: paymentId, reason: 'refund', released: debit.released },
       idempotency_key: `supplier_debit:${debit.orderItemId}`,
       occurred_at: occurred,
     })

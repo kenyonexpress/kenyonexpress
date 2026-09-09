@@ -30,6 +30,7 @@ const line = (over: Partial<PayoutBreakdownLine> = {}): PayoutBreakdownLine => (
   grossAgorot: 10_000,
   platformFeeAgorot: 3_000,
   supplierPayoutAgorot: 7_000,
+  reversedPayoutAgorot: 0,
   settlementStatus: 'settled',
   paidAt: '2026-09-15T10:00:00Z',
   ...over,

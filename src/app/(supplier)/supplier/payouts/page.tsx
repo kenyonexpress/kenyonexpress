@@ -116,6 +116,17 @@ export default async function SupplierPayoutsPage() {
         <Summary label="מגיע לספק" value={formatIls(agorot(totals.supplierPayoutAgorot))} />
       </div>
 
+      {/* Shown only when there is something to explain. A payout total that
+          dropped by the value of a refunded sale, with nothing on the page
+          naming the refund, is a support call. */}
+      {totals.reversedPayoutAgorot > 0 ? (
+        <Summary
+          label="זיכויים שקוזזו"
+          value={formatIls(agorot(totals.reversedPayoutAgorot))}
+          hint="הוחזר ללקוח, אינו נכלל במגיע לספק"
+        />
+      ) : null}
+
       {lines.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-10 text-center text-sm text-gray-500">
           אין הזמנות ששולמו עדיין.
@@ -159,6 +170,11 @@ export default async function SupplierPayoutsPage() {
                   <p className="font-extrabold text-heading" dir="ltr">
                     ספק {formatIls(agorot(line.supplierPayoutAgorot))}
                   </p>
+                  {line.reversedPayoutAgorot > 0 ? (
+                    <p className="text-xs font-semibold text-rose-600" dir="ltr">
+                      זוכה {formatIls(agorot(line.reversedPayoutAgorot))}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </li>

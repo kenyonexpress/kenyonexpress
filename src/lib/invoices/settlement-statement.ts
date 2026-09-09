@@ -1,4 +1,4 @@
-import type { PayoutBreakdownLine } from '@/lib/supplier/dashboard'
+import { type PayoutBreakdownLine, isReversedLine } from '@/lib/supplier/dashboard'
 
 /**
  * One calendar month of a supplier's settlement, as a document rather than a
@@ -58,7 +58,18 @@ export interface SettlementStatement {
   lines: PayoutBreakdownLine[]
   grossAgorot: number
   platformFeeAgorot: number
+  /** Payable. Excludes every reversed line, so it is what will be transferred. */
   supplierPayoutAgorot: number
+  /**
+   * Reversed by refunds this month, and NOT included in `supplierPayoutAgorot`.
+   *
+   * Stated as its own total because a statement whose payout column silently
+   * dropped a sale the supplier remembers making is a statement they cannot
+   * reconcile. This is the number that accounts for the difference.
+   */
+  reversedPayoutAgorot: number
+  /** How many of the listed lines were reversed. */
+  refundedCount: number
   /** Lines whose money has actually been settled, of the lines listed. */
   settledCount: number
 }
@@ -87,11 +98,15 @@ export function buildSettlementStatement(input: {
   let grossAgorot = 0
   let platformFeeAgorot = 0
   let supplierPayoutAgorot = 0
+  let reversedPayoutAgorot = 0
+  let refundedCount = 0
   let settledCount = 0
   for (const line of lines) {
     grossAgorot += line.grossAgorot
     platformFeeAgorot += line.platformFeeAgorot
     supplierPayoutAgorot += line.supplierPayoutAgorot
+    reversedPayoutAgorot += line.reversedPayoutAgorot
+    if (line.reversedPayoutAgorot > 0 || isReversedLine(line.settlementStatus)) refundedCount++
     if (line.settlementStatus === 'settled' || line.settlementStatus === 'paid') settledCount++
   }
 
@@ -102,6 +117,8 @@ export function buildSettlementStatement(input: {
     grossAgorot,
     platformFeeAgorot,
     supplierPayoutAgorot,
+    reversedPayoutAgorot,
+    refundedCount,
     settledCount,
   }
 }
