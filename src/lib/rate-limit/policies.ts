@@ -112,6 +112,14 @@ export const RATE_LIMIT_POLICIES = {
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
   'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
+  // Once per login per browser, and only when the browser arrives carrying a
+  // guest list. Ten an hour is generous for a person signing in and out; it is
+  // a ceiling on a client-supplied batch, not on a button.
+  'wishlist-merge': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'guest wishlist merge at login, per user',
+  },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.

@@ -51,6 +51,18 @@ function code(source: string): string {
 /** The two files that render a header icon cluster: handheld, then desktop. */
 const CLUSTERS = ['src/components/layout/Header.tsx', 'src/components/layout/MastheadNav.tsx']
 
+/**
+ * The wishlist control, in either of the two shapes it has had.
+ *
+ * It was a bare `<Heart>` inside a `<Link>` in both files until 2026-09-09,
+ * when the counter arrived and the pair became `<WishlistNavLink>` -- the badge
+ * has to read client state, and duplicating that in two files is how the two
+ * headers drift. Matching either keeps this test about the RULE (one wishlist
+ * affordance, before the cart, at every breakpoint) rather than about which
+ * element currently spells it.
+ */
+const WISHLIST_CONTROL = /<(?:Heart|WishlistNavLink)\b/g
+
 /** Every component that makes up the page chrome above the fold. */
 const HEADER_CHROME = [
   'src/app/layout.tsx',
@@ -64,7 +76,7 @@ const HEADER_CHROME = [
 describe('the header icon cluster', () => {
   it.each(CLUSTERS)('renders a heart and a cart in %s, and nothing else', (file) => {
     const src = code(read(file))
-    expect(src.match(/<Heart\b/g) ?? [], 'the wishlist heart').toHaveLength(1)
+    expect(src.match(WISHLIST_CONTROL) ?? [], 'the wishlist heart').toHaveLength(1)
     expect(src.match(/<HeaderCart\b/g) ?? [], 'the cart').toHaveLength(1)
   })
 
@@ -72,7 +84,7 @@ describe('the header icon cluster', () => {
     const src = code(read(file))
     // RTL: first child renders rightmost, so heart-first is what puts the cart
     // on the left where live measures it.
-    expect(src.indexOf('<Heart')).toBeLessThan(src.indexOf('<HeaderCart'))
+    expect(src.search(WISHLIST_CONTROL)).toBeLessThan(src.indexOf('<HeaderCart'))
   })
 
   it.each(CLUSTERS)('carries no account icon in %s', (file) => {

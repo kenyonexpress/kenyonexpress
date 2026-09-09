@@ -3,8 +3,8 @@ import MastheadNav from '@/components/layout/MastheadNav'
 import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
 import SmartImage from '@/components/ui/SmartImage'
+import WishlistNavLink from '@/components/wishlist/WishlistNavLink'
 import { LOGO } from '@/lib/assets'
-import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -105,13 +105,11 @@ export default function SiteHeader() {
               first, cart second puts the cart back on the left and gives the
               heart live's x=57 slot. */}
           <div className="flex items-center gap-2 xl:hidden">
-            <Link
-              href="/account/wishlist"
-              aria-label="המועדפים שלי"
+            <WishlistNavLink
+              size={22}
+              strokeWidth={1.8}
               className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
-            >
-              <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
-            </Link>
+            />
             <HeaderCart />
           </div>
 

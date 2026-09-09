@@ -1,7 +1,6 @@
 import HeaderCart from '@/components/cart/HeaderCart'
 import RegionMenu from '@/components/layout/RegionMenu'
-import { Heart } from 'lucide-react'
-import Link from 'next/link'
+import WishlistNavLink from '@/components/wishlist/WishlistNavLink'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
@@ -46,14 +45,12 @@ export default function MastheadNav() {
         className="flex shrink-0 items-center gap-4 lg:gap-nav-gap"
         aria-label="פעולות חשבון ועגלה"
       >
-        <Link
-          href="/account/wishlist"
-          aria-label="המועדפים שלי"
-          className="-m-1 p-1 transition-opacity hover:opacity-70"
+        <WishlistNavLink
+          size={ICON.size}
+          strokeWidth={ICON.strokeWidth}
+          className="-m-1 inline-block p-1 transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}
-        >
-          <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
-        </Link>
+        />
 
         {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.
             The cluster is exactly two icons at every breakpoint -- heart then

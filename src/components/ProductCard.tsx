@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -177,6 +178,11 @@ function DealsProductCard({ product }: { product: Product }) {
             />
           ) : null}
         </Link>
+
+        {/* The heart. An overlay inside the image wrap, so it adds nothing to
+            the card's flow and cannot move a measured element. `.p_con__badge`
+            below sits at the opposite inline edge. */}
+        <WishlistHeart productId={product.id} productName={product.name_he} variant="card" />
 
         {hasDiscount && (
           <div className="p_con__badge">

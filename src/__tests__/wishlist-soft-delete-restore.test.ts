@@ -25,12 +25,13 @@ import { describe, expect, it } from 'vitest'
  * THE PREMISE THIS TEST WAS FILED UNDER WAS WRONG. It said "nothing writes
  * `wishlists` at all -- there is no `from('wishlists')` anywhere in src/",
  * and therefore that the feature did not exist and the finding was theory.
- * Measured 2026-09-09: `src/server/actions/reviews.ts` (toggleWishlist,
- * getWishlistSaved), `src/server/queries/wishlist.ts` (getMyWishlist,
- * getMyWishlistMarks), `src/app/(account)/account/wishlist/page.tsx`,
- * `src/components/product/WishlistButton.tsx`, a header entry, an account-nav
- * entry and a `wishlist-toggle` rate-limit policy all ship today. The
- * feature is live; only the soft delete is not reachable.
+ * Measured 2026-09-09: `src/server/actions/wishlist.ts` (toggleWishlist and
+ * its neighbours; they were in `reviews.ts` until the wishlist was finished
+ * that evening), `src/server/queries/wishlist.ts`,
+ * `src/app/(account)/account/wishlist/page.tsx`, the heart on every product
+ * card and on the product page, a counter in both headers, a guest list in
+ * `localStorage` merged at login, and two rate-limit policies all ship today.
+ * The feature is live; only the soft delete is not reachable.
  *
  * WHAT IS ACTUALLY UNREACHABLE, AND WHAT HOLDS IT. No src/ file sets
  * `deleted_at` on `wishlists` -- the toggle removes with a hard DELETE -- so
@@ -48,6 +49,18 @@ import { describe, expect, it } from 'vitest'
  * while nothing sets the column. The day the guard below goes red is the day
  * that decision has to be made, and it will be made against a reachable
  * failure instead of a hypothetical one.
+ *
+ * THE OBVIOUS ESCAPE HATCH IS ALSO CLOSED, and it is worth naming because it
+ * is the first thing anyone tries: clear the tombstone with a hard DELETE and
+ * insert a fresh row. Measured on production 2026-09-09, rolled back, as the
+ * owner with the correct auth.uid():
+ *
+ *   DELETE ... WHERE product_id = <tombstoned> AND user_id = <own>   0 rows
+ *
+ * Postgres applies the SELECT policy to the rows a DELETE reads for its WHERE
+ * clause, exactly as it does for UPDATE, so the filtered SELECT policy hides
+ * the row from the delete as well. Under 185 as applied, a soft-deleted
+ * wishlist row is reachable by the service role and by nothing else.
  *
  * THE CONSEQUENCE IF IT EVER IS REACHED, measured the same day, both runs
  * rolled back, as the owner:
@@ -118,7 +131,7 @@ describe('wishlists soft delete: the restore that does not work', () => {
     // 23505 is returned both by the double-click race and by a collision with
     // a hidden soft-deleted row. Only a re-read separates them, so the action
     // must not answer the error code alone.
-    const action = readFileSync(resolve(SRC, 'server/actions/reviews.ts'), 'utf8')
+    const action = readFileSync(resolve(SRC, 'server/actions/wishlist.ts'), 'utf8')
     const insertOnward = action.slice(action.indexOf('.insert({ user_id: user.id'))
     const untilReturn = insertOnward.slice(
       0,

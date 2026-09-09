@@ -4,17 +4,15 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { ALREADY_REVIEWED, NOT_VERIFIED, TABLE_MISSING, reviewSchema } from '@/lib/reviews/reviews'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
-import { revalidatePath } from 'next/cache'
 
 /**
- * Review submission and wishlist toggling, both on the USER client on purpose.
+ * Review submission, on the USER client on purpose.
  *
- * Neither action decides anything. The purchase-verification for a review is
- * the INSERT policy from migration 154, and the wishlist is owner-scoped by
- * its RLS; running on the user's own session means those policies are the
- * enforcement, and this file only translates their refusals into Hebrew. An
- * admin-client version of these writes would silently re-open everything the
- * policies close.
+ * The action decides nothing. The purchase-verification is the INSERT policy
+ * from migration 154; running on the user's own session means that policy is
+ * the enforcement, and this file only translates its refusals into Hebrew. An
+ * admin-client version of this write would silently re-open everything the
+ * policy closes.
  */
 
 export type ReviewActionState = { ok: boolean; error?: string }
@@ -88,101 +86,13 @@ export async function submitReview(formData: FormData): Promise<ReviewActionStat
   return withActionContext('reviews.submit', () => runSubmitReview(formData))
 }
 
-export type WishlistActionState = { ok: boolean; saved?: boolean; error?: string }
-
-async function runToggleWishlist(productId: string): Promise<WishlistActionState> {
-  if (typeof productId !== 'string' || !/^[0-9a-f-]{36}$/i.test(productId)) {
-    return { ok: false, error: 'מוצר לא תקין.' }
-  }
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'צריך להתחבר כדי לשמור מוצרים.' }
-
-  const allowed = await checkRateLimit(`wishlist-toggle:${user.id}`, 60, 3600)
-  if (!allowed) return { ok: false, error: 'יותר מדי פעולות. נסה שוב בעוד רגע.' }
-
-  const { data: existing, error: readError } = await supabase
-    .from('wishlists' as never)
-    .select('product_id')
-    .eq('product_id', productId)
-    .maybeSingle()
-  if (readError) {
-    if (readError.code === TABLE_MISSING) {
-      return { ok: false, error: 'רשימת המשאלות עוד לא פתוחה.' }
-    }
-    return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
-  }
-
-  if (existing) {
-    const { error } = await supabase
-      .from('wishlists' as never)
-      .delete()
-      .eq('product_id', productId)
-      .eq('user_id', user.id)
-    if (error) return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
-    revalidatePath('/account/wishlist')
-    return { ok: true, saved: false }
-  }
-
-  const { error } = await supabase
-    .from('wishlists' as never)
-    .insert({ user_id: user.id, product_id: productId } as never)
-
-  if (error) {
-    if (error.code !== ALREADY_REVIEWED) {
-      return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
-    }
-    // 23505 says the (user_id, product_id) pair is taken. It is taken by two
-    // different situations and the error code cannot tell them apart, so the
-    // re-read does. Measured against production 2026-09-09, both in
-    // transactions that were rolled back, as the owner with the real
-    // auth.uid():
-    //
-    //   concurrent double-click, live row       insert 23505, re-read 1 row
-    //   row soft-deleted (185's SELECT hides it) insert 23505, re-read 0 rows
-    //
-    // Only the first is "already saved". Answering the second the same way
-    // fills the heart while /account/wishlist stays empty -- a success the
-    // customer can see is false. See wishlist-soft-delete-restore.test.ts.
-    const { data: reread, error: rereadError } = await supabase
-      .from('wishlists' as never)
-      .select('product_id')
-      .eq('product_id', productId)
-      .maybeSingle()
-    // A re-read that failed proves nothing either, and this branch exists to
-    // stop reporting an unproven save, so it refuses on both.
-    if (rereadError != null || reread == null) {
-      return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
-    }
-  }
-  revalidatePath('/account/wishlist')
-  return { ok: true, saved: true }
-}
-
-export async function toggleWishlist(productId: string): Promise<WishlistActionState> {
-  return withActionContext('wishlist.toggle', () => runToggleWishlist(productId))
-}
-
-async function runGetWishlistSaved(productId: string): Promise<boolean> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return false
-  const { data, error } = await supabase
-    .from('wishlists' as never)
-    .select('product_id')
-    .eq('product_id', productId)
-    .maybeSingle()
-  return !error && data != null
-}
-
-/** Read-only, own rows only (RLS): lets the button paint its saved state. */
-export async function getWishlistSaved(productId: string): Promise<boolean> {
-  return withActionContext('wishlist.saved', () => runGetWishlistSaved(productId))
-}
+/**
+ * THE WISHLIST ACTIONS MOVED. `src/server/actions/wishlist.ts` holds
+ * toggleWishlist and its neighbours as of 2026-09-09. They lived here because
+ * they shared migration 154 and one paragraph of rationale with reviews, which
+ * is a fact about a .sql file and not about either feature; every wishlist
+ * import pulled the review zod schema and the rating maths along with it.
+ */
 
 export interface ReviewableItem {
   orderItemId: string

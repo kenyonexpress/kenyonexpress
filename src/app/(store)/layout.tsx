@@ -5,6 +5,7 @@ import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
+import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 // cart-page.css is imported by the root layout, one request for the whole
 // site. See the note there before moving it back down here.
 
@@ -29,28 +30,30 @@ import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <CartBootstrap />
-      {/* Measured live: the footer sits directly after the content (top 871 on
+      <WishlistProvider>
+        <CartBootstrap />
+        {/* Measured live: the footer sits directly after the content (top 871 on
           hot-deals) with white space below, i.e. no sticky footer. flex-1 would
           stretch main to the viewport and push the footer to the bottom, which is
           the 1218px vertical mismatch in the category compare. Keep min-h-screen
           for the background fill, but let the footer follow the content. */}
-      {/* First focusable element on the page: WCAG 2.4.1, which Israeli
+        {/* First focusable element on the page: WCAG 2.4.1, which Israeli
           standard 5568 adopts. The header is a masthead, a search bar, a
           category menu and a nav row, and it repeats on every page. */}
-      <SkipLink />
-      <div className="min-h-screen flex flex-col bg-white">
-        <SiteHeader />
-        {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
+        <SkipLink />
+        <div className="min-h-screen flex flex-col bg-white">
+          <SiteHeader />
+          {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
             leaves focus on the link, so the next Tab goes back into the header
             and the skip does nothing for keyboard users. */}
-        <main id="main-content" tabIndex={-1} className="w-full focus:outline-none">
-          {children}
-        </main>
-        <SiteFooter />
-      </div>
-      <WhatsAppFloat />
-      <DeferredStoreChrome />
+          <main id="main-content" tabIndex={-1} className="w-full focus:outline-none">
+            {children}
+          </main>
+          <SiteFooter />
+        </div>
+        <WhatsAppFloat />
+        <DeferredStoreChrome />
+      </WishlistProvider>
     </CartProvider>
   )
 }

@@ -7,6 +7,7 @@ import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
+import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
 import Link from 'next/link'
@@ -57,50 +58,54 @@ async function AccountSideNav() {
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <CartBootstrap />
-      {/* WCAG 2.4.1 Bypass Blocks, which Israeli standard 5568 adopts. This
+      <WishlistProvider>
+        <CartBootstrap />
+        {/* WCAG 2.4.1 Bypass Blocks, which Israeli standard 5568 adopts. This
           layout repeats a navigation block on every page it wraps, so a
           keyboard or screen-reader user needs a way past it. */}
-      <SkipLink />
-      <div className="min-h-screen flex flex-col bg-white">
-        <SiteHeader />
-        {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
+        <SkipLink />
+        <div className="min-h-screen flex flex-col bg-white">
+          <SiteHeader />
+          {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
             leaves focus on the skip link, so the next Tab returns to the nav
             and the skip does nothing for the users it exists for. */}
-        <main id="main-content" tabIndex={-1} className="flex-1 w-full focus:outline-none">
-          <div className="account-page">
-            <div className="account-page__inner">
-              <nav className="account-page__crumb" aria-label="פירורי לחם">
-                <Link href="/">עמוד הבית</Link>
-                <span aria-hidden="true"> ‹ </span>
-                <span>האזור האישי</span>
-              </nav>
+          <main id="main-content" tabIndex={-1} className="flex-1 w-full focus:outline-none">
+            <div className="account-page">
+              <div className="account-page__inner">
+                <nav className="account-page__crumb" aria-label="פירורי לחם">
+                  <Link href="/">עמוד הבית</Link>
+                  <span aria-hidden="true"> ‹ </span>
+                  <span>האזור האישי</span>
+                </nav>
 
-              <div className="account-shell">
-                {/* Holds the nav's box, not a spinner: the column is a fixed
+                <div className="account-shell">
+                  {/* Holds the nav's box, not a spinner: the column is a fixed
                     260px so the content beside it never moves, and the height is
                     the measured height of the real nav so the page below it does
                     not either. See .account-nav--pending in account.css. */}
-                <Suspense
-                  fallback={<div className="account-nav account-nav--pending" aria-hidden="true" />}
-                >
-                  <AccountSideNav />
-                </Suspense>
-                {/* Every /account page reads rows scoped to the signed-in user,
+                  <Suspense
+                    fallback={
+                      <div className="account-nav account-nav--pending" aria-hidden="true" />
+                    }
+                  >
+                    <AccountSideNav />
+                  </Suspense>
+                  {/* Every /account page reads rows scoped to the signed-in user,
                     so each one is request-time work. One boundary here covers
                     all ten rather than ten boundaries in ten files. */}
-                <div className="account-content">
-                  <Suspense fallback={null}>{children}</Suspense>
+                  <div className="account-content">
+                    <Suspense fallback={null}>{children}</Suspense>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </main>
-        <SiteFooter />
-      </div>
-      <CartDrawer />
-      <WhatsAppFloat />
-      <Toaster position="top-center" dir="rtl" richColors closeButton />
+          </main>
+          <SiteFooter />
+        </div>
+        <CartDrawer />
+        <WhatsAppFloat />
+        <Toaster position="top-center" dir="rtl" richColors closeButton />
+      </WishlistProvider>
     </CartProvider>
   )
 }

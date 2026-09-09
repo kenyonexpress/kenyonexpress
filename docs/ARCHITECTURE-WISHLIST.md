@@ -2,8 +2,13 @@
 
 KenyonExpress wishlist architecture (binding). 1:1 electro / live YITH Wishlist UX.
 
-Status: BINDING for `arch/wishlist-compare` (2026-07-30)
-Worktree: `/Users/ofir/kenyonexpress-web/ke-arch-wishlist` only. **Documentation only.**
+Status: **SHIPPED 2026-09-09, and this document is now partly HISTORY.** Read
+section 0.1 before section 2: the data model here is NOT what was built, and
+following it would produce a second, incompatible schema. Everything else --
+the non-negotiables, the Hebrew copy table, the parity map, the guest
+localStorage contract -- is what shipped and remains binding.
+
+Original status: BINDING for `arch/wishlist-compare` (2026-07-30), documentation only.
 Stack: Next.js App Router, Supabase Postgres + RLS, Hebrew RTL, Heebo, guest `localStorage` + login merge (same moment as `mergeGuestCart`).
 Companions: live masthead Heart → `/wishlist` (`MastheadNav.tsx`), footer `מועדפים`, PDP measured YITH link text `הוסף למועדפים` (`docs/coupon-page-measured.md`), cart merge in `src/server/actions/cart.ts`.
 
@@ -12,6 +17,73 @@ Live WP uses **YITH WooCommerce Wishlist**. This doc replaces that plugin with f
 **Product compare** (YITH Compare / electro compare bar) is **out of scope** here. Branch name `wishlist-compare` reserves the topic; ship wishlist first. Compare gets a sibling doc if needed.
 
 Confirm App Router APIs against `node_modules/next/dist/docs/` before shipping.
+
+---
+
+## 0.1 What was actually built, and where this document is wrong
+
+Written 2026-09-09, after the feature shipped. Measured against production and
+against the tree, not remembered.
+
+**THE DATA MODEL IN SECTION 2 IS SUPERSEDED.** That section designs two tables,
+`wishlists` (a list) plus `wishlist_items` (its rows), which is the shape YITH
+uses because YITH supports several named lists per customer. Section 0
+non-negotiable 4 then rules out several lists in v1, so the second table was
+carrying a feature the same document had already deferred: every read paid a
+join to reach a `wishlists` row that could only ever be one row per user.
+
+What migration `154_reviews_wishlist.sql` applied instead, on 2026-09-09, is one
+table:
+
+```sql
+public.wishlists (user_id uuid, product_id uuid, created_at timestamptz,
+                  PRIMARY KEY (user_id, product_id))
+```
+
+The PK is the UNIQUE pair, so "already saved" needs no separate constraint, and
+migration 185 later added `deleted_at` and cut the single owner-ALL policy into
+four per-command policies. Owner-only in all four directions, confirmed against
+production.
+
+`created_at`, not `added_at`. Same column, the name every other table in this
+schema uses.
+
+**THE ROUTE IS `/account/wishlist`, NOT `/wishlist`.** The list is per customer
+and behind a session, `src/proxy.ts` already gates `/account`, and the account
+shell already carries the side nav a customer needs to get back out. A
+top-level `/wishlist` would have been a second signed-in area with its own
+chrome. Both header hearts point at `/account/wishlist`.
+
+**MULTI-LIST NAMING IS GONE, not deferred.** With one table and no list row
+there is nothing to name, so `name_he` and `is_default` do not exist. Bringing
+several lists back is a migration, which is the honest cost.
+
+**WHAT SHIPPED BEYOND THE SCHEMA**, all on 2026-09-09:
+
+| Piece | Where |
+|---|---|
+| Toggle, remove, move-to-cart, merge | `src/server/actions/wishlist.ts` |
+| One shared saved-set, optimistic, rolls back | `src/components/wishlist/WishlistProvider.tsx` |
+| The heart, card overlay and PDP link style | `src/components/wishlist/WishlistHeart.tsx` |
+| The masthead counter | `src/components/wishlist/WishlistNavLink.tsx` |
+| The page and its two per-row buttons | `src/app/(account)/account/wishlist/page.tsx` |
+| Guest list and its parsing | `src/lib/wishlist/guest-storage.ts` |
+
+**THE MERGE IS CLIENT-INITIATED, and section 5.1 is wrong about where it goes.**
+That section wires `mergeGuestWishlist` into `auth/callback/route.ts` beside
+`mergeGuestCart`. It cannot go there. The guest CART is a cookie, so the server
+holds it at the moment the session is created; the guest WISHLIST is
+`localStorage`, which no route handler can read. The provider sends it the first
+time it observes a session, and clears the browser copy only on a merge the
+server confirmed.
+
+**ONE TRAP THAT IS LIVE AND HAS NO FIX IN CODE.** Under 185 as applied, a
+soft-deleted wishlist row cannot be seen, updated, deleted or replaced by its
+owner: Postgres applies the SELECT policy to the rows an UPDATE or a DELETE
+reads, so the `deleted_at is null` filter hides the row from all three. Only the
+service role can reach it. Nothing sets that column today and a test holds that
+line. `src/__tests__/wishlist-soft-delete-restore.test.ts` carries the
+measurements.
 
 ---
 
@@ -1249,3 +1321,4 @@ E2E (Playwright): guest add → reload → still there; login → guest cleared 
 | Date | Change |
 |---|---|
 | 2026-07-30 | Initial binding wishlist architecture on `arch/wishlist-compare` |
+| 2026-09-09 | Shipped. Section 0.1 added: one-table schema, `/account/wishlist`, client-initiated merge. Section 2 and section 5.1 superseded by it. |

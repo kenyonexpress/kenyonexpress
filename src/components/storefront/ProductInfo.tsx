@@ -5,6 +5,7 @@ import CityTag from '@/components/geo/CityTag'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
@@ -377,6 +378,14 @@ export default function ProductInfo({
       >
         {outOfStock ? 'אזל מהמלאי' : 'קנה עכשיו'}
       </button>
+
+      {/* The wishlist slot the module header names. Live renders it link-style
+          under the buy controls, ~13px, label `הוסף למועדפים`; this is that row
+          carrying a real saved state instead of a placeholder. It is BELOW the
+          buy buttons and not between them on purpose -- a save is not a
+          purchase, and putting it in the buy stack competes with the two
+          controls the page exists for. */}
+      <WishlistHeart productId={productId} productName={name} variant="link" className="mt-2" />
 
       <div className="pdp-summary__tags">
         <span>
