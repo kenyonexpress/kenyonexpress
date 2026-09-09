@@ -1,5 +1,54 @@
 # `migrations/pending/`
 
+## 2026-09-09: 198 WRITTEN, not applied — the bell, and an empty publication
+
+`198_in_app_notifications.sql`. `notification_outbox` is an **email queue**: an
+address, a payload, a dedupe key, drained by a cron, and a row leaves it when
+the mail is sent. It is a record of what we tried to **send**, not of what a
+customer has been **told**. Nothing in it can back a bell with an unread count,
+and reusing it for one would mean an "unread" that clears when a cron runs
+rather than when somebody reads it.
+
+`push_subscriptions` (179) and the WhatsApp tables (173) are the other channels
+and are applied and complete. The in-app one has never existed: a customer who
+is on the site has no way to see that their voucher was redeemed unless they
+happen to open the mail.
+
+**The realtime trap, measured:**
+
+```
+select * from pg_publication_tables where pubname = 'supabase_realtime'  ->  0 rows
+```
+
+The publication is **empty**. A `postgres_changes` subscription against a table
+that is not in it connects, reports `SUBSCRIBED`, and receives nothing, ever —
+no error on either side. Nothing in this codebase subscribes to anything today,
+so it is not currently a live bug. It is the bug the bell would have had. The
+`ALTER PUBLICATION` is therefore part of the feature, and `REPLICA IDENTITY
+FULL` with it: without it an UPDATE's WAL record carries no `user_id` and the
+filter Supabase applies cannot be evaluated.
+
+**The client may mark read and nothing else, enforced by a column grant.** An
+UPDATE policy scoped to the owner would let a customer rewrite the title of
+their own notification — harmless until one is quoted in a support
+conversation. `GRANT UPDATE (read_at)` is the narrower tool and it is enforced
+by the grant system rather than by a `WITH CHECK` somebody has to get exactly
+right.
+
+**`notification_preferences` has no CHECK on `kind`, deliberately.** Which kinds
+may be switched off is a product decision that moves, and a constraint would
+mean a migration each time one crossed between required and optional. The list
+lives in `src/lib/notifications/preferences.ts`, which checks `REQUIRED_KINDS`
+**before** reading a row — so a row for a required kind is inert rather than
+dangerous, which is what makes the missing constraint safe.
+
+**Verified against production inside a rolled-back `DO` block:**
+
+```
+in_publication=1  absolute_href=REFUSED  mark_read=ALLOWED
+rewrite_title=REFUSED  other_users_visible=0
+```
+
 ## 2026-09-09: 197 WRITTEN, not applied — somewhere to put a delivery rate
 
 `197_shipping_zones_and_pickup.sql`. Nothing charges for delivery anywhere:

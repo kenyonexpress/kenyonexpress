@@ -5,11 +5,13 @@ import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
+import NotificationBell from '@/components/notifications/NotificationBell'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
 import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
+import { unreadCount } from '@/server/queries/notifications'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -44,14 +46,35 @@ async function AccountSideNav() {
     redirect(`/login?next=${encodeURIComponent('/account')}`)
   }
 
-  const [profile, wallet] = await Promise.all([getAccountProfile(), getWalletSummary()])
+  const [profile, wallet, unread] = await Promise.all([
+    getAccountProfile(),
+    getWalletSummary(),
+    unreadCount(),
+  ])
 
   return (
-    <AccountNav
-      fullName={profile?.fullName ?? null}
-      email={profile?.email ?? user.email ?? ''}
-      walletBalanceAgorot={wallet.balanceAgorot}
-    />
+    <>
+      {/*
+        THE BELL LIVES HERE AND NOT IN THE STOREFRONT HEADER, and the reason is
+        measurable rather than aesthetic. `SiteHeader` is under the pixel-parity
+        gate, which has to stay under 11% at 380, 768 and 1440; adding an
+        element to it changes the header's geometry at every width, and the
+        first thing that would report is a gate about a design reference, not
+        about notifications.
+
+        The account area is also where a bell is worth having: it is the only
+        place a customer is signed in by construction, and the count is a
+        property of a session.
+      */}
+      <div className="mb-3 flex justify-end">
+        <NotificationBell userId={user.id} initialUnread={unread} />
+      </div>
+      <AccountNav
+        fullName={profile?.fullName ?? null}
+        email={profile?.email ?? user.email ?? ''}
+        walletBalanceAgorot={wallet.balanceAgorot}
+      />
+    </>
   )
 }
 

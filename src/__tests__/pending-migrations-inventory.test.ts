@@ -379,6 +379,19 @@ describe('the pending migration inventory', () => {
       // seeded fake sends a customer to a locked door. Proven in a rolled-back
       // DO block: 5 zones, none charging, no pickup rows, anon INSERT refused.
       '197_shipping_zones_and_pickup.sql',
+      // 198 WRITTEN 2026-09-09, not applied. The bell, and the settings behind
+      // it. `notification_outbox` is an EMAIL QUEUE -- a record of what we tried
+      // to SEND, not of what a customer has been TOLD -- so it cannot back an
+      // unread count without an "unread" that clears when a cron runs. The
+      // ALTER PUBLICATION at the bottom is part of the feature, not
+      // housekeeping: `supabase_realtime` contains ZERO tables (measured), and
+      // a postgres_changes subscription against a table outside it connects,
+      // reports SUBSCRIBED and receives nothing, with no error on either side.
+      // Proven against production in a rolled-back DO block: the table joined
+      // the publication, an absolute href was refused by the CHECK, the owning
+      // customer could mark read but NOT rewrite a title (the column grant),
+      // and another user's rows were invisible.
+      '198_in_app_notifications.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
