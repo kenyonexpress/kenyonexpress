@@ -1,5 +1,71 @@
 # `migrations/pending/`
 
+## 2026-09-09: 197 WRITTEN, not applied — somewhere to put a delivery rate
+
+`197_shipping_zones_and_pickup.sql`. Nothing charges for delivery anywhere:
+`orders` has no shipping column, the cart view has no shipping line,
+`calculateSettlement` takes no shipping input, and all 44 active products carry
+`requires_shipping = true`.
+
+**That is a decision, not a gap.** `TopBar` prints "משלוח מהיר חינם" on every
+page of the site with no qualifier, and the product page promises 3-7 business
+days with no fee beside it. The code and the banner agree.
+
+**What is missing is a place to put a rate.** "Free" is expressed as an
+*absence*, and an absence cannot be changed carefully: there is nowhere to write
+"Eilat costs more", nowhere to write "free over ₪199", and no way to tell
+whether free-everywhere was chosen or merely never built. This makes the policy
+a value, seeded with exactly what the site already does.
+
+**Not wired into checkout, and not by oversight.** Charging for delivery needs
+rates nobody has set and contradicts a sentence on every page.
+`src/lib/shipping/zones.test.ts` holds the two together: a surcharge configured
+while the banner still says free fails the suite, in both directions.
+
+**`eilat` is separate from `south`** and it is the only split here that is not
+arbitrary — a four-hour drive past the last distribution point, priced apart by
+every Israeli courier, and exactly where a flat national rate loses money.
+
+**`pickup_points` is created EMPTY and stays that way.** A pickup point is a
+physical arrangement with a real shop, not a row. A seeded example is the single
+worst thing this file could do, because the failure lands on a customer standing
+outside a locked door holding an order number.
+
+Proven in a rolled-back `DO` block: `zones=5 charging=0 pickup_rows=0
+anon_insert=REFUSED`.
+
+## 2026-09-09: 196 WRITTEN, not applied — the tracking number nobody could see
+
+`196_shipped_notification_carries_tracking.sql`. One key in one
+`jsonb_build_object`, and it closes a chain that was broken at the last link.
+
+155 gave `order_items` a `carrier` and a `tracking_number`, and both are applied.
+The admin records them. 183 gave the order a trigger that mails the customer
+"ההזמנה שלך נשלחה" with a button reading **"למעקב אחרי ההזמנה"** — pointing at
+`/account/orders`, which rendered the word "נשלח" and **nothing else**.
+
+So the number was captured, stored, and shown to nobody, and the mail raised
+exactly the question the page it linked to could not answer. The customer's only
+remaining move was to write to support for a string already in the database.
+
+The page half is fixed in code. This is the mail half: the trigger built its
+payload from `orders` and a COUNT of items and never looked at either column.
+
+**`shipments` is an ARRAY, because the data is per line.** 155 put carrier and
+tracking on `order_items` and said why: an order-level shipments table "would
+fork fulfillment state into two places for the multi-supplier order that is this
+platform's normal case". Suppliers ship separately, so three suppliers is three
+parcels with three numbers, and a payload carrying one pair would be wrong in
+the case the model was built for. It is NULL rather than `[]` when no line has a
+number, and the email builder reads a missing array as "say nothing".
+
+**The firing condition, dedupe key and EXCEPTION clause are byte-for-byte the
+ones production carries**, read out with `pg_get_functiondef` rather than
+reconstructed from 183 — restating a function is how a live guard gets dropped
+by accident. Proven in a rolled-back `DO` block: the trigger fired once and the
+payload carried exactly the line with a real number, excluding the one whose
+tracking was whitespace.
+
 ## 2026-09-09: 195 WRITTEN, not applied — a sold-out page that learns nothing
 
 `195_stock_waitlist.sql`. `ProductInfo` printed "אזל מהמלאי", disabled the

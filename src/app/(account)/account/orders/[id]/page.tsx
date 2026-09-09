@@ -89,6 +89,47 @@ export default async function OrderDetailPage({ params }: Props) {
                   ? ' · נמסר'
                   : ''}
               </p>
+              {/*
+                The tracking line, and the reason it exists at the top of this
+                file's history: the shipped email says "למעקב אחרי ההזמנה" and
+                links here, and this page used to answer with the word "נשלח"
+                and nothing else. The number was captured by the admin, stored
+                by 155, and shown to nobody.
+
+                The number is printed whether or not a link could be built. A
+                carrier with no verified tracking URL still gets its name and
+                its number, because that is enough to phone with -- and it is
+                the one fact the customer opened the page for.
+              */}
+              {line.tracking && (
+                <p className="account-row__meta">
+                  {line.tracking.carrierLabel}
+                  {line.tracking.trackingNumber ? (
+                    <>
+                      {line.tracking.carrierLabel ? ' · ' : ''}
+                      <span dir="ltr" className="font-mono">
+                        {line.tracking.trackingNumber}
+                      </span>
+                    </>
+                  ) : null}
+                  {line.tracking.url && (
+                    <>
+                      {' · '}
+                      <a
+                        href={line.tracking.url}
+                        target="_blank"
+                        // `noreferrer` as well as `noopener`: the target is a
+                        // third party and the path a customer arrived by is
+                        // not theirs to read.
+                        rel="noopener noreferrer"
+                      >
+                        מעקב אצל השליח
+                      </a>
+                    </>
+                  )}
+                </p>
+              )}
+
               {line.supplier && (
                 <p className="account-row__meta">
                   {line.supplier.name}

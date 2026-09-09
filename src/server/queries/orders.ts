@@ -8,6 +8,7 @@ import {
   resolveOrderItemGeneration,
 } from '@/lib/commerce/order-money-columns'
 import { type Agorot, agorot } from '@/lib/money'
+import { type TrackingView, trackingView } from '@/lib/shipping/carriers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
@@ -62,6 +63,15 @@ export interface OrderLine {
   balanceDueAgorot: Agorot
   settlementStatus: SettlementState
   itemStatus: string
+  /**
+   * What the customer needs to find the parcel, or null.
+   *
+   * 155 gave `order_items` a carrier and a tracking number, the admin records
+   * them, and until now nothing on the customer's side read either. The shipped
+   * email says "למעקב אחרי ההזמנה" and links to this page; before this field
+   * the page answered with the word "נשלח" and no number.
+   */
+  tracking: TrackingView | null
   supplier: OrderLineSupplier | null
   vouchers: OrderVoucher[]
 }
@@ -222,7 +232,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     await admin
       .from('order_items')
       .select(
-        `id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status`,
+        `id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status, carrier, tracking_number`,
       )
       .eq('order_id', order.id),
     'orders.items_read_failed',
@@ -240,6 +250,8 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
         balance_due_agorot: number | null
         settlement_status: string
         item_status: string
+        carrier: string | null
+        tracking_number: string | null
       }[]
     | null
 
@@ -358,6 +370,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       balanceDueAgorot: agorot(item.balance_due_agorot ?? 0),
       settlementStatus: asSettlementState(item.settlement_status),
       itemStatus: item.item_status,
+      // Null unless there is something to say. `trackingView` keeps a number
+      // whose carrier it does not recognise, because the number is the fact the
+      // customer came for and a missing link is not a reason to withhold it.
+      tracking: trackingView(item.carrier, item.tracking_number),
       supplier: supplier
         ? {
             id: supplier.id,

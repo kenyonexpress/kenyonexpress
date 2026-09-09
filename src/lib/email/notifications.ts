@@ -1,5 +1,6 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
+import { trackingView } from '@/lib/shipping/carriers'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE } from '@/styles/tokens'
 
@@ -230,6 +231,34 @@ export function buildOrderShippedEmail(
   const when = hebrewDateTime(payload.fulfilled_at)
   const url = `${trimSite(siteUrl)}/account/orders`
 
+  /**
+   * The tracking numbers, in the mail that announces the shipment.
+   *
+   * This email used to say "למעקב אחרי ההזמנה" and link to a page that printed
+   * the word "נשלח" and nothing else -- so it raised exactly the question the
+   * page it linked to could not answer. The page shows the numbers now; they
+   * are repeated here because a customer reading the mail on a phone should not
+   * have to log in to learn who has their parcel.
+   *
+   * A LIST, NOT A PAIR, AND THAT IS THE GRAIN THE DATA IS IN. `carrier` and
+   * `tracking_number` live on `order_items`, one per LINE, because this
+   * platform's normal order mixes suppliers -- and suppliers ship separately.
+   * An order with three suppliers is three parcels with three numbers, and a
+   * mail that printed one of them would be wrong in the case the model was
+   * built for. `shipments` also accepts the flat pair as a single entry, so a
+   * caller with one parcel does not have to wrap it.
+   *
+   * Empty when the payload carries neither, which is every shipment enqueued
+   * before `tg_orders_notify_shipped` learned to send them (196). The mail then
+   * reads exactly as it did before rather than showing empty labels.
+   */
+  const shipments = (Array.isArray(payload.shipments) ? payload.shipments : [payload])
+    .map((entry) => {
+      const row = (entry ?? {}) as Record<string, unknown>
+      return trackingView(asText(row.carrier), asText(row.tracking_number))
+    })
+    .filter((view): view is NonNullable<typeof view> => view !== null)
+
   const subject = `ההזמנה שלך נשלחה · ${ref}`
   const greeting = name ? `שלום ${name},` : 'שלום,'
 
@@ -241,6 +270,13 @@ export function buildOrderShippedEmail(
     `מספר הזמנה: ${ltrText(ref)}`,
     items > 0 ? `פריטים: ${items}` : '',
     when ? `טופלה ב-${when}` : '',
+    ...shipments.flatMap((s) =>
+      [
+        s.carrierLabel ? `שליח: ${s.carrierLabel}` : '',
+        s.trackingNumber ? `מספר מעקב: ${ltrText(s.trackingNumber)}` : '',
+        s.url ? `מעקב אצל השליח: ${ltrText(s.url)}` : '',
+      ].filter((line) => line !== ''),
+    ),
     '',
     `למעקב אחרי ההזמנה: ${ltrText(url)}`,
   ]
@@ -255,6 +291,15 @@ export function buildOrderShippedEmail(
           <div>מספר הזמנה: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(ref)}</strong></div>
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
           ${when ? `<div style="color:${MUTED}">טופלה ב-${escapeHtml(when)}</div>` : ''}
+          ${shipments
+            .map(
+              (s) => `<div style="margin-top:8px">
+            ${s.carrierLabel ? `<div>שליח: <strong>${escapeHtml(s.carrierLabel)}</strong></div>` : ''}
+            ${s.trackingNumber ? `<div>מספר מעקב: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(s.trackingNumber)}</strong></div>` : ''}
+            ${s.url ? `<div><a href="${escapeHtml(s.url)}" style="color:${INK}">מעקב אצל השליח</a></div>` : ''}
+          </div>`,
+            )
+            .join('')}
         </div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למעקב אחרי ההזמנה</a>
       </div>`,

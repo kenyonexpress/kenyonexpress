@@ -357,6 +357,28 @@ describe('the pending migration inventory', () => {
       // malformed address and an unknown product are both refused, and a person
       // already notified can ask again for the next restock.
       '195_stock_waitlist.sql',
+      // 196 WRITTEN 2026-09-09, not applied. One key in one jsonb_build_object.
+      // The chain it completes: 155 gave order_items a carrier and a tracking
+      // number (applied), the admin records them, 183 mails the customer
+      // "ההזמנה שלך נשלחה" with a button reading "למעקב אחרי ההזמנה" -- and the
+      // page that button points at rendered the word "נשלח" and nothing else.
+      // The number was captured, stored, and shown to nobody. `shipments` is an
+      // ARRAY because carrier and tracking are per LINE, which is 155's own
+      // decision for the multi-supplier order this platform treats as normal.
+      // Proven against production in a rolled-back DO block: the trigger fired
+      // once and the payload carried exactly the line with a real number, the
+      // one whose tracking was whitespace excluded.
+      '196_shipped_notification_carries_tracking.sql',
+      // 197 WRITTEN 2026-09-09, not applied, and it changes nothing a customer
+      // sees on purpose. Nothing charges for delivery anywhere today, and that
+      // is a decision rather than a gap: TopBar prints "משלוח מהיר חינם" on
+      // every page. What is missing is a PLACE to put a rate -- "free" is
+      // currently expressed as an absence, and an absence cannot be changed
+      // carefully. Seeded with exactly today's policy. `pickup_points` is
+      // created EMPTY: a pickup point is an arrangement with a real shop, and a
+      // seeded fake sends a customer to a locked door. Proven in a rolled-back
+      // DO block: 5 zones, none charging, no pickup rows, anon INSERT refused.
+      '197_shipping_zones_and_pickup.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

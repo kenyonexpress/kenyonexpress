@@ -10,6 +10,7 @@ import {
 } from '@/lib/supplier/orders'
 import { requireSupplierRole } from '@/lib/supplier/rbac'
 import { getSupplierOrders } from '@/server/queries/supplier'
+import MarkShippedForm from './MarkShippedForm'
 
 export const metadata = { title: 'הזמנות' }
 
@@ -21,12 +22,20 @@ export const metadata = { title: 'הזמנות' }
  * that handing the till phone to a shift worker does not hand them the business
  * terms.
  *
- * There is no "mark shipped" button, and its absence is the design.
- * ARCHITECTURE-SUPPLIER-PORTAL.md section 5.2 routes every fulfillment
- * transition through a Server Action that writes `audit_log`, and section 3.2
- * gives suppliers SELECT on `orders` and nothing else. A button here would need
- * a write path that does not exist yet; shipping one that quietly used the
- * service role would be the audit hole those two sections are written to close.
+ * THERE IS A "mark shipped" BUTTON NOW, AND THIS PARAGRAPH USED TO SAY THERE
+ * WAS NOT. What it said was right and it named the missing thing rather than
+ * forbidding it: ARCHITECTURE-SUPPLIER-PORTAL.md section 5.2 routes every
+ * fulfillment transition through a Server Action that writes `audit_log`,
+ * section 3.2 gives suppliers SELECT on `orders` and nothing else, and "a button
+ * here would need a write path that does not exist yet; shipping one that
+ * quietly used the service role would be the audit hole those two sections are
+ * written to close."
+ *
+ * `src/server/actions/supplier/shipping.ts` is that write path. It uses the
+ * service role and is not that hole, because the caller's supplier comes from
+ * their membership rather than from the request and appears in the WHERE of
+ * both the read and the UPDATE -- a line that is not theirs updates zero rows.
+ * Every transition writes an audit row naming the supplier's user.
  */
 
 const TONE_CLASS = {
@@ -90,6 +99,18 @@ function OrderCard({ order }: { order: SupplierOrder }) {
                 {' · '}
                 כמות {line.quantity}
               </p>
+
+              {/*
+                The write path 5.2 asked for. The header above used to end "a
+                button here would need a write path that does not exist yet";
+                `src/server/actions/supplier/shipping.ts` is that path -- an
+                audited Server Action whose UPDATE is scoped to the caller's
+                own supplier in the WHERE, so the service role it uses is not
+                the hole 3.2 warns about.
+              */}
+              {line.productType === 'physical' && line.itemStatus === 'pending' && (
+                <MarkShippedForm orderItemId={line.orderItemId} />
+              )}
             </div>
             <div className="shrink-0 text-end text-xs">
               <p className="text-gray-500">
