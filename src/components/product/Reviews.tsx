@@ -1,4 +1,5 @@
 import { getProductReviews } from '@/server/queries/reviews'
+import ReportReview from './ReportReview'
 import ReviewFormGate from './ReviewFormGate'
 
 /**
@@ -47,6 +48,30 @@ export default async function Reviews({ productId }: { productId: string }) {
               <p className="mb-1 text-sm font-semibold text-heading">{review.title}</p>
             ) : null}
             {review.body ? <p className="text-sm text-gray-800">{review.body}</p> : null}
+
+            {/*
+              THE SUPPLIER'S ANSWER, indented and labelled, under the review it
+              answers. A one-star review with no reply and a one-star review with
+              "we are sorry, the masseuse was ill that day and we refunded you"
+              are different documents; the second is the one that makes a shopper
+              trust the shop.
+
+              Null until 199 is applied, so this renders nothing today and the
+              list looks exactly as it did.
+            */}
+            {review.supplier_reply ? (
+              <div className="mt-3 border-black/10 border-s-2 ps-3">
+                <p className="text-xs font-semibold text-heading">תגובת בית העסק</p>
+                <p className="text-sm text-gray-800">{review.supplier_reply}</p>
+                {review.supplier_replied_at ? (
+                  <time dateTime={review.supplier_replied_at} className="text-xs text-gray-500">
+                    {new Date(review.supplier_replied_at).toLocaleDateString('he-IL')}
+                  </time>
+                ) : null}
+              </div>
+            ) : null}
+
+            <ReportReview reviewId={review.id} />
           </li>
         ))}
       </ul>

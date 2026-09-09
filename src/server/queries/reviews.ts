@@ -28,6 +28,17 @@ export interface ApprovedReview {
   title: string | null
   body: string | null
   created_at: string
+  /**
+   * The supplier's public answer, or null.
+   *
+   * Requires 199. Until it is applied the column does not exist, and the select
+   * below asks for it through the optional-column probe rather than by name --
+   * naming a column this database lacks fails the WHOLE query with 42703 and
+   * blanks the review list, which is the outage shape this codebase has already
+   * shipped twice.
+   */
+  supplier_reply: string | null
+  supplier_replied_at: string | null
 }
 
 export interface ProductReviews {
@@ -36,6 +47,49 @@ export interface ProductReviews {
 }
 
 const NONE: ProductReviews = { reviews: [], summary: null }
+
+/**
+ * The list read, widest column set first.
+ *
+ * TWO MIGRATIONS ARE OPTIONAL HERE AND THEY LANDED AT DIFFERENT TIMES: `title`
+ * ships in 189 and `supplier_reply`/`supplier_replied_at` in 199, so a
+ * deployment can legitimately have neither, the first, or both. Naming a column
+ * this database lacks fails the WHOLE select with 42703 -- which would empty a
+ * list of real reviews to hide one optional field, an outage shape this
+ * codebase has already shipped twice.
+ *
+ * A LADDER RATHER THAN A PROBE, because the sets are nested: each rung drops
+ * the newest optional column and retries, so the answer is always the widest
+ * set this database actually has. Ordered newest-migration-first, so a fully
+ * migrated deployment succeeds on the first attempt and pays nothing.
+ */
+async function readList(
+  supabase: ReturnType<typeof createPublicClient>,
+  productId: string,
+  limit: number,
+) {
+  const COLUMNS = [
+    'id, rating, title, body, created_at, supplier_reply, supplier_replied_at',
+    'id, rating, title, body, created_at',
+    'id, rating, body, created_at',
+  ]
+
+  let result: Awaited<ReturnType<typeof run>> | null = null
+  const run = (columns: string) =>
+    supabase
+      .from('reviews' as never)
+      .select(columns)
+      .eq('product_id', productId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+  for (const columns of COLUMNS) {
+    result = await run(columns)
+    if (result.error?.code !== UNDEFINED_COLUMN) return result
+  }
+  return result as NonNullable<typeof result>
+}
 
 export async function getProductReviews(productId: string, limit = 20): Promise<ProductReviews> {
   'use cache'
@@ -46,30 +100,7 @@ export async function getProductReviews(productId: string, limit = 20): Promise<
   // aggregate cannot stop at a page boundary), the list is capped for display.
   // `limit 0` is a legitimate call -- "rating only, no list" for the JSON-LD.
   const [listResult, ratingsResult] = await Promise.all([
-    limit > 0
-      ? // `title` ships in pending/189. Naming a column the deployment does not
-        // have fails the whole select with 42703, which would empty a list of
-        // real reviews to hide one optional headline, so the read is retried
-        // without it. `optional-columns.ts` documents the same failure mode.
-        supabase
-          .from('reviews' as never)
-          .select('id, rating, title, body, created_at')
-          .eq('product_id', productId)
-          .eq('status', 'approved')
-          .order('created_at', { ascending: false })
-          .limit(limit)
-          .then((result) =>
-            result.error?.code === UNDEFINED_COLUMN
-              ? supabase
-                  .from('reviews' as never)
-                  .select('id, rating, body, created_at')
-                  .eq('product_id', productId)
-                  .eq('status', 'approved')
-                  .order('created_at', { ascending: false })
-                  .limit(limit)
-              : result,
-          )
-      : Promise.resolve({ data: [], error: null }),
+    limit > 0 ? readList(supabase, productId, limit) : Promise.resolve({ data: [], error: null }),
     supabase
       .from('reviews' as never)
       .select('rating')
@@ -92,6 +123,8 @@ export async function getProductReviews(productId: string, limit = 20): Promise<
         title: row.title ?? null,
         body: row.body ?? null,
         created_at: row.created_at ?? '',
+        supplier_reply: row.supplier_reply ?? null,
+        supplier_replied_at: row.supplier_replied_at ?? null,
       }))
   const ratings = (ratingsResult.data ?? []) as unknown as { rating: number }[]
   return { reviews, summary: summarizeRatings(ratings.map((row) => row.rating)) }
@@ -157,6 +190,48 @@ export async function getRatingSummaries(
  * synthetic ids) simply come back with `rating: null`, which is the same
  * outcome as an unrated product and needs no special case at the call site.
  */
+/**
+ * Every approved rating across one supplier's products, folded into one figure.
+ *
+ * THE HONEST AGGREGATE FOR A BUSINESS. A shopper judging a spa does not care
+ * which of its three treatments a review was left on; the question they are
+ * asking is about the spa. `getRatingSummaries` answers the per-product
+ * question and this answers the per-business one, and they are different
+ * numbers on purpose.
+ *
+ * NOT capped and not paged: an average that stopped at a page boundary would be
+ * an average of whichever reviews happened to sort first, which is a number
+ * that looks precise and means nothing. Same reason `getProductReviews` reads
+ * the ratings separately from the list it displays.
+ *
+ * Returns null with no approved reviews, so the caller omits the
+ * `AggregateRating` entirely rather than publishing a zero.
+ */
+export async function getSupplierRating(supplierId: string): Promise<RatingSummary | null> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+
+  const supabase = createPublicClient()
+  const { data, error } = await supabase
+    .from('reviews' as never)
+    .select('rating, products!inner(supplier_id)')
+    .eq('status', 'approved')
+    .eq('products.supplier_id', supplierId)
+
+  if (error) {
+    // The table is missing on a pre-154 deployment. Silent, and null: a
+    // supplier page must not fail over structured data.
+    if (error.code !== TABLE_MISSING) {
+      log.warn('reviews.supplier_rating_failed', { supplierId, code: error.code ?? null })
+    }
+    return null
+  }
+
+  const ratings = ((data ?? []) as unknown as { rating: number }[]).map((row) => row.rating)
+  return summarizeRatings(ratings)
+}
+
 export async function attachRatings<T extends { id: string }>(
   products: readonly T[],
 ): Promise<(T & { rating: RatingSummary | null })[]> {

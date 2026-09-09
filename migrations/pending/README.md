@@ -1,5 +1,59 @@
 # `migrations/pending/`
 
+## 2026-09-09: 199 WRITTEN, not applied — a dormant grant, woken by a new policy
+
+`199_review_replies_and_reports.sql`. It adds the supplier's public answer to a
+review and a reader's way to object to one. **The `REVOKE` in it is the point,
+not tidying.**
+
+154 shipped `reviews` with a verified-purchase INSERT policy, a moderation
+status and a soft delete. What it had no room for was a conversation: a one-star
+review with no reply and one with "we are sorry, the masseuse was ill that day
+and we have refunded you" are different documents, and only the second makes a
+shopper trust the shop.
+
+**The finding is what a new policy does to an old grant.** `authenticated`
+already held a **table-wide UPDATE grant** on `reviews`, over every column. It
+is inert today for exactly one reason: there is no UPDATE policy on the table,
+so RLS denies every UPDATE regardless of the grant.
+
+Adding the supplier reply policy **ends that**. The first version of this file
+did, and a probe against production came back:
+
+```
+rewrite_body=ALLOWED
+```
+
+— a supplier could have rewritten the rating and the body of a review about
+their own business. The column grant beneath was not wrong; it was never
+reached, because the wider grant already covered every column. This is the shape
+172's RESTRICTIVE policies were installed for, arriving from the other
+direction: **a grant that protects nothing until somebody adds a policy, at
+which point it protects nothing.**
+
+Re-probed after `REVOKE UPDATE ON public.reviews FROM authenticated`:
+
+```
+update_grants=3  own_reply=ALLOWED  rewrite_body=REFUSED
+foreign_reply=NO ROWS  duplicate_report=REFUSED  read_queue=REFUSED
+```
+
+Exactly the three reply columns; a supplier may answer a review of their own
+product and not one of anybody else's; a second report from the same person is
+refused by the unique index; and a reporter cannot read the moderation queue —
+deliberately, because letting them read their own report back tells them whether
+an admin has acted, which turns a moderation decision into a negotiation with
+whoever objected loudest.
+
+**Reports are resolved rather than deleted.** "We looked and it was fine" is the
+answer that stops the same review being re-queued by the next report, and it is
+only expressible if the row survives.
+
+**Measured: `reviews` holds 0 rows.** Everything here, and everything 154
+shipped, is inert until the first customer writes one. That is said rather than
+hidden, because "the reply feature works" and "the reply feature has never had a
+review to reply to" are different claims.
+
 ## 2026-09-09: 198 WRITTEN, not applied — the bell, and an empty publication
 
 `198_in_app_notifications.sql`. `notification_outbox` is an **email queue**: an

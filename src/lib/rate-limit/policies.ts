@@ -111,6 +111,11 @@ export const RATE_LIMIT_POLICIES = {
   // key on -- requiring one at the moment a shopper finds an empty shelf would
   // trade the only signal of interest for a signup form.
   waitlist: { limit: 5, windowSeconds: 3600, reason: 'back-in-stock mail, per IP' },
+  // Higher than a mail-sending form because it sends nothing: the ceiling is
+  // there to stop ONE person objecting to two hundred reviews in a sitting,
+  // which turns the moderation queue into a denial of service against the admin
+  // reading it. The one-per-reporter unique index handles the other direction.
+  review_report: { limit: 20, windowSeconds: 3600, reason: 'review abuse reports, per IP' },
 
   // Added when this layer was rebased onto main: `referral-code` landed on main
   // after the table was first written, and the static audit below is what

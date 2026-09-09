@@ -175,6 +175,78 @@ function buildOfferNode(input: ProductJsonLdInput, url: string): JsonLdNode | nu
   return offer
 }
 
+export interface SupplierJsonLdInput {
+  name: string
+  /** Absolute or site-relative; made absolute here. */
+  url: string
+  city: string | null
+  address: string | null
+  phone: string | null
+  logoUrl: string | null
+  description: string | null
+  rating: { average: number; count: number } | null
+  siteUrl: string
+}
+
+/**
+ * The supplier page, as a business search engines can place.
+ *
+ * `LocalBusiness` and not `Organization`, because that is what these are: a
+ * spa, a restaurant, a cabin, each with an address a customer drives to and a
+ * phone they call. `Organization` describes a company; `LocalBusiness` is the
+ * type that makes an address and an opening question meaningful, and it is what
+ * puts a business in a map result rather than only in a web result.
+ *
+ * THE ADDRESS IS OMITTED WHEN THERE IS NOTHING TO PUT IN IT. Measured
+ * 2026-09-09: of twelve suppliers, **zero** have an address and six have a
+ * phone. A `PostalAddress` node with an empty `streetAddress` is a claim about
+ * a location we do not have, and a structured-data error for search engines
+ * that check it -- worse than the absence, because the absence is honest.
+ *
+ * THE RATING IS OMITTED BELOW ONE REVIEW, for the reason the product node
+ * already gives: an `AggregateRating` over zero reviews is a fabricated claim
+ * and search engines penalise exactly that. `reviews` holds 0 rows in
+ * production, so this is the branch every supplier takes today.
+ */
+export function buildSupplierJsonLd(input: SupplierJsonLdInput): JsonLdNode {
+  const site = input.siteUrl.replace(/\/+$/, '')
+  const node: JsonLdNode = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: input.name,
+    url: absolute(site, input.url),
+  }
+
+  if (input.description) node.description = input.description
+  if (input.logoUrl) node.image = absolute(site, input.logoUrl)
+  if (input.phone) node.telephone = input.phone
+
+  // Built only from the fields that exist. `addressCountry` is the one value
+  // that is always true of this platform's suppliers and it is not enough on
+  // its own, so it rides along with a real street or city rather than standing
+  // as an address by itself.
+  if (input.address || input.city) {
+    node.address = {
+      '@type': 'PostalAddress',
+      ...(input.address ? { streetAddress: input.address } : {}),
+      ...(input.city ? { addressLocality: input.city } : {}),
+      addressCountry: 'IL',
+    }
+  }
+
+  if (input.rating && input.rating.count > 0) {
+    node.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: input.rating.average,
+      reviewCount: input.rating.count,
+      bestRating: 5,
+      worstRating: 1,
+    }
+  }
+
+  return node
+}
+
 export interface BreadcrumbEntry {
   name: string
   /** Site-relative path, e.g. `/product/x`. */

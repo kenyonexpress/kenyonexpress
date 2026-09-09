@@ -71,6 +71,7 @@
 | `supplier-lead` | 5 | 1 h | supplier lead mail |
 | `newsletter` | 5 | 1 h | newsletter subscription mail |
 | `waitlist` | 5 | 1 h | back-in-stock mail, per IP |
+| `review_report` | 20 | 1 h | review abuse reports, per IP |
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |
 | `admin-voucher-redeem` | 30 | 1 h | admin manual voucher burn, per staff user |
 | `admin-voucher-resend` | 30 | 1 h | admin resend of the coupon email, per staff user |

@@ -2,6 +2,8 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import SupplierStorefrontHeader from '@/components/storefront/SupplierStorefrontHeader'
+import { buildSupplierJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { siteUrl } from '@/lib/site-url'
 import {
   SUPPLIER_PAGE_SIZE,
   isSupplierId,
@@ -9,7 +11,7 @@ import {
   loadSupplierStorefrontCached,
   loadSupplierStorefrontProductsCached,
 } from '@/lib/supplier-storefront'
-import { attachRatings } from '@/server/queries/reviews'
+import { attachRatings, getSupplierRating } from '@/server/queries/reviews'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -62,8 +64,42 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
   const supplier = await loadSupplierStorefrontCached(id)
   if (!supplier) notFound()
 
+  /**
+   * The supplier as a business search engines can place.
+   *
+   * `LocalBusiness`, not `Organization`: these are spas, restaurants and cabins
+   * with an address a customer drives to. This page had NO structured data at
+   * all, while every product page has had a `Product` node with an
+   * `aggregateRating` since 154 -- so the business behind the products was
+   * invisible to a map result.
+   *
+   * The rating folds every approved review across this supplier's products,
+   * which is the honest aggregate for a BUSINESS: a shopper judging a spa does
+   * not care which of its three treatments a review was left on. It is omitted
+   * entirely below one review, and `reviews` holds 0 rows in production, so
+   * today it is always omitted.
+   */
+  const supplierRating = await getSupplierRating(id)
+  const jsonLd = buildSupplierJsonLd({
+    name: supplier.name,
+    url: `/s/${id}`,
+    city: supplier.city ?? null,
+    address: supplier.address ?? null,
+    phone: supplier.contactPhone ?? null,
+    logoUrl: supplier.logoUrl ?? null,
+    description: null,
+    rating: supplierRating,
+    siteUrl: siteUrl(),
+  })
+
   return (
     <div className="category-page mx-auto max-w-6xl px-4 py-8">
+      {/* eslint-disable-next-line react/no-danger -- jsonLdScript, allowlisted */}
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: jsonLdScript is the allowlisted serialiser
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+      />
       <SupplierStorefrontHeader supplier={supplier} />
 
       <Suspense fallback={<CategoryGridSkeleton count={SUPPLIER_PAGE_SIZE} />}>

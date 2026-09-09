@@ -392,6 +392,17 @@ describe('the pending migration inventory', () => {
       // customer could mark read but NOT rewrite a title (the column grant),
       // and another user's rows were invisible.
       '198_in_app_notifications.sql',
+      // 199 WRITTEN 2026-09-09, not applied, and the REVOKE in it is the whole
+      // point rather than tidying. `authenticated` already held a TABLE-WIDE
+      // UPDATE grant on `reviews`, inert only because no UPDATE policy existed.
+      // Adding the supplier reply policy would have made it live: the first
+      // version of the file was probed against production and came back
+      // `rewrite_body=ALLOWED`, meaning a supplier could have rewritten the
+      // rating and body of a review about their own business. Re-probed after
+      // the revoke: update_grants=3, own_reply=ALLOWED, rewrite_body=REFUSED,
+      // another supplier's review NO ROWS, a duplicate report REFUSED, and a
+      // reporter reading the queue REFUSED.
+      '199_review_replies_and_reports.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
