@@ -1,4 +1,5 @@
 import PasskeyManager from '@/components/account/PasskeyManager'
+import ReplayOptInToggle from '@/components/account/ReplayOptInToggle'
 import { listPasskeys } from '@/server/actions/passkeys'
 
 export const metadata = { title: 'אבטחה וכניסה' }
@@ -26,6 +27,7 @@ export default async function SecurityPage() {
           </p>
         </section>
       )}
+      <ReplayOptInToggle />
     </>
   )
 }

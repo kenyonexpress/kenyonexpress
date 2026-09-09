@@ -93,6 +93,30 @@ describe('trackEvent routing', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
+  it('folds person properties into $set on the fetch path', async () => {
+    const { trackEvent } = await freshModule('phc_test')
+
+    trackEvent('$set', {}, { distinctId: 'user-9', set: { cashback_tier: 'gold' } })
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const requestInit = (fetchSpy.mock.calls[0] as unknown[])[1] as { body: string }
+    const body = JSON.parse(requestInit.body)
+    expect(body.properties.$set).toEqual({ cashback_tier: 'gold' })
+    expect(body.distinct_id).toBe('user-9')
+  })
+
+  it('folds person properties into $set on the SDK path too', async () => {
+    const { trackEvent } = await freshModule('phc_test')
+    const capture = vi.fn()
+    parkedWindow.__ke_posthog = { capture }
+
+    trackEvent('page_view', { route: '/' }, { set: { cashback_tier: 'bronze' } })
+
+    expect(capture).toHaveBeenCalledTimes(1)
+    const properties = (capture.mock.calls[0] as unknown[])[1] as Record<string, unknown>
+    expect(properties.$set).toEqual({ cashback_tier: 'bronze' })
+  })
+
   it('hands the replay loader the same id events are keyed on', async () => {
     const { currentDistinctId } = await freshModule('phc_test')
 

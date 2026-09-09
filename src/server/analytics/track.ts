@@ -6,6 +6,7 @@ import type { ServerEventName } from '@/lib/analytics/events'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { POSTHOG_ID_COOKIE, isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { syncCashbackTierPersonProperty } from '@/server/analytics/cashback-tier'
 import { cookies } from 'next/headers'
 
 // Server-side analytics writes. Three rules hold everywhere in this file:
@@ -100,13 +101,12 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // Fired before the awaited RPC rather than after it, because `trackEvent`
     // returns synchronously and a slow or failing database round trip must not
     // decide whether the funnel event was sent.
+    const distinctId = serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
+      anonymousId,
+      userId: input.userId,
+    })
     if (isPostHogEnabled()) {
-      trackEvent(input.eventName, postHogProps(input), {
-        distinctId: serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
-          anonymousId,
-          userId: input.userId,
-        }),
-      })
+      trackEvent(input.eventName, postHogProps(input), { distinctId })
     }
 
     const admin = createAdminClient()
@@ -169,6 +169,14 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
         detail:
           'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/180.',
       })
+    }
+
+    // Every trackServerEvent call is a wallet-relevant money moment, so the
+    // person's cashback_tier is refreshed here, AFTER the funnel event went
+    // out and the first-party write settled. Best effort inside its own
+    // module; a failure costs a stale cohort label, nothing else.
+    if (input.userId) {
+      await syncCashbackTierPersonProperty(input.userId, distinctId)
     }
   } catch (error) {
     log.error('analytics.track_failed', { eventName: input.eventName, err: error })
