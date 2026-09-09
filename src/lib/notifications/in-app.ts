@@ -123,10 +123,22 @@ export function buildInAppContent(
       }
     }
     case 'order_shipped': {
-      const tracking = text(payload, 'tracking_number')
+      // The trigger writes `shipments: [{carrier, tracking_number}]`, one entry
+      // per line that HAS a number, and no top-level `tracking_number` at all
+      // (`tg_orders_notify_shipped`, read from production 2026-09-10). Reading
+      // the flat key left this body empty on every shipped order.
+      //
+      // The carrier is named and the number is not, for the reason the SMS and
+      // push bodies give: a long LTR tracking number inside an RTL sentence
+      // renders in a plausible but wrong order, and a wrong number is worse
+      // than none because the customer types it into a courier's site and is
+      // told it does not exist. It is on the order page, isolated properly.
+      const shipments = Array.isArray(payload.shipments) ? payload.shipments : []
+      const first = (shipments[0] ?? null) as Record<string, unknown> | null
+      const carrier = first ? text(first, 'carrier') : null
       return {
         title_he: 'ההזמנה שלך נשלחה',
-        body_he: tracking ? `מספר מעקב: ${tracking}` : null,
+        body_he: carrier ? `נשלח עם ${carrier}. פרטי המעקב בעמוד ההזמנה.` : null,
         href: '/account/orders',
       }
     }
@@ -145,13 +157,27 @@ export function buildInAppContent(
         href: '/account/coupons',
       }
     case 'voucher_expiring': {
-      const days = integer(payload, 'days_left')
+      // `days_remaining`, NOT `days_left`. The key was measured against
+      // production on 2026-09-10: `enqueue_expiring_voucher_notices` builds
+      // the payload with `'days_remaining', v_bucket`, and the email and push
+      // legs both read that name. In-app read a key that is never present, so
+      // `days` was always null and the body always said "it expires today" --
+      // including for the seven-day bucket, which is the one that runs most
+      // often. Not a missing detail: a customer told a voucher expires today
+      // when it expires next week goes to the shop for nothing.
+      const days = integer(payload, 'days_remaining')
       return {
         title_he: 'שובר שלך עומד לפוג',
-        // "in 0 days" is today, and saying "in 0 days" is how a reminder stops
-        // being read. Negative would mean the sweep is late, and a wrong tense
-        // is worse than no detail.
-        body_he: days !== null && days > 0 ? `נותרו ${days} ימים למימוש.` : 'הוא פג היום.',
+        // Hebrew has a real dual, so "נותרו 1 ימים" and "נותרו 2 ימים" both
+        // read wrong. Same three forms the push leg uses.
+        body_he:
+          days === null || days <= 0
+            ? 'הוא פג היום.'
+            : days === 1
+              ? 'הוא פג מחר.'
+              : days === 2
+                ? 'הוא פג בעוד יומיים.'
+                : `הוא פג בעוד ${days} ימים.`,
         href: '/account/coupons',
       }
     }
@@ -162,7 +188,13 @@ export function buildInAppContent(
         href: '/account/coupons',
       }
     case 'refund_completed': {
-      const amount = integer(payload, 'amount_agorot')
+      // `refunded_agorot` is what `refundOrder` enqueues, measured against the
+      // call site. `amount_agorot` is what `cashback_credited` uses, and
+      // reading it here left every refund notification with an empty body.
+      // Both names are accepted rather than only the right one: this row is
+      // the customer's record that money came back, and a body that is blank
+      // because of a key is worse than one filled from either spelling.
+      const amount = integer(payload, 'refunded_agorot') ?? integer(payload, 'amount_agorot')
       return {
         title_he: 'הזיכוי בוצע',
         // Signed on the wire in some payloads; a refund is always a return TO

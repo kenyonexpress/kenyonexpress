@@ -81,9 +81,28 @@ function shekels(agorotValue: number): string {
  * at a till, with a queue behind them.
  */
 function voucherIssued(payload: Record<string, unknown>): SmsMessage | null {
-  const code = text(payload, 'code')
+  // THE CODE IS NESTED, and reading it flat is why this template could never
+  // have rendered. `tg_orders_notify_paid` builds the payload with
+  // `'vouchers', <jsonb_agg of {code, product_name, supplier_name, ...}>` and
+  // no top-level `code` (read from production 2026-09-10). The WhatsApp
+  // builder already reads `vouchers[0]`; this one read `payload.code`, got
+  // null, and returned null -- which the sender reports as "no SMS template
+  // for voucher_issued", indistinguishable from a kind that owes no SMS.
+  //
+  // The flat form is still accepted, because a direct caller outside the
+  // outbox (a resend from an admin screen) has one voucher and no envelope.
+  const vouchers = Array.isArray(payload.vouchers) ? payload.vouchers : []
+  const first = (vouchers[0] ?? null) as Record<string, unknown> | null
+  const code = (first ? text(first, 'code') : null) ?? text(payload, 'code')
   if (!code) return null
-  const product = text(payload, 'product_name')
+  const product = (first ? text(first, 'product_name') : null) ?? text(payload, 'product_name')
+
+  // A multi-coupon order names NO code. Two codes is two more segments and a
+  // message that has to be read carefully at a till; the account page shows
+  // them all, side by side, with the shop each belongs to.
+  if (vouchers.length > 1) {
+    return message('voucher_issued', `${vouchers.length} הקופונים שלך מוכנים. הקודים באזור האישי.`)
+  }
 
   const body = product
     ? `הקופון שלך ל${product} מוכן. קוד: ⁨${code}⁩`
@@ -120,7 +139,14 @@ function voucherExpiring(payload: Record<string, unknown>): SmsMessage | null {
  * The carrier is named; the number is on the order page, isolated properly.
  */
 function orderShipped(payload: Record<string, unknown>): SmsMessage | null {
-  const carrier = text(payload, 'carrier')
+  // Same envelope as the in-app leg: the trigger writes
+  // `shipments: [{carrier, tracking_number}]`, one entry per line that has a
+  // number, and no top-level `carrier`. Read flat, every message lost the
+  // carrier's name and fell back to the generic body.
+  const shipments = Array.isArray(payload.shipments) ? payload.shipments : []
+  const firstShipment = (shipments[0] ?? null) as Record<string, unknown> | null
+  const carrier =
+    (firstShipment ? text(firstShipment, 'carrier') : null) ?? text(payload, 'carrier')
   const body = carrier
     ? `ההזמנה שלך יצאה לדרך עם ${carrier}. פרטי המעקב באזור האישי.`
     : 'ההזמנה שלך יצאה לדרך. פרטי המעקב באזור האישי.'

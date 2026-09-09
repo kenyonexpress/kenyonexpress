@@ -60,12 +60,60 @@ describe('the content itself', () => {
     expect(buildInAppContent('voucher_issued', { vouchers: [{}] })?.title_he).toBe('השובר שלך מוכן')
   })
 
+  it('reads the key the enqueuer actually writes', () => {
+    // THIS TEST USED TO PASS WITH `days_left`, AND THAT IS THE WHOLE POINT.
+    // `enqueue_expiring_voucher_notices` writes `days_remaining` -- measured
+    // against production 2026-09-10, and the email and push legs both read
+    // that name. In-app read `days_left`, so `days` was always null and the
+    // body always said "it expires today", including for the seven-day bucket.
+    // The test asserted the same wrong key as the code, so both agreed and
+    // neither described the queue.
+    expect(buildInAppContent('voucher_expiring', { days_remaining: 7 })?.body_he).toBe(
+      'הוא פג בעוד 7 ימים.',
+    )
+    expect(buildInAppContent('voucher_expiring', { days_left: 7 })?.body_he).not.toBe(
+      'הוא פג בעוד 7 ימים.',
+    )
+  })
+
   it('does not say "0 days left" when a voucher expires today', () => {
     // A reminder that says "in 0 days" is how a reminder stops being read.
-    expect(buildInAppContent('voucher_expiring', { days_left: 0 })?.body_he).toBe('הוא פג היום.')
-    expect(buildInAppContent('voucher_expiring', { days_left: 7 })?.body_he).toBe(
-      'נותרו 7 ימים למימוש.',
+    expect(buildInAppContent('voucher_expiring', { days_remaining: 0 })?.body_he).toBe(
+      'הוא פג היום.',
     )
+  })
+
+  it('uses the Hebrew dual rather than a suffix', () => {
+    // "נותרו 1 ימים" and "נותרו 2 ימים" both read wrong to a speaker, and this
+    // body is read by a customer deciding whether to go today.
+    expect(buildInAppContent('voucher_expiring', { days_remaining: 1 })?.body_he).toBe(
+      'הוא פג מחר.',
+    )
+    expect(buildInAppContent('voucher_expiring', { days_remaining: 2 })?.body_he).toBe(
+      'הוא פג בעוד יומיים.',
+    )
+  })
+
+  it('fills the refund body from the key refundOrder enqueues', () => {
+    // `refundOrder` writes `refunded_agorot`; this builder read
+    // `amount_agorot`, which is `cashback_credited`'s key, so every refund
+    // notification arrived with an empty body.
+    expect(buildInAppContent('refund_completed', { refunded_agorot: 9_500 })?.body_he).toBe(
+      '₪95 חזרו אליך.',
+    )
+  })
+
+  it('names the carrier from the shipments envelope', () => {
+    // `tg_orders_notify_shipped` writes `shipments: [{carrier, tracking_number}]`
+    // and no top-level `tracking_number`. The tracking number itself stays off
+    // the body: a long LTR number inside an RTL sentence renders in a
+    // plausible but wrong order, and a wrong one sends the customer to a
+    // courier's site to be told it does not exist.
+    const content = buildInAppContent('order_shipped', {
+      shipments: [{ carrier: 'צ׳יטה', tracking_number: 'RR123456789IL' }],
+    })
+    expect(content?.body_he).toBe('נשלח עם צ׳יטה. פרטי המעקב בעמוד ההזמנה.')
+    expect(content?.body_he).not.toContain('RR123456789IL')
   })
 
   it('refuses a price_drop whose payload is not a drop', () => {

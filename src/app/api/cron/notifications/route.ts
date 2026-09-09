@@ -7,6 +7,7 @@ import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { pushOutboxRow } from '@/lib/push/dispatch'
 import { bearerMatches } from '@/lib/security/constant-time'
+import { sendOutboxSms } from '@/lib/sms/outbox'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendOutboxWhatsapp } from '@/lib/whatsapp/outbox'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -121,6 +122,8 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   let whatsappFailed = 0
   let inApp = 0
   let inAppSkipped = 0
+  let smsSent = 0
+  let smsFailed = 0
 
   /** 23505: this outbox row already has its in-app notification. */
   const DUPLICATE = new Set(['23505'])
@@ -242,6 +245,20 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
           const wa = await sendOutboxWhatsapp(admin, row)
           if (wa === 'sent') whatsapped++
           else if (wa === 'failed') whatsappFailed++
+
+          // THE FIFTH LEG, and until now `lib/sms` had no caller at all:
+          // `sendTransactionalSms` was the only function in the repository
+          // that sends an SMS and nothing invoked it, so templates, opt-outs,
+          // the status webhook and the cost tracking were a finished feature
+          // that could not fire.
+          //
+          // Rides the same exactly-once pending->sent transition WhatsApp
+          // does, and for a paid channel that matters more: without a status
+          // column of its own there is no retry, and no retry is the correct
+          // failure for a message that costs money each time it is attempted.
+          const sms = await sendOutboxSms(admin, row, preferences)
+          if (sms === 'sent') smsSent++
+          else if (sms === 'failed') smsFailed++
         } else if (result.skipped) {
           // No API key is not a failure of this row. Counting it as an attempt
           // would burn the whole queue's retries on a machine that was never
@@ -340,6 +357,8 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     whatsappFailed,
     inApp,
     inAppSkipped,
+    smsSent,
+    smsFailed,
   })
 }
 
