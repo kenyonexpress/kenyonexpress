@@ -817,6 +817,17 @@ describe('the pending migration inventory', () => {
       // Both proven against production by impersonating a real customer inside
       // a rolled-back transaction, and the fix re-proven the same way.
       '218_profile_trigger_and_wallet_grant.sql',
+      // 219 WRITTEN 2026-09-09, not applied. `infra_costs` + `infra_budgets`,
+      // because NOT ONE billing credential exists in this project -- so the
+      // manual figure is the working path and has to persist somewhere an
+      // operator can correct. `amount_micro` is the same argued exception to
+      // the agorot rule as 216, `month` is a date CHECKed to the first, and the
+      // uniqueness includes `kind` because one provider carries both a
+      // subscription and usage -- collapsing them would make the projection
+      // extrapolate a subscription. Probed against production: a mid-month
+      // date, a duplicate provider/month/kind, an unknown provider and a
+      // negative cost were each refused, and fixed and variable coexist.
+      '219_infra_costs.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

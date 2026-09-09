@@ -1,5 +1,46 @@
 # `migrations/pending/`
 
+## 2026-09-09: 219 WRITTEN, not applied - the cost ledger, because nothing can fetch a bill
+
+`219_infra_costs.sql`. `infra_costs` and `infra_budgets`.
+
+**Why a table rather than four API clients.** Measured the same day: NOT ONE
+billing credential exists in this project. No Vercel token (and no project link
+either), no Supabase management token, no Upstash MANAGEMENT key, no Cloudflare
+token. `src/lib/costs/providers.ts` names the exact variable each would need.
+So the manual figure is the working path, not a fallback, and it has to persist
+somewhere an operator can correct it. An API pull later writes the same rows
+with `source = 'api'`, and the two stay distinguishable because a typed figure
+is a recollection and a fetched one is a measurement.
+
+**`amount_micro`, not agorot** - the same argued exception as 216: vendor costs
+in USD quoted to five decimal places, where agorot would need an FX rate the row
+does not have and would round a $0.0075 unit to 1 agora. The integer half of the
+rule is not relaxed and the file refuses to apply if the column is not an
+integer type.
+
+**`month` is a `date` CHECKed to the first of a month**, not a text `'2026-09'`.
+A text month cannot be compared, ordered or windowed without parsing, and every
+reader would parse it slightly differently; the CHECK is what stops it drifting
+into "the day somebody entered the figure".
+
+**The uniqueness includes `kind`**, and that is the one that matters. One
+provider legitimately carries both a subscription and usage - a Vercel Pro seat
+is fixed and its bandwidth overage is not - and collapsing them would make the
+month-end projection extrapolate a subscription, which on day 3 says the month
+will cost ten times the bill.
+
+**Admin-only in both directions.** What the platform pays is the cost side of
+every margin the shop makes; a supplier or a customer reading it learns what the
+operator can afford. There is no self-read to write because these rows belong to
+nobody.
+
+**Verified against production without applying**, in a rolled-back `DO` block: a
+mid-month date was refused, a second row for the same provider/month/kind was
+refused (it would silently double the month), an unknown provider and a negative
+cost were refused, fixed and variable coexist for one provider, and `anon` could
+not read while `authenticated` could not write.
+
 ## 2026-09-09: 218 WRITTEN, not applied - a trigger that fails every customer profile save, and the money column it accidentally guards
 
 `218_profile_trigger_and_wallet_grant.sql`. **Found while writing 217, not

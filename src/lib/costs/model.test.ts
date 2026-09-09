@@ -1,0 +1,166 @@
+import { describe, expect, it } from 'vitest'
+import {
+  type CostLine,
+  MEANINGFUL_ORDER_FLOOR,
+  checkBudget,
+  formatMicro,
+  perOrder,
+  projectMonth,
+} from './model'
+
+/**
+ * The two ways a cost dashboard lies, both asserted here rather than described.
+ */
+
+const USD = (amountMicro: number, kind: 'fixed' | 'variable', provider = 'p'): CostLine => ({
+  provider,
+  amountMicro,
+  currency: 'USD',
+  kind,
+  source: 'manual',
+})
+
+describe('projecting the month', () => {
+  it('does NOT extrapolate a subscription', () => {
+    // THE TRAP. $20 of Vercel charged whole on day 1, seen on day 3: a linear
+    // projection says $200 and the month will cost $20. An alert that fires on
+    // that number is an alert nobody reads by the second month.
+    const projection = projectMonth([USD(20_000_000, 'fixed')], {
+      dayOfMonth: 3,
+      daysInMonth: 30,
+      currency: 'USD',
+    })
+    expect(projection.projectedMicro).toBe(20_000_000)
+  })
+
+  it('extrapolates only what accrues', () => {
+    // $3 of usage over 3 days is $30 over 30.
+    const projection = projectMonth([USD(3_000_000, 'variable')], {
+      dayOfMonth: 3,
+      daysInMonth: 30,
+      currency: 'USD',
+    })
+    expect(projection.projectedMicro).toBe(30_000_000)
+  })
+
+  it('adds a whole subscription to an extrapolated usage', () => {
+    const projection = projectMonth([USD(20_000_000, 'fixed'), USD(3_000_000, 'variable')], {
+      dayOfMonth: 3,
+      daysInMonth: 30,
+      currency: 'USD',
+    })
+    expect(projection).toMatchObject({
+      fixedMicro: 20_000_000,
+      variableMicro: 3_000_000,
+      spentMicro: 23_000_000,
+      projectedMicro: 50_000_000,
+    })
+  })
+
+  it('uses the real length of the month rather than assuming 30', () => {
+    const february = projectMonth([USD(2_800_000, 'variable')], {
+      dayOfMonth: 28,
+      daysInMonth: 28,
+      currency: 'USD',
+    })
+    expect(february.projectedMicro).toBe(2_800_000)
+  })
+
+  it('does not divide by zero on the first day', () => {
+    const projection = projectMonth([USD(1_000_000, 'variable')], {
+      dayOfMonth: 0,
+      daysInMonth: 31,
+      currency: 'USD',
+    })
+    expect(projection.projectedMicro).toBe(31_000_000)
+  })
+
+  it('drops a foreign currency rather than inventing a rate, and says so', () => {
+    // A converted total looks authoritative and is wrong by whatever the rate
+    // has moved since. The omission is reported instead.
+    const projection = projectMonth(
+      [USD(10_000_000, 'fixed'), { ...USD(50_000_000, 'fixed'), currency: 'ILS' }],
+      { dayOfMonth: 15, daysInMonth: 30, currency: 'USD' },
+    )
+    expect(projection.spentMicro).toBe(10_000_000)
+    expect(projection.mixedCurrency).toBe(true)
+  })
+
+  it('is quiet about currency when there is nothing to drop', () => {
+    const projection = projectMonth([USD(10_000_000, 'fixed')], {
+      dayOfMonth: 15,
+      daysInMonth: 30,
+      currency: 'USD',
+    })
+    expect(projection.mixedCurrency).toBe(false)
+  })
+})
+
+describe('the budget threshold', () => {
+  it('fires on the PROJECTION, not on what is already spent', () => {
+    // An alert that waits for the money to be gone is a receipt.
+    const verdict = checkBudget(120_000_000, 100_000_000)
+    expect(verdict).toMatchObject({ breached: true, overMicro: 20_000_000, percentOfBudget: 120 })
+  })
+
+  it('does not fire under the ceiling', () => {
+    expect(checkBudget(90_000_000, 100_000_000).breached).toBe(false)
+  })
+
+  it('does not fire exactly at the ceiling', () => {
+    expect(checkBudget(100_000_000, 100_000_000).breached).toBe(false)
+  })
+
+  it('never fires against a budget nobody set', () => {
+    // Alerting against a ceiling of zero is how a dashboard teaches its reader
+    // to dismiss it.
+    expect(checkBudget(999_000_000, 0).breached).toBe(false)
+    expect(checkBudget(999_000_000, -5).breached).toBe(false)
+  })
+})
+
+describe('cost per order', () => {
+  const projection = projectMonth([USD(30_000_000, 'fixed'), USD(2_000_000, 'variable')], {
+    dayOfMonth: 30,
+    daysInMonth: 30,
+    currency: 'USD',
+  })
+
+  it('refuses to call a subscription divided by four a cost per order', () => {
+    // Production had FOUR orders when this was written. $32 / 4 = $8.00 looks
+    // authoritative and moves by 25% with one more sale.
+    const economics = perOrder(projection, 4)
+    expect(economics.totalPerOrderMicro).toBe(8_000_000)
+    expect(economics.isMeaningful).toBe(false)
+  })
+
+  it('separates what one more order costs from what the shop costs', () => {
+    // The marginal figure is the only one that describes an order, and it is
+    // useful at any volume.
+    const economics = perOrder(projection, 4)
+    expect(economics.marginalPerOrderMicro).toBe(500_000)
+    expect(economics.totalPerOrderMicro).toBeGreaterThan(economics.marginalPerOrderMicro * 10)
+  })
+
+  it('becomes meaningful at the stated floor and not before', () => {
+    expect(perOrder(projection, MEANINGFUL_ORDER_FLOOR - 1).isMeaningful).toBe(false)
+    expect(perOrder(projection, MEANINGFUL_ORDER_FLOOR).isMeaningful).toBe(true)
+  })
+
+  it('divides by nothing when there are no orders', () => {
+    const economics = perOrder(projection, 0)
+    expect(economics).toMatchObject({ orders: 0, totalPerOrderMicro: 0, isMeaningful: false })
+  })
+})
+
+describe('display', () => {
+  it('shows two decimals, whatever precision was kept for summing', () => {
+    expect(formatMicro(7_500, 'USD')).toBe('$0.01')
+    expect(formatMicro(20_000_000, 'USD')).toBe('$20.00')
+    expect(formatMicro(1_234_560_000, 'ILS')).toBe('₪1,234.56')
+  })
+
+  it('names an unknown currency rather than guessing a symbol', () => {
+    expect(formatMicro(1_000_000, 'EUR')).toBe('EUR 1.00')
+  })
+})
