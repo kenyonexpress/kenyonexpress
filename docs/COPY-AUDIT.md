@@ -86,7 +86,7 @@ formatting: it is a row that should not be in the catalogue. Hiding one product
 by name in the render path is a rule nobody can maintain, and it would hide a
 real product the day one is legitimately called "master".
 
-`migrations/pending/172_hide_master_product_test_row.sql` sets its stock to zero
+`migrations/applied/172_hide_master_product_test_row.sql` sets its stock to zero
 — not a delete, because an `order_items` row may reference it and deleting would
 orphan a historical order line. **Not applied.** Applying a migration to
 production needs Ofir's approval.

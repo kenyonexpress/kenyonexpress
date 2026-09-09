@@ -151,7 +151,7 @@ sum of every ledger entry              : 1.80
 
 The balances summing to exactly `0.00` is the double-entry invariant holding.
 
-**Decision.** `migrations/pending/146_wallet_balance_floor.sql` adds
+**Decision.** `migrations/applied/146_wallet_balance_floor.sql` adds
 
 ```sql
 check (user_id is null or balance_ils >= 0)

@@ -190,7 +190,7 @@ row in this table that is not a clean zero.
 
 Revoking `EXECUTE` from `anon` and `authenticated` on these six removes **6 of
 39 WARNs with no reachable code path affected**. That is
-`migrations/pending/143_revoke_unused_definer_execute.sql`, and it is **a draft,
+`migrations/applied/143_revoke_unused_definer_execute.sql`, and it is **a draft,
 not applied**.
 
 ---

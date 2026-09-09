@@ -366,7 +366,7 @@ select p.proname, pg_get_function_identity_arguments(p.oid) as args,
    ‏`is_admin` לבדה מוזכרת ב-**‏81** policies מתוך ‏133, ‏`has_role` ב-**‏19**
    ו-`current_user_role` ב-**‏10**, וביטוי policy מוערך בהרשאות התפקיד השואל.
    הפירוט ב-`docs/DB-HARDENING-AUDIT.md`.
-2. **‏`migrations/pending/143_revoke_unused_definer_execute.sql`** — שש
+2. **‏`migrations/applied/143_revoke_unused_definer_execute.sql`** — שש
    פונקציות שנמדדו בלי אף קורא. ממתין לאישור להרצת DDL.
 3. **ההענקה של `check_user_rate_limit`** — סעיף 6, נקודה 2.
 4. **alert על `rate_limit.check_failed`** — בלעדיו fail-open הוא שקט.

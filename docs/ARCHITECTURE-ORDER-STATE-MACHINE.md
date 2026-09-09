@@ -34,7 +34,7 @@ Status: **BINDING** · branch `docs/architecture-night` · 2026-08-19
 Scope: **docs only.**
 Companions: `ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`,
 `ARCHITECTURE-REFUNDS-CANCELLATIONS.md`, `ARCHITECTURE-SECURITY-HARDENING.md`.
-SQL: `migrations/pending/137_order_transition_guard.sql` — **הוחלה בפרודקשן.**
+SQL: `migrations/applied/137_order_transition_guard.sql` — **הוחלה בפרודקשן.**
 הקובץ נשאר על הדיסק תחת `pending/` ושורת ה-`NOT APPLIED` בתחתית הכותרת שלו
 מיושנת. ‏`ls` אינו ראיה כאן; ראה `docs/MIGRATION-BACKLOG.md`.
 

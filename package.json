@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/raw-html-gate.mjs && node scripts/postgrest-or-gate.mjs && node scripts/cache-invalidation-gate.mjs && node scripts/rtl-logical-gate.mjs && node scripts/i18n-gate.mjs",
+    "lint": "biome check . && node scripts/tokens-gate.mjs && node scripts/copy-gate.mjs && node scripts/asset-gate.mjs && node scripts/raw-html-gate.mjs && node scripts/postgrest-or-gate.mjs && node scripts/cache-invalidation-gate.mjs && node scripts/rtl-logical-gate.mjs && node scripts/i18n-gate.mjs && node scripts/docs-index-gate.mjs && node scripts/docs-path-audit.mjs",
     "lint:tokens": "node scripts/tokens-gate.mjs",
     "lint:copy": "node scripts/copy-gate.mjs",
     "lint:assets": "node scripts/asset-gate.mjs",
@@ -43,7 +43,8 @@
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "sentry:alerts": "node scripts/sentry-alert-rules.mjs",
     "sentry:alerts:dry": "node scripts/sentry-alert-rules.mjs --dry",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "lint:docs": "node scripts/docs-index-gate.mjs && node scripts/docs-path-audit.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

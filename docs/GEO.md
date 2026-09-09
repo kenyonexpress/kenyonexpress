@@ -9,7 +9,7 @@ schema, distance sorting and city facets, and most of it predates G5.
 | City tags UI | Wired | `src/components/geo/CityTags.tsx`, rendered on the category page |
 | City filter | Wired | `src/lib/category-page.ts` via `filterByCity` |
 | Distance math | Exists | `src/lib/geo/distance.ts` (+tests), coordinates validated |
-| Supplier coordinates | **Staged, unapplied** | `migrations/pending/136_supplier_coordinates.sql` |
+| Supplier coordinates | **Staged, unapplied** | `migrations/applied/136_supplier_coordinates.sql` |
 | Distance SORT | **Blocked on 136** | sorting suppliers/products by distance needs their coordinates; the column ships in 136 |
 | Search facets | Not applicable | search is Postgres ILIKE; there is no Meilisearch in the query path to facet |
 

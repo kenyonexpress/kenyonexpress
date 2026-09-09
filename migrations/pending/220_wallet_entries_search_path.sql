@@ -1,0 +1,71 @@
+-- 220_wallet_entries_search_path.sql
+--
+-- The one `function_search_path_mutable` WARN that is actually still live.
+--
+-- =============================================================================
+-- WHY THIS EXISTS WHEN 209 ALREADY CLAIMS "3 WARN -> 0"
+-- =============================================================================
+--
+-- `209_advisor_warnings.sql` pins three functions:
+--
+--     set_updated_at()
+--     fn_cashback_ledger_block_mutation()
+--     fn_il_phone_digits(text)
+--
+-- Read out of production on 2026-09-09, `pg_proc.proconfig` for all three is
+-- already `{search_path=public}`. The advisor does not warn on them and has not
+-- for some time; 209's section 1 is inert with respect to the advisor count.
+--
+-- The function the advisor DOES still name is not in 209 at all:
+--
+--     select proname, proconfig from pg_proc p
+--       join pg_namespace n on n.oid = p.pronamespace
+--      where n.nspname = 'public'
+--        and proname = 'fn_wallet_entries_block_mutation';
+--     -->  fn_wallet_entries_block_mutation | (null)
+--
+-- So applying 209 as written leaves `function_search_path_mutable` at 1, not 0.
+-- That is the whole reason for this file. It is additive and does not edit 209,
+-- because 209 is another session's file and its other two sections are correct.
+--
+-- =============================================================================
+-- WHAT THE FUNCTION IS
+-- =============================================================================
+--
+-- It is the append-only guard on `wallet_entries` - it raises on every UPDATE
+-- and DELETE so a balance can only ever be corrected by posting a compensating
+-- transfer. It is money, which is why it is worth pinning even though the
+-- exposure is small.
+--
+-- `prosecdef = false`, so this is defence in depth and not a live hole: the
+-- body runs with the caller's own rights. The body calls no schema-qualified
+-- object at all - it is a single unconditional RAISE - so an empty search_path
+-- changes no name resolution here and cannot change behaviour.
+--
+-- ALTER and not CREATE OR REPLACE: replacing a function resets its grants, and
+-- this one is attached to triggers on `wallet_entries`.
+
+BEGIN;
+
+ALTER FUNCTION public.fn_wallet_entries_block_mutation() SET search_path = '';
+
+COMMIT;
+
+-- =============================================================================
+-- VERIFY
+-- =============================================================================
+--
+--   select proname, proconfig from pg_proc p
+--     join pg_namespace n on n.oid = p.pronamespace
+--    where n.nspname = 'public'
+--      and proname = 'fn_wallet_entries_block_mutation';
+--   -- expect: {search_path=""}
+--
+-- And the guard must still refuse, which is the part a search_path change could
+-- in principle break:
+--
+--   do $$ begin
+--     begin
+--       update public.wallet_entries set amount_agorot = amount_agorot where false;
+--     exception when others then raise notice 'guard raised: %', sqlerrm; end;
+--   end $$;

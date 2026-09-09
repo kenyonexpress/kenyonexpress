@@ -2,6 +2,19 @@
 
 תאריך: 2026-07-29 | ענף: `arch/mega-docs` | סטטוס: **מסמך מחייב, שכבת מימוש**
 
+> <!-- rc5-banner:2026-09-09 -->
+> ⚠️ **‏`sitemap.ts` כבר אינו קובץ יחיד, והטבלה למטה עדיין אומרת שכן.**
+>
+> נמדד ב-09.09.2026 מול הריפו: **‏`src/app/sitemap.ts` אינו קיים.** הוא פוצל
+> לנתב ‏`src/app/sitemap.xml/route.ts` ולחמישה ‏sitemaps ילדים תחת
+> ‏`src/app/sitemap/`: ‏`products.xml`, ‏`categories.xml`, ‏`suppliers.xml`,
+> ‏`regions.xml`, ‏`content.xml`. הפיצול עצמו מתועד ב-`docs/SEO-PAGES.md`.
+>
+> שאר השורות בטבלה נבדקו ועומדות: ‏`src/app/robots.ts` קיים,
+> ‏`metadataBase` ו-`lang="he" dir="rtl"` קיימים ב-`src/app/layout.tsx`.
+> **שורת ה-JSON-LD התיישנה לטובה**: היא אומרת "אפס בכל הריפו", ויש היום
+> ‏`src/lib/seo/` עם בונים ל-structured data.
+
 כפיפות סמכות. כפוף ל-`docs/MASTER-ARCHITECTURE.md` ול-
 `docs/CONTRADICTIONS.md`. מרחיב את `docs/ARCHITECTURE-SEO.md` (מכניקת
 זמן ריצה) ואת `docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md` (‏slugs,

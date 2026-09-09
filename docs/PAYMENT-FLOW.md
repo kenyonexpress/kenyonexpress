@@ -685,7 +685,7 @@ Recorded rather than fixed, because this is a documentation branch.
    type, which describes the ALIASED shape and is therefore correct.
 
 3. **`status-transitions.ts` still calls 137 pending in its docstring.** The
-   header comment said `migrations/pending/137_order_transition_guard.sql`.
+   header comment said `migrations/applied/137_order_transition_guard.sql`.
    **FIXED 2026-09-09**: the file moved to `applied/` on 2026-09-03 and the
    docstring now says so. The table it ships was correct throughout.
 
