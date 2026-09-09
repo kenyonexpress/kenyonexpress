@@ -797,6 +797,26 @@ describe('the pending migration inventory', () => {
       // a negative price, a price with no currency, a currency with no price, a
       // lowercase currency and a duplicate provider_sid were each refused.
       '216_sms_log_and_opt_outs.sql',
+      // 217 WRITTEN 2026-09-09, not applied. `phone_verified_at` +
+      // `phone_verified_e164` on profiles, because `profiles.phone` is free
+      // text from a signup form and says nothing about possession. It issues no
+      // grant of its own and REFUSES TO APPLY until 218 has narrowed the table
+      // grant -- see 218 for why a column-level REVOKE would have been a silent
+      // no-op.
+      '217_profiles_phone_verified.sql',
+      // 218 WRITTEN 2026-09-09, not applied, and FOUND WHILE WRITING 217 rather
+      // than looked for. Two production defects in one file because fixing
+      // either alone is worse than fixing neither:
+      //   (1) `enforce_profile_privilege_columns` references `NEW.supplier_id`
+      //       and `profiles` has no such column, so it raises 42703 on every
+      //       non-admin UPDATE. That is every customer saving their name or
+      //       phone on /account/details, live, today.
+      //   (2) `authenticated` holds a TABLE-level UPDATE grant on profiles and
+      //       `wallet_balance` is not guarded by the trigger, so the crash in
+      //       (1) is the only thing stopping a customer minting store credit.
+      // Both proven against production by impersonating a real customer inside
+      // a rolled-back transaction, and the fix re-proven the same way.
+      '218_profile_trigger_and_wallet_grant.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

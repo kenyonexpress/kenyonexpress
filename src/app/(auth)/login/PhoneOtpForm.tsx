@@ -100,7 +100,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
         // Lets iOS and Android offer the code straight from the SMS banner,
         // which is the difference between one tap and switching apps.
         autoComplete="one-time-code"
-        maxLength={10}
+        maxLength={6}
         placeholder="123456"
         className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
       />

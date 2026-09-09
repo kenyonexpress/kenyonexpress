@@ -38,8 +38,9 @@
 | `signup` | 5 | 1 h | account flooding, per IP |
 | `magic` | 5 | 1 h | magic-link mail sent to a real inbox |
 | `phone-otp` | 5 | 1 h | OTP SMS costs money, per IP |
-| `phone-otp-number` | 5 | 1 h | OTP SMS to one number: the measured lockout vector |
-| `phone-verify` | 20 | 1 h | OTP code guessing |
+| `phone-otp-number` | 3 | 1 h | OTP SMS to one number: the measured lockout vector, and the bill |
+| `phone-verify` | 20 | 1 h | OTP code guessing, per IP |
+| `phone-verify-number` | 5 | 1 h | six digits is a million codes; per-number is what bounds the guessing |
 | `passkey-register` | 10 | 1 h | WebAuthn enrolment ceremonies; a real person adds one key, not eleven |
 | `mfa-enrol` | 10 | 1 h | TOTP factor creation, per user; one authenticator, not a pile of abandoned factors |
 | `mfa-verify` | 10 | 15 min | six digits are brute forceable; per-user bound is what actually protects the account |

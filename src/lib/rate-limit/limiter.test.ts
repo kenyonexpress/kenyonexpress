@@ -222,7 +222,9 @@ describe('rateLimit', () => {
     await rateLimit('phone-otp-number', '+972500000000')
     expect(rpc).toHaveBeenCalledWith('check_rate_limit', {
       p_key: 'phone-otp-number:+972500000000',
-      p_max_attempts: 5,
+      // Three since [47]: every one of these is an SMS that costs money and
+      // lands on a real handset.
+      p_max_attempts: 3,
       p_window_seconds: 3600,
     })
   })

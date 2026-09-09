@@ -47,11 +47,30 @@ export const RATE_LIMIT_POLICIES = {
   magic: { limit: 5, windowSeconds: 3600, reason: 'magic-link mail sent to a real inbox' },
   'phone-otp': { limit: 5, windowSeconds: 3600, reason: 'OTP SMS costs money, per IP' },
   'phone-otp-number': {
+    limit: 3,
+    windowSeconds: 3600,
+    reason: 'OTP SMS to one number: the measured lockout vector, and the bill',
+  },
+  'phone-verify': { limit: 20, windowSeconds: 3600, reason: 'OTP code guessing, per IP' },
+  /**
+   * THE ONE THAT ACTUALLY PROTECTS THE CODE, and it did not exist until [47].
+   *
+   * The send path was bounded per IP AND per number; the verify path was
+   * bounded per IP alone. Six digits is a million codes, and an attacker on a
+   * rotating connection -- the same attacker `phone-otp-number` was added for
+   * -- had an unbounded number of guesses against any one number. The IP
+   * ceiling above is the outer wall; this is the one that makes the SMS gate
+   * mean anything.
+   *
+   * FIVE, not twenty. Five is a customer mistyping a code they can see on the
+   * same screen; twenty is a script. The window is an hour and the code lives
+   * five minutes, so five is also five per code with room to spare.
+   */
+  'phone-verify-number': {
     limit: 5,
     windowSeconds: 3600,
-    reason: 'OTP SMS to one number: the measured lockout vector',
+    reason: 'six digits is a million codes; per-number is what bounds the guessing',
   },
-  'phone-verify': { limit: 20, windowSeconds: 3600, reason: 'OTP code guessing' },
   'passkey-register': {
     limit: 10,
     windowSeconds: 3600,

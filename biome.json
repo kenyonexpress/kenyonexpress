@@ -10,6 +10,8 @@
     "ignore": [
       "node_modules",
       "apps",
+      ".claude/worktrees",
+      ".claude/skills",
       ".next",
       "out",
       "build",

@@ -1,5 +1,79 @@
 # `migrations/pending/`
 
+## 2026-09-09: 218 WRITTEN, not applied - a trigger that fails every customer profile save, and the money column it accidentally guards
+
+`218_profile_trigger_and_wallet_grant.sql`. **Found while writing 217, not
+looked for.** 217 adds columns to `profiles`, so "can a customer write their own
+columns here" had to be answered. The answer was about two other things.
+
+**(1) `enforce_profile_privilege_columns` names a column that does not exist.**
+Its last check is `NEW.supplier_id IS DISTINCT FROM OLD.supplier_id`, and
+`public.profiles` has no `supplier_id` -- thirteen columns, read from
+`information_schema`. PL/pgSQL resolves field references at RUN TIME, so the
+function was created without complaint and raises `42703` the first time it
+reaches that line. The admin and service-role branches return before it, so the
+only callers that get there are **ordinary customers updating their own row**.
+
+**This is live.** `src/server/actions/account.ts:58` saves the account details
+form with the request-scoped client, so every customer editing their name or
+phone gets 42703 and sees `שמירת הפרטים נכשלה` -- a generic message that makes
+the cause undiagnosable from the UI. Proven by impersonating a real customer
+row (`set_config('request.jwt.claims', ...)` + `SET LOCAL ROLE authenticated`)
+inside a transaction that was rolled back.
+
+**(2) That crash is the only thing stopping a customer minting store credit.**
+`profiles_update_unified` is `USING (id = auth.uid())`, and an RLS policy is a
+ROW filter with no opinion about columns. `authenticated` holds UPDATE on the
+whole table. `wallet_balance_agorot` is generated and cannot be written, but it
+is generated FROM `wallet_balance`, which can. The trigger guards `role` and
+does not mention the wallet. So **fixing (1) alone would open (2)**, which is
+why they are one file and must not be separated.
+
+**(3) And the obvious fix does not work.** The first draft said
+`REVOKE UPDATE (wallet_balance) ON public.profiles FROM authenticated`. Probed
+against production: **the wallet write still succeeded**, balance 9999.00. A
+column-level REVOKE cannot subtract from a TABLE-level grant --
+`pg_class.relacl` carries `authenticated=arwdxtm/postgres` and
+`pg_attribute.attacl` is empty. `information_schema.column_privileges` hides
+this perfectly by reporting a table grant expanded into one row per column, so
+the draft's own verification passed while protecting nothing. The file now
+revokes the table grant and grants back exactly `(full_name, phone)`, which is
+measured: `account.ts:58` is the only request-scoped write to `profiles` in
+`src`.
+
+**Re-probed after correction**, one rolled-back block: the customer saved their
+name, the wallet write was refused, and role escalation was refused by the
+guard rather than by a crash. Production re-read afterwards: name null, wallet
+0.00, ACL unchanged, trigger still broken. Nothing applied.
+
+## 2026-09-09: 217 WRITTEN, not applied - what `profiles.phone` does not mean
+
+`217_profiles_phone_verified.sql`. `phone_verified_at` and
+`phone_verified_e164`.
+
+**`profiles.phone` already exists and says nothing about possession.** It holds
+whatever a signup form was given: a typo, somebody else's number, or a
+deliberate one. `phone_verified_at` is the moment an SMS code sent to that
+number was entered correctly, and nothing else.
+
+**A timestamp and a second column, not a boolean.** A boolean cannot say WHEN
+(a number verified two years ago is a different fact to a fraud review), cannot
+say WHICH NUMBER (changing `phone` would silently transfer the proof), and
+cannot say NOTHING (NULL is "never verified", which every existing row is).
+
+**It issues no grant and refuses to apply before 218.** See 218 for why: the
+UPDATE grant on `profiles` is table-level and therefore covers columns that do
+not exist yet, so these two would have been customer-writable the moment they
+were created -- a possession proof forgeable by its own subject. A column-level
+REVOKE here would have been a silent no-op, and its verification would have
+passed.
+
+**Verified against production without applying**, in a rolled-back block with
+218 applied first: the columns are not customer-writable, a timestamp with no
+number is refused, a non-E.164 number is refused, an Israeli landline is refused
+as a verified mobile, a real verification writes cleanly under the service role,
+and a customer impersonated through PostgREST could not forge one.
+
 ## 2026-09-09: 216 WRITTEN, not applied - the SMS log, and a deliberate exception to the money rule
 
 `216_sms_log_and_opt_outs.sql`. Two tables: what was sent and what it cost, and

@@ -88,12 +88,22 @@ export const phoneOtpSchema = z.object({
 
 export const phoneVerifySchema = z.object({
   phone: z.string().min(9, 'מספר טלפון נדרש').max(20, 'מספר טלפון לא תקין'),
-  // Supabase issues six digits; the range is wider so a project configured for
-  // a different length does not fail here with a message about the wrong thing.
+  /**
+   * SIX DIGITS, EXACTLY.
+   *
+   * The range used to be 4-10 so "a project configured for a different length"
+   * would not fail here. That generosity had a cost: every wrong-length string
+   * was forwarded to the provider as a verification attempt, spending one of
+   * the five this number gets per hour on input that could not possibly be a
+   * code. A customer who pastes a tracking number burns their own budget.
+   *
+   * Supabase issues six. If that is ever reconfigured, this line is the one to
+   * change, and changing it is a deliberate act rather than a silent widening.
+   */
   token: z
     .string()
     .trim()
-    .regex(/^\d{4,10}$/, 'הקוד מורכב מספרות בלבד'),
+    .regex(/^\d{6}$/, 'הקוד מורכב מ-6 ספרות'),
 })
 
 export type PhoneOtpInput = z.infer<typeof phoneOtpSchema>

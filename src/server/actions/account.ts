@@ -53,7 +53,16 @@ async function runUpdateProfileDetails(
   }
 
   const supabase = await createClient()
-  // The profiles UPDATE policy freezes `role`, so a client cannot escalate here.
+  // WHAT ACTUALLY FREEZES `role`, corrected 2026-09-09. It is not the UPDATE
+  // policy: `profiles_update_unified` is `USING (id = auth.uid())` and an RLS
+  // policy is a ROW filter with no opinion about columns. The freeze comes from
+  // the `enforce_profile_privilege_columns` trigger, and from the grant that
+  // `migrations/pending/218` narrows to exactly (full_name, phone).
+  //
+  // THIS UPDATE FAILS IN PRODUCTION TODAY, and 218 is the fix. The trigger
+  // references `NEW.supplier_id`, a column `profiles` does not have, so it
+  // raises 42703 on every non-admin update -- which is every customer saving
+  // this form. The generic message below is what they see.
   const { error } = await supabase
     .from('profiles')
     .update({ full_name: parsed.data.full_name, phone: parsed.data.phone })

@@ -352,7 +352,13 @@ async function runSendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthSt
 
   // Per-number as well as per-IP: the IP ceiling alone lets one attacker on a
   // rotating connection text the same person repeatedly.
-  const numberAllowed = await checkRateLimit(`phone-otp-number:${e164}`, 5, 3600)
+  //
+  // THREE, not five. Every one of these is an SMS that costs money and lands on
+  // a real handset, and three is already more than a customer who did not
+  // receive the first one needs. The number matches
+  // RATE_LIMIT_POLICIES['phone-otp-number'] and the inventory test beside that
+  // table fails if the two ever part company.
+  const numberAllowed = await checkRateLimit(`phone-otp-number:${e164}`, 3, 3600)
   if (!numberAllowed) return { error: 'יותר מדי בקשות למספר הזה — נסו שוב בעוד שעה' }
 
   await attachPhoneToExistingAccount(e164)
@@ -385,6 +391,15 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
   const e164 = toE164Israeli(parsed.data.phone)
   if (!e164) return { error: 'מספר הטלפון אינו תקין' }
 
+  // THE CEILING THAT MAKES THE SMS GATE MEAN ANYTHING, and it did not exist
+  // until [47]. The send path above is bounded per IP AND per number; this one
+  // was bounded per IP alone, so the attacker `phone-otp-number` was added for
+  // -- one on a rotating connection -- had an UNBOUNDED number of guesses
+  // against a six-digit code. Checked after normalisation so that every
+  // spelling of one number shares a counter, which is the whole point.
+  const numberAllowed = await checkRateLimit(`phone-verify-number:${e164}`, 5, 3600)
+  if (!numberAllowed) return { error: 'יותר מדי ניסיונות למספר הזה — בקשו קוד חדש בעוד שעה' }
+
   const supabase = await createClient()
   const { data, error } = await supabase.auth.verifyOtp({
     phone: e164,
@@ -407,11 +422,39 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
   // A phone-only account has no profile row, because the trigger that creates
   // one keys off the email. Written here so the rest of the site - which reads
   // `profiles`, not `auth.users` - can see the customer at all.
+  //
+  // THE VERIFICATION IS RECORDED HERE AND NOWHERE ELSE, because here is the
+  // only place possession was actually proven: `verifyOtp` returned above, so
+  // a code sent to THIS number was entered correctly. `profiles.phone` says
+  // nothing about possession -- it holds whatever a signup form was given.
+  //
+  // `ignoreDuplicates` is deliberately NOT used for the verification columns.
+  // The upsert below leaves an existing row's `phone` alone (that is the
+  // customer's own free-text spelling and theirs to edit), and then the update
+  // sets the two columns that are ours: an account whose owner just proved a
+  // number must end up marked as having proved it, whether or not the row
+  // already existed.
   if (data.user) {
     const admin = createAdminClient()
     await admin
       .from('profiles')
       .upsert({ id: data.user.id, phone: e164 }, { onConflict: 'id', ignoreDuplicates: true })
+
+    // 217 is written and unapplied, so this fails with 42703 until it lands.
+    // Read as "not available yet" rather than as a failure: the customer is
+    // signed in, and a missing column must not turn a successful login into an
+    // error page.
+    const { error: verifiedError } = await admin
+      .from('profiles')
+      .update({
+        phone_verified_at: new Date().toISOString(),
+        phone_verified_e164: e164,
+      } as never)
+      .eq('id', data.user.id)
+
+    if (verifiedError && verifiedError.code !== '42703' && verifiedError.code !== 'PGRST204') {
+      log.warn('auth.phone_verified_write_failed', { reason: verifiedError.message })
+    }
   }
 
   // The referral claim for the ONE signup path that never reaches
