@@ -16,8 +16,10 @@ name: Security
 # 2026-09-09 via `gh api repos/:owner/:repo --jq .security_and_analysis`). What
 # they do not cover is `secret_scanning_non_provider_patterns`, which is
 # DISABLED, and that is the setting for generic high-entropy strings rather than
-# recognised vendor formats. gitleaks is the part that overlaps that gap, and it
-# reads the whole history rather than only the push.
+# recognised vendor formats. gitleaks is the part that overlaps that gap, and
+# the step below reads the whole history rather than only the pushed commits.
+# See the comment on that step: getting that property took running the binary
+# instead of the action.
 
 on:
   pull_request:
@@ -48,20 +50,39 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
+      # RUNS THE BINARY, NOT gitleaks/gitleaks-action.
+      #
+      # The action was tried first and its run said `1 commits scanned`. It
+      # derives its scan range from the event -- the pushed commits on a push,
+      # the PR commits on a pull_request -- so `fetch-depth: 0` above buys
+      # nothing and the full history is never read. That is a reasonable default
+      # for the action and it is not what this job is for: the leak shape that
+      # matters here is a key committed once and deleted in the next commit,
+      # which an incremental scan passes over forever.
+      #
+      # Running the binary against the whole repository takes about 3 seconds
+      # for 3635 commits and 87 MB, so there is nothing to optimise away. It
+      # also removes the GITLEAKS_LICENSE question entirely, which the action
+      # requires for organisation-owned repositories.
+      #
+      # The version is pinned. A floating "latest" would mean new rules
+      # arriving on a day nobody chose, turning an unrelated pull request red
+      # with findings that were always there.
+      - name: Install gitleaks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
-          # Named rather than left to auto-detection. gitleaks does find a
-          # root .gitleaks.toml on its own, and a silent fallback to the default
-          # ruleset would report all nineteen triaged findings as new.
-          GITLEAKS_CONFIG: .gitleaks.toml
-          # No GITLEAKS_LICENSE: that is required for organisation accounts and
-          # this repository is user-owned (`gh api repos/:owner/:repo --jq
-          # .owner.type` returns "User", measured 2026-09-09). If it ever moves
-          # under an org, this job starts failing with a licence message rather
-          # than a finding, and this comment is where to look.
+          GITLEAKS_VERSION: 8.28.0
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks version
+
+      # `git` mode, so every commit in the history is read and not just the
+      # working tree. --redact keeps a finding from printing the secret it found
+      # into a public build log, which would publish it a second time.
+      - name: Scan the whole history
+        run: /tmp/gitleaks git --no-banner --redact -v -c .gitleaks.toml .
 
   dependencies:
     name: Dependency audit (fixable high/critical)
