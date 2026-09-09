@@ -1,7 +1,7 @@
 'use client'
 
 import { type AdminSection, canReadSection } from '@/lib/admin/permissions'
-import type { AppRole } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 import { cn } from '@/lib/utils'
 import {
   AlertTriangle,
@@ -79,7 +79,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
 ]
 
-export default function AdminSidebar({ role }: { role: AppRole }) {
+export default function AdminSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname()
   const visible = NAV_ITEMS.filter((item) => canReadSection(role, item.section))
 

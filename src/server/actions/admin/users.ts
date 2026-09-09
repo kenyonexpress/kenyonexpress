@@ -7,7 +7,6 @@ import { authorizeRoleChange } from '@/lib/admin/role-change'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import type { UserRole } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -73,13 +72,9 @@ async function runUpdateUserRole(_: UserActionState, formData: FormData): Promis
     return { error: 'רק מנהל-על יכול לשנות תפקיד של מנהל' }
   }
 
-  // The cast covers 'read_only' until 181 is applied and the types
-  // regenerated (see AppRole in lib/admin/roles.ts). Before apply-day,
-  // assigning it fails loudly here with Postgres "invalid input value for
-  // enum user_role", which is the honest pre-migration behavior.
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({ role: newRole as UserRole })
+    .update({ role: newRole })
     .eq('id', targetUserId)
 
   if (profileError) return { error: profileError.message }

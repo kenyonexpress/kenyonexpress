@@ -1,4 +1,4 @@
-import { type AppRole, isAdminRole } from './roles'
+import { type UserRole, isAdminRole } from './roles'
 
 export type RoleChangeResult = { ok: true } | { ok: false; error: string }
 
@@ -6,9 +6,9 @@ export type RoleChangeResult = { ok: true } | { ok: false; error: string }
 // server action and the UI.
 export function authorizeRoleChange(params: {
   callerId: string
-  callerRole: AppRole
+  callerRole: UserRole
   targetUserId: string
-  newRole: AppRole
+  newRole: UserRole
 }): RoleChangeResult {
   const { callerId, callerRole, targetUserId, newRole } = params
 

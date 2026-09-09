@@ -2377,6 +2377,7 @@ export type Database = {
         | "admin"
         | "super_admin"
         | "support"
+        | "read_only"
       voucher_scan_outcome:
         | "success"
         | "already_redeemed"
@@ -2585,6 +2586,7 @@ export const Constants = {
         "admin",
         "super_admin",
         "support",
+        "read_only",
       ],
       voucher_scan_outcome: [
         "success",

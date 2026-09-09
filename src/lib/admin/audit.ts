@@ -1,4 +1,4 @@
-import type { AppRole } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 import { log } from '@/lib/observability/log'
 import { getRequestId } from '@/lib/observability/request-context'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -43,7 +43,7 @@ async function requestContext(): Promise<{ ip: string | null; userAgent: string 
 
 export async function writeAuditLog(entry: {
   actorId: string
-  actorRole: AppRole
+  actorRole: UserRole
   action: AuditAction
   entityType: string
   entityId?: string | null

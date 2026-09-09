@@ -3,17 +3,17 @@
 import UserRoleClient from '@/app/(admin)/admin/users/UserRoleClient'
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import { ROLE_LABELS } from '@/lib/admin/roles'
-import type { AppRole } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 
 export type UserRow = {
   id: string
   email: string
   full_name: string | null
-  role: AppRole
+  role: UserRole
   created_at: string
 }
 
-const ROLE_BADGE: Record<AppRole, string> = {
+const ROLE_BADGE: Record<UserRole, string> = {
   customer: 'bg-black/5 text-black/60',
   vendor: 'bg-blue-100 text-blue-800',
   content_uploader: 'bg-purple-100 text-purple-800',
@@ -25,7 +25,7 @@ const ROLE_BADGE: Record<AppRole, string> = {
 
 interface Props {
   users: UserRow[]
-  callerRole: AppRole
+  callerRole: UserRole
   callerId: string
   canEdit?: boolean
 }
