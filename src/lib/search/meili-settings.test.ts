@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   BRANDS_INDEX_SETTINGS,
+  CATEGORIES_INDEX_SETTINGS,
   FILTERABLE_ATTRIBUTES,
   HEBREW_ATTRIBUTE_PATTERNS,
   INDEX_SETTINGS,
@@ -11,6 +12,7 @@ import {
   TYPO_TOLERANCE,
   brandDocumentId,
   toBrandDocuments,
+  toCategoryDocuments,
   toProductDocument,
 } from './meili-settings'
 
@@ -285,5 +287,69 @@ describe('toBrandDocuments', () => {
     const docs = toBrandDocuments(rows)
     const lg = docs.find((d) => d.name === 'LG')
     expect(lg?.id).toBe(brandDocumentId('lg'))
+  })
+})
+
+describe('the categories index', () => {
+  it('keeps the Hebrew typo budget and the heb locale pin', () => {
+    // Category names are Hebrew and short (ספא, בגדים); the products index's
+    // reasoning applies unchanged.
+    expect(CATEGORIES_INDEX_SETTINGS.typoTolerance.minWordSizeForTypos).toEqual(
+      TYPO_TOLERANCE.minWordSizeForTypos,
+    )
+    expect(CATEGORIES_INDEX_SETTINGS.localizedAttributes).toEqual([
+      { attributePatterns: ['name_he', 'description_he'], locales: ['heb'] },
+    ])
+  })
+
+  it('ranks the fuller category above the emptier one at equal relevance', () => {
+    const rules = CATEGORIES_INDEX_SETTINGS.rankingRules
+    expect(rules.indexOf('product_count:desc')).toBeGreaterThan(rules.indexOf('typo'))
+    expect(rules.indexOf('product_count:desc')).toBeLessThan(rules.indexOf('proximity'))
+  })
+
+  it('can filter subcategories and join back by slug', () => {
+    expect(CATEGORIES_INDEX_SETTINGS.filterableAttributes).toContain('parent_id')
+    expect(CATEGORIES_INDEX_SETTINGS.filterableAttributes).toContain('slug')
+  })
+})
+
+describe('toCategoryDocuments', () => {
+  const categories = [
+    { id: 'c1', slug: 'spa', name_he: 'ספא', sort_order: 2 },
+    { id: 'c2', slug: 'food', name_he: 'מסעדות', sort_order: 1 },
+    { id: 'c3', slug: 'old', name_he: 'ישן', is_active: false },
+    { id: 'c4', slug: 'gone', name_he: 'נמחק', deleted_at: '2026-01-01T00:00:00Z' },
+  ]
+  const products = [
+    { category_id: 'c1', type: 'physical' },
+    { category_id: 'c1', type: 'coupon' },
+    { category_id: 'c2', type: 'coupon' },
+    { category_id: null, type: 'physical' },
+    { category_id: 'c3', type: 'physical' },
+  ]
+
+  it('counts products and coupons per category', () => {
+    const docs = toCategoryDocuments(categories, products)
+    const spa = docs.find((d) => d.slug === 'spa')
+    expect(spa).toMatchObject({ product_count: 2, coupon_count: 1 })
+  })
+
+  it('drops inactive and soft-deleted categories even if the reader let them through', () => {
+    // The index is public output; the predicate holds wherever the rows came from.
+    const slugs = toCategoryDocuments(categories, products).map((d) => d.slug)
+    expect(slugs).not.toContain('old')
+    expect(slugs).not.toContain('gone')
+  })
+
+  it('keeps an empty category: navigation exists before products do', () => {
+    const docs = toCategoryDocuments([{ id: 'c9', slug: 'new', name_he: 'חדש' }], [])
+    expect(docs).toHaveLength(1)
+    expect(docs[0]).toMatchObject({ product_count: 0, coupon_count: 0, sort_order: 0 })
+  })
+
+  it('orders by sort_order, the way the storefront menu does', () => {
+    const docs = toCategoryDocuments(categories, products)
+    expect(docs.map((d) => d.slug)).toEqual(['food', 'spa'])
   })
 })
