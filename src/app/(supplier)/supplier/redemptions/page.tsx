@@ -1,3 +1,4 @@
+import PrintDaySummary from '@/components/supplier/PrintDaySummary'
 import { formatDate, formatIls } from '@/lib/account/format'
 import { agorot, sumAgorot } from '@/lib/money'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
@@ -33,6 +34,14 @@ export default async function SupplierRedemptionsPage() {
         <p className="mt-1 text-sm text-gray-500">
           היסטוריית סריקות לבית העסק. יתרת הגבייה נגבית מהלקוח בקופה.
         </p>
+        {/* Only on paper. The date has to be ON the sheet: a printed count with
+            no date is a page nobody can file against a till drawer. */}
+        <p className="hidden print:block print:text-sm">
+          סיכום ליום {new Date().toLocaleDateString('he-IL')}
+        </p>
+        <p className="mt-3">
+          <PrintDaySummary />
+        </p>
       </section>
 
       <div className="grid grid-cols-2 gap-3">
@@ -43,7 +52,7 @@ export default async function SupplierRedemptionsPage() {
             לגבייה <span dir="ltr">{formatIls(todayDue)}</span>
           </p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-4">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 print:hidden">
           <p className="text-xs text-gray-500">30 הימים האחרונים</p>
           <p className="text-2xl font-extrabold text-heading">{monthRows.length}</p>
           <p className="text-xs text-gray-500">
@@ -52,12 +61,28 @@ export default async function SupplierRedemptionsPage() {
         </div>
       </div>
 
+      {/* PAPER GETS TODAY ONLY, and the full history is hidden from it.
+          Printing the list as it stands sends every redemption the business
+          has ever had to the printer, which is not a day summary and is not
+          something anybody will do twice. */}
+      <ul className="hidden print:block">
+        {todayRows.map((row) => (
+          <li key={`print-${row.voucherId}`} className="border-b py-1 text-sm">
+            <span dir="ltr">{formatVoucherCode(row.code)}</span> — {row.productName} —{' '}
+            <span dir="ltr">{formatIls(agorot(row.remainingAmountDueAgorot))}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="hidden print:block print:mt-3 print:font-bold">
+        סה&quot;כ {todayRows.length} מימושים, לגבייה <span dir="ltr">{formatIls(todayDue)}</span>
+      </p>
+
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-10 text-center text-sm text-gray-500">
+        <p className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-10 text-center text-sm text-gray-500 print:hidden">
           אין מימושים עדיין.
         </p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-2 print:hidden">
           {rows.map((row) => (
             <li
               key={row.voucherId}
