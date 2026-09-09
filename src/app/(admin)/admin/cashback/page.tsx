@@ -1,6 +1,7 @@
 import { requireSection } from '@/lib/admin/rbac'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getCashbackPaid, getWalletDrift } from '@/server/queries/admin-wallet'
 import AdjustCashbackClient from './AdjustCashbackClient'
 
 const ils = (agorot: number) =>
@@ -36,13 +37,17 @@ export default async function CashbackPage() {
   await requireSection('payments', 'read')
 
   const admin = createAdminClient()
-  const { data, error } = await admin
-    .from('cashback_ledger')
-    .select(
-      'id, user_id, order_id, entry_type, amount_agorot, percent_bp, basis_agorot, reason, created_by, created_at',
-    )
-    .order('created_at', { ascending: false })
-    .limit(200)
+  const [{ data, error }, drift, paid] = await Promise.all([
+    admin
+      .from('cashback_ledger')
+      .select(
+        'id, user_id, order_id, entry_type, amount_agorot, percent_bp, basis_agorot, reason, created_by, created_at',
+      )
+      .order('created_at', { ascending: false })
+      .limit(200),
+    getWalletDrift(),
+    getCashbackPaid(),
+  ])
 
   const notInstalled = error?.code === UNDEFINED_TABLE
   const rows = (data ?? []) as LedgerRow[]
@@ -88,6 +93,42 @@ export default async function CashbackPage() {
         </div>
       ) : null}
 
+      {/* The integrity check, above the console rather than below it: an
+          operator about to post a manual adjustment should know first whether
+          any wallet is already out of step with its own ledger. */}
+      <section className="rounded-lg border border-gray-200 bg-white p-4">
+        <h2 className="text-lg font-semibold">תקינות יתרות</h2>
+        {!drift.known ? (
+          <p className="mt-1 text-sm text-amber-800">
+            לא ניתן לבדוק את תקינות היתרות כרגע ({drift.reason}). זו אינה תעודת תקינות: הבדיקה לא
+            רצה.
+          </p>
+        ) : drift.rows.length === 0 ? (
+          <p className="mt-1 text-sm text-gray-600">
+            נבדק: אין אף חשבון ארנק שהיתרה השמורה שלו חלוקה על היומן שלו.
+          </p>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-red-800">
+              {drift.rows.length} חשבונות שהיתרה השמורה שלהם אינה מסתדרת עם היומן. היומן הוא
+              הוספה-בלבד ולכן הוא הצד שלא ניתן היה לערוך.
+            </p>
+            <ul className="mt-2 space-y-1 text-sm">
+              {drift.rows.map((row) => (
+                <li key={row.accountId} className="flex flex-wrap gap-x-3 text-gray-700">
+                  <span className="font-mono text-xs">
+                    {row.code ?? row.userId ?? row.accountId}
+                  </span>
+                  <span>שמור {ils(row.cachedAgorot)}</span>
+                  <span>יומן {ils(row.ledgerAgorot)}</span>
+                  <span className="font-medium text-red-700">הפרש {ils(row.driftAgorot)}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </section>
+
       <section className="rounded-lg border border-gray-200 bg-white p-4">
         <h2 className="text-lg font-semibold">התאמה ידנית</h2>
         <p className="mt-1 text-sm text-gray-600">
@@ -100,7 +141,12 @@ export default async function CashbackPage() {
       <section>
         <h2 className="mb-2 text-lg font-semibold">תנועות אחרונות ({rows.length})</h2>
         {rows.length === 0 ? (
-          <p className="text-sm text-gray-500">אין תנועות ביומן עדיין.</p>
+          <p className="text-sm text-gray-500">
+            אין תנועות ביומן עדיין.
+            {paid && paid.entries > 0
+              ? ` שימו לב: זה לא אומר שלא שולם קאשבק. ${paid.entries} זיכויים בסך ${ils(paid.totalAgorot)} כבר יצאו מרזרבת הקאשבק דרך wallet_entries, לפני שהיומן הזה היה קיים, והוא אינו מייבא אותם אחורה.`
+              : ''}
+          </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
             <table className="min-w-full text-sm">

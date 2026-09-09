@@ -2,8 +2,12 @@ import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import { COUPON_STATUS_LABELS, labelFor } from '@/lib/admin/labels'
 import { canWriteSection } from '@/lib/admin/permissions'
 import { ROLE_LABELS, requireSection } from '@/lib/admin/rbac'
-import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { agorot } from '@/lib/commerce/money'
+import { shekels, shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
+import { ADMIN_WALLET_LEDGER_CAP } from '@/lib/wallet/admin-view'
+import { walletReasonLabel } from '@/server/queries/account'
+import { getAdminWalletView } from '@/server/queries/admin-wallet'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import UserRoleClient from '../UserRoleClient'
@@ -25,34 +29,27 @@ export default async function AdminUserDetailPage(props: {
 
   if (!profile) notFound()
 
-  const [{ data: orders }, { data: wallet }, { data: walletTx }, { data: coupons }] =
-    await Promise.all([
-      supabase
-        .from('orders')
-        .select('id, invoice_number, status, total_ils, created_at')
-        .eq('user_id', id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(10),
-      supabase
-        .from('wallet_balances')
-        .select('balance_ils, lifetime_earned_ils, lifetime_redeemed_ils')
-        .eq('user_id', id)
-        .maybeSingle(),
-      supabase
-        .from('wallet_transactions')
-        .select('id, type, amount_ils, notes, created_at')
-        .eq('user_id', id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(5),
-      supabase
-        .from('coupon_codes')
-        .select('id, code, status, expires_at, created_at')
-        .eq('user_id', id)
-        .order('created_at', { ascending: false })
-        .limit(5),
-    ])
+  // The wallet is read through getAdminWalletView, which goes to
+  // wallet_accounts and v_wallet_ledger. This page used to read
+  // wallet_balances and wallet_transactions: both hold zero rows in production
+  // (measured 2026-09-10) while the money sits in the other pair, so the one
+  // customer who has a balance was shown 0.00 and "no wallet movements".
+  const [{ data: orders }, walletView, { data: coupons }] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('id, invoice_number, status, total_ils, created_at')
+      .eq('user_id', id)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    getAdminWalletView(id),
+    supabase
+      .from('coupon_codes')
+      .select('id, code, status, expires_at, created_at')
+      .eq('user_id', id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+  ])
 
   const canEditRoles = canWriteSection(callerRole, 'users')
 
@@ -112,25 +109,49 @@ export default async function AdminUserDetailPage(props: {
         <section className="rounded-xl border border-black/10 bg-white p-5">
           <h2 className="mb-3 text-sm font-semibold text-gray-800">ארנק</h2>
           <p className="text-2xl font-bold text-heading">
-            {shekelsFromIlsRounded(wallet?.balance_ils ?? 0)}
+            {shekels(agorot(walletView.balanceAgorot))}
           </p>
-          <p className="mt-1 text-xs text-black/50">
-            נצבר: {shekelsFromIlsRounded(wallet?.lifetime_earned_ils ?? 0)} | מומש: ₪
-            {(wallet?.lifetime_redeemed_ils ?? 0).toLocaleString('he-IL')}
-          </p>
+
+          {walletView.totals.complete ? (
+            <p className="mt-1 text-xs text-black/50">
+              נצבר: {shekels(agorot(walletView.totals.earnedAgorot))} | מומש:{' '}
+              {shekels(agorot(walletView.totals.redeemedAgorot))}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-black/50">
+              יש יותר מ-{ADMIN_WALLET_LEDGER_CAP} תנועות בארנק הזה, ולכן הסכומים המצטברים אינם
+              נספרים כאן.
+            </p>
+          )}
+
+          {/* Drift is the one thing on this card that is an accusation and not
+              a number: the cached column and the append-only ledger disagree,
+              and only one of them could have been edited. */}
+          {walletView.totals.complete && walletView.totals.driftAgorot !== 0 && (
+            <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
+              היתרה השמורה אינה מסתדרת עם היומן: היומן אומר{' '}
+              {shekels(agorot(walletView.totals.ledgerBalanceAgorot))}, הפרש{' '}
+              {shekels(agorot(walletView.totals.driftAgorot))}.
+            </p>
+          )}
+
           <ul className="mt-3 space-y-1.5 border-t border-black/5 pt-3 text-xs">
-            {(walletTx ?? []).map((tx) => (
-              <li key={tx.id} className="flex justify-between gap-2">
-                <span className="text-black/60">
-                  {tx.type === 'earn' ? 'זיכוי' : tx.type === 'redeem' ? 'מימוש' : tx.type}
+            {walletView.entries.slice(0, 5).map((entry) => (
+              <li key={entry.id} className="flex justify-between gap-2">
+                <span className="text-black/60">{walletReasonLabel(entry.reason)}</span>
+                <span>
+                  {entry.direction === 'credit' ? '+' : '-'}
+                  {shekels(agorot(entry.amountAgorot))}
                 </span>
-                <span>{shekelsFromIlsRounded(tx.amount_ils)}</span>
                 <span className="text-black/40">
-                  {new Date(tx.created_at).toLocaleDateString('he-IL')}
+                  {new Date(entry.createdAt).toLocaleDateString('he-IL')}
                 </span>
               </li>
             ))}
-            {!walletTx?.length && <li className="text-black/40">אין תנועות ארנק</li>}
+            {walletView.entries.length === 0 && <li className="text-black/40">אין תנועות ארנק</li>}
+            {walletView.entries.length > 5 && (
+              <li className="text-black/40">ועוד {walletView.entries.length - 5} תנועות</li>
+            )}
           </ul>
         </section>
 
