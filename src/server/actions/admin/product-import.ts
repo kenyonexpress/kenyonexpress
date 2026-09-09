@@ -2,8 +2,10 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import {
+  type ImportMode,
   type RawImportRow,
   type ValidatedImportRow,
+  buildUpsertUpdateFields,
   markInFileDuplicates,
   validateImportRow,
 } from '@/lib/admin/product-import/import-rows'
@@ -12,24 +14,38 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { excludeDeleted } from '@/lib/soft-delete'
 import { createClient } from '@/lib/supabase/server'
+import type { TablesUpdate } from '@/types/database'
 import { revalidatePath, updateTag } from 'next/cache'
 
 /**
- * Server side of the CSV product import (`/admin/products/import`).
+ * Server side of the CSV/xlsx product import (`/admin/products/import`).
  *
  * Two actions, both re-validating every row through the shared
  * `validateImportRow` (productSchema + buildProductMoneyWrite):
  *
  *   previewProductImport - the dry run. Validates, resolves category names,
  *     checks slugs/skus against the database, writes NOTHING.
- *   importProductsBatch - inserts one client-sent batch. The client chunks the
- *     valid rows and calls this repeatedly, which is what drives the progress
- *     bar; each batch repeats the existence checks so a slug inserted by an
- *     earlier batch (or by another admin mid-import) fails its row with a
- *     readable message instead of a constraint error.
+ *   importProductsBatch - applies one client-sent batch ATOMICALLY. The
+ *     client chunks the valid rows and calls this repeatedly, which is what
+ *     drives the progress bar; each batch repeats the existence checks so a
+ *     slug inserted by an earlier batch (or by another admin mid-import)
+ *     fails its row with a readable message instead of a constraint error.
  *
- * Every import lands as `draft`. Publishing stays behind the per-product
- * publish gate, which needs a supplier the CSV cannot carry.
+ * Batch atomicity is compensation, not a transaction: PostgREST cannot span
+ * one across requests, and the RPC alternative would sit in
+ * `migrations/pending/` unusable until someone approves it. So the batch
+ * keeps a journal - inserted ids, and each updated row's prior values for
+ * exactly the columns about to change - and a mid-batch failure replays it
+ * backwards: inserts are deleted (admins hold `products_delete_unified`),
+ * updates restored. The restore can lose a concurrent admin edit made in the
+ * seconds between snapshot and rollback; with the dry run in front of every
+ * import that trade is taken for not leaving half a batch behind.
+ *
+ * Modes: `insert` fails a row whose slug exists; `upsert` updates it instead,
+ * through `buildUpsertUpdateFields` (only columns present in the file, money
+ * always rewritten as a unit, never status/images/supplier/type). Inserted
+ * rows always land as `draft`; publishing stays behind the per-product
+ * publish gate, which needs a supplier the file cannot carry.
  */
 
 const MAX_PREVIEW_ROWS = 5000
@@ -42,18 +58,21 @@ export interface ImportRowResult {
   slug: string | null
   name: string | null
   errors: string[]
+  /** What the row will do (preview) or did (import); absent on a failed row. */
+  action?: 'new' | 'update'
 }
 
 export interface ImportPreviewResult {
   error?: string
   rows?: ImportRowResult[]
-  summary?: { total: number; valid: number; invalid: number }
+  summary?: { total: number; valid: number; invalid: number; inserts: number; updates: number }
 }
 
 export interface ImportBatchResult {
   error?: string
   results?: ImportRowResult[]
   inserted?: number
+  updated?: number
 }
 
 function chunk<T>(items: T[], size: number): T[][] {
@@ -64,6 +83,21 @@ function chunk<T>(items: T[], size: number): T[][] {
 
 type Supabase = Awaited<ReturnType<typeof createClient>>
 
+interface ExistingProduct {
+  id: string
+  slug: string
+  sku: string | null
+  type: string
+  deleted_at: string | null
+}
+
+type CheckedRow = ValidatedImportRow & { existing?: ExistingProduct }
+
+function stripValidity(row: ValidatedImportRow, errors: string[]): ValidatedImportRow {
+  const { data: _data, money: _money, ...rest } = row
+  return { ...rest, errors }
+}
+
 /**
  * The shared, database-touching half of the pipeline: pure validation, then
  * category resolution and slug/sku existence checks. Mutates nothing.
@@ -71,7 +105,8 @@ type Supabase = Awaited<ReturnType<typeof createClient>>
 async function checkRows(
   supabase: Supabase,
   raw: RawImportRow[],
-): Promise<{ rows: ValidatedImportRow[]; categoryIds: Map<string, string>; error?: string }> {
+  mode: ImportMode,
+): Promise<{ rows: CheckedRow[]; categoryIds: Map<string, string>; error?: string }> {
   const rows = markInFileDuplicates(raw.map(validateImportRow))
   const categoryIds = new Map<string, string>()
 
@@ -90,48 +125,85 @@ async function checkRows(
     for (const c of data ?? []) categoryIds.set(c.name_he, c.id)
   }
 
-  // Existing slugs/skus. Soft-deleted rows count too: recreating a slug that an
-  // archived product still holds would collide the storefront URL history.
+  // Existing products by slug. Soft-deleted rows count too: recreating a slug
+  // that an archived product still holds would collide the storefront URL
+  // history, and updating an archived product from a CSV makes no sense.
   const slugs = [...new Set(rows.flatMap((r) => (r.data ? [r.data.slug] : [])))]
-  const existingSlugs = new Set<string>()
+  const existingBySlug = new Map<string, ExistingProduct>()
   for (const slugChunk of chunk(slugs, IN_CHUNK)) {
-    const { data, error } = await supabase.from('products').select('slug').in('slug', slugChunk)
+    const { data, error } = await supabase
+      .from('products')
+      .select('id, slug, sku, type, deleted_at')
+      .in('slug', slugChunk)
     if (error) return { rows, categoryIds, error: error.message }
-    for (const p of data ?? []) existingSlugs.add(p.slug)
+    for (const p of data ?? []) existingBySlug.set(p.slug, p)
   }
 
+  // Existing skus and which slug owns each - in upsert mode a sku is only a
+  // conflict when a DIFFERENT product holds it.
   const skus = [...new Set(rows.flatMap((r) => (r.data?.sku ? [r.data.sku] : [])))]
-  const existingSkus = new Set<string>()
+  const skuOwner = new Map<string, string>()
   for (const skuChunk of chunk(skus, IN_CHUNK)) {
-    const { data, error } = await supabase.from('products').select('sku').in('sku', skuChunk)
+    const { data, error } = await supabase.from('products').select('slug, sku').in('sku', skuChunk)
     if (error) return { rows, categoryIds, error: error.message }
-    for (const p of data ?? []) if (p.sku) existingSkus.add(p.sku)
+    for (const p of data ?? []) if (p.sku) skuOwner.set(p.sku, p.slug)
   }
 
-  const checked = rows.map((row) => {
+  const checked: CheckedRow[] = rows.map((row) => {
     const errors = [...row.errors]
-    if (row.data && existingSlugs.has(row.data.slug)) {
+    const existing = row.data ? existingBySlug.get(row.data.slug) : undefined
+
+    if (existing && mode === 'insert') {
       errors.push('קישור (slug) כבר קיים במערכת')
     }
-    if (row.data?.sku && existingSkus.has(row.data.sku)) {
-      errors.push('מק"ט כבר קיים במערכת')
+    if (existing && mode === 'upsert') {
+      if (existing.deleted_at !== null) {
+        errors.push('המוצר הקיים עם הקישור הזה הועבר לארכיון - שחזרו אותו לפני ייבוא מעדכן')
+      } else if ((row.record.type ?? '').trim() === '') {
+        // Without an explicit type the validator defaults to physical, and a
+        // coupon product would get physical money written over it silently.
+        errors.push('בעדכון מוצר קיים חובה למלא את עמודת הסוג (physical/coupon)')
+      } else if (row.data && row.data.type !== existing.type) {
+        errors.push(
+          `סוג המוצר בקובץ (${row.data.type}) שונה מהמוצר הקיים (${existing.type}) - שינוי סוג לא נתמך בייבוא`,
+        )
+      }
     }
+
+    const sku = row.data?.sku ?? null
+    if (sku) {
+      const owner = skuOwner.get(sku)
+      if (owner !== undefined && (mode === 'insert' || owner !== row.data?.slug)) {
+        errors.push(
+          mode === 'insert' ? 'מק"ט כבר קיים במערכת' : `מק"ט כבר שייך למוצר אחר (${owner})`,
+        )
+      }
+    }
+
     if (row.categoryName && !categoryIds.has(row.categoryName)) {
       errors.push(`קטגוריה "${row.categoryName}" לא נמצאה`)
     }
-    if (errors.length === row.errors.length) return row
-    const { data: _data, money: _money, ...rest } = row
-    return { ...rest, errors }
+
+    const base = errors.length === row.errors.length ? row : stripValidity(row, errors)
+    return mode === 'upsert' && existing && existing.deleted_at === null
+      ? { ...base, existing }
+      : base
   })
 
   return { rows: checked, categoryIds }
 }
 
-function toResult(row: ValidatedImportRow): ImportRowResult {
-  return { line: row.line, slug: row.slug, name: row.name, errors: row.errors }
+function toResult(row: CheckedRow): ImportRowResult {
+  return {
+    line: row.line,
+    slug: row.slug,
+    name: row.name,
+    errors: row.errors,
+    ...(row.data ? { action: row.existing ? ('update' as const) : ('new' as const) } : {}),
+  }
 }
 
-async function runPreview(raw: RawImportRow[]): Promise<ImportPreviewResult> {
+async function runPreview(raw: RawImportRow[], mode: ImportMode): Promise<ImportPreviewResult> {
   try {
     await requireAdminSession()
   } catch {
@@ -143,18 +215,45 @@ async function runPreview(raw: RawImportRow[]): Promise<ImportPreviewResult> {
   }
 
   const supabase = await createClient()
-  const { rows, error } = await checkRows(supabase, raw)
+  const { rows, error } = await checkRows(supabase, raw, mode)
   if (error) return { error }
 
   const results = rows.map(toResult)
-  const valid = results.filter((r) => r.errors.length === 0).length
+  const valid = results.filter((r) => r.errors.length === 0)
+  const updates = valid.filter((r) => r.action === 'update').length
   return {
     rows: results,
-    summary: { total: results.length, valid, invalid: results.length - valid },
+    summary: {
+      total: results.length,
+      valid: valid.length,
+      invalid: results.length - valid.length,
+      inserts: valid.length - updates,
+      updates,
+    },
   }
 }
 
-async function runImportBatch(raw: RawImportRow[]): Promise<ImportBatchResult> {
+type JournalEntry =
+  | { kind: 'insert'; id: string }
+  | { kind: 'update'; id: string; prior: Record<string, unknown> }
+
+/** Replays the journal backwards. Returns how many entries failed to revert. */
+async function rollback(supabase: Supabase, journal: JournalEntry[]): Promise<number> {
+  let failures = 0
+  for (const entry of [...journal].reverse()) {
+    const { error } =
+      entry.kind === 'insert'
+        ? await supabase.from('products').delete().eq('id', entry.id)
+        : await supabase
+            .from('products')
+            .update(entry.prior as TablesUpdate<'products'>)
+            .eq('id', entry.id)
+    if (error) failures++
+  }
+  return failures
+}
+
+async function runImportBatch(raw: RawImportRow[], mode: ImportMode): Promise<ImportBatchResult> {
   let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
     session = await requireAdminSession()
@@ -167,14 +266,57 @@ async function runImportBatch(raw: RawImportRow[]): Promise<ImportBatchResult> {
   }
 
   const supabase = await createClient()
-  const { rows, categoryIds, error } = await checkRows(supabase, raw)
+  const { rows, categoryIds, error } = await checkRows(supabase, raw, mode)
   if (error) return { error }
 
   const results: ImportRowResult[] = []
+  const journal: JournalEntry[] = []
   const insertedSlugs: string[] = []
+  const updatedSlugs: string[] = []
+  let batchError: string | null = null
 
   for (const row of rows) {
-    if (!row.data || !row.money) {
+    if (!row.data || !row.money || row.errors.length > 0) {
+      results.push(toResult(row))
+      continue
+    }
+
+    if (row.existing) {
+      const fields = buildUpsertUpdateFields(row)
+      if (!fields) {
+        results.push(toResult(row))
+        continue
+      }
+      if (row.record.category !== undefined) {
+        fields.category_id = row.categoryName ? (categoryIds.get(row.categoryName) ?? null) : null
+      }
+
+      // Snapshot exactly the columns about to change, for the rollback path.
+      const columns = Object.keys(fields)
+      const { data: prior, error: priorError } = await supabase
+        .from('products')
+        .select(columns.join(',') as '*')
+        .eq('id', row.existing.id)
+        .maybeSingle()
+      if (priorError || !prior) {
+        batchError = `שורה ${row.line}: ${priorError?.message ?? 'המוצר לעדכון לא נמצא'}`
+        break
+      }
+
+      const { error: updateError } = await supabase
+        .from('products')
+        .update(fields as TablesUpdate<'products'>)
+        .eq('id', row.existing.id)
+      if (updateError) {
+        batchError = `שורה ${row.line}: ${updateError.message}`
+        break
+      }
+      journal.push({
+        kind: 'update',
+        id: row.existing.id,
+        prior: prior as unknown as Record<string, unknown>,
+      })
+      updatedSlugs.push(row.data.slug)
       results.push(toResult(row))
       continue
     }
@@ -192,41 +334,79 @@ async function runImportBatch(raw: RawImportRow[]): Promise<ImportBatchResult> {
       ...fields
     } = row.data
 
-    const { error: insertError } = await supabase.from('products').insert({
-      ...fields,
-      ...row.money,
-      category_id: row.categoryName ? (categoryIds.get(row.categoryName) ?? null) : null,
-      images: [],
-      created_by: session.userId,
-    })
+    const { data: created, error: insertError } = await supabase
+      .from('products')
+      .insert({
+        ...fields,
+        ...row.money,
+        category_id: row.categoryName ? (categoryIds.get(row.categoryName) ?? null) : null,
+        images: [],
+        created_by: session.userId,
+      })
+      .select('id')
+      .single()
 
-    if (insertError) {
-      results.push({ ...toResult(row), errors: [insertError.message] })
-      continue
+    if (insertError || !created) {
+      batchError = `שורה ${row.line}: ${insertError?.message ?? 'ההוספה נכשלה'}`
+      break
     }
+    journal.push({ kind: 'insert', id: created.id })
     insertedSlugs.push(row.data.slug)
     results.push(toResult(row))
   }
 
-  if (insertedSlugs.length > 0) {
-    await writeAuditLog({
-      actorId: session.userId,
-      actorRole: session.role,
-      action: 'created',
-      entityType: 'products',
-      changes: { source: 'csv_import', inserted: insertedSlugs.length, slugs: insertedSlugs },
-    })
+  if (batchError) {
+    const failures = await rollback(supabase, journal)
+    const suffix =
+      failures > 0
+        ? ` (שחזור של ${failures} שורות נכשל - יש לבדוק ידנית)`
+        : ' - כל השורות בקבוצה בוטלו (rollback)'
+    return { error: `${batchError}${suffix}` }
+  }
+
+  if (insertedSlugs.length > 0 || updatedSlugs.length > 0) {
+    if (insertedSlugs.length > 0) {
+      await writeAuditLog({
+        actorId: session.userId,
+        actorRole: session.role,
+        action: 'created',
+        entityType: 'products',
+        changes: { source: 'file_import', inserted: insertedSlugs.length, slugs: insertedSlugs },
+      })
+    }
+    if (updatedSlugs.length > 0) {
+      await writeAuditLog({
+        actorId: session.userId,
+        actorRole: session.role,
+        action: 'updated',
+        entityType: 'products',
+        changes: { source: 'file_import', updated: updatedSlugs.length, slugs: updatedSlugs },
+      })
+    }
     revalidatePath('/admin/products')
     updateTag(CATALOGUE_TAG)
   }
 
-  return { results, inserted: insertedSlugs.length }
+  return { results, inserted: insertedSlugs.length, updated: updatedSlugs.length }
 }
 
-export async function previewProductImport(raw: RawImportRow[]): Promise<ImportPreviewResult> {
-  return withActionContext('admin.product.import_preview', () => runPreview(raw))
+/** Server-action args come off the wire; anything but 'upsert' means insert. */
+function coerceMode(mode: unknown): ImportMode {
+  return mode === 'upsert' ? 'upsert' : 'insert'
 }
 
-export async function importProductsBatch(raw: RawImportRow[]): Promise<ImportBatchResult> {
-  return withActionContext('admin.product.import_batch', () => runImportBatch(raw))
+export async function previewProductImport(
+  raw: RawImportRow[],
+  mode: ImportMode = 'insert',
+): Promise<ImportPreviewResult> {
+  return withActionContext('admin.product.import_preview', () => runPreview(raw, coerceMode(mode)))
+}
+
+export async function importProductsBatch(
+  raw: RawImportRow[],
+  mode: ImportMode = 'insert',
+): Promise<ImportBatchResult> {
+  return withActionContext('admin.product.import_batch', () =>
+    runImportBatch(raw, coerceMode(mode)),
+  )
 }
