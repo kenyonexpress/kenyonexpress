@@ -3,7 +3,6 @@ import {
   isSmsCapableIsraeli,
   maskPhone,
   phoneAuthEnabled,
-  phoneAuthEnabledPublic,
   phoneAuthErrorHebrew,
   toE164Israeli,
 } from './phone-otp'
@@ -18,11 +17,14 @@ describe('phoneAuthEnabled', () => {
     expect(phoneAuthEnabled(env({ PHONE_AUTH_ENABLED: '1' }))).toBe(true)
   })
 
-  it('reads a separate public variable on the client side', () => {
-    // Two variables, because the server one must not be inlined into the
-    // browser bundle and the client cannot read the server one.
-    expect(phoneAuthEnabledPublic(env({ PHONE_AUTH_ENABLED: 'true' }))).toBe(false)
-    expect(phoneAuthEnabledPublic(env({ NEXT_PUBLIC_PHONE_AUTH_ENABLED: 'true' }))).toBe(true)
+  it('is not read from a public variable, because there is no client copy', () => {
+    // There used to be a `phoneAuthEnabledPublic` and nothing called it: the
+    // login page is a server component and passes the answer down as a prop,
+    // so there is no second value that could disagree with this one. An
+    // operator who set only `NEXT_PUBLIC_PHONE_AUTH_ENABLED` -- which
+    // ENV-REFERENCE listed -- got a login page with no phone tab and no reason
+    // given.
+    expect(phoneAuthEnabled(env({ NEXT_PUBLIC_PHONE_AUTH_ENABLED: 'true' }))).toBe(false)
   })
 })
 

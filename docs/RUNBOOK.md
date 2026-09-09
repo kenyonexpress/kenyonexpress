@@ -350,6 +350,30 @@ it before concluding a fix did not work. Related: `pnpm start` runs with
 measured, so production-only boot guards apply. `ALLOW_INCOMPLETE_ENV` is the
 escape hatch.
 
+### 4.8 Phone sign-in is switched on and every code is rejected, or never arrives
+
+Three of the four things phone sign-in depends on are **not in this repository**
+and cannot be asserted by any test here. They are Supabase Auth (GoTrue)
+project settings, changed in the dashboard.
+
+| What | Required value | Why this one |
+|---|---|---|
+| Phone provider | enabled, with an SMS provider wired | Without it `signInWithOtp({ phone })` fails with a message the customer cannot act on. `PHONE_AUTH_ENABLED` exists to keep the tab hidden until this is true. |
+| OTP length | **6** | `phoneVerifySchema` refuses anything that is not exactly six digits, on purpose: a wrong-length string forwarded to the provider spends one of the five verification attempts that number gets per hour. Shorten the project setting without changing that regex and every code is rejected before it is checked. |
+| OTP expiry | **5 minutes** | The section this was built for names it. Longer is a code that stays valid after the customer has walked away from the handset; there is no way to read the current value from here. |
+
+The fourth is `PHONE_AUTH_ENABLED` in Vercel. **There is no
+`NEXT_PUBLIC_PHONE_AUTH_ENABLED`** -- the login page is a server component and
+passes the answer down as a prop. A variable by that name was listed in
+ENV-REFERENCE and read by nothing, so setting only it produced a login page
+with no phone tab and no explanation.
+
+What IS enforced in code, so it does not need checking here: 3 sends per hour
+per number and 5 per IP (`runSendPhoneOtp`), 5 verification attempts per hour
+per number and 20 per IP (`runVerifyPhoneOtp`), Israeli mobile only, and E.164
+normalisation before either counter is read -- so every spelling of one number
+shares one budget.
+
 ### 4.x A merge you did not start, with conflict markers already staged
 
 **Symptom.** `git status` looks like an ordinary large staged change.

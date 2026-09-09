@@ -15,10 +15,21 @@ export function phoneAuthEnabled(env: NodeJS.ProcessEnv = process.env): boolean 
   return env.PHONE_AUTH_ENABLED === 'true' || env.PHONE_AUTH_ENABLED === '1'
 }
 
-/** The same value, for the client bundle. Server and client must not disagree. */
-export function phoneAuthEnabledPublic(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.NEXT_PUBLIC_PHONE_AUTH_ENABLED === 'true' || env.NEXT_PUBLIC_PHONE_AUTH_ENABLED === '1'
-}
+/**
+ * THERE IS NO CLIENT-SIDE FLAG, AND THE ABSENCE IS THE DESIGN.
+ *
+ * There used to be a `phoneAuthEnabledPublic` reading
+ * `NEXT_PUBLIC_PHONE_AUTH_ENABLED`, with a comment saying server and client
+ * must not disagree. Nothing called it. `login/page.tsx` is a server component
+ * that calls `phoneAuthEnabled()` and passes the answer down as a prop, which
+ * is the arrangement where they CANNOT disagree, so the second variable had no
+ * job -- while `docs/ENV-REFERENCE.md` still listed it. An operator who set
+ * only the public one got a login page with no phone tab and no explanation;
+ * one who set both never learned that half of it was inert.
+ *
+ * One variable, read on the server. The Expo app has its own
+ * (`EXPO_PUBLIC_PHONE_AUTH_ENABLED`) because it has no server to ask.
+ */
 
 /**
  * E.164, which is the only format Supabase and Twilio accept.

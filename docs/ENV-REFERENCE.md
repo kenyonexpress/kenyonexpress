@@ -282,7 +282,7 @@ unset; nothing is sent.** Logs: `analytics.meta_purchase_failed`,
 | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL` | required in practice | Absolute URLs in emails, sitemap, OG images and the Cardcom return URL. Wrong here means a customer is redirected to the wrong host after paying. |
 | `CHECKOUT_ENABLED` | optional | A kill switch for checkout. |
 | `PUSH_ENABLED` | optional | |
-| `PHONE_AUTH_ENABLED`, `NEXT_PUBLIC_PHONE_AUTH_ENABLED` | optional | |
+| `PHONE_AUTH_ENABLED` | optional | Shows the phone tab on `/login`. **Server-side only, and there is no `NEXT_PUBLIC_` twin** -- the login page is a server component and passes the answer down as a prop. Setting it is not enough on its own: Supabase's own SMS provider has to be wired in the dashboard, or every send fails with a message the customer cannot act on. See `RUNBOOK` §4.8. |
 | `NEXT_PUBLIC_WHATSAPP_PHONE` | optional | |
 | `INVOICE_VAT_PERCENT` | optional | **Do not use to change the tax rate.** `VAT_RATE_BP = 1800` in `src/lib/money.ts:65` is the single definition. Two sources for one tax is how this project already shipped a 17/18 split. |
 
