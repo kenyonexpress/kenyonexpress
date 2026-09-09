@@ -1,5 +1,6 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
+import { publishedContentPageEntries } from '@/lib/content/read'
 import { newestTimestamp } from '@/lib/seo/lastmod'
 import {
   type SitemapEntry,
@@ -119,7 +120,11 @@ export async function sitemapSectionEntries(section: SitemapSection): Promise<Si
 
   switch (section) {
     case 'content':
-      return contentSitemapEntries(base, await catalogueTouched())
+      return contentSitemapEntries(
+        base,
+        await catalogueTouched(),
+        await publishedContentPageEntries(),
+      )
     case 'categories':
       return categorySitemapEntries(base, await readCategories())
     case 'products':

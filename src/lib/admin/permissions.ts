@@ -21,6 +21,7 @@ export type AdminSection =
   | 'audit-log'
   | 'suppliers'
   | 'discounts'
+  | 'content'
 
 export type SectionAccess = 'none' | 'read' | 'write'
 
@@ -37,6 +38,12 @@ const CONTENT_UPLOADER_ACCESS: Record<AdminSection, SectionAccess> = {
   // A campaign spends the platform's commission. That is money, and money is
   // not part of the catalog role, however much a discount code looks like content.
   discounts: 'none',
+  // The site's own pages say how refunds, cancellation and validity work, and
+  // under Israeli consumer law a factual claim on a marketing page binds the
+  // business. `content_uploader` loads catalogue copy; it does not get to
+  // rewrite what the business promises. The name of the role is the trap here:
+  // "content" in `content_uploader` means product content.
+  content: 'none',
 }
 
 const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
@@ -52,6 +59,9 @@ const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
   // Support answers "why did my code not work", so it must see the campaign.
   // It may not create or edit one: that is spending.
   discounts: 'read',
+  // Support quotes these pages back to customers, so reading them is part of
+  // answering. Editing them is not.
+  content: 'read',
 }
 
 export function sectionAccess(

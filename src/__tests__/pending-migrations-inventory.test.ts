@@ -537,6 +537,32 @@ describe('the pending migration inventory', () => {
       // the number, a duplicate r2_key REFUSED, and a non-hex contract hash
       // REFUSED.
       '204_supplier_onboarding.sql',
+      // 205: content_pages + content_page_revisions, for [58].
+      //
+      // IT SEEDS NOTHING, which is the decision worth recording here. The text
+      // of /about, /faq, /contact and /suppliers stays in TypeScript and is the
+      // FLOOR the reads fall back to; a row is created the first time an
+      // operator saves that page. Seeding it in SQL would be a second copy of
+      // every paragraph, in a file applied once and never read again, and the
+      // copy that drifts would be the one on screen. Applying this file
+      // therefore changes nothing a visitor sees.
+      //
+      // Writes go through three SECURITY DEFINER functions rather than
+      // PostgREST, because the page update and its revision row have to be one
+      // transaction and the revision NUMBER has to be allocated under a row
+      // lock. Rollback appends rather than deletes.
+      //
+      // Probed against production, rolled back: the first save is revision 1
+      // and the second is 2 on the same row, published_at does NOT move on a
+      // later edit or on unpublish, an empty published prose body REFUSED while
+      // the same body as a draft is accepted, an faq page with no entries
+      // REFUSED, a Hebrew slug REFUSED, a bound route under /page/ REFUSED, a
+      // second page claiming /about REFUSED, a rollback of a revision that does
+      // not exist REFUSED, an unknown status REFUSED, a 9-character meta
+      // description REFUSED, a javascript: og image REFUSED, and anon saw the
+      // one published row, no revisions, and could neither update a page nor
+      // execute save_content_page.
+      '205_content_pages.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

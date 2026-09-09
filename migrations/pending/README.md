@@ -1,5 +1,58 @@
 # `migrations/pending/`
 
+## 2026-09-09: 205 WRITTEN, not applied, and it seeds nothing
+
+`205_content_pages.sql`.
+
+**The decision worth reading first is that it inserts no rows.** The obvious
+shape is five INSERTs carrying the text of `/about`, `/faq`, `/contact`,
+`/suppliers` and a new `/page/how-it-works`. That text already lives in
+`src/content/about.ts`, `src/content/legal/faq.ts` and `src/lib/content/pages.ts`,
+and those modules are what the routes render today. A copy here would be a
+second copy of every paragraph, in a file applied once and then never read
+again, and the copy that drifts would be the one on screen. So the TypeScript
+stays the floor: `getContentPage` merges published rows over `BUILT_IN_PAGES`,
+and a row is created the first time an operator saves that page.
+
+**Applying this file therefore changes nothing a visitor sees.** It creates two
+empty tables and three functions.
+
+**`bound_route` is not writable from any form.** Four of the five pages already
+have addresses that are in the sitemap, carry canonicals and are linked from the
+footer; `/page/about` alongside `/about` would be duplicate content competing
+with itself. The column records the address a page renders at, for the sitemap
+and the admin's view link. If an operator could type it they could point a page
+at `/checkout`, and the sitemap would publish a URL that renders something else.
+
+**Writes go through three `SECURITY DEFINER` functions, not PostgREST.** A page
+update and its revision row have to be one transaction, and the revision NUMBER
+has to be allocated under a row lock -- `max(revision) + 1` from the client is a
+read-then-write that two overlapping saves both lose. `published_at` is set once
+on the first publish and never moved.
+
+**Rollback appends; it never deletes.** Restoring revision 3 writes it forward
+as a new revision with a note naming the source, and revisions 4 and 5 stay
+exactly where they are. An undo that erases what it undid turns the history from
+evidence into a guess.
+
+**Verified against production without applying.** One `DO` block created both
+tables, both policies, all three functions, exercised them, and ended in an
+unconditional `RAISE`. All of it passed: the first save is revision 1 and the
+second is 2 on the same row, `published_at` does not move on a later edit or on
+unpublish, an empty published prose body is refused while the same body as a
+draft is accepted, an faq page with no entries is refused, a Hebrew slug is
+refused, a bound route under `/page/` is refused, a second page claiming
+`/about` is refused, a rollback of a revision that does not exist raises rather
+than blanking the page, an unknown status is refused, a nine-character meta
+description is refused, a `javascript:` og image is refused, and under `SET ROLE
+anon` the client saw the one published row, no revisions at all, and could
+neither update a page nor execute `save_content_page`. `to_regclass` and
+`to_regproc` were re-read afterwards: nothing left behind.
+
+Order: independent of everything else pending. It creates two tables and three
+functions and touches nothing existing.
+
+
 ## 2026-09-09: 204 WRITTEN, not applied, an applicant is not a supplier
 
 `204_supplier_onboarding.sql`.

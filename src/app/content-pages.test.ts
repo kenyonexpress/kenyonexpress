@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { BUILT_IN_PAGES, type BuiltInPageSlug } from '@/lib/content/pages'
 import { contentSitemapEntries } from '@/lib/seo/sitemap-sections'
 import { describe, expect, it } from 'vitest'
 
@@ -70,11 +71,43 @@ describe('content pages carry the SEO fields a crawler needs', () => {
       expect(text).toContain('alternates:')
       expect(text).toContain('canonical:')
     })
+  }
 
-    it(`${name} declares a description`, () => {
-      expect(source(...path)).toMatch(/description:\s*\n?\s*'/)
+  /**
+   * The description is asserted on the VALUE, not on the source text.
+   *
+   * It used to be `expect(source).toMatch(/description:\s*\n?\s*'/)`, which
+   * required the string to be a literal in the file. [58] moved /about and
+   * /suppliers onto the CMS, so their description is now `seoDescription` from
+   * the page row with the body's excerpt behind it - and the old assertion
+   * failed on two pages whose descriptions had got BETTER, while it would still
+   * have passed on `description: ''`.
+   *
+   * `/blog` is not a content page and keeps its literal, so it is checked the
+   * way it is written.
+   */
+  const CMS_BACKED: [string, BuiltInPageSlug][] = [
+    ['about', 'about'],
+    ['suppliers', 'supplier-signup'],
+    ['contact', 'contact'],
+    ['faq', 'faq'],
+    ['how-it-works', 'how-it-works'],
+  ]
+
+  for (const [name, slug] of CMS_BACKED) {
+    it(`${name} ships a description long enough to be used as one`, () => {
+      const description = BUILT_IN_PAGES[slug].seoDescription
+      // 205's CHECK refuses a stored override under 20 characters. The built-in
+      // is what a page falls back to before any row exists, so it is held to
+      // the same floor.
+      expect(description).toBeTruthy()
+      expect((description ?? '').length).toBeGreaterThanOrEqual(20)
     })
   }
+
+  it('blog keeps its literal description, being the one page with no CMS row', () => {
+    expect(source('blog', 'page.tsx')).toMatch(/description:\s*\n?\s*'/)
+  })
 })
 
 describe('the new pages are reachable', () => {

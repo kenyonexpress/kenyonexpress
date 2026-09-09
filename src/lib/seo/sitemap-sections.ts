@@ -195,12 +195,45 @@ export function regionSitemapEntries(base: string): SitemapEntry[] {
  * for the three pages whose CONTENT is the catalogue. Everything else either
  * carries a real date of its own (posts, legal documents) or carries none.
  */
+/**
+ * A page whose body the operator can edit, as sitemap input.
+ *
+ * `path` and not `slug`, because four of the five built-in pages render at an
+ * address they already had - `/about`, not `/page/about`. The decision is made
+ * once, in `contentPageHref`.
+ */
+export type ContentPageEntry = { path: string; updatedAt: string | null }
+
 export function contentSitemapEntries(
   base: string,
   catalogueTouched: Date | undefined,
+  /**
+   * Published `content_pages` rows. Defaults to none, which is what a caller
+   * that only wants the fixed pages gets - and what the site emits until
+   * migration 205 is applied.
+   */
+  contentPages: readonly ContentPageEntry[] = [],
 ): SitemapEntry[] {
   const site = trimBase(base)
-  return [
+
+  /**
+   * When the CMS knows a page was last edited, that beats the guess.
+   *
+   * The four fixed content entries below carried NO `lastModified` and said why:
+   * "`/contact` changes when the code changes, and there is no signal here for
+   * that". A `content_pages` row IS that signal, so once one exists the entry
+   * stops saying "I do not know" and starts saying a date that is true. With no
+   * row it keeps omitting it, which is still better than a date that is wrong
+   * every time.
+   */
+  const edited = new Map(
+    contentPages
+      .filter((page) => page.updatedAt !== null)
+      .map((page) => [page.path, new Date(page.updatedAt as string)] as const),
+  )
+  const lastEdited = (path: string) => edited.get(path)
+
+  const fixed: SitemapEntry[] = [
     { url: `${site}/`, lastModified: catalogueTouched, changeFrequency: 'daily', priority: 1 },
     {
       url: `${site}/products`,
@@ -214,15 +247,32 @@ export function contentSitemapEntries(
       changeFrequency: 'daily',
       priority: 0.9,
     },
-    // No lastModified at all. `/contact` changes when the code changes, and
-    // there is no signal here for that; omitting it says "I do not know", which
-    // is both true and better than a date that is wrong every time.
-    { url: `${site}/contact`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${site}/faq`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${site}/about`, changeFrequency: 'monthly', priority: 0.5 },
+    {
+      url: `${site}/contact`,
+      lastModified: lastEdited('/contact'),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${site}/faq`,
+      lastModified: lastEdited('/faq'),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${site}/about`,
+      lastModified: lastEdited('/about'),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
     // Higher than the other content pages because it is the page a business
     // lands on, and a business is worth more than a session.
-    { url: `${site}/suppliers`, changeFrequency: 'monthly', priority: 0.7 },
+    {
+      url: `${site}/suppliers`,
+      lastModified: lastEdited('/suppliers'),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
     { url: `${site}/blog`, changeFrequency: 'weekly', priority: 0.6 },
     // Each post carries a real `publishedAt`, so unlike `/contact` there IS a
     // date worth publishing. Driven off the same registry the index renders, so
@@ -244,4 +294,28 @@ export function contentSitemapEntries(
       priority: 0.3,
     })),
   ]
+
+  /**
+   * Pages the operator created, minus the ones already listed above.
+   *
+   * DEDUPED BY PATH RATHER THAN APPENDED. `/about` is both a fixed entry and a
+   * `content_pages` row bound to that address, and a sitemap that lists one URL
+   * twice is a sitemap Search Console reports as containing errors - for a
+   * reason that would look like nothing at all in the code that emits it.
+   *
+   * The fixed entries WIN, because they carry the priorities and change
+   * frequencies that were chosen per page, and a generated entry would flatten
+   * `/suppliers` back down to the default.
+   */
+  const listed = new Set(fixed.map((entry) => entry.url))
+  const extra: SitemapEntry[] = contentPages
+    .map((page) => ({
+      url: `${site}${page.path}`,
+      lastModified: page.updatedAt ? new Date(page.updatedAt) : undefined,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    }))
+    .filter((entry) => !listed.has(entry.url))
+
+  return [...fixed, ...extra]
 }

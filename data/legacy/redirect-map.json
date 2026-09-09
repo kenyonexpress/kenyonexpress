@@ -153,6 +153,7 @@
       "/admin/fraud",
       "/admin/growth",
       "/admin/orders",
+    "/admin/pages",
       "/admin/payments",
       "/admin/payouts",
       "/admin/products",

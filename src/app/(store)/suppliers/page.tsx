@@ -1,12 +1,18 @@
+import RichText from '@/components/content/RichText'
 import SupplierLeadForm from '@/components/storefront/SupplierLeadForm'
+import { excerpt } from '@/lib/content/markup'
+import { getBoundContentPage } from '@/lib/content/read'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
-  title: 'הצטרפו כספקים',
-  description:
-    'בית עסק שרוצה למכור קופונים ומוצרים בקניון אקספרס: איך זה עובד, מה נדרש, ואיך משאירים פרטים.',
-  alternates: { canonical: '/suppliers' },
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getBoundContentPage('supplier-signup')
+  return {
+    title: page.seoTitle ?? page.title,
+    description:
+      page.seoDescription ?? (page.body.kind === 'prose' ? excerpt(page.body.markup) : page.title),
+    alternates: { canonical: '/suppliers' },
+  }
 }
 
 /**
@@ -23,6 +29,13 @@ export const metadata: Metadata = {
  * The frame matches `/about` and `/faq`, which were measured against the live
  * template. A marketing page with its own rhythm is what the comparison gate
  * exists to catch.
+ *
+ * THE CMS OWNS THE INTRODUCTION ONLY, under the slug `supplier-signup`. The
+ * four numbered steps, the three fact cards and the lead form stay in code, and
+ * the reason is in the paragraph above: every one of those sentences is a claim
+ * about what migration 051 enforces, and the moment they are editable text they
+ * stop being checkable against the schema. An operator may rewrite the pitch;
+ * the promises are not a text box.
  */
 
 const STEPS = [
@@ -59,7 +72,9 @@ const FACTS = [
   },
 ] as const
 
-export default function SuppliersPage() {
+export default async function SuppliersPage() {
+  const page = await getBoundContentPage('supplier-signup')
+
   return (
     <main className="mx-auto w-full max-w-page px-4 py-10">
       <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
@@ -73,11 +88,8 @@ export default function SuppliersPage() {
       </nav>
 
       <header className="mb-10 max-w-3xl">
-        <h1 className="text-3xl font-bold text-heading">הצטרפו כספקים</h1>
-        <p className="mt-4 text-base leading-relaxed text-heading/80">
-          קניון אקספרס מוכרת קופונים של בתי עסק ישראליים. הלקוח משלם כאן מקדמה, מגיע אליכם עם שובר
-          שנסרק במקום, ואת היתרה משלם אצלכם. אנחנו מביאים את הלקוח, אתם נותנים את השירות.
-        </p>
+        <h1 className="text-3xl font-bold text-heading">{page.title}</h1>
+        {page.body.kind === 'prose' && <RichText markup={page.body.markup} />}
       </header>
 
       <section className="mb-12 max-w-3xl">

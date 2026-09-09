@@ -33,6 +33,10 @@ const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
 
 const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   { label: 'אודות', href: '/about' },
+  // The one content page with no address of its own, so `/page/<slug>` is where
+  // it lives. A page in the sitemap and nowhere else is a page Google finds and
+  // a customer does not.
+  { label: 'איך זה עובד', href: '/page/how-it-works' },
   { label: 'צור קשר', href: '/contact' },
   { label: 'שאלות נפוצות', href: '/faq' },
   { label: 'הבלוג', href: '/blog' },

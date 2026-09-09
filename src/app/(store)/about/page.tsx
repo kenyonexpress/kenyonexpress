@@ -1,33 +1,47 @@
-import { ABOUT_UPDATED_AT, aboutIntro, aboutSections } from '@/content/about'
+import RichText from '@/components/content/RichText'
+import { excerpt } from '@/lib/content/markup'
+import { getBoundContentPage } from '@/lib/content/read'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
-  title: 'אודות',
-  description:
-    'מי אנחנו וכיצד עובדת רכישת קופון בקניון אקספרס: תשלום מקדים, שובר עם QR, יתרה בבית העסק, תוקף וזיכוי אוטומטי בפקיעה.',
-  alternates: { canonical: '/about' },
+/**
+ * The about page, whose words now come from the CMS.
+ *
+ * WHAT CHANGED AND WHAT DID NOT. The address, the frame, the breadcrumb and the
+ * typography are untouched: `max-w-page` outside, `max-w-3xl` for the measure,
+ * copied from `/faq`, which was measured against the live template. What moved
+ * is the source of the text. `getBoundContentPage('about')` returns the
+ * published `content_pages` row if there is one and the built-in otherwise, and
+ * the built-in IS `src/content/about.ts` reassembled by `BUILT_IN_PAGES` - so
+ * with migration 205 unapplied this page renders exactly the words it rendered
+ * before, from exactly the module it read before.
+ *
+ * THE SUPPLIER CALL TO ACTION IS NOT PART OF THE BODY. It is a card with a
+ * button, and an operator editing prose has no reason to be able to delete the
+ * one link on this page that turns a reader into a business. The CMS owns the
+ * prose; the page owns its furniture.
+ */
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getBoundContentPage('about')
+  return {
+    title: page.seoTitle ?? page.title,
+    description:
+      page.seoDescription ?? (page.body.kind === 'prose' ? excerpt(page.body.markup) : page.title),
+    alternates: { canonical: '/about' },
+  }
 }
 
-/**
- * The about page.
- *
- * Structure and spacing are copied from `/faq`, which was itself measured
- * against the live template: the same `max-w-page` frame, the same breadcrumb,
- * the same `max-w-3xl` measure for body text. A new marketing page with its own
- * rhythm is exactly what the comparison gate exists to catch, and matching an
- * existing page is cheaper than defending a new one.
- *
- * The content is a typed module rather than JSX, for the reason
- * `content/legal/faq.ts` gives: what the site claims about itself has to be
- * reviewable in one file, not spread through markup.
- */
-export default function AboutPage() {
-  const updated = new Date(ABOUT_UPDATED_AT).toLocaleDateString('he-IL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+export default async function AboutPage() {
+  const page = await getBoundContentPage('about')
+
+  const updated = page.updatedAt
+    ? new Date(page.updatedAt).toLocaleDateString('he-IL', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null
 
   return (
     <main className="mx-auto w-full max-w-page px-4 py-10">
@@ -42,22 +56,12 @@ export default function AboutPage() {
       </nav>
 
       <header className="mb-8 max-w-3xl">
-        <h1 className="text-3xl font-bold text-heading">אודות קניון אקספרס</h1>
-        <p className="mt-2 text-sm text-heading/75">עודכן לאחרונה: {updated}</p>
-        <p className="mt-4 text-base leading-relaxed text-heading/80">{aboutIntro}</p>
+        <h1 className="text-3xl font-bold text-heading">{page.title}</h1>
+        {updated && <p className="mt-2 text-sm text-heading/75">עודכן לאחרונה: {updated}</p>}
       </header>
 
       <div className="max-w-3xl space-y-8">
-        {aboutSections.map((section) => (
-          <section key={section.heading}>
-            <h2 className="text-xl font-semibold text-heading">{section.heading}</h2>
-            {section.paragraphs.map((paragraph) => (
-              <p key={paragraph} className="mt-3 text-base leading-relaxed text-heading/80">
-                {paragraph}
-              </p>
-            ))}
-          </section>
-        ))}
+        {page.body.kind === 'prose' && <RichText markup={page.body.markup} />}
 
         <section className="rounded-xl border border-heading/10 bg-brand-accent/40 p-5">
           <h2 className="text-lg font-semibold text-heading">רוצים להצטרף כספקים?</h2>
