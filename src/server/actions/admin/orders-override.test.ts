@@ -160,13 +160,17 @@ describe('overrideOrderStatus', () => {
     expect(writeAuditLog).not.toHaveBeenCalled()
   })
 
-  it('releases the stock reservation on pending -> cancelled', async () => {
+  it('releases the stock reservation and the discount claim on pending -> cancelled', async () => {
     queue('orders.select', orderRow('pending'))
     queue('orders.update', { data: { id: ORDER_ID }, error: null })
 
     const result = await overrideOrderStatus(null, form('cancelled'))
     expect(result).toEqual({ success: 'הסטטוס עודכן ל"בוטלה"' })
-    expect(rpcCalls).toEqual([{ fn: 'release_order_stock', args: { p_order_id: ORDER_ID } }])
+    // Both holds go back together: the shelf space and the coupon use (227).
+    expect(rpcCalls).toEqual([
+      { fn: 'release_order_stock', args: { p_order_id: ORDER_ID } },
+      { fn: 'release_order_discount', args: { p_order_id: ORDER_ID } },
+    ])
     expect(writeAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({ changes: { status: { from: 'pending', to: 'cancelled' } } }),
     )

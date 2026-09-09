@@ -5216,8 +5216,18 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_order_discount: {
+        Args: {
+          p_amount_agorot?: number
+          p_code: string
+          p_order_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_user_rate_limits: { Args: never; Returns: undefined }
+      consume_order_discount: { Args: { p_order_id: string }; Returns: number }
       consume_order_stock: { Args: { p_order_id: string }; Returns: number }
       credit_expired_vouchers: { Args: never; Returns: number }
       current_supplier_id: { Args: never; Returns: string }
@@ -5427,6 +5437,15 @@ export type Database = {
         Args: { p_product_id: string }
         Returns: number
       }
+      redeem_coupon_qr: {
+        Args: {
+          p_amount_agorot?: number
+          p_code: string
+          p_order_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       redeem_voucher: {
         Args: {
           p_code: string
@@ -5442,7 +5461,9 @@ export type Database = {
         Args: { p_order_id: string; p_reason?: string }
         Returns: number
       }
+      release_expired_order_discounts: { Args: never; Returns: number }
       release_expired_stock_reservations: { Args: never; Returns: number }
+      release_order_discount: { Args: { p_order_id: string }; Returns: number }
       release_order_stock: { Args: { p_order_id: string }; Returns: number }
       reserve_order_stock: {
         Args: { p_order_id: string; p_ttl_minutes?: number }

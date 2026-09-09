@@ -91,6 +91,20 @@ async function runCancelPendingOrder(
     })
   }
 
+  // The discount claim goes back with the stock, for the same reason and with
+  // the same best-effort stance: the sweep frees it at expires_at anyway, this
+  // just does it now. release_order_discount hands the use back on both
+  // counters (discount_campaigns and coupons) via released_at.
+  const { error: discountReleaseError } = await supabase.rpc('release_order_discount', {
+    p_order_id: parsed.data.id,
+  })
+  if (discountReleaseError) {
+    log.warn('admin.order_cancel_discount_release_failed', {
+      orderId: parsed.data.id,
+      reason: discountReleaseError.message,
+    })
+  }
+
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
@@ -258,6 +272,18 @@ async function runOverrideOrderStatus(
       log.warn('admin.order_override_stock_release_failed', {
         orderId: id,
         reason: releaseError.message,
+      })
+    }
+
+    // Same stance as the stock line above: the discount claim is a hold, and
+    // a move that frees the stock frees the use with it.
+    const { error: discountReleaseError } = await supabase.rpc('release_order_discount', {
+      p_order_id: id,
+    })
+    if (discountReleaseError) {
+      log.warn('admin.order_override_discount_release_failed', {
+        orderId: id,
+        reason: discountReleaseError.message,
       })
     }
   }

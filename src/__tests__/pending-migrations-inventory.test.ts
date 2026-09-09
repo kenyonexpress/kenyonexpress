@@ -299,6 +299,10 @@ describe('the pending migration inventory', () => {
     // fraud tables (fraud_flags, fraud_review_queue), proven first in a
     // rolled-back DO block and filed here as the record like 217/223/224.
     // Numbered 226 because 225 is taken by a pending file on another branch.
+    // 227 IS applied (2026-09-10, `discount_claim_wiring_227`): replay-first
+    // claim_order_discount, the expired-order discount sweep and the
+    // stranded-payment consume, proven first in a rolled-back DO block and
+    // filed here as the record like 217/223/224/226.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
@@ -307,6 +311,7 @@ describe('the pending migration inventory', () => {
       '223_restock_on_refund.sql',
       '224_post059_price_cashback_twins.sql',
       '226_fraud_controls.sql',
+      '227_discount_claim_wiring.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

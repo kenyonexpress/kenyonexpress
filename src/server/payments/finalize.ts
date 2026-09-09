@@ -636,6 +636,26 @@ export async function finalizeOrder(input: {
       })
     }
 
+    // The discount claim, re-affirmed for the payment that outlived its hold.
+    //
+    // The claim was taken at checkout (4c) and is normally still live here, in
+    // which case this is a no-op. But an order the sweep already released - it
+    // expired at 30 minutes, the stranded-payments cron verified the charge
+    // hours later - was charged WITH the discount in it, so the use is real:
+    // consume_order_discount revives the released redemption rows and puts the
+    // use back on `used_count`. Idempotent through `released_at`, so a
+    // replayed webhook re-adds nothing. Same class as the stock line above and
+    // equally forbidden from failing the finalize: the card is charged.
+    const { error: discountError } = await admin.rpc('consume_order_discount', {
+      p_order_id: order.id,
+    })
+    if (discountError) {
+      log.error('finalize.discount_consume_failed', {
+        orderId: order.id,
+        reason: discountError.message,
+      })
+    }
+
     // The authoritative purchase event, sent from the server at the moment the
     // order actually became paid.
     //

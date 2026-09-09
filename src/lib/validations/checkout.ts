@@ -222,6 +222,7 @@ export type CheckoutActionErrorCode =
   | 'NOT_FOUND'
   | 'INSUFFICIENT_STOCK'
   | 'INSUFFICIENT_WALLET'
+  | 'COUPON_INVALID'
   | 'CONSENT_REQUIRED'
   | 'ADDRESS_REQUIRED'
   | 'EXPIRED'
