@@ -420,6 +420,24 @@ describe('the pending migration inventory', () => {
       // guard=PASSED, kinds=16, price_drop accepted, a bogus kind still
       // refused, account_deleted kept.
       '200_wishlist_alert_kinds.sql',
+      // 201 WRITTEN 2026-09-09, not applied. Flash deals: a price change with a
+      // time on it. `discount_campaigns` (096) schedules a CODE; nothing has
+      // ever scheduled a PRICE, so the only way to run one was an operator
+      // editing kenyon_price twice and remembering to come back.
+      //
+      // The interesting property is what it does NOT need to do. A scheduler
+      // that moves prices on a timer, over a catalogue where 15 of 44 products
+      // advertise an unevidenced struck-through price, reads like a machine for
+      // manufacturing non-compliant discounts -- and is not, because 193
+      // governs the CLAIM rather than the price. Its whole duty to compliance
+      // is that every applied change writes a price_history row with
+      // source='change', the column 193 created for this and left unused,
+      // closing the sampling gap 193 documented: until now the record was one
+      // observation a day at 04:00, so a deal from 10:00 to 18:00 left no
+      // trace. Probed against production, rolled back: a duplicate moment
+      // REFUSED, a negative price REFUSED, a past-due row still due, a
+      // cancelled row freeing its slot, and anon unable to read the schedule.
+      '201_scheduled_price_changes.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

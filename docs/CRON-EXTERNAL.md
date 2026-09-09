@@ -98,6 +98,7 @@ file is in a repository.
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 9b https://kenyonexpress.vercel.app/api/cron/price-snapshot      GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 9c https://kenyonexpress.vercel.app/api/cron/wishlist-alerts     GET  0 5 * * *     Authorization: Bearer <CRON_SECRET>
+9d https://kenyonexpress.vercel.app/api/cron/price-schedule      GET  */5 * * * *   Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
@@ -134,6 +135,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
 | 9b | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/price-snapshot` |
 | 9c | 05:00 daily | `0 5 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
+| 9d | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/price-schedule` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 
@@ -155,6 +157,12 @@ timing changes with the scheduler.
   never finalised. That state is the worst one in the system and this is what
   notices it.
 - **`reconcile`** matches the day's payments against orders.
+- **`price-schedule`** applies flash deals whose moment has come. **Every five
+  minutes, and the granularity is the feature**: a deal scheduled for 14:00
+  that started at 15:00 is not the deal that was advertised. A due row in the
+  past is still due, so a missed run catches up rather than skipping. It also
+  writes the `price_history` row for the change, which is the only record a
+  mid-day price movement leaves — the daily snapshot samples once at 04:00.
 - **`wishlist-alerts`** mails a saved product that got cheaper, and everyone
   waiting on one that came back into stock. **05:00, an hour AFTER
   `price-snapshot`**, and the order is the point: the price-drop comparison

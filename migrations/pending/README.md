@@ -1,5 +1,55 @@
 # `migrations/pending/`
 
+## 2026-09-09: 201 WRITTEN, not applied — a flash deal, and what it does not need to do
+
+`201_scheduled_price_changes.sql`. `discount_campaigns` (096) schedules a
+**code** — `starts_at`, `expires_at`, caps, stacking, and since 194 caps that
+are actually counted. Nothing has ever scheduled a **price**. A flash deal is
+not a code somebody types; it is the product costing less between two o'clock
+and six, on the page, for everybody. The only way to run one today is an
+operator editing `kenyon_price` twice and remembering to come back.
+
+**The interesting part is what this does not need to do.** A scheduler that
+moves prices on a timer, over a catalogue where 15 of 44 products already
+advertise a struck-through price nobody can evidence, reads like a machine for
+manufacturing non-compliant discounts. It is not, and the reason is that 193
+governs the **claim** rather than the price.
+
+Israeli law constrains the "before" price, not the price. Lowering is always
+lawful. What a flash deal changes is the **evidence** — after a day at ₪99 a
+`full_price` of ₪150 stops being defensible for thirty days — and
+`checkReferencePrice` works that out on its own from `price_history`, with the
+storefront dropping the strike-through and nobody deciding anything.
+
+So this file's whole duty to compliance is one line of the cron that applies it:
+**every applied change writes a `price_history` row with `source = 'change'`**.
+That is the column 193 created for exactly this and left unused, and it closes
+the sampling gap 193 documented — until now the record was one observation a day
+at 04:00, so a flash deal that opened at 10:00 and closed at 18:00 left no trace
+at all, and the thirty-day "lowest price charged" would have been computed from
+a window that never saw it.
+
+**A table and not `pg_cron`.** A row can be listed, cancelled, and shown to an
+operator who wants to know what is about to happen to their catalogue; a job in
+another schema can be none of those without a query nobody will write.
+
+**Nothing here is public.** A schedule of future prices is the most valuable
+thing a competitor could read off this database, and it would let a shopper wait
+for a drop they can see coming. RESTRICTIVE deny, the 172 shape.
+
+Proven against production, rolled back:
+
+```
+duplicate_moment=REFUSED  negative_price=REFUSED  due_includes_past=1
+cancelled_frees_slot=2    anon_read=REFUSED
+```
+
+Two rows at the same instant are two prices with no rule for which wins, so the
+partial unique index refuses the second. A past-due row is still due, because a
+missed run must catch up — a flash deal nobody ran is a promise on a marketing
+email the site did not keep. And a cancelled row frees its slot for a
+replacement, because the index is scoped to uncancelled rows.
+
 ## 2026-09-09: 200 WRITTEN, not applied — two kinds, and a guard against 183's mistake
 
 `200_wishlist_alert_kinds.sql`. `price_drop` and `back_in_stock`, so a wishlist
