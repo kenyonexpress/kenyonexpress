@@ -415,6 +415,31 @@ describe('buildOrderShippedEmail', () => {
     )
   })
 
+  it('links each recognised carrier to its tracking page, in both bodies', () => {
+    const mail = buildNotification(
+      'order_shipped',
+      {
+        ...payload,
+        shipments: [
+          { carrier: 'israel post', tracking_number: 'RR123456789IL' },
+          { carrier: 'שליח של הספק', tracking_number: 'X-77' },
+        ],
+      },
+      SITE,
+    )
+    // Recognised: the raw alias becomes the canonical Hebrew label, and both
+    // bodies carry the deep link with the number embedded.
+    expect(mail?.text).toContain('מספר מעקב אצל דואר ישראל')
+    expect(mail?.text).toContain('https://israelpost.co.il/itemtrace/?itemcode=RR123456789IL')
+    expect(mail?.html).toContain(
+      'href="https://israelpost.co.il/itemtrace/?itemcode=RR123456789IL"',
+    )
+    // Unrecognised: label passes through untouched and no link is invented.
+    expect(mail?.text).toContain('מספר מעקב אצל שליח של הספק')
+    expect(mail?.text).not.toContain('למעקב אצל שליח של הספק')
+    expect(mail?.html).not.toContain('href="https://x-77')
+  })
+
   it('omits the carrier clause when the line has only a number', () => {
     const mail = buildNotification(
       'order_shipped',
