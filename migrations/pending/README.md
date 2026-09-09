@@ -1,5 +1,61 @@
 # `migrations/pending/`
 
+## 2026-09-09: 208 WRITTEN, not applied, and the probe corrected the file twice
+
+`208_drop_redundant_indexes.sql`.
+
+**Measured on production first.** 91 tables, **390 indexes**, 253 of them never
+scanned since 16.07. The whole database is 9,856 kB and **5,920 kB of that is
+index** - 60%.
+
+**253 unused indexes is not the finding and none of them is dropped for being
+unused.** At 44 rows Postgres will not use an index at all, because scanning one
+page is cheaper, so "never scanned" here mostly means "the query that would use
+it has never run". Dropping on that basis is optimising for a scale the business
+is trying to leave.
+
+**Redundancy is the finding, and it is wrong at every scale.** An index on `(a)`
+buys nothing beside an index on `(a, b)`: a B-tree is scannable on any prefix of
+its key, so the composite serves every query the narrow one serves while the
+narrow one costs a write on every insert and planning time on every query.
+Fourteen such pairs, found by comparing every non-unique, non-primary index
+against every other index on the same table with the same partial predicate.
+
+**Two look backwards on the scan counts** - `products_status_idx` with 55,593
+scans and `carts_session_id_idx` with 49,714 are both dropped, in favour of
+indexes with 0 and 14. The planner used the narrow one because it existed, not
+because nothing else could serve the query.
+
+**Verified against production without applying, and the probe corrected this
+file twice.** All fifteen were dropped inside a rolled-back transaction, with
+`enable_seqscan = off` so a 44-row table could not hide the answer behind a
+sequential scan, and `EXPLAIN` re-read for each:
+
+```
+products.status = 'active'  ->  idx_products_published
+carts.session_id = ...      ->  carts_session_profile_idx
+orders.user_id = ...        ->  idx_orders_user_status
+vouchers.order_item_id      ->  vouchers_order_item_issued_idx
+```
+
+The first is **not** what the pair-wise analysis predicted. `products` carries
+four status-leading or status-filtered indexes, and with the plain one gone the
+planner takes the **partial** `idx_products_published`, which matches the
+predicate exactly and is smaller than the composite. A better answer than the
+file expected, and the only way to know was to drop it and look.
+
+The probe also caught a defect in itself: its first run compared
+`user_id = gen_random_uuid()` and reported a sequential scan on `orders`.
+`gen_random_uuid()` is VOLATILE, so no index scan is possible against it - the
+schema was fine and the test was wrong, and a less suspicious reading would have
+kept an index on the strength of it.
+
+`pg_indexes` re-read afterwards: 390, unchanged, with all fifteen still present.
+
+Order: independent of everything else pending. It drops indexes and creates
+nothing.
+
+
 ## 2026-09-09: 207 WRITTEN, not applied, and its first draft was wrong
 
 `207_email_deliverability.sql`.

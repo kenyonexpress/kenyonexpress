@@ -620,6 +620,26 @@ describe('the pending migration inventory', () => {
       // fix leaves authenticated with SELECT alone and anon with nothing, and
       // anon reached neither the counters nor suppress_email.
       '207_email_deliverability.sql',
+      // 208: fourteen redundant indexes, for [62].
+      //
+      // 253 OF 390 INDEXES ARE UNUSED AND NONE OF THEM IS DROPPED FOR THAT.
+      // At 44 rows Postgres will not use an index at all, so "never scanned"
+      // mostly means "the query that would use it has never run". Dropping on
+      // that basis optimises for a scale the business is trying to leave.
+      //
+      // Redundancy is the finding and it is wrong at every scale: an index on
+      // (a) buys nothing beside one on (a, b), because a B-tree is scannable on
+      // any prefix of its key.
+      //
+      // Probed against production, rolled back: all fifteen dropped with
+      // enable_seqscan off so a 44-row table could not hide the answer, and
+      // EXPLAIN re-read for each. products.status fell to idx_products_published
+      // - the PARTIAL index, not the composite the pair-wise analysis predicted
+      // - and carts, orders and vouchers each fell to their composite. The probe
+      // also caught a defect in ITSELF: its first run used gen_random_uuid(),
+      // which is VOLATILE and makes an index scan impossible, and reported a
+      // seq scan that looked like a schema problem.
+      '208_drop_redundant_indexes.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
