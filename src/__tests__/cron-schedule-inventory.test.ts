@@ -59,6 +59,7 @@ describe('the scheduled job inventory', () => {
       'expire-vouchers',
       'whatsapp',
       'search-outbox',
+      'expire-coupons',
     ])
   })
 

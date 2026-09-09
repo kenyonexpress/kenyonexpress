@@ -106,6 +106,7 @@ describe('the pending migration inventory', () => {
       '210_media_ingest_queue.sql',
       '211_whatsapp_selfservice.sql',
       '212_rbac_truncate_and_search_path.sql',
+      '217_coupon_qr_redemption.sql',
     ])
   })
 

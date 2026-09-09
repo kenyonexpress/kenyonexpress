@@ -90,6 +90,7 @@ file is in a repository.
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+10b https://kenyonexpress.vercel.app/api/cron/expire-coupons     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -125,6 +126,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 | 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
 | 13 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-outbox` |
+| 14 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-coupons` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -155,6 +157,9 @@ timing changes with the scheduler.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
 - **`expire-vouchers`** marks vouchers past their date as expired.
+- **`expire-coupons`** stamps printed QR coupon codes (migration 182/217) whose
+  own date passed or whose campaign ended. No money moves; redemption re-checks
+  expiry under its own lock, this only keeps batch inventory truthful.
 - **`search-outbox`** drains `search_index_outbox` (migration 132): the durable
   record that a product write owes the Meilisearch index an update, written by
   the trigger in the same transaction as the write. The webhook -> QStash path
