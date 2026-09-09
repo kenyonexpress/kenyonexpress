@@ -1,5 +1,22 @@
 # Apply order
 
+## 2026-09-10 (fraud abuse goal): 226 APPLIED
+
+**226** fraud_controls (`fraud_controls_226`): additive only, two new
+server-only tables (`fraud_flags`, `fraud_review_queue`) with RLS on, zero
+policies and the client grants revoked, plus four indexes and the
+`updated_at` trigger. Full body dry-run first in a rolled-back DO block
+(dedupe index refused a duplicate pending row and freed the slot on resolve,
+CHECKs refused unknown kinds, the blocking-flag read returned the probe row,
+`authenticated` had no SELECT, RLS on), ending in a deliberate RAISE; the
+identical body then went through `apply_migration`. Post-apply measurement in
+one SELECT: 2 tables, 4 indexes, `rls_on=true`, `auth_flags_select=false`,
+`anon_queue_select=false`, `service_insert=true`, trigger present, 0 rows.
+Does not restate `set_updated_at` (the 183 lesson): creates it only if
+missing, and the live body already exists. Numbered 226 because 225 is taken
+by another branch's pending file. Applied under the 2026-09-10 fraud-abuse
+/goal, which names Supabase MCP as the migration route (the 217 protocol).
+
 ## 2026-09-09 (supplier sync goal): 223 APPLIED
 
 **223** restock_on_refund (`restock_on_refund_223`): full body dry-run first

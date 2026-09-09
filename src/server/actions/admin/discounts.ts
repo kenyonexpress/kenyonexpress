@@ -140,7 +140,7 @@ async function runSaveDiscountCampaign(
   const admin = createAdminClient()
 
   // used_count is deliberately absent from both branches. It belongs to
-  // fn_claim_discount, which holds a row lock while it moves; an admin form
+  // claim_order_discount, which holds a row lock while it moves; an admin form
   // writing it would be the read-then-write race the ledger exists to prevent,
   // reintroduced from a different direction.
   let campaignId = v.id ?? null

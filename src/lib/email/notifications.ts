@@ -1,5 +1,6 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
+import { resolveCarrier } from '@/lib/shipping/carriers'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE } from '@/styles/tokens'
 
@@ -265,9 +266,17 @@ export function buildOrderShippedEmail(
     `מספר הזמנה: ${ltrText(ref)}`,
     items > 0 ? `פריטים: ${items}` : '',
     when ? `טופלה ב-${when}` : '',
-    ...shipments.map(
-      (s) => `מספר מעקב${s.carrier ? ` אצל ${s.carrier}` : ''}: ${ltrText(s.trackingNumber)}`,
-    ),
+    ...shipments.flatMap((s) => {
+      // resolveCarrier gives the canonical Hebrew label and, when the courier
+      // is recognised, a tracking link. Unknown couriers keep the raw label
+      // and get no link, same rule as the order page.
+      const resolved = resolveCarrier(s.carrier, s.trackingNumber)
+      const label = resolved?.label ?? s.carrier
+      return [
+        `מספר מעקב${label ? ` אצל ${label}` : ''}: ${ltrText(s.trackingNumber)}`,
+        ...(resolved?.url ? [`למעקב אצל ${resolved.label}: ${ltrText(resolved.url)}`] : []),
+      ]
+    }),
     '',
     `למעקב אחרי ההזמנה: ${ltrText(url)}`,
   ]
@@ -283,10 +292,15 @@ export function buildOrderShippedEmail(
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
           ${when ? `<div style="color:${MUTED}">טופלה ב-${escapeHtml(when)}</div>` : ''}
           ${shipments
-            .map(
-              (s) =>
-                `<div>מספר מעקב${s.carrier ? ` אצל ${escapeHtml(s.carrier)}` : ''}: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(s.trackingNumber)}</strong></div>`,
-            )
+            .map((s) => {
+              const resolved = resolveCarrier(s.carrier, s.trackingNumber)
+              const label = resolved?.label ?? s.carrier
+              const number = `<strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(s.trackingNumber)}</strong>`
+              const linked = resolved?.url
+                ? `<a href="${escapeHtml(resolved.url)}" style="color:${INK}">${number}</a>`
+                : number
+              return `<div>מספר מעקב${label ? ` אצל ${escapeHtml(label)}` : ''}: ${linked}</div>`
+            })
             .join('')}
         </div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למעקב אחרי ההזמנה</a>

@@ -16,6 +16,14 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { isValidUnitCode } from '@/lib/coupons/unit-codes'
+import { couponStackingViolations } from '@/lib/fraud/coupon-stacking'
+import { enqueueFraudReview, hasBlockingFraudFlag } from '@/lib/fraud/review-queue'
+import {
+  checkCheckoutVelocity,
+  normalizeVelocityEmail,
+  normalizeVelocityPhone,
+} from '@/lib/fraud/velocity'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -36,7 +44,7 @@ import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
   type BeginCheckoutOutput,
   type CheckoutActionResult,
@@ -65,6 +73,42 @@ const ORDER_EXPIRY_MINUTES = 30
  * itself within one browse.
  */
 const STOCK_RESERVATION_MINUTES = 15
+
+/**
+ * Every refusal claim_order_discount and redeem_coupon_qr can answer, in the
+ * shopper's language. A reason this map does not know falls back to the
+ * generic line rather than leaking the English token.
+ */
+const CLAIM_REFUSAL_HE: Record<string, string> = {
+  inactive: 'קוד ההנחה אינו פעיל',
+  not_started: 'קוד ההנחה עדיין לא נכנס לתוקף',
+  expired: 'תוקף קוד ההנחה פג',
+  exhausted: 'קוד ההנחה מוצה',
+  per_user_exhausted: 'כבר ניצלת את קוד ההנחה הזה',
+  per_user_limit: 'כבר ניצלת את קוד ההנחה הזה',
+  redeemed: 'קוד ההנחה כבר מומש',
+  campaign_gone: 'קוד ההנחה כבר אינו קיים',
+  unknown: 'קוד ההנחה לא נמצא',
+  no_discount: 'אין סכום שעליו ניתן להחיל את הקוד',
+}
+
+/**
+ * One shape for both claim RPCs. claim_order_discount answers a text refusal
+ * or NULL for success; redeem_coupon_qr answers jsonb `{ ok, reason? }`. An
+ * rpc-level error is its own kind so the caller can fail closed with a retry
+ * message instead of blaming the code the shopper typed.
+ */
+function claimRefusal(result: {
+  data: unknown
+  error: { message: string } | null
+}): { kind: 'refused' | 'error'; detail: string } | null {
+  if (result.error) return { kind: 'error', detail: result.error.message }
+  if (result.data === null || result.data === undefined) return null
+  if (typeof result.data === 'string') return { kind: 'refused', detail: result.data }
+  const verdict = result.data as { ok?: boolean; reason?: string }
+  if (verdict.ok) return null
+  return { kind: 'refused', detail: verdict.reason ?? 'unknown' }
+}
 
 type SettlementProductRow = {
   id: string
@@ -346,10 +390,31 @@ async function runBeginCheckout(
 
   const admin = createAdminClient()
 
+  // A customer with an uncleared chargeback (or a manual block) on file does
+  // not get to start another charge. The read fails open like the rate
+  // limiter: the fraud rail must never be the reason a sale dies.
+  if (await hasBlockingFraudFlag(admin, user.id)) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      kind: 'chargeback-blocked',
+      details: { client_ref: input.client_ref },
+    })
+    return {
+      ok: false,
+      error: 'לא ניתן להשלים את התשלום. פנו לשירות הלקוחות',
+      code: 'REVIEW_REQUIRED',
+    }
+  }
+
+  // The delivery phone, for the velocity check below. Read off the address the
+  // shopper picked because that is the number the courier calls: the identity
+  // a reshipping run keeps while it rotates cards and accounts.
+  let addressPhone: string | null = null
+
   if (input.address_id) {
     const { data: address, error: addressReadError } = await admin
       .from('user_addresses')
-      .select('id, user_id')
+      .select('id, user_id, phone')
       .eq('id', input.address_id)
       .maybeSingle()
     // Separated from the ownership check below for the same reason as the card
@@ -365,6 +430,7 @@ async function runBeginCheckout(
     if (!address || address.user_id !== user.id) {
       return { ok: false, error: 'כתובת לא תקינה', code: 'ADDRESS_REQUIRED' }
     }
+    addressPhone = address.phone ?? null
   }
 
   // 2. Idempotent replay by client_ref
@@ -418,6 +484,30 @@ async function runBeginCheckout(
       return { ok: true, data: { kind: 'paid', order_id: existingPayment.order_id } }
     }
     return { ok: false, error: 'בקשת תשלום כפולה', code: 'IDEMPOTENT_REPLAY' }
+  }
+
+  // Order velocity, per identity dimension (IP, email, delivery phone). AFTER
+  // the replay short-circuit on purpose: a declined card retried against the
+  // same client_ref answers from the lookup above and spends nothing here, so
+  // only genuinely new order attempts count. Exceeding a bucket blocks the
+  // attempt and puts the customer in the fraud review queue once.
+  const clientIp = await getClientIp()
+  const velocity = await checkCheckoutVelocity({
+    ip: clientIp === 'unknown' ? null : clientIp,
+    email: normalizeVelocityEmail(user.email),
+    phone: normalizeVelocityPhone(addressPhone ?? user.phone),
+  })
+  if (!velocity.ok) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      kind: 'velocity',
+      details: { dimension: velocity.dimension, client_ref: input.client_ref },
+    })
+    return {
+      ok: false,
+      error: 'יותר מדי הזמנות בזמן קצר, נסו שוב מאוחר יותר',
+      code: 'RATE_LIMITED',
+    }
   }
 
   // 3. Settlement snapshot from product rows (never from the client)
@@ -598,13 +688,12 @@ async function runBeginCheckout(
   // code's minimum. Whatever this returns is what the card is reduced by, and
   // the engine caps it again against the commission.
   //
-  // The code itself is not stored on the order: `orders` has no column for it,
-  // and adding one would put an unapplied migration on the charging path, which
-  // is the trap GO-LIVE already carries once for commission_type. The
-  // consequence is recorded rather than hidden: nothing increments
-  // `coupons.used_count`, so `max_uses` is enforced as a read of a counter no
-  // part of this flow advances. See STATE, "what the coupon code does not do".
-  const { discountAgorot } = await resolveCheckoutDiscountAgorot()
+  // This read is still only a QUOTE. The authoritative answer is the claim at
+  // step 4c below, which holds the code's row FOR UPDATE and advances
+  // `used_count` (claim_order_discount, 194/227) so `max_uses` is finally a
+  // counter the purchase path moves. The code itself is still not stored on
+  // the order - the redemption row, keyed on the order id, is the record.
+  const { code: discountCode, discountAgorot } = await resolveCheckoutDiscountAgorot()
 
   let settlement: ReturnType<typeof calculateSettlement>
   try {
@@ -681,6 +770,25 @@ async function runBeginCheckout(
     if (giftError) {
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
+  }
+
+  // Coupon stacking that the settlement clamps permit but a reviewer should
+  // see: an order minting more cashback than the card pays, or a code applied
+  // to an order the card never sees. Detection only, the order proceeds; see
+  // src/lib/fraud/coupon-stacking.ts for why blocking here would be wrong.
+  const stackingViolations = couponStackingViolations({
+    discountAgorot: settlement.discountApplied,
+    walletAppliedAgorot: settlement.walletApplied,
+    cardChargeAgorot: settlement.cardCharge,
+    cashbackAgorot: settlement.cashbackAmount,
+  })
+  if (stackingViolations.length > 0) {
+    await enqueueFraudReview(admin, {
+      userId: user.id,
+      orderId: order.id,
+      kind: 'coupon-stacking',
+      details: { violations: stackingViolations },
+    })
   }
 
   const itemGeneration = await resolveOrderItemGeneration(
@@ -792,6 +900,63 @@ async function runBeginCheckout(
       ok: false,
       error: soldOut ? 'אחד הפריטים אזל מהמלאי' : 'אין מספיק במלאי לאחד הפריטים',
       code: 'INSUFFICIENT_STOCK',
+    }
+  }
+
+  // 4c. CLAIM THE DISCOUNT, same breath as the stock and for the same reason.
+  //
+  // The evaluation above priced the code; this is what SPENDS it. Under the
+  // code's row lock, claim_order_discount re-checks every limit and advances
+  // `used_count` once per order, so two shoppers racing the last use of a
+  // max_uses=1 code get one 'ok' and one 'exhausted' - before either card is
+  // charged. A printed QR unit goes through redeem_coupon_qr, which burns the
+  // unit's redeemed_at in the same transaction as the campaign ledger row.
+  //
+  // The claim is a HOLD, like the reservation above it: an order that never
+  // pays crosses expires_at and release_expired_order_discounts (the stock
+  // cron) hands the use back. Failing the checkout on refusal is the point -
+  // charging first and discovering 'exhausted' at finalize would be money out
+  // the door.
+  if (discountCode && discountAgorot > 0) {
+    const claim = isValidUnitCode(discountCode)
+      ? await admin.rpc('redeem_coupon_qr', {
+          p_code: discountCode,
+          p_order_id: order.id,
+          p_user_id: user.id,
+          p_amount_agorot: discountAgorot,
+        })
+      : await admin.rpc('claim_order_discount', {
+          p_code: discountCode,
+          p_order_id: order.id,
+          p_user_id: user.id,
+          p_amount_agorot: discountAgorot,
+        })
+    const refusal = claimRefusal(claim)
+    if (refusal !== null) {
+      // Same unwind as a stock shortfall: the order is closed and the stock it
+      // held goes back on the shelf now rather than at reservation expiry.
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      const { error: releaseError } = await admin.rpc('release_order_stock', {
+        p_order_id: order.id,
+      })
+      if (releaseError) {
+        log.warn('checkout.claim_refused_stock_release_failed', {
+          orderId: order.id,
+          reason: releaseError.message,
+        })
+      }
+      if (refusal.kind === 'error') {
+        // Fail closed, like the reservation: a claim system that fails open is
+        // a claim system that does nothing on the day it matters.
+        log.error('checkout.discount_claim_failed', { orderId: order.id, reason: refusal.detail })
+        return { ok: false, error: 'לא הצלחנו לאמת את קוד ההנחה, נסו שוב', code: 'INTERNAL' }
+      }
+      log.warn('checkout.discount_claim_refused', { orderId: order.id, reason: refusal.detail })
+      return {
+        ok: false,
+        error: CLAIM_REFUSAL_HE[refusal.detail] ?? 'קוד ההנחה כבר אינו תקף',
+        code: 'COUPON_INVALID',
+      }
     }
   }
 

@@ -84,7 +84,22 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient })
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { getUser: () => getUser() } }),
 }))
-vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: async () => true }))
+vi.mock('@/lib/utils/rate-limit', () => ({
+  checkRateLimit: async () => true,
+  getClientIp: async () => '203.0.113.9',
+}))
+// The velocity check rides the real fraud module; only the limiter underneath
+// is stubbed, and to "allowed" so these tests keep exercising the flow past it.
+vi.mock('@/lib/rate-limit/limiter', () => ({
+  rateLimit: async () => ({
+    allowed: true,
+    limit: 1,
+    windowSeconds: 1,
+    remaining: 1,
+    resetAtMs: null,
+    backend: 'upstash',
+  }),
+}))
 // One controllable provider instance, so the saved-card tests can steer the
 // charge outcome and assert what the hosted-page fallback asked for.
 const provider = vi.hoisted(() => ({
@@ -130,9 +145,10 @@ vi.mock('@/lib/payments/payment-money-columns', () => ({
 }))
 
 const getCart = vi.fn()
+const resolveDiscount = vi.fn()
 vi.mock('@/server/actions/cart', () => ({
   getCart: () => getCart(),
-  resolveCheckoutDiscountAgorot: async () => ({ discountAgorot: 0 }),
+  resolveCheckoutDiscountAgorot: () => resolveDiscount(),
 }))
 
 const { beginCheckout, reconcileOrderReturn } = await import('./checkout')
@@ -204,6 +220,7 @@ beforeEach(() => {
   calls.length = 0
   queues.clear()
   getCart.mockResolvedValue(cartWithOnePhysicalLine())
+  resolveDiscount.mockResolvedValue({ code: null, discountAgorot: 0 })
   provider.chargeWithToken.mockReset()
   provider.createLowProfile.mockReset()
   provider.verifyLowProfile.mockReset()
@@ -462,6 +479,105 @@ describe('beginCheckout: the saved-card charge and its 3DS fallback', () => {
       expect.objectContaining({ saveToken: true }),
     )
     expect(journalled()).toEqual(['token_charge_requested', 'token_charge_declined'])
+  })
+})
+
+describe('beginCheckout: the discount claim spends the code before the charge', () => {
+  /** rpc payload of the one claim call, or undefined if none was made. */
+  function claimCall(name: string) {
+    return calls.find((c) => c.table === `rpc:${name}`)
+  }
+
+  it('refuses the checkout when the claim answers exhausted, and unwinds the order it took', async () => {
+    queueThroughReservation()
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 500 })
+    queue('rpc:claim_order_discount.rpc', { data: 'exhausted', error: null })
+
+    const result = await beginCheckout(input())
+
+    // The single-use guarantee: the shopper is told before any charge, in
+    // Hebrew, and never reaches the payment provider.
+    expect(result).toMatchObject({ ok: false, code: 'COUPON_INVALID' })
+    expect(result.ok === false && result.error).toBe('קוד ההנחה מוצה')
+    expect(calls.some((c) => c.table === 'payments' && c.op === 'insert')).toBe(false)
+    // Same unwind as a stock shortfall: order closed, reservation handed back.
+    const orderUpdate = calls.find((c) => c.table === 'orders' && c.op === 'update')
+    expect(orderUpdate?.payload).toMatchObject({ status: 'cancelled' })
+    expect(claimCall('release_order_stock')).toBeDefined()
+  })
+
+  it('fails closed, not open, when the claim rpc itself dies', async () => {
+    queueThroughReservation()
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 500 })
+    queue('rpc:claim_order_discount.rpc', READ_FAILED)
+
+    const result = await beginCheckout(input())
+
+    // A claim system that fails open is a claim system that does nothing on
+    // the day it matters - same stance as the reservation above it.
+    expect(result).toMatchObject({ ok: false, code: 'INTERNAL' })
+    expect(result.ok === false && result.error).toContain('נסו שוב')
+    expect(calls.some((c) => c.table === 'payments' && c.op === 'insert')).toBe(false)
+    expect(claimCall('release_order_stock')).toBeDefined()
+  })
+
+  it('claims once, for this order and this amount, and goes on to the hosted page', async () => {
+    queueThroughReservation()
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 500 })
+    queue('rpc:claim_order_discount.rpc', { data: null, error: null })
+    queue('payments.insert', { data: { id: 'pay-lp' }, error: null })
+    provider.createLowProfile.mockResolvedValue({
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://pay.example/lp-1',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: true, data: { kind: 'redirect', order_id: ORDER_ID } })
+    expect(claimCall('claim_order_discount')?.payload).toMatchObject({
+      p_code: 'SAVE10',
+      p_order_id: ORDER_ID,
+      p_user_id: USER_ID,
+      p_amount_agorot: 500,
+    })
+    // The claim rode the checkout, not the finalize: it happened before the
+    // provider was asked for a page.
+    expect(claimCall('redeem_coupon_qr')).toBeUndefined()
+  })
+
+  it('routes a printed QR unit code through redeem_coupon_qr and honours its refusal', async () => {
+    queueThroughReservation()
+    // '00000000' is Luhn-valid, so it is a unit code and not a campaign code.
+    resolveDiscount.mockResolvedValue({ code: '00000000', discountAgorot: 500 })
+    queue('rpc:redeem_coupon_qr.rpc', { data: { ok: false, reason: 'redeemed' }, error: null })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: false, code: 'COUPON_INVALID' })
+    expect(result.ok === false && result.error).toBe('קוד ההנחה כבר מומש')
+    expect(claimCall('claim_order_discount')).toBeUndefined()
+    expect(claimCall('redeem_coupon_qr')?.payload).toMatchObject({
+      p_code: '00000000',
+      p_order_id: ORDER_ID,
+      p_amount_agorot: 500,
+    })
+  })
+
+  it('does not touch the claim layer when no code is applied', async () => {
+    queueThroughReservation()
+    queue('payments.insert', { data: { id: 'pay-lp' }, error: null })
+    provider.createLowProfile.mockResolvedValue({
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://pay.example/lp-1',
+      raw: {},
+    })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: true })
+    expect(claimCall('claim_order_discount')).toBeUndefined()
+    expect(claimCall('redeem_coupon_qr')).toBeUndefined()
   })
 })
 

@@ -1,5 +1,51 @@
 # `migrations/pending/`
 
+## 2026-09-10: 227 APPLIED (discount claim wiring)
+
+`227_discount_claim_wiring.sql` is the wiring 194 built and nothing ever
+called: `beginCheckout` now claims the applied code under the row lock
+(step 4c) before any charge, so `coupons.used_count` and
+`discount_campaigns.used_count` finally move and `max_uses=1` refuses the
+second order instead of the second million. The file also fixes what the
+first rolled-back probe measured: a REPLAY of an order that already held the
+claim answered `exhausted` (the limit check ran before the replay check, the
+exact defect `fn_claim_discount`'s header describes), and the
+`discount_redemptions_amount_positive` CHECK (`> 0`) killed every QR till
+redemption whose route-side `amount_agorot` defaulted to 0. New:
+`release_expired_order_discounts()` (claims of pending/cancelled orders past
+`expires_at` hand the use back, QR units un-redeem; runs from
+`/api/cron/stock`) and `consume_order_discount()` (a stranded payment that
+outlived the sweep puts the use back at finalize). Applied as
+`discount_claim_wiring_227` under the 2026-09-10 inventory /goal, which names
+Supabase MCP as the migration route (the 217 protocol). Proof, rolled back:
+claim ok / replay ok / second order `exhausted` / sweep 1 / consume 1 /
+consume replay 0 / zero-amount claim ok.
+
+## 2026-09-10: 226 APPLIED (fraud controls)
+
+`226_fraud_controls.sql` creates the two server-only tables behind the
+checkout fraud rail: `fraud_flags` (a live chargeback or manual flag blocks
+`beginCheckout` for that customer) and `fraud_review_queue` (what the velocity
+and coupon-stacking detectors file for a human). Applied as
+`fraud_controls_226` (`20260909192241`) under the 2026-09-10 fraud-abuse
+/goal, which names Supabase MCP as the migration route (the 217 protocol).
+Numbered 226 because 225 is taken by a supplier-contact-requests pending file
+on another branch (not on disk here, so it is deliberately not named in this
+manifest).
+
+Proven first in a rolled-back DO block over production: the pending-dedupe
+partial unique index refused a second `(user, kind)` pending row and allowed a
+new one after the first resolved, both CHECK lists refused an unknown kind,
+the blocking-flag read shape returned exactly the probe row, `authenticated`
+had no SELECT, and RLS was on. The deliberate RAISE at the end rolled all of
+it back; the identical file then went through `apply_migration`. Post-apply:
+2 tables, 4 indexes, RLS on with zero policies, `anon`/`authenticated` fully
+revoked, `service_role` writable, trigger present, 0 rows.
+
+The file does NOT restate `set_updated_at` (the 183 lesson): the live body
+pins `search_path TO 'public'`, so the file creates the function only if it
+is missing.
+
 ## 2026-09-09: 183 APPLIED, and the preflight is the whole story
 
 `183_order_shipped_notification.sql` enqueues `kind=order_shipped` when an
@@ -595,6 +641,7 @@ running. Order is the position in the apply sequence.
 | 211 | `211_whatsapp_selfservice.sql` | WhatsApp self-service on top of 173: widens the `whatsapp_inbound_messages` intent CHECK with `order_status`/`refund_request` (constraint name verified against production), adds `support_tickets.category` (default `general`, backfills `refund_request` from the `בקשת זיכוי` subject prefix the webhook writes meanwhile), and `fn_wa_orders_for_phone` — definer, service-role-only, returns ref/status/total/date of the phone's 3 latest orders for the webhook's status reply | **Low.** The CHECK widens (no existing row can fail it), the column is additive with a default, and the function is new with EXECUTE revoked from PUBLIC/anon/authenticated. Until applied, the webhook already degrades: audit rows fall back to intent `message`, status questions file a ticket | after 173 (applied: its five tables and both functions verified live in production 2026-09-09) | 173 | in file header |
 | 217 | `217_coupon_qr_redemption.sql` | The claim wiring 182 promised: `expires_at`/`expired_at` on `coupon_qr_codes`, partial index on the sweep's working set, `redeem_coupon_qr` (atomic single-use claim under FOR UPDATE, campaign caps delegated to `claim_order_discount`, idempotent per (code, order)) and `expire_coupon_qr_codes` (nightly stamp, no money). Both functions service_role only | **✅ APPLIED 2026-09-09** via MCP as `coupon_qr_redemption_217`, on the explicit instruction of the /goal that requested the coupon QR feature. Dry-run first in a rolled-back transaction with a seven-step probe over real inserts: first redeem ok, replay idempotent, second order refused `redeemed`, campaign cap refusal leaves the unit untouched, per-code expiry refused, sweep stamped 1, client roles cannot EXECUTE. Post-apply: 2 columns, 2 functions, grants service_role only, `coupon_qr_codes` held 0 rows | any | 182, 194 (both applied) | `drop function if exists public.redeem_coupon_qr(text, uuid, uuid, integer); drop function if exists public.expire_coupon_qr_codes(); alter table public.coupon_qr_codes drop column if exists expired_at, drop column if exists expires_at;` |
 | 224 | `224_post059_price_cashback_twins.sql` | The two post-059 names the payment path selects, added to the hosted pre-059 lineage as GENERATED STORED agorot twins: `orders.cashback_applied_agorot` (from `cashback_applied_ils`) and `order_items.unit_price_agorot` (from `unit_price_ils`), same `round(<ils> * 100)::bigint` shape as the 138/147 twins. Additive only: writers keep writing the ils sources and the generation probes (`orders.total_agorot`, `order_items.platform_bp`) still resolve `ils`, so no write path changes. Guarded per column in its own DO block against information_schema both ways (post-059 databases skip it; reruns are no-ops) | **✅ APPLIED 2026-09-10** via MCP as `post059_price_cashback_twins_224`, on the explicit instruction of the /goal that requested the landmine fix through MCP (same protocol as 217/223). Verified post-apply against every row: 0 mismatches between each twin and `round(<ils>*100)` (4 orders, 3 order_items), and a bare select of both names — 42703 before — answers. Lets `orderCashbackSelect`/`readOrderCashbackAgorot` go generation-free and `orderItemPriceSelect('ils')` name `unit_price_agorot` directly (only `total_price_agorot` still needs its alias) | any | 138/147 pattern (both applied); columns `cashback_applied_ils`, `unit_price_ils` NOT NULL, verified live | `alter table public.orders drop column if exists cashback_applied_agorot; alter table public.order_items drop column if exists unit_price_agorot;` (safe: generated, nothing writes them; readers revert with the code change) |
+| 227 | `227_discount_claim_wiring.sql` | The wiring 194 waited for: replay-first `claim_order_discount` (a retried order answers ok, not `exhausted` — measured against production in a rolled-back DO block), re-claim of a released row under the same limit checks, `release_expired_order_discounts()` (pending/cancelled orders past `expires_at` hand back both `used_count` counters and un-redeem their QR units; runs from `/api/cron/stock`) and `consume_order_discount(uuid)` (a stranded payment that outlived the sweep puts the use back at finalize, idempotent via `released_at`). Also loosens `discount_redemptions_amount_positive` from `> 0` to `>= 0`: the QR till route defaults `amount_agorot` to 0, so every till redemption without an explicit amount died on the CHECK inside `claim_order_discount` | **✅ APPLIED 2026-09-10** via MCP as `discount_claim_wiring_227`, on the explicit instruction of the /goal that requested stock/coupon enforcement through MCP (the 217 protocol). Proven first in a rolled-back DO block over production: claim ok, replay ok (was `exhausted`), second order `exhausted` on max_uses=1, sweep released 1 and the counter fell, consume revived 1 and its replay 0, zero-amount campaign claim ok. Called from `beginCheckout` 4c, `finalizeOrder`, both admin cancel paths and the stock cron | after 194, 217 (both applied) | 194, 217 | restore the 194 `claim_order_discount` body from `pg_get_functiondef`; `drop function if exists public.release_expired_order_discounts(); drop function if exists public.consume_order_discount(uuid);` re-add the `> 0` CHECK |
 | 223 | `223_restock_on_refund.sql` | The missing fourth verb of the 117 reservation lifecycle: `stock_reservations.restocked_at` + `restock_order_stock()` (definer, service_role only). `release_order_stock` only frees UNCONSUMED holds, so a paid-then-refunded order left the shelf permanently one sale short; this stamps the consumed rows and increments `products.stock_quantity` back in one statement, idempotent per reservation, untracked products skipped. Numbered 223 because 218-222 are taken by pending files on `audit/final-audit` | **✅ APPLIED 2026-09-09** via MCP as `restock_on_refund_223`, on the explicit instruction of the /goal that requested the dropshipping supplier-sync stock lifecycle through MCP (same protocol as 217). Dry-run first in a rolled-back transaction over real rows: consumed hold of 2 took the level 10 -> 12 and returned 1, replay returned 0 and left 12, untracked product stamped with no level change; rollback then verified (function and column absent). Post-apply: EXECUTE is postgres+service_role only, 0 rows stamped. Called by `refund.ts` after the paid -> refunded CAS | after 117 (applied) | 117 | `drop function if exists public.restock_order_stock(uuid); alter table public.stock_reservations drop column if exists restocked_at;` |
 | 212 | `212_rbac_truncate_and_search_path.sql` | RBAC hardening leftovers from the 2026-09-09 full-table RLS audit (`docs/RLS-AUDIT-2026-09-09.md`): revokes TRUNCATE from `anon`/`authenticated` on all public tables plus the default privileges for future tables (RLS never gates TRUNCATE — the bootstrap `GRANT ALL` left 72 tables truncatable by any signed-in session, past every policy), and pins `search_path = public` on the three advisor-flagged functions (`set_updated_at`, `fn_cashback_ledger_block_mutation`, `fn_il_phone_digits`) | **✅ APPLIED 2026-09-09** via MCP as `212_rbac_truncate_and_search_path` (version `20260909115250`), dry-run first in a rolled-back transaction. Post-apply measurement: 0 client TRUNCATE grants, 0 unpinned functions, advisor 0011 clean. No client path truncates (grep: zero), so no behavioural change | any | none | in file header |
 | 215 | `215_cashback_expiry.sql` | Cashback expiry: unspent cashback lapses 12 months after it was earned. `fn_cashback_expire(p_limit)` sweeps per user under the 177 advisory lock — expirable = GREATEST(0, reserve-sourced credits older than the cutoff minus every wallet debit), capped at the live balance, moved back to `platform:cashback_reserve` through `fn_wallet_transfer` (reason `cashback_expiry`) and recorded as a negative `expiry` row in `cashback_ledger`, idempotent per UTC day. Also: `wallet_entries` gains the 149/177 append-only trigger, and the ledger CHECKs learn the `expiry` type (negative-only, reason required) | **✅ APPLIED 2026-09-09** via MCP as `cashback_expiry_215`, on the /goal that requested the cashback engine with expiry rules through MCP. Rehearsed twice in rolled-back transactions first: clean whole-file apply, then a behavioral proof (3000 of 5000 agorot swept with 2000 spent, same-day replay no-op, UPDATE/DELETE on `wallet_entries` refused, positive `expiry` ledger row refused). Called nightly by `/api/cron/expire-cashback` | after 177 (applied) | 177, 139, 146 | in file header |

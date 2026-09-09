@@ -23,8 +23,8 @@ export default async function EditDiscountPage({ params }: { params: Promise<{ i
         </p>
         <p className="mt-2 text-sm text-gray-600">
           נוצל <bdi>{data.used_count}</bdi> פעמים. המונה מתוחזק על ידי{' '}
-          <code>fn_claim_discount</code> ולא ניתן לעריכה כאן: כתיבה שלו מהטופס הייתה מחזירה בדיוק את
-          מרוץ הקריאה-כתיבה שיומן המימושים קיים כדי למנוע.
+          <code>claim_order_discount</code> ולא ניתן לעריכה כאן: כתיבה שלו מהטופס הייתה מחזירה בדיוק
+          את מרוץ הקריאה-כתיבה שיומן המימושים קיים כדי למנוע.
         </p>
       </header>
       <DiscountCampaignForm initial={data} />
