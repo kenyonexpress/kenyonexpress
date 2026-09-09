@@ -6,6 +6,7 @@ import {
   formatMicro,
   perOrder,
   projectMonth,
+  trendPoints,
 } from './model'
 
 /**
@@ -162,5 +163,57 @@ describe('display', () => {
 
   it('names an unknown currency rather than guessing a symbol', () => {
     expect(formatMicro(1_000_000, 'EUR')).toBe('EUR 1.00')
+  })
+})
+
+describe('trendPoints', () => {
+  const END = new Date(Date.UTC(2026, 8, 1)) // 2026-09
+
+  it('returns one point per month, oldest first', () => {
+    const points = trendPoints([], END, 12)
+    expect(points).toHaveLength(12)
+    expect(points[0]?.label).toBe('2025-10')
+    expect(points[11]?.label).toBe('2026-09')
+  })
+
+  it('draws a month nobody recorded as zero rather than skipping it', () => {
+    // The gap IS the information. A trend that omits the empty months draws a
+    // smooth line across a hole and invites the reader to believe spending was
+    // continuous -- and the axis then lies about spacing too, because the
+    // points either side of the hole end up adjacent.
+    const points = trendPoints(
+      [{ month: '2026-09-01', fixedMicro: 20_000_000, variableMicro: 0, orders: 4 }],
+      END,
+      3,
+    )
+    expect(points.map((point) => point.label)).toEqual(['2026-07', '2026-08', '2026-09'])
+    expect(points[0]?.totalMicro).toBe(0)
+    expect(points[2]?.totalMicro).toBe(20_000_000)
+  })
+
+  it('has no cost per order in a month with no orders', () => {
+    // Null and not zero: the bill was paid and nothing was sold, and a zero
+    // would draw a line to the floor reading "orders were free that month".
+    const points = trendPoints(
+      [{ month: '2026-09-01', fixedMicro: 20_000_000, variableMicro: 0, orders: 0 }],
+      END,
+      1,
+    )
+    expect(points[0]?.perOrderMicro).toBeNull()
+  })
+
+  it('divides the whole bill by the orders, fixed included', () => {
+    const points = trendPoints(
+      [{ month: '2026-09-01', fixedMicro: 20_000_000, variableMicro: 4_000_000, orders: 8 }],
+      END,
+      1,
+    )
+    expect(points[0]?.totalMicro).toBe(24_000_000)
+    expect(points[0]?.perOrderMicro).toBe(3_000_000)
+  })
+
+  it('crosses a year boundary without inventing a month', () => {
+    const points = trendPoints([], new Date(Date.UTC(2027, 0, 1)), 3)
+    expect(points.map((point) => point.label)).toEqual(['2026-11', '2026-12', '2027-01'])
   })
 })

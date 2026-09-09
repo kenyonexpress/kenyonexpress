@@ -1,6 +1,6 @@
 import 'server-only'
 
-import type { CostLine } from '@/lib/costs/model'
+import type { CostLine, TrendMonth } from '@/lib/costs/model'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -121,4 +121,110 @@ export async function loadMonthCosts(month: Date, currency = 'USD'): Promise<Mon
     smsMessages,
     missing,
   }
+}
+
+/**
+ * The last `months` months of spend, for the trend on the billing page.
+ *
+ * THREE READS AND A JOIN IN MEMORY, not one grouped query. PostgREST cannot
+ * `group by` without a view or an RPC, and adding either for a chart on a page
+ * one person opens would be a schema change to save three round trips on an
+ * admin route. The row counts are bounded by the window: twelve months of
+ * infra_costs is at most a few dozen rows.
+ *
+ * EVERY READ DEGRADES TO EMPTY when its table is absent, exactly as
+ * `loadMonthCosts` does -- 219 is unapplied, so an empty trend is today's
+ * correct answer and not a failure. `trendPoints` then draws twelve zero
+ * months, which is the honest picture of a ledger nobody has filled in.
+ *
+ * Orders are counted per month with one query each rather than by reading every
+ * paid order into memory: a count with `head: true` transfers no rows, and
+ * twelve of them is cheaper than paging the orders table for a chart.
+ */
+export async function loadCostTrend(
+  endMonth: Date,
+  months: number,
+  currency = 'USD',
+): Promise<TrendMonth[]> {
+  const admin = createAdminClient()
+  const first = new Date(
+    Date.UTC(endMonth.getUTCFullYear(), endMonth.getUTCMonth() - (months - 1), 1),
+  )
+  const nextFirst = new Date(Date.UTC(endMonth.getUTCFullYear(), endMonth.getUTCMonth() + 1, 1))
+  const windowStart = first.toISOString().slice(0, 10)
+  const windowEnd = nextFirst.toISOString().slice(0, 10)
+
+  const rows = new Map<string, TrendMonth>()
+  const ensure = (month: string): TrendMonth => {
+    const existing = rows.get(month)
+    if (existing) return existing
+    const created: TrendMonth = { month, fixedMicro: 0, variableMicro: 0, orders: 0 }
+    rows.set(month, created)
+    return created
+  }
+
+  const { data: costRows, error: costsError } = await admin
+    .from('infra_costs' as never)
+    .select('month, kind, amount_micro, currency')
+    .gte('month', windowStart)
+    .lt('month', windowEnd)
+
+  if (costsError && !MISSING_TABLE.has(costsError.code ?? '')) {
+    log.warn('costs.trend_read_failed', { reason: costsError.message })
+  }
+
+  for (const row of (costRows ?? []) as unknown as Record<string, unknown>[]) {
+    // Another currency is dropped rather than converted, the same rule
+    // `projectMonth` applies. A chart is scanned rather than read, which makes
+    // a silently converted figure on it harder to catch, not easier.
+    if (String(row.currency ?? currency) !== currency) continue
+    const month = String(row.month ?? '').slice(0, 10)
+    if (!month) continue
+    const point = ensure(month)
+    const amount = Number(row.amount_micro ?? 0)
+    if (row.kind === 'variable') point.variableMicro += amount
+    else point.fixedMicro += amount
+  }
+
+  const { data: smsRows, error: smsError } = await admin
+    .from('sms_messages' as never)
+    .select('created_at, price_micro, price_currency')
+    .gte('created_at', windowStart)
+    .lt('created_at', windowEnd)
+    .not('price_micro', 'is', null)
+
+  if (smsError && !MISSING_TABLE.has(smsError.code ?? '')) {
+    log.warn('costs.trend_sms_failed', { reason: smsError.message })
+  }
+
+  for (const row of (smsRows ?? []) as unknown as Record<string, unknown>[]) {
+    if (String(row.price_currency ?? '') !== currency) continue
+    // SMS is variable by definition: it is spent one message at a time.
+    ensure(`${String(row.created_at ?? '').slice(0, 7)}-01`).variableMicro += Number(
+      row.price_micro ?? 0,
+    )
+  }
+
+  for (let back = months - 1; back >= 0; back--) {
+    const monthStart = new Date(
+      Date.UTC(endMonth.getUTCFullYear(), endMonth.getUTCMonth() - back, 1),
+    )
+    const monthEnd = new Date(
+      Date.UTC(endMonth.getUTCFullYear(), endMonth.getUTCMonth() - back + 1, 1),
+    )
+    const { count, error } = await admin
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .not('paid_at', 'is', null)
+      .gte('paid_at', monthStart.toISOString().slice(0, 10))
+      .lt('paid_at', monthEnd.toISOString().slice(0, 10))
+
+    if (error) {
+      log.warn('costs.trend_orders_failed', { reason: error.message })
+      continue
+    }
+    ensure(monthStart.toISOString().slice(0, 10)).orders = count ?? 0
+  }
+
+  return [...rows.values()]
 }

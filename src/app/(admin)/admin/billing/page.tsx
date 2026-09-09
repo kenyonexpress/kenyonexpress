@@ -1,9 +1,10 @@
 import StatsCard from '@/components/admin/StatsCard'
 import BillingForms from '@/components/admin/billing/BillingForms'
+import CostTrendChart from '@/components/admin/billing/CostTrendChart'
 import { requireSection } from '@/lib/admin/rbac'
-import { checkBudget, formatMicro, perOrder, projectMonth } from '@/lib/costs/model'
+import { checkBudget, formatMicro, perOrder, projectMonth, trendPoints } from '@/lib/costs/model'
 import { PROVIDERS, providerAvailability } from '@/lib/costs/providers'
-import { loadMonthCosts } from '@/server/queries/costs'
+import { loadCostTrend, loadMonthCosts } from '@/server/queries/costs'
 import { AlertTriangle, Coins, Receipt, TrendingUp } from 'lucide-react'
 
 /**
@@ -37,6 +38,14 @@ export const metadata = { title: 'עלויות ותקציב' }
 // month's heading.
 export const dynamic = 'force-dynamic'
 
+/**
+ * A year, so the chart carries a full seasonal cycle and the current month is
+ * compared with the same month last year rather than only with last month.
+ * Twelve is also short enough that the missing ones -- which today is all of
+ * them -- read as an empty ledger rather than as a broken chart.
+ */
+const TREND_MONTHS = 12
+
 function israelToday(): Date {
   // The billing month is the operator's month, not UTC's. On the 1st of a month
   // at 01:00 Israel time, UTC is still the previous month, and every figure
@@ -61,8 +70,12 @@ export default async function BillingPage() {
     Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0),
   ).getUTCDate()
 
-  const costs = await loadMonthCosts(monthStart)
+  const [costs, trendRows] = await Promise.all([
+    loadMonthCosts(monthStart),
+    loadCostTrend(monthStart, TREND_MONTHS),
+  ])
   const availability = providerAvailability()
+  const trend = trendPoints(trendRows, monthStart, TREND_MONTHS)
 
   // The measured SMS spend joins the ledger as a variable Twilio line rather
   // than being displayed beside it: it is real spend and belongs in the total.
@@ -168,6 +181,33 @@ export default async function BillingPage() {
           <p className="mt-2 text-amber-800 text-sm">
             שורות במטבע אחר הושמטו מהסכום. אין כאן שער חליפין, והמצאת אחד הייתה נותנת סכום שנראה
             מוסמך ושגוי בגובה תנועת השער.
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-border bg-white p-5">
+        <h2 className="font-bold text-heading text-lg">מגמת הוצאה</h2>
+        <p className="mt-1 text-muted text-sm">
+          {TREND_MONTHS} החודשים האחרונים. העמודה היא החשבון החודשי, מפוצל לקבוע ומשתנה; הקו הוא
+          העלות להזמנה.
+        </p>
+        {trend.some((point) => point.totalMicro > 0) ? (
+          <div className="mt-4">
+            <CostTrendChart points={trend} currency={costs.currency} />
+          </div>
+        ) : (
+          <p className="mt-3 rounded-lg bg-gray-50 p-3 text-gray-700 text-sm leading-relaxed">
+            אין עדיין נתוני הוצאה לאף חודש בחלון הזה. <b>גרף של אפסים אינו מגמה</b> — הוא נראה כמו
+            חודש בלי הוצאות, וזה לא מה שקורה כאן: אף מספר לא הוזן ואף ספק אינו נמשך אוטומטית.
+          </p>
+        )}
+        {/* The line breaks where a month had no orders, and that is stated
+            rather than left to be discovered: a reader who sees a gap and
+            assumes data loss will go looking for a bug that is not there. */}
+        {trend.some((point) => point.totalMicro > 0 && point.orders === 0) && (
+          <p className="mt-3 text-muted text-sm">
+            הקו נקטע בחודשים שבהם לא שולמה אף הזמנה. אין להם עלות להזמנה — החשבון שולם ולא נמכר דבר,
+            וציור אפס היה אומר שהזמנות היו חינם.
           </p>
         )}
       </section>

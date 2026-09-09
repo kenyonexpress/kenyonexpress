@@ -137,13 +137,54 @@ wrong by however far the rate has moved.
 
 ---
 
+## The trend, and the two things it refuses to draw
+
+Twelve months, stacked bars for fixed against variable, and a line for the cost
+per order. Two decisions in it are worth stating because both look like
+omissions:
+
+**A month nobody recorded is drawn as zero, not skipped.** The gap is the
+information. A trend that silently omits the empty months draws a smooth line
+across a hole and invites the reader to believe spending was continuous; it also
+makes the axis lie about spacing, because the points either side of the hole end
+up adjacent.
+
+**A month with no orders has no cost-per-order point, and the line breaks
+there.** `perOrderMicro` is null rather than zero and `connectNulls` is off. A
+line joined across the gap would descend smoothly through a month in which the
+bill was paid and nothing was sold — which is the opposite of what happened, and
+reads as "orders were free that month".
+
+With no `infra_costs` rows the page does not draw twelve empty columns either.
+A chart of zeroes is not a trend: it looks like a year of no spending, and what
+is true is that no figure has been entered. The page says that instead.
+
+## Threshold alerts: a banner, and deliberately not a pager
+
+The breach check runs where the numbers are entered. `checkBudget` compares the
+**projection** against the budget — not what has already been billed, because an
+alert that arrives after the money left is a receipt — and the page shows it in
+red at the top.
+
+It is not also mailed, and that is a decision rather than an omission. Every
+figure except SMS is typed in by hand on this same page, so the person who would
+receive the alert is the person who just entered the number that triggered it.
+The one cost that accrues unattended is SMS, summed from the delivery receipts;
+if that ever grows to where it alone can breach a monthly budget, the check
+belongs in a daily cron with its own outbox kind, and `settlement_gap` in
+`/api/cron/settlement-reconcile` is the pattern to copy — including its
+degradation when the kind is not yet in `notification_outbox_kind_check`.
+
+---
+
 ## Where each piece lives
 
 | | |
 | --- | --- |
 | `src/lib/costs/model.ts` | projection, budget verdict, per-order economics. Pure |
 | `src/lib/costs/providers.ts` | the registry, and what each provider would need |
-| `src/server/queries/costs.ts` | the month's ledger, budget, order count, measured SMS spend |
+| `src/server/queries/costs.ts` | the month's ledger, budget, order count, measured SMS spend, and the twelve-month trend |
+| `src/components/admin/billing/CostTrendChart.tsx` | the trend. RTL is set on the axes, not by a stylesheet |
 | `src/server/actions/admin/costs.ts` | manual entry. Parses money by digits, never through a float |
 | `src/app/(admin)/admin/billing/page.tsx` | the page |
 | `migrations/pending/219_infra_costs.sql` | `infra_costs` + `infra_budgets`. **Written, not applied** |

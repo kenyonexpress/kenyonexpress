@@ -221,3 +221,75 @@ export function formatMicro(amountMicro: number, currency: string): string {
     maximumFractionDigits: 2,
   })}`
 }
+
+// ---------------------------------------------------------------------------
+// the trend
+// ---------------------------------------------------------------------------
+
+/** One closed month of spend, for the trend. */
+export interface TrendMonth {
+  /** `YYYY-MM-01`, the same key `infra_costs.month` uses. */
+  month: string
+  fixedMicro: number
+  variableMicro: number
+  /** Orders paid in that month. Zero is a real answer, not a gap. */
+  orders: number
+}
+
+export interface TrendPoint extends TrendMonth {
+  /** `2026-08`, for the axis. */
+  label: string
+  totalMicro: number
+  /**
+   * Total divided by orders, or null when there were none.
+   *
+   * NULL AND NOT ZERO. A month with no orders has no cost per order; printing
+   * zero would draw a line to the floor and read as "orders were free that
+   * month", which is the opposite of what happened -- the fixed bill was paid
+   * and nothing was sold.
+   */
+  perOrderMicro: number | null
+}
+
+/**
+ * The last `count` months ending at `endMonth`, oldest first, with a point for
+ * every month whether or not anything was recorded in it.
+ *
+ * A MISSING MONTH IS DRAWN AS ZERO AND NOT SKIPPED. The gap is the information:
+ * a trend that silently omits the months nobody entered figures for shows a
+ * smooth line across a hole and invites the reader to believe spending was
+ * continuous. Skipping also makes the axis lie about spacing, because the
+ * points either side of the hole sit next to each other.
+ *
+ * Pure: the caller supplies the rows and the end month, so the boundary
+ * arithmetic is testable without a clock.
+ */
+export function trendPoints(
+  rows: readonly TrendMonth[],
+  endMonth: Date,
+  count: number,
+): TrendPoint[] {
+  const byMonth = new Map<string, TrendMonth>()
+  for (const row of rows) byMonth.set(row.month, row)
+
+  const points: TrendPoint[] = []
+  for (let back = count - 1; back >= 0; back--) {
+    const date = new Date(Date.UTC(endMonth.getUTCFullYear(), endMonth.getUTCMonth() - back, 1))
+    const month = date.toISOString().slice(0, 10)
+    const row = byMonth.get(month)
+    const fixedMicro = round(row?.fixedMicro ?? 0)
+    const variableMicro = round(row?.variableMicro ?? 0)
+    const orders = row?.orders ?? 0
+    const totalMicro = fixedMicro + variableMicro
+    points.push({
+      month,
+      label: month.slice(0, 7),
+      fixedMicro,
+      variableMicro,
+      orders,
+      totalMicro,
+      perOrderMicro: orders > 0 ? round(totalMicro / orders) : null,
+    })
+  }
+  return points
+}
