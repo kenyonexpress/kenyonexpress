@@ -22,8 +22,11 @@ import type { MetadataRoute } from 'next'
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'KenyonExpress',
-    short_name: 'Kenyon',
+    // The Hebrew name is what the launcher shows under the icon, and the
+    // launcher is the one surface where the Latin brand string reads as a
+    // foreign app. `short_name` must survive a ~12-character truncation.
+    name: 'קניון אקספרס',
+    short_name: 'קניון אקספרס',
     description: 'קופונים ומוצרים מעסקים בישראל',
     start_url: '/',
     scope: '/',

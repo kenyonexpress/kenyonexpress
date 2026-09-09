@@ -52,6 +52,20 @@ were previously no R2 credentials in this repo's secrets, and R2 was once
 disabled on the account entirely (see `scripts/upload-r2.mjs` history on main).
 If the backup workflow fails with 403 code 10042, R2 is still not enabled.
 
+Enablement status, measured 2026-09-09:
+
+- R2 is **still not enabled** on the Cloudflare account: the R2 API returned
+  `403 code 10042 "Please enable R2 through the Cloudflare Dashboard"` to a
+  bucket-list call. Everything in the table above is therefore blocked on the
+  one manual dashboard step only Ofir can take (enable R2, create the backup
+  bucket, mint a bucket-scoped API token).
+- Repo Actions settings hold none of the six entries: the only secret is
+  `CRON_SECRET`, and `DB_BACKUP_ENABLED` is not among the variables. Both
+  workflows are correctly inert, not silently failing.
+- Prerequisite 2 is already satisfied: the workflows, `scripts/dr/`, and this
+  runbook are all merged to `origin/main`, so the crons arm the moment the
+  settings exist.
+
 ## Restore: quarterly drill (automated)
 
 `.github/workflows/db-restore-drill.yml`, cron `0 5 2 1,4,7,10 *` plus manual
