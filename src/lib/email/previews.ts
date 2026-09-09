@@ -141,6 +141,17 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
   fromOutbox('welcome', 'ברוכים הבאים', 'customer', {
     customer_name: 'דנה כהן',
   }),
+  fromOutbox('price_drop', 'ירידת מחיר במשאלות', 'customer', {
+    customer_name: 'דנה כהן',
+    product_name: LONG_TITLE,
+    product_slug: 'עיסוי-מפנק',
+    saved_agorot: 19_900,
+    now_agorot: 14_900,
+  }),
+  fromOutbox('back_in_stock', 'חזר למלאי', 'customer', {
+    product_name: 'חיתולי פמפרס',
+    product_slug: 'חיתולי-פמפרס',
+  }),
   fromOutbox('supplier_sale', 'מכירה חדשה לספק', 'supplier', {
     supplier_name: 'סוויטה ספא בוטיק',
     order_ref: ORDER_REF,

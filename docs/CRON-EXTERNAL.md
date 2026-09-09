@@ -97,6 +97,7 @@ file is in a repository.
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 9b https://kenyonexpress.vercel.app/api/cron/price-snapshot      GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
+9c https://kenyonexpress.vercel.app/api/cron/wishlist-alerts     GET  0 5 * * *     Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
@@ -132,6 +133,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
 | 9b | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/price-snapshot` |
+| 9c | 05:00 daily | `0 5 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 
@@ -153,6 +155,13 @@ timing changes with the scheduler.
   never finalised. That state is the worst one in the system and this is what
   notices it.
 - **`reconcile`** matches the day's payments against orders.
+- **`wishlist-alerts`** mails a saved product that got cheaper, and everyone
+  waiting on one that came back into stock. **05:00, an hour AFTER
+  `price-snapshot`**, and the order is the point: the price-drop comparison
+  reads today's row out of `price_history`, and running first would compare
+  today against a day that has not been recorded yet, producing nothing and
+  reporting success. It enqueues into `notification_outbox` rather than
+  sending, so these mails get the same retry and idempotency as every other.
 - **`price-snapshot`** writes one row per product per day into `price_history`.
   It shares `reconcile`'s 04:00 slot rather than taking one of its own, which
   is 07:00 Israeli time in summer and 06:00 in winter -- far enough from

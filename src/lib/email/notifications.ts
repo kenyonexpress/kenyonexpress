@@ -83,6 +83,14 @@ export type NotificationKind =
    * finds the drain already able to render the rows it creates.
    */
   | 'order_shipped'
+  /**
+   * A saved product got cheaper than it was on the day it was saved. Enqueued
+   * by `/api/cron/wishlist-alerts`; requires 200 for the kind and 193 for the
+   * price history the comparison is made against.
+   */
+  | 'price_drop'
+  /** A product somebody asked to be told about is back on the shelf. 195, 200. */
+  | 'back_in_stock'
 
 function escapeHtml(value: string): string {
   return value
@@ -917,6 +925,113 @@ export function buildWelcomeEmail(
 }
 
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
+/**
+ * "The thing you saved got cheaper."
+ *
+ * BOTH NUMBERS, and the saving spelled out. "Now ₪150" is a price; "was ₪200,
+ * now ₪150, you save ₪50" is the reason the customer saved it in the first
+ * place, and it is the only version they can decide on without opening the
+ * site.
+ *
+ * Returns null with no new price. A mail announcing a drop it cannot state
+ * would be worse than none: the customer opens the site expecting a number and
+ * finds whatever is there now.
+ */
+export function buildPriceDropEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const nowAgorot = Math.round(asNumber(payload.now_agorot))
+  if (nowAgorot <= 0) return null
+
+  const wasAgorot = Math.round(asNumber(payload.saved_agorot))
+  const dropAgorot = Math.max(0, wasAgorot - nowAgorot)
+  const name = asText(payload.product_name) ?? 'מוצר ששמרתם'
+  const customer = asText(payload.customer_name)
+  const slug = asText(payload.product_slug)
+  const url = slug
+    ? `${trimSite(siteUrl)}/product/${encodeURIComponent(slug)}`
+    : `${trimSite(siteUrl)}/account/wishlist`
+
+  const subject = `ירד במחיר: ${name}`
+  const greeting = customer ? `שלום ${customer},` : 'שלום,'
+
+  const text = [
+    greeting,
+    '',
+    `${name} שנמצא ברשימת המשאלות שלכם ירד במחיר.`,
+    '',
+    wasAgorot > 0 ? `היה: ${formatAgorot(wasAgorot)}` : '',
+    `עכשיו: ${formatAgorot(nowAgorot)}`,
+    dropAgorot > 0 ? `חיסכון: ${formatAgorot(dropAgorot)}` : '',
+    '',
+    `למוצר: ${ltrText(url)}`,
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">ירד במחיר</div>
+        <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:14px">${escapeHtml(name)}</div>
+        <div style="font-size:14px;color:${INK};line-height:2;margin-top:8px">
+          ${wasAgorot > 0 ? `<div style="color:${MUTED}">היה: ${escapeHtml(formatAgorot(wasAgorot))}</div>` : ''}
+          <div style="font-size:20px;font-weight:800">${escapeHtml(formatAgorot(nowAgorot))}</div>
+          ${dropAgorot > 0 ? `<div style="color:${MUTED}">חיסכון: ${escapeHtml(formatAgorot(dropAgorot))}</div>` : ''}
+        </div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
+      </div>`,
+    'קיבלתם את המייל הזה כי שמרתם את המוצר ברשימת המשאלות.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * "The thing you asked about is back."
+ *
+ * SAYS THE STOCK IS LIMITED WITHOUT SAYING HOW MUCH. The number is known and is
+ * deliberately not printed: it is a figure from a cached read that a purchase
+ * two seconds later invalidates, and a mail that says "3 left" when there is
+ * one is worse than a mail that says nothing about the count. Israeli consumer
+ * law also limits urgency claims to ones the seller can substantiate, which is
+ * the same rule that keeps the deal countdown tied to a real date.
+ */
+export function buildBackInStockEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const name = asText(payload.product_name)
+  if (!name) return null
+
+  const slug = asText(payload.product_slug)
+  const url = slug ? `${trimSite(siteUrl)}/product/${encodeURIComponent(slug)}` : trimSite(siteUrl)
+
+  const subject = `חזר למלאי: ${name}`
+
+  const text = [
+    'שלום,',
+    '',
+    `${name} חזר למלאי.`,
+    'ביקשתם שנעדכן אתכם, אז הנה זה.',
+    '',
+    `למוצר: ${ltrText(url)}`,
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">חזר למלאי</div>
+        <div style="font-size:15px;color:${INK};margin-top:12px">${escapeHtml(name)}</div>
+        <div style="font-size:14px;color:${MUTED};margin-top:6px">ביקשתם שנעדכן אתכם, אז הנה זה.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
+      </div>`,
+    'קיבלתם את המייל הזה כי ביקשתם עדכון כשהמוצר יחזור למלאי.',
+  )
+
+  return { subject, html, text }
+}
+
 export function buildNotification(
   kind: string,
   payload: Record<string, unknown>,
@@ -949,6 +1064,10 @@ export function buildNotification(
       return buildRefundCompletedEmail(payload, siteUrl)
     case 'welcome':
       return buildWelcomeEmail(payload, siteUrl)
+    case 'price_drop':
+      return buildPriceDropEmail(payload, siteUrl)
+    case 'back_in_stock':
+      return buildBackInStockEmail(payload, siteUrl)
     default:
       return null
   }

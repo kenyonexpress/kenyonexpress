@@ -47,6 +47,11 @@ on:
     - cron: '30 2 * * *'
     - cron: '40 3 * * *'
     - cron: '0 4 * * *'
+    # 05:00: wishlist-alerts, an hour after price-snapshot on purpose. The
+    # price-drop comparison reads today's row out of price_history, so running
+    # first would compare today against a day nobody has recorded yet -- and
+    # report success having sent nothing.
+    - cron: '0 5 * * *'
     - cron: '15 23 * * *'
     - cron: '0 5 1 * *'
     - cron: '0 4 * * 5'

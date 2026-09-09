@@ -144,6 +144,7 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/subscriptions/route.ts',
       'src/app/api/cron/weekly-digest/route.ts',
       'src/app/api/cron/whatsapp/route.ts',
+      'src/app/api/cron/wishlist-alerts/route.ts',
     ])
   })
 })

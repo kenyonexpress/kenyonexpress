@@ -403,6 +403,23 @@ describe('the pending migration inventory', () => {
       // another supplier's review NO ROWS, a duplicate report REFUSED, and a
       // reporter reading the queue REFUSED.
       '199_review_replies_and_reports.sql',
+      // 200 WRITTEN 2026-09-09, not applied. Two `kind` values so a wishlist
+      // can be worth having: a saved product that got cheaper, and one that
+      // came back into stock. Both are possible because the DATA arrived in
+      // 193 and 195, not because anything new is invented here.
+      //
+      // The constraint cannot be extended, only dropped and recreated, which is
+      // exactly what 183 nearly got wrong: it restated twelve names
+      // reconstructed from an earlier file while the live constraint carried
+      // fourteen, and applying it would have DROPPED `account_deleted`. The
+      // fourteen restated here were read out of production with
+      // pg_get_constraintdef, and the DO block at the top REFUSES to run if the
+      // live constraint has grown a name this file does not know -- a migration
+      // that restates a list is only as current as the day it was written, so
+      // it checks the day it runs. Probed against production, rolled back:
+      // guard=PASSED, kinds=16, price_drop accepted, a bogus kind still
+      // refused, account_deleted kept.
+      '200_wishlist_alert_kinds.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

@@ -1,5 +1,42 @@
 # `migrations/pending/`
 
+## 2026-09-09: 200 WRITTEN, not applied — two kinds, and a guard against 183's mistake
+
+`200_wishlist_alert_kinds.sql`. `price_drop` and `back_in_stock`, so a wishlist
+can do the one thing a wishlist is for: tell somebody when a saved product gets
+cheaper or comes back.
+
+Both are possible because the **data** arrived in the last two migrations, not
+because anything new is invented here — `price_history` (193) makes a price drop
+a comparison between two of its rows, and `stock_waitlist` (195) already holds
+who asked to be told.
+
+**The constraint cannot be extended, only dropped and recreated, and that is
+where the danger is.** 183 shipped with twelve names reconstructed from the file
+before it while the live constraint already carried fourteen; applying it
+verbatim would have **dropped `account_deleted`** and turned every
+account-deletion notification into a 23514. Its preflight caught it.
+
+The fourteen restated here were read out of production with
+`pg_get_constraintdef` on 2026-09-09, and the `DO` block at the top **refuses to
+run** if the live constraint has grown a name this file does not know about. A
+migration that restates a list is only as current as the day it was written, so
+it checks the day it runs.
+
+Probed against production, rolled back:
+
+```
+guard=PASSED  kinds=16  price_drop=ACCEPTED  bogus_kind=REFUSED  account_deleted_kept=true
+```
+
+**The application ships ahead of it, deliberately and visibly.**
+`/api/cron/wishlist-alerts` enqueues both kinds and reads `23514` as "200 is not
+applied", reporting it once per run rather than throwing.
+`src/lib/email/outbox-kinds.test.ts` gained a third category for exactly this —
+and the assertion under it requires every ahead-of-its-migration kind to have a
+caller that **handles 23514**, which is the difference between "shipped ahead of
+its migration" and "shipped broken".
+
 ## 2026-09-09: 199 WRITTEN, not applied — a dormant grant, woken by a new policy
 
 `199_review_replies_and_reports.sql`. It adds the supplier's public answer to a

@@ -70,6 +70,27 @@ const CHECK_ACCEPTS = [
  */
 const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
 
+/**
+ * The other direction: kinds this application can RENDER and ENQUEUE, that the
+ * live constraint does not accept yet.
+ *
+ * `price_drop` and `back_in_stock` arrive with `migrations/pending/200`, and
+ * `/api/cron/wishlist-alerts` enqueues both. Until 200 is applied the insert
+ * fails with 23514.
+ *
+ * THIS IS NOT AN EXCUSE LIST, and the assertion below is what keeps it from
+ * becoming one: every name here must have a caller that HANDLES `23514`. That
+ * is the difference between "shipped ahead of its migration" and "shipped
+ * broken" — the first degrades to sending nothing and says so, the second
+ * throws in a cron at five in the morning.
+ *
+ * `order_shipped` was in this state before 183 and never appeared here, because
+ * its enqueuer is a database trigger and this scan only reads `src`. That is a
+ * real limit of the gate and worth naming rather than leaving to be
+ * rediscovered.
+ */
+const RENDERS_BUT_CONSTRAINT_REJECTS: readonly string[] = ['price_drop', 'back_in_stock']
+
 // Re-measured 2026-09-09, when 183 restated the constraint. The live list had
 // grown from twelve to fourteen since the 08-19 measurement: `account_deleted`
 // (150) and `order_shipped` (183). 183 as drafted restated only the twelve it
@@ -101,6 +122,14 @@ const PAYLOAD: Record<string, unknown> = {
   critical: 1,
   rows: [{ transactionId: 'tx1', terminalAgorot: 100, localAgorot: 90 }],
   full_name: 'דנה',
+  // The wishlist alerts' own guards: `buildPriceDropEmail` returns null without
+  // a new price, and `buildBackInStockEmail` without a product name (which the
+  // fixture already carries above). Both refusals are correct -- a mail
+  // announcing a drop it cannot state is worse than none -- so the fixture
+  // satisfies them rather than the builders relaxing.
+  product_slug: 'עיסוי-מפנק',
+  saved_agorot: 19_900,
+  now_agorot: 14_900,
 }
 
 const SITE = 'https://kenyonexpress.co.il'
@@ -145,6 +174,30 @@ describe('the outbox kinds three lists have to agree on', () => {
     }
   })
 
+  it('makes every ahead-of-its-migration kind handle the rejection', () => {
+    // The assertion that stops RENDERS_BUT_CONSTRAINT_REJECTS being an excuse
+    // list. A kind the constraint refuses WILL produce 23514 on every run until
+    // the migration lands, so its caller has to read that code and carry on.
+    // Without this the list would simply switch the gate off for two names.
+    for (const kind of RENDERS_BUT_CONSTRAINT_REJECTS) {
+      expect(
+        buildNotification(kind, PAYLOAD, SITE),
+        `${kind} has no builder: it cannot be rendered when the migration lands`,
+      ).not.toBeNull()
+
+      const callers = sourceFiles(resolve(process.cwd(), 'src')).filter((file) =>
+        new RegExp(`p_kind:\\s*'${kind}'`).test(readFileSync(file, 'utf8')),
+      )
+      expect(callers.length, `nothing enqueues ${kind}`).toBeGreaterThan(0)
+      for (const file of callers) {
+        expect(
+          readFileSync(file, 'utf8'),
+          `${file} enqueues ${kind} without handling 23514`,
+        ).toContain('23514')
+      }
+    }
+  })
+
   it('refuses a kind nobody renders', () => {
     expect(buildNotification('not_a_kind', PAYLOAD, SITE)).toBeNull()
   })
@@ -153,7 +206,7 @@ describe('the outbox kinds three lists have to agree on', () => {
     // THE ACTUAL 2026-08-19 BUG, in the form that catches it next time. Every
     // `p_kind:` and `kind:` literal handed to the outbox anywhere in src must
     // be a value the constraint accepts.
-    const accepted = new Set<string>(CHECK_ACCEPTS)
+    const accepted = new Set<string>([...CHECK_ACCEPTS, ...RENDERS_BUT_CONSTRAINT_REJECTS])
     const offenders: string[] = []
 
     for (const file of sourceFiles(resolve(process.cwd(), 'src'))) {
