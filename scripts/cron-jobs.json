@@ -7,6 +7,7 @@
     { "name": "invoices", "path": "/api/cron/invoices", "cron": "*/10 * * * *" },
     { "name": "stock", "path": "/api/cron/stock", "cron": "*/10 * * * *" },
     { "name": "stranded-payments", "path": "/api/cron/stranded-payments", "cron": "*/10 * * * *" },
+    { "name": "webhook-dlq", "path": "/api/cron/webhook-dlq", "cron": "*/10 * * * *" },
     { "name": "abandoned-cart", "path": "/api/cron/abandoned-cart", "cron": "0 * * * *" },
     { "name": "subscriptions", "path": "/api/cron/subscriptions", "cron": "30 2 * * *" },
     { "name": "reap-carts", "path": "/api/cron/reap-carts", "cron": "40 3 * * *" },

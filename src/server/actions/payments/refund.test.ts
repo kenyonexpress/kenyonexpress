@@ -300,6 +300,91 @@ describe('refundOrder: supplier debits', () => {
   })
 })
 
+describe('refundOrder: the payment journal', () => {
+  const journalRows = () =>
+    calls
+      .filter((c) => c.table === 'payment_events' && c.op === 'insert')
+      .map((c) => c.payload as Record<string, unknown>)
+
+  it('journals refund_requested before the provider is asked, and refund_succeeded after', async () => {
+    // 130 reserved these enum values and nothing wrote them: a refund was
+    // visible in settlement_events and audit_log but absent from the journal,
+    // so payment_events showed a charge with no exit.
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+    const types = journalRows().map((r) => r.event_type)
+    expect(types).toContain('refund_requested')
+    expect(types).toContain('refund_succeeded')
+    const succeeded = journalRows().find((r) => r.event_type === 'refund_succeeded')
+    expect(succeeded).toMatchObject({
+      order_id: 'order-1',
+      payment_id: 'pay-1',
+      transaction_id: 'refund-tx-1',
+      amount_agorot: 9_500,
+    })
+  })
+
+  it('journals the cancellation fee when one was charged', async () => {
+    // ₪100 charge, 5% fee: the fee row carries the fee, not the refund.
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+    const fee = journalRows().find((r) => r.event_type === 'cancellation_fee_applied')
+    expect(fee).toMatchObject({ order_id: 'order-1', amount_agorot: 500 })
+  })
+
+  it('journals no fee row on a same-day cancellation, which has none', async () => {
+    const now = new Date('2026-08-06T15:00:00Z')
+    seedHappyPath({ succeededAt: '2026-08-06T09:00:00Z' })
+    await refundOrder({ orderId: 'order-1', reason: 'test', now })
+    const types = journalRows().map((r) => r.event_type)
+    expect(types).not.toContain('cancellation_fee_applied')
+    expect(types).toContain('refund_succeeded')
+  })
+
+  it('journals refund_failed when the provider declines, and nothing as succeeded', async () => {
+    seedHappyPath()
+    refundByTransactionId.mockResolvedValue({
+      success: false,
+      refundTransactionId: null,
+      refundedAgorot: 0,
+      failureCode: '55',
+      failureMessage: 'declined',
+      raw: {},
+    })
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+    const types = journalRows().map((r) => r.event_type)
+    expect(types).toContain('refund_requested')
+    expect(types).toContain('refund_failed')
+    expect(types).not.toContain('refund_succeeded')
+  })
+
+  it('still journals refund_succeeded when the books fail after the credit', async () => {
+    // The row is written OUTSIDE the persistence try on purpose: when the
+    // bookkeeping diverges from the money, the journal must side with the money.
+    seedHappyPath()
+    const boom = new Error('constraint violation')
+    const original = adminClient.from
+    adminClient.from = ((table: string) => {
+      if (table === 'payments') {
+        return {
+          ...original(table),
+          insert: () => {
+            throw boom
+          },
+        }
+      }
+      return original(table)
+    }) as typeof adminClient.from
+    try {
+      const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+      expect(result).toMatchObject({ ok: false, code: 'INTERNAL' })
+      expect(journalRows().map((r) => r.event_type)).toContain('refund_succeeded')
+    } finally {
+      adminClient.from = original
+    }
+  })
+})
+
 describe('refundOrder: refusals', () => {
   it('answers MANUAL_RESOLUTION on a redeemed voucher, in Hebrew', async () => {
     queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })

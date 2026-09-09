@@ -623,17 +623,60 @@ export async function finalizeOrder(input: {
     await reportPurchase(admin, order.id, order.user_id, items as OrderItemRow[])
 
     if (input.token) {
-      await admin.from('payment_tokens').insert({
-        profile_id: order.user_id,
-        cardcom_token: input.token.token,
-        last_4: input.token.last4,
-        card_brand: input.token.brand,
-        expiry_month: input.token.expiryMonth,
-        expiry_year: input.token.expiryYear,
-        // A token is only chargeable on the terminal that minted it, so the
-        // saved card is useless without knowing which account that was.
-        cardcom_account_id: cardcomAccountId,
-      })
+      // A shopper who buys again with "save my card" ticked re-tokenizes the
+      // same card, and a plain insert accumulated one picker row per purchase,
+      // all reading "ויזה המסתיימת ב-1234". Cardcom mints a fresh token string
+      // per tokenization, so the string cannot be the dedupe key; the physical
+      // card can: same profile, same last four, same brand, same expiry. On a
+      // match the ROW is refreshed with the newest token rather than added,
+      // which also retires the older token string Cardcom may have invalidated.
+      //
+      // Best-effort on the read: the card is already charged, so a failed
+      // dedupe lookup must not fail the finalize. It falls back to the insert,
+      // which is the pre-dedupe behavior, and the worst case is the duplicate
+      // row this exists to avoid.
+      let existingTokenRowId: string | null = null
+      if (order.user_id) {
+        const { data: existingToken, error: tokenReadError } = await admin
+          .from('payment_tokens')
+          .select('id')
+          .eq('profile_id', order.user_id)
+          .eq('last_4', input.token.last4)
+          .eq('card_brand', input.token.brand)
+          .eq('expiry_month', input.token.expiryMonth)
+          .eq('expiry_year', input.token.expiryYear)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (tokenReadError) {
+          log.warn('finalize.token_dedupe_read_failed', {
+            orderId: order.id,
+            reason: tokenReadError.message,
+          })
+        }
+        existingTokenRowId = existingToken?.id ?? null
+      }
+      if (existingTokenRowId) {
+        await admin
+          .from('payment_tokens')
+          .update({
+            cardcom_token: input.token.token,
+            cardcom_account_id: cardcomAccountId,
+          })
+          .eq('id', existingTokenRowId)
+      } else {
+        await admin.from('payment_tokens').insert({
+          profile_id: order.user_id,
+          cardcom_token: input.token.token,
+          last_4: input.token.last4,
+          card_brand: input.token.brand,
+          expiry_month: input.token.expiryMonth,
+          expiry_year: input.token.expiryYear,
+          // A token is only chargeable on the terminal that minted it, so the
+          // saved card is useless without knowing which account that was.
+          cardcom_account_id: cardcomAccountId,
+        })
+      }
     }
 
     const { error: orderError } = await admin
