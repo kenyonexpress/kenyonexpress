@@ -16,6 +16,8 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
+import { checkVelocity } from '@/lib/fraud/velocity'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -31,12 +33,13 @@ import {
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
+import { paymentTokenWrite, paymentsHaveTokenColumn } from '@/lib/payments/payment-token-column'
 import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
   type BeginCheckoutOutput,
   type CheckoutActionResult,
@@ -49,6 +52,7 @@ import {
   trackServerEvent,
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
+import { readVelocityCounts, scoreOrder } from '@/server/fraud/signals'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { redirect } from 'next/navigation'
@@ -189,10 +193,26 @@ async function chargeSavedToken(args: {
       ),
       idempotency_key: args.idempotencyKey,
       cardcom_account_id: token.cardcom_account_id,
-      // The FK that ties the charge to the card it rode on. 026 created it and
-      // nothing ever wrote it, so "which saved card was this?" could only be
-      // answered by joining through Cardcom's own token string.
-      token_id: token.id,
+      // The FK that ties the charge to the card it rode on. 026 declares it and
+      // nothing wrote it until 52fe21ed4, so "which saved card was this?" could
+      // only be answered by joining through Cardcom's own token string.
+      //
+      // PROBED, NOT ASSUMED, and the probe is why saved-card checkout works.
+      // `information_schema` says production's `payments` has no `token_id`
+      // (026 is a different lineage from the hosted database, exactly as 059
+      // is), so naming it unconditionally raised 42703 and took down the whole
+      // INSERT - no payment row, no Cardcom call, "יצירת תשלום נכשלה" for every
+      // customer paying with a saved card. See `payment-token-column.ts`.
+      ...paymentTokenWrite(
+        await paymentsHaveTokenColumn((column) =>
+          admin
+            .from('payments')
+            .select(column)
+            .limit(0)
+            .then(({ error }) => ({ error })),
+        ),
+        token.id,
+      ),
     })
     .select('id')
     .single()
@@ -329,6 +349,15 @@ async function runBeginCheckout(
     }
   }
   const input = parsed.data
+
+  // The bot challenge. Placed after parsing rather than before it, unlike the
+  // signup form: this input is JSON from our own client, not a public form, so
+  // there is no field-by-field feedback to withhold, and a malformed body
+  // should say so rather than be reported as a failed challenge.
+  const challenge = await verifyTurnstile(input.turnstile_token, await getClientIp())
+  if (!challenge.ok) {
+    return { ok: false, error: turnstileErrorText(), code: 'VALIDATION' }
+  }
 
   // 1. Server-built cart + gate
   const cart = await getCart()
@@ -628,6 +657,37 @@ async function runBeginCheckout(
   const now = new Date()
   const expiresAt = new Date(now.getTime() + ORDER_EXPIRY_MINUTES * 60 * 1000)
 
+  /**
+   * 3b. VELOCITY. The last gate before an order exists, and the only fraud
+   * control in this flow that refuses anything.
+   *
+   * PLACED HERE, AFTER THE IDEMPOTENT REPLAY LOOKUP, ON PURPOSE. Above that
+   * lookup a customer whose payment already succeeded and who refreshed the
+   * page would be counted again and could be refused their own completed
+   * purchase; the replay path returns before reaching this line. Below it, and
+   * before the order INSERT, means nothing has been created yet when the answer
+   * is no - no pending order to expire, no stock reserved, no discount claimed.
+   *
+   * WHAT IT COUNTS AND WHY IT NEEDS NO MIGRATION: declines, distinct cards and
+   * one card across accounts, all out of `payments` and `payment_tokens`, which
+   * production has today. `lib/fraud/velocity.ts` states each ceiling and which
+   * side it was set from.
+   */
+  const velocityCounts = await readVelocityCounts(admin, {
+    userId: user.id,
+    tokenId: input.token_id ?? null,
+    now,
+  })
+  const velocity = checkVelocity(velocityCounts)
+  if (!velocity.allowed) {
+    log.warn('checkout.velocity_refused', {
+      userId: user.id,
+      rule: velocity.rule,
+      counts: velocityCounts,
+    })
+    return { ok: false, error: velocity.message, code: 'RATE_LIMITED' }
+  }
+
   // 4. Pending order + items snapshot
   //
   // Every money column here is integer agorot. 059 renamed the whole set
@@ -688,6 +748,41 @@ async function runBeginCheckout(
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
     }
   }
+
+  /**
+   * The risk score. Advisory, written in its OWN statement, and never fatal.
+   *
+   * It is not a column on the INSERT above for the reason that whole block is
+   * commented: naming a column the hosted database lacks fails the entire
+   * statement and no order can be created at all. A scoring table that is not
+   * applied yet must cost an unscored order, not a shop that cannot sell -
+   * which is also why `recordRiskAssessment` swallows 42P01.
+   *
+   * IT DOES NOT DECIDE ANYTHING. Nothing below reads the band, no branch
+   * refuses on it, and that is deliberate: the refusals happened at 3b, where
+   * each one is a count that can be explained. This routes the order to
+   * `/admin/fraud` and stops.
+   */
+  const discountShareBps =
+    settlement.faceValue > 0
+      ? Math.round(
+          ((settlement.discountApplied + settlement.walletApplied) / settlement.faceValue) * 10_000,
+        )
+      : 0
+  await scoreOrder(
+    admin,
+    {
+      userId: user.id,
+      orderId: order.id,
+      totalAgorot: settlement.faceValue,
+      discountShareBps,
+      giftToOtherRecipient: Boolean(input.gift_recipient_email),
+      tokenId: input.token_id ?? null,
+      now,
+    },
+    velocityCounts,
+    await getClientIp(),
+  )
 
   const itemGeneration = await resolveOrderItemGeneration(
     moneyColumnProbe(admin as never, 'order_items'),
@@ -1146,6 +1241,10 @@ async function runSubmitCheckout(
     save_card: savedTokenId ? false : formData.get('save_card') === 'on',
     address_id: addressId,
     token_id: savedTokenId,
+    // Written into this form by the Turnstile widget when one is configured.
+    // Null when it is not, which is what `verifyTurnstile` treats as "nothing
+    // to enforce" rather than as a failed challenge.
+    turnstile_token: text('cf-turnstile-response') || null,
     // Only forwarded when the shopper actually ticked "this is a gift"; an
     // empty string would fail zod's email check and reject the whole checkout.
     ...(text('gift') === 'on' && text('gift_recipient_email')

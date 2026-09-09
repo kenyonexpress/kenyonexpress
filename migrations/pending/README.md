@@ -1,5 +1,58 @@
 # `migrations/pending/`
 
+## 2026-09-09: 202 WRITTEN, not applied — one column that is a live bug, and three tables
+
+`202_fraud_abuse.sql`.
+
+**Part 1 is not a feature.** `information_schema` says `public.payments` has
+twenty columns and `token_id` is **not one of them**, although
+`026_commerce.sql` declares it in the CREATE TABLE — production and the file
+chain are different lineages, the same discovery `payment-money-columns.ts`
+records about 059. On 2026-09-07, commit `52fe21ed4` added `token_id` to the
+`payments` INSERT on the saved-card charge path. 42703 takes down the whole
+statement, so from that commit **every purchase with a saved card failed**
+before Cardcom was called, with "יצירת תשלום נכשלה". The hosted-page path
+inserts no `token_id` and was unaffected, which is why it never presented as an
+outage.
+
+The application no longer depends on this migration for that: `payment-token-
+column.ts` probes for the column and omits it when absent. Applying it restores
+the **record** — which card a charge rode on — and makes the per-account card
+velocity signal readable at all.
+
+**The part that refuses needs no migration.** The velocity limits count
+declines, distinct cards and one card across accounts out of `payments` and
+`payment_tokens`, which exist today. `order_risk_assessments` is the part that
+does **not** refuse: a score with no measured base rate behind it routes an
+order to a human and never declines one. It is a table and not a column on
+`orders` because that INSERT must not grow — the lesson `order-money-columns.ts`
+exists to record.
+
+**The refund cap is three per order, not three per customer.** Per customer
+punishes the good one; per order bounds the loop that costs something. Enforced
+by a trigger and not only by the form, and **a withdrawn request still counts**,
+because otherwise the cap is bypassed by withdraw-and-reopen and withdrawing is
+free.
+
+**Disputes are entered, not received.** The legacy Cardcom `/Interface/*.aspx`
+API sends no chargeback notification, so there is no integration to write.
+`respond_by` is NOT NULL: a case answered late is lost by default. `status` is
+text + CHECK rather than `public.dispute_status`, which exists in production
+with **zero columns using it** and whose `resolved_accepted` cannot say who
+accepted — losing a chargeback and declining to contest one are different
+numbers in every report.
+
+**Verified against production without applying.** One `DO` block created all of
+it, exercised it, and ended in an unconditional `RAISE`. All of it passed: the
+review CHECK refuses half a decision, three requests land and the fourth is
+refused, a withdrawal does not free a slot, an approval with no `decided_at` is
+refused, a duplicate `provider_ref` is refused, and a `won` with no
+`resolved_at` is refused. `pg_class`, `pg_proc` and `information_schema` re-read
+afterwards: nothing left behind.
+
+Order: independent of everything else pending. It adds one column, three tables
+and one function, and touches no existing row.
+
 ## 2026-09-09: 201 WRITTEN, not applied — a flash deal, and what it does not need to do
 
 `201_scheduled_price_changes.sql`. `discount_campaigns` (096) schedules a

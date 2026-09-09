@@ -1,5 +1,6 @@
 'use client'
 
+import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { GoogleLogo } from '@/components/shared/GoogleLogo'
 import { type AuthState, signInWithGoogle, signUpWithEmail } from '@/server/actions/auth'
 import Link from 'next/link'
@@ -122,6 +123,11 @@ export default function SignupForm({ next }: Props) {
         {getError(state) && (
           <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{getError(state)}</p>
         )}
+
+        {/* Renders nothing unless a Turnstile key pair is configured. The
+            Google button above is a separate form and carries no challenge:
+            Google has already decided that caller is a person. */}
+        <TurnstileWidget action="signup" />
 
         <button
           type="submit"

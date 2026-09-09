@@ -123,6 +123,17 @@ export const RATE_LIMIT_POLICIES = {
   // that user's own row - the limit bounds a held-down button, not an attacker.
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
   'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
+  // Keyed on the USER and not the IP, because this action requires a session,
+  // so there is an account to key on and a household behind one address must
+  // not share one allowance. Ten rather than three: the per-ORDER cap of three
+  // is the real limit and it is enforced by a trigger; this only bounds
+  // somebody opening a request against every order they have ever placed in one
+  // sitting, which the per-order cap cannot see.
+  'refund-request': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'refund requests across orders, per user',
+  },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
   // Once per login per browser, and only when the browser arrives carrying a
   // guest list. Ten an hour is generous for a person signing in and out; it is

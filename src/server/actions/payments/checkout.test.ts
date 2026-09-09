@@ -84,7 +84,14 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient })
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({ auth: { getUser: () => getUser() } }),
 }))
-vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit: async () => true }))
+// `getClientIp` joined this module's callers when the fraud layer landed:
+// beginCheckout passes the address to the Turnstile challenge and stores it on
+// the risk assessment. Without it here every test in this file died on "No
+// getClientIp export is defined on the mock" rather than on anything real.
+vi.mock('@/lib/utils/rate-limit', () => ({
+  checkRateLimit: async () => true,
+  getClientIp: async () => '203.0.113.10',
+}))
 // One controllable provider instance, so the saved-card tests can steer the
 // charge outcome and assert what the hosted-page fallback asked for.
 const provider = vi.hoisted(() => ({

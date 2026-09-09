@@ -13,6 +13,8 @@ import {
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
+import { isDisposableEmail } from '@/lib/fraud/disposable-email'
+import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -186,6 +188,13 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
   const allowed = await checkRateLimit(`signup:${ip}`, 5, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות הרשמה — נסו שוב בעוד שעה' }
 
+  // The bot challenge, before the schema, because a bot that cannot solve it
+  // should not get field-by-field validation feedback to iterate against.
+  // Answers "allowed, not enforced" and costs nothing when unconfigured, which
+  // is every environment this repo can see today.
+  const challenge = await verifyTurnstile(formData.get('cf-turnstile-response')?.toString(), ip)
+  if (!challenge.ok) return { error: turnstileErrorText() }
+
   const parsed = signupSchema.safeParse({
     full_name: formData.get('full_name'),
     email: formData.get('email'),
@@ -193,6 +202,23 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
     password: formData.get('password'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  /**
+   * Throwaway inboxes, refused at CREATION only.
+   *
+   * This is the one path where the block belongs: an account is what a coupon
+   * cap, a referral bonus and a first-order discount are all counted against,
+   * so an unlimited supply of accounts is an unlimited supply of each. Sign-IN
+   * never consults this list - somebody whose provider lands on it later is a
+   * customer with vouchers in their account, and locking them out to enforce a
+   * signup rule is worse than the abuse.
+   *
+   * The message names the reason. "נתונים לא תקינים" on a valid address sends a
+   * real person to check their typing forever.
+   */
+  if (isDisposableEmail(parsed.data.email)) {
+    return { error: 'לא ניתן להירשם עם כתובת מייל זמנית. השתמשו בכתובת קבועה.' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signUp({

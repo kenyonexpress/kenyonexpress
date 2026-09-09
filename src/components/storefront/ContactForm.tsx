@@ -1,5 +1,6 @@
 'use client'
 
+import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { type ContactState, submitContactForm } from '@/server/actions/contact'
 import { useActionState, useId } from 'react'
 
@@ -84,6 +85,9 @@ export default function ContactForm() {
           className={`${fieldClass} min-h-32 resize-y`}
         />
       </div>
+
+      {/* Renders nothing unless a Turnstile key pair is configured. */}
+      <TurnstileWidget action="contact" />
 
       <button
         type="submit"

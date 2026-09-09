@@ -1,5 +1,6 @@
 'use client'
 
+import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
@@ -943,6 +944,11 @@ export default function CheckoutForm({
                     {authError}
                   </div>
                 )}
+
+                {/* Renders nothing unless a Turnstile key pair is configured.
+                    Placed immediately above the pay button so a shopper who has
+                    to solve it sees it at the moment they mean to pay. */}
+                <TurnstileWidget action="checkout" />
 
                 <button type="submit" className="checkout-pay-btn" disabled={busy}>
                   {busy

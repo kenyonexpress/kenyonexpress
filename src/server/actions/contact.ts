@@ -2,6 +2,7 @@
 
 import { contactEmail } from '@/lib/contact-address'
 import { sendEmail } from '@/lib/email/resend'
+import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { withActionContext } from '@/lib/observability/action-context'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { z } from 'zod'
@@ -58,6 +59,13 @@ async function runSubmitContactForm(
   if (!(await checkRateLimit(`contact:${ip}`, 5, 3600))) {
     return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
   }
+
+  // The bot challenge sits BELOW the honeypot and the rate limit on purpose:
+  // both of those are free, and this one costs a round trip to Cloudflare. It
+  // is inert until a key pair is configured, and then it is the control that
+  // catches the bot which learned to leave the honeypot alone.
+  const challenge = await verifyTurnstile(formData.get('cf-turnstile-response')?.toString(), ip)
+  if (!challenge.ok) return { ok: false, error: turnstileErrorText() }
 
   const { name, email, message } = parsed.data
   const safeName = escapeHtml(name)

@@ -78,14 +78,37 @@ const IMG_SRC = [
  * well would produce it twice, where the strictest wins and the exception is
  * silently undone.
  */
+/**
+ * Cloudflare Turnstile needs three directives opened, and they are opened ONLY
+ * when the widget can actually render.
+ *
+ * The challenge loads a script from `challenges.cloudflare.com`, draws itself in
+ * an iframe from the same host, and posts the solved token back to it. Miss any
+ * one of the three and the widget fails in the way that costs the most: it
+ * renders nothing, no `cf-turnstile-response` field is ever added to the form,
+ * and every submission is refused as "missing token" - a broken signup page
+ * whose only symptom is in the browser console.
+ *
+ * GATED ON THE SITE KEY, and that gate is exact rather than cautious.
+ * `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is inlined into the browser bundle at build
+ * time, so the same build that has no site key has no widget, and the header
+ * that ships with it should not name a host nothing will contact. When the key
+ * is set the widget exists and the host is required. There is no configuration
+ * in which one is true and the other is not.
+ */
+const TURNSTILE_HOST = 'https://challenges.cloudflare.com'
+const turnstileConfigured = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim())
+const withTurnstile = (directive: string): string =>
+  turnstileConfigured ? `${directive} ${TURNSTILE_HOST}` : directive
+
 const BASE_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  withTurnstile("script-src 'self' 'unsafe-inline'"),
   "style-src 'self' 'unsafe-inline'",
   IMG_SRC,
   "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co",
-  'frame-src https://secure.cardcom.solutions',
+  withTurnstile("connect-src 'self' https://*.supabase.co"),
+  withTurnstile('frame-src https://secure.cardcom.solutions'),
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",
   "object-src 'none'",

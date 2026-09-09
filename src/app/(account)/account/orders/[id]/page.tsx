@@ -1,5 +1,7 @@
+import RefundRequestForm from '@/components/account/RefundRequestForm'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
+import { refundRequestStatus } from '@/server/actions/refund-requests'
 import { getOrderDetail } from '@/server/queries/orders'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -14,6 +16,12 @@ export default async function OrderDetailPage({ params }: Props) {
   // never a leak.
   const order = await getOrderDetail(id)
   if (!order) notFound()
+
+  // Read here rather than inside the client component: the decision needs the
+  // order's status and the existing rows, both of which are server-only reads,
+  // and a client that fetched them would render the form before knowing whether
+  // it is allowed.
+  const refund = await refundRequestStatus(id)
 
   return (
     <>
@@ -190,6 +198,14 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
         ))}
       </section>
+
+      <RefundRequestForm
+        orderId={id}
+        allowed={refund.allowed}
+        blockedMessage={refund.message}
+        remaining={refund.remaining}
+        requests={refund.requests}
+      />
 
       <p>
         <Link className="account-btn" href="/account/orders">

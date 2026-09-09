@@ -20,6 +20,7 @@ import {
   ScanLine,
   Search,
   Share2,
+  ShieldAlert,
   ShoppingCart,
   Store,
   Tag,
@@ -75,6 +76,9 @@ const NAV_ITEMS: NavItem[] = [
   // Separate from תשלומים לספקים above, which reads payout_statements (081,
   // never applied to this database).
   { href: '/admin/reports', label: 'דוחות כספיים', icon: FileSpreadsheet, section: 'payments' },
+  // `payments` and not `orders`: support reads orders, and this page names the
+  // reasons an order was flagged and what we intend to argue in a chargeback.
+  { href: '/admin/fraud', label: 'הונאה ומחלוקות', icon: ShieldAlert, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
   { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },

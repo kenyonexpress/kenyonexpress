@@ -56,6 +56,7 @@
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
 | `referral-code` | 10 | 1 h | referral code mint, per user |
 | `review-submit` | 5 | 1 h | review spam, per user |
+| `refund-request` | 10 | 1 h | refund requests across orders, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest wishlist merge at login, per user |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |

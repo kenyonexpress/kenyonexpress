@@ -438,6 +438,39 @@ describe('the pending migration inventory', () => {
       // REFUSED, a negative price REFUSED, a past-due row still due, a
       // cancelled row freeing its slot, and anon unable to read the schedule.
       '201_scheduled_price_changes.sql',
+      // 202 WRITTEN 2026-09-09, not applied. Fraud and abuse: three tables and
+      // one column that is a live bug.
+      //
+      // THE COLUMN IS NOT A FEATURE. `information_schema` says public.payments
+      // has twenty columns and `token_id` is not one of them, although
+      // 026_commerce.sql declares it in the CREATE TABLE. On 2026-09-07 commit
+      // 52fe21ed4 added `token_id` to the payments INSERT on the saved-card
+      // path, so 42703 took down the whole statement and EVERY saved-card
+      // purchase failed before Cardcom was called. The application no longer
+      // needs this migration for that -- `payment-token-column.ts` probes and
+      // omits -- so applying it restores the record, not the sale.
+      //
+      // The refusing half of the layer (velocity: declines, distinct cards, one
+      // card across accounts) reads tables production already has and needs
+      // NOTHING here. What needs applying is the recording: risk assessments in
+      // their own table rather than a column on `orders`, whose INSERT must not
+      // grow; refund_requests with a cap of three PER ORDER enforced by a
+      // trigger, counting withdrawn rows so the cap cannot be bypassed by
+      // withdraw-and-reopen; and disputes, entered by hand because the legacy
+      // Cardcom API sends no chargeback notification, with a NOT NULL
+      // `respond_by` because a case answered late is lost by default.
+      //
+      // `status` is text+CHECK and not `public.dispute_status`, which exists in
+      // production with zero columns using it: that enum cannot distinguish
+      // losing a chargeback from choosing not to contest one.
+      //
+      // Probed against production, rolled back: the review CHECK refuses half a
+      // decision, three requests land and the FOURTH is refused, a withdrawal
+      // does NOT free a slot, an approval with no decided_at is refused, a
+      // duplicate provider_ref is refused, and a `won` with no resolved_at is
+      // refused. pg_class, pg_proc and information_schema re-read afterwards:
+      // nothing left behind.
+      '202_fraud_abuse.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

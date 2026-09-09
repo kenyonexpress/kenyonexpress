@@ -68,6 +68,23 @@ const schema = z
     AXIOM_TOKEN: z.string().min(10).optional().or(z.literal('')),
     AXIOM_DATASET: z.string().optional().or(z.literal('')),
 
+    /**
+     * Cloudflare Turnstile. OPTIONAL, and inert unless BOTH are set - the third
+     * pair in this file with that contract, and here the asymmetry is what
+     * makes it necessary rather than tidy: the widget only renders when the
+     * BROWSER has the site key, so a deployment holding only the secret would
+     * receive no token from any real person and refuse every signup, every
+     * contact message and every checkout. Half a configuration must therefore
+     * read as no configuration, not as a stricter one.
+     *
+     * With neither set, `lib/fraud/turnstile.ts` allows and says so. That is a
+     * deliberate fail-open: an absent bot control is a smaller problem than a
+     * shop that cannot take an order, and no environment this repo can see
+     * holds a Turnstile key today.
+     */
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional().or(z.literal('')),
+    TURNSTILE_SECRET_KEY: z.string().optional().or(z.literal('')),
+
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
   })

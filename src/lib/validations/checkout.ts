@@ -155,6 +155,21 @@ export const beginCheckoutInputSchema = checkoutPaymentSchema
     z.object({
       address_id: uuid.nullable().default(null),
       channel: checkoutChannelSchema,
+      /**
+       * The Cloudflare Turnstile token, when the widget is configured.
+       *
+       * OPTIONAL IN THE SCHEMA AND MANDATORY IN THE ACTION, and the split is
+       * not sloppiness. Whether a token is required depends on whether the
+       * deployment has a key pair, which a static schema cannot see; making it
+       * required here would refuse every checkout in every environment that has
+       * no Turnstile, including this one. `verifyTurnstile` returns "allowed,
+       * not enforced" when unconfigured and refuses an empty token when it is,
+       * so the requirement follows the configuration instead of the build.
+       *
+       * The mobile app is the other caller of this action and does not render
+       * the widget; it will send nothing here, which is exactly the case above.
+       */
+      turnstile_token: z.string().max(4096).nullable().default(null),
     }),
   )
   .merge(giftSchema)
