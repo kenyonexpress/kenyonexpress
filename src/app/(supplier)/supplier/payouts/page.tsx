@@ -75,7 +75,7 @@ export default async function SupplierPayoutsPage() {
               <li key={row.status} className="flex items-center justify-between gap-3 py-2">
                 <span className="text-gray-600">
                   {SETTLEMENT_LABEL_HE[row.status] ?? row.status}
-                  <span className="mr-1.5 text-xs text-gray-400">({row.count})</span>
+                  <span className="ms-1.5 text-xs text-gray-400">({row.count})</span>
                 </span>
                 <span className="font-semibold text-heading" dir="ltr">
                   {formatIls(agorot(row.supplierDueAgorot))}

@@ -128,7 +128,7 @@ export default async function AdminQueuesPage() {
         <section key={section.queue} className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-lg font-semibold">
             {section.title}
-            <span className="mr-2 text-sm font-normal text-gray-500">({section.rows.length})</span>
+            <span className="ms-2 text-sm font-normal text-gray-500">({section.rows.length})</span>
           </h2>
           <p className="mt-1 mb-4 text-sm text-gray-500">{section.note}</p>
 

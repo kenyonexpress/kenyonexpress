@@ -177,7 +177,7 @@ export default async function GrowthDashboard() {
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-right">
+              <thead className="bg-gray-50 text-start">
                 <tr>
                   <th className="px-4 py-3 font-medium">שבוע</th>
                   <th className="px-4 py-3 font-medium">נשלחו</th>

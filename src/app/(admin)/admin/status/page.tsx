@@ -64,7 +64,7 @@ export default async function AdminStatusPage() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <table className="w-full text-right text-sm">
+        <table className="w-full text-start text-sm">
           <thead className="bg-gray-50 text-xs uppercase text-gray-500">
             <tr>
               <th className="px-4 py-3 font-medium">תלות</th>

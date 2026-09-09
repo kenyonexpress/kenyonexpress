@@ -58,7 +58,7 @@ export default function ReferralQueueRow({
             <span className="text-gray-500">ממליץ: </span>
             <bdi dir="ltr">{referrerEmail ?? '—'}</bdi>
             {referrerPaidCount > 0 && (
-              <span className="mr-2 text-xs text-gray-500">
+              <span className="ms-2 text-xs text-gray-500">
                 (שולמו לו כבר <bdi>{referrerPaidCount}</bdi>)
               </span>
             )}

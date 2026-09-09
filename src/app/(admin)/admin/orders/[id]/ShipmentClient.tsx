@@ -66,7 +66,7 @@ export default function ShipmentClient({ lines }: { lines: ShipmentLine[] }) {
           <li key={line.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
             <span className="text-sm text-gray-800">
               {line.productName}
-              <span className="mr-2 text-xs text-gray-500">
+              <span className="ms-2 text-xs text-gray-500">
                 {STATUS_HE[line.itemStatus] ?? line.itemStatus}
                 {line.carrier ? ` · ${line.carrier}` : ''}
                 {line.trackingNumber ? <span dir="ltr"> {line.trackingNumber}</span> : null}

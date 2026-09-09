@@ -96,7 +96,7 @@ export default async function AdminSearchPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-right text-xs text-gray-500">
+                <tr className="border-b border-gray-200 text-start text-xs text-gray-500">
                   <th className="py-2 font-medium">מונח</th>
                   <th className="py-2 font-medium">חיפושים</th>
                   <th className="py-2 font-medium">מתוכם ריקים</th>
@@ -136,7 +136,7 @@ export default async function AdminSearchPage() {
                 title={`${row.searches} חיפושים`}
               >
                 {row.raw_term}
-                <span className="mr-1.5 text-xs text-gray-500">{row.searches}</span>
+                <span className="ms-1.5 text-xs text-gray-500">{row.searches}</span>
               </span>
             ))}
           </div>
