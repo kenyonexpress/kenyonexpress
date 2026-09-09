@@ -80,7 +80,7 @@ charged is the honest claim: the shopper saves exactly what the page says.
 
 ### The evidence
 
-`migrations/pending/193_price_history.sql`. One row per product per day, with
+`migrations/applied/193_price_history.sql`. One row per product per day, with
 the price, the reference claimed that day, and the product's **status** that
 day.
 
@@ -164,11 +164,19 @@ was already cached per slug.
 **The cost of the gap, plainly:** a claim the record contradicts is suppressed
 on the product page and still painted on the card that led there.
 
-**193 is written and not applied**, per the standing rule. Until it is, every
-verdict is `unproven`, so wiring the product page changes nothing a shopper
-sees — which is the correct behaviour, not a workaround. The cron answers 200
-with a warning rather than 500 in the same state, because a job that fails every
-night for an unapproved migration teaches everyone to ignore it.
+**193 IS APPLIED, and this paragraph said the opposite until 2026-09-09.**
+`price_history` is in production with all eight declared columns, RLS on and its
+three indexes; the file had simply been left in `migrations/pending/`.
+
+What follows from that is the part worth acting on: the verdicts are no longer
+`unproven` because the table is missing, they are unproven because the table is
+**empty**. 193 creates the history; it does not backfill it, and nothing writes
+a daily snapshot yet. A reference price becomes provable only after the
+snapshots have been running long enough to cover the window the claim asserts.
+
+The degradation below is kept, and is now insurance rather than the everyday
+path: the cron answers 200 with a warning rather than 500 when the read fails,
+because a job that fails every night teaches everyone to ignore it.
 
 **Mid-day price changes are sampled, not captured.** One snapshot a day sees the
 price at 07:00. The `source` column already carries `'change'` for a future
@@ -198,6 +206,6 @@ agorot, and never touches VAT.
 | `src/lib/pricing/price-history.ts` | the batched read, and surviving the table's absence |
 | `src/lib/pricing/reference-surfaces.test.ts` | which surfaces check, and which do not |
 | `src/app/api/cron/price-snapshot/route.ts` | the daily writer |
-| `migrations/pending/193_price_history.sql` | the table. Not applied. |
+| `migrations/applied/193_price_history.sql` | the table. **Applied** (corrected 2026-09-09). |
 | `src/lib/product-detail.ts` | where the product page asks |
 | `src/app/(admin)/admin/products/page.tsx` | where the operator is told |

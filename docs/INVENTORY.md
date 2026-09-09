@@ -204,6 +204,6 @@ reservers queue behind one product row. That is a load question and belongs with
 | `src/server/actions/payments/checkout.ts` | steps 4b and 4c: stock, then discount |
 | `src/app/api/cron/stock/route.ts` | releases lapsed holds, alerts on low stock |
 | `migrations/pending/194_discount_claim_caps.sql` | the cap that was decoration. Not applied. |
-| `migrations/pending/195_stock_waitlist.sql` | back-in-stock requests. Not applied. |
+| `migrations/applied/195_stock_waitlist.sql` | back-in-stock requests. **Applied** (corrected 2026-09-09). |
 | `src/server/actions/waitlist.ts` | the join, rate limited, one answer for every outcome |
 | `src/components/storefront/WaitlistButton.tsx` | the sold-out page's only remaining offer |

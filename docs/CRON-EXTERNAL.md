@@ -199,7 +199,7 @@ timing changes with the scheduler.
   would leave a hole in a 30-day window and nothing would report it. This is
   the evidence behind every struck-through price on the site; see
   `docs/PRICING-COMPLIANCE.md`. It is inert until
-  `migrations/pending/193_price_history.sql` is applied, and says so with a
+  `migrations/applied/193_price_history.sql` is applied, and says so with a
   warning and a 200 rather than a 500, so an unapproved migration does not
   teach everyone to ignore this job.
 - **`health`** runs the internal checks and raises the alert. It is what tells

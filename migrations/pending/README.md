@@ -1,5 +1,39 @@
 # `migrations/pending/`
 
+## 2026-09-09: THIS DIRECTORY OVERSTATES WHAT IS OUTSTANDING. Read this first.
+
+Three files were moved to `migrations/applied/` today (193, 195, 200) because
+production already had them, column for column. They were found while doing
+`SECTIONS 24`, not while looking for them, which is the worrying part: nobody
+was checking.
+
+**Four more are very likely in the same state, and one is worse.** Every table
+each remaining pending file declares was tested with `to_regclass` against
+production on 2026-09-09:
+
+| File | Tables it declares | In production |
+|---|---|---|
+| `197_shipping_zones_and_pickup.sql` | `shipping_zones`, `pickup_points` | **both exist** |
+| `198_in_app_notifications.sql` | `notifications`, `notification_preferences` | **both exist** |
+| `199_review_replies_and_reports.sql` | `review_reports` | **exists** |
+| `201_scheduled_price_changes.sql` | `scheduled_price_changes` | **exists** |
+| `207_email_deliverability.sql` | `email_suppressions`, `email_events_daily` | **`email_suppressions` exists, `email_events_daily` does NOT** |
+
+**207 is the one that matters.** A file that is half in production is not a
+filing error, it is a migration that stopped in the middle or was applied by
+hand in pieces, and it will not tell you which. Anything reading
+`email_events_daily` gets `42P01` today while the suppression list works, so the
+failure looks like a code bug rather than a schema gap.
+
+**These four were NOT moved, deliberately.** Existence of a table is not proof
+that a file applied: it does not check columns, constraints, RLS, policies,
+grants or indexes, and moving on that evidence is the same mistake that put 193,
+195 and 200 in the wrong directory in the first place. Each needs the
+column-for-column comparison that 193 and 195 got before it moves.
+
+The remaining files below this line were not tested this way beyond the table
+existence above.
+
 ## 2026-09-09: 220 WRITTEN, not applied - the one search_path warning 209 misses
 
 `220_wallet_entries_search_path.sql`. One `ALTER FUNCTION`.
@@ -942,7 +976,19 @@ missed run must catch up — a flash deal nobody ran is a promise on a marketing
 email the site did not keep. And a cancelled row frees its slot for a
 replacement, because the index is scoped to uncancelled rows.
 
-## 2026-09-09: 200 WRITTEN, not applied — two kinds, and a guard against 183's mistake
+## 2026-09-09: 200 APPLIED, and moved — two kinds, and a guard against 183's mistake
+
+**Moved to `migrations/applied/` on 2026-09-09.** Production's
+`notification_outbox_kind_check` carries exactly the sixteen names this file
+specifies, read with `pg_get_constraintdef`. The repository had been asserting
+both things at once: the note on 214 already said 200 was applied, while the
+file itself still sat in `pending/`.
+
+**Do not re-apply it, and it will not let you.** Its own opening `DO` block
+raises when the live constraint carries a name the file does not restate, and
+the live constraint now carries `price_drop` and `back_in_stock` - which this
+file added and its fourteen-name guard list does not include. That is the guard
+working, not a defect. 214 carries the sixteen forward.
 
 `200_wishlist_alert_kinds.sql`. `price_drop` and `back_in_stock`, so a wishlist
 can do the one thing a wishlist is for: tell somebody when a saved product gets

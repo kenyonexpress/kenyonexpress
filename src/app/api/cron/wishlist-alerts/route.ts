@@ -184,15 +184,22 @@ async function runPriceDrops(
     })
 
     if (enqueueError) {
-      // 23514 is 200 being unapplied: the outbox does not accept `price_drop`
-      // yet. Reported once for the whole run rather than per row.
+      // 23514 USED TO MEAN 200 WAS UNAPPLIED. It is applied: production's
+      // `notification_outbox_kind_check` carries `price_drop`, read with
+      // `pg_get_constraintdef` on 2026-09-09. So a 23514 here no longer has a
+      // benign explanation and means the constraint was rewritten by a later
+      // migration that dropped the kind. Still degraded rather than thrown, so
+      // one bad kind cannot lose the whole run, but it is worth a look.
+      // Reported once for the whole run rather than per row.
       const unaccepted = enqueueError.code === '23514'
       log[unaccepted ? 'warn' : 'error']('wishlist_alerts.price_drop_enqueue_failed', {
         reason: enqueueError.message,
       })
       return {
         sent,
-        skipped: unaccepted ? 'price_drop kind not accepted (200)' : enqueueError.message,
+        skipped: unaccepted
+          ? 'price_drop kind rejected by the outbox constraint'
+          : enqueueError.message,
       }
     }
     sent++
@@ -250,7 +257,9 @@ async function runRestocks(admin: ReturnType<typeof createAdminClient>): Promise
       })
       return {
         sent,
-        skipped: unaccepted ? 'back_in_stock kind not accepted (200)' : enqueueError.message,
+        skipped: unaccepted
+          ? 'back_in_stock kind rejected by the outbox constraint'
+          : enqueueError.message,
       }
     }
 

@@ -93,11 +93,25 @@ point:** the price-drop comparison reads today's row out of `price_history`, and
 running first would compare today against a day nobody has recorded yet —
 producing nothing and reporting success.
 
-## Three unapplied migrations, tolerated separately
+## All three of these migrations are APPLIED, and this section said otherwise
 
-193, 195 and 200 are all pending, and the route runs correctly with none, some
-or all of them. Each read that returns `42P01` contributes zero alerts and the
-run reports what it could not do:
+**Corrected 2026-09-09.** 193, 195 and 200 were all filed in
+`migrations/pending/` and all three are live in production:
+
+| Migration | Evidence read from production |
+|---|---|
+| 193 | `price_history` exists with all eight declared columns, RLS on, 3 indexes |
+| 195 | `stock_waitlist` exists with all seven declared columns, RLS on, 3 indexes |
+| 200 | `notification_outbox_kind_check` carries exactly the 16 names it specifies |
+
+All three have been moved to `migrations/applied/`. **200 must not be
+re-applied**, and will refuse: its opening `DO` block raises when the live
+constraint carries a name it does not restate, and the live constraint now
+carries the two names 200 itself added.
+
+The tolerance described below is still real and still worth keeping, because it
+is what let the feature ship before the tables existed. It is no longer the
+situation:
 
 ```json
 { "priceDrops": { "sent": 0, "skipped": "price_history absent (193)" },
@@ -147,6 +161,6 @@ with it. Not built for a table with zero rows.
 | `src/lib/wishlist/alerts.ts` | the two rules, pure |
 | `src/lib/wishlist/alerts.test.ts` | 8 cases, including both threshold edges |
 | `src/app/api/cron/wishlist-alerts/route.ts` | who to tell |
-| `migrations/pending/200_wishlist_alert_kinds.sql` | the two kinds, and the guard. Not applied. |
+| `migrations/applied/200_wishlist_alert_kinds.sql` | the two kinds, and the guard. Applied. |
 | `src/lib/email/notifications.ts` | `buildPriceDropEmail`, `buildBackInStockEmail` |
 | `src/lib/email/previews.ts` | both, visible at `/dev/emails` |

@@ -144,6 +144,21 @@ describe('the pending migration inventory', () => {
       '185_soft_delete_user_facing_remainder.sql',
       '186_composite_indexes_top_queries.sql',
       '187_category_name_shekel_order.sql',
+      // 193 and 195 APPLIED, and found the same way as 200: the tables are in
+      // production, column for column, with RLS on and their indexes present,
+      // while the files sat in `pending/`. `price_history` reads
+      // (id, product_id, observed_on, price_agorot, reference_agorot, status,
+      // source, created_at) and `stock_waitlist` reads (id, product_id,
+      // variant_id, email, user_id, created_at, notified_at). They are the two
+      // tables the wishlist alerts read, which is how they were noticed.
+      '193_price_history.sql',
+      '195_stock_waitlist.sql',
+      // 200 APPLIED. Production's `notification_outbox_kind_check` carries
+      // exactly the sixteen names this file specifies, read with
+      // `pg_get_constraintdef` on 2026-09-09. The comment on 214 below already
+      // said so; the FILE was still sitting in `pending/`, so the repository
+      // asserted both at once. Moved here, which is the half that was missing.
+      '200_wishlist_alert_kinds.sql',
     ])
   })
 
@@ -321,18 +336,6 @@ describe('the pending migration inventory', () => {
       // live /blog route. Idempotent, deactivates rather than deletes so the
       // hit counter survives, and raises unless exactly 33 rows end up active.
       '192_seed_seo_redirects.sql',
-      // 193 WRITTEN 2026-09-09, not applied. It creates the record that makes a
-      // struck-through "before" price checkable, and the measurement that
-      // motivates it is a disjoint pair of sets: 15 active products advertise a
-      // saving, 20 have any price change recorded in `audit_log`, and NO
-      // product is in both. There is no evidence anywhere that any of the
-      // fifteen struck-through prices was ever charged. Append-only by trigger
-      // for every role including service_role, because a history that whoever
-      // is running the sale can edit is a second copy of the claim rather than
-      // evidence of it. Verified against production inside a rolled-back DO
-      // block: 80 rows seeded, a second identical run wrote 0, UPDATE and
-      // DELETE both refused, and no product skipped for want of a price.
-      '193_price_history.sql',
       // 194 WRITTEN 2026-09-09, not applied. It makes `max_uses` and
       // `max_uses_per_user` mean something. checkout.ts already carried the
       // finding in a comment -- "nothing increments coupons.used_count, so
@@ -346,17 +349,6 @@ describe('the pending migration inventory', () => {
       // used_count at 1 and writes one row, a second order for the same user
       // returns per_user_exhausted, and release hands the use back.
       '194_discount_claim_caps.sql',
-      // 195 WRITTEN 2026-09-09, not applied, and the smallest file here on
-      // purpose. A sold-out product page printed "אזל מהמלאי", disabled the
-      // button, and learned nothing from the visit. Measured the same day: no
-      // active product is at zero stock (44 active, 0 sold out, 19 untracked
-      // and therefore never sold out by construction), so this is built for the
-      // first time that branch is reached rather than to stop something
-      // bleeding. Proven against production in a rolled-back DO block: two
-      // calls with the same address in different casing write one row, a
-      // malformed address and an unknown product are both refused, and a person
-      // already notified can ask again for the next restock.
-      '195_stock_waitlist.sql',
       // 196 WRITTEN 2026-09-09, not applied. One key in one jsonb_build_object.
       // The chain it completes: 155 gave order_items a carrier and a tracking
       // number (applied), the admin records them, 183 mails the customer
@@ -403,23 +395,6 @@ describe('the pending migration inventory', () => {
       // another supplier's review NO ROWS, a duplicate report REFUSED, and a
       // reporter reading the queue REFUSED.
       '199_review_replies_and_reports.sql',
-      // 200 WRITTEN 2026-09-09, not applied. Two `kind` values so a wishlist
-      // can be worth having: a saved product that got cheaper, and one that
-      // came back into stock. Both are possible because the DATA arrived in
-      // 193 and 195, not because anything new is invented here.
-      //
-      // The constraint cannot be extended, only dropped and recreated, which is
-      // exactly what 183 nearly got wrong: it restated twelve names
-      // reconstructed from an earlier file while the live constraint carried
-      // fourteen, and applying it would have DROPPED `account_deleted`. The
-      // fourteen restated here were read out of production with
-      // pg_get_constraintdef, and the DO block at the top REFUSES to run if the
-      // live constraint has grown a name this file does not know -- a migration
-      // that restates a list is only as current as the day it was written, so
-      // it checks the day it runs. Probed against production, rolled back:
-      // guard=PASSED, kinds=16, price_drop accepted, a bogus kind still
-      // refused, account_deleted kept.
-      '200_wishlist_alert_kinds.sql',
       // 201 WRITTEN 2026-09-09, not applied. Flash deals: a price change with a
       // time on it. `discount_campaigns` (096) schedules a CODE; nothing has
       // ever scheduled a PRICE, so the only way to run one was an operator
