@@ -141,9 +141,16 @@ describe('the pending migration inventory', () => {
       '181b_admin_rbac_hardening.sql',
       '182_coupon_qr_batches.sql',
       '183_order_shipped_notification.sql',
-      '185_soft_delete_user_facing_remainder.sql',
-      '186_composite_indexes_top_queries.sql',
-      '187_category_name_shekel_order.sql',
+      '192_seed_seo_redirects.sql',
+      '193_price_history.sql',
+      '194_discount_claim_caps.sql',
+      '195_stock_waitlist.sql',
+      '196_shipped_notification_carries_tracking.sql',
+      '197_shipping_zones_and_pickup.sql',
+      '198_in_app_notifications.sql',
+      '199_review_replies_and_reports.sql',
+      '200_wishlist_alert_kinds.sql',
+      '201_scheduled_price_changes.sql',
     ])
   })
 
