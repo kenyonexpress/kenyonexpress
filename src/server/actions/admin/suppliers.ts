@@ -3,9 +3,10 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { type SupplierFormFields, parseSupplierForm } from '@/lib/admin/supplier-form'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 
 /**
  * CRUD for `public.suppliers`.
@@ -91,6 +92,9 @@ async function runUpsertSupplier(
 
   revalidatePath('/admin/suppliers')
   if (id) revalidatePath(`/admin/suppliers/${id}`)
+  // Name, city, logo, address and phone are all rendered on the public
+  // supplier storefront.
+  updateTag(CATALOGUE_TAG)
   return { success: id ? 'הספק עודכן' : 'הספק נוצר' }
 }
 
@@ -120,6 +124,8 @@ async function runSetSupplierStatus(
 
   revalidatePath('/admin/suppliers')
   revalidatePath(`/admin/suppliers/${id}`)
+  // Anything but `active` must take the public storefront down with it.
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
@@ -165,6 +171,8 @@ async function runSoftDeleteSupplier(id: string): Promise<{ error?: string }> {
   })
 
   revalidatePath('/admin/suppliers')
+  // A removed supplier must not keep a public page with its address on it.
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
@@ -249,6 +257,29 @@ async function runDeactivateSupplierMember(
   return {}
 }
 
+/**
+ * THE STOREFRONT SIDE OF EVERY WRITE BELOW, ADDED 2026-09-09.
+ *
+ * `src/lib/supplier-storefront.ts` reads this table inside `use cache` with
+ * `cacheLife('hours')` and `cacheTag(CATALOGUE_TAG)`, and it selects `status`
+ * and `deleted_at` so it can return null for a supplier that is inactive or
+ * removed. That filter runs when the cache entry is BUILT, not when it is
+ * served, so until this file expired the tag:
+ *
+ *   deactivating a supplier left its public storefront serving for an hour
+ *   soft-deleting one did the same, with its address and phone still on it
+ *
+ * `revalidatePath('/admin/suppliers')` was already here and does not help: it
+ * refreshes the admin list, which is exactly the surface where the operator
+ * could already see their change, and touches nothing the shopper reads. So
+ * the failure looked like it had worked.
+ *
+ * This is the case `src/lib/catalogue-cache.ts` describes in full ("silent,
+ * slow, and it looks like a database issue rather than a caching one") in a
+ * file its own list of write paths did not name.
+ * `scripts/cache-invalidation-gate.mjs` now enforces that list instead of
+ * relying on it being remembered.
+ */
 export async function upsertSupplier(
   _: SupplierActionState,
   formData: FormData,

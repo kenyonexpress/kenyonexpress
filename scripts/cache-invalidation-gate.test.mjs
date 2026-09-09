@@ -1,0 +1,125 @@
+import { describe, expect, it } from 'vitest'
+import {
+  DELIBERATE_EXCEPTIONS,
+  cachedTables,
+  classifyAction,
+  scanCacheInvalidation,
+} from './cache-invalidation-scan.mjs'
+
+/**
+ * THE GATE FOR A CONTRACT THAT WAS WRITTEN DOWN AND NOT ENFORCED.
+ *
+ * `src/lib/catalogue-cache.ts` says, in capitals: "EVERY WRITE PATH THAT
+ * CHANGES WHAT A SHOPPER SEES MUST CALL updateTag(CATALOGUE_TAG). A product
+ * saved without it stays invisible on the storefront for up to an hour, the
+ * admin sees their own change in the panel (which is uncached), and nothing
+ * anywhere reports a problem."
+ *
+ * That is correct, it is complete, and nothing checked it.
+ *
+ * MEASURED 2026-09-09: `admin/suppliers.ts` updates `suppliers` on edit, on
+ * status change and on soft delete, and called no `updateTag`. It called
+ * `revalidatePath('/admin/suppliers')`, which refreshes the admin list -- the
+ * one surface where the operator could already see their change -- and touches
+ * nothing a shopper reads. So the omission looked like it had worked.
+ *
+ * The consequence was not cosmetic. `supplier-storefront.ts` reads that table
+ * inside `use cache` and selects `status` and `deleted_at` so it can return
+ * null for a supplier that is inactive or removed, and that filter runs when
+ * the entry is BUILT. Deactivating or soft-deleting a supplier left its public
+ * page serving, with its address and phone on it, for up to an hour.
+ *
+ * WHY THE TABLE LIST IS NOT WRITTEN IN THIS FILE. It is read out of the cached
+ * source. A hand-kept list drifts the day somebody caches a new table, and the
+ * drifted-away table is exactly the one nobody remembers to invalidate -- the
+ * same failure one level up.
+ */
+
+describe('which tables the storefront caches', () => {
+  it('reads them out of the source rather than a hand-kept list', () => {
+    const tables = cachedTables()
+    // The ones that existed on 2026-09-09. Asserted as a subset, not an
+    // equality: caching a new table must not fail this test, it must widen the
+    // gate.
+    for (const table of ['products', 'categories', 'suppliers', 'coupon_deals', 'reviews']) {
+      expect(tables.has(table)).toBe(true)
+    }
+  })
+
+  it('does not collect a table nothing caches', () => {
+    const tables = cachedTables()
+    // Orders and payments are never rendered from a cached scope; if they ever
+    // are, that is a much bigger conversation than this gate.
+    expect(tables.has('payment_events')).toBe(false)
+  })
+})
+
+describe('what counts as a write that must invalidate', () => {
+  const tables = new Set(['suppliers', 'products'])
+
+  it('REGRESSION_SUPPLIERS: an update with no updateTag is a violation', () => {
+    const source = `
+      const { error } = await admin.from('suppliers').update(parsed.data).eq('id', id)
+      revalidatePath('/admin/suppliers')
+    `
+    const verdict = classifyAction(source, tables)
+    expect(verdict.ok).toBe(false)
+    expect(verdict.written).toEqual(['suppliers'])
+  })
+
+  it('REVALIDATE_PATH_IS_NOT_ENOUGH: an admin path refresh does not count', () => {
+    // The trap that made the original bug invisible. revalidatePath on an
+    // admin route refreshes the surface the operator could already see.
+    const source = `await admin.from('suppliers').update(x).eq('id', id); revalidatePath('/admin/suppliers')`
+    expect(classifyAction(source, tables).ok).toBe(false)
+  })
+
+  it('accepts updateTag, and accepts revalidateTag for a route handler', () => {
+    const withUpdate = `await admin.from('suppliers').update(x); updateTag(CATALOGUE_TAG)`
+    const withRevalidate = `await admin.from('products').update(x); revalidateTag(CATALOGUE_TAG)`
+    expect(classifyAction(withUpdate, tables).ok).toBe(true)
+    expect(classifyAction(withRevalidate, tables).ok).toBe(true)
+  })
+
+  it('sees the write through chained filters, which is how they are all written', () => {
+    const source = `
+      await admin.from('suppliers')
+        .update({ deleted_at: new Date().toISOString(), status: 'inactive' })
+        .eq('id', id)
+    `
+    expect(classifyAction(source, tables).written).toEqual(['suppliers'])
+  })
+
+  it('ignores a file that only reads a cached table', () => {
+    const source = `const { data } = await admin.from('suppliers').select('id').eq('id', id)`
+    const verdict = classifyAction(source, tables)
+    expect(verdict.ok).toBe(true)
+    expect(verdict.reason).toBe('writes-nothing-cached')
+  })
+
+  it('ignores a write to a table nothing caches', () => {
+    const source = `await admin.from('payment_events').insert(row)`
+    expect(classifyAction(source, tables).reason).toBe('writes-nothing-cached')
+  })
+})
+
+describe('the exception list', () => {
+  it('carries an argument for every entry, not just a path', () => {
+    // A bare path is a suppression nobody has to justify. The argument is the
+    // review step, and it has to survive being read a year later.
+    for (const [file, reason] of DELIBERATE_EXCEPTIONS) {
+      expect(file.startsWith('src/')).toBe(true)
+      expect(reason.length).toBeGreaterThan(80)
+    }
+  })
+
+  it('stays short enough that each one is still read', () => {
+    expect(DELIBERATE_EXCEPTIONS.size).toBeLessThanOrEqual(3)
+  })
+})
+
+describe('the repository as it stands', () => {
+  it('has no write path leaving the storefront cache stale', () => {
+    expect(scanCacheInvalidation()).toEqual([])
+  })
+})

@@ -19,6 +19,27 @@ import { revalidatePath } from 'next/cache'
 
 export type ReviewActionState = { ok: boolean; error?: string }
 
+/**
+ * NO `updateTag(CATALOGUE_TAG)` HERE, AND THAT IS DELIBERATE.
+ *
+ * `src/lib/catalogue-cache.ts` requires every write that changes what a shopper
+ * sees to invalidate the catalogue tag, and `server/queries/reviews.ts` reads
+ * this table inside `use cache`. This write is the exception, because it
+ * changes nothing a shopper sees:
+ *
+ * The insert sets no `status`, so it takes the column default, and migration
+ * 154 declares `status text NOT NULL DEFAULT 'pending'`. The cached read
+ * filters `status = 'approved'`. A freshly submitted review is therefore
+ * invisible to everybody until an admin approves it, and `admin/reviews.ts` is
+ * what calls `updateTag` at that moment.
+ *
+ * Invalidating here would flush the entire catalogue cache on every submission
+ * in order to publish nothing.
+ *
+ * `scripts/cache-invalidation-gate.mjs` carries the same argument in
+ * DELIBERATE_EXCEPTIONS; if the default ever stops being 'pending', both have
+ * to change and the gate is what will say so.
+ */
 async function runSubmitReview(formData: FormData): Promise<ReviewActionState> {
   const supabase = await createClient()
   const {
