@@ -59,6 +59,24 @@ export function getR2Client(): S3Client {
         region: 'auto',
         endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
         credentials: { accessKeyId, secretAccessKey },
+        // SPELLED OUT AT THE SDK'S OWN DEFAULT, which is 3 and `standard`
+        // (exponential backoff with full jitter, retrying throttling and
+        // transient 5xx only). Nothing changes by writing it here.
+        //
+        // It is written because the absence read as a gap: an audit looking
+        // for "exponential backoff on R2" finds no retry code in this
+        // repository and concludes there is none, when in fact every
+        // PutObject already gets three jittered attempts from the SDK. The
+        // alternative to this comment is re-deriving that from the AWS SDK
+        // source every time somebody asks.
+        //
+        // Three is also the right number here rather than a placeholder: an
+        // R2 write on the image path is called from a request a person is
+        // waiting on, and the durable retries in this system are the ones
+        // that belong on a queue (see invoices.ts and the QStash search
+        // pipeline), not in a held-open HTTP handler.
+        maxAttempts: 3,
+        retryMode: 'standard',
       }),
     }
   }

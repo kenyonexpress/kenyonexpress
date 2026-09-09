@@ -29,14 +29,28 @@ const ALL = sourceFiles(SRC)
 const rel = (path: string) => relative(SRC, path)
 
 /**
- * Both exemptions are the same fact: `log.ts` reads its request id out of
+ * Every exemption is the same fact: `log.ts` reads its request id out of
  * node:async_hooks, which cannot be in a client bundle.
  *
  * - `observability/log.ts` is the sink itself.
- * - `app/error.tsx` is a client error boundary. It runs in the browser, where
- *   there is no server request to correlate to.
+ * - The rest are client error boundaries. They run in the browser, where there
+ *   is no server request to correlate to, and the console line is also what
+ *   still works when the Sentry DSN is unset and every capture beside it is
+ *   inert.
+ *
+ * THIS LIST IS NOT ALLOWED TO GROW WITH THE APP. Four per-segment boundaries
+ * were added on 2026-09-09 and only two names appear here, because
+ * `(admin)`, `(account)` and `(supplier)` all delegate to
+ * `components/errors/SegmentErrorBoundary.tsx` and none of them logs on its
+ * own. A fifth boundary should add nothing to this set; if it does, it has
+ * copied the reporting instead of reusing it.
  */
-const ALLOWED_CONSOLE = new Set(['lib/observability/log.ts', 'app/error.tsx'])
+const ALLOWED_CONSOLE = new Set([
+  'lib/observability/log.ts',
+  'app/error.tsx',
+  'app/(store)/checkout/error.tsx',
+  'components/errors/SegmentErrorBoundary.tsx',
+])
 
 describe('raw console in src/', () => {
   it('is confined to the sink and the client error boundary', () => {

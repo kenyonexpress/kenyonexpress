@@ -233,6 +233,11 @@ describe('the storefront uses tokens, not Tailwind default colours', () => {
     'src/components/layout',
     'src/components/cart',
     'src/components/home',
+    // Added 2026-09-09. `SegmentErrorBoundary` renders customer-facing chrome
+    // for the (account) and (store) boundaries, and living outside these roots
+    // meant a shared component could hold the palette the pages that use it are
+    // forbidden. The hole was found by writing a file that fell into it.
+    'src/components/errors',
   ]
   // Neutral + semantic ramps. Utility prefixes that take a colour.
   const PALETTE =
