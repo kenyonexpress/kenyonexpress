@@ -1,3 +1,4 @@
+import { giftHeldCopy } from '@/lib/gifts/held-copy'
 import {
   COUPON_TONE_CHIP,
   couponMoneyView,
@@ -55,13 +56,23 @@ export default async function CouponsPage() {
             return (
               <div className="account-row" key={voucher.id}>
                 <div className="account-row__main">
-                  <p className="coupon-card__code" dir="ltr">
-                    {formatCouponCode(voucher.code)}
-                  </p>
+                  {/*
+                    A gift the recipient has not collected shows what it is
+                    instead of a code. `getCustomerVouchers` blanks the code for
+                    it, so the alternative is not "a code the buyer should not
+                    have" but an empty line where one used to be.
+                  */}
+                  {voucher.gift ? (
+                    <p className="account-row__title">{giftHeldCopy(voucher.gift).headline}</p>
+                  ) : (
+                    <p className="coupon-card__code" dir="ltr">
+                      {formatCouponCode(voucher.code)}
+                    </p>
+                  )}
                   <p className="account-row__title">{voucher.product?.name_he ?? 'קופון'}</p>
                   <p className="account-row__meta">
                     <span className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}>
-                      {status.label}
+                      {voucher.gift ? giftHeldCopy(voucher.gift).badge : status.label}
                     </span>
                     {voucher.status === 'redeemed'
                       ? ` · מומש ב-${formatCouponDate(voucher.redeemed_at)}`
@@ -84,7 +95,16 @@ export default async function CouponsPage() {
                 </div>
                 <div className="account-row__actions">
                   <Link className="account-btn" href={`/coupon/${voucher.id}`}>
-                    {status.presentable ? 'הצגת הקופון ו-QR' : 'פרטי הקופון'}
+                    {/*
+                      Never "הצגת הקופון ו-QR" on a gift: there is no QR behind
+                      that link for the buyer, and a button promising one is how
+                      a customer decides the page is broken.
+                    */}
+                    {voucher.gift
+                      ? 'פרטי המתנה'
+                      : status.presentable
+                        ? 'הצגת הקופון ו-QR'
+                        : 'פרטי הקופון'}
                   </Link>
                 </div>
               </div>

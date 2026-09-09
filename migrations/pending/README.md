@@ -1,5 +1,40 @@
 # `migrations/pending/`
 
+## 2026-09-10: 226 WRITTEN, not applied - a gift with a date and a wrapping fee
+
+`226_gift_scheduling_and_wrap.sql`. Three columns, one CHECK, one partial index.
+Nothing existing is dropped or renamed.
+
+- `orders.gift_deliver_at timestamptz` - when the buyer asked for the gift email
+  to go out. NULL is immediately, which is what every gift did before this.
+- `orders.gift_wrap_fee_agorot bigint NOT NULL DEFAULT 0` - integer agorot,
+  snapshot at checkout, with a `>= 0` CHECK. Platform revenue in full: it is
+  added to `cardCharge` and `platformNet` and moves no supplier split.
+- `vouchers.gift_deliver_at timestamptz` - the same date on the row the buyer
+  can actually read, plus a partial index on it.
+
+**108 is applied.** Measured against production 2026-09-10: all twelve of its
+gift columns are live and `voucher_gifted` is in the outbox kind CHECK. 226 adds
+to a working feature rather than completing a broken one.
+
+**There is no new queue.** `notification_outbox.next_attempt_at` already gates
+the drain (`and(status.eq.pending,next_attempt_at.lte.<now>)`), so a scheduled
+gift is a row parked on a future `next_attempt_at`. The cost, stated: the gift
+goes out on the first drain run after that moment, not at the stroke of it.
+
+**Every caller degrades without it, and the money path degrades first.** The
+checkout PROBES for `gift_wrap_fee_agorot` before computing the settlement and
+charges nothing when it is absent - a ₪15 charge with no row explaining it is
+the one failure that cannot be answered when somebody asks for it back.
+`finalize` reads the gift intent through a widening pair of selects and falls
+back to 108's three columns on 42703; the voucher UPDATE names `gift_deliver_at`
+only when there is a date to write, which a pre-226 database can never produce.
+Gifts therefore sell and send unchanged until this lands - they simply cannot be
+scheduled, and the wrapping checkbox bills nothing.
+
+**Reversal:** drop the three columns, the CHECK and the index. Nothing
+references them.
+
 ## 2026-09-10: 225 WRITTEN, not applied - where a supplier's contact change waits
 
 `225_supplier_contact_requests.sql`. One new table, three policies, a partial

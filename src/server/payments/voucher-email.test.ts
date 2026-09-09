@@ -214,3 +214,81 @@ describe('the idempotency key, which is the whole resend story', () => {
     expect(sendEmail).not.toHaveBeenCalled()
   })
 })
+
+/**
+ * SECTIONS 33: "buyer sees order but not the code".
+ *
+ * A gifted voucher stays owned by the BUYER until the recipient claims it - the
+ * buyer paid and a refund belongs to them - so it comes back from this
+ * order-scoped read like any other coupon. Before this filter existed, the
+ * buyer was emailed the recipient's code and QR minutes after paying, and could
+ * walk in and redeem the present they had just bought.
+ */
+describe('sendVoucherEmail — gifted coupons are not the buyer’s to receive', () => {
+  const gifted = (overrides: Row = {}): Row =>
+    voucher({
+      id: 'v-gift',
+      code: 'GIFTGIFT01',
+      gift_claim_token_hash: 'a'.repeat(64),
+      gift_claimed_at: null,
+      ...overrides,
+    })
+
+  it('sends nothing at all when every coupon on the order was gifted', async () => {
+    const result = await sendVoucherEmail(
+      client({ profile: { email: 'buyer@example.com' }, vouchers: [gifted()] }),
+      CONTEXT,
+    )
+    expect(result).toEqual({ sent: false, reason: 'all_gifted' })
+    expect(sendEmail).not.toHaveBeenCalled()
+  })
+
+  it('sends the buyer their OWN coupons and drops only the gifted ones', async () => {
+    const result = await sendVoucherEmail(
+      client({
+        profile: { email: 'buyer@example.com' },
+        vouchers: [gifted(), voucher({ id: 'v-mine', code: 'MINEMINE01' })],
+      }),
+      CONTEXT,
+    )
+    expect(result.sent).toBe(true)
+    const sent = sendEmail.mock.calls[0]?.[0] as { html: string; text: string }
+    expect(sent.html).toContain('MINEM-INE01')
+    // The whole point: the gifted code is nowhere in the message.
+    expect(sent.html).not.toContain('GIFTGIFT01')
+    expect(sent.html).not.toContain('GIFTG-IFT01')
+    expect(sent.text).not.toContain('GIFTGIFT01')
+    expect(sent.text).not.toContain('GIFTG-IFT01')
+  })
+
+  it('sends a CLAIMED gift again, because it is no longer held back for anyone', async () => {
+    /**
+     * Once claimed, `user_id` moves to the recipient, and this function is only
+     * ever called from finalize with the BUYER's id - so in production a
+     * claimed gift is not in this order's list for the buyer at all. Asserted
+     * anyway so the predicate is pinned to `claimed_at` rather than to the mere
+     * existence of a token hash.
+     */
+    const result = await sendVoucherEmail(
+      client({
+        profile: { email: 'recipient@example.com' },
+        vouchers: [gifted({ gift_claimed_at: '2026-09-10T10:00:00.000Z' })],
+      }),
+      CONTEXT,
+    )
+    expect(result.sent).toBe(true)
+    const sent = sendEmail.mock.calls[0]?.[0] as { html: string }
+    expect(sent.html).toContain('GIFTG-IFT01')
+  })
+
+  it('treats a row with no gift columns as an ordinary coupon', async () => {
+    // A reader whose select did not name the gift columns gets neither null nor
+    // a value. The honest answer for such a row is "not a gift" - the
+    // alternative would blank the code on every ordinary coupon.
+    const result = await sendVoucherEmail(
+      client({ profile: { email: 'buyer@example.com' }, vouchers: [voucher()] }),
+      CONTEXT,
+    )
+    expect(result.sent).toBe(true)
+  })
+})

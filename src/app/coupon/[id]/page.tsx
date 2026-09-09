@@ -1,4 +1,5 @@
 import WalletButtons from '@/components/coupon/WalletButtons'
+import { giftHeldCopy } from '@/lib/gifts/held-copy'
 import { createClient } from '@/lib/supabase/server'
 import { buildSupplierContact } from '@/lib/supplier-contact'
 import {
@@ -73,10 +74,15 @@ async function CouponPageBody({ params }: Props) {
   const status = couponStatusView(voucher)
   const money = couponMoneyView(voucher)
 
-  // Rendered only for a voucher that can still be scanned. A QR beside a spent
-  // or lapsed coupon invites a cashier to try, and it then fails in front of
-  // the customer.
-  const qrDataUrl = status.presentable ? await voucherQrDataUrl(voucher.qr_payload) : null
+  // Set only while this is a gift the recipient has not collected, in which
+  // case the code and the QR payload came back blank on purpose. See
+  // `withholdGiftedCode` in server/queries/vouchers.ts.
+  const gift = voucher.gift ? giftHeldCopy(voucher.gift) : null
+
+  // Rendered only for a voucher that can still be scanned, and never for a
+  // withheld gift: `qr_payload` is an empty string there, and encoding it would
+  // produce a valid-looking QR of nothing at all.
+  const qrDataUrl = status.presentable && !gift ? await voucherQrDataUrl(voucher.qr_payload) : null
 
   // Same builder as the product page. The links used to be assembled inline
   // here, and `wa.me/${whatsapp.replace(/[^0-9]/g, '')}` keeps the leading zero
@@ -110,7 +116,21 @@ async function CouponPageBody({ params }: Props) {
         </header>
 
         <div className="px-5 py-5">
-          {status.presentable ? (
+          {/*
+            A gift that has not been collected is checked FIRST, before
+            `status.presentable`. An unclaimed gift is `issued` and in date, so
+            it is presentable by every measure this page has - it is simply not
+            presentable BY THIS READER. Ordering the branches the other way puts
+            an empty QR and a blank code on screen.
+          */}
+          {gift ? (
+            <div className="rounded-xl bg-indigo-50 px-4 py-8 text-center">
+              <p className="text-base font-semibold text-indigo-900">{gift.headline}</p>
+              <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-indigo-700">
+                {gift.explanation}
+              </p>
+            </div>
+          ) : status.presentable ? (
             <div className="flex flex-col items-center gap-3">
               {qrDataUrl ? (
                 <img
@@ -151,7 +171,12 @@ async function CouponPageBody({ params }: Props) {
             </div>
           )}
 
-          <WalletButtons voucher={voucher} presentable={status.presentable} />
+          {/*
+            No Wallet buttons on a withheld gift. The pass is built from the
+            code and the QR, and the route now refuses one for an unclaimed
+            gift, so the buttons would be two controls that answer 409.
+          */}
+          {!gift && <WalletButtons voucher={voucher} presentable={status.presentable} />}
 
           {status.presentable && status.expiringSoon && (
             <p className="mt-4 rounded-xl bg-amber-50 px-4 py-2.5 text-center text-sm font-medium text-amber-800">

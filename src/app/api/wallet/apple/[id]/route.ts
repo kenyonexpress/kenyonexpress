@@ -35,6 +35,19 @@ async function handleGET(
   const voucher = await getCustomerVoucher(id)
   if (!voucher) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 })
 
+  /**
+   * A gift the buyer has not given away yet has no pass to build.
+   *
+   * `getCustomerVoucher` blanks `code` and `qr_payload` for it, so without this
+   * the route would happily sign a pass with an empty barcode and a filename of
+   * `kenyon-.pkpass` - a card in the customer's Wallet that scans as nothing.
+   * Refused by name instead, so the reason is in the response rather than in a
+   * support ticket about a Wallet pass that does not work.
+   */
+  if (voucher.gift) {
+    return NextResponse.json({ ok: false, error: 'gift_not_claimed' }, { status: 409 })
+  }
+
   const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? ''
 
   try {

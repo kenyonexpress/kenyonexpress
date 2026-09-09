@@ -878,11 +878,30 @@ export async function finalizeOrder(input: {
     // hits `if (order.paid_at) return replay`, and never reaches this line
     // again. Everything before the stamp throws because a replay can fix it;
     // everything after it stays best-effort because a replay cannot.
-    const { data: giftRow } = await admin
-      .from('orders')
-      .select('gift_recipient_name, gift_recipient_email, gift_message')
-      .eq('id', order.id)
-      .maybeSingle()
+    //
+    // TWO SELECTS, NARROWING. 226 adds `gift_deliver_at` and is PENDING, so
+    // naming it costs 42703 on any database without it - and that would take
+    // the recipient, the name and the greeting down with it, turning a missing
+    // schedule into a gift that is never sent at all. So the wide read is tried
+    // first and a missing column falls back to 108's three columns, which are
+    // applied and measured. `readGiftIntent` treats an absent
+    // `gift_deliver_at` as "send now", which is exactly what a pre-226
+    // database means by it.
+    const readGiftRow = async () => {
+      const wide = await admin
+        .from('orders')
+        .select('gift_recipient_name, gift_recipient_email, gift_message, gift_deliver_at')
+        .eq('id', order.id)
+        .maybeSingle()
+      if (!wide.error) return wide.data
+      const narrow = await admin
+        .from('orders')
+        .select('gift_recipient_name, gift_recipient_email, gift_message')
+        .eq('id', order.id)
+        .maybeSingle()
+      return narrow.data
+    }
+    const giftRow = await readGiftRow()
     const intent = giftRow ? readGiftIntent(giftRow as Record<string, string | null>) : null
     if (intent) {
       const { data: buyer } = await admin

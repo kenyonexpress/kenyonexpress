@@ -38,6 +38,11 @@ export interface GiftIntent {
   recipientName: string | null
   recipientEmail: string
   message: string | null
+  /**
+   * When the buyer asked for it to arrive (226). `null` is immediately, which
+   * is what every gift did before 226 and remains the default.
+   */
+  deliverAt: Date | null
 }
 
 /** Postgres: undefined_column, i.e. 108 has not been applied to this database. */
@@ -47,13 +52,23 @@ export function readGiftIntent(order: {
   gift_recipient_email?: string | null
   gift_recipient_name?: string | null
   gift_message?: string | null
+  gift_deliver_at?: string | null
 }): GiftIntent | null {
   const email = order.gift_recipient_email?.trim()
   if (!email) return null
+
+  // `gift_deliver_at` is from 226 and may be absent from the row entirely on a
+  // database without it, which is indistinguishable here from a gift with no
+  // schedule - and both mean the same thing: send it now.
+  const raw = order.gift_deliver_at
+  const parsed = raw ? new Date(raw) : null
+  const deliverAt = parsed && !Number.isNaN(parsed.getTime()) ? parsed : null
+
   return {
     recipientEmail: email,
     recipientName: order.gift_recipient_name?.trim() || null,
     message: order.gift_message?.trim() || null,
+    deliverAt,
   }
 }
 
@@ -116,9 +131,42 @@ export async function sendOrderGifts(
       }
     }
 
+    /**
+     * The schedule (226), decided once for the whole order.
+     *
+     * A DATE PAST THE COUPON'S EXPIRY IS DROPPED, not honoured. The checkout
+     * ceiling (`MAX_GIFT_SCHEDULE_DAYS`) refuses the absurd, but it cannot know
+     * an individual voucher's `expires_at` - that is stamped at issuance, here,
+     * after the sale. Delivering a claim link the day after the coupon dies is
+     * the worst available outcome: the recipient is told they have been given
+     * something, follows the link, and is refused. Sending at once instead
+     * means the gift is early rather than dead, and the buyer can still see
+     * what happened on their order.
+     *
+     * Compared per voucher because an order can mix products with different
+     * windows, and one short-dated line must not force the whole order early.
+     */
+    const requested = input.intent.deliverAt
+    const scheduleFor = (expiresAt: string | null): Date | null => {
+      if (!requested || requested.getTime() <= now.getTime()) return null
+      if (expiresAt) {
+        const expiry = new Date(expiresAt)
+        if (!Number.isNaN(expiry.getTime()) && requested.getTime() >= expiry.getTime()) {
+          log.warn('gifts.schedule_past_expiry', {
+            orderId: input.orderId,
+            requested: requested.toISOString(),
+            expiresAt,
+          })
+          return null
+        }
+      }
+      return requested
+    }
+
     let sent = 0
     for (const voucher of pending) {
       const { token, hash } = createGiftClaimToken()
+      const deliverAt = scheduleFor(voucher.expires_at)
 
       // Guarded on `gift_sent_at IS NULL`, so two concurrent finalizes cannot
       // both mint a token and send two links for one coupon.
@@ -129,7 +177,12 @@ export async function sendOrderGifts(
           gift_recipient_email: input.intent.recipientEmail,
           gift_message: input.intent.message,
           gift_claim_token_hash: hash,
+          // Queued, not delivered. With 226 the two can be weeks apart; the
+          // arrival is `notification_outbox.sent_at`. This stays stamped at
+          // queue time because it is the guard the UPDATE below is conditional
+          // on, and a replayed finalize must find the work done.
           gift_sent_at: now.toISOString(),
+          ...(deliverAt ? { gift_deliver_at: deliverAt.toISOString() } : {}),
         } as never)
         .eq('id', voucher.id)
         .is('gift_sent_at', null)
@@ -153,6 +206,21 @@ export async function sendOrderGifts(
           expires_at: voucher.expires_at,
         },
         dedupe_key: `gift:${voucher.id}`,
+        /**
+         * THE SCHEDULE, and the whole of it (226).
+         *
+         * The drain selects on
+         * `and(status.eq.pending,next_attempt_at.lte.<now>)`, so a row dated
+         * forward is invisible to every run until that moment and then goes out
+         * on the next one. No new table, no new job, no second thing that can
+         * disagree about whether the mail has been sent.
+         *
+         * Omitted entirely when there is no schedule, rather than set to now:
+         * the column is `NOT NULL DEFAULT now()`, so absent already means
+         * "due", and writing the timestamp ourselves would only add a way to be
+         * wrong about the clock.
+         */
+        ...(deliverAt ? { next_attempt_at: deliverAt.toISOString() } : {}),
       } as never)
 
       if (queueError && !queueError.message.includes('duplicate')) {

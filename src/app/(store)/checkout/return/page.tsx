@@ -6,6 +6,7 @@ import {
   readOrderMoney,
   resolveOrderGeneration,
 } from '@/lib/commerce/order-money-columns'
+import { giftHeldCopy } from '@/lib/gifts/held-copy'
 import { agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -20,6 +21,7 @@ import {
 } from '@/lib/whatsapp'
 import { reconcileOrderReturn } from '@/server/actions/payments/checkout'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
+import { isGiftedAway } from '@/server/payments/voucher-email'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -105,8 +107,15 @@ async function CheckoutReturnBody({ searchParams }: Props) {
     admin
       .from('vouchers')
       .select(
+        // The gift columns are from 108, which is APPLIED (measured against
+        // production 2026-09-10), so naming them here cannot 42703. `226`'s
+        // `gift_deliver_at` is deliberately NOT named: it is pending, and the
+        // whole select would fail on a database without it - on the page a
+        // customer lands on straight after paying.
         `id, code, qr_payload, expires_at,
          face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
+         gift_claim_token_hash, gift_claimed_at, gift_sent_at,
+         gift_recipient_name, gift_recipient_email,
          products(name_he)`,
       )
       .eq('order_id', orderId)
@@ -126,16 +135,51 @@ async function CheckoutReturnBody({ searchParams }: Props) {
   const orderMoney = readOrderMoney(generation, order)
 
   const couponsWithQr = await Promise.all(
-    (vouchers ?? []).map(async (voucher) => ({
-      ...voucher,
-      // Agorot all the way to the formatter now. This used to divide by 100
-      // here and hand shekel floats to a PRIVATE `shekels()` defined at the top
-      // of this file -- the same private-formatter-per-component pattern that
-      // `pricing.test.ts` exists to prevent, on the one page whose whole job is
-      // telling a customer what they were just charged.
-      collect_amount_agorot: agorot(voucher.remaining_amount_due_agorot),
-      qrDataUrl: await voucherQrDataUrl(voucher.qr_payload, { width: 264 }),
-    })),
+    (vouchers ?? []).map(async (voucher) => {
+      /**
+       * A gift the buyer just bought shows what it is, not the code.
+       *
+       * This page is the FIRST place the leak reached: it renders seconds after
+       * the charge, with the code in large type and a WhatsApp share button
+       * beside it. Whatever the account pages did afterwards, the buyer had
+       * already seen and could already forward the coupon they had just paid to
+       * give away.
+       *
+       * The same rule as the account reads, spelled by the same helper, because
+       * this page reads `vouchers` directly rather than through
+       * `getCustomerVoucher` - it runs on the service role before the customer
+       * is necessarily signed in on this device.
+       */
+      const held = isGiftedAway(voucher as unknown as Record<string, string | null>)
+      const gift = held
+        ? giftHeldCopy({
+            recipientName:
+              (voucher as unknown as { gift_recipient_name: string | null }).gift_recipient_name ??
+              null,
+            recipientEmail:
+              (voucher as unknown as { gift_recipient_email: string | null })
+                .gift_recipient_email ?? null,
+            deliverAt: null,
+            queuedAt: (voucher as unknown as { gift_sent_at: string | null }).gift_sent_at ?? null,
+          })
+        : null
+
+      return {
+        ...voucher,
+        gift,
+        code: held ? '' : voucher.code,
+        // Agorot all the way to the formatter now. This used to divide by 100
+        // here and hand shekel floats to a PRIVATE `shekels()` defined at the top
+        // of this file -- the same private-formatter-per-component pattern that
+        // `pricing.test.ts` exists to prevent, on the one page whose whole job is
+        // telling a customer what they were just charged.
+        collect_amount_agorot: agorot(voucher.remaining_amount_due_agorot),
+        // No QR for a withheld gift. `qr_payload` is still populated on the row
+        // here - this read is not the one that blanks it - so the guard has to
+        // be explicit rather than inherited.
+        qrDataUrl: held ? null : await voucherQrDataUrl(voucher.qr_payload, { width: 264 }),
+      }
+    }),
   )
 
   const cashbackAmount = agorot(cashbackAgorot ?? 0)
@@ -179,9 +223,23 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                 <article className="coupon-card" key={coupon.id}>
                   <div>
                     {productName && <div className="coupon-card__collect">{productName}</div>}
-                    <div className="coupon-card__code" dir="ltr">
-                      {formatVoucherCode(coupon.code)}
-                    </div>
+                    {/*
+                      A gift shows where it went instead of the code. The share
+                      link below is dropped with it: a WhatsApp message built
+                      from a blank code is a message offering nothing, and one
+                      built from a real code would hand the buyer the coupon
+                      they just paid to give away.
+                    */}
+                    {coupon.gift ? (
+                      <>
+                        <div className="coupon-card__collect">{coupon.gift.headline}</div>
+                        <div className="coupon-card__note">{coupon.gift.explanation}</div>
+                      </>
+                    ) : (
+                      <div className="coupon-card__code" dir="ltr">
+                        {formatVoucherCode(coupon.code)}
+                      </div>
+                    )}
                     {coupon.collect_amount_agorot > 0 && (
                       <div className="coupon-card__collect">
                         לתשלום בעסק במימוש: {shekels(coupon.collect_amount_agorot)}
@@ -196,24 +254,26 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                       })}
                       {' · '}הציגו את הקוד או את ה-QR בבית העסק
                     </div>
-                    <a
-                      href={shareHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="coupon-card__share"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 10,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: 'var(--color-whatsapp-ink)',
-                      }}
-                    >
-                      <WhatsAppIcon size={16} />
-                      שתפו את הקופון בוואטסאפ
-                    </a>
+                    {!coupon.gift && (
+                      <a
+                        href={shareHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="coupon-card__share"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          marginTop: 10,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: 'var(--color-whatsapp-ink)',
+                        }}
+                      >
+                        <WhatsAppIcon size={16} />
+                        שתפו את הקופון בוואטסאפ
+                      </a>
+                    )}
                   </div>
                   {coupon.qrDataUrl && (
                     <div className="coupon-card__qr">

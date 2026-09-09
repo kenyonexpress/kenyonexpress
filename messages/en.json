@@ -133,5 +133,11 @@
     "chartMonth": "Month",
     "chartRedemptions": "Redemptions",
     "chartTillCollected": "Collected at the till"
+  },
+  "gift": {
+    "deliverLabel": "When to send it",
+    "deliverHint": "Leave empty and the gift goes out right after payment.",
+    "wrapLabel": "Add gift wrapping",
+    "notice": "On the send date the recipient gets an email with a personal link to collect the coupon. Until they do, it stays in your account, and the code and QR are shown only to them."
   }
 }

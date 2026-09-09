@@ -85,7 +85,11 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/orders.ts': 1,
   'src/server/actions/payments/refund.ts': 6,
   'src/server/domain/vouchers/issue.ts': 1,
-  'src/server/payments/finalize.ts': 6,
+  // 6 -> 5 with 226: the gift-intent read used to destructure `data` alone, so
+  // a failed read was indistinguishable from an order that is not a gift. It
+  // now inspects `error` to decide whether to retry the narrow select, which
+  // means one fewer discarded read here rather than a new one.
+  'src/server/payments/finalize.ts': 5,
   'src/server/payments/gift-vouchers.ts': 1,
   'src/server/payments/invoices.ts': 10,
   'src/server/payments/voucher-email.ts': 3,

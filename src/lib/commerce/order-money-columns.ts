@@ -427,7 +427,54 @@ export async function resolveVoucherRateColumn(probe: ColumnProbe): Promise<Vouc
   return generation === 'agorot' ? 'platform_bp' : 'platform_percent'
 }
 
+/**
+ * Whether `orders.gift_wrap_fee_agorot` exists (226).
+ *
+ * NOT a generation, so it does not go through `resolveGeneration` and does not
+ * share its cache key: this is one optional column from a PENDING migration,
+ * not a lineage the whole table is on. Answering "ils" for a database that
+ * simply has not had 226 applied would tell every other caller that `orders`
+ * predates 042, which is false and would send the entire money path down the
+ * legacy branch.
+ *
+ * WHY ANYONE ASKS. The wrapping fee is added to the card charge. If the column
+ * is missing, the fee cannot be recorded on the order, and a charge with no row
+ * explaining it is unanswerable at the point where a customer asks what the
+ * ₪15 was. So the caller charges nothing rather than charging blind, and the
+ * question has to be asked BEFORE the settlement is computed rather than
+ * discovered when the INSERT comes back 42703 - by then the amount is already
+ * on its way to Cardcom.
+ *
+ * Cached per process like the generations are, and for the same reason: it is
+ * a fact about the schema, and asking it on every checkout is a round trip per
+ * purchase. A non-42703 error resolves to `false` WITHOUT caching, so a
+ * transient failure costs one un-wrapped order rather than pinning the process
+ * to "no fee" for its lifetime.
+ */
+let giftWrapColumn: boolean | undefined
+
+export async function resolveGiftWrapColumn(probe: ColumnProbe): Promise<boolean> {
+  if (giftWrapColumn !== undefined) return giftWrapColumn
+
+  let result: { error: { code?: string } | null }
+  try {
+    result = await probe('gift_wrap_fee_agorot')
+  } catch {
+    return false
+  }
+
+  if (!result.error) {
+    giftWrapColumn = true
+    return true
+  }
+  if (result.error.code !== UNDEFINED_COLUMN) return false
+
+  giftWrapColumn = false
+  return false
+}
+
 /** Test seam. Never called by application code. */
 export function __resetMoneyGenerationCache(): void {
   generations.clear()
+  giftWrapColumn = undefined
 }

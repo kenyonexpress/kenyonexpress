@@ -8,10 +8,38 @@ import { createClient } from '@/lib/supabase/server'
  * boundary.
  */
 
+/**
+ * What the buyer of a gift is told about a coupon they own but may not use.
+ *
+ * `recipientEmail` is here and the claim token is not, and that split is the
+ * point: the buyer typed the address, so showing it back is showing them their
+ * own input, while the token is a bearer credential that would let them collect
+ * the gift themselves.
+ */
+export interface VoucherGiftState {
+  recipientName: string | null
+  recipientEmail: string | null
+  /** When the buyer asked for it to be sent (226). Null means immediately. */
+  deliverAt: string | null
+  /** When it was queued. Null means it has not been queued yet. */
+  queuedAt: string | null
+}
+
 export interface CustomerVoucher {
   id: string
+  /**
+   * WITHHELD - empty string - while this is an uncollected gift. See
+   * `withholdGiftedCode`. Not optional, because every existing caller renders
+   * it unconditionally and a type that let them keep doing so would be a type
+   * that let the leak back in.
+   */
   code: string
   qr_payload: string
+  /**
+   * Set only when the code above has been withheld, and it is what the surfaces
+   * render in its place. Null on an ordinary coupon.
+   */
+  gift: VoucherGiftState | null
   status: 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
   face_value_agorot: number
   coupon_price_agorot: number
@@ -24,11 +52,72 @@ export interface CustomerVoucher {
   supplier: { name: string | null } | null
 }
 
+const GIFT_SELECT = `gift_claim_token_hash, gift_claimed_at, gift_sent_at,
+       gift_recipient_name, gift_recipient_email`
+
 const VOUCHER_SELECT = `id, code, qr_payload, status,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
+       ${GIFT_SELECT},
        product:products(name_he, slug),
        supplier:suppliers(name)`
+
+/** The gift columns as they come back from Postgres, before they are a state. */
+type GiftColumns = {
+  gift_claim_token_hash?: string | null
+  gift_claimed_at?: string | null
+  gift_sent_at?: string | null
+  gift_deliver_at?: string | null
+  gift_recipient_name?: string | null
+  gift_recipient_email?: string | null
+}
+
+/**
+ * Blanks the code and the QR of a gift its buyer has not given away yet.
+ *
+ * WHY THIS IS AT THE READ AND NOT IN THE PAGES. A gifted voucher stays owned by
+ * the BUYER until the recipient claims it - deliberately, because the buyer
+ * paid and a refund belongs to them - so it comes back from an ownership-scoped
+ * read like any other coupon. Four customer surfaces render a code or a QR out
+ * of these two functions: `/account/coupons`, `/coupon/[id]`, the Apple Wallet
+ * pass at `/api/wallet/apple/[id]`, and the confirmation page. Fixing four
+ * templates leaves the fifth one somebody adds next month, and the failure is
+ * silent: the page looks right, and the only symptom is a recipient turning up
+ * at a counter to be told the coupon was already used - by the person who
+ * bought it for them.
+ *
+ * So the code never leaves this file for a voucher that is not the reader's to
+ * present. A surface cannot print what it was not given.
+ *
+ * `qr_payload` goes with it, and that is not tidiness: the QR IS the code. A
+ * blanked code beside a live QR is the same leak with an extra step.
+ *
+ * NOT A SECURITY BOUNDARY, AND SAYING SO MATTERS. RLS scopes these rows to the
+ * owner, and the owner here IS the buyer - so this withholds from somebody who
+ * could read the row directly with their own token. It is a correctness rule
+ * about whose coupon it is, and the thing that actually stops the buyer
+ * REDEEMING it is that the counter burns a code they were never shown.
+ */
+function withholdGiftedCode<T extends { code: string; qr_payload: string } & GiftColumns>(
+  row: T,
+): T & { gift: VoucherGiftState | null } {
+  const held = Boolean(row.gift_claim_token_hash) && !row.gift_claimed_at
+  if (!held) return { ...row, gift: null }
+
+  return {
+    ...row,
+    code: '',
+    qr_payload: '',
+    gift: {
+      recipientName: row.gift_recipient_name ?? null,
+      recipientEmail: row.gift_recipient_email ?? null,
+      // 226 is pending, so this column may not have been selected at all.
+      // Absent reads as "no schedule", which is what it means.
+      deliverAt: row.gift_deliver_at ?? null,
+      queuedAt: row.gift_sent_at ?? null,
+    },
+  }
+}
 
 /**
  * A voucher read, or a throw. Never a silent absence.
@@ -75,7 +164,8 @@ export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
     { userId: user.id },
   )
 
-  return (data ?? []) as unknown as CustomerVoucher[]
+  const rows = (data ?? []) as unknown as (CustomerVoucher & GiftColumns)[]
+  return rows.map(withholdGiftedCode) as CustomerVoucher[]
 }
 
 /**
@@ -119,6 +209,7 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
         `id, code, qr_payload, status,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
+       ${GIFT_SELECT},
        product:products(name_he, slug),
        supplier:suppliers(name, city, address, contact_phone, whatsapp)`,
       )
@@ -129,7 +220,9 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
     { voucherId: id, userId: user.id },
   )
 
-  return (data as unknown as CustomerVoucherDetail | null) ?? null
+  const row = data as unknown as (CustomerVoucherDetail & GiftColumns) | null
+  if (!row) return null
+  return withholdGiftedCode(row) as CustomerVoucherDetail
 }
 
 /** True while a voucher can still be presented at a counter. */

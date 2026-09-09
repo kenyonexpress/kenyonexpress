@@ -8,6 +8,7 @@ import {
   buildOrderItemMoneyRow,
   buildOrderMoneyRow,
   moneyColumnProbe,
+  resolveGiftWrapColumn,
   resolveOrderGeneration,
   resolveOrderItemGeneration,
 } from '@/lib/commerce/order-money-columns'
@@ -18,6 +19,7 @@ import {
 } from '@/lib/commerce/product-money'
 import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { checkVelocity } from '@/lib/fraud/velocity'
+import { giftWrapFeeAgorot, resolveGiftDeliverAt } from '@/lib/gifts/wrap'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -641,6 +643,41 @@ async function runBeginCheckout(
   // Requires 194.
   const { code: discountCode, discountAgorot } = await resolveCheckoutDiscountAgorot()
 
+  /**
+   * The gift extras (226), resolved BEFORE the settlement because one of them
+   * is money.
+   *
+   * The send date is refused here rather than shrugged off. A customer who
+   * chose a date and got an immediate send has been ignored, and by the time
+   * they find out the coupon is already in the recipient's inbox - there is no
+   * unsending it.
+   *
+   * The fee is charged only if there is a column to record it in. `orders`
+   * gained `gift_wrap_fee_agorot` in 226, which is PENDING; on a database
+   * without it the checkbox does nothing and the customer pays for goods only.
+   * The alternative - charge ₪15 and store it nowhere - produces a card charge
+   * that no row in the system explains, which is the one failure that cannot be
+   * answered later.
+   */
+  const isGift = Boolean(input.gift_recipient_email)
+  const schedule = resolveGiftDeliverAt(isGift ? input.gift_deliver_at : null)
+  if (!schedule.ok) {
+    return { ok: false, error: schedule.error, code: 'VALIDATION' }
+  }
+  const giftWrapColumnAvailable = isGift
+    ? await resolveGiftWrapColumn(moneyColumnProbe(admin as never, 'orders'))
+    : false
+  const wrapFee = giftWrapFeeAgorot({
+    requested: Boolean(input.gift_wrap),
+    isGift,
+    columnAvailable: giftWrapColumnAvailable,
+  })
+  if (input.gift_wrap && isGift && wrapFee === 0) {
+    // Asked for, not charged. Silent here would mean an operator seeing a
+    // wrapping checkbox that never bills anything and no record of why.
+    log.warn('checkout.gift_wrap_unavailable', { userId: user.id })
+  }
+
   let settlement: ReturnType<typeof calculateSettlement>
   try {
     settlement = calculateSettlement({
@@ -648,6 +685,7 @@ async function runBeginCheckout(
       lines: settlementLines,
       walletApplied: walletAppliedAgorot,
       discountApplied: agorot(discountAgorot),
+      giftWrapFee: wrapFee,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'settlement failed'
@@ -716,7 +754,22 @@ async function runBeginCheckout(
         faceValueAgorot: settlement.faceValue,
         discountAgorot: settlement.discountApplied,
         walletAppliedAgorot: settlement.walletApplied,
-        paidOnSiteAgorot: settlement.paidOnSite,
+        /**
+         * The wrapping fee is INSIDE the order total, and leaving it out was
+         * the bug worth catching here (226).
+         *
+         * `total_agorot` is the gross the customer owes on site before their
+         * credits, and the whole path relies on the identity
+         * `total - wallet - discount = cardCharge`. The fee is added to
+         * `cardCharge` by the settlement engine, so an order total that
+         * excluded it would break that identity by exactly ₪15 - and the row
+         * that says what the order was worth would disagree with the amount
+         * sent to Cardcom, on every gift-wrapped order.
+         *
+         * `subtotal_agorot` stays `faceValue` and so stays goods-only, which is
+         * correct: the subtotal is the sticker price of what was bought.
+         */
+        paidOnSiteAgorot: agorot(settlement.paidOnSite + settlement.giftWrapFee),
       }),
       currency: 'ILS',
       address_id: input.address_id,
@@ -736,12 +789,30 @@ async function runBeginCheckout(
   // columns in that literal would put the purchase flow back behind a
   // migration; here the worst case is an order that is not marked as a gift.
   if (input.gift_recipient_email) {
+    /**
+     * 226's two columns are spread in CONDITIONALLY, and that is the whole
+     * reason this reads the way it does. `gift_deliver_at` and
+     * `gift_wrap_fee_agorot` are from a pending migration; naming either one
+     * unconditionally would make this UPDATE fail with 42703 on a database
+     * without 226 and take the recipient, the name and the greeting down with
+     * it - turning a missing schedule into an order that is not a gift at all.
+     *
+     * The fee is gated on the same probe that decided whether to CHARGE it, so
+     * the two cannot disagree: an order is only ever charged a fee on a
+     * database that has somewhere to put it.
+     */
     const { error: giftError } = await admin
       .from('orders')
       .update({
         gift_recipient_email: input.gift_recipient_email,
         gift_recipient_name: input.gift_recipient_name ?? null,
         gift_message: input.gift_message ?? null,
+        ...(giftWrapColumnAvailable
+          ? {
+              gift_deliver_at: schedule.deliverAt?.toISOString() ?? null,
+              gift_wrap_fee_agorot: wrapFee,
+            }
+          : {}),
       } as never)
       .eq('id', order.id)
     if (giftError) {
@@ -1247,11 +1318,18 @@ async function runSubmitCheckout(
     turnstile_token: text('cf-turnstile-response') || null,
     // Only forwarded when the shopper actually ticked "this is a gift"; an
     // empty string would fail zod's email check and reject the whole checkout.
+    // The wrapping fee and the send date ride INSIDE this spread, and that is
+    // load-bearing rather than tidy: the schema refuses either one without a
+    // recipient, so forwarding `gift_wrap: true` from a form whose gift box was
+    // unticked would reject the entire checkout. Untick the box and both
+    // vanish, which is also what the shopper meant.
     ...(text('gift') === 'on' && text('gift_recipient_email')
       ? {
           gift_recipient_email: text('gift_recipient_email'),
           gift_recipient_name: text('gift_recipient_name') || undefined,
           gift_message: text('gift_message') || undefined,
+          gift_deliver_at: text('gift_deliver_at') || undefined,
+          gift_wrap: formData.get('gift_wrap') === 'on',
         }
       : {}),
   })

@@ -456,3 +456,96 @@ describe('calculateSettlement — cart discount codes', () => {
     expect(result.platformNet + result.supplierDue).toBe(result.paidOnSite - 200)
   })
 })
+
+describe('calculateSettlement — gift wrapping fee (226)', () => {
+  const base = { idempotencyKey: 'k', lines: [couponLine()] }
+
+  it('is zero when nobody asked for it, which is every order before 226', () => {
+    const result = calculateSettlement(base)
+    expect(result.giftWrapFee).toBe(0)
+    // The identity the whole payment path relies on, unchanged.
+    expect(result.cardCharge).toBe(
+      result.paidOnSite - result.walletApplied - result.discountApplied,
+    )
+  })
+
+  it('is added to the card charge, so the customer actually pays it', () => {
+    const without = calculateSettlement(base)
+    const withFee = calculateSettlement({ ...base, giftWrapFee: agorot(1500) })
+    expect(withFee.cardCharge - without.cardCharge).toBe(1500)
+  })
+
+  it('is kept ENTIRELY by the platform: no supplier split moves by an agora', () => {
+    /**
+     * The rule the money path exists to protect. The supplier wrapped nothing
+     * and agreed to nothing about wrapping, so a fee that reached `supplierDue`
+     * or any per-line split would be the platform quietly changing what it owes
+     * on a sale that was already agreed.
+     */
+    const without = calculateSettlement(base)
+    const withFee = calculateSettlement({ ...base, giftWrapFee: agorot(1500) })
+
+    expect(withFee.supplierDue).toBe(without.supplierDue)
+    expect(withFee.commission).toBe(without.commission)
+    expect(withFee.platformNet - without.platformNet).toBe(1500)
+    for (const [index, line] of withFee.lines.entries()) {
+      const before = at(without.lines, index)
+      expect(line.supplierDue).toBe(before.supplierDue)
+      expect(line.commission).toBe(before.commission)
+      expect(line.paidOnSite).toBe(before.paidOnSite)
+    }
+  })
+
+  it('is NOT part of faceValue, because it cannot be redeemed at the counter', () => {
+    const without = calculateSettlement(base)
+    const withFee = calculateSettlement({ ...base, giftWrapFee: agorot(1500) })
+    expect(withFee.faceValue).toBe(without.faceValue)
+    expect(withFee.balanceDueAtBusiness).toBe(without.balanceDueAtBusiness)
+    // faceValue stays a sum over the lines, which is what keeps it addable.
+    expect(withFee.faceValue).toBe(sumAgorot(withFee.lines.map((l) => l.faceValue)))
+  })
+
+  it('earns no cashback: a fee is not a purchase', () => {
+    const without = calculateSettlement(base)
+    const withFee = calculateSettlement({ ...base, giftWrapFee: agorot(1500) })
+    expect(withFee.cashbackAmount).toBe(without.cashbackAmount)
+  })
+
+  it('does NOT raise the discount ceiling', () => {
+    /**
+     * The discount is capped at `commission` so it can never be funded from the
+     * supplier's share. If the fee widened that cap, a large enough code would
+     * start eating supplier money by way of a service the supplier is not part
+     * of - which is why the fee is applied after the cap and not before it.
+     */
+    const huge = agorot(100_000)
+    const without = calculateSettlement({ ...base, discountApplied: huge })
+    const withFee = calculateSettlement({
+      ...base,
+      discountApplied: huge,
+      giftWrapFee: agorot(1500),
+    })
+    expect(withFee.discountApplied).toBe(without.discountApplied)
+    expect(withFee.discountApplied).toBe(without.commission)
+  })
+
+  it('refuses a negative fee, which would be an unauthorised discount', () => {
+    expect(() => calculateSettlement({ ...base, giftWrapFee: agorot(-1500) })).toThrow(RangeError)
+  })
+
+  it('refuses a fractional fee, because money here is integer agorot', () => {
+    expect(() => calculateSettlement({ ...base, giftWrapFee: 1500.5 as never })).toThrow(RangeError)
+  })
+
+  it('conserves: the card charge plus the credits equals goods plus the fee', () => {
+    const result = calculateSettlement({
+      ...base,
+      walletApplied: agorot(1000),
+      discountApplied: agorot(200),
+      giftWrapFee: agorot(1500),
+    })
+    expect(result.cardCharge + result.walletApplied + result.discountApplied).toBe(
+      result.paidOnSite + result.giftWrapFee,
+    )
+  })
+})

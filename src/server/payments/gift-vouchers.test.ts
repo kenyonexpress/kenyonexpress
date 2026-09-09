@@ -83,7 +83,13 @@ describe('readGiftIntent', () => {
     expect(readGiftIntent({ gift_recipient_name: 'דנה', gift_message: 'מזל טוב' })).toBeNull()
     expect(
       readGiftIntent({ gift_recipient_email: ' dana@example.com ', gift_recipient_name: ' דנה ' }),
-    ).toEqual({ recipientEmail: 'dana@example.com', recipientName: 'דנה', message: null })
+    ).toEqual({
+      recipientEmail: 'dana@example.com',
+      recipientName: 'דנה',
+      message: null,
+      // 226: absent means "send now", which is what every gift did before it.
+      deliverAt: null,
+    })
   })
 })
 
@@ -92,6 +98,9 @@ describe('sendOrderGifts', () => {
     recipientEmail: 'dana@example.com',
     recipientName: 'דנה',
     message: 'מזל טוב!',
+    // Unscheduled, which is what every gift before 226 was. The scheduled cases
+    // build their own intent.
+    deliverAt: null,
   }
 
   function scriptTwoVouchers(): void {
@@ -193,5 +202,156 @@ describe('sendOrderGifts', () => {
       intent,
     })
     expect(result).toEqual({ sent: 0, reason: 'columns_missing' })
+  })
+})
+
+/**
+ * SECTIONS 33: "scheduled delivery date".
+ *
+ * There is no new queue. `notification_outbox.next_attempt_at` already decides
+ * whether the drain sees a row (`and(status.eq.pending,next_attempt_at.lte.
+ * <now>)`), so a scheduled gift is a row parked on a future `next_attempt_at`.
+ */
+describe('sendOrderGifts — scheduled delivery (226)', () => {
+  const LATER = new Date('2026-12-24T00:00:00.000Z')
+  const NOW = new Date('2026-09-10T12:00:00.000Z')
+
+  const intent = {
+    recipientEmail: 'dana@example.com',
+    recipientName: 'דנה',
+    message: 'מזל טוב!',
+    deliverAt: null,
+  }
+
+  function scriptOneVoucher(expiresAt: string | null): void {
+    queue('vouchers.select', {
+      data: [{ id: 'v1', product_id: 'p1', expires_at: expiresAt, gift_sent_at: null }],
+      error: null,
+    })
+    queue('products.select', { data: [{ id: 'p1', name_he: 'ספא זוגי' }], error: null })
+    queue('vouchers.update', { data: { id: 'v1' }, error: null })
+  }
+
+  it('parks the outbox row on the requested date so the drain skips it until then', async () => {
+    scriptOneVoucher('2027-01-30T00:00:00.000Z')
+    await sendOrderGifts(adminClient as never, {
+      orderId: ORDER_ID,
+      buyerUserId: 'buyer',
+      intent: { ...intent, deliverAt: LATER },
+      now: NOW,
+    })
+    const row = find('notification_outbox', 'insert')?.payload as Record<string, unknown>
+    expect(row.next_attempt_at).toBe(LATER.toISOString())
+  })
+
+  it('records the date on the voucher too, because the buyer is shown it', async () => {
+    // The outbox row is service-role only and holds the RAW claim token, so the
+    // buyer's account page can never read it. The voucher column is the record.
+    scriptOneVoucher('2027-01-30T00:00:00.000Z')
+    await sendOrderGifts(adminClient as never, {
+      orderId: ORDER_ID,
+      buyerUserId: 'buyer',
+      intent: { ...intent, deliverAt: LATER },
+      now: NOW,
+    })
+    const written = find('vouchers', 'update')?.payload as Record<string, unknown>
+    expect(written.gift_deliver_at).toBe(LATER.toISOString())
+  })
+
+  it('names no 226 column at all on an unscheduled gift', async () => {
+    /**
+     * 226 is PENDING. `gift_deliver_at` may not exist, and naming it in an
+     * UPDATE on a database without it fails the whole statement - which would
+     * mean no gift is ever sent. An unscheduled gift is the only kind such a
+     * database can produce, so it must not mention the column.
+     */
+    scriptOneVoucher(null)
+    await sendOrderGifts(adminClient as never, {
+      orderId: ORDER_ID,
+      buyerUserId: 'buyer',
+      intent,
+      now: NOW,
+    })
+    const written = find('vouchers', 'update')?.payload as Record<string, unknown>
+    expect(written).not.toHaveProperty('gift_deliver_at')
+    const row = find('notification_outbox', 'insert')?.payload as Record<string, unknown>
+    expect(row).not.toHaveProperty('next_attempt_at')
+  })
+
+  it('DROPS a date past the coupon expiry and sends at once instead', async () => {
+    /**
+     * The checkout ceiling cannot catch this: `expires_at` is stamped here, at
+     * issuance, after the sale. Honouring the date would deliver a claim link
+     * the day after the coupon died - the recipient is told they have a
+     * present, follows the link, and is refused. Early beats dead.
+     */
+    scriptOneVoucher('2026-11-01T00:00:00.000Z')
+    await sendOrderGifts(adminClient as never, {
+      orderId: ORDER_ID,
+      buyerUserId: 'buyer',
+      intent: { ...intent, deliverAt: LATER },
+      now: NOW,
+    })
+    const written = find('vouchers', 'update')?.payload as Record<string, unknown>
+    expect(written).not.toHaveProperty('gift_deliver_at')
+    const row = find('notification_outbox', 'insert')?.payload as Record<string, unknown>
+    expect(row).not.toHaveProperty('next_attempt_at')
+  })
+
+  it('ignores a date that has already passed', async () => {
+    scriptOneVoucher(null)
+    await sendOrderGifts(adminClient as never, {
+      orderId: ORDER_ID,
+      buyerUserId: 'buyer',
+      intent: { ...intent, deliverAt: new Date('2026-01-01T00:00:00.000Z') },
+      now: NOW,
+    })
+    const row = find('notification_outbox', 'insert')?.payload as Record<string, unknown>
+    expect(row).not.toHaveProperty('next_attempt_at')
+  })
+
+  it('still mints the token and mails only the token on a scheduled gift', async () => {
+    // Scheduling changes WHEN the row is drained, and nothing about what is in
+    // it: the hash on the row, the raw token in the mail.
+    scriptOneVoucher('2027-01-30T00:00:00.000Z')
+    await sendOrderGifts(adminClient as never, {
+      orderId: ORDER_ID,
+      buyerUserId: 'buyer',
+      intent: { ...intent, deliverAt: LATER },
+      now: NOW,
+    })
+    const written = find('vouchers', 'update')?.payload as { gift_claim_token_hash: string }
+    const mailed = (
+      find('notification_outbox', 'insert')?.payload as {
+        payload: { claim_token: string }
+      }
+    ).payload
+    expect(written.gift_claim_token_hash).toBe(hashGiftClaimToken(mailed.claim_token))
+    expect(JSON.stringify(written)).not.toContain(mailed.claim_token)
+  })
+})
+
+describe('readGiftIntent — the schedule off the order row', () => {
+  it('reads a stored date', () => {
+    const intent = readGiftIntent({
+      gift_recipient_email: 'dana@example.com',
+      gift_deliver_at: '2026-12-24T00:00:00.000Z',
+    })
+    expect(intent?.deliverAt?.toISOString()).toBe('2026-12-24T00:00:00.000Z')
+  })
+
+  it('treats an absent column as "send now", which is what a pre-226 database means', () => {
+    const intent = readGiftIntent({ gift_recipient_email: 'dana@example.com' })
+    expect(intent?.deliverAt).toBeNull()
+  })
+
+  it('treats an unparseable date as "send now" rather than throwing in finalize', () => {
+    // This runs after the card is charged. A throw here is money taken against
+    // an order that never closed.
+    const intent = readGiftIntent({
+      gift_recipient_email: 'dana@example.com',
+      gift_deliver_at: 'not a date',
+    })
+    expect(intent?.deliverAt).toBeNull()
   })
 })

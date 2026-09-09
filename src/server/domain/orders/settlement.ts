@@ -90,6 +90,11 @@ export interface SettlementInput {
    * SettlementResult for whose money it is.
    */
   discountApplied?: Agorot
+  /**
+   * Optional gift wrapping, in agorot (226). See `giftWrapFee` in
+   * SettlementResult for what it does and does not touch.
+   */
+  giftWrapFee?: Agorot
 }
 
 export interface SettlementResult {
@@ -117,7 +122,33 @@ export interface SettlementResult {
    * is applied here rather than trusted from the caller.
    */
   discountApplied: Agorot
-  /** What the platform actually keeps: commission less the discount it funded. */
+  /**
+   * Optional gift wrapping, in agorot (226).
+   *
+   * IT IS ADDED, NOT SPLIT. Every other number in this result is a division of
+   * what the customer paid for GOODS; this one is a charge for a service the
+   * platform performs, so it goes onto `cardCharge` and onto `platformNet` and
+   * changes nothing else. `supplierDue` and every per-line split are byte for
+   * byte what they would be without it, because the supplier did not wrap
+   * anything and is owed no part of it.
+   *
+   * IT IS NOT PART OF `faceValue`. Face value is what the business honours at
+   * the counter, and wrapping is not redeemable there. Keeping it out is also
+   * what keeps the per-line sums adding up: `faceValue`, `paidOnSite`,
+   * `commission` and `supplierDue` are all sums over `lines`, and a fee that
+   * belongs to no line cannot be inside any of them without breaking that.
+   *
+   * IT EARNS NO CASHBACK AND TAKES NO DISCOUNT, both by the same construction:
+   * cashback is computed per line and this is not a line, and the discount is
+   * capped at `commission`, which is a sum over lines. A discount code is
+   * marketing on the goods; funding a service fee out of it would be the
+   * platform paying itself.
+   */
+  giftWrapFee: Agorot
+  /**
+   * What the platform actually keeps: commission, less the discount it funded,
+   * plus any wrapping fee - which is entirely its own.
+   */
   platformNet: Agorot
   cardCharge: Agorot
 }
@@ -277,6 +308,19 @@ export function calculateSettlement(input: SettlementInput): SettlementResult {
     Math.min(requestedDiscount, commission, Math.max(0, paidOnSite - walletApplied)),
   )
 
+  // Applied AFTER the discount is capped, and that ordering is the point: the
+  // ceilings above are about the goods, and a fee that could raise the discount
+  // ceiling would let a code eat money the supplier is owed by way of a service
+  // the supplier is not part of.
+  const giftWrapFee = input.giftWrapFee ?? agorot(0)
+  assertNonNegative(giftWrapFee, 'gift wrap fee')
+  if (!Number.isInteger(giftWrapFee)) {
+    // Money is an integer number of agorot everywhere in this path, and this
+    // one arrives from a checkout form. A fraction here would reach the card
+    // charge and then the invoice.
+    throw new RangeError('gift wrap fee must be a whole number of agorot')
+  }
+
   return {
     idempotencyKey: input.idempotencyKey,
     lines,
@@ -288,7 +332,8 @@ export function calculateSettlement(input: SettlementInput): SettlementResult {
     cashbackAmount,
     walletApplied,
     discountApplied,
-    platformNet: agorot(commission - discountApplied),
-    cardCharge: agorot(paidOnSite - walletApplied - discountApplied),
+    giftWrapFee,
+    platformNet: agorot(commission - discountApplied + giftWrapFee),
+    cardCharge: agorot(paidOnSite - walletApplied - discountApplied + giftWrapFee),
   }
 }

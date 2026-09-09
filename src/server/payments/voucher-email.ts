@@ -55,9 +55,32 @@ export function voucherEmailIdempotencyKey(orderId: string, deliveryId?: string)
   return deliveryId ? `voucher-email:${orderId}:${deliveryId}` : `voucher-email:${orderId}`
 }
 
+/**
+ * True while a voucher is a gift that has not been collected yet, and is
+ * therefore not the holder's to be shown.
+ *
+ * Exported because three surfaces have to agree about it - this email, the
+ * customer's coupon reads and the confirmation page - and a rule about who may
+ * see a code is not one to spell out three times.
+ *
+ * `undefined` matters as much as `null` here. A caller whose select did not
+ * name the gift columns gets neither, and the honest answer for a row that
+ * cannot say whether it is a gift is "not a gift": that is the behaviour before
+ * 108, and the alternative would blank the code on every ordinary coupon whose
+ * reader simply asked for less.
+ */
+export function isGiftedAway(row: {
+  gift_claim_token_hash?: string | null
+  gift_claimed_at?: string | null
+}): boolean {
+  return Boolean(row.gift_claim_token_hash) && !row.gift_claimed_at
+}
+
 type VoucherRow = {
   id: string
   code: string
+  gift_claim_token_hash: string | null
+  gift_claimed_at: string | null
   face_value_agorot: number
   coupon_price_agorot: number
   remaining_amount_due_agorot: number
@@ -99,6 +122,7 @@ export async function sendVoucherEmail(
       .from('vouchers')
       .select(
         `id, code, face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot, expires_at,
+         gift_claim_token_hash, gift_claimed_at,
          products(name_he),
          suppliers(name, address, contact_phone)`,
       )
@@ -106,9 +130,44 @@ export async function sendVoucherEmail(
       .eq('status', 'issued')
       .order('issued_at', { ascending: true })
 
-    const vouchers = (rows ?? []) as unknown as VoucherRow[]
+    const allVouchers = (rows ?? []) as unknown as VoucherRow[]
     // A physical-only order issues no vouchers, and there is nothing to send.
-    if (vouchers.length === 0) return { sent: false, reason: 'no_vouchers' }
+    if (allVouchers.length === 0) return { sent: false, reason: 'no_vouchers' }
+
+    /**
+     * GIFTED COUPONS ARE REMOVED FROM THIS EMAIL, and this is the fix for the
+     * defect SECTIONS 33 words as "buyer sees order but not the code".
+     *
+     * `finalizeOrder` calls `sendOrderGifts` and then calls this, and this read
+     * is scoped to the ORDER rather than to ownership. A gifted voucher stays
+     * owned by the buyer until it is claimed - which is deliberate, the buyer
+     * paid and a refund belongs to them - so before this filter existed the
+     * buyer received the recipient's coupon code and QR by email, minutes after
+     * paying. The gift was a wrapped box with the lid off: nothing stopped the
+     * buyer walking into the business and redeeming the present they had just
+     * bought, and the recipient would find a dead link.
+     *
+     * `gift_claim_token_hash IS NOT NULL` is the test, not `gift_sent_at`: the
+     * hash is what makes a voucher claimable by somebody else, and it is
+     * written in the same guarded UPDATE as the timestamp.
+     *
+     * ONCE CLAIMED, THE ROW LEAVES ON ITS OWN. `gift_claimed_at` moves
+     * `user_id` to the recipient, and this function is called only from
+     * finalize with the BUYER's id - so a claimed gift is no longer in any
+     * email this sends. There is nothing to add for that case.
+     *
+     * The column may not exist (108 is applied, but the reader must not assume
+     * it): `undefined` is not `null`, so a row without the field is treated as
+     * not a gift, which is the behaviour before gifts existed.
+     */
+    const vouchers = allVouchers.filter((row) => !isGiftedAway(row))
+    if (vouchers.length === 0) {
+      // Every coupon on the order went to somebody else. The recipient has
+      // their own email; sending the buyer an empty coupon list would be a
+      // message with nothing in it.
+      log.info('email.voucher_all_gifted', { orderId: context.orderId })
+      return { sent: false, reason: 'all_gifted' }
+    }
 
     const lines: VoucherEmailLine[] = vouchers.map((row) => {
       const product = firstOf(row.products)

@@ -858,6 +858,25 @@ describe('the pending migration inventory', () => {
       // degrades to an empty list with a sentence, so the portal and the panel
       // both run unchanged until it lands.
       '225_supplier_contact_requests.sql',
+      // 226: `orders.gift_deliver_at`, `orders.gift_wrap_fee_agorot` and
+      // `vouchers.gift_deliver_at`, for SECTIONS 33's scheduled delivery and
+      // optional wrapping fee. Additive, three columns, one CHECK and one
+      // partial index; nothing is dropped or renamed, so it is safe to re-run.
+      //
+      // 108 IS applied (all twelve of its gift columns measured on the hosted
+      // project 2026-09-10), so this adds to a working feature rather than
+      // completing a broken one.
+      //
+      // EVERY CALLER DEGRADES. The checkout PROBES for
+      // `gift_wrap_fee_agorot` before computing the settlement and charges no
+      // fee when it is absent - a ₪15 charge with no row explaining it is the
+      // one failure that cannot be answered later. finalize reads the gift
+      // intent through a widening pair of selects and falls back to 108's three
+      // columns on 42703, and the voucher UPDATE names `gift_deliver_at` only
+      // when there is a date to write, which a pre-226 database can never
+      // produce. So the site sells gifts unchanged until this lands; it just
+      // cannot schedule them or charge for wrapping.
+      '226_gift_scheduling_and_wrap.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

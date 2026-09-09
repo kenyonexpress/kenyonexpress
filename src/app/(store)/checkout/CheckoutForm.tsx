@@ -19,6 +19,8 @@ import {
   validateStep,
 } from '@/lib/checkout/steps'
 import { clampWalletIls } from '@/lib/checkout/wallet-input'
+import { GIFT_WRAP_FEE_AGOROT, giftDateInputBounds } from '@/lib/gifts/wrap'
+import { t } from '@/lib/i18n/messages'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
@@ -249,6 +251,22 @@ export default function CheckoutForm({
   // cannot post a half-typed address, and the server forwards the fields only
   // when both the flag and the email are present.
   const [isGift, setIsGift] = useState(false)
+
+  /**
+   * The date picker's bounds, set AFTER mount rather than at render.
+   *
+   * `giftDateInputBounds` reads the clock, and the server and the browser do
+   * not necessarily agree about which day it is - they are minutes apart at
+   * best and on opposite sides of midnight at worst. Rendering the attributes
+   * on the server would make that disagreement a hydration mismatch on a form
+   * that takes card details. Empty until mounted means the picker is briefly
+   * unbounded, which costs nothing: the ceiling that actually decides is
+   * `resolveGiftDeliverAt` on the server.
+   */
+  const [giftDateBounds, setGiftDateBounds] = useState<{ min?: string; max?: string }>({})
+  useEffect(() => {
+    setGiftDateBounds(giftDateInputBounds())
+  }, [])
 
   // `walletBalance` and the `apply_wallet_ils` field are the one place on this
   // page still denominated in shekels: the wallet column is `balance_ils` and
@@ -714,9 +732,39 @@ export default function CheckoutForm({
                           placeholder="מזל טוב! בקיצור, תיהנו."
                         />
                       </div>
+                      <div className="checkout-field">
+                        <label htmlFor="co-gift-deliver-at">{t('gift.deliverLabel')}</label>
+                        <input
+                          id="co-gift-deliver-at"
+                          name="gift_deliver_at"
+                          type="date"
+                          /*
+                            LTR, like the recipient email above: a date input
+                            renders its own yyyy-mm-dd segments and the browser
+                            orders them left to right regardless. The label and
+                            the hint around it stay RTL.
+                          */
+                          dir="ltr"
+                          min={giftDateBounds.min}
+                          max={giftDateBounds.max}
+                        />
+                        <span className="checkout-field__hint">{t('gift.deliverHint')}</span>
+                      </div>
+
+                      <label className="checkout-terms">
+                        <input type="checkbox" name="gift_wrap" />
+                        <span>
+                          {t('gift.wrapLabel')} ({shekels(GIFT_WRAP_FEE_AGOROT)})
+                        </span>
+                      </label>
+
                       <p className="checkout-privacy">
-                        אחרי התשלום יישלח למקבל מייל עם קישור אישי לקבלת הקופון. עד שהוא ייאסף
-                        הקופון נשאר בחשבון שלכם.
+                        {/*
+                          Reworded for 226: "אחרי התשלום" was true of every gift
+                          until a send date existed, and a customer who schedules
+                          one for next month must not be told it goes out now.
+                        */}
+                        {t('gift.notice')}
                       </p>
                     </div>
                   )}

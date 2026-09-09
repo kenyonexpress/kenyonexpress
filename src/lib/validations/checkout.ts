@@ -131,6 +131,19 @@ export const giftSchema = z.object({
     .optional(),
   gift_recipient_name: z.string().trim().max(80).optional(),
   gift_message: z.string().trim().max(500, 'הברכה ארוכה מדי').optional(),
+  /**
+   * When to send it (226). Bounded here only for shape; whether the date is in
+   * the past or absurdly far ahead is `resolveGiftDeliverAt`'s question, and
+   * asking it in one place keeps the form, the action and the tests from each
+   * holding their own idea of the window.
+   */
+  gift_deliver_at: z.string().trim().max(40).optional(),
+  /**
+   * Whether to charge for wrapping (226). A BOOLEAN and not an amount: the
+   * price lives in `GIFT_WRAP_FEE_AGOROT` on the server. A client that could
+   * name its own fee could name a negative one.
+   */
+  gift_wrap: z.boolean().optional(),
 })
 
 /**
@@ -181,6 +194,33 @@ export const beginCheckoutInputSchema = checkoutPaymentSchema
         path: ['apply_wallet_ils'],
         message: 'סכום ארנק לא יכול להיות שלילי',
       })
+    }
+
+    /**
+     * Wrapping and a send date are attributes OF a gift, so neither means
+     * anything without a recipient (226).
+     *
+     * Refused rather than ignored, and the fee is why. A request that arrives
+     * with `gift_wrap: true` and no recipient email is either a form bug or a
+     * hand-built call, and silently dropping it is the version where nobody
+     * finds out - until somebody does, holding a ₪15 charge on an order that is
+     * not a gift. There is nothing to wrap when there is nobody to send it to.
+     */
+    if (!data.gift_recipient_email) {
+      if (data.gift_wrap) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['gift_wrap'],
+          message: 'אריזת מתנה זמינה רק בהזמנה שנשלחת במתנה',
+        })
+      }
+      if (data.gift_deliver_at) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['gift_deliver_at'],
+          message: 'תזמון משלוח זמין רק בהזמנה שנשלחת במתנה',
+        })
+      }
     }
   })
 
