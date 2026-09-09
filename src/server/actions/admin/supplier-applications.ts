@@ -193,7 +193,7 @@ async function runDecideApplication(
       reason: linkError.message,
     })
     return {
-      error: `הספק נוצר (${supplierId.slice(0, 8)}) אך הבקשה לא סומנה כמאושרת. אל תאשרו שוב — עדכנו ידנית.`,
+      error: `הספק נוצר (${supplierId.slice(0, 8)}) אך הבקשה לא סומנה כמאושרת. אל תאשרו שוב, עדכנו ידנית.`,
     }
   }
 

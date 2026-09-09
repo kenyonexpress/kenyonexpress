@@ -1,13 +1,13 @@
 # `migrations/pending/`
 
-## 2026-09-09: 204 WRITTEN, not applied — an applicant is not a supplier
+## 2026-09-09: 204 WRITTEN, not applied, an applicant is not a supplier
 
 `204_supplier_onboarding.sql`.
 
 **The obvious design is one enum value, and the measurement is why it is not
 done.** `supplier_status` is `active, suspended, closed`; adding `pending` looks
 like one line. But `from('suppliers')` appears at **19 call sites** in this repo
-and roughly **nine** filter on status at all — so a pending supplier would be
+and roughly **nine** filter on status at all, so a pending supplier would be
 visible by default in about ten places (the directory, the admin pickers, the
 publish gate, the payout run), and nothing would fail if one were missed. That
 is a gap-by-default: the safe state would depend on remembering.
@@ -21,7 +21,7 @@ touched. The 12 live supplier rows are untouched by this file.
 project (measured; a create/read round trip was exercised and rolled back), so
 the number goes into a vault secret through a `SECURITY DEFINER` wrapper granted
 to nobody but the service role. What stays in the clear is the bank code, the
-branch and the **last four** — which a payout operator needs to recognise an
+branch and the **last four**, which a payout operator needs to recognise an
 account and which cannot move money. There is deliberately **no read function**:
 nothing in this application needs to turn the id back into an account number,
 and one sitting here unused is one that can be called.
@@ -41,7 +41,7 @@ one business number refused** while a rejected one frees the number, a duplicate
 
 Order: independent of everything else pending.
 
-## 2026-09-09: 203 WRITTEN, not applied — the tables were live and the code never arrived
+## 2026-09-09: 203 WRITTEN, not applied, the tables were live and the code never arrived
 
 `203_support_center.sql`.
 
@@ -61,7 +61,7 @@ somebody we have **no way to reply to**. A CHECK now requires one of the three.
 
 **The policy change is a leak fix.** `internal` becomes an expressible message
 direction, and the existing owner-read policy returns every message on the
-ticket — so the first internal note would have been handed to the customer it
+ticket, so the first internal note would have been handed to the customer it
 was written about. The replacement filters it in the same statement that
 introduces the direction, so the two cannot be applied separately.
 
@@ -88,13 +88,13 @@ Nothing left behind.
 Order: independent of everything else pending. It touches only the two support
 tables.
 
-## 2026-09-09: 202 WRITTEN, not applied — one column that is a live bug, and three tables
+## 2026-09-09: 202 WRITTEN, not applied, one column that is a live bug, and three tables
 
 `202_fraud_abuse.sql`.
 
 **Part 1 is not a feature.** `information_schema` says `public.payments` has
 twenty columns and `token_id` is **not one of them**, although
-`026_commerce.sql` declares it in the CREATE TABLE — production and the file
+`026_commerce.sql` declares it in the CREATE TABLE, production and the file
 chain are different lineages, the same discovery `payment-money-columns.ts`
 records about 059. On 2026-09-07, commit `52fe21ed4` added `token_id` to the
 `payments` INSERT on the saved-card charge path. 42703 takes down the whole
@@ -105,7 +105,7 @@ outage.
 
 The application no longer depends on this migration for that: `payment-token-
 column.ts` probes for the column and omits it when absent. Applying it restores
-the **record** — which card a charge rode on — and makes the per-account card
+the **record**, which card a charge rode on, and makes the per-account card
 velocity signal readable at all.
 
 **The part that refuses needs no migration.** The velocity limits count
@@ -113,7 +113,7 @@ declines, distinct cards and one card across accounts out of `payments` and
 `payment_tokens`, which exist today. `order_risk_assessments` is the part that
 does **not** refuse: a score with no measured base rate behind it routes an
 order to a human and never declines one. It is a table and not a column on
-`orders` because that INSERT must not grow — the lesson `order-money-columns.ts`
+`orders` because that INSERT must not grow, the lesson `order-money-columns.ts`
 exists to record.
 
 **The refund cap is three per order, not three per customer.** Per customer
@@ -127,7 +127,7 @@ API sends no chargeback notification, so there is no integration to write.
 `respond_by` is NOT NULL: a case answered late is lost by default. `status` is
 text + CHECK rather than `public.dispute_status`, which exists in production
 with **zero columns using it** and whose `resolved_accepted` cannot say who
-accepted — losing a chargeback and declining to contest one are different
+accepted, losing a chargeback and declining to contest one are different
 numbers in every report.
 
 **Verified against production without applying.** One `DO` block created all of

@@ -86,7 +86,7 @@ export default async function SupplierApplyPage() {
         <section className="mt-6 rounded-lg border border-border bg-white p-5">
           <h2 className="text-lg font-semibold text-heading">הבקשה שלכם</h2>
           <p className="mt-2 text-sm text-body">
-            {live.business_name} —{' '}
+            {live.business_name}{' '}
             {live.status === 'approved'
               ? 'אושרה. ברוכים הבאים.'
               : live.status === 'in_review'

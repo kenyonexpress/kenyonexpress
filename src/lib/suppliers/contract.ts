@@ -26,7 +26,7 @@ import { createHash } from 'node:crypto'
 
 export const CONTRACT_VERSION = 'v1-2026-09-09'
 
-export const CONTRACT_TEXT = `הסכם ספק — קניון אקספרס
+export const CONTRACT_TEXT = `הסכם ספק, קניון אקספרס
 גרסה ${'v1-2026-09-09'}
 
 1. מהות ההתקשרות

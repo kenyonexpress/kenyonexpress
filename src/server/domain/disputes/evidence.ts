@@ -193,7 +193,7 @@ export function buildEvidencePack(input: EvidenceInput): EvidencePack {
             (item) =>
               `${item.quantity} × ${item.productName}${
                 item.supplierName ? ` (${item.supplierName})` : ''
-              } — ${ils(item.totalAgorot)}`,
+              }, ${ils(item.totalAgorot)}`,
           )
         : ['לא נמצאו שורות בהזמנה. זו תקלה בנתונים ולא ראיה.'],
   })
@@ -246,7 +246,7 @@ export function buildEvidencePack(input: EvidenceInput): EvidencePack {
     lines:
       input.refundRequests.length > 0
         ? input.refundRequests.map(
-            (r) => `${when(r.createdAt)}: בקשת החזר (${r.reasonCode}) — ${r.status}`,
+            (r) => `${when(r.createdAt)}: בקשת החזר (${r.reasonCode}), ${r.status}`,
           )
         : ['הלקוח לא פנה אלינו בבקשת החזר לפני פתיחת התיק. נקודה לטובתנו, אך לא ראיה.'],
   })

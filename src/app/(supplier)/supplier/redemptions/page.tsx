@@ -68,7 +68,7 @@ export default async function SupplierRedemptionsPage() {
       <ul className="hidden print:block">
         {todayRows.map((row) => (
           <li key={`print-${row.voucherId}`} className="border-b py-1 text-sm">
-            <span dir="ltr">{formatVoucherCode(row.code)}</span> — {row.productName} —{' '}
+            <span dir="ltr">{formatVoucherCode(row.code)}</span>, {row.productName}{' '}
             <span dir="ltr">{formatIls(agorot(row.remainingAmountDueAgorot))}</span>
           </li>
         ))}

@@ -162,7 +162,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       ).length
       setDrainSummary(
         refused > 0
-          ? `סונכרנו ${redeemed} מימושים. ${refused} סריקות נדחו — בדקו מולן.`
+          ? `סונכרנו ${redeemed} מימושים. ${refused} סריקות נדחו, בדקו מולן.`
           : `סונכרנו ${redeemed} מימושים.`,
       )
     } catch {
@@ -479,7 +479,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
             <bdi>{queue.length}</bdi> סריקות ממתינות לשליחה
           </p>
           <p className="mt-1 text-xs text-amber-900">
-            הן נשמרו במכשיר כשלא היה חיבור. <strong>עדיין לא נבדקו מול המערכת</strong> — שובר שיתברר
+            הן נשמרו במכשיר כשלא היה חיבור. <strong>עדיין לא נבדקו מול המערכת</strong>, שובר שיתברר
             כלא תקף יופיע כאן כנדחה אחרי הסנכרון.
           </p>
           <button

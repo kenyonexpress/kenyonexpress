@@ -51,7 +51,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 function short(value: unknown): string {
-  if (value === null || value === undefined) return '—'
+  if (value === null || value === undefined) return '-'
   const text = typeof value === 'string' ? value : JSON.stringify(value)
   return text.length > 60 ? `${text.slice(0, 60)}…` : text
 }
@@ -68,7 +68,7 @@ function changedFields(row: AuditRow): Array<{ field: string; from: string; to: 
     if (!changes) return []
     return Object.entries(changes)
       .filter(([field]) => !IGNORED_FIELDS.has(field))
-      .map(([field, value]) => ({ field, from: '—', to: short(value) }))
+      .map(([field, value]) => ({ field, from: '-', to: short(value) }))
   }
 
   const fields = new Set([...Object.keys(before), ...Object.keys(after)])

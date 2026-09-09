@@ -221,7 +221,7 @@ export default function SupplierApplyWizard({
             </option>
             {BANKS.map((bank) => (
               <option key={bank.code} value={bank.code}>
-                {bank.code} — {bank.name}
+                {bank.code}, {bank.name}
               </option>
             ))}
           </select>

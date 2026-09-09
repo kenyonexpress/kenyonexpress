@@ -95,14 +95,14 @@ export default async function SupplierApplicationsPage() {
         <p className="mt-1 text-sm text-gray-600">
           <strong>אישור יוצר את הספק.</strong> עד לרגע הזה אין שורה ב-<code>suppliers</code>, ולכן
           מבקש שטרם אושר אינו יכול להופיע במדריך, בבוררי האדמין, בשער הפרסום או בהרצת התשלומים. ספרת
-          הביקורת של מספר העסק בודקת שהמספר תקין בצורתו — <strong>לא שהעסק קיים</strong>. את זה
-          מוכיח המסמך.
+          הביקורת של מספר העסק בודקת שהמספר תקין בצורתו, <strong>לא שהעסק קיים</strong>. את זה מוכיח
+          המסמך.
         </p>
       </header>
 
       {documentsUnreadable && (
         <p className="rounded-lg bg-red-50 p-4 text-sm text-red-900">
-          לא ניתן לקרוא את רשימת המסמכים. <strong>אל תאשרו בקשה על סמך המסך הזה</strong> — הרשימה
+          לא ניתן לקרוא את רשימת המסמכים. <strong>אל תאשרו בקשה על סמך המסך הזה</strong>, הרשימה
           למטה תיראה ריקה גם אם הועלו מסמכים.
         </p>
       )}

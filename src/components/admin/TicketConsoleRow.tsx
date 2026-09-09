@@ -148,7 +148,7 @@ export default function TicketConsoleRow(props: {
             if (reply) setBody(reply.body)
           }}
         >
-          <option value="">— בחירה —</option>
+          <option value="">בחירה</option>
           {CANNED_REPLIES.map((reply) => (
             <option key={reply.id} value={reply.id}>
               {reply.label}

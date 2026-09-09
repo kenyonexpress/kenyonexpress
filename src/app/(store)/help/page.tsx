@@ -104,8 +104,8 @@ export default function HelpPage() {
         </p>
         <p className="mt-3 text-sm text-body">
           זמני התגובה שאנחנו מתחייבים אליהם, ולפיהם התור נמדד: פנייה דחופה (שובר שלא נסרק בבית העסק)
-          — עד <bdi>{SLA_TARGETS.urgent.firstResponseHours}</bdi> שעות. בעיה בתשלום או בהזמנה ששולמה
-          — עד <bdi>{SLA_TARGETS.high.firstResponseHours}</bdi> שעות. שאלה רגילה — עד{' '}
+          , עד <bdi>{SLA_TARGETS.urgent.firstResponseHours}</bdi> שעות. בעיה בתשלום או בהזמנה ששולמה
+          , עד <bdi>{SLA_TARGETS.high.firstResponseHours}</bdi> שעות. שאלה רגילה, עד{' '}
           <bdi>{SLA_TARGETS.normal.firstResponseHours}</bdi> שעות.
         </p>
       </section>

@@ -57,7 +57,7 @@ export default function ApplicationReviewRow(props: {
   if (state && 'success' in state) {
     return (
       <li className="rounded-lg border bg-gray-50 p-4 text-sm text-gray-600">
-        {props.businessName} — {state.success}
+        {props.businessName}, {state.success}
       </li>
     )
   }

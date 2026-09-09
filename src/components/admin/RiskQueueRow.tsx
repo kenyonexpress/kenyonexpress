@@ -32,7 +32,7 @@ export default function RiskQueueRow({
   if (state && 'success' in state) {
     return (
       <li className="rounded-lg border bg-gray-50 p-4 text-sm text-gray-600">
-        הזמנה {orderId.slice(0, 8)} — {state.success}
+        הזמנה {orderId.slice(0, 8)}, {state.success}
       </li>
     )
   }
