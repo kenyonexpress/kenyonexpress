@@ -17,6 +17,7 @@ import {
   pendingTable,
   selectPending,
 } from '@/lib/supabase/pending-schema'
+import { enqueueSubscriptionChargeInvoice } from '@/server/payments/invoices'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -182,17 +183,23 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
     // The charge row goes in FIRST, so a crash before the advance cannot cause
     // a second charge for the same cycle.
-    const { error: chargeError } = await admin.from(pendingTable('subscription_charges')).insert({
-      subscription_id: subscription.id,
-      period_key: periodKey,
-      status: outcome.success ? 'succeeded' : 'failed',
-      amount_agorot: amount,
-      platform_fee_agorot: split.platformFee,
-      supplier_due_agorot: split.supplierDue,
-      cardcom_transaction_id: outcome.transactionId,
-      failure_code: outcome.code,
-      failure_message: outcome.message?.slice(0, 500) ?? null,
-    } as never)
+    const { data: chargeRow, error: chargeError } = await admin
+      .from(pendingTable('subscription_charges'))
+      .insert({
+        subscription_id: subscription.id,
+        period_key: periodKey,
+        status: outcome.success ? 'succeeded' : 'failed',
+        amount_agorot: amount,
+        platform_fee_agorot: split.platformFee,
+        supplier_due_agorot: split.supplierDue,
+        cardcom_transaction_id: outcome.transactionId,
+        failure_code: outcome.code,
+        failure_message: outcome.message?.slice(0, 500) ?? null,
+      } as never)
+      // The id is needed to hang the invoice on ([90]); `select` after `insert`
+      // is one round trip either way.
+      .select('id')
+      .maybeSingle()
 
     if (chargeError) {
       // A unique violation means another run already recorded a success for this
@@ -210,6 +217,26 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         reason: chargeError.message,
       })
       continue
+    }
+
+    // THE INVOICE ([90]), and it is queued rather than issued here.
+    //
+    // Only on success: a declined card produces no supply and no document. It
+    // is queued after the charge row exists and BEFORE the schedule advances,
+    // so a crash between the two leaves a charge with no invoice - which the
+    // invoice cron can still find - rather than an advanced schedule with no
+    // record of what was billed.
+    //
+    // `enqueueSubscriptionChargeInvoice` never throws and its result is not
+    // checked, deliberately: the card has already been charged, the money has
+    // moved, and a document that could not be queued must not turn a successful
+    // payment into a failed run. The unique index on `subscription_charge_id`
+    // means a later retry cannot issue a second one.
+    if (outcome.success) {
+      const chargeId = (chargeRow as { id?: string } | null)?.id
+      if (chargeId) {
+        await enqueueSubscriptionChargeInvoice(admin, { chargeId, amountAgorot: amount })
+      }
     }
 
     const update = applyChargeOutcome(subscription, outcome, {

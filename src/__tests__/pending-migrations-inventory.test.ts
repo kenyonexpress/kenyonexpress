@@ -685,6 +685,28 @@ describe('the pending migration inventory', () => {
       // storefront filter needs - and could neither write it nor execute
       // set_phase_enabled.
       '210_product_phases.sql',
+      // 211: an invoice for a cycle charge, and [90]'s phase switch, off.
+      //
+      // MOST OF [90] IS ALREADY BUILT. 135b is applied, MAX_CHARGE_ATTEMPTS is
+      // 3, the charge cron and /account/subscriptions exist, and
+      // `subscription_charges_one_per_cycle` makes a cycle payable exactly
+      // once. What was missing: pause and resume (the STATUS existed since 135b
+      // and NOTHING COULD SET IT), an invoice per charge, and an admin console.
+      //
+      // `invoices.order_id` becomes nullable because a cycle charge creates no
+      // order, and that is a decision the cron states in its own header rather
+      // than an oversight. A CHECK requires exactly one of order_id and
+      // subscription_charge_id: an invoice for nothing is a tax document nobody
+      // can trace, and one for both is two claims about the same money.
+      //
+      // Probed against production, rolled back: the phase switch goes off
+      // WITHOUT clearing enabled_at, an invoice for a charge with no order is
+      // storable, a SECOND invoice for one charge REFUSED, an invoice for
+      // NEITHER refused, an invoice for BOTH refused, the existing order-only
+      // shape still works, and deleting a charge takes its invoice with it. The
+      // probe's first run also caught itself: it used billing_interval 'month'
+      // and subscriptions_interval_known permits only monthly|yearly.
+      '211_subscriptions_phase2.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

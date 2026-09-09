@@ -18,6 +18,7 @@ import {
   LifeBuoy,
   Package,
   Plus,
+  Repeat,
   ScanLine,
   Search,
   Share2,
@@ -97,6 +98,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/pages', label: 'עמודי תוכן', icon: FileText, section: 'content' },
   { href: '/admin/homepage', label: 'עמוד הבית', icon: LayoutDashboard, section: 'content' },
   { href: '/admin/phases', label: 'שלבי מוצר', icon: Flag, section: 'catalog' },
+  { href: '/admin/subscriptions', label: 'מנויים', icon: Repeat, section: 'payments' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
 ]
 

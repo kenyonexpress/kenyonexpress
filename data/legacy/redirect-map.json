@@ -168,6 +168,7 @@
       "/admin/reviews",
       "/admin/search",
       "/admin/status",
+    "/admin/subscriptions",
       "/admin/suppliers",
       "/admin/suppliers/applications",
       "/admin/suppliers/new",

@@ -1,5 +1,52 @@
 # `migrations/pending/`
 
+## 2026-09-09: 211 WRITTEN, not applied, and most of [90] was already there
+
+`211_subscriptions_phase2.sql`.
+
+**Measured before writing anything.** `135b_recurring_subscriptions.sql` is
+applied: `subscriptions` (18 columns) and `subscription_charges` (11) exist in
+production holding no rows, and the machinery around them is real rather than
+scaffolding - `MAX_CHARGE_ATTEMPTS = 3`, a charge cron, `/account/subscriptions`,
+`cancelSubscription`, and a unique index that makes a cycle succeed exactly once.
+
+**What [90] was missing, against its own list:**
+
+- **pause and resume.** `paused` has been a permitted status since 135b: the
+  CHECK allows it, `dueSubscriptions` skips it, `canCancel` accepts it - and
+  **nothing could set it.** A state the whole system understands and no path
+  produces is a feature that reads as built.
+- **an invoice per charge.** Zero mentions of an invoice anywhere on the charge
+  path.
+- **an admin console.** No `/admin/subscriptions` route existed at all, so a
+  `past_due` subscription was invisible until the customer complained - the case
+  three dunning attempts exist to catch early.
+- **the feature flag off.** 210 seeds every type enabled, `recurring` included.
+
+**`invoices.order_id` becomes nullable**, because a cycle charge creates no
+order - and that is a decision the cron states in its own header ("Building
+orders per cycle would create a second, competing definition of what an order
+is"), not an oversight. A CHECK then requires exactly one of `order_id` and
+`subscription_charge_id`: an invoice for nothing is a tax document nobody can
+trace back to a payment, and one for both is two claims about the same money.
+Safe to widen: `invoices` holds zero rows.
+
+**The switch is turned off here rather than in 210**, because 210 seeds every
+type enabled so that applying it changes nothing, and [90] asking for its flag
+off is a statement about this feature rather than about the shape of the table.
+Each phase-2 section owning its own switch is also the pattern 91 and 92 need.
+
+**Verified against production without applying.** The phase switch goes off
+**without clearing `enabled_at`**, an invoice for a charge with no order is
+storable, a second invoice for one charge is refused, an invoice for neither is
+refused, an invoice for both is refused, the existing order-only shape still
+works, and deleting a charge takes its invoice with it. The probe's first run
+also caught itself: it used `billing_interval = 'month'` and
+`subscriptions_interval_known` permits only `monthly` and `yearly`.
+
+Order: after 210, which creates `phase_config`. Independent of everything else.
+
+
 ## 2026-09-09: 210 WRITTEN, not applied, and the measurement inverted its default
 
 `210_product_phases.sql`.

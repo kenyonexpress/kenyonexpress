@@ -284,15 +284,28 @@ async function loadOrderContext(
 // Enqueue
 // ---------------------------------------------------------------------------
 
+/** Whichever of the two ids this row carries, for a log line. */
+function invoiceSubjectId(row: InvoiceSubject): string {
+  return 'order_id' in row ? row.order_id : row.subscription_charge_id
+}
+
 export type EnqueueResult =
   | { enqueued: true; invoiceId: string; replay: boolean }
   | { enqueued: false; reason: string }
 
+/**
+ * The subject an invoice belongs to: an order, or a subscription cycle charge.
+ *
+ * EXACTLY ONE, and 211 enforces it with `num_nonnulls(...) = 1`. An invoice for
+ * nothing is a tax document nobody can trace back to a payment, and one for
+ * both is two claims about the same money.
+ */
+type InvoiceSubject = { order_id: string } | { subscription_charge_id: string }
+
 async function insertInvoice(
   admin: AdminClient,
-  row: {
-    order_id: string
-    payment_id: string | null
+  row: InvoiceSubject & {
+    payment_id?: string | null
     document_type: InvoiceDocumentType
     idempotency_key: string
     total_agorot: number
@@ -311,7 +324,7 @@ async function insertInvoice(
     if (isMissingTable(error)) {
       // A deployment against a database without 107 keeps working with no
       // documents, exactly as it did before this feature existed.
-      log.warn('invoices.table_missing', { orderId: row.order_id })
+      log.warn('invoices.table_missing', { subject: invoiceSubjectId(row) })
       return { enqueued: false, reason: 'table_missing' }
     }
     // Unique violation on the idempotency key IS the replay guard, and a replay
@@ -327,7 +340,7 @@ async function insertInvoice(
         ? { enqueued: true, invoiceId: id, replay: true }
         : { enqueued: false, reason: 'duplicate' }
     }
-    log.error('invoices.enqueue_failed', { orderId: row.order_id, reason: error.message })
+    log.error('invoices.enqueue_failed', { subject: invoiceSubjectId(row), reason: error.message })
     return { enqueued: false, reason: error.message }
   }
 
@@ -393,6 +406,59 @@ export async function enqueueOrderInvoice(
  * action holds the number Cardcom confirmed, and re-deriving it here could
  * disagree with the money that actually moved.
  */
+/**
+ * Queues the tax invoice for one subscription cycle charge ([90]).
+ *
+ * WHY IT DOES NOT GO THROUGH `enqueueOrderInvoice`. A cycle charge has no
+ * order, and that is a decision the charge cron states in its own header:
+ * "Building orders per cycle would create a second, competing definition of
+ * what an order is." So 211 makes `invoices.order_id` nullable, adds
+ * `subscription_charge_id`, and enforces that exactly one of the two is set.
+ *
+ * ALWAYS A TAX INVOICE, never a coupon receipt. `documentTypeForOrder` decides
+ * from what an order contains, and a subscription contains a recurring service:
+ * it is a taxable supply on the day it is charged, not an advance against a
+ * voucher. There is nothing to decide, so nothing decides it.
+ *
+ * NEVER THROWS. The caller is the charge cron, past the point where the card
+ * has been charged, and a failure to queue a document must not turn a
+ * successful payment into a failed run - the money has moved either way, and
+ * the unique index means a later retry cannot double-issue.
+ */
+export async function enqueueSubscriptionChargeInvoice(
+  admin: AdminClient,
+  input: { chargeId: string; amountAgorot: number },
+): Promise<EnqueueResult> {
+  try {
+    if (!Number.isSafeInteger(input.amountAgorot) || input.amountAgorot <= 0) {
+      return { enqueued: false, reason: 'non_positive_amount' }
+    }
+
+    const vatPercent = resolveVatPercent()
+    // The charged amount is VAT-INCLUSIVE, the same as an order total: the
+    // customer agreed to a shekel figure and the split is arithmetic on it, not
+    // an addition to it.
+    const { netAgorot, vatAgorot } = splitVatInclusive(input.amountAgorot, vatPercent)
+
+    return await insertInvoice(admin, {
+      subscription_charge_id: input.chargeId,
+      document_type: 'tax_invoice_receipt',
+      // The charge id, which is unique per cycle because
+      // `subscription_charges_one_per_cycle` makes a cycle succeed once. So a
+      // retried cron run produces the same key and the insert is a replay.
+      idempotency_key: `sub_charge:${input.chargeId}`,
+      total_agorot: input.amountAgorot,
+      net_agorot: netAgorot,
+      vat_agorot: vatAgorot,
+      vat_percent: vatPercent,
+    })
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'enqueue failed'
+    log.error('invoices.subscription_enqueue_threw', { chargeId: input.chargeId, reason })
+    return { enqueued: false, reason }
+  }
+}
+
 export async function enqueueRefundCreditNote(
   admin: AdminClient,
   input: { orderId: string; refundPaymentId: string; refundedAgorot: number; reason: string },

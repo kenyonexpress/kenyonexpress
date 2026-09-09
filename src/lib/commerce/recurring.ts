@@ -335,6 +335,84 @@ export function isExhausted(subscription: Pick<BillableSubscription, 'failed_att
 }
 
 /**
+ * PAUSE AND RESUME ([90]).
+ *
+ * `paused` HAS BEEN A STATUS SINCE 135b AND NOTHING COULD SET IT. The database
+ * CHECK permits it, `dueSubscriptions` skips it, `canCancel` accepts it - and
+ * the only exported action was `cancelSubscription`. A state the whole system
+ * understands and no path produces is a feature that reads as built.
+ */
+
+/** Only a live subscription can be paused. A cancelled one is finished. */
+export function canPause(status: SubscriptionStatus): boolean {
+  return status === 'active' || status === 'past_due'
+}
+
+export function canResume(status: SubscriptionStatus): boolean {
+  return status === 'paused'
+}
+
+export interface PauseUpdate {
+  status: SubscriptionStatus
+  next_charge_at: string | null
+}
+
+/**
+ * Pausing KEEPS `next_charge_at` rather than clearing it.
+ *
+ * `dueSubscriptions` already refuses any status that is not `active` or
+ * `past_due`, so a stale date on a paused row can never be charged. Keeping it
+ * means support can still see which cycle the customer stopped on, which is the
+ * same reason `applyChargeOutcome` leaves the date in place on a decline.
+ *
+ * Clearing it would also make "paused" and "cancelled" look identical in the
+ * database, and `subscriptions_canceled_is_terminal` is the constraint that is
+ * supposed to tell them apart.
+ */
+export function pauseUpdate(
+  subscription: Pick<BillableSubscription, 'next_charge_at'>,
+): PauseUpdate {
+  return { status: 'paused', next_charge_at: subscription.next_charge_at }
+}
+
+export interface ResumeUpdate {
+  status: SubscriptionStatus
+  next_charge_at: string
+  failed_attempts: number
+}
+
+/**
+ * Resuming starts a FRESH cycle from now, and resets the failure count.
+ *
+ * BOTH HALVES ARE LOAD-BEARING AND NEITHER IS OBVIOUS.
+ *
+ * The date is recomputed from `now` rather than restored, because the stored
+ * date is the cycle the customer paused ON. Restoring it would charge them the
+ * moment they resume, for a period they spent paused - which is the one thing a
+ * pause button must not do.
+ *
+ * `failed_attempts` goes back to zero because `dueSubscriptions` refuses any
+ * row at or past `MAX_CHARGE_ATTEMPTS`. A subscription resumed from `past_due`
+ * with three failures behind it would show as `active`, sit in the customer's
+ * account looking alive, and never be charged again by any run. That is worse
+ * than either state it came from, because nothing reports it.
+ *
+ * The customer had to act to resume, which is the event that justifies a fresh
+ * dunning cycle. A card that is still dead simply fails three more times.
+ */
+export function resumeUpdate(context: {
+  nowIso: string
+  interval: BillingInterval
+  intervalCount?: number
+}): ResumeUpdate {
+  return {
+    status: 'active',
+    next_charge_at: nextChargeAt(context.nowIso, context.interval, context.intervalCount ?? 1),
+    failed_attempts: 0,
+  }
+}
+
+/**
  * Whether the customer may cancel this subscription from their account page.
  *
  * Cancelling an already-cancelled subscription is not an error worth showing a

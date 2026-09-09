@@ -1,6 +1,6 @@
 'use server'
 
-import { canCancel } from '@/lib/commerce/recurring'
+import { canCancel, canPause, canResume, pauseUpdate, resumeUpdate } from '@/lib/commerce/recurring'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import {
@@ -117,5 +117,118 @@ export async function cancelSubscription(
 ): Promise<AccountActionState> {
   return withActionContext('account.cancel_subscription', () =>
     runCancelSubscription(_prev, formData),
+  )
+}
+
+const holdSchema = z.object({ id: z.string().uuid('מזהה מנוי לא תקין') })
+
+/**
+ * Pause and resume, which [90] asks for and which nothing could do.
+ *
+ * `paused` has been a permitted status since 135b: the database CHECK allows
+ * it, `dueSubscriptions` skips it, `canCancel` accepts it - and the only action
+ * that existed was cancel. A state the whole system understands and no path
+ * produces is a feature that reads as built.
+ *
+ * The decisions are in `lib/commerce/recurring.ts` and are pure, for the same
+ * reason the charge outcome is: what a resume does to `next_charge_at` and to
+ * `failed_attempts` is testable without a database, and it is the half most
+ * likely to be got wrong.
+ */
+async function runHoldSubscription(
+  formData: FormData,
+  intent: 'pause' | 'resume',
+): Promise<AccountActionState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'יש להתחבר' }
+
+  const parsed = holdSchema.safeParse({ id: formData.get('id') })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'מזהה מנוי לא תקין' }
+
+  const current = await selectPending<
+    Pick<PendingSubscriptionRow, 'id' | 'status' | 'next_charge_at'> & {
+      billing_interval: string
+      billing_interval_count: number
+    }
+  >(() =>
+    supabase
+      .from(pendingTable('subscriptions'))
+      .select('id, status, next_charge_at, billing_interval, billing_interval_count')
+      .eq('id', parsed.data.id),
+  )
+
+  if (!current.ok) {
+    if (current.missing) return { error: 'המנויים אינם זמינים כרגע' }
+    log.error('subscription.hold.read_failed', { intent, reason: current.message })
+    return { error: 'העדכון נכשל' }
+  }
+
+  const row = current.rows[0]
+  // Same message for "not yours" and "does not exist", for the same reason
+  // cancel gives: telling them apart confirms an id to a stranger.
+  if (!row) return { error: 'המנוי לא נמצא' }
+
+  const status = row.status as never
+
+  if (intent === 'pause') {
+    if (!canPause(status)) return { success: 'המנוי אינו פעיל, אין מה להשהות' }
+    const update = pauseUpdate({ next_charge_at: row.next_charge_at ?? null })
+    const { error } = await supabase
+      .from(pendingTable('subscriptions'))
+      .update(update as never)
+      .eq('id', parsed.data.id)
+    if (error) {
+      if (isMissingRelation(error)) return { error: 'המנויים אינם זמינים כרגע' }
+      log.error('subscription.pause.write_failed', { reason: error.message })
+      return { error: 'ההשהיה נכשלה' }
+    }
+    log.info('subscription.paused', { subscriptionId: parsed.data.id })
+    revalidatePath('/account/subscriptions')
+    return { success: 'המנוי הושהה. לא יבוצע חיוב עד שתחדשו אותו.' }
+  }
+
+  if (!canResume(status)) return { success: 'המנוי אינו מושהה' }
+
+  const interval = row.billing_interval === 'yearly' ? 'yearly' : 'monthly'
+  const update = resumeUpdate({
+    nowIso: new Date().toISOString(),
+    interval,
+    intervalCount: row.billing_interval_count ?? 1,
+  })
+
+  const { error } = await supabase
+    .from(pendingTable('subscriptions'))
+    .update(update as never)
+    .eq('id', parsed.data.id)
+
+  if (error) {
+    if (isMissingRelation(error)) return { error: 'המנויים אינם זמינים כרגע' }
+    log.error('subscription.resume.write_failed', { reason: error.message })
+    return { error: 'החידוש נכשל' }
+  }
+
+  log.info('subscription.resumed', { subscriptionId: parsed.data.id })
+  revalidatePath('/account/subscriptions')
+  return { success: 'המנוי חודש. החיוב הבא יתבצע בתום התקופה הנוכחית.' }
+}
+
+export async function pauseSubscription(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.pause_subscription', () =>
+    runHoldSubscription(formData, 'pause'),
+  )
+}
+
+export async function resumeSubscription(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.resume_subscription', () =>
+    runHoldSubscription(formData, 'resume'),
   )
 }
