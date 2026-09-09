@@ -1,5 +1,33 @@
 # `migrations/pending/`
 
+## 2026-09-09: 220 WRITTEN, not applied - the one search_path warning 209 misses
+
+`220_wallet_entries_search_path.sql`. One `ALTER FUNCTION`.
+
+**Why it is not an edit to 209.** `209_advisor_warnings.sql` pins three
+functions and says "3 WARN -> 0". Read out of production the same day, all
+three already carry `proconfig = {search_path=public}`:
+
+    set_updated_at()
+    fn_cashback_ledger_block_mutation()
+    fn_il_phone_digits(text)
+
+The advisor does not warn on any of them. The function it does still name,
+`fn_wallet_entries_block_mutation`, appears in no pending file at all, so
+applying 209 as written leaves `function_search_path_mutable` at 1 rather than
+0. This file is additive: 209 is another session's, and its `auth_rls_initplan`
+and reasoning sections are correct.
+
+**What the function is.** The append-only guard on `wallet_entries` - it raises
+on every UPDATE and DELETE so a balance can only be corrected by posting a
+compensating transfer. It is money, which is why it is worth pinning even though
+`prosecdef = false` makes this defence in depth rather than a live hole. The
+body is a single unconditional `RAISE` that qualifies no object, so an empty
+search_path cannot change its behaviour.
+
+**`ALTER`, not `CREATE OR REPLACE`**, because replacing a function resets its
+grants and this one is attached to triggers on `wallet_entries`.
+
 ## 2026-09-09: 219 WRITTEN, not applied - the cost ledger, because nothing can fetch a bill
 
 `219_infra_costs.sql`. `infra_costs` and `infra_budgets`.

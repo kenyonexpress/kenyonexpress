@@ -226,3 +226,117 @@ optimising against a sample of nearly zero.
 **The EXIT criterion should be restated** from "0 WARN advisors" to "0 WARN
 advisors that are not a deliberate, documented architectural choice". As written,
 the only way to satisfy it is to break the site.
+
+---
+
+## 8. RC5 re-measurement, 2026-09-09: the argument in §3 is now a proof
+
+This section was added for `SECTIONS 53`. Everything above is left as written.
+
+### 8.1 The counts moved, and one of them moved backwards
+
+| | 2026-08-19 (§0) | 2026-09-01 | **2026-09-09** |
+|---|---|---|---|
+| policies in `public` | 133 | 133 | **180** |
+| policies referencing `is_admin()` | 79 | 81 | **93** |
+| `auth_rls_initplan` | **0** | - | **6** |
+| `multiple_permissive_policies` | 13 | - | **19** |
+| `function_search_path_mutable` | - | 3 | **1** |
+| definer WARN (`anon` + `authenticated`) | 26 | - | **23** |
+
+**`auth_rls_initplan` went from 0 back to 6, and that is the entry worth
+reading.** §0 records it as "**0.** Not one. Already wrapped in
+`(select auth.uid())`". Six policies written since then were written without the
+wrapper, on `push_subscriptions`, `webauthn_credentials`, `cashback_ledger` and
+`profiles`. A count that reaches zero and is then never re-read is a count that
+only ever described one afternoon. `migrations/pending/209_advisor_warnings.sql`
+carries the fix for all six.
+
+### 8.2 §3 reasoned it. Here is the measurement.
+
+§3 concludes that revoking `EXECUTE` would break the policies that call these
+functions. That is correct, and until now it was an argument from how RLS ought
+to work rather than an observation. Run against production inside a `DO` block
+that raises at the end, so the whole thing rolls back and leaves nothing:
+
+```sql
+do $$
+begin
+  execute 'create table public._probe_t(id int)';
+  execute 'create function public._probe_f() returns boolean language sql
+             security definer as $f$ select true $f$';
+  execute 'alter table public._probe_t enable row level security';
+  execute 'create policy p on public._probe_t for select to authenticated
+             using (public._probe_f())';
+  execute 'grant select on public._probe_t to authenticated';
+  execute 'revoke execute on function public._probe_f() from public';
+  execute 'revoke execute on function public._probe_f() from authenticated';
+  execute 'insert into public._probe_t values (1)';
+  execute 'set local role authenticated';
+  begin
+    execute 'select count(*) from public._probe_t';
+    raise exception 'SELECT SUCCEEDED :: revoking is safe';
+  exception when insufficient_privilege then
+    raise exception 'PERMISSION DENIED :: the EXECUTE grant is load-bearing';
+  end;
+end $$;
+```
+
+```
+ERROR:  P0001: PERMISSION DENIED :: the EXECUTE grant is load-bearing
+```
+
+`to_regclass('public._probe_t')` and `to_regproc('public._probe_f')` both
+return null afterwards: the block left no residue.
+
+### 8.3 The `anon` half needed its own probe, because `OR` looks like an escape
+
+The `anon` warnings come through one policy, and its shape invites a wrong
+conclusion:
+
+```
+seo_redirects_select_unified   SELECT   {anon,authenticated}   (is_admin() OR is_active)
+```
+
+The tempting reading is that `OR` short-circuits on `is_active`, so an anonymous
+reader never calls `is_admin()` and the grant can go. Same method, same
+rollback, with the guard forced false so the second operand is the one that
+decides:
+
+```sql
+  execute 'create policy p on public._probe2 for select to authenticated
+             using (public._probe_admin() or is_active)';
+  -- _probe_admin() returns false; rows are (1,true),(2,false)
+```
+
+```
+ERROR:  P0001: PERMISSION DENIED :: OR does NOT save it; revoke breaks the policy
+```
+
+The privilege is checked when the expression is evaluated, and the row with
+`is_active = false` forces the evaluation. So **revoking `is_admin` from `anon`
+breaks anonymous reads of `seo_redirects`**, which is the table that serves the
+public site's redirects.
+
+### 8.4 What this leaves
+
+Of the **23 definer WARNs**, zero are clearable:
+
+- **8 functions are load-bearing for 152 policy references** (`is_admin` 93,
+  `has_role` 19, `is_support` 13, `current_user_role` 11, `is_supplier_member`
+  10, `is_supplier_owner` 4, `is_supplier_order` 1,
+  `is_supplier_shipping_order` 1), by 8.2.
+- **13 are called deliberately as `authenticated`**, because they record
+  `auth.uid()` and the service role has no uid. `src/server/actions/admin/`
+  and `src/app/api/supplier/` build these on the request-scoped client on
+  purpose; `src/server/actions/admin/cashback.ts` says so in a comment at the
+  callsite.
+- **2 are the `anon` pair**, by 8.3, and `src/db/__tests__/anon-catalog.test.ts`
+  asserts an anonymous caller must get `false` rather than an error.
+
+So §0's headline stands, and stands on a measurement now. **The reachable
+target is 1 WARN category, not 0**: `function_search_path_mutable`, which
+`migrations/pending/220_wallet_entries_search_path.sql` takes to zero. The
+19 `multiple_permissive_policies` are a deliberate deferral with the reasoning
+in `migrations/pending/209_advisor_warnings.sql` and
+`docs/POST-LAUNCH-BACKLOG.md`.

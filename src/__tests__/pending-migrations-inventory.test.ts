@@ -828,6 +828,7 @@ describe('the pending migration inventory', () => {
       // date, a duplicate provider/month/kind, an unknown provider and a
       // negative cost were each refused, and fixed and variable coexist.
       '219_infra_costs.sql',
+      '220_wallet_entries_search_path.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
