@@ -1,5 +1,53 @@
 # `migrations/pending/`
 
+## 2026-09-09: 206 WRITTEN, not applied, and one of its lines is a real defect
+
+`206_homepage_merchandising.sql`.
+
+**Measured first, and it changes what [59] is.** `127_homepage_cms.sql` **is
+applied**: `homepage_sections`, `banners`, `v_homepage_sections_live` and
+`v_banners_live` all exist in production with RLS on. **Both tables hold zero
+rows.** So the machinery is live and inert - only the hero was ever wired to it,
+`readHomepageContent` returns the authored constants on every request, and no
+operator could reach any of it because there was no console. [59] is therefore
+mostly application code; this file is the small database half.
+
+**Four kinds the CHECK refuses today.** `product_rail`, `category_spotlight`,
+`supplier_spotlight` and `countdown`. `featured` stays in the set and is not
+reused for the rail: it has never had a component, and a kind meaning "some
+products, configured how exactly" is the ambiguity a closed set exists to
+prevent. `product_rail` says which products by saying `source` in its config.
+
+**The window check is the line worth reading.** Neither table checked that
+`ends_at` is after `starts_at`, and the live views filter
+`starts_at <= now() AND ends_at >= now()`. A backwards window is therefore a row
+that is active, scheduled, correct-looking in the admin list, and matches
+**nothing, ever** - no error, nothing to see, and the operator's next move is to
+check the schedule again. It is one mis-typed `datetime-local` away on two
+adjacent fields. Equal is refused too: a zero-length window is the same
+invisible row with a different typo behind it. Safe to add today precisely
+because both tables are empty.
+
+**`config` must be an object.** It is `jsonb NOT NULL DEFAULT '{}'` with no
+shape check, so `[1,2,3]` and `"hello"` are both storable and both make every
+`config.x` read undefined. The per-kind shape stays in
+`lib/homepage/sections.ts` with zod, because a CHECK encoding four object shapes
+is a CHECK nobody will extend correctly.
+
+**Verified against production without applying.** One `DO` block applied the
+whole file, exercised it and ended in an unconditional `RAISE`. All of it
+passed: all four new kinds store and 127's seven still store, an unknown kind
+refused, a backwards window refused, a zero-length window refused, an
+open-ended and a forward window both accepted, a backwards banner window
+refused, an array and a string as `config` both refused, the live view still hid
+a future-windowed row while returning an open one, and under `SET ROLE anon` the
+client could read the live view and could not insert. Re-read afterwards: zero
+rows, the original seven-value CHECK intact, and neither new index present.
+
+Order: independent of everything else pending. It alters two constraints, adds
+three, and creates two indexes.
+
+
 ## 2026-09-09: 205 WRITTEN, not applied, and it seeds nothing
 
 `205_content_pages.sql`.

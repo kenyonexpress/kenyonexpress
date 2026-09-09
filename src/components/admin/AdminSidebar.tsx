@@ -95,6 +95,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/pages', label: 'עמודי תוכן', icon: FileText, section: 'content' },
+  { href: '/admin/homepage', label: 'עמוד הבית', icon: LayoutDashboard, section: 'content' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
 ]
 

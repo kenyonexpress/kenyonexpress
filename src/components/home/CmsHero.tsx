@@ -15,7 +15,10 @@ import { readHomepageContent } from '@/lib/homepage/cms'
  * `migrations/pending/127` is applied the replacement is identical to the thing
  * it replaces.
  */
-export default async function CmsHero() {
-  const homepage = await readHomepageContent()
+export default async function CmsHero({ preview = false }: { preview?: boolean }) {
+  // `preview` ignores the schedule by reading the base table instead of the
+  // live view, which is what lets the admin console show a slide that has not
+  // started. It is off by default, so the storefront path is unchanged.
+  const homepage = await readHomepageContent({ preview })
   return <HeroSection slides={homepage.heroSlides} />
 }

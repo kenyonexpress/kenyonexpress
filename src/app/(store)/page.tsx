@@ -2,6 +2,7 @@ import BenefitBar from '@/components/home/BenefitBar'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
+import HomepageSections from '@/components/home/HomepageSections'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
@@ -112,8 +113,40 @@ export default function HomePage() {
 
         The hero's own copy is now `hidden md:block`, which is live's rule.
       */}
-      <BenefitBar />
-      <DealsOfTheDay />
+      {/*
+        THE BODY IS NOW CMS-ORDERED, AND THE FALLBACK IS THE AUTHORED BODY.
+
+        Same trick as the hero above, and for the same reason. The static shell
+        paints `<BenefitBar/><DealsOfTheDay/>`, so a deployment with no
+        `homepage_sections` rows - which is every deployment today, both tables
+        measured empty on 2026-09-09 - renders what this page rendered before
+        [59]. A configured page streams in and replaces it, which is the only
+        case where anything moves and is the case an operator asked for.
+
+        MEASURED, NOT ASSERTED. `.next/server/app/index.html` was built from
+        HEAD and from this file and diffed. It is NOT byte-identical, and the
+        two differences are both structural rather than painted: one client
+        chunk filename hash (the countdown banner is a client component and
+        joins the bundle), and React's Suspense boundary markers
+        `<!--$?--><template id="B:3">` around the fallback - the same pair the
+        hero's boundary above already emits. With those normalised the two
+        files are identical, character for character, including every class
+        name and inline style on the benefit bar and all 32 deal cards.
+
+        Rendering the sections WITHOUT a boundary would make this route
+        dynamic, and the hero is the LCP element on the busiest page on the
+        site.
+      */}
+      <Suspense
+        fallback={
+          <>
+            <BenefitBar />
+            <DealsOfTheDay />
+          </>
+        }
+      >
+        <HomepageSections />
+      </Suspense>
     </>
   )
 }

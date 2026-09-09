@@ -16,6 +16,7 @@ export const ADMIN_SECTIONS = [
   { href: '/admin/cashback', staffAllowed: false },
   { href: '/admin/users', staffAllowed: false },
   { href: '/admin/pages', staffAllowed: false },
+  { href: '/admin/homepage', staffAllowed: false },
   { href: '/admin/audit-log', staffAllowed: false },
 ] as const
 

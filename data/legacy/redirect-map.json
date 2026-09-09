@@ -152,6 +152,8 @@
       "/admin/flash-deals",
       "/admin/fraud",
       "/admin/growth",
+    "/admin/homepage",
+    "/admin/homepage/preview",
       "/admin/orders",
     "/admin/pages",
       "/admin/payments",

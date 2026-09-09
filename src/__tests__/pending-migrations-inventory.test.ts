@@ -563,6 +563,30 @@ describe('the pending migration inventory', () => {
       // one published row, no revisions, and could neither update a page nor
       // execute save_content_page.
       '205_content_pages.sql',
+      // 206: four more homepage_sections kinds, and the window check 127 did
+      // not have, for [59].
+      //
+      // 127 IS APPLIED AND BOTH ITS TABLES HOLD ZERO ROWS (read off production
+      // 2026-09-09), so the machinery is live and inert: only the hero was ever
+      // wired to it and no console existed. This file is the small database
+      // half of [59]; the rest is application code.
+      //
+      // THE WINDOW CHECK IS A REAL DEFECT AND NOT A TIDY-UP. Neither table
+      // checked that `ends_at` is after `starts_at`, and the live views filter
+      // `starts_at <= now() AND ends_at >= now()` - so a backwards window, which
+      // is one mis-typed `datetime-local` away on two adjacent fields, is a row
+      // that is active, scheduled, correct-looking in the admin, and matches
+      // NOTHING, EVER, with no error anywhere. Safe to add now precisely
+      // because both tables are empty.
+      //
+      // Probed against production, rolled back: all four new kinds store and
+      // 127's seven still store, an unknown kind REFUSED, a backwards window
+      // REFUSED, a zero-length window REFUSED, an open-ended and a forward
+      // window both accepted, a backwards banner window REFUSED, an array and a
+      // string as `config` both REFUSED, the live view still hid a
+      // future-windowed row while returning an open one, and anon could read
+      // the live view and not insert.
+      '206_homepage_merchandising.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
