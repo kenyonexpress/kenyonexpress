@@ -784,6 +784,19 @@ describe('the pending migration inventory', () => {
       // status range refuses 9999, anon has no SELECT and authenticated has no
       // INSERT.
       '215_push_deliveries.sql',
+      // 216 WRITTEN 2026-09-09, not applied. The SMS log and the opt-out list.
+      // Two decisions carry the file. The price column is NOT agorot and that
+      // is a deliberate exception to the money rule, argued in the header: it
+      // is USD, and Twilio quotes five decimal places, so agorot would both
+      // require an FX rate the row does not have and round $0.0075 to 1 agora
+      // -- a 30% error on the unit, times every message ever sent. It is
+      // `price_micro` + `price_currency`, integer, vendor cost, off the
+      // customer money path. And the opt-out list is keyed by PHONE and not by
+      // user, because an opt-out is a property of a handset. Probed against
+      // production in a rolled-back DO block: a landline, a non-E.164 number,
+      // a negative price, a price with no currency, a currency with no price, a
+      // lowercase currency and a duplicate provider_sid were each refused.
+      '216_sms_log_and_opt_outs.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

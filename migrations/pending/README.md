@@ -1,5 +1,48 @@
 # `migrations/pending/`
 
+## 2026-09-09: 216 WRITTEN, not applied - the SMS log, and a deliberate exception to the money rule
+
+`216_sms_log_and_opt_outs.sql`. Two tables: what was sent and what it cost, and
+who told us to stop.
+
+**THE PRICE COLUMN IS NOT AGOROT, AND THAT IS THE EXCEPTION.** The standing rule
+is money = agorot, integer. Twilio bills in USD, as a negative decimal string
+with five places (`-0.00750`). Storing that as agorot needs two things that are
+both wrong: a USD/ILS rate applied at write time, frozen at the moment of a text
+message and unauditable afterwards; and a rounding that turns $0.0075 into 1
+agora, a 30% error on the unit price multiplied by every message ever sent. So
+it is `price_micro` (bigint, millionths) plus `price_currency`, with a CHECK
+that they are both present or both absent. It is a VENDOR COST, not the customer
+money path: nothing here is charged to anybody and `src/lib/money.ts` is
+untouched. The integer half of the rule is not relaxed and the file's own
+verification block refuses to apply if the column is not an integer type.
+
+**Hebrew is why cost is measured per message at all.** Hebrew is outside GSM
+03.38, so every body switches the whole message to UCS-2, where a segment is 70
+characters and 67 per part of a multipart -- not 160. A 140-character
+notification reads as "well under the limit" and is billed as THREE. A Hebrew
+SMS programme costs two to three times a per-message estimate, and the
+difference is invisible until the invoice.
+
+**The opt-out list is keyed by PHONE, not by user.** An opt-out is a property of
+a handset: the same number may be on two accounts, and a customer who says stop
+means stop to that phone. `user_id` is recorded for support and is deliberately
+not the uniqueness. `sms_opt_outs` gets NO read policy at all -- it is keyed by
+phone number, so a self-read would have to compare a session against a column
+anyone can guess, and the only useful query against it is exactly the
+enumeration oracle not to build.
+
+**Verified against production without applying**, in rolled-back `DO` blocks.
+Refused, each with a check violation: an Israeli LANDLINE (Twilio accepts and
+bills an SMS there and delivers it nowhere), a non-E.164 number, a negative
+price, a price with no currency, a currency with no price, a lowercase currency
+code, and a duplicate `provider_sid` (the status callback fires several times
+per message and must update rather than insert). Grants confirmed: `anon` cannot
+read the log, `authenticated` cannot insert into it, and nobody but the service
+role can read `sms_opt_outs`.
+
+Order: independent of everything else pending.
+
 ## 2026-09-09: 215 WRITTEN, not applied - the delivery log, and the column that is deliberately not in it
 
 `215_push_deliveries.sql`. One row per push attempt per device.

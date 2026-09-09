@@ -153,7 +153,60 @@ gate about a design reference rather than about notifications.
 The account area is also where a bell is worth having: it is the only place a
 customer is signed in by construction, and the count is a property of a session.
 
-## SMS is a refusing stub, and the reason is not difficulty
+## SMS was a refusing stub; the reason it refused is now the flag
+
+**BUILT 2026-09-09 (SECTIONS 46).** The section below is kept because its
+argument is still the operating constraint. What changed is where the guard
+lives.
+
+The stub made "unimplemented" the guard, which meant the code could not be
+reviewed, tested or costed until the day somebody needed it in a hurry. The
+guard is now `SMS_ENABLED` plus `TWILIO_SMS_FROM`, both absent everywhere
+today, so the behaviour is byte for byte what it was -- every send skips with a
+reason -- while the code that will run on registration day exists and is
+tested against a mocked Twilio.
+
+TWO LOCKS AND NOT ONE, because `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` are
+shared with WhatsApp and are already set wherever WhatsApp is configured. With
+a credentials-only check, the day somebody sets a `TWILIO_SMS_FROM` for a test
+the whole notification queue starts texting real customers from an unregistered
+sender -- and the carriers drop those silently, so nothing reports it.
+
+### What Hebrew costs, and why it is a column
+
+An SMS is 160 characters only in GSM 03.38, which is Latin. One Hebrew letter
+switches the WHOLE message to UCS-2, where a segment is **70** characters and
+**67** per part of a multipart. A 140-character notification reads as "well
+under the limit" and is billed as THREE messages. A Hebrew SMS programme costs
+two to three times a per-message estimate and the difference is invisible until
+the invoice, so `sms_messages.segments` is recorded per send and
+`src/lib/sms/templates.test.ts` asserts a segment ceiling per template.
+
+The price is `price_micro` + `price_currency` and NOT agorot. That is a
+deliberate exception to the money rule, argued in `migrations/pending/216`: it
+is USD, Twilio quotes five decimal places, and agorot would need an FX rate the
+row does not have while rounding $0.0075 to 1 agora.
+
+### The opt-out keyword Twilio does not recognise
+
+Twilio intercepts STOP, STOPALL, UNSUBSCRIBE, CANCEL, END and QUIT and blocks
+the number. Every one is ENGLISH. An Israeli customer replies **הסר**, which
+Twilio forwards as an ordinary inbound message and does nothing about. A shop
+relying on the carrier's own handling has an opt-out that works for the
+customers who would never have used it and fails for the ones who do.
+
+`sms_opt_outs` is keyed by PHONE and not by user, because an opt-out is a
+property of a handset. The check FAILS CLOSED -- the only read in this stack
+that does -- because not knowing whether somebody opted out is not permission
+to message them.
+
+One exemption, and it is not a loophole: an OTP is something the customer asked
+for by pressing a button seconds earlier, and suppressing it would lock somebody
+out of their own account over a STOP they sent two years ago.
+
+### The original refusal, unchanged
+
+#### (the original section, as written, because its argument is the operating constraint)
 
 Twilio's SMS endpoint is the same `Messages` resource the WhatsApp client
 already posts to, with a different `From`. The HTTP call is fifteen lines.

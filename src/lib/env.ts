@@ -106,6 +106,33 @@ const schema = z
     /** mailto: or https:, contacted by a push service if this sender misbehaves. */
     VAPID_SUBJECT: z.string().optional().or(z.literal('')),
 
+    /**
+     * SMS, through the Twilio account WhatsApp already uses.
+     *
+     * TWO LOCKS, AND THEY ARE SEPARATE ON PURPOSE. `TWILIO_ACCOUNT_SID` and
+     * `TWILIO_AUTH_TOKEN` are shared with WhatsApp and are already set where
+     * WhatsApp is configured, so a single credential check would mean the day
+     * somebody sets `TWILIO_SMS_FROM` for a test, the whole notification queue
+     * starts texting real customers.
+     *
+     * And that failure would be INVISIBLE: Israel requires a registered sender,
+     * and messages from an unregistered one are dropped by the carriers with no
+     * bounce. Twilio reports `delivered`, the phone never rings, and nothing on
+     * either side says so.
+     */
+    SMS_ENABLED: z.string().optional().or(z.literal('')),
+    /**
+     * The registered Israeli sender ID or number. A DIFFERENT variable from
+     * `TWILIO_WHATSAPP_FROM`: different senders, different registrations.
+     */
+    TWILIO_SMS_FROM: z.string().optional().or(z.literal('')),
+    /**
+     * The URL Twilio was given for the SMS webhook. It must be the one in the
+     * console, because the signature is computed over it -- and behind Vercel's
+     * proxy that is not `request.url`.
+     */
+    TWILIO_SMS_WEBHOOK_URL: z.string().optional().or(z.literal('')),
+
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
   })
