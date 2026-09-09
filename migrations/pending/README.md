@@ -1,5 +1,67 @@
 # `migrations/pending/`
 
+## 2026-09-09: 213 WRITTEN, not applied, and one constraint is the whole design
+
+`213_cabins_phase2.sql`.
+
+**The exclusion constraint is the point.** Every other way of preventing a
+double booking is application code: read the calendar, decide it is free, write
+the row. Two requests that read before either writes both decide it is free, and
+both write. That race is not theoretical for a cabin - **it is what a popular
+weekend is.**
+
+```
+EXCLUDE USING gist (unit_id WITH =, stay WITH &&) WHERE (status <> 'cancelled')
+```
+
+Two overlapping stays for one unit cannot both exist, whatever the application
+believes and however many servers are running.
+
+**Adjacency is the case worth naming.** `daterange` is half-open:
+`[2026-10-01, 2026-10-05)` is four nights ending on the morning of the 5th, and
+`[2026-10-05, 2026-10-09)` starts that same morning. They do not overlap and
+they must not - otherwise checkout day is unbookable and a cabin loses a night
+between every pair of guests.
+
+**`btree_gist` is available and not installed.** It is what lets `unit_id WITH =`
+sit beside a range in one constraint; gist has no default operator class for
+uuid equality without it. Installing and rolling it back was part of the probe.
+
+**Holiday dates are a table, not a constant.** [92] asks for weekday, weekend and
+Israeli holiday pricing. The weekend is computable - Friday and Saturday, and
+that does not move. Jewish holidays do: lunisolar calendar, different Gregorian
+dates every year, several with an eve priced like the holiday and a day after
+that is not. Hard-coding a list would be writing dates this file cannot verify,
+and a wrong date is a wrong price on the busiest night of the year. An empty
+`cabin_holidays` prices holidays as ordinary days - visibly wrong, and wrong in
+the direction of charging less, rather than silently wrong on a date nobody
+checked.
+
+**Bookings are not publicly readable and availability is.** A guest must see
+that a weekend is taken or the calendar is useless, but who took it, for how
+much and with how many guests is nobody else's business. `v_cabin_availability`
+exposes three columns - unit, dates, status - and nothing else.
+
+**`free_cancellation_days` has a floor of 7 in a CHECK.** The Israeli Consumer
+Protection Law's distance-selling rules give 14 days from the transaction, and
+for accommodation the cancellation must reach the supplier at least 7 days
+(excluding rest days) before the service date. A supplier may widen the window;
+the constraint stops them narrowing it below the statutory floor.
+
+**Verified against production without applying.** An overlapping booking is
+refused with `exclusion_violation`, an adjacent one is accepted, a zero-night
+stay is refused - an empty range overlaps nothing, so without
+`NOT isempty(stay)` it would slip past the constraint entirely - a hold with no
+expiry is refused, an expired hold **still blocks until the sweep runs** and
+then does not, a cancellation frees its dates immediately, a range rate with no
+dates and a second weekend price are both refused, the cancellation window
+cannot be narrowed below 7 days, and under `SET ROLE anon` the client could read
+the availability view and not the bookings table. Re-read afterwards: no tables,
+no view, and `btree_gist` not installed.
+
+Order: after 210, which creates `phase_config`.
+
+
 ## 2026-09-09: 212 WRITTEN, not applied, and the probe corrected it twice
 
 `212_courses_phase2.sql`.

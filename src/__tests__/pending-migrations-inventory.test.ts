@@ -737,6 +737,32 @@ describe('the pending migration inventory', () => {
       // status), a subscription grants access, SURVIVES the first decline, and
       // stops once the three attempts are spent.
       '212_courses_phase2.sql',
+      // 213: cabins, and an EXCLUDE constraint that makes double-booking
+      // impossible rather than unlikely, for [92].
+      //
+      // Every other way of preventing a double booking is application code:
+      // read the calendar, decide it is free, write the row. Two requests that
+      // read before either writes both decide it is free. That race is what a
+      // popular weekend IS.
+      //
+      // HOLIDAY DATES ARE A TABLE, NOT A CONSTANT. Jewish holidays follow a
+      // lunisolar calendar and fall on different Gregorian dates every year;
+      // hard-coding a list would be writing dates this file cannot verify, and
+      // a wrong date is a wrong price on the busiest night of the year.
+      //
+      // Probed against production, rolled back: btree_gist is AVAILABLE and not
+      // installed and installs cleanly, an overlapping booking is REFUSED with
+      // exclusion_violation, an ADJACENT one is accepted (checkout morning is
+      // the next arrival), a zero-night stay is REFUSED rather than slipping
+      // past the constraint because an empty range overlaps nothing, a hold
+      // with no expiry is REFUSED because it would block a weekend forever, an
+      // expired hold still blocks UNTIL the sweep runs and then does not, a
+      // cancellation frees its dates immediately, a range rate with no dates
+      // and a second weekend price are both refused, the cancellation window
+      // cannot be narrowed below the statutory floor, and anon can see THAT
+      // dates are taken through the view while the bookings table itself is
+      // unreadable.
+      '213_cabins_phase2.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
