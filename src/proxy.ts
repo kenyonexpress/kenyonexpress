@@ -35,6 +35,42 @@ function withRequestId<T extends Response>(response: T, requestId: string): T {
   return response
 }
 
+/**
+ * Which paths the proxy sends to a login form.
+ *
+ * EXPORTED SO IT CAN BE TESTED. It was an inline boolean, and it carried a bug
+ * that a prefix check cannot avoid having:
+ *
+ *     pathname.startsWith('/supplier')
+ *
+ * That matches `/suppliers`, which is not the supplier portal. It is the public
+ * "הצטרפו כספקים" marketing page in `(store)`, linked from the site footer and
+ * the masthead, listed in `sitemap.xml` and allowed by `robots.txt`. Measured
+ * on the live site 2026-09-09: `/suppliers` answered **307 to
+ * /login?next=%2Fsuppliers**.
+ *
+ * So the page whose entire job is recruiting new suppliers demanded an account
+ * from people who by definition do not have one, and the sitemap advertised a
+ * URL that redirects, which Search Console reports as "Page with redirect" and
+ * never indexes.
+ *
+ * The `/supplier` portal itself is matched exactly and by `/supplier/` prefix,
+ * which is the same set it always meant.
+ */
+export function pathRequiresAuth(pathname: string): boolean {
+  // Two public doors into the portal, by name, so a supplier can reach a login
+  // form at all.
+  const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
+  const supplierPortal = pathname === '/supplier' || pathname.startsWith('/supplier/')
+
+  return (
+    pathname.startsWith('/account') ||
+    pathname.startsWith('/coupon/') ||
+    (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname)) ||
+    (supplierPortal && !supplierPublic)
+  )
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -132,12 +168,7 @@ export async function proxy(request: NextRequest) {
   // and a bare `/checkout/` prefix. The first breaks guest checkout outright,
   // which is the whole point of the paragraph above, and the second would catch
   // `/checkout/frame-return` and put a login form inside Cardcom's iframe.
-  const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
-  const needsAuth =
-    pathname.startsWith('/account') ||
-    pathname.startsWith('/coupon/') ||
-    (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname)) ||
-    (pathname.startsWith('/supplier') && !supplierPublic)
+  const needsAuth = pathRequiresAuth(pathname)
 
   if (needsAuth && !user) {
     return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
