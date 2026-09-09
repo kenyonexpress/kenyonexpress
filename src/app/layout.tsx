@@ -2,6 +2,7 @@ import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import PostHogReplay from '@/components/analytics/PostHogReplay'
 import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
+import EnvironmentBanner from '@/components/layout/EnvironmentBanner'
 import InstallPrompt from '@/components/pwa/InstallPrompt'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 import { CONSENT_PREPAINT_SCRIPT } from '@/lib/analytics/consent'
@@ -140,6 +141,14 @@ export default function RootLayout({
           without waiting for the rest of the document or the big stylesheet.
         */}
         <ConsentBanner />
+        {/*
+          Renders null in production, so this costs the shop nothing. Placed
+          above `{children}` and IN FLOW rather than fixed: a ribbon that
+          overlaps the header on a phone has to be dismissible, and a
+          dismissible warning is dismissed once and never seen again on the
+          only environment it exists for.
+        */}
+        <EnvironmentBanner />
         {children}
         {/*
           `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`

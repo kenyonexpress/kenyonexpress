@@ -118,5 +118,10 @@
     "helpfulAsk": "Helpful?",
     "helpfulDone": "Marked helpful",
     "helpfulFailed": "That did not work."
+  },
+  "environment": {
+    "label": "Test environment",
+    "preview": "This is a test environment. The data is not real and no real card should be used here.",
+    "local": "Local server. The data is not real and no real card should be used here."
   }
 }
