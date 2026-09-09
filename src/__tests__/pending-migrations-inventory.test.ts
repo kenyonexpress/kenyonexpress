@@ -640,6 +640,27 @@ describe('the pending migration inventory', () => {
       // which is VOLATILE and makes an index scan impossible, and reported a
       // seq scan that looked like a schema problem.
       '208_drop_redundant_indexes.sql',
+      // 209: the advisor warnings that can be fixed without changing who can
+      // read what, for [63].
+      //
+      // IT DOES NOT REACH ZERO WARN AND SAYS SO. It clears
+      // function_search_path_mutable (3) and auth_rls_initplan (6). It leaves
+      // the 23 SECURITY DEFINER execute warnings, because is_admin() alone is
+      // called by 93 RLS policies and an RLS expression is evaluated AS THE
+      // CALLING ROLE - revoking EXECUTE stops those 93 policies working, and
+      // SECURITY INVOKER is worse because these functions read `profiles`,
+      // which is behind a policy that calls them. It also leaves the 19
+      // multiple-permissive warnings, which are a rewrite of access control on
+      // 19 tables including three money tables.
+      //
+      // Probed against production, rolled back: all three functions pinned,
+      // fn_il_phone_digits still normalises '054-123-4567' and '+972 54
+      // 1234567' and still refuses junk, all six policies survive, the push
+      // policy is now an InitPlan, and the RESTRICTIVE super_admin MFA gate
+      // kept BOTH its COALESCE-to-aal1 default and its aal2 requirement - a
+      // coalesce lost in that rewrite turns "no aal claim means refuse" into
+      // "unknown, allow".
+      '209_advisor_warnings.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

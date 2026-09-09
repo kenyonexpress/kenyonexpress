@@ -16,6 +16,245 @@ output or a live query against the production database, not a recollection.
 Where a claim from the audit brief disagreed with the measurement, the
 measurement is what is recorded, and the disagreement is named.
 
+## 2026-09-09, later the same day: re-measured for [63], and the blocker moved
+
+**This section supersedes the two below it, and both are kept exactly as they
+are.** That is this file's own convention and it is worth keeping: the 01.09 and
+the earlier 09.09 assessments were true on their dates, and deleting them would
+delete the record of what was measured then.
+
+**What changed since the section below.** It named the live catalogue as the one
+deciding blocker. The catalogue is still 25 findings on 44 active products and
+still an operator decision, and it is still red - but it is no longer FIRST,
+because a measurement taken today found something ahead of it:
+
+> **Production is running a build from around 2026-08-31.** `/sitemap.xml` still
+> serves the single `<urlset>` that section 79 replaced with a `<sitemapindex>`
+> on 09.09, and `/page/how-it-works` - shipped today - returns 404. Production is
+> live, TLS valid, `/api/health` returns `{"ok":true,"database":"ok"}` at 166ms,
+> and roughly nine days and several dozen commits behind `audit/final-audit`.
+
+The section below says "nothing in this repo was ever deployed" is no longer
+true, and that remains correct. What is new is that **something was deployed and
+then stopped being updated**, which is a different problem and reads as health
+until somebody checks a URL that should exist.
+
+The second thing this pass found is a defect nobody had measured:
+
+> **`/_next/image` passes the deal-card AVIFs through unchanged at every width,
+> on production.** Source `ke-live-deal-0.avif` is 735x565 and 20,215 bytes;
+> `w=256` and `w=640` both return 20,215 bytes of `image/avif`, live on
+> `www.kenyonexpress.co.il`. Thirty-two cards on the home page. The same
+> optimizer resizes the hero WebP correctly (10 kB / 32 kB / 41 kB at 256 / 640
+> / 1080), so it is the AVIF sources, not the optimizer being off.
+
+Measured against `d6468c278` and against production.
+
+### Verdict: NOT READY
+
+Not because the software is bad. Because **the code being audited is not the
+code that is live**, and because eight things below have no evidence behind them
+yet. Every line carries what was measured and how.
+
+---
+
+### The blocking line
+
+**Production is running a build from around 2026-08-31.** Measured today:
+
+```
+https://kenyonexpress.co.il/      308 -> https://www.kenyonexpress.co.il/  200
+TLS                                valid
+/api/health                        {"ok":true,"database":"ok","latency_ms":166}
+/sitemap.xml                       <urlset>, lastmod 2026-08-31T14:54:35Z
+/page/how-it-works                 404
+```
+
+Section 79 shipped a `<sitemapindex>` on 09.09 and production still serves the
+single `<urlset>` it replaced. `/page/how-it-works` shipped this session and
+404s. So production is **live, healthy, and roughly nine days and several dozen
+commits behind `audit/final-audit`.**
+
+Everything else in this document describes the branch. Until a deploy of the
+branch reaches production, nothing here is a statement about the live site.
+
+---
+
+### Green, with evidence
+
+| Line | Evidence |
+| --- | --- |
+| Unit and integration tests | **5,541 passed**, 12 skipped, 447 files, `pnpm test` |
+| Type check | `pnpm tsc --noEmit` clean |
+| Lint and the eight gates | `pnpm lint` clean: biome, tokens, copy, asset, raw-html, postgrest-or, cache-invalidation, rtl-logical, i18n |
+| Production build | `pnpm build` compiles; 118 routes |
+| End-to-end | **620 passed**, 79 skipped of 710 across chromium and mobile-chrome |
+| Lighthouse | below |
+| Production is up | `/api/health` returns `ok` with a 166 ms database round trip |
+| TLS | valid certificate on the apex and on `www` |
+
+### Lighthouse, desktop preset, against a built server
+
+| route | perf | a11y | best practices | SEO | LCP | CLS |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/` | 97 | 96 | 96 | 100 | 1.2 s | 0.011 |
+| `/products` | 100 | 99 | 96 | 100 | 0.7 s | 0.012 |
+| `/category/hot-deals` | 100 | 99 | 96 | 100 | 0.7 s | 0.012 |
+| `/product/<slug>` | 99 | 100 | 96 | 100 | 0.9 s | 0.012 |
+| `/cart` | 99 | 100 | 96 | **69** | 0.8 s | 0.011 |
+| `/faq` | 100 | 100 | 96 | 100 | 0.8 s | 0.012 |
+| `/checkout` | **80** | - | - | - | 1.1 s | **0.357** |
+
+`/cart` scoring 69 on SEO is correct behaviour, not a defect: the page is
+`noindex`, and Lighthouse counts "blocked from indexing" as a failed audit.
+
+**These numbers are simulated.** Lighthouse on localhost runs Lantern over a
+dependency graph, and a previously measured 2.7 s real improvement showed up
+here as noise. They are a regression signal, not a field measurement.
+
+---
+
+### Red, with evidence
+
+### 1. The homepage serves full-size images to phones. Confirmed on production.
+
+The 32 deal-card images are AVIF, and `/_next/image` **passes the source through
+unchanged at every width**:
+
+```
+source        public/images/products/ke-live-deal-0.avif   735x565, 20,215 B
+local   w=256  20,215 B  image/avif        w=640  20,215 B
+prod    w=256  20,215 B  image/avif        w=640  20,215 B
+```
+
+A 256px request returns a 735px image. The same optimizer resizes the hero WebP
+correctly on production (10 kB / 32 kB / 41 kB at 256 / 640 / 1080), so this is
+specific to the AVIF sources, not to the optimizer being off.
+
+Thirty-two cards at 20 kB is roughly **640 kB of images on the homepage that
+should be a fraction of that on a 380px screen**. `e2e/home.spec.ts:154` was
+written to catch exactly this and is failing. It is not a local artefact: it was
+confirmed against `www.kenyonexpress.co.il`.
+
+### 2. DB advisors are not at zero WARN, and cannot be
+
+| advisor | level | count | after 209 |
+| --- | --- | --- | --- |
+| `function_search_path_mutable` | WARN | 3 | **0** |
+| `auth_rls_initplan` | WARN | 6 | **0** |
+| `anon_security_definer_function_executable` | WARN | 2 | 2 |
+| `authenticated_security_definer_function_executable` | WARN | 21 | 21 |
+| `multiple_permissive_policies` | WARN | 19 | 19 |
+| `unindexed_foreign_keys` | INFO | 8 | 8 |
+| `unused_index` | INFO | 197 | 183 after 208 |
+
+`209_advisor_warnings.sql` clears nine of the fifty-one. **The 23 definer
+warnings cannot be cleared**: `is_admin()` alone is called by 93 RLS policies,
+an RLS expression is evaluated as the calling role, and revoking EXECUTE stops
+those 93 policies working. The full argument is in the migration.
+
+The 19 multiple-permissive warnings are a rewrite of access control on 19
+tables including `cashback_ledger`, `payment_events` and
+`payout_statement_lines`. Deferred deliberately; see the backlog.
+
+### 3. Twenty-five migrations are written and not applied
+
+`162, 184, 188-209`. Every one is probed against production in a rolled-back
+transaction and none is applied. Among them:
+
+- **207** is the bounce and complaint suppression list. Without it, an address
+  that hard-bounced is mailed again by the next cron.
+- **205** and **206** are this session's CMS work; the site renders its built-in
+  text without them, so they are not blocking.
+- **162** is blocked on a deployed URL to seed into the vault.
+
+### 4. Email deliverability has four live DNS defects
+
+From `docs/EMAIL-DELIVERABILITY.md`, measured today. `node
+scripts/email-dns-check.mjs` exits 1:
+
+- `send.kenyonexpress.co.il` SPF contains `include[...].nses.com` - a pasted
+  placeholder, which RFC 7208 makes a **permerror for the whole record**.
+- Two DKIM TXT records at one selector, one of them also a placeholder.
+- DMARC has no `rua`, so nobody learns whether alignment works.
+- Nothing wrote to the suppression list until this session's webhook.
+
+DNS is at Cloudflare and this repository cannot change it.
+
+### 5. `SUPABASE_SECRET_KEY` has not been rotated
+
+The key in use was exposed during setup and bypasses every RLS policy.
+`scripts/compromised-keys.mjs` marks it by SHA-256 and
+`scripts/deploy-preflight.mjs` refuses to build with it. The procedure is in
+`docs/RUNBOOK.md`. Still outstanding.
+
+### 6. The live catalogue holds 25 template and duplicate rows
+
+44 active products, 25 findings: three `מאסטר` rows, five `-copy` slugs, names
+that contradict their slug (`פלייסטישן 5` on `/חיתולי-האגיס`), prices that
+contradict their own slug text, `₪` inside a slug. `supabase/catalogue-known-issues.json`
+holds them as a floor and `pnpm test src/lib/catalogue` gates it. None is
+auto-fixable: which of two duplicates is real is an operator decision.
+
+### 7. There is no load test
+
+[63] asks for k6 passing. **There is no k6 anywhere in this repository** - no
+script, no config, no CI job. `docs/ARCHITECTURE-TESTING.md` has listed it as
+missing since it was written (`T-12 | אין k6`). Nothing has ever measured what
+this system does under concurrent load.
+
+### 8. `/checkout` shifts layout badly on the empty-cart redirect
+
+`/checkout` with an empty cart redirects to `/cart`, and **that** navigation
+scores performance 80 with **CLS 0.357**, against 0.011 when `/cart` is loaded
+directly. Above Google's 0.1 "good" threshold by more than three times, on the
+path a shopper takes when they mis-click.
+
+---
+
+### What a human still has to do
+
+Only these. Everything else in this document is either green or written down as
+a decision.
+
+1. **Deploy the branch.** Production is nine days behind and no deploy can be
+   triggered from here; `docs/DEPLOY.md` and the notes in STATE.md describe what
+   is known about the Vercel project.
+2. **Fix four DNS records at Cloudflare.** Exact values in
+   `docs/EMAIL-DELIVERABILITY.md`. `node scripts/email-dns-check.mjs` turns green
+   when they are right.
+3. **Rotate `SUPABASE_SECRET_KEY`** per `docs/RUNBOOK.md`.
+4. **Decide the 25 catalogue rows** in `supabase/catalogue-known-issues.json`.
+5. **Approve and apply migrations** in `migrations/pending/`, in the order
+   `APPLY-ORDER.md` gives.
+6. **Verify the Resend domain** and add the webhook endpoint with its signing
+   secret as `RESEND_WEBHOOK_SECRET`.
+
+### The tag is not `v1.0.0`, and that is deliberate
+
+[63] asks for `tag v1.0.0`. **`v1.0.0` already exists**, on `d2e4b20ef`, dated
+2026-08-10, and it marks a real past state. Moving it would rewrite a tag that
+anybody who has fetched it already holds, and it would point a version number at
+code that this same document calls NOT READY.
+
+This branch has its own family - `v1.0.0-rc1`, `v1.0.0-rc2`,
+`v1.0.0-rc2-final-audit` (`19213f10f`, an ancestor of HEAD) - so this state is
+tagged `v1.0.0-rc3-final-audit`, which is the next name in the sequence the
+branch is actually using. `v1.0.0` becomes correct when the verdict above does.
+
+### The verdict, restated
+
+**NOT READY**, and the first line is the whole of it: the audited code is not
+the deployed code. Of the eight red items, three (1, 8, and the AVIF half of 1)
+are defects in the branch, and five are operational steps nobody has taken.
+
+The software itself is in good order: 5,541 unit tests, 620 end-to-end tests,
+Lighthouse between 97 and 100 on every customer route, eight build gates green,
+and every schema change probed against production before being proposed.
+
+
+---
+
 ## ‏09.09.2026: נמדד מחדש, וההכרעה השתנתה בסיבה ולא בתשובה
 
 **הסעיף הזה גובר על מה שמתחתיו, ומה שמתחתיו נשמר כפי שהוא.** המדידה מ-06.09

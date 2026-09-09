@@ -1,5 +1,57 @@
 # `migrations/pending/`
 
+## 2026-09-09: 209 WRITTEN, not applied, and it does not reach zero WARN
+
+`209_advisor_warnings.sql`.
+
+**What the advisors say, measured today:** security has 3
+`function_search_path_mutable`, 2 `anon_security_definer_function_executable`
+and 21 `authenticated_security_definer_function_executable`; performance has 6
+`auth_rls_initplan` and 19 `multiple_permissive_policies`. Fifty-one WARN
+findings in six categories.
+
+**This file clears nine of them**, and the two categories it leaves are left
+deliberately.
+
+**The 23 definer warnings cannot go to zero.** `is_admin()` is called by **93
+policies**, `has_role` by 19, `is_support` by 13, `current_user_role` by 11,
+`is_supplier_member` by 10. An RLS policy expression is evaluated **as the
+calling role**, so `authenticated` must hold EXECUTE on every one of them or 93
+policies start throwing permission errors - the whole admin panel, the supplier
+console and the account area. `SECURITY INVOKER` is worse: these functions read
+`profiles.role`, and `profiles` is behind a policy that calls `is_admin()`. The
+`anon` half is one policy, `seo_redirects_select_unified`, which is
+`(is_admin() OR is_active)` for `{anon, authenticated}`.
+
+What is true and worth stating: an anonymous caller can POST to
+`/rest/v1/rpc/is_admin` and get `false`. Nothing leaks - `is_supplier_member`
+tests membership of the CALLER, so it returns false for a supplier that exists
+and for one that does not.
+
+**The 19 multiple-permissive warnings are not touched.** Merging two permissive
+policies into one `OR` is a rewrite of access control on 19 tables including
+`cashback_ledger`, `payment_events` and `payout_statement_lines`. The cost being
+avoided is planning time on a database whose largest table is 44 rows.
+
+**`ALTER` and not `CREATE OR REPLACE`**, twice over: replacing a function resets
+its grants and `set_updated_at` is attached to triggers on dozens of tables, and
+`ALTER POLICY` leaves no instant in which the table is readable without its
+policy.
+
+**Verified against production without applying.** All three functions pinned and
+still working - `fn_il_phone_digits` still normalises `054-123-4567` and
+`+972 54 1234567` to `972541234567` and still refuses junk, which is the check
+that an empty `search_path` did not break a function that resolves nothing
+outside `pg_catalog`. All six policies survive, the push policy is now an
+InitPlan, and the RESTRICTIVE super_admin MFA gate kept **both** its
+`COALESCE(..., 'aal1')` default and its `aal2` requirement: a coalesce lost in
+that rewrite turns "no aal claim means aal1, refuse" into "unknown, allow".
+Re-read afterwards: zero functions pinned, and the push policy back to
+`(auth.uid() = user_id)`.
+
+Order: independent of everything else pending.
+
+
 ## 2026-09-09: 208 WRITTEN, not applied, and the probe corrected the file twice
 
 `208_drop_redundant_indexes.sql`.

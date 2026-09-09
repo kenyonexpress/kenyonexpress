@@ -32,7 +32,29 @@ test.describe('category archive', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}`)
-    const sort = page.getByLabel('מיון מוצרים')
+    // `.filter({ visible: true })`, and the reason is measured rather than
+    // defensive.
+    //
+    // For about 200ms after `page.goto` there are TWO `#category-orderby`
+    // selects in the DOM - the server-rendered one and the client one - and by
+    // 1000ms there is one again. Probed on a built server:
+    //
+    //     0ms  total=1  visible=0
+    //   200ms  total=2  visible=1
+    //  1000ms  total=1  visible=1
+    //
+    // The served HTML has exactly one and so does the settled DOM, so this is a
+    // hydration window and not a duplicate-id defect. But Playwright's strict
+    // mode THROWS IMMEDIATELY on two matches instead of retrying, so a retrying
+    // `toBeVisible` never got the chance to wait it out - and `toHaveCount(1)`
+    // did not help either, because it passes at 0ms and the second element
+    // appears afterwards.
+    //
+    // Exactly one is VISIBLE at every instant, which is the invariant that
+    // actually matters and the one a user experiences. Filtering on it keeps
+    // the accessible-name query rather than falling back to `.first()`, which
+    // would hide a real duplicate if one ever appeared.
+    const sort = page.getByLabel('מיון מוצרים').filter({ visible: true })
     await expect(sort).toBeVisible()
 
     // The select speaks WooCommerce orderby values ("price"); the URL speaks
@@ -48,7 +70,8 @@ test.describe('category archive', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}?sort=price_desc`)
-    await expect(page.getByLabel('מיון מוצרים')).toHaveValue('price-desc')
+    // Same hydration window as above. See the note on the previous test.
+    await expect(page.getByLabel('מיון מוצרים').filter({ visible: true })).toHaveValue('price-desc')
   })
 
   test('an unrecognised sort key falls back to the default order', async ({ page }) => {
@@ -56,7 +79,7 @@ test.describe('category archive', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}?sort=not-a-sort`)
-    await expect(page.getByLabel('מיון מוצרים')).toHaveValue('menu_order')
+    await expect(page.getByLabel('מיון מוצרים').filter({ visible: true })).toHaveValue('menu_order')
   })
 
   /**

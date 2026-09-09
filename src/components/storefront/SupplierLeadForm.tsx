@@ -173,7 +173,10 @@ export default function SupplierLeadForm() {
         {pending ? 'שולח...' : 'שליחת פרטים'}
       </button>
 
-      <p className="text-xs text-heading/60">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
+      {/* `/80` and not `/60`: at 12px this is not large text, so WCAG AA wants
+          4.5:1 and 60% opacity of the heading colour does not reach it. Caught
+          by `e2e/a11y.spec.ts` as the one serious violation on /suppliers. */}
+      <p className="text-xs text-heading/80">הפרטים משמשים ליצירת קשר בנוגע להצטרפות בלבד.</p>
     </form>
   )
 }
