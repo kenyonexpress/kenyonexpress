@@ -4,7 +4,7 @@
 //
 // Safe to import from client or server code: names only, no credentials.
 
-export type R2BucketPurpose = 'product-images' | 'coupon-qrcodes' | 'user-uploads'
+export type R2BucketPurpose = 'product-images' | 'coupon-qrcodes' | 'user-uploads' | 'course-videos'
 
 export type R2BucketConfig = {
   /** Actual bucket name in the Cloudflare account. */
@@ -36,6 +36,27 @@ export const R2_BUCKETS: Record<R2BucketPurpose, R2BucketConfig> = {
     public: false,
     maxBytes: 10 * 1024 * 1024,
     allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'],
+  },
+  /**
+   * Course video ([91]). PRIVATE, and that is the whole point: a lesson is what
+   * somebody paid for, so the object is never publicly addressable and is
+   * reached only through a short-lived signed URL minted after
+   * `has_course_access` has said yes.
+   *
+   * 2 GB, because a course lesson is a video file and the 10 MB ceiling on
+   * `user-uploads` would refuse anything longer than a few seconds. The limit is
+   * still a limit: it is what stops an admin upload form from being a way to
+   * fill a bucket.
+   *
+   * `video/quicktime` is here because that is what an iPhone produces, and a
+   * seller filming a lesson on a phone is the likeliest first upload this ever
+   * sees. The alternative is a rejection they cannot act on.
+   */
+  'course-videos': {
+    bucket: 'kenyonexpress-course-videos',
+    public: false,
+    maxBytes: 2 * 1024 * 1024 * 1024,
+    allowedTypes: ['video/mp4', 'video/webm', 'video/quicktime'],
   },
 }
 

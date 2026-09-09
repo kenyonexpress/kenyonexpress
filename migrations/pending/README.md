@@ -1,5 +1,67 @@
 # `migrations/pending/`
 
+## 2026-09-09: 212 WRITTEN, not applied, and the probe corrected it twice
+
+`212_courses_phase2.sql`.
+
+**Two transactions, and the reason is measured.** `ALTER TYPE ... ADD VALUE` was
+probed inside a `DO` block that ended in a `RAISE`. It was **accepted** -
+Postgres 17 permits it inside a transaction - and it rolled back cleanly;
+`pg_enum` still held exactly `coupon, physical, service, recurring` afterwards.
+What is still forbidden is USING the new value in the transaction that added it.
+Nothing in the second half needs to, but the split is kept so the next statement
+somebody adds cannot be the one that discovers this.
+
+**CTI rather than columns on `products`.** That table already carries 60-odd
+columns of which `coupon_expiry_days`, `recurring_amount_agorot` and
+`billing_interval` are each meaningful for one type and null for every other. A
+row in `course_products` IS the statement that this product is a course, and
+[91] can be reverted by dropping three tables rather than by finding four
+columns.
+
+**`has_course_access` reads `auth.uid()` and does not take a uid.** That
+distinction is one this database has already been bitten by: a `SECURITY
+DEFINER` function that accepts a uid attributes the check to whoever the caller
+names, which is an authorisation bypass wearing a parameter.
+
+Two routes in, both [91]'s own words. A **purchase** is an `order_items` row on
+an order with `paid_at IS NOT NULL` - not `status = 'paid'`, because the status
+moves on to `fulfilled` and `platform_settled` and a string check would revoke
+access the moment an operator settled the order. A **subscription** grants
+access while `active`, and while `past_due` with the dunning window still open:
+cutting a customer off on the first declined retry is premature, and the whole
+point of three attempts is that the first often fails for a reason that
+resolves.
+
+**The probe corrected this file twice, and both were RLS mistakes that would
+have shipped as "courses are broken for anonymous visitors".**
+
+1. `REVOKE ALL ... FROM anon` on `course_products` and `course_modules`
+   contradicted the public-read policies above it. A policy grants nothing; it
+   only filters what a GRANT already allows. The failure surfaced as
+   `permission denied for table course_modules` **raised by a query against
+   `course_lessons`**, because the lesson policy's subquery reads modules - a
+   long way from the line that caused it.
+2. A single policy `TO anon, authenticated` calling `has_course_access` failed
+   for anon with `permission denied for function`. Privileges are checked on the
+   whole expression rather than short-circuited past the `is_preview` branch
+   that would have avoided the call. Granting the function to anon would have
+   worked and bought nothing - `auth.uid()` is null for anon so it always
+   returns false - while adding an RPC endpoint and an advisor warning. Split by
+   role instead, which is the move
+   `120_split_public_select_policies_by_role.sql` already made on this database.
+
+**Verified against production without applying.** anon sees only the preview
+lesson and can still read the syllabus; an authenticated user with no purchase
+sees only the preview and has no access; the buyer of a real paid order sees
+both lessons and has access; progress is readable and writable only by its
+owner; an unpaid order grants nothing; a subscription grants access, survives
+the first decline, and stops once the three attempts are spent. Re-read
+afterwards: no tables, no function, and the enum unchanged.
+
+Order: after 210, which creates `phase_config`.
+
+
 ## 2026-09-09: 211 WRITTEN, not applied, and most of [90] was already there
 
 `211_subscriptions_phase2.sql`.

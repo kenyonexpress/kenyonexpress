@@ -707,6 +707,36 @@ describe('the pending migration inventory', () => {
       // probe's first run also caught itself: it used billing_interval 'month'
       // and subscriptions_interval_known permits only monthly|yearly.
       '211_subscriptions_phase2.sql',
+      // 212: the course subtype, its lessons, and who may watch them, for [91].
+      //
+      // TWO TRANSACTIONS, and the reason is measured: `ALTER TYPE ... ADD VALUE`
+      // was probed inside a DO block and ACCEPTED - Postgres 17 permits it in a
+      // transaction and it rolled back cleanly - but USING the value in the
+      // transaction that added it is still forbidden.
+      //
+      // THE PROBE CORRECTED THE FILE TWICE, and both were RLS mistakes that
+      // would have shipped as "courses are broken for anonymous visitors":
+      //
+      //   1. `REVOKE ALL ... FROM anon` on course_products and course_modules
+      //      directly contradicted the public-read policies above it. A policy
+      //      grants nothing, it only filters what a GRANT allows. The error
+      //      surfaced as `permission denied for table course_modules` raised by
+      //      a query against course_LESSONS, because the lesson policy's
+      //      subquery reads modules.
+      //   2. One policy `TO anon, authenticated` calling `has_course_access`
+      //      failed for anon with `permission denied for function` - privileges
+      //      are checked on the whole expression, not short-circuited past the
+      //      `is_preview` branch. Split by role, which is what
+      //      `120_split_public_select_policies_by_role.sql` already did here.
+      //
+      // Probed against production, rolled back: anon sees ONLY the preview
+      // lesson and can still read the syllabus, an authenticated user with no
+      // purchase sees only the preview, the buyer of a real paid order sees
+      // both and has access, progress is readable and writable only by its
+      // owner, an UNPAID order grants nothing (paid_at is the test, not
+      // status), a subscription grants access, SURVIVES the first decline, and
+      // stops once the three attempts are spent.
+      '212_courses_phase2.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

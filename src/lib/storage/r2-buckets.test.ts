@@ -8,8 +8,16 @@ import {
 } from './r2-buckets'
 
 describe('R2 bucket registry', () => {
-  it('declares exactly the three purposes the infra doc provisions', () => {
-    expect(R2_BUCKET_PURPOSES.sort()).toEqual(['coupon-qrcodes', 'product-images', 'user-uploads'])
+  it('declares exactly the four purposes the infra doc provisions', () => {
+    // `course-videos` joined in [91]. The list is exact rather than a subset on
+    // purpose: a bucket added without a line in `docs/ARCHITECTURE-MEDIA-R2.md`
+    // is a bucket nobody provisioned.
+    expect(R2_BUCKET_PURPOSES.sort()).toEqual([
+      'coupon-qrcodes',
+      'course-videos',
+      'product-images',
+      'user-uploads',
+    ])
   })
 
   it('bucket names satisfy R2 naming rules (3-63 chars, lowercase, digits, hyphens)', () => {
@@ -24,18 +32,29 @@ describe('R2 bucket registry', () => {
     expect(new Set(names).size).toBe(names.length)
   })
 
-  it('only product-images is public; QR codes and user uploads stay private', () => {
+  it('only product-images is public; everything paid for stays private', () => {
     expect(isPublicR2Bucket('product-images')).toBe(true)
     expect(isPublicR2Bucket('coupon-qrcodes')).toBe(false)
     expect(isPublicR2Bucket('user-uploads')).toBe(false)
+    // The one that matters most: a lesson is what somebody paid for, so the
+    // object must never be publicly addressable.
+    expect(isPublicR2Bucket('course-videos')).toBe(false)
   })
 
   it('every bucket allows at least one content type and a sane size cap', () => {
+    // The 20 MB ceiling was written when every bucket held an image or a PDF.
+    // `course-videos` is a video bucket and 20 MB would refuse anything longer
+    // than a few seconds, so it carries its own limit - still a limit, because
+    // what the cap is for is stopping an upload form from being a way to fill a
+    // bucket, not enforcing one number everywhere.
+    const CAP: Partial<Record<(typeof R2_BUCKET_PURPOSES)[number], number>> = {
+      'course-videos': 2 * 1024 * 1024 * 1024,
+    }
     for (const purpose of R2_BUCKET_PURPOSES) {
       const cfg = R2_BUCKETS[purpose]
       expect(cfg.allowedTypes.length, purpose).toBeGreaterThan(0)
       expect(cfg.maxBytes, purpose).toBeGreaterThan(0)
-      expect(cfg.maxBytes, purpose).toBeLessThanOrEqual(20 * 1024 * 1024)
+      expect(cfg.maxBytes, purpose).toBeLessThanOrEqual(CAP[purpose] ?? 20 * 1024 * 1024)
     }
   })
 })
