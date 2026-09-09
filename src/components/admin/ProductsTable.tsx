@@ -9,6 +9,7 @@ import {
   isImplausibleDiscount,
 } from '@/lib/commerce/implausible-discount'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { rollbackLastBulkOperation } from '@/server/actions/admin/bulk-rollback'
 import {
   type BulkPriceInput,
   bulkAdjustPrices,
@@ -99,6 +100,27 @@ export default function ProductsTable({ products, categories, hidePricing = fals
   }
 
   const ids = Array.from(selected)
+
+  async function undoLastBulk() {
+    if (!window.confirm('לשחזר את המוצרים שהשתנו בפעולה הקבוצתית האחרונה?')) return
+    setBusy(true)
+    try {
+      const result = await rollbackLastBulkOperation()
+      if (!result) return
+      if ('error' in result) {
+        toast.error(result.error)
+        return
+      }
+      // `success` here is a COUNT and not a promise that everything came back:
+      // a product edited since the bulk operation is deliberately left alone,
+      // and the message says how many were skipped for that reason.
+      toast.success(result.success)
+      setSelected(new Set())
+      router.refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function applyPrices() {
     const value = Number(priceValue)
@@ -290,6 +312,19 @@ export default function ProductsTable({ products, categories, hidePricing = fals
         {selected.size > 0 && (
           <span className="text-xs font-semibold text-black/70">{selected.size} נבחרו</span>
         )}
+
+        {/* OUTSIDE the selection toolbar on purpose: undoing the last bulk
+            operation has nothing to do with what is selected now, and putting
+            it inside would mean an operator has to re-select the products they
+            just changed in order to change them back. */}
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void undoLastBulk()}
+          className="ms-auto rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-black/70 transition-colors hover:bg-black/[0.04] disabled:opacity-60"
+        >
+          ביטול הפעולה הקבוצתית האחרונה
+        </button>
       </div>
 
       {selected.size > 0 && (

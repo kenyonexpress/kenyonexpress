@@ -2,6 +2,7 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { catalogueIlsToAgorot, scaleCatalogueIls } from '@/lib/admin/bulk-price'
+import type { BulkOperationKind, BulkSnapshotRow } from '@/lib/admin/bulk-rollback'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
@@ -504,15 +505,30 @@ async function runBulkUpdateProductStatus(
   }
 
   const supabase = await createClient()
+
+  // SNAPSHOT FIRST. Read before write, so the audit row can carry what these
+  // products were and an undo has something to restore. `changes: { ids,
+  // status }` recorded only the new state, which is enough to say what
+  // happened and not enough to reverse it.
+  const { data: beforeRows, error: snapshotError } = await supabase
+    .from('products')
+    .select('id, status')
+    .in('id', ids)
+  if (snapshotError) return { error: snapshotError.message }
+
   const { error } = await supabase.from('products').update({ status }).in('id', ids)
   if (error) return { error: error.message }
 
+  const before = (beforeRows ?? []) as BulkSnapshotRow[]
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
     action: 'status_change',
     entityType: 'products',
     changes: { ids, status },
+    metadata: { bulk_operation: 'update_status' satisfies BulkOperationKind },
+    before,
+    after: before.map((row) => ({ id: row.id, status })),
   })
 
   revalidatePath('/admin/products')
@@ -536,29 +552,37 @@ async function runBulkAssignCategory(
   }
 
   const supabase = await createClient()
+
+  const { data: beforeRows, error: snapshotError } = await supabase
+    .from('products')
+    .select('id, category_id')
+    .in('id', ids)
+  if (snapshotError) return { error: snapshotError.message }
+
   const { error } = await supabase
     .from('products')
     .update({ category_id: categoryId })
     .in('id', ids)
   if (error) return { error: error.message }
 
+  // ONE audit row, not two. This wrote a second one shaped
+  // `{ old: { ids }, new: {...} }` whose `old` held no old values at all, so
+  // every bulk assign read as two separate operations and the one claiming to
+  // carry the previous state carried a list of ids.
+  const before = (beforeRows ?? []) as BulkSnapshotRow[]
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
     action: 'updated',
     entityType: 'products',
     changes: { ids, category_id: categoryId },
+    metadata: { bulk_operation: 'assign_category' satisfies BulkOperationKind },
+    before,
+    after: before.map((row) => ({ id: row.id, category_id: categoryId })),
   })
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
-  await writeAuditLog({
-    actorId: session.userId,
-    actorRole: session.role,
-    action: 'updated',
-    entityType: 'products',
-    changes: { old: { ids }, new: { ids, category_id: categoryId } },
-  })
   return {}
 }
 
@@ -607,6 +631,10 @@ async function runBulkAdjustPrices(
 
   let updated = 0
   const skipped: string[] = []
+  // Filled per product that was actually written, so `before` and `after` line
+  // up row for row and a product the loop refused appears in neither.
+  const before: BulkSnapshotRow[] = []
+  const after: BulkSnapshotRow[] = []
 
   for (const p of products ?? []) {
     if (parsed.data.mode === 'percent') {
@@ -628,6 +656,12 @@ async function runBulkAdjustPrices(
       }
       const { error } = await supabase.from('products').update(patch).eq('id', p.id)
       if (error) return { error: error.message, updated }
+      before.push({ id: p.id, kenyon_price: p.kenyon_price, full_price: p.full_price })
+      after.push({
+        id: p.id,
+        kenyon_price: patch.kenyon_price,
+        full_price: patch.full_price ?? p.full_price,
+      })
       updated += 1
     } else {
       const nextAgorot = catalogueIlsToAgorot(parsed.data.value)
@@ -643,27 +677,28 @@ async function runBulkAdjustPrices(
         .update({ kenyon_price: next })
         .eq('id', p.id)
       if (error) return { error: error.message, updated }
+      before.push({ id: p.id, kenyon_price: p.kenyon_price })
+      after.push({ id: p.id, kenyon_price: next })
       updated += 1
     }
   }
 
+  // ONE row, carrying the prices as they were. This is what makes an undo
+  // possible at all: a percentage is not exactly invertible once it has been
+  // rounded to agorot, and in `set` mode the old prices are simply gone.
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
     action: 'updated',
     entityType: 'products',
     changes: { ids, mode: parsed.data.mode, value: parsed.data.value, updated, skipped },
+    metadata: { bulk_operation: 'adjust_prices' satisfies BulkOperationKind },
+    before,
+    after,
   })
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
-  await writeAuditLog({
-    actorId: session.userId,
-    actorRole: session.role,
-    action: 'updated',
-    entityType: 'products',
-    changes: { old: { ids }, new: { ids, prices: parsed.data, updated, skipped } },
-  })
   return { updated, skipped }
 }
 

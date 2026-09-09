@@ -45,7 +45,18 @@ function filesTouchingAuditLog(): string[] {
       const full = join(dir, entry)
       if (statSync(full).isDirectory()) walk(full)
       else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts') && !entry.endsWith('.d.ts')) {
-        if (readFileSync(full, 'utf8').includes("from('audit_log')")) {
+        // INSERT sites, not every file that names the table.
+        //
+        // This matched `from('audit_log')` alone until 2026-09-10, when
+        // `actions/admin/bulk-rollback.ts` started READING the log to undo the
+        // last bulk operation and was reported as an unregistered direct
+        // writer. Registering a reader on a writers' list would have made the
+        // list mean two things and left the per-file actor assertion passing
+        // vacuously over a file with no inserts in it.
+        //
+        // The teeth are unchanged: any new `.insert(` into audit_log still has
+        // to appear in DIRECT_WRITERS or go through writeAuditLog.
+        if (/from\('audit_log'\)\s*\.insert\(/.test(readFileSync(full, 'utf8'))) {
           found.push(relative(cwd, full).split('\\').join('/'))
         }
       }

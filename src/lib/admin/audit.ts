@@ -49,6 +49,25 @@ export async function writeAuditLog(entry: {
   entityId?: string | null
   changes?: Json
   metadata?: Json
+  /**
+   * The rows as they were, and as they became.
+   *
+   * `audit_log` has carried `before` and `after` since 169 and this helper
+   * never wrote either, so every admin mutation recorded only its new state.
+   * That is enough to answer "who changed this" and not enough to answer "what
+   * was it before", which is the question an undo needs and the question a
+   * dispute needs.
+   *
+   * Kept separate from `changes` rather than folded into it. `changes` is a
+   * free-form description of the operation (which ids, what mode, what was
+   * skipped) and every existing reader treats it that way; `before`/`after`
+   * are the ROW STATE and are what `rollbackLastBulkOperation` reads. Writing
+   * the row state into `changes` under an invented `old`/`new` shape is what
+   * the bulk actions used to do, and it produced a second audit row per
+   * operation whose `old` contained no old values at all.
+   */
+  before?: Json
+  after?: Json
 }): Promise<void> {
   try {
     const admin = createAdminClient()
@@ -61,6 +80,8 @@ export async function writeAuditLog(entry: {
       entity_id: entry.entityId ?? null,
       changes: entry.changes ?? null,
       metadata: entry.metadata ?? null,
+      before: entry.before ?? null,
+      after: entry.after ?? null,
       // `inet` rejects a malformed value, which would fail the insert and lose
       // the audit row entirely. Anything that is not plainly an address is
       // dropped to null instead: a row without an IP still records who and what.
