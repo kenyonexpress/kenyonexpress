@@ -131,6 +131,7 @@ describe('scheduled routes authenticate', () => {
     // list is the record of what runs on a schedule with admin credentials.
     expect(cronRouteFiles()).toEqual([
       'src/app/api/cron/abandoned-cart/route.ts',
+      'src/app/api/cron/backup/route.ts',
       'src/app/api/cron/expire-cashback/route.ts',
       'src/app/api/cron/expire-coupons/route.ts',
       'src/app/api/cron/expire-vouchers/route.ts',
