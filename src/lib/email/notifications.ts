@@ -75,11 +75,10 @@ export type NotificationKind =
   /** First successful sign-in. Deduped on the user id, so only the first one lands. */
   | 'welcome'
   /**
-   * Fulfilment complete: the order moved to `fulfilled`. Enqueued by the
-   * trigger in migrations/pending/183, so it fires for every writer of the
-   * transition, the admin console and the till app alike. Not yet accepted by
-   * the production CHECK constraint; the builder ships first so an approved 183
-   * finds the drain already able to render the rows it creates.
+   * Fulfilment complete: the order moved to `fulfilled`. Enqueued by
+   * `tg_orders_notify_shipped` (183, applied; payload widened by 196 to carry
+   * `shipments`), so it fires for every writer of the transition, the admin
+   * console and the till app alike.
    */
   | 'order_shipped'
 
@@ -113,6 +112,30 @@ function asNumber(value: unknown): number {
 
 function asText(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null
+}
+
+interface ShipmentLine {
+  carrier: string | null
+  trackingNumber: string
+}
+
+/**
+ * The `shipments` array `tg_orders_notify_shipped` builds (196): one entry per
+ * order line that carries a tracking number, `{ carrier, tracking_number }`.
+ * NULL and a missing key both mean "this order has no tracking to report", and
+ * an entry without a number says nothing worth a line, so both vanish here.
+ */
+function asShipments(value: unknown): ShipmentLine[] {
+  if (!Array.isArray(value)) return []
+  const lines: ShipmentLine[] = []
+  for (const entry of value) {
+    if (typeof entry !== 'object' || entry === null) continue
+    const record = entry as Record<string, unknown>
+    const trackingNumber = asText(record.tracking_number)
+    if (!trackingNumber) continue
+    lines.push({ carrier: asText(record.carrier), trackingNumber })
+  }
+  return lines
 }
 
 /** A date in Hebrew, or an empty string. Never the word `Invalid Date`. */
@@ -228,6 +251,7 @@ export function buildOrderShippedEmail(
   const name = asText(payload.customer_name)
   const items = asNumber(payload.item_count)
   const when = hebrewDateTime(payload.fulfilled_at)
+  const shipments = asShipments(payload.shipments)
   const url = `${trimSite(siteUrl)}/account/orders`
 
   const subject = `ההזמנה שלך נשלחה · ${ref}`
@@ -241,6 +265,9 @@ export function buildOrderShippedEmail(
     `מספר הזמנה: ${ltrText(ref)}`,
     items > 0 ? `פריטים: ${items}` : '',
     when ? `טופלה ב-${when}` : '',
+    ...shipments.map(
+      (s) => `מספר מעקב${s.carrier ? ` אצל ${s.carrier}` : ''}: ${ltrText(s.trackingNumber)}`,
+    ),
     '',
     `למעקב אחרי ההזמנה: ${ltrText(url)}`,
   ]
@@ -255,6 +282,12 @@ export function buildOrderShippedEmail(
           <div>מספר הזמנה: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(ref)}</strong></div>
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
           ${when ? `<div style="color:${MUTED}">טופלה ב-${escapeHtml(when)}</div>` : ''}
+          ${shipments
+            .map(
+              (s) =>
+                `<div>מספר מעקב${s.carrier ? ` אצל ${escapeHtml(s.carrier)}` : ''}: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(s.trackingNumber)}</strong></div>`,
+            )
+            .join('')}
         </div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למעקב אחרי ההזמנה</a>
       </div>`,

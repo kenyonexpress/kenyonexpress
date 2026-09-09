@@ -1,5 +1,22 @@
 # Apply order
 
+## 2026-09-09 (coupon QR goal): 217 APPLIED
+
+**217** coupon_qr_redemption (`coupon_qr_redemption_217`): full body dry-run
+first in a rolled-back transaction, with a seven-step functional probe over
+real inserts (three probe orders, one probe campaign with `max_uses 1`, three
+probe codes): first redeem ok, same-order replay idempotent, second order
+refused `redeemed` (the FOR UPDATE single-use gate), a campaign-cap refusal
+left the unit row untouched (`exhausted`, `redeemed_at` still NULL), a
+per-code `expires_at` in the past refused `expired`, the sweep stamped exactly
+that code, and neither `anon` nor `authenticated` can EXECUTE either function.
+The probe ended in a deliberate RAISE so everything rolled back; the identical
+body then went through `apply_migration`. Post-apply measurement: both
+columns, both functions, grants service_role only, partial index present,
+`coupon_qr_codes` held 0 rows so nothing live changed behaviour. Applied under
+the 2026-09-09 coupon QR /goal, which names Supabase MCP as the migration
+route.
+
 ## 2026-09-09 (RBAC goal): 212 APPLIED; 181 and 210 found already live
 
 **212** rbac_truncate_and_search_path (version `20260909115250`): full body

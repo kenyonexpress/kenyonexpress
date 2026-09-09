@@ -389,4 +389,49 @@ describe('buildOrderShippedEmail', () => {
     expect(mail?.text).not.toContain('Invalid Date')
     expect(mail?.html).not.toContain('Invalid Date')
   })
+
+  it('lists every tracking number the trigger collected, bidi-isolated', () => {
+    // 196 made tg_orders_notify_shipped carry `shipments`; a multi-supplier
+    // order is several parcels with several numbers, one line each.
+    const mail = buildNotification(
+      'order_shipped',
+      {
+        ...payload,
+        shipments: [
+          { carrier: 'דואר ישראל', tracking_number: 'RR123456789IL' },
+          { carrier: 'UPS', tracking_number: '1Z999AA10123456784' },
+        ],
+      },
+      SITE,
+    )
+    // Plain text gets LRI…PDI isolates so the LTR number sits right in RTL prose.
+    expect(mail?.text).toContain('מספר מעקב אצל דואר ישראל: ⁦RR123456789IL⁩')
+    expect(mail?.text).toContain('מספר מעקב אצל UPS: ⁦1Z999AA10123456784⁩')
+    expect(mail?.html).toContain('RR123456789IL')
+    expect(mail?.html).toContain('1Z999AA10123456784')
+    // HTML gets dir="ltr" plus the style, for clients that strip either one.
+    expect(mail?.html).toContain(
+      '<strong dir="ltr" style="direction:ltr;unicode-bidi:isolate">1Z999AA10123456784</strong>',
+    )
+  })
+
+  it('omits the carrier clause when the line has only a number', () => {
+    const mail = buildNotification(
+      'order_shipped',
+      { ...payload, shipments: [{ carrier: null, tracking_number: 'RR123456789IL' }] },
+      SITE,
+    )
+    expect(mail?.text).toContain('מספר מעקב: ⁦RR123456789IL⁩')
+    expect(mail?.text).not.toContain('אצל')
+  })
+
+  it('says nothing about tracking when the array is missing, null or junk', () => {
+    // jsonb_agg over zero rows is NULL, not []; and an entry without a number
+    // carries nothing worth a line. All of these must read like the pre-196 mail.
+    for (const shipments of [undefined, null, [], 'garbage', [{ carrier: 'UPS' }], [42]]) {
+      const mail = buildNotification('order_shipped', { ...payload, shipments }, SITE)
+      expect(mail?.text).not.toContain('מספר מעקב')
+      expect(mail?.html).not.toContain('מספר מעקב')
+    }
+  })
 })

@@ -15,14 +15,15 @@ import { revalidatePath } from 'next/cache'
  * lib/shipping/transitions.ts; the UPDATE re-checks the from-state in its
  * WHERE so two admins racing on the same line cannot double-fire.
  *
- * carrier/tracking_number ship in pending/155. Until it applies those columns
- * do not exist (42703), so the write retries without them and the caller is
- * told the tracking was not stored -- the status transition itself must not
- * be held hostage by a pending migration.
+ * carrier/tracking_number arrived with 155, since applied. The 42703 retry
+ * below predates that and stays: on a database without the columns the write
+ * retries without them and the caller is told the tracking was not stored --
+ * the status transition itself must not be held hostage by a schema gap.
  *
- * No email yet, deliberately: 'order_shipped' enters
- * notification_outbox_kind_check in 155, and enqueueing before that 23514s
- * (see src/lib/email/outbox-kinds.test.ts, the three-way agreement).
+ * No email from here, deliberately: `tg_orders_notify_shipped` (183, payload
+ * widened by 196) enqueues 'order_shipped' when the ORDER reaches fulfilled,
+ * with the tracking numbers of every line. Enqueueing from this per-line
+ * action too would mail the customer twice for the same shipment.
  */
 
 const UNDEFINED_COLUMN = '42703'

@@ -293,6 +293,7 @@ describe('the pending migration inventory', () => {
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
       '211_whatsapp_selfservice.sql',
+      '217_coupon_qr_redemption.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
