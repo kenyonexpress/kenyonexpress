@@ -13,6 +13,7 @@
     { "name": "reap-carts", "path": "/api/cron/reap-carts", "cron": "40 3 * * *" },
     { "name": "reconcile", "path": "/api/cron/reconcile", "cron": "0 4 * * *" },
     { "name": "expire-vouchers", "path": "/api/cron/expire-vouchers", "cron": "15 23 * * *" },
-    { "name": "whatsapp", "path": "/api/cron/whatsapp", "cron": "*/5 * * * *" }
+    { "name": "whatsapp", "path": "/api/cron/whatsapp", "cron": "*/5 * * * *" },
+    { "name": "search-outbox", "path": "/api/cron/search-outbox", "cron": "*/10 * * * *" }
   ]
 }

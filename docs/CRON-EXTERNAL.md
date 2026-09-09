@@ -84,6 +84,7 @@ file is in a repository.
 4  https://kenyonexpress.vercel.app/api/cron/stock               GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5  https://kenyonexpress.vercel.app/api/cron/stranded-payments   GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5b https://kenyonexpress.vercel.app/api/cron/webhook-dlq         GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5c https://kenyonexpress.vercel.app/api/cron/search-outbox       GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 6  https://kenyonexpress.vercel.app/api/cron/abandoned-cart      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 7  https://kenyonexpress.vercel.app/api/cron/subscriptions       GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
@@ -123,6 +124,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 | 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
+| 13 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-outbox` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -153,6 +155,12 @@ timing changes with the scheduler.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
 - **`expire-vouchers`** marks vouchers past their date as expired.
+- **`search-outbox`** drains `search_index_outbox` (migration 132): the durable
+  record that a product write owes the Meilisearch index an update, written by
+  the trigger in the same transaction as the write. The webhook -> QStash path
+  is the fast lane; this sweep is the floor under it. While `MEILISEARCH_HOST`
+  is unset the sweep leaves the queue untouched on purpose, so the backlog
+  survives until stage 2 turns search on.
 
 ## Setting it up from this repository, in two settings
 

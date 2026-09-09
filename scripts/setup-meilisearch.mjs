@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Creates the Meilisearch products and brands indexes, applies the settings
- * from src/lib/search/meili-settings.ts (Hebrew typo budget, synonyms, facets,
- * and the `heb` tokenizer locale pin), syncs every active product, and
- * rebuilds the derived brands index from the same read.
+ * Creates the Meilisearch products, brands and categories indexes, applies the
+ * settings from src/lib/search/meili-settings.ts (Hebrew typo budget, synonyms,
+ * facets, and the `heb` tokenizer locale pin), syncs every active product, and
+ * rebuilds the derived brands and categories indexes from the same read.
  *
  * Idempotent: re-running updates settings and re-pushes documents. Meilisearch
  * upserts on the primary key, so a re-sync never duplicates.
@@ -86,6 +86,32 @@ function loadSettings() {
       },
     },
     brandsLocalizedAttributes: [{ attributePatterns: ['name'], locales: pick('HEBREW_LOCALES') }],
+    // Mirrors CATEGORIES_INDEX_SETTINGS in meili-settings.ts, typo budget from
+    // the same parse. Categories are a real table, so the documents map rows;
+    // the counts come from the same product read that fills the main index.
+    categoriesSettings: {
+      searchableAttributes: ['name_he', 'name_en', 'description_he'],
+      filterableAttributes: ['parent_id', 'slug'],
+      sortableAttributes: ['product_count', 'sort_order'],
+      rankingRules: [
+        'words',
+        'typo',
+        'product_count:desc',
+        'proximity',
+        'attribute',
+        'sort',
+        'exactness',
+      ],
+      stopWords: pick('STOP_WORDS'),
+      typoTolerance: {
+        enabled: true,
+        minWordSizeForTypos: { ...typoTolerance.minWordSizeForTypos },
+        disableOnAttributes: [],
+      },
+    },
+    categoriesLocalizedAttributes: [
+      { attributePatterns: ['name_he', 'description_he'], locales: pick('HEBREW_LOCALES') },
+    ],
   }
 }
 
@@ -93,6 +119,7 @@ const HOST = (process.env.MEILISEARCH_HOST ?? '').replace(/\/$/, '')
 const KEY = process.env.MEILISEARCH_API_KEY ?? ''
 const INDEX = process.env.MEILISEARCH_INDEX ?? 'products'
 const BRANDS_INDEX = process.env.MEILISEARCH_BRANDS_INDEX ?? 'brands'
+const CATEGORIES_INDEX = process.env.MEILISEARCH_CATEGORIES_INDEX ?? 'categories'
 const SETTINGS_ONLY = process.argv.includes('--settings-only')
 
 if (!HOST) {
@@ -131,7 +158,7 @@ async function awaitTask(task, label) {
   throw new Error(`${label} did not finish in 30s`)
 }
 
-async function loadProducts() {
+async function createSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) {
@@ -143,8 +170,10 @@ async function loadProducts() {
   }
 
   const { createClient } = await import('@supabase/supabase-js')
-  const supabase = createClient(url, key, { auth: { persistSession: false } })
+  return createClient(url, key, { auth: { persistSession: false } })
+}
 
+async function loadProducts(supabase) {
   const { data, error } = await supabase
     .from('products')
     .select(
@@ -248,6 +277,48 @@ async function applyLocalized(uid, localizedAttributes) {
  * grouping is case- and whitespace-insensitive, the first spelling wins, and
  * the id is base64url because Meilisearch ids only allow [A-Za-z0-9_-].
  */
+/**
+ * One document per active category. Mirrors toCategoryDocuments in
+ * meili-settings.ts, which the test suite covers: counts come from the SAME
+ * product documents just pushed to the main index, so a chip's number can
+ * never describe a different catalogue than the one indexed.
+ */
+async function loadCategories(supabase) {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, parent_id, slug, name_he, name_en, description_he, image_url, sort_order')
+    .eq('is_active', true)
+    .is('deleted_at', null)
+  if (error) throw new Error(`supabase categories: ${error.message}`)
+  return data ?? []
+}
+
+function toCategoryDocuments(categories, products) {
+  const productCount = new Map()
+  const couponCount = new Map()
+  for (const product of products) {
+    if (!product.category_id) continue
+    productCount.set(product.category_id, (productCount.get(product.category_id) ?? 0) + 1)
+    if (product.type === 'coupon') {
+      couponCount.set(product.category_id, (couponCount.get(product.category_id) ?? 0) + 1)
+    }
+  }
+  return categories
+    .map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name_he: row.name_he,
+      name_en: row.name_en ?? null,
+      description_he: row.description_he ?? null,
+      parent_id: row.parent_id ?? null,
+      image_url: row.image_url ?? null,
+      sort_order: row.sort_order ?? 0,
+      product_count: productCount.get(row.id) ?? 0,
+      coupon_count: couponCount.get(row.id) ?? 0,
+    }))
+    .sort((a, b) => a.sort_order - b.sort_order || a.name_he.localeCompare(b.name_he, 'he'))
+}
+
 function toBrandDocuments(products) {
   const byKey = new Map()
   for (const row of products) {
@@ -280,9 +351,16 @@ async function main() {
 
   await ensureIndex(INDEX)
   await ensureIndex(BRANDS_INDEX)
+  await ensureIndex(CATEGORIES_INDEX)
 
-  const { settings, localizedAttributes, brandsSettings, brandsLocalizedAttributes } =
-    loadSettings()
+  const {
+    settings,
+    localizedAttributes,
+    brandsSettings,
+    brandsLocalizedAttributes,
+    categoriesSettings,
+    categoriesLocalizedAttributes,
+  } = loadSettings()
   await awaitTask(
     await meili(`/indexes/${INDEX}/settings`, { method: 'PATCH', body: settings }),
     'apply settings',
@@ -294,25 +372,35 @@ async function main() {
     await meili(`/indexes/${BRANDS_INDEX}/settings`, { method: 'PATCH', body: brandsSettings }),
     'apply brands settings',
   )
+  await awaitTask(
+    await meili(`/indexes/${CATEGORIES_INDEX}/settings`, {
+      method: 'PATCH',
+      body: categoriesSettings,
+    }),
+    'apply categories settings',
+  )
   await applyLocalized(INDEX, localizedAttributes)
   await applyLocalized(BRANDS_INDEX, brandsLocalizedAttributes)
+  await applyLocalized(CATEGORIES_INDEX, categoriesLocalizedAttributes)
 
   if (SETTINGS_ONLY) {
     console.log('setup-meilisearch: --settings-only, skipping product sync.')
     return
   }
 
-  const documents = await loadProducts()
+  const supabase = await createSupabase()
+  const documents = await loadProducts(supabase)
   if (documents.length === 0) {
+    // Keep going: the derived indexes still need their rebuild, and a category
+    // with zero products is a real (if sad) state the index should describe.
     console.log('setup-meilisearch: no active products to index.')
-    return
+  } else {
+    await awaitTask(
+      await meili(`/indexes/${INDEX}/documents`, { method: 'PUT', body: documents }),
+      'index documents',
+    )
+    console.log(`setup-meilisearch: indexed ${documents.length} product(s).`)
   }
-
-  await awaitTask(
-    await meili(`/indexes/${INDEX}/documents`, { method: 'PUT', body: documents }),
-    'index documents',
-  )
-  console.log(`setup-meilisearch: indexed ${documents.length} product(s).`)
 
   // The brands index is derived, so it is REBUILT rather than merged: a brand
   // whose last product left the catalogue must leave the index too, and an
@@ -329,6 +417,25 @@ async function main() {
     )
   }
   console.log(`setup-meilisearch: indexed ${brands.length} brand(s).`)
+
+  // Categories are rebuilt for the same reason brands are: a category
+  // deactivated in the catalogue must leave the index, and an upsert alone
+  // would keep it forever.
+  const categoryDocuments = toCategoryDocuments(await loadCategories(supabase), documents)
+  await awaitTask(
+    await meili(`/indexes/${CATEGORIES_INDEX}/documents`, { method: 'DELETE' }),
+    'clear categories index',
+  )
+  if (categoryDocuments.length > 0) {
+    await awaitTask(
+      await meili(`/indexes/${CATEGORIES_INDEX}/documents`, {
+        method: 'PUT',
+        body: categoryDocuments,
+      }),
+      'index category documents',
+    )
+  }
+  console.log(`setup-meilisearch: indexed ${categoryDocuments.length} category document(s).`)
 }
 
 main().catch((error) => {

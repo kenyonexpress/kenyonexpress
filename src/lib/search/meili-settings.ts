@@ -266,6 +266,126 @@ export function toBrandDocuments(rows: BrandSource[]): BrandDocument[] {
   return [...byKey.values()].sort((a, b) => b.product_count - a.product_count)
 }
 
+// ---------------------------------------------------------------------------
+// The categories index.
+//
+// Unlike brands, categories ARE a table, so the documents map rows rather than
+// aggregate free text. The index exists for category autocomplete and the
+// category chips on the search page; the products index keeps carrying
+// `category_slug` / `category_name_he` as facets, and this index's documents
+// join back through exactly those values. Rebuilt by
+// scripts/setup-meilisearch.mjs from the same run that fills products, so the
+// counts can never describe a different catalogue than the one indexed.
+// ---------------------------------------------------------------------------
+
+export const CATEGORIES_INDEX = process.env.MEILISEARCH_CATEGORIES_INDEX ?? 'categories'
+
+export interface CategoryDocument {
+  /** categories.id. A uuid fits Meilisearch's [A-Za-z0-9_-] id alphabet as-is. */
+  id: string
+  slug: string
+  name_he: string
+  name_en: string | null
+  description_he: string | null
+  /** For a "subcategories of X" facet; null for a root category. */
+  parent_id: string | null
+  image_url: string | null
+  sort_order: number
+  /** Active products in the category, coupons included. */
+  product_count: number
+  /** How many of those are coupons, so a chip can say "12 קופונים". */
+  coupon_count: number
+}
+
+/**
+ * Same Hebrew typo budget and locale pin as the products index, same
+ * reasoning. `slug` is not searchable, so nothing needs a typo exemption.
+ * `product_count:desc` sits where products put `in_stock:desc`: between two
+ * categories matching the query, the fuller one is the better suggestion.
+ */
+export const CATEGORIES_INDEX_SETTINGS = {
+  searchableAttributes: ['name_he', 'name_en', 'description_he'],
+  filterableAttributes: ['parent_id', 'slug'],
+  sortableAttributes: ['product_count', 'sort_order'],
+  rankingRules: [
+    'words',
+    'typo',
+    'product_count:desc',
+    'proximity',
+    'attribute',
+    'sort',
+    'exactness',
+  ],
+  stopWords: [...STOP_WORDS],
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: { ...TYPO_TOLERANCE.minWordSizeForTypos },
+    disableOnAttributes: [] as string[],
+  },
+  localizedAttributes: [
+    { attributePatterns: ['name_he', 'description_he'], locales: [...HEBREW_LOCALES] },
+  ],
+}
+
+type CategoryRow = {
+  id: string
+  slug: string
+  name_he: string
+  name_en?: string | null
+  description_he?: string | null
+  parent_id?: string | null
+  image_url?: string | null
+  sort_order?: number | null
+  is_active?: boolean | null
+  deleted_at?: string | null
+}
+
+type CategoryProductSource = {
+  category_id?: string | null
+  type?: string | null
+}
+
+/**
+ * Maps category rows plus the already-mapped product documents into category
+ * documents.
+ *
+ * Inactive and soft-deleted categories are dropped here, defensively, even
+ * when the reader already filtered: an index is public output, and the
+ * predicate must hold wherever the rows came from. Empty categories stay in —
+ * they exist for navigation — but `product_count:desc` ranks them last among
+ * equals.
+ */
+export function toCategoryDocuments(
+  categories: CategoryRow[],
+  products: CategoryProductSource[],
+): CategoryDocument[] {
+  const productCount = new Map<string, number>()
+  const couponCount = new Map<string, number>()
+  for (const product of products) {
+    if (!product.category_id) continue
+    productCount.set(product.category_id, (productCount.get(product.category_id) ?? 0) + 1)
+    if (product.type === 'coupon') {
+      couponCount.set(product.category_id, (couponCount.get(product.category_id) ?? 0) + 1)
+    }
+  }
+
+  return categories
+    .filter((row) => row.is_active !== false && row.deleted_at == null)
+    .map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name_he: row.name_he,
+      name_en: row.name_en ?? null,
+      description_he: row.description_he ?? null,
+      parent_id: row.parent_id ?? null,
+      image_url: row.image_url ?? null,
+      sort_order: row.sort_order ?? 0,
+      product_count: productCount.get(row.id) ?? 0,
+      coupon_count: couponCount.get(row.id) ?? 0,
+    }))
+    .sort((a, b) => a.sort_order - b.sort_order || a.name_he.localeCompare(b.name_he, 'he'))
+}
+
 /** The row shape pushed into the index. */
 export interface ProductDocument {
   id: string

@@ -23,6 +23,16 @@ function meiliEnv(): { host: string; key: string } | null {
   return { host: host.replace(/\/$/, ''), key }
 }
 
+/**
+ * Whether Meilisearch is configured at all. The outbox drain checks this
+ * BEFORE claiming: while stage 1 (Postgres ILIKE/FTS) serves search, the
+ * outbox rows are the durable record that a reindex is owed, and claiming
+ * them only to no-op would burn their attempt counters and blur the record.
+ */
+export function isMeilisearchConfigured(): boolean {
+  return meiliEnv() !== null
+}
+
 async function meiliRequest(path: string, method: string, body?: unknown): Promise<void> {
   const env = meiliEnv()
   if (!env) return
