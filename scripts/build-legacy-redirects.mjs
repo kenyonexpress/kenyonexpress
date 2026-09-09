@@ -106,6 +106,11 @@ function staticRoutes(dir = APP_DIR, prefix = '') {
     const name = entry.name
     if (name.startsWith('_') || name.startsWith('@')) continue
     if (name.startsWith('[')) continue
+    // `/dev/**` is not something this site serves. Those pages call
+    // `notFound()` under NODE_ENV=production, so counting them as live routes
+    // would tell the redirect builder that a path exists which every real
+    // visitor gets a 404 for.
+    if (prefix === '' && name === 'dev') continue
     const segment = name.startsWith('(') && name.endsWith(')') ? '' : `/${name}`
     const child = join(dir, name)
     if (existsSync(join(child, 'page.tsx')) || existsSync(join(child, 'page.ts'))) {
