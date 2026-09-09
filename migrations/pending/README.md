@@ -1,5 +1,104 @@
 # `migrations/pending/`
 
+## 2026-09-09: 195 WRITTEN, not applied — a sold-out page that learns nothing
+
+`195_stock_waitlist.sql`. `ProductInfo` printed "אזל מהמלאי", disabled the
+button, and the visit ended there. Somebody came for a specific thing, it was
+not there, and the shop learned nothing from it — not that the product is
+wanted, not by how many people.
+
+**Measured 2026-09-09, and it is why this file is the smallest one here:** no
+active product is at zero stock. 44 active, 0 sold out, 19 with
+`stock_quantity IS NULL` and therefore never sold out by construction. The
+branch exists in the UI and production does not currently reach it. Built for
+the first time it does, and sized accordingly.
+
+**Email is the key, not the user id.** A guest can want a restock, and demanding
+an account at that moment converts the only signal of interest into a signup
+form. `user_id` is recorded when there happens to be one.
+
+**Notified, not deleted.** `notified_at` marks a row sent rather than removing
+it, so "we told forty people and three bought" stays answerable and a second
+restock does not mail the same person again unless they ask again. The unique
+index is partial on `notified_at IS NULL` for exactly that: one LIVE request per
+address per product, and a new request after a notification is a new request
+rather than a duplicate.
+
+**Not readable by any client role.** A row is an email address next to a
+purchase intention; a public SELECT would turn the waitlist into a customer list
+anyone could page through. RESTRICTIVE deny, the 172 shape, so a permissive
+policy added later cannot outvote it.
+
+**Verified against production inside a rolled-back `DO` block:**
+
+```
+rows_after_two_calls=1  bad_email=REFUSED  unknown_product=REFUSED  rows_after_renotify=2
+```
+
+Two calls with the same address in different casing and whitespace write one
+row. A malformed address and an id that is not a live product are both refused
+rather than stored. After a notification the same person can ask again.
+
+## 2026-09-09: 194 WRITTEN, not applied — a single-use code is unlimited-use
+
+`194_discount_claim_caps.sql`. The finding was already in the codebase, in a
+comment next to the charge in `checkout.ts`:
+
+> nothing increments `coupons.used_count`, so `max_uses` is enforced as a read
+> of a counter no part of this flow advances
+
+That is exact, and what it means is that a code marked single-use is not
+single-use. It is **unlimited-use, for everybody, forever**. The check reads a
+counter, the counter stays at zero, the check passes. Nothing errors and nothing
+logs, because from the code's point of view the coupon simply has uses left.
+
+`max_uses_per_user` is worse on the `coupons` side: the column does not exist.
+`discount_campaigns` **has** both columns and a `discount_redemptions` table to
+count against, and `growth/discount.ts:147` reads `used_count >= max_uses`
+there too — against a counter that also has no writer. Two coupon systems, the
+same defect in both, and one of them looks complete enough that nobody
+re-checked.
+
+Measured 2026-09-09: `coupons` 0 rows, `discount_campaigns` 0 rows,
+`discount_redemptions` 0 rows. **Nothing has been lost yet.** The hole opens the
+moment the first code is created, and a marketing code is created by somebody in
+a hurry.
+
+**Shaped after 117's stock reservation on purpose.** A `max_uses` cap is the
+same kind of scarce thing as the last unit in stock, and 117 already solved it:
+check and claim in one statement under `FOR UPDATE`, before the card is charged,
+all-or-nothing, released when the order is cancelled. `claim_order_discount` is
+`reserve_order_stock` and `release_order_discount` is `release_order_stock`;
+they are called from the same two places. One shape in the codebase for "hold a
+limited thing while the shopper pays" beats two that differ in ways nobody
+chose.
+
+**A read-then-write in TypeScript would be the bug that was already fixed here
+once.** `finalize.ts` used to SELECT `stock_quantity` and UPDATE to
+`max(0, stock - qty)`; two concurrent finalizes read the same number and wrote
+the same result, and the floor hid it. `SELECT used_count; UPDATE used_count+1`
+is that bug with a different column.
+
+**Verified against production inside a rolled-back `DO` block**, with nothing
+left behind:
+
+```
+first=OK  replay=OK  used_after_replay=1  rows=1
+second_order=per_user_exhausted  released=1  used_after_release=0  retry=OK
+```
+
+A replayed claim for the same order leaves the counter at 1 and writes exactly
+one row (the unique index is what makes it idempotent rather than a guard
+somebody has to remember). A second order by the same customer under a cap of 1
+is refused. Release hands the use back and the next attempt succeeds. The match
+is case-insensitive — the first call passed `probe194` against a stored
+`PROBE194`.
+
+`coupons.max_uses_per_user` is nullable with `DEFAULT 1`: NULL means unlimited
+and stays expressible, while a code created without a thought is single-use per
+customer. That direction is the recoverable one — a customer refused a second
+use opens a ticket, a code reused without limit is money that is gone.
+
 ## 2026-09-09: 193 WRITTEN, not applied — fifteen price claims and no evidence
 
 `193_price_history.sql`. Measured against production the same day:

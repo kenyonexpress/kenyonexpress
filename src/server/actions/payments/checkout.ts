@@ -600,11 +600,17 @@ async function runBeginCheckout(
   //
   // The code itself is not stored on the order: `orders` has no column for it,
   // and adding one would put an unapplied migration on the charging path, which
-  // is the trap GO-LIVE already carries once for commission_type. The
-  // consequence is recorded rather than hidden: nothing increments
-  // `coupons.used_count`, so `max_uses` is enforced as a read of a counter no
-  // part of this flow advances. See STATE, "what the coupon code does not do".
-  const { discountAgorot } = await resolveCheckoutDiscountAgorot()
+  // is the trap GO-LIVE already carries once for commission_type.
+  //
+  // THE USE IS COUNTED SOMEWHERE ELSE NOW. This comment used to end "nothing
+  // increments `coupons.used_count`, so `max_uses` is enforced as a read of a
+  // counter no part of this flow advances" -- which is to say a single-use code
+  // was unlimited-use, for everybody, and the check passed every time because
+  // the counter never moved. `claim_order_discount` at step 4c advances it,
+  // under the row lock, next to the stock reservation and for the same reason:
+  // a cap on a scarce thing has to be claimed before the card is charged.
+  // Requires 194.
+  const { code: discountCode, discountAgorot } = await resolveCheckoutDiscountAgorot()
 
   let settlement: ReturnType<typeof calculateSettlement>
   try {
@@ -792,6 +798,70 @@ async function runBeginCheckout(
       ok: false,
       error: soldOut ? 'אחד הפריטים אזל מהמלאי' : 'אין מספיק במלאי לאחד הפריטים',
       code: 'INSUFFICIENT_STOCK',
+    }
+  }
+
+  // 4c. CLAIM THE DISCOUNT, for the same reason and in the same place.
+  //
+  // A `max_uses` cap is a scarce thing exactly like the last unit in stock, so
+  // it is held the same way: checked and advanced inside one row lock, before
+  // any payment row exists, all-or-nothing, and given back when the order is
+  // cancelled. `claim_order_discount` returns null on success or a refusal
+  // reason.
+  //
+  // AFTER the stock hold rather than before, so a checkout that is going to
+  // fail on stock does not burn a use of the code on the way. The reverse order
+  // would spend the customer's one-per-user allowance on an order they cannot
+  // complete, and the release only runs on paths that reach a cancel.
+  //
+  // A failure to CALL it is fatal, the same as the reservation: a cap system
+  // that fails open is a cap system that does nothing on the day it matters.
+  // The one exception is 42883 / PGRST202, which is 194 not being applied yet
+  // -- there the flow continues with the pre-194 behaviour rather than refusing
+  // every checkout over a migration nobody has approved.
+  if (discountCode && discountAgorot > 0) {
+    const { data: refusal, error: claimError } = await admin.rpc('claim_order_discount', {
+      p_order_id: order.id,
+      p_user_id: user.id,
+      p_code: discountCode,
+      p_amount_agorot: discountAgorot,
+    })
+
+    const notApplied =
+      claimError?.code === '42883' ||
+      claimError?.code === 'PGRST202' ||
+      /claim_order_discount/i.test(claimError?.message ?? '')
+
+    if (claimError && !notApplied) {
+      log.error('checkout.discount_claim_failed', {
+        orderId: order.id,
+        reason: claimError.message,
+      })
+      await admin.rpc('release_order_stock', { p_order_id: order.id })
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      return { ok: false, error: 'לא הצלחנו לאמת את קוד ההנחה, נסו שוב', code: 'INTERNAL' }
+    }
+
+    if (claimError) {
+      log.warn('checkout.discount_claim_unavailable', {
+        orderId: order.id,
+        detail: '194 is written and not applied; the cap is not being counted.',
+      })
+    } else if (refusal) {
+      // The stock hold is given back explicitly. It would lapse on its own
+      // within STOCK_RESERVATION_MINUTES, but a checkout that ends here ends
+      // now, and holding a unit for fifteen minutes against an order nobody
+      // will pay for is stock nobody can buy.
+      await admin.rpc('release_order_stock', { p_order_id: order.id })
+      await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+      return {
+        ok: false,
+        error:
+          refusal === 'per_user_exhausted'
+            ? 'כבר השתמשת בקוד ההנחה הזה'
+            : 'קוד ההנחה כבר אינו בתוקף',
+        code: 'VALIDATION',
+      }
     }
   }
 

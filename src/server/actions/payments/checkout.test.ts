@@ -130,9 +130,10 @@ vi.mock('@/lib/payments/payment-money-columns', () => ({
 }))
 
 const getCart = vi.fn()
+const resolveDiscount = vi.fn(async () => ({ code: null as string | null, discountAgorot: 0 }))
 vi.mock('@/server/actions/cart', () => ({
   getCart: () => getCart(),
-  resolveCheckoutDiscountAgorot: async () => ({ discountAgorot: 0 }),
+  resolveCheckoutDiscountAgorot: () => resolveDiscount(),
 }))
 
 const { beginCheckout, reconcileOrderReturn } = await import('./checkout')
@@ -208,6 +209,7 @@ beforeEach(() => {
   provider.createLowProfile.mockReset()
   provider.verifyLowProfile.mockReset()
   finalizeOrderMock.mockReset()
+  resolveDiscount.mockResolvedValue({ code: null, discountAgorot: 0 })
 })
 
 /** Everything up to and including the stock reservation, so 5b is reached. */
@@ -225,6 +227,109 @@ function queueThroughReservation(): void {
 function wrote(table: string): boolean {
   return calls.some((c) => c.table === table && c.op !== 'select')
 }
+
+describe('beginCheckout: a discount cap is claimed before the card is charged', () => {
+  // The defect these cover was a comment in checkout.ts rather than a bug
+  // report: "nothing increments coupons.used_count, so max_uses is enforced as
+  // a read of a counter no part of this flow advances". A single-use code was
+  // unlimited-use for everybody, and the check passed every time because the
+  // counter never moved.
+
+  it('claims the code, after the stock and before any payment row', async () => {
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 1000 })
+    queueThroughReservation()
+    queue('rpc:claim_order_discount.rpc', { data: null, error: null })
+    provider.createLowProfile.mockResolvedValue({
+      ok: true,
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://secure.cardcom.solutions/lp/1',
+    })
+
+    await beginCheckout(input())
+
+    const order = calls.findIndex((c) => c.table === 'rpc:reserve_order_stock')
+    const claim = calls.findIndex((c) => c.table === 'rpc:claim_order_discount')
+    const payment = calls.findIndex((c) => c.table === 'payments' && c.op !== 'select')
+    // After the stock so a checkout that is going to fail on stock does not
+    // burn a use of the code on the way out; before the payment row for the
+    // same reason the reservation is.
+    expect(claim).toBeGreaterThan(order)
+    expect(claim).toBeLessThan(payment === -1 ? Number.POSITIVE_INFINITY : payment)
+  })
+
+  it('does not claim anything when no code is applied', async () => {
+    queueThroughReservation()
+    provider.createLowProfile.mockResolvedValue({
+      ok: true,
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://secure.cardcom.solutions/lp/1',
+    })
+
+    await beginCheckout(input())
+
+    expect(calls.some((c) => c.table === 'rpc:claim_order_discount')).toBe(false)
+  })
+
+  it('refuses the checkout and gives the stock back when the customer has used the code', async () => {
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 1000 })
+    queueThroughReservation()
+    queue('rpc:claim_order_discount.rpc', { data: 'per_user_exhausted', error: null })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: false, code: 'VALIDATION' })
+    expect(result.ok === false && result.error).toContain('כבר השתמשת')
+    // The hold is handed back explicitly rather than left to lapse. It would
+    // free itself within STOCK_RESERVATION_MINUTES, and fifteen minutes of a
+    // unit nobody can buy is the cost of not saying so.
+    expect(calls.some((c) => c.table === 'rpc:release_order_stock')).toBe(true)
+    expect(provider.createLowProfile).not.toHaveBeenCalled()
+  })
+
+  it('refuses rather than charging when the claim itself errors', async () => {
+    // A cap system that fails open is a cap system that does nothing on the day
+    // it matters. Same rule the stock reservation already follows.
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 1000 })
+    queueThroughReservation()
+    queue('rpc:claim_order_discount.rpc', {
+      data: null,
+      error: { message: 'connection terminated', code: '08006' },
+    })
+
+    const result = await beginCheckout(input())
+
+    expect(result).toMatchObject({ ok: false, code: 'INTERNAL' })
+    expect(provider.createLowProfile).not.toHaveBeenCalled()
+  })
+
+  it('carries on when 194 is not applied yet, instead of refusing every checkout', async () => {
+    // The one error that is not fatal. 42883 is "function does not exist", and
+    // treating an unapproved migration as a payment outage would take the shop
+    // down over a file nobody has agreed to run.
+    resolveDiscount.mockResolvedValue({ code: 'SAVE10', discountAgorot: 1000 })
+    queueThroughReservation()
+    queue('rpc:claim_order_discount.rpc', {
+      data: null,
+      error: { message: 'function public.claim_order_discount does not exist', code: '42883' },
+    })
+    provider.createLowProfile.mockResolvedValue({
+      ok: true,
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://secure.cardcom.solutions/lp/1',
+    })
+
+    const result = await beginCheckout(input())
+
+    // Asserted as "the checkout carried on past the claim" rather than as a
+    // green result: this harness stops at the payment row, and what is under
+    // test is whether 42883 aborts the flow. It does not. The two things a
+    // refusal would have done -- answered VALIDATION and handed the stock back
+    // -- did not happen, and the run continued to the payment step.
+    expect(result.ok === false && result.code).not.toBe('VALIDATION')
+    expect(calls.some((c) => c.table === 'rpc:release_order_stock')).toBe(false)
+    expect(calls.some((c) => c.table === 'payments' && c.op !== 'select')).toBe(true)
+  })
+})
 
 describe('beginCheckout: a read that failed is not an answer', () => {
   it('does not tell the shopper their own address is invalid when it could not be read', async () => {

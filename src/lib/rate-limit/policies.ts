@@ -104,6 +104,13 @@ export const RATE_LIMIT_POLICIES = {
   // genuine shopper scans one flyer.
   coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
+  // Same shape and the same number as `newsletter`, because it is the same
+  // hazard: a form that ends in mail to an address the submitter typed. Without
+  // a ceiling it is a free way to point our domain at a stranger's inbox, with
+  // the restock notice as the payload. Per IP, because there is no account to
+  // key on -- requiring one at the moment a shopper finds an empty shelf would
+  // trade the only signal of interest for a signup form.
+  waitlist: { limit: 5, windowSeconds: 3600, reason: 'back-in-stock mail, per IP' },
 
   // Added when this layer was rebased onto main: `referral-code` landed on main
   // after the table was first written, and the static audit below is what

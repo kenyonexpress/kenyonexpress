@@ -91,6 +91,23 @@ async function runCancelPendingOrder(
     })
   }
 
+  // The discount code's use goes back with the stock, and for the same reason.
+  // A cancelled order that keeps its claim spends a one-per-customer code on a
+  // sale that never happened, and the customer cannot use it again -- a refusal
+  // they have no way to understand and support has no way to explain.
+  //
+  // Best effort and never fatal, like the line above: an unreleased claim costs
+  // one use of one code, a thrown error costs the cancellation.
+  const { error: discountReleaseError } = await supabase.rpc('release_order_discount', {
+    p_order_id: parsed.data.id,
+  })
+  if (discountReleaseError) {
+    log.warn('admin.order_cancel_discount_release_failed', {
+      orderId: parsed.data.id,
+      reason: discountReleaseError.message,
+    })
+  }
+
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
@@ -258,6 +275,19 @@ async function runOverrideOrderStatus(
       log.warn('admin.order_override_stock_release_failed', {
         orderId: id,
         reason: releaseError.message,
+      })
+    }
+
+    // Same pairing as the cancel path. `release_stock` is the effect that means
+    // "this order is not going to happen", and a discount claim is held on
+    // exactly the same premise.
+    const { error: discountReleaseError } = await supabase.rpc('release_order_discount', {
+      p_order_id: id,
+    })
+    if (discountReleaseError) {
+      log.warn('admin.order_override_discount_release_failed', {
+        orderId: id,
+        reason: discountReleaseError.message,
       })
     }
   }

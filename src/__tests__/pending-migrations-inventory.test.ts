@@ -333,6 +333,30 @@ describe('the pending migration inventory', () => {
       // block: 80 rows seeded, a second identical run wrote 0, UPDATE and
       // DELETE both refused, and no product skipped for want of a price.
       '193_price_history.sql',
+      // 194 WRITTEN 2026-09-09, not applied. It makes `max_uses` and
+      // `max_uses_per_user` mean something. checkout.ts already carried the
+      // finding in a comment -- "nothing increments coupons.used_count, so
+      // max_uses is enforced as a read of a counter no part of this flow
+      // advances" -- which is to say a single-use code was unlimited-use, for
+      // everybody, and the check passed every time. `discount_campaigns` has
+      // the same defect behind a schema that looks complete. Shaped after 117's
+      // stock reservation deliberately: claim under FOR UPDATE before the
+      // charge, release where the stock is released. Proven against production
+      // in a rolled-back DO block -- a replay for the same order leaves
+      // used_count at 1 and writes one row, a second order for the same user
+      // returns per_user_exhausted, and release hands the use back.
+      '194_discount_claim_caps.sql',
+      // 195 WRITTEN 2026-09-09, not applied, and the smallest file here on
+      // purpose. A sold-out product page printed "אזל מהמלאי", disabled the
+      // button, and learned nothing from the visit. Measured the same day: no
+      // active product is at zero stock (44 active, 0 sold out, 19 untracked
+      // and therefore never sold out by construction), so this is built for the
+      // first time that branch is reached rather than to stop something
+      // bleeding. Proven against production in a rolled-back DO block: two
+      // calls with the same address in different casing write one row, a
+      // malformed address and an unknown product are both refused, and a person
+      // already notified can ask again for the next restock.
+      '195_stock_waitlist.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

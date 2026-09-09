@@ -6,6 +6,7 @@ import RatingStars from '@/components/product/RatingStars'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import WaitlistButton from '@/components/storefront/WaitlistButton'
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
@@ -271,6 +272,18 @@ export default function ProductInfo({
         catalogue.
       */}
       {!outOfStock && scarcitySlot}
+
+      {/*
+        The only thing a sold-out page can still offer. Rendered for a product
+        that is genuinely out of stock, not for a coupon whose deal has closed:
+        a closed deal is not coming back, and offering to tell someone when it
+        does is a promise nothing here can keep.
+      */}
+      {outOfStock && !isCoupon && (
+        <div className="mt-3">
+          <WaitlistButton productId={productId} variantId={variant?.id ?? null} />
+        </div>
+      )}
 
       {/* A subscription is priced per cycle; quoting the one-off price here
           would promise the wrong number. The renewal terms sit next to the

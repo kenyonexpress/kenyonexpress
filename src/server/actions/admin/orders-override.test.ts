@@ -160,13 +160,21 @@ describe('overrideOrderStatus', () => {
     expect(writeAuditLog).not.toHaveBeenCalled()
   })
 
-  it('releases the stock reservation on pending -> cancelled', async () => {
+  it('releases the stock reservation AND the discount claim on pending -> cancelled', async () => {
     queue('orders.select', orderRow('pending'))
     queue('orders.update', { data: { id: ORDER_ID }, error: null })
 
     const result = await overrideOrderStatus(null, form('cancelled'))
     expect(result).toEqual({ success: 'הסטטוס עודכן ל"בוטלה"' })
-    expect(rpcCalls).toEqual([{ fn: 'release_order_stock', args: { p_order_id: ORDER_ID } }])
+    // Both, and in this order. A discount claim is held on exactly the premise
+    // `release_stock` denies -- that the order is going to happen -- so an
+    // override that frees one and not the other spends a one-per-customer code
+    // on a sale that never occurred, and the customer is refused next time with
+    // no way to find out why.
+    expect(rpcCalls).toEqual([
+      { fn: 'release_order_stock', args: { p_order_id: ORDER_ID } },
+      { fn: 'release_order_discount', args: { p_order_id: ORDER_ID } },
+    ])
     expect(writeAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({ changes: { status: { from: 'pending', to: 'cancelled' } } }),
     )
