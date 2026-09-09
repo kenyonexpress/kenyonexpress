@@ -23,6 +23,9 @@ const DIRECT_WRITERS = [
   { file: 'src/server/actions/payments/refund.ts', kind: 'human' },
   { file: 'src/server/payments/finalize.ts', kind: 'machine' },
   { file: 'src/app/api/payments/cardcom/webhook/route.ts', kind: 'machine' },
+  // The deletion proof row: the account owner erasing their own account is
+  // the actor, so the entity id doubles as the actor id.
+  { file: 'src/lib/account/deletion.ts', kind: 'self' },
 ] as const
 
 /** The insert literal that follows each from('audit_log') call. */
@@ -73,6 +76,13 @@ describe('direct audit_log inserts name their actor', () => {
         if (writer.kind === 'human') {
           expect(block, 'a human action must write the session actor').toMatch(
             /actor_id:\s*session\./,
+          )
+          expect(block).not.toMatch(/actor_id:\s*null/)
+        } else if (writer.kind === 'self') {
+          // Self-service: the authenticated owner acts on their own account,
+          // so the actor is the user id the action was called with.
+          expect(block, 'a self-service action must write the owner as actor').toMatch(
+            /actor_id:\s*userId/,
           )
           expect(block).not.toMatch(/actor_id:\s*null/)
         } else {

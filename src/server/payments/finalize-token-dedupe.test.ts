@@ -96,10 +96,16 @@ vi.mock('@/lib/payments/payment-money-columns', () => ({
     toAgorot: (v: unknown) => Number(v ?? 0),
   }),
 }))
-vi.mock('@/lib/commerce/order-money-columns', () => ({
-  moneyColumnProbe: () => async () => true,
-  resolveVoucherRateColumn: async () => 'platform_percent',
-}))
+vi.mock('@/lib/commerce/order-money-columns', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/commerce/order-money-columns')>()
+  return {
+    ...actual,
+    moneyColumnProbe: () => async () => true,
+    resolveOrderGeneration: async () => 'agorot' as const,
+    resolveOrderItemGeneration: async () => 'agorot' as const,
+    resolveVoucherRateColumn: async () => 'platform_percent',
+  }
+})
 vi.mock('@/lib/observability/sentry', () => ({ capturePaymentError: vi.fn() }))
 
 const { finalizeOrder } = await import('./finalize')
