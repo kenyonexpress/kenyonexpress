@@ -266,7 +266,32 @@ export function buildOrderShippedEmail(
   const name = asText(payload.customer_name)
   const items = asNumber(payload.item_count)
   const when = hebrewDateTime(payload.fulfilled_at)
-  const url = `${trimSite(siteUrl)}/account/orders`
+
+  /**
+   * The button goes to the public tracking page when the sender minted a link,
+   * and to the account page when it did not.
+   *
+   * The customer reading this on a phone is very often signed out -- they
+   * checked out as a guest, or the magic-link session expired weeks ago -- and
+   * `/account/orders` puts a login wall between them and a delivery status. The
+   * signed link (lib/orders/tracking-token.ts) does not. The fallback is kept
+   * because the payload written by the database trigger cannot mint an HMAC,
+   * and a mail with no button at all would be worse than one with the old
+   * button.
+   */
+  const url = asText(payload.tracking_url) ?? `${trimSite(siteUrl)}/account/orders`
+
+  /**
+   * "טופלה במלואה" is true when the whole order went out at once, and false for
+   * one parcel out of three. `partial` is set only by the server action that
+   * ships a single line; the trigger's payload has no such key, so its mail
+   * reads exactly as it always did.
+   */
+  const partial = payload.partial === true
+  const headline = partial ? 'חבילה מההזמנה שלך יצאה לדרך' : 'ההזמנה שלך נשלחה'
+  const opening = partial
+    ? 'חלק מההזמנה שלך יצא לדרך. שאר הפריטים יישלחו בנפרד, וכל חבילה מקבלת עדכון משלה.'
+    : 'ההזמנה שלך טופלה במלואה ויצאה לדרך.'
 
   /**
    * The tracking numbers, in the mail that announces the shipment.
@@ -296,13 +321,13 @@ export function buildOrderShippedEmail(
     })
     .filter((view): view is NonNullable<typeof view> => view !== null)
 
-  const subject = `ההזמנה שלך נשלחה · ${ref}`
+  const subject = `${headline} · ${ref}`
   const greeting = name ? `שלום ${name},` : 'שלום,'
 
   const text = [
     greeting,
     '',
-    'ההזמנה שלך טופלה במלואה ויצאה לדרך.',
+    opening,
     '',
     `מספר הזמנה: ${ltrText(ref)}`,
     items > 0 ? `פריטים: ${items}` : '',
@@ -322,8 +347,9 @@ export function buildOrderShippedEmail(
 
   const html = shell(
     `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
-        <div style="font-size:18px;font-weight:700;color:${INK}">ההזמנה שלך נשלחה</div>
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(headline)}</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
+        <div style="font-size:14px;color:${MUTED};margin-top:8px">${escapeHtml(opening)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
           <div>מספר הזמנה: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(ref)}</strong></div>
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}

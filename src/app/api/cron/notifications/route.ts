@@ -5,6 +5,7 @@ import { loadPreferenceRows } from '@/lib/notifications/preference-store'
 import { mayNotify } from '@/lib/notifications/preferences'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { orderTrackingUrl } from '@/lib/orders/tracking-token'
 import { pushOutboxRow } from '@/lib/push/dispatch'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { sendOutboxSms } from '@/lib/sms/outbox'
@@ -77,6 +78,33 @@ type OutboxRow = {
   push_status: string
   push_attempts: number
   push_next_attempt_at: string
+}
+
+/**
+ * The tracking link is minted here, at send time, and not by whoever enqueued
+ * the row.
+ *
+ * There are two producers of `order_shipped` -- the server action that ships a
+ * line, and the database trigger on `orders.status` -- and one of them is
+ * PL/pgSQL, which cannot compute an HMAC over an application secret. Minting in
+ * the sender means both produce a mail with a working link, and a row that has
+ * been sitting in the outbox for a week does not go out carrying a token that
+ * started expiring a week ago.
+ *
+ * A payload that already carries `tracking_url` keeps it: nothing does that
+ * today, and if something starts, the explicit value wins over the derived one.
+ */
+function withTrackingUrl(
+  kind: string,
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): Record<string, unknown> {
+  if (kind !== 'order_shipped') return payload
+  if (typeof payload.tracking_url === 'string' && payload.tracking_url !== '') return payload
+  const orderId = typeof payload.order_id === 'string' ? payload.order_id : null
+  if (!orderId) return payload
+  const url = orderTrackingUrl(siteUrl, orderId)
+  return url ? { ...payload, tracking_url: url } : payload
 }
 
 async function handleGET(request: NextRequest): Promise<NextResponse> {
@@ -209,7 +237,11 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         .update({ status: 'skipped', last_error: 'email switched off by the customer' })
         .eq('id', row.id)
     } else if (emailDue) {
-      const built = buildNotification(row.kind, row.payload ?? {}, siteUrl)
+      const built = buildNotification(
+        row.kind,
+        withTrackingUrl(row.kind, row.payload ?? {}, siteUrl),
+        siteUrl,
+      )
       if (!built) {
         // A kind nothing can render will never render, however often it is
         // retried, so it is parked immediately rather than burning five attempts.

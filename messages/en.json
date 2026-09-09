@@ -143,5 +143,29 @@
   "voucherExpiry": {
     "creditUsable": "You can spend it on any purchase on the site.",
     "walletCta": "To my wallet"
+  },
+  "orderTracking": {
+    "title": "Track your order",
+    "loading": "One moment, checking where your order is…",
+    "orderLabel": "Order",
+    "expiredTitle": "This link has expired",
+    "expiredBody": "Tracking links are valid for a limited time. Your order and its shipping details are in your account.",
+    "invalidTitle": "This link is not valid",
+    "invalidBody": "It may have been copied only partially. Your order and its shipping details are in your account.",
+    "missingBody": "We could not find this order. Your orders are in your account.",
+    "ordersCta": "Go to my orders",
+    "noPhysical": "Nothing in this order ships. The coupons you bought are waiting in your account, under My coupons.",
+    "stepsHeading": "Delivery steps",
+    "nowBadge": "Now",
+    "estimatePrefix": "Estimated delivery:",
+    "estimateSuffix": "Counted in business days. This is an estimate, not a commitment.",
+    "overduePrefix": "We estimated delivery by",
+    "overdueSuffix": "and the order has not arrived.",
+    "overdueCta": "Write to us",
+    "overdueTail": "and we will look into it.",
+    "shipmentsHeading": "Shipping details",
+    "carrierLink": "Track with the carrier",
+    "itemsHeading": "Items in this order",
+    "privacyNote": "This page shows delivery status only. Payment, invoice and refund details are in your account."
   }
 }

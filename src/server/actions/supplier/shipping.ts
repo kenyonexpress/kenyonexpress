@@ -5,6 +5,7 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { planTransition } from '@/lib/shipping/transitions'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSupplierRole } from '@/lib/supplier/rbac'
+import { notifyOrderShipped } from '@/server/shipping/notify'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -148,6 +149,11 @@ async function runMarkShipped(
       member_role: session.memberRole,
     },
   })
+
+  // The customer hears about it from here too, and through the same builder as
+  // the admin path: two write paths that told the customer different things
+  // would be worse than one that told them nothing.
+  await notifyOrderShipped(admin, item.order_id, itemId)
 
   revalidatePath('/supplier/orders')
   return { ok: true }

@@ -149,5 +149,12 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * The 589 difference between 1,292 and 703 is not a backlog. It is the admin
  * panel, the legal text and the live-site fixtures, and each is excluded for a
  * reason stated in this file's header rather than deferred.
+ *
+ * 2026-09-10, SECTIONS 29: the public order-tracking page was built with its
+ * copy in the catalog from the first commit (`orderTracking.*`, 22 keys), so a
+ * whole new customer-facing page added nothing here. `buildOrderShippedEmail`
+ * lost one literal on the way -- its headline became a variable, because a
+ * partial shipment must not claim the order "טופלה במלואה" -- so the number
+ * fell by one. 662 -> 661.
  */
-export const HEBREW_LITERAL_CEILING = 662
+export const HEBREW_LITERAL_CEILING = 661
