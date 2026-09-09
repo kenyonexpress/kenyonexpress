@@ -14,20 +14,42 @@ options), `docs/DISASTER-RECOVERY.md` (data loss).
 
 ## 0. Read this first
 
-Three facts change how you should interpret every alert below.
+Three facts change how you should interpret every alert below. **Two of the
+three were re-measured 2026-09-09 and had reversed; the original wording is kept
+underneath each so an alert written against the old assumption still reads.**
 
-1. **No scheduler is running.** Ten cron routes exist, are correct, and are
-   never called. See §2. Until this is fixed, anything that depends on a
-   scheduled job silently does not happen, and there is no alert for it because
-   the thing that would alert is itself a cron job.
+1. **A scheduler is running, and three routes are missing from the deployment.**
+   Re-measured 2026-09-09: `.github/workflows/cron.yml` calls all thirteen jobs
+   from GitHub Actions. `CRON_SCHEDULER_ENABLED=true` and `CRON_SECRET` are set
+   on the repository, and recent run logs show real calls returning `200`.
+
+   What is still broken is narrower and does not look like a scheduling
+   problem. Probing every path without the bearer (401 = present and guarded,
+   404 = absent from the build), **three answer 404: `whatsapp`, `retention`,
+   `weekly-digest`.** All three are in the tree and on `main`, so the deployment
+   is older than the routes. The WhatsApp outbox is never drained, retention
+   never runs, the weekly digest is never sent. `whatsapp` sits on the
+   five-minute schedule, so this is also why the cron workflow flaps red. The
+   fix is a production redeploy, not a scheduler change.
+   `scripts/deployed-cron-probe.mjs` (inside `production-smoke.yml`) is the gate
+   that catches this; every other cron gate compares the repo to itself.
+
+   *Was, until 2026-09-02:* "No scheduler is running. Ten cron routes exist, are
+   correct, and are never called." See §2.
 
 2. **The system is pre-launch.** Zero vouchers, zero payment events, four
    orders. Most "nothing is happening" symptoms are correct.
 
-3. **`finalize.ts` has a known column bug on the money path.** It selects
+3. **The `42703` column bug on the money path is fixed.** Re-measured
+   2026-09-09: `src/lib/commerce/order-money-columns.ts` resolves the schema
+   generation at runtime, so `finalize.ts` and `queries/orders.ts` name
+   `cashback_applied_agorot` / `unit_price_agorot` on a post-059 database and
+   the `_ils` twins on the hosted pre-059 one. §4.1 stays as the diagnosis for
+   the error class, but it is no longer the expected launch-day incident.
+
+   *Was, until 2026-09-08:* "`finalize.ts` selects
    `orders.cashback_applied_agorot` and `order_items.unit_price_agorot`, neither
-   of which exists in production. The first real payment will hit `42703`. See
-   §4.1. This is the single most likely launch-day incident.
+   of which exists in production. The first real payment will hit `42703`."
 
 ---
 
@@ -72,7 +94,11 @@ curl -s -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/health |
 
 ## 2. INCIDENT: nothing scheduled is running
 
-**This is the current state, not a hypothetical.**
+**No longer the current state. Re-measured 2026-09-09: the scheduler runs from
+GitHub Actions and returns 200s.** Keep reading this section when the symptoms
+below appear anyway, because they are also what a *partly* deployed build looks
+like -- see §0 fact 1, where three routes answer 404 in production while every
+in-repo gate is green.
 
 ### Symptoms
 
@@ -92,15 +118,22 @@ runs the ones the plan covers and **silently ignores the rest**, which is how a
 payment reconciler comes to be believed to be running when it is not. Removing
 them was the honest choice.
 
-### The ten routes
+### The routes
+
+Thirteen as of 2026-09-09, not the ten this section was written against.
+`scripts/cron-jobs.json` is the register and the only place worth reading; the
+list here goes stale every time a job is added.
 
 ```
 abandoned-cart   expire-vouchers   health        invoices    notifications
 reap-carts       reconcile         stock         stranded-payments
-subscriptions
+subscriptions    whatsapp          retention     weekly-digest
 ```
 
-All ten are `GET` and all ten require `Authorization: Bearer <CRON_SECRET>`,
+The last three answer **404 in production** (measured 2026-09-09) because the
+deployment predates them. They are in the tree and on `main`.
+
+All are `GET` and all require `Authorization: Bearer <CRON_SECRET>`,
 with no default and no fallback. A missing secret means every route answers 401.
 
 Three are on the money path: `invoices`, `reconcile`, `stranded-payments`.
@@ -109,14 +142,24 @@ email.
 
 ### Fix
 
-Two candidate schedulers are written down and **neither is switched on**:
+**Re-measured 2026-09-09: this is switched on. The section below is the history
+of how, kept because the caveat in it still bites.**
 
-- `.github/workflows/cron.yml` needs `CRON_SECRET` in Actions secrets
-  (`gh secret list` currently returns nothing) plus an enabling variable.
-  **Caveat: a scheduled workflow only fires from the default branch.** A `cron:`
-  workflow committed to a feature branch never runs, and `gh workflow run`
-  answers 404 for it.
-- cron-job.org needs a person in a browser.
+`.github/workflows/cron.yml` is the live scheduler. `gh secret list` returns
+`CRON_SECRET`, `gh variable list` returns `CRON_SCHEDULER_ENABLED=true`, and
+`CRON_BASE_URL` is deliberately unset so the base falls back to `defaultBaseUrl`
+in `scripts/cron-jobs.json` (`https://kenyonexpress.vercel.app`). cron-job.org
+is no longer needed; do not set it up as well, because running both schedulers
+calls every job twice.
+
+**The caveat that made this hard is still true: a scheduled workflow only fires
+from the default branch.** A `cron:` workflow committed to a feature branch
+never runs, and `gh workflow run` answers 404 for it. `cron.yml` is on `main`,
+which is why it fires.
+
+If the workflow is red, read the run log before touching the schedule. A `404`
+next to a job name means that route is missing from the *deployment* (see §0
+fact 1) and no amount of scheduler configuration fixes it.
 
 Details in `docs/CRON-EXTERNAL.md`.
 

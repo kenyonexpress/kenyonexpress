@@ -143,28 +143,67 @@ dig resend._domainkey.kenyonexpress.co.il CNAME +short
 
 ## 3. DNS cutover
 
-האתר החי היום הוא **WordPress** מאחורי Cloudflare, HTTP 200. nameservers כבר Cloudflare. זה מעבר מתוזמן, לא "DNS חסר".
+> **‏נמדד מחדש 09.09.2026: ה-cutover בוצע.** הסעיף הזה נכתב כשהדומיין עדיין
+> הצביע על ‏WordPress, וזה כבר לא המצב. מה שנמדד מהמכונה הזו:
+>
+> ```
+> kenyonexpress.co.il      A      64.29.17.1, 216.198.79.1   (Vercel)
+> www.kenyonexpress.co.il  CNAME  cname.vercel-dns.com
+> https://kenyonexpress.co.il/   308 -> https://www.kenyonexpress.co.il/   200
+> ```
+>
+> התעודה תקפה על ה-apex (‏`ssl_verify_result=0`), וב-HTML שמוגש יש חבילות
+> ‏`/_next/static` והכותרת ‏`קניון EXPRESS — מסדרים לך בילוי`. אין בו שום סימן
+> של ‏WordPress. ‏**‏DN4, ‏DN6 ו-DN7 עברו; ‏DN5 חלקי, וזה הסעיף הבא.**
+>
+> **‏אבל הכיוון הקנוני התהפך מול מה שהסעיף הזה תכנן, וזה פגם אמיתי.**
+> התכנון כאן היה ‏apex קנוני ו-`www` מפנה אליו. ‏Vercel מגיש את ‏`www` ומפנה
+> את ה-apex, כלומר בדיוק ההפך. הקוד עדיין מצד התכנון:
+> ‏`NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'` ב-`src/app/layout.tsx`.
+> התוצאה, נמדדה בפרודקשן, היא ש**כל כתובת שהאתר מכריז עליה כקנונית היא
+> הפניה**:
+>
+> ```
+> <link rel="canonical" href="https://kenyonexpress.co.il"/>
+> <meta property="og:url" content="https://kenyonexpress.co.il"/>
+> כל <loc> ב-/sitemap.xml            https://kenyonexpress.co.il/...
+> ```
+>
+> ‏Google פותר הפניה קנונית ולא מוחק את העמוד, ולכן זה אינו אירוע הסרה
+> מהאינדקס. מה שזה כן עולה: סיבוב נוסף בכל זחילה של כל כתובת, ו-`og:url`
+> שמוסר למגרדים חברתיים הפניה. **והסכנה האמיתית היא ביום שבו כיוון ההפניה
+> ישתנה ב-Vercel בלי שאף אחד ייגע בריפו** — אז הקנוני הופך ל-404 וכל השערים
+> הקיימים נשארים ירוקים, כי אף אחד מהם לא מבקש את הכתובת שהעמוד נוקב בה.
+>
+> **התיקון הוא אחד משניים, ושניהם דורשים גישה שאין למכונה הזו:** או
+> ‏`NEXT_PUBLIC_APP_URL=https://www.kenyonexpress.co.il` ב-Vercel Production,
+> או שינוי הגדרת הדומיין ב-Vercel כך שה-apex יגיש ו-`www` יפנה. **בחר אחד.**
+> ‏`scripts/canonical-host-probe.mjs` הוא השער החדש שמודד את זה מול הפריסה,
+> והוא רץ בכל ריצה של ‏`production-smoke.yml` כאזהרה מסומנת ולא כתקלת השבתה
+> (הוא אינו פותח ‏issue של ‏`production-down`, כי הפניה קנונית אינה השבתה).
 
-Host קנוני מומלץ (Q38): `https://kenyonexpress.co.il` (apex). `www` → apex 301.
+*ההקשר המקורי, כפי שנכתב ב-19.08:* האתר החי היום הוא **WordPress** מאחורי Cloudflare, HTTP 200. nameservers כבר Cloudflare. זה מעבר מתוזמן, לא "DNS חסר".
+
+Host קנוני מומלץ (Q38): `https://kenyonexpress.co.il` (apex). `www` → apex 301. **‏פרודקשן עושה את ההפך; ראה את התיבה למעלה.**
 
 | # | שער | P | סטטוס 19.08 | ראיה / פער |
 |---|---|---|---|---|
 | DN1 | ייצוא אזור Cloudflare (גיבוי) לפני שינוי | P0 | OPEN | |
 | DN2 | TTL על רשומות apex/www הורד ל-300 **לפחות 24 שעות לפני** | P0 | OPEN | |
 | DN3 | Vercel: הדומיין מחובר ל-**Production** של הפרויקט הנכון, סטטוס Valid | P0 | OPEN | אסור Preview |
-| DN4 | Apex A/ALIAS/CNAME לפי מה שוורסל מציג (לא לנחש IP) | P0 | OPEN | WordPress עדיין היעד |
-| DN5 | www CNAME לערך Vercel, ואז redirect לקנוני | P0 | OPEN | |
-| DN6 | HTTP → HTTPS 301/308 | P0 | OPEN | אחרי שהדומיין על Vercel |
-| DN7 | תעודה תקפה ל-apex ו-www | P0 | OPEN | |
+| DN4 | Apex A/ALIAS/CNAME לפי מה שוורסל מציג (לא לנחש IP) | P0 | **PASS 09.09** | `64.29.17.1`, `216.198.79.1` |
+| DN5 | www CNAME לערך Vercel, ואז redirect לקנוני | P0 | **חלקי 09.09** | ה-CNAME נכון (`cname.vercel-dns.com`); ההפניה בכיוון ההפוך מהתכנון |
+| DN6 | HTTP → HTTPS 301/308 | P0 | **PASS 09.09** | `http://kenyonexpress.co.il/` → 308 |
+| DN7 | תעודה תקפה ל-apex ו-www | P0 | **PASS 09.09** | `ssl_verify_result=0` על שניהם |
 | DN8 | Supabase Auth redirect allowlist כולל `https://kenyonexpress.co.il/auth/callback` | P0 | OPEN | |
 | DN9 | Google OAuth: URI ייצור בלבד, בלי localhost ב-client של prod | P0 | OPEN | |
 | DN10 | Cardcom Success/Fail/Webhook על אותו host | P0 | תלוי CC4 | |
-| DN11 | `NEXT_PUBLIC_*` / canonical מצביעים ל-host הקנוני | P0 | OPEN | |
+| DN11 | `NEXT_PUBLIC_*` / canonical מצביעים ל-host הקנוני | P0 | **FAIL 09.09** | הקנוני מצביע על ה-apex, שמפנה ל-www. `scripts/canonical-host-probe.mjs` |
 | DN12 | מפת 301 מ-WP (מוצרים, קטגוריות, עמודים משפטיים בנתיבים הישנים) | P0 | חלקי | נתיבים משפטיים כבר על אותם paths; 8 כרטיסי בית עדיין 404 |
-| DN13 | WordPress נשאר חי (שבועיים) על host משני / IP ישן ל-rollback | P0 | OPEN | |
+| DN13 | WordPress נשאר חי (שבועיים) על host משני / IP ישן ל-rollback | P0 | חלף זמנו | ה-cutover כבר קרה בלי הצעד הזה |
 | DN14 | הקפאת מכירת שוברים ב-WP לפני flip (Q3: T-14 אם המלאי קטן) | P0 | BLOCKED_OWNER | תאריך לא נקבע; כמות שוברים פתוחים לא נמדדה |
 | DN15 | HSTS preload | P2 | לא ביום 1 | Q37 |
-| DN16 | Production Git branch = `main` (לא `cursor/add-supabase-3c830`) | P0 | FAIL | STATE 10.08 |
+| DN16 | Production Git branch = `main` (לא `cursor/add-supabase-3c830`) | P0 | לא נמדד | דורש קריאה של הגדרות Vercel Production, שאין אליהן גישה מכאן |
 
 פקודות ראיה (Terminal, מכונה מקומית):
 
@@ -179,7 +218,21 @@ curl -sI https://www.kenyonexpress.co.il | head -n 8
 
 צפי אחרי cutover: HTTPS 200/308; HTTP אל HTTPS; www אל apex; ה-HTML הוא Next לא WP.
 
-**פער מול עכשיו.** הדומיין עדיין החנות הישנה. אסור לנתק לפני CC6 + RS6 + DN16.
+**‏נמדד 09.09.2026:** שלושת הראשונים התקיימו וה-HTML הוא ‏Next. הרביעי התקיים
+הפוך: ‏**apex אל www**, לא ‏www אל apex.
+
+```
+dig +short kenyonexpress.co.il A        -> 64.29.17.1  216.198.79.1
+dig +short www.kenyonexpress.co.il      -> cname.vercel-dns.com.
+curl -o /dev/null -w '%{http_code}' http://kenyonexpress.co.il/   -> 308
+curl -o /dev/null -w '%{ssl_verify_result}' https://kenyonexpress.co.il/ -> 0
+```
+
+**מה שנשאר פתוח כאן, ורק זה:** כיוון הקנוני (ראה התיבה בראש הסעיף), ו-DN1,
+‏DN2, ‏DN13 שהם צעדי-הכנה שכבר אין להם משמעות אחרי שה-cutover קרה. ‏DN8,
+‏DN9, ‏DN10 ו-DN11 **לא נמדדו** מכאן, כי כולם דורשים קריאה של הגדרות
+‏Supabase, ‏Google ו-Vercel Production. ‏**‏DN11 בפרט תלוי בהחלטת הקנוני, ולכן
+אין טעם לסמן אותו לפני שהיא מתקבלת.**
 
 ---
 

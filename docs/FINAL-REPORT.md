@@ -16,13 +16,91 @@ headline claim, "**NOTHING HAS EVER DEPLOYED**", stopped being true a few hours
 later. It is corrected below rather than quietly edited, because the reason it
 was true and the reason it stopped being true are both worth keeping.
 
-`main` is still not the mainline. It is roughly 300 commits behind and
-**`phase5/homepage` is the branch this project lives on.** Branching off `main`,
-or reading it to see what the product does, silently reverts every piece of
-security work done since. See item 4.
-
 Every number below was measured. Where a measurement has a date on it, that is
 the date it was taken, and nothing is quoted from an earlier session without one.
+
+---
+
+## Re-measured 2026-09-09: three of the four remaining items are done
+
+Everything from `## The one-line version` down is the 2026-09-01 snapshot and
+stays as written, because the same rule that governed the 08-31 rewrite governs
+this one: the reason a claim was true is worth as much as the correction. What
+follows supersedes it. **Read this section first; the four-item list below it is
+now wrong in three places.**
+
+### `main` is the mainline. The paragraph that said otherwise is inverted.
+
+The 09-01 text told a reader that `main` was "roughly 300 commits behind" and
+that "`phase5/homepage` is the branch this project lives on". Both halves have
+since reversed, and following the old advice today is the most damaging thing a
+newcomer could do with this document.
+
+| measured 2026-09-09 | `origin/main` | `origin/phase5/homepage` |
+| --- | --- | --- |
+| last commit | 2026-09-09 | **2026-08-31** (nine days dead) |
+| commits the other lacks | 490 | 348 |
+| files the other lacks | 30 | **322** |
+
+PR #6 merged (`d5c2739d4`, an ancestor of `main`), which is what moved the
+mainline. The 348-commit count is history shape, not content: the only files
+that exist on `phase5/homepage` and not on `main` are 29 hero images and
+`migrations/pending/007-order-transition-guard.sql`, and that migration is
+superseded by `migrations/applied/137_order_transition_guard.sql`. The 322 in
+the other direction include `scripts/compromised-keys.mjs`,
+`scripts/deploy-preflight.mjs`, `scripts/deployed-cron-probe.mjs` and the whole
+`scripts/dr/` tree. **Branching off `phase5/homepage` is what reverts the
+security work now.**
+
+### 1. The scheduled jobs are scheduled, and cron-job.org is not needed.
+
+The 09-01 text called this "the single highest-value item on this list" and said
+"**Nothing is scheduled right now.**" That was true when written and is not now.
+`.github/workflows/cron.yml` runs all thirteen jobs from GitHub Actions, on nine
+cron expressions, through `scripts/run-cron-jobs.sh`.
+
+Measured 2026-09-09, from the workflow's own run logs rather than from its
+configuration: `CRON_SCHEDULER_ENABLED` is `true` and `CRON_SECRET` is set on the
+repository, `CRON_BASE_URL` is unset so the base falls back to `defaultBaseUrl`
+in `scripts/cron-jobs.json` (`https://kenyonexpress.vercel.app`), and the most
+recent runs report real calls: `abandoned-cart -> 200`, `notifications -> 200`,
+`health -> 200`. This is a scheduler that is running, not one that is quietly
+no-oping.
+
+**One defect survives, and it is a deployment lag rather than a schedule.**
+Probing all thirteen paths without the bearer (401 means present and guarded,
+404 means absent from the build), ten answer 401 and three answer 404:
+`whatsapp`, `retention` and `weekly-digest`. All three are present in the tree
+and on `main`, so the deployment is older than the routes. `whatsapp` is on the
+five-minute schedule, which is why nine of the last thirty cron runs are red.
+`scripts/deployed-cron-probe.mjs` is the gate for this and runs inside
+`production-smoke.yml`; it clears when production is redeployed.
+
+### 2. The Cardcom production terminal is still open.
+
+Unchanged, and **not** re-measured: it needs the Vercel Production environment,
+which this machine cannot read. Treat the 09-01 text as still current and verify
+it against the dashboard before launch.
+
+### 3. The DNS cutover is done.
+
+The 09-01 text said `kenyonexpress.co.il` "serves 200 today through Cloudflare
+and what it serves is still the **old WordPress site**". Measured 2026-09-09:
+
+```
+kenyonexpress.co.il      A      64.29.17.1, 216.198.79.1   (Vercel)
+www.kenyonexpress.co.il  CNAME  cname.vercel-dns.com
+https://kenyonexpress.co.il/   308 -> https://www.kenyonexpress.co.il/   200
+```
+
+TLS verifies on the apex (`ssl_verify_result=0`), which it did not on 09-08. The
+served HTML carries `/_next/static` bundles and the Hebrew title
+`קניון EXPRESS — מסדרים לך בילוי`. There is no WordPress marker in it. The
+cutover happened; item 3 below describes a state that no longer exists.
+
+### 4. PR #6 is merged.
+
+`gh pr view 6` returns `MERGED`. Item 4 below asks the reader to merge it.
 
 ---
 

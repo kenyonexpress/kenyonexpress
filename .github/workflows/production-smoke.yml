@@ -152,6 +152,42 @@ jobs:
             echo 'failed=false' >> "$GITHUB_OUTPUT"
           fi
 
+      # DELIBERATELY NOT PART OF THE OUTAGE SIGNAL ABOVE.
+      #
+      # A canonical URL that 308s is a real defect and is not an outage, and the
+      # issue the previous step opens is labelled `production-down`. Folding a
+      # non-outage into an outage alert is how the outage alert stops being
+      # read, which this repository has already paid for once. So this step
+      # reports on every run and cannot turn the job red: `continue-on-error`
+      # keeps its non-zero exit from failing the workflow, and the finding lands
+      # in the job summary and as a warning annotation instead.
+      #
+      # MEASURED 2026-09-09: the live site publishes `https://kenyonexpress.co.il`
+      # as its canonical, its `og:url` and every sitemap `<loc>`, and that host
+      # answers 308 to `https://www.kenyonexpress.co.il/`. Vercel serves `www`;
+      # `src/app/layout.tsx` defaults to the apex. Fixing it is one environment
+      # variable (`NEXT_PUBLIC_APP_URL`) or one Vercel domain setting, and both
+      # are outside this machine.
+      - name: Does the declared canonical URL answer 200 without a redirect
+        id: canonical
+        continue-on-error: true
+        env:
+          PRODUCTION_URL: ${{ steps.target.outputs.base }}
+        run: |
+          set -uo pipefail
+          OUT=$(node scripts/canonical-host-probe.mjs 2>&1) || CANON_FAILED=1
+          echo "$OUT"
+          {
+            echo '### Canonical host'
+            echo ''
+            echo '```'
+            echo "$OUT"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${CANON_FAILED:-0}" = '1' ]; then
+            echo "::warning title=The canonical URL is not served directly::The address this site publishes to search engines does not answer 200. See the job summary. This is not an outage and does not open a production-down issue."
+          fi
+
       # ONE ISSUE PER OUTAGE, NOT ONE PER DAY. An outage lasting a week would
       # otherwise open seven issues, and seven issues about one thing is how a
       # real alert gets scrolled past. An existing open `production-down` issue
