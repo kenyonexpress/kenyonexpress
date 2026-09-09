@@ -89,6 +89,33 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
 
+### ‏09.09 ‏goal בוצע: ‏PostHog מלא (branch ‏autopilot, ‏`a84a47d76`)
+
+‏goal שהוזרק ב-/goal, מחוץ לתור. ארבעה רכיבים, על צינור ה-fetch הקיים,
+בלי migration ובלי שינוי סכימה:
+
+- **טקסונומיית funnel:** ‏`src/lib/analytics/posthog-funnel.ts` מגדיר את
+  רצף הרכישה הקנוני (‏$pageview, ‏view_item, ‏add_to_cart, ‏begin_checkout,
+  ‏purchase) וטסט נועל כל שם למודול שפולט אותו, כדי ש-rename לא יאפס דשבורד.
+- **‏replay ב-opt-in כפול:** ההקלטה דורשת עכשיו גם את הסכמת הבאנר וגם
+  cookie ‏`ke_replay_optin` שנדלק ב-account/security (רכיב חדש
+  ‏`ReplayOptInToggle`). כיבוי באמצע דף עוצר הקלטה רצה. בכוונה לא נגעתי
+  בבאנר: שינוי הנוסח היה מחייב bump ל-CONSENT_WORDING_VERSION ושאילה
+  מחדש של כל המבקרים.
+- **‏feature flag לצ'ק-אאוט:** ‏`checkout_variant` (‏control /
+  ‏express_summary) נקרא מ-/decide בלי SDK, עם שער הסכמה, ‏timeout ‏2s,
+  ‏fallback ל-control על כל כשל, ו-cache דביק לסשן. ‏begin_checkout
+  והאירועים אחריו נושאים ‏`$feature/checkout_variant`, והטופס חושף
+  ‏`data-checkout-variant` לוריאנטים של CSS. הדגל עצמו עוד לא הוגדר
+  ב-PostHog UI; עד אז כולם control.
+- **‏cohort לפי cashback:** ‏property ‏`cashback_tier`
+  (‏none/bronze/silver/gold לפי סכום ‏order_cashback ב-`v_wallet_ledger`,
+  ספים 1 / 10,000 / 50,000 אגורות) נכתב כאירוע ‏$set ייעודי אחרי כל אירוע
+  כסף שרתי, כך שה-cohort נבנה ב-PostHog בלי לגעת ב-DB.
+
+‏4078 טסטים, ‏type-check, ‏lint (בקבצים שלי) ו-build ירוקים. ‏commit יחיד
+עם paths מפורשים; ה-WIP של ה-goal המקביל (media-ingest) לא נגרר פנימה.
+
 ### ‏09.09 ‏goal בוצע: ‏Meilisearch, סגירת שני הפערים (branch ‏autopilot)
 
 ‏goal שהוזרק ב-/goal, מחוץ לתור. הפירוט המלא בשורת ה-Updated העליונה.
