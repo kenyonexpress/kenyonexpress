@@ -916,6 +916,21 @@ describe('the pending migration inventory', () => {
       // drawing seventeen empty rows, and the health route's repeated-failure
       // alert stays null. Unapplied costs observability and breaks nothing.
       '228_job_runs.sql',
+      // 229 WRITTEN 2026-09-10, not applied. One kind,
+      // `referral_bonus_credited`, added to `notification_outbox_kind_check`.
+      //
+      // WHY A WHOLE FILE FOR ONE STRING. `fn_pay_referral` credits both wallets
+      // and told nobody, because no kind existed that could carry the mail.
+      // Reusing `cashback_credited`, which the live constraint already accepts,
+      // would have saved this file and shipped a false sentence: it opens with
+      // `נכנס לך קאשבק`, and the REFERRER bought nothing, their friend did.
+      //
+      // UNAPPLIED COSTS THE MAIL AND NOT THE MONEY. `payReferralIfReady` moves
+      // the money in `fn_pay_referral` first and enqueues after; until this is
+      // applied every enqueue fails 23514 and is logged with
+      // `kind_not_accepted: true`, which is the same degrade
+      // `/api/cron/settlement-reconcile` runs for `settlement_gap` and 214.
+      '229_referral_bonus_notification_kind.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

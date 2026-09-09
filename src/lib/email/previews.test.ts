@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { EMAIL_PREVIEWS, PREVIEW_SITE_URL, findPreview } from './previews'
+import { EMAIL_PREVIEWS, PREVIEW_SITE_URL } from './previews'
 
 const ROOT = resolve(__dirname, '../../..')
 
@@ -30,7 +30,16 @@ describe('the gallery covers every mail', () => {
     // nobody will ever look at before a customer does.
     const kinds = kindsFromSource()
     expect(kinds.length).toBeGreaterThan(10)
-    const missing = kinds.filter((kind) => !findPreview(kind))
+    // Matched on `preview.kind` and not on `preview.id`: since
+    // `referral_bonus_credited` needs one sample per `role`, an id is no longer
+    // one-to-one with a kind, and matching on ids would report a covered kind
+    // as missing.
+    const covered = new Set<string>(
+      EMAIL_PREVIEWS.map((p) => p.kind).filter((kind): kind is NonNullable<typeof kind> =>
+        Boolean(kind),
+      ),
+    )
+    const missing = kinds.filter((kind) => !covered.has(kind))
     expect(missing, `kinds with no preview: ${missing.join(', ')}`).toEqual([])
   })
 
@@ -38,13 +47,13 @@ describe('the gallery covers every mail', () => {
     // The other direction. A stale sample renders happily and describes a mail
     // the system cannot send.
     const kinds = new Set(kindsFromSource())
-    // The two builders that are not outbox kinds: the login link goes out from
-    // the auth action, and the voucher mail from `finalizeOrder`. Both are
-    // real mail a customer receives, so they belong in the gallery; neither is
-    // a `notification_outbox` row, so neither can be in the union.
-    const NOT_OUTBOX = new Set(['magic_link', 'voucher_pdf_mail'])
-    const orphans = EMAIL_PREVIEWS.map((p) => p.id).filter(
-      (id) => !kinds.has(id) && !NOT_OUTBOX.has(id),
+    // A preview that is not an outbox row at all carries `kind: null` and is
+    // skipped here by construction. That replaced an allowlist of two ids: the
+    // login link goes out from the auth action and the voucher mail from
+    // `finalizeOrder`, and saying so on the preview beats keeping a list in the
+    // test that nobody updates.
+    const orphans = EMAIL_PREVIEWS.filter((p) => p.kind !== null && !kinds.has(p.kind)).map(
+      (p) => p.id,
     )
     expect(orphans, `previews with no kind: ${orphans.join(', ')}`).toEqual([])
   })

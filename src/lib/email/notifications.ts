@@ -78,6 +78,16 @@ export type NotificationKind =
    * purchase that earned it. Both reuses ship a false sentence about money.
    */
   | 'voucher_expiry_credited'
+  /**
+   * A referral bonus in the wallet, for either side of the referral. Enqueued
+   * by `payReferralIfReady` after `fn_pay_referral` moved the money, and
+   * accepted by the constraint from `migrations/pending/229`.
+   *
+   * Its own kind and not `cashback_credited` for the reason
+   * `buildReferralBonusEmail` gives: the referrer bought nothing, and a mail
+   * saying `נכנס לך קאשבק` sends them looking for a purchase of their own.
+   */
+  | 'referral_bonus_credited'
   /** Operator alert: a tax document gave up after five attempts. Added by 116. */
   | 'invoice_dead'
   /** Operator alert: a product is at or under its threshold. Added by 117. */
@@ -1263,6 +1273,86 @@ export function buildBackInStockEmail(
   return { subject, html, text }
 }
 
+/**
+ * The referral bonus, in the wallet, said to whichever side is reading.
+ *
+ * =========================================================================
+ * WHY THIS IS NOT `cashback_credited`
+ * =========================================================================
+ *
+ * That kind is accepted by production's constraint today and reusing it would
+ * have saved a migration. Its sentence is `נכנס לך קאשבק`, and for a REFERRER
+ * that is false in a way that costs support time: they did not buy anything,
+ * their friend did, and the mail sends them hunting for a purchase of their own
+ * that earned it. `buildVoucherExpiryCreditedEmail` above documents the same
+ * trap in the other direction. A false sentence about money is never the
+ * cheaper option.
+ *
+ * =========================================================================
+ * TWO SENTENCES, ONE TEMPLATE
+ * =========================================================================
+ *
+ * `role` decides which. The referrer is told their invitation paid off; the
+ * referred person is told they were credited for joining through a friend.
+ * Sending the referrer's copy to the referred person would tell somebody they
+ * invited themselves. An unrecognised role falls back to the neutral wording
+ * rather than guessing, because a payload that lost its role is exactly when
+ * guessing picks the wrong one.
+ *
+ * It does not name the other person. `profiles_select_unified` gives a customer
+ * their own row and nothing else, and an email is not the place to route around
+ * that; `/account/referrals` shows only dates for the same reason.
+ */
+export function buildReferralBonusEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const amountAgorot = Math.round(asNumber(payload.amount_agorot))
+  if (amountAgorot <= 0) return null
+
+  const whole = Math.trunc(amountAgorot / 100)
+  const fraction = amountAgorot % 100
+  const amount =
+    fraction === 0
+      ? `₪${whole.toLocaleString('he-IL')}`
+      : `₪${whole.toLocaleString('he-IL')}.${String(fraction).padStart(2, '0')}`
+
+  const role = asText(payload.role)
+  const line =
+    role === 'referrer'
+      ? `החבר שהזמנת ביצע רכישה ראשונה, וזיכינו את הארנק שלך ב-${amount}.`
+      : role === 'referred'
+        ? `הצטרפת דרך חבר, וזיכינו את הארנק שלך ב-${amount}.`
+        : `זיכינו את הארנק שלך ב-${amount} על הפניה.`
+
+  const url = `${trimSite(siteUrl)}/account/wallet`
+  const subject = `הבונוס שלך על ההפניה: ${amount}`
+
+  // The two sentences that are not built from `role` come from the message
+  // catalog rather than from literals here, following the precedent
+  // `orderTracking.*` set on 2026-09-10: a new customer-facing surface arrives
+  // with its copy already extracted, so the Hebrew-literal ceiling does not
+  // move for it. The `role` lines stay inline because each is one clause of a
+  // three-way choice made two statements above, and splitting a choice across
+  // a file and a JSON catalog is how the wrong branch ends up shipped.
+  const creditNote = t('referralEmail.creditNote')
+  const walletCta = t('referralEmail.walletCta')
+
+  const text = ['שלום,', '', line, creditNote, '', 'הארנק שלך:', ltrText(url)].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(line)}</div>
+        <div style="font-size:13px;color:${INK};opacity:0.7;margin-top:8px">${escapeHtml(creditNote)}</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">${escapeHtml(walletCta)}</a>
+      </div>`,
+    'קיבלת את המייל הזה כי נכנס בונוס הפניה לארנק שלך ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
 export function buildNotification(
   kind: string,
   payload: Record<string, unknown>,
@@ -1287,6 +1377,8 @@ export function buildNotification(
       return buildCashbackCreditedEmail(payload, siteUrl)
     case 'voucher_expiry_credited':
       return buildVoucherExpiryCreditedEmail(payload, siteUrl)
+    case 'referral_bonus_credited':
+      return buildReferralBonusEmail(payload, siteUrl)
     case 'invoice_dead':
       return buildInvoiceDeadEmail(payload, siteUrl)
     case 'low_stock':

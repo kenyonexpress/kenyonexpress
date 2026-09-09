@@ -1,6 +1,7 @@
 import {
   buildNotification,
   buildOrderPaidEmail,
+  buildReferralBonusEmail,
   buildSupplierSaleEmail,
   buildVoucherIssuedEmail,
   buildVoucherRedeemedEmail,
@@ -388,5 +389,48 @@ describe('buildOrderShippedEmail', () => {
     const mail = buildNotification('order_shipped', { ...payload, fulfilled_at: 'garbage' }, SITE)
     expect(mail?.text).not.toContain('Invalid Date')
     expect(mail?.html).not.toContain('Invalid Date')
+  })
+})
+
+describe('buildReferralBonusEmail', () => {
+  it('tells the referrer their FRIEND bought, not that they earned cashback', () => {
+    const mail = buildReferralBonusEmail({ amount_agorot: 2000, role: 'referrer' }, SITE)
+    expect(mail?.text).toContain('החבר שהזמנת')
+    // The trap this whole kind exists to avoid: `cashback_credited` would open
+    // with "נכנס לך קאשבק", sending a referrer who bought nothing hunting
+    // through their own orders for the purchase that earned it.
+    expect(mail?.text).not.toContain('נכנס לך קאשבק')
+  })
+
+  it('tells the referred person they joined through a friend', () => {
+    const mail = buildReferralBonusEmail({ amount_agorot: 1000, role: 'referred' }, SITE)
+    expect(mail?.text).toContain('הצטרפת דרך חבר')
+    expect(mail?.text).not.toContain('החבר שהזמנת')
+  })
+
+  it('falls back to neutral wording rather than guessing a lost role', () => {
+    const mail = buildReferralBonusEmail({ amount_agorot: 1000 }, SITE)
+    expect(mail?.text).toContain('על הפניה')
+    expect(mail?.text).not.toContain('החבר שהזמנת')
+  })
+
+  it('formats agorot without a float anywhere near it', () => {
+    expect(buildReferralBonusEmail({ amount_agorot: 2000 }, SITE)?.subject).toContain('₪20')
+    expect(buildReferralBonusEmail({ amount_agorot: 2050 }, SITE)?.subject).toContain('₪20.50')
+  })
+
+  it('says the credit cannot be withdrawn, because it cannot', () => {
+    const mail = buildReferralBonusEmail({ amount_agorot: 2000, role: 'referrer' }, SITE)
+    expect(mail?.text).toContain('ללא משיכה למזומן')
+  })
+
+  it('renders nothing for a zero bonus rather than announcing one', () => {
+    expect(buildReferralBonusEmail({ amount_agorot: 0, role: 'referrer' }, SITE)).toBeNull()
+  })
+
+  it('is reachable through the dispatcher under its own kind', () => {
+    expect(
+      buildNotification('referral_bonus_credited', { amount_agorot: 2000, role: 'referrer' }, SITE),
+    ).not.toBeNull()
   })
 })

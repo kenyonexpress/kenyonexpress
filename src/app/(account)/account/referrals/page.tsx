@@ -1,9 +1,11 @@
 import ReferralShareCard from '@/components/account/ReferralShareCard'
 import { formatDate, formatIls } from '@/lib/account/format'
+import { t } from '@/lib/i18n/messages'
 import { REFERRAL_QUERY_PARAM } from '@/lib/referrals/code'
+import { monthLabel } from '@/lib/referrals/leaderboard'
 import { siteUrl } from '@/lib/site-url'
 import type { ReferralRow, ReferralStatus } from '@/server/queries/referrals'
-import { getMyReferralSummary } from '@/server/queries/referrals'
+import { getMonthlyReferralLeaderboard, getMyReferralSummary } from '@/server/queries/referrals'
 import { getReferralProgram } from '@/server/referrals/program'
 
 export const metadata = { title: 'חבר מביא חבר' }
@@ -70,7 +72,11 @@ function ReferralListRow({
 }
 
 export default async function ReferralsPage() {
-  const [program, summary] = await Promise.all([getReferralProgram(), getMyReferralSummary()])
+  const [program, summary, leaderboard] = await Promise.all([
+    getReferralProgram(),
+    getMyReferralSummary(),
+    getMonthlyReferralLeaderboard(),
+  ])
 
   const referrerBonus = program ? formatIls(program.referrerBonus) : null
   const referredBonus = program ? formatIls(program.referredBonus) : null
@@ -158,6 +164,57 @@ export default async function ReferralsPage() {
           </ul>
         )}
       </section>
+
+      {/*
+        THE LEADERBOARD NAMES NOBODY, AND THAT IS THE DESIGN AND NOT A GAP.
+
+        `profiles_select_unified` gives a customer their own row and nothing
+        else, and the list above already refuses to name the other side of the
+        reader's OWN referral for that reason. A table of other customers is a
+        weaker claim on their identity, not a stronger one, so it carries a
+        rank, a count and "אתם" and nothing that could identify a person.
+
+        Read-only by construction: there is no action here and nothing to
+        submit. Only `completed` referrals are counted, so nobody is ranked by
+        a bonus that has not been paid.
+      */}
+      {program && (
+        <section className="account-card">
+          <h2 className="account-card__title">
+            {t('referralLeaderboard.titlePrefix')} {monthLabel(leaderboard.month)}
+          </h2>
+          {leaderboard.entries.length === 0 ? (
+            <p className="account-empty">{t('referralLeaderboard.empty')}</p>
+          ) : (
+            <>
+              <ol className="referral-leaderboard">
+                {leaderboard.entries.map((entry) => (
+                  <li
+                    key={`${entry.rank}-${entry.isMe ? 'me' : entry.count}`}
+                    className={
+                      entry.isMe ? 'referral-leaderboard__row is-me' : 'referral-leaderboard__row'
+                    }
+                  >
+                    <span className="referral-leaderboard__rank">{entry.rank}</span>
+                    <span className="referral-leaderboard__who">
+                      {entry.isMe ? 'אתם' : 'משתתף'}
+                    </span>
+                    <span className="referral-leaderboard__count">
+                      {entry.count}{' '}
+                      {entry.count === 1
+                        ? t('referralLeaderboard.one')
+                        : t('referralLeaderboard.many')}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              {leaderboard.viewerOutsideTop && (
+                <p className="account-row__meta">{t('referralLeaderboard.outsideTop')}</p>
+              )}
+            </>
+          )}
+        </section>
+      )}
     </>
   )
 }

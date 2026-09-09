@@ -1,5 +1,12 @@
 import { type Agorot, agorot } from '@/lib/money'
 import { log } from '@/lib/observability/log'
+import {
+  type LeaderboardEntry,
+  buildReferralLeaderboard,
+  israelMonthKey,
+  israelMonthRange,
+} from '@/lib/referrals/leaderboard'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -178,4 +185,78 @@ export async function getMyReferrals(): Promise<{
 export async function getMyReferralSummary(): Promise<ReferralSummary> {
   const [code, lists] = await Promise.all([getMyReferralCode(), getMyReferrals()])
   return { code, ...lists }
+}
+
+export interface MonthlyLeaderboard {
+  /** `YYYY-MM`, Israel. */
+  month: string
+  entries: LeaderboardEntry[]
+  /** True when the reader's row was appended because it fell outside the top. */
+  viewerOutsideTop: boolean
+}
+
+/**
+ * This month's referral leaderboard, read-only and identity-free.
+ *
+ * THE ONE READ ON THIS SCREEN THAT USES THE SERVICE CLIENT, and the reason is
+ * that the question is not about the caller's rows. `referrals_select_unified`
+ * allows a customer exactly the referrals they are a party to, which is correct
+ * for every other read here and useless for this one: a leaderboard built from
+ * it would show every customer a table of one, themselves, ranked first.
+ *
+ * That is safe only because of what leaves this function.
+ * `buildReferralLeaderboard` returns `{ rank, count, isMe }` and nothing else.
+ * No id, no email, no name, not even a count of how many people are in the
+ * table beyond what is listed. The viewer's id is used inside the server to set
+ * one boolean and is never rendered. So the service key reads identities and
+ * the screen receives arithmetic.
+ *
+ * WHY THE WINDOW IS WIDENED AND THEN FILTERED. Israel is UTC+2 or UTC+3
+ * depending on the season. Rather than encode which, the query asks for a day
+ * more than it needs and `israelMonthKey` buckets each row by the Israel month
+ * it actually falls in. Too wide and then filtered is correct; too narrow drops
+ * the first evening of the month with nothing to show for it.
+ *
+ * ONLY `completed` COUNTS. A pending referral is somebody who clicked a link,
+ * a flagged one is under review, and putting either on a leaderboard would rank
+ * people by activity that has not been paid and might never be.
+ */
+export async function getMonthlyReferralLeaderboard(limit = 10): Promise<MonthlyLeaderboard> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { from, to } = israelMonthRange()
+  const month = israelMonthKey(new Date().toISOString())
+
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('referrals')
+    .select('referrer_user_id, paid_at')
+    .eq('status', 'completed')
+    .is('deleted_at', null)
+    .gte('paid_at', from)
+    .lt('paid_at', to)
+    .limit(5000)
+
+  if (error) {
+    log.warn('referrals.leaderboard_read_failed', { reason: error.message })
+    return { month, entries: [], viewerOutsideTop: false }
+  }
+
+  const counts = new Map<string, number>()
+  for (const row of (data ?? []) as Array<{
+    referrer_user_id: string | null
+    paid_at: string | null
+  }>) {
+    if (!row.referrer_user_id || !row.paid_at) continue
+    if (israelMonthKey(row.paid_at) !== month) continue
+    counts.set(row.referrer_user_id, (counts.get(row.referrer_user_id) ?? 0) + 1)
+  }
+
+  const rows = [...counts.entries()].map(([referrerUserId, count]) => ({ referrerUserId, count }))
+  const { entries, viewerOutsideTop } = buildReferralLeaderboard(rows, user?.id ?? null, limit)
+
+  return { month, entries, viewerOutsideTop }
 }

@@ -705,3 +705,49 @@
   font-weight: 400;
   color: var(--account-muted);
 }
+
+/* The monthly leaderboard. No avatars and no names by design: the rows carry a
+   rank, a count and whether the row is yours, and nothing else exists to
+   render. See src/lib/referrals/leaderboard.ts. */
+.referral-leaderboard {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: none;
+}
+
+.referral-leaderboard__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--account-line);
+  font-size: 14px;
+}
+
+.referral-leaderboard__row:last-child {
+  border-bottom: 0;
+}
+
+.referral-leaderboard__row.is-me {
+  font-weight: 700;
+}
+
+.referral-leaderboard__rank {
+  min-width: 28px;
+  font-variant-numeric: tabular-nums;
+  color: var(--account-muted);
+}
+
+.referral-leaderboard__row.is-me .referral-leaderboard__rank {
+  color: var(--account-ink);
+}
+
+.referral-leaderboard__who {
+  flex: 1 1 auto;
+}
+
+.referral-leaderboard__count {
+  font-variant-numeric: tabular-nums;
+  color: var(--account-muted);
+}

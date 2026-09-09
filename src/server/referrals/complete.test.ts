@@ -35,10 +35,16 @@ vi.mock('@/lib/observability/log', () => ({
   },
 }))
 
+const payReferralIfReady = vi.fn()
+vi.mock('@/server/referrals/pay', () => ({
+  payReferralIfReady: (...args: unknown[]) => payReferralIfReady(...args),
+}))
+
 import { completeReferralForOrder } from './complete'
 
 const ORDER = '22222222-2222-4222-8222-222222222222'
 const USER = '11111111-1111-4111-8111-111111111111'
+const REFERRAL = '33333333-3333-4333-8333-333333333333'
 
 /** Postgres: undefined_column, the answer a pre-059 database gives. */
 const UNDEFINED_COLUMN = '42703'
@@ -74,6 +80,7 @@ beforeEach(() => {
   probeResult.mockReset()
   logWarn.mockReset()
   logInfo.mockReset()
+  payReferralIfReady.mockReset().mockResolvedValue(undefined)
 })
 
 afterEach(() => {
@@ -187,5 +194,47 @@ describe('completeReferralForOrder', () => {
 
     expect(logWarn).not.toHaveBeenCalled()
     expect(logInfo).toHaveBeenCalled()
+  })
+
+  it('follows ready_to_pay instead of logging it and walking away', async () => {
+    // The regression this pins. `fn_complete_referral` ends the clean case with
+    // `ready_to_pay` and leaves the row at `pending`; nothing here acted on it,
+    // so an unflagged referral waited in the admin review queue for a human,
+    // which is exactly what `require_manual_approval = false` says is not
+    // needed.
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpc.mockResolvedValue({
+      data: { ok: true, reason: 'ready_to_pay', referral_id: REFERRAL },
+      error: null,
+    })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    expect(payReferralIfReady).toHaveBeenCalledTimes(1)
+    expect(payReferralIfReady.mock.calls[0]?.[1]).toBe(REFERRAL)
+  })
+
+  it('does NOT pay a referral held for review', async () => {
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpc.mockResolvedValue({
+      data: { ok: true, reason: 'held_for_review', signals: ['device'] },
+      error: null,
+    })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    expect(payReferralIfReady).not.toHaveBeenCalled()
+  })
+
+  it('does not pay when the database sent no referral id to pay', async () => {
+    preO59()
+    selectResult.mockReturnValue({ data: { total_ils: 200 }, error: null })
+    rpc.mockResolvedValue({ data: { ok: true, reason: 'ready_to_pay' }, error: null })
+
+    await completeReferralForOrder(client() as never, { orderId: ORDER, userId: USER })
+
+    expect(payReferralIfReady).not.toHaveBeenCalled()
   })
 })

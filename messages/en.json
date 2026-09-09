@@ -167,5 +167,18 @@
     "carrierLink": "Track with the carrier",
     "itemsHeading": "Items in this order",
     "privacyNote": "This page shows delivery status only. Payment, invoice and refund details are in your account."
+  },
+  "referralLeaderboard": {
+    "titlePrefix": "Top referrers,",
+    "empty": "No referral was credited this month. First place is open.",
+    "you": "You",
+    "participant": "Participant",
+    "one": "referral",
+    "many": "referrals",
+    "outsideTop": "The last row is yours, at your real rank rather than at the bottom of the list."
+  },
+  "referralEmail": {
+    "creditNote": "The bonus is site credit only and cannot be withdrawn as cash.",
+    "walletCta": "Go to my wallet"
   }
 }

@@ -34,6 +34,18 @@ import { buildVoucherEmail } from './voucher-email'
 
 export interface EmailPreview {
   id: string
+  /**
+   * The `notification_outbox` kind this renders, or null for a mail that is not
+   * an outbox row at all.
+   *
+   * SEPARATE FROM `id` since 2026-09-10, and the split is the point.
+   * `referral_bonus_credited` branches on `role` and needs two samples, so `id`
+   * stopped being one-to-one with the kind. The completeness check in
+   * `previews.test.ts` reads THIS field, so a second variant of an existing
+   * kind cannot look like an orphan and a genuinely missing kind cannot be
+   * masked by a variant id that happens to start with the right prefix.
+   */
+  kind: NotificationKind | null
   /** What the mail is, in Hebrew, for the index page. */
   labelHe: string
   /** Who receives it. An operator alert is not a customer mail. */
@@ -49,9 +61,16 @@ function fromOutbox(
   labelHe: string,
   audience: EmailPreview['audience'],
   payload: Record<string, unknown>,
+  /**
+   * Only for a kind that needs more than one preview because its template
+   * branches. Ids must stay unique, and `kind` alone stops being unique the
+   * moment a second variant is listed.
+   */
+  variant?: string,
 ): EmailPreview {
   return {
-    id: kind,
+    id: variant ? `${kind}:${variant}` : kind,
+    kind,
     labelHe,
     audience,
     build(siteUrl) {
@@ -148,6 +167,23 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     supplier_name: 'מספרת רון',
     expires_at: '2026-09-09T20:59:59Z',
   }),
+  // Both sides, because the template branches on `role` and reviewing one
+  // hides the branch: the referrer's copy sent to the referred person would
+  // tell somebody they invited themselves.
+  fromOutbox(
+    'referral_bonus_credited',
+    'בונוס הפניה - הממליץ',
+    'customer',
+    { amount_agorot: 2_000, role: 'referrer' },
+    'referrer',
+  ),
+  fromOutbox(
+    'referral_bonus_credited',
+    'בונוס הפניה - המצטרף',
+    'customer',
+    { amount_agorot: 1_000, role: 'referred' },
+    'referred',
+  ),
   fromOutbox('welcome', 'ברוכים הבאים', 'customer', {
     customer_name: 'דנה כהן',
   }),
@@ -234,6 +270,8 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
   }),
   {
     id: 'magic_link',
+    // Sent by the auth action, not through the outbox, so there is no kind.
+    kind: null,
     labelHe: 'קישור התחברות',
     audience: 'customer',
     build: (siteUrl) =>
@@ -243,6 +281,8 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
   },
   {
     id: 'voucher_pdf_mail',
+    // Sent by `finalizeOrder`, not through the outbox.
+    kind: null,
     labelHe: 'שובר עם ‏QR',
     audience: 'customer',
     build: (siteUrl) =>

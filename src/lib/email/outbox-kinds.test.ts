@@ -164,6 +164,17 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
   return out
 }
 
+/**
+ * Source with comments blanked out, offsets not preserved.
+ *
+ * Only the `kind:` scans use this; everything else in this file reads whole
+ * files on purpose. Line numbers are never reported from the stripped text, so
+ * the cheaper replace is enough here.
+ */
+function stripComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+}
+
 describe('the outbox kinds three lists have to agree on', () => {
   it('was measured, and says when', () => {
     expect(MEASURED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
@@ -228,7 +239,18 @@ describe('the outbox kinds three lists have to agree on', () => {
     const offenders: string[] = []
 
     for (const file of sourceFiles(resolve(process.cwd(), 'src'))) {
-      const source = readFileSync(file, 'utf8')
+      // COMMENTS ARE STRIPPED FIRST, and that is not tidiness.
+      //
+      // The `kind:` scan below narrows itself to files that mention
+      // `notification_outbox`, and before this it decided that from the RAW
+      // text -- so a file entered scope by NAMING the table in a sentence.
+      // Measured 2026-09-10: adding one doc comment to `previews.ts` that says
+      // the words `notification_outbox` pulled in five unrelated payload
+      // `kind:` fields (`missing_locally`, `amount_mismatch`, ...) and reported
+      // them as outbox kinds the constraint rejects. A gate whose scope is
+      // decided by prose is a gate that fires on prose, which is the same
+      // failure `coupon-cookie.test.ts` had when it read a comment as a cookie.
+      const source = stripComments(readFileSync(file, 'utf8'))
       for (const match of source.matchAll(/p_kind:\s*'([a-z_]+)'/g)) {
         // `match[1]` is `string | undefined` under noUncheckedIndexedAccess even
         // though a matched group-1 always exists. `?? ''` keeps the check honest:

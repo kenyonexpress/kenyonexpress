@@ -1,5 +1,28 @@
 # `migrations/pending/`
 
+## 2026-09-10: 229 WRITTEN, not applied - one kind, so a referral bonus can be mailed about truthfully
+
+`229_referral_bonus_notification_kind.sql`. One CHECK constraint widened by one
+value, `referral_bonus_credited`. No table, no function, no data touched.
+
+**‏`fn_pay_referral` מזכה את שני הארנקים ולא סיפר לאף אחד.** לא היה מסלול קוד
+שמכניס שורה ל-`notification_outbox` אחרי תשלום הפניה, ולא היה ‏kind בבדיקת
+האילוץ שיכול היה לשאת אותה. ‏`src/server/referrals/pay.ts` מכניס עכשיו, והקובץ
+הזה הוא מה שמכניס את השורה פנימה.
+
+**למה לא למחזר את ‏`cashback_credited`,** שהאילוץ החי כבר מקבל: המשפט שלו הוא
+‏`נכנס לך קאשבק`, ולממליץ זה שקר יקר - הוא לא קנה כלום, החבר שלו קנה, והמייל
+שולח אותו לחפש בהיסטוריית ההזמנות שלו רכישה שזיכתה אותו. זו בדיוק המלכודת
+ש-`voucher_expiry_credited` קיבל ‏kind משלו כדי להימנע ממנה.
+
+**‏Unapplied עולה את המייל ולא את הכסף.** הכסף זז ב-`fn_pay_referral`, לפני
+ההכנסה לתור; עד שהקובץ יוחל כל הכנסה נכשלת ב-23514 ונרשמת עם
+‏`kind_not_accepted: true`. זו אותה הדרדרות ש-`/api/cron/settlement-reconcile`
+מריץ עבור ‏`settlement_gap` ו-214.
+
+**אומת מול פרודקשן בתוך ‏`DO` שהתגלגל אחורה** ולא הוחל: האילוץ נבנה מחדש עם
+‏17 ‏kinds, נקרא, וההגדרה החיה נבדקה אחרי - היא עדיין נושאת ‏16.
+
 ## 2026-09-10: 228 WRITTEN, not applied - a row per scheduled-job run
 
 `228_job_runs.sql`. One table, two functions, one restrictive policy. Nothing is
