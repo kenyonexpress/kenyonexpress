@@ -1,173 +1,46 @@
-import { sortedPosts } from '@/content/blog'
-import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
-import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
-import { orFail } from '@/lib/catalogue-read'
-import { newestTimestamp } from '@/lib/seo/lastmod'
+import { withRequestLog } from '@/lib/observability/with-request-log'
+import { SITEMAP_SECTIONS, sectionPath, sitemapIndexXml } from '@/lib/seo/sitemap-sections'
 import { siteUrl } from '@/lib/site-url'
-import { createPublicClient } from '@/lib/supabase/anon'
-import type { MetadataRoute } from 'next'
-import { cacheLife, cacheTag } from 'next/cache'
+import { NextResponse } from 'next/server'
 
 /**
- * Sitemap over the pages that are worth indexing: the static entry points, the
- * category archives, and every active product.
+ * `/sitemap.xml` - the SITEMAP INDEX. It lists the five per-type files and no
+ * URLs of its own.
  *
- * WHAT IS DELIBERATELY ABSENT. Nothing behind authentication and nothing that
- * is personal or single-use: /account/**, /supplier/**, /admin/**, /checkout,
- * /cart, and above all /redeem/[token] - that path IS a signed voucher token,
- * and publishing one in a sitemap hands a stranger the QR of a coupon somebody
- * paid for. The redeem page also sets robots noindex of its own, so it is
- * refused twice.
+ * WHY IT IS A ROUTE HANDLER AND NOT `app/sitemap.ts`. The metadata convention
+ * serialises a `MetadataRoute.Sitemap`, which is a `<urlset>`. There is no
+ * shape of that type that produces a `<sitemapindex>`, so an index has to be
+ * written. This file IS the old `app/sitemap.ts`, moved rather than replaced:
+ * its address is unchanged, `robots.txt` still points here, and anything that
+ * has already fetched this URL keeps getting an answer at it. What changed is
+ * that the answer is now a table of contents.
  *
- * Reads go through `createPublicClient` (anon), not the service-role admin
- * client. Locally the demo secret key makes admin fail silently and the
- * sitemap collapsed to the three static URLs ([15]/[27]). Anon is the same
- * catalogue the storefront already caches, and only columns that are already
- * public are selected. Tagged with `CATALOGUE_TAG` so an admin save that
- * calls `updateTag` refreshes this list too.
+ * NO `lastmod` ON THE INDEX ENTRIES, and it is the same argument
+ * `newestTimestamp` makes for the files themselves. The honest lastmod of
+ * `/sitemap/products.xml` is the newest product in it, and producing that here
+ * means running the product query to build the index: three catalogue reads to
+ * serve a document with five lines in it, on every crawl of the index. The per
+ * file lastmods inside each `<urlset>` carry the same information at the
+ * resolution that matters, and an omitted field says "I do not know" rather
+ * than something a crawler will learn to ignore.
+ *
+ * The cache header mirrors `/merchant.xml`: nothing at the browser, an hour at
+ * the edge, a day of stale-while-revalidate. A stale index is five URLs that
+ * have not moved; a missing one is a submission failure.
  */
+async function handleGET(): Promise<NextResponse> {
+  const base = siteUrl().replace(/\/+$/, '')
 
-/**
- * `use cache` + `cacheLife('hours')` replaces `export const revalidate = 3600`,
- * which `cacheComponents` does not accept as a route segment config. Same hour,
- * expressed where the caching happens rather than as a property of the file.
- *
- * The profile also buys an `expire` of a day: if the catalogue read fails or
- * this is not requested for a while, the last good sitemap keeps being served
- * instead of a fresh empty one. A sitemap that briefly lists nothing is a
- * deindexing request.
- *
- * `new Date()` is legal inside a cached scope; outside one, under this flag, it
- * is an error - see src/components/CopyrightYear.tsx.
- */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  'use cache'
-  cacheLife('hours')
-  cacheTag(CATALOGUE_TAG)
-
-  const base = siteUrl()
-  const now = new Date()
-
-  const supabase = createPublicClient()
-
-  // All three reads go through `orFail`, and that is the whole point of the
-  // expire window described above. Discarding the `error` here inverted the
-  // promise this file makes two comments up: a failed query yields `data: null`,
-  // the `?? []` below turns it into an empty list, and the enclosing `use cache`
-  // scope stores THAT as the good answer - so the failure did not fall back to
-  // the last good sitemap, it replaced it for the full cache life, silently.
-  // A sitemap that lists nothing is a deindexing request, which is why this
-  // read failing loudly is the safe direction: `use cache` stores nothing for a
-  // scope that threw, so the previous sitemap keeps being served.
-  //
-  // This file kept the bug through both 2026-08-20 fixes because the record of
-  // the second one assumed `getFeedProducts` fed it. It does not - that backs
-  // feed.xml and merchant.xml. The product, category, and supplier reads are
-  // the sitemap's own.
-  const [productsRead, categoriesRead, suppliersRead] = await Promise.all([
-    supabase
-      .from('products')
-      .select('slug, updated_at')
-      .eq('status', 'active')
-      .is('deleted_at', null)
-      .not('slug', 'is', null)
-      // Google caps a single sitemap file at 50,000 URLs; staying well inside
-      // that keeps this one file rather than needing an index.
-      .limit(45_000),
-    supabase
-      .from('categories')
-      .select('slug, updated_at')
-      .eq('is_active', true)
-      .not('slug', 'is', null),
-    supabase
-      .from('suppliers')
-      .select('id, updated_at')
-      .eq('status', 'active')
-      .is('deleted_at', null),
-  ])
-
-  const products = orFail(productsRead, 'sitemap.products_read_failed')
-  const categories = orFail(categoriesRead, 'sitemap.categories_read_failed')
-  const suppliers = orFail(suppliersRead, 'sitemap.suppliers_read_failed')
-
-  const categoryEntries: MetadataRoute.Sitemap = (categories ?? []).map((c) => ({
-    url: `${base}/category/${c.slug}`,
-    lastModified: c.updated_at ? new Date(c.updated_at) : now,
-    changeFrequency: 'daily' as const,
-    priority: 0.8,
-  }))
-
-  const productEntries: MetadataRoute.Sitemap = (products ?? []).map((p) => ({
-    url: `${base}/product/${p.slug}`,
-    lastModified: p.updated_at ? new Date(p.updated_at) : now,
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }))
-
-  const supplierEntries: MetadataRoute.Sitemap = (suppliers ?? []).map((s) => ({
-    url: `${base}/s/${s.id}`,
-    lastModified: s.updated_at ? new Date(s.updated_at) : now,
-    changeFrequency: 'weekly' as const,
-    priority: 0.6,
-  }))
-
-  // The listing pages change when the CATALOGUE changes, so their lastmod is
-  // the newest thing on them — not `new Date()`.
-  //
-  // The clock was what this used, and a lastmod that is always "now" is a
-  // lastmod that carries no information: every fetch of the sitemap claims all
-  // four pages changed since the last one, so a crawler either re-fetches
-  // pages that did not move or, having learned the value is noise, stops
-  // reading it. Google says as much explicitly — an inaccurate lastmod is
-  // ignored, and it is ignored for the whole file, not per URL.
-  const catalogueTouched = newestTimestamp(
-    [...(products ?? []), ...(categories ?? [])].map((row) => row.updated_at),
+  const xml = sitemapIndexXml(
+    SITEMAP_SECTIONS.map((section) => ({ loc: `${base}${sectionPath(section)}` })),
   )
 
-  const staticEntries: MetadataRoute.Sitemap = [
-    { url: `${base}/`, lastModified: catalogueTouched, changeFrequency: 'daily', priority: 1 },
-    {
-      url: `${base}/products`,
-      lastModified: catalogueTouched,
-      changeFrequency: 'daily',
-      priority: 0.9,
+  return new NextResponse(xml, {
+    headers: {
+      'content-type': 'application/xml; charset=utf-8',
+      'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
     },
-    {
-      url: `${base}/coupons`,
-      lastModified: catalogueTouched,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    // No lastModified at all. `/contact` changes when the code changes, and
-    // there is no signal here for that; omitting it says "I do not know", which
-    // is both true and better than a date that is wrong every time.
-    { url: `${base}/contact`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${base}/faq`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${base}/about`, changeFrequency: 'monthly', priority: 0.5 },
-    // Higher than the other content pages because it is the page a business
-    // lands on, and a business is worth more than a session.
-    { url: `${base}/suppliers`, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${base}/blog`, changeFrequency: 'weekly', priority: 0.6 },
-    // Each post carries a real `publishedAt`, so unlike `/contact` there IS a
-    // date worth publishing. Driven off the same registry the index renders, so
-    // a post cannot be listed in one and missing from the other.
-    ...sortedPosts().map((post) => ({
-      url: `${base}/blog/${post.slug}`,
-      lastModified: new Date(post.updatedAt ?? post.publishedAt),
-      changeFrequency: 'monthly' as const,
-      priority: 0.5,
-    })),
-    // The legal pages DO carry a date, because they have one: `updatedAt` is a
-    // field of the document, so unlike `/contact` there is a real signal to
-    // publish. They are also the four addresses the old site already has
-    // indexed, which is why they are listed rather than left to be found.
-    ...LEGAL_PAGE_SLUGS.map((slug) => ({
-      url: `${base}/${slug}`,
-      lastModified: new Date(getLegalPage(slug).updatedAt),
-      changeFrequency: 'yearly' as const,
-      priority: 0.3,
-    })),
-  ]
-
-  return [...staticEntries, ...categoryEntries, ...productEntries, ...supplierEntries]
+  })
 }
+
+export const GET = withRequestLog('/sitemap.xml', handleGET)
