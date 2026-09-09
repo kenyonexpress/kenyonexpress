@@ -292,12 +292,16 @@ describe('the pending migration inventory', () => {
     // 223 IS applied (2026-09-09, `restock_on_refund_223`) and stays filed
     // here as the record, the same way 217 does. It skips 218-222 because
     // those numbers are taken by pending files on `audit/final-audit`.
+    // 224 IS applied (2026-09-10, `post059_price_cashback_twins_224`): the
+    // generated agorot twins under the post-059 names `cashback_applied_agorot`
+    // and `unit_price_agorot`, filed here as the record like 217 and 223.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
       '211_whatsapp_selfservice.sql',
       '217_coupon_qr_redemption.sql',
       '223_restock_on_refund.sql',
+      '224_post059_price_cashback_twins.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

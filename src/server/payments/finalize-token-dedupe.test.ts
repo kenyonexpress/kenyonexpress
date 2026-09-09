@@ -101,7 +101,6 @@ vi.mock('@/lib/commerce/order-money-columns', async (importOriginal) => {
   return {
     ...actual,
     moneyColumnProbe: () => async () => true,
-    resolveOrderGeneration: async () => 'agorot' as const,
     resolveOrderItemGeneration: async () => 'agorot' as const,
     resolveVoucherRateColumn: async () => 'platform_percent',
   }
