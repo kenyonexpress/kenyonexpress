@@ -11,7 +11,7 @@ import { normalizeIsraeliPhone } from '@/lib/whatsapp'
  * platform level before we ever see it, so this list is the Hebrew layer.
  */
 
-export type InboundIntent = 'opt_in' | 'opt_out' | 'message'
+export type InboundIntent = 'opt_in' | 'opt_out' | 'order_status' | 'refund_request' | 'message'
 
 const OPT_OUT_KEYWORDS = new Set([
   'stop',
@@ -39,6 +39,43 @@ const OPT_IN_KEYWORDS = new Set([
   'אישור',
 ])
 
+/**
+ * Self-service intents, same whole-message rule. A missed phrasing costs one
+ * human read of a ticket; a wrong match here answers a support question with
+ * an order list, so the sets stay short and literal. Bare "ביטול" is in
+ * neither set on purpose: over WhatsApp it is ambiguous between cancelling an
+ * order and unsubscribing, and both wrong guesses are bad, so it reaches a
+ * human as a ticket.
+ */
+const ORDER_STATUS_KEYWORDS = new Set([
+  'status',
+  'order status',
+  'סטטוס',
+  'סטאטוס',
+  'סטטוס הזמנה',
+  'מצב הזמנה',
+  'מצב ההזמנה',
+  'איפה ההזמנה',
+  'איפה ההזמנה שלי',
+  'מה עם ההזמנה',
+  'מה עם ההזמנה שלי',
+  'מה קורה עם ההזמנה שלי',
+])
+
+const REFUND_KEYWORDS = new Set([
+  'refund',
+  'זיכוי',
+  'החזר',
+  'החזר כספי',
+  'בקשת זיכוי',
+  'בקשת החזר',
+  'אני רוצה זיכוי',
+  'אני רוצה החזר',
+  'ביטול הזמנה',
+  'לבטל הזמנה',
+  'לבטל את ההזמנה',
+])
+
 export function classifyInbound(body: string): InboundIntent {
   const normalized = body
     .trim()
@@ -48,6 +85,8 @@ export function classifyInbound(body: string): InboundIntent {
     .replace(/\s+/g, ' ')
   if (OPT_OUT_KEYWORDS.has(normalized)) return 'opt_out'
   if (OPT_IN_KEYWORDS.has(normalized)) return 'opt_in'
+  if (ORDER_STATUS_KEYWORDS.has(normalized)) return 'order_status'
+  if (REFUND_KEYWORDS.has(normalized)) return 'refund_request'
   return 'message'
 }
 

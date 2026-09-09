@@ -20,6 +20,28 @@ describe('classifyInbound', () => {
     expect(classifyInbound('הצטרפות!!!')).toBe('opt_in')
   })
 
+  it('recognizes the order-status keywords', () => {
+    for (const body of ['סטטוס', 'סטטוס הזמנה', 'איפה ההזמנה שלי', 'מה עם ההזמנה', 'STATUS']) {
+      expect(classifyInbound(body)).toBe('order_status')
+    }
+  })
+
+  it('recognizes the refund keywords', () => {
+    for (const body of ['זיכוי', 'החזר כספי', 'בקשת זיכוי', 'ביטול הזמנה', 'Refund']) {
+      expect(classifyInbound(body)).toBe('refund_request')
+    }
+  })
+
+  it('bare ביטול is ambiguous between order and channel, so it reaches a human', () => {
+    expect(classifyInbound('ביטול')).toBe('message')
+  })
+
+  it('English cancel stays the platform opt-out, not a refund request', () => {
+    // Twilio enforces STOP/CANCEL at the platform level before we see it;
+    // classifying it as refund would fight that.
+    expect(classifyInbound('cancel')).toBe('opt_out')
+  })
+
   it('treats a keyword inside a sentence as a support message, not consent', () => {
     // "I want to stop my order" must reach a human, not cut the channel.
     expect(classifyInbound('אני רוצה לבטל את ההזמנה, תעזרו לי')).toBe('message')

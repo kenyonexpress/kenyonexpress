@@ -96,3 +96,58 @@ export const OPT_IN_REPLY =
 export function ticketAckText(ticketRef: string): string {
   return `קיבלנו את פנייתך (מספר פנייה ${ticketRef}) ונחזור אליך בהקדם. אפשר להוסיף פרטים בהודעה נוספת כאן.`
 }
+
+/**
+ * Customer-facing Hebrew for every order_status value production knows.
+ * platform_settled is an internal accounting state; the customer's goods
+ * arrived, so it reads as fulfilled.
+ */
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  pending: 'ממתינה לתשלום',
+  paid: 'שולמה ובטיפול',
+  partially_fulfilled: 'סופקה חלקית',
+  fulfilled: 'סופקה',
+  cancelled: 'בוטלה',
+  refunded: 'זוכתה',
+  platform_settled: 'סופקה',
+}
+
+export interface OrderStatusRow {
+  order_ref: string
+  status: string
+  total_agorot: number
+  created_at: string
+}
+
+/** The reply to a status question: the customer's recent orders, newest first. */
+export function orderStatusText(orders: OrderStatusRow[]): string {
+  const lines = [orders.length === 1 ? 'סטטוס ההזמנה שלך:' : 'ההזמנות האחרונות שלך:']
+  for (const order of orders) {
+    const label = ORDER_STATUS_LABELS[order.status] ?? order.status
+    const date = new Date(order.created_at)
+    const when = Number.isNaN(date.getTime())
+      ? ''
+      : ` מ-${date.toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' })}`
+    const total = order.total_agorot > 0 ? `, ${formatAgorot(order.total_agorot)}` : ''
+    lines.push(`הזמנה ${order.order_ref}${when}: ${label}${total}`)
+  }
+  lines.push('', 'לשאלה נוספת אפשר פשוט לכתוב לנו כאן.')
+  return lines.join('\n')
+}
+
+/** A status question from a phone no order is attached to. */
+export const NO_ORDERS_TEXT = [
+  'לא מצאנו הזמנות המשויכות למספר הזה.',
+  'אם הזמנתם עם מספר טלפון אחר, כתבו לנו כאן את מספר ההזמנה ונבדוק.',
+].join('\n')
+
+/** Subject prefix that marks a ticket as a refund request for the admin queue. */
+export const REFUND_SUBJECT_PREFIX = 'בקשת זיכוי'
+
+/** Acknowledgment for a refund request that opened or joined a ticket. */
+export function refundRequestAckText(ticketRef: string): string {
+  return [
+    `קיבלנו את בקשת הזיכוי שלך (מספר פנייה ${ticketRef}) והיא תיבדק בהקדם.`,
+    'אם לא ציינתם מספר הזמנה, כתבו אותו כאן בהודעה נוספת כדי לזרז את הטיפול.',
+  ].join('\n')
+}
