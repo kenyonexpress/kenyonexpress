@@ -74,16 +74,50 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   const firstHours = Number(process.env.ABANDONED_CART_HOURS ?? FIRST_REMINDER_HOURS)
   const secondHours = Number(process.env.ABANDONED_CART_SECOND_HOURS ?? SECOND_REMINDER_HOURS)
 
-  const { data, error } = await admin.rpc(
+  /**
+   * TWO CALLS, WIDEST FIRST, AND THE NARROW ONE IS NOT A NICETY.
+   *
+   * The comment that used to sit here said the third argument was "ignored by
+   * the deployed two-argument function; PostgREST resolves the call by the
+   * named arguments it recognises". That is false, and it made this route
+   * return 500 on every single run: PostgREST resolves a routine by the exact
+   * SET of argument names it is given, so naming an argument the function does
+   * not have matches no candidate at all. Measured against production:
+   *
+   *   fn_due_abandoned_carts(p_older_than_hours := 2, p_limit := 100)
+   *     -> rows
+   *   fn_due_abandoned_carts(p_older_than_hours := 2, p_limit := 100,
+   *                          p_second_after_hours := 24)
+   *     -> undefined_function
+   *
+   * 190's own header is right that the signature is backward compatible, but
+   * only in the direction it considered: an OLD caller against the NEW
+   * function, where the default fills the gap. This is the other direction - a
+   * new caller against the old function - and a default cannot supply a
+   * parameter that does not exist.
+   *
+   * So: ask for the second reminder, and on "no such routine" ask again without
+   * it. The narrow call is the pre-190 behaviour and it is exactly what shipped
+   * before: one mail per cart, `reminder_number` absent and read as 1 below.
+   */
+  const NOT_APPLIED = new Set(['PGRST202', '42883'])
+
+  let { data, error } = await admin.rpc(
     'fn_due_abandoned_carts' as never,
     {
       p_older_than_hours: firstHours,
       p_limit: 100,
-      // Ignored by the deployed two-argument function; PostgREST resolves the
-      // call by the named arguments it recognises.
       p_second_after_hours: secondHours,
     } as never,
   )
+
+  if (error && NOT_APPLIED.has(error.code ?? '')) {
+    log.info('abandoned_cart.pre_190_signature', { firstHours })
+    ;({ data, error } = await admin.rpc(
+      'fn_due_abandoned_carts' as never,
+      { p_older_than_hours: firstHours, p_limit: 100 } as never,
+    ))
+  }
 
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
