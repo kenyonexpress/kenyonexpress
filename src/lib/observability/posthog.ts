@@ -170,6 +170,15 @@ export type TrackOptions = {
    * there is no browser identity to fall back on.
    */
   distinctId?: string
+  /**
+   * Person properties to write alongside the event, sent as PostHog's `$set`.
+   * Scalars only, same reasoning as EventProperties: person properties are
+   * what cohorts filter on, and an object here would be a PII leak with a
+   * longer shelf life than any single event. Keys should come from a named
+   * constant (see lib/analytics/cashback-tier.ts) so the writer and the
+   * cohort definition cannot drift apart.
+   */
+  set?: EventProperties
 }
 
 /**
@@ -194,16 +203,19 @@ export function trackEvent(
     // is the same either way, and an explicit distinctId override still means
     // "not this browser's id", which only server callers pass -- the SDK never
     // sees those because there is no window there.
+    // `$set` travels inside properties on both paths; the capture endpoint and
+    // posthog-js both peel it off there and write the person, not the event.
+    const withSet = options.set ? { ...properties, $set: options.set } : properties
     const sdk = sdkClient()
     if (sdk && options.distinctId === undefined) {
-      sdk.capture(event, { ...properties, $lib: 'kenyonexpress-fetch' })
+      sdk.capture(event, { ...withSet, $lib: 'kenyonexpress-fetch' })
       return
     }
     const body = JSON.stringify({
       api_key: KEY,
       event,
       distinct_id: options.distinctId ?? distinctId(),
-      properties: { ...properties, $lib: 'kenyonexpress-fetch' },
+      properties: { ...withSet, $lib: 'kenyonexpress-fetch' },
       timestamp: new Date().toISOString(),
     })
     void fetch(`${HOST}/capture/`, {

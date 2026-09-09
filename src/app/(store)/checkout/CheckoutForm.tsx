@@ -1,6 +1,7 @@
 'use client'
 
 import { trackCommerce } from '@/lib/analytics/commerce-client'
+import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
 import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
@@ -23,6 +24,7 @@ import { shekels } from '@/lib/money-format'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'
+import { useCheckoutVariant } from './useCheckoutVariant'
 
 export type CheckoutAddressPrefill = {
   id: string | null
@@ -112,22 +114,31 @@ export default function CheckoutForm({
    *
    * A no-op without consent: `trackCommerce` finds neither vendor global.
    */
+  const checkoutVariant = useCheckoutVariant()
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: the cart is a fresh object each render; keying on its identity would refire the event on every keystroke.
   useEffect(() => {
-    trackCommerce('begin_checkout', {
-      // `CartView` is agorot end to end, so nothing is converted here. The
-      // only division on this path is `toCurrencyAmount`, at the vendor
-      // boundary.
-      items: cart.items.map((item) => ({
-        id: item.product_id,
-        name: item.name_he,
-        priceAgorot: item.unit_price,
-        quantity: item.quantity,
-      })),
-      // `total`, not `subtotal`: the amount the card is actually charged, after
-      // a discount code. Reporting the pre-discount figure makes every funnel
-      // report overstate the value of reaching checkout.
-      valueAgorot: cart.total,
+    // The flag decision first, so this begin_checkout (the funnel's entry
+    // event for the experiment) carries $feature/checkout_variant. The
+    // promise settles in at most ~2s and only delays the EVENT, never the
+    // page; a fired-then-flagged ordering would leave the experiment's
+    // exposure event without its entry step.
+    void getCheckoutVariant().then(() => {
+      trackCommerce('begin_checkout', {
+        // `CartView` is agorot end to end, so nothing is converted here. The
+        // only division on this path is `toCurrencyAmount`, at the vendor
+        // boundary.
+        items: cart.items.map((item) => ({
+          id: item.product_id,
+          name: item.name_he,
+          priceAgorot: item.unit_price,
+          quantity: item.quantity,
+        })),
+        // `total`, not `subtotal`: the amount the card is actually charged,
+        // after a discount code. Reporting the pre-discount figure makes every
+        // funnel report overstate the value of reaching checkout.
+        valueAgorot: cart.total,
+      })
     })
   }, [])
 
@@ -420,6 +431,7 @@ export default function CheckoutForm({
         ref={formRef}
         className="checkout-page__grid"
         data-step={step}
+        data-checkout-variant={checkoutVariant}
         noValidate
       >
         <input type="hidden" name="client_ref" value={clientRef} />
