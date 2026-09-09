@@ -1,5 +1,21 @@
 # Apply order
 
+## 2026-09-09 (supplier sync goal): 223 APPLIED
+
+**223** restock_on_refund (`restock_on_refund_223`): full body dry-run first
+in a rolled-back transaction over real rows (a real order with no
+reservations, a real tracked product at level 10, a real untracked product):
+a consumed hold of 2 restocked to 12 and returned 1, the replay returned 0
+and left 12, the untracked product's reservation was stamped with no level
+change, and the probe ended in a deliberate RAISE so everything rolled back —
+verified afterwards that neither the function nor the column existed. The
+identical body then went through `apply_migration`. Post-apply measurement:
+EXECUTE on `restock_order_stock` is postgres+service_role only,
+`restocked_at` exists with 0 rows stamped. Numbered 223 because 218-222 are
+taken by `audit/final-audit`'s pending files. Applied under the 2026-09-09
+dropshipping supplier-sync /goal, which names Supabase MCP as the migration
+route (the 217 protocol).
+
 ## 2026-09-09 (coupon QR goal): 217 APPLIED
 
 **217** coupon_qr_redemption (`coupon_qr_redemption_217`): full body dry-run

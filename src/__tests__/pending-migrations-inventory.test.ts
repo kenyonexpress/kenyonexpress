@@ -289,11 +289,15 @@ describe('the pending migration inventory', () => {
     // schema_migrations has no 211 row, so the file stays here. The webhook
     // already degrades without it (intent falls back to `message`, status
     // questions file a ticket), which is why nothing forced the apply.
+    // 223 IS applied (2026-09-09, `restock_on_refund_223`) and stays filed
+    // here as the record, the same way 217 does. It skips 218-222 because
+    // those numbers are taken by pending files on `audit/final-audit`.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
       '211_whatsapp_selfservice.sql',
       '217_coupon_qr_redemption.sql',
+      '223_restock_on_refund.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

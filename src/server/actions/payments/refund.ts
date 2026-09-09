@@ -18,6 +18,7 @@ import {
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { pendingRestockRpc } from '@/lib/supabase/pending-restock'
 import { trackServerEvent } from '@/server/analytics/track'
 import {
   RefundError,
@@ -384,11 +385,38 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       .eq('id', paymentId)
       .eq('status', payment.status as string)
 
-    await admin
+    const { data: flipped, error: flipError } = await admin
       .from('orders')
       .update({ status: 'refunded' })
       .eq('id', order.id)
       .eq('status', 'paid')
+      .select('id')
+      .maybeSingle()
+    if (flipError) {
+      // The card is already credited; a failed status write is bookkeeping
+      // divergence, the same class the catch below alarms on. Logged here
+      // (rather than thrown) because the writes after this one - settlement
+      // events, credit note, audit - must still be attempted.
+      log.warn('refund.status_flip_failed', { order_id: order.id, err: flipError.message })
+    }
+
+    // Put the consumed stock back on the shelf, the `restock_consumed` effect
+    // order-transitions.ts declares for every `-> refunded` edge. Gated on the
+    // CAS above actually flipping the row, so a raced replay that lost the
+    // status write cannot restock a second time (the RPC is idempotent per
+    // reservation anyway; this keeps the two guards independent). Best effort,
+    // like every step after the provider call: the money already moved back,
+    // and a failure here costs shelf accuracy, not the refund. `release` would
+    // be the wrong verb - the hold was consumed at payment, so the level was
+    // really decremented and must be really incremented (migration 223).
+    if (flipped) {
+      const { error: restockError } = await admin.rpc(pendingRestockRpc(), {
+        p_order_id: order.id,
+      } as never)
+      if (restockError) {
+        log.warn('refund.restock_failed', { order_id: order.id, err: restockError.message })
+      }
+    }
 
     await recordSettlementEvents(admin, buildRefundEvents(order.id, paymentId, plan, now))
 

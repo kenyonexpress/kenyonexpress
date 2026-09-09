@@ -37,6 +37,21 @@ describe('order transition effect plan', () => {
     }
   })
 
+  it('restocks consumed stock on every refund edge, and only there', () => {
+    // A refund undoes a sale whose reservation was CONSUMED - the level really
+    // went down at payment, so it must really come back up (migration 223).
+    // `release_stock` is the verb for a hold that never decremented, which is
+    // why the two effects must never share an edge: running both would hand
+    // the same units back twice.
+    for (const [key, effects] of Object.entries(ORDER_TRANSITION_EFFECTS)) {
+      expect(effects.includes('restock_consumed'), `${key}`).toBe(key.endsWith('->refunded'))
+      expect(
+        effects.includes('restock_consumed') && effects.includes('release_stock'),
+        `${key} both releases and restocks`,
+      ).toBe(false)
+    }
+  })
+
   it('returns null for moves the machine forbids', () => {
     expect(effectsFor('cancelled', 'paid')).toBeNull()
     expect(effectsFor('refunded', 'pending')).toBeNull()

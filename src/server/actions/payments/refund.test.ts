@@ -66,6 +66,9 @@ const adminClient = {
     update: (payload: unknown) => builder(table, 'update', payload),
     upsert: (payload: unknown) => builder(table, 'upsert', payload),
   }),
+  // RPCs are recorded under `rpc:<name>` so a test can assert the exact call
+  // (restock_order_stock is the one that moves stock back on a refund).
+  rpc: (fn: string, args: unknown) => builder(`rpc:${fn}`, 'rpc', args),
 }
 
 const requireAdminSession = vi.fn()
@@ -503,5 +506,46 @@ describe('refundOrder: refusals', () => {
     const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
     expect(result).toMatchObject({ ok: false, code: 'FORBIDDEN' })
     expect(calls).toHaveLength(0)
+  })
+})
+
+describe('refundOrder: restocking consumed stock', () => {
+  it('calls restock_order_stock once the order really flipped to refunded', async () => {
+    // The `restock_consumed` effect order-transitions.ts declares for every
+    // `-> refunded` edge: the payment CONSUMED the reservation and decremented
+    // the shelf, so the refund must increment it back (migration 223).
+    seedHappyPath()
+    queue('orders.update', { data: { id: 'order-1' }, error: null })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result.ok).toBe(true)
+
+    const restock = find('rpc:restock_order_stock', 'rpc')
+    expect(restock).toBeDefined()
+    expect(restock?.payload).toEqual({ p_order_id: 'order-1' })
+  })
+
+  it('skips the restock when the status CAS lost to a concurrent writer', async () => {
+    // `.eq('status','paid')` matched nothing: some other process already moved
+    // the order, and whoever moved it owns the stock consequence. Restocking
+    // here anyway would be a second writer acting on a state it never saw.
+    seedHappyPath()
+    queue('orders.update', { data: null, error: null })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result.ok).toBe(true)
+    expect(find('rpc:restock_order_stock', 'rpc')).toBeUndefined()
+  })
+
+  it('does not fail the refund when the restock RPC errors - the money already moved', async () => {
+    seedHappyPath()
+    queue('orders.update', { data: { id: 'order-1' }, error: null })
+    queue('rpc:restock_order_stock.rpc', {
+      data: null,
+      error: { message: 'function does not exist' },
+    })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: true, replay: false })
   })
 })

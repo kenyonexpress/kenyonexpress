@@ -37,6 +37,14 @@ export type OrderTransitionEffect =
    * forbidden.
    */
   | 'money_flow_only'
+  /**
+   * Return CONSUMED stock to the shelf (`restock_order_stock`, migration 223).
+   * Owned by the refund console: consume really decremented the level at
+   * payment, so undoing a paid order must really increment it back. Distinct
+   * from `release_stock`, which only stamps a hold that never touched the
+   * level.
+   */
+  | 'restock_consumed'
 
 /**
  * One entry per legal edge of `orderMachine`, no more and no fewer;
@@ -49,10 +57,10 @@ export const ORDER_TRANSITION_EFFECTS: Readonly<
   'pending->cancelled': ['append_note', 'release_stock'],
   'paid->partially_fulfilled': ['append_note'],
   'paid->fulfilled': ['append_note'],
-  'paid->refunded': ['money_flow_only'],
+  'paid->refunded': ['money_flow_only', 'restock_consumed'],
   'partially_fulfilled->fulfilled': ['append_note'],
-  'partially_fulfilled->refunded': ['money_flow_only'],
-  'fulfilled->refunded': ['money_flow_only'],
+  'partially_fulfilled->refunded': ['money_flow_only', 'restock_consumed'],
+  'fulfilled->refunded': ['money_flow_only', 'restock_consumed'],
 }
 
 export function transitionKey(from: OrderStatus, to: OrderStatus): OrderTransitionKey {
