@@ -30,6 +30,48 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # THE OFFSITE BACKUP, WHICH REPORTS NOTHING WHEN IT IS SWITCHED OFF.
+      #
+      # db-backup.yml and db-restore-drill.yml both open with
+      # `if: vars.DB_BACKUP_ENABLED == 'true'`, so with the variable unset every
+      # scheduled run skips the whole job and finishes GREEN. A workflow that is
+      # doing nothing looks exactly like a workflow that is working, and on
+      # 2026-09-10 that had been true since the day both files were written:
+      # variable unset, none of the five secrets present, and R2 not even
+      # enabled on the Cloudflare account (403, code 10042). Zero dumps have
+      # ever existed. docs/DISASTER-RECOVERY.md §5.1.
+      #
+      # IT WARNS AND DOES NOT FAIL while the switch is off. Only Ofir can turn
+      # it on -- it is three dashboard actions and five secrets -- and a red
+      # nightly every night for a condition nobody here can fix is how a red
+      # nightly stops being read at all. That is the same reasoning
+      # nightly-health.sh gives for keeping `pnpm audit` report-only.
+      #
+      # IT DOES FAIL on the incoherent combination: switched ON with the
+      # credentials missing. That is not a decision anybody made, it is a
+      # half-finished setup, and it produces a backup job that runs and fails
+      # nightly -- which is worth one loud red here rather than a red on a
+      # workflow whose failure nobody has subscribed to.
+      - name: Offsite backup status
+        env:
+          ENABLED: ${{ vars.DB_BACKUP_ENABLED }}
+          HAS_DB_URL: ${{ secrets.SUPABASE_DB_URL != '' }}
+          HAS_R2: ${{ secrets.BACKUP_R2_BUCKET != '' && secrets.BACKUP_R2_ACCOUNT_ID != '' }}
+        run: |
+          if [ "$ENABLED" = "true" ]; then
+            if [ "$HAS_DB_URL" = "true" ] && [ "$HAS_R2" = "true" ]; then
+              echo "- offsite backup: **on**, credentials present" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "- offsite backup: **ON WITH MISSING CREDENTIALS**" >> "$GITHUB_STEP_SUMMARY"
+              echo "::error::DB_BACKUP_ENABLED is true but SUPABASE_DB_URL or the BACKUP_R2_* secrets are missing; db-backup.yml runs and fails every night."
+              exit 1
+            fi
+          else
+            echo "- offsite backup: **off** (DB_BACKUP_ENABLED unset). No dump has ever been written; see docs/DISASTER-RECOVERY.md §5.1" >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Offsite backups are switched off. The only backup is Supabase's own daily one, which does not survive losing the Supabase account."
+          fi
+
       - name: Health gates
         # THE BUILD GATE HAD NO ENVIRONMENT, SO IT COULD ONLY EVER FAIL.
         #
