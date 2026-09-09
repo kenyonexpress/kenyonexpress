@@ -14,6 +14,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const rpc = vi.fn()
+
+/**
+ * The route makes TWO kinds of RPC now, so no assertion here indexes into
+ * `rpc.mock.calls[0]`. Which one comes first is an implementation detail, and a
+ * test that encodes it fails the next time an unrelated call is added -- which
+ * is exactly what happened when the discrepancy recorder landed.
+ */
+const alertCalls = () =>
+  rpc.mock.calls.filter(([fn]) => fn === 'fn_enqueue_notification') as [
+    string,
+    Record<string, unknown>,
+  ][]
+const recordCalls = () =>
+  rpc.mock.calls.filter(([fn]) => fn === 'fn_record_payment_discrepancies') as [
+    string,
+    { p_rows: Record<string, unknown>[] },
+  ][]
 const from = vi.fn()
 const listTransactions = vi.fn()
 const loadCardcomEnv = vi.fn()
@@ -210,10 +227,8 @@ describe('terminal reconciliation cron', () => {
       })
       const body = await (await GET(request('Bearer s3cret'))).json()
       expect(body.critical).toBe(1)
-      expect(rpc).toHaveBeenCalledTimes(1)
-      const [fn, payload] = rpc.mock.calls[0] as [string, Record<string, unknown>]
-      expect(fn).toBe('fn_enqueue_notification')
-      expect(payload.p_kind).toBe('reconciliation_gap')
+      expect(alertCalls()).toHaveLength(1)
+      expect(alertCalls()[0]?.[1].p_kind).toBe('reconciliation_gap')
     })
 
     it('mails on an amount both sides disagree about', async () => {
@@ -223,16 +238,21 @@ describe('terminal reconciliation cron', () => {
       })
       const body = await (await GET(request('Bearer s3cret'))).json()
       expect(body.critical).toBe(1)
-      expect(rpc).toHaveBeenCalledTimes(1)
+      expect(alertCalls()).toHaveLength(1)
     })
 
-    it('stays quiet when the only difference is a payment the terminal did not report', async () => {
+    it('records the payment the terminal did not report, and does not page on it', async () => {
       // missing_remotely is usually the window boundary, not a fault. Paging on
-      // it would page every night.
+      // it would page every night. Keeping NO record of it was a different
+      // decision, and it threw away the evidence that settles whether the
+      // terminal parser reads the live wire format at all.
       const body = await (await GET(request('Bearer s3cret'))).json()
       expect(body.discrepancies).toBe(1)
       expect(body.critical).toBe(0)
-      expect(rpc).not.toHaveBeenCalled()
+      expect(alertCalls()).toHaveLength(0)
+      expect(recordCalls()).toHaveLength(1)
+      expect(recordCalls()[0]?.[1].p_rows).toHaveLength(1)
+      expect(recordCalls()[0]?.[1].p_rows[0]).toMatchObject({ kind: 'missing_remotely' })
     })
 
     it('stays quiet when everything matches', async () => {
@@ -242,6 +262,8 @@ describe('terminal reconciliation cron', () => {
       })
       const body = await (await GET(request('Bearer s3cret'))).json()
       expect(body).toMatchObject({ ok: true, discrepancies: 0, critical: 0 })
+      // Nothing found is nothing written: an empty batch never reaches the
+      // database at all.
       expect(rpc).not.toHaveBeenCalled()
     })
 
@@ -251,10 +273,10 @@ describe('terminal reconciliation cron', () => {
         transactions: [terminalCharge('tx-ghost', 100)],
       })
       await GET(request('Bearer s3cret'))
-      const first = (rpc.mock.calls[0] as [string, Record<string, unknown>])[1].p_dedupe
+      const first = alertCalls()[0]?.[1].p_dedupe
       rpc.mockClear()
       await GET(request('Bearer s3cret'))
-      const second = (rpc.mock.calls[0] as [string, Record<string, unknown>])[1].p_dedupe
+      const second = alertCalls()[0]?.[1].p_dedupe
       expect(second).toBe(first)
       expect(String(first)).toMatch(/^admin:reconciliation_gap:\d{4}-\d{2}-\d{2}$/)
     })
@@ -266,12 +288,18 @@ describe('terminal reconciliation cron', () => {
       })
       const body = await (await GET(request('Bearer s3cret'))).json()
       expect(body.critical).toBe(30)
-      const payload = (rpc.mock.calls[0] as [string, Record<string, unknown>])[1] as {
+      const payload = alertCalls()[0]?.[1] as {
         p_payload: { critical: number; rows: unknown[] }
       }
       // The full count still travels; only the listing is capped.
       expect(payload.p_payload.critical).toBe(30)
       expect(payload.p_payload.rows).toHaveLength(20)
+      // And the twenty that were mailed are not the only twenty that survive.
+      // Thirty-one, not thirty: the thirty critical ghosts PLUS the local
+      // `tx-1` this terminal list does not mention, which is `missing_remotely`
+      // and therefore never mailed at all. Both halves of that number are the
+      // reason the recorder exists.
+      expect(recordCalls()[0]?.[1].p_rows).toHaveLength(31)
     })
 
     it('still reports the gap when the alert could not be enqueued', async () => {

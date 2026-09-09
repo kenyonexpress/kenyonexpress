@@ -300,6 +300,16 @@ describe('the pending migration inventory', () => {
       // somebody had already made. Also proven: the old uniqueness is a
       // CONSTRAINT, not a bare index, so `DROP INDEX` on it fails 2BP01.
       '190_abandoned_cart_second_reminder.sql',
+      // 191 WRITTEN 2026-09-09, not applied. Purely additive: one new table,
+      // one new function, nothing existing touched. It gives the terminal
+      // reconciliation cron somewhere to put its findings, which SECTIONS 28
+      // names and which existed nowhere. Verified against production inside a
+      // rolled-back DO block: the re-find path bumps `seen_count` and preserves
+      // `first_seen_at`, a batch carrying the same key twice writes one row,
+      // and the same deal number on a second terminal is a second finding.
+      // The route runs unchanged without it, reading PGRST202 and 42883 as
+      // "not applied yet".
+      '191_payment_discrepancies.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

@@ -4,12 +4,14 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getCardcomAccounts, getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import {
+  type Discrepancy,
   type LocalPayment,
   type TerminalTransaction,
   reconcileAgainstTerminal,
 } from '@/lib/payments/terminal-reconciliation'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { recordPaymentDiscrepancies } from '@/server/payments/payment-discrepancies'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -97,7 +99,11 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   // every other, and this project runs a terminal per supplier account.
   const accounts = registry.list()
   const perAccount: { account: string; matched: number; critical: number }[] = []
-  const allDiscrepancies: ReturnType<typeof reconcileAgainstTerminal>['discrepancies'] = []
+  // The account travels WITH the finding rather than beside it. Flattening the
+  // per-account reports into one list drops the one field that tells two
+  // identical deal numbers on two terminals apart, and Cardcom's deal numbers
+  // are per terminal.
+  const allDiscrepancies: { accountId: string; discrepancy: Discrepancy }[] = []
 
   for (const account of accounts) {
     const listed = await getPaymentProvider(account.id).listTransactions({
@@ -131,11 +137,21 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
     const report = reconcileAgainstTerminal(terminal, local)
     perAccount.push({ account: account.id, matched: report.matched, critical: report.critical })
-    allDiscrepancies.push(...report.discrepancies)
+    allDiscrepancies.push(
+      ...report.discrepancies.map((discrepancy) => ({ accountId: account.id, discrepancy })),
+    )
   }
 
+  // Written down BEFORE the alert, and every kind of them, not just the
+  // critical ones. The alert is capped at twenty rows on purpose and its caller
+  // is a scheduler that discards the response body, so without this the
+  // identity of finding twenty-one and beyond did not survive the run at all.
+  // Never fatal: recording is not the job, asking the terminal is.
+  await recordPaymentDiscrepancies(admin, allDiscrepancies)
+
   const critical = allDiscrepancies.filter(
-    (d) => d.kind === 'missing_locally' || d.kind === 'amount_mismatch',
+    ({ discrepancy }) =>
+      discrepancy.kind === 'missing_locally' || discrepancy.kind === 'amount_mismatch',
   )
 
   if (critical.length > 0) {
@@ -152,7 +168,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         critical: critical.length,
         // Capped: an alert that lists two hundred rows is an alert nobody
         // reads. The full set is in the response and in the log.
-        rows: critical.slice(0, 20),
+        rows: critical.slice(0, 20).map(({ discrepancy }) => discrepancy),
       },
     })
     if (alertError) {

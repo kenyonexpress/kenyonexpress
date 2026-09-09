@@ -596,3 +596,54 @@ and the pinned `fn_il_phone_digits` returned `972541234567`, `972541234567` and
 left in production.
 
 Order: independent of 162 and 184. It touches no table and no policy.
+
+## 2026-09-09: 191 written, not applied, and the cron already runs without it
+
+`191_payment_discrepancies.sql` gives `/api/cron/reconcile` somewhere to put
+what it finds. SECTIONS 28 names the table; it existed nowhere in this repo.
+
+**What is lost today, read off the route rather than assumed.** The admin alert
+is capped at twenty rows, correctly. The other findings live only in the HTTP
+response body, and the caller of a cron endpoint is a scheduler that discards
+it. `reconcile.gaps_found` logs a COUNT, so the number of problems survived and
+the identity of the transactions did not. And `missing_remotely` is outside the
+critical set on purpose, so it was neither alerted nor logged individually nor
+stored, which threw away the one thing that would confirm whether the terminal
+parser reads the live wire format at all.
+
+**Keyed on the discrepancy, not on the run.** The window is 48 hours and runs
+overlap deliberately, so the same finding appears on consecutive days. The
+unique key is `(kind, transaction_id, cardcom_account_id)` and a re-find bumps
+`last_seen_at` and `seen_count`. That buys what a per-run table cannot: a
+finding that STOPPED being found is a row whose `last_seen_at` predates the last
+run, whereas in a per-run table the same fact is an absence of new rows, and an
+absence is also what a cron that quietly died looks like.
+
+**The writer is a function and not a PostgREST upsert**, because PostgREST
+compiles `upsert` to `ON CONFLICT DO UPDATE` over every column in the payload.
+`first_seen_at` would be reset on every run, which is the one value that makes
+"how long has this been open" answerable, and `seen_count` cannot be expressed
+at all from the client without a read-then-write that two overlapping runs both
+lose.
+
+**Verified against production without applying.** One `DO` block created the
+table, the indexes, both policies and the function, exercised them, and ended in
+an unconditional `RAISE`, so the whole thing rolled back. All of it passed:
+a batch containing the same key twice writes one row (the `distinct on` is what
+keeps `ON CONFLICT DO UPDATE cannot affect row a second time` from firing), a
+re-find leaves the row count at two while `seen_count` goes to 2, `first_seen_at`
+survives, a row that had been marked `resolved_at` is reopened, a second run
+that resolved no order id does not erase the one the first run found, the same
+deal number on a second terminal is a second row, an unknown `kind` is refused
+by the check constraint, and both `null` and a non-array return 0 rather than
+raising. `pg_class` and `pg_proc` were re-read afterwards: nothing left behind.
+
+**The route does not wait for it.** `recordPaymentDiscrepancies` treats
+`PGRST202` and `42883` as "not applied yet", says so once per process rather
+than once per run, and never throws. Recording is not the job; asking the
+terminal is, and a write that cannot land must not turn a good reconciliation
+into a 500 that the scheduler retries, because the retry re-pulls every
+terminal.
+
+Order: independent of 162, 184, 188, 189 and 190. It creates one table and one
+function and touches nothing existing.

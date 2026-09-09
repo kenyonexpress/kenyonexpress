@@ -505,6 +505,27 @@ Per line, at the application level:
 
 Recorded rather than fixed, because this is a documentation branch.
 
+0. **The reconciliation cron found discrepancies and kept none of them.**
+   **FIXED 2026-09-09.** `payment_discrepancies` is named by SECTIONS 28 and
+   existed nowhere in this repo. `/api/cron/reconcile` pulled each terminal's
+   `ListTransactions`, diffed it against `payments`, enqueued an admin alert
+   capped at twenty rows, and logged `reconcile.gaps_found` with a COUNT. So the
+   number of problems survived a run and the identity of the transactions did
+   not, and `missing_remotely` -- deliberately outside the critical set, because
+   the terminal parser has never been confirmed against a live wire format and
+   that is where a parser mismatch would land -- was neither alerted nor logged
+   individually nor stored at all. Not paging on it was right; keeping no record
+   of it threw away the exact evidence that would settle the parser question on
+   the first live run.
+
+   The findings are now written before the alert is composed, every kind of
+   them, keyed on `(kind, transaction_id, cardcom_account_id)` so the 48-hour
+   overlap bumps `seen_count` instead of accumulating rows. The migration is
+   `migrations/pending/191_payment_discrepancies.sql`, verified against
+   production inside a rolled-back `DO` block and **not applied**. The route
+   runs unchanged without it: `PGRST202` and `42883` are read as "not applied
+   yet", said once per process, and never fatal.
+
 1. **`src/server/payments/README.md` is stale.** It describes the coupon line
    moving `paid -> platform_settled`. The code in `state-machine.ts` moves both
    coupon and physical lines `paid -> split_executed` and deliberately does not

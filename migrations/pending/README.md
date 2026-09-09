@@ -1,5 +1,52 @@
 # `migrations/pending/`
 
+## 2026-09-09: 191 WRITTEN, not applied — somewhere to put the reconciliation
+
+`191_payment_discrepancies.sql`. SECTIONS 28 names a daily reconciliation cron
+"writing `payment_discrepancies`". The cron exists and is thorough; the table
+appears nowhere in this repo, and the findings did not survive the run.
+
+**What was lost, read off the route rather than assumed.** The admin alert caps
+at twenty rows, which is right -- an alert listing two hundred is one nobody
+reads. The rest lived only in the HTTP response body, whose caller is a
+scheduler that discards it. `reconcile.gaps_found` logs a COUNT, so the number
+of problems survived and the identity of the transactions did not. And
+`missing_remotely` is outside the critical set on purpose, so it was neither
+alerted nor logged individually nor stored: the terminal parser has never been
+confirmed against a live wire format and that kind is where a mismatch lands, so
+not paging on it is correct, but keeping no record of it threw away the exact
+evidence that would settle the parser question on the first live run.
+
+**Keyed on the discrepancy, not on the run.** The window is 48 hours and runs
+overlap deliberately, so the same finding recurs. The unique key is
+`(kind, transaction_id, cardcom_account_id)`, and a re-find bumps `last_seen_at`
+and `seen_count`. One problem stays one row, and a finding that STOPPED being
+found is visible as a row whose `last_seen_at` predates the last run. In a
+per-run table that same fact is an absence of new rows, and an absence is also
+what a cron that quietly died looks like.
+
+**The writer is a function, not a PostgREST upsert.** PostgREST compiles
+`upsert` to `ON CONFLICT DO UPDATE` over every column in the payload:
+`first_seen_at` would be reset on every run, and `seen_count` cannot be
+expressed from the client at all without a read-then-write that two overlapping
+runs both lose. `security invoker` and not definer -- the only caller holds the
+service role already -- with `search_path` pinned anyway, which is 188's point.
+
+**Verified against production, nothing applied.** One `DO` block built the
+table, both indexes, both policies and the function, exercised them, and ended
+in an unconditional `RAISE`. Everything held: a batch carrying the same key
+twice writes one row (the `distinct on` is what keeps `ON CONFLICT DO UPDATE
+cannot affect row a second time` from firing), a re-find leaves the count alone
+while `seen_count` reaches 2 and `first_seen_at` survives, a row marked
+`resolved_at` is reopened, a later run that resolved no order id does not erase
+the one an earlier run found, the same deal number on a second terminal is a
+second row, an unknown `kind` is refused by the CHECK, and `null` and a non-array
+both return 0. `pg_class` and `pg_proc` re-read afterwards: nothing left behind.
+
+**The route does not wait for it.** `PGRST202` and `42883` are read as "not
+applied yet", said once per process rather than once per run, and never fatal.
+Recording is not the job; asking the terminal is.
+
 ## 2026-09-09: 190 WRITTEN, not applied — the second abandoned-cart reminder
 
 `190_abandoned_cart_second_reminder.sql`. SECTIONS 26 asks for two reminders,
