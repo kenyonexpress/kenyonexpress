@@ -503,6 +503,40 @@ describe('the pending migration inventory', () => {
       // bogus category REFUSED, the `internal` direction accepted and a bogus
       // one REFUSED, and the owner policy confirmed to filter internal notes.
       '203_support_center.sql',
+      // 204 WRITTEN 2026-09-09, not applied. Supplier onboarding as a thing
+      // separate from being a supplier.
+      //
+      // THE OBVIOUS DESIGN IS ONE ENUM VALUE AND IT IS WRONG. `supplier_status`
+      // is active/suspended/closed, and adding `pending` looks like one line --
+      // but `from('suppliers')` appears at 19 call sites here and roughly nine
+      // filter on status at all, so a pending supplier would be VISIBLE BY
+      // DEFAULT in about ten places, with nothing failing if one were missed.
+      // A separate application table inverts that: an applicant is not a
+      // supplier and cannot appear where suppliers appear, because there is no
+      // row. The `suppliers` row is created at approval, by which point every
+      // existing query is already correct. The 12 live supplier rows are
+      // untouched.
+      //
+      // The bank account is NOT a column: `supabase_vault` is installed here
+      // (measured, and a create/read round trip exercised and rolled back), so
+      // the number goes into a vault secret through a SECURITY DEFINER wrapper
+      // granted to nobody but the service role, and the row keeps the uuid plus
+      // the bank code, branch and last four. There is deliberately NO read
+      // function -- nothing in the app needs to turn the id back into an
+      // account, and one sitting here unused is one that can be called.
+      //
+      // The contract log is append-only and stores a SHA-256 of the exact text:
+      // "they accepted the terms" is worth nothing if the terms can be edited
+      // afterwards.
+      //
+      // Probed against production, rolled back: the vault wrapper round trips
+      // and REFUSES an empty secret, a five-digit business id REFUSED,
+      // `submitted` with no submitted_at REFUSED, a rejection with no reason
+      // REFUSED, an approval with no supplier REFUSED, a SECOND live
+      // application for one business number REFUSED while a rejected one frees
+      // the number, a duplicate r2_key REFUSED, and a non-hex contract hash
+      // REFUSED.
+      '204_supplier_onboarding.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

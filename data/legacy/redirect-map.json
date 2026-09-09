@@ -165,6 +165,7 @@
       "/admin/search",
       "/admin/status",
       "/admin/suppliers",
+      "/admin/suppliers/applications",
       "/admin/suppliers/new",
       "/admin/support",
       "/admin/users",
@@ -212,6 +213,7 @@
       "/supplier/reviews",
       "/supplier/scan",
       "/suppliers",
+      "/suppliers/apply",
       "/terms-and-conditions"
     ]
   },

@@ -72,6 +72,12 @@ const NAV_ITEMS: NavItem[] = [
   },
   // Legacy payout table. Separate from ספקים on purpose: nothing on the purchase
   // path references it (docs/ADMIN-ARCHITECTURE.md section 2).
+  {
+    href: '/admin/suppliers/applications',
+    label: 'בקשות הצטרפות',
+    icon: BadgeCheck,
+    section: 'suppliers',
+  },
   { href: '/admin/vendors', label: 'ספקים (מערכת ישנה)', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },

@@ -1,5 +1,46 @@
 # `migrations/pending/`
 
+## 2026-09-09: 204 WRITTEN, not applied — an applicant is not a supplier
+
+`204_supplier_onboarding.sql`.
+
+**The obvious design is one enum value, and the measurement is why it is not
+done.** `supplier_status` is `active, suspended, closed`; adding `pending` looks
+like one line. But `from('suppliers')` appears at **19 call sites** in this repo
+and roughly **nine** filter on status at all — so a pending supplier would be
+visible by default in about ten places (the directory, the admin pickers, the
+publish gate, the payout run), and nothing would fail if one were missed. That
+is a gap-by-default: the safe state would depend on remembering.
+
+A separate application table inverts it. An applicant cannot appear anywhere a
+supplier appears because there is no row; the `suppliers` row is created at
+approval, by which point every existing query is already correct without being
+touched. The 12 live supplier rows are untouched by this file.
+
+**The bank account is not a column.** `supabase_vault` is installed in this
+project (measured; a create/read round trip was exercised and rolled back), so
+the number goes into a vault secret through a `SECURITY DEFINER` wrapper granted
+to nobody but the service role. What stays in the clear is the bank code, the
+branch and the **last four** — which a payout operator needs to recognise an
+account and which cannot move money. There is deliberately **no read function**:
+nothing in this application needs to turn the id back into an account number,
+and one sitting here unused is one that can be called.
+
+**The contract log is append-only and stores a hash.** "The supplier accepted
+the terms" is worth nothing if the terms can be edited afterwards, so each
+acceptance keeps the version and a SHA-256 of the exact text that was on screen.
+
+**Verified against production without applying.** One `DO` block ran the whole
+file, exercised it, and ended in an unconditional `RAISE`. All of it passed: the
+vault wrapper round trips and refuses an empty secret, a five-digit business id
+refused, `submitted` with no `submitted_at` refused, a rejection with no reason
+refused, an approval with no supplier refused, a **second live application for
+one business number refused** while a rejected one frees the number, a duplicate
+`r2_key` refused, and a non-hex contract hash refused. `pg_class`, `pg_proc` and
+`vault.secrets` re-read afterwards: nothing left behind.
+
+Order: independent of everything else pending.
+
 ## 2026-09-09: 203 WRITTEN, not applied — the tables were live and the code never arrived
 
 `203_support_center.sql`.

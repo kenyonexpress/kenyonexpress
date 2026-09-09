@@ -143,6 +143,20 @@ export const RATE_LIMIT_POLICIES = {
   // one ticket. It is also the ONLY bound on reopening a closed ticket: the
   // status deliberately does not refuse replies (see `customerMayReply`).
   'support-reply': { limit: 30, windowSeconds: 3600, reason: 'messages on a ticket, per user' },
+  // Supplier onboarding. Five applications an hour per account: a real business
+  // submits one, and the one-live-application-per-business-number index is what
+  // actually stops duplicates - this bounds somebody hammering the form with
+  // different numbers, which the index cannot see.
+  'supplier-apply': { limit: 5, windowSeconds: 3600, reason: 'supplier applications, per user' },
+  // Higher, because an application legitimately carries several documents and a
+  // failed upload is retried. Each call MINTS A PRESIGNED PUT URL, a credential
+  // that keeps working after the session is gone - the same reason
+  // `admin-upload-url` is limited despite being staff-only.
+  'supplier-doc-upload': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'presigned R2 PUT minting for onboarding documents, per user',
+  },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
   // Once per login per browser, and only when the browser arrives carrying a
   // guest list. Ten an hour is generous for a person signing in and out; it is
