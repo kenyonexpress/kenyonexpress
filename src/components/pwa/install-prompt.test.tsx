@@ -19,6 +19,10 @@ import InstallPrompt from './InstallPrompt'
  *   because the dismissal is remembered.
  * - the reservation is REMOVED when the banner goes, or every page keeps a
  *   6rem hole at the bottom for the rest of the session.
+ * - it is shown ONCE per device, and that is recorded when it appears rather
+ *   than when it is answered. A visitor who scrolls past without touching it
+ *   has pressed nothing, so a dismissal-only record brings the banner back on
+ *   the next visit and the one after.
  */
 
 function fireInstallPrompt() {
@@ -79,6 +83,28 @@ describe('InstallPrompt', () => {
     expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
     expect(document.documentElement.hasAttribute('data-pwa-prompt')).toBe(false)
     expect(localStorage.getItem('ke:pwa-install-dismissed')).toBe('1')
+  })
+
+  it('records that it was shown the moment it appears, not when it is answered', () => {
+    render(<InstallPrompt />)
+    fireInstallPrompt()
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    expect(screen.getByRole('region', { name: 'התקנת האפליקציה' })).toBeInTheDocument()
+    // Nothing has been pressed. The showing is already spent.
+    expect(localStorage.getItem('ke:pwa-install-shown')).toBe('1')
+  })
+
+  it('never comes back after it has been shown once, even if it was ignored', () => {
+    // The nagging case: scrolled past, never answered, no dismissal recorded.
+    localStorage.setItem('ke:pwa-install-shown', '1')
+    render(<InstallPrompt />)
+    fireInstallPrompt()
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
   })
 
   it('never comes back once dismissed', () => {

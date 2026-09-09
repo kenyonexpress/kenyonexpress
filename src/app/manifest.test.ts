@@ -11,11 +11,11 @@ import manifest from './manifest'
  * and `maskable` is the single most common PWA mistake, and it looks fine
  * everywhere except on the Android launcher that clips it.
  *
- * The second, and the reason this file exists, is the service worker's bypass
- * list. A worker that caches a cart, a checkout or an account page is not a
- * performance regression, it is a shopper seeing a stale total or the previous
- * user's order on a shared device. That list is plain text in a file no
- * bundler checks, so it is asserted here.
+ * The second is the handful of values the manifest and `public/sw.js` have to
+ * agree on. The worker's own rules -- the bypass list, the caching strategies,
+ * the push guards -- used to be asserted here as substrings and now live in
+ * `src/__tests__/service-worker.test.ts`, which runs them. See the note above
+ * the second describe block for what that change bought.
  */
 
 const sw = readFileSync('public/sw.js', 'utf8')
@@ -63,62 +63,42 @@ describe('web app manifest', () => {
   })
 })
 
-describe('service worker safety rails', () => {
-  it.each(['/api/', '/checkout', '/cart', '/account', '/supplier', '/admin', '/scan'])(
-    'never handles %s',
-    (path) => {
-      // [\s\S] rather than the `s` flag: the tsconfig target predates it.
-      const list = sw.match(/const BYPASS_PREFIXES = \[([\s\S]*?)\]/)?.[1] ?? ''
-      expect(list).toContain(`'${path}'`)
-    },
-  )
-
-  it('bypasses every non-GET request, so a POST can never be cached', () => {
-    expect(sw).toContain("request.method !== 'GET'")
+/**
+ * THE SERVICE WORKER'S RULES MOVED, AND THIS IS WHY.
+ *
+ * They used to be asserted here as substrings of `public/sw.js`:
+ * `expect(sw).toContain("request.method !== 'GET'")` and eight more like it.
+ * That form has a failure mode this file just hit -- refactoring the eviction
+ * into a shared `trimCache(cache, PAGES_LIMIT)` broke an assertion looking for
+ * `keys.length - PAGES_LIMIT` while the worker's behaviour was unchanged. A
+ * grep cannot tell whether the guard it matched is even reachable.
+ *
+ * `src/__tests__/service-worker.test.ts` now runs the file: it evaluates
+ * `public/sw.js` against a fake ServiceWorkerGlobalScope and asserts what the
+ * handler DOES with a request. Every rule that was checked here as text is
+ * checked there as behaviour, plus the image cache, the eviction and the push
+ * payload guards.
+ *
+ * One assertion stays in this file, below: that the manifest and the worker
+ * agree about the offline document. Neither test file owns both.
+ */
+describe('the manifest and the worker agree', () => {
+  it('precaches the offline page the fallback serves', () => {
+    // Two constants in one file, and if they part company the fallback matches
+    // nothing and a shopper with no signal gets the bare 503 instead.
+    const offlineUrl = sw.match(/const OFFLINE_URL = '([^']+)'/)?.[1]
+    expect(offlineUrl).toBe('/offline')
+    expect(sw).toMatch(/const PRECACHE = \[[^\]]*OFFLINE_URL/)
   })
 
-  it('bypasses cross-origin requests', () => {
-    expect(sw).toContain('url.origin !== self.location.origin')
-  })
-
-  it('serves navigations network-first, never cache-first', () => {
-    // The whole document strategy in one assertion: fetch first, and cached
-    // copies (browse page, then offline shell) only inside the catch.
-    expect(sw).toMatch(/request\.mode === 'navigate'[\s\S]*?fetch\(request\)[\s\S]*?\.catch/)
-    expect(sw).not.toMatch(/request\.mode === 'navigate'[\s\S]*?caches\.match\(request\)\.then/)
-  })
-
-  it('bounds the browse-page cache, so it cannot grow without limit', () => {
-    // The eviction in putBrowsePage is only real if a limit exists and the
-    // trim actually runs against it.
-    expect(sw).toMatch(/const PAGES_LIMIT = \d+/)
-    expect(sw).toMatch(/keys\.length - PAGES_LIMIT/)
-  })
-
-  it('only caches bare browse URLs: a query string is a filter permutation', () => {
-    expect(sw).toContain("if (url.search !== '') return false")
-  })
-
-  it('shows nothing for a push without a titled JSON payload', () => {
-    // An empty notification teaches people to revoke the permission; a
-    // malformed payload must be dropped, not rendered.
-    expect(sw).toMatch(/'push'[\s\S]*?if \(!event\.data\) return/)
-    expect(sw).toMatch(/typeof payload\.title !== 'string'/)
-  })
-
-  it('confines the notification click target to a same-origin path', () => {
-    // `//evil.example` parses as protocol-relative, so startsWith('/') alone
-    // is not the check.
-    expect(sw).toContain("payload.url.startsWith('/') && !payload.url.startsWith('//')")
-  })
-
-  it('deletes caches from previous versions on activate', () => {
-    expect(sw).toContain('caches.delete')
-    expect(sw).toContain('self.skipWaiting()')
-    expect(sw).toContain('self.clients.claim()')
-  })
-
-  it('only stores clean same-origin responses', () => {
-    expect(sw).toContain("response.ok && response.type === 'basic'")
+  it('precaches an icon the manifest actually declares', () => {
+    // A PRECACHE entry for an icon that was renamed is a 404 on install. It
+    // does not fail the install (they are added individually) and it does not
+    // report anything either.
+    const precache = sw.match(/const PRECACHE = \[([^\]]*)\]/)?.[1] ?? ''
+    const icons = new Set(manifest().icons?.map((icon) => icon.src) ?? [])
+    for (const match of precache.matchAll(/'(\/icons\/[^']+)'/g)) {
+      expect(icons, `${match[1]} is precached and not in the manifest`).toContain(match[1])
+    }
   })
 })

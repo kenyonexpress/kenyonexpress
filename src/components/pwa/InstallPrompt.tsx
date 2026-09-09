@@ -19,6 +19,22 @@ import { useEffect, useState } from 'react'
  */
 
 const DISMISSED_KEY = 'ke:pwa-install-dismissed'
+
+/**
+ * ONCE, EVER, PER DEVICE -- and this is a different key from the dismissal on
+ * purpose.
+ *
+ * The dismissal only records that somebody pressed "not now". A visitor who
+ * scrolled past the banner without touching it pressed nothing, so on the old
+ * behaviour the banner came back on the next visit, and the one after. That is
+ * the definition of nagging, and it is worse than useless here: Chrome will not
+ * fire `beforeinstallprompt` again once the app is installed, so the banner has
+ * no upside to repeat for and every repeat spends goodwill on the same ask.
+ *
+ * Written the moment the banner BECOMES VISIBLE rather than when it is
+ * answered, which is what makes "shown once" true rather than "answered once".
+ */
+const SHOWN_KEY = 'ke:pwa-install-shown'
 const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
 /**
@@ -72,6 +88,7 @@ export default function InstallPrompt() {
     // case offering to install it is nonsense.
     if (window.matchMedia('(display-mode: standalone)').matches) return
     if (localStorage.getItem(DISMISSED_KEY) === '1') return
+    if (localStorage.getItem(SHOWN_KEY) === '1') return
     if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
 
     const onPrompt = (event: Event) => {
@@ -86,9 +103,12 @@ export default function InstallPrompt() {
 
   const visible = deferred !== null && engaged
 
-  // Reserve the space for exactly as long as the banner occupies it.
+  // Reserve the space for exactly as long as the banner occupies it, and spend
+  // the one showing this device gets. Both are keyed off the same moment
+  // because they are the same moment: the banner is on screen.
   useEffect(() => {
     if (!visible) return
+    localStorage.setItem(SHOWN_KEY, '1')
     document.documentElement.setAttribute(RESERVE_ATTRIBUTE, '')
     return () => document.documentElement.removeAttribute(RESERVE_ATTRIBUTE)
   }, [visible])

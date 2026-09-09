@@ -2,6 +2,7 @@ import HeaderCart from '@/components/cart/HeaderCart'
 import MastheadNav from '@/components/layout/MastheadNav'
 import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
+import OfflineIndicator from '@/components/pwa/OfflineIndicator'
 import SmartImage from '@/components/ui/SmartImage'
 import WishlistNavLink from '@/components/wishlist/WishlistNavLink'
 import { LOGO } from '@/lib/assets'
@@ -56,6 +57,15 @@ export default function SiteHeader() {
       <TopBar />
 
       <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
+        {/*
+          INSIDE the sticky header, above the masthead row, so the notice
+          travels with the header instead of scrolling away -- the state it
+          reports is true for the whole page and not just for the top of it.
+          It renders null while online, so it costs nothing in the measured
+          table above; see the component for why that is not just an
+          optimisation.
+        */}
+        <OfflineIndicator />
         {/*
           h-header-handheld (83) below xl, h-header-masthead (109) from xl up:
           live's 84 and 110 less their 1px border. `xl` and not `lg` because

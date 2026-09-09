@@ -32,7 +32,8 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "back": "Back",
-    "currency": "₪"
+    "currency": "₪",
+    "offline": "No connection. Showing pages you have already visited."
   },
   "admin": {
     "title": "Admin Panel",

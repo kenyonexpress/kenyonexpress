@@ -13,6 +13,37 @@
 > was built under another name. Verify against `docs/DATA-MODEL.md` before
 > writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
 
+> <!-- shipped-vs-planned:2026-09-09 -->
+> ⚠️ **This document is the PLAN. What shipped differs on the two biggest
+> choices in it, and the differences are deliberate.**
+>
+> | Planned here | What is in the repository |
+> |---|---|
+> | Serwist (§1), TypeScript SW source, generated | A hand-written `public/sw.js`, 300 lines, no build step |
+> | CacheFirst for product images (§6) | **Stale-while-revalidate**, bounded to 60 entries |
+> | `maxEntries: 200`, `purgeOnQuotaError` | `IMAGES_LIMIT = 60`, insertion-order trim |
+> | R2 CDN image URLs | `/_next/image` and `/images/`; cross-origin is never cached |
+>
+> **Why no Serwist.** It is a build-time dependency that generates a worker,
+> and the worker is the one file on the site that can outlive a bad deploy. A
+> generated one is a file nobody reads until it is already serving a broken
+> build to a returning visitor. The hand-written one is 300 lines, every rule in
+> it is argued in its own header, and `src/__tests__/service-worker.test.ts`
+> runs THAT FILE - read from `public/`, evaluated against a fake global scope -
+> so the rules are checked rather than trusted.
+>
+> **Why SWR and not CacheFirst for images (§6).** CacheFirst plus "immutable
+> URLs, never overwrite bytes at the same URL" is a correct pair, and the second
+> half is not true here: `/images/` is not content-hashed, and replacing a hero
+> keeps its URL. Under CacheFirst that is a stale picture with a 30-day TTL and
+> no way for a visitor to escape it. SWR serves the cached copy just as fast and
+> repairs itself on the next request.
+>
+> Sections 2, 4 and 5 (manifest, offline fallback, A2HS) describe what shipped
+> accurately. Section 5's UX policy shipped with one addition: the banner is
+> shown ONCE per device, recorded when it appears rather than when it is
+> answered.
+
 KenyonExpress Progressive Web App architecture (binding).
 
 Status: BINDING for `arch/pwa` (2026-07-30)
@@ -626,6 +657,21 @@ Use `next/image` only if the icon is in the image pipeline; for local `/icons` a
 ---
 
 ## 6. Product image cache strategy
+
+> **SUPERSEDED BY WHAT SHIPPED, 2026-09-09.** The tables below are the plan.
+> `public/sw.js` uses stale-while-revalidate on `/_next/image` and `/images/`,
+> bounded at 60 entries by insertion-order eviction, with no TTL at all. The
+> reason is in the banner at the top of this file: CacheFirst is only safe when
+> the URL changes with the bytes, and `/images/` does not.
+>
+> One row here is wrong in a way worth naming rather than deleting. The plan
+> caches Supabase storage and an R2 CDN, both cross-origin. The shipped worker
+> refuses every cross-origin request: a response from another origin arrives
+> opaque, an opaque response in a cache is indistinguishable from a real one on
+> the way out, and quota accounting for opaque entries is padded to megabytes
+> the browser will not tell you about. If the catalogue ever moves to a CDN
+> origin, that is a decision to make again with those facts in hand, not a line
+> to uncomment.
 
 ### 6.1 Goals
 
