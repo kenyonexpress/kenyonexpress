@@ -43,6 +43,14 @@ const RAW_ENV_READERS: Record<string, { because: string; mustContain: string }> 
     because: 'names the vars in operator-facing misconfiguration messages',
     mustContain: 'checkAdminKey',
   },
+  'src/instrumentation.ts': {
+    because: 'boot wiring, names the key while explaining the liveness probe it starts',
+    mustContain: 'reportEnvironment',
+  },
+  'src/lib/env-probe.ts': {
+    because: 'boot-time liveness check must read the raw key to test it against the project',
+    mustContain: 'probeEnvironment',
+  },
   'src/lib/auth/passkeys/config.ts': {
     because: 'passkey store reads the key pair directly (178 lifecycle)',
     mustContain: 'SUPABASE_SERVICE_ROLE_KEY',

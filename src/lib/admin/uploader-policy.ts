@@ -1,4 +1,4 @@
-import type { AppRole } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 
 /**
  * The uploader money boundary, as one pure decision.
@@ -19,7 +19,7 @@ import type { AppRole } from '@/lib/admin/roles'
 export const UPLOADER_STRIPPED_FIELDS = ['platform_percent', 'supplier_split_percent'] as const
 
 export function applyUploaderPolicy<T extends Record<string, unknown>>(
-  role: AppRole,
+  role: UserRole,
   moneyFields: T,
 ): { fields: T; forcePendingApproval: boolean } {
   if (role !== 'content_uploader') return { fields: moneyFields, forcePendingApproval: false }
