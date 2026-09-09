@@ -587,6 +587,39 @@ describe('the pending migration inventory', () => {
       // future-windowed row while returning an open one, and anon could read
       // the live view and not insert.
       '206_homepage_merchandising.sql',
+      // 207: the suppression list's missing half, and a grant fix, for [60].
+      //
+      // THE FIRST DRAFT OF THIS FILE WAS `CREATE TABLE email_suppressions
+      // (address text ...)` AND WAS WRONG. Probed against production it failed
+      // with `column "address" does not exist`, because `CREATE TABLE IF NOT
+      // EXISTS` had silently done nothing: the table has been there since
+      // `supabase/migrations/095_notification_outbox.sql` with `email` as its
+      // primary key. A file that had been applied rather than probed would have
+      // reported success and left every reader looking for a column that does
+      // not exist.
+      //
+      // THE LIST IS ALREADY CONSULTED AND HAS NEVER HELD A ROW.
+      // `fn_enqueue_notification` has checked it since 095 and pending 190
+      // checks it too, and it is empty because Resend reports a bounce or a
+      // complaint exactly once, over a webhook, and nothing listened.
+      //
+      // THE GRANTS ARE WIDER THAN THE POLICY: anon holds SELECT and
+      // authenticated holds SELECT, INSERT, UPDATE, DELETE, TRUNCATE,
+      // REFERENCES and TRIGGER against a single admin-SELECT policy. RLS closes
+      // the DML, and TRUNCATE IS NOT SUBJECT TO RLS at all - it is unreachable
+      // only because PostgREST has no endpoint for it. 144 swept this class and
+      // did not reach this table.
+      //
+      // Probed against production, rolled back: a bounce suppresses and stores
+      // normalised, a complaint OUTRANKS a bounce, a later `manual` does NOT
+      // erase a complaint, one row per address however often reported, a
+      // non-address REFUSED, an unknown reason REFUSED, an unnormalised address
+      // REFUSED by the new CHECK, the 095 reader now finds the row, counters
+      // increment rather than replace, an untagged send lands under `unknown`
+      // rather than being dropped, an undefined event kind REFUSED, the grant
+      // fix leaves authenticated with SELECT alone and anon with nothing, and
+      // anon reached neither the counters nor suppress_email.
+      '207_email_deliverability.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

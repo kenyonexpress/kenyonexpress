@@ -29,8 +29,10 @@ const GATES = [
   // the gate. twilioSignatureValid is Twilio's HMAC-SHA1 over the public URL
   // plus the sorted form params, compared with timingSafeEqual in
   // server/whatsapp/twilio.ts -- the WhatsApp webhook was reported naked here
-  // purely because that call sits one module away.
-  /timingSafeEqual|bearerMatches|verifyQstashSignature|twilioSignatureValid/,
+  // purely because that call sits one module away. verifySvixSignature is the
+  // same shape for Resend: HMAC-SHA256 over `id.timestamp.rawBody` with a
+  // timestamp tolerance, compared with timingSafeEqual in server/email/svix.ts.
+  /timingSafeEqual|bearerMatches|verifyQstashSignature|twilioSignatureValid|verifySvixSignature/,
 ]
 
 function routeFiles(dir: string): string[] {

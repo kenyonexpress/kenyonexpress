@@ -1,5 +1,66 @@
 # `migrations/pending/`
 
+## 2026-09-09: 207 WRITTEN, not applied, and its first draft was wrong
+
+`207_email_deliverability.sql`.
+
+**The first version of this file was `CREATE TABLE public.email_suppressions
+(address text ...)`.** Probed against production inside a rolled-back `DO` block
+it failed with `column "address" does not exist` - because `CREATE TABLE IF NOT
+EXISTS` had silently done nothing. **The table has been there since
+`supabase/migrations/095_notification_outbox.sql`**, with `email` as its primary
+key, a `reason` CHECK whose fourth value is spelled `unsubscribed`, and zero
+rows.
+
+That is the whole argument for probing before writing more. `IF NOT EXISTS` does
+not warn; it succeeds. A file applied rather than probed would have left the new
+columns uncreated and every reader looking for a column called `address` that
+does not exist, and it would have reported success.
+
+**The list is already consulted and has never held a row.**
+`fn_enqueue_notification` checks it before queueing and has since 095, and
+pending 190 checks it too. It is empty because Resend reports a bounce or a
+complaint exactly once, over a webhook, and **nothing in this repository listens
+to that webhook**. So a hard-bounced address is mailed again by the next cron
+and an address whose owner pressed "spam" is mailed for as long as they have an
+account. That cost is not paid by the address that bounced; it is paid by every
+receipt and every coupon sent to everybody else, in the sending domain's
+reputation.
+
+**The grants are wider than the policy.** Measured live: `anon` holds SELECT,
+and `authenticated` holds SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES
+and TRIGGER, against a single `email_suppressions_admin_read` SELECT policy. RLS
+closes the DML, because a command with no policy is denied, so this is latent
+rather than live - but **TRUNCATE is not subject to RLS at all**, and the only
+thing between `authenticated` and an emptied suppression list is that PostgREST
+has no endpoint for it. `144_revoke_authenticated_dml` swept this class and did
+not reach this table.
+
+**The counters hold no address.** `email_events_daily` is a count per (day,
+template, event). It answers "is the coupon mail being opened less than it was"
+and cannot answer "did this customer open it", and there is no column that could
+be joined to make it answer that. The normal implementation - a row per message
+with a recipient, an opened_at, a user agent and an IP - is a reading-behaviour
+profile per customer, on a site whose privacy page promises search terms are
+kept without a user and without an IP.
+
+**Verified against production without applying.** One `DO` block applied the
+whole file, exercised it and ended in an unconditional `RAISE`. All of it
+passed: a bounce suppresses and stores normalised with its source, a complaint
+outranks a bounce, a later `manual` does **not** erase a complaint, one row per
+address however often it is reported, a non-address refused, an unknown reason
+refused, an unnormalised address refused by the new CHECK, the reader that has
+existed since 095 now finds the row, counters increment rather than replace, an
+untagged send lands under `unknown` rather than being dropped, an undefined
+event kind refused, the grant fix leaves `authenticated` with SELECT alone and
+`anon` with nothing, and under `SET ROLE anon` neither the counters nor
+`suppress_email` were reachable. Re-read afterwards: zero rows, neither new
+column present, no counters table, neither function.
+
+Order: independent of everything else pending. It alters one existing table,
+creates one new one and two functions.
+
+
 ## 2026-09-09: 206 WRITTEN, not applied, and one of its lines is a real defect
 
 `206_homepage_merchandising.sql`.

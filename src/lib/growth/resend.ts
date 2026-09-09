@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { countEmailEvent, isSuppressed } from '@/lib/email/suppression'
+
 /**
  * Resend, over fetch. No SDK.
  *
@@ -48,6 +50,13 @@ export type SendArgs = {
 }
 
 export async function sendEmail(args: SendArgs): Promise<SendResult> {
+  // The suppression check is FIRST, before the key check, and it is here as
+  // well as in `lib/email/resend.ts` because these are two senders that share
+  // nothing but the provider. This one carries marketing, which is the mail a
+  // complaint is actually about: sending it to an address that pressed "spam"
+  // is the single strongest signal Gmail has for classifying a whole domain.
+  if (await isSuppressed(args.to)) return { ok: false, skipped: true }
+
   if (!key()) return { ok: false, skipped: true }
 
   // Falls through to EMAIL_FROM, which is what the transactional sender in
@@ -86,6 +95,13 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
     const detail = await res.text().catch(() => '')
     return { ok: false, error: `resend ${res.status}: ${detail.slice(0, 200)}` }
   }
+  // Counted against the same per-day, per-template counters the transactional
+  // sender uses. Resend has no `email.sent` event, so without this the
+  // denominator for every rate is missing. The tag NAME here is `kind` and the
+  // transactional sender's is `template`; the webhook reads either, and the
+  // names are left alone because renaming a tag that is already going out on
+  // live mail would orphan the events already in flight.
+  await countEmailEvent(args.tag ?? 'unknown', 'sent')
   const body = (await res.json()) as { id?: string }
   return { ok: true, id: body.id ?? '' }
 }

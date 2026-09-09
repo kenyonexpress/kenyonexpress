@@ -15,6 +15,7 @@
     "lint:postgrest-or": "node scripts/postgrest-or-gate.mjs",
     "lint:cache-invalidation": "node scripts/cache-invalidation-gate.mjs",
     "lint:rtl-logical": "node scripts/rtl-logical-gate.mjs",
+    "check:email-dns": "node scripts/email-dns-check.mjs",
     "lint:changed": "node scripts/lint-changed.mjs",
     "typecheck:changed": "node scripts/typecheck-changed.mjs",
     "gate:hardcoded": "node scripts/hardcoded-gate.mjs",
