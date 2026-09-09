@@ -1,5 +1,46 @@
 # Apply order
 
+## 2026-09-09: 192 through 201 APPLIED, ten files, each dry-run first
+
+Applied one at a time via MCP `apply_migration`, on Ofir's explicit
+instruction (the `/goal` of 2026-09-09 named exactly this range). Before each
+apply, the full file body ran through `execute_sql` inside a transaction that
+was ROLLED BACK, with functional probes where the file has behaviour to prove:
+
+- **192** seed_seo_redirects: 33 active redirects after seed, table was empty.
+- **193** price_history: 80 backfill observations seeded (every non-deleted
+  product with a price), append-only triggers in place, public SELECT only.
+- **194** discount_claim_caps: `claim_order_discount` / `release_order_discount`
+  probed against a real order id (empty code NULL, unknown code NULL,
+  release 0), client EXECUTE revoked.
+- **195** stock_waitlist: joined twice with case/whitespace variants of one
+  email, exactly one lowercased row resulted; unknown-product refusal in place.
+- **196** shipped notification: live `tg_orders_notify_shipped` read with
+  `pg_get_functiondef` first — guard, dedupe key and firing condition matched
+  the file's baseline byte for byte; the replaced trigger was FIRED on a real
+  paid order in the rolled-back probe and the payload carried
+  `shipments[0].tracking_number`. Zero outbox residue after.
+- **197** shipping_zones seeded free-everywhere (5 zones, all 0 agorot),
+  pickup_points deliberately empty. The `set_updated_at` restatement differs
+  from the live body only in `:=` vs `=` and whitespace — same language,
+  attributes and semantics, so the replace is a no-op in behaviour.
+- **198** in_app notifications: `read_at` proven the ONLY updatable column for
+  authenticated; `notifications` added to `supabase_realtime` + REPLICA
+  IDENTITY FULL.
+- **199** review replies: table-wide UPDATE on `reviews` revoked BEFORE the
+  policy wakes it; post-check shows exactly 3 grantable columns
+  (supplier_reply, supplier_replied_at, supplier_replied_by).
+- **200** wishlist alert kinds: the live-drift guard passed (live constraint
+  carried exactly the 14 known names), now 16 kinds.
+- **201** scheduled_price_changes: one-pending-per-moment index probed
+  (duplicate refused, cancelled row frees the slot), deny-all RLS.
+
+Security advisors after: no new findings — every WARN pre-dates these files.
+The `set_updated_at` mutable-search_path WARN is pre-existing and unchanged.
+
+**Not applied and out of this batch's scope:** 162 (vault seeding), 184
+(maintenance window), 188–191, 202–205.
+
 **Nothing here is applied by an agent.** Each file goes to production through
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
