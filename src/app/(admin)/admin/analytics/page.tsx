@@ -111,26 +111,40 @@ export default async function AnalyticsPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-heading">אנליטיקה</h1>
 
-        <nav aria-label="טווח דיווח" className="flex gap-1 rounded-lg border border-gray-200 p-1">
-          {PERIODS.map((option) => (
-            <Link
-              key={option.value}
-              href={`/admin/analytics?period=${option.value}`}
-              aria-current={option.value === period.value ? 'page' : undefined}
-              className={
-                option.value === period.value
-                  ? 'rounded-md bg-brand-primary px-3 py-1.5 text-sm font-bold text-heading'
-                  : 'rounded-md px-3 py-1.5 text-sm text-black/60 transition-colors hover:bg-black/[0.04]'
-              }
-            >
-              {option.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/admin/analytics/snapshot"
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-black/[0.04]"
+          >
+            דוחות לילה ולקוחות חוזרים
+          </Link>
+
+          <nav aria-label="טווח דיווח" className="flex gap-1 rounded-lg border border-gray-200 p-1">
+            {PERIODS.map((option) => (
+              <Link
+                key={option.value}
+                href={`/admin/analytics?period=${option.value}`}
+                aria-current={option.value === period.value ? 'page' : undefined}
+                className={
+                  option.value === period.value
+                    ? 'rounded-md bg-brand-primary px-3 py-1.5 text-sm font-bold text-heading'
+                    : 'rounded-md px-3 py-1.5 text-sm text-black/60 transition-colors hover:bg-black/[0.04]'
+                }
+              >
+                {option.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
 
       <p className="text-sm text-black/50">
         {period.days} הימים האחרונים. כל הסכומים מצילום המצב בזמן הרכישה, לפי ימי עסקים בישראל.
+        הזמנה ששולמה והוחזרה אחר כך עדיין נספרת כאן;{' '}
+        <Link href="/admin/analytics/snapshot" className="underline hover:text-heading">
+          דוחות הלילה
+        </Link>{' '}
+        מחריגים אותה.
       </p>
 
       {truncated && (

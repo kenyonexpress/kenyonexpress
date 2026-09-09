@@ -2001,3 +2001,72 @@ describe('couponKpis', () => {
 | Date | Change |
 |---|---|
 | 2026-07-30 | Initial binding Admin analytics expansion on `arch/admin-analytics` |
+
+---
+
+## 17. The nightly snapshot screen (`/admin/analytics/snapshot`), added 2026-09-10
+
+### 17.1 What was measured
+
+Migration `170_reporting_tables.sql` was **applied to production on 2026-09-04**
+and everything downstream of it was written, tested and then never connected to
+anything. Measured 2026-09-10 against the live database and against `src/`:
+
+| Layer | State on 2026-09-10 | Evidence |
+|---|---|---|
+| `report_revenue_daily`, `report_orders_daily`, `report_top_products`, `report_cohort_retention` | exist, hold rows | `pg_class`, 4 relations, `relkind='r'` |
+| `refresh_report_tables()` nightly rebuild | runs, has never failed | `cron.job` id 2 `30 1 * * *`; `cron.job_run_details` 6/6 `succeeded`, 09-04 to 09-09 |
+| `admin_report_*` RPCs | exist, `SECURITY DEFINER`, `search_path=""` | `pg_proc`; a call with no admin JWT raises `42501 forbidden`, verified through MCP |
+| `src/server/queries/admin-reports.ts` (4 readers) | written, unit-tested | `admin-reports.test.ts` |
+| `src/server/actions/admin/reports.ts` (`refreshReports`) | written, unit-tested | `reports.test.ts`, 4 cases |
+| **Any screen rendering any of it** | **none** | zero imports of `admin-reports` or `actions/admin/reports` outside their own tests |
+
+So the tables had been rebuilt every night at 01:30 UTC since 2026-09-04 and no
+row had ever been displayed. This is the failure mode the repo is most prone to:
+not a broken feature, a finished one with no consumer, which reads as done from
+every angle except the one that matters.
+
+### 17.2 Why it is a separate screen from `/admin/analytics`
+
+The two measure different things on purpose, and an operator who reads one as a
+second opinion on the other will find them disagreeing. Both pages now say so in
+one line each, with a link.
+
+| | `/admin/analytics` (live) | `/admin/analytics/snapshot` |
+|---|---|---|
+| Source | `order_items` joined to `orders`, aggregated in TypeScript | four SQL tables aggregated in Postgres |
+| Refunded / cancelled orders | **counted** - the loader filters only on `paid_at is not null` and `deleted_at is null` | excluded from revenue and top products; counted separately in the order-flow report |
+| Row cap | 20,000 lines, reported when hit | none |
+| Freshness | now | the 01:30 UTC rebuild, printed per panel |
+| Returning customers | not measured anywhere | the cohort triangle |
+
+### 17.3 The cohort triangle, and the one thing it must not get wrong
+
+`report_cohort_retention` stores a row only for a (cohort month, month offset)
+pair with at least one active user. A grid that draws a missing row as 0% is
+wrong for the newest cohort in the most expensive possible way: every offset
+past the current month is missing **because that month has not happened yet**,
+and 0% there reads as "this month's new customers all churned".
+
+`src/lib/analytics/cohorts.ts` separates the two:
+
+- `future` - later than the current **Israel** month. Rendered as an em dash
+  with a spoken explanation. Israel and not UTC for the same reason 170 buckets
+  on `at time zone 'Asia/Jerusalem'`: on the 1st of the month the two disagree
+  for three hours, and that is a whole column flipping.
+- `value` - the month has elapsed, so a missing row is a real 0.
+
+The grid is also sized by **elapsed** time rather than by the widest populated
+offset, so a cohort that stopped returning in month 2 still shows the empty
+columns after it instead of the table quietly ending at its last non-zero cell.
+
+### 17.4 Manual rebuild
+
+`refreshReports()` calls `admin_refresh_reports()`, the definer wrapper granted
+to `authenticated`; `refresh_report_tables()` itself is granted to `postgres`
+and `service_role` only (measured 2026-09-10 from `proacl`). The call therefore
+goes through the request-scoped client, so the database re-checks `is_admin()`
+against the caller's own JWT and a bug in the application guard fails closed.
+The action's `revalidatePath` pointed at `/admin/reports` - a page that reads
+`settlement_events` and is untouched by this rebuild - and now points at the
+page that renders the tables.

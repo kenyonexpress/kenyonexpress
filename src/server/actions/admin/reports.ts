@@ -51,7 +51,10 @@ async function runRefreshReports(): Promise<ReportsActionState> {
     changes: { refreshed_at: result.rows[0] ?? null },
   })
 
-  revalidatePath('/admin/reports')
+  // The page that renders these four tables, not /admin/reports - that one
+  // reads settlement_events and is untouched by this rebuild. It was the
+  // placeholder path from before a consumer existed.
+  revalidatePath('/admin/analytics/snapshot')
   return { success: 'הדוחות רועננו' }
 }
 

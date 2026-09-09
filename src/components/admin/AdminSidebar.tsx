@@ -28,6 +28,7 @@ import {
   ShoppingCart,
   Store,
   Tag,
+  UserCheck,
   Users,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -106,7 +107,21 @@ const NAV_ITEMS: NavItem[] = [
   // reasons an order was flagged and what we intend to argue in a chargeback.
   { href: '/admin/fraud', label: 'הונאה ומחלוקות', icon: ShieldAlert, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
-  { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
+  // `exact` because the entry below is nested under it, and the active rule is
+  // `startsWith`: without this both rows light up on the snapshot page and the
+  // sidebar stops saying where you are.
+  {
+    href: '/admin/analytics',
+    label: 'אנליטיקה',
+    icon: BarChart3,
+    section: 'analytics',
+    exact: true,
+  },
+  // The 170 snapshot tables, rebuilt nightly by pg_cron. Separate entry and not
+  // a tab inside אנליטיקה because it answers a different question: that page
+  // counts every order ever charged, this one excludes what was refunded, and
+  // this is the only screen that shows returning customers at all.
+  { href: '/admin/analytics/snapshot', label: 'דוחות לילה', icon: UserCheck, section: 'analytics' },
   { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   // Reads job_runs, which the cron routes write themselves. The Actions run
