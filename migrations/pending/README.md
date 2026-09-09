@@ -1,5 +1,27 @@
 # `migrations/pending/`
 
+## 2026-09-10: 228 APPLIED (invoice sequences)
+
+`228_invoice_sequences.sql` gives the platform its own sequential document
+numbering, per terminal and per document type: `invoice_counters` (one row
+per `<cardcom account id>:<document type>` series), `fn_next_invoice_number`
+(a single atomic upsert, so two concurrent issues serialize on the row and
+can never print the same number), and `invoices.series` /
+`invoices.internal_number` with a partial unique index over the pair. The
+number feeds the platform's own Hebrew PDF (`src/lib/invoices/pdf.ts`),
+rendered and mirrored into R2 when the provider returns a document number
+without a fetchable PDF. Applied as `invoice_sequences_228` under the
+2026-09-10 invoicing /goal, which names Supabase MCP as the migration route
+(the 217 protocol).
+
+Proven first in a rolled-back DO block over production: three consecutive
+allocations answered 1, 2, 3, an independent series answered 1, and the
+function ACL held `postgres` and `service_role` only (anon and authenticated
+revoked, RLS on with zero policies on the counter table). Post-apply: RLS on,
+0 counter rows, both columns present, unique index present, ACL unchanged.
+Numbering only ever moves at issue time and only after the provider has
+issued, so a failed attempt burns no number.
+
 ## 2026-09-10: 227 APPLIED (discount claim wiring)
 
 `227_discount_claim_wiring.sql` is the wiring 194 built and nothing ever
