@@ -25,12 +25,6 @@ import {
   buildChargeSettledEvents,
   recordSettlementEvents,
 } from '@/server/payments/settlement-events'
-import {
-  type RecurringProductBilling,
-  type SubscriptionAdmin,
-  createSubscriptionsForOrder,
-  planSubscriptions,
-} from '@/server/payments/subscription-create'
 import { sendVoucherEmail } from '@/server/payments/voucher-email'
 import { completeReferralForOrder } from '@/server/referrals/complete'
 import type { Json } from '@/types/database'
@@ -657,7 +651,7 @@ export async function finalizeOrder(input: {
     // seen by a browser that DID survive is still counted once.
     await reportPurchase(admin, order.id, order.user_id, items as OrderItemRow[])
 
-    let savedTokenId: string | null = null
+    const savedTokenId: string | null = null
     if (input.token) {
       // A shopper who buys again with "save my card" ticked re-tokenizes the
       // same card, and a plain insert accumulated one picker row per purchase,

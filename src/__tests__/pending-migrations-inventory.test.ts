@@ -141,6 +141,9 @@ describe('the pending migration inventory', () => {
       '181b_admin_rbac_hardening.sql',
       '182_coupon_qr_batches.sql',
       '183_order_shipped_notification.sql',
+      '185_soft_delete_user_facing_remainder.sql',
+      '186_composite_indexes_top_queries.sql',
+      '187_category_name_shekel_order.sql',
       '192_seed_seo_redirects.sql',
       '193_price_history.sql',
       '194_discount_claim_caps.sql',
@@ -152,8 +155,8 @@ describe('the pending migration inventory', () => {
       '200_wishlist_alert_kinds.sql',
       '201_scheduled_price_changes.sql',
       '210_media_ingest_queue.sql',
-      '211_whatsapp_selfservice.sql',
       '212_rbac_truncate_and_search_path.sql',
+      '215_cashback_expiry.sql',
     ])
   })
 
@@ -281,9 +284,15 @@ describe('the pending migration inventory', () => {
     // spent both numbers on different migrations (148_refund_destination
     // 20260902182227, 149_audit_log_append_only 20260902182235), so the
     // unapplied file is the one that moved.
+    // 211 IS NOT APPLIED, measured 2026-09-09 while closing out the applied
+    // batch around it: production has no `fn_wa_orders_for_phone` and
+    // schema_migrations has no 211 row, so the file stays here. The webhook
+    // already degrades without it (intent falls back to `message`, status
+    // questions file a ticket), which is why nothing forced the apply.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
+      '211_whatsapp_selfservice.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
