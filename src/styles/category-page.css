@@ -891,3 +891,12 @@
   color: var(--cat-muted);
   opacity: 0.75;
 }
+
+/* The star row on a card, above the title with the category tags and the city,
+   at the same weight: it is provenance, not a promotion. Absent entirely for a
+   product with no approved review, so an unrated card keeps the geometry it
+   had before ratings existed. */
+.category-card__rating {
+  line-height: 1.4;
+  color: var(--cat-muted);
+}

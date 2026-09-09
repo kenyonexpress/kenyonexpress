@@ -1,5 +1,5 @@
 import { requireSection } from '@/lib/admin/rbac'
-import { TABLE_MISSING } from '@/lib/reviews/reviews'
+import { TABLE_MISSING, UNDEFINED_COLUMN } from '@/lib/reviews/reviews'
 import { createAdminClient } from '@/lib/supabase/admin'
 import ReviewActionsClient from './ReviewActionsClient'
 
@@ -8,6 +8,7 @@ export const metadata = { title: 'ביקורות ממתינות' }
 interface PendingReview {
   id: string
   rating: number
+  title: string | null
   body: string | null
   created_at: string
   product: { name_he: string | null; slug: string | null } | null
@@ -24,14 +25,24 @@ export default async function AdminReviewsPage() {
   await requireSection('catalog', 'write')
   const admin = createAdminClient()
 
-  const { data, error } = await admin
-    .from('reviews' as never)
-    .select(
-      'id, rating, body, created_at, product:products(name_he, slug), profile:profiles(full_name, email)',
-    )
-    .eq('status', 'pending')
-    .order('created_at', { ascending: true })
-    .limit(100)
+  const COLUMNS =
+    'id, rating, title, body, created_at, product:products(name_he, slug), profile:profiles(full_name, email)'
+  const queue = (columns: string) =>
+    admin
+      .from('reviews' as never)
+      .select(columns)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true })
+      .limit(100)
+
+  // `title` ships in pending/189. Naming it against a database without the
+  // column fails the whole select with 42703, and an empty moderation queue is
+  // the worst possible way to be wrong here: it reads as "nothing to approve"
+  // while real reviews sit unpublished.
+  let { data, error } = await queue(COLUMNS)
+  if (error?.code === UNDEFINED_COLUMN) {
+    ;({ data, error } = await queue(COLUMNS.replace('rating, title,', 'rating,')))
+  }
 
   if (error && error.code === TABLE_MISSING) {
     return (
@@ -66,6 +77,7 @@ export default async function AdminReviewsPage() {
                   {new Date(review.created_at).toLocaleDateString('he-IL')}
                 </span>
               </div>
+              {review.title ? <p className="mb-1 text-sm font-semibold">{review.title}</p> : null}
               {review.body ? <p className="mb-3 text-sm text-gray-800">{review.body}</p> : null}
               <ReviewActionsClient reviewId={review.id} />
             </li>

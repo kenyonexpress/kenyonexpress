@@ -8,6 +8,7 @@ import {
   loadSupplierStorefrontCached,
   loadSupplierStorefrontProductsCached,
 } from '@/lib/supplier-storefront'
+import { attachRatings } from '@/server/queries/reviews'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -91,6 +92,11 @@ async function SupplierProductGrid({
   const from = total === 0 ? 0 : (current - 1) * SUPPLIER_PAGE_SIZE + 1
   const to = Math.min(current * SUPPLIER_PAGE_SIZE, total)
 
+  // The star row on each card. One query for the whole page of results, under
+  // the same CATALOGUE_TAG the grid is cached by, so an approval and the stars
+  // it produces invalidate together.
+  const rated = await attachRatings(items)
+
   return (
     <>
       <p className="mb-4 text-sm text-black/60">
@@ -103,7 +109,7 @@ async function SupplierProductGrid({
 
       {items.length > 0 ? (
         <ul className="category-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {items.map((product) => (
+          {rated.map((product) => (
             <li key={product.id}>
               <CategoryProductCard product={product} />
             </li>

@@ -1,7 +1,13 @@
 'use server'
 
 import { withActionContext } from '@/lib/observability/action-context'
-import { ALREADY_REVIEWED, NOT_VERIFIED, TABLE_MISSING, reviewSchema } from '@/lib/reviews/reviews'
+import {
+  ALREADY_REVIEWED,
+  NOT_VERIFIED,
+  TABLE_MISSING,
+  UNDEFINED_COLUMN,
+  reviewSchema,
+} from '@/lib/reviews/reviews'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 
@@ -52,26 +58,74 @@ async function runSubmitReview(formData: FormData): Promise<ReviewActionState> {
     productId: formData.get('productId'),
     orderItemId: formData.get('orderItemId'),
     rating: Number(formData.get('rating')),
+    title: typeof formData.get('title') === 'string' ? String(formData.get('title')) : undefined,
     body: typeof formData.get('body') === 'string' ? String(formData.get('body')) : undefined,
   })
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'קלט לא תקין.' }
   }
 
-  const { error } = await supabase.from('reviews' as never).insert({
+  // ONE REVIEW PER CUSTOMER PER PRODUCT, ENFORCED HERE UNTIL 189 IS APPLIED.
+  //
+  // 154 constrains `order_item_id UNIQUE`, which is one review per purchased
+  // LINE: the same customer buying the same product twice earns a second slot
+  // on it, and 154 says so on purpose. SECTIONS 25 asks for the tighter rule,
+  // and pending/189 is the index that makes the database hold it.
+  //
+  // This check is NOT the migration's stand-in that gets deleted afterwards.
+  // A pre-check turns a race into a clean Hebrew sentence for the one customer
+  // who double-submits; the index turns it into 23505 for everybody. Keeping
+  // both is the same arrangement the wishlist toggle already uses, and the
+  // 23505 branch below is what covers the window between the two reads.
+  //
+  // `reviews_owner_read` is what makes this readable: a customer sees their own
+  // rows at any status, so a REJECTED review is found here and still blocks.
+  // That is deliberate -- see the migration header on why the retry path is a
+  // soft delete and not a resubmission.
+  const { data: mine, error: mineError } = await supabase
+    .from('reviews' as never)
+    .select('id')
+    .eq('product_id', parsed.data.productId)
+    .eq('user_id', user.id)
+    .limit(1)
+  if (mineError && mineError.code !== TABLE_MISSING) {
+    return { ok: false, error: 'שמירת הביקורת נכשלה. נסה שוב.' }
+  }
+  if (mine && (mine as unknown as unknown[]).length > 0) {
+    return { ok: false, error: 'כבר כתבת ביקורת על המוצר הזה.' }
+  }
+
+  const title = parsed.data.title && parsed.data.title.length > 0 ? parsed.data.title : null
+  const row = {
     product_id: parsed.data.productId,
     user_id: user.id,
     order_item_id: parsed.data.orderItemId,
     rating: parsed.data.rating,
     body: parsed.data.body && parsed.data.body.length > 0 ? parsed.data.body : null,
-  } as never)
+  }
+
+  let { error } = await supabase
+    .from('reviews' as never)
+    .insert((title === null ? row : { ...row, title }) as never)
+
+  // The column ships in pending/189. Naming it before that lands fails the
+  // WHOLE insert with 42703, so a customer who typed a headline would lose the
+  // review as well. The retry drops only the headline -- and the form does not
+  // offer the field at all in that state (`titleSupported` below), so this is
+  // the belt to that suspenders: a stale client, or 189 being reverted between
+  // the probe and the submit.
+  if (error?.code === UNDEFINED_COLUMN && title !== null) {
+    ;({ error } = await supabase.from('reviews' as never).insert(row as never))
+  }
 
   if (error) {
     if (error.code === NOT_VERIFIED) {
       return { ok: false, error: 'ביקורת אפשר לכתוב רק על מוצר שרכשת.' }
     }
     if (error.code === ALREADY_REVIEWED) {
-      return { ok: false, error: 'כבר כתבת ביקורת על הרכישה הזו.' }
+      // Either constraint. See ALREADY_REVIEWED in lib/reviews/reviews.ts for
+      // why one sentence covers both.
+      return { ok: false, error: 'כבר כתבת ביקורת על המוצר הזה.' }
     }
     if (error.code === TABLE_MISSING) {
       return { ok: false, error: 'הביקורות עוד לא פתוחות. נסה שוב בקרוב.' }
@@ -96,6 +150,16 @@ export async function submitReview(formData: FormData): Promise<ReviewActionStat
 
 export interface ReviewableItem {
   orderItemId: string
+  /**
+   * Whether the form may offer a headline field.
+   *
+   * `title` ships in pending/189 and the deployment can be behind it. A form
+   * that shows the field against a database without the column would take
+   * something the customer typed and drop it, and the customer would never
+   * know: the review saves either way (the action retries without it). Asking
+   * once, here, is what keeps the field from existing in that state.
+   */
+  titleSupported: boolean
 }
 
 async function runGetMyReviewableItem(productId: string): Promise<ReviewableItem | null> {
@@ -115,21 +179,42 @@ async function runGetMyReviewableItem(productId: string): Promise<ReviewableItem
     .limit(10)
   if (error || !items || items.length === 0) return null
 
+  // ONE PER PRODUCT, not one per line. This read is by PRODUCT and not by the
+  // order_item ids above, which is the whole change: the previous version
+  // asked "which of my purchases has an unspent slot", so a customer who
+  // bought the product twice was offered the form again after reviewing it
+  // once. `reviews_owner_read` returns own rows at any status, so a rejected
+  // review closes the form too -- see pending/189 on why the retry path is a
+  // soft delete.
   const { data: mine, error: reviewsError } = await supabase
     .from('reviews' as never)
-    .select('order_item_id')
-    .in(
-      'order_item_id',
-      items.map((item) => item.id),
-    )
-  // Table missing -> nothing is reviewable yet; that is the honest answer.
-  if (reviewsError) return null
+    .select('id, title')
+    .eq('product_id', productId)
+    .eq('user_id', user.id)
+    .limit(1)
 
-  const taken = new Set(
-    (mine as unknown as { order_item_id: string }[]).map((row) => row.order_item_id),
-  )
-  const free = items.find((item) => !taken.has(item.id))
-  return free ? { orderItemId: free.id } : null
+  // 42703: the deployment is behind 189 and has no `title` column. That says
+  // nothing about whether this customer may review, so the read is repeated
+  // without the column rather than answered as "not reviewable".
+  if (reviewsError?.code === UNDEFINED_COLUMN) {
+    const { data: retry, error: retryError } = await supabase
+      .from('reviews' as never)
+      .select('id')
+      .eq('product_id', productId)
+      .eq('user_id', user.id)
+      .limit(1)
+    if (retryError) return null
+    if ((retry as unknown as unknown[]).length > 0) return null
+    const first = items[0]
+    return first ? { orderItemId: first.id, titleSupported: false } : null
+  }
+
+  // Any other failure -> nothing is reviewable; that is the honest answer.
+  if (reviewsError) return null
+  if ((mine as unknown as unknown[]).length > 0) return null
+
+  const first = items[0]
+  return first ? { orderItemId: first.id, titleSupported: true } : null
 }
 
 /**

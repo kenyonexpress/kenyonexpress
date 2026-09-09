@@ -33,6 +33,8 @@ export default async function Reviews({ productId }: { productId: string }) {
         {reviews.map((review) => (
           <li key={review.id} className="rounded-lg border border-gray-100 p-4">
             <div className="mb-1 flex items-center gap-2">
+              {/* One review, so the count in RatingStars would read "(1)" on
+                  every row. This is the per-row rating, not an aggregate. */}
               <span aria-label={`${review.rating} מתוך 5`} className="text-primary">
                 {'★'.repeat(review.rating)}
                 <span className="text-gray-300">{'★'.repeat(5 - review.rating)}</span>
@@ -41,6 +43,9 @@ export default async function Reviews({ productId }: { productId: string }) {
                 {new Date(review.created_at).toLocaleDateString('he-IL')}
               </time>
             </div>
+            {review.title ? (
+              <p className="mb-1 text-sm font-semibold text-heading">{review.title}</p>
+            ) : null}
             {review.body ? <p className="text-sm text-gray-800">{review.body}</p> : null}
           </li>
         ))}

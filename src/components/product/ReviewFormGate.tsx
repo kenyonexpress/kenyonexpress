@@ -1,6 +1,6 @@
 'use client'
 
-import { getMyReviewableItem } from '@/server/actions/reviews'
+import { type ReviewableItem, getMyReviewableItem } from '@/server/actions/reviews'
 import { useEffect, useState } from 'react'
 import ReviewForm from './ReviewForm'
 
@@ -9,24 +9,31 @@ import ReviewForm from './ReviewForm'
  * visitor, so "does THIS session hold an unspent review slot" cannot render on
  * the server -- it is asked after paint through a server action, and the
  * INSERT policy re-verifies the answer on submit anyway.
+ *
+ * The same read reports whether `reviews.title` exists (pending/189), because
+ * the form must not offer a field the database would make the action drop.
  */
 export default function ReviewFormGate({ productId }: { productId: string }) {
-  const [orderItemId, setOrderItemId] = useState<string | null>(null)
+  const [item, setItem] = useState<ReviewableItem | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    getMyReviewableItem(productId).then((item) => {
-      if (!cancelled && item) setOrderItemId(item.orderItemId)
+    getMyReviewableItem(productId).then((found) => {
+      if (!cancelled && found) setItem(found)
     })
     return () => {
       cancelled = true
     }
   }, [productId])
 
-  if (!orderItemId) return null
+  if (!item) return null
   return (
     <div className="mb-6">
-      <ReviewForm productId={productId} orderItemId={orderItemId} />
+      <ReviewForm
+        productId={productId}
+        orderItemId={item.orderItemId}
+        titleSupported={item.titleSupported}
+      />
     </div>
   )
 }

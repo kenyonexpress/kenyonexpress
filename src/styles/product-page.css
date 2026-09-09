@@ -209,9 +209,13 @@
   color: var(--pdp-ink);
 }
 
-/* The slot live fills with its star rating. We do not have ratings, so it
-   carries the identifiers a shopper can actually act on instead of a fabricated
-   score; the height is what the rhythm below depends on. */
+/* The slot live fills with its star rating.
+   It carried only the SKU while there were no ratings to put in it, and it
+   still does for an unrated product: `RatingStars` renders nothing without an
+   approved review, so no fabricated score ever appears here.
+   Once a product has one, the stars share this row with the SKU rather than
+   taking a row of their own -- the height is what the rhythm below depends on,
+   and a new row would move everything under it. */
 .pdp-summary__meta {
   margin: 12px 0 0;
   min-height: var(--pdp-body-size);
@@ -574,4 +578,11 @@
 
 .city-tag--link:hover {
   text-decoration: underline;
+}
+
+/* Inside .pdp-summary__meta, so it inherits that slot's height. The margin is
+   inline-end because the document is RTL: the stars lead, the SKU follows. */
+.pdp-summary__rating {
+  margin-inline-end: 10px;
+  vertical-align: middle;
 }

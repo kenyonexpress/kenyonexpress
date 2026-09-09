@@ -283,6 +283,15 @@ describe('the pending migration inventory', () => {
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
       '188_pin_invoker_search_path.sql',
+      // 189 WRITTEN 2026-09-09, not applied. Additive only: two ADD COLUMN and
+      // one partial UNIQUE INDEX on reviews. Its DDL, its refusal guard and the
+      // constraint it creates were each proven against production in
+      // transactions that were rolled back -- see the file header. It has no
+      // preflight because it drops nothing and rewrites no policy, so there is
+      // no live catalog it can go stale against; the one thing that CAN change
+      // under it (a duplicate appearing before it is applied) is what block 0
+      // reads at apply time.
+      '189_reviews_title_and_one_per_product.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

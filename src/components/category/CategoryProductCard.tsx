@@ -1,9 +1,11 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import RatingStars from '@/components/product/RatingStars'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import type { RatingSummary } from '@/lib/reviews/reviews'
 import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -49,6 +51,12 @@ export type CategoryProduct = {
   supplier?: { city?: string | null } | null
   /** Set by sortByDistance when the customer asked for "near me". */
   distanceKm?: number | null
+  /**
+   * Approved-review summary, from `attachRatings`. Optional: a caller that does
+   * not attach it renders the card unchanged, and an unrated product renders no
+   * star row rather than an empty five-star frame.
+   */
+  rating?: RatingSummary | null
 }
 
 function formatPrice(value: number): string {
@@ -130,6 +138,12 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
         )}
 
         {priceBlock && <span className="category-card__price">{priceBlock}</span>}
+
+        {/* Outside the <Link>: a rating is not part of the product's
+            accessible name, and nesting it inside would append "דירוג 4.3 מתוך
+            5, 12 ביקורות" to every card link. Renders nothing at all until an
+            approved review exists. */}
+        <RatingStars summary={product.rating ?? null} className="category-card__rating" />
 
         <Link href={`/product/${product.slug}`} className="category-card__link">
           <h2 className="category-card__title">{product.name_he}</h2>

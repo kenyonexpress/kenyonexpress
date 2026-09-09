@@ -1,5 +1,43 @@
 # `migrations/pending/`
 
+## 2026-09-09: 189 WRITTEN, not applied — the review title and one review per product
+
+`189_reviews_title_and_one_per_product.sql` closes the three things SECTIONS 25
+asks of the schema that 154 did not ship: `title`, `verified_purchase`, and
+**one review per user per product**.
+
+The third is the one that matters and it is not a missing column, it is a
+different rule. 154 enforces `order_item_id UNIQUE` — one review per purchased
+**line** — and says so on purpose: "buying twice earns two review slots". Under
+the section's rule a second purchase earns nothing new, because the thing being
+reviewed is the product. Both constraints stay; the new one is strictly tighter.
+
+**The index is partial on `deleted_at IS NULL`, and that is the retry path.** A
+rejected review keeps occupying the slot, otherwise moderation is a treadmill.
+Soft-deleting the row is how a moderator lets somebody try again, and it frees
+the slot without erasing the history.
+
+**`verified_purchase` is a materialisation, not a gate.** What verifies a review
+is 154's INSERT policy. No code reads this column to decide anything, and a
+client can post `false` about its own review — a lie in the harmless direction.
+Forbidding it would mean restating the INSERT policy, which is the shape that
+nearly broke 183.
+
+**Three dry runs against production, all rolled back**, `reviews` back to 0 rows
+after each. The DDL applies verbatim; a second review by the same customer on
+the same product from a second real purchase is refused 23505; a soft-delete
+frees the slot and the retry is accepted; and with two live duplicates planted
+first, block 0 fires and names the pair while a bare `CREATE UNIQUE INDEX`
+merely 23505s. Details in the file header.
+
+**The application half is already shipped and does not wait for this file.**
+`runSubmitReview` and `getMyReviewableItem` enforce one-per-user-per-product in
+code today, so the rule holds on production now and this migration makes the
+database the one that holds it. The title field is rendered only when the column
+exists (probed once per request that needs it), so nothing a customer types can
+be silently dropped before it lands.
+
+
 ## 2026-09-09: 183 APPLIED, and the preflight is the whole story
 
 `183_order_shipped_notification.sql` enqueues `kind=order_shipped` when an

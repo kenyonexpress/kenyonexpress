@@ -1,5 +1,6 @@
 'use client'
 
+import { TITLE_MAX } from '@/lib/reviews/reviews'
 import { submitReview } from '@/server/actions/reviews'
 import { useState, useTransition } from 'react'
 
@@ -12,9 +13,18 @@ import { useState, useTransition } from 'react'
 export default function ReviewForm({
   productId,
   orderItemId,
+  titleSupported,
 }: {
   productId: string
   orderItemId: string
+  /**
+   * False when the deployment is behind pending/189 and `reviews.title` does
+   * not exist. The field is then not rendered AT ALL, rather than rendered and
+   * dropped: the action retries the insert without the column, so a headline
+   * typed into a form that offered one would vanish with no error and no way
+   * for the customer to know. An absent field cannot lose anything.
+   */
+  titleSupported: boolean
 }) {
   const [rating, setRating] = useState(5)
   const [done, setDone] = useState(false)
@@ -74,6 +84,18 @@ export default function ReviewForm({
           ))}
         </div>
       </fieldset>
+      {titleSupported ? (
+        <label className="block">
+          <span className="mb-1 block text-xs text-muted">כותרת (לא חובה)</span>
+          <input
+            type="text"
+            name="title"
+            maxLength={TITLE_MAX}
+            placeholder="במשפט אחד"
+            className="w-full rounded-lg border border-gray-200 p-2 text-sm"
+          />
+        </label>
+      ) : null}
       <textarea
         name="body"
         maxLength={1000}

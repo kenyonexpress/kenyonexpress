@@ -254,6 +254,10 @@ export default async function ProductPage({ params }: Props) {
             productId={product.id}
             name={product.name_he}
             nameEn={product.name_en}
+            /* The same summary the JSON-LD above is built from, so the stars a
+               visitor sees and the aggregateRating Google reads can never
+               disagree. Read once, at line ~164. */
+            ratingSummary={reviewSummary}
             basePrice={basePrice}
             oldPrice={oldPrice}
             baseStock={product.stock_quantity}
