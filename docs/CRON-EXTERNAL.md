@@ -19,7 +19,19 @@ Neither is running yet: `gh secret list` on `kenyonexpress/kenyonexpress`
 returns nothing, so `CRON_SECRET` is not set in Actions, and no variable enables
 the workflow. **Until one of them is switched on, none of the ten runs at all.**
 
-## Why they left `vercel.json`
+## Why they left `vercel.json` — and why the key is back
+
+> **UPDATE 2026-09-10: the `crons` key was restored to `vercel.json`**, by an
+> explicit goal that named it, declaring all eighteen jobs. Everything below
+> about the Hobby allowance is still true: the declaration takes effect only
+> on a deploy from this repo on a plan that covers eighteen jobs (Pro), and on
+> Hobby the platform still registers what the plan covers and silently skips
+> the rest. What changed since the removal is that the key can no longer lie
+> quietly: `src/__tests__/cron-schedule-inventory.test.ts` now requires it to
+> be byte-identical to `scripts/cron-jobs.json`, and the Actions workflow —
+> which remains the live scheduler — is the thing that actually fires. The day
+> Vercel crons take over for real, flip `CRON_SCHEDULER_ENABLED` off first;
+> two schedulers call every job twice.
 
 Vercel's cron allowance is a plan feature, not a code one. On Hobby it is two
 jobs at daily granularity; this project needs ten, and four of them at five or
@@ -103,6 +115,7 @@ file is in a repository.
 10c https://kenyonexpress.vercel.app/api/cron/expire-coupons     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
+13 https://kenyonexpress.vercel.app/api/cron/backup              GET  20 2 * * *    Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -139,6 +152,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
 | 13 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-outbox` |
 | 14 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-coupons` |
+| 15 | 02:20 daily | `20 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/backup` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -172,6 +186,12 @@ timing changes with the scheduler.
 - **`expire-coupons`** stamps printed QR coupon codes (migration 182/217) whose
   own date passed or whose campaign ended. No money moves; redemption re-checks
   expiry under its own lock, this only keeps batch inventory truthful.
+- **`backup`** writes the nightly logical backup: the business tables that
+  cannot be reconstructed from anywhere else (orders, the money legs, vouchers,
+  wallets, catalogue), as one JSON object per UTC day in the private
+  `db-backups` Storage bucket. All-or-nothing — a failed table read uploads
+  nothing and answers 500 — and idempotent per day. It supplements Supabase's
+  own physical backups; it does not replace them.
 - **`search-outbox`** drains `search_index_outbox` (migration 132): the durable
   record that a product write owes the Meilisearch index an update, written by
   the trigger in the same transaction as the write. The webhook -> QStash path

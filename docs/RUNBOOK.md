@@ -72,7 +72,16 @@ curl -s -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/health |
 
 ## 2. INCIDENT: nothing scheduled is running
 
-**This is the current state, not a hypothetical.**
+**This was the state until 2026-09-02, when the Actions scheduler went live**
+(`.github/workflows/cron.yml` on main, with `CRON_SECRET` and
+`CRON_SCHEDULER_ENABLED=true` set on the repository — see
+`docs/CRON-EXTERNAL.md`). On 2026-09-10 the `crons` key was also restored to
+`vercel.json`, declaring all eighteen jobs; it takes effect only on a deploy
+from this repo on a plan that covers them, and the inventory test keeps it
+identical to `scripts/cron-jobs.json` so it can no longer claim a schedule the
+manifest does not have. The section is kept because the failure mode below is
+how you re-diagnose it if the scheduler ever stops (GitHub disables schedules
+after 60 days without commits, with only an email as a symptom).
 
 ### Symptoms
 
