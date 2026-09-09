@@ -7,7 +7,6 @@ import {
   orderCashbackSelect,
   orderItemPriceSelect,
   readOrderCashbackAgorot,
-  resolveOrderGeneration,
   resolveOrderItemGeneration,
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
@@ -414,24 +413,24 @@ export async function finalizeOrder(input: {
     // and sent whoever answered the page hunting a missing row instead of a
     // database that stopped answering. The dead-letter replay is identical
     // either way; only the diagnosis changes, and only it was wrong.
-    // The wallet column is `cashback_applied_agorot` post-059 and
-    // `cashback_applied_ils` on the hosted pre-059 schema; naming the wrong
-    // one is 42703 and fails the WHOLE select, aborting a finalize for a card
-    // that has already been charged. Same trap `resolvePaymentMoneySchema`
-    // already guards on `payments`, now guarded here too.
-    const orderGeneration = await resolveOrderGeneration(moneyColumnProbe(admin, 'orders'))
+    // `cashback_applied_agorot` answers on both schema generations since 224:
+    // it is the writable post-059 column there, and a GENERATED agorot twin of
+    // `cashback_applied_ils` on the hosted pre-059 schema. Before 224 naming
+    // it there was 42703 and failed the WHOLE select, aborting a finalize for
+    // a card that had already been charged, so this read went through a
+    // per-generation probe; the column's existence retired the probe.
     const orderRow = orFail(
       await admin
         .from('orders')
-        .select(`id, user_id, status, paid_at, ${orderCashbackSelect(orderGeneration)}`)
+        .select(`id, user_id, status, paid_at, ${orderCashbackSelect()}`)
         .eq('id', input.orderId)
         .maybeSingle(),
       'finalize.order_read_failed',
       { orderId: input.orderId },
     )
     // The dynamic select string defeats supabase-js's row inference; the four
-    // fixed fields are what the code below reads, and the generation-specific
-    // cashback column goes through readOrderCashbackAgorot, which knows both.
+    // fixed fields are what the code below reads, and the cashback column
+    // goes through readOrderCashbackAgorot.
     const order = orderRow as unknown as
       | (Record<string, unknown> & {
           id: string
@@ -450,10 +449,11 @@ export async function finalizeOrder(input: {
       }
     }
 
-    // `unit_price_agorot` is a post-059 name; the hosted project calls the
-    // same integer-agorot number `unit_price_ils_agorot` (a generated column),
-    // and the fragment aliases it back so the row shape below is identical on
-    // both generations.
+    // `unit_price_agorot` exists on both generations since 224 (a GENERATED
+    // twin of `unit_price_ils` on the hosted project), but `total_price_agorot`
+    // is still pre-059-only under `total_price_ils_agorot`, so the fragment
+    // keeps the probe and aliases that one back; the row shape below is
+    // identical on both generations either way.
     const itemGeneration = await resolveOrderItemGeneration(moneyColumnProbe(admin, 'order_items'))
     const items = orFail(
       await admin
@@ -519,10 +519,9 @@ export async function finalizeOrder(input: {
       }
     } else {
       // spendWallet speaks shekels (fn_wallet_transfer takes p_amount_ils);
-      // the stored number is agorot post-059 and shekels pre-059, and the
-      // helper normalises either to integer agorot before the one boundary
-      // conversion below.
-      walletApplied = agorotToIls(agorot(readOrderCashbackAgorot(orderGeneration, order)))
+      // the column is integer agorot on both generations since 224, and the
+      // one boundary conversion below is the only agorot -> shekel step.
+      walletApplied = agorotToIls(agorot(readOrderCashbackAgorot(order)))
     }
 
     await spendWallet(admin, order.id, order.user_id, walletApplied)

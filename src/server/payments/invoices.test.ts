@@ -120,7 +120,13 @@ function scriptPaidOrder(
     error: null,
   })
   queue('orders.select', {
-    data: { id: ORDER_ID, user_id: 'user-1', cashback_applied_ils: options.walletIls ?? 10 },
+    // 224: the select names cashback_applied_agorot, which production answers
+    // in integer agorot on both schema generations.
+    data: {
+      id: ORDER_ID,
+      user_id: 'user-1',
+      cashback_applied_agorot: Math.round((options.walletIls ?? 10) * 100),
+    },
     error: null,
   })
   queue('order_items.select', {

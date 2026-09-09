@@ -1,9 +1,4 @@
-import {
-  moneyColumnProbe,
-  orderCashbackSelect,
-  readOrderCashbackAgorot,
-  resolveOrderGeneration,
-} from '@/lib/commerce/order-money-columns'
+import { orderCashbackSelect, readOrderCashbackAgorot } from '@/lib/commerce/order-money-columns'
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
 import {
   type InvoiceDocument,
@@ -184,15 +179,13 @@ async function loadOrderContext(
   const chargedAgorot = readAmountAgorot(money, payment) ?? 0
   if (chargedAgorot <= 0) return { skip: 'nothing_charged' }
 
-  // Probed, not selected-both-ways. The comment that stood here claimed
-  // PostgREST "returns the columns it has"; it does not -- one unknown name in
-  // the select is 42703 and the WHOLE select fails, so naming both spellings
-  // guaranteed failure on every schema, not tolerance on either. The probe is
-  // cached per table per process, so the round trip is paid once.
-  const orderGeneration = await resolveOrderGeneration(moneyColumnProbe(admin as never))
+  // No probe since 224: `cashback_applied_agorot` exists on both schema
+  // generations (writable post-059, a GENERATED agorot twin of
+  // `cashback_applied_ils` on the hosted pre-059 project), so the one name is
+  // safe to select and always answers in integer agorot.
   const { data: orderRow } = await admin
     .from('orders')
-    .select(`id, user_id, ${orderCashbackSelect(orderGeneration)}`)
+    .select(`id, user_id, ${orderCashbackSelect()}`)
     .eq('id', orderId)
     .maybeSingle()
   const order = orderRow as unknown as
@@ -203,7 +196,7 @@ async function loadOrderContext(
     | null
   if (!order) return { skip: 'order_not_found' }
 
-  const walletAppliedAgorot = readOrderCashbackAgorot(orderGeneration, order)
+  const walletAppliedAgorot = readOrderCashbackAgorot(order)
 
   const { data: itemRows } = await admin
     .from('order_items')

@@ -118,12 +118,12 @@ vi.mock('@/lib/commerce/order-money-columns', () => ({
   resolveVoucherRateColumn: async () => 'platform_percent',
   // The generation-resolved reads (D25 marathon step 1): the mocks pin the
   // post-059 'agorot' answer so the select strings under test keep the exact
-  // column names these fixtures were written against.
-  resolveOrderGeneration: async () => 'agorot',
+  // column names these fixtures were written against. The cashback pair is
+  // generation-free since 224.
   resolveOrderItemGeneration: async () => 'agorot',
   orderCashbackSelect: () => 'cashback_applied_agorot',
   orderItemPriceSelect: () => 'unit_price_agorot, total_price_agorot',
-  readOrderCashbackAgorot: (_g: unknown, row: Record<string, unknown> | null) =>
+  readOrderCashbackAgorot: (row: Record<string, unknown> | null) =>
     Math.round(Number(row?.cashback_applied_agorot ?? 0)),
 }))
 
