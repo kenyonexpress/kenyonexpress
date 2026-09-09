@@ -1,3 +1,4 @@
+import { scrubEventUser } from '@/lib/observability/sentry-user'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -33,6 +34,9 @@ Sentry.init({
   sendDefaultPii: false,
 
   beforeSend(event) {
+    // SentryUserSync sets { id } and nothing else, but this is the guarantee
+    // rather than the convention: whatever reaches setUser, only the id ships.
+    event.user = scrubEventUser(event.user)
     // Same rule as the server: a voucher token lives in the path.
     if (event.request?.url) {
       event.request.url = event.request.url

@@ -2,6 +2,7 @@ import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import PostHogReplay from '@/components/analytics/PostHogReplay'
 import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
+import SentryUserSync from '@/components/observability/SentryUserSync'
 import InstallPrompt from '@/components/pwa/InstallPrompt'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 import { CONSENT_PREPAINT_SCRIPT } from '@/lib/analytics/consent'
@@ -161,6 +162,12 @@ export default function RootLayout({
         */}
         <ServiceWorkerRegistrar />
         <InstallPrompt />
+        {/*
+          Sentry's user tag, id only. Renders null, subscribes to the auth
+          state Supabase already holds in memory, and makes no request of its
+          own - see the component for why it sits outside the consent gate.
+        */}
+        <SentryUserSync />
         {/*
           GA4 and the Meta Pixel, and they render NOTHING until the visitor has
           agreed - no script tag, no stub, no consent-mode-denied bootstrap. See

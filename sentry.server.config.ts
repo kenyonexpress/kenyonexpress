@@ -1,4 +1,5 @@
 import { redact } from '@/lib/observability/scrub'
+import { scrubEventUser } from '@/lib/observability/sentry-user'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -46,6 +47,8 @@ Sentry.init({
     if (event.request?.headers) event.request.headers = {}
     if (event.request?.cookies) event.request.cookies = {}
     if (event.request?.url) event.request.url = redactUrl(event.request.url)
+    // The id and nothing else, however a call site set the user (R41).
+    event.user = scrubEventUser(event.user)
     if (event.extra) event.extra = redact(event.extra) as Record<string, unknown>
     if (event.contexts?.payment) {
       event.contexts.payment = redact(event.contexts.payment) as Record<string, unknown>
