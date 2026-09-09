@@ -103,6 +103,7 @@ describe('the pending migration inventory', () => {
       '199_review_replies_and_reports.sql',
       '200_wishlist_alert_kinds.sql',
       '201_scheduled_price_changes.sql',
+      '211_whatsapp_selfservice.sql',
     ])
   })
 
