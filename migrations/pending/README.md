@@ -1,5 +1,53 @@
 # `migrations/pending/`
 
+## 2026-09-09: 190 WRITTEN, not applied — the second abandoned-cart reminder
+
+`190_abandoned_cart_second_reminder.sql`. SECTIONS 26 asks for two reminders,
+T+2h and T+24h. What shipped sends ONE, ever, and the ceiling is structural
+rather than a decision the route makes: `abandoned_cart_one_per_cart` is a
+UNIQUE on `cart_id` alone and `fn_due_abandoned_carts` excludes any cart with any
+nudge row. There is no counter to raise. This file adds `reminder_number` with a
+CHECK of 1..2, swaps the uniqueness to `(cart_id, reminder_number)`, and
+replaces the function so it says WHICH reminder is owed.
+
+**There is no `cart_abandonment` table, and that is deliberate.** The section
+names one holding `(cart_id, last_activity_at, reminder_sent_count)`. All three
+already exist and are already correct: `carts.updated_at` is the activity stamp
+the cart itself writes, the count is `count(*)` over the receipts, and `cart_id`
+is the nudge's own column. A separate counter has to be kept true by a trigger
+or by application code, and it fails silently in both directions -- ahead of the
+sends it mails too little, behind them too much. Counting the receipts cannot
+disagree with the receipts.
+
+**The gap is measured from the last nudge, not from the cart.** "Cart older than
+24h and exactly one nudge" misfires the moment the cron starts late: a cart
+abandoned 30 hours ago earns the first mail immediately and the second one
+hourly tick later.
+
+**Three findings came out of the dry runs, and two of them would have shipped:**
+
+1. `DROP INDEX abandoned_cart_one_per_cart` fails with 2BP01. It is a
+   CONSTRAINT, and `pg_indexes` -- which is what was read to write the statement
+   -- lists it like any other index and says nothing about that. The first run
+   stopped halfway.
+2. **The recreated function came back EXECUTE-able by PUBLIC, anon and
+   authenticated.** A DROP takes grants with it and a bare CREATE applies the
+   defaults; the original carried only `postgres` and `service_role`, so
+   somebody had already revoked the rest and the DROP would have undone it
+   silently. The function is SECURITY DEFINER and returns CUSTOMER EMAIL
+   ADDRESSES. Measured as `anon`: allowed without the revokes, 42501 with them.
+   Three REVOKEs are now in the file above the grants.
+3. The full sequence on a cart planted 30 hours old: reminder 1, then NOT DUE on
+   the next tick, then reminder 2 once the gap had passed, then NOT DUE, and a
+   third row refused 23514.
+
+**The route ships before this file and degrades to exactly today's behaviour.**
+The new third parameter has a default so the deployed two-argument call still
+resolves; before the migration the old function returns no `reminder_number`,
+the route reads that as reminder 1, and the old UNIQUE still allows one nudge
+per cart. There is no window where the two halves disagree.
+
+
 ## 2026-09-09: 189 WRITTEN, not applied — the review title and one review per product
 
 `189_reviews_title_and_one_per_product.sql` closes the three things SECTIONS 25

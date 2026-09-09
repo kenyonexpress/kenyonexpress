@@ -12,6 +12,7 @@ import {
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
 import { log } from '@/lib/observability/log'
+import { trackEvent } from '@/lib/observability/posthog'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -803,13 +804,46 @@ export async function finalizeOrder(input: {
     // replayed finalize re-runs it as a no-op because the row it would claim
     // already has a recovered_order_id.
     try {
-      await admin.rpc(
+      const { data: claimed, error: attributionError } = await admin.rpc(
         'fn_attribute_cart_recovery' as never,
         {
           p_order_id: order.id,
           p_user_id: order.user_id,
         } as never,
       )
+
+      // Named and logged rather than discarded, which is what
+      // `discarded-read-inventory.test.ts` is for: a silent failure here is
+      // indistinguishable from "this order recovered nothing", and that is the
+      // exact reading that let `v_abandoned_cart_recovery` report 0% for months
+      // while nothing called the function at all. Warn, never throw: the card
+      // is charged and attribution is a reporting fact.
+      if (attributionError) {
+        log.warn('abandoned_cart.attribution_failed', {
+          order_id: order.id,
+          code: attributionError.code ?? null,
+        })
+      }
+
+      // The recovery half of the abandoned-cart funnel, in PostHog. The send
+      // half is `abandoned_cart_reminder_sent` from the cron, keyed on the same
+      // user id, so the two join.
+      //
+      // Emitted only when the function actually claimed a nudge (it returns the
+      // count). Firing on every purchase would report a 100% recovery rate,
+      // which is the failure mode this whole attribution path exists to fix --
+      // `v_abandoned_cart_recovery` reported 0% for months because nothing
+      // called the function, and reporting 100% instead is no better.
+      //
+      // PostHog only: `trackServerEvent` also writes `analytics_events`, whose
+      // deployed whitelist accepts four names and would reject this one.
+      if (typeof claimed === 'number' && claimed > 0 && order.user_id) {
+        trackEvent(
+          'abandoned_cart_recovered',
+          { order_id: order.id, nudges_claimed: claimed },
+          { distinctId: order.user_id },
+        )
+      }
     } catch {
       // Deliberately silent, for the reason above.
     }

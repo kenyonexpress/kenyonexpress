@@ -292,6 +292,14 @@ describe('the pending migration inventory', () => {
       // under it (a duplicate appearing before it is applied) is what block 0
       // reads at apply time.
       '189_reviews_title_and_one_per_product.sql',
+      // 190 WRITTEN 2026-09-09, not applied. One destructive statement -- the
+      // function is DROPped because its return type gains a column -- and that
+      // is why it carries explicit REVOKEs: measured on production, a bare
+      // CREATE hands EXECUTE on a SECURITY DEFINER function that returns
+      // customer emails to PUBLIC, anon and authenticated, undoing a revoke
+      // somebody had already made. Also proven: the old uniqueness is a
+      // CONSTRAINT, not a bare index, so `DROP INDEX` on it fails 2BP01.
+      '190_abandoned_cart_second_reminder.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
