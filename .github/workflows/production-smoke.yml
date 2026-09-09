@@ -132,6 +132,39 @@ jobs:
           # captured and folded into the same FAILURES output, which is what
           # opens the outage issue. A red step with no issue is the failure
           # mode nightly-health.yml already had.
+          # THE COUPON PATH, WHICH TWO GREEN 200s CANNOT SEE EITHER.
+          #
+          # `/redeem/<token>` is where a supplier's scan lands, and it is the
+          # only route on the site that reads VOUCHER_QR_SECRET. With the secret
+          # set, a token carrying a bad signature renders a 200 refusal page
+          # ("קוד השובר אינו תקין"). With it missing, `verifyVoucherQrPayload`
+          # throws before any of that and the route answers 500 -- which is what
+          # production has been doing since at least 2026-09-01: 31 events in
+          # Sentry over nine days, and nothing in this repository asked.
+          #
+          # So the assertion is NOT 200, it is "not a 5xx". A refusal is the
+          # correct answer to a forged token and is what a working deployment
+          # gives; a 500 means the route cannot verify ANY signature, forged or
+          # real, and the scan path is down.
+          #
+          # The token is syntactically valid and deliberately unsigned. It costs
+          # one `invalid_signature` row in the refused-scan log per day once the
+          # secret is set, which is a fair price for proving that path works and
+          # is itself a check that the logging still runs.
+          REDEEM_URL="${BASE}/redeem/KEV1.c21va2UtcHJvYmU.bm90LWEtc2lnbmF0dXJl"
+          if [ -n "$BYPASS" ]; then
+            REDEEM_CODE=$(curl -sS -o /tmp/redeem -w '%{http_code}' --max-time 30               -H "x-vercel-protection-bypass: ${BYPASS}" "$REDEEM_URL" || echo '000')
+          else
+            REDEEM_CODE=$(curl -sS -o /tmp/redeem -w '%{http_code}' --max-time 30 "$REDEEM_URL" || echo '000')
+          fi
+          echo "${REDEEM_URL} -> ${REDEEM_CODE}"
+          REPORT="${REPORT}"$'\n'"| \`/redeem/<unsigned>\` | ${REDEEM_CODE} |"
+          case "$REDEEM_CODE" in
+            5*|000)
+              FAILURES="${FAILURES}"$'\n'"- \`${REDEEM_URL}\` answered **${REDEEM_CODE}**. A forged token must render a refusal, not fail: this is what a missing VOUCHER_QR_SECRET looks like from outside, and with it missing no real QR can be signed or verified either."$'\n'"  \`\`\`"$'\n'"  $(head -c 300 /tmp/redeem || true)"$'\n'"  \`\`\`"
+              ;;
+          esac
+
           CRON_OUT=$(CRON_BASE_URL="$BASE" node scripts/deployed-cron-probe.mjs 2>&1) || CRON_FAILED=1
           echo "$CRON_OUT"
           if [ "${CRON_FAILED:-0}" = '1' ]; then

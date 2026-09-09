@@ -43,12 +43,40 @@ export async function recordSearchTerm(term: string, hits: number): Promise<void
 }
 
 /**
- * Takes the caller's own client rather than making one. The function it calls
- * reads `auth.uid()` and writes nothing when there is no session, so a
- * logged-out caller is a silent no-op and needs no branch here.
+ * Takes the caller's own client rather than making one, so the owner-only RLS
+ * on `user_recent_searches` is what enforces ownership.
+ *
+ * IT BRANCHES ON THE SESSION, AND THE COMMENT THAT SAID IT NEED NOT WAS WRONG.
+ * It read: "the function reads `auth.uid()` and writes nothing when there is no
+ * session, so a logged-out caller is a silent no-op". The function does do
+ * that -- `IF v_user IS NULL THEN RETURN` is its first statement -- but the
+ * caller never reaches it. EXECUTE on `fn_record_recent_search` is granted to
+ * `postgres` and `service_role` only, so PostgREST refuses an `anon` call at
+ * the grant, before any of the body runs.
+ *
+ * Measured in Sentry on 2026-09-10: `RLS denied: POST rpc:fn_record_recent_search`,
+ * 39 events in eight hours, one per anonymous search, and the newest issue in
+ * the project. Not a customer-visible failure -- the search page renders and
+ * the error is swallowed here -- which is exactly why it ran for as long as it
+ * did while filling the error stream that real failures have to be found in.
+ *
+ * `authenticated` has no grant either, which is the other half:
+ * `user_recent_searches` held ZERO rows on the same day, so the recent-search
+ * list in the search header could never have had anything in it.
+ * `migrations/pending/224_grant_recent_search_execute.sql` is that half, and
+ * this branch is the half that needs no migration.
  */
 export async function recordRecentSearch(client: SupabaseClient, term: string): Promise<void> {
   try {
+    const {
+      data: { user },
+    } = await client.auth.getUser()
+    // No session, nothing to record against. Returning here costs nothing: with
+    // no auth cookie this resolves locally, without a round trip -- which is
+    // strictly cheaper than the RPC it replaces, since that one made a request
+    // in order to be refused.
+    if (!user) return
+
     const { error } = await client.rpc('fn_record_recent_search', { p_term: term })
     if (error) log.warn('search.recent_record_failed', { reason: error.message })
   } catch (error) {

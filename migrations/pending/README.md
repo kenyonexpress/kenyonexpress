@@ -1,5 +1,37 @@
 # `migrations/pending/`
 
+## 2026-09-10: 224 WRITTEN, not applied - one GRANT, and the feature it revives
+
+`224_grant_recent_search_execute.sql`. A single
+`GRANT EXECUTE ... TO authenticated`, with a `DO` block that proves it landed
+and that `anon` did **not** move.
+
+**`fn_record_recent_search` is granted to `postgres` and `service_role` only**,
+read off `information_schema.routine_privileges` in production on 2026-09-10.
+The application calls it through the shopper's own client, which is `anon` or
+`authenticated`, so PostgREST refuses at the grant before the function body
+runs -- and the body is correct: its first statement returns when there is no
+session.
+
+Both halves were measured, and they fail differently:
+
+| caller | what happens | fixed by |
+| --- | --- | --- |
+| `anon` | `RLS denied: POST rpc:fn_record_recent_search`, **39 events in eight hours** in Sentry, one per anonymous search | code: `recordRecentSearch` now checks for a session first |
+| `authenticated` | the same refusal, swallowed. `user_recent_searches` holds **zero rows** | this migration |
+
+So the recent-search list in the search header has been empty for every
+customer since the table was created, and nothing failed loudly enough for
+anyone to look. `anon` is deliberately left without the grant: the function
+keys on `auth.uid()`, so granting it would buy nothing today and would leave an
+unauthenticated caller one edit away from a `SECURITY DEFINER` function over a
+per-user table -- `127_revoke_check_rate_limit_execute` is the same lesson at a
+different site.
+
+**Reversal:** `REVOKE EXECUTE ON FUNCTION public.fn_record_recent_search(text)
+FROM authenticated;`. That returns the feature to silently empty, not to
+broken, because the code branch stands on its own.
+
 ## 2026-09-09: 223 WRITTEN, not applied - the column that gives the bell a writer
 
 `223_notifications_outbox_link.sql`. One nullable column and one unique index.

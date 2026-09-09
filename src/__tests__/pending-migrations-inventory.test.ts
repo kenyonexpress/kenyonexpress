@@ -819,6 +819,17 @@ describe('the pending migration inventory', () => {
       // inference-based ON CONFLICT only matches a partial index if it repeats
       // the predicate.
       '223_notifications_outbox_link.sql',
+      // 224 WRITTEN 2026-09-10, not applied. One GRANT. EXECUTE on
+      // fn_record_recent_search is held by postgres and service_role only, so
+      // the shopper's own client is refused at the grant before the body runs
+      // -- and the body is correct, it returns immediately without a session.
+      // Measured: `RLS denied: POST rpc:fn_record_recent_search` 39 times in
+      // eight hours in Sentry (the anon half, fixed in code beside this file),
+      // and user_recent_searches holding ZERO rows (the authenticated half,
+      // which is this). anon is deliberately NOT granted: the function keys on
+      // auth.uid(), so the grant would buy nothing and put an unauthenticated
+      // caller one edit away from a definer function over a per-user table.
+      '224_grant_recent_search_execute.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
