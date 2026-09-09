@@ -85,11 +85,18 @@ export type NotificationKind =
   /** First successful sign-in. Deduped on the user id, so only the first one lands. */
   | 'welcome'
   /**
-   * Fulfilment complete: the order moved to `fulfilled`. Enqueued by the
-   * trigger in migrations/pending/183, so it fires for every writer of the
-   * transition, the admin console and the till app alike. Not yet accepted by
-   * the production CHECK constraint; the builder ships first so an approved 183
-   * finds the drain already able to render the rows it creates.
+   * Fulfilment complete: the order moved to `fulfilled`. Enqueued by
+   * `trg_orders_notify_shipped`, so it fires for every writer of the
+   * transition, the admin console and the till app alike.
+   *
+   * THIS PARAGRAPH USED TO SAY THE OPPOSITE. It said the trigger was in
+   * `migrations/pending/183` and that the kind was "not yet accepted by the
+   * production CHECK constraint". Both halves were measured false on
+   * 2026-09-10: `pg_get_functiondef` returns the live trigger function, and
+   * `notification_outbox_kind_check` carries `order_shipped`. 183 was applied
+   * on 2026-09-09 and APPLY-ORDER.md records it; this comment was not updated
+   * with it, so the repository described a live customer-facing mail as dead.
+   * The same failure `outbox-kinds.test.ts` exists to catch one list over.
    */
   | 'order_shipped'
   /**

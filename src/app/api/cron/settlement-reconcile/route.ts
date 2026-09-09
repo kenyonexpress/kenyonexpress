@@ -69,10 +69,14 @@ const ALERT_ROW_CAP = 20
 
 /**
  * The kind is not in production's `notification_outbox_kind_check` yet; it
- * arrives with migrations/pending/214. Until that is applied every enqueue
- * fails with 23514, which this reads and carries on from, exactly as the
- * wishlist alerts do for `price_drop`. Degrading to "found the problems, could
- * not mail about them, said so in the log" beats throwing in a cron at 04:20.
+ * arrives with migrations/pending/214. Re-measured 2026-09-10: the live check
+ * carries sixteen kinds and `settlement_gap` is not one of them, so until 214
+ * is applied every enqueue here fails with 23514, which this reads and carries
+ * on from. Degrading to "found the problems, could not mail about them, said so
+ * in the log" beats throwing in a cron at 04:20.
+ *
+ * The `price_drop` comparison this used to draw is gone: that kind IS accepted
+ * now, and citing it as a fellow-rejected kind made a live path read as dead.
  */
 const KIND_NOT_ACCEPTED = '23514'
 
