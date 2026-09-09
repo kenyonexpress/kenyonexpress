@@ -1,5 +1,16 @@
 # קו בסיס דאטה: פרודקשן 19.08.2026
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a production data baseline, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 ענף: `phase5/homepage`, והמשך ב-`feat/seed-data`.
 סעיפים 1-6 נכתבו בלי שאילתה חדשה למרוחק: המספרים בסעיף 1 הם עובדת היום כפי שנמסרה, והשאר ניתוח מול מדידות קודמות ומול מפרטי החנות. **סעיף 7 הוא מדידה.** הוא הורץ מול הפרודקשן ב-19.08 ב-SELECT בלבד, והוא מתקן חלק מההיסק שמעליו.
 

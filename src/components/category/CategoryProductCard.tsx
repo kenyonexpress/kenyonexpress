@@ -3,6 +3,7 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -51,7 +52,7 @@ export type CategoryProduct = {
 }
 
 function formatPrice(value: number): string {
-  return `₪${Math.round(value)}`
+  return shekelsFromIlsRounded(value)
 }
 
 function discountPercent(price: number, old: number): number {

@@ -1,4 +1,13 @@
-/** Auto-extracted from refs/ke_live_home.html (753KB) */
+/**
+ * Auto-extracted from refs/ke_live_home.html (753KB). A RECORD of what live
+ * shows, not content this site renders -- nothing imports the slides here.
+ *
+ * The `image` values are live's own URLs. They used to be local paths under
+ * /images/hero/slider/, and those ten files were deleted on 2026-09-04: they
+ * were Electro's demo photography (iPhone, iPad, Gear watches, MacBook, and a
+ * mockup of Electro's own storefront). Live still serves them, which is exactly
+ * what this file is here to record.
+ */
 
 export type RevLayer = {
   id: string
@@ -68,7 +77,8 @@ export const KE_LIVE_REV_SLIDES: RevSlide[] = [
         dataXy: 'xo:364px,484px,361px,325px;y:t,m,m,m;yo:21px,0,0,-23px;',
         dataDim: 'w:370px,200px,200px,170px;h:495px,268px,268px,227px;',
         // animated WebP, same frames, a quarter of the bytes; see assets.ts
-        image: '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
+        image:
+          'https://kenyonexpress.co.il/wp-content/uploads/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
         zIndex: '5',
       },
       {
@@ -140,7 +150,7 @@ export const KE_LIVE_REV_SLIDES: RevSlide[] = [
         dataText: 'l:22;a:inherit;',
         dataXy: 'xo:380px,380px,398px,318px;yo:-15px,-15px,10px,33px;',
         dataDim: 'w:488px,488px,309px,273px;h:447px,447px,283px,250px;',
-        image: '/images/hero/slider/redPhone-1-1.png',
+        image: 'https://kenyonexpress.co.il/wp-content/uploads/redPhone-1-1.png',
         zIndex: '5',
       },
       {
@@ -212,7 +222,7 @@ export const KE_LIVE_REV_SLIDES: RevSlide[] = [
         dataText: 'l:22;a:inherit;',
         dataXy: 'xo:353px,353px,398px,318px;yo:17px,17px,10px,33px;',
         dataDim: 'w:410px,410px,309px,273px;h:376px,376px,283px,250px;',
-        image: '/images/hero/slider/Smartwatches1.png',
+        image: 'https://kenyonexpress.co.il/wp-content/uploads/Smartwatches1.png',
         zIndex: '5',
       },
       {
@@ -284,7 +294,7 @@ export const KE_LIVE_REV_SLIDES: RevSlide[] = [
         dataText: 'l:22;a:inherit;',
         dataXy: 'xo:358px,358px,398px,318px;yo:9px,9px,10px,33px;',
         dataDim: 'w:428px,428px,309px,273px;h:392px,392px,283px,250px;',
-        image: '/images/hero/slider/iapdlap.png',
+        image: 'https://kenyonexpress.co.il/wp-content/uploads/iapdlap.png',
         zIndex: '5',
       },
       {
@@ -356,7 +366,8 @@ export const KE_LIVE_REV_SLIDES: RevSlide[] = [
         dataText: 'w:normal;s:20,20,18,13;l:0,0,23,17;',
         dataXy: 'xo:25px,25px,23px,17px;yo:222px,222px,205px,154px;',
         dataDim: 'w:286px,286px,264px,199px;h:46px,46px,42px,31px;',
-        image: '/images/hero/slider/Screen-Shot-2021-11-12-at-0.20.17.png',
+        image:
+          'https://kenyonexpress.co.il/wp-content/uploads/Screen-Shot-2021-11-12-at-0.20.17.png',
         zIndex: '8',
       },
       {
@@ -389,7 +400,8 @@ export const KE_LIVE_REV_SLIDES: RevSlide[] = [
         dataText: 'l:22;a:inherit;',
         dataXy: 'xo:347px,347px,429px,306px;yo:-1px,-1px,16px,33px;',
         dataDim: 'w:419px,419px,258px,239px;h:425px,425px,289px,267px;',
-        image: '/images/hero/slider/Screen-Shot-2021-11-09-at-6.41.46.png',
+        image:
+          'https://kenyonexpress.co.il/wp-content/uploads/Screen-Shot-2021-11-09-at-6.41.46.png',
         zIndex: '5',
       },
     ],

@@ -55,6 +55,8 @@ interface Props {
   variants?: ProductVariant[]
   categories: Pick<Category, 'id' | 'name_he'>[]
   suppliers?: SupplierOption[]
+  /** Content-uploader: hide commission and price fields. Server strips them too. */
+  hidePricing?: boolean
 }
 
 const INITIAL_STATE: ProductFormState = null
@@ -77,6 +79,7 @@ export default function ProductForm({
   variants: initVariants = [],
   categories,
   suppliers = [],
+  hidePricing = false,
 }: Props) {
   const [state, action, pending] = useActionState(upsertProduct, INITIAL_STATE)
   const [images, setImages] = useState<string[]>(
@@ -371,21 +374,41 @@ export default function ProductForm({
           </p>
         </div>
         <div>
-          <label htmlFor="prod-status" className="block text-xs font-medium text-gray-700 mb-1">
+          <label htmlFor="prod-status" className="mb-1 block text-xs font-medium text-gray-700">
             סטטוס *
           </label>
-          <select
-            id="prod-status"
-            name="status"
-            defaultValue={product?.status ?? 'draft'}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          >
-            <option value="draft">טיוטה</option>
-            <option value="active">פעיל</option>
-            <option value="paused">מושהה</option>
-            <option value="archived">ארכיון</option>
-          </select>
+          {hidePricing ? (
+            <>
+              <input type="hidden" name="status" value="draft" />
+              <p
+                id="prod-status"
+                className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+              >
+                {product?.status === 'active'
+                  ? 'פעיל (רק מנהל משנה פרסום)'
+                  : product?.status === 'paused'
+                    ? 'מושהה'
+                    : product?.status === 'archived'
+                      ? 'ארכיון'
+                      : product?.status === 'sold_out'
+                        ? 'אזל'
+                        : 'טיוטה'}
+              </p>
+            </>
+          ) : (
+            <select
+              id="prod-status"
+              name="status"
+              defaultValue={product?.status ?? 'draft'}
+              required
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="draft">טיוטה</option>
+              <option value="active">פעיל</option>
+              <option value="paused">מושהה</option>
+              <option value="archived">ארכיון</option>
+            </select>
+          )}
         </div>
       </div>
 
@@ -429,60 +452,17 @@ export default function ProductForm({
       </div>
 
       {/* Money: the four per-product knobs. No default exists for any of them. */}
-      <div className="border-t border-gray-100 pt-5 space-y-4">
-        <div>
+      {hidePricing ? (
+        <div className="space-y-4 border-t border-gray-100 pt-5">
           <p className="text-sm font-semibold text-gray-700">מחירים ועמלות</p>
-          <p className="text-xs text-gray-500 mt-0.5">
-            כל הערכים נקבעים למוצר הזה בלבד. אין ברירת מחדל ואין אחוז קבוע במערכת. שינוי כאן חל על
-            הזמנות עתידיות בלבד.
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            מחירים ועמלות נשמרים למנהל. אפשר לערוך תוכן, תמונות וקטגוריה. פרסום למוצר פעיל דורש
+            מנהל.
           </p>
-          <p className="mt-2 text-xs text-gray-600">
-            <span className="font-medium">סוג העמלה: {commissionType.label}</span>{' '}
-            <span className="text-gray-500">
-              נקבע לפי סוג המוצר, לא נבחר בנפרד. עמלת הפלטפורמה חלה על {commissionType.baseLabel}
-            </span>
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="kenyon_price" className="block text-xs font-medium text-gray-700 mb-1">
-              מחיר רגיל (₪) *
-            </label>
-            <input
-              id="kenyon_price"
-              name="kenyon_price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={kenyonPrice}
-              onChange={(e) => setKenyonPrice(e.target.value)}
-              required
-              dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
-            <p className="mt-1 text-xs text-gray-500">מחיר המחירון של בית העסק</p>
-          </div>
-          <div>
-            <label htmlFor="full_price" className="block text-xs font-medium text-gray-700 mb-1">
-              מחיר לפני הנחה (₪)
-            </label>
-            <input
-              id="full_price"
-              name="full_price"
-              type="number"
-              min="0"
-              step="0.01"
-              defaultValue={product?.full_price ?? ''}
-              dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
-            <p className="mt-1 text-xs text-gray-500">מוצג מחוק בעמוד המוצר</p>
-          </div>
           <div>
             <label
               htmlFor="stock_quantity"
-              className="block text-xs font-medium text-gray-700 mb-1"
+              className="mb-1 block text-xs font-medium text-gray-700"
             >
               מלאי
             </label>
@@ -494,89 +474,16 @@ export default function ProductForm({
               step="1"
               defaultValue={product?.stock_quantity ?? ''}
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="platform_percent"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              עמלת פלטפורמה (%) *
-            </label>
-            <input
-              id="platform_percent"
-              name="platform_percent"
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={platformPercent}
-              onChange={(e) => handlePlatformPercent(e.target.value)}
-              required
-              dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="supplier_split_percent"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              אחוז לספק (%) *
-            </label>
-            <input
-              id="supplier_split_percent"
-              name="supplier_split_percent"
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={supplierSplit}
-              onChange={(e) => handleSupplierSplit(e.target.value)}
-              dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-gray-500 -mt-2">
-          שני החצאים נשמרים ומצטרפים תמיד ל-100%. עדכון אחד מעדכן את השני.{' '}
-          {isCouponProduct
-            ? 'החלוקה חלה על הסכום שמשולם באתר בלבד, לא על היתרה שנגבית בבית העסק.'
-            : 'החלוקה חלה על מלוא הסכום שמשולם באתר.'}
-        </p>
-
-        {isCouponProduct ? (
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label
-                htmlFor="coupon_price_ils"
-                className="block text-xs font-medium text-gray-700 mb-1"
-              >
-                מחיר הקופון באתר (₪) *
-              </label>
-              <input
-                id="coupon_price_ils"
-                name="coupon_price_ils"
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={couponPrice}
-                onChange={(e) => setCouponPrice(e.target.value)}
-                dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-              />
-              <p className="mt-1 text-xs text-gray-500">סכום מוחלט, לא אחוז</p>
-            </div>
+          {isCouponProduct ? (
             <div>
               <label
                 htmlFor="coupon_expiry_days"
-                className="block text-xs font-medium text-gray-700 mb-1"
+                className="mb-1 block text-xs font-medium text-gray-700"
               >
-                תוקף השובר (ימים) *
+                תוקף השובר (ימים)
               </label>
               <input
                 id="coupon_expiry_days"
@@ -586,136 +493,328 @@ export default function ProductForm({
                 step="1"
                 defaultValue={product?.coupon_expiry_days ?? ''}
                 dir="ltr"
+                className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="space-y-4 border-t border-gray-100 pt-5">
+          <div>
+            <p className="text-sm font-semibold text-gray-700">מחירים ועמלות</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              כל הערכים נקבעים למוצר הזה בלבד. אין ברירת מחדל ואין אחוז קבוע במערכת. שינוי כאן חל על
+              הזמנות עתידיות בלבד.
+            </p>
+            <p className="mt-2 text-xs text-gray-600">
+              <span className="font-medium">סוג העמלה: {commissionType.label}</span>{' '}
+              <span className="text-gray-500">
+                נקבע לפי סוג המוצר, לא נבחר בנפרד. עמלת הפלטפורמה חלה על {commissionType.baseLabel}
+              </span>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label
+                htmlFor="kenyon_price"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מחיר רגיל (₪) *
+              </label>
+              <input
+                id="kenyon_price"
+                name="kenyon_price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={kenyonPrice}
+                onChange={(e) => setKenyonPrice(e.target.value)}
+                required
+                dir="ltr"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
-              <p className="mt-1 text-xs text-gray-500">מיום הרכישה</p>
+              <p className="mt-1 text-xs text-gray-500">מחיר המחירון של בית העסק</p>
             </div>
             <div>
-              <span className="block text-xs font-medium text-gray-700 mb-1">
-                אחוז ההנחה לתצוגה
-              </span>
-              <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600">
-                {couponBadgePercent === null ? '-' : `${couponBadgePercent}%`}
-              </div>
-              <p className="mt-1 text-xs text-gray-500">מחושב מהמחירים, לא נקבע ידנית</p>
+              <label htmlFor="full_price" className="block text-xs font-medium text-gray-700 mb-1">
+                מחיר לפני הנחה (₪)
+              </label>
+              <input
+                id="full_price"
+                name="full_price"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={product?.full_price ?? ''}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">מוצג מחוק בעמוד המוצר</p>
+            </div>
+            <div>
+              <label
+                htmlFor="stock_quantity"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מלאי
+              </label>
+              <input
+                id="stock_quantity"
+                name="stock_quantity"
+                type="number"
+                min="0"
+                step="1"
+                defaultValue={product?.stock_quantity ?? ''}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
             </div>
           </div>
-        ) : isRecurring ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label
-                  htmlFor="recurring_amount_ils"
-                  className="block text-xs font-medium text-gray-700 mb-1"
-                >
-                  סכום החיוב התקופתי (₪) *
-                </label>
-                <input
-                  id="recurring_amount_ils"
-                  name="recurring_amount_ils"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={recurringAmount}
-                  onChange={(e) => setRecurringAmount(e.target.value)}
-                  required
-                  dir="ltr"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                />
-                <p className="mt-1 text-xs text-gray-500">נגבה בכל מחזור, לא סכום חד פעמי</p>
-              </div>
-              <div>
-                <label
-                  htmlFor="billing_interval"
-                  className="block text-xs font-medium text-gray-700 mb-1"
-                >
-                  תדירות חיוב *
-                </label>
-                <select
-                  id="billing_interval"
-                  name="billing_interval"
-                  value={billingInterval}
-                  onChange={(e) => setBillingInterval(e.target.value as BillingInterval)}
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                >
-                  {BILLING_INTERVALS.map((interval) => (
-                    <option key={interval} value={interval}>
-                      {BILLING_INTERVAL_LABELS[interval]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="billing_interval_count"
-                  className="block text-xs font-medium text-gray-700 mb-1"
-                >
-                  מכפיל תדירות
-                </label>
-                <input
-                  id="billing_interval_count"
-                  name="billing_interval_count"
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={billingIntervalCount}
-                  onChange={(e) => setBillingIntervalCount(e.target.value)}
-                  dir="ltr"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  {cadenceLabel(billingInterval, normalizeIntervalCount(billingIntervalCount) ?? 1)}
-                </p>
-              </div>
-            </div>
 
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
-              <p className="font-medium">איך החיוב החוזר עובד</p>
-              <p className="mt-1 leading-relaxed">
-                בקנייה הראשונה הכרטיס מאושר ונשמר כטוקן של Cardcom. מהמחזור השני והלאה החיוב מתבצע
-                אוטומטית מול הטוקן, בלי שהלקוח נכנס לאתר. הלקוח יכול לבטל בכל רגע מהאזור האישי,
-                והביטול עוצר את החיוב הבא בלבד: התקופה ששולמה נמשכת עד סופה ואינה מוחזרת.
-              </p>
-            </div>
-
-            {recurringPreview && (
-              <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
-                <p className="text-xs font-semibold text-gray-700 mb-2">
-                  מה הלקוח משלם, {recurringPreview.cadenceLabel}
-                </p>
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
-                  <Row label="בכל מחזור" value={recurringPreview.chargeIls} />
-                  <Row label="בשנה" value={recurringPreview.annualIls} />
-                  <Row label="הפלטפורמה שומרת, למחזור" value={recurringPreview.platformKeepsIls} />
-                  <Row label="הספק מקבל, למחזור" value={recurringPreview.supplierGetsIls} />
-                </dl>
-              </div>
-            )}
-          </div>
-        ) : (
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
-                htmlFor="discount_percent"
+                htmlFor="platform_percent"
                 className="block text-xs font-medium text-gray-700 mb-1"
               >
-                אחוז הנחה (%) *
+                עמלת פלטפורמה (%) *
               </label>
               <input
-                id="discount_percent"
-                name="discount_percent"
+                id="platform_percent"
+                name="platform_percent"
                 type="number"
                 min="0"
                 max="100"
                 step="0.01"
-                value={discountPercent}
-                onChange={(e) => setDiscountPercent(e.target.value)}
+                value={platformPercent}
+                onChange={(e) => handlePlatformPercent(e.target.value)}
+                required
                 dir="ltr"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
-              <p className="mt-1 text-xs text-gray-500">מקטין בפועל את הסכום שנגבה באתר</p>
             </div>
+            <div>
+              <label
+                htmlFor="supplier_split_percent"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                אחוז לספק (%) *
+              </label>
+              <input
+                id="supplier_split_percent"
+                name="supplier_split_percent"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={supplierSplit}
+                onChange={(e) => handleSupplierSplit(e.target.value)}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 -mt-2">
+            שני החצאים נשמרים ומצטרפים תמיד ל-100%. עדכון אחד מעדכן את השני.{' '}
+            {isCouponProduct
+              ? 'החלוקה חלה על הסכום שמשולם באתר בלבד, לא על היתרה שנגבית בבית העסק.'
+              : 'החלוקה חלה על מלוא הסכום שמשולם באתר.'}
+          </p>
+
+          {isCouponProduct ? (
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label
+                  htmlFor="coupon_price_ils"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  מחיר הקופון באתר (₪) *
+                </label>
+                <input
+                  id="coupon_price_ils"
+                  name="coupon_price_ils"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={couponPrice}
+                  onChange={(e) => setCouponPrice(e.target.value)}
+                  dir="ltr"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+                <p className="mt-1 text-xs text-gray-500">סכום מוחלט, לא אחוז</p>
+              </div>
+              <div>
+                <label
+                  htmlFor="coupon_expiry_days"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  תוקף השובר (ימים) *
+                </label>
+                <input
+                  id="coupon_expiry_days"
+                  name="coupon_expiry_days"
+                  type="number"
+                  min="1"
+                  step="1"
+                  defaultValue={product?.coupon_expiry_days ?? ''}
+                  dir="ltr"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+                <p className="mt-1 text-xs text-gray-500">מיום הרכישה</p>
+              </div>
+              <div>
+                <span className="block text-xs font-medium text-gray-700 mb-1">
+                  אחוז ההנחה לתצוגה
+                </span>
+                <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600">
+                  {couponBadgePercent === null ? '-' : `${couponBadgePercent}%`}
+                </div>
+                <p className="mt-1 text-xs text-gray-500">מחושב מהמחירים, לא נקבע ידנית</p>
+              </div>
+            </div>
+          ) : isRecurring ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label
+                    htmlFor="recurring_amount_ils"
+                    className="block text-xs font-medium text-gray-700 mb-1"
+                  >
+                    סכום החיוב התקופתי (₪) *
+                  </label>
+                  <input
+                    id="recurring_amount_ils"
+                    name="recurring_amount_ils"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={recurringAmount}
+                    onChange={(e) => setRecurringAmount(e.target.value)}
+                    required
+                    dir="ltr"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">נגבה בכל מחזור, לא סכום חד פעמי</p>
+                </div>
+                <div>
+                  <label
+                    htmlFor="billing_interval"
+                    className="block text-xs font-medium text-gray-700 mb-1"
+                  >
+                    תדירות חיוב *
+                  </label>
+                  <select
+                    id="billing_interval"
+                    name="billing_interval"
+                    value={billingInterval}
+                    onChange={(e) => setBillingInterval(e.target.value as BillingInterval)}
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  >
+                    {BILLING_INTERVALS.map((interval) => (
+                      <option key={interval} value={interval}>
+                        {BILLING_INTERVAL_LABELS[interval]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label
+                    htmlFor="billing_interval_count"
+                    className="block text-xs font-medium text-gray-700 mb-1"
+                  >
+                    מכפיל תדירות
+                  </label>
+                  <input
+                    id="billing_interval_count"
+                    name="billing_interval_count"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={billingIntervalCount}
+                    onChange={(e) => setBillingIntervalCount(e.target.value)}
+                    dir="ltr"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    {cadenceLabel(
+                      billingInterval,
+                      normalizeIntervalCount(billingIntervalCount) ?? 1,
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
+                <p className="font-medium">איך החיוב החוזר עובד</p>
+                <p className="mt-1 leading-relaxed">
+                  בקנייה הראשונה הכרטיס מאושר ונשמר כטוקן של Cardcom. מהמחזור השני והלאה החיוב מתבצע
+                  אוטומטית מול הטוקן, בלי שהלקוח נכנס לאתר. הלקוח יכול לבטל בכל רגע מהאזור האישי,
+                  והביטול עוצר את החיוב הבא בלבד: התקופה ששולמה נמשכת עד סופה ואינה מוחזרת.
+                </p>
+              </div>
+
+              {recurringPreview && (
+                <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">
+                    מה הלקוח משלם, {recurringPreview.cadenceLabel}
+                  </p>
+                  <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+                    <Row label="בכל מחזור" value={recurringPreview.chargeIls} />
+                    <Row label="בשנה" value={recurringPreview.annualIls} />
+                    <Row
+                      label="הפלטפורמה שומרת, למחזור"
+                      value={recurringPreview.platformKeepsIls}
+                    />
+                    <Row label="הספק מקבל, למחזור" value={recurringPreview.supplierGetsIls} />
+                  </dl>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="discount_percent"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  אחוז הנחה (%) *
+                </label>
+                <input
+                  id="discount_percent"
+                  name="discount_percent"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={discountPercent}
+                  onChange={(e) => setDiscountPercent(e.target.value)}
+                  dir="ltr"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+                <p className="mt-1 text-xs text-gray-500">מקטין בפועל את הסכום שנגבה באתר</p>
+              </div>
+              <div>
+                <label
+                  htmlFor="offer_valid_until"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  המבצע בתוקף עד
+                </label>
+                <input
+                  id="offer_valid_until"
+                  name="offer_valid_until"
+                  type="date"
+                  defaultValue={product?.offer_valid_until?.slice(0, 10) ?? ''}
+                  dir="ltr"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+            </div>
+          )}
+
+          {isCouponProduct && (
             <div>
               <label
                 htmlFor="offer_valid_until"
@@ -729,58 +828,39 @@ export default function ProductForm({
                 type="date"
                 defaultValue={product?.offer_valid_until?.slice(0, 10) ?? ''}
                 dir="ltr"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full max-w-xs border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
-          </div>
-        )}
+          )}
 
-        {isCouponProduct && (
-          <div>
-            <label
-              htmlFor="offer_valid_until"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              המבצע בתוקף עד
-            </label>
-            <input
-              id="offer_valid_until"
-              name="offer_valid_until"
-              type="date"
-              defaultValue={product?.offer_valid_until?.slice(0, 10) ?? ''}
-              dir="ltr"
-              className="w-full max-w-xs border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
-          </div>
-        )}
-
-        {/* Consequence of the numbers above, before saving them. A recurring
+          {/* Consequence of the numbers above, before saving them. A recurring
             product already showed its own per-cycle and annual breakdown, and a
             second box quoting "one unit" of a subscription would say nothing
             the first did not. */}
-        <div
-          className={`rounded-lg bg-gray-50 border border-gray-200 p-4 ${isRecurring ? 'hidden' : ''}`}
-        >
-          <p className="text-xs font-semibold text-gray-700 mb-2">מה יקרה בפועל ליחידה אחת</p>
-          {preview === null ? (
-            <p className="text-xs text-gray-500">
-              השלימו מחיר, עמלה{isCouponProduct ? ' ומחיר קופון' : ''} כדי לראות את החלוקה.
-            </p>
-          ) : (
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
-              <Row label="הלקוח משלם באתר" value={preview.paidOnlineIls} />
-              {isCouponProduct && (
-                <Row label="הלקוח משלים בבית העסק" value={preview.balanceAtBusinessIls} />
-              )}
-              <Row label="הפלטפורמה שומרת" value={preview.platformKeepsIls} />
-              <Row label="הספק מקבל" value={preview.supplierGetsIls} />
-              <div className="col-span-2 mt-1 text-gray-500">
-                אחוז ההנחה שיוצג: {preview.discountPercent}%
-              </div>
-            </dl>
-          )}
+          <div
+            className={`rounded-lg bg-gray-50 border border-gray-200 p-4 ${isRecurring ? 'hidden' : ''}`}
+          >
+            <p className="text-xs font-semibold text-gray-700 mb-2">מה יקרה בפועל ליחידה אחת</p>
+            {preview === null ? (
+              <p className="text-xs text-gray-500">
+                השלימו מחיר, עמלה{isCouponProduct ? ' ומחיר קופון' : ''} כדי לראות את החלוקה.
+              </p>
+            ) : (
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+                <Row label="הלקוח משלם באתר" value={preview.paidOnlineIls} />
+                {isCouponProduct && (
+                  <Row label="הלקוח משלים בבית העסק" value={preview.balanceAtBusinessIls} />
+                )}
+                <Row label="הפלטפורמה שומרת" value={preview.platformKeepsIls} />
+                <Row label="הספק מקבל" value={preview.supplierGetsIls} />
+                <div className="col-span-2 mt-1 text-gray-500">
+                  אחוז ההנחה שיוצג: {preview.discountPercent}%
+                </div>
+              </dl>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Featured + Coupon toggles */}
       <div className="flex flex-col gap-3">

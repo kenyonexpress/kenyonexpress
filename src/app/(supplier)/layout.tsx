@@ -60,7 +60,7 @@ export default function SupplierGroupLayout({ children }: { children: React.Reac
           names - doing that gave 53 and was wrong. */}
       <Suspense
         fallback={
-          <div className="h-[49.5px] border-b border-gray-200 bg-white" aria-hidden="true" />
+          <div className="h-supplier-header border-b border-gray-200 bg-white" aria-hidden="true" />
         }
       >
         <SupplierFrame>{children}</SupplierFrame>

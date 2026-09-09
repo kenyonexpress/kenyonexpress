@@ -38,7 +38,6 @@ async function runUpsertVendor(
     bank_name: formData.get('bank_name') || null,
     bank_branch: formData.get('bank_branch') || null,
     bank_account: formData.get('bank_account') || null,
-    commission_rate: formData.get('commission_rate') ?? '90',
     logo_url: formData.get('logo_url') || null,
     status: formData.get('status'),
   }
@@ -55,7 +54,6 @@ async function runUpsertVendor(
     business_name: fields.business_name,
     business_id: fields.business_id,
     contact_email: fields.contact_email,
-    commission_rate: fields.commission_rate,
     status: fields.status,
   }
 
@@ -90,6 +88,14 @@ async function runUpsertVendor(
 
   revalidatePath('/admin/vendors')
   if (id) revalidatePath(`/admin/vendors/${id}`)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { old: null, new: { id: id ?? null, business_name: fields.business_name } },
+  })
   return { success: id ? 'ספק עודכן' : 'ספק נוצר' }
 }
 
@@ -128,38 +134,21 @@ async function runUpdateVendorStatus(
 
 async function runUpdateVendorCommission(
   _: VendorActionState,
-  formData: FormData,
+  _formData: FormData,
 ): Promise<VendorActionState> {
-  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    session = await requireAdminSession()
+    await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
 
-  const id = formData.get('id') as string
-  const rate = z.coerce.number().min(0).max(100).safeParse(formData.get('commission_rate'))
-  if (!rate.success) return { error: 'עמלה לא תקינה' }
-
-  const supabase = await createClient()
-  const { error } = await supabase
-    .from('vendors')
-    .update({ commission_rate: rate.data })
-    .eq('id', id)
-  if (error) return { error: error.message }
-
-  await writeAuditLog({
-    actorId: session.userId,
-    actorRole: session.role,
-    action: 'updated',
-    entityType: 'vendors',
-    entityId: id,
-    changes: { commission_rate: rate.data },
-  })
-
-  revalidatePath('/admin/vendors')
-  revalidatePath(`/admin/vendors/${id}`)
-  return { success: 'עמלה עודכנה' }
+  // `vendors.commission_rate` was ARCHIVED by migration 112 into
+  // `legacy_percent_archive_112`; the live table has no such column, so the
+  // UPDATE this used to run failed 42703 in production on every call. The
+  // stale generated types hid that for five weeks. Commission now lives
+  // per-product (`products.platform_percent`, snapshotted to order_items at
+  // checkout), so a per-vendor rate is not a thing this model has.
+  return { error: 'עמלה אינה נקבעת ברמת הספק. העמלה מוגדרת פר מוצר בשדה platform_percent.' }
 }
 
 async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {

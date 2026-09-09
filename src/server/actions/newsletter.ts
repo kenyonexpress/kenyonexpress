@@ -6,6 +6,7 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { OFF_PAGE } from '@/styles/tokens'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
@@ -106,11 +107,11 @@ async function runSubscribeToNewsletter(
     to: email,
     subject: 'אישור הרשמה לניוזלטר של קניון אקספרס',
     tag: 'newsletter_confirm',
-    html: `<div dir="rtl" style="font-family:system-ui,sans-serif;text-align:right">
+    html: `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif;text-align:right">
       <h1 style="font-size:20px">רגע לפני שנתחיל</h1>
       <p>נרשמת לרשימת הדיוור של קניון אקספרס. לאישור ההרשמה יש ללחוץ:</p>
-      <p><a href="${confirmUrl}" style="background:#000;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">אישור ההרשמה</a></p>
-      <p style="color:#666;font-size:13px">אם לא נרשמת, אפשר להתעלם מהמייל הזה ולא יישלח אליך דבר.</p>
+      <p><a href="${confirmUrl}" style="background:${OFF_PAGE.brand};color:${OFF_PAGE.ink};font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">אישור ההרשמה</a></p>
+      <p style="color:${OFF_PAGE.muted};font-size:13px">אם לא נרשמת, אפשר להתעלם מהמייל הזה ולא יישלח אליך דבר.</p>
     </div>`,
   })
 

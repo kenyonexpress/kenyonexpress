@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -80,25 +80,33 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   fn_ensure_referral_code: ['src/server/actions/referrals.ts'],
 }
 
-const PENDING_DIR = 'migrations/pending'
+// Both migration directories. 143-145 were applied through MCP on 2026-09-03
+// and moved to `applied/`; the revokes are LIVE, so the caller check matters
+// more now, not less. Reading only `pending/` turned this whole file into a
+// no-op the moment the files moved, which is what the vacuity check below
+// caught.
+const REVOKE_DIRS = ['migrations/pending', 'migrations/applied']
 const CODE_ROOTS = ['src', 'apps']
 const SKIP_DIRS = new Set(['node_modules', '.next', '.expo', 'dist', 'build', 'coverage'])
 
 /** Function names a pending migration takes EXECUTE away from a client role. */
 function revokedFunctionNames(): string[] {
-  const dir = resolve(process.cwd(), PENDING_DIR)
   const names = new Set<string>()
 
-  for (const file of readdirSync(dir).filter((n) => n.endsWith('.sql'))) {
-    const sql = readFileSync(join(dir, file), 'utf8')
-    for (const rawLine of sql.split('\n')) {
-      const line = rawLine.trim()
-      // Comment lines quote statements constantly in this directory - rollback
-      // blocks, verification queries, the "what this does not do" sections. Only
-      // an executable line revokes anything.
-      if (line.startsWith('--') || line.length === 0) continue
-      const match = /REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.(\w+)/i.exec(line)
-      if (match?.[1]) names.add(match[1])
+  for (const relative of REVOKE_DIRS) {
+    const dir = resolve(process.cwd(), relative)
+    if (!existsSync(dir)) continue
+    for (const file of readdirSync(dir).filter((n) => n.endsWith('.sql'))) {
+      const sql = readFileSync(join(dir, file), 'utf8')
+      for (const rawLine of sql.split('\n')) {
+        const line = rawLine.trim()
+        // Comment lines quote statements constantly in this directory - rollback
+        // blocks, verification queries, the "what this does not do" sections. Only
+        // an executable line revokes anything.
+        if (line.startsWith('--') || line.length === 0) continue
+        const match = /REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.(\w+)/i.exec(line)
+        if (match?.[1]) names.add(match[1])
+      }
     }
   }
   return [...names].sort()

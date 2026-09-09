@@ -547,7 +547,7 @@ migrations/pending/130_payment_events.sql
 | ‏`coupons.used_count` לא מתקדם | `max_uses` נאכף כקריאה של מונה שאף חלק בזרימה לא מקדם | פתוח |
 | ‏iframe חסום, אין fallback | F23 | פתוח |
 | חיוב כפול מטרמינל | זיהוי יומי בלבד, טיפול ידני | §13 |
-| ‏`payment_events` | טיוטה בלבד | §11 |
+| ‏`payment_events` | **חי בפרודקשן** מ-01.09, ‏38 ערכי `payment_event_type` | §11 |
 | מיזוג עגלה: אין טסט לכפל מיזוג | §3.3 | פתוח |
 
 ### 12.3 ‏Definition of done לזרימה הזאת

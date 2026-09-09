@@ -235,6 +235,19 @@ export default function CheckoutForm({
   }
 
   const errorFor = (field: string): string | undefined => stepErrors[field]
+  /**
+   * The id of a field's error node, and undefined when it has no error.
+   *
+   * `aria-invalid` alone says "this is wrong" and never says WHAT is wrong: a
+   * screen reader lands on the input, announces "invalid", and the Hebrew
+   * message sitting next to it is not part of the accessible description. The
+   * fields carried `aria-invalid` and no `aria-describedby`, so every checkout
+   * error was visible and unannounced. Israeli standard 5568 adopts WCAG 2.0
+   * AA, which makes 3.3.1 Error Identification a legal requirement here, not a
+   * nicety.
+   */
+  const errorIdFor = (field: string): string | undefined =>
+    stepErrors[field] ? `co-err-${field.replaceAll('_', '-')}` : undefined
 
   /** Derived from the committed Electro capture, not hardcoded here. */
   const confirmSections = sectionsFromElectro()
@@ -427,7 +440,7 @@ export default function CheckoutForm({
         {address.id && <input type="hidden" name="address_id" value={address.id} />}
 
         <div className="checkout-col-main">
-          <div className="checkout-step" hidden={step !== 'details'}>
+          <div className="checkout-step" data-inactive={step !== 'details' ? '' : undefined}>
             <section className="checkout-section" aria-label="פרטים אישיים">
               <h2 className="checkout-section__title">
                 <span>פרטים אישיים</span>
@@ -448,9 +461,10 @@ export default function CheckoutForm({
                         defaultValue={prefill.first_name}
                         autoComplete="given-name"
                         aria-invalid={errorFor('first_name') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('first_name')}
                       />
                       {errorFor('first_name') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-first-name" className="checkout-field__error" role="alert">
                           {errorFor('first_name')}
                         </span>
                       )}
@@ -465,9 +479,10 @@ export default function CheckoutForm({
                         defaultValue={prefill.last_name}
                         autoComplete="family-name"
                         aria-invalid={errorFor('last_name') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('last_name')}
                       />
                       {errorFor('last_name') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-last-name" className="checkout-field__error" role="alert">
                           {errorFor('last_name')}
                         </span>
                       )}
@@ -496,9 +511,10 @@ export default function CheckoutForm({
                         */
                         dir="ltr"
                         aria-invalid={errorFor('phone') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('phone')}
                       />
                       {errorFor('phone') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-phone" className="checkout-field__error" role="alert">
                           {errorFor('phone')}
                         </span>
                       )}
@@ -519,9 +535,10 @@ export default function CheckoutForm({
                         autoComplete="email"
                         dir="ltr"
                         aria-invalid={errorFor('email') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('email')}
                       />
                       {errorFor('email') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-email" className="checkout-field__error" role="alert">
                           {errorFor('email')}
                         </span>
                       )}
@@ -533,7 +550,7 @@ export default function CheckoutForm({
             </section>
           </div>
 
-          <div className="checkout-step" hidden={step !== 'address'}>
+          <div className="checkout-step" data-inactive={step !== 'address' ? '' : undefined}>
             <section className="checkout-section" aria-label="כתובת למשלוח">
               <h2 className="checkout-section__title">
                 <span>כתובת למשלוח</span>
@@ -556,9 +573,10 @@ export default function CheckoutForm({
                         defaultValue={prefill.city}
                         autoComplete="address-level2"
                         aria-invalid={errorFor('city') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('city')}
                       />
                       {errorFor('city') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-city" className="checkout-field__error" role="alert">
                           {errorFor('city')}
                         </span>
                       )}
@@ -576,9 +594,10 @@ export default function CheckoutForm({
                         defaultValue={prefill.street}
                         autoComplete="address-line1"
                         aria-invalid={errorFor('street') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('street')}
                       />
                       {errorFor('street') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span id="co-err-street" className="checkout-field__error" role="alert">
                           {errorFor('street')}
                         </span>
                       )}
@@ -592,9 +611,14 @@ export default function CheckoutForm({
                         name="street_number"
                         defaultValue={prefill.street_number}
                         aria-invalid={errorFor('street_number') ? 'true' : undefined}
+                        aria-describedby={errorIdFor('street_number')}
                       />
                       {errorFor('street_number') && (
-                        <span className="checkout-field__error" role="alert">
+                        <span
+                          id="co-err-street-number"
+                          className="checkout-field__error"
+                          role="alert"
+                        >
                           {errorFor('street_number')}
                         </span>
                       )}
@@ -627,7 +651,7 @@ export default function CheckoutForm({
                         inputMode="numeric"
                         autoComplete="postal-code"
                         aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
-                        aria-describedby={zipError ? 'co-zip-error' : undefined}
+                        aria-describedby={zipError || errorFor('zip') ? 'co-zip-error' : undefined}
                         onBlur={(event) => validateZip(event.currentTarget.value)}
                       />
                       {(zipError || errorFor('zip')) && (
@@ -731,13 +755,20 @@ export default function CheckoutForm({
           )}
         </div>
 
-        <aside className="checkout-step" hidden={step !== 'review' && step !== 'confirm'}>
+        {/* Visible on EVERY step, not just review/confirm. Live's checkout
+            keeps the "ההזמנה שלך" panel on screen beside the billing form the
+            whole way through (refs/live-checkout capture: panel x~120..470 at
+            1440 while the form is filled), and hiding it until review left our
+            second grid column empty on the step the compare gate actually
+            shoots. The step-scoped blocks inside it keep their own hidden
+            flags, so nothing interactive appears early. */}
+        <aside className="checkout-step">
           <section className="checkout-review" aria-label="ההזמנה שלך">
             <h2 className="checkout-section__title">
               <span>ההזמנה שלך</span>
             </h2>
 
-            <div className="checkout-step" hidden={step === 'confirm'}>
+            <div className="checkout-step" data-inactive={step === 'confirm' ? '' : undefined}>
               <table className="checkout-review__table">
                 <thead>
                   <tr>
@@ -783,7 +814,7 @@ export default function CheckoutForm({
             </div>
 
             <div className="checkout-payment">
-              <div className="checkout-step" hidden={step !== 'confirm'}>
+              <div className="checkout-step" data-inactive={step !== 'confirm' ? '' : undefined}>
                 {/*
                 Sourced from refs/electro-checkout-text.json, captured with a
                 real browser against Electro's own checkout. Electro has no
@@ -887,6 +918,7 @@ export default function CheckoutForm({
                     type="checkbox"
                     name="accept_terms"
                     aria-invalid={errorFor('accept_terms') ? 'true' : undefined}
+                    aria-describedby={errorIdFor('accept_terms')}
                   />
                   <span>
                     קראתי ואני מסכים לאתר תנאי שימוש{' '}
@@ -894,7 +926,7 @@ export default function CheckoutForm({
                   </span>
                 </label>
                 {errorFor('accept_terms') && (
-                  <span className="checkout-field__error" role="alert">
+                  <span id="co-err-accept-terms" className="checkout-field__error" role="alert">
                     {errorFor('accept_terms')}
                   </span>
                 )}

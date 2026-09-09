@@ -1,4 +1,5 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
+import { OFF_PAGE } from '@/styles/tokens'
 
 /**
  * The magic-link login mail, sent through Resend instead of Supabase's SMTP.
@@ -22,9 +23,18 @@ import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
  */
 
 /* Kept in lockstep with notifications.ts; brand-colour.test.ts guards the hex. */
-const BRAND = '#fed700'
-const INK = '#1a1a1a'
-const MUTED = '#6b7280'
+// Same palette as notifications.ts and voucher-email.ts, taken from the one
+// place that owns it. These three were local copies of the token values;
+// identical today, and the drift this file's own history records (#f5c518
+// against #fed700) is exactly what a local copy earns over time.
+const {
+  brand: BRAND,
+  ink: INK,
+  muted: MUTED,
+  rule: RULE,
+  paper: PAPER,
+  panelWarm: PANEL_WARM,
+} = OFF_PAGE
 
 export interface MagicLinkEmailInput {
   /** The full verification URL. Interpolated escaped, never trimmed or rebuilt. */
@@ -63,10 +73,10 @@ export function buildMagicLinkEmail(input: MagicLinkEmailInput): BuiltMagicLinkE
   ].join('\n')
 
   const html = `
-    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#f5f5f5;padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
+    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">${escapeHtml(site)}</div>
-        <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
           <div style="font-size:18px;font-weight:700;color:${INK}">כניסה לחשבון שלך</div>
           <div style="font-size:14px;color:${INK};margin-top:10px">ביקשתם להתחבר ל-${escapeHtml(site)}. הכניסה בלחיצה אחת:</div>
           <a href="${escapeHtml(link)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">כניסה לחשבון</a>

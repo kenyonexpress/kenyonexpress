@@ -1,16 +1,13 @@
 version: 2
 
-# WHICH BRANCH THESE PULL REQUESTS TARGET, AND WHY IT IS NOT THE DEFAULT.
+# These PRs target the DEFAULT branch, which is `main`.
 #
-# Dependabot opens against the repository's default branch, which is `main`.
-# `main` is 301 commits behind `phase5/homepage`, and nothing merges into it
-# today. A bot PR against it would resolve a lockfile nobody runs, run CI on a
-# tree three hundred commits stale, and be unmergeable into the branch the work
-# is actually on. So `target-branch` overrides it below.
-#
-# THIS IS TEMPORARY AND MUST BE DELETED the day phase5/homepage merges into
-# main. A `target-branch` pointing at a branch that no longer exists makes
-# Dependabot stop silently - no PRs, no error anyone sees.
+# A `target-branch: phase5/homepage` override lived here while that branch was
+# the mainline. PR #6 squash-merged it into `main` on 2026-08-31 and CLAUDE.md
+# has said "main is the only branch" since. The override was exactly the trap
+# its own comment warned about: bot PRs kept opening against a branch nobody
+# merges, resolving a lockfile nobody runs. Deleted 2026-09-02; the day the
+# override outlives its branch, Dependabot stops silently.
 
 updates:
   # ---------------------------------------------------------------------------
@@ -33,7 +30,6 @@ updates:
     # DELETE THIS LINE THE DAY phase5/homepage MERGES INTO main. See the note at
     # the top of the file: a target-branch naming a branch that no longer exists
     # stops Dependabot silently - no pull requests, and no error anyone sees.
-    target-branch: phase5/homepage
     schedule:
       interval: weekly
       day: monday
@@ -95,7 +91,6 @@ updates:
     # DELETE THIS LINE TOO on the same day, for the same reason. Both entries
     # carry it, so both have to be removed - deleting one leaves half of
     # Dependabot pointed at a branch that is gone.
-    target-branch: phase5/homepage
     schedule:
       interval: weekly
       day: monday

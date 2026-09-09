@@ -4,6 +4,7 @@ import { AFFILIATE_STATUS_LABELS, REFERRAL_STATUS_LABELS, labelFor } from '@/lib
 import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
 import { canWriteSection } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
 import type { Affiliate, AffiliateStatus, Referral } from '@/types/database'
 import Link from 'next/link'
@@ -116,7 +117,7 @@ export default async function AdminAffiliatesPage(props: {
       {
         id: 'earnings',
         header: 'רווחים',
-        cell: (a) => `₪${a.total_earnings_ils.toLocaleString('he-IL')}`,
+        cell: (a) => shekelsFromIlsRounded(a.total_earnings_ils),
       },
       {
         id: 'created_at',
@@ -183,7 +184,7 @@ export default async function AdminAffiliatesPage(props: {
       {
         id: 'bonus',
         header: 'בונוס ששולם',
-        cell: (r) => `₪${r.bonus_paid_amount_ils.toLocaleString('he-IL')}`,
+        cell: (r) => shekelsFromIlsRounded(r.bonus_paid_amount_ils),
       },
       {
         id: 'created_at',

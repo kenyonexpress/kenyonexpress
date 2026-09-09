@@ -1,6 +1,6 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { identityScopedClient } from '@/lib/supabase/bearer'
-import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -39,8 +39,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const scoped = await identityScopedClient(request)
   if (!scoped) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
-  const allowed = await checkRateLimit(`staff-pin:${scoped.identity.user.id}`, 15, 3600)
-  if (!allowed) return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
+  const decision = await rateLimit('staff-pin', scoped.identity.user.id)
+  if (!decision.allowed) {
+    return NextResponse.json(
+      { ok: false, error: 'rate_limited' },
+      { status: 429, headers: rateLimitHeaders(decision) },
+    )
+  }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {

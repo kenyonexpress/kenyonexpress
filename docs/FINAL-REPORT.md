@@ -1,5 +1,16 @@
 # KenyonExpress: final report
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a phase completion report, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 Rewritten 2026-09-01. The previous version was written 2026-08-31 and its
 headline claim, "**NOTHING HAS EVER DEPLOYED**", stopped being true a few hours
 later. It is corrected below rather than quietly edited, because the reason it

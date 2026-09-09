@@ -6,6 +6,7 @@ import {
   type UnavailableReason,
 } from '@/lib/cart/types'
 import { calculateCommission } from '@/lib/commerce/commission'
+import { isImplausibleDiscountAgorot } from '@/lib/commerce/implausible-discount'
 import { type Agorot, agorot, ilsToAgorot, multiplyAgorot } from '@/lib/commerce/money'
 import type { ProductType } from '@/types/database'
 
@@ -27,6 +28,13 @@ type ProductRow = {
   deleted_at: string | null
   images: unknown
   is_coupon_enabled: boolean
+  /**
+   * The compare-at price, and the same column the "-NN%" badge on the card
+   * divides by (`ProductCard.tsx`). Optional because it is genuinely absent on
+   * most rows -- a product with no compare-at is not discounted, which is an
+   * ordinary state and not a fault.
+   */
+  full_price?: number | null
   platform_percent?: number | null
   coupon_price_ils?: number | null
   cashback_percent?: number | null
@@ -95,8 +103,20 @@ function unavailableReason(
   variant: VariantRow | null,
   quantity: number,
   priceable: boolean,
+  /**
+   * The line's own price, already converted once by the caller. Passed in for
+   * the same reason `priceable` is: the number this refuses to sell at has to
+   * be the exact number the checkout would have charged, and converting the
+   * column a second time here is how the guard and the charge drift apart.
+   */
+  unitPrice: Agorot,
 ): UnavailableReason | null {
   if (product.status !== 'active' || product.deleted_at) return 'delisted'
+  // Before `unpriced` and before the stock reasons, because this line HAS a
+  // price and the money engine would happily charge it. See the ordering note
+  // on `UnavailableReason` and the measured threshold in
+  // `lib/commerce/implausible-discount.ts`.
+  if (isImplausibleDiscountAgorot(unitPrice, compareAtAgorot(product))) return 'price_error'
   if (!priceable) return 'unpriced'
 
   const stock = stockCeiling(product, variant)
@@ -124,6 +144,24 @@ function productType(product: ProductRow): 'physical' | 'coupon' | null {
   if (product.type === 'coupon' || product.is_coupon_enabled) return 'coupon'
   if (product.type === 'physical') return 'physical'
   return null
+}
+
+/**
+ * The compare-at price in agorot, or null when the row carries none.
+ *
+ * `full_price` is the column the "-NN%" badge on the card divides by
+ * (`ProductCard.tsx`), so the guard and the badge are reading the same pair of
+ * numbers. A badge that says -100% beside a line that sells is exactly the
+ * contradiction this is here to prevent.
+ */
+function compareAtAgorot(product: ProductRow): Agorot | null {
+  const value = product.full_price
+  if (value == null || Number.isNaN(Number(value))) return null
+  try {
+    return ilsToAgorot(Number(value).toFixed(2))
+  } catch {
+    return null
+  }
 }
 
 /** Null when the admin has not set the mandatory per-product percent yet. */
@@ -228,7 +266,7 @@ export function buildCartView(
       percent != null &&
       (type !== 'coupon' || couponPriceUnit != null) &&
       (type !== 'physical' || unitPrice > 0)
-    const reason = unavailableReason(product, variant, item.quantity, priceable)
+    const reason = unavailableReason(product, variant, item.quantity, priceable, unitPrice)
     if (priceable) {
       commissionLines.push({
         id: lineKey,

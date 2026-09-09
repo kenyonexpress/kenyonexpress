@@ -6,7 +6,14 @@ test.describe('product page', () => {
     await openFirstProduct(page)
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(page.getByText(/₪/).first()).toBeVisible()
+    // SCOPED TO THE PRODUCT'S OWN PRICE, not the first ₪ in the document.
+    // `getByText(/₪/).first()` matched whatever came first in DOM ORDER, and
+    // D21 moved the off-canvas drawer ahead of the main content in the header
+    // markup -- so it started resolving to the drawer's hidden "עד ₪99"
+    // category link and failing on a page whose price was painted correctly.
+    // The assertion wanted the price; now it names it.
+    await expect(page.locator('.pdp-summary__price')).toBeVisible()
+    await expect(page.locator('.pdp-summary__price')).toContainText('₪')
     await expect(page.getByRole('navigation', { name: 'נתיב ניווט' })).toBeVisible()
     // .first(): related-products cards carry their own add-to-cart buttons
     await expect(

@@ -1,5 +1,21 @@
 # ARCHITECTURE-CHECKOUT-CARDCOM.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. Current: `docs/ARCHITECTURE-OVERVIEW.md` §4 and `docs/CARDCOM-ARCHITECTURE.md`.**
+>
+> Two corrections:
+>
+> 1. **No escrow is created at checkout.** The coupon prepayment is platform
+>    revenue at the moment the charge succeeds. `finalize.ts` writes no custody
+>    row.
+> 2. **`platform_settled` is a live value in `payment_status` and
+>    `order_status`,** and rows carry it. Any status list that omits it is
+>    incomplete.
+>
+> Cardcom does not sign its callbacks. Authenticity rests on the URL secret plus
+> mandatory server-to-server `GetLpResult` re-verification, never on the POST
+> body.
+
 KenyonExpress end-to-end checkout and Cardcom payment architecture (complete binding spec).
 
 Status: BINDING for worktree `/Users/ofir/kenyonexpress-web/ke-admin` · branch `arch/admin-supplier` (2026-07-28)

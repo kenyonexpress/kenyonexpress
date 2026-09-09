@@ -5,6 +5,7 @@ import { sendEmail } from '@/lib/growth/resend'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { OFF_PAGE } from '@/styles/tokens'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -109,11 +110,11 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         subject: 'שכחת משהו בסל?',
         tag: 'abandoned_cart',
         unsubscribeUrl,
-        html: `<div dir="rtl" style="font-family:system-ui,sans-serif;text-align:right">
+        html: `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif;text-align:right">
           <h1 style="font-size:20px">הסל שלך מחכה</h1>
           <p>נשארו לך <bdi>${row.item_count}</bdi> פריטים בסל בקניון אקספרס.</p>
-          <p><a href="${base}/cart" style="background:#000;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">חזרה לסל</a></p>
-          ${unsubscribeUrl ? `<p style="color:#888;font-size:12px"><a href="${unsubscribeUrl}">הסרה מרשימת הדיוור</a></p>` : ''}
+          <p><a href="${base}/cart" style="background:${OFF_PAGE.brand};color:${OFF_PAGE.ink};font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">חזרה לסל</a></p>
+          ${unsubscribeUrl ? `<p style="color:${OFF_PAGE.muted};font-size:12px"><a href="${unsubscribeUrl}">הסרה מרשימת הדיוור</a></p>` : ''}
         </div>`,
       })
 

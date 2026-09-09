@@ -1,5 +1,19 @@
 # ARCHITECTURE-CATEGORY-PAGE.md
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `admin_audit_log` | `audit_log` |
+> | `cart_items` | `carts.items`, a jsonb column |
+> | `notification_events` | `notification_outbox` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 ארכיטקטורת דף קטגוריה KenyonExpress: **1:1 מול electro home-v7 / shop-archive**.
 
 Status: BINDING for worktree `/Users/ofir/kenyonexpress-web/ke-arch-category` · branch `arch/category-page` (2026-07-30)
@@ -90,7 +104,10 @@ Parser חייב:
 
 ---
 
-## 3. סכמה: מלאי 33 טבלאות (קטלוג + מסחר)
+## 3. סכמה: מלאי הטבלאות (קטלוג + מסחר)
+
+> ‏**נמדד מול פרודקשן 01.09.2026: ‏61 טבלאות ב-`public`, ‏RLS דלוק על כולן.**
+> ‏המספר ‏33 שמופיע להלן היה יעד התכנון של המסמך הזה ואינו מתאר את המצב.
 
 ה-worktree מבוסס `main` מציג ב-`database.ts` תת-קבוצה (~14). המפרט מחייב את **מלאי היעד** של KenyonExpress (33) לדף הקטגוריה ולתלויותיו. עמודות כסף דינמיות (`coupon_price_ils`, `platform_percent`, `discount_percent`, `supplier_split_percent`) הן חלק מהמודל המחייב גם אם עדיין לא בכל מיגרציית main הישנה.
 

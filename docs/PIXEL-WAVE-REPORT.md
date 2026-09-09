@@ -1,5 +1,16 @@
 # ‏(23) גל הפיקסלים, מדידה
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a pixel-comparison wave, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 עודכן: ‏2026-08-19, ענף `feat/pixel-wave`, בילד `jKlu_531ZpXzULKt4Qrff` (‏10:49).
 
 ## המסקנה בשורה אחת

@@ -52,9 +52,30 @@ test.describe('search to checkout', () => {
     await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
 
     // 4. The cart must actually hold it.
+    //
+    // SCOPED TO THE SUMMARY, not `page.getByText(/₪/)`. Unscoped, the first
+    // match on the page is the category drawer's "עד ⁦99 ₪⁩" link, which is in
+    // the DOM and hidden -- so this asserted `toBeVisible` on a permanently
+    // hidden nav item and failed with "Received: hidden" on a cart that was
+    // rendering the price correctly two elements away. A price assertion has to
+    // look where the price is.
     await page.goto('/cart')
-    await expect(page.getByText(/₪/).first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
-    await expect(page.locator('a[href^="/product/"]').first()).toBeVisible()
+    const summary = page.getByRole('complementary', { name: 'סיכום הזמנה' })
+    await expect(summary).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
+    // Digits then sign: `lib/money-format.ts` emits the shekel to the RIGHT of
+    // the number in RTL, inside a bidi isolate. Sign-first was the old defect.
+    await expect(summary.getByText(/[\d,]+(?:\.\d{1,2})?\s?₪/).first()).toBeVisible()
+
+    // The line item, by the name a shopper reads. Scoped for the same reason as
+    // the price, and filtered for the same reason again: /cart carries TWO
+    // links to the product, an image-only one and the titled one, and on a
+    // phone the image link is the hidden one. `.first()` picked it and this
+    // failed with "Received: hidden" against a cart that was listing the
+    // product correctly on the next line.
+    const items = page.getByRole('region', { name: 'פריטים בעגלה' })
+    await expect(
+      items.locator('a[href^="/product/"]').filter({ hasText: /\S/ }).first(),
+    ).toBeVisible()
 
     // 5. And the cart must hand the shopper on to checkout.
     //

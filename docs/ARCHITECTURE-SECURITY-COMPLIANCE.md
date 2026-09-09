@@ -1,5 +1,20 @@
 # ARCHITECTURE-SECURITY-COMPLIANCE.md
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `admin_audit_log` | `audit_log` |
+> | `notifications_outbox` | `notification_outbox` |
+> | `payout_statements` | nothing; never built |
+> | `supplier_bank_accounts` | nothing; never built |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 KenyonExpress security and compliance architecture.
 
 Status: BINDING for `arch/admin-supplier` (2026-07-28)

@@ -260,8 +260,17 @@ RETURNING v.*;
 
 ## 5. Full SQL: `redeem_voucher` (binding draft)
 
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This draft was never applied, and production went the other way.**
+> The live `voucher_status` is
+> `issued, redeemed, expired, cancelled, refunded`. It keeps **`redeemed`**,
+> which this draft proposed renaming to `used`, and it carries **`cancelled`**,
+> which this draft omits entirely. Migration `087` is not in production's
+> ledger. Do not use the enum below as a reference for what a voucher row can
+> hold; use `docs/PAYMENT-FLOW.md` §6.
+
 ```sql
--- 087_redeem_voucher_issued_used.sql (idempotent draft)
+-- 087_redeem_voucher_issued_used.sql (idempotent draft, NEVER APPLIED)
 
 DO $$ BEGIN
   CREATE TYPE public.voucher_status AS ENUM ('issued', 'used', 'expired', 'refunded');

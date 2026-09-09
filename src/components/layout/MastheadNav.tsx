@@ -1,43 +1,69 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import DeferredHeaderSearch from '@/components/search/DeferredHeaderSearch'
-import { User } from 'lucide-react'
+import RegionMenu from '@/components/layout/RegionMenu'
+import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 /**
- * The masthead's right-hand group: search plus the account and cart icons.
+ * The masthead's left-hand group (RTL): the region selector and the two-icon
+ * cluster -- favorites then cart, which is the whole cluster.
  *
- * Search is mounted here, not in `layout/Header.tsx`, because that file is on
- * the LOCKED_COMPONENTS list and is measured against the live masthead. This
- * component renders inside the same header row and is not locked, so it is the
- * supported way to put search in the header without touching locked geometry.
+ * Geometry from refs/ke_live_computed.json at 1440, 2026-09-02, x from left:
  *
- * The wrapper grows into the space the logo leaves; the icon row stays
- * `shrink-0` so a long placeholder can never squeeze it.
+ *   cart 135  user 223  heart 284  "בחר אזור" 360..456  search 456..990
  *
- * The live WP heart → /wishlist was removed in [28]: there is no wishlist
- * route here, and a header icon that 404s is worse than a small geometry gap
- * against the live masthead. Re-add with the feature, not before.
+ * so RTL, reading right to left after the search: region selector, heart,
+ * cart -- with 38px edge-to-edge between the icons at lg (the measured
+ * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-nav-gap is that
+ * measurement, not a taste.
  *
- * Search is deferred ([32]): it is CSS-hidden on phones, so mobile Lighthouse
- * must not download or hydrate its suggest/router client graph.
+ * The heart is BACK (it was removed in [28] because there was no wishlist
+ * route and a 404 icon is worse than a geometry gap). The 1:1 instruction of
+ * 2026-09-02 overrides the gap half of that; the 404 half is avoided by
+ * sending it to the wishlist, which exists now (154 + /account/wishlist).
+ *
+ * The region selector matches live's secondary-nav (96x45, 14px/500 with a
+ * chevron). It is now a real dropdown -- see RegionMenu.tsx. It used to be a
+ * flat link to /suppliers, which is the join-us-as-a-supplier marketing page:
+ * a control labelled "choose a region" whose target has no regions on it. The
+ * seventeen regions it now opens are live's own, read off the rendered page.
+ *
+ * NO SEARCH FIELD. Live's masthead carries a 534px search form at x456..x990
+ * and this component used to render <DeferredHeaderSearch/> in that slot. The
+ * standing project rule is that there is no search UI anywhere, so the slot is
+ * gone rather than hidden: a CSS-hidden field is still in the DOM, still in the
+ * tab order, and still ships its client chunk. `justify-end` closes the gap it
+ * left, which is the one place this component knowingly departs from the
+ * measured layout. The pixel cost is recorded in STATE.md.
  */
 export default function MastheadNav() {
   return (
-    <div className="flex min-w-0 flex-1 items-center justify-end gap-5 ps-6">
-      <DeferredHeaderSearch />
+    <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
+      <RegionMenu />
 
-      <nav className="flex shrink-0 items-center gap-5" aria-label="פעולות חשבון ועגלה">
+      <nav
+        className="flex shrink-0 items-center gap-4 lg:gap-nav-gap"
+        aria-label="פעולות חשבון ועגלה"
+      >
         <Link
-          href="/login"
-          aria-label="החשבון שלי"
-          className="transition-opacity hover:opacity-70"
+          href="/account/wishlist"
+          aria-label="המועדפים שלי"
+          className="-m-1 p-1 transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}
         >
-          <User size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
+          <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
         </Link>
 
+        {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.
+            The cluster is exactly two icons at every breakpoint -- heart then
+            cart -- and the account entry point lives in the shell's top-left,
+            in exactly one place: TopBar's התחברות. This slot used to hold a
+            third <User> link to /login, which made three icons here, two more
+            account entry points than the rule allows (this one and the
+            handheld one in Header.tsx), and three places to keep in sync.
+            Live's own x at 1440 was cart 135, user 223, heart 284; dropping
+            the middle one closes to cart 135, heart 223. */}
         <HeaderCart />
       </nav>
     </div>

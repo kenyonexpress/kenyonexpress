@@ -50,7 +50,10 @@
   background: #fff;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 24px rgb(0 0 0 / 12%);
+  /* The drawer is anchored to the RTL LEFT edge (inset-inline-end above), so
+     the shadow must fall +4px toward the page content on its right; -4px threw
+     it off the viewport's left edge where nothing can see it. */
+  box-shadow: 4px 0 24px rgb(0 0 0 / 12%);
   animation: cart-drawer-in 0.22s ease-out;
 }
 
@@ -279,10 +282,16 @@
 .mini-cart__panel {
   position: absolute;
   top: calc(100% + 14px);
-  /* Anchored to the inline START, which in this RTL document is the right.
-     Using `left` here pinned the panel to the wrong edge and pushed it off
-     screen on the one layout the site actually ships in. */
-  inset-inline-start: 0;
+  /* Anchored to the inline END (the LEFT of this RTL document). The comment
+     that stood here chose inline-start, and it was right when it was written,
+     2026-07-31 -- the cart icon then sat mid-header with room on both sides.
+     D21 later moved the icon to the header's left edge, where a 340px panel
+     anchored right-edge-to-icon extends leftward off the viewport (x ~ -183
+     on 1440). refs/ke_live_computed.json agrees on the correct side: on
+     cart@1440 the live dropdown-menu-mini-cart spans x135..467 with its icon
+     at x135..203 -- the panel's left edge sits on the icon's left edge and
+     it opens rightward, which is inset-inline-end in RTL. */
+  inset-inline-end: 0;
   z-index: 60;
   width: 340px;
   max-width: calc(100vw - 30px);
@@ -312,7 +321,8 @@
   content: "";
   position: absolute;
   top: -6px;
-  inset-inline-start: 22px;
+  /* 22px in from the anchored edge, which flipped with the panel above. */
+  inset-inline-end: 22px;
   width: 11px;
   height: 11px;
   background: #fff;

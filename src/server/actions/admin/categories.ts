@@ -58,6 +58,13 @@ async function runUpsertCategory(
   } = await supabase.auth.getUser()
 
   const { id, ...fields } = parsed.data
+  const { data: before } = id
+    ? await supabase
+        .from('categories')
+        .select('id, slug, name_he, parent_id, is_active')
+        .eq('id', id)
+        .maybeSingle()
+    : { data: null }
 
   if (id) {
     const { error } = await supabase.from('categories').update(fields).eq('id', id)
@@ -86,6 +93,15 @@ async function runUpsertCategory(
       changes: { ...fields },
     })
   }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'categories',
+    entityId: id,
+    changes: { old: before ?? null, new: { id: id ?? null, ...fields } },
+  })
 
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)

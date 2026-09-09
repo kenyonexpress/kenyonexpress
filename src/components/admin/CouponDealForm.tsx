@@ -1,6 +1,7 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { shekelsFromIls } from '@/lib/money-format'
 import { type CouponDealFormState, upsertCouponDeal } from '@/server/actions/admin/coupon-deals'
 import type { CouponDeal, Vendor } from '@/types/database'
 import { MapPin, Tag } from 'lucide-react'
@@ -375,10 +376,12 @@ function CouponPreviewCard({
         )}
         <div className="pt-2 flex items-baseline gap-2">
           <span className="text-lg font-bold text-brand">
-            ₪{platformPrice > 0 ? platformPrice.toFixed(2) : '—'}
+            {platformPrice > 0 ? shekelsFromIls(platformPrice) : '—'}
           </span>
           {originalPrice > 0 && (
-            <span className="text-xs text-gray-400 line-through">₪{originalPrice.toFixed(2)}</span>
+            <span className="text-xs text-gray-400 line-through">
+              {shekelsFromIls(originalPrice)}
+            </span>
           )}
         </div>
       </div>

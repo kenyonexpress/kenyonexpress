@@ -1,11 +1,14 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { formatOffenders, scanRawValues, sourceFiles } from '../../scripts/raw-value-scan.mjs'
 import {
   CATALOG_CSS_METRICS,
   CATALOG_CSS_VARS,
+  PDP,
   PDP_CSS_METRICS,
   PDP_CSS_VARS,
+  SITE,
   SITE_CSS_METRICS,
   SITE_CSS_VARS,
 } from './tokens'
@@ -154,15 +157,30 @@ describe('product page tokens', () => {
  * a token" was a convention: 74 raw hexes had accumulated across 33 components
  * because nothing objected when one more was pasted in. Now a hex in a .tsx
  * fails the suite, and the only way to add a colour is to name it in tokens.ts
- * and mirror it into globals.css.
+ * and mirror it into tokens.css.
+ *
+ * The `@theme` block moved from `src/app/globals.css` to `src/styles/tokens.css`
+ * on 2026-09-03. Both files are read and concatenated rather than just the new
+ * one: if a `@theme` block is ever added back to globals.css, the tokens in it
+ * have to face this same contract instead of quietly sitting outside it.
  */
 function globalsCss(): string {
-  return readFileSync(resolve(process.cwd(), 'src/app/globals.css'), 'utf8')
+  return [
+    readFileSync(resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8'),
+    readFileSync(resolve(process.cwd(), 'src/app/globals.css'), 'utf8'),
+  ].join('\n')
 }
 
 function themeBlock(source: string): string {
-  const start = source.indexOf('@theme {')
-  return source.slice(start, source.indexOf('\n}', start))
+  // Every `@theme` block in the concatenated sources, not just the first.
+  const blocks: string[] = []
+  let start = source.indexOf('@theme {')
+  while (start !== -1) {
+    const end = source.indexOf('\n}', start)
+    blocks.push(source.slice(start, end === -1 ? undefined : end))
+    start = source.indexOf('@theme {', end === -1 ? source.length : end)
+  }
+  return blocks.join('\n')
 }
 
 /** Every .tsx under src/, repo-relative. */
@@ -176,19 +194,82 @@ function tsxFiles(dir = resolve(process.cwd(), 'src'), out: string[] = []): stri
 }
 
 /**
- * The one file allowed to name a hex. Google's sign-in mark is a trademark
- * reproduced to their branding guidelines, so it is deliberately NOT a design
- * token: a KenyonExpress rebrand must leave it alone. It is declared once, in
- * a file whose only job is to be that mark.
+ * THE PDP PALETTE AND THE SITE PALETTE MUST NOT DRIFT APART.
+ *
+ * `product-page.css` declares its own `--pdp-*` colours, and `PDP_CSS_VARS`
+ * already gates those against `tokens.ts`. What nothing gated is the pair of
+ * palettes against EACH OTHER: eight of the twelve PDP colours are the same
+ * value as a `SITE` colour, and the two are maintained in different objects.
+ *
+ * The failure that allows is quiet and total. Rebranding through
+ * `SITE.brand.primary` -- which the tokens file names as the way to rebrand --
+ * moves the header, the cards and every button on the site, and leaves the
+ * product page's add-to-cart the old yellow. No test fails, because each half
+ * still agrees with its own source. The page just stops matching the site.
+ *
+ * The four PDP colours with no site counterpart (`action`, `rule`, `buy`,
+ * `buyHover`) are deliberately absent from this table: they are measured
+ * values that exist only on that template.
  */
-// GoogleLogo carries Google's brand hexes, which are not ours to tokenise.
-//
-// global-error.tsx is the root-layout boundary: it renders when the layout
-// itself threw, which includes the case where the stylesheet is what failed to
-// load. It therefore cannot reference a CSS variable for the same reason it
-// supplies its own <html> and <body>, and inline hex is the only thing
-// guaranteed to render at that point.
-const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx', 'src/app/global-error.tsx'])
+/**
+ * THE STOREFRONT MAY NOT REACH FOR TAILWIND'S DEFAULT PALETTE.
+ *
+ * `bg-gray-200` is not a raw hex, so the rule above never saw it, and it is not
+ * a project colour either: it is Tailwind's own scale, which no token controls.
+ * A rebrand through `tokens.ts` moves everything the design system owns and
+ * leaves every `text-gray-600` exactly where it was. Twenty-eight of them had
+ * accumulated across the account pages, the checkout, the cart, the footer and
+ * the hero by 2026-09-03.
+ *
+ * SCOPED TO THE STOREFRONT ON PURPOSE. The admin panel uses the Tailwind scale
+ * throughout and is not customer-facing chrome; bringing it in would be a much
+ * larger sweep with no rebrand argument behind it. These are the surfaces a
+ * shopper sees.
+ */
+describe('the storefront uses tokens, not Tailwind default colours', () => {
+  const STOREFRONT = [
+    'src/app/(account)',
+    'src/app/(store)',
+    'src/components/layout',
+    'src/components/cart',
+    'src/components/home',
+  ]
+  // Neutral + semantic ramps. Utility prefixes that take a colour.
+  const PALETTE =
+    /(?<![\w-])(bg|text|border|ring|divide|from|via|to|outline|decoration|shadow|accent|caret|fill|stroke)-(gray|slate|zinc|neutral|stone)-\d{2,3}(?![\w-])/g
+
+  it('names no gray/slate/zinc/neutral/stone utility', () => {
+    const offenders: string[] = []
+    for (const root of STOREFRONT) {
+      for (const file of tsxFiles(resolve(process.cwd(), root))) {
+        for (const hit of readFileSync(file, 'utf8').match(PALETTE) ?? []) {
+          offenders.push(`${file}: ${hit}`)
+        }
+      }
+    }
+    expect(
+      offenders,
+      `Tailwind default colours in the storefront:\n  ${offenders.join('\n  ')}`,
+    ).toHaveLength(0)
+  })
+})
+
+describe('the PDP palette tracks the site palette', () => {
+  const SHARED: Array<[keyof typeof PDP.color, string]> = [
+    ['ink', SITE.functional.heading],
+    ['muted', SITE.neutral.muted2],
+    ['sale', SITE.functional.price],
+    ['strike', SITE.functional.priceStrike],
+    ['line', SITE.neutral.border],
+    ['brand', SITE.brand.primary],
+    ['brandHover', SITE.brand.primaryHover],
+    ['surface', SITE.surface.page],
+  ]
+
+  it.each(SHARED)('PDP.color.%s equals its site token', (key, siteValue) => {
+    expect(PDP.color[key].toLowerCase()).toBe(siteValue.toLowerCase())
+  })
+})
 
 describe('site colour tokens', () => {
   it('declares every token from tokens.ts in the @theme block with the same value', () => {
@@ -211,18 +292,34 @@ describe('site colour tokens', () => {
     }
   })
 
-  it('carries no raw hex in any component', () => {
-    const offenders: string[] = []
-    for (const file of tsxFiles()) {
-      if (HEX_ALLOWLIST.has(file)) continue
-      // Comments are documentation and may name a token, not a hex; the sweep
-      // rewrote the provenance notes to say "bg = brand-primary" for exactly
-      // that reason, so nothing here needs stripping first.
-      for (const hex of readFileSync(file, 'utf8').match(/#[0-9a-fA-F]{3,8}\b/g) ?? []) {
-        offenders.push(`${file}: ${hex}`)
-      }
-    }
-    expect(offenders, `raw hex in components:\n  ${offenders.join('\n  ')}`).toHaveLength(0)
+  /**
+   * THE RAW-VALUE RULE NOW LIVES IN `scripts/raw-value-scan.mjs`.
+   *
+   * It used to be two assertions right here, and both walked `.tsx` only. That
+   * was the hole, and it was exactly the size of the rule: every colour that
+   * escaped the palette in 2026-09 escaped through a `.ts` file. The hero
+   * slider's ground, seven literals in each email builder, a black CTA in three
+   * more transactional emails, and the wallet red written twice under a comment
+   * that named the wrong red.
+   *
+   * The scanner is shared with `scripts/tokens-gate.mjs`, which `pnpm lint`
+   * runs, so the same rule fails the build and fails the suite. Its allowlists
+   * carry the reason for every entry.
+   */
+  it('names no raw hex, rgb() or arbitrary px anywhere under src/', () => {
+    const offenders = scanRawValues()
+    expect(offenders, `raw values outside the token layer:\n${formatOffenders(offenders)}`).toEqual(
+      [],
+    )
+  })
+
+  it('scans .ts as well as .tsx, which is the hole this rule was opened for', () => {
+    // A guard on the guard: if sourceFiles() ever stops walking .ts the
+    // assertion above keeps passing and stops meaning anything.
+    const files = sourceFiles()
+    expect(files.some((f) => f.endsWith('.ts'))).toBe(true)
+    expect(files).toContain('src/lib/email/notifications.ts')
+    expect(files).toContain('src/lib/wallet/pass-model.ts')
   })
 
   it('keeps the Google mark out of the palette', () => {

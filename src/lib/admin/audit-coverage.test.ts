@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -11,7 +11,23 @@ import { describe, expect, it } from 'vitest'
  * and there — fails a test instead of silently losing its trail.
  */
 
-const MIGRATION = join(process.cwd(), 'migrations/pending/169_audit_full_coverage.sql')
+/**
+ * An applied migration moves out of `pending/`, so look in both places and name
+ * the file when neither has it, rather than failing with a bare ENOENT that
+ * reads like the test itself is broken. Same shape as
+ * status-transitions.test.ts and payment-events.test.ts.
+ */
+function resolveMigration(name: string): string {
+  for (const dir of ['migrations/applied', 'migrations/pending', 'supabase/migrations']) {
+    const full = join(process.cwd(), dir, name)
+    if (existsSync(full)) return full
+  }
+  throw new Error(
+    `${name} is in none of migrations/applied, migrations/pending, supabase/migrations`,
+  )
+}
+
+const MIGRATION = resolveMigration('169_audit_full_coverage.sql')
 
 /** Tables 169 attaches audit_* triggers to. */
 const COVERED_BY_169 = [

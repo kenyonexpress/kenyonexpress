@@ -60,12 +60,55 @@ The `set_updated_at` mutable-search_path WARN is pre-existing and unchanged.
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
 
+## 2026-09-04 (audit): ONE PENDING FILE — 162, BLOCKED ON VAULT
+
+The 2026-09-04 audit ran every preflight against production and found 166,
+167 and 168 **already applied and recorded** in
+`supabase_migrations.schema_migrations` (`20260903232445`, `20260903232455`,
+`20260903232504`), live definitions matching the files. They moved with their
+preflights to `migrations/applied/`, rows added to the APPLIED IN PRODUCTION
+table in `README.md`, SHA-256 lines in `migrations/applied/CHECKSUMS.sha256`.
+
+| File | State | Preflight |
+| --- | --- | --- |
+| `162_cron_schedule.sql` | **approved by Ofir (CLOSEOUT §7)**, blocked on vault seeding: the vault holds neither `cron_secret` nor `app_url` (re-measured 2026-09-04 via preflight blocks 3+4: `vault.decrypted_secrets` returns zero of the two names), and seeding them needs the Vercel env (§8a), which this machine cannot reach (no `vercel` CLI, no link, no token — and since 04.09 the Vercel project itself is gone, STATE.md blocker 0). Blocks 1+2 pass: pg_cron 1.6.4 + pg_net 0.20.0 installed, `cron.job` empty. Exact commands under "## חסמים לאופיר" in STATE.md. | `preflight_162.sql` |
+| `166_voucher_transition_guard.sql` | **APPLIED** as `voucher_transition_guard_166` (`20260903232445`); verified 2026-09-04, moved to `migrations/applied/`. | with it in `applied/` |
+| `167_order_items_money_constraints.sql` | **APPLIED** as `order_items_money_constraints_167` (`20260903232455`); verified 2026-09-04, moved to `migrations/applied/`. | with it in `applied/` |
+| `168_wallet_ledger_client_readonly.sql` | **APPLIED** as `wallet_ledger_client_readonly_168` (`20260903232504`); verified 2026-09-04, moved to `migrations/applied/`. | with it in `applied/` |
+
+`165_revoke_anon_helpers.sql` was **CANCELLED on 2026-09-04 (CLOSEOUT §13)**
+and moved to `migrations/cancelled/` with its preflight. Eighteen RLS policies
+on public/anon-readable tables call the two helpers inside USING/WITH CHECK;
+RLS quals run as the caller, so the revoke would have turned every anonymous
+catalogue SELECT into 42501. anon EXECUTE on `is_admin()` /
+`is_supplier_member(uuid)` is by design: both return false for a caller with
+no uid. Regression net: `src/db/__tests__/anon-catalog.test.ts`.
+
+`164` stays unused; §8c named the revoke file 165 and the number is kept
+stable. The section below is unchanged history.
+
+## 2026-09-03: THERE IS NOTHING LEFT TO APPLY (history)
+
+`migrations/pending/` holds no `.sql` file. The last three went to production on
+2026-09-03 -- `160_fk_indexes.sql`, `161_enable_pg_cron_pg_net.sql` and
+`163_orders_indexes.sql` -- and all three are recorded in `migrations/applied/`
+with the row that describes them in `README.md`.
+
+`162` is deliberately unused and reserved for the pg_cron schedule that `161`
+makes possible: twelve cron routes exist under `src/app/api/cron/` and, measured
+on 2026-09-03, `select count(*) from cron.job` returns 0 and `vercel.json`
+declares no crons at all. Nothing calls them.
+
+**The table below is history.** Every row in it has been applied. It is kept
+because a reader asking "was this applied, and what did it do" needs the row to
+still exist. A new migration starts at **164**.
+
 Twelve files in this directory are **already in production** and are not listed
 below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The fourteen that remain, in order
+## The twelve that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -140,5 +183,6 @@ cannot drop one.
 
 The table above keeps its original numbering column even though rows were
 removed as migrations were applied, so a row's number is a stable reference in
-conversation rather than a position. What is authoritative is the file list: ten
-files, and the APPLIED table in `README.md` holds the other twelve.
+conversation rather than a position. What is authoritative is the file list, and as of
+2026-09-03 that list is empty: every migration this directory ever described now
+lives in `migrations/applied/`.

@@ -6,6 +6,7 @@ import {
   contentSecurityPolicyFor,
   frameOptionsFor,
   isPaymentFramePath,
+  permissionsPolicyFor,
 } from './frame-policy'
 
 describe('isPaymentFramePath', () => {
@@ -128,5 +129,24 @@ describe('img-src stays tied to the one image-host allowlist', () => {
       .slice(1)
       .filter((token) => token.startsWith('https://'))
     expect(hosts).toEqual(REMOTE_IMAGE_PATTERNS.map((p) => `${p.protocol}://${p.hostname}`))
+  })
+})
+
+describe('permissionsPolicyFor', () => {
+  it('opens the camera only on the scanner routes', () => {
+    expect(permissionsPolicyFor('/scan')).toContain('camera=(self)')
+    expect(permissionsPolicyFor('/supplier/scan')).toContain('camera=(self)')
+    for (const path of ['/', '/checkout', '/checkout/frame-return', '/supplier', '/scanner-x']) {
+      expect(permissionsPolicyFor(path)).toContain('camera=()')
+    }
+  })
+
+  it('never loosens anything else', () => {
+    for (const path of ['/', '/scan']) {
+      const policy = permissionsPolicyFor(path)
+      expect(policy).toContain('microphone=()')
+      expect(policy).toContain('geolocation=()')
+      expect(policy).toContain('payment=(self)')
+    }
   })
 })

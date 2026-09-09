@@ -1,3 +1,4 @@
+import { shekelsFromIlsPlain } from '@/lib/money-format'
 import { absoluteUrl } from '@/lib/site-url'
 import type { FeedProduct } from './catalogue'
 import { cdata, escapeXml, rfc822, tag } from './xml'
@@ -105,5 +106,5 @@ function itemDescription(product: FeedProduct): string {
 }
 
 function money(value: number): string {
-  return `₪${value.toFixed(2)}`
+  return shekelsFromIlsPlain(value)
 }

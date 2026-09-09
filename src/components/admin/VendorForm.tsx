@@ -149,25 +149,10 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
       <section>
         <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">הגדרות</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="commission_rate"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              עמלת פלטפורם (%) *
-            </label>
-            <input
-              id="commission_rate"
-              name="commission_rate"
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              defaultValue={vendor?.commission_rate ?? 90}
-              dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
-          </div>
+          {/* The per-vendor commission field is gone on purpose. Migration 112
+              archived `vendors.commission_rate`; commission is per product
+              (`products.platform_percent`), snapshotted onto order_items at
+              checkout. A field here would post a value nothing can store. */}
           <div>
             <label htmlFor="vendor-status" className="block text-xs font-medium text-gray-700 mb-1">
               סטטוס

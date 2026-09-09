@@ -1,5 +1,16 @@
 # דף קטגוריה 1:1 - ממצאי מדידה (2026-07-24)
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a category-page comparison run, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 מדידות מהאתר החי ומ-localhost ב-1440x2600, דרך `scripts/_cat-probe.mjs`,
 `scripts/_cat-card-probe.mjs`, `scripts/_cat-cpw-probe.mjs`,
 `scripts/_cat-sidebar-probe.mjs`. הרפרנס: `/product-category/hot-deals/`.

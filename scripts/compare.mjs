@@ -3,10 +3,12 @@ import { copyFileSync, existsSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
+import { REFERENCE, classifyReference, refusalMessage } from './live-reference.mjs'
+import { appendParityRefusal } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
 //                                 [--live=<url>] [--mine=<url>]
-// home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
+// home     : live = LIVE_HOME below                  mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
 // coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
@@ -51,9 +53,22 @@ const LIVE_CART = 'https://kenyonexpress.co.il/cart/'
 // the same id refs/checkout-measured.json was measured against, so the order
 // panel holds one line on both runs.
 const LIVE_ATC_ID = process.env.LIVE_ATC_ID ?? '6166'
-// The saved refs/ke_live_singlefile.html renders a collapsed header (masthead 1px,
-// no 110px header row), so it under-represents the real site. Default the home
-// reference to the live site; pass --live=<file url> to use the single-file.
+// EVERY LIVE_* ABOVE NAMES A HOST THAT IS NOW OUR OWN DEPLOYMENT.
+//
+// Measured 2026-09-09: kenyonexpress.co.il resolves to our Vercel build (0
+// woocommerce markers, 125 `_next` references, our Hebrew title). None of these
+// constants points at the reference any more, and no run against them can
+// produce a fidelity number. They are left in place, unchanged, because the
+// guard in enforceReference() reads what they return and refuses on it, and
+// because they are the addresses to restore if the old site ever answers again.
+//
+// The escape hatch this comment used to offer -- "pass --live=<file url> to use
+// refs/ke_live_singlefile.html" -- names a file that does not exist: not in the
+// tree, not under $HOME, not in the recent backups. The archives that DO exist
+// (refs/ke_live_*.html) pass the identity guard and still cannot be used: their
+// URLs were saved protocol-relative, so 143 subresources fail under file:, and
+// their one stylesheet answers 403. The measurements, and what it would take to
+// have a reference again, are in docs/PARITY-REFERENCE.md.
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright')
@@ -213,6 +228,82 @@ const seedCart = async (target) => {
   }
 }
 
+/** A `file:` archive or the old host: the two shapes the reference has ever had. */
+const isExternal = (url) => url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+
+/**
+ * Read in the page. Kept as one function so the pre-seeding probe and the shot
+ * itself cannot drift into asking two different questions.
+ */
+const READ_REFERENCE_MARKERS = () => {
+  const urlsOf = (sel, attr) =>
+    Array.from(document.querySelectorAll(sel))
+      .map((el) => el.getAttribute(attr) ?? '')
+      .filter(Boolean)
+  // Stylesheets and scripts only. Our own catalogue still serves product photos
+  // from wp-content paths, so counting IMAGES here would classify our own build
+  // as the reference -- the exact miss this guard exists to prevent.
+  const wpAssets = [
+    ...urlsOf('link[rel~="stylesheet"][href]', 'href'),
+    ...urlsOf('script[src]', 'src'),
+  ].filter((u) => /wp-content|wp-includes/i.test(u))
+  const nextAssets = [...urlsOf('script[src]', 'src'), ...urlsOf('link[href]', 'href')].filter(
+    (u) => u.includes('/_next/'),
+  )
+  return {
+    wpStyleOrScript: wpAssets.length,
+    wooBodyClass: /woocommerce|wordpress/i.test(document.body?.className ?? ''),
+    generator: document.querySelector('meta[name="generator"]')?.getAttribute('content') ?? null,
+    nextAssets: nextAssets.length,
+    nextRuntime: Boolean(
+      document.querySelector('#__next, next-route-announcer, script#__NEXT_DATA__'),
+    ),
+  }
+}
+
+/**
+ * EVERY OTHER REFUSAL IN THIS FILE CATCHES A NUMBER THAT WOULD COME OUT TOO
+ * HIGH. A 404, two catalogues, a carousel mid-spin: all of them score badly and
+ * a bad score gets investigated. This one catches the opposite, and that is why
+ * it matters more than the rest of them put together.
+ *
+ * Measured 2026-09-09. `https://kenyonexpress.co.il/cart/` follows to
+ * `www.kenyonexpress.co.il/cart` and answers 200 with ZERO woocommerce markers,
+ * 125 `_next` references and our own Hebrew title. DNS was cut over to Vercel,
+ * so every `LIVE_*` constant at the top of this file now names OUR build. A run
+ * against it photographs this project twice and reports a near-zero diff, and
+ * nobody investigates a pass. `scripts/live-reference.mjs` holds the rule and
+ * the wording; `docs/PARITY-REFERENCE.md` holds what it costs and what would
+ * lift it.
+ *
+ * THIS GUARD ANSWERS IDENTITY AND NOTHING ELSE, ON PURPOSE. The obvious next
+ * question -- does the reference still RENDER -- was written here first and
+ * removed, because the version that inferred it from `document.styleSheets`
+ * passed `refs/ke_live_home.html`, which does not render. Measured 2026-09-09
+ * at 380px: 143 subresources failed, every one of them to
+ * `file://kenyonexpress.co.il/...`, because the capture saved its URLs
+ * protocol-relative and `//host/x` under `file:` is a host called
+ * kenyonexpress.co.il; its one real stylesheet answers 403; and Chromium keeps
+ * the failed sheet in `document.styleSheets` anyway, so the probe read it as
+ * loaded. An inference that green-lights a page with no images on it is worse
+ * than no check. What such an archive costs is written down in
+ * docs/PARITY-REFERENCE.md instead, where it can be read before somebody points
+ * `--live=` at one.
+ *
+ * @param {string} url
+ * @param {object} markers  from READ_REFERENCE_MARKERS
+ */
+const enforceReference = async (url, markers) => {
+  const verdict = classifyReference(markers)
+  if (verdict.kind !== REFERENCE) {
+    console.error(refusalMessage({ url, ...verdict }))
+    appendParityRefusal({ page, width: VIEW.width, reason: `live side is ${verdict.kind}` })
+    await b.close()
+    process.exit(5)
+  }
+  console.log(`  reference ok: ${verdict.why}`)
+}
+
 const shoot = async (url, out) => {
   const p = await ctx.newPage()
   // The live host intermittently drops a navigation into chrome-error, which
@@ -281,7 +372,14 @@ const shoot = async (url, out) => {
     })
   await p.evaluate(() => document.fonts?.ready).catch(() => {})
 
-  const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+  const external = isExternal(url)
+
+  // IS THE LEFT-HAND SIDE STILL THE REFERENCE? See enforceReference above. The
+  // page is already loaded here, so the check costs no extra navigation.
+  if (external) {
+    await enforceReference(url, await p.evaluate(READ_REFERENCE_MARKERS))
+  }
+
   // Local pages proxy remote product images through /_next/image on first
   // request, which is slower than the 2s this used to allow: cards were being
   // screenshotted mid-load and their broken-image glyphs scored as layout
@@ -612,8 +710,39 @@ const shoot = async (url, out) => {
   // Pointer-enter is the component's own supported way to hold a slide, so use
   // that rather than reaching into its state. Pages without a hero match
   // nothing and are untouched.
+  //
+  // SYNTHETIC EVENTS DO NOT HOLD LIVE'S SLIDER, AND THAT MADE THE 380 GATE A
+  // COIN FLIP. Measured 2026-09-03, same build, same server, three consecutive
+  // `--page=home --width=380` runs:
+  //
+  //   run 1   live 17825   mine 18257   10.96%
+  //   run 2   live 17825   mine 18257   10.96%
+  //   run 3   live 17791   mine 18257   28.25%
+  //
+  // Our side is byte-identical across all three; the reference is what moved.
+  // Probing the live page directly found the movers, and they are all Revolution
+  // Slider internals -- `rs-mask-wrap` 4337px against 5896px, a single `rs-layer`
+  // 137px against 800px, `rs-loader.spinner0` 40px against 0. The slider was
+  // simply on a different slide when the shutter fired. A gate that swings from
+  // 10.96% to 28.25% on carousel phase is not measuring layout, and 10.96% was
+  // never a pass -- it was one face of a coin.
+  //
+  // The bullet click above is why. `rs-bullet` is painted by the slider engine,
+  // but an untrusted synthetic click is not how that engine changes slide, so
+  // the call was a no-op that looked like a fix. Revolution Slider publishes a
+  // real API instead: a `window.revapi<N>` jQuery object carrying `revpause`
+  // and `revshowslide`. Verified present on the live homepage as `revapi6`
+  // (`rev_slider_6_1`, five slides), and driving it pins the reference exactly
+  // -- three consecutive loads returned slide 1, mask 137px, module 193px,
+  // body 17791, spinner 0, with no variation at all.
+  //
+  // Pause, then show slide 1, then pause again: `revshowslide` restarts the
+  // autoplay timer on its way in, so a single pause before it holds the wrong
+  // slide and a single pause after it races the transition.
   await p
-    .evaluate(() => {
+    .evaluate(async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
       const hero = document.querySelector(
         '[data-hero-slider], .home-v1-slider, rs-module, [class*="hero"]',
       )
@@ -628,10 +757,65 @@ const shoot = async (url, out) => {
       firstSlide?.dispatchEvent(
         new MouseEvent('click', { bubbles: true, cancelable: true, view: window }),
       )
+
+      // Every Revolution Slider on the page, by its own API. Discovered rather
+      // than hardcoded to `revapi6`: the number is assigned by the plugin and
+      // changes when the slider is rebuilt in WordPress.
+      const apis = Object.keys(window)
+        .filter((k) => /^revapi\d+$/.test(k))
+        .map((k) => window[k])
+        .filter((a) => a && typeof a.revpause === 'function')
+
+      for (const a of apis) {
+        try {
+          a.revpause()
+        } catch {}
+      }
+      for (const a of apis) {
+        try {
+          a.revshowslide(1)
+        } catch {}
+      }
+      await sleep(900)
+      for (const a of apis) {
+        try {
+          a.revpause()
+        } catch {}
+      }
     })
     .catch(() => {})
   // 700ms opacity transition on our slider, plus room for live's.
   await p.waitForTimeout(1200)
+
+  // THE FREEZE HAS TO BE PROVEN, NOT ASSUMED.
+  //
+  // The bullet click was silently a no-op for months and the gate still printed
+  // a number, which is the failure worth guarding: a frozen-looking reference
+  // that is still moving produces a score with no meaning, and it produces it
+  // quietly. Sample the hero geometry twice, 600ms apart, and record whether it
+  // held. `heroFrozen` is read at the bottom of the run, next to the other
+  // refusals, so a moving hero is reported rather than scored.
+  const heroGeometry = () =>
+    p
+      .evaluate(() => {
+        const el =
+          document.querySelector('rs-module') ??
+          document.querySelector('[data-hero-slider], .home-v1-slider')
+        if (!el) return 'no-hero'
+        const r = el.getBoundingClientRect()
+        const mask = document.querySelector('rs-mask-wrap')
+        return [
+          Math.round(r.height),
+          Math.round(mask ? mask.getBoundingClientRect().height : 0),
+          document.body.scrollHeight,
+        ].join('/')
+      })
+      .catch(() => 'unreadable')
+
+  const heroBefore = await heroGeometry()
+  await p.waitForTimeout(600)
+  const heroAfter = await heroGeometry()
+  heroStability[external ? 'live' : 'mine'] = { before: heroBefore, after: heroAfter }
 
   // COUNTED AT THE SHUTTER, NOT BEFORE IT. This block used to run right after
   // load, several waits earlier than the screenshot. Our related-products row
@@ -673,6 +857,10 @@ const cartEmptiness = { live: null, mine: null }
 const gridCounts = { live: null, mine: null }
 const gridTitles = { live: [], mine: [] }
 const heroImages = { live: null, mine: null }
+// Filled by the freeze block: whether each side's hero held still across a
+// 600ms sample. A side that moved makes the score meaningless -- see the
+// refusal near the bottom of this file.
+const heroStability = { live: null, mine: null }
 // THE SEARCH PAGE BELONGS HERE TOO, AND LEAVING IT OUT COST A DAY OF NUMBERS.
 //
 // The rule below was written for /category and /shop. `--page=search` scores
@@ -695,6 +883,20 @@ const heroImages = { live: null, mine: null }
 // buttons and the tag line in the same places, offset by about 58px.
 const COUNTED_GRIDS = new Set(['category', 'products', 'search', 'product'])
 const pendingImages = { live: 0, mine: 0 }
+
+// ASK BEFORE SEEDING, NOT AFTER. `seedCart('live')` drives an add-to-cart
+// against whatever the live host is, and the live host is our own production
+// deployment now. Refusing at shot time would already have sent a WooCommerce
+// add-to-cart GET at the real site and paid for two cart seedings first. This
+// probe answers identity only -- the archive-renders-unstyled half needs a
+// settled page, and it gets one in shoot().
+if ((page === 'checkout' || page === 'cart') && isExternal(liveUrl)) {
+  const probe = await ctx.newPage()
+  await probe.goto(liveUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
+  const markers = await probe.evaluate(READ_REFERENCE_MARKERS)
+  await probe.close()
+  await enforceReference(liveUrl, markers)
+}
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
@@ -845,6 +1047,37 @@ if (
   )
   process.exit(3)
 }
+// A HERO THAT IS STILL MOVING MAKES THE SCORE MEANINGLESS.
+//
+// This is the refusal that the 10.96%/28.25% split earned. Both numbers were
+// printed by a run that believed it had frozen the slider; only the second one
+// looked wrong. Refusing here is what makes the difference visible at the time
+// rather than three commits later, when a page has been "tuned" against a
+// reference that was never holding still.
+//
+// Escape hatch on the same pattern as the grid mismatch above, because a
+// deliberate run against a moving hero is occasionally what you want.
+const heroMoved = ['live', 'mine'].filter(
+  (side) =>
+    heroStability[side] !== null &&
+    heroStability[side].before !== 'no-hero' &&
+    heroStability[side].before !== 'unreadable' &&
+    heroStability[side].before !== heroStability[side].after,
+)
+if (heroMoved.length > 0 && process.env.COMPARE_ALLOW_MOVING_HERO !== '1') {
+  for (const side of heroMoved) {
+    const { before, after } = heroStability[side]
+    console.error(
+      `REFUSING to measure: ${side}'s hero moved between two samples 600ms apart (${before} -> ${after}, as module/mask/body height).`,
+    )
+  }
+  console.error(
+    'The freeze did not take. Live is driven through window.revapi<N>.revpause()/revshowslide(1); if that API is gone or renamed the reference is on an arbitrary slide and the score is carousel phase, not layout. Re-run, or set COMPARE_ALLOW_MOVING_HERO=1 to score it anyway.',
+  )
+  await b.close()
+  process.exit(4)
+}
+
 for (const side of ['live', 'mine']) {
   copyFileSync(runShot(side), `refs/${side}-${page}.png`)
   copyFileSync(runShot(side), `refs/${side}.png`)
@@ -860,6 +1093,10 @@ await new Promise((resolvePromise, reject) => {
     env: {
       ...process.env,
       COMPARE_PAGE: page,
+      // The viewport this run was shot at. `report.W` in the child is the
+      // narrower of the two images, which is not the same thing when the live
+      // page and ours differ in width.
+      COMPARE_WIDTH: String(VIEW.width),
       // Read the per-process shots, not the shared names. Without this the
       // isolation above buys nothing: the diff would still be taken across
       // whatever refs/live.png happens to hold by the time the child starts.

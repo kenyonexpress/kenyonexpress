@@ -48,7 +48,9 @@ export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
         <strong className="tabular-nums">{shekels(cart.total)}</strong>
       </div>
 
-      <p className="cart-sidebar__note">המחירים מחושבים בזמן אמת ועשויים להשתנות לפני התשלום</p>
+      {/* The real-time-pricing note moved below the checkout button
+          (CartPageView): live's collaterals end at the total + button, and the
+          disclaimer reads naturally under the CTA it qualifies. */}
     </aside>
   )
 }

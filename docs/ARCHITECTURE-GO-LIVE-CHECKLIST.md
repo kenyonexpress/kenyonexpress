@@ -1,5 +1,13 @@
 # ARCHITECTURE-GO-LIVE-CHECKLIST.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Superseded 2026-09-01 by `docs/LAUNCH-RUNBOOK.md`; system reference is `docs/ARCHITECTURE-OVERVIEW.md`.**
+>
+> Two items below cannot be checked as written. There is no escrow to verify,
+> and the ten cron jobs are **not** scheduled by Vercel: `vercel.json` declares
+> no `crons` key on purpose, and no external scheduler is switched on yet. See
+> `docs/CRON-EXTERNAL.md`.
+
 צ'קליסט **Go-Live** מחייב לשיגור KenyonExpress (כסף אמיתי + קופונים אמיתיים).
 
 Status: BINDING · worktree

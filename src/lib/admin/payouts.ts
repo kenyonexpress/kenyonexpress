@@ -1,3 +1,4 @@
+import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { z } from 'zod'
 
 /**
@@ -116,6 +117,5 @@ export const markPaidSchema = z.object({
  * once. Renaming this was cheaper than migrating the columns.
  */
 export function shekelsFromIls(value: number | string | null | undefined): string {
-  const n = typeof value === 'string' ? Number(value) : (value ?? 0)
-  return `₪${n.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return sharedShekelsFromIls(value)
 }

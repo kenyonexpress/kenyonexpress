@@ -42,6 +42,14 @@ async function runApproveReferral(id: string): Promise<ReferralActionState> {
   })
 
   revalidatePath('/admin/referrals')
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'referrals',
+    entityId: id,
+    changes: { old: { status: 'pending' }, new: { status: 'approved' } },
+  })
   return { ok: true }
 }
 
@@ -74,6 +82,14 @@ async function runRejectReferral(id: string, reason: string): Promise<ReferralAc
   })
 
   revalidatePath('/admin/referrals')
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'referrals',
+    entityId: id,
+    changes: { old: { status: 'pending' }, new: { status: 'rejected', reason: reason.trim() } },
+  })
   return { ok: true }
 }
 

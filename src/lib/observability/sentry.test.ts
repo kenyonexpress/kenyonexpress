@@ -79,3 +79,53 @@ describe('redact', () => {
     expect(redact([])).toEqual([])
   })
 })
+
+describe('a whole Cardcom webhook body (marathon step 15)', () => {
+  // The realistic legacy /Interface callback shape, with the exact field
+  // names cardcom.ts reads (both spellings) plus the instrument fields a
+  // terminal can attach. This is the body capturePaymentAlarm forwards on a
+  // mismatch -- the moment an error report is MOST likely to carry it whole.
+  const callback = {
+    terminalnumber: '1000',
+    lowprofilecode: 'lp-123',
+    ResponseCode: '0',
+    Operation: '1',
+    DealResponse: '0',
+    OperationResponse: '0',
+    ReturnValue: 'pay-1',
+    Amount: '199.90',
+    Last4CardDigits: '1234',
+    CardOwnerName: 'ישראל ישראלי',
+    CardValidityYear: '28',
+    CardValidityMonth: '09',
+    Token: 'tok_live_abc',
+    TokenExDate: '20280901',
+    InternalDealNumber: '777',
+  }
+
+  it('strips every instrument field and keeps the operational ones', () => {
+    const out = redact(callback) as Record<string, unknown>
+
+    // The chargeable instrument and everything printed on the card.
+    expect(out.Token).toBe('[redacted]')
+    expect(out.TokenExDate).toBe('[redacted]')
+    expect(out.Last4CardDigits).toBe('[redacted]')
+    expect(out.CardOwnerName).toBe('[redacted]')
+    expect(out.CardValidityYear).toBe('[redacted]')
+    expect(out.CardValidityMonth).toBe('[redacted]')
+
+    // What an operator debugging a mismatch actually needs.
+    expect(out.ReturnValue).toBe('pay-1')
+    expect(out.Amount).toBe('199.90')
+    expect(out.ResponseCode).toBe('0')
+    expect(out.lowprofilecode).toBe('lp-123')
+    expect(out.InternalDealNumber).toBe('777')
+  })
+
+  it('leaks nothing card-shaped through the serialised report', () => {
+    const serialised = JSON.stringify(redact(callback))
+    expect(serialised).not.toContain('tok_live_abc')
+    expect(serialised).not.toContain('1234')
+    expect(serialised).not.toContain('ישראל')
+  })
+})

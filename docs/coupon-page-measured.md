@@ -1,5 +1,16 @@
 # Coupon product page: measured computed styles
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a coupon-page measurement, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 Source URL: https://kenyonexpress.co.il/product/%D7%A7%D7%95%D7%A4%D7%95%D7%9F-%D7%98%D7%A1%D7%98/
 
 Page title: קופון טסט

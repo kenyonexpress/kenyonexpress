@@ -90,7 +90,11 @@ const { getProductSeoBySlug } = await import('./product-seo')
 const { getCouponDeal, getActiveCouponDealIds } = await import('./coupon-deals')
 const { getFeedProducts } = await import('./feeds/catalogue')
 const { loadProductBySlug, listProductSlugsForPrerender } = await import('./product-detail')
+const { loadSupplierStorefront, loadSupplierStorefrontProducts, listSupplierIdsForPrerender } =
+  await import('./supplier-storefront')
 const { default: sitemap } = await import('@/app/sitemap')
+
+const SUPPLIER_ID = '3f6b8c1e-0000-4000-8000-000000000000'
 
 /** Every cached reader, with the empty value each is expected to resolve to. */
 const READERS: Array<{ name: string; run: () => Promise<unknown>; empty: unknown }> = [
@@ -101,6 +105,17 @@ const READERS: Array<{ name: string; run: () => Promise<unknown>; empty: unknown
   { name: 'getFeedProducts', run: () => getFeedProducts(10), empty: [] },
   { name: 'loadProductBySlug', run: () => loadProductBySlug('a-slug'), empty: null },
   { name: 'listProductSlugsForPrerender', run: () => listProductSlugsForPrerender(10), empty: [] },
+  { name: 'loadSupplierStorefront', run: () => loadSupplierStorefront(SUPPLIER_ID), empty: null },
+  {
+    name: 'loadSupplierStorefrontProducts',
+    run: () => loadSupplierStorefrontProducts(SUPPLIER_ID, 1),
+    empty: { items: [], total: 0 },
+  },
+  {
+    name: 'listSupplierIdsForPrerender',
+    run: () => listSupplierIdsForPrerender(),
+    empty: [],
+  },
 ]
 
 beforeEach(() => {
@@ -132,12 +147,14 @@ describe.each(READERS)('$name', ({ run, empty }) => {
 /**
  * The sitemap does not fit the table above: on a genuinely empty catalogue it
  * still returns the static entries, so "resolves empty" is the wrong control.
- * The contract is the same one, stated in its own terms - no /product/ and no
- * /category/ URL may ever be produced by a FAILED read.
+ * The contract is the same one, stated in its own terms - no /product/, no
+ * /category/, and no /s/ URL may ever be produced by a FAILED read.
  */
 describe('sitemap', () => {
   const catalogueUrls = (entries: Array<{ url: string }>) =>
-    entries.filter((e) => e.url.includes('/product/') || e.url.includes('/category/'))
+    entries.filter(
+      (e) => e.url.includes('/product/') || e.url.includes('/category/') || e.url.includes('/s/'),
+    )
 
   it('throws and logs when the catalogue read fails', async () => {
     readResult.error = { code: '08006', message: 'connection failure' }

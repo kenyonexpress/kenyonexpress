@@ -73,11 +73,27 @@
 }
 
 /* Breadcrumb: measured padding 25.004px top / 22.4px bottom, 14px #333e48 */
+/* THE PADDING BELOW IS A DESKTOP MEASUREMENT AND WAS BEING SERVED TO PHONES.
+   25 + 24 + 22.4 is live's breadcrumb at 1440. At 380 live's is 42px total, and
+   ours measured 79 -- a 37px difference that pushed the h1, the result count,
+   the control bar and every card below them down by the same amount. Measured
+   on 2026-09-03, live vs ours before this rule:
+
+     h1     y180 vs y239      count  y220 vs y283
+     bar    y258 vs y321      card1  y310 vs y371
+
+   Every height already matched; only the offset did not, and this was it. */
 .category-breadcrumb {
-  padding: var(--cat-title-size) 0 var(--cat-crumb-pad-bot);
+  padding: 9px 0;
   font-size: 14px;
   line-height: var(--cat-body-line);
   color: var(--cat-ink);
+}
+
+@media (min-width: 768px) {
+  .category-breadcrumb {
+    padding: var(--cat-title-size) 0 var(--cat-crumb-pad-bot);
+  }
 }
 
 .category-breadcrumb a {
@@ -97,12 +113,26 @@
 
 /* Header row: h1 on inline-start (right), result count on inline-end (left).
    Measured: h1 25.004px / 500 / 40.0064px line-height, margin-bottom 14px. */
+/* LIVE STACKS THE COUNT UNDER THE TITLE ON A PHONE, and this was side by side.
+   Measured at 380 on 2026-09-03: live paints "דילים חמים" on its own line with
+   "מציגים את כל 2 התוצאות" beneath it; ours put both on one row, which reads as
+   a different header shape in every band below it. Stacked below 768 only --
+   the desktop row is what the 1440 comparison already scores at 6.2%. */
 .category-page__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin-bottom: 14px;
+}
+
+@media (min-width: 768px) {
+  .category-page__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
 }
 
 .category-page__title {
@@ -174,6 +204,33 @@
   font-size: 14px;
   padding: var(--cat-select-pad-y) 12px;
   cursor: pointer;
+}
+
+/* THE PHONE GETS LIVE'S "Filters" CONTROL, WHICH THIS BAR DID NOT HAVE.
+   Live's control bar at 380 carries "Filters" with a sliders glyph on the
+   inline-start and the sort pill on the inline-end; the view switcher is
+   desktop-only on both sides. Ours left that slot empty, so the sort pill drifted
+   across a bar that live keeps balanced.
+
+   It is an anchor, not a dialog: the filter sidebar is real, it is on this page,
+   and category-page.css already explains why it sits AFTER the grid. Sending the
+   thumb to it costs no JavaScript and cannot desynchronise from the panel it
+   names. */
+.category-control-bar__filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--spacing-touch-min, 44px);
+  padding: 0 4px;
+  color: var(--cat-ink);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  .category-control-bar__filters {
+    display: none;
+  }
 }
 
 /* View switcher: measured 116x39 on the inline-start side, hidden on mobile */

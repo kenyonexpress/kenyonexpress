@@ -15,25 +15,18 @@ name: Production smoke
 # on GitHub Actions, where a schedule is not a plan feature, and it authenticates
 # with nothing because both routes it calls are public.
 
-# IT DOES NOT RUN YET, AND THAT IS NOT FIXABLE FROM THIS BRANCH.
+# IT RUNS. The block that used to be here said it could not, because the file
+# lived on `phase5/homepage` and GitHub fires `schedule` only from the default
+# branch. It has since reached `main`. Measured 2026-09-09: the last three
+# scheduled runs (09-06, 09-07, 09-08) all completed successfully.
 #
-# GitHub fires `schedule` and accepts `workflow_dispatch` only for workflows
-# present on the repository's DEFAULT branch, which is `main`. This file lives
-# on `phase5/homepage`. Proven, not assumed - `gh workflow run
-# production-smoke.yml --ref phase5/homepage` answers:
-#
-#   HTTP 404: workflow production-smoke.yml not found on the default branch
-#
-# and `gh workflow list --all` shows only CI and Dependabot Updates, because
-# that listing is the default branch's too.
-#
-# So this probe starts working the day `phase5/homepage` reaches `main`, and not
-# before. Nothing in the file needs changing for that to happen; merging is the
-# fix, and merging is a decision this file is not allowed to make. The same is
-# true of dependabot-auto-merge.yml, which is likewise absent from `main`.
-#
-# Until then the liveness evidence is manual, and it was taken: on 2026-09-01
-# both probed URLs answered 200.
+# WHICH IS THE PROBLEM THIS FILE NOW ALSO ADDRESSES. Two green probes of `/`
+# and `/api/health` say the host answers, and nothing more. Both routes are old
+# enough to exist in any build, so this job reported a healthy site on
+# 2026-09-06, 09-07 and 09-08 while three SCHEDULED CRON ROUTES answered 404 in
+# the same deployment. The third step below asks the deployment about every
+# path in scripts/cron-jobs.json, which is the question the two original probes
+# structurally could not raise.
 
 on:
   schedule:
@@ -60,6 +53,10 @@ jobs:
     name: Probe the live deployment
     runs-on: ubuntu-latest
     steps:
+      # The job had no checkout while it only ran curl against two literal
+      # paths. The cron probe reads scripts/cron-jobs.json, so it needs one.
+      - uses: actions/checkout@v4
+
       # NOTHING SECRET IS NEEDED AND THE JOB SAYS SO RATHER THAN GUESSING.
       #
       # The base URL is a repository VARIABLE, not a secret: it is a public
@@ -93,7 +90,7 @@ jobs:
       # `--fail` is absent on purpose. It would make curl exit non-zero and end
       # the step before the status code could be captured and reported, which
       # would turn a precise "/api/health answered 503" into a bare red X.
-      - name: Probe / and /api/health
+      - name: Probe /, /api/health and every scheduled cron path
         id: probe
         env:
           BASE: ${{ steps.target.outputs.base }}
@@ -122,6 +119,25 @@ jobs:
               FAILURES="${FAILURES}"$'\n'"- \`${URL}\` answered **${CODE}**"$'\n'"  \`\`\`"$'\n'"  ${BODY}"$'\n'"  \`\`\`"
             fi
           done
+          # EVERY SCHEDULED CRON PATH, NOT JUST THE TWO LITERAL ONES.
+          #
+          # The probe carries no secret and does not need one: these routes are
+          # Bearer-guarded, so 401 is the healthy answer and 404 means the
+          # deployment does not have the route. A 200 is reported as its own
+          # failure -- an unauthenticated 200 from a route that mutates is
+          # worse than a missing one, and "anything but 404 is fine" is how
+          # that would be missed. See scripts/deployed-cron-probe.mjs.
+          #
+          # `|| true` so the report below is still written; the exit code is
+          # captured and folded into the same FAILURES output, which is what
+          # opens the outage issue. A red step with no issue is the failure
+          # mode nightly-health.yml already had.
+          CRON_OUT=$(CRON_BASE_URL="$BASE" node scripts/deployed-cron-probe.mjs 2>&1) || CRON_FAILED=1
+          echo "$CRON_OUT"
+          if [ "${CRON_FAILED:-0}" = '1' ]; then
+            FAILURES="${FAILURES}"$'\n'"- scheduled cron routes missing from the deployment:"$'\n'"  \`\`\`"$'\n'"${CRON_OUT}"$'\n'"  \`\`\`"
+          fi
+
           {
             echo 'report<<SMOKE_EOF'
             echo "$REPORT"
@@ -207,8 +223,8 @@ jobs:
       # The job goes red as well as opening the issue. An issue is the record;
       # a red run is what shows up in the Actions list and in the repository's
       # own badge, and the two are not interchangeable.
-      - name: Fail the run if anything did not answer 200
+      - name: Fail the run if anything did not answer as it should
         if: steps.probe.outputs.failed == 'true'
         run: |
-          echo '::error title=Production smoke failed::At least one probed URL did not answer 200. See the issue labelled production-down.'
+          echo '::error title=Production smoke failed::A probed URL did not answer 200, or a scheduled cron path is missing from the deployment. See the issue labelled production-down.'
           exit 1

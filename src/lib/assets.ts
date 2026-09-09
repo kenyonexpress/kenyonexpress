@@ -5,33 +5,24 @@
 export const LOGO = '/images/logo.webp'
 export const LOGO_FOOTER = '/images/logo-footer.webp'
 
-/** Homepage hero slider — refs/content-map.md block 4 */
-export const HERO_SLIDER_IMAGES = [
-  // Animated WebP, not the original 4.48MB GIF. next/image passes animated GIFs
-  // through unoptimised, so that one file was the homepage's largest-contentful
-  // paint at 5.3s on a server that answered in 240ms. Same 800x1070, same 47
-  // frames, 1.15MB. Lighthouse performance 77 -> see RELEASE-READINESS.md.
-  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
-  '/images/hero/slider/redPhone-1-1.png',
-  '/images/hero/slider/Smartwatches1.png',
-  '/images/hero/slider/iapdlap.png',
-  '/images/hero/slider/slider-img-3.png',
-  '/images/hero/slider/Screen-Shot-2021-11-12-at-0.20.17.png',
-  '/images/hero/slider/Screen-Shot-2021-11-09-at-6.41.46.png',
-] as const
-
-/** @deprecated use HERO_SLIDER_IMAGES */
-export const HERO_SLIDES = HERO_SLIDER_IMAGES
-
-/** 3 stacked side banners — electro `.slider-das-block`, refs/content-map.md block 5 */
-export const SIDE_BANNERS = [
-  '/images/hero/side-banners/tesla-logo-main.webp',
-  '/images/hero/side-banners/apple-140-new.webp',
-  '/images/hero/side-banners/home-sl-da-3.webp',
-] as const
-
-/** @deprecated use SIDE_BANNERS */
-export const PROMO = SIDE_BANNERS
+/**
+ * THE HERO'S TEN IMAGES ARE GONE, DELIBERATELY.
+ *
+ * `HERO_SLIDER_IMAGES` (7) and `SIDE_BANNERS` (3) named Electro's demo
+ * photography: an iPhone 11 Pro with AirPods, an iPad Pro, Samsung Gear
+ * smartwatches, a red phone, a MacBook, an Apple silhouette, a Tesla mark, and
+ * a mockup of Electro's own storefront with its name still in the masthead.
+ * Ten consumer-electronics product shots on a site that sells vouchers for
+ * restaurants, spas, hotels, courses and tradespeople.
+ *
+ * The files are deleted from `public/images/hero/` and the slots render
+ * `BrandPlaceholder`, which says out loud that the photograph is still to be
+ * taken. `scripts/template-asset-scan.mjs` fails the build if any of the ten
+ * filenames comes back, by name.
+ *
+ * Live serves the same ten files from its own uploads, so sourcing the slot
+ * from live could not have replaced them; the reasoning is on BrandPlaceholder.
+ */
 
 /** Category image banners below hero — refs/content-map.md block 6 */
 export const HERO_CATEGORY_BANNERS = {

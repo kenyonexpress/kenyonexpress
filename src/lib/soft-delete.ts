@@ -7,18 +7,24 @@
  * "in code" has to mean one module, or the filter ends up half-adopted the
  * way `orFail` documents for catalogue error handling.
  *
- * TWO SETS, NOT ONE, because production is behind the migration chain.
+ * TWO SETS, NOT ONE, because production can be behind the migration chain.
  * Filtering on a column Postgres does not have fails the whole query with
  * 42703 (see `optional-columns.ts` for the history of that failure mode). So:
  *
- *   - `SOFT_DELETE_LIVE_TABLES` carry `deleted_at` in production, measured
- *     2026-09-04 via information_schema over MCP. `excludeDeleted` filters.
- *   - `SOFT_DELETE_PENDING_TABLES` gain the column only when
- *     `migrations/pending/149_soft_delete_user_facing_remainder.sql` is
- *     applied. Until then `excludeDeleted` is deliberately a no-op for them.
- *     After 149 is applied, move the four names into the live list; every
- *     call site turns on in that one edit. A drift test pins these four to
- *     the tables 149 actually alters.
+ *   - `SOFT_DELETE_LIVE_TABLES` carry `deleted_at` in production.
+ *     `excludeDeleted` filters on them.
+ *   - `SOFT_DELETE_PENDING_TABLES` would name tables whose column is still
+ *     only in an unapplied migration, and `excludeDeleted` is deliberately a
+ *     no-op for those. It is EMPTY as of 2026-09-09: 185 was applied that
+ *     day, so `categories`, `product_images`, `reviews` and `wishlists`
+ *     moved into the live list and every call site turned on in that one
+ *     edit. The set stays because the next migration that adds `deleted_at`
+ *     to a table needs somewhere to name it between writing and applying.
+ *
+ * The list order is alphabetical and the two sets must stay disjoint; a
+ * drift test checks both against `src/types/database.ts`, which mirrors
+ * production. (185 was numbered 149 until 2026-09-09, when production turned
+ * out to have spent 149 on a different migration.)
  *
  * WHERE NOT TO USE IT. Post-sale reads on the money path (invoice line
  * names, finalize's fulfillment reads, gift-voucher emails, subscription
@@ -29,23 +35,23 @@
 
 export const SOFT_DELETE_LIVE_TABLES = [
   'affiliates',
+  'categories',
   'coupon_deals',
   'order_items',
   'orders',
+  'product_images',
   'product_variants',
   'products',
   'referrals',
+  'reviews',
   'suppliers',
   'user_addresses',
   'vendors',
-] as const
-
-export const SOFT_DELETE_PENDING_TABLES = [
-  'categories',
-  'product_images',
-  'reviews',
   'wishlists',
 ] as const
+
+/** Empty since 185 was applied on 2026-09-09. See the module header. */
+export const SOFT_DELETE_PENDING_TABLES = [] as const
 
 export type SoftDeleteLiveTable = (typeof SOFT_DELETE_LIVE_TABLES)[number]
 export type SoftDeletePendingTable = (typeof SOFT_DELETE_PENDING_TABLES)[number]

@@ -1,5 +1,23 @@
 # ARCHITECTURE-API-CONTRACTS.md
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `cart_items` | `carts.items`, a jsonb column |
+> | `consent_events` | nothing; never built |
+> | `coupon_redemptions` | `voucher_redemptions` |
+> | `coupon_scan_events` | `voucher_redemptions` |
+> | `notifications_outbox` | `notification_outbox` |
+> | `security_events` | nothing; `audit_log` + `payment_events` |
+> | `supplier_payouts` | nothing; never built |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 <!-- stale-banner:2026-09-01 -->
 > ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא הקוד עצמו, תחת `src/app/api/`.**
 >

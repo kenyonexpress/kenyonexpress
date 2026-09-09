@@ -1,4 +1,5 @@
 import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
+import { shekelsFromIls } from '@/lib/money-format'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -92,8 +93,12 @@ export default async function CouponDealPage({ params }: Props) {
               <Tag size={48} />
             </div>
           )}
+          {/* start-3, logical: the same corner CouponCard pins its badge to,
+              so the card a shopper clicked and the page it opens agree about
+              where the discount sits. right-3 happened to be the same pixel
+              in RTL but was the physical property this audit is removing. */}
           {discountPct != null && discountPct > 0 && (
-            <div className="absolute top-3 right-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
+            <div className="absolute top-3 start-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
               {discountPct}% הנחה
             </div>
           )}
@@ -117,19 +122,21 @@ export default async function CouponDealPage({ params }: Props) {
             {platformPrice != null && remaining != null ? (
               <>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-price">₪{platformPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-price">
+                    {shekelsFromIls(platformPrice)}
+                  </span>
                   <span className="text-sm text-gray-500 line-through">
-                    ₪{Number(deal.original_price).toFixed(2)}
+                    {shekelsFromIls(deal.original_price)}
                   </span>
                 </div>
                 <div className="text-sm text-gray-700 space-y-1">
                   <p>
-                    שלם <span className="font-semibold">₪{platformPrice.toFixed(2)}</span> עכשיו
+                    שלם <span className="font-semibold">{shekelsFromIls(platformPrice)}</span> עכשיו
                     באתר
                   </p>
                   <p>
-                    ואת היתרה <span className="font-semibold">₪{remaining.toFixed(2)}</span> בבית
-                    העסק בעת מימוש הקופון
+                    ואת היתרה <span className="font-semibold">{shekelsFromIls(remaining)}</span>{' '}
+                    בבית העסק בעת מימוש הקופון
                   </p>
                 </div>
               </>

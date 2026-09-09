@@ -67,35 +67,44 @@ export default function CartCouponForm({ coupon }: { coupon: AppliedCoupon | nul
   }
 
   return (
-    <form className="cart-coupon" onSubmit={submit}>
-      <label className="cart-coupon__label" htmlFor="cart-coupon-code">
-        יש לך קוד קופון?
-      </label>
-      <div className="cart-coupon__row">
-        <input
-          id="cart-coupon-code"
-          name="coupon_code"
-          value={code}
-          onChange={(event) => setCode(event.target.value)}
-          placeholder="הזן קוד"
-          autoComplete="off"
-          aria-invalid={error ? 'true' : undefined}
-          aria-describedby={error ? 'cart-coupon-error' : undefined}
-          className="cart-coupon__input"
-        />
-        <button
-          type="submit"
-          className="cart-coupon__submit"
-          disabled={pending || code.trim() === ''}
-        >
-          {pending ? 'בודק...' : 'החל'}
-        </button>
-      </div>
-      {error && (
-        <p className="cart-coupon__error" id="cart-coupon-error" role="alert">
-          {error}
-        </p>
-      )}
-    </form>
+    /* A <details> below 768, the footer-disclosure pattern: live's cart page
+       has no coupon UI at all, so every pixel this form spends on a phone is
+       pure divergence from the reference -- collapsed it costs one 28px row
+       (WooCommerce's own "יש לך קוד קופון?" toggle) instead of ~90px. From 768
+       up CSS forces the panel open and disables the summary, so the desktop
+       keeps the always-open field it has today. */
+    <details className="cart-coupon cart-coupon--disclosure">
+      <summary className="cart-coupon__summary">יש לך קוד קופון?</summary>
+      <form className="cart-coupon__form" onSubmit={submit}>
+        <label className="sr-only" htmlFor="cart-coupon-code">
+          קוד קופון
+        </label>
+        <div className="cart-coupon__row">
+          <input
+            id="cart-coupon-code"
+            name="coupon_code"
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            placeholder="הזן קוד"
+            autoComplete="off"
+            aria-invalid={error ? 'true' : undefined}
+            aria-describedby={error ? 'cart-coupon-error' : undefined}
+            className="cart-coupon__input"
+          />
+          <button
+            type="submit"
+            className="cart-coupon__submit"
+            disabled={pending || code.trim() === ''}
+          >
+            {pending ? 'בודק...' : 'החל'}
+          </button>
+        </div>
+        {error && (
+          <p className="cart-coupon__error" id="cart-coupon-error" role="alert">
+            {error}
+          </p>
+        )}
+      </form>
+    </details>
   )
 }

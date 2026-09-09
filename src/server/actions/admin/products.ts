@@ -1,11 +1,14 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import { catalogueIlsToAgorot, scaleCatalogueIls } from '@/lib/admin/bulk-price'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
+import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
-import { ilsToAgorot } from '@/lib/commerce/money'
+import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
 import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
@@ -20,6 +23,9 @@ import { z } from 'zod'
 
 export type ProductFormState = { error: string } | { success: string } | null
 
+const PRODUCT_AUDIT_SELECT =
+  'id, slug, name_he, status, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
+
 async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
@@ -30,6 +36,7 @@ async function runUpsertProduct(
   } catch {
     return { error: 'אין הרשאה' }
   }
+  const hidePricing = !canSeeMoney(session.role)
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
@@ -155,6 +162,32 @@ async function runUpsertProduct(
     ...fields
   } = parsed.data
 
+  const { data: before, error: beforeError } = id
+    ? await supabase.from('products').select(PRODUCT_AUDIT_SELECT).eq('id', id).maybeSingle()
+    : { data: null, error: null }
+  if (beforeError) return { error: beforeError.message }
+
+  // Content-uploader must not publish, and must not accidentally unpublish.
+  // The hidden field is a schema dummy (`draft`); on edit we omit `status`
+  // so a live or sold_out row stays as it is. A new product is always a
+  // draft until an admin publishes it. Money keys are omitted so an empty
+  // form cannot null an admin split.
+  const {
+    kenyon_price,
+    full_price: _fullPrice,
+    platform_percent,
+    supplier_split_percent,
+    discount_percent,
+    coupon_price_ils,
+    status: submittedStatus,
+    ...contentFields
+  } = fields
+  const writeFields = hidePricing
+    ? id
+      ? contentFields
+      : { ...contentFields, status: 'draft' as const }
+    : fields
+
   /**
    * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
    * turns out not to exist yet.
@@ -201,22 +234,39 @@ async function runUpsertProduct(
       : null
 
   // Every money column this write must set, derived once by the same pure
-  // module the form preview and checkout use.
-  const money = buildProductMoneyWrite({
-    type: fields.type,
-    kenyonPrice: fields.kenyon_price,
-    platformPercent: fields.platform_percent,
-    supplierSplitPercent: fields.supplier_split_percent,
-    discountPercent: fields.discount_percent,
-    couponPriceIls: fields.coupon_price_ils,
-    couponExpiryDays: fields.coupon_expiry_days,
-    recurringAmountAgorot,
-    billingInterval,
-    billingIntervalCount: billingIntervalCount ?? 1,
-  })
-  if (!money.ok) return { error: money.message }
+  // module the form preview and checkout use. A content_uploader never sends
+  // these, and must not overwrite an admin's existing split by writing nulls.
+  const money = hidePricing
+    ? null
+    : buildProductMoneyWrite({
+        type: fields.type,
+        kenyonPrice: kenyon_price,
+        platformPercent: platform_percent,
+        supplierSplitPercent: supplier_split_percent,
+        discountPercent: discount_percent,
+        couponPriceIls: coupon_price_ils,
+        couponExpiryDays: fields.coupon_expiry_days,
+        recurringAmountAgorot,
+        billingInterval,
+        billingIntervalCount: billingIntervalCount ?? 1,
+      })
+  if (money && !money.ok) return { error: money.message }
+  const moneyFields = money?.ok ? money.fields : {}
 
-  if (fields.status === 'active') {
+  // The uploader money boundary + forced pending approval (see the policy
+  // module for the full why; until 2026-09-02 an uploader could type any
+  // commission percent straight into a live, auto-approved product). The form
+  // now also omits the money inputs for that role, so `moneyFields` is already
+  // empty there; the policy still carries the approval-queue half, which the
+  // form cannot enforce.
+  const policy = applyUploaderPolicy(
+    session.role,
+    moneyFields as unknown as Record<string, unknown>,
+  )
+  const moneyWrite = policy.fields
+  const isUploader = policy.forcePendingApproval
+
+  if (!hidePricing && money && money.ok && submittedStatus === 'active') {
     // Publishing needs a complete supplier, so the identity is loaded rather
     // than assumed. Service role: this is a staff read of a table with no
     // permissive select policy for `authenticated`.
@@ -274,7 +324,13 @@ async function runUpsertProduct(
     const { error } = await writeWithWhatsAppFallback(async (extra) =>
       supabase
         .from('products')
-        .update({ ...fields, ...money.fields, ...extra, images })
+        .update({
+          ...writeFields,
+          ...moneyWrite,
+          ...extra,
+          images,
+          ...(isUploader ? { approval_status: 'pending' } : {}),
+        })
         .eq('id', id)
         .select('id')
         .maybeSingle(),
@@ -299,7 +355,14 @@ async function runUpsertProduct(
     const { data, error } = await writeWithWhatsAppFallback<{ id: string }>(async (extra) =>
       supabase
         .from('products')
-        .insert({ ...fields, ...money.fields, ...extra, images, created_by: user!.id })
+        .insert({
+          ...writeFields,
+          ...moneyWrite,
+          ...extra,
+          images,
+          created_by: user!.id,
+          ...(isUploader ? { approval_status: 'pending' } : {}),
+        })
         .select('id')
         .single(),
     )
@@ -373,6 +436,24 @@ async function runUpsertProduct(
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'products',
+    entityId: productId,
+    changes: {
+      old: before ?? null,
+      new: {
+        id: productId,
+        slug: fields.slug,
+        name_he: fields.name_he,
+        status: hidePricing ? (before?.status ?? 'draft') : submittedStatus,
+        kenyon_price: hidePricing ? undefined : kenyon_price,
+        platform_percent: hidePricing ? undefined : platform_percent,
+      },
+    },
+  })
   redirect('/admin/products')
 }
 
@@ -385,6 +466,12 @@ async function runDeleteProduct(id: string): Promise<{ error?: string }> {
   }
 
   const supabase = await createClient()
+  // No before-snapshot read here. `products` has carried an audit trigger since
+  // 011/149, upgraded in place by 169, and that trigger writes the full old row
+  // into audit_log.before on every UPDATE (see audit-coverage.test.ts). This
+  // action runs on the USER client, so auth.uid() inside the trigger is the
+  // admin doing it and the row is attributed. Re-reading the row here was a
+  // second round trip whose result was never used.
   const { error } = await supabase
     .from('products')
     .update({ deleted_at: new Date().toISOString(), status: 'archived' })
@@ -465,6 +552,13 @@ async function runBulkAssignCategory(
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'products',
+    changes: { old: { ids }, new: { ids, category_id: categoryId } },
+  })
   return {}
 }
 
@@ -478,14 +572,16 @@ const bulkPriceSchema = z.discriminatedUnion('mode', [
 
 export type BulkPriceInput = z.infer<typeof bulkPriceSchema>
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
-}
-
 /**
  * Bulk price update. Percent mode scales kenyon_price and full_price together;
  * set mode writes kenyon_price and skips products whose full_price would fall
  * below it (those are reported back, not silently broken).
+ *
+ * The math runs in integer agorot through scaleCatalogueIls (applyBp under
+ * the hood) -- not in ILS floats. The old body computed
+ * `round2(current * factor)` where both operands were floats, which is genuine
+ * float price math on the money path (marathon step 2); a -10% on 33.35 could
+ * land a hundredth off depending on the binary representation.
  */
 async function runBulkAdjustPrices(
   ids: string[],
@@ -513,19 +609,32 @@ async function runBulkAdjustPrices(
   const skipped: string[] = []
 
   for (const p of products ?? []) {
-    const current = Number(p.kenyon_price ?? 0)
     if (parsed.data.mode === 'percent') {
-      const factor = 1 + parsed.data.value / 100
-      const patch: { kenyon_price: number; full_price?: number } = {
-        kenyon_price: round2(current * factor),
+      const nextKenyon = scaleCatalogueIls(p.kenyon_price ?? 0, parsed.data.value)
+      if (nextKenyon == null) {
+        skipped.push(p.name_he)
+        continue
       }
-      if (p.full_price != null) patch.full_price = round2(Number(p.full_price) * factor)
+      const patch: { kenyon_price: number; full_price?: number } = {
+        kenyon_price: nextKenyon,
+      }
+      if (p.full_price != null) {
+        const nextFull = scaleCatalogueIls(p.full_price, parsed.data.value)
+        if (nextFull == null) {
+          skipped.push(p.name_he)
+          continue
+        }
+        patch.full_price = nextFull
+      }
       const { error } = await supabase.from('products').update(patch).eq('id', p.id)
       if (error) return { error: error.message, updated }
       updated += 1
     } else {
-      const next = round2(parsed.data.value)
-      if (p.full_price != null && Number(p.full_price) < next) {
+      const nextAgorot = catalogueIlsToAgorot(parsed.data.value)
+      if (nextAgorot == null) return { error: 'ערך מחיר לא תקין' }
+      const next = agorotToIls(nextAgorot)
+      const fullAgorot = p.full_price != null ? catalogueIlsToAgorot(p.full_price) : null
+      if (fullAgorot != null && fullAgorot < nextAgorot) {
         skipped.push(p.name_he)
         continue
       }
@@ -548,6 +657,13 @@ async function runBulkAdjustPrices(
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'products',
+    changes: { old: { ids }, new: { ids, prices: parsed.data, updated, skipped } },
+  })
   return { updated, skipped }
 }
 

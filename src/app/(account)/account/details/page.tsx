@@ -2,6 +2,7 @@ import ProfileDetailsForm from '@/components/account/ProfileDetailsForm'
 import { signOut } from '@/server/actions/auth'
 import { getAccountProfile } from '@/server/queries/account'
 import { notFound } from 'next/navigation'
+import DeleteAccountSection from './DeleteAccountSection'
 
 export const metadata = { title: 'הפרטים שלי' }
 
@@ -38,6 +39,8 @@ export default async function DetailsPage() {
           </button>
         </form>
       </section>
+
+      <DeleteAccountSection />
     </>
   )
 }

@@ -50,10 +50,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const supabase = createPublicClient()
 
-  // Both reads go through `orFail`, and that is the whole point of the expire
-  // window described above. Discarding the `error` here inverted the promise
-  // this file makes two comments up: a failed query yields `data: null`, the
-  // `?? []` below turns it into an empty list, and the enclosing `use cache`
+  // All three reads go through `orFail`, and that is the whole point of the
+  // expire window described above. Discarding the `error` here inverted the
+  // promise this file makes two comments up: a failed query yields `data: null`,
+  // the `?? []` below turns it into an empty list, and the enclosing `use cache`
   // scope stores THAT as the good answer - so the failure did not fall back to
   // the last good sitemap, it replaced it for the full cache life, silently.
   // A sitemap that lists nothing is a deindexing request, which is why this
@@ -62,8 +62,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //
   // This file kept the bug through both 2026-08-20 fixes because the record of
   // the second one assumed `getFeedProducts` fed it. It does not - that backs
-  // feed.xml and merchant.xml, and these two reads are the sitemap's own.
-  const [productsRead, categoriesRead] = await Promise.all([
+  // feed.xml and merchant.xml. The product, category, and supplier reads are
+  // the sitemap's own.
+  const [productsRead, categoriesRead, suppliersRead] = await Promise.all([
     supabase
       .from('products')
       .select('slug, updated_at')
@@ -78,10 +79,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, updated_at')
       .eq('is_active', true)
       .not('slug', 'is', null),
+    supabase
+      .from('suppliers')
+      .select('id, updated_at')
+      .eq('status', 'active')
+      .is('deleted_at', null),
   ])
 
   const products = orFail(productsRead, 'sitemap.products_read_failed')
   const categories = orFail(categoriesRead, 'sitemap.categories_read_failed')
+  const suppliers = orFail(suppliersRead, 'sitemap.suppliers_read_failed')
 
   const categoryEntries: MetadataRoute.Sitemap = (categories ?? []).map((c) => ({
     url: `${base}/category/${c.slug}`,
@@ -95,6 +102,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: p.updated_at ? new Date(p.updated_at) : now,
     changeFrequency: 'weekly' as const,
     priority: 0.7,
+  }))
+
+  const supplierEntries: MetadataRoute.Sitemap = (suppliers ?? []).map((s) => ({
+    url: `${base}/s/${s.id}`,
+    lastModified: s.updated_at ? new Date(s.updated_at) : now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
   }))
 
   // The listing pages change when the CATALOGUE changes, so their lastmod is
@@ -155,5 +169,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]
 
-  return [...staticEntries, ...categoryEntries, ...productEntries]
+  return [...staticEntries, ...categoryEntries, ...productEntries, ...supplierEntries]
 }

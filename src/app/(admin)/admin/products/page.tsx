@@ -1,5 +1,6 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { FileUp, Plus } from 'lucide-react'
@@ -32,7 +33,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   // Without this the catalog list was the one admin screen a support user could
   // open, while every sibling under /admin/products/* refused them. `read`, not
   // `write`: content_uploader lists and edits, support gets neither.
-  await requireSection('catalog', 'read')
+  const session = await requireSection('catalog', 'read')
 
   const raw = await searchParams
   const parsed = productListParamsSchema.safeParse({
@@ -51,7 +52,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   let query = supabase
     .from('products')
     .select(
-      'id, name_he, slug, status, kenyon_price, type, is_featured, platform_percent, coupon_price_ils, created_at, categories!products_category_id_fkey(name_he)',
+      'id, name_he, slug, status, kenyon_price, full_price, type, is_featured, platform_percent, coupon_price_ils, created_at, categories!products_category_id_fkey(name_he)',
       { count: 'exact' },
     )
     .is('deleted_at', null)
@@ -74,6 +75,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
       slug: p.slug,
       status: p.status,
       kenyon_price: p.kenyon_price,
+      full_price: p.full_price,
       type: p.type,
       is_featured: p.is_featured,
       category_name: category?.name_he ?? null,
@@ -139,7 +141,11 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         </form>
       </div>
 
-      <ProductsTable products={rows} categories={categories ?? []} />
+      <ProductsTable
+        products={rows}
+        categories={categories ?? []}
+        hidePricing={!canSeeMoney(session.role)}
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">

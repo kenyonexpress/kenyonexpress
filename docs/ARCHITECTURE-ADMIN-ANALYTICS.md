@@ -1,5 +1,25 @@
 # ARCHITECTURE-ADMIN-ANALYTICS.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. Money model: `docs/ARCHITECTURE-OVERVIEW.md` §3.**
+>
+> The dashboard designs here are still useful, but three data claims are wrong
+> against production:
+>
+> 1. **`supplier_payouts` does not exist.** Every query that reads it, and the
+>    payout KPI tiles built on it, have no table to run against.
+> 2. **Escrow columns are not a live signal.** `escrow_held` and
+>    `escrow_released` are dead `settlement_status` values that no code can
+>    write; `escrow_holds` holds 2 legacy rows. An analytics panel keyed on them
+>    reports zero forever.
+> 3. **`upfront_percent` is not the preferred percentage.** The snapshot the
+>    settlement actually uses is `order_items.platform_percent`. Reading
+>    `upfront_percent ?? platform_percent` prefers a legacy column.
+>
+> The `_agorot` columns this document reads are real. 26 of them are
+> `GENERATED ALWAYS ... STORED` twins of a legacy `numeric` column; read the
+> twin, never recompute it.
+
 KenyonExpress Admin analytics expansion (binding).
 
 Status: BINDING for `arch/admin-analytics` (2026-07-30)

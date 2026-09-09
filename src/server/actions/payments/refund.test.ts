@@ -132,7 +132,7 @@ function seedHappyPath(overrides: { succeededAt?: string | null; items?: unknown
 beforeEach(() => {
   calls.length = 0
   queues.clear()
-  requireAdminSession.mockReset().mockResolvedValue(undefined)
+  requireAdminSession.mockReset().mockResolvedValue({ userId: 'admin-1', role: 'admin' })
   capturePaymentError.mockReset()
   refundByTransactionId.mockReset().mockResolvedValue({
     success: true,
@@ -286,6 +286,22 @@ describe('refundOrder: supplier debits', () => {
       kind: 'refund_issued',
       paid_on_site_agorot: 9_500,
       idempotency_key: 'refund_issued:pay-1',
+    })
+  })
+
+  it('names the admin who refunded in the audit row, not "an admin, unknown which"', async () => {
+    // requireAdminSession() knows exactly who this is; the row used to write
+    // actor_id: null anyway (BUSINESS-RULES §10, fixed marathon step 11). A
+    // money reversal whose log names nobody is a statement, not evidence.
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    const audit = find('audit_log', 'insert')?.payload as Record<string, unknown>
+    expect(audit).toMatchObject({
+      actor_id: 'admin-1',
+      actor_role: 'admin',
+      action: 'status_change',
+      entity_type: 'order',
     })
   })
 

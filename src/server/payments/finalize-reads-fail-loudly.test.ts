@@ -116,6 +116,15 @@ vi.mock('@/lib/payments/payment-money-columns', () => ({
 vi.mock('@/lib/commerce/order-money-columns', () => ({
   moneyColumnProbe: () => async () => true,
   resolveVoucherRateColumn: async () => 'platform_percent',
+  // The generation-resolved reads (D25 marathon step 1): the mocks pin the
+  // post-059 'agorot' answer so the select strings under test keep the exact
+  // column names these fixtures were written against.
+  resolveOrderGeneration: async () => 'agorot',
+  resolveOrderItemGeneration: async () => 'agorot',
+  orderCashbackSelect: () => 'cashback_applied_agorot',
+  orderItemPriceSelect: () => 'unit_price_agorot, total_price_agorot',
+  readOrderCashbackAgorot: (_g: unknown, row: Record<string, unknown> | null) =>
+    Math.round(Number(row?.cashback_applied_agorot ?? 0)),
 }))
 
 const capturePaymentError = vi.fn()

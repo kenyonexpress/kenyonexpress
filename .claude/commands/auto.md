@@ -1,4 +1,4 @@
-=== מצב אוטונומי מלא — KenyonExpress ===
+=== מצב אוטונומי מלא: KenyonExpress ===
 
 אתה על Fable 5. עבוד ברצף מלא בלי לעצור עד סיום כל התור.
 
@@ -12,7 +12,10 @@
 
 חוקים קבועים (חלים על כל goal):
 - אין Escrow בשום מקום. עמלה דינמית platform_percent פר מוצר, מצולמת ל-order_items בזמן קנייה.
-- קופון: לקוח משלם מחיר קופון באתר, היתרה בבית העסק בסריקה, מה שנגבה באתר שייך לפלטפורמה, קופון פג אחרי סריקה.
+- קופון: לקוח משלם את `products.coupon_price_ils` באתר. זהו **סכום מוחלט** באגורות
+  שהאדמין קובע פר מוצר, לא אחוז, ואין לו ברירת מחדל בשום מקום. היתרה משולמת
+  במזומן בבית העסק בסריקה ואינה עוברת דרך הפלטפורמה. כל מה שנגבה באתר שייך
+  לפלטפורמה לצמיתות. השובר פג אחרי סריקה.
 - כל כסף = אגורות integer דרך money.ts. אסור floats.
 - UI אך ורק מ-refs/ke_live_singlefile.html או האתר החי. שער compare.mjs < 11% לכל דף.
 - Header: לוגו + 3 אייקונים בלבד. אין בורר אזור, אין search.
@@ -24,13 +27,21 @@
 התור (רצף):
 1. Cart — Zustand store, coupon/physical, persistence + SSR hydration בטוח, mini-cart drawer, דף /cart מלא RTL לפי refs, Vitest, compare < 11%.
 2. Checkout UI — /checkout RTL, zod, Guest→Google login ב"שלם", מצבי טעינה/שגיאה, interface מוכן ל-Cardcom, Vitest.
-3. Cardcom multi-account — תיקון finalize.ts:312 (מיגרציית enum לקובץ + "ממתין לאישור"), client לפי claude/CARDCOM-ARCHITECTURE.md אבל בלי Escrow, webhook עם אימות מול Cardcom API, state machine חד-כיווני, idempotency, payment_events, טסטים עם mocks.
-4. Coupon redemption — קוד ייחודי + QR אחרי תשלום, דף ספק לסריקה, מימוש אטומי חד-פעמי, סטטוסים active/redeemed/expired, תצוגת לקוח, Vitest.
+3. Cardcom multi-account — תיקון finalize.ts:312 (מיגרציית enum לקובץ + "ממתין לאישור"), client לפי `docs/CARDCOM-ARCHITECTURE.md` אבל בלי Escrow, webhook עם אימות מול Cardcom API, state machine חד-כיווני, idempotency, payment_events, טסטים עם mocks.
+4. Coupon redemption — קוד ייחודי + QR אחרי תשלום, דף ספק לסריקה, מימוש אטומי חד-פעמי, סטטוסים לפי ה-enum החי `voucher_status`: `issued`, `redeemed`, `expired`,
+   `cancelled`, `refunded`. **אין `active`.** כל מצב שאינו `issued` הוא סופי, תצוגת לקוח, Vitest.
 5. אזור אישי — /account: הזמנות, קופונים עם QR, פרטי חשבון, ארנק פנימי קריאה בלבד, auth, RTL לפי refs.
 6. SEO + Performance — metadata דינמי, JSON-LD, sitemap, next/image, Lighthouse 90+ mobile, דוח ב-STATE.md.
 7. Playwright E2E — בית→מוצר→עגלה→checkout (mock)→מימוש→אזור אישי, RTL assertions, CI.
 8. Integration pass — rebase הכל על main לפי תלויות, טסטים ירוקים, type-check, biome, merge, push, STATE.md סופי.
 
-אם STATE.md מראה שחלק כבר הסתיים — דלג עליו והמשך מהנקודה האמיתית.
+אם STATE.md מראה שחלק כבר הסתיים: דלג עליו והמשך מהנקודה האמיתית.
+
+‏**עדכון 01.09.2026: שמונת הסעיפים בתור הזה הושלמו.** ‏PR #6 מוזג, ‏`main` הוא
+הענף היחיד, והפרויקט מחכה להפעלת DNS ידנית שאופיר מאשר. אל תריץ את התור הזה
+מחדש. קרא את `STATE.md` תחת `## המשך מ:` וקח את ה-goal הראשון בתור שם.
+
+‏**תיאור המערכת כפי שהיא בפועל, נמדד מול הפרודקשן:**
+`docs/ARCHITECTURE-OVERVIEW.md`. הוא גובר על כל מסמך אחר ב-`docs/`.
 
 התחל עכשיו.

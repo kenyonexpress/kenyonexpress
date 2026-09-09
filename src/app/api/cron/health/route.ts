@@ -1,7 +1,10 @@
 import { buildHealthAlert, runHealthChecks } from '@/lib/health/checks'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { type SearchDrift, checkSearchDrift } from '@/lib/search/drift'
+import { type DrainResult, drainSearchOutbox } from '@/lib/search/outbox-drain'
 import { bearerMatches } from '@/lib/security/constant-time'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -42,6 +45,30 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   const report = await runHealthChecks()
   const alert = buildHealthAlert(report)
 
+  // The search-index floor rides the same five-minute schedule (marathon
+  // step 9): drain the outbox 132 built, then count DB against index. Both
+  // are inert while Meilisearch is unconfigured, and neither may take the
+  // health answer down with it -- a broken floor sweep is a log line and a
+  // field in the response, not a 500 on the probe.
+  let searchOutbox: DrainResult | { error: string } = { claimed: 0, done: 0, failed: 0 }
+  let searchDrift: SearchDrift = { status: 'skipped', reason: 'not attempted' }
+  try {
+    const admin = createAdminClient()
+    searchOutbox = await drainSearchOutbox(admin)
+    searchDrift = await checkSearchDrift(admin)
+    if (searchDrift.status === 'drift') {
+      log.warn('search.index_drift', {
+        db_count: searchDrift.dbCount,
+        index_count: searchDrift.indexCount,
+        gap: searchDrift.gap,
+      })
+    }
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'unknown'
+    searchOutbox = { error: reason }
+    log.warn('search.floor_sweep_failed', { reason })
+  }
+
   if (alert) {
     log.error('health.degraded', {
       down: report.dependencies.filter((d) => d.status === 'down').map((d) => d.name),
@@ -61,10 +88,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return NextResponse.json(report, {
-    status: report.ok ? 200 : 503,
-    headers: { 'cache-control': 'no-store' },
-  })
+  return NextResponse.json(
+    { ...report, searchOutbox, searchDrift },
+    {
+      status: report.ok ? 200 : 503,
+      headers: { 'cache-control': 'no-store' },
+    },
+  )
 }
 
 export const GET = withRequestLog('/api/cron/health', handleGET)

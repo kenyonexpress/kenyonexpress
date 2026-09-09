@@ -13,43 +13,73 @@
      which showed up as a 150px inset against every other route. */
   max-width: var(--container-page, 1320px);
   margin-inline: auto;
-  /* 138px of bottom padding, not 3rem. Measured: the live page leaves 138px
-     between the last control and the newsletter band, ours left 48, and the
-     92px shortfall pulled the whole footer up the page. Everything below it
-     then scored against the wrong rows of the reference, which is why two
-     100px bands read 56% and 78% while every element above them was landing
-     within a handful of pixels. */
-  padding: 1.5rem 15px 138px;
+  /* Top padding 0: live's breadcrumb sits flush at the top of site-content at
+     every width (y159 at 380, y165 at 1440); the breadcrumb's own padding is
+     the spacing.
+     Bottom: refs/ke_live_computed.json, cart 380 -- entry-content ends y1010
+     and the footer starts y1090, an 80px gap. The 138px this rule used to hold
+     at every width is live's DESKTOP clearance (last control to newsletter
+     band) and it applies from lg only, below. */
+  padding: 0 15px 80px;
   color: #333e48;
   font-size: 14px;
 }
 
-/* Measured off the live cart: 14px, padding 25.004px 0 22.4px. */
+@media (min-width: 1024px) {
+  .cart-page {
+    padding-bottom: 138px;
+  }
+}
+
+/* Two live breadcrumb treatments, per refs/ke_live_computed.json:
+   at 380 a compact full-bleed gray band, nav y159 42px tall on #f7f6f6;
+   from 768 the transparent 71px nav with padding 25.004px 0 22.4px. */
 .cart-page__breadcrumb {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 25.004px 0 22.4px;
+  margin-inline: -15px;
+  /* 6px, not the checkout's 9: this band's link carries py-1 for its touch
+     target, so 11.5px measured 52px against live's 42; 6px + the link's own
+     padding lands on the 42 the min-height guards. */
+  padding: 6px 15px;
+  min-height: 42px;
+  background: #f7f6f6;
   font-size: 14px;
   color: #333e48;
+}
+
+@media (min-width: 768px) {
+  .cart-page__breadcrumb {
+    margin-inline: 0;
+    padding: 25.004px 0 22.4px;
+    min-height: 0;
+    background: transparent;
+  }
 }
 
 .cart-page__breadcrumb a:hover {
   color: #0062bd;
 }
 
-/* Present for the document outline, absent from the layout. See the note in
-   CartPageView for why this is hidden rather than removed. */
+/* VISIBLE, at every width. The comment that stood here said the live page has
+   no visible heading; refs/ke_live_computed.json says otherwise at all three
+   widths -- h1.entry-title, 48px tall at 39.998px/500 in #333e48, 40px above
+   entry-content (y223/311 at 380, y237/325 at 1440). The 22px top margin is
+   the gap under the 380 breadcrumb band (201 -> 223); from 768 the
+   breadcrumb's own 22.4px bottom padding is the whole gap (192 -> 193). */
 .cart-page__title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
+  margin: 22px 0 40px;
+  font-size: 39.998px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #333e48;
+}
+
+@media (min-width: 768px) {
+  .cart-page__title {
+    margin-top: 0;
+  }
 }
 
 .cart-page__grid {
@@ -141,6 +171,10 @@
   border-radius: 22px;
   overflow: hidden;
   height: var(--cart-touch);
+  /* The auto margin rides on the LAST flex child so the row splits
+     remove+price (inline-start, the right) from the qty pill (inline-end, the
+     left) -- live's side order, see the note in CartLineItem. */
+  margin-inline-start: auto;
 }
 
 .cart-line__qty-btn {
@@ -178,7 +212,6 @@
   /* The price is the one thing on the row that has to be findable at a glance,
      and on Electro it is the accent red rather than the body slate. */
   color: var(--cart-price-red);
-  margin-inline-start: auto;
 }
 
 .cart-line__remove {
@@ -195,6 +228,120 @@
 .cart-line__remove:hover:not(:disabled) {
   color: #dc3545;
   background: #fef2f2;
+}
+
+/* Desktop never shows the unit-price row or the stacked-row labels; the card
+   already carries the line total. */
+.cart-line__unit,
+.cart-line__mlabel {
+  display: none;
+}
+
+/* ===========================================================================
+   BELOW 768 THE LINE IS LIVE'S STACKED WOOCOMMERCE ROWS, NOT THE CARD.
+   refs/ke_live_computed.json, cart@380: one cart_item renders as label rows
+   remove 57 / name 83 / price 54 / quantity 75 / subtotal 54 (~336 with cell
+   padding), values on the left (x23) and labels on the right, no thumbnail.
+   Our 177px card left every block after it ~200px above the reference, which
+   is what the 65.6% and 76.3% bands at y900-1300 were reading. The card DOM
+   is kept; display:contents flattens it and order re-stacks it.
+   =========================================================================== */
+@media (max-width: 767px) {
+  .cart-page__items {
+    border: none;
+    border-radius: 0;
+  }
+
+  .cart-line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 6px 0;
+    gap: 0;
+  }
+
+  .cart-line__thumb {
+    display: none;
+  }
+
+  .cart-line__body,
+  .cart-line__footer {
+    display: contents;
+  }
+
+  .cart-line__remove {
+    order: 1;
+    grid-column: 1 / -1;
+    /* end = the LEFT in RTL; live's remove link sits at x23. */
+    justify-self: end;
+    min-height: 57px;
+  }
+
+  .cart-line__name {
+    order: 2;
+    grid-column: 1 / -1;
+    min-height: 83px;
+    display: flex;
+    align-items: center;
+  }
+
+  .cart-line__warning {
+    order: 3;
+    grid-column: 1 / -1;
+  }
+
+  .cart-line__coupon-note {
+    order: 4;
+    grid-column: 1 / -1;
+  }
+
+  .cart-line__unit {
+    order: 5;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 54px;
+    font-size: 16.996px;
+  }
+
+  .cart-line__mlabel {
+    display: flex;
+    align-items: center;
+    font-size: 16.996px;
+    justify-self: start;
+  }
+
+  /* DOM order in the footer is remove, price-label, price, qty-label, qty;
+     live stacks quantity ABOVE the line total, so order swaps the two pairs.
+     The labels also carry live's row heights (quantity 75, subtotal 54) so
+     the grid rows measure what the reference measures. */
+  .cart-line__footer .cart-line__mlabel:first-of-type {
+    order: 8; /* מחיר: (line total) */
+    min-height: 54px;
+  }
+
+  .cart-line__footer .cart-line__mlabel:last-of-type {
+    order: 6; /* כמות: */
+    min-height: 75px;
+  }
+
+  .cart-line__qty {
+    order: 7;
+    justify-self: end;
+    margin-inline-start: 0;
+    /* Height stays var(--cart-touch): live's input is 40px but the 44px
+       touch floor is a standing project rule and outranks the 4px. The row's
+       75px comes from the label beside it either way. */
+  }
+
+  .cart-line__price {
+    order: 9;
+    justify-self: end;
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
 }
 
 .cart-sidebar {
@@ -413,7 +560,10 @@
 }
 
 /* Discount code. Sits between the rows and the total because that is the order
-   it is read in: what the items cost, what the code takes off, what is left. */
+   it is read in: what the items cost, what the code takes off, what is left.
+   Below 768 it is a <details> whose summary is the only row; from 768 up the
+   summary is inert and the form is forced visible, the footer-disclosure
+   pattern. */
 .cart-coupon {
   display: flex;
   flex-direction: column;
@@ -421,6 +571,38 @@
   padding-block: 16px;
   border-top: 1px solid #ddd;
   font-size: 14px;
+}
+
+.cart-coupon__summary {
+  list-style: none;
+  cursor: pointer;
+  color: #657888;
+  font-size: 14px;
+  /* The 44px touch floor is a standing project rule; the summary is the one
+     control a phone shopper taps to reach the coupon field. */
+  display: flex;
+  align-items: center;
+  min-height: var(--cart-touch);
+}
+
+.cart-coupon__summary::-webkit-details-marker {
+  display: none;
+}
+
+.cart-coupon__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .cart-coupon--disclosure > summary {
+    pointer-events: none;
+  }
+
+  .cart-coupon--disclosure > *:not(summary) {
+    display: flex !important;
+  }
 }
 
 .cart-coupon__row {
@@ -510,4 +692,54 @@
 .cart-sidebar__row--discount {
   color: #328614;
   font-weight: 700;
+}
+
+/* ===========================================================================
+   MOBILE COMPACTION, AT THE END OF THE FILE ON PURPOSE: these override base
+   rules declared above at equal specificity, so source order is the override
+   mechanism. All values are live's, refs/ke_live_computed.json cart@380.
+   =========================================================================== */
+@media (max-width: 767px) {
+  /* Live's actions row: a full-width 47px gray pill (y689 x23 w334), 42px
+     under the last item row (table tr ends 647, button starts 689). */
+  .cart-page__clear {
+    width: 100%;
+    margin-top: 42px;
+  }
+
+  /* Live's order-total row is 41px (y898..939); the desktop 1rem block
+     padding measured 70. */
+  .cart-sidebar__total {
+    padding: 8px 0;
+  }
+
+  /* Collapsed coupon costs one 44px summary row; the summary's own touch
+     height is the row, so the block needs no padding of its own. */
+  .cart-coupon {
+    padding-block: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Live's gap between the actions row (ends 736) and the collaterals h2
+     (starts 795) is ~56px; the desktop grid gap is 32. */
+  .cart-page__grid {
+    gap: 56px;
+  }
+
+  /* Live: h2 795..846, table starts 858 -- 12px under the heading. */
+  .cart-sidebar__title {
+    margin-bottom: 12px;
+  }
+
+  .cart-sidebar__rows {
+    margin-bottom: 8px;
+  }
+
+  /* Live's collaterals hold nothing after the checkout button; the note's
+     caveat is re-stated by the checkout itself, which reprices before
+     payment. */
+  .cart-sidebar__note {
+    display: none;
+  }
 }

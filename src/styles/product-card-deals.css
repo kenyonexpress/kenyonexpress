@@ -1,20 +1,49 @@
-/* refs/ke_live_singlefile.html — elementor-9175 / jet-listing-grid */
+/* refs/ke_live_home.html — elementor-9175 / jet-listing-grid
+   (was cited as ke_live_singlefile.html, a file retired in 62eb74956) */
 
 .jet-listing-grid-deals {
   display: flex;
   flex-wrap: wrap;
 }
 
-/* live: item box 287.5px (1150/4) x 501px; 8px vertical padding around the
-   485px card, no horizontal gutters; dividers via border only */
+/*
+  THE COLUMN COUNT WAS WRONG ON PHONES, AND IT WAS MOST OF THE 380 SCORE.
+
+  This rule set had 50% as the base and 25% from 1024up, so every viewport
+  below 1024 -- a 380px phone included -- rendered TWO cards per row. Measured
+  off refs/ke_live_computed.json, live renders:
+
+    width   card      per row   rows   first row y   pitch
+    ------  --------  -------   ----   -----------   -----
+    380     330x548      1       31        443        549
+    768     335x501      2       16        754        501
+    1440    288x501      4        8        898        501
+
+  One per row on a phone, not two. Two half-width cards where live has one
+  full-width card mismatches every pixel of the grid AND halves the page
+  height, which then throws every band below it out of alignment -- the home
+  page scored 40.45% at 380 against 7.11% at 1440.
+
+  The 4-up switch moves 1024 -> 1200: 1024 is not a breakpoint live has. Its
+  own switch is Bootstrap's xl, and the 4-column geometry is only measured at
+  1440. A 1024px tablet was being given the desktop grid on our side and the
+  2-up grid on live's.
+*/
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
   padding: 8px 0;
-  max-width: 50%;
-  flex: 0 0 50%;
+  max-width: 100%;
+  flex: 0 0 100%;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
+  .jet-listing-grid-deals__item {
+    max-width: 50%;
+    flex: 0 0 50%;
+  }
+}
+
+@media (min-width: 1200px) {
   .jet-listing-grid-deals__item {
     max-width: 25%;
     flex: 0 0 25%;
@@ -24,23 +53,21 @@
 /* live: divider on the LEFT edge (inline-end in RTL) of every item except the
    last one in each row (nth-child(4n)) — lines at x 433 / 721 / 1009 */
 .jet-listing-grid-deals__item .p_con {
-  border-inline-end: 1px solid #ddd;
+  border-inline-end: 1px solid var(--color-border);
   height: 100%;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1200px) {
   .jet-listing-grid-deals__item:nth-child(4n) .p_con {
     border-inline-end: none;
   }
 }
 
+/* One card per row below 768: there is no neighbour to divide from, and live
+   draws no rule there. The old block drew one on every card except the first
+   and last, which was a vertical line down the middle of a phone. */
 @media (max-width: 767px) {
   .jet-listing-grid-deals__item .p_con {
-    border-inline-end: 1px solid #ddd;
-  }
-
-  .jet-listing-grid-deals__item:first-child .p_con,
-  .jet-listing-grid-deals__item:last-child .p_con {
     border-inline-end: none;
   }
 }
@@ -56,7 +83,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 24px;
-  background: #fff;
+  background: var(--color-surface);
   transition: box-shadow 0.3s;
 }
 
@@ -70,11 +97,11 @@
   font-size: 12px;
   font-weight: 400;
   line-height: 24px; /* live: category row is 24px tall */
-  color: #657888;
+  color: var(--color-muted-2);
 }
 
 .p_con__category:hover {
-  color: #333e48;
+  color: var(--color-heading);
 }
 
 .p_con__title-wrap {
@@ -85,7 +112,7 @@
 
 .p_con__title,
 .jet-listing-grid-deals h2.p_con__title {
-  color: #0062bd;
+  color: var(--color-link);
   font-size: 22px;
   line-height: 32px; /* live: 2 clamped lines = 64px */
   margin: 0;
@@ -124,14 +151,14 @@
   position: absolute;
   inset-inline-end: 0;
   z-index: 2;
-  background-color: #e00;
+  background-color: var(--color-deal-badge);
   padding: 2px 10px;
   border-radius: 4px;
 }
 
 .discount_per {
   direction: ltr;
-  color: #fff;
+  color: var(--color-surface);
   text-align: center;
   display: flex;
   justify-content: center;
@@ -140,12 +167,57 @@
   font-weight: 700;
 }
 
+/*
+  THE FOOTER STACKS ON A PHONE, AND THAT IS THE WHOLE 47px.
+
+  This was `flex-direction: row` at every width. Live puts the price row and the
+  add-to-cart button on ONE line from 768 up and on TWO lines at 380, measured:
+
+    380   prices y872 h27 full width (x49 w282); cart y920 h40 at x290
+          -> a 21px gap, and a card 548 tall
+    1440  cart y1327 h40 and prices y1333 h27 share a line
+          -> a card 501 tall
+
+  47px per card. Card one still lined up, so the error looked small; by the
+  fourth card the grid was 141px out of step and the 380 bands below y1100 were
+  reading 50-74%. A per-card height error is the one kind that compounds.
+
+  The cart sits at the inline-end (visually left, RTL) on its own row, which is
+  where live puts it.
+*/
 .p_con__footer {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 21px;
   margin-top: 16px;
+}
+
+.p_con__footer .atc {
+  align-self: flex-end;
+}
+
+/* Live's price row is 27px tall on a phone (y872 h27); ours came out at 24,
+   which left the card 2px short and drifted 8px by the fourth row. */
+.p_con__footer .p_con__prices {
+  min-height: 27px;
+}
+
+@media (min-width: 768px) {
+  .p_con__footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0;
+  }
+
+  .p_con__footer .atc {
+    align-self: auto;
+  }
+
+  .p_con__footer .p_con__prices {
+    min-height: 0;
+  }
 }
 
 .p_con__prices {
@@ -158,7 +230,7 @@
 }
 
 .p_con__strike {
-  color: #2d2d2d;
+  color: var(--color-deal-price);
   font-size: 14px;
   font-weight: 400;
   text-decoration: line-through;
@@ -166,14 +238,14 @@
 }
 
 .p_con__sale {
-  color: #c93636;
+  color: var(--color-deal-sale);
   font-size: 16px;
   font-weight: 700;
   flex-grow: 1;
 }
 
 .p_con__single-price {
-  color: #2d2d2d;
+  color: var(--color-deal-price);
   font-size: 16px;
   font-weight: 700;
 }
@@ -199,7 +271,7 @@
   justify-content: center;
   align-self: flex-start;
   width: 40px;
-  background-color: #eaeaea;
+  background-color: var(--color-bottom-bar);
   padding: 10px 11px 10px 10px;
   border: none;
   border-radius: 200px;
@@ -216,10 +288,10 @@
 .p_con .atc button svg {
   width: 20px;
   height: 20px;
-  fill: #fff;
+  fill: var(--color-surface);
 }
 
 .p_con:hover .atc a,
 .p_con:hover .atc button {
-  background: #fed700 !important;
+  background: var(--color-brand-primary) !important;
 }

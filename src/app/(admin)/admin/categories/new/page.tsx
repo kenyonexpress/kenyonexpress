@@ -1,12 +1,12 @@
 import CategoryForm from '@/components/admin/CategoryForm'
-import { requireAdminPage } from '@/lib/admin/rbac'
+import { requireSection } from '@/lib/admin/rbac'
 import { excludeDeleted } from '@/lib/soft-delete'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'קטגוריה חדשה' }
 
 export default async function NewCategoryPage() {
-  await requireAdminPage()
+  await requireSection('catalog', 'write')
   const supabase = await createClient()
   const { data: categories } = await excludeDeleted(
     supabase.from('categories').select('id, name_he').eq('is_active', true),

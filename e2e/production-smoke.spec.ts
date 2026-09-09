@@ -19,8 +19,27 @@ import { addOpenProductToCart, openPurchasableProduct } from './helpers'
  * redeem vouchers must not point at a live commerce database.
  */
 
-/** ILS as the app prints it, e.g. "₪1,234.50" or "₪99". */
-const ILS = /₪\s?([\d,]+(?:\.\d{1,2})?)/
+/**
+ * ILS AS THE APP ACTUALLY PRINTS IT: THE DIGITS FIRST, THEN THE SIGN.
+ *
+ * This used to read `/₪\s?([\d,]+...)/` -- sign first -- and that is why this
+ * spec failed with "the order summary printed no shekel amount" against a cart
+ * that was rendering prices perfectly well. The app has not emitted that order
+ * since 2026-09-04. `lib/money-format.ts` emits
+ * `U+2066 1,234.50 U+00A0 ₪ U+2069`, and its header records the measurement
+ * behind every character: the sign goes to the RIGHT of the digits in an RTL
+ * document, a plain space lets the bidi algorithm migrate it back to the left,
+ * and the isolate is what pins it. Sign-first was the reported defect, not the
+ * contract.
+ *
+ * So the assertion was wrong and the app was right, which is the only reason
+ * to change the test rather than the code. `\s` matches the NBSP, and the
+ * isolates are zero-width and fall outside the match.
+ */
+const ILS = /([\d,]+(?:\.\d{1,2})?)\s?₪/
+
+/** The fraction digits of a printed price, or undefined when it prints whole. */
+const ILS_FRACTION = /[\d,]+\.(\d+)\s?₪/
 
 function parseIls(text: string): number | null {
   const match = ILS.exec(text)
@@ -76,7 +95,7 @@ test.describe('production smoke: guest cart to checkout', () => {
     const amounts = await summary.getByText(ILS).allTextContents()
     expect(amounts.length, 'the order summary printed no shekel amount').toBeGreaterThan(0)
     for (const raw of amounts) {
-      const decimals = /₪\s?[\d,]+\.(\d+)/.exec(raw)?.[1]
+      const decimals = ILS_FRACTION.exec(raw)?.[1]
       expect(decimals?.length ?? 0, `"${raw}" is not a whole number of agorot`).toBeLessThanOrEqual(
         2,
       )

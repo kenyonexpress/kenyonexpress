@@ -1,6 +1,7 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
+import { OFF_PAGE } from '@/styles/tokens'
 
 /**
  * Outbox notification builders for GOAL 6 (+ voucher_issued for migration 102).
@@ -21,23 +22,30 @@ import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
  */
 
 /**
- * The site's brand yellow, and it must stay the site's brand yellow.
+ * THE OFF-PAGE PALETTE, IMPORTED RATHER THAN COPIED.
  *
- * This was `#f5c518` in both email builders while every stylesheet in `src`
- * used `#fed700`. Nothing failed and nothing looked broken in isolation: a
- * transactional email simply arrived in a slightly different yellow from the
- * page it links to, which is the kind of thing only a customer comparing the
- * two ever notices, and it was hardcoded in exactly two places.
+ * This module emits inline styles, because mail clients drop <style> blocks and
+ * do not resolve CSS custom properties -- so the colour has to reach the string
+ * as a literal. It does NOT have to be WRITTEN as a literal here: `OFF_PAGE` in
+ * `src/styles/tokens.ts` is plain data with no CSS import behind it, so a
+ * build-time import gives the same string and one place to change it.
  *
- * `src/lib/email/brand-colour.test.ts` now reads the token out of
- * `src/app/globals.css` and fails if these drift apart again. It cannot be
- * imported from there at runtime: this module builds a string of inline styles
- * for mail clients that do not honour stylesheets, so the value has to be a
- * literal here.
+ * The previous arrangement was two constants in each of two builders, and the
+ * yellow had already drifted: both shipped `#f5c518` while every stylesheet in
+ * `src` painted `#fed700`, which only a customer holding the email next to the
+ * page would notice. `brand-colour.test.ts` caught that pair; the five neutrals
+ * beside them were still unguarded, and a `.ts` file was invisible to the hex
+ * gate entirely.
  */
-const BRAND = '#fed700'
-const INK = '#1a1a1a'
-const MUTED = '#6b7280'
+const {
+  brand: BRAND,
+  ink: INK,
+  muted: MUTED,
+  rule: RULE,
+  panel: PANEL,
+  paper: PAPER,
+  panelWarm: PANEL_WARM,
+} = OFF_PAGE
 
 export interface BuiltNotification {
   subject: string
@@ -89,7 +97,7 @@ function trimSite(siteUrl: string): string {
 
 function shell(bodyHtml: string, footer: string): string {
   return `
-    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#f5f5f5;padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
+    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">KenyonExpress</div>
         ${bodyHtml}
@@ -178,7 +186,7 @@ export function buildOrderPaidEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">התשלום התקבל</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -240,7 +248,7 @@ export function buildOrderShippedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">ההזמנה שלך נשלחה</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -306,7 +314,7 @@ export function buildSupplierSaleEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">מכירה חדשה</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -317,7 +325,7 @@ export function buildSupplierSaleEmail(
             )
             .join('')}
         </div>
-        <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px;border-top:1px solid #e5e7eb;padding-top:12px">
+        <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px;border-top:1px solid ${RULE};padding-top:12px">
           <div>סכום ההזמנה אצלכם: <strong>${escapeHtml(amount)}</strong></div>
           <div style="color:${MUTED}">מספר הזמנה <span dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(ref)}</span></div>
         </div>
@@ -372,11 +380,11 @@ export function buildVoucherRedeemedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">הקופון מומש</div>
         <div style="font-size:14px;color:${INK};margin-top:8px">${escapeHtml(product)}</div>
         ${supplier ? `<div style="font-size:13px;color:${MUTED};margin-top:2px">${escapeHtml(supplier)}</div>` : ''}
-        ${code ? `<div dir="ltr" style="${LTR_ISOLATE_STYLE};font-family:monospace;font-size:22px;font-weight:700;letter-spacing:3px;color:${INK};text-align:center;margin:16px 0;padding:12px;background:#f9fafb;border-radius:10px">${escapeHtml(code)}</div>` : ''}
+        ${code ? `<div dir="ltr" style="${LTR_ISOLATE_STYLE};font-family:monospace;font-size:22px;font-weight:700;letter-spacing:3px;color:${INK};text-align:center;margin:16px 0;padding:12px;background:${PANEL};border-radius:10px">${escapeHtml(code)}</div>` : ''}
         <div style="font-size:14px;color:${INK};line-height:2">
           ${when ? `<div style="color:${MUTED}">מומש ב-${escapeHtml(when)}</div>` : ''}
           ${collected > 0 ? `<div>נגבה בבית העסק: <strong>${escapeHtml(formatAgorot(collected))}</strong></div>` : ''}
@@ -481,7 +489,7 @@ export function buildVoucherGiftedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(
           sender ? `${sender} שלח לך מתנה` : 'קיבלת מתנה',
         )}</div>
@@ -489,7 +497,7 @@ export function buildVoucherGiftedEmail(
         <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
         ${
           message
-            ? `<div style="font-size:14px;color:${INK};line-height:1.9;margin-top:14px;padding:14px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb">${escapeHtml(message)}</div>`
+            ? `<div style="font-size:14px;color:${INK};line-height:1.9;margin-top:14px;padding:14px;background:${PANEL};border-radius:10px;border:1px solid ${RULE}">${escapeHtml(message)}</div>`
             : ''
         }
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">קבלת הקופון</a>
@@ -539,7 +547,7 @@ export function buildVoucherExpiringEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(`הקופון פג ${when}`)}</div>
         <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
         ${supplier ? `<div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>` : ''}
@@ -586,7 +594,7 @@ export function buildCashbackCreditedEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">זיכינו את הארנק שלך${ref ? ` על הזמנה ${escapeHtml(ref)}` : ''}. אפשר להשתמש בסכום בקנייה הבאה.</div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
@@ -634,10 +642,10 @@ export function buildInvoiceDeadEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};margin-top:10px">${escapeHtml(`הנפקת ${documentType} נכשלה ${attempts} פעמים והפסיקה לנסות.`)}</div>
-        <div style="font-size:13px;color:${MUTED};margin-top:10px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">${escapeHtml(reason)}</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:10px;padding:12px;background:${PANEL};border-radius:8px;border:1px solid ${RULE}">${escapeHtml(reason)}</div>
         <div style="font-size:14px;color:${INK};margin-top:12px">הלקוח שילם ואין לו קבלה.</div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">פתיחת ההזמנה באדמין</a>
       </div>`,
@@ -685,7 +693,7 @@ export function buildLowStockEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:12px">
           <div>זמין למכירה: <strong>${available}</strong></div>
@@ -742,7 +750,7 @@ export function buildReconciliationGapEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};margin-top:10px">פער מסוג "אין אצלנו רישום" פירושו לקוח שחויב ואין לו הזמנה, והוא לא ייפתח פנייה כי אין לו מספר הזמנה לצטט.</div>
         <div style="font-size:13px;color:${MUTED};margin-top:12px;line-height:2">
@@ -804,7 +812,7 @@ export function buildRefundCompletedEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(headline)}</div>
         ${feeAgorot > 0 ? `<div style="font-size:14px;color:${MUTED};margin-top:8px">נוכו דמי ביטול בסך ${escapeHtml(formatAgorot(feeAgorot))} לפי התקנון.</div>` : ''}
@@ -851,7 +859,7 @@ export function buildWelcomeEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)} החשבון שלך מוכן.</div>
         <div style="font-size:14px;color:${MUTED};margin-top:8px">הקופונים שתקנו יחכו לך באזור האישי, עם קוד לסריקה בבית העסק.</div>

@@ -1,5 +1,35 @@
 # ארכיטקטורת Mobile Super-App: React Native + Expo
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⛔ **‏`apps/web` אינו קיים, ולא התקיים מעולם. כל אזכור שלו כאן הוא הצעה.**
+>
+> ‏מבנה הריפו בפועל, ‏01.09.2026:
+>
+> | מה שמופיע כאן | מה שקיים |
+> |---|---|
+> | `apps/web/` | **לא קיים.** אפליקציית ה-Next יושבת ב-`src/app/`, קוד שרת ב-`src/server` וב-`src/lib` |
+> | `apps/api/` | **לא קיים.** אין שירות Hono ואין BFF נפרד |
+> | `packages/*` | **לא קיים.** אין `packages/` בריפו כלל |
+> | `apps/mobile/` | קיים. זו התיקייה **היחידה** תחת `apps/` |
+>
+> ‏M1 ו-M2 בסעיף 2 הם **תוכנית מעבר שלא בוצעה**, לא תיאור מצב. הם נשארים כאן
+> ‏כתוכנית. אל תכתוב נתיב, ‏import או הגדרת Vercel על סמך שום שורה שמזכירה
+> ‏`apps/web`. ‏`CLAUDE.md` עדיין קובע נתיב יחיד:
+> ‏`/Users/ofir/kenyonexpress-web/kenyonexpress`, בלי מבנה מקונן.
+>
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `consent_events` | nothing; never built |
+> | `notification_delivery_events` | `notification_outbox` |
+> | `notifications_outbox` | `notification_outbox` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 מסמך תכנון מחייב. תאריך: 2026-07-17. ענף: `phase5/homepage`.
 מיקום קנוני: `docs/`. תיקוני העוגן וספיגת מסמך ה-PWA הישן הושלמו.
 

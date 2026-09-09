@@ -1,6 +1,10 @@
 'use client'
 
 import {
+  shekelsFromIls as sharedShekelsFromIls,
+  shekelsFromIlsRounded as sharedShekelsFromIlsRounded,
+} from '@/lib/money-format'
+import {
   Bar,
   CartesianGrid,
   ComposedChart,
@@ -48,11 +52,10 @@ export type SalesPoint = {
 }
 
 /** Shekels in, unlike `@/lib/money-format`'s agorot one. See its header. */
-const shekelsFromIls = (value: number) =>
-  `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const shekelsFromIls = (value: number) => sharedShekelsFromIls(value)
 
 /** Axis ticks are scanned, not read: ₪1,250.00 at every gridline is noise. */
-const shortShekels = (value: number) => `₪${Math.round(value).toLocaleString('he-IL')}`
+const shortShekels = (value: number) => sharedShekelsFromIlsRounded(value)
 
 export default function SalesChart({ points }: { points: SalesPoint[] }) {
   if (points.length === 0) {

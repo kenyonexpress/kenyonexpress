@@ -18,6 +18,8 @@ export type SaleLine = {
   orderId: string
   productId: string | null
   productName: string | null
+  supplierId: string | null
+  supplierName: string | null
   /** 'coupon' or 'physical'. */
   productType: string
   /** platform_percent as snapshotted on the order item, not today's value. */
@@ -368,4 +370,46 @@ export function totalsOf(buckets: PeriodBucket[]): Omit<PeriodBucket, 'key'> {
     supplierDueIls: round2(totals.supplierDueIls),
     aovIls: totals.orders > 0 ? round2(totals.gmvIls / totals.orders) : 0,
   }
+}
+
+export type SupplierRow = {
+  supplierId: string | null
+  supplierName: string
+  items: number
+  gmvIls: number
+  platformRevenueIls: number
+  supplierDueIls: number
+}
+
+/** Same fold as topProducts, keyed by supplier -- who moves the money. */
+export function topSuppliers(lines: SaleLine[], limit = 10): SupplierRow[] {
+  const rows = new Map<string, SupplierRow>()
+  for (const line of lines) {
+    const key = line.supplierId ?? `unknown:${line.supplierName ?? ''}`
+    let row = rows.get(key)
+    if (!row) {
+      row = {
+        supplierId: line.supplierId,
+        supplierName: line.supplierName ?? 'ספק שנמחק',
+        items: 0,
+        gmvIls: 0,
+        platformRevenueIls: 0,
+        supplierDueIls: 0,
+      }
+      rows.set(key, row)
+    }
+    row.items += 1
+    row.gmvIls += line.gmvIls
+    row.platformRevenueIls += line.platformFeeIls
+    row.supplierDueIls += line.supplierDueIls
+  }
+  return [...rows.values()]
+    .map((row) => ({
+      ...row,
+      gmvIls: round2(row.gmvIls),
+      platformRevenueIls: round2(row.platformRevenueIls),
+      supplierDueIls: round2(row.supplierDueIls),
+    }))
+    .sort((a, b) => b.gmvIls - a.gmvIls || b.items - a.items)
+    .slice(0, limit)
 }

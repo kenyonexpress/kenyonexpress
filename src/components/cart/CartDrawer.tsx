@@ -34,7 +34,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
             fallbackClassName="h-full w-full"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-xs text-slate-400">
+          <div className="flex h-full w-full items-center justify-center bg-surface-hover text-xs text-icon-empty">
             —
           </div>
         )}

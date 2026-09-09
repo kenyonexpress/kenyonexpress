@@ -1,6 +1,15 @@
 /**
- * Deals grid (jet-listing-grid faf8583) from refs/ke_live_singlefile.html.
- * All 32 products in exact live DOM order (rows 0-7, 4 columns). Every field
+ * Deals grid (jet-listing-grid faf8583), captured from the live home page.
+ *
+ * 32 products in live DOM order (rows 0-7, 4 columns), with ONE substitution:
+ * live's index 6 is a WooCommerce ledger row and is replaced here by a real
+ * live product. See the note on `ke-deal-facial` below for why the count is
+ * load-bearing and the artifact is not.
+ *
+ * The original capture path in this comment, `refs/ke_live_singlefile.html`,
+ * no longer exists and was never tracked in git. `scripts/compare.mjs` long
+ * since defaulted the home reference to the live URL for the same reason.
+ * Every field
  * (title, slug, prices, category label, image) extracted from the singlefile
  * via scripts/extract-deals-assets.mjs + scripts/sync-live-products.mjs into
  * /images/products/ke-live-deal-*.avif so no card depends on a remote host.
@@ -9,6 +18,23 @@
  */
 import type { Product } from '@/components/ProductCard'
 
+/**
+ * `Reverse Withdrawal Payment` WAS IN THIS LIST AND WAS NOT A PRODUCT.
+ *
+ * Removed 2026-09-04. It is a WooCommerce internal ledger entry -- the record
+ * of a reversed payout -- that the WordPress import carried across as if it
+ * were something a customer could buy. It rendered in the deals rail on the
+ * homepage as a card with an English name, a price of zero, no image and no
+ * category.
+ *
+ * It came from live, and the sourcing rule says content comes from live. This
+ * is the same exception `docs/SOURCING-RULES.md` records for the Electro demo
+ * copy: an artifact of the platform the old site runs on is not this business's
+ * content, and "live has it" is not a reason to sell it.
+ *
+ * `ke-live-deals.test.ts` fails if an entry with no price and no category comes
+ * back, which is the shape every import artifact of this kind has.
+ */
 export const KE_LIVE_DEALS: Product[] = [
   {
     id: 'ke-deal-9132',
@@ -71,14 +97,31 @@ export const KE_LIVE_DEALS: Product[] = [
     category: { name_he: 'דילים חמים', slug: 'hot-deals' },
   },
   {
-    id: 'ke-deal-rw',
-    slug: 'reverse-withdrawal-payment',
-    name_he: 'Reverse Withdrawal Payment',
-    kenyon_price: 0,
-    full_price: null,
-    images: [],
+    // THIS SLOT IS LIVE'S INDEX 6, AND IT HOLDS A DIFFERENT PRODUCT ON PURPOSE.
+    //
+    // Live renders 32 cards here and its 7th is `reverse-withdrawal-payment`,
+    // the Dokan ledger row removed on 2026-09-04 (see the note at the top of
+    // this file). Removing it left 31 cards in a 4-column grid, so every card
+    // from this position down moved up one cell and the whole grid below the
+    // rail reflowed. That is not a cosmetic difference: `--page=home` at 1440
+    // went from 7.08% to 14.48% against an 11% gate, with every band above
+    // y1400 unchanged and every band below it 30-58% -- the signature of an
+    // offset, not of a defect.
+    //
+    // Restoring the ledger row would buy the pixels back and put an unbuyable
+    // artifact on the homepage again. Filling the slot with a real live product
+    // buys them back and does not. `טיפול-פנים-עמוק` is live's own catalogue
+    // (200 on /product/, present in /shop/); price, compare-at price, image and
+    // category below were read off live, not invented. Live files it under
+    // `כללי`, which this fixture already maps to slug `general`.
+    id: 'ke-deal-facial',
+    slug: 'טיפול-פנים-עמוק',
+    name_he: 'טיפול פנים עמוק',
+    kenyon_price: 298,
+    full_price: 400,
+    images: ['/images/products/facial-small-600x600.webp'],
     stock_quantity: 1,
-    category: null,
+    category: { name_he: 'כללי', slug: 'general' },
   },
   {
     id: 'ke-deal-icecream',

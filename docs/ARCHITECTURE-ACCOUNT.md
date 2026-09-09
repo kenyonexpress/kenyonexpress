@@ -1,5 +1,17 @@
 # ARCHITECTURE-ACCOUNT.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. See `docs/ARCHITECTURE-OVERVIEW.md`.**
+>
+> Escrow appears here as a state the customer can be shown. It is not: nothing
+> writes `escrow_held` or `escrow_released`, and the account area has no escrow
+> to display. A coupon is `issued` until it is scanned, and then it is
+> `redeemed`, terminally.
+>
+> `/account/subscriptions` (migration 135) is live and is not described below.
+> The `_agorot` reads in this document are correct; 26 of those columns are
+> `GENERATED ALWAYS ... STORED` and must be read, not recomputed.
+
 KenyonExpress **My Account** architecture (binding customer dashboard spec).
 
 Status: BINDING · worktree `/Users/ofir/kenyonexpress-web/ke-arch-account` · branch `arch/account` (2026-07-30)

@@ -113,18 +113,16 @@ test.describe('no sideways scroll at 320px', () => {
    *
    * `/checkout` with an empty cart redirects to `/cart`, so that entry measures
    * the cart at 320px under this route's name and the real form has never been
-   * width-tested at all. Nor have steps 2 to 4: the wizard keeps every step
-   * mounted and hides the ones that are not current, so even a seeded visit
-   * only ever puts `details` on the screen.
+   * width-tested at all.
    *
-   * This is the third gate found with that hole on the same day, after the CLS
-   * sweep and the a11y sweep, and all three had `/checkout` in their list.
-   *
-   * It walks with the shopper's own "המשך" button, which refuses a step whose
-   * fields do not validate, so a step this gate reaches is a step a shopper can
-   * reach.
+   * Since D25 there is no wizard below 768: checkout-page.css lays every step
+   * section out as one long page, which is live's own mobile layout, and hides
+   * the stepper and the per-step continue buttons. That is BETTER for this
+   * gate, not worse -- every field of every step is on screen at once, so one
+   * measurement covers what four wizard walks used to. The old version of this
+   * test advanced with "המשך", which no longer exists at this width.
    */
-  test('every step of a seeded checkout fits 320px', async ({ page }) => {
+  test('the seeded single-page checkout fits 320px, every section at once', async ({ page }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
     await page.goto('/checkout')
@@ -133,41 +131,29 @@ test.describe('no sideways scroll at 320px', () => {
       '/checkout',
     )
 
-    const width = async (label: string) => {
-      await page.waitForTimeout(400)
-      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
-      expect(
-        scrollWidth,
-        `the checkout ${label} step is ${scrollWidth}px wide in a 320px viewport`,
-      ).toBeLessThanOrEqual(321)
-    }
+    // The mobile layout really is the single page: the stepper is gone and
+    // the fields of steps 1, 2 and 4 are all visible with nothing clicked.
+    await expect(page.locator('.checkout-steps')).toBeHidden()
+    await expect(page.locator('#co-first-name')).toBeVisible()
+    await expect(page.locator('#co-city')).toBeVisible()
+    await expect(page.locator('.checkout-pay-btn')).toBeVisible()
 
-    const next = page.locator('.checkout-nav__next').first()
-    const advance = async (to: string) => {
-      await next.click()
-      await expect(
-        page.locator('.checkout-steps__item[aria-current="step"]'),
-        `the wizard would not advance to ${to}`,
-      ).toContainText(to)
-    }
-
-    await width('details')
-
+    // Filled fields, because Hebrew text in the inputs is what widens an RTL
+    // form that only fits while empty.
     await page.fill('#co-first-name', 'אופיר')
     await page.fill('#co-last-name', 'בדיקה')
     await page.fill('#co-phone', '0501234567')
     await page.fill('#co-email', 'qa@example.com')
-    await advance('כתובת למשלוח')
-    await width('address')
-
     await page.fill('#co-city', 'תל אביב')
     await page.fill('#co-street', 'דיזנגוף')
     await page.fill('#co-number', '10')
-    await advance('ביקורת הזמנה')
-    await width('review')
+    await page.waitForTimeout(400)
 
-    await advance('אישור ותשלום')
-    await width('confirm')
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(
+      scrollWidth,
+      `the single-page checkout is ${scrollWidth}px wide in a 320px viewport`,
+    ).toBeLessThanOrEqual(321)
   })
 
   /**

@@ -24,6 +24,7 @@ import {
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
+import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -363,8 +364,25 @@ async function CategoryPageBody({
     { label: category.name_he },
   ]
 
+  // The same trail the visible breadcrumb renders, as BreadcrumbList: the two
+  // are built from one `crumbs` array so they cannot disagree.
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const breadcrumbLd = buildBreadcrumbJsonLd(
+    [
+      { name: 'בית', path: '/' },
+      ...(parent ? [{ name: parent.name_he, path: `/category/${parent.slug}` }] : []),
+      { name: category.name_he, path: pathname },
+    ],
+    siteUrl,
+  )
+
   return (
     <div className="category-page">
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+      />
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={crumbs} />
@@ -385,18 +403,26 @@ async function CategoryPageBody({
 
         <CategoryControlBar value={sort} />
 
-        {/* The city picker. Same component as the row under the hero, so the
-            two cannot drift apart in behaviour or in what "one city" means. */}
-        <Suspense fallback={null}>
-          <CityTags className="mt-3" />
-        </Suspense>
-
         <div className="category-page__body">
           <div className="category-page__main">
             <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
               <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
             </Suspense>
           </div>
+
+          {/* The city picker. Same component as the row under the hero, so the
+              two cannot drift apart in behaviour or in what "one city" means.
+
+              BELOW THE GRID, for the reason category-page.css already gives for
+              the filter sidebar: live has zero gap between the control bar and
+              its first card, so anything inserted there pushes every row of the
+              page down against live's. Measured at 380 on 2026-09-03, this row
+              was ~100px of exactly that, and it sat ABOVE the grid while the
+              filters -- the same kind of control, with the same argument
+              written next to them -- sat below. It is one rule now. */}
+          <Suspense fallback={null}>
+            <CityTags className="mt-3" />
+          </Suspense>
 
           <CategoryFilterSidebar
             categories={allCategories}

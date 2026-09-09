@@ -1,9 +1,11 @@
 import { orFail } from '@/lib/catalogue-read'
 import {
   moneyColumnProbe,
+  orderItemPriceSelect,
   orderMoneySelect,
   readOrderMoney,
   resolveOrderGeneration,
+  resolveOrderItemGeneration,
 } from '@/lib/commerce/order-money-columns'
 import { type Agorot, agorot } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -208,16 +210,38 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
 
   // The worst of the three to discard: the order row carries the total, so a
   // failed items read rendered a complete-looking order with NO lines in it.
+  // The price columns are generation-resolved like the order row above:
+  // `unit_price_agorot`/`total_price_agorot` are post-059 names, and on the
+  // hosted pre-059 schema the fragment aliases the generated
+  // `*_ils_agorot` twins back to them (same integer-agorot units), so naming
+  // them bare would 42703 the whole select and empty every order page.
+  const itemGeneration = await resolveOrderItemGeneration(
+    moneyColumnProbe(admin as never, 'order_items'),
+  )
   const items = orFail(
     await admin
       .from('order_items')
       .select(
-        'id, product_id, product_type, supplier_id, quantity, unit_price_agorot, total_price_agorot, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
+        `id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status`,
       )
       .eq('order_id', order.id),
     'orders.items_read_failed',
     { orderId: order.id },
-  )
+  ) as unknown as
+    | {
+        id: string
+        product_id: string | null
+        product_type: string
+        supplier_id: string | null
+        quantity: number
+        unit_price_agorot: number | null
+        total_price_agorot: number | null
+        paid_on_site_agorot: number | null
+        balance_due_agorot: number | null
+        settlement_status: string
+        item_status: string
+      }[]
+    | null
 
   const productIds = [
     ...new Set((items ?? []).map((i) => i.product_id).filter((v): v is string => Boolean(v))),
@@ -325,8 +349,9 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       productImage: firstImage,
       productType: item.product_type === 'coupon' ? 'coupon' : 'physical',
       quantity: item.quantity,
-      // Integer agorot is the only money unit in the database since 059; the
-      // shekel columns it renamed away are not read anywhere.
+      // Integer agorot either way: post-059 these are the real column names,
+      // and pre-059 the select aliased the generated *_ils_agorot twins onto
+      // them (see orderItemPriceSelect), so no shekel value reaches here.
       unitPriceAgorot: agorot(item.unit_price_agorot ?? 0),
       totalAgorot: agorot(item.total_price_agorot ?? 0),
       paidOnSiteAgorot: agorot(item.paid_on_site_agorot ?? 0),

@@ -1,7 +1,6 @@
-import SmartImage from '@/components/ui/SmartImage'
-import { SIDE_BANNERS } from '@/lib/assets'
+import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { ChevronRight } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
 const SB = ELECTRO_HERO.sideBanners
@@ -13,37 +12,52 @@ type BannerLine = { text: string; bold?: boolean }[]
 type PromoBanner = {
   id: string
   href: string
-  image: string
   lines: BannerLine[]
 }
 
+/**
+ * HEBREW, AND ABOUT THIS CATALOGUE.
+ *
+ * These three blocks arrived from the Electro template and were still selling
+ * its demo catalogue in its language: "SHOP THE HOTTEST PRODUCTS", "CATCH BIG
+ * DEALS ON THE CONSOLES", "LAPTOPS NOTEBOOKS AND MORE". Two of the three named
+ * a product line this store does not carry -- KenyonExpress sells vouchers for
+ * restaurants, spas, hotels, courses and tradespeople -- and all three were in
+ * a language none of its customers shop in.
+ *
+ * The live site carries the same English (it runs the same theme), so there was
+ * no Hebrew counterpart in `refs/` to copy: this is written copy, not measured
+ * copy, and each line now matches the category it actually links to.
+ *
+ * The `bold` part of each line is the emphasis the template's design puts at
+ * 13px against the 11px around it, kept because it is a layout fact and not a
+ * language one.
+ */
 const PROMO_BANNERS: PromoBanner[] = [
   {
     id: 'das-1',
     href: '/category/hot-deals',
-    image: SIDE_BANNERS[0],
-    lines: [[{ text: 'SHOP THE ' }, { text: 'HOTTEST', bold: true }, { text: ' PRODUCTS' }]],
+    lines: [[{ text: 'הדילים ' }, { text: 'החמים', bold: true }, { text: ' של השבוע' }]],
   },
   {
     id: 'das-2',
-    href: '/category/phones-computers',
-    image: SIDE_BANNERS[1],
-    lines: [
-      [{ text: 'CATCH BIG ' }, { text: 'DEALS', bold: true }, { text: ' ON' }],
-      [{ text: 'THE CONSOLES' }],
-    ],
+    href: '/category/vacation',
+    lines: [[{ text: 'מבצעים ' }, { text: 'גדולים', bold: true }], [{ text: 'על צימרים ומלונות' }]],
   },
   {
     id: 'das-3',
-    href: '/category/phones-computers',
-    image: SIDE_BANNERS[2],
-    lines: [[{ text: 'LAPTOPS NOTEBOOKS' }], [{ text: 'AND MORE', bold: true }]],
+    href: '/category/restaurants-cafes',
+    lines: [[{ text: 'מסעדות, בתי קפה' }, { text: ' ועוד', bold: true }]],
   },
 ]
 
 function BannerText({ lines }: { lines: BannerLine[] }) {
   return (
-    <div dir="ltr" className="da-text text-end font-normal uppercase text-heading">
+    // dir and `uppercase` both went with the English. An RTL block inherits the
+    // document direction, and Hebrew has no letter case for `uppercase` to act
+    // on -- it was a no-op on the glyphs and a wrong signal to anything reading
+    // the markup.
+    <div className="da-text text-end font-normal text-heading">
       {lines.map((line, lineIdx) => (
         <span
           key={line.map((p) => p.text).join('|')}
@@ -65,12 +79,16 @@ function BannerText({ lines }: { lines: BannerLine[] }) {
   )
 }
 
+/**
+ * The banner's call to action.
+ *
+ * `Shop now` in Hebrew, and the chevron mirrored with it: a forward arrow
+ * points in the direction reading advances, which is leftward here. ChevronRight
+ * beside Hebrew points back at the text it came from.
+ */
 function ShopNowButton() {
   return (
-    <span
-      dir="ltr"
-      className="da-action mt-2 inline-flex items-center gap-2 self-end text-micro font-bold leading-none text-heading"
-    >
+    <span className="da-action mt-2 inline-flex items-center gap-2 self-end text-micro font-bold leading-none text-heading">
       <span
         aria-hidden="true"
         style={{
@@ -79,9 +97,9 @@ function ShopNowButton() {
         }}
         className="flex shrink-0 items-center justify-center rounded-full bg-brand-secondary text-brand-dark"
       >
-        <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+        <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
       </span>
-      Shop now
+      לרכישה
     </span>
   )
 }
@@ -103,7 +121,7 @@ export default function HeroPromoBanners() {
           key={banner.id}
           href={banner.href}
           className={`group relative flex min-h-0 flex-1 items-stretch overflow-hidden px-3 py-4 transition-colors hover:bg-brand-accent/40 ${
-            idx < PROMO_BANNERS.length - 1 ? 'border-b border-gray-200' : ''
+            idx < PROMO_BANNERS.length - 1 ? 'border-b border-border-alt' : ''
           }`}
         >
           <div className="relative z-10 flex min-w-0 flex-1 flex-col items-end justify-center">
@@ -113,17 +131,12 @@ export default function HeroPromoBanners() {
 
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-[-20px] end-[-10px] z-0 w-[80px] rotate-[16deg]"
+            className="pointer-events-none absolute -bottom-5 -end-2.5 z-0 w-20 rotate-[16deg]"
             style={{ height: BANNER_IMAGE_HEIGHT }}
           >
-            <SmartImage
-              src={banner.image}
-              alt=""
-              fill
-              sizes="80px"
-              quality={90}
-              className="object-contain transition-transform duration-300 group-hover:scale-105"
-              fallbackClassName="absolute inset-0"
+            <BrandPlaceholder
+              className="absolute inset-0 rounded-sm transition-transform duration-300 group-hover:scale-105"
+              markWidth={64}
             />
           </div>
         </Link>

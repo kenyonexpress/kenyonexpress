@@ -444,6 +444,22 @@ async function runBeginCheckout(
     (productRows ?? []).map((p) => [p.id, p as unknown as SettlementProductRow]),
   )
 
+  // A SUBSCRIPTION IS BOUGHT ALONE. The first cycle's charge doubles as the
+  // card tokenisation (ChargeAndCreateToken), and the renewal worker will
+  // charge that token for exactly the subscription amount. A physical or
+  // coupon line in the same order would fold into the same first charge, and
+  // there is no honest way to split one token charge into "the part that
+  // renews" and "the part that was a one-off". Refused rather than untangled.
+  const cartTypes = cart.items.map((i) => productMap.get(i.product_id)?.type ?? 'unknown')
+  const hasRecurring = cartTypes.includes('recurring')
+  if (hasRecurring && cart.items.length > 1) {
+    return {
+      ok: false,
+      error: 'מנוי נרכש בהזמנה נפרדת. סיימו קודם את רכישת המנוי או הסירו אותו מהעגלה',
+      code: 'VALIDATION',
+    }
+  }
+
   // Supplier identity for the snapshot. Loaded in one round trip keyed by the
   // supplier ids the cart's products point at.
   const supplierIds = [

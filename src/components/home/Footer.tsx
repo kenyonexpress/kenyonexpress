@@ -1,5 +1,6 @@
 'use client'
 
+import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
 import { formatIsraeliPhoneDisplay, storeWhatsAppNumber } from '@/lib/whatsapp'
 import { Phone, Send, Share2 } from 'lucide-react'
 import Image from 'next/image'
@@ -26,7 +27,7 @@ const columns = [
     title: 'ניווט מהיר',
     links: [
       { label: 'דילים חמים', href: '/deals' },
-      { label: 'עד ₪99', href: '/under-99' },
+      { label: UNDER_99_LABEL, href: '/under-99' },
       { label: 'מסעדות ובתי קפה', href: '/restaurants' },
       { label: 'טלפונים ואלקטרוניקה', href: '/electronics' },
       { label: 'תינוקות וילדים', href: '/kids' },

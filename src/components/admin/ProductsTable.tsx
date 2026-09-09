@@ -4,6 +4,11 @@ import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
 import StatusBadge, { productStatusBadge, productTypeBadge } from '@/components/admin/StatusBadge'
 import {
+  MAX_PLAUSIBLE_DISCOUNT_PERCENT,
+  isImplausibleDiscount,
+} from '@/lib/commerce/implausible-discount'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
+import {
   type BulkPriceInput,
   bulkAdjustPrices,
   bulkAssignCategory,
@@ -29,17 +34,25 @@ export type ProductRow = {
   platform_percent: number | null
   /** Coupon absolute on-site price. Null for physical or unset coupons. */
   coupon_price_ils: number | null
+  /**
+   * The compare-at price. Needed here and not only on the storefront: the cart
+   * refuses to sell a line priced at an implausible fraction of it, and without
+   * this column the admin cannot see why one of its own products stopped
+   * selling. See the price cell below.
+   */
+  full_price: number | null
 }
 
 interface Props {
   products: ProductRow[]
   categories: { id: string; name_he: string }[]
+  hidePricing?: boolean
 }
 
 const bulkBtn =
   'rounded-lg px-3 py-1.5 text-xs font-medium border border-black/10 transition-colors disabled:opacity-50'
 
-export default function ProductsTable({ products, categories }: Props) {
+export default function ProductsTable({ products, categories, hidePricing = false }: Props) {
   const router = useRouter()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [busy, setBusy] = useState(false)
@@ -110,7 +123,7 @@ export default function ProductsTable({ products, categories }: Props) {
     }
   }
 
-  const columns: DataTableColumn<ProductRow>[] = [
+  const allColumns: DataTableColumn<ProductRow>[] = [
     {
       id: 'select',
       header: '',
@@ -155,13 +168,42 @@ export default function ProductsTable({ products, categories }: Props) {
       header: 'מחיר',
       sortable: true,
       accessor: (p) => p.kenyon_price ?? 0,
-      cell: (p) => (
-        <span className="text-black/80" dir="ltr">
-          {p.type === 'coupon' && p.coupon_price_ils != null
-            ? `₪${Number(p.coupon_price_ils).toLocaleString('he-IL')} באתר`
-            : `₪${(p.kenyon_price ?? 0).toLocaleString('he-IL')}`}
-        </span>
-      ),
+      cell: (p) => {
+        // THE ONE PLACE A MERCHANT CAN FIND OUT WHY A PRODUCT STOPPED SELLING.
+        //
+        // The cart refuses any line priced at an implausible fraction of its
+        // own compare-at, and returns `price_error`. On the storefront that is
+        // deliberately vague -- the shopper can neither cause nor cure it. Here
+        // it has to be the opposite: the person reading this table is the one
+        // who can fix it, so it names BOTH numbers and the ceiling.
+        //
+        // The case that makes this necessary is not the ₪1 test row, which
+        // wants deleting. It is a compare-at fat-fingered too HIGH: ₪40,000
+        // typed against a real ₪250 product is 99.4% off, and the listing goes
+        // unsellable with nothing on the storefront to explain it.
+        const priceError = isImplausibleDiscount(p.kenyon_price, p.full_price)
+        return (
+          <div>
+            <span className="text-black/80" dir="ltr">
+              {p.type === 'coupon' && p.coupon_price_ils != null
+                ? `${shekelsFromIlsRounded(p.coupon_price_ils)} באתר`
+                : shekelsFromIlsRounded(p.kenyon_price ?? 0)}
+            </span>
+            {priceError && (
+              <div className="mt-1 text-xs font-medium text-red-600">
+                <span>לא ניתן למכירה: מחיר שגוי</span>
+                <span className="block font-normal text-black/60" dir="ltr">
+                  {shekelsFromIlsRounded(p.kenyon_price ?? 0)} /{' '}
+                  {shekelsFromIlsRounded(p.full_price ?? 0)}
+                </span>
+                <span className="block font-normal text-black/60">
+                  {`הנחה מעל ${MAX_PLAUSIBLE_DISCOUNT_PERCENT}% נחסמת. תקנו את המחיר או את מחיר ההשוואה.`}
+                </span>
+              </div>
+            )}
+          </div>
+        )
+      },
     },
     {
       id: 'platform_percent',
@@ -206,6 +248,9 @@ export default function ProductsTable({ products, categories }: Props) {
       ),
     },
   ]
+  const columns = hidePricing
+    ? allColumns.filter((col) => col.id !== 'price' && col.id !== 'platform_percent')
+    : allColumns
 
   return (
     <div className="space-y-3">
@@ -228,16 +273,18 @@ export default function ProductsTable({ products, categories }: Props) {
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-black/10 bg-warning-surface px-3 py-2">
           {/* Publish / hide / archive */}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() =>
-              void runBulk(() => bulkUpdateProductStatus(ids, 'active'), 'המוצרים פורסמו')
-            }
-            className={`${bulkBtn} bg-green-100 text-green-800 hover:bg-green-200`}
-          >
-            פרסום
-          </button>
+          {!hidePricing && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                void runBulk(() => bulkUpdateProductStatus(ids, 'active'), 'המוצרים פורסמו')
+              }
+              className={`${bulkBtn} bg-green-100 text-green-800 hover:bg-green-200`}
+            >
+              פרסום
+            </button>
+          )}
           <button
             type="button"
             disabled={busy}
@@ -280,34 +327,38 @@ export default function ProductsTable({ products, categories }: Props) {
           </button>
 
           {/* Price adjustment */}
-          <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />
-          <select
-            value={priceMode}
-            onChange={(e) => setPriceMode(e.target.value as 'percent' | 'set')}
-            aria-label="סוג עדכון מחיר"
-            className="rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
-          >
-            <option value="percent">שינוי באחוזים</option>
-            <option value="set">קביעת מחיר (₪)</option>
-          </select>
-          <input
-            type="number"
-            step="0.01"
-            value={priceValue}
-            onChange={(e) => setPriceValue(e.target.value)}
-            placeholder={priceMode === 'percent' ? 'למשל: -10' : 'למשל: 99.90'}
-            aria-label="ערך עדכון מחיר"
-            dir="ltr"
-            className="w-28 rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          <button
-            type="button"
-            disabled={busy || !priceValue}
-            onClick={() => void applyPrices()}
-            className={`${bulkBtn} bg-purple-100 text-purple-800 hover:bg-purple-200`}
-          >
-            עדכון מחירים
-          </button>
+          {!hidePricing && (
+            <>
+              <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />
+              <select
+                value={priceMode}
+                onChange={(e) => setPriceMode(e.target.value as 'percent' | 'set')}
+                aria-label="סוג עדכון מחיר"
+                className="rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="percent">שינוי באחוזים</option>
+                <option value="set">קביעת מחיר (₪)</option>
+              </select>
+              <input
+                type="number"
+                step="0.01"
+                value={priceValue}
+                onChange={(e) => setPriceValue(e.target.value)}
+                placeholder={priceMode === 'percent' ? 'למשל: -10' : 'למשל: 99.90'}
+                aria-label="ערך עדכון מחיר"
+                dir="ltr"
+                className="w-28 rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <button
+                type="button"
+                disabled={busy || !priceValue}
+                onClick={() => void applyPrices()}
+                className={`${bulkBtn} bg-purple-100 text-purple-800 hover:bg-purple-200`}
+              >
+                עדכון מחירים
+              </button>
+            </>
+          )}
 
           {/* Soft delete */}
           <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />

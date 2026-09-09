@@ -30,8 +30,8 @@ const BANNER_STYLE = {
   // variable is already resolved at first paint.
   background: 'var(--color-surface)',
   padding: '1rem',
-  borderTop: '1px solid rgba(0,0,0,0.1)',
-  boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+  borderTop: '1px solid var(--color-overlay-hairline)',
+  boxShadow: 'var(--shadow-consent-banner)',
   fontFamily: 'Arial, Helvetica, sans-serif',
 } as const
 
@@ -39,7 +39,7 @@ const COPY_STYLE = {
   margin: 0,
   fontSize: '14px',
   lineHeight: 1.625,
-  color: 'rgba(0,0,0,0.7)',
+  color: 'var(--color-overlay-ink)',
   fontFamily: 'Arial, Helvetica, sans-serif',
 } as const
 

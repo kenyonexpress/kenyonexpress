@@ -1,5 +1,5 @@
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { HandCoins, Headphones, Tag, ThumbsUp, Truck } from 'lucide-react'
+import { BadgePercent, HandCoins, Headphones, Tag, Truck } from 'lucide-react'
 
 const USP = ELECTRO_HERO.uspBar
 
@@ -35,22 +35,47 @@ const USP = ELECTRO_HERO.uspBar
  * those are what this matches.
  */
 const benefits = [
+  // WRAPPED BELOW lg, 2026-09-02: five nowrap fifths of a 380px viewport are
+  // 76px cells, and the reordered labels overflowed the page to 385px -- the
+  // exact horizontal-overflow defect the mobile audit hunts. Live's 380 render
+  // has no five-across bar at all, so wrapping is nearer the reference than
+  // clipping. RE-MEASURED off refs/ke_live_computed.json: the live icon order
+  // right-to-left is transport, customers, support, payment, tag -- so
+  // "קניה חכמה" is SECOND today, not last. The note above recorded it last from
+  // an earlier capture; the reference moved, which is what a live third-party
+  // site does. The icon is live's ec-customers (a percent badge), not a thumb.
   { icon: Truck, title: 'לכל חלקי', subtitle: 'הארץ' },
+  { icon: BadgePercent, title: 'קניה', subtitle: 'חכמה' },
   { icon: Headphones, title: 'שירות', subtitle: 'לקוחות' },
   { icon: HandCoins, title: 'מחירים', subtitle: 'מנצחים' },
   { icon: Tag, title: 'מותגי יוקרה', subtitle: 'מובילים !' },
-  { icon: ThumbsUp, title: 'קניה', subtitle: 'חכמה' },
 ]
 
 // All colours and sizes come from ELECTRO_HERO.uspBar (the measured token
 // module). Direction handling uses CSS logical properties only, so the bar
 // mirrors correctly under dir="rtl".
+/**
+ * LIVE DOES NOT RENDER THE FIVE BLOCKS ON A PHONE.
+ *
+ * Measured off refs/ke_live_computed.json: at 768 and 1440 the feature bar is
+ * 134px tall and `.feature` appears five times. At 380 the section collapses to
+ * an EMPTY 31px strip -- `.feature` is absent from that viewport entirely.
+ * Ours rendered all five at every width, stacked, and that height was part of
+ * the 967px by which the product grid started too low at 380.
+ *
+ * The list is hidden rather than unmounted so the strip keeps live's 31px of
+ * vertical space, and `aria-hidden` follows the visibility: a screen reader
+ * should not read five items that are not on the page.
+ */
 export default function BenefitBar() {
   return (
-    <section dir="rtl" className="w-full bg-white font-sans">
-      <div className="mx-auto" style={{ maxWidth: USP.maxWidth }}>
+    <section
+      dir="rtl"
+      className="h-feature-bar-mobile w-full bg-white font-sans md:flex md:h-feature-bar md:items-center"
+    >
+      <div className="mx-auto hidden w-full md:block" style={{ maxWidth: USP.maxWidth }}>
         <ul
-          className="flex flex-nowrap justify-between"
+          className="flex flex-wrap justify-between lg:flex-nowrap"
           style={{ border: `1px solid ${USP.borderColor}`, borderRadius: USP.borderRadius }}
         >
           {benefits.map((b, i) => {
@@ -64,7 +89,7 @@ export default function BenefitBar() {
                 // cannot be overridden by a media query and the narrowest
                 // phones need both smaller. See .benefit-bar__item in
                 // globals.css for the measurement.
-                className="benefit-bar__item w-1/5 flex items-center justify-center"
+                className="benefit-bar__item w-full sm:w-1/2 lg:w-1/5 flex items-center justify-center"
                 style={
                   {
                     '--usp-gap': `${USP.gap}px`,

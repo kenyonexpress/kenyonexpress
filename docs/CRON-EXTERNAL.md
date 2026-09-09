@@ -1,5 +1,14 @@
 # Scheduled jobs, run from outside Vercel
 
+> **STATUS 2026-09-02: THE ACTIONS SCHEDULER IS LIVE.** `CRON_SECRET` and
+> `CRON_SCHEDULER_ENABLED=true` are set on the repository
+> (`scripts/set-github-secrets.sh`, run against a Vercel production env pull),
+> and a dispatched `health` run completed green against production. All ten
+> schedules now fire from `.github/workflows/cron.yml` on main. cron-job.org is
+> therefore OPTIONAL, not required; if it is ever set up, flip
+> `CRON_SCHEDULER_ENABLED` off first -- two schedulers call every job twice.
+> `scripts/setup-cron-jobs.mjs` remains ready for that day.
+
 Ten jobs. All ten are `GET`, all ten authenticate with the same header, and all
 ten are wired to be run by a scheduler that is not Vercel.
 
@@ -90,6 +99,8 @@ file is in a repository.
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
+12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export

@@ -1,5 +1,27 @@
 # ARCHITECTURE-LEGAL-COMPLIANCE.md
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `analytics_events` | nothing; `search_events` is an aggregate |
+> | `cart_items` | `carts.items`, a jsonb column |
+> | `consent_events` | nothing; never built |
+> | `coupon_redemptions` | `voucher_redemptions` |
+> | `coupon_scan_events` | `voucher_redemptions` |
+> | `notification_delivery_events` | `notification_outbox` |
+> | `notification_events` | `notification_outbox` |
+> | `notifications_outbox` | `notification_outbox` |
+> | `payout_statements` | nothing; never built |
+> | `security_events` | nothing; `audit_log` + `payment_events` |
+> | `supplier_bank_accounts` | nothing; never built |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 ארכיטקטורת ציות משפטי ורגולטורי של KenyonExpress. מסמך הכרעות: כל סעיף מכריע, אין אופציות פתוחות.
 תאריך: 2026-07-17. ענף: `phase5/homepage`.
 
