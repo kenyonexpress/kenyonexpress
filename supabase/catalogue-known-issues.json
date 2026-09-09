@@ -1,0 +1,109 @@
+{
+  "$what": "Every catalogue-safety finding that is TRUE OF PRODUCTION TODAY, so a new one is visible against a known floor instead of drowning in a list of 25.",
+  "$why": "Demanding zero would have made the gate red on the day it was written, and a gate that is red on arrival gets deleted rather than fixed. These 25 are real and they are not this agent's to fix: which of two duplicate rows is the real one, and whether a massage costs 9 or 108, are the operator's calls and nobody else's.",
+  "$rules": "src/lib/catalogue/safety-rules.ts. The gate: src/lib/catalogue/catalogue-safety.test.ts.",
+  "$how_to_shrink_this": "Fix the row in the admin, re-measure with `node scripts/catalogue-safety.mjs --sql` through MCP, then delete the entry. The test fails if an entry no longer fires, so the list cannot quietly keep names of things that were already fixed.",
+  "$measured_at": "2026-09-09",
+  "known": {
+    "duplicate-name:50f60a63-3caf-4cc3-83d9-f5dd21768999": {
+      "product": "מבחר עיסויים לבחירה",
+      "detail": "\"מבחר עיסויים לבחירה\" is live 2 times across 2 supplier(s)"
+    },
+    "duplicate-name:6dc25c0a-e468-43d3-8b97-32a82b48f670": {
+      "product": "עיסוי מאסטר",
+      "detail": "\"עיסוי מאסטר\" is live 2 times across 2 supplier(s)"
+    },
+    "duplicate-name:92151d5b-de5f-419b-9edd-022f222e2fc1": {
+      "product": "עיסוי מאסטר",
+      "detail": "\"עיסוי מאסטר\" is live 2 times across 2 supplier(s)"
+    },
+    "duplicate-name:adc894ba-083b-41e0-85b9-68abd04adc41": {
+      "product": "טיפול פנים",
+      "detail": "\"טיפול פנים\" is live 2 times across 2 supplier(s)"
+    },
+    "duplicate-name:ec291362-8480-43db-84ce-bd45ea561afc": {
+      "product": "טיפול פנים",
+      "detail": "\"טיפול פנים\" is live 2 times across 2 supplier(s)"
+    },
+    "duplicate-name:f43d32ab-8822-4775-8b36-09b7750b6115": {
+      "product": "מבחר עיסויים לבחירה",
+      "detail": "\"מבחר עיסויים לבחירה\" is live 2 times across 2 supplier(s)"
+    },
+    "opaque-slug:aa8b918d-2005-4aba-81d4-ae04e6158bd0": {
+      "product": "חבילת חופשה למאלדיבים - 2 טיסות",
+      "detail": "slug is a bare number: 6253"
+    },
+    "price-contradicts-text:50f60a63-3caf-4cc3-83d9-f5dd21768999": {
+      "product": "מבחר עיסויים לבחירה",
+      "detail": "text says 108 and the row charges 20: עיסוי-מפנק-לגבר-45-דקות-רק-ב108₪"
+    },
+    "price-contradicts-text:6dc25c0a-e468-43d3-8b97-32a82b48f670": {
+      "product": "עיסוי מאסטר",
+      "detail": "text says 108 and the row charges 9: עיסוי-משולב-מפנק-לגבר-רק-108₪"
+    },
+    "price-contradicts-text:92151d5b-de5f-419b-9edd-022f222e2fc1": {
+      "product": "עיסוי מאסטר",
+      "detail": "text says 108 and the row charges 9: עיסוי-משולב-מפנק-לגבר-רק-108"
+    },
+    "price-contradicts-text:f43d32ab-8822-4775-8b36-09b7750b6115": {
+      "product": "מבחר עיסויים לבחירה",
+      "detail": "text says 108 and the row charges 20: עיסוי-מפנק-לגבר-45-דקות-רק-ב108"
+    },
+    "template-name:1ccbfa1e-bdce-4c89-917c-c9d95102eb86": {
+      "product": "! צימר מאסטר",
+      "detail": "name contains \"מאסטר\": ! צימר מאסטר"
+    },
+    "template-name:6dc25c0a-e468-43d3-8b97-32a82b48f670": {
+      "product": "עיסוי מאסטר",
+      "detail": "name contains \"מאסטר\": עיסוי מאסטר"
+    },
+    "template-name:85bff155-de4c-490c-9e7d-fc5510e8f7a5": {
+      "product": "חיתולי פמפרס (העתק)",
+      "detail": "name contains \"העתק\": חיתולי פמפרס (העתק)"
+    },
+    "template-name:9032de64-3efe-4fda-9ebf-4aab556af2a6": {
+      "product": "קוסמטיקאית.   אזל המלאי",
+      "detail": "name contains \"אזל המלאי\": קוסמטיקאית.   אזל המלאי"
+    },
+    "template-name:92151d5b-de5f-419b-9edd-022f222e2fc1": {
+      "product": "עיסוי מאסטר",
+      "detail": "name contains \"מאסטר\": עיסוי מאסטר"
+    },
+    "template-slug:1ccbfa1e-bdce-4c89-917c-c9d95102eb86": {
+      "product": "! צימר מאסטר",
+      "detail": "slug contains \"מאסטר\": צימר-מאסטר"
+    },
+    "template-slug:413efed9-66b7-4aa6-b6c7-2835d918be04": {
+      "product": "הסרת שיער בלייזר קר",
+      "detail": "slug contains \"copy\": טיפול-פנים-copy"
+    },
+    "template-slug:47b075be-fe9d-4958-8f8d-b3822c13fed7": {
+      "product": "תיק עור JEEP יוקרתי",
+      "detail": "slug contains \"לדוגמא\": מוצר-לדוגמא"
+    },
+    "template-slug:50957e5b-75fc-4b79-a78b-ec1854f351f7": {
+      "product": "פינוק גלידה",
+      "detail": "slug contains \"מאסטר\": צימר-מאסטר-copy-copy"
+    },
+    "template-slug:85bff155-de4c-490c-9e7d-fc5510e8f7a5": {
+      "product": "חיתולי פמפרס (העתק)",
+      "detail": "slug contains \"העתק\": חיתולי-פמפרס-העתק"
+    },
+    "template-slug:97a3edc0-6161-4e6c-99f0-a3ab58d13fc2": {
+      "product": "עיסוי לתינוק",
+      "detail": "slug contains \"מאסטר\": צימר-מאסטר-copy"
+    },
+    "template-slug:adc894ba-083b-41e0-85b9-68abd04adc41": {
+      "product": "טיפול פנים",
+      "detail": "slug contains \"מאסטר\": עיסוי-מאסטר"
+    },
+    "unsafe-slug:50f60a63-3caf-4cc3-83d9-f5dd21768999": {
+      "product": "מבחר עיסויים לבחירה",
+      "detail": "slug carries \"₪\": עיסוי-מפנק-לגבר-45-דקות-רק-ב108₪"
+    },
+    "unsafe-slug:6dc25c0a-e468-43d3-8b97-32a82b48f670": {
+      "product": "עיסוי מאסטר",
+      "detail": "slug carries \"₪\": עיסוי-משולב-מפנק-לגבר-רק-108₪"
+    }
+  }
+}
