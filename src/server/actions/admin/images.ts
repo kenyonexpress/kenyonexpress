@@ -10,6 +10,7 @@ import {
   validateImageDimensions,
 } from '@/lib/images/validate'
 import { withActionContext } from '@/lib/observability/action-context'
+import { rateLimit } from '@/lib/rate-limit'
 import { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } from '@/lib/storage/r2'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -64,6 +65,15 @@ async function runProcessAndUploadImage(formData: FormData): Promise<UploadImage
     session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
+  }
+
+  // Before the file is even read. This action decodes an upload and emits AVIF
+  // and WebP at four widths through sharp, inside the request, so an unbounded
+  // caller is unbounded CPU on the server that serves the storefront. Staff
+  // are not exempt: the limit is on the work, not on the trust.
+  const decision = await rateLimit('admin-image-process', session.userId)
+  if (!decision.allowed) {
+    return { error: 'יותר מדי העלאות בשעה האחרונה. נסו שוב בעוד כמה דקות.' }
   }
 
   const file = formData.get('file')

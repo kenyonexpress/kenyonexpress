@@ -2,6 +2,7 @@
 
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
+import { rateLimit } from '@/lib/rate-limit'
 import { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } from '@/lib/storage/r2'
 
 // Returned to the client so it knows how to upload a single file. When R2 is
@@ -22,10 +23,22 @@ function extOf(fileName: string): string {
  * `folder` is the R2 / bucket key prefix, e.g. "products".
  */
 async function runRequestUploadUrl(folder: string, fileName: string): Promise<UploadTarget> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
+  }
+
+  // LIMITED EVEN THOUGH IT IS STAFF-ONLY, which is the opposite of the usual
+  // "admins bypass" rule and is deliberate. What this returns is a PRESIGNED
+  // PUT URL: a credential that keeps working after the session that minted it
+  // is gone, until it expires. Unlimited, one staff token mints an unbounded
+  // number of them, and the limit on the minting is the only thing that bounds
+  // how many can exist at once.
+  const decision = await rateLimit('admin-upload-url', session.userId)
+  if (!decision.allowed) {
+    return { error: 'יותר מדי העלאות בשעה האחרונה. נסו שוב בעוד כמה דקות.' }
   }
 
   if (!isR2Configured()) return { provider: 'supabase' }

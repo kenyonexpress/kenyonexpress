@@ -145,6 +145,31 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'admin manual voucher burn, per staff user',
   },
 
+  // -- Image upload. Keyed on the staff user, and DELIBERATELY NOT EXEMPT
+  // because it is staff.
+  //
+  // `requestUploadUrl` mints a PRESIGNED R2 PUT URL, which is a credential that
+  // keeps working after the session that minted it is gone, until it expires.
+  // Unlimited, one staff token can mint an unbounded number of them and hand
+  // them out; a limit on the minting is the only thing that bounds how many can
+  // exist. `processAndUploadImage` is the other half and costs real CPU: it
+  // decodes an upload and emits AVIF and WebP at four widths through sharp,
+  // inside the request.
+  //
+  // 100 and 60 an hour are set above any real editing session (a bulk product
+  // import is dozens of images, not hundreds) and far below what either abuse
+  // shape needs to matter.
+  'admin-upload-url': {
+    limit: 100,
+    windowSeconds: 3600,
+    reason: 'presigned R2 PUT minting, per staff user',
+  },
+  'admin-image-process': {
+    limit: 60,
+    windowSeconds: 3600,
+    reason: 'server-side image conversion, per staff user',
+  },
+
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
   'app-session': { limit: 30, windowSeconds: 600, reason: 'app session exchange, per IP' },
   'push-register': { limit: 60, windowSeconds: 3600, reason: 'push token registration' },
