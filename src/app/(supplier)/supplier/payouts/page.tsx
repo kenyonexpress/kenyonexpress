@@ -44,13 +44,37 @@ export default async function SupplierPayoutsPage() {
         </p>
       </section>
 
-      <p>
+      {/*
+        TWO DOWNLOADS, AND THEY ARE FOR DIFFERENT PEOPLE. The CSV beside this is
+        every line ever, which is right for reconciling in a spreadsheet. The
+        monthly statement is what a supplier hands to a bookkeeper next to the
+        month's invoice -- Israeli bookkeeping runs on the calendar month, and a
+        file covering all time cannot be filed against one.
+
+        No month is passed, so the route picks the most recent month with
+        anything in it. "This month" would be an empty download on the 1st.
+      */}
+      <p className="flex flex-wrap gap-2">
         <a
           href="/api/supplier/payouts/csv"
           className="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
           download
         >
           הורדת הפירוט כ-CSV
+        </a>
+        <a
+          href="/api/supplier/statement?format=pdf"
+          className="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+          download
+        >
+          דוח התחשבנות חודשי (PDF)
+        </a>
+        <a
+          href="/api/supplier/statement?format=csv"
+          className="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+          download
+        >
+          דוח חודשי (CSV)
         </a>
       </p>
 

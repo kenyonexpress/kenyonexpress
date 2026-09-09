@@ -15,9 +15,11 @@ import {
   resolveVatPercent,
   splitVatInclusive,
 } from '@/lib/invoices/document'
+import { selectDocumentProvider } from '@/lib/invoices/provider'
 import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
+import type { CreateDocumentResult } from '@/lib/payments/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -710,9 +712,21 @@ export async function issueInvoice(
 
   const { document, transactionId, cardcomAccountId } = built
 
-  let result: Awaited<ReturnType<ReturnType<typeof getPaymentProvider>['createDocument']>>
+  // The document provider, chosen by INVOICE_PROVIDER and defaulting to
+  // cardcom -- which is what this line used to do unconditionally. Who issues
+  // the tax document and who charges the card are separate businesses in
+  // Israel, and reaching for the invoice through the payment object made the
+  // first a consequence of the second. See lib/invoices/provider.ts.
+  //
+  // The Cardcom adapter is passed as a thunk so it is only built when it is the
+  // one selected: `getPaymentProvider` reads terminal credentials, and
+  // constructing it under INVOICE_PROVIDER=green_invoice would make an invoice
+  // setting fail on a payment key.
+  const documentProvider = selectDocumentProvider(() => getPaymentProvider(cardcomAccountId))
+
+  let result: CreateDocumentResult
   try {
-    result = await getPaymentProvider(cardcomAccountId).createDocument({
+    result = await documentProvider.createDocument({
       documentType: document.documentType,
       customerName: document.customer.name,
       customerEmail: document.customer.email,

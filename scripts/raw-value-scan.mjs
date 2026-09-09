@@ -52,11 +52,12 @@ const ARBITRARY_PX_RE = /\[-?\d+(?:\.\d+)?px\]/g
  * `--color-slider-dot-idle` in tokens.css. If anything ever renders from this
  * object, the value has to move into the palette first.
  *
- * THE PDF. `qr-pdf.ts` calls pdf-lib's `rgb()`, which takes three floats in
- * 0..1, not the 0..255 integers CSS means by the same three letters. Those
- * numbers cannot come from the palette without a conversion the token layer
- * does not own, and they paint a PDF, which no stylesheet reaches. The
- * scanner sees `rgb(0.78, 0.78, 0.78)` and reads a CSS colour; it is not one.
+ * THE PDFS. `qr-pdf.ts` and `settlement-pdf.ts` call pdf-lib's `rgb()`, which
+ * takes three floats in 0..1, not the 0..255 integers CSS means by the same
+ * three letters. Those numbers cannot come from the palette without a
+ * conversion the token layer does not own, and they paint a PDF, which no
+ * stylesheet reaches. The scanner sees `rgb(0.78, 0.78, 0.78)` and reads a CSS
+ * colour; it is not one.
  *
  * THE TWO COMPONENTS. GoogleLogo reproduces Google's mark to their branding
  * guidelines and is deliberately not ours to tokenise -- a KenyonExpress
@@ -71,6 +72,7 @@ export const COLOUR_ALLOWLIST = new Set([
   'src/lib/ke-live-revslider-slides.ts',
   'src/lib/ke-live-hero-data.ts',
   'src/lib/coupons/qr-pdf.ts',
+  'src/lib/invoices/settlement-pdf.ts',
   'src/components/shared/GoogleLogo.tsx',
   'src/app/global-error.tsx',
 ])
