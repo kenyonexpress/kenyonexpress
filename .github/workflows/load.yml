@@ -23,7 +23,7 @@ on:
         required: true
         default: browse
         type: choice
-        options: [browse, search, checkout, redeem, pool]
+        options: [browse, search, mixed, checkout, redeem, pool]
       vus:
         description: 'Peak virtual users'
         required: true
@@ -47,7 +47,13 @@ jobs:
   k6:
     name: k6 ${{ inputs.scenario }} at ${{ inputs.vus }} VUs
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 70, not 30, because of one scenario: `mixed` holds for half an hour by
+    # default and ramps for three minutes at each end. At 30 the job would be
+    # cancelled six minutes from the end of its own profile and the summary
+    # artifact -- the point of the run -- would never be written. Every other
+    # scenario finishes well inside it, and this workflow is manual-only, so a
+    # generous ceiling costs nothing until somebody asks for a run.
+    timeout-minutes: 70
 
     steps:
       - uses: actions/checkout@v5

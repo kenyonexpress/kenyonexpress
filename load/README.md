@@ -17,6 +17,7 @@ brew install k6
 | `webhooks.js` | ‏L3 הצפת webhooks | כן | לא, ‏staging |
 | `redeem.js` | ‏L4 תור מימוש | כן | לא, ‏staging |
 | `pool.js` | ‏L5 ‏connection pool | קריאה בלבד, אבל הורס | לא, ‏staging |
+| `mixed.js` | ‏L7 תמהיל אמיתי, ‏30 דקות | לא | **כן**, בקנה מידה קטן |
 
 הספים ב-`lib/thresholds.js` הם טבלת 5.3 עצמה. ‏k6 יוצא בקוד 99 כשסף נחצה,
 ולכן כל קובץ כאן הוא שער ולא דוח.
