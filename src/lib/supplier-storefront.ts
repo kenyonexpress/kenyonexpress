@@ -35,6 +35,13 @@ export type SupplierStorefront = {
   logoUrl: string | null
   address: string | null
   contactPhone: string | null
+  /**
+   * Selected because it is the field most likely to be filled. Measured against
+   * production on 2026-09-09: of 12 suppliers, 6 carry a WhatsApp number, 6 a
+   * phone, 1 a logo and **0 an address** -- and the address was the only one of
+   * the four this page rendered.
+   */
+  whatsapp: string | null
 }
 
 export type SupplierStorefrontProduct = {
@@ -59,7 +66,7 @@ export async function loadSupplierStorefront(id: string): Promise<SupplierStoref
   const row = orFail(
     await supabase
       .from('suppliers')
-      .select('id, name, city, logo_url, address, contact_phone, status, deleted_at')
+      .select('id, name, city, logo_url, address, contact_phone, whatsapp, status, deleted_at')
       .eq('id', id)
       .maybeSingle(),
     'catalogue.supplier_storefront_failed',
@@ -73,6 +80,7 @@ export async function loadSupplierStorefront(id: string): Promise<SupplierStoref
     logoUrl: row.logo_url,
     address: row.address,
     contactPhone: row.contact_phone,
+    whatsapp: row.whatsapp,
   }
 }
 
