@@ -1,5 +1,6 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
+import { t } from '@/lib/i18n/messages'
 import { trackingView } from '@/lib/shipping/carriers'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE } from '@/styles/tokens'
@@ -65,6 +66,18 @@ export type NotificationKind =
   | 'voucher_expiring'
   /** Wallet credit, enqueued after the ledger move. Added by 114. */
   | 'cashback_credited'
+  /**
+   * The money behind an EXPIRED coupon, back in the wallet. Enqueued by
+   * `credit_expired_vouchers()` after the ledger move, and accepted by the
+   * constraint from `migrations/pending/227`.
+   *
+   * Its own kind rather than a reuse, and the reasoning is about honesty
+   * regarding money. `refund_completed` says "זיכינו את הכרטיס שלך" -- the
+   * card, which this is not. `cashback_credited` names the wallet correctly and
+   * the reason wrongly ("נכנס לך קאשבק"), sending the customer to look for a
+   * purchase that earned it. Both reuses ship a false sentence about money.
+   */
+  | 'voucher_expiry_credited'
   /** Operator alert: a tax document gave up after five attempts. Added by 116. */
   | 'invoice_dead'
   /** Operator alert: a product is at or under its threshold. Added by 117. */
@@ -599,9 +612,16 @@ export function buildVoucherExpiringEmail(
   const product = asText(payload.product_name) ?? 'הקופון שלך'
   const supplier = asText(payload.supplier_name)
   const url = `${trimSite(siteUrl)}/account/coupons`
-  const when = days === 1 ? 'מחר' : days === 2 ? 'בעוד יומיים' : `בעוד ${days} ימים`
+  // `days === 0` became reachable with 227: the reminder now matches a WINDOW
+  // per bucket instead of one exact calendar day, and `days_remaining` carries
+  // the true figure rather than the bucket's. Before that this branch could
+  // only be hit by a payload with a broken key, and it printed "פג בעוד 0
+  // ימים" -- which is not a sentence, on the most urgent mail of the three.
+  const when =
+    days <= 0 ? 'היום' : days === 1 ? 'מחר' : days === 2 ? 'בעוד יומיים' : `בעוד ${days} ימים`
 
-  const subject = days === 1 ? `${product} פג מחר` : `${product} פג ${when}`
+  const subject =
+    days <= 0 ? `${product} פג היום` : days === 1 ? `${product} פג מחר` : `${product} פג ${when}`
 
   const text = [
     'שלום,',
@@ -669,6 +689,80 @@ export function buildCashbackCreditedEmail(
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
       </div>`,
     'קיבלת את המייל הזה כי נכנס קאשבק לארנק שלך ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * The money behind a coupon that lapsed, back in the wallet.
+ *
+ * =========================================================================
+ * THIS EMAIL EXISTS BECAUSE THE REFUND WAS SILENT
+ * =========================================================================
+ *
+ * `credit_expired_vouchers()` has returned what the customer paid online to
+ * their wallet since 088. Measured 2026-09-10: nothing told them. No trigger
+ * enqueued anything for it, `notification_outbox` had no kind that could carry
+ * it, and the coupon page said only `פג תוקף`.
+ *
+ * C6 says expiry is not forfeiture. A refund the customer is never told about
+ * is indistinguishable from forfeiture at every surface they look at, so the
+ * policy existed in the ledger and nowhere a customer could see.
+ *
+ * =========================================================================
+ * WHAT IT MUST NOT SAY
+ * =========================================================================
+ *
+ * "הוחזר לכרטיס". This money is wallet credit and cannot leave the site, which
+ * is precisely the distinction `buildRefundCompletedEmail` is careful about in
+ * the other direction. Promising a card credit that is not coming is a support
+ * ticket at best and a chargeback at worst.
+ *
+ * It also does not apologise for the expiry or offer to reinstate the coupon.
+ * The deadline was on the coupon, in the reminder emails and on the page; the
+ * one thing worth saying now is where the money went.
+ *
+ * ENQUEUED AFTER THE LEDGER MOVE, never before -- the same ordering rule as the
+ * cashback mail, for the same reason: an email that promises money the ledger
+ * does not hold is a support ticket.
+ */
+export function buildVoucherExpiryCreditedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const amountAgorot = Math.round(asNumber(payload.amount_agorot))
+  // No mail for a coupon that cost nothing online. There is no refund to
+  // describe, and `₪0 הוחזרו` reads as though something went wrong.
+  if (amountAgorot <= 0) return null
+
+  const amount = formatAgorot(amountAgorot)
+  const product = asText(payload.product_name)
+  const supplier = asText(payload.supplier_name)
+  const url = `${trimSite(siteUrl)}/account/wallet`
+  const subject = `${amount} חזרו לארנק שלך`
+
+  const what = product ? `${product}${supplier ? ` ב${supplier}` : ''}` : 'אחד הקופונים שלך'
+
+  const text = [
+    'שלום,',
+    '',
+    `${what} פג ולא מומש.`,
+    `זיכינו את הארנק שלך ב-${amount}, כל הסכום ששולם באתר.`,
+    'אפשר להשתמש בו בקנייה הבאה.',
+    '',
+    'הארנק שלך:',
+    ltrText(url),
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(`${what} פג ולא מומש. זיכינו את הארנק שלך ב-${amount}, כל הסכום ששולם באתר.`)}</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:12px">${escapeHtml(t('voucherExpiry.creditUsable'))}</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">${escapeHtml(t('voucherExpiry.walletCta'))}</a>
+      </div>`,
+    'קיבלת את המייל הזה כי קופון שרכשת פג תוקף והסכום הוחזר לארנק שלך ב-KenyonExpress.',
   )
 
   return { subject, html, text }
@@ -1165,6 +1259,8 @@ export function buildNotification(
       return buildVoucherExpiringEmail(payload, siteUrl)
     case 'cashback_credited':
       return buildCashbackCreditedEmail(payload, siteUrl)
+    case 'voucher_expiry_credited':
+      return buildVoucherExpiryCreditedEmail(payload, siteUrl)
     case 'invoice_dead':
       return buildInvoiceDeadEmail(payload, siteUrl)
     case 'low_stock':

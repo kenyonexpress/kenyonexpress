@@ -144,6 +144,7 @@
       "/admin/categories/new",
       "/admin/coupons",
       "/admin/coupons/codes",
+      "/admin/coupons/expiry",
       "/admin/coupons/lookup",
       "/admin/coupons/new",
       "/admin/dashboard",

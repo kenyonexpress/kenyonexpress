@@ -82,6 +82,7 @@
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |
 | `admin-voucher-redeem` | 30 | 1 h | admin manual voucher burn, per staff user |
 | `admin-voucher-resend` | 30 | 1 h | admin resend of the coupon email, per staff user |
+| `admin-voucher-extend` | 30 | 1 h | admin extension of a voucher deadline, per staff user |
 | `voucher-resend` | 3 | 1 h | coupon email resend, per VOUCHER rather than per operator |
 | `admin-upload-url` | 100 | 1 h | presigned R2 PUT minting, per staff user |
 | `admin-image-process` | 60 | 1 h | server-side image conversion, per staff user |

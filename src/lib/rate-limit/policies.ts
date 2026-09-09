@@ -227,6 +227,17 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'admin resend of the coupon email, per staff user',
   },
+  // Per operator and NOT per voucher, unlike the resend beside it, and the
+  // asymmetry is deliberate. The harm a resend can do compounds on one
+  // customer's inbox, so it needs a per-voucher cap. An extension writes one
+  // row and sends nothing, so extending the same coupon twice costs the
+  // customer nothing -- what is worth bounding is a staff account being used to
+  // hand out deadlines in bulk, and that is counted per operator.
+  'admin-voucher-extend': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'admin extension of a voucher deadline, per staff user',
+  },
   // The second limit on the same action, and the one that protects the person
   // who is not in the room. Counting only the operator still allows one
   // customer to be mailed thirty times in an hour, and the harm there lands on

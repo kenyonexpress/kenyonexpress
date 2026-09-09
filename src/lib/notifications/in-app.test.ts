@@ -46,6 +46,28 @@ describe('the content itself', () => {
     expect(c?.href).toBe('/account/wallet')
   })
 
+  /**
+   * The pair a customer can receive about one coupon: the warning, then what
+   * happened to the money when the warning was not acted on. They must not both
+   * point at the coupon list -- there is nothing to do on a dead coupon's page,
+   * and the money is on the wallet page.
+   */
+  it('sends the expiry credit to the wallet and the expiry warning to the coupons', () => {
+    const warn = buildInAppContent('voucher_expiring', { days_remaining: 3 })
+    expect(warn?.href).toBe('/account/coupons')
+
+    const credited = buildInAppContent('voucher_expiry_credited', { amount_agorot: 10_800 })
+    expect(credited?.title_he).toBe('הכסף על קופון שפג חזר אליך')
+    expect(credited?.body_he).toBe('₪108 נוספו לארנק.')
+    expect(credited?.href).toBe('/account/wallet')
+  })
+
+  /** ₪0 נוספו לארנק is not a notification, it is a bug report. */
+  it('writes no expiry-credit row when nothing was paid online', () => {
+    expect(buildInAppContent('voucher_expiry_credited', { amount_agorot: 0 })).toBeNull()
+    expect(buildInAppContent('voucher_expiry_credited', {})).toBeNull()
+  })
+
   it('presents a refund as a positive amount even when the payload signs it', () => {
     // The journal stores a refund as a negative movement. "‏-₪50 חזרו אליך" is
     // a sentence that reads as money leaving.

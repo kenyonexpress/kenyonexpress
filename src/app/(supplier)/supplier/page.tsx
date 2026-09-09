@@ -5,7 +5,9 @@ import { agorot } from '@/lib/money'
 import { aggregateDashboard, monthlyRedemptions } from '@/lib/supplier/dashboard'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { hasMinRole } from '@/lib/supplier/roles'
+import { formatRateBp, supplierExpiryMetric } from '@/lib/vouchers/expiry-metrics'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
+import { getOwnExpiryMetrics } from '@/server/queries/expiry'
 import { getSupplierRedemptions, getSupplierSales } from '@/server/queries/supplier'
 import Link from 'next/link'
 
@@ -38,15 +40,32 @@ export default async function SupplierHomePage({
 }) {
   const session = await requireSupplierMember('/supplier')
   const sp = await searchParams
-  const [salesRead, redemptionsRead] = await Promise.all([
+  const [salesRead, redemptionsRead, expiryRead] = await Promise.all([
     getSupplierSales(session.supplierId),
     getSupplierRedemptions(session.supplierId),
+    // Their own row only. `getOwnExpiryMetrics` takes the id as a required
+    // argument for that reason: the underlying function returns every supplier
+    // when passed null, and a console that forgot to pass one would print the
+    // whole platform's coupons to one business.
+    getOwnExpiryMetrics(session.supplierId),
   ])
   const sales = salesRead.rows
   const redemptions = redemptionsRead.rows
   const stats = aggregateDashboard({ sales, redemptions })
   const months = monthlyRedemptions(redemptions)
   const recent = redemptions.slice(0, 5)
+
+  /*
+    How many of this supplier's decided coupons died unused.
+
+    Absent for two different reasons and both render as no card at all: 227 is
+    not applied, or this supplier has no settled coupons yet. Printing 0.0% for
+    either would tell a business their coupons never expire, which is a claim
+    made from no data.
+  */
+  const expiry = expiryRead.available
+    ? (expiryRead.rows.map(supplierExpiryMetric).find((r) => r.rateBp !== null) ?? null)
+    : null
 
   return (
     <div className="space-y-6">
@@ -93,6 +112,13 @@ export default async function SupplierHomePage({
           value={String(stats.couponRedemptionsTotal)}
           hint="סריקות מוצלחות (יתרה נגבית בקופה)"
         />
+        {expiry ? (
+          <StatCard
+            label="שוברים שפגו"
+            value={formatRateBp(expiry.rateBp)}
+            hint={`${expiry.expiredCount} מתוך ${expiry.settledCount} שהוכרעו`}
+          />
+        ) : null}
       </div>
 
       <RedemptionsChart buckets={months} />

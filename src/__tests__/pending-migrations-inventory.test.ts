@@ -877,6 +877,28 @@ describe('the pending migration inventory', () => {
       // produce. So the site sells gifts unchanged until this lands; it just
       // cannot schedule them or charge for wrapping.
       '226_gift_scheduling_and_wrap.sql',
+      // 227 WRITTEN 2026-09-10, not applied. The expiry engine's four measured
+      // gaps: the T-7/T-1 reminder matched ONE exact calendar day, so a dropped
+      // cron run lost the notice permanently and silently (the workflow's own
+      // header says a GitHub run can be dropped entirely); the wallet credit
+      // that has run nightly since 088 told the customer nothing, which makes
+      // C6 -- expiry is not forfeiture -- invisible at every surface they look
+      // at; and `fn_vouchers_status_guard` forbade `expired -> issued`, so an
+      // override could only extend a coupon that had not expired yet.
+      //
+      // THE KIND CHECK IS SPLICED, NOT RESTATED, so it composes with 214 in
+      // either order -- the failure `200_wishlist_alert_kinds.sql` already
+      // shipped. The splice was proven against a scratch table carrying the
+      // exact live constraint: 17 names accepted, a bogus one still refused.
+      //
+      // EVERY CALLER DEGRADES. The admin table names this file instead of
+      // printing a grid of 0.0%, which would read as "nothing expires here";
+      // the extend form refuses rather than silently doing nothing, because
+      // support telling a customer their coupon was extended when it was not is
+      // the worse failure. The customer-facing refund status needs no migration
+      // and works today: it reads the `wallet_entries` row the credit job has
+      // been writing all along.
+      '227_voucher_expiry_engine.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

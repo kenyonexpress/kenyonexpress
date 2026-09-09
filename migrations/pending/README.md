@@ -1,5 +1,63 @@
 # `migrations/pending/`
 
+## 2026-09-10: 227 WRITTEN, not applied - the expiry engine's four measured gaps
+
+`227_voucher_expiry_engine.sql`. Four function bodies replaced, one CHECK
+spliced, two functions added. Nothing is dropped or renamed.
+
+**Three of SECTIONS 29's seven items needed no schema at all.**
+`expire_vouchers()`, `credit_expired_vouchers()` and
+`enqueue_expiring_voucher_notices()` are all live and
+`/api/cron/expire-vouchers` already calls them in the right order. This file is
+what was measured wrong or missing beside them.
+
+- **The T-7/T-1 reminder matched one exact calendar day**, so a dropped cron run
+  lost that notice permanently and silently. `.github/workflows/cron.yml` says
+  in its own header that a GitHub run "can be dropped entirely", which makes
+  this an expected event rather than a hypothetical. Replaced with a window per
+  bucket - bucket 7 covers 2..7 days, bucket 1 covers 0..1 - so a missed night
+  is recovered by the next one. The existing `voucher_expiring:<id>:<bucket>`
+  dedupe key is what makes a repeated match safe.
+- **`days_remaining` now carries the true figure and not the bucket.** Under
+  equality they were the same number; under a window they are not, and three
+  templates print it to a customer as a promise.
+- **The wallet credit was silent.** `credit_expired_vouchers()` has returned
+  what the customer paid online since 088 and nothing ever told them, which
+  makes C6 - expiry is not forfeiture - invisible at every surface a customer
+  looks at. New kind `voucher_expiry_credited`, enqueued after the ledger move.
+- **`fn_vouchers_status_guard()` forbade `expired -> issued`**, so an override
+  could only extend a coupon that had not expired - the case nobody calls
+  support about. Opened, with the money rule in `extend_voucher_expiry()`:
+  it refuses a revival once `voucher:<id>:expiry_credit` exists, because
+  reviving a credited voucher hands the customer the money and the code both.
+- **`supplier_expiry_metrics()`** returns per-supplier counts. PostgREST has no
+  GROUP BY, so the alternative was reading every voucher into TypeScript. It
+  returns counts and no rate: the denominator is a decision and it lives in
+  `src/lib/vouchers/expiry-metrics.ts`, tested.
+
+**The kind CHECK is SPLICED and not restated**, so it composes with 214 in
+either order. `APPLY-ORDER.md` carries a standing rule about restating that
+constraint, and `200_wishlist_alert_kinds.sql` is the file that already shipped
+the failure it warns about. The splice reads `pg_get_constraintdef` and refuses
+loudly if the shape is not `kind = ANY (ARRAY[...])`.
+
+**Both new functions are SECURITY INVOKER and granted to `service_role` alone.**
+Neither needs to out-privilege its caller, and the definer functions in this
+database that read `auth.uid()` are the ones that went wrong.
+
+**Every caller degrades and none of them 500s.** The admin table prints a
+sentence naming this file rather than a grid of 0.0%, which would be read as
+"nothing expires here". The extend form answers
+"הארכת תוקף עדיין לא זמינה (מיגרציה 227 לא הוחלה)" rather than silently doing
+nothing, because support telling a customer their coupon was extended when it
+was not is the worse failure. The customer-facing refund status needs no
+migration at all and works today: it reads the `wallet_entries` row that
+`credit_expired_vouchers()` has been writing all along.
+
+**Reversal:** restore the four bodies from git history, splice
+`'voucher_expiry_credited'::text, ` back out of the CHECK, and drop the two new
+functions. Nothing in the database references either.
+
 ## 2026-09-10: 226 WRITTEN, not applied - a gift with a date and a wrapping fee
 
 `226_gift_scheduling_and_wrap.sql`. Three columns, one CHECK, one partial index.

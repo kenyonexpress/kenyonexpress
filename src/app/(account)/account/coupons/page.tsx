@@ -7,6 +7,8 @@ import {
   formatCouponCode,
   formatCouponDate,
 } from '@/lib/vouchers/coupon-view'
+import { expiryRefundView } from '@/lib/vouchers/expiry-refund'
+import { getVoucherExpiryCredits } from '@/server/queries/expiry'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
 
@@ -41,6 +43,22 @@ export const metadata = { title: 'הקופונים שלי' }
 export default async function CouponsPage() {
   const vouchers = await getCustomerVouchers()
 
+  /*
+    The expiry credits for every lapsed coupon on the page, in ONE query.
+
+    Per-row would be one round trip per expired coupon, which is the N+1 that
+    costs the most for the customer who has bought the most. The ids come from
+    a read already scoped by RLS and the credit read is scoped by RLS again.
+
+    Skipped entirely when nothing on the page has expired, so the common list --
+    live coupons -- is exactly as many queries as it was before.
+  */
+  const expiredIds = vouchers.filter((v) => v.status === 'expired').map((v) => v.id)
+  const credits =
+    expiredIds.length > 0
+      ? await getVoucherExpiryCredits(expiredIds)
+      : new Map<string, { amountAgorot: number; createdAt: string }>()
+
   return (
     <>
       <h1 className="account-title">הקופונים שלי</h1>
@@ -53,6 +71,11 @@ export default async function CouponsPage() {
           vouchers.map((voucher) => {
             const status = couponStatusView(voucher)
             const money = couponMoneyView(voucher)
+            const refund = expiryRefundView({
+              status: voucher.status,
+              coupon_price_agorot: voucher.coupon_price_agorot,
+              credit: credits.get(voucher.id) ?? null,
+            })
             return (
               <div className="account-row" key={voucher.id}>
                 <div className="account-row__main">
@@ -90,6 +113,17 @@ export default async function CouponsPage() {
                       {status.daysLeft === 0
                         ? 'הקופון פג היום'
                         : `נותרו ${status.daysLeft} ימים לניצול הקופון`}
+                    </p>
+                  )}
+                  {/*
+                    One line, not the detail page's whole panel: this is a list.
+                    It exists because the row above it says only `פג תוקף`, and
+                    a customer scanning the list for what happened to their
+                    money should not have to open each dead coupon to find out.
+                  */}
+                  {refund.state !== 'none' && (
+                    <p className="account-row__meta" data-testid="coupon-row-refund">
+                      {refund.headline}
                     </p>
                   )}
                 </div>

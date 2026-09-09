@@ -10,8 +10,10 @@ import {
   formatCouponCode,
   formatCouponDate,
 } from '@/lib/vouchers/coupon-view'
+import { expiryRefundView } from '@/lib/vouchers/expiry-refund'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import { buildRedemptionInquiryText } from '@/lib/whatsapp'
+import { getVoucherExpiryCredit } from '@/server/queries/expiry'
 import { getCustomerVoucher } from '@/server/queries/vouchers'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -83,6 +85,29 @@ async function CouponPageBody({ params }: Props) {
   // withheld gift: `qr_payload` is an empty string there, and encoding it would
   // produce a valid-looking QR of nothing at all.
   const qrDataUrl = status.presentable && !gift ? await voucherQrDataUrl(voucher.qr_payload) : null
+
+  /*
+    What happened to the money behind a coupon that lapsed.
+
+    Read ONLY for an expired voucher, so the ordinary path -- a live coupon
+    somebody has open at a till -- takes no extra round trip for a sentence it
+    would not print. `credit_expired_vouchers()` is the only writer of this
+    ledger row and it only ever runs on `expired` vouchers, so there is nothing
+    to find for any other status.
+
+    `known: false` means the read FAILED, not that no refund exists. The page
+    then says nothing at all rather than asserting "coming within a day" about
+    money that may already be in the wallet.
+  */
+  const creditRead = voucher.status === 'expired' ? await getVoucherExpiryCredit(voucher.id) : null
+  const refund =
+    creditRead?.known === true
+      ? expiryRefundView({
+          status: voucher.status,
+          coupon_price_agorot: voucher.coupon_price_agorot,
+          credit: creditRead.credit,
+        })
+      : null
 
   // Same builder as the product page. The links used to be assembled inline
   // here, and `wa.me/${whatsapp.replace(/[^0-9]/g, '')}` keeps the leading zero
@@ -164,6 +189,29 @@ async function CouponPageBody({ params }: Props) {
               )}
               {voucher.status === 'refunded' && (
                 <p className="mt-1 text-sm text-gray-500">הסכום ששולם באתר הוחזר לאמצעי התשלום.</p>
+              )}
+              {/*
+                The grey "פג תוקף" panel used to be the whole story an expired
+                coupon told, and it reads as forfeiture -- which is the policy
+                this project deliberately does not have. C6: expiry is not
+                forfeiture, and the wallet credit has run nightly since 088.
+              */}
+              {refund && refund.state !== 'none' && (
+                <div
+                  data-testid="coupon-expiry-refund"
+                  className="mx-auto mt-4 max-w-xs rounded-xl bg-emerald-50 px-4 py-3"
+                >
+                  <p className="text-sm font-semibold text-emerald-900">{refund.headline}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-emerald-800">{refund.detail}</p>
+                  {refund.state === 'credited' && (
+                    <Link
+                      href="/account/wallet"
+                      className="mt-2 inline-block text-xs font-semibold text-emerald-900 underline"
+                    >
+                      לארנק שלי
+                    </Link>
+                  )}
+                </div>
               )}
               <p dir="ltr" className="mt-3 font-mono text-lg tracking-widest text-gray-400">
                 {formatCouponCode(voucher.code)}

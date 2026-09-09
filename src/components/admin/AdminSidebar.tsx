@@ -14,6 +14,7 @@ import {
   FileSpreadsheet,
   FileText,
   Flag,
+  Hourglass,
   LayoutDashboard,
   LifeBuoy,
   Package,
@@ -58,6 +59,10 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag, section: 'catalog' },
   { href: '/admin/coupons', label: 'קופונים ודילים', icon: FileText, section: 'catalog' },
   { href: '/admin/coupons/lookup', label: 'איתור שובר', icon: ScanLine, section: 'catalog' },
+  // Next to איתור שובר rather than under דוחות: the two are the same subject
+  // seen at two zoom levels, and the operator who has just been asked to extend
+  // one coupon is the one who should see how often that supplier's coupons die.
+  { href: '/admin/coupons/expiry', label: 'תפוגת שוברים', icon: Hourglass, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   // `orders` and not `payments`: support has read on orders, and this console

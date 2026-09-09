@@ -6,7 +6,9 @@ import { isScannable } from '@/lib/admin/voucher-view'
 import { withActionContext } from '@/lib/observability/action-context'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { callPendingExpiryRpc, pendingExpiryRpc } from '@/lib/supabase/pending-expiry'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { endOfJerusalemDay } from '@/lib/vouchers/expiry-date'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { sendVoucherEmail } from '@/server/payments/voucher-email'
 
@@ -22,6 +24,13 @@ export type AdminVoucherLookup = {
   couponPriceAgorot: number
   remainingAmountDueAgorot: number
   expiresAt: string
+  /**
+   * The ceiling an extension cannot pass. `vouchers_expires_within_offer`
+   * enforces `expires_at <= offer_valid_until`, so the form needs this to set
+   * the input's `max` rather than let an operator pick a date the database will
+   * reject after they have typed a reason.
+   */
+  offerValidUntil: string | null
   redeemedAt: string | null
   scannable: boolean
 }
@@ -32,6 +41,8 @@ export type AdminVoucherRedeemState = { error: string } | { success: string; cod
 
 export type AdminVoucherResendState = { error: string } | { success: string; code: string } | null
 
+export type AdminVoucherExtendState = { error: string } | { success: string; code: string } | null
+
 type VoucherLookupRow = {
   id: string
   code: string
@@ -40,6 +51,7 @@ type VoucherLookupRow = {
   coupon_price_agorot: number
   remaining_amount_due_agorot: number
   expires_at: string
+  offer_valid_until: string | null
   redeemed_at: string | null
   supplier_id: string | null
   order_id: string | null
@@ -61,6 +73,7 @@ function toLookup(row: VoucherLookupRow, now: Date): AdminVoucherLookup {
     couponPriceAgorot: row.coupon_price_agorot,
     remainingAmountDueAgorot: row.remaining_amount_due_agorot,
     expiresAt: row.expires_at,
+    offerValidUntil: row.offer_valid_until ?? null,
     redeemedAt: row.redeemed_at,
     scannable: isScannable({ status: row.status, expires_at: row.expires_at }, now),
   }
@@ -72,8 +85,8 @@ async function loadByCode(code: string): Promise<VoucherLookupRow | null> {
     .from('vouchers')
     .select(
       `id, code, status, face_value_agorot, coupon_price_agorot,
-       remaining_amount_due_agorot, expires_at, redeemed_at, supplier_id,
-       order_id, user_id,
+       remaining_amount_due_agorot, expires_at, offer_valid_until, redeemed_at,
+       supplier_id, order_id, user_id,
        product:products(name_he),
        supplier:suppliers(name)`,
     )
@@ -296,6 +309,152 @@ async function runResendVoucherEmail(
   return { success: 'המייל נשלח שוב', code: voucher.code }
 }
 
+/**
+ * Moves a coupon's deadline later, and reports exactly why when it will not.
+ *
+ * =========================================================================
+ * WHY THIS IS AN RPC AND NOT AN UPDATE
+ * =========================================================================
+ *
+ * The obvious implementation is `update vouchers set expires_at = ...`, and it
+ * is wrong in a way that costs money. An expired voucher has usually already
+ * had what the customer paid online credited back to their wallet by step 2 of
+ * the nightly job. Reviving that voucher without checking hands the customer
+ * BOTH: they spend the wallet credit, then present the code, and the supplier
+ * is owed for goods against a prepayment that was given back.
+ *
+ * Checking in TypeScript and then updating is a check and a write in two
+ * transactions, and `credit_expired_vouchers()` runs between them for exactly
+ * as long as it takes. `extend_voucher_expiry()` takes the voucher row FOR
+ * UPDATE, so the credit job and this either serialise or one of them sees what
+ * the other did. 227 adds the same `FOR UPDATE` to the credit job's cursor,
+ * which is the other half of that lock.
+ *
+ * =========================================================================
+ * IT DOES NOT MAIL THE CUSTOMER, AND THAT IS NOT AN OVERSIGHT
+ * =========================================================================
+ *
+ * An extension is usually agreed on the phone while the customer is holding
+ * the coupon, and `voucher_expiring` will reach them from the nightly job on
+ * its own once the new deadline is inside a bucket -- 227's window match is
+ * what makes that true for a date set only days out. Sending a fourth kind of
+ * mail here would double up on that for the common case.
+ *
+ * =========================================================================
+ * THE AUDIT ROW IS WRITTEN FOR REFUSALS TOO
+ * =========================================================================
+ *
+ * SECTIONS 29 asks for "admin override to extend expiry with audit row". A log
+ * that only records successes cannot answer the question support actually
+ * brings, which is "I told the customer it was extended -- was it?". A refusal
+ * is a decision the system made about somebody's money and it is recorded with
+ * its reason.
+ */
+const EXTEND_REFUSALS: Record<string, string> = {
+  not_found: 'קוד שובר לא נמצא',
+  wrong_status: 'לא ניתן להאריך שובר שכבר מומש, בוטל או הוחזר',
+  not_later: 'התאריך החדש אינו מאוחר מהתוקף הנוכחי',
+  in_the_past: 'התאריך החדש כבר עבר',
+  past_offer: 'התאריך החדש חורג מתוקף המבצע של הספק',
+  already_credited: 'הסכום כבר הוחזר לארנק הלקוח, ולכן לא ניתן להחיות את השובר',
+}
+
+async function runExtendVoucherExpiry(
+  _: AdminVoucherExtendState,
+  formData: FormData,
+): Promise<AdminVoucherExtendState> {
+  let session: Awaited<ReturnType<typeof requireSection>>
+  try {
+    session = await requireSection('orders', 'write')
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const allowed = await checkRateLimit(`admin-voucher-extend:${session.userId}`, 30, 3600)
+  if (!allowed) return { error: 'יותר מדי הארכות, נסו שוב בעוד רגע' }
+
+  const code = normalizeVoucherCode(String(formData.get('code') ?? ''))
+  const reason = String(formData.get('reason') ?? '').trim()
+  const dateInput = String(formData.get('expires_on') ?? '').trim()
+  if (code.length < 6) return { error: 'קוד שובר לא תקין' }
+  if (reason.length < 3) return { error: 'חובה לציין סיבה להארכת התוקף' }
+
+  // End of the chosen day in Israel, not its midnight: an operator extending
+  // "until the 31st" means the customer may use it ON the 31st.
+  const newExpiry = endOfJerusalemDay(dateInput)
+  if (!newExpiry) return { error: 'תאריך לא תקין' }
+
+  let before: VoucherLookupRow | null
+  try {
+    before = await loadByCode(code)
+  } catch {
+    return { error: 'לא ניתן לקרוא את השובר כרגע' }
+  }
+  if (!before) return { error: 'קוד שובר לא נמצא' }
+
+  const admin = createAdminClient()
+  const result = await callPendingExpiryRpc<{
+    ok?: boolean
+    reason?: string
+    previous_expires_at?: string
+    expires_at?: string
+    revived?: boolean
+  }>(() =>
+    admin.rpc(pendingExpiryRpc('extend_voucher_expiry'), {
+      p_voucher_id: before.id,
+      p_new_expires_at: newExpiry.toISOString(),
+    } as never),
+  )
+
+  if (!result.ok) {
+    // Named rather than collapsed. An override that answered "failed" for an
+    // unapplied migration would have support retrying a button that cannot
+    // work until somebody approves a file.
+    if (result.missing) return { error: 'הארכת תוקף עדיין לא זמינה (מיגרציה 227 לא הוחלה)' }
+    return { error: 'הארכת התוקף נכשלה' }
+  }
+
+  const outcome = result.rows[0] ?? {}
+
+  if (outcome.ok !== true) {
+    const refusal = outcome.reason ?? 'unknown'
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'manual_override',
+      entityType: 'vouchers',
+      entityId: before.id,
+      changes: {
+        old: { expires_at: before.expires_at, status: before.status },
+        new: { extended: false, refused: refusal, requested: newExpiry.toISOString(), reason },
+      },
+    })
+    return { error: EXTEND_REFUSALS[refusal] ?? 'לא ניתן להאריך את השובר' }
+  }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'manual_override',
+    entityType: 'vouchers',
+    entityId: before.id,
+    changes: {
+      old: { expires_at: outcome.previous_expires_at ?? before.expires_at, status: before.status },
+      new: {
+        extended: true,
+        expires_at: outcome.expires_at ?? newExpiry.toISOString(),
+        revived: outcome.revived === true,
+        reason,
+      },
+    },
+  })
+
+  return {
+    success: outcome.revived === true ? 'השובר הוחזר לתוקף' : 'התוקף הוארך',
+    code: before.code,
+  }
+}
+
 export async function lookupAdminVoucher(
   state: AdminVoucherLookupState,
   formData: FormData,
@@ -315,4 +474,11 @@ export async function resendVoucherEmail(
   formData: FormData,
 ): Promise<AdminVoucherResendState> {
   return withActionContext('admin.voucher.resend', () => runResendVoucherEmail(state, formData))
+}
+
+export async function extendVoucherExpiry(
+  state: AdminVoucherExtendState,
+  formData: FormData,
+): Promise<AdminVoucherExtendState> {
+  return withActionContext('admin.voucher.extend', () => runExtendVoucherExpiry(state, formData))
 }

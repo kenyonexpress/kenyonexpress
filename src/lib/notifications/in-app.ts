@@ -87,6 +87,7 @@ export const IN_APP_KINDS = [
   'voucher_issued',
   'voucher_gifted',
   'voucher_expiring',
+  'voucher_expiry_credited',
   'voucher_redeemed',
   'refund_completed',
   'cashback_credited',
@@ -179,6 +180,23 @@ export function buildInAppContent(
                 ? 'הוא פג בעוד יומיים.'
                 : `הוא פג בעוד ${days} ימים.`,
         href: '/account/coupons',
+      }
+    }
+    case 'voucher_expiry_credited': {
+      // The other half of `voucher_expiring`. That one warns; this one reports
+      // what happened to the money when the warning was not acted on.
+      //
+      // `href` is the WALLET and not `/account/coupons`. The coupon is dead and
+      // there is nothing to do on its page; the money is on the wallet page and
+      // that is the only thing the customer can now act on. A notification whose
+      // link goes somewhere with no action on it is a notification that teaches
+      // people not to tap them.
+      const amount = integer(payload, 'amount_agorot')
+      if (amount === null || amount <= 0) return null
+      return {
+        title_he: 'הכסף על קופון שפג חזר אליך',
+        body_he: `${shekels(amount)} נוספו לארנק.`,
+        href: '/account/wallet',
       }
     }
     case 'voucher_redeemed':

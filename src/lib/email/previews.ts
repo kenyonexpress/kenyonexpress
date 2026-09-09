@@ -138,6 +138,16 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     balance_agorot: 9_990,
     reason: 'cashback',
   }),
+  // The pair matters in the gallery: `voucher_expiring` is the warning and this
+  // is what happens when it is not acted on. Reviewing either alone hides the
+  // fact that a customer can receive both about the same coupon.
+  fromOutbox('voucher_expiry_credited', 'זיכוי על קופון שפג', 'customer', {
+    voucher_id: '00000000-0000-0000-0000-0000000000ab',
+    amount_agorot: 10_800,
+    product_name: LONG_TITLE,
+    supplier_name: 'מספרת רון',
+    expires_at: '2026-09-09T20:59:59Z',
+  }),
   fromOutbox('welcome', 'ברוכים הבאים', 'customer', {
     customer_name: 'דנה כהן',
   }),
