@@ -18,6 +18,7 @@ const ITEMS = [
   { href: '/account/tokens', label: 'אמצעי תשלום' },
   { href: '/account/notifications', label: 'התראות' },
   { href: '/account/security', label: 'אבטחה וכניסה' },
+  { href: '/account/privacy', label: 'פרטיות ונתונים' },
 ] as const
 
 // This file carried its OWN copy of `formatIls`, a second

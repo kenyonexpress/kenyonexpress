@@ -132,17 +132,17 @@ export const RATE_LIMIT_POLICIES = {
   'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
 
-  // Admin voucher console. Keyed on the staff user, never on IP: the panel sits
-  // behind a session and a shared office NAT would otherwise share one bucket.
-  'admin-voucher-lookup': {
-    limit: 60,
+  // -- Privacy self-service. Keyed on the user: both act only on the caller's
+  // own account, so the limit bounds retries and stolen-session abuse.
+  'account-delete': {
+    limit: 3,
     windowSeconds: 3600,
-    reason: 'admin voucher code lookup, per staff user',
+    reason: 'destructive cascade over a dozen tables; a person needs exactly one',
   },
-  'admin-voucher-redeem': {
-    limit: 30,
+  'data-export': {
+    limit: 5,
     windowSeconds: 3600,
-    reason: 'admin manual voucher burn, per staff user',
+    reason: 'the export reads a dozen tables per call; a loop here is a cheap DB load',
   },
 
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
