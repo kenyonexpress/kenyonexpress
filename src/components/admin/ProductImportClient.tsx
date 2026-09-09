@@ -1,8 +1,10 @@
 'use client'
 
 import {
+  type HeaderMapping,
   IMPORT_COLUMNS,
   type ImportColumnKey,
+  type ImportMode,
   type RawImportRow,
   buildErrorReportCsv,
   buildTemplateCsv,
@@ -10,24 +12,30 @@ import {
   toRecords,
 } from '@/lib/admin/product-import/import-rows'
 import { CsvStreamParser } from '@/lib/admin/product-import/parse-csv'
+import { XlsxFormatError, parseXlsx } from '@/lib/admin/product-import/parse-xlsx'
 import type { ImportRowResult } from '@/server/actions/admin/product-import'
 import { importProductsBatch, previewProductImport } from '@/server/actions/admin/product-import'
-import { Download, FileUp, Upload } from 'lucide-react'
+import { ArrowRight, Download, FileUp, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 
 /**
- * The import screen's client half. The file never uploads as a file: it is
- * parsed in the browser, chunk by chunk off `File.stream()`, and only the
- * mapped rows travel to the server actions - first all of them for the dry
- * run, then the valid ones again in batches of BATCH_SIZE, which is what the
- * progress bar counts.
+ * The import screen's client half. The file never uploads as a file: a .csv
+ * is parsed chunk by chunk off `File.stream()`, an .xlsx through the
+ * dependency-free zip reader in `parse-xlsx.ts`, and only the mapped rows
+ * travel to the server actions - first all of them for the dry run, then the
+ * valid ones again in batches of BATCH_SIZE, which is what the progress bar
+ * counts. Between parse and dry run sits the mapping stage: every file column
+ * gets a select, prefilled by the header aliases, so a spreadsheet with
+ * unrecognized headers is mapped by hand instead of rejected.
  */
 
 const BATCH_SIZE = 50
 const PREVIEW_TABLE_LIMIT = 100
+/** How many data rows the mapping table scans for a sample value per column. */
+const SAMPLE_SCAN_ROWS = 20
 
-type Stage = 'idle' | 'checking' | 'ready' | 'importing' | 'done'
+type Stage = 'idle' | 'mapping' | 'checking' | 'ready' | 'importing' | 'done'
 
 const btn =
   'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50'
@@ -44,20 +52,31 @@ function downloadCsv(fileName: string, content: string) {
   URL.revokeObjectURL(url)
 }
 
+const REQUIRED_KEYS = new Set(IMPORT_COLUMNS.filter((c) => c.required).map((c) => c.key))
+const COLUMN_LABEL = new Map(IMPORT_COLUMNS.map((c) => [c.key, c.label]))
+
 export default function ProductImportClient() {
   const inputRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<Stage>('idle')
   const [fileName, setFileName] = useState('')
   const [fatal, setFatal] = useState<string | null>(null)
   const [fileWarnings, setFileWarnings] = useState<string[]>([])
+  const [header, setHeader] = useState<string[]>([])
+  const [dataRows, setDataRows] = useState<string[][]>([])
+  const [selections, setSelections] = useState<(ImportColumnKey | null)[]>([])
+  const [mode, setMode] = useState<ImportMode>('insert')
   const [rawRows, setRawRows] = useState<RawImportRow[]>([])
   const [previewRows, setPreviewRows] = useState<ImportRowResult[]>([])
-  const [summary, setSummary] = useState<{ total: number; valid: number; invalid: number } | null>(
-    null,
-  )
+  const [summary, setSummary] = useState<{
+    total: number
+    valid: number
+    invalid: number
+    inserts: number
+    updates: number
+  } | null>(null)
   const [progress, setProgress] = useState({ done: 0, total: 0 })
   const [importResults, setImportResults] = useState<ImportRowResult[]>([])
-  const [inserted, setInserted] = useState(0)
+  const [applied, setApplied] = useState({ inserted: 0, updated: 0 })
   const [errorsOnly, setErrorsOnly] = useState(false)
 
   async function handleFile(file: File) {
@@ -67,59 +86,83 @@ export default function ProductImportClient() {
     setPreviewRows([])
     setSummary(null)
     setImportResults([])
-    setInserted(0)
+    setApplied({ inserted: 0, updated: 0 })
     setFileName(file.name)
 
-    // Streaming parse: the parser carries quote/CRLF state across chunk
-    // boundaries, so a 5,000-row export never sits in memory twice.
-    const parser = new CsvStreamParser()
-    const reader = file.stream().getReader()
-    const decoder = new TextDecoder('utf-8')
-    for (;;) {
-      const { done, value } = await reader.read()
-      if (done) break
-      parser.write(decoder.decode(value, { stream: true }))
+    let parsed: { rows: string[][]; errors: { line: number; message: string }[] }
+    try {
+      if (/\.xlsx$/i.test(file.name)) {
+        parsed = await parseXlsx(await file.arrayBuffer())
+      } else {
+        // Streaming parse: the parser carries quote/CRLF state across chunk
+        // boundaries, so a 5,000-row export never sits in memory twice.
+        const parser = new CsvStreamParser()
+        const reader = file.stream().getReader()
+        const decoder = new TextDecoder('utf-8')
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          parser.write(decoder.decode(value, { stream: true }))
+        }
+        parser.write(decoder.decode())
+        parsed = parser.end()
+      }
+    } catch (e) {
+      setFatal(e instanceof XlsxFormatError ? e.message : 'קריאת הקובץ נכשלה')
+      setStage('idle')
+      return
     }
-    parser.write(decoder.decode())
-    const parsed = parser.end()
 
-    const [header, ...dataRows] = parsed.rows
-    if (!header || dataRows.length === 0) {
+    const [headerRow, ...rest] = parsed.rows
+    if (!headerRow || headerRow.length === 0 || rest.length === 0) {
       setFatal('הקובץ ריק או שאין בו שורות נתונים מתחת לשורת הכותרות')
       setStage('idle')
       return
     }
 
-    const mapping = mapHeaders(header)
-    if (mapping.missing.length > 0) {
-      const labels = IMPORT_COLUMNS.filter((c) =>
-        (mapping.missing as ImportColumnKey[]).includes(c.key),
-      ).map((c) => c.label)
-      setFatal(`חסרות עמודות חובה: ${labels.join(', ')}. אפשר להוריד את התבנית ולהתחיל ממנה.`)
-      setStage('idle')
+    setFileWarnings(parsed.errors.map((e) => `שורה ${e.line}: ${e.message}`))
+    setHeader(headerRow)
+    setDataRows(rest)
+    setSelections(mapHeaders(headerRow).keys)
+    setStage('mapping')
+  }
+
+  const duplicateKeys = (() => {
+    const seen = new Map<ImportColumnKey, number>()
+    for (const key of selections) if (key) seen.set(key, (seen.get(key) ?? 0) + 1)
+    return [...seen.entries()].filter(([, n]) => n > 1).map(([key]) => key)
+  })()
+  const mappedKeys = new Set(selections.filter((k): k is ImportColumnKey => k !== null))
+  const missingRequired = IMPORT_COLUMNS.filter((c) => c.required && !mappedKeys.has(c.key))
+
+  async function runPreview(nextMode: ImportMode = mode) {
+    const mapping: HeaderMapping = { keys: selections, unknown: [], missing: [] }
+    const rows = toRecords(mapping, dataRows)
+    if (rows.length === 0) {
+      setFatal('אחרי המיפוי לא נשארה אף שורת נתונים')
+      setStage('mapping')
       return
     }
 
-    const warnings = [
-      ...parsed.errors.map((e) => `שורה ${e.line}: ${e.message}`),
-      ...(mapping.unknown.length > 0
-        ? [`עמודות שלא זוהו ולא ייובאו: ${mapping.unknown.join(', ')}`]
-        : []),
-    ]
-    setFileWarnings(warnings)
-
-    const rows = toRecords(mapping, dataRows)
+    setStage('checking')
+    setFatal(null)
     setRawRows(rows)
-
-    const preview = await previewProductImport(rows)
+    const preview = await previewProductImport(rows, nextMode)
     if (preview.error || !preview.rows || !preview.summary) {
       setFatal(preview.error ?? 'בדיקת הקובץ נכשלה')
-      setStage('idle')
+      setStage('mapping')
       return
     }
     setPreviewRows(preview.rows)
     setSummary(preview.summary)
     setStage('ready')
+  }
+
+  function changeMode(next: ImportMode) {
+    setMode(next)
+    // The dry run's slug verdicts depend on the mode, so a flip after the
+    // check re-runs it against the same mapped rows.
+    if (stage === 'ready') void runPreview(next)
   }
 
   async function runImport() {
@@ -132,12 +175,14 @@ export default function ProductImportClient() {
 
     const results: ImportRowResult[] = []
     let insertedCount = 0
+    let updatedCount = 0
     for (let i = 0; i < toImport.length; i += BATCH_SIZE) {
       const batch = toImport.slice(i, i + BATCH_SIZE)
-      const res = await importProductsBatch(batch)
+      const res = await importProductsBatch(batch, mode)
       if (res.error || !res.results) {
-        // A failed batch fails its rows, not the whole run: the rows already
-        // inserted stay inserted and are reported below as such.
+        // A failed batch rolled itself back on the server: none of its rows
+        // were kept, and each is reported with the batch's error. Batches
+        // already applied stay applied.
         results.push(
           ...batch.map((b) => ({
             line: b.line,
@@ -149,12 +194,13 @@ export default function ProductImportClient() {
       } else {
         results.push(...res.results)
         insertedCount += res.inserted ?? 0
+        updatedCount += res.updated ?? 0
       }
       setProgress({ done: Math.min(i + BATCH_SIZE, toImport.length), total: toImport.length })
     }
 
     setImportResults(results)
-    setInserted(insertedCount)
+    setApplied({ inserted: insertedCount, updated: updatedCount })
     setStage('done')
   }
 
@@ -170,6 +216,14 @@ export default function ProductImportClient() {
     )
   }
 
+  function sampleFor(col: number): string {
+    for (const row of dataRows.slice(0, SAMPLE_SCAN_ROWS)) {
+      const value = (row[col] ?? '').trim()
+      if (value.length > 0) return value
+    }
+    return ''
+  }
+
   const failedCount = (stage === 'done' ? importResults : previewRows).filter(
     (r) => r.errors.length > 0,
   ).length
@@ -177,6 +231,38 @@ export default function ProductImportClient() {
     (r) => !errorsOnly || r.errors.length > 0,
   )
   const pct = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0
+
+  const modePicker = (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-semibold text-gray-900">מה לעשות עם מוצר שכבר קיים?</legend>
+      <label className="flex items-start gap-2 text-sm text-gray-700">
+        <input
+          type="radio"
+          name="import-mode"
+          className="mt-1"
+          checked={mode === 'insert'}
+          onChange={() => changeMode('insert')}
+          disabled={stage === 'checking' || stage === 'importing'}
+        />
+        <span>הוספה בלבד - שורה שהקישור (slug) שלה כבר קיים במערכת תיכשל</span>
+      </label>
+      <label className="flex items-start gap-2 text-sm text-gray-700">
+        <input
+          type="radio"
+          name="import-mode"
+          className="mt-1"
+          checked={mode === 'upsert'}
+          onChange={() => changeMode('upsert')}
+          disabled={stage === 'checking' || stage === 'importing'}
+        />
+        <span>
+          הוספה ועדכון - שורה עם קישור קיים תעדכן את המוצר הקיים. מתעדכנות רק עמודות שנכללו בקובץ,
+          ושדות המחיר מחושבים מחדש מהקובץ במלואם. סטטוס, תמונות, ספק וסוג המוצר לא משתנים, ועמודת
+          הסוג חובה בכל שורה מעדכנת.
+        </span>
+      </label>
+    </fieldset>
+  )
 
   return (
     <div className="space-y-6">
@@ -189,7 +275,7 @@ export default function ProductImportClient() {
             disabled={stage === 'checking' || stage === 'importing'}
           >
             <FileUp className="h-4 w-4" aria-hidden />
-            בחירת קובץ CSV
+            בחירת קובץ (CSV או Excel)
           </button>
           <button
             type="button"
@@ -204,7 +290,7 @@ export default function ProductImportClient() {
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,text/csv"
+          accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0]
@@ -213,8 +299,8 @@ export default function ProductImportClient() {
           }}
         />
         <p className="text-sm text-gray-600">
-          עובדים באקסל? לשמור בפורמט CSV UTF-8 (שמירה בשם ‹ CSV UTF-8) ולהעלות את הקובץ. כל המוצרים
-          נקלטים כטיוטה: פרסום נעשה מתוך עמוד המוצר, אחרי שיוך ספק.
+          אפשר להעלות קובץ Excel (‏.xlsx, הגיליון הראשון נקרא) או CSV UTF-8. מוצרים חדשים נקלטים
+          כטיוטה: פרסום נעשה מתוך עמוד המוצר, אחרי שיוך ספק.
         </p>
         {fatal ? (
           <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{fatal}</p>
@@ -231,16 +317,93 @@ export default function ProductImportClient() {
         ) : null}
       </div>
 
-      {summary && stage !== 'checking' ? (
+      {stage === 'mapping' ? (
+        <div className="rounded-xl border border-black/10 bg-white p-6 space-y-4">
+          <h2 className="text-base font-semibold text-gray-900">מיפוי עמודות</h2>
+          <p className="text-sm text-gray-600">
+            כל עמודה בקובץ זוהתה אוטומטית ככל האפשר. אפשר לתקן כל שיוך, ועמודה שמסומנת "לא לייבא"
+            פשוט תדולג. עמודות עם * הן חובה.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-black/10 text-gray-500">
+                  <th className="py-2 pe-4 text-start font-medium">עמודה בקובץ</th>
+                  <th className="py-2 pe-4 text-start font-medium">ערך לדוגמה</th>
+                  <th className="py-2 text-start font-medium">ייבוא אל</th>
+                </tr>
+              </thead>
+              <tbody>
+                {header.map((name, col) => (
+                  <tr key={`${col}-${name}`} className="border-b border-black/5">
+                    <td className="py-2 pe-4 font-medium text-gray-900">
+                      {name.trim() || `עמודה ${col + 1}`}
+                    </td>
+                    <td className="max-w-48 truncate py-2 pe-4 text-gray-600">{sampleFor(col)}</td>
+                    <td className="py-2">
+                      <select
+                        className="rounded-lg border border-black/10 bg-white px-2 py-1.5 text-sm"
+                        value={selections[col] ?? ''}
+                        onChange={(e) => {
+                          const next = [...selections]
+                          next[col] = (e.target.value || null) as ImportColumnKey | null
+                          setSelections(next)
+                        }}
+                      >
+                        <option value="">לא לייבא</option>
+                        {IMPORT_COLUMNS.map((c) => (
+                          <option key={c.key} value={c.key}>
+                            {c.label}
+                            {c.required ? ' *' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {duplicateKeys.length > 0 ? (
+            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+              שדה יעד נבחר יותר מפעם אחת:{' '}
+              {duplicateKeys.map((k) => COLUMN_LABEL.get(k) ?? k).join(', ')}
+            </p>
+          ) : null}
+          {missingRequired.length > 0 ? (
+            <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              עמודות חובה שטרם מופו: {missingRequired.map((c) => c.label).join(', ')}
+            </p>
+          ) : null}
+          {modePicker}
+          <button
+            type="button"
+            className={btn}
+            disabled={duplicateKeys.length > 0 || missingRequired.length > 0}
+            onClick={() => void runPreview()}
+          >
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+            בדיקת הקובץ (הרצת ניסיון, בלי לשמור)
+          </button>
+        </div>
+      ) : null}
+
+      {summary && (stage === 'ready' || stage === 'importing' || stage === 'done') ? (
         <div className="rounded-xl border border-black/10 bg-white p-6 space-y-4">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="font-semibold text-gray-900">
               {stage === 'done' ? 'תוצאות הייבוא' : 'תוצאות בדיקה (טרם נשמר דבר)'}
             </span>
             <span className="text-gray-600">סה"כ שורות: {summary.total}</span>
-            <span className="text-emerald-700">
-              {stage === 'done' ? `נקלטו: ${inserted}` : `תקינות: ${summary.valid}`}
-            </span>
+            {stage === 'done' ? (
+              <span className="text-emerald-700">
+                נוספו: {applied.inserted} · עודכנו: {applied.updated}
+              </span>
+            ) : (
+              <span className="text-emerald-700">
+                תקינות: {summary.valid} ({summary.inserts} חדשים, {summary.updates} עדכונים)
+              </span>
+            )}
             <span className={failedCount > 0 ? 'text-red-700' : 'text-gray-600'}>
               שגויות: {failedCount}
             </span>
@@ -260,11 +423,20 @@ export default function ProductImportClient() {
             </div>
           ) : null}
 
+          {stage === 'ready' ? modePicker : null}
+
           <div className="flex flex-wrap items-center gap-3">
             {stage === 'ready' && summary.valid > 0 ? (
               <button type="button" className={btn} onClick={() => void runImport()}>
                 <Upload className="h-4 w-4" aria-hidden />
-                ייבוא {summary.valid} מוצרים כטיוטה
+                {mode === 'upsert'
+                  ? `ייבוא ${summary.valid} שורות (${summary.inserts} חדשים, ${summary.updates} עדכונים)`
+                  : `ייבוא ${summary.valid} מוצרים כטיוטה`}
+              </button>
+            ) : null}
+            {stage === 'ready' ? (
+              <button type="button" className={btnGhost} onClick={() => setStage('mapping')}>
+                חזרה למיפוי העמודות
               </button>
             ) : null}
             {failedCount > 0 ? (
@@ -291,10 +463,11 @@ export default function ProductImportClient() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-black/10 text-start text-gray-500">
+                <tr className="border-b border-black/10 text-gray-500">
                   <th className="py-2 pe-4 text-start font-medium">שורה</th>
                   <th className="py-2 pe-4 text-start font-medium">שם</th>
                   <th className="py-2 pe-4 text-start font-medium">קישור (slug)</th>
+                  <th className="py-2 pe-4 text-start font-medium">פעולה</th>
                   <th className="py-2 text-start font-medium">מצב</th>
                 </tr>
               </thead>
@@ -306,10 +479,13 @@ export default function ProductImportClient() {
                     <td className="py-2 pe-4 font-mono text-xs" dir="ltr">
                       {row.slug ?? '-'}
                     </td>
+                    <td className="py-2 pe-4 text-gray-600">
+                      {row.action === 'update' ? 'עדכון' : row.action === 'new' ? 'חדש' : '-'}
+                    </td>
                     <td className="py-2">
                       {row.errors.length === 0 ? (
                         <span className="text-emerald-700">
-                          {stage === 'done' ? 'נקלט' : 'תקין'}
+                          {stage === 'done' ? (row.action === 'update' ? 'עודכן' : 'נקלט') : 'תקין'}
                         </span>
                       ) : (
                         <span className="text-red-700">{row.errors.join(' | ')}</span>

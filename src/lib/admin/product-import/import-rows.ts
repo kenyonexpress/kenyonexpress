@@ -154,15 +154,21 @@ export function toRecords(
   dataRows: string[][],
   firstLine = 2,
 ): RawImportRow[] {
-  return dataRows.map((cells, i) => {
+  const out: RawImportRow[] = []
+  dataRows.forEach((cells, i) => {
     const record: ImportRecord = {}
     mapping.keys.forEach((key, col) => {
       if (key === null) return
       const value = (cells[col] ?? '').trim()
       if (value.length > 0) record[key] = value
     })
-    return { line: firstLine + i, record }
+    // A row with nothing in any mapped column is not data: the CSV parser
+    // already drops blank lines, and the xlsx parser keeps blank rows dense so
+    // line numbers match Excel - both kinds end here, not in the error report.
+    if (Object.keys(record).length === 0) return
+    out.push({ line: firstLine + i, record })
   })
+  return out
 }
 
 const TYPE_ALIASES: Record<string, 'physical' | 'coupon'> = {
@@ -172,6 +178,9 @@ const TYPE_ALIASES: Record<string, 'physical' | 'coupon'> = {
   coupon: 'coupon',
   קופון: 'coupon',
 }
+
+/** How rows that already exist (by slug) are treated. */
+export type ImportMode = 'insert' | 'upsert'
 
 export interface ValidatedImportRow {
   line: number
@@ -183,6 +192,12 @@ export interface ValidatedImportRow {
   money?: ProductMoneyWrite
   /** Raw category name for the server to resolve to an id. */
   categoryName: string | null
+  /**
+   * The raw record, kept so the upsert path can tell "column absent from the
+   * file" apart from "validated to a default" - only present columns may
+   * overwrite an existing product.
+   */
+  record: ImportRecord
 }
 
 /**
@@ -308,7 +323,54 @@ export function validateImportRow(row: RawImportRow): ValidatedImportRow {
     errors,
     ...(parsed.success && errors.length === 0 ? { data: parsed.data, money } : {}),
     categoryName: r.category?.trim() || null,
+    record: r,
   }
+}
+
+/**
+ * Money is derived as a unit by `buildProductMoneyWrite`, and its inputs are
+ * required file columns - so an upsert always rewrites all of it, exactly as
+ * the preview showed. Everything else overwrites only when its column was in
+ * the file.
+ */
+const MONEY_SOURCE_FIELDS = [
+  'kenyon_price',
+  'full_price',
+  'platform_percent',
+  'supplier_split_percent',
+  'discount_percent',
+  'coupon_price_ils',
+  'coupon_expiry_days',
+  'is_coupon_enabled',
+] as const
+
+const PRESENCE_UPDATE_FIELDS = [
+  'name_he',
+  'name_en',
+  'description_he',
+  'short_description_he',
+  'brand',
+  'sku',
+  'barcode',
+  'stock_quantity',
+  'tags',
+] as const
+
+/**
+ * The column set an upsert writes to an EXISTING product. Deliberately no
+ * status, images, supplier, created_by or type: a CSV update must not
+ * unpublish a live product, drop its gallery, or change what it is.
+ * Category is the server's to add - it owns the name -> id map.
+ */
+export function buildUpsertUpdateFields(row: ValidatedImportRow): Record<string, unknown> | null {
+  if (!row.data || !row.money) return null
+  const out: Record<string, unknown> = {}
+  for (const field of MONEY_SOURCE_FIELDS) out[field] = row.data[field]
+  for (const field of PRESENCE_UPDATE_FIELDS) {
+    if (row.record[field] !== undefined) out[field] = row.data[field]
+  }
+  Object.assign(out, row.money)
+  return out
 }
 
 /** Flags rows whose slug or sku repeats an EARLIER row in the same file. */

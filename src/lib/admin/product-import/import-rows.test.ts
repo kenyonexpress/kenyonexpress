@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildErrorReportCsv,
   buildTemplateCsv,
+  buildUpsertUpdateFields,
   mapHeaders,
   markInFileDuplicates,
   toRecords,
@@ -60,6 +61,50 @@ describe('toRecords', () => {
       { line: 2, record: { slug: 'a' } },
       { line: 3, record: { slug: 'b', name_he: 'שם' } },
     ])
+  })
+
+  it('skips all-empty rows but keeps line numbers true to the file', () => {
+    // The xlsx parser returns blank Excel rows as empty arrays so indexes stay
+    // aligned with what the admin sees; those rows must not become errors.
+    const mapping = mapHeaders(['slug', 'name_he'])
+    const rows = toRecords(mapping, [['a', 'x'], [], ['', '  '], ['b', 'y']])
+    expect(rows).toEqual([
+      { line: 2, record: { slug: 'a', name_he: 'x' } },
+      { line: 5, record: { slug: 'b', name_he: 'y' } },
+    ])
+  })
+})
+
+describe('buildUpsertUpdateFields', () => {
+  it('rewrites money as a unit but other columns only when present in the file', () => {
+    const row = validateImportRow({
+      line: 2,
+      record: { ...goodRecord, sku: 'SKU-9', tags: 'חדש, מבצע' },
+    })
+    const fields = buildUpsertUpdateFields(row)
+    expect(fields).not.toBeNull()
+    // Money sources and the derived write, exactly like the insert path.
+    expect(fields?.kenyon_price).toBe(199.9)
+    expect(fields?.platform_percent).toBe(30)
+    expect(fields?.price_ils).toBe(199.9)
+    // Present columns update...
+    expect(fields?.name_he).toBe('מוצר בדיקה')
+    expect(fields?.sku).toBe('SKU-9')
+    expect(fields?.tags).toEqual(['חדש', 'מבצע'])
+    // ...absent ones do not, and the untouchables are never written.
+    expect(fields).not.toHaveProperty('name_en')
+    expect(fields).not.toHaveProperty('description_he')
+    expect(fields).not.toHaveProperty('status')
+    expect(fields).not.toHaveProperty('images')
+    expect(fields).not.toHaveProperty('type')
+    expect(fields).not.toHaveProperty('supplier_id')
+    expect(fields).not.toHaveProperty('created_by')
+  })
+
+  it('returns null for a row that failed validation', () => {
+    const row = validateImportRow({ line: 2, record: { slug: 'only-a-slug' } })
+    expect(row.errors.length).toBeGreaterThan(0)
+    expect(buildUpsertUpdateFields(row)).toBeNull()
   })
 })
 
