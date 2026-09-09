@@ -14,15 +14,23 @@ import { useEffect, useState } from 'react'
  * page, so the badge is right on the first paint and stays right across every
  * navigation, with no client round trip and no flash of an empty bell.
  *
- * REALTIME IS AN ENHANCEMENT, AND IT IS TREATED AS ONE. Measured 2026-09-09:
- * `supabase_realtime` contains ZERO tables, so a `postgres_changes`
- * subscription connects, reports SUBSCRIBED, and receives nothing -- with no
- * error on either side. `migrations/pending/198` adds `notifications` to the
- * publication, and until it is applied this subscription is inert.
+ * REALTIME IS AN ENHANCEMENT, AND IT IS TREATED AS ONE.
  *
- * That is the whole reason the count is not fetched here. A bell whose badge
- * came only from a live subscription would read zero forever, for everyone, and
- * look like a working feature with nothing to show.
+ * This paragraph used to say that `supabase_realtime` contained ZERO tables and
+ * that 198 was unapplied, so the subscription below was inert. Re-measured
+ * against production on 2026-09-09, both halves are false: 198 is applied,
+ * `notifications` has `REPLICA IDENTITY FULL`, and `pg_publication_tables`
+ * lists `public.notifications` under `supabase_realtime`. **The subscription
+ * fires.**
+ *
+ * THE STRUCTURE BELOW DOES NOT CHANGE, AND THAT IS THE POINT. The count still
+ * comes from the server first and the subscription still only increments it,
+ * because "the publication contains this table" is a piece of infrastructure
+ * state that can be switched off in a dashboard by someone who will never read
+ * this file. A bell whose badge came ONLY from a live subscription would read
+ * zero forever, for everyone, the moment that happened, and would look like a
+ * working feature with nothing to show. Correct while inert is the property
+ * worth keeping whether or not it is currently inert.
  *
  * The filter is `user_id=eq.<id>` and it is not the security boundary -- RLS is.
  * Supabase evaluates the filter against the WAL record, so a subscription

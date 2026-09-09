@@ -47,17 +47,28 @@ they happened to open the mail.
 
 ## The publication was empty, and that is the trap
 
+**As of 2026-09-09 it is no longer empty, and 198 is applied.** Re-measured:
+
 ```
-select * from pg_publication_tables where pubname = 'supabase_realtime'  ->  0 rows
+select * from pg_publication_tables where pubname = 'supabase_realtime'
+  ->  public.notifications
+
+select relreplident from pg_class where oid = 'public.notifications'::regclass
+  ->  f   (FULL)
 ```
+
+So the bell's subscription fires. The rest of this section is kept because the
+trap it describes is real and is the reason the design does not depend on the
+answer:
 
 A `postgres_changes` subscription against a table that is not in the publication
 **connects, reports `SUBSCRIBED`, and receives nothing.** No error on either
 side. The channel looks healthy and is deaf.
 
-Nothing in this codebase subscribes to anything today, so it is not a live bug.
-It is the bug the bell would have had, and it is why the `ALTER PUBLICATION` is
-part of migration 198 rather than something to remember afterwards —
+That is a failure no test in this repository can see, and it is switchable from
+a dashboard by somebody who will never read this file — which is why the
+`ALTER PUBLICATION` is part of migration 198 rather than something to remember
+afterwards —
 `REPLICA IDENTITY FULL` with it, because Supabase evaluates the `user_id=eq.`
 filter against the WAL record and the default identity carries no `user_id` on
 an UPDATE.
@@ -256,7 +267,7 @@ nothing.
 | | |
 | --- | --- |
 | `src/lib/notifications/preferences.ts` | required vs optional, and the resolver |
-| `migrations/pending/198_in_app_notifications.sql` | the table, the RLS, the publication. Not applied. |
+| `migrations/applied/198_in_app_notifications.sql` | the table, the RLS, the publication. **Applied** (corrected 2026-09-09). |
 | `src/server/queries/notifications.ts` | the bell's reads, surviving 198's absence |
 | `src/server/actions/notifications.ts` | mark read, save a preference |
 | `src/components/notifications/NotificationBell.tsx` | the badge, server-first |
@@ -264,3 +275,62 @@ nothing.
 | `src/lib/push/` | VAPID, dispatch, store, templates (existing, applied) |
 | `src/lib/whatsapp/` | Twilio client and outbox (existing, applied) |
 | `src/lib/sms/twilio.ts` | the shape, refusing until a sender is registered |
+
+---
+
+## 2026-09-09: the centre had no writer, and now has one
+
+**Measured:** the only statements against `notifications` anywhere in the
+repository were two `SELECT`s in `src/server/queries/notifications.ts` and one
+`UPDATE` of `read_at` in `src/server/actions/notifications.ts`. Nothing had ever
+inserted a row.
+
+So everything above was true and the feature was still empty: 198 applied, RLS
+right, both indexes present, `REPLICA IDENTITY FULL` set, `notifications` in the
+`supabase_realtime` publication, a bell that reads a server-rendered count, an
+account page, and a live subscription. A complete, correct, permanently empty
+notification centre.
+
+### A fourth leg on the outbox, not a second pipeline
+
+`/api/cron/notifications` already fans one outbox row out to email, push and
+WhatsApp. In-app is the fourth. It is not a separate pipeline because two
+pipelines over the same events are two chances to disagree about whether an
+event happened, and that disagreement always surfaces as a customer who was
+emailed about a voucher the site says they do not have.
+
+It runs **before** the push leg's `continue`, which is not a style point: every
+branch of the push leg ends in `continue`, so anything after it is reached only
+by rows that happen to owe a push.
+
+### The allowlist is the security boundary
+
+`IN_APP_KINDS` in `src/lib/notifications/in-app.ts` is an allowlist, because the
+two failure directions are not symmetric. A customer kind missing from it is a
+notification nobody gets, which somebody reports. An **operator** kind leaking
+through is `reconciliation_gap: settlement short by ₪4,102` in a shopper's bell,
+which is an internal finance figure published to a stranger.
+
+`supplier_sale`, `invoice_dead`, `low_stock`, `reconciliation_gap` and
+`settlement_gap` are refused by name and by test. `notification_outbox.user_id`
+is null for them anyway, and the drain checks that too: two independent refusals
+of the same fact.
+
+### Preferences are honoured, through the channel that already existed
+
+`CHANNELS` in `preferences.ts` has always included `in_app`. The leg calls
+`mayNotify(kind, 'in_app', rows)`, so a customer who switches a kind off in-app
+stops getting it there while their email is untouched. Required kinds ignore the
+table, as they do on every other channel.
+
+### Idempotency belongs to the database
+
+`223` adds `notifications.outbox_id`, unique, and the insert is
+`ON CONFLICT DO NOTHING`. A row is selected while **either** leg is pending, so
+the same row is seen again on later runs; without the constraint the customer
+would be notified once per run for as long as the mail kept failing.
+
+Until 223 is applied the leg **does nothing at all** rather than inserting
+without the link. A leg that cannot be idempotent is worse than a leg that
+waits.
+

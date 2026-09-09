@@ -1,5 +1,36 @@
 # `migrations/pending/`
 
+## 2026-09-09: 223 WRITTEN, not applied - the column that gives the bell a writer
+
+`223_notifications_outbox_link.sql`. One nullable column and one unique index.
+
+**198 shipped a notification centre with no writer.** The table, its RLS, both
+indexes, `REPLICA IDENTITY FULL` and membership of `supabase_realtime` are all
+in production, the bell reads it, the realtime subscription is live - and the
+only statements against `notifications` anywhere in the repository were two
+SELECTs and an UPDATE of `read_at`. It was a finished feature that was empty by
+construction.
+
+The fix is a fourth leg on the outbox drain, beside email, push and WhatsApp,
+and `outbox_id` is the one piece of schema it needs: `ON CONFLICT DO NOTHING`
+on a unique column makes the fan-out idempotent at the database, so a row seen
+again because its OTHER leg is still pending cannot notify twice.
+
+**Not an `in_app_status` column mirroring `push_status`.** A push is an attempt
+against a remote service and needs a state machine; an in-app row is a local
+INSERT, so the ROW is the state, and a column tracking whether the row exists is
+one fact stored twice.
+
+**The index is not partial, and the first draft's was.** The probe rejected it
+with `42P10`: an inference-based `ON CONFLICT` only matches a partial index if
+it repeats the predicate, so every writer forever would have had to remember
+`where outbox_id is not null` or take a runtime error. Postgres already treats
+NULLs as distinct in a unique index.
+
+`ON DELETE SET NULL` and not CASCADE: the queue is operational plumbing and may
+be pruned, and a customer's notification history must not disappear because
+somebody tidied it.
+
 ## 2026-09-09: 221 + 222 WRITTEN, not applied - the rating cache and helpful votes
 
 `221_review_rating_cache.sql`, `222_review_helpful_votes.sql`. Both for

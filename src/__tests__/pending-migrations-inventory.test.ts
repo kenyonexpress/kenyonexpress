@@ -153,6 +153,14 @@ describe('the pending migration inventory', () => {
       // tables the wishlist alerts read, which is how they were noticed.
       '193_price_history.sql',
       '195_stock_waitlist.sql',
+      // 198 APPLIED, the fifth found this way, and the only one whose last
+      // statement was the interesting part. Both tables, all five policies, both
+      // indexes, the set_updated_at trigger, the table grants AND the column
+      // grant (authenticated may UPDATE read_at and nothing else) are in
+      // production - and so is the part a table-existence check would never
+      // reach: notifications has REPLICA IDENTITY FULL and IS a member of the
+      // supabase_realtime publication. NotificationBell documented the opposite.
+      '198_in_app_notifications.sql',
       // 199 APPLIED, and the fourth found this way. Verified object for object,
       // not just by table existence: the supplier_reply length CHECK, all three
       // review_reports indexes, the reviews_supplier_reply UPDATE policy, and the
@@ -378,19 +386,6 @@ describe('the pending migration inventory', () => {
       // seeded fake sends a customer to a locked door. Proven in a rolled-back
       // DO block: 5 zones, none charging, no pickup rows, anon INSERT refused.
       '197_shipping_zones_and_pickup.sql',
-      // 198 WRITTEN 2026-09-09, not applied. The bell, and the settings behind
-      // it. `notification_outbox` is an EMAIL QUEUE -- a record of what we tried
-      // to SEND, not of what a customer has been TOLD -- so it cannot back an
-      // unread count without an "unread" that clears when a cron runs. The
-      // ALTER PUBLICATION at the bottom is part of the feature, not
-      // housekeeping: `supabase_realtime` contains ZERO tables (measured), and
-      // a postgres_changes subscription against a table outside it connects,
-      // reports SUBSCRIBED and receives nothing, with no error on either side.
-      // Proven against production in a rolled-back DO block: the table joined
-      // the publication, an absolute href was refused by the CHECK, the owning
-      // customer could mark read but NOT rewrite a title (the column grant),
-      // and another user's rows were invisible.
-      '198_in_app_notifications.sql',
       // 201 WRITTEN 2026-09-09, not applied. Flash deals: a price change with a
       // time on it. `discount_campaigns` (096) schedules a CODE; nothing has
       // ever scheduled a PRICE, so the only way to run one was an operator
@@ -815,6 +810,15 @@ describe('the pending migration inventory', () => {
       // person is refused by the PRIMARY KEY rather than by application code.
       // Votes are readable only by their own voter.
       '222_review_helpful_votes.sql',
+      // 223 WRITTEN 2026-09-09, not applied. notifications.outbox_id, unique, so
+      // the outbox drain's new in-app leg is idempotent at the database. 198
+      // shipped the notification centre complete and NOTHING ever wrote a row
+      // into it; this is the column that missing writer needs. Probed against
+      // production in a rolled-back DO block, and the probe is the reason the
+      // index is not partial: the first draft took 42P10, because an
+      // inference-based ON CONFLICT only matches a partial index if it repeats
+      // the predicate.
+      '223_notifications_outbox_link.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

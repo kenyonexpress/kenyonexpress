@@ -1,5 +1,6 @@
 import { buildNotification } from '@/lib/email/notifications'
 import { sendEmail } from '@/lib/email/resend'
+import { buildInAppContent, isInAppKind } from '@/lib/notifications/in-app'
 import { loadPreferenceRows } from '@/lib/notifications/preference-store'
 import { mayNotify } from '@/lib/notifications/preferences'
 import { log } from '@/lib/observability/log'
@@ -118,6 +119,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   let pushDead = 0
   let whatsapped = 0
   let whatsappFailed = 0
+  let inApp = 0
+  let inAppSkipped = 0
+
+  /** 23505: this outbox row already has its in-app notification. */
+  const DUPLICATE = new Set(['23505'])
+  /** `notifications.outbox_id` ships in pending/223. */
+  const NOT_APPLIED_223 = new Set(['42703', 'PGRST204', '42P01', 'PGRST205'])
 
   for (const row of rows) {
     const emailDue = row.status === 'pending' && row.next_attempt_at <= now
@@ -133,6 +141,60 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     // entirely (a receipt cannot be switched off) and an absent table reads as
     // "no opinion recorded", which is the same answer defaults-on gives.
     const preferences = await loadPreferenceRows(admin, row.user_id)
+
+    /**
+     * THE FOURTH LEG: the in-app notification centre.
+     *
+     * 198 shipped `notifications` complete - RLS, indexes, realtime - and
+     * NOTHING has ever written a row into it. Measured 2026-09-09: the only
+     * statements against the table in the whole repository were two SELECTs and
+     * an UPDATE of `read_at`. The bell was a finished feature that was empty by
+     * construction.
+     *
+     * It runs BEFORE the `!pushDue` continue below, deliberately: the push leg
+     * ends in `continue` on every branch, so anything placed after it is
+     * reached only by rows that happen to owe a push.
+     *
+     * Idempotency is the database's, not this loop's: `outbox_id` is unique and
+     * the insert is ON CONFLICT DO NOTHING, so a row seen again on a later run
+     * because its OTHER leg is still pending cannot notify twice.
+     *
+     * No status column and no retry. The row either exists or it does not, and
+     * a failure here must never hold up the mail: this is the leg that can be
+     * re-derived from the outbox at any time, so it logs and moves on.
+     */
+    if (row.user_id && isInAppKind(row.kind)) {
+      const content = mayNotify(row.kind, 'in_app', preferences)
+        ? buildInAppContent(row.kind, (row.payload ?? {}) as Record<string, unknown>)
+        : null
+      if (content) {
+        const { error: inAppError } = await admin.from('notifications' as never).insert({
+          user_id: row.user_id,
+          kind: row.kind,
+          title_he: content.title_he,
+          body_he: content.body_he,
+          href: content.href,
+          outbox_id: row.id,
+        } as never)
+        if (!inAppError) {
+          inApp++
+        } else if (DUPLICATE.has(inAppError.code ?? '')) {
+          // Already fanned out on an earlier run. Not a failure.
+          inAppSkipped++
+        } else if (NOT_APPLIED_223.has(inAppError.code ?? '')) {
+          // `outbox_id` ships in pending/223. Without it there is no way to be
+          // idempotent, and a leg that might notify twice on every retry is
+          // worse than a leg that waits for the migration.
+          inAppSkipped++
+        } else {
+          inAppSkipped++
+          log.warn('notifications.in_app_insert_failed', {
+            kind: row.kind,
+            code: inAppError.code ?? null,
+          })
+        }
+      }
+    }
 
     if (emailDue && !mayNotify(row.kind, 'email', preferences)) {
       // `skipped`, not `dead`: the customer can switch it back on, and a dead
@@ -276,6 +338,8 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     pushDead,
     whatsapped,
     whatsappFailed,
+    inApp,
+    inAppSkipped,
   })
 }
 
