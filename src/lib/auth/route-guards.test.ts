@@ -87,17 +87,140 @@ function routeFiles(): string[] {
   }).sort()
 }
 
-/** Comments name guards constantly. Only real code counts as calling one. */
+/**
+ * Comments name guards constantly. Only real code counts as calling one.
+ *
+ * A SCANNER, NOT A REGEX, AND THE REASON IS A BUG THIS GATE ALREADY HAD.
+ *
+ * The previous version stripped block comments with
+ * `/\/\*[\s\S]*?\*\//g` and then dropped lines beginning with `//`. Both
+ * steps are individually reasonable and the ORDER is what breaks: a `/*`
+ * sequence inside a LINE comment opens a block comment as far as that regex is
+ * concerned, and everything up to the next `*\/` anywhere in the file is
+ * deleted.
+ *
+ * `admin/products/page.tsx` carries the line
+ *
+ *     // ... while every sibling under /admin/products/* refused them.
+ *
+ * three lines above `await requireSection('catalog', 'read')`. For as long as
+ * that file contained no real block comment there was no closing delimiter, the
+ * regex matched nothing, and the gate passed for the wrong reason. Adding one
+ * ordinary JSDoc block anywhere below it supplied the partner delimiter, the
+ * strip swallowed the guard, and a correctly guarded route reported as
+ * unguarded.
+ *
+ * That direction is noisy and safe. The direction that is not: the same
+ * deletion can remove an ENTIRE route body, and a file whose guard was removed
+ * for real would look identical. A security gate must not have a mode where a
+ * stray character decides how much of the file it reads.
+ *
+ * So this walks the source once, tracking whether it is inside a line comment,
+ * a block comment, a quoted string or a template literal, and blanks comment
+ * characters in place. Offsets and line numbers survive, which is what
+ * `brand-contrast.test.ts` learned the hard way.
+ */
 function codeOnly(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => {
-      const t = line.trim()
-      return !t.startsWith('//') && !t.startsWith('*')
-    })
-    .join('\n')
+  const out: string[] = []
+  let mode: 'code' | 'line' | 'block' | 'single' | 'double' | 'template' = 'code'
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i] as string
+    const next = text[i + 1]
+    const keep = (ch: string) => out.push(ch)
+
+    switch (mode) {
+      case 'code':
+        if (c === '/' && next === '/') {
+          mode = 'line'
+          keep(' ')
+        } else if (c === '/' && next === '*') {
+          mode = 'block'
+          keep(' ')
+        } else {
+          if (c === "'") mode = 'single'
+          else if (c === '"') mode = 'double'
+          else if (c === '`') mode = 'template'
+          keep(c)
+        }
+        break
+      case 'line':
+        if (c === '\n') mode = 'code'
+        keep(c === '\n' ? '\n' : ' ')
+        break
+      case 'block':
+        if (c === '*' && next === '/') {
+          mode = 'code'
+          keep(' ')
+          keep(' ')
+          i++
+          continue
+        }
+        keep(c === '\n' ? '\n' : ' ')
+        break
+      default: {
+        // Inside a string. A backslash escapes the next character, so a quote
+        // it protects cannot be read as the closing one.
+        if (c === '\\') {
+          keep(c)
+          if (next !== undefined) {
+            keep(next)
+            i++
+          }
+          break
+        }
+        const closes =
+          (mode === 'single' && c === "'") ||
+          (mode === 'double' && c === '"') ||
+          (mode === 'template' && c === '`')
+        if (closes) mode = 'code'
+        keep(c)
+      }
+    }
+  }
+
+  return out.join('')
 }
+
+describe('the comment stripper reads code, not delimiters', () => {
+  // Every case here is a way the previous regex-pair deleted real code. They
+  // are pinned by behaviour rather than described, because the failure they
+  // cause is a guard that is present and reported missing -- or, in the other
+  // direction, a route body the gate never sees at all.
+
+  it('does not let a /* inside a line comment open a block comment', () => {
+    // The exact shape in admin/products/page.tsx. Before the rewrite, the guard
+    // below vanished the moment any JSDoc block appeared later in the file.
+    const source = [
+      '// every sibling under /admin/products/* refused them',
+      "const s = await requireSection('catalog', 'read')",
+      '/** an ordinary doc comment */',
+      'const x = 1',
+    ].join('\n')
+    expect(codeOnly(source)).toContain('requireSection(')
+  })
+
+  it('does not let a // inside a string comment out the rest of the line', () => {
+    const source = "const url = 'https://example.com'; await requireAdminSession()"
+    expect(codeOnly(source)).toContain('requireAdminSession(')
+  })
+
+  it('still removes a guard named only in a comment', () => {
+    // The thing the stripper is FOR. Without it, a file that merely mentions a
+    // guard in prose passes the gate.
+    expect(codeOnly('// this page needs requireAdminSession() one day')).not.toContain(
+      'requireAdminSession(',
+    )
+    expect(codeOnly('/* requireStaffSession() belongs here */')).not.toContain(
+      'requireStaffSession(',
+    )
+  })
+
+  it('preserves line numbers, so an offender is reported where it lives', () => {
+    const source = '/*\n a\n b\n*/\nconst x = 1'
+    expect(codeOnly(source).split('\n')).toHaveLength(5)
+  })
+})
 
 describe('privileged routes are guarded', () => {
   const files = routeFiles()

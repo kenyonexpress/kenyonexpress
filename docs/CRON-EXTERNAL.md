@@ -96,6 +96,7 @@ file is in a repository.
 7  https://kenyonexpress.vercel.app/api/cron/subscriptions       GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
+9b https://kenyonexpress.vercel.app/api/cron/price-snapshot      GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
@@ -130,6 +131,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 7 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/subscriptions` |
 | 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
+| 9b | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/price-snapshot` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 
@@ -151,6 +153,17 @@ timing changes with the scheduler.
   never finalised. That state is the worst one in the system and this is what
   notices it.
 - **`reconcile`** matches the day's payments against orders.
+- **`price-snapshot`** writes one row per product per day into `price_history`.
+  It shares `reconcile`'s 04:00 slot rather than taking one of its own, which
+  is 07:00 Israeli time in summer and 06:00 in winter -- far enough from
+  midnight in both offsets that the Israeli calendar day it files under is
+  never in doubt. A snapshot that landed on the wrong side of a date boundary
+  would leave a hole in a 30-day window and nothing would report it. This is
+  the evidence behind every struck-through price on the site; see
+  `docs/PRICING-COMPLIANCE.md`. It is inert until
+  `migrations/pending/193_price_history.sql` is applied, and says so with a
+  warning and a 200 rather than a 500, so an unapproved migration does not
+  teach everyone to ignore this job.
 - **`health`** runs the internal checks and raises the alert. It is what tells
   you the other nine stopped.
 - **`stock`** releases reservations that were never consumed.

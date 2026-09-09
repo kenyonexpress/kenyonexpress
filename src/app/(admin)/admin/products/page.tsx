@@ -2,6 +2,9 @@ import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable
 import { productListParamsSchema } from '@/lib/admin/page-params'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { ilsToAgorot } from '@/lib/commerce/money'
+import { loadReferenceVerdicts } from '@/lib/pricing/price-history'
+import { referenceWarning } from '@/lib/pricing/reference-price'
 import { createClient } from '@/lib/supabase/server'
 import { FileUp, Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -67,6 +70,30 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     supabase.from('categories').select('id, name_he').order('name_he'),
   ])
 
+  /**
+   * Whether each struck-through "before" price can be proved.
+   *
+   * The admin is the ONLY place this is ever said out loud. The storefront's
+   * job is to stop showing a claim the record contradicts, silently, because a
+   * shopper cannot act on a compliance note. An operator can, and is the only
+   * person who can: the fix is either to correct `full_price` or to hold the
+   * price long enough for it to be true, and both are decisions rather than
+   * code.
+   *
+   * Batched: one query for the whole page, not one per row. Against the
+   * page-scoped `supabase` client, so it inherits the same session.
+   */
+  const verdicts = await loadReferenceVerdicts(
+    supabase,
+    (products ?? [])
+      .filter((p) => p.kenyon_price != null)
+      .map((p) => ({
+        productId: p.id,
+        currentAgorot: ilsToAgorot(Number(p.kenyon_price)),
+        referenceAgorot: p.full_price == null ? null : ilsToAgorot(Number(p.full_price)),
+      })),
+  )
+
   const rows: ProductRow[] = (products ?? []).map((p) => {
     const category = Array.isArray(p.categories) ? p.categories[0] : p.categories
     return {
@@ -81,6 +108,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
       category_name: category?.name_he ?? null,
       platform_percent: p.platform_percent,
       coupon_price_ils: p.coupon_price_ils,
+      reference_warning: referenceWarning(verdicts.get(p.id) ?? { kind: 'not_claimed' }),
     }
   })
 

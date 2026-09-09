@@ -1,5 +1,59 @@
 # `migrations/pending/`
 
+## 2026-09-09: 193 WRITTEN, not applied — fifteen price claims and no evidence
+
+`193_price_history.sql`. Measured against production the same day:
+
+```
+44  active products
+15  showing a struck-through "מחיר רגיל" above the price charged
+20  products with any price change recorded anywhere (audit_log)
+ 0  products in BOTH sets
+```
+
+The intersection is empty. Israeli consumer law treats an advertised saving as
+a factual claim about what the trader used to charge; `products.full_price` is
+a number an operator types into a form, eight components paint it with a line
+through it, and nothing between the form and the shopper has ever asked whether
+it is true.
+
+**`audit_log` cannot stand in for it, and the numbers say why.** 555 product
+rows, 21 mentioning `kenyon_price`, covering 20 products, none of them among the
+fifteen. A change log records the edits that went through the audited path — a
+bulk update, a direct SQL edit or a CSV import writes nothing — and, more
+fundamentally, the law asks about the price on **every day** of a window,
+including the twenty-nine when nobody edited anything.
+
+**Append-only, by trigger, for every role including `service_role`.** This table
+exists to contradict a claim somebody wants to make. A history that whoever is
+under pressure to run a sale can edit is not evidence, it is a second copy of
+the claim. UPDATE and DELETE both raise `42501`.
+
+**No unique key on (product, day), deliberately.** A price can change twice in a
+day; forcing one row per day would make the writer choose which is "the" price,
+and a writer that chooses can be wrong. A day may carry several rows and the
+reader takes the lowest — the price a shopper could actually have paid. The
+unique index covers the whole observation instead, so a re-run of the snapshot
+is a no-op and a real change is a new row.
+
+**Status goes in the row and the reader filters on it.** A draft day is not a
+day the product had a price, and without it a product could be hidden for a
+month and return advertising any "before" price at all behind a full window of
+draft days.
+
+**Verified against production inside a rolled-back `DO` block**, with nothing
+left behind:
+
+```
+seeded=80  rerun_wrote=0  update=BLOCKED  delete=BLOCKED  products_with_null_price=0
+```
+
+It seeds one day from the live catalogue as it applies, so the window starts the
+day it lands rather than the day somebody remembers to schedule the cron.
+Nothing invents a price for a day it was not observed: a fabricated history
+would let an unprovable claim pass the check that exists to catch it. Full
+measurement in `docs/PRICING-COMPLIANCE.md`.
+
 ## 2026-09-09: 192 WRITTEN, not applied — the redirect table has never held a row
 
 `192_seed_seo_redirects.sql`. `select count(*) from public.seo_redirects` returns

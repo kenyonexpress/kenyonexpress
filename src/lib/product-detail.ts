@@ -1,9 +1,11 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
+import { ilsToAgorot } from '@/lib/commerce/money'
 import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
 import { buildRecurringOffer } from '@/lib/commerce/recurring'
 import { log } from '@/lib/observability/log'
+import { loadReferenceVerdicts, suppressReference } from '@/lib/pricing/price-history'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/anon'
 import {
@@ -140,6 +142,38 @@ export async function loadProductBySlug(slug: string) {
       })
     : null
 
+  /**
+   * May the struck-through "before" price be shown?
+   *
+   * Read HERE, inside the cache, for the same reason the coupon columns are:
+   * it is catalogue data, identical for every shopper asking for this slug, and
+   * on the page it would be a per-request round trip on the single surface
+   * where the claim is largest.
+   *
+   * The verdict is a fact about a 30-day window, so it moves once a day at
+   * most; an entry up to an hour stale is the same budget as the price beside
+   * it. `CATALOGUE_TAG` also covers it, so an admin correcting a `full_price`
+   * sees the verdict change with the price rather than an hour later.
+   *
+   * Today this returns `unproven` for every product, because
+   * `migrations/pending/193_price_history.sql` is not applied and the table
+   * does not exist. That is not a failure mode being tolerated -- it is the
+   * honest verdict, and `mayShowReference` paints it, so wiring this changes
+   * nothing a shopper sees until there is evidence to change it with.
+   */
+  const referenceVerdict =
+    product.full_price == null
+      ? null
+      : ((
+          await loadReferenceVerdicts(supabase, [
+            {
+              productId: product.id,
+              currentAgorot: ilsToAgorot(basePrice),
+              referenceAgorot: ilsToAgorot(Number(product.full_price)),
+            },
+          ])
+        ).get(product.id) ?? null)
+
   return {
     product,
     images,
@@ -150,6 +184,14 @@ export async function loadProductBySlug(slug: string) {
     stickerPriceIls,
     couponOffer,
     recurringOffer,
+    referenceVerdict,
+    /**
+     * The page reads THIS, not `referenceVerdict`, so a surface cannot forget
+     * to ask. `suppressReference` is false for every verdict except `violating`
+     * -- a claim measured to be false -- so adding the flag to a surface can
+     * only ever remove a false claim, never blank a true one by mistake.
+     */
+    suppressReferencePrice: suppressReference(referenceVerdict ?? undefined),
   }
 }
 

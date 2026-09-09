@@ -125,15 +125,38 @@ export default async function ProductPage({ params }: Props) {
   const detail = await loadProductBySlug(slug)
   if (!detail) notFound()
 
-  const { product, images, supplier, variants, galleryAssets, couponOffer, recurringOffer } = detail
+  const {
+    product,
+    images,
+    supplier,
+    variants,
+    galleryAssets,
+    couponOffer,
+    recurringOffer,
+    suppressReferencePrice,
+  } = detail
 
   const category = Array.isArray(product.categories)
     ? null
     : (product.categories as { id: string; name_he: string; slug: string } | null)
 
   const basePrice = Number(product.kenyon_price ?? 0)
+  /**
+   * The struck-through "before" price, or null when it may not be shown.
+   *
+   * `suppressReferencePrice` is the pricing-compliance verdict, computed in
+   * `loadProductBySlug` against `price_history`. It is true only for a claim
+   * the record CONTRADICTS -- a `full_price` above the lowest price actually
+   * charged in the last 30 days, which Israeli consumer law does not allow to
+   * be advertised as a saving. A claim nobody can check yet is still shown; see
+   * `src/lib/pricing/reference-price.ts` for why those two are treated
+   * differently and when the second turns into the first on its own.
+   *
+   * Only the CLAIM is dropped. `basePrice` is untouched, so this can never
+   * change what the shopper is charged.
+   */
   const oldPrice =
-    product.full_price != null && Number(product.full_price) > basePrice
+    !suppressReferencePrice && product.full_price != null && Number(product.full_price) > basePrice
       ? Number(product.full_price)
       : null
 

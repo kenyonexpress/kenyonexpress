@@ -41,6 +41,12 @@ export type ProductRow = {
    * selling. See the price cell below.
    */
   full_price: number | null
+  /**
+   * Why the struck-through price cannot be proved, in Hebrew, or null when
+   * there is nothing to say. Computed server-side against `price_history`;
+   * see src/lib/pricing/reference-price.ts.
+   */
+  reference_warning?: string | null
 }
 
 interface Props {
@@ -189,6 +195,20 @@ export default function ProductsTable({ products, categories, hidePricing = fals
                 ? `${shekelsFromIlsRounded(p.coupon_price_ils)} באתר`
                 : shekelsFromIlsRounded(p.kenyon_price ?? 0)}
             </span>
+            {/*
+              Amber, not red, and below the blocking error rather than beside
+              it. `priceError` means the listing cannot be sold at all; this
+              means the listing sells fine and the SAVING it advertises cannot
+              be evidenced. Painting them the same colour would train an
+              operator to read both as noise, and the one that stops a sale is
+              the one that must keep its urgency.
+            */}
+            {p.reference_warning && (
+              <div className="mt-1 text-xs font-medium text-amber-700">
+                <span>מחיר לפני הנחה</span>
+                <span className="block font-normal text-black/60">{p.reference_warning}</span>
+              </div>
+            )}
             {priceError && (
               <div className="mt-1 text-xs font-medium text-red-600">
                 <span>לא ניתן למכירה: מחיר שגוי</span>

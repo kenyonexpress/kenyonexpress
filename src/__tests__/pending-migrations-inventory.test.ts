@@ -321,6 +321,18 @@ describe('the pending migration inventory', () => {
       // live /blog route. Idempotent, deactivates rather than deletes so the
       // hit counter survives, and raises unless exactly 33 rows end up active.
       '192_seed_seo_redirects.sql',
+      // 193 WRITTEN 2026-09-09, not applied. It creates the record that makes a
+      // struck-through "before" price checkable, and the measurement that
+      // motivates it is a disjoint pair of sets: 15 active products advertise a
+      // saving, 20 have any price change recorded in `audit_log`, and NO
+      // product is in both. There is no evidence anywhere that any of the
+      // fifteen struck-through prices was ever charged. Append-only by trigger
+      // for every role including service_role, because a history that whoever
+      // is running the sale can edit is a second copy of the claim rather than
+      // evidence of it. Verified against production inside a rolled-back DO
+      // block: 80 rows seeded, a second identical run wrote 0, UPDATE and
+      // DELETE both refused, and no product skipped for want of a price.
+      '193_price_history.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
