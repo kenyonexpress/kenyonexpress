@@ -1,6 +1,7 @@
 import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import SiteFooter from '@/components/SiteFooter'
+import SkipLink from '@/components/a11y/SkipLink'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
@@ -15,6 +16,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <CartProvider>
       <CartBootstrap />
+      {/* WCAG 2.4.1 Bypass Blocks, which Israeli standard 5568 adopts. This
+          layout repeats a navigation block on every page it wraps, so a
+          keyboard or screen-reader user needs a way past it. */}
+      <SkipLink />
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-1 bg-gray-50">
@@ -43,7 +48,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <div className="hidden lg:block">
                 <RightSidebar />
               </div>
-              <main className="order-first min-w-0 space-y-4 lg:order-none">{children}</main>
+              <main
+                id="main-content"
+                tabIndex={-1}
+                className="order-first min-w-0 space-y-4 lg:order-none focus:outline-none"
+              >
+                {children}
+              </main>
               <div className="hidden lg:block">
                 <LeftSidebar />
               </div>

@@ -1,3 +1,4 @@
+import SkipLink from '@/components/a11y/SkipLink'
 import SupplierNav from '@/components/supplier/SupplierNav'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { ROLE_LABEL_HE } from '@/lib/supplier/roles'
@@ -26,6 +27,10 @@ async function SupplierFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {/* WCAG 2.4.1 Bypass Blocks, which Israeli standard 5568 adopts. This
+          layout repeats a navigation block on every page it wraps, so a
+          keyboard or screen-reader user needs a way past it. */}
+      <SkipLink />
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -47,7 +52,16 @@ async function SupplierFrame({ children }: { children: React.ReactNode }) {
         </div>
         <SupplierNav memberRole={session.memberRole} />
       </header>
-      <main className="mx-auto max-w-2xl px-4 py-6">{children}</main>
+      {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
+          leaves focus on the skip link, so the next Tab returns to the nav
+          and the skip does nothing for the users it exists for. */}
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto max-w-2xl px-4 py-6 focus:outline-none"
+      >
+        {children}
+      </main>
     </>
   )
 }

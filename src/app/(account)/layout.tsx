@@ -1,3 +1,4 @@
+import SkipLink from '@/components/a11y/SkipLink'
 import AccountNav from '@/components/account/AccountNav'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
@@ -57,9 +58,16 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   return (
     <CartProvider>
       <CartBootstrap />
+      {/* WCAG 2.4.1 Bypass Blocks, which Israeli standard 5568 adopts. This
+          layout repeats a navigation block on every page it wraps, so a
+          keyboard or screen-reader user needs a way past it. */}
+      <SkipLink />
       <div className="min-h-screen flex flex-col bg-white">
         <SiteHeader />
-        <main className="flex-1 w-full">
+        {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
+            leaves focus on the skip link, so the next Tab returns to the nav
+            and the skip does nothing for the users it exists for. */}
+        <main id="main-content" tabIndex={-1} className="flex-1 w-full focus:outline-none">
           <div className="account-page">
             <div className="account-page__inner">
               <nav className="account-page__crumb" aria-label="פירורי לחם">

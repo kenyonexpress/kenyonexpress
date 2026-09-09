@@ -1,3 +1,4 @@
+import SkipLink from '@/components/a11y/SkipLink'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import CommandPalette from '@/components/admin/CommandPalette'
 import { adminLandingPath } from '@/lib/admin/nav'
@@ -35,6 +36,10 @@ async function AdminFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {/* WCAG 2.4.1 Bypass Blocks, which Israeli standard 5568 adopts. This
+          layout repeats a navigation block on every page it wraps, so a
+          keyboard or screen-reader user needs a way past it. */}
+      <SkipLink />
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link href={adminLandingPath(role)} className="text-lg font-bold text-heading">
@@ -57,7 +62,12 @@ async function AdminFrame({ children }: { children: React.ReactNode }) {
 
       <div className="mx-auto flex max-w-7xl items-start gap-6 px-6 py-6">
         <AdminSidebar role={role} />
-        <main className="min-w-0 flex-1">{children}</main>
+        {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
+            leaves focus on the skip link, so the next Tab returns to the nav
+            and the skip does nothing for the users it exists for. */}
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
+          {children}
+        </main>
         {/* Mounted once for the whole panel: the point of Cmd+K is that it
             answers from wherever the operator is standing when the phone
             rings, not from a page they have to navigate to first. */}
