@@ -130,6 +130,19 @@ export const RATE_LIMIT_POLICIES = {
   'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
 
+  // -- Privacy self-service. Keyed on the user: both act only on the caller's
+  // own account, so the limit bounds retries and stolen-session abuse.
+  'account-delete': {
+    limit: 3,
+    windowSeconds: 3600,
+    reason: 'destructive cascade over a dozen tables; a person needs exactly one',
+  },
+  'data-export': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'the export reads a dozen tables per call; a loop here is a cheap DB load',
+  },
+
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
   'app-session': { limit: 30, windowSeconds: 600, reason: 'app session exchange, per IP' },
   'push-register': { limit: 60, windowSeconds: 3600, reason: 'push token registration' },
