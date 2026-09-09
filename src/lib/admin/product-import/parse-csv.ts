@@ -33,10 +33,75 @@ export interface CsvParserOptions {
   maxRows?: number
   /** Hard cap on a single field's length. Guards a file with no delimiters. */
   maxFieldLength?: number
+  /**
+   * The field separator. Omitted, it is DETECTED from the header line.
+   *
+   * WHY DETECTION AND NOT A COMMA. Excel writes the list separator from the
+   * operating system's locale, not a comma, and on a machine configured for a
+   * locale that uses one, "Save as CSV" produces a SEMICOLON-delimited file
+   * that looks identical in the spreadsheet. Parsed as commas, every line
+   * becomes ONE field: the import then reports missing columns for a file whose
+   * columns are plainly there on screen, and there is nothing the operator can
+   * do about it except learn a fact about their regional settings.
+   *
+   * Which locales do that is not something this repo can measure - it depends
+   * on the machine the file was exported from, and there is no such machine
+   * here. So this does not assume, it looks: whichever candidate yields the
+   * most fields on the header line wins.
+   */
+  delimiter?: string
 }
 
 const DEFAULT_MAX_ROWS = 5001 // header + 5000 data rows
 const DEFAULT_MAX_FIELD_LENGTH = 10_000
+const DEFAULT_DELIMITER = ','
+
+/**
+ * The separators worth considering, in the order they break ties.
+ *
+ * Comma first, so a file that is genuinely ambiguous - one column, no
+ * separators anywhere - is treated as the comma-delimited file it almost
+ * certainly is rather than as a tab-delimited one.
+ */
+const DELIMITER_CANDIDATES = [',', ';', '\t'] as const
+
+/**
+ * Counts each candidate on the header LINE ONLY, outside quotes.
+ *
+ * The header is the right place to look: it is the one line whose field count
+ * we know something about (it has more than one field in any real import), and
+ * it is written by the exporter rather than by a person. Counting over the
+ * whole file would let a semicolon inside one product description outvote the
+ * commas separating every column.
+ *
+ * Quotes are respected, because a header like `"name, full",price` has a comma
+ * that is data and would otherwise win on its own.
+ */
+export function detectDelimiter(text: string): string {
+  const newline = text.search(/\r|\n/)
+  const header = newline === -1 ? text : text.slice(0, newline)
+
+  let best = DEFAULT_DELIMITER
+  let bestCount = 0
+  for (const candidate of DELIMITER_CANDIDATES) {
+    let count = 0
+    let inQuotes = false
+    for (let i = 0; i < header.length; i++) {
+      const ch = header[i]
+      if (ch === '"') {
+        inQuotes = !inQuotes
+        continue
+      }
+      if (!inQuotes && ch === candidate) count++
+    }
+    // Strictly greater, so the candidate order above decides a tie.
+    if (count > bestCount) {
+      bestCount = count
+      best = candidate
+    }
+  }
+  return best
+}
 
 type State = 'field-start' | 'in-field' | 'in-quotes' | 'after-quote'
 
@@ -55,10 +120,13 @@ export class CsvStreamParser {
 
   private readonly maxRows: number
   private readonly maxFieldLength: number
+  /** Null until the header line has been seen and sniffed. */
+  private delimiter: string | null
 
   constructor(options: CsvParserOptions = {}) {
     this.maxRows = options.maxRows ?? DEFAULT_MAX_ROWS
     this.maxFieldLength = options.maxFieldLength ?? DEFAULT_MAX_FIELD_LENGTH
+    this.delimiter = options.delimiter ?? null
   }
 
   write(chunk: string): void {
@@ -68,6 +136,7 @@ export class CsvStreamParser {
       // Excel's "CSV UTF-8" export starts with a BOM; it is not data.
       if (text.startsWith('﻿')) text = text.slice(1)
       this.first = false
+      if (this.delimiter === null) this.delimiter = detectDelimiter(text)
     }
     for (const ch of text) {
       if (this.truncated) return
@@ -113,7 +182,7 @@ export class CsvStreamParser {
 
     // after-quote falls through to the shared delimiter handling below; any
     // non-delimiter character after a closing quote is appended leniently.
-    if (ch === ',') {
+    if (ch === (this.delimiter ?? DEFAULT_DELIMITER)) {
       this.endField()
       return
     }

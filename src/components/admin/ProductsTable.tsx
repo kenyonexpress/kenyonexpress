@@ -2,6 +2,7 @@
 
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
+import DuplicateProductButton from '@/components/admin/DuplicateProductButton'
 import StatusBadge, { productStatusBadge, productTypeBadge } from '@/components/admin/StatusBadge'
 import {
   MAX_PLAUSIBLE_DISCOUNT_PERCENT,
@@ -263,6 +264,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
           >
             עריכה
           </Link>
+          <DuplicateProductButton productId={p.id} />
           <DeleteButton onConfirm={() => deleteProduct(p.id)} />
         </div>
       ),

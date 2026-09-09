@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CsvStreamParser, parseCsv } from './parse-csv'
+import { CsvStreamParser, detectDelimiter, parseCsv } from './parse-csv'
 
 describe('parseCsv', () => {
   it('parses plain rows', () => {
@@ -73,5 +73,75 @@ describe('parseCsv', () => {
     const { rows, errors } = parseCsv(`a,${'x'.repeat(30)}`, { maxFieldLength: 10 })
     expect(rows[0]?.[1]).toBe('x'.repeat(10))
     expect(errors).toHaveLength(1)
+  })
+})
+
+describe('delimiter detection', () => {
+  it('reads a semicolon-delimited export as columns, not as one field', () => {
+    // The failure this exists for: Excel writes the list separator from the
+    // OS locale, so on some machines "Save as CSV" produces semicolons and the
+    // file looks identical in the spreadsheet. Parsed as commas, every line is
+    // ONE field and the import reports missing columns for a file whose
+    // columns are plainly there.
+    const result = parseCsv('name;price;sku\nמוצר;99;A1\n')
+    expect(result.rows[0]).toEqual(['name', 'price', 'sku'])
+    expect(result.rows[1]).toEqual(['מוצר', '99', 'A1'])
+  })
+
+  it('still reads a comma-delimited file', () => {
+    const result = parseCsv('name,price,sku\nמוצר,99,A1\n')
+    expect(result.rows[0]).toEqual(['name', 'price', 'sku'])
+  })
+
+  it('reads a tab-delimited file, which is what a paste from a spreadsheet is', () => {
+    const result = parseCsv('name\tprice\tsku\nמוצר\t99\tA1\n')
+    expect(result.rows[0]).toEqual(['name', 'price', 'sku'])
+  })
+
+  it('is not fooled by a separator that appears INSIDE a quoted header', () => {
+    // `"name, full"` has a comma that is data. Without respecting quotes it
+    // would tie with the real semicolons and win on candidate order.
+    const result = parseCsv('"name, full";price;sku\n"מוצר, מלא";99;A1\n')
+    expect(result.rows[0]).toEqual(['name, full', 'price', 'sku'])
+    expect(result.rows[1]).toEqual(['מוצר, מלא', '99', 'A1'])
+  })
+
+  it('looks at the header line only, so data cannot outvote the columns', () => {
+    // One description containing several semicolons must not turn a
+    // comma-delimited file into a semicolon-delimited one.
+    const result = parseCsv('name,description\nמוצר,"a;b;c;d;e;f"\n')
+    expect(result.rows[0]).toEqual(['name', 'description'])
+    expect(result.rows[1]).toEqual(['מוצר', 'a;b;c;d;e;f'])
+  })
+
+  it('falls back to a comma when the header has no separator at all', () => {
+    const result = parseCsv('name\nמוצר\n')
+    expect(result.rows).toEqual([['name'], ['מוצר']])
+  })
+
+  it('honours an explicit delimiter over detection', () => {
+    const result = parseCsv('a;b,c\n', { delimiter: ',' })
+    expect(result.rows[0]).toEqual(['a;b', 'c'])
+  })
+
+  it('detects through the BOM, which Excel writes before the header', () => {
+    const result = parseCsv('﻿name;price\nמוצר;99\n')
+    expect(result.rows[0]).toEqual(['name', 'price'])
+  })
+})
+
+describe('detectDelimiter', () => {
+  it('prefers the candidate with the most header fields', () => {
+    expect(detectDelimiter('a;b;c;d\n')).toBe(';')
+    expect(detectDelimiter('a,b,c,d\n')).toBe(',')
+    expect(detectDelimiter('a\tb\tc\td\n')).toBe('\t')
+  })
+
+  it('breaks a tie towards the comma', () => {
+    expect(detectDelimiter('a,b;c\n')).toBe(',')
+  })
+
+  it('handles a file with no newline at all', () => {
+    expect(detectDelimiter('a;b;c')).toBe(';')
   })
 })

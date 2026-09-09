@@ -27,6 +27,15 @@ const ADMIN_ACTIONS = join(process.cwd(), 'src/server/actions/admin')
 const UPLOADER_WRITABLE = new Set([
   'categories.ts',
   'images.ts',
+  // Duplicating a deal is catalogue copy and is exactly what the role exists
+  // for (SECTIONS 78 lists "duplicate deal" among its jobs). It is also the
+  // SAFER way for this role to reuse an offer: the copy inherits the commission
+  // split, the coupon price and the cashback percent UNCHANGED, where the
+  // alternative is a content_uploader retyping numbers they cannot even see
+  // (`canSeeMoney` hides pricing from them in the form). The copy lands as a
+  // draft with no stock and its own slug, so publishing it still goes through
+  // the gate this role does not hold.
+  'product-duplicate.ts',
   'products.ts',
   'reviews.ts',
   'upload.ts',

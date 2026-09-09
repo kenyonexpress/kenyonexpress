@@ -1,3 +1,4 @@
+import ProductChangeHistory from '@/components/admin/ProductChangeHistory'
 import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
@@ -66,6 +67,11 @@ export default async function EditProductPage({ params }: Props) {
         suppliers={(suppliers ?? []) as SupplierOption[]}
         hidePricing={!canSeeMoney(session.role)}
       />
+
+      {/* The audit trigger has written this since 011/149 and nothing has ever
+          shown it against a product. "Why is this price different from last
+          week" was answerable only by querying audit_log by hand. */}
+      <ProductChangeHistory productId={id} />
     </div>
   )
 }
