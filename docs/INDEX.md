@@ -288,6 +288,7 @@ one.
 | Document | Status | What it is |
 |---|---|---|
 | [A11Y-SWEEP-REPORT.md](A11Y-SWEEP-REPORT.md) | 🕯️ | ‏MISSION-FINAL שלב 8 מבקש ביקורת נגישות על כל דף. עד היום השער |
+| [BACKUP-RECOVERY.md](BACKUP-RECOVERY.md) | ⚠️ | ‏נמדד ‏10.09.2026. ששת פריטי הגיבוי אחד אחד: ‏PITR לא נרכש, ‏R2 לא מופעל ואין בו |
 | [BRANCH-AUDIT.md](BRANCH-AUDIT.md) | ✅ | Measured 2026-09-06 against closeout/v1-final at 48ea88353. Every number |
 | [CATEGORY-1TO1-FINDINGS.md](CATEGORY-1TO1-FINDINGS.md) | 🕯️ | מדידות מהאתר החי ומ-localhost ב-1440x2600, דרך scripts/cat-probe.mjs, |
 | [COPY-AUDIT.md](COPY-AUDIT.md) | ✅ | Every Latin-script string a visitor can read on the funnel, with a verdict. |

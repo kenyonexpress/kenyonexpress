@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "Lifecycle configuration for the OFFSITE BACKUP bucket only (not the three media buckets in r2-setup.md).",
+    "Apply with: aws s3api put-bucket-lifecycle-configuration --bucket <bucket> --endpoint-url https://<account>.r2.cloudflarestorage.com --lifecycle-configuration file://infra/cloudflare/backup-bucket-lifecycle.json",
+    "",
+    "THERE IS DELIBERATELY NO EXPIRATION RULE, AND THAT IS THE POINT OF THIS FILE.",
+    "docs/BACKUP-RECOVERY.md section 2 has the reasoning. Short version: retention lives in",
+    "scripts/dr/backup-lib.mjs keysToPrune, which never prunes below the newest 7 backups whatever",
+    "their age. A bucket lifecycle Expiration rule has no such floor. Add `Expiration: {Days: 30}`",
+    "here and the day the dump job stops running becomes the day a 30-day timer starts on the last",
+    "backup that exists, with nothing writing new ones and nothing reporting it. The two mechanisms",
+    "look interchangeable and are not: one degrades to 'kept too much', the other to 'kept nothing'.",
+    "",
+    "R2 HAS NO OBJECT VERSIONING AND NO OBJECT LOCK. Measured 2026-09-10 against Cloudflare's own",
+    "S3 compatibility matrix: PutBucketVersioning and GetBucketVersioning are listed unimplemented,",
+    "ListObjectVersions is absent, and x-amz-object-lock-* are unsupported on every object operation.",
+    "The substitute for versioning is that backup keys are immutable by construction: every dump is",
+    "named for the UTC minute it was taken, so a write can never overwrite a previous backup."
+  ],
+  "Rules": [
+    {
+      "ID": "abort-incomplete-multipart-uploads",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "" },
+      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 1 }
+    }
+  ]
+}

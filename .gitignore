@@ -68,3 +68,8 @@ backups/
 # never committed, and biome must not format the manifest (an untracked scratch
 # file was failing `pnpm lint` as a formatter error on 2026-09-09).
 .image-staging/
+
+# encrypted env backups (scripts/dr/env-backup.mjs refuses to write here, but a
+# hand-copied one must never become committable either)
+ke-env-*.enc
+ke-env-*.enc.*
