@@ -24,6 +24,25 @@ const PAGE_TITLE = 'חנות'
 export const metadata = {
   title: PAGE_TITLE,
   description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  /**
+   * THE CANONICAL THIS PAGE DID NOT HAVE.
+   *
+   * `/category/[slug]` renders the same grid, reads the same five query
+   * parameters and has carried a canonical since it was written, with the
+   * reason stated on it: "the same category is reachable with sort, page, price
+   * and city query strings, and without a canonical each of those competes as
+   * its own page". Every word of that is true of this route, which is the
+   * WHOLE shop rather than one slice of it, and it sits in the sitemap at
+   * priority 0.9, the highest of anything that is not the home page.
+   *
+   * `?sort=` alone takes six values and `?type=` two, so before this the shop
+   * offered a crawler at least a dozen distinct URLs serving reorderings of one
+   * set of products, competing with each other and with the home page for the
+   * same query. Pagination is folded in with them deliberately: with 44 active
+   * products there are two pages, and `rel=next` on a two-page archive buys
+   * nothing that a canonical to page one does not.
+   */
+  alternates: { canonical: '/products' },
 }
 
 type Props = {

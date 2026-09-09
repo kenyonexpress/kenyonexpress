@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { visualOrder } from '@/lib/og/bidi'
 import { SITE } from '@/styles/tokens'
 import { ImageResponse } from 'next/og'
 
@@ -42,14 +43,15 @@ export default async function Image() {
       }}
     >
       <div style={{ display: 'flex', fontSize: 96, fontWeight: 700, color: SITE.brand.dark }}>
-        קניון אקספרס
+        {visualOrder('קניון אקספרס')}
       </div>
       <div style={{ display: 'flex', fontSize: 40, color: SITE.functional.heading, marginTop: 16 }}>
-        {/* No comma. Satori has no bidi algorithm, so a neutral character
-            between two Hebrew runs is placed by glyph order rather than by
-            direction and lands on the wrong side of the word. Measured on the
-            first render of this card. */}
-        קופונים ומבצעים במחיר הכי טוב
+        {/* Every Hebrew string on this card goes through `visualOrder`.
+            MEASURED 2026-09-09 by fetching this PNG: the line above rendered
+            "סרפסקא ןוינק" and this one rendered backwards too. Satori has no
+            bidi algorithm, and the `direction: 'rtl'` above is a FLEXBOX
+            property: it reorders boxes and does nothing to glyphs. */}
+        {visualOrder('קופונים ומבצעים במחיר הכי טוב')}
       </div>
       <div style={{ display: 'flex', fontSize: 30, color: SITE.neutral.muted, marginTop: 48 }}>
         kenyonexpress.co.il

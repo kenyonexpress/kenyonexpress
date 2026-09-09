@@ -1,4 +1,10 @@
-import { readFileSync } from 'node:fs'
+import {
+  categorySitemapEntries,
+  contentSitemapEntries,
+  productSitemapEntries,
+  regionSitemapEntries,
+  supplierSitemapEntries,
+} from '@/lib/seo/sitemap-sections'
 import { describe, expect, it } from 'vitest'
 import { pathRequiresAuth } from '../proxy'
 import robots from './robots'
@@ -6,7 +12,7 @@ import robots from './robots'
 /**
  * THREE FILES THAT HAVE TO AGREE, AND NOTHING COMPARED THEM.
  *
- * `sitemap.ts` says "index this". `robots.ts` says "do not crawl that". The
+ * The sitemap says "index this". `robots.ts` says "do not crawl that". The
  * proxy's auth gate says "log in first". A URL can satisfy any one of them and
  * contradict another, and until 2026-09-09 nothing looked at more than one at a
  * time.
@@ -21,31 +27,34 @@ import robots from './robots'
  * Console reports that as "Page with redirect" and does not index it. Nobody
  * using the site as a logged-in operator would ever see it.
  *
- * WHAT THIS ASSERTS: every URL shape the sitemap emits is both crawlable and
- * reachable without a session. It reads the shapes out of `sitemap.ts` rather
- * than restating them, so a new entry is covered the day it is added, and it
- * reads the disallow list out of `robots()` rather than restating that either.
+ * WHAT CHANGED HERE, 2026-09-09. This used to read `${base}/...` shapes out of
+ * `app/sitemap.ts` WITH A REGULAR EXPRESSION, because that file was a
+ * `use cache` default export a test could not call. That pattern matched an
+ * ASCII character class, which is also why it could only ever have seen ASCII
+ * paths: `/city/<hebrew>` would have matched as the empty shape `/city` even if
+ * the old sitemap had emitted it, which it did not. The builders are pure now,
+ * so this CALLS them with fixture rows and checks the URLs that actually come
+ * out, Hebrew and percent-encoding included.
  */
 
-const SITEMAP_SOURCE = readFileSync('src/app/sitemap.ts', 'utf8')
+const BASE = 'https://kenyonexpress.co.il'
 
-/** Every `${base}/...` path the sitemap builds, read out of the source. */
-function sitemapPathShapes(): string[] {
-  const found = new Set<string>()
-  for (const match of SITEMAP_SOURCE.matchAll(/\$\{base\}(\/[a-z-]*)/g)) {
-    const path = match[1] ?? ''
-    found.add(path === '' ? '/' : path)
-  }
-  return [...found].sort()
-}
-
-/** A concrete path to probe for a shape that takes a dynamic segment. */
-const SAMPLE: Record<string, string> = {
-  '/product': '/product/some-slug',
-  '/category': '/category/hot-deals',
-  '/s': '/s/f47ac10b-58cc-4372-a567-0e02b2c3d901',
-  '/blog': '/blog/some-post',
-}
+/**
+ * One representative row per catalogue type. Real shapes, including a Hebrew
+ * product slug, because that is what production holds.
+ */
+const EMITTED: string[] = [
+  ...contentSitemapEntries(BASE, undefined),
+  ...categorySitemapEntries(BASE, [{ slug: 'hot-deals', updated_at: null }]),
+  ...productSitemapEntries(BASE, [
+    { slug: 'some-slug', updated_at: null },
+    { slug: 'צימר-מאסטר', updated_at: null },
+  ]),
+  ...regionSitemapEntries(BASE),
+  ...supplierSitemapEntries(BASE, [
+    { id: 'f47ac10b-58cc-4372-a567-0e02b2c3d901', updated_at: null },
+  ]),
+].map((entry) => entry.url.slice(BASE.length) || '/')
 
 const disallowed: string[] = (() => {
   const rules = robots().rules
@@ -57,33 +66,31 @@ const disallowed: string[] = (() => {
 })()
 
 describe('the sitemap only advertises URLs the site will actually serve', () => {
-  const shapes = sitemapPathShapes()
-
-  it('found the shapes, so a passing run is not an empty one', () => {
-    expect(shapes.length).toBeGreaterThanOrEqual(8)
-    expect(shapes).toContain('/suppliers')
+  it('found the URLs, so a passing run is not an empty one', () => {
+    expect(EMITTED.length).toBeGreaterThanOrEqual(30)
+    expect(EMITTED).toContain('/suppliers')
+    // The seventeen region pages are in a sitemap for the first time.
+    expect(EMITTED.filter((p) => p.startsWith('/city/'))).toHaveLength(17)
   })
 
-  it.each(sitemapPathShapes().map((shape) => [shape] as const))(
-    '%s is reachable without a session',
-    (shape) => {
-      const path = SAMPLE[shape] ?? shape
-      expect(pathRequiresAuth(path), `${path} is in sitemap.xml and redirects to login`).toBe(false)
-    },
-  )
+  it.each(EMITTED.map((path) => [path] as const))('%s is reachable without a session', (path) => {
+    expect(pathRequiresAuth(path), `${path} is in the sitemap and redirects to login`).toBe(false)
+  })
 
-  it.each(sitemapPathShapes().map((shape) => [shape] as const))(
-    '%s is not disallowed by robots.txt',
-    (shape) => {
-      const path = SAMPLE[shape] ?? shape
-      // A sitemap entry that robots forbids is a direct contradiction: it asks
-      // a crawler to index a page it has just been told not to fetch.
-      const blocked = disallowed.filter((rule) => rule !== '/' && path.startsWith(rule))
-      expect(blocked, `${path} is in sitemap.xml and disallowed by ${blocked.join(', ')}`).toEqual(
-        [],
-      )
-    },
-  )
+  it.each(EMITTED.map((path) => [path] as const))('%s is not disallowed by robots.txt', (path) => {
+    // A sitemap entry that robots forbids is a direct contradiction: it asks a
+    // crawler to index a page it has just been told not to fetch.
+    const blocked = disallowed.filter((rule) => rule !== '/' && path.startsWith(rule))
+    expect(blocked, `${path} is in the sitemap and disallowed by ${blocked.join(', ')}`).toEqual([])
+  })
+})
+
+describe('robots points at the index', () => {
+  it('advertises /sitemap.xml and not the five files it lists', () => {
+    // One line, because the index already enumerates the sections. A
+    // `Sitemap:` per section is a second copy of the list, in a second file.
+    expect(robots().sitemap).toBe(`${robots().host}/sitemap.xml`)
+  })
 })
 
 describe('robots still disallows what it is there to disallow', () => {

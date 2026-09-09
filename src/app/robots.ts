@@ -40,6 +40,15 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
+    /**
+     * The INDEX only, not the five files it lists.
+     *
+     * A `Sitemap:` line per section would work and is what the split tempts you
+     * into, and it is the wrong shape: robots.txt would then hold a second copy
+     * of the section list, so adding a sixth section means remembering to touch
+     * two files, and forgetting is silent. The index already enumerates them,
+     * so one line here delegates the question to the document whose job it is.
+     */
     sitemap: `${base}/sitemap.xml`,
     host: base,
   }

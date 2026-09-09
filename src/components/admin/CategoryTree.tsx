@@ -179,6 +179,7 @@ export default function CategoryTree({ categories }: Props) {
   const tree = buildTree(active)
   const parentOptions = active.map((c) => ({
     id: c.id,
+    slug: c.slug,
     name_he: c.name_he,
     parent_id: c.parent_id,
   }))

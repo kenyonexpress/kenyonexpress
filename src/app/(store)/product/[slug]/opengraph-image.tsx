@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { visualOrder } from '@/lib/og/bidi'
 import { buildOgCard } from '@/lib/og/product-card'
 import { loadProductBySlug } from '@/lib/product-detail'
 import { SITE } from '@/styles/tokens'
@@ -78,17 +79,23 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         backgroundColor: SITE.brand.primary,
         padding: '64px 72px',
         fontFamily: 'Heebo',
-        // Satori honours this, and without it a Hebrew line renders left-aligned
-        // with its punctuation at the wrong end.
+        // A FLEXBOX property here, and only that. It reverses the order of
+        // boxes in a row; it does not reorder glyphs, because Satori has no
+        // bidi algorithm. Believing otherwise is why every Hebrew string on
+        // these cards rendered backwards until 2026-09-09. `visualOrder` is
+        // what makes the text readable; this is what puts the boxes on the
+        // correct side.
         direction: 'rtl',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 34, fontWeight: 700, color: SITE.brand.dark }}>קניון אקספרס</div>
+          <div style={{ fontSize: 34, fontWeight: 700, color: SITE.brand.dark }}>
+            {visualOrder('קניון אקספרס')}
+          </div>
           {card.supplier && (
             <div style={{ fontSize: 28, color: SITE.functional.heading, marginTop: 6 }}>
-              {card.supplier}
+              {visualOrder(card.supplier)}
             </div>
           )}
         </div>
@@ -118,7 +125,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           lineHeight: 1.15,
         }}
       >
-        {card.title}
+        {visualOrder(card.title)}
       </div>
 
       {/* The white panel is drawn only when there IS a price. MEASURED on a
@@ -141,7 +148,9 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {card.priceLabel && (
-              <div style={{ fontSize: 26, color: SITE.neutral.muted }}>{card.priceLabel}</div>
+              <div style={{ fontSize: 26, color: SITE.neutral.muted }}>
+                {visualOrder(card.priceLabel)}
+              </div>
             )}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 18 }}>
               <div style={{ fontSize: 76, fontWeight: 700, color: SITE.functional.price }}>
@@ -161,7 +170,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             </div>
             {card.balance && (
               <div style={{ fontSize: 30, color: SITE.functional.heading, marginTop: 4 }}>
-                {card.balance}
+                {visualOrder(card.balance)}
               </div>
             )}
           </div>

@@ -7,6 +7,8 @@ import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import { getCategoryIndex } from '@/lib/category-page'
+import { categoryAncestors } from '@/lib/category-tree'
 import {
   resolveStorefrontProductType,
   storefrontProductTypeLabel,
@@ -200,10 +202,27 @@ export default async function ProductPage({ params }: Props) {
     stockQuantity: product.stock_quantity ?? null,
     rating: reviewSummary,
   })
+  /**
+   * The product's category AND everything above it.
+   *
+   * This used to be the single `category` join, so a product filed under a
+   * third-level category published `בית > <that category> > <product>` and
+   * dropped every level in between. The PDP is where a shopper arrives from
+   * search, so its trail is the one that tells Google, and the person, where in
+   * the catalogue this thing sits; naming the leaf and nothing else says the
+   * catalogue is flat.
+   *
+   * One cached read, shared with `/category/[slug]`, and `categoryAncestors`
+   * returns [] for a product with no category, which is the pre-existing shape.
+   */
+  const categoryTrail = category
+    ? [...categoryAncestors(await getCategoryIndex(), category.id), category]
+    : []
+
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
       { name: 'בית', path: '/' },
-      ...(category ? [{ name: category.name_he, path: `/category/${category.slug}` }] : []),
+      ...categoryTrail.map((c) => ({ name: c.name_he, path: `/category/${c.slug}` })),
       { name: product.name_he, path: `/product/${product.slug}` },
     ],
     siteUrl,
@@ -251,12 +270,14 @@ export default async function ProductPage({ params }: Props) {
             the columns block below it on y250. */}
         <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
           <Link href="/">בית</Link>
-          {category && (
-            <>
+          {/* The same `categoryTrail` the BreadcrumbList above is built from,
+              so the two cannot disagree about how deep the catalogue is. */}
+          {categoryTrail.map((crumb) => (
+            <span key={crumb.slug}>
               <span className="pdp-breadcrumb__sep">/</span>
-              <Link href={`/category/${category.slug}`}>{category.name_he}</Link>
-            </>
-          )}
+              <Link href={`/category/${crumb.slug}`}>{crumb.name_he}</Link>
+            </span>
+          ))}
           <span className="pdp-breadcrumb__sep">/</span>
           <span>{product.name_he}</span>
         </nav>

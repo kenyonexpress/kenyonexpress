@@ -1,6 +1,7 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
+import type { CategoryNode } from '@/lib/category-tree'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
@@ -145,6 +146,35 @@ export async function getAllCategorySlugs(): Promise<string[]> {
     'catalogue.category_slugs_failed',
   )
   return (data ?? []).map((c) => c.slug)
+}
+
+/**
+ * Every active category as `{ id, slug, name_he, parent_id }`: the whole tree,
+ * in one cached read, for the walks in `lib/category-tree.ts`.
+ *
+ * ONE READ AND NOT ONE PER LEVEL. The alternative is `getCategoryParent` in a
+ * loop, which costs a round trip per ancestor to assemble a breadcrumb, on a
+ * table holding twelve rows that `getAllCategories` already reads in full three
+ * lines down. Reading it once and walking in memory also means the walk is a
+ * pure function that a test can exercise without a database, which is why the
+ * cycle and depth cases in `category-tree.test.ts` exist at all.
+ *
+ * ACTIVE ONLY, deliberately. An inactive ancestor is a category whose page
+ * `getCategoryBySlug` refuses, so putting it in a breadcrumb would render a
+ * crumb that 404s and a `BreadcrumbList` item pointing at a page Google is told
+ * not to index. `categoryAncestors` truncates at a parent it cannot find, which
+ * makes "deactivate a parent" produce a shorter trail rather than a broken one.
+ */
+export async function getCategoryIndex(): Promise<CategoryNode[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+  const data = orFail(
+    await supabase.from('categories').select('id, slug, name_he, parent_id').eq('is_active', true),
+    'catalogue.category_index_failed',
+  )
+  return (data ?? []).map((row) => ({ ...row, name_he: repairPriceOrder(row.name_he) }))
 }
 
 export async function getCategoryParent(

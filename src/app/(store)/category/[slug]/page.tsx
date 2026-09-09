@@ -17,12 +17,13 @@ import {
   getAllCategories,
   getAllCategorySlugs,
   getCategoryBySlug,
-  getCategoryParent,
+  getCategoryIndex,
   getCategoryProductsCached,
   parseCity,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { categoryAncestors } from '@/lib/category-tree'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { attachRatings } from '@/server/queries/reviews'
@@ -336,10 +337,15 @@ async function CategoryPageBody({
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
-  const [parent, allCategories] = await Promise.all([
-    category.parent_id ? getCategoryParent(category.parent_id) : Promise.resolve(null),
-    getAllCategories(),
-  ])
+  //
+  // `getCategoryIndex` replaced a `getCategoryParent(category.parent_id)` that
+  // fetched exactly ONE ancestor. On a three-level tree that trail read
+  // `בית > parent > current` and dropped the root, in the visible breadcrumb
+  // and in the BreadcrumbList beside it. Same number of round trips (one cached
+  // read either way, and none at all for a root category before), and now it
+  // walks the whole way up.
+  const [index, allCategories] = await Promise.all([getCategoryIndex(), getAllCategories()])
+  const ancestors = categoryAncestors(index, category.id)
 
   const args: QueryArgs = {
     categoryId: category.id,
@@ -367,17 +373,17 @@ async function CategoryPageBody({
 
   const crumbs = [
     defaultHomeCrumb(),
-    ...(parent ? [{ label: parent.name_he, href: `/category/${parent.slug}` }] : []),
+    ...ancestors.map((a) => ({ label: a.name_he, href: `/category/${a.slug}` })),
     { label: category.name_he },
   ]
 
   // The same trail the visible breadcrumb renders, as BreadcrumbList: the two
-  // are built from one `crumbs` array so they cannot disagree.
+  // are built from one `ancestors` list so they cannot disagree about depth.
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
       { name: 'בית', path: '/' },
-      ...(parent ? [{ name: parent.name_he, path: `/category/${parent.slug}` }] : []),
+      ...ancestors.map((a) => ({ name: a.name_he, path: `/category/${a.slug}` })),
       { name: category.name_he, path: pathname },
     ],
     siteUrl,

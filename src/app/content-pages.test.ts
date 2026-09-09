@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { contentSitemapEntries } from '@/lib/seo/sitemap-sections'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -90,9 +91,15 @@ describe('the new pages are reachable', () => {
   })
 
   it('are all in the sitemap', () => {
-    const sitemap = readFileSync(join(process.cwd(), 'src', 'app', 'sitemap.ts'), 'utf8')
-    expect(sitemap).toContain('/about')
-    expect(sitemap).toContain('/suppliers')
-    expect(sitemap).toContain('/blog')
+    // Asked of the URLs the content section actually emits, not of the text of
+    // the file that emits them. The old form read `app/sitemap.ts` as a string
+    // and `toContain('/about')` would have passed on a commented-out entry, or
+    // on the word appearing anywhere in three hundred lines of prose.
+    const paths = contentSitemapEntries('https://example.test', undefined).map((entry) =>
+      entry.url.slice('https://example.test'.length),
+    )
+    expect(paths).toContain('/about')
+    expect(paths).toContain('/suppliers')
+    expect(paths).toContain('/blog')
   })
 })

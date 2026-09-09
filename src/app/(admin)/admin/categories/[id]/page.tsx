@@ -18,7 +18,7 @@ export default async function EditCategoryPage({ params }: Props) {
   const [{ data: category }, { data: categories }] = await Promise.all([
     supabase.from('categories').select('*').eq('id', id).single(),
     excludeDeleted(
-      supabase.from('categories').select('id, name_he').eq('is_active', true),
+      supabase.from('categories').select('id, slug, name_he, parent_id').eq('is_active', true),
       'categories',
     ).order('name_he'),
   ])

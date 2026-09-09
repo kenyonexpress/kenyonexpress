@@ -4,7 +4,18 @@ import { orFail } from '@/lib/catalogue-read'
 import { createClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
 
-export const metadata = { title: 'קופונים' }
+/**
+ * `/coupons` is submitted in `sitemap/content.xml` at priority 0.9, and it had
+ * a title and nothing else: no description, so search results quoted whatever
+ * fragment of the grid Google chose, and no canonical, so every link that
+ * arrives here carrying a campaign parameter is a separate page.
+ */
+export const metadata = {
+  title: 'קופונים',
+  description:
+    'כל הקופונים הפעילים של קניון אקספרס. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.',
+  alternates: { canonical: '/coupons' },
+}
 
 /**
  * The heading is the same for everyone, so it is the shell and the grid streams

@@ -1,6 +1,7 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { MAX_CATEGORY_DEPTH, parentChoiceError } from '@/lib/category-tree'
 import { slugify } from '@/lib/utils/slugify'
 import { type CategoryFormState, upsertCategory } from '@/server/actions/admin/categories'
 import type { Category } from '@/types/database'
@@ -13,19 +14,7 @@ interface Props {
   open: boolean
   onClose: () => void
   category?: Category
-  parentOptions: Pick<Category, 'id' | 'name_he' | 'parent_id'>[]
-}
-
-const MAX_DEPTH = 3
-
-function getDepth(
-  id: string | null | undefined,
-  options: Pick<Category, 'id' | 'name_he' | 'parent_id'>[],
-  depth = 0,
-): number {
-  if (!id || depth > MAX_DEPTH) return depth
-  const parent = options.find((c) => c.id === id)
-  return parent ? getDepth(parent.parent_id, options, depth + 1) : depth
+  parentOptions: Pick<Category, 'id' | 'name_he' | 'parent_id' | 'slug'>[]
 }
 
 const INITIAL: CategoryFormState = null
@@ -61,11 +50,23 @@ export default function CategoryDialog({ open, onClose, category, parentOptions 
     if (!category) setSlugVal(slugify(val))
   }
 
-  const allowedParents = parentOptions.filter((p) => {
-    if (category && p.id === category.id) return false
-    const depth = getDepth(p.id, parentOptions)
-    return depth < MAX_DEPTH - 1
-  })
+  /**
+   * THE LABEL SAID THREE AND THE FILTER ALLOWED TWO.
+   *
+   * This was a local `getDepth` plus `depth < MAX_DEPTH - 1`, and its own
+   * `getDepth` counts a root as 1. So the predicate was `depth < 2`, which
+   * admits roots only: a second-level category could never be chosen as a
+   * parent, no third level could be created through this dialog at all, and the
+   * label two lines down promised "מקס׳ 3 רמות" the whole time. It also filtered
+   * self and never descendants, so it had nothing to say about the cycle.
+   *
+   * Both rules now come from `lib/category-tree.ts`, which is the same function
+   * `upsertCategory` refuses with and the same one `CategoryForm` filters by.
+   * Three surfaces expressing one rule three ways is how they came to disagree.
+   */
+  const allowedParents = parentOptions.filter(
+    (p) => parentChoiceError(parentOptions, category?.id ?? null, p.id) === null,
+  )
 
   const error = state && 'error' in state ? state.error : null
 
@@ -169,7 +170,7 @@ export default function CategoryDialog({ open, onClose, category, parentOptions 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="cd-parent" className="block text-xs font-medium text-gray-700 mb-1">
-                  קטגוריית אב (מקס׳ {MAX_DEPTH} רמות)
+                  קטגוריית אב (מקס׳ {MAX_CATEGORY_DEPTH} רמות)
                 </label>
                 <select
                   id="cd-parent"

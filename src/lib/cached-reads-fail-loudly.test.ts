@@ -92,7 +92,7 @@ const { getFeedProducts } = await import('./feeds/catalogue')
 const { loadProductBySlug, listProductSlugsForPrerender } = await import('./product-detail')
 const { loadSupplierStorefront, loadSupplierStorefrontProducts, listSupplierIdsForPrerender } =
   await import('./supplier-storefront')
-const { default: sitemap } = await import('@/app/sitemap')
+const { sitemapSectionEntries } = await import('./seo/sitemap-data')
 
 const SUPPLIER_ID = '3f6b8c1e-0000-4000-8000-000000000000'
 
@@ -145,10 +145,17 @@ describe.each(READERS)('$name', ({ run, empty }) => {
 })
 
 /**
- * The sitemap does not fit the table above: on a genuinely empty catalogue it
- * still returns the static entries, so "resolves empty" is the wrong control.
- * The contract is the same one, stated in its own terms - no /product/, no
- * /category/, and no /s/ URL may ever be produced by a FAILED read.
+ * The sitemap does not fit the table above: on a genuinely empty catalogue the
+ * content section still returns the static entries, so "resolves empty" is the
+ * wrong control. The contract is the same one, stated in its own terms: no
+ * /product/, no /category/, and no /s/ URL may ever be produced by a FAILED
+ * read.
+ *
+ * Asked per SECTION since the split. That is a strictly better question than
+ * the old one: `sitemap()` mixed static entries with three catalogue reads, so
+ * "the sitemap is not empty" could be satisfied entirely by the static half
+ * while every product had silently vanished. `products` has nothing to hide
+ * behind.
  */
 describe('sitemap', () => {
   const catalogueUrls = (entries: Array<{ url: string }>) =>
@@ -156,17 +163,33 @@ describe('sitemap', () => {
       (e) => e.url.includes('/product/') || e.url.includes('/category/') || e.url.includes('/s/'),
     )
 
-  it('throws and logs when the catalogue read fails', async () => {
+  it.each(['content', 'categories', 'products', 'suppliers'] as const)(
+    '%s throws and logs when the catalogue read fails',
+    async (section) => {
+      readResult.error = { code: '08006', message: 'connection failure' }
+      await expect(sitemapSectionEntries(section)).rejects.toThrow(/connection failure/)
+      expect(logError).toHaveBeenCalled()
+    },
+  )
+
+  it('regions needs no read at all, so it cannot be emptied by one', async () => {
+    // Seventeen source constants. The section that was missing entirely is now
+    // the only one a database outage cannot shorten.
     readResult.error = { code: '08006', message: 'connection failure' }
-    await expect(sitemap()).rejects.toThrow(/connection failure/)
-    expect(logError).toHaveBeenCalledTimes(1)
+    await expect(sitemapSectionEntries('regions')).resolves.toHaveLength(17)
   })
 
   it('serves the static entries and stays silent when the catalogue is genuinely empty', async () => {
     readResult.data = []
-    const entries = await sitemap()
+    const entries = await sitemapSectionEntries('content')
     expect(catalogueUrls(entries)).toEqual([])
     expect(entries.length).toBeGreaterThan(0)
+    expect(logError).not.toHaveBeenCalled()
+  })
+
+  it('returns no product URLs at all on a genuinely empty catalogue', async () => {
+    readResult.data = []
+    await expect(sitemapSectionEntries('products')).resolves.toEqual([])
     expect(logError).not.toHaveBeenCalled()
   })
 })

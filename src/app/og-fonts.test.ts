@@ -32,17 +32,18 @@ describe('the Open Graph fonts', () => {
     expect([...header]).toEqual([0x00, 0x01, 0x00, 0x00])
   })
 
-  it.each(['(store)/product/[slug]/opengraph-image.tsx', 'opengraph-image.tsx'])(
-    '%s declares the fonts explicitly',
-    (file) => {
-      // Satori silently drops glyphs it has no face for. An ImageResponse
-      // without a `fonts` option is the exact shape of that failure.
-      const src = readFileSync(resolve(__dirname, file), 'utf8')
-      expect(src).toContain('Heebo-Regular.ttf')
-      expect(src).toContain('Heebo-Bold.ttf')
-      expect(src).toContain('fonts:')
-    },
-  )
+  it.each([
+    '(store)/product/[slug]/opengraph-image.tsx',
+    '(store)/category/[slug]/opengraph-image.tsx',
+    'opengraph-image.tsx',
+  ])('%s declares the fonts explicitly', (file) => {
+    // Satori silently drops glyphs it has no face for. An ImageResponse
+    // without a `fonts` option is the exact shape of that failure.
+    const src = readFileSync(resolve(__dirname, file), 'utf8')
+    expect(src).toContain('Heebo-Regular.ttf')
+    expect(src).toContain('Heebo-Bold.ttf')
+    expect(src).toContain('fonts:')
+  })
 })
 
 describe('the product page does not claim og:image itself', () => {
@@ -61,5 +62,47 @@ describe('the product page does not claim og:image itself', () => {
       .filter((line) => !line.trim().startsWith('//'))
       .join('\n')
     expect(metadata).not.toContain('images:')
+  })
+})
+
+/**
+ * THE SECOND SILENT FAILURE ON THIS SURFACE, and the one the font check could
+ * never see.
+ *
+ * MEASURED 2026-09-09 by fetching the PNGs: all three cards rendered every
+ * Hebrew word backwards. `next/og` draws through Satori, which lays glyphs out
+ * in logical order left to right and implements no bidi algorithm, and the
+ * `direction: 'rtl'` each card sets is a FLEXBOX property: it reorders boxes,
+ * not glyphs.
+ *
+ * The two failures are siblings and they fail the same way: route 200, valid
+ * PNG, green build, unreadable card, seen only by the recipient of somebody
+ * else's share. A missing font gives empty boxes; a present font gives every
+ * glyph correct and in the wrong order, which is arguably worse because it
+ * looks deliberate.
+ *
+ * `lib/og/bidi.test.ts` proves the reordering. This proves it is APPLIED, on
+ * every card, which is the half a pure unit test cannot reach.
+ */
+describe('every Open Graph card runs its Hebrew through the bidi pass', () => {
+  const CARDS = [
+    '(store)/product/[slug]/opengraph-image.tsx',
+    '(store)/category/[slug]/opengraph-image.tsx',
+    'opengraph-image.tsx',
+  ]
+
+  it.each(CARDS)('%s imports visualOrder', (file) => {
+    expect(readFileSync(resolve(__dirname, file), 'utf8')).toContain(
+      "import { visualOrder } from '@/lib/og/bidi'",
+    )
+  })
+
+  it.each(CARDS)('%s leaves no bare Hebrew string in the JSX', (file) => {
+    const src = readFileSync(resolve(__dirname, file), 'utf8')
+    // A Hebrew literal sitting between `>` and `<` is text Satori will draw as
+    // it stands, which is backwards. Inside `visualOrder('...')` it is a call
+    // argument and matches neither side of this.
+    const bare = src.match(/>\s*[֐-׿][^<{]*</g) ?? []
+    expect(bare, `bare Hebrew JSX text in ${file}: ${bare.join(' | ')}`).toEqual([])
   })
 })

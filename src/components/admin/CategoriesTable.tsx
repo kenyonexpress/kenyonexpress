@@ -29,7 +29,7 @@ export type CategoryRow = {
 interface Props {
   rows: CategoryRow[]
   categories: Category[]
-  parentOptions: Pick<Category, 'id' | 'name_he'>[]
+  parentOptions: Pick<Category, 'id' | 'slug' | 'name_he' | 'parent_id'>[]
   editingCategory?: Category
   showNewForm?: boolean
 }
