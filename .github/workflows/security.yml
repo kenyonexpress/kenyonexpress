@@ -1,0 +1,88 @@
+name: Security
+
+# The two checks SECTIONS 14 asked for that this repository did not have:
+# a secret scan over history, and a dependency audit that can actually fail.
+#
+# WHY THIS IS NOT A JOB INSIDE ci.yml. Branch protection on `main` requires
+# exactly four contexts by name, and every one of them has been green on every
+# commit for weeks. Adding a fifth job to that file does not make it required,
+# and adding a brand-new never-run gate straight into the required set is how a
+# repository ends up unable to merge anything at 3am. These run on the same
+# events, in the open, and the moment they have a run history somebody can add
+# them under Settings > Branches. That step is deliberately left to a person.
+#
+# WHAT GITHUB ALREADY DOES, so this does not claim credit for it: secret
+# scanning and push protection are both ENABLED on this repository (measured
+# 2026-09-09 via `gh api repos/:owner/:repo --jq .security_and_analysis`). What
+# they do not cover is `secret_scanning_non_provider_patterns`, which is
+# DISABLED, and that is the setting for generic high-entropy strings rather than
+# recognised vendor formats. gitleaks is the part that overlaps that gap, and it
+# reads the whole history rather than only the push.
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      # Dependabot pushes its own branches and then opens a PR; running both is
+      # two identical scans of the same tree.
+      - 'dependabot/**'
+  workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 is the whole point. A shallow clone scans the tip and
+      # would miss a key that was committed and then deleted, which is the
+      # normal shape of a leak: `SUPABASE_SECRET_KEY` on this project was
+      # exposed during setup and the file it was in is long gone.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+          # Named rather than left to auto-detection. gitleaks does find a
+          # root .gitleaks.toml on its own, and a silent fallback to the default
+          # ruleset would report all nineteen triaged findings as new.
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # No GITLEAKS_LICENSE: that is required for organisation accounts and
+          # this repository is user-owned (`gh api repos/:owner/:repo --jq
+          # .owner.type` returns "User", measured 2026-09-09). If it ever moves
+          # under an org, this job starts failing with a licence message rather
+          # than a finding, and this comment is where to look.
+
+  dependencies:
+    name: Dependency audit (fixable high/critical)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      # --ignore-scripts: an audit does not need any package's postinstall to
+      # run, and running arbitrary install scripts inside the job that exists to
+      # find malicious dependencies is a contradiction.
+      - name: Install
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      # Fails only on a high or critical advisory WITH a published patch, which
+      # is the set somebody reading the failure can act on. Unfixable ones are
+      # printed by name on every run and do not block. The reasoning in full is
+      # at the top of scripts/audit-gate.mjs.
+      - name: pnpm audit
+        run: node scripts/audit-gate.mjs

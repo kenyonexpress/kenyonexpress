@@ -1,0 +1,117 @@
+# gitleaks configuration for this repository.
+#
+# Scanned 2026-09-09 with gitleaks 8.28.0 over all 3635 commits (86.76 MB).
+# Nineteen findings. Every one was opened and read before it was written down
+# here, and the triage is below rather than in a commit message, because the
+# next person to add a suppression needs to see the standard the last eleven
+# were held to.
+#
+# ONE OF THE NINETEEN WAS A REAL SECRET, AND IT IS DEAD.
+#
+#   .env.test at commit 11a5303f2 held a `service_role` JWT, which is the key
+#   that bypasses RLS entirely. The file's own header says so and does not
+#   pretend otherwise. Decoded:
+#
+#     ref  ixvwfbuvfxsijywhbbb        (19 chars)
+#     iat  2024-02-18   exp  2025-02-17
+#
+#   The live project is `ixvwfbuvfxxsjiywhbbb` (20 chars). Those are DIFFERENT
+#   strings, not a typo in this comment, and the token expired 2025-02-17,
+#   which is 569 days before this scan. So the credential in the history is
+#   both for another project and long past its expiry. It stays suppressed by
+#   fingerprint rather than by deleting it: rewriting history to remove a dead
+#   key would break every commit hash in `STATE.md` and buy nothing.
+#
+#   THIS IS NOT THE KEY THAT STILL NEEDS ROTATING. That one is the live
+#   `SUPABASE_SECRET_KEY` in `.env.local`, which is untracked and therefore
+#   appears in no git scan at all. It is fingerprinted by SHA-256 in
+#   `scripts/compromised-keys.mjs` and refused by `scripts/deploy-preflight.mjs`.
+#   A green gitleaks run says nothing about it, and that is worth knowing
+#   before anyone reads one as an all-clear.
+#
+# THE OTHER EIGHTEEN ARE NOT SECRETS. In two groups:
+#
+#   refs/*.html and refs/*.mhtml (8)
+#     Saved copies of other companies' rendered pages, kept as design and
+#     content references. The hits are Cloudflare `data-token` form values and
+#     similar, belonging to whoever served the page. `docs/REFS-POLICY.md`
+#     already treats this directory as a captured artifact rather than source.
+#     Allowlisted by PATH, because these files are re-captured and a fingerprint
+#     would go stale on every recapture while the finding stayed just as false.
+#
+#   test fixtures (10)
+#     Constants named TOKEN, SECRET and VOUCHER_QR_SECRET in `*.test.ts`,
+#     `*.test.tsx` and `*.test.mjs`, plus the literal string
+#     "-----BEGIN PRIVATE KEY-----\nMIIB\n" in `ci-launch-gates.test.ts`, which
+#     is a fixture FOR THIS REPOSITORY'S OWN secret scanner, and the public
+#     Supabase `anon` key in `ci.yml` (anon keys ship in client bundles by
+#     design; this one is already a public repository variable).
+#     Allowlisted by FINGERPRINT and not by path. `**/*.test.ts` would have been
+#     one line instead of ten, and it would also mean a real key pasted into a
+#     test file is never reported. Ten lines is the price of that not happening.
+#
+# ADDING TO THIS FILE. A fingerprint is `commit:file:rule:line`, so it pins one
+# finding and cannot widen. Run the scan, read the actual value, and write down
+# why it is not a secret. "It is in a test" is not a reason on its own.
+#
+#   gitleaks git --no-banner --redact -v .
+
+title = "KenyonExpress"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Captured third-party pages. Not our credentials, and re-captured often."
+paths = [
+  '''^refs/''',
+]
+
+# `condition = "AND"` and not the default OR. gitleaks requires an allowlist
+# block to carry at least one of commits/paths/regexes/stopwords, so the paths
+# below are here to satisfy that. Under OR they would allowlist these whole
+# files, which is the broad suppression the header argues against; under AND a
+# finding is ignored only when it is in one of these files AND carries one of
+# the fingerprints. A NEW finding in the same file has a different fingerprint
+# and is still reported.
+[[allowlists]]
+description = "Test fixtures and public keys, each read before it was listed."
+condition = "AND"
+paths = [
+  '''^src/app/redeem/\[token\]/page\.test\.tsx$''',
+  '''^src/lib/vouchers/qr-image\.test\.ts$''',
+  '''^src/lib/vouchers/scan-input\.test\.ts$''',
+  '''^src/server/domain/vouchers/qr\.test\.ts$''',
+  '''^src/lib/payments/signature\.test\.ts$''',
+  '''^scripts/deploy-preflight\.test\.mjs$''',
+  '''^src/__tests__/ci-launch-gates\.test\.ts$''',
+  '''^\.github/workflows/ci\.yml$''',
+  '''^\.env\.test$''',
+]
+fingerprints = [
+  # TOKEN constants in voucher and redemption tests. Fake tokens by
+  # construction: the tests assert how a malformed or unknown token is handled.
+  "d78428cb8d7b74f16750098a5be9cb188a59d9fd:src/app/redeem/[token]/page.test.tsx:generic-api-key:58",
+  "db33a4cb28ca668355f4422c371a8f4176c5b2b7:src/lib/vouchers/qr-image.test.ts:generic-api-key:37",
+  "a0a35b86fceb855756bda425daae7b7389252a4b:src/lib/vouchers/scan-input.test.ts:generic-api-key:9",
+  "ea7e7576ef65564f72cb43e976fffadd22bc5be2:src/server/domain/vouchers/qr.test.ts:generic-api-key:4",
+  # HMAC secrets used to sign and then verify inside the same test file.
+  "be47a627d1e9263164d79f4dfdd5fe5e43e34fbe:src/lib/payments/signature.test.ts:generic-api-key:4",
+  "605488ef7f23b5c87920119b1dd65cbfa46cf98e:scripts/deploy-preflight.test.mjs:generic-api-key:35",
+  # Fixtures for this repository's OWN secret scanner. The "private key" is the
+  # literal "-----BEGIN PRIVATE KEY-----\nMIIB\n", which is what a test for a
+  # private-key detector has to contain in order to test anything.
+  "283c19d568eaff6f9410320857ddaf3748adfaa7:src/__tests__/ci-launch-gates.test.ts:generic-api-key:170",
+  "283c19d568eaff6f9410320857ddaf3748adfaa7:src/__tests__/ci-launch-gates.test.ts:private-key:148",
+  # The Supabase `anon` key for the live project, inlined as the fallback for a
+  # CI build. Anon keys are public by construction and this one is already the
+  # repository variable PUBLIC_SUPABASE_ANON_KEY. RLS is what protects the data
+  # behind it; if that stops being true, the fix is a policy, not this line.
+  "57757d5923cf10f968c13206d5dfe46327d02440:.github/workflows/ci.yml:jwt:124",
+  # The expired service_role and anon pair for project ixvwfbuvfxsijywhbbb.
+  # Read the header of this file before deciding these are harmless: they were
+  # a real leak, and what makes them safe now is the expiry date and the
+  # project ref, not the fact that they are old.
+  "11a5303f23f9f975dab280103e362994418373fe:.env.test:jwt:4",
+  "11a5303f23f9f975dab280103e362994418373fe:.env.test:jwt:5",
+]
