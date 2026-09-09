@@ -773,6 +773,17 @@ describe('the pending migration inventory', () => {
       // must now NOT be applied -- its own guard would raise on the two names
       // it added -- and 214 carries them forward.
       '214_settlement_gap_kind.sql',
+      // 215 WRITTEN 2026-09-09, not applied. The delivery log for push. Two
+      // decisions in it are worth the diff: `subscription_id` is NOT a foreign
+      // key, because a 410 deletes the subscription and a CASCADE would erase
+      // the record explaining why it went; and the endpoint is deliberately
+      // absent, because it is a bearer capability -- anyone holding it can push
+      // to that browser -- and a delivery log is the most-exported table in any
+      // system. Only `endpoint_host` is stored. Probed against production
+      // inside a rolled-back DO block: both CHECKs refuse an unknown value, the
+      // status range refuses 9999, anon has no SELECT and authenticated has no
+      // INSERT.
+      '215_push_deliveries.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

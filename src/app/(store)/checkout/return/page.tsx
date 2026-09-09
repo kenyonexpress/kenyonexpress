@@ -1,3 +1,4 @@
+import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
   moneyColumnProbe,
@@ -147,6 +148,16 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
           {shekels(agorot(orderMoney.totalAgorot))}
         </p>
+
+        {/*
+          THE ONE MOMENT WORTH ASKING FOR NOTIFICATION PERMISSION IN, and the
+          reason it is not on the landing page: a Block is permanent and cannot
+          be asked past. Here the order has just gone through and the customer
+          is waiting for a coupon or a parcel. It renders nothing for anybody
+          who has already answered, and it does not open the browser dialog
+          itself -- it links to the page where a button does.
+        */}
+        <PostPurchasePushPrompt />
 
         {couponsWithQr.length > 0 && (
           <section aria-label="הקופונים שלך" style={{ maxWidth: 640, marginInline: 'auto' }}>

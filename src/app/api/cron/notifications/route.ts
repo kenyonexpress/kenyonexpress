@@ -1,5 +1,7 @@
 import { buildNotification } from '@/lib/email/notifications'
 import { sendEmail } from '@/lib/email/resend'
+import { loadPreferenceRows } from '@/lib/notifications/preference-store'
+import { mayNotify } from '@/lib/notifications/preferences'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { pushOutboxRow } from '@/lib/push/dispatch'
@@ -121,7 +123,27 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     const emailDue = row.status === 'pending' && row.next_attempt_at <= now
     const pushDue = row.push_status === 'pending' && row.push_next_attempt_at <= now
 
-    if (emailDue) {
+    // THE SETTINGS PAGE HAS BEEN WRITING THIS TABLE AND NOTHING READ IT.
+    // Measured 2026-09-09: `mayNotify` was called only to DRAW the switches.
+    // A customer could turn a kind off in all four channels, see it saved, and
+    // keep receiving it -- which `preferences.ts` names in its own header as
+    // worse than having no setting at all.
+    //
+    // Read once per row and used by both legs. Required kinds ignore it
+    // entirely (a receipt cannot be switched off) and an absent table reads as
+    // "no opinion recorded", which is the same answer defaults-on gives.
+    const preferences = await loadPreferenceRows(admin, row.user_id)
+
+    if (emailDue && !mayNotify(row.kind, 'email', preferences)) {
+      // `skipped`, not `dead`: the customer can switch it back on, and a dead
+      // row would never be looked at again. No attempt is counted either --
+      // the row was never sent to a mail provider.
+      skipped++
+      await admin
+        .from('notification_outbox')
+        .update({ status: 'skipped', last_error: 'email switched off by the customer' })
+        .eq('id', row.id)
+    } else if (emailDue) {
       const built = buildNotification(row.kind, row.payload ?? {}, siteUrl)
       if (!built) {
         // A kind nothing can render will never render, however often it is
@@ -190,7 +212,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     // The push leg carries its own status, counter and backoff, so a mail that
     // failed does not hold up a notification the phone could already show, and
     // a phone that is unreachable does not re-send the mail.
-    const push = await pushOutboxRow(admin, row, siteUrl)
+    const push = await pushOutboxRow(admin, row, siteUrl, preferences)
 
     if (push.outcome === 'none') {
       await admin

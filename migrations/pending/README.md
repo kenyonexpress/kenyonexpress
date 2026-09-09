@@ -1,5 +1,40 @@
 # `migrations/pending/`
 
+## 2026-09-09: 215 WRITTEN, not applied - the delivery log, and the column that is deliberately not in it
+
+`215_push_deliveries.sql`. One row per push attempt per device.
+
+**Why a second log when the outbox already has five push columns.** Those five
+describe ONE notification's push leg, which is the right shape for a retry loop
+and the wrong shape for the question an operator asks: "why did this customer
+stop getting notifications". A customer has several browsers and they fail
+independently - the phone whose data was cleared answers 410 forever while the
+desktop works - and the outbox collapses all of them into one `push_error`.
+
+**THE ENDPOINT IS A BEARER CAPABILITY AND IS NOT LOGGED.**
+`push_subscriptions.endpoint` is a URL anyone holding it can push to, with no
+authentication beyond a VAPID signature they can mint themselves. A delivery log
+is the most-read, least-guarded table in any system: it gets pasted into support
+tickets, exported to spreadsheets and joined into dashboards. `endpoint_host` is
+stored instead - which push service is failing is what triage needs, and it is
+not a credential. The file's own verification block REFUSES TO APPLY if a column
+named `endpoint` exists.
+
+**`subscription_id` is not a foreign key, on purpose.** A 410 means the
+subscription is dead forever and the sender deletes the row. A foreign key would
+take the log entry with it under CASCADE or block the delete under RESTRICT, and
+that entry is precisely the record explaining why the subscription is gone.
+
+**Verified against production without applying**, in one rolled-back `DO` block:
+the table, both indexes, RLS, the revokes and both policies were created; a log
+row for a subscription that does not exist was inserted and kept; an unknown
+`transport`, an unknown `outcome` and a status of 9999 were each refused with a
+check violation; `anon` had no SELECT and `authenticated` had no INSERT while
+having SELECT. Re-read afterwards: the table does not exist.
+
+Order: independent of everything else pending. It creates one table and touches
+nothing existing.
+
 ## 2026-09-09: 214 WRITTEN, not applied, and reading the constraint corrected this file
 
 `214_settlement_gap_kind.sql`. One notification kind, `settlement_gap`, so

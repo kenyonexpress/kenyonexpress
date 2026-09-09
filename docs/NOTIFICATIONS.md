@@ -9,6 +9,29 @@ cron. `notification_outbox` with dedupe keys, retry and backoff.
 
 Two things were missing and one was a trap.
 
+## Correction, 2026-09-09 (SECTIONS 45): push was NOT complete
+
+The paragraph above says `push_subscriptions` (179, applied) with VAPID, a
+service worker and a full dispatch module. Every clause is true and the
+conclusion was wrong: **there was no sender.**
+
+`dispatch.ts` is the EXPO transport. It reads `push_tokens` through
+`fn_push_targets`, whose whole body is `SELECT ... FROM push_tokens WHERE
+t.enabled`. Nothing in the repository could send to a `push_subscriptions` row,
+and 179's own header says so in as many words: "there is no sender yet". So a
+customer could open `/account/notifications`, grant the permission, see
+`התראות פעילות בדפדפן הזה`, and never receive anything. `VAPID_PRIVATE_KEY` sat
+in the environment unread for the same reason.
+
+What that cost is worse than a missing feature: the ONE permission the browser
+will ever grant was being spent on a channel that could not deliver, and a
+denied permission cannot be asked for again.
+
+`src/lib/push/web-push.ts` and `src/lib/push/web-leg.ts` are the sender.
+`pushOutboxRow` now attempts both transports for every row and
+`combinePushLegs` reduces them to the single outcome the outbox records - any
+delivery wins, retry beats skipped, and skipped counts no attempt.
+
 ## `notification_outbox` cannot back a bell
 
 It is an **email queue**. An address, a payload, a dedupe key, drained by a
@@ -159,15 +182,21 @@ sequencing: adding writers before 198 is applied would put `42P01` handling into
 not exist.
 
 **The preference resolver is not yet consulted by the senders.**
-`mayNotify` is pure, tested and unused. Wiring it means a read per send in the
-notification drain, the push dispatcher and the WhatsApp cron — three call
-sites, each of which needs its own decision about what to do when the read
-fails, and none of which can be tested end to end until there are preferences to
-read.
+**DONE 2026-09-09 for email and push; WhatsApp is still open.**
+`src/lib/notifications/preference-store.ts` reads the table once per outbox row
+and both legs of `/api/cron/notifications` consult it. An absent table reads as
+"no opinion recorded", which is the same answer defaults-on gives, so a stale
+schema cache cannot silence every optional notification for everybody.
 
-Both are named here rather than described as done, because a preference centre
-that saves a setting nothing reads is the worst of the three states: it looks
-finished to the customer and changes nothing.
+The email leg settles a switched-off row as `skipped`, not `dead`: the customer
+can switch it back on, and no attempt is counted against the row's five. The
+push leg returns `skipped` for the same reason - `none` would settle the kind
+permanently and make the switch one-way.
+
+The WhatsApp cron is the remaining call site. It is named here rather than
+quietly left, because a preference centre that saves a setting nothing reads is
+the worst of the three states: it looks finished to the customer and changes
+nothing.
 
 ## Files
 

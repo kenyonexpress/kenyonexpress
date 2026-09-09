@@ -4,6 +4,7 @@ import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
 import type { CartViewItem } from '@/lib/cart/types'
+import { t } from '@/lib/i18n/messages'
 import { shekels } from '@/lib/money-format'
 import { ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
@@ -159,7 +160,7 @@ export default function MiniCartDropdown() {
       ref={panelRef}
       open
       className={`mini-cart__panel ${isPending ? 'mini-cart__panel--pending' : ''}`}
-      aria-label="עגלת קניות"
+      aria-label={t('nav.cart')}
     >
       {isEmpty ? (
         <div className="mini-cart__empty">

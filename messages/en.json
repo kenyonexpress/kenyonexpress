@@ -33,7 +33,13 @@
     "confirm": "Confirm",
     "back": "Back",
     "currency": "₪",
-    "offline": "No connection. Showing pages you have already visited."
+    "offline": "No connection. Showing pages you have already visited.",
+    "push_invite": {
+      "title": "Want us to let you know?",
+      "body": "A notification when your order ships, when a coupon is about to expire, and when cashback arrives. No marketing, and you can turn it off any time.",
+      "cta": "Enable notifications",
+      "label": "Notification suggestion"
+    }
   },
   "admin": {
     "title": "Admin Panel",

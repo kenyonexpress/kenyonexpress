@@ -1,6 +1,11 @@
 /**
- * Typed access to `push_subscriptions`, which migration 179 creates and
- * production does not have yet.
+ * Typed access to `push_subscriptions`, which migration 179 creates.
+ *
+ * **179 IS APPLIED. This header said it was not, until it was read on
+ * 2026-09-09**: the table is in production and holds zero rows. The `as never`
+ * assertion and the `isMissingPushRelation` guard below both stay, because the
+ * generated `database.ts` still does not carry the table and a preview branch
+ * is a database where it really is absent. What changed is the claim.
  *
  * Same story and same shape as lib/auth/passkeys/store.ts (178), and again a
  * separate file so neither apply-day breaks the other. WHEN 179 IS APPLIED:

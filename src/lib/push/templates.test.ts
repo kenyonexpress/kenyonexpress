@@ -30,8 +30,17 @@ describe('buildPushContent gating', () => {
     expect(buildPushContent('anything_new', {}, SITE)).toBeNull()
   })
 
-  it('lists exactly the three transactional kinds', () => {
-    expect([...PUSHABLE_KINDS]).toEqual(['voucher_issued', 'voucher_expiring', 'cashback_credited'])
+  it('lists exactly the five kinds that may reach a lock screen', () => {
+    // A deliberate diff. The outbox carries every notification the system owes,
+    // including supplier and admin alerts, and this list is the gate that keeps
+    // them off a customer's phone.
+    expect([...PUSHABLE_KINDS]).toEqual([
+      'voucher_issued',
+      'voucher_expiring',
+      'cashback_credited',
+      'order_shipped',
+      'price_drop',
+    ])
     for (const kind of PUSHABLE_KINDS) {
       expect(buildPushContent(kind, {}, SITE)).not.toBeUndefined()
     }

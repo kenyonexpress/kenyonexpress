@@ -85,6 +85,27 @@ const schema = z
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional().or(z.literal('')),
     TURNSTILE_SECRET_KEY: z.string().optional().or(z.literal('')),
 
+    /**
+     * Web Push (VAPID, RFC 8292). All three optional, and the absence is a
+     * working state: `vapidConfig()` returns null, the send leg reports
+     * "VAPID keys not configured" and skips WITHOUT counting an attempt, and
+     * the opt-in UI does not offer a permission it cannot turn into a
+     * subscription.
+     *
+     * THE PAIR MUST NEVER BE REGENERATED ONCE SUBSCRIPTIONS EXIST. A browser's
+     * subscription is bound to the public key it was minted against, so a new
+     * pair silently orphans every row in `push_subscriptions`: the sends fail
+     * with 403 and every customer who opted in stops receiving anything with
+     * no visible cause.
+     *
+     * The private half deliberately has no `NEXT_PUBLIC_` prefix, and the
+     * LEAKY check further down would refuse to boot if it did.
+     */
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional().or(z.literal('')),
+    VAPID_PRIVATE_KEY: z.string().optional().or(z.literal('')),
+    /** mailto: or https:, contacted by a push service if this sender misbehaves. */
+    VAPID_SUBJECT: z.string().optional().or(z.literal('')),
+
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
   })
