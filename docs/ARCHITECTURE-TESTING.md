@@ -854,3 +854,82 @@ rtl + secrets (20s) ────────────────────
 `docs/ARCHITECTURE-SEO-SITEMAP.md` (תקציבי CWV),
 `docs/ARCHITECTURE-OPS.md` (סביבות ופריסה),
 `docs/ARCHITECTURE-ROADMAP.md` (מתי כל שער חייב להיות ירוק).
+
+---
+
+## 2026-09-10: SECTIONS 35 measured, and what the suite could not see
+
+The whole Playwright suite was run against a production build (`pnpm start`,
+never `pnpm dev` - a dev server serves a different bundle and has faked cart
+failures here before). Interrupted partway through the mobile project, so the
+numbers are for the tests that reached a verdict:
+
+**247 passed, 44 skipped, 0 failed**, in 13.7 minutes.
+
+Zero failures is the headline and the 44 is the caveat: every skip is a
+seeded-fixture check (`pnpm seed:test`) or a catalogue-shape check, each stating
+its own reason. Nothing skips silently.
+
+### The seven items, measured
+
+| item | state |
+|---|---|
+| coupon full flow (search, buy, QR, redeem) | covered: `full-purchase-redeem.spec.ts`, `coupon-scan.spec.ts` |
+| physical flow | covered: `physical-purchase.spec.ts` |
+| refund flow | covered: `admin-refund.spec.ts` |
+| **supplier-view isolation** | **was not covered; added** |
+| admin edits snapshot correctly on order | covered at unit level (`settlement-events.test.ts`, `checkout.test.ts` pin the `platform_percent` snapshot); no E2E, see below |
+| **pagination 50/page** | **the site does not paginate at 50; added tests for what it does do** |
+| invalid code rejected | covered: `coupon-scan.spec.ts` refuses a forged token without leaking whether the voucher exists |
+
+### Isolation was tested only signed OUT
+
+`coupon-scan.spec.ts` proves a stranger at `/supplier/scan` is sent to login and
+a forged token is refused. Neither has a session. The interesting failure is the
+REAL CUSTOMER holding a valid cookie who types `/supplier` or `/admin` into the
+address bar, and on 2026-09-10 no spec exercised that.
+
+`e2e/role-isolation.spec.ts` adds it, and pins the DESTINATION rather than just
+the refusal. `requireSupplierMember` sends signed-out to `/login?next=...` and
+signed-in-without-membership to `/supplier/access-denied`, deliberately;
+asserting only "did not reach the console" would pass if the guard collapsed the
+two, and collapsing them puts a logged-in customer in a login loop.
+
+Two of its tests need no fixture and run everywhere: the signed-out redirect
+must preserve the return path, which is the half that breaks quietly - without
+it a supplier signs in and lands on the storefront, and the deep link they were
+sent is gone with no error anywhere. The other five skip on an unseeded database
+with the reason named, the same stance `admin-refund.spec.ts` takes.
+
+### The section asks for 50 per page. Nothing here is 50
+
+Measured: `CATEGORY_PAGE_SIZE = 12`, `SHOP_PAGE_SIZE = 24`,
+`SUPPLIER_PAGE_SIZE = 24`. A test asserting 50 would fail on working code, and
+changing the code to 50 is a layout decision rather than a bug fix.
+
+So `e2e/pagination.spec.ts` pins what "pagination works" means at any page size:
+a page never renders more cards than the archive counts, and page 2 holds
+DIFFERENT products. The disjointness check is the one that earns its place - an
+off-by-one in `range(from, from + SIZE - 1)` shows up as page 2 repeating page
+1's last row or skipping a product, and both render as a perfectly healthy grid.
+Verified live: `/products` shows 1-24 of 44, `?page=2` shows 25-44, no overlap.
+
+### A false finding, caught before it was written down
+
+`/products` rendered ZERO products and an empty result count on the server
+already listening on port 3311. That looked like a serious defect in the main
+archive that 247 passing tests had missed.
+
+It was a stale build. A parallel session's server had the port, and
+`reuseExistingServer` handed the whole suite to it. Rebuilt and started on a
+free port, the same URL renders 24 of 44 with correct counts on both pages. The
+lesson is the one already in this repo's notes and it cost half an hour here:
+**check which build is answering before believing what it renders.**
+
+### Why there is no E2E for "admin edits snapshot correctly on order"
+
+The rule (a per-product `platform_percent` frozen onto `order_items` at
+purchase) is pinned by unit tests that run on every commit. An E2E would need a
+paid order plus an admin edit plus a re-read, and would skip on every database
+that is not seeded - which is every database this suite runs against today. A
+sixth always-skipping test would add ceremony and no coverage.
