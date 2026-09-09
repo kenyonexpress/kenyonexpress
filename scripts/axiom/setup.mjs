@@ -12,6 +12,7 @@
  *
  *   node scripts/axiom/setup.mjs          # create/update everything
  *   node scripts/axiom/setup.mjs --dry    # print what would be sent, no network
+ *   node scripts/axiom/setup.mjs --ci     # as above, but exit 0 when unconfigured
  *
  * WHAT IT ENFORCES.
  *   - Dataset AXIOM_DATASET exists, retentionDays=30, useRetentionPeriod=true.
@@ -20,8 +21,12 @@
  *   - Dashboards auth / payments / errors, uid-pinned (kenyon-auth,
  *     kenyon-payments, kenyon-errors) so a re-run updates rather than
  *     duplicates. `{{dataset}}` in the JSON is bound to AXIOM_DATASET here.
+ *   - Alert rules: the two monitors and their notifiers from monitors.mjs
+ *     (5xx spike, slow queries), upserted by name. What they watch and why
+ *     the thresholds sit where they do is documented there, not here.
  *
- * NEEDS. AXIOM_TOKEN with ingest+datasets+dashboards permissions (an
+ * NEEDS. AXIOM_TOKEN with ingest+datasets+dashboards+monitors+notifiers
+ * permissions (an
  * API token, not a personal token, keeps dashboards shared: the API refuses
  * private dashboards, which is why owner stays X-AXIOM-EVERYONE) and
  * AXIOM_DATASET. Reads .env.local like the app does, so one file configures
@@ -34,9 +39,11 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { buildMonitors, buildNotifiers, planUpsert } from './monitors.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DRY = process.argv.includes('--dry')
+const CI = process.argv.includes('--ci')
 
 // .env.local, parsed just enough: the app's own env loading belongs to Next,
 // and this script runs outside it.
@@ -59,6 +66,13 @@ loadEnvLocal()
 const TOKEN = process.env.AXIOM_TOKEN
 const DATASET = process.env.AXIOM_DATASET
 const BASE = process.env.AXIOM_URL || 'https://api.axiom.co'
+
+if (CI && (!TOKEN || !DATASET)) {
+  // Same posture as sentry-alert-rules.mjs: rules are applied only where the
+  // secrets exist, and a fork's CI stays green without them.
+  console.log('AXIOM_TOKEN/AXIOM_DATASET not set; skipping Axiom setup.')
+  process.exit(0)
+}
 
 if (!TOKEN || !DATASET) {
   console.error(
@@ -153,5 +167,36 @@ for (const file of readdirSync(dashboardsDir)
   if (!result.ok) fail(`dashboard ${slug}`, result)
   console.log(`dashboard kenyon-${slug}: upserted (${dashboard.charts.length} charts)`)
 }
+
+// --- 3. Alert rules: notifiers first, then the monitors that use them ------
+
+/**
+ * Upserts by name and returns name -> id. In --dry the listing is null and
+ * every id is undefined, which buildMonitors treats as "no notifier wired" --
+ * the printed payloads stay honest about what a dry run can know.
+ */
+async function upsertByName(path, label, desired) {
+  const listed = await api('GET', path)
+  if (!DRY && !listed.ok) fail(`list ${label}s`, listed)
+
+  const ids = {}
+  const plan = planUpsert(Array.isArray(listed.json) ? listed.json : null, desired)
+  for (const item of plan.create) {
+    const created = await api('POST', path, item)
+    if (!created.ok) fail(`create ${label} ${item.name}`, created)
+    if (created.json?.id) ids[item.name] = created.json.id
+    console.log(`${label} ${item.name}: created`)
+  }
+  for (const { id, body } of plan.update) {
+    const updated = await api('PUT', `${path}/${encodeURIComponent(id)}`, body)
+    if (!updated.ok) fail(`update ${label} ${body.name}`, updated)
+    ids[body.name] = id
+    console.log(`${label} ${body.name}: updated in place`)
+  }
+  return ids
+}
+
+const notifierIds = await upsertByName('/v2/notifiers', 'notifier', buildNotifiers(process.env))
+await upsertByName('/v2/monitors', 'monitor', buildMonitors(DATASET, notifierIds))
 
 console.log(DRY ? 'dry run complete, nothing sent' : 'Axiom matches scripts/axiom/.')

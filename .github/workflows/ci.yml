@@ -322,6 +322,16 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: node scripts/sentry-alert-rules.mjs --ci
 
+      # Same contract for the Axiom side: dataset retention, dashboards and
+      # the 5xx/slow-query monitors (scripts/axiom/), upserted only from main.
+      # Without the secrets the script prints one line and exits 0.
+      - name: Apply Axiom dataset, dashboards and monitors
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
+          AXIOM_DATASET: ${{ vars.AXIOM_DATASET }}
+        run: node scripts/axiom/setup.mjs --ci
+
       - uses: actions/upload-artifact@v4
         with:
           name: next-build
