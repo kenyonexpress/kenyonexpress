@@ -54,7 +54,18 @@ vi.mock('@/lib/supabase/anon', () => {
 })
 
 const logError = vi.fn()
-vi.mock('@/lib/observability/log', () => ({ log: { error: (...a: unknown[]) => logError(...a) } }))
+// `warn` and `info` as well as `error`, because [89] put `lib/commerce/phases.ts`
+// in this module's import graph and it logs at all three. A partial mock made
+// three tests fail with "log.warn is not a function" and report it as the
+// catalogue read not throwing, which is a different bug entirely.
+vi.mock('@/lib/observability/log', () => ({
+  log: {
+    error: (...a: unknown[]) => logError(...a),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}))
 
 const { getShopProducts, getCategoryBySlug } = await import('./category-page')
 

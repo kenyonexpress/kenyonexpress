@@ -20,6 +20,7 @@ import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/s
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { getProductReviews } from '@/server/queries/reviews'
 import '@/styles/product-page.css'
+import { enabledProductTypes, isTypeSellable } from '@/lib/commerce/phases'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -126,6 +127,17 @@ export default async function ProductPage({ params }: Props) {
   // while the home page answered in 6ms.
   const detail = await loadProductBySlug(slug)
   if (!detail) notFound()
+
+  // PHASE GATING ([89]). A product whose TYPE the operator switched off is a
+  // 404 and not a "temporarily unavailable" page, for the same reason an
+  // unpublished content page is: telling a stranger that a thing exists but is
+  // withheld is information the shop has no reason to publish, and a 404 is
+  // what a crawler needs in order to stop asking.
+  //
+  // `enabledProductTypes` fails open, so a config that cannot be read leaves
+  // the page exactly as it was. The purchase is refused independently in
+  // `addToCart`, which reads live.
+  if (!isTypeSellable(detail.product.type, await enabledProductTypes())) notFound()
 
   const {
     product,

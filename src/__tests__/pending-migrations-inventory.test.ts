@@ -661,6 +661,30 @@ describe('the pending migration inventory', () => {
       // coalesce lost in that rewrite turns "no aal claim means refuse" into
       // "unknown, allow".
       '209_advisor_warnings.sql',
+      // 210: which product types the shop is currently selling, for [89].
+      //
+      // THE MEASUREMENT INVERTED THE DEFAULT. [89] puts coupons in phase 1 and
+      // physical products in phase 2, off until the admin turns it on after ten
+      // sales. Read off production: all 44 active products are `physical`, all
+      // 15 coupons are DRAFTS, and there have been 2 sales. Shipping phase 1 as
+      // written would hide 44 of 44 and leave an empty shop.
+      //
+      // So `phase` records the section's assignment as ADVICE and `is_enabled`
+      // is the switch, seeded true for every type. Applying this file changes
+      // nothing a shopper sees; the admin screen prints how many active
+      // products a switch would hide before it is flipped.
+      //
+      // Probed against production, rolled back: four rows seeded and all
+      // enabled, every product_type enum value has a row, a re-run of the seed
+      // does NOT re-enable a type the operator disabled and does not overwrite
+      // their note, enabled_at is set on the first enable and moves neither on
+      // a re-enable nor on a disable, an unknown type RAISES rather than
+      // silently updating nothing, an enabled row with no date REFUSED while a
+      // disabled future type with no date is accepted (which is what 91 and 92
+      // need), phase 3 REFUSED, and anon could read the table - which the
+      // storefront filter needs - and could neither write it nor execute
+      // set_phase_enabled.
+      '210_product_phases.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

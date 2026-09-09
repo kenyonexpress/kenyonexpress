@@ -2,6 +2,7 @@ import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import type { CategoryNode } from '@/lib/category-tree'
+import { enabledProductTypes } from '@/lib/commerce/phases'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
@@ -425,6 +426,18 @@ export async function getCategoryProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+
+  // PHASE GATING ([89]). A type the operator has switched off is not listed.
+  //
+  // `null` means the config could not be read, and it leaves the query
+  // untouched rather than filtering to nothing - see `lib/commerce/phases.ts`
+  // on why the listing path fails OPEN and the cart path does not. An empty
+  // shop that says "no products match" is indistinguishable from a shop with
+  // nothing to sell, and that is the failure `catalogue-read.ts` was written
+  // about.
+  const sellable = await enabledProductTypes()
+  if (sellable) query = query.in('type', sellable)
+
   if (productType) {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
@@ -539,6 +552,17 @@ export async function getShopProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+
+  // PHASE GATING ([89]). A type the operator has switched off is not listed.
+  //
+  // `null` means the config could not be read, and it leaves the query
+  // untouched rather than filtering to nothing - see `lib/commerce/phases.ts`
+  // on why the listing path fails OPEN and the cart path does not. An empty
+  // shop that says "no products match" is indistinguishable from a shop with
+  // nothing to sell, and that is the failure `catalogue-read.ts` was written
+  // about.
+  const sellable = await enabledProductTypes()
+  if (sellable) query = query.in('type', sellable)
   if (productType) {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)

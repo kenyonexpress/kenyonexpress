@@ -1,5 +1,57 @@
 # `migrations/pending/`
 
+## 2026-09-09: 210 WRITTEN, not applied, and the measurement inverted its default
+
+`210_product_phases.sql`.
+
+**[89] describes phase 1 as coupons and phase 2 as physical products, off until
+the admin turns it on after ten sales. Read off production:**
+
+```
+type      status   count          orders total 4, of which sold 2
+coupon    draft       15          vouchers 0
+physical  active      44
+physical  draft       21
+```
+
+**Every active product on this site is `physical`**, which the section puts in
+phase 2, and there is not one active coupon to put in its place: all 15 are
+drafts. Shipping phase 1 as written would hide 44 of 44 active products and
+leave an empty shop, while the condition for refilling it - ten sales - is five
+times away.
+
+That does not make the feature wrong; it makes the DEFAULT wrong. So the file
+separates two things the section says in one breath: `phase` records which phase
+a type belongs to, as **advice**, and `is_enabled` is the switch, **seeded true
+for every type**. Applying this file changes nothing a shopper sees, and
+`/admin/phases` prints how many active products a switch would hide next to the
+switch itself.
+
+**A table and not an environment variable.** `lib/admin/feature-flags.ts` says
+there is no flags table because "an agent cannot apply a migration, so a
+deploy-free admin toggle does not exist" - true of the four operational kill
+switches. This is different: [89] asks for a toggle the ADMIN flips, and an
+environment variable is a redeploy, which on this project is a step nobody has
+managed since 31.08.
+
+**`product_type` is `text`, not the enum.** 91 and 92 add course and cabin
+types, and a text key lets a row be seeded for a type before the enum has it -
+which is the order those sections need, since the phase must be OFF before the
+type exists.
+
+**Verified against production without applying.** Four rows seeded and all
+enabled, every `product_type` enum value has a row, a re-run of the seed does
+**not** re-enable a type the operator disabled and does not overwrite their
+note, `enabled_at` is set on the first enable and moves neither on a re-enable
+nor on a disable, an unknown type raises rather than silently updating nothing,
+an enabled row with no date is refused while a disabled future type with no date
+is accepted, phase 3 is refused, and under `SET ROLE anon` the client could read
+the table - which the storefront filter needs - and could neither write it nor
+execute `set_phase_enabled`. Re-read afterwards: no table, no function.
+
+Order: independent of everything else pending.
+
+
 ## 2026-09-09: 209 WRITTEN, not applied, and it does not reach zero WARN
 
 `209_advisor_warnings.sql`.

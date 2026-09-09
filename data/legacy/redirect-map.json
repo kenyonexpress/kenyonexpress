@@ -158,6 +158,7 @@
     "/admin/pages",
       "/admin/payments",
       "/admin/payouts",
+    "/admin/phases",
       "/admin/products",
       "/admin/products/import",
       "/admin/products/new",

@@ -12,6 +12,7 @@ import { buildCartView } from '@/lib/cart/pricing'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
+import { assertTypeSellable } from '@/lib/commerce/phases'
 import { isValidUnitCode } from '@/lib/coupons/unit-codes'
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
@@ -338,6 +339,21 @@ async function validateProductForCart(
 
   if (!product || product.status !== 'active' || product.deleted_at) {
     return { ok: false, error: 'המוצר לא זמין', code: 'NOT_FOUND' }
+  }
+
+  // PHASE GATING ([89]), AND THIS IS WHERE IT IS ENFORCED RATHER THAN APPLIED.
+  //
+  // The catalogue LISTS by the cached phase config and fails open: a type the
+  // operator switched off can stay visible for up to a cache period, which is
+  // an accepted cost. This is the point at which the shop would take money for
+  // it, so the read is live and a FAILED read refuses. Refusing one add to cart
+  // costs a shopper a retry; selling something the operator withdrew costs a
+  // refund and an apology.
+  //
+  // It also closes the hole hiding alone would leave: a direct product URL, a
+  // stale tab and a cart from before the switch all arrive here.
+  if (!(await assertTypeSellable(product.type))) {
+    return { ok: false, error: 'המוצר אינו זמין למכירה כרגע', code: 'NOT_FOUND' }
   }
 
   // A price that is an implausible fraction of its own compare-at is a data
