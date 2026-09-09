@@ -95,6 +95,43 @@
 בכיוונים הפוכים: guard נעקף על ידי מי שמדבר ישירות עם PostgREST, ו-RLS נעקף
 בכל מקום שבו הקוד מרים `createAdminClient()`.
 
+### ‏1.1 העוגייה של שכבה 1 נשלחה בלי ‏`Secure`, ושתי העוגיות לידה כן
+
+‏**נמדד 09.09.2026 מול ‏`@supabase/ssr` ‏0.10.3, לא מוערך.** ‏`DEFAULT_COOKIE_OPTIONS`
+של החבילה הוא ‏`{ path, sameSite: 'lax', httpOnly: false, maxAge }`, ואין בו
+מפתח ‏`secure` בכלל. שום דבר ב-`createServerClient` או ב-`createBrowserClient`
+לא מוסיף אותו. הרצה מול ‏`applyServerStorage` של החבילה עצמה:
+
+```
+בלי cookieOptions   -> { path: '/', sameSite: 'lax', httpOnly: false, maxAge: 34560000 }
+עם { secure: true } -> { path: '/', sameSite: 'lax', httpOnly: false, maxAge: 34560000, secure: true }
+```
+
+כלומר הדגל הוא באחריות הקוד הקורא, ושלושת המקומות שכותבים את עוגיית הסשן
+‏(`src/proxy.ts`, ‏`src/lib/supabase/server.ts`, ‏`src/lib/supabase/client.ts`)
+לא העבירו אותו. **העוגייה שנושאת את ה-access token ואת ה-refresh token הייתה
+היחידה באתר בלי הדגל:** ‏`ke_session_id` (מזהה עגלה) ו-`ke_ref` (קוד הפניה)
+שתיהן עוברות דרך ‏`guestSessionCookieOptions` ו-`referralCookieOptions`
+שמציבות אותו. **העוגייה הכי פחות שווה הייתה מוגנת והכי שווה לא**, וכל אחת
+מהשלוש נראתה שלמה במסך שלה.
+
+‏**הדגל מותנה ולא ‏`true` קבוע**, מאותה סיבה בדיוק שרשומה ב-`guest-session-cookie.ts`:
+עוגיית ‏`Secure` נזרקת מעל ‏http רגיל, ‏`NODE_ENV` אינו המתג כי ‏`next start`
+כאן הוא ‏`NODE_ENV=production`, והמתג הכן הוא הפרוטוקול שהבקשה **הזאת** הגיעה
+בו. סשן שנעלם בשקט על localhost נקרא כבאג התחברות, ומי שמאתר אותו לא מסתכל
+על דגלי עוגיות.
+
+‏**‏`httpOnly` הוא הדגל שהעוגייה הזאת לא יכולה לקבל, וזו החלטה ולא שכחה.**
+‏`createBrowserClient` קורא את הסשן בחזרה מ-`document.cookie`; זה כל מתאם
+האחסון שלו. ‏`httpOnly: true` לא מקשיח את הסשן אלא מסתיר אותו מהקורא היחיד
+שיש לו, וכל ‏`getUser()` בדפדפן מתחיל לענות "מנותק" בזמן שהשרת עדיין רואה
+סשן. ההגנה מפני קריאה בסקריפט היא ה-CSP, לא הדגל הזה.
+
+‏**הטסט:** ‏`src/lib/supabase/cookie-options.test.ts`, שלוש טענות לשלושת
+הכותבים. אומת אדום בהסרת השורה מכל אחד מהם. הוא מבחין בין ‏`secure: false`
+לבין ‏`cookieOptions` שאינו מועבר כלל, כי זו צורת הרגרסיה: הסשן ממשיך לעבוד,
+הדגל פשוט מפסיק להישלח, ואף עמוד, טסט או טיפוס לא מבחין.
+
 ---
 
 ## 2. תפקידים

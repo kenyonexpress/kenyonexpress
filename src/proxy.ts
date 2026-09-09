@@ -6,6 +6,7 @@ import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
+import { supabaseAuthCookieOptions } from '@/lib/supabase/cookie-options'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -124,7 +125,13 @@ export async function proxy(request: NextRequest) {
 
   let supabaseResponse = forward(request, requestId)
 
+  // `secure` on the session cookie, which `@supabase/ssr` does not set for us.
+  // Same source of truth as the guest cart cookie thirty lines down: the
+  // protocol THIS request arrived over, not NODE_ENV.
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    cookieOptions: supabaseAuthCookieOptions(
+      request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol,
+    ),
     cookies: {
       getAll() {
         return request.cookies.getAll()

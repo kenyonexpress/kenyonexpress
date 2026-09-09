@@ -63,6 +63,70 @@ const SRC = resolve(process.cwd(), 'src')
  */
 const WITHOUT_SECURE: Record<string, string> = {}
 
+/**
+ * Comments blanked out, character for character, so offsets and line numbers
+ * survive.
+ *
+ * WHY THIS EXISTS. The sweep below matches the TEXT `httpOnly:`, and a file
+ * that DOCUMENTS a cookie is not a file that sets one.
+ * `src/lib/supabase/cookie-options.ts` quotes the measured output of
+ * `@supabase/ssr` in its header — `{ path: '/', sameSite: 'lax', httpOnly:
+ * false, maxAge: ... }`, the before shape, without `secure` — and the sweep
+ * read that prose as a cookie and went red on the one file in the repo whose
+ * entire job is adding the flag.
+ *
+ * That is worse than a plain false alarm. The cheapest way out of it is
+ * `WITHOUT_SECURE['src/lib/supabase/cookie-options.ts'] = '...'`, and the
+ * allowlist is per FILE: the exemption would have covered the real options
+ * object in that same file, forever, for the next person who edits it. A gate
+ * whose false alarm is answered by exempting the code it protects is a gate
+ * that disarms itself.
+ *
+ * Strings are tracked so a `//` inside a literal is not mistaken for a comment.
+ * A regular expression literal containing `//` would still fool it; there is
+ * none in `src/`, and the failure mode is the old one, a false alarm on a real
+ * file, not a miss.
+ */
+function withoutComments(source: string): string {
+  const out = source.split('')
+  let i = 0
+  while (i < source.length) {
+    const c = source[i]
+    const next = source[i + 1]
+    if (c === '/' && next === '/') {
+      while (i < source.length && source[i] !== '\n') out[i++] = ' '
+      continue
+    }
+    if (c === '/' && next === '*') {
+      const end = source.indexOf('*/', i + 2)
+      const stop = end === -1 ? source.length : end + 2
+      while (i < stop) {
+        if (source[i] !== '\n') out[i] = ' '
+        i++
+      }
+      continue
+    }
+    if (c === "'" || c === '"' || c === '`') {
+      const quote = c
+      i++
+      while (i < source.length) {
+        if (source[i] === '\\') {
+          i += 2
+          continue
+        }
+        if (source[i] === quote) {
+          i++
+          break
+        }
+        i++
+      }
+      continue
+    }
+    i++
+  }
+  return out.join('')
+}
+
 function sourceFiles(dir: string): string[] {
   const found: string[] = []
   for (const entry of readdirSync(dir)) {
@@ -114,7 +178,7 @@ describe('every cookie in src decides `secure`', () => {
   const offenders: string[] = []
 
   for (const path of sourceFiles(SRC)) {
-    const source = readFileSync(path, 'utf8')
+    const source = withoutComments(readFileSync(path, 'utf8'))
     const file = relative(process.cwd(), path)
 
     for (let index = source.indexOf('httpOnly'); index !== -1; ) {
@@ -136,7 +200,9 @@ describe('every cookie in src decides `secure`', () => {
     // The sweep is only worth anything if it reaches the known cookies. If a
     // refactor moves them all behind a helper this number drops, and this
     // assertion is the prompt to re-point the sweep rather than delete it.
-    const seen = sourceFiles(SRC).filter((path) => /httpOnly\??:/.test(readFileSync(path, 'utf8')))
+    const seen = sourceFiles(SRC).filter((path) =>
+      /httpOnly\??:/.test(withoutComments(readFileSync(path, 'utf8'))),
+    )
     expect(seen.length, 'no cookie options objects found at all').toBeGreaterThanOrEqual(5)
   })
 
@@ -146,5 +212,34 @@ describe('every cookie in src decides `secure`', () => {
       undeclared,
       'a cookie options object sets httpOnly but never decides secure; add the flag, or add the file to WITHOUT_SECURE with the reason',
     ).toEqual([])
+  })
+})
+
+describe('withoutComments', () => {
+  it('blanks a line comment but keeps the line count', () => {
+    const stripped = withoutComments('const a = 1 // httpOnly: false\nconst b = 2')
+    expect(stripped).not.toContain('httpOnly')
+    expect(stripped.split('\n')).toHaveLength(2)
+    expect(stripped).toContain('const b = 2')
+  })
+
+  it('blanks a block comment and keeps every newline inside it', () => {
+    const source = '/**\n * { httpOnly: false }\n */\nconst x = 1'
+    const stripped = withoutComments(source)
+    expect(stripped).not.toContain('httpOnly')
+    expect(stripped).toHaveLength(source.length)
+    expect(stripped.split('\n')).toHaveLength(4)
+  })
+
+  it('leaves a `//` that is inside a string alone', () => {
+    const source = "const url = 'https://example.test' // httpOnly: false"
+    const stripped = withoutComments(source)
+    expect(stripped).toContain("'https://example.test'")
+    expect(stripped).not.toContain('httpOnly')
+  })
+
+  it('still sees a real options object', () => {
+    const source = 'const o = { httpOnly: true, secure: true }'
+    expect(withoutComments(source)).toBe(source)
   })
 })
