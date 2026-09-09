@@ -33,6 +33,7 @@ type Reservation = {
   expiresAtMs: number
   consumed?: boolean
   released?: boolean
+  restocked?: boolean
 }
 
 /** Mirrors `available_stock`: level minus LIVE holds, null passed through. */
@@ -223,5 +224,82 @@ describe('consuming a hold', () => {
     consume('a', levels, reservations)
     expect(levels.p).toBe(4)
     expect(reservations[1]?.consumed).toBeUndefined()
+  })
+})
+
+/**
+ * Mirrors `restock_order_stock` (migration 223): the undo of consume, gated on
+ * `consumed_at IS NOT NULL` and idempotent through `restocked_at`.
+ *
+ * Proved against production on 2026-09-09 in a rolled-back transaction, the
+ * same way the reserve/consume behaviour was: a consumed hold of 2 took the
+ * level 10 -> 12 and returned 1, the replay returned 0 and left 12, and a
+ * consumed hold on an untracked product was stamped without a level change.
+ */
+function restock(
+  orderId: string,
+  levels: Record<string, number | null>,
+  reservations: Reservation[],
+): number {
+  let incremented = 0
+  for (const r of reservations) {
+    if (r.orderId !== orderId || !r.consumed || r.restocked) continue
+    r.restocked = true
+    const level = levels[r.productId]
+    if (level !== undefined && level !== null) {
+      levels[r.productId] = level + r.quantity
+      incremented++
+    }
+  }
+  return incremented
+}
+
+describe('restocking a refunded order', () => {
+  it('returns exactly what consume took, and a replay returns nothing', () => {
+    // The refund action is replay-guarded, but every step after the provider
+    // call is best-effort and best-effort callers retry. The guard is on the
+    // RESERVATION, same as consume's.
+    const levels: Record<string, number | null> = { p: 10 }
+    const reservations: Reservation[] = [
+      { orderId: 'a', productId: 'p', quantity: 2, expiresAtMs: 2_000_000 },
+    ]
+    consume('a', levels as Record<string, number>, reservations)
+    expect(levels.p).toBe(8)
+    expect(restock('a', levels, reservations)).toBe(1)
+    expect(levels.p).toBe(10)
+    expect(restock('a', levels, reservations)).toBe(0)
+    expect(levels.p).toBe(10)
+  })
+
+  it('ignores a hold that was never consumed - release is the verb for those', () => {
+    // A pending-order cancellation releases; only a PAID order's refund
+    // restocks. Incrementing for an unconsumed hold would create stock out of
+    // nothing, because that hold never decremented anything.
+    const levels: Record<string, number | null> = { p: 5 }
+    const reservations: Reservation[] = [
+      { orderId: 'a', productId: 'p', quantity: 3, expiresAtMs: 2_000_000 },
+    ]
+    expect(restock('a', levels, reservations)).toBe(0)
+    expect(levels.p).toBe(5)
+  })
+
+  it('leaves an untracked product untracked', () => {
+    const levels: Record<string, number | null> = { p: null }
+    const reservations: Reservation[] = [
+      { orderId: 'a', productId: 'p', quantity: 1, expiresAtMs: 2_000_000, consumed: true },
+    ]
+    expect(restock('a', levels, reservations)).toBe(0)
+    expect(levels.p).toBeNull()
+  })
+
+  it('touches only the refunded order', () => {
+    const levels: Record<string, number | null> = { p: 4 }
+    const reservations: Reservation[] = [
+      { orderId: 'a', productId: 'p', quantity: 1, expiresAtMs: 2_000_000, consumed: true },
+      { orderId: 'b', productId: 'p', quantity: 2, expiresAtMs: 2_000_000, consumed: true },
+    ]
+    expect(restock('a', levels, reservations)).toBe(1)
+    expect(levels.p).toBe(5)
+    expect(reservations[1]?.restocked).toBeUndefined()
   })
 })
