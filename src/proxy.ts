@@ -154,13 +154,15 @@ export async function proxy(request: NextRequest) {
       .eq('id', user.id)
       .single()
     // Admin panel is open to panel roles: admin, super_admin,
-    // content_uploader, and support (049). Optimistic check only; every page
+    // content_uploader, support (049) and read_only (181, the observer tier —
+    // support's SELECT surface, no writes). Optimistic check only; every page
     // re-gates per section and every server action re-checks its own guard.
     const isPanel =
       profile?.role === 'admin' ||
       profile?.role === 'super_admin' ||
       profile?.role === 'content_uploader' ||
-      profile?.role === 'support'
+      profile?.role === 'support' ||
+      profile?.role === 'read_only'
     if (!isPanel) {
       return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
     }

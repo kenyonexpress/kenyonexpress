@@ -1,4 +1,4 @@
-import { type AppRole, isAdminRole } from '@/lib/admin/roles'
+import { type UserRole, isAdminRole } from '@/lib/admin/roles'
 
 // Pure RBAC decisions for the admin panel. No IO here: everything is
 // unit-testable. Matrix source: ARCHITECTURE-ADMIN.md section 3.2, which is
@@ -55,7 +55,7 @@ const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
 }
 
 export function sectionAccess(
-  role: AppRole | null | undefined,
+  role: UserRole | null | undefined,
   section: AdminSection,
 ): SectionAccess {
   if (isAdminRole(role)) return 'write'
@@ -67,17 +67,17 @@ export function sectionAccess(
   return 'none'
 }
 
-export function canReadSection(role: AppRole | null | undefined, section: AdminSection): boolean {
+export function canReadSection(role: UserRole | null | undefined, section: AdminSection): boolean {
   return sectionAccess(role, section) !== 'none'
 }
 
-export function canWriteSection(role: AppRole | null | undefined, section: AdminSection): boolean {
+export function canWriteSection(role: UserRole | null | undefined, section: AdminSection): boolean {
   return sectionAccess(role, section) === 'write'
 }
 
 // Money numbers (revenue, payments amounts) are admin-tier only; support and
 // read_only see the dashboard without them (V2 rule 2.2.1).
-export function canSeeMoney(role: AppRole | null | undefined): boolean {
+export function canSeeMoney(role: UserRole | null | undefined): boolean {
   return isAdminRole(role)
 }
 
@@ -85,7 +85,7 @@ export function canSeeMoney(role: AppRole | null | undefined): boolean {
 // super_admin: everything. admin: up to content_uploader/support/read_only,
 // never admin+ (enforced again inside the server action and by the DB trigger
 // hardened in 181).
-export function assignableRoles(callerRole: AppRole | null | undefined): AppRole[] {
+export function assignableRoles(callerRole: UserRole | null | undefined): UserRole[] {
   if (callerRole === 'super_admin') {
     return [
       'customer',
@@ -104,8 +104,8 @@ export function assignableRoles(callerRole: AppRole | null | undefined): AppRole
 }
 
 export function canAssignRole(
-  callerRole: AppRole | null | undefined,
-  targetRole: AppRole,
+  callerRole: UserRole | null | undefined,
+  targetRole: UserRole,
 ): boolean {
   return assignableRoles(callerRole).includes(targetRole)
 }

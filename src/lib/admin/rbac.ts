@@ -1,12 +1,12 @@
 import { superAdminMfaGate } from '@/lib/admin/mfa-gate'
 import { type AdminSection, canReadSection, canWriteSection } from '@/lib/admin/permissions'
-import { type AppRole, isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
+import { type UserRole, isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export { ROLE_LABELS, ROLE_ORDER, isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
 
-export type AdminSessionInfo = { userId: string; role: AppRole }
+export type AdminSessionInfo = { userId: string; role: UserRole }
 
 export async function getSessionWithRole(): Promise<AdminSessionInfo | null> {
   const supabase = await createClient()

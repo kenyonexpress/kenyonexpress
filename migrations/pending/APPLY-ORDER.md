@@ -1,5 +1,20 @@
 # Apply order
 
+## 2026-09-09 (RBAC goal): 212 APPLIED; 181 and 210 found already live
+
+**212** rbac_truncate_and_search_path (version `20260909115250`): full body
+dry-run in a rolled-back transaction first, probes inside the same transaction
+showed 0 client TRUNCATE grants and 0 unpinned target functions; identical
+result measured after the real apply. Applied under the 2026-09-09 RBAC /goal,
+which names Supabase MCP as the migration route.
+
+Also recorded, not applied now: **181** was already applied 2026-09-08 as two
+parts (`read_only_enum_181a` `20260908203538`, `admin_rbac_hardening_181b`
+`20260908203558`) — the apply predates this goal and was previously unlogged;
+every effect verified live (enum value, `is_support()` body, guard ladder,
+trigger, MFA policy). **210** applied 2026-09-09 as `media_ingest_queue_210`
+(`20260909093018`). Both now sit in README's APPLIED table.
+
 ## 2026-09-09: 192 through 201 APPLIED, ten files, each dry-run first
 
 Applied one at a time via MCP `apply_migration`, on Ofir's explicit

@@ -2,14 +2,14 @@
 
 import { assignableRoles } from '@/lib/admin/permissions'
 import { ROLE_LABELS } from '@/lib/admin/roles'
-import type { AppRole } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 import { type UserActionState, updateUserRole } from '@/server/actions/admin/users'
 import { useActionState } from 'react'
 
 interface Props {
   userId: string
-  currentRole: AppRole
-  callerRole: AppRole
+  currentRole: UserRole
+  callerRole: UserRole
   isSelf?: boolean
 }
 

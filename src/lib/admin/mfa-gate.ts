@@ -1,4 +1,4 @@
-import type { AppRole } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 
 // super_admin must hold an MFA-verified session (aal2) before any admin
 // guard lets them through; everyone else passes untouched. Pure so the
@@ -21,7 +21,7 @@ export type AssuranceLevel = 'aal1' | 'aal2' | null
 export type MfaGateDecision = 'ok' | 'enrol' | 'challenge'
 
 export function superAdminMfaGate(
-  role: AppRole | null | undefined,
+  role: UserRole | null | undefined,
   currentLevel: AssuranceLevel,
   nextLevel: AssuranceLevel,
 ): MfaGateDecision {

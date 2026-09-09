@@ -1,4 +1,4 @@
-import { type AppRole, isAdminRole, isStaffRole } from './roles'
+import { type UserRole, isAdminRole, isStaffRole } from './roles'
 
 // Admin sections keyed by base href. `staffAllowed` marks the sections a
 // content_uploader (staff who is not an admin) may reach. Everything else is
@@ -20,7 +20,7 @@ export const ADMIN_SECTIONS = [
 
 // Whether a role may access an admin section identified by an href (exact or a
 // sub-path such as /admin/products/new).
-export function canAccessAdminSection(role: AppRole, href: string): boolean {
+export function canAccessAdminSection(role: UserRole, href: string): boolean {
   if (isAdminRole(role)) return true
   // read_only (181) navigates everywhere admins do; every page renders its
   // read view and canWriteSection keeps the mutations away.
@@ -31,11 +31,11 @@ export function canAccessAdminSection(role: AppRole, href: string): boolean {
 }
 
 // Base hrefs a role should see in the sidebar.
-export function visibleAdminHrefs(role: AppRole): string[] {
+export function visibleAdminHrefs(role: UserRole): string[] {
   return ADMIN_SECTIONS.filter((s) => canAccessAdminSection(role, s.href)).map((s) => s.href)
 }
 
 // Landing path for /admin, based on the sections the role can reach.
-export function adminLandingPath(role: AppRole): string {
+export function adminLandingPath(role: UserRole): string {
   return isAdminRole(role) || role === 'read_only' ? '/admin/dashboard' : '/admin/products'
 }

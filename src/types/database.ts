@@ -5612,13 +5612,13 @@ export type Database = {
       supplier_member_role: 'owner' | 'manager' | 'scanner'
       supplier_status: 'active' | 'suspended' | 'closed'
       user_role:
-        | 'customer'
-        | 'content_uploader'
-        | 'vendor'
-        | 'admin'
-        | 'super_admin'
-        | 'support'
-        | 'read_only'
+        | "customer"
+        | "content_uploader"
+        | "vendor"
+        | "admin"
+        | "super_admin"
+        | "support"
+        | "read_only"
       voucher_scan_outcome:
         | 'success'
         | 'already_redeemed'
@@ -5877,13 +5877,13 @@ export const Constants = {
       supplier_member_role: ['owner', 'manager', 'scanner'],
       supplier_status: ['active', 'suspended', 'closed'],
       user_role: [
-        'customer',
-        'content_uploader',
-        'vendor',
-        'admin',
-        'super_admin',
-        'support',
-        'read_only',
+        "customer",
+        "content_uploader",
+        "vendor",
+        "admin",
+        "super_admin",
+        "support",
+        "read_only",
       ],
       voucher_scan_outcome: [
         'success',

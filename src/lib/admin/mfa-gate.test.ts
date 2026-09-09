@@ -1,9 +1,9 @@
 import { superAdminMfaGate } from '@/lib/admin/mfa-gate'
-import type { AppRole } from '@/lib/admin/roles'
+import type { UserRole } from '@/lib/admin/roles'
 import { describe, expect, it } from 'vitest'
 
 describe('superAdminMfaGate', () => {
-  it.each<AppRole>(['customer', 'vendor', 'content_uploader', 'support', 'read_only', 'admin'])(
+  it.each<UserRole>(['customer', 'vendor', 'content_uploader', 'support', 'read_only', 'admin'])(
     'never gates %s, whatever the session proved',
     (role) => {
       expect(superAdminMfaGate(role, null, null)).toBe('ok')
