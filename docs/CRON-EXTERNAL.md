@@ -99,6 +99,7 @@ file is in a repository.
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+10b https://kenyonexpress.vercel.app/api/cron/expire-cashback    GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
 ```

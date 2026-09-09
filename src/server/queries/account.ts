@@ -70,12 +70,15 @@ export interface AccountPaymentToken {
 /**
  * Hebrew labels for the ledger `reason` codes.
  *
- * These MUST match the strings finalize.ts passes as `p_reason`, which are
- * `order_cashback` and `order_spend` (verified against the live ledger). An
- * unknown code falls through to itself rather than to a wrong label.
+ * These MUST match the strings the writers pass as `p_reason`: finalize.ts
+ * (`order_cashback`, `order_spend`), `fn_cashback_order_bonus` from migration
+ * 177 (`cashback_bonus`) and `fn_cashback_expire` from 215 (`cashback_expiry`).
+ * An unknown code falls through to itself rather than to a wrong label.
  */
 export const WALLET_REASON_LABELS: Record<string, string> = {
   order_cashback: 'קאשבק על רכישה',
+  cashback_bonus: 'בונוס קאשבק',
+  cashback_expiry: 'פקיעת קאשבק',
   order_spend: 'שימוש בארנק',
   order_refund: 'החזר על ביטול',
   admin_credit: 'זיכוי ידני',

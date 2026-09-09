@@ -71,6 +71,8 @@
 | `newsletter` | 5 | 1 h | newsletter subscription mail |
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |
 | `admin-voucher-redeem` | 30 | 1 h | admin manual voucher burn, per staff user |
+| `account-delete` | 3 | 1 h | destructive cascade over a dozen tables; a person needs exactly one |
+| `data-export` | 5 | 1 h | the export reads a dozen tables per call; a loop here is a cheap DB load |
 | `app-session` | 30 | 10 min | app session exchange, per IP |
 | `push-register` | 60 | 1 h | push token registration |
 
