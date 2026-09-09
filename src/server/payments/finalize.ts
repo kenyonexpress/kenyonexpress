@@ -659,11 +659,49 @@ export async function finalizeOrder(input: {
 
     let savedTokenId: string | null = null
     if (input.token) {
-      // Kept as a single from().insert( expression: saved-cards.test.ts pins
-      // this file as the ONLY payment_tokens writer by matching that literal.
-      const { data: tokenRow, error: tokenInsertError } = await admin
-        .from('payment_tokens')
-        .insert({
+      // A shopper who buys again with "save my card" ticked re-tokenizes the
+      // same card, and a plain insert accumulated one picker row per purchase,
+      // all reading "ויזה המסתיימת ב-1234". Cardcom mints a fresh token string
+      // per tokenization, so the string cannot be the dedupe key; the physical
+      // card can: same profile, same last four, same brand, same expiry. On a
+      // match the ROW is refreshed with the newest token rather than added,
+      // which also retires the older token string Cardcom may have invalidated.
+      //
+      // Best-effort on the read: the card is already charged, so a failed
+      // dedupe lookup must not fail the finalize. It falls back to the insert,
+      // which is the pre-dedupe behavior, and the worst case is the duplicate
+      // row this exists to avoid.
+      let existingTokenRowId: string | null = null
+      if (order.user_id) {
+        const { data: existingToken, error: tokenReadError } = await admin
+          .from('payment_tokens')
+          .select('id')
+          .eq('profile_id', order.user_id)
+          .eq('last_4', input.token.last4)
+          .eq('card_brand', input.token.brand)
+          .eq('expiry_month', input.token.expiryMonth)
+          .eq('expiry_year', input.token.expiryYear)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (tokenReadError) {
+          log.warn('finalize.token_dedupe_read_failed', {
+            orderId: order.id,
+            reason: tokenReadError.message,
+          })
+        }
+        existingTokenRowId = existingToken?.id ?? null
+      }
+      if (existingTokenRowId) {
+        await admin
+          .from('payment_tokens')
+          .update({
+            cardcom_token: input.token.token,
+            cardcom_account_id: cardcomAccountId,
+          })
+          .eq('id', existingTokenRowId)
+      } else {
+        await admin.from('payment_tokens').insert({
           profile_id: order.user_id,
           cardcom_token: input.token.token,
           last_4: input.token.last4,
@@ -674,87 +712,6 @@ export async function finalizeOrder(input: {
           // saved card is useless without knowing which account that was.
           cardcom_account_id: cardcomAccountId,
         })
-        .select('id')
-        .maybeSingle()
-      if (tokenInsertError) {
-        // Not fatal to the order -- the charge is already verified -- but a
-        // recurring line below cannot become a subscription without this row,
-        // and the shopper asked for the card to be saved. Loud, not silent.
-        log.error('finalize.token_not_saved', {
-          orderId: order.id,
-          reason: tokenInsertError.message,
-        })
-      }
-      savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
-    }
-
-    // THE SUBSCRIPTION IS BORN HERE, and only here. Renewal
-    // (api/cron/subscriptions) and cancellation existed while nothing anywhere
-    // inserted a subscriptions row -- the tables from 135b were applied and
-    // writerless, the same shape as payment_events and refunds before them.
-    //
-    // A recurring line reaching this point means the customer has already been
-    // charged for the first cycle, so a refusal to create the row is LOUD: a
-    // silent skip would take the money once and never renew or deliver.
-    {
-      // product_id is nullable on the row type (a deleted product leaves the
-      // line); a recurring line with no product cannot be planned and is
-      // filtered here so the planner's refusal names a real product id.
-      const recurringLines = (items as OrderItemRow[])
-        .filter((i) => i.product_type === 'recurring' && i.product_id != null)
-        .map((i) => ({
-          productId: i.product_id as string,
-          supplierId: i.supplier_id ?? null,
-          platformPercent: i.platform_percent ?? null,
-        }))
-      if (recurringLines.length > 0) {
-        const { data: billing, error: billingReadError } = await admin
-          .from('products')
-          .select('id, recurring_amount_agorot, billing_interval, billing_interval_count')
-          .in(
-            'id',
-            recurringLines.map((l) => l.productId),
-          )
-        if (billingReadError) {
-          // The empty product list below makes the planner refuse with
-          // product_not_billable, which alarms -- but with the WRONG diagnosis.
-          // Name the real one.
-          log.error('finalize.billing_read_failed', {
-            orderId: order.id,
-            reason: billingReadError.message,
-          })
-        }
-        const plan = planSubscriptions({
-          userId: order.user_id,
-          paymentTokenId: savedTokenId,
-          lines: recurringLines,
-          products: (billing ?? []) as RecurringProductBilling[],
-          now,
-        })
-        if (!plan.ok) {
-          capturePaymentError(new Error('recurring line paid but no subscription plannable'), {
-            stage: 'finalize_order',
-            orderId: order.id,
-            paymentId: input.paymentId,
-            detail: { reason: plan.reason, product_id: plan.productId ?? null },
-          })
-        } else if (order.user_id && savedTokenId) {
-          const created = await createSubscriptionsForOrder(admin as unknown as SubscriptionAdmin, {
-            orderId: order.id,
-            userId: order.user_id,
-            paymentTokenId: savedTokenId,
-            rows: plan.rows,
-            now,
-          })
-          if (created.error) {
-            capturePaymentError(new Error('subscription insert failed after charge'), {
-              stage: 'finalize_order',
-              orderId: order.id,
-              paymentId: input.paymentId,
-              detail: { error: created.error },
-            })
-          }
-        }
       }
     }
 

@@ -92,6 +92,7 @@ file is in a repository.
 3  https://kenyonexpress.vercel.app/api/cron/invoices            GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 4  https://kenyonexpress.vercel.app/api/cron/stock               GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5  https://kenyonexpress.vercel.app/api/cron/stranded-payments   GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5b https://kenyonexpress.vercel.app/api/cron/webhook-dlq         GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 6  https://kenyonexpress.vercel.app/api/cron/abandoned-cart      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 7  https://kenyonexpress.vercel.app/api/cron/subscriptions       GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
@@ -132,6 +133,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
+| 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -150,6 +152,10 @@ timing changes with the scheduler.
 - **`stranded-payments`** finds payments that were verified but whose order
   never finalised. That state is the worst one in the system and this is what
   notices it.
+- **`webhook-dlq`** replays the webhook dead-letter queue: events that were
+  charged and verified against Cardcom and whose finalize failed. Same state
+  `stranded-payments` cares about, caught from the other side: that one finds
+  payments still `redirected`, this one finds journal rows left un-stamped.
 - **`reconcile`** matches the day's payments against orders.
 - **`health`** runs the internal checks and raises the alert. It is what tells
   you the other nine stopped.

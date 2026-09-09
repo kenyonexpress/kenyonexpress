@@ -822,7 +822,16 @@ export default function CheckoutForm({
                 </div>
                 <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
 
-                {step !== 'confirm' && savedCards.length > 0 && (
+                {/*
+                  Rendered on EVERY step, not gated on `step`: the wrapper above
+                  already hides the whole block until the confirm step, and the
+                  radios must exist in the DOM at the moment the form submits or
+                  `submitCheckout` reads an empty `token_id` and every returning
+                  customer is walked through the hosted page. The old condition
+                  here was `step !== 'confirm'`, the exact inverse of the
+                  wrapper's, so the picker could never be used.
+                */}
+                {savedCards.length > 0 && (
                   <fieldset className="checkout-cards">
                     <legend className="checkout-cards__legend">אמצעי תשלום</legend>
                     {savedCards.map((card) => (
@@ -852,7 +861,7 @@ export default function CheckoutForm({
                   </fieldset>
                 )}
 
-                {step !== 'confirm' && walletBalance > 0 && (
+                {walletBalance > 0 && (
                   <div className="checkout-wallet">
                     <label htmlFor="co-wallet">
                       שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})

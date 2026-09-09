@@ -28,7 +28,7 @@ import {
 } from '@/server/domain/orders/refund'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
 import { enqueueRefundCreditNote, issueQueuedInvoice } from '@/server/payments/invoices'
-import { type RefundRecordAdmin, groundFor, recordRefund } from '@/server/payments/refund-record'
+import { recordPaymentEvent } from '@/server/payments/payment-events'
 import {
   type SettlementEventRow,
   recordSettlementEvents,
@@ -229,6 +229,21 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
   const provider = getPaymentProvider(
     typeof payment.cardcom_account_id === 'string' ? payment.cardcom_account_id : null,
   )
+  // The journal rows 130 reserved for money going back out, which nothing
+  // wrote until now: a refund done here was visible in settlement_events and
+  // audit_log but absent from the payment journal, so the 3am read of
+  // payment_events showed a charge with no exit. Best-effort by contract
+  // (recordPaymentEvent never throws), so none of these can fail the refund.
+  await recordPaymentEvent({
+    eventType: 'refund_requested',
+    stage: 'cardcom_refund',
+    orderId: order.id,
+    paymentId,
+    transactionId,
+    amountAgorot: plan.refundAmountAgorot,
+    actorRole: 'admin',
+    detail: { cancel_only: plan.cancelOnly, reason: input.reason },
+  })
   const refund = await provider.refundByTransactionId({
     transactionId,
     amountAgorot: plan.refundAmountAgorot,
@@ -244,11 +259,45 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       paymentId,
       detail: { failure_code: refund.failureCode, cancel_only: plan.cancelOnly },
     })
+    await recordPaymentEvent({
+      eventType: 'refund_failed',
+      stage: 'cardcom_refund',
+      orderId: order.id,
+      paymentId,
+      transactionId,
+      amountAgorot: plan.refundAmountAgorot,
+      actorRole: 'admin',
+      detail: { failure_code: refund.failureCode ?? null, cancel_only: plan.cancelOnly },
+    })
     return {
       ok: false,
       error: refund.failureMessage ?? 'הזיכוי נדחה על ידי Cardcom',
       code: 'PROVIDER_ERROR',
     }
+  }
+
+  // Recorded the moment the provider says yes, OUTSIDE the persistence try:
+  // if the bookkeeping below diverges, the journal must still say the money
+  // moved, because it did.
+  await recordPaymentEvent({
+    eventType: 'refund_succeeded',
+    stage: 'cardcom_refund',
+    orderId: order.id,
+    paymentId,
+    transactionId: refund.refundTransactionId ?? transactionId,
+    amountAgorot: plan.refundAmountAgorot,
+    actorRole: 'admin',
+    detail: { cancel_only: plan.cancelOnly },
+  })
+  if (plan.cancellationFeeAgorot > 0) {
+    await recordPaymentEvent({
+      eventType: 'cancellation_fee_applied',
+      stage: 'cardcom_refund',
+      orderId: order.id,
+      paymentId,
+      amountAgorot: plan.cancellationFeeAgorot,
+      actorRole: 'admin',
+    })
   }
 
   try {
