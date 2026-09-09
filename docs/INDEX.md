@@ -336,6 +336,7 @@ one.
 | [COST-MODEL.md](COST-MODEL.md) | ✅ | What the platform pays, what an order costs, and the two places a cost |
 | [COURSES.md](COURSES.md) | ✅ | A course product type, its lessons, who may watch them, and the certificate. |
 | [CRON-EXTERNAL.md](CRON-EXTERNAL.md) | ✅ | Ten jobs. All ten are GET, all ten authenticate with the same header, and all |
+| [CRON.md](CRON.md) | ⚠️ | ‏נמדד ‏10.09.2026. שבע מ-17 המשימות המתוזמנות מחזירות ‏404 מהפריסה שהמתזמן קורא |
 | [CUSTOMER-SUPPORT-PLAYBOOK.md](CUSTOMER-SUPPORT-PLAYBOOK.md) | ✅ | תאריך: 2026-08-19. |
 | [DATA-BASELINE.md](DATA-BASELINE.md) | 🕯️ | ענף: phase5/homepage, והמשך ב-feat/seed-data. |
 | [DATA-RETENTION.md](DATA-RETENTION.md) | ✅ | What is kept, for how long, why, how deletion works, and where each line maps to |

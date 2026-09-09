@@ -1,4 +1,5 @@
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import {
@@ -280,4 +281,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   })
 }
 
-export const GET = withRequestLog('/api/cron/settlement-reconcile', handleGET)
+export const GET = withRequestLog(
+  '/api/cron/settlement-reconcile',
+  withJobRun('settlement-reconcile', handleGET),
+)

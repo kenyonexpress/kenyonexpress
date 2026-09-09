@@ -7,6 +7,7 @@ import {
   dueSubscriptions,
   isBillingInterval,
 } from '@/lib/commerce/recurring'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider } from '@/lib/payments'
@@ -270,4 +271,4 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, due: due.length, charged, failed })
 }
 
-export const GET = withRequestLog('/api/cron/subscriptions', handleGET)
+export const GET = withRequestLog('/api/cron/subscriptions', withJobRun('subscriptions', handleGET))

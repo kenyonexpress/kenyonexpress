@@ -9,6 +9,7 @@ import {
   Banknote,
   BarChart3,
   ClipboardList,
+  Clock,
   Coins,
   CreditCard,
   FileSpreadsheet,
@@ -108,6 +109,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
   { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
+  // Reads job_runs, which the cron routes write themselves. The Actions run
+  // records the call; this records the work.
+  { href: '/admin/cron', label: 'משימות מתוזמנות', icon: Clock, section: 'analytics' },
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/pages', label: 'עמודי תוכן', icon: FileText, section: 'content' },
   { href: '/admin/homepage', label: 'עמוד הבית', icon: LayoutDashboard, section: 'content' },

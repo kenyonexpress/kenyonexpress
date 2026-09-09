@@ -1,4 +1,5 @@
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -107,4 +108,4 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, released: released ?? 0, low: lowRows.length, alerted })
 }
 
-export const GET = withRequestLog('/api/cron/stock', handleGET)
+export const GET = withRequestLog('/api/cron/stock', withJobRun('stock', handleGET))

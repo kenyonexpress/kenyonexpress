@@ -899,6 +899,23 @@ describe('the pending migration inventory', () => {
       // and works today: it reads the `wallet_entries` row the credit job has
       // been writing all along.
       '227_voucher_expiry_engine.sql',
+      // 228 WRITTEN 2026-09-10, not applied. `job_runs`: a row per scheduled-job
+      // execution, plus `job_runs_health()` and `prune_job_runs()`.
+      //
+      // WHAT IT REPLACES. The only record that a cron job ran is currently the
+      // GitHub Actions run that called it, and that record cannot tell work from
+      // a 200 that did nothing, expires, and is blind to a run that was killed
+      // before it could answer at all.
+      //
+      // THE `running` ROW IS THE POINT of insert-then-update rather than one
+      // insert at the end: a killed invocation leaves exactly that and nothing
+      // else, and `job_runs_health()` counts a stale one as a failure on purpose.
+      //
+      // EVERY CONSUMER DEGRADES. `withJobRun` swallows PGRST205 and records
+      // nothing, the admin screen says the table is missing in words instead of
+      // drawing seventeen empty rows, and the health route's repeated-failure
+      // alert stays null. Unapplied costs observability and breaks nothing.
+      '228_job_runs.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

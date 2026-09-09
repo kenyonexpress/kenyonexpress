@@ -1,4 +1,5 @@
 import { agorot } from '@/lib/money'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { israeliDay } from '@/lib/pricing/price-history'
@@ -276,4 +277,7 @@ async function runRestocks(admin: ReturnType<typeof createAdminClient>): Promise
   return { sent, skipped: null }
 }
 
-export const GET = withRequestLog('/api/cron/wishlist-alerts', handleGET)
+export const GET = withRequestLog(
+  '/api/cron/wishlist-alerts',
+  withJobRun('wishlist-alerts', handleGET),
+)

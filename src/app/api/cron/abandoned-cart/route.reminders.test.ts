@@ -61,7 +61,11 @@ function makeBuilder() {
     return builder
   }
   builder.insert = (payload: Record<string, unknown>) => {
-    inserts.push(payload)
+    // `job_runs` is written by withJobRun around every cron handler and is not
+    // this route's work. Recording it here would make `inserts[0]` the
+    // telemetry row rather than the reminder, which is a test asserting on the
+    // wrapper it did not mean to test.
+    if (table !== 'job_runs') inserts.push(payload)
     pending = {
       data: null,
       error: Object.hasOwn(payload, 'reminder_number')

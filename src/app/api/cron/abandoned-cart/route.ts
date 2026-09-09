@@ -7,6 +7,7 @@ import {
   buildAbandonedCartEmail,
 } from '@/lib/growth/abandoned-cart-email'
 import { sendEmail } from '@/lib/growth/resend'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { trackEvent } from '@/lib/observability/posthog'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -289,4 +290,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, due: due.length, sent, failed, skipped })
 }
 
-export const GET = withRequestLog('/api/cron/abandoned-cart', handleGET)
+export const GET = withRequestLog(
+  '/api/cron/abandoned-cart',
+  withJobRun('abandoned-cart', handleGET),
+)

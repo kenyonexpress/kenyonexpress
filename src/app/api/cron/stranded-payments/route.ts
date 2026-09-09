@@ -1,3 +1,4 @@
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -175,4 +176,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, considered: payments.length, rescued, stillOpen, failed })
 }
 
-export const GET = withRequestLog('/api/cron/stranded-payments', handleGET)
+export const GET = withRequestLog(
+  '/api/cron/stranded-payments',
+  withJobRun('stranded-payments', handleGET),
+)

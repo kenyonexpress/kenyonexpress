@@ -1,4 +1,5 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { israeliDay } from '@/lib/pricing/price-history'
@@ -181,4 +182,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, due: rows.length, applied, failed })
 }
 
-export const GET = withRequestLog('/api/cron/price-schedule', handleGET)
+export const GET = withRequestLog(
+  '/api/cron/price-schedule',
+  withJobRun('price-schedule', handleGET),
+)

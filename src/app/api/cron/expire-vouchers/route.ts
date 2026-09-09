@@ -1,3 +1,4 @@
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -80,4 +81,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, expired, credited, reminders: reminders ?? 0 })
 }
 
-export const GET = withRequestLog('/api/cron/expire-vouchers', handleGET)
+export const GET = withRequestLog(
+  '/api/cron/expire-vouchers',
+  withJobRun('expire-vouchers', handleGET),
+)

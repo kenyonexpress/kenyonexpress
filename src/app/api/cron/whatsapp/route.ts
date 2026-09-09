@@ -1,3 +1,4 @@
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -158,4 +159,4 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   })
 }
 
-export const GET = withRequestLog('/api/cron/whatsapp', handleGET)
+export const GET = withRequestLog('/api/cron/whatsapp', withJobRun('whatsapp', handleGET))

@@ -1,3 +1,4 @@
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { israeliDay } from '@/lib/pricing/price-history'
@@ -122,4 +123,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, observed_on: observedOn, products: rows.length, written })
 }
 
-export const GET = withRequestLog('/api/cron/price-snapshot', handleGET)
+export const GET = withRequestLog(
+  '/api/cron/price-snapshot',
+  withJobRun('price-snapshot', handleGET),
+)

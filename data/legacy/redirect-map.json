@@ -147,6 +147,7 @@
       "/admin/coupons/expiry",
       "/admin/coupons/lookup",
       "/admin/coupons/new",
+      "/admin/cron",
       "/admin/dashboard",
       "/admin/discounts",
       "/admin/discounts/new",

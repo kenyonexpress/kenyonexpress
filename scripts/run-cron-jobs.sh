@@ -2,19 +2,20 @@
 #
 # Calls the scheduled jobs that are due, from GitHub Actions.
 #
-# WHY THIS EXISTS. Ten jobs left `vercel.json` because Hobby runs two of them
-# and silently ignores the other eight (docs/CRON-EXTERNAL.md). The replacement
-# written down there is cron-job.org, which is a better scheduler than this one
-# and needs a human to create ten jobs by hand in a browser. Until that happens
-# nothing calls them at all, and three of the ten are on the money path while a
+# WHY THIS EXISTS. The jobs left `vercel.json` because Hobby runs two of them,
+# at daily granularity, and silently ignores the rest (docs/CRON-EXTERNAL.md;
+# re-measured 2026-09-10, the team is still on Hobby). The replacement written
+# down there is cron-job.org, which is a better scheduler than this one and
+# needs a human to create every job by hand in a browser. Until that happens
+# nothing calls them at all, and three of them are on the money path while a
 # fourth is the only thing that ever emails a customer their voucher. This file
 # is the version that needs one repository secret and no signup.
 #
 # WHAT IT REFUSES TO DO. With no `CRON_SECRET` it calls nothing and exits 0.
 # Every route compares the bearer against `process.env.CRON_SECRET ?? ''`, so an
-# unset secret would produce ten 401s every five minutes forever - a red Actions
-# list that means "not configured", which is how a real failure gets scrolled
-# past. Not configured is quiet here, on purpose, and says so in the log.
+# unset secret would produce a 401 per job every five minutes forever - a red
+# Actions list that means "not configured", which is how a real failure gets
+# scrolled past. Not configured is quiet here, on purpose, and says so in the log.
 set -uo pipefail
 
 MANIFEST="${MANIFEST:-scripts/cron-jobs.json}"
@@ -41,7 +42,7 @@ if [ -n "${SCHEDULE:-}" ]; then
   SELECTOR="schedule '$SCHEDULE'"
   SELECTED=$(jq -r --arg c "$SCHEDULE" '.jobs[] | select(.cron == $c) | .name' "$MANIFEST")
 elif [ "${DISPATCH_JOB:-}" = "all" ]; then
-  SELECTOR="manual run, all ten"
+  SELECTOR="manual run, every job"
   SELECTED=$(jq -r '.jobs[].name' "$MANIFEST")
 else
   SELECTOR="manual run, '${DISPATCH_JOB:-}'"

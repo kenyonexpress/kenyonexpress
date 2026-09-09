@@ -3,6 +3,7 @@ import { sendEmail } from '@/lib/email/resend'
 import { buildInAppContent, isInAppKind } from '@/lib/notifications/in-app'
 import { loadPreferenceRows } from '@/lib/notifications/preference-store'
 import { mayNotify } from '@/lib/notifications/preferences'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { orderTrackingUrl } from '@/lib/orders/tracking-token'
@@ -394,4 +395,4 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   })
 }
 
-export const GET = withRequestLog('/api/cron/notifications', handleGET)
+export const GET = withRequestLog('/api/cron/notifications', withJobRun('notifications', handleGET))

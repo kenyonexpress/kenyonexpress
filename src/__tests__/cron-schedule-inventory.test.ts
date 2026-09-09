@@ -132,9 +132,41 @@ describe('the scheduled job inventory', () => {
     }
   })
 
-  it('keeps the base URL off the apex until the DNS cutover', () => {
-    // kenyonexpress.co.il still serves the old WordPress install, so a job
-    // pointed there today gets a 404 that reads as a broken route.
+  it('keeps the base URL on the alias and not the apex', () => {
+    // The original reason (the apex still served WordPress) expired: measured
+    // 2026-09-10, the apex 308s to www.kenyonexpress.co.il and both hosts serve
+    // this application from the same Vercel deployment. The assertion stays for
+    // a different reason. `kenyonexpress.vercel.app` is the project's own alias
+    // and cannot be moved by a DNS or domain-assignment change, and a scheduler
+    // that follows the customer-facing hostname would start calling whatever
+    // that name is pointed at next.
     expect(manifest.defaultBaseUrl).toBe('https://kenyonexpress.vercel.app')
+  })
+
+  it("records every job run, under the job's own name", () => {
+    // `withJobRun` is what writes `job_runs`. A route that stopped calling it
+    // would keep working and quietly stop reporting, which is the exact state
+    // this whole mechanism exists to end, and a route calling it under the
+    // WRONG name is worse: the dashboard would then show one job failing and
+    // another that has never been seen, both wrong, with nothing contradicting
+    // either.
+    for (const job of jobs) {
+      const source = read(`${ROUTES_DIR}/${job.name}/route.ts`)
+      expect(source, job.name).toContain(`withJobRun('${job.name}',`)
+    }
+  })
+
+  it('declares no crons array in vercel.json, and that is deliberate', () => {
+    // THE LINE THAT LOOKS LIKE AN OVERSIGHT AND IS THE FIX.
+    //
+    // These jobs were declared in `vercel.json` once. The Hobby plan registers
+    // two of them, at daily granularity, and ignores the rest without failing
+    // the build and without warning - so four jobs were believed to be running
+    // and were not. Re-measured 2026-09-10 through the Vercel API: the team
+    // `kenyonexpress-projects` is still on `hobby`. Putting seventeen entries
+    // back would silently unschedule fifteen of them, and it would look like
+    // progress in the diff.
+    const vercel = JSON.parse(read('vercel.json')) as Record<string, unknown>
+    expect(Object.hasOwn(vercel, 'crons')).toBe(false)
   })
 })

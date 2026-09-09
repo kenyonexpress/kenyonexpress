@@ -704,3 +704,41 @@ it.
 rows** in production (measured 2026-09-10), so no human can reach
 `/supplier/settings` to file a request in the first place. Applying 225 is
 therefore safe and inert until somebody is granted a membership.
+
+## 2026-09-10: 228 written, not applied, and every consumer already runs without it
+
+`228_job_runs.sql`. One table (`job_runs`), two functions
+(`job_runs_health()`, `prune_job_runs()`), one RESTRICTIVE deny policy plus the
+matching grant revoke. Nothing is dropped or renamed, and nothing existing reads
+or writes any of it, so the file has **no ordering constraint against any other
+pending migration**. Apply it whenever.
+
+**Why it exists.** The only record that a scheduled job ran is the GitHub
+Actions run that called it, and `scripts/run-cron-jobs.sh` calls any 2xx a
+success. That cannot distinguish a job that drained a backlog from one that
+returned 200 having done nothing, it expires with the Actions log, and it is
+blind to a run that was killed before it could answer at all.
+
+**What to check after applying.** The table starts empty, so apply-time can add
+nothing but the objects themselves:
+
+```sql
+SELECT policyname, permissive, cmd FROM pg_policies WHERE tablename = 'job_runs';
+SELECT privilege_type FROM information_schema.role_table_grants
+ WHERE table_name = 'job_runs' AND grantee IN ('anon','authenticated');
+SELECT * FROM public.job_runs_health();
+```
+
+Expect exactly one policy, `deny_all_client_roles`, with `permissive = 'RESTRICTIVE'`;
+**zero rows** from the grants query; and an empty result from the third, which is
+the correct answer before any job has run. A non-empty grants result means the
+REVOKE did not take, and a later permissive SELECT policy would then hand the
+same role INSERT, UPDATE and DELETE on the operational journal.
+
+Within five minutes of applying, `/api/cron/health`, `/api/cron/notifications`
+and `/api/cron/whatsapp` should each have written a row. If they have not, the
+table is applied and the deployment serving those routes predates the code that
+writes to it, which is a deploy question and not a schema one.
+
+**Reversal:** `DROP TABLE public.job_runs; DROP FUNCTION public.job_runs_health(interval); DROP FUNCTION public.prune_job_runs(integer);`
+Nothing references any of the three.

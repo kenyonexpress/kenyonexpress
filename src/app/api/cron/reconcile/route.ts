@@ -1,4 +1,5 @@
 import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getCardcomAccounts, getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
@@ -186,4 +187,4 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   })
 }
 
-export const GET = withRequestLog('/api/cron/reconcile', handleGET)
+export const GET = withRequestLog('/api/cron/reconcile', withJobRun('reconcile', handleGET))

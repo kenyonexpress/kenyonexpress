@@ -2,6 +2,7 @@ import { bucketSales, totalsOf } from '@/lib/analytics/aggregate'
 import { contactEmail } from '@/lib/contact-address'
 import { sendEmail } from '@/lib/growth/resend'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -77,4 +78,4 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, sent: result.ok === true, orders: totals.orders })
 }
 
-export const GET = withRequestLog('/api/cron/weekly-digest', handleGET)
+export const GET = withRequestLog('/api/cron/weekly-digest', withJobRun('weekly-digest', handleGET))

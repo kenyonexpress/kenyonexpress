@@ -1,10 +1,12 @@
 import { buildHealthAlert, runHealthChecks } from '@/lib/health/checks'
+import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { type SearchDrift, checkSearchDrift } from '@/lib/search/drift'
 import { type DrainResult, drainSearchOutbox } from '@/lib/search/outbox-drain'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { buildCronFailureAlert, fetchCronRuns } from '@/server/queries/cron-runs'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -98,15 +100,34 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     log.warn('search.floor_sweep_failed', { reason })
   }
 
-  if (alert) {
-    log.error('health.degraded', {
-      down: report.dependencies.filter((d) => d.status === 'down').map((d) => d.name),
+  // The second alert this route can raise, and the only place two consecutive
+  // failures of a scheduled job become audible. A job that fails once is
+  // usually a GitHub run that was dropped; twice in a row is a fault, and
+  // nothing else on this system is looking at that sequence. Inert (null)
+  // while 228 is unapplied, which is why it cannot turn into noise before the
+  // table exists.
+  let cronAlert: string | null = null
+  try {
+    const view = await fetchCronRuns(0)
+    if (!view.tableMissing) cronAlert = buildCronFailureAlert(view.health, view.failureThreshold)
+    if (cronAlert) log.error('cron.repeated_failures', { detail: cronAlert })
+  } catch (error) {
+    log.warn('cron.health_read_failed', {
+      reason: error instanceof Error ? error.message : 'unknown',
     })
+  }
+
+  if (alert || cronAlert) {
+    if (alert) {
+      log.error('health.degraded', {
+        down: report.dependencies.filter((d) => d.status === 'down').map((d) => d.name),
+      })
+    }
     const topic = process.env.HEALTH_NTFY_TOPIC ?? DEFAULT_TOPIC
     try {
       await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
         method: 'POST',
-        body: alert,
+        body: [alert, cronAlert].filter(Boolean).join('\n'),
         headers: { Priority: 'high', Title: 'KenyonExpress health' },
         signal: AbortSignal.timeout(5000),
       })
@@ -118,7 +139,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   }
 
   return NextResponse.json(
-    { ...report, searchOutbox, searchDrift },
+    { ...report, searchOutbox, searchDrift, cronAlert },
     {
       status: report.ok ? 200 : 503,
       headers: { 'cache-control': 'no-store' },
@@ -126,4 +147,4 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   )
 }
 
-export const GET = withRequestLog('/api/cron/health', handleGET)
+export const GET = withRequestLog('/api/cron/health', withJobRun('health', handleGET))
