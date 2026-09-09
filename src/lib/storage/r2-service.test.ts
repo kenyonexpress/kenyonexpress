@@ -75,9 +75,30 @@ describe('createR2SignedUploadUrl', () => {
     expect(publicUrl).toBe('https://cdn.example.test/products/a.webp')
   })
 
-  it('returns no public URL for a private bucket', async () => {
-    const { publicUrl } = await createR2SignedUploadUrl('coupon-qrcodes', 'qr/a.png', 'image/png')
+  it('signs the CDN caching policy into the upload, immutable for the public bucket', async () => {
+    const { uploadUrl, requiredHeaders } = await createR2SignedUploadUrl(
+      'product-images',
+      'products/a.webp',
+      'image/webp',
+    )
+    // cache-control is a SIGNED header: an upload that omits or changes it is
+    // refused, so no object can land in the public bucket without a year of
+    // immutable CDN caching attached.
+    expect(new URL(uploadUrl).searchParams.get('X-Amz-SignedHeaders')).toContain('cache-control')
+    expect(requiredHeaders).toEqual({
+      'Content-Type': 'image/webp',
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    })
+  })
+
+  it('returns no public URL for a private bucket, and a private caching policy', async () => {
+    const { publicUrl, requiredHeaders } = await createR2SignedUploadUrl(
+      'coupon-qrcodes',
+      'qr/a.png',
+      'image/png',
+    )
     expect(publicUrl).toBeNull()
+    expect(requiredHeaders['Cache-Control']).toBe('private, max-age=3600')
   })
 
   it('honours a custom expiry', async () => {
