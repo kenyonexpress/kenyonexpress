@@ -38,17 +38,29 @@ const ENV_EXTS = new Set(['.ts', '.tsx', '.mjs', '.js', '.cjs'])
 const SKIP_DIRS = new Set(['node_modules', '.next', '.git', 'coverage', 'playwright-report'])
 
 /**
- * The three files that are allowed to call `console.*`, and why each one is not
- * a stray debug line:
+ * Who may call `console.*`, in two tiers, because the two reasons are not the
+ * same reason and a single flat list hid that.
  *
- *   observability/log.ts  IS the structured logger. Its last hop has to reach
- *                         stdout, and on Vercel `console.error` is also what
- *                         marks a line as an error.
- *   app/error.tsx         the React error boundary. It runs in the browser,
- *                         where the server logger does not exist, and the digest
- *                         it prints is the only handle on the server-side stack.
+ * CONSOLE_LOGGING_LAYER is the structured logger itself. Its last hop has to
+ * reach stdout, and it needs all three of `log`/`warn`/`error` because on Vercel
+ * the method is what assigns the severity of the line.
+ *
+ * CONSOLE_BOUNDARIES are React error boundaries. They run in the browser, where
+ * `observability/log.ts` cannot: it reads its request id from `node:async_hooks`,
+ * which is a build error in a client bundle. The digest they print is the only
+ * handle on the server-side stack, and it is also what still works when the
+ * Sentry DSN is unset and every capture beside it is inert.
+ *
+ * A boundary may call `console.error` and NOTHING ELSE. That is the whole point
+ * of the second tier: this list grows every time a segment gets a boundary, and
+ * a blanket file exemption would carry a stray `console.log` in on the next one.
  */
-const CONSOLE_ALLOWED = new Set(['src/lib/observability/log.ts', 'src/app/error.tsx'])
+const CONSOLE_LOGGING_LAYER = new Set(['src/lib/observability/log.ts'])
+const CONSOLE_BOUNDARIES = new Set([
+  'src/app/error.tsx',
+  'src/app/(store)/checkout/error.tsx',
+  'src/components/errors/SegmentErrorBoundary.tsx',
+])
 
 const BUDGET = {
   untrackedMarkers: 0,
@@ -101,8 +113,12 @@ function auditCode() {
     for (const hit of scanMarkers(content)) markers.push({ file, ...hit })
     if (isTest(file)) continue
     for (const hit of scanAnyTypes(content)) anyTypes.push({ file, ...hit })
-    if (CONSOLE_ALLOWED.has(file)) continue
-    for (const hit of scanConsole(content)) consoleCalls.push({ file, ...hit })
+    if (CONSOLE_LOGGING_LAYER.has(file)) continue
+    const boundary = CONSOLE_BOUNDARIES.has(file)
+    for (const hit of scanConsole(content)) {
+      if (boundary && hit.method === 'error') continue
+      consoleCalls.push({ file, ...hit })
+    }
   }
 
   return { markers, anyTypes, consoleCalls }
