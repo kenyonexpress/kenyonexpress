@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS fifth source pass. Live Next in kenyonexpress is 16.3.3; this worktree still 16.2.12. RATE_LIMIT_POLICIES is exactly 40. Generated types list 81 public tables vs overview 61 from 2026-09-01. Re-measured whatsapp 404 and /api/health 200. Trio remains the target contract.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS fourth source pass. 40 RATE_LIMIT_POLICIES rows in kenyonexpress; AVIF is largest-width only; ke-arch cron-jobs.json is 12 without whatsapp, kenyonexpress is 13 with it. Working-tree regression that rewrote R-8 as "scheduler absent" was discarded.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS third source pass. R-8 corrected: GitHub Actions scheduler is live; whatsapp 404 on kenyonexpress.vercel.app; 13 jobs not 10; two files numbered 172; Sentry workers = Next instrumentation; rate windows mixed.)
 Updated: 2026-09-09 (docs: ARCHITECTURE-DOCS-DECISIONS-RISKS second source pass. Header names 172 admin SELECT on payment_webhook_events; two R2 modules; vercel.json has no crons key; R-16 added.)
@@ -129,6 +130,12 @@ Keep deepening every document. Repeat. Never stop.
 5. Rate-limit numbers in the contract are the ones in the goal (5/min, 3/min, 10/min, 1/10sec). Live windows (login 10/hour, signup 5/hour, redeem 60/hour, till 120/hour, no refresh 10/min) named in the header, §7, D-6, R-10.
 6. Live image ingest still runs `sharp` on Next. Header, §6, D-5, R-15 name that. 50 MB stays contract-only until PUT is direct-to-R2.
 7. RLS "x action" means S/I/U/D, not a collapsed R/W. Collapsing writes hid append-only tables.
+
+### החלטות שהתקבלו אוטומטית (2026-09-09, fifth source pass)
+1. Live Next.js version is taken from the kenyonexpress checkout (`16.3.3`), not from this worktree (`16.2.12`). Both named.
+2. User query still truncated at "acceptable". Still completed as acceptable lag. RISKS.md remains a deliverable.
+3. Table count: do not replace the 2026-09-01 MCP pull (61 / 133) with the generated-type dump (81) without a new MCP pull of `pg_policies`. Cite both. `DB-SECURITY-MODEL` §0 (53) is not the inventory.
+4. `whatsapp` still 404 on `https://kenyonexpress.vercel.app` (re-measured this pass). Health 200.
 
 ## המשך מ: תור המרתון, שלב 16
 

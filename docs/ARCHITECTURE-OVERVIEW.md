@@ -40,7 +40,7 @@ selling at an invented split.
 
 | Layer | Choice |
 |---|---|
-| Framework | Next.js **16.2.12**, App Router, React 19.2.4 |
+| Framework | Next.js **16.3.3** (`kenyonexpress` checkout). This worktree still pins 16.2.12. App Router, React 19.2.4 |
 | Language | TypeScript, strict |
 | Database | Supabase Postgres, project `ixvwfbuvfxxsjiywhbbb` |
 | Payments | Cardcom, legacy `/Interface/*.aspx` API |

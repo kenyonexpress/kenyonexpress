@@ -116,7 +116,7 @@ Likelihood × impact is the ranking. **Certain** means it is the current state, 
 
 **Mitigation.** One scheduler. Manifest `scripts/cron-jobs.json` is the inventory; the workflow, the doc, and `src/app/api/cron/*` must agree (the unit test already fails if they do not). Every new cron route must exist on the URL `CRON_BASE_URL` / `defaultBaseUrl` points at **before** it is added to the five-minute schedule. `/api/ready` does not replace a clock.
 
-**Live evidence (2026-09-09).** Scheduler is **on**: variable `CRON_SCHEDULER_ENABLED=true`, secret `CRON_SECRET` present, workflow active. Count kenyonexpress `scripts/cron-jobs.json`: **13** jobs, including `whatsapp`. This worktree's copy of that file currently lists **12** and omits `whatsapp`; do not count it. Measured 2026-09-08 22:44 UTC, schedule `*/5 * * * *`, base `https://kenyonexpress.vercel.app`: `notifications` 200, `health` 200, `whatsapp` 404. The `whatsapp` route exists on kenyonexpress main. Older paragraphs that say "nothing calls the cron routes" (including `docs/FAILURE-MODES.md` §2.1 and the 2026-09-01 body of `docs/CRON-EXTERNAL.md`) are stale relative to the 2026-09-02 banner on that same file and relative to this measurement.
+**Live evidence (2026-09-09).** Scheduler is **on**: variable `CRON_SCHEDULER_ENABLED=true`, secret `CRON_SECRET` present, workflow active. Count kenyonexpress `scripts/cron-jobs.json`: **13** jobs, including `whatsapp`. This worktree's copy of that file currently lists **12** and omits `whatsapp`; do not count it. Measured 2026-09-08 22:44 UTC and re-measured 2026-09-09 against `https://kenyonexpress.vercel.app`: `whatsapp` 404, `/api/health` 200. The `whatsapp` route exists on kenyonexpress main. Older paragraphs that say "nothing calls the cron routes" (including `docs/FAILURE-MODES.md` §2.1 and the 2026-09-01 body of `docs/CRON-EXTERNAL.md`) are stale relative to the 2026-09-02 banner on that same file and relative to this measurement.
 
 ---
 
@@ -225,3 +225,4 @@ Likelihood × impact is the ranking. **Certain** means it is the current state, 
 | 2026-09-09 | R-16 (172 admin SELECT on webhook payloads). R-8 evidence: `vercel.json` has no `crons` key. |
 | 2026-09-09 | R-8 rewritten: GitHub Actions scheduler is live; certain failure is `whatsapp` 404 on the Vercel URL, not an absent clock. R-17: two files numbered 172. R-1/R-7/R-10 live notes. |
 | 2026-09-09 | Fourth source pass: R-8 names kenyonexpress 13 jobs vs this worktree's 12; R-15 AVIF is largest-width only. |
+| 2026-09-09 | Fifth source pass: Next live 16.3.3; `whatsapp` still 404; generated types 81 tables vs overview 61 from 2026-09-01. |
