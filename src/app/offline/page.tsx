@@ -1,6 +1,19 @@
 import Link from 'next/link'
 
-export const metadata = { title: 'אין חיבור' }
+export const metadata = {
+  title: 'אין חיבור',
+  /**
+   * NOINDEX, for the same reason `not-found.tsx` carries it: this page's entire
+   * content is an error message. Nothing links to it -- it is reached only by
+   * the service worker substituting it for a failed navigation -- but "nothing
+   * links to it" is not how a URL stays out of an index. It is a real 200 at a
+   * guessable address, and an indexed one is a brand search result that reads
+   * "אין חיבור לאינטרנט".
+   *
+   * `follow: true`: the crawler should still take the link home from here.
+   */
+  robots: { index: false, follow: true },
+}
 
 /**
  * The document public/sw.js serves when a navigation fails with no network.

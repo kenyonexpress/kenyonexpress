@@ -473,6 +473,46 @@ describe('push', () => {
   })
 })
 
+describe('the offline shell the worker names', () => {
+  // `OFFLINE_URL` in public/sw.js is a plain string with no compile-time link
+  // to the route that answers it. Nothing fails loudly if they part company:
+  // `install` adds the precache entries with `allSettled`, so a 404 there is
+  // swallowed by design (one bad entry must not leave the origin with no worker
+  // at all), and the navigation fallback then degrades to the bare Hebrew
+  // Response further down. The site keeps working, the offline experience
+  // quietly stops being the page somebody wrote, and no test, log or build step
+  // says so.
+  const offlineUrl = SW_SOURCE.match(/const OFFLINE_URL = '([^']+)'/)?.[1]
+
+  it('is precached, or it cannot be there when the network is not', () => {
+    expect(offlineUrl).toBe('/offline')
+    const precache = SW_SOURCE.match(/const PRECACHE = \[([^\]]*)\]/)?.[1]
+    expect(precache).toContain('OFFLINE_URL')
+  })
+
+  it('is a route that exists in this repository', () => {
+    expect(readFileSync(resolve(process.cwd(), `src/app${offlineUrl}/page.tsx`), 'utf8')).toContain(
+      'export default function OfflinePage',
+    )
+  })
+
+  it('is not offered to search engines', () => {
+    // A 200 at a guessable address whose whole content is an error message.
+    // Nothing links to it, which is not the same as it staying out of an index.
+    const source = readFileSync(resolve(process.cwd(), `src/app${offlineUrl}/page.tsx`), 'utf8')
+    expect(source).toContain('robots: { index: false, follow: true }')
+  })
+
+  it('is not on a path the worker refuses to handle', () => {
+    // The bypass list is matched by prefix. An offline shell that fell under
+    // one would be fetched from the network at the exact moment there is none.
+    const bypass = SW_SOURCE.match(/const BYPASS_PREFIXES = \[([^\]]*)\]/)?.[1] ?? ''
+    const prefixes = [...bypass.matchAll(/'([^']+)'/g)].map((match) => match[1] as string)
+    expect(prefixes.length).toBeGreaterThan(0)
+    expect(prefixes.some((prefix) => (offlineUrl ?? '').startsWith(prefix))).toBe(false)
+  })
+})
+
 describe('the version', () => {
   it('names every cache, so activate can drop the whole previous generation', () => {
     // The kill switch. The activate handler deletes every cache whose name does
