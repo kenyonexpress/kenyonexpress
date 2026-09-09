@@ -1,3 +1,4 @@
+import { sentryEnvironment } from '@/lib/observability/sentry-environment'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -10,7 +11,11 @@ import * as Sentry from '@sentry/nextjs'
  */
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+  // Same rule as the Node runtime; see `lib/observability/sentry-environment.ts`.
+  environment: sentryEnvironment({
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+  }),
   release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
   // Matches the Node runtime. See sentry.server.config.ts for why 0.1.
   tracesSampleRate: 0.1,

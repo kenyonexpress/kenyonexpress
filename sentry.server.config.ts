@@ -1,4 +1,5 @@
 import { redact } from '@/lib/observability/scrub'
+import { sentryEnvironment } from '@/lib/observability/sentry-environment'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -9,7 +10,14 @@ import * as Sentry from '@sentry/nextjs'
  */
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+  // `VERCEL_ENV` first, `SENTRY_ENVIRONMENT` only off Vercel, and never
+  // `NODE_ENV` -- which is `production` in every built app and therefore tagged
+  // a preview deployment and the shop identically. See
+  // `lib/observability/sentry-environment.ts`.
+  environment: sentryEnvironment({
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+  }),
 
   // Tied to the deployed commit so a stack trace can be read against the exact
   // source it came from. Vercel injects VERCEL_GIT_COMMIT_SHA; the local

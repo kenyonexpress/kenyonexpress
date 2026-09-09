@@ -172,8 +172,8 @@ Vercel dashboard, Project → Settings → Environment Variables.
 | `SENTRY_ORG` | `kenyonexpress` | all |
 | `SENTRY_PROJECT` | `kenyonexpress-web` | all |
 | `SENTRY_AUTH_TOKEN` | org token, scopes `project:releases` + `org:read` | all |
-| `SENTRY_ENVIRONMENT` | `production` / `preview` | respectively |
-| `NEXT_PUBLIC_SENTRY_ENVIRONMENT` | same | respectively |
+| `SENTRY_ENVIRONMENT` | *(unnecessary on Vercel)* | see section 10 |
+| `NEXT_PUBLIC_SENTRY_ENVIRONMENT` | *(unnecessary on Vercel)* | see section 10 |
 
 Two traps in that table.
 
@@ -207,3 +207,111 @@ in question.
 3. **`beforeSend`** → all three configs drop headers, cookies and redact URLs.
    A voucher token lives in the path of `/redeem/<token>`, so that redaction is
    load-bearing (SEC-SCRUB) and must survive any edit to those files.
+
+---
+
+## 10. 2026-09-10: what Sentry was actually receiving
+
+Queried through the Sentry API, whole project, 30 days to 2026-09-10:
+
+| environment | release | events |
+|---|---|---|
+| `development` | null | 203 |
+| `sentry-wiring-check` | null | 3 |
+
+**Not one event from production**, and `release` null on all 206.
+
+The 203 are laptops. `SENTRY_DSN` sits in `.env.local`, so local development
+reports into the same project the shop reports into; that half is at least
+labelled. The other half is the finding: whatever is serving the live site sends
+nothing at all. That is a deployment question, not a configuration one, and it
+lines up with the other measurements of that deployment (seven of seventeen cron
+routes 404 there, `docs/CRON.md`).
+
+The four unresolved issues, all of them unread until this query:
+
+| events | issue |
+|---|---|
+| 91 | `Error: The destination stream closed early` |
+| 61 | `RLS denied: POST rpc:fn_record_recent_search` on `GET /search`, first seen 12h before the query |
+| 31 | `VoucherQrSecretMissingError: VOUCHER_QR_SECRET is not set` |
+| 2 | Server Components render error on `/redeem/:token` |
+
+The 61 is the live consequence of `migrations/pending/224` not being applied.
+
+### 10.1 The environment tag is the Vercel stage now, not `NODE_ENV`
+
+It was `SENTRY_ENVIRONMENT ?? NODE_ENV`. `NODE_ENV` is `production` in every
+built Next app, so a **preview deployment and the shop reported the same
+environment** and one alert rule covered both; the first thing an operator would
+learn from a page is a guess about which deployment sent it.
+
+`SENTRY_ENVIRONMENT` is worse in the exact way `src/lib/deploy-environment.ts`
+already argues for the staging banner: it is a variable somebody SETS, so it
+survives being copied from production's variable list into a preview
+environment, after which it describes an old copy-paste rather than the
+deployment. `VERCEL_ENV` is set by the platform per deployment and cannot be
+inherited.
+
+So `src/lib/observability/sentry-environment.ts` **inverts the obvious
+precedence**: the platform value wins where there is one, and the hand-set
+variable is the fallback for a deployment that is not on Vercel. A laptop is
+`local`, never `production`. The two `SENTRY_ENVIRONMENT` rows in the table
+above are marked unnecessary for this reason; setting them on Vercel now
+achieves nothing, which is the intended outcome.
+
+The browser passes `NEXT_PUBLIC_VERCEL_ENV`. Without the prefix the value is not
+inlined into the client bundle and reads as undefined, the identical trap the
+release fallback in `instrumentation-client.ts` documents.
+
+### 10.2 Issue grouping is by stage, not only by stack
+
+Sentry groups an exception by its stack trace and the money path funnels through
+shared helpers, so the same throw reached from `cardcom_webhook_finalize` and
+from `checkout_begin` arrived as **one issue**. Resolving it silenced both, and
+an alert on it said "payments" rather than which half was broken.
+
+`capturePaymentError` now fingerprints `['{{ default }}', 'payments', stage]`.
+`{{ default }}` keeps Sentry's own grouping inside a stage, so this only ever
+splits and never merges two things that were already separate.
+
+`capturePaymentAlarm` fingerprints `['payments', stage, message]`. That changes
+nothing today, and the doc comment says so: every call site passes a constant
+message with the variable parts in `detail`, so default message grouping is
+already right. It guards the case default grouping gets wrong, two stages
+emitting the same sentence.
+
+### 10.3 Two items of SECTIONS 34 deliberately not built
+
+**Slack webhook.** There is no Slack workspace, token or channel anywhere in the
+repo or the environment. The alerting channel here is ntfy, chosen with a
+written rationale in `src/lib/observability/alert.ts`: one operator with a
+phone, five alert conditions, and a hard rule that an alert which does not lead
+to an action is noise that kills the channel. Adding a second sink with no
+destination would be an integration that reports to nobody.
+
+**Session replay on payment errors.** `instrumentation-client.ts` sets
+`replaysSessionSampleRate: 0` and `replaysOnErrorSampleRate: 0` with the reason
+written next to them: replay records the DOM, and this DOM carries addresses,
+order contents and a voucher QR. Masking changes the calculus but not the
+question, and the question is a privacy decision about shipping customer session
+structure to a third party. That belongs to the operator, so it is recorded here
+rather than switched on.
+
+### 10.4 "Payment state stuck over 2h" is resolved rather than alerted
+
+`/api/cron/stranded-payments` runs **every ten minutes**, re-verifies each
+`redirected` payment older than three minutes with `GetLpResult`, and finalizes
+what the provider confirms. Money-at-risk outcomes alarm per occurrence
+(`stranded_amount_mismatch`, `stranded_finalize`), and the route is wrapped in
+`withJobRun`, which summarises its response body, so `rescued`, `stillOpen` and
+`failed` are persisted per run and readable at `/admin/cron` once
+`migrations/pending/228` is applied.
+
+The condition the section names is therefore acted on in ten minutes rather than
+paged after two hours. The one sub-case that is observable but not paged is a
+sustained provider outage: verification throws, the row is left untouched by
+design, and only the per-run counts record it. It is not paged because the job
+runs every ten minutes and the alert path has no dedupe, so a two-hour outage
+would send twelve pushes an hour into a channel whose stated rule is that it
+must stay rare.

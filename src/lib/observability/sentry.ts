@@ -54,6 +54,18 @@ export function capturePaymentError(error: unknown, context: PaymentErrorContext
       scope.setTag('area', 'payments')
       scope.setTag('stage', context.stage)
       if (context.orderId) scope.setTag('order_id', context.orderId)
+      // GROUPED BY STAGE AS WELL AS BY STACK, and the stage is the half that
+      // was missing. Sentry groups an exception by its stack trace, and the
+      // money path funnels through shared helpers -- so a throw inside the
+      // Supabase client reached from `cardcom_webhook_finalize` and the same
+      // throw reached from `checkout_begin` arrive with the same trace and
+      // become ONE issue. Resolving it silences both, and an alert on it says
+      // nothing about which half of the money path is broken.
+      //
+      // `{{ default }}` keeps Sentry's own grouping inside a stage, so two
+      // genuinely different failures at the same stage stay apart. This only
+      // ever splits; it never merges two things that were separate.
+      scope.setFingerprint(['{{ default }}', 'payments', context.stage])
       scope.setContext('payment', {
         stage: context.stage,
         order_id: context.orderId ?? null,
@@ -107,6 +119,17 @@ export async function capturePaymentAlarm(
       scope.setTag('area', 'payments')
       scope.setTag('stage', context.stage)
       if (context.orderId) scope.setTag('order_id', context.orderId)
+      // (stage, message), stated rather than inherited.
+      //
+      // This changes NOTHING today and that is worth saying plainly: every
+      // call site passes a CONSTANT message with the variable parts in
+      // `detail`, and Sentry's default grouping for `captureMessage` is the
+      // message, so the groups are already right. What it guards is the case
+      // default grouping gets wrong -- two different stages emitting the same
+      // sentence, which would merge into one issue and one alert. `stage`
+      // already appears twice in the webhook with two different messages, so
+      // the reverse pairing is not hypothetical.
+      scope.setFingerprint(['payments', context.stage, message])
       scope.setContext('payment', {
         stage: context.stage,
         order_id: context.orderId ?? null,

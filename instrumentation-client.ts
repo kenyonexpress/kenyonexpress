@@ -1,3 +1,4 @@
+import { sentryEnvironment } from '@/lib/observability/sentry-environment'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -10,7 +11,14 @@ import * as Sentry from '@sentry/nextjs'
  */
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+  // `NEXT_PUBLIC_VERCEL_ENV` and not `VERCEL_ENV`: without the prefix it is not
+  // inlined into the browser bundle and reads as undefined, the same trap the
+  // release fallback below documents. Both are referenced literally because
+  // Next inlines the literal expression, not a computed key.
+  environment: sentryEnvironment({
+    VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
+    SENTRY_ENVIRONMENT: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+  }),
   // NEXT_PUBLIC_SENTRY_RELEASE first, then the SHA Vercel exposes to the
   // browser. The fallback is what makes the uploaded source maps usable on a
   // Vercel deploy without a hand-set variable: the maps are attached to the
