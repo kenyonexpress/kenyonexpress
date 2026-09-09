@@ -23,8 +23,18 @@ import { NextResponse } from 'next/server'
  */
 async function handleGET(): Promise<NextResponse> {
   const session = await requireSupplierRole('owner', '/supplier/payouts')
-  const sales = await getSupplierSales(session.supplierId)
-  const lines = toPayoutBreakdown(sales)
+  const salesRead = await getSupplierSales(session.supplierId)
+  // Same rule as the monthly statement: an export is reconciled offline, away
+  // from any banner this app could show. A short file is worse than no file,
+  // because the rows in it are all real and nothing in the CSV says it stops
+  // early.
+  if (salesRead.failed || salesRead.truncated) {
+    return NextResponse.json(
+      { error: 'לא ניתן להפיק את הפירוט המלא כרגע. נסו שוב מאוחר יותר או פנו אלינו.' },
+      { status: 503 },
+    )
+  }
+  const lines = toPayoutBreakdown(salesRead.rows)
 
   const columns: readonly CsvColumn<PayoutBreakdownLine>[] = [
     { header: 'מוצר', value: (row) => row.productName },

@@ -6,6 +6,7 @@ import { checkBudget, formatMicro, perOrder, projectMonth, trendPoints } from '@
 import { PROVIDERS, providerAvailability } from '@/lib/costs/providers'
 import { loadCostTrend, loadMonthCosts } from '@/server/queries/costs'
 import { AlertTriangle, Coins, Receipt, TrendingUp } from 'lucide-react'
+import { connection } from 'next/server'
 
 /**
  * What the platform pays, this month, and what one more order costs.
@@ -36,7 +37,14 @@ export const metadata = { title: 'עלויות ותקציב' }
 
 // Live money. A cached cost page shows an admin last week's spend under this
 // month's heading.
-export const dynamic = 'force-dynamic'
+//
+// `export const dynamic = 'force-dynamic'` is what this said, and it does not
+// BUILD under `cacheComponents`: Turbopack rejects the segment config outright
+// ("Route segment config \"dynamic\" is not compatible with
+// nextConfig.cacheComponents"). `connection()` at the top of the component is
+// the replacement this repo already uses in `app/debug/sentry/page.tsx` -- it
+// makes the render wait for a real request, which is the same guarantee stated
+// as a runtime fact rather than as a segment flag.
 
 /**
  * A year, so the chart carries a full seasonal cycle and the current month is
@@ -61,6 +69,11 @@ function israelToday(): Date {
 }
 
 export default async function BillingPage() {
+  // Before anything reads the clock. `israelToday()` below calls `new Date()`,
+  // which under cacheComponents is a build-time read unless the render is
+  // already tied to a request -- and a "this month" heading resolved at build
+  // time is the exact staleness the comment above is about.
+  await connection()
   await requireSection('payments')
 
   const today = israelToday()

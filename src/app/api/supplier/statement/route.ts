@@ -49,8 +49,20 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   const format = url.searchParams.get('format') === 'pdf' ? 'pdf' : 'csv'
   const requested = url.searchParams.get('month')
 
-  const sales = await getSupplierSales(session.supplierId)
-  const lines = toPayoutBreakdown(sales)
+  const salesRead = await getSupplierSales(session.supplierId)
+  // A STATEMENT REFUSES WHERE A PAGE WARNS. The portal pages render a banner
+  // over a partial total, because a supplier glancing at a dashboard can be
+  // told the figure is incomplete. This file is handed to a bookkeeper and
+  // filed against a month's invoice, and it outlives the banner that would have
+  // qualified it -- a PDF with a footer nobody reads is a document that lies at
+  // the moment it matters. So an unfinished read produces no document at all.
+  if (salesRead.failed || salesRead.truncated) {
+    return NextResponse.json(
+      { error: 'לא ניתן להפיק דוח מלא כרגע. נסו שוב מאוחר יותר או פנו אלינו.' },
+      { status: 503 },
+    )
+  }
+  const lines = toPayoutBreakdown(salesRead.rows)
 
   // No month asked for: the most recent one with anything in it. NOT "this
   // month", which on the 1st of a month is an empty statement and reads as a

@@ -79,6 +79,15 @@ const NAV_ITEMS: NavItem[] = [
     icon: BadgeCheck,
     section: 'suppliers',
   },
+  // Contact-detail changes a supplier asked for. Its own entry rather than a
+  // tab inside a supplier's page: it is a QUEUE, and a queue nobody passes on
+  // the way to somewhere else is a queue that is never emptied.
+  {
+    href: '/admin/suppliers/contact-requests',
+    label: 'בקשות עדכון פרטים',
+    icon: BadgeCheck,
+    section: 'suppliers',
+  },
   { href: '/admin/vendors', label: 'ספקים (מערכת ישנה)', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },

@@ -1,6 +1,9 @@
+import IncompleteDataNotice from '@/components/supplier/IncompleteDataNotice'
 import PrintDaySummary from '@/components/supplier/PrintDaySummary'
+import RedemptionsChart from '@/components/supplier/RedemptionsChart'
 import { formatDate, formatIls } from '@/lib/account/format'
 import { agorot, sumAgorot } from '@/lib/money'
+import { monthlyRedemptions } from '@/lib/supplier/dashboard'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import { getSupplierRedemptions } from '@/server/queries/supplier'
@@ -9,7 +12,9 @@ export const metadata = { title: 'מימושים' }
 
 export default async function SupplierRedemptionsPage() {
   const session = await requireSupplierMember('/supplier/redemptions')
-  const rows = await getSupplierRedemptions(session.supplierId)
+  const read = await getSupplierRedemptions(session.supplierId)
+  const rows = read.rows
+  const months = monthlyRedemptions(rows)
 
   // The two windows the counter actually asks about: "מה נסרק היום" and the
   // last month. Fold in agorot (the only money type) and count; the shekel
@@ -39,10 +44,24 @@ export default async function SupplierRedemptionsPage() {
         <p className="hidden print:block print:text-sm">
           סיכום ליום {new Date().toLocaleDateString('he-IL')}
         </p>
-        <p className="mt-3">
+        {/* Paper is for the till drawer, CSV is for the bookkeeper. Both are
+            hidden from the printed sheet: a download link on paper is a dead
+            line of text. */}
+        <p className="mt-3 flex flex-wrap items-center gap-2 print:hidden">
           <PrintDaySummary />
+          <a
+            href="/api/supplier/redemptions/csv"
+            className="inline-flex min-h-11 items-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+            download
+          >
+            הורדת המימושים כ-CSV
+          </a>
         </p>
       </section>
+
+      <div className="print:hidden">
+        <IncompleteDataNotice reads={[read]} />
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-gray-200 bg-white p-4">
@@ -59,6 +78,10 @@ export default async function SupplierRedemptionsPage() {
             לגבייה <span dir="ltr">{formatIls(monthDue)}</span>
           </p>
         </div>
+      </div>
+
+      <div className="print:hidden">
+        <RedemptionsChart buckets={months} />
       </div>
 
       {/* PAPER GETS TODAY ONLY, and the full history is hidden from it.

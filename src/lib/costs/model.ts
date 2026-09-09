@@ -293,3 +293,33 @@ export function trendPoints(
   }
   return points
 }
+
+/** Decimal places `price_micro` carries. */
+const MICRO_DIGITS = 6
+
+/**
+ * A decimal string to integer millionths, without floating point.
+ *
+ * `parseFloat('20.10') * 1e6` is 20099999.999999996. Multiplying money by a
+ * million through binary floating point is precisely the mistake `price_micro`
+ * exists to avoid, so the whole and fractional halves are parsed as integers
+ * and combined.
+ *
+ * IT LIVES HERE RATHER THAN BESIDE ITS CALLER, and that is a build constraint
+ * and not a preference. It was exported from `server/actions/admin/costs.ts`,
+ * which carries `'use server'` -- and every export of a `'use server'` module
+ * must be an async function, because each one becomes a callable server-action
+ * endpoint. Turbopack refuses the build outright ("Server Actions must be async
+ * functions"). Marking it `async` to satisfy that would be worse than moving
+ * it: it would publish a money parser as a remotely invocable endpoint to make
+ * a lint pass.
+ */
+export function toMicro(amount: string): number | null {
+  const match = /^(\d+)(?:\.(\d{1,6}))?$/.exec(amount.trim())
+  if (!match) return null
+  const whole = Number(match[1])
+  const fraction = Number((match[2] ?? '').padEnd(MICRO_DIGITS, '0') || '0')
+  if (!Number.isSafeInteger(whole) || !Number.isSafeInteger(fraction)) return null
+  const micro = whole * 1_000_000 + fraction
+  return Number.isSafeInteger(micro) ? micro : null
+}

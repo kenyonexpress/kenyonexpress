@@ -6,6 +6,7 @@ import {
   formatMicro,
   perOrder,
   projectMonth,
+  toMicro,
   trendPoints,
 } from './model'
 
@@ -215,5 +216,44 @@ describe('trendPoints', () => {
   it('crosses a year boundary without inventing a month', () => {
     const points = trendPoints([], new Date(Date.UTC(2027, 0, 1)), 3)
     expect(points.map((point) => point.label)).toEqual(['2026-11', '2026-12', '2027-01'])
+  })
+})
+
+describe('toMicro', () => {
+  /**
+   * It was exported from `server/actions/admin/costs.ts` with the comment
+   * "Exported for its test", and NOTHING imported it -- there was no test. The
+   * export was therefore doing only one thing: publishing a money parser as a
+   * server-action endpoint, which is what broke the production build.
+   */
+  it('converts without floating point', () => {
+    // The number the doc comment is about: parseFloat('20.10') * 1e6 is
+    // 20099999.999999996.
+    expect(toMicro('20.10')).toBe(20_100_000)
+    expect(toMicro('0.000001')).toBe(1)
+    expect(toMicro('1')).toBe(1_000_000)
+    expect(toMicro('0')).toBe(0)
+  })
+
+  it('pads a short fraction rather than reading it as units', () => {
+    // '.1' is a tenth, so 100000 micro. Reading the digits as micro directly
+    // would make it 1.
+    expect(toMicro('0.1')).toBe(100_000)
+    expect(toMicro('0.01')).toBe(10_000)
+  })
+
+  it('trims, because a trailing space in a typed amount is invisible', () => {
+    expect(toMicro('  12.50  ')).toBe(12_500_000)
+  })
+
+  it.each(['', '-1', '1.2345678', 'abc', '1e6', '1,000', '.5', '1.'])(
+    'refuses %s rather than guessing',
+    (input) => {
+      expect(toMicro(input)).toBeNull()
+    },
+  )
+
+  it('refuses a value too large to stay an exact integer', () => {
+    expect(toMicro('99999999999')).toBeNull()
   })
 })

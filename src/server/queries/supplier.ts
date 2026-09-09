@@ -15,6 +15,98 @@ import type { SupplierProductRow } from '@/lib/supplier/products'
  * RLS policy cannot leak another tenant's rows.
  */
 
+/**
+ * =============================================================================
+ * WHY THESE READS PAGE, AND WHY THEY REPORT WHEN THEY COULD NOT FINISH
+ * =============================================================================
+ *
+ * Every money figure a supplier sees is a FOLD OVER THE ROWS THESE FUNCTIONS
+ * RETURN. `aggregateDashboard`, `summarizeSettlement`, `sumPayoutBreakdown` and
+ * the payouts CSV all sum an array; none of them issues its own query. So the
+ * `.limit()` on the read was not a display cap, it was the horizon of every
+ * total below it:
+ *
+ *   getSupplierSales   limit(200) -> supplierDueAgorot, the RECEIVABLE the
+ *                                   payouts page labels "מגיע לספק", stops
+ *                                   growing at the 200th order line
+ *   getSupplierRedemptions limit(100) -> couponRedemptionsTotal, labelled
+ *                                   "סריקות מוצלחות", is pinned at 100 forever,
+ *                                   and tillCollectedAgorot with it
+ *
+ * This is the same defect SECTIONS 25 found in the review rating average: an
+ * aggregate computed over a truncated read keeps the shape of a real number,
+ * carries no sign that it is partial, and is wrong in the direction nobody
+ * checks. A supplier reading a receivable that silently stopped growing has no
+ * way to notice.
+ *
+ * MEASURED, NOT ASSUMED: production today holds 0 vouchers and 3 order_items
+ * across 12 suppliers, so neither cap is biting yet. This is a horizon, not an
+ * active misreport, and it is fixed now because the monthly chart and the
+ * redemption CSV added in this section would have inherited it silently.
+ *
+ * THE CEILING IS REPORTED RATHER THAN SILENT. Paging without a bound is a way
+ * to hold a request open forever, so there is still a maximum -- but when it is
+ * reached the caller is TOLD, and the pages render a banner instead of printing
+ * a total that looks whole. A read that measures and does not say it was cut
+ * short is exactly what is being removed here; replacing one silent cap with a
+ * larger silent cap would be the same bug with a bigger number.
+ */
+const PAGE_SIZE = 1000
+const READ_CEILING = 10_000
+
+/**
+ * PostgREST's schema-cache miss, and Postgres' undefined_table.
+ *
+ * `225_supplier_contact_requests.sql` is in `migrations/pending/` and is not
+ * applied, so the contact-request read below must treat "the table is not there"
+ * as an empty list rather than as an error worth logging on every page view.
+ */
+const TABLE_ABSENT = new Set(['PGRST205', 'PGRST106', '42P01'])
+
+/** Rows plus the two facts a total needs before it can be printed as one. */
+export type SupplierRead<Row> = {
+  rows: Row[]
+  /** The ceiling was reached; more rows may exist and are not in `rows`. */
+  truncated: boolean
+  /** The query errored. `rows` is empty because nothing was read, NOT because nothing exists. */
+  failed: boolean
+}
+
+type PageResult = { data: unknown[] | null; error: { message: string } | null }
+
+/**
+ * Read every page up to READ_CEILING.
+ *
+ * `truncated` is set when the ceiling is consumed exactly, which over-reports by
+ * one case: a supplier with precisely READ_CEILING rows is told there may be
+ * more when there are not. That direction is deliberate. The alternative is a
+ * probe read past the ceiling to disambiguate, and being wrongly warned that a
+ * total may be incomplete costs a sentence, while wrongly being told it is
+ * complete costs the thing this whole comment exists to prevent.
+ */
+async function readAllPages<Row>(
+  page: (from: number, to: number) => PromiseLike<PageResult>,
+  onError: (message: string) => void,
+): Promise<SupplierRead<Row>> {
+  const rows: Row[] = []
+
+  for (let from = 0; from < READ_CEILING; from += PAGE_SIZE) {
+    const to = Math.min(from + PAGE_SIZE, READ_CEILING) - 1
+    const { data, error } = await page(from, to)
+    if (error) {
+      onError(error.message)
+      // A read that failed is not a supplier with no sales. The caller gets
+      // `failed` so it can say so, rather than rendering ₪0 with confidence.
+      return { rows: [], truncated: false, failed: true }
+    }
+    const batch = (data ?? []) as Row[]
+    rows.push(...batch)
+    if (batch.length < to - from + 1) return { rows, truncated: false, failed: false }
+  }
+
+  return { rows, truncated: true, failed: false }
+}
+
 type OrderItemRow = {
   id: string
   order_id: string
@@ -47,12 +139,16 @@ function productType(raw: string | null | undefined): SupplierSaleLine['productT
   return 'other'
 }
 
-export async function getSupplierSales(supplierId: string): Promise<SupplierSaleLine[]> {
+export async function getSupplierSales(
+  supplierId: string,
+): Promise<SupplierRead<SupplierSaleLine>> {
   const admin = createAdminClient()
-  const { data, error } = await admin
-    .from('order_items')
-    .select(
-      `
+  const read = await readAllPages<OrderItemRow>(
+    (from, to) =>
+      admin
+        .from('order_items')
+        .select(
+          `
       id,
       order_id,
       quantity,
@@ -67,23 +163,24 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
       products(name_he, type),
       orders!inner(paid_at, status)
     `,
-    )
-    .eq('supplier_id', supplierId)
-    // The admin client bypasses RLS, so the soft-delete predicate that
-    // `order_items`' SELECT policy would have applied has to be stated here.
-    // getSupplierProducts already does this; this read did not, and a
-    // soft-deleted line is a line an admin removed from the money path.
-    .is('deleted_at', null)
-    .not('orders.paid_at', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(200)
+        )
+        .eq('supplier_id', supplierId)
+        // The admin client bypasses RLS, so the soft-delete predicate that
+        // `order_items`' SELECT policy would have applied has to be stated here.
+        // getSupplierProducts already does this; this read did not, and a
+        // soft-deleted line is a line an admin removed from the money path.
+        .is('deleted_at', null)
+        .not('orders.paid_at', 'is', null)
+        // `created_at` is not unique, and a paged read ordered by a non-unique
+        // key can return the same row on two pages and skip another. `id` is
+        // the tiebreaker that makes the page boundaries stable.
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to) as unknown as PromiseLike<PageResult>,
+    (reason) => log.error('supplier.sales_query_failed', { reason }),
+  )
 
-  if (error) {
-    log.error('supplier.sales_query_failed', { reason: error.message })
-    return []
-  }
-
-  return ((data ?? []) as unknown as OrderItemRow[]).map((row) => {
+  const rows = read.rows.map((row) => {
     const immediate = row.supplier_immediate_agorot ?? 0
     const held = row.escrow_held_agorot ?? 0
     return {
@@ -124,6 +221,8 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
       paidAt: row.orders?.paid_at ?? null,
     }
   })
+
+  return { rows, truncated: read.truncated, failed: read.failed }
 }
 
 type SupplierOrderItemRow = {
@@ -229,12 +328,16 @@ export async function getSupplierOrders(supplierId: string): Promise<{
   return { lines, meta }
 }
 
-export async function getSupplierRedemptions(supplierId: string): Promise<SupplierRedemptionRow[]> {
+export async function getSupplierRedemptions(
+  supplierId: string,
+): Promise<SupplierRead<SupplierRedemptionRow>> {
   const admin = createAdminClient()
-  const { data, error } = await admin
-    .from('vouchers')
-    .select(
-      `
+  const read = await readAllPages<VoucherRow>(
+    (from, to) =>
+      admin
+        .from('vouchers')
+        .select(
+          `
       id,
       code,
       status,
@@ -244,28 +347,38 @@ export async function getSupplierRedemptions(supplierId: string): Promise<Suppli
       redeemed_at,
       products(name_he)
     `,
-    )
-    .eq('supplier_id', supplierId)
-    .eq('status', 'redeemed')
-    .order('redeemed_at', { ascending: false })
-    .limit(100)
+        )
+        .eq('supplier_id', supplierId)
+        .eq('status', 'redeemed')
+        // NULLS LAST is not cosmetic on a paged read. Postgres sorts NULLs
+        // FIRST in a DESC order, so a redeemed voucher whose `redeemed_at`
+        // never got written would sit at the head of page one -- ahead of every
+        // real scan -- and on the old capped read it consumed the limit that
+        // the recent redemptions were supposed to occupy. Production has no
+        // such row today (checked: 0 redeemed vouchers with a null
+        // `redeemed_at`), which is exactly why the ordering should be pinned
+        // now rather than discovered later.
+        .order('redeemed_at', { ascending: false, nullsFirst: false })
+        .order('id', { ascending: false })
+        .range(from, to) as unknown as PromiseLike<PageResult>,
+    (reason) => log.error('supplier.redemptions_query_failed', { reason }),
+  )
 
-  if (error) {
-    log.error('supplier.redemptions_query_failed', { reason: error.message })
-    return []
+  return {
+    rows: read.rows.map((row) => ({
+      voucherId: row.id,
+      code: row.code,
+      productName: row.products?.name_he ?? 'קופון',
+      customerName: null,
+      remainingAmountDueAgorot: row.remaining_amount_due_agorot,
+      couponPriceAgorot: row.coupon_price_agorot,
+      platformPercent: row.platform_percent,
+      redeemedAt: row.redeemed_at,
+      status: row.status,
+    })),
+    truncated: read.truncated,
+    failed: read.failed,
   }
-
-  return ((data ?? []) as unknown as VoucherRow[]).map((row) => ({
-    voucherId: row.id,
-    code: row.code,
-    productName: row.products?.name_he ?? 'קופון',
-    customerName: null,
-    remainingAmountDueAgorot: row.remaining_amount_due_agorot,
-    couponPriceAgorot: row.coupon_price_agorot,
-    platformPercent: row.platform_percent,
-    redeemedAt: row.redeemed_at,
-    status: row.status,
-  }))
 }
 
 type SupplierProductDbRow = {
@@ -346,4 +459,75 @@ export async function getSupplierProducts(supplierId: string): Promise<SupplierP
         Array.isArray(row.images) && typeof row.images[0] === 'string' ? row.images[0] : null,
     }
   })
+}
+
+export type SupplierContactRequestRow = {
+  id: string
+  field: string
+  currentValue: string | null
+  requestedValue: string
+  note: string | null
+  status: string
+  createdAt: string | null
+  decidedAt: string | null
+  decisionNote: string | null
+}
+
+/**
+ * The shop's own contact-change requests, newest first.
+ *
+ * 225 IS PENDING, so this returns an empty list rather than throwing when the
+ * table is not there. The settings page renders its form either way: a supplier
+ * cannot file a request until the migration lands (the action says so in
+ * Hebrew), and a history section that 500s the whole page because the table is
+ * absent would take the form down with it.
+ *
+ * The `.eq('supplier_id', supplierId)` is the same lock every read above uses.
+ * It is not redundant with 225's SELECT policy for the reason this module's
+ * header gives: this is the admin client, and the policy is not holding here.
+ */
+export async function getSupplierContactRequests(
+  supplierId: string,
+): Promise<SupplierContactRequestRow[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('supplier_contact_requests' as never)
+    .select(
+      'id, field, current_value, requested_value, note, status, created_at, decided_at, decision_note',
+    )
+    .eq('supplier_id', supplierId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (error) {
+    // Not applied yet is not a failure worth logging on every page view.
+    if (!TABLE_ABSENT.has(error.code ?? '')) {
+      log.error('supplier.contact_requests_query_failed', { reason: error.message })
+    }
+    return []
+  }
+
+  type Row = {
+    id: string
+    field: string
+    current_value: string | null
+    requested_value: string
+    note: string | null
+    status: string
+    created_at: string | null
+    decided_at: string | null
+    decision_note: string | null
+  }
+
+  return ((data ?? []) as unknown as Row[]).map((row) => ({
+    id: row.id,
+    field: row.field,
+    currentValue: row.current_value,
+    requestedValue: row.requested_value,
+    note: row.note,
+    status: row.status,
+    createdAt: row.created_at,
+    decidedAt: row.decided_at,
+    decisionNote: row.decision_note,
+  }))
 }

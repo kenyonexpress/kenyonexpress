@@ -78,6 +78,94 @@ export function isRedeemedToday(redeemedAt: string | null | undefined, now = new
   return at.getTime() >= startOfIsraelDay(now).getTime()
 }
 
+/** `YYYY-MM` for an instant, in Asia/Jerusalem. */
+function israelMonthKey(at: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem',
+    year: 'numeric',
+    month: '2-digit',
+  }).format(at)
+}
+
+/** One column of the monthly redemptions chart. */
+export type MonthlyRedemptionBucket = {
+  /** `YYYY-MM` in Asia/Jerusalem. */
+  month: string
+  /** Hebrew axis label, e.g. `ספט׳ 2026`. */
+  label: string
+  count: number
+  /** Balance collected over the counter that month. Never the platform's money. */
+  tillCollectedAgorot: number
+}
+
+export const MONTHLY_REDEMPTIONS_MONTHS = 12
+
+/**
+ * Redemptions folded into calendar months, for the chart section 28 asks for.
+ *
+ * EMPTY MONTHS ARE EMITTED, NOT SKIPPED. Building the buckets from the rows
+ * that exist produces a chart whose columns are whatever months had a scan,
+ * spaced evenly -- so a shop that redeemed nothing in August gets a chart where
+ * July sits directly beside September and the bad month is invisible. A bar
+ * chart's horizontal axis is a claim about time, and the one month a supplier
+ * most needs to see is the one with no bar. Every month in the window appears,
+ * at zero if that is what happened.
+ *
+ * THE CALENDAR IS ISRAEL'S. `redeemed_at` is stored UTC, and a scan at 01:00
+ * Israel time on the 1st is 22:00 UTC on the last day of the previous month.
+ * Bucketing on the UTC month files that redemption against a month the till
+ * roll disagrees with. Same reason `startOfIsraelDay` exists above.
+ *
+ * A row with no `redeemed_at` is counted in no month rather than in the current
+ * one: it has no date, and inventing today for it would put a scan of unknown
+ * age into the column a supplier reads as this month's takings.
+ */
+export function monthlyRedemptions(
+  redemptions: readonly SupplierRedemptionRow[],
+  options: { months?: number; now?: Date } = {},
+): MonthlyRedemptionBucket[] {
+  const months = Math.max(1, options.months ?? MONTHLY_REDEMPTIONS_MONTHS)
+  const now = options.now ?? new Date()
+
+  const totals = new Map<string, { count: number; tillCollectedAgorot: number }>()
+  for (const row of redemptions) {
+    if (row.status !== 'redeemed' || !row.redeemedAt) continue
+    const at = new Date(row.redeemedAt)
+    if (Number.isNaN(at.getTime())) continue
+    const key = israelMonthKey(at)
+    const bucket = totals.get(key) ?? { count: 0, tillCollectedAgorot: 0 }
+    bucket.count += 1
+    bucket.tillCollectedAgorot += Math.max(0, row.remainingAmountDueAgorot)
+    totals.set(key, bucket)
+  }
+
+  // Walk back from the current Israel month. Parsing `YYYY-MM` into a UTC
+  // midday anchor and stepping by UTC months keeps the walk off the DST edges
+  // that break a naive `setMonth` on a local Date.
+  const [currentYear, currentMonth] = israelMonthKey(now).split('-').map(Number)
+  const anchor = Date.UTC(currentYear as number, (currentMonth as number) - 1, 15, 12)
+
+  const out: MonthlyRedemptionBucket[] = []
+  for (let back = months - 1; back >= 0; back -= 1) {
+    const at = new Date(anchor)
+    at.setUTCMonth(at.getUTCMonth() - back)
+    const key = `${at.getUTCFullYear()}-${String(at.getUTCMonth() + 1).padStart(2, '0')}`
+    const bucket = totals.get(key)
+    out.push({
+      month: key,
+      label: new Intl.DateTimeFormat('he-IL', {
+        timeZone: 'UTC',
+        month: 'short',
+        year: 'numeric',
+      }).format(at),
+      count: bucket?.count ?? 0,
+      tillCollectedAgorot: bucket?.tillCollectedAgorot ?? 0,
+    })
+  }
+
+  return out
+}
+
 /**
  * Settlement states in which the line's supplier share has been reversed.
  *

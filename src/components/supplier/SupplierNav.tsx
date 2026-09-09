@@ -1,5 +1,6 @@
 'use client'
 
+import { t } from '@/lib/i18n/messages'
 import { type SupplierMemberRole, hasMinRole } from '@/lib/supplier/roles'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -18,6 +19,9 @@ const LINKS: Array<{
   { href: '/supplier/orders', label: 'הזמנות', minRole: 'manager' },
   { href: '/supplier/products', label: 'המוצרים שלי', minRole: 'manager' },
   { href: '/supplier/payouts', label: 'תשלומים', minRole: 'owner' },
+  // owner, matching 225's INSERT policy (`is_supplier_owner`). A manager shown
+  // this tab would fill the form in and be refused by RLS with no explanation.
+  { href: '/supplier/settings', label: t('supplier.settingsNav'), minRole: 'owner' },
 ]
 
 export default function SupplierNav({ memberRole }: { memberRole: SupplierMemberRole }) {

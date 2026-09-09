@@ -663,3 +663,44 @@ terminal.
 
 Order: independent of 162, 184, 188, 189 and 190. It creates one table and one
 function and touches nothing existing.
+
+## 2026-09-10: 225 written, not applied, and nothing waits for it
+
+`225_supplier_contact_requests.sql` creates one table, three policies, a partial
+unique index and four CHECK constraints. It **touches nothing that exists**: no
+column is added to `suppliers`, no policy on any existing table is rewritten, no
+function is dropped or recreated. Its order is therefore free -- it is
+independent of 162, 184, 188 through 197, and of everything in the 200s.
+
+**The application does not wait for it.** Three call sites read `PGRST205`,
+`PGRST106` and `42P01` as "not applied yet":
+`getSupplierContactRequests` returns an empty list without logging,
+`/supplier/settings` renders the form with an empty history, and the admin
+queue prints a sentence naming the migration instead of a table. The supplier
+action answers "בקשות עדכון פרטים עדיין לא זמינות" rather than throwing. This is
+the shape the abandoned-cart mailer should have had: an unapplied migration
+must not turn a route into a 500.
+
+**What to check after applying.** The `DO` block in the file header was proven
+in a rolled-back transaction, so the only thing apply-time can add is
+interaction with live data -- and there is none, because the table starts empty.
+Confirm the three policies and the absent DELETE grant:
+
+```sql
+SELECT policyname, cmd FROM pg_policies WHERE tablename = 'supplier_contact_requests';
+SELECT privilege_type FROM information_schema.role_table_grants
+ WHERE table_name = 'supplier_contact_requests' AND grantee = 'authenticated';
+```
+
+Expect three policies (`member_select`, `owner_insert`, `owner_withdraw`) and
+exactly `SELECT`, `INSERT`, `UPDATE`. A `DELETE` in that second result means the
+REVOKE did not take, and the history the table exists to keep is erasable by the
+supplier it is about.
+
+**Reversal:** `DROP TABLE public.supplier_contact_requests;`. Nothing references
+it.
+
+**A caveat that is not this file's to fix.** `supplier_members` holds **zero
+rows** in production (measured 2026-09-10), so no human can reach
+`/supplier/settings` to file a request in the first place. Applying 225 is
+therefore safe and inert until somebody is granted a membership.

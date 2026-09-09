@@ -1,3 +1,4 @@
+import IncompleteDataNotice from '@/components/supplier/IncompleteDataNotice'
 import { formatDate, formatIls } from '@/lib/account/format'
 import { agorot } from '@/lib/money'
 import {
@@ -25,10 +26,12 @@ export const metadata = { title: 'תשלומים' }
 
 export default async function SupplierPayoutsPage() {
   const session = await requireSupplierRole('owner', '/supplier/payouts')
-  const [sales, redemptions] = await Promise.all([
+  const [salesRead, redemptionsRead] = await Promise.all([
     getSupplierSales(session.supplierId),
     getSupplierRedemptions(session.supplierId),
   ])
+  const sales = salesRead.rows
+  const redemptions = redemptionsRead.rows
   const lines = toPayoutBreakdown(sales)
   const totals = sumPayoutBreakdown(lines)
   const balance = summarizeSettlement({ sales, redemptions })
@@ -43,6 +46,11 @@ export default async function SupplierPayoutsPage() {
           בזמן הסריקה, ולכן לא מגיעה עליו העברה מהפלטפורמה.
         </p>
       </section>
+
+      {/* This page is the receivable. If the read behind it did not finish,
+          that has to be said before any of the balances below are read as
+          what the platform owes. */}
+      <IncompleteDataNotice reads={[salesRead, redemptionsRead]} />
 
       {/*
         TWO DOWNLOADS, AND THEY ARE FOR DIFFERENT PEOPLE. The CSV beside this is

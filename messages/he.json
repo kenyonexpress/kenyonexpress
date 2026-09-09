@@ -123,5 +123,15 @@
     "label": "סביבת בדיקות",
     "preview": "זו סביבת בדיקות. הנתונים אינם אמיתיים ואין לבצע כאן תשלום בכרטיס אמיתי.",
     "local": "שרת מקומי. הנתונים אינם אמיתיים ואין לבצע כאן תשלום בכרטיס אמיתי."
+  },
+  "supplier": {
+    "settingsNav": "פרטי העסק",
+    "settingsTitle": "פרטי העסק",
+    "requestHeading": "בקשת עדכון",
+    "requestHistoryHeading": "הבקשות שלכם",
+    "valueUnset": "לא מוגדר",
+    "chartMonth": "חודש",
+    "chartRedemptions": "מימושים",
+    "chartTillCollected": "נגבה בקופה"
   }
 }

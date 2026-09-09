@@ -31,7 +31,10 @@ function adminWith(rows: unknown[]): { chain: Chain } {
       return self()
     },
     order: self,
-    limit: () => Promise.resolve({ data: rows, error: null }),
+    // The read pages with `.range()` now, so that is where the chain
+    // terminates. One short page ends the loop, which is what a fixture of a
+    // handful of rows is.
+    range: () => Promise.resolve({ data: rows, error: null }),
   })
   createAdminClient.mockReturnValue({ from: () => builder })
   return { chain }
@@ -62,9 +65,9 @@ describe('getSupplierRedemptions visibility', () => {
         products: { name_he: 'ארוחה זוגית' },
       },
     ])
-    const rows = await getSupplierRedemptions('sup-1')
+    const read = await getSupplierRedemptions('sup-1')
     expect(chain.selected).not.toMatch(/user_id|profiles|email|phone/)
-    expect(rows[0]).toMatchObject({
+    expect(read.rows[0]).toMatchObject({
       code: 'ABCDE12345',
       productName: 'ארוחה זוגית',
       customerName: null,

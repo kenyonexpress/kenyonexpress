@@ -123,5 +123,15 @@
     "label": "Test environment",
     "preview": "This is a test environment. The data is not real and no real card should be used here.",
     "local": "Local server. The data is not real and no real card should be used here."
+  },
+  "supplier": {
+    "settingsNav": "Business details",
+    "settingsTitle": "Business details",
+    "requestHeading": "Request an update",
+    "requestHistoryHeading": "Your requests",
+    "valueUnset": "Not set",
+    "chartMonth": "Month",
+    "chartRedemptions": "Redemptions",
+    "chartTillCollected": "Collected at the till"
   }
 }

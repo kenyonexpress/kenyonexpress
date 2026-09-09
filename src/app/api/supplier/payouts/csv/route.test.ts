@@ -47,7 +47,7 @@ beforeEach(() => {
   requireSupplierRole.mockReset()
   getSupplierSales.mockReset()
   requireSupplierRole.mockResolvedValue({ supplierId: 'sup-1', role: 'owner' })
-  getSupplierSales.mockResolvedValue([SALE])
+  getSupplierSales.mockResolvedValue({ rows: [SALE], truncated: false, failed: false })
 })
 
 describe('supplier payouts CSV', () => {
@@ -75,6 +75,25 @@ describe('supplier payouts CSV', () => {
     const response = await GET(req())
     const disposition = response.headers.get('content-disposition') ?? ''
     expect(disposition).toMatch(/payouts-\d{4}-\d{2}-\d{2}\.csv/)
+  })
+
+  /**
+   * A short file is worse than no file. An export is reconciled offline, where
+   * no banner this app could render is present, and nothing inside a CSV says
+   * it stopped early -- so a read that did not finish must not become a
+   * document. Both abnormal states are covered because they arrive by
+   * different routes: `truncated` is a healthy query that hit its ceiling,
+   * `failed` is a query that errored and returned no rows at all, which would
+   * otherwise export as a file with a header row and nothing under it.
+   */
+  it.each([
+    ['truncated', { rows: [SALE], truncated: true, failed: false }],
+    ['failed', { rows: [], truncated: false, failed: true }],
+  ])('refuses to export a %s read rather than shipping a partial file', async (_label, read) => {
+    getSupplierSales.mockResolvedValue(read)
+    const response = await GET(req())
+    expect(response.status).toBe(503)
+    expect(response.headers.get('content-disposition')).toBeNull()
   })
 
   it('does not swallow the gate: an unauthorised caller propagates', async () => {

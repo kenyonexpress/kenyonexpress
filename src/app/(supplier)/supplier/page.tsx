@@ -1,6 +1,8 @@
+import IncompleteDataNotice from '@/components/supplier/IncompleteDataNotice'
+import RedemptionsChart from '@/components/supplier/RedemptionsChart'
 import { formatDate, formatIls } from '@/lib/account/format'
 import { agorot } from '@/lib/money'
-import { aggregateDashboard } from '@/lib/supplier/dashboard'
+import { aggregateDashboard, monthlyRedemptions } from '@/lib/supplier/dashboard'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { hasMinRole } from '@/lib/supplier/roles'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
@@ -36,11 +38,14 @@ export default async function SupplierHomePage({
 }) {
   const session = await requireSupplierMember('/supplier')
   const sp = await searchParams
-  const [sales, redemptions] = await Promise.all([
+  const [salesRead, redemptionsRead] = await Promise.all([
     getSupplierSales(session.supplierId),
     getSupplierRedemptions(session.supplierId),
   ])
+  const sales = salesRead.rows
+  const redemptions = redemptionsRead.rows
   const stats = aggregateDashboard({ sales, redemptions })
+  const months = monthlyRedemptions(redemptions)
   const recent = redemptions.slice(0, 5)
 
   return (
@@ -50,6 +55,10 @@ export default async function SupplierHomePage({
           אין לכם הרשאה למסך המבוקש. פנו לבעל העסק להרחבת הרשאות.
         </p>
       ) : null}
+
+      {/* Above the cards, not below them: the cards are the numbers this
+          warns about, and a caveat printed after them is read second. */}
+      <IncompleteDataNotice reads={[salesRead, redemptionsRead]} />
 
       <section>
         <h1 className="text-2xl font-bold text-heading">לוח בקרה</h1>
@@ -85,6 +94,8 @@ export default async function SupplierHomePage({
           hint="סריקות מוצלחות (יתרה נגבית בקופה)"
         />
       </div>
+
+      <RedemptionsChart buckets={months} />
 
       <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">

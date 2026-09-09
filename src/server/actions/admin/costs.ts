@@ -2,6 +2,7 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
+import { toMicro } from '@/lib/costs/model'
 import { providerById } from '@/lib/costs/providers'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
@@ -27,8 +28,6 @@ import { z } from 'zod'
 
 type ActionResult = { error?: string; success?: string }
 
-const MICRO_DIGITS = 6
-
 const costSchema = z.object({
   provider: z.string().trim().min(1, 'ספק נדרש'),
   // YYYY-MM-01. The page supplies it; a free month string would let a figure
@@ -48,22 +47,6 @@ const costSchema = z.object({
     .regex(/^[A-Z]{3}$/, 'מטבע לא תקין'),
   note: z.string().trim().max(500).optional(),
 })
-
-/**
- * A decimal string to integer millionths, without floating point.
- *
- * Exported for its test: this is four lines and it is the only place a wrong
- * answer becomes a wrong number in a ledger.
- */
-export function toMicro(amount: string): number | null {
-  const match = /^(\d+)(?:\.(\d{1,6}))?$/.exec(amount.trim())
-  if (!match) return null
-  const whole = Number(match[1])
-  const fraction = Number((match[2] ?? '').padEnd(MICRO_DIGITS, '0') || '0')
-  if (!Number.isSafeInteger(whole) || !Number.isSafeInteger(fraction)) return null
-  const micro = whole * 1_000_000 + fraction
-  return Number.isSafeInteger(micro) ? micro : null
-}
 
 async function runSaveInfraCost(_: ActionResult, formData: FormData): Promise<ActionResult> {
   const session = await requireSection('payments', 'write')

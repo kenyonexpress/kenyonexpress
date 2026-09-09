@@ -830,6 +830,34 @@ describe('the pending migration inventory', () => {
       // auth.uid(), so the grant would buy nothing and put an unauthenticated
       // caller one edit away from a definer function over a per-user table.
       '224_grant_recent_search_execute.sql',
+      // 225 WRITTEN 2026-09-10, not applied. Purely additive: one new table,
+      // three policies, nothing existing touched. It is the place a supplier's
+      // requested contact change waits for an admin, which SECTIONS 28 names
+      // ("contact details edit request form (admin approves)") and which
+      // existed nowhere -- no table, no route, no action.
+      //
+      // A REQUEST TABLE RATHER THAN AN UPDATE GRANT ON `suppliers`, because
+      // that row also carries business_id, min_payout_ils and
+      // payout_hold_business_days: there is no version of this where the party
+      // being paid holds UPDATE on the table that pays them. The row is also
+      // the audit record, which is what makes "who changed the payout email"
+      // answerable at all.
+      //
+      // Verified against production inside a rolled-back DO block, eight
+      // assertions, each raising its own message on failure rather than a
+      // NOTICE nobody reads: a legitimate pending row lands, a SECOND pending
+      // row for the same field is refused by the partial unique index, a
+      // DECIDED row for that field is not in the way, `min_payout_ils` is
+      // refused as a field by the CHECK, a row claiming `approved` with no
+      // decided_at is refused, an empty requested_value is refused, three
+      // policies exist, and DELETE is granted to nobody. `pg_class` re-read
+      // afterwards: nothing left behind.
+      //
+      // Everything that touches it -- the supplier form, the history list, the
+      // admin queue -- reads PGRST205/PGRST106/42P01 as "not applied yet" and
+      // degrades to an empty list with a sentence, so the portal and the panel
+      // both run unchanged until it lands.
+      '225_supplier_contact_requests.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

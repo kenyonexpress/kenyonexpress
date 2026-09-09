@@ -1,5 +1,60 @@
 # `migrations/pending/`
 
+## 2026-09-10: 225 WRITTEN, not applied - where a supplier's contact change waits
+
+`225_supplier_contact_requests.sql`. One new table, three policies, a partial
+unique index and four CHECK constraints. Nothing existing is touched.
+
+**SECTIONS 28 asks for a "contact details edit request form (admin approves)"
+and there was no such thing anywhere** -- no table, no route, no action. The
+supplier console already had the dashboard, the redemptions list, the products
+list and the payouts view; this is the item in that section that had never been
+built.
+
+**A request table rather than an UPDATE grant on `suppliers`.** That row carries
+`business_id`, `min_payout_ils`, `payout_hold_business_days` and `status`
+alongside the seven contact columns, and any UPDATE grant to `authenticated` is
+a grant on the ROW. Narrowing it to the contact columns means a column-level
+grant plus a policy, and the failure mode is that a column added later is not
+covered by whatever was written to police it. There is no version of this where
+the party being paid holds UPDATE on the table that pays them.
+
+The row is also the audit record. "Who changed the payout email, and who
+approved it" is asked exactly once, after money goes somewhere unexpected, and a
+form that mutated the row directly answers it with nothing.
+
+**Seven fields are requestable**, all contact: `contact_name`, `contact_email`,
+`contact_phone`, `whatsapp`, `address`, `city`, `website`. Not `name` -- the
+display name is on the storefront and in indexed URLs. Not `business_id`, which
+invoices are issued against. Nothing in the payout terms. The allowlist is a
+CHECK constraint AND a TypeScript list, and `contact-fields.test.ts` reads the
+SQL to prove the two agree.
+
+**Verified against production inside a rolled-back `DO` block**, eight
+assertions, each raising its own message rather than a `NOTICE` the runner does
+not return:
+
+| # | asserted | result |
+| --- | --- | --- |
+| 1 | a legitimate pending row lands | 1 row |
+| 2 | a second **pending** row for the same field | refused, `unique_violation` |
+| 3 | a **decided** row for that field is not in the way | accepted |
+| 4 | `min_payout_ils` as a field | refused, `check_violation` |
+| 5 | `approved` with no `decided_at` | refused, `check_violation` |
+| 6 | an empty `requested_value` | refused, `check_violation` |
+| 7 | policies created | 3 |
+| 8 | `DELETE` granted to `authenticated` | none |
+
+`pg_class` was re-read afterwards: nothing left behind.
+
+**Nothing waits for it.** The supplier form, the history list and the admin
+queue all read `PGRST205`, `PGRST106` and `42P01` as "not applied yet" and
+degrade to an empty list plus one Hebrew sentence. The portal and the panel both
+run unchanged until it lands.
+
+**Reversal:** `DROP TABLE public.supplier_contact_requests;`. It is referenced
+by nothing.
+
 ## 2026-09-10: 224 WRITTEN, not applied - one GRANT, and the feature it revives
 
 `224_grant_recent_search_execute.sql`. A single
