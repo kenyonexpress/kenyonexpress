@@ -50,5 +50,53 @@
     "suspended": "Suspended",
     "draft": "Draft",
     "archived": "Archived"
+  },
+  "footer": {
+    "personalHeading": "My account",
+    "serviceHeading": "Customer service",
+    "account": "My account",
+    "cart": "Cart",
+    "orders": "Orders",
+    "about": "About",
+    "howItWorks": "How it works",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "blog": "Blog",
+    "suppliers": "Become a supplier",
+    "terms": "Terms",
+    "privacy": "Privacy policy",
+    "refunds": "Cancellations and returns",
+    "accessibility": "Accessibility statement",
+    "questions": "Questions, suggestions or comments?",
+    "addressLabel": "Our address:",
+    "newsletterPlaceholder": "Enter your email",
+    "newsletterAriaLabel": "Newsletter email address",
+    "logoAlt": "Kenyon EXPRESS",
+    "paymentMethods": "Payment methods"
+  },
+  "social": {
+    "telegram": "Telegram",
+    "youtube": "YouTube",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
+    "twitter": "Twitter",
+    "facebook": "Facebook"
+  },
+  "account": {
+    "overview": "Overview",
+    "details": "My details",
+    "orders": "My orders",
+    "coupons": "My coupons",
+    "wishlist": "Wishlist",
+    "wallet": "My wallet",
+    "referrals": "Refer a friend",
+    "subscriptions": "My subscriptions",
+    "addresses": "Addresses",
+    "tokens": "Payment methods",
+    "notifications": "Notifications",
+    "tickets": "My tickets",
+    "security": "Security and sign-in",
+    "navAriaLabel": "Account navigation",
+    "greeting": "Hello"
   }
 }

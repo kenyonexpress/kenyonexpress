@@ -1,24 +1,25 @@
 'use client'
 
 import { formatIls } from '@/lib/account/format'
+import { t } from '@/lib/i18n/messages'
 import type { Agorot } from '@/lib/money'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const ITEMS = [
-  { href: '/account', label: 'סקירה' },
-  { href: '/account/details', label: 'הפרטים שלי' },
-  { href: '/account/orders', label: 'ההזמנות שלי' },
-  { href: '/account/coupons', label: 'הקופונים שלי' },
-  { href: '/account/wishlist', label: 'מועדפים' },
-  { href: '/account/wallet', label: 'הארנק שלי' },
-  { href: '/account/referrals', label: 'חבר מביא חבר' },
-  { href: '/account/subscriptions', label: 'המנויים שלי' },
-  { href: '/account/addresses', label: 'כתובות' },
-  { href: '/account/tokens', label: 'אמצעי תשלום' },
-  { href: '/account/notifications', label: 'התראות' },
-  { href: '/account/tickets', label: 'הפניות שלי' },
-  { href: '/account/security', label: 'אבטחה וכניסה' },
+  { href: '/account', label: t('account.overview') },
+  { href: '/account/details', label: t('account.details') },
+  { href: '/account/orders', label: t('account.orders') },
+  { href: '/account/coupons', label: t('account.coupons') },
+  { href: '/account/wishlist', label: t('account.wishlist') },
+  { href: '/account/wallet', label: t('account.wallet') },
+  { href: '/account/referrals', label: t('account.referrals') },
+  { href: '/account/subscriptions', label: t('account.subscriptions') },
+  { href: '/account/addresses', label: t('account.addresses') },
+  { href: '/account/tokens', label: t('account.tokens') },
+  { href: '/account/notifications', label: t('account.notifications') },
+  { href: '/account/tickets', label: t('account.tickets') },
+  { href: '/account/security', label: t('account.security') },
 ] as const
 
 // This file carried its OWN copy of `formatIls`, a second
@@ -37,9 +38,9 @@ export default function AccountNav({
   const pathname = usePathname()
 
   return (
-    <nav className="account-nav" aria-label="ניווט באזור האישי">
+    <nav className="account-nav" aria-label={t('account.navAriaLabel')}>
       <div className="account-nav__head">
-        <p className="account-nav__name">{fullName || 'שלום'}</p>
+        <p className="account-nav__name">{fullName || t('account.greeting')}</p>
         <p className="account-nav__email">{email}</p>
       </div>
       <ul className="account-nav__list">

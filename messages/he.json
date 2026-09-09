@@ -50,5 +50,53 @@
     "suspended": "מושעה",
     "draft": "טיוטה",
     "archived": "ארכיון"
+  },
+  "footer": {
+    "personalHeading": "החשבון שלי",
+    "serviceHeading": "שירות לקוחות",
+    "account": "החשבון שלי",
+    "cart": "סל הקניות",
+    "orders": "הזמנות",
+    "about": "אודות",
+    "howItWorks": "איך זה עובד",
+    "contact": "צור קשר",
+    "faq": "שאלות נפוצות",
+    "blog": "הבלוג",
+    "suppliers": "הצטרפו כספקים",
+    "terms": "תקנון",
+    "privacy": "מדיניות פרטיות",
+    "refunds": "ביטולים והחזרות",
+    "accessibility": "הצהרת נגישות",
+    "questions": "יש לך שאלות, הצעות או הערות ?",
+    "addressLabel": "כתובתנו :",
+    "newsletterPlaceholder": "הזן כתובת Email",
+    "newsletterAriaLabel": "כתובת אימייל לניוזלטר",
+    "logoAlt": "קניון EXPRESS",
+    "paymentMethods": "אמצעי תשלום"
+  },
+  "social": {
+    "telegram": "טלגרם",
+    "youtube": "יוטיוב",
+    "instagram": "אינסטגרם",
+    "whatsapp": "וואטסאפ",
+    "twitter": "טוויטר",
+    "facebook": "פייסבוק"
+  },
+  "account": {
+    "overview": "סקירה",
+    "details": "הפרטים שלי",
+    "orders": "ההזמנות שלי",
+    "coupons": "הקופונים שלי",
+    "wishlist": "מועדפים",
+    "wallet": "הארנק שלי",
+    "referrals": "חבר מביא חבר",
+    "subscriptions": "המנויים שלי",
+    "addresses": "כתובות",
+    "tokens": "אמצעי תשלום",
+    "notifications": "התראות",
+    "tickets": "הפניות שלי",
+    "security": "אבטחה וכניסה",
+    "navAriaLabel": "ניווט באזור האישי",
+    "greeting": "שלום"
   }
 }
