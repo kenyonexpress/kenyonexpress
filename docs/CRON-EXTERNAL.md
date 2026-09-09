@@ -102,6 +102,7 @@ file is in a repository.
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
+13 https://kenyonexpress.vercel.app/api/cron/settlement-reconcile GET  20 4 * * *    Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -138,6 +139,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 9d | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/price-schedule` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
+| 13 | 04:20 daily | `20 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/settlement-reconcile` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -157,6 +159,25 @@ timing changes with the scheduler.
   never finalised. That state is the worst one in the system and this is what
   notices it.
 - **`reconcile`** matches the day's payments against orders.
+- **`settlement-reconcile`** matches each paid order LINE against the split it
+  says it was sold under, and both against the money journal. **04:20, twenty
+  minutes after `reconcile`, and the order matters**: `reconcile` establishes
+  that the right total moved, and this asks how that total was divided between
+  the platform and the supplier. Running it first would report a split as wrong
+  while the total it is a split of is still unverified.
+  It is the only thing in the system that reads `order_items.platform_percent`
+  and `order_items.commission_agorot` against each other. Nothing else can: the
+  terminal never knew about the split, so a supplier can be paid the wrong
+  amount for months while every reconciliation report is green.
+  It reports and never repairs -- whether a line charged 5% against a 10%
+  snapshot was sold at 5 or at 10 is not derivable from the row, because both
+  numbers are on it and they contradict each other.
+  `supabase/settlement-known-issues.json` holds what is already true of
+  production, so the alert fires on a NEW finding; an entry that stops firing is
+  reported too, because "somebody fixed it" and "the check broke" look identical
+  from here. The `settlement_gap` alert kind needs
+  `migrations/pending/214_settlement_gap_kind.sql`; until it is applied the job
+  finds everything, fails to enqueue with a 23514, and says so.
 - **`price-schedule`** applies flash deals whose moment has come. **Every five
   minutes, and the granularity is the feature**: a deal scheduled for 14:00
   that started at 15:00 is not the deal that was advertised. A due row in the

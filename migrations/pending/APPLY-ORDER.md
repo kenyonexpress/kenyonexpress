@@ -1,5 +1,21 @@
 # Apply order
 
+## 2026-09-09: 214, and the file it makes unapplyable
+
+`214_settlement_gap_kind.sql` adds one notification kind and can go in at any
+point. It touches one CHECK constraint and nothing else.
+
+**It has one ordering rule and one prohibition.** Apply it AFTER any other
+pending file that restates `notification_outbox_kind_check`, because the later
+of two restatements wins and the earlier one's names vanish.
+
+**`200_wishlist_alert_kinds.sql` must not be applied at all.** It is already in
+production - `price_drop` and `back_in_stock` are live, read on 2026-09-09 -
+and nothing recorded it. Its guard rejects any live name it does not restate,
+so it now raises on the two names it added itself. That is the right failure,
+and it is a failure: do not run it. 214 restates all sixteen live kinds plus
+its own.
+
 ## 2026-09-09: 184 NOT APPLIED, corrected, and given a preflight
 
 184 is the last file in the queue and it stays unapplied. It rebuilds the

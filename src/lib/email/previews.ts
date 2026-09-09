@@ -187,6 +187,41 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
       { kind: 'amount_mismatch', transaction_id: '99887767', amount_agorot: 11_100 },
     ],
   }),
+  fromOutbox('settlement_gap', 'פער בפיצול מול הספק', 'operator', {
+    // The three rows below are PRODUCTION as measured on 2026-09-09, with the
+    // ids shortened. Using them rather than invented numbers is what makes the
+    // preview show what the mail will actually look like the first time it
+    // fires: three lines whose percent and whose money are two different
+    // answers on one row.
+    critical: 3,
+    day: '2026-09-09',
+    rows: [
+      {
+        kind: 'percent_contradiction',
+        orderItemId: '11129c4f',
+        orderId: 'd3a5aa99',
+        expectedAgorot: 180,
+        actualAgorot: 90,
+        platformPercent: 10,
+      },
+      {
+        kind: 'percent_contradiction',
+        orderItemId: '4ba29dc9',
+        orderId: '79f488aa',
+        expectedAgorot: 79_900,
+        actualAgorot: 3995,
+        platformPercent: 100,
+      },
+      {
+        kind: 'journal_missing',
+        orderItemId: 'ef81705d',
+        orderId: '79f488aa',
+        expectedAgorot: 1800,
+        actualAgorot: null,
+        platformPercent: 10,
+      },
+    ],
+  }),
   {
     id: 'magic_link',
     labelHe: 'קישור התחברות',

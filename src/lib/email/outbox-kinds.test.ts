@@ -49,6 +49,15 @@ const CHECK_ACCEPTS = [
   'welcome',
   'account_deleted',
   'order_shipped',
+  // Re-measured 2026-09-09 against production. These two were listed below as
+  // "renders but the constraint rejects", on the strength of
+  // `migrations/pending/README.md` saying 200 was written and not applied.
+  // `pg_get_constraintdef` says otherwise: the live constraint carries both.
+  // 200 was applied at some point and nothing in the repository recorded it,
+  // so this file was describing a database that no longer exists -- the exact
+  // failure its own header is about, in the opposite direction.
+  'price_drop',
+  'back_in_stock',
 ] as const
 
 /**
@@ -74,9 +83,14 @@ const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
  * The other direction: kinds this application can RENDER and ENQUEUE, that the
  * live constraint does not accept yet.
  *
- * `price_drop` and `back_in_stock` arrive with `migrations/pending/200`, and
- * `/api/cron/wishlist-alerts` enqueues both. Until 200 is applied the insert
- * fails with 23514.
+ * `settlement_gap` arrives with `migrations/pending/214`, and
+ * `/api/cron/settlement-reconcile` enqueues it. Until 214 is applied the
+ * insert fails with 23514 and the job logs that it found the problems and
+ * could not mail about them.
+ *
+ * `price_drop` and `back_in_stock` used to be here on the strength of
+ * `migrations/pending/README.md`. Both are live; they moved up into
+ * CHECK_ACCEPTS on 2026-09-09 when the constraint was actually read.
  *
  * THIS IS NOT AN EXCUSE LIST, and the assertion below is what keeps it from
  * becoming one: every name here must have a caller that HANDLES `23514`. That
@@ -89,13 +103,17 @@ const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
  * real limit of the gate and worth naming rather than leaving to be
  * rediscovered.
  */
-const RENDERS_BUT_CONSTRAINT_REJECTS: readonly string[] = ['price_drop', 'back_in_stock']
+const RENDERS_BUT_CONSTRAINT_REJECTS: readonly string[] = ['settlement_gap']
 
-// Re-measured 2026-09-09, when 183 restated the constraint. The live list had
-// grown from twelve to fourteen since the 08-19 measurement: `account_deleted`
+// Re-measured 2026-09-09 twice. The first reading, when 183 restated the
+// constraint, took the live list from twelve to fourteen: `account_deleted`
 // (150) and `order_shipped` (183). 183 as drafted restated only the twelve it
 // knew plus order_shipped, which would have DROPPED account_deleted; the
 // preflight caught it and the file was corrected before it was applied.
+//
+// The second reading, the same evening and for 214, found sixteen: 200 had
+// been applied and no file in this repository said so. That is why this
+// constant exists as a re-measurement date and not as a "checked once".
 const MEASURED_AT = '2026-09-09'
 
 /** A payload fat enough that every builder's own guards are satisfied. */

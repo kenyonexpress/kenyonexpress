@@ -9,7 +9,12 @@
     "products": "Products",
     "account": "My Account",
     "cart": "Cart",
-    "search": "Search"
+    "search": "Search",
+    "pagination": {
+      "label": "Page navigation",
+      "previous": "Previous page",
+      "next": "Next page"
+    }
   },
   "auth": {
     "login": "Login",

@@ -1,0 +1,22 @@
+{
+  "$what": "Every settlement finding that is TRUE OF PRODUCTION TODAY, so a new one is visible against a known floor instead of paging every night about three rows from July.",
+  "$why": "All three paid lines in production were split at a flat 5% while carrying a platform_percent snapshot that says 10%, 10% and 100%. That is the fixed commission 070 removed from the money path, left behind on rows written before it. Demanding zero would make /api/cron/settlement-reconcile red on its first run and every run after, and an alert that is always on is an alert nobody reads.",
+  "$why_not_fixed_here": "Repairing them means writing to production money rows: deciding whether the ₪799 supplier is owed ₪0 (what the percent says) or ₪759.05 (what the money says), and whether the ₪18 coupons were sold at 5% or 10%. Those are the operator's calls, and a DB write to fix them is one of the four things this agent stops for.",
+  "$rules": "src/lib/payments/settlement-reconciliation.ts. The job: src/app/api/cron/settlement-reconcile/route.ts.",
+  "$how_to_shrink_this": "Correct the row, then delete the entry. The job reports an entry that STOPPED firing under `silenced`, so the list cannot quietly keep names of things that were already fixed - or hide a check that broke.",
+  "$measured_at": "2026-09-09",
+  "known": {
+    "percent_contradiction:11129c4f-1705-403d-a7bd-25ca76e91a25": {
+      "order": "d3a5aa99-ed75-4bf4-8dfa-ad0035be848c",
+      "detail": "coupon, ₪18 paid on site, platform_percent 10.00 implies ₪1.80 commission and the row charges ₪0.90 (5%)"
+    },
+    "percent_contradiction:ef81705d-8fa3-4dcc-9627-4215efc02162": {
+      "order": "79f488aa-549a-40dd-af80-eb66d886668f",
+      "detail": "coupon, ₪18 paid on site, platform_percent 10.00 implies ₪1.80 commission and the row charges ₪0.90 (5%)"
+    },
+    "percent_contradiction:4ba29dc9-58e3-42b3-8612-ab95362259eb": {
+      "order": "79f488aa-549a-40dd-af80-eb66d886668f",
+      "detail": "physical, ₪799 paid on site, platform_percent 100.00 implies ₪799 commission and the row charges ₪39.95 (5%), leaving ₪759.05 as supplier_immediate"
+    }
+  }
+}

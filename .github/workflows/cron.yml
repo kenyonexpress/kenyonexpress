@@ -1,4 +1,4 @@
-# The twelve scheduled jobs, run from Actions.
+# The seventeen scheduled jobs, run from Actions.
 #
 # `vercel.json` deliberately has no `crons` key: Hobby registers two jobs at
 # daily granularity and silently ignores the rest, so four of the ten - three on
@@ -47,6 +47,11 @@ on:
     - cron: '30 2 * * *'
     - cron: '40 3 * * *'
     - cron: '0 4 * * *'
+    # 04:20: settlement-reconcile, twenty minutes after reconcile on purpose.
+    # reconcile asks the terminal what it charged; this asks how that charge
+    # was split. Running them in the other order would report a split as wrong
+    # while the total it is a split OF is still unverified.
+    - cron: '20 4 * * *'
     # 05:00: wishlist-alerts, an hour after price-snapshot on purpose. The
     # price-drop comparison reads today's row out of price_history, so running
     # first would compare today against a day nobody has recorded yet -- and

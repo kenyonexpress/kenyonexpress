@@ -19,7 +19,17 @@ export function adminAlertRecipient(env: NodeJS.ProcessEnv = process.env): strin
   return contactEmail(env)
 }
 
-export type AdminAlertKind = 'invoice_dead' | 'low_stock' | 'reconciliation_gap'
+export type AdminAlertKind =
+  | 'invoice_dead'
+  | 'low_stock'
+  | 'reconciliation_gap'
+  /**
+   * The money moved correctly and was SPLIT wrongly. Its own kind and not
+   * `reconciliation_gap`, because the dedupe key below is kind plus day and
+   * both jobs run around 04:00: sharing a name would make whichever one
+   * enqueued second look like a duplicate and send nothing.
+   */
+  | 'settlement_gap'
 
 /**
  * The dedupe key an alert is queued under.

@@ -71,6 +71,15 @@ export type NotificationKind =
   | 'low_stock'
   /** Operator alert: our records and the terminal's disagree about money. */
   | 'reconciliation_gap'
+  /**
+   * Operator alert: the total is right and the SPLIT is not. An order line's
+   * commission does not match the `platform_percent` snapshotted on the same
+   * row, or the money journal and the line disagree, or a completed refund was
+   * never journalled. Accepted by the constraint from
+   * `migrations/pending/214`; the builder ships first so an approved 214 finds
+   * the drain already able to render what it lets in.
+   */
+  | 'settlement_gap'
   /** The card credit went through. Enqueued by `refundOrder` after the money moved. */
   | 'refund_completed'
   /** First successful sign-in. Deduped on the user id, so only the first one lands. */
@@ -818,6 +827,101 @@ export function buildReconciliationGapEmail(
 }
 
 /**
+ * The split is wrong, to the operator who is the only one who can decide it.
+ *
+ * WHY THIS IS NOT `reconciliation_gap` WORDED DIFFERENTLY. That alert says the
+ * wrong total moved, and a wrong total is a customer complaint the same hour.
+ * This one says the right total moved and was divided wrongly between the
+ * platform and the supplier, which nobody complains about: the customer paid
+ * what the page said, the terminal agrees with the payment row, and only the
+ * supplier statement is wrong, silently, every month.
+ *
+ * WHY IT NAMES THE LINE AND NOT THE ORDER. The split is a per-line fact -
+ * `platform_percent` is snapshotted onto `order_items` - and an order can hold
+ * one correct line and one wrong one. An alert that named only the order would
+ * send somebody to read every line to find which.
+ *
+ * IT ASKS A QUESTION RATHER THAN REPORTING A FIX. Whether a line charged 5% on
+ * a 10% snapshot was sold at 5 or at 10 is not derivable from the row: both
+ * numbers are on it and they contradict each other. The mail states both and
+ * stops, because the job deliberately does not repair money rows.
+ */
+export function buildSettlementGapEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const critical = Math.round(asNumber(payload.critical))
+  if (critical <= 0) return null
+
+  const day = asText(payload.day) ?? ''
+  const rows = Array.isArray(payload.rows) ? (payload.rows as Record<string, unknown>[]) : []
+  const url = `${trimSite(siteUrl)}/admin/reports`
+
+  const subject = `⚠️ ${critical} פערי פיצול תשלום מול הספקים (${day})`
+
+  const describe = (row: Record<string, unknown>): string => {
+    // The line, when there is one. A refund finding has no line, and printing
+    // an empty identifier would read as a missing value rather than as the
+    // order-level finding it is.
+    const subjectId = asText(row.orderItemId) ?? asText(row.orderId) ?? '—'
+    const at = ltrText(subjectId)
+    // `== null` and not `asText`: these arrive as numbers, and every finding
+    // carries both keys with `null` where the check has no amount to state.
+    const expected = row.expectedAgorot == null ? null : asNumber(row.expectedAgorot)
+    const actual = row.actualAgorot == null ? null : asNumber(row.actualAgorot)
+    const percent = row.platformPercent == null ? null : asNumber(row.platformPercent)
+
+    switch (asText(row.kind)) {
+      case 'percent_contradiction':
+        return `${at}: השורה שמורה על ${percent ?? '?'}% ולפי זה העמלה ${formatAgorot(expected ?? 0)}, ובפועל נגבתה ${formatAgorot(actual ?? 0)}`
+      case 'percent_missing':
+        return `${at}: אין ${'platform_percent'} על השורה, ולכן שום דבר לא מסביר עמלה של ${formatAgorot(actual ?? 0)}`
+      case 'split_not_conserved':
+        return `${at}: הלקוח שילם ${formatAgorot(expected ?? 0)} והחלוקה מסתכמת ב-${formatAgorot(actual ?? 0)}`
+      case 'journal_missing':
+        return `${at}: שורה משולמת של ${formatAgorot(expected ?? 0)} שלא נרשמה ביומן הכספים`
+      case 'journal_drift':
+        return `${at}: היומן רשום על ${formatAgorot(actual ?? 0)} והשורה על ${formatAgorot(expected ?? 0)}`
+      case 'refund_unjournalled':
+        return `${at}: זיכוי של ${formatAgorot(expected ?? 0)} הושלם ולא נרשם ביומן`
+      case 'journal_orphan':
+        return `${at}: רשומת יומן על ${formatAgorot(actual ?? 0)} לשורה שכבר אינה משולמת`
+      default:
+        return `${at}: ${asText(row.kind) ?? 'ממצא'}`
+    }
+  }
+
+  const text = [
+    `נמצאו ${critical} שורות שהסכום שלהן נכון והפיצול בין הפלטפורמה לספק אינו.`,
+    '',
+    'הסליקה מול המסוף לא תתפוס את זה: המסוף מעולם לא ידע על הפיצול.',
+    'מה שמושפע הוא דוח הספק והתשלום שיוצא בפועל.',
+    '',
+    ...rows.map((row) => `— ${describe(row)}`),
+    '',
+    'אף אחד מהם אינו לתיקון אוטומטי. איזה משני המספרים שעל השורה הוא הנכון',
+    'היא החלטה תפעולית, ולכן העבודה הזאת מדווחת ואינה מתקנת.',
+    '',
+    ltrText(url),
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:14px;color:${INK};margin-top:10px">הסכום שנגבה נכון. החלוקה בין הפלטפורמה לספק אינה, וההתאמה מול המסוף לא תתפוס את זה כי המסוף מעולם לא ידע על הפיצול.</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:12px;line-height:2">
+          ${rows.map((row) => `<div>${escapeHtml(describe(row))}</div>`).join('')}
+        </div>
+        <div style="font-size:13px;color:${MUTED};margin-top:12px">אף ממצא כאן אינו מתוקן אוטומטית: איזה משני המספרים שעל השורה נכון היא החלטה תפעולית.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">פתיחת הדוחות באדמין</a>
+      </div>`,
+    'התראה תפעולית, לא הודעה ללקוח.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
  * Refund done, to the customer whose card was credited.
  *
  * WHAT THIS EMAIL MUST NOT DO: promise a date. Cardcom credits the card; when
@@ -1060,6 +1164,8 @@ export function buildNotification(
       return buildLowStockEmail(payload, siteUrl)
     case 'reconciliation_gap':
       return buildReconciliationGapEmail(payload, siteUrl)
+    case 'settlement_gap':
+      return buildSettlementGapEmail(payload, siteUrl)
     case 'refund_completed':
       return buildRefundCompletedEmail(payload, siteUrl)
     case 'welcome':

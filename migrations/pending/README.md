@@ -1,5 +1,42 @@
 # `migrations/pending/`
 
+## 2026-09-09: 214 WRITTEN, not applied, and reading the constraint corrected this file
+
+`214_settlement_gap_kind.sql`. One notification kind, `settlement_gap`, so
+`/api/cron/settlement-reconcile` can reach a human.
+
+**It cannot share `reconciliation_gap`.** The outbox dedupes on
+`admin:<kind>:<day>`. Both jobs run within twenty minutes of each other, so one
+kind for two jobs means whichever enqueued second is swallowed as a duplicate -
+and silence is the exact thing both of them exist to prevent.
+
+**200 IS APPLIED, AND THIS FILE SAID IT WAS NOT.** `pg_get_constraintdef` on
+2026-09-09 returned sixteen kinds including `price_drop` and `back_in_stock`,
+which are 200's two. Nothing in the repository recorded the application. The
+entry below still says "200 WRITTEN, not applied" as it was written; this
+paragraph is the correction rather than an edit, because a manifest that
+silently rewrites its own history is a manifest nobody can date.
+
+Two other places were wrong the same way and are fixed in the same commit:
+`src/lib/email/outbox-kinds.test.ts` listed both kinds as rejected by the live
+constraint, and the wishlist alert path was believed to be degrading to 23514
+when it has in fact been able to send.
+
+**DO NOT APPLY 200.** Its guard refuses any live name it does not restate, and
+the live constraint now carries the two names 200 itself added - so it raises
+rather than dropping anything. 214 carries all sixteen forward plus its own.
+
+**Verified against production without applying**, with one rolled-back `DO`
+block: the guard passed against the live sixteen, the constraint was dropped and
+recreated at seventeen, `fn_enqueue_notification('settlement_gap', ...)` landed
+a row, an unknown kind was still refused with 23514, and the block ended in an
+unconditional `RAISE`. Re-read afterwards: sixteen kinds, zero outbox rows.
+Nothing left behind.
+
+Order: independent of everything else pending, except that it must be applied
+AFTER any file that restates `notification_outbox_kind_check`. Today there is
+one such file, 200, and it must not be applied at all.
+
 ## 2026-09-09: 213 WRITTEN, not applied, and one constraint is the whole design
 
 `213_cabins_phase2.sql`.

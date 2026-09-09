@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * THE TEN SCHEDULED JOBS ARE DESCRIBED IN FOUR PLACES. THEY MUST AGREE.
+ * THE SCHEDULED JOBS ARE DESCRIBED IN FOUR PLACES. THEY MUST AGREE.
  *
  * WHY THIS IS WORTH A TEST. These ten have already been silently unscheduled
  * once. They were declared in `vercel.json`, the plan registers two of them at
@@ -42,7 +42,7 @@ const manifest = JSON.parse(read(MANIFEST_PATH)) as {
 const jobs = manifest.jobs
 
 describe('the scheduled job inventory', () => {
-  it('names the sixteen jobs and nothing else', () => {
+  it('names the seventeen jobs and nothing else', () => {
     // A new cron route is a deliberate diff here. An undeclared one would be a
     // handler that exists, is reachable, and is never called by anything.
     expect(jobs.map((job) => job.name)).toEqual([
@@ -62,6 +62,7 @@ describe('the scheduled job inventory', () => {
       'whatsapp',
       'retention',
       'weekly-digest',
+      'settlement-reconcile',
     ])
   })
 

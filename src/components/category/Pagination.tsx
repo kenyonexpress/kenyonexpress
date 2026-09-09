@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n/messages'
 import Link from 'next/link'
 
 type Props = {
@@ -57,13 +58,17 @@ export default function Pagination({ pathname, params, currentPage, totalPages }
   const nextDisabled = currentPage >= totalPages
 
   return (
-    <nav className="category-pagination" aria-label="ניווט בין עמודים">
+    <nav className="category-pagination" aria-label={t('nav.pagination.label')}>
       {prevDisabled ? (
         <span className="is-disabled" aria-hidden>
           <Chevron dir="prev" />
         </span>
       ) : (
-        <Link href={hrefFor(pathname, params, currentPage - 1)} aria-label="העמוד הקודם" rel="prev">
+        <Link
+          href={hrefFor(pathname, params, currentPage - 1)}
+          aria-label={t('nav.pagination.previous')}
+          rel="prev"
+        >
           <Chevron dir="prev" />
         </Link>
       )}
@@ -89,7 +94,11 @@ export default function Pagination({ pathname, params, currentPage, totalPages }
           <Chevron dir="next" />
         </span>
       ) : (
-        <Link href={hrefFor(pathname, params, currentPage + 1)} aria-label="העמוד הבא" rel="next">
+        <Link
+          href={hrefFor(pathname, params, currentPage + 1)}
+          aria-label={t('nav.pagination.next')}
+          rel="next"
+        >
           <Chevron dir="next" />
         </Link>
       )}

@@ -763,6 +763,16 @@ describe('the pending migration inventory', () => {
       // dates are taken through the view while the bookings table itself is
       // unreadable.
       '213_cabins_phase2.sql',
+      // 214 WRITTEN 2026-09-09, not applied. One notification kind,
+      // `settlement_gap`, for the split reconciler. It restates
+      // `notification_outbox_kind_check` in full, which is the same shape that
+      // nearly deleted `account_deleted` in 183, so it carries the same guard
+      // and the list was read out of production rather than out of a file.
+      // Reading it corrected the repository: 200 is APPLIED, `price_drop` and
+      // `back_in_stock` are live, and three places here said otherwise. 200
+      // must now NOT be applied -- its own guard would raise on the two names
+      // it added -- and 214 carries them forward.
+      '214_settlement_gap_kind.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

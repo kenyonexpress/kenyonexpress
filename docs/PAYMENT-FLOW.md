@@ -501,7 +501,141 @@ Per line, at the application level:
 
 ---
 
-## 11. Known discrepancies
+## 11. Phase 1: full charge on site, partial transfer to the supplier
+
+**One charge, two owners.** The customer's card is charged the full price once,
+by us, on our terminal. Nothing is charged by the supplier and nothing is split
+at the terminal: Cardcom sees one transaction for the whole amount and has no
+concept of who the money belongs to afterwards. The division happens in our
+rows, and only in our rows.
+
+That single fact is what section 12 exists for, and it is worth stating before
+any of the mechanics: **the terminal cannot confirm the split, because the
+terminal never knew about it.**
+
+### What decides the division
+
+`products.platform_percent`, **per product, snapshotted onto the order line at
+purchase** into `order_items.platform_percent`. It is snapshotted rather than
+read live because an admin editing a product tomorrow must not change what a
+customer was charged today, and a supplier statement generated next month is
+computed from the line, not from the product.
+
+There is no default. `buildOrderItemSnapshot` refuses a line whose product
+carries no percent rather than inventing one, which is why "all 44 active
+products carry a `platform_percent`" is a fact worth measuring and is measured.
+
+### The three numbers on every line
+
+```
+order_items.paid_on_site_agorot        what the customer paid for this line
+order_items.commission_agorot          ours,   = paid_on_site x platform_percent
+order_items.supplier_immediate_agorot  theirs, = paid_on_site - commission
+```
+
+The supplier's share is the **residual**, never a second percentage applied to
+the same base. Applying the mirror percent independently is how two halves come
+to disagree by one agora on a rounding boundary; subtracting cannot.
+
+`escrow_release_agorot` is the legacy fourth column. The current engine leaves
+it at zero on every line it writes. It is non-zero only on the pre-070 coupon
+rows still in production, where the supplier's share sat in escrow instead of
+being immediate, and it is counted into the supplier share wherever
+conservation is checked so those rows are not reported for a model they were
+never written under.
+
+### The journal
+
+`settlement_events` (migration 094, applied 2026-07-31) records what HAPPENED,
+with a time on it, alongside `order_items`, which records what was AGREED.
+
+- `charge_settled` -- one per line of a paid order, written by
+  `buildChargeSettledEvents` and `recordSettlementEvents`. Carries its own copy
+  of the percent it was computed under.
+- `refund_issued` -- written by `refundOrder`, keyed
+  `refund_issued:<payment_id>`.
+- `supplier_debit` -- a supplier share that was already released and is being
+  clawed back by a refund. The amount sits POSITIVE and the direction is the
+  kind, because 094's CHECK refuses negatives on all four money columns on
+  purpose.
+
+**The journal write cannot throw.** It runs after the card has been charged and
+the order closed, and a journal row is not worth unwinding a payment for. A
+failure is logged and never reaches the caller.
+
+### The supplier statement
+
+`buildSettlementStatement` (`src/lib/invoices/settlement-statement.ts`) groups
+a supplier's lines by Israeli calendar month and totals what they are owed. It
+is computed from the SPLIT columns, not from the order total -- which is the
+whole reason a wrong split is expensive: the statement, `/admin/reports` and
+the payout that is actually wired are all downstream of the same three numbers,
+and all three agree with each other while being wrong together.
+
+### Refunds reverse it
+
+`refundOrder` writes `refund_issued` and, where a supplier share had already
+been released, `supplier_debit`. The customer's credit and the ledger reversal
+are one path: a refund that credited the card and left the ledger alone would
+leave a supplier owed money for a sale that no longer exists.
+
+---
+
+## 12. The job that checks the split
+
+`/api/cron/settlement-reconcile`, daily at 04:20 UTC, twenty minutes after
+`/api/cron/reconcile`.
+
+**Two different questions, and the order between them is deliberate.**
+`reconcile` asks the terminal what it charged and diffs that against
+`payments`: did the right total move. This asks how that total was divided.
+Running the split check first would report a split as wrong while the total it
+is a split of was still unverified.
+
+**Seven checks**, in `src/lib/payments/settlement-reconciliation.ts`, which is
+pure and separate from the route so production numbers can be test fixtures
+rather than paragraphs:
+
+| finding | what it means |
+| --- | --- |
+| `split_not_conserved` | commission + supplier share is not what the customer paid |
+| `percent_contradiction` | the snapshotted percent does not produce the commission on the same row |
+| `percent_missing` | no `platform_percent`, so nothing justifies the split |
+| `journal_drift` | journal and line both exist and disagree |
+| `refund_unjournalled` | a completed refund with no `refund_issued` row |
+| `journal_missing` | a paid line with no `charge_settled` row, on or after the epoch |
+| `journal_orphan` | a `charge_settled` row whose line is not paid any more |
+
+**The epoch.** `settlement_events` arrived on 2026-07-31 and all four
+production orders were paid on 2026-07-21. Reporting those as unjournalled
+would be true, unfixable and therefore noise, so lines paid before the journal
+existed are counted as `beforeJournal` rather than dropped -- an exclusion
+nobody can see is how a gate stops covering what it claims to cover. The
+percent checks are NOT epoch-bound: those rows are wrong today, and a statement
+generated today would use them.
+
+**It reports and never repairs**, and that is not timidity. Whether a line
+charged 5% against a 10% snapshot was sold at 5 or at 10 is not derivable from
+the row: both numbers are on it and they contradict each other. A job that
+guessed would turn one wrong number into one wrong number plus an audit trail
+saying it was reviewed.
+
+**The floor.** `supabase/settlement-known-issues.json` holds what is already
+true of production, so a NEW finding is what pages. An entry that STOPS firing
+is reported too, under `silenced`, because "somebody fixed the row" and "the
+check broke" look identical from here.
+
+**The alert** is `settlement_gap`, its own outbox kind and deliberately not
+`reconciliation_gap`: the dedupe key is kind plus day and both jobs run within
+twenty minutes, so sharing a name would make whichever enqueued second look
+like a duplicate and send nothing. The kind needs
+`migrations/pending/214_settlement_gap_kind.sql`; until it is applied the job
+finds everything, fails the enqueue with 23514, reads that code and says so
+rather than throwing in a cron at 04:20.
+
+---
+
+## 13. Known discrepancies
 
 Recorded rather than fixed, because this is a documentation branch.
 
@@ -558,8 +692,13 @@ Recorded rather than fixed, because this is a documentation branch.
 4. **`migrations/pending/` still holds 23 `.sql` files on disk.**
 
    **NO LONGER TRUE, re-measured 2026-09-09.** The applied files moved to
-   `migrations/applied/`, and `pending/` now holds three migrations and two
-   preflights. All three are genuinely outstanding, which is the opposite of
+   `migrations/applied/`, and `pending/` held three migrations and two
+   preflights at that moment. **Re-counted the same evening: 29 migrations and
+   the two preflights**, 162 through 214, because a section's worth of work
+   landed between the two readings. The count is not the point and never was;
+   `src/__tests__/pending-migrations-inventory.test.ts` names every file and
+   fails on an unlisted one, which is what makes `ls` on that directory
+   evidence. All three are genuinely outstanding, which is the opposite of
    the situation this note was written about: `162_cron_schedule` (approved,
    blocked on vault seeding), `184_orders_monthly_partitioning` (deliberately
    unapplied, needs a maintenance window) and `188_pin_invoker_search_path`
@@ -580,3 +719,30 @@ Recorded rather than fixed, because this is a documentation branch.
    `order_items.cashback_earned_ils`. The header of the migration file itself
    says the same thing, and `src/lib/commerce/order-money-columns.ts` says it at
    the call site.
+
+6. **All three paid lines in production are split at a flat 5%, against
+   snapshots that say something else.** Measured 2026-09-09, and this is the
+   finding that `/api/cron/settlement-reconcile` was built by:
+
+   ```
+   ₪18 coupon,   platform_percent 10.00, commission ₪0.90   → 5%
+   ₪18 coupon,   platform_percent 10.00, commission ₪0.90   → 5%
+   ₪799 physical, platform_percent 100.00, commission ₪39.95 → 5%
+   ```
+
+   5% is the fixed commission that 070 removed from the money path and that
+   this codebase says has no default; it is left on rows written before it. The
+   snapshot and the money are two different answers on one row, and the row is
+   what a supplier statement is built from: read the percent and the ₪799
+   supplier is owed ₪0, read the money and they are owed ₪759.05.
+
+   Conservation holds on all three, which is why nothing caught them: the
+   columns add up, they just add up to a division nobody agreed to. Not fixed
+   here, because choosing which of the two numbers is the real one is the
+   operator's call and acting on it is a write to production money rows. The
+   three are the entire contents of
+   `supabase/settlement-known-issues.json`, so a fourth is what pages.
+
+   `settlement_events` holds 0 rows and `refunds` holds 0, both re-read the
+   same day. Every one of these three predates the journal epoch, so the
+   journal checks are silent on them and the percent checks are not.
