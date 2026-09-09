@@ -1,5 +1,34 @@
 # `migrations/pending/`
 
+## 2026-09-09: 221 + 222 WRITTEN, not applied - the rating cache and helpful votes
+
+`221_review_rating_cache.sql`, `222_review_helpful_votes.sql`. Both for
+`SECTIONS 25`, and both are counters maintained by a trigger.
+
+**221 fixes a defect that has not happened yet.** `getRatingSummaries` folds
+every approved review in TypeScript with no `.limit()`, so it inherits
+PostgREST's row ceiling: past it, the average is computed over whichever rows
+came back, keeps its one decimal place, and is simply wrong with nothing
+raising. `rating_sum` + `rating_count` on `products`, not a stored average,
+because only sum and count can be updated from a delta - a stored average would
+force the trigger to rescan, which is the cost the cache exists to remove.
+
+The two transitions a naive trigger misses are the only two that will ever
+happen here: every review arrives `pending`, so approval is an UPDATE of
+`status` rather than an INSERT, and 185 made removal a soft delete rather than
+a DELETE. Both probed.
+
+**222 is one row per person per review, keyed `(review_id, user_id)`.** The
+primary key IS the anti-abuse design; a rate limit slows a second vote down and
+a key makes it impossible, which the probe confirms. Votes are readable only by
+the voter: who found what helpful is a behavioural trace, and publishing it
+would let anyone profile any customer straight off the catalogue.
+
+Both functions are `SECURITY DEFINER` with an empty `search_path`, because the
+writer is a customer who holds no UPDATE on `products` and, since 199, holds
+UPDATE on `reviews` only for the three `supplier_reply` columns. Neither trigger
+widens that.
+
 ## 2026-09-09: THIS DIRECTORY OVERSTATES WHAT IS OUTSTANDING. Read this first.
 
 Three files were moved to `migrations/applied/` today (193, 195, 200) because

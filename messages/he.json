@@ -110,5 +110,13 @@
     "security": "אבטחה וכניסה",
     "navAriaLabel": "ניווט באזור האישי",
     "greeting": "שלום"
+  },
+  "reviews": {
+    "sortLabel": "מיון:",
+    "sortRecent": "החדשות ביותר",
+    "sortHelpful": "המועילות ביותר",
+    "helpfulAsk": "ביקורת מועילה?",
+    "helpfulDone": "סימנת כמועילה",
+    "helpfulFailed": "הפעולה נכשלה."
   }
 }

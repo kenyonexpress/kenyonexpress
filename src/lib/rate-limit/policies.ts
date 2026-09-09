@@ -135,6 +135,11 @@ export const RATE_LIMIT_POLICIES = {
   // which turns the moderation queue into a denial of service against the admin
   // reading it. The one-per-reporter unique index handles the other direction.
   review_report: { limit: 20, windowSeconds: 3600, reason: 'review abuse reports, per IP' },
+  // Higher than review_report because voting is the ordinary way to read a
+  // review list and reporting is not. The one-per-person guarantee is the
+  // PRIMARY KEY on review_helpful_votes, not this; this only bounds one
+  // account voting across the whole catalogue.
+  review_helpful: { limit: 60, windowSeconds: 3600, reason: 'review helpful votes, per IP' },
 
   // Added when this layer was rebased onto main: `referral-code` landed on main
   // after the table was first written, and the static audit below is what

@@ -153,6 +153,13 @@ describe('the pending migration inventory', () => {
       // tables the wishlist alerts read, which is how they were noticed.
       '193_price_history.sql',
       '195_stock_waitlist.sql',
+      // 199 APPLIED, and the fourth found this way. Verified object for object,
+      // not just by table existence: the supplier_reply length CHECK, all three
+      // review_reports indexes, the reviews_supplier_reply UPDATE policy, and the
+      // grants that are the actual security boundary here - review_reports is
+      // INSERT-only to authenticated, and on reviews the UPDATE grant is scoped to
+      // exactly supplier_reply, supplier_replied_at and supplier_replied_by.
+      '199_review_replies_and_reports.sql',
       // 200 APPLIED. Production's `notification_outbox_kind_check` carries
       // exactly the sixteen names this file specifies, read with
       // `pg_get_constraintdef` on 2026-09-09. The comment on 214 below already
@@ -384,17 +391,6 @@ describe('the pending migration inventory', () => {
       // customer could mark read but NOT rewrite a title (the column grant),
       // and another user's rows were invisible.
       '198_in_app_notifications.sql',
-      // 199 WRITTEN 2026-09-09, not applied, and the REVOKE in it is the whole
-      // point rather than tidying. `authenticated` already held a TABLE-WIDE
-      // UPDATE grant on `reviews`, inert only because no UPDATE policy existed.
-      // Adding the supplier reply policy would have made it live: the first
-      // version of the file was probed against production and came back
-      // `rewrite_body=ALLOWED`, meaning a supplier could have rewritten the
-      // rating and body of a review about their own business. Re-probed after
-      // the revoke: update_grants=3, own_reply=ALLOWED, rewrite_body=REFUSED,
-      // another supplier's review NO ROWS, a duplicate report REFUSED, and a
-      // reporter reading the queue REFUSED.
-      '199_review_replies_and_reports.sql',
       // 201 WRITTEN 2026-09-09, not applied. Flash deals: a price change with a
       // time on it. `discount_campaigns` (096) schedules a CODE; nothing has
       // ever scheduled a PRICE, so the only way to run one was an operator
@@ -804,6 +800,21 @@ describe('the pending migration inventory', () => {
       // negative cost were each refused, and fixed and variable coexist.
       '219_infra_costs.sql',
       '220_wallet_entries_search_path.sql',
+      // 221 WRITTEN 2026-09-09, not applied. rating_sum + rating_count on
+      // products, maintained by trigger. Sum and count rather than a stored
+      // average, because only those can be updated from a delta. Probed against
+      // production on scratch tables inside a rolled-back DO block - scratch and
+      // not `products` itself, because ADD COLUMN takes an ACCESS EXCLUSIVE lock
+      // and the live site reads that table. All nine transitions correct,
+      // including the two a naive trigger misses: pending -> approved is an
+      // UPDATE and not an INSERT, and removal is a soft delete and not a DELETE.
+      '221_review_rating_cache.sql',
+      // 222 WRITTEN 2026-09-09, not applied. One vote per person per review,
+      // keyed (review_id, user_id), plus the cached helpful_count that makes
+      // sorting by it a single ORDER BY. Probed: the second vote from the same
+      // person is refused by the PRIMARY KEY rather than by application code.
+      // Votes are readable only by their own voter.
+      '222_review_helpful_votes.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

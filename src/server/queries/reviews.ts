@@ -39,6 +39,11 @@ export interface ApprovedReview {
    */
   supplier_reply: string | null
   supplier_replied_at: string | null
+  /**
+   * Votes from other readers. Requires 222; zero on a database without it,
+   * which reads the same as "nobody has voted", and that is true there.
+   */
+  helpful_count: number
 }
 
 export interface ProductReviews {
@@ -62,20 +67,30 @@ const NONE: ProductReviews = { reviews: [], summary: null }
  * the newest optional column and retries, so the answer is always the widest
  * set this database actually has. Ordered newest-migration-first, so a fully
  * migrated deployment succeeds on the first attempt and pays nothing.
+ *
+ * `helpful_count` (222) is on the ladder too. It is fetched but NOT ordered by
+ * here: the list is capped at `limit` for display, so ordering server-side
+ * would change WHICH reviews arrive, and the sort control is meant to reorder
+ * what the reader already has rather than fetch a different set. The order that
+ * decides membership stays recency, which is the honest one for a capped list.
  */
 async function readList(
   supabase: ReturnType<typeof createPublicClient>,
   productId: string,
   limit: number,
 ) {
-  const COLUMNS = [
-    'id, rating, title, body, created_at, supplier_reply, supplier_replied_at',
-    'id, rating, title, body, created_at',
-    'id, rating, body, created_at',
+  // Each rung is the widest projection a given set of migrations supports.
+  const RUNGS: { columns: string }[] = [
+    {
+      columns:
+        'id, rating, title, body, created_at, supplier_reply, supplier_replied_at, helpful_count',
+    },
+    { columns: 'id, rating, title, body, created_at, supplier_reply, supplier_replied_at' },
+    { columns: 'id, rating, title, body, created_at' },
+    { columns: 'id, rating, body, created_at' },
   ]
 
-  let result: Awaited<ReturnType<typeof run>> | null = null
-  const run = (columns: string) =>
+  const run = ({ columns }: { columns: string }) =>
     supabase
       .from('reviews' as never)
       .select(columns)
@@ -84,8 +99,9 @@ async function readList(
       .order('created_at', { ascending: false })
       .limit(limit)
 
-  for (const columns of COLUMNS) {
-    result = await run(columns)
+  let result: Awaited<ReturnType<typeof run>> | null = null
+  for (const rung of RUNGS) {
+    result = await run(rung)
     if (result.error?.code !== UNDEFINED_COLUMN) return result
   }
   return result as NonNullable<typeof result>
@@ -125,6 +141,7 @@ export async function getProductReviews(productId: string, limit = 20): Promise<
         created_at: row.created_at ?? '',
         supplier_reply: row.supplier_reply ?? null,
         supplier_replied_at: row.supplier_replied_at ?? null,
+        helpful_count: row.helpful_count ?? 0,
       }))
   const ratings = (ratingsResult.data ?? []) as unknown as { rating: number }[]
   return { reviews, summary: summarizeRatings(ratings.map((row) => row.rating)) }
@@ -156,6 +173,41 @@ export async function getRatingSummaries(
   if (productIds.length === 0) return out
 
   const supabase = createPublicClient()
+
+  // THE CACHE FIRST, AND IT IS NOT ONLY A SPEED CHOICE. The fold below has no
+  // `.limit()`, so it inherits PostgREST's server-side row ceiling: past it,
+  // the average is computed over WHICHEVER approved rows came back. It keeps
+  // its one decimal place, it looks precise, and it is wrong, and nothing
+  // raises. `rating_sum`/`rating_count` (221) are maintained by trigger and
+  // have no such horizon.
+  //
+  // 42703 is 221 being unapplied, which is the state today, so the fold below
+  // is still the everyday path and not a fallback in name only.
+  const cached = await supabase
+    .from('products' as never)
+    .select('id, rating_sum, rating_count')
+    .in('id', productIds as string[])
+
+  if (!cached.error) {
+    for (const row of (cached.data ?? []) as unknown as {
+      id: string
+      rating_sum: number
+      rating_count: number
+    }[]) {
+      // Absent rather than zero: an unrated product must render no stars, not
+      // a fabricated score of zero. Same contract as the fold.
+      if (!row.rating_count) continue
+      out.set(row.id, {
+        count: row.rating_count,
+        average: Math.round((row.rating_sum * 10) / row.rating_count) / 10,
+      })
+    }
+    return out
+  }
+  if (cached.error.code !== UNDEFINED_COLUMN) {
+    log.warn('reviews.rating_cache_failed', { code: cached.error.code ?? null })
+  }
+
   const { data, error } = await supabase
     .from('reviews' as never)
     .select('product_id, rating')

@@ -110,5 +110,13 @@
     "security": "Security and sign-in",
     "navAriaLabel": "Account navigation",
     "greeting": "Hello"
+  },
+  "reviews": {
+    "sortLabel": "Sort:",
+    "sortRecent": "Most recent",
+    "sortHelpful": "Most helpful",
+    "helpfulAsk": "Helpful?",
+    "helpfulDone": "Marked helpful",
+    "helpfulFailed": "That did not work."
   }
 }

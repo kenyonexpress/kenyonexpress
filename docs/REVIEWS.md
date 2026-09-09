@@ -175,7 +175,7 @@ put `42P01` handling in a second place.
 
 | | |
 | --- | --- |
-| `migrations/pending/199_review_replies_and_reports.sql` | reply columns, reports, and the revoke. Not applied. |
+| `migrations/applied/199_review_replies_and_reports.sql` | reply columns, reports, and the revoke. **Applied** (corrected 2026-09-09). |
 | `src/server/actions/supplier/reviews.ts` | the reply, through the customer's own role |
 | `src/app/(supplier)/supplier/reviews/` | the supplier's list and reply box |
 | `src/server/actions/reviews-report.ts` | the objection, one answer for every outcome |
@@ -183,3 +183,56 @@ put `42P01` handling in a second place.
 | `src/components/product/Reviews.tsx` | the reply rendered under the review |
 | `src/server/queries/reviews.ts` | the column ladder, and the supplier-wide rating |
 | `src/lib/seo/json-ld.ts` | `buildSupplierJsonLd` |
+
+---
+
+## 2026-09-09: 199 was applied all along, and two counters were missing
+
+**199 is applied.** It was filed in `migrations/pending/` and every object it
+declares is in production, verified one at a time rather than by the table
+existing: the `reviews_supplier_reply_length` CHECK, all three
+`review_reports` indexes, the `reviews_supplier_reply` UPDATE policy, and the
+grants that are the real boundary here - `review_reports` is INSERT-only to
+`authenticated`, and on `reviews` the UPDATE grant is scoped to exactly
+`supplier_reply`, `supplier_replied_at` and `supplier_replied_by`. It has been
+moved to `migrations/applied/`.
+
+### The aggregate rating had no cache, and the read-time version has a horizon
+
+`getRatingSummaries` selected every approved row for the products on screen and
+folded them in TypeScript. Correct today, with `reviews` at zero rows and 44
+active products. It does not stay correct: the read has no `.limit()`, so it
+inherits PostgREST's server-side row ceiling, and past it the average is
+computed over **whichever approved rows came back**. It keeps its one decimal
+place, it looks precise, and nothing raises.
+
+`221_review_rating_cache.sql` adds `rating_sum` + `rating_count` to `products`,
+maintained by trigger. **Sum and count, not a stored average**, because only
+those can be updated from a delta; an average would force the trigger to rescan
+every review for the product, which is the cost the cache exists to remove.
+
+The two transitions a naive trigger gets wrong are the only two that will ever
+happen on this site: every review arrives `pending`, so approval is an UPDATE of
+`status` rather than an INSERT, and 185 made removal a soft delete rather than a
+DELETE. Both are probed, along with rating edits and a `product_id` move.
+
+`getRatingSummaries` now reads the cache and falls back to the fold on 42703,
+so it behaves identically until 221 is applied.
+
+### "Sort by helpful" needed something to count
+
+`222_review_helpful_votes.sql`. One row per person per review, keyed
+`(review_id, user_id)`. **The primary key is the anti-abuse design**: a rate
+limit slows a second vote down, and a key makes it impossible. The probe
+confirms the second vote takes a `unique_violation`.
+
+Votes are readable only by the voter who cast them. Who found what helpful is a
+behavioural trace, and publishing it would let anyone build a profile of any
+customer straight off the catalogue. The COUNT is public; the votes are not.
+
+The sort is **a pair of links and not a `<select>`**, because this section
+renders inside the cached catalogue tree: the order has to be in the URL for the
+two orderings to be separately cacheable, and a select would need client
+JavaScript to achieve the same thing. Until 222 is applied, asking for "most
+helpful" returns the recency order, which is the same list - nothing can have
+been voted helpful on a database with no votes table.
