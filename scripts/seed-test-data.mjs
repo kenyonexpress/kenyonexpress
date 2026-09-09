@@ -23,6 +23,7 @@
 
 import { readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
+import { assertSeedTargetAllowed } from './seed-target-guard.mjs'
 
 const args = new Set(process.argv.slice(2))
 const CHECK_ONLY = args.has('--check')
@@ -54,6 +55,13 @@ if (!url || !key) {
   )
   process.exit(1)
 }
+
+// BEFORE THE CLIENT EXISTS, LET ALONE A WRITE. This script creates auth users
+// with passwords committed to this repository, one of them with the `admin`
+// role, and until 2026-09-09 it had no opinion whatsoever about which project
+// it was pointed at. See scripts/seed-target-guard.mjs for why that is an
+// authentication backdoor rather than untidy test data.
+assertSeedTargetAllowed(env)
 
 const admin = createClient(url, key, { auth: { persistSession: false } })
 
