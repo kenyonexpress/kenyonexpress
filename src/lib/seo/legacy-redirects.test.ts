@@ -127,18 +127,27 @@ describe('the artefact describes this repository', () => {
   })
 
   it('names the legacy URLs that still 404, rather than only counting them', () => {
-    // Three product URLs the old site served have no destination on this one:
-    // `restaurants-meat-2` and `restaurants-meat-3` exist as DRAFT rows and
-    // `קופון-טסט` does not exist at all (measured against production,
-    // 2026-09-09). None of the three gets a redirect and the reason differs
-    // per row -- a draft can be published, and a 410 would make that
-    // publication unreachable -- so they are named here instead. A fourth
-    // appearing is a change worth seeing.
+    // Two product URLs the old site served have no destination on this one:
+    // `restaurants-meat-2` and `restaurants-meat-3` exist as DRAFT rows
+    // (measured against production, 2026-09-10). Neither gets a redirect,
+    // because a draft can be published and a 410 would make that publication
+    // unreachable -- so they are named here instead. A third appearing is a
+    // change worth seeing.
     expect(map.$sitemap_diff.lost).toEqual([
       '/product/restaurants-meat-2',
       '/product/restaurants-meat-3',
-      '/product/קופון-טסט',
     ])
+  })
+
+  it('gives the confirmed-dead test coupon a 410, not a silent 404', () => {
+    // `קופון-טסט` was WordPress's checkout-test coupon and exists in no
+    // products row in any status, deleted included (production, 2026-09-10).
+    // Unlike the two drafts above its death is permanent, so it carries a 410
+    // -- the one answer that tells a crawler to deindex instead of retrying a
+    // soft 404 forever. The decision lives in CONFIRMED_GONE in the generator.
+    const row = map.redirects.find((r) => r.source === '/product/קופון-טסט')
+    expect(row?.status).toBe(410)
+    expect(row?.rule).toBe('confirmed_gone_410')
   })
 
   it('carries the counts it claims', () => {

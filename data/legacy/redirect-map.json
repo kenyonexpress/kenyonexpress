@@ -3,13 +3,13 @@
   "$why": "public.seo_redirects is empty in production, so every retired URL 404s. This is the map that fills it, corrected against what production actually serves.",
   "$how": "scripts/build-legacy-redirects.mjs reads data/legacy/url-inventory.json (the frozen 2026-08-11 crawl), measures the live catalogue through the anon key, reads the static route tree off src/app, and drops every row whose source is live or whose target is not.",
   "$generated_by": "scripts/build-legacy-redirects.mjs",
-  "$measured_at": "2026-09-10T08:47:37.147Z",
+  "$measured_at": "2026-09-10T08:56:32.959Z",
   "$counts": {
     "inventory": 87,
-    "redirects": 33,
+    "redirects": 34,
     "redirect_301": 20,
-    "redirect_410": 13,
-    "excluded": 54
+    "redirect_410": 14,
+    "excluded": 53
   },
   "$targets": {
     "$predicate": {
@@ -219,12 +219,11 @@
     "legacy_urls": 87,
     "served_unchanged": 51,
     "redirected_301": 20,
-    "gone_410": 13,
-    "lost_404": 3,
+    "gone_410": 14,
+    "lost_404": 2,
     "lost": [
       "/product/restaurants-meat-2",
-      "/product/restaurants-meat-3",
-      "/product/קופון-טסט"
+      "/product/restaurants-meat-3"
     ],
     "new_since_migration": 102
   },
@@ -427,6 +426,14 @@
       "rule": "excluded_status:private",
       "entity": "product",
       "wp_id": 8481
+    },
+    {
+      "source": "/product/קופון-טסט",
+      "target": "",
+      "status": 410,
+      "rule": "confirmed_gone_410",
+      "entity": "product",
+      "wp_id": 8836
     },
     {
       "source": "/recently-viewed",
@@ -754,11 +761,6 @@
       "source": "/product/קוסמטיקאית",
       "reason": "same_path_live",
       "note": "unchanged URL, served today (active product)"
-    },
-    {
-      "source": "/product/קופון-טסט",
-      "reason": "same_path_dead",
-      "note": "unchanged URL with nothing behind it: 404 today"
     },
     {
       "source": "/product/שעון-אפל-חכם-apple-watch-series-7",

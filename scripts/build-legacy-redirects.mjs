@@ -198,6 +198,21 @@ function slugifyHebrew(name) {
  * real products, and a visitor who lands there wants a catalogue, not a
  * tombstone.
  */
+/**
+ * URLs whose death is CONFIRMED permanent, so they get a 410 instead of the
+ * silent 404 the same_path_dead bucket otherwise leaves them with.
+ *
+ * A DECISION, like CATEGORY_OVERRIDES, and deliberately not a rule: most
+ * same-path-dead rows must NOT be here. The two restaurants-meat drafts are
+ * dead only until someone clicks publish, and a 410 would make that
+ * publication unreachable behind a status code crawlers treat as final. This
+ * one is different, and it was measured, not assumed: the slug exists in no
+ * products row in any status, deleted included (production, 2026-09-10). It
+ * was WordPress's checkout-test coupon, it is never coming back, and a 410
+ * tells Google to stop indexing it instead of retrying a soft 404 forever.
+ */
+const CONFIRMED_GONE = new Set(['/product/קופון-טסט'])
+
 const CATEGORY_OVERRIDES = {
   'יופי-בריאות-וטיפוח': 'beauty-health',
   'טלפונים-מחשבים-ואביזרים': 'phones-computers',
@@ -253,6 +268,17 @@ function build(inventory, live, routes) {
       const live = isLive(source)
       if (live) {
         drop(source, 'same_path_live', `unchanged URL, served today (${live})`)
+      } else if (CONFIRMED_GONE.has(source)) {
+        // Dead, and confirmed to stay dead. A 301 is impossible (the path
+        // never moved, so it would point at itself); 410 is the honest answer.
+        redirects.push({
+          source,
+          target: '',
+          status: 410,
+          rule: 'confirmed_gone_410',
+          entity: row.entity,
+          wp_id: row.entity_wp_id ?? null,
+        })
       } else {
         drop(source, 'same_path_dead', 'unchanged URL with nothing behind it: 404 today')
       }
