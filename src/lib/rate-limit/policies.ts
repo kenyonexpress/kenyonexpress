@@ -250,6 +250,42 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'coupon email resend, per VOUCHER rather than per operator',
   },
 
+  // -- The customer support console (`/admin/users/[id]`).
+  //
+  // A goodwill credit is the one tool here that moves money, so it is the
+  // tightest: twenty an hour is far above a real shift and far below what a
+  // compromised staff account would need to drain the adjustments ledger. The
+  // ceiling in the action (2,000 shekels a credit) bounds the size; this bounds
+  // the rate, and neither alone is enough.
+  'admin-wallet-credit': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'manual goodwill credit to a customer wallet, per staff user',
+  },
+  'admin-email-resend': {
+    limit: 40,
+    windowSeconds: 3600,
+    reason: 'resend of a queued transactional email, per staff user',
+  },
+  // The same asymmetry as `voucher-resend` above, for the same reason: counting
+  // only the operator still allows ONE customer to be mailed forty times, and
+  // the inbox that fills is not the operator's. Three per outbox row is the
+  // fix plus one retry.
+  'email-resend': {
+    limit: 3,
+    windowSeconds: 3600,
+    reason: 'transactional email resend, per OUTBOX ROW rather than per operator',
+  },
+  // Opening a read-only customer view writes an audit row and mints a 30-minute
+  // grant. Nothing is spent and nothing is sent, so the limit is not protecting
+  // a resource -- it bounds how fast one staff account can page through other
+  // people's histories, which is the abuse the audit row exists to make visible.
+  'admin-view-as': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'read-only customer view grant, per staff user',
+  },
+
   // -- Image upload. Keyed on the staff user, and DELIBERATELY NOT EXEMPT
   // because it is staff.
   //

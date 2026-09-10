@@ -1,5 +1,8 @@
+import CustomerSupportTools from '@/components/admin/CustomerSupportTools'
+import CustomerTimeline from '@/components/admin/CustomerTimeline'
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import { COUPON_STATUS_LABELS, labelFor } from '@/lib/admin/labels'
+import { MAX_MANUAL_CREDIT_ILS } from '@/lib/admin/manual-credit'
 import { canWriteSection } from '@/lib/admin/permissions'
 import { ROLE_LABELS, requireSection } from '@/lib/admin/rbac'
 import { agorot } from '@/lib/commerce/money'
@@ -7,6 +10,7 @@ import { shekels, shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
 import { ADMIN_WALLET_LEDGER_CAP } from '@/lib/wallet/admin-view'
 import { walletReasonLabel } from '@/server/queries/account'
+import { getCustomerTimeline, listCustomerEmails } from '@/server/queries/admin-customer'
 import { getAdminWalletView } from '@/server/queries/admin-wallet'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -34,7 +38,7 @@ export default async function AdminUserDetailPage(props: {
   // wallet_balances and wallet_transactions: both hold zero rows in production
   // (measured 2026-09-10) while the money sits in the other pair, so the one
   // customer who has a balance was shown 0.00 and "no wallet movements".
-  const [{ data: orders }, walletView, { data: coupons }] = await Promise.all([
+  const [{ data: orders }, walletView, { data: coupons }, timeline, emails] = await Promise.all([
     supabase
       .from('orders')
       .select('id, invoice_number, status, total_ils, created_at')
@@ -49,9 +53,17 @@ export default async function AdminUserDetailPage(props: {
       .eq('user_id', id)
       .order('created_at', { ascending: false })
       .limit(5),
+    getCustomerTimeline(id),
+    listCustomerEmails(id),
   ])
 
   const canEditRoles = canWriteSection(callerRole, 'users')
+  // Two permissions, asked separately, because they ARE two: a goodwill credit
+  // is money (`payments`) and impersonation is not (`users`). Collapsing them
+  // into one `isAdmin` flag would show a support operator a credit form whose
+  // server guard refuses it.
+  const canCredit = canWriteSection(callerRole, 'payments')
+  const canViewAs = canWriteSection(callerRole, 'users')
 
   return (
     <div className="space-y-6">
@@ -171,6 +183,16 @@ export default async function AdminUserDetailPage(props: {
           </ul>
         </section>
       </div>
+
+      <CustomerSupportTools
+        userId={id}
+        emails={emails}
+        canCredit={canCredit}
+        canViewAs={canViewAs}
+        maxCreditIls={MAX_MANUAL_CREDIT_ILS}
+      />
+
+      <CustomerTimeline events={timeline.events} partial={timeline.partial} />
 
       <section className="rounded-xl border border-black/10 bg-white">
         <h2 className="border-b border-black/5 px-5 py-3 text-sm font-semibold text-gray-800">

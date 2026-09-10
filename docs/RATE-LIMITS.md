@@ -84,6 +84,10 @@
 | `admin-voucher-resend` | 30 | 1 h | admin resend of the coupon email, per staff user |
 | `admin-voucher-extend` | 30 | 1 h | admin extension of a voucher deadline, per staff user |
 | `voucher-resend` | 3 | 1 h | coupon email resend, per VOUCHER rather than per operator |
+| `admin-wallet-credit` | 20 | 1 h | manual goodwill credit to a customer wallet, per staff user |
+| `admin-email-resend` | 40 | 1 h | resend of a queued transactional email, per staff user |
+| `email-resend` | 3 | 1 h | transactional email resend, per OUTBOX ROW rather than per operator |
+| `admin-view-as` | 30 | 1 h | read-only customer view grant, per staff user |
 | `admin-upload-url` | 100 | 1 h | presigned R2 PUT minting, per staff user |
 | `admin-image-process` | 60 | 1 h | server-side image conversion, per staff user |
 | `app-session` | 30 | 10 min | app session exchange, per IP |
