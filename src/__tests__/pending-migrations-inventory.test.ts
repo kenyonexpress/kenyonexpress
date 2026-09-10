@@ -303,6 +303,11 @@ describe('the pending migration inventory', () => {
     // claim_order_discount, the expired-order discount sweep and the
     // stranded-payment consume, proven first in a rolled-back DO block and
     // filed here as the record like 217/223/224/226.
+    // 228 IS applied (2026-09-10, `invoice_sequences_228`): the platform's
+    // own sequential invoice numbering (invoice_counters,
+    // fn_next_invoice_number, invoices.series/internal_number), proven first
+    // in a rolled-back DO block (1,2,3 on one series, 1 on another, ACL
+    // service_role only) and filed here as the record like 217/223/224/226/227.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
@@ -312,6 +317,7 @@ describe('the pending migration inventory', () => {
       '224_post059_price_cashback_twins.sql',
       '226_fraud_controls.sql',
       '227_discount_claim_wiring.sql',
+      '228_invoice_sequences.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

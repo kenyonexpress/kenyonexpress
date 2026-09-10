@@ -71,6 +71,10 @@ export const COLOUR_ALLOWLIST = new Set([
   'src/lib/ke-live-revslider-slides.ts',
   'src/lib/ke-live-hero-data.ts',
   'src/lib/coupons/qr-pdf.ts',
+  // The invoice PDF is print, not site chrome, same as qr-pdf above: pdf-lib
+  // takes rgb() components and a tax document's ink does not rebrand with the
+  // site theme.
+  'src/lib/invoices/pdf.ts',
   'src/components/shared/GoogleLogo.tsx',
   'src/app/global-error.tsx',
 ])

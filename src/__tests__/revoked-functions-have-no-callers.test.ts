@@ -78,6 +78,16 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   // `src/server/actions/referrals.ts` is the sanctioned path precisely because
   // it takes the uuid from the session and never from a caller.
   fn_ensure_referral_code: ['src/server/actions/referrals.ts'],
+  // `228_invoice_sequences.sql` revokes PUBLIC/anon/authenticated and grants
+  // service_role, in the same statement set that creates the function. The
+  // single caller is `allocateInvoiceNumber`, reached only from `issueInvoice`,
+  // whose clients are built with `createAdminClient()` (the cron route and the
+  // post-finalize immediate issue) - service_role both times. The revoke is
+  // load-bearing: the counter allocates tax-document numbers, and a session
+  // caller who could bump it would burn numbers into the platform's books.
+  //
+  // CLASSIFIED 2026-09-10, with the migration.
+  fn_next_invoice_number: ['src/server/payments/invoices.ts'],
 }
 
 // Both migration directories. 143-145 were applied through MCP on 2026-09-03

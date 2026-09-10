@@ -61,9 +61,12 @@ const adminClient = {
     update: (payload: unknown) => builder(table, 'update', payload),
     upsert: (payload: unknown) => builder(table, 'upsert', payload),
   }),
+  // Answers come from the same queue mechanism as table calls (key
+  // `rpc.<name>`), defaulting to `{ data: null, error: null }`, which is what
+  // the fixed mock returned before the sequence RPC needed a scriptable one.
   rpc: async (name: string, args: Record<string, unknown>) => {
     rpcCalls.push({ name, args })
-    return { data: null, error: null }
+    return settle(`rpc.${name}`)
   },
 }
 
@@ -73,10 +76,14 @@ vi.mock('@/lib/payments', () => ({
     createDocument: (input: unknown) => createDocument(input, accountId),
   }),
 }))
+const r2State = vi.hoisted(() => ({ configured: false }))
 vi.mock('@/lib/storage/r2', () => ({
-  isR2Configured: () => false,
-  createR2PresignedPutUrl: async () => ({ uploadUrl: '', publicUrl: '' }),
-  r2PublicUrl: (key: string) => key,
+  isR2Configured: () => r2State.configured,
+  createR2PresignedPutUrl: async (key: string) => ({
+    uploadUrl: `https://r2.example/upload/${key}`,
+    publicUrl: `https://cdn.example/${key}`,
+  }),
+  r2PublicUrl: (key: string) => `https://cdn.example/${key}`,
 }))
 
 import {
@@ -153,6 +160,7 @@ beforeEach(() => {
   calls.length = 0
   queues.clear()
   createDocument.mockReset()
+  r2State.configured = false
   __resetPaymentMoneySchemaCache()
 })
 
@@ -366,6 +374,97 @@ describe('issueInvoice', () => {
     const invoiceUpdate = find('invoices', 'update')?.payload as Record<string, unknown>
     expect(invoiceUpdate.status).toBe('issued')
     expect(invoiceUpdate.document_number).toBe('A-4471')
+  })
+
+  it('allocates the sequential number on the terminal series, in its own write', async () => {
+    scriptPaidOrder()
+    queue('rpc.fn_next_invoice_number', { data: 7, error: null })
+    createDocument.mockResolvedValue({
+      success: true,
+      documentNumber: 'A-4471',
+      documentUrl: 'https://provider.example/doc.pdf',
+      failureCode: null,
+      failureMessage: null,
+      raw: { ok: true },
+    })
+
+    const outcome = await issueInvoice(adminClient as never, row)
+    expect(outcome).toMatchObject({ ok: true })
+
+    // One counter per <terminal>:<type>: each terminal numbers its own books,
+    // and a credit note never draws from the sale's series.
+    const alloc = rpcCalls.find((call) => call.name === 'fn_next_invoice_number')
+    expect(alloc?.args.p_series).toBe('platform:tax_invoice_receipt')
+
+    // Two separate UPDATEs on purpose: a database without 228's columns must
+    // fail the allocation write alone, never the issued-status write.
+    const updates = findAll('invoices', 'update').map((c) => c.payload as Record<string, unknown>)
+    expect(updates[0]).toMatchObject({
+      series: 'platform:tax_invoice_receipt',
+      internal_number: 7,
+    })
+    expect(updates[1]).toMatchObject({ status: 'issued', document_number: 'A-4471' })
+  })
+
+  it('still issues, numberless, on a database without the sequence function', async () => {
+    scriptPaidOrder()
+    queue('rpc.fn_next_invoice_number', {
+      data: null,
+      error: { message: 'function public.fn_next_invoice_number does not exist' },
+    })
+    createDocument.mockResolvedValue({
+      success: true,
+      documentNumber: 'A-4471',
+      documentUrl: null,
+      failureCode: null,
+      failureMessage: null,
+      raw: {},
+    })
+
+    const outcome = await issueInvoice(adminClient as never, row)
+    expect(outcome).toMatchObject({ ok: true, documentNumber: 'A-4471' })
+
+    // The provider already numbered the document; a missing internal sequence
+    // costs the row its supplementary number, never its issued status.
+    const updates = findAll('invoices', 'update')
+    expect(updates).toHaveLength(1)
+    expect((updates[0]?.payload as Record<string, unknown>).status).toBe('issued')
+  })
+
+  it('renders its own Hebrew PDF into R2 when the provider returns no fetchable one', async () => {
+    scriptPaidOrder()
+    r2State.configured = true
+    queue('rpc.fn_next_invoice_number', { data: 42, error: null })
+    createDocument.mockResolvedValue({
+      success: true,
+      documentNumber: 'A-4471',
+      documentUrl: null,
+      failureCode: null,
+      failureMessage: null,
+      raw: {},
+    })
+    const put = vi.fn(async () => ({ ok: true }))
+    vi.stubGlobal('fetch', put)
+
+    try {
+      const outcome = await issueInvoice(adminClient as never, row)
+      // The stored URL is the R2 copy, keyed on the platform's own number.
+      expect(outcome).toMatchObject({
+        ok: true,
+        documentUrl: `https://cdn.example/invoices/${ORDER_ID}/KE-INV-000042.pdf`,
+      })
+
+      // What was PUT is a real PDF, not a placeholder: the render ran end to
+      // end through the embedded Hebrew font.
+      const body = (put.mock.calls[0] as unknown as [string, { body: Uint8Array }])[1].body
+      expect(new TextDecoder().decode(body.slice(0, 5))).toBe('%PDF-')
+
+      const issued = findAll('invoices', 'update').at(-1)?.payload as Record<string, unknown>
+      expect(issued.status).toBe('issued')
+      expect(issued.document_url).toBe(`https://cdn.example/invoices/${ORDER_ID}/KE-INV-000042.pdf`)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('does not touch the order when the provider rejects it', async () => {
