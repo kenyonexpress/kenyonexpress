@@ -61,7 +61,7 @@ pnpm dev                     # http://localhost:3000
 | `migrations/pending/` | מיגרציות שנכתבו וטרם הוחלו. סדר והתניות ב-`APPLY-ORDER.md` |
 | `supabase/migrations/` | ההיסטוריה. **אינה מתארת את פרודקשן** — הטיפוסים שנוצרים כן |
 | `scripts/` | שערים, סקריפטים תפעוליים וכלי מדידה |
-| `docs/` | ‏214 מסמכים. נקודת הכניסה: `docs/ARCHITECTURE-DOCS-INDEX.md` |
+| `docs/` | ‏258 מסמכים. נקודת הכניסה: `docs/INDEX.md`, ש-`pnpm lint:docs` מוודא שהוא מונה את כולם |
 | `e2e/`, `tests/`, `load/` | ‏Playwright, ‏Vitest, ‏k6 |
 
 ## חוקים שיעלו לך ביוקר אם תפספס אותם
@@ -91,7 +91,7 @@ LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
 
 ## תשתית ותפעול
 
-- **‏CI:** תשע workflows ב-`.github/workflows/`, וגם מה שבמכוון **אינו** רץ
+- **‏CI:** ‏10 workflows ב-`.github/workflows/`, וגם מה שבמכוון **אינו** רץ
   שם מתועד ב-`.github/workflows/README.md`.
 - **תקריות:** `docs/RUNBOOK.md` (נכתב להיקרא ב-03:00), ‏`docs/RUNBOOK-OPS.md`.
 - **ניטור:** `docs/MONITORING.md` — כולל מי מהשומרים עיוור כרגע ולמה.

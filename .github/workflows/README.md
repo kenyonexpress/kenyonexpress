@@ -1,8 +1,21 @@
 # What runs in CI, and what deliberately does not
 
-Five workflows live here, and the absence of a sixth is a decision rather
-than an oversight. This file records the decision so the next person does not add the
-missing file back.
+There are **10** workflow files here, and the absence of an eleventh - a
+`deploy.yml` - is a decision rather than an oversight. This file records the
+decision so the next person does not add the missing file back, and gives each
+of the ten a section of its own.
+
+**Measured 2026-09-10: it described five of the ten.** `db-backup.yml`,
+`db-restore-drill.yml`, `load.yml`, `nightly-health.yml` and `security.yml` had
+all been added and none was mentioned anywhere in this file - two of them
+scheduled, one of them the repository's only secret scan. A file whose stated
+purpose is "what runs in CI" being wrong about half of what runs is the drift it
+exists to prevent, and nothing could have caught it: adding a workflow is one
+commit and documenting it is a second one no gate ever asked for.
+
+`src/__tests__/ci-docs-inventory.test.ts` is that gate now. It fails when a file
+in this directory has no `## ` section here, when a section names a workflow that
+is gone, and when the count in the sentence above stops matching the directory.
 
 ## There is no `deploy.yml`, and there must not be one
 
@@ -109,8 +122,8 @@ point an unauthenticated probe would read the SSO wall as a healthy 200.
 
 ## `cron.yml`
 
-The ten scheduled jobs, moved out of `vercel.json` (see the section below) and
-into Actions. It fires on the seven distinct cron expressions, passes
+The seventeen scheduled jobs, moved out of `vercel.json` (see the section
+below) and into Actions. It fires on the eleven distinct cron expressions, passes
 `github.event.schedule` to `scripts/run-cron-jobs.sh`, and the script looks the
 due jobs up in `scripts/cron-jobs.json` and calls each one with the bearer
 token. The schedule exists once, in that JSON;
@@ -131,7 +144,7 @@ It is a worse scheduler than the `cron-job.org` setup the doc also describes:
 GitHub's cron is best effort, late by five to fifteen minutes under load, drops
 runs, and switches itself off after 60 days without a commit. It is here because
 it needs two settings instead of a person creating ten jobs in a browser, and
-the four money-path and email jobs among the ten had been running nowhere at all
+the four money-path and email jobs among them had been running nowhere at all
 in the meantime. Turning `CRON_SCHEDULER_ENABLED` off is the whole rollback, and
 it has to happen the day the other scheduler is set up: two schedulers means
 every job runs twice.
@@ -147,6 +160,82 @@ Enables GitHub's own auto-merge on patch-only Dependabot pull requests. It never
 merges anything itself, and its safety depends on branch protection existing on
 whatever branch `.github/dependabot.yml` names in `target-branch`. The file's
 own header comment carries the full argument.
+
+## `security.yml`
+
+Two jobs, `Secret scan (gitleaks)` and `Dependency audit (fixable high/critical)`,
+on `pull_request` and on `push` (Dependabot's own branches excluded, because it
+pushes a branch and then opens a PR and that is two scans of one tree). The
+scan reads the **whole history**, not the pushed commits, which is why
+`fetch-depth: 0` is on the checkout and why the binary is used directly instead
+of the action. The audit is `node scripts/audit-gate.mjs`, which fails on
+fixable high and critical advisories only.
+
+**Neither is a required check, deliberately.** Branch protection on `main`
+requires exactly four contexts by name; adding a job to a file does not make it
+required, and promoting a never-run gate straight into the required set is how a
+repository ends up unable to merge anything at 03:00. Both run in the open and
+can be added under Settings > Branches once they have a run history. That step
+is left to a person. GitHub's own secret scanning and push protection are
+already enabled on this repository (measured 2026-09-09); what they do not cover
+is `secret_scanning_non_provider_patterns`, which is disabled, and that gap is
+what gitleaks overlaps.
+
+## `nightly-health.yml`
+
+02:00 UTC, and GitHub's schedule is best effort: the runs to date fired around
+06:40. It runs `scripts/nightly-health.sh` - five gates including `pnpm build` -
+and opens a labelled GitHub issue on failure.
+
+Two things about it are worth knowing before trusting a green run. First, the
+build gate needs an environment or it can only ever fail, and it uses the same
+three repository **variables** `ci.yml`'s Build job does, for the same reason:
+all three are public by construction. Second, it is the watchdog over the
+backup switch, and it **warns rather than fails** while that switch is off - see
+the next section for why a green backup workflow means nothing today.
+
+## `db-backup.yml`
+
+Daily 03:00 UTC `pg_dump` of the hosted Supabase Postgres to Cloudflare R2, via
+`scripts/dr/pg-dump-to-r2.mjs`: dump, verify the TOC **before** upload, upload
+the dump plus a sha256 sidecar, prune past 30 days but never below the newest 7.
+Stdlib only, no `pnpm install`, so a lockfile problem can never be what stops
+the backups.
+
+**It has never produced a dump.** The job opens with
+`if: vars.DB_BACKUP_ENABLED == 'true'`, and with that variable unset every
+scheduled run skips the job and finishes **green** - a workflow doing nothing is
+indistinguishable from a workflow that works. Measured 2026-09-10: the variable
+is unset, none of the five secrets it needs exists, and R2 is not enabled on the
+Cloudflare account at all (403, code 10042). `docs/DISASTER-RECOVERY.md` §5.1.
+
+## `db-restore-drill.yml`
+
+05:00 UTC on the 2nd of Jan/Apr/Jul/Oct: download the newest R2 dump, check it
+against its sha256 sidecar, `pg_restore` into a clean Postgres 17 service
+container, and run `scripts/dr/verify-restore.sql` (table floors, money-path
+tables, catalogue rows, `auth.users` present). It notifies ntfy on **both**
+outcomes, because a drill nobody hears about did not happen.
+
+It proves dump integrity and restorability. It does not prove a full app
+bring-up on a scratch Supabase project; that stays a manual drill in
+`docs/DB-RESTORE-RUNBOOK.md`, because a throwaway container is free and a
+scratch Supabase project is not. Gated on the same `DB_BACKUP_ENABLED` variable
+as the backup, so today it skips too: a drill without backups can only fail.
+
+## `load.yml`
+
+`workflow_dispatch` only, with the target base URL, scenario, peak VUs, ramp
+and hold as inputs, and a first step that **refuses to point at production** -
+`load/redeem.js` writes redemption rows, and a capacity run against the live
+site is indistinguishable from an attack on it. k6 is installed in the run and
+the summary is uploaded as an artifact.
+
+Manual is not laziness here: this is the only configuration in the project where
+the load generator and the server are different computers. `docs/CAPACITY.md`
+records what happens when they are the same one - 100 VUs against a local
+`pnpm start` reported a 3.14s homepage p95 for a page that served one user in
+65ms.
 
 ## `vercel.json` has no `crons` key, on purpose
 

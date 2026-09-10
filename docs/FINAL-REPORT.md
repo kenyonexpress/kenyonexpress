@@ -21,6 +21,117 @@ the date it was taken, and nothing is quoted from an earlier session without one
 
 ---
 
+## Re-measured 2026-09-10: the deployment lag grew, and the CI documentation was wrong about half of CI
+
+Read this before the 09-09 section below it. Two of its claims have moved, one
+of them in the wrong direction, and both were measured today rather than
+inferred from the fact that nothing was touched.
+
+### The cron gap is 7 of 17 now, not 3 of 13. The scheduler is fine; the deployment is stale.
+
+`node scripts/deployed-cron-probe.mjs`, run 2026-09-10 against
+`https://kenyonexpress.vercel.app`:
+
+```
+7 of 17 scheduled routes are not serving:
+  /api/cron/price-schedule        404
+  /api/cron/price-snapshot        404
+  /api/cron/wishlist-alerts       404
+  /api/cron/whatsapp              404
+  /api/cron/retention             404
+  /api/cron/weekly-digest         404
+  /api/cron/settlement-reconcile  404
+```
+
+The ten that answer `401` are present and Bearer-guarded, which is the healthy
+answer to an unauthenticated probe. Nothing about the scheduler regressed:
+`cron.yml` still fires, `scripts/cron-jobs.json` still holds the one copy of the
+schedule, and `src/__tests__/cron-schedule-inventory.test.ts` still checks all
+four descriptions of it against each other.
+
+**What grew is the distance between the tree and what is serving.** The registry
+went from 13 jobs to 17 as sections landed, and every route added after the
+deployment that is currently aliased answers 404 - `price-schedule`,
+`price-snapshot`, `wishlist-alerts` and `settlement-reconcile` on top of the
+three the 09-09 section already named. So the shape of the finding is unchanged
+and its size is not: the number of jobs that cannot run grows with every route
+added until something redeploys, and nothing in this repository redeploys.
+`docs/DEPLOYMENT.md` records the cause, verified through the CLI on 09-02: the
+Vercel project has **no Git connection**, so a push to `main` deploys nothing and
+production only moves when someone runs `vercel deploy --prod` by hand. Every
+section that adds a cron route therefore adds a route that 404s, and will keep
+doing so until that connection is made.
+
+Read plainly: the WhatsApp outbox is never drained, retention never runs, the
+weekly digest is never sent, scheduled price changes never apply, no price
+snapshot is taken, no wishlist alert is sent, and the settlement reconciliation
+never runs. Every in-repo gate is green about all seven, correctly, because
+every one of them is a correct route in a build nobody is serving.
+
+### `.github/workflows/README.md` described five of the ten workflows
+
+The file whose first line is "What runs in CI, and what deliberately does not"
+opened with "Five workflows live here". Measured 2026-09-10: ten `.yml` files,
+five of them mentioned nowhere in it - `db-backup.yml`, `db-restore-drill.yml`,
+`load.yml`, `nightly-health.yml`, `security.yml`. Two are scheduled and one is
+the repository's only secret scan. The same file's `cron.yml` section still said
+"the ten scheduled jobs" and "seven distinct cron expressions" against a registry
+holding 17 jobs on 11 expressions.
+
+The root `README.md` had drifted in the same way in two numbers: "nine
+workflows" against ten, and "214 documents" against the 258 that
+`scripts/docs-index-gate.mjs` counts on every `pnpm lint:docs`. It also pointed
+a newcomer at `docs/ARCHITECTURE-DOCS-INDEX.md` rather than `docs/INDEX.md`,
+which is the index a gate keeps complete.
+
+All of it is corrected, and the reason it drifted is worth more than the
+correction: **adding a workflow is one commit and documenting it is a second one
+that no gate ever asked for**, so drift was the default outcome rather than an
+accident. `src/__tests__/ci-docs-inventory.test.ts` is that gate now - a
+workflow file with no section fails, a section naming a file that is gone fails,
+and both stated counts are checked against the tree.
+
+### The four required checks, and the one thing protection does not cover
+
+`gh api repos/:owner/:repo/branches/main/protection`, read 2026-09-10:
+`main` requires `Diff-scoped lint gates`, `Typecheck (changed files)`,
+`Unit tests + money coverage floors` and `Build`, with `strict: true`, so a
+branch must also be up to date before it merges. None of the four is conditional
+and none carries `continue-on-error`, which is now asserted rather than believed.
+
+Two settings are worth stating rather than discovering: `enforce_admins` is
+`false` and `required_approving_review_count` is `0`. So the protection stops a
+red pull request, and it does not stop an administrator pushing straight to
+`main` - which is exactly how the security fixes reached it in early September.
+That is a deliberate trade in a single-operator project, and it is the reason a
+"required check" here means "CI must be green before a merge", not "no code
+reaches main unreviewed".
+
+### git log, measured
+
+1,564 commits. 1,334 subjects are conventional-commit shaped, 86 are merges,
+and no subject is empty or a single word. The junk is narrow and identifiable:
+**60 commits carry an `[autopilot]` or `[auto-merger]` prefix**, 15 subjects are
+`wip`-shaped (mostly `autopilot residual`), and **101 subjects are longer than
+100 characters, the longest 946** - paragraphs written into the subject line
+where a body belongs.
+
+**Not rewritten, and that is a decision rather than an omission.** All of it is
+pushed, `main` is protected against force pushes, other checkouts and worktrees
+of this repository exist, and rewriting 1,564 commits to tidy 176 subject lines
+would invalidate every commit hash quoted in these documents - and they are
+quoted constantly, as evidence. A history that reads slightly badly is worth
+more than a clean one whose citations all point at nothing.
+
+**No gate was added for it either.** The producers of the messy subjects are
+background loops that commit on a timer, not people reading review feedback, so
+a blocking commit-message check would be red on `main` by tomorrow and would
+teach exactly the habit the E2E jobs in `ci.yml` are careful to avoid. The
+measurement above is the record; the fix is to stop the loops, not to fail the
+build.
+
+---
+
 ## Re-measured 2026-09-09: three of the four remaining items are done
 
 Everything from `## The one-line version` down is the 2026-09-01 snapshot and

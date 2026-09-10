@@ -34,7 +34,7 @@ order this document is built around.
 WordPress install at `kenyonexpress.co.il`, so they 404 the moment the record
 moves. That is now a live-site consequence, not a hypothetical.
 
-## Before the day: the four things that must already be true
+## Before the day: the five things that must already be true
 
 None of these can be done during the cutover, and each one takes hours to days
 of waiting on somebody else.
@@ -45,6 +45,41 @@ of waiting on somebody else.
 | 2 | Cardcom production terminal issued | Cardcom issues it on a call (03-9436100). A test terminal takes real cards and settles nowhere. |
 | 3 | Every variable in "Environment" below set in Vercel Production | `NEXT_PUBLIC_*` are inlined **at build time**. Setting one after the build means redeploying, not restarting. |
 | 4 | Migration 128 applied, or explicitly declined | It is what makes the catalogue real. Launching without it ships 34 demo products and hides all 19 real ones. |
+| 5 | A decision on the pending migration queue, written down | 41 files sit in `migrations/pending/` and the cutover applies none of them. Deciding during the window is how one gets applied at 02:00 with nobody reading its preconditions. See the next section. |
+
+### The pending migration queue: the launch applies none of it
+
+**Measured 2026-09-10.** `migrations/pending/` holds 41 `.sql` files: 39
+numbered, 162 through 229, plus `preflight_162.sql` and `preflight_184.sql`.
+The order they go in, and every precondition attached to one, lives in
+**`migrations/pending/APPLY-ORDER.md`** - that file is authoritative and this one
+does not restate it. The procedure for running any of them is
+`docs/RUNBOOK.md` § "Apply the pending migrations", and `CLAUDE.md` makes
+applying a migration to production one of the four things that needs Ofir's
+explicit approval.
+
+So the default for launch day is **apply nothing**. The site already serving the
+real catalogue at <https://kenyonexpress.vercel.app> runs on the production
+schema exactly as it is today, and the DNS cutover changes which host answers a
+name, not what the database looks like. A queue of 41 unapplied files is not a
+launch blocker; applying one during a cutover, with no window and no rollback
+rehearsed, is.
+
+Two of them carry a specific prohibition, and both are in APPLY-ORDER in full:
+
+- **`184_orders_monthly_partitioning.sql` must not go in during the cutover.**
+  It rebuilds the table every order lives in, on a live database, and needs its
+  own maintenance window. Reading production on 09-09 also found the file stale
+  in two ways that would have destroyed something silently: it recreates 3
+  triggers where production carries 6, and names 16 inbound foreign keys where
+  production has 17. `preflight_184.sql` is what says so before anything drops.
+- **`162_cron_schedule.sql` is blocked**, not deferred: it needs a deployed URL
+  to write into the vault, which is a value that does not exist until after the
+  deploy.
+
+If the launch does go ahead with the queue unapplied - which is the expectation -
+say so in the freeze commit, so that the next person does not read 41 pending
+files as an interrupted job.
 
 ---
 
