@@ -117,7 +117,17 @@
     "tickets": "My tickets",
     "security": "Security and sign-in",
     "navAriaLabel": "Account navigation",
-    "greeting": "Hello"
+    "greeting": "Hello",
+    "export": {
+      "title": "Download my data",
+      "intro": "One file with everything your account holds: details, addresses, orders, vouchers, wallet, reviews and wishlist.",
+      "cardsNote": "Saved cards are exported without the chargeable token: brand, last four digits and expiry only.",
+      "button": "Download my data",
+      "pending": "Preparing your file...",
+      "errorRateLimited": "Data downloads are limited to three per hour. Please try again in a few minutes.",
+      "errorGeneric": "We could not produce the file. Please try again, and contact us if it keeps happening.",
+      "errorNetwork": "We could not produce the file. Check your connection and try again."
+    }
   },
   "reviews": {
     "sortLabel": "Sort:",

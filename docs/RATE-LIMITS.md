@@ -64,6 +64,7 @@
 | `supplier-doc-upload` | 30 | 1 h | presigned R2 PUT minting for onboarding documents, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest wishlist merge at login, per user |
+| `account-export` | 3 | 1 h | full account data export, per user |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |
 | `voucher-redeem` | 120 | 1 h | till scans, per supplier user |
 | `voucher-redeem-batch` | 40 | 1 h | batch scans, per supplier |

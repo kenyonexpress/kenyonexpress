@@ -205,6 +205,18 @@ export const RATE_LIMIT_POLICIES = {
   'search-facets': { limit: 60, windowSeconds: 300, reason: 'faceted search, filters + counts' },
   analytics: { limit: 120, windowSeconds: 60, reason: 'beacon endpoint, per IP' },
 
+  /**
+   * The right-of-access download. Three an hour, per user.
+   *
+   * Low because it is the most expensive authenticated read in the app - eleven
+   * RLS-scoped table reads assembled into one body - and because there is no
+   * legitimate reason to need a fourth copy of an unchanged account within the
+   * hour. It is not lower than three: a failed download, a wrong folder and a
+   * retry is an ordinary Tuesday, and a compliance right that answers 429 on
+   * the second attempt is a compliance right that generates a complaint.
+   */
+  'account-export': { limit: 3, windowSeconds: 3600, reason: 'full account data export, per user' },
+
   // -- Public write forms. Five an hour, because these reach a human inbox.
   contact: { limit: 5, windowSeconds: 3600, reason: 'contact form mail' },
   'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },

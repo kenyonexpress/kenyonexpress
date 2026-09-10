@@ -3,6 +3,7 @@ import { signOut } from '@/server/actions/auth'
 import { getAccountProfile } from '@/server/queries/account'
 import { notFound } from 'next/navigation'
 import DeleteAccountSection from './DeleteAccountSection'
+import ExportDataSection from './ExportDataSection'
 
 export const metadata = { title: 'הפרטים שלי' }
 
@@ -40,6 +41,7 @@ export default async function DetailsPage() {
         </form>
       </section>
 
+      <ExportDataSection />
       <DeleteAccountSection />
     </>
   )

@@ -194,9 +194,9 @@ From the `rights` section, under Israel's Protection of Privacy Law:
 
 | Right | Promise | Implemented? |
 |---|---|---|
-| Access | inspect the data held | **No endpoint.** By hand. |
-| Correction | correction or deletion under §14, **with an answer within 30 days** | Profile edit exists; correction-on-request has no mechanism. |
-| Deletion | account deletion, subject to what the law requires be kept | **Not implemented.** §6. |
+| Access | inspect the data held | **Implemented 2026-09-10.** `POST /api/account/export`, and a button on `/account/details`. |
+| Correction | correction or deletion under §14, **with an answer within 30 days** | Profile edit exists; correction-on-request still has no mechanism. |
+| Deletion | account deletion, subject to what the law requires be kept | **Implemented.** `lib/account/delete-account.ts` + `fn_anonymize_user`. §6. |
 | Marketing opt-out | unsubscribe | Implemented — `email_suppressions`. |
 
 Contact for all of them: **info@kenyonexpress.co.il**, or the contact page. The
@@ -221,11 +221,56 @@ That is a good design. Anonymise the identity, keep the money.
 
 ### What exists
 
-**Nothing.** Searched across `src/` on 2026-09-01: no `deleteAccount`, no
-`delete_account`, no anonymisation routine, no `gdpr`-named helper, and no
-database function that scrubs a profile. The only deletion machinery in the
-system is the cart reaper and the rate-limit cleanups (§2), neither of which is
-running.
+**This section said "Nothing" and was measured on 2026-09-01. It is out of date,
+and re-measured on 2026-09-10 the answer is the opposite.**
+
+`src/lib/account/delete-account.ts` holds the plan and the confirmation phrase,
+`deleteAccount` in `src/server/actions/account.ts` executes it, and
+`DeleteAccountSection` on `/account/details` is the customer-facing gate: an
+"I understand" checkbox AND the phrase `מחק את החשבון שלי` typed exactly,
+because a checkbox confirms a finger and a typed phrase confirms a person read
+what happens. The erasure itself is `fn_anonymize_user` (migration 150), which
+is the atomic version; the action falls back to a per-table delete if the
+function is absent.
+
+`DELETION_EFFECTS` in that module is the single declaration of what survives, so
+the action, the UI copy and the tests cannot drift apart. KEPT: orders,
+payments, invoices, audit rows — the seven-year bookkeeping, anchored to an
+anonymised profile row. ERASED: name, email, phone, addresses, saved cards, push
+tokens, carts, recent searches, and the ability to log in.
+
+**What is still missing is the 30-day grace period**, which the closeout brief
+asks for and this implementation does not have: deletion is immediate and
+irreversible, and the UI says so in those words rather than implying a window
+that does not exist. A grace period needs a `deletion_requested_at` column and
+therefore a migration, which waits for an operator.
+
+### The access half, added 2026-09-10
+
+`POST /api/account/export` returns every row the caller's account owns as one
+JSON file, assembled in `src/server/account/export-data.ts`.
+
+**It reads through the caller's own Supabase client and never the service-role
+client**, so RLS decides what comes back and a wrong filter cannot return
+somebody else's row. Assembling it with the admin key and an `.eq('user_id', me)`
+would put the whole customer base one typo away from the wrong inbox, and that
+typo would be invisible in review.
+
+The card vault is the one section not selected with `*`: `payment_tokens` holds
+a token that can be charged, and the right of access is not a reason to put a
+bearer credential in a file the customer will email to themselves. Brand, last
+four and expiry only.
+
+A table that refuses is reported as `unavailable` with its error rather than
+returned as `[]`, because "you have no reviews" and "we could not read your
+reviews" must not look the same in a compliance answer.
+
+**It answers the caller directly instead of mailing a signed link, and that is a
+deliberate departure from the brief.** `RESEND_API_KEY` is absent from the
+Vercel project that serves production and `lib/email/resend.ts` treats an absent
+key as deliberate silence — it logs `email.disabled` and returns, with no error
+and no dead row. An emailed link would have been a right of access that delivers
+nothing, silently.
 
 ### What a request costs right now
 
