@@ -24,6 +24,7 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
     const { data } = await supabase.auth.mfa.listFactors()
     setFactors((data?.totp ?? []) as Factor[])
   }
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only load; refresh is recreated per render, so listing it would re-fetch MFA factors on every render
   useEffect(() => {
     void refresh()
   }, [])

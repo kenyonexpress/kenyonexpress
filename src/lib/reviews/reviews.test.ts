@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { reviewSchema, summarizeRatings } from './reviews'
+import { reviewSchema } from './reviews'
 
 describe('reviewSchema', () => {
   const base = {
@@ -25,22 +25,5 @@ describe('reviewSchema', () => {
     expect(reviewSchema.safeParse({ ...base, orderItemId: 'not-a-uuid', rating: 4 }).success).toBe(
       false,
     )
-  })
-})
-
-describe('summarizeRatings', () => {
-  it('is null on empty -- unrated is not zero-rated', () => {
-    expect(summarizeRatings([])).toBeNull()
-  })
-
-  it('averages to one decimal with integer math', () => {
-    expect(summarizeRatings([5, 4, 4])).toEqual({ count: 3, average: 4.3 })
-    expect(summarizeRatings([1, 5])).toEqual({ count: 2, average: 3 })
-    expect(summarizeRatings([5])).toEqual({ count: 1, average: 5 })
-  })
-
-  it('throws on a rating the DB CHECK would refuse', () => {
-    expect(() => summarizeRatings([3, 0])).toThrow()
-    expect(() => summarizeRatings([2.5])).toThrow()
   })
 })

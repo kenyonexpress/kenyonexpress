@@ -1,5 +1,61 @@
 # `migrations/pending/`
 
+## 2026-09-10: 232 APPLIED (reviews: admin moderation only)
+
+`232_reviews_admin_moderation_only.sql` closes the review model to what the
+business actually does: a verified buyer writes a review, the admin reads it
+in moderation, and no review is ever displayed or supplier-edited. It drops
+`reviews_supplier_reply` (199's UPDATE policy; the reply UI was never built,
+so the policy guarded a write nothing performs) and
+`reviews_public_read_approved` (154's world-read of approved rows), revokes
+199's per-column UPDATE grant on the three `supplier_reply` columns -- a
+grant invisible to `role_table_grants`, which is how "authenticated has no
+UPDATE" read as true while it sat there -- and revokes anon SELECT entirely.
+What remains is owner-plus-admin: 154's three owner policies untouched, and
+moderation on the service role. Applied as
+`reviews_admin_moderation_only_232` under the 2026-09-10 reviews /goal,
+which names Supabase MCP as the migration route (the 217 protocol).
+
+Proven live first, both directions: before apply, `SET LOCAL ROLE anon`
+could SELECT the table and `SET LOCAL ROLE authenticated` could UPDATE
+`supplier_reply` (both in rolled-back transactions); after apply, both
+answer 42501, while the authenticated owner-scoped SELECT still passes. The
+same commit removes the code half -- the product page's approved list and
+its JSON-LD aggregateRating -- and
+`reviews-moderation-migration-guards.test.ts` pins the file's shape.
+
+## 2026-09-10: 231 APPLIED (bell fanout)
+
+`231_bell_fanout.sql` is the writer behind the in-app bell: an AFTER INSERT
+trigger on `notification_outbox` (`outbox_bell_fanout` ->
+`tg_outbox_bell()`) that composes the customer's Hebrew -- title, body,
+account-relative href -- into 198's `public.notifications`, in the same
+transaction as the event. One choke point instead of a dozen call sites:
+every notification the platform owes a customer already passes through that
+one INSERT, `fn_enqueue_notification` already stamps `user_id` on it, and
+the outbox's dedupe (`ON CONFLICT DO NOTHING`) means a replayed enqueue can
+never ring twice. Operator kinds (`supplier_sale`, `invoice_dead`,
+`low_stock`, `reconciliation_gap`) and `account_deleted` fall through the
+ELSE: a kind without Hebrew here gets no bell row, the same gate push
+templates state. `fn_bell_agorot` formats agorot for display with integer
+arithmetic only. Applied as `bell_fanout_231` under the 2026-09-10
+notifications /goal, which names Supabase MCP as the migration route.
+Numbered 231 because 229/230 are taken by pending files on other branches.
+
+Proven first in a rolled-back DO block over production: five kinds
+exercised through the real `fn_enqueue_notification`, correct Hebrew and
+hrefs back, operator kind produced no row, and the probe caught a real bug
+before apply (`array_to_string` over an empty array returns `''` and not
+NULL, so the Hebrew fallback never fired; fixed with `nullif`, pinned in
+`bell-fanout-migration-guards.test.ts`). After apply, the realtime path was
+proven live end to end by `scripts/verify-bell-realtime.mjs`: a probe user
+signed in with the anon key, subscribed to `postgres_changes` filtered on
+its uid, received the INSERT the trigger produced, marked it read through
+the authenticated client (198's `UPDATE (read_at)` column grant held), and
+received its own UPDATE event back with old and new values (REPLICA
+IDENTITY FULL doing its job). All probe artifacts (auth user, profile,
+outbox row, bell row) were removed; residue measured 0.
+
 ## 2026-09-10: 228 APPLIED (invoice sequences)
 
 `228_invoice_sequences.sql` gives the platform its own sequential document
