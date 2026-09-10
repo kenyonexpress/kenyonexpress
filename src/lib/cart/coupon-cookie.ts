@@ -15,3 +15,26 @@ export const CART_COUPON_COOKIE = 'ke_cart_coupon'
 export const CART_EXPIRY_DAYS = 30
 
 export const COUPON_COOKIE_MAX_AGE = CART_EXPIRY_DAYS * 24 * 60 * 60
+
+/**
+ * Since stacking (see lib/growth/stacking.ts) the cookie can hold up to
+ * MAX_STACKED_CODES campaign codes, separator '|' (a character
+ * normalizeCouponCode can never emit, so an old single-code cookie parses as a
+ * one-element list and nothing else changes). The cookie still holds CODES and
+ * nothing else; every render re-resolves and re-prices them.
+ */
+export const COUPON_STACK_SEPARATOR = '|'
+
+export function parseCouponCookieCodes(value: string | undefined): string[] {
+  if (!value) return []
+  const seen = new Set<string>()
+  for (const part of value.split(COUPON_STACK_SEPARATOR)) {
+    const code = part.trim().replace(/\s+/g, '').toUpperCase()
+    if (code) seen.add(code)
+  }
+  return [...seen]
+}
+
+export function serializeCouponCookieCodes(codes: string[]): string {
+  return codes.join(COUPON_STACK_SEPARATOR)
+}

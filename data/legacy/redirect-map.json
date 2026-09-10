@@ -1,0 +1,789 @@
+{
+  "$what": "Every legacy WordPress URL, and what this site does with it today.",
+  "$why": "public.seo_redirects is empty in production, so every retired URL 404s. This is the map that fills it, corrected against what production actually serves.",
+  "$how": "scripts/build-legacy-redirects.mjs reads data/legacy/url-inventory.json (the frozen 2026-08-11 crawl), measures the live catalogue through the anon key, reads the static route tree off src/app, and drops every row whose source is live or whose target is not.",
+  "$generated_by": "scripts/build-legacy-redirects.mjs",
+  "$measured_at": "2026-09-10T08:47:37.147Z",
+  "$counts": {
+    "inventory": 87,
+    "redirects": 33,
+    "redirect_301": 20,
+    "redirect_410": 13,
+    "excluded": 54
+  },
+  "$targets": {
+    "$predicate": {
+      "products": "status = 'active' AND deleted_at IS NULL",
+      "categories": "is_active IS TRUE",
+      "static_routes": "a directory under src/app with a page.tsx and no dynamic segment"
+    },
+    "products": [
+      "6253",
+      "bar-drink",
+      "barbecue",
+      "barbecue-2",
+      "island-of-maldives",
+      "pampers-premium-care-diaper-pants-medium",
+      "samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g",
+      "travelling-to-the-island-of-maldives",
+      "אבחון-ואבחוןטיפול-רפסולוגי",
+      "אוזניות-איירפודס-3",
+      "אייפון-13",
+      "ארוחה-בשרית-זוגית",
+      "ארוחה-זוגית-עם-פלטת-קילו-בשרי-פרימיום-ו",
+      "ארוחת-בוקר-זוגית-בקפה-קפה",
+      "ארוחת-שף-במסעדת-אולטרה",
+      "חבילות-עיסוי-זוגיות-בסוויטה-ספא-בוטיק",
+      "חבילת-גלידה",
+      "חבילת-קוקטיילים",
+      "חופשה-חלומית-באחוזת-דניאל",
+      "חיתולי-האגיס",
+      "חיתולי-פמפרס",
+      "חיתולי-פמפרס-העתק",
+      "טיול-מאורגן-לדובאי",
+      "טיפול-פנים-copy",
+      "טיפול-פנים-עמוק",
+      "מוצר-לדוגמא",
+      "מזקקת-ויסקי",
+      "מלון-4-כוכבים-פלוס-ארוחת-בוקר",
+      "מלון-5-כוכבים-בטבריה",
+      "עוזרת-אישית-שירותי-משרד",
+      "עיסוי-מאסטר",
+      "עיסוי-מפנק",
+      "עיסוי-מפנק-לגבר-45-דקות-רק-ב108",
+      "עיסוי-מפנק-לגבר-45-דקות-רק-ב108₪",
+      "עיסוי-משולב-מפנק-לגבר-רק-108",
+      "עיסוי-משולב-מפנק-לגבר-רק-108₪",
+      "צימר-מאסטר",
+      "צימר-מאסטר-copy",
+      "צימר-מאסטר-copy-copy",
+      "צימר-שוויץ-בצפון",
+      "קוסמטיקאית",
+      "שעון-אפל-חכם-apple-watch-series-7",
+      "תזונה-הוליסטית-טבעית-וצמחי-מרפא",
+      "תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה"
+    ],
+    "categories": [
+      {
+        "slug": "baby-kids",
+        "name_he": "תינוקות וילדים"
+      },
+      {
+        "slug": "beauty-health",
+        "name_he": "טיפוח בריאות ויופי"
+      },
+      {
+        "slug": "courses",
+        "name_he": "קורסים Express בקרוב"
+      },
+      {
+        "slug": "electronics",
+        "name_he": "אלקטרוניקה"
+      },
+      {
+        "slug": "hot-deals",
+        "name_he": "דיל חם 🔥"
+      },
+      {
+        "slug": "new",
+        "name_he": "החדשים"
+      },
+      {
+        "slug": "pets",
+        "name_he": "ציוד ומזון לבעלי חיים"
+      },
+      {
+        "slug": "phones-computers",
+        "name_he": "טלפונים ואלקטרוניקה"
+      },
+      {
+        "slug": "professionals",
+        "name_he": "בעלי מקצוע"
+      },
+      {
+        "slug": "restaurants-cafes",
+        "name_he": "מסעדות ובתי קפה"
+      },
+      {
+        "slug": "under-99",
+        "name_he": "עד ⁦99 ₪⁩"
+      },
+      {
+        "slug": "vacation",
+        "name_he": "צימרים מלונות ונופש"
+      }
+    ],
+    "static_routes": [
+      "/",
+      "/about",
+      "/accessibility",
+      "/account",
+      "/account/addresses",
+      "/account/coupons",
+      "/account/details",
+      "/account/my-vouchers",
+      "/account/notifications",
+      "/account/orders",
+      "/account/privacy",
+      "/account/referrals",
+      "/account/security",
+      "/account/subscriptions",
+      "/account/tokens",
+      "/account/vouchers",
+      "/account/wallet",
+      "/account/wishlist",
+      "/admin",
+      "/admin-mfa",
+      "/admin/affiliates",
+      "/admin/analytics",
+      "/admin/approvals",
+      "/admin/audit-log",
+      "/admin/cashback",
+      "/admin/categories",
+      "/admin/categories/new",
+      "/admin/coupons",
+      "/admin/coupons/codes",
+      "/admin/coupons/lookup",
+      "/admin/coupons/new",
+      "/admin/dashboard",
+      "/admin/discounts",
+      "/admin/discounts/new",
+      "/admin/feature-flags",
+      "/admin/fraud",
+      "/admin/growth",
+      "/admin/orders",
+      "/admin/payments",
+      "/admin/payouts",
+      "/admin/products",
+      "/admin/products/import",
+      "/admin/products/new",
+      "/admin/queues",
+      "/admin/referrals",
+      "/admin/reports",
+      "/admin/reviews",
+      "/admin/search",
+      "/admin/status",
+      "/admin/suppliers",
+      "/admin/suppliers/new",
+      "/admin/users",
+      "/admin/vendors",
+      "/admin/vendors/new",
+      "/blog",
+      "/cart",
+      "/checkout",
+      "/checkout/app-return",
+      "/checkout/confirmation",
+      "/checkout/failed",
+      "/checkout/frame-return",
+      "/checkout/return",
+      "/contact",
+      "/coupons",
+      "/debug/sentry",
+      "/debug/sentry/render",
+      "/faq",
+      "/forgot-password",
+      "/gift-card",
+      "/legal/accessibility",
+      "/legal/privacy",
+      "/legal/returns",
+      "/legal/terms",
+      "/login",
+      "/mfa",
+      "/newsletter/confirm",
+      "/newsletter/unsubscribe",
+      "/offline",
+      "/privacy-policy",
+      "/products",
+      "/refund_returns",
+      "/reset-password",
+      "/scan",
+      "/search",
+      "/signup",
+      "/signup/confirm",
+      "/supplier",
+      "/supplier/access-denied",
+      "/supplier/login",
+      "/supplier/orders",
+      "/supplier/payouts",
+      "/supplier/products",
+      "/supplier/redemptions",
+      "/supplier/scan",
+      "/suppliers",
+      "/terms-and-conditions",
+      "/wishlist-alerts/unsubscribe"
+    ]
+  },
+  "$sitemap_diff": {
+    "$what": "Every URL the retired WordPress site served, and what this site does with it.",
+    "$why": "A cutover loses traffic through the one bucket that raises nothing: a URL Google has indexed, with no page behind it and no redirect row pointing anywhere.",
+    "legacy_urls": 87,
+    "served_unchanged": 51,
+    "redirected_301": 20,
+    "gone_410": 13,
+    "lost_404": 3,
+    "lost": [
+      "/product/restaurants-meat-2",
+      "/product/restaurants-meat-3",
+      "/product/קופון-טסט"
+    ],
+    "new_since_migration": 102
+  },
+  "redirects": [
+    {
+      "source": "/affiliate-area",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 8990
+    },
+    {
+      "source": "/compare",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 2917
+    },
+    {
+      "source": "/coupon-scanner",
+      "target": "/scan",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 8842,
+      "evidence": "static route"
+    },
+    {
+      "source": "/dashboard",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 5865
+    },
+    {
+      "source": "/error-payment-payplus",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 7659
+    },
+    {
+      "source": "/my-account",
+      "target": "/account",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 3854,
+      "evidence": "static route"
+    },
+    {
+      "source": "/my-orders",
+      "target": "/account/orders",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 5867,
+      "evidence": "static route"
+    },
+    {
+      "source": "/my-wishlist",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 8966
+    },
+    {
+      "source": "/product-category/hot-deals",
+      "target": "/category/hot-deals",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 310,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/uncategorized",
+      "target": "/products",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 15,
+      "evidence": "static route"
+    },
+    {
+      "source": "/product-category/בעלי-מקצוע",
+      "target": "/category/professionals",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 276,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/טלפונים-מחשבים-ואביזרים",
+      "target": "/category/phones-computers",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 272,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/יופי-בריאות-וטיפוח",
+      "target": "/category/beauty-health",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 271,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/מסעדות-ובתי-קפה",
+      "target": "/category/restaurants-cafes",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 270,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/עד-99",
+      "target": "/category/under-99",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 311,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/ציוד-ומזון-לבעלי-חיים",
+      "target": "/category/pets",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 275,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/צימרים-מלונות-ונופש",
+      "target": "/category/vacation",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 274,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/קורסים-express",
+      "target": "/category/courses",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 277,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product-category/תינוקות-וילדים",
+      "target": "/category/baby-kids",
+      "status": 301,
+      "rule": "category_slug",
+      "entity": "category",
+      "wp_id": 273,
+      "evidence": "active category"
+    },
+    {
+      "source": "/product/7388",
+      "target": "/product/קוסמטיקאית",
+      "status": 301,
+      "rule": "wp_old_slug",
+      "entity": "product",
+      "wp_id": 7388,
+      "evidence": "active product"
+    },
+    {
+      "source": "/product/product-template",
+      "target": "",
+      "status": 410,
+      "rule": "excluded_status:private",
+      "entity": "product",
+      "wp_id": 6503
+    },
+    {
+      "source": "/product/reverse-withdrawal-payment",
+      "target": "",
+      "status": 410,
+      "rule": "excluded_plugin_product",
+      "entity": "product",
+      "wp_id": 8548
+    },
+    {
+      "source": "/product/חופשה-חלומית-באחוזת-דניאל-3-לילות-copy",
+      "target": "",
+      "status": 410,
+      "rule": "excluded_status:private",
+      "entity": "product",
+      "wp_id": 8481
+    },
+    {
+      "source": "/recently-viewed",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 2174
+    },
+    {
+      "source": "/shop",
+      "target": "/products",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 3853,
+      "evidence": "static route"
+    },
+    {
+      "source": "/store-directory",
+      "target": "/products",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 2844,
+      "evidence": "static route"
+    },
+    {
+      "source": "/store-listing",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 5866
+    },
+    {
+      "source": "/track-your-order",
+      "target": "/account/orders",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 2181,
+      "evidence": "static route"
+    },
+    {
+      "source": "/wishlist",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 3855
+    },
+    {
+      "source": "/wishlist-archive",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 8965
+    },
+    {
+      "source": "/yith-compare",
+      "target": "",
+      "status": 410,
+      "rule": "page_gone_410",
+      "entity": "page",
+      "wp_id": 9246
+    },
+    {
+      "source": "/דף-בית-טסט",
+      "target": "/",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 6655,
+      "evidence": "static route"
+    },
+    {
+      "source": "/קניון-אקספרס-דף-הבית-מסדרים-לך-בילוי",
+      "target": "/",
+      "status": 301,
+      "rule": "page_redirect",
+      "entity": "page",
+      "wp_id": 4878,
+      "evidence": "static route"
+    }
+  ],
+  "excluded": [
+    {
+      "source": "/",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (static route)"
+    },
+    {
+      "source": "/about",
+      "reason": "source_is_live",
+      "note": "serves 200 today (static route); a row here would take it down"
+    },
+    {
+      "source": "/blog",
+      "reason": "source_is_live",
+      "note": "serves 200 today (static route); a row here would take it down"
+    },
+    {
+      "source": "/cart",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (static route)"
+    },
+    {
+      "source": "/checkout",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (static route)"
+    },
+    {
+      "source": "/contact",
+      "reason": "source_is_live",
+      "note": "serves 200 today (static route); a row here would take it down"
+    },
+    {
+      "source": "/privacy-policy",
+      "reason": "source_is_live",
+      "note": "serves 200 today (static route); a row here would take it down"
+    },
+    {
+      "source": "/product/6253",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/bar-drink",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/barbecue",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/barbecue-2",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/island-of-maldives",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/pampers-premium-care-diaper-pants-medium",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/restaurants-meat-2",
+      "reason": "same_path_dead",
+      "note": "unchanged URL with nothing behind it: 404 today"
+    },
+    {
+      "source": "/product/restaurants-meat-3",
+      "reason": "same_path_dead",
+      "note": "unchanged URL with nothing behind it: 404 today"
+    },
+    {
+      "source": "/product/samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/travelling-to-the-island-of-maldives",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/אבחון-ואבחוןטיפול-רפסולוגי",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/אוזניות-איירפודס-3",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/אייפון-13",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/ארוחה-בשרית-זוגית",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/ארוחה-זוגית-עם-פלטת-קילו-בשרי-פרימיום-ו",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/ארוחת-בוקר-זוגית-בקפה-קפה",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/ארוחת-שף-במסעדת-אולטרה",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/חבילות-עיסוי-זוגיות-בסוויטה-ספא-בוטיק",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/חבילת-גלידה",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/חבילת-קוקטיילים",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/חופשה-חלומית-באחוזת-דניאל",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/חיתולי-האגיס",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/חיתולי-פמפרס",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/חיתולי-פמפרס-העתק",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/טיול-מאורגן-לדובאי",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/טיפול-פנים-copy",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/טיפול-פנים-עמוק",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/מוצר-לדוגמא",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/מזקקת-ויסקי",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/מלון-4-כוכבים-פלוס-ארוחת-בוקר",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/מלון-5-כוכבים-בטבריה",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/עוזרת-אישית-שירותי-משרד",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/עיסוי-מאסטר",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/עיסוי-מפנק",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/עיסוי-מפנק-לגבר-45-דקות-רק-ב108₪",
+      "reason": "source_is_live",
+      "note": "serves 200 today (active product); a row here would take it down"
+    },
+    {
+      "source": "/product/עיסוי-משולב-מפנק-לגבר-רק-108₪",
+      "reason": "source_is_live",
+      "note": "serves 200 today (active product); a row here would take it down"
+    },
+    {
+      "source": "/product/צימר-מאסטר",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/צימר-מאסטר-copy",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/צימר-מאסטר-copy-copy",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/צימר-שוויץ-בצפון",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/קוסמטיקאית",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/קופון-טסט",
+      "reason": "same_path_dead",
+      "note": "unchanged URL with nothing behind it: 404 today"
+    },
+    {
+      "source": "/product/שעון-אפל-חכם-apple-watch-series-7",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/תזונה-הוליסטית-טבעית-וצמחי-מרפא",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/product/תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה",
+      "reason": "same_path_live",
+      "note": "unchanged URL, served today (active product)"
+    },
+    {
+      "source": "/refund_returns",
+      "reason": "source_is_live",
+      "note": "serves 200 today (static route); a row here would take it down"
+    },
+    {
+      "source": "/terms-and-conditions",
+      "reason": "source_is_live",
+      "note": "serves 200 today (static route); a row here would take it down"
+    }
+  ]
+}

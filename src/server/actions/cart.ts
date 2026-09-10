@@ -5,6 +5,8 @@ import {
   CART_COUPON_COOKIE,
   CART_EXPIRY_DAYS,
   COUPON_COOKIE_MAX_AGE,
+  parseCouponCookieCodes,
+  serializeCouponCookieCodes,
 } from '@/lib/cart/coupon-cookie'
 import {
   GUEST_SESSION_COOKIE,
@@ -19,6 +21,7 @@ import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { isValidUnitCode } from '@/lib/coupons/unit-codes'
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
+import { MAX_STACKED_CODES, evaluateDiscountStack } from '@/lib/growth/stacking'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
@@ -82,6 +85,25 @@ async function checkCartWriteRateLimit(userId: string | null): Promise<boolean> 
 }
 
 /**
+ * Whether any line of this cart is a gift-card product (234). Nothing on such
+ * a cart is discountable: the card's price IS its face value, and a discount
+ * would sell stored value below par. Defensive on the column, like every
+ * 234-dependent read: a database without it has no gift cards to find.
+ */
+async function cartHasGiftCard(view: CartView): Promise<boolean> {
+  const productIds = [...new Set(view.items.map((item) => item.product_id))]
+  if (productIds.length === 0) return false
+  const { data, error } = await createPublicClient()
+    .from('products')
+    .select('id')
+    .in('id', productIds)
+    .eq('is_gift_card' as never, true as never)
+    .limit(1)
+  if (error) return false
+  return ((data as { id: string }[] | null) ?? []).length > 0
+}
+
+/**
  * Prices a site-wide campaign against this cart, or returns null if the code is
  * not one. Null is not a failure: the caller falls through to the legacy
  * supplier coupons table.
@@ -114,6 +136,7 @@ async function evaluateCampaignCode(
       // never from the supplier's share (05a181a), so the cart may not promise
       // more than the platform earns on it.
       commissionAgorot: view.platform_fee,
+      giftCardInCart: await cartHasGiftCard(view),
     },
     new Date(),
   )
@@ -132,15 +155,66 @@ async function evaluateCampaignCode(
 }
 
 /**
- * Reads the cookie's code and prices it against this cart. Returns null for no
- * code, an unknown code, or a code that has stopped being valid — the cart then
- * renders as if none were applied, which is the truthful state.
+ * Resolves a LIST of codes to campaigns and prices them as a stack. Only
+ * campaigns stack: the legacy `public.coupons` table and printed QR unit codes
+ * apply single, as before, so a multi-code cookie is campaigns or nothing.
+ * The combination rules all live in `evaluateDiscountStack`; this only fetches.
  */
-async function resolveAppliedCoupon(
-  view: CartView,
-): Promise<{ code: string; label: string; discountAgorot: number } | null> {
+async function resolveCampaignStack(codes: string[], view: CartView) {
+  const campaigns = growthClient().campaigns()
+  const resolved = await Promise.all(
+    codes.map((code) => campaigns.byCode(code).then(({ data }) => data ?? null)),
+  )
+  const evaluation = evaluateDiscountStack(
+    resolved,
+    {
+      payableAgorot: view.subtotal,
+      commissionAgorot: view.platform_fee,
+      giftCardInCart: await cartHasGiftCard(view),
+    },
+    new Date(),
+  )
+  return { resolved, evaluation }
+}
+
+type ResolvedCoupon = {
+  code: string
+  label: string
+  discountAgorot: number
+  stack?: { code: string; discountAgorot: number }[]
+}
+
+/**
+ * Reads the cookie's code (or, since stacking, codes) and prices it against
+ * this cart. Returns null for no code, an unknown code, or a code that has
+ * stopped being valid — the cart then renders as if none were applied, which is
+ * the truthful state. A refused member of a stack costs that member alone.
+ */
+async function resolveAppliedCoupon(view: CartView): Promise<ResolvedCoupon | null> {
   const cookieStore = await cookies()
-  const code = normalizeCouponCode(cookieStore.get(CART_COUPON_COOKIE)?.value)
+  const codes = parseCouponCookieCodes(cookieStore.get(CART_COUPON_COOKIE)?.value)
+  if (codes.length === 0) return null
+
+  if (codes.length > 1) {
+    const { evaluation } = await resolveCampaignStack(codes.slice(0, MAX_STACKED_CODES), view)
+    if (evaluation.applied.length === 0) return null
+    const [first] = evaluation.applied
+    if (evaluation.applied.length === 1 && first) {
+      return { code: first.code, label: first.label, discountAgorot: first.discountAgorot }
+    }
+    return {
+      // The joined form is a display identity; checkout claims through `stack`.
+      code: evaluation.applied.map((entry) => entry.code).join('+'),
+      label: evaluation.applied.map((entry) => entry.label).join(' + '),
+      discountAgorot: evaluation.totalAgorot,
+      stack: evaluation.applied.map((entry) => ({
+        code: entry.code,
+        discountAgorot: entry.discountAgorot,
+      })),
+    }
+  }
+
+  const code = normalizeCouponCode(codes[0])
   if (!code) return null
 
   // Site-wide campaigns first.
@@ -156,6 +230,10 @@ async function resolveAppliedCoupon(
   // exact bug coupon-offer.ts already cost this project once.
   const campaign = await evaluateCampaignCode(code, view)
   if (campaign) return campaign
+
+  // The legacy table has no gift-card gate of its own, so the cart applies it:
+  // a cart holding stored value takes no discount from either code table.
+  if (await cartHasGiftCard(view)) return null
 
   // `coupons` is readable by anon only where `is_active`, so a deactivated code
   // arrives here as null rather than as an inactive row. `evaluateCoupon`
@@ -701,6 +779,39 @@ async function runApplyCouponCode(rawCode: string): Promise<CouponActionResult> 
   const { products, variants } = await loadCartProductData(items)
   const priced = buildCartView(row?.id ?? null, items, products, variants)
 
+  // Stacking: a second (or third) campaign code JOINS the ones already in the
+  // cookie when every code involved is a campaign that opted in. The rules
+  // live in evaluateDiscountStack; a refusal of the NEW code is reported with
+  // the engine's own sentence. When the existing cookie does not form a
+  // working stack with the new code (a legacy coupon, a code that lapsed), the
+  // fall-through below keeps the old semantics: the new code, valid on its
+  // own, REPLACES the cookie.
+  const cookieJar = await cookies()
+  const existingCodes = parseCouponCookieCodes(cookieJar.get(CART_COUPON_COOKIE)?.value)
+  if (existingCodes.length > 0 && !existingCodes.includes(code)) {
+    if (existingCodes.length >= MAX_STACKED_CODES) {
+      return fail('ניתן לשלב עד שלושה קודים בהזמנה אחת', 'COUPON_INVALID')
+    }
+    const candidate = [...existingCodes, code]
+    const { resolved, evaluation } = await resolveCampaignStack(candidate, priced)
+    if (resolved.every(Boolean)) {
+      if (evaluation.applied.length === candidate.length) {
+        cookieJar.set(CART_COUPON_COOKIE, serializeCouponCookieCodes(candidate), {
+          httpOnly: true,
+          sameSite: 'lax',
+          maxAge: COUPON_COOKIE_MAX_AGE,
+          path: '/',
+        })
+        revalidateCartPaths()
+        return { ok: true, cart: await runGetCart() }
+      }
+      const refusal = evaluation.refused.find((entry) => entry.code === code)
+      if (refusal) return fail(refusal.message, 'COUPON_INVALID')
+    }
+  } else if (existingCodes.includes(code)) {
+    return fail('הקוד הזה כבר הופעל בעגלה', 'COUPON_INVALID')
+  }
+
   // Site-wide campaign first, same precedence as resolveAppliedCoupon. Without
   // this the whole of 096 would be unreachable: a campaign code entered in the
   // cart would fall through to `public.coupons`, miss, and be rejected as
@@ -716,6 +827,13 @@ async function runApplyCouponCode(rawCode: string): Promise<CouponActionResult> 
     })
     revalidateCartPaths()
     return { ok: true, cart: await runGetCart() }
+  }
+
+  // The real reason, not 'unknown code': a campaign refused above for the
+  // gift card in the cart fell through here as a bare null, and the legacy
+  // table would only add a miss on top.
+  if (await cartHasGiftCard(priced)) {
+    return fail('לא ניתן להחיל קוד הנחה על עגלה עם גיפט קארד', 'COUPON_INVALID')
   }
 
   const { data } = await createPublicClient()
@@ -774,12 +892,19 @@ async function runRemoveCouponCode(): Promise<CouponActionResult> {
 async function runResolveCheckoutDiscountAgorot(): Promise<{
   code: string | null
   discountAgorot: number
+  stack?: { code: string; discountAgorot: number }[]
 }> {
   const cart = await runGetCart()
   if (!cart.coupon) return { code: null, discountAgorot: 0 }
   // Already agorot. This used to multiply a shekel float back up by 100 and
   // round it, which is the round trip the whole cart is now built to avoid.
-  return { code: cart.coupon.code, discountAgorot: cart.coupon.discount }
+  // `stack` carries the per-code amounts when several campaigns stack, so the
+  // checkout claim loop can hold each campaign's row for its own share.
+  return {
+    code: cart.coupon.code,
+    discountAgorot: cart.coupon.discount,
+    ...(cart.coupon.stack ? { stack: cart.coupon.stack } : {}),
+  }
 }
 
 export async function getCart(): Promise<CartView> {
@@ -844,6 +969,7 @@ export async function removeCouponCode(): Promise<CouponActionResult> {
 export async function resolveCheckoutDiscountAgorot(): Promise<{
   code: string | null
   discountAgorot: number
+  stack?: { code: string; discountAgorot: number }[]
 }> {
   return withActionContext('cart.resolve_checkout_discount', () =>
     runResolveCheckoutDiscountAgorot(),

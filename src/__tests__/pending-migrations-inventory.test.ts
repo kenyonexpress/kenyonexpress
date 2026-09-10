@@ -334,6 +334,12 @@ describe('the pending migration inventory', () => {
     // transaction with functional probes (defaults, the unsubscribe upsert,
     // authenticated locked out of the state table) and filed here as the
     // record like 217/223/224/226/227/228/231/232.
+    // 234 IS applied (2026-09-10, `gift_cards_234`): the gift_cards table,
+    // products.is_gift_card, the gift_card_issued outbox kind and
+    // redeem_gift_card. Verified object-by-object against production after
+    // the fact (table, flag column, all five indexes including the partial
+    // issue dedupe, the RLS policy and the widened kind check all present,
+    // zero rows) and filed here as the record like 217/223/224/226-233.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
@@ -347,6 +353,7 @@ describe('the pending migration inventory', () => {
       '231_bell_fanout.sql',
       '232_reviews_admin_moderation_only.sql',
       '233_wishlist_alerts.sql',
+      '234_gift_cards.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

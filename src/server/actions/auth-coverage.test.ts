@@ -67,6 +67,9 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['newsletter.ts:confirmNewsletter', 'token in the confirmation link is the authorisation'],
   ['newsletter.ts:unsubscribeByToken', 'unsubscribe must work from an email client'],
   ['gifts.ts:loadGiftPreview', 'claim token is the authorisation'],
+  // The recipient of a printed gift card usually has no account yet; the
+  // 78-bit bearer code is the authorisation, rate limited per IP in the body.
+  ['gift-cards.ts:checkGiftCardBalance', 'bearer code is the authorisation, rate limited'],
 ])
 
 function filesUnder(dir: string): string[] {

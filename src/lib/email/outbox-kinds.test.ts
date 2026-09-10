@@ -51,6 +51,7 @@ const CHECK_ACCEPTS = [
   'order_shipped',
   'price_drop',
   'back_in_stock',
+  'gift_card_issued',
 ] as const
 
 /**
@@ -81,6 +82,11 @@ const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
 // 2026-09-10: fourteen became sixteen. 200 (applied 2026-09-09) restated the
 // constraint with `price_drop` and `back_in_stock`, and its own closing DO
 // block counted 16 names out of pg_get_constraintdef after the apply.
+//
+// 2026-09-10, later the same day: sixteen became seventeen. 234 (applied,
+// `gift_cards_234`) restated the constraint with `gift_card_issued`;
+// re-measured with the pg_get_constraintdef query above and all seventeen
+// names came back, the sixteen prior members intact.
 const MEASURED_AT = '2026-09-10'
 
 /** A payload fat enough that every builder's own guards are satisfied. */

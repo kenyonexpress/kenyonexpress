@@ -693,7 +693,11 @@ async function runBeginCheckout(
   // `used_count` (claim_order_discount, 194/227) so `max_uses` is finally a
   // counter the purchase path moves. The code itself is still not stored on
   // the order - the redemption row, keyed on the order id, is the record.
-  const { code: discountCode, discountAgorot } = await resolveCheckoutDiscountAgorot()
+  const {
+    code: discountCode,
+    discountAgorot,
+    stack: discountStack,
+  } = await resolveCheckoutDiscountAgorot()
 
   let settlement: ReturnType<typeof calculateSettlement>
   try {
@@ -917,19 +921,32 @@ async function runBeginCheckout(
   // cron) hands the use back. Failing the checkout on refusal is the point -
   // charging first and discovering 'exhausted' at finalize would be money out
   // the door.
-  if (discountCode && discountAgorot > 0) {
-    const claim = isValidUnitCode(discountCode)
+  // A stacked discount claims each campaign for its own share, in application
+  // order; `discount_redemptions` is unique per (campaign, order), so the rows
+  // coexist and every by-order operation (release sweep, consume, refund)
+  // already iterates them. A refusal mid-stack unwinds exactly like a single
+  // refusal: the order is cancelled, and the claims taken before it lapse with
+  // the cancelled order at the sweep, the same way a paid-nothing order's
+  // single claim always has.
+  const discountClaims =
+    discountStack && discountStack.length > 1
+      ? discountStack.filter((entry) => entry.discountAgorot > 0)
+      : discountCode && discountAgorot > 0
+        ? [{ code: discountCode, discountAgorot }]
+        : []
+  for (const entry of discountClaims) {
+    const claim = isValidUnitCode(entry.code)
       ? await admin.rpc('redeem_coupon_qr', {
-          p_code: discountCode,
+          p_code: entry.code,
           p_order_id: order.id,
           p_user_id: user.id,
-          p_amount_agorot: discountAgorot,
+          p_amount_agorot: entry.discountAgorot,
         })
       : await admin.rpc('claim_order_discount', {
-          p_code: discountCode,
+          p_code: entry.code,
           p_order_id: order.id,
           p_user_id: user.id,
-          p_amount_agorot: discountAgorot,
+          p_amount_agorot: entry.discountAgorot,
         })
     const refusal = claimRefusal(claim)
     if (refusal !== null) {
