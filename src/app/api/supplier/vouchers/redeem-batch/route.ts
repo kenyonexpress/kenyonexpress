@@ -1,6 +1,7 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { isSameOriginRequest } from '@/lib/security/same-origin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { settledKeys } from '@/lib/vouchers/offline-scan'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -69,6 +70,12 @@ const MESSAGES: Record<string, string> = {
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  // The drain is the bulk version of the redemption, so it is refused the same
+  // way. Free-form error shape here, so the reason is named.
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ ok: false, error: 'cross_site' }, { status: 403 })
+  }
+
   const scanContext = readScanContext(request.headers)
 
   const scoped = await identityScopedClient(request)

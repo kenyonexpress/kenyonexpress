@@ -206,6 +206,42 @@ grants at all.
 reversible, and the application does not depend on the grant because all
 server-side writes go through the service-role client.
 
+### Re-measured 2026-09-10: 56 became 74, and the revoke is now a file
+
+```
+authenticated  INSERT  74 relations
+authenticated  UPDATE  72
+authenticated  DELETE  72
+anon           INSERT / UPDATE / DELETE  1   (carts, deliberate)
+```
+
+The growth is the finding rather than the number. Supabase's default privileges
+grant the client roles everything on every new table, so every migration that
+creates one widens this unless it says otherwise, and nothing was counting.
+
+**114 of the privileges are provably unusable, and those are the ones being
+taken back.** Three each on 38 relations - 33 tables and 5 reporting views -
+where no PERMISSIVE policy grants any client role INSERT, UPDATE, DELETE or ALL.
+Postgres refuses such a write before it consults a grant, so every one of them
+already fails today and revoking cannot break a working path.
+
+`migrations/pending/230_revoke_surplus_client_dml.sql` is that revoke and it is
+**unapplied**, awaiting approval like everything else in that directory. It was
+proven against production on 09-10 inside a DO block that revoked all 114,
+asserted none survived, checked that guest carts and the
+`notifications.read_at` column grant still worked, and then raised to roll
+itself back:
+
+```
+privileges before=114, remaining after revoke=none,
+carts anon INSERT=t, notifications.read_at UPDATE=t
+```
+
+`supabase/rls-manifest.json` now carries a `client_dml_grants` block with the
+measured list, and `src/lib/auth/rls-manifest.test.ts` fails when that block and
+the migration stop naming the same relations - which is what stops this reading
+56 again in a fortnight.
+
 ---
 
 ## 5. Advisor findings, all 21 triaged

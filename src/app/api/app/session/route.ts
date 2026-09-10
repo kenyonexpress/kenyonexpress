@@ -1,6 +1,7 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { isSameOriginRequest } from '@/lib/security/same-origin'
 import { createClient } from '@/lib/supabase/server'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -38,6 +39,11 @@ const bodySchema = z.object({
 })
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  // Cross-origin refusal, not authentication: see src/lib/security/same-origin.ts
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ ok: false, error: 'cross_site' }, { status: 403 })
+  }
+
   // Keyed by IP, because there is by definition no identity yet. Generous
   // enough for an app that re-establishes on every cold start, tight enough
   // that this cannot be used to grind tokens.
@@ -73,7 +79,12 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
 /** Sign-out inside the app has to clear the WebView's jar too, or the next
  * checkout opens as the previous account. */
-async function handleDELETE(): Promise<NextResponse> {
+async function handleDELETE(request: NextRequest): Promise<NextResponse> {
+  // Cross-origin refusal, not authentication: see src/lib/security/same-origin.ts
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ ok: false, error: 'cross_site' }, { status: 403 })
+  }
+
   const supabase = await createClient()
   await supabase.auth.signOut()
   return NextResponse.json({ ok: true })

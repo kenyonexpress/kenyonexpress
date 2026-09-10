@@ -1,5 +1,6 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { isSameOriginRequest } from '@/lib/security/same-origin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { getSupplierMemberships } from '@/lib/supplier/rbac'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -99,6 +100,11 @@ function respond(body: LookupResponse, status: number, headers?: Headers): NextR
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  // Same refusal and same reasoning as the redemption route next door.
+  if (!isSameOriginRequest(request)) {
+    return respond({ outcome: 'unauthorized', message: MESSAGES.unauthorized }, 403)
+  }
+
   const scanContext = readScanContext(request.headers)
 
   // Cookie for the portal, bearer for the app, and either way a client that

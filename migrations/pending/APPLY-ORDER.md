@@ -1,5 +1,50 @@
 # Apply order
 
+## 2026-09-10: 230, and it can go in at any point
+
+`230_revoke_surplus_client_dml.sql` takes INSERT, UPDATE and DELETE away from
+`authenticated` on 33 tables and 5 views. **It has no ordering rule against any
+other pending file** and it creates nothing, so nothing later depends on it.
+
+**Why it is safe to apply while the shop is serving.** The 38 relations are
+exactly those where a client role holds a DML privilege and no PERMISSIVE policy
+grants any client role a write. Postgres refuses the write before it consults a
+grant, so all 114 privileges are unusable today; revoking them cannot break a
+path that works, because any such path is already failing. The five views were
+checked separately - every use of all five in `src/` and `apps/` is `.select()`.
+
+**Proven on production on 2026-09-10, inside a DO block that revoked all 114,
+asserted none survived, and then raised to roll itself back:**
+
+    privileges before=114, remaining after revoke=none,
+    carts anon INSERT=t, notifications.read_at UPDATE=t
+
+The last two are the shapes that must NOT move: guest carts, and the column
+grant the notification bell marks itself read through. The file re-checks both
+after its own revokes and raises if either is gone.
+
+**Its guard refuses rather than proceeding** if any target has gained a client
+write policy since 09-10, or if any target has gained a column-level grant.
+Both would mean a feature now depends on the privilege being revoked.
+
+**What to check after applying.**
+
+```sql
+SELECT count(*) FROM information_schema.role_table_grants
+ WHERE table_schema = 'public' AND grantee IN ('anon','authenticated')
+   AND privilege_type IN ('INSERT','UPDATE','DELETE')
+   AND table_name IN ('payments','vouchers','refunds','wallet_entries','v_wallet_ledger');
+```
+
+Expect **0**; it is 15 before the file runs. `supabase/rls-manifest.json`'s
+`client_dml_grants` block carries the full measured list, and
+`src/lib/auth/rls-manifest.test.ts` fails if that block and this file stop
+naming the same relations.
+
+**Reversal:** `GRANT INSERT, UPDATE, DELETE ON <relation> TO authenticated;` for
+whichever relation turns out to need it. Reversing the whole file would restore
+114 privileges that nothing uses.
+
 ## 2026-09-09: 214, and the file it makes unapplyable
 
 `214_settlement_gap_kind.sql` adds one notification kind and can go in at any

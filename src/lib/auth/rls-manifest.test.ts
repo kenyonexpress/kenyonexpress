@@ -61,7 +61,14 @@ type Manifest = {
   schema: string
   service_role_only: Record<string, string>
   tables: ManifestTable[]
-  write_policies: { policies: WritePolicy[] }
+  write_policies: { policies: WritePolicy[]; no_write_policy: string[] }
+  client_dml_grants: {
+    intended: Record<string, string>
+    column_grants: Record<string, string>
+    surplus_tables: string[]
+    surplus_views: string[]
+    revoked_by: string
+  }
 }
 
 function loadManifest(): Manifest {
@@ -189,5 +196,113 @@ describe('RLS manifest', () => {
         expect(isDenyAll(policy), `${name}.${policy.policyname} is not deny-all`).toBe(true)
       }
     }
+  })
+})
+
+/**
+ * THE GRANT SIDE, ADDED 2026-09-10.
+ *
+ * Everything above is about policies: which ROWS a role may write. A grant is
+ * the question underneath it - whether the role may write at all - and until
+ * this block existed nothing in the repository recorded it.
+ * `docs/SECURITY-POSTURE.md` §4 calls it the one structural gap and recommends
+ * one thing: re-apply the DML revoke on the money tables. Measured against
+ * production on 2026-09-10, `authenticated` held INSERT on 74 relations, UPDATE
+ * on 72 and DELETE on 72, up from the 56 recorded on 09-01, because Supabase's
+ * default privileges hand the client roles everything on every new table.
+ *
+ * 114 of those privileges - three each on 38 relations - are unusable: those
+ * relations have no permissive client write policy, and Postgres refuses the
+ * write before it looks at a grant. Proven on production the same day, inside a
+ * DO block that revoked all 114, asserted none survived, and then raised to roll
+ * itself back: `privileges before=114, remaining after revoke=none, carts anon
+ * INSERT=t, notifications.read_at UPDATE=t`.
+ *
+ * WHAT THIS TEST HOLDS, WITH NO DATABASE. That the ledger and the migration that
+ * acts on it cannot drift apart, and that the revoke list never quietly loses a
+ * money table. It cannot re-measure production; the date on the block is what
+ * says when somebody last did.
+ */
+const grants = manifest.client_dml_grants
+const noWritePolicy = new Set(manifest.write_policies.no_write_policy)
+const migration = readFileSync(
+  resolve(process.cwd(), 'migrations/pending/230_revoke_surplus_client_dml.sql'),
+  'utf8',
+)
+
+describe('client DML grants', () => {
+  it('revokes nothing that a client write policy depends on', () => {
+    // The failure this prevents: a table gains a legitimate client write policy,
+    // and the revoke in 230 - written when it had none - takes the feature out
+    // at apply time, in production, with the policy sitting there looking right.
+    const contradictory = grants.surplus_tables.filter((table) => !noWritePolicy.has(table))
+    expect(
+      contradictory,
+      'on the revoke list but carrying a client write policy -- remove it from surplus_tables and from migration 230',
+    ).toEqual([])
+  })
+
+  it('names in migration 230 exactly the relations the ledger names', () => {
+    const revoked = [
+      ...migration.matchAll(/^REVOKE INSERT, UPDATE, DELETE ON public\.([a-z0-9_]+) FROM/gm),
+    ].map((match) => match[1])
+
+    expect(new Set(revoked).size, 'a relation revoked twice').toBe(revoked.length)
+    expect([...revoked].sort()).toEqual([...grants.surplus_tables, ...grants.surplus_views].sort())
+  })
+
+  it('keeps every money-path relation on the revoke list', () => {
+    // A ratchet, not a restatement. Shortening the list is the change worth
+    // catching: each of these is a table where one permissive policy written by
+    // accident would be a live vulnerability for exactly as long as the grant
+    // underneath it survives.
+    const money = [
+      'cashback_ledger',
+      'escrow_holds',
+      'invoices',
+      'payment_events',
+      'payments',
+      'refunds',
+      'split_executions',
+      'subscription_charges',
+      'voucher_redemptions',
+      'vouchers',
+      'wallet_accounts',
+      'wallet_balances',
+      'wallet_entries',
+      'wallet_transactions',
+    ]
+    const listed = new Set(grants.surplus_tables)
+    expect(money.filter((table) => !listed.has(table))).toEqual([])
+  })
+
+  it('leaves the two shapes that must survive out of the revoke list', () => {
+    const targets = new Set([...grants.surplus_tables, ...grants.surplus_views])
+
+    // Guest carts: anon writes them by design, and it is the only relation where
+    // a client role should hold DML and does.
+    expect(Object.keys(grants.intended)).toContain('carts')
+    expect(targets.has('carts')).toBe(false)
+
+    // Column grants are a narrower privilege than the table grant this revokes,
+    // and a table-level REVOKE on the same relation would read as covering them.
+    for (const qualified of Object.keys(grants.column_grants)) {
+      const named = qualified
+        .split(',')
+        .map((part) => part.trim().split('.')[0] ?? '')
+        .filter(Boolean)
+      for (const table of named) {
+        expect(targets.has(table), `${table} carries a column grant and must not be revoked`).toBe(
+          false,
+        )
+      }
+    }
+  })
+
+  it('says when it was measured', () => {
+    expect(grants.revoked_by).toBe('migrations/pending/230_revoke_surplus_client_dml.sql')
+    expect((grants as unknown as Record<string, string>).$measured_at).toMatch(
+      /^\d{4}-\d{2}-\d{2}$/,
+    )
   })
 })

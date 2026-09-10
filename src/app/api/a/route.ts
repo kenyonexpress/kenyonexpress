@@ -3,6 +3,7 @@ import { ingestBatchSchema } from '@/lib/analytics/events'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { isSameOriginRequest } from '@/lib/security/same-origin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
@@ -22,17 +23,6 @@ const RATE_LIMIT_PER_MINUTE = 120
 
 const noContent = () => new NextResponse(null, { status: 204 })
 
-/** Same-origin gate: an analytics endpoint has no cross-site callers. */
-function originAllowed(request: NextRequest): boolean {
-  const origin = request.headers.get('origin')
-  if (!origin) return true // sendBeacon and same-origin fetch may omit it
-  try {
-    return new URL(origin).host === request.nextUrl.host
-  } catch {
-    return false
-  }
-}
-
 function clientIp(request: NextRequest): string | null {
   const forwarded = request.headers.get('x-forwarded-for')
   const ip = forwarded?.split(',')[0]?.trim() || request.headers.get('x-real-ip')?.trim()
@@ -40,7 +30,8 @@ function clientIp(request: NextRequest): string | null {
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  if (!originAllowed(request)) return noContent()
+  // Same-origin gate: an analytics endpoint has no cross-site callers.
+  if (!isSameOriginRequest(request)) return noContent()
 
   // sendBeacon sends a Blob typed application/json; fetch sets it explicitly.
   const contentType = request.headers.get('content-type') ?? ''

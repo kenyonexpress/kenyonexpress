@@ -65,3 +65,64 @@ describe('mutating API routes', () => {
     )
   })
 })
+
+/**
+ * SECOND QUESTION, ADDED 2026-09-10: does a cookie-authenticated mutation refuse
+ * another origin?
+ *
+ * `src/lib/supabase/bearer.ts` prefers the COOKIE over the bearer header, by
+ * design and with the reasoning written out there, so every route that calls
+ * `authenticateRequest` or `identityScopedClient` is cookie-authenticated the
+ * moment a browser is the caller. Route handlers get none of the origin
+ * validation Next applies to server actions.
+ *
+ * `SameSite=Lax` on the session cookies (measured on the live site 2026-09-10)
+ * already defeats the textbook cross-SITE form post. What it does not defeat is
+ * a sibling subdomain, which is same-site by definition. The argument in full is
+ * in `src/lib/security/same-origin.ts`; this is the part that stays true.
+ */
+const COOKIE_AUTH = /authenticateRequest|identityScopedClient/
+const ORIGIN_GATE = /isSameOriginRequest/
+
+/**
+ * Mutating routes that authenticate some other way, with the reason. A route
+ * added to this list is a decision; a route missing from both this list and the
+ * origin gate is the defect.
+ */
+const NO_COOKIE_TO_STEAL: Record<string, string> = {
+  'src/app/api/payments/cardcom/webhook/route.ts':
+    'Cardcom server-to-server callback, verified by the unguessable ?s= string and a GetLpResult round trip.',
+  'src/app/api/search/index-dlq/route.ts': 'QStash signature.',
+  'src/app/api/search/index-job/route.ts': 'QStash signature.',
+  'src/app/api/webhooks/products/route.ts': 'Bearer secret compared in constant time.',
+  'src/app/api/webhooks/resend/route.ts': 'Svix HMAC-SHA256 over the raw body.',
+  'src/app/api/webhooks/twilio-sms/route.ts': 'Twilio HMAC-SHA1 over the URL and sorted params.',
+  'src/app/api/webhooks/whatsapp/route.ts': 'Twilio HMAC-SHA1, same as the SMS webhook.',
+  'src/app/api/supplier/redeem/route.ts':
+    'Alias that re-exports the guarded handler from /api/supplier/vouchers/redeem.',
+}
+
+describe('cookie-authenticated mutations', () => {
+  const files = routeFiles(API_DIR)
+
+  it('every one of them refuses a cross-origin browser POST', () => {
+    const unguarded = files
+      .filter((file) => {
+        const source = readFileSync(file, 'utf8')
+        return MUTATING.test(source) && !ORIGIN_GATE.test(source)
+      })
+      .map((file) => relative(process.cwd(), file))
+      .filter((file) => !(file in NO_COOKIE_TO_STEAL))
+      .filter((file) => COOKIE_AUTH.test(readFileSync(resolve(process.cwd(), file), 'utf8')))
+
+    expect(
+      unguarded,
+      'cookie-authenticated mutating routes with no origin check -- call isSameOriginRequest() or record why the cookie cannot be used against it',
+    ).toEqual([])
+  })
+
+  it('lists no exemption for a file that is gone', () => {
+    const present = files.map((file) => relative(process.cwd(), file))
+    for (const exempt of Object.keys(NO_COOKIE_TO_STEAL)) expect(present).toContain(exempt)
+  })
+})

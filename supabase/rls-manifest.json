@@ -1161,5 +1161,83 @@
       }
     ],
     "$permissive_means": "PERMISSIVE policies are ORed together, RESTRICTIVE ones are ANDed with the result. That is why the eight deny_all_client_roles policies are RESTRICTIVE and why the count alone would have missed the point: a PERMISSIVE policy saying `false` adds nothing and is defeated the moment somebody adds a second permissive policy, while a RESTRICTIVE one cannot be outvoted by any policy added later. Moving these tables from zero policies to RESTRICTIVE false is therefore a strengthening, not a restatement: zero policies is also undefeatable, but only until the first permissive policy lands. profiles_super_admin_mfa is the ninth RESTRICTIVE policy and is not a deny-all: it ANDs an aal2 requirement onto every UPDATE of a super_admin profile."
+  },
+  "client_dml_grants": {
+    "$what": [
+      "Which client roles hold INSERT, UPDATE or DELETE, measured against production on 2026-09-10.",
+      "A policy decides which ROWS a role may write; a grant decides whether it may write at all.",
+      "This file already recorded the policy side (write_policies). Nothing recorded the grant side,",
+      "and docs/SECURITY-POSTURE.md section 4 calls that the one structural gap in the schema."
+    ],
+    "$measured_at": "2026-09-10",
+    "$how": [
+      "The query is in docs/SECURITY-POSTURE.md section 4 and in migration 230's header.",
+      "src/lib/auth/rls-manifest.test.ts is the CI gate over this block and needs no database."
+    ],
+    "$why_it_grows": "Supabase's default privileges hand the client roles everything on every new table, so each migration that creates one adds three more write privileges unless it says otherwise. 56 relations at the 2026-09-01 reading, 74 on 2026-09-10. This block is what makes the next increase visible instead of silent.",
+    "totals_2026_09_10": {
+      "authenticated": {
+        "INSERT": 74,
+        "UPDATE": 72,
+        "DELETE": 72
+      },
+      "anon": {
+        "INSERT": 1,
+        "UPDATE": 1,
+        "DELETE": 1
+      }
+    },
+    "intended": {
+      "carts": "anon and authenticated both write carts by design: a guest cart exists before there is an account. This is the only relation where a client role SHOULD hold DML and does."
+    },
+    "column_grants": {
+      "notifications.read_at": "The bell marks itself read through a column grant rather than a table grant, so nothing else on the row is writable. Read from pg_attribute.attacl: information_schema.role_column_grants PROJECTS a table-level grant onto every column and cannot tell a real column grant from an inherited one.",
+      "reviews.supplier_reply, reviews.supplier_replied_at, reviews.supplier_replied_by": "Same shape: a supplier may write its reply onto a review it cannot otherwise touch."
+    },
+    "$surplus_means": "The client role holds a DML privilege AND no PERMISSIVE policy grants any client role INSERT, UPDATE, DELETE or ALL. With RLS on and no permissive write policy Postgres refuses the write before the grant is consulted, so every one of these privileges is unusable today and is revoked by migrations/pending/230_revoke_surplus_client_dml.sql. Revoking cannot break a working code path; what it buys is that a future policy written permissive by accident is inert instead of live.",
+    "surplus_tables": [
+      "abandoned_cart_nudges",
+      "ai_usage",
+      "analytics_events",
+      "cashback_ledger",
+      "coupon_codes",
+      "coupon_qr_batches",
+      "coupon_qr_codes",
+      "coupons",
+      "discount_campaigns",
+      "discount_redemptions",
+      "email_suppressions",
+      "escrow_holds",
+      "invoices",
+      "newsletter_subscribers",
+      "payment_events",
+      "payments",
+      "referral_program_settings",
+      "refunds",
+      "search_events",
+      "seo_redirects",
+      "split_executions",
+      "subscription_charges",
+      "supplier_staff",
+      "support_ticket_messages",
+      "voucher_redemptions",
+      "vouchers",
+      "wallet_accounts",
+      "wallet_balances",
+      "wallet_entries",
+      "wallet_transactions",
+      "whatsapp_contacts",
+      "whatsapp_inbound_messages",
+      "whatsapp_outbox"
+    ],
+    "$surplus_views_means": "Views carry no RLS of their own, so a grant here is judged by its callers instead: every use of all five in src/ and apps/ is .select(), read on 2026-09-10.",
+    "surplus_views": [
+      "v_admin_pending_queues",
+      "v_banners_live",
+      "v_homepage_sections_live",
+      "v_low_stock",
+      "v_wallet_ledger"
+    ],
+    "revoked_by": "migrations/pending/230_revoke_surplus_client_dml.sql"
   }
 }

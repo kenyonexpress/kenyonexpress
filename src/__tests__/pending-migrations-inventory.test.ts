@@ -931,6 +931,19 @@ describe('the pending migration inventory', () => {
       // `kind_not_accepted: true`, which is the same degrade
       // `/api/cron/settlement-reconcile` runs for `settlement_gap` and 214.
       '229_referral_bonus_notification_kind.sql',
+      // 230 WRITTEN 2026-09-10, not applied. 38 REVOKE statements and no DDL.
+      // docs/SECURITY-POSTURE.md §4 measured 56 relations where `authenticated`
+      // holds DML it cannot use; production answers 74 INSERT / 72 UPDATE / 72
+      // DELETE today, because Supabase's default privileges widen it on every
+      // new table and nothing was counting. 114 of those privileges -- three
+      // each on 33 tables and 5 views with no permissive client write policy --
+      // are refused by RLS before a grant is consulted, so revoking them cannot
+      // break a path that works. Proven on production inside a DO block that
+      // revoked all 114, asserted none survived, checked that guest carts and
+      // the notifications.read_at column grant still worked, and then raised to
+      // roll itself back. Its guard refuses if any target has since gained a
+      // client write policy or a column-level grant.
+      '230_revoke_surplus_client_dml.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

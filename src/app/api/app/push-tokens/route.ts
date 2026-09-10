@@ -2,6 +2,7 @@ import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { isExpoPushToken } from '@/lib/push/expo'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { isSameOriginRequest } from '@/lib/security/same-origin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { authenticateRequest } from '@/lib/supabase/bearer'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -35,6 +36,11 @@ const registerSchema = z.object({
 })
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  // Cross-origin refusal, not authentication: see src/lib/security/same-origin.ts
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ ok: false, error: 'cross_site' }, { status: 403 })
+  }
+
   const identity = await authenticateRequest(request)
   if (!identity) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
@@ -109,6 +115,11 @@ const unregisterSchema = z.object({ token: z.string().min(1).max(200) })
  * so the row keeps saying why this device went quiet.
  */
 async function handleDELETE(request: NextRequest): Promise<NextResponse> {
+  // Cross-origin refusal, not authentication: see src/lib/security/same-origin.ts
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ ok: false, error: 'cross_site' }, { status: 403 })
+  }
+
   const identity = await authenticateRequest(request)
   if (!identity) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 

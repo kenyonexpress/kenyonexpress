@@ -1,5 +1,6 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { isSameOriginRequest } from '@/lib/security/same-origin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -36,6 +37,11 @@ const bodySchema = z.object({
 type StaffRow = { staff_id: string; display_name: string; locked: boolean }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  // Cross-origin refusal, not authentication: see src/lib/security/same-origin.ts
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ ok: false, error: 'cross_site' }, { status: 403 })
+  }
+
   const scoped = await identityScopedClient(request)
   if (!scoped) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 

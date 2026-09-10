@@ -3,6 +3,7 @@ import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { isSameOriginRequest } from '@/lib/security/same-origin'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { expireWalletPasses } from '@/lib/wallet/notify'
@@ -185,6 +186,16 @@ async function reportRedemption(result: Record<string, unknown>): Promise<void> 
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
+  // A browser POST from another origin, refused before anything is read.
+  // SameSite=Lax already withholds the session cookie cross-SITE; what this
+  // adds is the same-site case, which is a sibling subdomain. It reuses the
+  // `unauthorized` outcome rather than inventing one, because that union is
+  // shared with the app and the offline drain and a name they do not know
+  // reads to them as an unhandled failure. src/lib/security/same-origin.ts.
+  if (!isSameOriginRequest(request)) {
+    return respond({ outcome: 'unauthorized', message: OUTCOME_MESSAGES.unauthorized }, 403)
+  }
+
   const scanContext = readScanContext(request.headers)
 
   // Cookie for the web portal, bearer for the app, and in BOTH cases a client
