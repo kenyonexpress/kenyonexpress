@@ -180,5 +180,17 @@
   "referralEmail": {
     "creditNote": "The bonus is site credit only and cannot be withdrawn as cash.",
     "walletCta": "Go to my wallet"
+  },
+  "errorBoundary": {
+    "retry": "Try again",
+    "home": "Back to home",
+    "login": "Back to sign in",
+    "bodyGeneric": "The failure has been logged. You can reload the page, or go back to the home page.",
+    "storeTitle": "Something went wrong in the shop",
+    "mainTitle": "Something went wrong",
+    "authTitle": "Something went wrong while signing in",
+    "authBody": "The failure has been logged. You can try again, or go back to sign in.",
+    "legalTitle": "Something went wrong loading the document",
+    "supplierPublicTitle": "Something went wrong on the supplier page"
   }
 }

@@ -542,3 +542,78 @@ refund taken directly at the Cardcom terminal, outside this system entirely.
 
 **A handled failure is not an absent one.** Each row above is handled by exactly
 one mechanism, named. If that mechanism is removed, the row moves to §4.
+
+---
+
+## 7. Re-measured 2026-09-10: the failure this catalogue was missing
+
+**A dependency that hangs is a different failure from one that answers badly,
+and only the second was handled anywhere.**
+
+`searchProductsServer` degrades three ways - Meilisearch, then the Postgres
+full-text RPC, then ILIKE - and §2.5 above treats search quality as the risk.
+The gap was underneath it: the Meilisearch call was a bare `fetch` with **no
+signal**. An engine that accepts the connection and never answers therefore held
+the shopper's request until the platform's own ceiling killed it, and
+`cache: 'no-store'` meant every search paid it again. Search is already the
+slowest read here at 615ms p95 under load (`docs/CAPACITY.md`), so this is the
+one dependency where the difference is visible to a customer.
+
+| | Before 2026-09-10 | Now |
+|---|---|---|
+| Meilisearch answers 400/500 | falls back to Postgres | unchanged |
+| Meilisearch refuses the connection | falls back to Postgres | unchanged |
+| **Meilisearch hangs** | **request waits on the platform ceiling** | 2s deadline, then Postgres |
+| **Meilisearch is down** | **every search pays the full wait** | 3 failures open a breaker for 30s |
+
+`src/lib/search/meili-breaker.ts` is the breaker and it says what it is not: per
+process state on a serverless platform, so each warm instance learns for itself
+and nothing is coordinated across the fleet. That is the whole intended benefit -
+one instance stops paying the timeout on every request - and claiming a
+fleet-wide breaker would be claiming something this cannot do.
+
+### The other two external services were measured and left alone
+
+- **Cardcom** already has a timeout and **one opt-in retry per call site**, off
+  by default, and `src/lib/payments/cardcom.ts` carries the argument: a POST to
+  `ChargeToken.aspx` that times out has not necessarily failed, so a blind retry
+  is a second charge. Exponential backoff is the wrong pattern on that endpoint
+  and the file says so at the seam where somebody would add it.
+- **R2** gets three jittered attempts from the AWS SDK (`retryMode: 'standard'`),
+  which is where a grep for "exponential backoff on R2" finds no code of ours.
+
+### Who hit the error
+
+Nothing ever called `Sentry.setUser`, so no event carried a user dimension and
+"one shopper or two hundred" was unanswerable. `onRequestError` now attaches the
+caller's **uuid only** - no email, no IP, `sendDefaultPii` stays `false` - read
+out of the session cookie rather than by asking Supabase on a request that is
+already failing. `src/lib/observability/user-context.ts` states the trade: the
+JWT signature is not verified, so a forged token can mislabel its own crash
+reports, which is a label and not an authorization decision.
+
+### Error boundaries
+
+Five of the ten route groups had one. `(store)` did not - the whole storefront -
+so a throw on a product page replaced the header and mini-cart with the root
+apology; `(auth)` did not, so a customer mid password-reset was offered the
+storefront and no way back. All five groups that serve pages now have one, and
+`src/components/errors/segment-coverage.test.ts` fails when a new group arrives
+without one. `(shop)` and `(marketing)` are empty directories and are excluded by
+measurement rather than by an exception list.
+
+### The Result pattern, measured rather than assumed
+
+The section this work came from asks for "typed Result pattern all services".
+Measured across the 27 non-test modules in `src/server/actions/`: **no service
+signals an expected failure by throwing.** Seventeen use the `ActionResult`
+envelope from `src/lib/admin/action-result.ts`; the other ten
+(`account`, `auth`, `consent`, `courses`, `mfa`, `orders`, `passkeys`, `push`,
+`subscriptions`) return `{ error: string }` / `{ success: string }`, which is the
+shape a form action needs and is equally typed and equally checked.
+
+**Not converted, deliberately.** Rewriting ten envelopes touches every UI caller
+of each, for no change in behaviour: the property that matters - a caller cannot
+ignore the failure branch - already holds in both dialects. The finding is the
+measurement, and it is recorded here rather than turned into a refactor whose
+only visible effect would be the diff.

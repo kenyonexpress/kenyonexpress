@@ -60,7 +60,7 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
-const { searchProductsServer } = await import('./search-server')
+const { searchProductsServer, __resetMeiliBreaker } = await import('./search-server')
 
 beforeEach(() => {
   recorded = { orGroups: [], eqPairs: [] }
@@ -71,6 +71,7 @@ beforeEach(() => {
   }
   process.env.MEILISEARCH_HOST = ''
   process.env.MEILISEARCH_API_KEY = ''
+  __resetMeiliBreaker()
 })
 
 describe('the ILIKE fallback', () => {
@@ -201,5 +202,92 @@ describe('the search_products FTS path (migration 171)', () => {
 
     expect(outcome).toEqual({ results: [], total: 0, engine: 'database-fts' })
     expect(recorded.orGroups).toEqual([])
+  })
+})
+
+/**
+ * THE ENGINE THAT DOES NOT ANSWER, which is a different failure from the engine
+ * that answers badly.
+ *
+ * Every Meilisearch failure the file handled before was a response: a 400 from
+ * an unconfigured index, a refused connection. A hang produced neither, and the
+ * `fetch` had no signal, so the shopper's request waited on the platform's own
+ * ceiling and `cache: 'no-store'` meant every search did it again.
+ */
+describe('when Meilisearch stops answering', () => {
+  const meiliUp = () => {
+    process.env.MEILISEARCH_HOST = 'http://meili.test'
+    process.env.MEILISEARCH_API_KEY = 'test-key'
+  }
+
+  it('gives the fetch a deadline instead of waiting on the platform', async () => {
+    meiliUp()
+    const fetchSpy = vi.fn(async (_url: unknown, _init?: RequestInit) => {
+      return new Response('{}', { status: 500 })
+    })
+    vi.stubGlobal('fetch', fetchSpy)
+
+    await searchProductsServer('אוזניות')
+
+    const init = fetchSpy.mock.calls[0]?.[1]
+    expect(init?.signal, 'the Meilisearch request carries no AbortSignal').toBeDefined()
+    vi.unstubAllGlobals()
+  })
+
+  it('falls back to Postgres rather than surfacing the failure', async () => {
+    meiliUp()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new DOMException('The operation was aborted', 'TimeoutError')
+      }),
+    )
+    rpcResponse = { data: [], error: null }
+
+    const outcome = await searchProductsServer('אוזניות')
+
+    expect(outcome.engine).toBe('database-fts')
+    vi.unstubAllGlobals()
+  })
+
+  it('stops calling it after three failures, so the fleet stops paying the timeout', async () => {
+    meiliUp()
+    const fetchSpy = vi.fn(async () => {
+      throw new DOMException('The operation was aborted', 'TimeoutError')
+    })
+    vi.stubGlobal('fetch', fetchSpy)
+    rpcResponse = { data: [], error: null }
+
+    for (let i = 0; i < 5; i++) await searchProductsServer(`אוזניות ${i}`)
+
+    // Three attempts, then the breaker answers for the other two. Without it,
+    // an engine that is down costs two seconds on every search until it returns.
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+    vi.unstubAllGlobals()
+  })
+
+  it('resumes the moment a call succeeds', async () => {
+    meiliUp()
+    let fail = true
+    const fetchSpy = vi.fn(async () => {
+      if (fail) throw new DOMException('aborted', 'TimeoutError')
+      return new Response(JSON.stringify({ hits: [], estimatedTotalHits: 0 }), { status: 200 })
+    })
+    vi.stubGlobal('fetch', fetchSpy)
+    rpcResponse = { data: [], error: null }
+
+    await searchProductsServer('one')
+    await searchProductsServer('two')
+    fail = false
+
+    const outcome = await searchProductsServer('three')
+    expect(outcome.engine).toBe('meilisearch')
+
+    // And the two earlier failures are forgotten: two more would otherwise open it.
+    fail = true
+    await searchProductsServer('four')
+    await searchProductsServer('five')
+    expect(fetchSpy).toHaveBeenCalledTimes(5)
+    vi.unstubAllGlobals()
   })
 })

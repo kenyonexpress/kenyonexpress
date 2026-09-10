@@ -88,6 +88,15 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
 
   const digest = (error as { digest?: string }).digest
 
+  // WHO, and only who. A uuid out of the session cookie, no email and no IP:
+  // both configs set `sendDefaultPii: false` and this does not undo that. Until
+  // 2026-09-10 no event carried a user at all, which made "one shopper or two
+  // hundred" unanswerable. lib/observability/user-context.ts carries the reason
+  // it reads the cookie rather than asking Supabase on a failing request, and
+  // the reason an unverified `sub` is fine for a label.
+  const { userIdFromCookieHeader } = await import('@/lib/observability/user-context')
+  const userId = userIdFromCookieHeader(request.headers.cookie)
+
   if (isMoneyPath(rawPath)) {
     const [{ capturePaymentError }, { alertMoneyFailure }] = await Promise.all([
       import('@/lib/observability/sentry'),
@@ -96,6 +105,7 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
 
     capturePaymentError(error, {
       stage: `request:${context.routeType}`,
+      userId,
       detail: { path, method: request.method, route: context.routePath, digest },
     })
 
@@ -106,6 +116,7 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
 
   const Sentry = await import('@sentry/nextjs')
   Sentry.withScope((scope) => {
+    if (userId) scope.setUser({ id: userId })
     scope.setTag('route_type', context.routeType)
     scope.setTag('router', context.routerKind)
     scope.setTag('route_path', context.routePath)

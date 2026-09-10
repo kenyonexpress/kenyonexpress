@@ -38,6 +38,12 @@ export type PaymentErrorContext = {
   orderId?: string | null
   paymentId?: string | null
   voucherId?: string | null
+  /**
+   * The caller's uuid, when it is known. `id` only, never an email or an IP:
+   * both Sentry configs set `sendDefaultPii: false` and this does not undo it.
+   * See lib/observability/user-context.ts.
+   */
+  userId?: string | null
   /** Anything else worth seeing. Redacted before it leaves the process. */
   detail?: Record<string, unknown>
 }
@@ -65,6 +71,7 @@ export function capturePaymentError(error: unknown, context: PaymentErrorContext
       // `{{ default }}` keeps Sentry's own grouping inside a stage, so two
       // genuinely different failures at the same stage stay apart. This only
       // ever splits; it never merges two things that were separate.
+      if (context.userId) scope.setUser({ id: context.userId })
       scope.setFingerprint(['{{ default }}', 'payments', context.stage])
       scope.setContext('payment', {
         stage: context.stage,

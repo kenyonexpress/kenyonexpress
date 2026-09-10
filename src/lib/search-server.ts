@@ -9,6 +9,13 @@ import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { log } from '@/lib/observability/log'
 import {
+  type BreakerState,
+  closed as breakerClosed,
+  isOpen,
+  recordFailure,
+  recordSuccess,
+} from '@/lib/search/meili-breaker'
+import {
   type PendingSearchProductRow,
   type SearchProductsArgs,
   callSearchProductsRpc,
@@ -41,15 +48,40 @@ type MeiliHit = {
   category?: { name_he: string; slug: string } | null
 }
 
+/**
+ * Per-process breaker state. Module scope, so it survives between requests on a
+ * warm instance and dies with the instance -- see meili-breaker.ts for why that
+ * is the intended scope rather than a limitation being papered over.
+ */
+let breaker: BreakerState = breakerClosed
+
+/**
+ * How long a search may wait on Meilisearch before Postgres takes the query.
+ *
+ * Search is the slowest read here at 615ms p95 under load (docs/CAPACITY.md), so
+ * this has to sit well above a healthy engine under pressure and well below the
+ * point where a shopper decides the site is broken. 2s does both, and every
+ * second of it is only ever paid by the first three requests after the engine
+ * goes down: the breaker then answers for the next thirty.
+ */
+const MEILI_TIMEOUT_MS = 2_000
+
 async function searchMeili(
   q: string,
   limit: number,
   productType?: 'coupon' | 'physical',
 ): Promise<SearchOutcome | null> {
+  const now = Date.now()
+  if (isOpen(breaker, now)) return null
+
   try {
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const index = process.env.MEILISEARCH_INDEX ?? 'products'
     const res = await fetch(`${host}/indexes/${index}/search`, {
+      // Without this the request has no ceiling of its own: an engine that
+      // accepts the connection and never answers holds the shopper until the
+      // platform kills the function.
+      signal: AbortSignal.timeout(MEILI_TIMEOUT_MS),
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +97,10 @@ async function searchMeili(
       // Search is request-time; do not cache across queries.
       cache: 'no-store',
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      breaker = recordFailure(breaker, Date.now())
+      return null
+    }
     const data = (await res.json()) as { hits: MeiliHit[]; estimatedTotalHits?: number }
     const results: Product[] = (data.hits ?? []).map((h) => ({
       id: h.id,
@@ -77,10 +112,27 @@ async function searchMeili(
       stock_quantity: h.stock_quantity,
       category: h.category ?? null,
     }))
+    breaker = recordSuccess(breaker)
     return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
-  } catch {
+  } catch (error) {
+    const previous = breaker
+    breaker = recordFailure(breaker, Date.now())
+    // Logged only on the transition, because the point of the breaker is that
+    // the next thirty seconds of searches say nothing at all. A line per failed
+    // search would bury the one line that matters.
+    if (!isOpen(previous, now) && isOpen(breaker, Date.now())) {
+      log.warn('search.meili_breaker_open', {
+        failures: breaker.failures,
+        reason: error instanceof Error ? error.name : 'unknown',
+      })
+    }
     return null
   }
+}
+
+/** Exported for tests: module state is otherwise unreachable between cases. */
+export const __resetMeiliBreaker = (): void => {
+  breaker = breakerClosed
 }
 
 /**
