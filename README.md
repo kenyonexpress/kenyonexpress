@@ -45,9 +45,17 @@ pnpm dev                     # http://localhost:3000
 | `pnpm seed:test` | נתוני בדיקה |
 | `pnpm lighthouse:smoke` | ‏Lighthouse מקומי |
 | `pnpm sentry:verify` / `sentry:alerts` | אימות התצורה של ‏Sentry וכללי ההתראה (`:dry` ‏/ ‏`:ci` לגרסאות שאינן כותבות) |
+| `pnpm format` / `pnpm check` | ‏biome, בכתיבה. ‏`lint` הוא אותו כלי בקריאה בלבד |
+| `pnpm typecheck:changed` / `pnpm lint:changed` | אותן בדיקות על הקבצים שהשתנו. זה מה ש-`.husky/pre-commit` מריץ |
+| `pnpm audit:hardcoded` | מרגנרט את הפנקס `docs/hardcoded-audit.md`. **‏`gate:hardcoded` הוא השער; זה מזיז את קו הבסיס שלו**, ולכן לא מריצים אותו כדי "לתקן" ממצא |
+| `pnpm audit:catalogue` | ‏25 הממצאים בקטלוג החי מול הרצפה ב-`supabase/catalogue-known-issues.json` |
+| `pnpm seed` / `pnpm seed:lifecycle` | זורע קטלוג ומחזור חיים של הזמנה. ‏`:sql` מדפיס את ה-SQL במקום להריץ, ‏`:clean-sql` מדפיס את הניקוי. **הזריעה מסרבת לרוץ מול פרודקשן** (`scripts/seed-target-guard.mjs`) |
+| `pnpm report:bundle` / `pnpm analyze` | גודל החבילה. הראשון דוח, השני ה-analyzer של ‏Next |
+| `pnpm check:email-dns` | ‏SPF ‏/ ‏DKIM ‏/ ‏DMARC של הדומיין שממנו נשלח דואר |
 
 הרשימה המלאה ב-`package.json`; ‏`pnpm audit:final` מוודא שכל script מצביע על
-קובץ שקיים.
+קובץ שקיים **ושכל אחד מהם מגיע מהטבלה הזו**, ישירות או דרך משפחה. ‏`prepare`
+הוא היחיד שפטור, כי מנהל החבילות מריץ אותו ולא אדם.
 
 ## מבנה
 

@@ -23,7 +23,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import {
   PLATFORM_ENV,
-  classifyCommitSubject,
+  applySubjectLedger,
   parseEnvExample,
   scanAnyTypes,
   scanConsole,
@@ -31,6 +31,7 @@ import {
   scanEnvReads,
   scanIndirectEnvNames,
   scanMarkers,
+  scanReadmeScriptCoverage,
 } from './final-audit-lib.mjs'
 
 const CODE_EXTS = new Set(['.ts', '.tsx'])
@@ -69,7 +70,9 @@ const BUDGET = {
   undocumentedEnv: 0,
   documentedButUnread: 0,
   missingScriptFiles: 0,
+  undocumentedScripts: 0,
   malformedSubjects: 0,
+  staleSubjectLedger: 0,
 }
 
 /**
@@ -88,6 +91,28 @@ const BUDGET = {
  * line is. Override with FINAL_AUDIT_GIT_BASE to measure a different range.
  */
 const GIT_BASELINE = process.env.FINAL_AUDIT_GIT_BASE || '16983ef6c'
+
+/**
+ * The two subjects inside that range that do not conform, frozen by SHA.
+ *
+ * The freeze is not an exemption for a class of subject, it is an exemption for
+ * two specific commits, and that distinction is the whole value of the file. A
+ * rule-shaped exemption ("allow `state:`", "raise the limit to 126") would let
+ * the next hundred through. A SHA cannot be reused, so this list can only be
+ * paid down, never borrowed against.
+ *
+ * Both are pushed to a shared branch. Rewriting a subject means a force push,
+ * which deletes whatever a parallel session has stacked on top of it, and the
+ * subject is the one part of a commit with no runtime effect. See the file's
+ * own $why.
+ *
+ * A SHA in here that is NOT in the measured range is its own failure
+ * (`staleSubjectLedger`): it means the entry outlived the range and the file is
+ * now carrying a name nobody checks. That is the same discipline as
+ * supabase/catalogue-known-issues.json, where an entry that stopped firing is
+ * as red as a new finding.
+ */
+const SUBJECT_LEDGER = join(import.meta.dirname, 'git-subject-known-issues.json')
 
 function walk(dir, exts, out = []) {
   if (!existsSync(dir)) return out
@@ -205,7 +230,13 @@ function repoText() {
   return repoTextCache
 }
 
-/** Every local path a package.json script names has to exist. */
+/**
+ * Two things about package.json's scripts, and they fail for different reasons.
+ *
+ * A script naming a path that is gone is broken: it exits 127 on the person who
+ * ran it. A script no README row reaches is not broken, it is unfindable, which
+ * is the same cost paid later and by somebody with less context.
+ */
 function auditScripts() {
   const { scripts } = JSON.parse(read('package.json'))
   const missing = []
@@ -214,7 +245,8 @@ function auditScripts() {
       if (!existsSync(m[0])) missing.push({ script: name, path: m[0] })
     }
   }
-  return { missing, total: Object.keys(scripts).length }
+  const readme = scanReadmeScriptCoverage(scripts, read('README.md'))
+  return { missing, readme, total: Object.keys(scripts).length }
 }
 
 /**
@@ -232,22 +264,36 @@ function auditGitLog() {
   try {
     git('cat-file', '-e', `${GIT_BASELINE}^{commit}`)
   } catch {
-    return { skipped: `baseline ${GIT_BASELINE} is not in this checkout`, malformed: [], total: 0 }
+    return {
+      skipped: `baseline ${GIT_BASELINE} is not in this checkout`,
+      malformed: [],
+      staleLedger: [],
+      frozenCount: 0,
+      total: 0,
+    }
   }
 
-  let subjects = []
+  let frozen = {}
+  if (existsSync(SUBJECT_LEDGER)) {
+    frozen = JSON.parse(read(SUBJECT_LEDGER)).known ?? {}
+  }
+
+  // Full SHAs, so a ledger key is unambiguous. `%H %s` and not two calls,
+  // because a second `git log` could straddle a concurrent commit from another
+  // session and pair the wrong subject with the wrong hash.
+  let lines = []
   try {
-    subjects = git('log', '--format=%s', `${GIT_BASELINE}..HEAD`).split('\n').filter(Boolean)
+    lines = git('log', '--format=%H%x00%s', `${GIT_BASELINE}..HEAD`).split('\n').filter(Boolean)
   } catch (err) {
     return { skipped: `git log failed: ${err.message.trim()}`, malformed: [], total: 0 }
   }
 
-  const malformed = []
-  for (const subject of subjects) {
-    const verdict = classifyCommitSubject(subject)
-    if (!verdict.ok) malformed.push({ subject, reasons: verdict.reasons })
-  }
-  return { skipped: null, malformed, total: subjects.length }
+  const commits = lines.map((line) => {
+    const [sha, subject] = line.split('\0')
+    return { sha, subject }
+  })
+
+  return { skipped: null, ...applySubjectLedger(commits, frozen), total: commits.length }
 }
 
 function main() {
@@ -275,8 +321,12 @@ function main() {
     indirectEnvNames: env.indirectNames.length,
     packageScripts: scripts.total,
     missingScriptFiles: scripts.missing.length,
+    undocumentedScripts: scripts.readme.uncovered.length,
+    readmeDocumentedScripts: scripts.readme.documentedCount,
     commitsSinceBaseline: gitLog.total,
     malformedSubjects: gitLog.malformed.length,
+    frozenSubjects: gitLog.frozenCount ?? 0,
+    staleSubjectLedger: (gitLog.staleLedger ?? []).length,
   }
 
   const failures = Object.entries(BUDGET).filter(([key, max]) => counts[key] > max)
@@ -304,9 +354,19 @@ function main() {
       counts.packageScripts,
     ],
     [
+      'package.json scripts no README row reaches',
+      counts.undocumentedScripts,
+      counts.packageScripts,
+    ],
+    [
       `commit subjects since ${GIT_BASELINE}`,
       counts.malformedSubjects,
       counts.commitsSinceBaseline,
+    ],
+    [
+      'stale entries in the frozen-subject ledger',
+      counts.staleSubjectLedger,
+      counts.frozenSubjects,
     ],
   ]
 
@@ -329,14 +389,30 @@ function main() {
     show('documented but unread env', env.documentedButUnread, (h) => h.name)
     show('missing script files', scripts.missing, (h) => `${h.script}  -> ${h.path}`)
     show(
+      'scripts README does not reach',
+      scripts.readme.uncovered,
+      (h) => `${h.script}  ${h.body.slice(0, 70)}`,
+    )
+    show(
       'malformed commit subjects',
       gitLog.malformed,
-      (h) => `${h.reasons.join('; ')}\n      ${h.subject.slice(0, 100)}`,
+      (h) => `${h.sha}  ${h.reasons.join('; ')}\n      ${h.subject.slice(0, 100)}`,
+    )
+    show(
+      'stale frozen-subject ledger entries',
+      gitLog.staleLedger ?? [],
+      (h) => `${h.sha}  no longer in range: ${h.subject.slice(0, 80)}`,
     )
   }
 
   if (gitLog.skipped) {
     console.log(`\n  note  commit subjects not measured: ${gitLog.skipped}`)
+  }
+
+  if (counts.frozenSubjects > 0) {
+    console.log(
+      `\n  note  ${counts.frozenSubjects} subject(s) in that range are frozen by SHA in scripts/git-subject-known-issues.json and are not counted above.`,
+    )
   }
 
   if (counts.indirectEnvNames > 0) {

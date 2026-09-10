@@ -1,0 +1,19 @@
+{
+  "$what": "Every commit subject between the audit baseline and today that does NOT conform, so the next one is visible against a known floor instead of joining a count that nobody reads.",
+  "$why": "These two are pushed to a shared branch that parallel sessions have checked out. Fixing a subject means rewriting the commit, which means a force push, which silently destroys whatever another session has on top of it. The subject is the one part of a commit with no runtime effect at all, so the trade is real damage against cosmetics. Freezing them and refusing the NEXT one is the only disposition that changes anything.",
+  "$rules": "classifyCommitSubject in scripts/final-audit-lib.mjs. The gate: scripts/final-audit.mjs, seventh row.",
+  "$how_to_shrink_this": "You cannot fix an entry, only outlive it. A SHA leaves this file when it falls behind FINAL_AUDIT_GIT_BASE, which happens the next time the audit baseline is moved forward at a release. The gate fails on a SHA that is no longer in range, so this file cannot quietly keep names of commits nobody measures.",
+  "$measured_at": "2026-09-10",
+  "known": {
+    "f9d1ea1b28a0736145fd38d3847a74ce0dd1cb33": {
+      "subject": "state: migrations applied, waves 33-35 running",
+      "reasons": ["unknown type \"state\""],
+      "origin": "a background autopilot loop, which commits on a timer and writes its own progress note as the subject. `docs` is the type this should have used."
+    },
+    "b8804fe83efe807c3013850af835bcd2ded9ff80": {
+      "subject": "feat(sentry): a preview deploy and the shop reported the same environment, and one issue covered both halves of the money path",
+      "reasons": ["126 chars, over 120"],
+      "origin": "session 34. Conventional and readable, six characters over the limit."
+    }
+  }
+}

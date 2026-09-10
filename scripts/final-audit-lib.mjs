@@ -356,3 +356,97 @@ export function classifyCommitSubject(subject) {
     reasons,
   }
 }
+
+/**
+ * Grade a range of commits against the frozen-subject ledger.
+ *
+ * Pure, and separated from the `git log` that feeds it, because the interesting
+ * behaviour is not "which subjects are malformed" (classifyCommitSubject already
+ * answers that) but the two-directional bookkeeping around it, and that is what
+ * an exemption file gets wrong. Both directions are failures:
+ *
+ *   malformed   - a non-conforming subject in range that the ledger does NOT
+ *                 name. This is the new one, and it is the point of the gate.
+ *   staleLedger - a SHA the ledger names that is NOT in range. The entry has
+ *                 outlived its measurement, so the file is now carrying a name
+ *                 nobody checks. Left unchecked, an exemption list drifts into
+ *                 a list of assertions about commits that are no longer there.
+ *
+ * A ledger entry is matched by full SHA and nothing else. Matching on the
+ * subject text would let a second commit reuse the exemption by copying the
+ * message, which is exactly how the offending subjects got here: a loop
+ * writing the same shape over and over.
+ *
+ * @param {Array<{sha: string, subject: string}>} commits oldest-or-newest first, order is not read
+ * @param {Record<string, {subject?: string}>} frozen ledger `known` map, keyed by full SHA
+ */
+export function applySubjectLedger(commits, frozen = {}) {
+  const inRange = new Set()
+  const malformed = []
+
+  for (const { sha, subject } of commits) {
+    inRange.add(sha)
+    const verdict = classifyCommitSubject(subject)
+    if (verdict.ok || frozen[sha]) continue
+    malformed.push({ sha: sha.slice(0, 9), subject, reasons: verdict.reasons })
+  }
+
+  const staleLedger = Object.keys(frozen)
+    .filter((sha) => !inRange.has(sha))
+    .map((sha) => ({ sha: sha.slice(0, 9), subject: frozen[sha]?.subject ?? '' }))
+
+  return { malformed, staleLedger, frozenCount: Object.keys(frozen).length }
+}
+
+/**
+ * Every npm script a person could run, and whether README.md accounts for it.
+ *
+ * WHY THIS IS A DIMENSION AND NOT A SENTENCE IN THE REPORT. The 2026-09-09 run
+ * of this audit asserted that README's table "covers all 29 scripts". By
+ * 2026-09-10 there were 44 and 26 of them were unmentioned -- the claim decayed
+ * in one day, because nothing was measuring it. A README is the one document
+ * whose accuracy nobody notices decaying, since the people who would notice are
+ * the ones who have not arrived yet.
+ *
+ * COVERAGE IS NOT "THE NAME APPEARS". Three routes count, because a table with
+ * 44 rows is not a README, it is package.json reformatted:
+ *
+ *   1. named    - README names the script.
+ *   2. family   - README names its base, the part before the first `:`. A row
+ *                 for `pnpm seed` accounts for `seed:sql` and `seed:clean-sql`,
+ *                 which are the same command with a flag.
+ *   3. same file - the script runs only local script files that documented
+ *                 scripts already run. This is what makes the `lint:*` aliases
+ *                 free: `pnpm lint` runs `node scripts/copy-gate.mjs` inline,
+ *                 so `lint:copy` is a shortcut to something already described,
+ *                 not a second thing to learn.
+ *
+ * `prepare` is exempt by name and it is the only one. The package manager runs
+ * it on install; documenting it would tell a reader about a command they will
+ * never type. Every other exemption should be a README row instead.
+ */
+const README_EXEMPT_SCRIPTS = new Set(['prepare'])
+const SCRIPT_FILE = /(?:scripts|src|e2e|supabase)\/[A-Za-z0-9_./-]+/g
+
+export function scanReadmeScriptCoverage(scripts, readme) {
+  const names = Object.keys(scripts)
+  const isNamed = (name) =>
+    new RegExp(`(^|[^a-z0-9:_-])${name.replace(/:/g, '[:]')}($|[^a-z0-9:_-])`, 'm').test(readme)
+  const filesOf = (body) => [...String(body).matchAll(SCRIPT_FILE)].map((m) => m[0])
+
+  const documented = new Set(names.filter(isNamed))
+  const documentedFiles = new Set()
+  for (const name of documented)
+    for (const file of filesOf(scripts[name])) documentedFiles.add(file)
+
+  const uncovered = []
+  for (const name of names) {
+    if (README_EXEMPT_SCRIPTS.has(name) || documented.has(name)) continue
+    if (isNamed(name.split(':')[0])) continue
+    const files = filesOf(scripts[name])
+    if (files.length > 0 && files.every((f) => documentedFiles.has(f))) continue
+    uncovered.push({ script: name, body: String(scripts[name]) })
+  }
+
+  return { uncovered, documentedCount: documented.size, total: names.length }
+}

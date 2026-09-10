@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   PLATFORM_ENV,
   SUBJECT_MAX,
+  applySubjectLedger,
   classifyCommitSubject,
   commentLineNumbers,
   parseEnvExample,
@@ -9,6 +11,7 @@ import {
   scanConsole,
   scanEnvReads,
   scanMarkers,
+  scanReadmeScriptCoverage,
 } from './final-audit-lib.mjs'
 
 /**
@@ -235,5 +238,114 @@ describe('classifyCommitSubject', () => {
     const v = classifyCommitSubject(`feat(dr): ${'x'.repeat(SUBJECT_MAX)}`)
     expect(v.ok).toBe(false)
     expect(v.reasons[0]).toMatch(/over 120/)
+  })
+})
+
+describe('applySubjectLedger', () => {
+  const bad = { sha: 'a'.repeat(40), subject: 'state: a loop wrote this' }
+  const good = { sha: 'b'.repeat(40), subject: 'fix(cart): a quantity of zero removed the line' }
+
+  it('refuses a malformed subject the ledger does not name', () => {
+    const { malformed, staleLedger } = applySubjectLedger([bad, good], {})
+    expect(malformed.map((m) => m.sha)).toEqual(['aaaaaaaaa'])
+    expect(malformed[0].reasons).toContain('unknown type "state"')
+    expect(staleLedger).toEqual([])
+  })
+
+  it('lets a frozen SHA through without letting its shape through', () => {
+    const twin = { sha: 'c'.repeat(40), subject: bad.subject }
+    const { malformed } = applySubjectLedger([bad, twin], { [bad.sha]: { subject: bad.subject } })
+    // Same text, different commit: the exemption is not transferable, which is
+    // the one property that keeps a loop from minting its own exemptions.
+    expect(malformed.map((m) => m.sha)).toEqual(['ccccccccc'])
+  })
+
+  it('fails on a ledger entry that has fallen out of range', () => {
+    const { malformed, staleLedger } = applySubjectLedger([good], {
+      [bad.sha]: { subject: bad.subject },
+    })
+    expect(malformed).toEqual([])
+    expect(staleLedger).toEqual([{ sha: 'aaaaaaaaa', subject: bad.subject }])
+  })
+
+  it('reports how many it is carrying, so a green row is not read as a clean history', () => {
+    const { frozenCount } = applySubjectLedger([good], { x: {}, y: {} })
+    expect(frozenCount).toBe(2)
+  })
+})
+
+describe('the committed frozen-subject ledger', () => {
+  const ledger = JSON.parse(readFileSync('scripts/git-subject-known-issues.json', 'utf8'))
+
+  it('keys every entry by a full 40-character SHA', () => {
+    // A short SHA would silently never match: the gate compares against %H.
+    for (const sha of Object.keys(ledger.known)) expect(sha).toMatch(/^[0-9a-f]{40}$/)
+  })
+
+  it('records a subject that really is malformed, for the reasons it claims', () => {
+    // Otherwise the file could exempt a conforming commit and nobody would know,
+    // because an exemption that is not needed produces no output at all.
+    for (const [sha, entry] of Object.entries(ledger.known)) {
+      const verdict = classifyCommitSubject(entry.subject)
+      expect(verdict.ok, `${sha} is exempted but conforms`).toBe(false)
+      expect(verdict.reasons).toEqual(entry.reasons)
+    }
+  })
+})
+
+describe('scanReadmeScriptCoverage', () => {
+  it('counts a script whose name the README prints', () => {
+    const { uncovered } = scanReadmeScriptCoverage(
+      { test: 'vitest run' },
+      'run `pnpm test` before pushing',
+    )
+    expect(uncovered).toEqual([])
+  })
+
+  it('lets a flag variant ride on its family row', () => {
+    // `pnpm seed` documented; seed:sql is the same command with --sql, and a
+    // row of its own would teach nothing.
+    const { uncovered } = scanReadmeScriptCoverage(
+      { seed: 'node scripts/seed.mjs', 'seed:sql': 'node scripts/seed.mjs --sql' },
+      '| `pnpm seed` | seeds the catalogue |',
+    )
+    expect(uncovered).toEqual([])
+  })
+
+  it('lets an alias ride on the documented script that already runs its file', () => {
+    // This is the real `lint` / `lint:copy` shape: the umbrella runs the gate
+    // inline, so the alias is a shortcut to something already described.
+    const { uncovered } = scanReadmeScriptCoverage(
+      {
+        lint: 'biome check . && node scripts/copy-gate.mjs',
+        'lint:copy': 'node scripts/copy-gate.mjs',
+      },
+      '| `pnpm lint` | biome plus the copy gate |',
+    )
+    expect(uncovered).toEqual([])
+  })
+
+  it('does not let seed:sql ride on a seed:test row', () => {
+    // `seed:test` is a different command, and matching it as the family of
+    // `seed:sql` would have hidden six real seeding commands. It did, in the
+    // first draft of this rule.
+    const { uncovered } = scanReadmeScriptCoverage(
+      { 'seed:test': 'node scripts/seed-test.mjs', 'seed:sql': 'node scripts/seed.mjs --sql' },
+      '| `pnpm seed:test` | test data |',
+    )
+    expect(uncovered.map((u) => u.script)).toEqual(['seed:sql'])
+  })
+
+  it('reports a script that runs no local file and is named nowhere', () => {
+    const { uncovered } = scanReadmeScriptCoverage({ analyze: 'next experimental-analyze' }, '')
+    expect(uncovered.map((u) => u.script)).toEqual(['analyze'])
+  })
+
+  it('exempts prepare, and nothing else', () => {
+    const { uncovered } = scanReadmeScriptCoverage(
+      { prepare: 'husky || true', postinstall: 'husky || true' },
+      '',
+    )
+    expect(uncovered.map((u) => u.script)).toEqual(['postinstall'])
   })
 })
