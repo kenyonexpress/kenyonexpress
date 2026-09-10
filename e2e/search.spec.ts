@@ -24,8 +24,25 @@ function supabaseEnv(): { url: string; anonKey: string } | null {
   if (!url || !anonKey) {
     try {
       const raw = fs.readFileSync(path.join(__dirname, '..', '.env.local'), 'utf8')
+      /**
+       * THE QUOTES ARE PART OF THE VALUE, AND STRIPPING THEM IS THE WHOLE FIX.
+       *
+       * `.env.local` here writes `NEXT_PUBLIC_SUPABASE_URL="https://..."`, and
+       * this regex captured the double quotes with it. The URL then read
+       * `"https://x.supabase.co"/rest/v1/...`, which Playwright's request
+       * context does not throw on - it answers 404.
+       *
+       * That 404 was landing on ONE test and hiding behind the other three.
+       * `activeProducts` uses the same malformed URL, returns [], and its
+       * callers `test.skip` for want of a product; only the tsquery case needs
+       * no product, so only it ran, and it looked like a lone PostgREST fault.
+       * Measured 2026-09-10: the same RPC answers 200 with the quotes removed.
+       */
       const read = (name: string) =>
-        new RegExp(`^${name}=(.+)$`, 'm').exec(raw)?.[1]?.trim() ?? undefined
+        new RegExp(`^${name}=(.+)$`, 'm')
+          .exec(raw)?.[1]
+          ?.trim()
+          .replace(/^["']|["']$/g, '') ?? undefined
       url = url || read('NEXT_PUBLIC_SUPABASE_URL')
       anonKey = anonKey || read('SUPABASE_ANON_KEY') || read('NEXT_PUBLIC_SUPABASE_ANON_KEY')
     } catch {
