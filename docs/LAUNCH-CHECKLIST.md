@@ -1,7 +1,10 @@
 # צ'קליסט עלייה לאוויר
 
 <!-- stale-banner:2026-09-01 -->
-> ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא `docs/LAUNCH-RUNBOOK.md`.**
+> ⛔ **הגוף ההיסטורי מיושן מ-01.09.2026. הרצף המחייב הוא `docs/LAUNCH-RUNBOOK.md`.**
+>
+> ‏**שער ה-PUSH NOW / HOLD שמיד למטה נמדד ‏10.09.2026 והוא כן עדכני.**
+> ‏מה שדורש אותך בלבד: `docs/MANUAL.md`.
 >
 > ‏נכתב ‏19.08.2026. אינו רצף העלייה לאוויר: הרצף המדויק, פקודה אחר פקודה עם
 > ‏rollback לכל שלב, נמצא במסמך המחייב, וכולל את ניתוח ה-DNS שאין כאן.
@@ -9,6 +12,64 @@
 >
 > ‏למה שנשאר לך: `docs/OWNER-CHECKLIST.md`.
 
+
+---
+
+# ‏שער העלייה לאוויר, נמדד ‏10.09.2026
+
+‏**כל שורה כאן נמדדה היום.** מה שלא נמדד היום אינו מופיע. הגוף ההיסטורי של
+המסמך נשאר מתחת, ומה שכתוב בו מ-19.08 אינו ראיה.
+
+## ‏PUSH NOW — ירוק ונמדד
+
+| מה | הראיה, היום |
+|---|---|
+| ‏CSP ו-HSTS | כותרות התגובה של פרודקשן: `max-age=63072000; includeSubDomains; preload`, ‏CSP עם `frame-ancestors 'none'` ו-`object-src 'none'` |
+| תלויות | ‏`pnpm audit` → ‏"No known vulnerabilities found" |
+| סריקת סודות | ‏`gitleaks` ב-`.github/workflows/security.yml` |
+| ‏Turnstile | הווידג'ט ב-`SignupForm` וב-`CheckoutForm`, ו-`verifyTurnstile` בצד השרת ב-`auth.ts`, ‏`contact.ts` ו-`payments/checkout.ts`. מחווט משני הצדדים |
+| הגבלת קצב | ‏`src/lib/rate-limit`, פר-מסלול, עם טסט שמונע דריפט בין הטבלה למימוש |
+| מפסק ל-Meilisearch | קיים ב-`search-server.ts`: נפתח אחרי ‏3 כשלונות, ‏30 שניות, נפילה חזרה ל-ILIKE. רק שלוש הבקשות הראשונות משלמות את ‏2 השניות |
+| קארדקום | ‏timeout ועוד ניסיון אחד, **רק** על כשל תעבורה ורק ב-opt-in. **בכוונה לא מפסק**: ‏POST לחיוב שנפל ב-timeout אולי כן חייב |
+| ‏job_runs | ‏`withJobRun` על כל ‏18 מסלולי ה-cron, נאכף בטסט המלאי |
+| גיבוי ותרגיל שחזור | ‏`db-backup.yml` יומי, ‏`db-restore-drill.yml` רבעוני |
+| ‏PWA | ‏`manifest.ts`, ‏`sw.js` עם ‏install/activate/fetch/push/notificationclick, ‏4 אייקונים, ‏`appleWebApp` ב-layout, ‏`InstallPrompt` עם טסטים |
+| ‏SEO | ‏`sitemap.xml`, ‏`robots.ts`, ‏JSON-LD, ‏301 דרך `seo_redirects`, ‏`feed.xml` ו-`merchant.xml` |
+| אנליטיקס | ‏GA4 ו-PostHog ב-`lib/analytics`, כולל `fbq` לקטלוג Meta |
+| מסע הקנייה | פאסטים, מיון, משאלות, התראות ירידת מחיר (`wishlist-alerts`), ‏`StockScarcity`, ‏`CountdownBanner`, ‏`BenefitBar`, כרטיסי אשראי שמורים, ‏Apple Wallet, אשף ספק, ‏KPI לאדמין |
+| חדש היום | סרגל לשוניות תחתון, סריקת ‏DLQ ל-webhook עם כפתור שחזור באדמין, ושומר שמונע מהמוק להגיש פרודקשן |
+| שערים | ‏6511 טסטים ב-519 קבצים, ‏type-check, ‏lint ו-`pnpm build` ירוקים |
+
+## ‏HOLD — חסום, עם הסיבה המדויקת
+
+| מה | הדגל או התנאי | למה |
+|---|---|---|
+| **גבייה** | שלושת אישורי קארדקום, ואז ‏`CARDCOM_USE_MOCK` כבוי | היום הם חסרים ו-`CARDCOM_USE_MOCK="true"` היה דלוק יחד עם ‏`CHECKOUT_ENABLED="true"`. **נסגר בקוד היום**: על ‏`VERCEL_ENV=production` המוק כבר לא יכול להגיש, ו-checkout מסרב. בלי האישורים אי אפשר לגבות, ועם המוק אפשר היה להזמין בלי לשלם |
+| **כל המיילים** | ‏`RESEND_API_KEY` על הפרויקט `kenyonexpress` | אינו קיים שם. ‏`resend.ts` מתייחס למפתח חסר כאל השבתה מכוונת: אין שגיאה, אין תור מת, ואף לקוח לא מקבל שובר או אישור |
+| **דיווח שגיאות** | ‏`SENTRY_DSN` על הפרויקט החי | אינו קיים שם, ולכן כל אירועי ‏Sentry הם ממחשבים ניידים |
+| **‏8 מתוך ‏18 מסלולי cron** | ‏redeploy | הפריסה החיה ישנה מהריפו. `settlement-reconcile`, ‏`webhook-dlq`, ‏`retention`, ‏`weekly-digest`, ‏`whatsapp`, ‏`price-schedule`, ‏`price-snapshot` ו-`wishlist-alerts` מחזירים ‏404 |
+| שער נאמנות חזותית | עותק של הוורדפרס הישן | ‏`compare.mjs` מסרב ביציאה ‏5: הדומיין מגיש אותנו, והשוואה לעצמנו תיקרא כ-0% |
+| ‏pgTAP | לא קיים | כיסוי ה-RLS הוא ב-TypeScript (`rls-manifest.test.ts`, ‏`rls-write-policies.test.ts`), לא ב-pgTAP. פער אמיתי, לא חוסם כסף |
+| תור מימוש לא מקוון | אין `sync` ב-`sw.js` | ה-service worker נושא ‏install/activate/fetch/push, ואין ‏background sync. סריקה בלי רשת לא תיזכר |
+| ‏42 מיגרציות | אישור מפורש | `migrations/pending/`, לפי `APPLY-ORDER.md` |
+
+## מה שהמשימה ביקשה והמוצר אוסר, ולכן לא נבנה
+
+‏**חיפוש מיידי.** לאתר **אין שדה חיפוש**, וזה חוק מוצר מוחלט שנאכף
+ב-`src/components/layout/no-search-ui.test.ts`. שלושה רכיבי חיפוש נמחקו
+ב-04.09 בדיוק כדי להגיע לזה. ‏`/search` שורד רק כדי שקישור קמפיין עם ‏`?q=`
+ייפתר, והוא `robots: noindex`. **ה-backend של החיפוש דווקא שלם**: יש
+‏`/api/search/suggest` עם ‏typo tolerance, סינונימים בעברית, cache והגבלת קצב,
+ו**אף רכיב לא קורא לו**. הוא ימתין לשם היום שבו החוק ישתנה.
+
+‏**"נצפו לאחרונה".** ‏`SiteFooter.tsx` מתעד שזה ושדה המשאלות היו שאריות
+וורדפרס ו"אינם פיצ'רים כאן". יש היסטוריית **חיפושים** (`user_recent_searches`),
+אין היסטוריית מוצרים.
+
+‏**גלילה אינסופית.** הקטגוריה מעומדת ב-`Pagination.tsx`, ו-SECTIONS 35 מגדיר
+"עימוד ‏50 לעמוד" כדרישה. גלילה אינסופית הייתה סותרת אותה.
+
+---
 
 תאריך: 2026-08-19.
 ענף: `ke-arch`.
