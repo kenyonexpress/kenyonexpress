@@ -36,6 +36,13 @@ const UPLOADER_WRITABLE = new Set([
   // draft with no stock and its own slug, so publishing it still goes through
   // the gate this role does not hold.
   'product-duplicate.ts',
+  // Attaching a photograph to a product by filename is catalogue content and
+  // is the job this role exists for. It writes ONE column, `images`, and it
+  // APPENDS rather than replaces, so the worst a mis-named file does is add a
+  // picture somebody can remove - no price, no status, no slug is reachable
+  // from it. Contrast `bulk-rollback.ts`, which is admin-tier precisely
+  // because a single undo there can revert a bulk PRICE change.
+  'product-images.ts',
   'products.ts',
   'reviews.ts',
   'upload.ts',

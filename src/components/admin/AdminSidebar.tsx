@@ -57,7 +57,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: Package,
     section: 'catalog',
     quickAdd: '/admin/products/new',
+    // `exact`, or the row lights up on /admin/products/images and /new too and
+    // the sidebar stops saying where you are.
+    exact: true,
   },
+  // Its own entry rather than a button inside the products table: an operator
+  // arrives here with a folder of files, not with a selection of rows.
+  { href: '/admin/products/images', label: 'תמונות קבוצתי', icon: Package, section: 'catalog' },
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag, section: 'catalog' },
   { href: '/admin/coupons', label: 'קופונים ודילים', icon: FileText, section: 'catalog' },
   { href: '/admin/coupons/lookup', label: 'איתור שובר', icon: ScanLine, section: 'catalog' },

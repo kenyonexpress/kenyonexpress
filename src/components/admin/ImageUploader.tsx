@@ -23,6 +23,17 @@ interface Props {
    */
   altKind?: AltSubjectKind
   altSubject?: string | null
+  /**
+   * Called once per upload batch with each ORIGINAL filename beside the URL it
+   * became.
+   *
+   * `onChange` cannot carry this: it reports URLs, and
+   * `processAndUploadImage` keys every upload as `<folder>/<uuid>`, so the URL
+   * has no trace of the original name. A caller that matches filenames to
+   * products - `/admin/products/images` - therefore has to be handed the pair
+   * here or it has nothing to match on.
+   */
+  onUploaded?: (pairs: { filename: string; url: string }[]) => void
 }
 
 interface StagedFile {
@@ -46,6 +57,7 @@ export default function ImageUploader({
   maxFiles = 5,
   altKind,
   altSubject,
+  onUploaded,
 }: Props) {
   const [staged, setStaged] = useState<StagedFile[]>([])
   const [uploading, setUploading] = useState(false)
@@ -150,6 +162,12 @@ export default function ImageUploader({
         urls.push(result.url)
       }
       for (const s of staged) URL.revokeObjectURL(s.previewUrl)
+      // The pairing is reported BEFORE `staged` is cleared, because it is the
+      // only place both halves exist. `processAndUploadImage` keys every
+      // upload as `<folder>/<uuid>`, so the returned URL carries no trace of
+      // what the file was called - and a caller matching filenames to products
+      // has nothing to match on once this component forgets.
+      onUploaded?.(staged.map((s, index) => ({ filename: s.file.name, url: urls[index] ?? '' })))
       setStaged([])
       onChange([...value, ...urls])
     } catch (e) {
