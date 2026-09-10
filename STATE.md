@@ -265,7 +265,60 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: **‏SECTIONS 24 ‏(WISHLIST-FAVORITES)** ואחריו ‏25 ו-26, אחרי אימות מול העץ שהם באמת פתוחים.
+## המשך מ: **התור שנמסר בסשן הזה סגור — ‏23, ‏24, ‏25, ‏26.** ‏23 נבנה כאן; ‏24, ‏25 ו-26 היו בנויים, ו**אומתו סעיף-סעיף מול פרודקשן ומול העץ** במקום להיסמך על מה שכתוב כאן.
+
+### ‏10.09: אימות ‏SECTIONS 24, ‏25, ‏26 — לא נכתב קוד, נמדד
+
+‏`STATE.md` טען שהשלושה הושלמו ולא נשא ראיה. שורה שנוקבת ב"הושלם" בלי מדידה
+היא בדיוק מה שהפיל את חוסם ‏#1 ב-`CLAUDE.md`, ולכן כל סעיף נבדק בנפרד.
+**כולם באמת סגורים.** שלושה פערים אמיתיים נמצאו, וכל שלושתם מיגרציות
+שממתינות לאישור — כלומר התנהגות נכונה ולא חוב.
+
+**‏24 ‏(WISHLIST-FAVORITES) — סגור.** ‏`wishlists` בפרודקשן עם
+‏`PRIMARY KEY (user_id, product_id)`, שהוא חזק מה-`UNIQUE` שהסעיף ביקש,
+‏`RLS` דלוק וארבע מדיניות **owner-only** על ‏SELECT ‏/ ‏INSERT ‏/ ‏UPDATE ‏/
+‏DELETE (`user_id = auth.uid()`, נקרא מ-`pg_policies`). העמודה היא
+‏`created_at` ולא ‏`added_at`, אותו דבר בשם אחר. ‏`WishlistHeart` מורכב
+ב-`ProductCard.tsx:202` וב-`storefront/ProductInfo.tsx:422`,
+‏`WishlistProvider` בשני ה-layouts (`(store)` ו-`(account)`),
+‏`WishlistNavLink` עם המונה ב-`Header.tsx:118` וב-`MastheadNav.tsx:48`,
+‏`/account/wishlist` קיים, ‏`moveWishlistItemToCart` ו-`mergeGuestWishlist`
+קיימים, והאורח יושב ב-`lib/wishlist/guest-storage.ts`. **‏`useOptimistic`
+לא בשימוש בכוונה** וכתוב למה ב-`WishlistProvider.tsx:44`.
+
+**‏25 ‏(PRODUCT-REVIEWS) — סגור.** ‏`reviews` בפרודקשן עם
+‏`CHECK (rating BETWEEN 1 AND 5)`, ‏`CHECK (status IN ('pending','approved','rejected'))`,
+ו-`UNIQUE (order_item_id)`. **"רק מי שקנה" נאכף במסד ולא באפליקציה:**
+‏`reviews_owner_insert_verified` דורש ‏`EXISTS` על ‏`order_items JOIN orders`
+עם ‏`o.user_id = auth.uid()` ועם סטטוס ב-`paid | partially_fulfilled |
+fulfilled | platform_settled`, וגם ‏`status = 'pending'` — כלומר אי אפשר
+להזריק ביקורת מאושרת. תור המודרציה ב-`/admin/reviews`, ו-**`AggregateRating`
+כן מתחשב מחדש באישור**: ‏`moderateReview` קורא ל-`updateTag(CATALOGUE_TAG)`,
+וזה התג שסיכום הדירוג מוקאש תחתיו (`server/queries/reviews.ts`).
+‏`RatingStars` על הכרטיס ועל דף המוצר, והטופס בעברית.
+‏**פער אמיתי: "ביקורת אחת לכל מוצר" נאכפת באפליקציה** ולא במסד, כי
+‏`UNIQUE(order_item_id)` הוא אחת לכל **שורת קנייה**; ‏`pending/189` הוא
+האינדקס שיהדק את זה. ההערה ב-`server/actions/reviews.ts:68` אומרת את זה
+מפורש, וגם למה שומרים את שתי השכבות ולא רק את האינדקס.
+
+**‏26 ‏(ABANDONED-CART) — סגור.** הטבלה בפרודקשן היא
+‏`abandoned_cart_nudges` (ולא ‏`cart_abandonment`), והיא **מודדת גם את
+ההחזרה** ולא רק את השליחה: ‏`recovered_order_id`, ‏`recovered_at`,
+‏`cart_value_agorot`, ועוד ‏view ‏`v_abandoned_cart_recovery` עם
+‏`recovery_rate_percent`. ‏`reminder_sent_count` אינו נשמר אלא נספר משורות
+ה-nudge, וזה עדיף. ‏`carts.updated_at` הוא ה-`last_activity_at`.
+ה-cron ב-`/api/cron/abandoned-cart` עם ‏`FIRST_REMINDER_HOURS = 2`
+ו-`SECOND_REMINDER_HOURS = 24`, שניהם עקיפים דרך משתני סביבה,
+ו-`trackEvent` ל-PostHog.
+‏**פער אמיתי: התזכורת השנייה תלויה ב-`pending/190`.** הקוד מטפל בזה נכון
+ובמפורש — הוא קורא ל-`fn_due_abandoned_carts` עם ‏`p_second_after_hours`,
+ועל ‏`PGRST202`/`42883` קורא שוב בלעדיו, וה-insert חוזר בלי
+‏`reminder_number` על ‏`42703`. עד שהמיגרציה תוחל: מייל אחד לעגלה, וזה
+בדיוק מה שנשלח היום.
+
+**סיכום המיגרציות הפתוחות שהאימות נגע בהן:** ‏189 (ביקורת אחת למוצר),
+‏190 (תזכורת שנייה). שתיהן ב-`migrations/pending/` וממתינות לאישור, לפי
+הכלל. אין קוד חסר מאחוריהן — יש התנהגות מושפלת ומתועדת.
 
 ### ‏10.09: ‏SECTIONS 23 ‏(FINAL-AUDIT) — ‏commits ‏`e34a0d903`, ‏`4e05349c8`, תג ‏`v1.0.0-rc6-final-audit`
 
