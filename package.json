@@ -24,6 +24,7 @@
     "audit:hardcoded": "node scripts/audit-hardcoded.mjs",
     "audit:final": "node scripts/final-audit.mjs",
     "audit:catalogue": "node scripts/catalogue-safety.mjs",
+    "probe:finalize": "node scripts/finalize-schema-probe.mjs",
     "ci:diff-gates": "pnpm lint:changed && pnpm typecheck:changed && pnpm gate:hardcoded",
     "format": "biome format --write .",
     "check": "biome check --write .",
