@@ -1,5 +1,20 @@
 # `migrations/pending/`
 
+## 2026-09-10: 234 APPLIED (gift cards)
+
+`234_gift_cards.sql` is the stored-value instrument: `gift_cards` (hashed
+bearer code, integer agorot face value, five-year statutory expiry stamped
+at issuance), `products.is_gift_card`, the `gift_card_issued` outbox kind,
+and `redeem_gift_card(p_code_hash, p_user_id)`, which redeems IN FULL into
+the holder's wallet through `fn_wallet_transfer` (idempotency
+`gift_card:<id>:redeem`, debit `platform:revenue`). Recorded in production
+as `gift_cards_234` (20260910032757) and verified object-by-object after
+the fact: the table, the flag column, all five indexes (including the
+partial `gift_cards_issue_dedupe` on `(order_item_id, unit_index)`), the
+owner-only SELECT policy and the widened kind check are all present, with
+zero rows. Clients write nothing; issuance and redemption are service-role
+paths (finalize's `gift-card-issue.ts` and the `gift-cards.ts` actions).
+
 ## 2026-09-10: 233 APPLIED (wishlist alerts)
 
 `233_wishlist_alerts.sql` is the state behind the wishlist alerts of 200:

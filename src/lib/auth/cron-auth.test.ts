@@ -148,6 +148,8 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/webhook-dlq/route.ts',
       'src/app/api/cron/weekly-digest/route.ts',
       'src/app/api/cron/whatsapp/route.ts',
+      'src/app/api/cron/wishlist-alerts/route.ts',
+      'src/app/api/cron/wishlist-digest/route.ts',
     ])
   })
 })

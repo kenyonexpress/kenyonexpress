@@ -103,6 +103,15 @@ export const RATE_LIMIT_POLICIES = {
   // codes before the counter is spent, so only well-formed probes count; a
   // genuine shopper scans one flyer.
   coupon_qr_apply: { limit: 30, windowSeconds: 3600, reason: 'printed QR landing, per IP' },
+  // The shape gate answers malformed strings free of charge, so only
+  // well-formed 16-character probes spend the counter; the code space is ~78
+  // bits, so the limit is UX headroom, not the security boundary.
+  gift_card_check: { limit: 20, windowSeconds: 3600, reason: 'gift card balance by code, per IP' },
+  gift_card_redeem: {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'gift card redemption attempts, per user',
+  },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
 
   // -- Order velocity, one bucket per identity dimension (src/lib/fraud).

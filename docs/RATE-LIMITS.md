@@ -53,6 +53,8 @@
 | `cart_write` | 120 | 1 h | cart mutation, user or IP |
 | `coupon` | 10 | 1 h | coupon code guessing |
 | `coupon_qr_apply` | 30 | 1 h | printed QR landing, per IP |
+| `gift_card_check` | 20 | 1 h | gift card balance by code, per IP |
+| `gift_card_redeem` | 10 | 1 h | gift card redemption attempts, per user |
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
 | `checkout-velocity-ip` | 30 | 24 h | new orders from one address in a day; carding rotates cards, not addresses |
 | `checkout-velocity-email` | 15 | 24 h | new orders on one email in a day; a stolen-card run batches on one login |

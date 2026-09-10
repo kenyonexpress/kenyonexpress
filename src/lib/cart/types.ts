@@ -126,6 +126,13 @@ export type AppliedCoupon = {
   label: string
   /** Integer agorot, like every other money field on this view. */
   discount: Agorot
+  /**
+   * Per-code breakdown when several campaign codes stack, in application
+   * order. Absent for a single code. Checkout claims each entry against its
+   * own campaign row, so the amounts here are what claim_order_discount is
+   * asked to hold, and their sum is `discount`.
+   */
+  stack?: { code: string; discountAgorot: number }[]
 }
 
 export type CartView = {

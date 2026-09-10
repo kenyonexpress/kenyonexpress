@@ -17,6 +17,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { trackServerEvent } from '@/server/analytics/track'
 import { awardOrderCountBonus } from '@/server/cashback/bonus'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import {
+  issueGiftCardsForItem,
+  readGiftCardProductIds,
+  readGiftCardRecipient,
+} from '@/server/payments/gift-card-issue'
 import { readGiftIntent, sendOrderGifts } from '@/server/payments/gift-vouchers'
 import { enqueueOrderInvoice, issueQueuedInvoice } from '@/server/payments/invoices'
 import {
@@ -562,8 +567,30 @@ export async function finalizeOrder(input: {
     // the intent is clearer resolved next to the loop that consumes it.
     const rateColumn = await resolveVoucherRateColumn(moneyColumnProbe(admin as never, 'vouchers'))
 
+    // Which lines are gift cards (234). Resolved before the loop because the
+    // branch below must keep them OUT of executeSplitForItem: a gift-card line
+    // has no supplier, and the split insert would refuse it with a NOT NULL
+    // violation after the card was already charged. On a database without 234
+    // this is an empty set and the loop is exactly what it was.
+    const giftCardProductIds = await readGiftCardProductIds(admin, productIds)
+    const giftCardRecipient =
+      giftCardProductIds.size > 0
+        ? await readGiftCardRecipient(admin, order.id, order.user_id)
+        : null
+
     for (const item of items as OrderItemRow[]) {
-      if (item.product_type === 'coupon') {
+      if (item.product_id && giftCardProductIds.has(item.product_id)) {
+        // Minted like vouchers - pre-stamp, throwing, replay-capped per unit -
+        // and settled like a coupon line: everything charged on site is ours,
+        // the "supplier share" of a stored-value instrument is the liability
+        // the redemption RPC later converts, and no split row exists to write.
+        await issueGiftCardsForItem(admin, item, giftCardRecipient!, now)
+        await admin
+          .from('order_items')
+          .update({ settlement_status: 'split_executed', item_status: 'issued' })
+          .eq('id', item.id)
+          .in('settlement_status', ['pending', 'paid'])
+      } else if (item.product_type === 'coupon') {
         const info = (item.product_id ? productInfo.get(item.product_id) : undefined) ?? {
           couponExpiryDays: null,
           offerValidUntil: null,

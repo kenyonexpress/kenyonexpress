@@ -89,6 +89,13 @@ vi.mock('@/server/payments/gift-vouchers', () => ({
   readGiftIntent: () => null,
   sendOrderGifts: async () => undefined,
 }))
+// Same reason as in finalize-reads-fail-loudly.test.ts: the fake answers every
+// products.select alike, so the is_gift_card read must not see the fixture.
+vi.mock('@/server/payments/gift-card-issue', () => ({
+  readGiftCardProductIds: async () => new Set(),
+  readGiftCardRecipient: async () => ({ email: null, name: null, message: null, buyerUserId: '' }),
+  issueGiftCardsForItem: async () => undefined,
+}))
 vi.mock('@/lib/analytics/server-events', () => ({ sendServerPurchase: async () => undefined }))
 vi.mock('@/lib/payments/payment-money-columns', () => ({
   resolvePaymentMoneySchema: async () => ({

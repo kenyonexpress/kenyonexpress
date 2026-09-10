@@ -86,6 +86,11 @@ export type NotificationKind =
   | 'price_drop'
   /** A saved or waited-on product is back on the shelf. Same cron, same 200. */
   | 'back_in_stock'
+  /**
+   * A purchased gift card, code included. Enqueued by finalize (234); the RAW
+   * code lives only in this payload, the table holds its hash.
+   */
+  | 'gift_card_issued'
 
 function escapeHtml(value: string): string {
   return value
@@ -1028,6 +1033,57 @@ export function buildBackInStockEmail(
   return { subject, html, text }
 }
 
+/**
+ * The gift card itself: the code IS the product, so it leads the email. The
+ * payload is written by `issueGiftCardsForItem` (234): `code` (raw, grouped),
+ * `amount_agorot`, `expires_at`, and optionally `recipient_name` and
+ * `gift_message` when the order named a recipient.
+ */
+export function buildGiftCardIssuedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const site = trimSite(siteUrl)
+  const code = asText(payload.code)
+  const amountAgorot = asNumber(payload.amount_agorot)
+  if (!code || amountAgorot <= 0) return null
+
+  const recipientName = asText(payload.recipient_name)
+  const giftMessage = asText(payload.gift_message)
+  const expires = hebrewDateTime(payload.expires_at)
+  const url = `${site}/gift-card`
+  const subject = `הגיפט קארד שלך על סך ${formatAgorot(amountAgorot)} מוכן`
+  const greeting = recipientName ? `שלום ${recipientName},` : 'שלום,'
+
+  const text = [
+    greeting,
+    '',
+    `קיבלת גיפט קארד של KenyonExpress על סך ${formatAgorot(amountAgorot)}.`,
+    ...(giftMessage ? ['', `"${giftMessage}"`] : []),
+    '',
+    `הקוד שלך: ${ltrText(code)}`,
+    '',
+    `למימוש נכנסים לחשבון באתר ומזינים את הקוד: ${ltrText(url)}`,
+    'הסכום נטען לארנק שלך וניתן לשימוש בכל רכישה.',
+    ...(expires ? [`תוקף הקוד: עד ${expires}.`] : []),
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(greeting)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">קיבלת גיפט קארד של KenyonExpress על סך <span style="font-weight:800">${escapeHtml(formatAgorot(amountAgorot))}</span>.</div>
+        ${giftMessage ? `<div style="font-size:15px;color:${INK};margin-top:10px;background:${PANEL};border-radius:10px;padding:12px">"${escapeHtml(giftMessage)}"</div>` : ''}
+        <div dir="ltr" style="font-size:22px;font-weight:800;letter-spacing:2px;color:${INK};background:${PANEL};border:1px dashed ${RULE};border-radius:10px;padding:14px;margin-top:14px;text-align:center;font-family:monospace">${escapeHtml(code)}</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:10px">למימוש נכנסים לחשבון באתר ומזינים את הקוד. הסכום נטען לארנק וניתן לשימוש בכל רכישה.</div>
+        ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:6px">תוקף הקוד: עד ${escapeHtml(expires)}.</div>` : ''}
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למימוש הגיפט קארד</a>
+      </div>`,
+    'קיבלת את המייל הזה כי נרכש עבורך גיפט קארד ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -1065,6 +1121,8 @@ export function buildNotification(
       return buildPriceDropEmail(payload, siteUrl)
     case 'back_in_stock':
       return buildBackInStockEmail(payload, siteUrl)
+    case 'gift_card_issued':
+      return buildGiftCardIssuedEmail(payload, siteUrl)
     default:
       return null
   }

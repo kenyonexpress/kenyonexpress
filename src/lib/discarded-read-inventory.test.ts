@@ -66,6 +66,10 @@ const INVENTORY: Record<string, number> = {
   'src/app/(admin)/admin/users/[id]/page.tsx': 1,
   'src/app/(admin)/admin/vendors/[id]/page.tsx': 1,
   'src/app/api/cron/abandoned-cart/route.ts': 2,
+  // Alert candidates: a failed read alerts nobody this run and the next run
+  // sees the same rows; nothing is lost, only late.
+  'src/app/api/cron/wishlist-alerts/route.ts': 3,
+  'src/app/api/cron/wishlist-digest/route.ts': 1,
   'src/app/api/supplier/vouchers/redeem/route.ts': 2,
   'src/app/auth/callback/route.ts': 1,
   // The bell panel: a failed read paints an empty panel and a zero badge,
@@ -89,6 +93,10 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/payments/refund.ts': 6,
   'src/server/domain/vouchers/issue.ts': 1,
   'src/server/payments/finalize.ts': 6,
+  // The buyer-profile read on issuance: a discarded failure leaves the email
+  // null and the issuer THROWS on that with its own sentence, so the failure
+  // is never rendered as absence, only renamed to the thing that matters.
+  'src/server/payments/gift-card-issue.ts': 1,
   'src/server/payments/gift-vouchers.ts': 1,
   'src/server/payments/invoices.ts': 10,
   'src/server/payments/voucher-email.ts': 3,

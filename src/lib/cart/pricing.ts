@@ -193,7 +193,12 @@ export function buildCartView(
    * rather than looked up here so this stays a pure function of its inputs and
    * so the coupon is read once per request instead of once per caller.
    */
-  coupon: { code: string; label: string; discountAgorot: number } | null = null,
+  coupon: {
+    code: string
+    label: string
+    discountAgorot: number
+    stack?: { code: string; discountAgorot: number }[]
+  } | null = null,
 ): CartView {
   if (storageItems.length === 0) {
     return { ...EMPTY_CART, id: cartId }
@@ -382,7 +387,12 @@ export function buildCartView(
     balance_due_at_business: commission.balanceDueAtBusiness,
     coupon:
       coupon && discountAgorot > 0
-        ? { code: coupon.code, label: coupon.label, discount: discountAgorot }
+        ? {
+            code: coupon.code,
+            label: coupon.label,
+            discount: discountAgorot,
+            ...(coupon.stack && coupon.stack.length > 1 ? { stack: coupon.stack } : {}),
+          }
         : null,
     discount: discountAgorot,
     total: agorot(payableAgorot - discountAgorot),
