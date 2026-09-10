@@ -4,11 +4,14 @@ import Link from 'next/link'
 /**
  * The phone's primary navigation, and the reason it is not just a nicer header.
  *
- * At 380px the header is a masthead, a search field, a category menu and a nav
- * row. Reaching any of it means scrolling back to the top of the page with the
- * hand that is holding the phone. This puts the five destinations that carry
- * the whole journey inside the thumb arc, on every route, at every scroll
- * position.
+ * At 380px the header is a masthead, a category menu and a nav row. Reaching
+ * any of it means scrolling back to the top of the page with the hand that is
+ * holding the phone. This puts the five destinations that carry the whole
+ * journey inside the thumb arc, on every route, at every scroll position.
+ *
+ * The five are home, categories, CART, wallet and account. The brief asked for
+ * a search tab in the third slot; see that entry below for why this site cannot
+ * have one and why linking to `/search` anyway would strand the visitor.
  *
  * IT IS `md:hidden`, NOT A RESPONSIVE VARIANT OF THE HEADER. From 768px up the
  * header is already reachable without scrolling and a bottom bar would be
@@ -101,13 +104,37 @@ const TABS: Tab[] = [
     ),
   },
   {
-    href: '/search',
-    label: t('nav.tabbar.search'),
-    match: startsWith('/search'),
+    /**
+     * THE CART, WHERE A SEARCH TAB WOULD OTHERWISE GO.
+     *
+     * The closeout brief names the five tabs as home / categories / search /
+     * wallet / account. The third one cannot exist here, and shipping it was a
+     * measured mistake this entry corrects.
+     *
+     * KenyonExpress has an ABSOLUTE PRODUCT RULE that the site carries no search
+     * field: not in the masthead, not in the drawer, not on the results page.
+     * `no-search-ui.test.ts` enforces it, and three search components were
+     * deleted on 2026-09-04 to get there. `/search` survives only so a campaign
+     * link or a redirect carrying `?q=` resolves.
+     *
+     * So a search tab does not fail the gate - it links, it does not type - it
+     * fails the VISITOR. Tapping it with no query lands on a page whose empty
+     * state reads "הקלידו לפחות 2 תווים כדי לחפש" above no input at all: an
+     * instruction that cannot be followed. It is also `robots: index: false`,
+     * because it is thin content by design.
+     *
+     * The cart is the honest fifth destination on a phone: it is the one screen
+     * a shopper returns to repeatedly mid-journey, it is statically rendered,
+     * and reaching it currently means scrolling back up to the masthead.
+     */
+    href: '/cart',
+    label: t('nav.tabbar.cart'),
+    match: startsWith('/cart'),
     icon: (
       <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true" {...stroke}>
-        <circle cx="11" cy="11" r="7" />
-        <path d="m20 20-3.6-3.6" />
+        <path d="M3 4h2.2l2.1 10.4a1.5 1.5 0 0 0 1.5 1.2h7.8a1.5 1.5 0 0 0 1.5-1.2L19.5 7H6" />
+        <circle cx="9.5" cy="19" r="1.3" />
+        <circle cx="17" cy="19" r="1.3" />
       </svg>
     ),
   },
@@ -136,6 +163,9 @@ const TABS: Tab[] = [
     ),
   },
 ]
+
+/** The destinations, in bar order. Exported so a test can assert absences. */
+export const TAB_HREFS: readonly string[] = TABS.map((tab) => tab.href)
 
 /** The first tab that claims the path, so the wallet wins inside `/account`. */
 export function activeTabHref(pathname: string): string | null {

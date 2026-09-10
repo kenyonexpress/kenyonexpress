@@ -1,4 +1,4 @@
-import { activeTabHref } from '@/components/layout/BottomTabBar'
+import { TAB_HREFS, activeTabHref } from '@/components/layout/BottomTabBar'
 import BottomTabBarActive from '@/components/layout/BottomTabBarActive'
 import { t } from '@/lib/i18n/messages'
 import { render, screen } from '@testing-library/react'
@@ -29,7 +29,7 @@ describe('activeTabHref', () => {
   it('keeps a tab lit inside its own sub-tree', () => {
     expect(activeTabHref('/account/orders')).toBe('/account')
     expect(activeTabHref('/category/hot-deals')).toBe('/products')
-    expect(activeTabHref('/search?q=x'.split('?')[0] as string)).toBe('/search')
+    expect(activeTabHref('/cart')).toBe('/cart')
   })
 
   it('gives the wallet sub-tree to the wallet tab, not to account', () => {
@@ -42,12 +42,21 @@ describe('activeTabHref', () => {
   it('does not match a path that merely starts with the same letters', () => {
     // `/accounts-payable` is not inside `/account`.
     expect(activeTabHref('/accounts-payable')).toBeNull()
-    expect(activeTabHref('/searching')).toBeNull()
+    expect(activeTabHref('/cartography')).toBeNull()
   })
 
   it('lights nothing on a route no tab owns, rather than guessing', () => {
-    expect(activeTabHref('/cart')).toBeNull()
     expect(activeTabHref('/checkout')).toBeNull()
+    expect(activeTabHref('/about')).toBeNull()
+  })
+
+  it('offers no search tab, because this site has no search field', () => {
+    // An absolute product rule, enforced by no-search-ui.test.ts. A search tab
+    // would pass that gate (it links, it does not type) and still strand the
+    // visitor: /search with no ?q= renders "type at least 2 characters" above
+    // no input at all, and is robots:noindex thin content by design.
+    expect(activeTabHref('/search')).toBeNull()
+    expect(TAB_HREFS).not.toContain('/search')
   })
 })
 
@@ -59,7 +68,7 @@ describe('BottomTabBar', () => {
     for (const key of [
       'nav.tabbar.home',
       'nav.tabbar.categories',
-      'nav.tabbar.search',
+      'nav.tabbar.cart',
       'nav.tabbar.wallet',
       'nav.tabbar.account',
     ] as const) {
