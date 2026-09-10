@@ -26,6 +26,16 @@ export type CardcomEnv = {
   appUrl: string
   checkoutEnabled: boolean
   useMock: boolean
+  /**
+   * Set when checkout was forced off because the MOCK provider was configured
+   * on the customer-facing deployment. Null on every healthy configuration.
+   *
+   * Carried as a field rather than only logged so the admin status screen and
+   * the launch gate can state the reason instead of reporting a generic
+   * "checkout disabled", which is the same string an operator sees when they
+   * turned it off on purpose.
+   */
+  refusedReason: string | null
 }
 
 /**
@@ -63,6 +73,34 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
     source.NODE_ENV === 'test' ||
     (!source.CARDCOM_TERMINAL_NUMBER && source.NODE_ENV !== 'production')
 
+  /**
+   * THE MOCK PROVIDER MAY NOT SERVE THE PRODUCTION DEPLOYMENT.
+   *
+   * Measured on 2026-09-10 against the Vercel project that actually serves
+   * https://www.kenyonexpress.co.il: `CARDCOM_USE_MOCK="true"` and
+   * `CHECKOUT_ENABLED="true"` were both set, and none of
+   * CARDCOM_TERMINAL_NUMBER, CARDCOM_API_NAME or CARDCOM_API_PASSWORD existed
+   * in any environment of any of the three projects.
+   *
+   * Read together with the block below, that configuration was not "checkout is
+   * broken". `getPaymentProvider` returns the shared mock whenever `useMock` is
+   * true, the mock approves on the happy path, and `checkoutEnabled` was true -
+   * so a shopper on the real domain could complete a checkout, have NO card
+   * charged, and have the order finalize and issue a voucher. The failure was
+   * silent and in the direction that gives goods away.
+   *
+   * The guard is scoped to VERCEL_ENV === 'production' rather than to
+   * `isDeployedRuntime`, deliberately: preview deployments legitimately run the
+   * mock so the flows can be exercised, and widening it would take that away to
+   * fix a problem preview does not have.
+   *
+   * It disables checkout rather than throwing. Throwing here would 500 the
+   * storefront on a configuration mistake, and the whole point is that the safe
+   * state is "no order is created", not "the site is down". `runBeginCheckout`
+   * already answers CHECKOUT_DISABLED with Hebrew copy.
+   */
+  const mockOnCustomerFacingDeploy = useMock && source.VERCEL_ENV === 'production'
+
   // Fail closed in production, open everywhere else.
   //
   // This read `!== 'false'`, so a MISSING or empty variable enabled checkout.
@@ -74,9 +112,14 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
   // mock provider should not have to set a variable to see a checkout, and no
   // real card can be charged there.
   const checkoutEnabled =
-    source.NODE_ENV === 'production'
+    !mockOnCustomerFacingDeploy &&
+    (source.NODE_ENV === 'production'
       ? source.CHECKOUT_ENABLED === 'true'
-      : source.CHECKOUT_ENABLED !== 'false'
+      : source.CHECKOUT_ENABLED !== 'false')
+
+  const refusedReason = mockOnCustomerFacingDeploy
+    ? 'CARDCOM_USE_MOCK=true on the production deployment: checkout refused so no order can be created without a charge'
+    : null
 
   if (useMock) {
     return {
@@ -88,6 +131,7 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
       appUrl: source.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
       checkoutEnabled,
       useMock: true,
+      refusedReason,
     }
   }
 
@@ -100,5 +144,6 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
     appUrl: required('NEXT_PUBLIC_APP_URL', source.NEXT_PUBLIC_APP_URL),
     checkoutEnabled,
     useMock: false,
+    refusedReason,
   }
 }

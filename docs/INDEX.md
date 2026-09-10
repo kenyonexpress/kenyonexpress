@@ -102,6 +102,7 @@ one.
 | [DECISIONS-PROVISIONAL.md](DECISIONS-PROVISIONAL.md) | ⚠️ | ‏כל שורה כאן היא הכרעה שנלקחה לבד כי לא הייתה תשובה, וכל אחת מהן |
 | [DECISIONS.md](DECISIONS.md) | 🕯️ | Every structural decision this system rests on, what it was decided instead of, |
 | [ENV-REFERENCE.md](ENV-REFERENCE.md) | ✅ | Every environment variable this system reads: what it does, what breaks without |
+| [MANUAL.md](MANUAL.md) | ✅ | ‏נכתב ‏10.09.2026. כל שורה נמדדה מול פרודקשן באותו יום: רק מה שדורש אדם. |
 | [MASTER-ARCHITECTURE.md](MASTER-ARCHITECTURE.md) | ⚠️ | מסמך ההכרעות המחייב של KenyonExpress. מהדורה זו מחליפה במלואה את מהדורות |
 | [MONEY-MODEL.md](MONEY-MODEL.md) | ✅ | Integer agorot, the generated columns, and which amounts are allowed to go |
 | [PAYMENT-FLOW.md](PAYMENT-FLOW.md) | ✅ | How money moves through KenyonExpress, from the cart to a settled order line. |

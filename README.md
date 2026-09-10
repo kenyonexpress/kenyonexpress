@@ -69,7 +69,7 @@ pnpm dev                     # http://localhost:3000
 | `migrations/pending/` | מיגרציות שנכתבו וטרם הוחלו. סדר והתניות ב-`APPLY-ORDER.md` |
 | `supabase/migrations/` | ההיסטוריה. **אינה מתארת את פרודקשן** — הטיפוסים שנוצרים כן |
 | `scripts/` | שערים, סקריפטים תפעוליים וכלי מדידה |
-| `docs/` | ‏259 מסמכים. נקודת הכניסה: `docs/INDEX.md`, ש-`pnpm lint:docs` מוודא שהוא מונה את כולם |
+| `docs/` | ‏260 מסמכים. נקודת הכניסה: `docs/INDEX.md`, ש-`pnpm lint:docs` מוודא שהוא מונה את כולם |
 | `e2e/`, `tests/`, `load/` | ‏Playwright, ‏Vitest, ‏k6 |
 
 ## חוקים שיעלו לך ביוקר אם תפספס אותם

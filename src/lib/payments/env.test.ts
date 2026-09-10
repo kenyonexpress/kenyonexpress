@@ -111,3 +111,87 @@ describe('webhook secret rotation', () => {
     expect(acceptedWebhookSecrets(dev())).toEqual(['mock-webhook-secret'])
   })
 })
+
+/**
+ * THE MOCK PROVIDER ON THE CUSTOMER-FACING DEPLOYMENT.
+ *
+ * This is not a hypothetical. Measured on 2026-09-10 against the Vercel project
+ * serving https://www.kenyonexpress.co.il: CARDCOM_USE_MOCK="true",
+ * CHECKOUT_ENABLED="true", and no CARDCOM_TERMINAL_NUMBER, CARDCOM_API_NAME or
+ * CARDCOM_API_PASSWORD anywhere in any of the three projects. With
+ * `getPaymentProvider` returning the shared mock on `useMock` and the mock
+ * approving the happy path, that combination let a shopper on the real domain
+ * complete a checkout with no card charged.
+ *
+ * These cases pin the guard in both directions, because a guard that is too
+ * wide is its own outage: preview must keep the mock.
+ */
+describe('the mock provider may not serve the production deployment', () => {
+  const base = {
+    NODE_ENV: 'production',
+    CHECKOUT_ENABLED: 'true',
+    CARDCOM_WEBHOOK_SECRET: 'wh',
+    NEXT_PUBLIC_APP_URL: 'https://www.kenyonexpress.co.il',
+  } as unknown as NodeJS.ProcessEnv
+
+  it('refuses checkout in exactly the configuration production was found in', () => {
+    const env = loadCardcomEnv({
+      ...base,
+      VERCEL_ENV: 'production',
+      CARDCOM_USE_MOCK: 'true',
+    } as NodeJS.ProcessEnv)
+
+    expect(env.checkoutEnabled).toBe(false)
+    expect(env.refusedReason).toContain('CARDCOM_USE_MOCK')
+  })
+
+  it('does not throw, because the safe state is no order rather than no site', () => {
+    // A throw here would 500 the storefront on a configuration mistake. The
+    // storefront must stay up and simply decline to take money.
+    expect(() =>
+      loadCardcomEnv({
+        ...base,
+        VERCEL_ENV: 'production',
+        CARDCOM_USE_MOCK: 'true',
+      } as NodeJS.ProcessEnv),
+    ).not.toThrow()
+  })
+
+  it('leaves preview alone, where the mock is the point', () => {
+    const env = loadCardcomEnv({
+      ...base,
+      VERCEL_ENV: 'preview',
+      CARDCOM_USE_MOCK: 'true',
+    } as NodeJS.ProcessEnv)
+
+    expect(env.useMock).toBe(true)
+    expect(env.checkoutEnabled).toBe(true)
+    expect(env.refusedReason).toBeNull()
+  })
+
+  it('leaves a real production terminal alone', () => {
+    const env = loadCardcomEnv({
+      ...base,
+      VERCEL_ENV: 'production',
+      CARDCOM_TERMINAL_NUMBER: '1000',
+      CARDCOM_API_NAME: 'api',
+      CARDCOM_API_PASSWORD: 'pw',
+    } as NodeJS.ProcessEnv)
+
+    expect(env.useMock).toBe(false)
+    expect(env.checkoutEnabled).toBe(true)
+    expect(env.refusedReason).toBeNull()
+  })
+
+  it('still refuses when CHECKOUT_ENABLED was never set, not only when it was true', () => {
+    const env = loadCardcomEnv({
+      NODE_ENV: 'production',
+      VERCEL_ENV: 'production',
+      CARDCOM_USE_MOCK: 'true',
+      CARDCOM_WEBHOOK_SECRET: 'wh',
+      NEXT_PUBLIC_APP_URL: 'https://www.kenyonexpress.co.il',
+    } as unknown as NodeJS.ProcessEnv)
+
+    expect(env.checkoutEnabled).toBe(false)
+  })
+})
