@@ -144,6 +144,48 @@ describe('the backend chain', () => {
     expect(decision.remaining).toBe(0)
   })
 
+  /**
+   * ADDED 2026-09-10. Every log line in this layer was about the LIMITER
+   * failing; none fired when a caller was refused, so "which ceilings are being
+   * hit" had no answer at all. See src/lib/rate-limit/rejections.ts.
+   */
+  it('records a refusal once per window, with the identifier hashed', async () => {
+    configureUpstash()
+    upstashReplies({ result: [0, 12, 1_700_000_060_000] })
+    await rateLimitByKey(
+      { redis: 'rl:v1:phone-otp-number:0501234567', postgres: 'phone-otp-number:0501234567' },
+      10,
+      3600,
+      { nowMs: 1_700_000_000_000 },
+    )
+
+    const rejected = logWarn.mock.calls.filter((call) => call[0] === 'rate_limit.rejected')
+    expect(rejected).toHaveLength(1)
+    const detail = rejected[0]?.[1] as Record<string, unknown>
+    expect(detail.policy).toBe('phone-otp-number')
+    expect(detail.backend).toBe('upstash')
+    // The phone number the caller typed must not be in the log line.
+    expect(JSON.stringify(detail)).not.toContain('0501234567')
+    expect(detail.identifier).toMatch(/^[0-9a-f]{12}$/)
+
+    // The rest of the same window says nothing.
+    upstashReplies({ result: [0, 13, 1_700_000_060_000] })
+    await rateLimitByKey(
+      { redis: 'rl:v1:phone-otp-number:0501234567', postgres: 'phone-otp-number:0501234567' },
+      10,
+      3600,
+      { nowMs: 1_700_000_000_001 },
+    )
+    expect(logWarn.mock.calls.filter((call) => call[0] === 'rate_limit.rejected')).toHaveLength(1)
+  })
+
+  it('says nothing when the caller is allowed', async () => {
+    configureUpstash()
+    upstashReplies({ result: [0, 3, 1_700_000_060_000] })
+    await rateLimitByKey(keys, 10, 3600, { nowMs: 1_700_000_000_000 })
+    expect(logWarn.mock.calls.filter((call) => call[0] === 'rate_limit.rejected')).toEqual([])
+  })
+
   it('falls back to Postgres when Upstash is unreachable, on the SAME key', async () => {
     configureUpstash()
     upstashUnreachable()

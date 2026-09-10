@@ -1,4 +1,9 @@
 import { log } from '@/lib/observability/log'
+import {
+  identifierFingerprint,
+  policyFromKey,
+  shouldReportRejection,
+} from '@/lib/rate-limit/rejections'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type RateLimitPolicyName, policy as policyFor, postgresKey, redisKey } from './policies'
 import { evaluateWindow } from './sliding-window'
@@ -152,6 +157,42 @@ async function viaPostgres(args: {
 }
 
 /**
+ * The one place a refusal is recorded, and the reason it is here rather than at
+ * the call sites: there are thirty of them and a refusal is invisible unless
+ * every single one remembers to log it. Both backends pass through this
+ * function, and it never throws - reporting a refusal must not become the
+ * refusal's failure mode.
+ *
+ * `src/lib/rate-limit/rejections.ts` carries the argument for one line per key
+ * per window, and for hashing the identifier: a rate-limit key holds a phone
+ * number for `phone-otp-number` and an IP for the per-IP policies, and the
+ * scrubber that protects logs works on field NAMES, so a phone number inside a
+ * string called `key` would go straight through it.
+ */
+function reportIfRefused(
+  key: string,
+  decision: RateLimitDecision,
+  nowMs: number,
+): RateLimitDecision {
+  if (decision.allowed) return decision
+  try {
+    if (!shouldReportRejection(key, decision.resetAtMs, decision.windowSeconds, nowMs)) {
+      return decision
+    }
+    log.warn('rate_limit.rejected', {
+      policy: policyFromKey(key),
+      identifier: identifierFingerprint(key),
+      limit: decision.limit,
+      window_seconds: decision.windowSeconds,
+      backend: decision.backend,
+    })
+  } catch {
+    // Best effort by definition: the caller is already being refused.
+  }
+  return decision
+}
+
+/**
  * The compat entry point: an arbitrary key and explicit numbers, which is the
  * shape all thirty existing call sites already speak. `rateLimit()` below is
  * the shape new code should use.
@@ -167,11 +208,11 @@ export async function rateLimitByKey(
   const config = upstashConfig()
   if (config) {
     const decision = await viaUpstash(config, { key: keys.redis, limit, windowSeconds, nowMs })
-    if (decision) return decision
+    if (decision) return reportIfRefused(keys.redis, decision, nowMs)
   }
 
   const fallback = await viaPostgres({ key: keys.postgres, limit, windowSeconds })
-  if (fallback) return fallback
+  if (fallback) return reportIfRefused(keys.postgres, fallback, nowMs)
 
   // Both backends are gone. The request proceeds, and the line below is the
   // only trace that it was unmetered.
