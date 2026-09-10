@@ -1,4 +1,4 @@
-# The seventeen scheduled jobs, run from Actions.
+# The eighteen scheduled jobs, run from Actions.
 #
 # `vercel.json` deliberately has no `crons` key: Hobby registers two jobs at
 # daily granularity and silently ignores the rest, so four of the ten - three on

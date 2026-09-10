@@ -1,5 +1,12 @@
 import { requireSection } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  MAX_DLQ_ATTEMPTS,
+  isExhausted,
+  listDeadLetters,
+  nextAttemptAt,
+  paymentEventsLedger,
+} from '@/server/payments/webhook-dlq'
 import RetryButton from './RetryButton'
 
 export const metadata = { title: 'תורים תקועים' }
@@ -7,10 +14,10 @@ export const metadata = { title: 'תורים תקועים' }
 /**
  * Everything that gave up, in one place.
  *
- * THREE QUEUES ON ONE SCREEN BECAUSE THEY FAIL FOR THE SAME REASONS - a
+ * FOUR QUEUES ON ONE SCREEN BECAUSE THEY FAIL FOR THE SAME REASONS - a
  * provider outage, a missing key, a malformed row - and each of them parks a
- * row after five attempts that nothing surfaces. Three separate pages would be
- * three places to forget, and a queue nobody looks at is a queue that does not
+ * row after five attempts that nothing surfaces. Four separate pages would be
+ * four places to forget, and a queue nobody looks at is a queue that does not
  * exist.
  *
  * READ WITH THE ADMIN CLIENT, deliberately. These tables have no staff-read RLS
@@ -20,6 +27,17 @@ export const metadata = { title: 'תורים תקועים' }
  *
  * A missing table renders an empty section rather than a 500, the same rule the
  * invoice queue applies to a database without 107.
+ *
+ * THE FOURTH QUEUE IS NOT LIKE THE OTHER THREE AND IS LISTED FIRST ANYWAY.
+ * A stuck Cardcom webhook means the card was charged and the order never
+ * closed, which outranks an unsent email and an unindexed product by a
+ * distance. It also has no `status = 'dead'` to filter on: the queue is a
+ * PREDICATE (`verified_against_api` true, `processed_at` null) and the attempt
+ * count lives in `payment_events`, so it is read through the module that owns
+ * that definition rather than re-spelled here. Every row is shown, not only the
+ * exhausted ones, because a row still inside its backoff is a customer waiting
+ * right now and an operator who has just fixed the cause should be able to see
+ * it and press the button.
  */
 
 const LIMIT = 50
@@ -46,6 +64,12 @@ export default async function AdminQueuesPage() {
   await requireSection('analytics')
   const admin = createAdminClient()
 
+  // WITH the ledger, unlike a bare listing: the attempt count is the column an
+  // operator decides on, and a screen that showed every row as attempt zero
+  // would make an exhausted event look untried.
+  const deadLetters = await listDeadLetters(admin, LIMIT, paymentEventsLedger(admin))
+  const now = Date.now()
+
   const [notifications, invoices, searchIndex] = await Promise.all([
     admin
       .from('notification_outbox')
@@ -67,6 +91,24 @@ export default async function AdminQueuesPage() {
   ])
 
   const sections: { queue: string; title: string; note: string; rows: DeadRow[] }[] = [
+    {
+      queue: 'payment_webhook',
+      title: 'תשלומים שנגבו וההזמנה לא נסגרה',
+      note: 'הכסף עבר בכרטיס, אומת מול Cardcom, וההזמנה נשארה פתוחה. הכפתור מריץ שוב את סגירת ההזמנה.',
+      rows: deadLetters.map((letter) => ({
+        id: letter.id,
+        label: `אירוע ${letter.externalEventId}`,
+        detail: !letter.paymentId
+          ? 'אין תשלום מקושר. דורש בדיקה ידנית.'
+          : isExhausted(letter)
+            ? `מוצה אחרי ${MAX_DLQ_ATTEMPTS} ניסיונות. לא ינוסה שוב אוטומטית.`
+            : nextAttemptAt(letter).getTime() > now
+              ? `הניסיון הבא ב-${whenText(nextAttemptAt(letter).toISOString())}`
+              : 'ממתין לסבב האוטומטי הבא.',
+        attempts: letter.attempts,
+        when: letter.createdAt,
+      })),
+    },
     {
       queue: 'notifications',
       title: 'התראות שלא נשלחו',
@@ -120,7 +162,7 @@ export default async function AdminQueuesPage() {
         <p className="mt-1 text-sm text-gray-500">
           {total === 0
             ? 'אין כרגע שורות תקועות.'
-            : `${total} שורות ויתרו אחרי חמישה ניסיונות וממתינות להחלטה.`}
+            : `${total} שורות ממתינות להחלטה. כל תור מוותר אחרי ${MAX_DLQ_ATTEMPTS} ניסיונות.`}
         </p>
       </div>
 

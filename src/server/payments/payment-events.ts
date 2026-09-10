@@ -21,13 +21,13 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * describing the charge could not be written. Every failure is logged and
  * swallowed.
  *
- * WHY THE CLIENT IS PASSED STRUCTURALLY. `src/types/database.ts` predates 130
- * and does not know `payment_events` exists, so `admin.from('payment_events')`
- * does not typecheck against the generated types. Regenerating them is a
- * separate change to a very large generated file. The narrow structural type
- * below is the same dodge `markOrderItemRedeemed` uses, for the same reason,
- * and it is deliberately visible rather than hidden behind an `as any` at the
- * call site.
+ * WHY THE CLIENT IS PASSED STRUCTURALLY. This began as a dodge around generated
+ * types that predated 130 and did not know `payment_events` existed. They have
+ * since been regenerated and do know it, so that reason has expired. The
+ * structural type stays for a better one: it is the seam every test writes
+ * through, and it keeps this module free of `@supabase/supabase-js` generics
+ * that would otherwise force every caller to hold a fully typed client just to
+ * record a journal line.
  */
 
 /**
@@ -102,9 +102,21 @@ export interface PaymentEvent {
   lowProfileId?: string | null
   transactionId?: string | null
   /**
-   * The provider's own id for this event where it has one. The table carries a
-   * unique index on it, which is what makes a replayed webhook detectable as a
-   * replay rather than as a second payment.
+   * The provider's own id for this event where it has one.
+   *
+   * THERE IS NO UNIQUE INDEX ON THIS COLUMN. This docblock used to say there
+   * was, and that a replayed webhook was therefore detectable here. Measured
+   * against production on 2026-09-10: `payment_events` carries seven indexes -
+   * the primary key plus six plain btrees on `actor_id`, `low_profile_id`,
+   * `order_id`, `payment_id`, `stage` and a partial one on failures - and not
+   * one of them is unique on `external_event_id`. Nothing was relying on the
+   * claim, which is the only reason it cost nothing; a dedupe built on it would
+   * have silently admitted duplicates.
+   *
+   * Replay detection lives where it always did: the unique constraint on
+   * `payment_webhook_events`. The column here is for joining a journal line to
+   * the event that caused it, and repeats are expected - `webhook-dlq.ts`
+   * writes one row per replay attempt under one event id on purpose.
    */
   externalEventId?: string | null
   amountAgorot?: number | null
@@ -177,9 +189,9 @@ export async function recordPaymentEvent(
       environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? null,
     })
     if (error) {
-      // A 23505 here is the unique index on external_event_id doing its job:
-      // the same provider event arrived twice. That is information, not a
-      // failure, and the caller decides what it means.
+      // A 23505 here is a primary-key collision and nothing else: there is no
+      // unique index on `external_event_id` (see the field above), so a repeat
+      // of the same provider event inserts a second row rather than failing.
       log.error('payment_events.write_failed', {
         eventType: event.eventType,
         stage: event.stage ?? null,

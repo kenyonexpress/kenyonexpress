@@ -92,6 +92,7 @@ file is in a repository.
 3  https://kenyonexpress.vercel.app/api/cron/invoices            GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 4  https://kenyonexpress.vercel.app/api/cron/stock               GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5  https://kenyonexpress.vercel.app/api/cron/stranded-payments   GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5b https://kenyonexpress.vercel.app/api/cron/webhook-dlq         GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 6  https://kenyonexpress.vercel.app/api/cron/abandoned-cart      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 7  https://kenyonexpress.vercel.app/api/cron/subscriptions       GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
@@ -130,6 +131,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 3 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/invoices` |
 | 4 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/stock` |
 | 5 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/stranded-payments` |
+| 5b | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
 | 6 | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/abandoned-cart` |
 | 7 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/subscriptions` |
 | 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
@@ -158,6 +160,12 @@ timing changes with the scheduler.
 - **`stranded-payments`** finds payments that were verified but whose order
   never finalised. That state is the worst one in the system and this is what
   notices it.
+- **`webhook-dlq`** replays the webhooks that arrived, verified against
+  Cardcom, and whose finalize then failed. Same worst-state as
+  `stranded-payments` reached from the other side: there the callback was lost,
+  here it landed and our own close broke. Five automatic attempts on a widening
+  backoff, then it waits for a person at `/admin/queues`. It calls no provider,
+  so unlike `stranded-payments` it still works with no Cardcom credentials.
 - **`reconcile`** matches the day's payments against orders.
 - **`settlement-reconcile`** matches each paid order LINE against the split it
   says it was sold under, and both against the money journal. **04:20, twenty

@@ -42,7 +42,7 @@ const manifest = JSON.parse(read(MANIFEST_PATH)) as {
 const jobs = manifest.jobs
 
 describe('the scheduled job inventory', () => {
-  it('names the seventeen jobs and nothing else', () => {
+  it('names the eighteen jobs and nothing else', () => {
     // A new cron route is a deliberate diff here. An undeclared one would be a
     // handler that exists, is reachable, and is never called by anything.
     expect(jobs.map((job) => job.name)).toEqual([
@@ -52,6 +52,7 @@ describe('the scheduled job inventory', () => {
       'invoices',
       'stock',
       'stranded-payments',
+      'webhook-dlq',
       'abandoned-cart',
       'subscriptions',
       'reap-carts',
@@ -163,7 +164,7 @@ describe('the scheduled job inventory', () => {
     // two of them, at daily granularity, and ignores the rest without failing
     // the build and without warning - so four jobs were believed to be running
     // and were not. Re-measured 2026-09-10 through the Vercel API: the team
-    // `kenyonexpress-projects` is still on `hobby`. Putting seventeen entries
+    // `kenyonexpress-projects` is still on `hobby`. Putting eighteen entries
     // back would silently unschedule fifteen of them, and it would look like
     // progress in the diff.
     const vercel = JSON.parse(read('vercel.json')) as Record<string, unknown>
