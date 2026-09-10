@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/i18n/format'
 import { agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 /**
@@ -205,5 +206,9 @@ export function formatCouponDate(iso: string | null | undefined): string {
   if (!iso) return '—'
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return '—'
-  return date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
+  // `formatDate` is byte-for-byte what this call was: the same locale and the
+  // same three options. Migrated rather than left, because the two identical
+  // sites are the only ones a sweep can move without changing what a screen
+  // shows - scripts/locale-format-gate.mjs carries the rest as a ceiling.
+  return formatDate(date)
 }

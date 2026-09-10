@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/i18n/format'
 import { agorot } from '@/lib/money'
 import { shekelsPlain } from '@/lib/money-format'
 import { couponMoneyView, couponStatusView, formatCouponCode } from '@/lib/vouchers/coupon-view'
@@ -74,7 +75,8 @@ function agorotToText(value: number): string {
 function hebrewDate(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return '—'
-  return date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
+  // Identical output to the call it replaces; see formatCouponDate for the note.
+  return formatDate(date)
 }
 
 /**
