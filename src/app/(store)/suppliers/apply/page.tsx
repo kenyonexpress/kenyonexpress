@@ -5,7 +5,13 @@ import { CONTRACT_TEXT, CONTRACT_VERSION } from '@/lib/suppliers/contract'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-export const metadata = { title: 'הצטרפות כבית עסק' }
+export const metadata = {
+  title: 'הצטרפות כבית עסק',
+  // Its own address, for the reason in coupons/[id]: the root layout's canonical
+  // is `/`, and a page that inherits it claims to be the home page. This is a
+  // landing page a supplier is sent to, so it should be indexed as itself.
+  alternates: { canonical: '/suppliers/apply' },
+}
 
 /**
  * NOT PRERENDERED, and this is the one page in `(store)` that says so.

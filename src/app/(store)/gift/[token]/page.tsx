@@ -16,6 +16,10 @@ import { Suspense } from 'react'
 export const metadata: Metadata = {
   title: 'קיבלת מתנה',
   robots: { index: false, follow: false },
+  // Self-canonical beside the noindex. Inheriting the root layout's '/' would
+  // pair noindex with a canonical pointing at the home page, and Google resolves
+  // that pair by following the canonical.
+  alternates: { canonical: '/gift' },
 }
 
 type Props = { params: Promise<{ token: string }> }

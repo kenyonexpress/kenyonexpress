@@ -43,6 +43,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     description: q ? `תוצאות חיפוש עבור "${q}" בקניון אקספרס` : 'חיפוש מוצרים בקניון אקספרס',
     // A results page is thin content that should never be indexed.
     robots: { index: false },
+    // Self-canonical beside the noindex. Inheriting the root layout's '/' would
+    // pair noindex with a canonical pointing at the home page, and Google resolves
+    // that pair by following the canonical.
+    alternates: { canonical: '/search' },
   }
 }
 

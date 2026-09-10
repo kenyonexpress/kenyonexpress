@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   title: 'מעבד תשלום',
   // Nothing here is worth indexing, and it carries an order id in the query.
   robots: { index: false, follow: false },
+  // Self-canonical beside the noindex. Inheriting the root layout's '/' would
+  // pair noindex with a canonical pointing at the home page, and Google resolves
+  // that pair by following the canonical.
+  alternates: { canonical: '/checkout/frame-return' },
 }
 
 /**

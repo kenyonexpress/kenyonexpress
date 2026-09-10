@@ -13,7 +13,15 @@ export async function generateMetadata({ params }: Props) {
   // The same cached read the body makes, so the title and the page cannot
   // describe different rows and the two do not cost two round trips.
   const deal = await getCouponDeal(id)
-  return { title: deal ? `${deal.title_he} — ${deal.business_name}` : 'קופון' }
+  return {
+    title: deal ? `${deal.title_he} — ${deal.business_name}` : 'קופון',
+    // Its OWN address. Without this the page inherits the root layout's
+    // `alternates.canonical: '/'` and every coupon deal tells Google it is the
+    // home page - measured 2026-09-10 across sixteen public routes. This is a
+    // real content page with a `generateStaticParams` list behind it, so the
+    // canonical is the fix and noindex would be the wrong one.
+    alternates: { canonical: `/coupons/${encodeURIComponent(id)}` },
+  }
 }
 
 export async function generateStaticParams() {
