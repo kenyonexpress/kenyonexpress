@@ -24,6 +24,7 @@ import { extname, join } from 'node:path'
 import {
   PLATFORM_ENV,
   applySubjectLedger,
+  findUnimportedComponents,
   parseEnvExample,
   scanAnyTypes,
   scanConsole,
@@ -73,6 +74,8 @@ const BUDGET = {
   undocumentedScripts: 0,
   malformedSubjects: 0,
   staleSubjectLedger: 0,
+  newDeadComponents: 0,
+  staleDeadComponentLedger: 0,
 }
 
 /**
@@ -113,6 +116,13 @@ const GIT_BASELINE = process.env.FINAL_AUDIT_GIT_BASE || '16983ef6c'
  * as red as a new finding.
  */
 const SUBJECT_LEDGER = join(import.meta.dirname, 'git-subject-known-issues.json')
+
+/**
+ * The 21 components nothing imports today, frozen so the 22nd is visible.
+ * The reasoning for a ratchet rather than a budget of zero is in
+ * findUnimportedComponents in final-audit-lib.mjs.
+ */
+const DEAD_COMPONENT_LEDGER = join(import.meta.dirname, 'dead-component-known-issues.json')
 
 function walk(dir, exts, out = []) {
   if (!existsSync(dir)) return out
@@ -250,6 +260,40 @@ function auditScripts() {
 }
 
 /**
+ * Components with no importer, against the frozen list.
+ *
+ * Two failures, same shape as the commit-subject ledger: a dead component the
+ * ledger does not name is new debt, and a name in the ledger that now HAS an
+ * importer (or is gone) is a stale entry. The second direction is what keeps
+ * the list shrinking: wire one up, and the gate makes you strike it off.
+ */
+function auditDeadComponents() {
+  const components = walk('src/components', CODE_EXTS).filter((f) => !isTest(f))
+  const sources = [
+    ...walk('src', CODE_EXTS),
+    ...walk('apps', CODE_EXTS),
+    ...walk('e2e', new Set(['.ts'])),
+  ]
+  const dead = new Set(findUnimportedComponents(components, sources, read))
+
+  let frozen = {}
+  if (existsSync(DEAD_COMPONENT_LEDGER)) {
+    frozen = JSON.parse(read(DEAD_COMPONENT_LEDGER)).known ?? {}
+  }
+
+  const isNew = [...dead].filter((file) => !frozen[file]).sort()
+  const stale = Object.keys(frozen)
+    .filter((file) => !dead.has(file))
+    .sort()
+    .map((file) => ({
+      file,
+      why: existsSync(file) ? 'now imported: strike it off' : 'file is gone: strike it off',
+    }))
+
+  return { isNew, stale, frozenCount: Object.keys(frozen).length, population: components.length }
+}
+
+/**
  * Commit subjects added since GIT_BASELINE.
  *
  * Degrades to `skipped` rather than to a failure when the baseline is not in the
@@ -305,6 +349,7 @@ function main() {
   const env = auditEnv()
   const scripts = auditScripts()
   const gitLog = auditGitLog()
+  const deadComponents = auditDeadComponents()
 
   const untrackedMarkers = markers.filter((m) => !m.tracked)
   const undirectedAnyTypes = anyTypes.filter((h) => !h.accepted)
@@ -327,6 +372,10 @@ function main() {
     malformedSubjects: gitLog.malformed.length,
     frozenSubjects: gitLog.frozenCount ?? 0,
     staleSubjectLedger: (gitLog.staleLedger ?? []).length,
+    componentsScanned: deadComponents.population,
+    frozenDeadComponents: deadComponents.frozenCount,
+    newDeadComponents: deadComponents.isNew.length,
+    staleDeadComponentLedger: deadComponents.stale.length,
   }
 
   const failures = Object.entries(BUDGET).filter(([key, max]) => counts[key] > max)
@@ -334,7 +383,16 @@ function main() {
   if (asJson) {
     console.log(
       JSON.stringify(
-        { counts, untrackedMarkers, undirectedAnyTypes, consoleCalls, env, scripts, gitLog },
+        {
+          counts,
+          untrackedMarkers,
+          undirectedAnyTypes,
+          consoleCalls,
+          env,
+          scripts,
+          gitLog,
+          deadComponents,
+        },
         null,
         2,
       ),
@@ -368,6 +426,16 @@ function main() {
       counts.staleSubjectLedger,
       counts.frozenSubjects,
     ],
+    [
+      'components nothing imports, beyond the frozen 21',
+      counts.newDeadComponents,
+      counts.componentsScanned,
+    ],
+    [
+      'stale entries in the dead-component ledger',
+      counts.staleDeadComponentLedger,
+      counts.frozenDeadComponents,
+    ],
   ]
 
   console.log('\nFINAL AUDIT (SECTIONS 23)\n')
@@ -398,6 +466,8 @@ function main() {
       gitLog.malformed,
       (h) => `${h.sha}  ${h.reasons.join('; ')}\n      ${h.subject.slice(0, 100)}`,
     )
+    show('new dead components', deadComponents.isNew, (h) => h)
+    show('stale dead-component ledger entries', deadComponents.stale, (h) => `${h.file}  ${h.why}`)
     show(
       'stale frozen-subject ledger entries',
       gitLog.staleLedger ?? [],
@@ -407,6 +477,12 @@ function main() {
 
   if (gitLog.skipped) {
     console.log(`\n  note  commit subjects not measured: ${gitLog.skipped}`)
+  }
+
+  if (counts.frozenDeadComponents > 0) {
+    console.log(
+      `\n  note  ${counts.frozenDeadComponents} component(s) with no importer are frozen in scripts/dead-component-known-issues.json. That is a ratchet, not a clean bill: the list is meant to shrink.`,
+    )
   }
 
   if (counts.frozenSubjects > 0) {

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   PLATFORM_ENV,
@@ -6,6 +6,7 @@ import {
   applySubjectLedger,
   classifyCommitSubject,
   commentLineNumbers,
+  findUnimportedComponents,
   parseEnvExample,
   scanAnyTypes,
   scanConsole,
@@ -347,5 +348,77 @@ describe('scanReadmeScriptCoverage', () => {
       '',
     )
     expect(uncovered.map((u) => u.script)).toEqual(['postinstall'])
+  })
+})
+
+describe('findUnimportedComponents', () => {
+  const scan = (files) =>
+    findUnimportedComponents(
+      Object.keys(files).filter((f) => f.startsWith('src/components/')),
+      Object.keys(files),
+      (f) => files[f],
+    )
+
+  it('finds a component nothing imports', () => {
+    expect(
+      scan({
+        'src/components/Orphan.tsx': 'export default function Orphan() {}',
+        'src/app/page.tsx': "import Live from '@/components/Live'",
+      }),
+    ).toEqual(['src/components/Orphan.tsx'])
+  })
+
+  it('does not let a file vouch for itself through a package of the same name', () => {
+    // ui/dropdown-menu.tsx imports @radix-ui/react-dropdown-menu. A pattern of
+    // "any path ending in dropdown-menu" reads that as its own importer, and
+    // the file disappeared from the findings when it did.
+    expect(
+      scan({
+        'src/components/ui/dropdown-menu.tsx': "import * as P from '@radix-ui/react-dropdown-menu'",
+      }),
+    ).toEqual(['src/components/ui/dropdown-menu.tsx'])
+  })
+
+  it('does not let a longer name vouch for a shorter one', () => {
+    // Matching a bare basename makes `Footer` a substring of `SiteFooter`, so a
+    // live component would sign off on a dead one.
+    expect(
+      scan({
+        'src/components/home/Footer.tsx': 'export default function Footer() {}',
+        'src/app/layout.tsx': "import SiteFooter from '@/components/layout/SiteFooter'",
+        'src/components/layout/SiteFooter.tsx': 'export default function SiteFooter() {}',
+      }),
+    ).toEqual(['src/components/home/Footer.tsx'])
+  })
+
+  it('counts a dynamic import as an import', () => {
+    expect(
+      scan({
+        'src/components/Heavy.tsx': 'export default function Heavy() {}',
+        'src/app/page.tsx': "const H = dynamic(() => import('@/components/Heavy'))",
+      }),
+    ).toEqual([])
+  })
+})
+
+describe('the committed dead-component ledger', () => {
+  const ledger = JSON.parse(readFileSync('scripts/dead-component-known-issues.json', 'utf8'))
+
+  it('names a file that exists, for every entry', () => {
+    // An entry for a deleted file is a stale exemption, and the gate says so at
+    // runtime. This says so at test time, which is where it is cheaper.
+    for (const file of Object.keys(ledger.known)) {
+      expect(existsSync(file), `${file} is in the ledger and not on disk`).toBe(true)
+    }
+  })
+
+  it('gives every entry a group and a detail, not just a name', () => {
+    // The list is meant to shrink, and nobody shrinks a list of bare paths:
+    // the reason a component is still here is what tells you whether to wire it
+    // up or delete it.
+    for (const [file, entry] of Object.entries(ledger.known)) {
+      expect(entry.group, file).toBeTruthy()
+      expect(entry.detail?.length ?? 0, file).toBeGreaterThan(20)
+    }
   })
 })

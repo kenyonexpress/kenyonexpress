@@ -1,0 +1,93 @@
+{
+  "$what": "Every component under src/components that NOTHING in src/, apps/ or e2e/ imports, as of 2026-09-10. 21 of 192.",
+  "$why": "A component with no importer is the most common defect shape in this project's history: a finished feature nobody wired up. Nothing counted them until this file existed. Demanding zero would have made the gate red on arrival, and the fix for a dead component is deletion, which is not a gate's call to force here -- three of these are re-export shims another path still uses, five are library surface, and two are cited by name in scripts/rtl-logical-scan.mjs and in other files' comments.",
+  "$rules": "findUnimportedComponents in scripts/final-audit-lib.mjs. The gate: scripts/final-audit.mjs, tenth and eleventh rows.",
+  "$how_to_shrink_this": "Wire it up or delete it, then strike the line. The gate FAILS on an entry that is now imported or gone, so this list cannot keep names of things already resolved. It is a ratchet: the 22nd dead component is refused.",
+  "$measured_at": "2026-09-10",
+  "known": {
+    "src/components/store/CategorySidebar.tsx": {
+      "group": "re-export shim",
+      "detail": "`export { default } from '@/components/home/HeroCategorySidebar'` and nothing else. An alias left behind when the homepage moved from store/ to home/."
+    },
+    "src/components/store/HomeHeroSection.tsx": {
+      "group": "re-export shim",
+      "detail": "`export { default } from '@/components/home/HeroSection'`."
+    },
+    "src/components/store/PromoBanners.tsx": {
+      "group": "re-export shim",
+      "detail": "`export { default } from '@/components/home/HeroPromoBanners'`."
+    },
+    "src/components/store/CategoryNav.tsx": {
+      "group": "superseded homepage section",
+      "detail": "The store/ generation of the homepage. The live one is under home/."
+    },
+    "src/components/store/CategoryProductSection.tsx": {
+      "group": "superseded homepage section",
+      "detail": "Same generation. Renders ProductCard in a titled rail."
+    },
+    "src/components/store/DealsSection.tsx": {
+      "group": "superseded homepage section",
+      "detail": "Same generation. Carries its own countdown, hardcoded to 23:59:59 on mount, so it counts down to nothing in particular; the live deals rail is home/DealsOfTheDay.tsx."
+    },
+    "src/components/home/FeaturedProducts.tsx": {
+      "group": "superseded homepage section",
+      "detail": "Server component that fetched and attached ratings, then handed off to FeaturedProductsTabs. The tabs component IS live; this wrapper is not."
+    },
+    "src/components/home/HeroExact.tsx": {
+      "group": "superseded homepage section",
+      "detail": "Composes HeroCategorySidebar + HeroPromoBanners + HeroSlider, all three of which are live and mounted elsewhere."
+    },
+    "src/components/home/Footer.tsx": {
+      "group": "superseded homepage section",
+      "detail": "src/styles/tokens.css:193 still names it as the owner of --container-footer, which is why deleting it is a measured change and not a tidy-up."
+    },
+    "src/components/layout/InfoBar.tsx": {
+      "group": "self-declared dead",
+      "detail": "Its own header says DEAD CODE and names the replacement: home/BenefitBar.tsx, matched 1:1 to the live site on 2026-08-10."
+    },
+    "src/components/product/WishlistButton.tsx": {
+      "group": "self-declared dead",
+      "detail": "Its own header says SUPERSEDED BY components/wishlist/WishlistHeart.tsx on 2026-09-09, and it re-exports that component. Kept as a shim."
+    },
+    "src/components/admin/CategoryTree.tsx": {
+      "group": "unwired feature",
+      "detail": "Admin category tree with drag reorder. Three other files' comments cite it as the reference for buildTree and for the sort_order semantics, so the comments break with the file."
+    },
+    "src/components/category/CategorySort.tsx": {
+      "group": "unwired feature",
+      "detail": "Exports SORT_OPTIONS and a router-driven sort control. The category page ships its own sorting."
+    },
+    "src/components/growth/NewsletterSignup.tsx": {
+      "group": "unwired feature",
+      "detail": "Bound to the real subscribeToNewsletter server action. The action has no other caller either, so the newsletter has no entry point on the site."
+    },
+    "src/components/legal/LegalDocumentView.tsx": {
+      "group": "unwired feature",
+      "detail": "One renderer for every legal document, and the legal routes do not use it."
+    },
+    "src/components/storefront/BlogPostHeader.tsx": {
+      "group": "unwired feature",
+      "detail": "Emits the blog post JSON-LD as well as the header, so the structured data goes with it."
+    },
+    "src/components/ui/button.tsx": {
+      "group": "shadcn primitive",
+      "detail": "Installed library surface. The site's buttons are styled directly against the token layer."
+    },
+    "src/components/ui/dropdown-menu.tsx": {
+      "group": "shadcn primitive",
+      "detail": "Also named in scripts/rtl-logical-scan.mjs's LTR island list, which is a second reference that breaks if the file goes."
+    },
+    "src/components/ui/form.tsx": {
+      "group": "shadcn primitive",
+      "detail": "react-hook-form bindings. This project's forms are server actions with useActionState."
+    },
+    "src/components/ui/select.tsx": {
+      "group": "shadcn primitive",
+      "detail": "Installed library surface."
+    },
+    "src/components/ui/textarea.tsx": {
+      "group": "shadcn primitive",
+      "detail": "Installed library surface."
+    }
+  }
+}

@@ -450,3 +450,51 @@ export function scanReadmeScriptCoverage(scripts, readme) {
 
   return { uncovered, documentedCount: documented.size, total: names.length }
 }
+
+/**
+ * Components under src/components that nothing imports.
+ *
+ * WHY THIS IS A RATCHET AND NOT A BUDGET OF ZERO. There are 21 of them today,
+ * out of 192. Demanding zero would make the gate red the day it is written, and
+ * this repo's own doctrine on that is written at the top of
+ * supabase/catalogue-known-issues.json: a gate that is red on arrival gets
+ * deleted rather than fixed. Worse, the fix for a dead component is deletion,
+ * and deleting a file is not this gate's decision to force -- six of the 21 are
+ * an earlier generation of the homepage that `store/` still documents, and two
+ * are cited by name in scripts/rtl-logical-scan.mjs's island list and in three
+ * other files' comments.
+ *
+ * So the number is frozen and the NEXT one is refused. That is worth more than
+ * it sounds: a component with no importer is the single most common defect
+ * shape in this project's history -- a finished feature nobody wired up -- and
+ * until now nothing counted them at all. A ratchet at 21 means the twenty-second
+ * cannot arrive quietly.
+ *
+ * WHAT COUNTS AS AN IMPORT, and the two ways a naive version gets this wrong:
+ *
+ *   - A file must not match itself. `ui/dropdown-menu.tsx` imports
+ *     `@radix-ui/react-dropdown-menu`, and a pattern of "some path ending in
+ *     dropdown-menu" reads that as its own importer. It did, and the file
+ *     dropped out of the findings.
+ *   - The path segment must be whole. Matching a bare basename makes
+ *     `Footer` a substring of `SiteFooter`, so a live component vouches for a
+ *     dead one with a longer name.
+ *
+ * Test files are excluded from the population, not exempted from it: a `.test.tsx`
+ * is imported by the runner and by nothing else by design.
+ */
+export function findUnimportedComponents(componentFiles, sources, readFile) {
+  const basename = (file) => file.replace(/^.*\//, '').replace(/\.tsx$/, '')
+  const quoteRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  const dead = []
+  for (const file of componentFiles) {
+    // The leading `/` is what keeps `Footer` from matching `SiteFooter`.
+    const pattern = new RegExp(
+      `(?:from|import)\\s*\\(?\\s*['"][^'"]*/${quoteRegex(basename(file))}['"]`,
+    )
+    const imported = sources.some((source) => source !== file && pattern.test(readFile(source)))
+    if (!imported) dead.push(file)
+  }
+  return dead
+}
