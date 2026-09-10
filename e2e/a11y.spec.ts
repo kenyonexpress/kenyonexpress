@@ -227,14 +227,34 @@ test('every interactive control on a product page is reachable by keyboard', asy
   expect(await unreachableControls(page)).toEqual([])
 })
 
-test('every control in the seeded checkout is reachable by keyboard', async ({ page }) => {
-  await openPurchasableProduct(page)
-  await addOpenProductToCart(page)
-  await page.goto('/checkout')
-  await page.waitForLoadState('domcontentloaded')
-  expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain('/checkout')
-  expect(await unreachableControls(page)).toEqual([])
-})
+/**
+ * TAGGED `@writes`, and the tag is what lets the rest of this file run in CI.
+ *
+ * `addOpenProductToCart` puts a row in `carts` through the shopper's own
+ * controls. Every other test in this file only reads. `ci.yml`'s comment on the
+ * preview job records why that mattered: a11y was excluded from CI "DESPITE
+ * being mostly read-only, because each carries a seeded-checkout test that
+ * writes a cart", and the only database CI can reach today is production.
+ *
+ * So the seeding tests carry a tag and the a11y job runs
+ * `--grep-invert=@writes`. `src/__tests__/a11y-writes-tagged.test.ts` fails if a test in
+ * this file calls a cart helper without the tag, because the cost of forgetting
+ * it is CI writing rows into production.
+ */
+test(
+  'every control in the seeded checkout is reachable by keyboard',
+  { tag: '@writes' },
+  async ({ page }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+    await page.goto('/checkout')
+    await page.waitForLoadState('domcontentloaded')
+    expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain(
+      '/checkout',
+    )
+    expect(await unreachableControls(page)).toEqual([])
+  },
+)
 
 /**
  * The banner is fixed to the bottom, and the body carries padding sized to it.
@@ -344,7 +364,7 @@ test.describe('product pages have no WCAG A/AA violations', () => {
  * 3.38:1 on the numeral's #e4e4e4 - and 14px BOLD is not the 18.66px that would
  * let 3:1 apply. The cart's sidebar note was #999 at 2.84:1 on the phone.
  */
-test.describe('the checkout with a seeded cart', () => {
+test.describe('the checkout with a seeded cart', { tag: '@writes' }, () => {
   test('cart and checkout have no WCAG A/AA violations', async ({ page }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
@@ -394,7 +414,7 @@ test.describe('the checkout with a seeded cart', () => {
  * outside, so the gate cannot pass on a state the shopper cannot reach: the
  * "המשך" button refuses a step whose fields do not validate.
  */
-test.describe('the checkout wizard, step by step', () => {
+test.describe('the checkout wizard, step by step', { tag: '@writes' }, () => {
   test('every step of the checkout has no WCAG A/AA violations', async ({ page, viewport }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
@@ -501,21 +521,30 @@ test.describe('the checkout wizard, step by step', () => {
  * They share `drawerOpen` and the label "עגלת קניות", and CSS picks between
  * them, so one test covers both only because both viewports run it.
  */
-test('the cart panel that opens on add-to-cart has no WCAG A/AA violations', async ({ page }) => {
-  await openPurchasableProduct(page)
-  await addOpenProductToCart(page)
+test(
+  'the cart panel that opens on add-to-cart has no WCAG A/AA violations',
+  // Adding to the cart is the whole subject of this test, so it writes by
+  // definition and carries the tag rather than being reworked.
+  { tag: '@writes' },
+  async ({ page }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
 
-  const panel = page.getByRole('dialog', { name: 'עגלת קניות' })
-  // Adding opens it by itself. If that ever stops being true the scan below
-  // would quietly measure the page with no panel on it, so it is asserted.
-  await expect(panel, 'add-to-cart did not open the cart panel; nothing was scanned').toBeVisible()
+    const panel = page.getByRole('dialog', { name: 'עגלת קניות' })
+    // Adding opens it by itself. If that ever stops being true the scan below
+    // would quietly measure the page with no panel on it, so it is asserted.
+    await expect(
+      panel,
+      'add-to-cart did not open the cart panel; nothing was scanned',
+    ).toBeVisible()
 
-  const results = await scan(page)
-  expect(
-    results.violations.map((v) => `${v.id} x${v.nodes.length}`),
-    `\n  ${describe(results)}\n`,
-  ).toEqual([])
-})
+    const results = await scan(page)
+    expect(
+      results.violations.map((v) => `${v.id} x${v.nodes.length}`),
+      `\n  ${describe(results)}\n`,
+    ).toEqual([])
+  },
+)
 
 /**
  * THE INSTALL BANNER, WHICH APPEARS FOR NOBODY THIS SWEEP HAS EVER VISITED AS.

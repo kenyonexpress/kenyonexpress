@@ -55,7 +55,7 @@ workflow while the integration is live is what produces the race in (1).
 
 ## `ci.yml`
 
-Five jobs. The first four block:
+Seven jobs. The first four block:
 
 | Job | Blocks | What it proves |
 | --- | --- | --- |
@@ -63,11 +63,20 @@ Five jobs. The first four block:
 | `typecheck` | yes | `tsc --strict` over the changed file set |
 | `test` | yes | `pnpm test:coverage`, including the per-file money coverage floors |
 | `build` | yes | `pnpm build` - a separate gate that tests and lint do not stand in for |
+| `a11y` | runs | axe-core over 19 routes in two viewports, on the `build` artifact, read-only |
 | `e2e` | skips | Playwright on a localhost production build. Skips until `CI_SUPABASE_URL` exists |
 | `e2e-preview` | skips | Playwright against the pull request's Vercel preview. Same gate |
 
 None of the first four carries `continue-on-error`, and none is conditional, so
 a red one is a red check on the pull request.
+
+`a11y` was added 2026-09-10 and is the only browser job here that runs, because it
+is the only one that writes nothing: the four cart-seeding tests in
+`e2e/a11y.spec.ts` carry `{ tag: '@writes' }` and it runs `--grep-invert=@writes`.
+`docs/ACCESSIBILITY-GATE.md` is the full account, including why the reads are not a
+new class of access - the `build` job already prerenders the catalogue with the same
+public variables. It is not a required check yet, for the reason `security.yml`
+gives about never-run gates.
 
 The two E2E jobs are not duplicates. `e2e` is the gate on the **code**: it
 builds here and drives `localhost`. `e2e-preview` is the gate on the

@@ -328,6 +328,79 @@ jobs:
           path: .next/
           retention-days: 3
 
+  # THE ACCESSIBILITY SWEEP, AND THE ONLY JOB IN THIS FILE THAT RUNS A BROWSER
+  # WITHOUT A SECRET.
+  #
+  # docs/ACCESSIBILITY-GATE.md is the finding: e2e/a11y.spec.ts scans 19 routes in
+  # two viewports with axe-core (wcag2a, wcag2aa, wcag21a, wcag21aa), plus
+  # keyboard traversal and an RTL/lang assertion, and it had NEVER run in CI. Both
+  # jobs below skip themselves when `CI_SUPABASE_URL` is empty and report success,
+  # so every accessibility guarantee this project has rested on a suite that was
+  # inert. Israeli standard 5568 adopts WCAG 2.0 AA; this is a legal surface, not
+  # a nice-to-have.
+  #
+  # WHY IT CAN RUN WHEN THEY CANNOT. Their hazard is writes: the E2E job's first
+  # step is `pnpm seed:test`, and the only database reachable from here is
+  # production. This job writes nothing. Four tests in that spec seed a cart
+  # through the shopper's own controls, they now carry `{ tag: '@writes' }`, and
+  # `--grep-invert=@writes` leaves them out.
+  # src/__tests__/a11y-writes-tagged.test.ts fails if a new seeding test is added
+  # without the tag, which is the one way this job could start writing rows into
+  # production without anybody noticing.
+  #
+  # AND THE READS ARE NOT A NEW CLASS OF ACCESS. The `build` job above already
+  # prerenders the catalogue with these same three repository VARIABLES, which are
+  # public by construction - the comment on its `env:` is the full argument. This
+  # job runs the build it produced and reads the same rows through a browser.
+  #
+  # NOT A REQUIRED CHECK, on purpose. It has no run history, and promoting a
+  # never-run gate straight into the required set is how a repository ends up
+  # unable to merge anything at 03:00. Add it under Settings > Branches once it
+  # has been green for a while.
+  a11y:
+    name: Accessibility (axe, read-only)
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
+      ALLOW_INCOMPLETE_ENV: 'true'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # The production build, not dev: RTL, caching and server actions all differ,
+      # and the artifact below is the build the gates above already passed.
+      E2E_WEB_COMMAND: pnpm start
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Chromium only. The spec parameterises two viewports itself, so the mobile
+      # project would run every scan a third time for no extra statement.
+      - name: Scan for WCAG A/AA violations
+        run: pnpm exec playwright test e2e/a11y.spec.ts --project=chromium --grep-invert=@writes
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-a11y
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
   # E2E drives a real browser against a real database, so it needs a Supabase
   # project. Until CI_SUPABASE_URL exists as a repository secret this job skips
   # rather than failing - a permanently red required check teaches people to

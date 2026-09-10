@@ -1,9 +1,47 @@
 # The accessibility gate, and what it does not cover
 
-Measured 2026-09-09. `docs/A11Y-SWEEP-REPORT.md` is the 2026-08-19 sweep and is
-marked historical; this file is about the gate that was left behind by it.
+Measured 2026-09-09, and **the headline below stopped being true on 2026-09-10**:
+the sweep now runs in CI. `docs/A11Y-SWEEP-REPORT.md` is the 2026-08-19 sweep and
+is marked historical; this file is about the gate that was left behind by it.
 
-## The finding: the gate is excellent and it does not run
+## 2026-09-10: it runs now, and the reason it could not was writes rather than reads
+
+**`ci.yml` has an `a11y` job**: `pnpm exec playwright test e2e/a11y.spec.ts
+--project=chromium --grep-invert=@writes`, on the artifact the `build` job already
+produced, with no secret involved.
+
+The blocker was never the axe scan. It was that four tests in that spec seed a
+cart through the shopper's own controls, and the only database CI can reach is
+production - which is why `ci.yml`'s preview job excluded a11y "DESPITE being
+mostly read-only". Those four now carry `{ tag: '@writes' }` and are excluded by
+tag, so what runs writes nothing.
+
+**The reads are not a new class of access.** The `build` job above it already
+prerenders the catalogue with the same three repository VARIABLES, which are
+public by construction. This job runs that build and reads the same rows through
+a browser.
+
+**Measured before the job was added, because a job that goes red on its first run
+teaches people to ignore it:** `pnpm build`, `PORT=3319 pnpm start`, then the
+command above against it - **36 passed, 1 skipped, 0 failed** in 21 seconds. The
+one skip is the consent-banner test on a page where no banner is showing, which
+skips itself by design.
+
+**`src/__tests__/a11y-writes-tagged.test.ts` is what keeps it honest**, and it
+runs in the `Unit tests` job that branch protection requires. It fails if a test
+in the spec calls a cart helper without the tag - the one way this job could start
+writing rows into production unnoticed - and it also fails if EVERY test ends up
+tagged, which would leave the job passing having scanned nothing. It asserts the
+job itself carries no job-level `if:` and no `secrets.` reference, because that is
+what made the other two jobs inert.
+
+**What still does not run:** the four `@writes` tests - cart, checkout, the
+checkout wizard step by step, and the cart panel - which are the money path and
+the most valuable scans in the file. They need a database that is not production.
+That has not changed, and it is still the single highest-value accessibility
+action available.
+
+## The finding as it stood on 2026-09-09: the gate is excellent and it does not run
 
 `e2e/a11y.spec.ts` runs axe-core with `wcag2a`, `wcag2aa`, `wcag21a` and
 `wcag21aa` across **19 routes in two viewports**, plus keyboard-traversal tests
@@ -94,12 +132,14 @@ test starts failing on it by itself.
 | ARIA Hebrew labels | Present; `lang`/`dir` asserted in the E2E suite |
 | Form errors announced | 20 components use `aria-live` or `role="alert"` |
 | Contrast on `#fed700` and `#E4002B` | Fixed in the 08-19 sweep, which measured the ratios |
-| Keyboard full flow | Tested for product and seeded checkout, in the suite that does not run |
-| Screen reader checkout | Keyboard traversal only; no axe scan of `/checkout` |
+| Keyboard full flow | Product and nine public routes now run in CI; the seeded checkout still does not |
+| Screen reader checkout | Keyboard traversal only, and only outside CI; no axe scan of `/checkout` in CI |
 | IS 5568 statement page | `/accessibility` and `/legal/accessibility` both exist |
 
-The pattern across that table is one thing, not nine: **almost every
-accessibility guarantee this project has depends on a suite that is currently
-inert.** Restoring it needs a database that is not production, and that is the
-single highest-value accessibility action available. Adding routes to a spec
-that does not run would not have been progress.
+The pattern across that table was one thing, not nine: **almost every
+accessibility guarantee this project has depended on a suite that was inert.**
+As of 2026-09-10 the read-only half of it runs on every push and pull request -
+19 routes, two viewports, keyboard traversal, the RTL/`lang` assertion and the
+consent-banner overlap checks. The half that seeds a cart still needs a database
+that is not production, and that remains the single highest-value accessibility
+action available.
