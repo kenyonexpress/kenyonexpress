@@ -107,6 +107,23 @@ html[data-consent="decided"] [data-consent-banner] {
 :root {
   --reserve-consent: 0rem;
   --reserve-pwa: 0rem;
+  --reserve-tabbar: 0rem;
+}
+
+/* The bottom tab bar is the third fixed thing down here, and the only one that
+   is ALWAYS up rather than dismissible: it is `md:hidden` navigation, so below
+   768px it occupies its space on every page for every visitor.
+   4rem = the 44px minimum target plus the 1.5px border and the label's descender
+   room, measured against the component's own `min-h-[44px]` floor rather than
+   guessed. Above 768px the bar is display:none, so the reservation returns to
+   0 and the desktop pages reserve nothing.
+   The safe-area inset is NOT added here. It is padding INSIDE the bar, so the
+   bar's own height already contains it, and adding it again would reserve it
+   twice on exactly the notched phones this is for. */
+@media (max-width: 767.98px) {
+  :root {
+    --reserve-tabbar: 4rem;
+  }
 }
 
 html:not([data-consent="decided"]) {
@@ -134,7 +151,7 @@ html[data-pwa-prompt] {
 }
 
 body {
-  padding-bottom: calc(var(--reserve-consent) + var(--reserve-pwa));
+  padding-bottom: calc(var(--reserve-consent) + var(--reserve-pwa) + var(--reserve-tabbar));
 }
 
 /* Turbopack caches this file's compiled output by CONTENT hash, not mtime.

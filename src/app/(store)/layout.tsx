@@ -1,11 +1,14 @@
 import SkipLink from '@/components/a11y/SkipLink'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
+import { BottomTabBarView } from '@/components/layout/BottomTabBar'
+import BottomTabBarActive from '@/components/layout/BottomTabBarActive'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
+import { Suspense } from 'react'
 // cart-page.css is imported by the root layout, one request for the whole
 // site. See the note there before moving it back down here.
 
@@ -52,6 +55,20 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           <SiteFooter />
         </div>
         <WhatsAppFloat />
+        {/* Outside the min-h-screen column on purpose: it is fixed, so nesting
+          it in the flex column would buy nothing and would put navigation
+          inside <main>'s sibling stack for a screen reader.
+
+          BEHIND SUSPENSE BECAUSE THE ACTIVE TAB NEEDS usePathname, and a client
+          hook on a prerendered route is CLIENT_HOOK_DYNAMIC under
+          cacheComponents: inline, it failed the build on /gift/[token] and
+          would have made every route in this group dynamic, which is the one
+          thing this layout's docblock above asks callers not to do. The
+          fallback is the same bar with nothing lit, so the swap is invisible
+          and CLS stays 0. */}
+        <Suspense fallback={<BottomTabBarView active={null} />}>
+          <BottomTabBarActive />
+        </Suspense>
         <DeferredStoreChrome />
       </WishlistProvider>
     </CartProvider>

@@ -14,6 +14,14 @@
       "label": "Page navigation",
       "previous": "Previous page",
       "next": "Next page"
+    },
+    "tabbar": {
+      "label": "Primary mobile navigation",
+      "home": "Home",
+      "categories": "Categories",
+      "search": "Search",
+      "wallet": "Wallet",
+      "account": "Account"
     }
   },
   "auth": {
