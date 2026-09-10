@@ -1,5 +1,31 @@
 # `migrations/pending/`
 
+## 2026-09-10: 233 APPLIED (wishlist alerts)
+
+`233_wishlist_alerts.sql` is the state behind the wishlist alerts of 200:
+`wishlist_alert_prefs` (per-user toggles; absent row = drops on, restocks
+on, weekly digest OFF, because the digest is marketing and must be an
+explicit yes) and `wishlist_stock_state` (the last in-stock flag the cron
+saw per product, because a restock is a transition and nothing else records
+one). Owner-only policies on the prefs, the 195 RESTRICTIVE deny-all shape
+on the state table, and the 226 lesson kept: `set_updated_at` is created
+only if missing, never restated. The producer is
+`/api/cron/wishlist-alerts` (drops, restocks, waitlist drain, and the daily
+`price_history` snapshot 193 promised), plus `/api/cron/wishlist-digest`
+(Friday summary to opted-in users); the signed unsubscribe link writes here
+with the service role (`src/server/wishlist/unsubscribe.ts`).
+
+Applied as `wishlist_alerts_233` (version 20260910025004) under the
+2026-09-10 wishlist-alerts /goal, which names Supabase MCP as the migration
+route (the 217 protocol). Full body dry-run first in a rolled-back
+transaction with functional probes: defaults landed true/true/false, the
+unsubscribe upsert cleared exactly the named flags, `authenticated` without
+a uid saw zero rows and could not write the state table (42501), 3+1
+policies, grants as declared. Identical body then went through
+`apply_migration`; post-apply measurement in one SELECT matched on every
+point, 0 rows in both tables. Filed here as the record like
+217/223/224/226/227/228/231/232.
+
 ## 2026-09-10: 232 APPLIED (reviews: admin moderation only)
 
 `232_reviews_admin_moderation_only.sql` closes the review model to what the

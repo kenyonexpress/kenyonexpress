@@ -56,6 +56,13 @@ const schema = z
 
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),
+    /**
+     * Signs the wishlist-alert unsubscribe links. OPTIONAL EVERYWHERE:
+     * `lib/wishlist/unsubscribe-token.ts` derives a key from CRON_SECRET when
+     * this is absent, so production (where CRON_SECRET is required) always
+     * signs, and setting this later only rotates the links, not the feature.
+     */
+    WISHLIST_UNSUB_SECRET: z.string().min(20).optional().or(z.literal('')),
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
 
     /**

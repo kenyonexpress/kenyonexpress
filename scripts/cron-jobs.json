@@ -1,5 +1,5 @@
 {
-  "$comment": "The single source of truth for the eighteen scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml, vercel.json and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
+  "$comment": "The single source of truth for the twenty scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml, vercel.json and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
   "defaultBaseUrl": "https://kenyonexpress.vercel.app",
   "jobs": [
     { "name": "notifications", "path": "/api/cron/notifications", "cron": "*/5 * * * *" },
@@ -19,6 +19,8 @@
     { "name": "retention", "path": "/api/cron/retention", "cron": "0 5 1 * *" },
     { "name": "weekly-digest", "path": "/api/cron/weekly-digest", "cron": "0 4 * * 5" },
     { "name": "expire-coupons", "path": "/api/cron/expire-coupons", "cron": "15 23 * * *" },
-    { "name": "backup", "path": "/api/cron/backup", "cron": "20 2 * * *" }
+    { "name": "backup", "path": "/api/cron/backup", "cron": "20 2 * * *" },
+    { "name": "wishlist-alerts", "path": "/api/cron/wishlist-alerts", "cron": "45 4 * * *" },
+    { "name": "wishlist-digest", "path": "/api/cron/wishlist-digest", "cron": "0 5 * * 5" }
   ]
 }

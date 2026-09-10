@@ -328,6 +328,12 @@ describe('the pending migration inventory', () => {
     // other branches. Shape pinned in
     // reviews-moderation-migration-guards.test.ts; filed here as the record
     // like 217/223/224/226/227/228/231.
+    // 233 IS applied (2026-09-10, `wishlist_alerts_233`, version
+    // 20260910025004): the wishlist alert prefs and the last-seen stock
+    // flags behind /api/cron/wishlist-alerts. Proven first in a rolled-back
+    // transaction with functional probes (defaults, the unsubscribe upsert,
+    // authenticated locked out of the state table) and filed here as the
+    // record like 217/223/224/226/227/228/231/232.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
@@ -340,6 +346,7 @@ describe('the pending migration inventory', () => {
       '228_invoice_sequences.sql',
       '231_bell_fanout.sql',
       '232_reviews_admin_moderation_only.sql',
+      '233_wishlist_alerts.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

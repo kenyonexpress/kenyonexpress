@@ -49,6 +49,8 @@ const CHECK_ACCEPTS = [
   'welcome',
   'account_deleted',
   'order_shipped',
+  'price_drop',
+  'back_in_stock',
 ] as const
 
 /**
@@ -75,7 +77,11 @@ const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
 // (150) and `order_shipped` (183). 183 as drafted restated only the twelve it
 // knew plus order_shipped, which would have DROPPED account_deleted; the
 // preflight caught it and the file was corrected before it was applied.
-const MEASURED_AT = '2026-09-09'
+//
+// 2026-09-10: fourteen became sixteen. 200 (applied 2026-09-09) restated the
+// constraint with `price_drop` and `back_in_stock`, and its own closing DO
+// block counted 16 names out of pg_get_constraintdef after the apply.
+const MEASURED_AT = '2026-09-10'
 
 /** A payload fat enough that every builder's own guards are satisfied. */
 const PAYLOAD: Record<string, unknown> = {
@@ -101,6 +107,10 @@ const PAYLOAD: Record<string, unknown> = {
   critical: 1,
   rows: [{ transactionId: 'tx1', terminalAgorot: 100, localAgorot: 90 }],
   full_name: 'דנה',
+  slug: 'some-product',
+  old_agorot: 40000,
+  new_agorot: 29900,
+  price_agorot: 29900,
 }
 
 const SITE = 'https://kenyonexpress.co.il'
