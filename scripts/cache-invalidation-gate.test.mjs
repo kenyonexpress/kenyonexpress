@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   DELIBERATE_EXCEPTIONS,
+  UNTAGGED_ON_PURPOSE,
   cachedTables,
   classifyAction,
   scanCacheInvalidation,
+  untaggedCachedScopes,
 } from './cache-invalidation-scan.mjs'
 
 /**
@@ -115,6 +118,54 @@ describe('the exception list', () => {
 
   it('stays short enough that each one is still read', () => {
     expect(DELIBERATE_EXCEPTIONS.size).toBeLessThanOrEqual(3)
+  })
+})
+
+/**
+ * WIDENED 2026-09-10, and the reason is a file that was never looked at.
+ *
+ * The scan read `src/server/actions` alone and reported clean. The one writer
+ * outside that tree is `src/app/api/cron/price-schedule/route.ts`, which UPDATEs
+ * `products.kenyon_price` on a schedule - a price change with no operator
+ * watching - and it invalidates correctly. Nothing was checking that it did.
+ */
+describe('where a write can come from', () => {
+  const tables = cachedTables()
+
+  it('accepts revalidateTag with a profile argument, which is what a route handler passes', () => {
+    // `revalidateTag(CATALOGUE_TAG, 'hours')` is the correct call outside a
+    // Server Action. The first pattern demanded a closing paren right after the
+    // tag, so widening the roots would have failed a correct file.
+    const source = `await admin.from('products').update({ kenyon_price: 1 }).eq('id', id)
+      revalidateTag(CATALOGUE_TAG, 'hours')`
+    expect(classifyAction(source, tables).ok).toBe(true)
+  })
+
+  it('looks at the cron route that changes prices on a schedule', () => {
+    const source = readFileSync('src/app/api/cron/price-schedule/route.ts', 'utf8')
+    const verdict = classifyAction(source, tables)
+    expect(verdict.written).toContain('products')
+    expect(verdict.ok, 'the scheduled price change no longer flushes the catalogue').toBe(true)
+  })
+})
+
+describe('every cached scope carries a tag', () => {
+  it('has no untagged scope in the repository', () => {
+    expect(untaggedCachedScopes()).toEqual([])
+  })
+
+  it('reports a scope whose cacheTag is missing', () => {
+    // The accident this catches: a cached reader copied from a neighbour, minus
+    // one line. It expires on a timer and no write can flush it.
+    const offenders = untaggedCachedScopes(['scripts/__fixtures__/untagged-cache'])
+    expect(offenders).toHaveLength(1)
+  })
+
+  it('carries an argument for every scope exempted from the tag rule', () => {
+    for (const [file, reason] of UNTAGGED_ON_PURPOSE) {
+      expect(file.startsWith('src/')).toBe(true)
+      expect(reason.length).toBeGreaterThan(80)
+    }
   })
 })
 

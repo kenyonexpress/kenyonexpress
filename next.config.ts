@@ -117,6 +117,38 @@ const nextConfig: NextConfig = {
           permissionsPolicyFor(path),
         ),
       })),
+      // THE ONE ASSET TYPE THE PLATFORM DOES NOT ALREADY GET RIGHT.
+      //
+      // Measured on production 2026-09-10:
+      //
+      //   /_next/static/chunks/*.js   public,max-age=31536000,immutable   (Next)
+      //   /images/logo.webp           public, max-age=0, must-revalidate
+      //
+      // Content-hashed output is handled by the framework. Files under `public/`
+      // are not hashed and got the default, so the logo, the hero images and
+      // every authored asset were revalidated on every page view by every
+      // visitor - a conditional request per image, per navigation.
+      //
+      // WHY NOT `immutable` HERE, which is the obvious copy of the line above.
+      // `public/` filenames are stable across deploys, so a long browser
+      // max-age pins whatever a visitor already has with no way to bust it: the
+      // day a logo changes, some browsers keep the old one until it expires.
+      // `max-age=0` keeps the browser asking, `s-maxage` lets the CDN answer for
+      // a day (a deploy purges it), and `stale-while-revalidate` means the week
+      // after that is instant and refreshed in the background rather than a wait.
+      //
+      // This adds no header where one already exists: it is a different key from
+      // the CSP entries above, so the negative-lookahead trick they depend on is
+      // untouched.
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
     ]
   },
   async redirects() {

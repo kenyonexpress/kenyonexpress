@@ -1,6 +1,9 @@
 # Caching
 
-Measured 2026-09-09 against the working tree.
+Measured 2026-09-09 against the working tree, **re-measured 2026-09-10**: the
+scope count below was twenty and is thirty, and the gate that enforces the
+contract had never looked at a route handler. Both are corrected in place, with
+the old numbers kept where the reasoning depends on them.
 
 ## This project does not use `export const revalidate`
 
@@ -12,7 +15,7 @@ directive plus `cacheLife()` and `cacheTag()` from `next/cache`.
 Anyone auditing this by looking for ISR exports concludes there is no caching.
 There are twenty cached scopes.
 
-## The twenty scopes
+## The thirty scopes
 
 | Where | Life | Tag |
 | --- | --- | --- |
@@ -24,9 +27,27 @@ There are twenty cached scopes.
 | `server/queries/reviews.ts`, `app/sitemap.ts` | `hours` | `CATALOGUE_TAG` |
 | `components/CopyrightYear.tsx` | `days` | none |
 
-Nineteen of the twenty are `cacheLife('hours')` and carry one tag. Search, cart,
-checkout and the whole account and admin area are uncached, which is what
-SECTIONS 16 asked for by calling them dynamic.
+**Re-measured 2026-09-10: thirty scopes across thirteen files**, counting only
+lines that are the `'use cache'` directive itself. The ten that arrived since
+09-09 are `lib/seo/sitemap-data.ts` (3), `lib/homepage/rails.ts` (3),
+`lib/content/read.ts`, `lib/commerce/phases.ts`, and one more in
+`lib/category-page.ts`, which is now 8.
+
+**Every one of the thirty carries `cacheTag(CATALOGUE_TAG)` except
+`CopyrightYear`**, which holds no table data and therefore has nothing a write
+could make stale. There is exactly one tag in the whole tree - 33 `cacheTag`
+calls, all of them `CATALOGUE_TAG` - which is the deliberate choice the next
+section argues for.
+
+**Counting by grep is a trap worth naming**: `grep "'use cache'"` answers 37,
+because seven of the hits are prose in comments explaining the directive. Two of
+those sit in `lib/commerce/stock-live.ts` and `lib/homepage/cms.ts`, which cache
+nothing at all - the first deliberately reads stock live, and the second explains
+why it cannot read a clock. An audit that counted those would report two cached
+scopes that do not exist.
+
+Search, cart, checkout and the whole account and admin area are uncached, which is
+what SECTIONS 16 asked for by calling them dynamic.
 
 ## One tag for the whole catalogue, on purpose
 
@@ -68,6 +89,35 @@ It derives the table list **out of the cached source** rather than from a list
 typed into the gate, because a hand-kept list drifts the day somebody caches a
 new table, and the drifted-away table is exactly the one nobody remembers to
 invalidate.
+
+### It was enforcing the contract on one directory, 2026-09-10
+
+**The scan read `src/server/actions` and nothing else, and reported clean.** Every
+route handler, cron route and payment module was outside it. That is not a
+theoretical hole: the one writer outside the actions tree is
+`src/app/api/cron/price-schedule/route.ts`, which UPDATEs `products.kenyon_price`
+on a schedule. A stale price there is the worst kind on this site - the grid shows
+one figure and the checkout charges another - and it runs with no operator
+watching. It invalidates correctly, and nothing in the repository was checking
+that it did.
+
+The roots are now `src/server/actions`, `src/server/payments`, `src/server/domain`
+and `src/app/api`. Widening them required fixing the pattern first: it demanded a
+closing paren immediately after the tag, so `revalidateTag(CATALOGUE_TAG, 'hours')`
+- the correct call in a route handler, with the profile argument the cron route
+passes - would have been reported as an offender. A gate that fails on correct
+code teaches people to re-run it rather than read it.
+
+### And the other half of the contract: a scope with no tag
+
+`untaggedCachedScopes()` fails a `'use cache'` scope that carries no `cacheTag`.
+Such a scope can only expire on its own timer, and **no write path can flush it,
+because there is nothing to name** - the same silent staleness arriving from the
+other direction, and the easier one to write by accident: a cached reader copied
+from a neighbour, minus one line. `CopyrightYear` is the one exemption, with its
+argument in `UNTAGGED_ON_PURPOSE`, and a fixture under
+`scripts/__fixtures__/untagged-cache/` proves the check fires rather than being
+green because there is nothing to find.
 
 ### `updateTag`, not `revalidateTag`
 
@@ -135,12 +185,48 @@ measured a hit rate; that measurement should come before the layer.
 
 ### "CDN headers per asset type"
 
-**Partly present, and not extended here.** `/api/search` sets
-`Cache-Control: public, s-maxage=30, stale-while-revalidate=60`, uploads to R2
-are written with `cacheControl: '31536000'`, and Next sets immutable headers on
-`/_next/static` itself. A blanket per-type header policy in `next.config.ts` was
-not added, because the two surfaces that would benefit are already covered and
-the rest are dynamic.
+**Re-measured on production 2026-09-10, and one type was wrong.** The 09-09 note
+below said the surfaces that would benefit were already covered. They were not:
+
+```
+/_next/static/chunks/*.js     public,max-age=31536000,immutable      Next itself
+/images/logo.webp             public, max-age=0, must-revalidate     the default
+/favicon.ico                  public, max-age=0, must-revalidate     the default
+/api/search?q=...             public                                 see below
+/                             public, max-age=0, must-revalidate     age: 90243
+```
+
+Content-hashed output is handled by the framework. **Files under `public/` are not
+hashed, got the platform default, and were therefore revalidated by every visitor
+on every navigation** - a conditional request per logo, per hero image, per page
+view. `next.config.ts` now sets
+`public, max-age=0, s-maxage=86400, stale-while-revalidate=604800` on
+`/images/:path*`.
+
+**Not `immutable`, and that is the whole decision.** A `public/` filename is
+stable across deploys, so a long browser max-age pins whatever a visitor already
+holds with no way to bust it: the day a logo changes, some browsers keep the old
+one until it expires. `max-age=0` keeps the browser asking, `s-maxage` lets the
+CDN answer for a day and a deploy purges it, and `stale-while-revalidate` makes
+the week after that instant rather than a wait.
+
+Verified against a real server rather than in the config alone: `pnpm build` then
+`PORT=3319 pnpm start` answers `/images/logo.webp` with the new header and
+`/_next/static/...` unchanged. `src/__tests__/asset-cache-headers.test.ts` holds
+the config side, including the two ways it could go wrong - `immutable` copied
+down from the line above, and a second `Content-Security-Policy` key that would
+undo the payment-frame exception through the intersection rule.
+
+**Two rows above are not header policy and are worth reading as what they are.**
+`/api/search` answers `public` on production while the source sets
+`s-maxage=30, stale-while-revalidate=60`; that line landed on 09-04 and the served
+deployment predates it (`docs/DEPLOYMENT.md`, and the seven 404 cron routes in
+`docs/OWASP-TOP-10.md` §A09 are the same fact). And the home page is an
+`x-vercel-cache: HIT` with `age: 90243` - a 25-hour-old edge copy of a build
+nobody can redeploy from here.
+
+Uploads to R2 are still written with `cacheControl: '31536000'`, which is correct:
+those keys are content-addressed.
 
 ### "Stampede protection"
 

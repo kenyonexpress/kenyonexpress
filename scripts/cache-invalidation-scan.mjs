@@ -44,13 +44,46 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { extname, join } from 'node:path'
 
 const CACHED_ROOTS = ['src/lib', 'src/server/queries', 'src/app']
-const ACTION_ROOT = 'src/server/actions'
+
+/**
+ * WHERE A WRITE CAN COME FROM, widened 2026-09-10.
+ *
+ * This was `src/server/actions` alone, and the gate reported clean while it had
+ * never looked at a route handler. That is not a hypothetical hole: the one
+ * writer outside the actions tree is `src/app/api/cron/price-schedule/route.ts`,
+ * which UPDATEs `products.kenyon_price` on a schedule -- a price change nobody
+ * is watching, on the surface where a stale figure is the one a shopper is shown
+ * next to a different one at checkout. It does invalidate, correctly, and
+ * nothing in this repository was checking that it did.
+ *
+ * Cron routes are also where a write is least likely to be noticed by hand: no
+ * operator is watching the storefront when one runs.
+ */
+const WRITER_ROOTS = [
+  'src/server/actions',
+  'src/server/payments',
+  'src/server/domain',
+  'src/app/api',
+]
 
 /**
  * Write paths that deliberately do NOT invalidate, each with the argument.
  * Adding to this is the review step, and the argument has to be in the file
  * itself, not only here.
  */
+/**
+ * Cached scopes that deliberately carry no tag, with the argument. A scope here
+ * must hold NO data that a write can change; anything else is staleness nobody
+ * can flush.
+ */
+export const UNTAGGED_ON_PURPOSE = new Map([
+  [
+    'src/components/CopyrightYear.tsx',
+    'Renders the current year with cacheLife(days). It reads no table, so there is ' +
+      'no write that could make it stale and no tag that would mean anything.',
+  ],
+])
+
 export const DELIBERATE_EXCEPTIONS = new Map([
   [
     'src/server/actions/admin/images.ts',
@@ -121,9 +154,16 @@ export function classifyAction(source, tables) {
     if (tables.has(match[1])) written.add(match[1])
   }
   if (written.size === 0) return { ok: true, reason: 'writes-nothing-cached', written: [] }
-  const invalidates = /updateTag\(\s*CATALOGUE_TAG\s*\)|revalidateTag\(\s*CATALOGUE_TAG\s*\)/.test(
-    source,
-  )
+  // BOTH FUNCTIONS, AND ARGUMENTS AFTER THE TAG.
+  //
+  // `revalidateTag(CATALOGUE_TAG, 'hours')` is the correct call in a route
+  // handler -- `updateTag` is Server-Action-only, and the profile argument is
+  // what the cron route passes. The first version of this pattern demanded a
+  // closing paren immediately after the tag, so widening the roots above would
+  // have reported that correct file as an offender. A gate that fails on correct
+  // code teaches people to re-run it, which is the failure
+  // src/__tests__/ci-gate-scope.test.ts exists to record.
+  const invalidates = /(?:update|revalidate)Tag\(\s*CATALOGUE_TAG\s*[,)]/.test(source)
   return {
     ok: invalidates,
     reason: invalidates ? 'invalidates' : 'writes-a-cached-table-without-invalidating',
@@ -131,14 +171,50 @@ export function classifyAction(source, tables) {
   }
 }
 
-export function scanCacheInvalidation({ actionRoot = ACTION_ROOT, roots = CACHED_ROOTS } = {}) {
+export function scanCacheInvalidation({ writerRoots = WRITER_ROOTS, roots = CACHED_ROOTS } = {}) {
   const tables = cachedTables(roots)
   const offenders = []
-  for (const file of walk(actionRoot)) {
-    if (/\.test\.tsx?$/.test(file)) continue
-    if (DELIBERATE_EXCEPTIONS.has(file)) continue
-    const { ok, reason, written } = classifyAction(readFileSync(file, 'utf8'), tables)
-    if (!ok) offenders.push({ file, reason, written })
+  for (const root of writerRoots) {
+    for (const file of walk(root)) {
+      if (/\.test\.tsx?$/.test(file)) continue
+      if (DELIBERATE_EXCEPTIONS.has(file)) continue
+      const { ok, reason, written } = classifyAction(readFileSync(file, 'utf8'), tables)
+      if (!ok) offenders.push({ file, reason, written })
+    }
+  }
+  return offenders
+}
+
+/**
+ * EVERY CACHED SCOPE CARRIES A TAG, which is the other half of the contract and
+ * was unenforced until 2026-09-10.
+ *
+ * A `'use cache'` scope with no `cacheTag` can only expire on its own timer: no
+ * write path can flush it, because there is nothing to name. It is the same
+ * silent staleness this file already guards against, arriving from the other
+ * direction, and it is the easier one to write by accident -- a new cached
+ * reader copied from a neighbour, minus one line.
+ *
+ * The scope is approximated the same way `cachedTables` approximates it, and for
+ * the same reason: over-collecting costs a false name on a list, under-collecting
+ * costs the bug.
+ */
+export function untaggedCachedScopes(roots = CACHED_ROOTS) {
+  const offenders = []
+  for (const root of roots) {
+    for (const file of walk(root)) {
+      if (/\.test\.tsx?$/.test(file)) continue
+      if (UNTAGGED_ON_PURPOSE.has(file)) continue
+      const lines = readFileSync(file, 'utf8').split('\n')
+      lines.forEach((line, index) => {
+        if (!/^\s*'use cache'\s*$/.test(line)) return
+        // Look ahead a few lines: cacheLife and cacheTag sit directly under the
+        // directive by convention in this codebase, and a scope that puts its
+        // tag fifteen lines down has bigger problems than this gate.
+        const window = lines.slice(index, index + 8).join('\n')
+        if (!/cacheTag\(/.test(window)) offenders.push({ file, line: index + 1 })
+      })
+    }
   }
   return offenders
 }
