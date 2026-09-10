@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
@@ -43,7 +43,17 @@ type Ledger = { $measured_at: string; known: Record<string, { product: string; d
 
 const snapshot = JSON.parse(readFileSync(SNAPSHOT, 'utf8')) as Snapshot
 const ledger = JSON.parse(readFileSync(LEDGER, 'utf8')) as Ledger
-const findings = findCatalogueProblems(snapshot.products)
+/**
+ * The disk half of the image rule. `public/` is the only place a `/images/...`
+ * path can resolve from, and this is the check that would have caught 13 active
+ * products pointing at files that were not in the repository and answered 404 in
+ * production - measured 2026-09-10, twelve of them recoverable from a staging
+ * directory an earlier session had left untracked.
+ */
+const imageExists = (publicPath: string) =>
+  existsSync(resolve(process.cwd(), 'public', publicPath.replace(/^\//, '')))
+
+const findings = findCatalogueProblems(snapshot.products, imageExists)
 const found = new Set(findings.map(findingKey))
 const known = new Set(Object.keys(ledger.known))
 

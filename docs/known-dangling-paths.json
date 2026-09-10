@@ -85,7 +85,6 @@
   "docs/FINAL-AUDIT.md :: refs/ke_live_singlefile.html",
   "docs/FINAL-REPORT.md :: migrations/pending/007-order-transition-guard.sql",
   "docs/GLOSSARY.md :: refs/ke_live_singlefile.html",
-  "docs/IMAGE-IMPORT-STATUS.md :: scripts/import-images.ts",
   "docs/INFRA-TASKS.md :: migrations/pending/162_schedule_cron_jobs.sql",
   "docs/INFRA-TASKS.md :: scripts/secret-leak-gate.mjs",
   "docs/INFRA-TASKS.md :: scripts/verify-cutover.mjs",

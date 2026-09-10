@@ -1,5 +1,10 @@
 # Image import: built, staged, and blocked on one account setting
 
+**Re-measured 2026-09-10, and the section's real subject turned out to be broken
+in production. Read `## 2026-09-10` at the bottom first.** The rest is the 09-09
+account and stays as written, with one bullet corrected where a file it said did
+not exist does.
+
 Measured 2026-09-09. SECTIONS 20 asked for `scripts/import-images.ts` and ended
 with "Run it." **It cannot be run, the reason is not in this repository, and the
 work it asked for already exists under different names.**
@@ -82,7 +87,95 @@ gate measures.
   written.** Writing one now would name URLs on a bucket that does not exist, so
   it would be a migration that is wrong on the day it is applied. It should be
   generated from the upload manifest after the first real run, not before.
-- **`scripts/import-images.ts` does not exist and should not be created.**
-  Adding a third pipeline with the section's name, next to two working ones,
-  would leave three things to keep in step. The name in the section is not the
-  deliverable; the images are.
+- ~~**`scripts/import-images.ts` does not exist and should not be created.**~~
+  **Corrected 2026-09-10: it existed when this was written.** Commit `a8254b92f`
+  added it on `closeout/v1-final` on 2026-09-08 and ran it for real - 320
+  renditions from 82 sources, idempotence and resumability each proven by a second
+  run rather than asserted. This branch did not carry it, which is how a document
+  came to argue against creating a file that already existed one branch over. It
+  is here now.
+
+  The argument the bullet made still has force, and the answer is that the three
+  pipelines do different things rather than the same thing three times: this one
+  is the only one that MEASURES each source and refuses to emit a tier above it
+  (168 of the tiers the section asked for are upscales of a 600px original and are
+  skipped, not faked), and it writes to a gitignored staging directory precisely
+  because nothing serves those renditions yet.
+
+---
+
+## 2026-09-10: thirteen active products had a broken image in production
+
+The section is about product images, and nobody had asked the one question that
+matters about them. Measured today, first against production and then against the
+deployment:
+
+```
+44 active products, 36 distinct first images
+23 of 36 resolve
+13 of 36 are absent from the repository AND answer 404 on the live site
+```
+
+The 13 were the main image of **16 of the 44 active products** - the picture the
+card in the grid and the hero on the product page both render. `next/image`
+returns 404 for them, so those cards show a broken image on a live shop, and
+every gate in this repository was green about it: the catalogue snapshot did not
+carry image paths, and nothing compared a path to the filesystem.
+
+`docs/LAUNCH-RUNBOOK.md` had warned about the shape of this - "all 32 product
+images are still served by the WordPress install, so they 404 the moment the
+record moves" - and it is stale in both directions now: the images were localised
+into `public/images/products/` at some point (zero rows point at
+kenyonexpress.co.il today), and 13 of them did not make the trip.
+
+### All thirteen were recovered, and twelve came back byte-identical
+
+`refs/live-assets/` is the crawl taken on 2026-09-05 while the old site was still
+serving, and it holds twelve of the thirteen **under the exact filename the
+catalogue references**, so those are the originals WordPress served rather than
+re-encodes. The thirteenth, `steak-1-600x512.webp`, is not in the crawl and came
+from `.image-staging/` as a 480w WebP re-encode, which is the only one of the 36
+that is not the original.
+
+Every one of the 36 now decodes through sharp at 400px or wider - checked, not
+assumed, because `/_next/image` serves a broken source byte-for-byte rather than
+failing (project memory: next-image-optimizer-swallows-sharp-errors).
+
+One image gap remains and it is not recoverable: `מזקקת וויסקי` has an **empty**
+images array, so there is no reference to look up. Choosing a photograph is the
+operator's decision, and it sits in `supabase/catalogue-known-issues.json` as
+`no-image`.
+
+### The gate that would have caught it
+
+`supabase/catalogue-snapshot.json` now carries `first_image` per product,
+measured the same day, and `src/lib/catalogue/safety-rules.ts` has two new rules:
+
+| Rule | Fires when |
+| --- | --- |
+| `no-image` | the product's images array is empty |
+| `image-file-missing` | the first image is referenced and no file exists under `public/` |
+
+The filesystem half arrives as a function from the caller, so the rules module
+stays pure and the unit tests keep driving it with literals. It runs in
+`pnpm test src/lib/catalogue`, in the Unit tests job branch protection requires.
+
+### R2, for the fourth time
+
+```
+r2_buckets_list -> 403 {"code":10042,"message":"Please enable R2 through the Cloudflare Dashboard."}
+```
+
+Measured again today through the Cloudflare MCP connector. Unchanged since 09-06,
+and unchanged by anything this repository can do.
+
+### And the crawl target is gone, which the script already said
+
+`https://kenyonexpress.co.il/` answers **308** into this application and
+`https://www.kenyonexpress.co.il/wp-json/wp/v2/media` answers **403**. There is
+nothing left to crawl; `refs/live-assets/` is the surviving corpus and it is what
+closed the gap above.
+
+`node scripts/import-images.ts` was run again today on the corpus as it now
+stands: **produced 2, reused 318, 18 of 82 sources wide enough for all four
+tiers, 168 tiers skipped as upscales.** The log line is in `~/ke-goals/images.log`.

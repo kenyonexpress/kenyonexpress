@@ -35,6 +35,12 @@ export type CatalogueProduct = {
   platform_percent: string | null
   supplier_id: string | null
   category_slug: string | null
+  /**
+   * `images->>0`: the one every card and the product hero render, so the one
+   * whose absence a customer sees. Added 2026-09-10, when 13 of the 36 distinct
+   * paths turned out to 404 in production.
+   */
+  first_image?: string | null
 }
 
 export type CatalogueFinding = {
@@ -51,6 +57,8 @@ export type CatalogueRule =
   | 'duplicate-name'
   | 'price-contradicts-text'
   | 'missing-platform-percent'
+  | 'no-image'
+  | 'image-file-missing'
 
 /**
  * Words that mean "this row was never finished": an admin duplicate, a seed
@@ -122,7 +130,21 @@ function money(value: string | null): number | null {
   return Number.isFinite(n) ? n : null
 }
 
-export function findCatalogueProblems(products: CatalogueProduct[]): CatalogueFinding[] {
+/**
+ * IMAGES ARE CHECKED AGAINST THE FILESYSTEM, WHICH THIS MODULE CANNOT TOUCH.
+ *
+ * The rules here are pure so the unit tests can drive them with literals. The
+ * one question that needs a disk - does `public/images/products/x.webp` exist -
+ * arrives as this function, supplied by the caller. Absent, the file check is
+ * skipped and only `no-image` can fire, which is what keeps a rules test from
+ * depending on the repository's contents.
+ */
+export type ImageExists = (publicPath: string) => boolean
+
+export function findCatalogueProblems(
+  products: CatalogueProduct[],
+  imageExists?: ImageExists,
+): CatalogueFinding[] {
   const findings: CatalogueFinding[] = []
   const add = (rule: CatalogueRule, productId: string, detail: string) =>
     findings.push({ rule, productId, detail })
@@ -179,6 +201,22 @@ export function findCatalogueProblems(products: CatalogueProduct[]): CatalogueFi
         p.id,
         `"${name}" is live ${group.length} times across ${suppliers.size} supplier(s)`,
       )
+    }
+  }
+
+  for (const p of products) {
+    // `undefined` means the snapshot predates the column; `null` means measured
+    // and empty. Only the second is a finding, so an older snapshot does not
+    // suddenly report 44 of them.
+    if (p.first_image === undefined) continue
+    if (!p.first_image) {
+      add('no-image', p.id, `no image at all: ${p.name_he}`)
+      continue
+    }
+    if (imageExists && !imageExists(p.first_image)) {
+      // A product that renders a broken image is worse than one with none: the
+      // card keeps its slot in the grid and the shopper reads it as our error.
+      add('image-file-missing', p.id, `${p.first_image} is referenced and not on disk`)
     }
   }
 

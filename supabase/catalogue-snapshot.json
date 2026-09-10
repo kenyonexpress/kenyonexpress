@@ -2,7 +2,7 @@
   "$what": "Every ACTIVE, non-deleted product in production, with the fields that decide whether it is safe to sell. Nothing here is derived from the repo.",
   "$why": "CLAUDE.md's top launch blocker named one row: a Master Product at 1 shekel, said to have 10 in stock and to render on the homepage. Measured on 2026-09-09 that row is status=draft with stock 0 and cannot be bought. The kind of defect it described is real and much wider than one row, and none of it was measured anywhere.",
   "$how": "node scripts/catalogue-safety.mjs --sql | run through Supabase MCP | node scripts/catalogue-safety.mjs --from rows.json",
-  "$measured_at": "2026-09-09",
+  "$measured_at": "2026-09-10",
   "$project_ref": "ixvwfbuvfxxsjiywhbbb",
   "$predicate": "status = 'active' AND deleted_at IS NULL",
   "products": [
@@ -17,7 +17,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "6c5921f3-fee4-48da-bf53-100410829212",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/h6-600x600.webp"
     },
     {
       "id": "db5adb71-394d-4b1d-b209-dd8260bc846f",
@@ -30,7 +31,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/foot-massage-2133279_1280-600x600.webp"
     },
     {
       "id": "7a417ef4-4536-4f03-bdab-b971939c571b",
@@ -43,7 +45,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "c27d58ef-6230-4fb2-ab78-6463d97ee5b3",
-      "category_slug": "phones-computers"
+      "category_slug": "phones-computers",
+      "first_image": "/images/products/1635336888j88OE.webp"
     },
     {
       "id": "3b2c1366-6d14-4f7c-b749-7142949400f4",
@@ -56,7 +59,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "c27d58ef-6230-4fb2-ab78-6463d97ee5b3",
-      "category_slug": "phones-computers"
+      "category_slug": "phones-computers",
+      "first_image": "/images/products/maxresdefault-1-600x600.webp"
     },
     {
       "id": "0b458957-a7f8-4538-9bb7-7fa383d367e0",
@@ -69,7 +73,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "a5d8cffc-2928-4a4b-a5ba-100f1bbc59ce",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/bq-plate-3-600x600.webp"
     },
     {
       "id": "ca3a8e54-b43f-425a-a20e-cf7a0710ee60",
@@ -82,7 +87,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "a5d8cffc-2928-4a4b-a5ba-100f1bbc59ce",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/rm5-600x600.webp"
     },
     {
       "id": "c261f011-36e2-4aa4-8fec-61a219a7cd2f",
@@ -95,7 +101,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/steak-1-600x512.webp"
     },
     {
       "id": "dee5444f-ade0-4ff1-b69c-c7193c4176fd",
@@ -108,7 +115,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/greg_i-600x383.avif"
     },
     {
       "id": "1e63c322-4ed5-4386-84cb-f5875499b694",
@@ -121,7 +129,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/b7.avif"
     },
     {
       "id": "413efed9-66b7-4aa6-b6c7-2835d918be04",
@@ -134,7 +143,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/WhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp"
     },
     {
       "id": "5f00253f-6870-498a-bc74-37678e855176",
@@ -147,7 +157,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/137_dl_photo_ffd5b-600x464.webp"
     },
     {
       "id": "370cff65-abab-4826-8758-7ee2a5f40669",
@@ -160,7 +171,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/ice3-600x600.webp"
     },
     {
       "id": "aa8b918d-2005-4aba-81d4-ae04e6158bd0",
@@ -173,7 +185,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/maldives-2-600x488.webp"
     },
     {
       "id": "b23a8796-5a27-42be-9592-e5cf5c125d25",
@@ -186,7 +199,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/cocktails-shaker-arrangement-night-club_23-2149093603-600x600.webp"
     },
     {
       "id": "8d395182-96b7-482d-9973-10be134977fb",
@@ -199,7 +213,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "6c5921f3-fee4-48da-bf53-100410829212",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/maldive4-600x408.webp"
     },
     {
       "id": "d613dc56-2a8a-4885-8e54-c4baf6849c8b",
@@ -212,7 +227,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "6c5921f3-fee4-48da-bf53-100410829212",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/WhatsApp-Image-2023-05-29-at-21.59.02-1-600x600.webp"
     },
     {
       "id": "d719b646-b528-4eea-87b6-fbc9fdc69fbc",
@@ -225,7 +241,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "baby-kids"
+      "category_slug": "baby-kids",
+      "first_image": "/images/products/European-baby-d4-600x600.webp"
     },
     {
       "id": "85bff155-de4c-490c-9e7d-fc5510e8f7a5",
@@ -238,7 +255,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "baby-kids"
+      "category_slug": "baby-kids",
+      "first_image": "/images/products/European-baby-d4-600x600.webp"
     },
     {
       "id": "581e5605-7542-493b-abda-ef9e67ff0028",
@@ -251,7 +269,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "6c5921f3-fee4-48da-bf53-100410829212",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/t5-600x600.webp"
     },
     {
       "id": "5214c96c-ed3e-4499-8205-dedeffa4f644",
@@ -264,7 +283,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "6c5921f3-fee4-48da-bf53-100410829212",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/maldives1-600x440.webp"
     },
     {
       "id": "fb84d073-d454-424a-9b53-93aa1f2a4464",
@@ -277,7 +297,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/herbs-906140_1280-600x600.webp"
     },
     {
       "id": "ec291362-8480-43db-84ce-bd45ea561afc",
@@ -290,7 +311,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/jdcc6dceleytpvvsgale-600x600.webp"
     },
     {
       "id": "adc894ba-083b-41e0-85b9-68abd04adc41",
@@ -303,7 +325,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/facial-small-600x600.webp"
     },
     {
       "id": "57092d6e-6295-45f5-a3a3-35613325aec4",
@@ -316,7 +339,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/facial-small-600x600.webp"
     },
     {
       "id": "e299dd1a-ad3f-4585-adee-eb6e33c0f733",
@@ -329,7 +353,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "ce85543d-e102-4ff1-b6dc-06799ca9d5a0",
-      "category_slug": "baby-kids"
+      "category_slug": "baby-kids",
+      "first_image": "/images/products/e-baby-d2.webp"
     },
     {
       "id": "50f60a63-3caf-4cc3-83d9-f5dd21768999",
@@ -342,7 +367,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/towel-2608095_1920-600x600.webp"
     },
     {
       "id": "f43d32ab-8822-4775-8b36-09b7750b6115",
@@ -355,7 +381,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/towel-2608095_1920-600x600.webp"
     },
     {
       "id": "8198e729-3513-435e-8d51-b0d94f0cc32a",
@@ -368,7 +395,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": null
     },
     {
       "id": "ab841597-0e49-40a0-ac85-c5b7845947ad",
@@ -381,7 +409,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/unnamed-1.avif"
     },
     {
       "id": "eaedbe7c-41de-4cb5-a678-442a48650ebb",
@@ -394,7 +423,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/h8.avif"
     },
     {
       "id": "d3f961f4-d95c-4cae-bc8f-2a32618dff18",
@@ -407,7 +437,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "a5d8cffc-2928-4a4b-a5ba-100f1bbc59ce",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/rm5-600x600.webp"
     },
     {
       "id": "3dec68f5-59d7-4838-8591-5032ebbbef5e",
@@ -420,7 +451,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "c27d58ef-6230-4fb2-ab78-6463d97ee5b3",
-      "category_slug": "phones-computers"
+      "category_slug": "phones-computers",
+      "first_image": "/images/products/galaxy-s22_highlights_kv_img-600x600.webp"
     },
     {
       "id": "afe56c5f-4012-4b02-b696-4f7f7733bd33",
@@ -433,7 +465,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "professionals"
+      "category_slug": "professionals",
+      "first_image": "/images/products/Outsourcing-Success_-Transforming-Property-Management-with-Virtual-Assistants.avif"
     },
     {
       "id": "97a3edc0-6161-4e6c-99f0-a3ab58d13fc2",
@@ -446,7 +479,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "ce85543d-e102-4ff1-b6dc-06799ca9d5a0",
-      "category_slug": "baby-kids"
+      "category_slug": "baby-kids",
+      "first_image": "/images/products/b2-600x600.webp"
     },
     {
       "id": "92151d5b-de5f-419b-9edd-022f222e2fc1",
@@ -459,7 +493,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/massage-therapy-1612308_1280-600x600.webp"
     },
     {
       "id": "6dc25c0a-e468-43d3-8b97-32a82b48f670",
@@ -472,7 +507,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/massage-therapy-1612308_1280-600x600.webp"
     },
     {
       "id": "933e28bb-5476-4250-8072-6dca2751102e",
@@ -485,7 +521,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/massage-2768833_1280-600x600.webp"
     },
     {
       "id": "50957e5b-75fc-4b79-a78b-ec1854f351f7",
@@ -498,7 +535,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "restaurants-cafes"
+      "category_slug": "restaurants-cafes",
+      "first_image": "/images/products/ice4-600x600.webp"
     },
     {
       "id": "80c2df5b-6a93-4eaf-8872-a7e257693fea",
@@ -511,7 +549,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "c27d58ef-6230-4fb2-ab78-6463d97ee5b3",
-      "category_slug": "phones-computers"
+      "category_slug": "phones-computers",
+      "first_image": "/images/products/sony3-600x600.webp"
     },
     {
       "id": "74ac31dd-559b-4537-81a4-4023cb049153",
@@ -524,7 +563,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "6c5921f3-fee4-48da-bf53-100410829212",
-      "category_slug": "vacation"
+      "category_slug": "vacation",
+      "first_image": "/images/products/WhatsApp-Image-2023-05-29-at-21.59.02-1-600x600.webp"
     },
     {
       "id": "9032de64-3efe-4fda-9ebf-4aab556af2a6",
@@ -537,7 +577,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "bef951ff-93bd-4064-985a-3ed6829d12d6",
-      "category_slug": "beauty-health"
+      "category_slug": "beauty-health",
+      "first_image": "/images/products/137_dl_photo_ffd5b-600x464.webp"
     },
     {
       "id": "052bdbc1-c2f7-4772-bd9f-9ffb478e6330",
@@ -550,7 +591,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "a5d8cffc-2928-4a4b-a5ba-100f1bbc59ce",
-      "category_slug": "professionals"
+      "category_slug": "professionals",
+      "first_image": "/images/products/pexels-pixabay-267399-600x402.webp"
     },
     {
       "id": "47b075be-fe9d-4958-8f8d-b3822c13fed7",
@@ -563,7 +605,8 @@
       "stock_quantity": 10,
       "platform_percent": "30.00",
       "supplier_id": "ce85543d-e102-4ff1-b6dc-06799ca9d5a0",
-      "category_slug": "hot-deals"
+      "category_slug": "hot-deals",
+      "first_image": "/images/products/S5cf8b9b35a5b49b0bf525d6cb7b89181H-600x600.webp"
     },
     {
       "id": "27788364-07c0-41b1-a217-fc778cc6e361",
@@ -576,7 +619,8 @@
       "stock_quantity": null,
       "platform_percent": "30.00",
       "supplier_id": "6d81fb1c-f7d5-498c-8df2-40f791e2ca77",
-      "category_slug": "hot-deals"
+      "category_slug": "hot-deals",
+      "first_image": "/images/products/Free-Photo-_-Client-doing-hair-cut-at-a-barber-shop-salon-600x417.webp"
     }
   ]
 }

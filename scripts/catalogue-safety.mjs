@@ -30,7 +30,14 @@ const QUERY = `select json_agg(row_to_json(t) order by t.name_he) as rows from (
   select p.id, p.name_he, p.slug, p.type, p.kenyon_price::text as kenyon_price,
          p.full_price::text as full_price, p.coupon_price_ils::text as coupon_price_ils,
          p.stock_quantity, p.platform_percent::text as platform_percent,
-         p.supplier_id, c.slug as category_slug
+         p.supplier_id, c.slug as category_slug,
+         -- The FIRST image is the one every card and the product hero render, so
+         -- it is the one whose absence a customer sees. Added 2026-09-10, when 13
+         -- of the 36 distinct paths turned out to 404 in production.
+         case
+           when jsonb_typeof(p.images) = 'array' and jsonb_array_length(p.images) > 0
+             then p.images->>0
+         end as first_image
     from public.products p
     left join public.categories c on c.id = p.category_id
    where p.status = 'active' and p.deleted_at is null

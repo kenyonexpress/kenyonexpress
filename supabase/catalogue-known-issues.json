@@ -3,7 +3,7 @@
   "$why": "Demanding zero would have made the gate red on the day it was written, and a gate that is red on arrival gets deleted rather than fixed. These 25 are real and they are not this agent's to fix: which of two duplicate rows is the real one, and whether a massage costs 9 or 108, are the operator's calls and nobody else's.",
   "$rules": "src/lib/catalogue/safety-rules.ts. The gate: src/lib/catalogue/catalogue-safety.test.ts.",
   "$how_to_shrink_this": "Fix the row in the admin, re-measure with `node scripts/catalogue-safety.mjs --sql` through MCP, then delete the entry. The test fails if an entry no longer fires, so the list cannot quietly keep names of things that were already fixed.",
-  "$measured_at": "2026-09-09",
+  "$measured_at": "2026-09-10",
   "known": {
     "duplicate-name:50f60a63-3caf-4cc3-83d9-f5dd21768999": {
       "product": "מבחר עיסויים לבחירה",
@@ -104,6 +104,10 @@
     "unsafe-slug:6dc25c0a-e468-43d3-8b97-32a82b48f670": {
       "product": "עיסוי מאסטר",
       "detail": "slug carries \"₪\": עיסוי-משולב-מפנק-לגבר-רק-108₪"
+    },
+    "no-image:8198e729-3513-435e-8d51-b0d94f0cc32a": {
+      "product": "מזקקת וויסקי - סיור מופלא במזקקת ויסקי מובילה",
+      "detail": "The only active product with an empty images array, measured 2026-09-10. It renders the placeholder rather than a broken image, which is why nobody saw it: a card with no picture reads as a design choice. It is the one image gap refs/live-assets/ cannot close - there is no reference to look up, so choosing a photograph is the operator's decision and not a recovery. The other thirteen gaps found the same day WERE recovered and are now in public/images/products/."
     }
   }
 }
