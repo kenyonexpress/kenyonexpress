@@ -24,6 +24,8 @@
     { "path": "/api/cron/retention", "schedule": "0 5 1 * *" },
     { "path": "/api/cron/weekly-digest", "schedule": "0 4 * * 5" },
     { "path": "/api/cron/expire-coupons", "schedule": "15 23 * * *" },
-    { "path": "/api/cron/backup", "schedule": "20 2 * * *" }
+    { "path": "/api/cron/backup", "schedule": "20 2 * * *" },
+    { "path": "/api/cron/wishlist-alerts", "schedule": "45 4 * * *" },
+    { "path": "/api/cron/wishlist-digest", "schedule": "0 5 * * 5" }
   ]
 }

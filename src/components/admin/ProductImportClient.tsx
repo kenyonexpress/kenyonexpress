@@ -52,7 +52,6 @@ function downloadCsv(fileName: string, content: string) {
   URL.revokeObjectURL(url)
 }
 
-const REQUIRED_KEYS = new Set(IMPORT_COLUMNS.filter((c) => c.required).map((c) => c.key))
 const COLUMN_LABEL = new Map(IMPORT_COLUMNS.map((c) => [c.key, c.label]))
 
 export default function ProductImportClient() {

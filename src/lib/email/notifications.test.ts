@@ -460,3 +460,77 @@ describe('buildOrderShippedEmail', () => {
     }
   })
 })
+
+describe('the price-drop mail', () => {
+  const payload = {
+    product_name: 'שעון חכם',
+    slug: 'smart-watch',
+    old_agorot: 40000,
+    new_agorot: 29900,
+    unsubscribe_url: 'https://kenyonexpress.co.il/wishlist-alerts/unsubscribe?token=abc',
+  }
+
+  it('states both prices in shekels and links the product page', () => {
+    const mail = buildNotification('price_drop', payload, SITE)
+    expect(mail?.subject).toContain('שעון חכם')
+    expect(mail?.html).toContain('400.00')
+    expect(mail?.html).toContain('299.00')
+    expect(mail?.html).toContain(`${SITE}/product/smart-watch`)
+  })
+
+  it('carries the signed unsubscribe link when the cron provided one', () => {
+    const mail = buildNotification('price_drop', payload, SITE)
+    expect(mail?.html).toContain('/wishlist-alerts/unsubscribe?token=abc')
+    expect(mail?.text).toContain('/wishlist-alerts/unsubscribe?token=abc')
+  })
+
+  it('omits the unsubscribe footer rather than rendering a dead link', () => {
+    const { unsubscribe_url: _dropped, ...bare } = payload
+    const mail = buildNotification('price_drop', bare, SITE)
+    expect(mail?.html).not.toContain('unsubscribe')
+  })
+
+  it('renders nothing for a price that did not actually drop', () => {
+    expect(
+      buildNotification('price_drop', { ...payload, old_agorot: 29900, new_agorot: 29900 }, SITE),
+    ).toBeNull()
+    expect(
+      buildNotification('price_drop', { ...payload, old_agorot: 100, new_agorot: 200 }, SITE),
+    ).toBeNull()
+  })
+})
+
+describe('the back-in-stock mail', () => {
+  const payload = {
+    product_name: 'אוזניות',
+    slug: 'headphones',
+    price_agorot: 12900,
+    unsubscribe_url: 'https://kenyonexpress.co.il/wishlist-alerts/unsubscribe?token=xyz',
+  }
+
+  it('names the product, its current price and the product page', () => {
+    const mail = buildNotification('back_in_stock', payload, SITE)
+    expect(mail?.subject).toContain('אוזניות')
+    expect(mail?.html).toContain('129.00')
+    expect(mail?.html).toContain(`${SITE}/product/headphones`)
+  })
+
+  it('survives a guest waitlist payload with no price and no unsubscribe', () => {
+    const mail = buildNotification('back_in_stock', { product_name: 'אוזניות' }, SITE)
+    expect(mail).not.toBeNull()
+    expect(mail?.html).not.toContain('unsubscribe')
+  })
+
+  it('renders nothing without a product to name', () => {
+    expect(buildNotification('back_in_stock', {}, SITE)).toBeNull()
+  })
+
+  it('escapes a product name coming out of the database', () => {
+    const mail = buildNotification(
+      'back_in_stock',
+      { product_name: '<img src=x onerror=alert(1)>' },
+      SITE,
+    )
+    expect(mail?.html).not.toContain('<img')
+  })
+})

@@ -1,4 +1,5 @@
 import AccountNav from '@/components/account/AccountNav'
+import NotificationBell from '@/components/account/NotificationBell'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
@@ -62,11 +63,16 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
         <main className="flex-1 w-full">
           <div className="account-page">
             <div className="account-page__inner">
-              <nav className="account-page__crumb" aria-label="פירורי לחם">
-                <Link href="/">עמוד הבית</Link>
-                <span aria-hidden="true"> ‹ </span>
-                <span>האזור האישי</span>
-              </nav>
+              <div className="account-topline">
+                <nav className="account-page__crumb" aria-label="פירורי לחם">
+                  <Link href="/">עמוד הבית</Link>
+                  <span aria-hidden="true"> ‹ </span>
+                  <span>האזור האישי</span>
+                </nav>
+                {/* Client-only: renders nothing until the session is
+                    confirmed, so the static shell is unchanged. */}
+                <NotificationBell />
+              </div>
 
               <div className="account-shell">
                 {/* Holds the nav's box, not a spinner: the column is a fixed

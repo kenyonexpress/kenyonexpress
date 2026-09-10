@@ -1,5 +1,87 @@
 # `migrations/pending/`
 
+## 2026-09-10: 233 APPLIED (wishlist alerts)
+
+`233_wishlist_alerts.sql` is the state behind the wishlist alerts of 200:
+`wishlist_alert_prefs` (per-user toggles; absent row = drops on, restocks
+on, weekly digest OFF, because the digest is marketing and must be an
+explicit yes) and `wishlist_stock_state` (the last in-stock flag the cron
+saw per product, because a restock is a transition and nothing else records
+one). Owner-only policies on the prefs, the 195 RESTRICTIVE deny-all shape
+on the state table, and the 226 lesson kept: `set_updated_at` is created
+only if missing, never restated. The producer is
+`/api/cron/wishlist-alerts` (drops, restocks, waitlist drain, and the daily
+`price_history` snapshot 193 promised), plus `/api/cron/wishlist-digest`
+(Friday summary to opted-in users); the signed unsubscribe link writes here
+with the service role (`src/server/wishlist/unsubscribe.ts`).
+
+Applied as `wishlist_alerts_233` (version 20260910025004) under the
+2026-09-10 wishlist-alerts /goal, which names Supabase MCP as the migration
+route (the 217 protocol). Full body dry-run first in a rolled-back
+transaction with functional probes: defaults landed true/true/false, the
+unsubscribe upsert cleared exactly the named flags, `authenticated` without
+a uid saw zero rows and could not write the state table (42501), 3+1
+policies, grants as declared. Identical body then went through
+`apply_migration`; post-apply measurement in one SELECT matched on every
+point, 0 rows in both tables. Filed here as the record like
+217/223/224/226/227/228/231/232.
+
+## 2026-09-10: 232 APPLIED (reviews: admin moderation only)
+
+`232_reviews_admin_moderation_only.sql` closes the review model to what the
+business actually does: a verified buyer writes a review, the admin reads it
+in moderation, and no review is ever displayed or supplier-edited. It drops
+`reviews_supplier_reply` (199's UPDATE policy; the reply UI was never built,
+so the policy guarded a write nothing performs) and
+`reviews_public_read_approved` (154's world-read of approved rows), revokes
+199's per-column UPDATE grant on the three `supplier_reply` columns -- a
+grant invisible to `role_table_grants`, which is how "authenticated has no
+UPDATE" read as true while it sat there -- and revokes anon SELECT entirely.
+What remains is owner-plus-admin: 154's three owner policies untouched, and
+moderation on the service role. Applied as
+`reviews_admin_moderation_only_232` under the 2026-09-10 reviews /goal,
+which names Supabase MCP as the migration route (the 217 protocol).
+
+Proven live first, both directions: before apply, `SET LOCAL ROLE anon`
+could SELECT the table and `SET LOCAL ROLE authenticated` could UPDATE
+`supplier_reply` (both in rolled-back transactions); after apply, both
+answer 42501, while the authenticated owner-scoped SELECT still passes. The
+same commit removes the code half -- the product page's approved list and
+its JSON-LD aggregateRating -- and
+`reviews-moderation-migration-guards.test.ts` pins the file's shape.
+
+## 2026-09-10: 231 APPLIED (bell fanout)
+
+`231_bell_fanout.sql` is the writer behind the in-app bell: an AFTER INSERT
+trigger on `notification_outbox` (`outbox_bell_fanout` ->
+`tg_outbox_bell()`) that composes the customer's Hebrew -- title, body,
+account-relative href -- into 198's `public.notifications`, in the same
+transaction as the event. One choke point instead of a dozen call sites:
+every notification the platform owes a customer already passes through that
+one INSERT, `fn_enqueue_notification` already stamps `user_id` on it, and
+the outbox's dedupe (`ON CONFLICT DO NOTHING`) means a replayed enqueue can
+never ring twice. Operator kinds (`supplier_sale`, `invoice_dead`,
+`low_stock`, `reconciliation_gap`) and `account_deleted` fall through the
+ELSE: a kind without Hebrew here gets no bell row, the same gate push
+templates state. `fn_bell_agorot` formats agorot for display with integer
+arithmetic only. Applied as `bell_fanout_231` under the 2026-09-10
+notifications /goal, which names Supabase MCP as the migration route.
+Numbered 231 because 229/230 are taken by pending files on other branches.
+
+Proven first in a rolled-back DO block over production: five kinds
+exercised through the real `fn_enqueue_notification`, correct Hebrew and
+hrefs back, operator kind produced no row, and the probe caught a real bug
+before apply (`array_to_string` over an empty array returns `''` and not
+NULL, so the Hebrew fallback never fired; fixed with `nullif`, pinned in
+`bell-fanout-migration-guards.test.ts`). After apply, the realtime path was
+proven live end to end by `scripts/verify-bell-realtime.mjs`: a probe user
+signed in with the anon key, subscribed to `postgres_changes` filtered on
+its uid, received the INSERT the trigger produced, marked it read through
+the authenticated client (198's `UPDATE (read_at)` column grant held), and
+received its own UPDATE event back with old and new values (REPLICA
+IDENTITY FULL doing its job). All probe artifacts (auth user, profile,
+outbox row, bell row) were removed; residue measured 0.
+
 ## 2026-09-10: 228 APPLIED (invoice sequences)
 
 `228_invoice_sequences.sql` gives the platform its own sequential document

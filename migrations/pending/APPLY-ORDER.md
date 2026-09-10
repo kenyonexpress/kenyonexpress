@@ -1,5 +1,24 @@
 # Apply order
 
+## 2026-09-10 (wishlist alerts goal): 233 APPLIED
+
+**233** wishlist_alerts (`wishlist_alerts_233`, version 20260910025004):
+additive only, two new tables. `wishlist_alert_prefs` (owner-managed
+toggles, RLS owner-only on all three verbs, no DELETE policy or grant) and
+`wishlist_stock_state` (server-only, the 195 RESTRICTIVE deny-all shape).
+Full body dry-run first in a rolled-back transaction with functional
+probes: column defaults true/true/false, the unsubscribe-shaped upsert
+cleared exactly the named flags and left the rest, `SET LOCAL ROLE
+authenticated` saw zero prefs rows and got 42501 writing the state table,
+3+1 policies, grants as declared. The identical body then went through
+`apply_migration`; post-apply measurement in one SELECT: both tables,
+RLS on both, 3+1 policies, `auth_prefs_select=true`,
+`auth_prefs_delete=false`, `anon_prefs_select=false`,
+`auth_state_select=false`, one trigger each, 0 rows each. Does not restate
+`set_updated_at` (the 183 lesson): creates it only if missing, and the
+live body already exists. Applied under the 2026-09-10 wishlist-alerts
+/goal, which names Supabase MCP as the migration route (the 217 protocol).
+
 ## 2026-09-10 (fraud abuse goal): 226 APPLIED
 
 **226** fraud_controls (`fraud_controls_226`): additive only, two new

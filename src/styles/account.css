@@ -705,3 +705,117 @@
   font-weight: 400;
   color: var(--account-muted);
 }
+
+/* ---------------------------------------------------------------- the bell
+   NotificationBell.tsx. The topline row puts the breadcrumb on the
+   inline-start and the bell on the inline-end; below it nothing moves,
+   because the bell's panel is absolutely positioned against the button. */
+
+.account-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* The crumb's own 16px moves up to the row, so the shell below sits exactly
+   where it did before the bell existed. */
+.account-topline .account-page__crumb {
+  margin-bottom: 0;
+}
+
+.account-bell {
+  position: relative;
+}
+
+.account-bell__button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--account-line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--account-ink);
+  cursor: pointer;
+}
+
+.account-bell__button:hover {
+  border-color: var(--account-muted);
+}
+
+.account-bell__badge {
+  position: absolute;
+  top: -4px;
+  inset-inline-end: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 4px;
+  border-radius: 9px;
+  background: var(--account-red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.account-bell__panel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 8px);
+  width: min(340px, calc(100vw - 30px));
+  background: #fff;
+  border: 1px solid var(--account-line);
+  border-radius: 10px;
+  z-index: 30;
+  overflow: hidden;
+}
+
+.account-bell__empty {
+  margin: 0;
+  padding: 18px 16px;
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.account-bell__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.account-bell__list li + li {
+  border-top: 1px solid var(--account-line);
+}
+
+.account-bell__item {
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: var(--account-ink);
+}
+
+.account-bell__item:hover {
+  background: #fafafa;
+}
+
+.account-bell__title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.account-bell__body {
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.account-bell__time {
+  font-size: 12px;
+  color: var(--account-muted);
+}

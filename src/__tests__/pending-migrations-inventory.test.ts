@@ -308,6 +308,32 @@ describe('the pending migration inventory', () => {
     // fn_next_invoice_number, invoices.series/internal_number), proven first
     // in a rolled-back DO block (1,2,3 on one series, 1 on another, ACL
     // service_role only) and filed here as the record like 217/223/224/226/227.
+    // 231 IS applied (2026-09-10, `bell_fanout_231`): the in-app bell's
+    // writer, an AFTER INSERT trigger on notification_outbox composing the
+    // customer's Hebrew into 198's notifications table. Proven first in a
+    // rolled-back DO block over production (five kinds exercised; the probe
+    // caught array_to_string's ''-not-NULL trap before apply), then the
+    // realtime delivery proven live end to end by
+    // scripts/verify-bell-realtime.mjs (INSERT + UPDATE both received, probe
+    // artifacts removed). Numbered 231 because 229/230 are taken by pending
+    // files on other branches, the same reason 226 skipped 225. Filed here
+    // as the record like 217/223/224/226/227/228.
+    // 232 IS applied (2026-09-10, `reviews_admin_moderation_only_232`):
+    // reviews closed to owner-plus-admin -- 199's supplier-reply column
+    // UPDATE grant and policy gone, 154's public read of approved rows gone,
+    // anon SELECT revoked. Both holes proven live in rolled-back
+    // transactions before apply (anon could SELECT, authenticated could
+    // UPDATE supplier_reply), both 42501 after, owner-scoped SELECT still
+    // passing. Numbered 232 because 229/230 are taken by pending files on
+    // other branches. Shape pinned in
+    // reviews-moderation-migration-guards.test.ts; filed here as the record
+    // like 217/223/224/226/227/228/231.
+    // 233 IS applied (2026-09-10, `wishlist_alerts_233`, version
+    // 20260910025004): the wishlist alert prefs and the last-seen stock
+    // flags behind /api/cron/wishlist-alerts. Proven first in a rolled-back
+    // transaction with functional probes (defaults, the unsubscribe upsert,
+    // authenticated locked out of the state table) and filed here as the
+    // record like 217/223/224/226/227/228/231/232.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '184_orders_monthly_partitioning.sql',
@@ -318,6 +344,9 @@ describe('the pending migration inventory', () => {
       '226_fraud_controls.sql',
       '227_discount_claim_wiring.sql',
       '228_invoice_sequences.sql',
+      '231_bell_fanout.sql',
+      '232_reviews_admin_moderation_only.sql',
+      '233_wishlist_alerts.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

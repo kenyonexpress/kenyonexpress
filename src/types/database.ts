@@ -1489,6 +1489,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body_he: string | null
+          created_at: string
+          href: string | null
+          id: string
+          kind: string
+          read_at: string | null
+          title_he: string
+          user_id: string
+        }
+        Insert: {
+          body_he?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          kind: string
+          read_at?: string | null
+          title_he: string
+          user_id: string
+        }
+        Update: {
+          body_he?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          kind?: string
+          read_at?: string | null
+          title_he?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           balance_due_agorot: number | null

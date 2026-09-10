@@ -16,7 +16,6 @@ import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-d
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
-import { getProductReviews } from '@/server/queries/reviews'
 import '@/styles/product-page.css'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -159,9 +158,9 @@ export default async function ProductPage({ params }: Props) {
   // disagreed with. `couponOffer` is the object the commission engine bills
   // from, so the advertised price and the charged price cannot diverge.
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-  // Anon-readable by policy, so this read keeps the page cacheable; the
-  // rating in the JSON-LD and the visible list below come from the same rows.
-  const { summary: reviewSummary } = await getProductReviews(product.id, 0)
+  // No aggregateRating on purpose: review content is not public (232 revoked
+  // the anon read), and a rating claim search engines can see while the page
+  // shows no reviews is exactly the mismatch they penalise.
   const productLd = buildProductJsonLd({
     name: product.name_he,
     description: product.description_he ?? null,
@@ -175,7 +174,6 @@ export default async function ProductPage({ params }: Props) {
     fullPriceIls: isCoupon ? null : oldPrice,
     couponOffer,
     stockQuantity: product.stock_quantity ?? null,
-    rating: reviewSummary,
   })
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
@@ -331,8 +329,9 @@ export default async function ProductPage({ params }: Props) {
           />
         </div>
 
-        {/* Verified reviews: the approved list is cache-friendly; the
-            per-session "can I review" gate inside streams via Suspense, the
+        {/* Review submission only -- no review is displayed to visitors (the
+            business model routes them to admin moderation instead). The
+            per-session "can I review" gate streams via Suspense, the
             StockScarcity pattern. */}
         <Suspense fallback={null}>
           <Reviews productId={product.id} />

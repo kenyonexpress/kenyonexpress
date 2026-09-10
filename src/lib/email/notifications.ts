@@ -82,6 +82,10 @@ export type NotificationKind =
    * console and the till app alike.
    */
   | 'order_shipped'
+  /** A saved product got cheaper. Enqueued by /api/cron/wishlist-alerts (200). */
+  | 'price_drop'
+  /** A saved or waited-on product is back on the shelf. Same cron, same 200. */
+  | 'back_in_stock'
 
 function escapeHtml(value: string): string {
   return value
@@ -918,6 +922,112 @@ export function buildWelcomeEmail(
   return { subject, html, text }
 }
 
+/**
+ * The unsubscribe footer both wishlist alerts share. The cron signs the URL
+ * per recipient (`lib/wishlist/unsubscribe-token.ts`) and freezes it into the
+ * payload; a payload without one (a guest waitlist row, or a run before the
+ * secret existed) simply carries no link rather than a dead one.
+ */
+function unsubscribeFooterHtml(payload: Record<string, unknown>): string {
+  const url = asText(payload.unsubscribe_url)
+  if (!url) return ''
+  return `<div style="font-size:12px;color:${MUTED};margin-top:14px;text-align:center"><a href="${escapeHtml(url)}" style="color:${MUTED}">להפסקת התראות על רשימת המשאלות</a></div>`
+}
+
+function unsubscribeFooterText(payload: Record<string, unknown>): string[] {
+  const url = asText(payload.unsubscribe_url)
+  if (!url) return []
+  return ['', `להפסקת ההתראות: ${ltrText(url)}`]
+}
+
+/**
+ * A saved product got cheaper. Both amounts arrive in agorot, frozen by the
+ * cron at the moment it compared them, so the mail states the drop that was
+ * detected even if the price moves again before the queue drains.
+ */
+export function buildPriceDropEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const site = trimSite(siteUrl)
+  const name = asText(payload.product_name)
+  const newAgorot = asNumber(payload.new_agorot)
+  const oldAgorot = asNumber(payload.old_agorot)
+  // A drop that cannot be stated is not worth a mail: without the product and
+  // both prices this renders nothing rather than a vague "something is cheaper".
+  if (!name || newAgorot <= 0 || oldAgorot <= newAgorot) return null
+
+  const slug = asText(payload.slug)
+  const url = slug ? `${site}/product/${slug}` : `${site}/account/wishlist`
+  const subject = `ירידת מחיר: ${name}`
+  const line = `${name} מרשימת המשאלות שלך ירד מ-${formatAgorot(oldAgorot)} ל-${formatAgorot(newAgorot)}.`
+
+  const text = [
+    'שלום,',
+    '',
+    line,
+    '',
+    `למוצר: ${ltrText(url)}`,
+    ...unsubscribeFooterText(payload),
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(name)} מרשימת המשאלות שלך ירד במחיר:</div>
+        <div style="font-size:16px;margin-top:8px"><span style="color:${MUTED};text-decoration:line-through">${escapeHtml(formatAgorot(oldAgorot))}</span> <span style="font-weight:800;color:${INK}">${escapeHtml(formatAgorot(newAgorot))}</span></div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
+      </div>${unsubscribeFooterHtml(payload)}`,
+    'קיבלת את המייל הזה כי שמרת את המוצר ברשימת המשאלות שלך ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * A product came back. Sent to wishlist owners and to `stock_waitlist` rows
+ * alike; the payload is the same shape, a waitlist guest just carries no
+ * unsubscribe URL because a one-shot mail they explicitly asked for has
+ * nothing to unsubscribe from.
+ */
+export function buildBackInStockEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const site = trimSite(siteUrl)
+  const name = asText(payload.product_name)
+  if (!name) return null
+
+  const slug = asText(payload.slug)
+  const url = slug ? `${site}/product/${slug}` : `${site}/account/wishlist`
+  const subject = `חזר למלאי: ${name}`
+  const priceAgorot = asNumber(payload.price_agorot)
+
+  const text = [
+    'שלום,',
+    '',
+    `${name} חזר למלאי.`,
+    ...(priceAgorot > 0 ? [`המחיר עכשיו: ${formatAgorot(priceAgorot)}.`] : []),
+    'כמות המלאי מוגבלת, וההזמנה מתבצעת באתר.',
+    '',
+    `למוצר: ${ltrText(url)}`,
+    ...unsubscribeFooterText(payload),
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(name)} חזר למלאי.</div>
+        ${priceAgorot > 0 ? `<div style="font-size:15px;color:${INK};margin-top:6px">המחיר עכשיו: <span style="font-weight:800">${escapeHtml(formatAgorot(priceAgorot))}</span></div>` : ''}
+        <div style="font-size:13px;color:${MUTED};margin-top:10px">כמות המלאי מוגבלת.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
+      </div>${unsubscribeFooterHtml(payload)}`,
+    'קיבלת את המייל הזה כי ביקשת עדכון כשהמוצר חוזר למלאי ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -951,6 +1061,10 @@ export function buildNotification(
       return buildRefundCompletedEmail(payload, siteUrl)
     case 'welcome':
       return buildWelcomeEmail(payload, siteUrl)
+    case 'price_drop':
+      return buildPriceDropEmail(payload, siteUrl)
+    case 'back_in_stock':
+      return buildBackInStockEmail(payload, siteUrl)
     default:
       return null
   }

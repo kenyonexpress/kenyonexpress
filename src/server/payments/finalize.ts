@@ -670,7 +670,6 @@ export async function finalizeOrder(input: {
     // seen by a browser that DID survive is still counted once.
     await reportPurchase(admin, order.id, order.user_id, items as OrderItemRow[])
 
-    const savedTokenId: string | null = null
     if (input.token) {
       // A shopper who buys again with "save my card" ticked re-tokenizes the
       // same card, and a plain insert accumulated one picker row per purchase,
