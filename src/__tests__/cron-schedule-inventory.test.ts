@@ -55,6 +55,7 @@ describe('the scheduled job inventory', () => {
       'stock',
       'stranded-payments',
       'webhook-dlq',
+      'job-dlq',
       'abandoned-cart',
       'subscriptions',
       'reap-carts',

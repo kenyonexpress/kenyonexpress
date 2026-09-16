@@ -41,6 +41,8 @@ const CRON_ROOT = 'src/app/api/cron'
 const ALSO_MACHINE_DRIVEN = [
   'src/app/api/search/index-job/route.ts',
   'src/app/api/search/index-dlq/route.ts',
+  'src/app/api/jobs/run/route.ts',
+  'src/app/api/jobs/dlq/route.ts',
 ]
 
 /**
@@ -140,6 +142,7 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/expire-vouchers/route.ts',
       'src/app/api/cron/health/route.ts',
       'src/app/api/cron/invoices/route.ts',
+      'src/app/api/cron/job-dlq/route.ts',
       'src/app/api/cron/notifications/route.ts',
       'src/app/api/cron/reap-carts/route.ts',
       'src/app/api/cron/reconcile/route.ts',

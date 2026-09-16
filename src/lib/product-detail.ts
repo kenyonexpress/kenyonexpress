@@ -6,13 +6,13 @@ import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
 import { buildRecurringOffer } from '@/lib/commerce/recurring'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createPublicClient } from '@/lib/supabase/anon'
 import {
   COUPON_054_COLUMNS,
   type Coupon054Row,
   readOptionalColumns,
   readStickerPriceIls,
 } from '@/lib/supabase/optional-columns'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 
 /**
@@ -52,7 +52,7 @@ export async function loadProductBySlug(slug: string) {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
 
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
 
   const product = orFail(
     await supabase
@@ -89,7 +89,7 @@ export async function loadProductBySlug(slug: string) {
   // the coupon products the shop exists to sell.
   const isCoupon = resolveStorefrontProductType(product) === 'coupon'
   const probe = (select: string, ids: string[]) =>
-    createPublicClient().from('products').select(select).in('id', ids) as never
+    createCatalogueReadClient().from('products').select(select).in('id', ids) as never
 
   // Three independent reads, so they go together rather than in sequence. On
   // a cache miss this is the difference between one round trip and three.
@@ -174,7 +174,7 @@ export async function loadProductBySlug(slug: string) {
  * deployment that has not applied 235 is a state, not a fault.
  */
 async function loadRatingSummary(productId: string): Promise<RatingSummary | null> {
-  const { data, error } = (await createPublicClient().rpc(
+  const { data, error } = (await createCatalogueReadClient().rpc(
     'product_rating_summary' as never,
     { p_product_id: productId } as never,
   )) as { data: unknown; error: { code?: string; message?: string } | null }
@@ -237,7 +237,7 @@ async function loadGalleryAssets(
 ): Promise<Record<string, { alt: string | null; blurDataURL: string | null }>> {
   if (images.length === 0) return {}
   const data = orFail(
-    await createPublicClient()
+    await createCatalogueReadClient()
       .from('media_assets')
       .select('url, alt_he, blur_data_url')
       .in('url', images),
@@ -265,7 +265,7 @@ export async function listProductSlugsForPrerender(limit = 200): Promise<string[
   cacheTag(CATALOGUE_TAG)
 
   const data = orFail(
-    await createPublicClient()
+    await createCatalogueReadClient()
       .from('products')
       .select('slug')
       .eq('status', 'active')

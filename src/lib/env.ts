@@ -30,6 +30,14 @@ const schema = z
     SUPABASE_ANON_KEY: z.string().min(20).optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(40).optional(),
     SUPABASE_SECRET_KEY: z.string().min(20).optional(),
+    /**
+     * The read replica's REST endpoint (Supabase's load-balanced
+     * `https://<ref>-all.supabase.co`). OPTIONAL EVERYWHERE and unset in every
+     * environment this repo can see: `lib/supabase/read-replica.ts` routes the
+     * catalogue's cookie-free reads there when present and to the primary when
+     * not, so provisioning a replica is an env change and no deploy.
+     */
+    SUPABASE_READ_REPLICA_URL: z.string().url().optional().or(z.literal('')),
 
     CARDCOM_TERMINAL_NUMBER: z.string().optional(),
     CARDCOM_API_NAME: z.string().optional(),
@@ -53,6 +61,16 @@ const schema = z
     UPSTASH_REDIS_REST_TOKEN: z.string().min(10).optional().or(z.literal('')),
     /** Milliseconds. Defaults to 1000 in `lib/rate-limit/upstash.ts`. */
     UPSTASH_REDIS_REST_TIMEOUT_MS: z.string().optional(),
+
+    /**
+     * The Cloudflare async-offload Worker (infra/cloudflare/workers/async-offload).
+     * OPTIONAL EVERYWHERE and inert unless BOTH are set: `lib/workers/
+     * async-offload.ts` runs the caller's inline fallback otherwise. The
+     * secret is the Worker's TASK_SECRET; twenty characters is the floor the
+     * producer enforces before it will sign anything with it.
+     */
+    CF_ASYNC_WORKER_URL: z.string().url().optional().or(z.literal('')),
+    CF_ASYNC_WORKER_SECRET: z.string().min(20).optional().or(z.literal('')),
 
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),

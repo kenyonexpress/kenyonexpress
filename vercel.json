@@ -13,6 +13,7 @@
     { "path": "/api/cron/stock", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/stranded-payments", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/webhook-dlq", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/job-dlq", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/abandoned-cart", "schedule": "0 * * * *" },
     { "path": "/api/cron/subscriptions", "schedule": "30 2 * * *" },
     { "path": "/api/cron/reap-carts", "schedule": "40 3 * * *" },

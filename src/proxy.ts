@@ -1,6 +1,9 @@
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
+import { edgeClientAddress, edgeShieldPolicyFor } from '@/lib/rate-limit/edge-shield'
+import { graduatedRateLimit } from '@/lib/rate-limit/graduated'
+import { tooManyRequests } from '@/lib/rate-limit/headers'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
@@ -66,6 +69,31 @@ export async function proxy(request: NextRequest) {
   // headers and pass. The decision itself lives in lib/security/same-origin.
   if (isCrossSiteApiMutation(request)) {
     return withRequestId(NextResponse.json(CROSS_SITE_REJECTION, { status: 403 }), requestId)
+  }
+
+  // The graduated shield over /api/*, keyed on the client address, before the
+  // session refresh below so a refused request costs no Supabase round trip.
+  // Three windows per address and a cooldown that doubles per refusal
+  // (lib/rate-limit/graduated.ts); machine callers that prove themselves with
+  // a secret are routed around it (lib/rate-limit/edge-shield.ts). Upstash
+  // only: unconfigured or down, the decision is open and the per-route table
+  // underneath keeps holding.
+  const shieldPolicy = edgeShieldPolicyFor(pathname)
+  if (shieldPolicy) {
+    const address = edgeClientAddress(request.headers)
+    if (address) {
+      const decision = await graduatedRateLimit(shieldPolicy, address)
+      if (!decision.allowed) {
+        return withRequestId(
+          tooManyRequests(decision.tier, {
+            error: 'יותר מדי בקשות. נסו שוב בעוד כמה דקות.',
+            refused_by: decision.refusedBy,
+            retry_after_seconds: decision.retryAfterSeconds,
+          }),
+          requestId,
+        )
+      }
+    }
   }
 
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.

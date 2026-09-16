@@ -56,6 +56,16 @@ const SECRET_AUTHENTICATED: { path: string; guard: RegExp; reason: string }[] = 
     reason: 'QStash delivery, signed',
   },
   {
+    path: 'src/app/api/jobs/dlq/route.ts',
+    guard: /verifyQstashSignature\(/,
+    reason: 'QStash failure callback for the job queue, signed',
+  },
+  {
+    path: 'src/app/api/jobs/run/route.ts',
+    guard: /verifyQstashSignature\(|bearerMatches\(/,
+    reason: 'QStash delivery, signed; or CRON_SECRET as bearer for a manual replay',
+  },
+  {
     path: 'src/app/api/search/index-job/route.ts',
     guard: /verifyQstashSignature\(|bearerMatches\(/,
     reason: 'QStash delivery, signed; or CRON_SECRET as bearer for ops',

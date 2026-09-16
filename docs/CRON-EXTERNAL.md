@@ -105,6 +105,7 @@ file is in a repository.
 4  https://kenyonexpress.vercel.app/api/cron/stock               GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5  https://kenyonexpress.vercel.app/api/cron/stranded-payments   GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5b https://kenyonexpress.vercel.app/api/cron/webhook-dlq         GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5e https://kenyonexpress.vercel.app/api/cron/job-dlq             GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5c https://kenyonexpress.vercel.app/api/cron/search-outbox       GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5d https://kenyonexpress.vercel.app/api/cron/search-reindex      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 6  https://kenyonexpress.vercel.app/api/cron/abandoned-cart      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
@@ -153,6 +154,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 | 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
+| 12b | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/job-dlq` |
 | 13 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-outbox` |
 | 13b | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-reindex` |
 | 14 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-coupons` |
@@ -180,6 +182,10 @@ timing changes with the scheduler.
 - **`stranded-payments`** finds payments that were verified but whose order
   never finalised. That state is the worst one in the system and this is what
   notices it.
+- **`job-dlq`** replays the job queue's dead letters (`job_dlq`, migration 242):
+  every `dead` row is re-published through QStash (or run inline when QStash
+  is not configured) and stamped `replayed`; a job already replayed three
+  times is stamped `exhausted` and logged at error level for a person.
 - **`webhook-dlq`** replays the webhook dead-letter queue: events that were
   charged and verified against Cardcom and whose finalize failed. Same state
   `stranded-payments` cares about, caught from the other side: that one finds

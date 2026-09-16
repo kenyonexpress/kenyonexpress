@@ -1,4 +1,5 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { enqueueJob } from '@/lib/jobs'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import {
@@ -9,6 +10,7 @@ import {
 import { jerusalemDayKey, snapshotPrices } from '@/lib/pricing/price-snapshot'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { offloadTask } from '@/lib/workers/async-offload'
 import { revalidateTag } from 'next/cache'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -52,6 +54,24 @@ import { type NextRequest, NextResponse } from 'next/server'
 /** Products read per run; the catalogue is 46 today and the cap is a guard. */
 const MAX_PRODUCTS = 2000
 
+/** The pages the nightly invalidation empties and a visitor lands on first. */
+const WARM_PATHS = ['/', '/products', '/category/hot-deals', '/search'] as const
+
+async function warmCatalogue(): Promise<void> {
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+  if (!/^https:\/\//.test(base)) return
+  const outcome = await offloadTask(
+    { type: 'warm-urls', urls: WARM_PATHS.map((path) => `${base}${path}`) },
+    {
+      inline: async () => {
+        const result = await enqueueJob('cache-warm', { paths: [...WARM_PATHS] })
+        return result.transport === 'qstash' ? `queued ${result.messageId}` : result.outcome
+      },
+    },
+  )
+  log.info('daily_deals.warm', outcome)
+}
+
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
   if (!bearerMatches(request.headers.get('authorization'), secret ?? '')) {
@@ -78,6 +98,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       failed: applied.failed,
       productIds: applied.productIds,
     })
+    // The invalidation above empties every catalogue page at once, and the
+    // next visitor to each would pay the cold render. The warm goes to the
+    // Cloudflare Worker when one is configured (one signed POST, answered in
+    // milliseconds, the fan-out runs there); otherwise to the job queue,
+    // which itself runs inline without QStash. Never awaited into a failure:
+    // a cold cache is a slow page, not a wrong deal.
+    await warmCatalogue()
   }
 
   // ---- 2. today's observation --------------------------------------------
