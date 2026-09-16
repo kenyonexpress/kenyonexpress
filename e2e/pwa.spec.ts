@@ -64,9 +64,13 @@ test('iOS has its icon and web-app tags', async ({ page, request }) => {
   const icon = await page.locator('link[rel="apple-touch-icon"]').getAttribute('href')
   expect(icon).toBeTruthy()
   expect((await request.get(icon as string)).status()).toBe(200)
-  await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveAttribute(
+  // Next 16 renders `appleWebApp.capable` as the standard tag, not the
+  // Apple-prefixed one it superseded; iOS 17+ reads both. Measured, not
+  // assumed: the first version of this test asked for the old name and failed.
+  await expect(page.locator('meta[name="mobile-web-app-capable"]')).toHaveAttribute(
     'content',
     'yes',
   )
+  await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveCount(1)
   await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1)
 })
