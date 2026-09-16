@@ -15,6 +15,12 @@ import {
 } from '@/lib/cart/guest-session'
 import { loadCartProductData } from '@/lib/cart/load-products'
 import { buildCartView } from '@/lib/cart/pricing'
+import {
+  type CartScope,
+  forgetCartRow,
+  readCartRowThrough,
+  rememberCartRow,
+} from '@/lib/cart/session-cache'
 import { CART_SHIPPING_COOKIE, SHIPPING_COOKIE_MAX_AGE } from '@/lib/cart/shipping-cookie'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
@@ -299,7 +305,18 @@ async function resolveCartView(cartId: string | null, items: CartStorageItem[]):
 
 type CartRow = { id: string; items: unknown }
 
-async function getCartRow(): Promise<{
+/**
+ * The shopper's cart row and who they are.
+ *
+ * `cached: true` reads through the Redis session store
+ * (`lib/cart/session-cache.ts`) and is for DISPLAY reads only: `getCart`,
+ * which every storefront page calls once after hydration. Every mutation
+ * calls this without the flag, because a mutation turns the row's `id` into
+ * an UPDATE-or-INSERT decision and a cached id that the reaper has since
+ * deleted would be a second cart. The store is refilled by `saveCartItems`
+ * after every write, so the next display read is current without a TTL.
+ */
+async function getCartRow(options: { cached?: boolean } = {}): Promise<{
   row: CartRow | null
   isGuest: boolean
   userId: string | null
@@ -310,23 +327,33 @@ async function getCartRow(): Promise<{
   } = await supabase.auth.getUser()
 
   if (user) {
-    const result = await supabase
-      .from('carts')
-      .select('id, items')
-      .eq('profile_id', user.id)
-      .maybeSingle()
-    return { row: cartRowOrFail(result, user.id), isGuest: false, userId: user.id }
+    const load = async () =>
+      cartRowOrFail(
+        await supabase.from('carts').select('id, items').eq('profile_id', user.id).maybeSingle(),
+        user.id,
+      )
+    const row = options.cached
+      ? (await readCartRowThrough({ kind: 'user', id: user.id }, load)).row
+      : await load()
+    return { row, isGuest: false, userId: user.id }
   }
 
   const sessionId = (await getGuestSessionId()) ?? (await ensureGuestSessionId())
-  const result = await createGuestCartClient(sessionId)
-    .from('carts')
-    .select('id, items')
-    .eq('session_id', sessionId)
-    .is('profile_id', null)
-    .maybeSingle()
+  const load = async () =>
+    cartRowOrFail(
+      await createGuestCartClient(sessionId)
+        .from('carts')
+        .select('id, items')
+        .eq('session_id', sessionId)
+        .is('profile_id', null)
+        .maybeSingle(),
+      sessionId,
+    )
+  const row = options.cached
+    ? (await readCartRowThrough({ kind: 'guest', id: sessionId }, load)).row
+    : await load()
 
-  return { row: cartRowOrFail(result, sessionId), isGuest: true, userId: null }
+  return { row, isGuest: true, userId: null }
 }
 
 /**
@@ -353,6 +380,18 @@ function cartRowOrFail(
   throw new Error(`cart.row_read_failed: ${result.error.message ?? 'cart read failed'}`)
 }
 
+/**
+ * Write-through: the saved row replaces the session store entry so the next
+ * display read returns what was just written. Awaited, not fire-and-forget,
+ * because the action's own response is built from the same row and a read
+ * racing this write would otherwise see the previous cart for one request.
+ * A failed write-through is a miss on the next read, nothing more.
+ */
+async function remembered(scope: CartScope, row: CartRow): Promise<CartRow> {
+  await rememberCartRow(scope, row)
+  return row
+}
+
 async function saveCartItems(
   items: CartStorageItem[],
   isGuest: boolean,
@@ -364,6 +403,7 @@ async function saveCartItems(
   if (isGuest) {
     const sessionId = await ensureGuestSessionId()
     const guest = createGuestCartClient(sessionId)
+    const scope: CartScope = { kind: 'guest', id: sessionId }
 
     if (existingId) {
       // Filtered by id, but reached under the policy's USING clause, which still
@@ -376,7 +416,7 @@ async function saveCartItems(
         .select('id, items')
         .single()
       if (error) throw error
-      return data
+      return remembered(scope, data)
     }
 
     const { data, error } = await guest
@@ -385,10 +425,11 @@ async function saveCartItems(
       .select('id, items')
       .single()
     if (error) throw error
-    return data
+    return remembered(scope, data)
   }
 
   const supabase = await createClient()
+  const scope: CartScope = { kind: 'user', id: userId! }
   if (existingId) {
     const { data, error } = await supabase
       .from('carts')
@@ -397,7 +438,7 @@ async function saveCartItems(
       .select('id, items')
       .single()
     if (error) throw error
-    return data
+    return remembered(scope, data)
   }
 
   const { data, error } = await supabase
@@ -406,7 +447,7 @@ async function saveCartItems(
     .select('id, items')
     .single()
   if (error) throw error
-  return data
+  return remembered(scope, data)
 }
 
 /**
@@ -493,7 +534,7 @@ function fail(error: string, code: string): CartActionResult {
 }
 
 async function runGetCart(): Promise<CartView> {
-  const { row } = await getCartRow()
+  const { row } = await getCartRow({ cached: true })
   const items = parseItems(row?.items)
   return resolveCartView(row?.id ?? null, items)
 }
@@ -748,11 +789,33 @@ async function runMergeGuestCart(
 
   const mergedItems = [...merged.values()]
 
-  await Promise.all([
+  const [userWrite, guestDelete] = await Promise.all([
     userCart?.id
       ? supabase.from('carts').update({ items: mergedItems }).eq('id', userCart.id)
       : supabase.from('carts').insert({ profile_id: userId, items: mergedItems }),
     guest.from('carts').delete().eq('id', guestCart.id),
+  ])
+
+  // Pending migration 240 adds `carts_profile_id_uidx`, one cart per account.
+  // With it in place, two logins racing through the INSERT branch produce a
+  // 23505 on the loser instead of a second row. That is the outcome the
+  // unique index exists for, and it is handled the same way as a failed read:
+  // false keeps the guest cookie, and the next login merges into the row the
+  // winner created. Without the index this branch is never taken.
+  if (userWrite.error) {
+    log.error('cart.merge_write_failed', { userId, sessionId, error: userWrite.error })
+    return false
+  }
+  if (guestDelete.error) {
+    log.error('cart.merge_guest_delete_failed', { userId, sessionId, error: guestDelete.error })
+  }
+
+  // Both entries in the session store describe rows that no longer exist as
+  // they were: the guest row is gone and the account row changed under an id
+  // this function did not re-read. Forget both; the next display read reloads.
+  await Promise.all([
+    forgetCartRow({ kind: 'guest', id: sessionId }),
+    forgetCartRow({ kind: 'user', id: userId }),
   ])
 
   return true

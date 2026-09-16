@@ -1,5 +1,36 @@
 # `migrations/pending/`
 
+## 2026-09-17: 240 + 241 PENDING (performance: FK indexes, one cart per account, RLS initplan)
+
+`240_perf_fk_indexes_and_cart_uniqueness.sql` is the index half of the
+performance goal. Section 1 adds covering indexes for the nine foreign keys
+Supabase's performance advisor listed as unindexed on 2026-09-17
+(cashback_ledger x2, coupon_qr_batches, coupon_redemptions, gift_cards,
+pickup_points, stock_waitlist, support_tickets, whatsapp_contacts), the same
+shape as 160 and 163. Section 2 adds `carts_profile_id_uidx`, a partial
+unique index on `carts(profile_id) where profile_id is not null`: the
+"no unique index on profile_id" that `cartRowOrFail` in
+src/server/actions/cart.ts has documented since 08-20 as the way an account
+ends up owning two carts. A guard block refuses the file if any account
+already holds two rows (measured 0 across 2763 carts on 09-17), and
+`runMergeGuestCart` now treats the 23505 the index will raise on a racing
+login as "retry at next login" rather than a crash. Not what it does:
+nothing about the storefront's read path, which is where the seq scans the
+advisor also shows live (categories 642K, profiles 435K scans, both on tables
+of 12-13 rows where a seq scan is the planner's correct choice).
+
+`241_rls_initplan_policies.sql` rewrites the six policies lint
+0003_auth_rls_initplan flags (profiles_super_admin_mfa,
+webauthn_credentials_{select,delete}_own, push_subscriptions_{select,delete}_own,
+cashback_ledger_owner_select) so `auth.uid()` / `current_user_role()` is a
+scalar subquery evaluated once per statement instead of once per row. Each
+policy was read off `pg_policies` on 09-17 and is restated with the same
+name, mode, role, command and qual, changed only by the `(select ...)`
+wrap; the file's closing block re-reads all six and refuses if any still
+carries a bare per-row call or if the RESTRICTIVE one came back permissive.
+Both files dry-run on production the same day in rolled-back DO blocks;
+the probe output is in APPLY-ORDER.md.
+
 ## 2026-09-17: 239 PENDING (push delivery log, SMS log, SMS opt-outs)
 
 `239_push_deliveries_sms_log_opt_outs.sql` adds the three tables the

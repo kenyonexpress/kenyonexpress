@@ -171,6 +171,27 @@ const nextConfig: NextConfig = {
     // denser compression on 157px paints that were still shipping q=75.
     qualities: [50, 60, 75, 90, 95],
     /**
+     * AVIF first, WebP for the browsers that cannot decode it
+     * (ARCHITECTURE-PERFORMANCE-SEO.md 4.2). Next 16's default is WebP only.
+     * The order is the preference order when the Accept header allows both;
+     * an animated or SVG source is passed through unchanged regardless, so the
+     * catalogue's photos are the only things this touches. Both formats are
+     * cached separately by Vercel Image Optimization, which is storage, not
+     * transformations, and transformations are what the plan bills.
+     */
+    formats: ['image/avif', 'image/webp'],
+    /**
+     * 31 days at the edge for an optimized image (2678400 = 31 * 24 * 3600).
+     *
+     * Next 16 raised its own default from 60s to 4 hours, and 4 hours is still
+     * six re-optimizations a day per (source, width, quality, format) tuple
+     * that nobody asked for: a product photo here changes by changing its PATH
+     * (4.2 rule 5, and `media_assets` keys on the path), so the bytes behind a
+     * given URL never change and a long TTL forfeits nothing. It also caps the
+     * upstream reads Supabase Storage sees for the same photo.
+     */
+    minimumCacheTTL: 2678400,
+    /**
      * Next's default, plus one rung at 288.
      *
      * The gap between 256 and 384 is where this site's two densest grids land.

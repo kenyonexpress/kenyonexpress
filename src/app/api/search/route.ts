@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
@@ -79,7 +80,7 @@ async function handleGET(request: NextRequest) {
     }))
     return NextResponse.json(
       { query: q, results },
-      { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } },
+      { headers: { 'Cache-Control': CacheControl.search } },
     )
   }
   if (!fts.missing) {
@@ -153,7 +154,7 @@ async function handleGET(request: NextRequest) {
 
   return NextResponse.json(
     { query: q, results },
-    { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } },
+    { headers: { 'Cache-Control': CacheControl.search } },
   )
 }
 

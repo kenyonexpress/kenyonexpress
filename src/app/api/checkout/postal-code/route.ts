@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import {
   buildPostalLookupUrl,
   normalizePostalLookupQuery,
@@ -39,7 +40,7 @@ function noSuggestion(configured: boolean): NextResponse {
     { zip: null, configured },
     // Not cached: an unconfigured or timed-out answer must not be remembered
     // for a day against an address that has a code.
-    { headers: { 'Cache-Control': 'no-store' } },
+    { headers: { 'Cache-Control': CacheControl.private } },
   )
 }
 
@@ -89,7 +90,7 @@ async function handleGET(request: NextRequest): Promise<Response> {
     // A house's code does not change day to day, and the query carries no
     // one's identity. Shared caching is what stops two shoppers on one
     // street from being two provider calls.
-    { headers: { 'Cache-Control': 'public, s-maxage=86400, max-age=3600' } },
+    { headers: { 'Cache-Control': CacheControl.postalCode } },
   )
 }
 
