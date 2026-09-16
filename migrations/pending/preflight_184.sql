@@ -42,7 +42,8 @@ select t.tgname, pg_get_triggerdef(t.oid) as def
  order by t.tgname;
 
 -- (2) EVERY INBOUND FOREIGN KEY MUST BE IN 184's referencing-table array.
---     EXPECT (2026-09-09): seventeen rows. Each becomes a composite FK on
+--     EXPECT (2026-09-16): nineteen rows (coupon_redemptions and gift_cards
+--     joined via 227 and 234). Each becomes a composite FK on
 --     (<column>, <created_at twin>), so a table missing from the array keeps
 --     a single-column FK to a primary key that no longer exists and the
 --     migration fails -- loudly, which is the good case. The bad case is a
@@ -97,7 +98,7 @@ select extname, extversion from pg_extension where extname = 'pg_cron';
 -- (8) OUTSIDE SQL: 184 is the one file the project records as needing a
 --     maintenance window. It rewrites the table every order lives in, and
 --     production is live. Do not run it unattended. After applying,
---     regenerate src/types/database.ts (the seventeen twin columns and the
+--     regenerate src/types/database.ts (the nineteen twin columns and the
 --     registry table change the generated types) and re-append the
 --     hand-written alias tail, which `supabase gen types` drops -- see the
 --     comment at the bottom of that file.

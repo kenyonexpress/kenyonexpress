@@ -9,14 +9,14 @@
 -- partition per UTC calendar month, with partitions always provisioned twelve
 -- months ahead by pg_cron (installed, 1.6.4).
 --
--- WHY THE FILE IS THIS LONG. Partitioning a table with seventeen inbound foreign
+-- WHY THE FILE IS THIS LONG. Partitioning a table with nineteen inbound foreign
 -- keys is not a one-liner, because a partitioned table can only carry unique
 -- constraints that include the partition key. Two consequences follow, and
 -- both are handled here rather than dropped on the floor:
 --
 --   1. The primary key becomes (id, created_at). Every FK that used to say
 --      REFERENCES orders(id) must become a composite FK on
---      (<fk>, <fk's created_at twin>). Each of the seventeen referencing tables
+--      (<fk>, <fk's created_at twin>). Each of the nineteen referencing tables
 --      gains a timestamptz twin column, auto-filled by a BEFORE trigger, so
 --      **no application write path changes**: inserts that set only order_id
 --      keep working, the trigger fills the twin, and the composite FK keeps
@@ -61,7 +61,7 @@
 -- than 12 months ahead fails with "no partition of relation" — by design;
 -- backdated imports need their partition created first.
 --
--- AFTER APPLY. Regenerate src/types/database.ts (pnpm db:types): the sixteen
+-- AFTER APPLY. Regenerate src/types/database.ts (pnpm db:types): the nineteen
 -- twin columns and the registry table change the generated types.
 --
 -- ROLLBACK (full, in order):
@@ -434,7 +434,7 @@ BEGIN
   GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
     ON public.orders TO service_role;
 
-  -- 3.9 The sixteen inbound FKs, re-pointed as composite FKs with their
+  -- 3.9 The nineteen inbound FKs, re-pointed as composite FKs with their
   -- original names and original ON DELETE behaviour. Each referencing table
   -- gains a trigger-filled created_at twin plus a pair CHECK closing the
   -- MATCH SIMPLE hole (a non-null FK with a null twin would otherwise skip
@@ -455,6 +455,11 @@ BEGIN
       -- Added 2026-09-09: 177 created cashback_ledger after this file was
       -- written, making seventeen inbound FKs where the header said sixteen.
       ('cashback_ledger',       'order_id',                'order_created_at',                'cashback_ledger_order_id_fkey',                 'SET NULL'),
+      -- Added 2026-09-16: 227 (coupon_redemptions) and 234 (gift_cards)
+      -- landed after the 09-09 correction, making nineteen inbound FKs.
+      -- Caught by preflight_184 block (2), exactly as designed.
+      ('coupon_redemptions',    'order_id',                'order_created_at',                'coupon_redemptions_order_id_fkey',              'CASCADE'),
+      ('gift_cards',            'order_id',                'order_created_at',                'gift_cards_order_id_fkey',                      'SET NULL'),
       ('payment_events',        'order_id',                'order_created_at',                'payment_events_order_id_fkey',                  'SET NULL'),
       ('wallet_transactions',   'related_order_id',        'related_order_created_at',        'wallet_transactions_related_order_id_fkey',     'SET NULL'),
       ('referrals',             'referred_first_order_id', 'referred_first_order_created_at', 'referrals_referred_first_order_id_fkey',        'SET NULL'),
@@ -466,11 +471,19 @@ BEGIN
                    r.tbl, r.fk_name);
     EXECUTE format('ALTER TABLE public.%I ADD COLUMN IF NOT EXISTS %I timestamptz',
                    r.tbl, r.twin_col);
+    -- The backfill is a structural sync, not a business event. User triggers
+    -- are disabled around it for two measured reasons (2026-09-16 dry-run):
+    -- settlement_events_no_rewrite refuses ANY update (P0001, the table is
+    -- append-only), and the 169 audit triggers would otherwise write one
+    -- fabricated audit row per backfilled row — the same reasoning that
+    -- delays audit_orders to 3.7b. RI (FK) triggers are internal and stay on.
+    EXECUTE format('ALTER TABLE public.%I DISABLE TRIGGER USER', r.tbl);
     EXECUTE format(
       'UPDATE public.%I t SET %I = o.created_at
          FROM public.orders o
         WHERE t.%I = o.id AND t.%I IS DISTINCT FROM o.created_at',
       r.tbl, r.twin_col, r.fk_col, r.twin_col);
+    EXECUTE format('ALTER TABLE public.%I ENABLE TRIGGER USER', r.tbl);
     EXECUTE format(
       'ALTER TABLE public.%I ADD CONSTRAINT %I CHECK ((%I IS NULL) = (%I IS NULL))',
       r.tbl, r.tbl || '_' || r.fk_col || '_partition_pair_chk',
