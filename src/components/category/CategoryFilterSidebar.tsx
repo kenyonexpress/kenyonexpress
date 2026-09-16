@@ -1,5 +1,6 @@
 'use client'
 
+import CategoryAutocomplete from '@/components/category/CategoryAutocomplete'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -33,6 +34,7 @@ export default function CategoryFilterSidebar({
   const [isPending, startTransition] = useTransition()
   const [min, setMin] = useState(priceMin != null ? String(priceMin) : '')
   const [max, setMax] = useState(priceMax != null ? String(priceMax) : '')
+  const current = currentSlug ? categories.find((c) => c.slug === currentSlug) : undefined
 
   /** Any filter change resets paging: page 3 of the old result set is meaningless. */
   function pushWith(mutate: (params: URLSearchParams) => void) {
@@ -71,6 +73,16 @@ export default function CategoryFilterSidebar({
       <details className="category-sidebar__disclosure">
         <summary className="category-sidebar__summary">סינון מוצרים</summary>
         <div className="category-sidebar__widgets">
+          {/* The site's one typing field, scoped to this archive. See the
+              note at the top of CategoryAutocomplete.tsx and the exemption in
+              layout/no-search-ui.test.ts. Absent on /products, which has no
+              category to scope to. */}
+          {current ? (
+            <div className="category-sidebar__widget">
+              <CategoryAutocomplete categorySlug={current.slug} categoryName={current.name_he} />
+            </div>
+          ) : null}
+
           <div className="category-sidebar__widget">
             <h3 className="category-sidebar__title">קטגוריות</h3>
             <ul className="category-sidebar__list">

@@ -1,6 +1,7 @@
 import CouponExpiryCountdown from '@/components/storefront/CouponExpiryCountdown'
 import { describeCouponExpiry } from '@/lib/commerce/coupon-expiry'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { cacheLife } from 'next/cache'
 import QRCode from 'qrcode'
 
 /**
@@ -25,6 +26,27 @@ import QRCode from 'qrcode'
  * from purchase. `CouponTerms` under this block prints the raw dates; this
  * block says what they mean.
  */
+/**
+ * The square itself, as a data URL, or null when the encoder refuses.
+ *
+ * `'use cache'` and not a bare await: under `cacheComponents` an async
+ * Server Component that awaits anything the framework cannot see is
+ * "uncached data outside Suspense", and `next build` refused every product
+ * page with a coupon offer (measured 2026-09-16, three slugs, exit 1). The
+ * encode is a pure function of the URL, so a cache entry is the honest
+ * shape for it: the same slug yields the same image for as long as the
+ * entry lives, and the page stays in the static shell.
+ */
+async function encodeProductQr(productUrl: string): Promise<string | null> {
+  'use cache'
+  cacheLife('max')
+  try {
+    return await QRCode.toDataURL(productUrl, { margin: 1, width: 192 })
+  } catch {
+    return null
+  }
+}
+
 export default async function CouponQrExpiry({
   offer,
   productUrl,
@@ -41,12 +63,7 @@ export default async function CouponQrExpiry({
     now: offer.validUntil ?? new Date(0),
   })
 
-  let qr: string | null = null
-  try {
-    qr = await QRCode.toDataURL(productUrl, { margin: 1, width: 192 })
-  } catch {
-    qr = null
-  }
+  const qr = await encodeProductQr(productUrl)
 
   return (
     <section className="pdp-coupon-qr" aria-label="מימוש הקופון" data-pdp="coupon-qr">

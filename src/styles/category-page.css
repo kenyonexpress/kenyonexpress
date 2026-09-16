@@ -709,6 +709,116 @@
   background: var(--cat-brand-hover);
 }
 
+/* Category-scoped autocomplete: the one typing field on the site, sidebar only */
+.category-autocomplete {
+  position: relative;
+}
+
+.category-autocomplete__field {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--cat-line);
+  border-radius: 4px;
+  background: #fff;
+  height: var(--cat-select-h);
+}
+
+.category-autocomplete__field:focus-within {
+  border-color: var(--cat-brand);
+}
+
+.category-autocomplete__input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--cat-ink);
+}
+
+.category-autocomplete__input:focus {
+  outline: none;
+}
+
+.category-autocomplete__submit {
+  flex: 0 0 auto;
+  width: 40px;
+  border: 0;
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  cursor: pointer;
+}
+
+.category-autocomplete__submit:hover {
+  background: var(--cat-brand-hover);
+}
+
+.category-autocomplete__list {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 20;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  border: 1px solid var(--cat-line);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.category-autocomplete__list[hidden] {
+  display: none;
+}
+
+.category-autocomplete__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--cat-ink);
+}
+
+.category-autocomplete__option.is-active {
+  background: #f5f5f5;
+  color: var(--cat-link);
+}
+
+.category-autocomplete__thumb {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  background: #f7f7f7;
+  border-radius: 3px;
+}
+
+.category-autocomplete__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-autocomplete__price {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--cat-ink);
+}
+
+.category-autocomplete__empty {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--cat-muted);
+}
+
 /* Pagination - Electro yellow (var(--cat-brand) measured site-wide accent) */
 .category-pagination {
   display: flex;

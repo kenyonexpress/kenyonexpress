@@ -1,6 +1,7 @@
 'use client'
 
 import CartCouponForm from '@/components/cart/CartCouponForm'
+import CartShippingSelector from '@/components/cart/CartShippingSelector'
 import type { CartView } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
 
@@ -39,7 +40,22 @@ export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
             <dd className="tabular-nums">-{shekels(cart.discount)}</dd>
           </div>
         )}
+
+        {/* The shipping row is the chosen method's rate, "חינם" while every
+            registered rate is zero. It is a row of the summary and not a note
+            under the selector so a shopper adding up the column finds every
+            term of the total in it. */}
+        {cart.shipping && (
+          <div className="cart-sidebar__row" data-testid="cart-shipping-row">
+            <dt>משלוח ({cart.shipping.label})</dt>
+            <dd className="tabular-nums">
+              {cart.shipping.cost === 0 ? 'חינם' : shekels(cart.shipping.cost)}
+            </dd>
+          </div>
+        )}
       </dl>
+
+      {cart.shipping && <CartShippingSelector shipping={cart.shipping} />}
 
       <CartCouponForm coupon={cart.coupon} />
 

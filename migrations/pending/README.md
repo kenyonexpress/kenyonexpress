@@ -1,5 +1,30 @@
 # `migrations/pending/`
 
+## 2026-09-16: 236 PENDING (orders: shipping method)
+
+`236_orders_shipping_method.sql` gives the shopper's shipping choice a place
+to land. The cart now offers two methods from a code registry
+(`src/lib/shipping/methods.ts`): delivery by the supplier, which is what every
+order has meant so far, and self pickup at the supplier. The pick is held in
+the `ke_cart_shipping` cookie, validated against the registry on every read,
+and priced into `CartView.shipping`. At checkout it has nowhere to go:
+`orders` records an address and no fulfilment method.
+
+Two additive columns: `shipping_method text` with a CHECK on the two
+registry ids (NULL means supplier delivery, so every existing row keeps its
+meaning), and `shipping_agorot bigint NOT NULL DEFAULT 0` for the rate.
+Every registered rate is zero and `src/lib/shipping/methods.test.ts` pins it
+there: the settlement engine does not add shipping to the card charge, and a
+non-zero rate before it does would make the cart total and the charged amount
+disagree.
+
+Checkout already writes the method, in its own UPDATE after the orders
+INSERT and only for a non-default pick, logging
+`checkout.shipping_method_not_recorded` while the column is missing (see the
+gift pattern beside it in `checkout.ts`). No reader names the column yet; the
+supplier and admin order pages gain it once this is applied. Idempotent, no
+dry-run against production yet; rollback is two `DROP COLUMN IF EXISTS`.
+
 ## 2026-09-16: 235 PENDING (product live channel + rating summary)
 
 `235_product_live_and_rating.sql` gives the product page the two things it

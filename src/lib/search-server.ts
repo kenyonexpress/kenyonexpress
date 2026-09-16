@@ -8,6 +8,7 @@
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { log } from '@/lib/observability/log'
+import { escapeMeiliFilterValue } from '@/lib/search/faceted'
 import {
   type PendingSearchProductRow,
   type SearchProductsArgs,
@@ -45,10 +46,17 @@ async function searchMeili(
   q: string,
   limit: number,
   productType?: 'coupon' | 'physical',
+  categorySlug?: string,
 ): Promise<SearchOutcome | null> {
   try {
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const index = process.env.MEILISEARCH_INDEX ?? 'products'
+    // Both are filterable attributes (lib/search/meili-settings.ts) and both
+    // go through the same quoting the faceted route uses, so a slug can only
+    // ever be a value in the expression, never a second clause.
+    const filter: string[] = []
+    if (productType) filter.push(`type = ${productType}`)
+    if (categorySlug) filter.push(`category_slug = ${escapeMeiliFilterValue(categorySlug)}`)
     const res = await fetch(`${host}/indexes/${index}/search`, {
       method: 'POST',
       headers: {
@@ -60,7 +68,7 @@ async function searchMeili(
       body: JSON.stringify({
         q,
         limit,
-        ...(productType ? { filter: `type = ${productType}` } : {}),
+        ...(filter.length ? { filter } : {}),
       }),
       // Search is request-time; do not cache across queries.
       cache: 'no-store',
@@ -187,16 +195,24 @@ async function searchDb(
   q: string,
   limit: number,
   productType?: 'coupon' | 'physical',
+  categorySlug?: string,
 ): Promise<SearchOutcome> {
   const supabase = await createClient()
+  // `!inner` only when a category is asked for: the plain (left) embed keeps
+  // uncategorised products in an unscoped search, while the scoped one has to
+  // drop rows whose category is not the one named, and a left embed cannot.
+  const embed = categorySlug
+    ? 'categories!products_category_id_fkey!inner(name_he, slug)'
+    : 'categories!products_category_id_fkey(name_he, slug)'
   let query = supabase
     .from('products')
-    .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories!products_category_id_fkey(name_he, slug)',
-      { count: 'exact' },
-    )
+    .select(`id, slug, name_he, kenyon_price, full_price, images, stock_quantity, ${embed}`, {
+      count: 'exact',
+    })
     .eq('status', 'active')
     .is('deleted_at', null)
+
+  if (categorySlug) query = query.eq('categories.slug', categorySlug)
 
   for (const word of queryWords(q)) {
     query = query.or(`name_he.ilike.%${word}%,description_he.ilike.%${word}%`)
@@ -224,10 +240,18 @@ async function searchDb(
   return { results, total: count ?? results.length, engine: 'database' }
 }
 
+/**
+ * `categorySlug` scopes the search to one archive. The listing page's
+ * autocomplete passes it so that typing inside /category/spa cannot suggest a
+ * refrigerator; every engine applies it in the query (a Meilisearch filter,
+ * the RPC's `category` argument, an inner-join equality on the ILIKE path), so
+ * the count is the count of the scoped result and not of a filtered page.
+ */
 export async function searchProductsServer(
   query: string,
   limit = 48,
   productType?: 'coupon' | 'physical',
+  categorySlug?: string,
 ): Promise<SearchOutcome> {
   const q = sanitize(query)
   if (q.length < 2) return { results: [], total: 0, engine: 'database' }
@@ -237,14 +261,14 @@ export async function searchProductsServer(
   // request 400s, searchMeili returns null, and the database path takes over —
   // which is correct behaviour, not a silent unfiltered result set.
   if (meiliConfigured()) {
-    const meili = await searchMeili(q, limit, productType)
+    const meili = await searchMeili(q, limit, productType, categorySlug)
     if (meili) return meili
   }
   // Postgres FTS (migration 171). Null means the RPC does not exist on this
   // database, so the stage-1 ILIKE below still carries local/preview setups.
-  const fts = await searchFts(q, limit, productType)
+  const fts = await searchFts(q, limit, productType, categorySlug)
   if (fts) return fts
-  return searchDb(q, limit, productType)
+  return searchDb(q, limit, productType, categorySlug)
 }
 
 /**
