@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # Refuse before k6 is even installed. `load/lib/guard.js` asserts the same
       # thing at runtime; this is the cheaper failure, and it fails the job
@@ -105,7 +105,7 @@ jobs:
       # the one whose numbers you most want to read.
       - name: Upload summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: k6-${{ inputs.scenario }}-${{ inputs.vus }}vu
           path: summary.json
