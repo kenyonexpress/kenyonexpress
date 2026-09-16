@@ -56,6 +56,7 @@
 | `gift_card_check` | 20 | 1 h | gift card balance by code, per IP |
 | `gift_card_redeem` | 10 | 1 h | gift card redemption attempts, per user |
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
+| `postal-lookup` | 30 | 10 min | postal-code lookups relayed to Israel Post, per IP |
 | `checkout-velocity-ip` | 30 | 24 h | new orders from one address in a day; carding rotates cards, not addresses |
 | `checkout-velocity-email` | 15 | 24 h | new orders on one email in a day; a stolen-card run batches on one login |
 | `checkout-velocity-phone` | 15 | 24 h | new orders naming one delivery phone in a day, across accounts |

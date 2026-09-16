@@ -113,6 +113,14 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'gift card redemption attempts, per user',
   },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
+  // One lookup per address field blur, against a third party that has no
+  // interest in being our proxy. A shopper correcting a street twice spends
+  // two; a scraper walking a city's streets through us spends the window.
+  'postal-lookup': {
+    limit: 30,
+    windowSeconds: 600,
+    reason: 'postal-code lookups relayed to Israel Post, per IP',
+  },
 
   // -- Order velocity, one bucket per identity dimension (src/lib/fraud).
   // `begin_checkout` above bounds a retry loop; these bound a fraud run, which

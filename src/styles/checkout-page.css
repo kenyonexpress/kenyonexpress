@@ -221,6 +221,14 @@
   color: #dc3545;
 }
 
+/* The autofill note under the postal code: same size as an error, muted
+   rather than red, because it reports something done for the shopper. */
+.checkout-field__hint {
+  font-size: 12px;
+  line-height: 18px;
+  color: #777;
+}
+
 /* Skeleton boxes for the Suspense shell. Heights are the ones the real
    controls already declare above -- label line 24, control 45, nav button 44
    plus its 8px top margin -- so a change to a field height has one place to

@@ -49,6 +49,20 @@ export default async function OrderDetailPage({ params }: Props) {
             <strong>{formatIls(order.totalAgorot)}</strong>
           </div>
         </div>
+        {order.paidAt && (
+          <div className="account-row">
+            <div className="account-row__main">
+              <p className="account-row__meta">אישור הזמנה להדפסה</p>
+            </div>
+            <div className="account-row__actions">
+              {/* Rendered per request behind the session; there is no stored
+                  file to leak. Not the tax document: that row is below. */}
+              <a className="account-btn" href={`/account/orders/${order.id}/receipt`}>
+                הורדת אישור הזמנה (PDF)
+              </a>
+            </div>
+          </div>
+        )}
         {order.invoice && (
           <div className="account-row">
             <div className="account-row__main">
