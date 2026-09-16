@@ -394,6 +394,10 @@ export const CATALOG = {
     /** view switcher icons. Measured on live. */
     switcher: '#495057',
     surface: '#ffffff',
+    // The category autocomplete's hover row and thumbnail well; the two greys
+    // Electro uses for a list row under the pointer and an image placeholder.
+    surfaceHover: '#f5f5f5',
+    thumb: '#f7f7f7',
     /** brand yellow and its hover, per the brief and the live masthead */
     brand: '#fed700',
     brandHover: '#fedd26',
@@ -448,6 +452,8 @@ export const CATALOG_CSS_VARS: Record<string, string> = {
   '--cat-line': CATALOG.color.line,
   '--cat-switcher': CATALOG.color.switcher,
   '--cat-surface': CATALOG.color.surface,
+  '--cat-surface-hover': CATALOG.color.surfaceHover,
+  '--cat-thumb': CATALOG.color.thumb,
   '--cat-brand': CATALOG.color.brand,
   '--cat-brand-hover': CATALOG.color.brandHover,
 }

@@ -1,5 +1,67 @@
 # `migrations/pending/`
 
+## 2026-09-16: 236 PENDING (orders: shipping method)
+
+`236_orders_shipping_method.sql` gives the shopper's shipping choice a place
+to land. The cart now offers two methods from a code registry
+(`src/lib/shipping/methods.ts`): delivery by the supplier, which is what every
+order has meant so far, and self pickup at the supplier. The pick is held in
+the `ke_cart_shipping` cookie, validated against the registry on every read,
+and priced into `CartView.shipping`. At checkout it has nowhere to go:
+`orders` records an address and no fulfilment method.
+
+Two additive columns: `shipping_method text` with a CHECK on the two
+registry ids (NULL means supplier delivery, so every existing row keeps its
+meaning), and `shipping_agorot bigint NOT NULL DEFAULT 0` for the rate.
+Every registered rate is zero and `src/lib/shipping/methods.test.ts` pins it
+there: the settlement engine does not add shipping to the card charge, and a
+non-zero rate before it does would make the cart total and the charged amount
+disagree.
+
+Checkout already writes the method, in its own UPDATE after the orders
+INSERT and only for a non-default pick, logging
+`checkout.shipping_method_not_recorded` while the column is missing (see the
+gift pattern beside it in `checkout.ts`). No reader names the column yet; the
+supplier and admin order pages gain it once this is applied. Idempotent, no
+dry-run against production yet; rollback is two `DROP COLUMN IF EXISTS`.
+
+## 2026-09-16: 235 PENDING (product live channel + rating summary)
+
+`235_product_live_and_rating.sql` gives the product page the two things it
+cannot get from its hour-long cache: a per-product broadcast topic and a
+rating it is allowed to show.
+
+**The live channel** is an AFTER UPDATE trigger on `products` (stock,
+price, compare-at, status, deleted_at) that calls `realtime.send` on the
+public topic `product:<id>` with exactly six catalogue fields plus the
+reservation-aware `available_stock`. Broadcast, not `postgres_changes`:
+a row-change feed ships the whole row, and `anon` holds column SELECT on
+all 93 columns of `products` today (measured 2026-09-16; `cost_ils`,
+`platform_percent` and `supplier_split_percent` included, a pre-existing
+exposure filed in STATE.md and NOT widened here). The trigger body swallows
+every error, because it fires inside the same transaction as finalize's
+stock decrement and a broadcast must never roll a paid order back. Reader:
+`src/lib/product-live/use-product-live.ts`; proof against production:
+`scripts/verify-product-live.mjs`.
+
+**The rating summary** is `product_rating_summary(p_product_id)`, SECURITY
+DEFINER over the rows 232 closed to `anon`, returning the one-decimal
+average and the count of APPROVED, undeleted reviews and nothing else.
+Reader: `loadRatingSummary` in `src/lib/product-detail.ts`, which treats
+PGRST202 (function absent, i.e. 235 not applied) as "no rating" and renders
+the identifiers in the slot as before.
+
+Dry-run on production 2026-09-16 in a rolled-back DO block: both functions
+and the trigger created, `anon` can execute the summary (returned
+`null / 0` for a product with no reviews), an UPDATE of `stock_quantity`
+fired the trigger without raising. The broadcast row itself did NOT land:
+`realtime.messages` had partitions only through `messages_2026_09_13`, so
+`realtime.send` hit "no partition of relation messages found for row" and
+swallowed it exactly as designed. The Realtime service creates those
+partitions when a tenant is connected; a subscribed client is what wakes it.
+That is what the verify script checks, and until it passes the feature is
+a no-op page, not a broken one.
+
 ## 2026-09-10: 234 APPLIED (gift cards)
 
 `234_gift_cards.sql` is the stored-value instrument: `gift_cards` (hashed

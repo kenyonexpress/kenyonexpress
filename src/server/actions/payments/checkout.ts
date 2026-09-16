@@ -41,6 +41,7 @@ import {
 } from '@/lib/payments/payment-money-columns'
 import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
+import { DEFAULT_SHIPPING_METHOD_ID } from '@/lib/shipping/methods'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -773,6 +774,32 @@ async function runBeginCheckout(
       .eq('id', order.id)
     if (giftError) {
       log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
+    }
+  }
+
+  // The shipping method, under the same rule as the gift above: its own
+  // statement, never a key in the orders INSERT. `orders.shipping_method` is
+  // added by migrations/pending/236_orders_shipping_method.sql and does not
+  // exist in production yet, so this UPDATE fails there with 42703 and the
+  // order goes through as a supplier delivery, which is what every order was
+  // before the selector existed. Only a NON-default pick is written: the
+  // default is what a null column already means, and writing it would log a
+  // warning on every checkout until 236 is applied.
+  //
+  // Read off the server-built cart, not off the input: the cart resolved the
+  // shopper's cookie against the registry, so the value here is an id the
+  // registry knows and never a string the browser sent.
+  if (cart.shipping && cart.shipping.method !== DEFAULT_SHIPPING_METHOD_ID) {
+    const { error: shippingError } = await admin
+      .from('orders')
+      .update({ shipping_method: cart.shipping.method } as never)
+      .eq('id', order.id)
+    if (shippingError) {
+      log.warn('checkout.shipping_method_not_recorded', {
+        order_id: order.id,
+        shipping_method: cart.shipping.method,
+        err: shippingError.message,
+      })
     }
   }
 

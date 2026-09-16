@@ -1,9 +1,11 @@
 import type { CartView } from '@/lib/cart/types'
+import { type ShippingMethodId, resolveShippingMethod } from '@/lib/shipping/methods'
 import {
   addToCart as addToCartAction,
   clearCart as clearCartAction,
   removeFromCart as removeFromCartAction,
   removeUnavailableItems as removeUnavailableItemsAction,
+  setShippingMethod as setShippingMethodAction,
   updateCartItem as updateCartItemAction,
 } from '@/server/actions/cart'
 import { createJSONStorage, persist } from 'zustand/middleware'
@@ -44,6 +46,7 @@ export type CartOptimisticAction =
   | { type: 'add'; productId: string; variantId: string | null; quantity: number }
   | { type: 'setQty'; productId: string; variantId: string | null; quantity: number }
   | { type: 'remove'; productId: string; variantId: string | null }
+  | { type: 'setShipping'; methodId: ShippingMethodId }
   | { type: 'replace'; cart: CartView }
 
 export function applyOptimistic(cart: CartView, action: CartOptimisticAction): CartView {
@@ -82,6 +85,15 @@ export function applyOptimistic(cart: CartView, action: CartOptimisticAction): C
           ),
       )
       return { ...cart, items, item_count: items.reduce((s, i) => s + i.quantity, 0) }
+    }
+    case 'setShipping': {
+      // Only the label moves optimistically. The cost and the total stay as
+      // the server last priced them: the registry says every rate is zero, and
+      // the day one is not, the number a shopper reads before the round trip
+      // should still be one the server produced.
+      if (!cart.shipping) return cart
+      const method = resolveShippingMethod(action.methodId)
+      return { ...cart, shipping: { ...cart.shipping, method: method.id, label: method.label } }
     }
     default:
       return cart
@@ -147,6 +159,13 @@ export interface CartStoreState {
    */
   removeUnavailable: () => Promise<void>
   clear: () => Promise<void>
+  /**
+   * Picks a shipping method. Resolves to whether the server recorded it, like
+   * `addToCart`: the radio that fired it re-reads the store either way, so a
+   * refused write snaps the selection back rather than leaving a checked
+   * option the cart does not hold.
+   */
+  setShippingMethod: (methodId: ShippingMethodId) => Promise<boolean>
   setCart: (cart: CartView) => void
   /**
    * Whether the visitor is signed in, for the parts of the cart UI that send a
@@ -359,6 +378,23 @@ export function createCartStore(
           }
         } catch {
           crashed(rollback)
+        }
+      },
+
+      setShippingMethod: async (methodId) => {
+        const rollback = begin({ type: 'setShipping', methodId })
+        try {
+          const result = await setShippingMethodAction(methodId)
+          if (result.ok) {
+            settle(result.cart, rollback)
+            return true
+          }
+          settle(null, rollback)
+          onFeedback({ kind: 'error', message: result.error })
+          return false
+        } catch {
+          crashed(rollback)
+          return false
         }
       },
 

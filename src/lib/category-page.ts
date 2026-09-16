@@ -34,7 +34,12 @@ import { cache } from 'react'
  * cache` function here that silently has neither.
  */
 
-export const CATEGORY_PAGE_SIZE = 12
+/**
+ * Eight cards a page. Two rows of four at 1440, four rows of two at 380; the
+ * grid, the skeleton, the result-count wording and the page-window arithmetic
+ * all read this one constant, and `category-page.test.ts` pins the number.
+ */
+export const CATEGORY_PAGE_SIZE = 8
 
 /**
  * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.

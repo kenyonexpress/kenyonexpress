@@ -121,7 +121,7 @@ describe('/api/search/suggest rate limiting', () => {
     const res = await suggest(req('/api/search/suggest', 'מקרר'))
 
     expect(res.status).toBe(200)
-    expect(searchProductsCached).toHaveBeenCalledWith('מקרר', 6)
+    expect(searchProductsCached).toHaveBeenCalledWith('מקרר', 6, undefined, undefined)
   })
 
   it('does not spend a limiter round-trip below the two-character floor', async () => {
@@ -181,5 +181,33 @@ describe('the 429 a client can pace against', () => {
     expect(res.headers.get('Cache-Control')).toContain('s-maxage')
     expect(res.headers.get('RateLimit-Limit')).toBeNull()
     expect(res.headers.get('RateLimit-Remaining')).toBeNull()
+  })
+})
+
+/**
+ * The listing page's autocomplete sends the archive it sits on. The scope
+ * has to reach the search, and a scope that is not a slug has to be dropped
+ * rather than refused: a broken filter must degrade to an unscoped answer, not
+ * to a field that stops suggesting.
+ */
+describe('/api/search/suggest category scope', () => {
+  function scoped(q: string, category: string) {
+    const url = new URL('https://kenyonexpress.co.il/api/search/suggest')
+    url.searchParams.set('q', q)
+    url.searchParams.set('category', category)
+    return new NextRequest(url)
+  }
+
+  it('passes a well-formed slug through to the search as the fourth argument', async () => {
+    await suggest(scoped('מקרר', 'electronics'))
+
+    expect(searchProductsCached).toHaveBeenCalledWith('מקרר', 6, undefined, 'electronics')
+  })
+
+  it('drops a malformed scope and still answers', async () => {
+    const res = await suggest(scoped('מקרר', 'spa" OR type = "coupon'))
+
+    expect(res.status).toBe(200)
+    expect(searchProductsCached).toHaveBeenCalledWith('מקרר', 6, undefined, undefined)
   })
 })

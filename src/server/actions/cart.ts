@@ -15,6 +15,7 @@ import {
 } from '@/lib/cart/guest-session'
 import { loadCartProductData } from '@/lib/cart/load-products'
 import { buildCartView } from '@/lib/cart/pricing'
+import { CART_SHIPPING_COOKIE, SHIPPING_COOKIE_MAX_AGE } from '@/lib/cart/shipping-cookie'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
@@ -24,6 +25,11 @@ import { evaluateDiscount } from '@/lib/growth/discount'
 import { MAX_STACKED_CODES, evaluateDiscountStack } from '@/lib/growth/stacking'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
+import {
+  type ShippingMethod,
+  isShippingMethodId,
+  resolveShippingMethod,
+} from '@/lib/shipping/methods'
 import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -263,9 +269,22 @@ async function resolveAppliedCoupon(view: CartView): Promise<ResolvedCoupon | nu
   }
 }
 
+/**
+ * The shipping method the shopper's cookie names, resolved against the
+ * registry. An absent, stale or edited cookie resolves to the default, so
+ * this cannot fail and the cookie cannot name a price.
+ */
+async function readShippingMethod(): Promise<ShippingMethod> {
+  const cookieStore = await cookies()
+  return resolveShippingMethod(cookieStore.get(CART_SHIPPING_COOKIE)?.value)
+}
+
 async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {
-  const { products, variants } = await loadCartProductData(items)
-  const priced = buildCartView(cartId, items, products, variants)
+  const [{ products, variants }, shipping] = await Promise.all([
+    loadCartProductData(items),
+    readShippingMethod(),
+  ])
+  const priced = buildCartView(cartId, items, products, variants, null, shipping)
   // Nothing to discount, so neither code table is worth two round trips. This
   // covers the empty cart and, since the pricer stopped blanking them, the cart
   // whose every line is unpriceable: both charge zero, and every discount path
@@ -275,7 +294,7 @@ async function resolveCartView(cartId: string | null, items: CartStorageItem[]):
   // minimum and to cap itself, and that total is only known after the lines are
   // priced. The second pass costs no query.
   const coupon = await resolveAppliedCoupon(priced)
-  return coupon ? buildCartView(cartId, items, products, variants, coupon) : priced
+  return coupon ? buildCartView(cartId, items, products, variants, coupon, shipping) : priced
 }
 
 type CartRow = { id: string; items: unknown }
@@ -865,12 +884,47 @@ async function runApplyCouponCode(rawCode: string): Promise<CouponActionResult> 
   revalidateCartPaths()
   return {
     ok: true,
-    cart: buildCartView(row?.id ?? null, items, products, variants, {
-      code: evaluation.code,
-      label: evaluation.label,
-      discountAgorot: evaluation.discountAgorot,
-    }),
+    cart: buildCartView(
+      row?.id ?? null,
+      items,
+      products,
+      variants,
+      {
+        code: evaluation.code,
+        label: evaluation.label,
+        discountAgorot: evaluation.discountAgorot,
+      },
+      await readShippingMethod(),
+    ),
   }
+}
+
+/**
+ * Records which shipping method the shopper picked.
+ *
+ * Cookie, not column, for the reason the coupon is a cookie (see the essay
+ * above CART_COUPON_COOKIE): production has no `carts` column for it and an
+ * unapplied migration must not sit under the purchase path. What the cookie
+ * holds is an id the registry validates on every read; a shopper who edits it
+ * can choose a different method and cannot choose a different rate.
+ *
+ * Refused, not defaulted, on an unknown id: the selector only offers ids the
+ * registry knows, so an unknown one is a stale client or a hand-made request,
+ * and either deserves an answer rather than a silent fallback.
+ */
+async function runSetShippingMethod(rawMethodId: unknown): Promise<CartActionResult> {
+  if (!isShippingMethodId(rawMethodId)) {
+    return fail('אופן משלוח לא מוכר', 'VALIDATION')
+  }
+  const cookieStore = await cookies()
+  cookieStore.set(CART_SHIPPING_COOKIE, rawMethodId, {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: SHIPPING_COOKIE_MAX_AGE,
+    path: '/',
+  })
+  revalidateCartPaths()
+  return { ok: true, cart: await runGetCart() }
 }
 
 async function runRemoveCouponCode(): Promise<CouponActionResult> {
@@ -964,6 +1018,10 @@ export async function applyCouponCode(rawCode: string): Promise<CouponActionResu
 
 export async function removeCouponCode(): Promise<CouponActionResult> {
   return withActionContext('cart.remove_coupon', () => runRemoveCouponCode())
+}
+
+export async function setShippingMethod(methodId: string): Promise<CartActionResult> {
+  return withActionContext('cart.set_shipping_method', () => runSetShippingMethod(methodId))
 }
 
 export async function resolveCheckoutDiscountAgorot(): Promise<{

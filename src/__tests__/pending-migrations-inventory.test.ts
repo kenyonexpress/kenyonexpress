@@ -354,6 +354,19 @@ describe('the pending migration inventory', () => {
       '232_reviews_admin_moderation_only.sql',
       '233_wishlist_alerts.sql',
       '234_gift_cards.sql',
+      // 235 is PENDING (2026-09-16): the product page's broadcast topic
+      // (trigger + realtime.send, chosen payload, never raises) and the
+      // approved-reviews rating summary. Dry-run rolled back on production;
+      // apply waits on the migration gate. README carries the measurement.
+      '235_product_live_and_rating.sql',
+      // 236 is PENDING (2026-09-16): where the cart's shipping-method pick
+      // lands on the order. `orders.shipping_method` (checked text, NULL means
+      // the supplier delivers) and `orders.shipping_agorot` (bigint, default 0,
+      // every registered rate is zero). Checkout already writes the method in
+      // its own UPDATE and logs `checkout.shipping_method_not_recorded` while
+      // the column is missing; no reader names the column until it exists.
+      // Additive, idempotent, rollback is two DROP COLUMN IF EXISTS.
+      '236_orders_shipping_method.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

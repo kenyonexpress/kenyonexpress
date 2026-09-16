@@ -575,3 +575,204 @@
 .city-tag--link:hover {
   text-decoration: underline;
 }
+
+/* Zoom, swipe and keyboard on the main frame. The frame's box is unchanged:
+   the magnified photo is clipped by the frame's own overflow, so the pixel
+   gate sees the same 470px square whether or not a shopper has zoomed. */
+.pdp-gallery__frame {
+  cursor: zoom-in;
+  touch-action: pan-y;
+  user-select: none;
+  outline-offset: 2px;
+}
+
+.pdp-gallery__frame[data-zoomed="true"] {
+  cursor: zoom-out;
+}
+
+.pdp-gallery__zoom {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+
+.pdp-gallery__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--pdp-surface) 85%, transparent);
+  color: var(--pdp-ink);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.pdp-gallery__nav--next {
+  left: 8px;
+}
+
+.pdp-gallery__nav--prev {
+  right: 8px;
+}
+
+.pdp-gallery__frame:hover .pdp-gallery__nav,
+.pdp-gallery__frame:focus-within .pdp-gallery__nav,
+.pdp-gallery__nav:focus-visible {
+  opacity: 1;
+}
+
+/* No hover on a touch screen: the arrows stay visible there, faintly. */
+@media (hover: none) {
+  .pdp-gallery__nav {
+    opacity: 0.7;
+  }
+}
+
+.pdp-gallery__counter {
+  position: absolute;
+  bottom: 8px;
+  inset-inline-end: 8px;
+  z-index: 2;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--pdp-ink) 70%, transparent);
+  color: var(--pdp-surface);
+  font-size: 12px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The star row in the meta slot. 14px glyphs on a 14px line, so the slot is
+   exactly as tall with stars as it is with the SKU alone. */
+.pdp-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-end: 12px;
+  vertical-align: top;
+}
+
+.pdp-rating__stars {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.pdp-rating__star {
+  position: relative;
+  display: inline-flex;
+  color: var(--pdp-line);
+}
+
+.pdp-rating__star--full {
+  color: var(--pdp-brand);
+}
+
+.pdp-rating__star--full svg {
+  fill: currentColor;
+}
+
+.pdp-rating__half {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* RTL: the filled half is the inline-start half, which is the right. */
+  clip-path: inset(0 0 0 50%);
+  color: var(--pdp-brand);
+}
+
+.pdp-rating__half svg {
+  fill: currentColor;
+}
+
+.pdp-rating__count {
+  font-size: var(--pdp-meta-size);
+  color: var(--pdp-muted);
+}
+
+/* The coupon redemption block: QR beside the two deadlines. */
+.pdp-coupon-qr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid var(--pdp-line);
+  border-radius: 16px;
+  background-color: var(--pdp-surface);
+}
+
+.pdp-coupon-qr__figure {
+  flex: none;
+  margin: 0;
+  text-align: center;
+}
+
+.pdp-coupon-qr__figure img {
+  display: block;
+  width: 144px;
+  height: 144px;
+  margin-inline: auto;
+}
+
+.pdp-coupon-qr__figure figcaption {
+  margin-top: 6px;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}
+
+.pdp-coupon-qr__body {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.pdp-coupon-qr__title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+  color: var(--pdp-ink);
+}
+
+.pdp-coupon-qr__text {
+  margin: 6px 0 0;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+.pdp-coupon-qr__list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+.pdp-coupon-qr__countdown {
+  display: inline-block;
+  margin-inline-start: 10px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: var(--pdp-meta-size);
+  font-weight: 700;
+  background-color: color-mix(in srgb, var(--pdp-brand) 30%, var(--pdp-surface));
+  color: var(--pdp-ink);
+}
+
+.pdp-coupon-qr__countdown[data-urgency="soon"],
+.pdp-coupon-qr__countdown[data-urgency="today"] {
+  background-color: var(--pdp-sale);
+  color: var(--pdp-surface);
+}

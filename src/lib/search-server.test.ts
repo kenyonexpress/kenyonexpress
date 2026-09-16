@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * WHAT THIS FILE GUARDS IS THE SHAPE OF THE QUERY, NOT THE ROWS.
@@ -127,6 +127,22 @@ describe('the ILIKE fallback', () => {
     expect(recorded.eqPairs).toContainEqual(['type', 'coupon'])
   })
 
+  it('scopes to one category with an inner join, so uncategorised rows cannot leak in', async () => {
+    await searchProductsServer('צימר', 6, undefined, 'spa')
+
+    expect(recorded.eqPairs).toContainEqual(['categories.slug', 'spa'])
+  })
+
+  it('hands the category scope to the FTS RPC by the argument 171 named', async () => {
+    await searchProductsServer('צימר', 6, undefined, 'spa')
+
+    expect(rpc).toHaveBeenCalledWith('search_products', {
+      q: 'צימר',
+      max_results: 6,
+      category: 'spa',
+    })
+  })
+
   it('is only reached AFTER the FTS RPC has answered "no such function"', async () => {
     await searchProductsServer('צימר')
 
@@ -201,5 +217,54 @@ describe('the search_products FTS path (migration 171)', () => {
 
     expect(outcome).toEqual({ results: [], total: 0, engine: 'database-fts' })
     expect(recorded.orGroups).toEqual([])
+  })
+})
+
+/**
+ * Stage 3. The engine is a stubbed `fetch`; what is pinned is the request
+ * body, because a filter that is built wrong returns an unscoped page with a
+ * 200 and no other sign.
+ */
+describe('the Meilisearch path', () => {
+  const realFetch = globalThis.fetch
+  let bodies: Record<string, unknown>[]
+
+  beforeEach(() => {
+    bodies = []
+    process.env.MEILISEARCH_HOST = 'http://meili.test'
+    process.env.MEILISEARCH_API_KEY = 'k'
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      bodies.push(JSON.parse(String(init?.body)))
+      return new Response(JSON.stringify({ hits: [], estimatedTotalHits: 0 }), { status: 200 })
+    }) as typeof fetch
+  })
+
+  it('applies the category scope as a quoted filter on category_slug', async () => {
+    const outcome = await searchProductsServer('צימר', 6, undefined, 'spa')
+
+    expect(outcome.engine).toBe('meilisearch')
+    expect(bodies[0]?.filter).toEqual(['category_slug = "spa"'])
+  })
+
+  it('ANDs the type facet with the category scope', async () => {
+    await searchProductsServer('צימר', 6, 'coupon', 'spa')
+
+    expect(bodies[0]?.filter).toEqual(['type = coupon', 'category_slug = "spa"'])
+  })
+
+  it('sends no filter key at all when nothing is scoped', async () => {
+    await searchProductsServer('צימר', 6)
+
+    expect(bodies[0]).not.toHaveProperty('filter')
+  })
+
+  it('cannot be handed a second clause through the slug', async () => {
+    await searchProductsServer('צימר', 6, undefined, 'spa" OR type = "coupon')
+
+    expect(bodies[0]?.filter).toEqual(['category_slug = "spa\\" OR type = \\"coupon"'])
+  })
+
+  afterAll(() => {
+    globalThis.fetch = realFetch
   })
 })

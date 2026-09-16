@@ -6,6 +6,7 @@ import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
+import { cityFromPostalCode, postalCodeMatchesCity } from '@/lib/checkout/postal-autofill'
 import {
   CHECKOUT_STEPS,
   type CheckoutStep,
@@ -315,6 +316,83 @@ export default function CheckoutForm({
     return !check || check.ok
   }
 
+  /**
+   * Postal-code autofill, both ways, and never over a typed value.
+   *
+   * `zipHint` is advice, not an error: it names the field that was filled in
+   * for the shopper, or the region a typed code belongs to when that is not
+   * the typed city. Neither blocks the step; `zipError` alone does that.
+   */
+  const [zipHint, setZipHint] = useState<string | null>(null)
+  const lookupRef = useRef<AbortController | null>(null)
+
+  const fieldByName = (name: string): HTMLInputElement | null => {
+    const field = formRef.current?.elements.namedItem(name)
+    return field instanceof HTMLInputElement ? field : null
+  }
+
+  /** Code -> city, on leaving the zip field. Fills an empty city, hints on a mismatch. */
+  const handleZipBlur = (value: string) => {
+    if (!validateZip(value)) {
+      setZipHint(null)
+      return
+    }
+    const region = cityFromPostalCode(value)
+    const city = fieldByName('city')
+    if (!region || !city) {
+      setZipHint(null)
+      return
+    }
+    if (city.value.trim() === '') {
+      city.value = region
+      setZipHint(`העיר הושלמה לפי המיקוד: ${region}. אפשר לערוך.`)
+      return
+    }
+    setZipHint(
+      postalCodeMatchesCity(value, city.value)
+        ? null
+        : `המיקוד שהוזן שייך לאזור ${region}. כדאי לבדוק.`,
+    )
+  }
+
+  /**
+   * City + street + house -> code, on leaving any of the three. Asks the
+   * server only when the zip is still empty, and drops a stale answer if the
+   * shopper moved on to another address before it arrived. Every failure is
+   * silence: the field is optional, and a lookup that did not work must not
+   * read as a checkout that did not.
+   */
+  const suggestZip = () => {
+    const zip = fieldByName('zip')
+    if (!zip || zip.value.trim() !== '') return
+    const city = fieldByName('city')?.value.trim() ?? ''
+    const street = fieldByName('street')?.value.trim() ?? ''
+    const house = fieldByName('street_number')?.value.trim() ?? ''
+    if (!city || !street || !house) return
+
+    lookupRef.current?.abort()
+    const controller = new AbortController()
+    lookupRef.current = controller
+    const params = new URLSearchParams({ city, street, house })
+    fetch(`/api/checkout/postal-code?${params.toString()}`, { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { zip?: string | null } | null) => {
+        if (controller.signal.aborted) return
+        const suggested = payload?.zip
+        if (typeof suggested !== 'string' || !suggested) return
+        // Re-read at arrival time, not at request time: the shopper may have
+        // typed the code themselves while the lookup was in flight.
+        const target = fieldByName('zip')
+        if (!target || target.value.trim() !== '') return
+        target.value = suggested
+        validateZip(suggested)
+        setZipHint('המיקוד הושלם אוטומטית לפי הכתובת. אפשר לערוך.')
+      })
+      .catch(() => {
+        // Aborted, offline, or a non-JSON answer. Nothing to fill.
+      })
+  }
+
   // The single gate that makes this a guest checkout: the form is filled, and
   // only the press of "pay" needs an identity. A guest is stashed and sent to
   // Google here instead of being turned away at the door.
@@ -572,6 +650,7 @@ export default function CheckoutForm({
                         name="city"
                         defaultValue={prefill.city}
                         autoComplete="address-level2"
+                        onBlur={suggestZip}
                         aria-invalid={errorFor('city') ? 'true' : undefined}
                         aria-describedby={errorIdFor('city')}
                       />
@@ -593,6 +672,7 @@ export default function CheckoutForm({
                         name="street"
                         defaultValue={prefill.street}
                         autoComplete="address-line1"
+                        onBlur={suggestZip}
                         aria-invalid={errorFor('street') ? 'true' : undefined}
                         aria-describedby={errorIdFor('street')}
                       />
@@ -610,6 +690,7 @@ export default function CheckoutForm({
                         id="co-number"
                         name="street_number"
                         defaultValue={prefill.street_number}
+                        onBlur={suggestZip}
                         aria-invalid={errorFor('street_number') ? 'true' : undefined}
                         aria-describedby={errorIdFor('street_number')}
                       />
@@ -651,12 +732,25 @@ export default function CheckoutForm({
                         inputMode="numeric"
                         autoComplete="postal-code"
                         aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
-                        aria-describedby={zipError || errorFor('zip') ? 'co-zip-error' : undefined}
-                        onBlur={(event) => validateZip(event.currentTarget.value)}
+                        aria-describedby={
+                          zipError || errorFor('zip')
+                            ? 'co-zip-error'
+                            : zipHint
+                              ? 'co-zip-hint'
+                              : undefined
+                        }
+                        onBlur={(event) => handleZipBlur(event.currentTarget.value)}
+                        onChange={() => setZipHint(null)}
                       />
                       {(zipError || errorFor('zip')) && (
                         <span className="checkout-field__error" id="co-zip-error" role="alert">
                           {zipError ?? errorFor('zip')}
+                        </span>
+                      )}
+                      {/* Advice, announced politely: it never blocks the step. */}
+                      {!zipError && !errorFor('zip') && zipHint && (
+                        <span className="checkout-field__hint" id="co-zip-hint" aria-live="polite">
+                          {zipHint}
                         </span>
                       )}
                     </div>

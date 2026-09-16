@@ -75,6 +75,8 @@ export const COLOUR_ALLOWLIST = new Set([
   // takes rgb() components and a tax document's ink does not rebrand with the
   // site theme.
   'src/lib/invoices/pdf.ts',
+  // The order receipt is the same kind of print artefact as the invoice.
+  'src/lib/orders/receipt-pdf.ts',
   'src/components/shared/GoogleLogo.tsx',
   'src/app/global-error.tsx',
 ])

@@ -694,6 +694,80 @@
   font-weight: 700;
 }
 
+/* Shipping method radiogroup, between the summary rows and the coupon field.
+   Colours are the sidebar's own (#333e48 ink, #657888 muted, #eee rule), so
+   nothing new is introduced for the raw-hex gate to count. */
+.cart-shipping {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  min-inline-size: 0;
+}
+
+.cart-shipping__legend {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #333e48;
+  margin-bottom: 0.625rem;
+  padding: 0;
+}
+
+.cart-shipping__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cart-shipping__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333e48;
+}
+
+.cart-shipping__option[data-checked] {
+  border-color: #333e48;
+}
+
+.cart-shipping:disabled .cart-shipping__option {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.cart-shipping__input {
+  margin: 0.2rem 0 0;
+  flex: 0 0 auto;
+  accent-color: #333e48;
+}
+
+.cart-shipping__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.cart-shipping__label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.cart-shipping__description {
+  font-size: 0.8125rem;
+  color: #657888;
+}
+
+.cart-shipping__cost {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
 /* ===========================================================================
    MOBILE COMPACTION, AT THE END OF THE FILE ON PURPOSE: these override base
    rules declared above at equal specificity, so source order is the override

@@ -1,4 +1,5 @@
 import {
+  type CartShipping,
   type CartStorageItem,
   type CartView,
   type CartViewItem,
@@ -8,6 +9,11 @@ import {
 import { calculateCommission } from '@/lib/commerce/commission'
 import { isImplausibleDiscountAgorot } from '@/lib/commerce/implausible-discount'
 import { type Agorot, agorot, ilsToAgorot, multiplyAgorot } from '@/lib/commerce/money'
+import {
+  DEFAULT_SHIPPING_METHOD_ID,
+  type ShippingMethod,
+  resolveShippingMethod,
+} from '@/lib/shipping/methods'
 import type { ProductType } from '@/types/database'
 
 const ZERO = agorot(0)
@@ -199,6 +205,12 @@ export function buildCartView(
     discountAgorot: number
     stack?: { code: string; discountAgorot: number }[]
   } | null = null,
+  /**
+   * The shipping method the shopper's cookie names, already resolved against
+   * the registry by the caller. Ignored when no line is physical: the view
+   * reports `shipping: null` and the selector never renders.
+   */
+  shippingMethod: ShippingMethod = resolveShippingMethod(DEFAULT_SHIPPING_METHOD_ID),
 ): CartView {
   if (storageItems.length === 0) {
     return { ...EMPTY_CART, id: cartId }
@@ -377,6 +389,16 @@ export function buildCartView(
     coupon ? Math.max(0, Math.min(coupon.discountAgorot, payableAgorot)) : 0,
   )
 
+  // A coupon is redeemed at the business, so a cart of coupons alone ships
+  // nothing and gets no shipping line. One physical item is enough to need one.
+  const shipping: CartShipping | null = viewItems.some((line) => line.type === 'physical')
+    ? {
+        method: shippingMethod.id,
+        label: shippingMethod.label,
+        cost: shippingMethod.costAgorot,
+      }
+    : null
+
   return {
     id: cartId,
     items: viewItems,
@@ -395,6 +417,7 @@ export function buildCartView(
           }
         : null,
     discount: discountAgorot,
-    total: agorot(payableAgorot - discountAgorot),
+    shipping,
+    total: agorot(payableAgorot - discountAgorot + (shipping?.cost ?? 0)),
   }
 }

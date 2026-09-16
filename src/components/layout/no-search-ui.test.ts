@@ -3,13 +3,21 @@ import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * THE SITE HAS NO SEARCH FIELD. THIS IS THE GATE THAT KEEPS IT THAT WAY.
+ * THE SHELL HAS NO SEARCH FIELD. THIS IS THE GATE THAT KEEPS IT THAT WAY.
  *
- * It is an absolute product rule, not a phase of the build: KenyonExpress ships
- * no search input in the masthead, the handheld header, the off-canvas drawer,
- * the footer or the results page. The Meilisearch backend is untouched and
- * `/search?q=` still answers, so a campaign link or a redirect resolves to real
- * results; what does not exist is a box a visitor can type into.
+ * KenyonExpress ships no search input in the masthead, the handheld header,
+ * the off-canvas drawer, the footer or the results page. The Meilisearch
+ * backend is untouched and `/search?q=` still answers, so a campaign link or a
+ * redirect resolves to real results; what does not exist in the chrome is a
+ * box a visitor can type into.
+ *
+ * ONE EXEMPTION, NAMED. On 2026-09-16 the product listing goal asked for a
+ * Meilisearch autocomplete, and it got one: `category/CategoryAutocomplete.tsx`,
+ * a category-scoped combobox that renders inside the listing page's filter
+ * sidebar and nowhere else. The exemption is a file name, not a pattern, and
+ * the test below pins that the file is imported by the sidebar alone -- so a
+ * second field cannot appear by copying the first, and the shell assertions
+ * are untouched by it.
  *
  * WHY A TEST AND NOT A CONVENTION. The rule was already written in prose at the
  * top of Header.tsx, MastheadNav.tsx and MobileDrawer.tsx -- three comments,
@@ -24,6 +32,10 @@ import { describe, expect, it } from 'vitest'
  */
 
 const ROOT = process.cwd()
+
+/** The one typing field, and the one component allowed to mount it. */
+const AUTOCOMPLETE = 'src/components/category/CategoryAutocomplete.tsx'
+const AUTOCOMPLETE_HOST = 'src/components/category/CategoryFilterSidebar.tsx'
 
 /** The components that make up every page's chrome. */
 const SHELL = [
@@ -83,6 +95,22 @@ describe('no search UI anywhere on the site', () => {
       }
     }
     expect(offenders, `search controls found:\n  ${offenders.join('\n  ')}`).toEqual([])
+  })
+
+  it('mounts the listing autocomplete from the filter sidebar and nowhere else', () => {
+    const importers = files.filter(
+      (f) => f !== AUTOCOMPLETE && /CategoryAutocomplete/.test(markup(f)),
+    )
+    expect(importers).toEqual([AUTOCOMPLETE_HOST])
+    // The exemption is a combobox on a text input, never a search input: the
+    // first assertion above already covers type="search", this pins the shape.
+    const source = markup(AUTOCOMPLETE)
+    expect(source).toContain('type="text"')
+    expect(source).toContain('role="combobox"')
+    // No shell file reaches it, directly or through the sidebar.
+    for (const file of SHELL) {
+      expect(markup(file)).not.toMatch(/CategoryAutocomplete|CategoryFilterSidebar/)
+    }
   })
 
   it('ships no component whose name says it is a search field', () => {

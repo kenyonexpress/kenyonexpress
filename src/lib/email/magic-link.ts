@@ -41,6 +41,13 @@ export interface MagicLinkEmailInput {
   actionLink: string
   /** Site name shown to the reader; the sender identity, not a link. */
   siteName?: string
+  /**
+   * The one-time code GoTrue mints alongside the link (`email_otp` on
+   * `generateLink`). Typed on the login page instead of clicking, which is the
+   * path for a mail opened on a different device than the browser that asked.
+   * Optional so a sender without it still produces the link-only mail.
+   */
+  code?: string
 }
 
 export interface BuiltMagicLinkEmail {
@@ -62,12 +69,15 @@ export function buildMagicLinkEmail(input: MagicLinkEmailInput): BuiltMagicLinkE
   const link = input.actionLink
   const subject = `הקישור שלך לכניסה ל-${site}`
 
+  const code = input.code?.trim() || null
+
   const text = [
     'שלום,',
     '',
     `ביקשתם להתחבר ל-${site}. הכניסה בלחיצה על הקישור:`,
     ltrText(link),
     '',
+    ...(code ? [`או הזינו את הקוד הזה בדף הכניסה: ${ltrText(code)}`, ''] : []),
     'הקישור אישי, חד פעמי, ותקף לזמן קצר.',
     'אם לא ביקשתם להתחבר, אפשר להתעלם מהמייל הזה ושום דבר לא ישתנה בחשבון.',
   ].join('\n')
@@ -82,6 +92,12 @@ export function buildMagicLinkEmail(input: MagicLinkEmailInput): BuiltMagicLinkE
           <a href="${escapeHtml(link)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">כניסה לחשבון</a>
           <div style="font-size:13px;color:${MUTED};margin-top:14px">אם הכפתור לא עובד, אפשר להעתיק את הקישור:</div>
           <div dir="ltr" style="${LTR_ISOLATE_STYLE};font-size:12px;color:${MUTED};margin-top:6px;word-break:break-all">${escapeHtml(link)}</div>
+${
+  code
+    ? `<div style="font-size:14px;color:${INK};margin-top:18px">או הזינו את הקוד הזה בדף הכניסה:</div>
+          <div dir="ltr" style="${LTR_ISOLATE_STYLE};font-size:26px;font-weight:800;letter-spacing:0.3em;color:${INK};text-align:center;margin-top:8px">${escapeHtml(code)}</div>`
+    : ''
+}
           <div style="font-size:13px;color:${MUTED};margin-top:14px">הקישור אישי, חד פעמי, ותקף לזמן קצר.</div>
         </div>
         <div style="font-size:12px;color:${MUTED};margin-top:18px;text-align:center">אם לא ביקשתם להתחבר, אפשר להתעלם מהמייל הזה ושום דבר לא ישתנה בחשבון.</div>

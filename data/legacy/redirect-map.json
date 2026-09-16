@@ -119,6 +119,7 @@
       "/accessibility",
       "/account",
       "/account/addresses",
+      "/account/cashback",
       "/account/coupons",
       "/account/details",
       "/account/my-vouchers",

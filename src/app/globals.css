@@ -38,6 +38,16 @@ body {
   padding-inline: var(--usp-pad);
 }
 
+/* Live's features-list is overflow:auto with the fifth cell off the inline end
+   at 768. It scrolls, but the capture shows no scrollbar (81px tall: 79 of
+   cell plus the two borders), so the bar must not paint one either. */
+.benefit-bar__list {
+  scrollbar-width: none;
+}
+.benefit-bar__list::-webkit-scrollbar {
+  display: none;
+}
+
 @media (max-width: 374px) {
   .benefit-bar__item {
     flex-direction: column;

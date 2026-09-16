@@ -15,9 +15,12 @@ import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
+  changePasswordSchema,
+  emailOtpVerifySchema,
   loginSchema,
   magicLinkSchema,
   newPasswordSchema,
@@ -59,6 +62,10 @@ const ERROR_MAP: Record<string, string> = {
     this project, and the fallback now names anything new rather than hiding it.
   */
   'Auth session missing': 'קישור האיפוס פג או שכבר נעשה בו שימוש — בקשו קישור חדש',
+  // What `verifyOtp` answers for a typed code that is wrong, reused, or older
+  // than the project's OTP expiry. One sentence for all three on purpose:
+  // distinguishing "wrong" from "expired" tells a guesser which digits to keep.
+  'Token has expired or is invalid': 'הקוד שגוי או שפג תוקפו — בקשו קוד חדש',
 }
 
 /**
@@ -477,6 +484,95 @@ async function runUpdatePassword(_: AuthState, formData: FormData): Promise<Auth
   redirect('/')
 }
 
+// ──────────────────────────────────────────────
+// Email OTP (the code from the login mail, typed instead of clicked)
+// ──────────────────────────────────────────────
+async function runVerifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  const ip = await getClientIp()
+  // Same ceiling as the SMS code and for the same reason: six digits is a
+  // million codes, and without this the mail gate is decorative.
+  const allowed = await checkRateLimit(`email-verify:${ip}`, 20, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const parsed = emailOtpVerifySchema.safeParse({
+    email: formData.get('email'),
+    token: formData.get('token'),
+  })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  // Per-address as well as per-IP, the way the password login is, so a list of
+  // proxies cannot buy one address twenty tries each.
+  const addressAllowed = await checkRateLimit(`email-verify-address:${parsed.data.email}`, 20, 3600)
+  if (!addressAllowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const supabase = await createClient()
+  // `type: 'email'` is what GoTrue expects for the code that rides with a
+  // magic link (`email_otp` off `generateLink`); 'magiclink' is the token_hash
+  // leg the callback route consumes. Both verify the same secret.
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: parsed.data.email,
+    token: parsed.data.token,
+    type: 'email',
+  })
+  if (error) return { error: toHebrew(error.message) }
+
+  // From here on this is the callback route's job, done here because the
+  // session was minted in this request and never passes through /auth/callback.
+  const sessionId = await getGuestSessionId()
+  if (data.user && sessionId) {
+    const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
+  }
+  if (data.user) {
+    await claimReferralOnce(data.user.id, sessionId)
+  }
+
+  redirect(safeNext(formData.get('next')))
+}
+
+// ──────────────────────────────────────────────
+// Change password (signed in, current password re-proves the owner)
+// ──────────────────────────────────────────────
+async function runChangePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user?.email) return { error: 'יש להתחבר' }
+
+  // Keyed on the session, not the IP: the thing being guessed here is one
+  // account's current password, from a device that already holds its cookies.
+  const allowed = await checkRateLimit(`change-password:${user.id}`, 10, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const parsed = changePasswordSchema.safeParse({
+    current_password: formData.get('current_password'),
+    password: formData.get('password'),
+    confirm_password: formData.get('confirm_password'),
+  })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  // `updateUser` trusts the session, and a session is exactly what a shared
+  // or stolen device has. The current password is checked against GoTrue on
+  // a throwaway anon client that persists nothing: a wrong one fails here and
+  // the real session is untouched; a right one mints a session we revoke on
+  // the spot, so the check leaves no second login behind.
+  const verifier = createPublicClient()
+  const { error: verifyError } = await verifier.auth.signInWithPassword({
+    email: user.email,
+    password: parsed.data.current_password,
+  })
+  if (verifyError) return { error: 'הסיסמה הנוכחית שגויה' }
+  await verifier.auth.signOut({ scope: 'local' })
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+  if (error) return { error: toHebrew(error.message) }
+  return { success: 'הסיסמה עודכנה' }
+}
+
 export async function signInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
   return withActionContext('auth.sign_in_google', () => runSignInWithGoogle(_, formData))
 }
@@ -515,4 +611,12 @@ export async function sendPasswordReset(_: AuthState, formData: FormData): Promi
 
 export async function updatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
   return withActionContext('auth.update_password', () => runUpdatePassword(_, formData))
+}
+
+export async function verifyEmailOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.verify_email_otp', () => runVerifyEmailOtp(_, formData))
+}
+
+export async function changePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.change_password', () => runChangePassword(_, formData))
 }

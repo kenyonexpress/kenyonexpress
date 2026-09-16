@@ -1,11 +1,13 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { searchProductsCached } from '@/lib/search-server'
+import { parseCategoryScope } from '@/lib/search/category-scope'
 import { getClientIp } from '@/lib/utils/rate-limit'
 import { NextResponse } from 'next/server'
 
 /**
- * Type-ahead suggestions for the header search box.
+ * Type-ahead suggestions for the listing page's category-scoped autocomplete
+ * (components/category/CategoryAutocomplete.tsx). The shell has no search box.
  *
  * This exists because the browser cannot ask Meilisearch directly. The engine is
  * reached with `MEILISEARCH_API_KEY`, a server secret, so a client-side fetch to
@@ -25,6 +27,8 @@ const MIN_QUERY = 2
 async function handleGET(request: Request) {
   const { searchParams } = new URL(request.url)
   const q = (searchParams.get('q') ?? '').trim()
+  // The listing page's autocomplete scopes itself to the archive it sits on.
+  const category = parseCategoryScope(searchParams.get('category'))
 
   // Two characters is roughly one Hebrew syllable. Below that every query
   // matches most of the catalogue, which is noise rather than a suggestion.
@@ -46,7 +50,7 @@ async function handleGET(request: Request) {
   }
 
   try {
-    const { results, engine } = await searchProductsCached(q, MAX_SUGGESTIONS)
+    const { results, engine } = await searchProductsCached(q, MAX_SUGGESTIONS, undefined, category)
     return NextResponse.json(
       {
         results: results.slice(0, MAX_SUGGESTIONS).map((r) => ({
