@@ -74,6 +74,12 @@ const schema = z
      */
     AXIOM_TOKEN: z.string().min(10).optional().or(z.literal('')),
     AXIOM_DATASET: z.string().optional().or(z.literal('')),
+    /**
+     * Where revenue facts (revenue.purchase / revenue.refund) land. Optional
+     * on top of the pair above: unset means the log dataset, so the cohort
+     * dashboard still has data on a half-configured environment.
+     */
+    AXIOM_REVENUE_DATASET: z.string().optional().or(z.literal('')),
 
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),

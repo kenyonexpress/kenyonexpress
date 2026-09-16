@@ -31,14 +31,36 @@ export function isAxiomEnabled(): boolean {
 }
 
 /**
+ * The dataset revenue facts land in. Its own dataset so cohort queries never
+ * scan the log firehose and so retention can differ (logs: 30 days; revenue:
+ * as long as the plan allows). Falls back to the log dataset when unset, so
+ * a half-configured environment still ships the fact somewhere queryable
+ * rather than dropping it.
+ */
+export function revenueDataset(): string | null {
+  const explicit = process.env.AXIOM_REVENUE_DATASET
+  if (explicit) return explicit
+  return env()?.dataset ?? null
+}
+
+export type ShipOptions = {
+  /** Overrides AXIOM_DATASET for this one event. */
+  dataset?: string
+}
+
+/**
  * Ships one structured event. Resolves when the attempt settles; the caller
  * is expected to `void` it. `_time` is Axiom's timestamp field.
  */
-export async function shipAxiomEvent(event: Record<string, unknown>): Promise<void> {
+export async function shipAxiomEvent(
+  event: Record<string, unknown>,
+  options: ShipOptions = {},
+): Promise<void> {
   const config = env()
   if (!config) return
+  const dataset = options.dataset ?? config.dataset
   try {
-    await fetch(`${API}/${encodeURIComponent(config.dataset)}/ingest`, {
+    await fetch(`${API}/${encodeURIComponent(dataset)}/ingest`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${config.token}`,
