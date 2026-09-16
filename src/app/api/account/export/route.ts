@@ -1,3 +1,4 @@
+import { writeAuditLog } from '@/lib/admin/audit'
 import { CONSENT_COOKIE, parseConsent } from '@/lib/analytics/consent'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -99,6 +100,20 @@ async function handleGET(): Promise<NextResponse> {
   }
 
   const consentRaw = (await cookies()).get(CONSENT_COOKIE)?.value ?? null
+
+  // The record of the request itself. A regulator asking "when did this
+  // person exercise the access right, and what did they get" is answered
+  // from audit_log, the same table the deletion cascade writes its proof of
+  // erasure to. Best effort by design (the helper logs and never throws): a
+  // failed audit row must not turn a legal right into a 500.
+  await writeAuditLog({
+    actorId: user.id,
+    actorRole: 'customer',
+    action: 'created',
+    entityType: 'data_export',
+    entityId: user.id,
+    metadata: { sections_unavailable: unavailable },
+  })
 
   const body = {
     format: 'kenyonexpress-data-export/1',

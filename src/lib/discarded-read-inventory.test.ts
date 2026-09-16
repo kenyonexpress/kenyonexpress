@@ -68,7 +68,7 @@ const INVENTORY: Record<string, number> = {
   'src/app/api/cron/abandoned-cart/route.ts': 2,
   // Alert candidates: a failed read alerts nobody this run and the next run
   // sees the same rows; nothing is lost, only late.
-  'src/app/api/cron/wishlist-alerts/route.ts': 3,
+  'src/app/api/cron/wishlist-alerts/route.ts': 2,
   'src/app/api/cron/wishlist-digest/route.ts': 1,
   'src/app/api/supplier/vouchers/redeem/route.ts': 2,
   'src/app/auth/callback/route.ts': 1,

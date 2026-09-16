@@ -381,6 +381,8 @@ describe('the pending migration inventory', () => {
       // a second 237 by a parallel session and renumbered to the next free
       // slot; README carries the reasoning and the preconditions.
       '239_push_deliveries_sms_log_opt_outs.sql',
+      '240_perf_fk_indexes_and_cart_uniqueness.sql',
+      '241_rls_initplan_policies.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

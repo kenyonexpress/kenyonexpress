@@ -8,6 +8,8 @@ import {
   PAYMENT_FRAME_PATHS,
   contentSecurityPolicyFor,
   permissionsPolicyFor,
+  reportingEndpointsHeader,
+  sentrySecurityEndpoint,
 } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
@@ -40,12 +42,27 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
 // not adds: two Content-Security-Policy headers are both enforced and the
 // strictest wins, which would undo the exception without saying so.
+// CSP violation reports go to Sentry when a DSN is configured at build time.
+// The header is static, so the DSN has to be present when `next build` runs;
+// Vercel injects the project's environment there, a laptop usually has none,
+// and in that case the policy simply carries no reporting directive.
+// `sentrySecurityEndpoint` in frame-policy.ts derives the endpoint from the
+// DSN and explains why a nonce is not the answer here.
+const CSP_REPORT_URI = sentrySecurityEndpoint(
+  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+  process.env.SENTRY_ENVIRONMENT ||
+    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
+    process.env.VERCEL_ENV,
+)
+const REPORTING_ENDPOINTS = reportingEndpointsHeader(CSP_REPORT_URI)
+
 const headersWithPolicy = (
   csp: string,
   frameOptions: 'DENY' | 'SAMEORIGIN',
   permissions: string,
 ) => [
   { key: 'Content-Security-Policy', value: csp },
+  ...(REPORTING_ENDPOINTS ? [{ key: 'Reporting-Endpoints', value: REPORTING_ENDPOINTS }] : []),
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   // Moves in step with frame-ancestors. Browsers that honour both enforce both,
   // so a DENY left behind on a framable path blocks the frame anyway.
@@ -88,7 +105,7 @@ const nextConfig: NextConfig = {
       {
         source: `/((?!${framable}|${cameraSources}).*)`,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor('/'),
+          contentSecurityPolicyFor('/', { reportUri: CSP_REPORT_URI }),
           'DENY',
           permissionsPolicyFor('/'),
         ),
@@ -96,7 +113,7 @@ const nextConfig: NextConfig = {
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: `${path}/:path*`,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor(path),
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
           'SAMEORIGIN',
           permissionsPolicyFor(path),
         ),
@@ -104,7 +121,7 @@ const nextConfig: NextConfig = {
       ...CAMERA_PATHS.map((path) => ({
         source: `${path}{/:path}?`,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor(path),
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
           'DENY',
           permissionsPolicyFor(path),
         ),
@@ -112,7 +129,7 @@ const nextConfig: NextConfig = {
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: path,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor(path),
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
           'SAMEORIGIN',
           permissionsPolicyFor(path),
         ),
@@ -153,6 +170,27 @@ const nextConfig: NextConfig = {
     // 50/60 for below-fold deal thumbs ([33]); Lighthouse image-delivery wanted
     // denser compression on 157px paints that were still shipping q=75.
     qualities: [50, 60, 75, 90, 95],
+    /**
+     * AVIF first, WebP for the browsers that cannot decode it
+     * (ARCHITECTURE-PERFORMANCE-SEO.md 4.2). Next 16's default is WebP only.
+     * The order is the preference order when the Accept header allows both;
+     * an animated or SVG source is passed through unchanged regardless, so the
+     * catalogue's photos are the only things this touches. Both formats are
+     * cached separately by Vercel Image Optimization, which is storage, not
+     * transformations, and transformations are what the plan bills.
+     */
+    formats: ['image/avif', 'image/webp'],
+    /**
+     * 31 days at the edge for an optimized image (2678400 = 31 * 24 * 3600).
+     *
+     * Next 16 raised its own default from 60s to 4 hours, and 4 hours is still
+     * six re-optimizations a day per (source, width, quality, format) tuple
+     * that nobody asked for: a product photo here changes by changing its PATH
+     * (4.2 rule 5, and `media_assets` keys on the path), so the bytes behind a
+     * given URL never change and a long TTL forfeits nothing. It also caps the
+     * upstream reads Supabase Storage sees for the same photo.
+     */
+    minimumCacheTTL: 2678400,
     /**
      * Next's default, plus one rung at 288.
      *

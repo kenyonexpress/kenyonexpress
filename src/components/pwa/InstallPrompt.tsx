@@ -1,21 +1,29 @@
 'use client'
 
+import { detectInstallSurface, readInstallEnvironment } from '@/lib/pwa/install-surface'
 import { useEffect, useState } from 'react'
 
 /**
- * The "add to home screen" invitation.
+ * The "add to home screen" invitation, in its two forms.
  *
- * Chrome fires `beforeinstallprompt` and lets the page defer it; the native
- * mini-infobar is suppressed the moment we call preventDefault, so once we
- * capture the event we are obliged to offer the install ourselves or the user
- * loses the option entirely. That is why the banner renders off a captured
- * event and never off a guess about the browser.
+ * CHROME AND ANDROID. Chrome fires `beforeinstallprompt` and lets the page
+ * defer it; the native mini-infobar is suppressed the moment we call
+ * preventDefault, so once we capture the event we are obliged to offer the
+ * install ourselves or the user loses the option entirely. That is why the
+ * banner renders off a captured event and never off a guess about the browser.
+ *
+ * iOS. Safari, and every other browser on iOS because they are all WebKit,
+ * fires nothing and exposes no API. The only install path is the share
+ * sheet's "Add to Home Screen", so on that platform the banner is
+ * instructions and a single "got it" button. Which form is shown is decided
+ * by `lib/pwa/install-surface.ts`, which is pure and tested on its own.
  *
  * Not shown on the money paths. A bar sliding up over the checkout during
  * payment costs an order, and the install is worth less than the order.
  *
- * A dismissal is remembered in localStorage. Re-asking every visit is how a
- * prompt gets ignored permanently, and there is no second chance after that.
+ * A dismissal is remembered in localStorage, and it is ONE key for both forms.
+ * Re-asking every visit is how a prompt gets ignored permanently, and there is
+ * no second chance after that.
  */
 
 const DISMISSED_KEY = 'ke:pwa-install-dismissed'
@@ -25,9 +33,11 @@ const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/sc
  * NOT ON THE FIRST THING A VISITOR SEES.
  *
  * Chrome fires `beforeinstallprompt` as soon as the engagement heuristic is
- * satisfied, which can be within a second of the page painting. Asking somebody
- * to install an app they have not looked at yet is how a prompt gets dismissed
- * permanently -- and the dismissal is remembered, so there is no second chance.
+ * satisfied, which can be within a second of the page painting, and the iOS
+ * form has no event at all and could render on the first frame. Asking
+ * somebody to install an app they have not looked at yet is how a prompt gets
+ * dismissed permanently -- and the dismissal is remembered, so there is no
+ * second chance.
  *
  * The gate is a real interaction on THIS visit: a scroll, a pointer down or a
  * key. Not a timer, because a timer fires at a shopper who walked away.
@@ -51,8 +61,14 @@ type InstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+/** What the banner has to offer: nothing yet, a captured prompt, or the iOS instructions. */
+type Offer = { kind: 'none' } | { kind: 'prompt'; event: InstallPromptEvent } | { kind: 'ios' }
+
+const BUTTON =
+  'min-h-touch-min rounded-xl px-4 font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2'
+
 export default function InstallPrompt() {
-  const [deferred, setDeferred] = useState<InstallPromptEvent | null>(null)
+  const [offer, setOffer] = useState<Offer>({ kind: 'none' })
   const [engaged, setEngaged] = useState(false)
 
   // The interaction gate. Registered once, torn down after the first signal.
@@ -67,24 +83,32 @@ export default function InstallPrompt() {
   }, [])
 
   useEffect(() => {
-    // `matchMedia` rather than a userAgent test: this is the only reliable way
-    // to know the app is already installed and running standalone, in which
-    // case offering to install it is nonsense.
-    if (window.matchMedia('(display-mode: standalone)').matches) return
     if (localStorage.getItem(DISMISSED_KEY) === '1') return
     if (HIDDEN_ON.some((path) => window.location.pathname.startsWith(path))) return
+
+    // `matchMedia` and `navigator.standalone` rather than a userAgent test for
+    // the installed state: those are the only reliable signals that the app is
+    // already on the home screen, in which case offering it is nonsense.
+    const surface = detectInstallSurface(readInstallEnvironment(window))
+    if (surface === 'installed') return
+
+    if (surface === 'ios') {
+      // No event will ever come. The instructions are the offer.
+      setOffer({ kind: 'ios' })
+      return
+    }
 
     const onPrompt = (event: Event) => {
       // Suppresses Chrome's own infobar. From here the offer is ours to make.
       event.preventDefault()
-      setDeferred(event as InstallPromptEvent)
+      setOffer({ kind: 'prompt', event: event as InstallPromptEvent })
     }
 
     window.addEventListener('beforeinstallprompt', onPrompt)
     return () => window.removeEventListener('beforeinstallprompt', onPrompt)
   }, [])
 
-  const visible = deferred !== null && engaged
+  const visible = offer.kind !== 'none' && engaged
 
   // Reserve the space for exactly as long as the banner occupies it.
   useEffect(() => {
@@ -97,16 +121,18 @@ export default function InstallPrompt() {
 
   const dismiss = () => {
     localStorage.setItem(DISMISSED_KEY, '1')
-    setDeferred(null)
+    setOffer({ kind: 'none' })
   }
 
   const install = async () => {
+    if (offer.kind !== 'prompt') return
+    const { event } = offer
     // The event is single-use: once prompted it cannot be prompted again, so
     // it is cleared regardless of the outcome.
-    setDeferred(null)
+    setOffer({ kind: 'none' })
     try {
-      await deferred.prompt()
-      await deferred.userChoice
+      await event.prompt()
+      await event.userChoice
     } catch {
       // The browser refused to show it. Nothing to recover.
     }
@@ -119,6 +145,7 @@ export default function InstallPrompt() {
     <section
       dir="rtl"
       aria-label="התקנת האפליקציה"
+      data-install-surface={offer.kind}
       // `bottom` is the consent reservation plus the inset, not a fixed 12px.
       // Both banners are `fixed` at the bottom of the viewport, so with a
       // constant offset this one lands ON TOP of the consent banner whenever a
@@ -130,23 +157,38 @@ export default function InstallPrompt() {
       <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
       <div className="min-w-0 flex-1">
         <p className="font-bold text-heading text-sm">התקינו את KenyonExpress</p>
-        <p className="text-gray-500 text-xs">גישה מהירה מהמסך הראשי, גם בלי דפדפן.</p>
+        {offer.kind === 'ios' ? (
+          // The two taps, in the order Safari shows them. "שיתוף" is the
+          // label under the share button in Hebrew iOS, and "הוסף למסך הבית"
+          // is the sheet item verbatim, so the shopper is matching text they
+          // can see rather than translating a description.
+          <p className="text-gray-500 text-xs">
+            לחצו על <span className="font-bold">שיתוף</span> בסרגל הדפדפן ואז על{' '}
+            <span className="font-bold">הוסף למסך הבית</span>.
+          </p>
+        ) : (
+          <p className="text-gray-500 text-xs">גישה מהירה מהמסך הראשי, גם בלי דפדפן.</p>
+        )}
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <button
-          type="button"
-          onClick={dismiss}
-          className="min-h-touch-min min-w-touch-min rounded-xl px-2 text-gray-500 text-xs transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
-        >
-          לא עכשיו
-        </button>
-        <button
-          type="button"
-          onClick={install}
-          className="min-h-touch-min rounded-xl bg-brand-primary px-4 font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
-        >
-          התקנה
-        </button>
+        {offer.kind === 'ios' ? (
+          <button type="button" onClick={dismiss} className={`${BUTTON} bg-brand-primary`}>
+            הבנתי
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={dismiss}
+              className="min-h-touch-min min-w-touch-min rounded-xl px-2 text-gray-500 text-xs transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
+            >
+              לא עכשיו
+            </button>
+            <button type="button" onClick={install} className={`${BUTTON} bg-brand-primary`}>
+              התקנה
+            </button>
+          </>
+        )}
       </div>
     </section>
   )

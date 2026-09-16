@@ -1,5 +1,33 @@
 # Apply order
 
+## 2026-09-17 (PERFORMANCE goal): 240 AND 241 WRITTEN, BOTH DRY-RUN ON PRODUCTION, NEITHER APPLIED
+
+Both files ran in full inside a `DO` block that ends in `RAISE EXCEPTION`,
+the established rolled-back pattern, through `execute_sql` on production.
+Neither is applied; both wait for the batch approval like 162/184/211.
+
+**240** (`perf_fk_indexes_and_cart_uniqueness`), probe output verbatim:
+`indexes_before=0 indexes_after=10 missing=none duplicate_accounts=0
+second_cart_probe=unique_violation as expected`. The last probe inserted a
+second cart row for an existing account inside the transaction and got the
+23505 the partial unique index exists to raise. Re-read after the rollback:
+`pg_indexes` still shows none of the ten names.
+
+**241** (`rls_initplan_policies`): all six policies dropped and recreated in
+the block; `pg_policies` re-read inside it showed `count=6`, the RESTRICTIVE
+one still RESTRICTIVE, and every qual in the InitPlan form
+(`( SELECT auth.uid() AS uid)`, `( SELECT current_user_role() ...)`). The
+first version of the file's own verification regex flagged the CORRECT form
+as per-row, because pg_policies deparses the subquery with a space after the
+parenthesis; the check was rewritten as "mentions the call and does not
+mention `select <call>`" and proven against both the live per-row quals
+(all six flagged) and the two expected forms (neither flagged) before the
+rollback was confirmed: production still carries the per-row quals.
+
+Application side: `runMergeGuestCart` now treats a 23505 from the account
+INSERT as "retry at next login" (commit on `autopilot`), so 240 can land
+without a code deploy racing it.
+
 ## 2026-09-16 (L1 LANDMINES): FULL QUEUE DRY-RUN — 162, 184, 211 PROVEN; 184 CORRECTED TWICE
 
 Supabase MCP `create_branch` was refused twice by the connector, so per the

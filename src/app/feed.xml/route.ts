@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import { getFeedProducts } from '@/lib/feeds/catalogue'
 import { buildRssFeed } from '@/lib/feeds/rss'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -33,7 +34,7 @@ async function handleGET(): Promise<NextResponse> {
   return new NextResponse(xml, {
     headers: {
       'content-type': 'application/rss+xml; charset=utf-8',
-      'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
+      'cache-control': CacheControl.feed,
     },
   })
 }

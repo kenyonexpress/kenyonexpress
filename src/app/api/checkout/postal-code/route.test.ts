@@ -1,3 +1,4 @@
+import { CacheControl } from '@/lib/cache/http'
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -85,7 +86,7 @@ describe('GET /api/checkout/postal-code', () => {
     const response = await GET(request(FULL_QUERY))
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({ zip: null, configured: false })
-    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(response.headers.get('Cache-Control')).toBe(CacheControl.private)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -106,7 +107,7 @@ describe('GET /api/checkout/postal-code', () => {
     fetchMock.mockResolvedValue(new Response('service unavailable', { status: 503 }))
     let response = await GET(request(FULL_QUERY))
     expect(await response.json()).toEqual({ zip: null, configured: true })
-    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(response.headers.get('Cache-Control')).toBe(CacheControl.private)
 
     fetchMock.mockRejectedValue(new Error('ECONNRESET'))
     response = await GET(request(FULL_QUERY))

@@ -18,6 +18,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { escapeLikePattern } from '@/lib/utils/search-escape'
 import {
   changePasswordSchema,
   emailOtpVerifySchema,
@@ -271,7 +272,7 @@ async function attachPhoneToExistingAccount(e164: string): Promise<void> {
   const { data: profiles } = await admin
     .from('profiles')
     .select('id, phone, email')
-    .ilike('phone', `%${suffix}`)
+    .ilike('phone', `%${escapeLikePattern(suffix)}`)
     .limit(50)
   const candidates = (profiles ?? []).filter((row) => toE164Israeli(row.phone) === e164)
 

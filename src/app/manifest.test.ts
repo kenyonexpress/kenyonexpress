@@ -96,7 +96,10 @@ describe('service worker safety rails', () => {
     // The eviction in putBrowsePage is only real if a limit exists and the
     // trim actually runs against it.
     expect(sw).toMatch(/const PAGES_LIMIT = \d+/)
-    expect(sw).toMatch(/keys\.length - PAGES_LIMIT/)
+    expect(sw).toMatch(/const IMAGES_LIMIT = \d+/)
+    expect(sw).toMatch(/keys\.length - limit/)
+    expect(sw).toMatch(/putBounded\(PAGES_CACHE, request, response\.clone\(\), PAGES_LIMIT\)/)
+    expect(sw).toMatch(/cacheFirstBounded\(IMAGES_CACHE, request, IMAGES_LIMIT\)/)
   })
 
   it('only caches bare browse URLs: a query string is a filter permutation', () => {

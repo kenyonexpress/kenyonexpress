@@ -3,6 +3,7 @@ import { productListParamsSchema } from '@/lib/admin/page-params'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
+import { likeContains } from '@/lib/utils/search-escape'
 import { FileUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -60,7 +61,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     .range(from, to)
 
   if (status) query = query.eq('status', status)
-  if (q) query = query.ilike('name_he', `%${q}%`)
+  if (q) query = query.ilike('name_he', likeContains(q))
 
   const [{ data: products, count }, { data: categories }] = await Promise.all([
     query,

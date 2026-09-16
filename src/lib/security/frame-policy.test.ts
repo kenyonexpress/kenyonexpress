@@ -1,12 +1,15 @@
 import { REMOTE_IMAGE_PATTERNS } from '@/lib/images/remote-hosts'
 import { describe, expect, it } from 'vitest'
 import {
+  CSP_REPORT_GROUP,
   DEFAULT_CONTENT_SECURITY_POLICY,
   PAYMENT_FRAME_PATHS,
   contentSecurityPolicyFor,
   frameOptionsFor,
   isPaymentFramePath,
   permissionsPolicyFor,
+  reportingEndpointsHeader,
+  sentrySecurityEndpoint,
 } from './frame-policy'
 
 describe('isPaymentFramePath', () => {
@@ -148,5 +151,55 @@ describe('permissionsPolicyFor', () => {
       expect(policy).toContain('geolocation=()')
       expect(policy).toContain('payment=(self)')
     }
+  })
+})
+
+describe('CSP violation reporting', () => {
+  it('derives the Sentry security endpoint from a DSN', () => {
+    expect(
+      sentrySecurityEndpoint('https://abc123@o4507.ingest.de.sentry.io/4509', 'production'),
+    ).toBe(
+      'https://o4507.ingest.de.sentry.io/api/4509/security/?sentry_key=abc123&sentry_environment=production',
+    )
+  })
+
+  it('omits the environment when none is known', () => {
+    expect(sentrySecurityEndpoint('https://k@h.example/7')).toBe(
+      'https://h.example/api/7/security/?sentry_key=k',
+    )
+  })
+
+  it.each([
+    '',
+    undefined,
+    null,
+    'not a url',
+    'https://h.example/7',
+    'https://k@h.example/',
+    'https://k@h.example/abc',
+  ])('yields nothing for %j', (dsn) => {
+    expect(sentrySecurityEndpoint(dsn)).toBeNull()
+  })
+
+  it('adds report-uri and report-to only when an endpoint is given', () => {
+    const uri = 'https://h.example/api/7/security/?sentry_key=k'
+    const withReporting = contentSecurityPolicyFor('/', { reportUri: uri })
+    expect(withReporting).toContain(`report-uri ${uri}`)
+    expect(withReporting).toContain(`report-to ${CSP_REPORT_GROUP}`)
+    expect(contentSecurityPolicyFor('/')).not.toContain('report-')
+    expect(contentSecurityPolicyFor('/', { reportUri: null })).not.toContain('report-')
+  })
+
+  it('the reporting directives never touch frame-ancestors', () => {
+    const uri = 'https://h.example/api/7/security/?sentry_key=k'
+    const occurrences = contentSecurityPolicyFor('/', { reportUri: uri }).match(/frame-ancestors/g)
+    expect(occurrences).toHaveLength(1)
+  })
+
+  it('emits a Reporting-Endpoints header that names the same group', () => {
+    const uri = 'https://h.example/api/7/security/?sentry_key=k'
+    expect(reportingEndpointsHeader(uri)).toBe(`${CSP_REPORT_GROUP}="${uri}"`)
+    expect(reportingEndpointsHeader(null)).toBeNull()
+    expect(reportingEndpointsHeader(undefined)).toBeNull()
   })
 })

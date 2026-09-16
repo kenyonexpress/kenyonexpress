@@ -86,3 +86,34 @@ describe('the payment adapter posts no card data', () => {
     expect(cardcom).toContain("'/Interface/LowProfile.aspx'")
   })
 })
+
+describe('a saved card never leaves as more than its last four digits', () => {
+  it('the data export selects only the masked columns of payment_tokens', () => {
+    const route = read('src/app/api/account/export/route.ts')
+    const select = route.match(/from\('payment_tokens'\)\s*\.select\(\s*'([^']+)'/)?.[1] ?? ''
+    expect(select).not.toBe('')
+    const columns = select.split(',').map((c) => c.trim())
+    expect(columns).toEqual(
+      expect.arrayContaining(['card_brand', 'last_4', 'expiry_month', 'expiry_year']),
+    )
+    expect(columns).not.toContain('*')
+    expect(columns.some((c) => /token/i.test(c))).toBe(false)
+  })
+
+  it('the log scrubber redacts every card-shaped key before it reaches Sentry', async () => {
+    const { redact } = await import('@/lib/observability/scrub')
+    const out = redact({
+      cardcom_token: 't',
+      card_number: '4580000000000000',
+      CardNumber: '4580',
+      cvv: '123',
+      last_4: '0000',
+    }) as Record<string, unknown>
+    expect(out.cardcom_token).toBe('[redacted]')
+    expect(out.card_number).toBe('[redacted]')
+    expect(out.CardNumber).toBe('[redacted]')
+    expect(out.cvv).toBe('[redacted]')
+    // The masked digits are the one card fact support is allowed to see.
+    expect(out.last_4).toBe('0000')
+  })
+})

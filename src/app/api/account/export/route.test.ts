@@ -5,10 +5,12 @@ const getUser = vi.hoisted(() => vi.fn())
 const createClient = vi.hoisted(() => vi.fn())
 const checkRateLimit = vi.hoisted(() => vi.fn())
 const cookieGet = vi.hoisted(() => vi.fn())
+const writeAuditLog = vi.hoisted(() => vi.fn(async () => {}))
 
 vi.mock('@/lib/supabase/server', () => ({ createClient }))
 vi.mock('@/lib/utils/rate-limit', () => ({ checkRateLimit }))
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: cookieGet }) }))
+vi.mock('@/lib/admin/audit', () => ({ writeAuditLog }))
 
 import { GET } from './route'
 
@@ -79,6 +81,28 @@ describe('GET /api/account/export', () => {
     const response = await GET(request())
     expect(response.status).toBe(429)
     expect(checkRateLimit).toHaveBeenCalledWith(`data-export:${USER.id}`, 5, 3600)
+  })
+
+  it('records the request in audit_log, and records nothing for a refused one', async () => {
+    errorTables = new Set(['vouchers'])
+    await GET(request())
+    expect(writeAuditLog).toHaveBeenCalledTimes(1)
+    expect(writeAuditLog).toHaveBeenCalledWith({
+      actorId: USER.id,
+      actorRole: 'customer',
+      action: 'created',
+      entityType: 'data_export',
+      entityId: USER.id,
+      metadata: { sections_unavailable: ['vouchers'] },
+    })
+
+    writeAuditLog.mockClear()
+    getUser.mockResolvedValue({ data: { user: null } })
+    await GET(request())
+    checkRateLimit.mockResolvedValue(false)
+    getUser.mockResolvedValue({ data: { user: USER } })
+    await GET(request())
+    expect(writeAuditLog).not.toHaveBeenCalled()
   })
 
   it('answers as a JSON download that no cache may keep', async () => {
