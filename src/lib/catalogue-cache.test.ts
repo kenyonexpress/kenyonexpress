@@ -101,7 +101,9 @@ describe('catalogue cache invalidation', () => {
    */
   it('reads the catalogue with the anon client and never the cookie-bound one', () => {
     for (const file of ['src/lib/category-page.ts', 'src/lib/product-seo.ts']) {
-      expect(code(file)).toContain('createPublicClient')
+      // `createCatalogueReadClient` is the same cookie-free anon client, bound
+      // to the read replica when one is configured (lib/supabase/read-replica).
+      expect(code(file)).toMatch(/createPublicClient\(\)|createCatalogueReadClient\(\)/)
       expect(code(file), `${file} calls createClient()`).not.toMatch(/await createClient\(\)/)
     }
   })
