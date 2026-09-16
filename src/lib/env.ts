@@ -66,6 +66,20 @@ const schema = z
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
 
     /**
+     * The private phone channel next to the public ntfy topic. OPTIONAL
+     * EVERYWHERE and inert unless BOTH are set (lib/observability/telegram.ts):
+     * half a configuration degrades to ntfy alone rather than failing boot.
+     */
+    TELEGRAM_BOT_TOKEN: z.string().min(20).optional().or(z.literal('')),
+    TELEGRAM_CHAT_ID: z.string().optional().or(z.literal('')),
+    /**
+     * Gate for /api/alerts/uptimerobot. Unset means the route answers 401 to
+     * everything, which is closed rather than open: an unauthenticated relay
+     * would let anyone page the operator at will.
+     */
+    UPTIMEROBOT_WEBHOOK_SECRET: z.string().min(20).optional().or(z.literal('')),
+
+    /**
      * The Axiom log leg. OPTIONAL EVERYWHERE and inert unless BOTH are set,
      * same contract as Upstash above: half a configuration degrades to the
      * console transport rather than failing anything. `lib/observability/

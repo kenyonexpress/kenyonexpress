@@ -37,6 +37,8 @@ Three facts change how you should interpret every alert below.
 |---|---|---|
 | **Sentry** | Unhandled errors, payment alarms | `@sentry/nextjs`, EU region |
 | **ntfy** | Operator pages, health failures | topic `kenyon-ofir-limit`, `NTFY_TOPIC` overrides |
+| **Telegram** | The same pages, on a private chat | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`; inert unless both set |
+| **UptimeRobot** | The site unreachable from outside | polls `/api/health`; webhook to `/api/alerts/uptimerobot` |
 | **`GET /api/health`** | Liveness + database reachability | unauthenticated, coarse on purpose |
 | **`GET /api/cron/health`** | Full per-dependency report | requires `Bearer CRON_SECRET` |
 | **`payment_events`** | Append-only payment forensics | database table, 38 event types |
@@ -67,6 +69,42 @@ which costs you the alerts that matter.
 curl -s https://<host>/api/health | jq
 curl -s -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/health | jq
 ```
+
+### The external monitor, and why the cron is not enough
+
+`/api/cron/health` runs on the deployment it checks. When the deployment is
+the thing that is down (Vercel, DNS, an expired certificate, all of which have
+happened here) the cron does not run and therefore does not page. Only a
+poller outside the deployment can report that the deployment is unreachable.
+
+That poller is UptimeRobot, on `/api/health` every five minutes. Its alert
+contact is a webhook back to `/api/alerts/uptimerobot?secret=...`, which
+formats the alert in Hebrew and hands it to `sendAlert`: ntfy and Telegram,
+the same fan-out every money-path alert uses. A `down` alert pages urgently;
+`up` is a quiet close; a certificate-expiry warning is high.
+
+Set it up once, from a machine that holds the account's main API key:
+
+```bash
+# 1. the secret the deployment and UptimeRobot share
+openssl rand -hex 24        # -> UPTIMEROBOT_WEBHOOK_SECRET, set in Vercel AND .env.local
+# 2. the monitor and the contact, idempotent
+UPTIMEROBOT_API_KEY=... UPTIMEROBOT_BASE_URL=https://kenyonexpress.co.il pnpm uptime:setup:dry
+UPTIMEROBOT_API_KEY=... UPTIMEROBOT_BASE_URL=https://kenyonexpress.co.il pnpm uptime:setup
+```
+
+The route answers 401 to everything while the secret is unset on the
+deployment. Rotating the secret is one env var and one re-run of the script.
+
+### Telegram
+
+```bash
+pnpm telegram:verify --chats   # after adding the bot to the chat: prints the chat id
+pnpm telegram:verify           # sends one silent test message
+```
+
+`sendAlert` posts to ntfy and Telegram concurrently and reports delivered when
+either accepts. Telegram unset means ntfy alone, exactly as before.
 
 ---
 

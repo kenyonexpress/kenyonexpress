@@ -30,7 +30,10 @@ const GATES = [
   // plus the sorted form params, compared with timingSafeEqual in
   // server/whatsapp/twilio.ts -- the WhatsApp webhook was reported naked here
   // purely because that call sits one module away.
-  /timingSafeEqual|bearerMatches|verifyQstashSignature|twilioSignatureValid/,
+  // secretEquals is the constant-time compare itself, the same module
+  // bearerMatches wraps; the UptimeRobot webhook holds it directly because
+  // UptimeRobot cannot send a Bearer header, only a query string.
+  /timingSafeEqual|secretEquals|bearerMatches|verifyQstashSignature|twilioSignatureValid/,
 ]
 
 function routeFiles(dir: string): string[] {
