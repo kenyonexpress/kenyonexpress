@@ -1,0 +1,34 @@
+# KenyonExpress async-offload Worker.
+#
+# Deploy from the repository root so the relative imports into src/lib/workers
+# resolve:
+#
+#   npx wrangler deploy -c infra/cloudflare/workers/async-offload/wrangler.toml
+#   npx wrangler secret put TASK_SECRET -c infra/cloudflare/workers/async-offload/wrangler.toml
+#
+# Create the two queues once (the consumer refuses to deploy without them):
+#
+#   npx wrangler queues create ke-async-tasks
+#   npx wrangler queues create ke-async-dlq
+#
+# Then on the Next side set CF_ASYNC_WORKER_URL to the Worker's URL and
+# CF_ASYNC_WORKER_SECRET to the same value as TASK_SECRET. Unset, every
+# producer runs its inline fallback (src/lib/workers/async-offload.ts).
+
+name = "ke-async-offload"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[[queues.producers]]
+queue = "ke-async-tasks"
+binding = "ASYNC_QUEUE"
+
+[[queues.consumers]]
+queue = "ke-async-tasks"
+max_batch_size = 10
+max_batch_timeout = 5
+# Mirrors MAX_ATTEMPTS in src/index.ts. After this many the platform moves the
+# message to the dead-letter queue below, where it waits for a person.
+max_retries = 5
+dead_letter_queue = "ke-async-dlq"

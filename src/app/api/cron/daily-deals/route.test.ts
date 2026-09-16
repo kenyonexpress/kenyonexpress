@@ -24,6 +24,10 @@ vi.mock('@/lib/pricing/price-snapshot', async (importOriginal) => ({
 }))
 vi.mock('next/cache', () => ({ revalidateTag }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({ from }) }))
+vi.mock('@/lib/workers/async-offload', () => ({
+  offloadTask: vi.fn().mockResolvedValue({ transport: 'inline', outcome: 'mocked' }),
+}))
+vi.mock('@/lib/jobs', () => ({ enqueueJob: vi.fn() }))
 
 import { GET } from './route'
 

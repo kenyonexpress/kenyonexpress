@@ -4,7 +4,7 @@ import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
 
@@ -16,7 +16,7 @@ import { cache } from 'react'
  * catalogue answer could ever be cached (a cached scope cannot touch request
  * APIs), and the rows returned depended on who was asking - an admin's session
  * could see rows a shopper could not, from the same function.
- * `createPublicClient()` is always exactly `anon`, which is both cacheable and
+ * `createCatalogueReadClient()` is always exactly `anon`, which is both cacheable and
  * the same catalogue for everybody. It is the client the cart already reads the
  * catalogue with, proven against the hosted project.
  *
@@ -126,7 +126,7 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase
       .from('categories')
@@ -144,7 +144,7 @@ export async function getAllCategorySlugs(): Promise<string[]> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug').eq('is_active', true)),
     'catalogue.category_slugs_failed',
@@ -158,7 +158,7 @@ export async function getCategoryParent(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await supabase.from('categories').select('slug, name_he').eq('id', parentId).single(),
     'catalogue.category_parent_failed',
@@ -173,7 +173,7 @@ export async function getCategoryChildren(
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(
       supabase
@@ -333,7 +333,7 @@ export function collectionFilter(
  * every request.
  */
 async function newestProductIds(
-  supabase: ReturnType<typeof createPublicClient>,
+  supabase: ReturnType<typeof createCatalogueReadClient>,
   limit: number,
 ): Promise<string[]> {
   const data = orFail(
@@ -368,7 +368,7 @@ export async function getCategoryProducts(opts: {
   cacheTag(CATALOGUE_TAG)
   const { categoryId, category, sort, page, priceMin, priceMax, productType, city, collection } =
     opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
   let query = supabase
@@ -474,7 +474,7 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const data = orFail(
     await orderedByMenu(supabase.from('categories').select('slug, name_he').eq('is_active', true)),
     'catalogue.all_categories_failed',
@@ -500,7 +500,7 @@ export async function getShopProducts(opts: {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const { sort, page, priceMin, priceMax, productType } = opts
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
   let query = supabase

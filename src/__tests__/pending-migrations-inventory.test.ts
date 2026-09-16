@@ -383,6 +383,11 @@ describe('the pending migration inventory', () => {
       '239_push_deliveries_sms_log_opt_outs.sql',
       '240_perf_fk_indexes_and_cart_uniqueness.sql',
       '241_rls_initplan_policies.sql',
+      // 242 is PENDING (2026-09-17): `job_dlq`, the dead-letter table for the
+      // general job queue (src/lib/jobs). Server-only like 069's
+      // search_index_dlq; the closing block refuses any client-role grant or
+      // policy. Not yet dry-run on production.
+      '242_job_dlq.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

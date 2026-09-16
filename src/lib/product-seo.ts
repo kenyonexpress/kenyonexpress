@@ -1,6 +1,6 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
-import { createPublicClient } from '@/lib/supabase/anon'
+import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 
 export type ProductSeoRow = {
@@ -17,7 +17,7 @@ export type ProductSeoRow = {
 /**
  * Catalogue fields `generateMetadata` needs on a PDP.
  *
- * Must stay on `createPublicClient` + `use cache`: the request-scoped client
+ * Must stay on `createCatalogueReadClient` + `use cache`: the request-scoped client
  * reads cookies, which forces streaming metadata (description lands after the
  * first `</head>`, and Lighthouse SEO fails `meta-description` even when the
  * tag exists later in the document). Cached anon reads can resolve with the
@@ -27,7 +27,7 @@ export async function getProductSeoBySlug(slug: string): Promise<ProductSeoRow |
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const supabase = createPublicClient()
+  const supabase = createCatalogueReadClient()
   return orFail(
     await supabase
       .from('products')

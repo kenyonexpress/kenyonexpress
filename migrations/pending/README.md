@@ -1,5 +1,21 @@
 # `migrations/pending/`
 
+## 2026-09-17: 242 PENDING (job queue dead letters)
+
+`242_job_dlq.sql` adds `job_dlq`, the dead-letter table for the general job
+queue in `src/lib/jobs` (one envelope, one worker at `/api/jobs/run`, one
+QStash failure callback at `/api/jobs/dlq`, one replay cron at
+`/api/cron/job-dlq`). Same shape as 069's `search_index_dlq` plus `job_type`
+lifted out of the envelope and `replayed_at` next to `resolved_at`; status
+is one of dead / replayed / exhausted / discarded, and the cron stamps a row
+`exhausted` after three replays rather than looping it. Server-only: RLS on,
+no policy, anon and authenticated revoked, service_role the only writer, and
+the closing DO block raises on any client grant or any policy. Rollback is
+one DROP TABLE. Until applied, the callback route answers 500 (QStash keeps
+the message and retries the callback) and the cron replays nothing;
+`src/lib/supabase/pending-jobs.ts` is the one cast that names the table and
+is deleted when `database.ts` is regenerated. Not yet dry-run on production.
+
 ## 2026-09-17: 240 + 241 PENDING (performance: FK indexes, one cart per account, RLS initplan)
 
 `240_perf_fk_indexes_and_cart_uniqueness.sql` is the index half of the
