@@ -9,6 +9,7 @@ import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { log } from '@/lib/observability/log'
 import { escapeMeiliFilterValue } from '@/lib/search/faceted'
+import { localesParam } from '@/lib/search/query-locale'
 import {
   type PendingSearchProductRow,
   type SearchProductsArgs,
@@ -69,6 +70,9 @@ async function searchMeili(
         q,
         limit,
         ...(filter.length ? { filter } : {}),
+        // Pins the query tokenizer to the script(s) actually typed, the same
+        // way the index settings pin the document side (query-locale.ts).
+        ...localesParam(q),
       }),
       // Search is request-time; do not cache across queries.
       cache: 'no-store',

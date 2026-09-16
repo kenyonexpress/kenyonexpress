@@ -41,6 +41,7 @@ export default defineConfig({
       'scripts/seed/**/*.test.ts',
       'scripts/dr/**/*.test.mjs',
       'scripts/axiom/**/*.test.mjs',
+      'scripts/uptimerobot/**/*.test.mjs',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {

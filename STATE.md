@@ -1,5 +1,7 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-17 02:40 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - טיפול בשגיאות: ‏Sentry source maps, ‏404/500 מותאמים, ‏health endpoint, ‏UptimeRobot + ‏Telegram). נמדד לפני כתיבה: ‏Sentry על שלושת ה-runtimes עם העלאת source maps ומחיקתן, ‏not-found / error / global-error בעברית RTL, ‏/api/health ו-/api/cron/health כבר היו קיימים. מה שחסר: ערוץ פרטי (‏Telegram) וניטור מחוץ לפריסה (‏UptimeRobot). נבנה: ‏lib/observability/telegram.ts ו-sendAlert שמפזר ל-ntfy ול-Telegram במקביל; ‏/api/alerts/uptimerobot עם סוד בהשוואה קבועת-זמן, ‏GET/JSON/form, הודעה בעברית לפי סוג; ‏scripts/uptimerobot/{plan,setup}.mjs אידמפוטנטי ו-scripts/telegram-verify.mjs; טסטים לשלושת דפי השגיאה ולחוזה ה-source maps. ‏commit ‏fecb493cc. בנוסף, 7 טסטים אדומים שנמצאו ב-HEAD לפני השינוי תוקנו ב-798ea01db (פירוט תחת 17.09 למטה). כל השערים ירוקים: ‏466 קבצים / 5455 טסטים, ‏type-check, ‏lint, ‏build.
+
 Updated: 2026-09-17 00:55 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - חשבון משתמש מלא: כניסה באימייל+סיסמה, ‏OTP, קישור קסם, ‏Passkey, הרשמה, שחזור סיסמה, דשבורד, הגדרות, מעקב קאשבק, ארנק, ‏RLS). נמדד לפני כתיבה: רוב המערכת כבר קיימת ומחווטת - כניסה בסיסמה/Google/קישור/SMS/Passkey ב-server/actions/auth.ts ו-passkeys.ts, הרשמה+אישור, שחזור סיסמה, 13 עמודי ‏/account כולל ארנק, ו-RLS נמדד דרך ‏MCP על ‏profiles, ‏wallet_accounts, ‏wallet_entries, ‏cashback_ledger, ‏webauthn_credentials - כולן ‏on עם policies של בעלים בלבד, אפס כתיבה לארנק לכל role. לכן **אין מיגרציה**. ארבעה פערים אמיתיים נסגרו בקומיט ‏a7d9700f4 על autopilot: (1) **קוד ‏OTP מהמייל** - ‏WIP לא מחובר שנמצא בעץ (סכימה ‏emailOtpVerifySchema + ‏email_otp במייל הממותג) קיבל צרכן: ‏verifyEmailOtp ב-auth.ts (‏verifyOtp type email, תקרות 20/שעה פר-IP ופר-כתובת, מיזוג עגלת אורח + תביעת הפניה כמו המסלולים שלא עוברים ב-callback), ושדה קוד ב-LoginForm שנפתח רק אחרי שליחה מוצלחת ונושא את הכתובת מוסתרת. (2) **שינוי סיסמה מתוך החשבון** - ‏changePassword: דורש סשן, תקרה על ‏user id, מוכיח את הסיסמה הנוכחית על ‏createPublicClient (לא שומר כלום) ומבטל את הסשן שהבדיקה טבעה, ורק אז ‏updateUser; ‏ChangePasswordForm ב-/account/security עם קישור לשחזור למי שנכנס ב-Google/קישור. (3) **‏TOTP MFA היה רכיב בלי צרכן** - ‏SecurityClient לא היה מיובא משום עמוד, כך ששער ה-aal2 ב-lib/auth/mfa.ts לא שמר על איש; מרונדר עכשיו ב-/account/security עם ‏isStaff מ-profiles.role. (4) **מעקב קאשבק** - ‏src/lib/cashback/tracker.ts (טהור: דירוג לפי ‏count(paid)+1 בדיוק כמו ה-SQL של 177, צריכת ‏FIFO של הזיכוי הישן קודם כמו הסוויפ של 215, פקיעה ב-12 חודשים, חלון 30 יום), ‏server/queries/cashback.ts (‏v_wallet_ledger + ‏cashback_ledger + הזמנות, כולם דרך הלקוח של הבקשה), עמוד ‏/account/cashback (פעיל/נצבר/הבונוס הבא עם ‏progress + היסטוריה עם "10% מתוך ₪120"), פריט nav ואריח בדשבורד. טסטים: ‏tracker.test.ts ‏(13), ‏auth-email-otp.test.ts ‏(12, שני ה-actions עם מוקים), הרחבות ל-auth.validations ו-magic-link. ‏ARCHITECTURE-USER-ACCOUNT.md נכתב. חמישה שערי ratchet ירו ונרשמו (‏auth-coverage: ‏verifyEmailOtp ציבורי עם סיבה; ‏rate-limit policies + ‏docs/RATE-LIMITS.md: שלושה מפתחות; ‏legacy-redirects: הראוט החדש; ‏discarded-read: השגיאה של קריאת ה-role נקראת ונרשמת). מלכודת build: ‏new Date() כפרמטר ברירת מחדל נפל ב-prerender של ‏cacheComponents - הועבר אחרי ה-await. שערים: ‏vitest ‏5106/5106 ‏(436 קבצים, 12 skipped), ‏type-check נקי, ‏lint נקי כולל שלושת השערים, ‏pnpm build ‏exit 0. החלטות שהתקבלו לבד: (א) בלי מיגרציה - הכל כבר בפרודקשן ונמדד. (ב) שינוי אימייל מתוך החשבון לא נבנה - זרימת אישור כפול של Supabase, ודף הפרטים אומר שהכתובת מגיעה מהספק. (ג) ‏MFA לא נכפה על צוות - הסיבה כתובה ב-mfa.ts. (ד) שדה הקוד מוצג גם כשהמייל של Supabase (בלי קוד) נשלח - ההודעה הניטרלית עדיפה על חשיפת קיום הכתובת.
 
 Updated: 2026-09-16 20:25 (goal שהוזרק ב-/goal: ‏Home Page - ‏Top Bar עם ברכה, מיקום, משלוח, קניה בטוחה, התחברות ‏RTL). נמדד לפני כתיבה: הרכיב כבר קיים ושלם - ‏src/components/layout/TopBar.tsx הוא רכיב 01 בתור, מסומן complete ב-COMPONENT-QUEUE ‏(04.09, שער 10.69/7.71/8.13), ממונט ב-Header.tsx לפני ה-masthead, ‏dir=rtl, ארבעת הפריטים בסדר ה-DOM של האתר החי (התחברות אחרון = שמאל), מפרידי ‏| ב-1em, והברכה ‏home-only דרך ‏body:has([data-home]) ב-globals.css ולא דרך ‏usePathname. שני פערים אמיתיים נסגרו: (1) חוזה הברכה ישב על שלושה קבצים (המחלקה ב-TopBar, הסמן ב-page.tsx, הכלל ב-globals.css) ושום טסט לא החזיק אותו - כל אחד מהם נראה כמו קוד מת לקורא מזדמן; ‏src/components/layout/topbar-greeting-gate.test.ts ‏(4 טסטים) מצמיד את שלושתם ומוודא שאף רכיב ב-layout לא מייבא ‏usePathname. (2) שום ספק לא קרא את הבר המרונדר; ‏e2e/topbar.spec.ts ‏(3 טסטים x 3 רוחבים x 2 פרויקטים = 18) מודד ב-380/768/1440 שהתחברות הוא הקישור היחיד ושהוא השמאלי בשורתו, שהברכה נראית ב-/ ומוסתרת ב-/cart, ושהעטיפה היא 3 שורות ב-380 ושורה אחת מעל - ‏18/18 מול ‏pnpm start על 3312. אין שינוי רינדור, לכן ‏compare.mjs לא הורץ (הרפרנס איננו, ‏REFS-POLICY). שערים: ‏vitest ‏4914/4914 ‏(418 קבצים, 12 skipped), ‏type-check נקי, ‏lint נקי כולל שלושת השערים, ‏pnpm build ‏exit 0 (נבדק שאין build מקביל לפני). תחזוקה: ‏caffeinate חי (‏PID 979, ‏sleep 0), גיבוי ‏tar יומי הופעל (האחרון היה מ-10.09), ניקוי לשלושה אחרונים. החלטות שהתקבלו לבד: לא נגעתי בקוד הרכיב - הוא נמדד וירוק, ושינוי בלי מדידת שער היה מפר את הכלל.
@@ -152,6 +154,35 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 **מסמכים שסעיפי ‏SECTIONS נוקבים בשמם ועדיין חסרים:**
 ‏`FINAL-AUDIT.md` (23), ‏`GO-LIVE-DRY-RUN.md` (43), ‏`RELEASE-NOTES.md`,
 ‏`PERF-REPORT.md`.
+
+### ‏17.09: ‏goal טיפול בשגיאות — רוב הדרישות כבר היו בנויות, ושבעה טסטים היו אדומים לפני שנגעתי — ‏commits ‏fecb493cc, ‏798ea01db
+
+**החלטות שהתקבלו אוטומטית:**
+
+1. **‏Telegram נוסף לצד ntfy ולא במקומו.** ‏`sendAlert` שולח לשניים במקביל
+   ומחזיר "נמסר" כשאחד מהם קיבל. ‏ntfy הוא ערוץ ציבורי; ‏Telegram הוא הבקרה
+   שלא הייתה. ‏`TELEGRAM_BOT_TOKEN` ו-`TELEGRAM_CHAT_ID` לא מוגדרים באף
+   סביבה עדיין, אז בפועל הכל ממשיך דרך ‏ntfy עד שאופיר ייצור בוט
+   (‏`pnpm telegram:verify --chats` מדפיס את ה-chat id).
+2. **‏UptimeRobot דרך ‏webhook אלינו ולא דרך ה-Telegram המובנה שלו.** ערוץ
+   אחד, פורמט אחד, ושורת ‏`uptime.alert_received` בלוג. הסוד עובר
+   ב-query string כי ‏UptimeRobot לא חותם ולא שולח כותרות; ה-route סגור
+   (401) כל עוד ‏`UPTIMEROBOT_WEBHOOK_SECRET` לא מוגדר. ההקמה עצמה
+   (‏`pnpm uptime:setup`) דורשת את מפתח ה-API הראשי של החשבון, שאין לי.
+3. **‏`secretEquals` נרשם כשער מוכר** ב-`mutating-route-guards.test.ts`. זו
+   ההשוואה קבועת-הזמן עצמה, זו ש-`bearerMatches` עוטף.
+4. **שני קבצים נשאו את המספר 237** ב-`migrations/pending`. הקובץ של
+   ‏push_deliveries / ‏sms הועבר ל-239 (238 תפוס), עם הסבר בכותרת ושורה
+   ב-README. לא הוחל דבר על פרודקשן.
+5. **שני הטסטים של ‏users-ban נכשלו בגלל ה-harness, לא בגלל הקוד:**
+   ‏`settle()` מחזיר תוצאה יחידה כ"דביקה", ולכן ‏`queue()` אחרי ברירת המחדל
+   מחזיר את ברירת המחדל ולעולם לא את הדריסה. נוסף ‏`override()` לטסט. תוך
+   כדי, קריאת המטרה ב-`runSetUserBan` שזרקה את ה-error נקראת עכשיו בשמה
+   (‏PGRST116 = לא נמצא, כל דבר אחר = כשל קריאה, נרשם ונדחה).
+6. **מפת ה-redirects הכילה שני נתיבי אדמין שאינם על הדיסק**
+   (‏`/admin/analytics/cohorts`, ‏`/admin/experiments`); הוסרו מה-JSON ידנית
+   כי הסקריפט הבונה דורש גישה ל-DB. אף redirect לא הצביע עליהם.
+
 
 ### ‏09.09: ‏nightly-health האדים שלושה לילות, וההסבר הכתוב כיסה רק שלושה מתוך ארבעה שערים. ‏commits: ‏7ac40c324, ‏e44bb696d
 

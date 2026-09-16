@@ -155,7 +155,11 @@ for (const file of readdirSync(dashboardsDir)
   .sort()) {
   const slug = file.replace(/\.json$/, '')
   const dashboard = JSON.parse(
-    readFileSync(join(dashboardsDir, file), 'utf8').replaceAll('{{dataset}}', DATASET),
+    readFileSync(join(dashboardsDir, file), 'utf8')
+      .replaceAll('{{dataset}}', DATASET)
+      // Revenue facts have their own dataset when AXIOM_REVENUE_DATASET is set
+      // (see src/lib/observability/axiom.ts); the fallback mirrors the app's.
+      .replaceAll('{{revenue_dataset}}', process.env.AXIOM_REVENUE_DATASET || DATASET),
   )
   dashboard.uid = `kenyon-${slug}`
 

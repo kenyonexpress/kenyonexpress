@@ -1003,3 +1003,101 @@
   color: var(--cat-muted);
   opacity: 0.75;
 }
+
+/* Faceted navigation on the results page (components/search/SearchFacetNav).
+   Links and counts only; styled to sit as one visual system with the
+   listing sidebar below it, at the same ink, size and rhythm. */
+.search-facets {
+  width: 100%;
+  padding-top: 24px;
+  margin-top: 24px;
+  border-top: 1px solid var(--cat-line);
+  box-sizing: border-box;
+}
+
+.search-facets__active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--cat-muted);
+}
+
+.search-facets__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-facets__chip,
+.search-facets__clear {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--cat-line);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--cat-ink);
+  text-decoration: none;
+}
+
+.search-facets__chip:hover,
+.search-facets__clear:hover {
+  color: var(--cat-link);
+  border-color: var(--cat-link);
+}
+
+.search-facets__clear {
+  border-style: dashed;
+}
+
+.search-facets__sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.search-facets__title {
+  margin: 0 0 10px;
+  font-size: 16.002px;
+  font-weight: 700;
+  color: var(--cat-ink);
+}
+
+.search-facets__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-facets__list li {
+  padding-block: 3px;
+}
+
+.search-facets__option {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--cat-ink);
+  text-decoration: none;
+}
+
+.search-facets__option:hover {
+  color: var(--cat-link);
+}
+
+.search-facets__option.is-current {
+  color: var(--cat-link);
+  font-weight: 700;
+}
+
+.search-facets__count {
+  color: var(--cat-muted);
+  font-variant-numeric: tabular-nums;
+}

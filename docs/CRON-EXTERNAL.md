@@ -106,6 +106,7 @@ file is in a repository.
 5  https://kenyonexpress.vercel.app/api/cron/stranded-payments   GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5b https://kenyonexpress.vercel.app/api/cron/webhook-dlq         GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
 5c https://kenyonexpress.vercel.app/api/cron/search-outbox       GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5d https://kenyonexpress.vercel.app/api/cron/search-reindex      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 6  https://kenyonexpress.vercel.app/api/cron/abandoned-cart      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
 7  https://kenyonexpress.vercel.app/api/cron/subscriptions       GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
@@ -153,6 +154,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 | 12 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/webhook-dlq` |
 | 13 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-outbox` |
+| 13b | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/search-reindex` |
 | 14 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-coupons` |
 | 15 | 02:20 daily | `20 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/backup` |
 | 16 | 04:45 daily | `45 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
@@ -202,6 +204,12 @@ timing changes with the scheduler.
   is the fast lane; this sweep is the floor under it. While `MEILISEARCH_HOST`
   is unset the sweep leaves the queue untouched on purpose, so the backlog
   survives until stage 2 turns search on.
+- **`search-reindex`** is the hourly full sync: every active product is
+  upserted into the Meilisearch indexes from Postgres and every document the
+  catalogue no longer lists is deleted. The webhook and the outbox move one
+  change at a time and both depend on the trigger; a bulk import, a restored
+  backup or a re-created index bypasses the trigger, and this is the only
+  path that repairs those. Inert while `MEILISEARCH_HOST` is unset.
 
 ## Setting it up from this repository, in two settings
 

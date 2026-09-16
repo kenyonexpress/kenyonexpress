@@ -1,5 +1,95 @@
 # `migrations/pending/`
 
+## 2026-09-17: 239 PENDING (push delivery log, SMS log, SMS opt-outs)
+
+`239_push_deliveries_sms_log_opt_outs.sql` adds the three tables the
+notification stack writes to and production does not have: `push_deliveries`
+(one row per browser subscription per notification, so a 410 on one phone is
+not collapsed into the outbox's single `push_error`), `sms_messages` (the SMS
+log with its cost) and `sms_opt_outs`, plus a widened CHECK on
+`notification_preferences` so a customer can switch SMS off on its own. Every
+table is RLS-enabled with owner and admin SELECT only; the service role is the
+only writer, and the file's closing DO block raises if a client role holds DML.
+
+Numbering: written as 237 on the same day `237_user_ban_and_store_settings`
+was filed by another session. Two pending files with one number is an
+apply-order ambiguity, so this one moved to 239, the next free number. It does
+not restate `public.set_updated_at()`: the live function is pinned and a
+CREATE OR REPLACE would un-pin it for every table that uses it (the 188 trap).
+Preconditions asserted in the file: 095/179/198 applied, `set_updated_at`
+present. Not yet dry-run on production.
+
+## 2026-09-17: 238 PENDING (search events by day)
+
+`238_search_events_daily.sql` gives search analytics a day axis. `search_events`
+(118) is an all-time aggregate per term, so the admin page's zero-result rate
+cannot say whether a gap is closing. The file adds `search_events_daily`, keyed
+by (UTC day, normalised term) with the same two counters, and restates
+`fn_record_search` as 118 wrote it plus one upsert into the new table, so both
+are written in the same statement. No user, no IP, no session: 118's privacy
+contract is unchanged. Reads are staff-only through the same `has_role('admin')`
+policy; the function stays `service_role`-only, as production has it (158/159).
+
+The live function body was read off production on 2026-09-17 and matches 118's
+file byte for byte, so the CREATE OR REPLACE is 118 plus one INSERT and not a
+stale copy over a drifted body. Dry-run on production the same day in a
+rolled-back DO block: table, index, policy, grants, and one recorded search
+landing in both tables with matching counters; re-read after: 0 tables, so the
+rollback held.
+
+The admin page (`src/app/(admin)/admin/search`) shows the all-time figures and
+no trend section until this is applied; `src/lib/supabase/pending-search-daily.ts`
+is the one cast that names the table and is deleted when `database.ts` is
+regenerated.
+
+## 2026-09-17: 237 PENDING (user ban record + store settings)
+
+`237_user_ban_and_store_settings.sql` gives the admin panel two places to
+write that it did not have.
+
+**The ban record.** The lock itself is `auth.users.banned_until`, set by the
+new `banUser` action through the Auth admin API; GoTrue then refuses the
+user's token refresh and `proxy.ts` calls `auth.getUser()` on every request,
+so a live session dies on its next page load with no column of ours
+involved. This file adds the panel's record of the fact on `profiles`:
+`banned_at`, `ban_reason` (500 chars) and `banned_by`, plus a partial index
+for the "banned" filter. A separate BEFORE UPDATE trigger,
+`enforce_profile_ban_columns`, refuses a non-admin change to the three
+columns, because `profiles_update_unified` lets an owner update their own
+row. It is a second trigger and not an edit to 181b's
+`enforce_profile_privilege_columns` on purpose: that live body was read off
+production on 2026-09-17 and differs from 090's file in this repo.
+
+**Store settings.** `store_settings` is a singleton (`CHECK (id = 1)`) of
+operator knobs: name, support email and phones (stored as 972 digits, the
+form normalises), address, `min_order_agorot` and
+`free_shipping_threshold_agorot` (bigint agorot, non-negative),
+`checkout_enabled`, `maintenance_mode` and a message. Reads are granted to
+the panel tiers through `is_support()`; there are zero write policies and
+the settings action writes with the service role after
+`requireSection('settings', 'write')`. The storefront reads it through
+`src/lib/store-settings/load.ts`, which returns the compiled defaults on
+42P01 or any read error, so nothing renders differently until this is
+applied. One behavioural consumer: `beginCheckout` refuses with
+`CHECKOUT_DISABLED` when `checkout_enabled` is false, after the env kill
+switch, failing open on a read error like the fraud rail beside it.
+
+Dry-run on production 2026-09-17 in a rolled-back DO block: all three
+columns, the trigger, the table with its seed row, one SELECT policy and
+`authenticated:SELECT` as the only client grant; the action's upsert path
+ran and a second row was refused by the CHECK. Re-read after: 0 ban
+columns, 0 `store_settings` tables, so the rollback held. Idempotent;
+rollback is in the file header.
+
+**Directory drift found while measuring, NOT acted on here:**
+`supabase_migrations.schema_migrations` records `coupon_qr_redemption_217`
+(2026-09-09), `reviews_admin_moderation_only_232`, `wishlist_alerts_233` and
+`gift_cards_234` (all 2026-09-10) as applied, while their files still sit in
+this directory. The inventory test cannot see production and so cannot
+catch this. Moving them to `applied/` needs the checksum file regenerated
+and the inventory list edited in the same commit; recorded in STATE.md for
+that pass.
+
 ## 2026-09-16: 236 PENDING (orders: shipping method)
 
 `236_orders_shipping_method.sql` gives the shopper's shipping choice a place

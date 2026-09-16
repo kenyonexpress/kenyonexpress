@@ -31,6 +31,9 @@
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "sentry:alerts": "node scripts/sentry-alert-rules.mjs",
     "sentry:alerts:dry": "node scripts/sentry-alert-rules.mjs --dry",
+    "telegram:verify": "node scripts/telegram-verify.mjs",
+    "uptime:setup": "node scripts/uptimerobot/setup.mjs",
+    "uptime:setup:dry": "node scripts/uptimerobot/setup.mjs --dry",
     "prepare": "husky || true"
   },
   "dependencies": {

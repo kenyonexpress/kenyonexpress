@@ -1,4 +1,5 @@
 import { buildHealthAlert, runHealthChecks } from '@/lib/health/checks'
+import { sendAlert } from '@/lib/observability/alert'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { type SearchDrift, checkSearchDrift } from '@/lib/search/drift'
@@ -27,11 +28,16 @@ import { type NextRequest, NextResponse } from 'next/server'
  * would be an alert nobody reads inside a day - which costs the alerts that
  * matter.
  *
- * The notification goes to ntfy, which needs no account and no API key, at the
- * topic this project already uses for its own progress. `HEALTH_NTFY_TOPIC`
- * overrides it. A failure to notify is logged and swallowed: the check itself
- * still answers, and a monitor that fails because its pager failed is a second
- * outage.
+ * The notification goes through `sendAlert`: ntfy at the topic this project
+ * already uses for its own progress (`HEALTH_NTFY_TOPIC` overrides it), and
+ * Telegram when a bot is configured. A failure to notify is logged and
+ * swallowed: the check itself still answers, and a monitor that fails because
+ * its pager failed is a second outage.
+ *
+ * WHAT THIS CANNOT SEE. It runs on the deployment it checks. When the
+ * deployment itself is unreachable (Vercel, DNS, an expired certificate) this
+ * never runs and never pages. That case belongs to the external monitor,
+ * which reports through /api/alerts/uptimerobot.
  */
 
 const DEFAULT_TOPIC = 'kenyon-ofir-limit'
@@ -73,19 +79,14 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     log.error('health.degraded', {
       down: report.dependencies.filter((d) => d.status === 'down').map((d) => d.name),
     })
-    const topic = process.env.HEALTH_NTFY_TOPIC ?? DEFAULT_TOPIC
-    try {
-      await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
-        method: 'POST',
-        body: alert,
-        headers: { Priority: 'high', Title: 'KenyonExpress health' },
-        signal: AbortSignal.timeout(5000),
-      })
-    } catch (error) {
-      log.warn('health.notify_failed', {
-        reason: error instanceof Error ? error.message : 'unknown',
-      })
-    }
+    const delivered = await sendAlert({
+      title: 'KenyonExpress health',
+      message: alert,
+      priority: 'high',
+      tags: ['warning'],
+      topic: process.env.HEALTH_NTFY_TOPIC ?? DEFAULT_TOPIC,
+    })
+    if (!delivered) log.warn('health.notify_failed', { reason: 'no channel accepted the alert' })
   }
 
   return NextResponse.json(

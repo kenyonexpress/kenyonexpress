@@ -31,6 +31,16 @@ export const CHECKOUT_VARIANT_PROPERTY = `$feature/${CHECKOUT_VARIANT_FLAG}`
  */
 export const CHECKOUT_VARIANT_CACHE_KEY = 'ke_ph_checkout_variant'
 
+/**
+ * The same decision, mirrored where the SERVER can read it. sessionStorage
+ * is invisible to finalize, and finalize is where the revenue fact for the
+ * Axiom cohort dashboard is built; without the mirror every purchase would
+ * carry `checkout_variant: null` and the per-variant revenue chart would be
+ * empty. A session cookie (no Max-Age), so it dies with the tab like the
+ * sessionStorage entry. Carries no authority: it labels a bucket.
+ */
+export const CHECKOUT_VARIANT_COOKIE = 'ke_ckv'
+
 export function resolveCheckoutVariant(raw: unknown): CheckoutVariant {
   return (CHECKOUT_VARIANTS as readonly unknown[]).includes(raw)
     ? (raw as CheckoutVariant)
@@ -61,5 +71,11 @@ export function cacheCheckoutVariant(variant: CheckoutVariant): void {
     window.sessionStorage.setItem(CHECKOUT_VARIANT_CACHE_KEY, variant)
   } catch {
     // See above.
+  }
+  try {
+    const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `${CHECKOUT_VARIANT_COOKIE}=${variant}; Path=/; SameSite=Lax${secure}`
+  } catch {
+    // Storage blocked: the server sees no variant and reports null, honestly.
   }
 }

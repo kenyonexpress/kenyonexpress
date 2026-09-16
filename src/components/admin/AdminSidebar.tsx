@@ -14,11 +14,13 @@ import {
   FileSpreadsheet,
   FileText,
   Flag,
+  FlaskConical,
   LayoutDashboard,
   Package,
   Plus,
   ScanLine,
   Search,
+  Settings,
   Share2,
   ShieldAlert,
   ShoppingCart,
@@ -79,10 +81,13 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/reports', label: 'דוחות כספיים', icon: FileSpreadsheet, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
+  { href: '/admin/analytics/cohorts', label: 'קוהורטות הכנסה', icon: Users, section: 'analytics' },
+  { href: '/admin/experiments', label: 'ניסויי A/B', icon: FlaskConical, section: 'analytics' },
   { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
+  { href: '/admin/settings', label: 'הגדרות חנות', icon: Settings, section: 'settings' },
 ]
 
 export default function AdminSidebar({ role }: { role: UserRole }) {
