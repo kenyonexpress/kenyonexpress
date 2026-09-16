@@ -16,6 +16,7 @@ export const ADMIN_SECTIONS = [
   { href: '/admin/cashback', staffAllowed: false },
   { href: '/admin/users', staffAllowed: false },
   { href: '/admin/audit-log', staffAllowed: false },
+  { href: '/admin/settings', staffAllowed: false },
 ] as const
 
 // Whether a role may access an admin section identified by an href (exact or a

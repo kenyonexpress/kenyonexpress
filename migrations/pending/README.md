@@ -1,5 +1,53 @@
 # `migrations/pending/`
 
+## 2026-09-17: 237 PENDING (user ban record + store settings)
+
+`237_user_ban_and_store_settings.sql` gives the admin panel two places to
+write that it did not have.
+
+**The ban record.** The lock itself is `auth.users.banned_until`, set by the
+new `banUser` action through the Auth admin API; GoTrue then refuses the
+user's token refresh and `proxy.ts` calls `auth.getUser()` on every request,
+so a live session dies on its next page load with no column of ours
+involved. This file adds the panel's record of the fact on `profiles`:
+`banned_at`, `ban_reason` (500 chars) and `banned_by`, plus a partial index
+for the "banned" filter. A separate BEFORE UPDATE trigger,
+`enforce_profile_ban_columns`, refuses a non-admin change to the three
+columns, because `profiles_update_unified` lets an owner update their own
+row. It is a second trigger and not an edit to 181b's
+`enforce_profile_privilege_columns` on purpose: that live body was read off
+production on 2026-09-17 and differs from 090's file in this repo.
+
+**Store settings.** `store_settings` is a singleton (`CHECK (id = 1)`) of
+operator knobs: name, support email and phones (stored as 972 digits, the
+form normalises), address, `min_order_agorot` and
+`free_shipping_threshold_agorot` (bigint agorot, non-negative),
+`checkout_enabled`, `maintenance_mode` and a message. Reads are granted to
+the panel tiers through `is_support()`; there are zero write policies and
+the settings action writes with the service role after
+`requireSection('settings', 'write')`. The storefront reads it through
+`src/lib/store-settings/load.ts`, which returns the compiled defaults on
+42P01 or any read error, so nothing renders differently until this is
+applied. One behavioural consumer: `beginCheckout` refuses with
+`CHECKOUT_DISABLED` when `checkout_enabled` is false, after the env kill
+switch, failing open on a read error like the fraud rail beside it.
+
+Dry-run on production 2026-09-17 in a rolled-back DO block: all three
+columns, the trigger, the table with its seed row, one SELECT policy and
+`authenticated:SELECT` as the only client grant; the action's upsert path
+ran and a second row was refused by the CHECK. Re-read after: 0 ban
+columns, 0 `store_settings` tables, so the rollback held. Idempotent;
+rollback is in the file header.
+
+**Directory drift found while measuring, NOT acted on here:**
+`supabase_migrations.schema_migrations` records `coupon_qr_redemption_217`
+(2026-09-09), `reviews_admin_moderation_only_232`, `wishlist_alerts_233` and
+`gift_cards_234` (all 2026-09-10) as applied, while their files still sit in
+this directory. The inventory test cannot see production and so cannot
+catch this. Moving them to `applied/` needs the checksum file regenerated
+and the inventory list edited in the same commit; recorded in STATE.md for
+that pass.
+
 ## 2026-09-16: 236 PENDING (orders: shipping method)
 
 `236_orders_shipping_method.sql` gives the shopper's shipping choice a place

@@ -19,6 +19,8 @@ const ALL_SECTIONS: AdminSection[] = [
   'analytics',
   'audit-log',
   'suppliers',
+  'discounts',
+  'settings',
 ]
 
 describe('sectionAccess', () => {
@@ -42,6 +44,7 @@ describe('sectionAccess', () => {
     expect(sectionAccess('support', 'dashboard')).toBe('read')
     expect(sectionAccess('support', 'affiliates')).toBe('read')
     expect(sectionAccess('support', 'suppliers')).toBe('read')
+    expect(sectionAccess('support', 'settings')).toBe('read')
     for (const section of ALL_SECTIONS) {
       expect(sectionAccess('support', section)).not.toBe('write')
     }

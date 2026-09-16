@@ -93,8 +93,14 @@ type GrowthClient = {
       quantity: number
       created_by: string | null
     }): Result<CouponQrBatchRow>
-    insertCodes(rows: { batch_id: string; campaign_id: string; code: string }[]): Result<null>
+    insertCodes(
+      rows: { batch_id: string; campaign_id: string; code: string; expires_at: string | null }[],
+    ): Result<null>
     codesForBatch(batchId: string): Result<Pick<CouponQrCodeRow, 'code'>[]>
+    /** Every code of the campaign, the four columns the batch inventory needs. */
+    codesInventory(
+      campaignId: string,
+    ): Result<Pick<CouponQrCodeRow, 'batch_id' | 'expires_at' | 'expired_at' | 'redeemed_at'>[]>
     existingCodes(codes: string[]): Result<Pick<CouponQrCodeRow, 'code'>[]>
   }
   qrRedemption(): {
@@ -176,8 +182,14 @@ export function growthClient(): GrowthClient {
       }) => db.from('coupon_qr_batches').insert(row).select('*').single(),
       // One .insert(rows) call on purpose: a single statement is atomic, so a
       // failed batch leaves zero codes rather than some.
-      insertCodes: (rows: { batch_id: string; campaign_id: string; code: string }[]) =>
-        db.from('coupon_qr_codes').insert(rows),
+      insertCodes: (
+        rows: { batch_id: string; campaign_id: string; code: string; expires_at: string | null }[],
+      ) => db.from('coupon_qr_codes').insert(rows),
+      codesInventory: (campaignId: string) =>
+        db
+          .from('coupon_qr_codes')
+          .select('batch_id, expires_at, expired_at, redeemed_at')
+          .eq('campaign_id', campaignId),
       codesForBatch: (batchId: string) =>
         db
           .from('coupon_qr_codes')

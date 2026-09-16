@@ -19,6 +19,7 @@ import {
   Plus,
   ScanLine,
   Search,
+  Settings,
   Share2,
   ShieldAlert,
   ShoppingCart,
@@ -83,6 +84,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
+  { href: '/admin/settings', label: 'הגדרות חנות', icon: Settings, section: 'settings' },
 ]
 
 export default function AdminSidebar({ role }: { role: UserRole }) {

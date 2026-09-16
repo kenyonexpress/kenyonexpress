@@ -11,7 +11,9 @@ const INPUT = 'w-full rounded-lg border px-3 py-2 text-sm'
  * Generates one printed QR batch for the campaign whose page it sits on.
  *
  * Deliberately small: value, limits and windows all live on the campaign, so
- * the only two questions a print run has are "for what" and "how many". The
+ * the questions a print run has are "for what", "how many" and, since 217
+ * gave each code its own deadline, "until when" (optional: a flyer for one
+ * month should die with the month while the campaign keeps running). The
  * download link appears in the batch list the action revalidates, not here:
  * the PDF is a GET to a route, and rendering it into the form would mean
  * holding the batch id in client state that the list already shows.
@@ -85,6 +87,36 @@ export default function CouponQrBatchForm({ campaignId }: { campaignId: string }
             <span
               key={e}
               id="qr-batch-quantity-error"
+              role="alert"
+              className="block text-xs text-red-700"
+            >
+              {e}
+            </span>
+          ))}
+        </div>
+
+        <div className="space-y-1">
+          <label htmlFor="qr-batch-expires" className="block text-sm font-medium">
+            תוקף הקודים (אופציונלי)
+          </label>
+          <input
+            id="qr-batch-expires"
+            name="expires_at"
+            type="datetime-local"
+            dir="ltr"
+            className={INPUT}
+            aria-describedby={
+              err.expires_at?.length ? 'qr-batch-expires-error' : 'qr-batch-expires-hint'
+            }
+          />
+          <span id="qr-batch-expires-hint" className="block text-xs text-gray-500">
+            ריק = חלון הקמפיין בלבד קובע. עם תאריך, הקודים בקבוצה הזו נדחים בקופה אחריו גם אם
+            הקמפיין ממשיך.
+          </span>
+          {err.expires_at?.map((e) => (
+            <span
+              key={e}
+              id="qr-batch-expires-error"
               role="alert"
               className="block text-xs text-red-700"
             >

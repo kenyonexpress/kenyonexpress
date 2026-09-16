@@ -367,6 +367,14 @@ describe('the pending migration inventory', () => {
       // the column is missing; no reader names the column until it exists.
       // Additive, idempotent, rollback is two DROP COLUMN IF EXISTS.
       '236_orders_shipping_method.sql',
+      // 237 is PENDING (2026-09-17): the panel's record of a user ban
+      // (profiles.banned_at / ban_reason / banned_by, guarded by their own
+      // BEFORE UPDATE trigger; the lock itself is auth.users.banned_until,
+      // set through the Auth admin API) and the `store_settings` singleton
+      // the admin settings page writes and lib/store-settings/load.ts reads
+      // with compiled defaults as fallback. Dry-run rolled back on
+      // production; README carries the measurement.
+      '237_user_ban_and_store_settings.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

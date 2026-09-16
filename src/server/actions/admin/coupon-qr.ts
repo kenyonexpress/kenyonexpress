@@ -2,11 +2,11 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
+import { parseQrBatchInput } from '@/lib/coupons/qr-batch-input'
 import { generateUnitCodes } from '@/lib/coupons/unit-codes'
 import { growthClient } from '@/lib/growth/client'
 import { withActionContext } from '@/lib/observability/action-context'
 import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
 
 // Batch generation of printed QR coupon codes (migration 182).
 //
@@ -14,22 +14,6 @@ import { z } from 'zod'
 // platform commission a campaign does, only through a printer. The action
 // re-checks for itself because a server action is directly addressable and the
 // page guard does not protect it.
-
-const schema = z.object({
-  campaign_id: z.string().uuid(),
-  label: z
-    .string()
-    .trim()
-    .min(1, 'לאיזה שימוש הקבוצה? (למשל: פליירים ספטמבר)')
-    .max(80, 'תיאור ארוך מדי'),
-  // The DB CHECK has the same ceiling; validating here turns a constraint
-  // violation into a field error.
-  quantity: z.coerce
-    .number()
-    .int('כמות חייבת להיות מספר שלם')
-    .min(1, 'לפחות קוד אחד')
-    .max(1000, 'עד 1000 קודים בקבוצה'),
-})
 
 export type CouponQrActionState = {
   ok: boolean
@@ -44,14 +28,11 @@ async function runGenerateCouponQrBatch(
 ): Promise<CouponQrActionState> {
   const session = await requireSection('discounts', 'write')
 
-  const parsed = schema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) {
-    return {
-      ok: false,
-      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
-    }
-  }
-  const v = parsed.data
+  // Schema (and the "deadline must be in the future" rule) live in
+  // lib/coupons/qr-batch-input.ts so they are tested without this action.
+  const parsed = parseQrBatchInput(Object.fromEntries(formData))
+  if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors }
+  const v = parsed.value
 
   const growth = growthClient()
 
@@ -90,9 +71,17 @@ async function runGenerateCouponQrBatch(
 
   // One insert call: a single statement is atomic, so failure leaves the batch
   // row childless (visible as 0 קודים in the list) rather than half-filled.
-  const { error: codesError } = await growth
-    .qrBatches()
-    .insertCodes(codes.map((code) => ({ batch_id: batch.id, campaign_id: v.campaign_id, code })))
+  // `expires_at` is 217's per-code deadline (live in production since
+  // 2026-09-09). NULL means the campaign window alone governs, which is what
+  // every batch before this field meant.
+  const { error: codesError } = await growth.qrBatches().insertCodes(
+    codes.map((code) => ({
+      batch_id: batch.id,
+      campaign_id: v.campaign_id,
+      code,
+      expires_at: v.expires_at,
+    })),
+  )
   if (codesError) {
     return {
       ok: false,
@@ -111,6 +100,7 @@ async function runGenerateCouponQrBatch(
       campaign_code: campaign.code,
       label: v.label,
       quantity: v.quantity,
+      expires_at: v.expires_at,
     },
   })
 
