@@ -105,3 +105,81 @@ describe('InstallPrompt', () => {
     }
   })
 })
+
+/**
+ * THE iOS FORM, WHICH NO EVENT CAN RAISE.
+ *
+ * Safari on iOS never fires `beforeinstallprompt`, so until 2026-09-17 the
+ * banner above rendered for nobody on an iPhone: the `apple-touch-icon` and
+ * `appleWebApp` metadata in the root layout described an install that no
+ * shopper was ever told how to perform. On that platform the offer is the two
+ * taps in the share sheet, and the same interaction gate, the same space
+ * reservation and the same dismissal key apply to it.
+ */
+const IPHONE =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+
+function pretendToBe(userAgent: string, extra: Record<string, unknown> = {}) {
+  for (const [key, value] of Object.entries({ userAgent, platform: 'iPhone', ...extra })) {
+    Object.defineProperty(window.navigator, key, { value, configurable: true })
+  }
+}
+
+describe('InstallPrompt on iOS', () => {
+  // The overrides are `configurable`, so deleting them uncovers jsdom's own
+  // navigator again for whatever runs next in this file.
+  afterEach(() => {
+    for (const key of ['userAgent', 'platform', 'standalone']) {
+      delete (window.navigator as unknown as Record<string, unknown>)[key]
+    }
+  })
+
+  it('shows the share-sheet instructions after an interaction, without any event', () => {
+    pretendToBe(IPHONE)
+    render(<InstallPrompt />)
+    // No beforeinstallprompt is dispatched: there is none to dispatch.
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    const banner = screen.getByRole('region', { name: 'התקנת האפליקציה' })
+    expect(banner.getAttribute('data-install-surface')).toBe('ios')
+    // The sheet item verbatim, so the shopper matches text they can see.
+    expect(banner.textContent).toContain('הוסף למסך הבית')
+    expect(banner.textContent).toContain('שיתוף')
+    // There is no API to call, so there is no install button to press.
+    expect(screen.queryByRole('button', { name: 'התקנה' })).toBeNull()
+    expect(document.documentElement.hasAttribute('data-pwa-prompt')).toBe(true)
+  })
+
+  it('still waits for the visitor to do something first', () => {
+    pretendToBe(IPHONE)
+    render(<InstallPrompt />)
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+  })
+
+  it('is dismissed for good by the one button it has, and gives the space back', () => {
+    pretendToBe(IPHONE)
+    render(<InstallPrompt />)
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    const button = screen.getByRole('button', { name: 'הבנתי' })
+    expect(button.className).toContain('min-h-touch-min')
+    act(() => {
+      button.click()
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+    expect(document.documentElement.hasAttribute('data-pwa-prompt')).toBe(false)
+    // The same key Chrome's form writes, so neither form ever re-asks.
+    expect(localStorage.getItem('ke:pwa-install-dismissed')).toBe('1')
+  })
+
+  it("stays silent once the app is on the home screen, via Safari's navigator.standalone", () => {
+    pretendToBe(IPHONE, { standalone: true })
+    render(<InstallPrompt />)
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+    expect(screen.queryByRole('region', { name: 'התקנת האפליקציה' })).toBeNull()
+  })
+})

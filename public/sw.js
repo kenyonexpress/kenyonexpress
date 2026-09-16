@@ -12,6 +12,15 @@
  *                     construction, so a stale hit is impossible: a changed
  *                     file has a different URL.
  *   /icons/**         cache-first. Same reasoning, changed rarely and by hand.
+ *   images            cache-first with a bounded cache (IMAGES_LIMIT entries,
+ *                     oldest evicted): /_next/image, /images/** and the logo.
+ *                     A browse page served offline without its pictures is a
+ *                     grid of alt text, so the pictures the shopper already
+ *                     downloaded are kept alongside the page. The optimizer
+ *                     URL carries its width and quality, so a hit is the same
+ *                     bytes the page asked for. Cache-first here is safe for
+ *                     the same reason as the assets above: a product photo
+ *                     that changes gets a new URL from the storage layer.
  *   navigations       network-FIRST, with two fallbacks in order, both used
  *                     only when the network actually fails: the last-seen copy
  *                     of the same browse page, then the offline shell. A
@@ -48,14 +57,18 @@
  * worker can be replaced on the next load rather than on the next tab close.
  */
 
-const VERSION = 'ke-v2'
+const VERSION = 'ke-v3'
 const STATIC_CACHE = `${VERSION}-static`
 const PAGES_CACHE = `${VERSION}-pages`
+const IMAGES_CACHE = `${VERSION}-images`
 const OFFLINE_URL = '/offline'
 
 // Enough for a browsing session over the catalogue, small enough that the
-// eviction sweep in putBrowsePage stays trivial.
+// eviction sweep in putBounded stays trivial.
 const PAGES_LIMIT = 40
+// A product grid is 8-12 pictures and a product page 3-5. Two screens of
+// catalogue plus the page the shopper is on, and nothing like a photo library.
+const IMAGES_LIMIT = 80
 
 // Kept deliberately tiny. Precaching a route list is how a worker ends up
 // pinning pages that later change; the offline shell is the only document that
@@ -101,6 +114,20 @@ function isImmutableAsset(url) {
   return url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/')
 }
 
+/**
+ * The optimizer endpoint and the two static picture folders. Query strings
+ * are PART of the key here, unlike browse pages: /_next/image?url=..&w=640 and
+ * the same at w=1200 are different bytes, and the bounded cache is what keeps
+ * that cardinality from mattering.
+ */
+function isImage(url) {
+  return (
+    url.pathname === '/_next/image' ||
+    url.pathname.startsWith('/images/') ||
+    url.pathname === '/logo.png'
+  )
+}
+
 function shouldBypass(request, url) {
   if (request.method !== 'GET') return true
   if (url.origin !== self.location.origin) return true
@@ -115,14 +142,27 @@ function isBrowsePage(url) {
   return BROWSE_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))
 }
 
-async function putBrowsePage(request, response) {
-  const cache = await caches.open(PAGES_CACHE)
+/** Store, then evict from the front: keys() is insertion-ordered, so the front is the oldest. */
+async function putBounded(cacheName, request, response, limit) {
+  const cache = await caches.open(cacheName)
   await cache.put(request, response)
   const keys = await cache.keys()
-  // keys() is insertion-ordered, so trimming from the front evicts oldest.
-  for (const key of keys.slice(0, Math.max(0, keys.length - PAGES_LIMIT))) {
+  for (const key of keys.slice(0, Math.max(0, keys.length - limit))) {
     await cache.delete(key)
   }
+}
+
+/** Cache-first with a bounded store. Used for pictures; assets have no bound because they need none. */
+async function cacheFirstBounded(cacheName, request, limit) {
+  const hit = await caches.match(request)
+  if (hit) return hit
+  const response = await fetch(request)
+  // Same bar as everywhere else: a clean same-origin 200, stored
+  // fire-and-forget so the picture is never delayed by its own bookkeeping.
+  if (response.ok && response.type === 'basic') {
+    putBounded(cacheName, request, response.clone(), limit)
+  }
+  return response
 }
 
 self.addEventListener('fetch', (event) => {
@@ -152,6 +192,11 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  if (isImage(url)) {
+    event.respondWith(cacheFirstBounded(IMAGES_CACHE, request, IMAGES_LIMIT))
+    return
+  }
+
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -159,7 +204,7 @@ self.addEventListener('fetch', (event) => {
           // Same bar as the asset cache: a clean same-origin 200 and nothing
           // else, stored fire-and-forget so caching never delays the response.
           if (response.ok && response.type === 'basic' && isBrowsePage(url)) {
-            putBrowsePage(request, response.clone())
+            putBounded(PAGES_CACHE, request, response.clone(), PAGES_LIMIT)
           }
           return response
         })
