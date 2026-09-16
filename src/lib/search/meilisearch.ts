@@ -229,6 +229,82 @@ export interface ReindexResult {
 }
 
 /**
+ * Every document id currently in an index, paged through the documents
+ * endpoint with only the primary key projected. Used by the hourly sync to
+ * find documents the catalogue no longer contains.
+ */
+async function listIndexDocumentIds(uid: string): Promise<Set<string>> {
+  const ids = new Set<string>()
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    const page = await meiliRequest<{ results: { id: string }[]; total: number }>(
+      `/indexes/${uid}/documents?fields=${PRIMARY_KEY}&limit=${PAGE_SIZE}&offset=${offset}`,
+      'GET',
+    )
+    for (const doc of page.results ?? []) ids.add(String(doc.id))
+    if (!page.results || page.results.length < PAGE_SIZE) break
+  }
+  return ids
+}
+
+export interface SyncResult extends ReindexResult {
+  /** Documents deleted because the catalogue no longer lists them. */
+  pruned: number
+}
+
+/**
+ * The hourly sync: `reindexAll` plus the half a PUT-based rebuild cannot do.
+ *
+ * Upserts only ever add or refresh. A product that was hard-deleted, bulk
+ * imported straight past the trigger, or soft-deleted while the webhook
+ * endpoint was down stays in the index as a ghost: it ranks, it renders a
+ * card, and it 404s on click. `checkSearchDrift` sees the count gap but
+ * cannot say which ids; this diff can. Every id in the index that the fresh
+ * catalogue read did not produce is deleted in one batch per index.
+ *
+ * Runs AFTER the upserts are enqueued rather than before, so an index that
+ * was empty (first run, or re-created) is filled and never briefly blanked.
+ * Meilisearch processes an index's tasks in order, so the delete batch cannot
+ * overtake the PUT it follows.
+ */
+export async function syncCatalogue(): Promise<SyncResult> {
+  const reindexed = await reindexAll()
+  if (reindexed.skipped) return { ...reindexed, pruned: 0 }
+
+  // reindexAll read the catalogue once; reading the id set again here keeps
+  // the two functions independent at the cost of one cheap projected query.
+  const admin = createAdminClient()
+  const { data: rows, error } = await admin
+    .from('products')
+    .select('id, type, is_coupon_enabled')
+    .eq('status', 'active')
+    .is('deleted_at', null)
+  if (error) throw new Error(`products id read failed: ${error.message}`)
+  const catalogueIds = new Set((rows ?? []).map((row) => row.id))
+  const couponIds = new Set(
+    (rows ?? [])
+      .filter((row) => row.type === 'coupon' || row.is_coupon_enabled)
+      .map((row) => row.id),
+  )
+
+  let pruned = 0
+  const prune = async (uid: string, keep: Set<string>) => {
+    const stale = [...(await listIndexDocumentIds(uid))].filter((id) => !keep.has(id))
+    if (stale.length === 0) return
+    const task = await meiliRequest<{ taskUid: number }>(
+      `/indexes/${uid}/documents/delete-batch`,
+      'POST',
+      stale,
+    )
+    reindexed.taskUids.push(task.taskUid)
+    pruned += stale.length
+  }
+  await prune(PRODUCTS_INDEX, catalogueIds)
+  await prune(COUPONS_INDEX, couponIds)
+
+  return { ...reindexed, pruned }
+}
+
+/**
  * Full rebuild of both indexes from Postgres.
  *
  * Upserts (PUT) rather than swap-and-replace: a document that fell out of the

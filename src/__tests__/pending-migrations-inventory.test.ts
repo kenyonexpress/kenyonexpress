@@ -375,6 +375,7 @@ describe('the pending migration inventory', () => {
       // with compiled defaults as fallback. Dry-run rolled back on
       // production; README carries the measurement.
       '237_user_ban_and_store_settings.sql',
+      '238_search_events_daily.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

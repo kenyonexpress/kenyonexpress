@@ -1,5 +1,28 @@
 # `migrations/pending/`
 
+## 2026-09-17: 238 PENDING (search events by day)
+
+`238_search_events_daily.sql` gives search analytics a day axis. `search_events`
+(118) is an all-time aggregate per term, so the admin page's zero-result rate
+cannot say whether a gap is closing. The file adds `search_events_daily`, keyed
+by (UTC day, normalised term) with the same two counters, and restates
+`fn_record_search` as 118 wrote it plus one upsert into the new table, so both
+are written in the same statement. No user, no IP, no session: 118's privacy
+contract is unchanged. Reads are staff-only through the same `has_role('admin')`
+policy; the function stays `service_role`-only, as production has it (158/159).
+
+The live function body was read off production on 2026-09-17 and matches 118's
+file byte for byte, so the CREATE OR REPLACE is 118 plus one INSERT and not a
+stale copy over a drifted body. Dry-run on production the same day in a
+rolled-back DO block: table, index, policy, grants, and one recorded search
+landing in both tables with matching counters; re-read after: 0 tables, so the
+rollback held.
+
+The admin page (`src/app/(admin)/admin/search`) shows the all-time figures and
+no trend section until this is applied; `src/lib/supabase/pending-search-daily.ts`
+is the one cast that names the table and is deleted when `database.ts` is
+regenerated.
+
 ## 2026-09-17: 237 PENDING (user ban record + store settings)
 
 `237_user_ban_and_store_settings.sql` gives the admin panel two places to

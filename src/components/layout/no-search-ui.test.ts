@@ -136,7 +136,7 @@ describe('no search UI anywhere on the site', () => {
     // The route stays: the rule removes the input, not the ability to resolve a
     // query somebody arrives with.
     const page = read('src/app/(store)/search/page.tsx')
-    expect(page).toContain('searchProductsCached')
+    expect(page).toContain('facetedSearchCached')
     expect(markup('src/app/(store)/search/page.tsx')).not.toContain('<input')
   })
 })

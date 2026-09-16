@@ -37,6 +37,9 @@
  */
 export const HEBREW_PREFIXES = ['ה', 'ו', 'ב', 'ל', 'מ', 'ש', 'כ'] as const
 
+/** A Hebrew letter, so a prefix is only ever attached to a Hebrew word. */
+const HEBREW_LETTER = /^[א-ת]/
+
 /**
  * Groups of terms that mean the same thing to a shopper.
  *
@@ -72,6 +75,47 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
 ] as const
 
 /**
+ * The same thing in another script.
+ *
+ * The catalogue is Hebrew with an English `name_en` and Latin brand names, and
+ * the shoppers are Israelis, which means Russian and Arabic keyboards as well
+ * as English ones. Meilisearch tokenizes each script correctly on its own
+ * (query-locale.ts pins the tokenizer) but it cannot know that "spa" and ספא
+ * are one word; that is a synonym, declared here.
+ *
+ * Every group anchors on the Hebrew head term of a group above, so a shopper
+ * typing "spa" reaches the same documents a shopper typing ספא does. The
+ * foreign spellings are NOT prefixed: `withHebrewPrefixes` attaches letters
+ * to Hebrew words only, and "הspa" is not a spelling anyone types.
+ *
+ * Same admission test as the Hebrew groups: would a shopper searching either
+ * term be glad to see the other's results? Translations pass by definition;
+ * transliterations ("zimmer") pass because the word has no English of its
+ * own; brand names and narrowings stay out.
+ */
+export const CROSS_LANGUAGE_GROUPS: readonly (readonly string[])[] = [
+  ['מסעדה', 'restaurant', 'ресторан', 'مطعم'],
+  ['בית קפה', 'cafe', 'coffee', 'кафе', 'кофе', 'مقهى'],
+  ['ספא', 'spa', 'спа', 'سبا'],
+  ['עיסוי', 'massage', 'массаж', 'مساج'],
+  ['מלון', 'hotel', 'отель', 'فندق'],
+  ['צימר', 'zimmer', 'циммер'],
+  ['כושר', 'gym', 'fitness', 'фитнес', 'جيم'],
+  ['מספרה', 'barber', 'salon', 'парикмахерская', 'حلاق'],
+  ['תספורת', 'haircut', 'стрижка'],
+  ['מתנה', 'gift', 'подарок', 'هدية'],
+  ['קופון', 'coupon', 'voucher', 'купон', 'كوبون'],
+  ['יום הולדת', 'birthday', 'день рождения', 'عيد ميلاد'],
+  ['חופשה', 'vacation', 'holiday', 'отпуск', 'عطلة'],
+] as const
+
+/** Everything the index is configured with: the Hebrew groups and the bridges. */
+export const ALL_SYNONYM_GROUPS: readonly (readonly string[])[] = [
+  ...SYNONYM_GROUPS,
+  ...CROSS_LANGUAGE_GROUPS,
+]
+
+/**
  * A term plus every prefixed spelling of it.
  *
  * Multi-word terms are prefixed on the FIRST word only, because that is where
@@ -89,6 +133,10 @@ export function withHebrewPrefixes(term: string): string[] {
   // At two letters, ב + ר is בר, which is a term in this very file.
   if (head.length < 3) return [trimmed]
 
+  // Only Hebrew words take Hebrew prefixes. A Latin, Cyrillic or Arabic term
+  // from the cross-language groups is a spelling of its own and nothing else.
+  if (!HEBREW_LETTER.test(head)) return [trimmed]
+
   return [trimmed, ...HEBREW_PREFIXES.map((prefix) => `${prefix}${head}${tail}`)]
 }
 
@@ -101,7 +149,7 @@ export function withHebrewPrefixes(term: string): string[] {
  * that one spelling.
  */
 export function buildSynonyms(
-  groups: readonly (readonly string[])[] = SYNONYM_GROUPS,
+  groups: readonly (readonly string[])[] = ALL_SYNONYM_GROUPS,
 ): Record<string, string[]> {
   const map: Record<string, Set<string>> = {}
 

@@ -35,7 +35,11 @@ export type FacetedSearchParams = {
   brand?: string
   tag?: string
   inStock?: boolean
-  /** Agorot. Integers only, like every amount in the money path. */
+  /**
+   * Whole shekels: the catalogue columns `kenyon_price`/`full_price` are
+   * numeric shekels (admin/bulk-price.ts), and the filter compares against
+   * them directly. Integers only, so the parser can refuse rather than round.
+   */
   priceMin?: number
   priceMax?: number
   sort?: FacetedSort
@@ -64,9 +68,9 @@ function readValue(searchParams: URLSearchParams, name: string): string | undefi
 }
 
 /**
- * Agorot, or undefined, or an explicit refusal. "12.50" is not a price in
- * this system, it is a bug reaching for the money path; it must 400, never
- * round.
+ * Whole shekels, or undefined, or an explicit refusal. "12.50" is not a
+ * bound anyone types into a facet URL, it is a caller reaching for the money
+ * path; it must 400, never round.
  */
 function readAgorot(searchParams: URLSearchParams, name: string): number | undefined | 'invalid' {
   const raw = searchParams.get(name)?.trim()
