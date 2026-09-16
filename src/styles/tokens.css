@@ -263,6 +263,13 @@
      because it was sized by its content instead of by the measurement. */
   --spacing-feature-bar-mobile: 31px;
   --spacing-feature-bar: 134px;
+  /* Below lg live does not wrap the five `.feature` blocks, it keeps them on
+     ONE row at a fixed 180px each (`@media (max-width:991.98px)
+     .features-list .feature{flex:0 0 auto;width:180px}`) inside a nowrap,
+     overflow:auto list -- so at 768 the strip shows four and the fifth is
+     scrolled off the inline end. Ours wrapped them two-up into three rows,
+     223px inside a 134px section, painting over the hero and the grid. */
+  --spacing-feature-item: 180px;
 
   /* --- The app shell, measured at all three widths ---------------------------
      Read off refs/ke_live_computed.json on 2026-09-03. The live shell is
@@ -272,16 +279,25 @@
 
        width   top bar   header   what the header is
        ------  --------  -------  ---------------------------------------
-       380     113       84       handheld: icons, logo, hamburger
-       768      38       84       handheld: same, wider
+       380     113       50       handheld: icons, logo, hamburger
+       768      38       50       handheld: same, wider
        1440     38      110       masthead: logo + nav, no hamburger
+
+     THE HANDHELD HEADER IS 50, NOT 84. The 84 this table carried until
+     2026-09-16 was never in a capture: the 09-04 ke_live_computed.json has
+     `site-header.header-v8` at h50 and `handheld-header-v2` at h49 at BOTH
+     380 and 768, the logo at y124 (380) and y49 (768), and both archived
+     screenshots (08-12 and 09-04) paint the logo row 113..163. The extra
+     34px pushed the hero, the feature strip and every deal card down by a
+     band, which is most of the 27% the home page scored at 380 and 768 on
+     2026-09-16 against a header that was otherwise right.
 
      The 113 at 380 is not a taste: the top bar's four info items (account,
      secure checkout, fast delivery, nationwide) do not fit one 380px line, so
      live wraps them onto three 37px rows. Ours hid them below md entirely,
      which is why our top bar was one row where live has three. */
   --spacing-topbar-handheld: 112px; /* + 1px border = live's 113 at 380 */
-  --spacing-header-handheld: 83px; /* + 1px border = live's 84 at 380 and 768 */
+  --spacing-header-handheld: 49px; /* + 1px border = live's 50 at 380 and 768 */
   /* 112/3, NOT 37. Three rows of a flat 37px are 111px inside a 112px box, and
      the leftover pixel is not harmless: it moves every divider between the top
      bar's three rows a little further from live's. Measured with

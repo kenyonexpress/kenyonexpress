@@ -1,5 +1,42 @@
 # `migrations/pending/`
 
+## 2026-09-16: 235 PENDING (product live channel + rating summary)
+
+`235_product_live_and_rating.sql` gives the product page the two things it
+cannot get from its hour-long cache: a per-product broadcast topic and a
+rating it is allowed to show.
+
+**The live channel** is an AFTER UPDATE trigger on `products` (stock,
+price, compare-at, status, deleted_at) that calls `realtime.send` on the
+public topic `product:<id>` with exactly six catalogue fields plus the
+reservation-aware `available_stock`. Broadcast, not `postgres_changes`:
+a row-change feed ships the whole row, and `anon` holds column SELECT on
+all 93 columns of `products` today (measured 2026-09-16; `cost_ils`,
+`platform_percent` and `supplier_split_percent` included, a pre-existing
+exposure filed in STATE.md and NOT widened here). The trigger body swallows
+every error, because it fires inside the same transaction as finalize's
+stock decrement and a broadcast must never roll a paid order back. Reader:
+`src/lib/product-live/use-product-live.ts`; proof against production:
+`scripts/verify-product-live.mjs`.
+
+**The rating summary** is `product_rating_summary(p_product_id)`, SECURITY
+DEFINER over the rows 232 closed to `anon`, returning the one-decimal
+average and the count of APPROVED, undeleted reviews and nothing else.
+Reader: `loadRatingSummary` in `src/lib/product-detail.ts`, which treats
+PGRST202 (function absent, i.e. 235 not applied) as "no rating" and renders
+the identifiers in the slot as before.
+
+Dry-run on production 2026-09-16 in a rolled-back DO block: both functions
+and the trigger created, `anon` can execute the summary (returned
+`null / 0` for a product with no reviews), an UPDATE of `stock_quantity`
+fired the trigger without raising. The broadcast row itself did NOT land:
+`realtime.messages` had partitions only through `messages_2026_09_13`, so
+`realtime.send` hit "no partition of relation messages found for row" and
+swallowed it exactly as designed. The Realtime service creates those
+partitions when a tenant is connected; a subscribed client is what wakes it.
+That is what the verify script checks, and until it passes the feature is
+a no-op page, not a broken one.
+
 ## 2026-09-10: 234 APPLIED (gift cards)
 
 `234_gift_cards.sql` is the stored-value instrument: `gift_cards` (hashed

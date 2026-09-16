@@ -1,3 +1,4 @@
+import type { RatingSummary } from '@/components/storefront/RatingStars'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
@@ -92,27 +93,30 @@ export async function loadProductBySlug(slug: string) {
 
   // Three independent reads, so they go together rather than in sequence. On
   // a cache miss this is the difference between one round trip and three.
-  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls] = await Promise.all([
-    loadSupplierPublicContact(product.supplier_id),
-    supabase
-      .from('product_variants')
-      .select('id, name_he, price, price_modifier, stock_quantity, sku')
-      .eq('product_id', product.id)
-      .eq('is_active', true)
-      .is('deleted_at', null)
-      .order('name_he')
-      .then(({ data }) => data),
-    loadGalleryAssets(images),
-    isCoupon
-      ? readOptionalColumns<Coupon054Row>(
-          probe,
-          COUPON_054_COLUMNS,
-          [product.id],
-          'product page',
-        ).then((rows) => rows.get(product.id))
-      : Promise.resolve(undefined),
-    isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
-  ])
+  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls, rating] = await Promise.all(
+    [
+      loadSupplierPublicContact(product.supplier_id),
+      supabase
+        .from('product_variants')
+        .select('id, name_he, price, price_modifier, stock_quantity, sku')
+        .eq('product_id', product.id)
+        .eq('is_active', true)
+        .is('deleted_at', null)
+        .order('name_he')
+        .then(({ data }) => data),
+      loadGalleryAssets(images),
+      isCoupon
+        ? readOptionalColumns<Coupon054Row>(
+            probe,
+            COUPON_054_COLUMNS,
+            [product.id],
+            'product page',
+          ).then((rows) => rows.get(product.id))
+        : Promise.resolve(undefined),
+      isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
+      loadRatingSummary(product.id),
+    ],
+  )
 
   const basePrice = Number(product.kenyon_price ?? 0)
 
@@ -150,7 +154,43 @@ export async function loadProductBySlug(slug: string) {
     stickerPriceIls,
     couponOffer,
     recurringOffer,
+    rating,
   }
+}
+
+/**
+ * The two numbers a visitor may know about a product's reviews.
+ *
+ * `product_rating_summary` (235) is SECURITY DEFINER over the rows 232 closed
+ * to `anon`, and returns the average and the count of APPROVED reviews and
+ * nothing else. It is read inside the hour cache because a rating moves on
+ * moderation, not on traffic, and the admin moderation action already
+ * invalidates the catalogue tag.
+ *
+ * NULL IS THE ANSWER FOR "NOT YET". The function does not exist until 235 is
+ * applied (PostgREST answers PGRST202), and a zero count is not a rating.
+ * Both render the identifiers in the slot instead, exactly as the page did
+ * before. Only an unexpected error is logged -- a missing function on a
+ * deployment that has not applied 235 is a state, not a fault.
+ */
+async function loadRatingSummary(productId: string): Promise<RatingSummary | null> {
+  const { data, error } = (await createPublicClient().rpc(
+    'product_rating_summary' as never,
+    { p_product_id: productId } as never,
+  )) as { data: unknown; error: { code?: string; message?: string } | null }
+  if (error) {
+    if (error.code !== 'PGRST202' && error.code !== '42883') {
+      log.warn('product_detail.rating_read_failed', { productId, reason: error.message })
+    }
+    return null
+  }
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { average: number | string | null; review_count: number | null }
+    | undefined
+  const count = Number(row?.review_count ?? 0)
+  const average = Number(row?.average)
+  if (!Number.isFinite(count) || count <= 0 || !Number.isFinite(average)) return null
+  return { average, count }
 }
 
 /**

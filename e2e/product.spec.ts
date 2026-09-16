@@ -26,6 +26,42 @@ test.describe('product page', () => {
     await expect(page.getByRole('button', { name: 'שתפו בוואטסאפ' })).toBeVisible()
   })
 
+  test('offers the wishlist heart and a share-or-copy button beside the channels', async ({
+    page,
+  }) => {
+    await openFirstProduct(page)
+    await expect(
+      page.getByRole('button', { name: /הוסף לרשימת המשאלות|הסר מרשימת המשאלות/ }).first(),
+    ).toBeVisible()
+    // Chromium on a desktop has no navigator.share, so the button offers a
+    // copy; on a device with a share sheet it offers that instead.
+    await expect(page.getByRole('button', { name: /העתקת קישור|^שיתוף$/ })).toBeVisible()
+  })
+
+  test('the gallery frame takes the keyboard and zooms in place', async ({ page }) => {
+    await openFirstProduct(page)
+    const frame = page.getByRole('region', { name: /תמונות המוצר/ })
+    test.skip((await frame.count()) === 0, 'product has no images')
+
+    await frame.focus()
+    await page.keyboard.press('Enter')
+    await expect(frame).toHaveAttribute('data-zoomed', 'true')
+    // The frame's own box does not grow: the zoom is clipped inside it.
+    const before = await frame.boundingBox()
+    await page.keyboard.press('Escape')
+    await expect(frame).not.toHaveAttribute('data-zoomed', 'true')
+    const after = await frame.boundingBox()
+    expect(before?.width).toBe(after?.width)
+    expect(before?.height).toBe(after?.height)
+
+    const thumbs = page.getByRole('button', { name: /^תמונה \d+$/ })
+    if ((await thumbs.count()) > 1) {
+      await frame.focus()
+      await page.keyboard.press('ArrowLeft')
+      await expect(thumbs.nth(1)).toHaveAttribute('aria-current', 'true')
+    }
+  })
+
   test('renders right-to-left with a Hebrew document title', async ({ page }) => {
     await openFirstProduct(page)
 

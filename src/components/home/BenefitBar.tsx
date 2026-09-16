@@ -74,8 +74,17 @@ export default function BenefitBar() {
       className="h-feature-bar-mobile w-full bg-white font-sans md:flex md:h-feature-bar md:items-center"
     >
       <div className="mx-auto hidden w-full md:block" style={{ maxWidth: USP.maxWidth }}>
+        {/*
+          ONE ROW AT EVERY WIDTH, the way live's `.features-list` is:
+          `flex-wrap:nowrap; overflow:auto`, and below 992px each `.feature`
+          is a fixed 180px. At 768 that is four visible cells and a fifth
+          scrolled off the inline end; ours wrapped into two columns and
+          three rows (223px inside the 134px strip) and painted over the
+          hero above and the deal grid below. The scrollbar is hidden by
+          .benefit-bar__list in globals.css; the strip still scrolls.
+        */}
         <ul
-          className="flex flex-wrap justify-between lg:flex-nowrap"
+          className="benefit-bar__list flex flex-nowrap justify-between overflow-x-auto lg:overflow-visible"
           style={{ border: `1px solid ${USP.borderColor}`, borderRadius: USP.borderRadius }}
         >
           {benefits.map((b, i) => {
@@ -89,7 +98,7 @@ export default function BenefitBar() {
                 // cannot be overridden by a media query and the narrowest
                 // phones need both smaller. See .benefit-bar__item in
                 // globals.css for the measurement.
-                className="benefit-bar__item w-full sm:w-1/2 lg:w-1/5 flex items-center justify-center"
+                className="benefit-bar__item flex w-feature-item shrink-0 items-center justify-center lg:w-1/5 lg:shrink"
                 style={
                   {
                     '--usp-gap': `${USP.gap}px`,

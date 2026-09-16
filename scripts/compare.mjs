@@ -83,6 +83,10 @@ const ctx = await b.newContext({
   deviceScaleFactor: 1,
   ...(STORAGE_STATE && existsSync(STORAGE_STATE) ? { storageState: STORAGE_STATE } : {}),
 })
+// Our consent banner is a fixed overlay and this viewport is 2600px tall, so
+// it would sit inside the measured bands (see scripts/shoot-mine.mjs for the
+// numbers). Scoped to the local origin: the reference host never sees it.
+await ctx.addCookies([{ name: 'ke_consent', value: 'denied.2', url: LOCAL }])
 
 let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)

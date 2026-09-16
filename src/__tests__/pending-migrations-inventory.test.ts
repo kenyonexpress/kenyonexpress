@@ -354,6 +354,11 @@ describe('the pending migration inventory', () => {
       '232_reviews_admin_moderation_only.sql',
       '233_wishlist_alerts.sql',
       '234_gift_cards.sql',
+      // 235 is PENDING (2026-09-16): the product page's broadcast topic
+      // (trigger + realtime.send, chosen payload, never raises) and the
+      // approved-reviews rating summary. Dry-run rolled back on production;
+      // apply waits on the migration gate. README carries the measurement.
+      '235_product_live_and_rating.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

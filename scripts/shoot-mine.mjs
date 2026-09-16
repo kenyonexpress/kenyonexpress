@@ -38,6 +38,18 @@ const ctx = await b.newContext({
   locale: 'he-IL',
   deviceScaleFactor: 1,
 })
+// The consent banner is a fixed overlay at the bottom of the VIEWPORT, and this
+// viewport is 2600px tall so the diff bands line up run to run -- which puts a
+// ~250px legal notice at y2350 of every phone shot, inside the measured area,
+// where a real phone paints it over whatever is on screen at the time. The
+// reference had no banner. Measured 2026-09-16 at 380: 27.26% with the banner
+// in frame, and bands y2300..2600 alone were 40% / 34% / 9%. The gate scores
+// the page, not the overlay, so the shot is taken as a visitor who has already
+// answered -- which is also the visitor every pre-09-09 number in
+// docs/UI-PARITY-REPORT.md described, because the banner did not exist yet.
+// `denied` and not `granted`: a denied visitor loads no third-party tags, so
+// nothing else on the page can differ either.
+await ctx.addCookies([{ name: 'ke_consent', value: 'denied.2', url: LOCAL }])
 const p = await ctx.newPage()
 
 let lastError = null
