@@ -44,6 +44,7 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['auth.ts:sendMagicLink', 'sign-in entry point'],
   ['auth.ts:sendPhoneOtp', 'sign-in entry point, rate limited per IP and per number'],
   ['auth.ts:verifyPhoneOtp', 'sign-in entry point, rate limited per IP'],
+  ['auth.ts:verifyEmailOtp', 'sign-in entry point, rate limited per IP and per address'],
   ['auth.ts:signOut', "acts on the caller's own session, no arguments"],
   ['auth.ts:signOutAll', "acts on the caller's own session, no arguments"],
   ['auth.ts:sendPasswordReset', 'reset must work when locked out'],

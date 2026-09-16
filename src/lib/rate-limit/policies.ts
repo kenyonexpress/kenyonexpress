@@ -52,6 +52,12 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'OTP SMS to one number: the measured lockout vector',
   },
   'phone-verify': { limit: 20, windowSeconds: 3600, reason: 'OTP code guessing' },
+  'email-verify': { limit: 20, windowSeconds: 3600, reason: 'mail OTP code guessing, per IP' },
+  'email-verify-address': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'mail OTP code guessing, per address, so proxies cannot buy one account more tries',
+  },
   'passkey-register': {
     limit: 10,
     windowSeconds: 3600,
@@ -95,6 +101,11 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'reset mail to one address from rotating IPs',
   },
   'update-password': { limit: 10, windowSeconds: 3600, reason: 'session-bound password change' },
+  'change-password': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'current-password re-proof from inside the account, keyed on the user id',
+  },
 
   // -- Commerce. Higher, because a real shopper trips these by shopping.
   cart_write: { limit: 120, windowSeconds: 3600, reason: 'cart mutation, user or IP' },

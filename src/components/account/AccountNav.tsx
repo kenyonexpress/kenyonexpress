@@ -12,6 +12,7 @@ const ITEMS = [
   { href: '/account/coupons', label: 'הקופונים שלי' },
   { href: '/account/wishlist', label: 'רשימת המשאלות' },
   { href: '/account/wallet', label: 'הארנק שלי' },
+  { href: '/account/cashback', label: 'הקאשבק שלי' },
   { href: '/account/referrals', label: 'חבר מביא חבר' },
   { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },

@@ -45,7 +45,13 @@ export async function trySendBrandedMagicLink(email: string): Promise<boolean> {
     }
 
     const link = `${siteUrl()}/auth/callback?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink`
-    const built = buildMagicLinkEmail({ actionLink: link })
+    // `email_otp` is the same secret as the link in code form. It rides in
+    // the mail so the customer can type it on the login page (`verifyEmailOtp`)
+    // when the mail is read on a different device than the one that asked.
+    const built = buildMagicLinkEmail({
+      actionLink: link,
+      code: data.properties.email_otp || undefined,
+    })
     const result = await sendEmail({
       to: email,
       subject: built.subject,

@@ -6,6 +6,7 @@ import {
   sendMagicLink,
   signInWithEmail,
   signInWithGoogle,
+  verifyEmailOtp,
 } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
@@ -48,6 +49,14 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
     sendMagicLink,
     null,
   )
+  const [codeState, codeAction, codePending] = useActionState<AuthState, FormData>(
+    verifyEmailOtp,
+    null,
+  )
+  // The address the link was sent to, carried into the code step the way
+  // PhoneOtpForm carries the number: the verify action needs the same address
+  // the mail went to, and a second input would let the two drift.
+  const [magicEmail, setMagicEmail] = useState('')
 
   const topError =
     getError(googleState) ??
@@ -200,6 +209,8 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
               autoComplete="email"
               placeholder="you@example.com"
               dir="ltr"
+              value={magicEmail}
+              onChange={(event) => setMagicEmail(event.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
             {getSuccess(magicState) && (
@@ -218,6 +229,46 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
               className="w-full border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
             >
               {magicPending ? 'שולחים...' : 'שלחו לי קישור'}
+            </button>
+          </form>
+        )}
+
+        {/*
+          The mail carries a six-digit code next to the link, for the case
+          where it is read on a phone while the browser that asked is a
+          laptop. Typing the code here signs that browser in without the
+          link ever being clicked. Shown only once a mail is on its way.
+        */}
+        {getSuccess(magicState) && (
+          <form action={codeAction} className="mt-4 space-y-3">
+            <input type="hidden" name="email" value={magicEmail} />
+            {next && <input type="hidden" name="next" value={next} />}
+            <label htmlFor="magic-code" className="block text-sm font-medium text-gray-700">
+              או הזינו את הקוד מהמייל
+            </label>
+            <input
+              id="magic-code"
+              name="token"
+              type="text"
+              required
+              dir="ltr"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={10}
+              placeholder="123456"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-center text-lg tracking-[0.4em] placeholder:tracking-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+            />
+            {getError(codeState) && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                {getError(codeState)}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={codePending}
+              className="w-full bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
+            >
+              {codePending ? 'מאמתים...' : 'כניסה עם הקוד'}
             </button>
           </form>
         )}

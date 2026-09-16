@@ -40,6 +40,8 @@
 | `phone-otp` | 5 | 1 h | OTP SMS costs money, per IP |
 | `phone-otp-number` | 5 | 1 h | OTP SMS to one number: the measured lockout vector |
 | `phone-verify` | 20 | 1 h | OTP code guessing |
+| `email-verify` | 20 | 1 h | mail OTP code guessing, per IP |
+| `email-verify-address` | 20 | 1 h | mail OTP code guessing, per address, so proxies cannot buy one account more tries |
 | `passkey-register` | 10 | 1 h | WebAuthn enrolment ceremonies; a real person adds one key, not eleven |
 | `mfa-enrol` | 10 | 1 h | TOTP factor creation, per user; one authenticator, not a pile of abandoned factors |
 | `mfa-verify` | 10 | 15 min | six digits are brute forceable; per-user bound is what actually protects the account |
@@ -50,6 +52,7 @@
 | `reset` | 5 | 1 h | reset mail, per IP |
 | `reset-address` | 5 | 1 h | reset mail to one address from rotating IPs |
 | `update-password` | 10 | 1 h | session-bound password change |
+| `change-password` | 10 | 1 h | current-password re-proof from inside the account, keyed on the user id |
 | `cart_write` | 120 | 1 h | cart mutation, user or IP |
 | `coupon` | 10 | 1 h | coupon code guessing |
 | `coupon_qr_apply` | 30 | 1 h | printed QR landing, per IP |

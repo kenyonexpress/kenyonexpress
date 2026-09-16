@@ -819,3 +819,34 @@
   font-size: 12px;
   color: var(--account-muted);
 }
+
+/* Cashback tracker: progress toward the next bonus purchase. A native
+   <progress>, restyled per engine; the fallback text inside it is what a
+   browser without the element would show. */
+.cashback-progress {
+  display: block;
+  width: 100%;
+  height: 8px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--account-line);
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.cashback-progress::-webkit-progress-bar {
+  background: var(--account-line);
+  border-radius: 4px;
+}
+
+.cashback-progress::-webkit-progress-value {
+  background: var(--account-yellow);
+  border-radius: 4px;
+}
+
+.cashback-progress::-moz-progress-bar {
+  background: var(--account-yellow);
+  border-radius: 4px;
+}

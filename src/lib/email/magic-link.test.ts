@@ -56,4 +56,28 @@ describe('buildMagicLinkEmail', () => {
     expect(mail.html).not.toContain('<script>')
     expect(mail.html).toContain('&lt;script&gt;')
   })
+
+  it('carries the typed-in code in both bodies when one is supplied', () => {
+    const mail = buildMagicLinkEmail({ actionLink: LINK, code: ' 482913 ' })
+    expect(mail.text).toContain('482913')
+    expect(mail.text).toContain('הזינו את הקוד')
+    expect(mail.html).toContain('482913')
+    // Still no link other than the login link: the code is text, not an href.
+    const hrefs = [...mail.html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])
+    for (const href of hrefs) expect(href).toBe(ESCAPED)
+  })
+
+  it('omits the code line entirely when no code was minted', () => {
+    for (const code of [undefined, '', '   ']) {
+      const mail = buildMagicLinkEmail({ actionLink: LINK, code })
+      expect(mail.text).not.toContain('הזינו את הקוד')
+      expect(mail.html).not.toContain('הזינו את הקוד')
+    }
+  })
+
+  it('escapes a hostile code the same way it escapes the link', () => {
+    const mail = buildMagicLinkEmail({ actionLink: LINK, code: '<img src=x onerror=alert(1)>' })
+    expect(mail.html).not.toContain('<img src=x')
+    expect(mail.html).toContain('&lt;img')
+  })
 })
