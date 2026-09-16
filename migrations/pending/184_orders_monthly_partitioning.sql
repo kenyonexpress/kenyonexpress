@@ -275,6 +275,46 @@ BEGIN
   -- 3.1 The one dependent view goes first; recreated verbatim in 3.9.
   DROP VIEW IF EXISTS public.v_admin_pending_queues;
 
+  -- 3.1b RLS policies on OTHER tables reference orders inside their quals
+  -- (nine of them, measured 2026-09-16 when the dry-run's DROP refused with
+  -- 2BP01 listing every one). A policy tracks the referenced table by OID,
+  -- so after 3.2's rename each would still point at the legacy table and
+  -- block its drop -- and DROP ... CASCADE would have silently deleted the
+  -- policies instead, leaving nine tables wide open or locked shut with no
+  -- error. Capture their definitions while deparse still prints `orders`,
+  -- drop them, and recreate them verbatim in 3.9b once the new parent
+  -- exists: the recreated expression text then binds to the new table.
+  CREATE TEMP TABLE tmp_orders_dependent_policies ON COMMIT DROP AS
+  SELECT
+    quote_ident(n.nspname) || '.' || quote_ident(c.relname) AS tbl,
+    pol.polname                                             AS name,
+    CASE pol.polcmd WHEN 'r' THEN 'SELECT' WHEN 'a' THEN 'INSERT'
+                    WHEN 'w' THEN 'UPDATE' WHEN 'd' THEN 'DELETE'
+                    ELSE 'ALL' END                          AS cmd,
+    CASE WHEN pol.polpermissive THEN 'PERMISSIVE'
+         ELSE 'RESTRICTIVE' END                             AS kind,
+    COALESCE(
+      (SELECT string_agg(quote_ident(a.rolname), ', ')
+         FROM pg_roles a WHERE a.oid = ANY (pol.polroles)),
+      'PUBLIC')                                             AS roles,
+    pg_get_expr(pol.polqual, pol.polrelid)                  AS qual,
+    pg_get_expr(pol.polwithcheck, pol.polrelid)             AS with_check
+  FROM pg_policy pol
+  JOIN pg_class c ON c.oid = pol.polrelid
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE pol.polrelid <> 'public.orders'::regclass
+    AND EXISTS (
+      SELECT 1 FROM pg_depend d
+      WHERE d.classid = 'pg_policy'::regclass
+        AND d.objid = pol.oid
+        AND d.refclassid = 'pg_class'::regclass
+        AND d.refobjid = 'public.orders'::regclass
+    );
+
+  FOR r IN SELECT * FROM tmp_orders_dependent_policies LOOP
+    EXECUTE format('DROP POLICY %I ON %s', r.name, r.tbl);
+  END LOOP;
+
   -- 3.2 Park the old table under a legacy name and free its index names
   -- (index names are schema-wide; constraint names are per-table and clash
   -- with nothing).
@@ -500,6 +540,19 @@ BEGIN
          FOREIGN KEY (%I, %I) REFERENCES public.orders (id, created_at)
          ON UPDATE CASCADE ON DELETE %s',
       r.tbl, r.fk_name, r.fk_col, r.twin_col, r.on_del);
+  END LOOP;
+
+  -- 3.9b The policies captured in 3.1b, recreated against the new parent.
+  -- Their expression text names `orders`, which now resolves to the
+  -- partitioned table.
+  FOR r IN SELECT * FROM tmp_orders_dependent_policies LOOP
+    EXECUTE format(
+      'CREATE POLICY %I ON %s AS %s FOR %s TO %s %s %s',
+      r.name, r.tbl, r.kind, r.cmd, r.roles,
+      CASE WHEN r.qual IS NOT NULL
+           THEN 'USING (' || r.qual || ')' ELSE '' END,
+      CASE WHEN r.with_check IS NOT NULL
+           THEN 'WITH CHECK (' || r.with_check || ')' ELSE '' END);
   END LOOP;
 
   -- 3.10 The old table has nothing pointing at it any more.
