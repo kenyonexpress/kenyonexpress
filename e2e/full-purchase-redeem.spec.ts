@@ -9,12 +9,21 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { addOpenProductToCart, expectHebrewRtl } from './helpers'
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
- * guest cart → login at pay (Google button present; email used in CI) →
- * mock hosted page return → coupon issued with QR → supplier scan redeem.
+ * guest cart → guest checkout form → sign-in on the pay leg (email in CI;
+ * the Google hop uses the same /auth/callback mergeGuestCart path) →
+ * mock hosted page → finalize → coupon with QR → supplier scan redeem.
+ *
+ * REWRITTEN 2026-09-16 for the guest-at-pay gate. This spec used to pin the
+ * OLD shape — an anonymous /checkout bouncing to /login — and had been red
+ * since the checkout became guest-fillable with sign-in demanded on the pay
+ * press (see src/app/(store)/checkout/page.tsx and checkout.spec.ts, which
+ * pins the gate itself). CI cannot complete the real Google OAuth hop, so
+ * the paid leg signs in with the seeded email user before paying; the
+ * guest-notice assertion below is what keeps the Google-at-pay design pinned.
  *
  * Requires:
  *   - scripts/seed-test-data.mjs (products + customer + supplier member)
@@ -23,6 +32,46 @@ import { BUY_BUTTON, expectHebrewRtl } from './helpers'
  * Skip with E2E_PAID_FLOW=0 when the shared DB cannot host fixtures.
  */
 
+/** Walk the stepped checkout form from wherever it starts to the confirm step.
+ * A returning customer with a saved address starts past the steps they have
+ * answered, so each leg is conditional on its fields being on screen. */
+async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page): Promise<void> {
+  // Step 1: personal details.
+  if (
+    await page
+      .getByLabel(/שם פרטי/)
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await page.getByLabel(/שם פרטי/).fill('בדיקה')
+    await page.getByLabel(/שם משפחה/).fill('אוטומטית')
+    await page.getByLabel(/טלפון/).fill('0501234567')
+    await page.getByLabel(/כתובת אימייל/).fill(E2E_CUSTOMER_EMAIL)
+    await page.getByRole('button', { name: 'המשך', exact: true }).click()
+  }
+
+  // Step 2: address (required even for coupon-only carts).
+  if (
+    await page
+      .getByLabel(/עיר/)
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await page.getByLabel(/עיר/).fill('תל אביב')
+    await page.getByLabel(/רחוב/).first().fill('הרצל')
+    await page.locator('input[name="street_number"]').fill('1')
+    await page.getByRole('button', { name: 'המשך', exact: true }).click()
+  }
+
+  // Step 3: review asks nothing; move on to the confirm step.
+  const toConfirm = page.getByRole('button', { name: 'המשך לאישור' })
+  if (await toConfirm.isVisible().catch(() => false)) {
+    await toConfirm.click()
+  }
+
+  await expect(page.locator('input[name="accept_terms"]')).toBeVisible()
+}
+
 test.describe('full purchase to redeem @checkout @redeem @money', () => {
   test.describe.configure({ timeout: 120_000 })
 
@@ -30,7 +79,7 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
   })
 
-  test('guest coupon cart → auth gate with Google → mock pay → voucher → supplier redeem', async ({
+  test('guest coupon cart → guest checkout → email sign-in at pay → mock pay → voucher → supplier redeem', async ({
     browser,
   }) => {
     const customer = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
@@ -39,46 +88,39 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
     await expectHebrewRtl(page)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
+    await addOpenProductToCart(page)
 
-    const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
-    const buyable = await buy.isVisible().catch(() => false)
-    test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
-    test.skip(await buy.isDisabled(), 'e2e-test-coupon is out of stock')
-
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
-
-    // Checkout gate: guest must see Google (and email) before pay.
+    // The guest-at-pay gate: /checkout serves the anonymous visitor the form,
+    // with the returning-customer sign-in offered rather than demanded.
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/, { timeout: 15_000 })
-    await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /כניסה עם Google/ })).toBeVisible()
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('קונית כאן בעבר?')).toBeVisible()
     await expectHebrewRtl(page)
 
     // CI cannot complete real Google OAuth. Email/password hits the same
     // mergeGuestCart path the Google callback uses after the OAuth hop.
-    await page.getByLabel('אימייל').fill(E2E_CUSTOMER_EMAIL)
-    await page.getByLabel('סיסמה').fill(E2E_CUSTOMER_PASSWORD)
-    await page.getByRole('button', { name: 'כניסה', exact: true }).click()
-    await page.waitForURL(/\/checkout/, { timeout: 20_000 })
-
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/checkout')
+    await page.goto('/checkout')
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('קופון בדיקות אוטומטיות')).toBeVisible()
 
+    await walkCheckoutStepsToConfirm(page)
     await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    await page.getByRole('button', { name: 'שליחת הזמנה' }).click()
 
-    // Mock Cardcom redirects straight back to /checkout/return; reconcile
-    // verifies the in-memory deal and finalizes (issues vouchers).
+    // Mock Cardcom's hosted page IS the return URL: the payment iframe loads
+    // /checkout/return and PaymentFrameBreakout moves the top window there.
+    // reconcile verifies the in-memory deal and finalizes (issues vouchers).
     await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
       timeout: 45_000,
     })
-    await expect(page.getByTestId('coupon-code').first()).toBeVisible()
-    await expect(page.getByTestId('coupon-qr').first()).toBeVisible()
+    await expect(page.locator('.coupon-card__code').first()).toBeVisible()
+    await expect(page.locator('.coupon-card__qr img').first()).toBeVisible()
     await expectHebrewRtl(page)
 
-    const codeText = (await page.getByTestId('coupon-code').first().textContent()) ?? ''
+    const codeText = (await page.locator('.coupon-card__code').first().textContent()) ?? ''
     const voucherCode = codeText.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
     expect(voucherCode.length).toBe(10)
 
@@ -112,23 +154,25 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await supplier.close()
   })
 
-  test('Google button is the primary CTA on the pay gate (no silent email-only)', async ({
+  test('the identity ask sits on the pay leg: guest reaches the form, Google leads on /login', async ({
     page,
   }) => {
     await clearBrowserSession(page)
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
-    const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
-    if (!(await buy.isVisible().catch(() => false))) {
-      test.skip(true, 'e2e-test-coupon missing; run pnpm seed:test')
-    }
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
+    await addOpenProductToCart(page)
 
+    // A guest with a populated cart gets the checkout form, not a bounce, and
+    // the returning-customer sign-in is an offer inside the page.
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/)
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible()
+    await expect(page.getByText('קונית כאן בעבר?')).toBeVisible()
+
+    // On the login page itself Google stays the primary CTA, above email.
+    await page.goto('/login?next=%2Fcheckout')
     const google = page.getByRole('button', { name: /כניסה עם Google/ })
     await expect(google).toBeVisible()
-    // Google is above the email form divider.
     const googleBox = await google.boundingBox()
     const emailBox = await page.getByLabel('אימייל').boundingBox()
     expect(googleBox && emailBox && googleBox.y < emailBox.y).toBeTruthy()
