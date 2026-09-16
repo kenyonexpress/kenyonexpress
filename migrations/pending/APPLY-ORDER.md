@@ -1,5 +1,57 @@
 # Apply order
 
+## 2026-09-16 (L1 LANDMINES): FULL QUEUE DRY-RUN — 162, 184, 211 PROVEN; 184 CORRECTED TWICE
+
+Supabase MCP `create_branch` was refused twice by the connector, so per the
+established pattern every check ran as a full-body dry-run inside a rolled
+back transaction on production via `execute_sql` — strictly stronger than a
+branch, since it runs against the real schema.
+
+**The ten applied files** (217, 223, 224, 226, 227, 228, 231, 232, 233, 234)
+were re-verified in `supabase_migrations.schema_migrations`: all ten present,
+versions strictly ascending in numeric order (20260909134818 →
+20260910032757). They applied cleanly in order; nothing to re-run.
+
+**211** dry-run clean: constraint widened, `category` column + backfill +
+partial index, `fn_wa_orders_for_phone` created, callable
+(`probe_call_ok=0` rows for an unknown phone, no error), grants
+service_role-only. Rolled back.
+
+**162** dry-run clean: throwaway vault rows (`cron_secret`, `app_url`)
+seeded inside the transaction so the guard passes, then the DO block
+scheduled all 12 `ke-*` jobs (`ke_jobs_scheduled=12`). Rolled back;
+`cron.job` still holds only `report_tables_nightly`. The real apply stays
+blocked on real vault seeding, as recorded below (2026-09-04).
+
+**184 was stale again, exactly as preflight_184 predicts, and had two new
+landmines only execution could find:**
+
+1. Preflight block (2): **nineteen** inbound FKs, not seventeen —
+   `coupon_redemptions` (227, CASCADE) and `gift_cards` (234, SET NULL)
+   landed after the 09-09 correction. Both added to the referencing-table
+   array.
+2. First dry-run failed at the 3.9 backfill: `settlement_events_no_rewrite`
+   raises P0001 on ANY update (append-only table), so the twin-column
+   backfill could never run. Fixed: the backfill UPDATE is wrapped in
+   `DISABLE TRIGGER USER` / `ENABLE TRIGGER USER` per referencing table,
+   which also keeps the 169 audit triggers from fabricating one audit row
+   per backfilled row (same reasoning that delays `audit_orders` to 3.7b).
+3. Second dry-run failed at 3.10: **nine RLS policies on other tables**
+   (payments, invoices, order_items, escrow_holds, split_executions,
+   user_addresses, payment_events, refunds, reviews) reference `orders` by
+   OID in their quals, so they blocked the legacy drop with 2BP01 — and
+   CASCADE would have silently deleted them. Fixed: new 3.1b captures their
+   deparsed definitions before the rename (text still says `orders`), drops
+   them, and 3.9b recreates them so the text rebinds to the new parent.
+
+Third dry-run completed end to end, probes inside the transaction:
+`is_partitioned=1`, `partition_count=15`, `rows_after=8` (matches before),
+`invoice_registry_rows=1`, `inbound_fks=19`, `orders_triggers=8` (6 original
++ invoice sync + truncate block), `settlement_triggers_reenabled=3`,
+cross-table policy dependencies on the new parent present, cron row created.
+All rolled back. 184 still requires its maintenance window and a fresh
+preflight run at apply time — nothing here changes that.
+
 ## 2026-09-10 (wishlist alerts goal): 233 APPLIED
 
 **233** wishlist_alerts (`wishlist_alerts_233`, version 20260910025004):
