@@ -92,11 +92,84 @@ const BASE_DIRECTIVES = [
   'upgrade-insecure-requests',
 ] as const
 
-export function contentSecurityPolicyFor(pathname: string): string {
+/**
+ * WHY THERE IS NO NONCE, MEASURED 2026-09-17
+ *
+ * `script-src` still carries `'unsafe-inline'`, and the reason is no longer
+ * "nobody has written the proxy code". Next applies a nonce during
+ * server-side rendering of the request that carries it, so a page has to be
+ * dynamically rendered to get one (node_modules/next/dist/docs/01-app/
+ * 02-guides/content-security-policy.md, "Forcing dynamic rendering"). This
+ * site runs `cacheComponents: true` and prerenders the storefront: the home
+ * page, every category and every product are served from the static cache
+ * with their inline scripts baked in at build time. A nonce in the header
+ * would not be in those scripts, and a strict policy would block the page's
+ * own hydration. Making every route dynamic to fix that is the performance
+ * regression the cache exists to prevent.
+ *
+ * What this module does instead is make the gap OBSERVABLE: with a Sentry DSN
+ * configured, every CSP violation is reported (`report-uri` for the browsers
+ * that still speak it, `report-to` for the ones that moved on), so an
+ * injected inline script that the policy would have blocked is at least a
+ * Sentry event with a `blocked-uri` and a `script-sample` in it. The list of
+ * inline scripts this app writes itself is pinned by
+ * lib/security/inline-html.test.ts, so the day the storefront moves off the
+ * static cache the set of scripts that need a nonce is already known.
+ */
+export const CSP_REPORT_GROUP = 'csp-endpoint'
+
+/**
+ * Sentry's security-report endpoint, derived from a DSN. The DSN is
+ * `https://<public key>@<host>/<project id>`; the endpoint is
+ * `https://<host>/api/<project id>/security/?sentry_key=<public key>`.
+ * Anything that does not parse to that shape yields null and no directive,
+ * which is the right answer for a laptop with no DSN.
+ */
+export function sentrySecurityEndpoint(
+  dsn: string | null | undefined,
+  environment?: string | null,
+): string | null {
+  if (!dsn) return null
+  let parsed: URL
+  try {
+    parsed = new URL(dsn)
+  } catch {
+    return null
+  }
+  const key = parsed.username
+  const project = parsed.pathname.replace(/^\/+/, '').replace(/\/+$/, '')
+  if (!key || !/^\d+$/.test(project)) return null
+  const endpoint = new URL(`${parsed.protocol}//${parsed.host}/api/${project}/security/`)
+  endpoint.searchParams.set('sentry_key', key)
+  if (environment) endpoint.searchParams.set('sentry_environment', environment)
+  return endpoint.toString()
+}
+
+export type ContentSecurityPolicyOptions = {
+  /** Where violation reports go. Null or absent means no reporting directive. */
+  reportUri?: string | null
+}
+
+export function contentSecurityPolicyFor(
+  pathname: string,
+  options: ContentSecurityPolicyOptions = {},
+): string {
   const frameAncestors = isPaymentFramePath(pathname)
     ? "frame-ancestors 'self'"
     : "frame-ancestors 'none'"
-  return [...BASE_DIRECTIVES, frameAncestors].join('; ')
+  const reporting = options.reportUri
+    ? [`report-uri ${options.reportUri}`, `report-to ${CSP_REPORT_GROUP}`]
+    : []
+  return [...BASE_DIRECTIVES, frameAncestors, ...reporting].join('; ')
+}
+
+/**
+ * The `Reporting-Endpoints` header `report-to` refers to. Emitted beside the
+ * policy by next.config.ts; a `report-to` group with no endpoint header is
+ * silently ignored, which is why the two are built from the same value.
+ */
+export function reportingEndpointsHeader(reportUri: string | null | undefined): string | null {
+  return reportUri ? `${CSP_REPORT_GROUP}="${reportUri}"` : null
 }
 
 /**

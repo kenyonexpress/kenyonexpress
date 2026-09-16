@@ -1,12 +1,14 @@
+import ConsentSettings from '@/components/account/ConsentSettings'
 import DeleteAccountForm from '@/components/account/DeleteAccountForm'
 import Link from 'next/link'
 
 export const metadata = { title: 'פרטיות ונתונים' }
 
 /**
- * The two GDPR self-service rights in one place: the access right as a JSON
- * download and the erasure right as the deletion form, next to the documents
- * that promise them. The export link is a plain <a> on purpose: the endpoint
+ * The three GDPR self-service rights in one place: the access right as a JSON
+ * download, the consent right as a switch that reads and writes the banner's
+ * own cookie, and the erasure right as the deletion form, next to the
+ * documents that promise them. The export link is a plain <a> on purpose: the endpoint
  * answers with Content-Disposition attachment off the session cookie, and a
  * navigation (not fetch) lets the browser stream it straight to a file.
  */
@@ -30,6 +32,8 @@ export default function PrivacyPage() {
           הורדת קובץ הנתונים
         </a>
       </section>
+
+      <ConsentSettings />
 
       <section className="account-card">
         <h2 className="account-card__title">המסמכים המלאים</h2>

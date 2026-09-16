@@ -8,6 +8,8 @@ import {
   PAYMENT_FRAME_PATHS,
   contentSecurityPolicyFor,
   permissionsPolicyFor,
+  reportingEndpointsHeader,
+  sentrySecurityEndpoint,
 } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
@@ -40,12 +42,27 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
 // not adds: two Content-Security-Policy headers are both enforced and the
 // strictest wins, which would undo the exception without saying so.
+// CSP violation reports go to Sentry when a DSN is configured at build time.
+// The header is static, so the DSN has to be present when `next build` runs;
+// Vercel injects the project's environment there, a laptop usually has none,
+// and in that case the policy simply carries no reporting directive.
+// `sentrySecurityEndpoint` in frame-policy.ts derives the endpoint from the
+// DSN and explains why a nonce is not the answer here.
+const CSP_REPORT_URI = sentrySecurityEndpoint(
+  process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+  process.env.SENTRY_ENVIRONMENT ||
+    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
+    process.env.VERCEL_ENV,
+)
+const REPORTING_ENDPOINTS = reportingEndpointsHeader(CSP_REPORT_URI)
+
 const headersWithPolicy = (
   csp: string,
   frameOptions: 'DENY' | 'SAMEORIGIN',
   permissions: string,
 ) => [
   { key: 'Content-Security-Policy', value: csp },
+  ...(REPORTING_ENDPOINTS ? [{ key: 'Reporting-Endpoints', value: REPORTING_ENDPOINTS }] : []),
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   // Moves in step with frame-ancestors. Browsers that honour both enforce both,
   // so a DENY left behind on a framable path blocks the frame anyway.
@@ -88,7 +105,7 @@ const nextConfig: NextConfig = {
       {
         source: `/((?!${framable}|${cameraSources}).*)`,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor('/'),
+          contentSecurityPolicyFor('/', { reportUri: CSP_REPORT_URI }),
           'DENY',
           permissionsPolicyFor('/'),
         ),
@@ -96,7 +113,7 @@ const nextConfig: NextConfig = {
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: `${path}/:path*`,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor(path),
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
           'SAMEORIGIN',
           permissionsPolicyFor(path),
         ),
@@ -104,7 +121,7 @@ const nextConfig: NextConfig = {
       ...CAMERA_PATHS.map((path) => ({
         source: `${path}{/:path}?`,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor(path),
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
           'DENY',
           permissionsPolicyFor(path),
         ),
@@ -112,7 +129,7 @@ const nextConfig: NextConfig = {
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: path,
         headers: headersWithPolicy(
-          contentSecurityPolicyFor(path),
+          contentSecurityPolicyFor(path, { reportUri: CSP_REPORT_URI }),
           'SAMEORIGIN',
           permissionsPolicyFor(path),
         ),

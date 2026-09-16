@@ -4,6 +4,7 @@ import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
+import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { createServerClient } from '@supabase/ssr'
@@ -56,6 +57,16 @@ export async function proxy(request: NextRequest) {
   // Neither branch was wrong on its own, which is how the two of them produced
   // it.
   if (pathname.startsWith('/monitoring')) return forward(request, requestId)
+
+  // The CSRF gate for route handlers. A state-changing call to /api/* that a
+  // browser says came from another site is refused here, before the session
+  // refresh below has spent a token round trip on it. Server Actions are not
+  // affected (Next checks their Origin itself), and server-to-server callers
+  // (Cardcom, QStash, the till app, the uptime monitor) send no browser
+  // headers and pass. The decision itself lives in lib/security/same-origin.
+  if (isCrossSiteApiMutation(request)) {
+    return withRequestId(NextResponse.json(CROSS_SITE_REJECTION, { status: 403 }), requestId)
+  }
 
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.
   //

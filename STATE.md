@@ -1,5 +1,7 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-17 03:45 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - ‏Security: ‏Upstash rate limiting, ‏CSRF SameSite, ‏CSP XSS, ‏parameterized queries, ‏GDPR export/delete/consent, ‏PCI via Cardcom). נמדד לפני כתיבה: חמישה מששת העמודים כבר בנויים - ‏limiter.ts עם ‏Upstash + נפילה ל-Postgres ‏(40 מדיניות, כל route משנה-מצב עם cookie כבר מוגבל), כל cookie ‏SameSite=Lax, כותרות ‏CSP/HSTS/XFO על כל route, ‏sanitizeOrTerm/likeContains קיימים, ייצוא/מחיקה/באנר הסכמה קיימים, ו-pci-scope.test.ts קיים. מה שחסר ונבנה: (1) **שכבת CSRF שנייה ל-route handlers** - ‏lib/security/same-origin.ts מחווט ב-proxy.ts לפני רענון הסשן: ‏POST/PUT/PATCH/DELETE ל-/api/* ש-Sec-Fetch-Site/Origin/Referer שלו מצביעים על אתר אחר מקבל ‏403 ‏cross_site_request; בלי רשימת נתיבים - קריאות שרת-לשרת (‏Cardcom, ‏QStash, אפליקציית הקופה) לא שולחות כותרות דפדפן ועוברות כ-no-browser-context. (2) **דיווח הפרות CSP ל-Sentry** - ‏sentrySecurityEndpoint(dsn) ב-frame-policy.ts, ‏next.config מוסיף ‏report-uri/report-to/Reporting-Endpoints כשיש DSN בזמן build. (3) **ביטול הסכמה** ב-/account/privacy - ‏ConsentSettings קורא את cookie הבאנר ומציע רק את ההחלטה שטרם התקבלה, דרך אותו server action. (4) **ייצוא נתונים נרשם ב-audit_log** ‏(data_export/created) כמו הוכחת המחיקה. (5) **חמישה טסטי ratchet חדשים** שסורקים את כל src/: ‏cookie-attributes ‏(כל cookie עם sameSite+httpOnly), ‏inline-html ‏(כל dangerouslySetInnerHTML דרך jsonLdScript או הקבוע של הבאנר), ‏parameterized-queries ‏(.or() רק עם sanitizer או יצרן מוגן, אין LIKE באינטרפולציה, ‏rpc בשם ליטרלי, אין sql.raw), ‏route-coverage ‏(כל route משנה-מצב עם limiter או שער סוד שנבדק), ו-PCI הורחב (הייצוא בלי token, ‏scrub מסתיר card/cvv/token). שלושה אתרי LIKE תוקנו בדרך (‏admin/products, ‏admin/coupons/codes, חיפוש סיומת טלפון ב-auth.ts). ‏**Nonce ל-CSP הוחלט ולא נדחה**: ‏Next מזריק nonce רק ברינדור דינמי, ו-cacheComponents מגיש את החנות מהמטמון הסטטי - ‏nonce היה שובר את ההידרציה או מבטל את המטמון; מתועד ב-frame-policy.ts וב-ARCHITECTURE-SECURITY-HARDENING.md §11. שני טסטים אדומים שירשתי מ-d36565d05 נרשמו (שלושה cron routes חדשים ברשימת cron-auth, ומצאי discarded-read של wishlist-alerts ירד ל-2). שערים: ‏vitest ‏5656/5656 ‏(481 קבצים, 12 skipped), ‏type-check נקי, ‏lint נקי כולל שלושת השערים, ‏pnpm build ‏exit 0.
+
 Updated: 2026-09-17 02:40 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - טיפול בשגיאות: ‏Sentry source maps, ‏404/500 מותאמים, ‏health endpoint, ‏UptimeRobot + ‏Telegram). נמדד לפני כתיבה: ‏Sentry על שלושת ה-runtimes עם העלאת source maps ומחיקתן, ‏not-found / error / global-error בעברית RTL, ‏/api/health ו-/api/cron/health כבר היו קיימים. מה שחסר: ערוץ פרטי (‏Telegram) וניטור מחוץ לפריסה (‏UptimeRobot). נבנה: ‏lib/observability/telegram.ts ו-sendAlert שמפזר ל-ntfy ול-Telegram במקביל; ‏/api/alerts/uptimerobot עם סוד בהשוואה קבועת-זמן, ‏GET/JSON/form, הודעה בעברית לפי סוג; ‏scripts/uptimerobot/{plan,setup}.mjs אידמפוטנטי ו-scripts/telegram-verify.mjs; טסטים לשלושת דפי השגיאה ולחוזה ה-source maps. ‏commit ‏fecb493cc. בנוסף, 7 טסטים אדומים שנמצאו ב-HEAD לפני השינוי תוקנו ב-798ea01db (פירוט תחת 17.09 למטה). כל השערים ירוקים: ‏466 קבצים / 5455 טסטים, ‏type-check, ‏lint, ‏build.
 
 Updated: 2026-09-17 00:55 (goal שהוזרק ב-/goal: ‏ARCHITECTURE - חשבון משתמש מלא: כניסה באימייל+סיסמה, ‏OTP, קישור קסם, ‏Passkey, הרשמה, שחזור סיסמה, דשבורד, הגדרות, מעקב קאשבק, ארנק, ‏RLS). נמדד לפני כתיבה: רוב המערכת כבר קיימת ומחווטת - כניסה בסיסמה/Google/קישור/SMS/Passkey ב-server/actions/auth.ts ו-passkeys.ts, הרשמה+אישור, שחזור סיסמה, 13 עמודי ‏/account כולל ארנק, ו-RLS נמדד דרך ‏MCP על ‏profiles, ‏wallet_accounts, ‏wallet_entries, ‏cashback_ledger, ‏webauthn_credentials - כולן ‏on עם policies של בעלים בלבד, אפס כתיבה לארנק לכל role. לכן **אין מיגרציה**. ארבעה פערים אמיתיים נסגרו בקומיט ‏a7d9700f4 על autopilot: (1) **קוד ‏OTP מהמייל** - ‏WIP לא מחובר שנמצא בעץ (סכימה ‏emailOtpVerifySchema + ‏email_otp במייל הממותג) קיבל צרכן: ‏verifyEmailOtp ב-auth.ts (‏verifyOtp type email, תקרות 20/שעה פר-IP ופר-כתובת, מיזוג עגלת אורח + תביעת הפניה כמו המסלולים שלא עוברים ב-callback), ושדה קוד ב-LoginForm שנפתח רק אחרי שליחה מוצלחת ונושא את הכתובת מוסתרת. (2) **שינוי סיסמה מתוך החשבון** - ‏changePassword: דורש סשן, תקרה על ‏user id, מוכיח את הסיסמה הנוכחית על ‏createPublicClient (לא שומר כלום) ומבטל את הסשן שהבדיקה טבעה, ורק אז ‏updateUser; ‏ChangePasswordForm ב-/account/security עם קישור לשחזור למי שנכנס ב-Google/קישור. (3) **‏TOTP MFA היה רכיב בלי צרכן** - ‏SecurityClient לא היה מיובא משום עמוד, כך ששער ה-aal2 ב-lib/auth/mfa.ts לא שמר על איש; מרונדר עכשיו ב-/account/security עם ‏isStaff מ-profiles.role. (4) **מעקב קאשבק** - ‏src/lib/cashback/tracker.ts (טהור: דירוג לפי ‏count(paid)+1 בדיוק כמו ה-SQL של 177, צריכת ‏FIFO של הזיכוי הישן קודם כמו הסוויפ של 215, פקיעה ב-12 חודשים, חלון 30 יום), ‏server/queries/cashback.ts (‏v_wallet_ledger + ‏cashback_ledger + הזמנות, כולם דרך הלקוח של הבקשה), עמוד ‏/account/cashback (פעיל/נצבר/הבונוס הבא עם ‏progress + היסטוריה עם "10% מתוך ₪120"), פריט nav ואריח בדשבורד. טסטים: ‏tracker.test.ts ‏(13), ‏auth-email-otp.test.ts ‏(12, שני ה-actions עם מוקים), הרחבות ל-auth.validations ו-magic-link. ‏ARCHITECTURE-USER-ACCOUNT.md נכתב. חמישה שערי ratchet ירו ונרשמו (‏auth-coverage: ‏verifyEmailOtp ציבורי עם סיבה; ‏rate-limit policies + ‏docs/RATE-LIMITS.md: שלושה מפתחות; ‏legacy-redirects: הראוט החדש; ‏discarded-read: השגיאה של קריאת ה-role נקראת ונרשמת). מלכודת build: ‏new Date() כפרמטר ברירת מחדל נפל ב-prerender של ‏cacheComponents - הועבר אחרי ה-await. שערים: ‏vitest ‏5106/5106 ‏(436 קבצים, 12 skipped), ‏type-check נקי, ‏lint נקי כולל שלושת השערים, ‏pnpm build ‏exit 0. החלטות שהתקבלו לבד: (א) בלי מיגרציה - הכל כבר בפרודקשן ונמדד. (ב) שינוי אימייל מתוך החשבון לא נבנה - זרימת אישור כפול של Supabase, ודף הפרטים אומר שהכתובת מגיעה מהספק. (ג) ‏MFA לא נכפה על צוות - הסיבה כתובה ב-mfa.ts. (ד) שדה הקוד מוצג גם כשהמייל של Supabase (בלי קוד) נשלח - ההודעה הניטרלית עדיפה על חשיפת קיום הכתובת.
@@ -154,6 +156,34 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 **מסמכים שסעיפי ‏SECTIONS נוקבים בשמם ועדיין חסרים:**
 ‏`FINAL-AUDIT.md` (23), ‏`GO-LIVE-DRY-RUN.md` (43), ‏`RELEASE-NOTES.md`,
 ‏`PERF-REPORT.md`.
+
+### ‏17.09: ‏goal ‏Security — חמישה מששת העמודים כבר עמדו; נוספו שכבת CSRF ל-API, דיווח CSP, ביטול הסכמה, ורישום הייצוא
+
+**החלטות שהתקבלו אוטומטית:**
+
+1. **אין nonce ל-CSP, וזו החלטה.** ‏Next מזריק nonce רק לעמוד שמרונדר
+   דינמית; ‏`cacheComponents: true` מגיש בית/קטגוריה/מוצר מהמטמון הסטטי עם
+   הסקריפטים המוטמעים מזמן ה-build. ‏nonce בכותרת בלי nonce בסקריפט הוא עמוד
+   שלא מתהדרר. במקום זה הפער נעשה **נצפה**: כל הפרה היא אירוע Sentry עם
+   ‏blocked-uri ו-script-sample, ורשימת הסקריפטים המוטמעים שיצטרכו nonce
+   ביום שהחנות תרד מהמטמון כבר ממופה ב-inline-html.test.ts.
+2. **שער ה-CSRF ב-proxy בלי רשימת נתיבים פטורים.** ‏webhooks, ‏cron, ‏QStash
+   ואפליקציית הקופה לא שולחים ‏Sec-Fetch-Site/Origin/Referer ועוברים
+   כ-no-browser-context בעצמם. רשימה הייתה עותק שני של עץ ה-routes.
+   ‏`same-site` נחשב זר בכוונה - אין תת-דומיין אח שאמור לכתוב לכאן.
+3. **ייצוא הנתונים נרשם ב-audit_log כ-`data_export` / `created`** ולא
+   ב-enum חדש: ‏audit_action הוא enum בפרודקשן, והוספת ערך היא מיגרציה. שורת
+   "נוצר ייצוא" עונה על השאלה של הרגולטור באותה טבלה שהמחיקה כותבת אליה.
+4. **‏actor_role של הייצוא הוא `customer`** (הערך ב-user_role) ולא `user`
+   כמו במחיקה: ‏writeAuditLog מקליד את השדה ל-UserRole, והעמודה עצמה היא
+   ‏text, כך ששני הערכים חוקיים.
+5. **שני טסטים אדומים ב-HEAD לפני שנגעתי** (מ-`d36565d05 autopilot
+   residual`): ‏cron-auth לא הכיר את ‏cashback-settlement / ‏daily-deals /
+   ‏email-retry - נרשמו (הם מאמתים, רק הרשימה הייתה חסרה); ומצאי
+   ‏discarded-read של ‏wishlist-alerts אמר 3 והקובץ מכיל 2 - הורד.
+6. **לא הוספתי מיגרציה ולא נגעתי ב-DB.** סעיפים 2 ו-4 של §10 (הרשאות
+   ברירת מחדל, טריגר append-only על audit_log) נשארים פתוחים ומחכים לחיבור
+   מיוחס.
 
 ### ‏17.09: ‏goal טיפול בשגיאות — רוב הדרישות כבר היו בנויות, ושבעה טסטים היו אדומים לפני שנגעתי — ‏commits ‏fecb493cc, ‏798ea01db
 
