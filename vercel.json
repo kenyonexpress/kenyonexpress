@@ -27,6 +27,9 @@
     { "path": "/api/cron/expire-coupons", "schedule": "15 23 * * *" },
     { "path": "/api/cron/backup", "schedule": "20 2 * * *" },
     { "path": "/api/cron/wishlist-alerts", "schedule": "45 4 * * *" },
-    { "path": "/api/cron/wishlist-digest", "schedule": "0 5 * * 5" }
+    { "path": "/api/cron/wishlist-digest", "schedule": "0 5 * * 5" },
+    { "path": "/api/cron/daily-deals", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/email-retry", "schedule": "30 */6 * * *" },
+    { "path": "/api/cron/cashback-settlement", "schedule": "45 23 * * *" }
   ]
 }

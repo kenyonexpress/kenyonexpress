@@ -159,6 +159,9 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 15 | 02:20 daily | `20 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/backup` |
 | 16 | 04:45 daily | `45 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/wishlist-alerts` |
 | 17 | Friday 05:00 | `0 5 * * 5` | `https://kenyonexpress.vercel.app/api/cron/wishlist-digest` |
+| 18 | 03:00 daily | `0 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/daily-deals` |
+| 19 | every 6 h at :30 | `30 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/email-retry` |
+| 20 | 23:45 daily | `45 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/cashback-settlement` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -210,6 +213,23 @@ timing changes with the scheduler.
   change at a time and both depend on the trigger; a bulk import, a restored
   backup or a re-created index bypasses the trigger, and this is the only
   path that repairs those. Inert while `MEILISEARCH_HOST` is unset.
+- **`daily-deals`** is the daily deal scrape, from our own catalogue now
+  that the live WordPress host serves this build: applies due flash deals
+  (`scheduled_price_changes`, 201) and writes their `price_history` rows
+  with `source = 'change'`, takes the day's price observation for every
+  product (idempotent with the one `wishlist-alerts` takes at 04:45), and
+  journals the ranked deal set under `daily_deals.set`. It does not touch
+  the home page grid, which the comparison gate pins to the reference.
+- **`email-retry`** puts `dead` outbox rows back to `pending` when their
+  `last_error` was the provider's (5xx, 429, network) and the row is under
+  three days old, with two attempts left and `last_error` kept. Rows dead
+  for a permanent reason (no template, 4xx) stay for the operator.
+- **`cashback-settlement`** re-reads every paid order of the last thirty
+  days against the two cashback legs finalize posts "logged, never
+  thrown", and posts what is missing under the same idempotency keys. An
+  older order that earned a bonus is `deferred` (logged with its rank) and
+  not replayed, because `fn_cashback_order_bonus` ranks by today's count.
+
 
 ## Setting it up from this repository, in two settings
 

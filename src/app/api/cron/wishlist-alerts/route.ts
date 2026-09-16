@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { jerusalemDayKey, snapshotPrices } from '@/lib/pricing/price-snapshot'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -85,10 +86,6 @@ type OutboxInsert = {
   payload: Record<string, unknown>
 }
 
-function jerusalemDayKey(): string {
-  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' })
-}
-
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
   if (!bearerMatches(request.headers.get('authorization'), secret ?? '')) {
@@ -115,40 +112,10 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   const productById = new Map(products.map((p) => [p.id, p]))
 
   // ---- 1. today's snapshot, minus the observations that already exist -----
-  let snapshotted = 0
-  {
-    const { data: existing } = await admin
-      .from('price_history' as never)
-      .select('product_id, price_agorot')
-      .eq('observed_on', today)
-    const seen = new Set(
-      ((existing ?? []) as unknown as { product_id: string; price_agorot: number }[]).map(
-        (row) => `${row.product_id}:${row.price_agorot}`,
-      ),
-    )
-    const rows = products
-      .filter(
-        (p) => p.kenyon_price_agorot !== null && !seen.has(`${p.id}:${p.kenyon_price_agorot}`),
-      )
-      .map((p) => ({
-        product_id: p.id,
-        observed_on: today,
-        price_agorot: p.kenyon_price_agorot,
-        reference_agorot: p.full_price_agorot,
-        status: p.status ?? 'unknown',
-        source: 'snapshot',
-      }))
-    if (rows.length > 0) {
-      const { error } = await admin.from('price_history' as never).insert(rows as never)
-      // 23505 is a concurrent run winning the race to the same observation,
-      // which is the unique index doing its job, not a failure.
-      if (error && error.code !== '23505') {
-        log.warn('wishlist_alerts.snapshot_failed', { reason: error.message })
-      } else if (!error) {
-        snapshotted = rows.length
-      }
-    }
-  }
+  // Shared with /api/cron/daily-deals (lib/pricing/price-snapshot.ts): either
+  // job missing a run leaves the other to keep the thirty-day window whole.
+  const snapshot = await snapshotPrices(admin, products, today, 'wishlist_alerts')
+  const snapshotted = snapshot.written
 
   // ---- who saved what ------------------------------------------------------
   const { data: wishlistData, error: wishlistError } = await admin

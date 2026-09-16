@@ -56,6 +56,9 @@ on:
     - cron: '20 2 * * *'
     - cron: '45 4 * * *'
     - cron: '0 5 * * 5'
+    - cron: '0 3 * * *'
+    - cron: '30 */6 * * *'
+    - cron: '45 23 * * *'
   workflow_dispatch:
     inputs:
       job:
