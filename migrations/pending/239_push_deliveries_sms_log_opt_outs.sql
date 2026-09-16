@@ -1,11 +1,14 @@
--- 237_push_deliveries_sms_log_opt_outs.sql
+-- 239_push_deliveries_sms_log_opt_outs.sql
 --
 -- The three tables the notification stack writes to and production does not
 -- have: the Web Push delivery log, the SMS log with its cost, and the SMS
 -- opt-out list. Plus one widened CHECK so a customer can switch SMS off on
 -- its own rather than through the WhatsApp switch.
 --
--- NUMBERED 237 BECAUSE 215 AND 216 ARE BURNED. `main` carries these two
+-- NUMBERED 239 BECAUSE 215, 216 AND 237 ARE BURNED. This file was written as
+-- 237 on the same day another session filed `237_user_ban_and_store_settings`;
+-- two pending files with one number is an apply-order ambiguity, so this one
+-- moved to the next free number (238 is search_events_daily). `main` carries these two
 -- tables as `215_push_deliveries.sql` and `216_sms_log_and_opt_outs.sql`,
 -- never applied. Production spent 215 on `cashback_expiry_215`
 -- (20260909132729) and 216 is taken by a pending file on another branch, so
@@ -101,10 +104,10 @@ BEGIN
   IF to_regclass('public.notification_outbox') IS NULL
      OR to_regclass('public.push_subscriptions') IS NULL
      OR to_regclass('public.notification_preferences') IS NULL THEN
-    RAISE EXCEPTION '095/179/198 are not applied here; 237 has nothing to attach to';
+    RAISE EXCEPTION '095/179/198 are not applied here; 239 has nothing to attach to';
   END IF;
   IF to_regproc('public.set_updated_at') IS NULL THEN
-    RAISE EXCEPTION 'public.set_updated_at() is missing; 237 does not restate it (it is pinned in production and a replace would un-pin it)';
+    RAISE EXCEPTION 'public.set_updated_at() is missing; 239 does not restate it (it is pinned in production and a replace would un-pin it)';
   END IF;
   IF to_regproc('public.is_admin') IS NULL THEN
     RAISE EXCEPTION 'public.is_admin() is missing; the admin read policies below depend on it';
@@ -381,7 +384,7 @@ BEGIN
        AND grantee IN ('anon', 'authenticated')
        AND privilege_type <> 'SELECT'
   ) THEN
-    RAISE EXCEPTION 'a client role holds DML on a 237 table';
+    RAISE EXCEPTION 'a client role holds DML on a 239 table';
   END IF;
 END $$;
 

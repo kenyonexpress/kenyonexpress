@@ -19,6 +19,16 @@ function queue(key: string, ...results: Result[]): void {
   queues.set(key, [...(queues.get(key) ?? []), ...results])
 }
 
+/**
+ * Replace whatever is queued. `queue()` appends, and `settle()` treats a
+ * single entry as sticky, so appending a second result to the beforeEach
+ * default returns the default first and the override never. A test that
+ * wants the NEXT read to see a specific row says so here.
+ */
+function override(key: string, result: Result): void {
+  queues.set(key, [result])
+}
+
 function settle(key: string): Result {
   const q = queues.get(key)
   if (!q || q.length === 0) return { data: null, error: null }
@@ -150,7 +160,7 @@ describe('banUser', () => {
     expect(await banUser(null, form({ user_id: ADMIN }))).toEqual({
       error: 'אי אפשר לחסום את עצמך',
     })
-    queue('request:profiles.select', { data: { role: 'admin' }, error: null })
+    override('request:profiles.select', { data: { role: 'admin' }, error: null })
     expect(await banUser(null, form({ user_id: TARGET }))).toEqual({
       error: 'רק מנהל-על יכול לחסום או לשחרר מנהל',
     })
@@ -167,7 +177,7 @@ describe('banUser', () => {
     expect(await banUser(null, form({ user_id: 'nope' }))).toEqual({
       error: 'מזהה משתמש לא תקין',
     })
-    queue('request:profiles.select', { data: null, error: null })
+    override('request:profiles.select', { data: null, error: null })
     expect(await banUser(null, form({ user_id: TARGET }))).toEqual({ error: 'משתמש לא נמצא' })
     expect(updateUserById).not.toHaveBeenCalled()
   })

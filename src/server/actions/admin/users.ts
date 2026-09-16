@@ -148,11 +148,18 @@ async function runSetUserBan(
   const reason = normalizeBanReason(parsed.data.reason)
 
   const supabase = await createClient()
-  const { data: target } = await supabase
+  const { data: target, error: targetError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', targetUserId)
     .single()
+  // PGRST116 is `.single()` finding no row, which is the "not found" this
+  // action reports. Anything else is a failed read, and a failed read must not
+  // be rendered as a missing user: it is logged and refused as what it is.
+  if (targetError && targetError.code !== 'PGRST116') {
+    log.error('admin.user_ban.target_read_failed', { action, reason: targetError.message })
+    return { error: 'קריאת המשתמש נכשלה' }
+  }
   if (!target) return { error: 'משתמש לא נמצא' }
 
   const authz = authorizeBan({

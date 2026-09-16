@@ -376,6 +376,11 @@ describe('the pending migration inventory', () => {
       // production; README carries the measurement.
       '237_user_ban_and_store_settings.sql',
       '238_search_events_daily.sql',
+      // 239 is PENDING (2026-09-17): push_deliveries, sms_messages and
+      // sms_opt_outs, the notification stack's three missing tables. Filed as
+      // a second 237 by a parallel session and renumbered to the next free
+      // slot; README carries the reasoning and the preconditions.
+      '239_push_deliveries_sms_log_opt_outs.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

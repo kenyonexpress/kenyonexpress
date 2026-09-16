@@ -1,5 +1,24 @@
 # `migrations/pending/`
 
+## 2026-09-17: 239 PENDING (push delivery log, SMS log, SMS opt-outs)
+
+`239_push_deliveries_sms_log_opt_outs.sql` adds the three tables the
+notification stack writes to and production does not have: `push_deliveries`
+(one row per browser subscription per notification, so a 410 on one phone is
+not collapsed into the outbox's single `push_error`), `sms_messages` (the SMS
+log with its cost) and `sms_opt_outs`, plus a widened CHECK on
+`notification_preferences` so a customer can switch SMS off on its own. Every
+table is RLS-enabled with owner and admin SELECT only; the service role is the
+only writer, and the file's closing DO block raises if a client role holds DML.
+
+Numbering: written as 237 on the same day `237_user_ban_and_store_settings`
+was filed by another session. Two pending files with one number is an
+apply-order ambiguity, so this one moved to 239, the next free number. It does
+not restate `public.set_updated_at()`: the live function is pinned and a
+CREATE OR REPLACE would un-pin it for every table that uses it (the 188 trap).
+Preconditions asserted in the file: 095/179/198 applied, `set_updated_at`
+present. Not yet dry-run on production.
+
 ## 2026-09-17: 238 PENDING (search events by day)
 
 `238_search_events_daily.sql` gives search analytics a day axis. `search_events`
