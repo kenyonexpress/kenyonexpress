@@ -36,30 +36,32 @@ import { addOpenProductToCart, expectHebrewRtl } from './helpers'
  * A returning customer with a saved address starts past the steps they have
  * answered, so each leg is conditional on its fields being on screen. */
 async function walkCheckoutStepsToConfirm(page: import('@playwright/test').Page): Promise<void> {
+  // Field ids rather than labels: the footer newsletter box also answers to
+  // "כתובת אימייל", so labels are ambiguous the moment the footer renders.
   // Step 1: personal details.
   if (
     await page
-      .getByLabel(/שם פרטי/)
+      .locator('#co-first-name')
       .isVisible()
       .catch(() => false)
   ) {
-    await page.getByLabel(/שם פרטי/).fill('בדיקה')
-    await page.getByLabel(/שם משפחה/).fill('אוטומטית')
-    await page.getByLabel(/טלפון/).fill('0501234567')
-    await page.getByLabel(/כתובת אימייל/).fill(E2E_CUSTOMER_EMAIL)
+    await page.locator('#co-first-name').fill('בדיקה')
+    await page.locator('#co-last-name').fill('אוטומטית')
+    await page.locator('#co-phone').fill('0501234567')
+    await page.locator('#co-email').fill(E2E_CUSTOMER_EMAIL)
     await page.getByRole('button', { name: 'המשך', exact: true }).click()
   }
 
   // Step 2: address (required even for coupon-only carts).
   if (
     await page
-      .getByLabel(/עיר/)
+      .locator('#co-city')
       .isVisible()
       .catch(() => false)
   ) {
-    await page.getByLabel(/עיר/).fill('תל אביב')
-    await page.getByLabel(/רחוב/).first().fill('הרצל')
-    await page.locator('input[name="street_number"]').fill('1')
+    await page.locator('#co-city').fill('תל אביב')
+    await page.locator('#co-street').fill('הרצל')
+    await page.locator('#co-number').fill('1')
     await page.getByRole('button', { name: 'המשך', exact: true }).click()
   }
 
