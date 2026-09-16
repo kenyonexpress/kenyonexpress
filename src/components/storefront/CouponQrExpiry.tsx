@@ -1,8 +1,8 @@
 import CouponExpiryCountdown from '@/components/storefront/CouponExpiryCountdown'
 import { describeCouponExpiry } from '@/lib/commerce/coupon-expiry'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { urlQrDataUrl } from '@/lib/vouchers/qr-image'
 import { cacheLife } from 'next/cache'
-import QRCode from 'qrcode'
 
 /**
  * How a coupon is redeemed, and until when.
@@ -40,11 +40,7 @@ import QRCode from 'qrcode'
 async function encodeProductQr(productUrl: string): Promise<string | null> {
   'use cache'
   cacheLife('max')
-  try {
-    return await QRCode.toDataURL(productUrl, { margin: 1, width: 192 })
-  } catch {
-    return null
-  }
+  return urlQrDataUrl(productUrl, { width: 192 })
 }
 
 export default async function CouponQrExpiry({
