@@ -81,7 +81,8 @@ const SUPPLIER = {
   name: 'ספק בדיקות אוטומטיות',
   contact_email: 'e2e@test.kenyonexpress.local',
   contact_phone: '03-0000000',
-  commission_percent: 10,
+  // No commission_percent here: production `suppliers` has no such column
+  // (commission lives per product). PGRST204 on seed, measured 2026-09-10.
   status: 'active',
   notes: 'פיקסצ׳ר לבדיקות E2E. אין למחוק ידנית — נוצר ע״י scripts/seed-test-data.mjs',
 }
@@ -109,10 +110,17 @@ const COUPON_PRODUCT = {
   status: 'active',
   price_ils: 400,
   coupon_price_ils: 40,
+  // The app's cart/checkout path reads the production-lineage columns
+  // kenyon_price (on-site charge) and full_price (face value), not the
+  // price_ils pair; without them add-to-cart throws RangeError. Measured
+  // 2026-09-10 against src/server/actions/cart.ts.
+  full_price: 400,
+  kenyon_price: 40,
   is_coupon_enabled: true,
   platform_percent: 10,
   cashback_percent: 5,
   commission_percent: 10,
+  commission_type: 'coupon_absolute',
   coupon_expiry_days: 90,
   stock_quantity: 1000,
   requires_shipping: false,
@@ -131,10 +139,14 @@ const PHYSICAL_PRODUCT = {
   type: 'physical',
   status: 'active',
   price_ils: 100,
+  // Same production-lineage pair as the coupon fixture above.
+  full_price: 100,
+  kenyon_price: 100,
   is_coupon_enabled: false,
   platform_percent: 10,
   cashback_percent: 5,
   commission_percent: 10,
+  commission_type: 'physical_percent',
   stock_quantity: 1000,
   requires_shipping: true,
   is_featured: false,
