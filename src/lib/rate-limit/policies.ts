@@ -217,6 +217,28 @@ export const RATE_LIMIT_POLICIES = {
    */
   'account-export': { limit: 3, windowSeconds: 3600, reason: 'full account data export, per user' },
 
+  /**
+   * The erasure request. Three a day, per user.
+   *
+   * It is the counterpart to `account-export` above and it is bounded for the
+   * same reason: the route opens a 30-day grace period and writes a row, so
+   * what is worth limiting is somebody holding the button down, not an
+   * attacker -- the endpoint requires a session and can only touch that
+   * user's own account.
+   *
+   * THREE AND NOT ONE, although one erasure a day is all anyone needs. The
+   * limiter is spent BEFORE the body is parsed, so a malformed request burns
+   * the allowance without creating anything. At a ceiling of one, a single
+   * 400 would lock a person out of requesting erasure until tomorrow, which
+   * is a compliance right answering 429 on the retry -- the same argument the
+   * export above is set at three for.
+   */
+  'account-delete': {
+    limit: 3,
+    windowSeconds: 86400,
+    reason: 'account erasure request opening a 30-day grace period, per user',
+  },
+
   // -- Public write forms. Five an hour, because these reach a human inbox.
   contact: { limit: 5, windowSeconds: 3600, reason: 'contact form mail' },
   'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
