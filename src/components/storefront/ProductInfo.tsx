@@ -2,7 +2,6 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import CityTag from '@/components/geo/CityTag'
-import RatingStars from '@/components/product/RatingStars'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
@@ -14,7 +13,6 @@ import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
-import type { RatingSummary } from '@/lib/reviews/reviews'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -63,7 +61,6 @@ interface Props {
    * Approved-review summary. The page already reads it for the JSON-LD, so
    * passing it down costs nothing; null renders no row at all.
    */
-  ratingSummary?: RatingSummary | null
   isCoupon: boolean
   /**
    * Present only for coupon products. Built server-side from
@@ -110,7 +107,6 @@ export default function ProductInfo({
   city,
   attributes,
   variants,
-  ratingSummary = null,
   isCoupon,
   couponOffer,
   recurringOffer = null,
@@ -227,19 +223,15 @@ export default function ProductInfo({
       )}
 
       {/* THE SLOT LIVE FILLS WITH ITS STAR RATING, and `product-page.css` says
-          so on `.pdp-summary__meta`: we had no ratings, so the slot carried the
+          so on `.pdp-summary__meta`: we have no ratings, so the slot carries the
           SKU instead -- real information rather than a fabricated score -- and
           the rhythm below depends on its height.
 
-          The rating now goes INSIDE that slot rather than above it. A new row
-          would push everything under it down by a line on any product that has
-          reviews, and the page's geometry cannot be re-measured since the live
-          reference was lost. The SKU stays beside it: it was never a substitute
-          for a rating, it is the thing a shopper can act on. With no approved
-          review `RatingStars` renders nothing and this row is byte-identical to
-          what it was. */}
+          The star row that briefly sat inside this slot is gone with the rest
+          of the reviews feature. It rendered nothing without an approved
+          review and there were never any, so its removal is byte-identical to
+          what shipped. */}
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
-        <RatingStars summary={ratingSummary} size="md" className="pdp-summary__rating" />
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>

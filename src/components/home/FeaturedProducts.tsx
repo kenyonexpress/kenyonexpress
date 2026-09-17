@@ -1,6 +1,5 @@
 import type { Product } from '@/components/ProductCard'
 import { createClient } from '@/lib/supabase/server'
-import { attachRatings } from '@/server/queries/reviews'
 import FeaturedProductsTabs from './FeaturedProductsTabs'
 
 /** refs/electro.html .section-products-carousel — Featured Products tabbed section */
@@ -34,7 +33,7 @@ export default async function FeaturedProducts() {
 
   // The star row on each card. One query for the whole carousel; an unrated
   // product comes back with `rating: null` and renders no row.
-  const products = await attachRatings(rows)
+  const products = rows
 
   return (
     <section

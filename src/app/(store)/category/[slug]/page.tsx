@@ -26,7 +26,6 @@ import { type SortValue, parseSort } from '@/lib/category-tokens'
 import { categoryAncestors } from '@/lib/category-tree'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
-import { attachRatings } from '@/server/queries/reviews'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -215,7 +214,7 @@ async function ResultGrid({
   // the same CATALOGUE_TAG the grid itself is cached by, so an approval and the
   // stars it produces invalidate together. Unrated products come back with
   // `rating: null` and render no row.
-  const rated = await attachRatings(ordered as CategoryProduct[])
+  const rated = ordered as CategoryProduct[]
 
   return (
     <>

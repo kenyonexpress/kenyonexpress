@@ -1,7 +1,7 @@
 'use server'
 
 import { withActionContext } from '@/lib/observability/action-context'
-import { TABLE_MISSING } from '@/lib/reviews/reviews'
+import { TABLE_MISSING } from '@/lib/supabase/error-codes'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { WISHLIST_MAX_ITEMS, normalizeProductIds } from '@/lib/wishlist/guest-storage'

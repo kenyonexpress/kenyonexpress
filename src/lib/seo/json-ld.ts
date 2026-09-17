@@ -184,7 +184,8 @@ export interface SupplierJsonLdInput {
   phone: string | null
   logoUrl: string | null
   description: string | null
-  rating: { average: number; count: number } | null
+  /** Approved-review aggregate; null/absent renders no rating claim at all. */
+  rating?: { average: number; count: number } | null
   siteUrl: string
 }
 

@@ -1,5 +1,5 @@
 import { log } from '@/lib/observability/log'
-import { TABLE_MISSING } from '@/lib/reviews/reviews'
+import { TABLE_MISSING } from '@/lib/supabase/error-codes'
 import { createClient } from '@/lib/supabase/server'
 
 /**

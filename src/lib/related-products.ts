@@ -2,7 +2,6 @@ import type { Product } from '@/components/ProductCard'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { createPublicClient } from '@/lib/supabase/anon'
-import { attachRatings } from '@/server/queries/reviews'
 import { cacheLife, cacheTag } from 'next/cache'
 
 /**
@@ -107,5 +106,5 @@ export async function loadRelatedProducts(
   // The star row on each card. One extra query for the whole strip, inside the
   // same `use cache` entry and under the same CATALOGUE_TAG, so an approval
   // invalidates the strip at the moment it invalidates the product page.
-  return attachRatings([...byId.values()].slice(0, 5))
+  return [...byId.values()].slice(0, 5)
 }

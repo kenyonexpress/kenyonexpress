@@ -56,7 +56,6 @@
 | `coupon_qr_apply` | 30 | 1 h | printed QR landing, per IP |
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
 | `referral-code` | 10 | 1 h | referral code mint, per user |
-| `review-submit` | 5 | 1 h | review spam, per user |
 | `refund-request` | 10 | 1 h | refund requests across orders, per user |
 | `support-open` | 10 | 1 h | new support tickets, per user |
 | `support-reply` | 30 | 1 h | messages on a ticket, per user |
@@ -79,8 +78,6 @@
 | `supplier-lead` | 5 | 1 h | supplier lead mail |
 | `newsletter` | 5 | 1 h | newsletter subscription mail |
 | `waitlist` | 5 | 1 h | back-in-stock mail, per IP |
-| `review_report` | 20 | 1 h | review abuse reports, per IP |
-| `review_helpful` | 60 | 1 h | review helpful votes, per IP |
 | `admin-voucher-lookup` | 60 | 1 h | admin voucher code lookup, per staff user |
 | `admin-voucher-redeem` | 30 | 1 h | admin manual voucher burn, per staff user |
 | `admin-voucher-resend` | 30 | 1 h | admin resend of the coupon email, per staff user |

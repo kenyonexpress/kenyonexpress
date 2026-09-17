@@ -14,7 +14,6 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
-import { attachRatings } from '@/server/queries/reviews'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
@@ -171,7 +170,7 @@ async function ResultGrid({
   // the same CATALOGUE_TAG the grid itself is cached by, so an approval and the
   // stars it produces invalidate together. Unrated products come back with
   // `rating: null` and render no row.
-  const rated = await attachRatings(items as CategoryProduct[])
+  const rated = items as CategoryProduct[]
 
   return (
     <>

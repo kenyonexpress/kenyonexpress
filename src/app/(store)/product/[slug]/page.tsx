@@ -1,5 +1,4 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
-import Reviews from '@/components/product/Reviews'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
@@ -18,7 +17,6 @@ import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-d
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
-import { getProductReviews } from '@/server/queries/reviews'
 import '@/styles/product-page.css'
 import { enabledProductTypes, isTypeSellable } from '@/lib/commerce/phases'
 import Link from 'next/link'
@@ -196,9 +194,6 @@ export default async function ProductPage({ params }: Props) {
   // disagreed with. `couponOffer` is the object the commission engine bills
   // from, so the advertised price and the charged price cannot diverge.
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-  // Anon-readable by policy, so this read keeps the page cacheable; the
-  // rating in the JSON-LD and the visible list below come from the same rows.
-  const { summary: reviewSummary } = await getProductReviews(product.id, 0)
   const productLd = buildProductJsonLd({
     name: product.name_he,
     description: product.description_he ?? null,
@@ -212,7 +207,6 @@ export default async function ProductPage({ params }: Props) {
     fullPriceIls: isCoupon ? null : oldPrice,
     couponOffer,
     stockQuantity: product.stock_quantity ?? null,
-    rating: reviewSummary,
   })
   /**
    * The product's category AND everything above it.
@@ -310,10 +304,6 @@ export default async function ProductPage({ params }: Props) {
             productId={product.id}
             name={product.name_he}
             nameEn={product.name_en}
-            /* The same summary the JSON-LD above is built from, so the stars a
-               visitor sees and the aggregateRating Google reads can never
-               disagree. Read once, at line ~164. */
-            ratingSummary={reviewSummary}
             basePrice={basePrice}
             oldPrice={oldPrice}
             baseStock={product.stock_quantity}
@@ -390,13 +380,6 @@ export default async function ProductPage({ params }: Props) {
             whatsappEnabled={readWhatsAppEnabled(product)}
           />
         </div>
-
-        {/* Verified reviews: the approved list is cache-friendly; the
-            per-session "can I review" gate inside streams via Suspense, the
-            StockScarcity pattern. */}
-        <Suspense fallback={null}>
-          <Reviews productId={product.id} />
-        </Suspense>
 
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />

@@ -1,10 +1,8 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
-import RatingStars from '@/components/product/RatingStars'
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
-import type { RatingSummary } from '@/lib/reviews/reviews'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -18,13 +16,6 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
-  /**
-   * Approved-review summary, from `attachRatings` at the point the list is
-   * built. Optional and absent-by-default: a caller that does not attach it
-   * renders the card exactly as it did before, and an unrated product renders
-   * no star row at all rather than an empty five-star frame.
-   */
-  rating?: RatingSummary | null
 }
 
 /**
@@ -125,14 +116,6 @@ function DealsProductCard({ product }: { product: Product }) {
         <Link href={`/product/${product.slug}`} className="hover:underline">
           <h2 className="p_con__title">{product.name_he}</h2>
         </Link>
-        {/* Electro's card carries a star row here. Ours renders ONLY with an
-            approved review behind it: `RatingStars` returns null for a null
-            summary, so an unrated card is byte-identical to the card before
-            this line existed. That is not caution for its own sake -- the pixel
-            gate cannot verify a geometry change on this card since the live
-            reference was lost, so the row has to be provably absent until there
-            is real data to justify it. */}
-        <RatingStars summary={product.rating ?? null} />
       </div>
 
       <div className="p_con__image-wrap relative">

@@ -41,10 +41,12 @@ import {
 describe('which tables the storefront caches', () => {
   it('reads them out of the source rather than a hand-kept list', () => {
     const tables = cachedTables()
-    // The ones that existed on 2026-09-09. Asserted as a subset, not an
+    // The ones that existed on 2026-09-09, less `reviews`: the feature was
+    // removed (there were never any) and nothing caches that table now.
+    // Asserted as a subset, not an
     // equality: caching a new table must not fail this test, it must widen the
     // gate.
-    for (const table of ['products', 'categories', 'suppliers', 'coupon_deals', 'reviews']) {
+    for (const table of ['products', 'categories', 'suppliers', 'coupon_deals']) {
       expect(tables.has(table)).toBe(true)
     }
   })

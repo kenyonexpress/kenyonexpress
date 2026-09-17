@@ -11,7 +11,6 @@ import {
   loadSupplierStorefrontCached,
   loadSupplierStorefrontProductsCached,
 } from '@/lib/supplier-storefront'
-import { attachRatings, getSupplierRating } from '@/server/queries/reviews'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -64,22 +63,6 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
   const supplier = await loadSupplierStorefrontCached(id)
   if (!supplier) notFound()
 
-  /**
-   * The supplier as a business search engines can place.
-   *
-   * `LocalBusiness`, not `Organization`: these are spas, restaurants and cabins
-   * with an address a customer drives to. This page had NO structured data at
-   * all, while every product page has had a `Product` node with an
-   * `aggregateRating` since 154 -- so the business behind the products was
-   * invisible to a map result.
-   *
-   * The rating folds every approved review across this supplier's products,
-   * which is the honest aggregate for a BUSINESS: a shopper judging a spa does
-   * not care which of its three treatments a review was left on. It is omitted
-   * entirely below one review, and `reviews` holds 0 rows in production, so
-   * today it is always omitted.
-   */
-  const supplierRating = await getSupplierRating(id)
   const jsonLd = buildSupplierJsonLd({
     name: supplier.name,
     url: `/s/${id}`,
@@ -88,7 +71,6 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
     phone: supplier.contactPhone ?? null,
     logoUrl: supplier.logoUrl ?? null,
     description: null,
-    rating: supplierRating,
     siteUrl: siteUrl(),
   })
 
@@ -127,7 +109,7 @@ async function SupplierProductGrid({
   // The star row on each card. One query for the whole page of results, under
   // the same CATALOGUE_TAG the grid is cached by, so an approval and the stars
   // it produces invalidate together.
-  const rated = await attachRatings(items)
+  const rated = items
 
   return (
     <>

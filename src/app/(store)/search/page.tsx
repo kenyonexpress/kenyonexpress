@@ -8,7 +8,6 @@ import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/li
 import { searchProductsCached } from '@/lib/search-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
 import { createClient } from '@/lib/supabase/server'
-import { attachRatings } from '@/server/queries/reviews'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -89,14 +88,12 @@ async function ResultGrid({ q, productType }: { q: string; productType?: Product
   // The star row on each card. One query for the whole page of results, under
   // the same CATALOGUE_TAG the grid is cached by, so an approval and the stars
   // it produces invalidate together.
-  const rated = await attachRatings(
-    results.map(
-      (product) =>
-        ({
-          ...product,
-          categories: product.category ? [product.category] : [],
-        }) as unknown as CategoryProduct,
-    ),
+  const rated = results.map(
+    (product) =>
+      ({
+        ...product,
+        categories: product.category ? [product.category] : [],
+      }) as unknown as CategoryProduct,
   )
 
   return (
