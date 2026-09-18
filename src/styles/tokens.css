@@ -272,16 +272,49 @@
 
        width   top bar   header   what the header is
        ------  --------  -------  ---------------------------------------
-       380     113       84       handheld: icons, logo, hamburger
-       768      38       84       handheld: same, wider
+       380     113       50       handheld: icons, logo, hamburger
+       768      38       50       handheld: same, wider
        1440     38      110       masthead: logo + nav, no hamburger
+
+     THE HANDHELD HEADER SAID 84 HERE AND LIVE'S IS 50. CORRECTED 2026-09-18,
+     AND THE OLD NUMBER IS NAMED RATHER THAN QUIETLY REPLACED, BECAUSE IT WAS
+     COMMITTED AND EVERY BAND BELOW THE HEADER WAS SCORED AGAINST IT.
+
+     Measured off the frozen pre-cutover captures, by finding the rows that are
+     a full-width 1px border on each side:
+
+       refs/ke_live_380.png    borders at y112 and y161  ->  header 49 + 1
+       refs/ke_live_768.png    borders at  y37 and  y86  ->  header 49 + 1
+       refs/ke_live_1440.png   borders at  y37 and y147  ->  header 110
+
+     The top bar (113 at 380, 38 at 768) and the masthead (110 at 1440) are
+     confirmed by the same scan and are unchanged. Only the handheld header was
+     wrong, and it was wrong at BOTH widths that fail the gate.
+
+     WHAT 84 PROBABLY WAS. It is our own header's height, not live's: the
+     source named as its origin, `refs/ke_live_computed.json`, was read on
+     2026-09-03, and by 2026-09-08 the gate was already refusing because
+     `kenyonexpress.co.il` had become our own Vercel build. A shell measured off
+     that host measures this project. That is a reading of the evidence and not
+     a measurement, which is why it is written as one.
+
+     WHAT IT COST. The 34px difference is a rigid offset applied to everything
+     below the header, and a band diff compares row y against row y. Measured at
+     380 on 2026-09-18, shifting our capture down against the reference and
+     rescoring:
+
+       shift    0px   31.15%      shift   36px   13.12%
+       shift   16px   27.72%      shift   48px   24.95%
+       shift   32px   18.94%      shift   64px   30.85%
+
+     Eighteen of the twenty-seven points were one number in this file.
 
      The 113 at 380 is not a taste: the top bar's four info items (account,
      secure checkout, fast delivery, nationwide) do not fit one 380px line, so
      live wraps them onto three 37px rows. Ours hid them below md entirely,
      which is why our top bar was one row where live has three. */
   --spacing-topbar-handheld: 112px; /* + 1px border = live's 113 at 380 */
-  --spacing-header-handheld: 83px; /* + 1px border = live's 84 at 380 and 768 */
+  --spacing-header-handheld: 49px; /* + 1px border = live's 50 at 380 and 768 */
   /* 112/3, NOT 37. Three rows of a flat 37px are 111px inside a 112px box, and
      the leftover pixel is not harmless: it moves every divider between the top
      bar's three rows a little further from live's. Measured with
