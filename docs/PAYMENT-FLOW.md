@@ -81,9 +81,23 @@ These are the exact value sets production accepts. Writing anything else raises
 | `payments.status` | `initiated`, `redirected`, `succeeded`, `failed`, `refunded`, `platform_settled` |
 | `voucher_status` | `issued`, `redeemed`, `expired`, `cancelled`, `refunded` |
 
-`voucher_status` is the odd one out: it has **no** transition guard. Its
-lifecycle is enforced by the `redeem_voucher()` function and by application
-code, not by a trigger. The other three are guarded.
+> **CORRECTED 2026-09-18. This paragraph said `voucher_status` had no
+> transition guard, and it contradicted the table at the top of this very file,
+> which has listed `tg_vouchers_status_guard` since 166 applied.**
+>
+> It read: *"`voucher_status` is the odd one out: it has **no** transition
+> guard. Its lifecycle is enforced by the `redeem_voucher()` function and by
+> application code, not by a trigger. The other three are guarded."*
+>
+> `docs/VOUCHER-LIFECYCLE.md` calls that exact claim "the sentence in this file
+> most likely to make somebody write a broken repair script" and corrected its
+> own copy on 2026-09-09. This copy was missed, so the retracted sentence went
+> on living in the document a reader reaches first.
+
+**All four are guarded.** Re-measured against production `pg_trigger` on
+2026-09-18: `tg_vouchers_status_guard` is live on `vouchers` and runs
+`fn_vouchers_status_guard()`. `redeem_voucher()` and the application code still
+matter, but they are not what makes an illegal state unreachable.
 
 ---
 
@@ -94,6 +108,11 @@ This is the whole of what production permits, read out of
 `fn_payments_status_guard`. **Every diagram in every document must agree with
 this section.** If a diagram shows an arrow that is not here, the diagram is
 wrong.
+
+All four guards are read out of production, not out of the migration files: the
+repo's `supabase/migrations/` is a different lineage from the hosted database,
+so a table transcribed from a migration can describe something that was never
+applied.
 
 ```
 orders.status
@@ -119,7 +138,17 @@ payments.status
   redirected        -> failed, succeeded
   succeeded         -> platform_settled, refunded
   terminal: failed, refunded
+
+vouchers.status
+  issued            -> redeemed, expired, cancelled, refunded
+  terminal: redeemed, expired, cancelled, refunded
 ```
+
+The fourth table was absent here while the guard was live, which is the same
+defect as the retracted paragraph above wearing different clothes: a section
+that announces itself as "the whole of what production permits" listed three of
+four. Read out of `fn_vouchers_status_guard` on 2026-09-18, the body is a
+literal four-pair `IN` list and every non-`issued` state is terminal.
 
 Three properties of these tables that are load-bearing and easy to lose:
 
