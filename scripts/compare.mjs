@@ -51,6 +51,17 @@ const VIEW = { width: Number(argOf('width', '1440')), height: 2600 }
 // The driver exits on the FIRST non-zero child code. A width that refuses (5)
 // or fails a guard (3, 4) produced no number, and a summary that showed two
 // percentages and a blank third while exiting 0 would read as a pass.
+//
+// AND IT EXITS 6 WHEN A WIDTH IS SIMPLY OVER THE CEILING, WHICH NOTHING HERE
+// USED TO DO. diff-bands.mjs prints the percentage, writes PASS or FAIL into
+// docs/UI-PARITY-REPORT.md, and exits 0 either way; so did this driver. On
+// 2026-09-18 a run reported three FAILs at 27.32%, 25.85% and 11.37% and
+// exited 0. Anything gating on the exit status -- CI, a hook, a loop -- read
+// that as a green visual gate.
+//
+// Single-width runs keep the old behaviour, because that is what every
+// existing caller and every note in STATE.md was written against. Only this
+// multi-width driver, which is new, enforces the ceiling it prints.
 const WIDTHS = String(argOf('widths', ''))
   .split(',')
   .map((w) => w.trim())
@@ -95,11 +106,19 @@ if (WIDTHS.length > 1) {
     }
   }
   console.log(`\n=== ${page} parity, gate ${GATE_CEILING}% ===`)
+  let over = 0
   for (const r of runs) {
     const pct = r.pct === null ? '    n/a' : `${r.pct.toFixed(2)}%`.padStart(7)
     const verdict =
       r.pct === null ? `no number (exit ${r.code})` : r.pct <= GATE_CEILING ? 'PASS' : 'FAIL'
+    if (r.pct !== null && r.pct > GATE_CEILING) over++
     console.log(`  ${String(r.width).padStart(4)}  ${pct}  ${verdict}`)
+  }
+  if (!worst && over) {
+    console.error(
+      `\n${over} of ${runs.length} widths are over the ${GATE_CEILING}% gate. Exiting 6.`,
+    )
+    process.exit(6)
   }
   process.exit(worst)
 }

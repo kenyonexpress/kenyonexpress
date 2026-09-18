@@ -82,3 +82,7 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-18 10:18 | home | 380 | 10.38% | PASS | `5c96b389b-dirty` | live side: frozen capture `refs/ke_live_380.png` |
 | 2026-09-18 10:20 | home | 768 | 9.56% | PASS | `5c96b389b-dirty` | live side: frozen capture `refs/ke_live_768.png` |
 | 2026-09-18 10:21 | home | 1440 | 11.37% | **FAIL** | `5c96b389b-dirty` | live side: frozen capture `refs/ke_live_1440.png` |
+| 2026-09-18 10:31 | home | 1440 | 11.37% | **FAIL** | `70c6157f6-dirty` | live side: frozen capture `refs/ke_live_1440.png`; both-painted 2.02% |
+| 2026-09-18 10:36 | home | 380 | 10.38% | PASS | `70c6157f6-dirty` | live side: frozen capture `refs/ke_live_380.png`; both-painted 6.16% |
+| 2026-09-18 10:37 | home | 768 | 9.56% | PASS | `70c6157f6-dirty` | live side: frozen capture `refs/ke_live_768.png`; both-painted 4.27% |
+| 2026-09-18 10:39 | home | 1440 | 11.37% | **FAIL** | `70c6157f6-dirty` | live side: frozen capture `refs/ke_live_1440.png`; both-painted 2.02% |

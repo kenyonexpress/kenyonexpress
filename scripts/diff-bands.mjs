@@ -49,6 +49,8 @@ const report = await page.evaluate(
     const BAND = 100
     const bands = []
     let totalDiff = 0
+    let liveBlank = 0
+    let mineBlank = 0
     for (let y0 = 0; y0 < H; y0 += BAND) {
       const y1 = Math.min(y0 + BAND, H)
       let diff = 0
@@ -59,19 +61,43 @@ const report = await page.evaluate(
             Math.abs(a[i] - m[i]) > TOL ||
             Math.abs(a[i + 1] - m[i + 1]) > TOL ||
             Math.abs(a[i + 2] - m[i + 2]) > TOL
-          )
+          ) {
             diff++
+            // WHICH SIDE IS BLANK, BECAUSE THE TWO ARE NOT THE SAME DEFECT.
+            //
+            // A pixel where the REFERENCE is white and we paint something is
+            // usually content the reference does not have: a product photo
+            // that never loaded into the capture, or a catalogue row live
+            // carried and we do not. Nothing in our stylesheets can close it,
+            // and the only edit that would is deleting the photograph.
+            //
+            // A pixel where BOTH sides paint and the colours disagree is the
+            // measurement the gate exists for: geometry, type, spacing,
+            // colour. That is the number worth acting on.
+            //
+            // Scoring them as one total is how 1440 read 11.37% on 2026-09-18
+            // while the drift a designer could act on was about 3. The split
+            // is reported next to the total from here on, so a FAIL says which
+            // kind of FAIL it is.
+            const BLANK = 247
+            if (a[i] > BLANK && a[i + 1] > BLANK && a[i + 2] > BLANK) liveBlank++
+            else if (m[i] > BLANK && m[i + 1] > BLANK && m[i + 2] > BLANK) mineBlank++
+          }
         }
       }
       totalDiff += diff
       bands.push({ y0, y1, pct: +((100 * diff) / ((y1 - y0) * W)).toFixed(1) })
     }
+    const pctOf = (n) => +((100 * n) / (W * H)).toFixed(2)
     return {
       W,
       H,
       liveSize: { w: live.width, h: live.height },
       mineSize: { w: mine.width, h: mine.height },
       overallPct: +((100 * totalDiff) / (W * H)).toFixed(2),
+      liveBlankPct: pctOf(liveBlank),
+      mineBlankPct: pctOf(mineBlank),
+      bothPaintedPct: pctOf(totalDiff - liveBlank - mineBlank),
       bands,
     }
   },
@@ -85,6 +111,9 @@ console.log(
 )
 console.log(`compared: ${report.W}x${report.H}`)
 console.log(`OVERALL first ${report.H}px: ${report.overallPct}%`)
+console.log(
+  `  of which: reference blank ${report.liveBlankPct}%  ours blank ${report.mineBlankPct}%  both painted ${report.bothPaintedPct}%`,
+)
 
 // Recorded BEFORE anything else happens with the number, so there is no path
 // that measures parity and forgets to write it down. docs/UI-PARITY-REPORT.md
@@ -93,7 +122,11 @@ appendParityRow({
   page: process.env.COMPARE_PAGE ?? 'unknown',
   width: Number(process.env.COMPARE_WIDTH ?? report.W),
   pct: report.overallPct,
-  notes: process.env.COMPARE_NOTES ?? '',
+  // The split rides along in the notes, because the report is what gets read a
+  // month later and a bare percentage cannot say whether it is worth chasing.
+  notes: [process.env.COMPARE_NOTES ?? '', `both-painted ${report.bothPaintedPct}%`]
+    .filter(Boolean)
+    .join('; '),
 })
 
 /**
