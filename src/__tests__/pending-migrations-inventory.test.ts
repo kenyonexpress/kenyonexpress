@@ -944,6 +944,14 @@ describe('the pending migration inventory', () => {
       // roll itself back. Its guard refuses if any target has since gained a
       // client write policy or a column-level grant.
       '230_revoke_surplus_client_dml.sql',
+      // 231 WRITTEN 2026-09-20, not applied. Two tables, two enums, RLS on
+      // each: the record of a data-export download and of a deletion request
+      // inside its 30-day grace period. It was written as
+      // `230-pending-exports-deletions.sql` and renumbered on 2026-09-20,
+      // because 230 was already spent and because the hyphen put it outside the
+      // `\d{3}[a-z]?_` the README manifest is read with -- a file that could
+      // not be named here even by someone trying to name it.
+      '231_pending_exports_deletions.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

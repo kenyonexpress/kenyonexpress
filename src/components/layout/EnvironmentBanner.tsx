@@ -37,6 +37,19 @@ export default function EnvironmentBanner() {
     // standing condition of the deployment rather than an event that just
     // happened.
     <output
+      // A STABLE HOOK FOR THE PARITY GATE, AND THE REASON IT NEEDS ONE.
+      //
+      // `next start` on a laptop is NODE_ENV=production with no VERCEL_ENV, so
+      // this ribbon renders on exactly the server scripts/compare.mjs measures
+      // -- correctly, that is what it is for. But it costs 36px at the top of
+      // the page that the reference capture does not have, which pushes every
+      // band below it out of alignment and scores as layout difference all the
+      // way down. Measured 2026-09-18 at 1440: it was the largest single
+      // contributor to a 21.31% run against an 11% gate.
+      //
+      // The gate hides it by this attribute, the same way it already hides
+      // <nextjs-portal>. A class would work until Tailwind renamed one.
+      data-environment-banner=""
       dir="rtl"
       className="block w-full bg-amber-400 px-4 py-1.5 text-center font-semibold text-amber-950 text-xs"
     >

@@ -37,7 +37,7 @@ import { extname, join } from 'node:path'
  * sites (`vouchers/coupon-view.ts`, `wallet/pass-model.ts`) moved to
  * `formatDate`. NEVER RAISE IT.
  */
-const CEILING = 140
+const CEILING = 138
 
 /** The sanctioned homes for a locale tag, and the only ones. */
 const ALLOWED_PREFIXES = ['src/lib/i18n/', 'src/lib/money']

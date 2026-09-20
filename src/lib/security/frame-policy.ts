@@ -101,6 +101,52 @@ const turnstileConfigured = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.
 const withTurnstile = (directive: string): string =>
   turnstileConfigured ? `${directive} ${TURNSTILE_HOST}` : directive
 
+/**
+ * THE MOCK PROVIDER'S HOSTED PAGE IS ON OUR OWN ORIGIN, AND THE CSP REFUSED IT.
+ *
+ * `frame-src https://secure.cardcom.solutions` names exactly one host, which is
+ * right for a real charge and wrong for every configuration that runs the mock:
+ * a local checkout, a preview deployment, and the Playwright money path. In
+ * those, `createLowProfile` returns a URL on this origin, the checkout mounts it
+ * in the payment iframe, and Chrome answers
+ *
+ *   Framing 'http://localhost:3311/checkout/frame-return?...' violates the
+ *   following Content Security Policy directive: "frame-src
+ *   https://secure.cardcom.solutions". The request has been blocked.
+ *
+ * The shopper sees an empty box below a filled-in checkout and the order stays
+ * `pending` forever. Measured 2026-09-10 on the production build; the paid
+ * Playwright suite could not have passed against it.
+ *
+ * OPENED ONLY FOR THE MOCK, and the condition below is a RESTATEMENT of
+ * `loadCardcomEnv`'s `useMock` rather than a simpler stand-in for it. The
+ * simpler stand-in was written first and had a hole: `CARDCOM_USE_MOCK === 'true'`
+ * alone leaves the directive closed under `next dev` with no terminal number,
+ * which is the default local setup and the exact case that is guaranteed to be
+ * running the mock. Anything the two could disagree about is a checkout that
+ * renders an empty payment box, so `frame-policy-matches-provider.test.ts`
+ * holds them to the same answer over the whole configuration matrix.
+ *
+ * It is restated rather than imported because `next.config.ts` loads this
+ * module directly, before the tsconfig path aliases exist - the same reason the
+ * import at the top of the file is relative.
+ *
+ * `'self'` is a narrow grant regardless. The only page it lets us frame is
+ * /checkout/frame-return, which is also the only path `frame-ancestors 'self'`
+ * applies to; every other route still refuses to be framed by anyone at all.
+ */
+export function usesMockPaymentProvider(source: NodeJS.ProcessEnv = process.env): boolean {
+  return (
+    source.CARDCOM_USE_MOCK === 'true' ||
+    source.NODE_ENV === 'test' ||
+    (!source.CARDCOM_TERMINAL_NUMBER && source.NODE_ENV !== 'production')
+  )
+}
+
+const mockPaymentProvider = usesMockPaymentProvider()
+const withMockFrame = (directive: string): string =>
+  mockPaymentProvider ? `${directive} 'self'` : directive
+
 const BASE_DIRECTIVES = [
   "default-src 'self'",
   withTurnstile("script-src 'self' 'unsafe-inline'"),
@@ -108,7 +154,7 @@ const BASE_DIRECTIVES = [
   IMG_SRC,
   "font-src 'self'",
   withTurnstile("connect-src 'self' https://*.supabase.co"),
-  withTurnstile('frame-src https://secure.cardcom.solutions'),
+  withMockFrame(withTurnstile('frame-src https://secure.cardcom.solutions')),
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",
   "object-src 'none'",

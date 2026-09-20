@@ -104,6 +104,7 @@ file is in a repository.
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
 13 https://kenyonexpress.vercel.app/api/cron/settlement-reconcile GET  20 4 * * *    Authorization: Bearer <CRON_SECRET>
+14 https://kenyonexpress.vercel.app/api/cron/anonymize-user-data  GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export

@@ -1,5 +1,4 @@
 import { agorot } from '@/lib/commerce/money'
-import { loadCardcomEnv } from '@/lib/payments/env'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -56,11 +55,40 @@ export class MockCardcomProvider implements PaymentProvider {
       status: 'pending',
       transactionId,
     })
-    const env = loadCardcomEnv()
-    const redirectUrl = `${env.appUrl}/checkout/return?order_id=${encodeURIComponent(input.orderId)}&lp=${encodeURIComponent(lowProfileId)}`
+    /**
+     * THE MOCK RETURNS WHERE THE REAL PROVIDER RETURNS, and it did not.
+     *
+     * It used to invent `${appUrl}/checkout/return?order_id=...&lp=...`. Both
+     * halves of that were wrong, and together they made the mock checkout
+     * unusable in a browser - which is every local checkout, every preview
+     * deployment, and the whole Playwright money path.
+     *
+     * 1. THE FRAME WAS BLOCKED. The checkout mounts this URL in an iframe and
+     *    the page's CSP carries `frame-src https://secure.cardcom.solutions`.
+     *    A URL on our own origin is not that host, so Chrome refused it
+     *    outright: "Framing 'http://localhost:3311/checkout/return?...'
+     *    violates the following Content Security Policy directive". Measured
+     *    2026-09-10 on the production build. `frame-policy.ts` now opens
+     *    `frame-src 'self'` for the mock, and only for the mock.
+     * 2. /checkout/return IS NOT FRAMABLE, ON PURPOSE. It keeps
+     *    `frame-ancestors 'none'` and it requires a session, because the
+     *    navigation into the iframe is cross-site and the Lax session cookie
+     *    is withheld - a shopper who had just paid would watch a login form
+     *    appear inside the payment box. The framable stub is
+     *    /checkout/frame-return, and `successRedirectUrl` already points at it.
+     *
+     * So the mock hands back the redirect URL it was GIVEN. The mock flow now
+     * traverses the identical route as a real charge - frame-return, top-window
+     * breakout, then the authenticated confirmation - instead of a shortcut
+     * that only ever worked in a test that never opened a browser.
+     *
+     * The `lp` parameter is not restored with it: `reconcileOrderReturn` reads
+     * `payments.cardcom_low_profile_id` from the row, which is what the real
+     * provider's return URL forces it to do anyway.
+     */
     return {
       lowProfileId,
-      redirectUrl,
+      redirectUrl: input.successRedirectUrl,
       raw: { mock: true, lowProfileId, amountAgorot: input.amountAgorot },
     }
   }
