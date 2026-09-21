@@ -153,13 +153,19 @@ test.describe('role isolation @security', () => {
       'e2e supplier has no supplier membership; run pnpm seed:test',
     )
 
-    // The rule from the business model: a supplier sees what they are owed and
-    // never what the platform keeps. Asserted on the rendered text rather than
-    // on a selector, because the leak this guards against is a number appearing
-    // somewhere nobody added a test id to.
+    // The rule from the business model (docs/BUSINESS-RULES.md §9.2): a
+    // supplier sees only their own tenant. Their OWN platform fee is part of
+    // that tenant: every payout statement carries gross, fee and net (081),
+    // the supplier signed the percentage, and a statement they cannot
+    // reconcile is worse than one that shows the deduction. What must never
+    // appear is a platform-wide number or a raw column name. This assertion
+    // used to forbid the fee label too; it first ran on 22.09.2026 (the e2e
+    // supplier had no membership before 21.09) against a dashboard card that
+    // has shown the fee since 02.08. The card is the product; the wording was
+    // the test's.
     const body = (await page.locator('body').innerText()).toLowerCase()
     expect(body).not.toContain('platform_percent')
-    expect(body).not.toContain('עמלת פלטפורמה')
     expect(body).not.toContain('הכנסות פלטפורמה')
+    expect(body).not.toContain('מחזור הפלטפורמה')
   })
 })
