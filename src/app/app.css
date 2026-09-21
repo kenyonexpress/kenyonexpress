@@ -1,0 +1,17 @@
+/*
+ * THE ONE STYLESHEET.
+ *
+ * Every CSS file the root layout used to import as a separate JS import is
+ * imported HERE, in the same order, and the layout imports only this file.
+ * A JS `import './x.css'` in a layout is a chunking hint the bundler is free
+ * to ignore, and it did: since Next 16 the four page-scoped files below came
+ * out as a second render-blocking <link> on every page (measured 22.09.2026:
+ * three stylesheet links on the homepage, one of them next/font's). A CSS
+ * `@import` is not a hint. The order is the cascade the pages were written
+ * against: tokens and Tailwind first, page CSS after.
+ */
+@import "./globals.css";
+@import "../styles/mini-cart.css";
+@import "../styles/cart-page.css";
+@import "../styles/home-handheld.css";
+@import "../styles/product-card-deals.css";

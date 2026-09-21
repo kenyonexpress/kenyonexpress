@@ -14,10 +14,9 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Heebo } from 'next/font/google'
 import { Suspense } from 'react'
-import './globals.css'
+import './app.css'
 // The header cart is in the masthead on every route, so its styles load here
 // rather than with the /cart page. See the note at the top of the file.
-import '@/styles/mini-cart.css'
 /**
  * The three below are imported HERE, not by the segment that uses them, and the
  * reason is the number of requests rather than the number of bytes.
@@ -34,9 +33,6 @@ import '@/styles/mini-cart.css'
  * that has none of those elements matches nothing. A file with bare element or
  * utility selectors does NOT belong here - it would now apply site-wide.
  */
-import '@/styles/cart-page.css'
-import '@/styles/home-handheld.css'
-import '@/styles/product-card-deals.css'
 
 const heebo = Heebo({
   variable: '--font-heebo',
