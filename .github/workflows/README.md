@@ -172,15 +172,21 @@ own header comment carries the full argument.
 
 ## `security.yml`
 
-Two jobs, `Secret scan (gitleaks)` and `Dependency audit (fixable high/critical)`,
-on `pull_request` and on `push` (Dependabot's own branches excluded, because it
+Three jobs. `Secret scan (gitleaks)` and `Dependency audit (fixable high/critical)`
+run on `pull_request` and on `push` (Dependabot's own branches excluded, because it
 pushes a branch and then opens a PR and that is two scans of one tree). The
 scan reads the **whole history**, not the pushed commits, which is why
 `fetch-depth: 0` is on the checkout and why the binary is used directly instead
 of the action. The audit is `node scripts/audit-gate.mjs`, which fails on
 fixable high and critical advisories only.
 
-**Neither is a required check, deliberately.** Branch protection on `main`
+The third, `OWASP ZAP baseline (deployed site)`, runs weekly and on
+`workflow_dispatch` only: a passive crawl of the live storefront with the
+report as an artifact and `.zap/rules.tsv` deciding what counts as a failure
+(nothing yet; the first read run decides). Section 81, added 2026-09-22 without
+GitHub credentials on the writing machine, so its first green run is its proof.
+
+**None is a required check, deliberately.** Branch protection on `main`
 requires exactly four contexts by name; adding a job to a file does not make it
 required, and promoting a never-run gate straight into the required set is how a
 repository ends up unable to merge anything at 03:00. Both run in the open and

@@ -51,6 +51,14 @@ const headersWithPolicy = (
   // so a DENY left behind on a framable path blocks the frame anyway.
   { key: 'X-Frame-Options', value: frameOptions },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
+  // Section 81. Opener isolation keeps a page this site opened (or that opened
+  // it) from reaching back into the window; `allow-popups` is the one relaxation
+  // the Google sign-in popup needs. Resource policy stops other sites from
+  // loading this origin's responses as subresources; `same-site` and not
+  // `same-origin` so the vercel.app previews of this project can still share.
+  // No Embedder-Policy: `require-corp` would refuse the Cardcom payment frame.
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   // Path-dependent for the same reason as the CSP: camera=() on the scanner
   // route is a scanner that cannot see (frame-policy.ts, CAMERA_PATHS).

@@ -1,0 +1,3 @@
+# ZAP baseline rules: <id>	IGNORE|WARN|FAIL	<note>. Nothing is FAIL until a run has been read.
+10021	WARN	X-Content-Type-Options is set; ZAP checks the header on every asset
+10038	WARN	CSP present in static config, nonce deliberately not (next.config.ts)

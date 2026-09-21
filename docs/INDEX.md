@@ -147,6 +147,7 @@ one.
 | [PRICING-COMPLIANCE.md](PRICING-COMPLIANCE.md) | ✅ | Measured 2026-09-09 against production (ixvwfbuvfxxsjiywhbbb). |
 | [RATE-LIMITS.md](RATE-LIMITS.md) | ✅ | נמדד מול העץ ב-09.09.2026. כל מספר כאן נקרא מ-src/lib/rate-limit/policies.ts |
 | [SECURITY-POSTURE.md](SECURITY-POSTURE.md) | ✅ | Threat model, what is enforced where, and the gaps that are real. |
+| [SECURITY.md](SECURITY.md) | ✅ | ‏SECTIONS 81. נמדד ‏22.09.2026: תשעת הפריטים מול מה שיש, המטריצה במקום ‏pgTAP, ומה לא נבנה ולמה. |
 
 ---
 

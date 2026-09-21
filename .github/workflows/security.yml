@@ -22,6 +22,10 @@ name: Security
 # instead of the action.
 
 on:
+  workflow_dispatch:
+  schedule:
+    # Weekly ZAP baseline, Monday 03:15 UTC; the other two jobs skip it.
+    - cron: '15 3 * * 1'
   pull_request:
   push:
     branches-ignore:
@@ -40,6 +44,7 @@ permissions:
 jobs:
   secrets:
     name: Secret scan (gitleaks)
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       # fetch-depth: 0 is the whole point. A shallow clone scans the tip and
@@ -86,6 +91,7 @@ jobs:
 
   dependencies:
     name: Dependency audit (fixable high/critical)
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -107,3 +113,28 @@ jobs:
       # at the top of scripts/audit-gate.mjs.
       - name: pnpm audit
         run: node scripts/audit-gate.mjs
+
+  # Section 81: an OWASP ZAP baseline (passive) scan of the deployed site. It
+  # runs on a schedule and on demand, never on pull requests: it needs a live
+  # target, takes minutes, and a passive crawl of the production storefront
+  # is not something every push should trigger. `fail_action: false` because a
+  # baseline scan's job is to write the report; the rules file below is where
+  # a finding becomes a failure once it has been read. Written 2026-09-22 from
+  # a machine without GitHub credentials, so the first green run is the proof.
+  zap-baseline:
+    name: OWASP ZAP baseline (deployed site)
+    if: github.event_name != 'pull_request' && github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: https://kenyonexpress.vercel.app
+          rules_file_name: .zap/rules.tsv
+          cmd_options: '-a -j'
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: zap-baseline-report
+
