@@ -3,6 +3,7 @@ import http from 'k6/http'
 import { Counter } from 'k6/metrics'
 import { catalogue, sample } from './lib/catalogue.js'
 import { BASE, assertNotProduction } from './lib/guard.js'
+import { TREND_STATS } from './lib/summary.js'
 import { ERROR_RATE, latency } from './lib/thresholds.js'
 
 /**
@@ -31,6 +32,7 @@ const DURATION = __ENV.LOAD_DURATION ?? '1m'
 const limited = new Counter('rate_limited')
 
 export const options = {
+  summaryTrendStats: TREND_STATS,
   scenarios: {
     crawler: {
       executor: 'constant-arrival-rate',

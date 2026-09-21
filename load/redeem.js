@@ -2,6 +2,7 @@ import { check } from 'k6'
 import http from 'k6/http'
 import { Counter } from 'k6/metrics'
 import { BASE, assertWritesAllowed, required } from './lib/guard.js'
+import { TREND_STATS } from './lib/summary.js'
 import { MUST_BE_ZERO, PAGE_LATENCY } from './lib/thresholds.js'
 
 /**
@@ -39,6 +40,7 @@ const alreadyRedeemed = new Counter('redeem_already')
 const serverErrors = new Counter('redeem_server_errors')
 
 export const options = {
+  summaryTrendStats: TREND_STATS,
   scenarios: {
     event_queue: {
       executor: 'constant-arrival-rate',

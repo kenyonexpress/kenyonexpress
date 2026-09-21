@@ -23,7 +23,7 @@ on:
         required: true
         default: browse
         type: choice
-        options: [browse, search, mixed, checkout, redeem, pool]
+        options: [browse, search, mixed, spike, checkout, redeem, pool]
       vus:
         description: 'Peak virtual users'
         required: true

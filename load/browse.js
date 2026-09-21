@@ -3,6 +3,7 @@ import http from 'k6/http'
 import { Rate } from 'k6/metrics'
 import { catalogue, sample } from './lib/catalogue.js'
 import { BASE, assertNotProduction } from './lib/guard.js'
+import { TREND_STATS } from './lib/summary.js'
 import { ERROR_RATE, PAGE_LATENCY } from './lib/thresholds.js'
 
 /**
@@ -28,6 +29,7 @@ const HOLD = __ENV.LOAD_HOLD ?? '5m'
 const rateLimited = new Rate('rate_limited')
 
 export const options = {
+  summaryTrendStats: TREND_STATS,
   scenarios: {
     flash_sale: {
       executor: 'ramping-vus',

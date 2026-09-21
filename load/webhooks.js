@@ -2,6 +2,7 @@ import { check } from 'k6'
 import http from 'k6/http'
 import { Counter } from 'k6/metrics'
 import { BASE, assertWritesAllowed, required } from './lib/guard.js'
+import { TREND_STATS } from './lib/summary.js'
 import { MUST_BE_ZERO, latency } from './lib/thresholds.js'
 
 /**
@@ -34,6 +35,7 @@ const rejected = new Counter('webhook_rejected')
 const serverErrors = new Counter('webhook_server_errors')
 
 export const options = {
+  summaryTrendStats: TREND_STATS,
   scenarios: {
     flood: {
       executor: 'constant-arrival-rate',

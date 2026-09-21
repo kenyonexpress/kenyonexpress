@@ -3,6 +3,7 @@ import http from 'k6/http'
 import { Counter } from 'k6/metrics'
 import { catalogue, sample } from './lib/catalogue.js'
 import { BASE, assertWritesAllowed } from './lib/guard.js'
+import { TREND_STATS } from './lib/summary.js'
 import { MUST_BE_ZERO } from './lib/thresholds.js'
 
 /**
@@ -32,6 +33,7 @@ const connectionErrors = new Counter('db_connection_errors')
 const serverErrors = new Counter('server_errors')
 
 export const options = {
+  summaryTrendStats: TREND_STATS,
   scenarios: {
     crush: {
       executor: 'ramping-vus',

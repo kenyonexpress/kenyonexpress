@@ -2,6 +2,7 @@ import { check, sleep } from 'k6'
 import http from 'k6/http'
 import { Counter } from 'k6/metrics'
 import { BASE, assertWritesAllowed, required } from './lib/guard.js'
+import { TREND_STATS } from './lib/summary.js'
 import { ERROR_RATE, MUST_BE_ZERO, PAGE_LATENCY } from './lib/thresholds.js'
 
 /**
@@ -48,6 +49,7 @@ if (SESSIONS.length < VUS) {
 }
 
 export const options = {
+  summaryTrendStats: TREND_STATS,
   scenarios: {
     steady: {
       executor: 'constant-vus',

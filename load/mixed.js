@@ -3,6 +3,7 @@ import http from 'k6/http'
 import { Counter, Rate } from 'k6/metrics'
 import { catalogue, sample } from './lib/catalogue.js'
 import { BASE, assertNotProduction } from './lib/guard.js'
+import { TREND_STATS } from './lib/summary.js'
 import { ERROR_RATE, PAGE_LATENCY, latency } from './lib/thresholds.js'
 
 /**
@@ -68,6 +69,7 @@ const rateLimited = new Rate('rate_limited')
 const sessions = new Counter('sessions_by_leg')
 
 export const options = {
+  summaryTrendStats: TREND_STATS,
   scenarios: {
     mixed_day: {
       executor: 'ramping-vus',
