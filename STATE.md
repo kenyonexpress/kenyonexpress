@@ -1,6 +1,8 @@
 # KenyonExpress — Project State
 
-Updated: 2026-09-22 (‏SECTIONS 87 ‏(STORE-APP) - **חמישה משישה היו או הושלמו; ה-TWA נדחה במפורש לפי ‏D1→M1 ‏(`ARCHITECTURE-MOBILE-SUPERAPP.md` ‏§11.6: עטיפות החנות הוחלפו ב-RN+Expo, ‏`apps/mobile` = ‏`co.il.kenyonexpress.app`).** **פגם חי שנמצא ותוקן:** ‏`app.json` של האפליקציה מצהיר ‏`autoVerify` ו-`applinks` על ‏`/account`, ‏`/checkout`, ‏`/product`, ואף אחד משני קבצי ה-deep-link לא היה קיים באתר. נוסף: ‏`/.well-known/assetlinks.json` ו-`apple-app-site-association` מ-`src/lib/pwa/deep-links.ts`, מונעי ‏env ‏(`ANDROID_APP_SHA256_FINGERPRINTS`, ‏`IOS_APP_TEAM_ID`) ו-**404 עד שמוגדרים**, עם טסט שהמזהים והנתיבים שווים ל-`app.json`; ‏**10 תמונות פתיחה ל-iOS** ‏(`splash.ts` + ‏`generate-pwa-splash.mjs`, ‏9–24 ‏kB, טסט קורא ‏IHDR); ‏`viewportFit: 'cover'`; במניפסט ‏`id`, ‏`prefer_related_applications: false` ו-3 ‏shortcuts לדפים שהטסט מוצא על הדיסק; ‏`e2e/pwa.spec.ts` **‏8/8** ב-chromium ו-mobile-chrome מול ה-build. ‏Next 16 כותב ‏`mobile-web-app-capable` ולא ‏`apple-`; ה-spec מקבל את שניהם. ‏`docs/APP.md`. **המשך מ (תור SECTIONS): סעיף ‏88 ‏(FINAL-AUDIT-V2).**)
+Updated: 2026-09-22 (‏SECTIONS 88 ‏(FINAL-AUDIT-V2) - **הרגרסיה המלאה רצה, ותשעת הכישלונות של ה-E2E אובחנו אחד-אחד.** ‏Playwright ‏746 טסטים בשני פרויקטים: ‏664 עוברים, ‏73 מדולגים, ‏9 נכשלים; **ארבעת כישלונות הכסף היו השרת הידני בלי ‏`NEXT_PUBLIC_APP_URL`** ‏(ה-iframe של הסליקה המדומה נבנה ל-localhost:3000, ריק תחת ‏`frame-src 'self'`, וההזמנה כן שולמה בשרת) — עם המשתנה ‏4/4 ירוקים והזיכרון עודכן; **כישלון נגישות אחד תוקן** ‏(שלד הקופונים: ‏`div` עם ‏`aria-label` → ‏`<output>`; ‏12/12 אחרי ‏rebuild; ניסיון ביניים עם ‏`role=status` על ‏`<ul>` שבר ‏24 ‏`<li>` והוחזר); ‏2 ידועים-אדומים ‏(`home.spec:419`); ‏**2 סתירה מתועדת**: ‏`/supplier` מציג 'עמלת פלטפורמה' מאז ‏02.08 והטסט מ-10.09 אוסר, ורץ לראשונה כי לספק הבדיקות יש חברות מאז ‏21.09 — החלטת בעלים. ‏parity ‏10.38/9.56/11.37 ‏(זהה ל-19.09, ‏1440 = צילום ריק ‏7.94%), ‏RTL sweep ‏54/54, ‏a11y+RTL+touch ‏194 עוברים, ‏k6 ‏spike ‏5→50 ‏p95 ‏308 ‏ms ‏(פי ‏2.2 מסבב ‏3), ‏500 ‏VUs נעצר ב-4 שניות על תקרת הלפטופ ‏(מדידה של פריסה, לא של מחשב). עמודים משפטיים: ‏4 מסמכים, ‏44 טסטים, שני פתוחים לבעלים ‏(ממונה פרטיות אם יחול, רכז נגישות). תג ‏`v2.0.0-rc1` בקו ‏v1.x של דוחות הסיום, לצד קו ‏v5.11.x של ‏step21. ‏`docs/FINAL-REPORT-V2.md`. **המשך מ (תור SECTIONS): סעיף ‏94 ‏(WA-CONTACT-SYSTEM), ואחריו לולאת התחזוקה.**)
+
+קודם: 2026-09-22 (‏SECTIONS 87 ‏(STORE-APP) - **חמישה משישה היו או הושלמו; ה-TWA נדחה במפורש לפי ‏D1→M1 ‏(`ARCHITECTURE-MOBILE-SUPERAPP.md` ‏§11.6: עטיפות החנות הוחלפו ב-RN+Expo, ‏`apps/mobile` = ‏`co.il.kenyonexpress.app`).** **פגם חי שנמצא ותוקן:** ‏`app.json` של האפליקציה מצהיר ‏`autoVerify` ו-`applinks` על ‏`/account`, ‏`/checkout`, ‏`/product`, ואף אחד משני קבצי ה-deep-link לא היה קיים באתר. נוסף: ‏`/.well-known/assetlinks.json` ו-`apple-app-site-association` מ-`src/lib/pwa/deep-links.ts`, מונעי ‏env ‏(`ANDROID_APP_SHA256_FINGERPRINTS`, ‏`IOS_APP_TEAM_ID`) ו-**404 עד שמוגדרים**, עם טסט שהמזהים והנתיבים שווים ל-`app.json`; ‏**10 תמונות פתיחה ל-iOS** ‏(`splash.ts` + ‏`generate-pwa-splash.mjs`, ‏9–24 ‏kB, טסט קורא ‏IHDR); ‏`viewportFit: 'cover'`; במניפסט ‏`id`, ‏`prefer_related_applications: false` ו-3 ‏shortcuts לדפים שהטסט מוצא על הדיסק; ‏`e2e/pwa.spec.ts` **‏8/8** ב-chromium ו-mobile-chrome מול ה-build. ‏Next 16 כותב ‏`mobile-web-app-capable` ולא ‏`apple-`; ה-spec מקבל את שניהם. ‏`docs/APP.md`. **המשך מ (תור SECTIONS): סעיף ‏88 ‏(FINAL-AUDIT-V2).**)
 
 קודם: 2026-09-22 (‏SECTIONS 86 ‏(DX) - **ארבעה משבעה היו ולא נגעתי בהם ‏(seed עברי ב-4 קבצים, ‏ADRs, תבנית ‏PR, ‏CODEOWNERS), אחד היה חלקי ושניים חסרו.** נוסף: **‏`/dev/components`** במקום ‏Storybook ‏(כל פרימיטיב ב-`ui/` על הטוקנים האמיתיים ב-RTL, צבעים ומידות מ-`tokens.ts`, ‏404 ב-production, טסט רינדור), **‏pre-commit עם ‏tsc ו-`vitest related` על ה-index** ‏(`scripts/precommit-gate.mjs`; נמדד: ‏3.9 שניות על שני קבצים, ‏tsc מלא ‏13.3), **‏CONTRIBUTING.md**, ‏ADR ‏0013 ‏(דגלים) ו-0014 ‏(חסימה ב-auth), ו-**‏`.vscode` תוקן מ-Prettier ל-Biome** עם ‏`extensions.json`. ‏Storybook נדחה במפורש: ‏build שני ומאות חבילות כדי לרנדר ‏11 פרימיטיבים שהאפליקציה מרנדרת בעצמה. ‏`docs/DX.md`. **המשך מ (תור SECTIONS): סעיף ‏87 ‏(STORE-APP).**)
 
@@ -689,6 +691,21 @@ SECTIONS 40 של סשן אחר, כולה untracked. לא נגעתי בה. הבס
 שערים: ‏6522 טסטים ב-520 קבצים, ‏type-check, ‏lint ו-build ירוקים.
 קומיטים ‏`9488d6981` ו-`29b0a60b5` נדחפו.
 
+
+### ‏22.09: ‏SECTIONS 88 ‏(FINAL-AUDIT-V2). המשך מ (תור SECTIONS): סעיף 94
+
+**המסמך: ‏`docs/FINAL-REPORT-V2.md`.** טבלת השורה התחתונה, תשעת הכישלונות עם
+הסיבה המדודה לכל אחד, שער הפיקסלים בפירוק, עומס, ומשפטי.
+
+**החלטות שהתקבלו לבד:**
+
+- התג הוא ‏`v2.0.0-rc1` כפי שהתור נוקב, בקו ‏v1.x של דוחות הסיום; קו ‏v5.11.x
+  של ‏step21 חי לצדו ולא "תוקן".
+- סתירת עמלת הפלטפורמה בקונסולת הספק לא נפתרה כאן: הטסט אוסר, המוצר מציג
+  מאז ‏02.08, ודוח תשלום בלי העמלה הוא דוח שהספק לא יכול לאמת. בעלים.
+- ‏`docs/UI-PARITY-REPORT.md` לא בקומיט: השער כתב אליו, וסשן מקביל מחזיק בו
+  שינויים לא מקומטים.
+- ‏500 ‏VUs לא נמדדים מלפטופ; נכתב כך ולא כ"עבר".
 
 ### ‏22.09: ‏SECTIONS 87 ‏(STORE-APP). המשך מ (תור SECTIONS): סעיף 88
 

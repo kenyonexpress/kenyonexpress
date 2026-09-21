@@ -306,6 +306,7 @@ one.
 | [DNS-SNAPSHOT-PRE-CUTOVER.md](DNS-SNAPSHOT-PRE-CUTOVER.md) | ✅ | Taken 2026-09-02, from the Cloudflare API (Zone:Read) and from public |
 | [FINAL-AUDIT.md](FINAL-AUDIT.md) | ✅ | ‏SECTIONS 23. נמדד ב-09.09.2026 מול 16983ef6c (‏origin/main אחרי מיזוג |
 | [FINAL-REPORT.md](FINAL-REPORT.md) | 🕯️ | Rewritten 2026-09-01. The previous version was written 2026-08-31 and its |
+| [FINAL-REPORT-V2.md](FINAL-REPORT-V2.md) | ✅ | ‏SECTIONS 88. נמדד ‏22.09.2026: ‏E2E מלא ‏(664/73/9 ותשעת הכישלונות מאובחנים), ‏parity ‏10.38/9.56/11.37, ‏RTL ‏54/54, ‏a11y ‏194, ‏k6 ‏spike ‏308 ‏ms, עמודים משפטיים. תג ‏v2.0.0-rc1. |
 | [GAP-AUDIT-FINAL.md](GAP-AUDIT-FINAL.md) | ✅ | Written 2026-09-02. Every verdict below was checked by reading the code or by |
 | [GO-LIVE-DRY-RUN.md](GO-LIVE-DRY-RUN.md) | ✅ | ‏SECTIONS 43. נמדד ‏21.09.2026: מיגרציות בטרנזקציה מגולגלת, ‏E2E מול ‏pnpm start, ‏RLS שלילי מול פרודקשן, ומה שחסום על סביבה. |
 | [IMAGE-IMPORT-STATUS.md](IMAGE-IMPORT-STATUS.md) | ✅ | Measured 2026-09-09. SECTIONS 20 asked for scripts/import-images.ts and ended |

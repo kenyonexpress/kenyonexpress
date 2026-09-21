@@ -49,7 +49,9 @@ export default function CouponCardSkeleton() {
 /** The grid of them, in the same columns and gap as the real one. */
 export function CouponsGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div
+    // <output> is the element whose native role is status, so the label is
+    // permitted without an explicit role (biome a11y/useSemanticElements).
+    <output
       className="grid grid-cols-2 md:grid-cols-3 gap-3"
       aria-busy="true"
       aria-label="טוען קופונים"
@@ -58,6 +60,6 @@ export function CouponsGridSkeleton({ count = 8 }: { count?: number }) {
         // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder, never reordered
         <CouponCardSkeleton key={i} />
       ))}
-    </div>
+    </output>
   )
 }

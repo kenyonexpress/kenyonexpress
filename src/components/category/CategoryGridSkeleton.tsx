@@ -7,6 +7,10 @@
  * streams in.
  */
 export default function CategoryGridSkeleton({ count = 8 }: { count?: number }) {
+  // `aria-label` is permitted here: a <ul> carries the list role, which may be
+  // named. The coupon skeleton next door is a role-less <div> and needs
+  // role="status" for the same label; giving the <ul> that role orphans its
+  // <li>s (axe: listitem), measured 22.09.2026.
   return (
     <ul className="category-products" aria-busy="true" aria-label="טוען מוצרים">
       {Array.from({ length: count }, (_, i) => (
