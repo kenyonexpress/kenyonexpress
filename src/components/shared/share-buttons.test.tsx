@@ -1,9 +1,11 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
+import WhatsAppFloatSheet from '@/components/contact/WhatsAppFloatSheet'
+import { DEFAULT_CONTACT_CHANNELS, topicsFor } from '@/lib/contact/channels'
+import { storeWhatsAppNumber } from '@/lib/whatsapp'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import FacebookShareButton from './FacebookShareButton'
-import WhatsAppFloat from './WhatsAppFloat'
 import WhatsAppShareButton from './WhatsAppShareButton'
 
 /**
@@ -23,8 +25,13 @@ describe('the floating WhatsApp button', () => {
     vi.unstubAllEnvs()
   })
 
+  // Section 94: the float is a server component that reads the topics and
+  // hands hrefs to `WhatsAppFloatSheet`; the sheet is what renders, so it is
+  // what is asserted, with the topics built the same way the server builds them.
+  const oneTopic = () => topicsFor(DEFAULT_CONTACT_CHANNELS.slice(0, 1), storeWhatsAppNumber())
+
   it('renders a wa.me link with a prefilled Hebrew message', () => {
-    const html = renderToStaticMarkup(<WhatsAppFloat />)
+    const html = renderToStaticMarkup(<WhatsAppFloatSheet topics={oneTopic()} />)
     expect(html).toContain('https://wa.me/')
     expect(html).toContain('text=')
   })
@@ -35,27 +42,35 @@ describe('the floating WhatsApp button', () => {
     // while the footer and the contact page carried on. A missing button is a
     // failure nobody reports.
     vi.stubEnv(PHONE_ENV, '')
-    const html = renderToStaticMarkup(<WhatsAppFloat />)
+    const html = renderToStaticMarkup(<WhatsAppFloatSheet topics={oneTopic()} />)
     expect(html).toContain('wa.me/972524635550')
   })
 
   it('opens in a new tab without handing the opener over', () => {
-    const html = renderToStaticMarkup(<WhatsAppFloat />)
+    const html = renderToStaticMarkup(<WhatsAppFloatSheet topics={oneTopic()} />)
     expect(html).toContain('target="_blank"')
     expect(html).toContain('noopener')
   })
 
   it('is labelled for a screen reader, not just drawn', () => {
-    const html = renderToStaticMarkup(<WhatsAppFloat />)
+    const html = renderToStaticMarkup(<WhatsAppFloatSheet topics={oneTopic()} />)
     expect(html).toContain('aria-label="דברו איתנו בוואטסאפ"')
   })
 
   it('sits in the RTL-correct corner, by logical property', () => {
     // `end-5`, not `right-5`: the site is RTL and a physical property would put
     // the button on the wrong side of every page.
-    const html = renderToStaticMarkup(<WhatsAppFloat />)
+    const html = renderToStaticMarkup(<WhatsAppFloatSheet topics={oneTopic()} />)
     expect(html).toMatch(/\bend-5\b/)
     expect(html).not.toMatch(/\bright-5\b/)
+  })
+
+  it('becomes a topic sheet, closed by default, once there is more than one topic', () => {
+    const topics = topicsFor(DEFAULT_CONTACT_CHANNELS, storeWhatsAppNumber())
+    expect(topics).toHaveLength(5)
+    const html = renderToStaticMarkup(<WhatsAppFloatSheet topics={topics} />)
+    expect(html).toContain('aria-expanded="false"')
+    expect(html).not.toContain('data-testid="whatsapp-float-sheet"')
   })
 })
 

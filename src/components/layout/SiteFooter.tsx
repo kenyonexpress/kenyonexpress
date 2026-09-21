@@ -1,3 +1,4 @@
+import FooterContactChannels from '@/components/contact/FooterContactChannels'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
 import { t } from '@/lib/i18n/messages'
@@ -281,6 +282,8 @@ export default function SiteFooter() {
                 </li>
               ))}
             </ul>
+            {/* Section 94: WhatsApp by topic, one link per active channel. */}
+            <FooterContactChannels />
           </details>
 
           {/* left column: אזור אישי — live's second accordion row below lg,

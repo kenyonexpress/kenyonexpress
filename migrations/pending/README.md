@@ -1,5 +1,14 @@
 # `migrations/pending/`
 
+## 2026-09-22: 236 WRITTEN, not applied - ערוצי וואטסאפ לפי נושא ומפה לפי route
+
+‏`236_contact_channels.sql`. סעיף ‏94. שתי טבלאות: ‏`contact_channels` ‏(חמישה נושאים:
+שירות לקוחות, הצעות, שיתופי פעולה, תקלה, הצטרפות עסק; מספר, פתיח עברי, סדר,
+פעיל) ו-`page_contact_config` ‏(תבנית ‏route → נושא, עם פתיח מותאם ו-`{name}`).
+קריאה ציבורית של שורות פעילות בלבד ‏(anon + authenticated), כתיבה ‏service role
+מ-`/admin/contact-channels` עם ‏audit. הקוד מחזיק את אותן חמש שורות כברירת מחדל
+‏(`src/lib/contact/channels.ts`), כך שהחנות עובדת לפני ההחלה. ‏`docs/WA-CONTACT.md`.
+
 ## 2026-09-22: 235 WRITTEN, not applied - טבלת דגלים, ומה שנשאר בסביבה בכוונה
 
 ‏`235_feature_flags.sql`. סעיף ‏83. ‏`feature_flags(key, enabled, description)`

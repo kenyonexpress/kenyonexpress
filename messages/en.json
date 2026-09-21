@@ -249,5 +249,15 @@
     "title": "Short maintenance",
     "body": "We are doing planned maintenance. Your orders and coupons are safe.",
     "retry": "Please try again in a few minutes."
+  },
+  "contact": {
+    "pickTopic": "How can we help?",
+    "openChat": "Open a WhatsApp chat",
+    "floatLabel": "Talk to us on WhatsApp",
+    "close": "Close",
+    "askBusiness": "Ask the business on WhatsApp",
+    "askStore": "Ask customer service on WhatsApp",
+    "footerHeading": "WhatsApp by topic",
+    "viaStore": "Your message reaches KenyonExpress customer service"
   }
 }

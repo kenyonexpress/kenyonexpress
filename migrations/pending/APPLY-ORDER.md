@@ -1,5 +1,14 @@
 # Apply order
 
+## 2026-09-22: 236, any order, two public-read tables
+
+`236_contact_channels.sql` creates `contact_channels` and `page_contact_config`
+with public read of active rows and seeds five topics and five route
+defaults. No dependency on any other pending file; `ON CONFLICT DO NOTHING`
+keeps an operator's edits on a second run. The storefront carries the same
+defaults in code, so applying it changes nothing visible until an operator
+edits a row.
+
 ## 2026-09-22: 235, any order, one operator table
 
 `235_feature_flags.sql` creates `feature_flags` (service role only) and seeds

@@ -1,8 +1,11 @@
+import ContactTopicPicker from '@/components/contact/ContactTopicPicker'
 import RichText from '@/components/content/RichText'
 import ContactForm from '@/components/storefront/ContactForm'
+import { topicsFor } from '@/lib/contact/channels'
 import { excerpt } from '@/lib/content/markup'
 import { getBoundContentPage } from '@/lib/content/read'
 import { formatIsraeliPhoneDisplay, storeWhatsAppLink, storeWhatsAppNumber } from '@/lib/whatsapp'
+import { listActiveContactChannels } from '@/server/contact/channels'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -29,7 +32,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContactPage() {
   const page = await getBoundContentPage('contact')
   const waHref = storeWhatsAppLink('שלום, יש לי שאלה לקניון אקספרס')
-  const waDisplay = formatIsraeliPhoneDisplay(storeWhatsAppNumber())
+  const storeNumber = storeWhatsAppNumber()
+  const waDisplay = formatIsraeliPhoneDisplay(storeNumber)
+  // Section 94: one topic per kind of question, each with its own opener and
+  // (when the operator set one) its own number. Table or code defaults.
+  const topics = topicsFor(await listActiveContactChannels(), storeNumber)
 
   return (
     <main className="mx-auto w-full max-w-page px-4 py-10">
@@ -74,6 +81,15 @@ export default async function ContactPage() {
           .
         </p>
       </header>
+
+      {topics.length > 0 && (
+        <section
+          aria-label="וואטסאפ לפי נושא"
+          className="mb-10 max-w-md rounded-2xl border border-black/10 bg-surface p-5"
+        >
+          <ContactTopicPicker topics={topics} surface="contact_page" />
+        </section>
+      )}
 
       <ContactForm />
     </main>

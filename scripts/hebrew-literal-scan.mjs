@@ -157,4 +157,4 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * partial shipment must not claim the order "טופלה במלואה" -- so the number
  * fell by one. 662 -> 661.
  */
-export const HEBREW_LITERAL_CEILING = 651
+export const HEBREW_LITERAL_CEILING = 650

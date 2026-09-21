@@ -1,6 +1,21 @@
+import { DEFAULT_CONTACT_CHANNELS, askBusinessHref } from '@/lib/contact/channels'
+import type { SupplierContactRow } from '@/lib/supplier-contact'
+import { buildSupplierInquiryText } from '@/lib/whatsapp'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import SupplierInfo from './SupplierInfo'
+
+/** What the product page computes and passes since section 94. */
+function askFor(supplier: SupplierContactRow, enabled: boolean, name: string | null) {
+  return askBusinessHref({
+    supplierWhatsapp: supplier.whatsapp ?? null,
+    whatsappEnabled: enabled,
+    name,
+    customerService: DEFAULT_CONTACT_CHANNELS[0] ?? null,
+    storeNumber: '972524635550',
+    supplierOpener: buildSupplierInquiryText(name),
+  })
+}
 
 /**
  * `docs/BUSINESS-MODEL.md` §2 makes address + Waze and phone + WhatsApp
@@ -32,6 +47,7 @@ describe('SupplierInfo', () => {
         productType="coupon"
         productName="ארוחה זוגית"
         whatsappEnabled
+        ask={askFor(full, true, 'ארוחה זוגית')}
       />,
     )
     expect(html).toContain('מסעדת השף הגדול')
@@ -49,6 +65,7 @@ describe('SupplierInfo', () => {
         productType="coupon"
         productName="ארוחה זוגית"
         whatsappEnabled
+        ask={askFor(full, true, 'ארוחה זוגית')}
       />,
     )
     expect(html).toContain(encodeURIComponent('ארוחה זוגית'))
@@ -125,16 +142,27 @@ describe('the WhatsApp opt-in', () => {
     // The default. `whatsapp_enabled` is false for all 80 products until an
     // admin ticks it, and the column does not exist yet at all -- so an
     // omitted prop must mean silence, not a published phone number.
-    const html = renderToStaticMarkup(<SupplierInfo supplier={reachable} productType="coupon" />)
-    expect(html).not.toContain('wa.me')
-    expect(html).not.toContain('בוואטסאפ')
+    // Section 94: the page still offers "ask", but it reaches customer service,
+    // never the supplier's own number.
+    const ask = askFor(reachable, false, null)
+    const html = renderToStaticMarkup(
+      <SupplierInfo supplier={reachable} productType="coupon" ask={ask} />,
+    )
+    expect(html).toContain('data-via="customer_service"')
+    expect(html).not.toContain('data-via="supplier"')
   })
 
   it('shows it once the product opts in', () => {
     const html = renderToStaticMarkup(
-      <SupplierInfo supplier={reachable} productType="coupon" whatsappEnabled />,
+      <SupplierInfo
+        supplier={reachable}
+        productType="coupon"
+        whatsappEnabled
+        ask={askFor(reachable, true, null)}
+      />,
     )
     expect(html).toContain('wa.me/972524635550')
+    expect(html).toContain('data-via="supplier"')
   })
 
   it('still shows nothing when there is no WhatsApp-capable number', () => {
@@ -143,9 +171,15 @@ describe('the WhatsApp opt-in', () => {
     // there opens WhatsApp only to say the number is not on it.
     const landlineOnly = { id: 's2', name: 'ספא רוגע', contact_phone: '03-1234567' }
     const html = renderToStaticMarkup(
-      <SupplierInfo supplier={landlineOnly} productType="coupon" whatsappEnabled />,
+      <SupplierInfo
+        supplier={landlineOnly}
+        productType="coupon"
+        whatsappEnabled
+        ask={askFor(landlineOnly, true, null)}
+      />,
     )
-    expect(html).not.toContain('wa.me')
+    // No supplier link; the fallback reaches customer service and says so.
+    expect(html).toContain('data-via="customer_service"')
     expect(html).toContain('03-1234567')
   })
 

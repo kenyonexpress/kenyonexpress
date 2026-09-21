@@ -405,6 +405,7 @@ one.
 | [TESTING.md](TESTING.md) | ✅ | What is tested where, how to run each suite, and what the gates actually block. |
 | [VISUAL-PARITY.md](VISUAL-PARITY.md) | ✅ | ‏נמדד ‏02.09.2026 (ערב), ‏compare.mjs מול build טרי על ‏:3412, האתר החי |
 | [WHATSAPP.md](WHATSAPP.md) | ✅ | Verified 2026-09-02. Built before G5; G5's one real gap was measurement, closed |
+| [WA-CONTACT.md](WA-CONTACT.md) | ✅ | ‏SECTIONS 94. נמדד ‏22.09.2026: וואטסאפ לפי נושא ‏(5 ערוצים, ברירות מחדל בקוד + מיגרציה ‏236), בורר ב-/contact, גיליון צף, ‏footer, "שאלה לבית העסק" עם נפילה לשירות לקוחות, אדמין, ‏E2E. |
 | [WISHLIST.md](WISHLIST.md) | ✅ | Measured 2026-09-09 against production (ixvwfbuvfxxsjiywhbbb). wishlists |
 | [WP-EXPORT-2026-07-29-DRY-RUN.md](WP-EXPORT-2026-07-29-DRY-RUN.md) | 🕯️ | The first dry run of the import pipeline against the real WordPress export |
 | [WP-IMPORT-2026-08-07-MAPPING.md](WP-IMPORT-2026-08-07-MAPPING.md) | 🕯️ | Source: data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml (5.9 MB, WP 6.8.1). |

@@ -1,36 +1,21 @@
-import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
-import { storeWhatsAppLink } from '@/lib/whatsapp'
+import WhatsAppFloatSheet from '@/components/contact/WhatsAppFloatSheet'
+import { topicsFor } from '@/lib/contact/channels'
+import { storeWhatsAppNumber } from '@/lib/whatsapp'
+import { listActiveContactChannels } from '@/server/contact/channels'
 
 /**
- * Floating "talk to us on WhatsApp" button, per `KE_LIVE_SPEC.md`.
- * Sits at the bottom-end corner (bottom-left in RTL), above the content.
+ * Floating WhatsApp button on every storefront, main and account page.
  *
- * LIFTED ON PHONES so it clears the bottom tab bar rather than sitting on top
- * of it. The bar is 4rem plus the safe-area inset; 5.25rem puts the button's
- * lower edge clear of it with the same 20px breathing room it has on desktop.
- * Overlapping instead would have covered the account tab, which is the corner
- * a right-handed thumb reaches first.
- *
- * The number resolves through `storeWhatsAppLink`, which falls back to the
- * published one when `NEXT_PUBLIC_WHATSAPP_PHONE` is unset. Before [68] this
- * button was the ONLY one of the three store-number surfaces that read the env
- * var, so a deployment without it lost the button while the footer icon and the
- * contact page carried on working -- a failure with no symptom anyone reports.
+ * Server side it resolves the topics (table or defaults) and hands plain
+ * hrefs to the client sheet. It is mounted in layouts, which do not know the
+ * page, so the list is the operator's order; the page-specific openers from
+ * `page_contact_config` are applied where the page is known (the product and
+ * supplier pages' "ask" button, the contact page).
  */
-export default function WhatsAppFloat() {
-  const href = storeWhatsAppLink('שלום, אשמח לעזרה עם הזמנה באתר KenyonExpress')
-  if (!href) return null
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="דברו איתנו בוואטסאפ"
-      title="דברו איתנו בוואטסאפ"
-      className="fixed bottom-[5.25rem] end-5 z-40 md:bottom-5 w-14 h-14 rounded-full bg-whatsapp text-white shadow-lg shadow-black/20 flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-whatsapp"
-    >
-      <WhatsAppIcon size={30} />
-    </a>
-  )
+export default async function WhatsAppFloat() {
+  const storeNumber = storeWhatsAppNumber()
+  if (!storeNumber) return null
+  const channels = await listActiveContactChannels()
+  const topics = topicsFor(channels, storeNumber)
+  return <WhatsAppFloatSheet topics={topics} />
 }

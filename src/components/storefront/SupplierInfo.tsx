@@ -1,4 +1,4 @@
-import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
+import AskBusinessButton from '@/components/contact/AskBusinessButton'
 import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
 import { buildSupplierInquiryText } from '@/lib/whatsapp'
@@ -65,6 +65,8 @@ export default function SupplierInfo({
   productType,
   productName,
   whatsappEnabled = false,
+  productId = null,
+  ask = null,
 }: {
   supplier: SupplierSummary
   productType: SupplierInfoProductType
@@ -75,12 +77,19 @@ export default function SupplierInfo({
    * the supplier never agreed to. See `readWhatsAppEnabled`.
    */
   whatsappEnabled?: boolean
+  productId?: string | null
+  /**
+   * Section 94: the "ask the business" link, computed by the page with
+   * `askBusinessHref`: the supplier's own WhatsApp when opted in, otherwise
+   * customer service with the product named in the opener. Null hides it.
+   */
+  ask?: { href: string; via: 'supplier' | 'customer_service' } | null
 }) {
   const contact = buildSupplierContact(supplier, {
     whatsappMessage: buildSupplierInquiryText(productName ?? null),
   })
 
-  const showWhatsApp = whatsappEnabled && contact.whatsappHref !== null
+  const showWhatsApp = (whatsappEnabled && contact.whatsappHref !== null) || ask !== null
 
   // `contact.hasAny` counts the WhatsApp link, which this component may be
   // suppressing. A supplier whose ONLY reachable detail is a WhatsApp number
@@ -142,17 +151,14 @@ export default function SupplierInfo({
               `contact_phone` values are landlines, so the flag alone would
               render links that open WhatsApp only to say the number is not on
               it. See 123_products_whatsapp_enabled.sql. */}
-          {showWhatsApp && contact.whatsappHref && (
+          {ask && (
             <li>
-              <a
-                href={contact.whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover"
-              >
-                <WhatsAppIcon size={16} />
-                שליחת הודעה בוואטסאפ
-              </a>
+              <AskBusinessButton
+                href={ask.href}
+                via={ask.via}
+                productId={productId ?? null}
+                supplierId={supplier?.id ?? null}
+              />
             </li>
           )}
         </ul>

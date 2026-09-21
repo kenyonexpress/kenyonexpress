@@ -1,7 +1,9 @@
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import AskBusinessButton from '@/components/contact/AskBusinessButton'
 import SupplierStorefrontHeader from '@/components/storefront/SupplierStorefrontHeader'
+import { askBusinessHref } from '@/lib/contact/channels'
 import { buildSupplierJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { siteUrl } from '@/lib/site-url'
 import {
@@ -11,6 +13,8 @@ import {
   loadSupplierStorefrontCached,
   loadSupplierStorefrontProductsCached,
 } from '@/lib/supplier-storefront'
+import { storeWhatsAppNumber } from '@/lib/whatsapp'
+import { findContactChannel } from '@/server/contact/channels'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -74,6 +78,18 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
     siteUrl: siteUrl(),
   })
 
+  // Section 94: the supplier page has no product, so the opener names the
+  // business; the supplier's own number needs a per-product opt-in and there
+  // is no product here, so this always reaches customer service.
+  const ask = askBusinessHref({
+    supplierWhatsapp: null,
+    whatsappEnabled: false,
+    name: supplier.name,
+    customerService: await findContactChannel('customer_service'),
+    storeNumber: storeWhatsAppNumber(),
+    supplierOpener: '',
+  })
+
   return (
     <div className="category-page mx-auto max-w-6xl px-4 py-8">
       {/* eslint-disable-next-line react/no-danger -- jsonLdScript, allowlisted */}
@@ -83,6 +99,11 @@ export default async function SupplierStorefrontPage({ params, searchParams }: P
         dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
       <SupplierStorefrontHeader supplier={supplier} />
+      {ask && (
+        <div className="mb-6">
+          <AskBusinessButton href={ask.href} via={ask.via} supplierId={supplier.id} />
+        </div>
+      )}
 
       <Suspense fallback={<CategoryGridSkeleton count={SUPPLIER_PAGE_SIZE} />}>
         <SupplierProductGrid id={id} searchParams={searchParams} />

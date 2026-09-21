@@ -12,11 +12,14 @@ import {
   resolveStorefrontProductType,
   storefrontProductTypeLabel,
 } from '@/lib/commerce/product-type'
+import { askBusinessHref } from '@/lib/contact/channels'
 import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
+import { buildSupplierInquiryText, storeWhatsAppNumber } from '@/lib/whatsapp'
+import { findContactChannel } from '@/server/contact/channels'
 import '@/styles/product-page.css'
 import { enabledProductTypes, isTypeSellable } from '@/lib/commerce/phases'
 import Link from 'next/link'
@@ -147,6 +150,18 @@ export default async function ProductPage({ params }: Props) {
     recurringOffer,
     suppressReferencePrice,
   } = detail
+
+  // Section 94: "ask the business". The supplier's own WhatsApp only when the
+  // product opted in (123) and the row carries a number; otherwise customer
+  // service, with the product named in the opener.
+  const ask = askBusinessHref({
+    supplierWhatsapp: supplier?.whatsapp ?? null,
+    whatsappEnabled: readWhatsAppEnabled(product),
+    name: product.name_he,
+    customerService: await findContactChannel('customer_service'),
+    storeNumber: storeWhatsAppNumber(),
+    supplierOpener: buildSupplierInquiryText(product.name_he),
+  })
 
   const category = Array.isArray(product.categories)
     ? null
@@ -377,7 +392,9 @@ export default async function ProductPage({ params }: Props) {
             supplier={supplier}
             productType={productType}
             productName={product.name_he}
+            productId={product.id}
             whatsappEnabled={readWhatsAppEnabled(product)}
+            ask={ask}
           />
         </div>
 

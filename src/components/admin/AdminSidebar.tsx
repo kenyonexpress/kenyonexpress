@@ -151,6 +151,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/settings', label: 'הגדרות מערכת', icon: Settings2, section: 'payments' },
   { href: '/admin/pages', label: 'עמודי תוכן', icon: FileText, section: 'content' },
+  { href: '/admin/contact-channels', label: 'ערוצי וואטסאפ', icon: LifeBuoy, section: 'content' },
   { href: '/admin/homepage', label: 'עמוד הבית', icon: LayoutDashboard, section: 'content' },
   { href: '/admin/phases', label: 'שלבי מוצר', icon: Flag, section: 'catalog' },
   { href: '/admin/subscriptions', label: 'מנויים', icon: Repeat, section: 'payments' },
