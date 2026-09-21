@@ -1,6 +1,7 @@
 import { buildHealthAlert, runHealthChecks } from '@/lib/health/checks'
 import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
+import { recordQueueDepth } from '@/lib/observability/queue-depth'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { type SearchDrift, checkSearchDrift } from '@/lib/search/drift'
 import { type DrainResult, drainSearchOutbox } from '@/lib/search/outbox-drain'
@@ -84,6 +85,25 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         gap: searchDrift.gap,
       })
     }
+    // The series, whatever the number is. The warn below is the interrupt and
+    // fires above a threshold; this is the line that lets the chart show a
+    // backlog climbing rather than only the moment it arrived.
+    recordQueueDepth('search_outbox', { pending: searchOutbox.pending })
+
+    // The one queue nothing counted. The notifications drain reads the rows
+    // that are DUE, which goes to zero while a backlog with a future
+    // `next_attempt_at` sits behind it -- a different number wearing the same
+    // name. `head: true` fetches no rows.
+    const { count: notificationPending, error: notificationCountError } = await admin
+      .from('notification_outbox')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending')
+    if (notificationCountError) {
+      log.warn('notifications.depth_read_failed', { reason: notificationCountError.message })
+    } else {
+      recordQueueDepth('notification_outbox', { pending: notificationPending ?? 0 })
+    }
+
     // Logged on its own, because the drift check above cannot see this. Drift
     // compares the index against the catalogue and SKIPS entirely while
     // Meilisearch is unconfigured, which is precisely when the backlog grows.

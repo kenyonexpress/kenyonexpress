@@ -79,3 +79,82 @@ describe('sendAlert', () => {
     expect(body).not.toMatch(/₪|agorot|\d+\.\d{2}/)
   })
 })
+
+/**
+ * The Slack leg. `SLACK_WEBHOOK_URL` is read at module load, so every case here
+ * resets the module registry and re-imports rather than stubbing after the
+ * fact -- stubbing an already-read constant tests nothing and passes.
+ */
+describe('sendAlert, the Slack fan-out', () => {
+  const originalFetch = globalThis.fetch
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  async function freshAlert(): Promise<typeof import('./alert')> {
+    vi.resetModules()
+    return import('./alert')
+  }
+
+  it('sends nothing at all without the variable, which is the state today', async () => {
+    vi.stubEnv('SLACK_WEBHOOK_URL', '')
+    const urls: string[] = []
+    globalThis.fetch = (async (url: string) => {
+      urls.push(String(url))
+      return new Response('ok', { status: 200 })
+    }) as never
+
+    const { sendAlert: send } = await freshAlert()
+    await send({ title: 'T', message: 'body' })
+
+    expect(urls.filter((u) => u.includes('hooks.slack.com'))).toEqual([])
+    expect(urls).toHaveLength(1)
+  })
+
+  it('posts title and message to the webhook when one is configured', async () => {
+    vi.stubEnv('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/T/B/X')
+    const calls: { url: string; init: RequestInit }[] = []
+    globalThis.fetch = (async (url: string, init: RequestInit) => {
+      calls.push({ url: String(url), init })
+      return new Response('ok', { status: 200 })
+    }) as never
+
+    const { sendAlert: send } = await freshAlert()
+    await send({ title: 'KE money path: capture', message: 'שלב: capture' })
+
+    const slack = calls.find((c) => c.url.includes('hooks.slack.com'))
+    expect(slack).toBeDefined()
+    const body = JSON.parse(String(slack?.init.body)) as { text: string }
+    expect(body.text).toContain('KE money path: capture')
+    expect(body.text).toContain('שלב: capture')
+  })
+
+  it('still reports the ntfy result when Slack is the leg that fails', async () => {
+    vi.stubEnv('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/T/B/X')
+    globalThis.fetch = (async (url: string) => {
+      if (String(url).includes('hooks.slack.com')) throw new Error('slack is down')
+      return new Response('ok', { status: 200 })
+    }) as never
+
+    const { sendAlert: send } = await freshAlert()
+    await expect(send({ title: 'T', message: 'body' })).resolves.toBe(true)
+  })
+
+  it('stays silent when alerts are switched off, on both legs', async () => {
+    vi.stubEnv('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/T/B/X')
+    vi.stubEnv('ALERTS_ENABLED', 'false')
+    const urls: string[] = []
+    globalThis.fetch = (async (url: string) => {
+      urls.push(String(url))
+      return new Response('ok', { status: 200 })
+    }) as never
+
+    const { sendAlert: send } = await freshAlert()
+    await send({ title: 'T', message: 'body' })
+
+    expect(urls).toEqual([])
+  })
+})

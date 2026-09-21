@@ -1,0 +1,102 @@
+{
+  "comment": [
+    "Alert rules with thresholds, as code, upserted by scripts/axiom/setup.mjs.",
+    "",
+    "EVERY THRESHOLD HERE IS EITHER MEASURED OR BORROWED FROM A NUMBER THAT",
+    "ALREADY EXISTS IN THE CODE, AND SAYS WHICH. A threshold invented to look",
+    "reasonable is the reason alert channels get muted: it fires on a normal",
+    "afternoon, somebody turns it off, and the rule that mattered goes with it.",
+    "",
+    "Each monitor names the panel in routes.json it corresponds to, so a rule",
+    "and the chart a human will open after it fires cannot drift apart.",
+    "",
+    "`range` is the window the query runs over; `intervalMinutes` is how often",
+    "it runs. A window shorter than the interval would skip data."
+  ],
+  "monitors": [
+    {
+      "slug": "error-rate-by-route",
+      "name": "Error rate above 5% on a route",
+      "description": "One request in twenty on a single route is answering 5xx or throwing. Panel: error-rate-by-route.",
+      "type": "Threshold",
+      "operator": "Above",
+      "threshold": 5,
+      "intervalMinutes": 10,
+      "rangeMinutes": 10,
+      "why": "MEASURED: Sentry held 184 errors in 30 days across the whole project, so a route sustaining 5% for ten minutes is far outside anything this store has done. Not 1%: a single 500 inside a quiet ten minutes with four requests is 25%, and that must not page.",
+      "aplQuery": "['{{dataset}}'] | where event in ('request.completed', 'request.failed') | extend failed = iff(event == 'request.failed' or status >= 500, 1, 0) | summarize requests = count(), error_rate = 100.0 * sum(failed) / count() by route | where requests >= 20 | summarize worst = max(error_rate)"
+    },
+    {
+      "slug": "p95-latency",
+      "name": "p95 latency above 3s on a route",
+      "description": "A route is taking over three seconds at the 95th percentile. Panel: p95-latency-by-route.",
+      "type": "Threshold",
+      "operator": "Above",
+      "threshold": 3000,
+      "intervalMinutes": 15,
+      "rangeMinutes": 15,
+      "why": "BORROWED: docs/ARCHITECTURE-TESTING.md section 5.3 budgets the product page at 800ms and the load gate fails above it. 3000ms is not that gate restated -- this measures real traffic including cold starts, where the k6 gate measures a warmed build under controlled load. It is set where a page has stopped being usable rather than where it has stopped being fast.",
+      "aplQuery": "['{{dataset}}'] | where event == 'request.completed' | summarize requests = count(), p95 = percentile(duration_ms, 95) by route | where requests >= 20 | summarize worst = max(p95)"
+    },
+    {
+      "slug": "payment-finalize-failed",
+      "name": "A payment was charged and the order did not close",
+      "description": "Any finalize_failed at all. Panel: payment-transitions.",
+      "type": "Threshold",
+      "operator": "Above",
+      "threshold": 0,
+      "intervalMinutes": 5,
+      "rangeMinutes": 5,
+      "why": "ZERO IS THE THRESHOLD, and it is the only rule here that has one. The card is charged and the order is open: src/app/api/payments/cardcom/webhook/route.ts calls this the single worst state in the system and already alarms per occurrence. This is the second pair of eyes on it, not the first.",
+      "aplQuery": "['{{dataset}}'] | where event == 'payment.event' and event_type == 'finalize_failed' | summarize failures = count()"
+    },
+    {
+      "slug": "search-outbox-backlog",
+      "name": "Search outbox above 500 pending",
+      "description": "The index queue has stopped draining. Panel: queue-depth.",
+      "type": "Threshold",
+      "operator": "Above",
+      "threshold": 500,
+      "intervalMinutes": 15,
+      "rangeMinutes": 15,
+      "why": "BORROWED EXACTLY: OUTBOX_BACKLOG_WARN in src/app/api/cron/health/route.ts, which carries the reasoning -- production held 21 rows on 2026-09-09, and the queue is MEANT to be non-empty between a product edit and the next sweep. Deliberately the same number as the log warn rather than a second one, because two thresholds for one condition is how they drift apart.",
+      "aplQuery": "['{{dataset}}'] | where event == 'queue.depth' and queue == 'search_outbox' | summarize deepest = max(pending)"
+    },
+    {
+      "slug": "webhook-dead-letters",
+      "name": "A payment webhook is stuck in the dead-letter queue",
+      "description": "Rows nothing automatic will touch again. Panel: webhook-lag.",
+      "type": "Threshold",
+      "operator": "Above",
+      "threshold": 0,
+      "intervalMinutes": 15,
+      "rangeMinutes": 15,
+      "why": "ZERO, for the same reason as finalize_failed: src/app/api/cron/webhook-dlq/route.ts says nothing automatic will touch a stuck row again and only a human opening /admin/queues moves it. A queue whose exit is manual has no healthy non-zero depth.",
+      "aplQuery": "['{{dataset}}'] | where event == 'queue.depth' and queue == 'payment_webhook_dlq' | summarize stuck_rows = max(stuck)"
+    },
+    {
+      "slug": "synthetic-down",
+      "name": "The synthetic probe could not shop the store",
+      "description": "Home, product or checkout did not answer 200. Panel: synthetic-uptime.",
+      "type": "Threshold",
+      "operator": "Above",
+      "threshold": 0,
+      "intervalMinutes": 10,
+      "rangeMinutes": 10,
+      "why": "The probe already retries before recording a failure, so a row here has survived two attempts and is not a dropped packet. This duplicates the GitHub issue that synthetic.yml opens ON PURPOSE: the workflow can only alert while GitHub Actions is up, and 'the thing that watches went down quietly' is the failure this whole section exists to make impossible.",
+      "aplQuery": "['{{dataset}}'] | where event == 'synthetic.probe' and status != 200 | summarize failures = count()"
+    },
+    {
+      "slug": "cache-hit-collapse",
+      "name": "Edge cache hit rate below 50%",
+      "description": "The pages that should be static are being rendered per request. Panel: cache-hit-rate.",
+      "type": "Threshold",
+      "operator": "Below",
+      "threshold": 50,
+      "intervalMinutes": 30,
+      "rangeMinutes": 30,
+      "why": "MEASURED 2026-09-21: nine consecutive probes of all three targets returned x-vercel-cache: HIT, nine times out of nine. Half of that, sustained for half an hour over roughly 36 samples, is not weather. 50% rather than 90% because a deploy legitimately empties the cache and must not page.",
+      "aplQuery": "['{{dataset}}'] | where event == 'synthetic.probe' and status == 200 | summarize samples = count(), hit_rate = 100.0 * countif(cache_status == 'HIT') / count() | where samples >= 12 | project hit_rate"
+    }
+  ]
+}

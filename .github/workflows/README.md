@@ -1,9 +1,9 @@
 # What runs in CI, and what deliberately does not
 
-There are **10** workflow files here, and the absence of an eleventh - a
+There are **11** workflow files here, and the absence of a twelfth - a
 `deploy.yml` - is a decision rather than an oversight. This file records the
 decision so the next person does not add the missing file back, and gives each
-of the ten a section of its own.
+of the eleven a section of its own.
 
 **Measured 2026-09-10: it described five of the ten.** `db-backup.yml`,
 `db-restore-drill.yml`, `load.yml`, `nightly-health.yml` and `security.yml` had
@@ -245,6 +245,55 @@ the load generator and the server are different computers. `docs/CAPACITY.md`
 records what happens when they are the same one - 100 VUs against a local
 `pnpm start` reported a 3.14s homepage p95 for a page that served one user in
 65ms.
+
+## `synthetic.yml`
+
+The five-minute uptime check: `/`, a real product page and `/checkout`, probed
+from outside by `scripts/synthetic-probe.mjs`. Verified by hand before the file
+was written, 2026-09-21 against `https://kenyonexpress.vercel.app`: all three
+answered 200 with `x-vercel-cache: HIT`, in 1.2 to 2.1 seconds. Both failure
+modes were verified too, because a probe nobody has seen go red is a probe
+nobody knows can: a non-existent product slug exits 1 and records `MISS`, and a
+1ms budget exits 1 on all three.
+
+**Why it is not `production-smoke.yml`.** That one asks `/` and `/api/health`,
+once a day. Both are true of every build this project has ever shipped, which
+is exactly how they stayed green through three nights of failing cron jobs
+(`docs/MONITORING.md`, section 7). These three routes are the funnel: a product
+page that 500s and a checkout that 500s are each the whole business being down
+while `/` answers 200.
+
+**Why it does not page on every red run.** At five minutes this fires 288 times
+a day, so two things bound the noise. In the script, a target fails only when
+**both** of two attempts fail, and the latency budget is judged on the better
+of the two -- a check that pages on one dropped packet is a check that gets
+muted inside a week, and a muted check still reads as covered. In the workflow,
+the open issue **is** the state: the first failure opens one and pushes to
+ntfy, a sustained outage gets at most one comment an hour, and a run that
+passes while an issue is open closes it and pushes the recovery. Nothing is
+persisted between runs, so there is no cache to go stale.
+
+**The budget is 5000ms and is loose on purpose.** This is an uptime check. A
+budget tight enough to be a performance gate would flap on runner network
+weather, and performance already has two owners that measure it under
+controlled load: `load.yml` with k6, and Lighthouse CI.
+
+**It probes the `.vercel.app` alias by default, for a measured reason.**
+`kenyonexpress.co.il` has not resolved since the Cloudflare zone went missing;
+re-checked 2026-09-21, `dig` returns nothing at all for A or NS. A probe aimed
+at a name that does not resolve reports DNS every five minutes forever.
+`vars.PRODUCTION_URL` overrides it, `vars.SYNTHETIC_PRODUCT_PATH` overrides the
+slug when the catalogue moves, and `vars.SYNTHETIC_BUDGET_MS` overrides the
+budget.
+
+With `secrets.AXIOM_TOKEN` and `vars.AXIOM_DATASET` set it also ships one
+`synthetic.probe` event per target to the same dataset the app logs to. That is
+what gives `scripts/axiom/dashboards/routes.json` its cache-hit-rate panel: the
+edge cache is not an application fact, so `x-vercel-cache` read from a response
+header by a client outside the deployment is the only source for it that exists.
+
+**Like every scheduled workflow here, it fires only from the default branch.**
+Until this file reaches `main`, it runs zero times.
 
 ## `vercel.json` has no `crons` key, on purpose
 

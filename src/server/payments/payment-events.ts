@@ -172,6 +172,24 @@ export async function recordPaymentEvent(
   event: PaymentEvent,
   admin?: PaymentEventAdmin,
 ): Promise<void> {
+  // MEASURED 2026-09-21: every branch of the money path logs its FAILURES and
+  // none of them logs a success, so the log stream could count payment errors
+  // and could not tell a spike from a busy afternoon. The journal row carries
+  // the detail; this line carries the two dimensions a rate needs and nothing
+  // else -- no ids, no amounts, no customer. It is written here rather than at
+  // the call sites because this function is the single choke point every
+  // transition already goes through, and a per-call-site line would drift the
+  // first time somebody adds a state.
+  //
+  // Before the insert on purpose: the transition happened whether or not the
+  // journal row persisted, and `payment_events.write_failed` below is the
+  // separate fact. A success rate computed from rows that survived the
+  // database would quietly improve during a database outage.
+  log.info('payment.event', {
+    event_type: event.eventType,
+    stage: event.stage ?? null,
+  })
+
   try {
     const client = admin ?? (createAdminClient() as unknown as PaymentEventAdmin)
     const { error } = await client.from('payment_events').insert({

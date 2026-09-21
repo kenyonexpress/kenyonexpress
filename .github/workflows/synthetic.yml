@@ -1,0 +1,203 @@
+name: Synthetic uptime
+
+# The uptime check SECTIONS 41 asks for: homepage, product page and checkout,
+# every five minutes, from outside the deployment.
+#
+# WHY IT IS SEPARATE FROM `production-smoke.yml`. That one runs daily and asks
+# `/` and `/api/health` plus every scheduled cron path. It answers "is the host
+# up and is the deployment current". This answers "can the store be shopped",
+# at a resolution where an outage is caught in minutes rather than by tomorrow
+# morning. They overlap on `/` and nowhere else, and merging them would mean
+# either probing the cron inventory 288 times a day or probing the funnel once.
+#
+# HONEST ABOUT THE SCHEDULER. GitHub fires `schedule` on a best-effort basis and
+# drops runs when the region is busy; `*/5` is an upper bound, not a promise,
+# and under load the real gap is often ten to fifteen minutes. That is worth
+# having and is not worth mistaking for a paid uptime service. It is also the
+# reason a single miss must not page: see the two-attempt rule in the script.
+#
+# `schedule` fires only from the default branch. This file has to reach `main`
+# before a single run happens, which is the trap
+# docs/MONITORING.md section 2 records and scripts-on-a-feature-branch have hit
+# here before.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Override the probed host (default: the vercel.app alias)'
+        required: false
+        type: string
+
+# A run that overlaps its predecessor probes nothing new and doubles the issue
+# traffic. Newer wins: a five-minute check is about now.
+concurrency:
+  group: synthetic-uptime
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    name: Probe the funnel
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No install step, and that is deliberate: scripts/synthetic-probe.mjs
+      # imports nothing. A probe whose own dependency tree can fail to resolve
+      # is a probe that reports its toolchain as an outage.
+      - name: Probe home, product and checkout
+        id: probe
+        continue-on-error: true
+        env:
+          SYNTHETIC_BASE_URL: ${{ inputs.base_url || vars.PRODUCTION_URL || '' }}
+          SYNTHETIC_PRODUCT_PATH: ${{ vars.SYNTHETIC_PRODUCT_PATH || '' }}
+          SYNTHETIC_BUDGET_MS: ${{ vars.SYNTHETIC_BUDGET_MS || '' }}
+          PRODUCTION_SMOKE_HEADER: ${{ secrets.PRODUCTION_SMOKE_HEADER }}
+          # Optional. With both set the probe ships `synthetic.probe` events to
+          # the same dataset the app logs to, which is what gives
+          # scripts/axiom/dashboards/routes.json its cache-hit-rate panel --
+          # the one metric of the seven that has no source inside the app,
+          # because the edge cache is not an application fact.
+          AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
+          AXIOM_DATASET: ${{ vars.AXIOM_DATASET }}
+        run: |
+          set -o pipefail
+          node scripts/synthetic-probe.mjs 2>&1 | tee probe.log
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Summarise the run
+        if: always()
+        run: |
+          {
+            echo '### Synthetic uptime'
+            echo
+            echo '```'
+            cat probe.log 2>/dev/null || echo 'the probe produced no output'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # One issue for an outage, not 288. The rules, in order:
+      #
+      #   failing, nothing open  -> open the issue and push to the phone. This
+      #                             is the transition into an outage, the one
+      #                             moment worth interrupting somebody.
+      #   failing, open and old  -> comment, no push. Bounds a sustained outage
+      #                             to roughly one comment an hour.
+      #   failing, open and new  -> say nothing. The record already exists.
+      #   passing, something open-> close it and push the recovery.
+      #
+      # The open issue IS the state, so nothing has to be persisted between
+      # runs and there is no cache to go stale.
+      - name: Open, update or close the outage issue
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          FAILED: ${{ steps.probe.outcome == 'failure' }}
+          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC || 'kenyon-ofir-limit' }}
+        with:
+          script: |
+            const fs = require('fs')
+            const label = 'synthetic-down'
+            const failed = process.env.FAILED === 'true'
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            const probeLog = fs.existsSync('probe.log') ? fs.readFileSync('probe.log', 'utf8') : ''
+
+            async function push(title, message) {
+              try {
+                await fetch(`https://ntfy.sh/${process.env.NTFY_TOPIC}`, {
+                  method: 'POST',
+                  headers: { Title: title, Priority: 'urgent', Tags: 'rotating_light' },
+                  body: message,
+                })
+              } catch (error) {
+                // A push that fails must not fail the job: the issue is the
+                // record and it has already been written by the time we get here.
+                core.warning(`ntfy push failed: ${error.message}`)
+              }
+            }
+
+            try {
+              await github.rest.issues.createLabel({
+                ...context.repo,
+                name: label,
+                color: 'b60205',
+                description: 'בדיקת ה-uptime של חמש הדקות נכשלה',
+              })
+            } catch (error) {
+              if (error.status !== 422) throw error
+            }
+
+            const { data: open } = await github.rest.issues.listForRepo({
+              ...context.repo, state: 'open', labels: label, per_page: 1,
+            })
+            const existing = open[0]
+
+            if (!failed) {
+              if (!existing) return core.notice('Synthetic probe green; nothing was open.')
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: existing.number,
+                body: `הבדיקה חזרה לירוק.\n\n\`\`\`\n${probeLog.trim()}\n\`\`\`\n\nריצה: ${run}`,
+              })
+              await github.rest.issues.update({
+                ...context.repo, issue_number: existing.number, state: 'closed',
+              })
+              await push('KE synthetic: recovered', `שלושת הנתיבים עונים 200 שוב.\n${run}`)
+              return core.notice(`Closed #${existing.number}: the funnel answers again.`)
+            }
+
+            const body = [
+              'בדיקת ה-uptime של חמש הדקות נכשלה על אחד משלושת נתיבי המשפך.',
+              '',
+              '```',
+              probeLog.trim() || 'the probe produced no output',
+              '```',
+              '',
+              `ריצה: ${run}`,
+              `זמן: ${new Date().toISOString()}`,
+            ].join('\n')
+
+            if (!existing) {
+              const { data: created } = await github.rest.issues.create({
+                ...context.repo,
+                title: `המשפך לא עונה: בדיקת uptime נכשלה ב-${new Date().toISOString().slice(0, 16).replace('T', ' ')}`,
+                body,
+                labels: [label],
+              })
+              await push('KE synthetic: funnel down', `נפתח issue #${created.number}.\n${run}`)
+              return core.notice(`Opened #${created.number}.`)
+            }
+
+            // 55 minutes rather than 60: the schedule drifts, and a window equal
+            // to the interval would skip an hour every time a run ran late.
+            const quietForMs = Date.now() - new Date(existing.updated_at).getTime()
+            if (quietForMs < 55 * 60 * 1000) {
+              return core.notice(
+                `#${existing.number} is already open and was updated ${Math.round(quietForMs / 60000)}m ago; staying quiet.`,
+              )
+            }
+
+            await github.rest.issues.createComment({
+              ...context.repo, issue_number: existing.number, body,
+            })
+            core.notice(`Commented on #${existing.number}: still down.`)
+
+      # The issue is the record; a red run is what shows in the Actions list.
+      # They are not interchangeable, which is why the probe step above is
+      # `continue-on-error` and this one exists.
+      - name: Fail the run if the funnel did not answer
+        if: steps.probe.outcome == 'failure'
+        run: |
+          echo '::error title=Synthetic uptime failed::One of /, the product page or /checkout did not answer 200 within budget. See the issue labelled synthetic-down.'
+          exit 1

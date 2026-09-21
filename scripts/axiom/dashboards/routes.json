@@ -1,0 +1,100 @@
+{
+  "name": "KenyonExpress - Routes, money and queues",
+  "description": "The six panels SECTIONS 41 names: error rate by route, p95 latency by route, payment success rate, webhook lag, queue depth and cache hit rate. Every query reads an event this codebase really emits; axiom-dashboard-contract.test.ts fails the build if that stops being true.",
+  "owner": "X-AXIOM-EVERYONE",
+  "datasets": ["{{dataset}}"],
+  "refreshTime": 300,
+  "schemaVersion": 2,
+  "timeWindowStart": "qr-now-24h",
+  "timeWindowEnd": "qr-now",
+  "charts": [
+    {
+      "id": "error-rate-by-route",
+      "name": "Error rate by route (% of requests answering 5xx or throwing)",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where event in ('request.completed', 'request.failed') | extend failed = iff(event == 'request.failed' or status >= 500, 1, 0) | summarize error_rate = 100.0 * sum(failed) / count() by bin_auto(_time), route"
+      },
+      "colorScheme": "Red"
+    },
+    {
+      "id": "p95-latency-by-route",
+      "name": "p95 latency by route (ms)",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'request.completed' | summarize p95 = percentile(duration_ms, 95) by bin_auto(_time), route"
+      }
+    },
+    {
+      "id": "slowest-routes",
+      "name": "Slowest routes right now (p50 / p95 / p99, ms)",
+      "type": "Table",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'request.completed' | summarize requests = count(), p50 = percentile(duration_ms, 50), p95 = percentile(duration_ms, 95), p99 = percentile(duration_ms, 99) by route | sort by p95 desc | limit 25"
+      }
+    },
+    {
+      "id": "payment-success-rate",
+      "name": "Payment success rate (finalize succeeded / attempted)",
+      "type": "Statistic",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'payment.event' and event_type in ('finalize_succeeded', 'finalize_failed') | summarize success_rate = 100.0 * countif(event_type == 'finalize_succeeded') / count()"
+      },
+      "colorScheme": "Green"
+    },
+    {
+      "id": "payment-transitions",
+      "name": "Money path transitions over time, by state",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'payment.event' | summarize count() by bin_auto(_time), event_type"
+      }
+    },
+    {
+      "id": "webhook-lag",
+      "name": "Webhook lag: p95 handler time, and the dead letters behind it",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where (event == 'request.completed' and route == '/api/payments/cardcom/webhook') or (event == 'queue.depth' and queue == 'payment_webhook_dlq') | summarize p95_handler_ms = percentile(duration_ms, 95), dead_letters = max(pending) by bin_auto(_time)"
+      },
+      "colorScheme": "Orange"
+    },
+    {
+      "id": "queue-depth",
+      "name": "Queue depth, every sweep (not only the bad ones)",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'queue.depth' | summarize pending = max(pending) by bin_auto(_time), queue"
+      },
+      "colorScheme": "Purple"
+    },
+    {
+      "id": "cache-hit-rate",
+      "name": "Cache hit rate at the edge (from the 5-minute synthetic probe)",
+      "type": "TimeSeries",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'synthetic.probe' | summarize hit_rate = 100.0 * countif(cache_status == 'HIT') / count() by bin_auto(_time), target"
+      },
+      "colorScheme": "Blue"
+    },
+    {
+      "id": "synthetic-uptime",
+      "name": "Synthetic probe: status and round trip per target",
+      "type": "Table",
+      "query": {
+        "apl": "['{{dataset}}'] | where event == 'synthetic.probe' | summarize probes = count(), failures = countif(status != 200), p95_ms = percentile(duration_ms, 95), hits = countif(cache_status == 'HIT') by target | sort by failures desc"
+      }
+    }
+  ],
+  "layout": [
+    { "i": "error-rate-by-route", "x": 0, "y": 0, "w": 6, "h": 4 },
+    { "i": "p95-latency-by-route", "x": 6, "y": 0, "w": 6, "h": 4 },
+    { "i": "payment-success-rate", "x": 0, "y": 4, "w": 3, "h": 3 },
+    { "i": "payment-transitions", "x": 3, "y": 4, "w": 9, "h": 3 },
+    { "i": "webhook-lag", "x": 0, "y": 7, "w": 6, "h": 4 },
+    { "i": "queue-depth", "x": 6, "y": 7, "w": 6, "h": 4 },
+    { "i": "cache-hit-rate", "x": 0, "y": 11, "w": 6, "h": 4 },
+    { "i": "slowest-routes", "x": 6, "y": 11, "w": 6, "h": 4 },
+    { "i": "synthetic-uptime", "x": 0, "y": 15, "w": 12, "h": 4 }
+  ]
+}

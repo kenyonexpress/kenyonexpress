@@ -1,5 +1,6 @@
 import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
+import { recordQueueDepth } from '@/lib/observability/queue-depth'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -86,6 +87,11 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       },
     })
   }
+
+  // Counted on every sweep already; now it is also recorded on every sweep.
+  // `webhook_dlq.stuck` below stays exactly as it was: it wakes somebody, and
+  // a queue that is merely deep should not.
+  recordQueueDepth('payment_webhook_dlq', { pending: sweep.depth, stuck: sweep.stuck })
 
   if (sweep.stuck > 0) {
     // Nothing automatic will touch these again. The only thing that moves them

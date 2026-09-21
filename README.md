@@ -99,7 +99,7 @@ LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
 
 ## תשתית ותפעול
 
-- **‏CI:** ‏10 workflows ב-`.github/workflows/`, וגם מה שבמכוון **אינו** רץ
+- **‏CI:** ‏11 workflows ב-`.github/workflows/`, וגם מה שבמכוון **אינו** רץ
   שם מתועד ב-`.github/workflows/README.md`.
 - **תקריות:** `docs/RUNBOOK.md` (נכתב להיקרא ב-03:00), ‏`docs/RUNBOOK-OPS.md`.
 - **ניטור:** `docs/MONITORING.md` — כולל מי מהשומרים עיוור כרגע ולמה.

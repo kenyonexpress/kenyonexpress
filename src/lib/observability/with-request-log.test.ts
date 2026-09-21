@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { log } from './log'
 import { getRequestContext } from './request-context'
 import { REQUEST_ID_HEADER } from './request-id'
-import { withRequestLog } from './with-request-log'
+import { HIGH_VOLUME_ROUTES, withRequestLog } from './with-request-log'
 
 /** Only the parts of NextRequest the wrapper touches. */
 function request(init: { id?: string; method?: string } = {}): NextRequest {
@@ -152,5 +152,63 @@ describe('withRequestLog', () => {
     expect(getRequestContext()).toBeUndefined()
     log.error('after.request', {})
     expect(JSON.parse((errorLine.mock.calls[0] as [string])[0]).request_id).toBeNull()
+  })
+})
+
+/**
+ * The level the 2xx completion line is written at, which decides whether the
+ * line exists at all: `log.ts` defaults the threshold to `info`, so `debug`
+ * here means "never emitted in production" rather than "cheap".
+ */
+describe('withRequestLog completion level', () => {
+  let infoLine: ReturnType<typeof vi.spyOn>
+  let warnLine: ReturnType<typeof vi.spyOn>
+  let errLine: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    infoLine = vi.spyOn(console, 'log').mockImplementation(() => {})
+    warnLine = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    errLine = vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  function lineFrom(spy: ReturnType<typeof vi.spyOn>): Record<string, unknown> | undefined {
+    for (const call of spy.mock.calls) {
+      const parsed = JSON.parse(String(call[0])) as Record<string, unknown>
+      if (parsed.event === 'request.completed') return parsed
+    }
+    return undefined
+  }
+
+  it('writes a 2xx at info on an ordinary route, so p95 has a source', async () => {
+    const handler = withRequestLog('/api/supplier/statement', async () => new Response(null))
+    await handler(request())
+
+    const line = lineFrom(infoLine)
+    expect(line?.level).toBe('info')
+    expect(line?.route).toBe('/api/supplier/statement')
+    expect(typeof line?.duration_ms).toBe('number')
+  })
+
+  it('keeps a 2xx at debug on the three high-volume routes', async () => {
+    for (const route of HIGH_VOLUME_ROUTES) {
+      infoLine.mockClear()
+      const handler = withRequestLog(route, async () => new Response(null))
+      await handler(request())
+      expect(lineFrom(infoLine), `${route} should stay debug`).toBeUndefined()
+    }
+  })
+
+  it('still warns on 4xx and errors on 5xx, high volume or not', async () => {
+    const quiet = withRequestLog('/api/a', async () => new Response(null, { status: 429 }))
+    await quiet(request())
+    expect(lineFrom(warnLine)?.level).toBe('warn')
+
+    const loud = withRequestLog('/api/cart', async () => new Response(null, { status: 500 }))
+    await loud(request())
+    expect(lineFrom(errLine)?.level).toBe('error')
   })
 })

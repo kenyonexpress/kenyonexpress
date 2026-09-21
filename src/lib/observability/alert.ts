@@ -19,6 +19,49 @@
 const TOPIC = process.env.NTFY_TOPIC ?? 'kenyon-ofir-limit'
 const BASE = process.env.NTFY_BASE_URL ?? 'https://ntfy.sh'
 
+/**
+ * The second sink, and the reason it is a URL and not an SDK.
+ *
+ * SECTIONS 34 recorded Slack as deliberately not built, on the grounds that
+ * there was no workspace to send to and a sink with no destination reports to
+ * nobody. That was the right call about a destination and the wrong shape for
+ * the code: it left the operator with no way to add one later except a commit.
+ *
+ * Every other optional integration here -- Resend, Sentry, Meilisearch, QStash,
+ * Axiom -- is wired and inert without its variable, and the operator turns it
+ * on by setting the variable. This is that, for alerting. `SLACK_WEBHOOK_URL`
+ * unset means not a single byte leaves the process, which is the state today;
+ * set means the same alert that buzzes the phone also lands in a channel where
+ * more than one person can see it.
+ *
+ * Read once at module load for the same reason `log.ts` gives: the variable
+ * cannot change inside a running process.
+ */
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL
+
+/**
+ * Fire-and-forget, and strictly additive: ntfy stays the sink whose result
+ * `sendAlert` returns. A Slack outage must not be able to turn a delivered
+ * push into a reported failure, and an alert path that awaits two hops is an
+ * alert path with two ways to hang.
+ */
+function fanOutToSlack(args: AlertArgs): void {
+  if (!SLACK_WEBHOOK_URL) return
+
+  void fetch(SLACK_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    // `text` only. Block Kit would render better and would also be a schema
+    // that can be wrong; this payload is accepted by an incoming webhook, a
+    // workflow webhook and every self-hosted thing that imitates one.
+    body: JSON.stringify({ text: `*${args.title}*\n${args.message}` }),
+    signal: AbortSignal.timeout(4000),
+  }).catch(() => {
+    // Same rule as the ntfy path: an error thrown while reporting an error
+    // becomes the error the customer sees.
+  })
+}
+
 export type AlertPriority = 'default' | 'high' | 'urgent'
 
 export type AlertArgs = {
@@ -35,6 +78,8 @@ export type AlertArgs = {
  */
 export async function sendAlert(args: AlertArgs): Promise<boolean> {
   if (process.env.ALERTS_ENABLED === 'false') return false
+
+  fanOutToSlack(args)
 
   try {
     const res = await fetch(`${BASE}/${TOPIC}`, {
