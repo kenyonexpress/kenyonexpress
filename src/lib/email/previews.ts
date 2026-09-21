@@ -198,6 +198,14 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
     product_name: 'חיתולי פמפרס',
     product_slug: 'חיתולי-פמפרס',
   }),
+  fromOutbox('payout_statement_ready', 'דוח תשלום מוכן לספק', 'supplier', {
+    statement_number: 'PS-000001',
+    supplier_name: 'ספק בדיקות אוטומטיות',
+    period_start: '2026-09-01',
+    period_end: '2026-09-22',
+    total_payout_agorot: 111905,
+    line_count: 5,
+  }),
   fromOutbox('supplier_sale', 'מכירה חדשה לספק', 'supplier', {
     supplier_name: 'סוויטה ספא בוטיק',
     order_ref: ORDER_REF,

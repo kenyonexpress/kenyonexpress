@@ -47,6 +47,10 @@ on:
     - cron: '30 2 * * *'
     - cron: '40 3 * * *'
     - cron: '0 4 * * *'
+    # 04:40: payout-run, after settlement-reconcile has checked the split it
+    # pays out of. A statement drawn from a split the reconcile would flag is a
+    # statement an admin would have to cancel.
+    - cron: '40 4 * * *'
     # 04:20: settlement-reconcile, twenty minutes after reconcile on purpose.
     # reconcile asks the terminal what it charged; this asks how that charge
     # was split. Running them in the other order would report a split as wrong

@@ -1,5 +1,13 @@
 # Apply order
 
+## 2026-09-22: 233, any order, one notification kind
+
+`233_payout_statement_ready_kind.sql` rebuilds `notification_outbox_kind_check`
+from the names the LIVE constraint carries plus `payout_statement_ready`. No
+ordering rule: it cannot drop a name 214, 227 or 229 add, whichever runs first.
+**Reversal:** rebuild the constraint without the name, only while no row of
+that kind exists.
+
 ## 2026-09-21: 232, after 225, independent of everything else
 
 `232_supplier_self_service.sql` (section 54). Two nullable text columns on

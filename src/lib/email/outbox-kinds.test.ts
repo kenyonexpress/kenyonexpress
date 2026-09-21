@@ -103,7 +103,10 @@ const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
  * real limit of the gate and worth naming rather than leaving to be
  * rediscovered.
  */
-const RENDERS_BUT_CONSTRAINT_REJECTS: readonly string[] = ['settlement_gap']
+const RENDERS_BUT_CONSTRAINT_REJECTS: readonly string[] = [
+  'settlement_gap',
+  'payout_statement_ready',
+]
 
 // Re-measured 2026-09-09 twice. The first reading, when 183 restated the
 // constraint, took the live list from twelve to fourteen: `account_deleted`

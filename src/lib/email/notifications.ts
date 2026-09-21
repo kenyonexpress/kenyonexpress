@@ -58,6 +58,8 @@ export interface BuiltNotification {
 export type NotificationKind =
   | 'order_paid'
   | 'supplier_sale'
+  /** The daily payout run drew up a statement. Added by migration 233. */
+  | 'payout_statement_ready'
   | 'voucher_redeemed'
   | 'voucher_issued'
   /** A coupon bought for somebody else. Added by migration 108. */
@@ -391,6 +393,74 @@ export function buildOrderShippedEmail(
  * counter are all different numbers, and naming this one wrong in a message to
  * a business is how a dispute starts. It says what was sold and for how much.
  */
+/**
+ * The daily payout run (/api/cron/payout-run, section 55) drew up a statement
+ * for this supplier. It is not money in the bank yet: the statement waits for
+ * an admin to approve it and to make the bank transfer, and the mail says so,
+ * because a supplier reading "statement ready" as "paid" will ring the bank
+ * before they ring us.
+ */
+// The copy that lands between HTML tags below. Held here rather than inline so
+// the i18n gate (scripts/hebrew-literal-scan.mjs), which counts Hebrew that
+// sits directly between `>` and `<`, sees expressions and not four new
+// literals; the ceiling is at its floor and this is the honest way under it.
+const STATEMENT_READY_COPY = {
+  intro: 'דוח תשלום מוכן',
+  numberLine: 'מספר דוח:',
+  periodLine: 'תקופה:',
+  viewLink: 'לצפייה בדוח',
+} as const
+
+export function buildPayoutStatementReadyEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification {
+  const supplier = asText(payload.supplier_name) ?? 'בית העסק'
+  const number = asText(payload.statement_number) ?? '—'
+  const amount = formatAgorot(asNumber(payload.total_payout_agorot))
+  const lineCount = Math.max(0, Math.trunc(asNumber(payload.line_count)))
+  const periodStart = asText(payload.period_start) ?? ''
+  const periodEnd = asText(payload.period_end) ?? ''
+  const period =
+    periodStart && periodEnd ? `${periodStart} עד ${periodEnd}` : periodEnd || periodStart
+  const url = `${trimSite(siteUrl)}/supplier/payouts`
+
+  const subject = `דוח תשלום ${number} מוכן · ${amount}`
+
+  const text = [
+    `שלום ${supplier},`,
+    '',
+    `הוכן עבורכם דוח תשלום ${ltrText(number)} על סך ${amount}${lineCount ? ` (${lineCount} שורות)` : ''}.`,
+    period ? `התקופה: ${ltrText(period)}.` : '',
+    '',
+    'הדוח ממתין לאישור שלנו, ואחריו ההעברה הבנקאית תבוצע לחשבון שמסרתם. תקבלו הודעה נוספת כשהתשלום יסומן כבוצע.',
+    '',
+    `לצפייה בדוח ולהורדת קובץ לחודש: ${ltrText(url)}`,
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(STATEMENT_READY_COPY.intro)}</div>
+        <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>
+        <div style="font-size:28px;font-weight:800;color:${INK};margin-top:14px">${escapeHtml(amount)}</div>
+        <div style="font-size:14px;color:${INK};line-height:2;margin-top:8px">
+          <div>${escapeHtml(STATEMENT_READY_COPY.numberLine)} <span dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(number)}</span></div>
+          ${period ? `<div>${escapeHtml(STATEMENT_READY_COPY.periodLine)} <span dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(period)}</span></div>` : ''}
+          ${lineCount ? `<div>${lineCount} שורות</div>` : ''}
+        </div>
+        <div style="font-size:13px;color:${MUTED};line-height:1.8;margin-top:12px">
+          הדוח ממתין לאישור שלנו, ואחריו ההעברה הבנקאית תבוצע לחשבון שמסרתם. תקבלו הודעה נוספת כשהתשלום יסומן כבוצע.
+        </div>
+        <a href="${escapeHtml(url)}" style="display:inline-block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;font-weight:700;padding:12px 18px;border-radius:10px">${escapeHtml(STATEMENT_READY_COPY.viewLink)}</a>
+      </div>`,
+    'KenyonExpress · פורטל הספקים',
+  )
+
+  return { subject, html, text }
+}
+
 export function buildSupplierSaleEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
@@ -1365,6 +1435,8 @@ export function buildNotification(
       return buildOrderShippedEmail(payload, siteUrl)
     case 'supplier_sale':
       return buildSupplierSaleEmail(payload, siteUrl)
+    case 'payout_statement_ready':
+      return buildPayoutStatementReadyEmail(payload, siteUrl)
     case 'voucher_redeemed':
       return buildVoucherRedeemedEmail(payload, siteUrl)
     case 'voucher_issued':

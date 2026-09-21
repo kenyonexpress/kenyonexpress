@@ -174,6 +174,7 @@ one.
 | [MOBILE-RELEASE.md](MOBILE-RELEASE.md) | ✅ | Verified 2026-09-02, code and production both. |
 | [MONITORING.md](MONITORING.md) | ✅ | נמדד ב-09.09.2026: היסטוריית ריצות אמיתית מ-GitHub Actions, משתנים וסודות |
 | [PERFORMANCE-BUDGET.md](PERFORMANCE-BUDGET.md) | ✅ | Measured 2026-09-06 against a real pnpm start build on port 3311, with |
+| [PAYOUT-ENGINE.md](PAYOUT-ENGINE.md) | ✅ | ‏SECTIONS 55. נבנה ‏22.09.2026: ריצת תשלומים יומית מהיומן, מה לא אוטומטי ולמה, ומה נמדד. |
 | [POST-LAUNCH-BACKLOG.md](POST-LAUNCH-BACKLOG.md) | ✅ | Everything deliberately deferred, with the measurement or the argument behind |
 | [RELEASE-PROCESS.md](RELEASE-PROCESS.md) | ✅ | back. |
 | [RELEASE-v1.0-MERGE-PLAN.md](RELEASE-v1.0-MERGE-PLAN.md) | ✅ | Written 2026-09-02. release/v1.0 is cut from closeout/v1-final at the tip |

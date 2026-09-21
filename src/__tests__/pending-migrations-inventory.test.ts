@@ -953,6 +953,7 @@ describe('the pending migration inventory', () => {
       // not be named here even by someone trying to name it.
       '231_pending_exports_deletions.sql',
       '232_supplier_self_service.sql',
+      '233_payout_statement_ready_kind.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

@@ -104,6 +104,7 @@ file is in a repository.
 11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 12 https://kenyonexpress.vercel.app/api/cron/weekly-digest       GET  0 4 * * 5     Authorization: Bearer <CRON_SECRET>
 13 https://kenyonexpress.vercel.app/api/cron/settlement-reconcile GET  20 4 * * *    Authorization: Bearer <CRON_SECRET>
+14 https://kenyonexpress.vercel.app/api/cron/payout-run GET  40 4 * * *    Authorization: Bearer <CRON_SECRET>
 14 https://kenyonexpress.vercel.app/api/cron/anonymize-user-data  GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
 ```
 
@@ -143,6 +144,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 | 13 | 04:20 daily | `20 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/settlement-reconcile` |
+| 14 | 04:40 daily | `40 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/payout-run` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -168,6 +170,10 @@ timing changes with the scheduler.
   backoff, then it waits for a person at `/admin/queues`. It calls no provider,
   so unlike `stranded-payments` it still works with no Cardcom credentials.
 - **`reconcile`** matches the day's payments against orders.
+- **`payout-run`** draws up a payout statement per supplier from paid physical
+  lines past their hold and over the supplier's minimum, twenty minutes after
+  settlement-reconcile has checked the split it pays out of. It never moves
+  money: an admin approves and marks paid (docs/PAYOUT-ENGINE.md).
 - **`settlement-reconcile`** matches each paid order LINE against the split it
   says it was sold under, and both against the money journal. **04:20, twenty
   minutes after `reconcile`, and the order matters**: `reconcile` establishes
