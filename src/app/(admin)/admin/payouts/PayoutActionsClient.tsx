@@ -1,12 +1,13 @@
 'use client'
 
-import { canApprove, canCancel, canMarkPaid, isHeld } from '@/lib/admin/payouts'
+import { canAdjust, canApprove, canCancel, canMarkPaid, isHeld } from '@/lib/admin/payouts'
 import {
+  addPayoutAdjustment,
   approvePayoutStatement,
   cancelPayoutStatement,
   markPayoutStatementPaid,
 } from '@/server/actions/admin/payouts'
-import { BadgeCheck, Ban, Banknote } from 'lucide-react'
+import { BadgeCheck, Ban, Banknote, SlidersHorizontal } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
@@ -28,6 +29,9 @@ export default function PayoutActionsClient({
   const [pending, startTransition] = useTransition()
   const [paying, setPaying] = useState(false)
   const [reference, setReference] = useState('')
+  const [adjusting, setAdjusting] = useState(false)
+  const [amount, setAmount] = useState('')
+  const [reason, setReason] = useState('')
 
   const row = { status, rolled_over: rolledOver, available_at: availableAt }
   // The trigger from migration 051 refuses a payment before every line has
@@ -41,6 +45,53 @@ export default function PayoutActionsClient({
       if (result.error) toast.error(result.error)
       else toast.success(result.success ?? 'בוצע')
     })
+  }
+
+  if (adjusting) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          inputMode="decimal"
+          placeholder="סכום בש״ח, שלילי לניכוי"
+          aria-label={`סכום התאמה לדוח ${statementNumber}`}
+          className="w-36 rounded-lg border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+        />
+        <input
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="סיבה (חובה)"
+          aria-label={`סיבת התאמה לדוח ${statementNumber}`}
+          className="w-48 rounded-lg border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+        />
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() =>
+            run(async () => {
+              const result = await addPayoutAdjustment({ statementId, amountIls: amount, reason })
+              if (!result.error) {
+                setAdjusting(false)
+                setAmount('')
+                setReason('')
+              }
+              return result
+            })
+          }
+          className="rounded-lg bg-brand-dark px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black disabled:opacity-60"
+        >
+          רישום התאמה
+        </button>
+        <button
+          type="button"
+          onClick={() => setAdjusting(false)}
+          className="text-xs text-gray-500 hover:underline"
+        >
+          ביטול
+        </button>
+      </div>
+    )
   }
 
   if (paying) {
@@ -105,6 +156,18 @@ export default function PayoutActionsClient({
         >
           <Banknote size={13} />
           תשלום
+        </button>
+      )}
+
+      {canAdjust(row) && (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => setAdjusting(true)}
+          className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+        >
+          <SlidersHorizontal size={13} />
+          התאמה
         </button>
       )}
 

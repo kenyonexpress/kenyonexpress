@@ -20,6 +20,7 @@ export const ADMIN_SECTIONS = [
   { href: '/admin/phases', staffAllowed: false },
   { href: '/admin/subscriptions', staffAllowed: false },
   { href: '/admin/audit-log', staffAllowed: false },
+  { href: '/admin/settings', staffAllowed: false },
 ] as const
 
 // Whether a role may access an admin section identified by an href (exact or a

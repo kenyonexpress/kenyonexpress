@@ -119,3 +119,32 @@ export const markPaidSchema = z.object({
 export function shekelsFromIls(value: number | string | null | undefined): string {
   return sharedShekelsFromIls(value)
 }
+
+/**
+ * A manual adjustment line on a live statement.
+ *
+ * Signed, in agorot, with a reason: a goodwill top-up for a damaged parcel is
+ * positive, a deduction for a returned unit is negative. Bounded at 10,000 ILS
+ * either way, which is above any single statement measured so far and below
+ * the number a typo adds. The reason is mandatory and travels to the line's
+ * `description` and to the audit row, so a statement never carries money
+ * nobody can explain.
+ */
+export const ADJUSTMENT_MAX_AGOROT = 1_000_000
+export const ADJUSTMENT_MIN_REASON = 5
+
+export const adjustmentSchema = z.object({
+  statementId: z.string().uuid('מזהה לא תקין'),
+  amountAgorot: z
+    .number()
+    .int('סכום ההתאמה חייב להיות באגורות שלמות')
+    .refine((n) => n !== 0, 'סכום ההתאמה לא יכול להיות אפס')
+    .refine((n) => Math.abs(n) <= ADJUSTMENT_MAX_AGOROT, 'התאמה מוגבלת ל-10,000 ₪ לכל כיוון'),
+  reason: z.string().trim().min(ADJUSTMENT_MIN_REASON, 'נדרשת סיבה להתאמה').max(300),
+})
+
+/** Only a statement nobody has approved yet may change what it says is owed. */
+export function canAdjust(row: { status: string; rolled_over?: boolean | null }): boolean {
+  const state = payoutState(row)
+  return state === 'draft' || state === 'pending_approval'
+}

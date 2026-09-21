@@ -19,6 +19,8 @@ export const metadata = { title: 'תשלומים לספקים' }
 
 const paramsSchema = baseListParamsSchema.extend({
   state: z.enum(['all', 'open', 'rolled_over', 'paid']).catch('all'),
+  // The per-supplier ledger: the supplier page links here with its id.
+  supplier: z.string().uuid().optional().catch(undefined),
 })
 
 type StatementRow = {
@@ -85,6 +87,7 @@ export default async function AdminPayoutsPage(props: {
   } else if (params.state === 'paid') {
     query = query.eq('status', 'paid')
   }
+  if (params.supplier) query = query.eq('supplier_id', params.supplier)
 
   const { data, count } = await query
     .order('period_start', { ascending: false })
@@ -215,11 +218,25 @@ export default async function AdminPayoutsPage(props: {
         defaultEnd={period.end}
       />
 
+      {params.supplier && (
+        <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700">
+          מוצגים רק הדוחות של ספק אחד:{' '}
+          {supplierRows?.find((s) => s.id === params.supplier)?.name ?? params.supplier}.{' '}
+          <a href="/admin/payouts" className="underline">
+            כל הספקים
+          </a>
+          {' · '}
+          <a href={`/api/admin/payouts/ledger?supplier=${params.supplier}`} className="underline">
+            ייצוא יומן CSV
+          </a>
+        </p>
+      )}
+
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <a
             key={f.key}
-            href={`/admin/payouts?state=${f.key}`}
+            href={`/admin/payouts?state=${f.key}${params.supplier ? `&supplier=${params.supplier}` : ''}`}
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
               params.state === f.key
                 ? 'bg-brand-dark text-white'
@@ -236,13 +253,23 @@ export default async function AdminPayoutsPage(props: {
         columns={columns}
         rowKey={(row) => row.id}
         basePath="/admin/payouts"
-        params={{ state: params.state, per: params.per, page: params.page }}
+        params={{
+          state: params.state,
+          supplier: params.supplier,
+          per: params.per,
+          page: params.page,
+        }}
         emptyMessage="אין ריצות תשלום בטווח הזה"
       />
 
       <TablePagination
         basePath="/admin/payouts"
-        params={{ state: params.state, per: params.per, page: params.page }}
+        params={{
+          state: params.state,
+          supplier: params.supplier,
+          per: params.per,
+          page: params.page,
+        }}
         page={params.page}
         perPage={params.per}
         total={total}

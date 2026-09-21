@@ -163,7 +163,23 @@ export default async function AuditLogPage(props: {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">לוג פעילות</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-gray-900">לוג פעילות</h1>
+        <a
+          href={`/api/admin/audit-log/csv?${new URLSearchParams(
+            Object.entries({
+              action: params.action,
+              entity: params.entity,
+              actor: params.actor,
+              from: params.from,
+              to: params.to,
+            }).filter((entry): entry is [string, string] => Boolean(entry[1])),
+          ).toString()}`}
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-black/[0.04]"
+        >
+          ייצוא CSV (לפי המסננים)
+        </a>
+      </div>
 
       <FilterBar
         basePath="/admin/audit-log"

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ADJUSTMENT_MAX_AGOROT,
   PAYOUT_STATE_LABELS,
+  adjustmentSchema,
+  canAdjust,
   canApprove,
   canCancel,
   canMarkPaid,
@@ -131,5 +134,31 @@ describe('shekelsFromIls', () => {
     expect(shekelsFromIls('1234.5')).toBe('⁦1,234.50 ₪⁩')
     expect(shekelsFromIls(0)).toBe('⁦0.00 ₪⁩')
     expect(shekelsFromIls(null)).toBe('⁦0.00 ₪⁩')
+  })
+})
+
+describe('manual adjustments', () => {
+  it('are allowed only before approval', () => {
+    expect(canAdjust({ status: 'draft' })).toBe(true)
+    expect(canAdjust({ status: 'pending_approval' })).toBe(true)
+    expect(canAdjust({ status: 'approved' })).toBe(false)
+    expect(canAdjust({ status: 'paid' })).toBe(false)
+    expect(canAdjust({ status: 'cancelled', rolled_over: true })).toBe(false)
+  })
+
+  it('take a signed integer amount in agorot and a reason', () => {
+    const base = {
+      statementId: '00000000-0000-4000-8000-000000000001',
+      reason: 'פיצוי על אריזה פגומה',
+    }
+    expect(adjustmentSchema.safeParse({ ...base, amountAgorot: -1250 }).success).toBe(true)
+    expect(adjustmentSchema.safeParse({ ...base, amountAgorot: 0 }).success).toBe(false)
+    expect(adjustmentSchema.safeParse({ ...base, amountAgorot: 12.5 }).success).toBe(false)
+    expect(
+      adjustmentSchema.safeParse({ ...base, amountAgorot: ADJUSTMENT_MAX_AGOROT + 1 }).success,
+    ).toBe(false)
+    expect(adjustmentSchema.safeParse({ ...base, amountAgorot: 100, reason: 'קצר' }).success).toBe(
+      false,
+    )
   })
 })

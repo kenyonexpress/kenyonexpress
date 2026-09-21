@@ -5,8 +5,11 @@ import { COUPON_STATUS_LABELS, labelFor } from '@/lib/admin/labels'
 import { MAX_MANUAL_CREDIT_ILS } from '@/lib/admin/manual-credit'
 import { canWriteSection } from '@/lib/admin/permissions'
 import { ROLE_LABELS, requireSection } from '@/lib/admin/rbac'
+import { isBanned } from '@/lib/admin/user-ban'
 import { agorot } from '@/lib/commerce/money'
+import { formatDate } from '@/lib/i18n/format'
 import { shekels, shekelsFromIlsRounded } from '@/lib/money-format'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { ADMIN_WALLET_LEDGER_CAP } from '@/lib/wallet/admin-view'
 import { walletReasonLabel } from '@/server/queries/account'
@@ -14,6 +17,7 @@ import { getCustomerTimeline, listCustomerEmails } from '@/server/queries/admin-
 import { getAdminWalletView } from '@/server/queries/admin-wallet'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import UserBanClient from '../UserBanClient'
 import UserRoleClient from '../UserRoleClient'
 
 export const metadata = { title: 'משתמש 360' }
@@ -21,7 +25,7 @@ export const metadata = { title: 'משתמש 360' }
 export default async function AdminUserDetailPage(props: {
   params: Promise<{ id: string }>
 }) {
-  const { role: callerRole } = await requireSection('users')
+  const { role: callerRole, userId: callerId } = await requireSection('users')
   const { id } = await props.params
 
   const supabase = await createClient()
@@ -32,6 +36,18 @@ export default async function AdminUserDetailPage(props: {
     .single()
 
   if (!profile) notFound()
+
+  // `banned_until` lives on auth.users, which PostgREST does not expose; the
+  // Auth admin API is the one reader. A failure here renders "unknown" rather
+  // than "not banned", because the two are not the same answer.
+  const { data: authUser, error: authError } = await createAdminClient().auth.admin.getUserById(id)
+  const bannedUntil =
+    (authUser?.user as { banned_until?: string | null } | undefined)?.banned_until ?? null
+  const banState: 'banned' | 'active' | 'unknown' = authError
+    ? 'unknown'
+    : isBanned(bannedUntil)
+      ? 'banned'
+      : 'active'
 
   // The wallet is read through getAdminWalletView, which goes to
   // wallet_accounts and v_wallet_ledger. This page used to read
@@ -116,6 +132,23 @@ export default async function AdminUserDetailPage(props: {
               />
             </div>
           )}
+          <div className="mt-4 border-t border-black/5 pt-3">
+            <p className="mb-2 text-xs text-black/50">
+              חסימה:{' '}
+              {banState === 'banned' ? (
+                <span className="font-semibold text-red-600">
+                  חסום עד {formatDate(bannedUntil ?? '')}
+                </span>
+              ) : banState === 'active' ? (
+                <span className="text-green-700">לא חסום</span>
+              ) : (
+                <span className="text-amber-700">לא ידוע ({authError?.message})</span>
+              )}
+            </p>
+            {canEditRoles && banState !== 'unknown' && profile.id !== callerId && (
+              <UserBanClient userId={profile.id} banned={banState === 'banned'} />
+            )}
+          </div>
         </section>
 
         <section className="rounded-xl border border-black/10 bg-white p-5">

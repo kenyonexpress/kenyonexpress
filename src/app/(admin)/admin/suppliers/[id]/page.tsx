@@ -1,7 +1,10 @@
 import SupplierForm from '@/components/admin/SupplierForm'
+import { ledgerTotals } from '@/lib/admin/payout-ledger'
 import { requireSection } from '@/lib/admin/rbac'
 import { summarizeOnboarding } from '@/lib/admin/supplier-onboarding'
+import { shekelsFromIls } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { readSupplierLedger } from '@/server/queries/payout-ledger'
 import type { Supplier } from '@/types/database'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -45,6 +48,9 @@ export default async function EditSupplierPage({ params }: Props) {
 
   if (!supplier) notFound()
 
+  const ledger = await readSupplierLedger(id)
+  const ledgerSummary = ledgerTotals(ledger.failed ? [] : ledger.lines)
+
   const productRows = products ?? []
 
   // Members carry only a user_id; the readable identity comes from profiles.
@@ -78,6 +84,47 @@ export default async function EditSupplierPage({ params }: Props) {
       />
 
       <SupplierForm supplier={supplier as Supplier} productCount={productRows.length} />
+
+      <section className="bg-white border border-gray-200 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">יומן תשלומים</h2>
+        {ledger.failed ? (
+          <p className="text-sm text-red-600">יומן התשלומים לא נטען: {ledger.reason}</p>
+        ) : ledger.lines.length === 0 ? (
+          <p className="text-sm text-gray-400">אין עדיין שורות תשלום לספק הזה</p>
+        ) : (
+          <dl className="grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <dt className="text-xs text-gray-500">שורות</dt>
+              <dd className="font-semibold tabular-nums">{ledgerSummary.lines}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500">סה"כ לתשלום (דוחות חיים)</dt>
+              <dd className="font-semibold tabular-nums">
+                {shekelsFromIls(ledgerSummary.owedIls)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500">מתוכם שולם</dt>
+              <dd className="font-semibold tabular-nums">
+                {shekelsFromIls(ledgerSummary.paidIls)}
+              </dd>
+            </div>
+          </dl>
+        )}
+        <p className="mt-3 flex flex-wrap gap-3 text-xs">
+          <Link href={`/admin/payouts?supplier=${id}`} className="text-brand hover:underline">
+            דוחות התשלום של הספק
+          </Link>
+          {!ledger.failed && ledger.lines.length > 0 && (
+            <a
+              href={`/api/admin/payouts/ledger?supplier=${id}`}
+              className="text-brand hover:underline"
+            >
+              ייצוא היומן ל-CSV
+            </a>
+          )}
+        </p>
+      </section>
 
       <section className="bg-white border border-gray-200 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">

@@ -1,8 +1,14 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
-import { generatePayoutSchema, markPaidSchema } from '@/lib/admin/payouts'
+import {
+  adjustmentSchema,
+  canAdjust,
+  generatePayoutSchema,
+  markPaidSchema,
+} from '@/lib/admin/payouts'
 import { type AdminSessionInfo, requireSection } from '@/lib/admin/rbac'
+import { agorot, agorotToIls, parseIls } from '@/lib/money'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
@@ -228,6 +234,123 @@ async function runCancelPayoutStatement(statementId: string): Promise<ActionResu
 
   refresh()
   return { success: 'הדוח בוטל והשורות שוחררו לריצה הבאה' }
+}
+
+/**
+ * Manual adjustment: one `adjustment` line and the statement total moved by
+ * the same amount.
+ *
+ * Not an RPC, because none exists for it and this repository does not apply
+ * migrations. Two writes, so the order matters: the line first, and if the
+ * total then fails to move the line is deleted again. A line without its
+ * total would print a statement whose sum disagrees with its rows; a total
+ * without its line would move money nobody can point at. Neither is left
+ * behind. `gross_ils` and `platform_fee_ils` stay 0: an adjustment is money
+ * between the platform and the supplier, not a sale, so it changes neither
+ * GMV nor the fee.
+ */
+async function runAddPayoutAdjustment(input: {
+  statementId: string
+  amountIls: string
+  reason: string
+}): Promise<ActionResult> {
+  const session = await guard()
+  if (!session) return { error: 'אין הרשאה' }
+
+  let amountAgorot: number
+  try {
+    amountAgorot = parseIls(input.amountIls)
+  } catch {
+    return { error: 'סכום לא תקין' }
+  }
+  const parsed = adjustmentSchema.safeParse({
+    statementId: input.statementId,
+    amountAgorot,
+    reason: input.reason,
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'קלט לא תקין' }
+  }
+  const { statementId, reason } = parsed.data
+  const amount = agorot(parsed.data.amountAgorot)
+
+  const supabase = await createClient()
+  const { data: statement, error: readError } = await supabase
+    .from('payout_statements')
+    .select('id, statement_number, status, rolled_over, total_payout_ils, supplier_id')
+    .eq('id', statementId)
+    .is('deleted_at', null)
+    .maybeSingle()
+  if (readError) return { error: reportError(readError, 'payout_statements') }
+  if (!statement) return { error: 'דוח לא נמצא' }
+  if (!canAdjust(statement)) {
+    return { error: 'אפשר להתאים רק דוח שעדיין לא אושר. בטל את האישור או צור דוח חדש.' }
+  }
+
+  const { data: line, error: lineError } = await supabase
+    .from('payout_statement_lines')
+    .insert({
+      statement_id: statementId,
+      line_type: 'adjustment',
+      description: reason,
+      quantity: 1,
+      gross_ils: 0,
+      platform_fee_ils: 0,
+      payout_ils: agorotToIls(amount),
+      platform_percent: null,
+    })
+    .select('id')
+    .single()
+  if (lineError) return { error: reportError(lineError, 'payout_statement_lines') }
+
+  const before = parseIls(statement.total_payout_ils ?? 0)
+  const after = agorot(before + amount)
+  const { error: totalError } = await supabase
+    .from('payout_statements')
+    .update({ total_payout_ils: agorotToIls(after) })
+    .eq('id', statementId)
+    .eq('total_payout_ils', statement.total_payout_ils ?? 0)
+  if (totalError) {
+    const { error: undoError } = await supabase
+      .from('payout_statement_lines')
+      .delete()
+      .eq('id', line.id)
+    log.error('payouts.adjustment_total_failed', {
+      statementId,
+      reason: totalError.message,
+      undone: !undoError,
+      undoReason: undoError?.message ?? null,
+    })
+    return { error: reportError(totalError, 'payout_statements') }
+  }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'manual_override',
+    entityType: 'payout_statements',
+    entityId: statementId,
+    changes: {
+      adjustment_line_id: line.id,
+      amount_agorot: amount,
+      reason,
+      statement_number: statement.statement_number,
+      supplier_id: statement.supplier_id,
+    },
+    before: { total_payout_ils: statement.total_payout_ils },
+    after: { total_payout_ils: agorotToIls(after) },
+  })
+
+  refresh()
+  return { success: `ההתאמה נרשמה על ${statement.statement_number}` }
+}
+
+export async function addPayoutAdjustment(input: {
+  statementId: string
+  amountIls: string
+  reason: string
+}): Promise<ActionResult> {
+  return withActionContext('admin.payout.add_adjustment', () => runAddPayoutAdjustment(input))
 }
 
 export async function generatePayoutStatement(input: {

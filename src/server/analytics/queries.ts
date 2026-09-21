@@ -2,6 +2,7 @@ import { log } from '@/lib/observability/log'
 import 'server-only'
 
 import type { FunnelRow, SaleLine } from '@/lib/analytics/aggregate'
+import type { RefundCounts, VoucherCounts } from '@/lib/analytics/ops-kpis'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { supplierDueAgorot } from '@/lib/supplier/dashboard'
@@ -171,4 +172,70 @@ export async function loadFunnel(days: number): Promise<FunnelLoad> {
   }
 
   return { available: true, row, days }
+}
+
+export type OpsLoad =
+  | { available: true; vouchers: VoucherCounts; refunds: RefundCounts }
+  | { available: false; reason: string }
+
+/**
+ * Redemption and refund counts for the window, for `computeOpsKpis`.
+ *
+ * Vouchers are counted by `created_at`, refunds by `requested_at`: both are
+ * "what was opened in this window", which is the population the sales KPIs
+ * on the same page describe. A voucher issued last month and redeemed today is
+ * not in a 30-day redemption rate, on purpose: that rate answers "of what we
+ * sold recently, how much has been used", and the cohort view on the snapshot
+ * page is where the long tail belongs.
+ *
+ * Four counts and one small select rather than one aggregate: PostgREST has
+ * no GROUP BY, and `head: true` counts cost no rows.
+ */
+export async function loadOpsKpis(days: number): Promise<OpsLoad> {
+  const admin = createAdminClient()
+  const since = windowStart(days)
+
+  const count = (status?: string[]) => {
+    let q = admin
+      .from('vouchers')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', since)
+    if (status) q = q.in('status', status as never)
+    return q
+  }
+
+  const [issued, redeemed, voided, refundRows] = await Promise.all([
+    count(),
+    count(['redeemed']),
+    count(['cancelled', 'refunded']),
+    admin.from('refunds').select('state, granted_agorot').gte('requested_at', since),
+  ])
+
+  const failed = [issued, redeemed, voided, refundRows].find((r) => r.error)
+  if (failed?.error) {
+    log.warn('analytics.ops_kpis_failed', { reason: failed.error.message })
+    return { available: false, reason: failed.error.message }
+  }
+
+  let completed = 0
+  let granted = 0
+  for (const row of refundRows.data ?? []) {
+    if (row.state !== 'completed') continue
+    completed += 1
+    granted += Number(row.granted_agorot ?? 0)
+  }
+
+  return {
+    available: true,
+    vouchers: {
+      issued: issued.count ?? 0,
+      redeemed: redeemed.count ?? 0,
+      voided: voided.count ?? 0,
+    },
+    refunds: {
+      requested: (refundRows.data ?? []).length,
+      completed,
+      grantedAgorot: agorot(granted),
+    },
+  }
 }
