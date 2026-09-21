@@ -21,7 +21,19 @@
 /.env*.local
 
 # Root-level only. NOT src/lib/supabase/, which the app imports 155 times.
-/supabase/
+# NOT `/supabase/` as a whole any more. `src/lib/payments/settlement-known-issues.ts`
+# IMPORTS `supabase/settlement-known-issues.json`, and gitignore semantics
+# cannot re-include a file under an excluded directory, so the whole-directory
+# rule made every Vercel build fail with `Module not found` while `pnpm build`
+# passed locally (measured 22.09.2026: the three latest previews of the
+# `kenyonexpress` project, all Error, all that one line). The subdirectories
+# are named instead; the JSON ledgers at the root of supabase/ ship.
+/supabase/.temp/
+/supabase/functions/
+/supabase/migrations/
+/supabase/schedules/
+/supabase/seed/
+/supabase/seed-fixes/
 /e2e/
 /.husky/
 
