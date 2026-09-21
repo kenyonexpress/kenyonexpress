@@ -37,19 +37,21 @@ describe('which fields a supplier may ask to change', () => {
   })
 
   /**
-   * The TypeScript list and the CHECK constraint in
-   * `225_supplier_contact_requests.sql` have to name the same seven columns. If
+   * The TypeScript list and the CHECK constraint have to name the same columns.
+   * 225 wrote the CHECK with seven; 232 restates it with nine (the two profile
+   * texts of section 54), and the LATEST restatement is what production ends
+   * up with, so that is the one read here. If
    * they drift, one side refuses what the other accepts: a field added here but
    * not there is a 23514 the supplier reads as "the site is broken", and a
    * field added there but not here is a column this module never validates.
    */
   it('names exactly the fields the migration allows', () => {
     const sql = readFileSync(
-      resolve(process.cwd(), 'migrations/pending/225_supplier_contact_requests.sql'),
+      resolve(process.cwd(), 'migrations/pending/232_supplier_self_service.sql'),
       'utf8',
     )
     const check = sql.match(/CHECK \(field IN \(([^)]+)\)\)/)
-    expect(check, 'the field allowlist CHECK is gone from 225').toBeTruthy()
+    expect(check, 'the field allowlist CHECK is gone from 232').toBeTruthy()
     const inMigration = [...(check?.[1] ?? '').matchAll(/'([a-z_]+)'/g)].map((m) => m[1])
     expect([...inMigration].sort()).toEqual([...CONTACT_FIELDS].sort())
   })
@@ -157,6 +159,8 @@ describe('validating a requested value', () => {
       address: 'הרצל 1',
       city: 'חיפה',
       website: 'https://example.com',
+      about_he: 'צימר משפחתי עם נוף לכנרת',
+      opening_hours: 'א-ה 9:00-18:00, ו 9:00-13:00',
     }
     for (const field of CONTACT_FIELDS) {
       expect(validateContactValue(field, samples[field]).ok, field).toBe(true)

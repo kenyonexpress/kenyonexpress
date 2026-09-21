@@ -101,6 +101,19 @@ const NAV_ITEMS: NavItem[] = [
     icon: BadgeCheck,
     section: 'suppliers',
   },
+  // Section 54's two other queues. Same reasoning: a queue gets its own entry.
+  {
+    href: '/admin/suppliers/price-proposals',
+    label: 'הצעות מחיר מספקים',
+    icon: BadgeCheck,
+    section: 'suppliers',
+  },
+  {
+    href: '/admin/suppliers/image-submissions',
+    label: 'תמונות מספקים לאישור',
+    icon: BadgeCheck,
+    section: 'suppliers',
+  },
   { href: '/admin/vendors', label: 'ספקים (מערכת ישנה)', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },

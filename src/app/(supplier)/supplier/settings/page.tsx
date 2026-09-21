@@ -1,4 +1,5 @@
 import ContactRequestForm from '@/components/supplier/ContactRequestForm'
+import ImageSubmissionForm from '@/components/supplier/ImageSubmissionForm'
 import WithdrawContactRequest from '@/components/supplier/WithdrawContactRequest'
 import { formatDate } from '@/lib/account/format'
 import { t } from '@/lib/i18n/messages'
@@ -41,7 +42,9 @@ export default async function SupplierSettingsPage() {
   const [{ data: supplier }, requests] = await Promise.all([
     admin
       .from('suppliers')
-      .select('contact_name, contact_email, contact_phone, whatsapp, address, city, website')
+      .select(
+        'contact_name, contact_email, contact_phone, whatsapp, address, city, website, about_he, opening_hours',
+      )
       .eq('id', session.supplierId)
       .maybeSingle(),
     getSupplierContactRequests(session.supplierId),
@@ -64,6 +67,11 @@ export default async function SupplierSettingsPage() {
         <div className="mt-3">
           <ContactRequestForm current={current} />
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <h2 className="text-base font-bold text-heading">{t('supplier.uploadLogoHeading')}</h2>
+        <ImageSubmissionForm kind="logo" />
       </section>
 
       <section className="space-y-3">

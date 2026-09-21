@@ -1,5 +1,19 @@
 # Apply order
 
+## 2026-09-21: 232, after 225, independent of everything else
+
+`232_supplier_self_service.sql` (section 54). Two nullable text columns on
+`suppliers`, two new tables with their own RLS, one private storage bucket.
+It widens 225's field CHECK **only if that table exists**, so it applies
+cleanly before or after 225; the two profile fields just cannot be requested
+until 225 is in. Proven 2026-09-21 in a rolled-back transaction on production:
+both tables, 5 policies and the bucket appear and are gone after ROLLBACK.
+
+**Reversal:** `DROP TABLE public.supplier_price_proposals, public.supplier_image_submissions;`
+then `DELETE FROM storage.buckets WHERE id = 'supplier-pending'` (after emptying
+it), then `ALTER TABLE public.suppliers DROP COLUMN about_he, DROP COLUMN opening_hours`.
+The 225 CHECK keeps the two extra names harmlessly.
+
 ## 2026-09-21: the go-live dry run, in one sentence per rule
 
 Measured on 2026-09-21 in rolled-back transactions against production

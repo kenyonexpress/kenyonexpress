@@ -1,3 +1,9 @@
+import ImageSubmissionForm from '@/components/supplier/ImageSubmissionForm'
+import PriceProposalForm from '@/components/supplier/PriceProposalForm'
+import RequestStatusBadge from '@/components/supplier/RequestStatusBadge'
+import WithdrawRequestButton from '@/components/supplier/WithdrawRequestButton'
+import { formatDate } from '@/lib/account/format'
+import { t } from '@/lib/i18n/messages'
 import { type Agorot, formatAgorot } from '@/lib/money'
 import {
   APPROVAL_LABEL_HE,
@@ -8,7 +14,11 @@ import {
   summarizeCatalogue,
 } from '@/lib/supplier/products'
 import { requireSupplierRole } from '@/lib/supplier/rbac'
-import { getSupplierProducts } from '@/server/queries/supplier'
+import {
+  getSupplierImageSubmissions,
+  getSupplierPriceProposals,
+  getSupplierProducts,
+} from '@/server/queries/supplier'
 
 export const metadata = { title: 'המוצרים שלי' }
 
@@ -49,7 +59,7 @@ function Money({ value }: { value: Agorot | null }) {
   )
 }
 
-function ProductCard({ row }: { row: SupplierProductRow }) {
+function ProductCard({ row, owner }: { row: SupplierProductRow; owner: boolean }) {
   const economics = productEconomics(row)
 
   return (
@@ -99,13 +109,26 @@ function ProductCard({ row }: { row: SupplierProductRow }) {
           </div>
         </dl>
       )}
+      {owner ? (
+        <>
+          <PriceProposalForm productId={row.id} />
+          <ImageSubmissionForm kind="product" productId={row.id} />
+        </>
+      ) : null}
     </li>
   )
 }
 
 export default async function SupplierProductsPage() {
   const session = await requireSupplierRole('manager', '/supplier/products')
-  const products = await getSupplierProducts(session.supplierId)
+  // Filing a request is owner-only (232's INSERT policies), so the forms are
+  // rendered for owners and the lists for everyone the page already admits.
+  const owner = session.memberRole === 'owner'
+  const [products, proposals, submissions] = await Promise.all([
+    getSupplierProducts(session.supplierId),
+    getSupplierPriceProposals(session.supplierId),
+    getSupplierImageSubmissions(session.supplierId),
+  ])
   const summary = summarizeCatalogue(products)
 
   return (
@@ -146,10 +169,95 @@ export default async function SupplierProductsPage() {
       ) : (
         <ul className="space-y-3">
           {products.map((row) => (
-            <ProductCard key={row.id} row={row} />
+            <ProductCard key={row.id} row={row} owner={owner} />
           ))}
         </ul>
       )}
+
+      <section className="space-y-3">
+        <h2 className="text-base font-bold text-heading">{t('supplier.proposalsHeading')}</h2>
+        {proposals.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-500">
+            {t('supplier.proposalsEmpty')}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {proposals.map((proposal) => (
+              <li
+                key={proposal.id}
+                className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-heading">{proposal.productName}</p>
+                    <p className="mt-1 text-sm text-gray-700">
+                      <span className="text-xs text-gray-500">{t('supplier.currentPrice')}: </span>
+                      <span dir="ltr">
+                        {proposal.currentAgorot === null
+                          ? '—'
+                          : formatAgorot(proposal.currentAgorot)}
+                      </span>
+                      <span className="mx-1.5 text-xs text-gray-500">
+                        {t('supplier.proposedPrice')}:{' '}
+                      </span>
+                      <span dir="ltr" className="font-semibold">
+                        {formatAgorot(proposal.proposedAgorot)}
+                      </span>
+                    </p>
+                    {proposal.decisionNote ? (
+                      <p className="mt-1 text-xs text-gray-500">{proposal.decisionNote}</p>
+                    ) : null}
+                    <p className="mt-1 text-xs text-gray-400">{formatDate(proposal.createdAt)}</p>
+                  </div>
+                  <div className="shrink-0 space-y-2 text-end">
+                    <RequestStatusBadge status={proposal.status} />
+                    {owner && proposal.status === 'pending' ? (
+                      <WithdrawRequestButton id={proposal.id} kind="price" />
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-base font-bold text-heading">{t('supplier.submissionsHeading')}</h2>
+        {submissions.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-500">
+            {t('supplier.submissionsEmpty')}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {submissions.map((submission) => (
+              <li
+                key={submission.id}
+                className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-heading">
+                      {submission.productName ?? t('supplier.uploadLogoHeading')}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-700">{submission.altHe}</p>
+                    {submission.decisionNote ? (
+                      <p className="mt-1 text-xs text-gray-500">{submission.decisionNote}</p>
+                    ) : null}
+                    <p className="mt-1 text-xs text-gray-400">{formatDate(submission.createdAt)}</p>
+                  </div>
+                  <div className="shrink-0 space-y-2 text-end">
+                    <RequestStatusBadge status={submission.status} />
+                    {owner && submission.status === 'pending' ? (
+                      <WithdrawRequestButton id={submission.id} kind="image" />
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   )
 }

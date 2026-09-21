@@ -1,4 +1,4 @@
-import { parseIls } from '@/lib/money'
+import { type Agorot, agorot, parseIls } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -529,5 +529,149 @@ export async function getSupplierContactRequests(
     createdAt: row.created_at,
     decidedAt: row.decided_at,
     decisionNote: row.decision_note,
+  }))
+}
+
+// ---------------------------------------------------------------------------
+// Section 54: what a supplier has asked for and how each request stands.
+// Both read with the service role and filtered by supplier_id here, the same
+// way getSupplierContactRequests does: the portal shows one shop's rows and
+// the tables' RLS is the second lock, not the first.
+// ---------------------------------------------------------------------------
+
+export type SupplierPriceProposalRow = {
+  id: string
+  productId: string
+  productName: string
+  currentAgorot: Agorot | null
+  proposedAgorot: Agorot
+  note: string | null
+  status: string
+  createdAt: string
+  decidedAt: string | null
+  decisionNote: string | null
+}
+
+export async function getSupplierPriceProposals(
+  supplierId: string,
+): Promise<SupplierPriceProposalRow[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('supplier_price_proposals' as never)
+    .select(
+      'id, product_id, current_kenyon_price_agorot, proposed_kenyon_price_agorot, note, status, created_at, decided_at, decision_note',
+    )
+    .eq('supplier_id', supplierId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+  if (error) {
+    log.warn('supplier.price_proposals_read_failed', { reason: error.message })
+    return []
+  }
+  const rows = (data ?? []) as {
+    id: string
+    product_id: string
+    current_kenyon_price_agorot: number | null
+    proposed_kenyon_price_agorot: number
+    note: string | null
+    status: string
+    created_at: string
+    decided_at: string | null
+    decision_note: string | null
+  }[]
+  const productIds = [...new Set(rows.map((r) => r.product_id))]
+  const names = new Map<string, string>()
+  if (productIds.length > 0) {
+    const { data: products, error: namesError } = await admin
+      .from('products')
+      .select('id, name_he')
+      .in('id', productIds)
+    // A failed name lookup leaves the row without a title, not without a row.
+    if (namesError) {
+      log.warn('supplier.request_product_names_read_failed', { reason: namesError.message })
+    }
+    for (const p of products ?? []) names.set(p.id, p.name_he)
+  }
+  return rows.map((r) => ({
+    id: r.id,
+    productId: r.product_id,
+    productName: names.get(r.product_id) ?? '',
+    currentAgorot:
+      r.current_kenyon_price_agorot === null ? null : agorot(r.current_kenyon_price_agorot),
+    proposedAgorot: agorot(r.proposed_kenyon_price_agorot),
+    note: r.note,
+    status: r.status,
+    createdAt: r.created_at,
+    decidedAt: r.decided_at,
+    decisionNote: r.decision_note,
+  }))
+}
+
+export type SupplierImageSubmissionRow = {
+  id: string
+  kind: string
+  productId: string | null
+  productName: string | null
+  altHe: string
+  status: string
+  createdAt: string
+  decidedAt: string | null
+  decisionNote: string | null
+  publishedUrl: string | null
+}
+
+export async function getSupplierImageSubmissions(
+  supplierId: string,
+): Promise<SupplierImageSubmissionRow[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('supplier_image_submissions' as never)
+    .select(
+      'id, kind, product_id, alt_he, status, created_at, decided_at, decision_note, published_url',
+    )
+    .eq('supplier_id', supplierId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+  if (error) {
+    log.warn('supplier.image_submissions_read_failed', { reason: error.message })
+    return []
+  }
+  const rows = (data ?? []) as {
+    id: string
+    kind: string
+    product_id: string | null
+    alt_he: string
+    status: string
+    created_at: string
+    decided_at: string | null
+    decision_note: string | null
+    published_url: string | null
+  }[]
+  const productIds = [
+    ...new Set(rows.map((r) => r.product_id).filter((v): v is string => Boolean(v))),
+  ]
+  const names = new Map<string, string>()
+  if (productIds.length > 0) {
+    const { data: products, error: namesError } = await admin
+      .from('products')
+      .select('id, name_he')
+      .in('id', productIds)
+    // A failed name lookup leaves the row without a title, not without a row.
+    if (namesError) {
+      log.warn('supplier.request_product_names_read_failed', { reason: namesError.message })
+    }
+    for (const p of products ?? []) names.set(p.id, p.name_he)
+  }
+  return rows.map((r) => ({
+    id: r.id,
+    kind: r.kind,
+    productId: r.product_id,
+    productName: r.product_id ? (names.get(r.product_id) ?? null) : null,
+    altHe: r.alt_he,
+    status: r.status,
+    createdAt: r.created_at,
+    decidedAt: r.decided_at,
+    decisionNote: r.decision_note,
+    publishedUrl: r.published_url,
   }))
 }

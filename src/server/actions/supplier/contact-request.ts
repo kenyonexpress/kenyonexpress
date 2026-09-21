@@ -68,7 +68,9 @@ async function runRequestContactChange(
   // holds by then.
   const { data: supplier, error: readError } = await supabase
     .from('suppliers')
-    .select('contact_name, contact_email, contact_phone, whatsapp, address, city, website')
+    .select(
+      'contact_name, contact_email, contact_phone, whatsapp, address, city, website, about_he, opening_hours',
+    )
     .eq('id', session.supplierId)
     .maybeSingle()
 

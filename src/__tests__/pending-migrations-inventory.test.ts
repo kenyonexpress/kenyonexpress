@@ -952,6 +952,7 @@ describe('the pending migration inventory', () => {
       // `\d{3}[a-z]?_` the README manifest is read with -- a file that could
       // not be named here even by someone trying to name it.
       '231_pending_exports_deletions.sql',
+      '232_supplier_self_service.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

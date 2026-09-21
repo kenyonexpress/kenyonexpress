@@ -27,6 +27,10 @@ export const CONTACT_FIELDS = [
   'address',
   'city',
   'website',
+  // Section 54: the two profile texts a supplier owns. Same request table, same
+  // admin queue (migration 232 widens 225's CHECK to admit them).
+  'about_he',
+  'opening_hours',
 ] as const
 
 export type ContactField = (typeof CONTACT_FIELDS)[number]
@@ -43,6 +47,8 @@ export const CONTACT_FIELD_LABEL_HE: Record<ContactField, string> = {
   address: 'כתובת',
   city: 'עיר',
   website: 'אתר אינטרנט',
+  about_he: 'אודות העסק',
+  opening_hours: 'שעות פעילות',
 }
 
 /** Mirrors the length ceiling in the migration's `c_len` CHECK. */
@@ -87,6 +93,11 @@ export function validateContactValue(field: ContactField, raw: string): FieldVal
   }
 
   switch (field) {
+    case 'about_he':
+    case 'opening_hours':
+      // Free text, already trimmed and bounded above; the 300-character CHECK on
+      // `suppliers` (232) is the same number as MAX_VALUE_LENGTH on purpose.
+      return { ok: true, value }
     case 'contact_email': {
       if (!EMAIL_SHAPE.test(value)) return { ok: false, error: 'כתובת אימייל לא תקינה.' }
       // Lower-cased because the domain half is case-insensitive and a supplier
