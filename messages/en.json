@@ -244,5 +244,10 @@
     "authBody": "The failure has been logged. You can try again, or go back to sign in.",
     "legalTitle": "Something went wrong loading the document",
     "supplierPublicTitle": "Something went wrong on the supplier page"
+  },
+  "maintenance": {
+    "title": "Short maintenance",
+    "body": "We are doing planned maintenance. Your orders and coupons are safe.",
+    "retry": "Please try again in a few minutes."
   }
 }

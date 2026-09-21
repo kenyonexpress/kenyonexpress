@@ -1,5 +1,12 @@
 # Apply order
 
+## 2026-09-22: 235, any order, one operator table
+
+`235_feature_flags.sql` creates `feature_flags` (service role only) and seeds
+the eight documented flags with their documented defaults. Independent of every
+other file. **Reversal:** `DROP TABLE public.feature_flags`; the reader treats a
+missing table as "no rows" and every flag falls back to env or default.
+
 ## 2026-09-22: 234, any order, one table with no client access
 
 `234_fraud_blocklist.sql` creates `fraud_blocklist` with RLS on and no

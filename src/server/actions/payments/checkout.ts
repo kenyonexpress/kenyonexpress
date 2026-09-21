@@ -59,6 +59,7 @@ import { type SettlementLineInput, calculateSettlement } from '@/server/domain/o
 import { readBlocklistMatches, readVelocityCounts, scoreOrder } from '@/server/fraud/signals'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
+import { isFeatureEnabled } from '@/server/resilience/flags'
 import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
@@ -328,6 +329,12 @@ async function runBeginCheckout(
 ): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
   const env = loadCardcomEnv()
   if (!env.checkoutEnabled) {
+    return { ok: false, error: 'התשלום מושבת כרגע, נסו שוב מאוחר יותר', code: 'CHECKOUT_DISABLED' }
+  }
+  // The same switch from the admin page (feature_flags, 235). The environment
+  // above still wins: a row cannot re-enable what CHECKOUT_ENABLED=false shut.
+  if (!(await isFeatureEnabled('CHECKOUT_ENABLED'))) {
+    log.warn('checkout.disabled_by_flag', {})
     return { ok: false, error: 'התשלום מושבת כרגע, נסו שוב מאוחר יותר', code: 'CHECKOUT_DISABLED' }
   }
 

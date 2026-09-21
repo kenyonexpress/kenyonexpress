@@ -50,6 +50,8 @@ Scope: docs בלבד.
 Phase 1: Vercel env + `process.env` בשרת.  
 Phase 2 (אופציונלי): טבלת `app_settings(key, value_json, updated_at)` עם RLS admin-only + cache 30s.
 
+**‏22.09.2026:** ‏Phase 2 נבנה כ-`feature_flags(key, enabled, description)` ‏(מיגרציה ‏235, ‏service role בלבד, מטמון ‏30 שניות), עם הסביבה גוברת על השורה. ‏`MAINTENANCE_MODE` ומתגי ההרג נשארו בסביבה בלבד. ‏`docs/RESILIENCE.md`.
+
 אין LaunchDarkly חובה ביום 1.
 
 ---

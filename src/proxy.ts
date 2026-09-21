@@ -3,6 +3,12 @@ import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/gues
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
 import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
+import {
+  isMaintenanceExempt,
+  isMaintenanceMode,
+  maintenanceHeaders,
+  maintenanceHtml,
+} from '@/lib/resilience/maintenance'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
@@ -93,6 +99,15 @@ export async function proxy(request: NextRequest) {
   // Neither branch was wrong on its own, which is how the two of them produced
   // it.
   if (pathname.startsWith('/monitoring')) return forward(request, requestId)
+
+  // Section 83: maintenance mode. Env-only and answered before any database
+  // is touched; the admin, the scheduler, health and assets stay reachable.
+  if (isMaintenanceMode() && !isMaintenanceExempt(pathname)) {
+    return withRequestId(
+      new NextResponse(maintenanceHtml(), { status: 503, headers: maintenanceHeaders() }),
+      requestId,
+    )
+  }
 
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.
   //

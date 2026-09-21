@@ -381,6 +381,7 @@ one.
 | [QUERY-COOKBOOK.md](QUERY-COOKBOOK.md) | ✅ | Twenty SQL queries an operator actually needs, ready to paste. |
 | [QUESTIONS-FOR-OFIR.md](QUESTIONS-FOR-OFIR.md) | 🕯️ | תאריך: 2026-08-19. |
 | [REFS-INDEX.md](REFS-INDEX.md) | ✅ | What every capture in refs/ holds, where it came from, and whether it is |
+| [RESILIENCE.md](RESILIENCE.md) | ✅ | ‏SECTIONS 83. נמדד ‏22.09.2026: ‏breakers, ‏DLQ, מתגי הרג, ומה שנבנה: מצב תחזוקה וטבלת דגלים עם ממשק. |
 | [REFS-POLICY.md](REFS-POLICY.md) | ✅ | Recommendation: change nothing. Do not adopt git-lfs, and do not commit the |
 | [REVIEWS.md](REVIEWS.md) | ✅ | Measured 2026-09-09 against production (ixvwfbuvfxxsjiywhbbb). |
 | [SENTRY-SETUP.md](SENTRY-SETUP.md) | ✅ | Measured and wired 21.08.2026. What is done, what is left, and the three ways |

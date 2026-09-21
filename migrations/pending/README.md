@@ -1,5 +1,14 @@
 # `migrations/pending/`
 
+## 2026-09-22: 235 WRITTEN, not applied - טבלת דגלים, ומה שנשאר בסביבה בכוונה
+
+‏`235_feature_flags.sql`. סעיף ‏83. ‏`feature_flags(key, enabled, description)`
+עם ‏RLS דלוק ובלי מדיניות ‏(service role בלבד), זרועה בשמונת הדגלים המתועדים
+ב-`ARCHITECTURE-FEATURE-FLAGS.md` §1 עם ברירות המחדל שלהם, ‏`ON CONFLICT DO NOTHING`.
+הסביבה גוברת על השורה, השורה על ברירת המחדל. **מתגי ההרג ו-`MAINTENANCE_MODE`
+אינם בטבלה**: מתג שצריך לקרוא מהמסד כדי לומר "אל תקראו מהמסד" אינו מתג.
+עד ההחלה כל דגל עונה מהסביבה או מברירת המחדל, והאדמין מסביר. ‏`docs/RESILIENCE.md`.
+
 ## 2026-09-22: 234 WRITTEN, not applied - רשימת חסימה עם סיבה ותוקף
 
 ‏`234_fraud_blocklist.sql`. סעיף ‏57. טבלה אחת, ‏`fraud_blocklist` ‏(אימייל /
