@@ -64,6 +64,9 @@ DECLARE
     'voucher_gifted', 'voucher_expiring', 'cashback_credited', 'invoice_dead',
     'low_stock', 'reconciliation_gap', 'refund_completed', 'welcome',
     'account_deleted', 'order_shipped', 'price_drop', 'back_in_stock',
+    -- Live since the gift-card work landed; found by the 2026-09-21 go-live
+    -- dry run, where the guard below raised on it. docs/GO-LIVE-DRY-RUN.md.
+    'gift_card_issued',
     -- New here, so re-applying this file is not a guard failure.
     'settlement_gap'
   ];
@@ -112,6 +115,7 @@ ALTER TABLE public.notification_outbox
     'order_shipped'::text,
     'price_drop'::text,
     'back_in_stock'::text,
+    'gift_card_issued'::text,
     -- New here. An order line's money does not match the split its own
     -- `platform_percent` describes, or the money journal disagrees with the
     -- line, or a completed refund never reached the journal.
@@ -124,8 +128,8 @@ BEGIN
   SELECT count(*) INTO n
     FROM (SELECT (regexp_matches(pg_get_constraintdef(oid), '''([a-z_]+)''::text', 'g'))[1]
             FROM pg_constraint WHERE conname = 'notification_outbox_kind_check') t;
-  IF n <> 17 THEN
-    RAISE EXCEPTION 'expected 17 accepted kinds, found %', n;
+  IF n <> 18 THEN
+    RAISE EXCEPTION 'expected 18 accepted kinds, found %', n;
   END IF;
 END $$;
 

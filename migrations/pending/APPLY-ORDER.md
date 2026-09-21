@@ -1,5 +1,27 @@
 # Apply order
 
+## 2026-09-21: the go-live dry run, in one sentence per rule
+
+Measured on 2026-09-21 in rolled-back transactions against production
+(docs/GO-LIVE-DRY-RUN.md). **Nine files here are already live** (188, 189, 190,
+191, 194, 196, 197, 201, 218) and 203 is partly live; see README. Three rules
+the dry run proved rather than stated:
+
+- **218 before 217.** 217's own guard raises otherwise. Proven: 218 -> 217 -> 214
+  applies in one transaction.
+- **214 now restates `gift_card_issued`.** The live constraint gained it after
+  214 was written; the guard raised, the list and the post-check count (18) were
+  fixed here. 227 and 229 build their lists from the live constraint, so numeric
+  order (214 before them) holds and the earlier "apply 214 last" rule is no
+  longer load-bearing.
+- **190 must not be re-applied.** Its `drop function ... (integer, integer)` then
+  `create function ... (integer, integer, integer)` fails on the live three-arg
+  function it already created.
+
+With 162, 184 and 190 held back, the remaining 38 files apply in numeric order
+(218 before 217) and roll back clean; nothing persisted, checked by object
+after every run.
+
 ## 2026-09-10: 230, and it can go in at any point
 
 `230_revoke_surplus_client_dml.sql` takes INSERT, UPDATE and DELETE away from

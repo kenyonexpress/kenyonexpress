@@ -288,3 +288,76 @@ export async function raiseInstallBanner(page: Page): Promise<Locator> {
   }
   return banner
 }
+
+/**
+ * Walks the four-step checkout (src/lib/checkout/steps.ts) from a freshly
+ * opened /checkout to the pay button and presses it.
+ *
+ * The form became a stepper in the CheckoutForm rewrite and the paid-flow specs
+ * still reached for a one-page `accept_terms` box that is now hidden until the
+ * last step; the 2026-09-21 go-live dry run found all three timing out there.
+ * The address step only exists when the cart holds something physical, so it
+ * is filled when its fields are on screen and skipped otherwise, which is the
+ * form's own rule (`needsAddress`) rather than a guess about the cart.
+ */
+export async function walkCheckoutToPayment(page: Page, email: string): Promise<void> {
+  await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
+
+  // Steps: details, address (only for a physical cart), review, confirm. A
+  // customer with a saved address gets no fields on the first two at all, only
+  // their name (`savedAddressAnswersFor` in CheckoutForm), so each pass fills
+  // whatever is on screen and presses the step's own "next" until the last
+  // step, which has no "next". Fields by id: the footer newsletter form also
+  // carries an input named email.
+  for (let pass = 0; pass < 4; pass += 1) {
+    const firstName = page.locator('#co-first-name')
+    if (await firstName.isVisible().catch(() => false)) {
+      await firstName.fill('בדיקה')
+      await page.locator('#co-last-name').fill('אוטומטית')
+      await page.locator('#co-phone').fill('0521234567')
+      await page.locator('#co-email').fill(email)
+    }
+    const city = page.locator('#co-city')
+    if (await city.isVisible().catch(() => false)) {
+      await city.fill('תל אביב')
+      await page.locator('#co-street').fill('אלנבי')
+      await page.locator('#co-number').fill('1')
+    }
+    const next = page.getByRole('button', { name: 'המשך', exact: true })
+    if (!(await next.isVisible().catch(() => false))) break
+    await next.click()
+    await page.waitForTimeout(300)
+  }
+
+  // confirm
+  const terms = page.locator('input[name="accept_terms"]')
+  await expect(terms).toBeVisible({ timeout: 10_000 })
+  await terms.check()
+  await page.getByRole('button', { name: 'שליחת הזמנה', exact: true }).click()
+}
+
+/**
+ * Removes every line from the signed-in customer's cart.
+ *
+ * The account cart lives in the database and survives a run, so a paid-flow
+ * spec that adds one item and then fails leaves it there for the next run.
+ * The dry run found the fixture customer carrying 13 lines from earlier
+ * attempts, which made "no voucher on a physical order" unmeasurable: the
+ * order had coupons in it too. Each spec now starts from an empty cart.
+ */
+export async function emptyCart(page: Page): Promise<void> {
+  await page.goto('/cart')
+  // The lines render after the cart provider hydrates; an immediate
+  // isVisible() on an empty DOM reads as "already empty" and returns.
+  await page
+    .getByRole('button', { name: /^הסר .* מהעגלה$/ })
+    .first()
+    .waitFor({ timeout: 10_000 })
+    .catch(() => undefined)
+  for (let i = 0; i < 40; i += 1) {
+    const remove = page.getByRole('button', { name: /^הסר .* מהעגלה$/ }).first()
+    if (!(await remove.isVisible().catch(() => false))) return
+    await remove.click()
+    await page.waitForTimeout(400)
+  }
+}

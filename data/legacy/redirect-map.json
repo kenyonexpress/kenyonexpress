@@ -210,7 +210,6 @@
       "/products",
       "/refund_returns",
       "/reset-password",
-      "/scan",
       "/search",
       "/signup",
       "/signup/confirm",
@@ -262,7 +261,7 @@
     },
     {
       "source": "/coupon-scanner",
-      "target": "/scan",
+      "target": "/supplier/scan",
       "status": 301,
       "rule": "page_redirect",
       "entity": "page",

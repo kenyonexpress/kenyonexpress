@@ -5,6 +5,7 @@ import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
+import { paymentReturnTarget } from '@/lib/checkout/frame-return-message'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import {
   CHECKOUT_STEPS,
@@ -396,6 +397,23 @@ export default function CheckoutForm({
 
     track('checkout_step', { step: 'payment_redirect' })
   }
+
+  // The payment frame cannot move this tab (its sandbox withholds
+  // allow-top-navigation on purpose), so when Cardcom returns into it,
+  // /checkout/frame-return posts the confirmation path here and this page
+  // navigates itself. Same origin only, checked again on receipt, and only to
+  // a path under /checkout/. src/lib/checkout/frame-return-message.ts.
+  const frameUrl = state && 'frame' in state ? state.frame?.url : undefined
+  useEffect(() => {
+    if (!frameUrl) return
+    const onMessage = (event: MessageEvent) => {
+      const target = paymentReturnTarget(event.data, event.origin, window.location.origin)
+      if (!target) return
+      window.location.replace(target)
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [frameUrl])
 
   const authError = googleState && 'error' in googleState ? googleState.error : null
   const formError = state && 'error' in state ? state.error : null
@@ -1078,8 +1096,10 @@ export default function CheckoutForm({
           </div>
           {/*
             The payment page runs here rather than in place of the site. When it
-            finishes, Cardcom navigates THIS iframe to /checkout/return, and
-            PaymentFrameBreakout on that page moves the top window to itself —
+            finishes, Cardcom navigates THIS iframe to /checkout/frame-return,
+            which posts the confirmation path up to this page (the sandbox
+            below forbids the frame from moving the tab itself), and the
+            listener above navigates the tab —
             which is why lib/security/frame-policy.ts relaxes frame-ancestors to
             'self' on that one path and nowhere else.
           */}

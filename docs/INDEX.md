@@ -299,6 +299,7 @@ one.
 | [FINAL-AUDIT.md](FINAL-AUDIT.md) | ✅ | ‏SECTIONS 23. נמדד ב-09.09.2026 מול 16983ef6c (‏origin/main אחרי מיזוג |
 | [FINAL-REPORT.md](FINAL-REPORT.md) | 🕯️ | Rewritten 2026-09-01. The previous version was written 2026-08-31 and its |
 | [GAP-AUDIT-FINAL.md](GAP-AUDIT-FINAL.md) | ✅ | Written 2026-09-02. Every verdict below was checked by reading the code or by |
+| [GO-LIVE-DRY-RUN.md](GO-LIVE-DRY-RUN.md) | ✅ | ‏SECTIONS 43. נמדד ‏21.09.2026: מיגרציות בטרנזקציה מגולגלת, ‏E2E מול ‏pnpm start, ‏RLS שלילי מול פרודקשן, ומה שחסום על סביבה. |
 | [IMAGE-IMPORT-STATUS.md](IMAGE-IMPORT-STATUS.md) | ✅ | Measured 2026-09-09. SECTIONS 20 asked for scripts/import-images.ts and ended |
 | [INDEX-USAGE-REPORT.md](INDEX-USAGE-REPORT.md) | ✅ | Measured against the production Supabase project ixvwfbuvfxxsjiywhbbb on |
 | [LIGHTHOUSE-AUDIT.md](LIGHTHOUSE-AUDIT.md) | 🕯️ | ‏MISSION-FINAL שלב 8. שלוש הביקורות רצות על כל המסלולים הציבוריים, לא על |

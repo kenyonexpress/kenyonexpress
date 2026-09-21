@@ -8,7 +8,7 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, emptyCart, expectHebrewRtl, walkCheckoutToPayment } from './helpers'
 
 /**
  * Admin cancel-and-refund, end to end (marathon step 10, journey d):
@@ -45,14 +45,14 @@ test.describe('admin cancel and refund @money @admin', () => {
     test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
 
     await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await emptyCart(page)
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
 
     await buy.click()
     await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
     await page.goto('/checkout')
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
-    await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
+    await walkCheckoutToPayment(page, E2E_CUSTOMER_EMAIL)
     await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
       timeout: 45_000,

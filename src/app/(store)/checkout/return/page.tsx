@@ -252,7 +252,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                         <div className="coupon-card__note">{coupon.gift.explanation}</div>
                       </>
                     ) : (
-                      <div className="coupon-card__code" dir="ltr">
+                      <div className="coupon-card__code" dir="ltr" data-testid="coupon-code">
                         {formatVoucherCode(coupon.code)}
                       </div>
                     )}
@@ -292,7 +292,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                     )}
                   </div>
                   {coupon.qrDataUrl && (
-                    <div className="coupon-card__qr">
+                    <div className="coupon-card__qr" data-testid="coupon-qr">
                       <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
                     </div>
                   )}

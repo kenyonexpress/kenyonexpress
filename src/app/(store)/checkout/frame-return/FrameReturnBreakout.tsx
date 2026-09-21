@@ -1,33 +1,33 @@
 'use client'
 
+import { paymentReturnMessage } from '@/lib/checkout/frame-return-message'
 import { useEffect } from 'react'
 
 /**
- * Moves the top window to the confirmation and lets the payment iframe die
- * with the checkout that owned it.
+ * Moves the shopper from the payment frame to the confirmation.
  *
- * `replace`, not `assign`: the entry being replaced is /checkout, and a back
- * button that returns to a checkout for an order that has already been paid is
- * an invitation to pay twice.
+ * Framed, this page cannot move the tab itself: the checkout's iframe sandbox
+ * withholds `allow-top-navigation` on purpose (src/lib/checkout/
+ * frame-return-message.ts has the measurement that found this out the hard
+ * way). So it posts the target to the parent, same origin only, and the
+ * checkout page navigates itself.
  *
- * When this page is somehow not framed — a shopper opening the URL directly,
- * or a provider that returned to the top window — the same call is still
- * correct: window.top is window.self, and the tab navigates to the
- * confirmation, which is where they were going.
+ * Unframed, the tab IS the page: a shopper opening the URL directly, a provider
+ * that returned to the top window, or the same page with the sandbox lifted.
+ * Then `replace` on our own location is the whole job. `replace`, not
+ * `assign`: the entry being replaced is /checkout, and a back button that
+ * returns to a checkout for an order that has already been paid is an
+ * invitation to pay twice.
  */
 export default function FrameReturnBreakout({ target }: { target: string }) {
   useEffect(() => {
     const url = new URL(target, window.location.origin).toString()
-    try {
-      // Cross-origin parents throw on access. frame-ancestors only permits our
-      // own origin, so this cannot happen — but reading window.top must not be
-      // what strands a paying customer if that ever stops being true.
-      const top = window.top ?? window.self
-      top.location.replace(url)
-    } catch {
-      window.location.replace(url)
+    const framed = window.parent !== window
+    if (framed) {
+      window.parent.postMessage(paymentReturnMessage(target), window.location.origin)
+      return
     }
+    window.location.replace(url)
   }, [target])
-
   return null
 }

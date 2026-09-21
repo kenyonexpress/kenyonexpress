@@ -80,7 +80,7 @@ export default async function AdminVoucherDetailPage({ params }: Props) {
        remaining_amount_due_agorot, platform_percent, offer_valid_until, expires_at,
        issued_at, redeemed_at, redeemed_by_supplier_id, cancelled_at, refunded_at,
        status_reason, order_id, order_item_id,
-       product:products(name_he), supplier:suppliers(name, contact_phone)`,
+       product:products(name_he), supplier:suppliers!vouchers_supplier_id_fkey(name, contact_phone)`,
     )
     .eq('id', id)
     .single()

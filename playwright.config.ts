@@ -51,6 +51,13 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'html',
   use: {
     baseURL: BASE_URL,
+    // Local only, and only for the rate limiter. `getClientIp()` reads
+    // `x-forwarded-for` first because Vercel sets it, which also means a client
+    // talking to a laptop's `pnpm start` can set it. A run that has already
+    // spent the hour's 10 sign-ins on one address can be pointed at a fresh
+    // bucket for a re-run; on Vercel the platform overwrites the header, so
+    // this cannot loosen anything deployed. See e2e/auth-session.ts for why a
+    // run needs so few sign-ins now.
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     locale: 'he-IL',
@@ -69,12 +76,17 @@ export default defineConfig({
      * With the variable unset the object is empty and nothing about a local or
      * localhost run changes.
      */
-    extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET
-      ? {
-          'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
-          'x-vercel-set-bypass-cookie': 'true',
-        }
-      : {},
+    extraHTTPHeaders: {
+      ...(process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+        ? {
+            'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+            'x-vercel-set-bypass-cookie': 'true',
+          }
+        : {}),
+      ...(process.env.E2E_FORWARDED_FOR
+        ? { 'x-forwarded-for': process.env.E2E_FORWARDED_FOR }
+        : {}),
+    },
   },
   projects: [
     {

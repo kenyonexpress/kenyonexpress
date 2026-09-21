@@ -49,10 +49,6 @@ const GUARDS = [
  * allowlisted file that is later rewritten into something else fails here.
  */
 const EXEMPT: Record<string, { because: string; mustContain: string }> = {
-  'src/app/(supplier)/supplier/scan/page.tsx': {
-    because: 'pure redirect to /scan, which is guarded; it reads nothing itself',
-    mustContain: "redirect('/scan')",
-  },
   'src/app/api/supplier/redeem/route.ts': {
     because: 'alias that re-exports the guarded /api/supplier/vouchers/redeem handler',
     mustContain: "export { POST } from '@/app/api/supplier/vouchers/redeem/route'",

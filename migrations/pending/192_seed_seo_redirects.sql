@@ -35,7 +35,7 @@ CREATE TEMP TABLE _seed (
 INSERT INTO _seed (source_path, target_path, status_code, entity_type, wp_id, mapping_rule) VALUES
   ('/affiliate-area', '', 410, 'page', 8990, 'page_gone_410'),
   ('/compare', '', 410, 'page', 2917, 'page_gone_410'),
-  ('/coupon-scanner', '/scan', 301, 'page', 8842, 'page_redirect'),
+  ('/coupon-scanner', '/supplier/scan', 301, 'page', 8842, 'page_redirect'),
   ('/dashboard', '', 410, 'page', 5865, 'page_gone_410'),
   ('/error-payment-payplus', '', 410, 'page', 7659, 'page_gone_410'),
   ('/my-account', '/account', 301, 'page', 3854, 'page_redirect'),

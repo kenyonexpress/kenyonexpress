@@ -60,7 +60,7 @@ const VOUCHER_SELECT = `id, code, qr_payload, status,
        offer_valid_until, expires_at, issued_at, redeemed_at,
        ${GIFT_SELECT},
        product:products(name_he, slug),
-       supplier:suppliers(name)`
+       supplier:suppliers!vouchers_supplier_id_fkey(name)`
 
 /** The gift columns as they come back from Postgres, before they are a state. */
 type GiftColumns = {
@@ -211,7 +211,7 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
        offer_valid_until, expires_at, issued_at, redeemed_at,
        ${GIFT_SELECT},
        product:products(name_he, slug),
-       supplier:suppliers(name, city, address, contact_phone, whatsapp)`,
+       supplier:suppliers!vouchers_supplier_id_fkey(name, city, address, contact_phone, whatsapp)`,
       )
       .eq('id', id)
       .eq('user_id', user.id)

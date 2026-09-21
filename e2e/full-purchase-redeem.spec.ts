@@ -9,7 +9,7 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, emptyCart, expectHebrewRtl, walkCheckoutToPayment } from './helpers'
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
@@ -36,6 +36,12 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     const customer = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
     const page = await customer.newPage()
 
+    // Start the account from an empty cart, then leave as a guest again so the
+    // guest-cart merge below has exactly one line to merge.
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await emptyCart(page)
+    await clearBrowserSession(page)
+
     await page.goto(`/product/${E2E_COUPON_SLUG}`)
     await expectHebrewRtl(page)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
@@ -48,25 +54,31 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await buy.click()
     await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
 
-    // Checkout gate: guest must see Google (and email) before pay.
+    // Since f6392ed6e (2026-07-29) a guest is NOT turned away at /checkout: the
+    // form renders, and only the press of "pay" needs an identity, which sends
+    // the guest to Google. This spec expected the old door-gate until the
+    // 2026-09-21 go-live dry run measured the page landing on /checkout itself.
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/, { timeout: 15_000 })
-    await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /כניסה עם Google/ })).toBeVisible()
+    await expect(page).toHaveURL(/\/checkout$/, { timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('קונית כאן בעבר?')).toBeVisible()
     await expectHebrewRtl(page)
 
-    // CI cannot complete real Google OAuth. Email/password hits the same
-    // mergeGuestCart path the Google callback uses after the OAuth hop.
+    // CI cannot complete real Google OAuth, and the pay button's gate IS
+    // Google. Email/password on /login hits the same mergeGuestCart path the
+    // Google callback uses after the OAuth hop, so sign in there and return.
+    await page.goto('/login?next=%2Fcheckout')
+    await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /כניסה עם Google/ })).toBeVisible()
     await page.getByLabel('אימייל').fill(E2E_CUSTOMER_EMAIL)
     await page.getByLabel('סיסמה').fill(E2E_CUSTOMER_PASSWORD)
     await page.getByRole('button', { name: 'כניסה', exact: true }).click()
     await page.waitForURL(/\/checkout/, { timeout: 20_000 })
 
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('קופון בדיקות אוטומטיות')).toBeVisible()
 
-    await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    await walkCheckoutToPayment(page, E2E_CUSTOMER_EMAIL)
 
     // Mock Cardcom redirects straight back to /checkout/return; reconcile
     // verifies the in-memory deal and finalizes (issues vouchers).
@@ -102,7 +114,7 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expectHebrewRtl(scanPage)
 
     await scanPage.getByLabel('הקלדת קוד ידנית').fill(voucherCode)
-    await scanPage.getByRole('button', { name: 'המשך' }).click()
+    await scanPage.getByRole('button', { name: 'בדוק שובר' }).click()
     await expect(scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ })).toBeVisible()
     await scanPage.getByRole('button', { name: /אשר ומַמֵש|אשר וממש/ }).click()
 
@@ -124,11 +136,21 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await buy.click()
     await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
 
+    // The gate moved from the door to the pay button (f6392ed6e): a guest sees
+    // the whole form, a returning-customer notice, and a hidden Google form
+    // that "pay" submits with the resume path. No silent email-only path.
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/)
+    await expect(page).toHaveURL(/\/checkout$/)
+    await expect(page.getByText('קונית כאן בעבר?')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'יש ללחוץ כאן כדי להתחבר' })).toBeVisible()
+    await expect(page.locator('form[hidden] input[name="next"]')).toHaveAttribute(
+      'value',
+      '/checkout?resume=1',
+    )
+    // And the door itself still offers Google above email for whoever walks in.
+    await page.goto('/login?next=%2Fcheckout')
     const google = page.getByRole('button', { name: /כניסה עם Google/ })
     await expect(google).toBeVisible()
-    // Google is above the email form divider.
     const googleBox = await google.boundingBox()
     const emailBox = await page.getByLabel('אימייל').boundingBox()
     expect(googleBox && emailBox && googleBox.y < emailBox.y).toBeTruthy()

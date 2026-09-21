@@ -96,13 +96,26 @@ export default async function OrderDetailPage({ params }: Props) {
   const supabase = await createClient()
   const admin = createAdminClient()
 
+  // No `profiles(...)` embed: `orders.user_id` references auth.users, not
+  // profiles, so PostgREST has no relationship to follow (PGRST200) and
+  // `.single()` came back empty -- every admin order page was a 404 in
+  // production until the 2026-09-21 go-live dry run measured it. The profile
+  // is a second read by id.
   const { data: order } = await supabase
     .from('orders')
-    .select('*, profiles(full_name, email, phone), order_items(*)')
+    .select('*, order_items(*)')
     .eq('id', id)
     .single()
 
   if (!order) notFound()
+
+  const { data: profile } = order.user_id
+    ? await supabase
+        .from('profiles')
+        .select('full_name, email, phone')
+        .eq('id', order.user_id)
+        .maybeSingle()
+    : { data: null }
 
   const items = (Array.isArray(order.order_items) ? order.order_items : []) as OrderItemRow[]
 
@@ -137,7 +150,6 @@ export default async function OrderDetailPage({ params }: Props) {
   })
 
   const badge = orderStatusBadge(order.status)
-  const profile = Array.isArray(order.profiles) ? order.profiles[0] : order.profiles
 
   const couponLines = items.filter((i) => i.product_type === 'coupon')
   const physicalLines = items.filter((i) => i.product_type === 'physical')

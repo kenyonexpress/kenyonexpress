@@ -78,7 +78,7 @@ export default async function AdminVouchersPage(props: {
     .select(
       `id, code, status, face_value_agorot, coupon_price_agorot,
        remaining_amount_due_agorot, expires_at, issued_at, redeemed_at, order_id,
-       product:products(name_he), supplier:suppliers(name)`,
+       product:products(name_he), supplier:suppliers!vouchers_supplier_id_fkey(name)`,
       { count: 'exact' },
     )
     .order('issued_at', { ascending: false })

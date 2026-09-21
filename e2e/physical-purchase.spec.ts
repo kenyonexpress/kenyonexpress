@@ -6,7 +6,7 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, emptyCart, expectHebrewRtl, walkCheckoutToPayment } from './helpers'
 
 /**
  * A signed-in customer buys a PHYSICAL product (marathon step 10, journey b).
@@ -38,16 +38,16 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     test.skip(await buy.isDisabled(), 'e2e-test-physical is out of stock')
 
     await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD)
+    await emptyCart(page)
     await page.goto(`/product/${E2E_PHYSICAL_SLUG}`)
 
     await buy.click()
     await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
 
     await page.goto('/checkout')
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות')).toBeVisible()
-    await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    await walkCheckoutToPayment(page, E2E_CUSTOMER_EMAIL)
 
     await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
     await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
@@ -60,8 +60,13 @@ test.describe('logged-in physical purchase @checkout @money', () => {
     await expect(page.getByTestId('coupon-code')).toHaveCount(0)
     await expect(page.getByTestId('coupon-qr')).toHaveCount(0)
 
-    // And the order is in the account.
+    // And the order is in the account: the list shows totals and status, the
+    // detail page names the product.
     await page.goto('/account/orders')
+    await expect(page.getByRole('heading', { name: 'ההזמנות שלי' })).toBeVisible({
+      timeout: 15_000,
+    })
+    await page.getByRole('link', { name: 'פרטים', exact: true }).first().click()
     await expect(page.getByText('מוצר פיזי לבדיקות אוטומטיות').first()).toBeVisible({
       timeout: 15_000,
     })

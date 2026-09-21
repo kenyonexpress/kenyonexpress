@@ -84,7 +84,7 @@ export default async function AdminOrdersPage(props: {
   let query = supabase
     .from('orders')
     .select(
-      'id, invoice_number, status, total_ils, created_at, user_id, profiles(full_name, email), order_items(product_type)',
+      'id, invoice_number, status, total_ils, created_at, user_id, order_items(product_type)',
       {
         count: 'exact',
       },
@@ -103,8 +103,18 @@ export default async function AdminOrdersPage(props: {
 
   const { data: orders, count, error } = await query
 
+  // orders.user_id references auth.users, so there is no relationship for a
+  // `profiles(...)` embed to follow (PGRST200): the customer column is a
+  // second read keyed by the page's user ids. Same fix as [id]/page.tsx.
+  const userIds = [...new Set((orders ?? []).map((o) => o.user_id).filter(Boolean))] as string[]
+  const { data: profileRows } =
+    userIds.length > 0
+      ? await supabase.from('profiles').select('id, full_name, email').in('id', userIds)
+      : { data: [] as { id: string; full_name: string | null; email: string | null }[] }
+  const profilesById = new Map((profileRows ?? []).map((p) => [p.id, p]))
+
   const rows: OrderRow[] = (orders ?? []).map((order) => {
-    const profile = Array.isArray(order.profiles) ? order.profiles[0] : order.profiles
+    const profile = order.user_id ? profilesById.get(order.user_id) : undefined
     const lines = (Array.isArray(order.order_items) ? order.order_items : []) as {
       product_type: string
     }[]
