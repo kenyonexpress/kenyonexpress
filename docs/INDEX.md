@@ -179,6 +179,7 @@ one.
 | [PERFORMANCE-BUDGET.md](PERFORMANCE-BUDGET.md) | ✅ | Measured 2026-09-06 against a real pnpm start build on port 3311, with |
 | [PERF.md](PERF.md) | ✅ | ‏SECTIONS 84. נמדד ‏22.09.2026: שמונת הפריטים מול מה שיש, ‏Lighthouse מדומה ו-provided, ‏bundle, תמונות, מטמון. |
 | [ADMIN-OPS.md](ADMIN-OPS.md) | ✅ | ‏SECTIONS 85. נמדד ‏22.09.2026: שבעת פריטי התפעול מול מה שיש; ‏KPI מימוש והחזרים, יומן ספק, התאמות, חסימה, ‏CSV ללוג, עורך הגדרות. |
+| [APP.md](APP.md) | ✅ | ‏SECTIONS 87. נמדד ‏22.09.2026: ‏splash ל-iOS, ‏deep links ‏(404 עד env), ‏shortcuts, ‏E2E ‏8/8; ‏TWA נדחה לפי ‏D1→M1. |
 | [DX.md](DX.md) | ✅ | ‏SECTIONS 86. נמדד ‏22.09.2026: שבעת פריטי ה-DX מול מה שיש; גלריית רכיבים ב-`/dev/components` במקום ‏Storybook, ‏pre-commit עם ‏tsc ו-vitest על ה-index, ‏CONTRIBUTING, ‏VS Code על ‏Biome. |
 | [PAYOUT-ENGINE.md](PAYOUT-ENGINE.md) | ✅ | ‏SECTIONS 55. נבנה ‏22.09.2026: ריצת תשלומים יומית מהיומן, מה לא אוטומטי ולמה, ומה נמדד. |
 | [POST-LAUNCH-BACKLOG.md](POST-LAUNCH-BACKLOG.md) | ✅ | Everything deliberately deferred, with the measurement or the argument behind |

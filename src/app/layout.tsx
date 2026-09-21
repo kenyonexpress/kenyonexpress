@@ -7,6 +7,7 @@ import InstallPrompt from '@/components/pwa/InstallPrompt'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 import { CONSENT_PREPAINT_SCRIPT } from '@/lib/analytics/consent'
 import { readThirdPartyConfig, validatedConfig } from '@/lib/analytics/third-party'
+import { startupImages } from '@/lib/pwa/splash'
 import { SITE } from '@/styles/tokens'
 import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -85,6 +86,9 @@ export const metadata: Metadata = {
     capable: true,
     title: 'Kenyon',
     statusBarStyle: 'default',
+    // One launch image per device size; without an exact match Safari shows
+    // white. The table and the generator are in src/lib/pwa/splash.ts.
+    startupImage: startupImages(),
   },
   icons: {
     apple: '/icons/apple-touch-icon.png',
@@ -102,6 +106,9 @@ export const metadata: Metadata = {
  */
 export const viewport: Viewport = {
   themeColor: SITE.brand.primary,
+  // Lets the page extend under the notch and the home indicator when
+  // installed; the bottom tab bar pads itself with env(safe-area-inset-bottom).
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { SITE } from '@/styles/tokens'
 import { describe, expect, it } from 'vitest'
 import manifest from './manifest'
@@ -56,6 +56,26 @@ describe('web app manifest', () => {
   it('starts at a bare URL, so the cached document is the one that is served', () => {
     // A `?utm_source=pwa` here makes every launch a cache miss.
     expect(manifest().start_url).toBe('/')
+  })
+
+  it('offers launcher shortcuts that are real storefront pages', () => {
+    const shortcuts = manifest().shortcuts ?? []
+    expect(shortcuts.length).toBeGreaterThanOrEqual(3)
+    for (const shortcut of shortcuts) {
+      const segment = shortcut.url.replace(/^\//, '')
+      const candidates = ['(store)', '(account)', '(shop)', '(main)'].map(
+        (group) => `src/app/${group}/${segment}/page.tsx`,
+      )
+      expect(
+        candidates.some((p) => existsSync(p)),
+        shortcut.url,
+      ).toBe(true)
+    }
+  })
+
+  it('does not point the browser at the Expo app as a related application', () => {
+    expect(manifest().prefer_related_applications).toBe(false)
+    expect(manifest().id).toBe('/')
   })
 
   it('is standalone, not fullscreen: a hidden status bar on checkout reads as phishing', () => {

@@ -1,6 +1,8 @@
 # KenyonExpress — Project State
 
-Updated: 2026-09-22 (‏SECTIONS 86 ‏(DX) - **ארבעה משבעה היו ולא נגעתי בהם ‏(seed עברי ב-4 קבצים, ‏ADRs, תבנית ‏PR, ‏CODEOWNERS), אחד היה חלקי ושניים חסרו.** נוסף: **‏`/dev/components`** במקום ‏Storybook ‏(כל פרימיטיב ב-`ui/` על הטוקנים האמיתיים ב-RTL, צבעים ומידות מ-`tokens.ts`, ‏404 ב-production, טסט רינדור), **‏pre-commit עם ‏tsc ו-`vitest related` על ה-index** ‏(`scripts/precommit-gate.mjs`; נמדד: ‏3.9 שניות על שני קבצים, ‏tsc מלא ‏13.3), **‏CONTRIBUTING.md**, ‏ADR ‏0013 ‏(דגלים) ו-0014 ‏(חסימה ב-auth), ו-**‏`.vscode` תוקן מ-Prettier ל-Biome** עם ‏`extensions.json`. ‏Storybook נדחה במפורש: ‏build שני ומאות חבילות כדי לרנדר ‏11 פרימיטיבים שהאפליקציה מרנדרת בעצמה. ‏`docs/DX.md`. **המשך מ (תור SECTIONS): סעיף ‏87 ‏(STORE-APP).**)
+Updated: 2026-09-22 (‏SECTIONS 87 ‏(STORE-APP) - **חמישה משישה היו או הושלמו; ה-TWA נדחה במפורש לפי ‏D1→M1 ‏(`ARCHITECTURE-MOBILE-SUPERAPP.md` ‏§11.6: עטיפות החנות הוחלפו ב-RN+Expo, ‏`apps/mobile` = ‏`co.il.kenyonexpress.app`).** **פגם חי שנמצא ותוקן:** ‏`app.json` של האפליקציה מצהיר ‏`autoVerify` ו-`applinks` על ‏`/account`, ‏`/checkout`, ‏`/product`, ואף אחד משני קבצי ה-deep-link לא היה קיים באתר. נוסף: ‏`/.well-known/assetlinks.json` ו-`apple-app-site-association` מ-`src/lib/pwa/deep-links.ts`, מונעי ‏env ‏(`ANDROID_APP_SHA256_FINGERPRINTS`, ‏`IOS_APP_TEAM_ID`) ו-**404 עד שמוגדרים**, עם טסט שהמזהים והנתיבים שווים ל-`app.json`; ‏**10 תמונות פתיחה ל-iOS** ‏(`splash.ts` + ‏`generate-pwa-splash.mjs`, ‏9–24 ‏kB, טסט קורא ‏IHDR); ‏`viewportFit: 'cover'`; במניפסט ‏`id`, ‏`prefer_related_applications: false` ו-3 ‏shortcuts לדפים שהטסט מוצא על הדיסק; ‏`e2e/pwa.spec.ts` **‏8/8** ב-chromium ו-mobile-chrome מול ה-build. ‏Next 16 כותב ‏`mobile-web-app-capable` ולא ‏`apple-`; ה-spec מקבל את שניהם. ‏`docs/APP.md`. **המשך מ (תור SECTIONS): סעיף ‏88 ‏(FINAL-AUDIT-V2).**)
+
+קודם: 2026-09-22 (‏SECTIONS 86 ‏(DX) - **ארבעה משבעה היו ולא נגעתי בהם ‏(seed עברי ב-4 קבצים, ‏ADRs, תבנית ‏PR, ‏CODEOWNERS), אחד היה חלקי ושניים חסרו.** נוסף: **‏`/dev/components`** במקום ‏Storybook ‏(כל פרימיטיב ב-`ui/` על הטוקנים האמיתיים ב-RTL, צבעים ומידות מ-`tokens.ts`, ‏404 ב-production, טסט רינדור), **‏pre-commit עם ‏tsc ו-`vitest related` על ה-index** ‏(`scripts/precommit-gate.mjs`; נמדד: ‏3.9 שניות על שני קבצים, ‏tsc מלא ‏13.3), **‏CONTRIBUTING.md**, ‏ADR ‏0013 ‏(דגלים) ו-0014 ‏(חסימה ב-auth), ו-**‏`.vscode` תוקן מ-Prettier ל-Biome** עם ‏`extensions.json`. ‏Storybook נדחה במפורש: ‏build שני ומאות חבילות כדי לרנדר ‏11 פרימיטיבים שהאפליקציה מרנדרת בעצמה. ‏`docs/DX.md`. **המשך מ (תור SECTIONS): סעיף ‏87 ‏(STORE-APP).**)
 
 קודם: 2026-09-22 (‏SECTIONS 85 ‏(ADMIN-OPS) - **שלושה משבעה היו שלמים ולא נגעתי בהם, ארבעה הושלמו.** היה: לוג עם ‏diff, תפקידים, ‏CSV לדוחות. נוסף: **‏KPI מימוש והחזרים** ‏(4 כרטיסים ב-analytics, יחסים בנקודות בסיס שלמות), **יומן תשלומים לפי ספק** ‏(סינון ‏`?supplier=`, מקטע בדף הספק, ‏CSV של השורות), **התאמה ידנית** על דוח שטרם אושר ‏(שורת ‏`adjustment` חתומה ‏±10,000 ₪ עם סיבה, סך מותנה בערך שנקרא, פיצוי אם הסך נכשל), **חסימת משתמש** דרך ‏`auth.users.banned_until` עם סיבה ו-audit ‏(GoTrue מסרב לטוקן חסום ב-`getUser`, ולכן אין צורך בבדיקה בכל שער), **‏CSV ללוג הפעילות** לפי המסננים עם ה-diff משוטח, ו-**‏`/admin/settings`**: עורך ל-`referral_program_settings` ‏(0 שורות בפרודקשן מאז ‏098; כתיבה על מפתח השירות כי המדיניות היחידה היא ‏SELECT). **נמדד ב-BEGIN…ROLLBACK מול פרודקשן:** ההתאמה עוברת את ה-CHECK והטריגרים ‏(2 רשומות ‏audit מהטריגרים + אחת עם הסיבה), ה-upsert עובר, וה-CHECK ‏`referral_settings_amounts` חשף שהטופס התיר ‏0 כ'ללא מגבלה' וזה תוקן. ההערה ב-`actions/admin/payouts.ts` על '081 לא הוחלה' מיושנת: הטבלאות קיימות, ‏0 דוחות. ‏`docs/ADMIN-OPS.md`. **המשך מ (תור SECTIONS): סעיף ‏86 ‏(DX).**)
 
@@ -687,6 +689,20 @@ SECTIONS 40 של סשן אחר, כולה untracked. לא נגעתי בה. הבס
 שערים: ‏6522 טסטים ב-520 קבצים, ‏type-check, ‏lint ו-build ירוקים.
 קומיטים ‏`9488d6981` ו-`29b0a60b5` נדחפו.
 
+
+### ‏22.09: ‏SECTIONS 87 ‏(STORE-APP). המשך מ (תור SECTIONS): סעיף 88
+
+**המסמך: ‏`docs/APP.md`.** תשעה פריטים, מה היה, מה נוסף, מה נמדד מול השרת,
+וצעדי הבעלים להפעלת ה-deep links ‏(SHA-256 מ-Play, ‏Team ID מ-Apple, פריסה
+מחדש כי ה-routes סטטיים).
+
+**החלטות שהתקבלו לבד:**
+
+- ‏TWA/Bubblewrap לא נבנה: ציטוט של ‏D1→M1 ולא החלטה חדשה. שתי אפליקציות
+  עם אותו שם בחנות היו הנזק.
+- ‏404 ולא ‏placeholder בקבצי ה-deep-link: מערכת ההפעלה שומרת אימות כושל ליום.
+- ‏`related_applications` לא הוצהר עד שהאפליקציה בחנות.
+- ‏`screenshots` במניפסט לא נוספו: דורשים צילומים אמיתיים.
 
 ### ‏22.09: ‏SECTIONS 86 ‏(DX). המשך מ (תור SECTIONS): סעיף 87
 
