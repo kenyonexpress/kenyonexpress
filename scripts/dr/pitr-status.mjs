@@ -13,6 +13,7 @@
  * See pitr-lib.mjs for why "could not measure" is a separate answer.
  */
 
+import { execFileSync } from 'node:child_process'
 import { EXIT, exitCodeFor, pitrVerdict } from './pitr-lib.mjs'
 
 const PROJECT_REF = process.env.SUPABASE_PROJECT_REF || 'ixvwfbuvfxxsjiywhbbb'
@@ -27,11 +28,32 @@ function cannotMeasure(msg) {
   process.exit(EXIT.CANNOT_MEASURE)
 }
 
-const token = process.env.SUPABASE_ACCESS_TOKEN
+/**
+ * The token, from the environment or, on a Mac where `supabase login` has been
+ * run, from the CLI's own keychain entry (stored as `go-keyring-base64:` +
+ * base64 of the sbp_ token). Measured 2026-09-22: the second path is the only
+ * one this project's laptop has, and a check that cannot run on the one
+ * machine that runs checks is a check nobody runs.
+ */
+function keychainToken() {
+  if (process.platform !== 'darwin') return null
+  try {
+    const raw = execFileSync('security', ['find-generic-password', '-s', 'Supabase CLI', '-w'], {
+      encoding: 'utf8',
+    }).trim()
+    const b64 = raw.startsWith('go-keyring-base64:') ? raw.slice('go-keyring-base64:'.length) : raw
+    const decoded = Buffer.from(b64, 'base64').toString('utf8')
+    return decoded.startsWith('sbp_') ? decoded : null
+  } catch {
+    return null
+  }
+}
+const token = process.env.SUPABASE_ACCESS_TOKEN || keychainToken()
 if (!token) {
   cannotMeasure(
-    'SUPABASE_ACCESS_TOKEN is not set. Create one at https://supabase.com/dashboard/account/tokens ' +
-      'and re-run. Without it this check has no opinion, which is the honest answer.',
+    'SUPABASE_ACCESS_TOKEN is not set and no Supabase CLI login is in the keychain. Create one at ' +
+      'https://supabase.com/dashboard/account/tokens and re-run. Without it this check has no opinion, ' +
+      'which is the honest answer.',
   )
 }
 
@@ -58,6 +80,32 @@ try {
   payload = JSON.parse(body)
 } catch {
   cannotMeasure(`response was not JSON (${body.slice(0, 200)})`)
+}
+
+// Second reading, same token: what the platform actually holds. The add-on
+// list says what was bought; this says what exists to restore from.
+try {
+  const backupsRes = await fetch(`${API}/v1/projects/${PROJECT_REF}/database/backups`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+  })
+  if (backupsRes.ok) {
+    const b = await backupsRes.json()
+    const list = Array.isArray(b.backups) ? b.backups : []
+    const times = list
+      .map((x) => x.inserted_at)
+      .filter(Boolean)
+      .sort()
+    const window = times.length
+      ? ` window=${times[0].slice(0, 10)}..${times[times.length - 1].slice(0, 10)}`
+      : ''
+    note(
+      `backups: pitr_enabled=${b.pitr_enabled} walg_enabled=${b.walg_enabled} physical=${list.length}${window}`,
+    )
+  } else {
+    note(`backups endpoint answered ${backupsRes.status}; the add-on verdict below stands alone`)
+  }
+} catch (err) {
+  note(`backups endpoint unreachable: ${err.message}`)
 }
 
 const verdict = pitrVerdict(payload)

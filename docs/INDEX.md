@@ -165,6 +165,7 @@ one.
 | [DEPLOYMENT.md](DEPLOYMENT.md) | ✅ | Verified against the real Vercel project on 2026-09-02, through the CLI, not |
 | [DNS-CUTOVER-PLAN.md](DNS-CUTOVER-PLAN.md) | ✅ | Nothing here has been run. Executing the cutover is a hard stop and needs |
 | [DR-RUNBOOK.md](DR-RUNBOOK.md) | ✅ | ‏נכתב ‏02.09.2026. תרחיש הייחוס: פרויקט ה-Supabase המאוחסן אבד או הושחת. |
+| [DR.md](DR.md) | ✅ | ‏SECTIONS 82. נמדד ‏22.09.2026: ‏PITR כבוי, ‏7 גיבויים פיזיים, ‏R2 עדיין כבוי; ששת הפריטים מול מה שיש. |
 | [ETERNAL-OPS.md](ETERNAL-OPS.md) | ✅ | תאריך: 2026-08-19. |
 | [GROWTH-LAUNCH-MARKETING.md](GROWTH-LAUNCH-MARKETING.md) | ✅ | תאריך: 2026-08-19. |
 | [INCIDENT-PLAYBOOKS.md](INCIDENT-PLAYBOOKS.md) | ✅ | Five named incidents, with steps. Written to be followed by someone who did not |
