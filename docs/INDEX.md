@@ -179,6 +179,7 @@ one.
 | [PERFORMANCE-BUDGET.md](PERFORMANCE-BUDGET.md) | ✅ | Measured 2026-09-06 against a real pnpm start build on port 3311, with |
 | [PERF.md](PERF.md) | ✅ | ‏SECTIONS 84. נמדד ‏22.09.2026: שמונת הפריטים מול מה שיש, ‏Lighthouse מדומה ו-provided, ‏bundle, תמונות, מטמון. |
 | [ADMIN-OPS.md](ADMIN-OPS.md) | ✅ | ‏SECTIONS 85. נמדד ‏22.09.2026: שבעת פריטי התפעול מול מה שיש; ‏KPI מימוש והחזרים, יומן ספק, התאמות, חסימה, ‏CSV ללוג, עורך הגדרות. |
+| [DX.md](DX.md) | ✅ | ‏SECTIONS 86. נמדד ‏22.09.2026: שבעת פריטי ה-DX מול מה שיש; גלריית רכיבים ב-`/dev/components` במקום ‏Storybook, ‏pre-commit עם ‏tsc ו-vitest על ה-index, ‏CONTRIBUTING, ‏VS Code על ‏Biome. |
 | [PAYOUT-ENGINE.md](PAYOUT-ENGINE.md) | ✅ | ‏SECTIONS 55. נבנה ‏22.09.2026: ריצת תשלומים יומית מהיומן, מה לא אוטומטי ולמה, ומה נמדד. |
 | [POST-LAUNCH-BACKLOG.md](POST-LAUNCH-BACKLOG.md) | ✅ | Everything deliberately deferred, with the measurement or the argument behind |
 | [RELEASE-PROCESS.md](RELEASE-PROCESS.md) | ✅ | back. |
@@ -443,6 +444,8 @@ listed here because the index is where people look, and checked by
 | [adr/0010-no-search-ui-then-header.md](adr/0010-no-search-ui-then-header.md) | ✅ | סטטוס: עודכן ‏02.09. |
 | [adr/0011-refs-based-visual-parity.md](adr/0011-refs-based-visual-parity.md) | ✅ | סטטוס: נאכף. |
 | [adr/0012-one-code-agent-per-repo.md](adr/0012-one-code-agent-per-repo.md) | ✅ | סטטוס: כלל עצירה קשה. |
+| [adr/0013-feature-flags-env-over-table.md](adr/0013-feature-flags-env-over-table.md) | ✅ | סטטוס: נאכף. מאז: ‏22.09.2026 ‏(SECTIONS 83). |
+| [adr/0014-bans-live-in-auth-users.md](adr/0014-bans-live-in-auth-users.md) | ✅ | סטטוס: נאכף. מאז: ‏22.09.2026 ‏(SECTIONS 85). |
 | [adr/README.md](adr/README.md) | ✅ | ‏נכתבו ‏02.09.2026 (‏STEP 85), כתקצירים המפנים לראיות. כל החלטה כאן כבר |
 
 ---

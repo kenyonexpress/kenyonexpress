@@ -1,2 +1,1 @@
-#!/bin/sh
-pnpm exec lint-staged
+pnpm exec lint-staged && node scripts/precommit-gate.mjs
