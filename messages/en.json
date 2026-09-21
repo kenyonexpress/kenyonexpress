@@ -127,7 +127,16 @@
       "errorRateLimited": "Data downloads are limited to three per hour. Please try again in a few minutes.",
       "errorGeneric": "We could not produce the file. Please try again, and contact us if it keeps happening.",
       "errorNetwork": "We could not produce the file. Check your connection and try again."
-    }
+    },
+    "invoices": "My invoices",
+    "invoicesCount": "issued documents",
+    "invoicesEmpty": "No invoices yet. They are issued automatically after every payment.",
+    "invoiceView": "View document",
+    "invoicePending": "Being issued",
+    "invoiceVat": "VAT",
+    "invoiceTypeCoupon": "Coupon receipt",
+    "invoiceTypeTax": "Tax invoice/receipt",
+    "invoiceTypeCredit": "Credit note"
   },
   "reviews": {
     "sortLabel": "Sort:",

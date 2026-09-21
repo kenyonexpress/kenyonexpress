@@ -127,7 +127,16 @@
       "errorRateLimited": "הורדת הנתונים מוגבלת לשלוש פעמים בשעה. נסו שוב בעוד כמה דקות.",
       "errorGeneric": "לא הצלחנו להפיק את הקובץ. נסו שוב, ואם זה חוזר פנו אלינו.",
       "errorNetwork": "לא הצלחנו להפיק את הקובץ. בדקו את החיבור ונסו שוב."
-    }
+    },
+    "invoices": "החשבוניות שלי",
+    "invoicesCount": "מסמכים שהונפקו",
+    "invoicesEmpty": "עדיין אין חשבוניות. הן מונפקות אוטומטית אחרי כל תשלום.",
+    "invoiceView": "לצפייה במסמך",
+    "invoicePending": "בהנפקה",
+    "invoiceVat": "מע״מ",
+    "invoiceTypeCoupon": "קבלה על קופון",
+    "invoiceTypeTax": "חשבונית מס/קבלה",
+    "invoiceTypeCredit": "חשבונית זיכוי"
   },
   "reviews": {
     "sortLabel": "מיון:",

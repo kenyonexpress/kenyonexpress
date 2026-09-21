@@ -10,6 +10,7 @@ const ITEMS = [
   { href: '/account', label: t('account.overview') },
   { href: '/account/details', label: t('account.details') },
   { href: '/account/orders', label: t('account.orders') },
+  { href: '/account/invoices', label: t('account.invoices') },
   { href: '/account/coupons', label: t('account.coupons') },
   { href: '/account/wishlist', label: t('account.wishlist') },
   { href: '/account/wallet', label: t('account.wallet') },

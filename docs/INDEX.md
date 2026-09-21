@@ -385,6 +385,7 @@ one.
 | [SHIPPING.md](SHIPPING.md) | ✅ | Measured 2026-09-09 against production (ixvwfbuvfxxsjiywhbbb). |
 | [SOURCING-RULES.md](SOURCING-RULES.md) | ✅ | Authoritative. Read this before changing any asset, string or geometry value. |
 | [STAGING.md](STAGING.md) | ✅ | סביבת ביניים: הבאנר נבנה, כל השאר חסום על גורמים חיצוניים. נמדד 2026-09-10. |
+| [TAX-INVOICING.md](TAX-INVOICING.md) | ✅ | ‏SECTIONS 56. נמדד ‏22.09.2026: מה מסעיף ‏68 חי, ומה נוסף: רשימת חשבוניות ללקוח ומסך חיפוש והחזרה לתור לאדמין. |
 | [SUPPLIER-SELF-SERVICE.md](SUPPLIER-SELF-SERVICE.md) | ✅ | ‏SECTIONS 54. נבנה ‏21.09.2026: שדות פרופיל, הצעות מחיר ותמונות בדלי ממתין, מה היה קיים ומה נמדד. |
 | [SPAWNER-REVIVAL-MEASURED.md](SPAWNER-REVIVAL-MEASURED.md) | 🕯️ | נמדד 19.08.2026 ב-09:32. תוספת ל-docs/ETERNAL-OPS.md §1.2 ו-§5, ותיקון |
 | [SUBSCRIPTIONS.md](SUBSCRIPTIONS.md) | ✅ | This section is additive. Everything below it is the 2026-09-02 write-up of |
