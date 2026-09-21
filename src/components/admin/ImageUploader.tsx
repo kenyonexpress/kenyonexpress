@@ -187,6 +187,9 @@ export default function ImageUploader({
                 src={url}
                 alt="תמונת מוצר"
                 fill
+                // A preview thumbnail; without `sizes` a fill image asks for the
+                // viewport-wide candidate for a box that is never wider than this.
+                sizes="160px"
                 className="object-cover rounded-lg border border-gray-200"
               />
               <button
