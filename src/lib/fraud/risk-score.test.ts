@@ -19,6 +19,8 @@ const calm: RiskSignals = {
   ordersFromIpLastHour: 1,
   giftToOtherRecipient: false,
   discountShareBps: 0,
+  smallOrdersLastDay: 0,
+  refundRequestsLastWeek: 0,
 }
 
 describe('assessRisk', () => {
@@ -92,6 +94,8 @@ describe('assessRisk', () => {
       previousPaidOrders: 0,
       totalAgorot: 500_000,
       ordersFromIpLastHour: 9,
+      smallOrdersLastDay: 9,
+      refundRequestsLastWeek: 9,
       giftToOtherRecipient: true,
       discountShareBps: 10_000,
     })
@@ -113,6 +117,8 @@ describe('assessRisk', () => {
       previousPaidOrders: 0,
       totalAgorot: 500_000,
       ordersFromIpLastHour: 9,
+      smallOrdersLastDay: 9,
+      refundRequestsLastWeek: 9,
       giftToOtherRecipient: true,
       discountShareBps: 10_000,
     })
@@ -137,5 +143,24 @@ describe('riskReasonText', () => {
   it('hands back an unknown reason rather than rendering "undefined"', () => {
     // Old rows survive a re-tuning of the table. The queue must render them.
     expect(riskReasonText('retired_signal')).toBe('retired_signal')
+  })
+})
+
+describe('the two section-57 pattern rules', () => {
+  it('reads three small paid orders in a day as card testing, medium weight', () => {
+    const one = assessRisk({ ...calm, smallOrdersLastDay: 3 })
+    expect(one.reasons).toContain('many_small_orders')
+    expect(one.band).toBe('elevated')
+    expect(assessRisk({ ...calm, smallOrdersLastDay: 2 }).reasons).not.toContain(
+      'many_small_orders',
+    )
+  })
+
+  it('reads two refund requests in a week as a pattern, and with a second medium signal routes to review', () => {
+    const alone = assessRisk({ ...calm, refundRequestsLastWeek: 2 })
+    expect(alone.reasons).toEqual(['rapid_refund_requests'])
+    expect(alone.band).toBe('elevated')
+    const paired = assessRisk({ ...calm, refundRequestsLastWeek: 2, smallOrdersLastDay: 3 })
+    expect(paired.band).toBe('review')
   })
 })

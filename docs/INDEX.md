@@ -142,6 +142,7 @@ one.
 | [AUTH-MODEL.md](AUTH-MODEL.md) | ⚠️ | נמדד מול פרודקשן (ixvwfbuvfxxsjiywhbbb) ב-19.08.2026. כל מספר כאן הוא תוצאה |
 | [DB-SECURITY-MODEL.md](DB-SECURITY-MODEL.md) | ✅ | ‏53 טבלאות ב-public, כולן עם RLS מופעל, כולן rlsforced = false (הבעלים ו-servicerole עוקפים). |
 | [FRAUD.md](FRAUD.md) | ✅ | שכבת ההונאה והניצול לרעה: מה מסרב, מה רק מנתב, ומה מכל זה חי כבר היום. |
+| [FRAUD-RULES.md](FRAUD-RULES.md) | ✅ | ‏SECTIONS 57. נכתב ‏22.09.2026: טבלת הכללים, מה מסרב ומה מנתב, רשימת החסימה, ההתראה, ומה נמדד. |
 | [OWASP-TOP-10.md](OWASP-TOP-10.md) | ✅ | Measured 2026-09-09 against the working tree, the live deployment and the |
 | [PRICING-COMPLIANCE.md](PRICING-COMPLIANCE.md) | ✅ | Measured 2026-09-09 against production (ixvwfbuvfxxsjiywhbbb). |
 | [RATE-LIMITS.md](RATE-LIMITS.md) | ✅ | נמדד מול העץ ב-09.09.2026. כל מספר כאן נקרא מ-src/lib/rate-limit/policies.ts |

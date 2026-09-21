@@ -1,5 +1,14 @@
 # `migrations/pending/`
 
+## 2026-09-22: 234 WRITTEN, not applied - רשימת חסימה עם סיבה ותוקף
+
+‏`234_fraud_blocklist.sql`. סעיף ‏57. טבלה אחת, ‏`fraud_blocklist` ‏(אימייל /
+טלפון / ‏IP / טביעת כרטיס, סיבה, תוקף, מי רשם ומי הסיר), ‏RLS דלוק **בלי
+מדיניות** ובלי הרשאות לתפקידי לקוח: הקופה קוראת ב-service role ומסרבת על
+התאמה פעילה, והאדמין כותב ב-service role מ-`/admin/fraud` עם ‏audit. ערכים
+מנורמלים בקוד לפני כתיבה וחיפוש, ואינדקס ייחודי חלקי מבטיח שורה פעילה אחת
+לערך. בלי תלות בקובץ אחר, כולל ‏202. ‏`docs/FRAUD-RULES.md`.
+
 ## 2026-09-22: 233 WRITTEN, not applied - סוג הודעה אחד, ‏`payout_statement_ready`
 
 ‏`233_payout_statement_ready_kind.sql`. סעיף ‏55. המייל שספק מקבל כשריצת

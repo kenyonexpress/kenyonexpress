@@ -954,6 +954,7 @@ describe('the pending migration inventory', () => {
       '231_pending_exports_deletions.sql',
       '232_supplier_self_service.sql',
       '233_payout_statement_ready_kind.sql',
+      '234_fraud_blocklist.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

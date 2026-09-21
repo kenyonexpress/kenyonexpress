@@ -1,6 +1,8 @@
+import { type BlocklistRow, normalizeBlockValue } from '@/lib/fraud/blocklist'
 import { isDisposableEmail } from '@/lib/fraud/disposable-email'
 import { type RiskAssessment, type RiskSignals, assessRisk } from '@/lib/fraud/risk-score'
 import type { VelocityCounts } from '@/lib/fraud/velocity'
+import { sendAlert } from '@/lib/observability/alert'
 import { log } from '@/lib/observability/log'
 import type { createAdminClient } from '@/lib/supabase/admin'
 
@@ -202,6 +204,8 @@ export type RiskContext = {
   discountShareBps: number
   giftToOtherRecipient: boolean
   tokenId: string | null
+  /** The caller's address as the request reported it, or null. */
+  clientIp: string | null
   now: Date
 }
 
@@ -214,9 +218,18 @@ export async function readRiskSignals(
   context: RiskContext,
   velocity: VelocityCounts,
 ): Promise<RiskSignals> {
-  const [profile, previousPaidOrders] = await Promise.all([
+  const [
+    profile,
+    previousPaidOrders,
+    smallOrdersLastDay,
+    refundRequestsLastWeek,
+    ordersFromIpLastHour,
+  ] = await Promise.all([
     readProfile(client, context.userId),
     countPreviousPaidOrders(client, context.userId, context.orderId),
+    countSmallPaidOrdersLastDay(client, context.userId, context.orderId, context.now),
+    countRefundRequestsLastWeek(client, context.userId, context.now),
+    countOrdersFromIpLastHour(client, context.clientIp, context.orderId, context.now),
   ])
 
   return {
@@ -227,9 +240,11 @@ export async function readRiskSignals(
     disposableEmail: profile.email ? isDisposableEmail(profile.email) : false,
     previousPaidOrders,
     totalAgorot: context.totalAgorot,
-    // Left to the caller: the IP count is a rate-limiter question, not a table
-    // one, and nothing stores an IP against an order until 202 is applied.
-    ordersFromIpLastHour: 0,
+    // From `order_risk_assessments.client_ip`, which 202 adds; until then the
+    // read answers zero and says so once in the log.
+    ordersFromIpLastHour,
+    smallOrdersLastDay,
+    refundRequestsLastWeek,
     giftToOtherRecipient: context.giftToOtherRecipient,
     discountShareBps: context.discountShareBps,
   }
@@ -287,6 +302,121 @@ async function countPreviousPaidOrders(
  * scoring table is missing, and there is no version of this write that is worth
  * a customer's purchase.
  */
+/** Section 57: the card-testing shape. Paid orders in the last day under the
+ *  small-order line, this account, excluding the order being scored. */
+const SMALL_ORDER_ILS = 50
+export async function countSmallPaidOrdersLastDay(
+  client: Client,
+  userId: string,
+  exceptOrderId: string,
+  now: Date,
+): Promise<number> {
+  const since = new Date(now.getTime() - 24 * 3_600_000).toISOString()
+  const { count, error } = await client
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .neq('id', exceptOrderId)
+    .not('paid_at', 'is', null)
+    .gte('paid_at', since)
+    .lt('total_ils', SMALL_ORDER_ILS)
+  if (error) {
+    log.warn('fraud.small_orders_read_failed', { userId, reason: error.message })
+    return 0
+  }
+  return count ?? 0
+}
+
+/** Section 57: refund requests this account filed in the last week, any
+ *  order. `refund_requests` arrives with 202; a missing table reads as zero. */
+export async function countRefundRequestsLastWeek(
+  client: Client,
+  userId: string,
+  now: Date,
+): Promise<number> {
+  const since = new Date(now.getTime() - 7 * 86_400_000).toISOString()
+  const { count, error } = await client
+    .from('refund_requests' as never)
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', since)
+  if (error) {
+    if (!isMissingTable(error.code)) {
+      log.warn('fraud.refund_requests_read_failed', { userId, reason: error.message })
+    }
+    return 0
+  }
+  return count ?? 0
+}
+
+/** Orders scored from the same address in the last hour, from the risk rows
+ *  202 stores. Zero without the table, zero without an address. */
+export async function countOrdersFromIpLastHour(
+  client: Client,
+  clientIp: string | null,
+  exceptOrderId: string,
+  now: Date,
+): Promise<number> {
+  if (!clientIp) return 0
+  const since = new Date(now.getTime() - 3_600_000).toISOString()
+  const { count, error } = await client
+    .from('order_risk_assessments')
+    .select('order_id', { count: 'exact', head: true })
+    .eq('client_ip', clientIp)
+    .neq('order_id', exceptOrderId)
+    .gte('created_at', since)
+  if (error) {
+    if (!isMissingTable(error.code)) {
+      log.warn('fraud.ip_orders_read_failed', { reason: error.message })
+    }
+    return 0
+  }
+  return count ?? 0
+}
+
+function isMissingTable(code: string | undefined): boolean {
+  return code === '42P01' || code === 'PGRST205' || code === 'PGRST106'
+}
+
+/**
+ * The operator's blocklist (234), read for the values this checkout carries.
+ * Each value is normalised the way the admin action normalised it before
+ * storing, so the lookup and the row agree on spelling. A missing table is
+ * "no matches": until 234 lands there is nothing to refuse on.
+ */
+export async function readBlocklistMatches(
+  client: Client,
+  values: { email: string | null; phone: string | null; ip: string | null; tokenId: string | null },
+): Promise<BlocklistRow[]> {
+  const wanted: { kind: string; value: string }[] = []
+  const email = normalizeBlockValue('email', values.email)
+  const phone = normalizeBlockValue('phone', values.phone)
+  const ip = normalizeBlockValue('ip', values.ip)
+  const token = normalizeBlockValue('card_fingerprint', values.tokenId)
+  if (email) wanted.push({ kind: 'email', value: email })
+  if (phone) wanted.push({ kind: 'phone', value: phone })
+  if (ip) wanted.push({ kind: 'ip', value: ip })
+  if (token) wanted.push({ kind: 'card_fingerprint', value: token })
+  if (wanted.length === 0) return []
+  const { data, error } = await client
+    .from('fraud_blocklist' as never)
+    .select('kind, value, reason, expires_at, removed_at')
+    .is('removed_at', null)
+    .in(
+      'value',
+      wanted.map((w) => w.value),
+    )
+  if (error) {
+    if (!isMissingTable(error.code))
+      log.warn('fraud.blocklist_read_failed', { reason: error.message })
+    return []
+  }
+  const rows = (data ?? []) as unknown as BlocklistRow[]
+  // `value` alone can collide across kinds only in theory (an email is never
+  // an IP), but the kind is checked anyway so a row means what it says.
+  return rows.filter((row) => wanted.some((w) => w.kind === row.kind && w.value === row.value))
+}
+
 let missingTableWarned = false
 
 export async function recordRiskAssessment(
@@ -361,6 +491,21 @@ export async function scoreOrder(
       signals,
       clientIp,
     })
+    if (assessment.band === 'review') {
+      // Section 57's "alert on rule hits". The push carries the order id and
+      // the reason codes, never the signals themselves (an email, an IP).
+      log.warn('fraud.review_band', {
+        orderId: context.orderId,
+        score: assessment.score,
+        reasons: assessment.reasons,
+      })
+      await sendAlert({
+        title: 'Fraud review',
+        message: `הזמנה ${context.orderId.slice(0, 8)} סומנה לבדיקה (ציון ${assessment.score}): ${assessment.reasons.join(', ')}`,
+        priority: 'high',
+        tags: ['rotating_light'],
+      })
+    }
     return assessment
   } catch (error) {
     // The boundary `beginCheckout` calls, and the order it is scoring HAS

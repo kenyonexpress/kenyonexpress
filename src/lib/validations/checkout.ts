@@ -284,6 +284,8 @@ export type CheckoutActionErrorCode =
   | 'PAYMENT_PROVIDER_ERROR'
   | 'PAYMENT_DECLINED'
   | 'RATE_LIMITED'
+  /** Section 57: an active blocklist match. Terminal, never retried. */
+  | 'BLOCKED'
   | 'CHECKOUT_DISABLED'
   | 'INTERNAL'
 

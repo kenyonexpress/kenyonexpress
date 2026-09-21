@@ -1,5 +1,12 @@
 # Apply order
 
+## 2026-09-22: 234, any order, one table with no client access
+
+`234_fraud_blocklist.sql` creates `fraud_blocklist` with RLS on and no
+policies (service role only), independent of every other file. **Reversal:**
+`DROP TABLE public.fraud_blocklist`; the checkout treats a missing table as
+"no matches", so nothing breaks either way.
+
 ## 2026-09-22: 233, any order, one notification kind
 
 `233_payout_statement_ready_kind.sql` rebuilds `notification_outbox_kind_check`

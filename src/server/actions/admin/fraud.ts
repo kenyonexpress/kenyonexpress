@@ -2,6 +2,13 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
+import {
+  BLOCKLIST_KIND_LABEL_HE,
+  MAX_REASON_LENGTH,
+  expiryFor,
+  isBlocklistKind,
+  normalizeBlockValue,
+} from '@/lib/fraud/blocklist'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -326,4 +333,144 @@ export async function resolveDispute(
   formData: FormData,
 ): Promise<FraudActionState> {
   return withActionContext('admin.dispute_resolve', () => runResolveDispute(prev, formData))
+}
+
+// ---------------------------------------------------------------------------
+// Section 57: the blocklist (migration 234). Add with a reason and an optional
+// expiry in days; remove with a note. Both audited, both normalised through
+// the same function the checkout looks values up with.
+// ---------------------------------------------------------------------------
+
+const blocklistAddSchema = z.object({
+  kind: z.string(),
+  value: z.string().trim().min(1).max(320),
+  reason: z.string().trim().min(3).max(MAX_REASON_LENGTH),
+  expires_days: z.string().trim().optional().default(''),
+})
+
+async function runAddBlocklistEntry(
+  _: FraudActionState,
+  formData: FormData,
+): Promise<FraudActionState> {
+  let session: AdminSessionInfo
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  const parsed = blocklistAddSchema.safeParse({
+    kind: formData.get('kind'),
+    value: formData.get('value'),
+    reason: formData.get('reason'),
+    expires_days: formData.get('expires_days') ?? '',
+  })
+  if (!parsed.success) return { error: 'יש למלא סוג, ערך וסיבה (לפחות 3 תווים).' }
+  if (!isBlocklistKind(parsed.data.kind)) return { error: 'סוג לא מוכר.' }
+  const value = normalizeBlockValue(parsed.data.kind, parsed.data.value)
+  if (!value) return { error: `הערך אינו ${BLOCKLIST_KIND_LABEL_HE[parsed.data.kind]} תקין.` }
+  const expiresAt = expiryFor(parsed.data.expires_days, new Date())
+  if (expiresAt === undefined) return { error: 'תוקף בימים: מספר שלם בין 1 ל-3650, או ריק.' }
+
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('fraud_blocklist' as never)
+    .insert({
+      kind: parsed.data.kind,
+      value,
+      reason: parsed.data.reason,
+      expires_at: expiresAt,
+      created_by: session.userId,
+    } as never)
+    .select('id')
+    .maybeSingle()
+  if (error) {
+    if (missing(error.code))
+      return { error: NOT_APPLIED.replace('202_fraud_abuse', '234_fraud_blocklist') }
+    if (error.code === '23505') return { error: 'הערך הזה כבר חסום.' }
+    log.warn('admin.blocklist_add_failed', { reason: error.message })
+    return { error: 'ההוספה נכשלה.' }
+  }
+  const row = data as { id: string } | null
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: 'admin',
+    action: 'created',
+    entityType: 'fraud_blocklist',
+    entityId: row?.id ?? null,
+    changes: { kind: parsed.data.kind, reason: parsed.data.reason, expires_at: expiresAt },
+    // The value itself stays out of the audit row: it is an email, a phone or
+    // a card fingerprint, and the audit log is read more widely than this table.
+    metadata: { value_hash_prefix: value.slice(0, 3) },
+  })
+  revalidatePath('/admin/fraud')
+  return { success: 'נוסף לרשימת החסימה.' }
+}
+
+const blocklistRemoveSchema = z.object({
+  id: z.string().uuid(),
+  note: z.string().trim().max(500).optional().default(''),
+})
+
+async function runRemoveBlocklistEntry(
+  _: FraudActionState,
+  formData: FormData,
+): Promise<FraudActionState> {
+  let session: AdminSessionInfo
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  const parsed = blocklistRemoveSchema.safeParse({
+    id: formData.get('id'),
+    note: formData.get('note') ?? '',
+  })
+  if (!parsed.success) return { error: 'מזהה לא תקין' }
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('fraud_blocklist' as never)
+    .update({
+      removed_at: new Date().toISOString(),
+      removed_by: session.userId,
+      removal_note: parsed.data.note || null,
+    } as never)
+    .eq('id', parsed.data.id)
+    .is('removed_at', null)
+    .select('id, kind')
+  if (error) {
+    if (missing(error.code))
+      return { error: NOT_APPLIED.replace('202_fraud_abuse', '234_fraud_blocklist') }
+    log.warn('admin.blocklist_remove_failed', { reason: error.message })
+    return { error: 'ההסרה נכשלה.' }
+  }
+  const rows = (data ?? []) as unknown as { id: string; kind: string }[]
+  const row = rows[0]
+  if (!row) return { error: 'הרשומה לא נמצאה או כבר הוסרה.' }
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: 'admin',
+    action: 'deleted',
+    entityType: 'fraud_blocklist',
+    entityId: row.id,
+    changes: { removed: true, note: parsed.data.note || null },
+    metadata: { kind: row.kind },
+  })
+  revalidatePath('/admin/fraud')
+  return { success: 'הוסר מרשימת החסימה.' }
+}
+
+export async function addBlocklistEntry(
+  state: FraudActionState,
+  formData: FormData,
+): Promise<FraudActionState> {
+  return withActionContext('admin.fraud.blocklist_add', () => runAddBlocklistEntry(state, formData))
+}
+
+export async function removeBlocklistEntry(
+  state: FraudActionState,
+  formData: FormData,
+): Promise<FraudActionState> {
+  return withActionContext('admin.fraud.blocklist_remove', () =>
+    runRemoveBlocklistEntry(state, formData),
+  )
 }

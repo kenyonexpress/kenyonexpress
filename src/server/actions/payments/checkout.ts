@@ -17,10 +17,12 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { blocklistDecision } from '@/lib/fraud/blocklist'
 import { turnstileErrorText, verifyTurnstile } from '@/lib/fraud/turnstile'
 import { checkVelocity } from '@/lib/fraud/velocity'
 import { giftWrapFeeAgorot, resolveGiftDeliverAt } from '@/lib/gifts/wrap'
 import { withActionContext } from '@/lib/observability/action-context'
+import { sendAlert } from '@/lib/observability/alert'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import {
@@ -54,7 +56,7 @@ import {
   trackServerEvent,
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
-import { readVelocityCounts, scoreOrder } from '@/server/fraud/signals'
+import { readBlocklistMatches, readVelocityCounts, scoreOrder } from '@/server/fraud/signals'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
 import { redirect } from 'next/navigation'
@@ -726,6 +728,31 @@ async function runBeginCheckout(
     return { ok: false, error: velocity.message, code: 'RATE_LIMITED' }
   }
 
+  // Section 57's blocklist: the one fraud rule that refuses outright. Checked
+  // after velocity and before the order exists, so a refused checkout leaves
+  // no pending order and no reserved stock. The customer gets one sentence;
+  // the kind and the reason go to the log and the operator push.
+  const clientIp = await getClientIp()
+  const blocklist = blocklistDecision(
+    await readBlocklistMatches(admin, {
+      email: user.email ?? null,
+      phone: null,
+      ip: clientIp,
+      tokenId: input.token_id ?? null,
+    }),
+    now,
+  )
+  if (blocklist.blocked) {
+    log.warn('checkout.blocklist_refused', { userId: user.id, kind: blocklist.kind })
+    await sendAlert({
+      title: 'Fraud blocklist hit',
+      message: `ניסיון תשלום נחסם (${blocklist.kind}): ${blocklist.reason}`,
+      priority: 'high',
+      tags: ['no_entry'],
+    })
+    return { ok: false, error: blocklist.message, code: 'BLOCKED' }
+  }
+
   // 4. Pending order + items snapshot
   //
   // Every money column here is integer agorot. 059 renamed the whole set
@@ -849,10 +876,11 @@ async function runBeginCheckout(
       discountShareBps,
       giftToOtherRecipient: Boolean(input.gift_recipient_email),
       tokenId: input.token_id ?? null,
+      clientIp,
       now,
     },
     velocityCounts,
-    await getClientIp(),
+    clientIp,
   )
 
   const itemGeneration = await resolveOrderItemGeneration(

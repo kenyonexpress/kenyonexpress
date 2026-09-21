@@ -1,3 +1,4 @@
+import BlocklistPanel from '@/components/admin/BlocklistPanel'
 import DisputeRow from '@/components/admin/DisputeRow'
 import NewDisputeForm from '@/components/admin/NewDisputeForm'
 import RefundRequestRow from '@/components/admin/RefundRequestRow'
@@ -6,6 +7,7 @@ import { requireSection } from '@/lib/admin/rbac'
 import { riskReasonText } from '@/lib/fraud/risk-score'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NOT_APPLIED, listDisputes } from '@/server/queries/disputes'
+import { listActiveBlocklist } from '@/server/queries/fraud-blocklist'
 
 export const metadata = { title: 'הונאה ומחלוקות' }
 
@@ -50,6 +52,7 @@ type RequestRow = {
 
 export default async function FraudPage() {
   await requireSection('payments', 'read')
+  const blocklist = await listActiveBlocklist()
 
   const admin = createAdminClient()
 
@@ -153,6 +156,24 @@ export default async function FraudPage() {
               />
             ))}
           </ul>
+        )}
+      </section>
+
+      {/* ── Blocklist (section 57) ─────────────────────────────────── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">רשימת חסימה</h2>
+        <p className="text-sm text-gray-600">
+          הכלל היחיד בשכבה הזו שמסרב מיד: אימייל, טלפון, כתובת IP או טביעת כרטיס עם סיבה ותוקף.
+          הקופה בודקת התאמה פעילה לפני יצירת ההזמנה ומחזירה משפט אחיד ללקוח; הסיבה נשארת כאן. כל
+          הוספה והסרה ב-audit_log. docs/FRAUD-RULES.md.
+        </p>
+        {blocklist.missing ? (
+          <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
+            הטבלה עדיין לא הוחלה. הקובץ ממתין ב-migrations/pending/234_fraud_blocklist.sql; עד אז
+            אין מה לחסום ואין על מה לסרב.
+          </p>
+        ) : (
+          <BlocklistPanel entries={blocklist.rows} />
         )}
       </section>
 

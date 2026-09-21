@@ -33,6 +33,10 @@ export type RiskReason =
   | 'many_orders_from_ip'
   | 'gift_to_stranger'
   | 'coupon_stack_max'
+  // Section 57's two pattern rules. Both medium: a pattern is a shape, and a
+  // shape alone has no measured base rate here either (see the header).
+  | 'many_small_orders'
+  | 'rapid_refund_requests'
 
 /** Every reason, its weight, and the sentence an operator reads. */
 export const RISK_REASONS: Record<RiskReason, { weight: number; he: string }> = {
@@ -54,6 +58,8 @@ export const RISK_REASONS: Record<RiskReason, { weight: number; he: string }> = 
   disposable_email: { weight: 20, he: 'כתובת מייל חד-פעמית' },
   first_order_high_value: { weight: 20, he: 'הזמנה ראשונה בסכום גבוה' },
   many_orders_from_ip: { weight: 20, he: 'הרבה הזמנות מאותה כתובת IP' },
+  many_small_orders: { weight: 20, he: 'הרבה הזמנות קטנות ביממה האחרונה' },
+  rapid_refund_requests: { weight: 20, he: 'כמה בקשות החזר בשבוע האחרון' },
 
   // -- Weak. Present because they are worth SEEING next to a strong signal,
   // and deliberately too light to route anything on their own. A nine-minute-old
@@ -93,6 +99,10 @@ export type RiskSignals = {
   totalAgorot: number
   /** Orders created from this IP in the last hour, this one included. */
   ordersFromIpLastHour: number
+  /** Paid orders by this account in the last day under the small-order line. */
+  smallOrdersLastDay: number
+  /** Refund requests this account filed in the last week, any order. */
+  refundRequestsLastWeek: number
   /**
    * NOT A FIELD, AND THE ABSENCE IS THE POINT.
    *
@@ -142,6 +152,12 @@ export function assessRisk(signals: RiskSignals): RiskAssessment {
     reasons.push('first_order_high_value')
   }
   if (signals.ordersFromIpLastHour >= 5) reasons.push('many_orders_from_ip')
+  // Three small paid orders in a day is card testing's shape: a stolen number
+  // is tried on cheap things before it is used on the expensive one.
+  if (signals.smallOrdersLastDay >= 3) reasons.push('many_small_orders')
+  // Two refund requests in a week across orders, before the per-order cap of
+  // three (202) has anything to say about any one of them.
+  if (signals.refundRequestsLastWeek >= 2) reasons.push('rapid_refund_requests')
 
   if (signals.accountAgeMinutes < FRESH_ACCOUNT_MINUTES) reasons.push('fresh_account')
   if (signals.giftToOtherRecipient) reasons.push('gift_to_stranger')
