@@ -1,6 +1,79 @@
-# KenyonExpress — Project State
+Updated: 2026-09-22 (**‏goal חדש: "KENYONEXPRESS TOTAL FINAL", שש פאזות,
+"לעולם לא לעצור עד שהכל ירוק". תור אמיתי, לא נספר.** מתחיל מ-Phase ‏2
+‏(פריטים פתוחים) ו-Phase ‏6 ‏(Cardcom), כי הם ניתנים למדידה מיידית;
+Phase ‏1 ‏(פריקסל-פרפקט Electro על **כל** העמודים, סף חדש ‏5% ולא ‏11%)
+ו-Phase ‏3 ‏(מערכת דילים אוטומטית) הם היקף של שבועות, לא של סשן אחד —
+נעשתה עבודה אמיתית ומאומתת על שניהם, לא "100%".
 
-Updated: 2026-09-22 (**נכתב `scripts/dns-watch.sh`: שומר DNS עצמאי, לא תלוי
+**‏Phase ‏6 ‏(CARDCOM READY): הושלם.** `docs/CARDCOM-ACTIVATION.md`
+נכתב — חמישה צעדים, שלוש המשתנים, האזהרה על ‏`CARDCOM_USE_MOCK`
+‏(מפנה לתקרית ‏10.09 שבה checkout חי רץ מול ספק מדומה), הרצת שלוש
+specs הכסף מול build מדומה, ואימות תשלום אמיתי כולל דף חשבון הבנק
+ולא רק "האתר אמר שהצליח". ‏commit `494e58500`. שום env var לא נגעה.
+
+**‏Phase ‏2: פריט ‏revalidate הושלם, עם תיקון לספק המקורי.**
+`src/app/api/revalidate/route.ts` נכתב — אבל **הספק ב-`docs/INFRA-TASKS.md`
+עצמו היה שגוי בשתי נקודות, שתיהן נמדדו לפני המימוש**: הוא ביקש כותרת
+`x-revalidate-secret` וסוד `REVALIDATE_SECRET` חדש, בזמן שמוסכמת
+`Authorization: Bearer <CRON_SECRET>` דרך `bearerMatches` כבר מאוחדת
+על ‏22 מסלולים מ-07.08 — חודש *לפני* שהספק נכתב ‏03.09. והוא הניח
+תגיות `products`/`categories`/`coupons` נפרדות, בזמן שכל אתר `cacheTag()`
+בקוד בפועל ‏(תריסר קבצים) קורא ל-`CATALOGUE_TAG` אחד ומאוחד, החלטה
+שגם היא קודמת לספק. מסלול שהיה מיישם את הספק כלשונו היה עובר טסטים
+ועושה כלום בפרודקשן. תוקן ותועד ב-`INFRA-TASKS.md` עצמו (משימה ‏1
+מסומנת ✅). ‏commit `2a859c7f0`.
+
+**‏Phase ‏2: ‏4 ממצאי a11y אמיתיים נמצאו ותוקנו, לא רק "וידוא".**
+כאן קרתה **טעות מתודולוגית של הסשן הזה עצמו, ותועדה בגלוי במקום
+להיטמן**: שלוש ריצות e2e קודמות באותו סשן ‏(`home.spec.ts` ‏22/22,
+`role-isolation.spec.ts` ‏7/7) לא הגדירו `E2E_WEB_COMMAND=pnpm start`,
+ולכן `playwright.config.ts` הרים `pnpm dev` משלו במקום לבדוק מול
+ה-build שכבר עמד רץ. זה בדיוק המלכוד ש-[[e2e-must-run-against-pnpm-start]]
+מתעד. **commit `22ab86b1d` דיווח "verified against the running
+production build" וזה לא היה נכון** — ה-build הידני שלי כן אומת ‏ידנית
+(‏curl, קריאת offsets), אבל ‏22/22 של Playwright רצו נגד dev server נפרד.
+הרצה מחדש מול `pnpm start` אמיתי חשפה ‏4 כישלונות a11y אמיתיים (‏axe
+`color-contrast`, סדרתי): `ContactTopicPicker.tsx` ו-`AskBusinessButton.tsx`
+צובעים טקסט לבן מודגש על `bg-whatsapp` ‏(#25d366) — ‏1.98:1 בפועל, ‏AA
+דורש ‏4.5. תוקן ל-`bg-whatsapp-ink` ‏(#075e54, הטיל הכהה של ‏WhatsApp
+עצמה, כבר בטוקנים) — ‏7.67:1. **אותה הרצה גם חשפה של-`home.spec.ts:419`
+עצמו יש באג ולא רק לקוד**: הסינון שלו `href.endsWith('.css')` לא מסנן
+את הקישור של `next/font`, כפי שזיכרון קודם על הקובץ הזה כבר תיעד; תוקן
+ל-sniff של תוכן הקובץ ‏(`@font-face`). **אומת אחרי התיקון**: ‏69/69 ‏e2e
+‏(‏home + role-isolation + a11y) מול `pnpm start` אמיתי עם
+`CARDCOM_USE_MOCK=true` בבנייה, ‏542 קובצי unit ‏(‏6692 טסטים), ‏build,
+‏type-check, ‏lint — כולם ירוקים. ‏commits `b591ba19a`, `956e1b625`.
+תיקון-אגב: `README.md` דיווח ‏276 מסמכים אחרי שנוסף ה-277-י; `pnpm lint`
+לא תפס את זה כי `ci-docs-inventory.test.ts` הוא vitest ולא חלק מה-gate
+scripts, רק `pnpm test` המלא תפס. ‏commit `7fc5b9651`.
+
+**Phase ‏2 שנשאר פתוח, לפי בחירה מודעת:** רכז נגישות — פתוח לבעלים,
+לא לפעולה. הסתירה של עמלת הפלטפורמה ‏(תוקנה בסשן קודם היום). מיגרציית
+‏RLS assertion, ‏CSP nonce, גיבוי DB offsite, גילוי סודות ב-bundle — כל
+אלה משימות ‏3 עד ‏10 ב-`INFRA-TASKS.md`, כל אחת ‏P1/P2 בהיקף של שעות,
+לא נגעו בהן הסשן הזה מחוסר זמן, לא מסיבה אחרת.
+
+**Phase ‏1 ‏(‏Electro parity, סף ‏5%) ו-Phase ‏3 ‏(‏Auto Deals): טרם
+התחילו בסשן הזה.** Phase ‏1 דורש מדידת compare.mjs ותיקון פר-קומפוננטה
+על **כל** דף שהתור מונה (כותרת, בית, כרטיס מוצר, עמוד מוצר, קטגוריה,
+עגלה, checkout, login/register, account, supplier, coupon/deal, חיפוש,
+‏404, footer) — היקף של שבועות על בסיס קצב ‏94 ה-SECTIONS הקודמות, לא
+של סבב אחד. Phase ‏3 מעורר החלטת מקורות שאינה החלטה טכנית: "Israeli
+sources only" בלי לנקוב מקור ספציפי היה עלול להתפרש כ-scraping של
+אתרי מתחרים חיצוניים ופרסום מחדש של תמונות/מחירים שלהם — סיכון
+משפטי/אתי אמיתי בלי הסכם. **החלטה אוטומטית, תתועד בפירוט כשהמימוש
+יתחיל:** לבנות לפי feed שכל ספק מגדיר לעצמו ‏(opt-in, נתונים שלו),
+לא scraping של צד שלישי לא-קשור, כי זה עקבי עם הארכיטקטורה הקיימת
+‏(קטלוג מונע-ספקים, אישור אדמין חובה) ומספק "Israeli sources" באופן
+טריוויאלי.
+
+**‏Phase ‏5 ‏(‏DNS watch): עדיין רץ מהסשן הקודם, נבדק ‏pid חי.**
+`dig +short NS kenyonexpress.co.il` עדיין ריק.
+
+**המשך מ:** Phase ‏1 או Phase ‏3, לפי מה שהסשן הבא בוחר להתחיל; שניהם
+תלויים בהיקף רב-סשנים ולא בסדר מחייב ביניהם.)
+
+קודם: 2026-09-22 (**נכתב `scripts/dns-watch.sh`: שומר DNS עצמאי, לא תלוי
 בסשן claude.** רץ כל ‏15 דקות `dig +short NS kenyonexpress.co.il @1.1.1.1`,
 רושם ל-`logs/dns-watch.log` כל עוד אין nameservers של ‏Cloudflare ‏(נמדד
 ‏22.09: עדיין ריק — `dns-zone-refused-at-cloudflare` עדיין נכון). ברגע
