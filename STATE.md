@@ -1,3 +1,53 @@
+Updated: 2026-09-23 (00:31) (**DNS cutover trigger, שמיני ברצף. אותו בלוקר,
+אותו סוכן שני, אבל הפעם עם מידע חדש: Vercel MCP התחבר בסשן הזה (לא היה
+זמין באף אחד משבעת הסבבים הקודמים), ומה שהוא הראה משנה את התמונה מעבר
+ל-DNS בלבד.**
+
+נבדק מחדש, לא הונח:
+
+- **סוכן שני עדיין חי, על אותו repo בדיוק**: `pid 35738`
+  (`claude --dangerously-skip-permissions --model fable /goal`), `lsof -p
+  35738` מאשר `cwd` זהה (`/Users/ofir/kenyonexpress-web/kenyonexpress`),
+  `elapsed` עכשיו `01-03:20:45`, עוד כ-5 דקות CPU מעל הסבב הקודם, עדיין
+  צובר. זה תנאי העצירה הרביעי מתוך הארבעה, נמדד לא הונח, בפעם השמינית.
+- `dig NS kenyonexpress.co.il @1.1.1.1` עדיין `aria`/`quinton.ns.cloudflare.com`,
+  `dig A` על root ועל `www` עדיין ריק. אותה "zone active but empty" משבעת
+  הסבבים הקודמים.
+
+**חדש הפעם, קריאה בלבד דרך Vercel MCP (זמין לראשונה בסשן הזה):**
+
+- **שלב 2 (צירוף domain) כבר בוצע, לא על ידי אף סבב מהשבעה הקודמים.**
+  `list_project_domains` על הפרויקט `kenyonexpress`
+  (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מראה `kenyonexpress.co.il` וגם
+  `www.kenyonexpress.co.il` עם `verified: true`. מישהו (כנראה Ofir, לא
+  סוכן קוד, כי אף session לא נגע ב-Vercel קודם) חיבר את הדומיין כבר. אין
+  צורך בפעולה כשהחסימה תיפתר.
+- **אבל אין deploy פעיל של production: `live: false` על הפרויקט, ואין אף
+  deployment עם `target: "production"` ברשימת חמשת האחרונים.** כל push
+  ל-`audit/final-audit` (כולל commits תיעוד בלבד של הסבבים הקודמים,
+  `b1d1a63d9`, `c4219a7c`) מפעיל אוטומטית preview build (`target: null`)
+  דרך חיבור Git. **שני האחרונים מהם נכשלו**: `dpl_FWTpBS7teKVNGq7AvrwVzSWcjFGd`
+  (commit `c4219a7c`) ו-`dpl_Eu6m35E1GLt7xo8xVffDt4aQv1ZQ` (commit
+  `a9c4e07c`) שניהם `errorCode: BUILD_UTILS_SPAWN_1`,
+  `errorMessage: "Command \"pnpm build\" exited with 1"`. אלה commits
+  שנגעו רק ב-STATE.md/contact - כלומר הכשל הזה כנראה לא תלוי בתוכן ה-diff
+  אלא במשהו סביבתי בפרויקט הזה ב-Vercel (env vars חסרים על Preview,
+  אולי אותו compromised `SUPABASE_SECRET_KEY` שחוסם build מקומי דרך
+  `deploy-preflight.mjs`). **לא אובחן עד הסוף הפעם** - קריאת `errorMessage`
+  בלבד היא בדיקה תקינה, אבל חפירה בלוגים המלאים וניסיון תיקון היא כבר
+  פעולה על תשתית production משותפת, וסוכן שני חי אומר לעצור לפני זה.
+  משמעות מעשית: **גם כשהחסימה של הסוכן השני תיפתר, deploy ל-production
+  צפוי להיכשל על אותה שגיאה עד שהיא תאובחן** - זה עצמו item חדש בתור, לא
+  רק "לחכות ל-DNS".
+- לא בוצע בכוונה מעבר לקריאה: לא `create_deployment`, לא שינוי domain, לא
+  חפירה בלוגי build מלאים. `git status -sb` נקי מול origin.
+
+**המשך מ:** ללא שינוי - נשאר passkey post-first-login prompt (ראה מטה,
+00:26/00:22), ובנוסף item חדש שנוסף לתור: לאבחן את כשל ה-`pnpm build` על
+Vercel preview (מעל, `BUILD_UTILS_SPAWN_1`) לפני שניגשים ל-deploy production
+בפעם שהסוכן השני משתחרר. כל עוד הסוכן השני חי על אותו repo, בדיקה נוספת
+של אותו trigger תיעצר באותה נקודה.
+
 Updated: 2026-09-23 (00:28) (**DNS cutover trigger, שביעי ברצף, שום דבר לא
 זז. אותו בלוקר, אותו סוכן שני, אותה החלטה.**
 
