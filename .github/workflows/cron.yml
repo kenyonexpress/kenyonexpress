@@ -64,6 +64,8 @@ on:
     - cron: '15 23 * * *'
     - cron: '0 5 1 * *'
     - cron: '0 4 * * 5'
+    # Every 6h: deals-autopilot. See scripts/cron-jobs.json's comment.
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       job:

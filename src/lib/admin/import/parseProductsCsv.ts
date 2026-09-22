@@ -156,11 +156,17 @@ function validateGrid(grid: string[][]): ParseProductsResult {
 
 // ── CSV (RFC 4180: quoted fields, escaped quotes, embedded newlines) ─────────
 
-function stripBom(text: string): string {
+export function stripBom(text: string): string {
   return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text
 }
 
-function parseCsvGrid(text: string): string[][] {
+/**
+ * RFC 4180 CSV -> a grid of strings. Exported for
+ * src/lib/deals-autopilot/parse.ts, which needs the identical quoting rules
+ * for a supplier-uploaded CSV feed and has no reason to carry a second,
+ * possibly-diverging copy of them.
+ */
+export function parseCsvGrid(text: string): string[][] {
   const grid: string[][] = []
   let row: string[] = []
   let field = ''

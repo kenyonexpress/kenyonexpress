@@ -132,6 +132,7 @@ describe('scheduled routes authenticate', () => {
     expect(cronRouteFiles()).toEqual([
       'src/app/api/cron/abandoned-cart/route.ts',
       'src/app/api/cron/anonymize-user-data/route.ts',
+      'src/app/api/cron/deals-autopilot/route.ts',
       'src/app/api/cron/expire-vouchers/route.ts',
       'src/app/api/cron/health/route.ts',
       'src/app/api/cron/invoices/route.ts',

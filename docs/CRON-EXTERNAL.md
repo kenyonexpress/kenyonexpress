@@ -106,6 +106,7 @@ file is in a repository.
 13 https://kenyonexpress.vercel.app/api/cron/settlement-reconcile GET  20 4 * * *    Authorization: Bearer <CRON_SECRET>
 14 https://kenyonexpress.vercel.app/api/cron/payout-run GET  40 4 * * *    Authorization: Bearer <CRON_SECRET>
 14 https://kenyonexpress.vercel.app/api/cron/anonymize-user-data  GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
+15 https://kenyonexpress.vercel.app/api/cron/deals-autopilot      GET  0 */6 * * *   Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -145,6 +146,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 11 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/whatsapp` |
 | 13 | 04:20 daily | `20 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/settlement-reconcile` |
 | 14 | 04:40 daily | `40 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/payout-run` |
+| 15 | every 6h | `0 */6 * * *` | `https://kenyonexpress.vercel.app/api/cron/deals-autopilot` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -229,6 +231,11 @@ timing changes with the scheduler.
 - **`retention`** ages audit_log IPs older than 365 days to NULL through
   `fn_audit_retention_sweep()` (pending/157) -- the one write the append-only
   trigger sanctions. Answers ok with `pending` until 157 is applied.
+- **`deals-autopilot`** fetches each opted-in supplier's own deals feed
+  (`suppliers.feed_url`, https only, never a third-party site) and queues
+  whatever parses as `deal_candidates`, pending admin review. Answers
+  `{ skipped: ... }` and touches nothing while `DEALS_AUTOPILOT` is off.
+  See `docs/DEALS-PIPELINE.md`.
 
 ## Setting it up from this repository, in two settings
 

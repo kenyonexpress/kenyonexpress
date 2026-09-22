@@ -101,6 +101,11 @@
       "name": "payout-run",
       "path": "/api/cron/payout-run",
       "cron": "40 4 * * *"
+    },
+    {
+      "name": "deals-autopilot",
+      "path": "/api/cron/deals-autopilot",
+      "cron": "0 */6 * * *"
     }
   ]
 }

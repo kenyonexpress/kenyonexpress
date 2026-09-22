@@ -66,6 +66,7 @@ describe('the scheduled job inventory', () => {
       'anonymize-user-data',
       'settlement-reconcile',
       'payout-run',
+      'deals-autopilot',
     ])
   })
 
