@@ -88,7 +88,6 @@
   "docs/INFRA-TASKS.md :: migrations/pending/162_schedule_cron_jobs.sql",
   "docs/INFRA-TASKS.md :: scripts/secret-leak-gate.mjs",
   "docs/INFRA-TASKS.md :: scripts/verify-cutover.mjs",
-  "docs/INFRA-TASKS.md :: src/app/api/revalidate/route.ts",
   "docs/INFRA-TASKS.md :: src/app/api/version/route.ts",
   "docs/MASTER-ARCHITECTURE.md :: src/contracts/",
   "docs/MASTER-ARCHITECTURE.md :: src/contracts/agents.ts",

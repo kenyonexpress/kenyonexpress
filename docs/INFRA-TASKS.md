@@ -6,34 +6,60 @@
 
 ## משימה 1: endpoint לרענון ISR לפי דרישה (on-demand revalidation)
 
-**סטטוס:** פתוח.
+**סטטוס:** ✅ בוצע 22.09.2026, `src/app/api/revalidate/route.ts`.
 
-**הבעיה:** אין
+**הבעיה שהייתה:** אין
 `src/app/api/revalidate/route.ts`
-(נמדד 03.09: הקובץ לא קיים). דפי ISR מתעדכנים רק לפי טיימר, ועריכת תוכן
-ב-Supabase לא משתקפת באתר עד פקיעת ה-revalidate.
+(נמדד 03.09: הקובץ לא קיים). דפי ה-catalogue מתעדכנים מיד בכתיבה
+מ-Server Action דרך `updateTag` (`src/lib/catalogue-cache.ts`), אבל
+כותב שאינו Server Action — cron, pipeline חיצוני — לא יכול לקרוא
+`updateTag` בכלל ונשאר תלוי בטיימר של `cacheLife`.
 
-**הפתרון (לפי הספק שכבר כתוב ב-INFRA-AUDIT.md, פרק "Revalidate endpoint"):**
+**הספק המקורי כאן היה שגוי בשתי נקודות, ותוקן ולא יושם כלשונו** —
+נמדד לפני המימוש, לא אחריו:
 
-1. יצירת
-   `src/app/api/revalidate/route.ts`
-   עם: POST בלבד, `runtime = 'nodejs'`, השוואה בזמן קבוע של הכותרת
-   `x-revalidate-secret`
-   מול
-   `REVALIDATE_SECRET`
-   באמצעות
-   `crypto.timingSafeEqual`,
-   ואז `revalidateTag` לפי ה-`table` שב-payload.
-2. מפת תגיות: `products` ו-`product_variants` אל התג `products`,
-   `categories` אל `categories`,
-   `coupon_deals` / `coupons` / `coupon_codes` אל `coupons`.
-3. תיעוד `REVALIDATE_SECRET` ב-`.env.example`.
-4. הגדרת Database Webhooks ב-Supabase (אחד לכל טבלה) לפי הבלוק המוכן
-   ב-INFRA-AUDIT.md. שלב זה תלוי בפרודקשן חי, ולכן מתועד ולא מורץ.
+1. **סכימת האימות.** הספק המקורי ביקש כותרת `x-revalidate-secret` מול
+   `REVALIDATE_SECRET` חדש. בפועל, מוסכמת `Authorization: Bearer
+   <CRON_SECRET>` עם `bearerMatches` מ-`src/lib/security/constant-time.ts`
+   כבר קיימת ומאוחדת על ‏22 מסלולים (‏`git log`: המוסכמה הזאת נקבעה
+   ‏07.08 — חודש *לפני* שהמשימה הזאת נכתבה ‏03.09). הקובץ הזה עצמו
+   מתעד במפורש שהסתירה בין `!==` על מחרוזת לבין `timingSafeEqual` היא
+   באג שקט ובלתי-נראה; secret תשיעי עם כותרת אחרת היה בדיוק אותה סתירה
+   מחדש, לא תיקון שלה. המסלול משתמש ב-`CRON_SECRET` הקיים.
+2. **מפת התגיות.** הספק המקורי הניח תגיות נפרדות `products`/`categories`/
+   `coupons`. נמדד: **אף `cacheTag()` בקוד בפועל לא קורא לאף אחת מהן** —
+   כל אתר הקריאה (`category-page.ts`, `coupon-deals.ts`,
+   `product-detail.ts`, `related-products.ts`, `homepage/rails.ts`,
+   ‏ועוד תריסר) קורא ל-`cacheTag(CATALOGUE_TAG)` אחד ומאוחד
+   (‏`'catalogue'`), ו-`src/lib/catalogue-cache.ts` (מ-02.08, גם הוא
+   *לפני* המשימה הזאת) מתעד את הבחירה הזאת במפורש כמכוונת. מסלול שהיה
+   קורא `revalidateTag('products', …)` היה עובר את כל הטסטים שלו
+   ומבצע בלי-כלום בפרודקשן — בדיוק דפוס התקלה שהריפו הזה חוזר ומזהיר
+   מפניו ("ממצא מוגמר בלי צרכן"). המסלול ממפה שם טבלה ל-`CATALOGUE_TAG`
+   או ל-`CONTACT_CHANNELS_TAG` בפועל.
 
-**הגדרת סיום:** הקובץ קיים, בקשת POST עם secret שגוי מחזירה 401,
-עם secret נכון מחזירה 200 ומריצה `revalidateTag`, טסטים ירוקים
-(`pnpm test`, `pnpm type-check`, `pnpm lint`).
+**מה כן בוצע:**
+
+1. `src/app/api/revalidate/route.ts`: POST בלבד, אימות `Authorization:
+   Bearer <CRON_SECRET>` דרך `bearerMatches` (זהה לשאר מסלולי ה-cron),
+   ‏`revalidateTag(tag, 'hours')` — לא `updateTag`, כי route handler לא
+   יכול לקרוא לו — לפי מפה מפורשת מ-`table` בגוף הבקשה: `products`/
+   `categories`/`deals` ← `CATALOGUE_TAG`, `contact_channels`/
+   `page_contact_config` ← `CONTACT_CHANNELS_TAG`. טבלה לא-רשומה
+   מוחזרת ‏400 במפורש, לא no-op ‏200 שקט.
+2. תיעוד `CRON_SECRET` עודכן ב-`.env.example` לכלול את המסלול הזה
+   ברשימת הקוראים שלו; אין `REVALIDATE_SECRET` חדש.
+3. `route.test.ts`: ‏12/12, כולל "נשאר סגור כש-CRON_SECRET לא מוגדר"
+   ו-"מסרב לטבלה בלי תג במקום no-op שקט".
+4. הגדרת Database Webhooks ב-Supabase (אחד לכל טבלה) **עדיין תלויה
+   בפרודקשן חי ולא בוצעה** — זהה למגבלה בספק המקורי. הצרכן הראשון בפועל
+   הוא לולאת ה-cron של Phase 3 (‏DEALS_AUTOPILOT), שממילא לא Server
+   Action וקוראת למסלול הזה ישירות אחרי ההכנסה, לא דרך Webhook.
+
+**הגדרת סיום (עודכנה מהמקור לשקף מה שנבדק בפועל):** הקובץ קיים, בקשת
+POST עם `CRON_SECRET` שגוי או חסר מחזירה 401, עם הסוד הנכון וטבלה ידועה
+מחזירה 200 ומריצה `revalidateTag` על התג הנכון, טבלה לא-ידועה מחזירה
+400, טסטים ירוקים (`pnpm test`, `pnpm type-check`, `pnpm lint`).
 
 ## משימה 2: מיגרציית אימות לכיסוי RLS (assertion migration)
 
