@@ -190,8 +190,10 @@
      bar, columns and copyright bar all sit in a 1200 container with 15px of
      inline padding, which lands their content on the same x135..x1305 edges as
      the page body. SiteFooter used --container-page and ran 68px wider on each
-     side. --container-footer above belongs to home/Footer.tsx, a different
-     component; the two are not the same box. */
+     side. --container-footer above belonged to home/Footer.tsx, a different,
+     unmounted component deleted 2026-09-23 (OWNER DECISIONS v2) -- the value
+     is kept as the live site's own measured number, not read by anything here
+     now. */
   /* The hero row, measured on kenyonexpress.co.il 2026-07-30: the three-column
      block spans x135..x1305 at a 1440 viewport, so 1170 wide, and the slider
      between the fixed side columns lands at 728. Ours ran in --container-page

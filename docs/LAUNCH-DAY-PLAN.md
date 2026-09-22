@@ -492,7 +492,7 @@ TTL יכול לחזור לערך ארוך אחרי שהרזולברים התיי
 Sentry: אין בום 5xx. Vercel cron: לפחות
 `notifications`
 רץ. תיבת
-`info@kenyonexpress.co.il`
+`support@kenyonexpress.co.il`
 לא מתה.
 
 ---

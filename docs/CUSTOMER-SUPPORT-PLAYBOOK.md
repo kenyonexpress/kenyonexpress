@@ -10,7 +10,7 @@
 `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md`.
 
 ערוץ נכנס: מייל
-`info@kenyonexpress.co.il`
+`support@kenyonexpress.co.il`
 או וואטסאפ
 `052-463-5550`
 (מתוך דפי החוק באתר). ב-soft-launch אין טופס

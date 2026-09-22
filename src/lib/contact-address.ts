@@ -11,13 +11,16 @@
  * Protection of Privacy Law it is the address a data-subject request is sent to.
  *
  * The default is kept rather than removed. An unset variable must not produce
- * an empty `To:` on the contact form or a blank line in a legal document, and
- * `info@` at the company's own domain is the address the live site already
- * publishes, so it is a real fallback and not a placeholder.
+ * an empty `To:` on the contact form or a blank line in a legal document.
+ *
+ * `support@`, not `info@`: owner policy, 22.09.2026 (OWNER DECISIONS v2,
+ * customer service). Every legal document and the contact page read this
+ * constant (or its `contactEmail()` wrapper) rather than a literal, which is
+ * the whole reason this file exists -- so the address moved in one place.
  */
 
 /** The address used when `CONTACT_TO` is not set. */
-export const DEFAULT_CONTACT_EMAIL = 'info@kenyonexpress.co.il'
+export const DEFAULT_CONTACT_EMAIL = 'support@kenyonexpress.co.il'
 
 /**
  * Where operator mail goes and what the legal pages print.

@@ -1,3 +1,54 @@
+Updated: 2026-09-23 (00:26) (**OWNER DECISIONS v2, סעיף Customer service:
+"WhatsApp + email בלבד, בלי Crisp, בלי טלפון, support@ במקום info@" -
+נבדק ויושם.**
+
+**Crisp: no-op מאומת.** `grep -rli crisp src package.json` לא מצא כלום -
+לא היה קיים מלכתחילה, כלום לא נמחק כי לא היה מה למחוק.
+
+**כתובת המייל: תוקן במקור אחד, לא בכל אתר.** `src/lib/contact-address.ts`
+כבר היה המקור היחיד ל-`CONTACT_TO` (`contactEmail()`), משמש ב-4 קריאות
+(`contact.ts`, `admin-alerts.ts`, `weekly-digest`, `help/page.tsx) - שינוי
+`DEFAULT_CONTACT_EMAIL` ל-`support@kenyonexpress.co.il` שם זז את כולם.
+אבל שני מקומות עוד החזיקו עותק נפרד: `contact/page.tsx` (מייל hardcoded
+בלי contactEmail()) ו-`LegalContactBlock.tsx` (`LEGAL_CONTACT_EMAIL`
+constant נפרד) - בדיוק הבאג ששני-ה-copies שהמודול הזה עצמו מתאר בהיסטוריה
+שלו כ"כבר תוקן". תוקנו שניהם עכשיו לקרוא ל-`contactEmail()`, מה שבאמת
+ממזג לשלושה ל-מקום אחד לראשונה. גם 4 קבצי תוכן משפטי (`privacy.ts`,
+`accessibility.ts` פעמיים, `cancellation.ts`) ושני docs (`CUSTOMER-SUPPORT-
+PLAYBOOK.md`, `LAUNCH-DAY-PLAN.md`) עודכנו כטקסט חופשי.
+
+**"בלי טלפון" - נמצא רכיב מת אחד שסתר את זה, נמחק.**
+`src/components/home/Footer.tsx` לא היה מיובא משום מקום (מאומת: אין
+import חי בכל src/), אבל הכיל קישור `tel:+${storePhone}` תחת הכותרת
+"יש שאלות? התקשרו" - בדיוק ההיפך ממדיניות הבעלים, קוד מת שמחכה להתעורר.
+נמחק. שאר "טלפון" ב-repo (checkout delivery, OTP login, שדות ספק/אדמין)
+**לא נגעתי בהם** - אלה נתוני עסק/משלוח/התחברות, לא ערוץ שירות לקוחות,
+וההנחיה של הבעלים מדברת במפורש על "ערוצי שירות" (Customer service).
+מערכת `contact_channels` הקיימת (5 נושאים, `/contact` והפוטר) כבר הייתה
+WhatsApp-בלבד מההתחלה - אין שם אפילו אופציית טלפון להסיר.
+
+**עלות הצד: שלושה פנקסי-ratchet עודכנו כי המחיקה שינתה מספרים אמיתיים,
+לא רק תוקנו כדי לעבור.** `scripts/dead-component-known-issues.json` -
+השורה של Footer.tsx הוסרה (הקובץ לא קיים יותר, לא "לא בשימוש"). `scripts/
+hebrew-literal-scan.mjs` - התקרה ירדה 650←633 (הטקסט העברי של הפוטר המת
+הלך איתו). `docs/COMPONENT-INVENTORY.md` - השורה הוסרה. גם הערת provenance
+ב-`src/styles/tokens.css:193` תוקנה (הפנתה ל-Footer.tsx בתור "הבעלים" של
+`--container-footer` - הטוקן עצמו נשאר, זו רק מדידה מהאתר החי, לא ערוץ
+לקוח).
+
+**נבדק, לא הונח:** `pnpm type-check` + `pnpm lint` (כולל כל 11 שערי ה-
+inventory, גם ה-ratchet שזה עתה שונה) + `pnpm test` (549/549 קבצים, 6782
+טסטים, אחרי תיקון 2 טסטים ישנים שציפו ל-`info@`) + `pnpm build` נקי
+(`exit code 0`) - כולם ירוקים לפני commit.
+
+**המשך מ:** passkey post-first-login prompt (OWNER DECISIONS v2, סעיף
+Auth) - התשתית כבר קיימת במלואה (`@simplewebauthn`, `src/server/actions/
+passkeys.ts`, `PasskeyManager.tsx`, `PasskeyLoginButton.tsx`) אבל אין
+עדיין UX שמציע רישום passkey אחרי login ראשון - זה מה שצריך להיבנות,
+כולל e2e. אחרי זה: invoices (הסרת green_invoice/icount, toggle עסקי) ואז
+images (Unsplash/Pexels/R2/IMAGES-INVENTORY), לפי הסדר ב-OWNER DECISIONS
+v2. commit+push מתבצע מיד אחרי הודעה זו.
+
 Updated: 2026-09-23 (00:22) (**DNS cutover trigger, שישה ברצף, שום דבר לא
 זז ולא נוסה deploy. אותו בלוקר, אותו סוכן שני, אותה החלטה.**
 

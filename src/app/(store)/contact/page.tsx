@@ -1,6 +1,7 @@
 import ContactTopicPicker from '@/components/contact/ContactTopicPicker'
 import RichText from '@/components/content/RichText'
 import ContactForm from '@/components/storefront/ContactForm'
+import { contactEmail } from '@/lib/contact-address'
 import { topicsFor } from '@/lib/contact/channels'
 import { excerpt } from '@/lib/content/markup'
 import { getBoundContentPage } from '@/lib/content/read'
@@ -21,7 +22,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Minimal contact page. Real inbox routing is CONTACT_TO (default
- * info@kenyonexpress.co.il). Legal terms stay a separate content task.
+ * support@kenyonexpress.co.il, via `contactEmail()`). Legal terms stay a
+ * separate content task.
  *
  * THE CMS OWNS THE INTRODUCTION AND NOTHING ELSE. The paragraph below it is
  * built from `lib/whatsapp`, and that is deliberate: [68] already fixed a page
@@ -72,11 +74,11 @@ export default async function ContactPage() {
           )}{' '}
           או במייל{' '}
           <a
-            href="mailto:info@kenyonexpress.co.il"
+            href={`mailto:${contactEmail()}`}
             className="font-medium text-heading underline underline-offset-2"
             dir="ltr"
           >
-            info@kenyonexpress.co.il
+            {contactEmail()}
           </a>
           .
         </p>

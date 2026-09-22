@@ -93,7 +93,6 @@ Judgements are based on the actual file contents (with `file:line` references wh
 | DealsOfTheDay | src/components/home/DealsOfTheDay.tsx | (no props; async, `KE_LIVE_DEALS`) | (store)/page | NO (`max-w-[1150px]` `pt-[30px]` :11, layout px) | YES |
 | FeaturedProducts | src/components/home/FeaturedProducts.tsx | (no props; async server, DB) | unused | YES (delegates markup to FeaturedProductsTabs) | YES |
 | FeaturedProductsTabs | src/components/home/FeaturedProductsTabs.tsx | `{ products: Product[] }` | home/FeaturedProducts | NO (`border-[#ededed]` :33, `text-[#333e48]` :34,:44,:45, `text-[#fed700]` :44, `text-[#7e7e7e]` :45,:63, `text-[22px]`) | YES |
-| Footer | src/components/home/Footer.tsx | (no props; +Instagram/Facebook icons) | unused | NO (`bg-[#333e48]` :50, `text-[#fed700]` :62,:67,:85,:100, `max-w-[1430px]`, `text-[13px/14px/16px/20px]`) | YES |
 | HeroCategorySidebar | src/components/home/HeroCategorySidebar.tsx | (no props) | home/HeroSection, home/HeroExact, store/CategorySidebar | NO (`bg-[#f5f5f5]` :56) | YES |
 | HeroExact | src/components/home/HeroExact.tsx | (no props) | unused | YES (`max-w-page`, gray utils) | YES (`dir="rtl"`, `flex-row`) |
 | HeroPromoBanners (+BannerText/ShopNowButton) | src/components/home/HeroPromoBanners.tsx | (no props) | home/HeroExact, home/HeroSection, store/PromoBanners | NO (`text-[11px]` :72, `h-[80px]` :116, layout px) | YES |

@@ -61,7 +61,7 @@ describe('submitContactForm', () => {
     expect(sendEmail).toHaveBeenCalledOnce()
     expect(sendEmail.mock.calls[0]?.[0]).toMatchObject({
       replyTo: 'dani@example.com',
-      to: 'info@kenyonexpress.co.il',
+      to: 'support@kenyonexpress.co.il',
     })
   })
 

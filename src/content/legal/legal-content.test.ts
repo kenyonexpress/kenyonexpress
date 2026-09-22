@@ -88,7 +88,7 @@ describe('legal pages', () => {
     const text = textOf(getLegalPage('accessibility').blocks)
     expect(text).toContain('5568')
     expect(text).toContain('AA')
-    expect(text).toMatch(/info@kenyonexpress\.co\.il/)
+    expect(text).toMatch(/support@kenyonexpress\.co\.il/)
     // A statement with no known-limitations section is a template, not a
     // statement about this site.
     expect(

@@ -156,5 +156,10 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * lost one literal on the way -- its headline became a variable, because a
  * partial shipment must not claim the order "טופלה במלואה" -- so the number
  * fell by one. 662 -> 661.
+ *
+ * 2026-09-23, OWNER DECISIONS v2: `src/components/home/Footer.tsx` deleted --
+ * confirmed unused by every live import, and it carried a `tel:` "call us"
+ * link contradicting the owner's "no phone anywhere" customer-service policy.
+ * Its Hebrew literals left with it. 650 -> 633.
  */
-export const HEBREW_LITERAL_CEILING = 650
+export const HEBREW_LITERAL_CEILING = 633

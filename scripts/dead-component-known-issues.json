@@ -1,5 +1,5 @@
 {
-  "$what": "Every component under src/components that NOTHING in src/, apps/ or e2e/ imports, as of 2026-09-10. 21 of 192.",
+  "$what": "Every component under src/components that NOTHING in src/, apps/ or e2e/ imports, as of 2026-09-10. 20 of 191, after home/Footer.tsx was deleted on 2026-09-23 (OWNER DECISIONS v2: dead code carrying a customer-facing tel: link, contradicting the no-phone policy).",
   "$why": "A component with no importer is the most common defect shape in this project's history: a finished feature nobody wired up. Nothing counted them until this file existed. Demanding zero would have made the gate red on arrival, and the fix for a dead component is deletion, which is not a gate's call to force here -- three of these are re-export shims another path still uses, five are library surface, and two are cited by name in scripts/rtl-logical-scan.mjs and in other files' comments.",
   "$rules": "findUnimportedComponents in scripts/final-audit-lib.mjs. The gate: scripts/final-audit.mjs, tenth and eleventh rows.",
   "$how_to_shrink_this": "Wire it up or delete it, then strike the line. The gate FAILS on an entry that is now imported or gone, so this list cannot keep names of things already resolved. It is a ratchet: the 22nd dead component is refused.",
@@ -36,10 +36,6 @@
     "src/components/home/HeroExact.tsx": {
       "group": "superseded homepage section",
       "detail": "Composes HeroCategorySidebar + HeroPromoBanners + HeroSlider, all three of which are live and mounted elsewhere."
-    },
-    "src/components/home/Footer.tsx": {
-      "group": "superseded homepage section",
-      "detail": "src/styles/tokens.css:193 still names it as the owner of --container-footer, which is why deleting it is a measured change and not a tidy-up."
     },
     "src/components/layout/InfoBar.tsx": {
       "group": "self-declared dead",
