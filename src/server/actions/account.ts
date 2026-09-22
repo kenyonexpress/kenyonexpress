@@ -10,6 +10,7 @@ import {
   type AccountActionState,
   addressSchema,
   idSchema,
+  invoiceSettingsSchema,
   profileDetailsSchema,
 } from '@/lib/validations/account'
 import { revalidatePath } from 'next/cache'
@@ -73,6 +74,48 @@ async function runUpdateProfileDetails(
   revalidatePath('/account/details')
   revalidatePath('/account')
   return { success: 'הפרטים נשמרו' }
+}
+
+/** Postgres undefined_table, and PostgREST's schema-cache equivalents. 239 pending. */
+const INVOICE_SETTINGS_TABLE_ABSENT = new Set(['42P01', 'PGRST205', 'PGRST106'])
+
+async function runSaveInvoiceSettings(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  const userId = await requireUserId()
+  if (!userId) return { error: 'יש להתחבר' }
+
+  const parsed = invoiceSettingsSchema.safeParse({
+    invoice_to_business: formData.get('invoice_to_business') === 'on',
+    business_name: formData.get('business_name'),
+    business_registration_number: formData.get('business_registration_number'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'הפרטים אינם תקינים' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('customer_invoice_settings' as never).upsert(
+    {
+      user_id: userId,
+      invoice_to_business: parsed.data.invoice_to_business,
+      business_name: parsed.data.business_name || null,
+      business_registration_number: parsed.data.business_registration_number || null,
+    } as never,
+    { onConflict: 'user_id' },
+  )
+
+  if (error) {
+    if (INVOICE_SETTINGS_TABLE_ABSENT.has(error.code ?? '')) {
+      return { error: 'ההגדרה עדיין לא זמינה' }
+    }
+    log.warn('account.invoice_settings_save_failed', { reason: error.message })
+    return { error: 'שמירת ההגדרה נכשלה' }
+  }
+
+  revalidatePath('/account/invoices')
+  return { success: 'הגדרות החשבונית נשמרו' }
 }
 
 async function runSaveAddress(
@@ -237,6 +280,15 @@ export async function updateProfileDetails(
   formData: FormData,
 ): Promise<AccountActionState> {
   return withActionContext('account.update_profile', () => runUpdateProfileDetails(_prev, formData))
+}
+
+export async function saveInvoiceSettings(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.save_invoice_settings', () =>
+    runSaveInvoiceSettings(_prev, formData),
+  )
 }
 
 export async function saveAddress(

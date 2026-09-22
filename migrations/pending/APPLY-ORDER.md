@@ -1,5 +1,18 @@
 # Apply order
 
+## 2026-09-23: 239, any order, one new table with owner-only RLS
+
+`239_customer_invoice_settings.sql` creates `customer_invoice_settings`, one
+row per user, RLS restricted to `user_id = auth.uid()` for select/insert/
+update. Deliberately NOT columns on `profiles` -- see the migration's own
+header and `migrations/pending/README.md` for why: profile updates are broken
+in production today until 218 applies, and this table has nothing to do with
+that trigger. No dependency on any other pending file, including 218.
+**Reversal:** `DROP TABLE public.customer_invoice_settings;` -- the invoice
+build (`src/server/payments/invoices.ts`) treats a missing table the same as
+an empty one: fall back to the account holder's own name, exactly today's
+behaviour.
+
 ## 2026-09-23: 238, any order, one nullable column on an already-applied table
 
 `238_whatsapp_inbound_order_match.sql` adds `order_id` (nullable, FK to

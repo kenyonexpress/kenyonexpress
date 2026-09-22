@@ -35,3 +35,39 @@ export type AddressInput = z.infer<typeof addressSchema>
 export const idSchema = z.object({ id: z.string().uuid('מזהה לא תקין') })
 
 export type AccountActionState = { error: string } | { success: string } | null
+
+/**
+ * "Invoice to business name" (OWNER DECISIONS v2, 22.09.2026). Both fields
+ * are required TOGETHER when the toggle is on: a business invoice with a
+ * name and no registration number is not one a business can use for input
+ * VAT, so half-filled is treated as not filled rather than saved partially.
+ * When the toggle is off, both are optional -- a customer may have typed a
+ * name, changed their mind, and switched back without losing it.
+ */
+export const invoiceSettingsSchema = z
+  .object({
+    invoice_to_business: z.coerce.boolean(),
+    business_name: z.string().trim().max(120, 'שם העסק ארוך מדי').optional().or(z.literal('')),
+    // ח.פ. (חברה) ותעודת עוסק מורשה הן תשע ספרות בישראל.
+    business_registration_number: z
+      .string()
+      .trim()
+      .regex(/^\d{9}$/, 'מספר עוסק / ח.פ. חייב להיות תשע ספרות')
+      .optional()
+      .or(z.literal('')),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.invoice_to_business) return
+    if (!value.business_name) {
+      ctx.addIssue({ code: 'custom', path: ['business_name'], message: 'יש להזין שם עסק' })
+    }
+    if (!value.business_registration_number) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['business_registration_number'],
+        message: 'יש להזין מספר עוסק / ח.פ.',
+      })
+    }
+  })
+
+export type InvoiceSettingsInput = z.infer<typeof invoiceSettingsSchema>

@@ -1,5 +1,18 @@
 # `migrations/pending/`
 
+## 2026-09-23: 239 WRITTEN, not applied - טבלה חדשה כדי לעקוף trigger שבור
+
+‏`239_customer_invoice_settings.sql`. הבעלים ביקש טוגל "חשבונית לעסק" עם שם
+עסק ומספר עוסק/ח.פ. באזור האישי. **לא נוספו עמודות ל-`profiles`**: ההערה
+הקיימת ב-`runUpdateProfileDetails` (`src/server/actions/account.ts`) כבר
+מתעדת ש-`enforce_profile_privilege_columns` מתייחס ל-`NEW.supplier_id`
+(עמודה ש-`profiles` אין לה) וזורק על **כל** ‏UPDATE של לקוח על `profiles`
+עד ש-‏218 (עדיין pending) יוחל — כלומר תכונה חדשה שנשענת על `profiles` הייתה
+נכשלת בשקט מהיום הראשון. טבלה נפרדת עוקפת את זה לגמרי, באותה סיבה
+ש-`notification_preferences` ו-`user_addresses` כבר נפרדות: `RLS` בעלים-בלבד,
+שורה אחת ללקוח. שני השדות (שם עסק + מספר עוסק) נאכפים יחד באפליקציה
+(`zod`), לא ב-`CHECK` — כלל עסקי שישתנה זו פריסה, לא מיגרציה.
+
 ## 2026-09-23: 238 WRITTEN, not applied - עמודה אחת, בלי טבלה חדשה
 
 ‏`238_whatsapp_inbound_order_match.sql`. **הוובהוק הנכנס של וואטסאפ כבר היה

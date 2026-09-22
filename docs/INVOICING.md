@@ -40,7 +40,7 @@ piling up in an account nobody is watching.
 
 **The Cardcom adapter is passed as a thunk**, so it is only constructed when it
 is the one selected. `getPaymentProvider` reads terminal credentials, and
-building it under `INVOICE_PROVIDER=green_invoice` would make an invoice setting
+building it under `INVOICE_PROVIDER=icount` would make an invoice setting
 fail on a payment key — an error pointing at the wrong system entirely.
 
 **It is typed on the one method that matters** (`Pick<DocumentProvider,
@@ -49,12 +49,18 @@ the full interface would have meant adding an `id` to `PaymentProvider` — the
 payment layer carrying a field for the invoice layer's benefit, which is the
 same coupling pointing the other way.
 
-**The stubs refuse instead of pretending.** `green_invoice` and `icount` are
-named with the shape they need and no request code, because a client written
-against documentation nobody has opened looks finished and fails on the first
-real call — and the first real call is a customer's tax receipt. They return a
-refusal naming the credentials they need, which lands in `invoices.last_error`
-where an operator reads it, and the queue retries rather than dying.
+**The stub refuses instead of pretending.** `icount` is named with the shape
+it needs and no request code, because a client written against documentation
+nobody has opened looks finished and fails on the first real call — and the
+first real call is a customer's tax receipt. It returns a refusal naming the
+credentials it needs, which lands in `invoices.last_error` where an operator
+reads it, and the queue retries rather than dying.
+
+**Green Invoice was a third stub here and was removed, 22.09.2026** (owner
+decision: "Cardcom invoice module only"). It was never more than this same
+shape of refusal — no request code, no credential ever configured anywhere —
+so removing it deleted a choice nobody was going to make, not a working
+integration.
 
 **The mock returns `mock-doc-…`, which could never be mistaken for a real
 number.** This project runs against the hosted database, so a stray mock run

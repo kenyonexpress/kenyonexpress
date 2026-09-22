@@ -20,6 +20,7 @@ import { log } from '@/lib/observability/log'
 import { getPaymentProvider } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import type { CreateDocumentResult } from '@/lib/payments/types'
+import { getInvoiceSettings } from '@/server/queries/invoice-settings'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -153,6 +154,29 @@ interface OrderInvoiceContext {
   cardcomAccountId: string | null
 }
 
+/**
+ * The customer name string sent to the document provider when "invoice to
+ * business name" is on.
+ *
+ * THE REGISTRATION NUMBER RIDES IN THE NAME FIELD, NOT A DEDICATED ONE. This
+ * project's Cardcom client (`src/lib/payments/cardcom.ts`) calls the legacy
+ * `/Interface/BillGoldPost.aspx` endpoint, not the v11 JSON API that
+ * `docs/CARDCOM-ARCHITECTURE.md` documents a `TaxId`-shaped field for --
+ * this codebase has never verified that the legacy endpoint has an
+ * equivalent, and guessing a field name for a customer's tax document is
+ * exactly the kind of unverified call `lib/invoices/provider.ts` refuses to
+ * make for a whole provider. `InvoiceHead.CustName` is the one field already
+ * proven to reach the printed document, so the registration number is
+ * appended to it instead of invented as a second field that might silently
+ * go nowhere.
+ */
+export function invoiceBusinessCustomerName(
+  businessName: string,
+  registrationNumber: string | null,
+): string {
+  return registrationNumber ? `${businessName} (ח.פ./עוסק ${registrationNumber})` : businessName
+}
+
 async function loadOrderContext(
   admin: AdminClient,
   orderId: string,
@@ -245,6 +269,19 @@ async function loadOrderContext(
     phone: string | null
   } | null
 
+  // "Invoice to business name" (OWNER DECISIONS v2, 22.09.2026), applied at
+  // build time so an already-issued document is never touched. Both fields
+  // are required together by invoiceSettingsSchema, so `businessName` being
+  // set here already implies a registration number exists.
+  const invoiceSettings = await getInvoiceSettings(admin, order.user_id)
+  const customerName =
+    invoiceSettings.invoiceToBusiness && invoiceSettings.businessName
+      ? invoiceBusinessCustomerName(
+          invoiceSettings.businessName,
+          invoiceSettings.businessRegistrationNumber,
+        )
+      : (customerRow?.full_name ?? null)
+
   const itemLines = items.map((item) => ({
     productName: item.product_id ? (names.get(item.product_id) ?? null) : null,
     productType: item.product_type,
@@ -270,7 +307,7 @@ async function loadOrderContext(
       }),
       productTypes: items.map((item) => item.product_type),
       customer: {
-        name: customerRow?.full_name ?? null,
+        name: customerName,
         email: customerRow?.email ?? null,
         phone: customerRow?.phone ?? null,
       },
@@ -786,7 +823,7 @@ export async function issueInvoice(
   //
   // The Cardcom adapter is passed as a thunk so it is only built when it is the
   // one selected: `getPaymentProvider` reads terminal credentials, and
-  // constructing it under INVOICE_PROVIDER=green_invoice would make an invoice
+  // constructing it under INVOICE_PROVIDER=icount would make an invoice
   // setting fail on a payment key.
   const documentProvider = selectDocumentProvider(() => getPaymentProvider(cardcomAccountId))
 

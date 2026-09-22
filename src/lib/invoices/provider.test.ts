@@ -3,7 +3,6 @@ import type { CreateDocumentInput } from '@/lib/payments/types'
 import { describe, expect, it, vi } from 'vitest'
 import {
   DOCUMENT_PROVIDER_IDS,
-  greenInvoiceProvider,
   icountProvider,
   mockDocumentProvider,
   resolveDocumentProviderId,
@@ -49,10 +48,10 @@ describe('choosing a provider', () => {
 describe('building the selected provider', () => {
   it('does not construct the cardcom adapter unless cardcom is selected', () => {
     // `getPaymentProvider` reads terminal credentials. Building it eagerly
-    // would make INVOICE_PROVIDER=green_invoice fail on a missing PAYMENT key,
-    // which is an error message pointing at the wrong system entirely.
+    // would make INVOICE_PROVIDER=icount fail on a missing PAYMENT key, which
+    // is an error message pointing at the wrong system entirely.
     const build = vi.fn(() => ({ createDocument: vi.fn() }))
-    selectDocumentProvider(build, { INVOICE_PROVIDER: 'green_invoice' } as never)
+    selectDocumentProvider(build, { INVOICE_PROVIDER: 'icount' } as never)
     expect(build).not.toHaveBeenCalled()
   })
 
@@ -74,16 +73,13 @@ describe('building the selected provider', () => {
   })
 })
 
-describe('the stubs refuse rather than pretend', () => {
-  it.each([
-    ['green_invoice', greenInvoiceProvider],
-    ['icount', icountProvider],
-  ])('%s returns a refusal naming what it needs', async (_id, provider) => {
+describe('the stub refuses rather than pretends', () => {
+  it('icount returns a refusal naming what it needs', async () => {
     // A client written against documentation nobody has opened looks finished
     // and fails on the first real call -- and the first real call is a
     // customer's tax receipt. The refusal lands in `invoices.last_error`, where
     // an operator will read it, and the queue retries rather than dying.
-    const result = await provider.createDocument(request())
+    const result = await icountProvider.createDocument(request())
     expect(result.success).toBe(false)
     expect(result.failureCode).toBe('provider_not_implemented')
     expect(result.failureMessage).toMatch(/טרם חובר/)

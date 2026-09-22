@@ -136,7 +136,14 @@
     "invoiceVat": "VAT",
     "invoiceTypeCoupon": "Coupon receipt",
     "invoiceTypeTax": "Tax invoice/receipt",
-    "invoiceTypeCredit": "Credit note"
+    "invoiceTypeCredit": "Credit note",
+    "businessInvoiceTitle": "Business invoice",
+    "businessInvoiceIntro": "Future invoices will be issued to the business name and registration number instead of your own name, starting with the next one issued. Invoices already issued do not change.",
+    "businessInvoiceToggle": "Issue invoices to a business name",
+    "businessInvoiceName": "Business name",
+    "businessInvoiceRegistrationNumber": "Business registration number",
+    "businessInvoiceSave": "Save",
+    "businessInvoiceSaving": "Saving…"
   },
   "reviews": {
     "sortLabel": "Sort:",

@@ -974,6 +974,16 @@ describe('the pending migration inventory', () => {
       // matching in TypeScript, the same suffix-then-normalise pattern
       // `attachPhoneToExistingAccount` already uses for phone-OTP login.
       '238_whatsapp_inbound_order_match.sql',
+      // 239 WRITTEN 2026-09-23. A new table, not new columns on `profiles`:
+      // `runUpdateProfileDetails` (src/server/actions/account.ts) already
+      // documents that every non-admin UPDATE on `profiles` fails in
+      // production today (enforce_profile_privilege_columns references
+      // NEW.supplier_id, which profiles does not have) until 218 applies.
+      // `customer_invoice_settings` is its own table for the same reason
+      // `notification_preferences` and `user_addresses` are: it sidesteps
+      // the broken trigger entirely rather than making a new feature wait on
+      // an unrelated pending migration.
+      '239_customer_invoice_settings.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

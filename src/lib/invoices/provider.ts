@@ -33,17 +33,23 @@ import type { CreateDocumentInput, CreateDocumentResult } from '@/lib/payments/t
  * IS ours to close is making sure a document is always requested; the number on
  * it belongs to whoever is legally answerable for it.
  *
- * WHY THE STUBS REFUSE INSTEAD OF PRETENDING
+ * WHY THE STUB REFUSES INSTEAD OF PRETENDING
  *
- * `green_invoice` and `icount` are named here with the shape they would need
- * and no request code, because writing an API client against documentation
- * nobody has opened produces something that looks finished and fails on the
- * first real call -- and the first real call is a customer's tax receipt. They
- * return a refusal naming themselves, which lands in `invoices.last_error`
- * where an operator will read it, rather than a 500.
+ * `icount` is named here with the shape it would need and no request code,
+ * because writing an API client against documentation nobody has opened
+ * produces something that looks finished and fails on the first real call --
+ * and the first real call is a customer's tax receipt. It returns a refusal
+ * naming itself, which lands in `invoices.last_error` where an operator will
+ * read it, rather than a 500.
+ *
+ * GREEN INVOICE WAS HERE TOO, AND WAS REMOVED (owner decision, 22.09.2026):
+ * "Cardcom invoice module only." It was never more than this same shape of
+ * refusal -- no request code, no credential ever configured for it in any
+ * environment -- so removing it deletes a choice nobody was going to make,
+ * not a working integration.
  */
 
-export type DocumentProviderId = 'cardcom' | 'green_invoice' | 'icount' | 'mock'
+export type DocumentProviderId = 'cardcom' | 'icount' | 'mock'
 
 export interface DocumentProvider {
   readonly id: DocumentProviderId
@@ -55,7 +61,6 @@ export const INVOICE_PROVIDER_ENV = 'INVOICE_PROVIDER'
 
 export const DOCUMENT_PROVIDER_IDS: readonly DocumentProviderId[] = [
   'cardcom',
-  'green_invoice',
   'icount',
   'mock',
 ] as const
@@ -122,23 +127,9 @@ export const mockDocumentProvider: DocumentProvider = {
   },
 }
 
-/**
- * Green Invoice (חשבונית ירוקה).
- *
- * Shape only. Issuing through it needs an API key and a business id from their
- * console, and a request body nobody here has validated against their API.
- */
-export const greenInvoiceProvider: DocumentProvider = {
-  id: 'green_invoice',
-  async createDocument() {
-    return refuse(
-      'green_invoice',
-      'ספק החשבוניות green_invoice טרם חובר: נדרשים GREEN_INVOICE_API_KEY ו-GREEN_INVOICE_API_SECRET.',
-    )
-  },
-}
-
-/** iCount. Same shape, same reason. */
+/** iCount. Shape only: issuing through it needs a company id and credentials
+ * from their console, and a request body nobody here has validated against
+ * their API. */
 export const icountProvider: DocumentProvider = {
   id: 'icount',
   async createDocument() {
@@ -170,8 +161,6 @@ export function selectDocumentProvider(
   switch (resolveDocumentProviderId(env)) {
     case 'cardcom':
       return { id: 'cardcom', createDocument: (input) => cardcom().createDocument(input) }
-    case 'green_invoice':
-      return greenInvoiceProvider
     case 'icount':
       return icountProvider
     case 'mock':

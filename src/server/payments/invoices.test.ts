@@ -84,6 +84,7 @@ import {
   documentIssuingMode,
   enqueueOrderInvoice,
   enqueueRefundCreditNote,
+  invoiceBusinessCustomerName,
   invoiceIdempotencyKey,
   issueInvoice,
 } from './invoices'
@@ -160,6 +161,18 @@ describe('invoiceIdempotencyKey', () => {
     expect(invoiceIdempotencyKey('credit_note', { orderId: 'o', paymentId: 'p' })).toBe(
       'payment:p:credit_note',
     )
+  })
+})
+
+describe('invoiceBusinessCustomerName', () => {
+  it('appends the registration number to the business name', () => {
+    expect(invoiceBusinessCustomerName('חברת דוגמה בע"מ', '123456789')).toBe(
+      'חברת דוגמה בע"מ (ח.פ./עוסק 123456789)',
+    )
+  })
+
+  it('falls back to the bare business name when there is no registration number', () => {
+    expect(invoiceBusinessCustomerName('חברת דוגמה בע"מ', null)).toBe('חברת דוגמה בע"מ')
   })
 })
 
@@ -360,6 +373,52 @@ describe('issueInvoice', () => {
     const invoiceUpdate = find('invoices', 'update')?.payload as Record<string, unknown>
     expect(invoiceUpdate.status).toBe('issued')
     expect(invoiceUpdate.document_number).toBe('A-4471')
+  })
+
+  it('sends the business name instead of the account holder when invoice_to_business is on', async () => {
+    scriptPaidOrder()
+    queue('customer_invoice_settings.select', {
+      data: {
+        invoice_to_business: true,
+        business_name: 'חברת דוגמה בע"מ',
+        business_registration_number: '123456789',
+      },
+      error: null,
+    })
+    createDocument.mockResolvedValue({
+      success: true,
+      documentNumber: 'A-4472',
+      documentUrl: null,
+      failureCode: null,
+      failureMessage: null,
+      raw: {},
+    })
+
+    await issueInvoice(adminClient as never, row)
+
+    const sent = createDocument.mock.calls[0]?.[0] as { customerName: string }
+    expect(sent.customerName).toBe('חברת דוגמה בע"מ (ח.פ./עוסק 123456789)')
+  })
+
+  it('falls back to the account holder name when the table is not applied yet (239 pending)', async () => {
+    scriptPaidOrder()
+    queue('customer_invoice_settings.select', {
+      data: null,
+      error: { code: '42P01', message: 'relation does not exist' },
+    })
+    createDocument.mockResolvedValue({
+      success: true,
+      documentNumber: 'A-4473',
+      documentUrl: null,
+      failureCode: null,
+      failureMessage: null,
+      raw: {},
+    })
+
+    await issueInvoice(adminClient as never, row)
+
+    const sent = createDocument.mock.calls[0]?.[0] as { customerName: string }
+    expect(sent.customerName).toBe('דנה')
   })
 
   it('does not touch the order when the provider rejects it', async () => {

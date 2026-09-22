@@ -136,7 +136,14 @@
     "invoiceVat": "מע״מ",
     "invoiceTypeCoupon": "קבלה על קופון",
     "invoiceTypeTax": "חשבונית מס/קבלה",
-    "invoiceTypeCredit": "חשבונית זיכוי"
+    "invoiceTypeCredit": "חשבונית זיכוי",
+    "businessInvoiceTitle": "חשבונית לעסק",
+    "businessInvoiceIntro": "חשבוניות עתידיות יופקו על שם העסק ומספר העוסק/ח.פ. במקום שמכם, החל מהחשבונית הבאה שתונפק. חשבוניות שכבר הופקו לא משתנות.",
+    "businessInvoiceToggle": "הפקת חשבונית על שם עסק",
+    "businessInvoiceName": "שם העסק",
+    "businessInvoiceRegistrationNumber": "מספר עוסק מורשה / ח.פ.",
+    "businessInvoiceSave": "שמירה",
+    "businessInvoiceSaving": "שומר…"
   },
   "reviews": {
     "sortLabel": "מיון:",

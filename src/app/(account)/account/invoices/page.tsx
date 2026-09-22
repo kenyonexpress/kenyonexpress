@@ -1,5 +1,8 @@
+import BusinessInvoiceSettings from '@/components/account/BusinessInvoiceSettings'
 import { formatDate, formatIls } from '@/lib/account/format'
 import { t } from '@/lib/i18n/messages'
+import { createClient } from '@/lib/supabase/server'
+import { getInvoiceSettings } from '@/server/queries/invoice-settings'
 import { getMyInvoices } from '@/server/queries/invoices'
 import Link from 'next/link'
 
@@ -26,12 +29,26 @@ export default async function InvoicesPage() {
   const invoices = await getMyInvoices()
   const issued = invoices.filter((i) => i.status === 'issued')
 
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const settings = user
+    ? await getInvoiceSettings(supabase, user.id)
+    : { invoiceToBusiness: false, businessName: null, businessRegistrationNumber: null }
+
   return (
     <>
       <h1 className="account-title">{t('account.invoices')}</h1>
       <p className="account-subtitle">
         {issued.length} {t('account.invoicesCount')}
       </p>
+
+      <BusinessInvoiceSettings
+        invoiceToBusiness={settings.invoiceToBusiness}
+        businessName={settings.businessName}
+        businessRegistrationNumber={settings.businessRegistrationNumber}
+      />
 
       <section className="account-card">
         {invoices.length === 0 ? (
