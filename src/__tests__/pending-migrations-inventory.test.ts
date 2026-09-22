@@ -957,6 +957,14 @@ describe('the pending migration inventory', () => {
       '234_fraud_blocklist.sql',
       '235_feature_flags.sql',
       '236_contact_channels.sql',
+      // 237 WRITTEN 2026-09-22. Supplier-fed deals ingestion queue, not a
+      // scraper: suppliers.feed_url/feed_format (opt-in, the supplier's own
+      // domain only) and deal_candidates, a staging table a fetch or a
+      // manual submission can reach but only an admin can move past
+      // 'pending_review'. See docs/DEALS-PIPELINE.md for why platform_percent
+      // (no default anywhere, BUSINESS-RULES.md §4.1) keeps this from ever
+      // writing straight to public.products.
+      '237_deals_autopilot.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

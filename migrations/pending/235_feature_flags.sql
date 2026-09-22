@@ -47,7 +47,8 @@ INSERT INTO public.feature_flags (key, enabled, description) VALUES
   ('WALLET_APPLY_ENABLED', true, 'כבוי = אי אפשר לשלם מהארנק בקופה.'),
   ('SUPPLIER_SCAN_ENABLED', true, 'כבוי = סורק הספק מסרב לממש.'),
   ('AI_CS_AGENT_ENABLED', false, 'דלוק רק אחרי ריצת צל.'),
-  ('AI_SUPPLIER_AGENT_ENABLED', false, '')
+  ('AI_SUPPLIER_AGENT_ENABLED', false, ''),
+  ('DEALS_AUTOPILOT', false, 'כבוי = מסלול ה-cron של תור הדילים מדלג בלי לגעת בשום ספק. סעיף 96, docs/DEALS-PIPELINE.md.')
 ON CONFLICT (key) DO NOTHING;
 
 COMMIT;

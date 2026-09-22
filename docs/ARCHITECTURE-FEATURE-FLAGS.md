@@ -41,6 +41,7 @@ Scope: docs בלבד.
 | `SUPPLIER_SCAN_ENABLED` | true | |
 | `AI_CS_AGENT_ENABLED` | false עד shadow done | |
 | `AI_SUPPLIER_AGENT_ENABLED` | false | |
+| `DEALS_AUTOPILOT` | false | כבוי = מסלול ה-cron של תור הדילים מדלג. סעיף 96, docs/DEALS-PIPELINE.md |
 | `MAINTENANCE_MODE` | false | דף תחזוקה ציבורי; admin נשאר |
 
 ---

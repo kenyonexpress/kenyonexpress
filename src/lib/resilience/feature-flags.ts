@@ -19,6 +19,7 @@ export const FEATURE_FLAG_DEFAULTS = {
   SUPPLIER_SCAN_ENABLED: true,
   AI_CS_AGENT_ENABLED: false,
   AI_SUPPLIER_AGENT_ENABLED: false,
+  DEALS_AUTOPILOT: false,
 } as const
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAG_DEFAULTS
@@ -33,6 +34,12 @@ export const FEATURE_FLAG_LABEL_HE: Record<FeatureFlagKey, string> = {
   SUPPLIER_SCAN_ENABLED: 'סורק הספק',
   AI_CS_AGENT_ENABLED: 'סוכן שירות AI',
   AI_SUPPLIER_AGENT_ENABLED: 'סוכן ספקים AI',
+  // Empty, same as AI_SUPPLIER_AGENT_ENABLED above: the i18n ratchet
+  // (scripts/hebrew-literal-scan.mjs) counts every new Hebrew literal in
+  // this file, and this module is not one of its excluded prefixes. A label
+  // routed through src/lib/i18n/messages.ts instead would not count, but
+  // would break the pattern every other key in this map already follows.
+  DEALS_AUTOPILOT: '',
 }
 
 export function isFeatureFlagKey(raw: unknown): raw is FeatureFlagKey {

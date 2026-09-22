@@ -1,5 +1,16 @@
 # `migrations/pending/`
 
+## 2026-09-22: 237 WRITTEN, not applied - תור קליטת דילים מספקים, לא scraping
+
+‏`237_deals_autopilot.sql`. סעיף ‏96. שני עמודות חדשות ב-`suppliers`:
+‏`feed_url`/`feed_format` ‏(opt-in, ‏https בלבד, אף פעם לא אתר צד שלישי), וטבלה
+חדשה `deal_candidates` — תור staging שגם fetch אוטומטי וגם טופס ידני יכולים
+לכתוב אליו, אבל רק אדמין יכול להזיז מ-`pending_review`. **‏`platform_percent`
+אין ‏default בשום מקום ‏(BUSINESS-RULES.md §4.1), ולכן הטבלה הזאת ולא כתיבה
+ישירה ל-`products`**: עמלה היא החלטה עסקית, לא משהו שספק קובע לעצמו. ‏RLS: ספק
+קורא וכותב ‏(‏source='manual' בלבד) רק את השורות של עצמו; אישור/דחייה
+‏service role בלבד. ‏`docs/DEALS-PIPELINE.md`.
+
 ## 2026-09-22: 236 WRITTEN, not applied - ערוצי וואטסאפ לפי נושא ומפה לפי route
 
 ‏`236_contact_channels.sql`. סעיף ‏94. שתי טבלאות: ‏`contact_channels` ‏(חמישה נושאים:
