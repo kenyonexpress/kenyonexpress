@@ -1,3 +1,30 @@
+Updated: 2026-09-23 (00:28) (**DNS cutover trigger, שביעי ברצף, שום דבר לא
+זז. אותו בלוקר, אותו סוכן שני, אותה החלטה.**
+
+`dns-watch.sh` הפעיל סשן שביעי על אותו trigger. נבדק מחדש, לא הונח:
+
+- **סוכן שני עדיין חי, על אותו repo בדיוק**: `ps aux` מצא
+  `claude --dangerously-skip-permissions --model fable /goal` (PID 35738),
+  רץ מאז יום שני 21:00, עם 33+ דקות CPU בפועל. `lsof -p 35738` מאשר
+  `cwd` = `/Users/ofir/kenyonexpress-web/kenyonexpress` (אותו repo, לא repo
+  אחר). זה בדיוק תנאי העצירה הרביעי מתוך הארבעה - גם בתבנית ה-goal וגם
+  ב-CLAUDE.md.
+- `dig NS kenyonexpress.co.il @1.1.1.1` עדיין `aria`/`quinton.ns.cloudflare.com`,
+  `dig A` על root ועל `www` עדיין ריק - "zone active but empty" ללא שינוי
+  משישה הסבבים הקודמים (`1dda83b76`, `b8d316170`, `5cf6b3743`, `a9c4e07cb`,
+  `b1d1a63d9`, `c4219a7ca`).
+- לא בוצע בכוונה: לא נבדק zone status דרך Cloudflare MCP (מחבר לא מאומת
+  בסשן הזה), לא צורף domain ל-Vercel, לא בוצע deploy. העצירה היא לפני שלב 2
+  (צירוף domain), לא רק לפני deploy - כי גם צירוף domain הוא שינוי state על
+  תשתית production משותפת שהסוכן השני עלול להיות באמצע עבודה עליה.
+- `git status -sb` מול `origin/audit/final-audit`: branch מסונכרן, אין
+  ahead/behind. העץ שהוצג כ-modified בתחילת הסשן הזה כבר לא שם - כנראה קומיט
+  שביצע הסוכן השני תוך כדי.
+
+**המשך מ:** ללא שינוי - נשאר passkey post-first-login prompt (ראה מטה,
+00:26/00:22). כל עוד הסוכן השני חי על אותו repo, בדיקה נוספת של אותו trigger
+תיעצר באותה נקודה - אין תועלת בניסיון נוסף לפני שהוא מסיים.)
+
 Updated: 2026-09-23 (00:26) (**OWNER DECISIONS v2, סעיף Customer service:
 "WhatsApp + email בלבד, בלי Crisp, בלי טלפון, support@ במקום info@" -
 נבדק ויושם.**
