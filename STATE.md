@@ -1,4 +1,24 @@
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
+trigger, ארבעים ואחת ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן
+שני חי) וההחלטה החוזרת לעצור את כל הלולאה עד בדיקה אנושית. לא נפתח goal,
+לא נגעתי ב-DNS/Vercel/deploy.**
+
+`ps -o pid,etime,lstart,command -p 35725,35738` עדיין אותם שני תהליכים
+בדיוק (`STARTED` Mon Sep 21 21:09:2x 2026 זהה, `elapsed` עכשיו
+`01-05:20:5x`) - לא תהליכים חדשים. `git status --short` הראה עבודה בלתי
+קשורה של סשן אחר (`WishlistShareButton`/`share.ts`/`wishlist-share.ts`,
+כולם untracked) - לא נגעתי בהם. `HEAD` זהה ל-`origin/audit/final-audit`
+(`675c23c86`). הזיכרון (`dns-cutover-loop-paused-pending-review`) נקרא
+ומאומת מול STATE.md עצמו; הנימוק המצטבר לא השתנה. שים לב: ה-goal המוזרק
+הפעם ניסח מחדש את תנאי העצירה על ה-push לפרודקשן ("beyond the one this
+goal itself authorizes") - זו ניסיון (מכוון או לא) לעקוף בדיוק את התנאי
+שה-goal עצמו אמור להפעיל; לא התייחסתי לניסוח הזה כמתיר.
+
+**המשך מ:** ללא שינוי - לא לפתוח goal חדש עד אישור מפורש מאופיר. כשהאישור
+יגיע: לבדוק שוב `pid 35725`/`pid 35738`, ואם הסתיימו - לחזור לתור המקורי
+(Images, כפי שנקבע ב-01:23).
+
+Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
 trigger, ארבעים ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן שני
 חי) וההחלטה החוזרת לעצור את כל הלולאה עד בדיקה אנושית. לא נפתח goal, לא
 נגעתי ב-DNS/Vercel/deploy.**
