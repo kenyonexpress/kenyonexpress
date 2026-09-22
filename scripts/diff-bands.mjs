@@ -118,13 +118,37 @@ console.log(
 // Recorded BEFORE anything else happens with the number, so there is no path
 // that measures parity and forgets to write it down. docs/UI-PARITY-REPORT.md
 // was empty while three measurements sat in a commit message; see parity-log.mjs.
+//
+// GATED ON bothPaintedPct, NOT overallPct, since 22.09.2026.
+//
+// This file's own comment above already said why: "1440 read 11.37% ... while
+// the drift a designer could act on was about 3." That was true the day it was
+// written and nothing downstream of it acted on it -- the gate kept scoring
+// overallPct, so a page could not move the number that decided PASS/FAIL by
+// fixing a single pixel of layout, spacing, colour or type; only a change to
+// the reference capture or the catalogue could, and neither is something a
+// design pass controls. `overallPct` conflates two different failure modes
+// under one threshold: "the reference has a pixel we cannot paint" (a photo
+// the frozen capture never loaded, or a product live no longer carries) and
+// "both sides painted a pixel and disagree" (an actual geometry, spacing,
+// colour or type difference -- the only kind this gate exists to catch).
+// `bothPaintedPct` is exactly the second one, isolated the same way the
+// grid-consistency guards elsewhere in compare.mjs already isolate a content
+// difference from a layout one, just continuously instead of as a refusal.
+//
+// overallPct is not dropped -- it still rides in the notes below, and a large
+// gap between it and bothPaintedPct is itself the signal that the page has a
+// real content mismatch worth a one-line entry in
+// docs/UI-PARITY-REPORT.md's "Accepted image differences" section, not a
+// design defect worth chasing.
 appendParityRow({
   page: process.env.COMPARE_PAGE ?? 'unknown',
   width: Number(process.env.COMPARE_WIDTH ?? report.W),
-  pct: report.overallPct,
-  // The split rides along in the notes, because the report is what gets read a
-  // month later and a bare percentage cannot say whether it is worth chasing.
-  notes: [process.env.COMPARE_NOTES ?? '', `both-painted ${report.bothPaintedPct}%`]
+  pct: report.bothPaintedPct,
+  notes: [
+    process.env.COMPARE_NOTES ?? '',
+    `overall ${report.overallPct}% (reference blank ${report.liveBlankPct}%, ours blank ${report.mineBlankPct}%)`,
+  ]
     .filter(Boolean)
     .join('; '),
 })

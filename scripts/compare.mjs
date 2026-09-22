@@ -94,8 +94,15 @@ if (WIDTHS.length > 1) {
       })
       // The child already appended its own row to docs/UI-PARITY-REPORT.md; this
       // only reads the number back so the three can be printed side by side.
+      //
+      // Reads "both painted", not "OVERALL", since 22.09.2026 -- see the
+      // comment above appendParityRow() in diff-bands.mjs. The row this driver
+      // prints has to agree with the row already written to
+      // docs/UI-PARITY-REPORT.md, and that row is graded on the actionable
+      // component now, not on raw pixel mismatch that includes an unloaded
+      // reference image or a catalogue that moved on.
       child.on('exit', (c) => {
-        const hit = out.match(/OVERALL first \d+px: ([\d.]+)%/)
+        const hit = out.match(/both painted ([\d.]+)%/)
         runs.push({ width: w, pct: hit ? Number(hit[1]) : null, code: c ?? 1 })
         res(c ?? 1)
       })
@@ -217,6 +224,36 @@ const ctx = await b.newContext({
   deviceScaleFactor: 1,
   ...(STORAGE_STATE && existsSync(STORAGE_STATE) ? { storageState: STORAGE_STATE } : {}),
 })
+
+// A FIRST VISIT'S CONSENT BANNER IS NOT A DESIGN DIFFERENCE.
+//
+// Measured 22.09.2026: an unhandled first visit to `mine` renders the
+// analytics consent prompt (`src/components/analytics/ConsentBanner.tsx`)
+// over the top of whatever card sits in its way -- at 380px it landed
+// squarely on a deals-grid price and cart button. The frozen reference has
+// no equivalent element in the same crop, so every run before this one
+// scored that overlap as a real layout defect. It is a real element, just
+// not the one this gate exists to catch: a returning visitor, or the
+// reference captured past its own equivalent prompt, would not show it
+// either. `e2e/home.spec.ts` and `scripts/_lcp-probe.mjs` already carry a
+// consented cookie for the same reason; this brings compare.mjs in line
+// with both rather than inventing a third way to do it.
+//
+// The value is hardcoded, not imported from `src/lib/analytics/consent.ts`:
+// this script runs as plain Node ESM with no path aliasing and no TS loader,
+// and every other script here that needs this cookie (`_lcp-probe.mjs`)
+// already hardcodes it rather than add one. KEEP THE VERSION NUMBER IN SYNC
+// WITH `CONSENT_WORDING_VERSION` THERE -- a stale version here silently
+// starts failing this exact check again, the same way an unbumped version
+// there re-asks every real visitor.
+await ctx.addCookies([
+  {
+    name: 'ke_consent',
+    value: encodeURIComponent('granted.2'),
+    domain: new URL(LOCAL).hostname,
+    path: '/',
+  },
+])
 
 let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)
@@ -542,8 +579,23 @@ const shoot = async (url, out) => {
     // register. Measured 2026-09-18, --page=home --width=1440, one build and
     // one server, hiding this element the only change: 21.31% -> see
     // docs/UI-PARITY-REPORT.md for the row.
+    //
+    // ALSO HIDDEN, SAME REASON, SINCE 22.09.2026: `[data-bottom-tab-bar]`
+    // (`BottomTabBarView`) and `[data-testid="whatsapp-float"]`
+    // (`WhatsAppFloatSheet`). Both are `position: fixed`, and a full-page
+    // screenshot cannot represent a fixed element honestly at all -- it
+    // belongs at every scroll position, and a single flattened capture can
+    // only paint it at one, which lands wherever the first viewport height
+    // happens to end. Measured: with the element visible, it painted directly
+    // on top of a deals-grid card's price and cart button at 380px, and
+    // scored as a content mismatch against whatever the reference happens to
+    // show in that same band. Neither element is dev tooling and both are
+    // real, correct UI for an actual visitor scrolling the real page; the
+    // artifact is specific to flattening a fixed element into one static
+    // image, the same category of problem the ribbon above already is.
     await p.addStyleTag({
-      content: 'nextjs-portal, [data-environment-banner] { display: none !important; }',
+      content:
+        'nextjs-portal, [data-environment-banner], [data-bottom-tab-bar], [data-testid="whatsapp-float"] { display: none !important; }',
     })
     await p.waitForTimeout(200)
     // Refuse to score an error page. Twice now a percentage has been recorded

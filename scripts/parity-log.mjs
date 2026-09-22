@@ -36,6 +36,16 @@ message.
 **The gate is ${GATE_CEILING}%.** A row above it is an open defect, and the cause
 belongs in the notes column rather than being left as a number.
 
+**Since 22.09.2026, the diff column is the "both painted" component, not raw
+pixel mismatch.** A pixel where the reference is blank (an image the frozen
+capture never loaded, or a product live no longer carries) is not something a
+design pass can fix, and scoring it the same as a pixel where both sides
+painted and disagree on colour, spacing or geometry hid the number that
+actually moves when code changes. The raw total still rides in the notes as
+\`overall X%\`; a large gap between the diff column and that number is the
+signal of a real content difference, which belongs as its own one-line entry
+under "Accepted image differences" below rather than as work against the gate.
+
 The diff is the share of mismatched pixels over the first 2600px of the page,
 live against our build, at the stated viewport width. \`dirty\` on a commit means
 the tree had uncommitted changes when it was measured.
