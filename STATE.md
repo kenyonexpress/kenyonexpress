@@ -1,3 +1,39 @@
+Updated: 2026-09-23 (01:05) (**DNS cutover trigger, עשירי ברצף. לא נמדד
+מחדש zone/NS/deploy - תשעה סבבים זהים קודם כבר קבעו "goal שנתקע פעמיים:
+לדלג", וההוכחה החיה (pid 35738) לא דורשת אימות DNS נוסף כדי לקבוע את אותה
+מסקנה. תור הפיצ'רים העצמאי כן זז: passkey post-first-login prompt נבנה
+ונשלח.**
+
+`ps -p 35738` בתחילת הסבב: עדיין חי, `cwd` זהה
+(`/Users/ofir/kenyonexpress-web/kenyonexpress`), `elapsed` `01-03:51:00`,
+עדיין צובר CPU. `git log` הראה שהוא כבר הספיק שני commits חדשים מאז הרישום
+התשיעי (`1186084e9` וואטסאפ order-match, `203e75e9e` תיעוד) - לא נגעתי
+בהם.
+
+**passkey post-first-login prompt (OWNER DECISIONS v2, סעיף Auth) נבנה
+במלואו וכבר היה קיים בעץ העבודה בתחילת הסבב** (`src/components/account/
+PasskeyRegisterPrompt.tsx`, `e2e/passkey-register-prompt.spec.ts`,
++שינויים ב-`src/app/(account)/layout.tsx` ו-`src/styles/account.css`) -
+כנראה משיירי סבב קודם שלא הספיק לסגור. נבדק, לא הונח: `pnpm type-check`
+נקי, `pnpm lint` נקי (אזהרת `useExhaustiveDependencies` יחידה היא ב-
+`SecurityClient.tsx`, קובץ שלא נגעתי בו, לא בקבצים שלי), `pnpm test`
+551/551 קבצים, 6798 עברו + 12 skipped. **לא הרצתי `pnpm build`** - סוכן
+שני חי באותה תיקייה (לא worktree), וזיכרון קיים (`concurrent-worktree-
+builds-oom`) מתעד ש-build מקביל הורג build מקביל; type-check+lint+test
+הם השער כשיש סוכן שני פעיל. commit בנתיבים מפורשים בלבד (`git commit --
+<4 הקבצים>`), לא `-A` - `git status` בזמן ה-commit כבר הראה
+`.env.example`, `docs/INVOICING.md`, `src/lib/invoices/provider.ts`,
+`provider.test.ts`, `src/server/payments/invoices.ts` משתנים תחת עבודת
+הסוכן השני על Invoices (ראה הרישום למעלה מ-01:00) - לא נכללו, נשארו
+כפי שהיו. `commit 9b8c215f8`, `push` הצליח (`203e75e9e..9b8c215f8`).
+
+**המשך מ:** הסוכן השני כבר תפס את Invoices (הרישום שלו מ-01:00 למעלה
+אומר זאת במפורש ומדלג על passkey בדיוק כי אני בניתי אותו - סימטרי להחלטה
+שלי כאן). כדי לא להתנגש על אותם קבצים, הפריט הבא בתור העצמאי הוא
+**images** (Unsplash/Pexels/R2, `IMAGES-INVENTORY`, לפי OWNER DECISIONS
+v2 אחרי Invoices) - נבדק תחילה שהסוכן השני לא כבר שם לפני שנכתבת שורת
+קוד. DNS/deploy נשארים תלויים בסוכן השני שמשתחרר.
+
 Updated: 2026-09-23 (01:00) (**בקשה חדשה מאופיר באמצע העבודה: מערכת וואטסאפ
 מלאה מאפס על ‏Meta Cloud API. נבדק לפני שנכתבה שורת קוד: רוב זה כבר קיים,
 בנוי ובדוק.** תוכן הבקשה: טבלת ‏`whatsapp_messages`, ‏Supabase Function
