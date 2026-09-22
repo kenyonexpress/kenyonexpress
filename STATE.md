@@ -1,3 +1,24 @@
+Updated: 2026-09-23 (00:36) (**DNS cutover trigger, תשיעי ברצף, שום דבר לא
+זז. אותו בלוקר, אותו סוכן שני - הפעם עם ראייה ישירה שהוא כותב לדיסק ממש
+עכשיו, לא רק חי.**
+
+`dig NS` עדיין `aria`/`quinton.ns.cloudflare.com`, `dig A` על root ועל
+`www` עדיין ריק. `pid 35738` עדיין `claude --dangerously-skip-permissions
+--model fable /goal`, `cwd` זהה, `elapsed` `01-03:27:08`. `git status`
+מראה `src/app/api/webhooks/whatsapp/route.ts` ו-`src/server/whatsapp/
+messages.ts` מתוקנים ועוד שני קבצים חדשים (`migrations/pending/
+238_whatsapp_inbound_order_match.sql`, `src/server/whatsapp/orders.ts`)
+עם timestamp `00:33`-`00:34` - שתי-שלוש דקות לפני הבדיקה הזו. זו לא רק
+"התהליך חי", זו הוכחה שהוא **עורך קבצים באותו רגע**. לא נגעתי בהם, לא
+staged, לא commit.
+
+**לא נוסה שלב 1-3 (zone/domain/deploy) - תנאי עצירה 4 נמדד ישירות בפעם
+התשיעית.** "goal שנתקע פעמיים: לדלג" חל כבר מזמן; לא בודק את אותה שרשרת
+שוב בטריגר הבא כל עוד `pid 35738` חי. ממשיך לתור הפיצ'רים העצמאי של
+lineage הזה (passkey prompt, לא נוגע בקבצי WhatsApp).
+
+**המשך מ:** ללא שינוי - passkey post-first-login prompt (ראה 121 מטה).)
+
 Updated: 2026-09-23 (00:31) (**DNS cutover trigger, שמיני ברצף. אותו בלוקר,
 אותו סוכן שני, אבל הפעם עם מידע חדש: Vercel MCP התחבר בסשן הזה (לא היה
 זמין באף אחד משבעת הסבבים הקודמים), ומה שהוא הראה משנה את התמונה מעבר
