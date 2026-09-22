@@ -21,6 +21,7 @@
     "lint:changed": "node scripts/lint-changed.mjs",
     "typecheck:changed": "node scripts/typecheck-changed.mjs",
     "gate:hardcoded": "node scripts/hardcoded-gate.mjs",
+    "gate:secret-leak": "node scripts/secret-leak-gate.mjs",
     "audit:hardcoded": "node scripts/audit-hardcoded.mjs",
     "audit:final": "node scripts/final-audit.mjs",
     "audit:catalogue": "node scripts/catalogue-safety.mjs",

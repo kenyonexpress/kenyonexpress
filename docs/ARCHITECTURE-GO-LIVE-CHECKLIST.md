@@ -189,15 +189,25 @@ curl -sI https://www.kenyonexpress.co.il | head -n 10
 | ENV12 | `UNSUBSCRIBE_SIGNING_SECRET` | P1 | notifications |
 | ENV13 | Ntfy / admin alert vars | P1 | |
 
-בדיקת דליפה:
+בדיקת דליפה (docs/INFRA-TASKS.md task 10):
 
 ```
-# Terminal (repo root): אין service role / Cardcom password ב-client bundle
+pnpm build && node scripts/secret-leak-gate.mjs
 ```
+
+סורק כל קובץ טקסט תחת `.next/static/` ‏(הבילד שמוגש לדפדפן) מול כל
+משתנה סביבה שנראה כמו סוד ‏(שם תואם `SECRET`/`PASSWORD`/`SERVICE_ROLE`/
+`PRIVATE_KEY`/`API_KEY`/`TOKEN`, לא מתחיל ב-`NEXT_PUBLIC_`), וגם מול שמות
+שבעת סודות ה-P0 עצמם ‏(`SUPABASE_SECRET_KEY`, סט Cardcom, `CRON_SECRET`,
+`VOUCHER_QR_SECRET`) — כדי לתפוס גם אובייקט env שסודר בשלמותו לתוך chunk
+ציבורי. יציאה ‏0=נקי, ‏1=נמצאה דליפה ‏(השם בלבד מודפס, לעולם לא הערך),
+‏2=‏`.next/static` חסר. הריצה ב-CI ‏(‏`ci.yml`, מיד אחרי `pnpm build`)
+מוכיחה בעיקר את המנגנון — הריצה המחייבת היא מול בילד עם env בצורת
+פרודקשן.
 
 | # | בדיקה | P |
 |---|---|---|
-| ENV14 | אף סוד כסף לא תחת `NEXT_PUBLIC_` | P0 |
+| ENV14 | אף סוד כסף לא תחת `NEXT_PUBLIC_`; `node scripts/secret-leak-gate.mjs` על בילד עם env של פרודקשן חוזר 0 | P0 |
 | ENV15 | רשימת Production env ב-Vercel תואמת סעיף 3 (צילום / export מושחר) | P0 |
 
 ---
@@ -328,7 +338,7 @@ Smoke אחרי deploy: יצירת שגיאה מבוקרת ב-preview/staging ק�
 
 | # | בדיקה | P | סטטוס |
 |---|---|---|---|
-| S1 | אין service role / סוד Cardcom ב-client bundle (חיפוש ב-`.next/static`) | P0 | |
+| S1 | אין service role / סוד Cardcom ב-client bundle: `node scripts/secret-leak-gate.mjs` על בילד עם env של פרודקשן | P0 | |
 | S2 | Rate limit על checkout, scan, ו-auth endpoints | P0 | |
 | S3 | RBAC: admin routes דורשים role אמיתי, לא רק session | P0 | |
 | S4 | עמודי מדיניות: תקנון, פרטיות, החזרים נגישים מה-footer | P0 | |

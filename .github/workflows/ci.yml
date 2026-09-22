@@ -313,6 +313,21 @@ jobs:
 
       - run: pnpm build
 
+      # docs/INFRA-TASKS.md task 10. Scans the artifact `pnpm build` just
+      # produced for a secret VALUE or a P0 secret NAME (SUPABASE_SECRET_KEY,
+      # the Cardcom terminal set, CRON_SECRET, VOUCHER_QR_SECRET) reaching
+      # `.next/static/` -- the client bundle every browser downloads.
+      #
+      # HONEST ABOUT WHAT THIS RUN PROVES. This job does not set real
+      # production secrets, so this run mostly proves the mechanism and the
+      # P0 name-scan rather than catching a real leaked value: there is
+      # usually no real secret value in this env to match against. The
+      # binding run is against a build with production-shaped env, same
+      # caveat ENV15 in the checklist already carries for comparing the
+      # Vercel env list by hand.
+      - name: Scan the client bundle for a leaked secret
+        run: node scripts/secret-leak-gate.mjs
+
       # Alert rules are code (scripts/sentry-alert-rules.mjs), applied by
       # upsert after a green build and only from main: a PR editing the rules
       # must not rewrite live alerting before it merges. Without the auth
