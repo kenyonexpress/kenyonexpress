@@ -5,6 +5,10 @@ vi.mock('@/lib/observability/log', () => ({
   log: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }))
 
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+}))
+
 const inserted: Array<Record<string, unknown>> = []
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({

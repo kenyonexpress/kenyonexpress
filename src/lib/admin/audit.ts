@@ -3,6 +3,7 @@ import { log } from '@/lib/observability/log'
 import { getRequestId } from '@/lib/observability/request-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { AuditAction, Json } from '@/types/database'
+import * as Sentry from '@sentry/nextjs'
 import { headers } from 'next/headers'
 
 // Every admin mutation writes an audit_log row through this single helper
@@ -93,8 +94,12 @@ export async function writeAuditLog(entry: {
     })
     if (error) {
       log.error('audit.write_failed', { reason: error.message })
+      Sentry.captureException(new Error(`audit.write_failed: ${error.message}`), {
+        tags: { area: 'admin', op: 'audit_log' },
+      })
     }
   } catch (err) {
     log.error('audit.write_threw', { err })
+    Sentry.captureException(err, { tags: { area: 'admin', op: 'audit_log' } })
   }
 }
