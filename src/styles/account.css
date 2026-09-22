@@ -751,3 +751,43 @@
   font-variant-numeric: tabular-nums;
   color: var(--account-muted);
 }
+
+/* Passkey registration nudge */
+.passkey-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(51, 62, 72, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 60;
+}
+
+.passkey-prompt {
+  background: #fff;
+  border-radius: 4px;
+  padding: 24px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.passkey-prompt__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--account-ink);
+  margin: 0 0 10px;
+}
+
+.passkey-prompt__desc {
+  font-size: 14px;
+  color: var(--account-muted);
+  margin: 0 0 20px;
+}
+
+.passkey-prompt__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

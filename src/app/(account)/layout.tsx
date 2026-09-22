@@ -1,5 +1,6 @@
 import SkipLink from '@/components/a11y/SkipLink'
 import AccountNav from '@/components/account/AccountNav'
+import PasskeyRegisterPrompt from '@/components/account/PasskeyRegisterPrompt'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
@@ -9,7 +10,9 @@ import NotificationBell from '@/components/notifications/NotificationBell'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
 import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
+import { listPasskeys } from '@/server/actions/passkeys'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
 import { unreadCount } from '@/server/queries/notifications'
 import Link from 'next/link'
@@ -46,14 +49,24 @@ async function AccountSideNav() {
     redirect(`/login?next=${encodeURIComponent('/account')}`)
   }
 
-  const [profile, wallet, unread] = await Promise.all([
+  const [profile, wallet, unread, passkeys] = await Promise.all([
     getAccountProfile(),
     getWalletSummary(),
     unreadCount(),
+    // Best-effort: the register-a-passkey nudge is a nice-to-have, not
+    // something worth failing the whole side nav over.
+    listPasskeys().catch((cause): Awaited<ReturnType<typeof listPasskeys>> => {
+      log.warn('passkey.list_threw', {
+        message: cause instanceof Error ? cause.message : String(cause),
+      })
+      return { error: 'unavailable' }
+    }),
   ])
+  const hasPasskeys = 'available' in passkeys && passkeys.available && passkeys.passkeys.length > 0
 
   return (
     <>
+      <PasskeyRegisterPrompt userId={user.id} hasPasskeys={hasPasskeys} />
       {/*
         THE BELL LIVES HERE AND NOT IN THE STOREFRONT HEADER, and the reason is
         measurable rather than aesthetic. `SiteHeader` is under the pixel-parity
