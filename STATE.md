@@ -1,6 +1,45 @@
 # KenyonExpress — Project State
 
-Updated: 2026-09-22 (**שני מתוך שלושת הפריטים הפתוחים ב-`docs/FINAL-REPORT-V2.md`
+Updated: 2026-09-22 (**נכתב `scripts/dns-watch.sh`: שומר DNS עצמאי, לא תלוי
+בסשן claude.** רץ כל ‏15 דקות `dig +short NS kenyonexpress.co.il @1.1.1.1`,
+רושם ל-`logs/dns-watch.log` כל עוד אין nameservers של ‏Cloudflare ‏(נמדד
+‏22.09: עדיין ריק — `dns-zone-refused-at-cloudflare` עדיין נכון). ברגע
+שמופיע `aria.ns.cloudflare.com` או `quinton.ns.cloudflare.com`: התראת
+macOS, ואז `exec` לסשן `claude --dangerously-skip-permissions --model
+sonnet` עצמאי עם goal שמאמת את אזור ‏Cloudflare, מצרף את הדומיין לפרויקט
+‏Vercel, מבצע production deploy, מוודא ‏200 על הדומיין החי, מריץ
+`compare.mjs` על ‏380/768/1440 מול `refs/ke_live_*.png`, מתקן רגרסיה אם
+יש, מעדכן `STATE.md`, וממשיך את לולאת הסגירה. **למה סקריפט נפרד ולא לולאה
+בתוך סשן claude:** סשן claude נגמר במכסה, במגבלת context, בקריסה, או
+בסגירת טרמינל — וכל אלה היו עוצרים גם את בדיקת ה-DNS יחד איתו. הסקריפט
+עצמו לא תלוי בכלום מזה.
+
+**‏LaunchAgent נוצר, נטען ואומת רץ בפועל** ‏(לא commit — מקומי למכונה):
+`~/Library/LaunchAgents/com.kenyonexpress.dnswatch.plist`, מריץ את
+הסקריפט תחת `caffeinate -dimsu` עם `KeepAlive`, כך ששורד סגירת טרמינל
+וגם restart. **נבדק, לא רק נכתב**: `launchctl list` מראה pid חי,
+`pgrep` מוצא גם את תהליך ה-bash וגם את caffeinate שעוטף אותו, ו-הלוג
+מראה קריאה נכונה של "אין cutover עדיין" מול תשובת ה-NS הריקה הנוכחית.
+‏`logs/` נוסף ל-`.gitignore` כדי שהלוג הרץ הזה ‏(ושל future background
+watchers) לא ייסחף ל-commit על ידי אחת מלולאות ה-autopilot האחרות שכבר
+רצות על הריפו הזה. ‏commit `12c79c98c`, נדחף.
+
+**החלטה מתועדת, לא שאלה:** ה-goal שהסקריפט משגר כולל production deploy
+אוטומטי ללא אישור אנושי נוסף ברגע שה-DNS מתהפך. זו בקשה מפורשת של
+המשתמש בהודעה שיצרה את הסקריפט הזה, עקבית עם `docs/BRANCH-AUDIT.md`
+וסעיף "DNS WATCH LOOP" ב-goal הקודם באותו שיחה, ועם דפוסי ה-autopilot
+הקיימים כבר בפרויקט ‏(`ke-eternal.sh` עושה את אותו דבר עבור ה-goal
+הכללי). **מיפוי לפני כתיבה מצא ‏7 ‏LaunchAgents קיימים אחרים**
+‏(`auto-merger`, `autopilot`, `caffeinate`, `guardian`, `main-auto-pull`,
+`watchdog`, `wifi-guard`) ו-3 קבצי `kenyon-loop.sh` בתיקיות אחיות —
+אף אחד מהם לא ספציפי ל-DNS, כך שאין כפילות תפקוד, רק תוספת.
+
+**המשך מ:** הסקריפט רץ ברקע וממתין. שום פעולת המשך אינה נדרשת עד
+שה-DNS יתהפך בפועל — הבדיקה הבאה שלי או של סשן אחר צריכה רק לוודא
+ש-`launchctl list | grep dnswatch` עדיין מראה pid חי ושה-log ממשיך
+להתעדכן, לא לפתוח goal חדש.)
+
+קודם: 2026-09-22 (**שני מתוך שלושת הפריטים הפתוחים ב-`docs/FINAL-REPORT-V2.md`
 נסגרו, בעבודה שכבר ישבה בעץ בתחילת הסשן ולא הוזמנה על ידי /goal חדש.**
 **‏(1) `home.spec:419` ‏("עמוד הבית עולה גיליון חוסם-רינדור אחד") ‏ירוק**:
 קובץ חדש, `src/app/app.css`, מייבא ‏`globals.css` ואז ארבעת הגיליונות
