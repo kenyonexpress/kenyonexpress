@@ -102,6 +102,13 @@ const SURFACES: Record<string, { posture: Posture; note: string }> = {
     posture: 'not-a-price',
     note: 'strikes completed onboarding steps',
   },
+  'src/app/(admin)/admin/deals-queue/page.tsx': {
+    posture: 'not-a-price',
+    note:
+      'a supplier-submitted candidate full_price for admin review, not a claim shown to ' +
+      'any customer -- deal_candidates never publishes to public.products on its own, ' +
+      'see docs/DEALS-PIPELINE.md',
+  },
 }
 
 function walk(dir: string, out: string[] = []): string[] {

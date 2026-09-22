@@ -153,6 +153,7 @@
       "/admin/cron",
       "/admin/dashboard",
       "/admin/data-requests",
+      "/admin/deals-queue",
       "/admin/discounts",
       "/admin/discounts/new",
       "/admin/feature-flags",
