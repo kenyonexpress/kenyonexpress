@@ -54,15 +54,15 @@ describe('normalizeReferralCode', () => {
 })
 
 describe('referralShareUrl', () => {
-  it('points at the home page with the code as ?ref=', () => {
+  it('points at the home page with the code as ?ref= plus UTM', () => {
     expect(referralShareUrl('AB12CD34', 'https://kenyonexpress.co.il')).toBe(
-      'https://kenyonexpress.co.il/?ref=AB12CD34',
+      'https://kenyonexpress.co.il/?ref=AB12CD34&utm_source=referral&utm_medium=share&utm_campaign=referral_program',
     )
   })
 
   it('does not double the slash when the origin carries one', () => {
     expect(referralShareUrl('AB12CD34', 'https://kenyonexpress.co.il/')).toBe(
-      'https://kenyonexpress.co.il/?ref=AB12CD34',
+      'https://kenyonexpress.co.il/?ref=AB12CD34&utm_source=referral&utm_medium=share&utm_campaign=referral_program',
     )
   })
 })

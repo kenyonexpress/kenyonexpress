@@ -50,5 +50,8 @@ export const REFERRAL_QUERY_PARAM = 'ref'
 export function referralShareUrl(code: string, origin: string): string {
   const url = new URL('/', origin)
   url.searchParams.set(REFERRAL_QUERY_PARAM, code)
+  url.searchParams.set('utm_source', 'referral')
+  url.searchParams.set('utm_medium', 'share')
+  url.searchParams.set('utm_campaign', 'referral_program')
   return url.toString()
 }
