@@ -1,4 +1,6 @@
+import { ORDER_STATUS_LABELS } from '@/lib/admin/labels'
 import { formatAgorot } from '@/lib/vouchers/coupon-view'
+import type { WhatsAppMatchedOrder } from '@/server/whatsapp/orders'
 
 /**
  * WhatsApp message builders: pure text, no transport, no database, same split
@@ -95,4 +97,21 @@ export const OPT_IN_REPLY =
 /** Acknowledgment for a free-text message that opened or joined a ticket. */
 export function ticketAckText(ticketRef: string): string {
   return `קיבלנו את פנייתך (מספר פנייה ${ticketRef}) ונחזור אליך בהקדם. אפשר להוסיף פרטים בהודעה נוספת כאן.`
+}
+
+/**
+ * The order-summary line prepended to the ticket reply when
+ * `findRecentOrderForPhone` (`server/whatsapp/orders.ts`) matched the
+ * sender's number to an order. Same label map the admin order list uses
+ * (`ORDER_STATUS_LABELS`), so a status reads the same word everywhere a
+ * human sees it.
+ */
+export function orderSummaryReplyText(order: WhatsAppMatchedOrder): string {
+  const ref = order.id.slice(0, 8).toUpperCase()
+  const statusHe = (ORDER_STATUS_LABELS as Record<string, string>)[order.status] ?? order.status
+  const lines = [`מצאנו את ההזמנה האחרונה שלך: ${ref}, סטטוס: ${statusHe}.`]
+  if (order.total_ils_agorot != null && order.total_ils_agorot > 0) {
+    lines.push(`סך ההזמנה: ${formatAgorot(order.total_ils_agorot)}`)
+  }
+  return lines.join('\n')
 }

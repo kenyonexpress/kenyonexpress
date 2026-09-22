@@ -1,5 +1,16 @@
 # Apply order
 
+## 2026-09-23: 238, any order, one nullable column on an already-applied table
+
+`238_whatsapp_inbound_order_match.sql` adds `order_id` (nullable, FK to
+`orders`, `ON DELETE SET NULL`) to `whatsapp_inbound_messages`, which is
+already live in production. No dependency on any other pending file, and no
+RLS or grant change: the column is only ever written by the service-role
+webhook and only ever read by the admin viewer. **Reversal:**
+`ALTER TABLE public.whatsapp_inbound_messages DROP COLUMN order_id;` -- the
+webhook and the admin viewer both degrade to "no match" on a missing column
+rather than erroring (`src/server/queries/whatsapp-messages.ts`).
+
 ## 2026-09-22: 236, any order, two public-read tables
 
 `236_contact_channels.sql` creates `contact_channels` and `page_contact_config`

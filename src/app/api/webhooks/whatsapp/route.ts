@@ -2,7 +2,13 @@ import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { classifyInbound, waPhoneDigits } from '@/server/whatsapp/inbound'
-import { OPT_IN_REPLY, OPT_OUT_REPLY, ticketAckText } from '@/server/whatsapp/messages'
+import {
+  OPT_IN_REPLY,
+  OPT_OUT_REPLY,
+  orderSummaryReplyText,
+  ticketAckText,
+} from '@/server/whatsapp/messages'
+import { findRecentOrderForPhone } from '@/server/whatsapp/orders'
 import { loadTwilioEnv, twilioSignatureValid } from '@/server/whatsapp/twilio'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -20,6 +26,10 @@ import { type NextRequest, NextResponse } from 'next/server'
  *   way consent is ever granted; nothing opts a phone in on its behalf.
  * - anything else: a support ticket. An open ticket for the same phone absorbs
  *   the message; otherwise one is created, and the reply carries its ref.
+ *   `findRecentOrderForPhone` (238) then tries to match the sender to their
+ *   most recent order and, if one is found, prepends its status and total to
+ *   the same reply -- a courtesy, not a replacement: the ticket is still
+ *   opened and a human still reads the message either way.
  *
  * ORDERING: replay check first (read), then the side effects, then the
  * inbound row is recorded (write). A failure mid-processing therefore returns
@@ -111,6 +121,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   const intent = classifyInbound(body)
   let ticketId: string | null = null
+  let matchedOrderId: string | null = null
   let reply: string
 
   if (intent === 'opt_out') {
@@ -201,6 +212,23 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     }
 
     reply = ticketAckText(ticketId.slice(0, 8).toUpperCase())
+
+    // Order match is a courtesy on top of the ticket, never a replacement for
+    // it: a human still reads every free-text message. Best-effort and
+    // logged-only on failure, the same stance `pushOutboxRow` and the WhatsApp
+    // outbox take on their own side channels -- the ticket already landed, so
+    // a lookup that cannot run must not turn a 200 into a 500.
+    try {
+      const order = await findRecentOrderForPhone(admin, phone)
+      if (order) {
+        matchedOrderId = order.id
+        reply = `${orderSummaryReplyText(order)}\n\n${reply}`
+      }
+    } catch (cause) {
+      log.warn('whatsapp.order_match_failed', {
+        reason: cause instanceof Error ? cause.message : String(cause),
+      })
+    }
   }
 
   // Best effort from here: the side effects landed, so the reply goes out even
@@ -212,6 +240,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     body: body.slice(0, 4000),
     intent,
     ticket_id: ticketId,
+    order_id: matchedOrderId,
   } as never)
   if (recordError) {
     log.error('whatsapp.inbound_record_failed', { reason: recordError.message })

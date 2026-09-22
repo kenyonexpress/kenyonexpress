@@ -16,6 +16,17 @@ const calls: Record<string, TableCall[]> = {}
 let seenRow: { message_sid: string } | null = null
 let openTicketRow: { id: string } | null = null
 let upsertError: { message: string } | null = null
+// Fixtures for findRecentOrderForPhone (server/whatsapp/orders.ts): a bare
+// `await` on the query chain, no `.maybeSingle()`/`.single()` terminal, the
+// same shape the real Supabase builder resolves to.
+let profileRows: { id: string; phone: string | null }[] = []
+let addressRows: { user_id: string; phone: string | null }[] = []
+let orderRows: {
+  id: string
+  status: string
+  total_ils_agorot: number | null
+  created_at: string
+}[] = []
 
 function record(table: string, method: string, args: unknown[]) {
   calls[table] = calls[table] ?? []
@@ -24,7 +35,7 @@ function record(table: string, method: string, args: unknown[]) {
 
 function tableStub(table: string) {
   const chain: Record<string, unknown> = {}
-  for (const m of ['select', 'eq', 'in', 'order', 'limit']) {
+  for (const m of ['select', 'eq', 'in', 'is', 'ilike', 'order']) {
     chain[m] = (...args: unknown[]) => {
       record(table, m, args)
       return chain
@@ -49,6 +60,16 @@ function tableStub(table: string) {
         single: async () => ({ data: { id: 'ticket-1111-2222' }, error: null }),
       }),
     })
+  }
+  // A real Promise, not a hand-rolled `.then`: biome's noThenProperty rule
+  // refuses the latter. Defined last so the merged object still carries
+  // `.maybeSingle` for the one caller (support_tickets) that chains past
+  // `.limit()`; findRecentOrderForPhone's three reads bare-await it instead.
+  chain.limit = (...args: unknown[]) => {
+    record(table, 'limit', args)
+    const data =
+      table === 'profiles' ? profileRows : table === 'user_addresses' ? addressRows : orderRows
+    return Object.assign(Promise.resolve({ data, error: null }), chain)
   }
   return chain
 }
@@ -98,6 +119,9 @@ describe('whatsapp webhook', () => {
     seenRow = null
     openTicketRow = null
     upsertError = null
+    profileRows = []
+    addressRows = []
+    orderRows = []
     vi.stubEnv('TWILIO_ACCOUNT_SID', 'ACtest')
     vi.stubEnv('TWILIO_AUTH_TOKEN', AUTH_TOKEN)
     vi.stubEnv('TWILIO_WHATSAPP_FROM', '+14155238886')
@@ -195,5 +219,59 @@ describe('whatsapp webhook', () => {
     const response = await POST(twilioRequest(params))
     expect(response.status).toBe(200)
     expect(calls.whatsapp_inbound_messages).toBeUndefined()
+  })
+
+  describe('order match on a free-text message (238)', () => {
+    it('prepends the order summary to the ticket ack and records order_id', async () => {
+      profileRows = [{ id: 'user-1', phone: '0501234567' }]
+      orderRows = [
+        {
+          id: 'order-abcdef12-3456',
+          status: 'paid',
+          total_ils_agorot: 12345,
+          created_at: '2026-09-01',
+        },
+      ]
+      const response = await POST(twilioRequest(INBOUND))
+      const text = await response.text()
+      expect(text).toContain('שולמה')
+      expect(text).toContain('123.45')
+      expect(text).toContain('קיבלנו את פנייתך')
+
+      const inboundInsert = calls.whatsapp_inbound_messages?.find((c) => c.method === 'insert')
+      expect((inboundInsert?.args[0] as Record<string, unknown>).order_id).toBe(
+        'order-abcdef12-3456',
+      )
+    })
+
+    it('matches by delivery-address phone when the profile has none', async () => {
+      addressRows = [{ user_id: 'user-2', phone: '972501234567' }]
+      orderRows = [
+        { id: 'order-2', status: 'pending', total_ils_agorot: null, created_at: '2026-09-01' },
+      ]
+      const response = await POST(twilioRequest(INBOUND))
+      expect(await response.text()).toContain('ממתינה לתשלום')
+    })
+
+    it('does not match and does not fail the ticket when no order exists for the phone', async () => {
+      const response = await POST(twilioRequest(INBOUND))
+      expect(response.status).toBe(200)
+      const inboundInsert = calls.whatsapp_inbound_messages?.find((c) => c.method === 'insert')
+      expect((inboundInsert?.args[0] as Record<string, unknown>).order_id).toBeNull()
+    })
+
+    it('never matches on opt-in or opt-out, which never reach the ticket branch', async () => {
+      profileRows = [{ id: 'user-1', phone: '0501234567' }]
+      orderRows = [
+        {
+          id: 'order-abcdef12-3456',
+          status: 'paid',
+          total_ils_agorot: 12345,
+          created_at: '2026-09-01',
+        },
+      ]
+      const response = await POST(twilioRequest({ ...INBOUND, Body: 'הסר' }))
+      expect(await response.text()).not.toContain('שולמה')
+    })
   })
 })

@@ -18,6 +18,7 @@ import {
   Hourglass,
   LayoutDashboard,
   LifeBuoy,
+  MessageCircle,
   Package,
   Plus,
   Repeat,
@@ -77,6 +78,12 @@ const NAV_ITEMS: NavItem[] = [
   // `orders` and not `payments`: support has read on orders, and this console
   // is what that role exists for.
   { href: '/admin/support', label: 'פניות תמיכה', icon: LifeBuoy, section: 'orders' },
+  {
+    href: '/admin/whatsapp/messages',
+    label: 'הודעות וואטסאפ',
+    icon: MessageCircle,
+    section: 'orders',
+  },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
   {
     href: '/admin/suppliers',

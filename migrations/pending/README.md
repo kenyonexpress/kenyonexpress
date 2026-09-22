@@ -1,5 +1,18 @@
 # `migrations/pending/`
 
+## 2026-09-23: 238 WRITTEN, not applied - עמודה אחת, בלי טבלה חדשה
+
+‏`238_whatsapp_inbound_order_match.sql`. **הוובהוק הנכנס של וואטסאפ כבר היה
+קיים ובנוי במלואו** (`src/app/api/webhooks/whatsapp/route.ts`, מאמת חתימת
+Twilio, מסווג הצטרפות/הסרה/פנייה חופשית, פותח פניית תמיכה) — לא נבנתה מערכת
+שנייה מקבילה מול ‏Meta Cloud API כפי שהוזמן במקור, כי זה היה יוצר שני מקורות
+אמת לאותה שיחה. מה שנוסף: עמודת `order_id` (nullable, ‏FK ל-`orders`,
+‏`ON DELETE SET NULL`) על `whatsapp_inbound_messages` הקיימת, כדי לתעד איזו
+הזמנה (אם בכלל) הטלפון של השולח שויך אליה. ההתאמה עצמה ב-TypeScript
+(`src/server/whatsapp/orders.ts`), לא ב-SQL — אותה שיטה בדיוק
+ש-`attachPhoneToExistingAccount` כבר משתמשת בה להתחברות ‏OTP: מסנן לפי שבע
+הספרות האחרונות, השוואה מדויקת אחרי נרמול בקוד. בלי תלות בקובץ אחר.
+
 ## 2026-09-22: 237 WRITTEN, not applied - תור קליטת דילים מספקים, לא scraping
 
 ‏`237_deals_autopilot.sql`. סעיף ‏96. שני עמודות חדשות ב-`suppliers`:

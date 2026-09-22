@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { OPT_IN_REPLY, OPT_OUT_REPLY, buildWhatsAppText, ticketAckText } from './messages'
+import {
+  OPT_IN_REPLY,
+  OPT_OUT_REPLY,
+  buildWhatsAppText,
+  orderSummaryReplyText,
+  ticketAckText,
+} from './messages'
 
 const PAYLOAD = {
   order_id: 'abcdef12-3456-7890-abcd-ef1234567890',
@@ -66,5 +72,31 @@ describe('canned replies', () => {
 
   it('the ticket ack carries the ticket ref', () => {
     expect(ticketAckText('AB12CD34')).toContain('AB12CD34')
+  })
+})
+
+describe('orderSummaryReplyText', () => {
+  const order = {
+    id: 'abcdef12-3456-7890-abcd-ef1234567890',
+    status: 'paid',
+    total_ils_agorot: 12345,
+    created_at: '2026-09-01T00:00:00.000Z',
+  }
+
+  it('names the order ref, the Hebrew status label and the total', () => {
+    const text = orderSummaryReplyText(order)
+    expect(text).toContain('ABCDEF12')
+    expect(text).toContain('שולמה')
+    expect(text).toContain('123.45')
+  })
+
+  it('falls back to the raw status for a value the label map does not know', () => {
+    const text = orderSummaryReplyText({ ...order, status: 'some_future_status' })
+    expect(text).toContain('some_future_status')
+  })
+
+  it('omits the total line when there is none to show', () => {
+    const text = orderSummaryReplyText({ ...order, total_ils_agorot: null })
+    expect(text).not.toContain('סך ההזמנה')
   })
 })

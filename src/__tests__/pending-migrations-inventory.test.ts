@@ -965,6 +965,15 @@ describe('the pending migration inventory', () => {
       // (no default anywhere, BUSINESS-RULES.md §4.1) keeps this from ever
       // writing straight to public.products.
       '237_deals_autopilot.sql',
+      // 238 WRITTEN 2026-09-23. One nullable column, no new table:
+      // `whatsapp_inbound_messages.order_id`. The inbound WhatsApp webhook
+      // (src/app/api/webhooks/whatsapp/route.ts) already existed, verified,
+      // classified and ticketed; this lets it also record which order (if
+      // any) the sender's phone matched, for the auto-reply order summary
+      // added the same day. `src/server/whatsapp/orders.ts` does the actual
+      // matching in TypeScript, the same suffix-then-normalise pattern
+      // `attachPhoneToExistingAccount` already uses for phone-OTP login.
+      '238_whatsapp_inbound_order_match.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

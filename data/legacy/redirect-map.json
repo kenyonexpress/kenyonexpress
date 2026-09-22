@@ -189,6 +189,7 @@
       "/admin/users",
       "/admin/vendors",
       "/admin/vendors/new",
+      "/admin/whatsapp/messages",
       "/blog",
       "/cart",
       "/checkout",
