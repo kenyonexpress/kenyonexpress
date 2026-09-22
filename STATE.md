@@ -1,13 +1,19 @@
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
-trigger, שלושים ושמונה ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן
+trigger, שלושים ותשע ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן
 שני חי) וההחלטה החוזרת לעצור את כל הלולאה עד בדיקה אנושית. לא נפתח goal,
 לא נגעתי ב-DNS/Vercel/deploy.**
 
 `ps -o pid,etime,lstart,command -p 35725,35738` עדיין אותם שני תהליכים
-בדיוק (`STARTED` זהה, 21.09 21:09:2x, `elapsed` עכשיו `01-05:11:2x`) - לא
-תהליכים חדשים. `git status --short` נקי, `HEAD` זהה ל-`origin/audit/final-audit`
-(`28d5d5e67`). הזיכרון (`dns-cutover-loop-paused-pending-review`) נקרא
-ומאומת מול STATE.md עצמו; הנימוק המצטבר לא השתנה.
+בדיוק (`STARTED` זהה, 21.09 21:09:2x, `elapsed` עכשיו `01-05:13:1x`) - לא
+תהליכים חדשים. **שינוי מהריצות הקודמות: `git status --short` הפעם לא נקי**
+(`.env.example` ו-`src/lib/payments/accounts.test.ts` מתוקנים,
+`src/lib/payments/refund-destination.ts`/`.test.ts` חדשים ולא עוקבים) -
+כנראה עבודה של אחד הסוכנים החיים על קוד תשלומים. לא נגעתי בקבצים האלה, לא
+עשיתי `add`/`commit` עליהם, ולא הרצתי `-A` (ר' `commit-with-paths-takes-
+working-tree` ו-`parallel-claude-sessions` בזיכרון). `HEAD` זהה ל-
+`origin/audit/final-audit` (`96b15fc22`). הזיכרון
+(`dns-cutover-loop-paused-pending-review`) נקרא ומאומת מול STATE.md עצמו;
+הנימוק המצטבר לא השתנה.
 
 **המשך מ:** ללא שינוי - לא לפתוח goal חדש עד אישור מפורש מאופיר. כשהאישור
 יגיע: לבדוק שוב `pid 35725`/`pid 35738`, ואם הסתיימו - לחזור לתור המקורי

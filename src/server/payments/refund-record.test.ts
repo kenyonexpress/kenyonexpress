@@ -29,6 +29,12 @@ const base = {
 describe('the statutory record', () => {
   beforeEach(() => vi.clearAllMocks())
 
+  it('writes wallet as the destination when the caller names it', async () => {
+    const { admin, insert } = stub()
+    await recordRefund(admin, { ...base, destination: 'wallet' })
+    expect(insert.mock.calls[0]?.[0].destination).toBe('wallet')
+  })
+
   it('writes every column the notice needs', async () => {
     const { admin, insert } = stub()
     await recordRefund(admin, base)
@@ -42,6 +48,7 @@ describe('the statutory record', () => {
       granted_agorot: 9_500,
       cancellation_fee_agorot: 500,
       cancel_only: false,
+      destination: 'original_method',
       reason_he: 'ביטול עסקה',
     })
   })

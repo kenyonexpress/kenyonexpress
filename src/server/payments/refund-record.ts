@@ -1,4 +1,5 @@
 import { log } from '@/lib/observability/log'
+import type { RefundDestination } from '@/lib/payments/refund-destination'
 
 /**
  * The statutory cancellation record, which existed as a table and nothing else.
@@ -68,6 +69,12 @@ export interface RefundRecord {
   requestedBy?: string | null
   decidedBy?: string | null
   at: Date
+  /**
+   * Where the shekel went. Defaults to original_method because that is the
+   * statutory path inside 14 days. A wallet goodwill refund must set this
+   * explicitly so the row cannot be read as a card credit that never happened.
+   */
+  destination?: RefundDestination
 }
 
 type RefundRow = {
@@ -85,6 +92,7 @@ type RefundRow = {
   requested_at: string
   decided_at: string | null
   completed_at: string | null
+  destination: RefundDestination
 }
 
 /** Minimal structural client shape; `src/types/database.ts` predates 131. */
@@ -116,6 +124,7 @@ export async function recordRefund(
       granted_agorot: record.grantedAgorot,
       cancellation_fee_agorot: record.cancellationFeeAgorot,
       cancel_only: record.cancelOnly,
+      destination: record.destination ?? 'original_method',
       reason_he: record.reasonHe,
       requested_by: record.requestedBy ?? null,
       decided_by: record.decidedBy ?? null,

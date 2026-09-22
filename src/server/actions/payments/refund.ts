@@ -17,6 +17,7 @@ import {
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
+import { selectRefundDestination } from '@/lib/payments/refund-destination'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { trackServerEvent } from '@/server/analytics/track'
 import {
@@ -308,6 +309,11 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       cancelOnly: plan.cancelOnly,
       reasonHe: input.reason,
       at: now,
+      destination: selectRefundDestination({
+        chargedAt: chargedAt && !Number.isNaN(chargedAt.getTime()) ? chargedAt : now,
+        now,
+        voucherConsumed: consumed.length > 0,
+      }),
     })
 
     if (plan.voucherRefunds.length > 0) {

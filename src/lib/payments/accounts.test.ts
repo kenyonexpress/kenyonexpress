@@ -36,6 +36,41 @@ describe('loadCardcomAccounts', () => {
     expect(registry.get('anchor-supplier').label).toBe('anchor-supplier')
   })
 
+  it('loads three extra merchant accounts beside the platform one', () => {
+    // Mixed baskets still fall through to the platform (selectAccountForSuppliers),
+    // so extra terminals are per-supplier, not per-line. Three extras is the
+    // configuration the ops brief asked for: platform plus three businesses.
+    const three = JSON.stringify([
+      {
+        id: 'hotel',
+        terminalNumber: '2001',
+        apiName: 'hotel-api',
+        apiPassword: 'pw',
+        supplierIds: ['sup-hotel'],
+      },
+      {
+        id: 'spa',
+        terminalNumber: '2002',
+        apiName: 'spa-api',
+        apiPassword: 'pw',
+        supplierIds: ['sup-spa'],
+      },
+      {
+        id: 'tours',
+        terminalNumber: '2003',
+        apiName: 'tours-api',
+        apiPassword: 'pw',
+        supplierIds: ['sup-tours'],
+      },
+    ])
+    const registry = loadCardcomAccounts({ ...LIVE_ENV, CARDCOM_ACCOUNTS: three })
+    expect(registry.list().map((a) => a.id)).toEqual([PLATFORM_ACCOUNT_ID, 'hotel', 'spa', 'tours'])
+    expect(selectAccountForSuppliers(registry, ['sup-spa']).id).toBe('spa')
+    expect(selectAccountForSuppliers(registry, ['sup-spa', 'sup-hotel']).id).toBe(
+      PLATFORM_ACCOUNT_ID,
+    )
+  })
+
   it('throws UNKNOWN_ACCOUNT rather than silently charging the platform terminal', () => {
     const registry = loadCardcomAccounts(LIVE_ENV)
     try {
