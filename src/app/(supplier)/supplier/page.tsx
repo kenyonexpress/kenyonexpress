@@ -2,7 +2,12 @@ import IncompleteDataNotice from '@/components/supplier/IncompleteDataNotice'
 import RedemptionsChart from '@/components/supplier/RedemptionsChart'
 import { formatDate, formatIls } from '@/lib/account/format'
 import { agorot } from '@/lib/money'
-import { aggregateDashboard, monthlyRedemptions } from '@/lib/supplier/dashboard'
+import {
+  aggregateDashboard,
+  monthlyRedemptions,
+  salesByDay,
+  salesByProduct,
+} from '@/lib/supplier/dashboard'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { hasMinRole } from '@/lib/supplier/roles'
 import { formatRateBp, supplierExpiryMetric } from '@/lib/vouchers/expiry-metrics'
@@ -53,6 +58,8 @@ export default async function SupplierHomePage({
   const redemptions = redemptionsRead.rows
   const stats = aggregateDashboard({ sales, redemptions })
   const months = monthlyRedemptions(redemptions)
+  const byProduct = salesByProduct(sales).slice(0, 8)
+  const byDay = salesByDay(sales).slice(0, 7)
   const recent = redemptions.slice(0, 5)
 
   /*
@@ -122,6 +129,40 @@ export default async function SupplierHomePage({
       </div>
 
       <RedemptionsChart buckets={months} />
+
+      {byProduct.length > 0 ? (
+        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <h2 className="text-base font-bold text-heading">מכירות לפי מוצר</h2>
+          <ul className="mt-3 space-y-2 text-sm">
+            {byProduct.map((row) => (
+              <li key={row.productName} className="flex items-baseline justify-between gap-3">
+                <span>
+                  {row.productName} <span className="text-gray-400">({row.quantity})</span>
+                </span>
+                <span className="tabular-nums text-heading">
+                  {formatIls(agorot(row.supplierDueAgorot))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {byDay.length > 0 ? (
+        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <h2 className="text-base font-bold text-heading">מכירות לפי יום</h2>
+          <ul className="mt-3 space-y-2 text-sm">
+            {byDay.map((row) => (
+              <li key={row.day} className="flex items-baseline justify-between gap-3">
+                <span dir="ltr">{row.day}</span>
+                <span className="tabular-nums text-heading">
+                  {row.count} · {formatIls(agorot(row.supplierDueAgorot))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">

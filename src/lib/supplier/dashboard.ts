@@ -385,3 +385,71 @@ export const SETTLEMENT_LABEL_HE: Record<string, string> = {
   refunded: 'זוכה',
   cancelled: 'בוטל',
 }
+
+export type ProductSalesBucket = {
+  productName: string
+  quantity: number
+  supplierDueAgorot: number
+}
+
+export type DaySalesBucket = {
+  /** YYYY-MM-DD in Asia/Jerusalem. */
+  day: string
+  count: number
+  supplierDueAgorot: number
+}
+
+function israelDayKey(at: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(at)
+}
+
+/**
+ * Paid sales folded per product, reversed lines dropped.
+ *
+ * A refunded physical line is not a sale the supplier is still owed, so it
+ * must not appear as volume either. Quantity is the units that still stand.
+ */
+export function salesByProduct(sales: readonly SupplierSaleLine[]): ProductSalesBucket[] {
+  const buckets = new Map<string, ProductSalesBucket>()
+  for (const line of sales) {
+    if (isReversedLine(line.settlementStatus)) continue
+    const current = buckets.get(line.productName) ?? {
+      productName: line.productName,
+      quantity: 0,
+      supplierDueAgorot: 0,
+    }
+    current.quantity += Math.max(0, line.quantity)
+    current.supplierDueAgorot += supplierDueAgorot(line)
+    buckets.set(line.productName, current)
+  }
+  return [...buckets.values()].sort(
+    (a, b) => b.supplierDueAgorot - a.supplierDueAgorot || b.quantity - a.quantity,
+  )
+}
+
+/**
+ * Paid sales folded per Israel calendar day, reversed lines dropped.
+ *
+ * Empty days are omitted: this is a table of days that had a sale, not a
+ * chart whose axis claims every day existed. The monthly redemptions chart
+ * is the one that emits zeros so a quiet month is visible.
+ */
+export function salesByDay(sales: readonly SupplierSaleLine[]): DaySalesBucket[] {
+  const buckets = new Map<string, DaySalesBucket>()
+  for (const line of sales) {
+    if (isReversedLine(line.settlementStatus) || !line.paidAt) continue
+    const at = new Date(line.paidAt)
+    if (Number.isNaN(at.getTime())) continue
+    const day = israelDayKey(at)
+    const current = buckets.get(day) ?? { day, count: 0, supplierDueAgorot: 0 }
+    current.count += 1
+    current.supplierDueAgorot += supplierDueAgorot(line)
+    buckets.set(day, current)
+  }
+  return [...buckets.values()].sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0))
+}

@@ -3,6 +3,8 @@ import {
   type SupplierRedemptionRow,
   type SupplierSaleLine,
   aggregateDashboard,
+  salesByDay,
+  salesByProduct,
   sumPayoutBreakdown,
   summarizeSettlement,
   supplierDueAgorot,
@@ -192,5 +194,57 @@ describe('a refunded line is due nothing', () => {
     const totals = sumPayoutBreakdown(toPayoutBreakdown([refundedPhysical]))
     expect(totals.supplierPayoutAgorot).toBe(0)
     expect(totals.reversedPayoutAgorot).toBe(9_000)
+  })
+})
+
+describe('salesByProduct', () => {
+  it('drops refunded lines and ranks by what is still owed', () => {
+    const rows = salesByProduct([
+      sale({ productName: 'ספא', quantity: 2, supplierImmediateAgorot: 0 }),
+      sale({
+        orderItemId: 'oi-2',
+        productName: 'מלון',
+        productType: 'physical',
+        quantity: 1,
+        supplierImmediateAgorot: 9000,
+        settlementStatus: 'split_executed',
+      }),
+      sale({
+        orderItemId: 'oi-3',
+        productName: 'מלון',
+        productType: 'physical',
+        quantity: 1,
+        supplierImmediateAgorot: 9000,
+        settlementStatus: 'refunded',
+      }),
+    ])
+    expect(rows).toEqual([
+      { productName: 'מלון', quantity: 1, supplierDueAgorot: 9000 },
+      { productName: 'ספא', quantity: 2, supplierDueAgorot: 0 },
+    ])
+  })
+})
+
+describe('salesByDay', () => {
+  it('buckets on the Israel calendar day of paidAt', () => {
+    const rows = salesByDay([
+      sale({
+        orderItemId: 'oi-a',
+        productType: 'physical',
+        supplierImmediateAgorot: 5000,
+        settlementStatus: 'split_executed',
+        paidAt: '2026-08-01T22:30:00Z',
+      }),
+      sale({
+        orderItemId: 'oi-b',
+        productType: 'physical',
+        supplierImmediateAgorot: 2000,
+        settlementStatus: 'split_executed',
+        paidAt: '2026-08-02T00:10:00+03:00',
+      }),
+    ])
+    expect(rows[0]?.day).toBe('2026-08-02')
+    expect(rows[0]?.count).toBe(2)
+    expect(rows[0]?.supplierDueAgorot).toBe(7000)
   })
 })
