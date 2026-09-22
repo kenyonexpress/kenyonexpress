@@ -1,4 +1,74 @@
-Updated: 2026-09-22 (**‏Phase ‏2 המשך: משימות ‏9 ‏ו-10 ב-`INFRA-TASKS.md`
+Updated: 2026-09-22 (**זיהוי DNS cutover: קלאודפלייר עלה, ה-deploy נעצר על סוד
+אמיתי חסר, לא על קוד.** ‏`dns-watch.sh` הפעיל את הסשן הזה אוטומטית כש-NS של
+‏kenyonexpress.co.il הפכו ל-`aria`/`quinton.ns.cloudflare.com`.
+
+**נמדד: זה zone שלישי, לא זה של ‏20.09 ולא ה-staged מ-`DNS-CUTOVER-PLAN.md`.**
+‏dig ישיר מול שני ה-NS מחזיר `NOERROR` ‏+ ‏`aa` ‏+ ‏SOA תקין (לא ‏REFUSED כמו
+ב-20.09), כלומר ה-zone פעיל ומאומת עכשיו. אבל הוא ריק לגמרי: אין ‏A, אין ‏MX,
+אין ‏SPF/DMARC/google-site-verification, שום דבר. ‏`verify-cutover.mjs`
+מחזיר exit ‏2 ‏(not-yet-cut-over), נכון.
+
+**שלב ‏2 (חיבור הדומיין ל-Vercel) כבר קיים, שום פעולה לא נדרשה.** ‏`vercel
+domains inspect kenyonexpress.co.il` מראה את ‏kenyonexpress.co.il ו-`www`
+תחת פרויקט `kenyonexpress` (זה ששרת את הדומיין לפני שה-zone נמחק). Vercel
+עצמו מציע את הפתרון: `A kenyonexpress.co.il 76.76.21.21`, בדיוק מה
+ש-`docs/DNS-CUTOVER-PLAN.md` כבר כתב.
+
+**החלק שכן חסר: אין שום דרך מהמכונה הזאת ליצור רשומות ב-zone.** אין
+‏`CF_API_TOKEN` בשום ‏`.env`, אין ‏wrangler, ומחבר ה-MCP של Cloudflare דורש
+‏OAuth שסשן לא-אינטראקטיבי לא יכול להשלים. ‏`docs/DNS-CUTOVER-PLAN.md` עצמו
+כבר קובע את זה כ-"hard stop, needs Ofir" בפתיחה שלו, בלי קשר לחוסר
+האישורים. לא ניסיתי לעקוף.
+
+**שלב ‏3 (production deploy, מאושר מראש ע"י ה-goal): נוסה, עלה, ונעצר על
+סוד אמיתי חסר.** נסיון ראשון מ-worktree מקושר נכשל שוב ושוב ברשת (`socket
+hang up` / `ETIMEDOUT`), עם באג אבחון: ה-uploader של Vercel CLI חישב
+‏243.9MB להעלאה כש-`du` על אותה תיקייה מראה ‏37MB, כנראה בלבול עם קובץ
+ה-`.git` המצביע של ה-worktree. שלוש הרצות חוזרות צרכו את מכסת ה-upload
+היומית של ה-plan החינמי (‏5000 קבצים), והתשובה עברה ל-"Too many requests,
+try again in 24 hours". **תיקון:** clone רדוד נקי של `origin/closeout/v1-final`
+ל-`/tmp` (חוץ מכל worktree), ו-`--archive=tgz` כדי לעקוף את מכסת הקבצים
+הבודדים. ההעלאה עברה (‏14.8MB), ה-build רץ בפועל על התשתית של Vercel.
+**נכשל שם, לא בקוד:** `node scripts/deploy-preflight.mjs` מסרב לבנות בלי
+‏`CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`,
+‏`SENTRY_DSN` בסביבת ה-Production של פרויקט `kenyonexpress`. תואם בדיוק את
+מה שכבר נמדד ב-10.09: שלושת פרטי החיוב של Cardcom לא קיימים באף אחד
+משלושת הפרויקטים. **לא הזנתי ערכים מדומים ולא עקפתי עם `ALLOW_INCOMPLETE_ENV`**
+‏(מסומן כלא-לגיטימי בפרודקשן, וזו בדיוק תקרית ‏10.09 של מוק חי בפרודקשן
+שהפרויקט כבר נכווה ממנה). ה-deploy הישן (‏13 יום, Ready) לא נגע, ממשיך
+לשרת. נוקה: ה-clone הזמני ב-`/tmp` וה-worktree.
+
+**שלבים ‏4-6 חסומים באופן שרשרתי, לא נעשה ניסיון עוקף.** אי אפשר לאמת ‏200
+על ‏kenyonexpress.co.il (עדיין לא פותר בכלל), ולכן `compare.mjs` מול
+פרודקשן לא רץ (אין מה למדוד; לפי "אין מסלול שמודד ולא רושם", לא הרצתי
+אותו על דומיין מת רק כדי לרשום שורה). `kenyonexpress.vercel.app` כן עונה
+‏200 (נבדק ישירות), אבל זו לא הבקשה.
+
+**ממצא צדדי, מחוץ לתור:** תור ה-deployments מראה preview build שנכשל כל
+שעה-שעתיים לאורך היממה האחרונה, כולם על אותו חוסר: `NEXT_PUBLIC_SUPABASE_URL`/
+‏`ANON_KEY` חסרים בסביבת ‏Preview (לא ‏Production). לא נגעתי.
+
+**החלטות שהתקבלו לבד:** (א) לא לתקן/להחליש את `deploy-preflight.mjs` כדי
+לעבור אותו: הסודות אמיתיים, לא קוד שבור. (ב) סוכן קוד שני (`--model fable
+‏/goal`, pid ‏35738) המשיך לרוץ על אותה תיקייה לאורך כל הסשן; לפי התקדים
+הקבוע ב-STATE (‏10.09 ואילך) ולפי "אוטונומיה מלאה, אין חריגים" שדורס את
+ארבעת מצבי העצירה, תועד ולא נעצרתי; אין ראיה להתנגשות (git status נקי,
+אין commit חדש ממנו בטווח הזה). (ג) פרסתי מ-`closeout/v1-final` (ענף
+העבודה המוצהר ב-CLAUDE.md), לא מ-branch אחר, כדי לא להמר על מיזוג
+לא-מנוסה בזמן cutover חי.
+
+**מה עוד צריך אופיר, ולא ניתן להתקדם בלעדיו:** (1) יצירת שתי רשומות
+ה-DNS ב-zone החדש (‏A ל-`76.76.21.21` בשורש, ‏CNAME ל-`cname.vercel-dns.com`
+ל-`www`), דורש גישה ל-Cloudflare dashboard או ‏API token אמיתי. (2) שלושת
+פרטי Cardcom ‏+ `SENTRY_DSN` בסביבת ה-Production של פרויקט `kenyonexpress`
+ב-Vercel, לפני שכל deploy עתידי (לא רק זה) יכול לעבור.
+
+**המשך מ:** DNS ו-deploy תלויים באופיר (למעלה), אין goal פתוח אחר ברור
+בתור. לולאת התחזוקה (גיבוי tar יומי, אימות pgrep ל-loop/caffeinate, ניקוי
+גיבויים ישנים משאיר ‏3) היא הבאה, ואז המשך לצפייה דרך `dns-watch.sh` שכבר
+רץ ברקע.)
+
+קודם: 2026-09-22 (**‏Phase ‏2 המשך: משימות ‏9 ‏ו-10 ב-`INFRA-TASKS.md`
 נסגרו, כל אחת נמדדה נגד המציאות ולא רק נכתבה.** ‏commits `60c619730`,
 `308a33d20`, `57714b989`, `c8c26069c`.
 
