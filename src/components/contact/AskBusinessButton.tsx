@@ -36,7 +36,12 @@ export default function AskBusinessButton({
           ...(supplierId ? { supplier_id: supplierId } : {}),
         })
       }
-      className="inline-flex min-h-11 items-center gap-2 rounded-full bg-whatsapp px-4 text-sm font-bold text-white transition-transform hover:scale-[1.02]"
+      // bg-whatsapp-ink, not bg-whatsapp: white on the bright #25d366 mark
+      // measures ~1.98:1 (axe: color-contrast, serious). WhatsApp's own
+      // darker teal (also in src/styles/tokens.css, already used as link
+      // ink elsewhere) carries white at 7.67:1 -- same trade already made
+      // for --color-promo-flame, see the comment there.
+      className="inline-flex min-h-11 items-center gap-2 rounded-full bg-whatsapp-ink px-4 text-sm font-bold text-white transition-transform hover:scale-[1.02]"
     >
       <WhatsAppIcon size={18} />
       {via === 'supplier' ? t('contact.askBusiness') : t('contact.askStore')}
