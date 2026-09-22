@@ -1,4 +1,47 @@
-Updated: 2026-09-22 (**‏Phase ‏1 נסגר בפועל, המספר האמיתי: home
+Updated: 2026-09-22 (**‏Phase ‏3 ‏(Auto Deals) נבנה במלואו לפי המודל שאושר —
+supplier-feed, לא scraping.** חמישה commits, `f7ab19937`..`3f370cab2`,
+כל אחד עם שערים ירוקים ‏(type-check, lint, טסטים) בנפרד ובסוף גם ביחד.
+
+**מה קיים בפועל:** מיגרציה `237_deals_autopilot.sql` ‏(pending) —
+`suppliers.feed_url`/`feed_format` ‏(https בלבד) ו-`deal_candidates`
+‏(תור staging, RLS ספק-בלבד לקריאה/הגשה ידנית). דגל `DEALS_AUTOPILOT`
+‏(כבוי כברירת מחדל) נוסף למיגרציה `235` הקיימת. ספריית
+`src/lib/deals-autopilot/` ‏(parse.ts JSON+CSV עם zod, ingest.ts שלא נוגע
+בשורה שכבר הוכרעה). מסלול `/api/cron/deals-autopilot` כל ‏6 שעות,
+רשום ב-`scripts/cron-jobs.json` ובכל שלושת המקומות שנבדקים מולו. שני
+טפסי ספק ב-`/supplier/settings` ‏(פיד + הגשה ידנית), פעולות
+server actions דרך admin client עם exception מתועד בשער ה-cache
+‏(אין קריאה cached שקוראת את השדות האלה). תור אישור אדמין ב-
+`/admin/deals-queue` ‏(אישור/דחייה בלבד).
+
+**החלטת scope מתועדת, לא נשכחה תחת הלחץ:** "אישור" מסמן שאדמין בדק
+ואינו יוצר שורת `products` בפועל — `platform_percent` אין לו ברירת מחדל
+בשום מקום ‏(BUSINESS-RULES.md §4.1), ופיד לא יכול לספק אותו. שילוב בטוח
+מול הטופס הקיים ‏(`upsertProduct`) נדרש מעבר נפרד. מתועד במלואו ב-
+`docs/DEALS-PIPELINE.md`, כולל למה "Israeli sources" נפתר במבנה ‏(כל
+מקור הוא ספק שכבר קיים בפלטפורמה) ולא ב-scraping.
+
+**נמדד, לא רק נכתב:** `e2e/deals-autopilot.spec.ts` רץ מול `pnpm start`
+אמיתי — ‏4 עברו, ‏1 דילג ‏(fixture אדמין לא seeded בסביבה הזאת, אותה
+מוסכמה שכבר קיימת בשאר החליפה). הריצה גם תפסה שגיאת "column not found"
+אמיתית ‏(237 עדיין לא הוחל) ואישרה שהניפול חינני ‏(הודעה מפורשת, לא 500).
+
+**באג אמיתי שנתפס בדרך ותוקן:** שני כפתורי השליחה נכתבו לראשונה
+`bg-brand text-white` ‏(צהוב עם טקסט לבן, ‏1.41:1 מול דרישת ‏4.5:1) —
+`src/lib/a11y/brand-contrast.test.ts` תפס את זה לפני commit, תוקן ל-
+`bg-heading` כמו טפסי הספק האחרים.
+
+**שערים סופיים אחרי הכל:** ‏547 קובצי unit ‏(‏6750 טסטים), ‏type-check,
+‏lint, ‏build — כולם ירוקים.
+
+**המשך מ:** Phases ‏2/4/5/6 לפי הסדר שה-goal ביקש. Phase ‏2 הנותר הוא
+משימות ‏3 עד ‏10 ב-`docs/INFRA-TASKS.md` ‏(RLS assertion, ‏CSP nonce,
+תזמון ‏cron מעל ‏pg_cron, שער boot נגד מוק בפרודקשן, אבחון Vercel, שער
+טריות דיפלוי, גיבוי DB offsite, שער דליפת סודות) — כל אחת עצמאית,
+חלקן נוגעות בתשתית ייצור רגישה ‏(cron production, CSP). Phase ‏4
+‏(איכות) כבר מתקיים ברציפות בכל commit. Phase ‏5 ‏ו-6 כבר סגורים.)
+
+קודם: 2026-09-22 (**‏Phase ‏1 נסגר בפועל, המספר האמיתי: home
 ‏6.22% / 4.31% / 2.02% ב-380/768/1440 ‏(both-painted, נמדד מול `pnpm
 start` אמיתי, ‏commit `c7826209c`).** ‏768 ‏ו-1440 מתחת ל-5%; ‏380 לא,
 ומתועד למה בפירוט מלא ב-`docs/UI-PARITY-REPORT.md`.
