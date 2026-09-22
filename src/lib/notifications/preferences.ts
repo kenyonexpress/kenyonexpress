@@ -35,6 +35,64 @@ export const CHANNELS = ['email', 'push', 'whatsapp', 'in_app'] as const
 export type Channel = (typeof CHANNELS)[number]
 
 /**
+ * The channels the settings page renders a switch for.
+ *
+ * `email` is deliberately absent. Every kind in `OPTIONAL_KINDS` is a
+ * customer-facing kind, and the owner's 22.09.2026 policy makes `mayNotify`
+ * return `false` for the email channel on every one of them unconditionally
+ * -- so a stored preference row for `{kind, 'email', true}` would change
+ * nothing, and a switch that looks live but does nothing is exactly the
+ * broken-control problem this file's own header already names for required
+ * kinds. Leaving `email` out of the table is the same fix as leaving required
+ * kinds out of it: there is no row, so there is nothing to lie about.
+ */
+export const CUSTOMER_TOGGLE_CHANNELS = CHANNELS.filter(
+  (c): c is Exclude<Channel, 'email'> => c !== 'email',
+)
+
+/**
+ * Owner policy, 22.09.2026: no customer email except password reset (which is
+ * Supabase Auth's own outgoing mail, entirely outside `notification_outbox`
+ * and this file) and voucher gifts. Everything else a customer would have
+ * read in a mail now lives at /account: orders, voucher codes with QR,
+ * status, invoice download.
+ *
+ * `voucher_gifted` IS THE ONE EXEMPTION, AND IT IS NOT AN OVERSIGHT. Every
+ * other kind here restates something the ACCOUNT HOLDER can already see by
+ * signing in. A gift recipient has no account until they follow this mail's
+ * claim link -- there is no /account for them to check instead, so this mail
+ * is the entire delivery mechanism for the gift feature, not a duplicate of
+ * one. Suppressing it would not move the notice to the account area; it
+ * would delete the only way a recipient ever learns they received anything.
+ *
+ * CHECKED IN `mayNotify` BEFORE `REQUIRED_KINDS`, deliberately: a required
+ * kind is "the customer may not opt out of this on their own", which is a
+ * different question from "does this channel exist for customers at all".
+ * The owner policy answers the second question and answers it first.
+ */
+export const EMAIL_POLICY_EXEMPT_KINDS = ['voucher_gifted'] as const
+
+/**
+ * Kinds addressed to the business, not to a customer -- unaffected by the
+ * no-customer-email policy above. Supplier mail is a business-to-business
+ * relationship the owner's directive does not mention, and every other name
+ * here already carries "operator alert, not a customer message" in its own
+ * builder in `lib/email/notifications.ts`.
+ */
+export const OPERATOR_EMAIL_KINDS = [
+  'supplier_sale',
+  'payout_statement_ready',
+  'invoice_dead',
+  'low_stock',
+  'reconciliation_gap',
+  'settlement_gap',
+] as const
+
+export function isOperatorEmailKind(kind: string): boolean {
+  return (OPERATOR_EMAIL_KINDS as readonly string[]).includes(kind)
+}
+
+/**
  * Kinds a customer cannot switch off, in any channel.
  *
  * Deliberately short. Every entry is either the product itself or the record of
@@ -105,6 +163,17 @@ export interface PreferenceRow {
  * are not addressed to a user.
  */
 export function mayNotify(kind: string, channel: Channel, rows: readonly PreferenceRow[]): boolean {
+  // Owner policy, checked first and unconditionally: the email channel does
+  // not exist for a customer kind at all, so there is no preference row left
+  // to consult. See EMAIL_POLICY_EXEMPT_KINDS above for the one exception.
+  if (
+    channel === 'email' &&
+    !isOperatorEmailKind(kind) &&
+    !(EMAIL_POLICY_EXEMPT_KINDS as readonly string[]).includes(kind)
+  ) {
+    return false
+  }
+
   // Checked first, so a stray row for a required kind -- written by a bug, a
   // migration, or somebody with SQL access -- cannot stop a receipt.
   if (isRequiredKind(kind)) return true
@@ -125,12 +194,12 @@ export function mayNotify(kind: string, channel: Channel, rows: readonly Prefere
  */
 export function preferenceMatrix(
   rows: readonly PreferenceRow[],
-): { kind: OptionalKind; channels: Record<Channel, boolean> }[] {
+): { kind: OptionalKind; channels: Record<Exclude<Channel, 'email'>, boolean> }[] {
   return OPTIONAL_KINDS.map((kind) => ({
     kind,
     channels: Object.fromEntries(
-      CHANNELS.map((channel) => [channel, mayNotify(kind, channel, rows)]),
-    ) as Record<Channel, boolean>,
+      CUSTOMER_TOGGLE_CHANNELS.map((channel) => [channel, mayNotify(kind, channel, rows)]),
+    ) as Record<Exclude<Channel, 'email'>, boolean>,
   }))
 }
 

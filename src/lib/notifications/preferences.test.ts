@@ -3,10 +3,14 @@ import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   CHANNELS,
+  CUSTOMER_TOGGLE_CHANNELS,
+  EMAIL_POLICY_EXEMPT_KINDS,
   KIND_LABEL_HE,
+  OPERATOR_EMAIL_KINDS,
   OPTIONAL_KINDS,
   type PreferenceRow,
   REQUIRED_KINDS,
+  isOperatorEmailKind,
   isPreferenceKind,
   mayNotify,
   preferenceMatrix,
@@ -15,16 +19,21 @@ import {
 const ROOT = resolve(__dirname, '../../..')
 
 describe('a customer cannot switch off the thing they bought', () => {
-  it('sends a required kind even when a row says otherwise', () => {
+  it('sends a required kind even when a row says otherwise, on every non-email channel', () => {
     // Checked BEFORE the table, so a stray row -- from a bug, a migration, or
     // somebody with SQL access -- cannot stop a receipt. The support ticket
     // this prevents is "I bought it and nothing arrived", answered by a setting
     // the customer turned off six weeks earlier and does not remember.
+    //
+    // Email is excluded here: the owner's 22.09.2026 policy blocks it for
+    // EVERY required kind except `voucher_gifted` (below), so a required kind
+    // being unstoppable no longer means it is unstoppable on every channel --
+    // it means it is unstoppable on whichever channels still carry it.
     const rows: PreferenceRow[] = REQUIRED_KINDS.flatMap((kind) =>
       CHANNELS.map((channel) => ({ kind, channel, enabled: false })),
     )
     for (const kind of REQUIRED_KINDS) {
-      for (const channel of CHANNELS) {
+      for (const channel of CUSTOMER_TOGGLE_CHANNELS) {
         expect(mayNotify(kind, channel, rows), `${kind}/${channel}`).toBe(true)
       }
     }
@@ -47,21 +56,54 @@ describe('an optional kind honours the table', () => {
   it('is on when nothing has been decided', () => {
     // Silence means the customer has never opened the settings page -- which is
     // all of them today, since the table is empty. Treating that as "do not
-    // contact me" would stop every expiry reminder in the system.
-    expect(mayNotify('voucher_expiring', 'email', [])).toBe(true)
+    // contact me" would stop every expiry reminder in the system. Checked on
+    // `push`, not `email`: email is off unconditionally for this kind now (see
+    // the owner-policy block below), so it can no longer demonstrate "honours
+    // the table" on its own.
+    expect(mayNotify('voucher_expiring', 'push', [])).toBe(true)
   })
 
   it('is off when a row says so, per channel', () => {
-    const rows: PreferenceRow[] = [{ kind: 'voucher_expiring', channel: 'email', enabled: false }]
-    expect(mayNotify('voucher_expiring', 'email', rows)).toBe(false)
-    // The other channels are untouched: switching off the mail is not switching
-    // off the push.
-    expect(mayNotify('voucher_expiring', 'push', rows)).toBe(true)
+    const rows: PreferenceRow[] = [{ kind: 'voucher_expiring', channel: 'push', enabled: false }]
+    expect(mayNotify('voucher_expiring', 'push', rows)).toBe(false)
+    // The other channels are untouched: switching off the push is not
+    // switching off in-app.
+    expect(mayNotify('voucher_expiring', 'in_app', rows)).toBe(true)
   })
 
   it('does not let one kind\u2019s row govern another', () => {
-    const rows: PreferenceRow[] = [{ kind: 'welcome', channel: 'email', enabled: false }]
-    expect(mayNotify('cashback_credited', 'email', rows)).toBe(true)
+    const rows: PreferenceRow[] = [{ kind: 'welcome', channel: 'push', enabled: false }]
+    expect(mayNotify('cashback_credited', 'push', rows)).toBe(true)
+  })
+})
+
+describe('owner policy, 22.09.2026: no customer email except password reset', () => {
+  it('blocks email for every required and optional kind except voucher_gifted', () => {
+    for (const kind of [...REQUIRED_KINDS, ...OPTIONAL_KINDS]) {
+      const expected = (EMAIL_POLICY_EXEMPT_KINDS as readonly string[]).includes(kind)
+      expect(mayNotify(kind, 'email', []), kind).toBe(expected)
+    }
+  })
+
+  it('cannot be worked around by a preference row saying otherwise', () => {
+    const rows: PreferenceRow[] = [{ kind: 'welcome', channel: 'email', enabled: true }]
+    expect(mayNotify('welcome', 'email', rows)).toBe(false)
+  })
+
+  it('still delivers voucher_gifted by email -- the recipient has no account to read it in', () => {
+    expect(mayNotify('voucher_gifted', 'email', [])).toBe(true)
+  })
+
+  it('leaves operator alerts on email untouched', () => {
+    for (const kind of OPERATOR_EMAIL_KINDS) {
+      expect(isOperatorEmailKind(kind), kind).toBe(true)
+      expect(mayNotify(kind, 'email', []), kind).toBe(true)
+    }
+  })
+
+  it('does not affect non-email channels for the same kinds', () => {
+    expect(mayNotify('voucher_issued', 'in_app', [])).toBe(true)
+    expect(mayNotify('voucher_expiring', 'push', [])).toBe(true)
   })
 })
 
@@ -99,7 +141,14 @@ describe('the settings page', () => {
     const matrix = preferenceMatrix([{ kind: 'welcome', channel: 'push', enabled: false }])
     const welcome = matrix.find((row) => row.kind === 'welcome')
     expect(welcome?.channels.push).toBe(false)
-    expect(welcome?.channels.email).toBe(true)
+    expect(welcome?.channels.in_app).toBe(true)
+  })
+
+  it('never renders an email column -- the owner policy makes every row inert there', () => {
+    const matrix = preferenceMatrix([])
+    for (const row of matrix) {
+      expect('email' in row.channels, row.kind).toBe(false)
+    }
   })
 })
 

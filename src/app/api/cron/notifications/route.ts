@@ -229,14 +229,33 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     }
 
     if (emailDue && !mayNotify(row.kind, 'email', preferences)) {
-      // `skipped`, not `dead`: the customer can switch it back on, and a dead
-      // row would never be looked at again. No attempt is counted either --
-      // the row was never sent to a mail provider.
+      // `skipped`, not `dead`: the customer can switch it back on (or, for the
+      // owner's no-customer-email policy, never could in the first place), and
+      // a dead row would never be looked at again. No attempt is counted
+      // either -- the row was never sent to a mail provider.
       skipped++
       await admin
         .from('notification_outbox')
         .update({ status: 'skipped', last_error: 'email switched off by the customer' })
         .eq('id', row.id)
+
+      // WhatsApp and SMS do not ride "the mail sent" -- they ride "the email
+      // leg reached a terminal decision that was not a provider failure".
+      // Before the owner's 22.09.2026 no-customer-email policy, those were the
+      // same event, because the only way `mayNotify` returned false for email
+      // was a customer preference, which is not a reason to also silence
+      // WhatsApp. Now `mayNotify` returns false for EVERY customer email by
+      // policy, and `voucher_issued`/`voucher_expiring` are exactly the two
+      // kinds WhatsApp has a template for (`lib/whatsapp/outbox.ts`). Leaving
+      // this fan-out inside the `result.ok` branch below would have made
+      // removing the email carrier silently remove the WhatsApp voucher too.
+      const wa = await sendOutboxWhatsapp(admin, row)
+      if (wa === 'sent') whatsapped++
+      else if (wa === 'failed') whatsappFailed++
+
+      const sms = await sendOutboxSms(admin, row, preferences)
+      if (sms === 'sent') smsSent++
+      else if (sms === 'failed') smsFailed++
     } else if (emailDue) {
       const built = buildNotification(
         row.kind,
@@ -273,8 +292,11 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
             .eq('id', row.id)
           // WhatsApp rides the email leg's exactly-once pending->sent
           // transition (see lib/whatsapp/outbox.ts for why it has no state
-          // machine of its own). Inert without TWILIO_*, never throws, never
-          // touches the row.
+          // machine of its own). This branch is reached only by operator
+          // kinds and the voucher_gifted exemption now -- every other
+          // customer kind is blocked at `mayNotify` above (22.09.2026 policy)
+          // and gets its WhatsApp/SMS fan-out from that branch instead. Inert
+          // without TWILIO_*, never throws, never touches the row.
           const wa = await sendOutboxWhatsapp(admin, row)
           if (wa === 'sent') whatsapped++
           else if (wa === 'failed') whatsappFailed++

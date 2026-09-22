@@ -1,8 +1,8 @@
 'use client'
 
 import {
-  CHANNELS,
   CHANNEL_LABEL_HE,
+  CUSTOMER_TOGGLE_CHANNELS,
   KIND_LABEL_HE,
   type OptionalKind,
   type PreferenceRow,
@@ -50,7 +50,8 @@ export default function PreferenceSwitches({ rows }: { rows: PreferenceRow[] }) 
     <div>
       <p className="text-sm text-muted">
         אפשר לכבות את ההודעות שכאן. הודעות על הזמנה ששילמתם עליה, על שובר שהונפק ועל החזר כספי
-        נשלחות תמיד, כי הן חלק ממה שקניתם.
+        נשלחות תמיד, כי הן חלק ממה שקניתם. הודעות במייל לא נשלחות ללקוחות כלל -- כל המידע נמצא באזור
+        האישי.
       </p>
 
       {error && (
@@ -63,7 +64,7 @@ export default function PreferenceSwitches({ rows }: { rows: PreferenceRow[] }) 
         <thead>
           <tr>
             <th className="p-2 text-start font-semibold">התראה</th>
-            {CHANNELS.map((channel) => (
+            {CUSTOMER_TOGGLE_CHANNELS.map((channel) => (
               <th key={channel} className="p-2 text-center font-semibold">
                 {CHANNEL_LABEL_HE[channel]}
               </th>
@@ -74,7 +75,7 @@ export default function PreferenceSwitches({ rows }: { rows: PreferenceRow[] }) 
           {matrix.map((row) => (
             <tr key={row.kind} className="border-black/10 border-t">
               <td className="p-2">{KIND_LABEL_HE[row.kind]}</td>
-              {CHANNELS.map((channel) => (
+              {CUSTOMER_TOGGLE_CHANNELS.map((channel) => (
                 <td key={channel} className="p-2 text-center">
                   <label className="inline-flex h-11 w-11 items-center justify-center">
                     <span className="sr-only">
