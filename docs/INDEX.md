@@ -121,6 +121,7 @@ one.
 | Document | Status | What it is |
 |---|---|---|
 | [CARDCOM-ACTIVATION.md](CARDCOM-ACTIVATION.md) | ✅ | The owner's checklist for turning on real Cardcom credentials: which three env vars, the one that must not be true, and how to verify the first real payment. |
+| [DEALS-PIPELINE.md](DEALS-PIPELINE.md) | ✅ | Supplier-fed deals ingestion queue: feed or manual submission, admin review, and why it never scrapes a third-party site or writes straight to products. |
 | [CARDCOM-ARCHITECTURE.md](CARDCOM-ARCHITECTURE.md) | 🕯️ | Base URL לכל הקריאות: |
 | [COMPONENT-INVENTORY.md](COMPONENT-INVENTORY.md) | ✅ | Read-only scan of src/components. Every .tsx component is listed, grouped by subdirectory. |
 | [COUPON-STOREFRONT-SPEC.md](COUPON-STOREFRONT-SPEC.md) | ✅ | מפרט מלא של דף מוצר מסוג קופון (storefront PDP). |
