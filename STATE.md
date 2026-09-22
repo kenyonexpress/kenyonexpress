@@ -1,8 +1,104 @@
-Updated: 2026-09-23 (00:05) (**אותו DNS cutover, דקה אחרי הסבב הקודם: המצב
-לא השתנה, לא נוסה deploy חוזר.** `dns-watch.sh` הפעיל סשן שני על אותו
-trigger כמעט מיד אחרי שהקודם סיים (STATE עודכן 23:56, הסשן הזה עלה 23:57).
+Updated: 2026-09-23 (00:11) (**OWNER DECISIONS v2, סעיף Notifications: "אין
+מייל ללקוח חוץ מאיפוס סיסמה" יושם, כולל התיקון הקריטי שלא היה מובן מאליו.**
 
-**נמדד מחדש, לא הונח: ה-zone עדיין בדיוק כמו שנמדד לפני דקה.** `dig NS`
+`src/lib/notifications/preferences.ts`: נוספו `EMAIL_POLICY_EXEMPT_KINDS`
+(`voucher_gifted` בלבד - הנמען אין לו חשבון עדיין, המייל הזה *הוא* מנגנון
+המסירה) ו-`OPERATOR_EMAIL_KINDS` (שישה סוגים לעסק, לא ללקוח - לא מושפעים).
+`mayNotify` חוסם את ערוץ ה-email באופן בלתי-מותנה לכל שאר הסוגים, נבדק
+*לפני* גם `REQUIRED_KINDS` - כלומר גם `voucher_issued`/`order_paid` לא
+יוצאים יותר במייל, בכוונה (הבעלים כתב מפורש: אישור הזמנה וקוד השובר עוברים
+ל-/account).
+
+**הסיכון שנתפס לפני שנכתב שורת קוד אחת: WhatsApp/SMS רכבו על ה-branch של
+הצלחת המייל.** `sendOutboxWhatsapp`/`sendOutboxSms` נקראו רק בתוך
+`if (result.ok)` אחרי `sendEmail` מוצלח. אם המדיניות הייתה מיושמת בלי לגעת
+ב-route, `voucher_issued` (אחד משני הסוגים היחידים עם תבנית WhatsApp) היה
+מפסיק לשלוח WhatsApp בשקט - בניגוד ישיר לכוונת הבעלים ("WhatsApp + email
+בלבד" כערוצי שירות). תוקן ב-`route.ts`: ה-branch של `!mayNotify` (שסימן
+את השורה כ-`skipped`) קורא עכשיו גם ל-`sendOutboxWhatsapp`/`sendOutboxSms`
+- שני הפונקציות חסרות state משלהן ולא נוגעות בשורה, כך שקריאה להן משני
+מקומות בטוחה. כישלון אמיתי של ספק המייל (ה-branch השלישי, retry/dead)
+נשאר בלעדי - לא פותח WhatsApp/SMS.
+
+**עמוד ההגדרות תוקן גם הוא, לא רק ה-sender.** `preferenceMatrix` ו-
+`PreferenceSwitches.tsx` היו ממשיכים להציג עמודת "מייל" עבור כל הסוגים
+האופציונליים - מתג שנראה חי אבל `mayNotify` תמיד היה מבטל, בדיוק אותה
+בעיה שהקובץ עצמו כבר מזהיר מפניה לגבי סוגים חובה. נוסף `CUSTOMER_TOGGLE_CHANNELS`
+(שלושת הערוצים בלי email), והטבלה בעמוד ההגדרות כבר לא מציגה את העמודה הזו.
+
+**נבדק, לא הונח:** 6 טסטים חדשים ב-`route.test.ts` עם admin client מזויף
+מוכיחים בפועל שהתרחיש שנחסם (חסימת מייל לא הורגת WhatsApp/SMS) לא קורה,
+ושכישלון ספק אמיתי עדיין לא פותח אותם. עודכנו גם טסטים קיימים ב-
+`preferences.test.ts` שהניחו שמייל תמיד `true` לסוגי חובה. `pnpm type-check`,
+`pnpm lint` (כולל כל שערי ה-inventory) ו-`pnpm test` (549 קבצים, 6782
+טסטים) ירוקים לפני commit.
+
+**לא נגעתי ב-STATE.md של הסבב הקודם.** `git status` בתחילת הסבב הזה כבר
+הראה `pid 35738` (סוכן שני, `--model fable /goal`) עדיין חי וכותב ל-DNS
+watch באותה תיקייה בדיוק - הראיה לכך תועדה כבר בערך הקודם למטה. שיניתי
+רק את ארבעת קבצי ה-notifications ואת השורות האלה כאן; שום קובץ אחר.
+
+**המשך מ:** Crisp/טלפון/דף-צור-קשר (OWNER DECISIONS v2 סעיף Customer
+service) - להסיר Crisp (nothing found, אימות בלבד), להחליף `info@` ל-
+`support@kenyonexpress.co.il` בדף הצור-קשר ובפוטר, להסיר שדות טלפון
+כערוץ שירות *בלי* לגעת ב-`PhoneOtpForm.tsx` (זו שיטת התחברות, לא ערוץ
+שירות - דגל שטרם הועבר לאופיר, יתועד גם הוא כהחלטה עצמאית). אחרי זה:
+passkey post-login prompt, ואז invoices/images לפי הסדר ב-OWNER DECISIONS
+v2. commit+push מתבצע מיד אחרי הודעה זו.
+
+Updated: 2026-09-23 (00:08) (**אותו trigger בפעם השלישית, שלוש דקות אחרי
+הסבב הקודם: שום דבר לא זז, לא נוסה deploy רביעי.** `dns-watch.sh` הפעיל
+סשן שלישי (`pid 91345`) על אותו DNS cutover כמעט מיד אחרי שהקודם סיים
+(STATE עודכן 00:05, הסשן הזה עלה 00:04-00:08). לא זו הפעם השנייה שהחסימה
+נמדדה - זו השלישית ("goal שנתקע פעמיים: לדלג" כבר חל מהסבב הקודם), ולכן
+לא נוסה deploy כלל הפעם, לא רק דולג אחרי ניסיון.
+
+**נמדד מחדש בשתי שיטות שונות, לא הונח: שני החסמים בדיוק כמו שהיו.**
+‏`dig NS`/`dig A` חוזרים על אותה תוצאה (`aria`/`quinton.ns.cloudflare.com`,
+אפס רשומות A ב-root וב-`www`) - **אבל הפעם נבדק גם ישירות דרך Vercel MCP
+ולא רק CLI**, ומאמת שני דברים בבת אחת: (א) **שלב 2 (חיבור הדומיין) אכן
+כבר גמור** - `list_project_domains` על `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`
+מראה `kenyonexpress.co.il` ו-`www.kenyonexpress.co.il` שניהם עם
+`verified: true` תחת הפרויקט, בלי צורך בפעולה; (ב) **הסודות החסרים אכן
+חסרים בשם הנכון, לא רק "משהו Cardcom קיים"** - `filter_project_envs` מציג
+‏30 משתנים ב-Production, כולל `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/
+‏`CARDCOM_API_KEY`/`CARDCOM_WEBHOOK_SECRET`/`CARDCOM_USE_MOCK`/
+‏`NEXT_PUBLIC_CARDCOM_SANDBOX` ו-`SENTRY_AUTH_TOKEN` - **אבל לא
+`CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` או
+‏`SENTRY_DSN`**, שהם בדיוק מה ש-`deploy-preflight.mjs` דורש (תואם ל-API
+הישן של Cardcom, ראה `docs/CARDCOM-ARCHITECTURE.md`). כלומר יש בפרויקט
+משתני Cardcom בשם אחר לגמרי, שלא עוזרים ל-preflight ועלולים לבלבל סבב
+עתידי שיחשוב שהם "אותו דבר". לא נגעתי בהם ולא ניסיתי fallback ביניהם.
+
+**סוכן קוד שני: לא רק חי, כותב יותר ממה שנמדד לפני שלוש דקות.** ‏`pid
+35738` (`--model fable /goal`) עדיין באותו `cwd` בדיוק, `elapsed` עכשיו
+מעל יממה שלמה (`01-02:57:51`). ה-`git status` שהיה קובץ בודד דיפדפרנס
+(`preferences.ts`) בסבב הקודם מראה עכשיו **ארבעה** קבצים דיפדפרנס
+(`src/app/api/cron/notifications/route.ts`,
+`src/components/notifications/PreferenceSwitches.tsx`,
+`src/lib/notifications/preferences.test.ts`,
+`src/lib/notifications/preferences.ts`) - עדות ישירה לכתיבה חיה שממשיכה
+בין הסבבים, לא סתם תהליך שנשאר פתוח. לא נגעתי באף אחד מהם.
+
+**החלטה: לא נוסה deploy, לא שלב 2 (כבר גמור ממילא), שום קובץ מלבד
+השורות האלה ב-STATE.md.** שלושה דברים יחד: (א) שני החסמים החיצוניים
+עדיין בתוקף באותם שמות משתנים בדיוק; (ב) תנאי העצירה הרביעי של ה-goal
+("סוכן קוד שני שרץ על אותו repo") מתקיים עם ראיה מחמירה מהסבב הקודם, לא
+מוחלשת; (ג) זו הפעם השלישית של אותו trigger - "goal שנתקע פעמיים: לדלג"
+כבר חל. לא הרצתי `compare.mjs` (אין deploy חדש ואין domain שעונה, אין מה
+למדוד). לא נכנסתי לתור `NEXT-GOALS.md` הכללי מאותה סיבה שהסבב הקודם נימק:
+סוכן שני כותב באותה תיקייה ממש עכשיו.
+
+**המשך מ:** בלי שינוי - DNS ו-deploy עדיין תלויים באופיר: שתי רשומות
+ה-DNS (`A` ל-`76.76.21.21` בשורש, `CNAME` ל-`cname.vercel-dns.com` ל-`www`)
+ופרטי Cardcom (`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/
+`CARDCOM_API_PASSWORD`) ו-`SENTRY_DSN` בסביבת Production של הפרויקט
+`kenyonexpress` ב-Vercel, בשמות המדויקים האלה ולא בשמות הדומים שכבר קיימים
+שם. הסבב הבא (ידני או דרך `dns-watch.sh`) צריך לבדוק דרך Vercel MCP אם
+אלה השתנו לפני כל ניסיון deploy נוסף; אם לא השתנו, אין טעם לנסות שוב -
+לחזור ל-`NEXT-GOALS.md` הרגיל, ולבדוק קודם אם `pid 35738` עדיין חי וכותב.)
+
+קודם: 2026-09-23 (00:05) (**נמדד מחדש, לא הונח: ה-zone עדיין בדיוק כמו שנמדד לפני דקה.** `dig NS`
 מראה את אותם `aria`/`quinton.ns.cloudflare.com`, ו-`dig A` על השורש ועל
 `www` מחזיר ריק (בלי רשומה) - אותו zone פעיל-אבל-ריק, אין A חדש. `vercel
 whoami` (דרך `npx vercel@latest`, אין CLI מותקן גלובלית בסביבה הזאת)
