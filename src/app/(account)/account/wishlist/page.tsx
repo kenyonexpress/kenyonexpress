@@ -1,4 +1,5 @@
 import WishlistItemActions from '@/components/wishlist/WishlistItemActions'
+import WishlistShareButton from '@/components/wishlist/WishlistShareButton'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { getMyWishlist } from '@/server/queries/wishlist'
 import Link from 'next/link'
@@ -43,44 +44,51 @@ export default async function WishlistPage() {
           </Link>
         </p>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
-          {entries.map((entry) => {
-            const image = firstImage(entry.product.images)
-            const name = entry.product.name_he ?? 'מוצר'
-            const href = entry.product.slug ? `/product/${entry.product.slug}` : null
-            const price = entry.product.price_ils
-            // Matches what `addToCart` will decide: no price is not sellable,
-            // and a zero stock level is refused there too. The button says so
-            // up front instead of letting the move fail.
-            const canAddToCart = price != null && entry.product.stock_quantity !== 0
-            const body = (
-              <span className="flex items-center gap-3">
-                {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image} alt="" className="h-16 w-16 rounded-lg object-cover" />
-                ) : (
-                  <span aria-hidden="true" className="h-16 w-16 rounded-lg bg-surface-hover" />
-                )}
-                <span>
-                  <span className="block font-semibold">{name}</span>
-                  {price != null ? (
-                    <span className="block text-sm text-price">{shekelsFromIlsRounded(price)}</span>
-                  ) : null}
+        <>
+          <div className="mb-4">
+            <WishlistShareButton />
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {entries.map((entry) => {
+              const image = firstImage(entry.product.images)
+              const name = entry.product.name_he ?? 'מוצר'
+              const href = entry.product.slug ? `/product/${entry.product.slug}` : null
+              const price = entry.product.price_ils
+              // Matches what `addToCart` will decide: no price is not sellable,
+              // and a zero stock level is refused there too. The button says so
+              // up front instead of letting the move fail.
+              const canAddToCart = price != null && entry.product.stock_quantity !== 0
+              const body = (
+                <span className="flex items-center gap-3">
+                  {image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={image} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                  ) : (
+                    <span aria-hidden="true" className="h-16 w-16 rounded-lg bg-surface-hover" />
+                  )}
+                  <span>
+                    <span className="block font-semibold">{name}</span>
+                    {price != null ? (
+                      <span className="block text-sm text-price">
+                        {shekelsFromIlsRounded(price)}
+                      </span>
+                    ) : null}
+                  </span>
                 </span>
-              </span>
-            )
-            return (
-              <li key={entry.product_id} className="rounded-lg border border-border-alt p-3">
-                {href ? <Link href={href}>{body}</Link> : body}
-                <WishlistItemActions
-                  productId={entry.product_id}
-                  productName={name}
-                  canAddToCart={canAddToCart}
-                />
-              </li>
-            )
-          })}
-        </ul>
+              )
+              return (
+                <li key={entry.product_id} className="rounded-lg border border-border-alt p-3">
+                  {href ? <Link href={href}>{body}</Link> : body}
+                  <WishlistItemActions
+                    productId={entry.product_id}
+                    productName={name}
+                    canAddToCart={canAddToCart}
+                  />
+                </li>
+              )
+            })}
+          </ul>
+        </>
       )}
     </>
   )
