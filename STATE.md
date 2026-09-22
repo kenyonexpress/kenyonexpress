@@ -1,12 +1,12 @@
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
-trigger, שלושים ושתיים ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן
+trigger, שלושים ושלוש ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן
 שני חי) וההחלטה החוזרת לעצור את כל הלולאה עד בדיקה אנושית. לא נפתח goal,
 לא נגעתי ב-DNS/Vercel/deploy.**
 
-`ps -o pid,etime,lstart,command -p 35725,35738` עדיין אותם שני תהליכים,
-עכשיו `elapsed` `01-05:01:2x`, `STARTED` זהה (21.09 21:09) - לא תהליכים
-חדשים. `git status --short` נקי, `HEAD` זהה ל-`origin/audit/final-audit`
-(`84c12d735`). הזיכרון (`dns-cutover-loop-paused-pending-review`) נקרא
+`ps -o pid,etime,lstart,command -p 35725,35738` עדיין אותם שני תהליכים
+בדיוק (`STARTED` זהה, 21.09 21:09:2x, `elapsed` עכשיו `01-05:03:1x`) - לא
+תהליכים חדשים. `git status --short` נקי, `HEAD` זהה ל-`origin/audit/final-audit`
+(`fc94a34a7`). הזיכרון (`dns-cutover-loop-paused-pending-review`) נקרא
 ומאומת מול STATE.md עצמו; הנימוק המצטבר לא השתנה.
 
 **המשך מ:** ללא שינוי - לא לפתוח goal חדש עד אישור מפורש מאופיר. כשהאישור
@@ -14,7 +14,7 @@ trigger, שלושים ושתיים ברצף. שני תנאי עצירה עצמא
 (Images, כפי שנקבע ב-01:23).
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
-trigger, שלושים ואחת ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן
+trigger, שלושים ושתיים ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4 (סוכן
 שני חי) וההחלטה החוזרת לעצור את כל הלולאה עד בדיקה אנושית. לא נפתח goal,
 לא נגעתי ב-DNS/Vercel/deploy.**
 
