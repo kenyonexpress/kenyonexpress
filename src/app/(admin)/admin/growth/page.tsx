@@ -1,4 +1,5 @@
 import { requireSection } from '@/lib/admin/rbac'
+import { sumRecoveryWeeks } from '@/lib/cart/recovery-metrics'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
@@ -93,6 +94,13 @@ export default async function GrowthDashboard() {
   const r = (referrals.data ?? null) as unknown as Ref | null
   const n = (newsletter.data ?? null) as unknown as News | null
   const rec = (recovery.data ?? []) as unknown as Recovery[]
+  const recoveryTotals = sumRecoveryWeeks(
+    rec.map((w) => ({
+      nudgesSent: w.nudges_sent,
+      recovered: w.recovered,
+      recoveredValueAgorot: w.recovered_value_agorot,
+    })),
+  )
 
   const campaignSpend = camps.reduce((s, c) => s + (c.total_discount_agorot ?? 0), 0)
   const drifting = camps.filter((c) => c.counter_drift)
@@ -170,6 +178,20 @@ export default async function GrowthDashboard() {
 
       <section className="space-y-3">
         <h2 className="font-semibold text-lg">שחזור עגלות נטושות</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Tile label="נשלחו" value={num(recoveryTotals.nudgesSent)} />
+          <Tile label="חזרו" value={num(recoveryTotals.recovered)} />
+          <Tile
+            label="שיעור שחזור"
+            value={pct(
+              recoveryTotals.recoveryRateBp == null
+                ? null
+                : Math.floor(recoveryTotals.recoveryRateBp / 100),
+            )}
+            hint="רכישה בתוך 72 שעות מתזכורת. אין תזכורת שלישית."
+          />
+          <Tile label="ערך שחוזר" value={ils(recoveryTotals.recoveredValueAgorot)} />
+        </div>
         {rec.length === 0 ? (
           <p className="rounded-lg border border-dashed p-6 text-center text-gray-500 text-sm">
             עדיין לא נשלחו תזכורות.
