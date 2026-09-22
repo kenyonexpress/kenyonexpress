@@ -1,5 +1,7 @@
 import ContactRequestForm from '@/components/supplier/ContactRequestForm'
+import DealsFeedForm from '@/components/supplier/DealsFeedForm'
 import ImageSubmissionForm from '@/components/supplier/ImageSubmissionForm'
+import ManualDealForm from '@/components/supplier/ManualDealForm'
 import WithdrawContactRequest from '@/components/supplier/WithdrawContactRequest'
 import { formatDate } from '@/lib/account/format'
 import { t } from '@/lib/i18n/messages'
@@ -52,6 +54,22 @@ export default async function SupplierSettingsPage() {
 
   const current = (supplier ?? {}) as Record<string, string | null>
 
+  // Read separately from the block above, and defaulted to null on ANY
+  // error: 237 (feed_url/feed_format) has not applied everywhere this page
+  // is served, and a `column does not exist` on those two must not 500 the
+  // page that already works for the seven contact fields above it. The
+  // Supabase client resolves an error rather than rejecting, so this checks
+  // `.error`, not a catch.
+  const dealsFeedResult = await admin
+    .from('suppliers')
+    .select('feed_url, feed_format')
+    .eq('id', session.supplierId)
+    .maybeSingle()
+  const dealsFeed = (dealsFeedResult.error ? null : dealsFeedResult.data) ?? {
+    feed_url: null,
+    feed_format: null,
+  }
+
   return (
     <div className="space-y-6">
       <section>
@@ -66,6 +84,22 @@ export default async function SupplierSettingsPage() {
         <h2 className="text-base font-bold text-heading">{t('supplier.requestHeading')}</h2>
         <div className="mt-3">
           <ContactRequestForm current={current} />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <h2 className="text-base font-bold text-heading">{t('supplier.dealsFeedHeading')}</h2>
+        <div className="mt-3">
+          <DealsFeedForm
+            current={{ feedUrl: dealsFeed.feed_url, feedFormat: dealsFeed.feed_format }}
+          />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <h2 className="text-base font-bold text-heading">{t('supplier.dealsManualHeading')}</h2>
+        <div className="mt-3">
+          <ManualDealForm />
         </div>
       </section>
 

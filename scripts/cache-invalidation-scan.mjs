@@ -101,6 +101,18 @@ export const DELIBERATE_EXCEPTIONS = new Map([
       'admin/reviews.ts DOES call updateTag on approval. Invalidating here would flush ' +
       'the whole catalogue cache on every submission to publish nothing.',
   ],
+  [
+    'src/server/actions/supplier/deals-feed.ts',
+    'Writes suppliers.feed_url/feed_format (237_deals_autopilot.sql) and inserts a ' +
+      "deal_candidates row with status='pending_review'. Neither is read by any " +
+      'CATALOGUE_TAG-cached query: no cached read selects feed_url/feed_format at all, ' +
+      'and deal_candidates has no cached reader in any status, approved included -- ' +
+      'turning a candidate into a public.products row is a separate, later admin ' +
+      'action, and THAT path is what would need to invalidate (it does not exist yet; ' +
+      'see docs/DEALS-PIPELINE.md). Invalidating here would flush the whole catalogue ' +
+      'cache on every feed-config save and every manual deal submission to publish ' +
+      'nothing a shopper can see.',
+  ],
 ])
 
 function walk(dir, files = []) {
