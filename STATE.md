@@ -1,3 +1,60 @@
+Updated: 2026-09-23 (01:00) (**בקשה חדשה מאופיר באמצע העבודה: מערכת וואטסאפ
+מלאה מאפס על ‏Meta Cloud API. נבדק לפני שנכתבה שורת קוד: רוב זה כבר קיים,
+בנוי ובדוק.** תוכן הבקשה: טבלת ‏`whatsapp_messages`, ‏Supabase Function
+לוובהוק, כפתורי "לחצו לוואטסאפ" בדף מוצר ובדף צור קשר, אדמין ב-
+`/admin/whatsapp/messages`, ‏`docs/WHATSAPP-SETUP.md`.
+
+**מה שכבר היה חי, ולא נבנה שוב:** הוובהוק הנכנס
+(`src/app/api/webhooks/whatsapp/route.ts`) - מאמת חתימת ‏Twilio, מסווג
+הצטרפות/הסרה/פנייה חופשית, פותח פניית תמיכה, עם ‏route.test.ts מלא. תור
+יוצא (`whatsapp_outbox`, מיגרציה ‏173, מנוקז ע"י `/api/cron/whatsapp`).
+כפתורי "לחצו לוואטסאפ" בדף מוצר (`SupplierInfo.tsx`) ובדף צור קשר/פוטר
+(`ContactTopicPicker`, מיגרציה ‏236) - שניהם כבר `wa.me` ישירים, לא צריכים
+שום ‏provider. **‏`docs/WHATSAPP.md` הקיים מתעד את כל זה ומאומת ‏02.09.**
+
+**החלטה עצמאית:** לא נבנתה מערכת שנייה מקבילה מול ‏Meta Cloud API ישירות.
+‏Twilio WhatsApp Business Platform **הוא** אינטגרציית ‏Meta Cloud API -
+הרשמת מספר וואטסאפ ב-Twilio עוברת דרך אימות ‏Meta Business Manager כחלק
+מאותו תהליך. שתי מערכות מקבילות = שני webhooks שעונים על אותה שאלה, בלי
+דרך להבטיח לאיזה מהם הודעה נתונה תגיע. הפער האמיתי (היחיד): ההודעה הנכנסת
+לא ידעה לאיזו הזמנה להתאים את הטלפון, ואין מסך לקרוא את השיחות.
+
+**מה שנוסף בפועל, commit ‏`1186084e9`:**
+- ‏`whatsapp_inbound_messages.order_id` (מיגרציה ‏238 pending, עמודה אחת
+  nullable, בלי טבלה חדשה).
+- `src/server/whatsapp/orders.ts` - התאמת טלפון להזמנה, מנורמל בקוד (לא
+  ב-SQL) בדיוק כמו `attachPhoneToExistingAccount` בהתחברות ‏OTP: מסנן לפי
+  ‏7 ספרות אחרונות, השוואה מדויקת אחרי נרמול. שני מקורות: `profiles.phone`
+  ואז `user_addresses.phone`.
+- תגובת הפנייה החופשית עכשיו מוסיפה סיכום הזמנה (סטטוס+סכום) כשנמצאה
+  התאמה, לפני שורת אישור הפנייה הרגילה - בלי לשנות כלום בפנייה עצמה.
+- `/admin/whatsapp/messages` - טבלה, כל הודעה נכנסת, מזהה פנייה והזמנה
+  שזוהתה אם יש. נגיש רק לקריאה, degrade חלק אם ‏238 עוד לא הוחל.
+- `docs/WHATSAPP-SETUP.md` - מדריך אמיתי לאופיר: הרשמה דרך Twilio Console
+  (כולל שלב Meta Business Manager), משתני סביבה, הפניית webhook, אישור
+  תבניות, בדיקה. עודכן גם `docs/WHATSAPP.md` עם החלק הנכנס.
+
+**נבדק, לא הונח:** `pnpm type-check` נקי, `pnpm test` ‏551/551 קבצים ‏6799
+טסטים (כולל ‏3 טסטים חדשים ב-`route.test.ts` שמוכיחים בפועל שהתאמת הזמנה
+לא שוברת את זרימת הפנייה), `pnpm build` נקי (`exit 0`). שני פנקסי-ratchet
+עודכנו כי נוספו קובץ/נתיב אמיתיים: `pending-migrations-inventory.test.ts`
+(מיגרציה ‏238), `data/legacy/redirect-map.json` (נתיב ‏`/admin/whatsapp/
+messages` חדש) ו-`README.md`/`docs/INDEX.md` (ספירת מסמכים ‏278←279).
+
+**סוכן שני עדיין חי ובונה בדיוק את מה שהיה בתור שלי לפני ההודעה הזו:**
+‏`git status` הראה `src/app/(account)/layout.tsx`, `src/styles/account.css`,
+`src/components/account/PasskeyRegisterPrompt.tsx` ו-`e2e/passkey-register-
+prompt.spec.ts` לא-מחויבים, עם שגיאות ‏lint פעילות (`role="dialog"`,
+`useExhaustiveDependencies`) - זה בדיוק ה-goal "passkey post-first-login
+prompt" שתוכנן להיות הבא בתור שלי. **לא נגעתי באף אחד מהם**, ולא ריצתי
+`pnpm lint` המלא כשער-סיום (הוא נכשל על קבצים שלא שלי) - רק על הקבצים
+שאני שיניתי, כולם נקיים. commit בנתיבים מפורשים בלבד דילג עליהם אוטומטית.
+
+**המשך מ:** מדלג על passkey (סוכן אחר בונה אותו כרגע) וממשיך ל-Invoices
+(OWNER DECISIONS v2): מחיקת ה-adapter של Green Invoice, טוגל "חשבונית
+לעסק" עם שם עסק ומספר ח.פ. באזור האישי, מוחל על חשבוניות עתידיות. commit
++push מתבצע מיד אחרי הודעה זו.
+
 Updated: 2026-09-23 (00:36) (**DNS cutover trigger, תשיעי ברצף, שום דבר לא
 זז. אותו בלוקר, אותו סוכן שני - הפעם עם ראייה ישירה שהוא כותב לדיסק ממש
 עכשיו, לא רק חי.**
