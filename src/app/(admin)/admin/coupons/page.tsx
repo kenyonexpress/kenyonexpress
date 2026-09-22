@@ -74,12 +74,20 @@ export default async function AdminCouponsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-ink">קופונים</h1>
-        <Link href="/admin/coupons?new=1" className={adminBtn}>
-          <Plus size={15} />
-          קופון חדש
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/coupons?new=1" className={adminBtn}>
+            <Plus size={15} />
+            קופון חדש
+          </Link>
+          <Link
+            href="/admin/coupons/impact"
+            className="inline-flex items-center rounded-lg border border-black/10 px-4 py-2 text-sm font-semibold text-ink hover:bg-black/[0.04]"
+          >
+            השפעה לפי מוצר
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">

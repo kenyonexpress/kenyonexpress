@@ -223,4 +223,47 @@ describe('evaluateCoupon', () => {
     )
     expect(result.ok && result.discountAgorot).toBe(1000)
   })
+
+  it('refuses a cart that holds a blacklisted product', () => {
+    const result = evaluateCoupon(
+      coupon({ excluded_product_ids: ['p1'] }),
+      cart(5000, ['p1', 'p2']),
+      NOW,
+    )
+    expect(!result.ok && result.reason).toBe('excluded')
+    expect(!result.ok && result.message).toMatch(/[֐-׿]/)
+  })
+
+  it('refuses a cart whose category or supplier is blacklisted', () => {
+    const category = evaluateCoupon(
+      coupon({ excluded_category_ids: ['cat-spa'] }),
+      {
+        payableAgorot: 5000,
+        productIds: ['p1'],
+        categoryIds: ['cat-spa'],
+      },
+      NOW,
+    )
+    expect(!category.ok && category.reason).toBe('excluded')
+
+    const supplier = evaluateCoupon(
+      coupon({ excluded_supplier_ids: ['sup-1'] }),
+      {
+        payableAgorot: 5000,
+        productIds: ['p1'],
+        supplierIds: ['sup-1'],
+      },
+      NOW,
+    )
+    expect(!supplier.ok && supplier.reason).toBe('excluded')
+  })
+
+  it('honours a code when the blacklist does not match the cart', () => {
+    const result = evaluateCoupon(
+      coupon({ excluded_product_ids: ['p9'], excluded_category_ids: ['other'] }),
+      { payableAgorot: 5000, productIds: ['p1'], categoryIds: ['cat-spa'] },
+      NOW,
+    )
+    expect(result.ok).toBe(true)
+  })
 })

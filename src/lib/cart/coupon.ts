@@ -42,6 +42,12 @@ export type CouponRecord = {
   max_uses: number | null
   used_count: number | null
   product_id: string | null
+  /** Product ids this code must not discount. Empty means no product blacklist. */
+  excluded_product_ids?: readonly string[] | null
+  /** Category ids this code must not discount. Empty means no category blacklist. */
+  excluded_category_ids?: readonly string[] | null
+  /** Supplier ids this code must not discount. Empty means no supplier blacklist. */
+  excluded_supplier_ids?: readonly string[] | null
 }
 
 export type CouponEvaluation =
@@ -55,6 +61,7 @@ export type CouponFailure =
   | 'exhausted'
   | 'below-minimum'
   | 'not-in-cart'
+  | 'excluded'
   | 'nothing-to-discount'
   | 'invalid'
 
@@ -65,6 +72,7 @@ const MESSAGES: Record<CouponFailure, string> = {
   exhausted: 'קוד הקופון מוצה',
   'below-minimum': 'הסכום בעגלה נמוך מהמינימום לקוד הזה',
   'not-in-cart': 'הקוד תקף למוצר שאינו בעגלה',
+  excluded: 'הקוד אינו תקף למוצרים שבעגלה',
   'nothing-to-discount': 'אין סכום לחיוב באתר שעליו אפשר להחיל את הקוד',
   invalid: 'קוד הקופון מוגדר שגוי ואינו ניתן להחלה',
 }
@@ -100,6 +108,10 @@ export type CouponCartFacts = {
   payableAgorot: number
   /** Product ids in the cart, for a code tied to one product. */
   productIds: string[]
+  /** Category ids of the lines, used only by the blacklist. */
+  categoryIds?: readonly string[]
+  /** Supplier ids of the lines, used only by the blacklist. */
+  supplierIds?: readonly string[]
 }
 
 function fail(reason: CouponFailure): CouponEvaluation {
@@ -136,6 +148,8 @@ export function evaluateCoupon(
   if (coupon.product_id && !cart.productIds.includes(coupon.product_id)) {
     return fail('not-in-cart')
   }
+
+  if (isExcluded(coupon, cart)) return fail('excluded')
 
   if (cart.payableAgorot <= 0) return fail('nothing-to-discount')
 
@@ -181,6 +195,30 @@ function discountFor(coupon: CouponRecord, payableAgorot: number): number | null
   )
   if (raw === null) return null
   return Math.max(0, Math.min(raw, payableAgorot))
+}
+
+function listed(ids: readonly string[] | null | undefined): readonly string[] {
+  return (ids ?? []).filter((id) => id.length > 0)
+}
+
+function overlaps(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length === 0 || right.length === 0) return false
+  const set = new Set(left)
+  return right.some((id) => set.has(id))
+}
+
+/**
+ * A blacklist match on ANY line refuses the whole code.
+ *
+ * Discounting "everything except these" by applying the code to the rest
+ * would mean a second, smaller payable amount that settlement does not know
+ * about. The cart either accepts the code or it does not.
+ */
+function isExcluded(coupon: CouponRecord, cart: CouponCartFacts): boolean {
+  if (overlaps(listed(coupon.excluded_product_ids), cart.productIds)) return true
+  if (overlaps(listed(coupon.excluded_category_ids), cart.categoryIds ?? [])) return true
+  if (overlaps(listed(coupon.excluded_supplier_ids), cart.supplierIds ?? [])) return true
+  return false
 }
 
 function labelFor(coupon: CouponRecord): string {

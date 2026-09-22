@@ -73,6 +73,7 @@ const NAV_ITEMS: NavItem[] = [
   // seen at two zoom levels, and the operator who has just been asked to extend
   // one coupon is the one who should see how often that supplier's coupons die.
   { href: '/admin/coupons/expiry', label: 'תפוגת שוברים', icon: Hourglass, section: 'catalog' },
+  { href: '/admin/coupons/impact', label: 'השפעת קופונים', icon: BarChart3, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   // `orders` and not `payments`: support has read on orders, and this console
