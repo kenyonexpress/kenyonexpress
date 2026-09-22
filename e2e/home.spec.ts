@@ -419,13 +419,26 @@ test.describe('homepage', () => {
   test('the homepage costs one render-blocking stylesheet', async ({ page }) => {
     await page.goto('/')
 
-    const sheets = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+    const sheets = await page.evaluate(async () => {
+      const hrefs = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
         .map((l) => (l as HTMLLinkElement).getAttribute('href') ?? '')
-        // next/font injects its own <link> for the self-hosted Heebo; this is
-        // about the CSS chunks the app's own imports produce.
-        .filter((href) => href.endsWith('.css')),
-    )
+        .filter((href) => href.endsWith('.css'))
+
+      // next/font's <link> for the self-hosted Heebo carries the same rel,
+      // the same data-precedence="next" and the same hashed name shape as
+      // the app's own bundle, so `href` alone cannot tell them apart --
+      // measured 22.09.2026: `.filter((h) => h.endsWith('.css'))` alone kept
+      // both and made this assertion fail against a real production build
+      // no matter how the app's own imports were consolidated. Its body is
+      // nothing but @font-face rules; sniff that instead of guessing from
+      // the URL.
+      const isFontOnly = async (href: string) => {
+        const text = await (await fetch(href)).text()
+        return text.trimStart().startsWith('@font-face')
+      }
+      const fontOnly = await Promise.all(hrefs.map(isFontOnly))
+      return hrefs.filter((_, i) => !fontOnly[i])
+    })
 
     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
   })
