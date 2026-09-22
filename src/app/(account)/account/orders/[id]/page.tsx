@@ -1,9 +1,12 @@
 import OrderHelpForm from '@/components/account/OrderHelpForm'
 import RefundRequestForm from '@/components/account/RefundRequestForm'
+import ReviewForm from '@/components/reviews/ReviewForm'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { REVIEWABLE_ORDER_STATUSES } from '@/lib/reviews/eligibility'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { refundRequestStatus } from '@/server/actions/refund-requests'
 import { getOrderDetail } from '@/server/queries/orders'
+import { getMyReviewsForItems } from '@/server/queries/reviews'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -23,6 +26,8 @@ export default async function OrderDetailPage({ params }: Props) {
   // and a client that fetched them would render the form before knowing whether
   // it is allowed.
   const refund = await refundRequestStatus(id)
+  const existing = await getMyReviewsForItems(order.lines.map((line) => line.id))
+  const canReview = (REVIEWABLE_ORDER_STATUSES as readonly string[]).includes(order.status)
 
   return (
     <>
@@ -79,26 +84,29 @@ export default async function OrderDetailPage({ params }: Props) {
       <section className="account-card">
         <h2 className="account-card__title">פריטים</h2>
         {order.lines.map((line) => (
-          <div className="account-row" key={line.id}>
-            <div className="account-row__main">
-              <p className="account-row__title">
-                {line.productSlug ? (
-                  <Link href={`/product/${line.productSlug}`}>{line.productName}</Link>
-                ) : (
-                  line.productName
-                )}
-              </p>
-              <p className="account-row__meta">
-                {line.quantity} יחידות · {formatIls(line.unitPriceAgorot)} ליחידה
-                {line.productType === 'coupon' && line.balanceDueAgorot > 0
-                  ? ` · ${formatIls(line.balanceDueAgorot)} לתשלום בבית העסק`
-                  : ''}
-                {line.productType === 'physical' && line.itemStatus === 'shipped' ? ' · נשלח' : ''}
-                {line.productType === 'physical' && line.itemStatus === 'delivered'
-                  ? ' · נמסר'
-                  : ''}
-              </p>
-              {/*
+          <div key={line.id}>
+            <div className="account-row">
+              <div className="account-row__main">
+                <p className="account-row__title">
+                  {line.productSlug ? (
+                    <Link href={`/product/${line.productSlug}`}>{line.productName}</Link>
+                  ) : (
+                    line.productName
+                  )}
+                </p>
+                <p className="account-row__meta">
+                  {line.quantity} יחידות · {formatIls(line.unitPriceAgorot)} ליחידה
+                  {line.productType === 'coupon' && line.balanceDueAgorot > 0
+                    ? ` · ${formatIls(line.balanceDueAgorot)} לתשלום בבית העסק`
+                    : ''}
+                  {line.productType === 'physical' && line.itemStatus === 'shipped'
+                    ? ' · נשלח'
+                    : ''}
+                  {line.productType === 'physical' && line.itemStatus === 'delivered'
+                    ? ' · נמסר'
+                    : ''}
+                </p>
+                {/*
                 The tracking line, and the reason it exists at the top of this
                 file's history: the shipped email says "למעקב אחרי ההזמנה" and
                 links here, and this page used to answer with the word "נשלח"
@@ -110,92 +118,102 @@ export default async function OrderDetailPage({ params }: Props) {
                 its number, because that is enough to phone with -- and it is
                 the one fact the customer opened the page for.
               */}
-              {line.tracking && (
-                <p className="account-row__meta">
-                  {line.tracking.carrierLabel}
-                  {line.tracking.trackingNumber ? (
-                    <>
-                      {line.tracking.carrierLabel ? ' · ' : ''}
-                      <span dir="ltr" className="font-mono">
-                        {line.tracking.trackingNumber}
-                      </span>
-                    </>
-                  ) : null}
-                  {line.tracking.url && (
-                    <>
-                      {' · '}
-                      <a
-                        href={line.tracking.url}
-                        target="_blank"
-                        // `noreferrer` as well as `noopener`: the target is a
-                        // third party and the path a customer arrived by is
-                        // not theirs to read.
-                        rel="noopener noreferrer"
-                      >
-                        מעקב אצל השליח
-                      </a>
-                    </>
-                  )}
-                </p>
-              )}
+                {line.tracking && (
+                  <p className="account-row__meta">
+                    {line.tracking.carrierLabel}
+                    {line.tracking.trackingNumber ? (
+                      <>
+                        {line.tracking.carrierLabel ? ' · ' : ''}
+                        <span dir="ltr" className="font-mono">
+                          {line.tracking.trackingNumber}
+                        </span>
+                      </>
+                    ) : null}
+                    {line.tracking.url && (
+                      <>
+                        {' · '}
+                        <a
+                          href={line.tracking.url}
+                          target="_blank"
+                          // `noreferrer` as well as `noopener`: the target is a
+                          // third party and the path a customer arrived by is
+                          // not theirs to read.
+                          rel="noopener noreferrer"
+                        >
+                          מעקב אצל השליח
+                        </a>
+                      </>
+                    )}
+                  </p>
+                )}
 
-              {line.supplier && (
-                <p className="account-row__meta">
-                  {line.supplier.name}
-                  {line.supplier.city ? ` · ${line.supplier.city}` : ''}
-                  {line.supplier.phone ? ` · ${line.supplier.phone}` : ''}
-                </p>
-              )}
+                {line.supplier && (
+                  <p className="account-row__meta">
+                    {line.supplier.name}
+                    {line.supplier.city ? ` · ${line.supplier.city}` : ''}
+                    {line.supplier.phone ? ` · ${line.supplier.phone}` : ''}
+                  </p>
+                )}
 
-              {line.vouchers.length > 0 && (
-                <div style={{ marginTop: 12, display: 'grid', gap: 12 }}>
-                  {line.vouchers.map((voucher) => {
-                    // Through the shared presenter, so this chip cannot say
-                    // `פעיל` about a coupon the counter has already stopped
-                    // accepting: the expiry sweep is a cron, and a lapsed row
-                    // sits at `issued` until it runs. A missing deadline reads
-                    // as expired for the same reason.
-                    const status = couponStatusView({
-                      status: voucher.status,
-                      expires_at: voucher.expiresAt ?? '',
-                      redeemed_at: voucher.usedAt,
-                    })
-                    return (
-                      <div className="coupon-card" key={voucher.code}>
-                        {voucher.qrDataUrl && (
-                          <img
-                            src={voucher.qrDataUrl}
-                            alt={`קוד QR לקופון ${voucher.code}`}
-                            width={120}
-                            height={120}
-                          />
-                        )}
-                        <div>
-                          <p className="coupon-card__code">{voucher.code}</p>
-                          <p className="account-row__meta">
-                            <span
-                              className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}
-                            >
-                              {status.label}
-                            </span>
-                            {voucher.expiresAt
-                              ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}`
-                              : ''}
-                          </p>
-                          {voucher.collectAmountAgorot != null &&
-                            voucher.collectAmountAgorot > 0 && (
-                              <p className="account-row__meta">
-                                לתשלום בבית העסק: {formatIls(voucher.collectAmountAgorot)}
-                              </p>
-                            )}
+                {line.vouchers.length > 0 && (
+                  <div style={{ marginTop: 12, display: 'grid', gap: 12 }}>
+                    {line.vouchers.map((voucher) => {
+                      // Through the shared presenter, so this chip cannot say
+                      // `פעיל` about a coupon the counter has already stopped
+                      // accepting: the expiry sweep is a cron, and a lapsed row
+                      // sits at `issued` until it runs. A missing deadline reads
+                      // as expired for the same reason.
+                      const status = couponStatusView({
+                        status: voucher.status,
+                        expires_at: voucher.expiresAt ?? '',
+                        redeemed_at: voucher.usedAt,
+                      })
+                      return (
+                        <div className="coupon-card" key={voucher.code}>
+                          {voucher.qrDataUrl && (
+                            <img
+                              src={voucher.qrDataUrl}
+                              alt={`קוד QR לקופון ${voucher.code}`}
+                              width={120}
+                              height={120}
+                            />
+                          )}
+                          <div>
+                            <p className="coupon-card__code">{voucher.code}</p>
+                            <p className="account-row__meta">
+                              <span
+                                className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}
+                              >
+                                {status.label}
+                              </span>
+                              {voucher.expiresAt
+                                ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}`
+                                : ''}
+                            </p>
+                            {voucher.collectAmountAgorot != null &&
+                              voucher.collectAmountAgorot > 0 && (
+                                <p className="account-row__meta">
+                                  לתשלום בבית העסק: {formatIls(voucher.collectAmountAgorot)}
+                                </p>
+                              )}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+              <div className="account-row__actions">{formatIls(line.totalAgorot)}</div>
             </div>
-            <div className="account-row__actions">{formatIls(line.totalAgorot)}</div>
+            {canReview &&
+            line.productId &&
+            !existing.some((row) => row.deletedAt == null && row.productId === line.productId) ? (
+              <ReviewForm
+                orderItemId={line.id}
+                productId={line.productId}
+                productName={line.productName}
+              />
+            ) : null}
           </div>
         ))}
       </section>

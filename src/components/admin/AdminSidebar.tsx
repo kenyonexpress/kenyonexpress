@@ -75,6 +75,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/coupons/expiry', label: 'תפוגת שוברים', icon: Hourglass, section: 'catalog' },
   { href: '/admin/coupons/impact', label: 'השפעת קופונים', icon: BarChart3, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
+  { href: '/admin/reviews', label: 'ביקורות', icon: MessageCircle, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   // `orders` and not `payments`: support has read on orders, and this console
   // is what that role exists for.

@@ -63,6 +63,7 @@
 | `supplier-doc-upload` | 30 | 1 h | presigned R2 PUT minting for onboarding documents, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest wishlist merge at login, per user |
+| `review-submit` | 10 | 1 h | post-purchase review submit, per user |
 | `account-export` | 3 | 1 h | full account data export, per user |
 | `account-delete` | 3 | 24 h | account erasure request opening a 30-day grace period, per user |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |

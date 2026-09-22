@@ -179,6 +179,11 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'guest wishlist merge at login, per user',
   },
+  'review-submit': {
+    limit: 10,
+    windowSeconds: 3600,
+    reason: 'post-purchase review submit, per user',
+  },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.

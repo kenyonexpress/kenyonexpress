@@ -176,6 +176,7 @@
       "/admin/queues",
       "/admin/referrals",
       "/admin/reports",
+      "/admin/reviews",
       "/admin/search",
       "/admin/settings",
       "/admin/status",
