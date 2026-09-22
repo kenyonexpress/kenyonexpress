@@ -140,17 +140,49 @@ deleting them stops mail delivery immediately.
 ## Verify, before telling anyone it is done
 
 ```bash
-dig +short A kenyonexpress.co.il @1.1.1.1        # expect 76.76.21.21
-dig +short CNAME www.kenyonexpress.co.il @1.1.1.1 # expect cname.vercel-dns.com
-dig +short MX kenyonexpress.co.il @1.1.1.1        # expect mailgw2.spd.co.il, UNCHANGED
-
-curl -sS -o /dev/null -w '%{http_code} %{ssl_verify_result}\n' https://kenyonexpress.co.il/
-curl -sS -o /dev/null -w '%{http_code}\n' https://www.kenyonexpress.co.il/
+node scripts/verify-cutover.mjs
 ```
 
-A certificate error in the first minutes is normal: Vercel issues the
-certificate after it sees the domain resolving to it. It is only a problem if it
-persists past about fifteen minutes.
+Behaviour-based (docs/INFRA-TASKS.md task 9), not a hardcoded IP: resolves
+apex and `www` against 1.1.1.1, confirms the nameservers actually name
+Vercel, checks the http->https redirect, fetches `/` and `/api/health`, and
+compares the health verdict against `kenyonexpress.vercel.app` as the
+known-good reference. Exit 0 means done; exit 1 means resolved but broken
+(the case worth investigating before telling anyone); exit 2 means not
+resolved yet, which is every run before this file is ever executed.
+
+The MX record is not part of what the script checks (it has no bearing on
+whether the site works) -- if mail matters on the day, confirm separately:
+
+```bash
+dig +short MX kenyonexpress.co.il @1.1.1.1        # expect mailgw2.spd.co.il, UNCHANGED
+```
+
+A certificate error in the script's output in the first minutes is normal:
+Vercel issues the certificate after it sees the domain resolving to it. It
+is only a problem if it persists past about fifteen minutes.
+
+## The day after: what still points at the old host
+
+Cutting DNS over does not update anything that has `kenyonexpress.vercel.app`
+or the staged Cloudflare zone written into it by hand. All of the following
+are manual, in other systems, and nothing in this repository can perform
+them:
+
+- `.github` repository **variables** `PRODUCTION_URL` and `CRON_BASE_URL` ->
+  `https://kenyonexpress.co.il` (Settings > Secrets and variables > Actions
+  > Variables). Until these move, `production-smoke.yml` and the cron probe
+  keep watching the Vercel host, and `verify-cutover.mjs`'s step in that
+  workflow keeps treating a broken apex as informational rather than a
+  failure -- see the comment on that step.
+- Vercel project env var `NEXT_PUBLIC_APP_URL` -> the apex, then redeploy
+  (env changes need a new deployment to take effect).
+- Supabase Auth redirect allowlist: add
+  `https://kenyonexpress.co.il/auth/callback` (checklist row DOM5).
+- Cardcom terminal Success/Fail/Webhook URLs -> the apex (checklist row
+  DOM8). The webhook URL is also what every future `IndicatorUrl` is built
+  from, so a Cardcom callback in flight at the moment of the switch is not
+  affected, but every new checkout after it is.
 
 ## Rollback
 

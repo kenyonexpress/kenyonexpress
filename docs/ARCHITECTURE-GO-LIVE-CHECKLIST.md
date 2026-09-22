@@ -73,8 +73,8 @@ https://kenyonexpress.co.il
 
 | # | רשומה | יעד | P | סטטוס | ראיה |
 |---|---|---|---|---|---|
-| DOM1 | `A` / `ALIAS` ל-apex `@` | כתובות Vercel (לפי UI Domains) | P0 | | `dig kenyonexpress.co.il A +short` |
-| DOM2 | `CNAME` ל-`www` | `cname.vercel-dns.com` (או הערך ש-Vercel מציג) | P0 | | `dig www.kenyonexpress.co.il CNAME +short` |
+| DOM1 | `A` / `ALIAS` ל-apex `@` | כתובות Vercel (לפי UI Domains) | P0 | | `node scripts/verify-cutover.mjs` (בודק resolve + נותן שם ל-nameservers, לא IP קשיח) |
+| DOM2 | `CNAME` ל-`www` | `cname.vercel-dns.com` (או הערך ש-Vercel מציג) | P0 | | `node scripts/verify-cutover.mjs` (אותה ריצה, בודקת גם `www`) |
 | DOM3 | אין רשומות ישנות ל-WP/שרת קודם על אותו host בלי 301 מתוכנן | P0 | | |
 | DOM4 | TTL סביר אחרי cutover (לא לשכוח להוריד לפני מעבר) | P1 | | |
 
@@ -82,9 +82,9 @@ https://kenyonexpress.co.il
 
 | # | בדיקה | P | סטטוס | ראיה |
 |---|---|---|---|---|
-| SSL1 | תעודת HTTPS תקפה ל-apex ו-www (Vercel auto / Let's Encrypt) | P0 | | דפדפן מנעול / `curl -vI https://…` |
+| SSL1 | תעודת HTTPS תקפה ל-apex ו-www (Vercel auto / Let's Encrypt) | P0 | | `node scripts/verify-cutover.mjs` (fetch ל-https נכשל על תעודה לא תקפה; לא בודק שרשרת/תפוגה, ראו SSL5/SSL8) |
 | SSL2 | אין mixed content בדפי מפתח (home, PDP, cart, checkout) | P0 | | DevTools |
-| SSL3 | HTTP → HTTPS redirect 301/308 | P0 | | `curl -I http://kenyonexpress.co.il` |
+| SSL3 | HTTP → HTTPS redirect 301/308 | P0 | | `node scripts/verify-cutover.mjs` (בודק במפורש, לא עוקב אחרי redirect) |
 | SSL4 | Host לא-קנוני מפנה לקנוני (www↔apex עקבי) | P0 | | `curl -I` |
 | SSL5 | שרשרת תעודה מלאה; לא self-signed / staging cert על הדומיין החי | P0 | | |
 | SSL6 | TLS 1.2+ בלבד (ברירת Vercel מקובלת) | P1 | | |

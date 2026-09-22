@@ -221,6 +221,39 @@ jobs:
             echo "::warning title=The canonical URL is not served directly::The address this site publishes to search engines does not answer 200. See the job summary. This is not an outage and does not open a production-down issue."
           fi
 
+      # docs/INFRA-TASKS.md task 9. THREE STATES, ONE OF THEM EXPECTED.
+      #
+      # Exit 2 (kenyonexpress.co.il not yet on Vercel) is the state this
+      # workflow has run in every day since 20.09, and is not a failure --
+      # continue-on-error covers exit 2 the same as exit 1. What DOES fail the
+      # job is exit 1 (resolves to Vercel but broken) and ONLY once
+      # vars.PRODUCTION_URL has actually been switched to the apex: while it
+      # still names kenyonexpress.vercel.app (today), this step is reporting
+      # on a domain the workflow is not yet supposed to depend on, and can only
+      # ever see state 2 regardless of anything scripts/dns-watch.sh is doing.
+      - name: Has kenyonexpress.co.il cut over, and is it healthy
+        id: cutover
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          OUT=$(node scripts/verify-cutover.mjs 2>&1)
+          CODE=$?
+          echo "$OUT"
+          {
+            echo '### Domain cutover (kenyonexpress.co.il)'
+            echo ''
+            echo '```'
+            echo "$OUT"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CODE" = '1' ] && [[ "${{ vars.PRODUCTION_URL }}" == *"kenyonexpress.co.il"* ]]; then
+            echo "::error title=kenyonexpress.co.il is cut over but unhealthy::See the job summary. PRODUCTION_URL is already the apex, so this is the real alert task 9 exists for, not the expected pre-cutover state."
+            exit 1
+          fi
+          if [ "$CODE" = '1' ]; then
+            echo "::warning title=kenyonexpress.co.il resolves to Vercel but failed a check::See the job summary. Not failing the run because PRODUCTION_URL has not been switched to the apex yet, so nothing here depends on this domain being correct today."
+          fi
+
       # ONE ISSUE PER OUTAGE, NOT ONE PER DAY. An outage lasting a week would
       # otherwise open seven issues, and seven issues about one thing is how a
       # real alert gets scrolled past. An existing open `production-down` issue
