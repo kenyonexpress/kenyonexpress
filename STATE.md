@@ -16,6 +16,12 @@ Updated: 2026-09-23 (סשן `work/goal-queue-0923`, אופיר אישר ישיר
 Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon exclusions, supplier sales by product/day, wishlist HMAC share, reviews (submit + admin queue + public ratings, no PDP hero stars), referral UTM, cart recovery metrics (no third mail), passkey fallback to magic link, audit_log Sentry, CDN edge cache.
 
 **המשך מ:** v3.0.0-advanced tagged. DNS cutover remains a manual step.
+**פריט 3, חסום על ה-reference, נמדד ולא הונח.**
+- ה-frozen `refs/ke_live_product.html` נשמר בלי stylesheets: הרינדור שלו offline הוא markup גולמי (רשימות, קישורים כחולים, בלי תמונות). `refs/ke_live_product_{380,768,1440}.png` שנוצרו ממנו אינם reference תקף. `scripts/capture-frozen-product.mjs` הוכנס עם כותרת אזהרה בלבד.
+- דמו Electro (`electro.madrasthemes.com`) עונה לדפדפן headless ב-"Just a moment..." של Cloudflare. לא נעקף.
+- הצילום התקין היחיד הוא `refs/live-product.png` (1440, מ-03.09, מוצר אחר מזה שאנחנו מרנדרים). ב-380 וב-768 אין reference תקף, ולכן אין שער ב-11% שאפשר למדוד. לא נכתבה שורה מומצאת ל-`UI-PARITY-REPORT.md`.
+- כדי לפתוח: לשמור את דף המוצר של Electro v7 בדפדפן אמיתי כ-single-file HTML (עם ה-CSS) ל-`refs/`, ואז להריץ `node scripts/compare.mjs --page=product --widths=380,768,1440 --live-png ...`.
+
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
 trigger, שבעים ואחת ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4
