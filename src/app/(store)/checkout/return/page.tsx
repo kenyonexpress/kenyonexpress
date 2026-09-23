@@ -1,3 +1,4 @@
+import InvoiceDownloadLink from '@/components/checkout/InvoiceDownloadLink'
 import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
@@ -217,6 +218,8 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           who has already answered, and it does not open the browser dialog
           itself -- it links to the page where a button does.
         */}
+        <InvoiceDownloadLink orderId={order.id} />
+
         <PostPurchasePushPrompt />
 
         {couponsWithQr.length > 0 && (

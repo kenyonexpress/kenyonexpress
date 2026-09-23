@@ -28,7 +28,15 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 
 **פריט 6, קיים, נוסף טסט.** `ProductShareRow` (וואטסאפ ראשון, `navigator.share`, ובגיבוי שולחני פייסבוק / טלגרם / מייל, ואז העתקת קישור עם toast "הקישור הועתק") כבר מחובר ב-`ProductInfo`. וואטסאפ תמיד ב-click של הלקוח בלבד. נוסף `product-share-row.test.tsx` (סדר, גיבוי מוסתר עד לחיצה, טקסט ה-toast).
 
-**המשך מ:** פריט 7 (חשבונית מס קבלה בעמודי תודה והזמנה).
+**פריט 7, נבנה.**
+- `src/lib/invoices/download-token.ts` (HMAC-SHA256 על `invoice-dl-v1.<orderId>.<exp>`, מפתח `VOUCHER_QR_SECRET`, תוקף 30 יום) + טסטים.
+- `GET /api/invoices/[orderId]/download?exp&sig`: מאמת חתימה ותוקף (404 / 410), ואז מזרים את המסמך כ-attachment דרך ה-origin שלנו, בלי לחשוף את כתובת הספק. עטוף ב-`withRequestLog`. + טסט route.
+- `InvoiceDownloadLink` בעמוד התודה (`/checkout/return`) עם "לחשבונית מס קבלה לחץ כאן להורדה", ובעמוד ההזמנה באזור האישי אותו טקסט. **שום דבר לא נשלח אוטומטית**; הטקסט ב-FAQ שהבטיח מייל תוקן.
+- סעיף "מסמכי מס דיגיטליים" בסוף `termsAndConditions` (הסכמה לקבלת מסמכי מס בקובץ דיגיטלי בלבד, בלי משלוח אוטומטי).
+- **לא נבדק בפרודקשן:** הורדה בפועל מול הספק (אין מסמך `issued` שאפשר לבדוק בלי הזמנה אמיתית). ה-ToS הוא טקסט שלא עבר עורך דין.
+- **שערים אדומים שהיו לפני העבודה הזו (נמדדו גם בצ'קאאוט הראשי, לא שלי):** `i18n` תקרה 642 מול 633, `discarded-read-inventory` (reviews, coupons/impact), `auth-coverage` ו-`log-coverage` על `wishlist-share.ts:mintMyWishlistShareLink`. אף אחד מהם לא נגע בו הפריט הזה.
+
+**המשך מ:** פריט 8 (מיילים ללקוח אם קיים `RESEND_API_KEY`).
 
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover

@@ -2,6 +2,7 @@ import OrderHelpForm from '@/components/account/OrderHelpForm'
 import RefundRequestForm from '@/components/account/RefundRequestForm'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { t } from '@/lib/i18n/messages'
 import { REVIEWABLE_ORDER_STATUSES } from '@/lib/reviews/eligibility'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { refundRequestStatus } from '@/server/actions/refund-requests'
@@ -74,7 +75,7 @@ export default async function OrderDetailPage({ params }: Props) {
               {/* The href is this route, never the provider's URL: the document
                   is served only after the session is re-checked. */}
               <Link className="account-btn" href={`/account/orders/${order.id}/invoice`}>
-                הורדת חשבונית
+                {t('invoice.downloadCta')}
               </Link>
             </div>
           </div>

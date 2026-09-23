@@ -102,6 +102,15 @@
     "twitter": "Twitter",
     "facebook": "Facebook"
   },
+  "invoice": {
+    "downloadCta": "Click here to download your tax invoice / receipt",
+    "pending": "Your tax invoice / receipt will be available to download here in a few minutes.",
+    "unavailable": "This service is unavailable right now",
+    "linkExpired": "This link has expired. You can download the invoice from your account",
+    "notFound": "Not found",
+    "notIssued": "The invoice has not been issued yet",
+    "tryAgain": "The invoice is not available right now, please try again in a moment"
+  },
   "share": {
     "telegramLabel": "Share on Telegram",
     "shareLabel": "Share",
