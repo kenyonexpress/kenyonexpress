@@ -68,7 +68,13 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 - **באנר אחרי רכישה ראשונה:** `FirstPurchaseBanner` בעמוד התודה, רק כשההזמנה היא ההזמנה ששולמה היחידה של חשבון (`isFirstPaidOrder`; אורח, שגיאת קריאה ולקוח חוזר = לא מוצג): שני קישורים, "הוספת מפתח גישה" ל-`/account/security` ו-"הכל באפליקציה" ל-`/account/notifications`. הוא לא פותח דיאלוג הרשאה ולא רושם הסכמה בעצם ההצגה. בהזמנה שאינה ראשונה נשאר `PostPurchasePushPrompt` הקודם.
 - **לא נבדק בדפדפן:** ההצגה של המתג והבאנר. אין שרת מקומי בנוי בסשן הזה (ראו פריט 17).
 
-**המשך מ:** פריט 15 (PWA ו-push).
+**פריט 15, קיים, והחסר היחיד היה מפתחות VAPID: נוצרו והוגדרו.**
+- **קיים ובדוק:** `app/manifest.ts` (standalone, אייקונים 192/512/maskable, קיצורי דרך), `public/sw.js` (מטמוני סטטי/דפים/תמונות, עמוד offline), `InstallPrompt`, `ServiceWorkerRegistrar`, `OfflineIndicator`, `PushOptIn`, ושכבת השליחה (`lib/push/web-push.ts`, `web-leg`, `dispatch`). 123 טסטים ירוקים.
+- **החסר:** ב-Vercel Production לא היה אף משתנה VAPID, ולכן `vapidPublicKey()` החזיר null וכל הזמנות ה-push הסתירו את עצמן. **נוצר זוג מפתחות P-256 חדש** והוגדרו `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (Config) ו-`VAPID_PRIVATE_KEY` (sensitive) ב-Production. הפרטי לא הודפס ולא נשמר בקובץ. `VAPID_SUBJECT` לא הוגדר בכוונה (ברירת המחדל בקוד היא כתובת האתר; לא שלחתי את המייל של אופיר לשירותי push חיצוניים).
+- **לא פעיל עד פריסה מחדש:** `NEXT_PUBLIC_*` נצרב בזמן build. **`push_subscriptions` בפרודקשן: 0 שורות**, כלומר אף מכשיר לא נרשם מעולם, ולכן אין מנויים שיישברו בהחלפת מפתח.
+- **לא נבדק:** קבלת push אמיתית במכשיר (דורש דפדפן עם הרשאה ומנוי).
+
+**המשך מ:** פריט 16 (WCAG 2.1 AA, SEO, schema.org, sitemap, robots).
 
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
