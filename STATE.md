@@ -10,6 +10,7 @@ Updated: 2026-09-23 (סשן `work/goal-queue-0923`, אופיר אישר ישיר
 - **סיבת הכשל של ה-build:** בפרויקט Vercel `kenyonexpress` המשתנה `NEXT_PUBLIC_SUPABASE_URL` מוגדר ל-Production בלבד, ולכן כל build של Preview נפל באיסוף הנתונים של `/coupons/[id]`. אחר כך, ב-Production, ה-instrumentation hook סירב לעלות בגלל `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` חסרים.
 - **מה נעשה:** `vercel deploy --prod --archive=tgz` (בלי `--archive` ההעלאה נחסמת ב-5000 קבצים), ואז `ALLOW_INCOMPLETE_ENV=true` ב-Production והפעלה מחדש. `https://kenyonexpress-6ny4ek717-kenyonexpress-projects.vercel.app` מחזיר 200 על `/`, `/page/how-it-works`, `/sitemap.xml`, `/api/health`.
 - **החלטה שהתקבלה לבד:** `CHECKOUT_ENABLED=false` ב-Production (היה `true`, ב-Preview+Production). הסיבה: התשלום הוא stub (`CARDCOM_USE_MOCK=true`) וסטאב שמסיים הזמנות בלי חיוב אמיתי הוא הפגם המתועד ב-`mock-payment-provider-served-production`. להחזרה: `vercel env rm CHECKOUT_ENABLED production` ואז `add` עם `true` ופריסה מחדש.
+- **היסטוריית פריסות Production (23.09), ולמה הראשונות אינן הקוד של הענף:** `vercel deploy` מתוך worktree עם `.vercel/repo.json` בשורש הראשי **מעלה את העץ של הצ'קאאוט הראשי**, לא את ה-worktree. `6ny4ek717` ו-`okbknncci` נבנו מהעץ הראשי (HEAD `9fe2ca441`, ואולי עם עריכות לא-committed של סשנים אחרים באותו רגע; לא נבדק). **`ibwnvxa7m` נבנה מה-worktree** (`work/goal-queue-0923`) אחרי שנוצר `.vercel/project.json` מקומי (gitignored), ואומת בסמנים ייחודיים (`/api/invoices/x/download` מחזיר "לא נמצא" 404, צ'יפים, כפתור "להצטרפות והסכם דיגיטלי"). זו הפריסה העדכנית והפעילה. לפריסה עתידית מ-worktree: `.vercel/project.json` עם `projectId=prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` ו-`orgId=team_TUMTPVDP8218QHwedSjmgJWl`, ואז `vercel deploy --prod --archive=tgz`, ולאמת בסימן ייחודי.
 - **חסימה שאינה בידי הסוכן:** ההאצלה ב-registry מצביעה על `ns1.vercel.com` / `ns2.vercel.com`, וה-nameservers שוורסל דורש הם **`ns1.vercel-dns.com` / `ns2.vercel-dns.com`** (או רשומת `A kenyonexpress.co.il 76.76.21.21`). עד שמתקנים אצל הרשם, `kenyonexpress.co.il` ו-`www` לא נפתרים (SERVFAIL). `vercel domains inspect kenyonexpress.co.il` מראה ✘ על שניהם.
 
 
@@ -74,7 +75,22 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 - **לא פעיל עד פריסה מחדש:** `NEXT_PUBLIC_*` נצרב בזמן build. **`push_subscriptions` בפרודקשן: 0 שורות**, כלומר אף מכשיר לא נרשם מעולם, ולכן אין מנויים שיישברו בהחלפת מפתח.
 - **לא נבדק:** קבלת push אמיתית במכשיר (דורש דפדפן עם הרשאה ומנוי).
 
-**המשך מ:** פריט 16 (WCAG 2.1 AA, SEO, schema.org, sitemap, robots).
+**פריט 16, קיים ונמדד על build חי.** JSON-LD (`lib/seo/json-ld.ts`: Product, Offer, BreadcrumbList, FAQPage, BlogPosting, WebSite+SearchAction), `robots.ts`, `sitemap`, canonical לכל עמוד, ושערי axe (`e2e/a11y.spec.ts`, תגי `wcag2a/aa` + `wcag21a/aa`). **נמדד ב-23.09 מול הפריסה `kenyonexpress-ibwnvxa7m`:** `e2e/a11y.spec.ts` 40 עברו, 1 דולג, 0 נכשלו; `e2e/seo-markup.spec.ts` ו-`e2e/pwa.spec.ts` עברו.
+
+**פריט 17, חלקי: ה-suite קיים ורץ, ההזמנה עצמה לא הורצה.**
+- הורצו מול build מקומי (`next start`, פורט 3411) ומול הפריסה: home, product, category, cart, checkout (אורח), seo-markup, pwa, search. **מקומי: 71 עברו, 3 נכשלו (timeout של 30 שניות), 1 דולג. מול הפריסה: 31 עברו, 3 נכשלו, 1 דולג.** קבוצת הנכשלים **מתחלפת בין הריצות**: `cart:77` ו-`product:97` נכשלו מקומית ועברו בפריסה, ו-`cart:38`, `cart:89`, `checkout:43` נכשלו בפריסה. כולן timeout בלולאת גילוי המוצר או ב-`page.goto` (קופסת 8GB, DB מרוחק): אותה חתימת עומס שמתועדת ב-`playwright.config.ts`, לא כשל פונקציונלי. **כל בדיקה עברה לפחות פעם אחת; לא נבדק שהן ירוקות ברצף אחד.**
+- **לא הורצו בכוונה:** `purchase-flow`, `physical-purchase`, `full-purchase-redeem`. הן מסיימות הזמנה ויוצרות שורות `orders`/`vouchers`/חשבוניות בפרודקשן (אין DB מקומי; Docker לא עולה כאן). "קופה כאורח עד ה-stub" נבדקת עד הטופס (`checkout.spec`: אורח עם עגלה מלאה מגיע לטופס); לחיצה על "שלם" דורשת כניסה ומייצרת הזמנה אמיתית.
+- **מלכודת שנמדדה:** ‏PID 30000 (שרת `next-server` של סשן אחר, מאז 23.09 02:50) מחזיק את פורט 3311; הריצה הראשונה שלי רצה מולו ולא מול ה-build שלי, ונפסלה. **לא נגעתי בתהליך.** הריצה התקפה היא על 3411. מפתחות "Hidden" ב-`vercel env pull` חוזרים כמחרוזת `[REDACTED]`-דמוית (11 תווים), ואם משאירים אותם ה-env נכשל בוולידציה.
+
+**פריט 18, לא הושג 90+ בעמוד הבית.** Lighthouse 12, מובייל (ברירת מחדל), מול `kenyonexpress-ibwnvxa7m` ב-Production:
+| עמוד | ביצועים | נגישות | Best Practices | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| בית | **68** | 100 | 100 | 69 | 3.7s | 880ms | 0 |
+| מוצר | **80** | 100 | 100 | 69 | 3.9s | 140ms | 0 |
+- **SEO 69 הוא ממצא אחד (`is-crawlable`) והוא כנראה ארטיפקט:** התגובה נושאת `x-robots-tag: noindex`, כותרת ש-Vercel מוסיפה על כתובות פריסה (`*.vercel.app`); הקוד לא מגדיר אותה (grep ב-`next.config.ts`, `proxy.ts`, `lib/security`). **לא הוכח על הדומיין האמיתי** (DNS עדיין לא נפתר).
+- **סיבות הביצועים בבית, נמדד:** ‏HTML של 640KB לא דחוס (60KB gz) שמכיל **~300K תווים של flight payload** להידרציה, ‏85 תגי `img`, ‏~1,985 צמתים; ‏Script Evaluation ‏1.4s, ‏Style & Layout ‏1.2s, ‏TBT ‏880ms; ‏JS ‏387KB gz ב-30 קבצים, מתוכם chunk ‏441KB שמכיל את Sentry+react-dom (ב-PDP אותו chunk עם TBT של 140ms בלבד, כלומר Sentry אינו הגורם ל-TBT של הבית). **הצעד הבא:** לצמצם את ה-props שעוברים ל-client components בבית (ה-payload), ולהפחית צמתים בגריד הדילים. עבודה מבנית, לא תיקון נקודתי.
+
+**המשך מ:** פריט 19 (BACKLOG). `docs/BACKLOG.md` לא קיים. ראו למטה מה נלקח מ-STATE.
 
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
