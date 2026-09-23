@@ -124,6 +124,25 @@
     "days": "days",
     "legacy": "days (existing value)"
   },
+  "appConsent": {
+    "title": "Everything in the app",
+    "body": "I agree to receive, in the app and as push notifications, every update that can be switched off: shipping updates, coupon expiry reminders, cashback and welcome messages. No email, SMS or WhatsApp is sent. The consent is recorded with the date and this wording, and you can withdraw it here at any time.",
+    "on": "On",
+    "off": "Off",
+    "unavailable": "This setting is not available yet.",
+    "failed": "Could not save.",
+    "needLogin": "Please sign in.",
+    "badRequest": "Invalid request.",
+    "rateLimited": "Too many attempts. Please try again later.",
+    "prefsFailed": "Your consent was saved but the settings did not update. Please try again."
+  },
+  "firstPurchase": {
+    "label": "Next steps after your purchase",
+    "title": "First purchase done, two small steps left",
+    "body": "A passkey lets you sign in with one touch, and \"everything in the app\" brings you coupon and order updates. Both are your choice.",
+    "passkeyCta": "Add a passkey",
+    "appCta": "Everything in the app"
+  },
   "share": {
     "telegramLabel": "Share on Telegram",
     "shareLabel": "Share",

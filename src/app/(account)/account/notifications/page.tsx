@@ -1,6 +1,8 @@
+import EverythingInAppToggle from '@/components/notifications/EverythingInAppToggle'
 import PreferenceSwitches from '@/components/notifications/PreferenceSwitches'
 import PushOptIn from '@/components/pwa/PushOptIn'
 import { markNotificationRead } from '@/server/actions/notifications'
+import { loadAppConsent } from '@/server/queries/app-consent'
 import { loadNotifications, loadPreferences } from '@/server/queries/notifications'
 import Link from 'next/link'
 
@@ -23,7 +25,11 @@ export const metadata = { title: 'התראות' }
  * state rather than a disguised error.
  */
 export default async function NotificationsPage() {
-  const [items, preferences] = await Promise.all([loadNotifications(), loadPreferences()])
+  const [items, preferences, appConsent] = await Promise.all([
+    loadNotifications(),
+    loadPreferences(),
+    loadAppConsent(),
+  ])
   const unread = items.filter((item) => item.readAt === null)
 
   return (
@@ -77,6 +83,8 @@ export default async function NotificationsPage() {
           </>
         )}
       </section>
+
+      <EverythingInAppToggle initialOn={appConsent.on} available={appConsent.available} />
 
       <section className="account-card">
         <h2 className="account-card__title">מה לשלוח לי</h2>

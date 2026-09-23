@@ -1,5 +1,13 @@
 # Apply order
 
+## 2026-09-23: 240, any order, one new table + one function, no dependencies
+
+`240_app_consent_events.sql` creates `app_consent_events` and
+`record_app_consent(text,text,text,inet,text)`. No dependency on any other
+pending file. **Reversal:** `DROP FUNCTION public.record_app_consent(text, text, text, inet, text); DROP TABLE public.app_consent_events;`
+Until it is applied the "everything in the app" switch on `/account/notifications`
+is disabled and says so; nothing else changes.
+
 ## 2026-09-23: 239, any order, one new table with owner-only RLS
 
 `239_customer_invoice_settings.sql` creates `customer_invoice_settings`, one

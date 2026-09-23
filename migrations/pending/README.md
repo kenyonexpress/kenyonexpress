@@ -1,5 +1,17 @@
 # `migrations/pending/`
 
+## 2026-09-23: 240 WRITTEN, not applied - הסכמת "הכל באפליקציה", טבלה חדשה בלבד
+
+‏`240_app_consent_events.sql`. הבעלים ביקש מתג "הכל באפליקציה" עם הסכמה
+מתועדת. נוצרת `app_consent_events` (append-only, ‏RLS בעלים-בלבד לקריאה, בלי
+הרשאת כתיבה לאיש) ופונקציית ‏`record_app_consent()` ב-`SECURITY DEFINER` שלא
+מקבלת מזהה משתמש אלא קוראת ‏`auth.uid()`. **לא נעשה שימוש ב-`consent_events`
+(031):** נמדד מול פרודקשן ב-23.09 שהיא אינה קיימת שם. נבדקה ב-`BEGIN/ROLLBACK`
+מול פרודקשן: הטבלה והפונקציה נוצרות, ‏`anon` ללא EXECUTE ולא SELECT,
+‏`authenticated` עם SELECT בלבד, ואחרי ה-ROLLBACK אין זכר לשתיהן. הקוד
+(`src/server/actions/app-consent.ts`) מתדרדר בבטחה בלעדיה: התצוגה אומרת
+"ההגדרה עדיין לא זמינה" והמתג נעול.
+
 ## 2026-09-23: 239 WRITTEN, not applied - טבלה חדשה כדי לעקוף trigger שבור
 
 ‏`239_customer_invoice_settings.sql`. הבעלים ביקש טוגל "חשבונית לעסק" עם שם

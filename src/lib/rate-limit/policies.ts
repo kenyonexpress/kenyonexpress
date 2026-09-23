@@ -161,6 +161,9 @@ export const RATE_LIMIT_POLICIES = {
   // actually stops duplicates - this bounds somebody hammering the form with
   // different numbers, which the index cannot see.
   'supplier-apply': { limit: 5, windowSeconds: 3600, reason: 'supplier applications, per user' },
+  // Each press appends an evidence row and rewrites ten preference rows; a person
+  // flipping one switch does not need more than a few a minute.
+  'app-consent': { limit: 20, windowSeconds: 3600, reason: 'in-app consent changes, per user' },
   // Higher, because an application legitimately carries several documents and a
   // failed upload is retried. Each call MINTS A PRESIGNED PUT URL, a credential
   // that keeps working after the session is gone - the same reason
