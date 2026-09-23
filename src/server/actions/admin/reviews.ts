@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { t } from '@/lib/i18n/messages'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, updateTag } from 'next/cache'
@@ -33,12 +34,14 @@ async function setStatus(
   if (!idSchema.safeParse(id).success) return { error: 'מזהה לא תקין' }
 
   const admin = createAdminClient()
-  const { data: row } = await admin
+  const { data: row, error: rowError } = await admin
     .from('reviews')
     .select('id, status, product_id')
     .eq('id', id)
     .is('deleted_at', null)
     .maybeSingle()
+  // A failed read is not "review not found": say which it was.
+  if (rowError) return { error: t('readFailed.retry') }
   if (!row) return { error: 'ביקורת לא נמצאה' }
   if (row.status !== 'pending') return { error: 'אפשר להחליט רק על ביקורת ממתינה' }
 

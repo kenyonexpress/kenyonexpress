@@ -1,5 +1,6 @@
 'use client'
 
+import { t } from '@/lib/i18n/messages'
 import { REVIEW_BODY_MAX } from '@/lib/reviews/eligibility'
 import { submitReview } from '@/server/actions/reviews'
 import { useState, useTransition } from 'react'
@@ -33,7 +34,7 @@ export default function ReviewForm({
         return
       }
       setDone(true)
-      setMessage('הביקורת נשלחה וממתינה לאישור.')
+      setMessage(t('reviewForm.sent'))
     })
   }
 
@@ -47,16 +48,18 @@ export default function ReviewForm({
 
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-sm font-semibold text-heading">ביקורת על {productName}</p>
+      <p className="text-sm font-semibold text-heading">
+        {t('reviewForm.about').replace('{name}', productName)}
+      </p>
       <fieldset className="m-0 flex min-w-0 flex-wrap gap-1 border-0 p-0">
-        <legend className="sr-only">דירוג</legend>
+        <legend className="sr-only">{t('reviewForm.rating')}</legend>
         {[1, 2, 3, 4, 5].map((value) => (
           <button
             key={value}
             type="button"
             onClick={() => setRating(value)}
             aria-pressed={rating === value}
-            aria-label={`${value} מתוך 5`}
+            aria-label={t('reviewsPage.outOf').replace('{value}', String(value))}
             className="min-h-11 min-w-11 rounded-lg border border-border px-2 text-sm font-semibold text-heading hover:bg-surface-2"
           >
             {value}
@@ -70,7 +73,7 @@ export default function ReviewForm({
         rows={3}
         dir="rtl"
         className="w-full rounded-lg border border-border px-3 py-2 text-start text-sm"
-        placeholder="מה היה טוב, ומה פחות (לא חובה)"
+        placeholder={t('reviewForm.placeholder')}
       />
       <button
         type="button"
@@ -78,7 +81,7 @@ export default function ReviewForm({
         disabled={pending}
         className="min-h-11 rounded-xl bg-brand-primary px-4 text-sm font-semibold text-brand-dark disabled:opacity-60"
       >
-        {pending ? 'שולחים…' : 'שליחת ביקורת'}
+        {pending ? t('reviewForm.sending') : t('reviewForm.submit')}
       </button>
       {message ? (
         <output className="block text-sm text-muted" aria-live="polite">

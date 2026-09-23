@@ -16,13 +16,15 @@ type PendingReview = {
 export default async function AdminReviewsPage() {
   await requireStaffSession()
   const admin = createAdminClient()
-  const { data } = await admin
+  const { data, error } = await admin
     .from('reviews')
     .select('id, rating, body, created_at, product_id, products(name_he, slug)')
     .eq('status', 'pending')
     .is('deleted_at', null)
     .order('created_at', { ascending: true })
     .limit(100)
+  // An empty moderation queue and a failed read look identical without this.
+  if (error) throw new Error(`pending reviews read failed: ${error.message}`)
 
   const rows = (data ?? []) as unknown as PendingReview[]
 

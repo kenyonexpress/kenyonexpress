@@ -143,6 +143,60 @@
     "passkeyCta": "Add a passkey",
     "appCta": "Everything in the app"
   },
+  "wishlistShare": {
+    "signIn": "Sign in to share.",
+    "empty": "There are no products to share.",
+    "failed": "Could not create the link right now."
+  },
+  "readFailed": {
+    "retry": "Could not read the data. Please try again."
+  },
+  "wishlistPublic": {
+    "title": "Shared wishlist",
+    "loading": "Loading the list…",
+    "invalidTitle": "This link is not valid",
+    "expired": "This link has expired. Whoever shared it can create a new one from their wishlist.",
+    "broken": "This link is broken or not recognised.",
+    "continueShopping": "Continue shopping",
+    "snapshotNote": "A snapshot of the list on the day it was shared. Products removed from the store no longer appear.",
+    "empty": "There are no available products on this list right now.",
+    "fallbackName": "Product"
+  },
+  "reviewsPage": {
+    "title": "Reviews",
+    "loading": "Loading reviews…",
+    "backToProduct": "Back to the product",
+    "titleFor": "Reviews: {name}",
+    "average": "Average {avg} out of 5, from {count} reviews.",
+    "none": "There are no approved reviews for this product yet.",
+    "outOf": "{value} out of 5"
+  },
+  "reviewForm": {
+    "sent": "Your review was sent and is waiting for approval.",
+    "about": "Review of {name}",
+    "rating": "Rating",
+    "placeholder": "What was good, and what was not (optional)",
+    "sending": "Sending…",
+    "submit": "Send review"
+  },
+  "supplierDashboard": {
+    "denied": "You do not have permission for that screen. Ask the business owner to widen your permissions.",
+    "title": "Dashboard",
+    "summary": "Sales and redemptions by the platform fee percentage set on each product.",
+    "redemptionsToday": "Redemptions today",
+    "redemptionsTodayHint": "Successful scans",
+    "tillToday": "To collect at the till today",
+    "tillTodayHint": "Customer balance at the business",
+    "platformFee": "Platform fee",
+    "platformFeeHint": "From paid orders",
+    "supplierDue": "Due to the supplier (physical)",
+    "supplierDueHint": "Immediate settlement after payment on the site",
+    "couponRedemptions": "Coupon redemptions",
+    "couponRedemptionsHint": "Successful scans (balance collected at the till)",
+    "expired": "Expired vouchers",
+    "expiredHint": "{expired} of {settled} settled",
+    "byProduct": "Sales by product"
+  },
   "share": {
     "telegramLabel": "Share on Telegram",
     "shareLabel": "Share",

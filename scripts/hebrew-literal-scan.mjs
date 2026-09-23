@@ -161,5 +161,11 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * confirmed unused by every live import, and it carried a `tel:` "call us"
  * link contradicting the owner's "no phone anywhere" customer-service policy.
  * Its Hebrew literals left with it. 650 -> 633.
+ *
+ * 2026-09-24: the count had drifted to 641 (the wishlist share page, the
+ * product reviews page, `ReviewForm` and the supplier dashboard cards landed as
+ * literals). Those four moved to `messages/*.json`; the shared-wishlist page,
+ * the reviews page and the invoice, consent and first-purchase copy all read
+ * through `t()`. 641 -> 632.
  */
-export const HEBREW_LITERAL_CEILING = 633
+export const HEBREW_LITERAL_CEILING = 632

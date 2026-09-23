@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n/messages'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { verifyWishlistShareToken } from '@/lib/wishlist/share'
 import { loadSharedWishlistProducts } from '@/lib/wishlist/shared-products'
@@ -6,7 +7,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 
 export const metadata: Metadata = {
-  title: 'רשימת מועדפים משותפת',
+  title: t('wishlistPublic.title'),
   robots: { index: false, follow: false },
   // Self-canonical of the prefix, not the token. The URL is a credential: a
   // crawler that indexed one of these would publish somebody's saved products.
@@ -26,7 +27,7 @@ function firstImage(images: unknown): string | null {
 export default function SharedWishlistPage(props: Props) {
   return (
     <main className="mx-auto w-full max-w-page px-4 py-12">
-      <Suspense fallback={<p className="text-sm text-muted">טוענים את הרשימה…</p>}>
+      <Suspense fallback={<p className="text-sm text-muted">{t('wishlistPublic.loading')}</p>}>
         <SharedWishlistBody {...props} />
       </Suspense>
     </main>
@@ -39,15 +40,13 @@ async function SharedWishlistBody({ params }: Props) {
   if (!verdict.ok) {
     return (
       <div className="mx-auto max-w-xl text-center">
-        <h1 className="text-2xl font-bold text-heading">הקישור אינו תקף</h1>
+        <h1 className="text-2xl font-bold text-heading">{t('wishlistPublic.invalidTitle')}</h1>
         <p className="mt-3 text-muted">
-          {verdict.reason === 'expired'
-            ? 'פג תוקף הקישור. מי ששיתף יכול ליצור קישור חדש מהמועדפים שלו.'
-            : 'הקישור פגום או לא מוכר.'}
+          {verdict.reason === 'expired' ? t('wishlistPublic.expired') : t('wishlistPublic.broken')}
         </p>
         <p className="mt-6">
           <Link href="/products" className="font-semibold text-price underline">
-            להמשך קניות
+            {t('wishlistPublic.continueShopping')}
           </Link>
         </p>
       </div>
@@ -58,17 +57,15 @@ async function SharedWishlistBody({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold text-heading">רשימת מועדפים משותפת</h1>
-      <p className="mt-2 text-sm text-muted">
-        צילום של הרשימה ביום השיתוף. מוצרים שהוסרו מהחנות כבר לא מופיעים.
-      </p>
+      <h1 className="text-2xl font-bold text-heading">{t('wishlistPublic.title')}</h1>
+      <p className="mt-2 text-sm text-muted">{t('wishlistPublic.snapshotNote')}</p>
       {products.length === 0 ? (
-        <p className="mt-6 text-muted">אין מוצרים זמינים ברשימה הזו כרגע.</p>
+        <p className="mt-6 text-muted">{t('wishlistPublic.empty')}</p>
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
           {products.map((product) => {
             const image = firstImage(product.images)
-            const name = product.name_he ?? 'מוצר'
+            const name = product.name_he ?? t('wishlistPublic.fallbackName')
             const href = product.slug ? `/product/${product.slug}` : null
             const price = product.price_ils
             const body = (

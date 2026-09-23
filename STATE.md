@@ -90,7 +90,14 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 - **SEO 69 הוא ממצא אחד (`is-crawlable`) והוא כנראה ארטיפקט:** התגובה נושאת `x-robots-tag: noindex`, כותרת ש-Vercel מוסיפה על כתובות פריסה (`*.vercel.app`); הקוד לא מגדיר אותה (grep ב-`next.config.ts`, `proxy.ts`, `lib/security`). **לא הוכח על הדומיין האמיתי** (DNS עדיין לא נפתר).
 - **סיבות הביצועים בבית, נמדד:** ‏HTML של 640KB לא דחוס (60KB gz) שמכיל **~300K תווים של flight payload** להידרציה, ‏85 תגי `img`, ‏~1,985 צמתים; ‏Script Evaluation ‏1.4s, ‏Style & Layout ‏1.2s, ‏TBT ‏880ms; ‏JS ‏387KB gz ב-30 קבצים, מתוכם chunk ‏441KB שמכיל את Sentry+react-dom (ב-PDP אותו chunk עם TBT של 140ms בלבד, כלומר Sentry אינו הגורם ל-TBT של הבית). **הצעד הבא:** לצמצם את ה-props שעוברים ל-client components בבית (ה-payload), ולהפחית צמתים בגריד הדילים. עבודה מבנית, לא תיקון נקודתי.
 
-**המשך מ:** פריט 19 (BACKLOG). `docs/BACKLOG.md` לא קיים. ראו למטה מה נלקח מ-STATE.
+**פריט 19, `docs/BACKLOG.md` לא קיים. נלקחו מה-STATE הפריטים הבטוחים והברי-ביצוע: שערים אדומים שהיו על הענף לפני העבודה הזו.** `pnpm test` ירוק עכשיו: **568 קבצים, 6,885 טסטים, 0 נכשלו** (היה 4 שערים אדומים).
+- **`wishlist-share.ts`:** ה-action בדק את המשתמש רק בעקיפין (ה-query מחזיר רשימה ריקה לאורח, כלומר "אין מוצרים לשתף" למי שפשוט לא מחובר) ולא היה עטוף ב-`withActionContext`. נוסף `auth.getUser()` מפורש ו-wrapper. שער `auth-coverage` ו-`log-coverage` ירוקים.
+- **שש קריאות שהשליכו את `error` (`discarded-read-inventory`):** `admin/coupons/impact`, `admin/reviews` (זורקות במקום להציג אפס שקרי), `actions/admin/reviews.ts`, ו-`actions/reviews.ts` (3). **התיקון של `reviews.ts` הוא באג ממשי, לא סגנון:** כשל בקריאת "הביקורות הקיימות של הלקוח" נהפך ל"אין ביקורות" והתיר ביקורת כפולה על אותו פריט. עכשיו הבקשה נדחית.
+- **תקרת i18n:** 641 -> 632. הועברו ל-`messages/*.json`: עמוד הרשימה המשותפת, עמוד הביקורות, `ReviewForm`, כרטיסי לוח הבקרה של ספק. `locale-format`: תאריך בעמוד הביקורות עבר ל-`formatDate` (יוצג חודש מילולי כמו `/about`, לא מספרי).
+- **`pnpm lint`:** כל השערים ירוקים חוץ מ-`docs-path-audit`, שמדווח 37 "נתיבים תלויים" שכולם `refs/*` ו-`supabase/.temp` (קבצים ב-gitignore שקיימים רק בצ'קאאוט הראשי). **ארטיפקט של worktree, לא רקב אמיתי; לא נכתב ל-ledger.** נמחקה שורה אחת אמיתית מה-ledger (`docs/REVIEWS.md :: src/server/queries/reviews.ts`, הקובץ קיים עכשיו). אזהרת biome אחת קיימת מלפני (`SecurityClient.tsx`, תלות ב-`useEffect`).
+- **נשאר פתוח מה-STATE, ואינו בידי סוכן:** הכרעות מוצר (מועדון, העברת קופון, מחיר מקורי+מקור, אחוז עמלת שותפים, חמשת המיילים מול מדיניות 22.09); אישור החלה של מיגרציות pending (162, 169, 170, 171, 204, 226, 227, 236, 240 ועוד); רוטציית `SUPABASE_SECRET_KEY`; תיקון NS אצל הרשם; ניקוי 25 ממצאי הקטלוג החי (החלטות מפעיל). ביצועי עמוד הבית (68, ראו פריט 18) הוא פתוח ובר-ביצוע אבל מבני.
+
+**המשך מ:** ביצועי עמוד הבית (הקטנת ה-flight payload ומספר הצמתים), אחרי שאופיר מכריע בפריטים החסומים.
 
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover

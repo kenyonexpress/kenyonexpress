@@ -143,6 +143,60 @@
     "passkeyCta": "הוספת מפתח גישה",
     "appCta": "הכל באפליקציה"
   },
+  "wishlistShare": {
+    "signIn": "יש להתחבר כדי לשתף.",
+    "empty": "אין מוצרים לשתף.",
+    "failed": "לא ניתן ליצור קישור כרגע."
+  },
+  "readFailed": {
+    "retry": "קריאת הנתונים נכשלה. נסו שוב."
+  },
+  "wishlistPublic": {
+    "title": "רשימת מועדפים משותפת",
+    "loading": "טוענים את הרשימה…",
+    "invalidTitle": "הקישור אינו תקף",
+    "expired": "פג תוקף הקישור. מי ששיתף יכול ליצור קישור חדש מהמועדפים שלו.",
+    "broken": "הקישור פגום או לא מוכר.",
+    "continueShopping": "להמשך קניות",
+    "snapshotNote": "צילום של הרשימה ביום השיתוף. מוצרים שהוסרו מהחנות כבר לא מופיעים.",
+    "empty": "אין מוצרים זמינים ברשימה הזו כרגע.",
+    "fallbackName": "מוצר"
+  },
+  "reviewsPage": {
+    "title": "ביקורות",
+    "loading": "טוענים ביקורות…",
+    "backToProduct": "חזרה למוצר",
+    "titleFor": "ביקורות: {name}",
+    "average": "ממוצע {avg} מתוך 5, מתוך {count} ביקורות.",
+    "none": "עדיין אין ביקורות מאושרות למוצר הזה.",
+    "outOf": "{value} מתוך 5"
+  },
+  "reviewForm": {
+    "sent": "הביקורת נשלחה וממתינה לאישור.",
+    "about": "ביקורת על {name}",
+    "rating": "דירוג",
+    "placeholder": "מה היה טוב, ומה פחות (לא חובה)",
+    "sending": "שולחים…",
+    "submit": "שליחת ביקורת"
+  },
+  "supplierDashboard": {
+    "denied": "אין לכם הרשאה למסך המבוקש. פנו לבעל העסק להרחבת הרשאות.",
+    "title": "לוח בקרה",
+    "summary": "סיכום מכירות ומימושים לפי אחוז עמלת הפלטפורמה שהוגדר בכל מוצר.",
+    "redemptionsToday": "מימושים היום",
+    "redemptionsTodayHint": "סריקות שהצליחו",
+    "tillToday": "לגבייה בקופה היום",
+    "tillTodayHint": "יתרת לקוח בעסק",
+    "platformFee": "עמלת פלטפורמה",
+    "platformFeeHint": "מתוך הזמנות ששולמו",
+    "supplierDue": "מגיע לספק (פיזי)",
+    "supplierDueHint": "סליקה מיידית אחרי תשלום באתר",
+    "couponRedemptions": "מימושי קופון",
+    "couponRedemptionsHint": "סריקות מוצלחות (יתרה נגבית בקופה)",
+    "expired": "שוברים שפגו",
+    "expiredHint": "{expired} מתוך {settled} שהוכרעו",
+    "byProduct": "מכירות לפי מוצר"
+  },
   "share": {
     "telegramLabel": "שיתוף בטלגרם",
     "shareLabel": "שיתוף",
