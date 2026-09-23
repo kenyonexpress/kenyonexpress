@@ -36,11 +36,12 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 - **לא נבדק בפרודקשן:** הורדה בפועל מול הספק (אין מסמך `issued` שאפשר לבדוק בלי הזמנה אמיתית). ה-ToS הוא טקסט שלא עבר עורך דין.
 - **שערים אדומים שהיו לפני העבודה הזו (נמדדו גם בצ'קאאוט הראשי, לא שלי):** `i18n` תקרה 642 מול 633, `discarded-read-inventory` (reviews, coupons/impact), `auth-coverage` ו-`log-coverage` על `wishlist-share.ts:mintMyWishlistShareLink`. אף אחד מהם לא נגע בו הפריט הזה.
 
-**פריט 8, `RESEND_API_KEY` קיים ב-Production (Secret, נוצר לפני 7 ימים), והמיילים כבר מחוברים ולא נבנה כלום חדש.**
-- `STATE.md` לא מונה "חמישה מיילים" בשום מקום שנמצא בחיפוש. במקום לנחש חמישה, נבדק מה חי: `docs/EMAILS.md` מפרט 13 בוני outbox (`order_paid`, `voucher_issued`+מייל השובר, `voucher_expiring` 7 ו-1 ימים, `voucher_redeemed`, `refund_completed`, `cashback_credited`, `order_shipped`, `welcome`, `magic_link`), מנוקזים ב-`/api/cron/notifications` כל 5 דקות, עם suppression ו-idempotency.
-- **לא הוכח:** שהדומיין `kenyonexpress.co.il` מאומת ב-Resend (השולח ברירת המחדל `noreply@kenyonexpress.co.il`, או `EMAIL_FROM`), ושמייל אמיתי הגיע לתיבה. אין לסוכן גישה ל-Resend. עד שהדומיין מאומת, Resend מסרב לשליחה והסוכן לא יכול לדעת. **הצעד הבא:** לוודא ב-Resend את אימות הדומיין, ואז `EMAIL_FROM` ב-Vercel אם צריך כתובת אחרת.
-- מיילי ההזמנה מקשרים ל-`/account/orders/<id>/invoice` (מאחורי התחברות) ואינם מצרפים את המסמך: זה מתיישב עם "לא לשלוח אוטומטית". תוקן ב-FAQ שיאמר שהקובץ עצמו לא נשלח.
-- ההזמנות עצמן חסומות כרגע: `CHECKOUT_ENABLED=false` ב-Production (ראו פריט 2), כך שאף מייל הזמנה לא ישלח עד שיוחלט אחרת.
+**פריט 8, חסום על הכרעה של אופיר, לא חובר כלום.** `RESEND_API_KEY` קיים ב-Production, אבל:
+- **מדיניות בעלים מ-22.09 (commit `eae464b1a`, `src/lib/notifications/preferences.ts`): אין מייל ללקוח חוץ מאיפוס סיסמה ומתנת שובר** (`EMAIL_POLICY_EXEMPT_KINDS = ['voucher_gifted']`). `mayNotify` מחזיר false לכל מייל לקוח אחר, ללא תנאי, ולכן `order_paid`, `voucher_expiring`, `refund_completed` ושאר בוני ה-outbox לא יישלחו ללקוח גם עם מפתח תקין. המדיניות הזו סותרת את "חמשת מיילי הלקוח" של 23.09.
+- `STATE.md` לא מכיל רשימה של חמישה מיילים (נחפש בכל הקובץ). ניחוש של חמישה והפיכת המדיניות ללא ההוראה המפורשת היה הפרה של אחת משתי ההוראות בלי לדעת איזו.
+- **להמשך:** אופיר מציין את חמשת המיילים; כל אחד מתווסף ל-`EMAIL_POLICY_EXEMPT_KINDS` (שינוי בשורה אחת + טסט ב-`preferences.test.ts` שמגדיר את המדיניות כרגע). הבונים והתור כבר קיימים.
+- **לא הוכח בכלל:** שהדומיין מאומת ב-Resend (אין גישה).
+- ההזמנות חסומות ממילא: `CHECKOUT_ENABLED=false` ב-Production (פריט 2).
 
 **פריט 9, קיים, לא שונה, לא נמדד מחדש.** עגלה וקופה עברו את השער ב-06.09 מול ה-reference החי הישן (עגלה 10.07 / 10.57 / 8.16, קופה 10.59 / 10.10 / 10.71 ב-380/768/1440). ה-reference כבר לא קיים ולכן אי אפשר למדוד שוב, ולעמוד התודה מעולם לא היה reference. הזרימה: מגלשים כאורח, ממלאים כתובת, הכניסה (Google/סיסמה/קישור קסם) נדרשת רק בכפתור התשלום והעגלה ממוזגת ב-`/auth/callback`. **"קופה בלי חשבון בכלל" לא קיימת ולא נבדקה מולה האפשרות:** התשלום דורש חשבון (Google/סיסמה/קישור קסם). לא נבדק אם `orders.user_id` מקבל null, וייתכן ששינוי כזה דורש מיגרציה. נשאר: התשלום stub (`CARDCOM_USE_MOCK`), ראו פריט 2.
 
