@@ -59,6 +59,11 @@ const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   { label: t('footer.terms'), href: '/terms-and-conditions' },
   { label: t('footer.privacy'), href: '/privacy-policy' },
   { label: t('footer.refunds'), href: '/refund_returns' },
+  // Consumer Protection Law s.14C: the way to cancel must be findable from every page.
+  // Lands on the returns document's own how-to-cancel section, not its top.
+  { label: t('footer.cancelTransaction'), href: '/refund_returns#how-to-cancel' },
+  // The cookies section of the privacy document; one text, not a second copy of it.
+  { label: t('footer.cookies'), href: '/privacy-policy#cookies' },
   { label: t('footer.accessibility'), href: '/accessibility' },
 ]
 
