@@ -33,7 +33,7 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 - `src/lib/invoices/download-token.ts` (HMAC-SHA256 על `invoice-dl-v1.<orderId>.<exp>`, מפתח `VOUCHER_QR_SECRET`, תוקף 30 יום) + טסטים.
 - `GET /api/invoices/[orderId]/download?exp&sig`: מאמת חתימה ותוקף (404 / 410), ואז מזרים את המסמך כ-attachment דרך ה-origin שלנו, בלי לחשוף את כתובת הספק. עטוף ב-`withRequestLog`. + טסט route.
 - `InvoiceDownloadLink` בעמוד התודה (`/checkout/return`) עם "לחשבונית מס קבלה לחץ כאן להורדה", ובעמוד ההזמנה באזור האישי אותו טקסט. **שום דבר לא נשלח אוטומטית**; הטקסט ב-FAQ שהבטיח מייל תוקן.
-- סעיף "מסמכי מס דיגיטליים" בסוף `termsAndConditions` (הסכמה לקבלת מסמכי מס בקובץ דיגיטלי בלבד, בלי משלוח אוטומטי).
+- **סעיף "מסמכי מס דיגיטליים" (`id: digital-tax-documents`) ב-`src/app/(legal)/_content/terms.ts`, הטקסט שעמוד `/terms-and-conditions` באמת מגיש** (הסכמה לקבלת מסמכי מס בקובץ דיגיטלי בלבד, בלי משלוח אוטומטי), ותוקן סעיף התשלום שאמר שהחשבונית "תישלח ללקוח בדואר אלקטרוני". `updatedAt` עודכן ל-2026-09-24. **טעות שלי שתוקנה:** בהתחלה הוספתי את הסעיף ל-`src/content/legal/wp-migrated.ts`, הטקסט הישן והכפול שאיש לא מגיש, ולא ראיתי את זה עד שבדקתי את העמוד החי. הסעיף נשאר גם שם, כי הוא לא מזיק.
 - **לא נבדק בפרודקשן:** הורדה בפועל מול הספק (אין מסמך `issued` שאפשר לבדוק בלי הזמנה אמיתית). ה-ToS הוא טקסט שלא עבר עורך דין.
 - **שערים אדומים שהיו לפני העבודה הזו (נמדדו גם בצ'קאאוט הראשי, לא שלי):** `i18n` תקרה 642 מול 633, `discarded-read-inventory` (reviews, coupons/impact), `auth-coverage` ו-`log-coverage` על `wishlist-share.ts:mintMyWishlistShareLink`. אף אחד מהם לא נגע בו הפריט הזה.
 
