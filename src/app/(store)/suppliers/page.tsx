@@ -2,6 +2,7 @@ import RichText from '@/components/content/RichText'
 import SupplierLeadForm from '@/components/storefront/SupplierLeadForm'
 import { excerpt } from '@/lib/content/markup'
 import { getBoundContentPage } from '@/lib/content/read'
+import { t } from '@/lib/i18n/messages'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -84,7 +85,7 @@ export default async function SuppliersPage() {
         <span aria-hidden="true" className="mx-2">
           /
         </span>
-        <span className="text-heading">הצטרפו כספקים</span>
+        <span className="text-heading">{t('footer.suppliers')}</span>
       </nav>
 
       <header className="mb-10 max-w-3xl">
@@ -119,6 +120,18 @@ export default async function SuppliersPage() {
             <p className="mt-2 text-sm leading-relaxed text-heading/75">{fact.body}</p>
           </div>
         ))}
+      </section>
+
+      <section className="mb-12 max-w-3xl rounded-xl border border-heading/10 p-6">
+        <p className="mb-4 text-base leading-relaxed text-heading/80">
+          {t('footer.suppliersApplyHint')}
+        </p>
+        <Link
+          href="/suppliers/apply"
+          className="inline-flex items-center rounded-full bg-brand px-6 py-3 text-base font-bold text-heading"
+        >
+          {t('footer.suppliersApplyCta')}
+        </Link>
       </section>
 
       <section className="max-w-3xl">
