@@ -36,7 +36,13 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 - **לא נבדק בפרודקשן:** הורדה בפועל מול הספק (אין מסמך `issued` שאפשר לבדוק בלי הזמנה אמיתית). ה-ToS הוא טקסט שלא עבר עורך דין.
 - **שערים אדומים שהיו לפני העבודה הזו (נמדדו גם בצ'קאאוט הראשי, לא שלי):** `i18n` תקרה 642 מול 633, `discarded-read-inventory` (reviews, coupons/impact), `auth-coverage` ו-`log-coverage` על `wishlist-share.ts:mintMyWishlistShareLink`. אף אחד מהם לא נגע בו הפריט הזה.
 
-**המשך מ:** פריט 8 (מיילים ללקוח אם קיים `RESEND_API_KEY`).
+**פריט 8, `RESEND_API_KEY` קיים ב-Production (Secret, נוצר לפני 7 ימים), והמיילים כבר מחוברים ולא נבנה כלום חדש.**
+- `STATE.md` לא מונה "חמישה מיילים" בשום מקום שנמצא בחיפוש. במקום לנחש חמישה, נבדק מה חי: `docs/EMAILS.md` מפרט 13 בוני outbox (`order_paid`, `voucher_issued`+מייל השובר, `voucher_expiring` 7 ו-1 ימים, `voucher_redeemed`, `refund_completed`, `cashback_credited`, `order_shipped`, `welcome`, `magic_link`), מנוקזים ב-`/api/cron/notifications` כל 5 דקות, עם suppression ו-idempotency.
+- **לא הוכח:** שהדומיין `kenyonexpress.co.il` מאומת ב-Resend (השולח ברירת המחדל `noreply@kenyonexpress.co.il`, או `EMAIL_FROM`), ושמייל אמיתי הגיע לתיבה. אין לסוכן גישה ל-Resend. עד שהדומיין מאומת, Resend מסרב לשליחה והסוכן לא יכול לדעת. **הצעד הבא:** לוודא ב-Resend את אימות הדומיין, ואז `EMAIL_FROM` ב-Vercel אם צריך כתובת אחרת.
+- מיילי ההזמנה מקשרים ל-`/account/orders/<id>/invoice` (מאחורי התחברות) ואינם מצרפים את המסמך: זה מתיישב עם "לא לשלוח אוטומטית". תוקן ב-FAQ שיאמר שהקובץ עצמו לא נשלח.
+- ההזמנות עצמן חסומות כרגע: `CHECKOUT_ENABLED=false` ב-Production (ראו פריט 2), כך שאף מייל הזמנה לא ישלח עד שיוחלט אחרת.
+
+**המשך מ:** פריט 9 (עגלה, קופה ותודה בסגנון Electro v7, אורח ואז Google, תשלום stub).
 
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
