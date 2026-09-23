@@ -4,6 +4,11 @@ Updated: 2026-09-23 (סשן `work/goal-queue-0923`, אופיר אישר ישיר
 
 ## תור 23.09 (אישור ישיר של אופיר)
 
+**SHOWABLE: no.** פריט 2 חסום ב-DNS אצל הרשם (ההאצלה על `ns1/ns2.vercel.com` במקום `ns1/ns2.vercel-dns.com`; נבדק שוב 24.09, ללא שינוי) ופריט 3 חסום כי אין reference תקף לדף מוצר. **הפריסה הפעילה: `kenyonexpress-7heqbxqll` (Production, נבנתה מה-worktree `work/goal-queue-0923`), 200 על `/`, `/products`, `/api/health`, `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`.** `CHECKOUT_ENABLED=false` בה. נוסף `NEXT_PUBLIC_SUPABASE_URL` גם ל-Preview (ערך ציבורי) כדי שבניות Preview של Git יפסיקו ליפול באיסוף הנתונים של `/coupons/[id]` (הכשל שנמצא בפריט 2). Preview עדיין לא יעלה בזמן ריצה בלי `ALLOW_INCOMPLETE_ENV` והמפתחות הרגישים, וזה בכוונה.
+
+**מצב הענף:** `work/goal-queue-0923` (מ-`audit/final-audit@9fe2ca441`), ‏`pnpm test` ירוק (568 קבצים, 6,885 טסטים), ‏type-check נקי, ‏lint ירוק חוץ מ-`docs-path-audit` (ארטיפקט worktree, ראו פריט 19). לא מוזג ל-`main` ול-`audit/final-audit`.
+
+
 **פריט 1:** אין wakeup או cron פעיל בסשן (`CronList` ריק). אין מה לבטל.
 
 **פריט 2, נבנה ופרוס, חסום רק ב-DNS.**
