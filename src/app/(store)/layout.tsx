@@ -7,6 +7,7 @@ import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
+import { Toaster } from '@/components/ui/sonner'
 import { WishlistProvider } from '@/components/wishlist/WishlistProvider'
 import { Suspense } from 'react'
 // cart-page.css is imported by the root layout, one request for the whole
@@ -70,6 +71,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           <BottomTabBarActive />
         </Suspense>
         <DeferredStoreChrome />
+        <Toaster position="top-center" dir="rtl" richColors closeButton />
       </WishlistProvider>
     </CartProvider>
   )

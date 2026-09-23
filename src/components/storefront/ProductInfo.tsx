@@ -2,8 +2,7 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import CityTag from '@/components/geo/CityTag'
-import FacebookShareButton from '@/components/shared/FacebookShareButton'
-import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
+import ProductShareRow from '@/components/shared/ProductShareRow'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import WaitlistButton from '@/components/storefront/WaitlistButton'
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
@@ -423,14 +422,10 @@ export default function ProductInfo({
             coupon, `price` is the sticker price of the goods at the business,
             and this line used to send a friend "₪200" for a deal the page
             beside it quotes at ₪80. See lib/share/message.ts. */}
-        <span className="inline-flex items-center gap-4">
-          <WhatsAppShareButton
-            productId={productId}
-            message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
-            appendCurrentUrl
-          />
-          <FacebookShareButton />
-        </span>
+        <ProductShareRow
+          productId={productId}
+          message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
+        />
       </div>
     </div>
   )

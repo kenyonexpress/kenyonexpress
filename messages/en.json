@@ -102,6 +102,14 @@
     "twitter": "Twitter",
     "facebook": "Facebook"
   },
+  "share": {
+    "telegramLabel": "Share on Telegram",
+    "shareLabel": "Share",
+    "emailLabel": "Share by email",
+    "copyLinkLabel": "Copy link",
+    "linkCopied": "Link copied",
+    "linkCopyFailed": "Could not copy the link"
+  },
   "account": {
     "overview": "Overview",
     "details": "My details",

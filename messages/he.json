@@ -102,6 +102,14 @@
     "twitter": "טוויטר",
     "facebook": "פייסבוק"
   },
+  "share": {
+    "telegramLabel": "שיתוף בטלגרם",
+    "shareLabel": "שיתוף",
+    "emailLabel": "שיתוף במייל",
+    "copyLinkLabel": "העתקת קישור",
+    "linkCopied": "הקישור הועתק",
+    "linkCopyFailed": "העתקת הקישור נכשלה"
+  },
   "account": {
     "overview": "סקירה",
     "details": "הפרטים שלי",
