@@ -296,6 +296,9 @@
     "retry": "Please try again in a few minutes."
   },
   "contact": {
+    "productQuestion": "Ask about this product on WhatsApp",
+    "productQuestionMessage": "Hello, I have a question about {name} on Kenyon Express.",
+    "orderContact": "Ask about this order on WhatsApp",
     "pickTopic": "How can we help?",
     "openChat": "Open a WhatsApp chat",
     "floatLabel": "Talk to us on WhatsApp",

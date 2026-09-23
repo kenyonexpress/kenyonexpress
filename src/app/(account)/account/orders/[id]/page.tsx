@@ -2,6 +2,7 @@ import OrderHelpForm from '@/components/account/OrderHelpForm'
 import RefundRequestForm from '@/components/account/RefundRequestForm'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { orderContactLink } from '@/lib/contact/inquiry-links'
 import { t } from '@/lib/i18n/messages'
 import { REVIEWABLE_ORDER_STATUSES } from '@/lib/reviews/eligibility'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
@@ -63,6 +64,24 @@ export default async function OrderDetailPage({ params }: Props) {
             <strong>{formatIls(order.totalAgorot)}</strong>
           </div>
         </div>
+        {orderContactLink(order.id) && (
+          <div className="account-row">
+            <div className="account-row__main">
+              <p className="account-row__meta">{t('contact.orderContact')}</p>
+            </div>
+            <div className="account-row__actions">
+              <a
+                className="account-btn"
+                href={orderContactLink(order.id) ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="order-contact-link"
+              >
+                {t('contact.openChat')}
+              </a>
+            </div>
+          </div>
+        )}
         {order.invoice && (
           <div className="account-row">
             <div className="account-row__main">

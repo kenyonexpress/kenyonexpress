@@ -296,6 +296,9 @@
     "retry": "נסו שוב בעוד כמה דקות."
   },
   "contact": {
+    "productQuestion": "שאלה על המוצר בוואטסאפ",
+    "productQuestionMessage": "שלום, יש לי שאלה על {name} בקניון אקספרס.",
+    "orderContact": "שאלה על ההזמנה בוואטסאפ",
     "pickTopic": "במה נוכל לעזור?",
     "openChat": "פתיחת שיחה בוואטסאפ",
     "floatLabel": "דברו איתנו בוואטסאפ",
