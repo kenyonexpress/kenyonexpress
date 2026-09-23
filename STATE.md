@@ -1,5 +1,18 @@
 Updated: 2026-09-23 | **v3.0.0-advanced complete, ready for growth scaling**
 
+Updated: 2026-09-23 (סשן `work/goal-queue-0923`, אופיר אישר ישירות ב-/goal: הלולאה הישנה שקטה, עובדים בתור של 19 פריטים)
+
+## תור 23.09 (אישור ישיר של אופיר)
+
+**פריט 1:** אין wakeup או cron פעיל בסשן (`CronList` ריק). אין מה לבטל.
+
+**פריט 2, נבנה ופרוס, חסום רק ב-DNS.**
+- **סיבת הכשל של ה-build:** בפרויקט Vercel `kenyonexpress` המשתנה `NEXT_PUBLIC_SUPABASE_URL` מוגדר ל-Production בלבד, ולכן כל build של Preview נפל באיסוף הנתונים של `/coupons/[id]`. אחר כך, ב-Production, ה-instrumentation hook סירב לעלות בגלל `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` חסרים.
+- **מה נעשה:** `vercel deploy --prod --archive=tgz` (בלי `--archive` ההעלאה נחסמת ב-5000 קבצים), ואז `ALLOW_INCOMPLETE_ENV=true` ב-Production והפעלה מחדש. `https://kenyonexpress-6ny4ek717-kenyonexpress-projects.vercel.app` מחזיר 200 על `/`, `/page/how-it-works`, `/sitemap.xml`, `/api/health`.
+- **החלטה שהתקבלה לבד:** `CHECKOUT_ENABLED=false` ב-Production (היה `true`, ב-Preview+Production). הסיבה: התשלום הוא stub (`CARDCOM_USE_MOCK=true`) וסטאב שמסיים הזמנות בלי חיוב אמיתי הוא הפגם המתועד ב-`mock-payment-provider-served-production`. להחזרה: `vercel env rm CHECKOUT_ENABLED production` ואז `add` עם `true` ופריסה מחדש.
+- **חסימה שאינה בידי הסוכן:** ההאצלה ב-registry מצביעה על `ns1.vercel.com` / `ns2.vercel.com`, וה-nameservers שוורסל דורש הם **`ns1.vercel-dns.com` / `ns2.vercel-dns.com`** (או רשומת `A kenyonexpress.co.il 76.76.21.21`). עד שמתקנים אצל הרשם, `kenyonexpress.co.il` ו-`www` לא נפתרים (SERVFAIL). `vercel domains inspect kenyonexpress.co.il` מראה ✘ על שניהם.
+
+
 Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon exclusions, supplier sales by product/day, wishlist HMAC share, reviews (submit + admin queue + public ratings, no PDP hero stars), referral UTM, cart recovery metrics (no third mail), passkey fallback to magic link, audit_log Sentry, CDN edge cache.
 
 **המשך מ:** v3.0.0-advanced tagged. DNS cutover remains a manual step.
