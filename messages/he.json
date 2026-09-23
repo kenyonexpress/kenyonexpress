@@ -115,6 +115,15 @@
     "notIssued": "החשבונית עדיין לא הונפקה",
     "tryAgain": "החשבונית אינה זמינה כרגע, נסו שוב בעוד רגע"
   },
+  "categoryChips": {
+    "label": "סינון לפי קטגוריה",
+    "all": "הכל"
+  },
+  "couponExpiry": {
+    "choose": "בחרו תוקף",
+    "days": "ימים",
+    "legacy": "ימים (ערך קיים)"
+  },
   "share": {
     "telegramLabel": "שיתוף בטלגרם",
     "shareLabel": "שיתוף",

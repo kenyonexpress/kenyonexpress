@@ -1,4 +1,5 @@
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
+import CategoryChips from '@/components/category/CategoryChips'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
@@ -209,6 +210,10 @@ async function ShopGrid({ searchParams }: Props) {
   return <ResultGrid args={args} linkParams={linkParams} />
 }
 
+async function ShopChips() {
+  return <CategoryChips categories={await getAllCategories()} />
+}
+
 async function ShopSidebar({ searchParams }: Props) {
   const [{ args }, allCategories] = await Promise.all([shopArgs(searchParams), getAllCategories()])
   return (
@@ -258,6 +263,10 @@ export default function ProductsPage({ searchParams }: Props) {
             the same measured 45.89px min-height, radius and `--cat-bar` fill -
             and the controls land in it. Rendering `<CategoryControlBar>` here
             instead type-checks and then fails the build. */}
+        <Suspense fallback={null}>
+          <ShopChips />
+        </Suspense>
+
         <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>
           <ShopControlBar searchParams={searchParams} />
         </Suspense>

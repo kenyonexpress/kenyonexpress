@@ -115,6 +115,15 @@
     "notIssued": "The invoice has not been issued yet",
     "tryAgain": "The invoice is not available right now, please try again in a moment"
   },
+  "categoryChips": {
+    "label": "Filter by category",
+    "all": "All"
+  },
+  "couponExpiry": {
+    "choose": "Choose validity",
+    "days": "days",
+    "legacy": "days (existing value)"
+  },
   "share": {
     "telegramLabel": "Share on Telegram",
     "shareLabel": "Share",
