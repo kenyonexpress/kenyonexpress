@@ -22,6 +22,14 @@ Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon 
 - הצילום התקין היחיד הוא `refs/live-product.png` (1440, מ-03.09, מוצר אחר מזה שאנחנו מרנדרים). ב-380 וב-768 אין reference תקף, ולכן אין שער ב-11% שאפשר למדוד. לא נכתבה שורה מומצאת ל-`UI-PARITY-REPORT.md`.
 - כדי לפתוח: לשמור את דף המוצר של Electro v7 בדפדפן אמיתי כ-single-file HTML (עם ה-CSS) ל-`refs/`, ואז להריץ `node scripts/compare.mjs --page=product --widths=380,768,1440 --live-png ...`.
 
+**פריט 4, קיים ונבדק, לא נבנה מחדש.** טופס העלאת מוצר (`/admin/products/new`, `/[id]/edit`, `/import`, `ProductForm`, `ImageUploader`) כבר חי, עם `platform_percent` חובה ו-`coupon_expiry_days` חובה, והעלאת תמונות עם fallback ל-Supabase Storage כש-R2 לא מוגדר. 344 טסטים ב-`components/admin`, `actions/admin/products`, `lib/admin` ירוקים. לא נבדק: העלאה בפועל בפרודקשן (דורש התחברות אדמין), ולכן קיום הבאקט ב-Supabase לא הוכח.
+
+**פריט 5:** `SHOWABLE: no` (פריט 2 חסום ב-DNS אצל הרשם, פריט 3 חסום ב-reference). יתעדכן ל-yes רק כששניהם נסגרים.
+
+**פריט 6, קיים, נוסף טסט.** `ProductShareRow` (וואטסאפ ראשון, `navigator.share`, ובגיבוי שולחני פייסבוק / טלגרם / מייל, ואז העתקת קישור עם toast "הקישור הועתק") כבר מחובר ב-`ProductInfo`. וואטסאפ תמיד ב-click של הלקוח בלבד. נוסף `product-share-row.test.tsx` (סדר, גיבוי מוסתר עד לחיצה, טקסט ה-toast).
+
+**המשך מ:** פריט 7 (חשבונית מס קבלה בעמודי תודה והזמנה).
+
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
 trigger, שבעים ואחת ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4
