@@ -4,6 +4,74 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q11 - DONE (אומת 25.09) - דף "הצטרפו כעסקים" עם הסכם click-wrap: hash גרסה, timestamp ו-IP
+
+**הפריט כבר היה עשוי ב-`185b904a4` (09.09, ‏SECTIONS 76) ובקישור `1e9b4f0e2` (24.09).**
+מה שהיה חסר בטבלה, "לא אומת: timestamp + IP", אומת עכשיו על העץ ונעול בטסט.
+נכתב: טסט אחד לפעולה ושורת כותרת אחת.
+
+**מה נבדק (נמדד, לא צוטט):**
+- **הדף:** `/suppliers/apply` (`(store)`, `instant=false`), דורש התחברות
+  (`redirect('/login?next=/suppliers/apply')`), מרנדר את `CONTRACT_TEXT` בתוך
+  `SupplierApplyWizard` עם `contract_version` נסתר ותיבת `accept_contract`
+  חובה. על ה-build המקומי `GET /suppliers/apply` 200. הקישורים אליו: פוטר
+  `footer.suppliers` = "הצטרפו כעסקים", ו-CTA "להצטרפות והסכם דיגיטלי"
+  ב-`/suppliers`.
+- **הכותרת לפי STATE.md:** `metadata.title` וה-`h1` של הדף היו
+  "הצטרפות כבית עסק"; שונו ל-**"הצטרפו כעסקים"**, אותו טקסט של תווית הפוטר
+  שהתור מפנה אליה. ערוץ הפנייה ב-`lib/contact/channels.ts` נשאר
+  "הצטרפות כבית עסק" (זה שם ערוץ, לא כותרת דף; `e2e/wa-contact.spec.ts`
+  בודק אותו).
+- **hash של הגרסה:** `src/lib/suppliers/contract.ts`, `CONTRACT_VERSION =
+  'v1-2026-09-09'`, `contractHash()` = SHA-256 hex של `CONTRACT_TEXT`,
+  מחושב בשרת מהקבוע ולעולם לא מהטופס. גרסה שאינה תואמת נדחית לפני כל כתיבה.
+- **timestamp:** `migrations/pending/204_supplier_onboarding.sql` שורה 272,
+  `accepted_at timestamptz NOT NULL DEFAULT now()`. הפעולה אינה שולחת
+  `accepted_at` בכלל, כך שהשעה היא של ה-DB ולא של הדפדפן.
+- **IP:** `supplier-onboarding.ts` שורות 192-198: `getClientIp()`
+  (`x-forwarded-for` הראשון, ואז `x-real-ip`) נכתב ל-`client_ip inet`;
+  `'unknown'` הופך ל-NULL כי `inet` דוחה מחרוזת שאינה כתובת. הכתובת אמינה
+  רק מאחורי Vercel שדורס את הכותרת (הערה ב-`rate-limit.ts`).
+- **הרשומה:** `supplier_contract_acceptances` (`application_id`,
+  `accepted_by`, `contract_version`, `contract_sha256` עם CHECK
+  `^[0-9a-f]{64}$`, `accepted_at`, `client_ip`), RLS: קריאה לבעלים ולצוות,
+  ‏INSERT/UPDATE/DELETE נשללים מ-`anon` ומ-`authenticated`; הכתיבה דרך
+  service role בלבד.
+- **טסט חדש** `src/server/actions/supplier-onboarding.test.ts`, 9 טסטים:
+  השורה שנכתבת שווה בדיוק ל-`{application_id, accepted_by, contract_version,
+  contract_sha256: contractHash(CONTRACT_TEXT), client_ip}`; hash שהדפדפן
+  שולח נזרק; `accepted_at` מהטופס נזרק; `unknown` → NULL; גרסה ישנה ותיבה לא
+  מסומנת נדחות בלי שום כתיבה (לא vault, לא שורת בקשה); כשל ברישום ההסכם לא
+  מפיל בקשה שכבר נשלחה ונרשם ב-log; ושני טסטים על טקסט 204 (DEFAULT now(),
+  ‏inet, CHECK של ה-hash).
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, docs-index 280, docs-path-audit 155), `pnpm test`
+**579 קבצים, 6,999 ירוקים, 12 מדולגים** (+1 קובץ, +9 טסטים), `pnpm build`
+ירוק (BUILD_ID `wDvbkx7fkV8GCwUm-xqGd`). **שער ההשוואה בחזית, `pnpm start`
+על 3311, `--baseline=refs/ke_live_{width}.png`:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 21:40-21:43 UTC על `d1f6dd0a8-dirty`
+(מלוכלך בגלל הטסט והכותרת שלמעלה). דף ההצטרפות עצמו אינו נמדד בשער: אין לו
+צילום reference (הוא לא קיים באתר החי).
+
+**חסום ולא בידי הסוכן (ללא שינוי):** 204 לא הוחלה בפרודקשן, ולכן שליחת
+הטופס עונה "טופס ההצטרפות עדיין לא פעיל" עד שאופיר מאשר (חוסם 3, יש להוסיף
+את 204 לרשימה שם). ה-IP נרשם נכון רק מאחורי proxy שדורס `x-forwarded-for`.
+
+**החלטות שהתקבלו לבד:**
+- "title per STATE.md" פורש כתווית הפוטר "הצטרפו כעסקים" (פריט 10 בארכיון,
+  `messages/he.json` `footer.suppliers`), והיא הוחלה על הכותרת ועל ה-`h1`
+  של `/suppliers/apply`. לא נוצר דף חדש: הדף קיים, מקושר ומרונדר.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול הוא
+  `src/lib/money.ts`), כמו ב-Q06..Q10. לא נגעתי בכסף.
+
 ## Q10 - DONE (אומת 25.09) - סל, קופה ודף תודה בסגנון Electro v7: קופת אורח, Google בסוף, תשלום מאחורי ממשק, מינימום 0
 
 **הפריט כבר היה עשוי ב-`f6392ed6e` (29.07, "guest checkout on measured Electro

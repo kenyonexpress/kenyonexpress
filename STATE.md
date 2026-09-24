@@ -2,10 +2,10 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q12 DONE (אומת 25.09).** הבא בתור: **Q13** (בטבלה DONE, ‏`bf0effa2e`,
-‏`02cb65fb3`, ‏`ace712504`; לאמת על העץ ולרשום).
+**Q13 DONE (אומת 25.09).** הבא בתור: **Q14** (בטבלה OPEN, חלקי: `(store)/gift`
+‏`078a3de6d`, צ'יפים ‏`dda866a5a`; חסר ראיה להעברת קופון למשתמש אחר).
 
-ההיסטוריה המלאה (Q01..Q10, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -24,6 +24,65 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q13 - DONE (אומת 25.09) - דף צור קשר בחמישה ערוצים, wa.me ו-support@ בלבד, בלי טלפון; כפתור שאלה על המוצר עם נפילה לשירות לקוחות
+
+**הפריט כבר היה עשוי.** חמשת הערוצים והבורר ב-`bf0effa2e` (22.09), תיבת
+`support@` והסרת כל טלפון של הפלטפורמה ב-`02cb65fb3` (23.09), וכפתור
+"שאלה על המוצר" ב-`ace712504` (24.09). לא נכתב קוד. הטבלה אמרה DONE בלי
+ראיה מהעץ ומה-build; זה מה שנמדד עכשיו.
+
+**מה נבדק (נמדד, לא צוטט):**
+- **חמישה ערוצים, בקוד ובטבלה:** `src/lib/contact/channels.ts`
+  `DEFAULT_CONTACT_CHANNELS`: שירות לקוחות, הצעות ורעיונות, שיתופי פעולה,
+  תקלה באתר, הצטרפות כבית עסק. אותם חמישה זורעים ב-`236_contact_channels.sql`
+  (pending); עד ההחלה `listActiveContactChannels()` נופל לברירות המחדל
+  בקוד, ולכן הדף מלא גם בלי המיגרציה. לכל ערוץ פותח משלו, `number: null`
+  נפתר ל-`storeWhatsAppNumber()`.
+- **`/contact` על ה-build המקומי** (BUILD_ID `tv1yIApZ_-SntVQ-_yU4P`, `pnpm start`
+  על 3312): 200. ב-HTML המוגש: `contact-picker-contact_page` פעם אחת, כל אחת
+  מחמש התוויות פעמיים (בורר + פוטר), `support@kenyonexpress.co.il` 4 פעמים,
+  25 קישורי `wa.me/972524635550`, **0 `href="tel:"`**. המספר המודפס ליד
+  "אפשר גם בוואטסאפ" מקושר ל-wa.me ולא ל-tel, ושניהם נגזרים מ-`lib/whatsapp`.
+- **מייל:** `contactEmail()` ב-`src/lib/contact-address.ts`, ברירת מחדל
+  `support@kenyonexpress.co.il`; ארבעת המסמכים המשפטיים, `LegalContactBlock`
+  וטופס צור קשר קוראים אותה. `info@` נשאר רק בהערה ובטסט של `markup`.
+- **בלי טלפון של הפלטפורמה:** ה-`tel:` היחידים ב-src הם טלפון של בית העסק
+  (`supplier-contact.ts` ל-`SupplierInfo`, `SupplierStorefrontHeader`,
+  `/coupon/[id]`), נתון עסק ולא ערוץ שירות; ההחלטה נרשמה ב-`02cb65fb3`
+  ונשמרת. `ContactForm` בלי שדה טלפון.
+- **דף מוצר** (`/product/עוזרת-אישית-שירותי-משרד`, 200): `ProductInfo.tsx`
+  שורה 459 מרנדר `ProductQuestionLink` (`product-question-link`, "שאלה על
+  המוצר בוואטסאפ", פותח `contact.productQuestionMessage` עם שם המוצר וכתובת
+  הדף). ליד פרטי הספק `AskBusinessButton`: `askBusinessHref()` בוחר את
+  הוואטסאפ של הספק רק כשהמוצר הפעיל אותו ויש מספר, אחרת שירות לקוחות עם שם
+  המוצר בפותח, והתווית משתנה בהתאם ("שאלה לשירות הלקוחות בוואטסאפ"). על
+  המוצר שנמדד: `data-via="customer_service"`, כלומר הנפילה עובדת.
+- **טסטים קיימים:** `channels.test.ts` (137 שורות), `inquiry-links.test.ts`,
+  `SupplierInfo.test.tsx`, `e2e/wa-contact.spec.ts`.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, input-dir 23, docs-index 280, docs-path-audit 155),
+`pnpm test` **579 קבצים, 6,999 ירוקים, 12 מדולגים**, `pnpm build` ירוק.
+**שער ההשוואה בחזית, `--baseline=refs/ke_live_{width}.png`, exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 22:02-22:05 UTC על `106846187` (הראשונה
+נקייה, השתיים אחריה `-dirty` רק כי הפנקס עצמו השתנה). דף צור קשר ודף המוצר
+ב-380/768 אינם נמדדים: אין להם צילום reference (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- שרת `pnpm start` זר על 3311 (PID 23687, מהפריט הקודם) לא נעצר; השער רץ
+  על 3312 מול ה-build הטרי ונעצר בסיום. הרצת `pnpm build` תחת שרת ישן
+  משאירה אותו עם `.next` שהוחלף; מי שמשתמש ב-3311 צריך להפעיל מחדש.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול הוא
+  `src/lib/money.ts`), כמו ב-Q06..Q12. לא נגעתי בכסף.
+- סעיף Q11 הועבר לארכיון כדי לשמור על STATE.md מתחת ל-300 שורות.
 
 ## Q12 - DONE (אומת 25.09) - דפים משפטיים בפריסת terms-and-conditions של Electro: תקנון, פרטיות, ביטולים לפי 14ג, נגישות, עוגיות, קישור ביטול בפוטר
 
@@ -84,74 +143,6 @@ locale-format 138/138, docs-index 280, docs-path-audit 155), `pnpm test`
 - `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול
   `src/lib/money.ts`), כמו ב-Q06..Q11. לא נגעתי בכסף.
 
-## Q11 - DONE (אומת 25.09) - דף "הצטרפו כעסקים" עם הסכם click-wrap: hash גרסה, timestamp ו-IP
-
-**הפריט כבר היה עשוי ב-`185b904a4` (09.09, ‏SECTIONS 76) ובקישור `1e9b4f0e2` (24.09).**
-מה שהיה חסר בטבלה, "לא אומת: timestamp + IP", אומת עכשיו על העץ ונעול בטסט.
-נכתב: טסט אחד לפעולה ושורת כותרת אחת.
-
-**מה נבדק (נמדד, לא צוטט):**
-- **הדף:** `/suppliers/apply` (`(store)`, `instant=false`), דורש התחברות
-  (`redirect('/login?next=/suppliers/apply')`), מרנדר את `CONTRACT_TEXT` בתוך
-  `SupplierApplyWizard` עם `contract_version` נסתר ותיבת `accept_contract`
-  חובה. על ה-build המקומי `GET /suppliers/apply` 200. הקישורים אליו: פוטר
-  `footer.suppliers` = "הצטרפו כעסקים", ו-CTA "להצטרפות והסכם דיגיטלי"
-  ב-`/suppliers`.
-- **הכותרת לפי STATE.md:** `metadata.title` וה-`h1` של הדף היו
-  "הצטרפות כבית עסק"; שונו ל-**"הצטרפו כעסקים"**, אותו טקסט של תווית הפוטר
-  שהתור מפנה אליה. ערוץ הפנייה ב-`lib/contact/channels.ts` נשאר
-  "הצטרפות כבית עסק" (זה שם ערוץ, לא כותרת דף; `e2e/wa-contact.spec.ts`
-  בודק אותו).
-- **hash של הגרסה:** `src/lib/suppliers/contract.ts`, `CONTRACT_VERSION =
-  'v1-2026-09-09'`, `contractHash()` = SHA-256 hex של `CONTRACT_TEXT`,
-  מחושב בשרת מהקבוע ולעולם לא מהטופס. גרסה שאינה תואמת נדחית לפני כל כתיבה.
-- **timestamp:** `migrations/pending/204_supplier_onboarding.sql` שורה 272,
-  `accepted_at timestamptz NOT NULL DEFAULT now()`. הפעולה אינה שולחת
-  `accepted_at` בכלל, כך שהשעה היא של ה-DB ולא של הדפדפן.
-- **IP:** `supplier-onboarding.ts` שורות 192-198: `getClientIp()`
-  (`x-forwarded-for` הראשון, ואז `x-real-ip`) נכתב ל-`client_ip inet`;
-  `'unknown'` הופך ל-NULL כי `inet` דוחה מחרוזת שאינה כתובת. הכתובת אמינה
-  רק מאחורי Vercel שדורס את הכותרת (הערה ב-`rate-limit.ts`).
-- **הרשומה:** `supplier_contract_acceptances` (`application_id`,
-  `accepted_by`, `contract_version`, `contract_sha256` עם CHECK
-  `^[0-9a-f]{64}$`, `accepted_at`, `client_ip`), RLS: קריאה לבעלים ולצוות,
-  ‏INSERT/UPDATE/DELETE נשללים מ-`anon` ומ-`authenticated`; הכתיבה דרך
-  service role בלבד.
-- **טסט חדש** `src/server/actions/supplier-onboarding.test.ts`, 9 טסטים:
-  השורה שנכתבת שווה בדיוק ל-`{application_id, accepted_by, contract_version,
-  contract_sha256: contractHash(CONTRACT_TEXT), client_ip}`; hash שהדפדפן
-  שולח נזרק; `accepted_at` מהטופס נזרק; `unknown` → NULL; גרסה ישנה ותיבה לא
-  מסומנת נדחות בלי שום כתיבה (לא vault, לא שורת בקשה); כשל ברישום ההסכם לא
-  מפיל בקשה שכבר נשלחה ונרשם ב-log; ושני טסטים על טקסט 204 (DEFAULT now(),
-  ‏inet, CHECK של ה-hash).
-
-**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
-locale-format 138/138, docs-index 280, docs-path-audit 155), `pnpm test`
-**579 קבצים, 6,999 ירוקים, 12 מדולגים** (+1 קובץ, +9 טסטים), `pnpm build`
-ירוק (BUILD_ID `wDvbkx7fkV8GCwUm-xqGd`). **שער ההשוואה בחזית, `pnpm start`
-על 3311, `--baseline=refs/ke_live_{width}.png`:**
-
-| דף | רוחב | תוכן | מצב |
-|---|---|---|---|
-| home | 380 | 8.44% | PASS |
-| home | 768 | 9.03% | PASS |
-| home | 1440 | 3.82% | PASS |
-
-השורות ב-`docs/UI-PARITY-REPORT.md` 21:40-21:43 UTC על `d1f6dd0a8-dirty`
-(מלוכלך בגלל הטסט והכותרת שלמעלה). דף ההצטרפות עצמו אינו נמדד בשער: אין לו
-צילום reference (הוא לא קיים באתר החי).
-
-**חסום ולא בידי הסוכן (ללא שינוי):** 204 לא הוחלה בפרודקשן, ולכן שליחת
-הטופס עונה "טופס ההצטרפות עדיין לא פעיל" עד שאופיר מאשר (חוסם 3, יש להוסיף
-את 204 לרשימה שם). ה-IP נרשם נכון רק מאחורי proxy שדורס `x-forwarded-for`.
-
-**החלטות שהתקבלו לבד:**
-- "title per STATE.md" פורש כתווית הפוטר "הצטרפו כעסקים" (פריט 10 בארכיון,
-  `messages/he.json` `footer.suppliers`), והיא הוחלה על הכותרת ועל ה-`h1`
-  של `/suppliers/apply`. לא נוצר דף חדש: הדף קיים, מקושר ומרונדר.
-- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול הוא
-  `src/lib/money.ts`), כמו ב-Q06..Q10. לא נגעתי בכסף.
-
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
 | פריט | מצב | ראיה |
@@ -168,7 +159,7 @@ locale-format 138/138, docs-index 280, docs-path-audit 155), `pnpm test`
 | Q10 | DONE (אומת 25.09) | `f6392ed6e` (29.07). קופת אורח (`/checkout` מחוץ ל-`needsAuth`, 200 אנונימי), Google בלחיצת התשלום עם `resume=1`, `PaymentProvider` עם mock, אין מינימום הזמנה. שער: home 8.44/9.03/3.82, cart 1440 1.47%, checkout 1440 0.94%, PASS. `compare.mjs` תוקן ל-`--baseline` בסל ובקופה. |
 | Q11 | DONE (אומת 25.09) | `185b904a4` (09.09) + `1e9b4f0e2`. `/suppliers/apply` עם `CONTRACT_TEXT`, hash SHA-256 מהקבוע בשרת, `accepted_at DEFAULT now()` ו-`client_ip inet` ב-204 (pending). כותרת "הצטרפו כעסקים". +9 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q12 | DONE (אומת 25.09) | `c03a59f6b`, `a6d3608ac`. ארבעה דפים 200 מ-`LegalArticle`, `/legal/*` 308. "עד 5% ממחיר העסקה או 100 שקלים חדשים, לפי הנמוך" ב-`returns.ts` 157, תואם `refund.ts`; קופון ניתן להעברה ב-`terms.ts` 177; `#cookies` ו-`#how-to-cancel` בפוטר. שער 8.44/9.03/3.82 PASS. |
-| Q13 | DONE | `bf0effa2e`, `02cb65fb3`, כפתור שאלה על המוצר `ace712504`. |
+| Q13 | DONE (אומת 25.09) | `bf0effa2e`, `02cb65fb3`, `ace712504`. `/contact` 200 עם חמשת הנושאים מ-`DEFAULT_CONTACT_CHANNELS`, 25 קישורי `wa.me`, `support@kenyonexpress.co.il`, אפס `tel:`. דף מוצר: `product-question-link` + `ask-business` עם `data-via="customer_service"`. שער 8.44/9.03/3.82 PASS. |
 | Q14 | OPEN, חלקי | `(store)/gift` + תזמון (`078a3de6d`), צ'יפים `dda866a5a`. אין ראיה להעברת קופון למשתמש אחר. |
 | Q15 | OPEN, חלקי | crons קיימים (`expire-vouchers`, `notifications`, `weekly-digest`). אין ראיה ל-T-7/T-1 ב-pg_cron, club tiers, cashback לארנק. |
 | Q16 | OPEN, חלקי | `fc9da36dc`, `2410c879d`. אין ראיה ל-commission per campaign ול-fraud checks. |
