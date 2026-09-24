@@ -2,7 +2,94 @@ Updated: 2026-09-23 | **v3.0.0-advanced complete, ready for growth scaling**
 
 Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon exclusions, supplier sales by product/day, wishlist HMAC share, reviews (submit + admin queue + public ratings, no PDP hero stars), referral UTM, cart recovery metrics (no third mail), passkey fallback to magic link, audit_log Sentry, CDN edge cache.
 
-**המשך מ:** v3.0.0-advanced tagged. DNS cutover remains a manual step.
+**המשך מ:** Q01 DONE (25.09). הבא בתור: Q02. v3.0.0-advanced tagged. DNS cutover remains a manual step.
+
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`)
+
+## Q01 - DONE - סדר בעץ העבודה וטבלת מצב לתור הסופי
+
+**עץ העבודה נקי. אין שינויים לא מחויבים לסקור.** `git status --short` ריק,
+`HEAD` (`4690c45d4`) זהה ל-`origin/audit/final-audit`. שני ה-pids
+(`35725`/`35738`) שהרשומות הקודמות עקבו אחריהם **אינם חיים** (`ps -p`
+מחזיר ריק). סט העריכות שלהם (`next.config.ts`, `edge-cache.ts`,
+`asset-cache-headers.test.ts`, `AnalyticsProvider.tsx`, `proxy.ts`) נחת
+בקומיט `073ed3a1f fix(cache)`, ולא אבד. תהליך `claude` יחיד על הריפו
+עכשיו (הסשן הזה). `scripts/dns-watch.sh` עדיין רץ ברקע (pid 1033 תחת
+`caffeinate`), ראה הערה למטה.
+
+**מה שנשאר לא מחויב ולא נגעתי בו:** עשרה stash-ים, שלא נמחקו (כלל: אין
+מחיקת נתונים). אחד מהם על הענף הזה:
+`stash@{2}: WIP on audit/final-audit: ab0d2e41e` (23 קבצים: `sitemap.ts`
+הוחלף ב-`sitemap.xml/route.ts`, `robots.ts`, `CategoryDialog`/`CategoryForm`,
+`category-page.ts`, `actions/admin/categories.ts`). ה-sitemap הזה כבר קיים
+ב-HEAD כ-`src/app/sitemap.xml/`, כך שה-stash כנראה מיושן. לא הוחל ולא
+נמחק. השאר (`autopilot`, `docs/ui-design-system`, `main`,
+`feat/payments-verify`, `arch/docs-batch-2` x4) שייכים לענפים אחרים.
+
+**`docs/BACKLOG.md` לא קיים** בעץ ולא בהיסטוריה של הענף. קיימים
+`docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md`. פריטי
+B01-B10 בתור מצביעים על קובץ שאין, ראה הערה בטבלה.
+
+### טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log` ומהעץ, 25.09)
+
+| פריט | מצב | ראיה |
+|---|---|---|
+| Q01 | DONE | הרשומה הזו. |
+| Q02 | OPEN, חסום | `dig +short NS/A kenyonexpress.co.il @1.1.1.1` מחזיר ריק (הדומיין לא מתרגם, זיכרון `dns-zone-refused-at-cloudflare` מ-20.09 עדיין נכון). `pnpm build` נכשל ב-Vercel עצמו (זיכרון 23.09). אין קומיט של deploy ירוק. חוסם DNS לאופיר. |
+| Q03 | DONE | `docs/UI-PARITY-REPORT.md` 22.09: home 380 6.22%, 768 4.31%, 1440 2.02% (PASS מול `refs/ke_live_<w>.png` הקפואים). קומיטים `6bfebe3c6` (city tags), `55287f02f`. |
+| Q04 | OPEN | דף המוצר לא נמדד: `268b3fcf2` וטבלת ה-parity 23.09 00:02 `product 380 REFUSED` (capture 388px). הפריסה קיימת (`d4ba435da`, `25da18097`, `3897033b4`), אבל `original_price` עם מקור ו-Google reviews link לא נמצאו בקוד. |
+| Q05 | OPEN, חלקי | `src/lib/admin/product-form-schema.ts` מכיל type, prices, `platform_percent`, validity, shipping, category. חסרים: transfer days, payout cadence, cancellation window, refund policy, cashback, city, original_price + source. העלאה ל-R2 קיימת (`31b083e8e`), אבל R2 לא מופעל בחשבון (זיכרון). |
+| Q06 | OPEN | אין `SHOWABLE` ב-STATE.md (grep = 0). Q02, Q04, Q05 פתוחים, לכן אי אפשר לכתוב yes. חסר: DNS/deploy, מדידת דף מוצר, שדות טופס. |
+| Q07 | DONE | `9fe2ca441 feat(product): reorder share row - WhatsApp first, native Share API, Copy Link` (24.09). |
+| Q08 | OPEN, חלקי | חשבוניות: `4cc600d46`, `eb29504b4`. פנייה ב-wa.me: `1186084e9`. לא נמצאה ראיה ל-signed PDF download link ולבקשת ביטול לפי 14ג בדף ההזמנה. |
+| Q09 | OPEN, חלקי | `RESEND_API_KEY` נקרא ב-3 מסלולים. `0ac09ff04` (15 builders). אבל `eae464b1a feat(notifications): no customer email except password reset (owner policy)` סותר את המפרט של 6 שורות אישור רכישה. דורש החלטת מפעיל. |
+| Q10 | DONE | `f6392ed6e feat(checkout): guest checkout on measured Electro geometry`. מסלולי cart/checkout/order קיימים. תשלום ב-mock מאחורי ממשק (זיכרון `mock-payment-provider`). |
+| Q11 | OPEN | קיים `(store)/suppliers` (`698736314`, דף גיוס ספקים), אבל אין click-wrap: אין `agreement_hash`/`version_hash` בקוד או במיגרציות. |
+| Q12 | DONE | `(legal)/legal`, `(store)/terms-and-conditions`, `privacy-policy`, `refund_returns`, `accessibility`. `c03a59f6b` (הצהרת נגישות). לא אומת בנפרד: 14 יום, מינימום 5% או 100 ש"ח בטקסט ההחזרות. |
+| Q13 | DONE | `bf0effa2e feat(contact): WhatsApp by topic`, `02cb65fb3 support@ inbox, no phone anywhere`. `(store)/contact` קיים. |
+| Q14 | OPEN, חלקי | `(store)/gift` קיים, `078a3de6d` (תזמון). לא נמצאו קומיטים להעברת קופון למשתמש אחר או ל-filter chips (פתוח בסופ"ש, משלוח חינם, קרוב אליי). |
+| Q15 | OPEN, חלקי | `api/cron/expire-vouchers`, `notifications`, `weekly-digest` קיימים. אין ראיה ל-T-7/T-1 דרך pg_cron, ל-club tiers, או ל-wallet cashback פר מוצר (`api/wallet` קיים). |
+| Q16 | OPEN, חלקי | `fc9da36dc feat(admin-affiliates)`, `2410c879d Phase 16: Referral Program`. לא נמצאה ראיה ל-commission per campaign ול-fraud checks על affiliates. |
+| Q17 | OPEN, חלקי | `c6dff8dc2 Phase 18: WebAuthn Passkey`, `9b8c215f8` (passkey prompt), `af64d96e7` (2FA). אין ראיה לאימות טלפון/OTP fallback ול-"everything in the app" עם הסכמה. |
+| Q18 | DONE | `f08a701d1` (manifest, PWA E2E), `86af4a7c3` (offline shell), `src/app/manifest.ts`. ניהול מנויי push: `be736f10f`. |
+| Q19 | OPEN, חלקי | `58f920f8f feat(fraud)`. rate limit על login/checkout/redeem: זיכרון `e2e-money-path` (10/h per IP). לא אומת: אכיפת single-use ב-DB, velocity, verified badge, "נקנה השבוע". |
+| Q20 | DONE | `29b921163 Phase 13: Supplier Tools`, `bf9f2ca09` (payout ledger). `(supplier)/supplier/{orders,payouts,products,redemptions,scan,settings}`. |
+| Q21 | OPEN, חלקי | sitemap (5 חלקים), `robots.ts`, `0f42ef81a test(seo)`, `b591ba19a fix(a11y)`. אין קומיט שמכריז על מעבר WCAG 2.1 AA מלא. |
+| Q22 | OPEN, חלקי | `e2e/` קיים, `31ada5313` (9 כשלי E2E אובחנו). Lighthouse: `docs/LIGHTHOUSE-AUDIT.md`, `b4109ea2d`. אין ראיה ל-90+ mobile על product page. |
+| Q23 | OPEN | `docs/AUTOPILOT-DIFF.md` לא קיים. |
+| Q24 | OPEN | `docs/LAUNCH-READINESS.md` קיים אבל מסומן "Historical snapshot" (09.09, `35bd70baa` NOT READY). דורש כתיבה מחדש מול המצב הנוכחי. |
+| B01-B10 | OPEN, חסום | `docs/BACKLOG.md` לא קיים. ללא הקובץ אין "highest-impact open phase 1 item". מועמדים: `docs/POST-LAUNCH-BACKLOG.md`, `docs/MIGRATION-BACKLOG.md`. החלטה בפריט B01. |
+
+**שערי הבדיקה על HEAD, לפני הקומיט הזה (השינוי היחיד שלי הוא STATE.md,
+שאף שער אינו סורק):** `pnpm type-check` נקי. `pnpm lint` אדום ו-`pnpm test`
+4 קבצים אדומים, כולם שערי ratchet על `src/` שהודלקו על ידי קומיטי
+Phase 11-19 של הסשן הקודם (`65fbc3b54`..`af64d96e7`):
+
+1. i18n ratchet: `expected 642 to be less than or equal to 633`, 9 מחרוזות
+   עבריות מעל התקרה (`src/lib/i18n/i18n.test.ts`, וגם ב-lint).
+2. auth-coverage: `wishlist-share.ts:mintMyWishlistShareLink` ללא guard
+   (`0600163c6 Phase 14`). זה ממצא אבטחה ולא רק רישום.
+3. log-coverage: `server/actions/wishlist-share.ts` exported 1, wrapped 0.
+4. discarded-read-inventory: 4 קבצים זורקים `error`:
+   `admin/coupons/impact/page.tsx` (`d6aae7aa0 Phase 12`),
+   `admin/reviews/page.tsx`, `actions/admin/reviews.ts`, `actions/reviews.ts`
+   (`4dab065ef Phase 15`).
+
+לא תיקנתי: זה קוד פיצ'רים של סשן אחר, והרישום ב-inventory בלי אימות היה
+מסתיר את (2). נרשם כאן כ"שאר" של Q01. **מומלץ לפריט B01** אם BACKLOG.md
+לא יימצא.
+
+**הערה על `dns-watch.sh`:** רץ (pid 1033) ומשגר סשן אוטונומי של deploy
+ברגע שה-NS של Cloudflare יופיעו. 71 סבבים קודמים עצרו את זה עד בדיקה של
+אופיר (זיכרון `dns-cutover-loop-paused-pending-review`). לא נגעתי בו.
+
+**החלטות שהתקבלו לבד:** (1) לא הוחל ולא נמחק אף stash. (2) לא נגזם
+STATE.md (~23,800 שורות), ממשיך להיות מסומן לאופיר. (3) "OPEN, חלקי" נשאר
+OPEN בטבלה, כי התור מבקש done/open בלבד.
+
+**המשך מ:** Q01 DONE. הבא: Q02 (Vercel build + deploy). צפוי BLOCKED על
+DNS, ראה שורת Q02.
+
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover
 trigger, שבעים ואחת ברצף. שני תנאי עצירה עצמאיים נמדדו שוב: תנאי 4
