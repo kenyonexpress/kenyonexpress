@@ -220,6 +220,23 @@ jobs:
             })
             core.notice(`Opened outage issue #${created.number}.`)
 
+      # THE PHONE, NOT ONLY THE ISSUE. An issue is read when somebody opens
+      # GitHub; the daily probe finding the site down at 07:20 is worth a buzz.
+      # Same notifier as auto-rollback.yml; inert without the Telegram secrets,
+      # and ntfy is attempted regardless. `|| true`: a refused page must not
+      # hide the issue step's own result.
+      - name: Page Telegram and ntfy
+        if: steps.probe.outputs.failed == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NTFY_TOPIC: ${{ vars.NTFY_TOPIC }}
+          FAILURES: ${{ steps.probe.outputs.failures }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          node scripts/deploy/notify.mjs --priority urgent --title "KE production: daily smoke failed" \
+            --text "$(printf 'בדיקת ה-smoke היומית נכשלה מול %s.\n%s\nריצה: %s' "${{ steps.target.outputs.base }}" "$FAILURES" "$RUN_URL")" || true
+
       # The job goes red as well as opening the issue. An issue is the record;
       # a red run is what shows up in the Actions list and in the repository's
       # own badge, and the two are not interchangeable.

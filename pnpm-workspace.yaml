@@ -1,6 +1,10 @@
 allowBuilds:
   '@biomejs/biome': true
   '@parcel/watcher': true
+  # Arrived with @percy/cli. Its postinstall pre-downloads Percy's own Chromium
+  # for asset discovery; left off, `percy exec` fetches it lazily on first run,
+  # and only the visual-regression job ever runs that.
+  '@percy/core': false
   # Never approved, and left unapproved: the postinstall downloads a release
   # binary that only the sourcemap upload needs, and nothing here runs it. It
   # was a literal 'set this to true or false' placeholder, which pnpm now exits
@@ -11,6 +15,8 @@ allowBuilds:
   # funding banner; nothing needs it to run.
   core-js: false
   esbuild: true
+  # Transitive via @lhci/cli. Its postinstall only rewrites a version stamp.
+  protobufjs: false
   sharp: true
 
 # One sharp for the whole tree.

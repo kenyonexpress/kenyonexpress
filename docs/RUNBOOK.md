@@ -418,12 +418,26 @@ then `pnpm test`, `pnpm type-check` and `pnpm lint`.
 
 ### 5.1 Application
 
-Vercel keeps every deployment. Promote the previous one from the dashboard.
+Vercel keeps every deployment. Three ways back, in the order to try them:
 
-**The Vercel CLI is reachable locally but there is no project link and no
-token**, so `vercel rollback` cannot be run from this checkout. Rollback is a
-dashboard action, and a production push is one of the four stop-and-ask
-situations regardless.
+1. **Automatic.** `.github/workflows/auto-rollback.yml` smokes the production
+   domain after every successful production `deployment_status` and, when
+   `VERCEL_TOKEN` is set as a repository secret, rolls back to the previous
+   READY production deployment, smokes again and pages Telegram + ntfy. A
+   promotion through `deploy-promote.yml` does the same inside the run.
+   `docs/DEPLOY-PIPELINE.md` §2-3.
+2. **From a runner.** `gh workflow run auto-rollback.yml` re-runs the smoke
+   and the rollback on demand. Locally, `VERCEL_TOKEN=... pnpm deploy:rollback`
+   does the same through the REST API (`pnpm deploy:rollback:dry` resolves the
+   target without moving anything). No project link is needed; the ids default
+   to the ones measured 2026-09-17.
+3. **Dashboard.** Deployments, filter Production, previous READY deployment,
+   "Promote to Production". This is the path when the automatic one exits 5
+   (rollback itself failed) or 3 (nothing older is READY).
+
+**As of 2026-09-17 the token is not set**, so today only path 3 moves the
+domain; paths 1 and 2 still smoke and page, and say so. Setting the token is a
+production action and one of the four stop-and-ask situations.
 
 ### 5.2 Database: the general rule
 

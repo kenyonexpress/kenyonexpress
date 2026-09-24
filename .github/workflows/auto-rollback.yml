@@ -1,0 +1,204 @@
+name: Auto-rollback
+
+# The safety net UNDER the blue-green workflow, for deployments that did not go
+# through it: a push the Vercel GitHub app deployed directly, a promote from
+# the dashboard, a rollback somebody did by hand. Every one of those reaches
+# GitHub as a `deployment_status` event, and this listens for the moment a
+# production deployment reports success.
+#
+# Then it asks the only question that matters: is the production domain fit
+# to serve? scripts/deploy/smoke.mjs answers with the pages, the health BODY
+# and every scheduled cron path. On a no, it pages Telegram + ntfy, rolls back
+# to the previous READY production deployment (when VERCEL_TOKEN allows it),
+# smokes again, opens or updates the production-down issue, and marks the
+# rollback on the monitoring surfaces.
+#
+# Without VERCEL_TOKEN it still smokes and still pages; it just cannot move
+# the domain, and says so in the alert instead of pretending to.
+#
+# NOT a schedule. production-smoke.yml is the daily probe. This is the
+# per-deploy probe, and the two share the smoke script and the issue label so
+# a bad deploy at 09:00 and the 07:20 probe the next day land on one thread.
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Run the smoke and roll back on failure even without a deployment_status event.'
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  deployments: read
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  verify:
+    name: Smoke production after a deployment, roll back on failure
+    # Only a SUCCESSFUL PRODUCTION deployment, or a manual dispatch. Preview
+    # deployments have their own URL and no traffic; a failed deployment never
+    # took the domain, so there is nothing to roll back.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       (github.event.deployment.environment == 'Production' || github.event.deployment.environment == 'production'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # `secrets` is not readable from a step's `if`; only a step output is.
+      - name: Record whether a rollback is possible from here
+        id: gate
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then echo "has_token=true" >> "$GITHUB_OUTPUT"; else
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Rollback disabled::VERCEL_TOKEN is not set. This run will smoke and page, but cannot move the production domain."
+          fi
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Vercel reports success when the deployment is READY; the domain's
+      # edge cache can take a few seconds more to re-point. Probing at t+0
+      # would sometimes smoke the blue and call the green healthy.
+      - name: Let the domain settle
+        if: github.event_name == 'deployment_status'
+        run: sleep 45
+
+      - name: Smoke the production domain
+        id: smoke
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -uo pipefail
+          BASE="${PRODUCTION_URL:-https://kenyonexpress.vercel.app}"
+          node scripts/deploy/smoke.mjs --base "$BASE" --json /tmp/smoke.json
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Page on failure (before the rollback, so a hung rollback cannot swallow the page)
+        if: steps.smoke.outputs.smoke_ok == 'false'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NTFY_TOPIC: ${{ vars.NTFY_TOPIC }}
+          FAILURES: ${{ steps.smoke.outputs.smoke_failures }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          HAS_TOKEN: ${{ steps.gate.outputs.has_token }}
+        run: |
+          NEXT='מנסה החזרה אוטומטית לפריסה הקודמת.'
+          [ "$HAS_TOKEN" = "true" ] || NEXT='אין VERCEL_TOKEN, לא ניתן להחזיר מכאן. החזרה ידנית מהדשבורד.'
+          node scripts/deploy/notify.mjs --priority urgent --title "KE deploy: smoke failed" \
+            --text "$(printf 'בדיקת ה-smoke אחרי הפריסה נכשלה על %s.\n%s\n%s\nריצה: %s' "${{ steps.smoke.outputs.base }}" "$FAILURES" "$NEXT" "$RUN_URL")" || true
+
+      - name: Roll back to the previous READY production deployment
+        id: rollback
+        if: steps.smoke.outputs.smoke_ok == 'false' && steps.gate.outputs.has_token == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NTFY_TOPIC: ${{ vars.NTFY_TOPIC }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          node scripts/deploy/rollback.mjs --reason "production smoke failed after deployment_status success"
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Mark the rollback on Sentry, PostHog and Axiom
+        if: steps.rollback.outputs.code == '0'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+          AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
+          AXIOM_DATASET: ${{ vars.AXIOM_DATASET }}
+          AXIOM_DEPLOY_DATASET: ${{ vars.AXIOM_DEPLOY_DATASET }}
+        run: |
+          node scripts/deploy/mark-release.mjs --sha "${{ github.event.deployment.sha || github.sha }}" \
+            --url "${{ steps.smoke.outputs.base }}" --event rolled-back
+
+      # ONE ISSUE PER OUTAGE. Same label and same open-or-comment rule as
+      # production-smoke.yml, so the daily probe and this one share a thread.
+      - name: Open or update the outage issue
+        if: steps.smoke.outputs.smoke_ok == 'false'
+        uses: actions/github-script@v7
+        env:
+          BASE: ${{ steps.smoke.outputs.base }}
+          FAILURES: ${{ steps.smoke.outputs.smoke_failures }}
+          REPORT: ${{ steps.smoke.outputs.smoke_report }}
+          ROLLBACK_CODE: ${{ steps.rollback.outputs.code }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const label = 'production-down'
+            const rollback = {
+              '0': 'הוחזר אוטומטית לפריסה הקודמת ואומת.',
+              '1': 'ההחזרה נכשלה או שהפריסה הקודמת גם היא לא עוברת smoke. **נדרשת התערבות ידנית.**',
+              '3': 'אין פריסה קודמת תקינה להחזיר אליה. **נדרשת התערבות ידנית.**',
+              '': 'לא בוצעה החזרה: VERCEL_TOKEN לא מוגדר. החזרה ידנית מהדשבורד.',
+            }[process.env.ROLLBACK_CODE ?? ''] ?? `ההחזרה יצאה עם קוד ${process.env.ROLLBACK_CODE}.`
+            const body = [
+              `בדיקת ה-smoke אחרי פריסה נכשלה מול ${process.env.BASE}.`,
+              '',
+              '| נתיב | קוד | תוצאה |',
+              '| --- | --- | --- |',
+              process.env.REPORT.trim(),
+              '',
+              '**מה נכשל**',
+              process.env.FAILURES.trim(),
+              '',
+              `**החזרה:** ${rollback}`,
+              '',
+              `ריצה: ${process.env.RUN_URL}`,
+              `זמן: ${new Date().toISOString()}`,
+            ].join('\n')
+            try {
+              await github.rest.issues.createLabel({ ...context.repo, name: label, color: 'b60205', description: 'הדיפלוי החי לא עונה 200' })
+            } catch (error) {
+              if (error.status !== 422) throw error
+            }
+            const { data: open } = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', labels: label, per_page: 1 })
+            if (open.length > 0) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: open[0].number, body })
+              core.notice(`Commented on the open outage issue #${open[0].number}.`)
+              return
+            }
+            const { data: created } = await github.rest.issues.create({
+              ...context.repo,
+              title: `פריסה נכשלה ב-smoke: ${new Date().toISOString().slice(0, 16)}`,
+              body,
+              labels: [label],
+            })
+            core.notice(`Opened outage issue #${created.number}.`)
+
+      - name: Fail the run when production did not pass
+        if: steps.smoke.outputs.smoke_ok == 'false'
+        run: |
+          echo '::error title=Production smoke failed after deployment::See the production-down issue; the rollback outcome is recorded there.'
+          exit 1

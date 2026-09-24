@@ -17,6 +17,8 @@ Measured from this branch on **2026-09-01**.
 | Build | Next | whole repo | `pnpm build` |
 | Pixel comparison | Playwright script | home, category, product, coupon | `node scripts/compare.mjs` |
 | Lighthouse | script | smoke | `pnpm lighthouse:smoke` |
+| Lighthouse CI | `@lhci/cli` | home, catalogue, cart, checkout | `pnpm lighthouse:ci` (server already up on LOCAL_BASE) |
+| Visual regression | Percy + Playwright project `visual` | six funnel snapshots at 380 / 768 / 1440 | `PERCY_TOKEN=… pnpm test:visual` |
 
 ---
 

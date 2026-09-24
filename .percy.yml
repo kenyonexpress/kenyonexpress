@@ -1,0 +1,35 @@
+# Percy visual regression (https://docs.percy.io/docs/percy-yaml).
+#
+# Snapshots are taken by e2e/visual.spec.ts through @percy/playwright, so the
+# DOM is captured from the same production build and the same he-IL locale the
+# rest of the E2E suite runs against. Percy re-renders that DOM in its own
+# browsers at the widths below; the local Chromium's rendering is never what
+# gets compared.
+#
+# The widths are the project's three design widths: 380, 768 and 1440 are the
+# trio every visual step is measured at (CLAUDE.md, docs/UI-PARITY-REPORT.md).
+version: 2
+snapshot:
+  widths: [380, 768, 1440]
+  min-height: 1024
+  # The storefront is Hebrew RTL. Percy's renderer honours the document's own
+  # dir/lang attributes; this only makes the intent explicit in the config.
+  enable-javascript: false
+  percy-css: |
+    /* Anything time- or data-dependent is masked so a snapshot diff means a
+       layout change, not a new deal expiring or a countdown ticking. */
+    [data-percy-hide],
+    time,
+    [data-testid="countdown"],
+    .sr-only-live { visibility: hidden !important; }
+    *, *::before, *::after {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+      transition-duration: 0s !important;
+      caret-color: transparent !important;
+    }
+discovery:
+  # First-party assets only; third-party requests are answered from Percy's
+  # cache and never reach the network during a build.
+  allowed-hostnames: []
+  network-idle-timeout: 750

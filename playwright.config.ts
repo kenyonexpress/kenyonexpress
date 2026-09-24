@@ -11,6 +11,9 @@ const PORT = process.env.E2E_PORT ?? '3000'
 const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`
 const WEB_COMMAND = process.env.E2E_WEB_COMMAND ?? 'pnpm dev'
 
+/** e2e/visual.spec.ts: Percy snapshots, run only by the `visual` project. */
+const VISUAL_SPEC = /visual\.spec\.ts$/
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -80,13 +83,24 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: [VISUAL_SPEC],
     },
     {
       // Phone viewport for RTL + layout regressions. Paid money flow stays on
       // desktop chromium only (tagged via grep invert) so CI time stays bounded.
       name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
-      testIgnore: [/full-purchase-redeem\.spec\.ts/],
+      testIgnore: [/full-purchase-redeem\.spec\.ts/, VISUAL_SPEC],
+    },
+    {
+      // Percy visual regression. Its own project so the functional runs above
+      // never pay for it and so CI can run exactly this and nothing else under
+      // `percy exec`. One browser is enough: Percy re-renders the captured DOM
+      // at the widths in .percy.yml, so the local viewport only has to be wide
+      // enough for the page to settle.
+      name: 'visual',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: [VISUAL_SPEC],
     },
   ],
   // An externally supplied base URL means the app is already running somewhere

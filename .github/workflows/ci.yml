@@ -413,6 +413,132 @@ jobs:
             test-results/
           retention-days: 7
 
+  # LIGHTHOUSE CI. Scores the production build the `build` job just made, on
+  # the four public funnel pages, three runs each, median asserted.
+  #
+  # READ-ONLY, so it is NOT gated on CI_SUPABASE_URL the way `e2e` is: it
+  # navigates to /, /products, /cart and /checkout and writes nothing. With the
+  # demo service key the admin-backed reads fail the same way they do in the
+  # build job, and the page still serves, which is what a document-quality
+  # audit needs. It is not a statement about field performance; lighthouserc.cjs
+  # says which assertions are errors, which are warnings, and why.
+  lighthouse:
+    name: Lighthouse CI
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
+      ALLOW_INCOMPLETE_ENV: 'true'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      CARDCOM_USE_MOCK: 'true'
+      CARDCOM_WEBHOOK_SECRET: mock-webhook-secret
+      CHECKOUT_ENABLED: 'true'
+      LOCAL_BASE: http://localhost:3000
+      LHCI_START_SERVER: '1'
+      # Optional: with a Lighthouse CI GitHub App token the run also posts a
+      # status check. Without it the reports are only the artifact below.
+      LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+      - name: Collect and assert (lhci autorun)
+        run: pnpm lighthouse:ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-ci
+          path: .lighthouseci/
+          retention-days: 14
+
+  # PERCY VISUAL REGRESSION. Walks the storefront funnel (e2e/visual.spec.ts)
+  # under `percy exec`, which captures each page's DOM and has Percy render it
+  # at 380 / 768 / 1440 and diff it against the approved baseline.
+  #
+  # Gated TWICE, and both gates announce themselves:
+  #  - PERCY_TOKEN: without it there is nothing to upload to, so the job would
+  #    walk the funnel and compare nothing.
+  #  - CI_SUPABASE_URL: the spec adds a product to a guest cart to snapshot the
+  #    populated cart and the checkout form, so it WRITES a cart row. That is
+  #    the same reason `e2e` is gated, and the only database this repository
+  #    can reach without that secret is production.
+  visual:
+    name: Visual regression (Percy)
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      E2E_WEB_COMMAND: pnpm start
+      CARDCOM_USE_MOCK: 'true'
+      CARDCOM_WEBHOOK_SECRET: mock-webhook-secret
+      CHECKOUT_ENABLED: 'true'
+      PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+      # Percy names the build after the branch and compares against the base.
+      PERCY_BRANCH: ${{ github.head_ref || github.ref_name }}
+      PERCY_TARGET_BRANCH: ${{ github.base_ref || 'main' }}
+    steps:
+      - name: Decide whether this job can run
+        id: gate
+        env:
+          CI_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+          PERCY_TOKEN_SET: ${{ secrets.PERCY_TOKEN != '' }}
+        run: |
+          if [ "$PERCY_TOKEN_SET" != "true" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Visual regression skipped::PERCY_TOKEN is not set, so there is no Percy project to upload snapshots to. Add the PERCY_TOKEN repository secret to enable this job."
+          elif [ -z "$CI_SUPABASE_URL" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Visual regression skipped::CI_SUPABASE_URL is not set. The visual spec writes a guest cart, and the only database reachable without that secret is production. Set the CI_SUPABASE_* repository secrets against a disposable project to enable this job."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: pnpm/action-setup@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/download-artifact@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          name: next-build
+          path: .next/
+      - name: Seed E2E fixtures (catalogue + auth users)
+        if: steps.gate.outputs.run == 'true'
+        run: pnpm seed:test
+      - name: Install Chromium
+        if: steps.gate.outputs.run == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Snapshot the funnel under percy exec
+        if: steps.gate.outputs.run == 'true'
+        run: pnpm test:visual
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.gate.outputs.run == 'true'
+        with:
+          name: playwright-report-visual
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
   # E2E AGAINST THE PULL REQUEST'S VERCEL PREVIEW. This is a different thing
   # from the `e2e` job above and does not replace it.
   #

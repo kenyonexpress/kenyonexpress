@@ -674,6 +674,23 @@ normalises; layer 2 is what keeps the gate honest until then.
 Verified in all three directions: a new violation under `src/` exits 1, the
 same violation under `scripts/` exits 0, and the clean tree exits 0.
 
+### 6.5 Added 2026-09-17 (branch `autopilot`, goal "Testing: complete")
+
+Measured on this branch before and after; every number below is command
+output, not the plan.
+
+| Piece | Where | Notes |
+|---|---|---|
+| **Coverage scope + 80% floor** | `vitest.config.ts` | Coverage was instrumented on the money path only (6 files). It now instruments all of `src/lib/**` and `src/server/**` (the code that runs without a browser; pages and components are what Playwright, Lighthouse and Percy cover) and asserts a **global 80% line floor** on that scope, alongside the untouched per-file 95% money floors. Before this goal the scope measured **69.44% lines** (8942/12877); §6.6 records the number the floor was set against. |
+| **Supabase webhook integration test** | `src/app/api/webhooks/products/route.test.ts` | The receiver for the Supabase Database Webhook on `public.products` was the only webhook route with no test. 22 cases through the real request-log wrapper, payload contract and QStash transport: both auth headers, tampered body, both 400 shapes, table/id no-ops, INSERT/UPDATE/soft-delete/DELETE to the right op, inline run when QStash is unset, the publish call's retry/failure-callback/dedup headers when it is, and 500 on either transport failing so Supabase retries. |
+| **Lighthouse CI** | `lighthouserc.cjs`, `pnpm lighthouse:ci`, job `lighthouse` in `ci.yml` | `@lhci/cli` over `/`, `/products`, `/cart`, `/login`, three runs each, median asserted. Accessibility and best-practices are `error` at 0.9 everywhere; SEO is `error` at 0.9 on the indexable pages only (`/cart` is `noindex` by design and scores 0.69 on `is-crawlable`); performance is `warn` at 0.8 because `docs/PERFORMANCE-BUDGET.md` measured a 5-point run-to-run spread on an unchanged tree. The deterministic budgets are errors: total 1.2 MB, script 600 KB, image 800 KB, CLS 0.1; render-blocking resources warn above 2 because every page carries one or two Next CSS chunks. `/checkout` was in the first draft and removed: with no cart it redirects client-side to `/cart` and the swap scores CLS 0.36, which is a finding about the empty-cart redirect and not something Lighthouse can measure past. Read-only, so it runs on every push from the `build` artifact and is not gated on `CI_SUPABASE_URL`. Reports are the `lighthouse-ci` artifact. Ran green locally against the production build, 12 runs. |
+| **Percy visual regression** | `.percy.yml`, `e2e/visual.spec.ts`, Playwright project `visual`, `pnpm test:visual`, job `visual` in `ci.yml` | Six snapshots over the funnel (home, catalogue, product, cart empty and populated, guest checkout form, login) rendered by Percy at 380 / 768 / 1440. Its own Playwright project so `chromium` and `mobile-chrome` never pay for it. The job skips with a named warning unless BOTH `PERCY_TOKEN` and `CI_SUPABASE_URL` are set: the spec writes a guest cart, and the only database reachable without the second secret is production (same reason the `e2e` job is gated). |
+
+What this does NOT claim: neither new job has run green on GitHub yet. `lhci
+healthcheck` passes locally and the workflow parses; the Percy job cannot run
+anywhere until the two secrets exist, and it says so in the run log rather than
+passing silently.
+
 ### 6.4 Not built, and why
 
 - **`e2e/redeem.spec.ts` (§2.2), including the concurrency race.** Needs a

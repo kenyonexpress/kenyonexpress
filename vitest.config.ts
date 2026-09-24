@@ -3,16 +3,32 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
 /**
- * Coverage policy (docs/ARCHITECTURE-TESTING-CICD.md §1.5):
- * money-path modules carry a hard per-file floor; everything else is reported
- * for information only. A global percentage is deliberately NOT a merge gate —
- * the closed invariant list is what actually protects the money path.
+ * Coverage policy (docs/ARCHITECTURE-TESTING-CICD.md §1.5 and §6.5):
+ * money-path modules carry a hard per-file floor, and the headless code
+ * (`src/lib`, `src/server`) carries a global 80% line floor on top of it.
+ * The closed invariant list is still what actually protects the money path;
+ * the global floor is a ratchet so that new server code arrives with tests
+ * rather than a promise of them.
  */
 const MONEY_MODULE_FLOOR = {
   lines: 95,
   branches: 95,
   functions: 95,
   statements: 95,
+}
+
+/**
+ * Global floor over the coverage `include` below. Lines only: branch and
+ * function percentages on Supabase-backed actions are dominated by error
+ * arms that a fake client can reach but a reader learns nothing from, and a
+ * floor that invites tests written to move a number is worse than none.
+ *
+ * Measured on 2026-09-17 before the floor existed: 69.44% lines over the same
+ * scope. The tests that lifted it are the `*-actions.test.ts` files next to
+ * the server actions and the lib tests added in the same change.
+ */
+const HEADLESS_CODE_FLOOR = {
+  lines: 80,
 }
 
 export default defineConfig({
@@ -42,26 +58,26 @@ export default defineConfig({
       'scripts/dr/**/*.test.mjs',
       'scripts/axiom/**/*.test.mjs',
       'scripts/uptimerobot/**/*.test.mjs',
+      'scripts/deploy/**/*.test.mjs',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {
       provider: 'v8',
       reporter: ['text-summary', 'json-summary', 'lcov'],
       reportsDirectory: './coverage',
-      // Only the money path is instrumented for floors. Including all of src
-      // would let report noise drown the signal.
-      include: [
-        // The canonical money module CLAUDE.md makes mandatory for every money
-        // calculation. It was absent from this list until 2026-08-20, so it
-        // carried no floor and did not even appear in the report, while the
-        // primitives it re-exports from ./commerce/money were floored at 95%.
-        'src/lib/money.ts',
-        'src/lib/commerce/**/*.ts',
-        'src/lib/checkout/split.ts',
-        'src/server/domain/orders/**/*.ts',
-      ],
-      exclude: ['**/*.test.ts', '**/*.test.tsx'],
+      // The headless code: everything under src/lib and src/server. Pages,
+      // layouts and components are deliberately NOT here; they are exercised
+      // by Playwright, Lighthouse CI and Percy against a real build, and a
+      // jsdom render count of them would be a number without a meaning.
+      //
+      // Until 2026-09-17 this list was the six money files only, so the
+      // canonical money module could be (and once was) absent from it without
+      // anyone noticing. Instrumenting the whole scope keeps that from
+      // recurring: the money files are inside it and keep their own floors.
+      include: ['src/lib/**/*.ts', 'src/server/**/*.ts'],
+      exclude: ['**/*.test.ts', '**/*.test.tsx', '**/*.d.ts'],
       thresholds: {
+        ...HEADLESS_CODE_FLOOR,
         'src/lib/money.ts': MONEY_MODULE_FLOOR,
         'src/lib/commerce/money.ts': MONEY_MODULE_FLOOR,
         'src/lib/commerce/commission.ts': MONEY_MODULE_FLOOR,

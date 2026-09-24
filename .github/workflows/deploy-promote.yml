@@ -1,0 +1,220 @@
+name: Deploy (blue-green)
+
+# Blue-green promotion to production.
+#
+#   green = a fresh deployment built from this commit, on its own URL
+#   blue  = whatever production serves right now
+#
+# 1. Build the green as a NON-production deployment (`vercel deploy --prebuilt`
+#    with no --prod), so it has a URL and no traffic.
+# 2. scripts/deploy/promote.mjs smokes the green on that URL (pages, health
+#    body, every cron path). A green that fails never touches the domain.
+# 3. It promotes the green (Vercel's promote endpoint re-points the production
+#    domains; no rebuild) and smokes the PRODUCTION domain.
+# 4. If that second smoke fails it rolls back to the blue through the rollback
+#    endpoint, smokes again, and pages Telegram + ntfy with the outcome.
+# 5. On success it stamps the deploy on Sentry, PostHog and Axiom.
+#
+# WHAT GATES IT. The secret VERCEL_TOKEN. Without it every step announces the
+# skip and exits green, because the Vercel project today is linked to a
+# different repository (docs/RELEASE-PROCESS.md §0) and a workflow that fails
+# red on every push for a missing token is a workflow somebody deletes. When
+# the token is set, this file IS the release path, and merging to main is not.
+#
+# VERCEL_ORG_ID and VERCEL_PROJECT_ID are ids, not secrets. They default in
+# scripts/deploy/vercel.mjs to the values measured through the Vercel MCP on
+# 2026-09-17 and can be overridden as repository variables.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deployment:
+        description: 'Existing deployment id (dpl_...) or host to promote. Empty = build one from this commit.'
+        required: false
+        default: ''
+      dry:
+        description: 'Resolve and smoke only; never call promote or rollback.'
+        type: boolean
+        default: false
+      skip_preview_smoke:
+        description: 'Skip the smoke on the green URL (only when Deployment Protection blocks it and no bypass secret exists).'
+        type: boolean
+        default: false
+
+# One promotion at a time. Two concurrent runs could each promote, each fail,
+# and each roll back to the other's green.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  promote:
+    name: Build green, smoke, promote, verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Decide whether this job can run
+        id: gate
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Blue-green deploy skipped::VERCEL_TOKEN is not set. Set it (a token with deployments:write on the kenyonexpress-projects team) and this workflow becomes the release path: build, smoke, promote, verify, roll back."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: pnpm/action-setup@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.gate.outputs.run == 'true'
+
+      # Build only when no existing deployment was named. `vercel pull` writes
+      # the project's production env to .vercel/.env.production.local, which
+      # is what the preflight and the build read. The preflight is the refusal
+      # to ship a compromised key (scripts/deploy-preflight.mjs); it runs here
+      # and not in `pnpm build` on purpose.
+      - name: Pull the production environment and run the deploy preflight
+        if: steps.gate.outputs.run == 'true' && github.event.inputs.deployment == ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || 'team_TUMTPVDP8218QHwedSjmgJWl' }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || 'prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk' }}
+        run: |
+          set -euo pipefail
+          pnpm dlx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+          set -a
+          # shellcheck disable=SC1091
+          . .vercel/.env.production.local
+          set +a
+          node scripts/deploy-preflight.mjs
+
+      - name: Build and upload the green (no traffic yet)
+        id: green
+        if: steps.gate.outputs.run == 'true' && github.event.inputs.deployment == ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || 'team_TUMTPVDP8218QHwedSjmgJWl' }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || 'prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk' }}
+        run: |
+          set -euo pipefail
+          pnpm dlx vercel@latest build --prod --yes --token="$VERCEL_TOKEN"
+          # --prebuilt uploads .vercel/output; without --prod the deployment
+          # gets its own URL and is NOT put behind the production domain.
+          # `--target production` is not passed for the same reason: the
+          # promote step is the only thing allowed to move the domain.
+          URL=$(pnpm dlx vercel@latest deploy --prebuilt --yes --token="$VERCEL_TOKEN" \
+            --meta githubCommitSha="$GITHUB_SHA" --meta blueGreen=green 2>/tmp/deploy.log | tail -n1)
+          cat /tmp/deploy.log
+          echo "green deployment: $URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke the green, promote, smoke production, roll back on failure
+        id: promote
+        if: steps.gate.outputs.run == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NTFY_TOPIC: ${{ vars.NTFY_TOPIC }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DEPLOYMENT: ${{ github.event.inputs.deployment || steps.green.outputs.url }}
+          DRY: ${{ github.event.inputs.dry }}
+          SKIP_PREVIEW: ${{ github.event.inputs.skip_preview_smoke }}
+        run: |
+          set -uo pipefail
+          ARGS=(--deployment "$DEPLOYMENT")
+          [ "$DRY" = "true" ] && ARGS+=(--dry)
+          [ "$SKIP_PREVIEW" = "true" ] && ARGS+=(--skip-preview-smoke)
+          node scripts/deploy/promote.mjs "${ARGS[@]}"
+          CODE=$?
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "deployment=$DEPLOYMENT" >> "$GITHUB_OUTPUT"
+          exit $CODE
+
+      # Markers only after a promotion that stayed. A rolled-back deploy is
+      # marked by the rollback path with event=rolled-back.
+      - name: Mark the release on Sentry, PostHog and Axiom
+        if: steps.gate.outputs.run == 'true' && steps.promote.outputs.code == '0' && github.event.inputs.dry != 'true'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+          AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
+          AXIOM_DATASET: ${{ vars.AXIOM_DATASET }}
+          AXIOM_DEPLOY_DATASET: ${{ vars.AXIOM_DEPLOY_DATASET }}
+        run: |
+          node scripts/deploy/mark-release.mjs --sha "$GITHUB_SHA" \
+            --deployment "${{ steps.promote.outputs.deployment }}" \
+            --url "${{ vars.PRODUCTION_URL || 'https://kenyonexpress.vercel.app' }}" --event promoted
+
+      - name: Mark a rolled-back release
+        if: steps.gate.outputs.run == 'true' && (steps.promote.outputs.code == '4' || steps.promote.outputs.code == '5')
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+          AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
+          AXIOM_DATASET: ${{ vars.AXIOM_DATASET }}
+          AXIOM_DEPLOY_DATASET: ${{ vars.AXIOM_DEPLOY_DATASET }}
+        run: |
+          node scripts/deploy/mark-release.mjs --sha "$GITHUB_SHA" \
+            --deployment "${{ steps.promote.outputs.deployment }}" \
+            --url "${{ vars.PRODUCTION_URL || 'https://kenyonexpress.vercel.app' }}" --event rolled-back
+
+      # Exit 5 means production is in an unknown state and a human is needed
+      # now. The Telegram page already went out; the issue is the record.
+      - name: Open an incident issue when the rollback itself failed
+        if: steps.gate.outputs.run == 'true' && steps.promote.outputs.code == '5'
+        uses: actions/github-script@v7
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DEPLOYMENT: ${{ steps.promote.outputs.deployment }}
+        with:
+          script: |
+            const label = 'production-down'
+            try {
+              await github.rest.issues.createLabel({ ...context.repo, name: label, color: 'b60205', description: 'הדיפלוי החי לא עונה 200' })
+            } catch (error) {
+              if (error.status !== 422) throw error
+            }
+            await github.rest.issues.create({
+              ...context.repo,
+              title: `פריסה נכשלה וגם ההחזרה נכשלה: ${new Date().toISOString().slice(0, 16)}`,
+              labels: [label],
+              body: [
+                'הקידום של הפריסה נכשל בבדיקת ה-smoke על דומיין הפרודקשן, וההחזרה לפריסה הקודמת נכשלה גם היא.',
+                '',
+                `פריסה: ${process.env.DEPLOYMENT}`,
+                `ריצה: ${process.env.RUN_URL}`,
+                '',
+                'מה לעשות: docs/DEPLOY-PIPELINE.md §5 (החזרה ידנית מהדשבורד של Vercel).',
+              ].join('\n'),
+            })

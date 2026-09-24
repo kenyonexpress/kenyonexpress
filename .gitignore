@@ -75,3 +75,10 @@ backups/
 # never committed, and biome must not format the manifest (an untracked scratch
 # file was failing `pnpm lint` as a formatter error on 2026-09-09).
 .image-staging/
+
+# Lighthouse CI reports (pnpm lighthouse:ci); uploaded as a CI artifact
+.lighthouseci/
+
+# Per-agent coverage scratch trees (vitest --coverage with a custom reportsDirectory).
+# Generated HTML that biome would otherwise lint; the canonical tree is /coverage above.
+coverage-*/

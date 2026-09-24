@@ -83,3 +83,8 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-16 13:47 | home | 380 | 47.84% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
 | 2026-09-16 13:49 | home | 768 | 48.65% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
 | 2026-09-16 13:50 | home | 1440 | 45.83% | **FAIL** | `bfd12b3d6-dirty` | HOME-PAGE: handheld header 84->50, feature strip one nowrap row below lg, shot with consent decided; mine vs 09-04 archived live capture (ke-arch/refs) |
+| 2026-09-24 00:05 | home | 380 | 9.29% | PASS | `69bcbd5c7-dirty` | homepage-closeout baseline at 69bcbd5c7; mine vs 08-12 archived ke_live_380.png |
+| 2026-09-24 00:06 | home | 768 | 20.63% | **FAIL** | `69bcbd5c7-dirty` | homepage-closeout baseline at 69bcbd5c7; mine vs 08-12 archived ke_live_768.png |
+| 2026-09-24 00:08 | home | 1440 | 11.12% | **FAIL** | `69bcbd5c7-dirty` | homepage-closeout baseline at 69bcbd5c7; mine vs 08-12 archived ke_live_1440.png |
+| 2026-09-24 00:12 | home | 768 | 20.63% | **FAIL** | `69bcbd5c7-dirty` | homepage-closeout baseline rerun, optimizer warm; mine vs 08-12 archived ke_live_768.png |
+| 2026-09-24 00:18 | home | 768 | 20.63% | **FAIL** | `69bcbd5c7-dirty` | experiment: shoot-mine with 8s paint wait after the sweep; tests whether the blank card photos at 768 are decode timing |
