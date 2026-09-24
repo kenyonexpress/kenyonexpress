@@ -2,10 +2,10 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q11 DONE (אומת 25.09).** הבא בתור: **Q12** (בטבלה DONE; לא אומת בנפרד:
-5% או 100 ש"ח בטקסט. לאמת על העץ ולרשום).
+**Q12 DONE (אומת 25.09).** הבא בתור: **Q13** (בטבלה DONE, ‏`bf0effa2e`,
+‏`02cb65fb3`, ‏`ace712504`; לאמת על העץ ולרשום).
 
-ההיסטוריה המלאה (Q01..Q09, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+ההיסטוריה המלאה (Q01..Q10, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -24,6 +24,65 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q12 - DONE (אומת 25.09) - דפים משפטיים בפריסת terms-and-conditions של Electro: תקנון, פרטיות, ביטולים לפי 14ג, נגישות, עוגיות, קישור ביטול בפוטר
+
+**הפריט כבר היה עשוי.** הטקסטים ב-`src/app/(legal)/_content/*.ts` (`d5c2739d4`
+ואילך, תיקון אחרון `28656d996`), הקידום לנתיבים המקושרים ב-`c03a59f6b`, וקישורי
+"ביטול עסקה" ו-"מדיניות עוגיות" בפוטר ב-`a6d3608ac` (24.09). לא נכתב קוד.
+מה שהיה חסר בטבלה, "לא אומת: 5% או 100 ש"ח בטקסט", אומת עכשיו על העץ ועל ה-build.
+
+**מה נבדק (נמדד, לא צוטט):**
+- **הפריסה:** מרנדר אחד, `LegalArticle.tsx`: breadcrumb "בית / כותרת", `h1`,
+  תאריך עדכון, הודעת סקירה גלויה, תוכן עניינים מקושר, סעיפים ממוספרים
+  (המספור נגזר מהסדר), מיכל `max-w-page` (1320) עם מידת קריאה `max-w-3xl`,
+  ובתחתית `LegalFooterLinks` לשלושת המסמכים האחרים. `(legal)/layout.tsx`
+  עוטף בכותרת ובפוטר של החנות.
+- **הנתיבים על ה-build המקומי** (BUILD_ID `VDWCwPh-ataFrmHxIWYzL`, `pnpm start`
+  על 3311): `/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
+  `/accessibility` כולם 200; `/legal/returns` 308 לנתיב הקנוני. כל ארבעת
+  הדפים ב-`(store)` קוראים `getLegalDoc()` ומרנדרים `LegalArticle`, כך שיש
+  סט טקסט אחד.
+- **ביטולים לפי 14ג:** `returns.ts` טבלת חלונות: 14 יום למוצר פיזי ולקופון
+  ללא מועד, 14 יום עם 2 ימי עסקים לפני מועד קבוע, 14 יום עם 7 ימים לפני אירוח
+  ובילוי (14ג(ד)(2)), ו-14ח למנוי. **דמי ביטול, שורה 157: "עד 5% ממחיר העסקה
+  או 100 שקלים חדשים, לפי הנמוך מביניהם"**, תואם ל-`computeCancellationFee`
+  ב-`src/server/domain/orders/refund.ts` (נקודות בסיס, integer). הטסט
+  `legal-pages.test.ts` שורות 150-151 נועל את שני המספרים, ו-
+  `legal-duplication.test.ts` נועל את ההסכמה בין הטקסט לקוד.
+- **העברת קופון:** `terms.ts` שורה 177: "קופון ניתן להעברה לאדם אחר, לרבות
+  כמתנה, אלא אם צוין אחרת בעמוד הדיל".
+- **עוגיות:** סעיף `#cookies` ב-`privacy.ts` (שורה 148), טבלת עוגיות בשמות
+  הקבועים מהקוד (`ke_consent`, Supabase), טעינת צד שלישי רק אחרי הסכמה.
+  אין דף עוגיות נפרד, בכוונה: טקסט אחד ולא עותק שני (הערה ב-`SiteFooter`).
+- **פוטר:** `SiteFooter.tsx` שורות 59-67: תקנון, פרטיות, ביטולים והחזרות,
+  **"ביטול עסקה" → `/refund_returns#how-to-cancel`**, "מדיניות עוגיות" →
+  `/privacy-policy#cookies`, הצהרת נגישות. שני ה-`id` קיימים ב-HTML המוגש
+  (grep על ה-build), ושני ה-href מופיעים בדף הבית.
+- **נגישות:** `accessibility.ts`, ערוצי פנייה בשם, כלל הרכז לפי סף 25
+  העובדים, מה נמדד בפועל (axe על 19 דפים + מעבר מקלדת בכל ריצה).
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, docs-index 280, docs-path-audit 155), `pnpm test`
+**579 קבצים, 6,999 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה
+בחזית, `--baseline=refs/ke_live_{width}.png`:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 21:51-21:54 UTC על `7251b838c` (הראשונה
+נקייה, השתיים אחריה `-dirty` רק כי הפנקס עצמו השתנה). הדפים המשפטיים עצמם
+אינם נמדדים בשער: אין להם צילום reference (`refs/` מחזיק בית, מוצר, סל וקופה).
+
+**החלטות שהתקבלו לבד:**
+- "מדיניות עוגיות" נשארת סעיף בתוך מדיניות הפרטיות ולא דף חמישי: זה הטקסט
+  שכבר מקושר מהפוטר, וסט שני של אותו נוסח הוא הכשל ש-`legal-routes.test.ts`
+  נכתב למנוע.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול
+  `src/lib/money.ts`), כמו ב-Q06..Q11. לא נגעתי בכסף.
 
 ## Q11 - DONE (אומת 25.09) - דף "הצטרפו כעסקים" עם הסכם click-wrap: hash גרסה, timestamp ו-IP
 
@@ -93,69 +152,6 @@ locale-format 138/138, docs-index 280, docs-path-audit 155), `pnpm test`
 - `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול הוא
   `src/lib/money.ts`), כמו ב-Q06..Q10. לא נגעתי בכסף.
 
-## Q10 - DONE (אומת 25.09) - סל, קופה ודף תודה בסגנון Electro v7: קופת אורח, Google בסוף, תשלום מאחורי ממשק, מינימום 0
-
-**הפריט כבר היה עשוי ב-`f6392ed6e` (29.07, "guest checkout on measured Electro
-geometry").** לא נכתב קוד UI. הפריט אימת על העץ ועל ה-build, ותיקן את שער
-ההשוואה כדי שהסל והקופה יימדדו שוב מול הצילומים הקפואים.
-
-**מה נבדק (נמדד, לא צוטט):**
-- **קופת אורח:** `src/proxy.ts` שורה 170, `/checkout` אינו ברשימת `needsAuth`
-  (רק תתי-הנתיבים). על ה-build המקומי (`nbkSvg5_JlRxh7h-gds98`, `pnpm start`
-  על 3311), `GET /checkout` אנונימי 200, `/cart` 200, `/checkout/return` 307
-  ל-`/login?next=…` (דף התודה קורא את ההזמנה של הקונה עצמו ודורש session,
-  בכוונה).
-- **Google בסוף:** `CheckoutForm.tsx` שורות 156-166 (`signInWithGoogle` דרך
-  `useActionState`, טופס נסתר עם `next=/checkout?resume=1`), שורות 377-414
-  (הזהות נדרשת בלחיצת התשלום; תשובות האורח נשמרות ב-`sessionStorage` תחת
-  `RESUME_KEY`), שורה 349 (מילוי מחדש אחרי החזרה). הכפתור: "יש ללחוץ כאן כדי
-  להתחבר".
-- **תשלום מאחורי ממשק:** `src/lib/payments/types.ts` שורה 151,
-  `interface PaymentProvider` (`createLowProfile`, `chargeWithToken`,
-  `verifyLowProfile`, `refundByTransactionId`, `createDocument`,
-  `listTransactions`). `getPaymentProvider` ב-`index.ts` שורה 38 מחזיר
-  `MockCardcomProvider` כש-`CARDCOM_USE_MOCK=true`, אחרת `CardcomProvider`.
-  לא נגעתי בשום ספק תשלום.
-- **מינימום הזמנה 0:** אין שער סכום מינימלי ב-`submitCheckout` (grep על
-  `MIN_ORDER|minimum|total < N` ב-`checkout.ts` וב-`lib/checkout/*`: אפס
-  תוצאות). ה-`min_order_agorot` היחיד בריפו הוא סף תוכנית ההפניות, לא הקופה.
-  שורה פיזית במחיר 0 נדחית (שורה 593) כשגיאת נתונים של אדמין, כלל אחר.
-- **גאומטריית Electro:** `src/styles/checkout-page.css` מצטט
-  `refs/checkout-measured.json` (מיכל 1165, טור חיוב 650 מימין, פאנל הזמנה
-  466 משמאל, כפתור 397x64 רדיוס 50), `src/styles/checkout-tokens.test.ts`.
-  דף התודה `checkout/return/page.tsx` מייבא את אותו גיליון; הסל דרך
-  `cart-page.css` מה-layout הראשי.
-
-**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
-locale-format 138/138, docs-index 280, docs-path-audit 154), `pnpm test`
-**578 קבצים, 6,990 ירוקים, 12 מדולגים**, `pnpm build` ירוק (BUILD_ID
-`nbkSvg5_JlRxh7h-gds98`). **שער ההשוואה בחזית, `pnpm start` על 3311:**
-
-| דף | רוחב | תוכן | מצב | reference |
-|---|---|---|---|---|
-| home | 380 | 8.44% | PASS | `refs/ke_live_380.png` |
-| home | 768 | 9.03% | PASS | `refs/ke_live_768.png` |
-| home | 1440 | 3.82% | PASS | `refs/ke_live_1440.png` |
-| cart | 1440 | 1.47% | PASS | `refs/live-cart.png` (1440x4033, 09.09), סל מקומי מלא |
-| checkout | 1440 | 0.94% | PASS | `refs/live-checkout.png` (1440x2600, 07.09), נחת על `/checkout` בלי הפניה |
-
-השורות ב-`docs/UI-PARITY-REPORT.md` 21:24-21:30 UTC על `29b782c2d-dirty`
-(מלוכלך רק בגלל עריכת `compare.mjs` שלמטה). **380 ו-768 בסל ובקופה לא נמדדו:
-אין צילומי reference ברוחבים האלה** (חוסם 5). לא נכתבה שורה מומצאת.
-
-**החלטות שהתקבלו לבד:**
-- **`scripts/compare.mjs`, שתי עריכות** כדי ש-`--baseline` יעבוד גם בסל
-  ובקופה (הפנקס רשם ב-09.2x "unmeasurable at any width"): (א) בדיקת הזהות
-  של הצד החי ו-`seedCart('live')` מדולגות כשיש צילום קפוא, כי הדומיין לא
-  מתרגם ושניהם מתו על ה-goto לפני שהגיעו לצילום; (ב) שער "שני סלים במצב
-  שונה" רץ רק כשהצד החי צולם בפועל (`undefined !== false` דחה כל ריצה קפואה
-  עם ההודעה "filled"). הזריעה המקומית עדיין רצה; מצב הצילום הקפוא נרשם
-  בלוג ולא מאומת.
-- הקופה עברה את שער "לא הופנה מ-`/checkout`" עם סל אנונימי זרוע, וזו ראיה
-  שנייה לקופת האורח, מעבר ל-curl.
-- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים, מסלול הכסף
-  הוא `src/lib/money.ts` (כמו Q06..Q09).
-
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
 | פריט | מצב | ראיה |
@@ -171,7 +167,7 @@ locale-format 138/138, docs-index 280, docs-path-audit 154), `pnpm test`
 | Q09 | DONE (25.09) | הרשומה למעלה. מייל רק ל-5: אישור 6 שורות, איפוס סיסמה (Resend + fallback), תזכורת תפוגה, התראת אבטחה, מתנה למקבל. 11 סוגי push לדף ההזמנה, תיקון `data.url`. +37 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q10 | DONE (אומת 25.09) | `f6392ed6e` (29.07). קופת אורח (`/checkout` מחוץ ל-`needsAuth`, 200 אנונימי), Google בלחיצת התשלום עם `resume=1`, `PaymentProvider` עם mock, אין מינימום הזמנה. שער: home 8.44/9.03/3.82, cart 1440 1.47%, checkout 1440 0.94%, PASS. `compare.mjs` תוקן ל-`--baseline` בסל ובקופה. |
 | Q11 | DONE (אומת 25.09) | `185b904a4` (09.09) + `1e9b4f0e2`. `/suppliers/apply` עם `CONTRACT_TEXT`, hash SHA-256 מהקבוע בשרת, `accepted_at DEFAULT now()` ו-`client_ip inet` ב-204 (pending). כותרת "הצטרפו כעסקים". +9 טסטים. שער 8.44/9.03/3.82 PASS. |
-| Q12 | DONE | `(legal)/legal`, `terms-and-conditions`, `privacy-policy`, `refund_returns`, `accessibility`, `c03a59f6b`. לא אומת בנפרד: 5% או 100 ש"ח בטקסט. |
+| Q12 | DONE (אומת 25.09) | `c03a59f6b`, `a6d3608ac`. ארבעה דפים 200 מ-`LegalArticle`, `/legal/*` 308. "עד 5% ממחיר העסקה או 100 שקלים חדשים, לפי הנמוך" ב-`returns.ts` 157, תואם `refund.ts`; קופון ניתן להעברה ב-`terms.ts` 177; `#cookies` ו-`#how-to-cancel` בפוטר. שער 8.44/9.03/3.82 PASS. |
 | Q13 | DONE | `bf0effa2e`, `02cb65fb3`, כפתור שאלה על המוצר `ace712504`. |
 | Q14 | OPEN, חלקי | `(store)/gift` + תזמון (`078a3de6d`), צ'יפים `dda866a5a`. אין ראיה להעברת קופון למשתמש אחר. |
 | Q15 | OPEN, חלקי | crons קיימים (`expire-vouchers`, `notifications`, `weekly-digest`). אין ראיה ל-T-7/T-1 ב-pg_cron, club tiers, cashback לארנק. |

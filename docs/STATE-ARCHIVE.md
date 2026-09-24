@@ -4,6 +4,73 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q10 - DONE (אומת 25.09) - סל, קופה ודף תודה בסגנון Electro v7: קופת אורח, Google בסוף, תשלום מאחורי ממשק, מינימום 0
+
+**הפריט כבר היה עשוי ב-`f6392ed6e` (29.07, "guest checkout on measured Electro
+geometry").** לא נכתב קוד UI. הפריט אימת על העץ ועל ה-build, ותיקן את שער
+ההשוואה כדי שהסל והקופה יימדדו שוב מול הצילומים הקפואים.
+
+**מה נבדק (נמדד, לא צוטט):**
+- **קופת אורח:** `src/proxy.ts` שורה 170, `/checkout` אינו ברשימת `needsAuth`
+  (רק תתי-הנתיבים). על ה-build המקומי (`nbkSvg5_JlRxh7h-gds98`, `pnpm start`
+  על 3311), `GET /checkout` אנונימי 200, `/cart` 200, `/checkout/return` 307
+  ל-`/login?next=…` (דף התודה קורא את ההזמנה של הקונה עצמו ודורש session,
+  בכוונה).
+- **Google בסוף:** `CheckoutForm.tsx` שורות 156-166 (`signInWithGoogle` דרך
+  `useActionState`, טופס נסתר עם `next=/checkout?resume=1`), שורות 377-414
+  (הזהות נדרשת בלחיצת התשלום; תשובות האורח נשמרות ב-`sessionStorage` תחת
+  `RESUME_KEY`), שורה 349 (מילוי מחדש אחרי החזרה). הכפתור: "יש ללחוץ כאן כדי
+  להתחבר".
+- **תשלום מאחורי ממשק:** `src/lib/payments/types.ts` שורה 151,
+  `interface PaymentProvider` (`createLowProfile`, `chargeWithToken`,
+  `verifyLowProfile`, `refundByTransactionId`, `createDocument`,
+  `listTransactions`). `getPaymentProvider` ב-`index.ts` שורה 38 מחזיר
+  `MockCardcomProvider` כש-`CARDCOM_USE_MOCK=true`, אחרת `CardcomProvider`.
+  לא נגעתי בשום ספק תשלום.
+- **מינימום הזמנה 0:** אין שער סכום מינימלי ב-`submitCheckout` (grep על
+  `MIN_ORDER|minimum|total < N` ב-`checkout.ts` וב-`lib/checkout/*`: אפס
+  תוצאות). ה-`min_order_agorot` היחיד בריפו הוא סף תוכנית ההפניות, לא הקופה.
+  שורה פיזית במחיר 0 נדחית (שורה 593) כשגיאת נתונים של אדמין, כלל אחר.
+- **גאומטריית Electro:** `src/styles/checkout-page.css` מצטט
+  `refs/checkout-measured.json` (מיכל 1165, טור חיוב 650 מימין, פאנל הזמנה
+  466 משמאל, כפתור 397x64 רדיוס 50), `src/styles/checkout-tokens.test.ts`.
+  דף התודה `checkout/return/page.tsx` מייבא את אותו גיליון; הסל דרך
+  `cart-page.css` מה-layout הראשי.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, docs-index 280, docs-path-audit 154), `pnpm test`
+**578 קבצים, 6,990 ירוקים, 12 מדולגים**, `pnpm build` ירוק (BUILD_ID
+`nbkSvg5_JlRxh7h-gds98`). **שער ההשוואה בחזית, `pnpm start` על 3311:**
+
+| דף | רוחב | תוכן | מצב | reference |
+|---|---|---|---|---|
+| home | 380 | 8.44% | PASS | `refs/ke_live_380.png` |
+| home | 768 | 9.03% | PASS | `refs/ke_live_768.png` |
+| home | 1440 | 3.82% | PASS | `refs/ke_live_1440.png` |
+| cart | 1440 | 1.47% | PASS | `refs/live-cart.png` (1440x4033, 09.09), סל מקומי מלא |
+| checkout | 1440 | 0.94% | PASS | `refs/live-checkout.png` (1440x2600, 07.09), נחת על `/checkout` בלי הפניה |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 21:24-21:30 UTC על `29b782c2d-dirty`
+(מלוכלך רק בגלל עריכת `compare.mjs` שלמטה). **380 ו-768 בסל ובקופה לא נמדדו:
+אין צילומי reference ברוחבים האלה** (חוסם 5). לא נכתבה שורה מומצאת.
+
+**החלטות שהתקבלו לבד:**
+- **`scripts/compare.mjs`, שתי עריכות** כדי ש-`--baseline` יעבוד גם בסל
+  ובקופה (הפנקס רשם ב-09.2x "unmeasurable at any width"): (א) בדיקת הזהות
+  של הצד החי ו-`seedCart('live')` מדולגות כשיש צילום קפוא, כי הדומיין לא
+  מתרגם ושניהם מתו על ה-goto לפני שהגיעו לצילום; (ב) שער "שני סלים במצב
+  שונה" רץ רק כשהצד החי צולם בפועל (`undefined !== false` דחה כל ריצה קפואה
+  עם ההודעה "filled"). הזריעה המקומית עדיין רצה; מצב הצילום הקפוא נרשם
+  בלוג ולא מאומת.
+- הקופה עברה את שער "לא הופנה מ-`/checkout`" עם סל אנונימי זרוע, וזו ראיה
+  שנייה לקופת האורח, מעבר ל-curl.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים, מסלול הכסף
+  הוא `src/lib/money.ts` (כמו Q06..Q09).
+
+(הועבר מ-STATE.md ב-Q12, 25.09.)
+
+---
+
 Updated: 2026-09-23 | **v3.0.0-advanced complete, ready for growth scaling**
 
 Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`)
