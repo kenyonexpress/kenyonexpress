@@ -2,11 +2,11 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q09 DONE (25.09).** הבא בתור: **Q10** (בטבלה DONE מ-`f6392ed6e`; לאמת על
-העץ לפי כלל "פריט שכבר נעשה", ואז Q11).
+**Q10 DONE (אומת 25.09).** הבא בתור: **Q11** (בטבלה OPEN חלקי: הסכם
+click-wrap עם hash קיים, לא אומת timestamp + IP).
 
-ההיסטוריה המלאה (Q01..Q05, תור 23.09, וכל מה שקדם, 24,310 שורות) עברה
-ל-`docs/STATE-ARCHIVE.md` באותו קומיט. הקובץ הזה מחזיק רק את מה שחי.
+ההיסטוריה המלאה (Q01..Q09, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
 
@@ -25,177 +25,68 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
 
-## Q06 - DONE (25.09) - אימות Q02..Q05 מול ראיות, ‏SHOWABLE: no
+## Q10 - DONE (אומת 25.09) - סל, קופה ודף תודה בסגנון Electro v7: קופת אורח, Google בסוף, תשלום מאחורי ממשק, מינימום 0
 
-**מה נמדד בסשן הזה (לא צוטט מרישומים):** DNS (ארבע שאילתות dig, שני curl),
-פריסות הפרודקשן ב-Vercel דרך REST (חמש האחרונות, עם sha), HTML חי של דף
-הבית ושל `/product/barbecue-2`, `git rev-parse HEAD origin/audit/final-audit`
-(זהים, `2ee29bc90`), `git log a388118f1..HEAD` (4 קומיטים), נוכחות
-`migrations/pending/241..243`, grep שדות הטופס, ושער ההשוואה המלא למעלה.
+**הפריט כבר היה עשוי ב-`f6392ed6e` (29.07, "guest checkout on measured Electro
+geometry").** לא נכתב קוד UI. הפריט אימת על העץ ועל ה-build, ותיקן את שער
+ההשוואה כדי שהסל והקופה יימדדו שוב מול הצילומים הקפואים.
 
-**שערים על העץ של הקומיט הזה:** `pnpm build` ירוק (BUILD_ID למעלה),
-`pnpm type-check` נקי, `pnpm lint` נקי (i18n 632/632, docs-index 280,
-docs-path-audit 154 רשומות), `pnpm test` **574 קבצים, 6,945 טסטים ירוקים,
-12 מדולגים**. הקבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/INDEX.md` (שורה לארכיון), `docs/known-dangling-paths.json` (40 נתיבים
-היסטוריים מהארכיון, דרך `--write` של הסקריפט, אפס הסרות), `README.md`
-(279 -> 280 מסמכים, שער `ci-docs-inventory`), `docs/UI-PARITY-REPORT.md`
-(שלוש שורות השער).
+**מה נבדק (נמדד, לא צוטט):**
+- **קופת אורח:** `src/proxy.ts` שורה 170, `/checkout` אינו ברשימת `needsAuth`
+  (רק תתי-הנתיבים). על ה-build המקומי (`nbkSvg5_JlRxh7h-gds98`, `pnpm start`
+  על 3311), `GET /checkout` אנונימי 200, `/cart` 200, `/checkout/return` 307
+  ל-`/login?next=…` (דף התודה קורא את ההזמנה של הקונה עצמו ודורש session,
+  בכוונה).
+- **Google בסוף:** `CheckoutForm.tsx` שורות 156-166 (`signInWithGoogle` דרך
+  `useActionState`, טופס נסתר עם `next=/checkout?resume=1`), שורות 377-414
+  (הזהות נדרשת בלחיצת התשלום; תשובות האורח נשמרות ב-`sessionStorage` תחת
+  `RESUME_KEY`), שורה 349 (מילוי מחדש אחרי החזרה). הכפתור: "יש ללחוץ כאן כדי
+  להתחבר".
+- **תשלום מאחורי ממשק:** `src/lib/payments/types.ts` שורה 151,
+  `interface PaymentProvider` (`createLowProfile`, `chargeWithToken`,
+  `verifyLowProfile`, `refundByTransactionId`, `createDocument`,
+  `listTransactions`). `getPaymentProvider` ב-`index.ts` שורה 38 מחזיר
+  `MockCardcomProvider` כש-`CARDCOM_USE_MOCK=true`, אחרת `CardcomProvider`.
+  לא נגעתי בשום ספק תשלום.
+- **מינימום הזמנה 0:** אין שער סכום מינימלי ב-`submitCheckout` (grep על
+  `MIN_ORDER|minimum|total < N` ב-`checkout.ts` וב-`lib/checkout/*`: אפס
+  תוצאות). ה-`min_order_agorot` היחיד בריפו הוא סף תוכנית ההפניות, לא הקופה.
+  שורה פיזית במחיר 0 נדחית (שורה 593) כשגיאת נתונים של אדמין, כלל אחר.
+- **גאומטריית Electro:** `src/styles/checkout-page.css` מצטט
+  `refs/checkout-measured.json` (מיכל 1165, טור חיוב 650 מימין, פאנל הזמנה
+  466 משמאל, כפתור 397x64 רדיוס 50), `src/styles/checkout-tokens.test.ts`.
+  דף התודה `checkout/return/page.tsx` מייבא את אותו גיליון; הסל דרך
+  `cart-page.css` מה-layout הראשי.
 
-**החלטות שהתקבלו לבד:**
-- **לא נפרס `2ee29bc90` לפרודקשן.** Q06 מבקש לכתוב מה חסר, לא לסגור אותו,
-  ופריסה היא מצב עצירה. הפקודה שעובדת רשומה בזיכרון
-  `production-served-by-invisible-vercel-account` ובסעיף Q02 בארכיון.
-- **STATE.md נגזם ל-<300 שורות** לפי כלל הפריט; שום שורה לא נמחקה, הכל
-  ב-`docs/STATE-ARCHIVE.md` באותו קומיט.
-- `docs/BACKLOG.md` שהפריט מבקש לקרוא **לא קיים** (גם לא בהיסטוריה של הענף);
-  `packages/money.ts` לא קיים, המסלול הוא `src/lib/money.ts` ו-`src/lib/commerce/money.ts`.
-- שער ההשוואה הורץ אף שהפריט אינו נוגע ב-UI, כי כל שורות Q03 בפנקס היו
-  `-dirty` ולא הייתה מדידה על קומיט נקי. עכשיו יש.
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, docs-index 280, docs-path-audit 154), `pnpm test`
+**578 קבצים, 6,990 ירוקים, 12 מדולגים**, `pnpm build` ירוק (BUILD_ID
+`nbkSvg5_JlRxh7h-gds98`). **שער ההשוואה בחזית, `pnpm start` על 3311:**
 
-## Q09 - DONE (25.09) - מיילים ללקוח לפי הרשימה, כל השאר web push לדף ההזמנה
+| דף | רוחב | תוכן | מצב | reference |
+|---|---|---|---|---|
+| home | 380 | 8.44% | PASS | `refs/ke_live_380.png` |
+| home | 768 | 9.03% | PASS | `refs/ke_live_768.png` |
+| home | 1440 | 3.82% | PASS | `refs/ke_live_1440.png` |
+| cart | 1440 | 1.47% | PASS | `refs/live-cart.png` (1440x4033, 09.09), סל מקומי מלא |
+| checkout | 1440 | 0.94% | PASS | `refs/live-checkout.png` (1440x2600, 07.09), נחת על `/checkout` בלי הפניה |
 
-**ההחלטה שהפריט ביקש ממפעיל התקבלה בפריט עצמו.** ‏`final-queue.txt` (25.09
-02:37) מאוחר ממדיניות 22.09 ומנקוב ברשימה סגורה; הרשימה היא ההחלטה. אין
-צורך בשאלה.
-
-**מה היה (נמדד בקוד):** ‏`mayNotify` חסם מייל לכל סוג לקוח חוץ מ-`voucher_gifted`,
-אבל ‏`finalizeOrder` עדיין שלח ישירות את מייל ה-QR עם הקודים (`sendVoucherEmail`,
-עוקף את המדיניות). איפוס סיסמה יצא מ-SMTP של Supabase, לא מ-Resend. לא הייתה
-התראת אבטחה בשום מקום. ‏**כל web push נחת בדף הבית:** התבניות שמו ‏URL
-מוחלט ב-`data.url`, ו-`sw.js` פותח רק נתיב שמתחיל ב-`/`.
-
-**מה נכתב:**
-- **רשימת המיילים** ב-`preferences.ts`: ‏`EMAIL_POLICY_EXEMPT_KINDS` =
-  ‏`order_paid`, ‏`voucher_issued`, ‏`voucher_expiring`, ‏`voucher_gifted`.
-  איפוס סיסמה והתראת אבטחה הם שליחה ישירה, לא סוג outbox (ה-CHECK היה
-  דוחה סוג חדש עד מיגרציה, והתראה שמחכה למיגרציה אינה התראה).
-- **אישור רכישה של 6 שורות** (‏14ג(ב)): ‏`renderConfirmation` אחד לשני
-  הטריגרים (095 ללא קופונים, 102 עם). מוכר, הזמנה, שולם (עם קישור לקבלה
-  במסלול שלנו), אספקה, ביטול (14 יום, דמי ביטול 5% או ‏₪100 דרך
-  ‏`formatAgorot`), דף ההזמנה. **בלי קוד ובלי QR**; הקודים בדף ההזמנה.
-  הטסט סופר בדיוק שש שורות. ‏`finalize.ts` לא שולח יותר את מייל ה-QR;
-  ‏`sendVoucherEmail` נשאר לכפתור השליחה-מחדש של המפעיל.
-- **איפוס סיסמה דרך Resend**: ‏`password-reset-send.ts`,
-  ‏`generateLink({ type: 'recovery' })` לקישור שלנו
-  ‏`/auth/callback?token_hash=…&type=recovery`; ה-callback מקבל ‏`type`
-  מרשימה סגורה (‏`recovery`, אחרת ‏`magiclink`). ‏Supabase SMTP נשאר fallback.
-- **התראת אבטחה**: ‏`security-alert.ts` + ‏`security-alert-send.ts`, נשלחת
-  אחרי שינוי סיסמה, רישום ‏TOTP (רק כשהגורם היה ‏`unverified`), הוספת
-  passkey והסרתו. **בלי קישור במייל** (צורת פישינג), כתובת האתר כטקסט.
-- **web push לדף ההזמנה**: ‏`templates.ts` מכסה 11 סוגי לקוח (נוספו
-  ‏`order_paid`, ‏`voucher_redeemed`, ‏`refund_completed`,
-  ‏`voucher_expiry_credited`, ‏`referral_bonus_credited`, ‏`back_in_stock`);
-  ‏`data.url` הוא נתיב ‏`/account/orders/<id>` כשיש ‏`order_id`, ו-`data.link`
-  הצורה המוחלטת. ‏`welcome` ו-`voucher_gifted` בכוונה ללא push.
-- העתק לקטלוג: ‏`purchaseConfirmation.*`, ‏`securityAlert.*`, ‏`passwordReset.*`
-  ב-`he.json` ו-`en.json`. תקרת i18n ירדה 631 -> 628. ‏`docs/EMAILS.md` עודכן.
-
-**שערים על העץ:** ‏`pnpm type-check` נקי, ‏`pnpm lint` נקי (i18n 628/628,
-locale-format 138/138, docs-index 280), ‏`pnpm test` **578 קבצים, 6,990
-ירוקים, 12 מדולגים** (+37). ‏`pnpm build` ירוק (BUILD_ID
-‏`5CnF-KHhp1I594VQrgU2Y`). **שער ההשוואה בחזית, ‏`pnpm start` על 3311,
-‏`--widths=380,768,1440 --baseline=refs/ke_live_{width}.png`: 380 ‏8.44% PASS,
-768 ‏9.03% PASS, 1440 ‏3.82% PASS**, שלוש שורות ב-`UI-PARITY-REPORT` על
-‏`4751618f0-dirty`. זהה ל-Q08 כי דף הבית לא נגע.
+השורות ב-`docs/UI-PARITY-REPORT.md` 21:24-21:30 UTC על `29b782c2d-dirty`
+(מלוכלך רק בגלל עריכת `compare.mjs` שלמטה). **380 ו-768 בסל ובקופה לא נמדדו:
+אין צילומי reference ברוחבים האלה** (חוסם 5). לא נכתבה שורה מומצאת.
 
 **החלטות שהתקבלו לבד:**
-- **מספר עוסק/ח.פ אינו קיים בריפו** (לא בתוכן המשפטי, לא בפוטר, לא ב-env).
-  שורת המוכר נושאת שם, כתובת הפוטר, ‏support@ וקישור לתקנון, בלי מספר
-  מומצא. תיקון: עריכה אחת ב-`purchaseConfirmation.sellerName`. חוסם 9.
-- **מייל ה-QR לקונה הוסר מ-finalize**, כי הרשימה סגורה ומדיניות 22.09 כבר
-  אמרה שהקופון חי ב-/account. הקונה מקבל את 6 השורות + push לדף ההזמנה.
-- ‏`voucher_expiring` הוא הסוג האופציונלי היחיד עם מייל; לא נוספה עמודת
-  מייל בהגדרות (מתג חי אחד בעמודה מתה). ההסבר בעמוד ההגדרות עודכן.
-- ‏`vercel.json` ללא crons: ה-drain (`/api/cron/notifications`) לא מתוזמן
-  בפרודקשן. לא בפריט הזה; רשום כחוסם 10.
-- ‏`docs/BACKLOG.md` עדיין לא קיים (כמו Q06..Q08). לא נוצר.
-- **תהליך ‏`next-server` (pid 81888, לא מאזין על 3311, בעלים לא ידוע)** היה
-  קיים לפני שער ההשוואה ונעלם אחרי הניקוי שלי (`pkill -f next-server -n`,
-  שאמור היה לפגוע רק בשרת שלי). ייתכן שהיה שרת של סשן אחר. לא שוחזר, כי
-  אין לי את הפקודה שהריצה אותו.
-
-## Q08 - DONE (25.09) - חשבונית, שדות מע"מ בקופה, wa.me עם פרטי הזמנה, ביטול לפי 14ג
-
-**מה היה לפני (נמדד בקוד, לא צוטט):** הורדת חשבונית חתומה קיימת בשני
-המקומות: בדף התודה `InvoiceDownloadLink` (קישור חתום ופג-תוקף דרך
-`/api/invoices/[orderId]/download`, מוזרם דרך המקור ולא מפנה ל-URL של הספק)
-ובדף ההזמנה דרך `/account/orders/[id]/invoice` (בדיקת session). לא נשלח
-בשום ערוץ, לחיצה בלבד. **שדות מע"מ לעסק היו רק בהגדרות החשבון**
-(`BusinessInvoiceSettings`, טבלת `customer_invoice_settings`, 239 ממתינה),
-**לא בקופה.** wa.me בשני הדפים נשא רק את מזהה ההזמנה. טופס "בקשת החזר" קיים
-עם דמי ביטול 5%/₪100 אבל בלי אזכור של 14ג ובלי המילה "ביטול" בכותרת.
-
-**מה נכתב:**
-- **קופה:** בלוק "חשבונית על שם עסק" בשלב הפרטים (`CheckoutForm.tsx`),
-  תיבת סימון + שם עסק + מספר עוסק/ח.פ. (9 ספרות, LTR), מוסתר עד לסימון,
-  ממולא מראש מההגדרה השמורה (`checkout/page.tsx` קורא `getInvoiceSettings`
-  דרך לקוח RLS). `submitCheckout` מאמת ב-`invoiceSettingsSchema` ומבצע
-  upsert לאותה שורה **לפני החיוב**, כי `invoices.ts` קורא אותה בזמן בניית
-  המסמך. אם השורה לא נכתבת והתיבה מסומנת (239 לא הוחלה), הקופה מחזירה שגיאה
-  מפורשת במקום להנפיק חשבונית פרטית בשקט. שער צעדים ב-`steps.ts` דורש
-  שם ומספר רק כשהתיבה מסומנת. ביטול סימון שומר שם ומספר ומכבה את הדגל.
-- **wa.me עם פרטי הזמנה:** `buildOrderInquiryText` מקבל שמות פריטים (עד 3,
-  "ועוד N") וסכום ששולם באגורות דרך `shekels(agorot())`. דף ההזמנה שולח את
-  שורות ההזמנה והסכום; דף התודה את שמות הקופונים ו-`orderMoney.totalAgorot`.
-- **ביטול לפי 14ג:** `RefundRequestForm` נקרא עכשיו "ביטול עסקה ובקשת החזר",
-  עם משפט 14ג (14 יום מקבלת המוצר או מסמך הגילוי, לפי המאוחר) וקישור
-  ל-`/legal/returns`. דף התודה מקבל שורה "התחרטתם?" עם קישור לדף ההזמנה.
-- `messages/he.json` + `en.json`: `checkout.businessInvoice.*`,
-  `cancellation.*`. תקרת i18n ירדה 632 -> 631.
-
-**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 631/631),
-`pnpm test` **574 קבצים, 6,953 טסטים ירוקים, 12 מדולגים** (+8 טסטים:
-whatsapp, inquiry-links, steps, checkout-form-contract). `pnpm build` ירוק
-(BUILD_ID `-B-svNKuB0-XB662vfExd`). **שער ההשוואה בחזית, `pnpm start` על
-3311, `--widths=380,768,1440 --baseline=refs/ke_live_{width}.png`: 380
-8.44% PASS, 768 9.03% PASS, 1440 3.82% PASS**, שלוש שורות ב-`UI-PARITY-REPORT`
-על `44e318815-dirty`. זהה ל-Q06 כי דף הבית לא נגע.
-
-**החלטות שהתקבלו לבד:**
-- הקופה כותבת לאותה טבלה כמו הגדרות החשבון ולא לעמודה חדשה על `orders`:
-  זה מה שהחשבונית קוראת היום, ואין מיגרציה חדשה. המשמעות: הבחירה בקופה
-  מעדכנת את ברירת המחדל של החשבון, וזה נאמר ללקוח ברמז מתחת לשדות.
-- `docs/BACKLOG.md` עדיין לא קיים (כמו ב-Q06). לא נוצר.
-- הבלוק מרונדר גם לאורח (אין שורה לקרוא, ריק), כי התשלום דורש התחברות
-  והכתיבה קורית אחרי ה-sign-in בפעולת השרת.
-
-## Q07 - DONE (אומת 25.09) - כפתור שיתוף בדף המוצר
-
-**הפריט כבר היה עשוי ב-`9fe2ca441` (23.09, על `audit/final-audit`).** לא
-נכתב קוד; הפריט הזה אימת בלבד, לפי כלל "פריט שכבר נעשה: לאמת, לרשום, לסיים".
-
-**מה נבדק על העץ:**
-- `src/components/shared/ProductShareRow.tsx`, מרונדר מ-`ProductInfo.tsx`
-  (שורה 455), כלומר על כל דף מוצר. הסדר: `WhatsAppShareButton` ראשון,
-  בגופן `text-base font-bold` (בולט מהשאר), פותח `wa.me` בלחיצה עם ההודעה
-  מ-`buildShareMessage` (שם הדיל + המחיר של ההצעה) והכתובת בשורה חדשה.
-- כפתור "שיתוף": `navigator.share` כשקיים (מובייל); כשאינו קיים, לחיצה
-  פותחת fallback: פייסבוק, טלגרם (`t.me/share/url`), מייל (`mailto:`).
-  ההחלטה לפי קיום ה-API בזמן לחיצה, לא לפי user-agent.
-- `CopyLinkButton`: `navigator.clipboard.writeText` + toast `הקישור הועתק`
-  (sonner, `Toaster dir="rtl"` ב-`(store)/layout.tsx`). כל המחרוזות
-  ב-`messages/he.json` תחת `share`.
-- **אין WhatsApp אוטומטי בשיתוף**: כל פתיחת `wa.me` היא לחיצה של הלקוח.
-  קיים ערוץ Twilio נפרד וקודם (`whatsapp_outbox`, מיגרציה 173) לתבניות
-  שובר בלבד, מותנה opt-in ונבדק שוב בזמן שליחה; אינו מתוזמן ב-`vercel.json`
-  (0 crons) ולא נגע בפריט הזה. `docs/BACKLOG.md` עדיין לא קיים.
-
-**שערים על `5d22aa60e` (העץ נקי לפני השער):** `pnpm type-check` נקי,
-`pnpm lint` נקי (i18n 632/632), `pnpm test` 574 קבצים, 6,945 ירוקים,
-12 מדולגים; בתוך הירוקים `product-share-row.test.tsx` ו-`share-buttons.test.tsx`,
-16 טסטים. `pnpm build` ירוק (BUILD_ID `feRtH5JRBtDXC-CvFtWaN`).
-**שער ההשוואה, בחזית, `pnpm start` על 3311:**
-
-| דף | רוחב | תוכן | מצב |
-|---|---|---|---|
-| product | 1440 | 2.79% | PASS (`refs/live-product.png`, `COMPARE_ALLOW_GRID_MISMATCH=1`, קומיט נקי) |
-| home | 380 | 8.44% | PASS |
-| home | 768 | 9.03% | PASS |
-| home | 1440 | 3.82% | PASS |
-
-380 ו-768 בדף המוצר עדיין ללא reference (חוסם 5); לא נכתבה שורה מומצאת.
-השורות בפנקס `docs/UI-PARITY-REPORT.md`, 20:18-20:23 UTC.
+- **`scripts/compare.mjs`, שתי עריכות** כדי ש-`--baseline` יעבוד גם בסל
+  ובקופה (הפנקס רשם ב-09.2x "unmeasurable at any width"): (א) בדיקת הזהות
+  של הצד החי ו-`seedCart('live')` מדולגות כשיש צילום קפוא, כי הדומיין לא
+  מתרגם ושניהם מתו על ה-goto לפני שהגיעו לצילום; (ב) שער "שני סלים במצב
+  שונה" רץ רק כשהצד החי צולם בפועל (`undefined !== false` דחה כל ריצה קפואה
+  עם ההודעה "filled"). הזריעה המקומית עדיין רצה; מצב הצילום הקפוא נרשם
+  בלוג ולא מאומת.
+- הקופה עברה את שער "לא הופנה מ-`/checkout`" עם סל אנונימי זרוע, וזו ראיה
+  שנייה לקופת האורח, מעבר ל-curl.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים, מסלול הכסף
+  הוא `src/lib/money.ts` (כמו Q06..Q09).
 
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
@@ -210,7 +101,7 @@ whatsapp, inquiry-links, steps, checkout-form-contract). `pnpm build` ירוק
 | Q07 | DONE (אומת 25.09) | `9fe2ca441` (23.09) על הענף. `ProductShareRow` ב-`ProductInfo`: WhatsApp ראשון ובולט, Share נייטיב, fallback פייסבוק/טלגרם/מייל, העתקת קישור עם toast `הקישור הועתק`. 16 טסטים ירוקים. שער מוצר 1440 ‏2.79% PASS על `5d22aa60e` נקי. |
 | Q08 | DONE (25.09) | הרשומה למעלה. חשבונית חתומה (קיים), שדות מע"מ לעסק בקופה (חדש), wa.me עם פריטים וסכום (חדש), ביטול לפי 14ג בדף ההזמנה ובדף התודה (חדש). +8 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q09 | DONE (25.09) | הרשומה למעלה. מייל רק ל-5: אישור 6 שורות, איפוס סיסמה (Resend + fallback), תזכורת תפוגה, התראת אבטחה, מתנה למקבל. 11 סוגי push לדף ההזמנה, תיקון `data.url`. +37 טסטים. שער 8.44/9.03/3.82 PASS. |
-| Q10 | DONE | `f6392ed6e feat(checkout): guest checkout on measured Electro geometry`. תשלום ב-mock מאחורי ממשק. |
+| Q10 | DONE (אומת 25.09) | `f6392ed6e` (29.07). קופת אורח (`/checkout` מחוץ ל-`needsAuth`, 200 אנונימי), Google בלחיצת התשלום עם `resume=1`, `PaymentProvider` עם mock, אין מינימום הזמנה. שער: home 8.44/9.03/3.82, cart 1440 1.47%, checkout 1440 0.94%, PASS. `compare.mjs` תוקן ל-`--baseline` בסל ובקופה. |
 | Q11 | OPEN, חלקי | הסכם click-wrap עם hash ב-`lib/suppliers/contract.ts`, CTA `1e9b4f0e2`. לא אומת: שמירת timestamp + IP. |
 | Q12 | DONE | `(legal)/legal`, `terms-and-conditions`, `privacy-policy`, `refund_returns`, `accessibility`, `c03a59f6b`. לא אומת בנפרד: 5% או 100 ש"ח בטקסט. |
 | Q13 | DONE | `bf0effa2e`, `02cb65fb3`, כפתור שאלה על המוצר `ace712504`. |
@@ -241,8 +132,9 @@ whatsapp, inquiry-links, steps, checkout-form-contract). `pnpm build` ירוק
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר.
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
-5. **צילום reference לדף מוצר ב-380 וב-768**: בלי זה השער בדף המוצר (Q04)
-   נמדד ב-1440 בלבד.
+5. **צילומי reference ב-380 וב-768 לדף המוצר, לסל ולקופה**: קיימים רק
+   ב-1440 (`refs/live-product.png`, `refs/live-cart.png`,
+   `refs/live-checkout.png`). בלי זה השערים של Q04 ו-Q10 נמדדים ב-1440 בלבד.
 6. **`RESEND_API_KEY` בפרודקשן**: לא נמדד בפריט הזה (הזיכרון אומר שמשתני
    הסביבה מפוצלים בין שלושה פרויקטים ב-Vercel). בלי המפתח כל חמשת המיילים
    נופלים בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.

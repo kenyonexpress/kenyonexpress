@@ -1094,7 +1094,13 @@ const pendingImages = { live: 0, mine: 0 }
 // add-to-cart GET at the real site and paid for two cart seedings first. This
 // probe answers identity only -- the archive-renders-unstyled half needs a
 // settled page, and it gets one in shoot().
-if ((page === 'checkout' || page === 'cart') && isExternal(liveUrl)) {
+// A FROZEN CAPTURE MEANS NO LIVE NAVIGATION, HERE TOO. `--baseline` was wired
+// into the frozen block below, which the home page reaches first; cart and
+// checkout reached this probe and `seedCart('live')` before it, and with the
+// domain unresolvable (registrar NS, 25.09) both died on the goto and the gate
+// never got to the capture it was handed. The capture IS the live side, so the
+// identity probe has nothing to classify and the live seed has nothing to seed.
+if ((page === 'checkout' || page === 'cart') && isExternal(liveUrl) && !LIVE_PNG) {
   const probe = await ctx.newPage()
   await probe.goto(liveUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
   const markers = await probe.evaluate(READ_REFERENCE_MARKERS)
@@ -1107,7 +1113,7 @@ if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // waiting out its full timeout on a page that answers in under a second
   // cold, and the order costs nothing to get right.
   await seedCart('mine')
-  await seedCart('live')
+  if (!LIVE_PNG) await seedCart('live')
 }
 
 // TWO AGENTS RUNNING THIS SCRIPT IN ONE WORKING DIRECTORY OVERWRITE EACH
@@ -1206,7 +1212,17 @@ await shoot(mineUrl, runShot('mine'))
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
 // percentage nobody can act on.
-if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
+// With a frozen capture nothing reads the live cart, so `cartEmptiness.live`
+// stays undefined and `undefined !== false` refused every frozen cart run with
+// a message calling the unread side "filled". The state of a capture cannot be
+// checked here; it is named in the notes column instead, and the reader pairs
+// the file with the seed on purpose.
+if (page === 'cart' && LIVE_PNG) {
+  console.log(
+    `cart: frozen capture, live cart state not checked; local cart is ${cartEmptiness.mine ? 'EMPTY' : 'filled'}.`,
+  )
+}
+if (page === 'cart' && !LIVE_PNG && cartEmptiness.live !== cartEmptiness.mine) {
   const describe = (v) => (v ? 'empty' : 'filled')
   console.error(
     `REFUSING to measure: live cart is ${describe(cartEmptiness.live)} and the local cart is ${describe(cartEmptiness.mine)}.`,

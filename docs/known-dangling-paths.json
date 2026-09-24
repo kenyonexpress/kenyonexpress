@@ -132,6 +132,7 @@
   "docs/STATE-ARCHIVE.md :: migrations/pending/173_whatsapp_flow.sql",
   "docs/STATE-ARCHIVE.md :: migrations/pending/177_cashback_ledger.sql",
   "docs/STATE-ARCHIVE.md :: migrations/pending/180_analytics_server_event_names.sql",
+  "docs/STATE-ARCHIVE.md :: migrations/pending/241..243",
   "docs/STATE-ARCHIVE.md :: public/manifest.json",
   "docs/STATE-ARCHIVE.md :: refs/cart-measurements.md",
   "docs/STATE-ARCHIVE.md :: refs/checkout-measured.json",
