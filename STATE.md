@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q14 DONE (25.09).** הבא בתור: **Q15** (בטבלה OPEN, חלקי: crons קיימים;
-חסר ראיה ל-T-7/T-1 ב-pg_cron, club tiers, cashback לארנק).
+**Q15 DONE (25.09).** הבא בתור: **Q16** (בטבלה OPEN, חלקי: `fc9da36dc`,
+`2410c879d`; אין ראיה ל-commission per campaign ול-fraud checks).
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -24,6 +24,69 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q15 - DONE (25.09) - תזכורות תפוגה T-7 ו-T-1 בפוש ובמייל דרך pg_cron; דרגות מועדון לפי הוצאה ב-12 חודשים; קאשבק לארנק פר מוצר, ברירת מחדל 0
+
+**שניים מתוך שלושה היו עשויים, השלישי לא.** נמדד על העץ לפני שנכתבה שורה:
+
+- **תזכורות T-7 ו-T-1 במייל ובפוש: קיימות.** `/api/cron/expire-vouchers` קורא `expire_vouchers()`,
+  `credit_expired_vouchers()` ואז `enqueue_expiring_voucher_notices({p_buckets:[7,1]})`; שלושתן חיות
+  בפרודקשן (כותרת 227, נמדד 10.09). ה-outbox נשאב ב-`/api/cron/notifications` בשתי רגליים: מייל
+  (`buildVoucherExpiringEmail` ב-`lib/email/notifications.ts`, אחד מחמשת המיילים של Q09) ו-web push
+  (`couponExpiring` ב-`lib/push/templates.ts`, `voucher_expiring` ברשימת סוגי ה-push). **pg_cron:**
+  `162_cron_schedule.sql` (pending; אושר 04.09, לא הוחל, חסום על `app_url` ב-vault, חוסם 5 ב-CLAUDE.md)
+  מתזמן `ke-expire-vouchers` ב-`15 23 * * *` ו-`ke-notifications` כל 5 דקות דרך pg_cron + pg_net (161
+  מוחלת). 227 (pending) מרחיבה את ההתאמה מיום מדויק לחלון פר-bucket כדי שלילה שנפל לא יאבד תזכורת.
+  **עד שמוחלת 162 שום דבר לא יורה בפרודקשן** (חוסם 10). לא נכתב SQL חדש: הקובץ קיים ועותק היה כפילות.
+- **קאשבק לארנק פר מוצר, ברירת מחדל 0: קיים.** `products.cashback_percent` NOT NULL DEFAULT 0 (042,
+  בפרודקשן לפי `database.ts`), בטופס האדמין (`ProductForm`, `products.ts` 291: תיבה ריקה = 0), נצלם
+  ל-`order_items.cashback_amount_agorot` בקופה (`checkout.ts` 589/611) ומזוכה לארנק ב-`finalize.ts`
+  `creditCashback` מ-`platform:cashback_reserve` עם idempotency `order:<id>:cashback` והתראת
+  `cashback_credited`. לא נגעתי.
+- **דרגות מועדון לפי הוצאה ב-12 חודשים: לא היה.** grep על `club|tier|12.month` מצא רק אנליטיקה
+  ומנויים. **נכתב עכשיו.**
+
+**מה נכתב:**
+
+- `lib/club/tiers.ts` (טהור): חלון 365 יום לפי `paid_at` (נפילה ל-`created_at` רק כשהוא NULL);
+  סטטוסים שנספרים: paid, partially_fulfilled, fulfilled, platform_settled (pending, cancelled, refunded
+  לא); הסכום הוא מה שהלקוח שילם באתר (`readOrderMoney.totalAgorot`), אגורות שלמות; ספים: חבר מועדון 0,
+  כסף ₪1,000, זהב ₪3,000, פלטינה ₪10,000; התקדמות באחוז שלם דרך `divRoundHalfUp`, לעולם לא 100 לפני
+  שהדרגה הבאה הושגה.
+- `server/queries/club.ts` `getClubStanding()`: session, ואז admin client מוצמד ל-`user_id`, generation
+  של עמודות הכסף נפתר ולא נקוב (אותה תבנית כמו `getMyOrders`), `orFail`. **השעון נקרא אחרי ה-session ולא
+  כברירת מחדל של פרמטר**: ה-build נפל על `/account` ב-prerender error בדיוק על השורה הזו (cacheComponents),
+  תוקן ונמדד שוב.
+- `components/account/ClubTierCard.tsx` ככרטיס בסקירת החשבון: שם דרגה, הוצאה ב-12 חודשים, פס התקדמות
+  דקורטיבי (`aria-hidden`) והאחוז במשפט מתחתיו. כל המחרוזות ב-`messages` (`club.*`, he+en).
+  `.club-progress` ב-`account.css` עם משתני הקובץ בלבד.
+- **החלטה: מחושב בזמן קריאה, לא נשמר.** אין עמודה `club_tier`, אין job ואין מיגרציה: כל עמודה שנקראת
+  קיימת בפרודקשן והפיצ'ר עובד ביום הפריסה. עמודה מאוחסנת הייתה עותק שני של הכלל שתלוי ב-cron שיכול
+  להחסיר לילה (227), ופונקציית SQL בלי צרכן היא בדיוק צורת הפגם השכיחה כאן. הטבות לדרגה אינן בפריט.
+- **טסטים:** +17 (`tiers.test.ts` 11, `club.test.ts` 4, `ClubTierCard.test.tsx` 2).
+
+**נמדד על ה-build המקומי** (BUILD_ID `Sf0vlpV41F0tEEa0hVw74`, `pnpm start` על 3313): `/account`
+אנונימי 307 ל-`/login?next=%2Faccount`.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628), `pnpm test` **586 קבצים,
+7,044 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית, `--baseline=refs/ke_live_{width}.png`,
+exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 22:51-22:55 UTC על `3d911526c-dirty`. דף החשבון עצמו אינו
+נמדד: דורש התחברות ואין לו צילום reference (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- שלושה `next-server` זרים חיים (3311 ו-3312 עונים 200); השער רץ על 3313 מול ה-build הטרי והשרת שלי
+  נעצר לפי PID בסיום. `pkill -f "next start"` אינו הורג דבר כאן: התהליכים נקראים `next-server`.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`), הכסף עובר
+  דרכו בלבד.
+- סעיף Q13 הועבר לארכיון כדי לשמור על STATE.md מתחת ל-300 שורות.
 
 ## Q14 - DONE (25.09) - קופון במתנה במייל, מיידי או מתוזמן, עם ברכה; העברת קופון למשתמש אחר; צ'יפים: פתוח בסופ"ש, משלוח חינם, קרוב אליי בהסכמה
 
@@ -91,65 +154,6 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
   (קיים בקופה בלבד), כי ביטול של שליחה מתוזמנת היה דורש כתיבה ל-`gift_deliver_at` שאינה קיימת.
 - `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`). לא נגעתי בכסף.
 
-## Q13 - DONE (אומת 25.09) - דף צור קשר בחמישה ערוצים, wa.me ו-support@ בלבד, בלי טלפון; כפתור שאלה על המוצר עם נפילה לשירות לקוחות
-
-**הפריט כבר היה עשוי.** חמשת הערוצים והבורר ב-`bf0effa2e` (22.09), תיבת
-`support@` והסרת כל טלפון של הפלטפורמה ב-`02cb65fb3` (23.09), וכפתור
-"שאלה על המוצר" ב-`ace712504` (24.09). לא נכתב קוד. הטבלה אמרה DONE בלי
-ראיה מהעץ ומה-build; זה מה שנמדד עכשיו.
-
-**מה נבדק (נמדד, לא צוטט):**
-- **חמישה ערוצים, בקוד ובטבלה:** `src/lib/contact/channels.ts`
-  `DEFAULT_CONTACT_CHANNELS`: שירות לקוחות, הצעות ורעיונות, שיתופי פעולה,
-  תקלה באתר, הצטרפות כבית עסק. אותם חמישה זורעים ב-`236_contact_channels.sql`
-  (pending); עד ההחלה `listActiveContactChannels()` נופל לברירות המחדל
-  בקוד, ולכן הדף מלא גם בלי המיגרציה. לכל ערוץ פותח משלו, `number: null`
-  נפתר ל-`storeWhatsAppNumber()`.
-- **`/contact` על ה-build המקומי** (BUILD_ID `tv1yIApZ_-SntVQ-_yU4P`, `pnpm start`
-  על 3312): 200. ב-HTML המוגש: `contact-picker-contact_page` פעם אחת, כל אחת
-  מחמש התוויות פעמיים (בורר + פוטר), `support@kenyonexpress.co.il` 4 פעמים,
-  25 קישורי `wa.me/972524635550`, **0 `href="tel:"`**. המספר המודפס ליד
-  "אפשר גם בוואטסאפ" מקושר ל-wa.me ולא ל-tel, ושניהם נגזרים מ-`lib/whatsapp`.
-- **מייל:** `contactEmail()` ב-`src/lib/contact-address.ts`, ברירת מחדל
-  `support@kenyonexpress.co.il`; ארבעת המסמכים המשפטיים, `LegalContactBlock`
-  וטופס צור קשר קוראים אותה. `info@` נשאר רק בהערה ובטסט של `markup`.
-- **בלי טלפון של הפלטפורמה:** ה-`tel:` היחידים ב-src הם טלפון של בית העסק
-  (`supplier-contact.ts` ל-`SupplierInfo`, `SupplierStorefrontHeader`,
-  `/coupon/[id]`), נתון עסק ולא ערוץ שירות; ההחלטה נרשמה ב-`02cb65fb3`
-  ונשמרת. `ContactForm` בלי שדה טלפון.
-- **דף מוצר** (`/product/עוזרת-אישית-שירותי-משרד`, 200): `ProductInfo.tsx`
-  שורה 459 מרנדר `ProductQuestionLink` (`product-question-link`, "שאלה על
-  המוצר בוואטסאפ", פותח `contact.productQuestionMessage` עם שם המוצר וכתובת
-  הדף). ליד פרטי הספק `AskBusinessButton`: `askBusinessHref()` בוחר את
-  הוואטסאפ של הספק רק כשהמוצר הפעיל אותו ויש מספר, אחרת שירות לקוחות עם שם
-  המוצר בפותח, והתווית משתנה בהתאם ("שאלה לשירות הלקוחות בוואטסאפ"). על
-  המוצר שנמדד: `data-via="customer_service"`, כלומר הנפילה עובדת.
-- **טסטים קיימים:** `channels.test.ts` (137 שורות), `inquiry-links.test.ts`,
-  `SupplierInfo.test.tsx`, `e2e/wa-contact.spec.ts`.
-
-**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
-locale-format 138/138, input-dir 23, docs-index 280, docs-path-audit 155),
-`pnpm test` **579 קבצים, 6,999 ירוקים, 12 מדולגים**, `pnpm build` ירוק.
-**שער ההשוואה בחזית, `--baseline=refs/ke_live_{width}.png`, exit 0:**
-
-| דף | רוחב | תוכן | מצב |
-|---|---|---|---|
-| home | 380 | 8.44% | PASS |
-| home | 768 | 9.03% | PASS |
-| home | 1440 | 3.82% | PASS |
-
-השורות ב-`docs/UI-PARITY-REPORT.md` 22:02-22:05 UTC על `106846187` (הראשונה
-נקייה, השתיים אחריה `-dirty` רק כי הפנקס עצמו השתנה). דף צור קשר ודף המוצר
-ב-380/768 אינם נמדדים: אין להם צילום reference (חוסם 5).
-
-**החלטות שהתקבלו לבד:**
-- שרת `pnpm start` זר על 3311 (PID 23687, מהפריט הקודם) לא נעצר; השער רץ
-  על 3312 מול ה-build הטרי ונעצר בסיום. הרצת `pnpm build` תחת שרת ישן
-  משאירה אותו עם `.next` שהוחלף; מי שמשתמש ב-3311 צריך להפעיל מחדש.
-- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול הוא
-  `src/lib/money.ts`), כמו ב-Q06..Q12. לא נגעתי בכסף.
-- סעיף Q11 הועבר לארכיון כדי לשמור על STATE.md מתחת ל-300 שורות.
-
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
 | פריט | מצב | ראיה |
@@ -168,7 +172,7 @@ locale-format 138/138, input-dir 23, docs-index 280, docs-path-audit 155),
 | Q12 | DONE (אומת 25.09) | `c03a59f6b`, `a6d3608ac`. ארבעה דפים 200 מ-`LegalArticle`, `/legal/*` 308. "עד 5% ממחיר העסקה או 100 שקלים חדשים, לפי הנמוך" ב-`returns.ts` 157, תואם `refund.ts`; קופון ניתן להעברה ב-`terms.ts` 177; `#cookies` ו-`#how-to-cancel` בפוטר. שער 8.44/9.03/3.82 PASS. |
 | Q13 | DONE (אומת 25.09) | `bf0effa2e`, `02cb65fb3`, `ace712504`. `/contact` 200 עם חמשת הנושאים מ-`DEFAULT_CONTACT_CHANNELS`, 25 קישורי `wa.me`, `support@kenyonexpress.co.il`, אפס `tel:`. דף מוצר: `product-question-link` + `ask-business` עם `data-via="customer_service"`. שער 8.44/9.03/3.82 PASS. |
 | Q14 | DONE (25.09) | הרשומה למעלה. מתנה בקופה קיימת (`078a3de6d`, 108 מוחלת, 226 ממתינה לתזמון). חדש: `transferVoucher`/`revokeVoucherTransfer` + `/account/coupons/[id]/gift`; צ'יפים פתוח בסופ"ש (תג `open-weekend`), משלוח חינם (fallback ל-243), קרוב אליי. +41 טסטים. שער 8.44/9.03/3.82 PASS. |
-| Q15 | OPEN, חלקי | crons קיימים (`expire-vouchers`, `notifications`, `weekly-digest`). אין ראיה ל-T-7/T-1 ב-pg_cron, club tiers, cashback לארנק. |
+| Q15 | DONE (25.09) | הרשומה למעלה. T-7/T-1 קיימים (`expire-vouchers` + outbox, מייל ופוש; pg_cron ב-162 pending, חלון ב-227 pending). `cashback_percent` פר מוצר DEFAULT 0 קיים (042, צילום בקופה, זיכוי ב-finalize). חדש: `lib/club/tiers.ts`, `getClubStanding`, `ClubTierCard` בסקירת החשבון. +17 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q16 | OPEN, חלקי | `fc9da36dc`, `2410c879d`. אין ראיה ל-commission per campaign ול-fraud checks. |
 | Q17 | OPEN, חלקי | passkey (`c6dff8dc2`, `9b8c215f8`), 2FA (`af64d96e7`), מתג "הכל באפליקציה" עם הסכמה (`719fc6dff`, 240 pending). אין ראיה לאימות טלפון/OTP. |
 | Q18 | DONE | `f08a701d1`, `86af4a7c3`, `be736f10f`. |

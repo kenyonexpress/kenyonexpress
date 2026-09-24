@@ -520,5 +520,18 @@
     "copyHint": "If the button does not work, copy the link:",
     "shortLived": "The link is personal, single-use and valid for a short time.",
     "ignore": "If you did not ask to reset your password, ignore this email: your current password stays in force."
+  },
+  "club": {
+    "title": "Customer club",
+    "tiers": {
+      "member": "Member",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "spend": "Purchases in the last 12 months: {amount}",
+    "toNext": "{amount} more to reach {tier} ({percent} of the way)",
+    "top": "You have reached the top tier",
+    "window": "The tier is based on purchases paid on the site in the last 12 months."
   }
 }

@@ -791,3 +791,17 @@
   gap: 8px;
   justify-content: flex-end;
 }
+
+/* Club tier */
+.club-progress {
+  height: 8px;
+  background: var(--account-line);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 12px 0 8px;
+}
+
+.club-progress__bar {
+  height: 100%;
+  background: var(--account-yellow);
+}

@@ -1,7 +1,9 @@
+import ClubTierCard from '@/components/account/ClubTierCard'
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { getWalletSummary } from '@/server/queries/account'
+import { getClubStanding } from '@/server/queries/club'
 import { getMyOrders } from '@/server/queries/orders'
 import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
@@ -9,10 +11,11 @@ import Link from 'next/link'
 export const metadata = { title: 'האזור האישי' }
 
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons] = await Promise.all([
+  const [wallet, orders, coupons, club] = await Promise.all([
     getWalletSummary(),
     getMyOrders(),
     getCustomerVouchers(),
+    getClubStanding(),
   ])
 
   const lastOrder = orders[0] ?? null
@@ -74,6 +77,8 @@ export default async function AccountOverviewPage() {
             </Link>
           </p>
         </section>
+
+        {club ? <ClubTierCard standing={club} /> : null}
 
         <section className="account-card">
           <h2 className="account-card__title">סך ההזמנות</h2>

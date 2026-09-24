@@ -4,6 +4,65 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q13 - DONE (אומת 25.09) - דף צור קשר בחמישה ערוצים, wa.me ו-support@ בלבד, בלי טלפון; כפתור שאלה על המוצר עם נפילה לשירות לקוחות
+
+**הפריט כבר היה עשוי.** חמשת הערוצים והבורר ב-`bf0effa2e` (22.09), תיבת
+`support@` והסרת כל טלפון של הפלטפורמה ב-`02cb65fb3` (23.09), וכפתור
+"שאלה על המוצר" ב-`ace712504` (24.09). לא נכתב קוד. הטבלה אמרה DONE בלי
+ראיה מהעץ ומה-build; זה מה שנמדד עכשיו.
+
+**מה נבדק (נמדד, לא צוטט):**
+- **חמישה ערוצים, בקוד ובטבלה:** `src/lib/contact/channels.ts`
+  `DEFAULT_CONTACT_CHANNELS`: שירות לקוחות, הצעות ורעיונות, שיתופי פעולה,
+  תקלה באתר, הצטרפות כבית עסק. אותם חמישה זורעים ב-`236_contact_channels.sql`
+  (pending); עד ההחלה `listActiveContactChannels()` נופל לברירות המחדל
+  בקוד, ולכן הדף מלא גם בלי המיגרציה. לכל ערוץ פותח משלו, `number: null`
+  נפתר ל-`storeWhatsAppNumber()`.
+- **`/contact` על ה-build המקומי** (BUILD_ID `tv1yIApZ_-SntVQ-_yU4P`, `pnpm start`
+  על 3312): 200. ב-HTML המוגש: `contact-picker-contact_page` פעם אחת, כל אחת
+  מחמש התוויות פעמיים (בורר + פוטר), `support@kenyonexpress.co.il` 4 פעמים,
+  25 קישורי `wa.me/972524635550`, **0 `href="tel:"`**. המספר המודפס ליד
+  "אפשר גם בוואטסאפ" מקושר ל-wa.me ולא ל-tel, ושניהם נגזרים מ-`lib/whatsapp`.
+- **מייל:** `contactEmail()` ב-`src/lib/contact-address.ts`, ברירת מחדל
+  `support@kenyonexpress.co.il`; ארבעת המסמכים המשפטיים, `LegalContactBlock`
+  וטופס צור קשר קוראים אותה. `info@` נשאר רק בהערה ובטסט של `markup`.
+- **בלי טלפון של הפלטפורמה:** ה-`tel:` היחידים ב-src הם טלפון של בית העסק
+  (`supplier-contact.ts` ל-`SupplierInfo`, `SupplierStorefrontHeader`,
+  `/coupon/[id]`), נתון עסק ולא ערוץ שירות; ההחלטה נרשמה ב-`02cb65fb3`
+  ונשמרת. `ContactForm` בלי שדה טלפון.
+- **דף מוצר** (`/product/עוזרת-אישית-שירותי-משרד`, 200): `ProductInfo.tsx`
+  שורה 459 מרנדר `ProductQuestionLink` (`product-question-link`, "שאלה על
+  המוצר בוואטסאפ", פותח `contact.productQuestionMessage` עם שם המוצר וכתובת
+  הדף). ליד פרטי הספק `AskBusinessButton`: `askBusinessHref()` בוחר את
+  הוואטסאפ של הספק רק כשהמוצר הפעיל אותו ויש מספר, אחרת שירות לקוחות עם שם
+  המוצר בפותח, והתווית משתנה בהתאם ("שאלה לשירות הלקוחות בוואטסאפ"). על
+  המוצר שנמדד: `data-via="customer_service"`, כלומר הנפילה עובדת.
+- **טסטים קיימים:** `channels.test.ts` (137 שורות), `inquiry-links.test.ts`,
+  `SupplierInfo.test.tsx`, `e2e/wa-contact.spec.ts`.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, input-dir 23, docs-index 280, docs-path-audit 155),
+`pnpm test` **579 קבצים, 6,999 ירוקים, 12 מדולגים**, `pnpm build` ירוק.
+**שער ההשוואה בחזית, `--baseline=refs/ke_live_{width}.png`, exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 22:02-22:05 UTC על `106846187` (הראשונה
+נקייה, השתיים אחריה `-dirty` רק כי הפנקס עצמו השתנה). דף צור קשר ודף המוצר
+ב-380/768 אינם נמדדים: אין להם צילום reference (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- שרת `pnpm start` זר על 3311 (PID 23687, מהפריט הקודם) לא נעצר; השער רץ
+  על 3312 מול ה-build הטרי ונעצר בסיום. הרצת `pnpm build` תחת שרת ישן
+  משאירה אותו עם `.next` שהוחלף; מי שמשתמש ב-3311 צריך להפעיל מחדש.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול הוא
+  `src/lib/money.ts`), כמו ב-Q06..Q12. לא נגעתי בכסף.
+- סעיף Q11 הועבר לארכיון כדי לשמור על STATE.md מתחת ל-300 שורות.
+
 ## Q12 - DONE (אומת 25.09) - דפים משפטיים בפריסת terms-and-conditions של Electro: תקנון, פרטיות, ביטולים לפי 14ג, נגישות, עוגיות, קישור ביטול בפוטר
 
 **הפריט כבר היה עשוי.** הטקסטים ב-`src/app/(legal)/_content/*.ts` (`d5c2739d4`
