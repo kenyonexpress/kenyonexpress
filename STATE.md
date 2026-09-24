@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q06 DONE.** הבא בתור: **Q07** (הטבלה מסמנת אותו DONE ב-`9fe2ca441`; לאמת על
-העץ ולסגור לפי כלל "פריט שכבר נעשה: לאמת, לרשום, לסיים").
+**Q07 DONE (אומת 25.09, לא נכתב קוד).** הבא בתור: **Q08** (הטבלה: OPEN,
+חלקי; לאמת שדות מע"מ לעסק בקופה ובקשת ביטול לפי 14ג בדף ההזמנה).
 
 ההיסטוריה המלאה (Q01..Q05, תור 23.09, וכל מה שקדם, 24,310 שורות) עברה
 ל-`docs/STATE-ARCHIVE.md` באותו קומיט. הקובץ הזה מחזיק רק את מה שחי.
@@ -53,6 +53,43 @@ docs-path-audit 154 רשומות), `pnpm test` **574 קבצים, 6,945 טסטי�
 - שער ההשוואה הורץ אף שהפריט אינו נוגע ב-UI, כי כל שורות Q03 בפנקס היו
   `-dirty` ולא הייתה מדידה על קומיט נקי. עכשיו יש.
 
+## Q07 - DONE (אומת 25.09) - כפתור שיתוף בדף המוצר
+
+**הפריט כבר היה עשוי ב-`9fe2ca441` (23.09, על `audit/final-audit`).** לא
+נכתב קוד; הפריט הזה אימת בלבד, לפי כלל "פריט שכבר נעשה: לאמת, לרשום, לסיים".
+
+**מה נבדק על העץ:**
+- `src/components/shared/ProductShareRow.tsx`, מרונדר מ-`ProductInfo.tsx`
+  (שורה 455), כלומר על כל דף מוצר. הסדר: `WhatsAppShareButton` ראשון,
+  בגופן `text-base font-bold` (בולט מהשאר), פותח `wa.me` בלחיצה עם ההודעה
+  מ-`buildShareMessage` (שם הדיל + המחיר של ההצעה) והכתובת בשורה חדשה.
+- כפתור "שיתוף": `navigator.share` כשקיים (מובייל); כשאינו קיים, לחיצה
+  פותחת fallback: פייסבוק, טלגרם (`t.me/share/url`), מייל (`mailto:`).
+  ההחלטה לפי קיום ה-API בזמן לחיצה, לא לפי user-agent.
+- `CopyLinkButton`: `navigator.clipboard.writeText` + toast `הקישור הועתק`
+  (sonner, `Toaster dir="rtl"` ב-`(store)/layout.tsx`). כל המחרוזות
+  ב-`messages/he.json` תחת `share`.
+- **אין WhatsApp אוטומטי בשיתוף**: כל פתיחת `wa.me` היא לחיצה של הלקוח.
+  קיים ערוץ Twilio נפרד וקודם (`whatsapp_outbox`, מיגרציה 173) לתבניות
+  שובר בלבד, מותנה opt-in ונבדק שוב בזמן שליחה; אינו מתוזמן ב-`vercel.json`
+  (0 crons) ולא נגע בפריט הזה. `docs/BACKLOG.md` עדיין לא קיים.
+
+**שערים על `5d22aa60e` (העץ נקי לפני השער):** `pnpm type-check` נקי,
+`pnpm lint` נקי (i18n 632/632), `pnpm test` 574 קבצים, 6,945 ירוקים,
+12 מדולגים; בתוך הירוקים `product-share-row.test.tsx` ו-`share-buttons.test.tsx`,
+16 טסטים. `pnpm build` ירוק (BUILD_ID `feRtH5JRBtDXC-CvFtWaN`).
+**שער ההשוואה, בחזית, `pnpm start` על 3311:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| product | 1440 | 2.79% | PASS (`refs/live-product.png`, `COMPARE_ALLOW_GRID_MISMATCH=1`, קומיט נקי) |
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+380 ו-768 בדף המוצר עדיין ללא reference (חוסם 5); לא נכתבה שורה מומצאת.
+השורות בפנקס `docs/UI-PARITY-REPORT.md`, 20:18-20:23 UTC.
+
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
 | פריט | מצב | ראיה |
@@ -63,7 +100,7 @@ docs-path-audit 154 רשומות), `pnpm test` **574 קבצים, 6,945 טסטי�
 | Q04 | DONE (25.09) | `6fb5fe971`. שער: 1440 2.79% PASS (reference של מוצר אחר, grid override); 380/768 REFUSED, אין reference. 242 pending. |
 | Q05 | DONE (25.09) | `2ee29bc90`. כל השדות בטופס, Zod (`productExtrasSchema`), RLS דרך user client, 243 pending. +26 טסטים. |
 | Q06 | DONE (25.09) | הרשומה הזו. SHOWABLE: no, עם פירוט החסר. |
-| Q07 | DONE | `9fe2ca441 feat(product): reorder share row - WhatsApp first, native Share API, Copy Link` (24.09). לאמת בפריט הבא. |
+| Q07 | DONE (אומת 25.09) | `9fe2ca441` (23.09) על הענף. `ProductShareRow` ב-`ProductInfo`: WhatsApp ראשון ובולט, Share נייטיב, fallback פייסבוק/טלגרם/מייל, העתקת קישור עם toast `הקישור הועתק`. 16 טסטים ירוקים. שער מוצר 1440 ‏2.79% PASS על `5d22aa60e` נקי. |
 | Q08 | OPEN, חלקי | חשבונית חתומה להורדה קיימת (`8853cfa9d`, `4cc600d46`, `eb29504b4`). פנייה ב-wa.me (`1186084e9`). לא אומת: שדות מע"מ לעסק בקופה, בקשת ביטול לפי 14ג בדף ההזמנה. |
 | Q09 | OPEN, חלקי | `RESEND_API_KEY` נקרא ב-3 מסלולים, 15 builders (`0ac09ff04`). `eae464b1a` (אין מייל ללקוח חוץ מאיפוס סיסמה, מדיניות בעלים) סותר את 6 שורות אישור הרכישה. דורש החלטת מפעיל. |
 | Q10 | DONE | `f6392ed6e feat(checkout): guest checkout on measured Electro geometry`. תשלום ב-mock מאחורי ממשק. |
