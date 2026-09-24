@@ -21,9 +21,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const exchangeCodeForSession = vi.fn()
+const verifyOtp = vi.fn()
 
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: async () => ({ auth: { exchangeCodeForSession } }),
+  createClient: async () => ({ auth: { exchangeCodeForSession, verifyOtp } }),
 }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({}) }))
 vi.mock('next/headers', () => ({
@@ -47,6 +48,8 @@ async function location(query: string): Promise<URL> {
 
 beforeEach(() => {
   exchangeCodeForSession.mockReset()
+  verifyOtp.mockReset()
+  verifyOtp.mockResolvedValue({ data: { session: null }, error: { message: 'bad' } })
   // The whole failure surface: no code, a code Supabase rejects, and a code it
   // accepts without handing back a session. All three land in the same branch.
   exchangeCodeForSession.mockResolvedValue({ data: { session: null }, error: { message: 'bad' } })
@@ -104,5 +107,29 @@ describe('a successful exchange', () => {
       expect(url.origin, evil).toBe('https://shop.test')
       expect(url.pathname, evil).toBe('/')
     }
+  })
+})
+
+describe('a custom-sent token_hash', () => {
+  beforeEach(() => {
+    verifyOtp.mockResolvedValue({ data: { session: { user: { id: 'u1' } } }, error: null })
+  })
+
+  it('verifies a magic link by default', async () => {
+    await location('?token_hash=abc')
+    expect(verifyOtp).toHaveBeenCalledWith({ type: 'magiclink', token_hash: 'abc' })
+  })
+
+  it('verifies the branded password reset as recovery and lands on the reset form', async () => {
+    const url = await location('?token_hash=abc&type=recovery&next=%2Freset-password')
+    expect(verifyOtp).toHaveBeenCalledWith({ type: 'recovery', token_hash: 'abc' })
+    expect(url.pathname).toBe('/reset-password')
+  })
+
+  it('does not let the query pick any other verification type', async () => {
+    // A closed list: the mails send `recovery` or nothing, so anything else an
+    // attacker writes is treated as the magic link it is not, and fails there.
+    await location('?token_hash=abc&type=signup')
+    expect(verifyOtp).toHaveBeenCalledWith({ type: 'magiclink', token_hash: 'abc' })
   })
 })

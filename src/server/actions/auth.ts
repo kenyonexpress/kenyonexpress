@@ -30,6 +30,8 @@ import {
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
 import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
+import { trySendBrandedPasswordReset } from '@/server/auth/password-reset-send'
+import { trySendSecurityAlert } from '@/server/auth/security-alert-send'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -511,6 +513,13 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
   // point of `passwordResetResult` below.
   if (!addressAllowed) return passwordResetResult(null)
 
+  // The branded mail through Resend first (Q09), Supabase's own mail as the
+  // fallback. `false` from the branded path is "could not", never "must not":
+  // no key, an unknown address and a provider outage all land on the same
+  // fallback, and the reply below is identical either way.
+  const branded = await trySendBrandedPasswordReset(parsed.data.email)
+  if (branded) return passwordResetResult(null)
+
   const supabase = await createClient()
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: authRedirect('/auth/callback?next=/reset-password'),
@@ -541,8 +550,17 @@ async function runUpdatePassword(_: AuthState, formData: FormData): Promise<Auth
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+  const { data, error } = await supabase.auth.updateUser({ password: parsed.data.password })
   if (error) return { error: toHebrew(error.message) }
+
+  // The security alert (Q09), after the change and before the redirect. The
+  // recipient that matters is the one who did NOT do this, so it is sent
+  // whether or not the change looks routine. Best-effort: a mail that will
+  // not send does not undo a password that already changed.
+  const user = data.user
+  if (user) {
+    await trySendSecurityAlert({ email: user.email, event: 'password_changed', userId: user.id })
+  }
   redirect('/')
 }
 

@@ -117,10 +117,13 @@ export function buildInAppContent(
   switch (kind) {
     case 'order_paid': {
       const total = integer(payload, 'total_agorot')
+      const orderId = text(payload, 'order_id')
       return {
         title_he: 'ההזמנה שלך התקבלה',
         body_he: total === null ? null : `שולמו ${shekels(total)}.`,
-        href: '/account/orders',
+        // The order page itself when the payload names it (095 always does);
+        // the list is the fallback, not the destination.
+        href: orderId ? `/account/orders/${orderId}` : '/account/orders',
       }
     }
     case 'order_shipped': {

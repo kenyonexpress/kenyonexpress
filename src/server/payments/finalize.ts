@@ -32,7 +32,6 @@ import {
   createSubscriptionsForOrder,
   planSubscriptions,
 } from '@/server/payments/subscription-create'
-import { sendVoucherEmail } from '@/server/payments/voucher-email'
 import { completeReferralForOrder } from '@/server/referrals/complete'
 import type { Json } from '@/types/database'
 
@@ -931,18 +930,13 @@ export async function finalizeOrder(input: {
       await issueQueuedInvoice(admin, queued.invoiceId)
     }
 
-    // The customer's coupons, by email. Last, and incapable of failing the
-    // finalize for the same reason the journal above cannot: the card is
-    // charged and the order is closed. Deduplicated by the provider on the
-    // order id, so a replayed finalize does not send twice.
-    await sendVoucherEmail(admin, {
-      orderId: order.id,
-      userId: order.user_id,
-      siteUrl: (process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il').replace(
-        /\/+$/,
-        '',
-      ),
-    })
+    // NO DIRECT COUPON MAIL FROM HERE SINCE Q09 (25.09.2026). The buyer's
+    // purchase mail is the six-line legal confirmation, rendered by the outbox
+    // drain from the `voucher_issued` row `tg_orders_notify_paid` (102) wrote
+    // inside this same transaction; the codes and QR are on the order page,
+    // which the push leg links. `sendVoucherEmail` still exists for the
+    // operator's resend action in `actions/admin/vouchers.ts`, where a human
+    // asked for the codes to go out by mail.
 
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {

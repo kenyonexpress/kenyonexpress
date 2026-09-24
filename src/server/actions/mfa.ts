@@ -4,6 +4,7 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { trySendSecurityAlert } from '@/server/auth/security-alert-send'
 import { redirect } from 'next/navigation'
 
 /**
@@ -102,6 +103,15 @@ async function runVerifyTotpCode(
   const factorId = String(formData.get('factor_id') ?? '')
   if (!/^\d{6}$/.test(code) || !factorId) return { error: BAD_CODE }
 
+  // Enrolment or login challenge? The same form serves both. A factor that
+  // is still `unverified` when this runs is being enrolled, and that is the
+  // event the security alert is for; a verified factor answering a login
+  // challenge is not a change to the account.
+  const { data: factors } = await supabase.auth.mfa.listFactors()
+  const enrolling = (factors?.all ?? []).some(
+    (factor) => factor.id === factorId && factor.status === 'unverified',
+  )
+
   const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
     factorId,
   })
@@ -118,6 +128,10 @@ async function runVerifyTotpCode(
   if (verifyError) {
     log.warn('mfa.verify_failed', { reason: verifyError.message })
     return { error: BAD_CODE }
+  }
+
+  if (enrolling) {
+    await trySendSecurityAlert({ email: user.email, event: 'totp_enabled', userId: user.id })
   }
 
   redirect('/admin')

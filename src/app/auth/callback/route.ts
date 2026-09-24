@@ -51,6 +51,11 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
   const safeNext = safeNextPath(searchParams.get('next'))
+  // Which custom-sent mail the token came from. `recovery` is the branded
+  // password reset (`server/auth/password-reset-send.ts`); anything else,
+  // including no value, is the magic link. Closed list: a `type` an attacker
+  // writes cannot pick a verification the mails never send.
+  const otpType = searchParams.get('type') === 'recovery' ? 'recovery' : 'magiclink'
 
   if (code || tokenHash) {
     const supabase = await createClient()
@@ -59,7 +64,8 @@ export async function GET(request: NextRequest) {
       Two ways in, one session out. `code` is the PKCE leg every flow used
       until now: Google, Supabase-sent magic links, email confirmation.
       `token_hash` is the custom-sent magic link from
-      `server/auth/magic-link-send.ts`: our own Resend mail cannot use
+      `server/auth/magic-link-send.ts`, or the branded password reset from
+      `server/auth/password-reset-send.ts`: our own Resend mail cannot use
       Supabase's `action_link`, because that verifies at GoTrue and returns
       the session in a URL fragment this server route can never read, so the
       mail links here and the verification happens server-side instead.
@@ -74,7 +80,7 @@ export async function GET(request: NextRequest) {
           .exchangeCodeForSession(code)
           .then(({ data, error }) => ({ session: data.session, error }))
       : await supabase.auth
-          .verifyOtp({ type: 'magiclink', token_hash: tokenHash as string })
+          .verifyOtp({ type: otpType, token_hash: tokenHash as string })
           .then(({ data, error }) => ({ session: data.session, error }))
 
     if (!error && session) {

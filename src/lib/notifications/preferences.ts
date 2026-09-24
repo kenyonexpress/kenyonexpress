@@ -37,40 +37,57 @@ export type Channel = (typeof CHANNELS)[number]
 /**
  * The channels the settings page renders a switch for.
  *
- * `email` is deliberately absent. Every kind in `OPTIONAL_KINDS` is a
- * customer-facing kind, and the owner's 22.09.2026 policy makes `mayNotify`
- * return `false` for the email channel on every one of them unconditionally
- * -- so a stored preference row for `{kind, 'email', true}` would change
- * nothing, and a switch that looks live but does nothing is exactly the
- * broken-control problem this file's own header already names for required
- * kinds. Leaving `email` out of the table is the same fix as leaving required
- * kinds out of it: there is no row, so there is nothing to lie about.
+ * `email` is deliberately absent. Under the Q09 list below the only OPTIONAL
+ * kind that can reach a customer by mail is `voucher_expiring`; every other
+ * optional kind has `mayNotify` return `false` for email unconditionally, so a
+ * stored row for `{kind, 'email', true}` would change nothing, and a switch
+ * that looks live but does nothing is exactly the broken-control problem this
+ * file's own header names for required kinds. One live switch in a column of
+ * dead ones is not worth the column; the expiry reminder is a service mail
+ * about a coupon the customer paid for, and it stays on.
  */
 export const CUSTOMER_TOGGLE_CHANNELS = CHANNELS.filter(
   (c): c is Exclude<Channel, 'email'> => c !== 'email',
 )
 
 /**
- * Owner policy, 22.09.2026: no customer email except password reset (which is
- * Supabase Auth's own outgoing mail, entirely outside `notification_outbox`
- * and this file) and voucher gifts. Everything else a customer would have
- * read in a mail now lives at /account: orders, voucher codes with QR,
- * status, invoice download.
+ * Owner policy on customer email, in two dated steps.
  *
- * `voucher_gifted` IS THE ONE EXEMPTION, AND IT IS NOT AN OVERSIGHT. Every
- * other kind here restates something the ACCOUNT HOLDER can already see by
- * signing in. A gift recipient has no account until they follow this mail's
- * claim link -- there is no /account for them to check instead, so this mail
- * is the entire delivery mechanism for the gift feature, not a duplicate of
- * one. Suppressing it would not move the notice to the account area; it
- * would delete the only way a recipient ever learns they received anything.
+ * 22.09.2026: no customer email except password reset and voucher gifts.
+ * Everything a customer would have read in a mail moved to /account.
+ *
+ * 25.09.2026 (final queue, item Q09) NARROWED THAT TO A NAMED LIST, and this
+ * constant is that list as far as the outbox is concerned. A customer is
+ * mailed, through Resend and only when `RESEND_API_KEY` is set, for exactly:
+ *
+ *   - the legal purchase confirmation (six lines, the s.14C(b) disclosure):
+ *     `order_paid` for an order with no coupons, `voucher_issued` for one
+ *     with coupons. The two triggers in 095/102 are mutually exclusive, so
+ *     one purchase is one mail;
+ *   - the expiry reminder, `voucher_expiring`;
+ *   - the gift coupon to its recipient, `voucher_gifted` -- who has no
+ *     account and no /account to check, so this mail IS the delivery;
+ *   - the password reset and the security alert, which are not outbox kinds
+ *     at all: `server/auth/password-reset-send.ts` and
+ *     `server/auth/security-alert-send.ts` call `sendEmail` directly, the way
+ *     the magic link always has.
+ *
+ * Everything else a customer is owed is a web push linking to the order page
+ * (`lib/push/templates.ts`) plus the in-app bell. The coupon codes and QR
+ * live on the order page; the confirmation mail names the order and links
+ * it rather than carrying the codes.
  *
  * CHECKED IN `mayNotify` BEFORE `REQUIRED_KINDS`, deliberately: a required
  * kind is "the customer may not opt out of this on their own", which is a
  * different question from "does this channel exist for customers at all".
  * The owner policy answers the second question and answers it first.
  */
-export const EMAIL_POLICY_EXEMPT_KINDS = ['voucher_gifted'] as const
+export const EMAIL_POLICY_EXEMPT_KINDS = [
+  'order_paid',
+  'voucher_issued',
+  'voucher_expiring',
+  'voucher_gifted',
+] as const
 
 /**
  * Kinds addressed to the business, not to a customer -- unaffected by the
@@ -163,9 +180,9 @@ export interface PreferenceRow {
  * are not addressed to a user.
  */
 export function mayNotify(kind: string, channel: Channel, rows: readonly PreferenceRow[]): boolean {
-  // Owner policy, checked first and unconditionally: the email channel does
-  // not exist for a customer kind at all, so there is no preference row left
-  // to consult. See EMAIL_POLICY_EXEMPT_KINDS above for the one exception.
+  // Owner policy, checked first and unconditionally: the email channel exists
+  // for a customer kind only if it is on the Q09 list, so for every other
+  // kind there is no preference row left to consult.
   if (
     channel === 'email' &&
     !isOperatorEmailKind(kind) &&

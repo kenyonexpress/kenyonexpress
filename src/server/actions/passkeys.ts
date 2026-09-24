@@ -22,6 +22,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { trySendSecurityAlert } from '@/server/auth/security-alert-send'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import {
   type AuthenticationResponseJSON,
@@ -215,6 +216,9 @@ async function runFinishPasskeyRegistration(
     if (isMissingPasskeyRelation(error)) return { error: NOT_AVAILABLE }
     return fail('passkey.register_store_failed', error.message)
   }
+
+  // A new way into the account is exactly what the security alert is for.
+  await trySendSecurityAlert({ email: user.email, event: 'passkey_added', userId: user.id })
 
   return { success: 'המפתח נשמר, מעכשיו אפשר להתחבר עם טביעת אצבע או Face ID' }
 }
@@ -427,6 +431,8 @@ async function runDeletePasskey(credentialId: unknown): Promise<PasskeyFinishSta
     if (isMissingPasskeyRelation(error)) return { error: NOT_AVAILABLE }
     return fail('passkey.delete_failed', error.message)
   }
+
+  await trySendSecurityAlert({ email: user.email, event: 'passkey_removed', userId: user.id })
   return { success: 'המפתח הוסר' }
 }
 

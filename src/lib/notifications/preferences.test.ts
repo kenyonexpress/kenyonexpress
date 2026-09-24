@@ -25,10 +25,10 @@ describe('a customer cannot switch off the thing they bought', () => {
     // this prevents is "I bought it and nothing arrived", answered by a setting
     // the customer turned off six weeks earlier and does not remember.
     //
-    // Email is excluded here: the owner's 22.09.2026 policy blocks it for
-    // EVERY required kind except `voucher_gifted` (below), so a required kind
-    // being unstoppable no longer means it is unstoppable on every channel --
-    // it means it is unstoppable on whichever channels still carry it.
+    // Email is excluded here: the owner's policy (22.09, narrowed 25.09 in
+    // Q09) blocks it for `refund_completed`, so a required kind being
+    // unstoppable no longer means it is unstoppable on every channel -- it
+    // means it is unstoppable on whichever channels still carry it.
     const rows: PreferenceRow[] = REQUIRED_KINDS.flatMap((kind) =>
       CHANNELS.map((channel) => ({ kind, channel, enabled: false })),
     )
@@ -57,10 +57,10 @@ describe('an optional kind honours the table', () => {
     // Silence means the customer has never opened the settings page -- which is
     // all of them today, since the table is empty. Treating that as "do not
     // contact me" would stop every expiry reminder in the system. Checked on
-    // `push`, not `email`: email is off unconditionally for this kind now (see
-    // the owner-policy block below), so it can no longer demonstrate "honours
-    // the table" on its own.
+    // `push` and on `email`: the expiry reminder is the one optional kind the
+    // Q09 list lets reach a customer by mail.
     expect(mayNotify('voucher_expiring', 'push', [])).toBe(true)
+    expect(mayNotify('voucher_expiring', 'email', [])).toBe(true)
   })
 
   it('is off when a row says so, per channel', () => {
@@ -77,8 +77,21 @@ describe('an optional kind honours the table', () => {
   })
 })
 
-describe('owner policy, 22.09.2026: no customer email except password reset', () => {
-  it('blocks email for every required and optional kind except voucher_gifted', () => {
+describe('owner policy, 25.09.2026 (Q09): customer email only for the named list', () => {
+  it('names exactly the outbox kinds a customer may be mailed for', () => {
+    // Pinned by name, like REQUIRED_KINDS above. The list is the owner's, not
+    // the code's: purchase confirmation (both payload shapes), the expiry
+    // reminder and the gift coupon. Password reset and the security alert
+    // are direct sends outside the outbox and cannot appear here.
+    expect([...EMAIL_POLICY_EXEMPT_KINDS]).toEqual([
+      'order_paid',
+      'voucher_issued',
+      'voucher_expiring',
+      'voucher_gifted',
+    ])
+  })
+
+  it('blocks email for every required and optional kind that is not on the list', () => {
     for (const kind of [...REQUIRED_KINDS, ...OPTIONAL_KINDS]) {
       const expected = (EMAIL_POLICY_EXEMPT_KINDS as readonly string[]).includes(kind)
       expect(mayNotify(kind, 'email', []), kind).toBe(expected)
@@ -144,7 +157,7 @@ describe('the settings page', () => {
     expect(welcome?.channels.in_app).toBe(true)
   })
 
-  it('never renders an email column -- the owner policy makes every row inert there', () => {
+  it('never renders an email column -- one live switch among dead ones is not a column', () => {
     const matrix = preferenceMatrix([])
     for (const row of matrix) {
       expect('email' in row.channels, row.kind).toBe(false)

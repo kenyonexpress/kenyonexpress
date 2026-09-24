@@ -115,19 +115,43 @@ The preview server is what `/dev/emails` is, at a fraction of the cost. The
 reuse is worth revisiting if a sixteenth builder needs the same header for the
 fourth time.
 
+## The owner's list (Q09, 25.09.2026)
+
+A customer is mailed, through Resend and only when `RESEND_API_KEY` is set,
+for exactly five things. Everything else a customer is owed is a web push
+linking to the order page (`lib/push/templates.ts`) plus the in-app bell.
+`mayNotify` in `lib/notifications/preferences.ts` enforces the outbox half;
+the other two are direct sends that never touch the outbox.
+
+| mail | how it is sent | builder |
+| --- | --- | --- |
+| purchase confirmation, six lines (s.14C(b)) | outbox `order_paid` (no coupons) or `voucher_issued` (coupons); the 095/102 triggers are mutually exclusive | `buildOrderPaidEmail` / `buildVoucherIssuedEmail`, one `renderConfirmation` |
+| password reset | `server/auth/password-reset-send.ts`, `generateLink({ type: 'recovery' })` to our callback with `type=recovery`; Supabase SMTP is the fallback | `lib/email/password-reset.ts` |
+| expiry reminder | outbox `voucher_expiring` | `buildVoucherExpiringEmail` |
+| security alert | `server/auth/security-alert-send.ts` after a password change, TOTP enrolment, passkey added or removed; no link in the mail | `lib/email/security-alert.ts` |
+| gift coupon to its recipient | outbox `voucher_gifted` | `buildVoucherGiftedEmail` |
+
+**The confirmation carries no coupon code and no QR.** The codes are on the
+order page the sixth line links; `voucher-email.ts` (the QR mail) is no
+longer called from `finalizeOrder` and exists for the operator's resend
+action only. **The seller line has no registration number** because none
+exists anywhere in the repository; it is one edit to `SELLER` in
+`notifications.ts` once Ofir supplies it.
+
 ## The kinds, against what was asked
 
 | asked for | kind | state |
 | --- | --- | --- |
-| order confirmed | `order_paid` | live |
-| voucher issued with QR | `voucher_issued` + the voucher mail | live |
-| expiring 7d / 1d | `voucher_expiring` | live, `days_left` in the payload |
-| redeemed | `voucher_redeemed` | live |
-| refund done | `refund_completed` | live |
-| wallet credit | `cashback_credited` | live |
-| shipping updates | `order_shipped` | live; carries tracking as of 196 |
-| welcome | `welcome` | live, deduped on the user id |
-| password reset | `magic_link` | live, through Resend rather than Supabase SMTP |
+| order confirmed | `order_paid` | live: the six-line confirmation, by mail and push |
+| voucher issued with QR | `voucher_issued` | live: the six-line confirmation by mail; the QR is on the order page the push links |
+| expiring 7d / 1d | `voucher_expiring` | live, mail and push, `days_left` in the payload |
+| redeemed | `voucher_redeemed` | push only since Q09 |
+| refund done | `refund_completed` | push only since Q09 |
+| wallet credit | `cashback_credited`, `voucher_expiry_credited`, `referral_bonus_credited` | push only since Q09 |
+| shipping updates | `order_shipped` | push only since Q09; carries tracking as of 196 |
+| welcome | `welcome` | in-app bell only; no mail, no push |
+| password reset | `password_reset` (direct) | live, through Resend with Supabase SMTP as fallback |
+| security alert | `security_alert` (direct) | live, through Resend only |
 | abandoned cart 1h / 24h | — | **not an outbox kind**; see below |
 
 **The abandoned-cart mail does not go through the outbox.** It calls `sendEmail`
@@ -164,7 +188,9 @@ govern.
 | --- | --- |
 | `src/lib/email/notifications.ts` | thirteen outbox builders and the switch |
 | `src/lib/email/voucher-email.ts` | the voucher mail, sent from `finalizeOrder` |
-| `src/lib/email/magic-link.ts` | login and password reset |
+| `src/lib/email/magic-link.ts` | login |
+| `src/lib/email/password-reset.ts` | the branded password reset, sent by `server/auth/password-reset-send.ts` |
+| `src/lib/email/security-alert.ts` | the security alert, sent by `server/auth/security-alert-send.ts` |
 | `src/lib/email/bidi.ts` | the isolate helpers every builder places by hand |
 | `src/lib/email/previews.ts` | one awkward sample per mail |
 | `src/lib/email/previews.test.ts` | the gallery is complete, both directions |

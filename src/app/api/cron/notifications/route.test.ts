@@ -115,11 +115,13 @@ describe('notifications cron auth', () => {
 })
 
 /**
- * The owner's 22.09.2026 policy ("no customer email except password reset")
- * makes `mayNotify` refuse the email channel for `voucher_issued`. Before this
- * fan-out was moved, that refusal alone would have also killed WhatsApp/SMS
- * delivery of the voucher code, because both rode inside the `sendEmail`
- * success branch. These tests are the regression guard for that fix.
+ * The owner's policy (22.09.2026, narrowed to a named list on 25.09 in Q09)
+ * makes `mayNotify` refuse the email channel for `cashback_credited`. Before
+ * this fan-out was moved, that refusal alone would have also killed
+ * WhatsApp/SMS delivery of the voucher code, because both rode inside the
+ * `sendEmail` success branch. These tests are the regression guard for that
+ * fix; `voucher_issued`, the original example, is on the Q09 list now and is
+ * covered by the last test below.
  */
 describe('WhatsApp/SMS fan-out survives the email being blocked by policy', () => {
   beforeEach(() => {
@@ -135,7 +137,7 @@ describe('WhatsApp/SMS fan-out survives the email being blocked by policy', () =
   })
 
   it('marks a policy-blocked customer kind skipped, but still fans out WhatsApp and SMS', async () => {
-    const row = { ...BASE_ROW, kind: 'voucher_issued' }
+    const row = { ...BASE_ROW, kind: 'cashback_credited', payload: { amount_agorot: 500 } }
     const { admin, updates } = fakeAdmin([row])
     createAdminClient.mockReturnValue(admin)
     sendOutboxWhatsapp.mockResolvedValue('sent')
@@ -170,6 +172,29 @@ describe('WhatsApp/SMS fan-out survives the email being blocked by policy', () =
     expect(sendEmail).toHaveBeenCalledTimes(1)
     expect(sendOutboxWhatsapp).toHaveBeenCalledTimes(1)
     expect(sendOutboxSms).toHaveBeenCalledTimes(1)
+    expect(body).toMatchObject({ sent: 1, skipped: 0 })
+  })
+
+  it('mails the six-line purchase confirmation for voucher_issued, on the Q09 list', async () => {
+    const row = {
+      ...BASE_ROW,
+      kind: 'voucher_issued',
+      payload: {
+        order_id: '11111111-2222-3333-4444-555555555555',
+        order_ref: 'ORDER1',
+        vouchers: [{ product_name: 'עיסוי', coupon_price_agorot: 9900 }],
+      },
+    }
+    const { admin } = fakeAdmin([row])
+    createAdminClient.mockReturnValue(admin)
+    sendEmail.mockResolvedValue({ ok: true })
+
+    const body = await (await GET(request('Bearer s3cret'))).json()
+
+    expect(sendEmail).toHaveBeenCalledTimes(1)
+    const input = sendEmail.mock.calls[0]?.[0] as { subject: string; text: string }
+    expect(input.subject).toContain('אישור רכישה')
+    expect(input.text).toContain('/account/orders/11111111-2222-3333-4444-555555555555')
     expect(body).toMatchObject({ sent: 1, skipped: 0 })
   })
 

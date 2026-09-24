@@ -1,5 +1,4 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
-import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { t } from '@/lib/i18n/messages'
 import { trackingView } from '@/lib/shipping/carriers'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
@@ -181,12 +180,160 @@ function hebrewDateTime(iso: unknown): string {
 }
 
 /**
- * Order confirmation, for the customer.
+ * THE SIX-LINE PURCHASE CONFIRMATION (Q09, 25.09.2026).
  *
- * Enqueued only for an order that issued no vouchers. A coupon order already
- * gets `voucher-email.ts`, which lists the codes and links each QR and is a
- * better confirmation than this one; sending both would be two emails for one
- * purchase. The trigger makes that call, not this builder.
+ * This is the written disclosure s.14C(b) of the Consumer Protection Law
+ * requires after a distance sale, and it is the only purchase mail a customer
+ * receives. Six lines, no more: the seller, what was bought, what was paid,
+ * how it is delivered, the right to cancel, and where the order lives. The
+ * coupon codes and QR are NOT here -- they are on the order page the sixth
+ * line links to, because a code in a mail is redeemable by whoever forwards
+ * it and the owner's policy keeps the product behind the login.
+ *
+ * `buildOrderPaidEmail` and `buildVoucherIssuedEmail` are the two payload
+ * shapes (095 for an order with no coupons, 102 for one with) of the same
+ * mail. The triggers are mutually exclusive, so one purchase is one mail.
+ *
+ * The lines are built as data and rendered twice, so the text alternative and
+ * the HTML cannot disagree on a number, and `legal-confirmation` tests count
+ * them: a seventh line is a failing test, not a longer mail.
+ *
+ * WHAT THE SELLER LINE DOES NOT CARRY. The business registration number
+ * (ח.פ / עוסק) appears nowhere in this repository -- not in the legal content,
+ * not in the footer, not in an env var -- and inventing a placeholder in a
+ * legal document is worse than the omission. The line names the operator,
+ * the address the footer already prints, the support address and the terms
+ * URL. Adding the number is one edit to `purchaseConfirmation.sellerName`
+ * in `messages/he.json`.
+ */
+/**
+ * The seller line's fixed facts. The name and address are catalogue strings
+ * (`purchaseConfirmation.*` in `messages/he.json`), the support address is
+ * the one every legal page names.
+ */
+const SELLER_SUPPORT_EMAIL = 'support@kenyonexpress.co.il'
+
+/**
+ * The lawful cancellation fee for a voluntary cancellation: the lower of 5%
+ * or ₪100 (s.14E(b)(1)). The same rule `RefundRequestForm` shows.
+ */
+const CANCELLATION_FEE_AGOROT = 10_000
+
+interface ConfirmationLine {
+  label: string
+  value: string
+  /** A URL, isolated LTR in both renderings. */
+  url?: string
+}
+
+interface ConfirmationInput {
+  ref: string
+  orderId: string | null
+  customerName: string | null
+  totalAgorot: number
+  /** "3 פריטים" or "קופון: עיסוי זוגי ועוד 2". Already Hebrew. */
+  whatHe: string
+  /** True for a coupon order: delivery is immediate, on the order page. */
+  coupons: boolean
+}
+
+function joinNames(names: readonly string[], fallback: string): string {
+  const shown = names.filter((n) => n.trim() !== '').slice(0, 3)
+  if (shown.length === 0) return fallback
+  const rest = names.length - shown.length
+  return rest > 0
+    ? `${shown.join(', ')} ${t('purchaseConfirmation.andMore')} ${rest}`
+    : shown.join(', ')
+}
+
+function confirmationLines(input: ConfirmationInput, siteUrl: string): ConfirmationLine[] {
+  const site = trimSite(siteUrl)
+  const orderUrl = input.orderId
+    ? `${site}/account/orders/${input.orderId}`
+    : `${site}/account/orders`
+  const whose = input.customerName
+    ? ` ${t('purchaseConfirmation.onBehalfOf')} ${input.customerName}`
+    : ''
+
+  return [
+    {
+      label: t('purchaseConfirmation.labelSeller'),
+      value: `${t('purchaseConfirmation.sellerName')}, ${t('purchaseConfirmation.sellerAddress')}, ${SELLER_SUPPORT_EMAIL}. ${t('purchaseConfirmation.termsPrefix')}`,
+      url: `${site}/terms-and-conditions`,
+    },
+    {
+      label: t('purchaseConfirmation.labelOrder'),
+      value: `${ltrText(input.ref)}${whose}: ${input.whatHe}`,
+    },
+    // The receipt link is OUR ownership-checked route, never the provider's
+    // URL: a tax document handed out as a raw provider link is readable by
+    // anything that ever sees the mail. Resolved at click time, so it does
+    // not matter that the invoice cron may run minutes after this goes out.
+    {
+      label: t('purchaseConfirmation.labelPaid'),
+      value: `${formatAgorot(input.totalAgorot)} ${t('purchaseConfirmation.paidBy')} ${
+        input.orderId
+          ? t('purchaseConfirmation.receiptLink')
+          : t('purchaseConfirmation.receiptOnPage')
+      }`,
+      ...(input.orderId ? { url: `${orderUrl}/invoice` } : {}),
+    },
+    {
+      label: t('purchaseConfirmation.labelDelivery'),
+      value: input.coupons
+        ? t('purchaseConfirmation.deliveryCoupons')
+        : t('purchaseConfirmation.deliveryGoods'),
+    },
+    {
+      label: t('purchaseConfirmation.labelCancellation'),
+      value: `${t('purchaseConfirmation.cancellationRule')} ${t('purchaseConfirmation.feePrefix')} ${t('purchaseConfirmation.feeRule')} ${formatAgorot(CANCELLATION_FEE_AGOROT)}`,
+    },
+    {
+      label: t('purchaseConfirmation.labelOrderPage'),
+      value: t('purchaseConfirmation.orderPageDetail'),
+      url: orderUrl,
+    },
+  ]
+}
+
+function renderConfirmation(
+  input: ConfirmationInput,
+  siteUrl: string,
+  headline: string,
+): BuiltNotification {
+  const lines = confirmationLines(input, siteUrl)
+  const subject = `${t('purchaseConfirmation.subject')} · ${input.ref}`
+
+  const text = lines
+    .map((line) => `${line.label}: ${line.value}${line.url ? ` ${ltrText(line.url)}` : ''}`)
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(headline)}</div>
+        <ol style="font-size:14px;color:${INK};line-height:1.8;margin:14px 0 0;padding-inline-start:20px">
+          ${lines
+            .map(
+              (line) =>
+                `<li><strong>${escapeHtml(line.label)}:</strong> ${escapeHtml(line.value)}${
+                  line.url
+                    ? ` <a href="${escapeHtml(line.url)}" dir="ltr" style="${LTR_ISOLATE_STYLE};color:${INK}">${escapeHtml(line.url)}</a>`
+                    : ''
+                }</li>`,
+            )
+            .join('')}
+        </ol>
+      </div>`,
+    t('purchaseConfirmation.footer'),
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Purchase confirmation for an order with no coupons. Payload frozen by
+ * `tg_orders_notify_paid` (095): order_id, order_ref, customer_name,
+ * total_agorot, item_count.
  */
 export function buildOrderPaidEmail(
   payload: Record<string, unknown>,
@@ -197,60 +344,23 @@ export function buildOrderPaidEmail(
     String(payload.order_id ?? '')
       .slice(0, 8)
       .toUpperCase()
-  const name = asText(payload.customer_name)
-  const total = formatAgorot(asNumber(payload.total_agorot))
   const items = asNumber(payload.item_count)
-  const url = `${trimSite(siteUrl)}/account/orders`
 
-  /**
-   * The receipt link points at OUR route, not at the provider's URL, and the
-   * route re-checks ownership before it redirects. A tax document handed out as
-   * a raw provider link is readable by anything that ever sees the mail - a
-   * forward, a screenshot, a shared inbox.
-   *
-   * It is also why the link can be included at all despite the document not
-   * existing yet when this mail is built: the invoice cron and the notification
-   * cron are separate jobs, so the receipt is usually issued minutes after the
-   * confirmation goes out. A link resolved at CLICK time has no race; an
-   * embedded URL would have had to wait for one.
-   */
-  const orderId = asText(payload.order_id)
-  const receiptUrl = orderId ? `${trimSite(siteUrl)}/account/orders/${orderId}/invoice` : null
-
-  const subject = `ההזמנה שלך התקבלה · ${ref}`
-  const greeting = name ? `שלום ${name},` : 'שלום,'
-
-  const text = [
-    greeting,
-    '',
-    'התשלום התקבל וההזמנה שלך נקלטה.',
-    '',
-    `מספר הזמנה: ${ltrText(ref)}`,
-    `סך הכל שולם באתר: ${total}`,
-    items > 0 ? `פריטים: ${items}` : '',
-    '',
-    `לפרטי ההזמנה: ${ltrText(url)}`,
-    receiptUrl ? `לקבלה: ${ltrText(receiptUrl)}` : '',
-  ]
-    .filter((line) => line !== '')
-    .join('\n')
-
-  const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
-        <div style="font-size:18px;font-weight:700;color:${INK}">התשלום התקבל</div>
-        <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
-        <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
-          <div>מספר הזמנה: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(ref)}</strong></div>
-          <div>סך הכל שולם באתר: <strong>${escapeHtml(total)}</strong></div>
-          ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
-        </div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
-        ${receiptUrl ? `<div style="font-size:13px;color:${MUTED};margin-top:12px;text-align:center"><a href="${escapeHtml(receiptUrl)}" style="color:${MUTED}">להורדת הקבלה</a></div>` : ''}
-      </div>`,
-    'קיבלת את המייל הזה כי ביצעת רכישה ב-KenyonExpress.',
+  return renderConfirmation(
+    {
+      ref,
+      orderId: asText(payload.order_id),
+      customerName: asText(payload.customer_name),
+      totalAgorot: asNumber(payload.total_agorot),
+      whatHe:
+        items > 0
+          ? `${items} ${t('purchaseConfirmation.items')}`
+          : t('purchaseConfirmation.itemsFallback'),
+      coupons: false,
+    },
+    siteUrl,
+    t('purchaseConfirmation.headlineOrder'),
   )
-
-  return { subject, html, text }
 }
 
 /**
@@ -587,46 +697,59 @@ export function buildVoucherRedeemedEmail(
 }
 
 /**
- * Coupon delivery after pay. Payload shape is frozen by
+ * Purchase confirmation for an order WITH coupons. Payload shape is frozen by
  * `tg_orders_notify_paid` in migration 102 (snake_case voucher rows).
- * Reuses `buildVoucherEmail` so the transitional finalize sender and the
- * outbox drain cannot drift apart on copy or amounts.
+ *
+ * Until Q09 this rendered `buildVoucherEmail`, the codes and the QR links.
+ * Under the owner's list it is the same six-line disclosure as `order_paid`,
+ * with the coupons named and the total as the sum of what was paid on the
+ * site for each of them; the codes are on the order page the last line
+ * links. `voucher-email.ts` still exists for the operator's resend button.
  */
 export function buildVoucherIssuedEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification {
-  const orderId = asText(payload.order_id) ?? 'unknown'
+  const orderId = asText(payload.order_id)
+  const ref = asText(payload.order_ref) ?? (orderId ?? '').slice(0, 8).toUpperCase()
   const raw = Array.isArray(payload.vouchers) ? payload.vouchers : []
   const vouchers = raw.flatMap((row) => {
     if (!row || typeof row !== 'object') return []
     const v = row as Record<string, unknown>
-    const id = asText(v.id)
-    const code = asText(v.code)
-    const expiresAt = asText(v.expires_at)
-    if (!id || !code || !expiresAt) return []
     return [
       {
-        id,
-        code,
         productName: asText(v.product_name),
-        supplierName: asText(v.supplier_name),
-        supplierAddress: asText(v.supplier_address),
-        supplierPhone: asText(v.supplier_phone),
-        faceValueAgorot: asNumber(v.face_value_agorot),
         couponPriceAgorot: asNumber(v.coupon_price_agorot),
-        remainingDueAgorot: asNumber(v.remaining_amount_due_agorot),
-        expiresAt,
       },
     ]
   })
+  // Integer agorot in, integer agorot out; `formatAgorot` is the only divide.
+  const totalAgorot = vouchers.reduce((sum, v) => sum + Math.trunc(v.couponPriceAgorot), 0)
+  const names = vouchers.map((v) => v.productName ?? '')
+  const count = vouchers.length
+  const whatHe =
+    count === 0
+      ? t('purchaseConfirmation.couponsFallback')
+      : `${
+          count === 1
+            ? t('purchaseConfirmation.coupon')
+            : `${count} ${t('purchaseConfirmation.coupons')}`
+        }: ${joinNames(names, t('purchaseConfirmation.namesFallback'))}`
 
-  return buildVoucherEmail({
-    customerName: asText(payload.customer_name),
-    orderId,
-    vouchers,
-    siteUrl: trimSite(siteUrl),
-  })
+  return renderConfirmation(
+    {
+      ref,
+      orderId,
+      customerName: asText(payload.customer_name),
+      totalAgorot,
+      whatHe,
+      coupons: true,
+    },
+    siteUrl,
+    count === 1
+      ? t('purchaseConfirmation.headlineCoupon')
+      : t('purchaseConfirmation.headlineCoupons'),
+  )
 }
 
 /**

@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q08 DONE (25.09).** הבא בתור: **Q09** (הטבלה: OPEN, חלקי; דורש החלטת
-מפעיל על מיילים ללקוח, ראו חוסם 6).
+**Q09 DONE (25.09).** הבא בתור: **Q10** (בטבלה DONE מ-`f6392ed6e`; לאמת על
+העץ לפי כלל "פריט שכבר נעשה", ואז Q11).
 
 ההיסטוריה המלאה (Q01..Q05, תור 23.09, וכל מה שקדם, 24,310 שורות) עברה
 ל-`docs/STATE-ARCHIVE.md` באותו קומיט. הקובץ הזה מחזיק רק את מה שחי.
@@ -52,6 +52,68 @@ docs-path-audit 154 רשומות), `pnpm test` **574 קבצים, 6,945 טסטי�
   `packages/money.ts` לא קיים, המסלול הוא `src/lib/money.ts` ו-`src/lib/commerce/money.ts`.
 - שער ההשוואה הורץ אף שהפריט אינו נוגע ב-UI, כי כל שורות Q03 בפנקס היו
   `-dirty` ולא הייתה מדידה על קומיט נקי. עכשיו יש.
+
+## Q09 - DONE (25.09) - מיילים ללקוח לפי הרשימה, כל השאר web push לדף ההזמנה
+
+**ההחלטה שהפריט ביקש ממפעיל התקבלה בפריט עצמו.** ‏`final-queue.txt` (25.09
+02:37) מאוחר ממדיניות 22.09 ומנקוב ברשימה סגורה; הרשימה היא ההחלטה. אין
+צורך בשאלה.
+
+**מה היה (נמדד בקוד):** ‏`mayNotify` חסם מייל לכל סוג לקוח חוץ מ-`voucher_gifted`,
+אבל ‏`finalizeOrder` עדיין שלח ישירות את מייל ה-QR עם הקודים (`sendVoucherEmail`,
+עוקף את המדיניות). איפוס סיסמה יצא מ-SMTP של Supabase, לא מ-Resend. לא הייתה
+התראת אבטחה בשום מקום. ‏**כל web push נחת בדף הבית:** התבניות שמו ‏URL
+מוחלט ב-`data.url`, ו-`sw.js` פותח רק נתיב שמתחיל ב-`/`.
+
+**מה נכתב:**
+- **רשימת המיילים** ב-`preferences.ts`: ‏`EMAIL_POLICY_EXEMPT_KINDS` =
+  ‏`order_paid`, ‏`voucher_issued`, ‏`voucher_expiring`, ‏`voucher_gifted`.
+  איפוס סיסמה והתראת אבטחה הם שליחה ישירה, לא סוג outbox (ה-CHECK היה
+  דוחה סוג חדש עד מיגרציה, והתראה שמחכה למיגרציה אינה התראה).
+- **אישור רכישה של 6 שורות** (‏14ג(ב)): ‏`renderConfirmation` אחד לשני
+  הטריגרים (095 ללא קופונים, 102 עם). מוכר, הזמנה, שולם (עם קישור לקבלה
+  במסלול שלנו), אספקה, ביטול (14 יום, דמי ביטול 5% או ‏₪100 דרך
+  ‏`formatAgorot`), דף ההזמנה. **בלי קוד ובלי QR**; הקודים בדף ההזמנה.
+  הטסט סופר בדיוק שש שורות. ‏`finalize.ts` לא שולח יותר את מייל ה-QR;
+  ‏`sendVoucherEmail` נשאר לכפתור השליחה-מחדש של המפעיל.
+- **איפוס סיסמה דרך Resend**: ‏`password-reset-send.ts`,
+  ‏`generateLink({ type: 'recovery' })` לקישור שלנו
+  ‏`/auth/callback?token_hash=…&type=recovery`; ה-callback מקבל ‏`type`
+  מרשימה סגורה (‏`recovery`, אחרת ‏`magiclink`). ‏Supabase SMTP נשאר fallback.
+- **התראת אבטחה**: ‏`security-alert.ts` + ‏`security-alert-send.ts`, נשלחת
+  אחרי שינוי סיסמה, רישום ‏TOTP (רק כשהגורם היה ‏`unverified`), הוספת
+  passkey והסרתו. **בלי קישור במייל** (צורת פישינג), כתובת האתר כטקסט.
+- **web push לדף ההזמנה**: ‏`templates.ts` מכסה 11 סוגי לקוח (נוספו
+  ‏`order_paid`, ‏`voucher_redeemed`, ‏`refund_completed`,
+  ‏`voucher_expiry_credited`, ‏`referral_bonus_credited`, ‏`back_in_stock`);
+  ‏`data.url` הוא נתיב ‏`/account/orders/<id>` כשיש ‏`order_id`, ו-`data.link`
+  הצורה המוחלטת. ‏`welcome` ו-`voucher_gifted` בכוונה ללא push.
+- העתק לקטלוג: ‏`purchaseConfirmation.*`, ‏`securityAlert.*`, ‏`passwordReset.*`
+  ב-`he.json` ו-`en.json`. תקרת i18n ירדה 631 -> 628. ‏`docs/EMAILS.md` עודכן.
+
+**שערים על העץ:** ‏`pnpm type-check` נקי, ‏`pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, docs-index 280), ‏`pnpm test` **578 קבצים, 6,990
+ירוקים, 12 מדולגים** (+37). ‏`pnpm build` ירוק (BUILD_ID
+‏`5CnF-KHhp1I594VQrgU2Y`). **שער ההשוואה בחזית, ‏`pnpm start` על 3311,
+‏`--widths=380,768,1440 --baseline=refs/ke_live_{width}.png`: 380 ‏8.44% PASS,
+768 ‏9.03% PASS, 1440 ‏3.82% PASS**, שלוש שורות ב-`UI-PARITY-REPORT` על
+‏`4751618f0-dirty`. זהה ל-Q08 כי דף הבית לא נגע.
+
+**החלטות שהתקבלו לבד:**
+- **מספר עוסק/ח.פ אינו קיים בריפו** (לא בתוכן המשפטי, לא בפוטר, לא ב-env).
+  שורת המוכר נושאת שם, כתובת הפוטר, ‏support@ וקישור לתקנון, בלי מספר
+  מומצא. תיקון: עריכה אחת ב-`purchaseConfirmation.sellerName`. חוסם 9.
+- **מייל ה-QR לקונה הוסר מ-finalize**, כי הרשימה סגורה ומדיניות 22.09 כבר
+  אמרה שהקופון חי ב-/account. הקונה מקבל את 6 השורות + push לדף ההזמנה.
+- ‏`voucher_expiring` הוא הסוג האופציונלי היחיד עם מייל; לא נוספה עמודת
+  מייל בהגדרות (מתג חי אחד בעמודה מתה). ההסבר בעמוד ההגדרות עודכן.
+- ‏`vercel.json` ללא crons: ה-drain (`/api/cron/notifications`) לא מתוזמן
+  בפרודקשן. לא בפריט הזה; רשום כחוסם 10.
+- ‏`docs/BACKLOG.md` עדיין לא קיים (כמו Q06..Q08). לא נוצר.
+- **תהליך ‏`next-server` (pid 81888, לא מאזין על 3311, בעלים לא ידוע)** היה
+  קיים לפני שער ההשוואה ונעלם אחרי הניקוי שלי (`pkill -f next-server -n`,
+  שאמור היה לפגוע רק בשרת שלי). ייתכן שהיה שרת של סשן אחר. לא שוחזר, כי
+  אין לי את הפקודה שהריצה אותו.
 
 ## Q08 - DONE (25.09) - חשבונית, שדות מע"מ בקופה, wa.me עם פרטי הזמנה, ביטול לפי 14ג
 
@@ -147,7 +209,7 @@ whatsapp, inquiry-links, steps, checkout-form-contract). `pnpm build` ירוק
 | Q06 | DONE (25.09) | הרשומה הזו. SHOWABLE: no, עם פירוט החסר. |
 | Q07 | DONE (אומת 25.09) | `9fe2ca441` (23.09) על הענף. `ProductShareRow` ב-`ProductInfo`: WhatsApp ראשון ובולט, Share נייטיב, fallback פייסבוק/טלגרם/מייל, העתקת קישור עם toast `הקישור הועתק`. 16 טסטים ירוקים. שער מוצר 1440 ‏2.79% PASS על `5d22aa60e` נקי. |
 | Q08 | DONE (25.09) | הרשומה למעלה. חשבונית חתומה (קיים), שדות מע"מ לעסק בקופה (חדש), wa.me עם פריטים וסכום (חדש), ביטול לפי 14ג בדף ההזמנה ובדף התודה (חדש). +8 טסטים. שער 8.44/9.03/3.82 PASS. |
-| Q09 | OPEN, חלקי | `RESEND_API_KEY` נקרא ב-3 מסלולים, 15 builders (`0ac09ff04`). `eae464b1a` (אין מייל ללקוח חוץ מאיפוס סיסמה, מדיניות בעלים) סותר את 6 שורות אישור הרכישה. דורש החלטת מפעיל. |
+| Q09 | DONE (25.09) | הרשומה למעלה. מייל רק ל-5: אישור 6 שורות, איפוס סיסמה (Resend + fallback), תזכורת תפוגה, התראת אבטחה, מתנה למקבל. 11 סוגי push לדף ההזמנה, תיקון `data.url`. +37 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q10 | DONE | `f6392ed6e feat(checkout): guest checkout on measured Electro geometry`. תשלום ב-mock מאחורי ממשק. |
 | Q11 | OPEN, חלקי | הסכם click-wrap עם hash ב-`lib/suppliers/contract.ts`, CTA `1e9b4f0e2`. לא אומת: שמירת timestamp + IP. |
 | Q12 | DONE | `(legal)/legal`, `terms-and-conditions`, `privacy-policy`, `refund_returns`, `accessibility`, `c03a59f6b`. לא אומת בנפרד: 5% או 100 ש"ח בטקסט. |
@@ -181,12 +243,18 @@ whatsapp, inquiry-links, steps, checkout-form-contract). `pnpm build` ירוק
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
 5. **צילום reference לדף מוצר ב-380 וב-768**: בלי זה השער בדף המוצר (Q04)
    נמדד ב-1440 בלבד.
-6. **החלטת מפעיל על מיילים ללקוח** (Q09): מדיניות "אין מייל חוץ מאיפוס
-   סיסמה" מול מפרט 6 שורות אישור רכישה.
+6. **`RESEND_API_KEY` בפרודקשן**: לא נמדד בפריט הזה (הזיכרון אומר שמשתני
+   הסביבה מפוצלים בין שלושה פרויקטים ב-Vercel). בלי המפתח כל חמשת המיילים
+   נופלים בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.
 7. **`SUPABASE_SECRET_KEY` חשוף ודורש רוטציה** (CLAUDE.md, `RUNBOOK`);
    `deploy-preflight` מסרב לבנות איתו.
 8. **Cardcom בפרודקשן**: `CHECKOUT_ENABLED=false`, ספק התשלום ב-mock;
    שלוש credentials החיוב לא קיימות באף פרויקט Vercel.
+9. **מספר עוסק/ח.פ לשורת המוכר** באישור הרכישה (Q09): אינו קיים בריפו.
+   עריכה אחת ב-`messages/he.json`, `purchaseConfirmation.sellerName`.
+10. **ה-drain של ההתראות אינו מתוזמן**: `vercel.json` ללא `crons`, ולכן
+    אף מייל או push מה-outbox לא יוצא בפרודקשן עד שיתווסף cron ל-
+    `/api/cron/notifications` (וגם ל-`expire-vouchers`).
 
 ## ידני לאופיר, לפי סדר קריטיות
 

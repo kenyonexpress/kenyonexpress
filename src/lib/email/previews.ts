@@ -1,5 +1,7 @@
 import { buildMagicLinkEmail } from './magic-link'
 import { type BuiltNotification, type NotificationKind, buildNotification } from './notifications'
+import { buildPasswordResetEmail } from './password-reset'
+import { buildSecurityAlertEmail } from './security-alert'
 import { buildVoucherEmail } from './voucher-email'
 
 /**
@@ -288,8 +290,35 @@ export const EMAIL_PREVIEWS: readonly EmailPreview[] = [
       }),
   },
   {
+    id: 'password_reset',
+    // Sent by the reset action through `server/auth/password-reset-send.ts`,
+    // not through the outbox, so there is no kind.
+    kind: null,
+    labelHe: 'איפוס סיסמה',
+    audience: 'customer',
+    build: (siteUrl) =>
+      buildPasswordResetEmail({
+        actionLink: `${siteUrl}/auth/callback?token_hash=abc123&type=recovery&next=%2Freset-password`,
+      }),
+  },
+  {
+    id: 'security_alert',
+    // Sent directly after a password change, a TOTP enrolment or a passkey
+    // change; never an outbox row. One sample, the event with the longest copy.
+    kind: null,
+    labelHe: 'התראת אבטחה',
+    audience: 'customer',
+    build: (siteUrl) =>
+      buildSecurityAlertEmail({
+        event: 'passkey_added',
+        at: '2026-09-25T08:15:00Z',
+        siteUrl,
+      }),
+  },
+  {
     id: 'voucher_pdf_mail',
-    // Sent by `finalizeOrder`, not through the outbox.
+    // Sent by the operator's resend action (`actions/admin/vouchers.ts`), not
+    // through the outbox and not from finalize since Q09.
     kind: null,
     labelHe: 'שובר עם ‏QR',
     audience: 'customer',

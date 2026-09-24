@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest'
 
 const SITE = 'https://kenyonexpress.co.il'
 
-describe('buildOrderPaidEmail', () => {
+describe('buildOrderPaidEmail (the six-line s.14C(b) confirmation)', () => {
   const payload = {
     order_id: '79f488aa-549a-40dd-af80-eb66d886668f',
     order_ref: '79F488AA',
@@ -18,6 +18,28 @@ describe('buildOrderPaidEmail', () => {
     total_agorot: 81_700,
     item_count: 2,
   }
+
+  /** The text alternative, one entry per line, blank lines dropped. */
+  function lines(text: string): string[] {
+    return text.split('\n').filter((line) => line.trim() !== '')
+  }
+
+  it('is exactly six lines, each one labelled', () => {
+    // The owner asked for six lines and the law asks for six things. A seventh
+    // line here is a failing test, not a longer mail.
+    const mail = buildOrderPaidEmail(payload, SITE)
+    const body = lines(mail.text)
+    expect(body).toHaveLength(6)
+    expect(body.map((line) => line.split(':')[0])).toEqual([
+      'המוכר',
+      'ההזמנה',
+      'שולם',
+      'אספקה',
+      'ביטול',
+      'דף ההזמנה ושירות',
+    ])
+    expect((mail.html.match(/<li>/g) ?? []).length).toBe(6)
+  })
 
   it('states the reference and the total the customer actually paid', () => {
     const mail = buildOrderPaidEmail(payload, SITE)
@@ -27,21 +49,38 @@ describe('buildOrderPaidEmail', () => {
   })
 
   it('reads the amount as agorot and never divides it a second time', () => {
-    // 81700 agorot is ⁦817.00 ₪⁩. A builder that treated the payload as shekels
-    // would say ⁦81,700.00 ₪⁩, which is the failure this asserts against.
     const mail = buildOrderPaidEmail(payload, SITE)
     expect(mail.text).not.toContain('81,700')
     expect(mail.text).not.toContain('⁦8.17 ₪⁩')
   })
 
-  it('greets by name when there is one and stays polite when there is not', () => {
-    expect(buildOrderPaidEmail(payload, SITE).text).toContain('שלום דנה')
-    expect(buildOrderPaidEmail({ ...payload, customer_name: null }, SITE).text).toContain('שלום,')
+  it('names the seller, the cancellation right and the fee, and the terms', () => {
+    const mail = buildOrderPaidEmail(payload, SITE)
+    expect(mail.text).toContain('קניון אקספרס')
+    expect(mail.text).toContain('support@kenyonexpress.co.il')
+    expect(mail.text).toContain('סעיף 14ג')
+    expect(mail.text).toContain('14 יום')
+    expect(mail.text).toContain('5%')
+    expect(mail.text).toContain('⁦100.00 ₪⁩')
+    expect(mail.text).toContain('https://kenyonexpress.co.il/terms-and-conditions')
   })
 
-  it('links the account orders page on the configured origin', () => {
+  it('carries no coupon code: the product is behind the login, on the order page', () => {
+    const mail = buildOrderPaidEmail(payload, SITE)
+    expect(mail.text).not.toContain('קוד')
+    expect(mail.html).not.toContain('/coupon/')
+  })
+
+  it('names the customer on the order line when there is one and stays polite when not', () => {
+    expect(buildOrderPaidEmail(payload, SITE).text).toContain('על שם דנה')
+    expect(buildOrderPaidEmail({ ...payload, customer_name: null }, SITE).text).not.toContain(
+      'על שם',
+    )
+  })
+
+  it('links the ORDER page on the configured origin, not the list', () => {
     expect(buildOrderPaidEmail(payload, SITE).html).toContain(
-      'https://kenyonexpress.co.il/account/orders',
+      'https://kenyonexpress.co.il/account/orders/79f488aa-549a-40dd-af80-eb66d886668f',
     )
   })
 
@@ -54,6 +93,7 @@ describe('buildOrderPaidEmail', () => {
     const mail = buildOrderPaidEmail({}, SITE)
     expect(mail.subject).toBeTruthy()
     expect(mail.text).toContain('⁦0.00 ₪⁩')
+    expect(lines(mail.text)).toHaveLength(6)
   })
 })
 
@@ -149,7 +189,7 @@ describe('buildVoucherRedeemedEmail', () => {
   })
 })
 
-describe('buildVoucherIssuedEmail', () => {
+describe('buildVoucherIssuedEmail (the same six lines, for a coupon order)', () => {
   const payload = {
     order_id: '79f488aa-549a-40dd-af80-eb66d886668f',
     order_ref: '79F488AA',
@@ -170,17 +210,39 @@ describe('buildVoucherIssuedEmail', () => {
     ],
   }
 
-  it('states both amounts in the locked coupon money order', () => {
+  it('sums what was paid on the site, in agorot, and names the coupon', () => {
     const mail = buildVoucherIssuedEmail(payload, SITE)
-    expect(mail.text).toContain('שולם באתר: ⁦220.00 ₪⁩')
-    expect(mail.text).toContain('לתשלום בבית העסק: ⁦180.00 ₪⁩')
-    expect(mail.html).toContain('/coupon/57002c6d-f917-4adc-804e-65e6c4bde594')
+    expect(mail.subject).toBe('אישור רכישה · 79F488AA')
+    expect(mail.text).toContain('שולם: ⁦220.00 ₪⁩')
+    expect(mail.text).toContain('קופון: ארוחה בשרית')
+    expect(mail.text.split('\n').filter((l) => l.trim() !== '')).toHaveLength(6)
+  })
+
+  it('never prints the code or a coupon link: the QR is on the order page', () => {
+    const mail = buildVoucherIssuedEmail(payload, SITE)
+    expect(mail.text).not.toContain('PRQBE23456')
+    expect(mail.html).not.toContain('PRQBE23456')
+    expect(mail.html).not.toContain('/coupon/57002c6d')
+    expect(mail.html).toContain('/account/orders/79f488aa-549a-40dd-af80-eb66d886668f')
+  })
+
+  it('counts and truncates names past three', () => {
+    const many = {
+      ...payload,
+      vouchers: ['א', 'ב', 'ג', 'ד', 'ה'].map((name) => ({
+        product_name: name,
+        coupon_price_agorot: 1000,
+      })),
+    }
+    const mail = buildVoucherIssuedEmail(many, SITE)
+    expect(mail.text).toContain('5 קופונים: א, ב, ג ועוד 2')
+    expect(mail.text).toContain('שולם: ⁦50.00 ₪⁩')
   })
 
   it('survives an empty voucher list rather than throwing at drain time', () => {
     const mail = buildVoucherIssuedEmail({ ...payload, vouchers: [] }, SITE)
-    expect(mail.subject).toContain('0 קופונים')
-    expect(mail.text).toContain('0 הקופונים שלך מוכנים')
+    expect(mail.subject).toContain('79F488AA')
+    expect(mail.text).toContain('⁦0.00 ₪⁩')
   })
 })
 
