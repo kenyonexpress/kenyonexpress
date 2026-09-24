@@ -5,11 +5,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
+import { getInvoiceSettings } from '@/server/queries/invoice-settings'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import CheckoutForm, { type CheckoutAddressPrefill } from './CheckoutForm'
+import CheckoutForm, {
+  type CheckoutAddressPrefill,
+  type CheckoutInvoicePrefill,
+} from './CheckoutForm'
 import { CheckoutShell } from './CheckoutShell'
 import '@/styles/checkout-page.css'
 
@@ -123,6 +127,7 @@ async function CheckoutPageBody({
   let walletBalance = 0
   let savedCards: { id: string; last4: string | null; brand: string | null; isDefault: boolean }[] =
     []
+  let invoiceSettings: CheckoutInvoicePrefill | null = null
 
   if (user) {
     const admin = createAdminClient()
@@ -166,6 +171,9 @@ async function CheckoutPageBody({
       zip: defaultAddress?.zip ?? '',
       email: user.email ?? '',
     }
+    // The saved "invoice to business" preference, through the RLS client like
+    // the account page. A failed read is a blank block, never a blocked checkout.
+    invoiceSettings = await getInvoiceSettings(supabase, user.id).catch(() => null)
     walletBalance = wallet.balanceAgorot / 100
     savedCards = (tokens ?? [])
       // An expired card is still listed in /account so the customer can delete
@@ -195,6 +203,7 @@ async function CheckoutPageBody({
         isAuthenticated={Boolean(user)}
         resuming={resume === '1'}
         channel={channel === 'app' ? 'app' : 'web'}
+        invoiceSettings={invoiceSettings}
       />
     </div>
   )

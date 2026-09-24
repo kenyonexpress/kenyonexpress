@@ -110,6 +110,30 @@ describe('validateDetailsStep', () => {
   it('does not care about the address', () => {
     expect(validateDetailsStep({ ...complete, city: '', street: '' })).toEqual({})
   })
+
+  it('ignores the business fields while the box is unticked', () => {
+    expect(
+      validateDetailsStep({ ...complete, business_name: '', business_registration_number: '12' }),
+    ).toEqual({})
+  })
+
+  it('requires a name and a nine-digit number once the box is ticked', () => {
+    const errors = validateDetailsStep({
+      ...complete,
+      invoice_to_business: 'on',
+      business_name: '',
+      business_registration_number: '12345',
+    })
+    expect(Object.keys(errors).sort()).toEqual(['business_name', 'business_registration_number'])
+    expect(
+      validateDetailsStep({
+        ...complete,
+        invoice_to_business: 'on',
+        business_name: 'קניון בע"מ',
+        business_registration_number: ' 123456789 ',
+      }),
+    ).toEqual({})
+  })
 })
 
 describe('validateAddressStep', () => {

@@ -168,4 +168,4 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * the reviews page and the invoice, consent and first-purchase copy all read
  * through `t()`. 641 -> 632.
  */
-export const HEBREW_LITERAL_CEILING = 632
+export const HEBREW_LITERAL_CEILING = 631

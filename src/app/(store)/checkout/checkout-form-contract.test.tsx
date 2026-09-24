@@ -191,6 +191,37 @@ describe('the checkout confirm step', () => {
     expect(container.querySelector('[name="save_card"]')).toBeNull()
   })
 
+  it('offers the business-invoice fields, hidden until the box is ticked', () => {
+    const { container } = renderCheckout()
+    const box = container.querySelector<HTMLInputElement>('[name="invoice_to_business"]')
+    expect(box?.checked).toBe(false)
+    // Posted with every submission, so the action knows the block was rendered.
+    expect(container.querySelector<HTMLInputElement>('[name="invoice_fields"]')?.value).toBe('1')
+    const name = container.querySelector<HTMLInputElement>('[name="business_name"]')
+    expect(name?.closest('[hidden]')).not.toBeNull()
+    fireEvent.click(box as HTMLInputElement)
+    expect(name?.closest('[hidden]')).toBeNull()
+    expect(
+      container.querySelector<HTMLInputElement>('[name="business_registration_number"]')?.maxLength,
+    ).toBe(9)
+  })
+
+  it('opens the business block pre-filled for a saved business customer', () => {
+    const { container } = renderCheckout({
+      invoiceSettings: {
+        invoiceToBusiness: true,
+        businessName: 'קניון בע"מ',
+        businessRegistrationNumber: '123456789',
+      },
+    })
+    expect(container.querySelector<HTMLInputElement>('[name="invoice_to_business"]')?.checked).toBe(
+      true,
+    )
+    expect(container.querySelector<HTMLInputElement>('[name="business_name"]')?.value).toBe(
+      'קניון בע"מ',
+    )
+  })
+
   it('carries the client_ref it was handed, once', () => {
     // A fresh uuid per page load is minted by the server component; what this
     // guards is that the form posts exactly that one, since it is the

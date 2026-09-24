@@ -317,6 +317,14 @@
   "checkout": {
     "steps": {
       "extras": "Additional details"
+    },
+    "businessInvoice": {
+      "title": "Invoice to a business",
+      "toggle": "I need a tax invoice issued to a business (VAT-registered dealer / company)",
+      "name": "Business name",
+      "registrationNumber": "VAT / company registration number",
+      "hint": "Nine digits. Saved for your next invoices too; you can change it in your account.",
+      "required": "Enter a business name and a nine-digit registration number, or untick the box"
     }
   },
   "voucherExpiry": {
@@ -411,5 +419,13 @@
       "cancellationLink": "Cancellation and returns policy",
       "imagesIllustrative": "Images are for illustration only."
     }
+  },
+  "cancellation": {
+    "title": "Cancel the purchase or request a refund",
+    "law": "Under section 14C of the Consumer Protection Law a distance sale may be cancelled within 14 days of receiving the goods or the disclosure document, whichever is later. The request is sent from here and answered by the site team, not automatically.",
+    "policyLink": "Full cancellation policy",
+    "openCta": "Request a cancellation or refund on this order",
+    "thankYou": "Changed your mind? Cancelling under section 14C of the Consumer Protection Law is done from the order page in your account.",
+    "thankYouCta": "To the order page"
   }
 }

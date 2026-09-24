@@ -1,5 +1,10 @@
 import { t } from '@/lib/i18n/messages'
-import { buildOrderInquiryText, storeWhatsAppNumber, waChatLink } from '@/lib/whatsapp'
+import {
+  type OrderInquiryDetails,
+  buildOrderInquiryText,
+  storeWhatsAppNumber,
+  waChatLink,
+} from '@/lib/whatsapp'
 
 /**
  * The two "ask us about THIS" buttons: a question about a product, and a
@@ -16,9 +21,12 @@ export function productQuestionLink(productName: string, pageUrl?: string): stri
   return waChatLink(number, pageUrl ? `${opener}\n${pageUrl}` : opener)
 }
 
-/** wa.me link to the store with a prefilled question about one order. */
-export function orderContactLink(orderId: string): string | null {
+/**
+ * wa.me link to the store with a prefilled question about one order: the short
+ * id, and when the caller has them, the item names and the amount paid.
+ */
+export function orderContactLink(orderId: string, details?: OrderInquiryDetails): string | null {
   const number = storeWhatsAppNumber()
   if (!number) return null
-  return waChatLink(number, buildOrderInquiryText(orderId.slice(0, 8).toUpperCase()))
+  return waChatLink(number, buildOrderInquiryText(orderId.slice(0, 8).toUpperCase(), details))
 }

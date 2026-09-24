@@ -79,6 +79,13 @@ function readResume(): Partial<Record<(typeof RESUME_FIELDS)[number], string>> {
   }
 }
 
+/** What the account has saved under "invoice to business", if anything. */
+export type CheckoutInvoicePrefill = {
+  invoiceToBusiness: boolean
+  businessName: string | null
+  businessRegistrationNumber: string | null
+}
+
 export default function CheckoutForm({
   cart,
   clientRef,
@@ -89,6 +96,7 @@ export default function CheckoutForm({
   isAuthenticated,
   resuming = false,
   channel = 'web',
+  invoiceSettings = null,
 }: {
   cart: CartView
   clientRef: string
@@ -104,6 +112,12 @@ export default function CheckoutForm({
    * changes where Cardcom sends the browser back to, and nothing else.
    */
   channel?: 'web' | 'app'
+  /**
+   * The account's saved "invoice to business" preference, so the block below
+   * opens pre-filled for a returning business customer. Null for a shopper who
+   * never set one (and for a guest, who has no row to read).
+   */
+  invoiceSettings?: CheckoutInvoicePrefill | null
 }) {
   /**
    * `begin_checkout`, once per mount of the checkout page.
@@ -154,6 +168,12 @@ export default function CheckoutForm({
   const [zipError, setZipError] = useState<string | null>(null)
 
   const [step, setStep] = useState<CheckoutStep>('details')
+  // Q08: the business-invoice fields show only once the box is ticked, like the
+  // gift block. The inputs stay MOUNTED either way (hidden by the wrapper), so
+  // a saved name survives an untick-and-retick within the same visit.
+  const [businessInvoice, setBusinessInvoice] = useState(
+    Boolean(invoiceSettings?.invoiceToBusiness),
+  )
   const [stepErrors, setStepErrors] = useState<StepErrors>({})
 
   /**
@@ -600,6 +620,89 @@ export default function CheckoutForm({
                   </div>
                 </>
               )}
+            </section>
+
+            {/*
+              Business VAT fields at checkout (Q08). The same row the account
+              page edits (`customer_invoice_settings`, 239): the action upserts
+              it BEFORE the charge, and `invoices.ts` reads it when the tax
+              document is built. A one-off business purchase therefore needs
+              no detour through the account settings first.
+            */}
+            <section
+              className="checkout-section"
+              aria-label={t('checkout.businessInvoice.title')}
+              data-testid="business-invoice"
+            >
+              <h2 className="checkout-section__title">
+                <span>{t('checkout.businessInvoice.title')}</span>
+              </h2>
+              <input type="hidden" name="invoice_fields" value="1" />
+              <label className="checkout-terms">
+                <input
+                  type="checkbox"
+                  name="invoice_to_business"
+                  checked={businessInvoice}
+                  onChange={(event) => setBusinessInvoice(event.target.checked)}
+                />
+                <span>{t('checkout.businessInvoice.toggle')}</span>
+              </label>
+              <div hidden={!businessInvoice}>
+                <div className="checkout-fields-row">
+                  <div className="checkout-field">
+                    <label htmlFor="co-business-name">
+                      {t('checkout.businessInvoice.name')}{' '}
+                      <span className="checkout-field__required">*</span>
+                    </label>
+                    <input
+                      id="co-business-name"
+                      name="business_name"
+                      defaultValue={invoiceSettings?.businessName ?? ''}
+                      maxLength={120}
+                      autoComplete="organization"
+                      aria-invalid={errorFor('business_name') ? 'true' : undefined}
+                      aria-describedby={errorIdFor('business_name')}
+                    />
+                    {errorFor('business_name') && (
+                      <span
+                        id="co-err-business-name"
+                        className="checkout-field__error"
+                        role="alert"
+                      >
+                        {errorFor('business_name')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="checkout-field">
+                    <label htmlFor="co-business-registration-number">
+                      {t('checkout.businessInvoice.registrationNumber')}{' '}
+                      <span className="checkout-field__required">*</span>
+                    </label>
+                    <input
+                      id="co-business-registration-number"
+                      name="business_registration_number"
+                      defaultValue={invoiceSettings?.businessRegistrationNumber ?? ''}
+                      inputMode="numeric"
+                      maxLength={9}
+                      placeholder="123456789"
+                      /* Digits, so LTR like the phone above; the label stays RTL. */
+                      dir="ltr"
+                      aria-invalid={errorFor('business_registration_number') ? 'true' : undefined}
+                      aria-describedby={errorIdFor('business_registration_number')}
+                    />
+                    {errorFor('business_registration_number') && (
+                      <span
+                        id="co-err-business-registration-number"
+                        className="checkout-field__error"
+                        role="alert"
+                      >
+                        {errorFor('business_registration_number')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <p className="checkout-privacy">{t('checkout.businessInvoice.hint')}</p>
+              </div>
             </section>
           </div>
 

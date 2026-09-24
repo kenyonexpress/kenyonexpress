@@ -9,6 +9,7 @@ import {
   resolveOrderGeneration,
 } from '@/lib/commerce/order-money-columns'
 import { giftHeldCopy } from '@/lib/gifts/held-copy'
+import { t } from '@/lib/i18n/messages'
 import { agorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -323,9 +324,18 @@ async function CheckoutReturnBody({ searchParams }: Props) {
         {(() => {
           const storePhone = storeWhatsAppNumber()
           if (!storePhone) return null
+          // The coupon names and the amount paid ride in the prefilled text, so
+          // the first message already says what support would ask first.
           const href = waChatLink(
             storePhone,
-            buildOrderInquiryText(order.id.slice(0, 8).toUpperCase()),
+            buildOrderInquiryText(order.id.slice(0, 8).toUpperCase(), {
+              itemNames: couponsWithQr.map((coupon) =>
+                Array.isArray(coupon.products)
+                  ? coupon.products[0]?.name_he
+                  : (coupon.products as { name_he: string } | null)?.name_he,
+              ),
+              totalAgorot: orderMoney.totalAgorot,
+            }),
           )
           if (!href) return null
           return (
@@ -349,6 +359,23 @@ async function CheckoutReturnBody({ searchParams }: Props) {
             </p>
           )
         })()}
+
+        {/*
+          Consumer Protection Law s.14C, on the page a buyer lands on: the
+          right to cancel is exercised from the order page, and a customer who
+          regrets the purchase in the next minute should not have to hunt for
+          it in the footer.
+        */}
+        <p
+          className="checkout-success__sub"
+          style={{ marginTop: 16 }}
+          data-testid="cancellation-note"
+        >
+          {t('cancellation.thankYou')}{' '}
+          <Link href={`/account/orders/${order.id}`} style={{ fontWeight: 600 }}>
+            {t('cancellation.thankYouCta')}
+          </Link>
+        </p>
 
         <p style={{ marginTop: 28 }}>
           <Link href="/products" className="checkout-pay-btn" style={{ display: 'inline-flex' }}>

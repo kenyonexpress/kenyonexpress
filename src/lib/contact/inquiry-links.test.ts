@@ -23,4 +23,15 @@ describe('inquiry links', () => {
     const href = orderContactLink('abcdef12-0000-4000-8000-000000000000')
     expect(decodeURIComponent(href?.split('text=')[1] ?? '')).toContain('ABCDEF12')
   })
+
+  it('prefills the order details the order page hands it', () => {
+    const href = orderContactLink('abcdef12-0000-4000-8000-000000000000', {
+      itemNames: ['ארוחה זוגית'],
+      totalAgorot: 4000,
+    })
+    const text = decodeURIComponent(href?.split('text=')[1] ?? '')
+    expect(text).toContain('ABCDEF12')
+    expect(text).toContain('ארוחה זוגית')
+    expect(text).toContain('40.00')
+  })
 })

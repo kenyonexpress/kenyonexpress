@@ -171,8 +171,38 @@ export function buildRedemptionInquiryText(productName: string | null): string {
   return `שלום, יש לי קופון מ-KenyonExpress${subject} ואשמח לתאם מימוש`
 }
 
-export function buildOrderInquiryText(orderShortId: string): string {
-  return `שלום, אשמח לעדכון על הזמנה ${orderShortId} שביצעתי באתר KenyonExpress`
+export type OrderInquiryDetails = {
+  /** Product names on the order, in line order. Only the first few are sent. */
+  itemNames?: readonly (string | null | undefined)[]
+  /** What the customer paid on the site, integer agorot. Omitted when unknown. */
+  totalAgorot?: number | null
+}
+
+/** More than this and the prefilled message stops being one support can skim. */
+const MAX_INQUIRY_ITEMS = 3
+
+/**
+ * The prefilled "about my order" message. The order id alone forced support to
+ * ask what was bought and for how much; the details ride along so the first
+ * message already answers that. Nothing here sends anything: the customer
+ * still has to press send in WhatsApp.
+ */
+export function buildOrderInquiryText(
+  orderShortId: string,
+  details: OrderInquiryDetails = {},
+): string {
+  const lines = [`שלום, אשמח לעדכון על הזמנה ${orderShortId} שביצעתי באתר KenyonExpress`]
+  const names = (details.itemNames ?? []).map((name) => (name ?? '').trim()).filter(Boolean)
+  if (names.length > 0) {
+    const shown = names.slice(0, MAX_INQUIRY_ITEMS)
+    const more = names.length - shown.length
+    lines.push(`פריטים: ${shown.join(', ')}${more > 0 ? ` ועוד ${more}` : ''}`)
+  }
+  const total = details.totalAgorot
+  if (typeof total === 'number' && Number.isInteger(total) && total > 0) {
+    lines.push(`סכום ששולם באתר: ${shekels(agorot(total))}`)
+  }
+  return lines.join('\n')
 }
 
 export function buildOrderUpdateText(input: {

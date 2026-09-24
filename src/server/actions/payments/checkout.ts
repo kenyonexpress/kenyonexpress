@@ -44,6 +44,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { invoiceSettingsSchema } from '@/lib/validations/account'
 import {
   type BeginCheckoutOutput,
   type CheckoutActionResult,
@@ -1280,6 +1281,54 @@ async function runSubmitCheckout(
   const text = (name: string) => {
     const v = formData.get(name)
     return typeof v === 'string' ? v.trim() : ''
+  }
+
+  // Business-invoice fields (Q08). Posted only by a form that rendered the
+  // block (`invoice_fields=1`), so an older client or a test that omits it
+  // leaves the account's saved preference alone. Written BEFORE the charge,
+  // because `src/server/payments/invoices.ts` reads this row when the document
+  // is built, which happens after payment; a write after the redirect would
+  // miss the very invoice the shopper ticked the box for.
+  if (text('invoice_fields') === '1') {
+    const invoiceParsed = invoiceSettingsSchema.safeParse({
+      invoice_to_business: formData.get('invoice_to_business') === 'on',
+      business_name: text('business_name'),
+      business_registration_number: text('business_registration_number'),
+    })
+    if (!invoiceParsed.success) {
+      return {
+        error: invoiceParsed.error.issues[0]?.message ?? 'פרטי החשבונית לעסק אינם תקינים',
+      }
+    }
+    const wantsBusinessInvoice = invoiceParsed.data.invoice_to_business
+    // Unticked turns the flag off and KEEPS the saved name and number:
+    // PostgREST upserts only the columns in the body. That is what unticking
+    // on this order means, and it is what the account page will show next.
+    const { error: invoiceError } = await supabase
+      .from('customer_invoice_settings' as never)
+      .upsert(
+        (wantsBusinessInvoice
+          ? {
+              user_id: user.id,
+              invoice_to_business: true,
+              business_name: invoiceParsed.data.business_name || null,
+              business_registration_number: invoiceParsed.data.business_registration_number || null,
+            }
+          : { user_id: user.id, invoice_to_business: false }) as never,
+        { onConflict: 'user_id' },
+      )
+    if (invoiceError && wantsBusinessInvoice) {
+      // 239 not applied, or the write failed. The shopper asked for a business
+      // invoice and would otherwise get a personal one with no warning; saying
+      // so costs one untick, a wrong tax document costs a support case.
+      log.warn('checkout.invoice_settings_save_failed', {
+        userId: user.id,
+        reason: invoiceError.message,
+      })
+      return {
+        error: 'חשבונית על שם עסק אינה זמינה כרגע. בטלו את הסימון כדי להמשיך, או פנו אלינו.',
+      }
+    }
   }
 
   let addressId: string | null = text('address_id') || null

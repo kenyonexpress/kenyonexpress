@@ -30,6 +30,12 @@ export default async function OrderDetailPage({ params }: Props) {
   const refund = await refundRequestStatus(id)
   const existing = await getMyReviewsForItems(order.lines.map((line) => line.id))
   const canReview = (REVIEWABLE_ORDER_STATUSES as readonly string[]).includes(order.status)
+  // Prefilled with what was bought and what was paid, so the first WhatsApp
+  // message already carries what support would otherwise ask for.
+  const contactHref = orderContactLink(order.id, {
+    itemNames: order.lines.map((line) => line.productName),
+    totalAgorot: order.totalAgorot,
+  })
 
   return (
     <>
@@ -64,7 +70,7 @@ export default async function OrderDetailPage({ params }: Props) {
             <strong>{formatIls(order.totalAgorot)}</strong>
           </div>
         </div>
-        {orderContactLink(order.id) && (
+        {contactHref && (
           <div className="account-row">
             <div className="account-row__main">
               <p className="account-row__meta">{t('contact.orderContact')}</p>
@@ -72,7 +78,7 @@ export default async function OrderDetailPage({ params }: Props) {
             <div className="account-row__actions">
               <a
                 className="account-btn"
-                href={orderContactLink(order.id) ?? undefined}
+                href={contactHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid="order-contact-link"

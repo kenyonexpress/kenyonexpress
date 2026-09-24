@@ -37,6 +37,8 @@ export type StepErrors = Record<string, string>
 export type StepValues = Record<string, string | undefined>
 
 const REQUIRED_MESSAGE = 'שדה חובה'
+/** ח.פ. and an authorised-dealer number are both nine digits in Israel. */
+const BUSINESS_NUMBER_MESSAGE = 'מספר עוסק / ח.פ. הוא תשע ספרות'
 
 function blank(value: string | undefined): boolean {
   return (value ?? '').trim() === ''
@@ -84,6 +86,17 @@ export function validateDetailsStep(values: StepValues): StepErrors {
 
   const email = checkEmail(values.email)
   if (email) errors.email = email
+
+  // The business-invoice block is optional, but ticked-and-empty is not a
+  // business invoice anyone can claim input VAT on. Same rule as
+  // `invoiceSettingsSchema` on the server, stated here where the shopper can
+  // still fix it instead of after the pay button.
+  if (values.invoice_to_business === 'on') {
+    if (blank(values.business_name)) errors.business_name = REQUIRED_MESSAGE
+    if (!/^\d{9}$/.test((values.business_registration_number ?? '').trim())) {
+      errors.business_registration_number = BUSINESS_NUMBER_MESSAGE
+    }
+  }
 
   return errors
 }

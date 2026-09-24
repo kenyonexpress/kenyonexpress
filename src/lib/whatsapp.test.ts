@@ -203,4 +203,29 @@ describe('the message a customer sends about their own order', () => {
   it('names the order so support does not have to ask', () => {
     expect(buildOrderInquiryText('KE-1042')).toContain('KE-1042')
   })
+
+  it('carries what was bought and what was paid when the caller has them', () => {
+    const text = buildOrderInquiryText('KE-1042', {
+      itemNames: ['ארוחה זוגית', null, ' עיסוי שוודי '],
+      totalAgorot: 12350,
+    })
+    expect(text).toContain('KE-1042')
+    expect(text).toContain('פריטים: ארוחה זוגית, עיסוי שוודי')
+    // Agorot in, formatted by the one shekel formatter; never a float.
+    expect(text).toContain('123.50')
+    expect(text).not.toContain('12350')
+  })
+
+  it('lists three items and counts the rest', () => {
+    const text = buildOrderInquiryText('KE-1', { itemNames: ['a', 'b', 'c', 'd', 'e'] })
+    expect(text).toContain('פריטים: a, b, c ועוד 2')
+  })
+
+  it('says nothing about items or money it does not have', () => {
+    const bare = buildOrderInquiryText('KE-1')
+    expect(buildOrderInquiryText('KE-1', { itemNames: [], totalAgorot: 0 })).toBe(bare)
+    expect(buildOrderInquiryText('KE-1', { totalAgorot: null })).toBe(bare)
+    // A non-integer is not agorot; it is left out rather than formatted wrong.
+    expect(buildOrderInquiryText('KE-1', { totalAgorot: 12.5 })).toBe(bare)
+  })
 })

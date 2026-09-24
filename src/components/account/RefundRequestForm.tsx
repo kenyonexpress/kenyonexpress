@@ -1,6 +1,8 @@
 'use client'
 
+import { t } from '@/lib/i18n/messages'
 import { type RefundRequestState, requestRefund } from '@/server/actions/refund-requests'
+import Link from 'next/link'
 import { useActionState, useId, useState } from 'react'
 
 const EMPTY: RefundRequestState = { ok: false }
@@ -84,8 +86,17 @@ export default function RefundRequestForm({
   const left = state.ok && typeof state.remaining === 'number' ? state.remaining : remaining
 
   return (
-    <section className="account-card" dir="rtl">
-      <h2 className="account-card__title">בקשת החזר</h2>
+    <section className="account-card" dir="rtl" data-testid="cancellation-request">
+      <h2 className="account-card__title">{t('cancellation.title')}</h2>
+      {/*
+        Consumer Protection Law s.14C, named on the page where the right is
+        exercised and not only in the policy: the form below IS the cancellation
+        request, and a customer looking for "ביטול" must not have to guess that
+        "החזר" is the word for it here.
+      */}
+      <p className="account-row__meta">
+        {t('cancellation.law')} <Link href="/legal/returns">{t('cancellation.policyLink')}</Link>
+      </p>
 
       {requests.length > 0 && (
         <ul className="account-list">
@@ -112,7 +123,7 @@ export default function RefundRequestForm({
       ) : allowed && !open ? (
         <p>
           <button type="button" className="account-btn" onClick={() => setOpen(true)}>
-            בקשת החזר על ההזמנה
+            {t('cancellation.openCta')}
           </button>
           <span className="account-row__meta">
             {' '}
