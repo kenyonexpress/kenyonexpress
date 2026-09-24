@@ -16,6 +16,7 @@ import { trackEvent } from '@/lib/observability/posthog'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { recordAffiliateConversionForOrder } from '@/server/affiliates/convert'
 import { trackServerEvent } from '@/server/analytics/track'
 import { awardOrderCountBonus } from '@/server/cashback/bonus'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
@@ -429,21 +430,26 @@ export async function finalizeOrder(input: {
     const orderRow = orFail(
       await admin
         .from('orders')
-        .select(`id, user_id, status, paid_at, ${orderCashbackSelect(orderGeneration)}`)
+        .select(
+          `id, user_id, status, paid_at, affiliate_code, ${orderCashbackSelect(orderGeneration)}`,
+        )
         .eq('id', input.orderId)
         .maybeSingle(),
       'finalize.order_read_failed',
       { orderId: input.orderId },
     )
-    // The dynamic select string defeats supabase-js's row inference; the four
+    // The dynamic select string defeats supabase-js's row inference; the five
     // fixed fields are what the code below reads, and the generation-specific
     // cashback column goes through readOrderCashbackAgorot, which knows both.
+    // `affiliate_code` is 010's column, in the generated types, snapshotted by
+    // checkout from the share-link cookie and read once below.
     const order = orderRow as unknown as
       | (Record<string, unknown> & {
           id: string
           user_id: string
           status: string
           paid_at: string | null
+          affiliate_code: string | null
         })
       | null
     if (!order) return { ok: false, error: 'order not found', code: 'NOT_FOUND' }
@@ -622,6 +628,22 @@ export async function finalizeOrder(input: {
       orderId: order.id,
       userId: order.user_id,
       cardToken: input.token?.token ?? null,
+    })
+
+    // The affiliate commission, if this order carries a share-link code.
+    //
+    // After the referral on purpose: `recordAffiliateConversionForOrder` asks
+    // whether this same order already paid this affiliate a referral bonus,
+    // and that is only known once the line above has run. Every decision
+    // (campaign, base, fraud flags, budget) lives in lib/affiliates/commission;
+    // like the two calls above, a failure is logged and does not fail the
+    // finalize: the card is already charged.
+    await recordAffiliateConversionForOrder(admin, {
+      orderId: order.id,
+      userId: order.user_id,
+      affiliateCode: order.affiliate_code,
+      cardToken: input.token?.token ?? null,
+      now,
     })
 
     // The stock the checkout held becomes a sale, once, in one statement.

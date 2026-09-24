@@ -136,6 +136,13 @@ export const RATE_LIMIT_POLICIES = {
   // caught it. Keyed on the user, not the IP, because the action can only touch
   // that user's own row - the limit bounds a held-down button, not an attacker.
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
+  // Same shape and same reasoning as `referral-code`: joining the affiliate
+  // programme mints that code and inserts one row the user already owns.
+  'affiliate-join': {
+    limit: 5,
+    windowSeconds: 3600,
+    reason: 'affiliate programme enrolment, per user',
+  },
   // Keyed on the USER and not the IP, because this action requires a session,
   // so there is an account to key on and a household behind one address must
   // not share one allowance. Ten rather than three: the per-ORDER cap of three

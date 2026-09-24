@@ -56,6 +56,7 @@
 | `coupon_qr_apply` | 30 | 1 h | printed QR landing, per IP |
 | `begin_checkout` | 10 | 1 min | Cardcom low-profile creation |
 | `referral-code` | 10 | 1 h | referral code mint, per user |
+| `affiliate-join` | 5 | 1 h | affiliate programme enrolment, per user |
 | `refund-request` | 10 | 1 h | refund requests across orders, per user |
 | `support-open` | 10 | 1 h | new support tickets, per user |
 | `support-reply` | 30 | 1 h | messages on a ticket, per user |

@@ -1006,6 +1006,12 @@ describe('the pending migration inventory', () => {
       // write drops the group on the un-migrated database only while every
       // value is still the default (lib/admin/optional-column-groups.ts).
       '243_product_terms.sql',
+      // 244 WRITTEN 2026-09-25 (Q16). Two new tables only: affiliate campaigns
+      // (commission in basis points, integer-agorot caps, scope, window) and
+      // affiliate conversions (one per order, UNIQUE). Three SELECT policies,
+      // no client write. Every reader catches 42P01 and the programme reads as
+      // "not open yet" until it is applied (server/affiliates/convert.ts).
+      '244_affiliate_campaigns.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

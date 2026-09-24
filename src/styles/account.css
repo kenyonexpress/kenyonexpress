@@ -805,3 +805,83 @@
   height: 100%;
   background: var(--account-yellow);
 }
+
+/* Affiliate programme */
+.affiliate-terms {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.affiliate-terms__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+}
+
+.affiliate-terms__name {
+  font-weight: 700;
+  color: var(--account-ink);
+}
+
+.affiliate-terms__rate {
+  font-weight: 700;
+  color: var(--account-ink);
+}
+
+.affiliate-terms__meta {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.affiliate-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  margin: 0 0 12px;
+}
+
+.affiliate-totals__label {
+  display: block;
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.affiliate-totals__value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--account-ink);
+}
+
+.affiliate-join__field {
+  display: block;
+  font-size: 14px;
+  color: var(--account-ink);
+  margin: 0 0 12px;
+}
+
+.affiliate-join__input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  font: inherit;
+  color: var(--account-ink);
+  background: #fff;
+}
+
+.affiliate-join__error {
+  font-size: 14px;
+  color: var(--account-red);
+  margin: 0 0 12px;
+}

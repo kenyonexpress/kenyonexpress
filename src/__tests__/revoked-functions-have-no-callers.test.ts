@@ -77,7 +77,13 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   // another customer's uuid can read (and mint) that person's referral code.
   // `src/server/actions/referrals.ts` is the sanctioned path precisely because
   // it takes the uuid from the session and never from a caller.
-  fn_ensure_referral_code: ['src/server/actions/referrals.ts'],
+  //
+  // CLASSIFIED 2026-09-25 (Q16): a second caller, `actions/affiliates.ts`,
+  // mints the code when a customer joins the affiliate programme. Same shape
+  // exactly: the uuid is the session's, the client is `createAdminClient()`,
+  // so it arrives as service_role and 143 does not touch it. The affiliate
+  // code is the referral code, which is why the same function is called.
+  fn_ensure_referral_code: ['src/server/actions/affiliates.ts', 'src/server/actions/referrals.ts'],
 }
 
 // Both migration directories. 143-145 were applied through MCP on 2026-09-03

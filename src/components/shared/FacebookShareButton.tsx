@@ -17,13 +17,17 @@ import FacebookIcon from '@/components/shared/FacebookIcon'
 export default function FacebookShareButton({
   label = 'שיתוף בפייסבוק',
   className,
+  url,
 }: {
   label?: string
   className?: string
+  /** The URL to share instead of the bare page URL, read at click time. */
+  url?: () => string
 }) {
   const handleClick = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`
-    window.open(url, '_blank', 'noopener,noreferrer,width=600,height=500')
+    const href = url ? url() : window.location.href
+    const sharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(href)}`
+    window.open(sharer, '_blank', 'noopener,noreferrer,width=600,height=500')
   }
 
   return (

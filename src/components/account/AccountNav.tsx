@@ -15,6 +15,7 @@ const ITEMS = [
   { href: '/account/wishlist', label: t('account.wishlist') },
   { href: '/account/wallet', label: t('account.wallet') },
   { href: '/account/referrals', label: t('account.referrals') },
+  { href: '/account/affiliate', label: t('account.affiliate') },
   { href: '/account/subscriptions', label: t('account.subscriptions') },
   { href: '/account/addresses', label: t('account.addresses') },
   { href: '/account/tokens', label: t('account.tokens') },

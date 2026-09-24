@@ -35,9 +35,10 @@ import { extname, join } from 'node:path'
 /**
  * The ceiling. 142 on 2026-09-10 in 83 files; 140 after the two byte-identical
  * sites (`vouchers/coupon-view.ts`, `wallet/pass-model.ts`) moved to
- * `formatDate`. NEVER RAISE IT.
+ * `formatDate`; 134 on 2026-09-25 after `admin/affiliates/page.tsx` moved its four
+ * inline sites to `formatDateShort` and `formatNumber` (Q16). NEVER RAISE IT.
  */
-const CEILING = 138
+const CEILING = 134
 
 /** The sanctioned homes for a locale tag, and the only ones. */
 const ALLOWED_PREFIXES = ['src/lib/i18n/', 'src/lib/money']

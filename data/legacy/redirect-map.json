@@ -119,6 +119,7 @@
       "/accessibility",
       "/account",
       "/account/addresses",
+      "/account/affiliate",
       "/account/coupons",
       "/account/details",
       "/account/invoices",

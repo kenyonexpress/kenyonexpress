@@ -80,6 +80,11 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   order_refund: 'החזר על ביטול',
   admin_credit: 'זיכוי ידני',
   coupon_expired: 'קרדיט על קופון שפג',
+  // Written by server/affiliates/pay.ts (AFFILIATE_WALLET_REASON), not by
+  // finalize.ts, so account-labels.test.ts does not find it by regex; it is
+  // pinned by affiliates/wired.test.ts instead.
+  affiliate_commission: 'עמלת שותפים על מכירה',
+  referral_bonus: 'בונוס חבר מביא חבר',
 }
 
 export function walletReasonLabel(reason: string): string {

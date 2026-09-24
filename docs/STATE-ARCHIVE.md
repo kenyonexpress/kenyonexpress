@@ -4,6 +4,72 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q14 - DONE (25.09) - קופון במתנה במייל, מיידי או מתוזמן, עם ברכה; העברת קופון למשתמש אחר; צ'יפים: פתוח בסופ"ש, משלוח חינם, קרוב אליי בהסכמה
+
+**שני שלישים היו עשויים, השליש השלישי לא.** נמדד על העץ לפני שנכתבה שורה:
+
+- **מתנה במייל בקופה, מיידי או מתוזמן, עם ברכה: קיים.** `giftSchema` ב-`validations/checkout.ts`
+  (מייל, שם, ברכה עד 500, `gift_deliver_at`, אריזה), `sendOrderGifts` ב-`payments/gift-vouchers.ts`
+  ממנטף token מגובב, כותב `voucher_gifted` ל-outbox עם `next_attempt_at` כתזמון (226 ממתינה;
+  בלעדיה נשלח מיד), `/gift/[token]` + `claimGift` מעבירים בעלות. 108 מוחלת (עמודות ה-gift
+  ב-`database.ts`).
+- **העברת קופון למשתמש אחר: לא היה.** `actions/gifts.ts` הכיל רק `claimGift` ו-`loadGiftPreview`;
+  לא היה שום מסלול לבעל קופון לשלוח אותו הלאה. **נכתב עכשיו.**
+- **צ'יפים: היו רק קישורי קטגוריה** (`CategoryChips`, `dda866a5a`). "קרוב אליי" היה כפתור בשורת
+  הערים מתחת לגריד, לא צ'יפ. "פתוח בסופ"ש" ו-"משלוח חינם" לא היו. **נכתבו עכשיו.**
+
+**מה נכתב:**
+
+- **העברת קופון.** `lib/gifts/transfer.ts` (טהור): `transferEligibility` (issued, בתוקף, ואין קישור
+  שטרם נאסף), `giftTransferSchema` (zod, אותם גבולות כמו בקופה). `transferVoucher` ו-`revokeVoucherTransfer`
+  ב-`actions/gifts.ts`: אותו מנגנון של מתנה מהקופה (token מגובב, `voucher_gifted`, הבעלות עוברת רק
+  ב-`claimGift`), עם השומרים **בתוך ה-UPDATE** (`user_id`, `status=issued`, `or(hash.is.null, claimed.not.is.null)`)
+  כך שמרוץ מוכרע ב-Postgres. `dedupe_key` פר קישור (`gift:<id>:<hash16>`), כי קופון יכול לעבור
+  יותר מפעם אחת. אם ה-outbox נכשל, השורה מוחזרת למצבה. ביטול מנקה את ה-hash ומסמן שורת outbox
+  ממתינה כ-`dead`, ומשאיר `gift_sent_at` (שומר ה-idempotency של finalize). מגבלה 20/שעה למשתמש.
+  `gift_deliver_at` (226) לא נכתב: 42703 בפרודקשן. דף `/account/coupons/[id]/gift` (טופס, מצב
+  "נשלח וממתין" עם ביטול, סירוב), קישורים "העברה במתנה"/"המתנה בדרך" ברשימת הקופונים. הקוד וה-QR
+  נעלמים מהמסכים של השולח ברגע שיש token (`withholdGiftedCode`, קיים).
+- **צ'יפים.** `lib/catalogue/filter-chips.ts` (טהור): פרסרים, `toggleChipHref`, `applyChipFilters`,
+  `isMissingShippingColumn`. `FilterChips` (שרת, קישורים) + `NearMeChip` (לקוח, כפתור, הסכמה בלחיצה)
+  בשני דפי הארכיון, אותן מחלקות CSS של שורת הקטגוריות. `useNearMe` חולץ מ-`CityTags` ומשותף לשניהם.
+  **הנתונים, וזו ההחלטה המרכזית:** "פתוח בסופ"ש" הוא התג `open-weekend` ב-`products.tags` (עמודה
+  שקיימת בפרודקשן), עם תיבת סימון בטופס המוצר לכל סוג מוצר; לא עמודה חדשה, כי עמודה הייתה יושבת
+  ב-`pending` והצ'יפ היה 42703 בכל לחיצה. "משלוח חינם" = `requires_shipping` ו-`shipping_price_agorot=0`
+  (243 ממתינה); ב-42703 השאילתה רצה שוב בלי העמודה, וזה אותו סט שורות כל עוד הכול נשלח חינם
+  (הכותרת של 243 אומרת זאת). נמדד על ה-build: האזהרה `catalogue.shipping_column_missing` נרשמה
+  והדף ענה 200. "קרוב אליי" הוא ה-`?near=` הקיים, נשאל בלחיצה ולעולם לא ב-mount.
+- **טסטים:** +41 (`filter-chips.test.ts` 9, `filter-chips.test.tsx` 2, `transfer.test.ts` 7,
+  `gifts-transfer.test.ts` 10 עם admin client מדומה, ועוד).
+
+**נמדד על ה-build המקומי** (BUILD_ID `S_Fasw94DSP0GjUV9P6Nt`, `pnpm start` על 3312): `/products`
+ו-`/category/hot-deals` 200 עם שורת הצ'יפים (שלוש תוויות, `aria-pressed="false"` על קרוב אליי);
+`?open=weekend` מסמן `aria-current="true"` ומחזיר גריד ריק (אף מוצר עדיין לא מתויג);
+`?shipping=free` מסמן ומחזיר את כל הקטלוג אחרי ה-fallback. `/account/coupons/<id>/gift` אנונימי:
+307 ל-`/login?next=`.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628, כל המחרוזות החדשות ב-`messages`),
+`pnpm test` **583 קבצים, 7,027 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית,
+`--baseline=refs/ke_live_{width}.png`, exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 22:34-22:37 UTC על `c42099d58-dirty`. **שלוש השורות שלפניהן
+(22:28-22:31) נמדדו בטעות מול השרת הזר על 3311 שמגיש build ישן** (ראה החלטות); הן נשארות בפנקס כי
+השער כותב בעצמו, אבל הראיה היא 22:34-22:37. דפי הקטגוריה והחנות אינם נמדדים (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- שרת `pnpm start` זר על 3311 (מ-Q13) עדיין חי ומגיש את ה-`.next` הישן; `pnpm start` שלי נפל עם
+  EADDRINUSE בשקט וריצת ההשוואה הראשונה מדדה אותו. זוהה לפי `_buildManifest` חסר ו-0 צ'יפים ב-HTML,
+  ונמדד שוב על 3312. לא נעצר (לא שלי). מי שמודד: לבדוק את ה-log של `pnpm start` לפני שקורא מספרים.
+- לא נכתב SQL: כל העמודות שהתכונה נשענת עליהן קיימות בפרודקשן. תזמון להעברה מהחשבון לא נבנה
+  (קיים בקופה בלבד), כי ביטול של שליחה מתוזמנת היה דורש כתיבה ל-`gift_deliver_at` שאינה קיימת.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`). לא נגעתי בכסף.
+
 ## Q13 - DONE (אומת 25.09) - דף צור קשר בחמישה ערוצים, wa.me ו-support@ בלבד, בלי טלפון; כפתור שאלה על המוצר עם נפילה לשירות לקוחות
 
 **הפריט כבר היה עשוי.** חמשת הערוצים והבורר ב-`bf0effa2e` (22.09), תיבת

@@ -12,13 +12,16 @@ export default function TelegramShareButton({
   text,
   label = t('share.telegramLabel'),
   className,
+  url,
 }: {
   text?: string
   label?: string
   className?: string
+  /** The URL to share instead of the bare page URL, read at click time. */
+  url?: () => string
 }) {
   const handleClick = () => {
-    const params = new URLSearchParams({ url: window.location.href })
+    const params = new URLSearchParams({ url: url ? url() : window.location.href })
     if (text) params.set('text', text)
     window.open(
       `https://t.me/share/url?${params.toString()}`,

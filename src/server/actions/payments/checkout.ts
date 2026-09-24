@@ -51,6 +51,7 @@ import {
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
 import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
+import { snapshotAffiliateAttribution } from '@/server/affiliates/attribution'
 import {
   linkAnalyticsIdentity,
   stampOrderAttribution,
@@ -816,6 +817,12 @@ async function runBeginCheckout(
   if (orderError || !order) {
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
+
+  // The share-link code that brought this buyer here (`ke_ref` cookie), in its
+  // OWN statement for the same reason the gift columns below are: a failure is
+  // an unattributed order, never an uncreated one. Decided at finalize, not
+  // here (server/affiliates/convert.ts).
+  await snapshotAffiliateAttribution(admin, { orderId: order.id, userId: user.id })
 
   // The gift intent (108), written in its OWN statement and not added to the
   // insert above. This whole module exists because naming a column the hosted

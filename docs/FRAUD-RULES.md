@@ -47,6 +47,22 @@
 | ‏`gift_to_stranger` | ‏10 | נמען שאינו בעל החשבון | קלט הקופה |
 | ‏`coupon_stack_max` | ‏10 | הנחה+ארנק ‏≥ ‏50% | קלט הקופה |
 
+**תוכנית השותפים (‏Q16, ‏25.09):** ההחלטה ב-`lib/affiliates/commission.ts`
+(‏`decideConversion`, טהור), הרישום ב-`server/affiliates/convert.ts` אחרי
+תשלום, התור בלשונית "מכירות שותפים" ב-`/admin/affiliates`. עמלה עוברת
+לארנק רק משורה ‏`pending`; ‏`flagged` ממתינה לאדם; ‏`rejected` נרשמת ואינה
+משלמת.
+
+| סיבה | תוצאה | סף | מקור |
+| --- | --- | --- | --- |
+| ‏`self_purchase` | נדחה, נרשם | הקונה הוא השותף | ‏`affiliates.user_id` |
+| ‏`referral_bonus_paid` | נדחה, נרשם | אותה הזמנה כבר שילמה לשותף בונוס חבר-מביא-חבר | ‏`referrals.referred_first_order_id` |
+| ‏`same_device` / ‏`same_ip` / ‏`same_card` | לבדיקה | ‏`fn_referral_fraud_signals(שותף, קונה)` | ‏`referral_signals` ‏(098), מוזן בהצטרפות, בקופה ובתשלום |
+| ‏`velocity` | לבדיקה | ‏≥ ‏`max_conversions_per_day` לשותף ב-24 שעות | ‏`affiliate_conversions` ‏(244) |
+| ‏`manual_approval` | לבדיקה | הקמפיין דורש אישור | ‏`affiliate_campaigns.require_manual_approval` |
+| ‏`budget_exhausted` | לא נרשם | סכום העמלות שהתחייבו + זו > תקציב | ‏`affiliate_campaigns.budget_agorot` |
+| ‏`below_minimum` / ‏`affiliate_not_approved` / ‏`no_live_campaign` | לא נרשם | | |
+
 **"אי-התאמה גיאוגרפית" מהסעיף אינה כלל כאן, במכוון:** אין לאתר מקור
 גיאוגרפי שנמדד ‏(אין ‏geo-IP, אין מדינת כרטיס מ-Cardcom הישן), וכלל על
 נתון שאינו קיים הוא כלל שלעולם לא יורה ונראה ככיסוי.

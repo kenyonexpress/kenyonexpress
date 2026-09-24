@@ -8,13 +8,16 @@ import { toast } from 'sonner'
 export default function CopyLinkButton({
   label = t('share.copyLinkLabel'),
   className,
+  url,
 }: {
   label?: string
   className?: string
+  /** The URL to copy instead of the bare page URL, read at click time. */
+  url?: () => string
 }) {
   const handleClick = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href)
+      await navigator.clipboard.writeText(url ? url() : window.location.href)
       toast.success(t('share.linkCopied'))
     } catch {
       toast.error(t('share.linkCopyFailed'))

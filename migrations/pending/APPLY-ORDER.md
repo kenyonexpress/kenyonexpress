@@ -886,3 +886,32 @@ writes to it, which is a deploy question and not a schema one.
 
 **Reversal:** `DROP TABLE public.job_runs; DROP FUNCTION public.job_runs_health(interval); DROP FUNCTION public.prune_job_runs(integer);`
 Nothing references any of the three.
+
+## 2026-09-25: 244 written, not applied, independent of every other pending file
+
+`244_affiliate_campaigns.sql`. Two new tables (`affiliate_campaigns`,
+`affiliate_conversions`), three SELECT policies, no function, no trigger
+beyond `set_updated_at` (010). Depends on 010 and 098, both applied. Nothing
+existing is altered, so it has **no ordering constraint against any other
+pending file**. Apply it whenever.
+
+**What to check after applying.** Both tables start empty:
+
+```sql
+SELECT tablename, policyname, cmd FROM pg_policies
+ WHERE tablename IN ('affiliate_campaigns', 'affiliate_conversions');
+SELECT table_name, grantee, privilege_type
+  FROM information_schema.role_table_grants
+ WHERE table_name IN ('affiliate_campaigns', 'affiliate_conversions')
+   AND grantee IN ('anon', 'authenticated');
+```
+
+Expect three policies, all `SELECT`; and only `(authenticated, SELECT)` rows
+from the grants query, nothing for `anon`. Any `INSERT`/`UPDATE`/`DELETE` row
+means a client role can write money terms and must be revoked before use.
+
+Then create the first campaign from `/admin/affiliates?tab=campaigns`; the
+next paid order carrying an approved affiliate's code writes a conversion.
+
+**Reversal:** `DROP TABLE public.affiliate_conversions; DROP TABLE public.affiliate_campaigns;`
+Wallet entries already written stay, as ledger entries must.

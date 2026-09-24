@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q15 DONE (25.09).** הבא בתור: **Q16** (בטבלה OPEN, חלקי: `fc9da36dc`,
-`2410c879d`; אין ראיה ל-commission per campaign ול-fraud checks).
+**Q16 DONE (25.09).** הבא בתור: **Q17** (בטבלה OPEN, חלקי: passkey, 2FA,
+מתג "הכל באפליקציה"; אין ראיה לאימות טלפון/OTP).
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -88,52 +88,53 @@ exit 0:**
   דרכו בלבד.
 - סעיף Q13 הועבר לארכיון כדי לשמור על STATE.md מתחת ל-300 שורות.
 
-## Q14 - DONE (25.09) - קופון במתנה במייל, מיידי או מתוזמן, עם ברכה; העברת קופון למשתמש אחר; צ'יפים: פתוח בסופ"ש, משלוח חינם, קרוב אליי בהסכמה
+## Q16 - DONE (25.09) - תוכנית שותפים: שיתוף דילים עם קוד, עמלה פר קמפיין שהאדמין קובע, זיכוי לארנק, בדיקות הונאה
 
-**שני שלישים היו עשויים, השליש השלישי לא.** נמדד על העץ לפני שנכתבה שורה:
+**נמדד על העץ לפני שנכתבה שורה.** מה שהיה: קונסולת אדמין ל-`affiliates` (010,
+`fc9da36dc`: אישור/דחייה/השעיה, מונים) **בלי אף דרך להצטרף, בלי קוד שנכתב לאיש,
+בלי ייחוס** (`orders.affiliate_code` קיים מ-010 ואף שורה בקוד לא כתבה אליו),
+בלי קמפיין, בלי עמלה ובלי תשלום; ותוכנית חבר-מביא-חבר שלמה (098: `?ref=`,
+עוגייה, `fn_claim/complete/pay_referral`, `fn_referral_fraud_signals`, תור).
+`2410c879d` הוסיף רק UTM לקישור ההפניה.
 
-- **מתנה במייל בקופה, מיידי או מתוזמן, עם ברכה: קיים.** `giftSchema` ב-`validations/checkout.ts`
-  (מייל, שם, ברכה עד 500, `gift_deliver_at`, אריזה), `sendOrderGifts` ב-`payments/gift-vouchers.ts`
-  ממנטף token מגובב, כותב `voucher_gifted` ל-outbox עם `next_attempt_at` כתזמון (226 ממתינה;
-  בלעדיה נשלח מיד), `/gift/[token]` + `claimGift` מעבירים בעלות. 108 מוחלת (עמודות ה-gift
-  ב-`database.ts`).
-- **העברת קופון למשתמש אחר: לא היה.** `actions/gifts.ts` הכיל רק `claimGift` ו-`loadGiftPreview`;
-  לא היה שום מסלול לבעל קופון לשלוח אותו הלאה. **נכתב עכשיו.**
-- **צ'יפים: היו רק קישורי קטגוריה** (`CategoryChips`, `dda866a5a`). "קרוב אליי" היה כפתור בשורת
-  הערים מתחת לגריד, לא צ'יפ. "פתוח בסופ"ש" ו-"משלוח חינם" לא היו. **נכתבו עכשיו.**
+**מה נכתב, ומה ההחלטה המרכזית: קוד אחד לשתי התוכניות.** קוד השותף הוא
+`profiles.referral_code`; הקישור `?ref=` והעוגייה `ke_ref` (proxy, 30 יום, מגע
+אחרון) משרתים את שתיהן, וה-DB יחד עם `decideConversion` מכריעים מי משלמת.
+- **שיתוף:** `useShareAttribution` (לקוח; שואל את השרת רק כשיש session) +
+  `attributedShareUrl` (טהור); ארבעת ערוצי `ProductShareRow` והדף `/account/affiliate`
+  מוציאים את הקוד על הקישור. `getMyShareCode` מחזיר קוד רק לשותף מאושר או
+  כשתוכנית ההפניות פעילה. השורה זהה חזותית; רק ה-href משתנה.
+- **ייחוס:** `snapshotAffiliateAttribution` בקופה (משפט UPDATE נפרד מה-INSERT,
+  מאותה סיבה כמו עמודות המתנה) כותב `orders.affiliate_code` ומטביע device/IP
+  של הקונה ב-`referral_signals`.
+- **עמלה פר קמפיין:** `244_affiliate_campaigns.sql` (pending): `affiliate_campaigns`
+  (`commission_bp` 0..5000, מינימום, תקרה, תקציב, מכסה יומית, אישור ידני, חלון,
+  היקף לקטגוריה/מוצר) ו-`affiliate_conversions` (אחת להזמנה, UNIQUE). לשונית
+  "קמפיינים ועמלות" + "מכירות שותפים" ב-`/admin/affiliates` (`requireSection('affiliates','write')`,
+  audit לכל כתיבה). **ההחלטה כולה ב-`lib/affiliates/commission.ts`**, טהור, דרך
+  `applyBp`; אין plpgsql שני. הצטרפות: `joinAffiliateProgram` (ממנטף דרך
+  `fn_ensure_referral_code` על service key, uuid מה-session, שורה `pending_review`).
+- **זיכוי לארנק:** `payAffiliateConversion` דרך `fn_wallet_transfer` מ-`platform:cashback_reserve`
+  (אותו חשבון של `fn_pay_referral`), reason `affiliate_commission` (תווית בפנקס),
+  idempotency `affiliate:<id>`; העברה לפני עדכון סטטוס; משלם אחד לשני הקוראים
+  (finalize ותור האדמין). `finalize` קורא אחרי `completeReferralForOrder`.
+- **בדיקות הונאה** (`docs/FRAUD-RULES.md` §2): `self_purchase` ו-`referral_bonus_paid`
+  נדחים ונרשמים; `same_device/ip/card` (098, מוזן עכשיו בהצטרפות, בקופה ובתשלום),
+  `velocity`, `manual_approval` מנתבים לתור; `budget_exhausted`/`below_minimum` לא
+  נרשמים. תקציב שלא נקרא = תקציב שנגמר.
+- **בלי 244 הקוד רץ:** 42P01 נתפס בכל קורא; דף החשבון אומר "התוכנית עדיין לא
+  פתוחה" ומאפשר להצטרף; finalize רושם `affiliates.campaigns_table_missing`.
+- **טסטים:** +49 (`commission.test.ts` 17, `affiliate-campaigns.test.ts` 9, `share-url.test.ts` 4,
+  `affiliates/wired.test.ts` 13, ועוד). `fn_ensure_referral_code` סווג לקורא שני,
+  244 נרשמה ב-inventory, `affiliate-join` ב-policies + `RATE-LIMITS.md`,
+  `/account/affiliate` ב-`redirect-map.json`.
 
-**מה נכתב:**
+**נמדד על ה-build המקומי** (BUILD_ID `XtgFWxZ_EHrOtw8UYlQyW`, `pnpm start` על 3314, אומת
+לפי ה-BUILD_ID ב-HTML): `/account/affiliate` אנונימי 307 ל-`/login?next=%2Faccount%2Faffiliate`.
 
-- **העברת קופון.** `lib/gifts/transfer.ts` (טהור): `transferEligibility` (issued, בתוקף, ואין קישור
-  שטרם נאסף), `giftTransferSchema` (zod, אותם גבולות כמו בקופה). `transferVoucher` ו-`revokeVoucherTransfer`
-  ב-`actions/gifts.ts`: אותו מנגנון של מתנה מהקופה (token מגובב, `voucher_gifted`, הבעלות עוברת רק
-  ב-`claimGift`), עם השומרים **בתוך ה-UPDATE** (`user_id`, `status=issued`, `or(hash.is.null, claimed.not.is.null)`)
-  כך שמרוץ מוכרע ב-Postgres. `dedupe_key` פר קישור (`gift:<id>:<hash16>`), כי קופון יכול לעבור
-  יותר מפעם אחת. אם ה-outbox נכשל, השורה מוחזרת למצבה. ביטול מנקה את ה-hash ומסמן שורת outbox
-  ממתינה כ-`dead`, ומשאיר `gift_sent_at` (שומר ה-idempotency של finalize). מגבלה 20/שעה למשתמש.
-  `gift_deliver_at` (226) לא נכתב: 42703 בפרודקשן. דף `/account/coupons/[id]/gift` (טופס, מצב
-  "נשלח וממתין" עם ביטול, סירוב), קישורים "העברה במתנה"/"המתנה בדרך" ברשימת הקופונים. הקוד וה-QR
-  נעלמים מהמסכים של השולח ברגע שיש token (`withholdGiftedCode`, קיים).
-- **צ'יפים.** `lib/catalogue/filter-chips.ts` (טהור): פרסרים, `toggleChipHref`, `applyChipFilters`,
-  `isMissingShippingColumn`. `FilterChips` (שרת, קישורים) + `NearMeChip` (לקוח, כפתור, הסכמה בלחיצה)
-  בשני דפי הארכיון, אותן מחלקות CSS של שורת הקטגוריות. `useNearMe` חולץ מ-`CityTags` ומשותף לשניהם.
-  **הנתונים, וזו ההחלטה המרכזית:** "פתוח בסופ"ש" הוא התג `open-weekend` ב-`products.tags` (עמודה
-  שקיימת בפרודקשן), עם תיבת סימון בטופס המוצר לכל סוג מוצר; לא עמודה חדשה, כי עמודה הייתה יושבת
-  ב-`pending` והצ'יפ היה 42703 בכל לחיצה. "משלוח חינם" = `requires_shipping` ו-`shipping_price_agorot=0`
-  (243 ממתינה); ב-42703 השאילתה רצה שוב בלי העמודה, וזה אותו סט שורות כל עוד הכול נשלח חינם
-  (הכותרת של 243 אומרת זאת). נמדד על ה-build: האזהרה `catalogue.shipping_column_missing` נרשמה
-  והדף ענה 200. "קרוב אליי" הוא ה-`?near=` הקיים, נשאל בלחיצה ולעולם לא ב-mount.
-- **טסטים:** +41 (`filter-chips.test.ts` 9, `filter-chips.test.tsx` 2, `transfer.test.ts` 7,
-  `gifts-transfer.test.ts` 10 עם admin client מדומה, ועוד).
-
-**נמדד על ה-build המקומי** (BUILD_ID `S_Fasw94DSP0GjUV9P6Nt`, `pnpm start` על 3312): `/products`
-ו-`/category/hot-deals` 200 עם שורת הצ'יפים (שלוש תוויות, `aria-pressed="false"` על קרוב אליי);
-`?open=weekend` מסמן `aria-current="true"` ומחזיר גריד ריק (אף מוצר עדיין לא מתויג);
-`?shipping=free` מסמן ומחזיר את כל הקטלוג אחרי ה-fallback. `/account/coupons/<id>/gift` אנונימי:
-307 ל-`/login?next=`.
-
-**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628, כל המחרוזות החדשות ב-`messages`),
-`pnpm test` **583 קבצים, 7,027 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית,
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628; locale-format
+הורד 138→134 אחרי שדף האדמין עבר ל-`formatDateShort`/`formatNumber`), `pnpm test`
+**590 קבצים, 7,091 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית,
 `--baseline=refs/ke_live_{width}.png`, exit 0:**
 
 | דף | רוחב | תוכן | מצב |
@@ -141,18 +142,18 @@ exit 0:**
 | home | 380 | 8.44% | PASS |
 | home | 768 | 9.03% | PASS |
 | home | 1440 | 3.82% | PASS |
+| product | 1440 | 2.79% | PASS (`refs/live-product.png`, grid override) |
 
-השורות ב-`docs/UI-PARITY-REPORT.md` 22:34-22:37 UTC על `c42099d58-dirty`. **שלוש השורות שלפניהן
-(22:28-22:31) נמדדו בטעות מול השרת הזר על 3311 שמגיש build ישן** (ראה החלטות); הן נשארות בפנקס כי
-השער כותב בעצמו, אבל הראיה היא 22:34-22:37. דפי הקטגוריה והחנות אינם נמדדים (חוסם 5).
+השורות ב-`docs/UI-PARITY-REPORT.md` 23:45-23:51 UTC על `2826d983b-dirty`. דף המוצר ב-380/768
+ודף החשבון אינם נמדדים (חוסם 5).
 
 **החלטות שהתקבלו לבד:**
-- שרת `pnpm start` זר על 3311 (מ-Q13) עדיין חי ומגיש את ה-`.next` הישן; `pnpm start` שלי נפל עם
-  EADDRINUSE בשקט וריצת ההשוואה הראשונה מדדה אותו. זוהה לפי `_buildManifest` חסר ו-0 צ'יפים ב-HTML,
-  ונמדד שוב על 3312. לא נעצר (לא שלי). מי שמודד: לבדוק את ה-log של `pnpm start` לפני שקורא מספרים.
-- לא נכתב SQL: כל העמודות שהתכונה נשענת עליהן קיימות בפרודקשן. תזמון להעברה מהחשבון לא נבנה
-  (קיים בקופה בלבד), כי ביטול של שליחה מתוזמנת היה דורש כתיבה ל-`gift_deliver_at` שאינה קיימת.
-- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`). לא נגעתי בכסף.
+- אין אימייל/פוש על עמלה: kind חדש ב-outbox היה שורה מתה עד מיגרציה, והארנק
+  מציג את הזיכוי עם התווית. אין מעקב קליקים (`total_clicks` נשאר 0): כתיבה בכל
+  לנדינג ב-proxy אינה חלק בפריט.
+- `lsof` לא קיים במכונה; בדיקת הפורטים הראשונה הדפיסה ריק. השרת שלי אומת לפי
+  ה-BUILD_ID בתגובה, ונעצר לפי PID. שני `next-server` זרים (23704, 46984) לא נגעתי.
+- סעיף Q14 הועבר לארכיון (STATE.md 162 שורות לפני הרשומה הזו).
 
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
@@ -173,7 +174,7 @@ exit 0:**
 | Q13 | DONE (אומת 25.09) | `bf0effa2e`, `02cb65fb3`, `ace712504`. `/contact` 200 עם חמשת הנושאים מ-`DEFAULT_CONTACT_CHANNELS`, 25 קישורי `wa.me`, `support@kenyonexpress.co.il`, אפס `tel:`. דף מוצר: `product-question-link` + `ask-business` עם `data-via="customer_service"`. שער 8.44/9.03/3.82 PASS. |
 | Q14 | DONE (25.09) | הרשומה למעלה. מתנה בקופה קיימת (`078a3de6d`, 108 מוחלת, 226 ממתינה לתזמון). חדש: `transferVoucher`/`revokeVoucherTransfer` + `/account/coupons/[id]/gift`; צ'יפים פתוח בסופ"ש (תג `open-weekend`), משלוח חינם (fallback ל-243), קרוב אליי. +41 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q15 | DONE (25.09) | הרשומה למעלה. T-7/T-1 קיימים (`expire-vouchers` + outbox, מייל ופוש; pg_cron ב-162 pending, חלון ב-227 pending). `cashback_percent` פר מוצר DEFAULT 0 קיים (042, צילום בקופה, זיכוי ב-finalize). חדש: `lib/club/tiers.ts`, `getClubStanding`, `ClubTierCard` בסקירת החשבון. +17 טסטים. שער 8.44/9.03/3.82 PASS. |
-| Q16 | OPEN, חלקי | `fc9da36dc`, `2410c879d`. אין ראיה ל-commission per campaign ול-fraud checks. |
+| Q16 | DONE (25.09) | הרשומה למעלה. קונסולה קיימת (`fc9da36dc`); חדש: הצטרפות, ייחוס בקופה, 244 pending (קמפיינים+המרות), `lib/affiliates/commission.ts`, זיכוי דרך `fn_wallet_transfer`, תור אדמין, קוד על הקישור בשיתוף. +49 טסטים. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
 | Q17 | OPEN, חלקי | passkey (`c6dff8dc2`, `9b8c215f8`), 2FA (`af64d96e7`), מתג "הכל באפליקציה" עם הסכמה (`719fc6dff`, 240 pending). אין ראיה לאימות טלפון/OTP. |
 | Q18 | DONE | `f08a701d1`, `86af4a7c3`, `be736f10f`. |
 | Q19 | OPEN, חלקי | `58f920f8f feat(fraud)`, rate limit 10/h. לא אומת: single-use ב-DB, velocity, verified badge, "נקנה השבוע". |
@@ -195,7 +196,8 @@ exit 0:**
    `POST /v13/deployments` עם `gitSource.sha`, `target=production`, כמו ב-Q02.
 3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
    עונה "עדיין לא פעיל"), 240 (הסכמת "הכל באפליקציה"), 241 (עיר משלוש
-   כותרות), 242 (מקור מחיר + ביקורות גוגל), 243 (תנאי מוצר). סדר והתנאים
+   כותרות), 242 (מקור מחיר + ביקורות גוגל), 243 (תנאי מוצר), 244 (קמפיינים
+   והמרות של תוכנית השותפים; בלעדיה התוכנית "עדיין לא פתוחה"). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר.
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
