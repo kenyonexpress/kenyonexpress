@@ -105,7 +105,6 @@
   "docs/REVIEWS.md :: src/components/product/Reviews.tsx",
   "docs/REVIEWS.md :: src/server/actions/reviews-report.ts",
   "docs/REVIEWS.md :: src/server/actions/supplier/reviews.ts",
-  "docs/REVIEWS.md :: src/server/queries/reviews.ts",
   "docs/SOURCING-RULES.md :: refs/ke_live_computed.json",
   "docs/SOURCING-RULES.md :: refs/ke_live_content.json",
   "docs/SOURCING-RULES.md :: scripts/visual-audit.mjs",

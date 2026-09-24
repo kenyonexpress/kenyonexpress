@@ -1,3 +1,5 @@
+import FirstPurchaseBanner from '@/components/checkout/FirstPurchaseBanner'
+import InvoiceDownloadLink from '@/components/checkout/InvoiceDownloadLink'
 import PostPurchasePushPrompt from '@/components/pwa/PostPurchasePushPrompt'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import {
@@ -22,6 +24,7 @@ import {
 import { reconcileOrderReturn } from '@/server/actions/payments/checkout'
 import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import { isGiftedAway } from '@/server/payments/voucher-email'
+import { isFirstPaidOrder } from '@/server/queries/first-purchase'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -217,7 +220,13 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           who has already answered, and it does not open the browser dialog
           itself -- it links to the page where a button does.
         */}
-        <PostPurchasePushPrompt />
+        <InvoiceDownloadLink orderId={order.id} />
+
+        {(await isFirstPaidOrder(admin, order.id)) ? (
+          <FirstPurchaseBanner />
+        ) : (
+          <PostPurchasePushPrompt />
+        )}
 
         {couponsWithQr.length > 0 && (
           <section aria-label="הקופונים שלך" style={{ maxWidth: 640, marginInline: 'auto' }}>

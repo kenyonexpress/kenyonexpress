@@ -82,10 +82,14 @@
     "contact": "Contact",
     "faq": "FAQ",
     "blog": "Blog",
-    "suppliers": "Become a supplier",
+    "suppliers": "Join as a business",
+    "suppliersApplyCta": "Apply and sign the digital agreement",
+    "suppliersApplyHint": "Fill in your business details, read and accept the agreement on the site, and the application goes to our review. Nothing is sent automatically.",
     "terms": "Terms",
     "privacy": "Privacy policy",
     "refunds": "Cancellations and returns",
+    "cookies": "Cookie policy",
+    "cancelTransaction": "Cancel a purchase",
     "accessibility": "Accessibility statement",
     "questions": "Questions, suggestions or comments?",
     "addressLabel": "Our address:",
@@ -101,6 +105,97 @@
     "whatsapp": "WhatsApp",
     "twitter": "Twitter",
     "facebook": "Facebook"
+  },
+  "invoice": {
+    "downloadCta": "Click here to download your tax invoice / receipt",
+    "pending": "Your tax invoice / receipt will be available to download here in a few minutes.",
+    "unavailable": "This service is unavailable right now",
+    "linkExpired": "This link has expired. You can download the invoice from your account",
+    "notFound": "Not found",
+    "notIssued": "The invoice has not been issued yet",
+    "tryAgain": "The invoice is not available right now, please try again in a moment"
+  },
+  "categoryChips": {
+    "label": "Filter by category",
+    "all": "All"
+  },
+  "couponExpiry": {
+    "choose": "Choose validity",
+    "days": "days",
+    "legacy": "days (existing value)"
+  },
+  "appConsent": {
+    "title": "Everything in the app",
+    "body": "I agree to receive, in the app and as push notifications, every update that can be switched off: shipping updates, coupon expiry reminders, cashback and welcome messages. No email, SMS or WhatsApp is sent. The consent is recorded with the date and this wording, and you can withdraw it here at any time.",
+    "on": "On",
+    "off": "Off",
+    "unavailable": "This setting is not available yet.",
+    "failed": "Could not save.",
+    "needLogin": "Please sign in.",
+    "badRequest": "Invalid request.",
+    "rateLimited": "Too many attempts. Please try again later.",
+    "prefsFailed": "Your consent was saved but the settings did not update. Please try again."
+  },
+  "firstPurchase": {
+    "label": "Next steps after your purchase",
+    "title": "First purchase done, two small steps left",
+    "body": "A passkey lets you sign in with one touch, and \"everything in the app\" brings you coupon and order updates. Both are your choice.",
+    "passkeyCta": "Add a passkey",
+    "appCta": "Everything in the app"
+  },
+  "wishlistShare": {
+    "signIn": "Sign in to share.",
+    "empty": "There are no products to share.",
+    "failed": "Could not create the link right now."
+  },
+  "readFailed": {
+    "retry": "Could not read the data. Please try again."
+  },
+  "wishlistPublic": {
+    "title": "Shared wishlist",
+    "loading": "Loading the list…",
+    "invalidTitle": "This link is not valid",
+    "expired": "This link has expired. Whoever shared it can create a new one from their wishlist.",
+    "broken": "This link is broken or not recognised.",
+    "continueShopping": "Continue shopping",
+    "snapshotNote": "A snapshot of the list on the day it was shared. Products removed from the store no longer appear.",
+    "empty": "There are no available products on this list right now.",
+    "fallbackName": "Product"
+  },
+  "reviewsPage": {
+    "title": "Reviews",
+    "loading": "Loading reviews…",
+    "backToProduct": "Back to the product",
+    "titleFor": "Reviews: {name}",
+    "average": "Average {avg} out of 5, from {count} reviews.",
+    "none": "There are no approved reviews for this product yet.",
+    "outOf": "{value} out of 5"
+  },
+  "reviewForm": {
+    "sent": "Your review was sent and is waiting for approval.",
+    "about": "Review of {name}",
+    "rating": "Rating",
+    "placeholder": "What was good, and what was not (optional)",
+    "sending": "Sending…",
+    "submit": "Send review"
+  },
+  "supplierDashboard": {
+    "denied": "You do not have permission for that screen. Ask the business owner to widen your permissions.",
+    "title": "Dashboard",
+    "summary": "Sales and redemptions by the platform fee percentage set on each product.",
+    "redemptionsToday": "Redemptions today",
+    "redemptionsTodayHint": "Successful scans",
+    "tillToday": "To collect at the till today",
+    "tillTodayHint": "Customer balance at the business",
+    "platformFee": "Platform fee",
+    "platformFeeHint": "From paid orders",
+    "supplierDue": "Due to the supplier (physical)",
+    "supplierDueHint": "Immediate settlement after payment on the site",
+    "couponRedemptions": "Coupon redemptions",
+    "couponRedemptionsHint": "Successful scans (balance collected at the till)",
+    "expired": "Expired vouchers",
+    "expiredHint": "{expired} of {settled} settled",
+    "byProduct": "Sales by product"
   },
   "share": {
     "telegramLabel": "Share on Telegram",
@@ -283,6 +378,9 @@
     "retry": "Please try again in a few minutes."
   },
   "contact": {
+    "productQuestion": "Ask about this product on WhatsApp",
+    "productQuestionMessage": "Hello, I have a question about {name} on Kenyon Express.",
+    "orderContact": "Ask about this order on WhatsApp",
     "pickTopic": "How can we help?",
     "openChat": "Open a WhatsApp chat",
     "floatLabel": "Talk to us on WhatsApp",

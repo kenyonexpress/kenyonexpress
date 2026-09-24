@@ -900,3 +900,38 @@
   line-height: 1.4;
   color: var(--cat-muted);
 }
+
+/* Category chips: one sideways-scrolling row of real links under the page heading.
+   The row scrolls inside its own box so the page body never scrolls on a phone. */
+.category-chips {
+  margin: 0 0 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.category-chips__list {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 0 6px;
+  list-style: none;
+  white-space: nowrap;
+}
+.category-chips__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgb(0 0 0 / 0.18);
+  border-radius: 999px;
+  color: var(--color-heading);
+  font-size: 14px;
+  text-decoration: none;
+}
+.category-chips__chip:hover {
+  border-color: var(--color-heading);
+}
+.category-chips__chip[aria-current="page"] {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  font-weight: 700;
+}

@@ -1,3 +1,13 @@
+// !! DO NOT USE ITS OUTPUT AS A GATE BASELINE (measured 23.09.2026). !!
+// refs/ke_live_product.html is a saved DOM without its stylesheets, so this
+// offline render is unstyled default-browser markup (bullet lists, blue links,
+// no images). Scoring the product page against those PNGs would measure "styled
+// vs unstyled", not fidelity. The Electro v7 demo that would be the alternative
+// reference answers headless browsers with a Cloudflare challenge, so it cannot
+// be captured either. The only valid product capture is refs/live-product.png
+// (1440px, 2026-09-03, a different product than the one we render).
+// Kept in the repo as the record of the attempt. See STATE.md, item 3.
+//
 // One-off: render the already-frozen refs/ke_live_product.html at the three
 // gate widths and save PNGs, so scripts/compare.mjs --page=product has a
 // --live-png reference the way home already does (refs/ke_live_{width}.png).

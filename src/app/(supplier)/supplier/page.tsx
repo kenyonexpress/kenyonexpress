@@ -1,6 +1,7 @@
 import IncompleteDataNotice from '@/components/supplier/IncompleteDataNotice'
 import RedemptionsChart from '@/components/supplier/RedemptionsChart'
 import { formatDate, formatIls } from '@/lib/account/format'
+import { t } from '@/lib/i18n/messages'
 import { agorot } from '@/lib/money'
 import {
   aggregateDashboard,
@@ -78,7 +79,7 @@ export default async function SupplierHomePage({
     <div className="space-y-6">
       {sp.denied === 'role' ? (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          אין לכם הרשאה למסך המבוקש. פנו לבעל העסק להרחבת הרשאות.
+          {t('supplierDashboard.denied')}
         </p>
       ) : null}
 
@@ -87,43 +88,43 @@ export default async function SupplierHomePage({
       <IncompleteDataNotice reads={[salesRead, redemptionsRead]} />
 
       <section>
-        <h1 className="text-2xl font-bold text-heading">לוח בקרה</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          סיכום מכירות ומימושים לפי אחוז עמלת הפלטפורמה שהוגדר בכל מוצר.
-        </p>
+        <h1 className="text-2xl font-bold text-heading">{t('supplierDashboard.title')}</h1>
+        <p className="mt-1 text-sm text-gray-500">{t('supplierDashboard.summary')}</p>
       </section>
 
       <div className="grid grid-cols-2 gap-3">
         <StatCard
-          label="מימושים היום"
+          label={t('supplierDashboard.redemptionsToday')}
           value={String(stats.redemptionsToday)}
-          hint="סריקות שהצליחו"
+          hint={t('supplierDashboard.redemptionsTodayHint')}
         />
         <StatCard
-          label="לגבייה בקופה היום"
+          label={t('supplierDashboard.tillToday')}
           value={formatIls(agorot(stats.tillCollectedTodayAgorot))}
-          hint="יתרת לקוח בעסק"
+          hint={t('supplierDashboard.tillTodayHint')}
         />
         <StatCard
-          label="עמלת פלטפורמה"
+          label={t('supplierDashboard.platformFee')}
           value={formatIls(agorot(stats.platformFeeAgorot))}
-          hint="מתוך הזמנות ששולמו"
+          hint={t('supplierDashboard.platformFeeHint')}
         />
         <StatCard
-          label="מגיע לספק (פיזי)"
+          label={t('supplierDashboard.supplierDue')}
           value={formatIls(agorot(stats.supplierDueAgorot))}
-          hint="סליקה מיידית אחרי תשלום באתר"
+          hint={t('supplierDashboard.supplierDueHint')}
         />
         <StatCard
-          label="מימושי קופון"
+          label={t('supplierDashboard.couponRedemptions')}
           value={String(stats.couponRedemptionsTotal)}
-          hint="סריקות מוצלחות (יתרה נגבית בקופה)"
+          hint={t('supplierDashboard.couponRedemptionsHint')}
         />
         {expiry ? (
           <StatCard
-            label="שוברים שפגו"
+            label={t('supplierDashboard.expired')}
             value={formatRateBp(expiry.rateBp)}
-            hint={`${expiry.expiredCount} מתוך ${expiry.settledCount} שהוכרעו`}
+            hint={t('supplierDashboard.expiredHint')
+              .replace('{expired}', String(expiry.expiredCount))
+              .replace('{settled}', String(expiry.settledCount))}
           />
         ) : null}
       </div>
@@ -132,7 +133,7 @@ export default async function SupplierHomePage({
 
       {byProduct.length > 0 ? (
         <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="text-base font-bold text-heading">מכירות לפי מוצר</h2>
+          <h2 className="text-base font-bold text-heading">{t('supplierDashboard.byProduct')}</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {byProduct.map((row) => (
               <li key={row.productName} className="flex items-baseline justify-between gap-3">

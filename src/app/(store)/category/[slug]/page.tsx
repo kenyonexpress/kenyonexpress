@@ -1,5 +1,6 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
+import CategoryChips from '@/components/category/CategoryChips'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
@@ -412,6 +413,8 @@ async function CategoryPageBody({
             <ResultCount args={args} />
           </Suspense>
         </header>
+
+        <CategoryChips categories={allCategories} currentSlug={category.slug} />
 
         <CategoryControlBar value={sort} />
 

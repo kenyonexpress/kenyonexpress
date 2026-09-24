@@ -14,10 +14,12 @@ export const metadata = { title: 'השפעת קופונים' }
 export default async function CouponImpactPage() {
   await requireSection('catalog', 'read')
   const admin = createAdminClient()
-  const { data } = await admin
+  const { data, error } = await admin
     .from('vouchers')
     .select('status, coupon_price_agorot, product:products(id, name_he)')
     .limit(2000)
+  // A failed read must not render as "no coupon usage": that is a false zero on a revenue page.
+  if (error) throw new Error(`coupon impact read failed: ${error.message}`)
 
   type Row = {
     status: string

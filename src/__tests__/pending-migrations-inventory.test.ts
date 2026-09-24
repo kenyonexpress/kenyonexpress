@@ -984,6 +984,10 @@ describe('the pending migration inventory', () => {
       // the broken trigger entirely rather than making a new feature wait on
       // an unrelated pending migration.
       '239_customer_invoice_settings.sql',
+      // 240 WRITTEN 2026-09-23. `app_consent_events` + `record_app_consent()`: the
+      // append-only record behind the "everything in the app" switch. New table,
+      // not `consent_events` (031), which production does not have.
+      '240_app_consent_events.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

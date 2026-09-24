@@ -60,6 +60,7 @@
 | `support-open` | 10 | 1 h | new support tickets, per user |
 | `support-reply` | 30 | 1 h | messages on a ticket, per user |
 | `supplier-apply` | 5 | 1 h | supplier applications, per user |
+| `app-consent` | 20 | 1 h | in-app consent changes, per user |
 | `supplier-doc-upload` | 30 | 1 h | presigned R2 PUT minting for onboarding documents, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
 | `wishlist-merge` | 10 | 1 h | guest wishlist merge at login, per user |

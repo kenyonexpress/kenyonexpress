@@ -1,9 +1,5 @@
 Updated: 2026-09-23 | **v3.0.0-advanced complete, ready for growth scaling**
 
-Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon exclusions, supplier sales by product/day, wishlist HMAC share, reviews (submit + admin queue + public ratings, no PDP hero stars), referral UTM, cart recovery metrics (no third mail), passkey fallback to magic link, audit_log Sentry, CDN edge cache.
-
-**המשך מ:** Q01 DONE (25.09). הבא בתור: Q02. v3.0.0-advanced tagged. DNS cutover remains a manual step.
-
 Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`)
 
 ## Q01 - DONE - סדר בעץ העבודה וטבלת מצב לתור הסופי
@@ -89,6 +85,113 @@ OPEN בטבלה, כי התור מבקש done/open בלבד.
 
 **המשך מ:** Q01 DONE. הבא: Q02 (Vercel build + deploy). צפוי BLOCKED על
 DNS, ראה שורת Q02.
+
+
+
+
+Updated: 2026-09-23 (סשן `work/goal-queue-0923`, אופיר אישר ישירות ב-/goal: הלולאה הישנה שקטה, עובדים בתור של 19 פריטים)
+
+## תור 23.09 (אישור ישיר של אופיר)
+
+**SHOWABLE: no.** פריט 2 חסום ב-DNS אצל הרשם (ההאצלה על `ns1/ns2.vercel.com` במקום `ns1/ns2.vercel-dns.com`; נבדק שוב 24.09, ללא שינוי) ופריט 3 חסום כי אין reference תקף לדף מוצר. **הפריסה הפעילה: `kenyonexpress-7heqbxqll` (Production, נבנתה מה-worktree `work/goal-queue-0923`), 200 על `/`, `/products`, `/api/health`, `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`.** `CHECKOUT_ENABLED=false` בה. נוסף `NEXT_PUBLIC_SUPABASE_URL` גם ל-Preview (ערך ציבורי) כדי שבניות Preview של Git יפסיקו ליפול באיסוף הנתונים של `/coupons/[id]` (הכשל שנמצא בפריט 2). Preview עדיין לא יעלה בזמן ריצה בלי `ALLOW_INCOMPLETE_ENV` והמפתחות הרגישים, וזה בכוונה.
+
+**מצב הענף:** `work/goal-queue-0923` (מ-`audit/final-audit@9fe2ca441`), ‏`pnpm test` ירוק (568 קבצים, 6,885 טסטים), ‏type-check נקי, ‏lint ירוק חוץ מ-`docs-path-audit` (ארטיפקט worktree, ראו פריט 19). לא מוזג ל-`main` ול-`audit/final-audit`.
+
+
+**פריט 1:** אין wakeup או cron פעיל בסשן (`CronList` ריק). אין מה לבטל.
+
+**פריט 2, נבנה ופרוס, חסום רק ב-DNS.**
+- **סיבת הכשל של ה-build:** בפרויקט Vercel `kenyonexpress` המשתנה `NEXT_PUBLIC_SUPABASE_URL` מוגדר ל-Production בלבד, ולכן כל build של Preview נפל באיסוף הנתונים של `/coupons/[id]`. אחר כך, ב-Production, ה-instrumentation hook סירב לעלות בגלל `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` חסרים.
+- **מה נעשה:** `vercel deploy --prod --archive=tgz` (בלי `--archive` ההעלאה נחסמת ב-5000 קבצים), ואז `ALLOW_INCOMPLETE_ENV=true` ב-Production והפעלה מחדש. `https://kenyonexpress-6ny4ek717-kenyonexpress-projects.vercel.app` מחזיר 200 על `/`, `/page/how-it-works`, `/sitemap.xml`, `/api/health`.
+- **החלטה שהתקבלה לבד:** `CHECKOUT_ENABLED=false` ב-Production (היה `true`, ב-Preview+Production). הסיבה: התשלום הוא stub (`CARDCOM_USE_MOCK=true`) וסטאב שמסיים הזמנות בלי חיוב אמיתי הוא הפגם המתועד ב-`mock-payment-provider-served-production`. להחזרה: `vercel env rm CHECKOUT_ENABLED production` ואז `add` עם `true` ופריסה מחדש.
+- **היסטוריית פריסות Production (23.09), ולמה הראשונות אינן הקוד של הענף:** `vercel deploy` מתוך worktree עם `.vercel/repo.json` בשורש הראשי **מעלה את העץ של הצ'קאאוט הראשי**, לא את ה-worktree. `6ny4ek717` ו-`okbknncci` נבנו מהעץ הראשי (HEAD `9fe2ca441`, ואולי עם עריכות לא-committed של סשנים אחרים באותו רגע; לא נבדק). **`ibwnvxa7m` נבנה מה-worktree** (`work/goal-queue-0923`) אחרי שנוצר `.vercel/project.json` מקומי (gitignored), ואומת בסמנים ייחודיים (`/api/invoices/x/download` מחזיר "לא נמצא" 404, צ'יפים, כפתור "להצטרפות והסכם דיגיטלי"). זו הפריסה העדכנית והפעילה. לפריסה עתידית מ-worktree: `.vercel/project.json` עם `projectId=prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` ו-`orgId=team_TUMTPVDP8218QHwedSjmgJWl`, ואז `vercel deploy --prod --archive=tgz`, ולאמת בסימן ייחודי.
+- **חסימה שאינה בידי הסוכן:** ההאצלה ב-registry מצביעה על `ns1.vercel.com` / `ns2.vercel.com`, וה-nameservers שוורסל דורש הם **`ns1.vercel-dns.com` / `ns2.vercel-dns.com`** (או רשומת `A kenyonexpress.co.il 76.76.21.21`). עד שמתקנים אצל הרשם, `kenyonexpress.co.il` ו-`www` לא נפתרים (SERVFAIL). `vercel domains inspect kenyonexpress.co.il` מראה ✘ על שניהם.
+
+
+Phases 11-20 on `audit/final-audit`: refund destination (14-day window), coupon exclusions, supplier sales by product/day, wishlist HMAC share, reviews (submit + admin queue + public ratings, no PDP hero stars), referral UTM, cart recovery metrics (no third mail), passkey fallback to magic link, audit_log Sentry, CDN edge cache.
+
+**המשך מ:** v3.0.0-advanced tagged. DNS cutover remains a manual step.
+**פריט 3, חסום על ה-reference, נמדד ולא הונח.**
+- ה-frozen `refs/ke_live_product.html` נשמר בלי stylesheets: הרינדור שלו offline הוא markup גולמי (רשימות, קישורים כחולים, בלי תמונות). `refs/ke_live_product_{380,768,1440}.png` שנוצרו ממנו אינם reference תקף. `scripts/capture-frozen-product.mjs` הוכנס עם כותרת אזהרה בלבד.
+- דמו Electro (`electro.madrasthemes.com`) עונה לדפדפן headless ב-"Just a moment..." של Cloudflare. לא נעקף.
+- הצילום התקין היחיד הוא `refs/live-product.png` (1440, מ-03.09, מוצר אחר מזה שאנחנו מרנדרים). ב-380 וב-768 אין reference תקף, ולכן אין שער ב-11% שאפשר למדוד. לא נכתבה שורה מומצאת ל-`UI-PARITY-REPORT.md`.
+- כדי לפתוח: לשמור את דף המוצר של Electro v7 בדפדפן אמיתי כ-single-file HTML (עם ה-CSS) ל-`refs/`, ואז להריץ `node scripts/compare.mjs --page=product --widths=380,768,1440 --live-png ...`.
+
+**פריט 4, קיים ונבדק, לא נבנה מחדש.** טופס העלאת מוצר (`/admin/products/new`, `/[id]/edit`, `/import`, `ProductForm`, `ImageUploader`) כבר חי, עם `platform_percent` חובה ו-`coupon_expiry_days` חובה, והעלאת תמונות עם fallback ל-Supabase Storage כש-R2 לא מוגדר. 344 טסטים ב-`components/admin`, `actions/admin/products`, `lib/admin` ירוקים. לא נבדק: העלאה בפועל בפרודקשן (דורש התחברות אדמין), ולכן קיום הבאקט ב-Supabase לא הוכח.
+
+**פריט 5:** `SHOWABLE: no` (פריט 2 חסום ב-DNS אצל הרשם, פריט 3 חסום ב-reference). יתעדכן ל-yes רק כששניהם נסגרים.
+
+**פריט 6, קיים, נוסף טסט.** `ProductShareRow` (וואטסאפ ראשון, `navigator.share`, ובגיבוי שולחני פייסבוק / טלגרם / מייל, ואז העתקת קישור עם toast "הקישור הועתק") כבר מחובר ב-`ProductInfo`. וואטסאפ תמיד ב-click של הלקוח בלבד. נוסף `product-share-row.test.tsx` (סדר, גיבוי מוסתר עד לחיצה, טקסט ה-toast).
+
+**פריט 7, נבנה.**
+- `src/lib/invoices/download-token.ts` (HMAC-SHA256 על `invoice-dl-v1.<orderId>.<exp>`, מפתח `VOUCHER_QR_SECRET`, תוקף 30 יום) + טסטים.
+- `GET /api/invoices/[orderId]/download?exp&sig`: מאמת חתימה ותוקף (404 / 410), ואז מזרים את המסמך כ-attachment דרך ה-origin שלנו, בלי לחשוף את כתובת הספק. עטוף ב-`withRequestLog`. + טסט route.
+- `InvoiceDownloadLink` בעמוד התודה (`/checkout/return`) עם "לחשבונית מס קבלה לחץ כאן להורדה", ובעמוד ההזמנה באזור האישי אותו טקסט. **שום דבר לא נשלח אוטומטית**; הטקסט ב-FAQ שהבטיח מייל תוקן.
+- **סעיף "מסמכי מס דיגיטליים" (`id: digital-tax-documents`) ב-`src/app/(legal)/_content/terms.ts`, הטקסט שעמוד `/terms-and-conditions` באמת מגיש** (הסכמה לקבלת מסמכי מס בקובץ דיגיטלי בלבד, בלי משלוח אוטומטי), ותוקן סעיף התשלום שאמר שהחשבונית "תישלח ללקוח בדואר אלקטרוני". `updatedAt` עודכן ל-2026-09-24. **טעות שלי שתוקנה:** בהתחלה הוספתי את הסעיף ל-`src/content/legal/wp-migrated.ts`, הטקסט הישן והכפול שאיש לא מגיש, ולא ראיתי את זה עד שבדקתי את העמוד החי. הסעיף נשאר גם שם, כי הוא לא מזיק.
+- **לא נבדק בפרודקשן:** הורדה בפועל מול הספק (אין מסמך `issued` שאפשר לבדוק בלי הזמנה אמיתית). ה-ToS הוא טקסט שלא עבר עורך דין.
+- **שערים אדומים שהיו לפני העבודה הזו (נמדדו גם בצ'קאאוט הראשי, לא שלי):** `i18n` תקרה 642 מול 633, `discarded-read-inventory` (reviews, coupons/impact), `auth-coverage` ו-`log-coverage` על `wishlist-share.ts:mintMyWishlistShareLink`. אף אחד מהם לא נגע בו הפריט הזה.
+
+**פריט 8, חסום על הכרעה של אופיר, לא חובר כלום.** `RESEND_API_KEY` קיים ב-Production, אבל:
+- **מדיניות בעלים מ-22.09 (commit `eae464b1a`, `src/lib/notifications/preferences.ts`): אין מייל ללקוח חוץ מאיפוס סיסמה ומתנת שובר** (`EMAIL_POLICY_EXEMPT_KINDS = ['voucher_gifted']`). `mayNotify` מחזיר false לכל מייל לקוח אחר, ללא תנאי, ולכן `order_paid`, `voucher_expiring`, `refund_completed` ושאר בוני ה-outbox לא יישלחו ללקוח גם עם מפתח תקין. המדיניות הזו סותרת את "חמשת מיילי הלקוח" של 23.09.
+- `STATE.md` לא מכיל רשימה של חמישה מיילים (נחפש בכל הקובץ). ניחוש של חמישה והפיכת המדיניות ללא ההוראה המפורשת היה הפרה של אחת משתי ההוראות בלי לדעת איזו.
+- **להמשך:** אופיר מציין את חמשת המיילים; כל אחד מתווסף ל-`EMAIL_POLICY_EXEMPT_KINDS` (שינוי בשורה אחת + טסט ב-`preferences.test.ts` שמגדיר את המדיניות כרגע). הבונים והתור כבר קיימים.
+- **לא הוכח בכלל:** שהדומיין מאומת ב-Resend (אין גישה).
+- ההזמנות חסומות ממילא: `CHECKOUT_ENABLED=false` ב-Production (פריט 2).
+
+**פריט 9, קיים, לא שונה, לא נמדד מחדש.** עגלה וקופה עברו את השער ב-06.09 מול ה-reference החי הישן (עגלה 10.07 / 10.57 / 8.16, קופה 10.59 / 10.10 / 10.71 ב-380/768/1440). ה-reference כבר לא קיים ולכן אי אפשר למדוד שוב, ולעמוד התודה מעולם לא היה reference. הזרימה: מגלשים כאורח, ממלאים כתובת, הכניסה (Google/סיסמה/קישור קסם) נדרשת רק בכפתור התשלום והעגלה ממוזגת ב-`/auth/callback`. **"קופה בלי חשבון בכלל" לא קיימת ולא נבדקה מולה האפשרות:** התשלום דורש חשבון (Google/סיסמה/קישור קסם). לא נבדק אם `orders.user_id` מקבל null, וייתכן ששינוי כזה דורש מיגרציה. נשאר: התשלום stub (`CARDCOM_USE_MOCK`), ראו פריט 2.
+
+**פריט 10, קיים, נוסף רק הקישור.** `/suppliers/apply` כבר כולל ויזארד, הסכם click-wrap עם גרסה ו-hash (`src/lib/suppliers/contract.ts`), חשבון בנק ל-vault ותור אישור אדמין. נוסף: התווית בפוטר "הצטרפו כעסקים", וכפתור "להצטרפות והסכם דיגיטלי" בעמוד `/suppliers` שלא הוביל לשום מקום. **חסום ולא בידי הסוכן:** `migrations/pending/204_supplier_onboarding.sql` לא הוחלה בפרודקשן, ולכן שליחת הטופס עונה "טופס ההצטרפות עדיין לא פעיל" עד שאופיר מאשר. הדף דורש התחברות לפני שרואים את הטופס.
+
+**פריט 11, קיים, נוספו שני קישורי פוטר.** תקנון (`/terms-and-conditions`), פרטיות (`/privacy-policy`), החזרות לפי 14ג ו-14ח (`/refund_returns`, עם סעיף `how-to-cancel`), נגישות (`/accessibility`) כבר חיים ומרונדרים ממקור אחד ב-`(legal)/_content`. נוסף בפוטר: "ביטול עסקה" -> `/refund_returns#how-to-cancel`, ו-"מדיניות עוגיות" -> `/privacy-policy#cookies` (סעיף העוגיות בפרטיות כבר כולל טבלת עוגיות; עמוד נפרד היה עותק שני והטסטים נגד כפילות משפטית אוסרים אותו). **לא נבדק:** "מבנה Electro" של עמודי תנאים, כי אין reference נגיש (ראו פריט 3), והטקסטים המשפטיים לא עברו עורך דין (`reviewNotice`).
+
+**פריט 12, קיים, נוספו שני הכפתורים החסרים.** `/contact` כבר כולל את 5 הערוצים (`CONTACT_CHANNEL_KEYS`: שירות לקוחות, הצעות, שיתופי פעולה, תקלה באתר, הצטרפות עסק) בוואטסאפ `wa.me`, קישור `mailto` וטופס; אין `tel:` בשום מקום. נוסף: `ProductQuestionLink` בדף המוצר ("שאלה על המוצר בוואטסאפ", עם שם המוצר וכתובת הדף) ו-`orderContactLink` בעמוד ההזמנה באזור האישי, שניהם `wa.me` שהלקוח לוחץ עליו, בלי שליחה אוטומטית (`lib/contact/inquiry-links.ts` + טסט). **לא הוחל:** `migrations/pending/236_contact_channels.sql` (הערוצים ב-DB, כרגע ברירות המחדל בקוד).
+
+**פריט 13, חלקי: 4 מתוך 8 סגורים, 4 חסומים על מפרט שלא קיים בשום מקום ב-repo.** נמדד בסקירת קוד (לא בפרודקשן):
+- **קופון מתנה במייל, מיידי או מתוזמן: קיים.** `CheckoutForm` שדה `gift_deliver_at`, `gift-vouchers.ts`, דף `/gift/[token]`, טסטים. התזמון תלוי ב-`migrations/pending/226_gift_scheduling_and_wrap.sql` (לא הוחלה; בלעדיה הקוד שולח מיד). מייל המתנה הוא היחיד שמותר ללקוח לפי מדיניות 22.09.
+- **תזכורות תפוגה T-7 ו-T-1: קיים.** `cron/expire-vouchers` עם `p_buckets: [7, 1]`. התיקון של חלון-הזמן ב-`227_voucher_expiry_engine.sql` לא הוחל. **תזכורת במייל ללקוח חסומה על המדיניות ההיא** (`voucher_expiring` אינו ב-`EMAIL_POLICY_EXEMPT_KINDS`); ערוץ ההתראה באפליקציה הוא הפעיל.
+- **תוקף פר מוצר 30/60/90: נבנה.** `CouponExpirySelect` בטופס האדמין (3 מקומות) עם 30/60/90; ערך ישן מחוץ לרשימה נשמר כאפשרות ולא נדרס; הסכמה בצד השרת נשארת חובה בלי ברירת מחדל.
+- **צ'יפים לסינון קטגוריות: נבנה.** `CategoryChips` (קישורים אמיתיים, `aria-current`, גלילה אופקית פנימית) בעמודי `/products` ו-`/category/[slug]`, מתחת לכותרת. מדידת השער של עמודי קטגוריה ממילא מסרבת (ראו פריט 3).
+- **חסום: מועדון לקוחות ורמות.** אין קוד, אין טבלה ואין מפרט. הסף לכל רמה וההטבות הן החלטת מוצר של אופיר.
+- **חסום: העברת קופון בין משתמשים.** אין קוד. חסרים: האם מותר לשובר שמומש חלקית, האם פעם אחת, האם נרשם ב-audit ומול מי. הדבר הקרוב הוא זרימת המתנה (`claimGift`).
+- **חסום: מחיר מקורי עם מקור.** יש `full_price` ו-`price_history`, אין `original_price_source`. הערכים המותרים למקור (ספק, סקר שוק, מחיר קודם שלנו) הם החלטה משפטית-מוצרית.
+- **חסום: תוכנית שותפים.** יש ממשק אדמין וטבלת `affiliates`, אין נתיב קישור, אין ייחוס להזמנה ואין אחוז עמלה. חוק הפרויקט: אין עמלת ברירת מחדל בשום מקום, ולכן האחוז חייב להגיע מאופיר. (תוכנית ההפניות "הביאו חבר" שלמה ואינה זו.)
+
+**פריט 14, נבנה חלקית: הסכמה מתועדת מוכנה אבל לא פעילה עד החלת 240.**
+- **כבר היה:** התחברות בסיסמה + כפתור מפתח גישה (`PasskeyLoginButton`, טבלת `webauthn_credentials` קיימת בפרודקשן), נדנוד להוספת מפתח גישה בכניסה הראשונה לאזור האישי, והזמנת push בעמוד התודה.
+- **נבנה:** מתג "הכל באפליקציה" ב-`/account/notifications` (`EverythingInAppToggle`) עם נוסח ההסכמה מודפס לידו. לחיצה **קודם** רושמת אירוע הסכמה (`record_app_consent`, מזהה המשתמש מ-`auth.uid()`, גרסת נוסח, מקור, IP, user agent) ורק אחריו כותבת `notification_preferences` (כל הסוגים האופציונליים על `in_app` ו-`push`, לעולם לא מייל/וואטסאפ/SMS). אם אי אפשר לרשום הסכמה, שום העדפה לא משתנה. טסטים ל-action ול-lib.
+- **`migrations/pending/240_app_consent_events.sql` (לא הוחלה):** טבלת `app_consent_events` append-only + הפונקציה. נבדקה ב-`BEGIN/ROLLBACK` מול פרודקשן (`anon` בלי גישה, `authenticated` SELECT בלבד), ואחרי ה-ROLLBACK הפרודקשן נקי. **עד שתוחל המתג נעול ומציג "ההגדרה עדיין לא זמינה".** נרשמה ב-README, ב-APPLY-ORDER, בטסט האינבנטר, ובטבלת ה-rate limit (`app-consent`, 20 לשעה, גם ב-`docs/RATE-LIMITS.md`).
+- **באנר אחרי רכישה ראשונה:** `FirstPurchaseBanner` בעמוד התודה, רק כשההזמנה היא ההזמנה ששולמה היחידה של חשבון (`isFirstPaidOrder`; אורח, שגיאת קריאה ולקוח חוזר = לא מוצג): שני קישורים, "הוספת מפתח גישה" ל-`/account/security` ו-"הכל באפליקציה" ל-`/account/notifications`. הוא לא פותח דיאלוג הרשאה ולא רושם הסכמה בעצם ההצגה. בהזמנה שאינה ראשונה נשאר `PostPurchasePushPrompt` הקודם.
+- **לא נבדק בדפדפן:** ההצגה של המתג והבאנר. אין שרת מקומי בנוי בסשן הזה (ראו פריט 17).
+
+**פריט 15, קיים, והחסר היחיד היה מפתחות VAPID: נוצרו והוגדרו.**
+- **קיים ובדוק:** `app/manifest.ts` (standalone, אייקונים 192/512/maskable, קיצורי דרך), `public/sw.js` (מטמוני סטטי/דפים/תמונות, עמוד offline), `InstallPrompt`, `ServiceWorkerRegistrar`, `OfflineIndicator`, `PushOptIn`, ושכבת השליחה (`lib/push/web-push.ts`, `web-leg`, `dispatch`). 123 טסטים ירוקים.
+- **החסר:** ב-Vercel Production לא היה אף משתנה VAPID, ולכן `vapidPublicKey()` החזיר null וכל הזמנות ה-push הסתירו את עצמן. **נוצר זוג מפתחות P-256 חדש** והוגדרו `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (Config) ו-`VAPID_PRIVATE_KEY` (sensitive) ב-Production. הפרטי לא הודפס ולא נשמר בקובץ. `VAPID_SUBJECT` לא הוגדר בכוונה (ברירת המחדל בקוד היא כתובת האתר; לא שלחתי את המייל של אופיר לשירותי push חיצוניים).
+- **לא פעיל עד פריסה מחדש:** `NEXT_PUBLIC_*` נצרב בזמן build. **`push_subscriptions` בפרודקשן: 0 שורות**, כלומר אף מכשיר לא נרשם מעולם, ולכן אין מנויים שיישברו בהחלפת מפתח.
+- **לא נבדק:** קבלת push אמיתית במכשיר (דורש דפדפן עם הרשאה ומנוי).
+
+**פריט 16, קיים ונמדד על build חי.** JSON-LD (`lib/seo/json-ld.ts`: Product, Offer, BreadcrumbList, FAQPage, BlogPosting, WebSite+SearchAction), `robots.ts`, `sitemap`, canonical לכל עמוד, ושערי axe (`e2e/a11y.spec.ts`, תגי `wcag2a/aa` + `wcag21a/aa`). **נמדד ב-23.09 מול הפריסה `kenyonexpress-ibwnvxa7m`:** `e2e/a11y.spec.ts` 40 עברו, 1 דולג, 0 נכשלו; `e2e/seo-markup.spec.ts` ו-`e2e/pwa.spec.ts` עברו.
+
+**פריט 17, חלקי: ה-suite קיים ורץ, ההזמנה עצמה לא הורצה.**
+- הורצו מול build מקומי (`next start`, פורט 3411) ומול הפריסה: home, product, category, cart, checkout (אורח), seo-markup, pwa, search. **מקומי: 71 עברו, 3 נכשלו (timeout של 30 שניות), 1 דולג. מול הפריסה: 31 עברו, 3 נכשלו, 1 דולג.** קבוצת הנכשלים **מתחלפת בין הריצות**: `cart:77` ו-`product:97` נכשלו מקומית ועברו בפריסה, ו-`cart:38`, `cart:89`, `checkout:43` נכשלו בפריסה. כולן timeout בלולאת גילוי המוצר או ב-`page.goto` (קופסת 8GB, DB מרוחק): אותה חתימת עומס שמתועדת ב-`playwright.config.ts`, לא כשל פונקציונלי. **כל בדיקה עברה לפחות פעם אחת; לא נבדק שהן ירוקות ברצף אחד.**
+- **לא הורצו בכוונה:** `purchase-flow`, `physical-purchase`, `full-purchase-redeem`. הן מסיימות הזמנה ויוצרות שורות `orders`/`vouchers`/חשבוניות בפרודקשן (אין DB מקומי; Docker לא עולה כאן). "קופה כאורח עד ה-stub" נבדקת עד הטופס (`checkout.spec`: אורח עם עגלה מלאה מגיע לטופס); לחיצה על "שלם" דורשת כניסה ומייצרת הזמנה אמיתית.
+- **מלכודת שנמדדה:** ‏PID 30000 (שרת `next-server` של סשן אחר, מאז 23.09 02:50) מחזיק את פורט 3311; הריצה הראשונה שלי רצה מולו ולא מול ה-build שלי, ונפסלה. **לא נגעתי בתהליך.** הריצה התקפה היא על 3411. מפתחות "Hidden" ב-`vercel env pull` חוזרים כמחרוזת `[REDACTED]`-דמוית (11 תווים), ואם משאירים אותם ה-env נכשל בוולידציה.
+
+**פריט 18, לא הושג 90+ בעמוד הבית.** Lighthouse 12, מובייל (ברירת מחדל), מול `kenyonexpress-ibwnvxa7m` ב-Production:
+| עמוד | ביצועים | נגישות | Best Practices | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| בית | **68** | 100 | 100 | 69 | 3.7s | 880ms | 0 |
+| מוצר | **80** | 100 | 100 | 69 | 3.9s | 140ms | 0 |
+- **SEO 69 הוא ממצא אחד (`is-crawlable`) והוא כנראה ארטיפקט:** התגובה נושאת `x-robots-tag: noindex`, כותרת ש-Vercel מוסיפה על כתובות פריסה (`*.vercel.app`); הקוד לא מגדיר אותה (grep ב-`next.config.ts`, `proxy.ts`, `lib/security`). **לא הוכח על הדומיין האמיתי** (DNS עדיין לא נפתר).
+- **סיבות הביצועים בבית, נמדד:** ‏HTML של 640KB לא דחוס (60KB gz) שמכיל **~300K תווים של flight payload** להידרציה, ‏85 תגי `img`, ‏~1,985 צמתים; ‏Script Evaluation ‏1.4s, ‏Style & Layout ‏1.2s, ‏TBT ‏880ms; ‏JS ‏387KB gz ב-30 קבצים, מתוכם chunk ‏441KB שמכיל את Sentry+react-dom (ב-PDP אותו chunk עם TBT של 140ms בלבד, כלומר Sentry אינו הגורם ל-TBT של הבית). **הצעד הבא:** לצמצם את ה-props שעוברים ל-client components בבית (ה-payload), ולהפחית צמתים בגריד הדילים. עבודה מבנית, לא תיקון נקודתי.
+
+**פריט 19, `docs/BACKLOG.md` לא קיים. נלקחו מה-STATE הפריטים הבטוחים והברי-ביצוע: שערים אדומים שהיו על הענף לפני העבודה הזו.** `pnpm test` ירוק עכשיו: **568 קבצים, 6,885 טסטים, 0 נכשלו** (היה 4 שערים אדומים).
+- **`wishlist-share.ts`:** ה-action בדק את המשתמש רק בעקיפין (ה-query מחזיר רשימה ריקה לאורח, כלומר "אין מוצרים לשתף" למי שפשוט לא מחובר) ולא היה עטוף ב-`withActionContext`. נוסף `auth.getUser()` מפורש ו-wrapper. שער `auth-coverage` ו-`log-coverage` ירוקים.
+- **שש קריאות שהשליכו את `error` (`discarded-read-inventory`):** `admin/coupons/impact`, `admin/reviews` (זורקות במקום להציג אפס שקרי), `actions/admin/reviews.ts`, ו-`actions/reviews.ts` (3). **התיקון של `reviews.ts` הוא באג ממשי, לא סגנון:** כשל בקריאת "הביקורות הקיימות של הלקוח" נהפך ל"אין ביקורות" והתיר ביקורת כפולה על אותו פריט. עכשיו הבקשה נדחית.
+- **תקרת i18n:** 641 -> 632. הועברו ל-`messages/*.json`: עמוד הרשימה המשותפת, עמוד הביקורות, `ReviewForm`, כרטיסי לוח הבקרה של ספק. `locale-format`: תאריך בעמוד הביקורות עבר ל-`formatDate` (יוצג חודש מילולי כמו `/about`, לא מספרי).
+- **`pnpm lint`:** כל השערים ירוקים חוץ מ-`docs-path-audit`, שמדווח 37 "נתיבים תלויים" שכולם `refs/*` ו-`supabase/.temp` (קבצים ב-gitignore שקיימים רק בצ'קאאוט הראשי). **ארטיפקט של worktree, לא רקב אמיתי; לא נכתב ל-ledger.** נמחקה שורה אחת אמיתית מה-ledger (`docs/REVIEWS.md :: src/server/queries/reviews.ts`, הקובץ קיים עכשיו). אזהרת biome אחת קיימת מלפני (`SecurityClient.tsx`, תלות ב-`useEffect`).
+- **נשאר פתוח מה-STATE, ואינו בידי סוכן:** הכרעות מוצר (מועדון, העברת קופון, מחיר מקורי+מקור, אחוז עמלת שותפים, חמשת המיילים מול מדיניות 22.09); אישור החלה של מיגרציות pending (162, 169, 170, 171, 204, 226, 227, 236, 240 ועוד); רוטציית `SUPABASE_SECRET_KEY`; תיקון NS אצל הרשם; ניקוי 25 ממצאי הקטלוג החי (החלטות מפעיל). ביצועי עמוד הבית (68, ראו פריט 18) הוא פתוח ובר-ביצוע אבל מבני.
+
+**המשך מ:** ביצועי עמוד הבית (הקטנת ה-flight payload ומספר הצמתים), אחרי שאופיר מכריע בפריטים החסומים.
 
 
 Updated: 2026-09-23 (סשן `audit/final-audit`, Sonnet 5) (**DNS cutover

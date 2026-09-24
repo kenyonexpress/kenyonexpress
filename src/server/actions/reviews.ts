@@ -1,5 +1,6 @@
 'use server'
 
+import { t } from '@/lib/i18n/messages'
 import { withActionContext } from '@/lib/observability/action-context'
 import { rateLimit } from '@/lib/rate-limit/limiter'
 import {
@@ -49,24 +50,29 @@ async function runSubmitReview(input: {
   if (!decision.allowed) return { ok: false, error: 'יותר מדי ניסיונות. נסו שוב מאוחר יותר.' }
 
   const admin = createAdminClient()
-  const { data: line } = await admin
+  const { data: line, error: lineError } = await admin
     .from('order_items')
     .select('id, product_id, order_id')
     .eq('id', input.orderItemId)
     .maybeSingle()
+  if (lineError) return { ok: false, error: t('readFailed.retry') }
   if (!line) return { ok: false, error: REVIEW_REFUSAL_HE.wrong_product }
 
-  const { data: order } = await admin
+  const { data: order, error: orderError } = await admin
     .from('orders')
     .select('user_id, status')
     .eq('id', line.order_id)
     .maybeSingle()
+  if (orderError) return { ok: false, error: t('readFailed.retry') }
   if (!order) return { ok: false, error: REVIEW_REFUSAL_HE.wrong_product }
 
-  const { data: existingRows } = await supabase
+  const { data: existingRows, error: existingError } = await supabase
     .from('reviews')
     .select('order_item_id, product_id, deleted_at')
     .eq('user_id', user.id)
+  // Refuse rather than treat a failed read as "no earlier reviews": that would
+  // let the same customer review the same item twice.
+  if (existingError) return { ok: false, error: t('readFailed.retry') }
 
   const existing: ExistingReview[] = (existingRows ?? []).map((row) => ({
     orderItemId: row.order_item_id,

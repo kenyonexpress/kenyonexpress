@@ -1,5 +1,6 @@
 'use client'
 
+import CouponExpirySelect from '@/components/admin/CouponExpirySelect'
 import ImageUploader from '@/components/admin/ImageUploader'
 import { readDimensionMm, readTags, readVatExempt } from '@/lib/admin/product-fields'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
@@ -485,14 +486,8 @@ export default function ProductForm({
               >
                 תוקף השובר (ימים)
               </label>
-              <input
-                id="coupon_expiry_days"
-                name="coupon_expiry_days"
-                type="number"
-                min="1"
-                step="1"
-                defaultValue={product?.coupon_expiry_days ?? ''}
-                dir="ltr"
+              <CouponExpirySelect
+                defaultValue={product?.coupon_expiry_days}
                 className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
@@ -651,14 +646,8 @@ export default function ProductForm({
                 >
                   תוקף השובר (ימים) *
                 </label>
-                <input
-                  id="coupon_expiry_days"
-                  name="coupon_expiry_days"
-                  type="number"
-                  min="1"
-                  step="1"
-                  defaultValue={product?.coupon_expiry_days ?? ''}
-                  dir="ltr"
+                <CouponExpirySelect
+                  defaultValue={product?.coupon_expiry_days}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <p className="mt-1 text-xs text-gray-500">מיום הרכישה</p>
@@ -1017,15 +1006,9 @@ export default function ProductForm({
             >
               תוקף הקופון (ימים){isCouponProduct ? ' *' : ''}
             </label>
-            <input
-              id="coupon_expiry_days"
-              name="coupon_expiry_days"
-              type="number"
-              min="1"
-              step="1"
-              defaultValue={product?.coupon_expiry_days ?? ''}
+            <CouponExpirySelect
+              defaultValue={product?.coupon_expiry_days}
               required={isCouponProduct}
-              dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="mt-1 text-xs text-gray-500">

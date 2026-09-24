@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import ProductQuestionLink from '@/components/contact/ProductQuestionLink'
 import CityTag from '@/components/geo/CityTag'
 import ProductShareRow from '@/components/shared/ProductShareRow'
 import CouponPricing from '@/components/storefront/CouponPricing'
@@ -426,6 +427,7 @@ export default function ProductInfo({
           productId={productId}
           message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
         />
+        <ProductQuestionLink productName={name} />
       </div>
     </div>
   )
