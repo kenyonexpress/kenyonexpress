@@ -1,6 +1,6 @@
 import BenefitBar from '@/components/home/BenefitBar'
 import CmsHero from '@/components/home/CmsHero'
-import DealsOfTheDay from '@/components/home/DealsOfTheDay'
+import { DealsOfTheDayFallback } from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
 import HomepageSections from '@/components/home/HomepageSections'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
@@ -92,10 +92,10 @@ export default function HomePage() {
         fixes that: the row either occupies vertical space or it is not there.
 
         The 11% gate is a locked project rule (CLAUDE.md), so it wins over a
-        placement preference. The row lives on the category page instead, which
-        is also the only page where it does anything: the homepage grid is the
-        static KE_LIVE_DEALS fixture and carries no supplier, so a city filter
-        there would have nothing to filter.
+        placement preference. The row lives on the category page instead. (The
+        homepage grid reads the catalogue since 2026-09-25 and each card names
+        its city on the meta line - lib/homepage/deals.ts - but a FILTER row
+        under the hero is still the 50px this measurement priced.)
 
         To put it back, restore <Suspense><CityTags/></Suspense> here and accept
         ~21.65%. That is Ofir's call, not this session's.
@@ -141,7 +141,7 @@ export default function HomePage() {
         fallback={
           <>
             <BenefitBar />
-            <DealsOfTheDay />
+            <DealsOfTheDayFallback />
           </>
         }
       >

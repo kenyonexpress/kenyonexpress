@@ -93,10 +93,31 @@
   box-shadow: 0 3px 16px 0 rgba(0, 0, 0, 0.1);
 }
 
+/* The meta row: category, then the city on the SAME 24px line. The row is
+   pinned to the category's height and clips with an ellipsis, so a long
+   category plus a long city can never become a second line; a second line on
+   one card shifts every card below it and the diff is banded. */
+.p_con__meta {
+  height: 24px;
+  font-size: 12px;
+  line-height: 24px;
+  color: var(--color-muted-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .p_con__category {
   font-size: 12px;
   font-weight: 400;
   line-height: 24px; /* live: category row is 24px tall */
+  color: var(--color-muted-2);
+}
+
+.p_con__city {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 24px;
   color: var(--color-muted-2);
 }
 
@@ -131,12 +152,22 @@
 
 .p_con__image-link {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   width: 100%;
 }
 
-/* live: natural aspect ratio at 245px height, aligned to inline-start (right
-   in RTL); narrow images (e.g. 480x600) do NOT stretch to full width */
+/* live: natural aspect ratio at 245px height; narrow images (e.g. 480x600) do
+   NOT stretch to full width.
+
+   CENTRED, NOT INLINE-START, SINCE 2026-09-25, AND THAT IS A MEASURED CHOICE.
+   Live aligned a narrow image to the start edge. The catalogue rows the grid
+   now renders (lib/homepage/deals.ts) carry WordPress's 600x600 centre crops
+   of the photos live showed whole; at 245px tall a square crop is the same
+   photo at the same scale with its sides cut off, so centred under the same
+   `object-position` it lands pixel for pixel on the centre of live's, and
+   start-aligned it lands 20-60px to one side of it on every card. Electro's
+   own card centres the picture. Measured at 768 before/after in
+   docs/UI-PARITY-REPORT.md, rows dated 2026-09-25. */
 .p_con__image {
   width: auto;
   max-width: 100%;

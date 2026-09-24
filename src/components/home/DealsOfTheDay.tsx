@@ -1,5 +1,5 @@
 import ProductDealCard from '@/components/ProductDealCard'
-import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
+import { FIXTURE_DEALS, type HomeDeal, homeDeals } from '@/lib/homepage/deals'
 
 /**
  * refs/ke_live_home.html — jet-listing-grid faf8583. No section title.
@@ -19,11 +19,7 @@ import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
  * `xl:px-0` hands it back to the cap. The column count itself lives in
  * src/styles/product-card-deals.css, which carries the measurement table.
  */
-export default async function DealsOfTheDay() {
-  // Pixel parity: all 32 cards from the reference only, no DB merge (different
-  // images/order = a content difference wearing a fidelity number).
-  const products = KE_LIVE_DEALS
-
+function DealsGrid({ products }: { products: readonly HomeDeal[] }) {
   return (
     <section
       aria-label="מוצרים מובילים"
@@ -38,4 +34,32 @@ export default async function DealsOfTheDay() {
       </div>
     </section>
   )
+}
+
+/**
+ * The catalogue's own rows, in live's order, with the capture as fallback.
+ * `lib/homepage/deals.ts` carries the reasoning; this file only paints.
+ *
+ * Until 2026-09-25 this rendered `KE_LIVE_DEALS` and nothing else, under a
+ * note that a database merge would be "a content difference wearing a fidelity
+ * number". The order is what made that true, and the order is now live's.
+ * Measured on the same three frozen captures before and after the change:
+ * see docs/UI-PARITY-REPORT.md for the rows dated 2026-09-25.
+ */
+export default async function DealsOfTheDay() {
+  return <DealsGrid products={await homeDeals()} />
+}
+
+/**
+ * The SYNCHRONOUS grid the page shows while the catalogue read is in flight.
+ *
+ * `app/(store)/page.tsx` uses this as the Suspense fallback around
+ * `HomepageSections`. A fallback that itself awaits the database would
+ * suspend the boundary it is the fallback for, which React resolves by
+ * suspending the parent - the root - and the static shell would wait on the
+ * read it exists to not wait on. So the fallback is the capture, unread and
+ * unawaited, and the catalogue replaces it when it lands.
+ */
+export function DealsOfTheDayFallback() {
+  return <DealsGrid products={FIXTURE_DEALS} />
 }

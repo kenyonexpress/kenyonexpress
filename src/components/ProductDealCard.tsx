@@ -1,4 +1,5 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -15,6 +16,8 @@ type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /** The meta line under the category: where the deal is. Null paints nothing. */
+  city?: string | null
 }
 
 /**
@@ -97,41 +100,55 @@ export default function ProductDealCard({ product }: { product: Product }) {
   const discountPct = hasDiscount ? Math.round((1 - price / old) * 100) : 0
   const outOfStock = product.stock_quantity === 0
   const canAdd = product.kenyon_price != null && !outOfStock
+  // The canonical spelling when the value names a city this project knows
+  // ("תל אביב יפו" -> "תל אביב"), the operator's own text otherwise. The
+  // category card shows known cities only because it also sorts by their
+  // coordinates; the meta line here only labels, so hiding a real value the
+  // table has not learned yet would hide the fact the card exists to show.
+  const city = cityByName(product.city)?.name ?? product.city?.trim() ?? null
 
   return (
     <article className="p_con">
-      {product.category && (
-        <Link href={categoryHref(product.category.slug)} className="p_con__category">
-          {product.category.name_he}
-        </Link>
+      {/*
+        ONE LINE, 24px, WHATEVER IT HOLDS. The category alone was a 24px row
+        in the capture (product-card-deals.css pins the line height). The city
+        joins it on the same row rather than under it, and the row clips with
+        an ellipsis rather than wrapping, because a second 24px line on one
+        card in a row moves every card below it and the diff is banded.
+      */}
+      {(product.category || city) && (
+        <div className="p_con__meta">
+          {product.category && (
+            <Link href={categoryHref(product.category.slug)} className="p_con__category">
+              {product.category.name_he}
+            </Link>
+          )}
+          {city && (
+            <span className="p_con__city">
+              {product.category ? ' · ' : ''}
+              {city}
+            </span>
+          )}
+        </div>
       )}
 
       {/*
         `prefetch={false}` on every product link in this card, and it is a fix
         with a number behind it.
 
-        This card renders ONLY `KE_LIVE_DEALS` (via `DealsOfTheDay`, its single
-        caller), which is a verbatim mirror of the live site's 32 deal hrefs -
-        the file says so at the top, "including live's own mismatched slugs".
-        Measured against this catalogue: **8 of those 32 slugs have no product
-        here at all** (`reverse-withdrawal-payment`, `קופון-טסט`,
-        `צימר-מאסטר-copy-copy`, `מלון-4-כוכבים-פלוס-ארוחת-בוקר`,
-        `מלון-5-כוכבים-בטבריה`, `ארוחת-בוקר-זוגית-בקפה-קפה`,
-        `עוזרת-אישית-שירותי-משרד`,
-        `תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה`), and all 8 answer 404.
+        Until 2026-09-25 this card rendered ONLY `KE_LIVE_DEALS`, a verbatim
+        mirror of the live site's 32 deal hrefs, and 8 of those slugs had no
+        product here, so Next's in-view prefetch fired a full server render that
+        came back 404 on every homepage view - which is how `home.spec.ts`
+        "reaching the footer costs no 404s" caught it. The grid now renders
+        catalogue rows (`lib/homepage/deals.ts`), so every href resolves; the
+        capture is only the fallback when the catalogue does not answer.
 
-        Next prefetches a Link when it scrolls into view, so a quarter of this
-        grid fired a full server render that came back 404 on every homepage
-        view. That was invisible while the product page was a PPR shell: a
-        prefetch got the static frame with a 200 and never ran the body that
-        calls `notFound()`. Now that the page is fully static per slug ([46]),
-        the prefetch resolves the real thing and the 404 surfaces - which is
-        how `home.spec.ts` "reaching the footer costs no 404s" caught it.
-
-        The links stay, because the cards are pixel-matched to live and this is
-        a DATA gap (those products are not imported yet - recorded in
-        GO-LIVE.md), not a markup one. Same shape as the `built: false` footer
-        links from [21]: the href remains, the speculative fetch does not.
+        `prefetch={false}` stays. 32 cards on the busiest page are 32
+        speculative product renders per visit whether or not they 404, and the
+        fallback still carries the capture's hrefs. Same shape as the
+        `built: false` footer links from [21]: the href remains, the
+        speculative fetch does not.
       */}
       <div className="p_con__title-wrap">
         <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
