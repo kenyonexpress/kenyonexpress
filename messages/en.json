@@ -119,6 +119,37 @@
     "label": "Filter by category",
     "all": "All"
   },
+  "filterChips": {
+    "label": "Quick filters",
+    "openWeekend": "Open on weekends",
+    "freeShipping": "Free shipping",
+    "nearMe": "Near me",
+    "locating": "Locating...",
+    "nearMeUnsupported": "This browser does not support location",
+    "nearMeInvalid": "We could not read your location",
+    "nearMeDenied": "No location permission. You can pick a city from the list",
+    "nearMeFailed": "We could not find your location. You can pick a city from the list"
+  },
+  "giftTransfer": {
+    "title": "Send this coupon as a gift",
+    "intro": "The recipient gets an email with a personal link, and the coupon moves to their account the moment they collect it. Until then it stays in your account and you can cancel.",
+    "emailLabel": "Recipient's email",
+    "nameLabel": "Recipient's name (optional)",
+    "messageLabel": "Personal message (optional)",
+    "submit": "Send the coupon as a gift",
+    "submitting": "Sending...",
+    "sent": "The coupon was sent. It moves to the recipient once they collect it.",
+    "cta": "Send as a gift",
+    "manage": "Gift on its way",
+    "heldTitle": "The coupon was sent and is waiting to be collected",
+    "revoke": "Cancel and take the coupon back",
+    "revoking": "Cancelling...",
+    "revoked": "The gift was cancelled. The coupon is yours again.",
+    "notEligible": "This coupon cannot be transferred. Only a valid, unredeemed coupon can be.",
+    "back": "Back to my coupons",
+    "coupon": "Coupon",
+    "validUntil": "Valid until"
+  },
   "couponExpiry": {
     "choose": "Choose validity",
     "days": "days",

@@ -935,3 +935,32 @@
   border-color: var(--color-brand-primary);
   font-weight: 700;
 }
+
+/* The filter row under the category chips: same chip, one more state. The
+   near-me chip is a <button> (consent on click) and carries aria-pressed; the
+   two link chips carry aria-current="true". Both paint as "on". */
+.category-chips--filters {
+  margin-top: -6px;
+}
+.category-chips__chip--button {
+  gap: 6px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.category-chips__chip--button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.category-chips__chip[aria-current="true"],
+.category-chips__chip[aria-pressed="true"] {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  font-weight: 700;
+}
+.category-chips__note {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-heading);
+}

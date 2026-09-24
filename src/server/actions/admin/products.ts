@@ -26,6 +26,7 @@ import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { OPEN_WEEKEND_TAG } from '@/lib/catalogue/filter-chips'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
@@ -103,12 +104,16 @@ async function runUpsertProduct(
     // One text input, comma separated. Split here rather than in the form so
     // the server decides what a tag is: trimmed, non-empty, and deduped, so
     // "מבצע, מבצע" is one tag and a trailing comma is not an empty one.
+    // The weekend checkbox is the same column: it adds or removes the one
+    // marker tag the storefront chip filters on, and never touches the rest.
     tags: [
       ...new Set(
         String(formData.get('tags') ?? '')
           .split(',')
           .map((t) => t.trim())
-          .filter(Boolean),
+          .filter(Boolean)
+          .filter((t) => t !== OPEN_WEEKEND_TAG)
+          .concat(formData.get('open_weekend') === 'true' ? [OPEN_WEEKEND_TAG] : []),
       ),
     ],
     warranty_months: formData.get('warranty_months') || null,

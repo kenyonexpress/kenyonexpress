@@ -23,6 +23,7 @@ import {
   readProductTerms,
 } from '@/lib/admin/product-terms'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
+import { OPEN_WEEKEND_TAG } from '@/lib/catalogue/filter-chips'
 import {
   type ProductMoneyType,
   commissionTypeOf,
@@ -1268,7 +1269,9 @@ export default function ProductForm({
               id="tags"
               name="tags"
               type="text"
-              defaultValue={readTags(product).join(', ')}
+              defaultValue={readTags(product)
+                .filter((tag) => tag !== OPEN_WEEKEND_TAG)
+                .join(', ')}
               placeholder="מבצע, חורף, מתנה"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
@@ -1277,6 +1280,28 @@ export default function ProductForm({
             </p>
           </div>
         )}
+        {/* The weekend marker behind the storefront's "פתוח בסופ״ש" chip. Stored
+            as the tag `open-weekend` (see lib/catalogue/filter-chips.ts for why
+            a tag and not a column), shown for every product type because a
+            coupon for a business is exactly what the chip is asked about. */}
+        <div className="flex items-start gap-3">
+          <input
+            id="open_weekend"
+            name="open_weekend"
+            type="checkbox"
+            value="true"
+            defaultChecked={readTags(product).includes(OPEN_WEEKEND_TAG)}
+            className="mt-1 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <div>
+            <label htmlFor="open_weekend" className="text-sm font-medium text-gray-700">
+              פתוח בסופי שבוע
+            </label>
+            <p className="text-xs text-gray-500 mt-0.5">
+              העסק מקבל לקוחות בשישי ובשבת. מופיע בסינון "פתוח בסופ״ש" בדפי הקטגוריה.
+            </p>
+          </div>
+        </div>
         <div className="grid grid-cols-5 gap-4">
           <div>
             <label htmlFor="weight_grams" className="block text-xs font-medium text-gray-700 mb-1">

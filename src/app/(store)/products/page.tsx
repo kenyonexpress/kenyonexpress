@@ -6,7 +6,13 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
+import FilterChips from '@/components/category/FilterChips'
 import Pagination from '@/components/category/Pagination'
+import {
+  type ChipFilters,
+  chipFiltersFromParams,
+  chipLinkParams,
+} from '@/lib/catalogue/filter-chips'
 import {
   type ProductTypeFilter,
   SHOP_PAGE_SIZE,
@@ -72,6 +78,7 @@ type QueryArgs = {
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
+  chips?: ChipFilters
 }
 
 function pageWindow(total: number, page: number) {
@@ -96,20 +103,23 @@ function pageWindow(total: number, page: number) {
 async function shopArgs(searchParams: Props['searchParams']) {
   const sp = await searchParams
   const sort = parseSort(sp.sort)
+  const chips = chipFiltersFromParams(sp)
   const args: QueryArgs = {
     sort,
     page: parsePage(sp.page),
     priceMin: parsePrice(sp.min),
     priceMax: parsePrice(sp.max),
     productType: parseProductType(sp.type),
+    chips,
   }
   const linkParams = {
     sort: sort === 'menu_order' ? undefined : sort,
     min: args.priceMin != null ? String(args.priceMin) : undefined,
     max: args.priceMax != null ? String(args.priceMax) : undefined,
     type: args.productType,
+    ...chipLinkParams(chips),
   }
-  return { args, linkParams }
+  return { args, linkParams, chips }
 }
 
 /**
@@ -214,6 +224,12 @@ async function ShopChips() {
   return <CategoryChips categories={await getAllCategories()} />
 }
 
+/** Reads the URL, so it streams into its own hole under the static category row. */
+async function ShopFilterChips({ searchParams }: Props) {
+  const { linkParams, chips } = await shopArgs(searchParams)
+  return <FilterChips pathname="/products" params={linkParams} filters={chips} />
+}
+
 async function ShopSidebar({ searchParams }: Props) {
   const [{ args }, allCategories] = await Promise.all([shopArgs(searchParams), getAllCategories()])
   return (
@@ -265,6 +281,9 @@ export default function ProductsPage({ searchParams }: Props) {
             instead type-checks and then fails the build. */}
         <Suspense fallback={null}>
           <ShopChips />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ShopFilterChips searchParams={searchParams} />
         </Suspense>
 
         <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>

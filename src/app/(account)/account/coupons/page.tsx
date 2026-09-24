@@ -1,4 +1,5 @@
 import { giftHeldCopy } from '@/lib/gifts/held-copy'
+import { t } from '@/lib/i18n/messages'
 import {
   COUPON_TONE_CHIP,
   couponMoneyView,
@@ -140,6 +141,28 @@ export default async function CouponsPage() {
                         ? 'הצגת הקופון ו-QR'
                         : 'פרטי הקופון'}
                   </Link>
+                  {/*
+                    Sending it on. A usable coupon can be given away from here;
+                    one already on its way links to the same page, where the
+                    only action is taking it back.
+                  */}
+                  {voucher.gift ? (
+                    <Link
+                      className="account-btn"
+                      href={`/account/coupons/${voucher.id}/gift`}
+                      data-testid="coupon-row-gift-manage"
+                    >
+                      {t('giftTransfer.manage')}
+                    </Link>
+                  ) : status.presentable ? (
+                    <Link
+                      className="account-btn"
+                      href={`/account/coupons/${voucher.id}/gift`}
+                      data-testid="coupon-row-gift-transfer"
+                    >
+                      {t('giftTransfer.cta')}
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             )

@@ -1,11 +1,17 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
+import {
+  type ChipFilters,
+  applyChipFilters,
+  isMissingShippingColumn,
+} from '@/lib/catalogue/filter-chips'
 import type { CategoryNode } from '@/lib/category-tree'
 import { enabledProductTypes } from '@/lib/commerce/phases'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
+import { log } from '@/lib/observability/log'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -376,6 +382,28 @@ async function newestProductIds(
   return (data ?? []).map((row) => row.id)
 }
 
+/**
+ * Runs the archive query, and runs it once more without naming
+ * `shipping_price_agorot` when the database answers 42703 for it.
+ *
+ * Only the free-shipping chip names that column (pending 243). On a database
+ * without it the first attempt fails the whole select, and the retry filters
+ * on `requires_shipping` alone - the identical row set while every product
+ * ships free, which 243's header says is what checkout charges today. A
+ * migrated database costs one call; an unmigrated one costs two and stays
+ * correct. Any other error, and the first result is returned to `orFail`.
+ */
+async function runWithShippingFallback<
+  R extends { error: { code?: string; message?: string } | null },
+>(build: (withShippingColumn: boolean) => PromiseLike<R>, chips: ChipFilters): Promise<R> {
+  const first = await build(Boolean(chips.freeShipping))
+  if (!chips.freeShipping || !isMissingShippingColumn(first.error)) return first
+  log.warn('catalogue.shipping_column_missing', {
+    hint: 'apply migrations/pending/243_product_terms.sql; the free-shipping chip filters on requires_shipping alone until then',
+  })
+  return build(false)
+}
+
 export async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
@@ -388,98 +416,114 @@ export async function getCategoryProducts(opts: {
   city?: string
   /** Set for the three collection slugs. See `collectionRule`. */
   collection?: CollectionRule
+  /** The filter chips (`?open=weekend`, `?shipping=free`). Part of the cache key. */
+  chips?: ChipFilters
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { categoryId, category, sort, page, priceMin, priceMax, productType, city, collection } =
-    opts
+  const {
+    categoryId,
+    category,
+    sort,
+    page,
+    priceMin,
+    priceMax,
+    productType,
+    city,
+    collection,
+    chips = {},
+  } = opts
   const supabase = createPublicClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
-  let query = supabase
-    .from('products')
-    .select(
-      // `city` ONLY. `latitude`/`longitude` arrive with 136 and do not
-      // exist in this database yet - naming a missing column is Postgres 42703,
-      // which fails the WHOLE select, so every category page would render an
-      // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
-      // exists. Add the two columns to this string when 136 is applied;
-      // `supplierLocation` already prefers them the moment they are present.
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
-      { count: 'exact' },
-    )
-    .eq('status', 'active')
-    .is('deleted_at', null)
-
-  if (collection) {
-    query = query.or(
-      collectionFilter(
-        categoryId,
-        collection,
-        collection.kind === 'newest' ? await newestProductIds(supabase, collection.limit) : [],
-      ),
-    )
-  } else {
-    query = query.eq('category_id', categoryId)
-  }
-
-  if (priceMin != null) query = query.gte('kenyon_price', priceMin)
-  if (priceMax != null) query = query.lte('kenyon_price', priceMax)
-
-  // PHASE GATING ([89]). A type the operator has switched off is not listed.
-  //
-  // `null` means the config could not be read, and it leaves the query
-  // untouched rather than filtering to nothing - see `lib/commerce/phases.ts`
-  // on why the listing path fails OPEN and the cart path does not. An empty
-  // shop that says "no products match" is indistinguishable from a shop with
-  // nothing to sell, and that is the failure `catalogue-read.ts` was written
-  // about.
+  // Both reads that the builder below needs, resolved once, so the retry after
+  // a missing shipping column rebuilds the query without a second round trip.
+  const newestIds =
+    collection?.kind === 'newest' ? await newestProductIds(supabase, collection.limit) : []
   const sellable = await enabledProductTypes()
-  if (sellable) query = query.in('type', sellable)
 
-  if (productType) {
-    const facet = productTypeFilter(productType)
-    query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
-  }
+  const build = (withShippingColumn: boolean) => {
+    let query = supabase
+      .from('products')
+      .select(
+        // `city` ONLY. `latitude`/`longitude` arrive with 136 and do not
+        // exist in this database yet - naming a missing column is Postgres 42703,
+        // which fails the WHOLE select, so every category page would render an
+        // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
+        // exists. Add the two columns to this string when 136 is applied;
+        // `supplierLocation` already prefers them the moment they are present.
+        'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
+        { count: 'exact' },
+      )
+      .eq('status', 'active')
+      .is('deleted_at', null)
 
-  switch (sort) {
-    case 'price_asc':
-      query = query.order('kenyon_price', { ascending: true, nullsFirst: false })
-      break
-    case 'price_desc':
-      query = query.order('kenyon_price', { ascending: false, nullsFirst: false })
-      break
-    case 'name':
-      query = query.order('name_he', { ascending: true })
-      break
-    case 'newest':
-      query = query.order('created_at', { ascending: false })
-      break
-    default:
-      /*
-       * menu_order / popularity / rating.
-       *
-       * Live's archive order is Hebrew-alphabetical by name, WITH FEATURED
-       * PRODUCTS PINNED ABOVE IT. Verified 2026-09-03 against
-       * refs/ke_live_products.html: after de-duplicating the markup the shop's
-       * 24 slots read `אייפון 13` first and then `! צימר מאסטר`, `אבחון`,
-       * `אוזניות`, `אייפון 13` again, `ארוחה בשרית` ... -- alphabetical from
-       * slot two on, with one product appearing out of order at the top AND
-       * again in its own alphabetical place. That is a pin, not a sort.
-       *
-       * Ordering by name alone put those pinned rows in the middle, which is
-       * most of why compare.mjs refused this page: 21 of 24 products existed on
-       * both sides but only 15 sat in the same slot. There is still no
-       * menu_order column; `is_featured` is the pin this schema has.
-       */
-      query = query
-        .order('is_featured', { ascending: false, nullsFirst: false })
-        .order('name_he', { ascending: true })
+    if (collection) {
+      query = query.or(collectionFilter(categoryId, collection, newestIds))
+    } else {
+      query = query.eq('category_id', categoryId)
+    }
+
+    if (priceMin != null) query = query.gte('kenyon_price', priceMin)
+    if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+
+    // PHASE GATING ([89]). A type the operator has switched off is not listed.
+    //
+    // `null` means the config could not be read, and it leaves the query
+    // untouched rather than filtering to nothing - see `lib/commerce/phases.ts`
+    // on why the listing path fails OPEN and the cart path does not. An empty
+    // shop that says "no products match" is indistinguishable from a shop with
+    // nothing to sell, and that is the failure `catalogue-read.ts` was written
+    // about.
+    if (sellable) query = query.in('type', sellable)
+
+    if (productType) {
+      const facet = productTypeFilter(productType)
+      query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
+    }
+
+    query = applyChipFilters(query, chips, withShippingColumn)
+
+    switch (sort) {
+      case 'price_asc':
+        query = query.order('kenyon_price', { ascending: true, nullsFirst: false })
+        break
+      case 'price_desc':
+        query = query.order('kenyon_price', { ascending: false, nullsFirst: false })
+        break
+      case 'name':
+        query = query.order('name_he', { ascending: true })
+        break
+      case 'newest':
+        query = query.order('created_at', { ascending: false })
+        break
+      default:
+        /*
+         * menu_order / popularity / rating.
+         *
+         * Live's archive order is Hebrew-alphabetical by name, WITH FEATURED
+         * PRODUCTS PINNED ABOVE IT. Verified 2026-09-03 against
+         * refs/ke_live_products.html: after de-duplicating the markup the shop's
+         * 24 slots read `אייפון 13` first and then `! צימר מאסטר`, `אבחון`,
+         * `אוזניות`, `אייפון 13` again, `ארוחה בשרית` ... -- alphabetical from
+         * slot two on, with one product appearing out of order at the top AND
+         * again in its own alphabetical place. That is a pin, not a sort.
+         *
+         * Ordering by name alone put those pinned rows in the middle, which is
+         * most of why compare.mjs refused this page: 21 of 24 products existed on
+         * both sides but only 15 sat in the same slot. There is still no
+         * menu_order column; `is_featured` is the pin this schema has.
+         */
+        query = query
+          .order('is_featured', { ascending: false, nullsFirst: false })
+          .order('name_he', { ascending: true })
+    }
+    return query.range(from, from + CATEGORY_PAGE_SIZE - 1)
   }
 
   const { data, count } = orFailWithCount(
-    await query.range(from, from + CATEGORY_PAGE_SIZE - 1),
+    await runWithShippingFallback(build, chips),
     'catalogue.category_products_failed',
     { category_id: opts.categoryId, page },
   )
@@ -533,60 +577,67 @@ export async function getShopProducts(opts: {
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
+  /** The filter chips. Part of the cache key. */
+  chips?: ChipFilters
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { sort, page, priceMin, priceMax, productType } = opts
+  const { sort, page, priceMin, priceMax, productType, chips = {} } = opts
   const supabase = createPublicClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
-
-  let query = supabase
-    .from('products')
-    .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug)',
-      { count: 'exact' },
-    )
-    .eq('status', 'active')
-    .is('deleted_at', null)
-
-  if (priceMin != null) query = query.gte('kenyon_price', priceMin)
-  if (priceMax != null) query = query.lte('kenyon_price', priceMax)
-
-  // PHASE GATING ([89]). A type the operator has switched off is not listed.
-  //
-  // `null` means the config could not be read, and it leaves the query
-  // untouched rather than filtering to nothing - see `lib/commerce/phases.ts`
-  // on why the listing path fails OPEN and the cart path does not. An empty
-  // shop that says "no products match" is indistinguishable from a shop with
-  // nothing to sell, and that is the failure `catalogue-read.ts` was written
-  // about.
   const sellable = await enabledProductTypes()
-  if (sellable) query = query.in('type', sellable)
-  if (productType) {
-    const facet = productTypeFilter(productType)
-    query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
-  }
 
-  switch (sort) {
-    case 'price_asc':
-      query = query.order('kenyon_price', { ascending: true, nullsFirst: false })
-      break
-    case 'price_desc':
-      query = query.order('kenyon_price', { ascending: false, nullsFirst: false })
-      break
-    case 'name':
-      query = query.order('name_he', { ascending: true })
-      break
-    case 'newest':
-      query = query.order('created_at', { ascending: false })
-      break
-    default:
-      query = query.order('name_he', { ascending: true })
+  const build = (withShippingColumn: boolean) => {
+    let query = supabase
+      .from('products')
+      .select(
+        'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug)',
+        { count: 'exact' },
+      )
+      .eq('status', 'active')
+      .is('deleted_at', null)
+
+    if (priceMin != null) query = query.gte('kenyon_price', priceMin)
+    if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+
+    // PHASE GATING ([89]). A type the operator has switched off is not listed.
+    //
+    // `null` means the config could not be read, and it leaves the query
+    // untouched rather than filtering to nothing - see `lib/commerce/phases.ts`
+    // on why the listing path fails OPEN and the cart path does not. An empty
+    // shop that says "no products match" is indistinguishable from a shop with
+    // nothing to sell, and that is the failure `catalogue-read.ts` was written
+    // about.
+    if (sellable) query = query.in('type', sellable)
+    if (productType) {
+      const facet = productTypeFilter(productType)
+      query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
+    }
+
+    query = applyChipFilters(query, chips, withShippingColumn)
+
+    switch (sort) {
+      case 'price_asc':
+        query = query.order('kenyon_price', { ascending: true, nullsFirst: false })
+        break
+      case 'price_desc':
+        query = query.order('kenyon_price', { ascending: false, nullsFirst: false })
+        break
+      case 'name':
+        query = query.order('name_he', { ascending: true })
+        break
+      case 'newest':
+        query = query.order('created_at', { ascending: false })
+        break
+      default:
+        query = query.order('name_he', { ascending: true })
+    }
+    return query.range(from, from + SHOP_PAGE_SIZE - 1)
   }
 
   const { data, count } = orFailWithCount(
-    await query.range(from, from + SHOP_PAGE_SIZE - 1),
+    await runWithShippingFallback(build, chips),
     'catalogue.shop_products_failed',
     { page, sort },
   )

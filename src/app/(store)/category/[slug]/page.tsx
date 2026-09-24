@@ -7,8 +7,14 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
+import FilterChips from '@/components/category/FilterChips'
 import Pagination from '@/components/category/Pagination'
 import CityTags from '@/components/geo/CityTags'
+import {
+  type ChipFilters,
+  chipFiltersFromParams,
+  chipLinkParams,
+} from '@/lib/catalogue/filter-chips'
 import {
   CATEGORY_PAGE_SIZE,
   type CollectionRule,
@@ -135,6 +141,8 @@ type QueryArgs = {
   near?: Coordinates | null
   /** The collection rule for this slug, if it is one of the three. */
   collection?: CollectionRule
+  /** The filter chips. Part of the cache key, like every other filter. */
+  chips?: ChipFilters
 }
 
 /**
@@ -334,6 +342,7 @@ async function CategoryPageBody({
   const productType = parseProductType(sp.type)
   const city = parseCity(sp.city)
   const near = parseNear(sp.near)
+  const chips = chipFiltersFromParams(sp)
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
@@ -361,6 +370,7 @@ async function CategoryPageBody({
     // collection on its own. Undefined for the nine taxonomies, which keep
     // matching on category_id alone.
     collection: collectionRule(category.slug),
+    chips,
   }
 
   const pathname = `/category/${category.slug}`
@@ -369,6 +379,14 @@ async function CategoryPageBody({
     min: priceMin != null ? String(priceMin) : undefined,
     max: priceMax != null ? String(priceMax) : undefined,
     type: productType,
+    ...chipLinkParams(chips),
+  }
+  // The chips keep the city and the nearest-first origin the customer already
+  // chose; pagination (above) deliberately does not carry them, as before.
+  const chipParams = {
+    ...linkParams,
+    city,
+    near: near ? `${near.lat},${near.lng}` : undefined,
   }
 
   const crumbs = [
@@ -415,6 +433,7 @@ async function CategoryPageBody({
         </header>
 
         <CategoryChips categories={allCategories} currentSlug={category.slug} />
+        <FilterChips pathname={pathname} params={chipParams} filters={chips} />
 
         <CategoryControlBar value={sort} />
 
