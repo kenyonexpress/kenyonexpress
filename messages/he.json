@@ -389,5 +389,27 @@
     "askStore": "שאלה לשירות הלקוחות בוואטסאפ",
     "footerHeading": "וואטסאפ לפי נושא",
     "viaStore": "הפנייה מגיעה לשירות הלקוחות של קניון אקספרס"
+  },
+  "pdp": {
+    "priceSource": "מקור המחיר הרגיל",
+    "priceSourceLink": "לאסמכתא",
+    "googleReviews": "ביקורות בגוגל",
+    "smallPrint": {
+      "title": "האותיות הקטנות",
+      "vatIncluded": "המחיר סופי וכולל מע\"מ.",
+      "vatExempt": "המחיר סופי. המוצר פטור ממע\"מ.",
+      "priceBasis": "המחיר הרגיל המוצג מבוסס על {source}.",
+      "couponValidDays": "הקופון תקף {days} ימים מיום הרכישה.",
+      "offerValidUntil": "ההצעה בתוקף עד {date}.",
+      "couponSingleUse": "הקופון למימוש חד-פעמי בבית העסק בלבד, בהצגת הקוד.",
+      "couponBalance": "היתרה לתשלום משולמת ישירות לבית העסק במועד המימוש.",
+      "physicalShipping": "המשלוח והאספקה באחריות הספק.",
+      "warranty": "אחריות {months} חודשים מטעם הספק.",
+      "recurring": "המנוי מתחדש אוטומטית עד לביטול מהאזור האישי.",
+      "stockLimited": "עד גמר המלאי.",
+      "cancellation": "ביטול עסקה לפי חוק הגנת הצרכן:",
+      "cancellationLink": "מדיניות ביטולים והחזרות",
+      "imagesIllustrative": "התמונות להמחשה בלבד."
+    }
   }
 }

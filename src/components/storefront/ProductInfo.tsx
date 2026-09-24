@@ -12,7 +12,9 @@ import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
+import { t } from '@/lib/i18n/messages'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
+import type { OriginalPriceSource } from '@/lib/pricing/original-price-source'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -39,6 +41,12 @@ interface Props {
   nameEn: string | null
   basePrice: number
   oldPrice: number | null
+  /**
+   * What the struck-through `oldPrice` is based on (pending 242), or null.
+   * The page passes null whenever it passes a null `oldPrice`, so a source is
+   * never printed under a claim the page is not making.
+   */
+  originalPriceSource?: OriginalPriceSource | null
   baseStock: number | null
   /**
    * The live "only X left" line, rendered by the page inside its own Suspense
@@ -100,6 +108,7 @@ export default function ProductInfo({
   nameEn,
   basePrice,
   oldPrice,
+  originalPriceSource = null,
   baseStock,
   scarcitySlot = null,
   sku,
@@ -298,7 +307,7 @@ export default function ProductInfo({
           pricing block. Everything else shows the ordinary sale price. */}
       {recurringOffer ? null : couponOffer ? (
         <div className="pdp-coupon">
-          <CouponPricing offer={couponOffer} />
+          <CouponPricing offer={couponOffer} originalPriceSource={originalPriceSource} />
         </div>
       ) : (
         <>
@@ -306,6 +315,26 @@ export default function ProductInfo({
             {oldPrice != null && (
               <li>
                 מחיר רגיל: <del>{shekelsFromIls(oldPrice)}</del>
+              </li>
+            )}
+            {/* The basis of the strike, directly under it: a struck price is a
+                claim about the past, and this is what the operator is basing it
+                on. Nothing renders when no basis is stated. */}
+            {oldPrice != null && originalPriceSource && (
+              <li className="pdp-summary__source" data-testid="pdp-price-source">
+                {t('pdp.priceSource')}: {originalPriceSource.label}
+                {originalPriceSource.href && (
+                  <>
+                    {' '}
+                    <a
+                      href={originalPriceSource.href}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                    >
+                      {t('pdp.priceSourceLink')}
+                    </a>
+                  </>
+                )}
               </li>
             )}
             <li>מחיר בקניון: {shekelsFromIls(price)}</li>

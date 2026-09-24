@@ -586,3 +586,52 @@
   margin-inline-end: 10px;
   vertical-align: middle;
 }
+
+/* Basis of the struck-through price: one meta-size line under the מחיר רגיל
+   row, in the muted ink. It qualifies the claim above it and must not read
+   as a second price. */
+.pdp-summary__source {
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}
+
+.pdp-summary__source a {
+  color: var(--pdp-action);
+  text-decoration: underline;
+}
+
+/* The small print: under the details band, above the recommendations, at
+   meta size in the muted ink. Terms a careful shopper reads before paying;
+   they sit below everything that sells and compete with none of it. */
+.pdp-small-print {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--pdp-line);
+  /* `.pdp-related` below opens with margin-top: -20px (live's y940 measure),
+     and adjacent margins add, so 44px here is a net 24px between the last
+     line and the recommendations heading. Measured at 1440 on 2026-09-25:
+     without it the heading painted over the final line. */
+  margin-bottom: 44px;
+}
+
+.pdp-small-print__title {
+  margin: 0 0 4px;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  font-weight: 700;
+  color: var(--pdp-muted);
+}
+
+.pdp-small-print__list {
+  margin: 0;
+  padding-inline-start: 18px;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}
+
+.pdp-small-print__list a {
+  color: var(--pdp-action);
+  text-decoration: underline;
+}

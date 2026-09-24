@@ -389,5 +389,27 @@
     "askStore": "Ask customer service on WhatsApp",
     "footerHeading": "WhatsApp by topic",
     "viaStore": "Your message reaches KenyonExpress customer service"
+  },
+  "pdp": {
+    "priceSource": "Basis of the regular price",
+    "priceSourceLink": "Source",
+    "googleReviews": "Google reviews",
+    "smallPrint": {
+      "title": "The small print",
+      "vatIncluded": "The price is final and includes VAT.",
+      "vatExempt": "The price is final. This product is VAT-exempt.",
+      "priceBasis": "The regular price shown is based on {source}.",
+      "couponValidDays": "The coupon is valid for {days} days from purchase.",
+      "offerValidUntil": "The offer is valid until {date}.",
+      "couponSingleUse": "The coupon is redeemable once, at the business only, on presenting the code.",
+      "couponBalance": "Any balance is paid directly to the business on redemption.",
+      "physicalShipping": "Shipping and delivery are the supplier's responsibility.",
+      "warranty": "{months} months' warranty from the supplier.",
+      "recurring": "The subscription renews automatically until cancelled from your account.",
+      "stockLimited": "While stocks last.",
+      "cancellation": "Cancellation under the Consumer Protection Law:",
+      "cancellationLink": "Cancellation and returns policy",
+      "imagesIllustrative": "Images are for illustration only."
+    }
   }
 }

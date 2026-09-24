@@ -988,6 +988,16 @@ describe('the pending migration inventory', () => {
       // append-only record behind the "everything in the app" switch. New table,
       // not `consent_events` (031), which production does not have.
       '240_app_consent_events.sql',
+      // 241 WRITTEN 2026-09-25. Data only: `products.city` on the three active
+      // rows whose own title names a city, guarded on `city IS NULL`. The home
+      // page meta line reads it (lib/homepage/deals.ts).
+      '241_seed_product_city_from_title.sql',
+      // 242 WRITTEN 2026-09-25 (Q04). Additive only: `products.original_price_source`
+      // + `_url` (the stated basis of the struck-through price) and
+      // `suppliers.google_reviews_url`, each with a CHECK, plus a column-level
+      // SELECT grant to anon on the two product columns. Both reads go through
+      // readOptionalColumns, so the page renders without it.
+      '242_product_price_source_google_reviews.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

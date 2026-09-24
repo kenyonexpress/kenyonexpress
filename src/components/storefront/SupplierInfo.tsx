@@ -1,11 +1,22 @@
 import AskBusinessButton from '@/components/contact/AskBusinessButton'
 import type { StorefrontProductType } from '@/lib/commerce/product-type'
+import { t } from '@/lib/i18n/messages'
+import { googleReviewsHref } from '@/lib/pricing/original-price-source'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
 import { buildSupplierInquiryText } from '@/lib/whatsapp'
-import { MapPin, Navigation, Phone } from 'lucide-react'
+import { MapPin, Navigation, Phone, Star } from 'lucide-react'
 import Link from 'next/link'
 
-export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow) | null
+export type SupplierSummary =
+  | ({ id: string; name: string } & SupplierContactRow & {
+        /**
+         * The business's Google reviews page (pending 242), raw. Rendered as a
+         * link only when `googleReviewsHref` accepts the host, so a row written
+         * by hand cannot put a foreign site under the words "ביקורות בגוגל".
+         */
+        google_reviews_url?: string | null
+      })
+  | null
 
 /**
  * Supplier details on EVERY product page (coupon, physical and subscription).
@@ -91,12 +102,16 @@ export default function SupplierInfo({
 
   const showWhatsApp = (whatsappEnabled && contact.whatsappHref !== null) || ask !== null
 
+  // The one trust signal on this block that is not ours to write. Null unless
+  // the stored URL is https AND on a Google host.
+  const reviewsHref = googleReviewsHref(supplier?.google_reviews_url)
+
   // `contact.hasAny` counts the WhatsApp link, which this component may be
   // suppressing. A supplier whose ONLY reachable detail is a WhatsApp number
   // that the admin has not opted in would otherwise render an empty <ul> under
   // the heading instead of the "details coming soon" line.
   const hasAnyVisible = Boolean(
-    contact.name || contact.addressLine || contact.telHref || showWhatsApp,
+    contact.name || contact.addressLine || contact.telHref || showWhatsApp || reviewsHref,
   )
 
   return (
@@ -141,6 +156,21 @@ export default function SupplierInfo({
                   paragraph would otherwise flip 03-1234567 to 1234567-03. */}
               <a href={contact.telHref} dir="ltr" className="font-medium text-link hover:underline">
                 {contact.phoneDisplay}
+              </a>
+            </li>
+          )}
+
+          {reviewsHref && (
+            <li className="flex items-center gap-1.5">
+              <Star size={15} aria-hidden="true" className="shrink-0" />
+              <a
+                href={reviewsHref}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                data-testid="supplier-google-reviews"
+                className="font-medium text-link hover:underline"
+              >
+                {t('pdp.googleReviews')}
               </a>
             </li>
           )}

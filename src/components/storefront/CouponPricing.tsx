@@ -1,5 +1,7 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { shekelsFromIls } from '@/lib/commerce/coupon-offer'
+import { t } from '@/lib/i18n/messages'
+import type { OriginalPriceSource } from '@/lib/pricing/original-price-source'
 
 /**
  * The pricing block on a coupon product page.
@@ -13,7 +15,18 @@ import { shekelsFromIls } from '@/lib/commerce/coupon-offer'
  *
  * Every colour and size comes from the @theme tokens in globals.css.
  */
-export default function CouponPricing({ offer }: { offer: CouponOffer }) {
+export default function CouponPricing({
+  offer,
+  originalPriceSource = null,
+}: {
+  offer: CouponOffer
+  /**
+   * What the struck "מחיר רגיל" is based on (pending 242), or null. The page
+   * passes null when the reference-price verdict suppresses the claim, so the
+   * sentence never appears under a strike the record contradicts.
+   */
+  originalPriceSource?: OriginalPriceSource | null
+}) {
   if (!offer.sellable) {
     return (
       <div className="rounded-lg border border-border bg-surface-hover p-4">
@@ -45,6 +58,24 @@ export default function CouponPricing({ offer }: { offer: CouponOffer }) {
             {shekelsFromIls(offer.fullPriceIls)}
           </span>
         </p>
+        {originalPriceSource && (
+          <p className="mt-0.5 text-xs text-muted" data-testid="pdp-price-source">
+            {t('pdp.priceSource')}: {originalPriceSource.label}
+            {originalPriceSource.href && (
+              <>
+                {' '}
+                <a
+                  href={originalPriceSource.href}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="underline"
+                >
+                  {t('pdp.priceSourceLink')}
+                </a>
+              </>
+            )}
+          </p>
+        )}
         <div className="mt-1 flex flex-wrap items-end gap-3">
           <span className="text-sm text-muted">מחיר בקניון:</span>
           <span className="text-3xl font-black text-price">

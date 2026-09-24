@@ -193,3 +193,57 @@ describe('the WhatsApp opt-in', () => {
     expect(html).toContain('יתעדכנו בקרוב')
   })
 })
+
+/**
+ * Pending 242 adds `suppliers.google_reviews_url`. The link is the one trust
+ * signal on the block that the site does not author, so it renders only for
+ * a URL on a Google host; anything else is dropped before it becomes a link
+ * under the words "ביקורות בגוגל".
+ */
+describe('SupplierInfo Google reviews link', () => {
+  const base = {
+    id: 'a',
+    name: 'מסעדת השף הגדול',
+    city: 'תל אביב',
+    address: 'דיזנגוף 100',
+    contact_phone: '03-1234567',
+    whatsapp: null,
+  }
+
+  it('links the reviews page when the stored URL is on a Google host', () => {
+    const html = renderToStaticMarkup(
+      <SupplierInfo
+        supplier={{ ...base, google_reviews_url: 'https://maps.app.goo.gl/AbCdEf' }}
+        productType="coupon"
+      />,
+    )
+    expect(html).toContain('data-testid="supplier-google-reviews"')
+    expect(html).toContain('href="https://maps.app.goo.gl/AbCdEf"')
+    expect(html).toContain('ביקורות בגוגל')
+  })
+
+  it('renders no reviews link for a foreign host, an http URL, or no URL at all', () => {
+    for (const url of ['https://notgoogle.com/reviews', 'http://www.google.com/maps', null]) {
+      const html = renderToStaticMarkup(
+        <SupplierInfo supplier={{ ...base, google_reviews_url: url }} productType="physical" />,
+      )
+      expect(html, String(url)).not.toContain('supplier-google-reviews')
+      expect(html, String(url)).not.toContain('ביקורות בגוגל')
+    }
+  })
+
+  it('counts the reviews link as a visible detail, so it is not hidden behind the placeholder', () => {
+    const html = renderToStaticMarkup(
+      <SupplierInfo
+        supplier={{
+          id: 'b',
+          name: '',
+          google_reviews_url: 'https://g.page/r/AbCdEf/review',
+        }}
+        productType="coupon"
+      />,
+    )
+    expect(html).toContain('supplier-google-reviews')
+    expect(html).not.toContain('פרטי הספק יתעדכנו בקרוב')
+  })
+})

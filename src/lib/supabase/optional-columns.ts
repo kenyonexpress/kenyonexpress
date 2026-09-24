@@ -56,6 +56,13 @@ export async function readOptionalColumns<Row extends { id: string }>(
   columns: readonly string[],
   ids: readonly string[],
   label: string,
+  /**
+   * What the once-per-process warning tells the operator to do. The default
+   * names 054 because every caller was a coupon column when this was written;
+   * a caller probing a column from a different migration passes its own, so
+   * the log does not send someone to apply the wrong file.
+   */
+  missingHint = 'apply supabase/migrations/054_voucher_redemption.sql. Coupons will read as unpriced until then.',
 ): Promise<Map<string, Row>> {
   if (ids.length === 0) return new Map()
 
@@ -63,10 +70,7 @@ export async function readOptionalColumns<Row extends { id: string }>(
 
   if (error) {
     if (error.code === UNDEFINED_COLUMN) {
-      warnOnce(
-        label,
-        `${label}: ${columns.join(', ')} missing from this database — apply supabase/migrations/054_voucher_redemption.sql. Coupons will read as unpriced until then.`,
-      )
+      warnOnce(label, `${label}: ${columns.join(', ')} missing from this database — ${missingHint}`)
       return new Map()
     }
     throw new Error(`${label}: ${error.message}`)
@@ -213,6 +217,34 @@ export async function readWalletAccountAgorot(
   const [accountId, balanceAgorot] = [...rows][0] ?? []
   return { accountId: accountId ?? null, balanceAgorot: balanceAgorot ?? 0 }
 }
+
+/**
+ * The two columns pending migration 242 adds to `products`: the stated basis
+ * of the struck-through "regular price" and an optional link to it. Probed,
+ * not named in the main select, for the same reason as the 054 pair: naming a
+ * column production lacks 42703s the WHOLE product read and 404s every page.
+ */
+export const ORIGINAL_PRICE_SOURCE_COLUMNS = [
+  'original_price_source',
+  'original_price_source_url',
+] as const
+
+export type OriginalPriceSourceRow = {
+  id: string
+  original_price_source: string | null
+  original_price_source_url: string | null
+}
+
+/** The one column 242 adds to `suppliers`: the business's Google reviews page. */
+export const SUPPLIER_GOOGLE_REVIEWS_COLUMNS = ['google_reviews_url'] as const
+
+export type SupplierGoogleReviewsRow = {
+  id: string
+  google_reviews_url: string | null
+}
+
+export const MIGRATION_242_HINT =
+  'apply migrations/pending/242_product_price_source_google_reviews.sql. The page shows no price source and no Google reviews link until then.'
 
 /** The two columns migration 054 adds to `products`. */
 export const COUPON_054_COLUMNS = ['coupon_price_ils', 'offer_valid_until'] as const

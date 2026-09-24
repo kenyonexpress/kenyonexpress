@@ -5,12 +5,18 @@ import { ilsToAgorot } from '@/lib/commerce/money'
 import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
 import { buildRecurringOffer } from '@/lib/commerce/recurring'
 import { log } from '@/lib/observability/log'
+import { describeOriginalPriceSource } from '@/lib/pricing/original-price-source'
 import { loadReferenceVerdicts, suppressReference } from '@/lib/pricing/price-history'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/anon'
 import {
   COUPON_054_COLUMNS,
   type Coupon054Row,
+  MIGRATION_242_HINT,
+  ORIGINAL_PRICE_SOURCE_COLUMNS,
+  type OriginalPriceSourceRow,
+  SUPPLIER_GOOGLE_REVIEWS_COLUMNS,
+  type SupplierGoogleReviewsRow,
   readOptionalColumns,
   readStickerPriceIls,
 } from '@/lib/supabase/optional-columns'
@@ -62,7 +68,7 @@ export async function loadProductBySlug(slug: string) {
         `id, slug, name_he, name_en, description_he,
        kenyon_price, full_price, is_coupon_enabled,
        coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
-       requires_shipping, weight_grams, warranty_months,
+       requires_shipping, weight_grams, warranty_months, vat_exempt,
        type, sku, images, stock_quantity, category_id, supplier_id,
        recurring_amount_agorot, billing_interval, billing_interval_count,
        categories!products_category_id_fkey(id, name_he, slug)`,
@@ -92,31 +98,56 @@ export async function loadProductBySlug(slug: string) {
   const probe = (select: string, ids: string[]) =>
     createPublicClient().from('products').select(select).in('id', ids) as never
 
-  // Three independent reads, so they go together rather than in sequence. On
-  // a cache miss this is the difference between one round trip and three.
-  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls] = await Promise.all([
-    loadSupplierPublicContact(product.supplier_id),
-    supabase
-      .from('product_variants')
-      .select('id, name_he, price, price_modifier, stock_quantity, sku')
-      .eq('product_id', product.id)
-      .eq('is_active', true)
-      .is('deleted_at', null)
-      .order('name_he')
-      .then(({ data }) => data),
-    loadGalleryAssets(images),
-    isCoupon
-      ? readOptionalColumns<Coupon054Row>(
-          probe,
-          COUPON_054_COLUMNS,
-          [product.id],
-          'product page',
-        ).then((rows) => rows.get(product.id))
-      : Promise.resolve(undefined),
-    isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
-  ])
+  // Independent reads, so they go together rather than in sequence. On a cache
+  // miss this is the difference between one round trip and several.
+  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls, priceSourceRow] =
+    await Promise.all([
+      loadSupplierPublicContact(product.supplier_id),
+      supabase
+        .from('product_variants')
+        .select('id, name_he, price, price_modifier, stock_quantity, sku')
+        .eq('product_id', product.id)
+        .eq('is_active', true)
+        .is('deleted_at', null)
+        .order('name_he')
+        .then(({ data }) => data),
+      loadGalleryAssets(images),
+      isCoupon
+        ? readOptionalColumns<Coupon054Row>(
+            probe,
+            COUPON_054_COLUMNS,
+            [product.id],
+            'product page',
+          ).then((rows) => rows.get(product.id))
+        : Promise.resolve(undefined),
+      isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
+      // The stated basis of the struck-through price (pending 242). Probed for
+      // every type: a physical product strikes `full_price` and a coupon strikes
+      // the sticker price, and both claims need the same sentence under them.
+      // Skipped when there is no `full_price` at all, because then there is no
+      // strike for a source to describe.
+      product.full_price == null
+        ? Promise.resolve(undefined)
+        : readOptionalColumns<OriginalPriceSourceRow>(
+            probe,
+            ORIGINAL_PRICE_SOURCE_COLUMNS,
+            [product.id],
+            'product page (original price source)',
+            MIGRATION_242_HINT,
+          ).then((rows) => rows.get(product.id)),
+    ])
 
   const basePrice = Number(product.kenyon_price ?? 0)
+
+  /**
+   * What the operator says the struck price is based on, or null. This is the
+   * raw claim; the page still pairs it with `suppressReferencePrice` below, so
+   * a source is never printed under a strike the record contradicts.
+   */
+  const originalPriceSource = describeOriginalPriceSource({
+    label: priceSourceRow?.original_price_source,
+    url: priceSourceRow?.original_price_source_url,
+  })
 
   // Built HERE and not on the page, because `buildCouponOffer` reads the
   // current time to decide whether the offer has lapsed, and a Server
@@ -185,6 +216,7 @@ export async function loadProductBySlug(slug: string) {
     couponOffer,
     recurringOffer,
     referenceVerdict,
+    originalPriceSource,
     /**
      * The page reads THIS, not `referenceVerdict`, so a surface cannot forget
      * to ask. `suppressReference` is false for every verdict except `violating`
@@ -216,11 +248,26 @@ export async function loadProductBySlug(slug: string) {
  */
 async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null
-  const { data, error } = await createAdminClient()
-    .from('suppliers')
-    .select('id, name, city, address, contact_phone, whatsapp')
-    .eq('id', supplierId)
-    .maybeSingle()
+  const admin = createAdminClient()
+  // Two reads, and the split is the point. The five contact columns exist in
+  // production and are NAMED. `google_reviews_url` is pending 242 and is
+  // PROBED: naming it in the select below would 42703 the whole row, and the
+  // block that "degrades" on a null supplier would degrade to nothing on every
+  // product page of every supplier until the migration is applied.
+  const [{ data, error }, reviews] = await Promise.all([
+    admin
+      .from('suppliers')
+      .select('id, name, city, address, contact_phone, whatsapp')
+      .eq('id', supplierId)
+      .maybeSingle(),
+    readOptionalColumns<SupplierGoogleReviewsRow>(
+      (select, ids) => admin.from('suppliers').select(select).in('id', ids) as never,
+      SUPPLIER_GOOGLE_REVIEWS_COLUMNS,
+      [supplierId],
+      'product page (supplier google reviews)',
+      MIGRATION_242_HINT,
+    ),
+  ])
   // The error was dropped, and dropping it is invisible in exactly the way that
   // costs: `SupplierInfo` reads a null supplier as "no details on file" and
   // prints "פרטי הספק יתעדכנו בקרוב", the same sentence it prints for the
@@ -230,7 +277,13 @@ async function loadSupplierPublicContact(supplierId: string | null) {
   // table, with not one line in the log. A key that expires in production would
   // silently take the mandatory block off EVERY product page.
   if (error) log.error('product_detail.supplier_load_failed', { supplier_id: supplierId, error })
-  return data
+  if (!data) return null
+  return {
+    ...data,
+    // Raw column; `SupplierInfo` runs it through `googleReviewsHref`, which
+    // refuses every host that is not Google's before it becomes a link.
+    google_reviews_url: reviews.get(supplierId)?.google_reviews_url ?? null,
+  }
 }
 
 /** Blur placeholders and Hebrew alt text for pipeline-uploaded images. */

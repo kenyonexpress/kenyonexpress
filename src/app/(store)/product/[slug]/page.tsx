@@ -2,6 +2,7 @@ import ViewTracker from '@/components/analytics/ViewTracker'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
+import ProductSmallPrint from '@/components/storefront/ProductSmallPrint'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
@@ -187,6 +188,15 @@ export default async function ProductPage({ params }: Props) {
       ? Number(product.full_price)
       : null
 
+  /**
+   * The stated basis of the struck price (pending 242), gated by the SAME
+   * verdict as the strike: when the claim is suppressed its source goes with
+   * it. A coupon strikes the sticker price rather than `oldPrice`, so the gate
+   * here is the verdict alone and not `oldPrice != null`; `ProductInfo` adds
+   * that second condition itself on the physical branch.
+   */
+  const priceSource = suppressReferencePrice ? null : detail.originalPriceSource
+
   // One resolution, asked for rather than derived. `isCoupon` and the sentence
   // under the supplier's phone number used to answer this question separately,
   // and the second one read `products.type` alone -- so the five live products
@@ -321,6 +331,7 @@ export default async function ProductPage({ params }: Props) {
             nameEn={product.name_en}
             basePrice={basePrice}
             oldPrice={oldPrice}
+            originalPriceSource={priceSource}
             baseStock={product.stock_quantity}
             /*
               The one live read on this page, behind its own boundary. The
@@ -397,6 +408,19 @@ export default async function ProductPage({ params }: Props) {
             ask={ask}
           />
         </div>
+
+        {/* The small print, on every type: VAT posture, the basis of the struck
+            price, validity, single use, warranty, and a link to the
+            cancellation clause. Built from what this page already resolved;
+            see lib/product/small-print.ts for what is deliberately NOT restated. */}
+        <ProductSmallPrint
+          productType={productType}
+          couponOffer={couponOffer}
+          vatExempt={product.vat_exempt ?? null}
+          requiresShipping={product.requires_shipping}
+          warrantyMonths={product.warranty_months}
+          originalPriceSource={isCoupon || oldPrice != null ? priceSource : null}
+        />
 
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />

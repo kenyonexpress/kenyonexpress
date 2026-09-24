@@ -2,6 +2,95 @@ Updated: 2026-09-23 | **v3.0.0-advanced complete, ready for growth scaling**
 
 Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`)
 
+## Q04 - DONE - דף המוצר: מקור המחיר הרגיל, ביקורות גוגל, אותיות קטנות; השער נמדד ב-1440 בלבד
+
+**המשך מ:** Q04 DONE. הבא בתור: Q05 (טופס העלאת מוצר). שני השדות של 242,
+`original_price_source` ו-`google_reviews_url`, עדיין בלי שדה בטופס האדמין,
+וזה בדיוק תחום Q05.
+
+**מה כבר היה בדף, ואומת על שרת בנוי (14 דפי מוצר, `pnpm start` על 3311):**
+בלוק "פרטי הספק" (שם, כתובת + Waze, טלפון, כפתור "שאלה לבית העסק" /
+"שאלה לשירות הלקוחות"), שורת שיתוף (וואטסאפ ראשון, Share, העתקת קישור, Q07),
+כפתור "שאלה על המוצר בוואטסאפ", ו-"תנאי מימוש ותוקף" לקופונים (`CouponTerms`:
+"בתוקף עד" + "ניתן למימוש תוך N ימים"). שני הווריאנטים (קופון ופיזי) עוברים
+באותו דף עם `resolveStorefrontProductType`.
+
+**מה נוסף:**
+
+1. **מקור המחיר הרגיל.** `migrations/pending/242_product_price_source_google_reviews.sql`
+   (נכתב על ידי הסשן הקודם ב-01:13 ונשאר לא מחויב; אומץ אחרי סקירה):
+   `products.original_price_source` (תווית) + `original_price_source_url`
+   (קישור https), `suppliers.google_reviews_url`, שלושתן NULLable עם CHECK,
+   ו-GRANT SELECT ברמת עמודה ל-anon על שתי עמודות המוצר. **תוקן בה באג:**
+   ה-regex של מארח גוגל היה `google\.[a-z.]+` וקיבל `google.com.evil.io`;
+   הטסט של המודול תפס את זה. עכשיו `google\.[a-z]{2,3}(\.[a-z]{2})?` בשני
+   המקומות (ה-CHECK ו-`GOOGLE_HOST` ב-`src/lib/pricing/original-price-source.ts`).
+   הקריאה ב-`product-detail.ts` עוברת דרך `readOptionalColumns` (42703 נרשם פעם
+   אחת ונקרא כ-NULL), כך שהדף רץ בלי המיגרציה. התווית מודפסת מתחת ל-"מחיר
+   רגיל" בשני הבלוקים (`ProductInfo` לפיזי, `CouponPricing` לקופון), עם קישור
+   "לאסמכתא" כשיש URL, **ורק כשפסק 30 הימים לא מדכא את הקו החוצה**
+   (`suppressReferencePrice`): מקור הוא טענה על הטענה, והוא נופל איתה.
+2. **קישור לביקורות בגוגל** בבלוק הספק, `googleReviewsHref` מסנן כל מארח
+   שאינו של גוגל וכל סכמה שאינה https לפני שזה הופך לקישור. נקרא בשאילתה נפרדת
+   מ-`suppliers` (probe), כי לציין עמודה חסרה ב-select הראשי היה מפיל את כל
+   הבלוק בכל דף מוצר עד ההחלה.
+3. **האותיות הקטנות.** `src/lib/product/small-print.ts` (טהור, 10 טסטים) +
+   `ProductSmallPrint.tsx`, מתחת לרצועת הפרטים, לפני "מומלצים": מע"מ (לפי
+   `vat_exempt`), בסיס המחיר הרגיל, תוקף הקופון בשתי הצורות, מימוש חד-פעמי,
+   יתרה לבית העסק, משלוח/אחריות/עד גמר המלאי לפיזי, חידוש אוטומטי למנוי,
+   וקישור ל-`/refund_returns#how-to-cancel`. **תנאי הביטול לא משוכפלים** (14
+   יום, תקרת העמלה): הם חיים פעם אחת במסמך ההחזרות, שהטסט שלו נועל את
+   המספרים. כל המחרוזות דרך `t('pdp.*')` (`messages/he.json` + `en.json`),
+   ותקרת ה-i18n נשארה 632/632.
+4. CSS: `.pdp-summary__source`, `.pdp-small-print*`, ו-`margin-bottom: 44px`
+   כי `.pdp-related` פותח ב-`-20px` והכותרת "מומלצים" צבעה על השורה האחרונה
+   (נמדד וצולם ב-1440 וב-380, תוקן ואומת שוב).
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 632/632), `pnpm test`
+**572 קבצים, 6,918 טסטים ירוקים**, `pnpm build` ירוק (BUILD_ID 01:58).
+
+**שער ההשוואה, כפי שנמדד ונרשם ב-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו:**
+
+| רוחב | תוצאה | הערה |
+|---|---|---|
+| 380 | REFUSED | "capture is 1440px, run is 380px". אין צילום reference ב-380. |
+| 768 | REFUSED | אותו דבר. אין צילום ב-768. |
+| 1440 | **2.79% PASS** (drift עיצובי), כולל 14.77% | reference: `refs/live-product.png` (03.09, **מוצר אחר** מזה שאנחנו מרנדרים), ועם `COMPARE_ALLOW_GRID_MISMATCH=1` כי שומר הגריד סירב ("live shows null product cards", PNG קפוא אין בו DOM לספור). |
+
+כלומר: הפריט אומר "same compare gate", והשער הזה **אינו ניתן למדידה תקינה**
+בדף המוצר (הרישום של 23.09, פריט 3, עדיין נכון: ה-frozen HTML בלי stylesheets,
+דמו Electro מאחורי Cloudflare). מה שכן נמדד: 1440 מתחת ל-11% גם עם reference
+לא מושלם. לא נכתבה שורה מומצאת; שלוש השורות בפנקס נכתבו על ידי הסקריפט.
+`--widths 380,768,1440` עוצר אחרי הסירוב הראשון, ולכן 768 ו-1440 הורצו כל
+אחד עם `--width=`.
+
+**מה מרונדר עכשיו בפרודקשן אחרי deploy:** האותיות הקטנות בכל דף (אומת:
+`vat,shipping,stock,cancellation,images` לפיזי, `vat,coupon-single-use,
+cancellation,images` לקופונים `barbecue-2` ו-`ארוחה-בשרית-זוגית`). **מקור
+המחיר וקישור הביקורות מרונדרים ריק** עד ש-242 תוחל ועד שיהיו ערכים; שניהם
+דורשים שדה בטופס (Q05). לא הוחלה שום מיגרציה, לא הורצה BEGIN/ROLLBACK מול
+פרודקשן בסשן הזה.
+
+**החלטות שהתקבלו לבד:**
+- **אימוץ קבצי הסשן הקודם** (242, `original-price-source.ts` + הטסט): נכתבו
+  ב-01:13, בלי commit ובלי רישום ב-STATE.md, בתהליך שלא היה חי כשהסשן הזה
+  התחיל (01:39). הכותרת של 242 אומרת "Q04" במפורש.
+- **`241_seed_product_city_from_title.sql` נכנס לקומיט הזה** אף שהוא של Q03:
+  הסשן הקודם כבר רשם אותו ב-`pending-migrations-inventory.test.ts`
+  וב-`migrations/pending/README.md`, שני קבצים שגם 242 צריך, ו-`git commit --
+  <paths>` לוקח את עץ העבודה של הנתיבים. בלי קובץ ה-SQL הטסט היה אדום ב-CI.
+  הקובץ הוא נתונים בלבד, שלוש שורות UPDATE מסוננות על slug ועל `city IS NULL`.
+- **לא נגעתי ב-WIP של עמוד הבית** של אותו סשן, והוא נשאר לא מחויב:
+  `src/app/(store)/page.tsx`, `ProductDealCard.tsx` + טסט, `DealsOfTheDay.tsx`,
+  `product-card-deals.css`, `src/lib/homepage/deals.ts` + טסט. **המדידה שלו
+  בפנקס: 380 9.61% PASS, 768 13.21% FAIL, 1440 5.35% PASS** (18:04-18:11).
+  הטסטים וה-build שלמעלה רצו עם הקבצים האלה בעץ ועברו. ההכרעה אם להשלים או
+  לזרוק שייכת ל-Q03/B-item, לא לכאן.
+- **override של שומר הגריד** ל-1440 בלבד, כדי שיהיה מספר בפנקס במקום סירוב
+  שלא נרשם (הסירוב של הגריד לא כותב שורה). ההערה בטבלה למעלה אומרת מה הוא.
+- השרת שהרמתי על 3311 נסגר בסוף. שורות `HANGING_PROMISE_REJECTION` בפלט
+  ה-build הן מזרם המלאי (`stock-live.ts`, `available_stock`) שקדם לפריט הזה.
+
 ## Q02 - BLOCKED (DNS אצל הרשם) - ה-build ירוק, פרוס, הדומיין לא מתרגם
 
 **המשך מ:** Q02 BLOCKED, DNS בלבד. ה-build של Vercel ירוק והפריסה חיה על
@@ -130,7 +219,7 @@ B01-B10 בתור מצביעים על קובץ שאין, ראה הערה בטבל
 | Q01 | DONE | הרשומה הזו. |
 | Q02 | OPEN, חסום | `dig +short NS/A kenyonexpress.co.il @1.1.1.1` מחזיר ריק (הדומיין לא מתרגם, זיכרון `dns-zone-refused-at-cloudflare` מ-20.09 עדיין נכון). `pnpm build` נכשל ב-Vercel עצמו (זיכרון 23.09). אין קומיט של deploy ירוק. חוסם DNS לאופיר. |
 | Q03 | DONE | `docs/UI-PARITY-REPORT.md` 22.09: home 380 6.22%, 768 4.31%, 1440 2.02% (PASS מול `refs/ke_live_<w>.png` הקפואים). קומיטים `6bfebe3c6` (city tags), `55287f02f`. |
-| Q04 | OPEN | דף המוצר לא נמדד: `268b3fcf2` וטבלת ה-parity 23.09 00:02 `product 380 REFUSED` (capture 388px). הפריסה קיימת (`d4ba435da`, `25da18097`, `3897033b4`), אבל `original_price` עם מקור ו-Google reviews link לא נמצאו בקוד. |
+| Q04 | DONE (25.09) | מקור המחיר הרגיל, קישור ביקורות גוגל, אותיות קטנות; 242 pending. שער: 1440 2.79% PASS (reference של מוצר אחר, grid override), 380/768 REFUSED, אין reference. ראו סעיף Q04 למעלה. |
 | Q05 | OPEN, חלקי | `src/lib/admin/product-form-schema.ts` מכיל type, prices, `platform_percent`, validity, shipping, category. חסרים: transfer days, payout cadence, cancellation window, refund policy, cashback, city, original_price + source. העלאה ל-R2 קיימת (`31b083e8e`), אבל R2 לא מופעל בחשבון (זיכרון). |
 | Q06 | OPEN | אין `SHOWABLE` ב-STATE.md (grep = 0). Q02, Q04, Q05 פתוחים, לכן אי אפשר לכתוב yes. חסר: DNS/deploy, מדידת דף מוצר, שדות טופס. |
 | Q07 | DONE | `9fe2ca441 feat(product): reorder share row - WhatsApp first, native Share API, Copy Link` (24.09). |
