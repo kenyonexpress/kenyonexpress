@@ -53,3 +53,48 @@ export function readTags(row: Row): string[] {
   if (!Array.isArray(value)) return []
   return value.filter((t): t is string => typeof t === 'string' && t.trim().length > 0)
 }
+
+/**
+ * The stated basis of the struck-through price, raw, as the form re-shows it.
+ * Both columns arrive with pending 242 and are absent from production today,
+ * so an absent column reads as empty exactly like a NULL one.
+ */
+export function readOriginalPriceSourceFields(row: Row): { label: string; url: string } {
+  const r = record(row)
+  const label = r?.original_price_source
+  const url = r?.original_price_source_url
+  return {
+    label: typeof label === 'string' ? label : '',
+    url: typeof url === 'string' ? url : '',
+  }
+}
+
+/** `products.city` as typed, trimmed; an absent or NULL column is an empty box. */
+export function readCity(row: Row): string {
+  const value = record(row)?.city
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+/**
+ * `products.cashback_percent`, a percent, as production stores it (numeric,
+ * NOT NULL DEFAULT 0 since 042). 059 would rename it to basis points and is
+ * not applied; the form reads whichever is present through the same rule the
+ * cart uses (CASHBACK_PERCENT_CANDIDATES in lib/supabase/optional-columns.ts).
+ */
+export function readCashbackPercent(row: Row): number {
+  const r = record(row)
+  if (!r) return 0
+  if (r.cashback_bp !== undefined && r.cashback_bp !== null) {
+    const bp = Number(r.cashback_bp)
+    return Number.isFinite(bp) ? bp / 100 : 0
+  }
+  const percent = Number(r.cashback_percent)
+  return Number.isFinite(percent) && percent > 0 ? percent : 0
+}
+
+/** Named here so the message and the file cannot drift apart (242). */
+export const ORIGINAL_PRICE_SOURCE_MIGRATION_FILE =
+  'migrations/pending/242_product_price_source_google_reviews.sql'
+
+// One template literal, never several joined with `+` (STATE, template-literal trap).
+export const ORIGINAL_PRICE_SOURCE_MIGRATION_NOTICE = `מקור המחיר הרגיל עדיין לא מופעל במסד הנתונים. יש להחיל את המיגרציה ${ORIGINAL_PRICE_SOURCE_MIGRATION_FILE} ואז לשמור שוב. שאר שדות המוצר נשמרים כרגיל.`

@@ -1,5 +1,23 @@
 # `migrations/pending/`
 
+## 2026-09-25: 243 WRITTEN, not applied - חמישה תנאי מוצר לטופס האדמין, עמודות נוספות בלבד
+
+‏`243_product_terms.sql`. ‏Q05: טופס העלאת המוצר קובע למוצר הזה בלבד מחיר משלוח
+(‏`shipping_price_agorot`, ‏integer אגורות, ‏NOT NULL DEFAULT 0), ימי העברה לספק
+(‏`supplier_transfer_days`, ‏NULL = הגדרת הספק), תדירות תשלום לספק
+(‏`payout_cadence`, ‏NULL = הריצה היומית), חלון ביטול (‏`cancellation_window_days`,
+‏NOT NULL DEFAULT 14, ‏CHECK שאינו יורד מ-14 לפי חוק הגנת הצרכן) ומדיניות החזר
+(‏`refund_policy`, ‏NOT NULL DEFAULT 'statutory'). חמש עמודות ‏`ADD COLUMN IF NOT
+EXISTS`, כל אחת עם ‏CHECK, בלי שינוי בשום עמודה קיימת. ‏GRANT SELECT ברמת עמודה
+ל-`anon` ו-`authenticated`. **הקוד רץ בלעדיה:** הטופס קורא את החמש דרך
+‏`readProductTerms` (עמודה חסרה = ברירת המחדל) והכתיבה שולחת אותן כקבוצה אחת
+ש-`optional-column-groups.ts` מפיל בשגיאת עמודה חסרה **רק כשכל הערכים בברירת
+המחדל**; מוצר שהאדמין שינה בו תנאי נדחה עם שם הקובץ הזה עד ההחלה, ולא נכתב
+לשום מקום ומדווח כנשמר. ברירות המחדל הן מה שהפלטפורמה עושה היום (משלוח חינם,
+‏hold של הספק, ריצה יומית, ‏14 יום, דמי ביטול לפי חוק); ה-checkout עדיין לא
+גובה משלוח ומנוע התשלומים עדיין לא קורא את ה-override, ושניהם רשומים כפתוחים
+ב-`STATE.md`. לא הורצה ‏BEGIN/ROLLBACK מול פרודקשן בסשן הזה.
+
 ## 2026-09-25: 242 WRITTEN, not applied - מקור המחיר הרגיל וקישור לביקורות גוגל, עמודות נוספות בלבד
 
 ‏`242_product_price_source_google_reviews.sql`. ‏Q04: דף המוצר מציין על מה

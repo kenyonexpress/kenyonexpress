@@ -1,3 +1,10 @@
+import {
+  MAX_CANCELLATION_DAYS,
+  MAX_SUPPLIER_TRANSFER_DAYS,
+  PAYOUT_CADENCES,
+  REFUND_POLICIES,
+  STATUTORY_CANCELLATION_DAYS,
+} from '@/lib/admin/product-terms'
 import { z } from 'zod'
 
 function emptyToNull(value: unknown): unknown {
@@ -191,3 +198,136 @@ export const variantSchema = z.object({
 })
 
 export type ProductInput = z.infer<typeof productSchema>
+
+/**
+ * The Q05 (2026-09-25) fields: city, the stated basis of the struck-through
+ * price (pending 242), cashback, and the five per-product terms (pending 243).
+ *
+ * A SEPARATE SCHEMA, NOT MORE KEYS ON `productSchema`, and this is measured,
+ * not stylistic. `z.preprocess(emptyToNull, ...)` turns an ABSENT key into
+ * `null` and zod 3.25 then SETS that key on the output (`{}` parses to
+ * `{ a: null }`). The CSV import spreads `productSchema`'s output straight into
+ * its insert, so these keys on `productSchema` would put `shipping_price_ils`
+ * (not a column at all) and 242/243's columns into every imported row: PGRST204
+ * on the whole import, migrated or not. The form's server action is the only
+ * caller of this schema, and it alone knows how to send these columns to a
+ * database that may not have them yet (`optional-column-groups.ts`).
+ *
+ * No zod defaults here either. The defaults live in `product-terms.ts`, so a
+ * blank box and a typed default are the same value on the same path and a
+ * `null` can be told from "the admin never saw this field".
+ */
+export const productExtrasSchema = z
+  .object({
+    // What the homepage meta line prints beside the category (Q03). Free text;
+    // the action normalises it to the catalogue spelling when cityByName knows it.
+    city: z.preprocess(
+      emptyToNull,
+      z.string().trim().max(60, 'שם עיר עד 60 תווים').nullable().optional(),
+    ),
+    // The stated basis of `full_price` (242): a label the shopper reads plus an
+    // optional https link. The bounds are 242's CHECKs.
+    original_price_source: z.preprocess(
+      emptyToNull,
+      z
+        .string()
+        .trim()
+        .min(2, 'מקור המחיר הרגיל: לפחות 2 תווים')
+        .max(120, 'מקור המחיר הרגיל: עד 120 תווים')
+        .nullable()
+        .optional(),
+    ),
+    original_price_source_url: z.preprocess(
+      emptyToNull,
+      z
+        .string()
+        .trim()
+        .max(2000, 'כתובת האסמכתא ארוכה מדי')
+        .url('כתובת האסמכתא לא תקינה')
+        .startsWith('https://', 'כתובת האסמכתא חייבת להתחיל ב-https://')
+        .nullable()
+        .optional(),
+    ),
+    // Percent of what the customer paid, credited to the wallet. The column
+    // exists in production (042, NOT NULL DEFAULT 0) and the cart reads it.
+    cashback_percent: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number({ invalid_type_error: 'קאשבק חייב להיות מספר' })
+        .min(0, 'קאשבק לא יכול להיות שלילי')
+        .max(100, 'קאשבק לא יכול לעלות על 100%')
+        .nullable()
+        .optional(),
+    ),
+    // Shekels in the form, agorot in the column (`shipping_price_agorot`, 243).
+    // Form-only name, like recurring_amount_ils, converted once through money.ts.
+    shipping_price_ils: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number({ invalid_type_error: 'מחיר משלוח חייב להיות מספר' })
+        .min(0, 'מחיר משלוח לא יכול להיות שלילי')
+        .nullable()
+        .optional(),
+    ),
+    supplier_transfer_days: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number({ invalid_type_error: 'ימי העברה לספק חייבים להיות מספר' })
+        .int('ימי העברה לספק: מספר שלם של ימים')
+        .min(0, 'ימי העברה לספק לא יכולים להיות שליליים')
+        .max(MAX_SUPPLIER_TRANSFER_DAYS, `ימי העברה לספק: עד ${MAX_SUPPLIER_TRANSFER_DAYS}`)
+        .nullable()
+        .optional(),
+    ),
+    payout_cadence: z.preprocess(
+      emptyToNull,
+      z.enum(PAYOUT_CADENCES, { message: 'תדירות תשלום לספק לא מוכרת' }).nullable().optional(),
+    ),
+    // The statutory 14 days is a FLOOR, never a ceiling: a product may give the
+    // customer longer to cancel and may not give less.
+    cancellation_window_days: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number({ invalid_type_error: 'חלון הביטול חייב להיות מספר' })
+        .int('חלון הביטול: מספר שלם של ימים')
+        .min(
+          STATUTORY_CANCELLATION_DAYS,
+          `חלון הביטול לא יכול להיות קצר מ-${STATUTORY_CANCELLATION_DAYS} יום לפי חוק הגנת הצרכן`,
+        )
+        .max(MAX_CANCELLATION_DAYS, `חלון הביטול: עד ${MAX_CANCELLATION_DAYS} יום`)
+        .nullable()
+        .optional(),
+    ),
+    refund_policy: z.preprocess(
+      emptyToNull,
+      z.enum(REFUND_POLICIES, { message: 'מדיניות ההחזר לא מוכרת' }).nullable().optional(),
+    ),
+  })
+  .superRefine((data, ctx) => {
+    // A link with no words is not a stated basis (original-price-source.ts):
+    // the label is the sentence the shopper reads, the URL is its evidence.
+    if (data.original_price_source_url != null && data.original_price_source == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'קישור לאסמכתא דורש תיאור של מקור המחיר הרגיל',
+        path: ['original_price_source'],
+      })
+    }
+  })
+
+export type ProductExtrasInput = z.infer<typeof productExtrasSchema>
+
+/**
+ * A source for a price that is not there describes nothing. Cross-schema, so
+ * it lives beside the two schemas rather than inside either: the action calls
+ * it with both parsed results. Returns the Hebrew refusal or null.
+ */
+export function originalPriceSourceConflict(
+  product: Pick<ProductInput, 'full_price'>,
+  extras: Pick<ProductExtrasInput, 'original_price_source'>,
+): string | null {
+  if (extras.original_price_source != null && product.full_price == null) {
+    return 'מקור המחיר הרגיל דורש מחיר לפני הנחה'
+  }
+  return null
+}

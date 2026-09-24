@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { readDimensionMm, readTags, readVatExempt } from './product-fields'
+import {
+  readCashbackPercent,
+  readCity,
+  readDimensionMm,
+  readOriginalPriceSourceFields,
+  readTags,
+  readVatExempt,
+} from './product-fields'
 
 describe('readDimensionMm', () => {
   it('prefers the millimetre column', () => {
@@ -50,5 +57,42 @@ describe('readTags', () => {
 
   it('drops blanks and non-strings rather than rendering them', () => {
     expect(readTags({ tags: ['מבצע', '', '  ', 7, null, 'מתנה'] })).toEqual(['מבצע', 'מתנה'])
+  })
+})
+
+describe('readOriginalPriceSourceFields', () => {
+  it('reads an absent column (242 not applied) as empty boxes', () => {
+    expect(readOriginalPriceSourceFields({})).toEqual({ label: '', url: '' })
+    expect(readOriginalPriceSourceFields(null)).toEqual({ label: '', url: '' })
+  })
+
+  it('shows what is stored', () => {
+    expect(
+      readOriginalPriceSourceFields({
+        original_price_source: 'מחירון היצרן',
+        original_price_source_url: 'https://example.com/list',
+      }),
+    ).toEqual({ label: 'מחירון היצרן', url: 'https://example.com/list' })
+  })
+})
+
+describe('readCity', () => {
+  it('is an empty box for NULL or absent, trimmed otherwise', () => {
+    expect(readCity({})).toBe('')
+    expect(readCity({ city: null })).toBe('')
+    expect(readCity({ city: ' תל אביב ' })).toBe('תל אביב')
+  })
+})
+
+describe('readCashbackPercent', () => {
+  it('reads the production column as a percent, 0 when unset', () => {
+    expect(readCashbackPercent({ cashback_percent: 5 })).toBe(5)
+    expect(readCashbackPercent({ cashback_percent: 0 })).toBe(0)
+    expect(readCashbackPercent({})).toBe(0)
+    expect(readCashbackPercent(null)).toBe(0)
+  })
+
+  it('reads the 059 basis-point column back as a percent when a row carries it', () => {
+    expect(readCashbackPercent({ cashback_bp: 250 })).toBe(2.5)
   })
 })

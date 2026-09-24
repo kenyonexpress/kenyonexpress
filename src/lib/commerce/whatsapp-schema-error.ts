@@ -31,7 +31,7 @@ export const WHATSAPP_MIGRATION_FILE = 'migrations/pending/123_products_whatsapp
 // One template literal, not several joined with `+`. Concatenating template
 // literals has already corrupted a production build in this repo once: the
 // served bundle lost text and shipped broken JS with a 200 and no log entry.
-const WHATSAPP_MIGRATION_NOTICE = `כפתור הוואטסאפ עדיין לא מופעל במסד הנתונים. יש להחיל את המיגרציה ${WHATSAPP_MIGRATION_FILE} ואז לשמור שוב. שאר שדות המוצר נשמרים כרגיל.`
+export const WHATSAPP_MIGRATION_NOTICE = `כפתור הוואטסאפ עדיין לא מופעל במסד הנתונים. יש להחיל את המיגרציה ${WHATSAPP_MIGRATION_FILE} ואז לשמור שוב. שאר שדות המוצר נשמרים כרגיל.`
 
 /**
  * Returns the admin-facing notice when `message` is the missing column, and

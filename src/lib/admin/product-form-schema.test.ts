@@ -1,4 +1,9 @@
-import { type ProductInput, productSchema } from '@/lib/admin/product-form-schema'
+import {
+  type ProductInput,
+  originalPriceSourceConflict,
+  productExtrasSchema,
+  productSchema,
+} from '@/lib/admin/product-form-schema'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -139,5 +144,92 @@ describe('productSchema: the split pair, in every mode', () => {
       expect(result.data.platform_percent ?? null).toBeNull()
       expect(result.data.kenyon_price ?? null).toBeNull()
     }
+  })
+})
+
+describe('productSchema: stays closed to the Q05 extras', () => {
+  it('sets none of the extras keys on its output', () => {
+    // zod 3.25 SETS an absent preprocessed key as null. The CSV import spreads
+    // this output into its insert, so any extras key here would send 242/243
+    // columns (and `shipping_price_ils`, which is no column) with every
+    // imported row. The extras live on productExtrasSchema, parsed by the
+    // form action only.
+    const result = productSchema.safeParse(base())
+    expect(result.success).toBe(true)
+    if (result.success) {
+      for (const key of Object.keys(productExtrasSchema._def.schema.shape)) {
+        expect(key in result.data, key).toBe(false)
+      }
+    }
+  })
+})
+
+describe('productExtrasSchema', () => {
+  it('parses an untouched form as all-null, never as a default', () => {
+    const result = productExtrasSchema.safeParse({})
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(Object.values(result.data).every((v) => v === null)).toBe(true)
+    }
+  })
+
+  it('refuses a cancellation window under the statutory 14 days', () => {
+    const result = productExtrasSchema.safeParse({ cancellation_window_days: 7 })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain('14')
+    }
+    expect(productExtrasSchema.safeParse({ cancellation_window_days: 14 }).success).toBe(true)
+    expect(productExtrasSchema.safeParse({ cancellation_window_days: 30 }).success).toBe(true)
+  })
+
+  it('refuses a source link without a source label, and a non-https link', () => {
+    const noLabel = productExtrasSchema.safeParse({
+      original_price_source_url: 'https://example.com/list',
+    })
+    expect(noLabel.success).toBe(false)
+    if (!noLabel.success) {
+      expect(noLabel.error.issues[0]?.path).toEqual(['original_price_source'])
+    }
+    expect(
+      productExtrasSchema.safeParse({
+        original_price_source: 'מחירון היצרן',
+        original_price_source_url: 'http://example.com/list',
+      }).success,
+    ).toBe(false)
+    expect(
+      productExtrasSchema.safeParse({
+        original_price_source: 'מחירון היצרן',
+        original_price_source_url: 'https://example.com/list',
+      }).success,
+    ).toBe(true)
+  })
+
+  it('bounds cashback to a percent and keeps shipping non-negative', () => {
+    expect(productExtrasSchema.safeParse({ cashback_percent: 101 }).success).toBe(false)
+    expect(productExtrasSchema.safeParse({ cashback_percent: -1 }).success).toBe(false)
+    expect(productExtrasSchema.safeParse({ shipping_price_ils: -5 }).success).toBe(false)
+    expect(productExtrasSchema.safeParse({ shipping_price_ils: '29.90' }).success).toBe(true)
+  })
+
+  it('accepts only the named cadences and policies', () => {
+    expect(productExtrasSchema.safeParse({ payout_cadence: 'hourly' }).success).toBe(false)
+    expect(productExtrasSchema.safeParse({ payout_cadence: 'weekly' }).success).toBe(true)
+    expect(productExtrasSchema.safeParse({ refund_policy: 'none' }).success).toBe(false)
+    expect(productExtrasSchema.safeParse({ refund_policy: 'fee_waived' }).success).toBe(true)
+  })
+})
+
+describe('originalPriceSourceConflict', () => {
+  it('refuses a source for a price that is not there', () => {
+    expect(
+      originalPriceSourceConflict({ full_price: null }, { original_price_source: 'מחירון' }),
+    ).toContain('מחיר לפני הנחה')
+    expect(
+      originalPriceSourceConflict({ full_price: 120 }, { original_price_source: 'מחירון' }),
+    ).toBeNull()
+    expect(
+      originalPriceSourceConflict({ full_price: null }, { original_price_source: null }),
+    ).toBeNull()
   })
 })

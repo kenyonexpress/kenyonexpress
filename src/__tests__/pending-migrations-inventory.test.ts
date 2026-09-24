@@ -998,6 +998,14 @@ describe('the pending migration inventory', () => {
       // SELECT grant to anon on the two product columns. Both reads go through
       // readOptionalColumns, so the page renders without it.
       '242_product_price_source_google_reviews.sql',
+      // 243 WRITTEN 2026-09-25 (Q05). Additive only: five per-product terms on
+      // `products` (shipping_price_agorot, supplier_transfer_days,
+      // payout_cadence, cancellation_window_days, refund_policy), each with a
+      // CHECK, three with a NOT NULL DEFAULT, plus a column-level SELECT grant
+      // to anon. The admin form reads them as defaults when absent and the
+      // write drops the group on the un-migrated database only while every
+      // value is still the default (lib/admin/optional-column-groups.ts).
+      '243_product_terms.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

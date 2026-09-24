@@ -3,8 +3,25 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { catalogueIlsToAgorot, scaleCatalogueIls } from '@/lib/admin/bulk-price'
 import type { BulkOperationKind, BulkSnapshotRow } from '@/lib/admin/bulk-rollback'
+import {
+  type OptionalColumnGroup,
+  writeWithOptionalColumns,
+} from '@/lib/admin/optional-column-groups'
 import { canSeeMoney } from '@/lib/admin/permissions'
-import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
+import { ORIGINAL_PRICE_SOURCE_MIGRATION_NOTICE } from '@/lib/admin/product-fields'
+import {
+  originalPriceSourceConflict,
+  productExtrasSchema,
+  productSchema as schema,
+  variantSchema,
+} from '@/lib/admin/product-form-schema'
+import {
+  PRODUCT_TERMS_COLUMNS,
+  PRODUCT_TERMS_MIGRATION_NOTICE,
+  isDefaultProductTerms,
+  productTermsFromForm,
+  productTermsWrite,
+} from '@/lib/admin/product-terms'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
@@ -12,7 +29,11 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
-import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
+import {
+  WHATSAPP_MIGRATION_NOTICE,
+  whatsappSchemaError,
+} from '@/lib/commerce/whatsapp-schema-error'
+import { cityByName } from '@/lib/geo/cities'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -100,6 +121,28 @@ async function runUpsertProduct(
     seo_keywords: formData.get('seo_keywords') || null,
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  // The Q05 fields, on their own schema so the CSV import never sees them
+  // (see productExtrasSchema for the measured reason). `|| null` on every
+  // input: an unrendered box (content uploader) and an empty one are the same
+  // absence, and the defaults are applied below, not by zod.
+  const extrasParsed = productExtrasSchema.safeParse({
+    city: formData.get('city') || null,
+    original_price_source: formData.get('original_price_source') || null,
+    original_price_source_url: formData.get('original_price_source_url') || null,
+    cashback_percent: formData.get('cashback_percent') || null,
+    shipping_price_ils: formData.get('shipping_price_ils') || null,
+    supplier_transfer_days: formData.get('supplier_transfer_days') || null,
+    payout_cadence: formData.get('payout_cadence') || null,
+    cancellation_window_days: formData.get('cancellation_window_days') || null,
+    refund_policy: formData.get('refund_policy') || null,
+  })
+  if (!extrasParsed.success) {
+    return { error: extrasParsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+  }
+  const extras = extrasParsed.data
+  const sourceConflict = originalPriceSourceConflict(parsed.data, extras)
+  if (sourceConflict) return { error: sourceConflict }
 
   const supabase = await createClient()
   const {
@@ -190,41 +233,62 @@ async function runUpsertProduct(
     : fields
 
   /**
-   * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
-   * turns out not to exist yet.
+   * Columns that pending migrations add, sent as groups and dropped per group
+   * on the un-migrated database ONLY while the group is at its defaults. The
+   * rule, its history (it began as the whatsapp_enabled retry that lived here
+   * inline) and the three rejected alternatives are in
+   * `lib/admin/optional-column-groups.ts`. A migrated database costs one call;
+   * a deliberately filled group on an un-migrated one is refused with the
+   * migration's filename, never written nowhere and reported as saved.
    *
-   * The column arrives with `migrations/pending/123_products_whatsapp_enabled
-   * .sql`, which is not applied. Three cheaper-looking options were rejected:
-   *
-   *  - Always send it. PostgREST answers PGRST204 for EVERY product an admin
-   *    edits: the whole admin broken by a feature nobody switched on.
-   *  - Send it only when ticked. Then un-ticking a previously ticked box sends
-   *    nothing and the flag silently stays on -- the one direction that matters,
-   *    because it is how a supplier withdraws consent.
-   *  - Read the row first to see whether it has the column. An extra round trip
-   *    on every save, and the read itself fails on the un-migrated database.
-   *
-   * So the write is attempted with the column and retried without it, once,
-   * only on the missing-column error. On a migrated database there is no retry
-   * and no extra call. On an un-migrated one an untouched toggle costs one
-   * retry and saves correctly, while a DELIBERATELY ticked box is reported
-   * through `whatsappSchemaError` with the filename, rather than being written
-   * nowhere and reported as success.
+   * The content uploader sends only the WhatsApp group: the source and the
+   * terms are money-side, and sending their defaults from a form that does not
+   * show them would overwrite an admin's stored values with defaults.
    */
-  const whatsappFields = { whatsapp_enabled: whatsappEnabled }
+  const terms = productTermsFromForm(extras)
+  const sourceAtDefault =
+    extras.original_price_source == null && extras.original_price_source_url == null
+  const optionalGroups: OptionalColumnGroup[] = [
+    {
+      key: 'whatsapp_enabled_123',
+      columns: ['whatsapp_enabled'],
+      fields: { whatsapp_enabled: whatsappEnabled },
+      atDefault: !whatsappEnabled,
+      notice: WHATSAPP_MIGRATION_NOTICE,
+    },
+    ...(hidePricing
+      ? []
+      : [
+          {
+            key: 'original_price_source_242',
+            columns: ['original_price_source', 'original_price_source_url'],
+            fields: {
+              original_price_source: extras.original_price_source ?? null,
+              original_price_source_url: extras.original_price_source_url ?? null,
+            },
+            atDefault: sourceAtDefault,
+            notice: ORIGINAL_PRICE_SOURCE_MIGRATION_NOTICE,
+          },
+          {
+            key: 'product_terms_243',
+            columns: [...PRODUCT_TERMS_COLUMNS],
+            fields: productTermsWrite(terms),
+            atDefault: isDefaultProductTerms(terms),
+            notice: PRODUCT_TERMS_MIGRATION_NOTICE,
+          },
+        ]),
+  ]
 
-  async function writeWithWhatsAppFallback<T>(
-    run: (
-      extra: Record<string, unknown>,
-    ) => Promise<{ data: T | null; error: PostgrestError | null }>,
-  ) {
-    const first = await run(whatsappFields)
-    if (!first.error) return first
-
-    // Only the missing-column case is retried, and only when the admin did not
-    // ask for the feature. Anything else is a real error and must surface.
-    if (whatsappEnabled || whatsappSchemaError(first.error.message) === null) return first
-    return run({})
+  // Two Q05 columns exist in production already (the generated types carry
+  // them) and are written directly. `city` is content: the uploader sees the
+  // box, and the catalogue spelling wins when the typed value names a known
+  // city ("תל אביב יפו" is stored as "תל אביב", an unknown value as typed).
+  // `cashback_percent` is NOT NULL DEFAULT 0 (042): a blank admin box is 0,
+  // and the uploader, who never sees the box, does not send the key.
+  const city = extras.city == null ? null : (cityByName(extras.city)?.name ?? extras.city)
+  const directExtras = {
+    city,
+    ...(hidePricing ? {} : { cashback_percent: extras.cashback_percent ?? 0 }),
   }
 
   // Shekels to agorot, once, at the edge, through money.ts. Nothing downstream
@@ -319,15 +383,17 @@ async function runUpsertProduct(
     category_id: fields.category_id,
     kenyon_price: fields.kenyon_price,
     platform_percent: fields.platform_percent,
+    city,
   }
 
   if (id) {
-    const { error } = await writeWithWhatsAppFallback(async (extra) =>
+    const { error } = await writeWithOptionalColumns(optionalGroups, async (extra) =>
       supabase
         .from('products')
         .update({
           ...writeFields,
           ...moneyWrite,
+          ...directExtras,
           ...extra,
           images,
           ...(isUploader ? { approval_status: 'pending' } : {}),
@@ -353,19 +419,22 @@ async function runUpsertProduct(
       changes: auditChanges,
     })
   } else {
-    const { data, error } = await writeWithWhatsAppFallback<{ id: string }>(async (extra) =>
-      supabase
-        .from('products')
-        .insert({
-          ...writeFields,
-          ...moneyWrite,
-          ...extra,
-          images,
-          created_by: user!.id,
-          ...(isUploader ? { approval_status: 'pending' } : {}),
-        })
-        .select('id')
-        .single(),
+    const { data, error } = await writeWithOptionalColumns<{ id: string }, PostgrestError>(
+      optionalGroups,
+      async (extra) =>
+        supabase
+          .from('products')
+          .insert({
+            ...writeFields,
+            ...moneyWrite,
+            ...directExtras,
+            ...extra,
+            images,
+            created_by: user!.id,
+            ...(isUploader ? { approval_status: 'pending' } : {}),
+          })
+          .select('id')
+          .single(),
     )
     if (error || !data) {
       return {

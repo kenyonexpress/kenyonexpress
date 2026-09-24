@@ -1,8 +1,27 @@
 'use client'
 
-import CouponExpirySelect from '@/components/admin/CouponExpirySelect'
+import CouponExpirySelect, {
+  COUPON_EXPIRY_DEFAULT_DAYS,
+} from '@/components/admin/CouponExpirySelect'
 import ImageUploader from '@/components/admin/ImageUploader'
-import { readDimensionMm, readTags, readVatExempt } from '@/lib/admin/product-fields'
+import {
+  readCashbackPercent,
+  readCity,
+  readDimensionMm,
+  readOriginalPriceSourceFields,
+  readTags,
+  readVatExempt,
+} from '@/lib/admin/product-fields'
+import {
+  MAX_CANCELLATION_DAYS,
+  MAX_SUPPLIER_TRANSFER_DAYS,
+  PAYOUT_CADENCES,
+  PAYOUT_CADENCE_LABELS,
+  REFUND_POLICIES,
+  REFUND_POLICY_LABELS,
+  STATUTORY_CANCELLATION_DAYS,
+  readProductTerms,
+} from '@/lib/admin/product-terms'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
 import {
   type ProductMoneyType,
@@ -126,6 +145,13 @@ export default function ProductForm({
     product?.discount_percent != null ? String(product.discount_percent) : '',
   )
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
+  // Q05. Read defensively: 242 and 243 are not applied, so these columns are
+  // absent from the row today and read as their defaults (product-terms.ts).
+  const savedTerms = readProductTerms(product)
+  const savedSource = readOriginalPriceSourceFields(product)
+  // A NEW product opens on 90 days; an existing one shows what it has, blank
+  // included, so a stored blank is never rewritten without being seen.
+  const couponExpiryDefault = product ? product.coupon_expiry_days : COUPON_EXPIRY_DEFAULT_DAYS
 
   const error = state && 'error' in state ? state.error : null
 
@@ -452,6 +478,25 @@ export default function ProductForm({
         </div>
       </div>
 
+      {/* Location. What the homepage meta line prints beside the category
+          (Q03); the supplier's city is the fallback when this is blank. */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="city" className="block text-xs font-medium text-gray-700 mb-1">
+            עיר
+          </label>
+          <input
+            id="city"
+            name="city"
+            maxLength={60}
+            defaultValue={readCity(product)}
+            placeholder="כמו בעיר של הספק אם ריק"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+          <p className="mt-1 text-xs text-gray-500">מוצג בכרטיס המוצר בעמוד הבית ליד הקטגוריה</p>
+        </div>
+      </div>
+
       {/* Money: the four per-product knobs. No default exists for any of them. */}
       {hidePricing ? (
         <div className="space-y-4 border-t border-gray-100 pt-5">
@@ -487,7 +532,7 @@ export default function ProductForm({
                 תוקף השובר (ימים)
               </label>
               <CouponExpirySelect
-                defaultValue={product?.coupon_expiry_days}
+                defaultValue={couponExpiryDefault}
                 className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
@@ -567,6 +612,45 @@ export default function ProductForm({
             </div>
           </div>
 
+          {/* The stated basis of the struck-through price (242). A claim the
+              shopper reads beside the strike; nothing is shown when blank. */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="original_price_source"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מקור המחיר לפני הנחה
+              </label>
+              <input
+                id="original_price_source"
+                name="original_price_source"
+                maxLength={120}
+                defaultValue={savedSource.label}
+                placeholder="מחירון היצרן, מחיר באתר הספק"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">מודפס מתחת למחיר המחוק בדף המוצר</p>
+            </div>
+            <div>
+              <label
+                htmlFor="original_price_source_url"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                קישור לאסמכתא (https)
+              </label>
+              <input
+                id="original_price_source_url"
+                name="original_price_source_url"
+                type="url"
+                defaultValue={savedSource.url}
+                dir="ltr"
+                placeholder="https://"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
@@ -617,6 +701,31 @@ export default function ProductForm({
               : 'החלוקה חלה על מלוא הסכום שמשולם באתר.'}
           </p>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="cashback_percent"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                קאשבק ללקוח (%)
+              </label>
+              <input
+                id="cashback_percent"
+                name="cashback_percent"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                defaultValue={readCashbackPercent(product)}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                אחוז מהסכום ששולם באתר, נזקף לארנק הלקוח. ברירת המחדל 0.
+              </p>
+            </div>
+          </div>
+
           {isCouponProduct ? (
             <div className="grid grid-cols-3 gap-4">
               <div>
@@ -647,7 +756,7 @@ export default function ProductForm({
                   תוקף השובר (ימים) *
                 </label>
                 <CouponExpirySelect
-                  defaultValue={product?.coupon_expiry_days}
+                  defaultValue={couponExpiryDefault}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <p className="mt-1 text-xs text-gray-500">מיום הרכישה</p>
@@ -1007,7 +1116,7 @@ export default function ProductForm({
               תוקף הקופון (ימים){isCouponProduct ? ' *' : ''}
             </label>
             <CouponExpirySelect
-              defaultValue={product?.coupon_expiry_days}
+              defaultValue={couponExpiryDefault}
               required={isCouponProduct}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
@@ -1249,6 +1358,127 @@ export default function ProductForm({
           </div>
         </div>
       </div>
+
+      {/* Per-product terms (243). Admin only: every one of them is a promise
+          to the customer or a payment term to the supplier. The defaults are
+          what the platform does today (product-terms.ts explains each). */}
+      {!hidePricing && (
+        <div className="border-t border-gray-100 pt-5 space-y-4">
+          <div>
+            <p className="text-sm font-semibold text-gray-700">תנאי המוצר</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              משלוח, תשלום לספק וביטול. נקבעים למוצר הזה בלבד וחלים על הזמנות עתידיות.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label
+                htmlFor="shipping_price_ils"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מחיר משלוח (₪)
+              </label>
+              <input
+                id="shipping_price_ils"
+                name="shipping_price_ils"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={savedTerms.shippingPriceAgorot / 100}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">0 = משלוח חינם</p>
+            </div>
+            <div>
+              <label
+                htmlFor="supplier_transfer_days"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                ימי העברה לספק
+              </label>
+              <input
+                id="supplier_transfer_days"
+                name="supplier_transfer_days"
+                type="number"
+                min="0"
+                max={MAX_SUPPLIER_TRANSFER_DAYS}
+                step="1"
+                defaultValue={savedTerms.supplierTransferDays ?? ''}
+                dir="ltr"
+                placeholder="לפי הספק"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">ימים אחרי המימוש. ריק = הגדרת הספק.</p>
+            </div>
+            <div>
+              <label
+                htmlFor="payout_cadence"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                תדירות תשלום לספק
+              </label>
+              <select
+                id="payout_cadence"
+                name="payout_cadence"
+                defaultValue={savedTerms.payoutCadence ?? ''}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="">לפי ריצת התשלומים היומית</option>
+                {PAYOUT_CADENCES.map((cadence) => (
+                  <option key={cadence} value={cadence}>
+                    {PAYOUT_CADENCE_LABELS[cadence]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="cancellation_window_days"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                חלון ביטול (ימים)
+              </label>
+              <input
+                id="cancellation_window_days"
+                name="cancellation_window_days"
+                type="number"
+                min={STATUTORY_CANCELLATION_DAYS}
+                max={MAX_CANCELLATION_DAYS}
+                step="1"
+                defaultValue={savedTerms.cancellationWindowDays}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                לפחות {STATUTORY_CANCELLATION_DAYS} יום לפי חוק הגנת הצרכן. אפשר יותר, לא פחות.
+              </p>
+            </div>
+            <div>
+              <label
+                htmlFor="refund_policy"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מדיניות החזר
+              </label>
+              <select
+                id="refund_policy"
+                name="refund_policy"
+                defaultValue={savedTerms.refundPolicy}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                {REFUND_POLICIES.map((policy) => (
+                  <option key={policy} value={policy}>
+                    {REFUND_POLICY_LABELS[policy]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SEO (048) */}
       <div className="border-t border-gray-100 pt-5 space-y-4">
