@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 export const metadata = {
-  title: 'הצטרפות כבית עסק',
+  title: 'הצטרפו כעסקים',
   // Its own address, for the reason in coupons/[id]: the root layout's canonical
   // is `/`, and a page that inherits it claims to be the home page. This is a
   // landing page a supplier is sent to, so it should be indexed as itself.
@@ -83,7 +83,7 @@ export default async function SupplierApplyPage() {
 
   return (
     <div dir="rtl" className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-heading">הצטרפות כבית עסק</h1>
+      <h1 className="text-2xl font-bold text-heading">הצטרפו כעסקים</h1>
       <p className="mt-2 text-sm text-body">
         מילוי הטופס אורך כמה דקות. אחרי השליחה נבדוק את הפרטים והמסמכים ונחזור אליכם.
       </p>

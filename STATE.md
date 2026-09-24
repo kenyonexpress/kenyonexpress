@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q10 DONE (אומת 25.09).** הבא בתור: **Q11** (בטבלה OPEN חלקי: הסכם
-click-wrap עם hash קיים, לא אומת timestamp + IP).
+**Q11 DONE (אומת 25.09).** הבא בתור: **Q12** (בטבלה DONE; לא אומת בנפרד:
+5% או 100 ש"ח בטקסט. לאמת על העץ ולרשום).
 
 ההיסטוריה המלאה (Q01..Q09, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -24,6 +24,74 @@ click-wrap עם hash קיים, לא אומת timestamp + IP).
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q11 - DONE (אומת 25.09) - דף "הצטרפו כעסקים" עם הסכם click-wrap: hash גרסה, timestamp ו-IP
+
+**הפריט כבר היה עשוי ב-`185b904a4` (09.09, ‏SECTIONS 76) ובקישור `1e9b4f0e2` (24.09).**
+מה שהיה חסר בטבלה, "לא אומת: timestamp + IP", אומת עכשיו על העץ ונעול בטסט.
+נכתב: טסט אחד לפעולה ושורת כותרת אחת.
+
+**מה נבדק (נמדד, לא צוטט):**
+- **הדף:** `/suppliers/apply` (`(store)`, `instant=false`), דורש התחברות
+  (`redirect('/login?next=/suppliers/apply')`), מרנדר את `CONTRACT_TEXT` בתוך
+  `SupplierApplyWizard` עם `contract_version` נסתר ותיבת `accept_contract`
+  חובה. על ה-build המקומי `GET /suppliers/apply` 200. הקישורים אליו: פוטר
+  `footer.suppliers` = "הצטרפו כעסקים", ו-CTA "להצטרפות והסכם דיגיטלי"
+  ב-`/suppliers`.
+- **הכותרת לפי STATE.md:** `metadata.title` וה-`h1` של הדף היו
+  "הצטרפות כבית עסק"; שונו ל-**"הצטרפו כעסקים"**, אותו טקסט של תווית הפוטר
+  שהתור מפנה אליה. ערוץ הפנייה ב-`lib/contact/channels.ts` נשאר
+  "הצטרפות כבית עסק" (זה שם ערוץ, לא כותרת דף; `e2e/wa-contact.spec.ts`
+  בודק אותו).
+- **hash של הגרסה:** `src/lib/suppliers/contract.ts`, `CONTRACT_VERSION =
+  'v1-2026-09-09'`, `contractHash()` = SHA-256 hex של `CONTRACT_TEXT`,
+  מחושב בשרת מהקבוע ולעולם לא מהטופס. גרסה שאינה תואמת נדחית לפני כל כתיבה.
+- **timestamp:** `migrations/pending/204_supplier_onboarding.sql` שורה 272,
+  `accepted_at timestamptz NOT NULL DEFAULT now()`. הפעולה אינה שולחת
+  `accepted_at` בכלל, כך שהשעה היא של ה-DB ולא של הדפדפן.
+- **IP:** `supplier-onboarding.ts` שורות 192-198: `getClientIp()`
+  (`x-forwarded-for` הראשון, ואז `x-real-ip`) נכתב ל-`client_ip inet`;
+  `'unknown'` הופך ל-NULL כי `inet` דוחה מחרוזת שאינה כתובת. הכתובת אמינה
+  רק מאחורי Vercel שדורס את הכותרת (הערה ב-`rate-limit.ts`).
+- **הרשומה:** `supplier_contract_acceptances` (`application_id`,
+  `accepted_by`, `contract_version`, `contract_sha256` עם CHECK
+  `^[0-9a-f]{64}$`, `accepted_at`, `client_ip`), RLS: קריאה לבעלים ולצוות,
+  ‏INSERT/UPDATE/DELETE נשללים מ-`anon` ומ-`authenticated`; הכתיבה דרך
+  service role בלבד.
+- **טסט חדש** `src/server/actions/supplier-onboarding.test.ts`, 9 טסטים:
+  השורה שנכתבת שווה בדיוק ל-`{application_id, accepted_by, contract_version,
+  contract_sha256: contractHash(CONTRACT_TEXT), client_ip}`; hash שהדפדפן
+  שולח נזרק; `accepted_at` מהטופס נזרק; `unknown` → NULL; גרסה ישנה ותיבה לא
+  מסומנת נדחות בלי שום כתיבה (לא vault, לא שורת בקשה); כשל ברישום ההסכם לא
+  מפיל בקשה שכבר נשלחה ונרשם ב-log; ושני טסטים על טקסט 204 (DEFAULT now(),
+  ‏inet, CHECK של ה-hash).
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628,
+locale-format 138/138, docs-index 280, docs-path-audit 155), `pnpm test`
+**579 קבצים, 6,999 ירוקים, 12 מדולגים** (+1 קובץ, +9 טסטים), `pnpm build`
+ירוק (BUILD_ID `wDvbkx7fkV8GCwUm-xqGd`). **שער ההשוואה בחזית, `pnpm start`
+על 3311, `--baseline=refs/ke_live_{width}.png`:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 21:40-21:43 UTC על `d1f6dd0a8-dirty`
+(מלוכלך בגלל הטסט והכותרת שלמעלה). דף ההצטרפות עצמו אינו נמדד בשער: אין לו
+צילום reference (הוא לא קיים באתר החי).
+
+**חסום ולא בידי הסוכן (ללא שינוי):** 204 לא הוחלה בפרודקשן, ולכן שליחת
+הטופס עונה "טופס ההצטרפות עדיין לא פעיל" עד שאופיר מאשר (חוסם 3, יש להוסיף
+את 204 לרשימה שם). ה-IP נרשם נכון רק מאחורי proxy שדורס `x-forwarded-for`.
+
+**החלטות שהתקבלו לבד:**
+- "title per STATE.md" פורש כתווית הפוטר "הצטרפו כעסקים" (פריט 10 בארכיון,
+  `messages/he.json` `footer.suppliers`), והיא הוחלה על הכותרת ועל ה-`h1`
+  של `/suppliers/apply`. לא נוצר דף חדש: הדף קיים, מקושר ומרונדר.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול הוא
+  `src/lib/money.ts`), כמו ב-Q06..Q10. לא נגעתי בכסף.
 
 ## Q10 - DONE (אומת 25.09) - סל, קופה ודף תודה בסגנון Electro v7: קופת אורח, Google בסוף, תשלום מאחורי ממשק, מינימום 0
 
@@ -102,7 +170,7 @@ locale-format 138/138, docs-index 280, docs-path-audit 154), `pnpm test`
 | Q08 | DONE (25.09) | הרשומה למעלה. חשבונית חתומה (קיים), שדות מע"מ לעסק בקופה (חדש), wa.me עם פריטים וסכום (חדש), ביטול לפי 14ג בדף ההזמנה ובדף התודה (חדש). +8 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q09 | DONE (25.09) | הרשומה למעלה. מייל רק ל-5: אישור 6 שורות, איפוס סיסמה (Resend + fallback), תזכורת תפוגה, התראת אבטחה, מתנה למקבל. 11 סוגי push לדף ההזמנה, תיקון `data.url`. +37 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q10 | DONE (אומת 25.09) | `f6392ed6e` (29.07). קופת אורח (`/checkout` מחוץ ל-`needsAuth`, 200 אנונימי), Google בלחיצת התשלום עם `resume=1`, `PaymentProvider` עם mock, אין מינימום הזמנה. שער: home 8.44/9.03/3.82, cart 1440 1.47%, checkout 1440 0.94%, PASS. `compare.mjs` תוקן ל-`--baseline` בסל ובקופה. |
-| Q11 | OPEN, חלקי | הסכם click-wrap עם hash ב-`lib/suppliers/contract.ts`, CTA `1e9b4f0e2`. לא אומת: שמירת timestamp + IP. |
+| Q11 | DONE (אומת 25.09) | `185b904a4` (09.09) + `1e9b4f0e2`. `/suppliers/apply` עם `CONTRACT_TEXT`, hash SHA-256 מהקבוע בשרת, `accepted_at DEFAULT now()` ו-`client_ip inet` ב-204 (pending). כותרת "הצטרפו כעסקים". +9 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q12 | DONE | `(legal)/legal`, `terms-and-conditions`, `privacy-policy`, `refund_returns`, `accessibility`, `c03a59f6b`. לא אומת בנפרד: 5% או 100 ש"ח בטקסט. |
 | Q13 | DONE | `bf0effa2e`, `02cb65fb3`, כפתור שאלה על המוצר `ace712504`. |
 | Q14 | OPEN, חלקי | `(store)/gift` + תזמון (`078a3de6d`), צ'יפים `dda866a5a`. אין ראיה להעברת קופון למשתמש אחר. |
@@ -127,7 +195,8 @@ locale-format 138/138, docs-index 280, docs-path-audit 154), `pnpm test`
    שום דבר בצד Vercel לא דורש שינוי.
 2. **פריסת פרודקשן של `2ee29bc90`** (מצב עצירה, אישור נדרש): REST
    `POST /v13/deployments` עם `gitSource.sha`, `target=production`, כמו ב-Q02.
-3. **מיגרציות ממתינות**: 240 (הסכמת "הכל באפליקציה"), 241 (עיר משלוש
+3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
+   עונה "עדיין לא פעיל"), 240 (הסכמת "הכל באפליקציה"), 241 (עיר משלוש
    כותרות), 242 (מקור מחיר + ביקורות גוגל), 243 (תנאי מוצר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר.
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
