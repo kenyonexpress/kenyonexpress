@@ -268,7 +268,7 @@ Merging to `main` triggers a Vercel production deployment. `vercel.json`:
 ```json
 { "framework": "nextjs",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm build",
+  "buildCommand": "node scripts/deploy-preflight.mjs && pnpm build",
   "outputDirectory": ".next",
   "regions": ["fra1"] }
 ```

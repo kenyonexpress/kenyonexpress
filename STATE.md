@@ -1,8 +1,8 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B01)
 
 ## המשך מ:
 
-**Q24 DONE (25.09, נמדד מול פרודקשן, הרשם ו-GitHub Actions).** הבא בתור: **B01**, ואחריו **B02**.
+**B01 DONE (25.09).** הבא בתור: **B02**, ואחריו **B03**.
 
 ההיסטוריה המלאה (Q01..Q23, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -23,6 +23,42 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## B01 - DONE (25.09) - ה-preflight של הפריסה מחובר לבניית Vercel
+
+**מה נבחר ולמה.** ‏`docs/BACKLOG.md` אינו קיים (אומת שוב ב-B01: אין קובץ כזה
+בשום ענף, ב-worktrees או ב-`~/ke-goals`; ‏`docs/POST-LAUNCH-BACKLOG.md` הוא
+לפי הגדרתו רשימת פריטים **נדחים**, ו-`docs/MIGRATION-BACKLOG.md` הוא טבלת
+סטטוס מיגרציות). לכן מאגר הפריטים הוא החוסמים הפתוחים ב-STATE וב-
+‏`LAUNCH-READINESS`. מתוך שמונה, שבעה הם פעולות של אופיר בלבד. היחיד שבידי
+הסוכן: **חוסם 7, "‏`deploy-preflight` אינו מחובר ל-`pnpm build` ולא ל-`vercel.json`".**
+ארבעה מסמכים (‏`DEPLOY.md`, ‏`OWASP-TOP-10.md`, ‏`env.ts`, ‏`CLAUDE.md`) תיארו
+את הסקריפט כ"מחובר ל-`buildCommand`", והוא לא היה. תכונה גמורה בלי צרכן, מאז
+‏06.09.
+
+**מה נעשה.** ‏`vercel.json` ‏`buildCommand` הוא עכשיו
+‏`node scripts/deploy-preflight.mjs && pnpm build`. ‏`pnpm build` עצמו נשאר
+‏`next build` (הכותרת של הסקריפט: בדיקה שחוסמת בנייה מקומית עם המפתח הקיים
+מוסרת). ‏`scripts/deploy-preflight.test.mjs` חדש, ‏9 טסטים: החיווט (מתחיל
+ב-preflight, מחובר ב-`&&`), ‏`pnpm build` לא השתנה, רשימת המשתנים הנדרשים
+זהה לזו של שומר ה-boot ב-`env.ts`, ו-exit codes אמיתיים של הסקריפט תחת סביבה
+מבוקרת: נקי 0, ריק 1 עם כל שם, ‏`SERVICE_ROLE_KEY` מתקבל במקום ‏`SECRET_KEY`,
+‏`CARDCOM_SANDBOX=true` נדחה, ‏`ALLOW_INCOMPLETE_ENV=true` נדחה, ואף ערך אינו
+מודפס. ‏`docs/RELEASE-PROCESS.md` (דוגמת ה-JSON) ו-`docs/LAUNCH-READINESS.md`
+(שורת חוסם 7) עודכנו.
+
+**למה זה בטוח לפריסה הבאה.** שומר ה-boot ‏`assertNoCompromisedKeys(isDeployedRuntime())`
+ורשימת החובה ב-`env.ts` נמצאים ב-`48ea88353`, שהוא אב של ‏`a388118f1` החי;
+‏`instrumentation.ts` מייבא את ‏`env` ב-boot; והפריסה החיה עונה 200. כלומר
+הסביבה ב-Vercel Production כבר עוברת את שתי הבדיקות שה-preflight יריץ. הוא
+מוסיף הודעה קריאה **לפני** הבנייה, לא כישלון חדש. ערכי הסודות לא נקראו.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (אזהרת biome אחת קיימת
+מקודם ב-`SecurityClient.tsx`), `pnpm test` **600 קבצים / 7,158 ירוקים / 12
+מדולגים** (+1 קובץ, +9), `pnpm build` ירוק (BUILD_ID `-qJt2q-vf_MqFYai6_oSU`).
+שער ההשוואה בחזית על 3341, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS,
+‏1440 ‏3.82% PASS**, exit 0, שורות 03:18-03:22 UTC ב-`docs/UI-PARITY-REPORT.md`
+על `820a4de13-dirty`.
 
 ## Q24 - DONE (נמדד 25.09) - docs/LAUNCH-READINESS.md: NOT READY, עם ראיות ופריטים ידניים לאופיר
 
@@ -93,7 +129,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 | Q22 | DONE (נמדד 25.09) | הרשומה למעלה. E2E על build עם mock: בית+קטגוריה+מוצר 82/82, סל+קופה+מסלול 40 עברו / 3 דולגו לפי viewport, אורח עד ה-stub ומימוש 2/2. שני פגמים תוקנו (גריד האזור האישי, מרוץ strict-mode). Lighthouse mobile מקומי: בית 73-77, מוצר 76-80 (מדומה), 100/100 ללא סימולציה; alias פרודקשן 90-93 / 87-92. שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
 | Q23 | DONE (25.09) | הרשומה למעלה. `docs/AUTOPILOT-DIFF.md`: autopilot כולו כבר ב-`origin/main`; closeout = +1 קומיט מקומי; 22 מיגרציות במספרים תפוסים; שווה לשמור: 9 טסטי actions, תיקון פנקס, Telegram/UptimeRobot, RLS-AUDIT. |
 | Q24 | DONE (25.09) | הרשומה למעלה. `docs/LAUNCH-READINESS.md` נכתב מחדש: NOT READY על שלוש שורות (דומיין, mock, cron 401 עם 72 הודעות תקועות), 8 חוסמים עם ראיה, 13 פריטים ידניים. שער 8.44/9.03/3.82 PASS. |
-| B01-B10 | OPEN, חסום | `docs/BACKLOG.md` לא קיים. מועמדים: `docs/POST-LAUNCH-BACKLOG.md`, `docs/MIGRATION-BACKLOG.md`. החלטה ב-B01. |
+| B01 | DONE (25.09) | הרשומה למעלה. `vercel.json` מריץ `deploy-preflight` לפני `pnpm build`; +9 טסטים. שער 8.44/9.03/3.82 PASS. |
+| B02-B10 | OPEN | `docs/BACKLOG.md` לא קיים (אומת B01). המאגר: חוסמים פתוחים ב-STATE וב-`LAUNCH-READINESS`. אחרי B01 כל השמונה הם פעולות של אופיר; B02 יבדוק שוב ואם אין פריט בידי הסוכן יכתוב BACKLOG EMPTY. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
@@ -119,7 +156,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
    (נמדד 25.09, Q24; הערך לא נקרא). בלי ערך תקף כל חמשת המיילים נופלים
    בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.
 7. **`SUPABASE_SECRET_KEY` חשוף ודורש רוטציה** (CLAUDE.md, `RUNBOOK`);
-   `deploy-preflight` מסרב לבנות איתו.
+   `deploy-preflight` מסרב לבנות איתו, ומ-B01 (25.09) הוא רץ בפועל לפני
+   `pnpm build` ב-`vercel.json`.
 8. **Cardcom בפרודקשן**: ספק התשלום ב-mock, נמדד 25.09 על `/checkout` החי
    (`frame-src ... 'self'`); 24 תשלומי `mock-` ו-0 אמיתיים ב-30 יום. שמות
    `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID`/`USE_MOCK` ו-`CHECKOUT_ENABLED`
