@@ -43,6 +43,19 @@ import { shekels, shekelsPlain } from '@/lib/money-format'
 
 export type { LocaleCode }
 
+/**
+ * Every date here is printed in Israel time, on both sides of hydration.
+ *
+ * Without the pin, a client component that renders a server-supplied
+ * timestamp formats it once on the server (UTC on Vercel, whatever the laptop
+ * is set to locally) and once in the browser (the visitor's zone), and for any
+ * instant between 21:00 and 00:00 UTC the two disagree about the day. React
+ * reports that as hydration error #418 on every visit. Measured on
+ * /admin/users in the route audit of 25.09 and fixed here rather than at the
+ * fifteen call sites, so the next one cannot reintroduce it.
+ */
+export const SITE_TIME_ZONE = 'Asia/Jerusalem'
+
 /** Money. See the header: agorot in, and never reformatted here. */
 export { shekels as formatCurrency, shekelsPlain as formatCurrencyPlain }
 export type { Agorot }
@@ -64,6 +77,7 @@ export function formatDate(
     day: 'numeric',
     month: 'long',
     year: 'numeric',
+    timeZone: SITE_TIME_ZONE,
   })
 }
 
@@ -78,6 +92,7 @@ export function formatDateShort(
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+    timeZone: SITE_TIME_ZONE,
   })
 }
 
@@ -94,6 +109,7 @@ export function formatDateTime(
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: SITE_TIME_ZONE,
   })
 }
 
@@ -104,7 +120,11 @@ export function formatTime(
 ): string {
   const date = toDate(value)
   if (!date) return ''
-  return date.toLocaleTimeString(intlTag(locale), { hour: '2-digit', minute: '2-digit' })
+  return date.toLocaleTimeString(intlTag(locale), {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: SITE_TIME_ZONE,
+  })
 }
 
 /**

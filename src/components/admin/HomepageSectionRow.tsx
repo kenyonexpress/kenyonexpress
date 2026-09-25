@@ -2,6 +2,7 @@
 
 import type { AdminSectionRow } from '@/lib/admin/homepage'
 import { SECTION_KIND_LABELS } from '@/lib/homepage/sections'
+import { formatDateShort } from '@/lib/i18n/format'
 import {
   type HomepageActionState,
   reorderHomepageSection,
@@ -41,7 +42,7 @@ export default function HomepageSectionRow({
 
   const window =
     section.startsAt || section.endsAt
-      ? `${section.startsAt ? new Date(section.startsAt).toLocaleDateString('he-IL') : '—'} ← ${section.endsAt ? new Date(section.endsAt).toLocaleDateString('he-IL') : '—'}`
+      ? `${section.startsAt ? formatDateShort(section.startsAt) : '—'} ← ${section.endsAt ? formatDateShort(section.endsAt) : '—'}`
       : 'תמיד'
 
   return (

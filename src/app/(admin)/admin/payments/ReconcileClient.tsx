@@ -1,6 +1,7 @@
 'use client'
 
 import { type Reconciled, VERDICT_LABELS } from '@/lib/admin/payment-reconciliation'
+import { formatDateTime } from '@/lib/i18n/format'
 import { shekelsFromIls } from '@/lib/money-format'
 import { retryFinalizePayment } from '@/server/actions/admin/payments'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
@@ -111,7 +112,7 @@ export default function ReconcileClient({ rows, strandedIls }: Props) {
                   {row.amountIls === null ? '—' : shekelsFromIls(row.amountIls)}
                 </td>
                 <td className="px-4 py-3 text-xs text-gray-500">
-                  {row.succeededAt ? new Date(row.succeededAt).toLocaleString('he-IL') : '—'}
+                  {row.succeededAt ? formatDateTime(row.succeededAt) : '—'}
                 </td>
                 <td className="px-4 py-3">
                   {row.retryable && row.paymentId ? (

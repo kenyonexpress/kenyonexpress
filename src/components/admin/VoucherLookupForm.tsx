@@ -1,6 +1,7 @@
 'use client'
 
 import { formatVoucherCode } from '@/lib/admin/voucher-view'
+import { formatDateTime } from '@/lib/i18n/format'
 import { agorot, formatAgorot } from '@/lib/money'
 import { toJerusalemDateInput } from '@/lib/vouchers/expiry-date'
 import {
@@ -100,7 +101,7 @@ export default function VoucherLookupForm({ canRedeem }: { canRedeem: boolean })
             </div>
             <div>
               <dt className="text-xs text-gray-500">תוקף</dt>
-              <dd>{new Date(voucher.expiresAt).toLocaleString('he-IL')}</dd>
+              <dd>{formatDateTime(voucher.expiresAt)}</dd>
             </div>
             <div>
               <dt className="text-xs text-gray-500">שווי פנים</dt>

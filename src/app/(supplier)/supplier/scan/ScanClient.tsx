@@ -112,7 +112,15 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [drainSummary, setDrainSummary] = useState<string | null>(null)
 
   const [cameraOn, setCameraOn] = useState(false)
-  const cameraSupported = typeof window !== 'undefined' && 'BarcodeDetector' in window
+  // Decided after mount, never during render: the server has no window, so it
+  // renders the page without the camera button, and a Chrome that has
+  // BarcodeDetector then rendered it during hydration and React reported the
+  // mismatch (error #418) on every visit. The button now appears one paint
+  // later, which is the honest order for a capability only the client knows.
+  const [cameraSupported, setCameraSupported] = useState(false)
+  useEffect(() => {
+    setCameraSupported('BarcodeDetector' in window)
+  }, [])
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const rafRef = useRef<number | null>(null)

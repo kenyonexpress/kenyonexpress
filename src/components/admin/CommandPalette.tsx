@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateShort } from '@/lib/i18n/format'
 import { type QuickSearchHit, quickSearchOrders } from '@/server/actions/admin/quick-search'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -156,7 +157,7 @@ export default function CommandPalette() {
                 </span>
                 <span className="shrink-0 text-xs text-black/40">
                   {hit.matchedOn === 'invoice' ? 'חשבונית' : 'לקוח'} ·{' '}
-                  {new Date(hit.createdAt).toLocaleDateString('he-IL')}
+                  {formatDateShort(hit.createdAt)}
                 </span>
               </button>
             ))}

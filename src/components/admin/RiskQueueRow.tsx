@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTime } from '@/lib/i18n/format'
 import { type FraudActionState, reviewRiskAssessment } from '@/server/actions/admin/fraud'
 import Link from 'next/link'
 import { useActionState } from 'react'
@@ -43,7 +44,7 @@ export default function RiskQueueRow({
         <Link href={`/admin/orders/${orderId}`} className="font-semibold underline">
           הזמנה {orderId.slice(0, 8)}
         </Link>
-        <span className="text-sm text-gray-500">{new Date(createdAt).toLocaleString('he-IL')}</span>
+        <span className="text-sm text-gray-500">{formatDateTime(createdAt)}</span>
         <span className="rounded bg-amber-100 px-2 py-0.5 text-sm font-bold text-amber-900">
           ציון <bdi>{score}</bdi>
         </span>

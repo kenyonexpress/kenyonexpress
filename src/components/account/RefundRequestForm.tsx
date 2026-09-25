@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateShort } from '@/lib/i18n/format'
 import { t } from '@/lib/i18n/messages'
 import { type RefundRequestState, requestRefund } from '@/server/actions/refund-requests'
 import Link from 'next/link'
@@ -104,9 +105,7 @@ export default function RefundRequestForm({
             <li key={`${request.created_at}-${request.reason_code}`} className="account-row">
               <div className="account-row__main">
                 <span>{REASONS.find((r) => r.value === request.reason_code)?.label ?? 'בקשה'}</span>
-                <span className="account-row__meta">
-                  {new Date(request.created_at).toLocaleDateString('he-IL')}
-                </span>
+                <span className="account-row__meta">{formatDateShort(request.created_at)}</span>
               </div>
               <div className="account-row__actions">
                 {STATUS_LABEL[request.status] ?? request.status}

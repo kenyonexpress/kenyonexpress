@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTime } from '@/lib/i18n/format'
 import { type SupportActionState, replyAsStaff, updateTicket } from '@/server/actions/admin/support'
 import { CANNED_REPLIES } from '@/server/domain/support/canned-replies'
 import {
@@ -96,7 +97,7 @@ export default function TicketConsoleRow(props: {
       <p
         className={`mt-1 text-sm ${props.breached ? 'font-semibold text-red-800' : 'text-gray-600'}`}
       >
-        נפתחה {new Date(props.createdAt).toLocaleString('he-IL')}.{' '}
+        נפתחה {formatDateTime(props.createdAt)}.{' '}
         {props.paused
           ? 'השעון עצור: ממתינה לתשובת הלקוח.'
           : props.answered
@@ -126,7 +127,7 @@ export default function TicketConsoleRow(props: {
                 : message.direction === 'outbound'
                   ? 'אנחנו'
                   : 'הלקוח'}{' '}
-              · {new Date(message.at).toLocaleString('he-IL')}
+              · {formatDateTime(message.at)}
             </span>
             <p className="whitespace-pre-wrap">{message.body}</p>
           </li>

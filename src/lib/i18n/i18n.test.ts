@@ -118,6 +118,17 @@ describe('the formatters', () => {
     expect(formatTime(when, 'he')).toMatch(/^\d{2}:\d{2}$/)
   })
 
+  it('prints the day in Israel time whatever the host clock is set to', () => {
+    // 21:30 UTC on the 24th is 00:30 on the 25th in Jerusalem. Without the
+    // pin the server (UTC on Vercel) printed 24 and the browser printed 25,
+    // and React reported the disagreement as hydration error #418.
+    const lateEvening = '2026-09-24T21:30:00Z'
+    expect(formatDateShort(lateEvening, 'he')).toBe('25.09.2026')
+    expect(formatDate(lateEvening, 'he')).toBe('25 בספטמבר 2026')
+    expect(formatDateTime(lateEvening, 'he')).toMatch(/^25\.09\.2026, 00:30$/)
+    expect(formatTime(lateEvening, 'he')).toBe('00:30')
+  })
+
   it('returns the empty string for an invalid date, never `Invalid Date`', () => {
     // `new Date(undefined).toLocaleDateString()` does not throw; it returns
     // those two words, and this codebase would print them into a receipt.

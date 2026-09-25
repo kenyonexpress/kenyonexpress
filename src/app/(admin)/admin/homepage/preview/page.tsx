@@ -1,3 +1,4 @@
+import { CartProvider } from '@/components/cart/CartProvider'
 import CmsHero from '@/components/home/CmsHero'
 import HomepageSections from '@/components/home/HomepageSections'
 import { requireAdminPage } from '@/lib/admin/rbac'
@@ -23,6 +24,15 @@ export const metadata = { title: 'תצוגה מקדימה של עמוד הבית
  * because they belong to the `(store)` layout and this page is inside
  * `(admin)`. Rendering the sections alone is the honest half - it is the part
  * the console controls - and the chrome is identical on every page anyway.
+ *
+ * WHAT IT DOES NEED FROM THAT LAYOUT is the cart store. Every deal card in the
+ * sections carries an add-to-cart control that reads it through `useCart`,
+ * which throws without a provider; measured in the route audit of 25.09, the
+ * whole preview fell into the admin error boundary on every visit (React
+ * error #419 in the console, "useCart must be used within CartProvider"). The
+ * provider is mounted here with its defaults and no `<CartBootstrap>`: the
+ * cards render exactly as they do on the storefront, and an operator who
+ * clicks one adds to their own cart, which is also what the live page does.
  */
 export default async function HomepagePreviewPage() {
   await requireAdminPage()
@@ -44,10 +54,12 @@ export default async function HomepagePreviewPage() {
         </Link>
       </header>
 
-      <div dir="rtl" className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <CmsHero preview />
-        <HomepageSections preview />
-      </div>
+      <CartProvider>
+        <div dir="rtl" className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <CmsHero preview />
+          <HomepageSections preview />
+        </div>
+      </CartProvider>
     </div>
   )
 }

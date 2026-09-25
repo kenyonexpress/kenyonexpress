@@ -86,12 +86,46 @@ export function withRequestLog<Args extends unknown[]>(
 
         return response
       } catch (error) {
+        const durationMs = Math.round(performance.now() - startedAt)
+        // `redirect()` and `notFound()` inside a route handler are thrown, not
+        // returned, and Next turns them into the 3xx or 404 after this catch.
+        // They are the handler's answer, not its failure: the route audit of
+        // 25.09 found every gated CSV export writing an error-level
+        // `request.failed` with a NEXT_REDIRECT stack for each anonymous
+        // visit, which is exactly the line an on-call reader would page on.
+        const control = controlFlowStatus(error)
+        if (control !== null) {
+          log[control >= 400 ? 'warn' : 'info']('request.completed', {
+            status: control,
+            duration_ms: durationMs,
+          })
+          throw error
+        }
         log.error('request.failed', {
           err: error instanceof Error ? error : new Error(String(error)),
-          duration_ms: Math.round(performance.now() - startedAt),
+          duration_ms: durationMs,
         })
         throw error
       }
     })
   }
+}
+
+/**
+ * The status Next will send for a thrown navigation signal, or null when the
+ * throw is a real failure. The digest is Next's own wire format:
+ * `NEXT_REDIRECT;<type>;<url>;<status>;` and `NEXT_HTTP_ERROR_FALLBACK;<status>`.
+ */
+export function controlFlowStatus(error: unknown): number | null {
+  const digest = (error as { digest?: unknown } | null)?.digest
+  if (typeof digest !== 'string') return null
+  if (digest.startsWith('NEXT_REDIRECT;')) {
+    const status = Number(digest.split(';')[3])
+    return Number.isInteger(status) && status >= 300 && status < 400 ? status : 307
+  }
+  if (digest.startsWith('NEXT_HTTP_ERROR_FALLBACK;')) {
+    const status = Number(digest.split(';')[1])
+    return Number.isInteger(status) && status >= 400 && status < 500 ? status : 404
+  }
+  return null
 }

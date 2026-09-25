@@ -77,7 +77,11 @@ export default async function InvoicesPage() {
               </div>
               <div className="account-row__actions">
                 {invoice.status === 'issued' && invoice.hasDocument ? (
-                  <Link className="account-btn" href={`/account/orders/${invoice.orderId}/invoice`}>
+                  <Link
+                    className="account-btn"
+                    href={`/account/orders/${invoice.orderId}/invoice`}
+                    prefetch={false}
+                  >
                     {t('account.invoiceView')}
                   </Link>
                 ) : (

@@ -175,7 +175,12 @@ const BASE_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline'",
   IMG_SRC,
   "font-src 'self'",
-  withTurnstile("connect-src 'self' https://*.supabase.co"),
+  // Both schemes, because supabase-js opens the in-app notification feed
+  // (NotificationBell) over a realtime websocket to the same project host, and
+  // connect-src does not treat wss:// as covered by https://. Without the
+  // second entry every signed-in page logged one CSP violation per mount and
+  // the bell never received a live event (route audit, 25.09).
+  withTurnstile("connect-src 'self' https://*.supabase.co wss://*.supabase.co"),
   withMockFrame(withTurnstile('frame-src https://secure.cardcom.solutions')),
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",

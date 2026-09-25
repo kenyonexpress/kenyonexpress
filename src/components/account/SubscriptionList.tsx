@@ -2,6 +2,7 @@
 
 import { formatIls } from '@/lib/account/format'
 import { cancellationNotice } from '@/lib/commerce/recurring'
+import { formatDateShort } from '@/lib/i18n/format'
 import type { Agorot } from '@/lib/money'
 import { cancelSubscription } from '@/server/actions/subscriptions'
 import type { AccountSubscription } from '@/server/queries/subscriptions'
@@ -26,7 +27,7 @@ const STATUS_CLASSES: Record<AccountSubscription['status'], string> = {
 function formatDate(iso: string | null): string {
   if (!iso) return '-'
   const date = new Date(iso)
-  return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('he-IL')
+  return Number.isNaN(date.getTime()) ? '-' : formatDateShort(date)
 }
 
 export default function SubscriptionList({

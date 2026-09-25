@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { log } from './log'
 import { getRequestContext } from './request-context'
 import { REQUEST_ID_HEADER } from './request-id'
-import { HIGH_VOLUME_ROUTES, withRequestLog } from './with-request-log'
+import { HIGH_VOLUME_ROUTES, controlFlowStatus, withRequestLog } from './with-request-log'
 
 /** Only the parts of NextRequest the wrapper touches. */
 function request(init: { id?: string; method?: string } = {}): NextRequest {
@@ -124,6 +124,39 @@ describe('withRequestLog', () => {
     expect(line.err.message).toBe('finalize exploded')
   })
 
+  it('logs a thrown redirect() as the 3xx it becomes, never as a failure', async () => {
+    // Route handlers redirect by throwing; Next catches the digest above this
+    // wrapper and answers 307. The route audit of 25.09 found every gated CSV
+    // export writing an error-level request.failed with a stack for each
+    // anonymous visit, which is the line an on-call reader would page on.
+    const digest = 'NEXT_REDIRECT;replace;/login;307;'
+    const handler = withRequestLog('/api/admin/audit-log/csv', async () => {
+      throw Object.assign(new Error('NEXT_REDIRECT'), { digest })
+    })
+
+    await expect(handler(request({ id: 'trace-2' }))).rejects.toMatchObject({ digest })
+
+    expect(errorLine).not.toHaveBeenCalled()
+    expect(warnLine).not.toHaveBeenCalled()
+    const infoLines = vi.mocked(console.log).mock.calls.map((c) => JSON.parse(c[0] as string))
+    const completed = infoLines.find((line) => line.event === 'request.completed')
+    expect(completed).toMatchObject({ status: 307, request_id: 'trace-2' })
+  })
+
+  it('logs a thrown notFound() as a 404 at warn, like a returned 404', async () => {
+    const digest = 'NEXT_HTTP_ERROR_FALLBACK;404'
+    const handler = withRequestLog('/api/a', async () => {
+      throw Object.assign(new Error('NEXT_HTTP_ERROR_FALLBACK'), { digest })
+    })
+
+    await expect(handler(request())).rejects.toMatchObject({ digest })
+
+    expect(errorLine).not.toHaveBeenCalled()
+    expect(warnLine).toHaveBeenCalledTimes(1)
+    const line = JSON.parse((warnLine.mock.calls[0] as [string])[0])
+    expect(line).toMatchObject({ event: 'request.completed', status: 404 })
+  })
+
   it('keeps one request id per request under concurrency', async () => {
     // The failure this guards against is a module-level variable instead of
     // async local storage: it passes every serial test and interleaves ids the
@@ -210,5 +243,26 @@ describe('withRequestLog completion level', () => {
     const loud = withRequestLog('/api/cart', async () => new Response(null, { status: 500 }))
     await loud(request())
     expect(lineFrom(errLine)?.level).toBe('error')
+  })
+})
+
+describe('controlFlowStatus', () => {
+  it('reads the status out of a redirect digest and defaults to 307', () => {
+    expect(controlFlowStatus({ digest: 'NEXT_REDIRECT;replace;/login;307;' })).toBe(307)
+    expect(controlFlowStatus({ digest: 'NEXT_REDIRECT;push;/x;308;' })).toBe(308)
+    expect(controlFlowStatus({ digest: 'NEXT_REDIRECT;push;/x;;' })).toBe(307)
+  })
+
+  it('reads the status out of an http-error digest and defaults to 404', () => {
+    expect(controlFlowStatus({ digest: 'NEXT_HTTP_ERROR_FALLBACK;404' })).toBe(404)
+    expect(controlFlowStatus({ digest: 'NEXT_HTTP_ERROR_FALLBACK;403' })).toBe(403)
+    expect(controlFlowStatus({ digest: 'NEXT_HTTP_ERROR_FALLBACK;' })).toBe(404)
+  })
+
+  it('answers null for anything that is a real failure', () => {
+    expect(controlFlowStatus(new Error('finalize exploded'))).toBeNull()
+    expect(controlFlowStatus({ digest: 12345 })).toBeNull()
+    expect(controlFlowStatus(null)).toBeNull()
+    expect(controlFlowStatus('NEXT_REDIRECT')).toBeNull()
   })
 })

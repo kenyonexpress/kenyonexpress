@@ -36,9 +36,13 @@ import { extname, join } from 'node:path'
  * The ceiling. 142 on 2026-09-10 in 83 files; 140 after the two byte-identical
  * sites (`vouchers/coupon-view.ts`, `wallet/pass-model.ts`) moved to
  * `formatDate`; 134 on 2026-09-25 after `admin/affiliates/page.tsx` moved its four
- * inline sites to `formatDateShort` and `formatNumber` (Q16). NEVER RAISE IT.
+ * inline sites to `formatDateShort` and `formatNumber` (Q16); 116 on 2026-09-25 after
+ * the route audit (M07-c1) moved every client component that renders a
+ * server-supplied timestamp (14 files, 18 sites) to the timezone-pinned
+ * `formatDateShort` / `formatDateTime`, because the inline form hydrated to a
+ * different day than the server printed. NEVER RAISE IT.
  */
-const CEILING = 134
+const CEILING = 116
 
 /** The sanctioned homes for a locale tag, and the only ones. */
 const ALLOWED_PREFIXES = ['src/lib/i18n/', 'src/lib/money']

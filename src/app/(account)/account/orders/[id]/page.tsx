@@ -99,7 +99,11 @@ export default async function OrderDetailPage({ params }: Props) {
             <div className="account-row__actions">
               {/* The href is this route, never the provider's URL: the document
                   is served only after the session is re-checked. */}
-              <Link className="account-btn" href={`/account/orders/${order.id}/invoice`}>
+              <Link
+                className="account-btn"
+                href={`/account/orders/${order.id}/invoice`}
+                prefetch={false}
+              >
                 {t('invoice.downloadCta')}
               </Link>
             </div>

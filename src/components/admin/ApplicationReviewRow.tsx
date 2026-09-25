@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateShort } from '@/lib/i18n/format'
 import {
   type ApplicationActionState,
   decideSupplierApplication,
@@ -77,9 +78,7 @@ export default function ApplicationReviewRow(props: {
         </span>
         <span className="text-sm">{props.status === 'in_review' ? 'בבדיקה' : 'ממתינה'}</span>
         {props.submittedAt && (
-          <span className="text-sm text-gray-500">
-            הוגשה {new Date(props.submittedAt).toLocaleDateString('he-IL')}
-          </span>
+          <span className="text-sm text-gray-500">הוגשה {formatDateShort(props.submittedAt)}</span>
         )}
       </div>
 

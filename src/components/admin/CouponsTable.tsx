@@ -3,6 +3,7 @@
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
 import StatusBadge, { productStatusBadge } from '@/components/admin/StatusBadge'
+import { formatDateShort } from '@/lib/i18n/format'
 import { shekelsFromIls, shekelsFromIlsRounded } from '@/lib/money-format'
 import { softDeleteCouponDeal } from '@/server/actions/admin/coupon-deals'
 import Link from 'next/link'
@@ -73,7 +74,7 @@ export default function CouponsTable({ deals }: Props) {
       accessor: (d) => d.valid_until ?? '',
       cell: (d) => (
         <span className="text-xs text-black/50">
-          {d.valid_until ? new Date(d.valid_until).toLocaleDateString('he-IL') : 'ללא הגבלה'}
+          {d.valid_until ? formatDateShort(d.valid_until) : 'ללא הגבלה'}
         </span>
       ),
     },

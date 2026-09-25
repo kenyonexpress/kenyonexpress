@@ -35,7 +35,7 @@ describe('CSP and Turnstile', () => {
     expect(csp).not.toContain(HOST)
     // The pre-existing directives survive untouched.
     expect(csp).toContain("script-src 'self' 'unsafe-inline'")
-    expect(csp).toContain("connect-src 'self' https://*.supabase.co")
+    expect(csp).toContain("connect-src 'self' https://*.supabase.co wss://*.supabase.co")
     expect(csp).toContain('frame-src https://secure.cardcom.solutions')
   })
 

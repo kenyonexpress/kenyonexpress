@@ -82,6 +82,7 @@ export default function CountdownBanner({
     month: 'long',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Asia/Jerusalem',
   })
 
   return (

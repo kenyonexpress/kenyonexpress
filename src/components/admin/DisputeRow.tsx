@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateShort } from '@/lib/i18n/format'
 import { type FraudActionState, resolveDispute } from '@/server/actions/admin/fraud'
 import Link from 'next/link'
 import { useActionState } from 'react'
@@ -71,7 +72,7 @@ export default function DisputeRow({
           ? overdue
             ? `מועד התשובה עבר לפני ${Math.abs(daysLeft)} ימים.`
             : `נותרו ${daysLeft} ימים להשיב.`
-          : `נסגר ב-${new Date(resolvedAt).toLocaleDateString('he-IL')}.`}
+          : `נסגר ב-${formatDateShort(resolvedAt)}.`}
       </p>
 
       <p className="mt-2 flex flex-wrap gap-2 text-sm">

@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTime } from '@/lib/i18n/format'
 import { type FraudActionState, decideRefundRequestAction } from '@/server/actions/admin/fraud'
 import Link from 'next/link'
 import { useActionState } from 'react'
@@ -53,7 +54,7 @@ export default function RefundRequestRow({
           הזמנה {orderId.slice(0, 8)}
         </Link>
         <span className="text-sm font-semibold">{REASONS[reasonCode] ?? reasonCode}</span>
-        <span className="text-sm text-gray-500">{new Date(createdAt).toLocaleString('he-IL')}</span>
+        <span className="text-sm text-gray-500">{formatDateTime(createdAt)}</span>
       </div>
 
       <p className="mt-2 whitespace-pre-wrap text-sm text-gray-800">{reasonText}</p>

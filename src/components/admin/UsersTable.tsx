@@ -4,6 +4,7 @@ import UserRoleClient from '@/app/(admin)/admin/users/UserRoleClient'
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import { ROLE_LABELS } from '@/lib/admin/roles'
 import type { AppRole } from '@/lib/admin/roles'
+import { formatDateShort } from '@/lib/i18n/format'
 
 export type UserRow = {
   id: string
@@ -68,11 +69,7 @@ export default function UsersTable({ users, callerRole, callerId, canEdit = true
       header: 'הצטרפות',
       sortable: true,
       accessor: (u) => u.created_at,
-      cell: (u) => (
-        <span className="text-xs text-black/50">
-          {new Date(u.created_at).toLocaleDateString('he-IL')}
-        </span>
-      ),
+      cell: (u) => <span className="text-xs text-black/50">{formatDateShort(u.created_at)}</span>,
     },
   ]
 

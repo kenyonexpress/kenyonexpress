@@ -1,6 +1,7 @@
 'use client'
 
 import type { ContentRevision } from '@/lib/admin/content-pages'
+import { formatDateTime } from '@/lib/i18n/format'
 import {
   type ContentPageActionState,
   rollbackContentPage,
@@ -55,9 +56,7 @@ export default function ContentRevisionList({
         {revisions.map((revision, index) => (
           <li key={revision.revision} className="flex flex-wrap items-center gap-3 py-3">
             <span className="w-12 text-sm font-semibold text-gray-700">#{revision.revision}</span>
-            <span className="text-sm text-gray-600">
-              {new Date(revision.createdAt).toLocaleString('he-IL')}
-            </span>
+            <span className="text-sm text-gray-600">{formatDateTime(revision.createdAt)}</span>
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
               {revision.status === 'published' ? 'פורסם' : 'טיוטה'}
             </span>

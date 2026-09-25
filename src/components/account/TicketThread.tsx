@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateShort, formatDateTime } from '@/lib/i18n/format'
 import { type SupportState, replyToTicket } from '@/server/actions/support'
 import { STATUS_LABELS, type TicketStatus } from '@/server/domain/support/sla'
 import Link from 'next/link'
@@ -38,9 +39,7 @@ export default function TicketThread({
     <section className="account-card" dir="rtl">
       <p className="account-subtitle">
         <span className="account-chip">{STATUS_LABELS[status] ?? status}</span>{' '}
-        <span className="account-row__meta">
-          נפתחה ב-{new Date(createdAt).toLocaleDateString('he-IL')}
-        </span>
+        <span className="account-row__meta">נפתחה ב-{formatDateShort(createdAt)}</span>
         {orderId && (
           <>
             {' · '}
@@ -56,8 +55,7 @@ export default function TicketThread({
           <li key={message.id} className="account-row">
             <div className="account-row__main">
               <span className="account-row__meta">
-                {message.fromUs ? 'קניון אקספרס' : 'אתם'} ·{' '}
-                {new Date(message.at).toLocaleString('he-IL')}
+                {message.fromUs ? 'קניון אקספרס' : 'אתם'} · {formatDateTime(message.at)}
               </span>
               <p className="whitespace-pre-wrap">{message.body}</p>
             </div>
