@@ -4,6 +4,143 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q17 - DONE (25.09) - כניסה: סיסמה ומפתח גישה, אימות טלפון, OTP כגיבוי, מתג "הכל באפליקציה" עם הסכמה מתועדת, באנר מפתח גישה ופוש אחרי הקנייה הראשונה, נדחה ל-30 יום
+
+**הטבלה אמרה "אין ראיה לאימות טלפון/OTP" והיא טעתה.** נמדד על העץ לפני שנכתבה שורה:
+
+- **סיסמה, Google, מפתח גישה, קישור קסם: קיימים.** `(auth)/login/LoginForm.tsx`: Google,
+  ‏`PasskeyLoginButton` (WebAuthn, `lib/auth/passkeys/*`, `actions/passkeys.ts`; כשל Face ID
+  פותח את טופס קישור-הקסם, `c6dff8dc2`), מייל+סיסמה, קישור קסם. ‏2FA לאדמין: TOTP ו-aal2
+  (`af64d96e7`, `(auth)/mfa`, `admin-mfa`).
+- **אימות טלפון ו-OTP: קיימים** (`67bc68025`, `d52fc7827`, `8be6be014`). ‏`PhoneOtpForm`
+  ישירות מתחת ל-Google: שליחת קוד ב-SMS (`sendPhoneOtp`, E.164 דרך `toE164Israeli`, נייד
+  בלבד `isSmsCapableIsraeli`), אימות (`verifyPhoneOtp`, `autoComplete="one-time-code"`), ומיזוג
+  לחשבון קיים לפי הטלפון (`lib/auth/phone-merge.ts`, `decidePhoneMerge`). הרשמה במייל דורשת טלפון
+  נייד ישראלי (`SignupForm`, `phone` חובה). **מאחורי `PHONE_AUTH_ENABLED` בשרת בלבד**: בלי ספק SMS
+  בהגדרות ה-auth של Supabase (פעולת דשבורד, לא קוד) הכפתור מוסתר והכניסה במייל/Google/מפתח עובדת.
+  זו ה-OTP כגיבוי: מי שאין לו Google ולא רוצה סיסמה.
+- **מתג "הכל באפליקציה" עם הסכמה מתועדת: קיים** (`719fc6dff`): `EverythingInAppToggle` בדף
+  ההתראות, `setEverythingInApp` כותב אירוע ב-`record_app_consent` (auth.uid בלבד, גרסת נוסח, מקור,
+  IP, user-agent) **לפני** שינוי ההעדפות, ‏240 pending. בלי 240 המתג מדווח שהתכונה עדיין לא זמינה.
+- **באנר מפתח גישה ופוש אחרי הקנייה הראשונה: היה, בלי "נדחה ל-30 יום".** ‏`FirstPurchaseBanner`
+  ב-`/checkout/return` על ההזמנה הראשונה ששולמה (`isFirstPaidOrder`), בלי כפתור דחייה ובלי חלון;
+  ‏`PostPurchasePushPrompt` נרשם כ"הוצג" **לצמיתות** ברגע שנראה; ‏`PasskeyRegisterPrompt`
+  ב-`/account` נדחה **לצמיתות** ב-"לא עכשיו". שלוש דגלים, שלוש מדיניות, אף אחת 30 יום.
+
+**מה נכתב:**
+
+- `lib/pwa/snooze.ts` (טהור): `SNOOZE_DAYS = 30`, הערך המאוחסן הוא **רגע הסיום** באלפיות שנייה,
+  ‏`isSnoozed` מקבל רק מספר שלם חיובי, ולכן דגל `'1'` הישן אינו דחייה: מי שדחה תחת הכלל הישן
+  נשאל פעם אחת נוספת ומכאן נכנס לחלון של 30 יום. ‏localStorage ולא עוגייה או עמודה: מפתח גישה,
+  מנוי פוש והרשאת התראות הם פר מכשיר, וכך גם ה"לא עכשיו" שלהם.
+- `FirstPurchaseBanner` הפך ל-client עם "לא עכשיו" (30 יום, `ke:first-purchase-banner:snoozed-until`),
+  מוסתר בשרת ומוכרע אחרי hydration (כמו הפוש; חלופה של רינדור ואז הסתרה מהבהבת באנר שכבר נדחה).
+  קישור המפתח נעלם כשיש מפתח (`hasPasskeys`). **מותקן גם בסקירת החשבון** (`/account`) ללקוח עם
+  הזמנה ששולמה (`orders.some(paidAt)`), כי דף האישור נראה פעם אחת ו"נדחה ל-30 יום" חסר משמעות
+  בלי מקום לחזור אליו. ‏`listPasskeys` best-effort, אותו catch כמו ב-side nav.
+- `PostPurchasePushPrompt`: "לא עכשיו" ולחיצה על הקישור דוחות ל-30 יום (`ke:push-invite:snoozed-until`);
+  צפייה בלבד אינה תשובה עוד. ‏`granted`/`denied` עדיין משתיקים לתמיד, כי ההרשאה עצמה כבר הוצאה.
+- `PasskeyRegisterPrompt`: אותו מפתח (`ke_passkey_prompt_seen:<uid>`), הערך הפך מדגל לרגע סיום.
+  ה-e2e (`passkey-register-prompt.spec.ts`, reload אחרי דחייה) נשאר תקף.
+- מחרוזות: `firstPurchase.dismiss`, `common.push_invite.dismiss` (he+en).
+- **טסטים:** +24 (`snooze.test.ts` 13, `first-purchase-banner.test.tsx` 4,
+  `passkey-register-prompt.test.tsx` 4, פוש +3 והחלפת "פעם אחת למכשיר" ב"חוזר בהזמנה הבאה").
+
+**נמדד על ה-build המקומי** (BUILD_ID `RcW67BAIZE_KSt0OxnBU0`, `pnpm start` על 3313, אומת לפי
+ה-BUILD_ID ב-HTML): `/account` אנונימי 307 ל-`/login?next=%2Faccount`; `/checkout/return` בלי
+`order_id` 307.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628, locale-format 134),
+`pnpm test` **593 קבצים, 7,115 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית,
+`--baseline=refs/ke_live_{width}.png`, exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 00:03-00:06 UTC (26.09) על `721fe00e3-dirty`. דף האישור ודף
+החשבון אינם נמדדים: דורשים הזמנה/התחברות ואין להם צילום reference (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- לא נגעתי בדף הכניסה: כל ארבעת המסלולים קיימים והפער היחיד היה מדיניות הדחייה. אימות טלפון
+  בפרודקשן דורש ספק SMS בדשבורד Supabase ו-`PHONE_AUTH_ENABLED=true` ב-Vercel (שניהם פעולות
+  של אופיר, לא נמדדו בפריט הזה, נרשמו כפריט ידני).
+- דחיית הבאנר אינה דוחה את דיאלוג המפתח ולהפך: שני מפתחות, שני שאלות; חיבור ביניהם היה קופלינג
+  בין דף האישור ל-layout של החשבון בלי צורך נמדד.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`).
+  לא נגעתי בכסף.
+- סעיף Q15 הועבר לארכיון (STATE.md 230 שורות לפני הרשומה הזו).
+- שני `next-server` זרים (23704 על 3311, 46984 על 3312) לא נגעתי; השרת שלי על 3313 נעצר לפי PID.
+
+## Q16 - DONE (25.09) - תוכנית שותפים: שיתוף דילים עם קוד, עמלה פר קמפיין שהאדמין קובע, זיכוי לארנק, בדיקות הונאה
+
+**נמדד על העץ לפני שנכתבה שורה.** מה שהיה: קונסולת אדמין ל-`affiliates` (010,
+`fc9da36dc`: אישור/דחייה/השעיה, מונים) **בלי אף דרך להצטרף, בלי קוד שנכתב לאיש,
+בלי ייחוס** (`orders.affiliate_code` קיים מ-010 ואף שורה בקוד לא כתבה אליו),
+בלי קמפיין, בלי עמלה ובלי תשלום; ותוכנית חבר-מביא-חבר שלמה (098: `?ref=`,
+עוגייה, `fn_claim/complete/pay_referral`, `fn_referral_fraud_signals`, תור).
+`2410c879d` הוסיף רק UTM לקישור ההפניה.
+
+**מה נכתב, ומה ההחלטה המרכזית: קוד אחד לשתי התוכניות.** קוד השותף הוא
+`profiles.referral_code`; הקישור `?ref=` והעוגייה `ke_ref` (proxy, 30 יום, מגע
+אחרון) משרתים את שתיהן, וה-DB יחד עם `decideConversion` מכריעים מי משלמת.
+- **שיתוף:** `useShareAttribution` (לקוח; שואל את השרת רק כשיש session) +
+  `attributedShareUrl` (טהור); ארבעת ערוצי `ProductShareRow` והדף `/account/affiliate`
+  מוציאים את הקוד על הקישור. `getMyShareCode` מחזיר קוד רק לשותף מאושר או
+  כשתוכנית ההפניות פעילה. השורה זהה חזותית; רק ה-href משתנה.
+- **ייחוס:** `snapshotAffiliateAttribution` בקופה (משפט UPDATE נפרד מה-INSERT,
+  מאותה סיבה כמו עמודות המתנה) כותב `orders.affiliate_code` ומטביע device/IP
+  של הקונה ב-`referral_signals`.
+- **עמלה פר קמפיין:** `244_affiliate_campaigns.sql` (pending): `affiliate_campaigns`
+  (`commission_bp` 0..5000, מינימום, תקרה, תקציב, מכסה יומית, אישור ידני, חלון,
+  היקף לקטגוריה/מוצר) ו-`affiliate_conversions` (אחת להזמנה, UNIQUE). לשונית
+  "קמפיינים ועמלות" + "מכירות שותפים" ב-`/admin/affiliates` (`requireSection('affiliates','write')`,
+  audit לכל כתיבה). **ההחלטה כולה ב-`lib/affiliates/commission.ts`**, טהור, דרך
+  `applyBp`; אין plpgsql שני. הצטרפות: `joinAffiliateProgram` (ממנטף דרך
+  `fn_ensure_referral_code` על service key, uuid מה-session, שורה `pending_review`).
+- **זיכוי לארנק:** `payAffiliateConversion` דרך `fn_wallet_transfer` מ-`platform:cashback_reserve`
+  (אותו חשבון של `fn_pay_referral`), reason `affiliate_commission` (תווית בפנקס),
+  idempotency `affiliate:<id>`; העברה לפני עדכון סטטוס; משלם אחד לשני הקוראים
+  (finalize ותור האדמין). `finalize` קורא אחרי `completeReferralForOrder`.
+- **בדיקות הונאה** (`docs/FRAUD-RULES.md` §2): `self_purchase` ו-`referral_bonus_paid`
+  נדחים ונרשמים; `same_device/ip/card` (098, מוזן עכשיו בהצטרפות, בקופה ובתשלום),
+  `velocity`, `manual_approval` מנתבים לתור; `budget_exhausted`/`below_minimum` לא
+  נרשמים. תקציב שלא נקרא = תקציב שנגמר.
+- **בלי 244 הקוד רץ:** 42P01 נתפס בכל קורא; דף החשבון אומר "התוכנית עדיין לא
+  פתוחה" ומאפשר להצטרף; finalize רושם `affiliates.campaigns_table_missing`.
+- **טסטים:** +49 (`commission.test.ts` 17, `affiliate-campaigns.test.ts` 9, `share-url.test.ts` 4,
+  `affiliates/wired.test.ts` 13, ועוד). `fn_ensure_referral_code` סווג לקורא שני,
+  244 נרשמה ב-inventory, `affiliate-join` ב-policies + `RATE-LIMITS.md`,
+  `/account/affiliate` ב-`redirect-map.json`.
+
+**נמדד על ה-build המקומי** (BUILD_ID `XtgFWxZ_EHrOtw8UYlQyW`, `pnpm start` על 3314, אומת
+לפי ה-BUILD_ID ב-HTML): `/account/affiliate` אנונימי 307 ל-`/login?next=%2Faccount%2Faffiliate`.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628; locale-format
+הורד 138→134 אחרי שדף האדמין עבר ל-`formatDateShort`/`formatNumber`), `pnpm test`
+**590 קבצים, 7,091 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית,
+`--baseline=refs/ke_live_{width}.png`, exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+| product | 1440 | 2.79% | PASS (`refs/live-product.png`, grid override) |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 23:45-23:51 UTC על `2826d983b-dirty`. דף המוצר ב-380/768
+ודף החשבון אינם נמדדים (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- אין אימייל/פוש על עמלה: kind חדש ב-outbox היה שורה מתה עד מיגרציה, והארנק
+  מציג את הזיכוי עם התווית. אין מעקב קליקים (`total_clicks` נשאר 0): כתיבה בכל
+  לנדינג ב-proxy אינה חלק בפריט.
+- `lsof` לא קיים במכונה; בדיקת הפורטים הראשונה הדפיסה ריק. השרת שלי אומת לפי
+  ה-BUILD_ID בתגובה, ונעצר לפי PID. שני `next-server` זרים (23704, 46984) לא נגעתי.
+- סעיף Q14 הועבר לארכיון (STATE.md 162 שורות לפני הרשומה הזו).
+
 ## Q15 - DONE (25.09) - תזכורות תפוגה T-7 ו-T-1 בפוש ובמייל דרך pg_cron; דרגות מועדון לפי הוצאה ב-12 חודשים; קאשבק לארנק פר מוצר, ברירת מחדל 0
 
 **שניים מתוך שלושה היו עשויים, השלישי לא.** נמדד על העץ לפני שנכתבה שורה:

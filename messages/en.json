@@ -444,6 +444,8 @@
     "priceSource": "Basis of the regular price",
     "priceSourceLink": "Source",
     "googleReviews": "Google reviews",
+    "supplierVerified": "Verified supplier",
+    "boughtThisWeek": "{count} bought this week",
     "smallPrint": {
       "title": "The small print",
       "vatIncluded": "The price is final and includes VAT.",

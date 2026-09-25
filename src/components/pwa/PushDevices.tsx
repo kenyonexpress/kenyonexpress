@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/i18n/format'
 import { t } from '@/lib/i18n/messages'
 import { removePushSubscriptionById } from '@/server/actions/push'
 import type { PushDevice } from '@/server/queries/push-subscriptions'
@@ -85,10 +86,7 @@ export default function PushDevices({ devices }: { devices: PushDevice[] }) {
                   )}
                 </p>
                 <p className="account-row__meta">
-                  {t('pushDevices.enabledOn')}{' '}
-                  {new Date(device.createdAt).toLocaleDateString('he-IL', {
-                    timeZone: 'Asia/Jerusalem',
-                  })}
+                  {t('pushDevices.enabledOn')} {formatDate(device.createdAt)}
                 </p>
               </div>
               <div className="account-row__actions">

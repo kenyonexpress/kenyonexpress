@@ -1,6 +1,7 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { createPublicClient } from '@/lib/supabase/anon'
+import { readSupplierVerification } from '@/lib/suppliers/verification-read'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
 
@@ -42,6 +43,13 @@ export type SupplierStorefront = {
    * the four this page rendered.
    */
   whatsapp: string | null
+  /**
+   * "ספק מאומת", earned by an approved application or a real redemption and
+   * never by the status column alone (`lib/suppliers/verification.ts`).
+   * Optional so a caller that built the object by hand shows no badge rather
+   * than a wrong one.
+   */
+  verified?: boolean
 }
 
 export type SupplierStorefrontProduct = {
@@ -73,6 +81,11 @@ export async function loadSupplierStorefront(id: string): Promise<SupplierStoref
     { id },
   )
   if (!row || row.status !== 'active' || row.deleted_at) return null
+  const verification = await readSupplierVerification({
+    id: row.id,
+    status: row.status,
+    deleted_at: row.deleted_at,
+  })
   return {
     id: row.id,
     name: row.name,
@@ -81,6 +94,7 @@ export async function loadSupplierStorefront(id: string): Promise<SupplierStoref
     address: row.address,
     contactPhone: row.contact_phone,
     whatsapp: row.whatsapp,
+    verified: verification.verified,
   }
 }
 

@@ -1,4 +1,5 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import BoughtThisWeek from '@/components/storefront/BoughtThisWeek'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
@@ -348,6 +349,16 @@ export default async function ProductPage({ params }: Props) {
                   trackedLevel={product.stock_quantity}
                   isCoupon={isCoupon}
                 />
+              </Suspense>
+            }
+            /*
+              Real charges in the trailing week, or nothing. Same boundary
+              discipline as the scarcity line and read outside the cache for
+              the same reason; see lib/commerce/social-proof.ts for the rule.
+            */
+            proofSlot={
+              <Suspense fallback={null}>
+                <BoughtThisWeek productId={product.id} />
               </Suspense>
             }
             sku={product.sku}

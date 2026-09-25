@@ -1,4 +1,5 @@
 import AskBusinessButton from '@/components/contact/AskBusinessButton'
+import VerifiedSupplierBadge from '@/components/storefront/VerifiedSupplierBadge'
 import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { t } from '@/lib/i18n/messages'
 import { googleReviewsHref } from '@/lib/pricing/original-price-source'
@@ -15,6 +16,12 @@ export type SupplierSummary =
          * by hand cannot put a foreign site under the words "ביקורות בגוגל".
          */
         google_reviews_url?: string | null
+        /**
+         * Decided in `lib/suppliers/verification.ts` from an approved
+         * application or a real redemption; absent means "no evidence", and
+         * no evidence renders no badge.
+         */
+        verified?: boolean
       })
   | null
 
@@ -126,6 +133,7 @@ export default function SupplierInfo({
               <Link href={`/s/${supplier.id}`} className="font-medium text-link hover:underline">
                 {contact.name}
               </Link>
+              {supplier.verified === true && <VerifiedSupplierBadge className="ms-2" />}
             </li>
           )}
 

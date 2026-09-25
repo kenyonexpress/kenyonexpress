@@ -10,6 +10,7 @@
   --pdp-muted: #657888;
   --pdp-action: #5d7184;
   --pdp-sale: #dc3545;
+  --pdp-verified: #008a2e;
   --pdp-strike: #6f6f6f;
   --pdp-rule: #cccfd1;
   --pdp-line: #dddddd;
@@ -257,6 +258,33 @@
   min-height: 0;
   font-weight: 600;
   color: var(--color-price);
+}
+
+/* "N bought this week". Same line as the scarcity note and the same
+   reasoning on min-height: absent on most pages, so it reserves nothing. Muted
+   rather than red because it is information, not urgency. */
+.pdp-summary__proof {
+  margin-top: 4px;
+  min-height: 0;
+  color: var(--pdp-muted);
+}
+
+/* "ספק מאומת". A small outlined pill beside the supplier's name, on the
+   product page and on the supplier's own page; the check is the icon, the
+   words carry the meaning so it reads without colour. */
+.pdp-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+  padding: 1px 8px;
+  border: 1px solid var(--pdp-verified);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--pdp-verified);
+  white-space: nowrap;
 }
 
 .pdp-summary__dot {

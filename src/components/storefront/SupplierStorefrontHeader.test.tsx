@@ -77,4 +77,15 @@ describe('SupplierStorefrontHeader', () => {
     expect(render({ address: 'הרצל 12' })).toContain('waze.com')
     expect(render()).not.toContain('waze.com')
   })
+
+  it('shows the verified badge only when the loader decided it from evidence', () => {
+    // `verified` is decided in lib/suppliers/verification.ts from an approved
+    // application or a real redemption. A hand-built object without the field
+    // is "no evidence", and no evidence is no badge.
+    expect(render()).not.toContain('supplier-verified')
+    expect(render({ verified: false })).not.toContain('supplier-verified')
+    const html = render({ verified: true })
+    expect(html).toContain('data-testid="supplier-verified"')
+    expect(html).toContain('ספק מאומת')
+  })
 })

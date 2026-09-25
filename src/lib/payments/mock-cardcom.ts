@@ -1,4 +1,5 @@
 import { agorot } from '@/lib/commerce/money'
+import { MOCK_TRANSACTION_PREFIX } from '@/lib/payments/mock-transaction-id'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -48,8 +49,8 @@ export class MockCardcomProvider implements PaymentProvider {
 
   async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {
     this.sequence += 1
-    const lowProfileId = `mock-lp-${this.sequence}-${input.paymentId.slice(0, 8)}`
-    const transactionId = `mock-txn-${this.sequence}`
+    const lowProfileId = `${MOCK_TRANSACTION_PREFIX}lp-${this.sequence}-${input.paymentId.slice(0, 8)}`
+    const transactionId = `${MOCK_TRANSACTION_PREFIX}txn-${this.sequence}`
     this.deals.set(lowProfileId, {
       input,
       status: 'pending',
@@ -115,7 +116,7 @@ export class MockCardcomProvider implements PaymentProvider {
         raw: { mock: true, declined: true },
       }
     }
-    const transactionId = `mock-tok-${this.sequence}`
+    const transactionId = `${MOCK_TRANSACTION_PREFIX}tok-${this.sequence}`
     return {
       success: true,
       transactionId,
@@ -195,7 +196,7 @@ export class MockCardcomProvider implements PaymentProvider {
     // without changing a single visible number.
     return {
       success: true,
-      refundTransactionId: `mock-${input.cancelOnly ? 'cancel' : 'refund'}-${this.sequence}`,
+      refundTransactionId: `${MOCK_TRANSACTION_PREFIX}${input.cancelOnly ? 'cancel' : 'refund'}-${this.sequence}`,
       refundedAgorot: agorot(refunded),
       failureCode: null,
       failureMessage: null,
@@ -234,7 +235,7 @@ export class MockCardcomProvider implements PaymentProvider {
       }
     }
     this.documents.push(input)
-    const documentNumber = `mock-doc-${this.sequence}`
+    const documentNumber = `${MOCK_TRANSACTION_PREFIX}doc-${this.sequence}`
     return {
       success: true,
       documentNumber,

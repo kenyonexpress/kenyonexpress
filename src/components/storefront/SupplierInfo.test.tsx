@@ -246,4 +246,29 @@ describe('SupplierInfo Google reviews link', () => {
     expect(html).toContain('supplier-google-reviews')
     expect(html).not.toContain('פרטי הספק יתעדכנו בקרוב')
   })
+
+  describe('the verified badge', () => {
+    const full = { id: 'a', name: 'מסעדת השף הגדול', city: 'תל אביב', address: 'דיזנגוף 100' }
+
+    it('is absent unless the loader decided verified from evidence', () => {
+      expect(
+        renderToStaticMarkup(<SupplierInfo supplier={full} productType="physical" />),
+      ).not.toContain('supplier-verified')
+      expect(
+        renderToStaticMarkup(
+          <SupplierInfo supplier={{ ...full, verified: false }} productType="physical" />,
+        ),
+      ).not.toContain('supplier-verified')
+    })
+
+    it('sits beside the supplier name when verified', () => {
+      const html = renderToStaticMarkup(
+        <SupplierInfo supplier={{ ...full, verified: true }} productType="coupon" />,
+      )
+      expect(html).toContain('data-testid="supplier-verified"')
+      expect(html).toContain('ספק מאומת')
+      // The badge follows the name link, inside the same list item.
+      expect(html.indexOf('ספק מאומת')).toBeGreaterThan(html.indexOf(full.name))
+    })
+  })
 })

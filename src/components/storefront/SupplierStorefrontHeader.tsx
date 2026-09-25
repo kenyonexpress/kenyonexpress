@@ -1,3 +1,4 @@
+import VerifiedSupplierBadge from '@/components/storefront/VerifiedSupplierBadge'
 import { isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { buildSupplierContact } from '@/lib/supplier-contact'
 import type { SupplierStorefront } from '@/lib/supplier-storefront'
@@ -55,7 +56,10 @@ export default function SupplierStorefrontHeader({ supplier }: { supplier: Suppl
       ) : null}
       <div className="min-w-0 space-y-2">
         <p className="text-sm text-black/50">ספק</p>
-        <h1 className="text-2xl font-bold text-heading">{supplier.name}</h1>
+        <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold text-heading">
+          {supplier.name}
+          {supplier.verified === true && <VerifiedSupplierBadge />}
+        </h1>
         {contact.addressLine ? (
           <p className="text-sm text-black/60">
             {contact.wazeHref ? (

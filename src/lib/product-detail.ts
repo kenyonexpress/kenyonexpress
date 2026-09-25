@@ -20,6 +20,7 @@ import {
   readOptionalColumns,
   readStickerPriceIls,
 } from '@/lib/supabase/optional-columns'
+import { readSupplierVerification } from '@/lib/suppliers/verification-read'
 import { cacheLife, cacheTag } from 'next/cache'
 
 /**
@@ -257,7 +258,7 @@ async function loadSupplierPublicContact(supplierId: string | null) {
   const [{ data, error }, reviews] = await Promise.all([
     admin
       .from('suppliers')
-      .select('id, name, city, address, contact_phone, whatsapp')
+      .select('id, name, city, address, contact_phone, whatsapp, status, deleted_at')
       .eq('id', supplierId)
       .maybeSingle(),
     readOptionalColumns<SupplierGoogleReviewsRow>(
@@ -278,11 +279,17 @@ async function loadSupplierPublicContact(supplierId: string | null) {
   // silently take the mandatory block off EVERY product page.
   if (error) log.error('product_detail.supplier_load_failed', { supplier_id: supplierId, error })
   if (!data) return null
+  // Decided from what happened (an approved application, a real redemption),
+  // never from a flag; see lib/suppliers/verification.ts. `status` and
+  // `deleted_at` are read for this decision only and do not reach the page.
+  const { status, deleted_at, ...publicColumns } = data
+  const verification = await readSupplierVerification({ id: data.id, status, deleted_at })
   return {
-    ...data,
+    ...publicColumns,
     // Raw column; `SupplierInfo` runs it through `googleReviewsHref`, which
     // refuses every host that is not Google's before it becomes a link.
     google_reviews_url: reviews.get(supplierId)?.google_reviews_url ?? null,
+    verified: verification.verified,
   }
 }
 

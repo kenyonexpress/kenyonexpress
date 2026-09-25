@@ -55,6 +55,11 @@ interface Props {
    * page - out of the cache.
    */
   scarcitySlot?: ReactNode
+  /**
+   * The "N bought this week" line, same contract as `scarcitySlot`: a node the
+   * page streams in behind Suspense, null when there is nothing real to say.
+   */
+  proofSlot?: ReactNode
   sku: string | null
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
@@ -111,6 +116,7 @@ export default function ProductInfo({
   originalPriceSource = null,
   baseStock,
   scarcitySlot = null,
+  proofSlot = null,
   sku,
   categoryName,
   city,
@@ -273,6 +279,7 @@ export default function ProductInfo({
         catalogue.
       */}
       {!outOfStock && scarcitySlot}
+      {!outOfStock && proofSlot}
 
       {/*
         The only thing a sold-out page can still offer. Rendered for a product

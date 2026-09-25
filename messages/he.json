@@ -444,6 +444,8 @@
     "priceSource": "מקור המחיר הרגיל",
     "priceSourceLink": "לאסמכתא",
     "googleReviews": "ביקורות בגוגל",
+    "supplierVerified": "ספק מאומת",
+    "boughtThisWeek": "{count} נרכשו השבוע",
     "smallPrint": {
       "title": "האותיות הקטנות",
       "vatIncluded": "המחיר סופי וכולל מע\"מ.",
