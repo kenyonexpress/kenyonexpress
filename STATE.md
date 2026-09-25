@@ -1,12 +1,12 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B07)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B08)
 
 ## המשך מ:
 
-**B07 DONE (25.09): BACKLOG EMPTY, נמדד בפעם השישית.** הבא בתור: **B08**,
-ואחריו B09..B10. כולם נושאים את אותו טקסט כמו B02; אם דבר לא השתנה מאז (תנאי הפתיחה
+**B08 DONE (25.09): BACKLOG EMPTY, נמדד בפעם השביעית.** הבא בתור: **B09**,
+ואחריו B10. כולם נושאים את אותו טקסט כמו B02; אם דבר לא השתנה מאז (תנאי הפתיחה
 מחדש בסעיף B02) התשובה הנכונה היא לאמת את הרשומה הזו ולכתוב BACKLOG EMPTY שוב.
 
-ההיסטוריה המלאה (Q01..Q24, B01, B03..B06, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+ההיסטוריה המלאה (Q01..Q24, B01, B03..B07, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -26,32 +26,34 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
 
-## B07 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השישית ודבר לא השתנה
+## B08 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השביעית ודבר לא השתנה
 
-**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B06.** HEAD
-`b761ac594` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
-קומיטים חדשים מאז B06.
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B07.** HEAD
+`728b6d511` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
+קומיטים חדשים מאז B07.
 
-| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B07 | תוצאה |
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B08 | תוצאה |
 |---|---|---|
-| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: אפס התאמות ל-`docs/BACKLOG.md` (רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`, שניהם נפסלו ב-B02). ב-`~/ke-goals` (97 קבצים) אין קובץ backlog; המילה מופיעה רק בטקסט התור עצמו (שורות 25-34 של `final-queue.txt`). | לא. |
-| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`, AUTHORITY) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,223 בתים, אותו גודל) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **29** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: אפס התאמות ל-`docs/BACKLOG.md` (ב-HEAD רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`, ב-`origin/main` רק הראשון; שניהם נפסלו ב-B02). ב-`~/ke-goals` (97 קבצים) אין קובץ backlog מלבד עותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`; המילה מופיעה רק בטקסט התור עצמו (שורות 25-34 של `final-queue.txt`). | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`, AUTHORITY) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,137 בתים) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **30** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
 | (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
 
-**החלטות שהתקבלו לבד:** (א) ‏B06 הועבר לארכיון באותו commit; ‏B02 נשאר כי
-B08..B10 מפנים לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה
+**החלטות שהתקבלו לבד:** (א) ‏B07 הועבר לארכיון באותו commit; ‏B02 נשאר כי
+B09..B10 מפנים לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה
 סיבה כמו ב-B02. ‏(ג) אותם שלושה שרתי `next-server` מסשנים אחרים עדיין רצים
-(pid 23704, 46984, 99861); השער נמדד על 3381 מול שרת חדש שאומת שהוא מגיש
-את BUILD_ID של הריצה הזו (`ETwreg3XKKK1pk_-Jdh6u` בתוך ה-HTML), ורק שני
-התהליכים של הריצה הזו (pnpm start 36273 + next-server 36289) נסגרו בסיום;
-3381 עונה exit 7 אחרי הסגירה.
+(pid 23704, 46984, 99861) ולא נגעתי בהם; השער נמדד על 3391 מול שרת חדש שאומת
+שהוא מגיש את BUILD_ID של הריצה הזו (`SKeEJpU9cUNbFXlDC3qE4` בתוך ה-HTML), ורק
+שני התהליכים של הריצה הזו (pnpm start 42218 + next-server 42232) נסגרו בסיום;
+3391 עונה exit 7 אחרי הסגירה. ‏(ד) שורות `HANGING_PROMISE_REJECTION` בפלט
+ה-build הן מזרם המלאי (`stock-live.ts`) והן מתועדות בארכיון תחת Q04 כרעש ידוע;
+ה-build יצא 0.
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome אזהרה אחת ידועה,
 i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצים /
-7,158 ירוקים / 12 מדולגים** (96.7s), `pnpm build` ירוק (BUILD_ID
-`ETwreg3XKKK1pk_-Jdh6u`). שער ההשוואה בחזית על 3381, `--baseline`:
-**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 04:24-04:27 UTC
-ב-`docs/UI-PARITY-REPORT.md` על `b761ac594`. תחזוקה: גיבוי היום קיים
+7,158 ירוקים / 12 מדולגים** (92.8s), `pnpm build` ירוק (BUILD_ID
+`SKeEJpU9cUNbFXlDC3qE4`). שער ההשוואה בחזית על 3391, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 04:35-04:38 UTC
+ב-`docs/UI-PARITY-REPORT.md` על `728b6d511`. תחזוקה: גיבוי היום קיים
 (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל, אין מה לנקות),
 ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
 
@@ -123,8 +125,9 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
 | B04 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השלישית. פירוט בארכיון. |
 | B05 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם הרביעית. פירוט בארכיון. |
 | B06 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם החמישית. פירוט בארכיון. |
-| B07 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השישית: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. שער 8.44/9.03/3.82 PASS. |
-| B08-B10 | OPEN | אותו טקסט כמו B02. בלי שינוי בתנאי הפתיחה מחדש (רשומת B02) התשובה היא BACKLOG EMPTY מאומת מחדש. |
+| B07 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השישית. פירוט בארכיון. |
+| B08 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השביעית: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. שער 8.44/9.03/3.82 PASS. |
+| B09-B10 | OPEN | אותו טקסט כמו B02. בלי שינוי בתנאי הפתיחה מחדש (רשומת B02) התשובה היא BACKLOG EMPTY מאומת מחדש. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
@@ -133,7 +136,7 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
    אחרי ההתפשטות: `dig +short A kenyonexpress.co.il @1.1.1.1` צריך להחזיר
    `216.198.79.1`, ואז `curl -sI https://www.kenyonexpress.co.il/` ל-200.
    שום דבר בצד Vercel לא דורש שינוי.
-2. **פריסת פרודקשן של HEAD (`b761ac594`, 29 קומיטים אחרי `a388118f1` החי)**
+2. **פריסת פרודקשן של HEAD (`728b6d511`, 30 קומיטים אחרי `a388118f1` החי)**
    (מצב עצירה, אישור נדרש): REST `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, כמו ב-Q02.
 3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
