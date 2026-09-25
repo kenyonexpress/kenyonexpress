@@ -4,6 +4,52 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## M08-c1 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם העשירית: שלושת תנאי הפתיחה מחדש נבדקו ואף אחד לא התקיים
+
+הפריט מגדיר את `docs/BACKLOG.md` כקלט. הקובץ אינו קיים: `git ls-tree -r` על HEAD,
+על `origin/main`, על `origin/closeout/v1-final` ועל `origin/audit/final-audit` מחזיר
+רק `docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md` (שניהם נפסלו ב-B02:
+הראשון ריק לפי הבאנר שלו, השני "כל מה שנדחה במכוון"); `git cat-file -e` על כל
+ה-refs המקומיים: אפס; `~/ke-goals`: המילה מופיעה רק בשורות B02 ו-M08-c1 של התור
+עצמו ובעותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`. אחרי
+`git fetch`, `51b9ac768` שווה ל-`origin/audit/final-audit`, אפס קומיטים חדשים.
+
+| תנאי פתיחה מחדש (מרשומת B02, בארכיון) | נמדד ב-M08-c1 | תוצאה |
+|---|---|---|
+| (א) `docs/BACKLOG.md` נוצר | לא, בשום ref ולא בדיסק (למעלה). | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl` על שני המארחים exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,180 בתים) עם `0` `p_con__city`, `0` `pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **41** קומיטים מאחורי HEAD. `dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
+| (ג) שער אדום בריצה הזו | type-check, lint (13 שערים), test, build ושער ההשוואה בשני הדפים ובשלושת הרוחבים: הכל ירוק (למטה). | לא. |
+
+**מה שכן היה מועמד ונפסל, כמו ב-B02:** חוסמים 1-10 למטה הם רשם, סוד, דשבורד,
+migration או פריסה; `POST-LAUNCH-BACKLOG.md` נדחה בהגדרה; `MIGRATION-BACKLOG.md`
+ריק לפי עצמו. אין פריט שלב 1 בידי הסוכן.
+
+**החלטות שהתקבלו לבד:** (א) לא נוצר `docs/BACKLOG.md`: קובץ חדש ב-`docs/` מפעיל
+את שערי המלאי בלי תוכן שמצדיק אותו, ואותה החלטה נרשמה ב-B02..B10. (ב) רשומת
+Q05b הועברה לארכיון באותו commit; הרשומה הזו תופסת את מקומה. (ג) שרת
+`next-server` זר אחד (pid 74758) רץ מסשן אחר, לא נגעתי בו; השער נמדד על 3491 מול
+שרת חדש שאומת שהוא מגיש את BUILD_ID של הריצה הזו, ונסגר בסיום (3491 עונה
+exit 7). (ד) השערים והשער החזותי רצו במלואם אף שהשינוי הוא ב-STATE.md ובפנקס
+בלבד, כי חוקי הפריט דורשים את המספרים בכל ריצה. (ה) `M15-c1` מבקש לרענן את
+`docs/BACKLOG.md`; כשיגיע תורו, יצירת הקובץ תהיה תוצר של אותו פריט ולא של זה.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 116 בתקרה,
+docs-index 281, docs-path-audit 153 ללא שינוי), `pnpm test` **601 קבצים / 7,171
+ירוקים / 12 מדולגים** (53.7s), `pnpm build` ירוק (BUILD_ID `8YNvNRUtEMxNHvniDSgLm`,
+0 ERROR). שער ההשוואה בחזית על 3491, `--baseline`, ללא override:
+
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית מול `refs/ke_live_*` | **8.43% PASS** | **9.08% PASS** | **3.82% PASS** |
+| מוצר `barbecue-2` מול `refs/electro_product_*` | **5.61% PASS** | **4.92% PASS** | **2.99% PASS** |
+
+שש השורות 10:01-10:10 UTC ב-`docs/UI-PARITY-REPORT.md` על `51b9ac768` (הראשונה
+נקייה, השאר `-dirty` רק כי השורה הראשונה כבר שינתה את הפנקס). **תחזוקה:** גיבוי
+היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה קבצים בסך הכל),
+`caffeinate` חי.
+
+---
+
 ## Q05b - DONE (25.09) - דף המוצר מול Electro v7 בשלושת הרוחבים, מוצר אמיתי, בלי override: 5.65 / 4.95 / 2.92 PASS
 
 **ה-reference.** `docs/MISSING-ASSETS.md` סעיף 1 רשם ב-04.09 שדמו Electro עונה

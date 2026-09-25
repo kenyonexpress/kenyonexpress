@@ -3,7 +3,7 @@
 What could not be captured, what was tried, and what is being used instead.
 Written so no session builds geometry on a guess or on a block page.
 
-Last measured: 2026-09-25 (section 1); 2026-09-04 for the rest.
+Last measured: 2026-09-25 (sections 1 and 1b); 2026-09-04 for the rest.
 
 ## 1. The Electro single-product page — CAPTURED (25.09.2026)
 
@@ -51,6 +51,62 @@ is Hebrew RTL, so the overall pixel difference is high (21% to 35%) and mostly
 "reference blank": the two pages paint content in different places. The gated
 number is the both-painted drift, the same metric the home page has been gated
 on since 22.09; see `docs/UI-PARITY-REPORT.md` for the rows.
+
+## 1b. The Electro cart and checkout pages — REFUSED (25.09.2026, M09-c1)
+
+**Wanted:** `refs/electro_cart_{380,768,1440}.png` and
+`refs/electro_checkout_{380,768,1440}.png`, captured with one line in the
+demo cart, so the cart and checkout parity gates have a reference at the two
+phone widths. Today they have one only at 1440 (`refs/live-cart.png`,
+`refs/live-checkout.png`, saved from the old WooCommerce site on 09.09 and
+07.09), and the old site no longer answers at any width.
+
+**What was built for it:** `scripts/capture-electro.mjs` takes
+`--add-to-cart=<id>` (parsed in `scripts/capture-electro-args.mjs`, pinned by
+`scripts/capture-electro-args.test.mjs`). It visits the demo's own
+`/?add-to-cart=<id>&quantity=1` through the warmed context before the real
+navigation, counts `.cart_item` rows on the captured page, and refuses with
+exit 3 if a seeded capture shows no cart line. Without that guard an empty
+cart panel, or a checkout that WooCommerce sent back to the empty cart, would
+have been written under a reference name and scored.
+
+**What happened on 2026-09-25, in one session, same script, same context
+warm-up that cleared the product page minutes earlier:**
+
+```
+node scripts/capture-electro.mjs "https://electro.madrasthemes.com/cart/"     electro_cart     --add-to-cart=2439
+{"url":".../cart/","blocked":true,"title":"403 - Forbidden","bytes":81082,"cartLines":0}
+node scripts/capture-electro.mjs "https://electro.madrasthemes.com/checkout/" electro_checkout --add-to-cart=2439
+{"url":".../checkout/","blocked":true,"title":"403 - Forbidden","bytes":81082,"cartLines":0}
+```
+
+Then without the seed, to separate the path from the seed:
+
+| URL | Outcome |
+|---|---|
+| `/cart/` | `403 - Forbidden`, 81,082 bytes (the origin's error page, same size as the 04.09 product refusal) |
+| `/checkout/` | `403 - Forbidden`, 81,082 bytes |
+| `/?add-to-cart=2439&quantity=1` | `Just a moment...`, 28,792 bytes, the challenge never cleared in 30s |
+| `/product/ultra-wireless-s50-headphones-s50-with-bluetooth/` | 200, 518,688 bytes, written as `refs/probe_product.*` (a byte-for-byte duplicate of `refs/electro_product.*`, gitignored, may be deleted) |
+
+So the refusal is per path on the origin, not the challenge and not the
+seed: the demo does not serve its cart or checkout to this client at all, and
+the product page (2439) is what the seed would have put in the cart. Two
+approaches were tried and both ended on the 403, which is where the project
+rule says to stop. Nothing was written for cart or checkout.
+
+**What to run on the day the demo answers** (the gate side is already wired:
+`--baseline` with `{width}` is the same flag the product gate uses):
+
+```
+node scripts/capture-electro.mjs "https://electro.madrasthemes.com/cart/"     electro_cart     --add-to-cart=2439
+node scripts/capture-electro.mjs "https://electro.madrasthemes.com/checkout/" electro_checkout --add-to-cart=2439
+LOCAL_BASE=http://localhost:<port> node scripts/compare.mjs --page=cart     --widths=380,768,1440 --baseline='refs/electro_cart_{width}.png'
+LOCAL_BASE=http://localhost:<port> node scripts/compare.mjs --page=checkout --widths=380,768,1440 --baseline='refs/electro_checkout_{width}.png'
+```
+
+Until then the cart and checkout gates stay at 1440 only, against the two
+09.09/07.09 captures, and STATE.md blocker 5 stays open.
 
 ## 2. Six earlier "Electro captures" were Cloudflare block pages
 

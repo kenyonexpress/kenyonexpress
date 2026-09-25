@@ -15,16 +15,21 @@ import { resolve } from 'node:path'
  * A headless browser can pass the challenge because it runs the JavaScript. This
  * waits for the challenge to clear rather than screenshotting it.
  *
- * Usage: node scripts/capture-electro.mjs <url> <slug>
+ * Usage: node scripts/capture-electro.mjs <url> <slug> [--add-to-cart=<id>]
  * Writes refs/<slug>.html, refs/<slug>_{380,768,1440}.png and
  * refs/<slug>_computed.json.
+ *
+ * `--add-to-cart=<id>` seeds the demo's WooCommerce cart with one line before
+ * the real navigation. Without it `/checkout/` redirects to an empty cart and
+ * `/cart/` is a one-line "your cart is currently empty" panel, and neither is
+ * a reference for the filled state scripts/compare.mjs seeds locally.
  */
 import { chromium } from '@playwright/test'
+import { parseCaptureArgs } from './capture-electro-args.mjs'
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= resolve(homedir(), 'Library/Caches/ms-playwright')
 
-const url = process.argv[2] ?? 'https://electro.madrasthemes.com/'
-const slug = process.argv[3] ?? 'electro_home'
+const { url, slug, seedUrl } = parseCaptureArgs(process.argv.slice(2))
 const WIDTHS = [380, 768, 1440]
 
 const UA =
@@ -56,6 +61,14 @@ try {
     await page.goto(`${origin}/`, { waitUntil: 'domcontentloaded', timeout: 60000 })
     await page.waitForTimeout(3000)
   }
+  if (seedUrl) {
+    // The seed is a GET the challenge may replay after it clears, so it goes
+    // through the same warmed context and gets its own settle time. The cart
+    // cookie is what this navigation is for; the page behind it is not read.
+    await page.goto(seedUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await page.waitForTimeout(3000)
+    console.log(`seeded the demo cart via ${seedUrl}`)
+  }
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
   // The challenge replaces the document when it clears. Poll for real content.
   for (let i = 0; i < 20; i++) {
@@ -77,7 +90,20 @@ try {
 
 const title = await page.title().catch(() => '(none)')
 const bytes = (await page.content().catch(() => '')).length
-console.log(JSON.stringify({ url, blocked, title, bytes }))
+const cartLines = await page
+  .evaluate(() => document.querySelectorAll('.woocommerce-cart-form__cart-item, .cart_item').length)
+  .catch(() => 0)
+console.log(JSON.stringify({ url, blocked, title, bytes, cartLines }))
+
+// A seeded capture of an empty cart is the exact wrong reference: it scores
+// and nobody looks at it. Refuse rather than write it.
+if (seedUrl && !blocked && cartLines === 0) {
+  console.error(
+    'BLOCKED: --add-to-cart was given but the page shows no cart line. Nothing written.',
+  )
+  await browser.close()
+  process.exit(3)
+}
 
 if (blocked) {
   console.error('BLOCKED: the challenge did not clear. Nothing written.')
