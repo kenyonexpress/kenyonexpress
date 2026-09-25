@@ -2,9 +2,9 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q23 DONE (25.09, נמדד ב-git).** הבא בתור: **Q24**, ואחריו **B01**.
+**Q24 DONE (25.09, נמדד מול פרודקשן, הרשם ו-GitHub Actions).** הבא בתור: **B01**, ואחריו **B02**.
 
-ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+ההיסטוריה המלאה (Q01..Q23, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -24,199 +24,46 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
 
-## Q23 - DONE (נמדד 25.09) - docs/AUTOPILOT-DIFF.md: מה יש ב-autopilot וב-phase5/homepage-closeout שאין כאן
+## Q24 - DONE (נמדד 25.09) - docs/LAUNCH-READINESS.md: NOT READY, עם ראיות ופריטים ידניים לאופיר
 
-**נקרא דרך git בלבד, בלי merge ובלי cherry-pick.** בסיס משותף `a3df275ed` (09.09).
-`autopilot` (`69bcbd5c7`, 17.09): **96** קומיטים שאין ב-HEAD, 18 מהם `autopilot residual`;
-HEAD מחזיק 395 שאין שם. `phase5/homepage-closeout` = autopilot + **קומיט אחד**
-(`7b2e5795b`, 24.09) שקיים רק ב-worktree המקומי ועל אף remote. **כל autopilot כבר
-בתוך `origin/main`** (0 קומיטים של autopilot חסרים שם, ועוד 13 מעליו). ברמת קבצים:
-181 קבצים שונו בשני הצדדים, 269 קיימים רק ב-autopilot, 805 רק ב-HEAD.
+**המסמך נכתב מחדש מלמעלה, וההערכות הקודמות (01.09 עד 09.09) נשמרו מתחתיו
+מילה במילה.** הבאנר "צילום היסטורי" הוסר, השורה ב-`docs/INDEX.md` עודכנה ל-✅.
+כל מספר נמדד בריצה הזו: DB פרודקשן (קריאה בלבד דרך ה-management API), ה-alias
+החי, הרשם, והיסטוריית הריצות ב-GitHub Actions.
 
-- **22 קבצי מיגרציה תחת מספרים ש-HEAD כבר השתמש בהם** (210, 211, 212, 215, 217,
-  223, 224, 226 עד 242), תוכן שונה על כל מספר. שום דבר לא עובר כקובץ; כל מועמד
-  צריך מספר מ-245 ודריי-ראן מגולגל. הטענות "223 ו-224 הוחלו" סותרות את הדריי-ראן
-  של 21.09 (`docs/GO-LIVE-DRY-RUN.md`), ו-`src/types/database.ts` ריק מכל
-  האובייקטים של הרשימה.
-- **crons ב-`vercel.json`** (25 שם, 0 כאן): HEAD מתזמן 21 מ-Actions, והפרויקט
-  ב-Hobby (שני crons ביום לכל היותר). לא לקחת.
-- **קוד רק שם** (219 קבצים): תור עבודות + DLQ, seams לסקיילביליות (replica, QStash,
-  Redis, Worker), gift cards, cashback tracker, מספור חשבוניות, חיפוש facets
-  (סותר את הכלל "אין שדה חיפוש"), `/scan` בנתיב שכבר הוזז. רובו קיים ב-HEAD
-  בצורה אחרת; הפירוט בטבלה במסמך.
-- **הקומיט של ה-closeout**: 59 קבצי טסט (19,242 שורות), צנרת blue-green
-  (מכוונת לפרויקט Vercel שמקושר לריפו אחר), Percy ו-LHCI (אין חשבונות), **ורגרסיות**:
-  `pnpm lint` קוצץ ל-3 שערים מתוך 12, שני workflows נמחקו, 11 סקריפטים ירדו
-  מ-`package.json`.
-- **מה שווה לשמור, לפי סדר:** (1) תשעה קבצי טסט של actions שמודולים שלהם קיימים
-  ב-HEAD **בלי אף טסט שמייבא אותם** (admin/cashback, categories, discounts, fraud,
-  product-import, suppliers, vendors, newsletter, reviews), להעביר ידנית מול
-  החתימות של HEAD, מודול לפריט; (2) תיקון הפנקס: תשעת הקבצים החיים בפרודקשן
-  עדיין ב-`migrations/pending/`; (3) ערוץ Telegram + UptimeRobot, קטן ומותנה env;
-  (4) docs/RLS-AUDIT-2026-09-09 כמדידה מתוארכת.
+**שלושה ממצאים שלא היו רשומים בשום מקום:**
 
-**החלטות שהתקבלו לבד:** (א) `docs/BACKLOG.md` לא קיים (הפריט מבקש לקרוא אותו);
-נרשם, לא נוצר, ההחלטה נשארת ל-B01. (ב) שער ההשוואה **לא הורץ**: הפריט הוא מסמך
-בלבד, אפס שינוי ב-UI; המספרים האחרונים על העץ הזה נותרו 8.44 / 9.03 / 3.82 PASS
-(שורות 02:12-02:15 ב-`docs/UI-PARITY-REPORT.md`). (ג) נתיבים שקיימים רק
-ב-autopilot נכתבו במסמך בלי backticks, כדי לא לפתוח שורות בפנקס הנתיבים התלויים;
-שורה אחת (`docs/STATE-ARCHIVE.md :: docs/AUTOPILOT-DIFF.md`) ירדה מהפנקס כי
-הנתיב קיים עכשיו. (ד) `README.md` מונה 281 מסמכים במקום 280 (הטסט
-`ci-docs-inventory` דורש שוויון לשער).
+1. **המתזמן מעולם לא הצליח.** ‏`cron.yml` רץ מ-`main` (workflows מתוזמנים
+   יורים רק מענף ברירת המחדל) ונכשל **40 מ-40** הריצות האחרונות. כל נתיב
+   ב-HEAD עונה **401** ל-`CRON_SECRET` ש-GitHub מחזיק, כלומר הסוד ב-GitHub
+   ובזה ב-Vercel שונים. התוצאה, נמדדה: ‏`notification_outbox` מחזיק **72**
+   שורות `pending` מאז ‏10.09 09:57 UTC; אף מייל או פוש לא יצא מפרודקשן
+   ‏15 יום. החוסם 10 הקודם ("ה-drain אינו מתוזמן") היה שגוי בסיבה: הוא
+   מתוזמן, ונדחה. בנוסף ‏`scripts/cron-jobs.json` של `main` מונה שבעה נתיבים
+   שאין ב-HEAD (‏404).
+2. **הפריסה החיה ‏22 קומיטים מאחורי HEAD**, לא ארבעה (Q06 נמדד לפני Q07..Q23).
+3. **הקטלוג: ‏46 מוצרים פעילים**, לא 44 כמו בצילום מ-09.09; ‏5 slugs של
+   ‏`copy/העתק/לדוגמא`, ‏3 שורות `מאסטר`, ‏0 עם עיר.
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (docs-index-gate 281,
-docs-path-audit 154 ללא שינוי), `pnpm test` 599 קבצים / 7,149 ירוקים / 12 מדולגים
-(הכשל היחיד היה ספירת המסמכים ב-README, תוקן), `pnpm build` ירוק (BUILD_ID
-`OnR3EZ-PGGO1TQ1Zcm32v`).
+**אומת מחדש:** NS ברשם עדיין `ns2.vercel.com`; ‏`/checkout` החי מגיש
+‏`frame-src ... 'self'` (ספק mock), ‏24 תשלומי `mock-` ו-15 ריקים ב-30 יום,
+אפס חיובים אמיתיים; ראש המיגרציות `20260910085722`, כל אובייקט של 204/223/
+234-236/239-244 חסר; שמות `CARDCOM_*`, ‏`RESEND_API_KEY`, ‏`R2_*` קיימים
+בפרויקט Vercel (ערכים לא נקראו). ‏`deploy-preflight` אינו מחובר ל-`pnpm build`
+ולא ל-`vercel.json`, ולכן המפתח החשוף לא נחסם ב-Vercel.
 
-## Q22 - DONE (נמדד 25.09) - E2E גלישה, מוצר, סל, קופת אורח עד ה-stub; Lighthouse mobile
+**החלטות שהתקבלו לבד:** (א) הפריט ביקש לקרוא `docs/BACKLOG.md`; לא קיים
+(כמו ב-Q23), ההחלטה נשארת ל-B01. (ב) לא נגעתי בסודות: הסקת ה-401 היא
+מהשוואת ה-Bearer ב-`job-run.ts` מול ‏`run-cron-jobs.sh`, לא מקריאת ערכים.
+(ג) המסמך באנגלית כמו קודמיו, ורשימת הפריטים לאופיר בעברית.
 
-**כל מספר כאן נמדד על build טרי עם ‏mock** (`CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build`, BUILD_ID
-`vAlm2GJMPCfXqWiv00WJL`, שרת על 3331, ‏`frame-src ... 'self'` מוגש). שני
-המשתנים חייבים להיות בזמן ה-build: ה-CSP של ה-iframe נאפה ב-`routes-manifest`
-(`frame-policy.ts`), וה-canonical (`site-url.ts`) נאפה ב-shell הסטטי. build בלי
-`NEXT_PUBLIC_APP_URL` מגיש canonical של פרודקשן ב-HTML ו-localhost בהידרציה,
-ו-Lighthouse קורא ‏SEO ‏92 ("Multiple conflicting URLs"). נמדד; ב-Vercel שני
-הזמנים חולקים env ואין סתירה.
-
-- **E2E, ‏`--workers=1`, שני הפרויקטים (Desktop Chrome + Pixel 5):**
-  `home`+`category`+`product` ‏**82/82**; `cart`+`checkout`+`purchase-flow`
-  ‏**40 עברו, 3 דולגו** (שלושתם מותנים ב-viewport, בעיצוב);
-  `full-purchase-redeem` על chromium ‏**2/2**: סל אורח ← `/checkout` פתוח
-  לאורח ← כניסה בלחיצת התשלום (מייל, אותו מסלול `mergeGuestCart` של Google) ←
-  ה-stub ‏`/checkout/frame-return` בתוך ה-iframe ← `/checkout/return` עם
-  "התשלום הצליח!" ← שובר + QR ← `/account/coupons` ← מימוש בקופת הספק.
-  הריצות כתבו שורות אמיתיות לפרודקשן על לקוח הבדיקות (3 הזמנות mock, 3 שוברים
-  מומשו), כמו ב-21.09 וב-22.09. אין staging.
-- **כשל אחד באצווה, לא בקוד:** בריצת האצווה השלמה גוף הקופה לא הגיע תוך 5 שניות
-  (ה-snapshot מראה כותרת ופוטר בלבד) בזמן שהשרת רשם ‏1,834 ‏`db.query_failed`
-  מרענון הרקע של דף הבית (הרעש הידוע, ‏`docs/FINAL-REPORT-V2.md` §1). ריצה
-  לבד מיד אחר כך: ‏2/2.
-- **שני פגמים אמיתיים נמצאו ותוקנו:**
-  1. **גריד האזור האישי שבור מ-09.09.** ‏`AccountSideNav` ב-`(account)/layout.tsx`
-     החזיר fragment של שלושה תאים (prompt, פעמון, nav) לתוך גריד של שתי עמודות
-     (`260px 1fr`), ולכן ה-nav נחת בעמודה הרחבה והתוכן של כל דף ירד לשורה השנייה
-     של עמודת ה-260. נמדד ב-`/account/coupons`: תוכן ברוחב ‏260 בתוך shell של
-     ‏1250, שורה ברוחב ‏218, ופסקת הקוד ברוחב ‏**0** מאז ש-Q14 הוסיף כפתור פעולה
-     שני. ה-fallback של ה-Suspense היה תא אחד, ולכן ה-shell נראה נכון עד שה-nav
-     הגיע. תוקן: תא אחד `.account-side`, ו-fallback שמשקף אותו
-     (`.account-side__bell-pending` ‏44+12px). אחרי התיקון: תוכן ‏960, קוד ‏338.
-  2. **מרוץ strict-mode בשני טסטים של הקטגוריה:** `getByText` תפס את העותק המוסתר
-     שריאקט חונה בסוף ה-body לרגע לפני ה-swap של הגריד המוזרם. ה-snapshot בזמן
-     הכשל כבר הראה פסקה אחת בתוך `main`. ה-locator מוגבל ל-`#main-content`.
-- **Lighthouse mobile** (13.4.1, ברירת מחדל: simulate, ‏412x823), 3 ריצות לכל דף
-  על ה-build הזה:
-
-  | דף | perf | a11y | BP | SEO | LCP מדומה | `provided` |
-  |---|---|---|---|---|---|---|
-  | `/` | 73 / 77 / 77 | 100 | 96 | 100 | 6.0-6.4s | **100** (LCP 0.48s) |
-  | `/product/barbecue` | 76 / 80 / 80 | 100 | 96 | 100 | 5.0-5.8s | **100** (LCP 0.13s) |
-
-  **alias הפרודקשן** (`kenyonexpress.vercel.app`, ‏`a388118f1`, לפני Q03 והתיקון):
-  ‏`/` ‏**93 / 90**, מוצר ‏**87 / 92**. ‏BP ‏96 מקומי מול ‏100 בפרודקשן הוא http
-  מול https.
-- **תיקון LCP בדף הבית, נמדד:** אלמנט ה-LCP הוא תמונת הכרטיס הראשון של הגריד
-  המוזרם מהקטלוג (לא ה-fixture ב-shell), ורשימת הגילוי של Lighthouse נכשלה
-  בשלוש השורות (בלי fetchpriority, לא ניתן לגילוי ב-HTML, ‏`loading=lazy`), עם
-  ‏525-634ms ‏`resourceLoadDelay`. ‏`priority` על ארבעת הכרטיסים הראשונים של
-  הגריד האמיתי בלבד (`ProductDealCard` ‏`priority`, ‏`DealsGrid` ‏`eagerCount`;
-  ה-fallback נשאר lazy כי כרטיסיו מוחלפים). אחרי: גילוי ‏2/3 (Next 16 פולט
-  preload בלי fetchpriority), ‏delay ‏359-475ms, ‏`provided` LCP ‏0.48s.
-  **הציון המדומה לא זז**, בדיוק כפי ש-`docs/PERFORMANCE-BUDGET.md` מתעד: מול
-  localhost הגרף הפסימי של Lantern מכיל את כל הדף (30 סקריפטים / 423KB, ‏25
-  prefetch של RSC, 3 פונטים) לפני ה-LCP הנצפה.
-- **החלטות שהתקבלו לבד:** (א) יעד ה-90+ המדומה על localhost לא הושג ולא נרדף
-  הלאה: ה-124KB ה"לא בשימוש" הם chunks של ריאקט/Next, וה-25 prefetch הם התנהגות
-  ה-`<Link>` של Next; קיצוץ שניהם אינו בגדר הפריט ולא היה מזיז 6.3s ל-2.5s. המספר
-  שנחשב הוא על ההפרסה של HEAD אחרי הפריסה (חוסם 2), וה-alias הישן כבר ב-90-93 בבית.
-  (ב) רעש ה-`db.query_failed` בזמן רענון דף הבית לא סונן (מתועד, מחוץ לפריט).
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (docs-index-gate OK), `pnpm test`
-599 קבצים / 7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק. שער ההשוואה בחזית על
-3331, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**,
-מוצר 1440 ‏**2.79% PASS**, שורות 02:12-02:17 ב-`docs/UI-PARITY-REPORT.md`.
-תחזוקה: גיבוי `kenyonexpress-backup-2026-09-25-0931.tar.gz` (780MB) נוצר, הישן
-מארבעה נמחק (כלל: שלושה); ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
-
-## Q21 - DONE (נמדד 25.09) - WCAG 2.1 AA, מטא SEO, schema.org Product/Offer, sitemap, robots
-
-**נמדד על build טרי (`fyau7_b1Flj5STr-YW69a`) על 3321, לא על הרישומים.**
-
-- **WCAG 2.1 AA**: `e2e/a11y.spec.ts` (axe-core, תגיות `wcag2a/wcag2aa/wcag21a/wcag21aa`,
-  19 מסלולים ציבוריים, מקלדת, `lang="he" dir="rtl"`, באנר הסכמה ב-320/640/1440)
-  בחזית, `--grep-invert=@writes`: **36 עברו, 1 דולג (באנר לא מוצג, בעיצוב), 0 נכשלו**,
-  11.8s. ארבעת ה-`@writes` (סל, קופה, אשף, פאנל סל) לא רצים בלי DB שאינו פרודקשן,
-  כמו שכתוב ב-`docs/ACCESSIBILITY-GATE.md`; זה הפער היחיד והוא ידוע.
-- **מטא**: דף מוצר `/product/barbecue` מגיש `<title>`, `description`, `canonical`
-  מוחלט, `og:title/description/url/image/locale=he_IL`, `twitter:card`. בית וקטגוריה
-  עם canonical ו-description. `<html lang="he" dir="rtl">`.
-- **schema.org**: דף מוצר מגיש `Product` + `Offer` (`priceCurrency: ILS`, `price`,
-  `availability`, `seller`, `url`) + `BreadcrumbList`; בית `WebSite`+`Organization`;
-  קטגוריה, ספק (`LocalBusiness`), FAQ, בלוג עם צמתים משלהם (`lib/seo/json-ld.ts`).
-  **תוקן**: `highPrice` על `Offer` אינו מאפיין schema.org (שייך ל-`AggregateOffer`
-  בלבד), ולכן המחיר המחוק לא הגיע לתוצאות החיפוש. הוחלף ב-`priceSpecification`
-  מסוג `UnitPriceSpecification` עם `priceType: StrikethroughPrice`, הקידוד שגוגל
-  מתעדת למחיר מחירון. נמדד בשירות אחרי build: `price 49.50`, מחיר מחוק `99.00`.
-- **sitemap**: `/sitemap.xml` אינדקס עם 5 חלקים (content, categories, products,
-  regions, suppliers); `products.xml` 46 כתובות מוחלטות מקודדות. `/robots.txt`
-  מתיר `/`, חוסם 13 נתיבים פרטיים, מצביע על ה-sitemap.
-
-**החלטות שהתקבלו לבד:** הפריט הוא אימות ותיקון אחד; לא נכתב שום דבר חדש
-שכבר קיים (`0f42ef81a`, `b591ba19a`, `b36955eb3`, `cf567236f`, `d1adea146`).
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627), `pnpm test`
-599 קבצים / 7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק. שער ההשוואה בחזית על
-3321, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**,
-שורות 01:22-01:26 ב-`docs/UI-PARITY-REPORT.md`; מוצר 1440 ‏2.79% PASS (01:29).
-
-## Q20 - DONE (אומת 25.09) - לוח ספק: מכירות, מימושים, זיכויים ותשלומים, קריאה בלבד
-
-**נמדד על העץ ועל פרודקשן לפני שנכתבה שורה.** `29b921163` (Phase 13: מכירות
-לפי מוצר ולפי יום ישראלי) ו-`bf9f2ca09` (פנקס תשלומים) הם אבות של HEAD. מה שחי:
-
-- **מכירות**: `/supplier` (`(supplier)/supplier/page.tsx`): מימושים היום, גבייה
-  בקופה היום, עמלת פלטפורמה, מגיע לספק, סה"כ מימושים, שיעור פקיעה (רק כשיש
-  נתון); לפי מוצר (8) ולפי יום (7); גרף חודשי. `lib/supplier/dashboard.ts`
-  מוריד שורות `refunded`/`cancelled` מכל סכום (`isReversedLine`,
-  `supplierDueAgorot` מחזיר 0), `IncompleteDataNotice` כשהקריאה נחתכה.
-- **מימושים**: `/supplier/redemptions` + CSV (`api/supplier/redemptions/csv`),
-  היום ו-30 יום, סיכום להדפסה לקופה.
-- **זיכויים**: `/supplier/payouts` מציג `זיכויים שקוזזו` (`reversedPayoutAgorot`)
-  רק כשיש מה להסביר, ותווית `זוכה` בפירוט לפי סטטוס התחשבנות.
-- **תשלומים**: `/supplier/payouts` (owner בלבד, `requireSupplierRole`), פירוט לפי
-  `platform_percent` של כל שורה כפי שצולם ב-`order_items`, CSV מלא, דוח חודשי
-  PDF/CSV (`api/supplier/statement`). כסף באגורות דרך `lib/money` בלבד.
-- **קריאה בלבד, נמדד בפרודקשן**: אפס policies של INSERT/UPDATE/DELETE לחברי
-  ספק על `order_items`, `orders`, `vouchers`, `payout_statements`,
-  `payout_statement_lines`. הדפים אינם מייבאים אף action כתיבה.
-
-**"per RLS", בדיוק מה נכון ומה לא.** שער החברות `requireSupplierMember` קורא
-`supplier_members` דרך לקוח הבקשה תחת RLS. **קריאות הכסף עצמן רצות על service
-role עם נעילת `supplier_id` מפורשת** (`server/queries/supplier.ts`), לא תחת
-RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפעיל היחיד): תחת
-ה-policies החיות (`order_items_select_unified`, `orders_select_unified`,
-`vouchers_select_unified`, RLS דלוק על שלוש הטבלאות) הספק רואה **17** שורות
-הזמנה והקריאה הנוכחית מחזירה **19**. השתיים החסרות הן שורות על הזמנות
-`refunded`: ה-policy של `orders` מגבילה ספק ל-`paid/partially_fulfilled/fulfilled`
-וה-`!inner` join היה מוחק אותן. מעבר ל-RLS כמות שהיא היה מעלים בדיוק את
-הזיכויים שהפריט דורש. מימושים: 2 = 2 (`redeemed_by_supplier_id` שווה
-ל-`supplier_id` בכל שורה).
-
-**החלטות שהתקבלו לבד:**
-- הקריאות נשארות על service role עם שני מנעולים (`supplier_members` תחת RLS
-  נותן את ה-id, `.eq('supplier_id')` על כל שאילתה). מעבר ל-RLS דורש הרחבת
-  `orders_select_unified` ל-`refunded`/`cancelled` לחברי ספק, וזו מיגרציה בלי
-  צרכן עד שהקריאות יוחלפו; לא נכתבה. אין שינוי קוד, הפריט הוא אימות.
-- שלוש שורות FAIL בפנקס ההשוואה 01:05-01:08 (13.76/15.45/6.55) הן **ריקות**:
-  `pnpm start` על 3311 נפל ב-`EADDRINUSE` (שרת של סשן אחר, רץ 3h19m) והשער מדד
-  build זר. סומנו VOID בפנקס. הריצה התקפה על 3319 עם BUILD_ID מאומת ב-HTML.
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, locale-format
-134/134), `pnpm test` 599 קבצים / 7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק
-(BUILD_ID `Mua1dGRsNvKAGBt_VWnCK`). שער ההשוואה בחזית על 3319, `--baseline`:
-**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 01:11-01:14
-ב-`docs/UI-PARITY-REPORT.md`.
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 599 קבצים /
+7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק (BUILD_ID `EfxxNqd3f_4Lxq4cAsCGA`),
+‏`pnpm audit --prod` אפס. שער ההשוואה בחזית על 3341, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 03:00-03:03
+ב-`docs/UI-PARITY-REPORT.md` על `d0a21af2a`. תחזוקה: גיבוי היום כבר קיים
+(`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל), ‏`caffeinate`
+חי (pid 959), ‏`SleepDisabled 1`.
 
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
@@ -245,7 +92,7 @@ RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפע
 | Q21 | DONE (נמדד 25.09) | הרשומה למעלה. axe WCAG 2.1 AA: 36 עברו / 0 נכשלו על 19 מסלולים. מטא, JSON-LD (Product+Offer, `highPrice` -> `StrikethroughPrice`), sitemap 5 חלקים, robots. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
 | Q22 | DONE (נמדד 25.09) | הרשומה למעלה. E2E על build עם mock: בית+קטגוריה+מוצר 82/82, סל+קופה+מסלול 40 עברו / 3 דולגו לפי viewport, אורח עד ה-stub ומימוש 2/2. שני פגמים תוקנו (גריד האזור האישי, מרוץ strict-mode). Lighthouse mobile מקומי: בית 73-77, מוצר 76-80 (מדומה), 100/100 ללא סימולציה; alias פרודקשן 90-93 / 87-92. שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
 | Q23 | DONE (25.09) | הרשומה למעלה. `docs/AUTOPILOT-DIFF.md`: autopilot כולו כבר ב-`origin/main`; closeout = +1 קומיט מקומי; 22 מיגרציות במספרים תפוסים; שווה לשמור: 9 טסטי actions, תיקון פנקס, Telegram/UptimeRobot, RLS-AUDIT. |
-| Q24 | OPEN | `docs/LAUNCH-READINESS.md` הוא צילום היסטורי (09.09, NOT READY). דורש כתיבה מחדש. |
+| Q24 | DONE (25.09) | הרשומה למעלה. `docs/LAUNCH-READINESS.md` נכתב מחדש: NOT READY על שלוש שורות (דומיין, mock, cron 401 עם 72 הודעות תקועות), 8 חוסמים עם ראיה, 13 פריטים ידניים. שער 8.44/9.03/3.82 PASS. |
 | B01-B10 | OPEN, חסום | `docs/BACKLOG.md` לא קיים. מועמדים: `docs/POST-LAUNCH-BACKLOG.md`, `docs/MIGRATION-BACKLOG.md`. החלטה ב-B01. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
@@ -255,8 +102,9 @@ RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפע
    אחרי ההתפשטות: `dig +short A kenyonexpress.co.il @1.1.1.1` צריך להחזיר
    `216.198.79.1`, ואז `curl -sI https://www.kenyonexpress.co.il/` ל-200.
    שום דבר בצד Vercel לא דורש שינוי.
-2. **פריסת פרודקשן של `2ee29bc90`** (מצב עצירה, אישור נדרש): REST
-   `POST /v13/deployments` עם `gitSource.sha`, `target=production`, כמו ב-Q02.
+2. **פריסת פרודקשן של HEAD (`d0a21af2a`, 22 קומיטים אחרי `a388118f1` החי)**
+   (מצב עצירה, אישור נדרש): REST `POST /v13/deployments` עם `gitSource.sha`,
+   `target=production`, כמו ב-Q02.
 3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
    עונה "עדיין לא פעיל"), 240 (הסכמת "הכל באפליקציה"), 241 (עיר משלוש
    כותרות), 242 (מקור מחיר + ביקורות גוגל), 243 (תנאי מוצר), 244 (קמפיינים
@@ -267,29 +115,34 @@ RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפע
 5. **צילומי reference ב-380 וב-768 לדף המוצר, לסל ולקופה**: קיימים רק
    ב-1440 (`refs/live-product.png`, `refs/live-cart.png`,
    `refs/live-checkout.png`). בלי זה השערים של Q04 ו-Q10 נמדדים ב-1440 בלבד.
-6. **`RESEND_API_KEY` בפרודקשן**: לא נמדד בפריט הזה (הזיכרון אומר שמשתני
-   הסביבה מפוצלים בין שלושה פרויקטים ב-Vercel). בלי המפתח כל חמשת המיילים
-   נופלים בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.
+6. **`RESEND_API_KEY` בפרודקשן**: השם קיים ב-target Production של הפרויקט
+   (נמדד 25.09, Q24; הערך לא נקרא). בלי ערך תקף כל חמשת המיילים נופלים
+   בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.
 7. **`SUPABASE_SECRET_KEY` חשוף ודורש רוטציה** (CLAUDE.md, `RUNBOOK`);
    `deploy-preflight` מסרב לבנות איתו.
-8. **Cardcom בפרודקשן**: `CHECKOUT_ENABLED=false`, ספק התשלום ב-mock;
-   שלוש credentials החיוב לא קיימות באף פרויקט Vercel.
+8. **Cardcom בפרודקשן**: ספק התשלום ב-mock, נמדד 25.09 על `/checkout` החי
+   (`frame-src ... 'self'`); 24 תשלומי `mock-` ו-0 אמיתיים ב-30 יום. שמות
+   `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID`/`USE_MOCK` ו-`CHECKOUT_ENABLED`
+   קיימים בפרויקט (ערכים לא נקראו).
 9. **מספר עוסק/ח.פ לשורת המוכר** באישור הרכישה (Q09): אינו קיים בריפו.
    עריכה אחת ב-`messages/he.json`, `purchaseConfirmation.sellerName`.
-10. **ה-drain של ההתראות אינו מתוזמן**: `vercel.json` ללא `crons`, ולכן
-    אף מייל או push מה-outbox לא יוצא בפרודקשן עד שיתווסף cron ל-
-    `/api/cron/notifications` (וגם ל-`expire-vouchers`).
+10. **המתזמן מתוזמן ונדחה** (Q24): `cron.yml` על `main` נכשל 40/40, כל נתיב
+    עונה 401 ל-`CRON_SECRET` של GitHub (סוד שונה מזה ב-Vercel). 72 הודעות
+    `pending` ב-`notification_outbox` מאז 10.09; `expire-vouchers` ושאר 21
+    העבודות לא רצות. תיקון: אותו ערך בשני המקומות. פעולה של אופיר בלבד.
 
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. DNS (חוסם 1). פעולה אחת בממשק הרשם.
-2. אישור פריסה של HEAD (חוסם 2).
-3. אישור והחלת 240..243 דרך MCP לפי `RUNBOOK`, ואז `pnpm db:types`.
-4. רוטציית `SUPABASE_SECRET_KEY` (חוסם 7).
-5. הפעלת R2 בדשבורד Cloudflare (חוסם 4).
-6. Cardcom: `CARDCOM_USE_MOCK=false` + המפתחות + `CHECKOUT_ENABLED=true` (חוסם 8).
-7. `scripts/dns-watch.sh` (pid 1033) עדיין רץ ומשגר סשן deploy כשיופיעו NS
+2. `CRON_SECRET` זהה ב-GitHub וב-Vercel (חוסם 10); הריצה הבאה של "Scheduled jobs"
+   צריכה להראות `notifications -> 200`.
+3. אישור פריסה של HEAD (חוסם 2).
+4. אישור והחלת 240..243 דרך MCP לפי `RUNBOOK`, ואז `pnpm db:types`.
+5. רוטציית `SUPABASE_SECRET_KEY` (חוסם 7).
+6. הפעלת R2 בדשבורד Cloudflare (חוסם 4).
+7. Cardcom: `CARDCOM_USE_MOCK=false` + המפתחות + `CHECKOUT_ENABLED=true` (חוסם 8).
+8. `scripts/dns-watch.sh` (pid 957) עדיין רץ ומשגר סשן deploy כשיופיעו NS
    של Cloudflare; זה לא יירה על המעבר ל-vercel-dns. לבדוק לפני שמפעילים משהו.
-8. עשרה stash-ים לא נמחקו (כלל: אין מחיקת נתונים); רשימה בארכיון תחת Q01.
-9. כניסה בטלפון (Q17): ספק SMS בהגדרות ה-auth של Supabase ואז `PHONE_AUTH_ENABLED=true`
+9. עשרה stash-ים לא נמחקו (כלל: אין מחיקת נתונים); רשימה בארכיון תחת Q01.
+10. כניסה בטלפון (Q17): ספק SMS בהגדרות ה-auth של Supabase ואז `PHONE_AUTH_ENABLED=true`
    ב-Vercel. בלעדיהם הכפתור מוסתר והשאר עובד.

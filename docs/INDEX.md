@@ -174,7 +174,7 @@ one.
 | [INFRA-TASKS.md](INFRA-TASKS.md) | ✅ | רשימת משימות תשתית ממוספרות ל-backend של KenyonExpress. |
 | [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md) | ⚠️ | תאריך: 2026-08-19. |
 | [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) | ⚠️ | תאריך: 2026-08-19. |
-| [LAUNCH-READINESS.md](LAUNCH-READINESS.md) | 🕯️ | Measured on main at dd10a9504, 2026-09-01. Every number below is command |
+| [LAUNCH-READINESS.md](LAUNCH-READINESS.md) | ✅ | Measured 2026-09-25 on audit/final-audit at d0a21af2a. NOT READY: domain dark, mock charges, cron secret mismatch |
 | [LAUNCH-RUNBOOK.md](LAUNCH-RUNBOOK.md) | ✅ | The order of operations for going live, command by command, with the rollback |
 | [MOBILE-RELEASE.md](MOBILE-RELEASE.md) | ✅ | Verified 2026-09-02, code and production both. |
 | [MONITORING.md](MONITORING.md) | ✅ | נמדד ב-09.09.2026: היסטוריית ריצות אמיתית מ-GitHub Actions, משתנים וסודות |

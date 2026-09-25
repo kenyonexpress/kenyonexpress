@@ -1,15 +1,113 @@
 # Launch readiness
 
+Measured 2026-09-25 on `audit/final-audit` at `d0a21af2a` (clean tree, in sync
+with `origin/audit/final-audit`), against the production database
+(`ixvwfbuvfxxsjiywhbbb`, read-only), the live Vercel deployment
+(`kenyonexpress.vercel.app`), the registrar's nameservers and the GitHub Actions
+run history. Every number is command output from this run. Where an earlier
+section of this file or `STATE.md` said something else, the measurement wins
+and the difference is named. The earlier assessments (01.09, 02.09, 06.09,
+09.09) are kept verbatim below, under "Superseded assessments".
 
-> <!-- v1-final-historical:2026-09-01 -->
-> 🕯️ **Historical snapshot. Not current guidance.**
->
-> This is a launch-readiness assessment, true on the date it carries. It is kept as a record of what
-> was measured and decided then, and it is **not** maintained against
-> production. Numbers, table names and statuses in it may since have changed.
->
-> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
-> `docs/INDEX.md` for which document is authoritative on a given subject.
+## Verdict: NOT READY
+
+The software is green on every gate it owns. The **operation** around it is
+not: the storefront cannot be reached on its own domain, cannot charge a real
+card, and has not delivered a single email or push notification since
+2026-09-10. Each of those three is an action only Ofir can take, and each is
+listed with its exact step in the last section.
+
+| # | Blocking line | Measured |
+| --- | --- | --- |
+| 1 | The domain does not resolve | Registrar (`ns1.ns.il`) delegates `kenyonexpress.co.il` to `ns2.vercel.com`; `dig A @1.1.1.1` and `dig A www @8.8.8.8` return nothing; `curl https://kenyonexpress.co.il/` exits 6. The correct zone already answers: SOA at `ns1.vercel-dns.com`. |
+| 2 | Production charges no card | `/checkout` on the live alias serves `frame-src https://secure.cardcom.solutions 'self'`; the `'self'` grant is appended only when `usesMockPaymentProvider()` is true (`src/lib/security/frame-policy.ts`). In the last 30 days `payments` holds 24 rows with a `mock-` transaction id and 15 with none, zero real Cardcom ids. 19 `paid` orders in 7 days, all of them E2E runs against the mock. |
+| 3 | No notification has left production in 15 days | `notification_outbox`: 72 rows `pending`, `sent_at` null, oldest `2026-09-10 09:57 UTC`. The drain (`/api/cron/notifications`, every 5 minutes) is called by `.github/workflows/cron.yml`, which fires from `main` and has **failed 40 of its last 40 runs**: every route in HEAD answers **401** to the `CRON_SECRET` GitHub holds, so the GitHub secret and the Vercel one differ. The same failure silences `expire-vouchers`, `invoices`, `stranded-payments`, `webhook-dlq`, `abandoned-cart` and the rest of the 21 jobs. `main`'s `scripts/cron-jobs.json` also names seven routes HEAD does not ship (`search-reindex`, `job-dlq`, `search-outbox`, `cashback-settlement`, `email-retry`, `expire-cashback`, `expire-coupons`), each a 404. |
+| 4 | The live build is 22 commits behind HEAD | Production deployment `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, built from `a388118f1` (24.09 17:42 UTC). `git rev-list --count a388118f1..HEAD` = 22, from Q03 through Q23. Markers on the alias: `p_con__city` 0, `pdp-small-print` 0, `StrikethroughPrice` 0, `account-side` 0, frozen `ke-live-deal-N` images 31. The Q22 account-grid fix is not live. |
+| 5 | Six migrations the shipped code needs are not applied | Production migration head `20260910085722`. `to_regclass` says MISSING for `supplier_applications` (204), `app_consent_events` (240), `affiliate_campaigns` (244), `contact_channels` (236), `feature_flags` (235), `fraud_blocklist` (234), `customer_invoice_settings` (239); `products.original_price_source` (242) and `products.cancellation_window_days` (243) have 0 columns; `notifications.outbox_id` (223) 0. 26 SQL files sit in `migrations/pending/`. Nine of them (188-191, 194, 196, 197, 201, 218) are already live, so "apply the folder in order" is wrong; apply by the object scan in `docs/GO-LIVE-DRY-RUN.md`. |
+| 6 | The live catalogue still holds template rows | 46 active products (the 09.09 snapshot said 44). Active slugs matching `-copy`, `העתק` or `לדוגמא`: 5. Active names containing `מאסטר`: 3. Active products with a city: 0 of 46 (241 unapplied). `platform_percent` missing: 0. The gate `pnpm test src/lib/catalogue` is 38/38 against the 25-row ledger; the ledger is an operator decision, not a fix. |
+| 7 | `SUPABASE_SECRET_KEY` rotation is still open | The key is flagged by hash in `scripts/compromised-keys.mjs` and `scripts/deploy-preflight.mjs` refuses it, but neither `pnpm build` nor `vercel.json` runs the preflight, so Vercel builds with whatever is set. The value in Vercel was not read. Both `SUPABASE_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` exist in the production target. |
+| 8 | R2 is not enabled on the Cloudflare account | Measured 10.09 (403, code 10042), not re-measured today; the four `R2_*` variables exist in Vercel. Product images fall back to Supabase Storage and the external DB backup writes nothing. |
+
+## Green, with evidence
+
+| Gate | Result |
+| --- | --- |
+| `pnpm type-check` | clean |
+| `pnpm lint` | clean, 12 gates: biome, tokens, copy, asset, raw-html, postgrest-or, cache-invalidation, rtl-logical, i18n (627/627), locale-format, input-dir, docs-index (281 documents), docs-path-audit (154 known) |
+| `pnpm test` | 599 files, **7,149 passed**, 12 skipped |
+| `pnpm build` | green, BUILD_ID `EfxxNqd3f_4Lxq4cAsCGA`; the `db.query_failed` lines during prerender are the known `HANGING_PROMISE_REJECTION` noise (`docs/FINAL-REPORT-V2.md` §1) |
+| Parity gate, this run, foreground, `--baseline` | home **380 8.44% / 768 9.03% / 1440 3.82% PASS**, rows 03:00-03:03 in `docs/UI-PARITY-REPORT.md` on `d0a21af2a`; product 1440 2.79% PASS (02:17, same tree) |
+| `pnpm audit --prod` | no known vulnerabilities |
+| E2E (Q22, build with mock) | home+category+product 82/82; cart+checkout+purchase-flow 40 passed, 3 viewport-skipped; guest to stub to redemption 2/2 |
+| WCAG 2.1 AA (Q21, axe) | 36 passed, 0 failed, 19 public routes |
+| Live alias | `/` 200, `/product/barbecue-2` 200, `/checkout` 200, `/sitemap.xml` 200, `/page/how-it-works` 200, `/api/health` `{"ok":true,"database":"ok","latency_ms":86}`; all 21 HEAD cron routes exist (401 without the bearer, none 404) |
+| Lighthouse (Q22) | alias home 93/90, product 87/92; local mobile simulated 73-80, `provided` 100/100 |
+| Branches | `audit/final-audit` = origin; `origin/main` is 109 ahead (all autopilot, analysed in `docs/AUTOPILOT-DIFF.md`) and 396 behind |
+| Money | integer agorot through `src/lib/money.ts`; `platform_percent` per product, snapshotted into `order_items` (Q20 measured) |
+
+## What flips the verdict to READY
+
+All of these, measured, not recorded:
+
+1. `dig +short A kenyonexpress.co.il @1.1.1.1` returns `216.198.79.1` and
+   `curl -sI https://www.kenyonexpress.co.il/` is 200 with a valid certificate.
+2. A production deployment built from HEAD (or later) serves `p_con__city` on
+   `/` and `pdp-small-print` on a product page.
+3. `/checkout` on production serves `frame-src https://secure.cardcom.solutions`
+   **without** `'self'`, and one real charge of a small amount appears in
+   `payments` with a non-`mock-` transaction id and is refunded from the admin.
+4. `cron.yml` on `main` shows a green run whose log reads `notifications -> 200`,
+   and `notification_outbox` pending count goes to 0.
+5. 204, 223, 224, 234-236, 239-244 are applied (object scan, not file count) and
+   `pnpm db:types` is committed.
+6. The 25 catalogue rows in `supabase/catalogue-known-issues.json` are decided
+   and the ledger shrinks to 0 with `pnpm test src/lib/catalogue` still green.
+7. `SUPABASE_SECRET_KEY` rotated; the old hash no longer matches the value in use.
+
+## ידני לאופיר, לפי סדר קריטיות
+
+כל פריט כאן הוא פעולה שהסוכן אינו רשאי או אינו יכול לבצע. הסדר הוא לפי מה
+שחוסם לקוח אמיתי, לא לפי קלות.
+
+1. **DNS ברשם** (חוסם 1). להחליף את שני ה-NS של `kenyonexpress.co.il`
+   מ-`ns1.vercel.com` / `ns2.vercel.com` ל-`ns1.vercel-dns.com` /
+   `ns2.vercel-dns.com`. פעולה אחת בממשק הרשם; שום דבר בצד Vercel לא משתנה.
+2. **‏`CRON_SECRET` זהה ב-GitHub וב-Vercel** (חוסם 3). לקרוא את הערך
+   ב-Vercel (פרויקט `kenyonexpress`, Production) ולהדביק אותו ב-GitHub
+   ‏Settings > Secrets > Actions > `CRON_SECRET`. הריצה הבאה של "Scheduled
+   jobs" צריכה להראות `notifications -> 200`. עד אז 72 הודעות ממתינות.
+3. **אישור פריסת HEAD לפרודקשן** (חוסם 4). ‏`POST /v13/deployments` עם
+   ‏`gitSource.sha=d0a21af2a`, ‏`target=production`, לפי `docs/RUNBOOK.md`.
+   ‏22 קומיטים, כולל תיקון גריד האזור האישי (Q22).
+4. **החלת המיגרציות הממתינות** (חוסם 5): 204, 223, 224, 234, 235, 236, 239,
+   240, 241, 242, 243, 244, לפי סריקת האובייקטים ב-`docs/GO-LIVE-DRY-RUN.md`,
+   ואז `pnpm db:types` ו-commit. **לא** "כל התיקייה לפי הסדר": תשעה קבצים
+   כבר חיים ו-190 אינו אידמפוטנטי.
+5. **‏Cardcom אמיתי** (חוסם 2). המפתחות כבר קיימים בשם ב-Vercel; לבדוק את
+   הערכים, לקבוע `CARDCOM_USE_MOCK=false` ו-`CHECKOUT_ENABLED=true`, לפרוס
+   מחדש (ה-CSP נאפה בזמן build), ולבצע חיוב אמיתי אחד קטן וזיכוי.
+6. **רוטציית `SUPABASE_SECRET_KEY`** (חוסם 7) לפי `docs/RUNBOOK.md`, ואז
+   לעדכן את הערך ב-Vercel ולפרוס.
+7. **הכרעה על 25 שורות הקטלוג** (חוסם 6) ב-`supabase/catalogue-known-issues.json`:
+   אילו כפילויות אמיתיות, מה המחיר של "עיסוי מאסטר", ומחיקת שורות ה-`copy`.
+8. **הפעלת R2** בדשבורד Cloudflare (חוסם 8).
+9. **‏`scripts/cron-jobs.json` ב-`main`** מכיל שבעה נתיבים שאינם קיימים
+   ב-HEAD; אחרי שהענף הזה ימוזג ל-`main` (PR, ארבע בדיקות) הרשימה מתיישרת
+   מאליה. עד אז כל ריצה מתוזמנת תדווח 404 על השבעה גם כשהסוד נכון.
+10. ‏`scripts/dns-watch.sh` (pid 957) עדיין רץ ומשגר סשן פריסה כשיופיעו NS של
+    Cloudflare; המעבר ל-vercel-dns לא יפעיל אותו. לעצור לפני שמפעילים משהו.
+11. מספר עוסק/ח.פ בשורת המוכר של אישור הרכישה: עריכה אחת ב-`messages/he.json`,
+    ‏`purchaseConfirmation.sellerName`.
+12. כניסה בטלפון: ספק SMS בהגדרות ה-auth של Supabase ואז `PHONE_AUTH_ENABLED=true`.
+13. עשרה stash-ים לא נמחקו (רשימה ב-`docs/STATE-ARCHIVE.md` תחת Q01).
+
+---
+
+## Superseded assessments (01.09 to 09.09), kept verbatim
+
+Each section below was true on the date it carries and is not maintained. The
+09.09 section named the catalogue and then the stale deployment as the first
+blocker; both are still open and both now sit behind the three lines above.
 
 Measured on `main` at `dd10a9504`, 2026-09-01. Every number below is command
 output or a live query against the production database, not a recollection.
