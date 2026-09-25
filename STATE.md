@@ -1,12 +1,12 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B03)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B04)
 
 ## המשך מ:
 
-**B03 DONE (25.09): BACKLOG EMPTY, מאומת מחדש.** הבא בתור: **B04**, ואחריו
-B05..B10. כולם נושאים את אותו טקסט כמו B02; אם דבר לא השתנה מאז (תנאי הפתיחה
+**B04 DONE (25.09): BACKLOG EMPTY, מאומת בפעם השלישית.** הבא בתור: **B05**,
+ואחריו B06..B10. כולם נושאים את אותו טקסט כמו B02; אם דבר לא השתנה מאז (תנאי הפתיחה
 מחדש בסעיף B02) התשובה הנכונה היא לאמת את הרשומה הזו ולכתוב BACKLOG EMPTY שוב.
 
-ההיסטוריה המלאה (Q01..Q24, B01, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+ההיסטוריה המלאה (Q01..Q24, B01, B03, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -26,31 +26,31 @@ B05..B10. כולם נושאים את אותו טקסט כמו B02; אם דבר �
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
 
-## B03 - DONE (25.09) - BACKLOG EMPTY, שלושת תנאי הפתיחה מחדש נבדקו ואף אחד לא התקיים
+## B04 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השלישית ודבר לא השתנה
 
-**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומת B02.** HEAD `a3c3c66ed`
-שווה ל-`origin/audit/final-audit`, עץ נקי, אפס קומיטים חדשים מאז B02.
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02 ו-B03.** HEAD
+`c63f71b73` שווה ל-`origin/audit/final-audit`, עץ נקי, אפס קומיטים חדשים
+מאז B03.
 
-| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B03 | תוצאה |
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B04 | תוצאה |
 |---|---|---|
-| (א) `docs/BACKLOG.md` נוצר | `git ls-tree` על HEAD ועל `origin/main`, ו-`~/ke-goals`: רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`. | לא. |
-| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק; ה-alias `kenyonexpress.vercel.app` עונה 200 עם `0` ‏`p_con__city` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`; ‏`dns-watch.sh` (pid 999) עדיין רץ. | לא. |
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree` על HEAD ועל `origin/main`: 0 התאמות; ב-`~/ke-goals` אין קובץ backlog. רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md` קיימים. | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק; ה-alias `kenyonexpress.vercel.app` עונה 200 עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1` (עכשיו 26 קומיטים מאחורי HEAD). ‏`dns-watch.sh` (pid 957/999) עדיין רץ. | לא. |
 | (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
 
-`docs/POST-LAUNCH-BACKLOG.md` נסרק שוב לפי כותרות: DB, ביצועים, i18n, תוכן,
-merchandising, "נדחה" ו"נראה כמו backlog ואינו"; אין בו "שלב 1". עשרת החוסמים
-והפריטים הידניים למטה לא השתנו ואינם בידי הסוכן.
+**החלטות שהתקבלו לבד:** (א) ‏B03 הועבר לארכיון באותו commit; ‏B02 נשאר כי
+B05..B10 מפנים לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה
+סיבה כמו ב-B02. ‏(ג) שלושה שרתי `pnpm start` ישנים מסשנים אחרים תופסים
+פורטים (כולל 3341); השער נמדד על 3351 מול שרת חדש שאומת שהוא מגיש את
+BUILD_ID של הריצה הזו, והשרת הזה בלבד נסגר בסיום. השרתים הישנים לא נגעו.
 
-**החלטות שהתקבלו לבד:** (א) ‏B01 ו-Q24 הועברו לארכיון באותו commit כדי
-להשאיר כאן רק את מה שחי; ‏B02 נשאר כי B03..B10 מפנים לתנאי הפתיחה שבו.
-‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה סיבה כמו ב-B02.
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` **600 קבצים /
-7,158 ירוקים / 12 מדולגים**, `pnpm build` ירוק (BUILD_ID `1xDgBF_l_Y00D_kmW0VYx`).
-שער ההשוואה בחזית על 3341, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS,
-‏1440 ‏3.82% PASS**, exit 0, שורות 03:41-03:45 UTC ב-`docs/UI-PARITY-REPORT.md`
-על `a3c3c66ed`. תחזוקה: גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`,
-שלושה בסך הכל), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 134
+בתקרה, docs-index 281), `pnpm test` **600 קבצים / 7,158 ירוקים / 12 מדולגים**,
+`pnpm build` ירוק (BUILD_ID `71Gp3sDb7Gtv3MGPP6gUP`). שער ההשוואה בחזית על
+3351, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**,
+שורות 03:52-03:55 UTC ב-`docs/UI-PARITY-REPORT.md` על `c63f71b73`. תחזוקה:
+גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך
+הכל, אין מה לנקות), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
 
 ## B02 - DONE (25.09) - BACKLOG EMPTY
 
@@ -116,8 +116,9 @@ merchandising, "נדחה" ו"נראה כמו backlog ואינו"; אין בו "�
 | Q24 | DONE (25.09) | הרשומה למעלה. `docs/LAUNCH-READINESS.md` נכתב מחדש: NOT READY על שלוש שורות (דומיין, mock, cron 401 עם 72 הודעות תקועות), 8 חוסמים עם ראיה, 13 פריטים ידניים. שער 8.44/9.03/3.82 PASS. |
 | B01 | DONE (25.09) | הרשומה למעלה. `vercel.json` מריץ `deploy-preflight` לפני `pnpm build`; +9 טסטים. שער 8.44/9.03/3.82 PASS. |
 | B02 | DONE (25.09) | **BACKLOG EMPTY.** הרשומה למעלה: שבעה מאגרים נסרקו, אפס פריטי שלב 1 בידי הסוכן. שער 8.44/9.03/3.82 PASS. |
-| B03 | DONE (25.09) | **BACKLOG EMPTY**, מאומת מחדש: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. שער 8.44/9.03/3.82 PASS. |
-| B04-B10 | OPEN | אותו טקסט כמו B02. בלי שינוי בתנאי הפתיחה מחדש (רשומת B02) התשובה היא BACKLOG EMPTY מאומת מחדש. |
+| B03 | DONE (25.09) | **BACKLOG EMPTY**, מאומת מחדש. פירוט בארכיון. |
+| B04 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השלישית: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. שער 8.44/9.03/3.82 PASS. |
+| B05-B10 | OPEN | אותו טקסט כמו B02. בלי שינוי בתנאי הפתיחה מחדש (רשומת B02) התשובה היא BACKLOG EMPTY מאומת מחדש. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
@@ -126,7 +127,7 @@ merchandising, "נדחה" ו"נראה כמו backlog ואינו"; אין בו "�
    אחרי ההתפשטות: `dig +short A kenyonexpress.co.il @1.1.1.1` צריך להחזיר
    `216.198.79.1`, ואז `curl -sI https://www.kenyonexpress.co.il/` ל-200.
    שום דבר בצד Vercel לא דורש שינוי.
-2. **פריסת פרודקשן של HEAD (`d0a21af2a`, 22 קומיטים אחרי `a388118f1` החי)**
+2. **פריסת פרודקשן של HEAD (`c63f71b73`, 26 קומיטים אחרי `a388118f1` החי)**
    (מצב עצירה, אישור נדרש): REST `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, כמו ב-Q02.
 3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס

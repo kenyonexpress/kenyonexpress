@@ -4,6 +4,32 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## B03 - DONE (25.09) - BACKLOG EMPTY, שלושת תנאי הפתיחה מחדש נבדקו ואף אחד לא התקיים
+
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומת B02.** HEAD `a3c3c66ed`
+שווה ל-`origin/audit/final-audit`, עץ נקי, אפס קומיטים חדשים מאז B02.
+
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B03 | תוצאה |
+|---|---|---|
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree` על HEAD ועל `origin/main`, ו-`~/ke-goals`: רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`. | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק; ה-alias `kenyonexpress.vercel.app` עונה 200 עם `0` ‏`p_con__city` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`; ‏`dns-watch.sh` (pid 999) עדיין רץ. | לא. |
+| (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
+
+`docs/POST-LAUNCH-BACKLOG.md` נסרק שוב לפי כותרות: DB, ביצועים, i18n, תוכן,
+merchandising, "נדחה" ו"נראה כמו backlog ואינו"; אין בו "שלב 1". עשרת החוסמים
+והפריטים הידניים למטה לא השתנו ואינם בידי הסוכן.
+
+**החלטות שהתקבלו לבד:** (א) ‏B01 ו-Q24 הועברו לארכיון באותו commit כדי
+להשאיר כאן רק את מה שחי; ‏B02 נשאר כי B03..B10 מפנים לתנאי הפתיחה שבו.
+‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה סיבה כמו ב-B02.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` **600 קבצים /
+7,158 ירוקים / 12 מדולגים**, `pnpm build` ירוק (BUILD_ID `1xDgBF_l_Y00D_kmW0VYx`).
+שער ההשוואה בחזית על 3341, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS,
+‏1440 ‏3.82% PASS**, exit 0, שורות 03:41-03:45 UTC ב-`docs/UI-PARITY-REPORT.md`
+על `a3c3c66ed`. תחזוקה: גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`,
+שלושה בסך הכל), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+
 ## B01 - DONE (25.09) - ה-preflight של הפריסה מחובר לבניית Vercel
 
 **מה נבחר ולמה.** ‏`docs/BACKLOG.md` אינו קיים (אומת שוב ב-B01: אין קובץ כזה
