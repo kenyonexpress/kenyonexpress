@@ -1,23 +1,15 @@
-RESUME FROM: M08-c1
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, Q05b)
+RESUME FROM: M09-c1
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M08-c1)
 
 ## המשך מ:
 
-**Q05b DONE (25.09): דף המוצר נמדד מול Electro v7 בשלושת הרוחבים, בלי אף
-override, ועבר.** דמו Electro ענה היום 200 לדפדפן headless (ב-04.09 היה 403 קבוע
-על כל `/product/*`), ו-`scripts/capture-electro.mjs` ללא שינוי כתב
-`refs/electro_product_{380,768,1440}.png` + HTML + computed. השער על מוצר אמיתי
-מהקטלוג (`barbecue-2`, "ארוחה בשרית", ‏₪180 / ‏₪199, מסעדות ובתי קפה), על build טרי
-(`meoaJXLMZC3t-yn6-ZdGR`, שרת 3481 מאומת לפי BUILD_ID), בחזית, `--widths=380,768,1440
---baseline='refs/electro_product_{width}.png'`, בלי `COMPARE_ALLOW_GRID_MISMATCH`:
-**380 ‏5.65% PASS, ‏768 ‏4.95% PASS, ‏1440 ‏2.92% PASS.** הבית באותו build ובאותה ריצה:
-**380 ‏8.43%, ‏768 ‏9.03%, ‏1440 ‏3.82%, PASS.** שש השורות 09:42-09:52 UTC
-ב-`docs/UI-PARITY-REPORT.md`. פירוט ברשומה למטה. **SHOWABLE נשאר `no`**: תנאי Q05b
-(שני הדפים עוברים) מתקיים, אבל Q06 מגדיר את הדגל לפי Q02..Q05 והדומיין עדיין
-לא מתרגם והפריסה החיה היא `a388118f1`; ראו הסעיף הבא.
+**M08-c1 DONE (25.09): BACKLOG EMPTY, בפעם העשירית.** `docs/BACKLOG.md` אינו קיים
+בשום ref ולא בדיסק, ושלושת תנאי הפתיחה מחדש מרשומת B02 נמדדו ולא התקיימו: הדומיין
+עדיין לא מתרגם (NS ברשם `ns1/ns2.vercel.com`), ה-alias עדיין מגיש `a388118f1`
+(עכשיו 41 קומיטים מאחורי HEAD), וכל השערים ירוקים. אפס שינוי קוד. הרשומה למטה.
 
-**הבא בתור: M08-c1** (‏`docs/BACKLOG.md` אינו קיים; ‏B02..B10 מדדו BACKLOG EMPTY תשע
-פעמים, ותנאי הפתיחה מחדש רשומים בארכיון תחת B02).
+**הבא בתור: M09-c1** (ניקוי STATE: הפריט הפתוח בעל ההשפעה הגבוהה ביותר ב-STATE.md
+שסוכן קוד יכול להשלים בלי אופיר; אם אין, לכתוב STATE CLEAN).
 
 ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M07-c1, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -46,72 +38,49 @@ Q06 (שרץ אחרי Q05b בתור) מגדיר אותו לפי Q02..Q05 עם ר�
 ניתן להצגה כלל.
 
 
-## Q05b - DONE (25.09) - דף המוצר מול Electro v7 בשלושת הרוחבים, מוצר אמיתי, בלי override: 5.65 / 4.95 / 2.92 PASS
+## M08-c1 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם העשירית: שלושת תנאי הפתיחה מחדש נבדקו ואף אחד לא התקיים
 
-**ה-reference.** `docs/MISSING-ASSETS.md` סעיף 1 רשם ב-04.09 שדמו Electro עונה
-`403 - Forbidden` על כל `/product/*` אחרי שה-challenge של Cloudflare עובר, וארבע דרכים
-נכשלו. היום אותו סקריפט, ללא שינוי, עבר:
+הפריט מגדיר את `docs/BACKLOG.md` כקלט. הקובץ אינו קיים: `git ls-tree -r` על HEAD,
+על `origin/main`, על `origin/closeout/v1-final` ועל `origin/audit/final-audit` מחזיר
+רק `docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md` (שניהם נפסלו ב-B02:
+הראשון ריק לפי הבאנר שלו, השני "כל מה שנדחה במכוון"); `git cat-file -e` על כל
+ה-refs המקומיים: אפס; `~/ke-goals`: המילה מופיעה רק בשורות B02 ו-M08-c1 של התור
+עצמו ובעותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`. אחרי
+`git fetch`, `51b9ac768` שווה ל-`origin/audit/final-audit`, אפס קומיטים חדשים.
 
-```
-node scripts/capture-electro.mjs \
-  "https://electro.madrasthemes.com/product/ultra-wireless-s50-headphones-s50-with-bluetooth/" \
-  electro_product
-```
+| תנאי פתיחה מחדש (מרשומת B02, בארכיון) | נמדד ב-M08-c1 | תוצאה |
+|---|---|---|
+| (א) `docs/BACKLOG.md` נוצר | לא, בשום ref ולא בדיסק (למעלה). | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl` על שני המארחים exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,180 בתים) עם `0` `p_con__city`, `0` `pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **41** קומיטים מאחורי HEAD. `dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
+| (ג) שער אדום בריצה הזו | type-check, lint (13 שערים), test, build ושער ההשוואה בשני הדפים ובשלושת הרוחבים: הכל ירוק (למטה). | לא. |
 
-כתב `refs/electro_product.html` (518,572 בתים, הכותרת האמיתית של המוצר),
-`refs/electro_product_380.png` (380x11181), `_768.png` (768x8408), `_1440.png`
-(1440x7653) ו-`_computed.json` (2,238 שורות). `refs/` אינו ב-git (מדיניות
-`docs/REFS-POLICY.md`); הפקודה למעלה מייצרת אותם מחדש. הסעיף ב-`MISSING-ASSETS.md`
-נכתב מחדש כ-CAPTURED עם שתי המדידות, ושורת ה-ledger שלו ב-`known-dangling-paths.json`
-הוסרה (`docs-path-audit --write`), אחרת `pnpm lint` אדום.
+**מה שכן היה מועמד ונפסל, כמו ב-B02:** חוסמים 1-10 למטה הם רשם, סוד, דשבורד,
+migration או פריסה; `POST-LAUNCH-BACKLOG.md` נדחה בהגדרה; `MIGRATION-BACKLOG.md`
+ריק לפי עצמו. אין פריט שלב 1 בידי הסוכן.
 
-**המוצר.** `barbecue-2` ("ארוחה בשרית", ‏₪180 / מחיר מלא ‏₪199, מסעדות ובתי קפה,
-תמונה, 10 במלאי): שורה אמיתית בקטלוג ולא אחת מ-25 שורות התבנית/העותקים
-ב-`supabase/catalogue-known-issues.json`. ברירת המחדל של הסקריפט,
-`מוצר-לדוגמא`, היא שורת תבנית, ולכן הריצה מקבלת `COMPARE_PRODUCT_SLUG=barbecue-2`.
+**החלטות שהתקבלו לבד:** (א) לא נוצר `docs/BACKLOG.md`: קובץ חדש ב-`docs/` מפעיל
+את שערי המלאי בלי תוכן שמצדיק אותו, ואותה החלטה נרשמה ב-B02..B10. (ב) רשומת
+Q05b הועברה לארכיון באותו commit; הרשומה הזו תופסת את מקומה. (ג) שרת
+`next-server` זר אחד (pid 74758) רץ מסשן אחר, לא נגעתי בו; השער נמדד על 3491 מול
+שרת חדש שאומת שהוא מגיש את BUILD_ID של הריצה הזו, ונסגר בסיום (3491 עונה
+exit 7). (ד) השערים והשער החזותי רצו במלואם אף שהשינוי הוא ב-STATE.md ובפנקס
+בלבד, כי חוקי הפריט דורשים את המספרים בכל ריצה. (ה) `M15-c1` מבקש לרענן את
+`docs/BACKLOG.md`; כשיגיע תורו, יצירת הקובץ תהיה תוצר של אותו פריט ולא של זה.
 
-**תיקון אחד ב-`scripts/compare.mjs`, לא override.** עם `--baseline` אין ניווט לצד
-החי, ולכן `gridCounts.live` נשאר `null` ו-guard ספירת הגריד סירב ("live shows null
-product cards") בכל ריצת מוצר קפואה, בלי לכתוב שורת ledger; זו הסיבה ש-Q04 ו-M02-c1
-נזקקו ל-`COMPARE_ALLOW_GRID_MISMATCH=1`. אותו פגם בדיוק שה-guard של הסל כבר מטפל
-בו (`cartEmptiness.live`): עכשיו הצד הקפוא לא נספר, השורה מודפסת ("frozen capture,
-live grid not counted; the local page shows 5 product card(s)"), ו-guard הכותרות
-ו-guard תמונת הגיבור ממילא מדלגים על `null`. השער החי (בלי `--baseline`) לא השתנה.
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 116 בתקרה,
+docs-index 281, docs-path-audit 153 ללא שינוי), `pnpm test` **601 קבצים / 7,171
+ירוקים / 12 מדולגים** (53.7s), `pnpm build` ירוק (BUILD_ID `8YNvNRUtEMxNHvniDSgLm`,
+0 ERROR). שער ההשוואה בחזית על 3491, `--baseline`, ללא override:
 
-**המדידה.** build טרי `pnpm build` (BUILD_ID `meoaJXLMZC3t-yn6-ZdGR`), שרת `pnpm start`
-על 3481 מאומת לפי BUILD_ID ב-HTML, בחזית:
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית מול `refs/ke_live_*` | **8.43% PASS** | **9.08% PASS** | **3.82% PASS** |
+| מוצר `barbecue-2` מול `refs/electro_product_*` | **5.61% PASS** | **4.92% PASS** | **2.99% PASS** |
 
-```
-COMPARE_PRODUCT_SLUG=barbecue-2 LOCAL_BASE=http://localhost:3481 \
-  node scripts/compare.mjs --page=product --widths=380,768,1440 \
-  --baseline='refs/electro_product_{width}.png'
-LOCAL_BASE=http://localhost:3481 \
-  node scripts/compare.mjs --page=home --widths=380,768,1440 \
-  --baseline='refs/ke_live_{width}.png'
-```
-
-| דף | 380 | 768 | 1440 | overall (reference blank / ours blank) |
-|---|---|---|---|---|
-| מוצר מול Electro v7 | **5.65% PASS** | **4.95% PASS** | **2.92% PASS** | 33.26 (21.19 / 6.43), 34.71 (23.73 / 6.04), 21.15 (13 / 5.22) |
-| בית מול `ke_live_*` | **8.43% PASS** | **9.03% PASS** | **3.82% PASS** | 13.97 (2.79 / 2.75), 16.17 (4.37 / 2.77), 15.09 (9.9 / 1.37) |
-
-שש השורות 09:42-09:52 UTC ב-`docs/UI-PARITY-REPORT.md`, `fb12aab61-dirty` (העץ
-נשא את תיקון `compare.mjs` בזמן המדידה). ריצה ראשונה על ה-build הקודם (M07-c1,
-09:31-09:35) נתנה אותם מספרים בדיוק. המספר המגודר הוא both-painted, כמו בבית
-מאז 22.09; ה-overall גבוה כי ה-reference הוא LTR אנגלית (אוזניות) ושלנו RTL עברית,
-ורוב ההפרש הוא "reference blank": שני הדפים צובעים תוכן במקומות שונים. לא נדרש
-אף תיקון UI: שלושת הרוחבים עברו בריצה הראשונה.
-
-**החלטות שהתקבלו לבד:** (א) SHOWABLE נשאר `no` (ראו הסעיף למעלה): Q05b מבקש `yes`
-כששני הדפים עוברים, Q06 המאוחר יותר מבקש `yes` רק כש-Q02..Q05 מאומתים, ו-Q02 חסום
-אצל הרשם. הרישום המחמיר נשאר וה-evidence של Q05b נרשם לידו. (ב) `refs/` נשאר
-מחוץ ל-git, כמו כל ה-refs; הסקריפט והפקודה הם המקור. (ג) הבית נמדד מחדש אף
-שאינו חלק מ-Q05b, כי תנאי ה-SHOWABLE דורש "שניהם עוברים" על אותו build.
-(ד) `lsof` אינו ב-PATH של ה-shell הזה; `/usr/sbin/lsof` כן.
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (6 שערים), `pnpm test` **601 קבצים /
-7,171 ירוקים / 12 מדולגים**, `pnpm build` ירוק. **תחזוקה:** גיבוי היום קיים
-(`kenyonexpress-backup-2026-09-25-0931.tar.gz`), `caffeinate` חי.
+שש השורות 10:01-10:10 UTC ב-`docs/UI-PARITY-REPORT.md` על `51b9ac768` (הראשונה
+נקייה, השאר `-dirty` רק כי השורה הראשונה כבר שינתה את הפנקס). **תחזוקה:** גיבוי
+היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה קבצים בסך הכל),
+`caffeinate` חי.
 
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
@@ -159,6 +128,7 @@ LOCAL_BASE=http://localhost:3481 \
 | M05-c1 | DONE (25.09) | פירוט בארכיון. advisors דרך management API: 44 WARN, 21 עם קובץ ממתין (245, 246 חדשים; 209, 220 קיימים), 23 by design. 218 לא הוחלה (ממצא). שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
 | M06-c1 | DONE (25.09) | הרשומה למעלה. a11y / BP / SEO 100 בבית ובמוצר (BP 96 -> 100). perf: devtools 96 / 98, alias `a388118f1` 91 / 90, simulate מקומי 79-83 / 75-84 (תכונת Lantern, מתועד). 4 תיקונים נמדדו. שער 8.43/9.08/3.82 PASS, מוצר 2.79 PASS. פירוט בארכיון. |
 | M07-c1 | DONE (25.09) | הרשומה למעלה. 241 נתיבים בארבעה תפקידים, 239 PASS / 2 NO DATA / 0 FAIL; אפס שגיאות קונסולה, אפס אזהרות הידרציה, RTL ב-167/167. חמישה פגמים תוקנו (תאריכים בהידרציה, CSP wss, מצלמת הסריקה, תצוגת הבית באדמין, prefetch חשבונית) + הלוגר. שער 8.43/9.03/3.82 PASS, מוצר 2.79 PASS. |
+| M08-c1 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם העשירית: `docs/BACKLOG.md` אינו קיים בשום ref; שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. אפס שינוי קוד. שער 8.43/9.08/3.82 PASS, מוצר 5.61/4.92/2.99 PASS. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 

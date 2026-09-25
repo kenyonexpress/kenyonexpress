@@ -4,6 +4,74 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q05b - DONE (25.09) - דף המוצר מול Electro v7 בשלושת הרוחבים, מוצר אמיתי, בלי override: 5.65 / 4.95 / 2.92 PASS
+
+**ה-reference.** `docs/MISSING-ASSETS.md` סעיף 1 רשם ב-04.09 שדמו Electro עונה
+`403 - Forbidden` על כל `/product/*` אחרי שה-challenge של Cloudflare עובר, וארבע דרכים
+נכשלו. היום אותו סקריפט, ללא שינוי, עבר:
+
+```
+node scripts/capture-electro.mjs \
+  "https://electro.madrasthemes.com/product/ultra-wireless-s50-headphones-s50-with-bluetooth/" \
+  electro_product
+```
+
+כתב `refs/electro_product.html` (518,572 בתים, הכותרת האמיתית של המוצר),
+`refs/electro_product_380.png` (380x11181), `_768.png` (768x8408), `_1440.png`
+(1440x7653) ו-`_computed.json` (2,238 שורות). `refs/` אינו ב-git (מדיניות
+`docs/REFS-POLICY.md`); הפקודה למעלה מייצרת אותם מחדש. הסעיף ב-`MISSING-ASSETS.md`
+נכתב מחדש כ-CAPTURED עם שתי המדידות, ושורת ה-ledger שלו ב-`known-dangling-paths.json`
+הוסרה (`docs-path-audit --write`), אחרת `pnpm lint` אדום.
+
+**המוצר.** `barbecue-2` ("ארוחה בשרית", ‏₪180 / מחיר מלא ‏₪199, מסעדות ובתי קפה,
+תמונה, 10 במלאי): שורה אמיתית בקטלוג ולא אחת מ-25 שורות התבנית/העותקים
+ב-`supabase/catalogue-known-issues.json`. ברירת המחדל של הסקריפט,
+`מוצר-לדוגמא`, היא שורת תבנית, ולכן הריצה מקבלת `COMPARE_PRODUCT_SLUG=barbecue-2`.
+
+**תיקון אחד ב-`scripts/compare.mjs`, לא override.** עם `--baseline` אין ניווט לצד
+החי, ולכן `gridCounts.live` נשאר `null` ו-guard ספירת הגריד סירב ("live shows null
+product cards") בכל ריצת מוצר קפואה, בלי לכתוב שורת ledger; זו הסיבה ש-Q04 ו-M02-c1
+נזקקו ל-`COMPARE_ALLOW_GRID_MISMATCH=1`. אותו פגם בדיוק שה-guard של הסל כבר מטפל
+בו (`cartEmptiness.live`): עכשיו הצד הקפוא לא נספר, השורה מודפסת ("frozen capture,
+live grid not counted; the local page shows 5 product card(s)"), ו-guard הכותרות
+ו-guard תמונת הגיבור ממילא מדלגים על `null`. השער החי (בלי `--baseline`) לא השתנה.
+
+**המדידה.** build טרי `pnpm build` (BUILD_ID `meoaJXLMZC3t-yn6-ZdGR`), שרת `pnpm start`
+על 3481 מאומת לפי BUILD_ID ב-HTML, בחזית:
+
+```
+COMPARE_PRODUCT_SLUG=barbecue-2 LOCAL_BASE=http://localhost:3481 \
+  node scripts/compare.mjs --page=product --widths=380,768,1440 \
+  --baseline='refs/electro_product_{width}.png'
+LOCAL_BASE=http://localhost:3481 \
+  node scripts/compare.mjs --page=home --widths=380,768,1440 \
+  --baseline='refs/ke_live_{width}.png'
+```
+
+| דף | 380 | 768 | 1440 | overall (reference blank / ours blank) |
+|---|---|---|---|---|
+| מוצר מול Electro v7 | **5.65% PASS** | **4.95% PASS** | **2.92% PASS** | 33.26 (21.19 / 6.43), 34.71 (23.73 / 6.04), 21.15 (13 / 5.22) |
+| בית מול `ke_live_*` | **8.43% PASS** | **9.03% PASS** | **3.82% PASS** | 13.97 (2.79 / 2.75), 16.17 (4.37 / 2.77), 15.09 (9.9 / 1.37) |
+
+שש השורות 09:42-09:52 UTC ב-`docs/UI-PARITY-REPORT.md`, `fb12aab61-dirty` (העץ
+נשא את תיקון `compare.mjs` בזמן המדידה). ריצה ראשונה על ה-build הקודם (M07-c1,
+09:31-09:35) נתנה אותם מספרים בדיוק. המספר המגודר הוא both-painted, כמו בבית
+מאז 22.09; ה-overall גבוה כי ה-reference הוא LTR אנגלית (אוזניות) ושלנו RTL עברית,
+ורוב ההפרש הוא "reference blank": שני הדפים צובעים תוכן במקומות שונים. לא נדרש
+אף תיקון UI: שלושת הרוחבים עברו בריצה הראשונה.
+
+**החלטות שהתקבלו לבד:** (א) SHOWABLE נשאר `no` (ראו הסעיף למעלה): Q05b מבקש `yes`
+כששני הדפים עוברים, Q06 המאוחר יותר מבקש `yes` רק כש-Q02..Q05 מאומתים, ו-Q02 חסום
+אצל הרשם. הרישום המחמיר נשאר וה-evidence של Q05b נרשם לידו. (ב) `refs/` נשאר
+מחוץ ל-git, כמו כל ה-refs; הסקריפט והפקודה הם המקור. (ג) הבית נמדד מחדש אף
+שאינו חלק מ-Q05b, כי תנאי ה-SHOWABLE דורש "שניהם עוברים" על אותו build.
+(ד) `lsof` אינו ב-PATH של ה-shell הזה; `/usr/sbin/lsof` כן.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (6 שערים), `pnpm test` **601 קבצים /
+7,171 ירוקים / 12 מדולגים**, `pnpm build` ירוק. **תחזוקה:** גיבוי היום קיים
+(`kenyonexpress-backup-2026-09-25-0931.tar.gz`), `caffeinate` חי.
+
+
 ## M07-c1 - DONE (25.09) - ביקורת נתיבים: 241 נתיבים בארבעה תפקידים, 0 FAIL, אפס שגיאות קונסולה ואפס אזהרות הידרציה, RTL בכל דף; חמישה פגמים תוקנו
 
 **נמדד על build טרי** (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3471
