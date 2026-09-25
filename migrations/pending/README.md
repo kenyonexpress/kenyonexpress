@@ -1,5 +1,41 @@
 # `migrations/pending/`
 
+## 2026-09-25: 246 WRITTEN, not applied - ה-`auth_rls_initplan` היחיד ש-209 לא סוגר, נמדד
+
+‏`246_profiles_mfa_initplan.sql`. ‏M05-c1. ‏209 §2 כותב את
+‏`profiles_super_admin_mfa` כ-`(SELECT auth.jwt() ->> 'aal')`, ו-Postgres שומר
+את זה כ-`( SELECT (auth.jwt() ->> 'aal'))`; ה-lint של ה-advisor (‏splinter
+‏0003) מקבל רק את הצורה המילולית `select auth.jwt()`, ולכן ה-WARN נשאר. נמדד
+ב-BEGIN/ROLLBACK מול פרודקשן ב-25.09 עם שאילתת ה-lint עצמה בתוך הטרנזקציה:
+אחרי הטקסט של 209 ‏`profiles` עדיין ברשימה, אחרי הקובץ הזה לא. ‏`ALTER POLICY`
+יחיד, אותה סמנטיקה בדיוק כולל ה-`COALESCE(..., 'aal1')`; נבדק כאדמין וכחמישה
+לקוחות עם ‏`aal1`/‏`aal2`/בלי claim, לפני ואחרי, זהה. **אחרי 209** (אם 209
+יוחל אחריו, ה-WARN חוזר עד ריצה חוזרת). קובץ נוסף ולא עריכה של 209, כמו 220.
+
+## 2026-09-25: 245 WRITTEN, not applied - policy מתירני אחד לכל (טבלה, תפקיד, פעולה), 14 WARN -> 0
+
+‏`245_single_permissive_policy_per_action.sql`. ‏M05-c1: ה-advisors נקראו
+דרך ה-management API (‏28 ממצאי אבטחה, ‏206 ביצועים). ‏14 ה-WARN של
+‏`multiple_permissive_policies` על 11 טבלאות (‏`banners`, ‏`homepage_sections`,
+‏`cashback_ledger`, ‏`payment_events`, ‏`payout_statements`,
+‏`payout_statement_lines`, ‏`refunds`, ‏`supplier_branches`, ‏`support_tickets`,
+‏`support_ticket_messages`, ‏`whatsapp_contacts`) מאוחדים ל-policy אחד לכל
+(תפקיד, פעולה): שני policies מתירניים מעבירים שורה אם `P1 OR P2`, ולכן כל policy
+מאוחד הוא בדיוק `(P1) OR (P2)`; ‏`FOR ALL` מפוצל ל-SELECT/INSERT/UPDATE/DELETE;
+קריאה ציבורית שמתמזגת עם עזר ש-`anon` אינו רשאי להריץ (‏`has_role`,
+‏`current_user_role`) מפוצלת לפי תפקיד (‏`_select_anon` / ‏`_select_authenticated`,
+המוסכמה של הקטלוג, והסיבה ש-165 בוטלה); קריאות שאינן תלויות בשורה עטופות
+ב-`(select ...)`. **נבדק ב-BEGIN/ROLLBACK מול פרודקשן ב-25.09** יחד עם 209 §2
+ו-220: ‏55 בדיקות נראוּת (‏5 זהויות: ‏anon, אדמין, חבר ספק, לקוח עם שורות,
+משתמש ריק × ‏11 טבלאות) זהות לפני ואחרי; ‏lint ‏0006 בתוך הטרנזקציה ‏14 -> ‏0.
+**אחרי 209** (209 עושה ‏ALTER ל-`cashback_ledger_owner_select` שהקובץ הזה
+מוחק) **ואחרי 203** (203 יוצר מחדש את שני ה-SELECT של
+‏`support_ticket_messages`; התנאי `direction <> 'internal'` שלו כבר נישא כאן).
+ה-23 האזהרות על ‏SECURITY DEFINER (‏2 ‏anon, ‏21 ‏authenticated) **אינן מקבלות
+קובץ**: לכל אחת קורא שצריך את ה-grant, נמדד מחדש (‏8 פרדיקטים של policies,
+‏13 ‏RPC מלקוח הסשן של המשתמש עם בדיקת ‏`is_admin()` בגוף; ‏service_role בלי
+‏`auth.uid()` היה נדחה). ה-`function_search_path_mutable` היחיד כבר ב-220.
+
 ## 2026-09-25: 244 WRITTEN, not applied - תוכנית שותפים: קמפיינים עם עמלה והמרות, שתי טבלאות חדשות בלבד
 
 ‏`244_affiliate_campaigns.sql`. ‏Q16: לקוח משתף דיל עם הקוד שלו על הקישור,

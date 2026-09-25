@@ -1,6 +1,6 @@
 # DB-SECURITY-MODEL.md — RLS, Policies, SECURITY DEFINER
 
-> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-01 (סעיף 4 מפה מלאה; המספרים וסעיף 5.1 נשלפו מחדש אחרי החלת 127).
+> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-25 (סעיף 0א: ספירות ו-advisors נמדדו מחדש דרך ה-management API; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
 > כל שורה כאן נשלפה מ-`pg_policies`, `pg_class`, `pg_proc` (aclexplode) בפועל, לא מהזיכרון.
 > **מיגרציה 125 הוחלה ואומתה ב-21.08**: הוסרו הרשאות EXECUTE ל-authenticated מ-6 פונקציות עזר יתומות. אומת שוב ב-01.09: לשש כולן `anon=false, authed=false`.
 > **⚠️ מיגרציה 127 הוחלה ב-01.09**, אחרי שהאתר עלה לאוויר, והיא משנה את סעיף 5.1. ‏`check_rate_limit` **אינה חשופה יותר** ל-anon ול-authenticated. הוכחה, קריאה אמיתית עם המפתח הפומבי: `POST /rest/v1/rpc/check_rate_limit` מחזיר `401` ו-`42501 permission denied for function check_rate_limit`.
@@ -27,6 +27,55 @@ policies", ו-132 הוסיפה את `search_index_outbox` שאין לה policy �
 ‏**‏6 הרשאות EXECUTE ל-anon בסך הכל**, לא ‏4: מעבר לארבע ה-SECURITY DEFINER יש ‏`payment_events_append_only` ו-`refunds_force_due_by`, שתיהן פונקציות טריגר שנושאות את ה-grant הציבורי שברירת המחדל של Postgres נותנת. הן מחזירות `trigger` ולא מקבלות ארגומנטים, ולכן קריאה להן דרך PostgREST לא משיגה דבר. ‏audit שסופר grants ולא משטח-תקיפה יראה ‏6 וצריך לדעת שלוש מהן אינרטיות.
 
 Advisors security אחרי 127: **‏23** ממצאים, כולם מכוונים ומתועדים — 8 `rls_enabled_no_policy` (INFO, deny-all מכוון), 3 `anon_security_definer` (WARN, סעיף 5.1), 12 `authenticated_security_definer` (WARN, סעיפים 5.1+5.2). לפני 127 היו 25; שני הממצאים שנעלמו הם בדיוק `check_rate_limit` בשתי הרשימות.
+
+**המספרים בפסקה הזו ובסעיף הזה הם מ-01.09. הספירה החיה מ-25.09 בסעיף 0א.**
+
+## 0א. נמדד מחדש 25.09.2026 (M05-c1), דרך ה-management API, קריאה בלבד
+
+**הסכימה גדלה מאז 01.09.** ‏**98** טבלאות ב-`public` (היו 53), כולן עם RLS
+מופעל, אפס `rls_forced`. ‏**82** עם policy מתירני אחד לפחות, ‏**4** בלי אף policy
+(‏`fraud_flags`, ‏`fraud_review_queue`, ‏`invoice_counters`, ‏`media_ingest_queue`),
+‏**12** עם policies מגבילים בלבד (‏`coupon_redemptions`, ‏`legacy_percent_archive_112`,
+‏`rate_limits`, ‏`referral_signals`, ‏`scheduled_price_changes`, ‏`search_index_dlq`,
+‏`search_index_outbox`, ‏`settlement_events`, ‏`stock_reservations`, ‏`stock_waitlist`,
+‏`user_rate_limits`, ‏`wishlist_stock_state`). ‏16 = 4 + 12 חסומות לגמרי ל-anon
+ול-authenticated; הרשימה בסעיף 6 (8 טבלאות) היא מ-01.09.
+
+**‏117 פונקציות, ‏89 מהן SECURITY DEFINER** (היו 69 / 61). **כל 89 מצמידות
+‏`search_path`.** הפונקציה היחידה בלי הצמדה היא ‏`fn_wallet_entries_block_mutation`,
+טריגר ‏INVOKER, והתיקון שלה ממתין ב-220. ‏**2** ‏SECURITY DEFINER חשופות ל-anon
+(‏`is_admin`, ‏`is_supplier_member`, בדיוק כמו סעיף 5.1; ‏`fn_record_recent_search`
+כבר לא) ו-**21** ל-authenticated: ‏11 מסעיפים 5.1 ו-5.2 (‏`fn_record_recent_search`
+ירדה) ועוד **‏10 חדשות**, כולן עם ‏`IF NOT public.is_admin() THEN RAISE` בגוף
+ונקראות מלקוח הסשן של המשתמש (‏`createClient()`), ולכן ה-grant נדרש:
+‏`admin_refresh_reports`, ‏`admin_report_cohort_retention`, ‏`admin_report_orders_daily`,
+‏`admin_report_revenue_daily`, ‏`admin_report_top_products` (‏`queries/admin-reports.ts`,
+‏`actions/admin/reports.ts`), ‏`generate_payout_statement`, ‏`approve_payout_statement`,
+‏`cancel_payout_statement`, ‏`mark_payout_statement_paid` (‏`actions/admin/payouts.ts`),
+‏`fn_cashback_admin_adjust` (‏`actions/admin/cashback.ts`). ‏service_role אין לו
+‏`auth.uid()`, ולכן קריאה דרך ‏`createAdminClient()` הייתה נדחית ב-`forbidden`.
+
+**‏Advisors, ‏25.09:**
+
+| קטגוריה | ממצא | רמה | כמות | מה נעשה |
+|---|---|---|---|---|
+| אבטחה | `authenticated_security_definer_function_executable` | WARN | 21 | by design, לכל אחת קורא (למעלה) |
+| אבטחה | `anon_security_definer_function_executable` | WARN | 2 | by design, פרדיקטים של 18 policies; 165 בוטלה |
+| אבטחה | `function_search_path_mutable` | WARN | 1 | ‏`220_wallet_entries_search_path.sql`, ממתינה |
+| אבטחה | `rls_enabled_no_policy` | INFO | 4 | deny-all מכוון |
+| ביצועים | `multiple_permissive_policies` | WARN | 14 | ‏`245_single_permissive_policy_per_action.sql`, ממתינה, נבדקה ב-BEGIN/ROLLBACK: ‏14 -> ‏0 |
+| ביצועים | `auth_rls_initplan` | WARN | 6 | ‏5 ב-`209_advisor_warnings.sql` §2; השישי (‏`profiles_super_admin_mfa`) ב-`246_profiles_mfa_initplan.sql`, כי צורת 209 נמדדה כעדיין מסומנת |
+| ביצועים | `unused_index` | INFO | 176 | לא נגעו; ראו 208 |
+| ביצועים | `unindexed_foreign_keys` | INFO | 9 | לא נגעו; ‏`POST-LAUNCH-BACKLOG` |
+| ביצועים | `auth_db_connections_absolute` | INFO | 1 | הגדרת פרויקט, לא סכימה |
+
+סך הכול ‏28 ממצאי אבטחה ו-206 ביצועים; ‏44 WARN, ‏21 מהם עם קובץ ממתין
+(‏209, ‏220, ‏245, ‏246) ו-23 by design. אף קובץ לא הוחל.
+
+**ממצא צדדי מאותה ריצה, לא מה-advisors:** ‏`enforce_profile_privilege_columns`
+עדיין מפיל כל ‏UPDATE של לקוח על השורה שלו ב-`profiles` עם ‏`42703 record "new"
+has no field "supplier_id"` (‏5 מתוך 5 לקוחות שנבדקו ב-BEGIN/ROLLBACK; האדמין עובר).
+‏218 שמתקנת זאת **לא הוחלה**, בניגוד לרישום קודם.
 
 ## 1. עקרון-על
 

@@ -1012,6 +1012,14 @@ describe('the pending migration inventory', () => {
       // no client write. Every reader catches 42P01 and the programme reads as
       // "not open yet" until it is applied (server/affiliates/convert.ts).
       '244_affiliate_campaigns.sql',
+      // M05-c1 (25.09): one permissive policy per (table, role, action) on
+      // eleven tables; rehearsed on production in BEGIN/ROLLBACK, lint 0006
+      // 14 -> 0, 55 visibility probes identical. After 209 and after 203.
+      '245_single_permissive_policy_per_action.sql',
+      // M05-c1 (25.09): the profiles MFA initplan rewrite in the textual form
+      // the advisor's lint accepts; 209's form is measured as still flagged.
+      // After 209.
+      '246_profiles_mfa_initplan.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

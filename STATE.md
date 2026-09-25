@@ -1,16 +1,19 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M04-c1)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M05-c1)
 
 ## המשך מ:
 
-**M04-c1 DONE (25.09): היגיינת תלויות.** `pnpm audit` 0 חולשות לפני ואחרי; 30
-חבילות עודכנו ב-patch/minor (בהן `next` 16.3.6, React 19.3.0, `@supabase/supabase-js`
-2.117.1, `lucide-react` 1.47.0), 14 major ו-3 נוספות דולגו בכוונה, הפירוט ברשומה
-למטה. ארבעת השערים ירוקים (test 601 / 7,162 / 12, build `hB3Kgl84w8-Yye69Aqgh2`)
-ושער ההשוואה 8.44 / 9.03 / 3.82 בבית, 2.79 במוצר, ללא שינוי. ה-goal הבא:
-**M05-c1** (Database audit: `get_advisors` ב-MCP של Supabase לקריאה בלבד, אבטחה
-וביצועים; לכל WARN קובץ מיגרציה ב-`migrations/pending` בלבד, לעולם לא להחיל;
-עדכון docs). שימו לב: ה-MCP של Supabase דורש הרשאה בסשן לא-אינטראקטיבי, ובלעדיה
-החלופה היא ה-management API עם token מה-keychain של ה-CLI. הדומיין עדיין מאציל
+**M05-c1 DONE (25.09): ביקורת DB.** ה-advisors נקראו לקריאה בלבד דרך ה-management
+API (ה-MCP של Supabase דורש OAuth בסשן לא-אינטראקטיבי): 28 ממצאי אבטחה, 206 ביצועים,
+44 WARN. 21 מהם עם קובץ ממתין: 220 (קיים), 209 §2 (קיים, 5 מ-6), **245 חדש** (14
+policies מתירניים כפולים על 11 טבלאות, נבדק ב-BEGIN/ROLLBACK מול פרודקשן: 14 -> 0, 55
+בדיקות נראוּת זהות) ו-**246 חדש** (ה-initplan היחיד ש-209 לא סוגר, נמדד). 23 WARN של
+SECURITY DEFINER הם by design, לכל אחת קורא שנמדד. שום דבר לא הוחל.
+`docs/DB-SECURITY-MODEL.md` קיבל סעיף 0א עם הספירות החיות. **ממצא צדדי: 218 לא
+הוחלה, עדכון פרופיל של לקוח נופל ב-42703 בפרודקשן** (חוסם 3 למטה). ארבעת השערים
+ירוקים (test 601 / 7,162 / 12, build `64qgMLWJak8cqa3VAWpao`) ושער ההשוואה
+8.44 / 9.03 / 3.82 בבית, 2.79 במוצר, ללא שינוי. ה-goal הבא: **M06-c1** (Lighthouse
+mobile בבית ובמוצר, כל ציון 90 ומעלה, לרשום ב-STATE.md). שימו לב ל-`site-url-baked-at-build-time`
+ול-`lighthouse-lcp-is-simulated-on-localhost` בזיכרון. הדומיין עדיין מאציל
 ל-`ns1/ns2.vercel.com` (נמדד 25.09 ב-M02-c1); פריסת HEAD לפרודקשן חסומה
 ב-preflight (M01-c1, בארכיון).
 
@@ -35,73 +38,91 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 ניתן להצגה כלל.
 
 
-## M04-c1 - DONE (25.09) - היגיינת תלויות: 0 חולשות, 30 חבילות עודכנו ב-patch/minor, ארבעת השערים ושער ההשוואה ירוקים
+## M05-c1 - DONE (25.09) - ביקורת DB: 44 WARN, 21 עם קובץ ממתין (שניים חדשים: 245, 246), 23 by design, אפס הוחל
 
-**נמדד על העץ.** HEAD `092ff2517` שווה ל-`origin/audit/final-audit` אחרי
-`git fetch`, עץ נקי בתחילת הפריט; STATE.md 235 שורות, בלי צורך בארכוב בפתיחה.
+**נמדד על העץ ומול פרודקשן.** HEAD `31196638d` שווה ל-`origin/audit/final-audit`,
+עץ נקי בתחילת הפריט; STATE.md 243 שורות, בלי צורך בארכוב בפתיחה. `docs/BACKLOG.md`
+אינו קיים.
 
-**`pnpm audit`, לפני ואחרי:** `No known vulnerabilities found`, exit 0 בשתי הריצות.
+**איך נקראו ה-advisors.** ה-MCP של Supabase מופיע כ"דורש הרשאה" וה-OAuth אינו
+אפשרי בסשן לא-אינטראקטיבי. במקומו: `GET /v1/projects/<ref>/advisors/{security,performance}`
+ב-management API עם ה-token של ה-CLI מה-keychain (אותו מסלול שהוכח ב-21.09 ל-SQL),
+200 בשניהם. קריאה בלבד; כל SQL שנשלח היה `BEGIN ... ROLLBACK`.
 
-**`pnpm outdated`:** 47 חבילות מאחור, חולקו לשלוש קבוצות:
+**מה ה-advisors אומרים (25.09):**
 
-1. **עודכנו, 30, patch ו-minor בלבד** (`pnpm add` ברשימה מפורשת, לא `pnpm update`,
-   כדי שרק החבילות הנקובות יזוזו; ה-lockfile השתנה ב-2,084 שורות, כולן מהן):
+| קטגוריה | ממצא | רמה | כמות | כיסוי |
+|---|---|---|---|---|
+| אבטחה | `authenticated_security_definer_function_executable` | WARN | 21 | by design |
+| אבטחה | `anon_security_definer_function_executable` | WARN | 2 | by design (165 בוטלה) |
+| אבטחה | `function_search_path_mutable` | WARN | 1 | `220`, כבר ממתין |
+| אבטחה | `rls_enabled_no_policy` | INFO | 4 | deny-all מכוון |
+| ביצועים | `multiple_permissive_policies` | WARN | 14 | **`245` חדש** |
+| ביצועים | `auth_rls_initplan` | WARN | 6 | `209` §2 (5), **`246` חדש** (1) |
+| ביצועים | `unused_index` / `unindexed_foreign_keys` / `auth_db_connections_absolute` | INFO | 176 / 9 / 1 | לא נגעו |
 
-| חבילה | מ | אל |
+**למה 23 ה-WARN של SECURITY DEFINER לא מקבלים קובץ.** לכל אחת נמדד קורא: 8 הן
+פרדיקטים של policies (`is_admin` ב-93, `has_role`, `is_support`, `current_user_role`,
+`is_supplier_*`) שרצים כזהות הקורא; 13 הן RPC מלקוח הסשן של המשתמש (`createClient()`,
+לא `createAdminClient()`): `redeem_voucher` (2 נתיבים), `verify_supplier_staff_pin`,
+`supplier_app_context` (apps/mobile), `generate/approve/cancel/mark_paid_payout_statement`
+(`actions/admin/payouts.ts`), `fn_cashback_admin_adjust` (`actions/admin/cashback.ts`),
+`admin_report_*` ×4 ו-`admin_refresh_reports` (`queries/admin-reports.ts`,
+`actions/admin/reports.ts`). כל 13 בודקות `public.is_admin()` או חברוּת בגוף;
+service_role בלי `auth.uid()` היה נדחה. REVOKE = הפסקת שירות, לא הקשחה.
+
+**245 (`single_permissive_policy_per_action`).** policy אחד לכל (טבלה, תפקיד, פעולה)
+על `banners`, `homepage_sections`, `cashback_ledger`, `payment_events`, `payout_statements`,
+`payout_statement_lines`, `refunds`, `supplier_branches`, `support_tickets`,
+`support_ticket_messages`, `whatsapp_contacts`. הכלל: `(P1) OR (P2)` מילולית; `FOR ALL`
+מפוצל לפי פעולה; קריאה ציבורית שמתמזגת עם עזר ש-anon אינו רשאי להריץ מפוצלת לפי תפקיד
+(`_select_anon` / `_select_authenticated`, מוסכמת הקטלוג, והלקח של 165); קריאות שאינן
+תלויות בשורה עטופות ב-`(select ...)`. **הרצת חזרה מול פרודקשן ב-BEGIN/ROLLBACK** יחד
+עם 209 §2 ו-220, עם שאילתות ה-lint של splinter (0003, 0006) בתוך הטרנזקציה:
+
+| מדד | לפני | אחרי |
 |---|---|---|
-| `next` (pin מדויק נשמר), `@next/mdx` | 16.3.3, 16.3.0 | 16.3.6 |
-| `react`, `react-dom` (pin מדויק נשמר), `@types/react`, `@types/react-dom` | 19.2.4, 19.2.14, 19.2.3 | 19.3.0 |
-| `@radix-ui/react-dialog` / `-dropdown-menu` / `-label` / `-toast` | 1.1.15 / 2.1.16 / 2.1.8 / 1.2.15 | 1.1.23 / 2.1.24 / 2.1.15 / 1.2.23 |
-| `@radix-ui/react-select`, `@radix-ui/react-slot` | 2.2.6, 1.2.4 | 2.3.7, 1.3.3 |
-| `@supabase/supabase-js` | 2.105.4 | 2.117.1 |
-| `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner` | 3.1127.0 | 3.1139.0 |
-| `lucide-react` | 1.16.0 | 1.47.0 |
-| `next-intl` | 4.12.0 | 4.14.6 |
-| `posthog-js` | 1.427.2 | 1.434.12 |
-| `react-hook-form` | 7.76.0 | 7.88.0 |
-| `@simplewebauthn/server`, `sonner`, `zustand` | 14.0.1, 2.0.7, 5.0.14 | 14.0.2, 2.0.8, 5.0.15 |
-| `drizzle-orm`, `drizzle-kit` | 0.45.2, 0.31.10 | 0.45.3, 0.31.11 |
-| `tailwindcss`, `@tailwindcss/postcss` | 4.3.0 | 4.3.3 |
-| `@testing-library/react`, `fast-xml-parser`, `lighthouse`, `@axe-core/playwright` | 16.3.2, 5.10.1, 13.4.1, 4.12.1 | 16.3.3, 5.11.1, 13.5.0, 4.13.0 |
+| lint 0006 (multiple permissive) | 14 | **0** |
+| lint 0003 (initplan), אחרי 209 בלבד | 6 | 1 (`profiles_super_admin_mfa`) |
+| lint 0003, אחרי 246 | | **0** |
+| בדיקות נראוּת: 5 זהויות × 11 טבלאות (anon, אדמין, חבר ספק, לקוח עם 27 שורות ledger / 4 payment_events / 2 refunds, משתמש ריק) | 55 | **55 זהות**, כולל 42501 של anon על `payment_events` ו-`refunds` (grant, לא policy) |
+| policies אחרי, לפי טבלה | | 5/5/1/1/4/4/1/5/2/1/1 |
+| `fn_wallet_entries_block_mutation.proconfig` אחרי 220 | null | `search_path=""` |
 
-2. **דולגו, major, 14, מחוץ לפריט לפי הגדרתו:** `@biomejs/biome` 1.9 -> 2.5,
-   `@hookform/resolvers` 3 -> 5, `@sentry/nextjs` + `@sentry/node` 10 -> 11,
-   `@testing-library/jest-dom` 6 -> 7, `@types/node` 20 -> 26, `@vitejs/plugin-react`
-   4 -> 6, `vitest` + `@vitest/coverage-v8` 4 -> 5, `jsdom` 25 -> 30, `lint-staged`
-   15 -> 17, `tailwind-merge` 2 -> 3, `typescript` 5 -> 7, `zod` 3 -> 4.
-3. **דולגו בהחלטה, 3:** `@anthropic-ai/sdk` 0.122 -> 0.128 ו-`@supabase/ssr`
-   0.10.3 -> 0.12.7, כי minor בקו 0.x הוא שבירה לפי semver ו-`ssr` יושב על מסלול
-   ה-auth; `@playwright/test` 1.60.0 -> 1.63.0, כי הוא דורש הורדת Chromium חדש
-   (המטמון מחזיק 1223 ו-1243 בלבד) ברשת שענתה ב-10-38 שניות לבקשת registry, ושער
-   ההשוואה רץ עליו.
+**246 (`profiles_mfa_initplan`).** 209 כותב `(SELECT auth.jwt() ->> 'aal')`, Postgres
+שומר `( SELECT (auth.jwt() ->> 'aal'))`, וה-lint מקבל רק `select auth.jwt()` מילולית.
+נמדד: אחרי הטקסט של 209 ה-WARN נשאר; אחרי `(select auth.jwt()) ->> 'aal'` נעלם. 18
+בדיקות UPDATE על `profiles` (אדמין + 5 לקוחות × aal1/aal2/בלי) זהות בשלושת המצבים.
+קובץ נוסף ולא עריכה של 209, כמו 220.
 
-**ארבעת השערים אחרי העדכון, בחזית:**
+**ממצא צדדי, לא מה-advisors:** כל 15 ניסיונות ה-UPDATE של לקוחות על השורה שלהם
+ב-`profiles` נפלו ב-`42703 record "new" has no field "supplier_id"` (הטריגר
+`enforce_profile_privilege_columns`; `profiles` בלי עמודה כזו). **218 שמתקנת זאת לא
+הוחלה**, בניגוד לזיכרון מ-21.09; `actions/account.ts` מעדכן `profiles` על לקוח הסשן,
+כלומר טופס הפרופיל בפרודקשן שבור. נרשם בחוסם 3 ובידני 4, לא תוקן כאן (goal אחד).
 
-| שער | תוצאה |
-|---|---|
-| `pnpm audit` | 0 חולשות |
-| `pnpm type-check` | exit 0 |
-| `pnpm lint` | exit 0, 0 אזהרות, 12 השערים נקיים (i18n 627/627, he-IL 134, docs-index 281); `pnpm` פרש מחדש את `onlyBuiltDependencies` לשש שורות ו-`biome format package.json` החזיר אותו |
-| `pnpm test` | exit 0, **601 קבצים / 7,162 ירוקים / 12 מדולגים** (153.0s), 0 שורות stderr |
-| `pnpm build` | exit 0, BUILD_ID `hB3Kgl84w8-Yye69Aqgh2`, 336 שורות, 0 ERROR, 11 WARN (7 `db.query_slow`, 4 `db.optional_column_missing`, כמו ב-M03-c1) |
+**קבצים:** `migrations/pending/245_*.sql` (475 שורות), `246_*.sql` (66), README
+ו-APPLY-ORDER (סדר: 245 אחרי 209 ואחרי 203; 246 אחרי 209), `pending-migrations-inventory.test.ts`,
+`docs/DB-SECURITY-MODEL.md` סעיף 0א (98 טבלאות, 117 פונקציות / 89 definer, 2 anon / 21
+authenticated, 4 + 12 deny-all), `docs/POST-LAUNCH-BACKLOG.md`.
 
-`ExperimentalWarning: ML-DSA-44` עדיין 8 פעמים: `@simplewebauthn/server` 14.0.2 לא
-שינה זאת, המקור הוא `@peculiar/x509` תחת Node 25.9, והתיקון הוא דגל Node או major.
+**ארבעת השערים, בחזית:** `pnpm type-check` exit 0; `pnpm lint` exit 0, 0 אזהרות (i18n
+627/627, he-IL 134, docs-index 281); `pnpm test` **601 קבצים / 7,162 ירוקים / 12 מדולגים**
+(57.8s); `pnpm build` exit 0, BUILD_ID `64qgMLWJak8cqa3VAWpao`, 343 שורות, 0 ERROR, 18
+WARN (14 `db.query_slow`, 4 `db.optional_column_missing`).
 
-**שער ההשוואה בחזית על 3431** (ה-HTML המוגש מכיל את BUILD_ID `hB3Kgl84w8-Yye69Aqgh2`,
-אומת ב-curl לפני המדידה), `--baseline`: **בית 380 ‏8.44% PASS, ‏768 ‏9.03% PASS,
-‏1440 ‏3.82% PASS; מוצר 1440 ‏2.79% PASS** (`refs/live-product.png`,
-`COMPARE_ALLOW_GRID_MISMATCH=1`). זהים לשלוש הספרות ל-M02-c1 למרות `lucide-react`
-1.16 -> 1.47, radix ו-React 19.3. שורות 06:02-06:08 UTC ב-`docs/UI-PARITY-REPORT.md`
-על `092ff2517-dirty` (dirty כי `package.json` וה-lockfile טרם נכנסו ל-commit במדידה).
+**שער ההשוואה בחזית על 3441** (ה-HTML המוגש מכיל את BUILD_ID, אומת ב-curl), `--baseline`:
+**בית 380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS; מוצר 1440 ‏2.79% PASS**
+(`refs/live-product.png`, `COMPARE_ALLOW_GRID_MISMATCH=1`). זהים ל-M04-c1; אפס שינוי UI.
+שורות 06:30-06:36 UTC ב-`docs/UI-PARITY-REPORT.md` על `31196638d-dirty`.
 
-**החלטות שהתקבלו לבד:** (א) רשימה מפורשת ולא `pnpm update`, ראו למעלה. (ב) שלוש
-הדילוגים בקבוצה 3. (ג) השרת שלי על 3431 (pid 88634) נעצר בסיום; שלושת השרתים הזרים
-(pid 23687/46969/99846) לא נגעתי בהם.
+**החלטות שהתקבלו לבד:** (א) management API במקום MCP. (ב) אין קובץ REVOKE ל-23 ה-WARN
+של definer, ראו למעלה. (ג) 246 כקובץ נוסף ולא עריכה של 209. (ד) 245 נושא את
+`direction <> 'internal'` של 203 (no-op עד 203, תיקון הדליפה אחריה). (ה) השרת שלי
+(pid 3692, v16.3.6) נעצר; שלושת הזרים (v16.3.3) לא נגעתי. (ו) ממצא 218 נרשם ולא תוקן.
 
 **תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה
-בסך הכל, אין מה למחוק), `caffeinate` חי (pid 959), `SleepDisabled 1`,
-`dns-watch.sh` חי (pid 999).
+בסך הכל), `caffeinate` חי (959, 999), `SleepDisabled 1`, `dns-watch.sh` חי (999).
 
 ## B02 - DONE (25.09) - BACKLOG EMPTY
 
@@ -179,6 +200,7 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 | M02-c1 | DONE (25.09) | בית 380 8.44%, 768 9.03%, 1440 3.82% PASS; מוצר 1440 2.79% PASS, 380/768 REFUSED (אין reference תקף). אין רגרסיה. פירוט בארכיון. |
 | M03-c1 | DONE (25.09) | פירוט בארכיון. type-check נקי; lint 0 אזהרות; test 601/7,162; build 0 ERROR. +4 טסטים. אפס שינוי UI. |
 | M04-c1 | DONE (25.09) | הרשומה למעלה. audit 0 חולשות; 30 חבילות patch/minor (next 16.3.6, React 19.3.0, supabase-js 2.117.1, lucide 1.47.0); 14 major + 3 דולגו. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79 PASS. |
+| M05-c1 | DONE (25.09) | הרשומה למעלה. advisors דרך management API: 44 WARN, 21 עם קובץ ממתין (245, 246 חדשים; 209, 220 קיימים), 23 by design. BEGIN/ROLLBACK: 0006 14 -> 0, 0003 6 -> 0, 55 בדיקות זהות. 218 לא הוחלה (ממצא). שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
@@ -193,7 +215,9 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
    ב-`deploy-preflight`**: `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
    `CARDCOM_API_PASSWORD` חסרים ב-Production ו-`ALLOW_INCOMPLETE_ENV=true` מוגדר
    שם. עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה.
-3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
+3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
+   עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
+   "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
    עונה "עדיין לא פעיל"), 240 (הסכמת "הכל באפליקציה"), 241 (עיר משלוש
    כותרות), 242 (מקור מחיר + ביקורות גוגל), 243 (תנאי מוצר), 244 (קמפיינים
    והמרות של תוכנית השותפים; בלעדיה התוכנית "עדיין לא פתוחה"). סדר והתנאים
@@ -232,7 +256,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
    שהקוד קורא; `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID` הקיימים אינם נקראים)
    ולהסיר `ALLOW_INCOMPLETE_ENV`. אחרי זה פריסה של HEAD: REST `POST /v13/deployments`
    עם `gitSource.sha`, `target=production`, כמו ב-Q02.
-4. אישור והחלת 240..243 דרך MCP לפי `RUNBOOK`, ואז `pnpm db:types`.
+4. אישור והחלת **218 תחילה** (טופס הפרופיל שבור, חוסם 3), ואז 240..243, 209/220/245/246
+   לפי `APPLY-ORDER`, דרך MCP לפי `RUNBOOK`, ואז `pnpm db:types`.
 5. רוטציית `SUPABASE_SECRET_KEY` (חוסם 7).
 6. הפעלת R2 בדשבורד Cloudflare (חוסם 4).
 7. Cardcom: `CARDCOM_USE_MOCK=false` + המפתחות + `CHECKOUT_ENABLED=true` (חוסם 8).

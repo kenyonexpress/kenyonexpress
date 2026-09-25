@@ -24,6 +24,12 @@ a query nobody notices, and the risk being taken is a money-adjacent policy
 rewritten by somebody who cannot exercise it. Deferred until either the tables
 are big enough to measure the cost or the policies are being touched anyway.
 
+**25.09 (M05-c1): 14 remain (five pairs went with migrations applied since),
+and `245_single_permissive_policy_per_action.sql` is written and rehearsed
+against production in BEGIN/ROLLBACK: lint 0006 14 to 0, 55 row-visibility
+probes across five identities identical before and after. What is deferred
+is now only the application, under the migration rule.**
+
 ### The 8 unindexed foreign keys
 
 `208_drop_redundant_indexes.sql` drops 14 indexes and argues that this database

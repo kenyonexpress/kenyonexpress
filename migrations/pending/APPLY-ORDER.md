@@ -1,5 +1,48 @@
 # Apply order
 
+## 2026-09-25: 246, AFTER 209, one ALTER POLICY
+
+`246_profiles_mfa_initplan.sql` re-issues 209 §2's rewrite of
+`profiles_super_admin_mfa` in the one textual form the advisor's lint accepts
+(`(select auth.jwt()) ->> 'aal'` instead of `(SELECT auth.jwt() ->> 'aal')`).
+Same predicate, same rows; rehearsed on production in BEGIN/ROLLBACK on
+2026-09-25 with the lint query inside the transaction (209's text: still
+flagged; this text: clear) and with update probes as an admin and five
+customers under `aal1`, `aal2` and no claim, identical before and after.
+Apply AFTER 209: applied before, 209 overwrites it and the WARN returns.
+**Reversal:** re-run 209 §2's ALTER for this policy.
+
+## 2026-09-25: 245, AFTER 209 and AFTER 203, policies only on eleven tables
+
+`245_single_permissive_policy_per_action.sql` replaces every pair (or triple)
+of permissive policies that share a (table, role, action) with one policy
+whose predicate is the OR of the originals; `FOR ALL` policies are split per
+command, and public reads that would merge with a helper `anon` cannot
+EXECUTE are split by role (`_select_anon` / `_select_authenticated`). No
+grant, function or table changes. Tables: `banners`, `homepage_sections`,
+`cashback_ledger`, `payment_events`, `payout_statements`,
+`payout_statement_lines`, `refunds`, `supplier_branches`, `support_tickets`,
+`support_ticket_messages`, `whatsapp_contacts`.
+
+Rehearsed on production in BEGIN/ROLLBACK on 2026-09-25 together with 209 §2
+and 220: 55 row-visibility probes (anon, an admin, a supplier member, a
+customer with ledger/refund/payment rows, an empty user, on all eleven
+tables) identical before and after; the advisor's own lint 0006 inside the
+transaction went 14 to 0.
+
+**Order.** AFTER 209 (209 §2 `ALTER POLICY cashback_ledger_owner_select`
+fails once this file has dropped it). AFTER 203 (203 recreates the two
+`support_ticket_messages` SELECT policies; applied later it re-adds them
+beside the unified one, no leak, WARN back on that table).
+
+**What to check after applying.** The VERIFY block in the file: the lint
+query returns no row, policy counts per table are 5/5/1/1/4/4/1/5/2/1/1 in
+the order listed above, and `GET /rest/v1/banners` with the anon key still
+answers 200.
+
+**Reversal:** drop the policies named in the file and re-run the CREATE
+POLICY statements of 127, 130, 131, 133, 152, 173, 177 and 181b/203.
+
 ## 2026-09-23: 240, any order, one new table + one function, no dependencies
 
 `240_app_consent_events.sql` creates `app_consent_events` and

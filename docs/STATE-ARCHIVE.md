@@ -4,6 +4,74 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## M04-c1 - DONE (25.09) - היגיינת תלויות: 0 חולשות, 30 חבילות עודכנו ב-patch/minor, ארבעת השערים ושער ההשוואה ירוקים
+
+**נמדד על העץ.** HEAD `092ff2517` שווה ל-`origin/audit/final-audit` אחרי
+`git fetch`, עץ נקי בתחילת הפריט; STATE.md 235 שורות, בלי צורך בארכוב בפתיחה.
+
+**`pnpm audit`, לפני ואחרי:** `No known vulnerabilities found`, exit 0 בשתי הריצות.
+
+**`pnpm outdated`:** 47 חבילות מאחור, חולקו לשלוש קבוצות:
+
+1. **עודכנו, 30, patch ו-minor בלבד** (`pnpm add` ברשימה מפורשת, לא `pnpm update`,
+   כדי שרק החבילות הנקובות יזוזו; ה-lockfile השתנה ב-2,084 שורות, כולן מהן):
+
+| חבילה | מ | אל |
+|---|---|---|
+| `next` (pin מדויק נשמר), `@next/mdx` | 16.3.3, 16.3.0 | 16.3.6 |
+| `react`, `react-dom` (pin מדויק נשמר), `@types/react`, `@types/react-dom` | 19.2.4, 19.2.14, 19.2.3 | 19.3.0 |
+| `@radix-ui/react-dialog` / `-dropdown-menu` / `-label` / `-toast` | 1.1.15 / 2.1.16 / 2.1.8 / 1.2.15 | 1.1.23 / 2.1.24 / 2.1.15 / 1.2.23 |
+| `@radix-ui/react-select`, `@radix-ui/react-slot` | 2.2.6, 1.2.4 | 2.3.7, 1.3.3 |
+| `@supabase/supabase-js` | 2.105.4 | 2.117.1 |
+| `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner` | 3.1127.0 | 3.1139.0 |
+| `lucide-react` | 1.16.0 | 1.47.0 |
+| `next-intl` | 4.12.0 | 4.14.6 |
+| `posthog-js` | 1.427.2 | 1.434.12 |
+| `react-hook-form` | 7.76.0 | 7.88.0 |
+| `@simplewebauthn/server`, `sonner`, `zustand` | 14.0.1, 2.0.7, 5.0.14 | 14.0.2, 2.0.8, 5.0.15 |
+| `drizzle-orm`, `drizzle-kit` | 0.45.2, 0.31.10 | 0.45.3, 0.31.11 |
+| `tailwindcss`, `@tailwindcss/postcss` | 4.3.0 | 4.3.3 |
+| `@testing-library/react`, `fast-xml-parser`, `lighthouse`, `@axe-core/playwright` | 16.3.2, 5.10.1, 13.4.1, 4.12.1 | 16.3.3, 5.11.1, 13.5.0, 4.13.0 |
+
+2. **דולגו, major, 14, מחוץ לפריט לפי הגדרתו:** `@biomejs/biome` 1.9 -> 2.5,
+   `@hookform/resolvers` 3 -> 5, `@sentry/nextjs` + `@sentry/node` 10 -> 11,
+   `@testing-library/jest-dom` 6 -> 7, `@types/node` 20 -> 26, `@vitejs/plugin-react`
+   4 -> 6, `vitest` + `@vitest/coverage-v8` 4 -> 5, `jsdom` 25 -> 30, `lint-staged`
+   15 -> 17, `tailwind-merge` 2 -> 3, `typescript` 5 -> 7, `zod` 3 -> 4.
+3. **דולגו בהחלטה, 3:** `@anthropic-ai/sdk` 0.122 -> 0.128 ו-`@supabase/ssr`
+   0.10.3 -> 0.12.7, כי minor בקו 0.x הוא שבירה לפי semver ו-`ssr` יושב על מסלול
+   ה-auth; `@playwright/test` 1.60.0 -> 1.63.0, כי הוא דורש הורדת Chromium חדש
+   (המטמון מחזיק 1223 ו-1243 בלבד) ברשת שענתה ב-10-38 שניות לבקשת registry, ושער
+   ההשוואה רץ עליו.
+
+**ארבעת השערים אחרי העדכון, בחזית:**
+
+| שער | תוצאה |
+|---|---|
+| `pnpm audit` | 0 חולשות |
+| `pnpm type-check` | exit 0 |
+| `pnpm lint` | exit 0, 0 אזהרות, 12 השערים נקיים (i18n 627/627, he-IL 134, docs-index 281); `pnpm` פרש מחדש את `onlyBuiltDependencies` לשש שורות ו-`biome format package.json` החזיר אותו |
+| `pnpm test` | exit 0, **601 קבצים / 7,162 ירוקים / 12 מדולגים** (153.0s), 0 שורות stderr |
+| `pnpm build` | exit 0, BUILD_ID `hB3Kgl84w8-Yye69Aqgh2`, 336 שורות, 0 ERROR, 11 WARN (7 `db.query_slow`, 4 `db.optional_column_missing`, כמו ב-M03-c1) |
+
+`ExperimentalWarning: ML-DSA-44` עדיין 8 פעמים: `@simplewebauthn/server` 14.0.2 לא
+שינה זאת, המקור הוא `@peculiar/x509` תחת Node 25.9, והתיקון הוא דגל Node או major.
+
+**שער ההשוואה בחזית על 3431** (ה-HTML המוגש מכיל את BUILD_ID `hB3Kgl84w8-Yye69Aqgh2`,
+אומת ב-curl לפני המדידה), `--baseline`: **בית 380 ‏8.44% PASS, ‏768 ‏9.03% PASS,
+‏1440 ‏3.82% PASS; מוצר 1440 ‏2.79% PASS** (`refs/live-product.png`,
+`COMPARE_ALLOW_GRID_MISMATCH=1`). זהים לשלוש הספרות ל-M02-c1 למרות `lucide-react`
+1.16 -> 1.47, radix ו-React 19.3. שורות 06:02-06:08 UTC ב-`docs/UI-PARITY-REPORT.md`
+על `092ff2517-dirty` (dirty כי `package.json` וה-lockfile טרם נכנסו ל-commit במדידה).
+
+**החלטות שהתקבלו לבד:** (א) רשימה מפורשת ולא `pnpm update`, ראו למעלה. (ב) שלוש
+הדילוגים בקבוצה 3. (ג) השרת שלי על 3431 (pid 88634) נעצר בסיום; שלושת השרתים הזרים
+(pid 23687/46969/99846) לא נגעתי בהם.
+
+**תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה
+בסך הכל, אין מה למחוק), `caffeinate` חי (pid 959), `SleepDisabled 1`,
+`dns-watch.sh` חי (pid 999).
+
 ## M03-c1 - DONE (25.09) - שער ירוק: ארבעת השערים נקיים, אזהרת lint אחת ו-321 שורות רעש בבנייה תוקנו
 
 **נמדד על העץ, לא מול הרשומה הקודמת.** HEAD `59ffb75d4` שווה
