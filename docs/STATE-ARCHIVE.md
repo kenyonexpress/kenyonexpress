@@ -4,6 +4,40 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## B09 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השמינית ודבר לא השתנה
+
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B08.** HEAD
+`27f9bc40f` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
+קומיטים חדשים מאז B08.
+
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B09 | תוצאה |
+|---|---|---|
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: אפס התאמות ל-`docs/BACKLOG.md` (ב-HEAD רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`, ב-`origin/main` רק הראשון; שניהם נפסלו ב-B02). ב-`~/ke-goals` אין קובץ backlog מלבד עותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`; `final-queue.txt` לא השתנה (mtime 25.09 02:37) והמילה מופיעה רק בשורות B01..B10 של התור עצמו. | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`, AUTHORITY) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,223 בתים) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **31** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
+| (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
+
+**החלטות שהתקבלו לבד:** (א) ‏B08 הועבר לארכיון באותו commit; ‏B02 נשאר כי
+B10 מפנה לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה סיבה כמו
+ב-B02. ‏(ג) אותם שלושה שרתי `next-server` מסשנים אחרים עדיין רצים (pid 23704,
+46984, 99861), אף אחד מהם לא מאזין על שום פורט 3xxx (`netstat`), ולא נגעתי
+בהם; השער נמדד על 3401 מול שרת חדש שאומת שהוא מגיש את BUILD_ID של הריצה
+הזו (`FXY8p-MtCP08VgFt2y6cE` בתוך ה-HTML). בסיום נסגרו `pnpm start` 48273
+ו-`next-server` 48288 של הריצה הזו, וגם `next-server` 50671 שהופיע אחרי
+שהשרת של הריצה הזו עלה ובלי `pnpm start` הורה משלו; אחרי הסגירה אף פורט 3xxx
+לא מאזין ושלושת השרתים הזרים נשארו, כך שאף סשן אחר לא איבד פורט מוגש, אבל
+מקור ה-pid הזה לא זוהה. 3401 עונה exit 7 אחרי הסגירה. ‏(ד) 270 שורות
+`HANGING_PROMISE_REJECTION` בפלט ה-build הן מזרם המלאי (`stock-live.ts`),
+רעש ידוע שתועד בארכיון תחת Q04; ה-build יצא 0.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome אזהרה אחת ידועה,
+i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצים /
+7,158 ירוקים / 12 מדולגים** (79.0s), `pnpm build` ירוק (BUILD_ID
+`FXY8p-MtCP08VgFt2y6cE`). שער ההשוואה בחזית על 3401, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, exit 0, שורות
+04:46-04:49 UTC ב-`docs/UI-PARITY-REPORT.md` על `27f9bc40f`. תחזוקה: גיבוי
+היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל, אין
+מה לנקות), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+
 ## B08 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השביעית ודבר לא השתנה
 
 **נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B07.** HEAD
