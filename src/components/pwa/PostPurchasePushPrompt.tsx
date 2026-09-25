@@ -2,6 +2,7 @@
 
 import { t } from '@/lib/i18n/messages'
 import { vapidPublicKey } from '@/lib/push/vapid'
+import { readSnooze, writeSnooze } from '@/lib/pwa/snooze'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -23,14 +24,19 @@ import { useEffect, useState } from 'react'
  * screen, on top of the coupon codes, is exactly the unprompted interruption
  * that produces a Block. What this component spends is a suggestion.
  *
- * ONCE, AND NEVER FOR SOMEBODY WHO ALREADY DECIDED. It is not shown when
- * permission is already granted or denied, when notifications are unsupported,
- * when there is no VAPID key to subscribe with, or when it has been shown
- * before. `localStorage` and not a cookie: the state is per device, which is
- * what a notification permission is.
+ * NEVER FOR SOMEBODY WHO ALREADY DECIDED, AND NOT FOR THIRTY DAYS AFTER A "NOT
+ * NOW". It is not shown when permission is already granted or denied, when
+ * notifications are unsupported, when there is no VAPID key to subscribe with,
+ * or while a dismissal is in force. The dismissal is thirty days, not forever
+ * (`lib/pwa/snooze`, shared with the passkey prompts): a "not now" on the day
+ * of the first order is not a decision about notifications, and the browser
+ * permission it protects has NOT been spent, so there is something left to
+ * offer. Following the link counts as a dismissal too, since the page it leads
+ * to asks properly. `localStorage` and not a cookie: the state is per device,
+ * which is what a notification permission is.
  */
 
-const SHOWN_KEY = 'ke:push-invite-shown'
+export const PUSH_INVITE_SNOOZE_KEY = 'ke:push-invite:snoozed-until'
 
 export default function PostPurchasePushPrompt() {
   const [visible, setVisible] = useState(false)
@@ -50,17 +56,15 @@ export default function PostPurchasePushPrompt() {
     // first and cannot change the second.
     if (Notification.permission !== 'default') return
 
-    try {
-      if (localStorage.getItem(SHOWN_KEY) === '1') return
-      localStorage.setItem(SHOWN_KEY, '1')
-    } catch {
-      // Private mode, or storage blocked. Showing it is the better failure:
-      // the worst case is being asked twice, and the alternative is a customer
-      // who can never be told their parcel shipped.
-    }
+    if (readSnooze(PUSH_INVITE_SNOOZE_KEY, Date.now())) return
 
     setVisible(true)
   }, [])
+
+  function dismiss(): void {
+    writeSnooze(PUSH_INVITE_SNOOZE_KEY, Date.now())
+    setVisible(false)
+  }
 
   if (!visible) return null
 
@@ -77,12 +81,22 @@ export default function PostPurchasePushPrompt() {
         <p className="font-bold text-heading text-sm">{t('common.push_invite.title')}</p>
         <p className="mt-1 text-gray-500 text-xs leading-relaxed">{t('common.push_invite.body')}</p>
       </div>
-      <Link
-        href="/account/notifications"
-        className="min-h-touch-min shrink-0 rounded-xl bg-brand-primary px-4 py-2 font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
-      >
-        {t('common.push_invite.cta')}
-      </Link>
+      <div className="flex shrink-0 flex-col items-stretch gap-1">
+        <Link
+          href="/account/notifications"
+          onClick={dismiss}
+          className="min-h-touch-min rounded-xl bg-brand-primary px-4 py-2 text-center font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
+        >
+          {t('common.push_invite.cta')}
+        </Link>
+        <button
+          type="button"
+          onClick={dismiss}
+          className="min-h-touch-min px-2 py-1 text-gray-500 text-xs hover:text-link"
+        >
+          {t('common.push_invite.dismiss')}
+        </button>
+      </div>
     </section>
   )
 }

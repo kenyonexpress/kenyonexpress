@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q16 DONE (25.09).** הבא בתור: **Q17** (בטבלה OPEN, חלקי: passkey, 2FA,
-מתג "הכל באפליקציה"; אין ראיה לאימות טלפון/OTP).
+**Q17 DONE (25.09).** הבא בתור: **Q18** (בטבלה DONE, לאמת על העץ), ואחריו
+**Q19** (OPEN, חלקי).
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -24,69 +24,6 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
-
-## Q15 - DONE (25.09) - תזכורות תפוגה T-7 ו-T-1 בפוש ובמייל דרך pg_cron; דרגות מועדון לפי הוצאה ב-12 חודשים; קאשבק לארנק פר מוצר, ברירת מחדל 0
-
-**שניים מתוך שלושה היו עשויים, השלישי לא.** נמדד על העץ לפני שנכתבה שורה:
-
-- **תזכורות T-7 ו-T-1 במייל ובפוש: קיימות.** `/api/cron/expire-vouchers` קורא `expire_vouchers()`,
-  `credit_expired_vouchers()` ואז `enqueue_expiring_voucher_notices({p_buckets:[7,1]})`; שלושתן חיות
-  בפרודקשן (כותרת 227, נמדד 10.09). ה-outbox נשאב ב-`/api/cron/notifications` בשתי רגליים: מייל
-  (`buildVoucherExpiringEmail` ב-`lib/email/notifications.ts`, אחד מחמשת המיילים של Q09) ו-web push
-  (`couponExpiring` ב-`lib/push/templates.ts`, `voucher_expiring` ברשימת סוגי ה-push). **pg_cron:**
-  `162_cron_schedule.sql` (pending; אושר 04.09, לא הוחל, חסום על `app_url` ב-vault, חוסם 5 ב-CLAUDE.md)
-  מתזמן `ke-expire-vouchers` ב-`15 23 * * *` ו-`ke-notifications` כל 5 דקות דרך pg_cron + pg_net (161
-  מוחלת). 227 (pending) מרחיבה את ההתאמה מיום מדויק לחלון פר-bucket כדי שלילה שנפל לא יאבד תזכורת.
-  **עד שמוחלת 162 שום דבר לא יורה בפרודקשן** (חוסם 10). לא נכתב SQL חדש: הקובץ קיים ועותק היה כפילות.
-- **קאשבק לארנק פר מוצר, ברירת מחדל 0: קיים.** `products.cashback_percent` NOT NULL DEFAULT 0 (042,
-  בפרודקשן לפי `database.ts`), בטופס האדמין (`ProductForm`, `products.ts` 291: תיבה ריקה = 0), נצלם
-  ל-`order_items.cashback_amount_agorot` בקופה (`checkout.ts` 589/611) ומזוכה לארנק ב-`finalize.ts`
-  `creditCashback` מ-`platform:cashback_reserve` עם idempotency `order:<id>:cashback` והתראת
-  `cashback_credited`. לא נגעתי.
-- **דרגות מועדון לפי הוצאה ב-12 חודשים: לא היה.** grep על `club|tier|12.month` מצא רק אנליטיקה
-  ומנויים. **נכתב עכשיו.**
-
-**מה נכתב:**
-
-- `lib/club/tiers.ts` (טהור): חלון 365 יום לפי `paid_at` (נפילה ל-`created_at` רק כשהוא NULL);
-  סטטוסים שנספרים: paid, partially_fulfilled, fulfilled, platform_settled (pending, cancelled, refunded
-  לא); הסכום הוא מה שהלקוח שילם באתר (`readOrderMoney.totalAgorot`), אגורות שלמות; ספים: חבר מועדון 0,
-  כסף ₪1,000, זהב ₪3,000, פלטינה ₪10,000; התקדמות באחוז שלם דרך `divRoundHalfUp`, לעולם לא 100 לפני
-  שהדרגה הבאה הושגה.
-- `server/queries/club.ts` `getClubStanding()`: session, ואז admin client מוצמד ל-`user_id`, generation
-  של עמודות הכסף נפתר ולא נקוב (אותה תבנית כמו `getMyOrders`), `orFail`. **השעון נקרא אחרי ה-session ולא
-  כברירת מחדל של פרמטר**: ה-build נפל על `/account` ב-prerender error בדיוק על השורה הזו (cacheComponents),
-  תוקן ונמדד שוב.
-- `components/account/ClubTierCard.tsx` ככרטיס בסקירת החשבון: שם דרגה, הוצאה ב-12 חודשים, פס התקדמות
-  דקורטיבי (`aria-hidden`) והאחוז במשפט מתחתיו. כל המחרוזות ב-`messages` (`club.*`, he+en).
-  `.club-progress` ב-`account.css` עם משתני הקובץ בלבד.
-- **החלטה: מחושב בזמן קריאה, לא נשמר.** אין עמודה `club_tier`, אין job ואין מיגרציה: כל עמודה שנקראת
-  קיימת בפרודקשן והפיצ'ר עובד ביום הפריסה. עמודה מאוחסנת הייתה עותק שני של הכלל שתלוי ב-cron שיכול
-  להחסיר לילה (227), ופונקציית SQL בלי צרכן היא בדיוק צורת הפגם השכיחה כאן. הטבות לדרגה אינן בפריט.
-- **טסטים:** +17 (`tiers.test.ts` 11, `club.test.ts` 4, `ClubTierCard.test.tsx` 2).
-
-**נמדד על ה-build המקומי** (BUILD_ID `Sf0vlpV41F0tEEa0hVw74`, `pnpm start` על 3313): `/account`
-אנונימי 307 ל-`/login?next=%2Faccount`.
-
-**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628), `pnpm test` **586 קבצים,
-7,044 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית, `--baseline=refs/ke_live_{width}.png`,
-exit 0:**
-
-| דף | רוחב | תוכן | מצב |
-|---|---|---|---|
-| home | 380 | 8.44% | PASS |
-| home | 768 | 9.03% | PASS |
-| home | 1440 | 3.82% | PASS |
-
-השורות ב-`docs/UI-PARITY-REPORT.md` 22:51-22:55 UTC על `3d911526c-dirty`. דף החשבון עצמו אינו
-נמדד: דורש התחברות ואין לו צילום reference (חוסם 5).
-
-**החלטות שהתקבלו לבד:**
-- שלושה `next-server` זרים חיים (3311 ו-3312 עונים 200); השער רץ על 3313 מול ה-build הטרי והשרת שלי
-  נעצר לפי PID בסיום. `pkill -f "next start"` אינו הורג דבר כאן: התהליכים נקראים `next-server`.
-- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`), הכסף עובר
-  דרכו בלבד.
-- סעיף Q13 הועבר לארכיון כדי לשמור על STATE.md מתחת ל-300 שורות.
 
 ## Q16 - DONE (25.09) - תוכנית שותפים: שיתוף דילים עם קוד, עמלה פר קמפיין שהאדמין קובע, זיכוי לארנק, בדיקות הונאה
 
@@ -155,6 +92,76 @@ exit 0:**
   ה-BUILD_ID בתגובה, ונעצר לפי PID. שני `next-server` זרים (23704, 46984) לא נגעתי.
 - סעיף Q14 הועבר לארכיון (STATE.md 162 שורות לפני הרשומה הזו).
 
+## Q17 - DONE (25.09) - כניסה: סיסמה ומפתח גישה, אימות טלפון, OTP כגיבוי, מתג "הכל באפליקציה" עם הסכמה מתועדת, באנר מפתח גישה ופוש אחרי הקנייה הראשונה, נדחה ל-30 יום
+
+**הטבלה אמרה "אין ראיה לאימות טלפון/OTP" והיא טעתה.** נמדד על העץ לפני שנכתבה שורה:
+
+- **סיסמה, Google, מפתח גישה, קישור קסם: קיימים.** `(auth)/login/LoginForm.tsx`: Google,
+  ‏`PasskeyLoginButton` (WebAuthn, `lib/auth/passkeys/*`, `actions/passkeys.ts`; כשל Face ID
+  פותח את טופס קישור-הקסם, `c6dff8dc2`), מייל+סיסמה, קישור קסם. ‏2FA לאדמין: TOTP ו-aal2
+  (`af64d96e7`, `(auth)/mfa`, `admin-mfa`).
+- **אימות טלפון ו-OTP: קיימים** (`67bc68025`, `d52fc7827`, `8be6be014`). ‏`PhoneOtpForm`
+  ישירות מתחת ל-Google: שליחת קוד ב-SMS (`sendPhoneOtp`, E.164 דרך `toE164Israeli`, נייד
+  בלבד `isSmsCapableIsraeli`), אימות (`verifyPhoneOtp`, `autoComplete="one-time-code"`), ומיזוג
+  לחשבון קיים לפי הטלפון (`lib/auth/phone-merge.ts`, `decidePhoneMerge`). הרשמה במייל דורשת טלפון
+  נייד ישראלי (`SignupForm`, `phone` חובה). **מאחורי `PHONE_AUTH_ENABLED` בשרת בלבד**: בלי ספק SMS
+  בהגדרות ה-auth של Supabase (פעולת דשבורד, לא קוד) הכפתור מוסתר והכניסה במייל/Google/מפתח עובדת.
+  זו ה-OTP כגיבוי: מי שאין לו Google ולא רוצה סיסמה.
+- **מתג "הכל באפליקציה" עם הסכמה מתועדת: קיים** (`719fc6dff`): `EverythingInAppToggle` בדף
+  ההתראות, `setEverythingInApp` כותב אירוע ב-`record_app_consent` (auth.uid בלבד, גרסת נוסח, מקור,
+  IP, user-agent) **לפני** שינוי ההעדפות, ‏240 pending. בלי 240 המתג מדווח שהתכונה עדיין לא זמינה.
+- **באנר מפתח גישה ופוש אחרי הקנייה הראשונה: היה, בלי "נדחה ל-30 יום".** ‏`FirstPurchaseBanner`
+  ב-`/checkout/return` על ההזמנה הראשונה ששולמה (`isFirstPaidOrder`), בלי כפתור דחייה ובלי חלון;
+  ‏`PostPurchasePushPrompt` נרשם כ"הוצג" **לצמיתות** ברגע שנראה; ‏`PasskeyRegisterPrompt`
+  ב-`/account` נדחה **לצמיתות** ב-"לא עכשיו". שלוש דגלים, שלוש מדיניות, אף אחת 30 יום.
+
+**מה נכתב:**
+
+- `lib/pwa/snooze.ts` (טהור): `SNOOZE_DAYS = 30`, הערך המאוחסן הוא **רגע הסיום** באלפיות שנייה,
+  ‏`isSnoozed` מקבל רק מספר שלם חיובי, ולכן דגל `'1'` הישן אינו דחייה: מי שדחה תחת הכלל הישן
+  נשאל פעם אחת נוספת ומכאן נכנס לחלון של 30 יום. ‏localStorage ולא עוגייה או עמודה: מפתח גישה,
+  מנוי פוש והרשאת התראות הם פר מכשיר, וכך גם ה"לא עכשיו" שלהם.
+- `FirstPurchaseBanner` הפך ל-client עם "לא עכשיו" (30 יום, `ke:first-purchase-banner:snoozed-until`),
+  מוסתר בשרת ומוכרע אחרי hydration (כמו הפוש; חלופה של רינדור ואז הסתרה מהבהבת באנר שכבר נדחה).
+  קישור המפתח נעלם כשיש מפתח (`hasPasskeys`). **מותקן גם בסקירת החשבון** (`/account`) ללקוח עם
+  הזמנה ששולמה (`orders.some(paidAt)`), כי דף האישור נראה פעם אחת ו"נדחה ל-30 יום" חסר משמעות
+  בלי מקום לחזור אליו. ‏`listPasskeys` best-effort, אותו catch כמו ב-side nav.
+- `PostPurchasePushPrompt`: "לא עכשיו" ולחיצה על הקישור דוחות ל-30 יום (`ke:push-invite:snoozed-until`);
+  צפייה בלבד אינה תשובה עוד. ‏`granted`/`denied` עדיין משתיקים לתמיד, כי ההרשאה עצמה כבר הוצאה.
+- `PasskeyRegisterPrompt`: אותו מפתח (`ke_passkey_prompt_seen:<uid>`), הערך הפך מדגל לרגע סיום.
+  ה-e2e (`passkey-register-prompt.spec.ts`, reload אחרי דחייה) נשאר תקף.
+- מחרוזות: `firstPurchase.dismiss`, `common.push_invite.dismiss` (he+en).
+- **טסטים:** +24 (`snooze.test.ts` 13, `first-purchase-banner.test.tsx` 4,
+  `passkey-register-prompt.test.tsx` 4, פוש +3 והחלפת "פעם אחת למכשיר" ב"חוזר בהזמנה הבאה").
+
+**נמדד על ה-build המקומי** (BUILD_ID `RcW67BAIZE_KSt0OxnBU0`, `pnpm start` על 3313, אומת לפי
+ה-BUILD_ID ב-HTML): `/account` אנונימי 307 ל-`/login?next=%2Faccount`; `/checkout/return` בלי
+`order_id` 307.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628, locale-format 134),
+`pnpm test` **593 קבצים, 7,115 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית,
+`--baseline=refs/ke_live_{width}.png`, exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 00:03-00:06 UTC (26.09) על `721fe00e3-dirty`. דף האישור ודף
+החשבון אינם נמדדים: דורשים הזמנה/התחברות ואין להם צילום reference (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- לא נגעתי בדף הכניסה: כל ארבעת המסלולים קיימים והפער היחיד היה מדיניות הדחייה. אימות טלפון
+  בפרודקשן דורש ספק SMS בדשבורד Supabase ו-`PHONE_AUTH_ENABLED=true` ב-Vercel (שניהם פעולות
+  של אופיר, לא נמדדו בפריט הזה, נרשמו כפריט ידני).
+- דחיית הבאנר אינה דוחה את דיאלוג המפתח ולהפך: שני מפתחות, שני שאלות; חיבור ביניהם היה קופלינג
+  בין דף האישור ל-layout של החשבון בלי צורך נמדד.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`).
+  לא נגעתי בכסף.
+- סעיף Q15 הועבר לארכיון (STATE.md 230 שורות לפני הרשומה הזו).
+- שני `next-server` זרים (23704 על 3311, 46984 על 3312) לא נגעתי; השרת שלי על 3313 נעצר לפי PID.
+
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
 | פריט | מצב | ראיה |
@@ -175,7 +182,7 @@ exit 0:**
 | Q14 | DONE (25.09) | הרשומה למעלה. מתנה בקופה קיימת (`078a3de6d`, 108 מוחלת, 226 ממתינה לתזמון). חדש: `transferVoucher`/`revokeVoucherTransfer` + `/account/coupons/[id]/gift`; צ'יפים פתוח בסופ"ש (תג `open-weekend`), משלוח חינם (fallback ל-243), קרוב אליי. +41 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q15 | DONE (25.09) | הרשומה למעלה. T-7/T-1 קיימים (`expire-vouchers` + outbox, מייל ופוש; pg_cron ב-162 pending, חלון ב-227 pending). `cashback_percent` פר מוצר DEFAULT 0 קיים (042, צילום בקופה, זיכוי ב-finalize). חדש: `lib/club/tiers.ts`, `getClubStanding`, `ClubTierCard` בסקירת החשבון. +17 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q16 | DONE (25.09) | הרשומה למעלה. קונסולה קיימת (`fc9da36dc`); חדש: הצטרפות, ייחוס בקופה, 244 pending (קמפיינים+המרות), `lib/affiliates/commission.ts`, זיכוי דרך `fn_wallet_transfer`, תור אדמין, קוד על הקישור בשיתוף. +49 טסטים. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
-| Q17 | OPEN, חלקי | passkey (`c6dff8dc2`, `9b8c215f8`), 2FA (`af64d96e7`), מתג "הכל באפליקציה" עם הסכמה (`719fc6dff`, 240 pending). אין ראיה לאימות טלפון/OTP. |
+| Q17 | DONE (25.09) | הרשומה למעלה. קיים: סיסמה/Google/מפתח גישה/קישור קסם, OTP בטלפון מאחורי `PHONE_AUTH_ENABLED` (`67bc68025`), 2FA אדמין (`af64d96e7`), מתג "הכל באפליקציה" עם הסכמה (`719fc6dff`, 240 pending). חדש: `lib/pwa/snooze.ts`, "לא עכשיו" ל-30 יום בבאנר, בפוש ובדיאלוג המפתח, באנר גם ב-`/account`. +24 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q18 | DONE | `f08a701d1`, `86af4a7c3`, `be736f10f`. |
 | Q19 | OPEN, חלקי | `58f920f8f feat(fraud)`, rate limit 10/h. לא אומת: single-use ב-DB, velocity, verified badge, "נקנה השבוע". |
 | Q20 | DONE | `29b921163`, `bf9f2ca09`, `(supplier)/supplier/*`. |
@@ -228,3 +235,5 @@ exit 0:**
 7. `scripts/dns-watch.sh` (pid 1033) עדיין רץ ומשגר סשן deploy כשיופיעו NS
    של Cloudflare; זה לא יירה על המעבר ל-vercel-dns. לבדוק לפני שמפעילים משהו.
 8. עשרה stash-ים לא נמחקו (כלל: אין מחיקת נתונים); רשימה בארכיון תחת Q01.
+9. כניסה בטלפון (Q17): ספק SMS בהגדרות ה-auth של Supabase ואז `PHONE_AUTH_ENABLED=true`
+   ב-Vercel. בלעדיהם הכפתור מוסתר והשאר עובד.

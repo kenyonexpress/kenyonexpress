@@ -4,6 +4,69 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q15 - DONE (25.09) - תזכורות תפוגה T-7 ו-T-1 בפוש ובמייל דרך pg_cron; דרגות מועדון לפי הוצאה ב-12 חודשים; קאשבק לארנק פר מוצר, ברירת מחדל 0
+
+**שניים מתוך שלושה היו עשויים, השלישי לא.** נמדד על העץ לפני שנכתבה שורה:
+
+- **תזכורות T-7 ו-T-1 במייל ובפוש: קיימות.** `/api/cron/expire-vouchers` קורא `expire_vouchers()`,
+  `credit_expired_vouchers()` ואז `enqueue_expiring_voucher_notices({p_buckets:[7,1]})`; שלושתן חיות
+  בפרודקשן (כותרת 227, נמדד 10.09). ה-outbox נשאב ב-`/api/cron/notifications` בשתי רגליים: מייל
+  (`buildVoucherExpiringEmail` ב-`lib/email/notifications.ts`, אחד מחמשת המיילים של Q09) ו-web push
+  (`couponExpiring` ב-`lib/push/templates.ts`, `voucher_expiring` ברשימת סוגי ה-push). **pg_cron:**
+  `162_cron_schedule.sql` (pending; אושר 04.09, לא הוחל, חסום על `app_url` ב-vault, חוסם 5 ב-CLAUDE.md)
+  מתזמן `ke-expire-vouchers` ב-`15 23 * * *` ו-`ke-notifications` כל 5 דקות דרך pg_cron + pg_net (161
+  מוחלת). 227 (pending) מרחיבה את ההתאמה מיום מדויק לחלון פר-bucket כדי שלילה שנפל לא יאבד תזכורת.
+  **עד שמוחלת 162 שום דבר לא יורה בפרודקשן** (חוסם 10). לא נכתב SQL חדש: הקובץ קיים ועותק היה כפילות.
+- **קאשבק לארנק פר מוצר, ברירת מחדל 0: קיים.** `products.cashback_percent` NOT NULL DEFAULT 0 (042,
+  בפרודקשן לפי `database.ts`), בטופס האדמין (`ProductForm`, `products.ts` 291: תיבה ריקה = 0), נצלם
+  ל-`order_items.cashback_amount_agorot` בקופה (`checkout.ts` 589/611) ומזוכה לארנק ב-`finalize.ts`
+  `creditCashback` מ-`platform:cashback_reserve` עם idempotency `order:<id>:cashback` והתראת
+  `cashback_credited`. לא נגעתי.
+- **דרגות מועדון לפי הוצאה ב-12 חודשים: לא היה.** grep על `club|tier|12.month` מצא רק אנליטיקה
+  ומנויים. **נכתב עכשיו.**
+
+**מה נכתב:**
+
+- `lib/club/tiers.ts` (טהור): חלון 365 יום לפי `paid_at` (נפילה ל-`created_at` רק כשהוא NULL);
+  סטטוסים שנספרים: paid, partially_fulfilled, fulfilled, platform_settled (pending, cancelled, refunded
+  לא); הסכום הוא מה שהלקוח שילם באתר (`readOrderMoney.totalAgorot`), אגורות שלמות; ספים: חבר מועדון 0,
+  כסף ₪1,000, זהב ₪3,000, פלטינה ₪10,000; התקדמות באחוז שלם דרך `divRoundHalfUp`, לעולם לא 100 לפני
+  שהדרגה הבאה הושגה.
+- `server/queries/club.ts` `getClubStanding()`: session, ואז admin client מוצמד ל-`user_id`, generation
+  של עמודות הכסף נפתר ולא נקוב (אותה תבנית כמו `getMyOrders`), `orFail`. **השעון נקרא אחרי ה-session ולא
+  כברירת מחדל של פרמטר**: ה-build נפל על `/account` ב-prerender error בדיוק על השורה הזו (cacheComponents),
+  תוקן ונמדד שוב.
+- `components/account/ClubTierCard.tsx` ככרטיס בסקירת החשבון: שם דרגה, הוצאה ב-12 חודשים, פס התקדמות
+  דקורטיבי (`aria-hidden`) והאחוז במשפט מתחתיו. כל המחרוזות ב-`messages` (`club.*`, he+en).
+  `.club-progress` ב-`account.css` עם משתני הקובץ בלבד.
+- **החלטה: מחושב בזמן קריאה, לא נשמר.** אין עמודה `club_tier`, אין job ואין מיגרציה: כל עמודה שנקראת
+  קיימת בפרודקשן והפיצ'ר עובד ביום הפריסה. עמודה מאוחסנת הייתה עותק שני של הכלל שתלוי ב-cron שיכול
+  להחסיר לילה (227), ופונקציית SQL בלי צרכן היא בדיוק צורת הפגם השכיחה כאן. הטבות לדרגה אינן בפריט.
+- **טסטים:** +17 (`tiers.test.ts` 11, `club.test.ts` 4, `ClubTierCard.test.tsx` 2).
+
+**נמדד על ה-build המקומי** (BUILD_ID `Sf0vlpV41F0tEEa0hVw74`, `pnpm start` על 3313): `/account`
+אנונימי 307 ל-`/login?next=%2Faccount`.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 628/628), `pnpm test` **586 קבצים,
+7,044 ירוקים, 12 מדולגים**, `pnpm build` ירוק. **שער ההשוואה בחזית, `--baseline=refs/ke_live_{width}.png`,
+exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 22:51-22:55 UTC על `3d911526c-dirty`. דף החשבון עצמו אינו
+נמדד: דורש התחברות ואין לו צילום reference (חוסם 5).
+
+**החלטות שהתקבלו לבד:**
+- שלושה `next-server` זרים חיים (3311 ו-3312 עונים 200); השער רץ על 3313 מול ה-build הטרי והשרת שלי
+  נעצר לפי PID בסיום. `pkill -f "next start"` אינו הורג דבר כאן: התהליכים נקראים `next-server`.
+- `docs/BACKLOG.md` עדיין לא קיים; `packages/money.ts` לא קיים (המסלול `src/lib/money.ts`), הכסף עובר
+  דרכו בלבד.
+- סעיף Q13 הועבר לארכיון כדי לשמור על STATE.md מתחת ל-300 שורות.
+
 ## Q14 - DONE (25.09) - קופון במתנה במייל, מיידי או מתוזמן, עם ברכה; העברת קופון למשתמש אחר; צ'יפים: פתוח בסופ"ש, משלוח חינם, קרוב אליי בהסכמה
 
 **שני שלישים היו עשויים, השליש השלישי לא.** נמדד על העץ לפני שנכתבה שורה:

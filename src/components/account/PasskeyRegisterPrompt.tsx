@@ -1,16 +1,23 @@
 'use client'
 
+import { readSnooze, writeSnooze } from '@/lib/pwa/snooze'
 import { beginPasskeyRegistration, finishPasskeyRegistration } from '@/server/actions/passkeys'
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser'
 import { useEffect, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
 /**
- * One-time, per-device nudge to add a passkey after a customer's first visit
- * to the account area. There is no "already asked" column in the database on
+ * Per-device nudge to add a passkey after a customer's first visit to the
+ * account area. There is no "already asked" column in the database on
  * purpose (see STATE.md): dismissal is tracked client-side in localStorage,
  * keyed by user id. That scope is actually correct here, not a shortcut,
  * because a registered passkey is itself device/platform-bound.
+ *
+ * "NOT NOW" MEANS THIRTY DAYS, NOT FOREVER (Q17). The flag used to be
+ * permanent; it is now a snooze through `lib/pwa/snooze`, the same window the
+ * push invitation and the first-purchase banner use. A successful registration
+ * sets the same snooze only as a belt: the next render receives
+ * `hasPasskeys=true` from the server and never asks again.
  *
  * The registration choreography (begin action -> `startRegistration` ->
  * finish action) mirrors PasskeyManager exactly; this component only adds the
@@ -22,20 +29,13 @@ function seenKey(userId: string): string {
 }
 
 function markSeen(userId: string): void {
-  try {
-    window.localStorage.setItem(seenKey(userId), '1')
-  } catch {
-    // Storage disabled (private browsing, quota): worst case the prompt
-    // reappears next visit, which is a nag, not a bug.
-  }
+  // Storage disabled (private browsing, quota) is swallowed inside: worst case
+  // the prompt reappears next visit, which is a nag, not a bug.
+  writeSnooze(seenKey(userId), Date.now())
 }
 
 function alreadySeen(userId: string): boolean {
-  try {
-    return window.localStorage.getItem(seenKey(userId)) !== null
-  } catch {
-    return false
-  }
+  return readSnooze(seenKey(userId), Date.now())
 }
 
 function registrationErrorHebrew(cause: unknown): string {
