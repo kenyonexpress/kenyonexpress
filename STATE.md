@@ -2,7 +2,7 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q22 DONE (25.09, נמדד).** הבא בתור: **Q23**, ואחריו **Q24**.
+**Q23 DONE (25.09, נמדד ב-git).** הבא בתור: **Q24**, ואחריו **B01**.
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -23,6 +23,51 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q23 - DONE (נמדד 25.09) - docs/AUTOPILOT-DIFF.md: מה יש ב-autopilot וב-phase5/homepage-closeout שאין כאן
+
+**נקרא דרך git בלבד, בלי merge ובלי cherry-pick.** בסיס משותף `a3df275ed` (09.09).
+`autopilot` (`69bcbd5c7`, 17.09): **96** קומיטים שאין ב-HEAD, 18 מהם `autopilot residual`;
+HEAD מחזיק 395 שאין שם. `phase5/homepage-closeout` = autopilot + **קומיט אחד**
+(`7b2e5795b`, 24.09) שקיים רק ב-worktree המקומי ועל אף remote. **כל autopilot כבר
+בתוך `origin/main`** (0 קומיטים של autopilot חסרים שם, ועוד 13 מעליו). ברמת קבצים:
+181 קבצים שונו בשני הצדדים, 269 קיימים רק ב-autopilot, 805 רק ב-HEAD.
+
+- **22 קבצי מיגרציה תחת מספרים ש-HEAD כבר השתמש בהם** (210, 211, 212, 215, 217,
+  223, 224, 226 עד 242), תוכן שונה על כל מספר. שום דבר לא עובר כקובץ; כל מועמד
+  צריך מספר מ-245 ודריי-ראן מגולגל. הטענות "223 ו-224 הוחלו" סותרות את הדריי-ראן
+  של 21.09 (`docs/GO-LIVE-DRY-RUN.md`), ו-`src/types/database.ts` ריק מכל
+  האובייקטים של הרשימה.
+- **crons ב-`vercel.json`** (25 שם, 0 כאן): HEAD מתזמן 21 מ-Actions, והפרויקט
+  ב-Hobby (שני crons ביום לכל היותר). לא לקחת.
+- **קוד רק שם** (219 קבצים): תור עבודות + DLQ, seams לסקיילביליות (replica, QStash,
+  Redis, Worker), gift cards, cashback tracker, מספור חשבוניות, חיפוש facets
+  (סותר את הכלל "אין שדה חיפוש"), `/scan` בנתיב שכבר הוזז. רובו קיים ב-HEAD
+  בצורה אחרת; הפירוט בטבלה במסמך.
+- **הקומיט של ה-closeout**: 59 קבצי טסט (19,242 שורות), צנרת blue-green
+  (מכוונת לפרויקט Vercel שמקושר לריפו אחר), Percy ו-LHCI (אין חשבונות), **ורגרסיות**:
+  `pnpm lint` קוצץ ל-3 שערים מתוך 12, שני workflows נמחקו, 11 סקריפטים ירדו
+  מ-`package.json`.
+- **מה שווה לשמור, לפי סדר:** (1) תשעה קבצי טסט של actions שמודולים שלהם קיימים
+  ב-HEAD **בלי אף טסט שמייבא אותם** (admin/cashback, categories, discounts, fraud,
+  product-import, suppliers, vendors, newsletter, reviews), להעביר ידנית מול
+  החתימות של HEAD, מודול לפריט; (2) תיקון הפנקס: תשעת הקבצים החיים בפרודקשן
+  עדיין ב-`migrations/pending/`; (3) ערוץ Telegram + UptimeRobot, קטן ומותנה env;
+  (4) docs/RLS-AUDIT-2026-09-09 כמדידה מתוארכת.
+
+**החלטות שהתקבלו לבד:** (א) `docs/BACKLOG.md` לא קיים (הפריט מבקש לקרוא אותו);
+נרשם, לא נוצר, ההחלטה נשארת ל-B01. (ב) שער ההשוואה **לא הורץ**: הפריט הוא מסמך
+בלבד, אפס שינוי ב-UI; המספרים האחרונים על העץ הזה נותרו 8.44 / 9.03 / 3.82 PASS
+(שורות 02:12-02:15 ב-`docs/UI-PARITY-REPORT.md`). (ג) נתיבים שקיימים רק
+ב-autopilot נכתבו במסמך בלי backticks, כדי לא לפתוח שורות בפנקס הנתיבים התלויים;
+שורה אחת (`docs/STATE-ARCHIVE.md :: docs/AUTOPILOT-DIFF.md`) ירדה מהפנקס כי
+הנתיב קיים עכשיו. (ד) `README.md` מונה 281 מסמכים במקום 280 (הטסט
+`ci-docs-inventory` דורש שוויון לשער).
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (docs-index-gate 281,
+docs-path-audit 154 ללא שינוי), `pnpm test` 599 קבצים / 7,149 ירוקים / 12 מדולגים
+(הכשל היחיד היה ספירת המסמכים ב-README, תוקן), `pnpm build` ירוק (BUILD_ID
+`OnR3EZ-PGGO1TQ1Zcm32v`).
 
 ## Q22 - DONE (נמדד 25.09) - E2E גלישה, מוצר, סל, קופת אורח עד ה-stub; Lighthouse mobile
 
@@ -199,7 +244,7 @@ RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפע
 | Q20 | DONE (אומת 25.09) | `29b921163`, `bf9f2ca09`. מכירות/מימושים/זיכויים/תשלומים ב-`(supplier)/supplier/*`, אגורות בלבד, אפס policy כתיבה לספק (נמדד בפרודקשן). קריאות על service role עם נעילת tenant ולא RLS: RLS חי היה מעלים 2 שורות `refunded` מתוך 19 (נמדד). שער 8.44/9.03/3.82 PASS. |
 | Q21 | DONE (נמדד 25.09) | הרשומה למעלה. axe WCAG 2.1 AA: 36 עברו / 0 נכשלו על 19 מסלולים. מטא, JSON-LD (Product+Offer, `highPrice` -> `StrikethroughPrice`), sitemap 5 חלקים, robots. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
 | Q22 | DONE (נמדד 25.09) | הרשומה למעלה. E2E על build עם mock: בית+קטגוריה+מוצר 82/82, סל+קופה+מסלול 40 עברו / 3 דולגו לפי viewport, אורח עד ה-stub ומימוש 2/2. שני פגמים תוקנו (גריד האזור האישי, מרוץ strict-mode). Lighthouse mobile מקומי: בית 73-77, מוצר 76-80 (מדומה), 100/100 ללא סימולציה; alias פרודקשן 90-93 / 87-92. שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
-| Q23 | OPEN | `docs/AUTOPILOT-DIFF.md` לא קיים. |
+| Q23 | DONE (25.09) | הרשומה למעלה. `docs/AUTOPILOT-DIFF.md`: autopilot כולו כבר ב-`origin/main`; closeout = +1 קומיט מקומי; 22 מיגרציות במספרים תפוסים; שווה לשמור: 9 טסטי actions, תיקון פנקס, Telegram/UptimeRobot, RLS-AUDIT. |
 | Q24 | OPEN | `docs/LAUNCH-READINESS.md` הוא צילום היסטורי (09.09, NOT READY). דורש כתיבה מחדש. |
 | B01-B10 | OPEN, חסום | `docs/BACKLOG.md` לא קיים. מועמדים: `docs/POST-LAUNCH-BACKLOG.md`, `docs/MIGRATION-BACKLOG.md`. החלטה ב-B01. |
 

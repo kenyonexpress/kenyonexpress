@@ -110,7 +110,6 @@
   "docs/SOURCING-RULES.md :: scripts/visual-audit.mjs",
   "docs/STATE-ARCHIVE.md :: docs/APP-STORE-SUBMISSION.md",
   "docs/STATE-ARCHIVE.md :: docs/ARCHITECTURE-FRAUD-PREVENTION.md",
-  "docs/STATE-ARCHIVE.md :: docs/AUTOPILOT-DIFF.md",
   "docs/STATE-ARCHIVE.md :: docs/BACKLOG.md",
   "docs/STATE-ARCHIVE.md :: docs/CHECKOUT-ARCHITECTURE.md",
   "docs/STATE-ARCHIVE.md :: docs/DEEP-LINKS-SPEC.md",
