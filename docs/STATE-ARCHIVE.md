@@ -4,6 +4,41 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## B10 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם התשיעית ודבר לא השתנה; התור נגמר
+
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B09.** HEAD
+`eeb01983e` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
+קומיטים חדשים מאז B09. ‏B10 הוא הפריט האחרון ב-`~/ke-goals/final-queue.txt`
+(mtime 25.09 02:37, ללא שינוי); אחריו אין פריט.
+
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B10 | תוצאה |
+|---|---|---|
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: אפס התאמות ל-`docs/BACKLOG.md` (ב-HEAD רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`, ב-`origin/main` רק הראשון; שניהם נפסלו ב-B02). ב-`~/ke-goals` אין קובץ backlog מלבד עותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`; המילה מופיעה רק בשורות B02 ו-B10 של התור עצמו. | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`, AUTHORITY) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,223 בתים, זהה ל-B09) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **32** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
+| (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
+
+**החלטות שהתקבלו לבד:** (א) ‏B09 הועבר לארכיון באותו commit; ‏B02 נשאר כי
+הוא מחזיק את תנאי הפתיחה מחדש שכל B03..B10 נמדדו מולם. ‏(ב) לא נוצר
+`docs/BACKLOG.md`, מאותה סיבה כמו ב-B02. ‏(ג) אותם שלושה שרתי `next-server`
+מסשנים אחרים עדיין רצים (pid 23704, 46984, 99861), לא נגעתי בהם; השער נמדד
+על 3411 מול שרת חדש (`pnpm start` 54213, `next-server` 54224) שאומת שהוא
+מגיש את BUILD_ID של הריצה הזו (`0vZBYlgF602ZJUraKkWVJ` בתוך ה-HTML). בסיום
+נסגרו רק השניים של הריצה הזו; 3411 עונה exit 7 אחרי הסגירה ושלושת הזרים
+נשארו. ‏(ד) 276 שורות `HANGING_PROMISE_REJECTION` ואזהרות prerender של
+`cookies()`/`fetch()` בפלט ה-build הן הרעש הידוע שתועד בארכיון תחת Q04;
+ה-build יצא 0. ‏(ה) התור נגמר עם B10. אין פריט הבא ב-`final-queue.txt`;
+הסשן הבא בונה תור חדש רק אם אחד משלושת תנאי הפתיחה מחדש התקיים, אחרת אין
+מה לעשות בצד הסוכן ורשימת "ידני לאופיר" למטה היא כל מה שנותר.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome אזהרה אחת ידועה,
+i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצים /
+7,158 ירוקים / 12 מדולגים** (89.8s), `pnpm build` ירוק (BUILD_ID
+`0vZBYlgF602ZJUraKkWVJ`). שער ההשוואה בחזית על 3411, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, exit 0, שורות
+04:57-05:00 UTC ב-`docs/UI-PARITY-REPORT.md` על `eeb01983e`. תחזוקה: גיבוי
+היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל, אין
+מה לנקות), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+
 ## B09 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השמינית ודבר לא השתנה
 
 **נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B08.** HEAD

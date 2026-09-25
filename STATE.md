@@ -1,14 +1,15 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B10)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M01-c1)
 
 ## המשך מ:
 
-**B10 DONE (25.09): BACKLOG EMPTY, נמדד בפעם התשיעית. התור `final-queue.txt`
-נגמר; B10 היה האחרון.** אין goal הבא. סשן חדש: לבדוק את שלושת תנאי הפתיחה
-מחדש שברשומת B02 (קובץ `docs/BACKLOG.md`, חוסם שאופיר סגר, שער אדום); אם
-אף אחד לא התקיים, אין עבודה בצד הסוכן, ורשימת "ידני לאופיר" בתחתית היא כל
-מה שפתוח.
+**M01-c1 BLOCKED (25.09): DNS BLOCKER, ובנוסף הפריסה סורבה ב-preflight.**
+ה-goal הבא: **M02-c1** (Parity check: `scripts/compare.mjs` לדף הבית ולדף
+המוצר ב-380, 768 ו-1440). הדומיין עדיין מאציל ל-`ns1/ns2.vercel.com`; פלט
+ה-dig המדויק והתיקון ברשומת M01-c1 למטה. פריסת HEAD ל-Vercel נוסתה ונכשלה
+ב-`deploy-preflight` על שלושה שמות Cardcom חסרים ועל `ALLOW_INCOMPLETE_ENV=true`
+בסביבת Production; פרודקשן נשאר על `a388118f1`.
 
-ההיסטוריה המלאה (Q01..Q24, B01, B03..B09, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+ההיסטוריה המלאה (Q01..Q24, B01, B03..B10, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -29,40 +30,97 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 ניתן להצגה כלל.
 
 
-## B10 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם התשיעית ודבר לא השתנה; התור נגמר
+## M01-c1 - BLOCKED (25.09) - DNS BLOCKER; הפריסה סורבה ב-preflight
 
-**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B09.** HEAD
-`eeb01983e` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
-קומיטים חדשים מאז B09. ‏B10 הוא הפריט האחרון ב-`~/ke-goals/final-queue.txt`
-(mtime 25.09 02:37, ללא שינוי); אחריו אין פריט.
+**נמדד מול הרשת, מול Vercel ומול git, לא מול רשומות קודמות.** HEAD
+`92f8b6904` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי.
+`git log HEAD..a388118f1` ריק (אין רגרסיה בפריסה), `a388118f1..HEAD` = 33.
 
-| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B10 | תוצאה |
-|---|---|---|
-| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: אפס התאמות ל-`docs/BACKLOG.md` (ב-HEAD רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`, ב-`origin/main` רק הראשון; שניהם נפסלו ב-B02). ב-`~/ke-goals` אין קובץ backlog מלבד עותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`; המילה מופיעה רק בשורות B02 ו-B10 של התור עצמו. | לא. |
-| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`, AUTHORITY) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,223 בתים, זהה ל-B09) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **32** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
-| (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
+### DNS BLOCKER
 
-**החלטות שהתקבלו לבד:** (א) ‏B09 הועבר לארכיון באותו commit; ‏B02 נשאר כי
-הוא מחזיק את תנאי הפתיחה מחדש שכל B03..B10 נמדדו מולם. ‏(ב) לא נוצר
-`docs/BACKLOG.md`, מאותה סיבה כמו ב-B02. ‏(ג) אותם שלושה שרתי `next-server`
-מסשנים אחרים עדיין רצים (pid 23704, 46984, 99861), לא נגעתי בהם; השער נמדד
-על 3411 מול שרת חדש (`pnpm start` 54213, `next-server` 54224) שאומת שהוא
-מגיש את BUILD_ID של הריצה הזו (`0vZBYlgF602ZJUraKkWVJ` בתוך ה-HTML). בסיום
-נסגרו רק השניים של הריצה הזו; 3411 עונה exit 7 אחרי הסגירה ושלושת הזרים
-נשארו. ‏(ד) 276 שורות `HANGING_PROMISE_REJECTION` ואזהרות prerender של
-`cookies()`/`fetch()` בפלט ה-build הן הרעש הידוע שתועד בארכיון תחת Q04;
-ה-build יצא 0. ‏(ה) התור נגמר עם B10. אין פריט הבא ב-`final-queue.txt`;
-הסשן הבא בונה תור חדש רק אם אחד משלושת תנאי הפתיחה מחדש התקיים, אחרת אין
-מה לעשות בצד הסוכן ורשימת "ידני לאופיר" למטה היא כל מה שנותר.
+הפלט המדויק, 25.09 12:06 (+07):
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome אזהרה אחת ידועה,
-i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצים /
-7,158 ירוקים / 12 מדולגים** (89.8s), `pnpm build` ירוק (BUILD_ID
-`0vZBYlgF602ZJUraKkWVJ`). שער ההשוואה בחזית על 3411, `--baseline`:
-**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, exit 0, שורות
-04:57-05:00 UTC ב-`docs/UI-PARITY-REPORT.md` על `eeb01983e`. תחזוקה: גיבוי
-היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל, אין
-מה לנקות), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+```
+$ dig A kenyonexpress.co.il @1.1.1.1
+;; ->>HEADER<<- opcode: QUERY, status: SERVFAIL, id: 42724
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+; OPT=15: ... ("..at delegation kenyonexpress.co.il.")   # EDE 22, No Reachable Authority at delegation
+$ dig +short A kenyonexpress.co.il @1.1.1.1              # (ריק)
+$ dig +short A www.kenyonexpress.co.il @8.8.8.8          # (ריק)
+
+$ dig NS kenyonexpress.co.il @ns1.ns.il +norecurse
+;; AUTHORITY SECTION:
+kenyonexpress.co.il.    86400   IN  NS  ns2.vercel.com.
+kenyonexpress.co.il.    86400   IN  NS  ns1.vercel.com.
+$ whois kenyonexpress.co.il | grep -i nserver | tail -2
+nserver:      ns1.vercel.com
+nserver:      ns2.vercel.com
+
+$ dig +short SOA kenyonexpress.co.il @ns1.vercel-dns.com
+ns1.vercel-dns.com. hostmaster.nsone.net. 1790178646 43200 7200 1209600 600
+$ dig +short A kenyonexpress.co.il @ns1.vercel-dns.com      # 64.29.17.65  216.198.79.1
+$ dig +short A www.kenyonexpress.co.il @ns1.vercel-dns.com  # 216.198.79.1  64.29.17.1
+
+$ curl -s -o /dev/null -w '%{http_code}' https://kenyonexpress.co.il/       # 000, exit 6
+$ curl -s -o /dev/null -w '%{http_code}' https://www.kenyonexpress.co.il/   # 000, exit 6
+```
+
+**התיקון המדויק, אצל הרשם בלבד:** בממשק הרשם של `kenyonexpress.co.il`
+להחליף את שני רשומות ה-NS: `ns1.vercel.com` ל-`ns1.vercel-dns.com`,
+`ns2.vercel.com` ל-`ns2.vercel-dns.com`. ה-zone ב-`vercel-dns.com` כבר שלם
+ועונה (SOA ו-A למעלה); שום דבר בצד Vercel לא דורש שינוי. ה-TTL של ההאצלה
+בהורה הוא 86400, כלומר עד יממה עד שהרזולברים מתעדכנים. אימות אחרי ההתפשטות:
+`dig +short A kenyonexpress.co.il @1.1.1.1` מחזיר `216.198.79.1`/`64.29.17.65`,
+ואז `curl -sI https://www.kenyonexpress.co.il/` עונה 200.
+
+### הבנייה והפריסה ב-Vercel
+
+`POST /v13/deployments` (REST, טוקן ה-CLI, `target=production`, `gitSource.sha`
+`92f8b6904`) יצר את `dpl_EJvyytwYXRjGBj2HJiXavgr3GkBk`
+(`kenyonexpress-ga2irw458-kenyonexpress-projects.vercel.app`). אחרי `pnpm install`
+(21.6s) הבנייה יצאה **ERROR** (`BUILD_UTILS_SPAWN_1`) על
+`node scripts/deploy-preflight.mjs && pnpm build`:
+
+```
+deploy preflight: 4 problem(s), refusing to ship
+  MISSING      CARDCOM_TERMINAL_NUMBER חסר. ראה docs/ENV.md.
+  MISSING      CARDCOM_API_NAME חסר. ראה docs/ENV.md.
+  MISSING      CARDCOM_API_PASSWORD חסר. ראה docs/ENV.md.
+  WAIVER       ALLOW_INCOMPLETE_ENV=true נועד ל-`next start` מקומי בלבד. על פלטפורמת פריסה זו עקיפה של כל הבדיקות שלמעלה.
+```
+
+**מה זה אומר:** (א) מאז B01 (preflight ב-`vercel.json`) **אף פריסה של הענף
+לא יכולה להצליח** עד שסביבת Production ב-Vercel תתוקן; זה הועבר לרשימה
+הידנית. שמות Cardcom שקיימים שם (`CARDCOM_API_KEY`, `CARDCOM_CLIENT_ID`,
+`CARDCOM_MERCHANT_ID`, נמדד ב-`GET /v9/projects/.../env`, שמות בלבד) **אינם
+נקראים בשום מקום ב-`src/`**; הקוד קורא `CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` (`src/lib/payments/env.ts`,
+`src/lib/env.ts`). (ב) **לא הודפסה שורת `COMPROMISED`**: הסריקה מכסה את
+`SUPABASE_SECRET_KEY` ו-`SUPABASE_SERVICE_ROLE_KEY`, שניהם קיימים ב-Production,
+ואף אחד מהם אינו מתאים ל-SHA-256 של המפתח שנחשף. חוסם 7 נשאר עבור העותק
+המקומי והנוהל, אבל הוא אינו מה שחוסם את הפריסה. (ג) **פרודקשן לא השתנה**:
+`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` READY מ-`a388118f1` עדיין החי,
+`kenyonexpress.vercel.app` עונה 200 (639,180 בתים, `0` ‏`p_con__city`, 30
+תמונות `ke-live-deal-N.webp`), עכשיו 33 קומיטים מאחורי HEAD.
+
+**החלטות שהתקבלו לבד:** (א) הפריסה נוסתה כי הפריט עצמו מורה עליה במפורש
+("run the Vercel production build, deploy") והוא ההרשאה למצב העצירה
+"push לפרודקשן"; התוצאה היא בנייה שסורבה ואף artifact לא נוצר. (ב) לא
+נגעתי בסביבת Vercel (כלל הפריט) ולא ב-DNS. (ג) B10 הועבר לארכיון באותו
+commit; B02 נשאר בגלל תנאי הפתיחה מחדש. (ד) שלושת שרתי `next-server` הזרים
+(pid 23704, 46984, 99861) לא נגעתי; השער נמדד על 3421 מול שרת חדש (`pnpm
+start` 61412, `next-server` 61426) שאומת שהוא מגיש את BUILD_ID של הריצה
+(`prS15GWKaZXfmdZt9m-_C` בתוך ה-HTML), ובסיום נסגרו רק השניים האלה (3421
+עונה exit 7). (ה) 266 שורות `HANGING_PROMISE_REJECTION` בפלט ה-build הן
+הרעש הידוע (ארכיון, Q04); ה-build יצא 0.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 134
+בתקרה, docs-index 281), `pnpm test` **600 קבצים / 7,158 ירוקים / 12 מדולגים**
+(63.0s), `pnpm build` ירוק (BUILD_ID `prS15GWKaZXfmdZt9m-_C`). שער ההשוואה
+בחזית על 3421, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440
+‏3.82% PASS**, exit 0, שורות 05:11-05:14 UTC ב-`docs/UI-PARITY-REPORT.md` על
+`92f8b6904`. תחזוקה: גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`,
+שלושה בסך הכל), `caffeinate` חי (pid 959), `SleepDisabled 1`.
 
 ## B02 - DONE (25.09) - BACKLOG EMPTY
 
@@ -136,6 +194,7 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
 | B08 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השביעית. פירוט בארכיון. |
 | B09 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השמינית. פירוט בארכיון. |
 | B10 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם התשיעית: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. האחרון בתור. שער 8.44/9.03/3.82 PASS. |
+| M01-c1 | BLOCKED, DNS אצל הרשם | הרשומה למעלה. dig SERVFAIL (EDE 22), NS ברשם `ns1/ns2.vercel.com`; curl exit 6 בשני המארחים. פריסת HEAD ל-Vercel נוסתה וסורבה ב-preflight (3 שמות Cardcom חסרים + waiver); פרודקשן נשאר `a388118f1`. שער 8.44/9.03/3.82 PASS. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
@@ -143,10 +202,13 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
    מ-`ns1.vercel.com`/`ns2.vercel.com` ל-`ns1.vercel-dns.com`/`ns2.vercel-dns.com`.
    אחרי ההתפשטות: `dig +short A kenyonexpress.co.il @1.1.1.1` צריך להחזיר
    `216.198.79.1`, ואז `curl -sI https://www.kenyonexpress.co.il/` ל-200.
-   שום דבר בצד Vercel לא דורש שינוי.
-2. **פריסת פרודקשן של HEAD (`eeb01983e`, 32 קומיטים אחרי `a388118f1` החי)**
-   (מצב עצירה, אישור נדרש): REST `POST /v13/deployments` עם `gitSource.sha`,
-   `target=production`, כמו ב-Q02.
+   שום דבר בצד Vercel לא דורש שינוי. נמדד שוב 25.09 (M01-c1), ללא שינוי;
+   פלט ה-dig המלא ברשומת M01-c1.
+2. **פריסת פרודקשן של HEAD (`92f8b6904`, 33 קומיטים אחרי `a388118f1` החי)**:
+   נוסתה ב-M01-c1 (REST `POST /v13/deployments`, `target=production`) **וסורבה
+   ב-`deploy-preflight`**: `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+   `CARDCOM_API_PASSWORD` חסרים ב-Production ו-`ALLOW_INCOMPLETE_ENV=true` מוגדר
+   שם. עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה.
 3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
    עונה "עדיין לא פעיל"), 240 (הסכמת "הכל באפליקציה"), 241 (עיר משלוש
    כותרות), 242 (מקור מחיר + ביקורות גוגל), 243 (תנאי מוצר), 244 (קמפיינים
@@ -162,7 +224,9 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
    בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.
 7. **`SUPABASE_SECRET_KEY` חשוף ודורש רוטציה** (CLAUDE.md, `RUNBOOK`);
    `deploy-preflight` מסרב לבנות איתו, ומ-B01 (25.09) הוא רץ בפועל לפני
-   `pnpm build` ב-`vercel.json`.
+   `pnpm build` ב-`vercel.json`. **נמדד ב-M01-c1: הסריקה על סביבת Production
+   של Vercel לא מצאה את המפתח החשוף** (אף שורת `COMPROMISED`), כלומר החשיפה
+   נוגעת לעותקים מקומיים ולנוהל, לא לפריסה.
 8. **Cardcom בפרודקשן**: ספק התשלום ב-mock, נמדד 25.09 על `/checkout` החי
    (`frame-src ... 'self'`); 24 תשלומי `mock-` ו-0 אמיתיים ב-30 יום. שמות
    `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID`/`USE_MOCK` ו-`CHECKOUT_ENABLED`
@@ -179,7 +243,11 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
 1. DNS (חוסם 1). פעולה אחת בממשק הרשם.
 2. `CRON_SECRET` זהה ב-GitHub וב-Vercel (חוסם 10); הריצה הבאה של "Scheduled jobs"
    צריכה להראות `notifications -> 200`.
-3. אישור פריסה של HEAD (חוסם 2).
+3. **סביבת Production ב-Vercel לפני כל פריסה** (חוסם 2, נמדד M01-c1): להוסיף
+   `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` (השמות
+   שהקוד קורא; `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID` הקיימים אינם נקראים)
+   ולהסיר `ALLOW_INCOMPLETE_ENV`. אחרי זה פריסה של HEAD: REST `POST /v13/deployments`
+   עם `gitSource.sha`, `target=production`, כמו ב-Q02.
 4. אישור והחלת 240..243 דרך MCP לפי `RUNBOOK`, ואז `pnpm db:types`.
 5. רוטציית `SUPABASE_SECRET_KEY` (חוסם 7).
 6. הפעלת R2 בדשבורד Cloudflare (חוסם 4).
