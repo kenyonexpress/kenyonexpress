@@ -4,6 +4,32 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## B04 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השלישית ודבר לא השתנה
+
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02 ו-B03.** HEAD
+`c63f71b73` שווה ל-`origin/audit/final-audit`, עץ נקי, אפס קומיטים חדשים
+מאז B03.
+
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B04 | תוצאה |
+|---|---|---|
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree` על HEAD ועל `origin/main`: 0 התאמות; ב-`~/ke-goals` אין קובץ backlog. רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md` קיימים. | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק; ה-alias `kenyonexpress.vercel.app` עונה 200 עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1` (עכשיו 26 קומיטים מאחורי HEAD). ‏`dns-watch.sh` (pid 957/999) עדיין רץ. | לא. |
+| (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
+
+**החלטות שהתקבלו לבד:** (א) ‏B03 הועבר לארכיון באותו commit; ‏B02 נשאר כי
+B05..B10 מפנים לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה
+סיבה כמו ב-B02. ‏(ג) שלושה שרתי `pnpm start` ישנים מסשנים אחרים תופסים
+פורטים (כולל 3341); השער נמדד על 3351 מול שרת חדש שאומת שהוא מגיש את
+BUILD_ID של הריצה הזו, והשרת הזה בלבד נסגר בסיום. השרתים הישנים לא נגעו.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 134
+בתקרה, docs-index 281), `pnpm test` **600 קבצים / 7,158 ירוקים / 12 מדולגים**,
+`pnpm build` ירוק (BUILD_ID `71Gp3sDb7Gtv3MGPP6gUP`). שער ההשוואה בחזית על
+3351, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**,
+שורות 03:52-03:55 UTC ב-`docs/UI-PARITY-REPORT.md` על `c63f71b73`. תחזוקה:
+גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך
+הכל, אין מה לנקות), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+
 ## B03 - DONE (25.09) - BACKLOG EMPTY, שלושת תנאי הפתיחה מחדש נבדקו ואף אחד לא התקיים
 
 **נבדק מול העץ, מול הרשת ומול origin, לא מול רשומת B02.** HEAD `a3c3c66ed`
