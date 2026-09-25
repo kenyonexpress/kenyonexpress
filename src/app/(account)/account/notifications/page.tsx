@@ -1,9 +1,12 @@
 import EverythingInAppToggle from '@/components/notifications/EverythingInAppToggle'
 import PreferenceSwitches from '@/components/notifications/PreferenceSwitches'
+import PushDevices from '@/components/pwa/PushDevices'
 import PushOptIn from '@/components/pwa/PushOptIn'
+import { t } from '@/lib/i18n/messages'
 import { markNotificationRead } from '@/server/actions/notifications'
 import { loadAppConsent } from '@/server/queries/app-consent'
 import { loadNotifications, loadPreferences } from '@/server/queries/notifications'
+import { loadPushSubscriptions } from '@/server/queries/push-subscriptions'
 import Link from 'next/link'
 
 export const metadata = { title: 'התראות' }
@@ -25,10 +28,11 @@ export const metadata = { title: 'התראות' }
  * state rather than a disguised error.
  */
 export default async function NotificationsPage() {
-  const [items, preferences, appConsent] = await Promise.all([
+  const [items, preferences, appConsent, devices] = await Promise.all([
     loadNotifications(),
     loadPreferences(),
     loadAppConsent(),
+    loadPushSubscriptions(),
   ])
   const unread = items.filter((item) => item.readAt === null)
 
@@ -91,10 +95,17 @@ export default async function NotificationsPage() {
         <PreferenceSwitches rows={preferences} />
       </section>
 
-      <section className="account-card">
-        <h2 className="account-card__title">התראות דחיפה</h2>
-        <PushOptIn />
-      </section>
+      {/* PushOptIn renders its own account-card with this heading; wrapping it
+          in another one printed the title twice. The device list sits under
+          it in its own card: opt-in is about THIS browser, the list is about
+          all of them. */}
+      <PushOptIn />
+      {devices.length > 0 && (
+        <section className="account-card">
+          <h2 className="account-card__title">{t('pushDevices.title')}</h2>
+          <PushDevices devices={devices} />
+        </section>
+      )}
     </>
   )
 }

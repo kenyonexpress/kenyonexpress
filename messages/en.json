@@ -168,6 +168,14 @@
     "rateLimited": "Too many attempts. Please try again later.",
     "prefsFailed": "Your consent was saved but the settings did not update. Please try again."
   },
+  "pushDevices": {
+    "title": "Connected browsers",
+    "intro": "Browsers that receive notifications for this account. Removing a browser stops its notifications immediately.",
+    "listLabel": "Browsers receiving notifications",
+    "thisBrowser": "This browser",
+    "enabledOn": "Enabled",
+    "remove": "Remove"
+  },
   "firstPurchase": {
     "label": "Next steps after your purchase",
     "title": "First purchase done, two small steps left",

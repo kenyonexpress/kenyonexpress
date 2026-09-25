@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q17 DONE (25.09).** הבא בתור: **Q18** (בטבלה DONE, לאמת על העץ), ואחריו
-**Q19** (OPEN, חלקי).
+**Q18 DONE (25.09).** הבא בתור: **Q19** (OPEN, חלקי), ואחריו **Q20**
+(בטבלה DONE, לאמת על העץ).
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -24,6 +24,38 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q18 - DONE (25.09) - התקנת PWA ופוש עם ניהול מנויים
+
+**נמדד על העץ לפני שנכתבה שורה.** שלושת הקומיטים שהטבלה ציינה (`f08a701d1`,
+`86af4a7c3`, `be736f10f`) הם אבות של HEAD, ומה שחי איתם: `src/app/manifest.ts`
+(id, shortcuts, maskable), `public/sw.js` עם `push` ו-`notificationclick`,
+`ServiceWorkerRegistrar` ו-`InstallPrompt` ב-layout, `PushOptIn` בדף ההתראות
+(הרשאה רק מלחיצה, שמירה בשרת לפני "פעיל", ביטול בדפדפן אם השמירה נכשלה),
+`savePushSubscription`/`removePushSubscription` (service role, מסונן על
+`user_id`, rate limit 30/h), שולח VAPID ב-`lib/push/web-leg.ts` שמוחק 404/410,
+179 מוחלת (`migrations/applied`), 215 (יומן משלוחים) ממתינה.
+
+**מה חסר, ונבנה:** ניהול מנויים מעבר לדפדפן הנוכחי. 179 שמרה `user_agent`
+"ל-UI ניהול עתידי" ואף אחד לא בנה אותו: לקוח שאיבד טלפון לא יכול היה להפסיק
+אליו התראות. חדש: `server/queries/push-subscriptions.ts` (קריאה דרך הלקוח של
+הבקשה תחת `push_subscriptions_select_own`, בלי המפתחות), `removePushSubscriptionById`
+(uuid בלבד, מסונן על `user_id`, `revalidatePath`), `components/pwa/PushDevices.tsx`
+(סימון "הדפדפן הזה" לפי endpoint בצד הלקוח, הסרה לשורה), `lib/push/device-label.ts`
+(UA -> "Chrome, Android", לעולם לא המחרוזת הגולמית). העתקים ב-`messages/*.json`
+תחת `pushDevices.*`. תיקון אגבי: דף ההתראות עטף את `PushOptIn` בכרטיס עם אותה
+כותרת שהרכיב מרנדר בעצמו, והכותרת הופיעה פעמיים.
+
+**החלטות שהתקבלו לבד:** (א) הסרת דפדפן רחוק מוחקת את השורה ולא את המנוי
+בדפדפן הרחוק (רק הוא יכול), וזה מספיק כי בלי שורה אין שליחה. (ב) הרשימה
+מוסתרת כשאין שורות; המצב הריק כבר מוסבר ב-`PushOptIn`. (ג) תקרת ה-i18n ירדה
+628 -> 627 (הכותרת הכפולה יצאה, הרכיב החדש קורא מהקטלוג); לא הועלתה.
+
+**שערים:** `pnpm test` 596 קבצים / 7129 ירוקים, `type-check` נקי, `lint`
+אזהרה אחת קיימת מראש ב-`SecurityClient.tsx`, `pnpm build` ירוק
+(BUILD_ID `rTuGZExcxmTJq2wUkNe7g`). שער ההשוואה בחזית על 3347 (3311 ו-3312
+תפוסים על ידי סשנים אחרים): **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82%
+PASS**, שורות 00:25-00:28 UTC ב-`docs/UI-PARITY-REPORT.md`.
 
 ## Q16 - DONE (25.09) - תוכנית שותפים: שיתוף דילים עם קוד, עמלה פר קמפיין שהאדמין קובע, זיכוי לארנק, בדיקות הונאה
 
@@ -183,7 +215,7 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 | Q15 | DONE (25.09) | הרשומה למעלה. T-7/T-1 קיימים (`expire-vouchers` + outbox, מייל ופוש; pg_cron ב-162 pending, חלון ב-227 pending). `cashback_percent` פר מוצר DEFAULT 0 קיים (042, צילום בקופה, זיכוי ב-finalize). חדש: `lib/club/tiers.ts`, `getClubStanding`, `ClubTierCard` בסקירת החשבון. +17 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q16 | DONE (25.09) | הרשומה למעלה. קונסולה קיימת (`fc9da36dc`); חדש: הצטרפות, ייחוס בקופה, 244 pending (קמפיינים+המרות), `lib/affiliates/commission.ts`, זיכוי דרך `fn_wallet_transfer`, תור אדמין, קוד על הקישור בשיתוף. +49 טסטים. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
 | Q17 | DONE (25.09) | הרשומה למעלה. קיים: סיסמה/Google/מפתח גישה/קישור קסם, OTP בטלפון מאחורי `PHONE_AUTH_ENABLED` (`67bc68025`), 2FA אדמין (`af64d96e7`), מתג "הכל באפליקציה" עם הסכמה (`719fc6dff`, 240 pending). חדש: `lib/pwa/snooze.ts`, "לא עכשיו" ל-30 יום בבאנר, בפוש ובדיאלוג המפתח, באנר גם ב-`/account`. +24 טסטים. שער 8.44/9.03/3.82 PASS. |
-| Q18 | DONE | `f08a701d1`, `86af4a7c3`, `be736f10f`. |
+| Q18 | DONE (25.09) | הרשומה למעלה. קיים: manifest, `public/sw.js` (push + notificationclick), `InstallPrompt`, `PushOptIn` לדפדפן הזה, `savePushSubscription`/`removePushSubscription`, שולח VAPID עם ניקוי 404/410, 179 מוחלת. חדש: רשימת "דפדפנים מחוברים" בכל המכשירים (`loadPushSubscriptions` תחת RLS, `removePushSubscriptionById`, `PushDevices`, `lib/push/device-label.ts`), הכותרת הכפולה בדף ההתראות הוסרה. +15 טסטים, תקרת i18n 628 -> 627. שער 8.44/9.03/3.82 PASS. |
 | Q19 | OPEN, חלקי | `58f920f8f feat(fraud)`, rate limit 10/h. לא אומת: single-use ב-DB, velocity, verified badge, "נקנה השבוע". |
 | Q20 | DONE | `29b921163`, `bf9f2ca09`, `(supplier)/supplier/*`. |
 | Q21 | OPEN, חלקי | sitemap, robots, `0f42ef81a`, `b591ba19a`. אין קומיט שמכריז WCAG 2.1 AA מלא. |

@@ -6,6 +6,7 @@ import { isMissingPushRelation, pushSubscriptionTable } from '@/lib/push/store'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 
 /**
@@ -16,8 +17,15 @@ import { headers } from 'next/headers'
  * grants no INSERT or UPDATE policy on purpose, so nobody can attach an
  * arbitrary endpoint to an account with the anon key.
  *
- * Both actions answer "not available yet" while 179 is unapplied, the same
- * contract as passkeys: the notifications page must render either way.
+ * All three actions answer "not available yet" while 179 is unapplied, the
+ * same contract as passkeys: the notifications page must render either way.
+ *
+ * Two ways to remove. `removePushSubscription(endpoint)` is what THIS browser
+ * calls after it has unsubscribed itself; `removePushSubscriptionById(id)` is
+ * the list on the notifications page removing ANOTHER browser (the phone that
+ * was lost, the shared computer). The second cannot unsubscribe the far
+ * browser, so the sender's next attempt at it answers 201 into a row that no
+ * longer exists -- which is fine: without a row there is no attempt at all.
  */
 
 export type PushActionState = { success: true } | { error: string }
@@ -104,6 +112,7 @@ async function runSave(input: PushSubscriptionInput): Promise<PushActionState> {
     if (isMissingPushRelation(error)) return { error: NOT_AVAILABLE }
     return fail('push.subscribe_failed', error.message)
   }
+  revalidatePath('/account/notifications')
   return { success: true }
 }
 
@@ -134,5 +143,41 @@ async function runRemove(endpoint: string): Promise<PushActionState> {
     if (isMissingPushRelation(error)) return { error: NOT_AVAILABLE }
     return fail('push.unsubscribe_failed', error.message)
   }
+  revalidatePath('/account/notifications')
+  return { success: true }
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Remove one of the caller's own browsers from the list, by row id. */
+export async function removePushSubscriptionById(id: string): Promise<PushActionState> {
+  return withActionContext('push.unsubscribe_device', () => runRemoveById(id))
+}
+
+async function runRemoveById(id: string): Promise<PushActionState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: NOT_SIGNED_IN }
+
+  if (typeof id !== 'string' || !UUID.test(id)) {
+    return fail('push.unsubscribe_device_rejected', 'id')
+  }
+
+  // Same shape as runRemove: the service role deletes, and the user_id filter
+  // is what keeps it to the caller's own rows. Filtering by id alone would let
+  // any signed-in account silence any other account's browser by guessing.
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from(pushSubscriptionTable())
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
+  if (error) {
+    if (isMissingPushRelation(error)) return { error: NOT_AVAILABLE }
+    return fail('push.unsubscribe_device_failed', error.message)
+  }
+  revalidatePath('/account/notifications')
   return { success: true }
 }

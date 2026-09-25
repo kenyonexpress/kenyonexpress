@@ -2,6 +2,7 @@
 
 import { urlBase64ToUint8Array, vapidPublicKey } from '@/lib/push/vapid'
 import { removePushSubscription, savePushSubscription } from '@/server/actions/push'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 /**
@@ -36,6 +37,9 @@ const COPY: Record<Exclude<Status, 'busy'>, string> = {
 export default function PushOptIn() {
   const [status, setStatus] = useState<Status>('checking')
   const [error, setError] = useState<string | null>(null)
+  // The device list under this card is server-rendered; a refresh after
+  // either write is what makes this browser appear in it, or leave it.
+  const router = useRouter()
 
   useEffect(() => {
     let cancelled = false
@@ -106,6 +110,7 @@ export default function PushOptIn() {
         return
       }
       setStatus('on')
+      router.refresh()
     } catch {
       setStatus('off')
       setError('הפעלת ההתראות נכשלה, נסו שוב')
@@ -126,6 +131,7 @@ export default function PushOptIn() {
         await removePushSubscription(endpoint)
       }
       setStatus('off')
+      router.refresh()
     } catch {
       setStatus('off')
       setError('כיבוי ההתראות נכשל, נסו שוב')

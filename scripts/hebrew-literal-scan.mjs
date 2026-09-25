@@ -167,5 +167,9 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * literals). Those four moved to `messages/*.json`; the shared-wishlist page,
  * the reviews page and the invoice, consent and first-purchase copy all read
  * through `t()`. 641 -> 632.
+ *
+ * 2026-09-25, Q18: the push device list (`PushDevices`) was built with its copy
+ * in the catalog (`pushDevices.*`), and the notifications page lost the
+ * duplicated "התראות דחיפה" heading that `PushOptIn` already renders. 628 -> 627.
  */
-export const HEBREW_LITERAL_CEILING = 628
+export const HEBREW_LITERAL_CEILING = 627
