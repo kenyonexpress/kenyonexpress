@@ -4,6 +4,34 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## B05 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם הרביעית ודבר לא השתנה
+
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B04.** HEAD
+`69f74bbc1` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
+קומיטים חדשים מאז B04.
+
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B05 | תוצאה |
+|---|---|---|
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md` (ב-main רק הראשון). ב-`~/ke-goals` אין קובץ backlog; המילה מופיעה רק בלוגים ובטקסט התור עצמו. | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8. ה-alias `kenyonexpress.vercel.app` עונה 200 (639KB) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **27** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 999 תחת caffeinate) עדיין רץ. | לא. |
+| (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
+
+**החלטות שהתקבלו לבד:** (א) ‏B04 הועבר לארכיון באותו commit; ‏B02 נשאר כי
+B06..B10 מפנים לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה
+סיבה כמו ב-B02. ‏(ג) ארבעה שרתי `next-server` מסשנים אחרים רצים (pid 23704,
+46984, 99861 ועוד אחד); השער נמדד על 3361 מול שרת חדש שאומת שהוא מגיש את
+BUILD_ID של הריצה הזו (`9XZyPRhoB0UR1l6_6aOyj` בתוך ה-HTML), ורק שני
+התהליכים של הריצה הזו (pnpm start 24321 + next-server 24337) נסגרו בסיום.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 134
+בתקרה, docs-index 281), `pnpm test` **600 קבצים / 7,158 ירוקים / 12 מדולגים**
+(80.7s), `pnpm build` ירוק (BUILD_ID `9XZyPRhoB0UR1l6_6aOyj`; אזהרת build
+יחידה: 242 לא הוחלה, ידועה). שער ההשוואה בחזית על 3361, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 04:03-04:06 UTC
+ב-`docs/UI-PARITY-REPORT.md` על `69f74bbc1`. תחזוקה: גיבוי היום קיים
+(`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל, אין מה לנקות),
+‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+
 ## B04 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השלישית ודבר לא השתנה
 
 **נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02 ו-B03.** HEAD
