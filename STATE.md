@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q20 DONE (25.09, אומת).** הבא בתור: **Q21** (OPEN, חלקי: sitemap ו-robots
-קיימים, אין ראיה ל-WCAG 2.1 AA מלא), ואחריו **Q22**.
+**Q21 DONE (25.09, נמדד).** הבא בתור: **Q22** (OPEN, חלקי: `e2e/` קיים,
+אין ראיה ל-Lighthouse mobile 90+ על דף מוצר), ואחריו **Q23**.
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -24,6 +24,37 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q21 - DONE (נמדד 25.09) - WCAG 2.1 AA, מטא SEO, schema.org Product/Offer, sitemap, robots
+
+**נמדד על build טרי (`fyau7_b1Flj5STr-YW69a`) על 3321, לא על הרישומים.**
+
+- **WCAG 2.1 AA**: `e2e/a11y.spec.ts` (axe-core, תגיות `wcag2a/wcag2aa/wcag21a/wcag21aa`,
+  19 מסלולים ציבוריים, מקלדת, `lang="he" dir="rtl"`, באנר הסכמה ב-320/640/1440)
+  בחזית, `--grep-invert=@writes`: **36 עברו, 1 דולג (באנר לא מוצג, בעיצוב), 0 נכשלו**,
+  11.8s. ארבעת ה-`@writes` (סל, קופה, אשף, פאנל סל) לא רצים בלי DB שאינו פרודקשן,
+  כמו שכתוב ב-`docs/ACCESSIBILITY-GATE.md`; זה הפער היחיד והוא ידוע.
+- **מטא**: דף מוצר `/product/barbecue` מגיש `<title>`, `description`, `canonical`
+  מוחלט, `og:title/description/url/image/locale=he_IL`, `twitter:card`. בית וקטגוריה
+  עם canonical ו-description. `<html lang="he" dir="rtl">`.
+- **schema.org**: דף מוצר מגיש `Product` + `Offer` (`priceCurrency: ILS`, `price`,
+  `availability`, `seller`, `url`) + `BreadcrumbList`; בית `WebSite`+`Organization`;
+  קטגוריה, ספק (`LocalBusiness`), FAQ, בלוג עם צמתים משלהם (`lib/seo/json-ld.ts`).
+  **תוקן**: `highPrice` על `Offer` אינו מאפיין schema.org (שייך ל-`AggregateOffer`
+  בלבד), ולכן המחיר המחוק לא הגיע לתוצאות החיפוש. הוחלף ב-`priceSpecification`
+  מסוג `UnitPriceSpecification` עם `priceType: StrikethroughPrice`, הקידוד שגוגל
+  מתעדת למחיר מחירון. נמדד בשירות אחרי build: `price 49.50`, מחיר מחוק `99.00`.
+- **sitemap**: `/sitemap.xml` אינדקס עם 5 חלקים (content, categories, products,
+  regions, suppliers); `products.xml` 46 כתובות מוחלטות מקודדות. `/robots.txt`
+  מתיר `/`, חוסם 13 נתיבים פרטיים, מצביע על ה-sitemap.
+
+**החלטות שהתקבלו לבד:** הפריט הוא אימות ותיקון אחד; לא נכתב שום דבר חדש
+שכבר קיים (`0f42ef81a`, `b591ba19a`, `b36955eb3`, `cf567236f`, `d1adea146`).
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627), `pnpm test`
+599 קבצים / 7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק. שער ההשוואה בחזית על
+3321, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**,
+שורות 01:22-01:26 ב-`docs/UI-PARITY-REPORT.md`; מוצר 1440 ‏2.79% PASS (01:29).
 
 ## Q20 - DONE (אומת 25.09) - לוח ספק: מכירות, מימושים, זיכויים ותשלומים, קריאה בלבד
 
@@ -97,7 +128,7 @@ RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפע
 | Q18 | DONE (25.09) | הרשומה למעלה. קיים: manifest, `public/sw.js` (push + notificationclick), `InstallPrompt`, `PushOptIn` לדפדפן הזה, `savePushSubscription`/`removePushSubscription`, שולח VAPID עם ניקוי 404/410, 179 מוחלת. חדש: רשימת "דפדפנים מחוברים" בכל המכשירים (`loadPushSubscriptions` תחת RLS, `removePushSubscriptionById`, `PushDevices`, `lib/push/device-label.ts`), הכותרת הכפולה בדף ההתראות הוסרה. +15 טסטים, תקרת i18n 628 -> 627. שער 8.44/9.03/3.82 PASS. |
 | Q19 | DONE (25.09) | הרשומה למעלה. קיים ופרוס: `redeem_voucher` אטומי + טריגר 166 (נמדד בפרודקשן), מגבלות קצב login/checkout/redeem, `velocity.ts`, רשימת חסימה 234. חדש: `ספק מאומת` מאישור אנושי או מימוש אמיתי (1 מ-7 היום), `N נרכשו השבוע` מחיובים אמיתיים בלבד (18/18 mock מוחרגות). +25 טסטים. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
 | Q20 | DONE (אומת 25.09) | `29b921163`, `bf9f2ca09`. מכירות/מימושים/זיכויים/תשלומים ב-`(supplier)/supplier/*`, אגורות בלבד, אפס policy כתיבה לספק (נמדד בפרודקשן). קריאות על service role עם נעילת tenant ולא RLS: RLS חי היה מעלים 2 שורות `refunded` מתוך 19 (נמדד). שער 8.44/9.03/3.82 PASS. |
-| Q21 | OPEN, חלקי | sitemap, robots, `0f42ef81a`, `b591ba19a`. אין קומיט שמכריז WCAG 2.1 AA מלא. |
+| Q21 | DONE (נמדד 25.09) | הרשומה למעלה. axe WCAG 2.1 AA: 36 עברו / 0 נכשלו על 19 מסלולים. מטא, JSON-LD (Product+Offer, `highPrice` -> `StrikethroughPrice`), sitemap 5 חלקים, robots. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
 | Q22 | OPEN, חלקי | `e2e/` קיים, `31ada5313`. Lighthouse: `docs/LIGHTHOUSE-AUDIT.md`. אין ראיה ל-90+ mobile על דף מוצר. |
 | Q23 | OPEN | `docs/AUTOPILOT-DIFF.md` לא קיים. |
 | Q24 | OPEN | `docs/LAUNCH-READINESS.md` הוא צילום היסטורי (09.09, NOT READY). דורש כתיבה מחדש. |

@@ -131,9 +131,9 @@ JSON-LD: `Organization` + `WebSite` (כבר ב-
 | `offers.@type` | `Offer` | |
 | `offers.priceCurrency` | תמיד `ILS` | |
 | `offers.price` (קופון) | `CouponOffer.paidOnlineIls` ← `coupon_price_ils` | מה שנגבה באתר |
-| `offers.highPrice` (קופון) | `CouponOffer.fullPriceIls` ← `full_price` / `kenyon_price` | רק אם גבוה מהמקדמה. זה שווי הדיל, לא החיוב באתר |
+| `offers.priceSpecification` (קופון) | `CouponOffer.fullPriceIls` ← `full_price` / `kenyon_price` | `UnitPriceSpecification` עם `priceType: StrikethroughPrice`, רק אם גבוה מהמקדמה. זה שווי הדיל, לא החיוב באתר. `highPrice` שייך ל-`AggregateOffer` בלבד (תוקן 25.09) |
 | `offers.price` (פיזי) | `price_ils` / `kenyon_price` | מלוא החיוב באתר |
-| `offers.highPrice` (פיזי) | `full_price` אם גבוה יותר | מחיר מחוק |
+| `offers.priceSpecification` (פיזי) | `full_price` אם גבוה יותר | מחיר מחוק, אותו `UnitPriceSpecification` |
 | `offers.availability` | מלאי פיזי: `stock_quantity`. קופון לא-sellable: `OutOfStock` בלי מחיר | אסור `price: 0` |
 | `offers.priceValidUntil` | `offer_valid_until` דרך `CouponOffer.validUntil` | תוקף ההצעה, לא תוקף השובר אחרי קנייה |
 | `offers.seller` | `Organization` עם `suppliers.name` | לא Cardcom |

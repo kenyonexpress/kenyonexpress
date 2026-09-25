@@ -16,7 +16,16 @@ import type { CouponOffer } from '@/lib/commerce/coupon-offer'
  * A coupon that advertised the sticker price would put a number in search
  * results that nobody is ever charged, and a coupon that advertised only the
  * online amount without context would promise a whole meal for the deposit.
- * Both appear: `price` is what is paid here, `highPrice` is the sticker.
+ * Both appear: `price` is what is paid here, and the sticker rides along as a
+ * `UnitPriceSpecification` typed `StrikethroughPrice`.
+ *
+ * WHY NOT `highPrice`. That property belongs to `AggregateOffer`, the node for
+ * a price RANGE across several sellers; on a single `Offer` it is not a
+ * schema.org property at all, so validators drop it and the strikethrough
+ * never reaches a search result. `priceSpecification` with
+ * `priceType: StrikethroughPrice` is the encoding Google documents for a list
+ * price on a merchant listing, and it is measured here (2026-09-25): the
+ * served product page carried `highPrice` on its `Offer`.
  *
  * A coupon that cannot be sold gets NO offer node at all rather than an offer
  * priced at zero. `availability: OutOfStock` with no price is the honest
@@ -66,6 +75,19 @@ function trimSite(siteUrl: string): string {
 /** Two decimals, dot separator. Schema.org wants a number, not a formatted one. */
 function price(value: number): string {
   return value.toFixed(2)
+}
+
+/**
+ * The crossed-out sticker price, as schema.org spells it on a single offer.
+ * `Offer.price` stays the amount charged; this is only ever the higher one.
+ */
+function strikethrough(value: number): JsonLdNode {
+  return {
+    '@type': 'UnitPriceSpecification',
+    priceType: `${SCHEMA}/StrikethroughPrice`,
+    price: price(value),
+    priceCurrency: 'ILS',
+  }
 }
 
 function absolute(siteUrl: string, path: string): string {
@@ -144,7 +166,7 @@ function buildOfferNode(input: ProductJsonLdInput, url: string): JsonLdNode | nu
       ...(seller ? { seller } : {}),
     }
     if (input.couponOffer.fullPriceIls > input.couponOffer.paidOnlineIls) {
-      offer.highPrice = price(input.couponOffer.fullPriceIls)
+      offer.priceSpecification = strikethrough(input.couponOffer.fullPriceIls)
     }
     // The offer's own deadline, not the issued voucher's. They differ, and the
     // one a search result should carry is how long the price stands.
@@ -170,7 +192,7 @@ function buildOfferNode(input: ProductJsonLdInput, url: string): JsonLdNode | nu
     ...(seller ? { seller } : {}),
   }
   if (input.fullPriceIls !== null && input.fullPriceIls > input.priceIls) {
-    offer.highPrice = price(input.fullPriceIls)
+    offer.priceSpecification = strikethrough(input.fullPriceIls)
   }
   return offer
 }
