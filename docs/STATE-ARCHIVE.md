@@ -4,6 +4,83 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## B01 - DONE (25.09) - ה-preflight של הפריסה מחובר לבניית Vercel
+
+**מה נבחר ולמה.** ‏`docs/BACKLOG.md` אינו קיים (אומת שוב ב-B01: אין קובץ כזה
+בשום ענף, ב-worktrees או ב-`~/ke-goals`; ‏`docs/POST-LAUNCH-BACKLOG.md` הוא
+לפי הגדרתו רשימת פריטים **נדחים**, ו-`docs/MIGRATION-BACKLOG.md` הוא טבלת
+סטטוס מיגרציות). לכן מאגר הפריטים הוא החוסמים הפתוחים ב-STATE וב-
+‏`LAUNCH-READINESS`. מתוך שמונה, שבעה הם פעולות של אופיר בלבד. היחיד שבידי
+הסוכן: **חוסם 7, "‏`deploy-preflight` אינו מחובר ל-`pnpm build` ולא ל-`vercel.json`".**
+ארבעה מסמכים (‏`DEPLOY.md`, ‏`OWASP-TOP-10.md`, ‏`env.ts`, ‏`CLAUDE.md`) תיארו
+את הסקריפט כ"מחובר ל-`buildCommand`", והוא לא היה. תכונה גמורה בלי צרכן, מאז
+‏06.09.
+
+**מה נעשה.** ‏`vercel.json` ‏`buildCommand` הוא עכשיו
+‏`node scripts/deploy-preflight.mjs && pnpm build`. ‏`pnpm build` עצמו נשאר
+‏`next build` (הכותרת של הסקריפט: בדיקה שחוסמת בנייה מקומית עם המפתח הקיים
+מוסרת). ‏`scripts/deploy-preflight.test.mjs` חדש, ‏9 טסטים: החיווט (מתחיל
+ב-preflight, מחובר ב-`&&`), ‏`pnpm build` לא השתנה, רשימת המשתנים הנדרשים
+זהה לזו של שומר ה-boot ב-`env.ts`, ו-exit codes אמיתיים של הסקריפט תחת סביבה
+מבוקרת: נקי 0, ריק 1 עם כל שם, ‏`SERVICE_ROLE_KEY` מתקבל במקום ‏`SECRET_KEY`,
+‏`CARDCOM_SANDBOX=true` נדחה, ‏`ALLOW_INCOMPLETE_ENV=true` נדחה, ואף ערך אינו
+מודפס. ‏`docs/RELEASE-PROCESS.md` (דוגמת ה-JSON) ו-`docs/LAUNCH-READINESS.md`
+(שורת חוסם 7) עודכנו.
+
+**למה זה בטוח לפריסה הבאה.** שומר ה-boot ‏`assertNoCompromisedKeys(isDeployedRuntime())`
+ורשימת החובה ב-`env.ts` נמצאים ב-`48ea88353`, שהוא אב של ‏`a388118f1` החי;
+‏`instrumentation.ts` מייבא את ‏`env` ב-boot; והפריסה החיה עונה 200. כלומר
+הסביבה ב-Vercel Production כבר עוברת את שתי הבדיקות שה-preflight יריץ. הוא
+מוסיף הודעה קריאה **לפני** הבנייה, לא כישלון חדש. ערכי הסודות לא נקראו.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (אזהרת biome אחת קיימת
+מקודם ב-`SecurityClient.tsx`), `pnpm test` **600 קבצים / 7,158 ירוקים / 12
+מדולגים** (+1 קובץ, +9), `pnpm build` ירוק (BUILD_ID `-qJt2q-vf_MqFYai6_oSU`).
+שער ההשוואה בחזית על 3341, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS,
+‏1440 ‏3.82% PASS**, exit 0, שורות 03:18-03:22 UTC ב-`docs/UI-PARITY-REPORT.md`
+על `820a4de13-dirty`.
+
+## Q24 - DONE (נמדד 25.09) - docs/LAUNCH-READINESS.md: NOT READY, עם ראיות ופריטים ידניים לאופיר
+
+**המסמך נכתב מחדש מלמעלה, וההערכות הקודמות (01.09 עד 09.09) נשמרו מתחתיו
+מילה במילה.** הבאנר "צילום היסטורי" הוסר, השורה ב-`docs/INDEX.md` עודכנה ל-✅.
+כל מספר נמדד בריצה הזו: DB פרודקשן (קריאה בלבד דרך ה-management API), ה-alias
+החי, הרשם, והיסטוריית הריצות ב-GitHub Actions.
+
+**שלושה ממצאים שלא היו רשומים בשום מקום:**
+
+1. **המתזמן מעולם לא הצליח.** ‏`cron.yml` רץ מ-`main` (workflows מתוזמנים
+   יורים רק מענף ברירת המחדל) ונכשל **40 מ-40** הריצות האחרונות. כל נתיב
+   ב-HEAD עונה **401** ל-`CRON_SECRET` ש-GitHub מחזיק, כלומר הסוד ב-GitHub
+   ובזה ב-Vercel שונים. התוצאה, נמדדה: ‏`notification_outbox` מחזיק **72**
+   שורות `pending` מאז ‏10.09 09:57 UTC; אף מייל או פוש לא יצא מפרודקשן
+   ‏15 יום. החוסם 10 הקודם ("ה-drain אינו מתוזמן") היה שגוי בסיבה: הוא
+   מתוזמן, ונדחה. בנוסף ‏`scripts/cron-jobs.json` של `main` מונה שבעה נתיבים
+   שאין ב-HEAD (‏404).
+2. **הפריסה החיה ‏22 קומיטים מאחורי HEAD**, לא ארבעה (Q06 נמדד לפני Q07..Q23).
+3. **הקטלוג: ‏46 מוצרים פעילים**, לא 44 כמו בצילום מ-09.09; ‏5 slugs של
+   ‏`copy/העתק/לדוגמא`, ‏3 שורות `מאסטר`, ‏0 עם עיר.
+
+**אומת מחדש:** NS ברשם עדיין `ns2.vercel.com`; ‏`/checkout` החי מגיש
+‏`frame-src ... 'self'` (ספק mock), ‏24 תשלומי `mock-` ו-15 ריקים ב-30 יום,
+אפס חיובים אמיתיים; ראש המיגרציות `20260910085722`, כל אובייקט של 204/223/
+234-236/239-244 חסר; שמות `CARDCOM_*`, ‏`RESEND_API_KEY`, ‏`R2_*` קיימים
+בפרויקט Vercel (ערכים לא נקראו). ‏`deploy-preflight` אינו מחובר ל-`pnpm build`
+ולא ל-`vercel.json`, ולכן המפתח החשוף לא נחסם ב-Vercel.
+
+**החלטות שהתקבלו לבד:** (א) הפריט ביקש לקרוא `docs/BACKLOG.md`; לא קיים
+(כמו ב-Q23), ההחלטה נשארת ל-B01. (ב) לא נגעתי בסודות: הסקת ה-401 היא
+מהשוואת ה-Bearer ב-`job-run.ts` מול ‏`run-cron-jobs.sh`, לא מקריאת ערכים.
+(ג) המסמך באנגלית כמו קודמיו, ורשימת הפריטים לאופיר בעברית.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 599 קבצים /
+7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק (BUILD_ID `EfxxNqd3f_4Lxq4cAsCGA`),
+‏`pnpm audit --prod` אפס. שער ההשוואה בחזית על 3341, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 03:00-03:03
+ב-`docs/UI-PARITY-REPORT.md` על `d0a21af2a`. תחזוקה: גיבוי היום כבר קיים
+(`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל), ‏`caffeinate`
+חי (pid 959), ‏`SleepDisabled 1`.
+
 ## Q23 - DONE (נמדד 25.09) - docs/AUTOPILOT-DIFF.md: מה יש ב-autopilot וב-phase5/homepage-closeout שאין כאן
 
 **נקרא דרך git בלבד, בלי merge ובלי cherry-pick.** בסיס משותף `a3df275ed` (09.09).
