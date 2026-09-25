@@ -2,8 +2,7 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q21 DONE (25.09, נמדד).** הבא בתור: **Q22** (OPEN, חלקי: `e2e/` קיים,
-אין ראיה ל-Lighthouse mobile 90+ על דף מוצר), ואחריו **Q23**.
+**Q22 DONE (25.09, נמדד).** הבא בתור: **Q23**, ואחריו **Q24**.
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -24,6 +23,76 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
+
+## Q22 - DONE (נמדד 25.09) - E2E גלישה, מוצר, סל, קופת אורח עד ה-stub; Lighthouse mobile
+
+**כל מספר כאן נמדד על build טרי עם ‏mock** (`CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build`, BUILD_ID
+`vAlm2GJMPCfXqWiv00WJL`, שרת על 3331, ‏`frame-src ... 'self'` מוגש). שני
+המשתנים חייבים להיות בזמן ה-build: ה-CSP של ה-iframe נאפה ב-`routes-manifest`
+(`frame-policy.ts`), וה-canonical (`site-url.ts`) נאפה ב-shell הסטטי. build בלי
+`NEXT_PUBLIC_APP_URL` מגיש canonical של פרודקשן ב-HTML ו-localhost בהידרציה,
+ו-Lighthouse קורא ‏SEO ‏92 ("Multiple conflicting URLs"). נמדד; ב-Vercel שני
+הזמנים חולקים env ואין סתירה.
+
+- **E2E, ‏`--workers=1`, שני הפרויקטים (Desktop Chrome + Pixel 5):**
+  `home`+`category`+`product` ‏**82/82**; `cart`+`checkout`+`purchase-flow`
+  ‏**40 עברו, 3 דולגו** (שלושתם מותנים ב-viewport, בעיצוב);
+  `full-purchase-redeem` על chromium ‏**2/2**: סל אורח ← `/checkout` פתוח
+  לאורח ← כניסה בלחיצת התשלום (מייל, אותו מסלול `mergeGuestCart` של Google) ←
+  ה-stub ‏`/checkout/frame-return` בתוך ה-iframe ← `/checkout/return` עם
+  "התשלום הצליח!" ← שובר + QR ← `/account/coupons` ← מימוש בקופת הספק.
+  הריצות כתבו שורות אמיתיות לפרודקשן על לקוח הבדיקות (3 הזמנות mock, 3 שוברים
+  מומשו), כמו ב-21.09 וב-22.09. אין staging.
+- **כשל אחד באצווה, לא בקוד:** בריצת האצווה השלמה גוף הקופה לא הגיע תוך 5 שניות
+  (ה-snapshot מראה כותרת ופוטר בלבד) בזמן שהשרת רשם ‏1,834 ‏`db.query_failed`
+  מרענון הרקע של דף הבית (הרעש הידוע, ‏`docs/FINAL-REPORT-V2.md` §1). ריצה
+  לבד מיד אחר כך: ‏2/2.
+- **שני פגמים אמיתיים נמצאו ותוקנו:**
+  1. **גריד האזור האישי שבור מ-09.09.** ‏`AccountSideNav` ב-`(account)/layout.tsx`
+     החזיר fragment של שלושה תאים (prompt, פעמון, nav) לתוך גריד של שתי עמודות
+     (`260px 1fr`), ולכן ה-nav נחת בעמודה הרחבה והתוכן של כל דף ירד לשורה השנייה
+     של עמודת ה-260. נמדד ב-`/account/coupons`: תוכן ברוחב ‏260 בתוך shell של
+     ‏1250, שורה ברוחב ‏218, ופסקת הקוד ברוחב ‏**0** מאז ש-Q14 הוסיף כפתור פעולה
+     שני. ה-fallback של ה-Suspense היה תא אחד, ולכן ה-shell נראה נכון עד שה-nav
+     הגיע. תוקן: תא אחד `.account-side`, ו-fallback שמשקף אותו
+     (`.account-side__bell-pending` ‏44+12px). אחרי התיקון: תוכן ‏960, קוד ‏338.
+  2. **מרוץ strict-mode בשני טסטים של הקטגוריה:** `getByText` תפס את העותק המוסתר
+     שריאקט חונה בסוף ה-body לרגע לפני ה-swap של הגריד המוזרם. ה-snapshot בזמן
+     הכשל כבר הראה פסקה אחת בתוך `main`. ה-locator מוגבל ל-`#main-content`.
+- **Lighthouse mobile** (13.4.1, ברירת מחדל: simulate, ‏412x823), 3 ריצות לכל דף
+  על ה-build הזה:
+
+  | דף | perf | a11y | BP | SEO | LCP מדומה | `provided` |
+  |---|---|---|---|---|---|---|
+  | `/` | 73 / 77 / 77 | 100 | 96 | 100 | 6.0-6.4s | **100** (LCP 0.48s) |
+  | `/product/barbecue` | 76 / 80 / 80 | 100 | 96 | 100 | 5.0-5.8s | **100** (LCP 0.13s) |
+
+  **alias הפרודקשן** (`kenyonexpress.vercel.app`, ‏`a388118f1`, לפני Q03 והתיקון):
+  ‏`/` ‏**93 / 90**, מוצר ‏**87 / 92**. ‏BP ‏96 מקומי מול ‏100 בפרודקשן הוא http
+  מול https.
+- **תיקון LCP בדף הבית, נמדד:** אלמנט ה-LCP הוא תמונת הכרטיס הראשון של הגריד
+  המוזרם מהקטלוג (לא ה-fixture ב-shell), ורשימת הגילוי של Lighthouse נכשלה
+  בשלוש השורות (בלי fetchpriority, לא ניתן לגילוי ב-HTML, ‏`loading=lazy`), עם
+  ‏525-634ms ‏`resourceLoadDelay`. ‏`priority` על ארבעת הכרטיסים הראשונים של
+  הגריד האמיתי בלבד (`ProductDealCard` ‏`priority`, ‏`DealsGrid` ‏`eagerCount`;
+  ה-fallback נשאר lazy כי כרטיסיו מוחלפים). אחרי: גילוי ‏2/3 (Next 16 פולט
+  preload בלי fetchpriority), ‏delay ‏359-475ms, ‏`provided` LCP ‏0.48s.
+  **הציון המדומה לא זז**, בדיוק כפי ש-`docs/PERFORMANCE-BUDGET.md` מתעד: מול
+  localhost הגרף הפסימי של Lantern מכיל את כל הדף (30 סקריפטים / 423KB, ‏25
+  prefetch של RSC, 3 פונטים) לפני ה-LCP הנצפה.
+- **החלטות שהתקבלו לבד:** (א) יעד ה-90+ המדומה על localhost לא הושג ולא נרדף
+  הלאה: ה-124KB ה"לא בשימוש" הם chunks של ריאקט/Next, וה-25 prefetch הם התנהגות
+  ה-`<Link>` של Next; קיצוץ שניהם אינו בגדר הפריט ולא היה מזיז 6.3s ל-2.5s. המספר
+  שנחשב הוא על ההפרסה של HEAD אחרי הפריסה (חוסם 2), וה-alias הישן כבר ב-90-93 בבית.
+  (ב) רעש ה-`db.query_failed` בזמן רענון דף הבית לא סונן (מתועד, מחוץ לפריט).
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (docs-index-gate OK), `pnpm test`
+599 קבצים / 7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק. שער ההשוואה בחזית על
+3331, `--baseline`: **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**,
+מוצר 1440 ‏**2.79% PASS**, שורות 02:12-02:17 ב-`docs/UI-PARITY-REPORT.md`.
+תחזוקה: גיבוי `kenyonexpress-backup-2026-09-25-0931.tar.gz` (780MB) נוצר, הישן
+מארבעה נמחק (כלל: שלושה); ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
 
 ## Q21 - DONE (נמדד 25.09) - WCAG 2.1 AA, מטא SEO, schema.org Product/Offer, sitemap, robots
 
@@ -129,7 +198,7 @@ RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפע
 | Q19 | DONE (25.09) | הרשומה למעלה. קיים ופרוס: `redeem_voucher` אטומי + טריגר 166 (נמדד בפרודקשן), מגבלות קצב login/checkout/redeem, `velocity.ts`, רשימת חסימה 234. חדש: `ספק מאומת` מאישור אנושי או מימוש אמיתי (1 מ-7 היום), `N נרכשו השבוע` מחיובים אמיתיים בלבד (18/18 mock מוחרגות). +25 טסטים. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
 | Q20 | DONE (אומת 25.09) | `29b921163`, `bf9f2ca09`. מכירות/מימושים/זיכויים/תשלומים ב-`(supplier)/supplier/*`, אגורות בלבד, אפס policy כתיבה לספק (נמדד בפרודקשן). קריאות על service role עם נעילת tenant ולא RLS: RLS חי היה מעלים 2 שורות `refunded` מתוך 19 (נמדד). שער 8.44/9.03/3.82 PASS. |
 | Q21 | DONE (נמדד 25.09) | הרשומה למעלה. axe WCAG 2.1 AA: 36 עברו / 0 נכשלו על 19 מסלולים. מטא, JSON-LD (Product+Offer, `highPrice` -> `StrikethroughPrice`), sitemap 5 חלקים, robots. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
-| Q22 | OPEN, חלקי | `e2e/` קיים, `31ada5313`. Lighthouse: `docs/LIGHTHOUSE-AUDIT.md`. אין ראיה ל-90+ mobile על דף מוצר. |
+| Q22 | DONE (נמדד 25.09) | הרשומה למעלה. E2E על build עם mock: בית+קטגוריה+מוצר 82/82, סל+קופה+מסלול 40 עברו / 3 דולגו לפי viewport, אורח עד ה-stub ומימוש 2/2. שני פגמים תוקנו (גריד האזור האישי, מרוץ strict-mode). Lighthouse mobile מקומי: בית 73-77, מוצר 76-80 (מדומה), 100/100 ללא סימולציה; alias פרודקשן 90-93 / 87-92. שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
 | Q23 | OPEN | `docs/AUTOPILOT-DIFF.md` לא קיים. |
 | Q24 | OPEN | `docs/LAUNCH-READINESS.md` הוא צילום היסטורי (09.09, NOT READY). דורש כתיבה מחדש. |
 | B01-B10 | OPEN, חסום | `docs/BACKLOG.md` לא קיים. מועמדים: `docs/POST-LAUNCH-BACKLOG.md`, `docs/MIGRATION-BACKLOG.md`. החלטה ב-B01. |

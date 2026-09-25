@@ -19,16 +19,28 @@ import { FIXTURE_DEALS, type HomeDeal, homeDeals } from '@/lib/homepage/deals'
  * `xl:px-0` hands it back to the cap. The column count itself lives in
  * src/styles/product-card-deals.css, which carries the measurement table.
  */
-function DealsGrid({ products }: { products: readonly HomeDeal[] }) {
+/**
+ * `eagerCount` is how many leading cards carry the LCP image hint. Four is
+ * live's first row at 1440 and, on a phone, the first card plus the three
+ * under it, each a 5KB thumbnail at q=50. See `priority` on ProductDealCard
+ * for the measurement; the fallback passes 0 because its cards are replaced.
+ */
+function DealsGrid({
+  products,
+  eagerCount = 0,
+}: {
+  products: readonly HomeDeal[]
+  eagerCount?: number
+}) {
   return (
     <section
       aria-label="מוצרים מובילים"
       className="mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
     >
       <div className="jet-listing-grid-deals bg-white">
-        {products.map((product) => (
+        {products.map((product, index) => (
           <div key={product.id} className="jet-listing-grid-deals__item">
-            <ProductDealCard product={product} />
+            <ProductDealCard product={product} priority={index < eagerCount} />
           </div>
         ))}
       </div>
@@ -47,8 +59,11 @@ function DealsGrid({ products }: { products: readonly HomeDeal[] }) {
  * see docs/UI-PARITY-REPORT.md for the rows dated 2026-09-25.
  */
 export default async function DealsOfTheDay() {
-  return <DealsGrid products={await homeDeals()} />
+  return <DealsGrid products={await homeDeals()} eagerCount={HOME_DEALS_EAGER} />
 }
+
+/** The first row at 1440; on a phone the first card and the three below it. */
+const HOME_DEALS_EAGER = 4
 
 /**
  * The SYNCHRONOUS grid the page shows while the catalogue read is in flight.

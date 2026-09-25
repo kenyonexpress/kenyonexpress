@@ -88,7 +88,29 @@ function categoryHref(slug: string): string {
   return slug === LIVE_CATCH_ALL_CATEGORY ? '/products' : `/category/${slug}`
 }
 
-export default function ProductDealCard({ product }: { product: Product }) {
+/**
+ * `priority` is the LCP hint for the first cards of the REAL grid only.
+ *
+ * Measured with Lighthouse mobile on 2026-09-25 against the production build:
+ * the LCP element on the home page is the first deal card's photo, and it is
+ * the photo from the streamed catalogue grid, not the fixture in the static
+ * shell. The discovery checklist failed on all three lines (no fetchpriority,
+ * not discoverable in the initial document, loading=lazy) and the breakdown
+ * charged 525-634ms of resource load delay to it: the request only left after
+ * the boundary swapped and layout ran. `priority` on next/image emits
+ * fetchpriority="high", drops loading="lazy" and preloads from the stream.
+ *
+ * The fallback grid stays lazy on purpose. Its cards are replaced the moment
+ * the catalogue segment lands, so preloading its photos would spend the
+ * phone's first round trips on pictures the visitor never keeps.
+ */
+export default function ProductDealCard({
+  product,
+  priority = false,
+}: {
+  product: Product
+  priority?: boolean
+}) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -171,6 +193,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              priority={priority}
               // `.p_con__image` pins the height to 245px and leaves the width
               // auto, which is live's aspect. No inline style: see the note in
               // ProductCard.tsx - an inline `height:auto` beats the class and

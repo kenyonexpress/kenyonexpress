@@ -50,6 +50,21 @@
 }
 
 /* Nav */
+
+/*
+ * The first grid cell: the bell row and the nav together. The pending bell box
+ * is the bell's own size (h-11 plus mb-3 on the row) so the nav below it, and
+ * the footer below that, sit where they will once the read resolves.
+ */
+.account-side {
+  min-width: 0;
+}
+
+.account-side__bell-pending {
+  height: 44px;
+  margin-bottom: 12px;
+}
+
 .account-nav {
   border: 1px solid var(--account-line);
   border-radius: 4px;

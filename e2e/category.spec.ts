@@ -21,9 +21,12 @@ test.describe('category archive', () => {
     await expect(page.getByRole('navigation', { name: 'נתיב ניווט' })).toBeVisible()
 
     // Either products, or the empty-state copy. Both are valid archive states;
-    // a blank page with neither is the regression this guards against.
-    const grid = page.locator('a[href^="/product/"]').first()
-    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
+    // a blank page with neither is the regression this guards against. Scoped
+    // to main for the reason given on the price-filter test below: the grid
+    // streams, and a page-wide match can catch React's parked copy mid-swap.
+    const main = page.locator('#main-content')
+    const grid = main.locator('a[href^="/product/"]').first()
+    const empty = main.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
     await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 })
   })
 
@@ -208,8 +211,17 @@ test.describe('category archive', () => {
     const response = await page.goto(`/category/${slug}?min=0&max=1`)
     expect(response?.status()).toBe(200)
 
-    const grid = page.locator('a[href^="/product/"]').first()
-    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
+    // Scoped to the main landmark, and not by accident. The grid streams in
+    // through a Suspense boundary, and React parks the streamed HTML in a
+    // hidden container at the end of <body> for the instant before its swap
+    // script moves it into place. A page-wide getByText polled in that instant
+    // resolves to two paragraphs, the parked one and the placed one, and `or`
+    // is strict, so the assertion failed on a page that was rendering exactly
+    // one empty state. Measured on mobile-chrome 2026-09-25: the ARIA snapshot
+    // taken at the failure already showed a single paragraph, inside main.
+    const main = page.locator('#main-content')
+    const grid = main.locator('a[href^="/product/"]').first()
+    const empty = main.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
     await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 })
   })
 
