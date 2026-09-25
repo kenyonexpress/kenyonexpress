@@ -1,16 +1,17 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M02-c1)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M03-c1)
 
 ## המשך מ:
 
-**M02-c1 DONE (25.09): שער הפריטי נמדד ועבר, אין רגרסיה.** דף הבית 380 ‏8.44%,
-‏768 ‏9.03%, ‏1440 ‏3.82%, כולם PASS; דף המוצר 1440 ‏2.79% PASS, ‏380 ו-768
-REFUSED (אין reference תקף; פירוט ברשומה למטה). ה-goal הבא: **M03-c1** (Green
-check: `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`, ותיקון כל
-שגיאה ואזהרה שניתנת לתיקון בלי לשנות התנהגות). הדומיין עדיין מאציל
-ל-`ns1/ns2.vercel.com` (נמדד שוב 25.09 ב-M02-c1); פריסת HEAD לפרודקשן
-חסומה ב-preflight (M01-c1, בארכיון).
+**M03-c1 DONE (25.09): ארבעת השערים ירוקים ונקיים.** `type-check` exit 0,
+`lint` 0 אזהרות (היתה 1), `test` 601 קבצים / 7,162 ירוקים / 12 מדולגים עם 0
+שורות stderr (היו 3), `build` ירוק עם 0 שורות ERROR (היו 273) ו-12 WARN
+שכולן נכונות. ה-goal הבא: **M04-c1** (Dependency hygiene: `pnpm audit`,
+`pnpm outdated`, שדרוגי patch ו-minor בלבד שמשאירים type-check, test ו-build
+ירוקים; לעולם לא major; לרשום ב-STATE.md מה השתנה). הדומיין עדיין מאציל
+ל-`ns1/ns2.vercel.com` (נמדד 25.09 ב-M02-c1); פריסת HEAD לפרודקשן חסומה
+ב-preflight (M01-c1, בארכיון).
 
-ההיסטוריה המלאה (Q01..Q24, B01, B03..B10, M01-c1, תור 23.09, וכל מה שקדם)
+ההיסטוריה המלאה (Q01..Q24, B01, B03..B10, M01-c1, M02-c1, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -31,53 +32,69 @@ check: `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`, ותיקון �
 ניתן להצגה כלל.
 
 
-## M02-c1 - DONE (25.09) - שער הפריטי: בית 8.44/9.03/3.82, מוצר 1440 ‏2.79, כולם PASS
+## M03-c1 - DONE (25.09) - שער ירוק: ארבעת השערים נקיים, אזהרת lint אחת ו-321 שורות רעש בבנייה תוקנו
 
-**נמדד על שרת חדש, לא מול רשומות קודמות.** HEAD `b694bd897` שווה
-ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי. `pnpm build` ירוק
-(BUILD_ID `TAlQlzoB06y_zi1uJF9hh`, 27.5s), `pnpm start` על 3431, וה-HTML
-שהוגש מכיל את אותו BUILD_ID (אומת ב-curl לפני המדידה; שלושת שרתי
-`next-server` הזרים, pid 23704/46984/99861, לא נגעתי בהם).
+**נמדד על העץ, לא מול הרשומה הקודמת.** HEAD `59ffb75d4` שווה
+ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי בתחילת הפריט.
 
-**דף הבית, `--widths=380,768,1440 --baseline=refs/ke_live_{width}.png`,
-בחזית, exit 0:**
+**מה נמצא בריצה הראשונה, לפני שינוי:**
 
-| רוחב | both painted | מצב | שורה בפנקס |
-|---|---|---|---|
-| 380 | **8.44%** | PASS | 05:21 UTC, `b694bd897` |
-| 768 | **9.03%** | PASS | 05:23 UTC, `b694bd897-dirty` |
-| 1440 | **3.82%** | PASS | 05:24 UTC, `b694bd897-dirty` |
+| שער | תוצאה | מה לא היה נקי |
+|---|---|---|
+| `pnpm type-check` | exit 0 | כלום. |
+| `pnpm lint` | exit 0, **אזהרה 1** | `useExhaustiveDependencies` ב-`SecurityClient.tsx` 27: ה-effect קרא ל-`refresh` בלי לרשום אותה. |
+| `pnpm test` | exit 0, 600 קבצים / 7,158 / 12 מדולגים | **3 שורות `Error: Not implemented: navigation`** ב-stderr, מקליק על `<a href="/checkout">` חי ב-jsdom בשני טסטים של הסל. |
+| `pnpm build` | exit 0, BUILD_ID `5jOp-4_jhif4OCinnbIGF` | **273 `db.query_failed` ברמת ERROR ו-48 אזהרות באתרי הקריאה**, כולן "During prerendering, fetch() rejects when the prerender is complete" (`FINAL-REPORT-V2` 20.09 מנה 5,180 כאלה בזמן ריצה וכתב "ראוי לסינון ברמת הלוג, לא נעשה כאן"). |
 
-זהים לשלוש הספרות למדידות Q06..M01-c1. **אין רגרסיה ואין מה לתקן.**
+**מה תוקן, בלי שינוי התנהגות מוצר:**
 
-**דף המוצר (`/product/מוצר-לדוגמא`):**
+1. **`SecurityClient.tsx`**: קריאת `listFactors` הועברה לפונקציית מודול
+   `listTotpFactors`; ה-effect נוגע רק ב-`setFactors` היציב. `refresh` נשארה
+   לשני הקוראים האחרים. אפס אזהרות biome.
+2. **`cart-checkout-button.test.tsx`, `unavailable-blocks-every-checkout.test.tsx`**:
+   עוזר `clickWithoutNavigating` בכל קובץ. מאזין על `document` רץ אחרי ה-handler
+   של React, קורא את `defaultPrevented` כפי שהרכיב השאיר אותו ורק אז מבטל את
+   הניווט של jsdom. אותה אסרציה בדיוק, אפס `Not implemented`.
+3. **`src/lib/observability/prerender-abort.ts`** (חדש, +3 טסטים): `isPrerenderAbort`
+   מזהה את הדחייה של Next בשני הצורות שהיא מגיעה, `digest ===
+   'HANGING_PROMISE_REJECTION'` על השגיאה הזרוקה, והמשפט הקבוע ב-`message`
+   אחרי ש-supabase-js עטף אותה ל-`{ error }`.
+4. **`query-log-fetch.ts`** (+1 טסט): הדחייה הזו נרשמת כ-`db.query_abandoned`
+   ב-DEBUG ונזרקת הלאה כמו קודם; `db.query_failed` נשאר לכל השאר.
+5. **חמישה אתרי קריאה** מדלגים על ה-WARN שלהם רק במקרה הזה, אותו fallback בדיוק:
+   `stock-live.ts` (`stock.available_read_failed`/`_threw`), `homepage/cms.ts`
+   (`homepage.cms_read_failed`), `referrals/program.ts`
+   (`referrals.settings_read_failed`), `(account)/layout.tsx` ו-`account/page.tsx`
+   (`passkey.list_threw`, שם זה `cookies()` שנדחה).
 
-| רוחב | תוצאה | reference | הערה |
-|---|---|---|---|
-| 1440 | **2.79%** PASS (כולל 14.77%) | `refs/live-product.png` (03.09, מוצר אחר) | `COMPARE_ALLOW_GRID_MISMATCH=1`, כמו ב-Q04; שורה 05:27 UTC |
-| 380 | REFUSED, exit 5 | אין | "capture is 1440px, run is 380px"; שורה 05:28 UTC |
-| 768 | REFUSED, exit 5 | אין | "capture is 1440px, run is 768px"; שורה 05:28 UTC |
+**אחרי התיקון, כל ארבעת השערים בחזית:**
 
-**למה 380 ו-768 של דף המוצר אינם ניתנים למדידה, ולמה זה לא רגרסיה:**
-הפריט מבקש "fix every regression until all three are under 11 percent".
-ב-380 וב-768 אין מספר בכלל, לא מספר מעל 11. הצילומים היחידים ברוחבים
-האלה, `refs/ke_live_product_{380,768}.png` (23.09), רונדרו מ-HTML שנשמר
-בלי stylesheets ואינם reference (ארכיון, B02, חוסם 5); למדוד מולם היה
-מייצר מספר מומצא. מקור חדש לצילום הוא האתר החי, והדומיין עדיין לא
-מתרגם (`dig NS kenyonexpress.co.il @ns1.ns.il` מחזיר `ns1/ns2.vercel.com`,
-נמדד 25.09 05:30 UTC). זה חוסם 1 (הרשם) ואינו בידי הסוכן.
+| שער | תוצאה |
+|---|---|
+| `pnpm type-check` | exit 0 |
+| `pnpm lint` | exit 0, **0 אזהרות**; 12 השערים נקיים (i18n 627/627, he-IL 134 בתקרה, docs-index 281) |
+| `pnpm test` | exit 0, **601 קבצים / 7,162 ירוקים / 12 מדולגים** (171.3s), **0 שורות stderr** |
+| `pnpm build` | exit 0, BUILD_ID `3F28FBpqv8LZuD115AiOw`; פלט 658 -> **340 שורות, 0 ברמת ERROR**, 12 WARN |
 
-**החלטות שהתקבלו לבד:** (א) לא נמדד מול ה-refs הפסולים ב-380/768 ולא
-נכתבה שורה מומצאת; שורות ה-REFUSED בפנקס נכתבו על ידי השער עצמו. (ב)
-רשומת M01-c1 המלאה (פלט ה-dig ופלט ה-preflight) הועברה לארכיון; תמצית
-התיקון נשארת בחוסמים 1 ו-2. (ג) שום קובץ UI לא השתנה, ולכן ה-diff הוא
-הפנקס ו-STATE.md בלבד.
+**מה נשאר ולמה זה לא לתיקון כאן:** (א) 8 `db.query_slow` בבנייה: שאילתות
+אמיתיות מעל 1,500ms מהלפטופ ל-Supabase בזמן prerender; רשת, לא קוד. (ב) 4
+`db.optional_column_missing`, 3 `content_pages.not_applied`, 2 `phases.not_applied`:
+אזהרות נכונות על 242 ומיגרציות ממתינות (חוסם 3), והן אמורות לירות. (ג) 8-10
+`ExperimentalWarning: ML-DSA-44 Web Crypto` מ-Node 25.9: `@simplewebauthn/server`
+14.0.1 ו-`@peculiar/x509` 2.1.0 קוראים ל-`crypto.subtle.supports`; קוד של תלות,
+ותיקון פירושו שדרוג חבילות (M04-c1) או `--no-warnings` שמסתיר גם אזהרות
+אמיתיות. לא נגעתי.
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 134
-בתקרה, docs-index 281), `pnpm test` **600 קבצים / 7,158 ירוקים / 12 מדולגים**
-(157.6s), `pnpm build` ירוק. תחזוקה: גיבוי היום קיים
-(`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל), `caffeinate`
-חי (pid 959), `SleepDisabled 1`. השרת על 3431 נסגר בסיום הפריט.
+**החלטות שהתקבלו לבד:** (א) הסינון נעשה בשכבת ה-fetch ובאתרי הקריאה ולא
+ב-`log.ts`, כדי ש-`db.query_failed` ימשיך למנות כל כישלון אמיתי ב-Axiom
+(`dashboards/errors.json` לא השתנה). (ב) שם אירוע חדש `db.query_abandoned`
+ב-DEBUG במקום שתיקה, כדי שאפשר יהיה לספור את הביטולים אם יידרש. (ג) שער
+ההשוואה לא הורץ: אפס שינוי ב-UI (השינוי היחיד ב-`src/app` הוא סדר קריאה
+ב-`useEffect` ושני `if` על לוג), והפריט הזה אינו פריט parity; המספרים
+האחרונים 8.44/9.03/3.82 מ-M02-c1 עומדים.
+
+**תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`,
+שלושה בסך הכל, אין מה למחוק), `caffeinate` חי (pid 959), `SleepDisabled 1`.
 
 ## B02 - DONE (25.09) - BACKLOG EMPTY
 
@@ -152,7 +169,8 @@ check: `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`, ותיקון �
 | B09 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השמינית. פירוט בארכיון. |
 | B10 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם התשיעית: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. האחרון בתור. שער 8.44/9.03/3.82 PASS. |
 | M01-c1 | BLOCKED, DNS אצל הרשם | פירוט בארכיון. dig SERVFAIL (EDE 22), NS ברשם `ns1/ns2.vercel.com`; curl exit 6 בשני המארחים. פריסת HEAD ל-Vercel נוסתה וסורבה ב-preflight (3 שמות Cardcom חסרים + waiver); פרודקשן נשאר `a388118f1`. שער 8.44/9.03/3.82 PASS. |
-| M02-c1 | DONE (25.09) | הרשומה למעלה. בית 380 8.44%, 768 9.03%, 1440 3.82% PASS; מוצר 1440 2.79% PASS, 380/768 REFUSED (אין reference תקף, דומיין חשוך). אין רגרסיה, אפס שינויי UI. |
+| M02-c1 | DONE (25.09) | בית 380 8.44%, 768 9.03%, 1440 3.82% PASS; מוצר 1440 2.79% PASS, 380/768 REFUSED (אין reference תקף). אין רגרסיה. פירוט בארכיון. |
+| M03-c1 | DONE (25.09) | הרשומה למעלה. type-check נקי; lint 0 אזהרות (תוקנה 1); test 601/7,162 ירוקים, 0 stderr (תוקנו 3); build 0 ERROR (תוקנו 273 + 48 WARN של prerender abort). +4 טסטים. אפס שינוי UI. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 

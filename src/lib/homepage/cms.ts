@@ -1,6 +1,7 @@
 import type { HeroSlide } from '@/components/home/HeroSlider'
 import { HERO_SINGLEFILE_SLIDES } from '@/lib/hero-singlefile-data'
 import { log } from '@/lib/observability/log'
+import { isPrerenderAbort } from '@/lib/observability/prerender-abort'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -216,9 +217,13 @@ export async function readHomepageContent(
     }
 
     if (banners.error || sections.error) {
-      log.warn('homepage.cms_read_failed', {
-        reason: banners.error?.message ?? sections.error?.message,
-      })
+      // Silent when a completed prerender cancelled the read: same fallback,
+      // nothing to chart.
+      if (!isPrerenderAbort(banners.error) && !isPrerenderAbort(sections.error)) {
+        log.warn('homepage.cms_read_failed', {
+          reason: banners.error?.message ?? sections.error?.message,
+        })
+      }
       return AUTHORED_CONTENT
     }
 

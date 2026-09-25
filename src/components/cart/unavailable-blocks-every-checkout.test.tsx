@@ -109,14 +109,39 @@ function renderSurface(surface: 'drawer' | 'mini', items: CartViewItem[]) {
 
 const checkoutLink = () => screen.getByRole('link', { name: 'המשך לתשלום' })
 
+/**
+ * Dispatch a click and report whether the component cancelled it, WITHOUT
+ * letting jsdom follow the href. jsdom has no navigation: an uncancelled click
+ * on `<a href="/checkout">` schedules `navigate()` on a timer, which then
+ * prints "Not implemented: navigation" through the virtual console after the
+ * test has finished. A listener on `document` runs after React's root handler
+ * in the bubble phase, so it can read `defaultPrevented` as the component left
+ * it and only then cancel the default itself. The return value is exactly what
+ * `fireEvent.click` would have returned.
+ */
+function clickWithoutNavigating(link: HTMLElement): boolean {
+  let cancelledByComponent = false
+  const swallow = (event: Event) => {
+    cancelledByComponent = event.defaultPrevented
+    event.preventDefault()
+  }
+  document.addEventListener('click', swallow, { once: true })
+  try {
+    fireEvent.click(link)
+  } finally {
+    document.removeEventListener('click', swallow)
+  }
+  return !cancelledByComponent
+}
+
 describe.each(['drawer', 'mini'] as const)('the %s checkout button', (surface) => {
   it('works on a cart that is fine', () => {
     renderSurface(surface, [LINE])
     const link = checkoutLink()
     expect(link.getAttribute('href')).toBe('/checkout')
     expect(link.getAttribute('aria-disabled')).not.toBe('true')
-    // fireEvent.click returns false when something called preventDefault.
-    expect(fireEvent.click(link)).toBe(true)
+    // Like fireEvent.click, this is false when something called preventDefault.
+    expect(clickWithoutNavigating(link)).toBe(true)
   })
 
   it('refuses while a line is unavailable, the same as /cart does', () => {

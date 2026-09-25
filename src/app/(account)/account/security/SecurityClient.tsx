@@ -5,6 +5,12 @@ import { useEffect, useState, useTransition } from 'react'
 
 type Factor = { id: string; status: string; friendly_name?: string | null }
 
+async function listTotpFactors(): Promise<Factor[]> {
+  const supabase = createClient()
+  const { data } = await supabase.auth.mfa.listFactors()
+  return (data?.totp ?? []) as Factor[]
+}
+
 /**
  * TOTP enrollment and management, straight against Supabase Auth's native MFA
  * (no table of ours -- the provider that issues sessions owns the factors).
@@ -20,12 +26,10 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
   const [isPending, startTransition] = useTransition()
 
   async function refresh() {
-    const supabase = createClient()
-    const { data } = await supabase.auth.mfa.listFactors()
-    setFactors((data?.totp ?? []) as Factor[])
+    setFactors(await listTotpFactors())
   }
   useEffect(() => {
-    void refresh()
+    void listTotpFactors().then(setFactors)
   }, [])
 
   function beginEnroll() {

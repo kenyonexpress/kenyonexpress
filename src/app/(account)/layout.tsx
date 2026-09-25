@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/account.css'
+import { isPrerenderAbort } from '@/lib/observability/prerender-abort'
 
 /**
  * The session check and the identity the side nav shows, together, because both
@@ -56,9 +57,13 @@ async function AccountSideNav() {
     // Best-effort: the register-a-passkey nudge is a nice-to-have, not
     // something worth failing the whole side nav over.
     listPasskeys().catch((cause): Awaited<ReturnType<typeof listPasskeys>> => {
-      log.warn('passkey.list_threw', {
-        message: cause instanceof Error ? cause.message : String(cause),
-      })
+      // `cookies()` rejects when a prerender completes first; that is the
+      // static shell, not a passkey outage.
+      if (!isPrerenderAbort(cause)) {
+        log.warn('passkey.list_threw', {
+          message: cause instanceof Error ? cause.message : String(cause),
+        })
+      }
       return { error: 'unavailable' }
     }),
   ])

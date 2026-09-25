@@ -3,6 +3,31 @@ import { describe, expect, it, vi } from 'vitest'
 import CartCheckoutButton from './CartCheckoutButton'
 
 /**
+ * Dispatch a click and report whether the component cancelled it, WITHOUT
+ * letting jsdom follow the href. jsdom has no navigation: an uncancelled click
+ * on `<a href="/checkout">` schedules `navigate()` on a timer, which then
+ * prints "Not implemented: navigation" through the virtual console after the
+ * test has finished. A listener on `document` runs after React's root handler
+ * in the bubble phase, so it can read `defaultPrevented` as the component left
+ * it and only then cancel the default itself. The return value is exactly what
+ * `fireEvent.click` would have returned.
+ */
+function clickWithoutNavigating(link: HTMLElement): boolean {
+  let cancelledByComponent = false
+  const swallow = (event: Event) => {
+    cancelledByComponent = event.defaultPrevented
+    event.preventDefault()
+  }
+  document.addEventListener('click', swallow, { once: true })
+  try {
+    fireEvent.click(link)
+  } finally {
+    document.removeEventListener('click', swallow)
+  }
+  return !cancelledByComponent
+}
+
+/**
  * The disabled checkout link has to REFUSE, not just look refused.
  *
  * `aria-disabled` on an anchor is an announcement. What stopped the click was
@@ -27,7 +52,7 @@ describe('CartCheckoutButton', () => {
 
     const link = screen.getByRole('link', { name: 'המשך לתשלום' })
     expect(link.getAttribute('href')).toBe('/checkout')
-    expect(fireEvent.click(link)).toBe(true)
+    expect(clickWithoutNavigating(link)).toBe(true)
     expect(onNavigate).toHaveBeenCalledOnce()
   })
 

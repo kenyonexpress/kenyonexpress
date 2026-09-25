@@ -1,5 +1,6 @@
 import { type Agorot, agorot } from '@/lib/money'
 import { log } from '@/lib/observability/log'
+import { isPrerenderAbort } from '@/lib/observability/prerender-abort'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -85,7 +86,9 @@ export async function getReferralProgram(): Promise<ReferralProgram | null> {
     // that will not answer should render "the program is not running" rather
     // than take the account area down. The customer's own referral rows, which
     // are the part of that page that is theirs, read from somewhere else.
-    log.warn('referrals.settings_read_failed', { reason: error.message })
+    if (!isPrerenderAbort(error)) {
+      log.warn('referrals.settings_read_failed', { reason: error.message })
+    }
     return null
   }
 

@@ -112,6 +112,22 @@ describe('createQueryLogFetch', () => {
     expect(logged).toHaveLength(0)
   })
 
+  it('logs the Next.js prerender abort at debug as db.query_abandoned and rethrows it', async () => {
+    // 273 of these per `pnpm build` were counted as db.query_failed at error.
+    const abandoned = Object.assign(
+      new Error('During prerendering, fetch() rejects when the prerender is complete.'),
+      { digest: 'HANGING_PROMISE_REJECTION' },
+    )
+    const wrapped = createQueryLogFetch((() => Promise.reject(abandoned)) as typeof fetch, NO_ENV)
+    await expect(wrapped(REST)).rejects.toBe(abandoned)
+    expect(logged).toHaveLength(1)
+    expect(logged[0]).toMatchObject({
+      level: 'debug',
+      event: 'db.query_abandoned',
+      fields: { target: 'orders', method: 'GET' },
+    })
+  })
+
   it('passes unrecognized urls through without logging', async () => {
     const wrapped = createQueryLogFetch(baseReturning(500), NO_ENV)
     await wrapped('https://x.supabase.co/storage/v1/object/img.png')

@@ -1,4 +1,5 @@
 import { log } from '@/lib/observability/log'
+import { isPrerenderAbort } from '@/lib/observability/prerender-abort'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -58,7 +59,11 @@ export async function readLiveStock(
     ])
 
     if (error) {
-      log.warn('stock.available_read_failed', { productId, reason: error.message })
+      // A prerender that completed before the RPC answered is not a read
+      // failure; the page's dynamic hole re-reads at request time.
+      if (!isPrerenderAbort(error)) {
+        log.warn('stock.available_read_failed', { productId, reason: error.message })
+      }
       return UNTRACKED_STOCK
     }
 
@@ -69,10 +74,12 @@ export async function readLiveStock(
       threshold: meta?.low_stock_threshold ?? null,
     }
   } catch (error) {
-    log.warn('stock.available_read_threw', {
-      productId,
-      reason: error instanceof Error ? error.message : 'unknown',
-    })
+    if (!isPrerenderAbort(error)) {
+      log.warn('stock.available_read_threw', {
+        productId,
+        reason: error instanceof Error ? error.message : 'unknown',
+      })
+    }
     return UNTRACKED_STOCK
   }
 }

@@ -4,6 +4,55 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## M02-c1 - DONE (25.09) - שער הפריטי: בית 8.44/9.03/3.82, מוצר 1440 ‏2.79, כולם PASS
+
+**נמדד על שרת חדש, לא מול רשומות קודמות.** HEAD `b694bd897` שווה
+ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי. `pnpm build` ירוק
+(BUILD_ID `TAlQlzoB06y_zi1uJF9hh`, 27.5s), `pnpm start` על 3431, וה-HTML
+שהוגש מכיל את אותו BUILD_ID (אומת ב-curl לפני המדידה; שלושת שרתי
+`next-server` הזרים, pid 23704/46984/99861, לא נגעתי בהם).
+
+**דף הבית, `--widths=380,768,1440 --baseline=refs/ke_live_{width}.png`,
+בחזית, exit 0:**
+
+| רוחב | both painted | מצב | שורה בפנקס |
+|---|---|---|---|
+| 380 | **8.44%** | PASS | 05:21 UTC, `b694bd897` |
+| 768 | **9.03%** | PASS | 05:23 UTC, `b694bd897-dirty` |
+| 1440 | **3.82%** | PASS | 05:24 UTC, `b694bd897-dirty` |
+
+זהים לשלוש הספרות למדידות Q06..M01-c1. **אין רגרסיה ואין מה לתקן.**
+
+**דף המוצר (`/product/מוצר-לדוגמא`):**
+
+| רוחב | תוצאה | reference | הערה |
+|---|---|---|---|
+| 1440 | **2.79%** PASS (כולל 14.77%) | `refs/live-product.png` (03.09, מוצר אחר) | `COMPARE_ALLOW_GRID_MISMATCH=1`, כמו ב-Q04; שורה 05:27 UTC |
+| 380 | REFUSED, exit 5 | אין | "capture is 1440px, run is 380px"; שורה 05:28 UTC |
+| 768 | REFUSED, exit 5 | אין | "capture is 1440px, run is 768px"; שורה 05:28 UTC |
+
+**למה 380 ו-768 של דף המוצר אינם ניתנים למדידה, ולמה זה לא רגרסיה:**
+הפריט מבקש "fix every regression until all three are under 11 percent".
+ב-380 וב-768 אין מספר בכלל, לא מספר מעל 11. הצילומים היחידים ברוחבים
+האלה, `refs/ke_live_product_{380,768}.png` (23.09), רונדרו מ-HTML שנשמר
+בלי stylesheets ואינם reference (ארכיון, B02, חוסם 5); למדוד מולם היה
+מייצר מספר מומצא. מקור חדש לצילום הוא האתר החי, והדומיין עדיין לא
+מתרגם (`dig NS kenyonexpress.co.il @ns1.ns.il` מחזיר `ns1/ns2.vercel.com`,
+נמדד 25.09 05:30 UTC). זה חוסם 1 (הרשם) ואינו בידי הסוכן.
+
+**החלטות שהתקבלו לבד:** (א) לא נמדד מול ה-refs הפסולים ב-380/768 ולא
+נכתבה שורה מומצאת; שורות ה-REFUSED בפנקס נכתבו על ידי השער עצמו. (ב)
+רשומת M01-c1 המלאה (פלט ה-dig ופלט ה-preflight) הועברה לארכיון; תמצית
+התיקון נשארת בחוסמים 1 ו-2. (ג) שום קובץ UI לא השתנה, ולכן ה-diff הוא
+הפנקס ו-STATE.md בלבד.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 134
+בתקרה, docs-index 281), `pnpm test` **600 קבצים / 7,158 ירוקים / 12 מדולגים**
+(157.6s), `pnpm build` ירוק. תחזוקה: גיבוי היום קיים
+(`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל), `caffeinate`
+חי (pid 959), `SleepDisabled 1`. השרת על 3431 נסגר בסיום הפריט.
+
+
 ## M01-c1 - BLOCKED (25.09) - DNS BLOCKER; הפריסה סורבה ב-preflight
 
 **נמדד מול הרשת, מול Vercel ומול git, לא מול רשומות קודמות.** HEAD

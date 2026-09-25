@@ -3,6 +3,7 @@ import FirstPurchaseBanner from '@/components/checkout/FirstPurchaseBanner'
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
 import { log } from '@/lib/observability/log'
+import { isPrerenderAbort } from '@/lib/observability/prerender-abort'
 import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { listPasskeys } from '@/server/actions/passkeys'
 import { getWalletSummary } from '@/server/queries/account'
@@ -22,9 +23,13 @@ export default async function AccountOverviewPage() {
     // Best-effort, same call as the side nav: the banner below only decides
     // whether to show its passkey link, and a failed read means "show it".
     listPasskeys().catch((cause): Awaited<ReturnType<typeof listPasskeys>> => {
-      log.warn('passkey.list_threw', {
-        message: cause instanceof Error ? cause.message : String(cause),
-      })
+      // `cookies()` rejects when a prerender completes first; that is the
+      // static shell, not a passkey outage.
+      if (!isPrerenderAbort(cause)) {
+        log.warn('passkey.list_threw', {
+          message: cause instanceof Error ? cause.message : String(cause),
+        })
+      }
       return { error: 'unavailable' }
     }),
   ])

@@ -1,4 +1,5 @@
 import { log } from '@/lib/observability/log'
+import { isPrerenderAbort } from '@/lib/observability/prerender-abort'
 import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
 import { SupabaseTimeoutError } from '@/lib/supabase/timeout-fetch'
 
@@ -32,7 +33,10 @@ import { SupabaseTimeoutError } from '@/lib/supabase/timeout-fetch'
  * - a throw:          `db.query_failed` at ERROR, then rethrown untouched.
  *   Except SupabaseTimeoutError, which timeout-fetch already logged as
  *   `supabase.timeout`; logging it twice under two names would make the
- *   dashboards double-count the incident.
+ *   dashboards double-count the incident. And except the rejection Next.js
+ *   hands a fetch it abandoned when a prerender completed: that is
+ *   `db.query_abandoned` at DEBUG, because the database never answered and
+ *   nothing failed (273 of them per `pnpm build`, see prerender-abort.ts).
  *
  * The URL's query string appears in no event, ever: a PostgREST filter like
  * ?email=eq.someone@x.com is PII, the target is not (SEC-SCRUB, and the same
@@ -113,12 +117,18 @@ export function createQueryLogFetch(
       }
       return response
     } catch (error) {
-      // supabase.timeout already logged this one with the same duration.
-      if (!(error instanceof SupabaseTimeoutError)) {
+      const durationMs = Math.round(performance.now() - startedAt)
+      if (isPrerenderAbort(error)) {
+        // Next.js cancelled the call when the static shell completed. Not a
+        // database answer, so not a failure; still rethrown so the caller's
+        // own fallback runs exactly as before.
+        log.debug('db.query_abandoned', { target, method, duration_ms: durationMs })
+      } else if (!(error instanceof SupabaseTimeoutError)) {
+        // supabase.timeout already logged this one with the same duration.
         log.error('db.query_failed', {
           target,
           method,
-          duration_ms: Math.round(performance.now() - startedAt),
+          duration_ms: durationMs,
           err: error instanceof Error ? error : new Error(String(error)),
         })
       }
