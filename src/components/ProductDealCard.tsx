@@ -27,20 +27,41 @@ type Product = {
  * pulled the whole card module (both variants) into the home client graph.
  * Only `AddToCartButton` needs the island; the rest is static markup + Image.
  *
- * `sizes` provenance: measured at eighteen viewport/dpr pairs
- * (scripts/_deal-card-paint.mjs). Same string as ProductCard's deals variant.
+ * `sizes` MATCHES THE GRID THIS CARD IS IN, `.jet-listing-grid-deals`, which
+ * is one card per row below 768, two to 1199 and four from 1200
+ * (product-card-deals.css). The previous string (`39vw` below 430, `43vw`
+ * to 640, `46vw` to 1023) described the two-up phone grid that the parity
+ * work replaced, and it was measured wrong on 2026-09-25 at eleven viewports:
+ * a 412px phone paints this image 314px wide (100vw minus the 49px side
+ * margins) and `39vw` declared 160, so Chrome fetched the 288 rung for a
+ * 550-device-pixel slot at dpr 1.75. Two consequences, both measured:
+ *
+ *  - every phone thumbnail was upscaled 1.9x, which is a soft picture;
+ *  - Chrome's LCP caps an upscaled image at its intrinsic size, so the shell's
+ *    capture card (painted at ~150ms) scored 56k and lost the LCP to the
+ *    catalogue card that replaced it at 700-1200ms, whose AVIF source the
+ *    optimizer serves unresized. Lighthouse then charged the whole page's
+ *    load to the LCP. With the declared width honest, the capture card is
+ *    the LCP and the swap is invisible to the metric, as it is to the eye.
+ *
+ * Below 430 the image is column-bound: `100vw - 98px` (262 at 360, 282 at
+ * 380, 314 at 412). From 431 to 1199 it is aspect-bound at 245px tall: 319
+ * for live's 1.30 captures, 353 for a 600x417 photo, 245 for a square; 360
+ * covers those, and a 16:9 photo (436) is the one shape that still upscales,
+ * by 1.2. From 1200 the widest card paints 239 (measured at 1440).
  */
 const DEAL_SIZE_STOPS = {
+  /** below this the image is column-bound, 100vw minus the two 49px margins */
   narrow: 430,
-  handheld: 640,
-  wide: 1023,
+  /** one below the `min-width: 1200px` the four-up grid switches at */
+  wide: 1199,
+  /** the widest image any viewport >= 1200 paints */
   desktopPaint: 240,
 } as const
 
 const DEAL_IMAGE_SIZES = [
-  `(max-width: ${DEAL_SIZE_STOPS.narrow}px) 39vw`,
-  `(max-width: ${DEAL_SIZE_STOPS.handheld}px) 43vw`,
-  `(max-width: ${DEAL_SIZE_STOPS.wide}px) 46vw`,
+  `(max-width: ${DEAL_SIZE_STOPS.narrow}px) calc(100vw - 98px)`,
+  `(max-width: ${DEAL_SIZE_STOPS.wide}px) 360px`,
   `${DEAL_SIZE_STOPS.desktopPaint}px`,
 ].join(', ')
 

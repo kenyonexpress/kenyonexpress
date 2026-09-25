@@ -7,6 +7,7 @@ import {
   frameOptionsFor,
   isPaymentFramePath,
   permissionsPolicyFor,
+  upgradesInsecureRequests,
 } from './frame-policy'
 
 describe('isPaymentFramePath', () => {
@@ -148,5 +149,37 @@ describe('permissionsPolicyFor', () => {
       expect(policy).toContain('geolocation=()')
       expect(policy).toContain('payment=(self)')
     }
+  })
+})
+
+describe('upgradesInsecureRequests', () => {
+  const env = (vars: Record<string, string>) => vars as unknown as NodeJS.ProcessEnv
+  // The directive rewrites every http: redirect target to https:. Against a
+  // local `pnpm start` that turned the header's three /account prefetches into
+  // net::ERR_SSL_PROTOCOL_ERROR (measured 2026-09-25). The build's configured
+  // origin is the switch; unset is the production default and is https.
+  it('is on for the production default and any https origin', () => {
+    expect(upgradesInsecureRequests(env({}))).toBe(true)
+    expect(
+      upgradesInsecureRequests(env({ NEXT_PUBLIC_APP_URL: 'https://kenyonexpress.co.il' })),
+    ).toBe(true)
+    expect(
+      upgradesInsecureRequests(env({ NEXT_PUBLIC_APP_URL: 'https://kenyonexpress.vercel.app/' })),
+    ).toBe(true)
+  })
+
+  it('is off only when the site itself is addressed over plain http', () => {
+    expect(upgradesInsecureRequests(env({ NEXT_PUBLIC_APP_URL: 'http://localhost:3461' }))).toBe(
+      false,
+    )
+    expect(upgradesInsecureRequests(env({ NEXT_PUBLIC_APP_URL: ' HTTP://127.0.0.1:3000 ' }))).toBe(
+      false,
+    )
+  })
+
+  it('keeps the directive in the policy this process built, unless this process is an http build', () => {
+    const expected = upgradesInsecureRequests()
+    expect(contentSecurityPolicyFor('/').includes('upgrade-insecure-requests')).toBe(expected)
+    expect(DEFAULT_CONTENT_SECURITY_POLICY.includes('upgrade-insecure-requests')).toBe(expected)
   })
 })

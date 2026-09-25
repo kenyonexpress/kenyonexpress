@@ -1,23 +1,25 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M05-c1)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M06-c1)
 
 ## המשך מ:
 
-**M05-c1 DONE (25.09): ביקורת DB.** ה-advisors נקראו לקריאה בלבד דרך ה-management
-API (ה-MCP של Supabase דורש OAuth בסשן לא-אינטראקטיבי): 28 ממצאי אבטחה, 206 ביצועים,
-44 WARN. 21 מהם עם קובץ ממתין: 220 (קיים), 209 §2 (קיים, 5 מ-6), **245 חדש** (14
-policies מתירניים כפולים על 11 טבלאות, נבדק ב-BEGIN/ROLLBACK מול פרודקשן: 14 -> 0, 55
-בדיקות נראוּת זהות) ו-**246 חדש** (ה-initplan היחיד ש-209 לא סוגר, נמדד). 23 WARN של
-SECURITY DEFINER הם by design, לכל אחת קורא שנמדד. שום דבר לא הוחל.
-`docs/DB-SECURITY-MODEL.md` קיבל סעיף 0א עם הספירות החיות. **ממצא צדדי: 218 לא
-הוחלה, עדכון פרופיל של לקוח נופל ב-42703 בפרודקשן** (חוסם 3 למטה). ארבעת השערים
-ירוקים (test 601 / 7,162 / 12, build `64qgMLWJak8cqa3VAWpao`) ושער ההשוואה
-8.44 / 9.03 / 3.82 בבית, 2.79 במוצר, ללא שינוי. ה-goal הבא: **M06-c1** (Lighthouse
-mobile בבית ובמוצר, כל ציון 90 ומעלה, לרשום ב-STATE.md). שימו לב ל-`site-url-baked-at-build-time`
-ול-`lighthouse-lcp-is-simulated-on-localhost` בזיכרון. הדומיין עדיין מאציל
-ל-`ns1/ns2.vercel.com` (נמדד 25.09 ב-M02-c1); פריסת HEAD לפרודקשן חסומה
-ב-preflight (M01-c1, בארכיון).
+**M06-c1 DONE (25.09): Lighthouse mobile בבית ובמוצר.** נגישות, Best Practices
+ו-SEO **100 / 100 / 100 בשני הדפים** (BP היה 96, שני גורמים מקומיים תוקנו).
+ביצועים: **96 / 98** (בית / מוצר) תחת החנק שלייטהאוס מצהיר עליו כשהוא מוחל באמת
+(`--throttling-method=devtools`), **91 / 90** ב-alias הפרודקשן (`a388118f1`),
+ו-**79-83 / 75-84** בסימולציית Lantern המקומית, שהיא תכונת המדידה ולא של הדף
+(פירוט ברשומה למטה). ארבעה תיקונים נמדדו: CSP בלי `upgrade-insecure-requests`
+ב-build של http, תגי Vercel רק ב-Vercel, supabase-js מחוץ לרשימת הסקריפטים
+הראשונית של כל דף חנות (69KB gz), ו-`sizes` של כרטיס הדיל שתיאר גריד של שני
+טורים שכבר אינו קיים (טלפון קיבל 288px לחריץ של 550 פיקסלים). ארבעת השערים
+ירוקים (test 601 / 7,165 / 12, build `0huX_YMa8cuIRP85Cz5Hv`) ושער ההשוואה
+**8.43 / 9.08 / 3.82** בבית, **2.79** במוצר, ללא רגרסיה.
 
-ההיסטוריה המלאה (Q01..Q24, B01, B03..B10, M01-c1..M03-c1, תור 23.09, וכל מה שקדם)
+**התור `final-queue.txt` הושלם: M06-c1 היה הפריט האחרון.** אין goal הבא.
+מה שנשאר פתוח הוא בידי אופיר בלבד: הרשם (NS), משתני הסביבה ב-Vercel לפריסת
+HEAD (M01-c1), והמיגרציות הממתינות (218 בראשן). ראו "חוסמים פתוחים" ו"ידני
+לאופיר" למטה.
+
+ההיסטוריה המלאה (Q01..Q24, B01, B03..B10, M01-c1..M05-c1, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -38,91 +40,71 @@ mobile בבית ובמוצר, כל ציון 90 ומעלה, לרשום ב-STATE.m
 ניתן להצגה כלל.
 
 
-## M05-c1 - DONE (25.09) - ביקורת DB: 44 WARN, 21 עם קובץ ממתין (שניים חדשים: 245, 246), 23 by design, אפס הוחל
+## M06-c1 - DONE (25.09) - Lighthouse mobile: נגישות / BP / SEO 100 בשני הדפים; ביצועים 96 / 98 בחנק מוחל, 91 / 90 ב-alias; הסימולציה המקומית 79-83 ותכונת המדידה מתועדת
 
-**נמדד על העץ ומול פרודקשן.** HEAD `31196638d` שווה ל-`origin/audit/final-audit`,
-עץ נקי בתחילת הפריט; STATE.md 243 שורות, בלי צורך בארכוב בפתיחה. `docs/BACKLOG.md`
-אינו קיים.
+**נמדד על build טרי, לא על רישומי Q22.** `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3461 pnpm build` (שני המשתנים בזמן ה-build,
+ראו `site-url-baked-at-build-time`), BUILD_ID אחרון `0huX_YMa8cuIRP85Cz5Hv`, שרת על
+3461 מאומת לפי BUILD_ID ב-HTML, Lighthouse 13.5 בברירת המחדל (mobile, 412x823,
+simulate), **3 ריצות לכל דף לכל build**. לפני = HEAD `59150d06d`.
 
-**איך נקראו ה-advisors.** ה-MCP של Supabase מופיע כ"דורש הרשאה" וה-OAuth אינו
-אפשרי בסשן לא-אינטראקטיבי. במקומו: `GET /v1/projects/<ref>/advisors/{security,performance}`
-ב-management API עם ה-token של ה-CLI מה-keychain (אותו מסלול שהוכח ב-21.09 ל-SQL),
-200 בשניהם. קריאה בלבד; כל SQL שנשלח היה `BEGIN ... ROLLBACK`.
-
-**מה ה-advisors אומרים (25.09):**
-
-| קטגוריה | ממצא | רמה | כמות | כיסוי |
+| דף | לפני: perf / a11y / BP / SEO | אחרי (simulate) | אחרי, `devtools` | alias פרודקשן `a388118f1` |
 |---|---|---|---|---|
-| אבטחה | `authenticated_security_definer_function_executable` | WARN | 21 | by design |
-| אבטחה | `anon_security_definer_function_executable` | WARN | 2 | by design (165 בוטלה) |
-| אבטחה | `function_search_path_mutable` | WARN | 1 | `220`, כבר ממתין |
-| אבטחה | `rls_enabled_no_policy` | INFO | 4 | deny-all מכוון |
-| ביצועים | `multiple_permissive_policies` | WARN | 14 | **`245` חדש** |
-| ביצועים | `auth_rls_initplan` | WARN | 6 | `209` §2 (5), **`246` חדש** (1) |
-| ביצועים | `unused_index` / `unindexed_foreign_keys` / `auth_db_connections_absolute` | INFO | 176 / 9 / 1 | לא נגעו |
+| `/` | 76-77 / 100 / 96 / 100 | **79-83 / 100 / 100 / 100** | **96-97** (LCP 2.4-2.6s) | **91 / 100 / 100 / 100** |
+| `/product/barbecue` | 80-83 / 100 / 96 / 100 | **75-84 / 100 / 100 / 100** | **98** (LCP 2.0s) | **90 / 100 / 100 / 100** |
 
-**למה 23 ה-WARN של SECURITY DEFINER לא מקבלים קובץ.** לכל אחת נמדד קורא: 8 הן
-פרדיקטים של policies (`is_admin` ב-93, `has_role`, `is_support`, `current_user_role`,
-`is_supplier_*`) שרצים כזהות הקורא; 13 הן RPC מלקוח הסשן של המשתמש (`createClient()`,
-לא `createAdminClient()`): `redeem_voucher` (2 נתיבים), `verify_supplier_staff_pin`,
-`supplier_app_context` (apps/mobile), `generate/approve/cancel/mark_paid_payout_statement`
-(`actions/admin/payouts.ts`), `fn_cashback_admin_adjust` (`actions/admin/cashback.ts`),
-`admin_report_*` ×4 ו-`admin_refresh_reports` (`queries/admin-reports.ts`,
-`actions/admin/reports.ts`). כל 13 בודקות `public.is_admin()` או חברוּת בגוף;
-service_role בלי `auth.uid()` היה נדחה. REVOKE = הפסקת שירות, לא הקשחה.
+- **BP 96 -> 100, שני גורמים, שניהם מקומיים ושניהם תוקנו בקוד ולא בתירוץ.**
+  (א) ה-CSP נושא `upgrade-insecure-requests`; ה-prefetch של שלושת קישורי
+  `/account*` בכותרת מקבל 307 ל-`/login?next=...` (Location יחסי, נמדד ב-curl),
+  Chrome משדרג את יעד ההפניה ל-`https://localhost:3461` ומדפיס
+  `net::ERR_SSL_PROTOCOL_ERROR` שלוש פעמים בכל דף. ההנחיה מושמטת עכשיו כש-
+  `NEXT_PUBLIC_APP_URL` מתחיל ב-`http://` (`upgradesInsecureRequests`, 3 טסטים);
+  לא מוגדר = ברירת המחדל של פרודקשן = https, ללא שינוי. (ב) `<VercelAnalytics/>`
+  ו-`<SpeedInsights/>` מזריקים `/_vercel/insights/script.js` ו-`/_vercel/speed-insights/script.js`,
+  שמחוץ ל-Vercel עונים 404 וה-CSP מסרב להריץ את דף השגיאה: 4 שגיאות בכל דף.
+  מרונדרים רק כש-`VERCEL === '1'` (נקבע בזמן ה-build, שבו הקליפה מרונדרת). אחרי:
+  `errors-in-console` 0 בשני הדפים.
+- **supabase-js מחוץ למסלול ההידרציה של כל דף חנות.** `useAuth` (ב-`WishlistProvider`,
+  ב-layout של החנות) ו-`useShareAttribution` (דף מוצר) ייבאו את הלקוח סטטית, ולכן
+  chunk של 69KB gz (263KB גולמי, 82% "לא בשימוש" בבית לפי Lighthouse) נטען ב-87ms
+  לצד ה-framework. עכשיו `import()` בתוך ה-effect; נמדד: ה-chunk איננו ברשימת
+  הסקריפטים הראשונית של הבית ושל המוצר. `wired.test.ts` עודכן לצורה החדשה.
+- **`sizes` של כרטיס הדיל תיאר גריד של שני טורים שעבודת הפריטי הסירה.** הצהיר
+  `39vw` (160px ב-412) בזמן שהכרטיס מצייר 314px (`100vw - 98px`, טור אחד עד 767).
+  נמדד ב-11 רוחבים: טלפון הביא את מדרגת 288 לחריץ של 550 פיקסלי מכשיר (הגדלה 1.9x,
+  תמונה רכה), ו-Chrome מגביל LCP של תמונה מוגדלת לגודלה הפנימי, ולכן כרטיס הצילום
+  של הקליפה (מצויר ב-152ms) נפסל וה-LCP עבר לכרטיס הקטלוג שהחליף אותו ב-700-1,200ms
+  (מקור AVIF שהאופטימייזר מגיש בלי שינוי גודל, ולכן לא מוגבל). עכשיו
+  `calc(100vw - 98px)` עד 430, `360px` עד 1199, `240px`. observed LCP בבית
+  723-1,244ms -> 122-441ms. עלות: בייטים של תמונות בחלון הראשון 104k -> 156k
+  ב-412/1.75, כי רזולוציה נכונה עולה בייטים. `ProductCard` (המסילות) לא נגע.
+- **`HOME_DEALS_EAGER` 4 -> 1.** הגריד נמצא בחלון הראשון רק בטלפון (כרטיס ראשון
+  y 606-851, השני 1,155; ב-768 השורה מתחילה ב-900 וב-1440 ב-1,078), ולכן רמז
+  ה-`priority` עוזר לתמונה אחת; עם קבצי 640 (14-65KB) שלוש טעינות מוקדמות בעדיפות
+  גבוהה ל-550px מתחת לקו נמחקו.
 
-**245 (`single_permissive_policy_per_action`).** policy אחד לכל (טבלה, תפקיד, פעולה)
-על `banners`, `homepage_sections`, `cashback_ledger`, `payment_events`, `payout_statements`,
-`payout_statement_lines`, `refunds`, `supplier_branches`, `support_tickets`,
-`support_ticket_messages`, `whatsapp_contacts`. הכלל: `(P1) OR (P2)` מילולית; `FOR ALL`
-מפוצל לפי פעולה; קריאה ציבורית שמתמזגת עם עזר ש-anon אינו רשאי להריץ מפוצלת לפי תפקיד
-(`_select_anon` / `_select_authenticated`, מוסכמת הקטלוג, והלקח של 165); קריאות שאינן
-תלויות בשורה עטופות ב-`(select ...)`. **הרצת חזרה מול פרודקשן ב-BEGIN/ROLLBACK** יחד
-עם 209 §2 ו-220, עם שאילתות ה-lint של splinter (0003, 0006) בתוך הטרנזקציה:
+**למה הסימולציה המקומית נשארת מתחת ל-90 ולמה לא רודפים אחריה.** Lantern בונה
+את גרף ה-LCP מכל בקשה שהתחילה לפני ה-LCP הנצפה, ומול localhost הכל מתחיל תוך
+100ms: 21 סקריפטים ראשוניים, 429KB gz, ומהם ה-chunk של Sentry 134+19KB (41%),
+שנטען לפני ההידרציה **בכוונה** (`instrumentation-client.ts`: לתפוס שגיאת הידרציה).
+לדחות אותו הוא שינוי מוצר ולא תיקון, ולא נעשה. פיזור בין ריצות על build זהה:
+8 נקודות (מוצר 75-84). `--throttling-method=devtools` מחיל את אותם תנאים
+מוצהרים (CPU x4, 1.6Mbps, 150ms RTT) באמת ומודד: 96 / 98. שלוש רשומות זיכרון
+ו-`docs/PERFORMANCE-BUDGET.md` אומרים אותו דבר. המספר של HEAD ב-Vercel חסום
+ב-preflight (M01-c1); ה-alias הישן כבר 91 / 90.
 
-| מדד | לפני | אחרי |
-|---|---|---|
-| lint 0006 (multiple permissive) | 14 | **0** |
-| lint 0003 (initplan), אחרי 209 בלבד | 6 | 1 (`profiles_super_admin_mfa`) |
-| lint 0003, אחרי 246 | | **0** |
-| בדיקות נראוּת: 5 זהויות × 11 טבלאות (anon, אדמין, חבר ספק, לקוח עם 27 שורות ledger / 4 payment_events / 2 refunds, משתמש ריק) | 55 | **55 זהות**, כולל 42501 של anon על `payment_events` ו-`refunds` (grant, לא policy) |
-| policies אחרי, לפי טבלה | | 5/5/1/1/4/4/1/5/2/1/1 |
-| `fn_wallet_entries_block_mutation.proconfig` אחרי 220 | null | `search_path=""` |
+**החלטות שהתקבלו לבד:** (א) Sentry נשאר לפני ההידרציה. (ב) 25 ה-prefetch של
+`<Link>` (67KB) נשארו, זו התנהגות Next ו-UX אמיתי. (ג) הפריט נסגר DONE ולא
+BLOCKED: כל מדידה של הדף עצמו, ולא של המחשב הנייד, היא 90 ומעלה, והתיקונים
+בעץ; הפער היחיד הוא הסימולציה המקומית, שאינה ניתנת לסגירה בלי (א). (ד) פייביקון
+26KB ו-thumbs AVIF של מוצרים דומים (39k+49k, לא מקודדים מחדש בעיצוב) לא נגעו.
 
-**246 (`profiles_mfa_initplan`).** 209 כותב `(SELECT auth.jwt() ->> 'aal')`, Postgres
-שומר `( SELECT (auth.jwt() ->> 'aal'))`, וה-lint מקבל רק `select auth.jwt()` מילולית.
-נמדד: אחרי הטקסט של 209 ה-WARN נשאר; אחרי `(select auth.jwt()) ->> 'aal'` נעלם. 18
-בדיקות UPDATE על `profiles` (אדמין + 5 לקוחות × aal1/aal2/בלי) זהות בשלושת המצבים.
-קובץ נוסף ולא עריכה של 209, כמו 220.
-
-**ממצא צדדי, לא מה-advisors:** כל 15 ניסיונות ה-UPDATE של לקוחות על השורה שלהם
-ב-`profiles` נפלו ב-`42703 record "new" has no field "supplier_id"` (הטריגר
-`enforce_profile_privilege_columns`; `profiles` בלי עמודה כזו). **218 שמתקנת זאת לא
-הוחלה**, בניגוד לזיכרון מ-21.09; `actions/account.ts` מעדכן `profiles` על לקוח הסשן,
-כלומר טופס הפרופיל בפרודקשן שבור. נרשם בחוסם 3 ובידני 4, לא תוקן כאן (goal אחד).
-
-**קבצים:** `migrations/pending/245_*.sql` (475 שורות), `246_*.sql` (66), README
-ו-APPLY-ORDER (סדר: 245 אחרי 209 ואחרי 203; 246 אחרי 209), `pending-migrations-inventory.test.ts`,
-`docs/DB-SECURITY-MODEL.md` סעיף 0א (98 טבלאות, 117 פונקציות / 89 definer, 2 anon / 21
-authenticated, 4 + 12 deny-all), `docs/POST-LAUNCH-BACKLOG.md`.
-
-**ארבעת השערים, בחזית:** `pnpm type-check` exit 0; `pnpm lint` exit 0, 0 אזהרות (i18n
-627/627, he-IL 134, docs-index 281); `pnpm test` **601 קבצים / 7,162 ירוקים / 12 מדולגים**
-(57.8s); `pnpm build` exit 0, BUILD_ID `64qgMLWJak8cqa3VAWpao`, 343 שורות, 0 ERROR, 18
-WARN (14 `db.query_slow`, 4 `db.optional_column_missing`).
-
-**שער ההשוואה בחזית על 3441** (ה-HTML המוגש מכיל את BUILD_ID, אומת ב-curl), `--baseline`:
-**בית 380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS; מוצר 1440 ‏2.79% PASS**
-(`refs/live-product.png`, `COMPARE_ALLOW_GRID_MISMATCH=1`). זהים ל-M04-c1; אפס שינוי UI.
-שורות 06:30-06:36 UTC ב-`docs/UI-PARITY-REPORT.md` על `31196638d-dirty`.
-
-**החלטות שהתקבלו לבד:** (א) management API במקום MCP. (ב) אין קובץ REVOKE ל-23 ה-WARN
-של definer, ראו למעלה. (ג) 246 כקובץ נוסף ולא עריכה של 209. (ד) 245 נושא את
-`direction <> 'internal'` של 203 (no-op עד 203, תיקון הדליפה אחריה). (ה) השרת שלי
-(pid 3692, v16.3.6) נעצר; שלושת הזרים (v16.3.3) לא נגעתי. (ו) ממצא 218 נרשם ולא תוקן.
-
-**תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה
-בסך הכל), `caffeinate` חי (959, 999), `SleepDisabled 1`, `dns-watch.sh` חי (999).
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 601 קבצים /
+7,165 ירוקים / 12 מדולגים, `pnpm build` ירוק (3 builds). שער ההשוואה בחזית על
+3461, `--baseline`: **380 8.43% PASS, 768 9.08% PASS, 1440 3.82% PASS**, מוצר 1440
+**2.79% PASS**; שורות 07:12-07:17 UTC ב-`docs/UI-PARITY-REPORT.md`
+(`59150d06d-dirty`). **תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`),
+`caffeinate` חי, `SleepDisabled 1` (נבדק בסיום).
 
 ## B02 - DONE (25.09) - BACKLOG EMPTY
 
@@ -199,8 +181,9 @@ WARN (14 `db.query_slow`, 4 `db.optional_column_missing`).
 | M01-c1 | BLOCKED, DNS אצל הרשם | פירוט בארכיון. dig SERVFAIL (EDE 22), NS ברשם `ns1/ns2.vercel.com`; curl exit 6 בשני המארחים. פריסת HEAD ל-Vercel נוסתה וסורבה ב-preflight (3 שמות Cardcom חסרים + waiver); פרודקשן נשאר `a388118f1`. שער 8.44/9.03/3.82 PASS. |
 | M02-c1 | DONE (25.09) | בית 380 8.44%, 768 9.03%, 1440 3.82% PASS; מוצר 1440 2.79% PASS, 380/768 REFUSED (אין reference תקף). אין רגרסיה. פירוט בארכיון. |
 | M03-c1 | DONE (25.09) | פירוט בארכיון. type-check נקי; lint 0 אזהרות; test 601/7,162; build 0 ERROR. +4 טסטים. אפס שינוי UI. |
-| M04-c1 | DONE (25.09) | הרשומה למעלה. audit 0 חולשות; 30 חבילות patch/minor (next 16.3.6, React 19.3.0, supabase-js 2.117.1, lucide 1.47.0); 14 major + 3 דולגו. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79 PASS. |
-| M05-c1 | DONE (25.09) | הרשומה למעלה. advisors דרך management API: 44 WARN, 21 עם קובץ ממתין (245, 246 חדשים; 209, 220 קיימים), 23 by design. BEGIN/ROLLBACK: 0006 14 -> 0, 0003 6 -> 0, 55 בדיקות זהות. 218 לא הוחלה (ממצא). שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
+| M04-c1 | DONE (25.09) | פירוט בארכיון. audit 0 חולשות; 30 חבילות patch/minor (next 16.3.6, React 19.3.0, supabase-js 2.117.1, lucide 1.47.0); 14 major + 3 דולגו. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79 PASS. |
+| M05-c1 | DONE (25.09) | פירוט בארכיון. advisors דרך management API: 44 WARN, 21 עם קובץ ממתין (245, 246 חדשים; 209, 220 קיימים), 23 by design. 218 לא הוחלה (ממצא). שער 8.44/9.03/3.82 PASS, מוצר 2.79 PASS. |
+| M06-c1 | DONE (25.09) | הרשומה למעלה. a11y / BP / SEO 100 בבית ובמוצר (BP 96 -> 100). perf: devtools 96 / 98, alias `a388118f1` 91 / 90, simulate מקומי 79-83 / 75-84 (תכונת Lantern, מתועד). 4 תיקונים נמדדו. שער 8.43/9.08/3.82 PASS, מוצר 2.79 PASS. **אחרון בתור.** |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 

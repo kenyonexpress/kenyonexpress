@@ -100,8 +100,11 @@ describe('the share', () => {
 
   it('asks the server only for a signed-in visitor', () => {
     const hook = code('src/components/shared/useShareAttribution.ts')
-    expect(hook).toContain('supabase.auth')
-    expect(hook).toContain('!data.user')
+    // The browser client is imported lazily (see the hook), so the session
+    // read is `createClient().auth.getUser()` and the gate is on its result.
+    expect(hook).toContain("import('@/lib/supabase/client')")
+    expect(hook).toContain('.auth.getUser()')
+    expect(hook).toContain('!result.data.user')
   })
 })
 

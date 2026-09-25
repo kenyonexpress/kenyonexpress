@@ -1,7 +1,6 @@
 'use client'
 
 import { attributedShareUrl } from '@/lib/affiliates/share-url'
-import { createClient } from '@/lib/supabase/client'
 import { getMyShareCode } from '@/server/actions/affiliates'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -25,29 +24,32 @@ import { useCallback, useEffect, useState } from 'react'
  * `shareHref()` is read AT CLICK TIME from `window.location.href`, as every
  * share button here already does, so the code is added to whatever page the
  * customer is actually on.
+ *
+ * THE CLIENT IS IMPORTED LAZILY for the same reason as in `useAuth`: this hook
+ * is on every product page, and a static import put `@supabase/supabase-js`
+ * into that page's initial script list. The "nothing may throw" rule above
+ * holds through the import too - a rejected import lands in the same catch.
  */
 export function useShareAttribution(): { shareHref: () => string; code: string | null } {
   const [code, setCode] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    let supabase: ReturnType<typeof createClient>
-    try {
-      supabase = createClient()
-    } catch {
-      return
-    }
-    supabase.auth
-      .getUser()
-      .then(({ data }) => {
-        if (cancelled || !data.user) return null
+    import('@/lib/supabase/client')
+      .then(({ createClient }) => {
+        if (cancelled) return null
+        return createClient().auth.getUser()
+      })
+      .then((result) => {
+        if (cancelled || !result || !result.data.user) return null
         return getMyShareCode()
       })
       .then((value) => {
         if (!cancelled && typeof value === 'string') setCode(value)
       })
       .catch(() => {
-        // Not signed in, or the action is unreachable. The link stays clean.
+        // Not signed in, no Supabase configuration, or the action is
+        // unreachable. The link stays clean.
       })
     return () => {
       cancelled = true

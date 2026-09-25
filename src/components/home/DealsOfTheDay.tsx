@@ -20,10 +20,18 @@ import { FIXTURE_DEALS, type HomeDeal, homeDeals } from '@/lib/homepage/deals'
  * src/styles/product-card-deals.css, which carries the measurement table.
  */
 /**
- * `eagerCount` is how many leading cards carry the LCP image hint. Four is
- * live's first row at 1440 and, on a phone, the first card plus the three
- * under it, each a 5KB thumbnail at q=50. See `priority` on ProductDealCard
- * for the measurement; the fallback passes 0 because its cards are replaced.
+ * `eagerCount` is how many leading cards carry the LCP image hint. ONE, since
+ * 2026-09-25, and that is a measurement of where the grid sits. The first
+ * row is inside the first viewport on a phone only: at 412x823 the first
+ * card's image spans y 606-851 and the second card starts at 1155, one card
+ * per row; at 768 the row begins at y 900 and at 1440 at y 1078, below the
+ * fold at both. So the hint can help exactly one image anywhere, and it used
+ * to be on four. That was cheap while the card asked for the 288 rung (5KB
+ * each); with `sizes` now declaring the width the card really paints, the
+ * same four fetch 640-wide files of 14-65KB, and three of them would be
+ * preloaded at high priority for a place 550px below the fold, ahead of the
+ * scripts the page hydrates with. See `priority` on ProductDealCard for the
+ * discovery measurement; the fallback passes 0 because its cards are replaced.
  */
 function DealsGrid({
   products,
@@ -63,7 +71,7 @@ export default async function DealsOfTheDay() {
 }
 
 /** The first row at 1440; on a phone the first card and the three below it. */
-const HOME_DEALS_EAGER = 4
+const HOME_DEALS_EAGER = 1
 
 /**
  * The SYNCHRONOUS grid the page shows while the catalogue read is in flight.

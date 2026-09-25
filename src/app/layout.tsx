@@ -197,9 +197,22 @@ export default function RootLayout({
           origin through Vercel's rewrite, so no third-party request leaves the
           page and no cookie is set, which is why they sit outside the consent
           gate that GA4 and Meta are behind.
+
+          Only where that rewrite exists. Off Vercel the two script tags point
+          at `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js`,
+          which this app does not serve: every local `pnpm start` answered them
+          with 404 and the CSP then refused to execute the HTML error page, four
+          console errors per page load (measured 2026-09-25, Lighthouse Best
+          Practices 96 on a page that has nothing else wrong). `VERCEL` is set
+          to `1` by the platform at build time, which is when this shell is
+          prerendered, so the deployment is unchanged.
         */}
-        <VercelAnalytics />
-        <SpeedInsights />
+        {process.env.VERCEL === '1' && (
+          <>
+            <VercelAnalytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   )

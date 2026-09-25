@@ -147,6 +147,28 @@ const mockPaymentProvider = usesMockPaymentProvider()
 const withMockFrame = (directive: string): string =>
   mockPaymentProvider ? `${directive} 'self'` : directive
 
+/**
+ * `upgrade-insecure-requests` ONLY WHEN THE SITE IS SERVED OVER HTTPS.
+ *
+ * The directive tells the browser to rewrite every `http:` subresource and
+ * redirect target to `https:`. On the deployment that is a no-op safety net.
+ * On a local production build it is a fault: MEASURED 2026-09-25 with
+ * Lighthouse against `pnpm start` on `http://localhost:3461`, the router
+ * prefetch of `/account`, `/account/wallet` and `/account/wishlist` from the
+ * header was answered by the proxy with a relative `Location: /login?next=...`,
+ * Chrome upgraded that redirect to `https://localhost:3461/login?...`, and the
+ * page logged three `net::ERR_SSL_PROTOCOL_ERROR` lines. Three failed
+ * prefetches on every page and a Best Practices score of 96 for an error that
+ * cannot happen where the header is meant to apply.
+ *
+ * The switch is the configured site origin, the same variable `siteUrl()`
+ * reads, because it is the one thing that says which scheme this build is
+ * addressed at. Unset means the production default, which is https.
+ */
+export function upgradesInsecureRequests(source: NodeJS.ProcessEnv = process.env): boolean {
+  return !/^http:\/\//i.test(source.NEXT_PUBLIC_APP_URL?.trim() ?? '')
+}
+
 const BASE_DIRECTIVES = [
   "default-src 'self'",
   withTurnstile("script-src 'self' 'unsafe-inline'"),
@@ -158,7 +180,7 @@ const BASE_DIRECTIVES = [
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",
   "object-src 'none'",
-  'upgrade-insecure-requests',
+  ...(upgradesInsecureRequests() ? (['upgrade-insecure-requests'] as const) : []),
 ] as const
 
 export function contentSecurityPolicyFor(pathname: string): string {

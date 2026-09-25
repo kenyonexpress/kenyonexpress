@@ -4,6 +4,92 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## M05-c1 - DONE (25.09) - ביקורת DB: 44 WARN, 21 עם קובץ ממתין (שניים חדשים: 245, 246), 23 by design, אפס הוחל
+
+**נמדד על העץ ומול פרודקשן.** HEAD `31196638d` שווה ל-`origin/audit/final-audit`,
+עץ נקי בתחילת הפריט; STATE.md 243 שורות, בלי צורך בארכוב בפתיחה. `docs/BACKLOG.md`
+אינו קיים.
+
+**איך נקראו ה-advisors.** ה-MCP של Supabase מופיע כ"דורש הרשאה" וה-OAuth אינו
+אפשרי בסשן לא-אינטראקטיבי. במקומו: `GET /v1/projects/<ref>/advisors/{security,performance}`
+ב-management API עם ה-token של ה-CLI מה-keychain (אותו מסלול שהוכח ב-21.09 ל-SQL),
+200 בשניהם. קריאה בלבד; כל SQL שנשלח היה `BEGIN ... ROLLBACK`.
+
+**מה ה-advisors אומרים (25.09):**
+
+| קטגוריה | ממצא | רמה | כמות | כיסוי |
+|---|---|---|---|---|
+| אבטחה | `authenticated_security_definer_function_executable` | WARN | 21 | by design |
+| אבטחה | `anon_security_definer_function_executable` | WARN | 2 | by design (165 בוטלה) |
+| אבטחה | `function_search_path_mutable` | WARN | 1 | `220`, כבר ממתין |
+| אבטחה | `rls_enabled_no_policy` | INFO | 4 | deny-all מכוון |
+| ביצועים | `multiple_permissive_policies` | WARN | 14 | **`245` חדש** |
+| ביצועים | `auth_rls_initplan` | WARN | 6 | `209` §2 (5), **`246` חדש** (1) |
+| ביצועים | `unused_index` / `unindexed_foreign_keys` / `auth_db_connections_absolute` | INFO | 176 / 9 / 1 | לא נגעו |
+
+**למה 23 ה-WARN של SECURITY DEFINER לא מקבלים קובץ.** לכל אחת נמדד קורא: 8 הן
+פרדיקטים של policies (`is_admin` ב-93, `has_role`, `is_support`, `current_user_role`,
+`is_supplier_*`) שרצים כזהות הקורא; 13 הן RPC מלקוח הסשן של המשתמש (`createClient()`,
+לא `createAdminClient()`): `redeem_voucher` (2 נתיבים), `verify_supplier_staff_pin`,
+`supplier_app_context` (apps/mobile), `generate/approve/cancel/mark_paid_payout_statement`
+(`actions/admin/payouts.ts`), `fn_cashback_admin_adjust` (`actions/admin/cashback.ts`),
+`admin_report_*` ×4 ו-`admin_refresh_reports` (`queries/admin-reports.ts`,
+`actions/admin/reports.ts`). כל 13 בודקות `public.is_admin()` או חברוּת בגוף;
+service_role בלי `auth.uid()` היה נדחה. REVOKE = הפסקת שירות, לא הקשחה.
+
+**245 (`single_permissive_policy_per_action`).** policy אחד לכל (טבלה, תפקיד, פעולה)
+על `banners`, `homepage_sections`, `cashback_ledger`, `payment_events`, `payout_statements`,
+`payout_statement_lines`, `refunds`, `supplier_branches`, `support_tickets`,
+`support_ticket_messages`, `whatsapp_contacts`. הכלל: `(P1) OR (P2)` מילולית; `FOR ALL`
+מפוצל לפי פעולה; קריאה ציבורית שמתמזגת עם עזר ש-anon אינו רשאי להריץ מפוצלת לפי תפקיד
+(`_select_anon` / `_select_authenticated`, מוסכמת הקטלוג, והלקח של 165); קריאות שאינן
+תלויות בשורה עטופות ב-`(select ...)`. **הרצת חזרה מול פרודקשן ב-BEGIN/ROLLBACK** יחד
+עם 209 §2 ו-220, עם שאילתות ה-lint של splinter (0003, 0006) בתוך הטרנזקציה:
+
+| מדד | לפני | אחרי |
+|---|---|---|
+| lint 0006 (multiple permissive) | 14 | **0** |
+| lint 0003 (initplan), אחרי 209 בלבד | 6 | 1 (`profiles_super_admin_mfa`) |
+| lint 0003, אחרי 246 | | **0** |
+| בדיקות נראוּת: 5 זהויות × 11 טבלאות (anon, אדמין, חבר ספק, לקוח עם 27 שורות ledger / 4 payment_events / 2 refunds, משתמש ריק) | 55 | **55 זהות**, כולל 42501 של anon על `payment_events` ו-`refunds` (grant, לא policy) |
+| policies אחרי, לפי טבלה | | 5/5/1/1/4/4/1/5/2/1/1 |
+| `fn_wallet_entries_block_mutation.proconfig` אחרי 220 | null | `search_path=""` |
+
+**246 (`profiles_mfa_initplan`).** 209 כותב `(SELECT auth.jwt() ->> 'aal')`, Postgres
+שומר `( SELECT (auth.jwt() ->> 'aal'))`, וה-lint מקבל רק `select auth.jwt()` מילולית.
+נמדד: אחרי הטקסט של 209 ה-WARN נשאר; אחרי `(select auth.jwt()) ->> 'aal'` נעלם. 18
+בדיקות UPDATE על `profiles` (אדמין + 5 לקוחות × aal1/aal2/בלי) זהות בשלושת המצבים.
+קובץ נוסף ולא עריכה של 209, כמו 220.
+
+**ממצא צדדי, לא מה-advisors:** כל 15 ניסיונות ה-UPDATE של לקוחות על השורה שלהם
+ב-`profiles` נפלו ב-`42703 record "new" has no field "supplier_id"` (הטריגר
+`enforce_profile_privilege_columns`; `profiles` בלי עמודה כזו). **218 שמתקנת זאת לא
+הוחלה**, בניגוד לזיכרון מ-21.09; `actions/account.ts` מעדכן `profiles` על לקוח הסשן,
+כלומר טופס הפרופיל בפרודקשן שבור. נרשם בחוסם 3 ובידני 4, לא תוקן כאן (goal אחד).
+
+**קבצים:** `migrations/pending/245_*.sql` (475 שורות), `246_*.sql` (66), README
+ו-APPLY-ORDER (סדר: 245 אחרי 209 ואחרי 203; 246 אחרי 209), `pending-migrations-inventory.test.ts`,
+`docs/DB-SECURITY-MODEL.md` סעיף 0א (98 טבלאות, 117 פונקציות / 89 definer, 2 anon / 21
+authenticated, 4 + 12 deny-all), `docs/POST-LAUNCH-BACKLOG.md`.
+
+**ארבעת השערים, בחזית:** `pnpm type-check` exit 0; `pnpm lint` exit 0, 0 אזהרות (i18n
+627/627, he-IL 134, docs-index 281); `pnpm test` **601 קבצים / 7,162 ירוקים / 12 מדולגים**
+(57.8s); `pnpm build` exit 0, BUILD_ID `64qgMLWJak8cqa3VAWpao`, 343 שורות, 0 ERROR, 18
+WARN (14 `db.query_slow`, 4 `db.optional_column_missing`).
+
+**שער ההשוואה בחזית על 3441** (ה-HTML המוגש מכיל את BUILD_ID, אומת ב-curl), `--baseline`:
+**בית 380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS; מוצר 1440 ‏2.79% PASS**
+(`refs/live-product.png`, `COMPARE_ALLOW_GRID_MISMATCH=1`). זהים ל-M04-c1; אפס שינוי UI.
+שורות 06:30-06:36 UTC ב-`docs/UI-PARITY-REPORT.md` על `31196638d-dirty`.
+
+**החלטות שהתקבלו לבד:** (א) management API במקום MCP. (ב) אין קובץ REVOKE ל-23 ה-WARN
+של definer, ראו למעלה. (ג) 246 כקובץ נוסף ולא עריכה של 209. (ד) 245 נושא את
+`direction <> 'internal'` של 203 (no-op עד 203, תיקון הדליפה אחריה). (ה) השרת שלי
+(pid 3692, v16.3.6) נעצר; שלושת הזרים (v16.3.3) לא נגעתי. (ו) ממצא 218 נרשם ולא תוקן.
+
+**תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה
+בסך הכל), `caffeinate` חי (959, 999), `SleepDisabled 1`, `dns-watch.sh` חי (999).
+
 ## M04-c1 - DONE (25.09) - היגיינת תלויות: 0 חולשות, 30 חבילות עודכנו ב-patch/minor, ארבעת השערים ושער ההשוואה ירוקים
 
 **נמדד על העץ.** HEAD `092ff2517` שווה ל-`origin/audit/final-audit` אחרי
