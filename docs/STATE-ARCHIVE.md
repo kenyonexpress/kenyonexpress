@@ -4,6 +4,71 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## M03-c1 - DONE (25.09) - שער ירוק: ארבעת השערים נקיים, אזהרת lint אחת ו-321 שורות רעש בבנייה תוקנו
+
+**נמדד על העץ, לא מול הרשומה הקודמת.** HEAD `59ffb75d4` שווה
+ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי בתחילת הפריט.
+
+**מה נמצא בריצה הראשונה, לפני שינוי:**
+
+| שער | תוצאה | מה לא היה נקי |
+|---|---|---|
+| `pnpm type-check` | exit 0 | כלום. |
+| `pnpm lint` | exit 0, **אזהרה 1** | `useExhaustiveDependencies` ב-`SecurityClient.tsx` 27: ה-effect קרא ל-`refresh` בלי לרשום אותה. |
+| `pnpm test` | exit 0, 600 קבצים / 7,158 / 12 מדולגים | **3 שורות `Error: Not implemented: navigation`** ב-stderr, מקליק על `<a href="/checkout">` חי ב-jsdom בשני טסטים של הסל. |
+| `pnpm build` | exit 0, BUILD_ID `5jOp-4_jhif4OCinnbIGF` | **273 `db.query_failed` ברמת ERROR ו-48 אזהרות באתרי הקריאה**, כולן "During prerendering, fetch() rejects when the prerender is complete" (`FINAL-REPORT-V2` 20.09 מנה 5,180 כאלה בזמן ריצה וכתב "ראוי לסינון ברמת הלוג, לא נעשה כאן"). |
+
+**מה תוקן, בלי שינוי התנהגות מוצר:**
+
+1. **`SecurityClient.tsx`**: קריאת `listFactors` הועברה לפונקציית מודול
+   `listTotpFactors`; ה-effect נוגע רק ב-`setFactors` היציב. `refresh` נשארה
+   לשני הקוראים האחרים. אפס אזהרות biome.
+2. **`cart-checkout-button.test.tsx`, `unavailable-blocks-every-checkout.test.tsx`**:
+   עוזר `clickWithoutNavigating` בכל קובץ. מאזין על `document` רץ אחרי ה-handler
+   של React, קורא את `defaultPrevented` כפי שהרכיב השאיר אותו ורק אז מבטל את
+   הניווט של jsdom. אותה אסרציה בדיוק, אפס `Not implemented`.
+3. **`src/lib/observability/prerender-abort.ts`** (חדש, +3 טסטים): `isPrerenderAbort`
+   מזהה את הדחייה של Next בשני הצורות שהיא מגיעה, `digest ===
+   'HANGING_PROMISE_REJECTION'` על השגיאה הזרוקה, והמשפט הקבוע ב-`message`
+   אחרי ש-supabase-js עטף אותה ל-`{ error }`.
+4. **`query-log-fetch.ts`** (+1 טסט): הדחייה הזו נרשמת כ-`db.query_abandoned`
+   ב-DEBUG ונזרקת הלאה כמו קודם; `db.query_failed` נשאר לכל השאר.
+5. **חמישה אתרי קריאה** מדלגים על ה-WARN שלהם רק במקרה הזה, אותו fallback בדיוק:
+   `stock-live.ts` (`stock.available_read_failed`/`_threw`), `homepage/cms.ts`
+   (`homepage.cms_read_failed`), `referrals/program.ts`
+   (`referrals.settings_read_failed`), `(account)/layout.tsx` ו-`account/page.tsx`
+   (`passkey.list_threw`, שם זה `cookies()` שנדחה).
+
+**אחרי התיקון, כל ארבעת השערים בחזית:**
+
+| שער | תוצאה |
+|---|---|
+| `pnpm type-check` | exit 0 |
+| `pnpm lint` | exit 0, **0 אזהרות**; 12 השערים נקיים (i18n 627/627, he-IL 134 בתקרה, docs-index 281) |
+| `pnpm test` | exit 0, **601 קבצים / 7,162 ירוקים / 12 מדולגים** (171.3s), **0 שורות stderr** |
+| `pnpm build` | exit 0, BUILD_ID `3F28FBpqv8LZuD115AiOw`; פלט 658 -> **340 שורות, 0 ברמת ERROR**, 12 WARN |
+
+**מה נשאר ולמה זה לא לתיקון כאן:** (א) 8 `db.query_slow` בבנייה: שאילתות
+אמיתיות מעל 1,500ms מהלפטופ ל-Supabase בזמן prerender; רשת, לא קוד. (ב) 4
+`db.optional_column_missing`, 3 `content_pages.not_applied`, 2 `phases.not_applied`:
+אזהרות נכונות על 242 ומיגרציות ממתינות (חוסם 3), והן אמורות לירות. (ג) 8-10
+`ExperimentalWarning: ML-DSA-44 Web Crypto` מ-Node 25.9: `@simplewebauthn/server`
+14.0.1 ו-`@peculiar/x509` 2.1.0 קוראים ל-`crypto.subtle.supports`; קוד של תלות,
+ותיקון פירושו שדרוג חבילות (M04-c1) או `--no-warnings` שמסתיר גם אזהרות
+אמיתיות. לא נגעתי.
+
+**החלטות שהתקבלו לבד:** (א) הסינון נעשה בשכבת ה-fetch ובאתרי הקריאה ולא
+ב-`log.ts`, כדי ש-`db.query_failed` ימשיך למנות כל כישלון אמיתי ב-Axiom
+(`dashboards/errors.json` לא השתנה). (ב) שם אירוע חדש `db.query_abandoned`
+ב-DEBUG במקום שתיקה, כדי שאפשר יהיה לספור את הביטולים אם יידרש. (ג) שער
+ההשוואה לא הורץ: אפס שינוי ב-UI (השינוי היחיד ב-`src/app` הוא סדר קריאה
+ב-`useEffect` ושני `if` על לוג), והפריט הזה אינו פריט parity; המספרים
+האחרונים 8.44/9.03/3.82 מ-M02-c1 עומדים.
+
+**תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`,
+שלושה בסך הכל, אין מה למחוק), `caffeinate` חי (pid 959), `SleepDisabled 1`.
+
+
 ## M02-c1 - DONE (25.09) - שער הפריטי: בית 8.44/9.03/3.82, מוצר 1440 ‏2.79, כולם PASS
 
 **נמדד על שרת חדש, לא מול רשומות קודמות.** HEAD `b694bd897` שווה
