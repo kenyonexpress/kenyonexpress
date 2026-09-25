@@ -1,12 +1,13 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B08)
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, B09)
 
 ## המשך מ:
 
-**B08 DONE (25.09): BACKLOG EMPTY, נמדד בפעם השביעית.** הבא בתור: **B09**,
-ואחריו B10. כולם נושאים את אותו טקסט כמו B02; אם דבר לא השתנה מאז (תנאי הפתיחה
-מחדש בסעיף B02) התשובה הנכונה היא לאמת את הרשומה הזו ולכתוב BACKLOG EMPTY שוב.
+**B09 DONE (25.09): BACKLOG EMPTY, נמדד בפעם השמינית.** הבא בתור: **B10**,
+האחרון בתור. הוא נושא את אותו טקסט כמו B02; אם דבר לא השתנה מאז (תנאי הפתיחה
+מחדש בסעיף B02) התשובה הנכונה היא לאמת את הרשומה הזו ולכתוב BACKLOG EMPTY שוב,
+ואחריו התור `final-queue.txt` נגמר.
 
-ההיסטוריה המלאה (Q01..Q24, B01, B03..B07, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
+ההיסטוריה המלאה (Q01..Q24, B01, B03..B08, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
@@ -26,36 +27,40 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
 
-## B08 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השביעית ודבר לא השתנה
 
-**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B07.** HEAD
-`728b6d511` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
-קומיטים חדשים מאז B07.
+## B09 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם השמינית ודבר לא השתנה
 
-| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B08 | תוצאה |
+**נבדק מול העץ, מול הרשת ומול origin, לא מול רשומות B02..B08.** HEAD
+`27f9bc40f` שווה ל-`origin/audit/final-audit` אחרי `git fetch`, עץ נקי, אפס
+קומיטים חדשים מאז B08.
+
+| תנאי פתיחה מחדש (מרשומת B02) | נמדד ב-B09 | תוצאה |
 |---|---|---|
-| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: אפס התאמות ל-`docs/BACKLOG.md` (ב-HEAD רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`, ב-`origin/main` רק הראשון; שניהם נפסלו ב-B02). ב-`~/ke-goals` (97 קבצים) אין קובץ backlog מלבד עותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`; המילה מופיעה רק בטקסט התור עצמו (שורות 25-34 של `final-queue.txt`). | לא. |
-| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`, AUTHORITY) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,137 בתים) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **30** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
+| (א) `docs/BACKLOG.md` נוצר | `git ls-tree -r` על HEAD ועל `origin/main`: אפס התאמות ל-`docs/BACKLOG.md` (ב-HEAD רק `MIGRATION-BACKLOG.md` ו-`POST-LAUNCH-BACKLOG.md`, ב-`origin/main` רק הראשון; שניהם נפסלו ב-B02). ב-`~/ke-goals` אין קובץ backlog מלבד עותק של `MIGRATION-BACKLOG.md` בתוך `ke-autopilot-v2/repo/docs`; `final-queue.txt` לא השתנה (mtime 25.09 02:37) והמילה מופיעה רק בשורות B01..B10 של התור עצמו. | לא. |
+| (ב) אופיר סגר חוסם | `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` exit 6. הרשם (`dig NS @ns1.ns.il +norecurse`, AUTHORITY) עדיין `ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com` (serial 1790178646, ללא שינוי). ה-alias `kenyonexpress.vercel.app` עונה 200 (639,223 בתים) עם `0` ‏`p_con__city`, ‏`0` ‏`pdp-small-print` ב-`/product/barbecue-2` ו-30 תמונות `ke-live-deal-N.webp`, כלומר עדיין `a388118f1`, עכשיו **31** קומיטים מאחורי HEAD. ‏`dns-watch.sh` (pid 957 תחת caffeinate 999) עדיין רץ. | לא. |
 | (ג) שער אדום בריצה הזו | type-check, lint, test, build ושער ההשוואה בשלושת הרוחבים: הכל ירוק (למטה). | לא. |
 
-**החלטות שהתקבלו לבד:** (א) ‏B07 הועבר לארכיון באותו commit; ‏B02 נשאר כי
-B09..B10 מפנים לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה
-סיבה כמו ב-B02. ‏(ג) אותם שלושה שרתי `next-server` מסשנים אחרים עדיין רצים
-(pid 23704, 46984, 99861) ולא נגעתי בהם; השער נמדד על 3391 מול שרת חדש שאומת
-שהוא מגיש את BUILD_ID של הריצה הזו (`SKeEJpU9cUNbFXlDC3qE4` בתוך ה-HTML), ורק
-שני התהליכים של הריצה הזו (pnpm start 42218 + next-server 42232) נסגרו בסיום;
-3391 עונה exit 7 אחרי הסגירה. ‏(ד) שורות `HANGING_PROMISE_REJECTION` בפלט
-ה-build הן מזרם המלאי (`stock-live.ts`) והן מתועדות בארכיון תחת Q04 כרעש ידוע;
-ה-build יצא 0.
+**החלטות שהתקבלו לבד:** (א) ‏B08 הועבר לארכיון באותו commit; ‏B02 נשאר כי
+B10 מפנה לתנאי הפתיחה שבו. ‏(ב) לא נוצר `docs/BACKLOG.md`, מאותה סיבה כמו
+ב-B02. ‏(ג) אותם שלושה שרתי `next-server` מסשנים אחרים עדיין רצים (pid 23704,
+46984, 99861), אף אחד מהם לא מאזין על שום פורט 3xxx (`netstat`), ולא נגעתי
+בהם; השער נמדד על 3401 מול שרת חדש שאומת שהוא מגיש את BUILD_ID של הריצה
+הזו (`FXY8p-MtCP08VgFt2y6cE` בתוך ה-HTML). בסיום נסגרו `pnpm start` 48273
+ו-`next-server` 48288 של הריצה הזו, וגם `next-server` 50671 שהופיע אחרי
+שהשרת של הריצה הזו עלה ובלי `pnpm start` הורה משלו; אחרי הסגירה אף פורט 3xxx
+לא מאזין ושלושת השרתים הזרים נשארו, כך שאף סשן אחר לא איבד פורט מוגש, אבל
+מקור ה-pid הזה לא זוהה. 3401 עונה exit 7 אחרי הסגירה. ‏(ד) 270 שורות
+`HANGING_PROMISE_REJECTION` בפלט ה-build הן מזרם המלאי (`stock-live.ts`),
+רעש ידוע שתועד בארכיון תחת Q04; ה-build יצא 0.
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome אזהרה אחת ידועה,
 i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצים /
-7,158 ירוקים / 12 מדולגים** (92.8s), `pnpm build` ירוק (BUILD_ID
-`SKeEJpU9cUNbFXlDC3qE4`). שער ההשוואה בחזית על 3391, `--baseline`:
-**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 04:35-04:38 UTC
-ב-`docs/UI-PARITY-REPORT.md` על `728b6d511`. תחזוקה: גיבוי היום קיים
-(`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל, אין מה לנקות),
-‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
+7,158 ירוקים / 12 מדולגים** (79.0s), `pnpm build` ירוק (BUILD_ID
+`FXY8p-MtCP08VgFt2y6cE`). שער ההשוואה בחזית על 3401, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, exit 0, שורות
+04:46-04:49 UTC ב-`docs/UI-PARITY-REPORT.md` על `27f9bc40f`. תחזוקה: גיבוי
+היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`, שלושה בסך הכל, אין
+מה לנקות), ‏`caffeinate` חי (pid 959), ‏`SleepDisabled 1`.
 
 ## B02 - DONE (25.09) - BACKLOG EMPTY
 
@@ -126,8 +131,9 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
 | B05 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם הרביעית. פירוט בארכיון. |
 | B06 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם החמישית. פירוט בארכיון. |
 | B07 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השישית. פירוט בארכיון. |
-| B08 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השביעית: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. שער 8.44/9.03/3.82 PASS. |
-| B09-B10 | OPEN | אותו טקסט כמו B02. בלי שינוי בתנאי הפתיחה מחדש (רשומת B02) התשובה היא BACKLOG EMPTY מאומת מחדש. |
+| B08 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השביעית. פירוט בארכיון. |
+| B09 | DONE (25.09) | **BACKLOG EMPTY**, נמדד בפעם השמינית: שלושת תנאי הפתיחה מחדש נבדקו ולא התקיימו. שער 8.44/9.03/3.82 PASS. |
+| B10 | OPEN | אותו טקסט כמו B02, האחרון בתור. בלי שינוי בתנאי הפתיחה מחדש (רשומת B02) התשובה היא BACKLOG EMPTY מאומת מחדש. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
@@ -136,7 +142,7 @@ i18n 627/627, he-IL 134 בתקרה, docs-index 281), `pnpm test` **600 קבצי�
    אחרי ההתפשטות: `dig +short A kenyonexpress.co.il @1.1.1.1` צריך להחזיר
    `216.198.79.1`, ואז `curl -sI https://www.kenyonexpress.co.il/` ל-200.
    שום דבר בצד Vercel לא דורש שינוי.
-2. **פריסת פרודקשן של HEAD (`728b6d511`, 30 קומיטים אחרי `a388118f1` החי)**
+2. **פריסת פרודקשן של HEAD (`27f9bc40f`, 31 קומיטים אחרי `a388118f1` החי)**
    (מצב עצירה, אישור נדרש): REST `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, כמו ב-Q02.
 3. **מיגרציות ממתינות**: 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
