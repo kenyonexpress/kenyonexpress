@@ -1,25 +1,34 @@
-Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, M07-c1)
+RESUME FROM: M08-c1
+Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/final-queue.txt`, Q05b)
 
 ## המשך מ:
 
-**M07-c1 DONE (25.09): ביקורת נתיבים.** ‏`e2e/route-audit.spec.ts` מבקש **כל נתיב
-באפליקציה בדפדפן אמיתי, בארבעה תפקידים** (אנונימי, לקוח, אדמין, ספק): ‏**241 שורות
-ייחודיות, ‏239 PASS, ‏2 NO DATA, ‏0 FAIL**. כל דף (‏167 שנמדדו בדפדפן) הוא
-‏`<html lang="he" dir="rtl">` עם גוף RTL מחושב, **אפס שגיאות קונסולה, אפס אזהרות
-הידרציה**, ‏39 הפניות מכוונות שכולן נחתו על היעד הכתוב ליד הנתיב, ו-72 נתיבי קובץ
-ו-API בלי אף 5xx. **חמישה פגמים נמצאו ותוקנו** (פירוט ברשומה למטה): הידרציה שנשברה
-על תאריכים ב-14 רכיבי לקוח, ‏CSP שחסם את ה-websocket של פעמון ההתראות, כפתור
-המצלמה בסריקת הספק שנרנדר שונה בשרת ובדפדפן, תצוגת עמוד הבית באדמין שנפלה ל-error
-boundary, ו-prefetch של קישורי החשבונית שירה 307 לכל דף חשבון. הלוגר גם הפסיק
-לרשום ‏`redirect()` בתוך route handler כ-`request.failed`.
+**Q05b DONE (25.09): דף המוצר נמדד מול Electro v7 בשלושת הרוחבים, בלי אף
+override, ועבר.** דמו Electro ענה היום 200 לדפדפן headless (ב-04.09 היה 403 קבוע
+על כל `/product/*`), ו-`scripts/capture-electro.mjs` ללא שינוי כתב
+`refs/electro_product_{380,768,1440}.png` + HTML + computed. השער על מוצר אמיתי
+מהקטלוג (`barbecue-2`, "ארוחה בשרית", ‏₪180 / ‏₪199, מסעדות ובתי קפה), על build טרי
+(`meoaJXLMZC3t-yn6-ZdGR`, שרת 3481 מאומת לפי BUILD_ID), בחזית, `--widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'`, בלי `COMPARE_ALLOW_GRID_MISMATCH`:
+**380 ‏5.65% PASS, ‏768 ‏4.95% PASS, ‏1440 ‏2.92% PASS.** הבית באותו build ובאותה ריצה:
+**380 ‏8.43%, ‏768 ‏9.03%, ‏1440 ‏3.82%, PASS.** שש השורות 09:42-09:52 UTC
+ב-`docs/UI-PARITY-REPORT.md`. פירוט ברשומה למטה. **SHOWABLE נשאר `no`**: תנאי Q05b
+(שני הדפים עוברים) מתקיים, אבל Q06 מגדיר את הדגל לפי Q02..Q05 והדומיין עדיין
+לא מתרגם והפריסה החיה היא `a388118f1`; ראו הסעיף הבא.
 
 **הבא בתור: M08-c1** (‏`docs/BACKLOG.md` אינו קיים; ‏B02..B10 מדדו BACKLOG EMPTY תשע
 פעמים, ותנאי הפתיחה מחדש רשומים בארכיון תחת B02).
 
-ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M06-c1, תור 23.09, וכל מה שקדם)
+ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M07-c1, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## SHOWABLE: no
+
+**Q05b (25.09): תנאי הפריט Q05b מתקיים.** בית 8.43 / 9.03 / 3.82 ומוצר
+5.65 / 4.95 / 2.92 ב-380 / 768 / 1440, כולם PASS, על build אחד. הדגל נשאר `no` כי
+Q06 (שרץ אחרי Q05b בתור) מגדיר אותו לפי Q02..Q05 עם ראיה, ו-Q02 לא השתנה: הדומיין
+לא מתרגם והפריסה החיה היא `a388118f1`. החלטה שהתקבלה לבד: לא לדרוס את הרישום
+המחמיר יותר ברישום רך יותר; מה שחסר בדיוק נשאר בטבלה למטה.
 
 **Q06 (25.09): נבדק מול הרשת, מול Vercel, מול git ומול שער ההשוואה, לא מול
 הרישומים הקודמים.** Q03, Q04 ו-Q05 עשויים ומאומתים בקוד; Q02 חסום. לכן לא
@@ -29,7 +38,7 @@ boundary, ו-prefetch של קישורי החשבונית שירה 307 לכל ד�
 |---|---|---|
 | Q02 | build ירוק ב-Vercel, פריסת פרודקשן `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` READY מ-git sha `a388118f1`, ‏200 על `https://kenyonexpress.vercel.app/` (נמדד עכשיו). | (א) **הדומיין לא מתרגם**: `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` ו-`www` מחזירים exit 6. הרשם (`dig NS @ns1.ns.il`) עדיין מאציל ל-`ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com`. **פעולה של אופיר בלבד.** (ב) **הפריסה החיה היא `a388118f1`, ארבעה קומיטים מאחורי HEAD** (`0f981138e`, `6fb5fe971` Q04, `8d924b196` Q03, `2ee29bc90` Q05). ב-HTML החי: `0` ‏`pdp-small-print` ב-`/product/barbecue-2`, ‏`0` ‏`p_con__city` בדף הבית, ‏30 תמונות `ke-live-deal-N.webp` (הגריד הקפוא). פריסה לפרודקשן היא אחד מארבעת מצבי העצירה ואינה חלק מ-Q06; נרשמת כאן כפריט ידני. |
 | Q03 | `8d924b196` על origin. **שער נמדד בסשן הזה על HEAD נקי, `pnpm build` (BUILD_ID `LaycI8sfKnHf2W15yrW5Z`), `pnpm start` על 3311, `--widths=380,768,1440 --baseline=refs/ke_live_{width}.png`, בחזית: 380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, exit 0. השורות ב-`docs/UI-PARITY-REPORT.md` 19:59-20:02 UTC; הראשונה `2ee29bc90` נקי, השתיים אחריה `-dirty` רק כי השורה הראשונה כבר שינתה את הפנקס עצמו. | **עיר על הכרטיס בפרודקשן**: `products.city` הוא NULL בכל 46 השורות הפעילות, ‏`241_seed_product_city_from_title.sql` ממתינה ולא הוחלה (ממלאת 3), והשאר דורש מילוי בטופס Q05 אחרי פריסה. עד אז שורת המטא בפרודקשן מציגה קטגוריה בלבד. |
-| Q04 | `6fb5fe971` על origin: מקור מחיר רגיל, קישור ביקורות גוגל, אותיות קטנות, ‏242 ממתינה. | (א) **השער בדף המוצר נמדד ב-1440 בלבד** (2.79% PASS, reference `refs/live-product.png` של מוצר אחר, עם `COMPARE_ALLOW_GRID_MISMATCH=1`); **380 ו-768 REFUSED**, "capture is 1440px", אין צילום reference ברוחבים האלה. "same compare gate" אינו ניתן למדידה מלאה בלי צילום מוצר ב-380 וב-768. (ב) מקור המחיר וקישור הביקורות מרונדרים ריק בפרודקשן עד החלת 242 ועד שיהיו ערכים. |
+| Q04 | `6fb5fe971` על origin: מקור מחיר רגיל, קישור ביקורות גוגל, אותיות קטנות, ‏242 ממתינה. | (א) **השער בדף המוצר נמדד ב-1440 בלבד** (2.79% PASS, reference `refs/live-product.png` של מוצר אחר, עם `COMPARE_ALLOW_GRID_MISMATCH=1`); **380 ו-768 REFUSED** באותו יום. **נסגר ב-Q05b (25.09):** reference של Electro v7 בשלושת הרוחבים, 5.65 / 4.95 / 2.92 PASS, בלי override. (ב) מקור המחיר וקישור הביקורות מרונדרים ריק בפרודקשן עד החלת 242 ועד שיהיו ערכים. |
 | Q05 | `2ee29bc90` על origin. `ProductForm.tsx` + `product-form-schema.ts` + `product-terms.ts` + `actions/admin/products.ts` מכילים את כל השדות (נבדק ב-grep: city, cashback_percent, original_price_source(+url), shipping_price, supplier_transfer_days, payout_cadence, cancellation_window_days, refund_policy, platform_percent, coupon_expiry, category, supplier, ImageUploader). ‏243 ממתינה. | (א) **242 ו-243 לא הוחלו**: ערך שאינו ברירת מחדל בשני שדות המקור ובחמשת התנאים נדחה בשמירה עם שם קובץ המיגרציה (`optional-column-groups.ts`). (ב) **R2 לא מופעל בחשבון** (נמדד 10.09, 403 code 10042), ההעלאה נופלת ל-Supabase Storage. שניהם פעולות של אופיר. |
 
 **סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
@@ -37,73 +46,72 @@ boundary, ו-prefetch של קישורי החשבונית שירה 307 לכל ד�
 ניתן להצגה כלל.
 
 
-## M07-c1 - DONE (25.09) - ביקורת נתיבים: 241 נתיבים בארבעה תפקידים, 0 FAIL, אפס שגיאות קונסולה ואפס אזהרות הידרציה, RTL בכל דף; חמישה פגמים תוקנו
+## Q05b - DONE (25.09) - דף המוצר מול Electro v7 בשלושת הרוחבים, מוצר אמיתי, בלי override: 5.65 / 4.95 / 2.92 PASS
 
-**נמדד על build טרי** (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3471
-pnpm build`, BUILD_ID ‏`wesVVCI0eiO8EE1W5DMsp`, שרת על 3471 מאומת לפי BUILD_ID),
-‏`e2e/route-audit.spec.ts` ב-Chromium, worker אחד, בחזית, בשישה מקטעים (מקטע האדמין
-לבדו עובר 10 דקות). פנקס: שורה אחת לכל נתיב, ‏`ROUTE_AUDIT_REPORT` מצביע מחוץ
-ל-`test-results/` כי Playwright מרוקן אותה בתחילת כל ריצה.
+**ה-reference.** `docs/MISSING-ASSETS.md` סעיף 1 רשם ב-04.09 שדמו Electro עונה
+`403 - Forbidden` על כל `/product/*` אחרי שה-challenge של Cloudflare עובר, וארבע דרכים
+נכשלו. היום אותו סקריפט, ללא שינוי, עבר:
 
-| תפקיד | דפים בדפדפן | קובץ / API | PASS | NO DATA | FAIL |
-|---|---|---|---|---|---|
-| אנונימי | 66 (59 קבועים + 7 שהתגלו: מוצר, ביקורות, קטגוריה, קופון, עמוד CMS, חנות ספק, עיר) | 72 | 138 | 0 (`/city/[slug]`: אין עיר ב-sitemap) | 0 |
-| לקוח | 27 | | 26 | 1 (`/account/tickets/[id]`: אין פנייה ללקוח הבדיקה) | 0 |
-| אדמין | 67 (59 + 8 שהתגלו) | | 66 | 1 (`/admin/discounts/[id]`: אין הנחה) | 0 |
-| ספק | 9 | | 9 | 0 | 0 |
+```
+node scripts/capture-electro.mjs \
+  "https://electro.madrasthemes.com/product/ultra-wireless-s50-headphones-s50-with-bluetooth/" \
+  electro_product
+```
 
-מה נבדק בכל דף: סטטוס 200 או הפניה ליעד שכתוב ליד הנתיב (39 הפניות, כולן נחתו
-נכון: ‏`/legal/*`, ‏`/terms`, ‏`/privacy`, ‏`/scan`, נתיבים מוגנים ל-`/login?next=`,
-לקוח ב-`/admin` הביתה, ספק ב-`/admin` הביתה, לקוח ב-`/supplier` ל-`access-denied`,
-‏`/admin` ל-`/admin/dashboard`, ‏`/account/vouchers` ל-`/account/coupons`); מזהה
-מזויף עונה דף "לא נמצא" ולא 500 (מוצר, קטגוריה, עיר, קופון, עמוד, מתנה, חנות,
-הזמנה, פנייה); אפס `console.error` ואפס `pageerror`; אפס ‏React #418/#419/#423/#425;
-‏`dir="rtl"`, ‏`lang="he"` וכיוון גוף מחושב RTL. ‏`/admin/users/[id]/view-as` הושמט
-בכוונה: GET שם טובע cookie התחזות וכותב שורת audit.
+כתב `refs/electro_product.html` (518,572 בתים, הכותרת האמיתית של המוצר),
+`refs/electro_product_380.png` (380x11181), `_768.png` (768x8408), `_1440.png`
+(1440x7653) ו-`_computed.json` (2,238 שורות). `refs/` אינו ב-git (מדיניות
+`docs/REFS-POLICY.md`); הפקודה למעלה מייצרת אותם מחדש. הסעיף ב-`MISSING-ASSETS.md`
+נכתב מחדש כ-CAPTURED עם שתי המדידות, ושורת ה-ledger שלו ב-`known-dangling-paths.json`
+הוסרה (`docs-path-audit --write`), אחרת `pnpm lint` אדום.
 
-**חמישה פגמים, כולם נמדדו לפני ואחרי:**
+**המוצר.** `barbecue-2` ("ארוחה בשרית", ‏₪180 / מחיר מלא ‏₪199, מסעדות ובתי קפה,
+תמונה, 10 במלאי): שורה אמיתית בקטלוג ולא אחת מ-25 שורות התבנית/העותקים
+ב-`supabase/catalogue-known-issues.json`. ברירת המחדל של הסקריפט,
+`מוצר-לדוגמא`, היא שורת תבנית, ולכן הריצה מקבלת `COMPARE_PRODUCT_SLUG=barbecue-2`.
 
-1. **הידרציה נשברת על תאריכים (React #418 ב-`/admin/users`).** ‏`toLocaleDateString('he-IL')`
-   בתוך רכיב לקוח מרנדר בשרת באזור הזמן של המכונה (UTC ב-Vercel, ‏+07 במחשב הזה)
-   ובדפדפן באזור של המבקר; לכל רגע בין 21:00 ל-00:00 UTC היום שונה. **14 רכיבי
-   לקוח, ‏18 אתרים** (טבלאות המשתמשים והקופונים, פליטת הפקודות, תור הסיכון,
-   הזיכויים, המחלוקות, הפניות באדמין ובחשבון, המנויים, ההיסטוריה, הבאנר) הועברו
-   ל-`formatDateShort`/`formatDateTime` מ-`lib/i18n/format.ts`, שקיבל
-   ‏`SITE_TIME_ZONE = 'Asia/Jerusalem'` בארבע הפונקציות. טסט: ‏21:30 UTC מודפס
-   ‏`25.09.2026` גם תחת ‏`TZ=UTC`. תקרת ‏`locale-format-gate` ירדה 134 -> 116.
-2. **‏CSP חסם את ה-realtime של ‏NotificationBell.** ‏`connect-src https://*.supabase.co`
-   אינו מכסה ‏`wss://`; כל דף מחובר רשם הפרת CSP והפעמון לא קיבל אירוע חי.
-   ‏`wss://*.supabase.co` נוסף, טסט עודכן.
-3. **כפתור המצלמה ב-`/supplier/scan` (React #418).** ‏`'BarcodeDetector' in window`
-   בזמן הרינדור: השרת ללא הכפתור, ‏Chrome איתו. עבר ל-`useEffect`.
-4. **‏`/admin/homepage/preview` נפל ל-error boundary של האדמין (React #419,
-   ‏`useCart must be used within CartProvider`).** כרטיסי הדיל בסעיפים קוראים
-   ל-`useCart`, והקבוצה ‏`(admin)` אינה עוטפת ב-`CartProvider`. הדף עוטף עכשיו את
-   הסעיפים בעצמו, בלי ‏`CartBootstrap`.
-5. **‏prefetch של קישור החשבונית.** ‏`<Link>` ל-route handler ‏`/account/orders/[id]/invoice`
-   הביא prefetch שענה 307 מכל דף הזמנה ודף חשבוניות. ‏`prefetch={false}` בשני המקומות.
+**תיקון אחד ב-`scripts/compare.mjs`, לא override.** עם `--baseline` אין ניווט לצד
+החי, ולכן `gridCounts.live` נשאר `null` ו-guard ספירת הגריד סירב ("live shows null
+product cards") בכל ריצת מוצר קפואה, בלי לכתוב שורת ledger; זו הסיבה ש-Q04 ו-M02-c1
+נזקקו ל-`COMPARE_ALLOW_GRID_MISMATCH=1`. אותו פגם בדיוק שה-guard של הסל כבר מטפל
+בו (`cartEmptiness.live`): עכשיו הצד הקפוא לא נספר, השורה מודפסת ("frozen capture,
+live grid not counted; the local page shows 5 product card(s)"), ו-guard הכותרות
+ו-guard תמונת הגיבור ממילא מדלגים על `null`. השער החי (בלי `--baseline`) לא השתנה.
 
-**ועוד אחד בצד השרת:** ‏`withRequestLog` רשם כל ‏`redirect()` ו-`notFound()` שנזרקים
-מתוך route handler (ייצוא CSV מוגן, דוחות, ledger) כ-`request.failed` ברמת error עם
-stack. עכשיו הוא קורא את ה-digest של Next ורושם ‏`request.completed` עם ה-3xx/4xx
-האמיתי; ‏+5 טסטים. אחרי ה-build האחרון: ‏0 שורות ‏`request.failed` בלוג לאורך כל הביקורת.
+**המדידה.** build טרי `pnpm build` (BUILD_ID `meoaJXLMZC3t-yn6-ZdGR`), שרת `pnpm start`
+על 3481 מאומת לפי BUILD_ID ב-HTML, בחזית:
 
-**החלטות שהתקבלו לבד:** (א) הרכיבים שעברו ל-`formatDateShort` מדפיסים ‏`25.09.2026`
-במקום ‏`25.9.2026`; זה השינוי החזותי היחיד והוא הצורה שה-`account/format` כבר
-משתמש בה. (ב) ‏`/admin` נרשם כהפניה מכוונת ל-`/admin/dashboard`, לא כפגם.
-(ג) ‏`/city/[slug]` הוא NO DATA כי ‏`products.city` הוא NULL בכל השורות עד 241
-(חוסם 3). (ד) שני מקטעי אדמין שדולגו באמצע נבעו מ-`TypeError: fetch failed` מול
-Supabase ברגע הכניסה (‏`rate_limit.open` בלוג), לא מהנתיבים; הורצו שוב ועברו.
-(ה) ארבעה שרתי ‏`next start` ישנים מפריטים קודמים (3311 ועוד) הופסקו לפני ה-build,
-כי כולם הגישו מאותו ‏`.next`. (ו) פרטי ה-fixture של האדמין: ‏`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il`
-(לא ברירת המחדל ‏`.local`), רשום גם בזיכרון.
+```
+COMPARE_PRODUCT_SLUG=barbecue-2 LOCAL_BASE=http://localhost:3481 \
+  node scripts/compare.mjs --page=product --widths=380,768,1440 \
+  --baseline='refs/electro_product_{width}.png'
+LOCAL_BASE=http://localhost:3481 \
+  node scripts/compare.mjs --page=home --widths=380,768,1440 \
+  --baseline='refs/ke_live_{width}.png'
+```
 
-**שערים:** ‏`pnpm type-check` נקי, ‏`pnpm lint` נקי, ‏`pnpm test` **601 קבצים /
-7,171 ירוקים / 12 מדולגים** (+6 טסטים), ‏`pnpm build` ירוק. שער ההשוואה בחזית על
-3471, ‏`--baseline`: **380 ‏8.43% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, מוצר 1440
-**2.79% PASS**; שורות 09:12-09:17 UTC ב-`docs/UI-PARITY-REPORT.md` (`568062b0d-dirty`).
-ללא רגרסיה. **תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`,
-3 גיבויים בסך הכל), ‏`caffeinate` חי, ‏`SleepDisabled 1`.
+| דף | 380 | 768 | 1440 | overall (reference blank / ours blank) |
+|---|---|---|---|---|
+| מוצר מול Electro v7 | **5.65% PASS** | **4.95% PASS** | **2.92% PASS** | 33.26 (21.19 / 6.43), 34.71 (23.73 / 6.04), 21.15 (13 / 5.22) |
+| בית מול `ke_live_*` | **8.43% PASS** | **9.03% PASS** | **3.82% PASS** | 13.97 (2.79 / 2.75), 16.17 (4.37 / 2.77), 15.09 (9.9 / 1.37) |
+
+שש השורות 09:42-09:52 UTC ב-`docs/UI-PARITY-REPORT.md`, `fb12aab61-dirty` (העץ
+נשא את תיקון `compare.mjs` בזמן המדידה). ריצה ראשונה על ה-build הקודם (M07-c1,
+09:31-09:35) נתנה אותם מספרים בדיוק. המספר המגודר הוא both-painted, כמו בבית
+מאז 22.09; ה-overall גבוה כי ה-reference הוא LTR אנגלית (אוזניות) ושלנו RTL עברית,
+ורוב ההפרש הוא "reference blank": שני הדפים צובעים תוכן במקומות שונים. לא נדרש
+אף תיקון UI: שלושת הרוחבים עברו בריצה הראשונה.
+
+**החלטות שהתקבלו לבד:** (א) SHOWABLE נשאר `no` (ראו הסעיף למעלה): Q05b מבקש `yes`
+כששני הדפים עוברים, Q06 המאוחר יותר מבקש `yes` רק כש-Q02..Q05 מאומתים, ו-Q02 חסום
+אצל הרשם. הרישום המחמיר נשאר וה-evidence של Q05b נרשם לידו. (ב) `refs/` נשאר
+מחוץ ל-git, כמו כל ה-refs; הסקריפט והפקודה הם המקור. (ג) הבית נמדד מחדש אף
+שאינו חלק מ-Q05b, כי תנאי ה-SHOWABLE דורש "שניהם עוברים" על אותו build.
+(ד) `lsof` אינו ב-PATH של ה-shell הזה; `/usr/sbin/lsof` כן.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (6 שערים), `pnpm test` **601 קבצים /
+7,171 ירוקים / 12 מדולגים**, `pnpm build` ירוק. **תחזוקה:** גיבוי היום קיים
+(`kenyonexpress-backup-2026-09-25-0931.tar.gz`), `caffeinate` חי.
 
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
@@ -112,8 +120,9 @@ Supabase ברגע הכניסה (‏`rate_limit.open` בלוג), לא מהנתי�
 | Q01 | DONE | סדר בעץ, טבלה זו. פירוט בארכיון. |
 | Q02 | BLOCKED, DNS אצל הרשם | build ירוק, פרוס מ-git (`a388118f1`, READY), 200 על vercel.app. הדומיין לא מתרגם: NS ברשם `ns1/ns2.vercel.com` במקום `ns1/ns2.vercel-dns.com`. נמדד שוב 25.09 (Q06), ללא שינוי. |
 | Q03 | DONE (25.09) | `8d924b196`. גריד מהקטלוג, עיר בשורת המטא. שער על קומיט נקי (Q06): 380 8.44%, 768 9.03%, 1440 3.82%, PASS. |
-| Q04 | DONE (25.09) | `6fb5fe971`. שער: 1440 2.79% PASS (reference של מוצר אחר, grid override); 380/768 REFUSED, אין reference. 242 pending. |
+| Q04 | DONE (25.09) | `6fb5fe971`. שער ב-25.09 בבוקר: 1440 2.79% PASS (reference של מוצר אחר, grid override); 380/768 REFUSED. **ב-Q05b:** 5.65 / 4.95 / 2.92 PASS מול Electro v7, בלי override. 242 pending. |
 | Q05 | DONE (25.09) | `2ee29bc90`. כל השדות בטופס, Zod (`productExtrasSchema`), RLS דרך user client, 243 pending. +26 טסטים. |
+| Q05b | DONE (25.09) | הרשומה למעלה. Electro v7 single product נלכד ב-380/768/1440 (`refs/electro_product_*`); שער על `barbecue-2` בלי override: 5.65 / 4.95 / 2.92 PASS; בית 8.43 / 9.03 / 3.82 PASS באותו build. `compare.mjs`: guard הגריד לא סופר צד קפוא. SHOWABLE נשאר `no` בגלל Q02. |
 | Q06 | DONE (25.09) | הרשומה הזו. SHOWABLE: no, עם פירוט החסר. |
 | Q07 | DONE (אומת 25.09) | `9fe2ca441` (23.09) על הענף. `ProductShareRow` ב-`ProductInfo`: WhatsApp ראשון ובולט, Share נייטיב, fallback פייסבוק/טלגרם/מייל, העתקת קישור עם toast `הקישור הועתק`. 16 טסטים ירוקים. שער מוצר 1440 ‏2.79% PASS על `5d22aa60e` נקי. |
 | Q08 | DONE (25.09) | הרשומה למעלה. חשבונית חתומה (קיים), שדות מע"מ לעסק בקופה (חדש), wa.me עם פריטים וסכום (חדש), ביטול לפי 14ג בדף ההזמנה ובדף התודה (חדש). +8 טסטים. שער 8.44/9.03/3.82 PASS. |
@@ -173,9 +182,12 @@ Supabase ברגע הכניסה (‏`rate_limit.open` בלוג), לא מהנתי�
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר.
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
-5. **צילומי reference ב-380 וב-768 לדף המוצר, לסל ולקופה**: קיימים רק
-   ב-1440 (`refs/live-product.png`, `refs/live-cart.png`,
-   `refs/live-checkout.png`). בלי זה השערים של Q04 ו-Q10 נמדדים ב-1440 בלבד.
+5. **צילומי reference ב-380 וב-768 לסל ולקופה**: קיימים רק ב-1440
+   (`refs/live-cart.png`, `refs/live-checkout.png`), ולכן השער של Q10 נמדד ב-1440
+   בלבד. **דף המוצר נסגר ב-Q05b (25.09)** עם reference של Electro v7 בשלושת
+   הרוחבים (`refs/electro_product_{380,768,1440}.png`, נוצר מחדש בפקודה
+   ב-`docs/MISSING-ASSETS.md` סעיף 1; `refs/` אינו ב-git). לסל ולקופה אין דף
+   Electro v7 שנלכד עדיין; אותו סקריפט אמור לעבוד עליהם ביום שהדמו עונה.
 6. **`RESEND_API_KEY` בפרודקשן**: השם קיים ב-target Production של הפרויקט
    (נמדד 25.09, Q24; הערך לא נקרא). בלי ערך תקף כל חמשת המיילים נופלים
    בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.

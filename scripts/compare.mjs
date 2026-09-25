@@ -1258,8 +1258,20 @@ if (
   process.exit(3)
 }
 
+// With a frozen capture nothing reads the live grid, so `gridCounts.live`
+// stays null and `null !== 4` refused every frozen product run as "live shows
+// null product cards" -- the same defect the cart guard above already names,
+// and this one wrote no ledger row on the way out. A capture's grid cannot be
+// counted here; the notes column names the file, and the reader pairs it with
+// the slug on purpose.
+if (COUNTED_GRIDS.has(page) && LIVE_PNG) {
+  console.log(
+    `${page}: frozen capture, live grid not counted; the local page shows ${gridCounts.mine} product card(s).`,
+  )
+}
 if (
   COUNTED_GRIDS.has(page) &&
+  !LIVE_PNG &&
   gridCounts.live !== gridCounts.mine &&
   process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
 ) {

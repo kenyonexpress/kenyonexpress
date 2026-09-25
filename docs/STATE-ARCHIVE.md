@@ -4,6 +4,76 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## M07-c1 - DONE (25.09) - ביקורת נתיבים: 241 נתיבים בארבעה תפקידים, 0 FAIL, אפס שגיאות קונסולה ואפס אזהרות הידרציה, RTL בכל דף; חמישה פגמים תוקנו
+
+**נמדד על build טרי** (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3471
+pnpm build`, BUILD_ID ‏`wesVVCI0eiO8EE1W5DMsp`, שרת על 3471 מאומת לפי BUILD_ID),
+‏`e2e/route-audit.spec.ts` ב-Chromium, worker אחד, בחזית, בשישה מקטעים (מקטע האדמין
+לבדו עובר 10 דקות). פנקס: שורה אחת לכל נתיב, ‏`ROUTE_AUDIT_REPORT` מצביע מחוץ
+ל-`test-results/` כי Playwright מרוקן אותה בתחילת כל ריצה.
+
+| תפקיד | דפים בדפדפן | קובץ / API | PASS | NO DATA | FAIL |
+|---|---|---|---|---|---|
+| אנונימי | 66 (59 קבועים + 7 שהתגלו: מוצר, ביקורות, קטגוריה, קופון, עמוד CMS, חנות ספק, עיר) | 72 | 138 | 0 (`/city/[slug]`: אין עיר ב-sitemap) | 0 |
+| לקוח | 27 | | 26 | 1 (`/account/tickets/[id]`: אין פנייה ללקוח הבדיקה) | 0 |
+| אדמין | 67 (59 + 8 שהתגלו) | | 66 | 1 (`/admin/discounts/[id]`: אין הנחה) | 0 |
+| ספק | 9 | | 9 | 0 | 0 |
+
+מה נבדק בכל דף: סטטוס 200 או הפניה ליעד שכתוב ליד הנתיב (39 הפניות, כולן נחתו
+נכון: ‏`/legal/*`, ‏`/terms`, ‏`/privacy`, ‏`/scan`, נתיבים מוגנים ל-`/login?next=`,
+לקוח ב-`/admin` הביתה, ספק ב-`/admin` הביתה, לקוח ב-`/supplier` ל-`access-denied`,
+‏`/admin` ל-`/admin/dashboard`, ‏`/account/vouchers` ל-`/account/coupons`); מזהה
+מזויף עונה דף "לא נמצא" ולא 500 (מוצר, קטגוריה, עיר, קופון, עמוד, מתנה, חנות,
+הזמנה, פנייה); אפס `console.error` ואפס `pageerror`; אפס ‏React #418/#419/#423/#425;
+‏`dir="rtl"`, ‏`lang="he"` וכיוון גוף מחושב RTL. ‏`/admin/users/[id]/view-as` הושמט
+בכוונה: GET שם טובע cookie התחזות וכותב שורת audit.
+
+**חמישה פגמים, כולם נמדדו לפני ואחרי:**
+
+1. **הידרציה נשברת על תאריכים (React #418 ב-`/admin/users`).** ‏`toLocaleDateString('he-IL')`
+   בתוך רכיב לקוח מרנדר בשרת באזור הזמן של המכונה (UTC ב-Vercel, ‏+07 במחשב הזה)
+   ובדפדפן באזור של המבקר; לכל רגע בין 21:00 ל-00:00 UTC היום שונה. **14 רכיבי
+   לקוח, ‏18 אתרים** (טבלאות המשתמשים והקופונים, פליטת הפקודות, תור הסיכון,
+   הזיכויים, המחלוקות, הפניות באדמין ובחשבון, המנויים, ההיסטוריה, הבאנר) הועברו
+   ל-`formatDateShort`/`formatDateTime` מ-`lib/i18n/format.ts`, שקיבל
+   ‏`SITE_TIME_ZONE = 'Asia/Jerusalem'` בארבע הפונקציות. טסט: ‏21:30 UTC מודפס
+   ‏`25.09.2026` גם תחת ‏`TZ=UTC`. תקרת ‏`locale-format-gate` ירדה 134 -> 116.
+2. **‏CSP חסם את ה-realtime של ‏NotificationBell.** ‏`connect-src https://*.supabase.co`
+   אינו מכסה ‏`wss://`; כל דף מחובר רשם הפרת CSP והפעמון לא קיבל אירוע חי.
+   ‏`wss://*.supabase.co` נוסף, טסט עודכן.
+3. **כפתור המצלמה ב-`/supplier/scan` (React #418).** ‏`'BarcodeDetector' in window`
+   בזמן הרינדור: השרת ללא הכפתור, ‏Chrome איתו. עבר ל-`useEffect`.
+4. **‏`/admin/homepage/preview` נפל ל-error boundary של האדמין (React #419,
+   ‏`useCart must be used within CartProvider`).** כרטיסי הדיל בסעיפים קוראים
+   ל-`useCart`, והקבוצה ‏`(admin)` אינה עוטפת ב-`CartProvider`. הדף עוטף עכשיו את
+   הסעיפים בעצמו, בלי ‏`CartBootstrap`.
+5. **‏prefetch של קישור החשבונית.** ‏`<Link>` ל-route handler ‏`/account/orders/[id]/invoice`
+   הביא prefetch שענה 307 מכל דף הזמנה ודף חשבוניות. ‏`prefetch={false}` בשני המקומות.
+
+**ועוד אחד בצד השרת:** ‏`withRequestLog` רשם כל ‏`redirect()` ו-`notFound()` שנזרקים
+מתוך route handler (ייצוא CSV מוגן, דוחות, ledger) כ-`request.failed` ברמת error עם
+stack. עכשיו הוא קורא את ה-digest של Next ורושם ‏`request.completed` עם ה-3xx/4xx
+האמיתי; ‏+5 טסטים. אחרי ה-build האחרון: ‏0 שורות ‏`request.failed` בלוג לאורך כל הביקורת.
+
+**החלטות שהתקבלו לבד:** (א) הרכיבים שעברו ל-`formatDateShort` מדפיסים ‏`25.09.2026`
+במקום ‏`25.9.2026`; זה השינוי החזותי היחיד והוא הצורה שה-`account/format` כבר
+משתמש בה. (ב) ‏`/admin` נרשם כהפניה מכוונת ל-`/admin/dashboard`, לא כפגם.
+(ג) ‏`/city/[slug]` הוא NO DATA כי ‏`products.city` הוא NULL בכל השורות עד 241
+(חוסם 3). (ד) שני מקטעי אדמין שדולגו באמצע נבעו מ-`TypeError: fetch failed` מול
+Supabase ברגע הכניסה (‏`rate_limit.open` בלוג), לא מהנתיבים; הורצו שוב ועברו.
+(ה) ארבעה שרתי ‏`next start` ישנים מפריטים קודמים (3311 ועוד) הופסקו לפני ה-build,
+כי כולם הגישו מאותו ‏`.next`. (ו) פרטי ה-fixture של האדמין: ‏`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il`
+(לא ברירת המחדל ‏`.local`), רשום גם בזיכרון.
+
+**שערים:** ‏`pnpm type-check` נקי, ‏`pnpm lint` נקי, ‏`pnpm test` **601 קבצים /
+7,171 ירוקים / 12 מדולגים** (+6 טסטים), ‏`pnpm build` ירוק. שער ההשוואה בחזית על
+3471, ‏`--baseline`: **380 ‏8.43% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, מוצר 1440
+**2.79% PASS**; שורות 09:12-09:17 UTC ב-`docs/UI-PARITY-REPORT.md` (`568062b0d-dirty`).
+ללא רגרסיה. **תחזוקה:** גיבוי היום קיים (`kenyonexpress-backup-2026-09-25-0931.tar.gz`,
+3 גיבויים בסך הכל), ‏`caffeinate` חי, ‏`SleepDisabled 1`.
+
+---
+
 ## M06-c1 - DONE (25.09) - Lighthouse mobile: נגישות / BP / SEO 100 בשני הדפים; ביצועים 96 / 98 בחנק מוחל, 91 / 90 ב-alias; הסימולציה המקומית 79-83 ותכונת המדידה מתועדת
 
 **נמדד על build טרי, לא על רישומי Q22.** `CARDCOM_USE_MOCK=true

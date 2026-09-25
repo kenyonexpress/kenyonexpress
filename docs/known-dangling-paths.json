@@ -92,7 +92,6 @@
   "docs/MASTER-ARCHITECTURE.md :: src/lib/log.ts",
   "docs/MASTER-ARCHITECTURE.md :: src/lib/money/",
   "docs/MASTER-ARCHITECTURE.md :: supabase/seed.sql",
-  "docs/MISSING-ASSETS.md :: refs/electro_product.html",
   "docs/MISSING-ASSETS.md :: refs/ke_live_computed.json",
   "docs/MISSING-ASSETS.md :: refs/ke_live_content.json",
   "docs/PARITY-REFERENCE.md :: refs/ke_live_singlefile.html",
