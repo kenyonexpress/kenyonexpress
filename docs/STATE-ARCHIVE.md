@@ -4,6 +4,118 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 
 ---
 
+## Q19 - DONE (25.09) - הונאה ואמון: מימוש חד-פעמי ב-DB, מגבלות קצב, בדיקות מהירות, תג ספק מאומת ומונה "נרכשו השבוע" מנתונים אמיתיים בלבד
+
+**נמדד על העץ ועל פרודקשן לפני שנכתבה שורה.** הטבלה אמרה "לא אומת" על ארבעה
+מתוך חמישה; שלושה מהם היו קיימים ושניים לא:
+
+- **מימוש חד-פעמי ב-DB: קיים ופרוס.** `redeem_voucher` (074/085) מעדכן
+  `WHERE status='issued'` במשפט אחד (אין חלון קריאה-ואז-כתיבה), ו-166 מוסיפה
+  טריגר `tg_vouchers_status_guard` שמסרב לכל מעבר מ-`redeemed` חזרה. **נמדד
+  בפרודקשן** (read-only דרך ה-management API): `pg_trigger` מחזיר 1 לטריגר,
+  `pg_proc` 1 לפונקציה, 2 מימושים בסך הכל.
+- **מגבלות קצב על כניסה, קופה ומימוש: קיימות.** `login` 10/h ל-IP +
+  `login-account` 20/h לחשבון, `begin_checkout` 10/min, `redeem` 60/h ל-IP,
+  `voucher-redeem` 120/h לספק (`lib/rate-limit/policies.ts`, `docs/RATE-LIMITS.md`
+  עם טסט סחיפה).
+- **בדיקות מהירות: קיימות.** `lib/fraud/velocity.ts` (`declined_payments` 5/h,
+  `distinct_cards` 5/יום, `card_across_accounts`), נקרא ב-`checkout.ts` לפני
+  שההזמנה קיימת; רשימת חסימה 234; ציון סיכון שמנתב לבדיקה. `docs/FRAUD-RULES.md`.
+- **תג ספק מאומת: לא היה.** אין עמודה, אין רכיב, אין מחרוזת.
+- **"נקנה השבוע": לא היה.** אפס התאמות ל-`this_week`/`השבוע` בקוד ובקטלוג.
+
+**מה נכתב, ומה ההחלטה המרכזית: ראיה או שתיקה, לעולם לא דגל.**
+
+- **`ספק מאומת`** (`lib/suppliers/verification.ts`, טהור, 7 טסטים): מאומת רק
+  ספק `active` לא מחוק **וגם** אחד משניים: בקשת הצטרפות שאדם אישר
+  (`supplier_applications.status='approved'` עם `supplier_id`, חי אחרי 204) **או**
+  מימוש אמיתי אחד לפחות (`vouchers.status='redeemed'` אצלו). **לא נחשב:**
+  `status='active'` לבדו, כי 027 עשה אותו DEFAULT וכל שורה זרועה נושאת אותו;
+  `business_id`, כי **0 מ-7** הפעילים מחזיקים אחד. `verification-read.ts`: שני
+  head counts דרך service role (vouchers ללא policy ציבורית), 42P01 על הטבלה של
+  204 הוא "אין ראיה" בלי לוג. נקרא בתוך `loadSupplierPublicContact` ו-
+  `loadSupplierStorefront` (שניהם `'use cache'`, שעה). `VerifiedSupplierBadge`
+  ליד שם הספק ב-`SupplierInfo` (דף מוצר) וב-`SupplierStorefrontHeader` (`/s/[id]`).
+  **נמדד בפרודקשן: 1 מ-7 ספקים פעילים** עונה לכלל היום.
+- **`{count} נרכשו השבוע`** (`lib/commerce/social-proof.ts`, טהור, 8 טסטים;
+  `bought-this-week.ts`, שתי קריאות; `BoughtThisWeek.tsx` ב-Suspense משלו עם
+  `connection()`, כמו `StockScarcity`): יחידות ב-`order_items` על הזמנות
+  `paid`/`fulfilled`/`partially_fulfilled`/`platform_settled` ששולמו ב-7 ימים,
+  **ורק עם חיוב אמיתי**: `payments.status='succeeded'`, `kind='charge'`, ומזהה
+  שאינו `mock-`. **נמדד בפרודקשן: 18 מ-18 ההזמנות ששולמו בשבוע האחרון הן
+  mock** (`mock-txn-`/`mock-tok-`/`mock-canc`), על 2 מוצרים; הספירה הנאיבית
+  הייתה מציגה "18 נרכשו השבוע" על מוצר שאיש לא קנה. רצפת תצוגה 3; מתחתיה
+  השורה נעדרת ולא מעוגלת. הקידומת קבוע אחד ב-`lib/payments/mock-transaction-id.ts`
+  ש-`MockCardcom` עצמו קורא (חמשת המזהים שלו עברו לקבוע).
+- מחרוזות: `pdp.supplierVerified`, `pdp.boughtThisWeek` (he+en). CSS: `--pdp-verified`
+  בבלוק הטוקנים (שער ה-hex תפס `#1f8a4c` גולמי, ותוקן), `.pdp-verified`,
+  `.pdp-summary__proof`. `docs/FRAUD-RULES.md` §5. **+25 טסטים.**
+
+**נמדד על ה-build המקומי** (BUILD_ID `tsta1aFOQ0CB_e0omPoAV`, `pnpm start` על 3313,
+אומת לפי ה-BUILD_ID ב-HTML): `/s/<הספק עם המימושים>` 200 עם
+`data-testid="supplier-verified"`; דף מוצר שלו 200 עם התג; `מוצר-לדוגמא` בלי תג
+ובלי מונה (הספק שלו ללא מימוש; אפס חיובים אמיתיים בשבוע). המונה אינו מופיע על
+אף דף בפרודקשן היום, וזו התוצאה הנכונה של הכלל.
+
+**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627,
+locale-format 134/134 אחרי תיקון אגבי: Q18 הכניס `toLocaleDateString('he-IL')`
+ב-`PushDevices.tsx` והשער עמד על 135; הוחלף ב-`formatDate`), `pnpm test`
+**599 קבצים, 7,149 ירוקים, 12 מדולגים**, `pnpm build` ירוק (הריצה הראשונה נפלה
+על `new Date()` ב-prerender; `connection()` לפני הקריאה). **שער ההשוואה בחזית,
+`--baseline`, exit 0:**
+
+| דף | רוחב | תוכן | מצב |
+|---|---|---|---|
+| home | 380 | 8.44% | PASS |
+| home | 768 | 9.03% | PASS |
+| home | 1440 | 3.82% | PASS |
+| product | 1440 | 2.79% | PASS (`refs/live-product.png`, grid override) |
+
+השורות ב-`docs/UI-PARITY-REPORT.md` 00:49-00:55 UTC (26.09) על `13091a782-dirty`.
+
+**החלטות שהתקבלו לבד:**
+- אין מיגרציה: `verified` נגזר ולא מאוחסן, כי עמודה שמפעיל מסמן היא טענה ולא
+  ראיה, וכי pending מת עד החלה. אחרי 204 האישור האנושי נכנס לבד.
+- `status='active'` אינו אימות. זה אומר ש-6 מ-7 הספקים הפעילים בלי תג היום; זו
+  אמת ולא פגם.
+- הזמנות mock מוחרגות מהמונה גם כשהאתר רץ על mock: מונה שסופר חזרות הוא
+  בדיוק "נתונים לא אמיתיים".
+- סעיפי Q16 ו-Q17 הועברו לארכיון (STATE.md 271 שורות לפני הרשומה הזו).
+- שני `next-server` זרים על 3311/3312 לא נגעתי; השרת שלי על 3313 נעצר לפי PID.
+
+## Q18 - DONE (25.09) - התקנת PWA ופוש עם ניהול מנויים
+
+**נמדד על העץ לפני שנכתבה שורה.** שלושת הקומיטים שהטבלה ציינה (`f08a701d1`,
+`86af4a7c3`, `be736f10f`) הם אבות של HEAD, ומה שחי איתם: `src/app/manifest.ts`
+(id, shortcuts, maskable), `public/sw.js` עם `push` ו-`notificationclick`,
+`ServiceWorkerRegistrar` ו-`InstallPrompt` ב-layout, `PushOptIn` בדף ההתראות
+(הרשאה רק מלחיצה, שמירה בשרת לפני "פעיל", ביטול בדפדפן אם השמירה נכשלה),
+`savePushSubscription`/`removePushSubscription` (service role, מסונן על
+`user_id`, rate limit 30/h), שולח VAPID ב-`lib/push/web-leg.ts` שמוחק 404/410,
+179 מוחלת (`migrations/applied`), 215 (יומן משלוחים) ממתינה.
+
+**מה חסר, ונבנה:** ניהול מנויים מעבר לדפדפן הנוכחי. 179 שמרה `user_agent`
+"ל-UI ניהול עתידי" ואף אחד לא בנה אותו: לקוח שאיבד טלפון לא יכול היה להפסיק
+אליו התראות. חדש: `server/queries/push-subscriptions.ts` (קריאה דרך הלקוח של
+הבקשה תחת `push_subscriptions_select_own`, בלי המפתחות), `removePushSubscriptionById`
+(uuid בלבד, מסונן על `user_id`, `revalidatePath`), `components/pwa/PushDevices.tsx`
+(סימון "הדפדפן הזה" לפי endpoint בצד הלקוח, הסרה לשורה), `lib/push/device-label.ts`
+(UA -> "Chrome, Android", לעולם לא המחרוזת הגולמית). העתקים ב-`messages/*.json`
+תחת `pushDevices.*`. תיקון אגבי: דף ההתראות עטף את `PushOptIn` בכרטיס עם אותה
+כותרת שהרכיב מרנדר בעצמו, והכותרת הופיעה פעמיים.
+
+**החלטות שהתקבלו לבד:** (א) הסרת דפדפן רחוק מוחקת את השורה ולא את המנוי
+בדפדפן הרחוק (רק הוא יכול), וזה מספיק כי בלי שורה אין שליחה. (ב) הרשימה
+מוסתרת כשאין שורות; המצב הריק כבר מוסבר ב-`PushOptIn`. (ג) תקרת ה-i18n ירדה
+628 -> 627 (הכותרת הכפולה יצאה, הרכיב החדש קורא מהקטלוג); לא הועלתה.
+
+**שערים:** `pnpm test` 596 קבצים / 7129 ירוקים, `type-check` נקי, `lint`
+אזהרה אחת קיימת מראש ב-`SecurityClient.tsx`, `pnpm build` ירוק
+(BUILD_ID `rTuGZExcxmTJq2wUkNe7g`). שער ההשוואה בחזית על 3347 (3311 ו-3312
+תפוסים על ידי סשנים אחרים): **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82%
+PASS**, שורות 00:25-00:28 UTC ב-`docs/UI-PARITY-REPORT.md`.
+
+
 ## Q17 - DONE (25.09) - כניסה: סיסמה ומפתח גישה, אימות טלפון, OTP כגיבוי, מתג "הכל באפליקציה" עם הסכמה מתועדת, באנר מפתח גישה ופוש אחרי הקנייה הראשונה, נדחה ל-30 יום
 
 **הטבלה אמרה "אין ראיה לאימות טלפון/OTP" והיא טעתה.** נמדד על העץ לפני שנכתבה שורה:

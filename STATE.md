@@ -2,8 +2,8 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 
 ## המשך מ:
 
-**Q19 DONE (25.09).** הבא בתור: **Q20** (בטבלה DONE, לאמת על העץ), ואחריו
-**Q21** (OPEN, חלקי).
+**Q20 DONE (25.09, אומת).** הבא בתור: **Q21** (OPEN, חלקי: sitemap ו-robots
+קיימים, אין ראיה ל-WCAG 2.1 AA מלא), ואחריו **Q22**.
 
 ההיסטוריה המלאה (Q01..Q11, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -25,116 +25,53 @@ Updated: 2026-09-25 (סשן `audit/final-audit`, Fable 5.1, תור `~/ke-goals/f
 ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
 ניתן להצגה כלל.
 
-## Q19 - DONE (25.09) - הונאה ואמון: מימוש חד-פעמי ב-DB, מגבלות קצב, בדיקות מהירות, תג ספק מאומת ומונה "נרכשו השבוע" מנתונים אמיתיים בלבד
+## Q20 - DONE (אומת 25.09) - לוח ספק: מכירות, מימושים, זיכויים ותשלומים, קריאה בלבד
 
-**נמדד על העץ ועל פרודקשן לפני שנכתבה שורה.** הטבלה אמרה "לא אומת" על ארבעה
-מתוך חמישה; שלושה מהם היו קיימים ושניים לא:
+**נמדד על העץ ועל פרודקשן לפני שנכתבה שורה.** `29b921163` (Phase 13: מכירות
+לפי מוצר ולפי יום ישראלי) ו-`bf9f2ca09` (פנקס תשלומים) הם אבות של HEAD. מה שחי:
 
-- **מימוש חד-פעמי ב-DB: קיים ופרוס.** `redeem_voucher` (074/085) מעדכן
-  `WHERE status='issued'` במשפט אחד (אין חלון קריאה-ואז-כתיבה), ו-166 מוסיפה
-  טריגר `tg_vouchers_status_guard` שמסרב לכל מעבר מ-`redeemed` חזרה. **נמדד
-  בפרודקשן** (read-only דרך ה-management API): `pg_trigger` מחזיר 1 לטריגר,
-  `pg_proc` 1 לפונקציה, 2 מימושים בסך הכל.
-- **מגבלות קצב על כניסה, קופה ומימוש: קיימות.** `login` 10/h ל-IP +
-  `login-account` 20/h לחשבון, `begin_checkout` 10/min, `redeem` 60/h ל-IP,
-  `voucher-redeem` 120/h לספק (`lib/rate-limit/policies.ts`, `docs/RATE-LIMITS.md`
-  עם טסט סחיפה).
-- **בדיקות מהירות: קיימות.** `lib/fraud/velocity.ts` (`declined_payments` 5/h,
-  `distinct_cards` 5/יום, `card_across_accounts`), נקרא ב-`checkout.ts` לפני
-  שההזמנה קיימת; רשימת חסימה 234; ציון סיכון שמנתב לבדיקה. `docs/FRAUD-RULES.md`.
-- **תג ספק מאומת: לא היה.** אין עמודה, אין רכיב, אין מחרוזת.
-- **"נקנה השבוע": לא היה.** אפס התאמות ל-`this_week`/`השבוע` בקוד ובקטלוג.
+- **מכירות**: `/supplier` (`(supplier)/supplier/page.tsx`): מימושים היום, גבייה
+  בקופה היום, עמלת פלטפורמה, מגיע לספק, סה"כ מימושים, שיעור פקיעה (רק כשיש
+  נתון); לפי מוצר (8) ולפי יום (7); גרף חודשי. `lib/supplier/dashboard.ts`
+  מוריד שורות `refunded`/`cancelled` מכל סכום (`isReversedLine`,
+  `supplierDueAgorot` מחזיר 0), `IncompleteDataNotice` כשהקריאה נחתכה.
+- **מימושים**: `/supplier/redemptions` + CSV (`api/supplier/redemptions/csv`),
+  היום ו-30 יום, סיכום להדפסה לקופה.
+- **זיכויים**: `/supplier/payouts` מציג `זיכויים שקוזזו` (`reversedPayoutAgorot`)
+  רק כשיש מה להסביר, ותווית `זוכה` בפירוט לפי סטטוס התחשבנות.
+- **תשלומים**: `/supplier/payouts` (owner בלבד, `requireSupplierRole`), פירוט לפי
+  `platform_percent` של כל שורה כפי שצולם ב-`order_items`, CSV מלא, דוח חודשי
+  PDF/CSV (`api/supplier/statement`). כסף באגורות דרך `lib/money` בלבד.
+- **קריאה בלבד, נמדד בפרודקשן**: אפס policies של INSERT/UPDATE/DELETE לחברי
+  ספק על `order_items`, `orders`, `vouchers`, `payout_statements`,
+  `payout_statement_lines`. הדפים אינם מייבאים אף action כתיבה.
 
-**מה נכתב, ומה ההחלטה המרכזית: ראיה או שתיקה, לעולם לא דגל.**
-
-- **`ספק מאומת`** (`lib/suppliers/verification.ts`, טהור, 7 טסטים): מאומת רק
-  ספק `active` לא מחוק **וגם** אחד משניים: בקשת הצטרפות שאדם אישר
-  (`supplier_applications.status='approved'` עם `supplier_id`, חי אחרי 204) **או**
-  מימוש אמיתי אחד לפחות (`vouchers.status='redeemed'` אצלו). **לא נחשב:**
-  `status='active'` לבדו, כי 027 עשה אותו DEFAULT וכל שורה זרועה נושאת אותו;
-  `business_id`, כי **0 מ-7** הפעילים מחזיקים אחד. `verification-read.ts`: שני
-  head counts דרך service role (vouchers ללא policy ציבורית), 42P01 על הטבלה של
-  204 הוא "אין ראיה" בלי לוג. נקרא בתוך `loadSupplierPublicContact` ו-
-  `loadSupplierStorefront` (שניהם `'use cache'`, שעה). `VerifiedSupplierBadge`
-  ליד שם הספק ב-`SupplierInfo` (דף מוצר) וב-`SupplierStorefrontHeader` (`/s/[id]`).
-  **נמדד בפרודקשן: 1 מ-7 ספקים פעילים** עונה לכלל היום.
-- **`{count} נרכשו השבוע`** (`lib/commerce/social-proof.ts`, טהור, 8 טסטים;
-  `bought-this-week.ts`, שתי קריאות; `BoughtThisWeek.tsx` ב-Suspense משלו עם
-  `connection()`, כמו `StockScarcity`): יחידות ב-`order_items` על הזמנות
-  `paid`/`fulfilled`/`partially_fulfilled`/`platform_settled` ששולמו ב-7 ימים,
-  **ורק עם חיוב אמיתי**: `payments.status='succeeded'`, `kind='charge'`, ומזהה
-  שאינו `mock-`. **נמדד בפרודקשן: 18 מ-18 ההזמנות ששולמו בשבוע האחרון הן
-  mock** (`mock-txn-`/`mock-tok-`/`mock-canc`), על 2 מוצרים; הספירה הנאיבית
-  הייתה מציגה "18 נרכשו השבוע" על מוצר שאיש לא קנה. רצפת תצוגה 3; מתחתיה
-  השורה נעדרת ולא מעוגלת. הקידומת קבוע אחד ב-`lib/payments/mock-transaction-id.ts`
-  ש-`MockCardcom` עצמו קורא (חמשת המזהים שלו עברו לקבוע).
-- מחרוזות: `pdp.supplierVerified`, `pdp.boughtThisWeek` (he+en). CSS: `--pdp-verified`
-  בבלוק הטוקנים (שער ה-hex תפס `#1f8a4c` גולמי, ותוקן), `.pdp-verified`,
-  `.pdp-summary__proof`. `docs/FRAUD-RULES.md` §5. **+25 טסטים.**
-
-**נמדד על ה-build המקומי** (BUILD_ID `tsta1aFOQ0CB_e0omPoAV`, `pnpm start` על 3313,
-אומת לפי ה-BUILD_ID ב-HTML): `/s/<הספק עם המימושים>` 200 עם
-`data-testid="supplier-verified"`; דף מוצר שלו 200 עם התג; `מוצר-לדוגמא` בלי תג
-ובלי מונה (הספק שלו ללא מימוש; אפס חיובים אמיתיים בשבוע). המונה אינו מופיע על
-אף דף בפרודקשן היום, וזו התוצאה הנכונה של הכלל.
-
-**שערים על העץ:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627,
-locale-format 134/134 אחרי תיקון אגבי: Q18 הכניס `toLocaleDateString('he-IL')`
-ב-`PushDevices.tsx` והשער עמד על 135; הוחלף ב-`formatDate`), `pnpm test`
-**599 קבצים, 7,149 ירוקים, 12 מדולגים**, `pnpm build` ירוק (הריצה הראשונה נפלה
-על `new Date()` ב-prerender; `connection()` לפני הקריאה). **שער ההשוואה בחזית,
-`--baseline`, exit 0:**
-
-| דף | רוחב | תוכן | מצב |
-|---|---|---|---|
-| home | 380 | 8.44% | PASS |
-| home | 768 | 9.03% | PASS |
-| home | 1440 | 3.82% | PASS |
-| product | 1440 | 2.79% | PASS (`refs/live-product.png`, grid override) |
-
-השורות ב-`docs/UI-PARITY-REPORT.md` 00:49-00:55 UTC (26.09) על `13091a782-dirty`.
+**"per RLS", בדיוק מה נכון ומה לא.** שער החברות `requireSupplierMember` קורא
+`supplier_members` דרך לקוח הבקשה תחת RLS. **קריאות הכסף עצמן רצות על service
+role עם נעילת `supplier_id` מפורשת** (`server/queries/supplier.ts`), לא תחת
+RLS. נמדד בפרודקשן (read-only, rolled back, כחבר הספק הפעיל היחיד): תחת
+ה-policies החיות (`order_items_select_unified`, `orders_select_unified`,
+`vouchers_select_unified`, RLS דלוק על שלוש הטבלאות) הספק רואה **17** שורות
+הזמנה והקריאה הנוכחית מחזירה **19**. השתיים החסרות הן שורות על הזמנות
+`refunded`: ה-policy של `orders` מגבילה ספק ל-`paid/partially_fulfilled/fulfilled`
+וה-`!inner` join היה מוחק אותן. מעבר ל-RLS כמות שהיא היה מעלים בדיוק את
+הזיכויים שהפריט דורש. מימושים: 2 = 2 (`redeemed_by_supplier_id` שווה
+ל-`supplier_id` בכל שורה).
 
 **החלטות שהתקבלו לבד:**
-- אין מיגרציה: `verified` נגזר ולא מאוחסן, כי עמודה שמפעיל מסמן היא טענה ולא
-  ראיה, וכי pending מת עד החלה. אחרי 204 האישור האנושי נכנס לבד.
-- `status='active'` אינו אימות. זה אומר ש-6 מ-7 הספקים הפעילים בלי תג היום; זו
-  אמת ולא פגם.
-- הזמנות mock מוחרגות מהמונה גם כשהאתר רץ על mock: מונה שסופר חזרות הוא
-  בדיוק "נתונים לא אמיתיים".
-- סעיפי Q16 ו-Q17 הועברו לארכיון (STATE.md 271 שורות לפני הרשומה הזו).
-- שני `next-server` זרים על 3311/3312 לא נגעתי; השרת שלי על 3313 נעצר לפי PID.
+- הקריאות נשארות על service role עם שני מנעולים (`supplier_members` תחת RLS
+  נותן את ה-id, `.eq('supplier_id')` על כל שאילתה). מעבר ל-RLS דורש הרחבת
+  `orders_select_unified` ל-`refunded`/`cancelled` לחברי ספק, וזו מיגרציה בלי
+  צרכן עד שהקריאות יוחלפו; לא נכתבה. אין שינוי קוד, הפריט הוא אימות.
+- שלוש שורות FAIL בפנקס ההשוואה 01:05-01:08 (13.76/15.45/6.55) הן **ריקות**:
+  `pnpm start` על 3311 נפל ב-`EADDRINUSE` (שרת של סשן אחר, רץ 3h19m) והשער מדד
+  build זר. סומנו VOID בפנקס. הריצה התקפה על 3319 עם BUILD_ID מאומת ב-HTML.
 
-## Q18 - DONE (25.09) - התקנת PWA ופוש עם ניהול מנויים
-
-**נמדד על העץ לפני שנכתבה שורה.** שלושת הקומיטים שהטבלה ציינה (`f08a701d1`,
-`86af4a7c3`, `be736f10f`) הם אבות של HEAD, ומה שחי איתם: `src/app/manifest.ts`
-(id, shortcuts, maskable), `public/sw.js` עם `push` ו-`notificationclick`,
-`ServiceWorkerRegistrar` ו-`InstallPrompt` ב-layout, `PushOptIn` בדף ההתראות
-(הרשאה רק מלחיצה, שמירה בשרת לפני "פעיל", ביטול בדפדפן אם השמירה נכשלה),
-`savePushSubscription`/`removePushSubscription` (service role, מסונן על
-`user_id`, rate limit 30/h), שולח VAPID ב-`lib/push/web-leg.ts` שמוחק 404/410,
-179 מוחלת (`migrations/applied`), 215 (יומן משלוחים) ממתינה.
-
-**מה חסר, ונבנה:** ניהול מנויים מעבר לדפדפן הנוכחי. 179 שמרה `user_agent`
-"ל-UI ניהול עתידי" ואף אחד לא בנה אותו: לקוח שאיבד טלפון לא יכול היה להפסיק
-אליו התראות. חדש: `server/queries/push-subscriptions.ts` (קריאה דרך הלקוח של
-הבקשה תחת `push_subscriptions_select_own`, בלי המפתחות), `removePushSubscriptionById`
-(uuid בלבד, מסונן על `user_id`, `revalidatePath`), `components/pwa/PushDevices.tsx`
-(סימון "הדפדפן הזה" לפי endpoint בצד הלקוח, הסרה לשורה), `lib/push/device-label.ts`
-(UA -> "Chrome, Android", לעולם לא המחרוזת הגולמית). העתקים ב-`messages/*.json`
-תחת `pushDevices.*`. תיקון אגבי: דף ההתראות עטף את `PushOptIn` בכרטיס עם אותה
-כותרת שהרכיב מרנדר בעצמו, והכותרת הופיעה פעמיים.
-
-**החלטות שהתקבלו לבד:** (א) הסרת דפדפן רחוק מוחקת את השורה ולא את המנוי
-בדפדפן הרחוק (רק הוא יכול), וזה מספיק כי בלי שורה אין שליחה. (ב) הרשימה
-מוסתרת כשאין שורות; המצב הריק כבר מוסבר ב-`PushOptIn`. (ג) תקרת ה-i18n ירדה
-628 -> 627 (הכותרת הכפולה יצאה, הרכיב החדש קורא מהקטלוג); לא הועלתה.
-
-**שערים:** `pnpm test` 596 קבצים / 7129 ירוקים, `type-check` נקי, `lint`
-אזהרה אחת קיימת מראש ב-`SecurityClient.tsx`, `pnpm build` ירוק
-(BUILD_ID `rTuGZExcxmTJq2wUkNe7g`). שער ההשוואה בחזית על 3347 (3311 ו-3312
-תפוסים על ידי סשנים אחרים): **380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82%
-PASS**, שורות 00:25-00:28 UTC ב-`docs/UI-PARITY-REPORT.md`.
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, locale-format
+134/134), `pnpm test` 599 קבצים / 7,149 ירוקים / 12 מדולגים, `pnpm build` ירוק
+(BUILD_ID `Mua1dGRsNvKAGBt_VWnCK`). שער ההשוואה בחזית על 3319, `--baseline`:
+**380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, שורות 01:11-01:14
+ב-`docs/UI-PARITY-REPORT.md`.
 
 ## טבלת מצב לתור `final-queue.txt` (ראיה מ-`git log`, מהעץ ומהרשת, 25.09)
 
@@ -159,7 +96,7 @@ PASS**, שורות 00:25-00:28 UTC ב-`docs/UI-PARITY-REPORT.md`.
 | Q17 | DONE (25.09) | הרשומה למעלה. קיים: סיסמה/Google/מפתח גישה/קישור קסם, OTP בטלפון מאחורי `PHONE_AUTH_ENABLED` (`67bc68025`), 2FA אדמין (`af64d96e7`), מתג "הכל באפליקציה" עם הסכמה (`719fc6dff`, 240 pending). חדש: `lib/pwa/snooze.ts`, "לא עכשיו" ל-30 יום בבאנר, בפוש ובדיאלוג המפתח, באנר גם ב-`/account`. +24 טסטים. שער 8.44/9.03/3.82 PASS. |
 | Q18 | DONE (25.09) | הרשומה למעלה. קיים: manifest, `public/sw.js` (push + notificationclick), `InstallPrompt`, `PushOptIn` לדפדפן הזה, `savePushSubscription`/`removePushSubscription`, שולח VAPID עם ניקוי 404/410, 179 מוחלת. חדש: רשימת "דפדפנים מחוברים" בכל המכשירים (`loadPushSubscriptions` תחת RLS, `removePushSubscriptionById`, `PushDevices`, `lib/push/device-label.ts`), הכותרת הכפולה בדף ההתראות הוסרה. +15 טסטים, תקרת i18n 628 -> 627. שער 8.44/9.03/3.82 PASS. |
 | Q19 | DONE (25.09) | הרשומה למעלה. קיים ופרוס: `redeem_voucher` אטומי + טריגר 166 (נמדד בפרודקשן), מגבלות קצב login/checkout/redeem, `velocity.ts`, רשימת חסימה 234. חדש: `ספק מאומת` מאישור אנושי או מימוש אמיתי (1 מ-7 היום), `N נרכשו השבוע` מחיובים אמיתיים בלבד (18/18 mock מוחרגות). +25 טסטים. שער 8.44/9.03/3.82 PASS, מוצר 1440 2.79% PASS. |
-| Q20 | DONE | `29b921163`, `bf9f2ca09`, `(supplier)/supplier/*`. |
+| Q20 | DONE (אומת 25.09) | `29b921163`, `bf9f2ca09`. מכירות/מימושים/זיכויים/תשלומים ב-`(supplier)/supplier/*`, אגורות בלבד, אפס policy כתיבה לספק (נמדד בפרודקשן). קריאות על service role עם נעילת tenant ולא RLS: RLS חי היה מעלים 2 שורות `refunded` מתוך 19 (נמדד). שער 8.44/9.03/3.82 PASS. |
 | Q21 | OPEN, חלקי | sitemap, robots, `0f42ef81a`, `b591ba19a`. אין קומיט שמכריז WCAG 2.1 AA מלא. |
 | Q22 | OPEN, חלקי | `e2e/` קיים, `31ada5313`. Lighthouse: `docs/LIGHTHOUSE-AUDIT.md`. אין ראיה ל-90+ mobile על דף מוצר. |
 | Q23 | OPEN | `docs/AUTOPILOT-DIFF.md` לא קיים. |
