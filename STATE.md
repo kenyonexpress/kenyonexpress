@@ -3,7 +3,14 @@ Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c51)
 
 ## המשך מ:
 
-## M18-c51 - DONE (29.09): בדיקת idle — טופס הניוזלטר בפוטר חוזר לפעול
+## M18-c51 - DONE (29.09), אומת שוב (29.09): בדיקת idle — טופס הניוזלטר בפוטר חוזר לפעול
+
+**אימות חוזר (אותו יום, אותה הרצה עם הוראות idle-check זהות):** הפריט כבר
+היה DONE ו-pushed לפני שהריצה הזו נפתחה. נבדק מחדש: `git status` נקי,
+`origin/audit/final-audit` זהה ל-HEAD (`1d4f7cdc5`, 0 קומיטים בכל כיוון),
+`FooterNewsletterForm.tsx` קיים וקורא ל-`subscribeToNewsletter` דרך
+`useActionState`, `SiteFooter.tsx` מייבא ומשתמש בו. אין drift, אין שינוי
+קוד נוסף נדרש. `RESUME FROM` נשאר `M19-c51` כפי שהיה.
 
 **בדיקת idle:** כל הפריטים למעלה בתור (M01..M17) מסומנים DONE/BLOCKED עם ראיה,
 ואין drift חדש. זו לא ריצת idle ריקה: כשהסשן נפתח היה diff לא-commit-ed בעץ
