@@ -1,113 +1,82 @@
 RESUME FROM: M17-c37
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c51, אומת מחדש)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c51)
 
 ## המשך מ:
 
-## M16-c51 - DONE (29.09), אומת מחדש (29.09): תברואת ריפו — git status נקי, כל ענף מקומי נדחף, PRs פתוחים וענפים ישנים רשומים
+## M17-c51 - DONE (29.09): מעבר משפטי ולשוני — כל מחרוזת עברית ב-UI וכל דף משפטי, טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח, קישורים שבורים
 
-**אימות חוזר (אותו יום, סשן חדש שקיבל את אותו פריט בתור):** הפריט כבר בוצע
-(קומיט `56af8f213`). נבדק מחדש בלי לשנות קוד: `git status` נקי; שש הענפים
-בלי remote בשם זהה (`chore/vitest-4`, `docs/nightly-health-green`,
-`fix/main-nightly-red`, `pr36`, `release/v1.1`, `wip/refund-record-rebase-head`)
-עדיין `merge-base --is-ancestor` **כן** לתוך `origin/main` — לא צריכים
-דחיפה; יתר הענפים שסומנו "לפנים" ביחס ל-`origin/main` (עוקבים אחריו
-כ-upstream בפועל) תואמים בדיוק את ה-remote בעל אותו שם משלהם. PRs פתוחים:
-24 (רשימת ה-23 המקורית ב-M16-c51 כללה בפועל גם היא 24 מספרים — טעות ניסוח
-בפרוזה, לא drift אמיתי; אותם 24 מספרי PR בדיוק, ללא חדש וללא סגור).
-`pnpm type-check` / `lint` / `test` (604 קבצים, 7182 עברו, 12 דולגו) /
-`build` ירוקים. אין שינוי UI, לא נדרש שער השוואה חזותי. `RESUME FROM`
-נשאר `M17-c37`.
+**שיטה:** סוכן חקר קרא במלואם את ארבעת מסמכי `src/app/(legal)/_content/*.ts`
+(המסמכים החיים, המוגשים בפועל תחת `/terms-and-conditions`, `/privacy-policy`,
+`/refund_returns`, `/accessibility`), את `messages/he.json` (590 שורות, קטלוג
+i18n שכן נקרא בפועל דרך `t()` ב-~80 רכיבים, לא scaffolding מת כפי שנרמז
+ב-`docs/I18N.md`), ואת ארבעת קבצי `src/content/legal/*.ts` (התוכן שהוגר
+מ-WordPress). גילוי נתיבים תוך כדי: לאתר יש **שני** סטים של מסמכים משפטיים —
+הסט החי תחת `_content/*.ts`, וסט שני מת (`src/content/legal/wp-migrated.ts`
+ועוד) שאינו מקושר משום מקום; זה מצב ידוע ומתועד במכוון
+ב-`src/content/legal/legal-duplication.test.ts` ("הכרעה של אופיר עם עו"ד"),
+לא drift חדש. גם דפי `/legal/*` (ה-slug הישן) קיימים כ-`permanentRedirect`
+בלבד, לא כמסמך שני.
 
-**הפריט:** לוודא `git status` נקי, שכל ענף מקומי דחוף, ולרשום PRs פתוחים
-וענפים ישנים ב-STATE.md. בלי merge ובלי מחיקה. **`RESUME FROM` נשאר
-`M17-c37` בכוונה**, כמו ב-M11..M15: המספר הזה כבר עמד בעץ העבודה כשהפריט
-נפתח, סשן אחר כבר קידם את התור, והפריט הזה בוצע משום סדר.
+**נמצא ותוקן (רק בקוד חי, לקוח רואה):**
 
-**1. `git status`: נקי מלפני הפריט ואחריו** (אין staged/unstaged/untracked).
-31 stash-ים קיימים (לא נגעתי, לא בהיקף — הרשום כידני 15 ב-`docs/BACKLOG.md`).
+1. **דליפת LTR + מילה זרה, `messages/he.json:487` `sellerAddress`** — מוצג
+   בכל מייל אישור רכישה (`src/lib/email/notifications.ts:261`, גילוי חובה
+   של המוכר). היה `"...וההיי-טק, Air Port City"` (אנגלית גולמית, גם עם רווח
+   שגוי בשם "Air Port" במקום "Airport"), בעוד אותה מחרוזת עצמה תעתקה
+   "hi-tech" ל"היי-טק" שתי מילים קודם. תוקן ל-`"...וההיי-טק, איירפורט סיטי"`
+   — תעתיק עקבי לשם המקום האמיתי (פארק עסקים ליד נתב"ג), לא שינוי כתובת.
+2. **מילה באנגלית, `messages/he.json:97` `newsletterPlaceholder`** — placeholder
+   בשדה הניוזלטר בפוטר בכל עמוד (`SiteFooter.tsx:203`). היה
+   `"הזן כתובת Email"` מול `auth.email: "אימייל"` הקיים כבר באותו קטלוג.
+   תוקן ל-`"הזן כתובת אימייל"`.
+3. **קישור שבור (308 מיותר), `LegalFooterLinks.tsx:39`** — רשימת ארבעת
+   הקישורים המשפטיים המוצגת בתחתית **כל ארבעת** הדפים המשפטיים החיים
+   (`LegalArticle.tsx:219`) הצביעה על `/legal/${slug}`, שהוא כיום stub של
+   redirect בלבד. תוקן למפה `CANONICAL_PATH` שמצביעה ישירות על הנתיב החי
+   (`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
+   `/accessibility`), בלי קפיצת redirect.
+4. **קישור שבור, `RefundRequestForm.tsx:99`** — קישור "מדיניון הביטולים"
+   בטופס בקשת החזר באזור האישי הצביע על `/legal/returns` (אותו stub).
+   תוקן ל-`/refund_returns` הישיר.
 
-**2. ענפים מקומיים: 42 סה"כ. 9 היו דחופים מאחור ונדחפו עכשיו** (כולם
-תוכן שלא היה ב-origin בשום שם ענף, לא merge, `git push`/`git push -u`
-בלבד): `docs/final-pack` (1 קומיט מאחור על upstream קיים), ו-8 חדשים
-ל-origin — `docs/final-pass`, `feat/coupon-qr`, `feat/db-hardening-v2`,
-`feat/ux-wave-final`, `phase5/homepage-closeout`, `save/ke-visual-work`,
-`worktree-ke-fetch-timeout`, `worktree-mega-63-72`. שניים מתוכם נכשלו
-בניסיון הראשון על timeout רשת חולף (`ssh.github.com`) ונדחפו בהצלחה בשנייה.
+**נמצא ותוקן בקוד מת (לא מוגש ללקוח, `src/content/legal/wp-migrated.ts`,
+לא היה בהיקף חובה אבל תיקון זול וללא סיכון — שום טסט לא מצמיד hash לטקסט,
+רק דפוסי "5%"/"100"):** תשע טעויות כתיב — "בלבדת" (אות מיותרת), "לעצמה
+לעצמה" (כפילות מילה), ארבע פעמים "אלה" במקום "אלא" (מילת ניגוד שגויה),
+"לאחרת" במקום "לאחר", משפט מגומגם "הפגם במוצר נשבר" (המוצר נשבר, לא הפגם),
+ו-נ׳ סופית תועה לפני "לרשתות" ("ןלרשתות" → "ולרשתות").
 
-**`main` לא נדחף.** `main` המקומי (עוקב עדיין `origin/main`, לא `audit/final-audit`)
-עומד ב-193 לפנים / 109 מאחור מול `origin/main`. `main` מוגן ב-GitHub (PR +
-4 בדיקות, CLAUDE.md), ודחיפה ישירה עוקפת הגנה — לא בוצעה. ה-193 הקומיטים
-המקומיים על `main` הם היסטוריה קיימת (לא נוצרו בפריט הזה); איחוד `audit/final-audit`
-ל-`main` נשאר PR עתידי, מחוץ להיקף תברואה.
+**נבדק ונמצא נקי:** typos ב-Hebrew ב-`_content/*.ts` (~1060 שורות),
+ב-`messages/he.json` המלא, וב-`cancellation.ts`/`faq.ts`/`accessibility.ts`
+תחת `src/content/legal`; מילים באנגלית בטקסט ללקוח מעבר לשתי הנקודות
+שתוקנו (סריקת מילות UI נפוצות + סריקה רחבה של Latin runs בתוך JSX עם סינון
+false-positive של שמות מותג/טכני); קישורים פנימיים נוספים (`href="/..."`,
+`<Link href=`) מול עץ ה-routes בפועל — אין 404 נוספים; קישורי
+`mailto:`/`tel:`/`wa.me:` — התקלות היחידות שנמצאו הן fixtures שליליים
+מכוונים בטסט של `src/lib/supplier-contact.ts`, לא באג חי.
 
-**6 ענפים מקומיים נשארו בלי remote במכוון, לא "לא-דחופים":** `chore/vitest-4`,
-`docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`, `release/v1.1`,
-`wip/refund-record-rebase-head` — כולם `merge-base --is-ancestor` **כן** לתוך
-`origin/main` וגם לתוך `audit/final-audit`; תוכנם כבר בפנים דרך קומיט מיזוג,
-ו-GitHub מחק את ה-remote branch שלהם אחרי המיזוג. דחיפה מחדש הייתה יוצרת
-ענף כפול לתוכן שכבר קיים — לא בוצעה.
+**שער השוואה חזותי (`scripts/compare.mjs`, foreground, על `pnpm start` אמיתי
+ב-3311, לפני commit):** 380 8.51% PASS, 768 9.02% PASS, 1440 3.95% PASS —
+זהה למדידת M14-c51 שקדמה, אין רגרסיה. שורות נכתבו ל-`docs/UI-PARITY-REPORT.md`
+על ידי הריצה עצמה. `pnpm type-check` נקי, `pnpm lint` נקי (כולל copy-gate
+ו-i18n-gate בתקרה הקיימת 627, ללא שינוי מספר), `pnpm test` 604 קבצים / 7182
+עברו / 12 דולגו, `pnpm build` הצליח (exit 0).
 
-**3. PRs פתוחים: 23** (`gh pr list --state open`, כולל draft):
-#47 deps minor-dev · #46 docs/ui-design-system (draft) · #33 claude/db-audits (draft) ·
-#32 cursor/w1-block-14-docs (draft) · #31 deps lucide-react · #30 cursor/docs-batch-2 (draft) ·
-#28 cursor/docs-batch-1 · #25 cursor/ci-launch-3ceb · #23 cursor/e2e-legal-3ceb (draft) ·
-#22 cursor/refund-state-machine-47b2 (draft) · #21 claude/og-images-p8v8cd (draft) ·
-#20 cursor/docs-roadmap-47b2 (draft) · #19 claude/feat-about-trust-ax43xs (draft) ·
-#18 cursor/project-readme-onboarding-47b2 · #17 cursor/docs-project-entrance-20c4 (draft) ·
-#16 cursor/scheduled-jobs-24-7-75b4 · #14/#13/#12/#9 dependabot (phase5/homepage) ·
-#5 feat/e2e-quality · #4 feat/supplier-portal · #3 arch/docs-launch-pack ·
-#2 claude/terminal-cursor-work-2mr2pq (draft). אף אחד לא נסגר/מוזג בפריט הזה.
+**קבצים:** `messages/he.json`, `src/app/(legal)/_components/LegalFooterLinks.tsx`,
+`src/components/account/RefundRequestForm.tsx`, `src/content/legal/wp-migrated.ts`,
+`docs/UI-PARITY-REPORT.md`, `STATE.md`.
 
-**4. ענפים ישנים (stale) ב-`origin`, לפי מדידה (`git merge-base --is-ancestor`
-של כל ענף remote מול `origin/main` ומול `audit/final-audit`, זמן ה-commit
-האחרון, והצלבה מול רשימת ה-PRs הפתוחים):**
-
-- **22 ענפי remote כבר במוזגו לתוך גם `origin/main` וגם `audit/final-audit`**,
-  בלי PR פתוח עליהם — מועמדים בטוחים למחיקה (לא נמחקו, מחוץ להיקף):
-  `arch/admin-supplier`, `arch/ai-agents`, `arch/db-audit`, `arch/mega-docs`,
-  `arch/supplier-portal`, `cursor/add-supabase-3c830`, `docs/v1-final`,
-  `feat/admin-core`, `feat/checkout-complete`, `feat/ci-foundation`,
-  `feat/coupon-redemption`, `feat/e2e`, `feat/growth-core`, `feat/notifications`,
-  `feat/observability`, `feat/payments-core`, `feat/personal-area`,
-  `feat/search-core`, `feat/seo-performance`, `feat/wp-migration`,
-  `release/v1.0`, `release/v1.2`.
-- **59 ענפי remote לא מוזגו לאף אחד משני הענפים, בלי PR פתוח, ועם קומיט אחרון
-  לפני 15.09** (14+ יום) — לרוב אשכול `arch/docs-*` (17 ענפי תיעוד ממתינים
-  מ-10-12.09), אשכול `feat/*` ישן מ-19-21.08 (`feat/auth-hardening`,
-  `feat/auth-model`, `feat/checkout-cardcom`, `feat/checkout-e2e`,
-  `feat/legal-pages`, `feat/monitoring-sentry`, `feat/notifications-full`,
-  `feat/payments-verify`, `feat/performance-seo`, `feat/pixel-wave`,
-  `feat/product-type`, `feat/rate-limit-layer`, `feat/search-meilisearch`,
-  `feat/seed-data`, `feat/supplier-portal`, `feat/ux-wave-final`,
-  `feat/visual-polish`), ושאר ענפי `arch/*`/`cursor/*`/`docs/*` בודדים
-  (`arch/account-area`, `arch/checkout-cardcom-verification`,
-  `arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration`,
-  `chore/hardcoded-ledger-magic-link`, `closeout/v1-final`, `cursor/ci-launch-3ceb`
-  אם ללא PR, `docs/app-store-and-deep-links`, `docs/architecture-night`,
-  `docs/final-pack`, `docs/final-pass`, `feat/coupon-qr`, `ke-arch`,
-  `ke-cursor-docs`, `merge/supplier-and-arch-night`, `phase5/homepage`).
-  אין פעולה — רשימה לאופיר להכריע (מחיקה דורשת אישור מפורש, כלל הפרויקט).
-- שאר ~25 הענפים המקומיים תואמים במדויק את ה-remote שלהם (ahead=0), כולל
-  כל ה-`arch/*` וה-`feat/*` שיש להם עותק מקומי — אין דחיפה נדרשת.
-
-**המספרים המלאים (84 unmerged, 22 merged-safe, רשימת stale-no-PR) נגזרו
-בסקריפט חד-פעמי בטרמינל, לא נשמרו כקובץ — לשחזור: `git merge-base
---is-ancestor <branch> origin/main`, `git merge-base --is-ancestor <branch>
-audit/final-audit`, ו-`gh pr list --state open --json headRefName`.**
-
-**אין שינוי קוד. `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`
-ירוקים** (נמדד על התיקייה אחרי כל שינויי התיעוד). אין שינוי UI, לא נדרש
-שער השוואה חזותי.
-
-**קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (הועברו לשם M14-c51 ו-M15-c51
-המלאים, לפי מגבלת 300 השורות).
+**`RESUME FROM` נשאר `M17-c37` בכוונה**, כמו ב-M11..M16: המספר הזה כבר עמד
+בעץ העבודה כשהפריט נפתח, וזה בוצע משום סדר.
 
 **הבא בתור: לפי `RESUME FROM`, M17-c37.**
 
-**M15-c51..M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M15-c51 —
-`docs/BACKLOG.md` נוצר כרשימת "ידני לאופיר" יחידה. M14-c51 — bundle ירד,
-`CategoryStrip.tsx` תוקן. M13-c51 — CSP/HSTS/X-Frame-Options/Referrer-Policy
-אומתו על build אמיתי. M12-c51 — SEO, 261 בדיקות, אפס drift.
+**M16-c51..M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M16-c51 —
+תברואת ריפו, git status נקי, 9 ענפים נדחפו, 23 PRs פתוחים ו-81 ענפים ישנים
+רשומים (22 בטוחים למחיקה, 59 בלי PR). M15-c51 — `docs/BACKLOG.md` נוצר
+כרשימת "ידני לאופיר" יחידה. M14-c51 — bundle ירד, `CategoryStrip.tsx` תוקן.
+M13-c51 — CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על build אמיתי.
+M12-c51 — SEO, 261 בדיקות, אפס drift.
 
 ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M13-c51, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.

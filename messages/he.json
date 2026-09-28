@@ -94,7 +94,7 @@
     "accessibility": "הצהרת נגישות",
     "questions": "יש לך שאלות, הצעות או הערות ?",
     "addressLabel": "כתובתנו :",
-    "newsletterPlaceholder": "הזן כתובת Email",
+    "newsletterPlaceholder": "הזן כתובת אימייל",
     "newsletterAriaLabel": "כתובת אימייל לניוזלטר",
     "logoAlt": "קניון EXPRESS",
     "paymentMethods": "אמצעי תשלום"
@@ -484,7 +484,7 @@
     "labelCancellation": "ביטול",
     "labelOrderPage": "דף ההזמנה ושירות",
     "sellerName": "קניון אקספרס (KenyonExpress)",
-    "sellerAddress": "פארק העסקים, התעשייה וההיי-טק, Air Port City",
+    "sellerAddress": "פארק העסקים, התעשייה וההיי-טק, איירפורט סיטי",
     "termsPrefix": "התקנון:",
     "onBehalfOf": "על שם",
     "items": "פריטים",

@@ -1,5 +1,14 @@
 import Link from 'next/link'
 import { LEGAL_DOCS } from '../_content'
+import type { LegalSlug } from '../_content'
+
+/** `/legal/*` only redirects here, so link the canonical path directly and skip the hop. */
+const CANONICAL_PATH: Record<LegalSlug, string> = {
+  terms: '/terms-and-conditions',
+  privacy: '/privacy-policy',
+  returns: '/refund_returns',
+  accessibility: '/accessibility',
+}
 
 /**
  * The four legal pages, as one link list.
@@ -36,7 +45,7 @@ export default function LegalFooterLinks({
                 </span>
               ) : (
                 <Link
-                  href={`/legal/${doc.slug}`}
+                  href={CANONICAL_PATH[doc.slug]}
                   title={doc.description}
                   className="text-heading/80 underline underline-offset-4 hover:text-heading"
                 >

@@ -96,7 +96,7 @@ export default function RefundRequestForm({
         "החזר" is the word for it here.
       */}
       <p className="account-row__meta">
-        {t('cancellation.law')} <Link href="/legal/returns">{t('cancellation.policyLink')}</Link>
+        {t('cancellation.law')} <Link href="/refund_returns">{t('cancellation.policyLink')}</Link>
       </p>
 
       {requests.length > 0 && (

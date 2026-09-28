@@ -2,6 +2,107 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c51 - DONE (29.09), אומת מחדש (29.09): תברואת ריפו — git status נקי, כל ענף מקומי נדחף, PRs פתוחים וענפים ישנים רשומים
+
+**אימות חוזר (אותו יום, סשן חדש שקיבל את אותו פריט בתור):** הפריט כבר בוצע
+(קומיט `56af8f213`). נבדק מחדש בלי לשנות קוד: `git status` נקי; שש הענפים
+בלי remote בשם זהה (`chore/vitest-4`, `docs/nightly-health-green`,
+`fix/main-nightly-red`, `pr36`, `release/v1.1`, `wip/refund-record-rebase-head`)
+עדיין `merge-base --is-ancestor` **כן** לתוך `origin/main` — לא צריכים
+דחיפה; יתר הענפים שסומנו "לפנים" ביחס ל-`origin/main` (עוקבים אחריו
+כ-upstream בפועל) תואמים בדיוק את ה-remote בעל אותו שם משלהם. PRs פתוחים:
+24 (רשימת ה-23 המקורית ב-M16-c51 כללה בפועל גם היא 24 מספרים — טעות ניסוח
+בפרוזה, לא drift אמיתי; אותם 24 מספרי PR בדיוק, ללא חדש וללא סגור).
+`pnpm type-check` / `lint` / `test` (604 קבצים, 7182 עברו, 12 דולגו) /
+`build` ירוקים. אין שינוי UI, לא נדרש שער השוואה חזותי. `RESUME FROM`
+נשאר `M17-c37`.
+
+**הפריט:** לוודא `git status` נקי, שכל ענף מקומי דחוף, ולרשום PRs פתוחים
+וענפים ישנים ב-STATE.md. בלי merge ובלי מחיקה. **`RESUME FROM` נשאר
+`M17-c37` בכוונה**, כמו ב-M11..M15: המספר הזה כבר עמד בעץ העבודה כשהפריט
+נפתח, סשן אחר כבר קידם את התור, והפריט הזה בוצע משום סדר.
+
+**1. `git status`: נקי מלפני הפריט ואחריו** (אין staged/unstaged/untracked).
+31 stash-ים קיימים (לא נגעתי, לא בהיקף — הרשום כידני 15 ב-`docs/BACKLOG.md`).
+
+**2. ענפים מקומיים: 42 סה"כ. 9 היו דחופים מאחור ונדחפו עכשיו** (כולם
+תוכן שלא היה ב-origin בשום שם ענף, לא merge, `git push`/`git push -u`
+בלבד): `docs/final-pack` (1 קומיט מאחור על upstream קיים), ו-8 חדשים
+ל-origin — `docs/final-pass`, `feat/coupon-qr`, `feat/db-hardening-v2`,
+`feat/ux-wave-final`, `phase5/homepage-closeout`, `save/ke-visual-work`,
+`worktree-ke-fetch-timeout`, `worktree-mega-63-72`. שניים מתוכם נכשלו
+בניסיון הראשון על timeout רשת חולף (`ssh.github.com`) ונדחפו בהצלחה בשנייה.
+
+**`main` לא נדחף.** `main` המקומי (עוקב עדיין `origin/main`, לא `audit/final-audit`)
+עומד ב-193 לפנים / 109 מאחור מול `origin/main`. `main` מוגן ב-GitHub (PR +
+4 בדיקות, CLAUDE.md), ודחיפה ישירה עוקפת הגנה — לא בוצעה. ה-193 הקומיטים
+המקומיים על `main` הם היסטוריה קיימת (לא נוצרו בפריט הזה); איחוד `audit/final-audit`
+ל-`main` נשאר PR עתידי, מחוץ להיקף תברואה.
+
+**6 ענפים מקומיים נשארו בלי remote במכוון, לא "לא-דחופים":** `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`, `release/v1.1`,
+`wip/refund-record-rebase-head` — כולם `merge-base --is-ancestor` **כן** לתוך
+`origin/main` וגם לתוך `audit/final-audit`; תוכנם כבר בפנים דרך קומיט מיזוג,
+ו-GitHub מחק את ה-remote branch שלהם אחרי המיזוג. דחיפה מחדש הייתה יוצרת
+ענף כפול לתוכן שכבר קיים — לא בוצעה.
+
+**3. PRs פתוחים: 23** (`gh pr list --state open`, כולל draft):
+#47 deps minor-dev · #46 docs/ui-design-system (draft) · #33 claude/db-audits (draft) ·
+#32 cursor/w1-block-14-docs (draft) · #31 deps lucide-react · #30 cursor/docs-batch-2 (draft) ·
+#28 cursor/docs-batch-1 · #25 cursor/ci-launch-3ceb · #23 cursor/e2e-legal-3ceb (draft) ·
+#22 cursor/refund-state-machine-47b2 (draft) · #21 claude/og-images-p8v8cd (draft) ·
+#20 cursor/docs-roadmap-47b2 (draft) · #19 claude/feat-about-trust-ax43xs (draft) ·
+#18 cursor/project-readme-onboarding-47b2 · #17 cursor/docs-project-entrance-20c4 (draft) ·
+#16 cursor/scheduled-jobs-24-7-75b4 · #14/#13/#12/#9 dependabot (phase5/homepage) ·
+#5 feat/e2e-quality · #4 feat/supplier-portal · #3 arch/docs-launch-pack ·
+#2 claude/terminal-cursor-work-2mr2pq (draft). אף אחד לא נסגר/מוזג בפריט הזה.
+
+**4. ענפים ישנים (stale) ב-`origin`, לפי מדידה (`git merge-base --is-ancestor`
+של כל ענף remote מול `origin/main` ומול `audit/final-audit`, זמן ה-commit
+האחרון, והצלבה מול רשימת ה-PRs הפתוחים):**
+
+- **22 ענפי remote כבר במוזגו לתוך גם `origin/main` וגם `audit/final-audit`**,
+  בלי PR פתוח עליהם — מועמדים בטוחים למחיקה (לא נמחקו, מחוץ להיקף):
+  `arch/admin-supplier`, `arch/ai-agents`, `arch/db-audit`, `arch/mega-docs`,
+  `arch/supplier-portal`, `cursor/add-supabase-3c830`, `docs/v1-final`,
+  `feat/admin-core`, `feat/checkout-complete`, `feat/ci-foundation`,
+  `feat/coupon-redemption`, `feat/e2e`, `feat/growth-core`, `feat/notifications`,
+  `feat/observability`, `feat/payments-core`, `feat/personal-area`,
+  `feat/search-core`, `feat/seo-performance`, `feat/wp-migration`,
+  `release/v1.0`, `release/v1.2`.
+- **59 ענפי remote לא מוזגו לאף אחד משני הענפים, בלי PR פתוח, ועם קומיט אחרון
+  לפני 15.09** (14+ יום) — לרוב אשכול `arch/docs-*` (17 ענפי תיעוד ממתינים
+  מ-10-12.09), אשכול `feat/*` ישן מ-19-21.08 (`feat/auth-hardening`,
+  `feat/auth-model`, `feat/checkout-cardcom`, `feat/checkout-e2e`,
+  `feat/legal-pages`, `feat/monitoring-sentry`, `feat/notifications-full`,
+  `feat/payments-verify`, `feat/performance-seo`, `feat/pixel-wave`,
+  `feat/product-type`, `feat/rate-limit-layer`, `feat/search-meilisearch`,
+  `feat/seed-data`, `feat/supplier-portal`, `feat/ux-wave-final`,
+  `feat/visual-polish`), ושאר ענפי `arch/*`/`cursor/*`/`docs/*` בודדים
+  (`arch/account-area`, `arch/checkout-cardcom-verification`,
+  `arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration`,
+  `chore/hardcoded-ledger-magic-link`, `closeout/v1-final`, `cursor/ci-launch-3ceb`
+  אם ללא PR, `docs/app-store-and-deep-links`, `docs/architecture-night`,
+  `docs/final-pack`, `docs/final-pass`, `feat/coupon-qr`, `ke-arch`,
+  `ke-cursor-docs`, `merge/supplier-and-arch-night`, `phase5/homepage`).
+  אין פעולה — רשימה לאופיר להכריע (מחיקה דורשת אישור מפורש, כלל הפרויקט).
+- שאר ~25 הענפים המקומיים תואמים במדויק את ה-remote שלהם (ahead=0), כולל
+  כל ה-`arch/*` וה-`feat/*` שיש להם עותק מקומי — אין דחיפה נדרשת.
+
+**המספרים המלאים (84 unmerged, 22 merged-safe, רשימת stale-no-PR) נגזרו
+בסקריפט חד-פעמי בטרמינל, לא נשמרו כקובץ — לשחזור: `git merge-base
+--is-ancestor <branch> origin/main`, `git merge-base --is-ancestor <branch>
+audit/final-audit`, ו-`gh pr list --state open --json headRefName`.**
+
+**אין שינוי קוד. `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`
+ירוקים** (נמדד על התיקייה אחרי כל שינויי התיעוד). אין שינוי UI, לא נדרש
+שער השוואה חזותי.
+
+**קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (הועברו לשם M14-c51 ו-M15-c51
+המלאים, לפי מגבלת 300 השורות).
+
+**הבא בתור: לפי `RESUME FROM`, M17-c37.**
+
 ## M15-c51 - DONE (29.09): סנכרון תיעוד — STATE.md, docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md, רשימת "ידני לאופיר" אחת במקום שתיים סוטות
 
 **הפריט:** רענון טבלת המצב בשלושת הקבצים מול `git log` וראיית קוד, ואיחוד
