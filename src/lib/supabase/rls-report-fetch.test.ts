@@ -121,4 +121,50 @@ describe('createRlsReportFetch', () => {
     expect(logged).toHaveLength(1)
     expect(captured).toHaveLength(0)
   })
+
+  it('captures on the public DSN when the server one is unset', async () => {
+    // `??` only falls through on null/undefined, not on '' — stub the server
+    // var away entirely rather than blanking it, or this exercises nothing new.
+    vi.stubEnv('SENTRY_DSN', undefined)
+    vi.stubEnv('NEXT_PUBLIC_SENTRY_DSN', 'https://key@o1.ingest.de.sentry.io/1')
+    const wrapped = createRlsReportFetch(baseReturning(403, RLS_BODY))
+    await wrapped('https://db.test/rest/v1/orders')
+    expect(captured).toHaveLength(1)
+  })
+
+  it('defaults the captured message to empty when the body carries none', async () => {
+    const wrapped = createRlsReportFetch(baseReturning(403, { code: '42501' }))
+    await wrapped('https://db.test/rest/v1/orders')
+    expect(captured).toHaveLength(1)
+  })
+
+  it('accepts a URL object, falling back to String(input)', async () => {
+    const wrapped = createRlsReportFetch(baseReturning(403, RLS_BODY))
+    const res = await wrapped(new URL('https://db.test/rest/v1/orders'), { method: 'POST' })
+    expect(res.status).toBe(403)
+    expect(captured[0]?.tags.rls_target).toBe('orders')
+  })
+
+  it('accepts a Request object, reading its url and method', async () => {
+    const wrapped = createRlsReportFetch(baseReturning(403, RLS_BODY))
+    const request = new Request('https://db.test/rest/v1/orders', { method: 'DELETE' })
+    await wrapped(request)
+    expect(captured[0]?.tags.rls_target).toBe('orders')
+    expect(logged[0]).toMatchObject({ method: 'DELETE' })
+  })
+
+  it('stays silent when the target URL cannot be parsed', async () => {
+    const wrapped = createRlsReportFetch(baseReturning(403, RLS_BODY))
+    const res = await wrapped('not a valid url')
+    expect(res.status).toBe(403)
+    expect(captured).toHaveLength(0)
+    expect(logged).toHaveLength(0)
+  })
+
+  it('stays silent when the body parses to a non-object JSON value', async () => {
+    const wrapped = createRlsReportFetch(baseReturning(403, 42))
+    await wrapped('https://db.test/rest/v1/orders')
+    expect(captured).toHaveLength(0)
+    expect(logged).toHaveLength(0)
+  })
 })

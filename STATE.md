@@ -1,12 +1,44 @@
-RESUME FROM: STATE CLEAN
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c52)
+RESUME FROM: M11-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c52)
 
 ## המשך מ:
 
-STATE CLEAN. נמדד בפעם השתים-עשרה (אחרי M08-c1..M08-c52, שכבר מדדו
-אחת-עשרה פעמים) שאין פריט אחד ב-`docs/BACKLOG.md` שסוכן קוד יכול לבצע
-לבד. סשן הבא: לבדוק אם אופיר טיפל בפריט כלשהו מ-`docs/BACKLOG.md` ופתח
-עבודת קוד חדשה; אם לא, אין מה למדוד שוב עד שמשהו ישתנה.
+M10-c52 סגר את הפער היחיד שנמצא. סשן הבא: לבדוק אם אופיר טיפל בפריט
+כלשהו מ-`docs/BACKLOG.md` ופתח עבודת קוד חדשה; אם לא, STATE נשאר CLEAN
+ואין מה למדוד שוב עד שמשהו ישתנה.
+
+## M10-c52 - DONE (29.09): כיסוי טסטים — `rls-report-fetch.ts` היה הנמוך מבין ששת המועמדים
+
+נמדד ישירות, לא הוערך: הורחב זמנית `coverage.include` ב-`vitest.config.ts`
+(לא נשמר) כדי לכלול את ששת המשפחות שהבריף מנה — `money.ts`,
+`checkout/split.ts`, `server/domain/vouchers/state-machine.ts`,
+`server/domain/orders/state-machine.ts`, משפחת ה-refund
+(`refund.ts`/`refund-request.ts`/`refund-record.ts`/`refund-wallet.ts`),
+ו-RLS helpers — והורצה סוויטה מלאה עם `--coverage` (604 קבצים, 7182
+טסטים, כולם ירוקים). התוצאה: חמשת המשפחות הראשונות כבר ב-100% ענפים
+(`money.ts`, `split.ts`, שני ה-state-machine, `refund-record.ts`) או קרוב
+מאוד (`refund.ts` 96.4%). ה-RLS helper היחיד עם לוגיקת ענפים אמיתית —
+המניפסטים (`rls-manifest`/`rls-write-policies`/`rls-role-matrix`) הם
+בדיקות מונעות-נתונים בלי מודול מקור — הוא `src/lib/supabase/rls-report-fetch.ts`,
+ועמד על **81.1% ענפים (30/37)**, הנמוך מכל ששת המועמדים.
+
+שבעה ענפים לא מכוסים, כולם ב-`restTarget`/`isRlsDenialBody`/הקשר ה-Sentry:
+קלט שאינו מחרוזת (‏`Request`/`URL`), URL לא תקין שנתפס ב-`catch`, גוף JSON
+תקין שאינו אובייקט, ו-`??` על שני משתני סביבת ה-DSN וברירת המחדל של
+`message`. נוספו שבעה טסטים ל-`rls-report-fetch.test.ts` (13 בסך הכל
+בקובץ) שמכסים כל ענף: קלט `URL`/`Request`, URL בלתי-ניתן-לפענוח, גוף
+`42` (JSON תקין, לא אובייקט), `NEXT_PUBLIC_SENTRY_DSN` כש-`SENTRY_DSN`
+לא מוגדר (לא רק ריק — `??` נופל רק על `undefined`/`null`, לא על `''`),
+וגוף בלי `message`. אומת מחדש עם אותה הרחבה זמנית: **100% ענפים/שורות/
+פונקציות**. `vitest.config.ts` הוחזר בדיוק לגרסה שהייתה ב-HEAD (diff ריק).
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (כל 12 השערים כולל
+i18n/locale-format על התקרה הקיימת), `pnpm test` **604/7188** (13 חדשים,
+כולם ירוקים), `pnpm build` עבר בלי שגיאה. אין שינוי UI, אין צורך בשער
+השוואה חזותי.
+
+**קבצים:** `src/lib/supabase/rls-report-fetch.test.ts` בלבד (+46 שורות),
+`STATE.md`.
 
 ## M09-c52 - DONE (29.09): STATE CLEAN
 
@@ -170,6 +202,7 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 | M07-c52 | DONE (29.09) | הרשומה למעלה. שער נתיבים מלא: 244 שורות ייחודיות, 239 PASS / 5 NO DATA / 0 FAIL. תיקון תזמון אחד בתשתית הבדיקה בלבד. |
 | M08-c52 | DONE (29.09) | **BACKLOG EMPTY**, נמדד בפעם האחת-עשרה: כל 15 הסעיפים ב-`docs/BACKLOG.md` הם פעולות אסורות על הסוכן (DNS/סודות/Vercel env, פריסה, מיגרציה על פרודקשן, Cardcom אמיתי, הכרעת קטלוג, מחיקת נתונים, ערך שרק אופיר מחזיק). אין שינוי קוד. |
 | M09-c52 | DONE (29.09) | **STATE CLEAN**, נמדד בפעם השתים-עשרה, עם בדיקה ישירה נוספת: `git fetch` מול origin (HEAD זהה), `docs/POST-LAUNCH-BACKLOG.md` (כולו דחיות מנומקות) ו-`grep TODO/FIXME` ב-`src/` (שתי תוצאות, שתיהן Cardcom אמיתי, אסור). אין פריט חדש, אין שינוי קוד. |
+| M10-c52 | DONE (29.09) | הרשומה למעלה. נמדד (לא הוערך) שהנמוך מבין ששת המועמדים הוא `src/lib/supabase/rls-report-fetch.ts`, 81.1% ענפים; שאר החמישה כבר ב-95%+. שבעה טסטים נוספו, 100% ענפים אומת. `vitest.config.ts` הורחב זמנית למדידה בלבד והוחזר בדיוק (diff ריק). שערים נקיים, 604/7188. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
