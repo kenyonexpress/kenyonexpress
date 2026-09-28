@@ -88,8 +88,14 @@ vi.mock('@/lib/supabase/server', () => ({
 // beginCheckout passes the address to the Turnstile challenge and stores it on
 // the risk assessment. Without it here every test in this file died on "No
 // getClientIp export is defined on the mock" rather than on anything real.
+//
+// `checkRateLimit` is a controllable mock, not a permanent stub, so the
+// `begin_checkout` ceiling itself (M13-c51) has a test where it says no —
+// every other describe block in this file only ever exercised the `true`
+// branch.
+const checkRateLimit = vi.hoisted(() => vi.fn(async () => true))
 vi.mock('@/lib/utils/rate-limit', () => ({
-  checkRateLimit: async () => true,
+  checkRateLimit,
   getClientIp: async () => '203.0.113.10',
 }))
 // One controllable provider instance, so the saved-card tests can steer the
@@ -217,6 +223,25 @@ beforeEach(() => {
   provider.verifyLowProfile.mockReset()
   finalizeOrderMock.mockReset()
   resolveDiscount.mockResolvedValue({ code: null, discountAgorot: 0 })
+  checkRateLimit.mockReset()
+  checkRateLimit.mockResolvedValue(true)
+})
+
+describe('beginCheckout: the begin_checkout rate limit', () => {
+  it('refuses to create a Low Profile once the per-user ceiling is hit', async () => {
+    checkRateLimit.mockResolvedValue(false)
+    const result = await beginCheckout(input())
+    expect(result).toEqual({
+      ok: false,
+      error: 'יותר מדי ניסיונות תשלום, המתינו דקה',
+      code: 'RATE_LIMITED',
+    })
+    expect(checkRateLimit).toHaveBeenCalledWith(`begin_checkout:user:${USER_ID}`, 10, 60)
+    // Rejected before any cart, address, product or order table is touched;
+    // only the CHECKOUT_ENABLED flag read (feature_flags) runs ahead of it.
+    expect(wrote('orders')).toBe(false)
+    expect(calls.some((c) => c.table !== 'feature_flags')).toBe(false)
+  })
 })
 
 /** Everything up to and including the stock reservation, so 5b is reached. */

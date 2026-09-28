@@ -1,7 +1,55 @@
 RESUME FROM: M17-c37
-Updated: 2026-09-28 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c51)
+Updated: 2026-09-28 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c51)
 
 ## המשך מ:
+
+## M13-c51 - DONE (28.09): כותרות אבטחה ותקרות — CSP, HSTS, X-Frame-Options, Referrer-Policy, Upstash על login/checkout/redeem: אומת מול build ירוק, שני פערי טסט נסגרו
+
+**הפריט:** אימות CSP, HSTS, X-Frame-Options, Referrer-Policy ותקרות Upstash על
+login, checkout ו-redeem. תיקון כל פער שנמצא, עם טסטים. **`RESUME FROM` נשאר
+`M17-c37` בכוונה**, כמו ב-M11-c51/M12-c51: מספר זה כבר עמד בעץ העבודה כשהפריט
+נפתח, כלומר סשן אחר כבר קידם את התור; הפריט הזה הושלם משום סדר.
+
+**הכותרות: תשתית קיימת ומקיפה, נבדקה בפועל ולא רק בקונפיג.** `next.config.ts`
++ `src/lib/security/frame-policy.ts` כבר בונים CSP תלוי-נתיב, HSTS
+(`max-age=63072000; includeSubDomains; preload`), X-Frame-Options תלוי-נתיב,
+Referrer-Policy (`strict-origin-when-cross-origin`), COOP/CORP ו-Permissions-Policy,
+עם שער יחידה (`frame-policy.test.ts`, `csp-turnstile.test.ts`,
+`frame-policy-matches-provider.test.ts`). מה שחסר היה אימות שהן אכן יוצאות על
+תגובה אמיתית: `pnpm build` + `pnpm start` על 3517, ואז `curl -sD -` על `/`,
+`/login`, `/checkout`, `/redeem/abc` — כל ארבע הכותרות נוכחות בכל ארבעתם, ועל
+`/checkout/frame-return` X-Frame-Options הופך ל-SAMEORIGIN ו-frame-ancestors
+ל-`'self'` כמתועד (התיק היחיד שמותר להיפרם, לצורך חזרת Cardcom).
+
+**Upstash: `UPSTASH_REDIS_REST_URL` אינו מוגדר באף סביבה שהריפו רואה
+(`docs/RATE-LIMITS.md` §7), כך שהמסלול החי הוא Postgres fallback, במכוון
+(כשל פתוח).** login, checkout ו-redeem שלושתם כן קוראים ל-rate limit:
+`login:{ip}` ו-`login-account:{email}` ב-`auth.ts`, `begin_checkout:user:{id}`
+(10/דקה) ב-`checkout.ts`, `redeem:{ip}` (60/שעה) ב-`redeem/[token]/page.tsx`.
+
+**שני פערי טסט נמצאו ונסגרו — שלושת הראוטים היו "רשומים" בתיעוד אבל
+לא נבדקו על ענף הדחייה:**
+
+1. `src/server/actions/auth.test.ts` לא היה קיים. נוסף: דוחה על תקרת ה-IP
+   ולפני שהחשבון נבדק, ודוחה על תקרת החשבון גם כשה-IP מתחת לתקרה (עם
+   lower-case על המייל).
+2. `checkout.test.ts` נעל את `checkRateLimit` ל-`async () => true` קבוע — ענף
+   הדחייה של `begin_checkout` לא נבדק אף פעם. הוחלף ב-mock נשלט
+   (`vi.hoisted`), ונוסף טסט שמוודא סירוב לפני שנוגעים בעגלה/כתובת/מוצר
+   (רק קריאת `feature_flags` רצה קודם).
+3. `src/app/redeem/[token]/page.test.tsx` לא היה קיים. `RedeemTokenBody`
+   יוצא עכשיו לבדיקה ישירה (היה רק ברירת מחדל); נוסף טסט שמוודא סירוב לפני
+   בדיקת החתימה, ושאין קריאה כלל כשאין כתובת לקבוע לפיה.
+
+**`pnpm type-check`, `pnpm lint` (627/627 i18n, 116 he-IL, כל שאר השערים
+ירוקים), `pnpm test` (604 קבצים, 7182 עברו) ו-`pnpm build` ירוקים.** לא נדרש
+שער השוואה חזותי — אין שינוי UI.
+
+**קבצים:** `src/server/actions/auth.test.ts` (חדש), `payments/checkout.test.ts`
+(mock נשלט + טסט), `src/app/redeem/[token]/page.tsx` (export יחיד),
+`src/app/redeem/[token]/page.test.tsx` (חדש), `STATE.md`.
+
+**הבא בתור: לפי `RESUME FROM`, M17-c37.**
 
 ## M12-c51 - DONE (28.09): SEO — מטא, canonical, og, schema.org Product/Offer, sitemap, robots: אומת מול build ירוק, אין drift
 

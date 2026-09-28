@@ -88,7 +88,7 @@ export default function RedeemTokenPage(props: Props) {
   )
 }
 
-async function RedeemTokenBody({ params }: Props) {
+export async function RedeemTokenBody({ params }: Props) {
   const { token } = await params
   const scanContext = readScanContext(await headers())
 
