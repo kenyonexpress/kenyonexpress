@@ -1,7 +1,29 @@
-RESUME FROM: M03-c52
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c52)
+RESUME FROM: M04-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c52)
 
 ## המשך מ:
+
+## M03-c52 - DONE (29.09): green check — type-check/lint/test/build, אפס תיקון נדרש
+
+ארבעת השערים הורצו מחדש מסוף נקי על `d0b811f07` (HEAD): `pnpm type-check`
+נקי (0 שגיאות), `pnpm lint` נקי (biome 2018 קבצים 0 fixes + 12 שערי
+תוכן, i18n 627/627 בתקרה), `pnpm test` 604 קבצים / 7182 עברו / 12 דולגו
+(זהה ל-M02-c52), `pnpm build` exit 0, "Compiled successfully", TypeScript
+עבר בתוך ה-build עצמו גם כן.
+
+שורות ה-`warn` היחידות בפלט ה-build הן לוגים של האפליקציה בזמן ריצה
+(SSG מול Supabase האמיתי), לא אזהרות מערכת build: `db.optional_column_missing`
+על `original_price_source`/`google_reviews_url` (מיגרציה 242 pending,
+מתועדת, אין לה תיקון בלי החלה שאסורה בפריט הזה) ו-`db.query_slow` על
+`suppliers`/`supplier_applications` (זמן תגובה של הרשת מול DB חי בזמן
+build, לא באג בקוד). אין ESLint warnings, אין TypeScript warnings, אין
+webpack/Turbopack warnings. **אפס דבר לתקן.**
+
+אין שינוי קוד (אין UI, אין שער השוואה חזותי נדרש). קובץ יחיד: `STATE.md`.
+
+**הבא בתור: `M04-c52` אינו רשום עדיין; לבנות אותו מסעיף "מצב נוכחי" ב-
+`CLAUDE.md` (סדר עדיפות 2: מיגרציה 169 לא הוחלה, ארבעה אירועי משפך
+נזרקים בשקט מול פרודקשן) בסשן הבא.**
 
 ## M02-c52 - DONE (29.09): שער השוואה חזותי, בית ומוצר, שלושת הרוחבים — אפס רגרסיה
 
@@ -135,6 +157,7 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 | M18-c51 | DONE (29.09) | הרשומה למעלה. טופס ניוזלטר בפוטר חובר ל-`subscribeToNewsletter` האמיתי במקום `/api/newsletter` שלא היה קיים מעולם (404 שקט על כל שליחה). type-check/lint/test (604/7182, זהה)/build נקיים; שער 8.51/9.02/3.95 PASS, זהה למדידה הקודמת. |
 | M01-c52 | DONE (29.09) | הרשומה למעלה. חוסם 1 (DNS ברשם) RESOLVED; חוסם 2/3 (פריסת HEAD) נשאר פתוח מאותה סיבה. פירוט בארכיון. |
 | M02-c52 | DONE (29.09) | הרשומה למעלה. שער חזותי בית+מוצר בשלושת הרוחבים: 8.51/9.02/3.95 ו-5.65/4.95/2.92, כולם PASS, אפס רגרסיה. ברירת המחדל של compare.mjs מסורבת (הדומיין הוא בנייתנו עצמה); נעשה שימוש ב-`--baseline` עם הצילומים הקפואים. |
+| M03-c52 | DONE (29.09) | הרשומה למעלה. type-check/lint/test/build מחדש על `d0b811f07`: כולם נקיים, 604/7182 זהה, build exit 0. אפס תיקון נדרש; ה-warn היחידים בפלט ה-build הם לוגים של האפליקציה (מיגרציה 242 pending, זמן תגובה DB), לא אזהרות build. אין שינוי קוד. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
