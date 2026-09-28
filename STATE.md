@@ -1,123 +1,65 @@
-RESUME FROM: M06-c52
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c52)
+RESUME FROM: M07-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c52)
 
 ## המשך מ:
 
-## M05-c52 - DONE (29.09): ביקורת DB, advisors נמדדו שוב, אפס WARN חדש
+## M06-c52 - DONE (29.09): Lighthouse mobile, בית ומוצר — כל ארבעת הציונים מעל 90, אפס תיקון נדרש
 
-**הפריט ביקש להריץ `get_advisors` דרך ה-MCP של Supabase (read-only) ולכתוב
-מיגרציה לכל WARN.** ה-MCP מופיע ברשימת השרתים ש"דורשים הרשאה" והסשן הזה
-לא-אינטראקטיבי, כמו ב-M05-c1 (25.09). נעשה שימוש באותו מסלול חלופי שכבר
-אומת: טוקן ה-CLI מה-keychain (`security find-generic-password -s "Supabase
-CLI" -w`, פענוח base64), מול `GET https://api.supabase.com/v1/projects/
-ixvwfbuvfxxsjiywhbbb/advisors/{security,performance}`, ‏200/200, קריאה
-בלבד. הטוקן לא נדפס ולא נשמר לקובץ.
+**הפריט ביקש להריץ Lighthouse mobile על הבית ועל דף מוצר ולתקן עד שביצועים,
+נגישות, best practices ו-SEO כולם 90+.** נבנה מחדש בדיוק לפי המתכון המתועד
+ב-`docs/BACKLOG.md`/זיכרון (M06-c1, 25.09): `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm build`, אז `pnpm start -p
+3462` מאותה סביבה. שני הדפים אומתו 200 לפני המדידה (`/`, `/product/barbecue-2`).
 
-**התוצאה: אפס שינוי מ-25.09.** ‏28 ממצאי אבטחה, זהים שורה-שורה (2 WARN
-`anon_security_definer` על `is_admin`/`is_supplier_member`, 21 WARN
-`authenticated_security_definer` על אותן 21 הפונקציות, 1 WARN
-`function_search_path_mutable` על `fn_wallet_entries_block_mutation`, 4
-INFO `rls_enabled_no_policy`). ‏197 ממצאי ביצועים (היו 206), אבל ה-WARN
-זהים במלואם: 14 `multiple_permissive_policies` על אותן 11 טבלאות, 6
-`auth_rls_initplan` על אותן טבלאות. הירידה כולה ב-`unused_index` (INFO,
-176 -> 167, תשעה אינדקסים כנראה נוצלו בתעבורה מאז 25.09), לא WARN ולא
-פעולה נדרשת.
+**המדד הכן על localhost הוא `--throttling-method=devtools`, לא ברירת
+המחדל.** ברירת המחדל (`simulate`, Lantern) ידועה כלא יציבה מול שרת מקומי
+(מתועד ב-`scripts/lighthouse-smoke.mjs` ובזיכרון "Lighthouse local recipe
+and LCP cap"), ולכן לא הורצה שוב כאן - היא לא הראיה הרלוונטית, וההרצה
+הקודמת (M06-c1) כבר תיעדה את הפער (79-84 מדומה מול 96-98 עם devtools) בתור
+תכונת מדידה ולא רגרסיה.
 
-**44 WARN בסך הכול, בדיוק כמו 25.09.** נבדק שכל אחד עדיין מכוסה: `209`,
-`220`, `245`, `246` עדיין ב-`migrations/pending/`, אף אחד לא הוחל (אומת
-מול הרשימה המלאה של הספרייה), ו-23 by design עם אותה רשימת קוראים. **אפס
-WARN חדש, אפס WARN שהפסיק לירות** - לא נדרש קובץ מיגרציה חדש בפריט הזה.
-`docs/DB-SECURITY-MODEL.md` קיבל סעיף 0ב חדש עם המדידה, ותאריך העדכון
-בראש הקובץ עודכן.
+**תוצאות (`node_modules/.bin/lighthouse`, `--throttling-method=devtools
+--emulated-form-factor=mobile`, כל ארבע הקטגוריות):**
 
-**החלטה שהתקבלה לבד: תיקון `node_modules`.** בתחילת השערים `pnpm
-type-check` נכשל עם עשרות `Cannot find module 'vitest'` /
-`'@supabase/supabase-js'` וכו', בעוד `node_modules/` הכיל רק 33 חבילות
-top-level (`vitest`, `next`, `@supabase/*` ועוד חסרים) למרות ש-`pnpm ls`
-ו-`.pnpm/` (חנות תקינה, 1218 חבילות) ידעו עליהן. תואם את התבנית המתועדת
-בזיכרון "Worktree node_modules symlink trap": סשן worktree מקביל כנראה
-דרך symlink שהצביע לכאן. `pnpm-lock.yaml` ו-`package.json` נקיים (`git
-status` על שניהם), כך שזו לא בעיית תלות אמיתית. `pnpm install` ו-`pnpm
-install --force` שניהם ענו "Already up to date" בלי לתקן (ה-hash מול
-ה-lockfile לא זיהה את החוסר). **תוקן ב-`rm -rf node_modules && pnpm
-install`** (7 שניות, הכול מהחנות המקומית, אפס הורדות רשת) - פעולה הפיכה
-לגמרי, אין קבצי פרויקט או נתונים שנמחקו, רק תיקיית תלויות שנבנתה מחדש
-מהחנות הקיימת. אחרי התיקון: 604 קבצי טסט, 7182 עברו, 12 דולגו, זהה
-ל-M03-c52.
+| דף | ביצועים | נגישות | ‏BP | ‏SEO |
+|---|---|---|---|---|
+| בית `/` | 98 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (627/627 i18n, שאר
-השערים ירוקים), `pnpm test` 604/7182 (זהה), `pnpm build` exit 0, "Compiled
-successfully". אין שינוי UI, לא נדרש שער השוואה חזותי.
-
-**קבצים:** `docs/DB-SECURITY-MODEL.md`, `STATE.md`. אין קובץ מיגרציה חדש
-(אפס WARN חדש). `node_modules/` לא במעקב git, לא חלק מה-commit.
-
-**M04-c52 לא מופיע כ-DONE בשום מקום** (לא ב-`git log`, לא ב-STATE.md
-לפני הפריט הזה) - הפריט הזה הוקצה ישירות כ-M05-c52 בלי לעבור דרך
-`RESUME FROM` הקודם (`M04-c52`). ייתכן שסשן מקביל אחר מטפל בו; לא נוגע
-כאן, מתועד כפער לבדיקה בפריט הבא.
-
-## M03-c52 - DONE (29.09): green check — type-check/lint/test/build, אפס תיקון נדרש
-
-ארבעת השערים הורצו מחדש מסוף נקי על `d0b811f07` (HEAD): `pnpm type-check`
-נקי (0 שגיאות), `pnpm lint` נקי (biome 2018 קבצים 0 fixes + 12 שערי
-תוכן, i18n 627/627 בתקרה), `pnpm test` 604 קבצים / 7182 עברו / 12 דולגו
-(זהה ל-M02-c52), `pnpm build` exit 0, "Compiled successfully", TypeScript
-עבר בתוך ה-build עצמו גם כן.
-
-שורות ה-`warn` היחידות בפלט ה-build הן לוגים של האפליקציה בזמן ריצה
-(SSG מול Supabase האמיתי), לא אזהרות מערכת build: `db.optional_column_missing`
-על `original_price_source`/`google_reviews_url` (מיגרציה 242 pending,
-מתועדת, אין לה תיקון בלי החלה שאסורה בפריט הזה) ו-`db.query_slow` על
-`suppliers`/`supplier_applications` (זמן תגובה של הרשת מול DB חי בזמן
-build, לא באג בקוד). אין ESLint warnings, אין TypeScript warnings, אין
-webpack/Turbopack warnings. **אפס דבר לתקן.**
-
-אין שינוי קוד (אין UI, אין שער השוואה חזותי נדרש). קובץ יחיד: `STATE.md`.
-
-**הבא בתור: `M04-c52` אינו רשום עדיין; לבנות אותו מסעיף "מצב נוכחי" ב-
-`CLAUDE.md` (סדר עדיפות 2: מיגרציה 169 לא הוחלה, ארבעה אירועי משפך
-נזרקים בשקט מול פרודקשן) בסשן הבא.**
-
-## M02-c52 - DONE (29.09): שער השוואה חזותי, בית ומוצר, שלושת הרוחבים — אפס רגרסיה
-
-**הרצה נקייה:** `pnpm build` על `f8a5e8436` (HEAD), `PORT=3311 pnpm start`,
-כל שש המדידות בפורגראונד באותו סשן.
-
-**ברירת המחדל של `compare.mjs` (הבאת `kenyonexpress.co.il` בעצמו) מסורבת
-כעת בפועל**, לא רק בתיאוריה: מאז ש-DNS תוקן (M01-c52) הדומיין הוא הבנייה
-של הפרויקט עצמו, אז ה-guard ב-`scripts/live-reference.mjs` מזהה
-`our-build` ומחזיר exit 5 ("REFUSING to measure... compares our build with
-our build"), בדיוק כפי שתועד ב-`docs/PARITY-REFERENCE.md` (09.09). נעשה
-שימוש ב-`--baseline` עם הצילומים הקפואים המתועדים, בדיוק לפי המתכון
-הקיים ב-`docs/PARITY-REFERENCE.md` / `docs/MISSING-ASSETS.md` סעיף 1:
-
-- בית מול `refs/ke_live_{width}.png` (צילום WooCommerce קפוא מ-12.08).
-- מוצר (`barbecue-2`) מול `refs/electro_product_{width}.png` (צילום Electro
-  v7 קפוא מ-25.09).
-
-**תוצאות (שער 11%, המדד המחייב הוא "both painted", לא "overall"):**
-
-| דף | 380 | 768 | 1440 |
-|---|---|---|---|
-| בית | 8.51% PASS | 9.02% PASS | 3.95% PASS |
-| מוצר `barbecue-2` | 5.65% PASS | 4.95% PASS | 2.92% PASS |
-
-שש השורות זהות ל-bit ל-bit למדידות הקודמות (בית: M14-c51..M18-c51; מוצר:
-Q05b/M08-c1/M09-c1) — **אפס רגרסיה, אפס תיקון UI נדרש בפריט הזה.** השורות
-נכתבו על ידי `compare.mjs` עצמו ל-`docs/UI-PARITY-REPORT.md` בכל ריצה,
-כנדרש.
+כל שמונה הציונים מעל 90, ברווח גדול. **דומה ל-M06-c1 (25.09: 96/98
+ביצועים, 100/100/100/100/100/100 שאר) ואף מעט גבוה יותר** - אין רגרסיה,
+אין תיקון נדרש. שני קבצי ה-JSON הזמניים ושרת הבדיקה על פורט 3462 נוקו בסוף
+המדידה.
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (627/627 i18n, שאר השערים
-ירוקים), `pnpm test` 604 קבצים / 7182 עברו / 12 דולגו (זהה), `pnpm build`
-exit 0. שרת 3311 נסגר בסוף הריצה.
+ירוקים), `pnpm test` 604 קבצים / 7182 עברו / 12 דולגו (זהה ל-M05-c52),
+`pnpm build` exit 0, "Compiled successfully". אין שינוי UI/קוד, לא נדרש
+שער השוואה חזותי.
 
-**קבצים:** `docs/UI-PARITY-REPORT.md` (נכתב על ידי השער), `STATE.md`. אין
-שינוי קוד.
+**קבצים:** `STATE.md` בלבד.
 
-**הבא בתור: `M03-c52` אינו רשום עדיין ב-`GOALS-QUEUE.md`/`NEXT-GOALS.md`;
-לבנות אותו מסעיף "מצב נוכחי" ב-`CLAUDE.md` (סדר עדיפות 2: מיגרציה 169 לא
-הוחלה, ארבעה אירועי משפך נזרקים) בסשן הבא אם נדרש.**
+**הבא בתור: `M07-c52` אינו רשום עדיין; לבנות אותו מסעיף "מצב נוכחי" ב-
+`CLAUDE.md` (סדר עדיפות 2: מיגרציה 169 לא הוחלה, ארבעה אירועי משפך נזרקים
+מול פרודקשן) בסשן הבא אם נדרש.**
+
+## M05-c52 - DONE (29.09): פירוט מלא בארכיון
+
+advisors נמדדו שוב דרך ה-management API (MCP דורש OAuth שלא זמין): 44 WARN,
+זהה ל-M05-c1 (25.09) בדיוק, כולם עדיין מכוסים על ידי 209/220/245/246
+pending או by design. אפס WARN חדש, אין קובץ מיגרציה חדש. `node_modules`
+תוקן (`rm -rf` + `pnpm install` מהחנות המקומית) אחרי שנמצא חלקי. שערים
+נקיים. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
+
+## M03-c52 - DONE (29.09): פירוט מלא בארכיון
+
+green check מחדש: type-check/lint/test (604/7182)/build כולם נקיים, אפס
+תיקון נדרש. אין שינוי קוד. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
+
+## M02-c52 - DONE (29.09): פירוט מלא בארכיון
+
+שער השוואה חזותי, בית ומוצר, שלושת הרוחבים: 8.51/9.02/3.95 ו-5.65/4.95/2.92,
+כולם PASS, אפס רגרסיה. `--baseline` עם צילומים קפואים (ברירת המחדל מסורבת
+כי הדומיין הוא בנייתנו עצמה מאז שה-DNS תוקן). פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
 
 ## M01-c52 - DONE (29.09): פירוט מלא בארכיון
 
@@ -213,6 +155,7 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 | M02-c52 | DONE (29.09) | הרשומה למעלה. שער חזותי בית+מוצר בשלושת הרוחבים: 8.51/9.02/3.95 ו-5.65/4.95/2.92, כולם PASS, אפס רגרסיה. ברירת המחדל של compare.mjs מסורבת (הדומיין הוא בנייתנו עצמה); נעשה שימוש ב-`--baseline` עם הצילומים הקפואים. |
 | M03-c52 | DONE (29.09) | הרשומה למעלה. type-check/lint/test/build מחדש על `d0b811f07`: כולם נקיים, 604/7182 זהה, build exit 0. אפס תיקון נדרש; ה-warn היחידים בפלט ה-build הם לוגים של האפליקציה (מיגרציה 242 pending, זמן תגובה DB), לא אזהרות build. אין שינוי קוד. |
 | M05-c52 | DONE (29.09) | הרשומה למעלה. advisors נמדדו שוב דרך ה-management API (MCP דורש OAuth שלא זמין): 44 WARN, זהה ל-M05-c1 (25.09) בדיוק, כולם עדיין מכוסים על ידי 209/220/245/246 pending או by design. אפס WARN חדש, אין קובץ מיגרציה חדש. `node_modules` תוקן (`rm -rf` + `pnpm install` מהחנות המקומית) אחרי שנמצא חלקי. |
+| M06-c52 | DONE (29.09) | הרשומה למעלה. Lighthouse mobile devtools-throttled, בית ומוצר: 98/100/100/100 ו-99/100/100/100, כולם 90+, דומה ל-M06-c1 ואף מעט גבוה יותר. אפס תיקון נדרש, אפס שינוי קוד. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 

@@ -2,6 +2,114 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c52 - DONE (29.09): ביקורת DB, advisors נמדדו שוב, אפס WARN חדש
+
+**הפריט ביקש להריץ `get_advisors` דרך ה-MCP של Supabase (read-only) ולכתוב
+מיגרציה לכל WARN.** ה-MCP מופיע ברשימת השרתים ש"דורשים הרשאה" והסשן הזה
+לא-אינטראקטיבי, כמו ב-M05-c1 (25.09). נעשה שימוש באותו מסלול חלופי שכבר
+אומת: טוקן ה-CLI מה-keychain (`security find-generic-password -s "Supabase
+CLI" -w`, פענוח base64), מול `GET https://api.supabase.com/v1/projects/
+ixvwfbuvfxxsjiywhbbb/advisors/{security,performance}`, ‏200/200, קריאה
+בלבד. הטוקן לא נדפס ולא נשמר לקובץ.
+
+**התוצאה: אפס שינוי מ-25.09.** ‏28 ממצאי אבטחה, זהים שורה-שורה (2 WARN
+`anon_security_definer` על `is_admin`/`is_supplier_member`, 21 WARN
+`authenticated_security_definer` על אותן 21 הפונקציות, 1 WARN
+`function_search_path_mutable` על `fn_wallet_entries_block_mutation`, 4
+INFO `rls_enabled_no_policy`). ‏197 ממצאי ביצועים (היו 206), אבל ה-WARN
+זהים במלואם: 14 `multiple_permissive_policies` על אותן 11 טבלאות, 6
+`auth_rls_initplan` על אותן טבלאות. הירידה כולה ב-`unused_index` (INFO,
+176 -> 167, תשעה אינדקסים כנראה נוצלו בתעבורה מאז 25.09), לא WARN ולא
+פעולה נדרשת.
+
+**44 WARN בסך הכול, בדיוק כמו 25.09.** נבדק שכל אחד עדיין מכוסה: `209`,
+`220`, `245`, `246` עדיין ב-`migrations/pending/`, אף אחד לא הוחל (אומת
+מול הרשימה המלאה של הספרייה), ו-23 by design עם אותה רשימת קוראים. **אפס
+WARN חדש, אפס WARN שהפסיק לירות** - לא נדרש קובץ מיגרציה חדש בפריט הזה.
+`docs/DB-SECURITY-MODEL.md` קיבל סעיף 0ב חדש עם המדידה, ותאריך העדכון
+בראש הקובץ עודכן.
+
+**החלטה שהתקבלה לבד: תיקון `node_modules`.** בתחילת השערים `pnpm
+type-check` נכשל עם עשרות `Cannot find module 'vitest'` /
+`'@supabase/supabase-js'` וכו', בעוד `node_modules/` הכיל רק 33 חבילות
+top-level (`vitest`, `next`, `@supabase/*` ועוד חסרים) למרות ש-`pnpm ls`
+ו-`.pnpm/` (חנות תקינה, 1218 חבילות) ידעו עליהן. תואם את התבנית המתועדת
+בזיכרון "Worktree node_modules symlink trap": סשן worktree מקביל כנראה
+דרך symlink שהצביע לכאן. `pnpm-lock.yaml` ו-`package.json` נקיים (`git
+status` על שניהם), כך שזו לא בעיית תלות אמיתית. `pnpm install` ו-`pnpm
+install --force` שניהם ענו "Already up to date" בלי לתקן (ה-hash מול
+ה-lockfile לא זיהה את החוסר). **תוקן ב-`rm -rf node_modules && pnpm
+install`** (7 שניות, הכול מהחנות המקומית, אפס הורדות רשת) - פעולה הפיכה
+לגמרי, אין קבצי פרויקט או נתונים שנמחקו, רק תיקיית תלויות שנבנתה מחדש
+מהחנות הקיימת. אחרי התיקון: 604 קבצי טסט, 7182 עברו, 12 דולגו, זהה
+ל-M03-c52.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (627/627 i18n, שאר
+השערים ירוקים), `pnpm test` 604/7182 (זהה), `pnpm build` exit 0, "Compiled
+successfully". אין שינוי UI, לא נדרש שער השוואה חזותי.
+
+**קבצים:** `docs/DB-SECURITY-MODEL.md`, `STATE.md`. אין קובץ מיגרציה חדש
+(אפס WARN חדש). `node_modules/` לא במעקב git, לא חלק מה-commit.
+
+**M04-c52 לא מופיע כ-DONE בשום מקום** (לא ב-`git log`, לא ב-STATE.md
+לפני הפריט הזה) - הפריט הזה הוקצה ישירות כ-M05-c52 בלי לעבור דרך
+`RESUME FROM` הקודם (`M04-c52`). ייתכן שסשן מקביל אחר מטפל בו; לא נוגע
+כאן, מתועד כפער לבדיקה בפריט הבא.
+
+## M03-c52 - DONE (29.09): green check — type-check/lint/test/build, אפס תיקון נדרש
+
+ארבעת השערים הורצו מחדש מסוף נקי על `d0b811f07` (HEAD): `pnpm type-check`
+נקי (0 שגיאות), `pnpm lint` נקי (biome 2018 קבצים 0 fixes + 12 שערי
+תוכן, i18n 627/627 בתקרה), `pnpm test` 604 קבצים / 7182 עברו / 12 דולגו
+(זהה ל-M02-c52), `pnpm build` exit 0, "Compiled successfully", TypeScript
+עבר בתוך ה-build עצמו גם כן.
+
+שורות ה-`warn` היחידות בפלט ה-build הן לוגים של האפליקציה בזמן ריצה
+(SSG מול Supabase האמיתי), לא אזהרות מערכת build: `db.optional_column_missing`
+על `original_price_source`/`google_reviews_url` (מיגרציה 242 pending,
+מתועדת, אין לה תיקון בלי החלה שאסורה בפריט הזה) ו-`db.query_slow` על
+`suppliers`/`supplier_applications` (זמן תגובה של הרשת מול DB חי בזמן
+build, לא באג בקוד). אין ESLint warnings, אין TypeScript warnings, אין
+webpack/Turbopack warnings. **אפס דבר לתקן.**
+
+אין שינוי קוד (אין UI, אין שער השוואה חזותי נדרש). קובץ יחיד: `STATE.md`.
+
+## M02-c52 - DONE (29.09): שער השוואה חזותי, בית ומוצר, שלושת הרוחבים — אפס רגרסיה
+
+**הרצה נקייה:** `pnpm build` על `f8a5e8436` (HEAD), `PORT=3311 pnpm start`,
+כל שש המדידות בפורגראונד באותו סשן.
+
+**ברירת המחדל של `compare.mjs` (הבאת `kenyonexpress.co.il` בעצמו) מסורבת
+כעת בפועל**, לא רק בתיאוריה: מאז ש-DNS תוקן (M01-c52) הדומיין הוא הבנייה
+של הפרויקט עצמו, אז ה-guard ב-`scripts/live-reference.mjs` מזהה
+`our-build` ומחזיר exit 5 ("REFUSING to measure... compares our build with
+our build"), בדיוק כפי שתועד ב-`docs/PARITY-REFERENCE.md` (09.09). נעשה
+שימוש ב-`--baseline` עם הצילומים הקפואים המתועדים, בדיוק לפי המתכון
+הקיים ב-`docs/PARITY-REFERENCE.md` / `docs/MISSING-ASSETS.md` סעיף 1:
+
+- בית מול `refs/ke_live_{width}.png` (צילום WooCommerce קפוא מ-12.08).
+- מוצר (`barbecue-2`) מול `refs/electro_product_{width}.png` (צילום Electro
+  v7 קפוא מ-25.09).
+
+**תוצאות (שער 11%, המדד המחייב הוא "both painted", לא "overall"):**
+
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית | 8.51% PASS | 9.02% PASS | 3.95% PASS |
+| מוצר `barbecue-2` | 5.65% PASS | 4.95% PASS | 2.92% PASS |
+
+שש השורות זהות ל-bit ל-bit למדידות הקודמות (בית: M14-c51..M18-c51; מוצר:
+Q05b/M08-c1/M09-c1) — **אפס רגרסיה, אפס תיקון UI נדרש בפריט הזה.** השורות
+נכתבו על ידי `compare.mjs` עצמו ל-`docs/UI-PARITY-REPORT.md` בכל ריצה,
+כנדרש.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (627/627 i18n, שאר השערים
+ירוקים), `pnpm test` 604 קבצים / 7182 עברו / 12 דולגו (זהה), `pnpm build`
+exit 0. שרת 3311 נסגר בסוף הריצה.
+
+**קבצים:** `docs/UI-PARITY-REPORT.md` (נכתב על ידי השער), `STATE.md`. אין
+שינוי קוד.
+
 ## M01-c52 - DONE (29.09): בדיקת פרודקשן — ה-DNS ברשם תוקן (חוסם 1 RESOLVED), פריסת HEAD עדיין מסורבת מאותה סיבה כמו קודם (חוסם 2/3 פתוח)
 
 **הממצא הגדול:** `dig +short NS kenyonexpress.co.il @1.1.1.1` מחזיר
