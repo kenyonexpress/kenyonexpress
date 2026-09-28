@@ -2,6 +2,58 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c52 - DONE (29.09): בדיקת פרודקשן — ה-DNS ברשם תוקן (חוסם 1 RESOLVED), פריסת HEAD עדיין מסורבת מאותה סיבה כמו קודם (חוסם 2/3 פתוח)
+
+**הממצא הגדול:** `dig +short NS kenyonexpress.co.il @1.1.1.1` מחזיר
+`ns1.vercel-dns.com.` / `ns2.vercel-dns.com.` — **לא** `ns1/ns2.vercel.com`
+כפי שנמדד בכל בדיקה קודמת (M01-c1, M02-c1, לאורך כל התור). `dig +short A`
+מחזיר `216.198.79.1` ו-`216.198.79.65`. `curl -sIL https://kenyonexpress.co.il`
+עונה `308` ל-`https://www.kenyonexpress.co.il/`, וזה עונה `200` עם `Server:
+Vercel`, CSP/HSTS/COOP מלאים, `lang="he" dir="rtl"` ו-`<title>קניון EXPRESS —
+מסדרים לך בילוי | קניון אקספרס</title>` — האתר האמיתי, לא placeholder.
+**חוסם 1 (DNS ברשם) RESOLVED.** מי שינה את ה-NS ומתי לא ידוע (ייתכן אופיר,
+ייתכן התפשטות מאוחרת של שינוי קודם) — לא נמדד כאן, רק התוצאה.
+
+**מלכודת נמצאה ותועדה לפני שהיא חזרה על עצמה:** לחשבון יש **שלושה** פרויקטי
+Vercel: `kenyonexpress-prod` (`prj_keQjjnDoTb41AYmHy3ia59BKumyt`),
+`kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`), ו-`kenyonexpress-web`
+(`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk`). הניסיון הראשון לפרוס כוון אל
+`kenyonexpress-prod` (השם הכי מפתה) — **הוא לא מחזיק את הדומיין בכלל**,
+רק `kenyonexpress-prod.vercel.app`; הפריסה שם "הצליחה" להיכשל באותה סיבה
+במקרה, אבל אפילו הצלחה שם לא הייתה נוגעת לאתר החי. `kenyonexpress`
+(השני) הוא זה שמחזיק בפועל את `kenyonexpress.co.il` /
+`www.kenyonexpress.co.il` (`list_project_domains`, מאומת). **כל פעולה
+עתידית על "הפרויקט" חייבת להיות על `kenyonexpress`, לא `kenyonexpress-prod`.**
+
+**מצב פרודקשן החי (פרויקט `kenyonexpress`):** הפריסה ה-READY האחרונה
+(`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`) היא commit `a388118f1` — **אותו commit
+שתועד בכל רשומות התור הקודמות** ("production runs it"), עכשיו כ-48 קומיטים
+מאחורי HEAD (`1083b8d8d`). ה-DNS היה החוליה החסרה היחידה: התוכן שמאחוריו
+לא השתנה.
+
+**ניסיון פריסה אמיתי של HEAD (`1083b8d8d`) לפרודקשן, על הפרויקט הנכון:**
+`create_deployment` עם `target=production`, `gitSource` מ-`audit/final-audit`
+על אותו SHA. תוצאה: `state=ERROR`, `errorCode=BUILD_UTILS_SPAWN_1`,
+`errorMessage="Command \"node scripts/deploy-preflight.mjs && pnpm build\"
+exited with 1"` — **בדיוק כמו ב-M01-c1**. נקרא רשימת משתני הסביבה של
+Production על הפרויקט הנכון ישירות (37 משתנים): `CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` — השלושה ש-`deploy-preflight.mjs`
+דורש ושהקוד בפועל קורא — **עדיין לא קיימים**; קיימים במקומם
+`CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY` (שמות שהקוד
+אינו קורא, כפי שתועד כבר ב-BACKLOG.md סעיף 3). `ALLOW_INCOMPLETE_ENV` עדיין
+קיים ב-Production. אלה בדיוק שני התנאים שתועדו כחוסם 2/3 — **פתוח, לא
+תוקן, נמדד עכשיו מול הפרויקט האמיתי במקום מול ההנחה הקודמת.** פרודקשן
+נשאר על `a388118f1` לאורך כל הניסיון; `curl` אחרי הכישלון עדיין מחזיר
+`308`/`200` כרגיל — שום דבר לא נשבר.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 604 קבצים /
+7182 עברו / 12 דולגו (זהה ל-M18-c51), `pnpm build` exit 0. אין שינוי UI
+בפריט הזה (בדיקת תשתית בלבד) — שער השוואה חזותי לא הורץ, כמו ב-M15-c51.
+
+**`docs/BACKLOG.md` סעיף 1 (DNS ברשם) עודכן ל-RESOLVED.**
+
+**קבצים:** `STATE.md`, `docs/BACKLOG.md`. אין שינוי קוד.
+
 ## M18-c51 - DONE (29.09), אומת שוב (29.09): בדיקת idle — טופס הניוזלטר בפוטר חוזר לפעול
 
 **אימות חוזר (אותו יום, אותה הרצה עם הוראות idle-check זהות):** הפריט כבר
@@ -47,6 +99,72 @@ BUILD_ID `vDuwA6YXxrF1x_hVFy31y`): 380 8.51% PASS, 768 9.02% PASS, 1440
 
 **הבא בתור: אין עוד פריט רשום ב-`GOALS-QUEUE.md`/`docs/COMPONENT-QUEUE.md`
 בשם M19-c51 עדיין; אם התור נבנה מ-`NEXT-GOALS.md` בסשן הבא, לבנות אותו שם.**
+
+## M17-c51 - DONE (29.09): מעבר משפטי ולשוני — כל מחרוזת עברית ב-UI וכל דף משפטי, טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח, קישורים שבורים
+
+**שיטה:** סוכן חקר קרא במלואם את ארבעת מסמכי `src/app/(legal)/_content/*.ts`
+(המסמכים החיים, המוגשים בפועל תחת `/terms-and-conditions`, `/privacy-policy`,
+`/refund_returns`, `/accessibility`), את `messages/he.json` (590 שורות, קטלוג
+i18n שכן נקרא בפועל דרך `t()` ב-~80 רכיבים, לא scaffolding מת כפי שנרמז
+ב-`docs/I18N.md`), ואת ארבעת קבצי `src/content/legal/*.ts` (התוכן שהוגר
+מ-WordPress). גילוי נתיבים תוך כדי: לאתר יש **שני** סטים של מסמכים משפטיים —
+הסט החי תחת `_content/*.ts`, וסט שני מת (`src/content/legal/wp-migrated.ts`
+ועוד) שאינו מקושר משום מקום; זה מצב ידוע ומתועד במכוון
+ב-`src/content/legal/legal-duplication.test.ts` ("הכרעה של אופיר עם עו"ד"),
+לא drift חדש. גם דפי `/legal/*` (ה-slug הישן) קיימים כ-`permanentRedirect`
+בלבד, לא כמסמך שני.
+
+**נמצא ותוקן (רק בקוד חי, לקוח רואה):**
+
+1. **דליפת LTR + מילה זרה, `messages/he.json:487` `sellerAddress`** — מוצג
+   בכל מייל אישור רכישה (`src/lib/email/notifications.ts:261`, גילוי חובה
+   של המוכר). היה `"...וההיי-טק, Air Port City"` (אנגלית גולמית, גם עם רווח
+   שגוי בשם "Air Port" במקום "Airport"), בעוד אותה מחרוזת עצמה תעתקה
+   "hi-tech" ל"היי-טק" שתי מילים קודם. תוקן ל-`"...וההיי-טק, איירפורט סיטי"`
+   — תעתיק עקבי לשם המקום האמיתי (פארק עסקים ליד נתב"ג), לא שינוי כתובת.
+2. **מילה באנגלית, `messages/he.json:97` `newsletterPlaceholder`** — placeholder
+   בשדה הניוזלטר בפוטר בכל עמוד (`SiteFooter.tsx:203`). היה
+   `"הזן כתובת Email"` מול `auth.email: "אימייל"` הקיים כבר באותו קטלוג.
+   תוקן ל-`"הזן כתובת אימייל"`.
+3. **קישור שבור (308 מיותר), `LegalFooterLinks.tsx:39`** — רשימת ארבעת
+   הקישורים המשפטיים המוצגת בתחתית **כל ארבעת** הדפים המשפטיים החיים
+   (`LegalArticle.tsx:219`) הצביעה על `/legal/${slug}`, שהוא כיום stub של
+   redirect בלבד. תוקן למפה `CANONICAL_PATH` שמצביעה ישירות על הנתיב החי
+   (`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
+   `/accessibility`), בלי קפיצת redirect.
+4. **קישור שבור, `RefundRequestForm.tsx:99`** — קישור "מדיניון הביטולים"
+   בטופס בקשת החזר באזור האישי הצביע על `/legal/returns` (אותו stub).
+   תוקן ל-`/refund_returns` הישיר.
+
+**נמצא ותוקן בקוד מת (לא מוגש ללקוח, `src/content/legal/wp-migrated.ts`,
+לא היה בהיקף חובה אבל תיקון זול וללא סיכון — שום טסט לא מצמיד hash לטקסט,
+רק דפוסי "5%"/"100"):** תשע טעויות כתיב — "בלבדת" (אות מיותרת), "לעצמה
+לעצמה" (כפילות מילה), ארבע פעמים "אלה" במקום "אלא" (מילת ניגוד שגויה),
+"לאחרת" במקום "לאחר", משפט מגומגם "הפגם במוצר נשבר" (המוצר נשבר, לא הפגם),
+ו-נ׳ סופית תועה לפני "לרשתות" ("ןלרשתות" → "ולרשתות").
+
+**נבדק ונמצא נקי:** typos ב-Hebrew ב-`_content/*.ts` (~1060 שורות),
+ב-`messages/he.json` המלא, וב-`cancellation.ts`/`faq.ts`/`accessibility.ts`
+תחת `src/content/legal`; מילים באנגלית בטקסט ללקוח מעבר לשתי הנקודות
+שתוקנו (סריקת מילות UI נפוצות + סריקה רחבה של Latin runs בתוך JSX עם סינון
+false-positive של שמות מותג/טכני); קישורים פנימיים נוספים (`href="/..."`,
+`<Link href=`) מול עץ ה-routes בפועל — אין 404 נוספים; קישורי
+`mailto:`/`tel:`/`wa.me:` — התקלות היחידות שנמצאו הן fixtures שליליים
+מכוונים בטסט של `src/lib/supplier-contact.ts`, לא באג חי.
+
+**שער השוואה חזותי (`scripts/compare.mjs`, foreground, על `pnpm start` אמיתי
+ב-3311, לפני commit):** 380 8.51% PASS, 768 9.02% PASS, 1440 3.95% PASS —
+זהה למדידת M14-c51 שקדמה, אין רגרסיה. שורות נכתבו ל-`docs/UI-PARITY-REPORT.md`
+על ידי הריצה עצמה. `pnpm type-check` נקי, `pnpm lint` נקי (כולל copy-gate
+ו-i18n-gate בתקרה הקיימת 627, ללא שינוי מספר), `pnpm test` 604 קבצים / 7182
+עברו / 12 דולגו, `pnpm build` הצליח (exit 0).
+
+**קבצים:** `messages/he.json`, `src/app/(legal)/_components/LegalFooterLinks.tsx`,
+`src/components/account/RefundRequestForm.tsx`, `src/content/legal/wp-migrated.ts`,
+`docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
+**`RESUME FROM` נשאר `M17-c37` בכוונה**, כמו ב-M11..M16: המספר הזה כבר עמד
+בעץ העבודה כשהפריט נפתח, וזה בוצע משום סדר.
 
 ## M16-c51 - DONE (29.09), אומת מחדש (29.09): תברואת ריפו — git status נקי, כל ענף מקומי נדחף, PRs פתוחים וענפים ישנים רשומים
 
