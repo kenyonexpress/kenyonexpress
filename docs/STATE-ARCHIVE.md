@@ -2,6 +2,173 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c51 - DONE (28.09): axe על כל דף, אפס ממצאים חמורים/קריטיים נותרים
+
+**הפריט:** נגישות. axe על כל דף, תיקון כל ממצא `serious`/`critical`, שמירה על WCAG 2.1 AA,
+תיעוד הספירה הנותרת כאן. **`RESUME FROM` נשאר `M17-c37` בכוונה**: המספר הזה כבר עמד
+בעץ העבודה לפני שהפריט הזה נפתח, כלומר סשן אחר כבר קידם את התור מעבר ל-M11 בזמן
+שהפריט הזה עדיין המתין; M11-c51 הושלם משום סדר, ולא דורס התקדמות שכבר קיימת.
+
+**מה נבדק:** הסבב הציבורי הקיים (`e2e/a11y.spec.ts`, 19+ נתיבים ללא session) ותוספת
+חדשה, `e2e/a11y-authenticated.spec.ts`, שסורקת כל נתיב עם `expect.kind==='page'`
+בשלושת התפקידים המחוברים דרך `route-lists.ts` (80 נתיבים: 16 `/account/*`, 55
+`/admin/*`, 9 `/supplier/*`). ‏121 בדיקות סה"כ, `pnpm build` + `pnpm start` על build
+אחד, `pnpm exec playwright test e2e/a11y.spec.ts e2e/a11y-authenticated.spec.ts
+--project=chromium --workers=1`.
+
+**באג בתשתית הבדיקה שתוקן לפני שהמספרים היו אמינים:** `a11y-authenticated.spec.ts`
+ייבא את `CUSTOMER_PAGES`/`ADMIN_PAGES`/`SUPPLIER_PAGES` ישירות מ-`route-audit.spec.ts`.
+ל-Playwright כל `test()` ברמת המודול נרשם ברגע הייבוא, גם כשהמטרה היא רק קבוע מיוצא,
+ולכן הריצה הראשונה הרצה בפועל 306 בדיקות (את כל 224 בדיקות ה-route-audit יחד עם ה-82
+של a11y) ונמשכה 36 דקות. הנתונים כללו שתי כשלות route-audit לא קשורות
+(`anon /legal/accessibility`, `anon /legal/returns`) שלא שייכות לפריט הזה כלל.
+**תוקן:** הרשימות הועברו ל-`e2e/route-lists.ts`, מודול נתונים טהור בלי אף `test()`,
+ו-`route-audit.spec.ts` וה-a11y-authenticated החדש שניהם מייבאים ממנו. אחרי התיקון:
+80 בדיקות authenticated, כ-11 דקות.
+
+**מה נמצא ותוקן (סבב ראשון, 77 מתוך 80 נכשלו):**
+
+1. **`text-gray-400` על רקע לבן** ב-68 מקומות ב-admin/supplier/auth (יחס ניגודיות
+   2.5:1), כולל שורה משותפת ב-`admin/layout.tsx` שמופיעה בכל דף admin. הוחלף
+   ב-`text-muted` (הטוקן הקיים שכבר עבר את השער בצד הציבורי). `SiteFooter.tsx`
+   (רקע כהה) ו-`CategoryNav.tsx` (קוד מת, אין קורא בכל ה-src) לא נגעו.
+2. **`text-black/40`/`text-black/50` על רקע לבן** ב-138 מקומות (3.98:1 ו-2.85:1
+   בהתאמה, שניהם מתחת לסף). הוחלף אחיד ל-`text-black/60` (5.75:1), טון שכבר היה
+   בשימוש מוכח ב-`ProductsTable.tsx`.
+3. **`text-brand` (הצהוב #fed700) כצבע קישור על רקע לבן**, ‏1.41:1: קישורי מק"ט
+   הזמנה/קופון/ספק ב-26 מקומות היו כמעט בלתי נראים. הוחלף ב-`text-brand-dark`
+   (#1a1a1a), הטוקן שכבר משמש לאותה מטרה ב-`SupplierStorefrontHeader.tsx` וב-
+   `checkout/app-return/page.tsx`.
+4. **קישור בתוך פסקת טקסט תלוי צבע בלבד** (`admin/settings`, כלל `link-in-text-block`):
+   `hover:underline` בלבד לא מספיק כשקישור יושב בתוך טקסט רץ; הוחלף לקו תחתון קבוע.
+5. **שני `<select>` בלי שם נגיש** (כלל `select-name`, **קריטי**): מסנן הפעולה
+   ב-`admin/audit-log` קיבל `aria-label`; תפריט התפקיד לכל משתמש ב-`UserRoleClient`
+   קיבל `aria-label` הכולל את שם/אימייל המשתמש (prop חדש `userLabel`, מחווט משני
+   הקוראים).
+6. **`text-red-600` על רקע `bg-red-50`/לבן** ב-2 מקומות (4.41:1 ו-4.83:1, שניהם
+   נמדדו כנכשלים בפועל למרות שהחישוב היד עומד רק בקצה): כרטיס SLA ב-`admin/dashboard`
+   ו-`DeleteButton`. הוחלף ל-`text-red-700`.
+7. **`text-gray-500`** ב-3 מקומות שנמדדו כנכשלים בפועל (badge על `bg-gray-100`,
+   כפתור ביטול ב-`DeleteButton`, אזור גרירת תמונות ב-`ImageUploader`): הוחלף
+   ל-`text-gray-600`.
+
+**ממצא אחד התברר כארטיפקט של הבדיקה ולא של המוצר:** כשל אחרון וחוזר ב-
+`.border-2 > span` ב-`/admin/suppliers/new` נשאר אחרי כל התיקונים למעלה. נבדק
+ישירות עם סקריפט Playwright חד-פעמי: ‏`element.matches(':hover')` החזיר `true`
+על עמוד שאף עכבר לא נגע בו. הסבב מתחבר פעם אחת לתפקיד ומשתמש **באותו `page`**
+לכל הניווטים שלו (`page.goto`, לא `page.click`), כך שהסמן נשאר בדיוק במקום שבו
+`signInWithEmail` לחץ על "כניסה", ועל `admin/suppliers/new` אזור הגרירה נופל
+בדיוק על אותה נקודה, מה שמדליק `hover:text-brand`. תוקן ב-`scan()` עם
+`page.mouse.move(0, 0)` לפני כל axe.analyze, כדי שהבדיקה תמדוד מצב מנוחה אמיתי
+ולא hover מקרי שנשאר מהתחברות.
+
+**ספירה נותרת: 0 ממצאי `serious`/`critical` (וגם לא `moderate`/`minor`)** בשני
+קבצי הבדיקה יחד, מאומת בשלוש ריצות מלאות עוקבות אחרי כל התיקונים (121 בדיקות,
+120 עברו, 1 דולגה, 0 נכשלו). ‏WCAG 2.1 AA נשמר.
+
+**שערים:** `pnpm type-check` נקי. `pnpm lint` נקי (i18n 627/627, he-IL 116, כל
+שאר השערים ירוקים; ‏`biome check --write` תיקן פורמט אחרי שהקיצור של כמה מחרוזות
+class איפשר לקבצן לקפל JSX לשורה אחת). `pnpm test` **602 קבצים / 7,177 ירוקים /
+12 דולגים**. `pnpm build` ירוק. שער השוואה על build טרי, `--baseline=refs/ke_live_
+{width}.png`: בית **8.43% / 9.06% / 3.88%** ב-380/768/1440, כולם PASS (אין
+רגרסיה חזותית; כל השינויים הם admin/account/supplier, האתר הציבורי לא נגע).
+
+**קבצים:** ‏`e2e/route-lists.ts` (חדש), `e2e/a11y-authenticated.spec.ts` (חדש),
+`e2e/route-audit.spec.ts` (ייבוא מהרשימה המשותפת במקום להגדיר בעצמו), עוד כ-90
+קבצי `src/` (הצבעים למעלה), `src/styles/account.css` (‏`--account-muted` הוכהה
+מ-`#657888` ל-`#51606d`, ‏`.wallet-balance__note` מ-`opacity:.75` ל-`.85`, שניהם
+נמדדו ככושלים בפועל על אף שהחישוב היד עמד רק בקצה של 4.5:1).
+
+
+
+**M09-c1 BLOCKED (25.09): חוסם 5, reference לסל ולקופה ב-380/768.** הפריט היחיד
+ב-STATE.md שסוכן יכול להשלים בלי אופיר. הכלי נבנה ונבדק (`--add-to-cart` בסקריפט
+הלכידה, +6 טסטים), אבל דמו Electro עונה `403 - Forbidden` על `/cart/` ועל
+`/checkout/`, עם seed ובלי, בעוד דף המוצר נפתח באותו סשן. שתי דרכים, שני 403, עצירה
+לפי הכלל. הרשומה למטה, הפקודות ליום שהדמו יענה ב-`docs/MISSING-ASSETS.md` סעיף 1b.
+
+**הבא בתור: M10-c1.**
+
+ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M08-c1, תור 23.09, וכל מה שקדם)
+ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
+
+## SHOWABLE: no
+
+**Q05b (25.09): תנאי הפריט Q05b מתקיים.** בית 8.43 / 9.03 / 3.82 ומוצר
+5.65 / 4.95 / 2.92 ב-380 / 768 / 1440, כולם PASS, על build אחד. הדגל נשאר `no` כי
+Q06 (שרץ אחרי Q05b בתור) מגדיר אותו לפי Q02..Q05 עם ראיה, ו-Q02 לא השתנה: הדומיין
+לא מתרגם והפריסה החיה היא `a388118f1`. החלטה שהתקבלה לבד: לא לדרוס את הרישום
+המחמיר יותר ברישום רך יותר; מה שחסר בדיוק נשאר בטבלה למטה.
+
+**Q06 (25.09): נבדק מול הרשת, מול Vercel, מול git ומול שער ההשוואה, לא מול
+הרישומים הקודמים.** Q03, Q04 ו-Q05 עשויים ומאומתים בקוד; Q02 חסום. לכן לא
+`yes`. מה שחסר, במדויק, לפי פריט:
+
+| פריט | מה יש (ראיה) | מה חסר ל-SHOWABLE |
+|---|---|---|
+| Q02 | build ירוק ב-Vercel, פריסת פרודקשן `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` READY מ-git sha `a388118f1`, ‏200 על `https://kenyonexpress.vercel.app/` (נמדד עכשיו). | (א) **הדומיין לא מתרגם**: `dig +short A kenyonexpress.co.il @1.1.1.1` ריק, `www` ריק ב-8.8.8.8, `curl https://kenyonexpress.co.il/` ו-`www` מחזירים exit 6. הרשם (`dig NS @ns1.ns.il`) עדיין מאציל ל-`ns1.vercel.com`/`ns2.vercel.com`; ה-zone הנכון עונה SOA ב-`ns1.vercel-dns.com`. **פעולה של אופיר בלבד.** (ב) **הפריסה החיה היא `a388118f1`, ארבעה קומיטים מאחורי HEAD** (`0f981138e`, `6fb5fe971` Q04, `8d924b196` Q03, `2ee29bc90` Q05). ב-HTML החי: `0` ‏`pdp-small-print` ב-`/product/barbecue-2`, ‏`0` ‏`p_con__city` בדף הבית, ‏30 תמונות `ke-live-deal-N.webp` (הגריד הקפוא). פריסה לפרודקשן היא אחד מארבעת מצבי העצירה ואינה חלק מ-Q06; נרשמת כאן כפריט ידני. |
+| Q03 | `8d924b196` על origin. **שער נמדד בסשן הזה על HEAD נקי, `pnpm build` (BUILD_ID `LaycI8sfKnHf2W15yrW5Z`), `pnpm start` על 3311, `--widths=380,768,1440 --baseline=refs/ke_live_{width}.png`, בחזית: 380 ‏8.44% PASS, ‏768 ‏9.03% PASS, ‏1440 ‏3.82% PASS**, exit 0. השורות ב-`docs/UI-PARITY-REPORT.md` 19:59-20:02 UTC; הראשונה `2ee29bc90` נקי, השתיים אחריה `-dirty` רק כי השורה הראשונה כבר שינתה את הפנקס עצמו. | **עיר על הכרטיס בפרודקשן**: `products.city` הוא NULL בכל 46 השורות הפעילות, ‏`241_seed_product_city_from_title.sql` ממתינה ולא הוחלה (ממלאת 3), והשאר דורש מילוי בטופס Q05 אחרי פריסה. עד אז שורת המטא בפרודקשן מציגה קטגוריה בלבד. |
+| Q04 | `6fb5fe971` על origin: מקור מחיר רגיל, קישור ביקורות גוגל, אותיות קטנות, ‏242 ממתינה. | (א) **השער בדף המוצר נמדד ב-1440 בלבד** (2.79% PASS, reference `refs/live-product.png` של מוצר אחר, עם `COMPARE_ALLOW_GRID_MISMATCH=1`); **380 ו-768 REFUSED** באותו יום. **נסגר ב-Q05b (25.09):** reference של Electro v7 בשלושת הרוחבים, 5.65 / 4.95 / 2.92 PASS, בלי override. (ב) מקור המחיר וקישור הביקורות מרונדרים ריק בפרודקשן עד החלת 242 ועד שיהיו ערכים. |
+| Q05 | `2ee29bc90` על origin. `ProductForm.tsx` + `product-form-schema.ts` + `product-terms.ts` + `actions/admin/products.ts` מכילים את כל השדות (נבדק ב-grep: city, cashback_percent, original_price_source(+url), shipping_price, supplier_transfer_days, payout_cadence, cancellation_window_days, refund_policy, platform_percent, coupon_expiry, category, supplier, ImageUploader). ‏243 ממתינה. | (א) **242 ו-243 לא הוחלו**: ערך שאינו ברירת מחדל בשני שדות המקור ובחמשת התנאים נדחה בשמירה עם שם קובץ המיגרציה (`optional-column-groups.ts`). (ב) **R2 לא מופעל בחשבון** (נמדד 10.09, 403 code 10042), ההעלאה נופלת ל-Supabase Storage. שניהם פעולות של אופיר. |
+
+**סיכום השורה התחתונה:** האתר ניתן להצגה **רק ב-`https://kenyonexpress.vercel.app`
+ורק כפי שהיה ב-`a388118f1`** (בלי Q03/Q04/Q05). על הדומיין הרשמי הוא אינו
+ניתן להצגה כלל.
+
+
+## M09-c1 - BLOCKED (25.09) - חוסם 5 (reference לסל ולקופה ב-380/768): הכלי נבנה ונבדק, דמו Electro מסרב ל-`/cart/` ול-`/checkout/` ב-403
+
+**הפריט:** הפריט הפתוח בעל ההשפעה הגבוהה ביותר ב-STATE.md שסוכן קוד יכול להשלים
+בלי אופיר. נסרקו: עשרת החוסמים, עשרת הפריטים הידניים ושלוש שורות "מה חסר" של
+Q03..Q05. כולם רשם, סוד, דשבורד, migration או פריסה, חוץ מחוסם 5: לסל ולקופה יש
+reference רק ב-1440 (`refs/live-cart.png`, `refs/live-checkout.png`, מהאתר הישן,
+09.09 ו-07.09), והאתר הישן לא עונה יותר באף רוחב. Q05b סגר את אותו פער לדף המוצר
+עם `scripts/capture-electro.mjs`, ולכן זה הפריט.
+
+**מה נבנה (בקוד, נבדק):** `scripts/capture-electro.mjs` מקבל `--add-to-cart=<id>`
+(פירוק הארגומנטים ב-`scripts/capture-electro-args.mjs`, 6 טסטים
+ב-`capture-electro-args.test.mjs`): מבקר ב-`/?add-to-cart=<id>&quantity=1` של הדמו
+דרך אותו context מחומם לפני הניווט האמיתי, סופר שורות `.cart_item` בדף שנלכד,
+ומסרב ב-exit 3 אם לכידה עם seed מראה סל ריק. בלי השומר הזה סל ריק, או קופה
+ש-WooCommerce החזיר לסל הריק, היו נכתבים בשם של reference ומנוקדים.
+
+**מה נמדד (25.09, סשן אחד, אותו חימום שפתח את דף המוצר דקות קודם):**
+
+| URL | עם seed 2439 | בלי seed |
+|---|---|---|
+| `/cart/` | `403 - Forbidden`, 81,082 בתים | `403 - Forbidden`, 81,082 בתים |
+| `/checkout/` | `403 - Forbidden`, 81,082 בתים | `403 - Forbidden`, 81,082 בתים |
+| `/?add-to-cart=2439&quantity=1` | | `Just a moment...`, 28,792 בתים, לא נפתח ב-30 שניות |
+| `/product/ultra-wireless-s50-...` | | 200, 518,688 בתים (ביקורת: הנתיב שכן עובד) |
+
+הסירוב הוא לפי נתיב במקור (אותו דף שגיאה של 81,082 בתים כמו סירוב המוצר ב-04.09),
+לא ה-challenge ולא ה-seed. שתי דרכים נוסו ושתיהן נגמרו ב-403; לפי הכלל, לא שלישית.
+לא נכתב דבר לסל ולקופה. הפירוט, הפקודות ליום שהדמו יענה, והשער שכבר מחווט אליהן
+(`--baseline='refs/electro_cart_{width}.png'`) ב-`docs/MISSING-ASSETS.md` סעיף 1b.
+`refs/probe_product.*` הם תוצר הביקורת, כפילות בייט-לבייט של `electro_product.*`,
+gitignored; לא נמחקו (כלל 2).
+
+**החלטות שהתקבלו לבד:** (א) הפריט מסומן BLOCKED ולא DONE: הקוד נחת, אבל
+ה-reference שהפריט נועד לו לא קיים והשער בסל ובקופה נשאר ב-1440 בלבד. חוסם 5 נשאר
+פתוח עם הפקודה המדויקת. (ב) לא נוסה מקור חלופי (ארכיון אינטרנט, דמו אחר):
+מקור האמת הוא הדמו עצמו. (ג) שרת `next-server` זר (pid 74758) לא נגעתי בו; השער
+נמדד על 3501 מול שרת חדש שאומת (`_buildManifest.js` של BUILD_ID הריצה עונה 200)
+ונסגר בסיום (3501 עונה exit 7). (ד) רשומת M08-c1 הועברה לארכיון באותו commit.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 116 בתקרה,
+docs-index 281, docs-path-audit 153 ללא שינוי), `pnpm test` **602 קבצים / 7,177
+ירוקים / 12 מדולגים** (51.4s, +6), `pnpm build` ירוק (BUILD_ID `z_1goHG34CQ8IQmCbrS49`,
+0 ERROR). שער ההשוואה בחזית על 3501, `--baseline`, ללא override:
+
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית מול `refs/ke_live_*` | **8.43% PASS** | **9.03% PASS** | **3.82% PASS** |
+| מוצר `barbecue-2` מול `refs/electro_product_*` | **5.65% PASS** | **4.95% PASS** | **2.92% PASS** |
+| סל מול `refs/live-cart.png` (סל מקומי מלא) | אין reference | אין reference | **1.47% PASS** |
+| קופה מול `refs/live-checkout.png` (נחת על `/checkout`) | אין reference | אין reference | **0.94% PASS** |
+
+שמונה השורות 10:22-10:35 UTC ב-`docs/UI-PARITY-REPORT.md` על `3c3c1508d-dirty`
+(העץ החזיק את שינוי הקוד של הפריט בזמן המדידה). **תחזוקה:** גיבוי היום קיים
 ---
 
 ## M08-c1 - DONE (25.09) - BACKLOG EMPTY, נמדד בפעם העשירית: שלושת תנאי הפתיחה מחדש נבדקו ואף אחד לא התקיים
