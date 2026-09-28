@@ -594,7 +594,10 @@ function roleSuite(
     test(`${role} detail pages discovered from their lists`, async () => {
       test.skip(!signedIn, `${role} sign-in failed: ${signInError || 'unknown'}`)
       // Up to ten list visits and ten audits in one test; the 30s default is for one page.
-      test.setTimeout(240_000)
+      // 240s assumed roughly 12s per round trip; measured against the hosted Supabase
+      // project from a local dev machine, individual queries alone can take 1.5-6s and
+      // occasionally hit the 10s client timeout, so the budget is doubled.
+      test.setTimeout(480_000)
       for (const [list, prefix, suffix] of details) {
         let found = await discoverDetail(page, list, prefix, suffix)
         if (!found && prefix === '/admin/categories/') {
