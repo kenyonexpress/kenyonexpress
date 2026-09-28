@@ -2,6 +2,101 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c51 - DONE (28.09): כותרות אבטחה ותקרות — CSP, HSTS, X-Frame-Options, Referrer-Policy, Upstash על login/checkout/redeem: אומת מול build ירוק, שני פערי טסט נסגרו
+
+**הפריט:** אימות CSP, HSTS, X-Frame-Options, Referrer-Policy ותקרות Upstash על
+login, checkout ו-redeem. תיקון כל פער שנמצא, עם טסטים. **`RESUME FROM` נשאר
+`M17-c37` בכוונה**, כמו ב-M11-c51/M12-c51: מספר זה כבר עמד בעץ העבודה כשהפריט
+נפתח, כלומר סשן אחר כבר קידם את התור; הפריט הזה הושלם משום סדר.
+
+**הכותרות: תשתית קיימת ומקיפה, נבדקה בפועל ולא רק בקונפיג.** `next.config.ts`
++ `src/lib/security/frame-policy.ts` כבר בונים CSP תלוי-נתיב, HSTS
+(`max-age=63072000; includeSubDomains; preload`), X-Frame-Options תלוי-נתיב,
+Referrer-Policy (`strict-origin-when-cross-origin`), COOP/CORP ו-Permissions-Policy,
+עם שער יחידה (`frame-policy.test.ts`, `csp-turnstile.test.ts`,
+`frame-policy-matches-provider.test.ts`). מה שחסר היה אימות שהן אכן יוצאות על
+תגובה אמיתית: `pnpm build` + `pnpm start` על 3517, ואז `curl -sD -` על `/`,
+`/login`, `/checkout`, `/redeem/abc` — כל ארבע הכותרות נוכחות בכל ארבעתם, ועל
+`/checkout/frame-return` X-Frame-Options הופך ל-SAMEORIGIN ו-frame-ancestors
+ל-`'self'` כמתועד (התיק היחיד שמותר להיפרם, לצורך חזרת Cardcom).
+
+**Upstash: `UPSTASH_REDIS_REST_URL` אינו מוגדר באף סביבה שהריפו רואה
+(`docs/RATE-LIMITS.md` §7), כך שהמסלול החי הוא Postgres fallback, במכוון
+(כשל פתוח).** login, checkout ו-redeem שלושתם כן קוראים ל-rate limit:
+`login:{ip}` ו-`login-account:{email}` ב-`auth.ts`, `begin_checkout:user:{id}`
+(10/דקה) ב-`checkout.ts`, `redeem:{ip}` (60/שעה) ב-`redeem/[token]/page.tsx`.
+
+**שני פערי טסט נמצאו ונסגרו — שלושת הראוטים היו "רשומים" בתיעוד אבל
+לא נבדקו על ענף הדחייה:**
+
+1. `src/server/actions/auth.test.ts` לא היה קיים. נוסף: דוחה על תקרת ה-IP
+   ולפני שהחשבון נבדק, ודוחה על תקרת החשבון גם כשה-IP מתחת לתקרה (עם
+   lower-case על המייל).
+2. `checkout.test.ts` נעל את `checkRateLimit` ל-`async () => true` קבוע — ענף
+   הדחייה של `begin_checkout` לא נבדק אף פעם. הוחלף ב-mock נשלט
+   (`vi.hoisted`), ונוסף טסט שמוודא סירוב לפני שנוגעים בעגלה/כתובת/מוצר
+   (רק קריאת `feature_flags` רצה קודם).
+3. `src/app/redeem/[token]/page.test.tsx` לא היה קיים. `RedeemTokenBody`
+   יוצא עכשיו לבדיקה ישירה (היה רק ברירת מחדל); נוסף טסט שמוודא סירוב לפני
+   בדיקת החתימה, ושאין קריאה כלל כשאין כתובת לקבוע לפיה.
+
+**`pnpm type-check`, `pnpm lint` (627/627 i18n, 116 he-IL, כל שאר השערים
+ירוקים), `pnpm test` (604 קבצים, 7182 עברו) ו-`pnpm build` ירוקים.** לא נדרש
+שער השוואה חזותי — אין שינוי UI.
+
+**קבצים:** `src/server/actions/auth.test.ts` (חדש), `payments/checkout.test.ts`
+(mock נשלט + טסט), `src/app/redeem/[token]/page.tsx` (export יחיד),
+`src/app/redeem/[token]/page.test.tsx` (חדש), `STATE.md`.
+
+**הבא בתור: לפי `RESUME FROM`, M17-c37.**
+
+---
+
+## M12-c51 - DONE (28.09): SEO — מטא, canonical, og, schema.org Product/Offer, sitemap, robots: אומת מול build ירוק, אין drift
+
+**הפריט:** אימות מטא, canonical, og tags, schema.org Product ו-Offer בדפי מוצר,
+טריות ה-sitemap ו-robots. תיקון כל סטייה שנמצאת. **`RESUME FROM` נשאר `M17-c37`
+בכוונה**, כמו ב-M11-c51: המספר הזה כבר עמד בעץ העבודה לפני שהפריט הזה נפתח, כלומר
+סשן אחר כבר קידם את התור מעבר לכאן; הפריט הזה הושלם משום סדר.
+
+**מה נבדק, מול Q21 (25.09, בארכיון) שכבר בנה את התשתית הזו:** `pnpm build` +
+`pnpm start` על 3311, ואז:
+
+1. **שער יחידה**, 9 קבצים / 166 בדיקות: `src/lib/seo/**`, `src/app/sitemap*`,
+   `src/app/robots.test.ts`, `src/lib/product-seo.ts` — כולם ירוקים.
+2. **`src/__tests__/canonical-coverage.test.ts`, `sitemap-canonicals.test.ts`,
+   `sitemap-robots-agree.test.ts`** (95 בדיקות): מוודאים שכל דף ציבורי נושא
+   canonical משלו (לא יורש מהשורש), שכל כתובת ב-sitemap עקבית עם ה-canonical
+   שלה, ושכל כתובת שה-sitemap פולט גם מותרת ב-`robots.ts` — ירוקים.
+3. **`e2e/seo-markup.spec.ts` בזמן ריצה, על ה-build האמיתי (`E2E_BASE_URL=
+   http://localhost:3311`, לא `pnpm dev`)**: JSON-LD `Product`+`BreadcrumbList`
+   בדף מוצר, canonical מוחלט שמצביע על עצמו, `/products` ו-`/category/*`
+   מקבלים canonical יחיד, `/redeem/<token>` ו-`/account/wishlist` נושאים
+   `noindex`. 5/5 עברו.
+4. **בדיקה ידנית על ה-HTML המוגש** (`curl` על `/product/barbecue`): `<title>`,
+   `<meta name="description">`, `<link rel="canonical">` מוחלט, כל שבעת תגי
+   `og:*` (כולל `og:image` **מהראוט המיוצר** ולא מתמונת המוצר — התיעוד בקובץ
+   מסביר שזו תקלה שכבר קרתה וכבר תוקנה), JSON-LD `Product` עם `offers.price`,
+   `priceSpecification` (`StrikethroughPrice`) ו-`availability` הנגזרים
+   מאותו נתון שהעמוד מציג, ו-`BreadcrumbList` בית/קטגוריה/מוצר.
+5. **`/robots.txt`**: 12 נתיבים אסורים (כולל `/redeem/`, `/coupon/`, `/checkout`,
+   `/cart`), שורת `Sitemap:` לאינדקס בלבד. **`/sitemap.xml`**: `<sitemapindex>`
+   על חמישה קבצים. **`/sitemap/products.xml`**: 46 כתובות פעילות, `lastmod` לפי
+   `updated_at` אמיתי מה-DB (לא שעון-רגע). **`/sitemap/regions.xml`**: 17
+   כתובות, תואם את הרישום ב-`docs/STATE-ARCHIVE.md` (SECTIONS 79).
+
+**לא נמצאה סטייה.** אפס שינוי קוד. `pnpm type-check`, `pnpm lint` (627/627
+i18n, 116 he-IL, כל שאר השערים ירוקים), `pnpm test` ו-`pnpm build` ירוקים
+ללא שינוי בעץ. לא נדרש שער השוואה חזותי — הפריט לא נגע ב-UI.
+
+**קבצים:** אין. שינוי יחיד הוא `STATE.md` (הרשומה הזו) ו-`docs/STATE-ARCHIVE.md`
+(העברת הפירוט המלא של M11-c51/Q05b/Q06/M09-c1 לארכיון, כדי להישאר מתחת ל-300
+שורות).
+
+**הבא בתור: לפי `RESUME FROM`, M17-c37.**
+
+---
+
 ## M11-c51 - DONE (28.09): axe על כל דף, אפס ממצאים חמורים/קריטיים נותרים
 
 **הפריט:** נגישות. axe על כל דף, תיקון כל ממצא `serious`/`critical`, שמירה על WCAG 2.1 AA,

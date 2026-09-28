@@ -1,7 +1,65 @@
 RESUME FROM: M17-c37
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c51)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c51)
 
 ## המשך מ:
+
+## M15-c51 - DONE (29.09): סנכרון תיעוד — STATE.md, docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md, רשימת "ידני לאופיר" אחת במקום שתיים סוטות
+
+**הפריט:** רענון טבלת המצב בשלושת הקבצים מול `git log` וראיית קוד, ואיחוד
+רשימות "ידני לאופיר" לרשימה יחידה בסדר קריטיות, בלי כפילויות. **`RESUME FROM`
+נשאר `M17-c37` בכוונה**, כמו ב-M11..M14: המספר הזה כבר עמד בעץ העבודה כשהפריט
+נפתח, סשן אחר כבר קידם את התור, והפריט הזה הושלם משום סדר.
+
+**`docs/BACKLOG.md` לא היה קיים.** תשעה פריטים בתור (B02..M08-c1, בארכיון)
+מדדו את זה שוב ושוב והחליטו **לא** ליצור אותו, מהסיבה הרשומה ב-M08-c1:
+"קובץ חדש ב-`docs/` מפעיל את שערי המלאי בלי תוכן שמצדיק אותו". M08-c1 גם
+רשם מראש: "`M15-c1` מבקש לרענן את `docs/BACKLOG.md`; כשיגיע תורו, יצירת
+הקובץ תהיה תוצר של אותו פריט ולא של זה" — זה אותו פריט (מספור שונה,
+`-c51` במקום `-c1`), וזה עכשיו התוצר שלו.
+
+**מה שהשוואה בין `STATE.md` ל-`docs/LAUNCH-READINESS.md` מצאה: שתי הרשימות
+סטו זו מזו, לא רק בניסוח.** רשימת המיגרציות הממתינות בשתי הרשומות "ידני
+לאופיר" (25.09 בשתיהן) הייתה **קבוצה שונה של מספרי קבצים** — STATE.md נקב
+ב-218, 245, 246, 204, 240-244; LAUNCH-READINESS.md נקב ב-204, 223, 224,
+234-236, 239-244 — חפיפה חלקית בלבד, כל אחת חסרה קבצים שהשנייה מנתה. שני
+פריטים היו ב-LAUNCH-READINESS.md ונעדרו לגמרי מרשימת הפעולה של STATE.md
+(הכרעת 25 שורות הקטלוג, ואי-ההתאמה של `scripts/cron-jobs.json` ב-`main`
+מול HEAD). שני פריטים אחרים היו ברשימת ה**חוסמים** של STATE.md אך מעולם לא
+עברו לרשימת ה**פעולה** שלו (`RESEND_API_KEY`, שורת ח.פ). כל ארבעת אלה
+תוקנו ב-`docs/BACKLOG.md`, שממזג את שתי הרשימות ל-15 סעיפים ומצטט מקור לכל
+אחד.
+
+**`docs/BACKLOG.md` כתוב, לא רק נוצר ריק:** 15 סעיפים בסדר קריטיות, כל אחד
+עם המקור (STATE.md חוסם N / LAUNCH-READINESS.md שורה/סעיף N) ועם רשימת
+המיגרציות המאוחדת (17 קבצים: 204, 209, 218, 220, 223, 224, 234, 235, 236,
+239-246 — האיחוד של שתי הרשימות שסטו). `STATE.md` ו-`docs/LAUNCH-READINESS.md`
+מפנים אליו במקום לשמור עותק כל אחד.
+
+**`docs-index-gate` ו-`docs-path-audit` תפסו את ההשלכה בפועל, לא רק
+תיאורטית.** הקובץ החדש נפל מחוץ ל-`docs/INDEX.md` (282 מסמכים, לא 281) —
+תוקן, נוסף לאשכול "Operations, release and infrastructure". ורשומת
+`docs/STATE-ARCHIVE.md` שציינה שהקובץ עדיין לא קיים (מ-M08-c1) הפכה לנתיב
+תקף — `docs-path-audit --write` הסיר את השורה מהפנקס.
+
+**ראיה שקדמה לפריט הזה, נבדקה ולא נמדדה מחדש:** רשימת המיגרציות שנבנתה ב-
+`docs/BACKLOG.md` היא איחוד של רשימות קיימות (STATE.md, `docs/LAUNCH-READINESS.md`,
+`migrations/pending/APPLY-ORDER.md`), לא מדידה חדשה מול פרודקשן — הפריט הזה
+הוא סנכרון תיעוד, לא ביקורת DB. **מספר הקומיטים שפרודקשן מאחור מ-HEAD עודכן
+מ-22 (25.09) ל-47 (`git rev-list --count a388118f1..HEAD`, מקומי בלבד, לא
+נבדק מול הפריסה החיה).** הפער בין הענפים (`audit/final-audit` מול
+`origin/main`) עודכן מ-396 ל-**421** קומיטים לפנים; הפער ההפוך (autopilot
+ב-`main`) נשאר **109**, ללא שינוי.
+
+**`pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 116, docs-index
+282 מסמכים, docs-path-audit 152 ללא dangling חדש), `pnpm test` (604 קבצים,
+7182 עברו, 12 דולגו) ו-`pnpm build` ירוקים.** אין שינוי UI, לא נדרש שער
+השוואה חזותי.
+
+**קבצים:** `docs/BACKLOG.md` (חדש), `docs/INDEX.md` (שורה + ספירה),
+`docs/known-dangling-paths.json` (`docs-path-audit --write`), `STATE.md`,
+`docs/LAUNCH-READINESS.md`.
+
+**הבא בתור: לפי `RESUME FROM`, M17-c37.**
 
 ## M14-c51 - DONE (29.09): ביצועים, גודל bundle, פלט צנרת התמונות, תגיות ISR וכותרות cache: ממצא אחד תוקן, ממצא כוזב אחד נשלל אחרי בדיקה כפולה
 
@@ -62,98 +120,12 @@ FROM` נשאר `M17-c37` בכוונה**, כמו ב-M11..M13: המספר הזה �
 
 **הבא בתור: לפי `RESUME FROM`, M17-c37.**
 
-## M13-c51 - DONE (28.09): כותרות אבטחה ותקרות — CSP, HSTS, X-Frame-Options, Referrer-Policy, Upstash על login/checkout/redeem: אומת מול build ירוק, שני פערי טסט נסגרו
+**M13-c51 ו-M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M13-c51 —
+CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על build אמיתי, שני פערי טסט
+נסגרו. M12-c51 — SEO (מטא, canonical, og, schema.org Product/Offer, sitemap,
+robots), 261 בדיקות, אפס drift.
 
-**הפריט:** אימות CSP, HSTS, X-Frame-Options, Referrer-Policy ותקרות Upstash על
-login, checkout ו-redeem. תיקון כל פער שנמצא, עם טסטים. **`RESUME FROM` נשאר
-`M17-c37` בכוונה**, כמו ב-M11-c51/M12-c51: מספר זה כבר עמד בעץ העבודה כשהפריט
-נפתח, כלומר סשן אחר כבר קידם את התור; הפריט הזה הושלם משום סדר.
-
-**הכותרות: תשתית קיימת ומקיפה, נבדקה בפועל ולא רק בקונפיג.** `next.config.ts`
-+ `src/lib/security/frame-policy.ts` כבר בונים CSP תלוי-נתיב, HSTS
-(`max-age=63072000; includeSubDomains; preload`), X-Frame-Options תלוי-נתיב,
-Referrer-Policy (`strict-origin-when-cross-origin`), COOP/CORP ו-Permissions-Policy,
-עם שער יחידה (`frame-policy.test.ts`, `csp-turnstile.test.ts`,
-`frame-policy-matches-provider.test.ts`). מה שחסר היה אימות שהן אכן יוצאות על
-תגובה אמיתית: `pnpm build` + `pnpm start` על 3517, ואז `curl -sD -` על `/`,
-`/login`, `/checkout`, `/redeem/abc` — כל ארבע הכותרות נוכחות בכל ארבעתם, ועל
-`/checkout/frame-return` X-Frame-Options הופך ל-SAMEORIGIN ו-frame-ancestors
-ל-`'self'` כמתועד (התיק היחיד שמותר להיפרם, לצורך חזרת Cardcom).
-
-**Upstash: `UPSTASH_REDIS_REST_URL` אינו מוגדר באף סביבה שהריפו רואה
-(`docs/RATE-LIMITS.md` §7), כך שהמסלול החי הוא Postgres fallback, במכוון
-(כשל פתוח).** login, checkout ו-redeem שלושתם כן קוראים ל-rate limit:
-`login:{ip}` ו-`login-account:{email}` ב-`auth.ts`, `begin_checkout:user:{id}`
-(10/דקה) ב-`checkout.ts`, `redeem:{ip}` (60/שעה) ב-`redeem/[token]/page.tsx`.
-
-**שני פערי טסט נמצאו ונסגרו — שלושת הראוטים היו "רשומים" בתיעוד אבל
-לא נבדקו על ענף הדחייה:**
-
-1. `src/server/actions/auth.test.ts` לא היה קיים. נוסף: דוחה על תקרת ה-IP
-   ולפני שהחשבון נבדק, ודוחה על תקרת החשבון גם כשה-IP מתחת לתקרה (עם
-   lower-case על המייל).
-2. `checkout.test.ts` נעל את `checkRateLimit` ל-`async () => true` קבוע — ענף
-   הדחייה של `begin_checkout` לא נבדק אף פעם. הוחלף ב-mock נשלט
-   (`vi.hoisted`), ונוסף טסט שמוודא סירוב לפני שנוגעים בעגלה/כתובת/מוצר
-   (רק קריאת `feature_flags` רצה קודם).
-3. `src/app/redeem/[token]/page.test.tsx` לא היה קיים. `RedeemTokenBody`
-   יוצא עכשיו לבדיקה ישירה (היה רק ברירת מחדל); נוסף טסט שמוודא סירוב לפני
-   בדיקת החתימה, ושאין קריאה כלל כשאין כתובת לקבוע לפיה.
-
-**`pnpm type-check`, `pnpm lint` (627/627 i18n, 116 he-IL, כל שאר השערים
-ירוקים), `pnpm test` (604 קבצים, 7182 עברו) ו-`pnpm build` ירוקים.** לא נדרש
-שער השוואה חזותי — אין שינוי UI.
-
-**קבצים:** `src/server/actions/auth.test.ts` (חדש), `payments/checkout.test.ts`
-(mock נשלט + טסט), `src/app/redeem/[token]/page.tsx` (export יחיד),
-`src/app/redeem/[token]/page.test.tsx` (חדש), `STATE.md`.
-
-**הבא בתור: לפי `RESUME FROM`, M17-c37.**
-
-## M12-c51 - DONE (28.09): SEO — מטא, canonical, og, schema.org Product/Offer, sitemap, robots: אומת מול build ירוק, אין drift
-
-**הפריט:** אימות מטא, canonical, og tags, schema.org Product ו-Offer בדפי מוצר,
-טריות ה-sitemap ו-robots. תיקון כל סטייה שנמצאת. **`RESUME FROM` נשאר `M17-c37`
-בכוונה**, כמו ב-M11-c51: המספר הזה כבר עמד בעץ העבודה לפני שהפריט הזה נפתח, כלומר
-סשן אחר כבר קידם את התור מעבר לכאן; הפריט הזה הושלם משום סדר.
-
-**מה נבדק, מול Q21 (25.09, בארכיון) שכבר בנה את התשתית הזו:** `pnpm build` +
-`pnpm start` על 3311, ואז:
-
-1. **שער יחידה**, 9 קבצים / 166 בדיקות: `src/lib/seo/**`, `src/app/sitemap*`,
-   `src/app/robots.test.ts`, `src/lib/product-seo.ts` — כולם ירוקים.
-2. **`src/__tests__/canonical-coverage.test.ts`, `sitemap-canonicals.test.ts`,
-   `sitemap-robots-agree.test.ts`** (95 בדיקות): מוודאים שכל דף ציבורי נושא
-   canonical משלו (לא יורש מהשורש), שכל כתובת ב-sitemap עקבית עם ה-canonical
-   שלה, ושכל כתובת שה-sitemap פולט גם מותרת ב-`robots.ts` — ירוקים.
-3. **`e2e/seo-markup.spec.ts` בזמן ריצה, על ה-build האמיתי (`E2E_BASE_URL=
-   http://localhost:3311`, לא `pnpm dev`)**: JSON-LD `Product`+`BreadcrumbList`
-   בדף מוצר, canonical מוחלט שמצביע על עצמו, `/products` ו-`/category/*`
-   מקבלים canonical יחיד, `/redeem/<token>` ו-`/account/wishlist` נושאים
-   `noindex`. 5/5 עברו.
-4. **בדיקה ידנית על ה-HTML המוגש** (`curl` על `/product/barbecue`): `<title>`,
-   `<meta name="description">`, `<link rel="canonical">` מוחלט, כל שבעת תגי
-   `og:*` (כולל `og:image` **מהראוט המיוצר** ולא מתמונת המוצר — התיעוד בקובץ
-   מסביר שזו תקלה שכבר קרתה וכבר תוקנה), JSON-LD `Product` עם `offers.price`,
-   `priceSpecification` (`StrikethroughPrice`) ו-`availability` הנגזרים
-   מאותו נתון שהעמוד מציג, ו-`BreadcrumbList` בית/קטגוריה/מוצר.
-5. **`/robots.txt`**: 12 נתיבים אסורים (כולל `/redeem/`, `/coupon/`, `/checkout`,
-   `/cart`), שורת `Sitemap:` לאינדקס בלבד. **`/sitemap.xml`**: `<sitemapindex>`
-   על חמישה קבצים. **`/sitemap/products.xml`**: 46 כתובות פעילות, `lastmod` לפי
-   `updated_at` אמיתי מה-DB (לא שעון-רגע). **`/sitemap/regions.xml`**: 17
-   כתובות, תואם את הרישום ב-`docs/STATE-ARCHIVE.md` (SECTIONS 79).
-
-**לא נמצאה סטייה.** אפס שינוי קוד. `pnpm type-check`, `pnpm lint` (627/627
-i18n, 116 he-IL, כל שאר השערים ירוקים), `pnpm test` ו-`pnpm build` ירוקים
-ללא שינוי בעץ. לא נדרש שער השוואה חזותי — הפריט לא נגע ב-UI.
-
-**קבצים:** אין. שינוי יחיד הוא `STATE.md` (הרשומה הזו) ו-`docs/STATE-ARCHIVE.md`
-(העברת הפירוט המלא של M11-c51/Q05b/Q06/M09-c1 לארכיון, כדי להישאר מתחת ל-300
-שורות).
-
-**הבא בתור: לפי `RESUME FROM`, M17-c37.**
-
-ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M11-c51, תור 23.09, וכל מה שקדם)
+ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M13-c51, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 
@@ -211,6 +183,9 @@ i18n, 116 he-IL, כל שאר השערים ירוקים), `pnpm test` ו-`pnpm bu
 | M09-c1 | BLOCKED, דמו Electro מסרב | הרשומה למעלה. `--add-to-cart` בסקריפט הלכידה +6 טסטים; `/cart/` ו-`/checkout/` 403 עם seed ובלי, המוצר 200 באותו סשן. חוסם 5 נשאר. שער 8.43/9.03/3.82 PASS, מוצר 5.65/4.95/2.92 PASS, סל 1.47 וקופה 0.94 ב-1440 PASS. |
 | M11-c51 | DONE (28.09) | הרשומה למעלה. axe על 121 בדיקות (סבב ציבורי + 80 נתיבים מחוברים בשלושה תפקידים); 77 נכשלו בסבב ראשון, כולם תוקנו (7 סוגי ממצא: `text-gray-400`, `text-black/40`/`50`, `text-brand` כקישור, קישור תלוי צבע, שני `select` בלי שם, `text-red-600`, `text-gray-500`), ממצא אחד נוסף התברר כארטיפקט עכבר-תקוע בבדיקה עצמה ותוקן שם. ‏0 ממצאים נותרים, מאומת בשלוש ריצות נקיות עוקבות. שער 8.43/9.06/3.88 PASS. |
 | M12-c51 | DONE (28.09) | הרשומה למעלה. מטא/canonical/og/JSON-LD Product+Offer/sitemap/robots אומתו מול build אמיתי (166 טסטי יחידה, 95 טסטי canonical-coverage/sitemap-robots-agree, 5 e2e על `pnpm start`, בדיקה ידנית על HTML מוגש). אפס drift, אפס שינוי קוד. |
+| M13-c51 | DONE (28.09) | הרשומה למעלה. CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על `curl` מול build אמיתי בארבעה נתיבים; Upstash לא מוגדר, Postgres fallback פעיל; שני פערי טסט נסגרו (`auth.test.ts`, `checkout.test.ts` חדשים). |
+| M14-c51 | DONE (29.09) | הרשומה למעלה. Bundle ירד (382.2kB->341.2kB בית), `CategoryStrip.tsx` מ-17 מועמדי srcset ל-2 (HTML -1.8%), ISR ו-cache headers נבדקו ללא רגרסיה בת-תיקון. ממצא כוזב (14.05% חד-פעמי) נשלל בשש ריצות. שער 8.51/9.02/3.95 PASS. |
+| M15-c51 | DONE (29.09) | הרשומה למטה. `docs/BACKLOG.md` נוצר כרשימת "ידני לאופיר" יחידה, ממוזגת מ-STATE.md ומ-LAUNCH-READINESS.md; שני חוסרים אמיתיים נמצאו בכל אחד מהם ותוקנו. אין שינוי UI, לא נדרש שער השוואה חזותי. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
@@ -260,24 +235,19 @@ i18n, 116 he-IL, כל שאר השערים ירוקים), `pnpm test` ו-`pnpm bu
     עונה 401 ל-`CRON_SECRET` של GitHub (סוד שונה מזה ב-Vercel). 72 הודעות
     `pending` ב-`notification_outbox` מאז 10.09; `expire-vouchers` ושאר 21
     העבודות לא רצות. תיקון: אותו ערך בשני המקומות. פעולה של אופיר בלבד.
+11. **הקטלוג החי מכיל שורות תבנית וכפילויות** (`supabase/catalogue-known-issues.json`,
+    25 ממצאים על 44-46 מוצרים פעילים לפי המדידה): שלוש שורות `מאסטר`, חמש
+    `-copy`/`-העתק`/`-לדוגמא`, שמות שסותרים slug, מחיר שסותר את הטקסט של
+    עצמו. **לא היה רשום כחוסם ב-STATE.md עד M15-c51** (נמדד ב-`docs/LAUNCH-READINESS.md`
+    שורה חוסמת 6 ו-`CLAUDE.md` §"מצב נוכחי"); שער `pnpm test src/lib/catalogue`
+    ירוק מול הפנקס — הפנקס הוא הכרעת מפעיל, לא תקלה שנמדדת.
+12. **`scripts/cron-jobs.json` ב-`main` מכיל שבעה נתיבים ש-HEAD אינו מגיש**
+    (`search-reindex`, `job-dlq`, `search-outbox`, `cashback-settlement`,
+    `email-retry`, `expire-cashback`, `expire-coupons`), כל אחד עונה 404 גם
+    אחרי שחוסם 10 נסגר. נפתר מעצמו במיזוג הענף הזה ל-`main`. **לא היה רשום
+    ב-STATE.md עד M15-c51** (נמדד ב-`docs/LAUNCH-READINESS.md` ידני 9).
 
 ## ידני לאופיר, לפי סדר קריטיות
 
-1. DNS (חוסם 1). פעולה אחת בממשק הרשם.
-2. `CRON_SECRET` זהה ב-GitHub וב-Vercel (חוסם 10); הריצה הבאה של "Scheduled jobs"
-   צריכה להראות `notifications -> 200`.
-3. **סביבת Production ב-Vercel לפני כל פריסה** (חוסם 2, נמדד M01-c1): להוסיף
-   `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` (השמות
-   שהקוד קורא; `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID` הקיימים אינם נקראים)
-   ולהסיר `ALLOW_INCOMPLETE_ENV`. אחרי זה פריסה של HEAD: REST `POST /v13/deployments`
-   עם `gitSource.sha`, `target=production`, כמו ב-Q02.
-4. אישור והחלת **218 תחילה** (טופס הפרופיל שבור, חוסם 3), ואז 240..243, 209/220/245/246
-   לפי `APPLY-ORDER`, דרך MCP לפי `RUNBOOK`, ואז `pnpm db:types`.
-5. רוטציית `SUPABASE_SECRET_KEY` (חוסם 7).
-6. הפעלת R2 בדשבורד Cloudflare (חוסם 4).
-7. Cardcom: `CARDCOM_USE_MOCK=false` + המפתחות + `CHECKOUT_ENABLED=true` (חוסם 8).
-8. `scripts/dns-watch.sh` (pid 957) עדיין רץ ומשגר סשן deploy כשיופיעו NS
-   של Cloudflare; זה לא יירה על המעבר ל-vercel-dns. לבדוק לפני שמפעילים משהו.
-9. עשרה stash-ים לא נמחקו (כלל: אין מחיקת נתונים); רשימה בארכיון תחת Q01.
-10. כניסה בטלפון (Q17): ספק SMS בהגדרות ה-auth של Supabase ואז `PHONE_AUTH_ENABLED=true`
-   ב-Vercel. בלעדיהם הכפתור מוסתר והשאר עובד.
+הרשימה המלאה, ממוזגת עם `docs/LAUNCH-READINESS.md` וללא כפילויות, עברה
+ל-`docs/BACKLOG.md` (M15-c51). לא נשמר עותק כאן, כדי שלא ייסטה שוב.

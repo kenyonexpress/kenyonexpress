@@ -155,10 +155,11 @@ one.
 
 ## Operations, release and infrastructure
 
-27 documents.
+28 documents.
 
 | Document | Status | What it is |
 |---|---|---|
+| [BACKLOG.md](BACKLOG.md) | ✅ | Created 2026-09-29 (M15-c51): the single canonical "ידני לאופיר" list, merged from STATE.md and LAUNCH-READINESS.md, in criticality order, no duplicates. |
 | [CAPACITY.md](CAPACITY.md) | ✅ | Measured 2026-09-01 with the k6 scenarios already in load/. Every number here |
 | [CI-AND-BRANCH-PROTECTION.md](CI-AND-BRANCH-PROTECTION.md) | ⚠️ | Applied 21.08.2026. What is enforced, what is deliberately not, and the two |
 | [CONTENT-UPLOADER.md](CONTENT-UPLOADER.md) | ✅ | קונסולת מעלה התוכן: מה כבר היה, מה נוסף, ומה נדחה עם נימוק. |
