@@ -1,7 +1,46 @@
-RESUME FROM: M17-c37
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c51)
+RESUME FROM: M19-c51
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c51)
 
 ## המשך מ:
+
+## M18-c51 - DONE (29.09): בדיקת idle — טופס הניוזלטר בפוטר חוזר לפעול
+
+**בדיקת idle:** כל הפריטים למעלה בתור (M01..M17) מסומנים DONE/BLOCKED עם ראיה,
+ואין drift חדש. זו לא ריצת idle ריקה: כשהסשן נפתח היה diff לא-commit-ed בעץ
+העבודה (`SiteFooter.tsx`, `FooterNewsletterForm.tsx` חדש) — תיקון שלם וכתוב
+כבר, לא WIP חצי-גמור. הפריט הזה אימת אותו, הריץ עליו את כל השערים, ו-commit-ט.
+
+**הממצא (שיפור אמיתי בהמרה, לא קוסמטי):** טופס הניוזלטר בפוטר
+(`SiteFooter.tsx`, מוצג בכל עמוד דסקטופ) היה `<form method="post"
+action="/api/newsletter">` גולמי. **הנתיב `/api/newsletter` לא היה קיים
+בריפו מעולם** (נבדק: `find src/app/api/newsletter` — ריק; `grep -rn
+"api/newsletter" src` — אפס תוצאות מעבר להערה שתועדה). כל שליחה מהתיבה הזו
+נחתה על 404 של Next ושום שורה לא נכתבה ל-`newsletter_subscribers`. הפעולה
+הנכונה, `subscribeToNewsletter` ב-`src/server/actions/newsletter.ts`, כבר
+הייתה קיימת ועובדת (double opt-in, rate limit, בדיקת השתקה) ולא הייתה
+מחוברת לשום UI חי.
+
+**התיקון:** `FooterNewsletterForm.tsx` חדש, קליינט-קומפוננטה עם
+`useActionState(subscribeToNewsletter, ...)`, אותה גאומטריה בדיוק (pill
+470x41, קלט LTR מימין, כפתור כהה משמאל) פלוס שורת סטטוס שמופיעה רק אחרי
+שליחה (לא משפיעה על ה-paint הראשון שהשער מודד). `SiteFooter.tsx` קורא לה
+במקום הטופס הגולמי.
+
+**שערים על העץ המלא (כולל שני הקבצים):** `pnpm type-check` נקי. `pnpm lint`
+נקי (i18n-gate 627/627, כל שאר השערים clean, אין שינוי בתקרות). `pnpm test`
+604 קבצים / 7182 עברו / 12 דולגו — זהה ל-M17-c51, אין רגרסיה. `pnpm build`
+exit 0. שער השוואה חזותי (`compare.mjs`, foreground, `pnpm start` על 3311,
+BUILD_ID `vDuwA6YXxrF1x_hVFy31y`): 380 8.51% PASS, 768 9.02% PASS, 1440
+3.95% PASS — **זהה ל-3 העשרוניות** למדידת M17-c51 לפני התיקון, כי הטופס
+לא שינה שום פיקסל בפעימה הראשונה. שורות נכתבו ל-`docs/UI-PARITY-REPORT.md`
+על ידי הריצה עצמה.
+
+**קבצים:** `src/components/layout/SiteFooter.tsx`,
+`src/components/layout/FooterNewsletterForm.tsx` (חדש), `docs/UI-PARITY-REPORT.md`,
+`STATE.md`.
+
+**הבא בתור: אין עוד פריט רשום ב-`GOALS-QUEUE.md`/`docs/COMPONENT-QUEUE.md`
+בשם M19-c51 עדיין; אם התור נבנה מ-`NEXT-GOALS.md` בסשן הבא, לבנות אותו שם.**
 
 ## M17-c51 - DONE (29.09): מעבר משפטי ולשוני — כל מחרוזת עברית ב-UI וכל דף משפטי, טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח, קישורים שבורים
 
@@ -139,6 +178,7 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 | M13-c51 | DONE (28.09) | הרשומה למעלה. CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על `curl` מול build אמיתי בארבעה נתיבים; Upstash לא מוגדר, Postgres fallback פעיל; שני פערי טסט נסגרו (`auth.test.ts`, `checkout.test.ts` חדשים). |
 | M14-c51 | DONE (29.09) | הרשומה למעלה. Bundle ירד (382.2kB->341.2kB בית), `CategoryStrip.tsx` מ-17 מועמדי srcset ל-2 (HTML -1.8%), ISR ו-cache headers נבדקו ללא רגרסיה בת-תיקון. ממצא כוזב (14.05% חד-פעמי) נשלל בשש ריצות. שער 8.51/9.02/3.95 PASS. |
 | M15-c51 | DONE (29.09) | הרשומה למטה. `docs/BACKLOG.md` נוצר כרשימת "ידני לאופיר" יחידה, ממוזגת מ-STATE.md ומ-LAUNCH-READINESS.md; שני חוסרים אמיתיים נמצאו בכל אחד מהם ותוקנו. אין שינוי UI, לא נדרש שער השוואה חזותי. |
+| M18-c51 | DONE (29.09) | הרשומה למעלה. טופס ניוזלטר בפוטר חובר ל-`subscribeToNewsletter` האמיתי במקום `/api/newsletter` שלא היה קיים מעולם (404 שקט על כל שליחה). type-check/lint/test (604/7182, זהה)/build נקיים; שער 8.51/9.02/3.95 PASS, זהה למדידה הקודמת. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
