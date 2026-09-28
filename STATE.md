@@ -1,129 +1,100 @@
 RESUME FROM: M17-c37
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c51)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c51)
 
 ## המשך מ:
 
-## M15-c51 - DONE (29.09): סנכרון תיעוד — STATE.md, docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md, רשימת "ידני לאופיר" אחת במקום שתיים סוטות
+## M16-c51 - DONE (29.09): תברואת ריפו — git status נקי, כל ענף מקומי נדחף, PRs פתוחים וענפים ישנים רשומים
 
-**הפריט:** רענון טבלת המצב בשלושת הקבצים מול `git log` וראיית קוד, ואיחוד
-רשימות "ידני לאופיר" לרשימה יחידה בסדר קריטיות, בלי כפילויות. **`RESUME FROM`
-נשאר `M17-c37` בכוונה**, כמו ב-M11..M14: המספר הזה כבר עמד בעץ העבודה כשהפריט
-נפתח, סשן אחר כבר קידם את התור, והפריט הזה הושלם משום סדר.
+**הפריט:** לוודא `git status` נקי, שכל ענף מקומי דחוף, ולרשום PRs פתוחים
+וענפים ישנים ב-STATE.md. בלי merge ובלי מחיקה. **`RESUME FROM` נשאר
+`M17-c37` בכוונה**, כמו ב-M11..M15: המספר הזה כבר עמד בעץ העבודה כשהפריט
+נפתח, סשן אחר כבר קידם את התור, והפריט הזה בוצע משום סדר.
 
-**`docs/BACKLOG.md` לא היה קיים.** תשעה פריטים בתור (B02..M08-c1, בארכיון)
-מדדו את זה שוב ושוב והחליטו **לא** ליצור אותו, מהסיבה הרשומה ב-M08-c1:
-"קובץ חדש ב-`docs/` מפעיל את שערי המלאי בלי תוכן שמצדיק אותו". M08-c1 גם
-רשם מראש: "`M15-c1` מבקש לרענן את `docs/BACKLOG.md`; כשיגיע תורו, יצירת
-הקובץ תהיה תוצר של אותו פריט ולא של זה" — זה אותו פריט (מספור שונה,
-`-c51` במקום `-c1`), וזה עכשיו התוצר שלו.
+**1. `git status`: נקי מלפני הפריט ואחריו** (אין staged/unstaged/untracked).
+31 stash-ים קיימים (לא נגעתי, לא בהיקף — הרשום כידני 15 ב-`docs/BACKLOG.md`).
 
-**מה שהשוואה בין `STATE.md` ל-`docs/LAUNCH-READINESS.md` מצאה: שתי הרשימות
-סטו זו מזו, לא רק בניסוח.** רשימת המיגרציות הממתינות בשתי הרשומות "ידני
-לאופיר" (25.09 בשתיהן) הייתה **קבוצה שונה של מספרי קבצים** — STATE.md נקב
-ב-218, 245, 246, 204, 240-244; LAUNCH-READINESS.md נקב ב-204, 223, 224,
-234-236, 239-244 — חפיפה חלקית בלבד, כל אחת חסרה קבצים שהשנייה מנתה. שני
-פריטים היו ב-LAUNCH-READINESS.md ונעדרו לגמרי מרשימת הפעולה של STATE.md
-(הכרעת 25 שורות הקטלוג, ואי-ההתאמה של `scripts/cron-jobs.json` ב-`main`
-מול HEAD). שני פריטים אחרים היו ברשימת ה**חוסמים** של STATE.md אך מעולם לא
-עברו לרשימת ה**פעולה** שלו (`RESEND_API_KEY`, שורת ח.פ). כל ארבעת אלה
-תוקנו ב-`docs/BACKLOG.md`, שממזג את שתי הרשימות ל-15 סעיפים ומצטט מקור לכל
-אחד.
+**2. ענפים מקומיים: 42 סה"כ. 9 היו דחופים מאחור ונדחפו עכשיו** (כולם
+תוכן שלא היה ב-origin בשום שם ענף, לא merge, `git push`/`git push -u`
+בלבד): `docs/final-pack` (1 קומיט מאחור על upstream קיים), ו-8 חדשים
+ל-origin — `docs/final-pass`, `feat/coupon-qr`, `feat/db-hardening-v2`,
+`feat/ux-wave-final`, `phase5/homepage-closeout`, `save/ke-visual-work`,
+`worktree-ke-fetch-timeout`, `worktree-mega-63-72`. שניים מתוכם נכשלו
+בניסיון הראשון על timeout רשת חולף (`ssh.github.com`) ונדחפו בהצלחה בשנייה.
 
-**`docs/BACKLOG.md` כתוב, לא רק נוצר ריק:** 15 סעיפים בסדר קריטיות, כל אחד
-עם המקור (STATE.md חוסם N / LAUNCH-READINESS.md שורה/סעיף N) ועם רשימת
-המיגרציות המאוחדת (17 קבצים: 204, 209, 218, 220, 223, 224, 234, 235, 236,
-239-246 — האיחוד של שתי הרשימות שסטו). `STATE.md` ו-`docs/LAUNCH-READINESS.md`
-מפנים אליו במקום לשמור עותק כל אחד.
+**`main` לא נדחף.** `main` המקומי (עוקב עדיין `origin/main`, לא `audit/final-audit`)
+עומד ב-193 לפנים / 109 מאחור מול `origin/main`. `main` מוגן ב-GitHub (PR +
+4 בדיקות, CLAUDE.md), ודחיפה ישירה עוקפת הגנה — לא בוצעה. ה-193 הקומיטים
+המקומיים על `main` הם היסטוריה קיימת (לא נוצרו בפריט הזה); איחוד `audit/final-audit`
+ל-`main` נשאר PR עתידי, מחוץ להיקף תברואה.
 
-**`docs-index-gate` ו-`docs-path-audit` תפסו את ההשלכה בפועל, לא רק
-תיאורטית.** הקובץ החדש נפל מחוץ ל-`docs/INDEX.md` (282 מסמכים, לא 281) —
-תוקן, נוסף לאשכול "Operations, release and infrastructure". ורשומת
-`docs/STATE-ARCHIVE.md` שציינה שהקובץ עדיין לא קיים (מ-M08-c1) הפכה לנתיב
-תקף — `docs-path-audit --write` הסיר את השורה מהפנקס.
+**6 ענפים מקומיים נשארו בלי remote במכוון, לא "לא-דחופים":** `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`, `release/v1.1`,
+`wip/refund-record-rebase-head` — כולם `merge-base --is-ancestor` **כן** לתוך
+`origin/main` וגם לתוך `audit/final-audit`; תוכנם כבר בפנים דרך קומיט מיזוג,
+ו-GitHub מחק את ה-remote branch שלהם אחרי המיזוג. דחיפה מחדש הייתה יוצרת
+ענף כפול לתוכן שכבר קיים — לא בוצעה.
 
-**ראיה שקדמה לפריט הזה, נבדקה ולא נמדדה מחדש:** רשימת המיגרציות שנבנתה ב-
-`docs/BACKLOG.md` היא איחוד של רשימות קיימות (STATE.md, `docs/LAUNCH-READINESS.md`,
-`migrations/pending/APPLY-ORDER.md`), לא מדידה חדשה מול פרודקשן — הפריט הזה
-הוא סנכרון תיעוד, לא ביקורת DB. **מספר הקומיטים שפרודקשן מאחור מ-HEAD עודכן
-מ-22 (25.09) ל-47 (`git rev-list --count a388118f1..HEAD`, מקומי בלבד, לא
-נבדק מול הפריסה החיה).** הפער בין הענפים (`audit/final-audit` מול
-`origin/main`) עודכן מ-396 ל-**421** קומיטים לפנים; הפער ההפוך (autopilot
-ב-`main`) נשאר **109**, ללא שינוי.
+**3. PRs פתוחים: 23** (`gh pr list --state open`, כולל draft):
+#47 deps minor-dev · #46 docs/ui-design-system (draft) · #33 claude/db-audits (draft) ·
+#32 cursor/w1-block-14-docs (draft) · #31 deps lucide-react · #30 cursor/docs-batch-2 (draft) ·
+#28 cursor/docs-batch-1 · #25 cursor/ci-launch-3ceb · #23 cursor/e2e-legal-3ceb (draft) ·
+#22 cursor/refund-state-machine-47b2 (draft) · #21 claude/og-images-p8v8cd (draft) ·
+#20 cursor/docs-roadmap-47b2 (draft) · #19 claude/feat-about-trust-ax43xs (draft) ·
+#18 cursor/project-readme-onboarding-47b2 · #17 cursor/docs-project-entrance-20c4 (draft) ·
+#16 cursor/scheduled-jobs-24-7-75b4 · #14/#13/#12/#9 dependabot (phase5/homepage) ·
+#5 feat/e2e-quality · #4 feat/supplier-portal · #3 arch/docs-launch-pack ·
+#2 claude/terminal-cursor-work-2mr2pq (draft). אף אחד לא נסגר/מוזג בפריט הזה.
 
-**`pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 116, docs-index
-282 מסמכים, docs-path-audit 152 ללא dangling חדש), `pnpm test` (604 קבצים,
-7182 עברו, 12 דולגו) ו-`pnpm build` ירוקים.** אין שינוי UI, לא נדרש שער
-השוואה חזותי.
+**4. ענפים ישנים (stale) ב-`origin`, לפי מדידה (`git merge-base --is-ancestor`
+של כל ענף remote מול `origin/main` ומול `audit/final-audit`, זמן ה-commit
+האחרון, והצלבה מול רשימת ה-PRs הפתוחים):**
 
-**קבצים:** `docs/BACKLOG.md` (חדש), `docs/INDEX.md` (שורה + ספירה),
-`docs/known-dangling-paths.json` (`docs-path-audit --write`), `STATE.md`,
-`docs/LAUNCH-READINESS.md`.
+- **22 ענפי remote כבר במוזגו לתוך גם `origin/main` וגם `audit/final-audit`**,
+  בלי PR פתוח עליהם — מועמדים בטוחים למחיקה (לא נמחקו, מחוץ להיקף):
+  `arch/admin-supplier`, `arch/ai-agents`, `arch/db-audit`, `arch/mega-docs`,
+  `arch/supplier-portal`, `cursor/add-supabase-3c830`, `docs/v1-final`,
+  `feat/admin-core`, `feat/checkout-complete`, `feat/ci-foundation`,
+  `feat/coupon-redemption`, `feat/e2e`, `feat/growth-core`, `feat/notifications`,
+  `feat/observability`, `feat/payments-core`, `feat/personal-area`,
+  `feat/search-core`, `feat/seo-performance`, `feat/wp-migration`,
+  `release/v1.0`, `release/v1.2`.
+- **59 ענפי remote לא מוזגו לאף אחד משני הענפים, בלי PR פתוח, ועם קומיט אחרון
+  לפני 15.09** (14+ יום) — לרוב אשכול `arch/docs-*` (17 ענפי תיעוד ממתינים
+  מ-10-12.09), אשכול `feat/*` ישן מ-19-21.08 (`feat/auth-hardening`,
+  `feat/auth-model`, `feat/checkout-cardcom`, `feat/checkout-e2e`,
+  `feat/legal-pages`, `feat/monitoring-sentry`, `feat/notifications-full`,
+  `feat/payments-verify`, `feat/performance-seo`, `feat/pixel-wave`,
+  `feat/product-type`, `feat/rate-limit-layer`, `feat/search-meilisearch`,
+  `feat/seed-data`, `feat/supplier-portal`, `feat/ux-wave-final`,
+  `feat/visual-polish`), ושאר ענפי `arch/*`/`cursor/*`/`docs/*` בודדים
+  (`arch/account-area`, `arch/checkout-cardcom-verification`,
+  `arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration`,
+  `chore/hardcoded-ledger-magic-link`, `closeout/v1-final`, `cursor/ci-launch-3ceb`
+  אם ללא PR, `docs/app-store-and-deep-links`, `docs/architecture-night`,
+  `docs/final-pack`, `docs/final-pass`, `feat/coupon-qr`, `ke-arch`,
+  `ke-cursor-docs`, `merge/supplier-and-arch-night`, `phase5/homepage`).
+  אין פעולה — רשימה לאופיר להכריע (מחיקה דורשת אישור מפורש, כלל הפרויקט).
+- שאר ~25 הענפים המקומיים תואמים במדויק את ה-remote שלהם (ahead=0), כולל
+  כל ה-`arch/*` וה-`feat/*` שיש להם עותק מקומי — אין דחיפה נדרשת.
 
-**הבא בתור: לפי `RESUME FROM`, M17-c37.**
+**המספרים המלאים (84 unmerged, 22 merged-safe, רשימת stale-no-PR) נגזרו
+בסקריפט חד-פעמי בטרמינל, לא נשמרו כקובץ — לשחזור: `git merge-base
+--is-ancestor <branch> origin/main`, `git merge-base --is-ancestor <branch>
+audit/final-audit`, ו-`gh pr list --state open --json headRefName`.**
 
-## M14-c51 - DONE (29.09): ביצועים, גודל bundle, פלט צנרת התמונות, תגיות ISR וכותרות cache: ממצא אחד תוקן, ממצא כוזב אחד נשלל אחרי בדיקה כפולה
+**אין שינוי קוד. `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`
+ירוקים** (נמדד על התיקייה אחרי כל שינויי התיעוד). אין שינוי UI, לא נדרש
+שער השוואה חזותי.
 
-**הפריט:** בדיקת ארבעה תחומי ביצועים ותיקון הרגרסיה הגדולה ביותר שנמצאת. **`RESUME
-FROM` נשאר `M17-c37` בכוונה**, כמו ב-M11..M13: המספר הזה כבר עמד בעץ העבודה כשהפריט
-נפתח, סשן אחר כבר קידם את התור, והפריט הזה הושלם משום סדר.
-
-**1. גודל bundle: אין רגרסיה, יש שיפור.** מול הבייסליין הכתוב ב-`docs/PERFORMANCE-REPORT.md`
-(‏09.09, `b8aac3855`, 331 קומיטים אחורה): ה-JS של הבית ירד מ-382.2kB ל-341.2kB gzip,
-קופה מ-384.7kB ל-344.9kB gzip, ובסה"כ 26 chunks ב-405.5kB -> 27 chunks ב-365.9kB.
-`scripts/bundle-report.mjs` על build טרי, `pnpm start`.
-
-**2. פלט צנרת התמונות: הממצא ותיקונו.** ‏`CategoryStrip.tsx` (4 אייקוני קטגוריה
-100x100px בהירו, שני עותקים מורכבים, דסקטופ ומובייל) השתמש ב-`fill` עם
-`sizes={`100px`}`. ‏next/image מקצץ את רשימת ה-srcset רק כשה-`sizes` מכיל יחידת
-`vw` שה-regex שלו (`get-img-props.js:getWidths`) מזהה; ערך px גולמי נופל
-לרשימה המלאה `imageSizes`+`deviceSizes`: **17 מועמדים, 16w עד 3840w, לאייקון
-100x100**. תוקן ל-`width`/`height` מפורשים (בלי `fill`), שמפעיל את ה-branch
-הקומפקטי 1x/2x: **2 מועמדים**. נמדד: HTML גולמי של הבית 686,292 -> 673,858
-בייט (‏-12,434B, ‏-1.8%), משוכפל על שני builds עצמאיים.
-
-**ממצא כוזב שנשלל בבדיקה כפולה.** ריצת `compare.mjs --page=home` הראשונה
-בסשן (על build עם התיקון) החזירה 380px **14.05% FAIL** (תקרה 11%), ונראתה
-כרגרסיה מהתיקון. נבדק ביסודיות: **6 ריצות עוקבות על שני builds עצמאיים** (עם
-התיקון ובלעדיו, כל אחד built טרי ומופעל מחדש, כל אחד נמדד פי 3 ברצף) נתנו
-תוצאה **זהה ויציבה: 8.51% PASS**, בלי יוצא מן הכלל. ה-14.05% היה מדידה חד-פעמית
-לא ניתנת לשחזור (כנראה רינדור ראשון על cache קר), לא קשורה לקוד שהשתנה. מצב
-סופי עם התיקון: **380 8.51% PASS, 768 9.02% PASS, 1440 3.95% PASS**, כולם ירוקים.
-
-**3. תגיות ISR: לא נמצאה רגרסיה.** `cache-invalidation-gate` נקי. כל פונקציות
-קריאת הנתונים של הבית/קטגוריה/מוצר (`lib/homepage/{deals,rails}.ts`,
-`category-page.ts`, `product-detail.ts`) עקביות: `cacheLife('hours')` +
-`cacheTag(CATALOGUE_TAG)`. **`docs/ARCHITECTURE-PERFORMANCE.md` מתעד ערכי יעד
-מיושנים** (`revalidate` 120/300/180 שניות ברמת ה-route) מלפני המעבר ל-Next 16
-`cacheComponents`, שדורש `cacheLife`/`use cache` במקום זאת ונכשל build על
-`export const revalidate`. המדיניות המיושמת בפועל (`cacheLife('hours')`,
-כ-3600/86400 שניות) גוברת על המסמך; המסמך לא תוקן בפריט הזה (תיעוד בלבד,
-מחוץ להיקף).
-
-**4. כותרות cache: לא נמצאה רגרסיה הניתנת לתיקון מקומית.** `/images/*` נושא
-בפועל את `public, max-age=0, s-maxage=86400, stale-while-revalidate=604800`
-המתועד. דפי הבית/מוצר מחזירים `Cache-Control: private, no-cache, no-store...`
-תחת `pnpm start` למרות שיש להם shell סטטי (`x-nextjs-prerender:1`). נבדק מול
-`node_modules/next/dist/docs/.../ppr-platform-guide.md`: זו התנהגות **צפויה**
-עבור "Origin-Only" serving (מה ש-`next start` עושה כברירת מחדל) - ה-shell
-וחורי ה-Suspense החיים (‏`StockScarcity`/`BoughtThisWeek` בדף המוצר, מכוונים
-להישאר חיים לפי הערת הקוד) מתמזגים לתגובה סטרימינג אחת שלא ניתן לסמן כ-cacheable.
-ה-`s-maxage` שמתועד ב-`ARCHITECTURE-PERFORMANCE.md` דורש CDN שמיישם את פרוטוקול
-"shell + resume" של Next (Vercel), ולא ניתן לאמת מ-localhost. לא רגרסיה ברת-תיקון.
-
-**`pnpm type-check`, `pnpm lint` (627/627 i18n, 116 he-IL), `pnpm test` (604
-קבצים, 7182 עברו) ו-`pnpm build` ירוקים, פעמיים (עם ובלי התיקון, לבדיקת הממצא
-הכוזב).**
-
-**קבצים:** `src/components/store/CategoryStrip.tsx`, `docs/UI-PARITY-REPORT.md`
-(שורות מדידה, כולל 4 סירובים וריצה חד-פעמית חריגה מהחקירה, נשמרו כרשומה
-מדויקת לפי מוסכמת הפנקס), `STATE.md`.
+**קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (הועברו לשם M14-c51 ו-M15-c51
+המלאים, לפי מגבלת 300 השורות).
 
 **הבא בתור: לפי `RESUME FROM`, M17-c37.**
 
-**M13-c51 ו-M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M13-c51 —
-CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על build אמיתי, שני פערי טסט
-נסגרו. M12-c51 — SEO (מטא, canonical, og, schema.org Product/Offer, sitemap,
-robots), 261 בדיקות, אפס drift.
+**M15-c51..M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M15-c51 —
+`docs/BACKLOG.md` נוצר כרשימת "ידני לאופיר" יחידה. M14-c51 — bundle ירד,
+`CategoryStrip.tsx` תוקן. M13-c51 — CSP/HSTS/X-Frame-Options/Referrer-Policy
+אומתו על build אמיתי. M12-c51 — SEO, 261 בדיקות, אפס drift.
 
 ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M13-c51, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.

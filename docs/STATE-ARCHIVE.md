@@ -2,6 +2,123 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c51 - DONE (29.09): סנכרון תיעוד — STATE.md, docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md, רשימת "ידני לאופיר" אחת במקום שתיים סוטות
+
+**הפריט:** רענון טבלת המצב בשלושת הקבצים מול `git log` וראיית קוד, ואיחוד
+רשימות "ידני לאופיר" לרשימה יחידה בסדר קריטיות, בלי כפילויות. **`RESUME FROM`
+נשאר `M17-c37` בכוונה**, כמו ב-M11..M14: המספר הזה כבר עמד בעץ העבודה כשהפריט
+נפתח, סשן אחר כבר קידם את התור, והפריט הזה הושלם משום סדר.
+
+**`docs/BACKLOG.md` לא היה קיים.** תשעה פריטים בתור (B02..M08-c1, בארכיון)
+מדדו את זה שוב ושוב והחליטו **לא** ליצור אותו, מהסיבה הרשומה ב-M08-c1:
+"קובץ חדש ב-`docs/` מפעיל את שערי המלאי בלי תוכן שמצדיק אותו". M08-c1 גם
+רשם מראש: "`M15-c1` מבקש לרענן את `docs/BACKLOG.md`; כשיגיע תורו, יצירת
+הקובץ תהיה תוצר של אותו פריט ולא של זה" — זה אותו פריט (מספור שונה,
+`-c51` במקום `-c1`), וזה עכשיו התוצר שלו.
+
+**מה שהשוואה בין `STATE.md` ל-`docs/LAUNCH-READINESS.md` מצאה: שתי הרשימות
+סטו זו מזו, לא רק בניסוח.** רשימת המיגרציות הממתינות בשתי הרשומות "ידני
+לאופיר" (25.09 בשתיהן) הייתה **קבוצה שונה של מספרי קבצים** — STATE.md נקב
+ב-218, 245, 246, 204, 240-244; LAUNCH-READINESS.md נקב ב-204, 223, 224,
+234-236, 239-244 — חפיפה חלקית בלבד, כל אחת חסרה קבצים שהשנייה מנתה. שני
+פריטים היו ב-LAUNCH-READINESS.md ונעדרו לגמרי מרשימת הפעולה של STATE.md
+(הכרעת 25 שורות הקטלוג, ואי-ההתאמה של `scripts/cron-jobs.json` ב-`main`
+מול HEAD). שני פריטים אחרים היו ברשימת ה**חוסמים** של STATE.md אך מעולם לא
+עברו לרשימת ה**פעולה** שלו (`RESEND_API_KEY`, שורת ח.פ). כל ארבעת אלה
+תוקנו ב-`docs/BACKLOG.md`, שממזג את שתי הרשימות ל-15 סעיפים ומצטט מקור לכל
+אחד.
+
+**`docs/BACKLOG.md` כתוב, לא רק נוצר ריק:** 15 סעיפים בסדר קריטיות, כל אחד
+עם המקור (STATE.md חוסם N / LAUNCH-READINESS.md שורה/סעיף N) ועם רשימת
+המיגרציות המאוחדת (17 קבצים: 204, 209, 218, 220, 223, 224, 234, 235, 236,
+239-246 — האיחוד של שתי הרשימות שסטו). `STATE.md` ו-`docs/LAUNCH-READINESS.md`
+מפנים אליו במקום לשמור עותק כל אחד.
+
+**`docs-index-gate` ו-`docs-path-audit` תפסו את ההשלכה בפועל, לא רק
+תיאורטית.** הקובץ החדש נפל מחוץ ל-`docs/INDEX.md` (282 מסמכים, לא 281) —
+תוקן, נוסף לאשכול "Operations, release and infrastructure". ורשומת
+`docs/STATE-ARCHIVE.md` שציינה שהקובץ עדיין לא קיים (מ-M08-c1) הפכה לנתיב
+תקף — `docs-path-audit --write` הסיר את השורה מהפנקס.
+
+**ראיה שקדמה לפריט הזה, נבדקה ולא נמדדה מחדש:** רשימת המיגרציות שנבנתה ב-
+`docs/BACKLOG.md` היא איחוד של רשימות קיימות (STATE.md, `docs/LAUNCH-READINESS.md`,
+`migrations/pending/APPLY-ORDER.md`), לא מדידה חדשה מול פרודקשן — הפריט הזה
+הוא סנכרון תיעוד, לא ביקורת DB. **מספר הקומיטים שפרודקשן מאחור מ-HEAD עודכן
+מ-22 (25.09) ל-47 (`git rev-list --count a388118f1..HEAD`, מקומי בלבד, לא
+נבדק מול הפריסה החיה).** הפער בין הענפים (`audit/final-audit` מול
+`origin/main`) עודכן מ-396 ל-**421** קומיטים לפנים; הפער ההפוך (autopilot
+ב-`main`) נשאר **109**, ללא שינוי.
+
+**`pnpm type-check` נקי, `pnpm lint` נקי (i18n 627/627, he-IL 116, docs-index
+282 מסמכים, docs-path-audit 152 ללא dangling חדש), `pnpm test` (604 קבצים,
+7182 עברו, 12 דולגו) ו-`pnpm build` ירוקים.** אין שינוי UI, לא נדרש שער
+השוואה חזותי.
+
+**קבצים:** `docs/BACKLOG.md` (חדש), `docs/INDEX.md` (שורה + ספירה),
+`docs/known-dangling-paths.json` (`docs-path-audit --write`), `STATE.md`,
+`docs/LAUNCH-READINESS.md`.
+
+**הבא בתור: לפי `RESUME FROM`, M17-c37.**
+
+## M14-c51 - DONE (29.09): ביצועים, גודל bundle, פלט צנרת התמונות, תגיות ISR וכותרות cache: ממצא אחד תוקן, ממצא כוזב אחד נשלל אחרי בדיקה כפולה
+
+**הפריט:** בדיקת ארבעה תחומי ביצועים ותיקון הרגרסיה הגדולה ביותר שנמצאת. **`RESUME
+FROM` נשאר `M17-c37` בכוונה**, כמו ב-M11..M13: המספר הזה כבר עמד בעץ העבודה כשהפריט
+נפתח, סשן אחר כבר קידם את התור, והפריט הזה הושלם משום סדר.
+
+**1. גודל bundle: אין רגרסיה, יש שיפור.** מול הבייסליין הכתוב ב-`docs/PERFORMANCE-REPORT.md`
+(‏09.09, `b8aac3855`, 331 קומיטים אחורה): ה-JS של הבית ירד מ-382.2kB ל-341.2kB gzip,
+קופה מ-384.7kB ל-344.9kB gzip, ובסה"כ 26 chunks ב-405.5kB -> 27 chunks ב-365.9kB.
+`scripts/bundle-report.mjs` על build טרי, `pnpm start`.
+
+**2. פלט צנרת התמונות: הממצא ותיקונו.** ‏`CategoryStrip.tsx` (4 אייקוני קטגוריה
+100x100px בהירו, שני עותקים מורכבים, דסקטופ ומובייל) השתמש ב-`fill` עם
+`sizes={`100px`}`. ‏next/image מקצץ את רשימת ה-srcset רק כשה-`sizes` מכיל יחידת
+`vw` שה-regex שלו (`get-img-props.js:getWidths`) מזהה; ערך px גולמי נופל
+לרשימה המלאה `imageSizes`+`deviceSizes`: **17 מועמדים, 16w עד 3840w, לאייקון
+100x100**. תוקן ל-`width`/`height` מפורשים (בלי `fill`), שמפעיל את ה-branch
+הקומפקטי 1x/2x: **2 מועמדים**. נמדד: HTML גולמי של הבית 686,292 -> 673,858
+בייט (‏-12,434B, ‏-1.8%), משוכפל על שני builds עצמאיים.
+
+**ממצא כוזב שנשלל בבדיקה כפולה.** ריצת `compare.mjs --page=home` הראשונה
+בסשן (על build עם התיקון) החזירה 380px **14.05% FAIL** (תקרה 11%), ונראתה
+כרגרסיה מהתיקון. נבדק ביסודיות: **6 ריצות עוקבות על שני builds עצמאיים** (עם
+התיקון ובלעדיו, כל אחד built טרי ומופעל מחדש, כל אחד נמדד פי 3 ברצף) נתנו
+תוצאה **זהה ויציבה: 8.51% PASS**, בלי יוצא מן הכלל. ה-14.05% היה מדידה חד-פעמית
+לא ניתנת לשחזור (כנראה רינדור ראשון על cache קר), לא קשורה לקוד שהשתנה. מצב
+סופי עם התיקון: **380 8.51% PASS, 768 9.02% PASS, 1440 3.95% PASS**, כולם ירוקים.
+
+**3. תגיות ISR: לא נמצאה רגרסיה.** `cache-invalidation-gate` נקי. כל פונקציות
+קריאת הנתונים של הבית/קטגוריה/מוצר (`lib/homepage/{deals,rails}.ts`,
+`category-page.ts`, `product-detail.ts`) עקביות: `cacheLife('hours')` +
+`cacheTag(CATALOGUE_TAG)`. **`docs/ARCHITECTURE-PERFORMANCE.md` מתעד ערכי יעד
+מיושנים** (`revalidate` 120/300/180 שניות ברמת ה-route) מלפני המעבר ל-Next 16
+`cacheComponents`, שדורש `cacheLife`/`use cache` במקום זאת ונכשל build על
+`export const revalidate`. המדיניות המיושמת בפועל (`cacheLife('hours')`,
+כ-3600/86400 שניות) גוברת על המסמך; המסמך לא תוקן בפריט הזה (תיעוד בלבד,
+מחוץ להיקף).
+
+**4. כותרות cache: לא נמצאה רגרסיה הניתנת לתיקון מקומית.** `/images/*` נושא
+בפועל את `public, max-age=0, s-maxage=86400, stale-while-revalidate=604800`
+המתועד. דפי הבית/מוצר מחזירים `Cache-Control: private, no-cache, no-store...`
+תחת `pnpm start` למרות שיש להם shell סטטי (`x-nextjs-prerender:1`). נבדק מול
+`node_modules/next/dist/docs/.../ppr-platform-guide.md`: זו התנהגות **צפויה**
+עבור "Origin-Only" serving (מה ש-`next start` עושה כברירת מחדל) - ה-shell
+וחורי ה-Suspense החיים (‏`StockScarcity`/`BoughtThisWeek` בדף המוצר, מכוונים
+להישאר חיים לפי הערת הקוד) מתמזגים לתגובה סטרימינג אחת שלא ניתן לסמן כ-cacheable.
+ה-`s-maxage` שמתועד ב-`ARCHITECTURE-PERFORMANCE.md` דורש CDN שמיישם את פרוטוקול
+"shell + resume" של Next (Vercel), ולא ניתן לאמת מ-localhost. לא רגרסיה ברת-תיקון.
+
+**`pnpm type-check`, `pnpm lint` (627/627 i18n, 116 he-IL), `pnpm test` (604
+קבצים, 7182 עברו) ו-`pnpm build` ירוקים, פעמיים (עם ובלי התיקון, לבדיקת הממצא
+הכוזב).**
+
+**קבצים:** `src/components/store/CategoryStrip.tsx`, `docs/UI-PARITY-REPORT.md`
+(שורות מדידה, כולל 4 סירובים וריצה חד-פעמית חריגה מהחקירה, נשמרו כרשומה
+מדויקת לפי מוסכמת הפנקס), `STATE.md`.
+
+**הבא בתור: לפי `RESUME FROM`, M17-c37.**
+
 ## M13-c51 - DONE (28.09): כותרות אבטחה ותקרות — CSP, HSTS, X-Frame-Options, Referrer-Policy, Upstash על login/checkout/redeem: אומת מול build ירוק, שני פערי טסט נסגרו
 
 **הפריט:** אימות CSP, HSTS, X-Frame-Options, Referrer-Policy ותקרות Upstash על
