@@ -77,7 +77,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="text-gray-400 hover:text-gray-700 w-4 shrink-0"
+          className="text-muted hover:text-gray-700 w-4 shrink-0"
         >
           {hasChildren ? (
             expanded ? (
@@ -98,7 +98,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
         )}
 
         <span className="flex-1 text-sm font-medium text-gray-800 truncate">{node.name_he}</span>
-        <span className="text-xs text-gray-400 font-mono hidden sm:inline">{node.slug}</span>
+        <span className="text-xs text-muted font-mono hidden sm:inline">{node.slug}</span>
 
         <StatusBadge
           label={node.is_active ? 'פעיל' : 'לא פעיל'}
@@ -109,7 +109,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
           <button
             type="button"
             onClick={() => handleMove('up')}
-            className="p-1 text-gray-400 hover:text-gray-700 text-xs"
+            className="p-1 text-muted hover:text-gray-700 text-xs"
             title="הזז למעלה"
           >
             ↑
@@ -117,7 +117,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
           <button
             type="button"
             onClick={() => handleMove('down')}
-            className="p-1 text-gray-400 hover:text-gray-700 text-xs"
+            className="p-1 text-muted hover:text-gray-700 text-xs"
             title="הזז למטה"
           >
             ↓
@@ -126,7 +126,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
             <button
               type="button"
               onClick={() => onAddChild(node.id)}
-              className="p-1 text-gray-400 hover:text-brand"
+              className="p-1 text-muted hover:text-brand"
               title="הוסף תת-קטגוריה"
             >
               <Plus size={13} />
@@ -135,7 +135,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
           <button
             type="button"
             onClick={() => onEdit(node)}
-            className="p-1 text-gray-400 hover:text-brand"
+            className="p-1 text-muted hover:text-brand"
           >
             <Edit2 size={13} />
           </button>
@@ -143,7 +143,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
             type="button"
             onClick={handleDelete}
             aria-label="מחיקת קטגוריה"
-            className="p-1 text-gray-400 hover:text-red-600"
+            className="p-1 text-muted hover:text-red-600"
           >
             <Trash2 size={13} />
           </button>
@@ -212,7 +212,7 @@ export default function CategoryTree({ categories }: Props) {
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         {tree.length === 0 ? (
-          <div className="px-5 py-10 text-center text-gray-400 text-sm">אין קטגוריות עדיין</div>
+          <div className="px-5 py-10 text-center text-muted text-sm">אין קטגוריות עדיין</div>
         ) : (
           tree.map((node) => (
             <CategoryNode

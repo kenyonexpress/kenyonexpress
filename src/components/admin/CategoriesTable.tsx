@@ -71,7 +71,7 @@ export default function CategoriesTable({
       header: 'מזהה',
       sortable: true,
       accessor: (c) => c.slug,
-      cell: (c) => <span className="font-mono text-xs text-black/40">{c.slug}</span>,
+      cell: (c) => <span className="font-mono text-xs text-black/60">{c.slug}</span>,
     },
     {
       id: 'parent',
@@ -149,7 +149,7 @@ export default function CategoriesTable({
       </Dialog>
 
       {(showNewForm || editingCategory) && (
-        <p className="text-xs text-black/40">
+        <p className="text-xs text-black/60">
           <Link href="/admin/categories" className="hover:underline">
             סגור טופס וחזור לטבלה
           </Link>

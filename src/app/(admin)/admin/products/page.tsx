@@ -189,7 +189,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
               הקודם
             </Link>
           )}
-          <span className="text-xs text-black/50">
+          <span className="text-xs text-black/60">
             עמוד {page} מתוך {totalPages} ({total} מוצרים)
           </span>
           {page < totalPages && (

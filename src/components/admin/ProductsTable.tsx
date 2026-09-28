@@ -181,7 +181,7 @@ export default function ProductsTable({ products, categories, hidePricing = fals
             {p.name_he}
             {p.is_featured && <span className="ms-1 text-xs text-amber-500">★</span>}
           </Link>
-          <div className="font-mono text-xs text-black/40">{p.slug}</div>
+          <div className="font-mono text-xs text-black/60">{p.slug}</div>
         </div>
       ),
     },

@@ -101,7 +101,7 @@ export default async function DashboardPage() {
             variant="admin"
           />
         ) : (
-          <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white p-4 text-xs text-black/40">
+          <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white p-4 text-xs text-black/60">
             נתוני כסף: אין הרשאה
           </div>
         )}
@@ -156,7 +156,7 @@ export default async function DashboardPage() {
                   </p>
                   <p className="text-sm text-black/60">{labelFor(PENDING_QUEUE_LABELS, key)}</p>
                   {oldest && (
-                    <p className={`mt-1 text-xs ${slaBreached ? 'text-red-600' : 'text-black/40'}`}>
+                    <p className={`mt-1 text-xs ${slaBreached ? 'text-red-700' : 'text-black/60'}`}>
                       הישן ביותר: {oldest.toLocaleDateString('he-IL')}
                     </p>
                   )}
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
             })}
           </div>
         ) : (
-          <p className="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-black/40">
+          <p className="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-black/60">
             אין פריטים ממתינים. בוקר טוב.
           </p>
         )}
@@ -175,7 +175,7 @@ export default async function DashboardPage() {
       <section className="rounded-xl border border-black/10 bg-white">
         <div className="flex items-center justify-between border-b border-black/5 px-5 py-3">
           <h2 className="text-sm font-semibold text-gray-800">פעילות אחרונה</h2>
-          <Link href="/admin/audit-log" className="text-xs text-brand hover:underline">
+          <Link href="/admin/audit-log" className="text-xs text-brand-dark hover:underline">
             ללוג המלא
           </Link>
         </div>
@@ -184,15 +184,15 @@ export default async function DashboardPage() {
             <li key={event.id} className="flex items-center justify-between gap-3 px-5 py-2.5">
               <span>
                 {labelFor(AUDIT_ACTION_LABELS, event.action)}
-                <span className="text-black/50"> ב-{event.entity_type}</span>
+                <span className="text-black/60"> ב-{event.entity_type}</span>
               </span>
-              <span className="text-xs text-black/40">
+              <span className="text-xs text-black/60">
                 {event.actor_role ?? 'מערכת'} | {new Date(event.created_at).toLocaleString('he-IL')}
               </span>
             </li>
           ))}
           {!auditFeed?.length && (
-            <li className="px-5 py-6 text-center text-sm text-black/40">אין פעילות רשומה</li>
+            <li className="px-5 py-6 text-center text-sm text-black/60">אין פעילות רשומה</li>
           )}
         </ul>
       </section>

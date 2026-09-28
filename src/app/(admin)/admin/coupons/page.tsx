@@ -112,7 +112,7 @@ export default async function AdminCouponsPage({ searchParams }: Props) {
             {editingDeal ? 'עריכת קופון' : 'קופון חדש'}
           </h2>
           <CouponForm deal={editingDeal ?? undefined} vendors={vendors ?? []} />
-          <Link href="/admin/coupons" className="text-xs text-black/40 hover:underline">
+          <Link href="/admin/coupons" className="text-xs text-black/60 hover:underline">
             סגור טופס
           </Link>
         </div>

@@ -75,7 +75,7 @@ export default async function ApprovalsQueuePage() {
                     >
                       {p.name_he}
                     </Link>
-                    <div className="font-mono text-xs text-black/40">{p.slug}</div>
+                    <div className="font-mono text-xs text-black/60">{p.slug}</div>
                   </td>
                   <td className="px-5 py-3 text-gray-600">{TYPE_LABELS[p.type] ?? p.type}</td>
                   <td className="px-5 py-3 text-gray-600">{supplier?.name ?? 'ללא'}</td>
@@ -96,7 +96,7 @@ export default async function ApprovalsQueuePage() {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-gray-400">
+                <td colSpan={7} className="px-5 py-10 text-center text-muted">
                   אין מוצרים הממתינים לאישור
                 </td>
               </tr>

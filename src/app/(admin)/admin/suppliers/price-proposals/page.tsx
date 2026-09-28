@@ -119,7 +119,7 @@ export default async function SupplierPriceProposalsPage() {
             ))}
             {rows.length === 0 && !error ? (
               <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-gray-400">
+                <td colSpan={7} className="px-5 py-10 text-center text-muted">
                   אין הצעות ממתינות
                 </td>
               </tr>

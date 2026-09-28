@@ -73,7 +73,7 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
             {notes}
           </pre>
         ) : (
-          <p className="mb-3 text-sm text-gray-400">אין הערות</p>
+          <p className="mb-3 text-sm text-muted">אין הערות</p>
         )}
 
         <form action={noteAction} className="space-y-2">

@@ -8,6 +8,7 @@ import { useActionState } from 'react'
 
 interface Props {
   userId: string
+  userLabel: string
   currentRole: AppRole
   callerRole: AppRole
   isSelf?: boolean
@@ -15,17 +16,23 @@ interface Props {
 
 const INITIAL: UserActionState = null
 
-export default function UserRoleClient({ userId, currentRole, callerRole, isSelf }: Props) {
+export default function UserRoleClient({
+  userId,
+  userLabel,
+  currentRole,
+  callerRole,
+  isSelf,
+}: Props) {
   const [state, action, pending] = useActionState(updateUserRole, INITIAL)
   const available = assignableRoles(callerRole)
 
   // You cannot change your own role (prevents self-lockout); mirror the server guard.
   if (isSelf) {
-    return <span className="text-xs text-gray-400">{ROLE_LABELS[currentRole]}</span>
+    return <span className="text-xs text-muted">{ROLE_LABELS[currentRole]}</span>
   }
 
   if (!available.length) {
-    return <span className="text-xs text-gray-400">—</span>
+    return <span className="text-xs text-muted">—</span>
   }
 
   return (
@@ -34,6 +41,7 @@ export default function UserRoleClient({ userId, currentRole, callerRole, isSelf
       <select
         name="role"
         defaultValue={currentRole}
+        aria-label={`תפקיד עבור ${userLabel}`}
         className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
       >
         {available.map((r) => (

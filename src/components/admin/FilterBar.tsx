@@ -29,7 +29,7 @@ export default function FilterBar({
       <div className="relative min-w-[12rem] max-w-sm flex-1">
         <Search
           size={15}
-          className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-black/40"
+          className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-black/60"
           aria-hidden
         />
         <input

@@ -134,7 +134,7 @@ export default async function AuditLogPage(props: {
     {
       id: 'entity_id',
       header: 'מזהה',
-      className: 'font-mono text-xs text-black/40',
+      className: 'font-mono text-xs text-black/60',
       cell: (log) => (log.entity_id ? `${log.entity_id.slice(0, 8)}…` : ''),
     },
     {
@@ -149,13 +149,13 @@ export default async function AuditLogPage(props: {
     {
       id: 'actor_role',
       header: 'תפקיד',
-      className: 'text-xs text-black/50',
+      className: 'text-xs text-black/60',
       cell: (log) => log.actor_role ?? '',
     },
     {
       id: 'created_at',
       header: 'תאריך',
-      className: 'whitespace-nowrap text-xs text-black/50',
+      className: 'whitespace-nowrap text-xs text-black/60',
       sortKey: 'created_at',
       cell: (log) => new Date(log.created_at).toLocaleString('he-IL'),
     },
@@ -204,6 +204,7 @@ export default async function AuditLogPage(props: {
         <select
           name="action"
           defaultValue={params.action ?? ''}
+          aria-label="סינון לפי פעולה"
           className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
         >
           <option value="">כל הפעולות</option>

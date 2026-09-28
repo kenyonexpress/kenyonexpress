@@ -59,7 +59,7 @@ const shortShekels = (value: number) => sharedShekelsFromIlsRounded(value)
 
 export default function SalesChart({ points }: { points: SalesPoint[] }) {
   if (points.length === 0) {
-    return <p className="py-8 text-center text-sm text-black/50">אין נתונים בטווח הזה.</p>
+    return <p className="py-8 text-center text-sm text-black/60">אין נתונים בטווח הזה.</p>
   }
 
   return (

@@ -45,7 +45,7 @@ export default function SubscriptionList({
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
         <p className="text-sm text-gray-600">אין לך מנויים פעילים.</p>
-        <Link href="/" className="mt-2 inline-block text-sm text-brand hover:underline">
+        <Link href="/" className="mt-2 inline-block text-sm text-brand-dark hover:underline">
           לדילים באתר
         </Link>
       </div>

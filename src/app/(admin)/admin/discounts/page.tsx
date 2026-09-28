@@ -128,7 +128,7 @@ export default async function DiscountsPage() {
                           מותרת
                         </span>
                       ) : (
-                        <span className="text-gray-400">כבויה</span>
+                        <span className="text-muted">כבויה</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-gray-600">

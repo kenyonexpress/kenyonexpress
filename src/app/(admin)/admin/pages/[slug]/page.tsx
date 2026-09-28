@@ -31,7 +31,7 @@ export default async function AdminContentPageEditor({ params }: Props) {
         <Link href="/admin/pages" className="text-sm text-gray-600 underline underline-offset-2">
           עמודי תוכן
         </Link>
-        <span className="text-gray-400">/</span>
+        <span className="text-muted">/</span>
         <h1 className="text-2xl font-bold text-gray-900">{page.title}</h1>
         <a
           href={page.href}

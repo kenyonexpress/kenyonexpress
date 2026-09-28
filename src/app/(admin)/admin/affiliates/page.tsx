@@ -253,7 +253,7 @@ export default async function AdminAffiliatesPage(props: {
         id: 'created_at',
         header: 'הוגש',
         sortKey: 'created_at',
-        className: 'whitespace-nowrap text-xs text-black/50',
+        className: 'whitespace-nowrap text-xs text-black/60',
         cell: (a) => formatDateShort(a.created_at),
       },
       ...(canEdit
@@ -320,7 +320,7 @@ export default async function AdminAffiliatesPage(props: {
         id: 'created_at',
         header: 'תאריך',
         sortKey: 'created_at',
-        className: 'whitespace-nowrap text-xs text-black/50',
+        className: 'whitespace-nowrap text-xs text-black/60',
         cell: (r) => formatDateShort(r.created_at),
       },
     ]
@@ -559,7 +559,7 @@ export default async function AdminAffiliatesPage(props: {
         id: 'created_at',
         header: 'תאריך',
         sortKey: 'created_at',
-        className: 'whitespace-nowrap text-xs text-black/50',
+        className: 'whitespace-nowrap text-xs text-black/60',
         cell: (c) => formatDateShort(c.created_at),
       },
       ...(canEdit

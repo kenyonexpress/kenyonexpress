@@ -135,7 +135,7 @@ export default function CommandPalette() {
           {error && <p className="p-4 text-sm text-red-600">{error}</p>}
 
           {!error && term.trim().length >= MIN_TERM && !busy && hits.length === 0 && (
-            <p className="p-4 text-sm text-black/50">לא נמצאו הזמנות</p>
+            <p className="p-4 text-sm text-black/60">לא נמצאו הזמנות</p>
           )}
 
           {!error &&
@@ -151,11 +151,11 @@ export default function CommandPalette() {
               >
                 <span className="min-w-0">
                   <span className="font-medium">{hit.invoiceNumber ?? '(ללא מספר)'}</span>
-                  <span className="ms-2 text-black/50">
+                  <span className="ms-2 text-black/60">
                     {hit.customerName ?? hit.customerEmail ?? ''}
                   </span>
                 </span>
-                <span className="shrink-0 text-xs text-black/40">
+                <span className="shrink-0 text-xs text-black/60">
                   {hit.matchedOn === 'invoice' ? 'חשבונית' : 'לקוח'} ·{' '}
                   {formatDateShort(hit.createdAt)}
                 </span>
@@ -163,7 +163,7 @@ export default function CommandPalette() {
             ))}
         </div>
 
-        <p className="border-t border-black/10 px-4 py-2 text-xs text-black/40">
+        <p className="border-t border-black/10 px-4 py-2 text-xs text-black/60">
           ⌘K לפתיחה · ↑↓ לניווט · Enter לפתיחת הזמנה · Esc לסגירה
         </p>
       </dialog>

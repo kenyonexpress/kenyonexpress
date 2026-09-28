@@ -70,7 +70,7 @@ export default function CustomerSupportTools({
           <h2 className="text-sm font-semibold text-gray-800">זיכוי ידני לארנק</h2>
           <input type="hidden" name="user_id" value={userId} />
 
-          <label htmlFor="credit-amount" className="block text-xs text-black/50">
+          <label htmlFor="credit-amount" className="block text-xs text-black/60">
             סכום בשקלים
           </label>
           <input
@@ -85,7 +85,7 @@ export default function CustomerSupportTools({
             className={FIELD}
           />
 
-          <label htmlFor="credit-reason" className="block text-xs text-black/50">
+          <label htmlFor="credit-reason" className="block text-xs text-black/60">
             סיבה (חובה)
           </label>
           <textarea
@@ -97,7 +97,7 @@ export default function CustomerSupportTools({
             className={FIELD}
           />
 
-          <p className="text-xs text-black/40">
+          <p className="text-xs text-black/60">
             הזיכוי נרשם ביומן עם שם המבצע והסיבה, ותקרת הזיכוי היא ₪{formatNumber(maxCreditIls)}.
           </p>
 
@@ -117,10 +117,10 @@ export default function CustomerSupportTools({
         {emails.length === 0 ? (
           /* Not a disabled control with no explanation. The outbox is empty for
              this customer, which is a fact about them and not about the tool. */
-          <p className="text-xs text-black/40">לא נשלחו ללקוח הזה מיילים דרך התור.</p>
+          <p className="text-xs text-black/60">לא נשלחו ללקוח הזה מיילים דרך התור.</p>
         ) : (
           <>
-            <label htmlFor="resend-outbox" className="block text-xs text-black/50">
+            <label htmlFor="resend-outbox" className="block text-xs text-black/60">
               המייל לשליחה
             </label>
             <select id="resend-outbox" name="outbox_id" required className={FIELD}>
@@ -131,7 +131,7 @@ export default function CustomerSupportTools({
               ))}
             </select>
 
-            <label htmlFor="resend-reason" className="block text-xs text-black/50">
+            <label htmlFor="resend-reason" className="block text-xs text-black/60">
               סיבה (חובה)
             </label>
             <textarea
@@ -145,7 +145,7 @@ export default function CustomerSupportTools({
 
             {/* "Queued", not "sent". The outbox is drained by the notifications
                 cron, so the mail leaves on that pass and not on this press. */}
-            <p className="text-xs text-black/40">
+            <p className="text-xs text-black/60">
               המייל נכנס לתור ונשלח בריצת ה-cron הבאה. כתובת חסומה לא תקבל אותו.
             </p>
 
@@ -165,7 +165,7 @@ export default function CustomerSupportTools({
           <h2 className="text-sm font-semibold text-gray-800">צפייה כלקוח</h2>
           <input type="hidden" name="user_id" value={userId} />
 
-          <label htmlFor="view-as-reason" className="block text-xs text-black/50">
+          <label htmlFor="view-as-reason" className="block text-xs text-black/60">
             סיבה (חובה)
           </label>
           <textarea
@@ -177,7 +177,7 @@ export default function CustomerSupportTools({
             className={FIELD}
           />
 
-          <p className="text-xs text-black/40">
+          <p className="text-xs text-black/60">
             מצב קריאה בלבד, לחצי שעה, ונרשם ביומן לפני הפתיחה. אי אפשר לבצע פעולות בשם הלקוח.
           </p>
 

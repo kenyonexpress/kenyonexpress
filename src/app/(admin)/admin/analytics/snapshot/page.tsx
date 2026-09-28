@@ -101,7 +101,7 @@ function stamp(refreshedAt: string | null | undefined): string | null {
 function Stale({ refreshedAt }: { refreshedAt: string | null | undefined }) {
   const at = stamp(refreshedAt)
   if (!at) return null
-  return <p className="mt-1 text-xs text-black/40">נבנה לאחרונה: {at}</p>
+  return <p className="mt-1 text-xs text-black/60">נבנה לאחרונה: {at}</p>
 }
 
 /** One shared shape for "the reports are not installed" and "the read failed". */
@@ -161,7 +161,7 @@ export default async function ReportSnapshotPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-heading">דוחות לילה</h1>
-          <p className="mt-1 text-sm text-black/50">
+          <p className="mt-1 text-sm text-black/60">
             צילום מצב שנבנה מחדש כל לילה ב-01:30 ‏UTC. אין בו תקרת שורות, והוא מחריג הזמנות שבוטלו
             והוחזרו.{' '}
             <Link href="/admin/analytics" className="underline hover:text-heading">
@@ -222,7 +222,7 @@ export default async function ReportSnapshotPage({
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="text-sm font-bold text-heading">לקוחות חוזרים לפי חודש הצטרפות</h2>
-        <p className="mt-1 text-xs text-black/50">
+        <p className="mt-1 text-xs text-black/60">
           כל שורה היא הלקוחות שרכשו לראשונה באותו חודש. התא אומר איזה חלק מהם רכש שוב כעבור ‏X
           חודשים. מקף פירושו שהחודש עוד לא הגיע, בניגוד ל-0% שפירושו שאיש לא חזר.
         </p>
@@ -251,7 +251,7 @@ export default async function ReportSnapshotPage({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-sm font-bold text-heading">תנועת הזמנות</h2>
-          <p className="mt-1 text-xs text-black/50">
+          <p className="mt-1 text-xs text-black/60">
             לפי יום היצירה ולא יום התשלום, וכולל את מה שדוח ההכנסות מחריג: זה הדוח שבו הזמנה שבוטלה
             נראית.
           </p>
@@ -261,7 +261,7 @@ export default async function ReportSnapshotPage({
                 <table className="w-full text-start text-sm">
                   <caption className="sr-only">הזמנות לפי יום ולפי סטטוס</caption>
                   <thead>
-                    <tr className="border-b border-gray-200 text-xs text-black/50">
+                    <tr className="border-b border-gray-200 text-xs text-black/60">
                       <th scope="col" className="py-2 text-start font-medium">
                         תאריך
                       </th>
@@ -285,7 +285,7 @@ export default async function ReportSnapshotPage({
                   <tbody>
                     {orderRows.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="py-3 text-black/50">
+                        <td colSpan={6} className="py-3 text-black/60">
                           אין הזמנות בטווח הזה.
                         </td>
                       </tr>
@@ -324,7 +324,7 @@ export default async function ReportSnapshotPage({
 
         <section className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-sm font-bold text-heading">מוצרים מובילים</h2>
-          <p className="mt-1 text-xs text-black/50">
+          <p className="mt-1 text-xs text-black/60">
             לפי הכנסה מהשורה, בחלון של {windowDays} הימים האחרונים. שורה שבוטלה או הוחזרה בתוך הזמנה
             משולמת אינה נספרת.
           </p>
@@ -334,7 +334,7 @@ export default async function ReportSnapshotPage({
                 <table className="w-full text-start text-sm">
                   <caption className="sr-only">מוצרים מובילים לפי הכנסה בחלון הנבחר</caption>
                   <thead>
-                    <tr className="border-b border-gray-200 text-xs text-black/50">
+                    <tr className="border-b border-gray-200 text-xs text-black/60">
                       <th scope="col" className="py-2 text-start font-medium">
                         #
                       </th>
@@ -352,7 +352,7 @@ export default async function ReportSnapshotPage({
                   <tbody>
                     {topRows.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="py-3 text-black/50">
+                        <td colSpan={4} className="py-3 text-black/60">
                           אין מכירות בחלון הזה. הצילום שומר שורות רק לחלון שהיו בו מכירות, ולכן חלון
                           ריק כאן אינו תקלה.
                         </td>
@@ -360,7 +360,7 @@ export default async function ReportSnapshotPage({
                     )}
                     {topRows.map((row) => (
                       <tr key={row.rank} className="border-b border-gray-100 last:border-0">
-                        <td className="py-2 text-black/50">{row.rank}</td>
+                        <td className="py-2 text-black/60">{row.rank}</td>
                         <td className="py-2 text-black/70">
                           <Link
                             href={`/admin/products/${row.productId}`}

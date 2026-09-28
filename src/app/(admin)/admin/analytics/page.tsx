@@ -152,7 +152,7 @@ export default async function AnalyticsPage({
         </div>
       </div>
 
-      <p className="text-sm text-black/50">
+      <p className="text-sm text-black/60">
         {period.days} הימים האחרונים. כל הסכומים מצילום המצב בזמן הרכישה, לפי ימי עסקים בישראל.
         הזמנה ששולמה והוחזרה אחר כך עדיין נספרת כאן;{' '}
         <Link href="/admin/analytics/snapshot" className="underline hover:text-heading">
@@ -241,7 +241,7 @@ export default async function AnalyticsPage({
         <h2 className="text-sm font-bold text-heading">משפך המרה</h2>
         {funnel.available ? (
           <>
-            <p className="mt-1 text-xs text-black/50">
+            <p className="mt-1 text-xs text-black/60">
               התנהגות מתוך האגרגציה היומית; רכישות נספרות מטבלת ההזמנות, לא מאירועים.
             </p>
             <div className="mt-4">
@@ -249,7 +249,7 @@ export default async function AnalyticsPage({
             </div>
           </>
         ) : (
-          <p className="mt-3 text-sm text-black/50">
+          <p className="mt-3 text-sm text-black/60">
             המשפך יופיע אחרי החלת מיגרציות האנליטיקה (033, 034, 053). שאר הנתונים בדף אינם תלויים
             בהן.
           </p>
@@ -259,13 +259,13 @@ export default async function AnalyticsPage({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-sm font-bold text-heading">קופונים מול מוצרים פיזיים</h2>
-          <p className="mt-1 text-xs text-black/50">
+          <p className="mt-1 text-xs text-black/60">
             מחזור קופון נמדד בשווי פנים, ולכן גדול ממה שנגבה באתר. הפער הוא מה שנגבה בעסק.
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-start text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-xs text-black/50">
+                <tr className="border-b border-gray-200 text-xs text-black/60">
                   <th scope="col" className="py-2 text-start font-medium">
                     סוג
                   </th>
@@ -283,7 +283,7 @@ export default async function AnalyticsPage({
               <tbody>
                 {typeSplit.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="py-3 text-black/50">
+                    <td colSpan={4} className="py-3 text-black/60">
                       אין מכירות בטווח הזה.
                     </td>
                   </tr>
@@ -305,13 +305,13 @@ export default async function AnalyticsPage({
 
         <section className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-sm font-bold text-heading">עשרת הספקים המובילים</h2>
-          <p className="mt-1 text-xs text-black/50">
+          <p className="mt-1 text-xs text-black/60">
             לפי GMV בטווח הנבחר; אותן שורות מכירה של שאר העמוד.
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-start text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-xs text-black/50">
+                <tr className="border-b border-gray-200 text-xs text-black/60">
                   <th scope="col" className="py-2 text-start font-medium">
                     ספק
                   </th>
@@ -332,7 +332,7 @@ export default async function AnalyticsPage({
               <tbody>
                 {suppliers.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-3 text-black/50">
+                    <td colSpan={5} className="py-3 text-black/60">
                       אין מכירות בטווח הזה.
                     </td>
                   </tr>
@@ -356,13 +356,13 @@ export default async function AnalyticsPage({
 
         <section className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-sm font-bold text-heading">הכנסות לפי אחוז פלטפורמה</h2>
-          <p className="mt-1 text-xs text-black/50">
+          <p className="mt-1 text-xs text-black/60">
             לפי האחוז שצולם בזמן הרכישה. שינוי אחוז היום אינו מזיז שורה בטבלה הזו.
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-start text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-xs text-black/50">
+                <tr className="border-b border-gray-200 text-xs text-black/60">
                   <th scope="col" className="py-2 text-start font-medium">
                     אחוז
                   </th>
@@ -380,7 +380,7 @@ export default async function AnalyticsPage({
               <tbody>
                 {takeRates.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="py-3 text-black/50">
+                    <td colSpan={4} className="py-3 text-black/60">
                       אין מכירות בטווח הזה.
                     </td>
                   </tr>
@@ -410,11 +410,11 @@ export default async function AnalyticsPage({
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="text-sm font-bold text-heading">מוצרים מובילים</h2>
-        <p className="mt-1 text-xs text-black/50">לפי מחזור בטווח הנבחר.</p>
+        <p className="mt-1 text-xs text-black/60">לפי מחזור בטווח הנבחר.</p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-start text-sm">
             <thead>
-              <tr className="border-b border-gray-200 text-xs text-black/50">
+              <tr className="border-b border-gray-200 text-xs text-black/60">
                 <th scope="col" className="py-2 text-start font-medium">
                   מוצר
                 </th>
@@ -435,7 +435,7 @@ export default async function AnalyticsPage({
             <tbody>
               {products.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-3 text-black/50">
+                  <td colSpan={5} className="py-3 text-black/60">
                     אין מכירות בטווח הזה.
                   </td>
                 </tr>

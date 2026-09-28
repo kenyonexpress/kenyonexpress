@@ -122,7 +122,7 @@ export default function PopularSearchesEditor({ initial }: { initial: Row[] }) {
         <ul className="divide-y divide-gray-100">
           {initial.map((row) => (
             <li key={row.id} className="flex items-center gap-3 py-2.5">
-              <span className="w-10 text-xs text-gray-400">{row.position}</span>
+              <span className="w-10 text-xs text-muted">{row.position}</span>
               <span className="flex-1 text-sm font-medium">{row.term}</span>
               {row.target_url && (
                 <span dir="ltr" className="text-xs text-gray-500">

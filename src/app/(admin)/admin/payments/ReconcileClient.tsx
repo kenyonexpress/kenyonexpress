@@ -85,13 +85,13 @@ export default function ReconcileClient({ rows, strandedIls }: Props) {
                 <td className="px-4 py-3">
                   <Link
                     href={`/admin/orders/${row.orderId}`}
-                    className="font-mono text-xs text-brand hover:underline"
+                    className="font-mono text-xs text-brand-dark hover:underline"
                     dir="ltr"
                   >
                     {row.orderId.slice(0, 8)}
                   </Link>
                   {row.transactionId && (
-                    <div className="text-xs text-gray-400" dir="ltr">
+                    <div className="text-xs text-muted" dir="ltr">
                       {row.transactionId}
                     </div>
                   )}
@@ -125,7 +125,7 @@ export default function ReconcileClient({ rows, strandedIls }: Props) {
                       {busy === row.paymentId ? 'מריץ...' : 'הרצת סגירה מחדש'}
                     </button>
                   ) : (
-                    <span className="text-xs text-gray-400">בדיקה ידנית</span>
+                    <span className="text-xs text-muted">בדיקה ידנית</span>
                   )}
                   {message?.id === row.paymentId && (
                     <div

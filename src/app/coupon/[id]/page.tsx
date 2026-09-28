@@ -177,7 +177,7 @@ async function CouponPageBody({ params }: Props) {
               >
                 {formatCouponCode(voucher.code)}
               </p>
-              <p className="text-xs text-gray-400">הציגו את הקוד בבית העסק</p>
+              <p className="text-xs text-muted">הציגו את הקוד בבית העסק</p>
             </div>
           ) : (
             <div className="rounded-xl bg-gray-50 py-8 text-center">
@@ -213,7 +213,7 @@ async function CouponPageBody({ params }: Props) {
                   )}
                 </div>
               )}
-              <p dir="ltr" className="mt-3 font-mono text-lg tracking-widest text-gray-400">
+              <p dir="ltr" className="mt-3 font-mono text-lg tracking-widest text-muted">
                 {formatCouponCode(voucher.code)}
               </p>
             </div>
@@ -315,7 +315,7 @@ async function CouponPageBody({ params }: Props) {
         )}
       </article>
 
-      <p className="mt-4 text-center text-xs text-gray-400">
+      <p className="mt-4 text-center text-xs text-muted">
         הונפק ב־{formatCouponDate(voucher.issued_at)}
       </p>
     </main>

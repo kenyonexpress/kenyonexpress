@@ -37,7 +37,7 @@ export default function BarSeries({
     return (
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="text-sm font-bold text-heading">{title}</h2>
-        <p className="mt-3 text-sm text-black/50">אין נתונים בטווח הזה.</p>
+        <p className="mt-3 text-sm text-black/60">אין נתונים בטווח הזה.</p>
       </section>
     )
   }
@@ -45,7 +45,7 @@ export default function BarSeries({
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5">
       <h2 className="text-sm font-bold text-heading">{title}</h2>
-      {caption && <p className="mt-1 text-xs text-black/50">{caption}</p>}
+      {caption && <p className="mt-1 text-xs text-black/60">{caption}</p>}
 
       {/* The bars are decorative on top of the table below, which carries the
           same numbers in text. */}
@@ -75,7 +75,7 @@ export default function BarSeries({
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-gray-200 text-xs text-black/50">
+            <tr className="border-b border-gray-200 text-xs text-black/60">
               <th scope="col" className="py-2 text-start font-medium">
                 תקופה
               </th>

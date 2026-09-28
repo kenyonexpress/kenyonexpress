@@ -22,7 +22,7 @@ function shade(rate: number): string {
   if (rate >= 40) return 'bg-emerald-400 text-emerald-950'
   if (rate >= 20) return 'bg-emerald-200 text-emerald-950'
   if (rate > 0) return 'bg-emerald-100 text-emerald-950'
-  return 'bg-gray-50 text-black/40'
+  return 'bg-gray-50 text-black/60'
 }
 
 function percent(rate: number): string {
@@ -32,7 +32,7 @@ function percent(rate: number): string {
 export default function CohortGrid({ grid }: { grid: Grid }) {
   if (grid.rows.length === 0) {
     return (
-      <p className="text-sm text-black/50">
+      <p className="text-sm text-black/60">
         אין עדיין אף קוהורטה. קוהורטה נוצרת מהרכישה המשולמת הראשונה של לקוח מזוהה, ולכן הזמנת אורח
         אינה נספרת כאן.
       </p>
@@ -48,7 +48,7 @@ export default function CohortGrid({ grid }: { grid: Grid }) {
           שיעור הלקוחות מכל חודש הצטרפות שביצעו רכישה משולמת נוספת בחודשים שאחריו
         </caption>
         <thead>
-          <tr className="border-b border-gray-200 text-xs text-black/50">
+          <tr className="border-b border-gray-200 text-xs text-black/60">
             <th scope="col" className="py-2 pe-3 text-start font-medium">
               חודש הצטרפות
             </th>

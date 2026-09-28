@@ -120,14 +120,14 @@ export default async function SupplierRedemptionsPage() {
                   {row.customerName ? (
                     <p className="mt-1 text-xs text-gray-500">לקוח: {row.customerName}</p>
                   ) : null}
-                  <p className="mt-1 text-xs text-gray-400">{formatDate(row.redeemedAt)}</p>
+                  <p className="mt-1 text-xs text-muted">{formatDate(row.redeemedAt)}</p>
                 </div>
                 <div className="shrink-0 text-end">
                   <p className="text-xs text-gray-500">לגבייה בעסק</p>
                   <p className="text-lg font-extrabold text-heading" dir="ltr">
                     {formatIls(agorot(row.remainingAmountDueAgorot))}
                   </p>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-muted">
                     עמלה {row.platformPercent}% · שולם באתר{' '}
                     <span dir="ltr">{formatIls(agorot(row.couponPriceAgorot))}</span>
                   </p>

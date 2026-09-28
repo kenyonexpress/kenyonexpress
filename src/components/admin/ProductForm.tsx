@@ -991,7 +991,7 @@ export default function ProductForm({
             <label htmlFor="is_coupon_enabled" className="text-sm font-medium text-gray-700">
               ניתן לרכישה כקופון
             </label>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted">
               (הלקוח משלם באתר את מחיר הקופון שתגדיר, והיתרה נגבית בבית העסק)
             </span>
           </div>
@@ -1555,7 +1555,7 @@ export default function ProductForm({
           <button
             type="button"
             onClick={addVariant}
-            className="inline-flex items-center gap-1 text-xs text-brand hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-brand-dark hover:underline"
           >
             <Plus size={13} />
             הוסף גרסה
@@ -1628,7 +1628,7 @@ export default function ProductForm({
                       <button
                         type="button"
                         onClick={() => removeVariant(idx)}
-                        className="text-gray-400 hover:text-red-600"
+                        className="text-muted hover:text-red-600"
                       >
                         <Trash2 size={14} />
                       </button>

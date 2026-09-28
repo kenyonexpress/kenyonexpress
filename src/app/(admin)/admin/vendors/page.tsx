@@ -93,14 +93,12 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
                   <td className="px-5 py-3">
                     <Link
                       href={`/admin/vendors/${vendor.id}`}
-                      className="text-brand hover:underline font-medium"
+                      className="text-brand-dark hover:underline font-medium"
                     >
                       {vendor.business_name}
                     </Link>
                     {profile && (
-                      <div className="text-xs text-gray-400">
-                        {profile.full_name ?? profile.email}
-                      </div>
+                      <div className="text-xs text-muted">{profile.full_name ?? profile.email}</div>
                     )}
                   </td>
                   <td className="px-5 py-3 font-mono text-xs text-gray-600">
@@ -114,7 +112,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
                   <td className="px-5 py-3">
                     <Link
                       href={`/admin/vendors/${vendor.id}`}
-                      className="text-brand text-sm hover:underline"
+                      className="text-brand-dark text-sm hover:underline"
                     >
                       עריכה
                     </Link>
@@ -124,7 +122,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
             })}
             {!vendors?.length && (
               <tr>
-                <td colSpan={6} className="px-5 py-10 text-center text-gray-400">
+                <td colSpan={6} className="px-5 py-10 text-center text-muted">
                   אין ספקים
                 </td>
               </tr>

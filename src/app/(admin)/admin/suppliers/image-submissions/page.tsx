@@ -98,7 +98,7 @@ export default async function SupplierImageSubmissionsPage() {
                     // link that expires in ten minutes.
                     <img src={preview} alt={row.alt_he} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-gray-400">
+                    <div className="flex h-full items-center justify-center text-xs text-muted">
                       אין תצוגה
                     </div>
                   )}
@@ -129,7 +129,7 @@ export default async function SupplierImageSubmissionsPage() {
           )
         })}
         {rows.length === 0 && !error ? (
-          <li className="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-10 text-center text-gray-400 md:col-span-2">
+          <li className="rounded-xl border border-dashed border-gray-300 bg-white px-5 py-10 text-center text-muted md:col-span-2">
             אין העלאות ממתינות
           </li>
         ) : null}

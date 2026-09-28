@@ -64,7 +64,7 @@ export default function CouponsTable({ deals }: Props) {
         d.platform_price != null ? (
           <span className="font-semibold">{shekelsFromIls(d.platform_price)}</span>
         ) : (
-          <span className="text-xs text-gray-400">לא הוגדר</span>
+          <span className="text-xs text-muted">לא הוגדר</span>
         ),
     },
     {
@@ -73,7 +73,7 @@ export default function CouponsTable({ deals }: Props) {
       sortable: true,
       accessor: (d) => d.valid_until ?? '',
       cell: (d) => (
-        <span className="text-xs text-black/50">
+        <span className="text-xs text-black/60">
           {d.valid_until ? formatDateShort(d.valid_until) : 'ללא הגבלה'}
         </span>
       ),

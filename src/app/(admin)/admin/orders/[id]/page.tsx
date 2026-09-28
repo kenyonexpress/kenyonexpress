@@ -243,7 +243,7 @@ export default async function OrderDetailPage({ params }: Props) {
       )}
 
       {items.length === 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl p-10 text-center text-gray-400">
+        <div className="bg-white border border-gray-200 rounded-xl p-10 text-center text-muted">
           אין פריטים בהזמנה
         </div>
       )}
@@ -320,14 +320,14 @@ function LineTable({
                   <td className="px-4 py-3 text-gray-800">
                     <div>{item.supplier_name ?? '—'}</div>
                     {item.supplier_phone && (
-                      <div className="text-xs text-gray-400" dir="ltr">
+                      <div className="text-xs text-muted" dir="ltr">
                         {item.supplier_phone}
                       </div>
                     )}
                     {item.product_id && (
                       <Link
                         href={`/admin/products/${item.product_id}/edit`}
-                        className="text-xs text-brand hover:underline"
+                        className="text-xs text-brand-dark hover:underline"
                       >
                         המוצר היום
                       </Link>
@@ -362,7 +362,7 @@ function LineTable({
                   </td>
                   <td className="px-4 py-3 text-gray-700" dir="ltr">
                     {percent(item.supplier_split_percent)}
-                    <div className="text-xs text-gray-400">{ils(item.supplier_payout_ils)}</div>
+                    <div className="text-xs text-muted">{ils(item.supplier_payout_ils)}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-700" dir="ltr">
                     {percent(item.discount_percent)}

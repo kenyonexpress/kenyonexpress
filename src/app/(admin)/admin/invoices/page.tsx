@@ -163,7 +163,7 @@ export default async function AdminInvoicesPage(props: {
             ))}
             {rows.length === 0 && !error ? (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={8} className="px-4 py-10 text-center text-muted">
                   אין חשבוניות תואמות
                 </td>
               </tr>

@@ -75,7 +75,7 @@ export default function WalletButtons({ voucher, presentable }: Props) {
           שמירה ב-Google Wallet
         </a>
       )}
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-muted">
         אותו QR בדיוק שמופיע כאן. גם אחרי השמירה, הדף הזה נשאר תקף.
       </p>
     </div>

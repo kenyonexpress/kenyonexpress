@@ -55,7 +55,7 @@ export default function SupplierStorefrontHeader({ supplier }: { supplier: Suppl
         />
       ) : null}
       <div className="min-w-0 space-y-2">
-        <p className="text-sm text-black/50">ספק</p>
+        <p className="text-sm text-black/60">ספק</p>
         <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold text-heading">
           {supplier.name}
           {supplier.verified === true && <VerifiedSupplierBadge />}

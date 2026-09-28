@@ -179,7 +179,7 @@ export default async function ReportsPage({
         >
           הצג
         </button>
-        <p className="text-xs text-black/50">הימים נספרים לפי שעון ישראל. הטווח מוגבל לשנה אחת.</p>
+        <p className="text-xs text-black/60">הימים נספרים לפי שעון ישראל. הטווח מוגבל לשנה אחת.</p>
       </form>
 
       {result.truncated && (
@@ -228,7 +228,7 @@ export default async function ReportsPage({
         />
       </div>
 
-      <p className="text-sm text-black/50">
+      <p className="text-sm text-black/60">
         ההחזרים נספרים בנפרד ואינם מקוזזים מהמכירות: יום עם מכירה אחת והחזר אחד אינו יום ללא פעילות.
       </p>
 
@@ -236,7 +236,7 @@ export default async function ReportsPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-bold text-heading">מכירות לאורך זמן</h2>
-            <p className="mt-1 text-xs text-black/50">
+            <p className="mt-1 text-xs text-black/60">
               מה שנגבה באתר, ועמלת הפלטפורמה בקו לצידו. הטבלה שמתחת נושאת את אותם המספרים.
             </p>
           </div>
@@ -251,7 +251,7 @@ export default async function ReportsPage({
           <table className="w-full text-start text-sm">
             <caption className="sr-only">מכירות, עמלות והחזרים לפי תקופה</caption>
             <thead>
-              <tr className="border-b border-gray-200 text-xs text-black/50">
+              <tr className="border-b border-gray-200 text-xs text-black/60">
                 <th scope="col" className="py-2 text-start font-medium">
                   {range.granularity === 'month' ? 'חודש' : 'תאריך'}
                 </th>
@@ -278,7 +278,7 @@ export default async function ReportsPage({
             <tbody>
               {buckets.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-3 text-black/50">
+                  <td colSpan={7} className="py-3 text-black/60">
                     אין תנועות בטווח הזה.
                   </td>
                 </tr>
@@ -309,7 +309,7 @@ export default async function ReportsPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-bold text-heading">התחייבות פתוחה לספקים</h2>
-            <p className="mt-1 text-xs text-black/50">
+            <p className="mt-1 text-xs text-black/60">
               מה שנצבר לספק בטווח הזה, פחות מה שקוזז בהחזרים ופחות מה שכבר שולם. סכום שלילי אומר
               שהספק חייב לפלטפורמה.
             </p>
@@ -321,7 +321,7 @@ export default async function ReportsPage({
           <table className="w-full text-start text-sm">
             <caption className="sr-only">התחייבות פתוחה לכל ספק</caption>
             <thead>
-              <tr className="border-b border-gray-200 text-xs text-black/50">
+              <tr className="border-b border-gray-200 text-xs text-black/60">
                 <th scope="col" className="py-2 text-start font-medium">
                   ספק
                 </th>
@@ -342,7 +342,7 @@ export default async function ReportsPage({
             <tbody>
               {obligations.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-3 text-black/50">
+                  <td colSpan={5} className="py-3 text-black/60">
                     אין תנועות לספקים בטווח הזה.
                   </td>
                 </tr>

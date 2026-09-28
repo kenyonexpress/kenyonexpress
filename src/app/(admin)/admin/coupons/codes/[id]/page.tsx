@@ -174,7 +174,7 @@ export default async function AdminVoucherDetailPage({ params }: Props) {
         <div className="pt-2">
           <Link
             href={`/admin/orders/${voucher.order_id}`}
-            className="text-sm text-brand hover:underline"
+            className="text-sm text-brand-dark hover:underline"
           >
             להזמנה
           </Link>

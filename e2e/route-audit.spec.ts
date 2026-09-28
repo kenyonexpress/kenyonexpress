@@ -9,6 +9,16 @@ import {
   E2E_SUPPLIER_PASSWORD,
   signInWithEmail,
 } from './auth-session'
+import {
+  ADMIN_PAGES,
+  BOGUS,
+  CUSTOMER_PAGES,
+  type RouteSpec,
+  SUPPLIER_PAGES,
+  notFound,
+  page200,
+  redirect,
+} from './route-lists'
 
 /**
  * Route audit: every route in the app, in a real browser, as every role.
@@ -59,21 +69,6 @@ import {
  * of every chunk land in the same file when ROUTE_AUDIT_REPORT is set.
  */
 
-type Expectation =
-  /** Renders in place with 200. */
-  | { kind: 'page' }
-  /** Intentional redirect; the final pathname must start with `to`. */
-  | { kind: 'redirect'; to: string }
-  /**
-   * A bogus id must answer the not-found page, never a server error. Either a
-   * 404 status, or a 200 carrying the not-found page: notFound() thrown inside
-   * a Suspense boundary after the shell has streamed cannot change the status
-   * any more, and the gift and coupon pages are built that way on purpose.
-   */
-  | { kind: 'not-found' }
-
-type RouteSpec = { path: string; expect: Expectation; note?: string }
-
 type Row = {
   role: string
   path: string
@@ -85,24 +80,6 @@ type Row = {
   rtl: boolean | null
   detail?: string
 }
-
-const page200 = (path: string, note?: string): RouteSpec => ({
-  path,
-  expect: { kind: 'page' },
-  note,
-})
-const redirect = (path: string, to: string, note?: string): RouteSpec => ({
-  path,
-  expect: { kind: 'redirect', to },
-  note,
-})
-const notFound = (path: string, note?: string): RouteSpec => ({
-  path,
-  expect: { kind: 'not-found' },
-  note,
-})
-
-const BOGUS = '00000000-0000-4000-8000-000000000000'
 
 // ---------------------------------------------------------------------------
 // Anonymous
@@ -268,100 +245,12 @@ const FILE_AND_API_ROUTES = [
 // Signed-in roles
 // ---------------------------------------------------------------------------
 
-const CUSTOMER_PAGES: RouteSpec[] = [
-  page200('/account'),
-  page200('/account/addresses'),
-  page200('/account/affiliate'),
-  page200('/account/coupons'),
-  page200('/account/details'),
-  page200('/account/invoices'),
-  redirect('/account/my-vouchers', '/account/coupons', 'permanent alias of the coupon list'),
-  page200('/account/notifications'),
-  page200('/account/orders'),
-  page200('/account/referrals'),
-  page200('/account/security'),
-  page200('/account/subscriptions'),
-  page200('/account/tickets'),
-  page200('/account/tokens'),
-  redirect('/account/vouchers', '/account/coupons', 'permanent alias of the coupon list'),
-  page200('/account/wallet'),
-  page200('/account/wishlist'),
-  page200('/login', 'the login form renders again for a signed-in visitor; no redirect exists'),
-  redirect('/admin', '/', 'a customer is not an admin'),
-  redirect('/supplier', '/supplier/access-denied', 'a customer is not a supplier'),
-  notFound(`/account/orders/${BOGUS}`),
-  notFound(`/account/tickets/${BOGUS}`),
-  notFound(`/account/coupons/${BOGUS}/gift`),
-  notFound(`/coupon/${BOGUS}`),
-]
-
 /** Detail pages discovered from a list page: [list, href prefix, suffix]. */
 const CUSTOMER_DETAILS: Array<[string, string, string]> = [
   ['/account/orders', '/account/orders/', ''],
   ['/account/tickets', '/account/tickets/', ''],
   ['/account/coupons', '/account/coupons/', '/gift'],
 ]
-
-const ADMIN_PAGES: RouteSpec[] = [
-  '/admin/affiliates',
-  '/admin/analytics',
-  '/admin/analytics/snapshot',
-  '/admin/approvals',
-  '/admin/audit-log',
-  '/admin/billing',
-  '/admin/cashback',
-  '/admin/categories',
-  '/admin/categories/new',
-  '/admin/contact-channels',
-  '/admin/coupons',
-  '/admin/coupons/codes',
-  '/admin/coupons/expiry',
-  '/admin/coupons/impact',
-  '/admin/coupons/lookup',
-  '/admin/coupons/new',
-  '/admin/cron',
-  '/admin/dashboard',
-  '/admin/data-requests',
-  '/admin/deals-queue',
-  '/admin/discounts',
-  '/admin/discounts/new',
-  '/admin/feature-flags',
-  '/admin/flash-deals',
-  '/admin/fraud',
-  '/admin/growth',
-  '/admin/homepage',
-  '/admin/homepage/preview',
-  '/admin/invoices',
-  '/admin/orders',
-  '/admin/pages',
-  '/admin/payments',
-  '/admin/payouts',
-  '/admin/phases',
-  '/admin/products',
-  '/admin/products/images',
-  '/admin/products/import',
-  '/admin/products/new',
-  '/admin/queues',
-  '/admin/referrals',
-  '/admin/reports',
-  '/admin/reviews',
-  '/admin/search',
-  '/admin/settings',
-  '/admin/status',
-  '/admin/subscriptions',
-  '/admin/suppliers',
-  '/admin/suppliers/applications',
-  '/admin/suppliers/contact-requests',
-  '/admin/suppliers/image-submissions',
-  '/admin/suppliers/new',
-  '/admin/suppliers/price-proposals',
-  '/admin/support',
-  '/admin/users',
-  '/admin/vendors',
-  '/admin/vendors/new',
-  '/admin/whatsapp/messages',
-].map((path) => page200(path))
-ADMIN_PAGES.unshift(redirect('/admin', '/admin/dashboard', 'the admin root is the dashboard'))
 
 const ADMIN_DETAILS: Array<[string, string, string]> = [
   ['/admin/categories', '/admin/categories/', ''],
@@ -374,18 +263,6 @@ const ADMIN_DETAILS: Array<[string, string, string]> = [
   ['/admin/suppliers', '/admin/suppliers/', ''],
   ['/admin/users', '/admin/users/', ''],
   ['/admin/vendors', '/admin/vendors/', ''],
-]
-
-const SUPPLIER_PAGES: RouteSpec[] = [
-  page200('/supplier'),
-  page200('/supplier/orders'),
-  page200('/supplier/payouts'),
-  page200('/supplier/products'),
-  page200('/supplier/redemptions'),
-  page200('/supplier/scan'),
-  page200('/supplier/settings'),
-  redirect('/supplier/login', '/supplier', 'a signed-in supplier skips the portal login'),
-  redirect('/admin', '/', 'a supplier is not an admin'),
 ]
 
 // ---------------------------------------------------------------------------

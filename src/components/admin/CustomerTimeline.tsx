@@ -66,7 +66,7 @@ export default function CustomerTimeline({
     <section className="rounded-xl border border-black/10 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-5 py-3">
         <h2 className="text-sm font-semibold text-gray-800">ציר זמן של הלקוח</h2>
-        <div className="flex flex-wrap gap-2 text-xs text-black/50">
+        <div className="flex flex-wrap gap-2 text-xs text-black/60">
           {(Object.keys(TIMELINE_KIND_LABELS) as TimelineKind[])
             .filter((kind) => counts[kind] > 0)
             .map((kind) => (
@@ -88,7 +88,7 @@ export default function CustomerTimeline({
       )}
 
       {events.length === 0 ? (
-        <p className="px-5 py-8 text-center text-sm text-black/40">אין אירועים ללקוח הזה</p>
+        <p className="px-5 py-8 text-center text-sm text-black/60">אין אירועים ללקוח הזה</p>
       ) : (
         <ol className="divide-y divide-black/5">
           {events.map((event) => (
@@ -104,7 +104,7 @@ export default function CustomerTimeline({
 
               <span className="font-medium text-gray-900">
                 {event.href ? (
-                  <Link href={event.href} className="text-brand hover:underline">
+                  <Link href={event.href} className="text-brand-dark hover:underline">
                     {event.titleHe}
                   </Link>
                 ) : (
@@ -124,10 +124,10 @@ export default function CustomerTimeline({
                 </span>
               )}
 
-              <span className="ms-auto text-xs text-black/40">{stamp(event.at)}</span>
+              <span className="ms-auto text-xs text-black/60">{stamp(event.at)}</span>
 
               {event.detailHe && (
-                <span className="w-full text-xs text-black/50">{event.detailHe}</span>
+                <span className="w-full text-xs text-black/60">{event.detailHe}</span>
               )}
             </li>
           ))}

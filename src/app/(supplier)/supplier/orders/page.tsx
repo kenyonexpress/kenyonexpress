@@ -201,7 +201,7 @@ export default async function SupplierOrdersPage() {
         </ul>
       )}
 
-      <p className="text-gray-400 text-xs leading-relaxed">
+      <p className="text-muted text-xs leading-relaxed">
         התצוגה לקריאה בלבד. עדכון סטטוס משלוח נרשם ביומן הביקורת ומתבצע דרך התמיכה, לא מהמסך הזה.
       </p>
     </div>

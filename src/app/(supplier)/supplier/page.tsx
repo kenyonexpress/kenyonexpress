@@ -34,7 +34,7 @@ function StatCard({
       <p className="mt-2 text-2xl font-extrabold text-heading" dir="ltr">
         {value}
       </p>
-      {hint ? <p className="mt-1 text-xs text-gray-400">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
     </div>
   )
 }
@@ -138,7 +138,7 @@ export default async function SupplierHomePage({
             {byProduct.map((row) => (
               <li key={row.productName} className="flex items-baseline justify-between gap-3">
                 <span>
-                  {row.productName} <span className="text-gray-400">({row.quantity})</span>
+                  {row.productName} <span className="text-muted">({row.quantity})</span>
                 </span>
                 <span className="tabular-nums text-heading">
                   {formatIls(agorot(row.supplierDueAgorot))}
@@ -221,7 +221,7 @@ export default async function SupplierHomePage({
                     <p className="mt-0.5 font-mono text-sm tracking-wider text-gray-600" dir="ltr">
                       {formatVoucherCode(row.code)}
                     </p>
-                    <p className="mt-1 text-xs text-gray-400">{formatDate(row.redeemedAt)}</p>
+                    <p className="mt-1 text-xs text-muted">{formatDate(row.redeemedAt)}</p>
                   </div>
                   <div className="text-end">
                     <p className="text-xs text-gray-500">לגבייה</p>

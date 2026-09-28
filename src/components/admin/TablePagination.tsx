@@ -31,7 +31,7 @@ export default function TablePagination({
 
   return (
     <nav aria-label="ניווט עמודים" className="flex items-center justify-between gap-4 text-sm">
-      <span className="text-black/50">
+      <span className="text-black/60">
         {from.toLocaleString('he-IL')}-{to.toLocaleString('he-IL')} מתוך{' '}
         {total.toLocaleString('he-IL')}
       </span>

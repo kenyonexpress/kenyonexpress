@@ -146,7 +146,7 @@ export default async function AdminOrdersPage(props: {
       cell: (order) => (
         <Link
           href={`/admin/orders/${order.id}`}
-          className="font-mono text-xs text-brand hover:underline"
+          className="font-mono text-xs text-brand-dark hover:underline"
         >
           {order.invoice_number ?? order.id.slice(0, 8)}
         </Link>
@@ -177,7 +177,7 @@ export default async function AdminOrdersPage(props: {
       id: 'created_at',
       header: 'תאריך',
       sortKey: 'created_at',
-      className: 'whitespace-nowrap text-xs text-black/50',
+      className: 'whitespace-nowrap text-xs text-black/60',
       cell: (order) => new Date(order.created_at).toLocaleDateString('he-IL'),
     },
   ]

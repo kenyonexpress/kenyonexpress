@@ -85,7 +85,7 @@ export default function AppError({
       </div>
 
       {error.digest && (
-        <p dir="ltr" className="mt-8 font-mono text-xs text-gray-400">
+        <p dir="ltr" className="mt-8 font-mono text-xs text-muted">
           {error.digest}
         </p>
       )}

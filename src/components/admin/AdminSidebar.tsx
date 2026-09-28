@@ -199,7 +199,7 @@ export default function AdminSidebar({ role }: { role: AppRole }) {
                   <Link
                     href={quickAdd}
                     aria-label="מוצר חדש"
-                    className="flex items-center px-2 text-black/40 transition-colors hover:bg-black/[0.03] hover:text-black"
+                    className="flex items-center px-2 text-black/60 transition-colors hover:bg-black/[0.03] hover:text-black"
                   >
                     <Plus size={13} />
                   </Link>

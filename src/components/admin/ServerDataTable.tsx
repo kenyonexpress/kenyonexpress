@@ -44,7 +44,7 @@ export default function ServerDataTable<T>({
     <div className="overflow-x-auto rounded-xl border border-black/10 bg-surface">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/50">
+          <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/60">
             {selectable && <th className="w-10 px-3 py-3" />}
             {columns.map((col) => (
               <th key={col.id} className={cn('px-4 py-3 font-medium', col.className)}>
@@ -100,7 +100,7 @@ export default function ServerDataTable<T>({
             <tr>
               <td
                 colSpan={columns.length + (selectable ? 1 : 0)}
-                className="px-4 py-10 text-center text-sm text-black/40"
+                className="px-4 py-10 text-center text-sm text-black/60"
               >
                 {emptyMessage}
               </td>

@@ -21,7 +21,7 @@ export default async function BulkProductImagesPage() {
       <header className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-heading">העלאת תמונות קבוצתית</h1>
-          <p className="mt-1 text-sm text-black/50">
+          <p className="mt-1 text-sm text-black/60">
             העלאת תיקיית תמונות בבת אחת, כשכל קובץ משויך למוצר לפי שמו.
           </p>
         </div>

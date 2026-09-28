@@ -84,7 +84,7 @@ export default function DataTable<T>({
           <div className="relative min-w-[12rem] flex-1 max-w-sm">
             <Search
               size={15}
-              className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-black/40"
+              className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-black/60"
               aria-hidden
             />
             <Input
@@ -101,7 +101,7 @@ export default function DataTable<T>({
       <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/50">
+            <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/60">
               {columns.map((col) => (
                 <th key={col.id} className={cn('px-4 py-3 font-medium', col.className)}>
                   {col.sortable && col.accessor ? (
@@ -145,7 +145,7 @@ export default function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-10 text-center text-sm text-black/40"
+                  className="px-4 py-10 text-center text-sm text-black/60"
                 >
                   {emptyMessage}
                 </td>

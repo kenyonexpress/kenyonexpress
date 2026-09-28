@@ -95,7 +95,7 @@ export default async function AdminSettingsPage() {
         </h2>
         <p className="text-sm text-gray-600">
           הפעלה וכיבוי של יכולות בזמן ריצה, עם משתנה סביבה שגובר על הטבלה.{' '}
-          <Link href="/admin/feature-flags" className="text-brand hover:underline">
+          <Link href="/admin/feature-flags" className="text-brand-dark underline">
             לעריכת הדגלים
           </Link>
         </p>

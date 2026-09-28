@@ -103,7 +103,7 @@ export default async function AdminVouchersPage(props: {
       header: 'קוד',
       className: 'font-mono text-xs',
       cell: (v) => (
-        <Link href={`/admin/coupons/codes/${v.id}`} className="text-brand hover:underline">
+        <Link href={`/admin/coupons/codes/${v.id}`} className="text-brand-dark hover:underline">
           <span dir="ltr">{formatVoucherCode(v.code)}</span>
         </Link>
       ),
@@ -131,14 +131,14 @@ export default async function AdminVouchersPage(props: {
     {
       id: 'redeemed',
       header: 'נסרק',
-      className: 'text-xs text-black/50',
+      className: 'text-xs text-black/60',
       cell: (v) => (v.redeemed_at ? new Date(v.redeemed_at).toLocaleString('he-IL') : '—'),
     },
     {
       id: 'expires',
       header: 'תוקף',
       sortKey: 'expires_at',
-      className: 'whitespace-nowrap text-xs text-black/50',
+      className: 'whitespace-nowrap text-xs text-black/60',
       cell: (v) => new Date(v.expires_at).toLocaleDateString('he-IL'),
     },
   ]
@@ -152,7 +152,7 @@ export default async function AdminVouchersPage(props: {
             סטטוס סריקה לכל שובר שהונפק, כולל QR לשחזור מול בית העסק.
           </p>
         </div>
-        <Link href="/admin/coupons" className="text-sm text-brand hover:underline">
+        <Link href="/admin/coupons" className="text-sm text-brand-dark hover:underline">
           לניהול הדילים
         </Link>
       </div>

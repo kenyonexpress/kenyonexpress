@@ -114,7 +114,7 @@ export default async function FlashDealsPage() {
                 </td>
                 <td className="p-2">
                   {row.cancelled_at ? (
-                    <span className="text-black/50">בוטל</span>
+                    <span className="text-black/60">בוטל</span>
                   ) : row.applied_at ? (
                     <span className="text-emerald-700">הוחל</span>
                   ) : (
@@ -123,7 +123,7 @@ export default async function FlashDealsPage() {
                   {row.last_error && (
                     <span className="block text-xs text-red-600">{row.last_error}</span>
                   )}
-                  {row.note && <span className="block text-xs text-black/50">{row.note}</span>}
+                  {row.note && <span className="block text-xs text-black/60">{row.note}</span>}
                 </td>
               </tr>
             ))}

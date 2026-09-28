@@ -404,7 +404,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         )}
 
         {redeemable && (
-          <p className="mt-4 text-center text-xs text-gray-400">
+          <p className="mt-4 text-center text-xs text-muted">
             המימוש סופי ואינו ניתן לביטול. השובר יפוג מיד עם האישור.
           </p>
         )}
@@ -463,7 +463,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
           </div>
         )}
         {result.replayed && (
-          <p className="mt-3 text-center text-xs text-gray-400">התוצאה שוחזרה מבקשה קודמת</p>
+          <p className="mt-3 text-center text-xs text-muted">התוצאה שוחזרה מבקשה קודמת</p>
         )}
         <button
           type="button"
@@ -562,7 +562,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         </button>
       </form>
 
-      <p className="text-center text-xs text-gray-400">מחובר כ-{supplierName}</p>
+      <p className="text-center text-xs text-muted">מחובר כ-{supplierName}</p>
     </div>
   )
 }

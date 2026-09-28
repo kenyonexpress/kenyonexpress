@@ -136,7 +136,7 @@ export default async function AdminSearchPage() {
                 title={`${row.searches} חיפושים`}
               >
                 {row.raw_term}
-                <span className="ms-1.5 text-xs text-gray-500">{row.searches}</span>
+                <span className="ms-1.5 text-xs text-gray-600">{row.searches}</span>
               </span>
             ))}
           </div>

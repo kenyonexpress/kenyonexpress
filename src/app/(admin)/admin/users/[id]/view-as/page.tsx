@@ -55,7 +55,7 @@ export default async function ViewAsPage(props: { params: Promise<{ id: string }
         <p className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           {VIEW_AS_REFUSALS[verdict.reason]}
         </p>
-        <Link href={`/admin/users/${id}`} className="text-sm text-brand hover:underline">
+        <Link href={`/admin/users/${id}`} className="text-sm text-brand-dark hover:underline">
           חזרה לדף הלקוח
         </Link>
       </div>
@@ -95,23 +95,23 @@ export default async function ViewAsPage(props: { params: Promise<{ id: string }
           <h2 className="mb-3 text-sm font-semibold text-gray-800">הפרטים שלי</h2>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-2">
-              <dt className="text-black/50">שם</dt>
+              <dt className="text-black/60">שם</dt>
               <dd className="text-black/80">{profile.full_name ?? ''}</dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt className="text-black/50">אימייל</dt>
+              <dt className="text-black/60">אימייל</dt>
               <dd dir="ltr" className="text-black/80">
                 {profile.email}
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt className="text-black/50">טלפון</dt>
+              <dt className="text-black/60">טלפון</dt>
               <dd dir="ltr" className="text-black/80">
                 {profile.phone ?? ''}
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt className="text-black/50">הצטרפות</dt>
+              <dt className="text-black/60">הצטרפות</dt>
               <dd>{formatDateShort(profile.created_at)}</dd>
             </div>
           </dl>
@@ -122,7 +122,7 @@ export default async function ViewAsPage(props: { params: Promise<{ id: string }
           <p className="text-2xl font-bold text-heading">
             {shekels(agorot(walletView.balanceAgorot))}
           </p>
-          <p className="mt-1 text-xs text-black/50">
+          <p className="mt-1 text-xs text-black/60">
             זו היתרה שהלקוח רואה בחשבון שלו, מאותו מקור שהמסך שלו קורא.
           </p>
         </section>

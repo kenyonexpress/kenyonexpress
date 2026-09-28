@@ -51,7 +51,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: 'ok' | 'mu
 // `Agorot`, not `number`: the brand is the whole point, and widening it here
 // would let a shekel float reach the formatter unnoticed.
 function Money({ value }: { value: Agorot | null }) {
-  if (value === null) return <span className="text-gray-400">—</span>
+  if (value === null) return <span className="text-muted">—</span>
   return (
     <span dir="ltr" className="tabular-nums">
       {formatAgorot(value)}
@@ -207,7 +207,7 @@ export default async function SupplierProductsPage() {
                     {proposal.decisionNote ? (
                       <p className="mt-1 text-xs text-gray-500">{proposal.decisionNote}</p>
                     ) : null}
-                    <p className="mt-1 text-xs text-gray-400">{formatDate(proposal.createdAt)}</p>
+                    <p className="mt-1 text-xs text-muted">{formatDate(proposal.createdAt)}</p>
                   </div>
                   <div className="shrink-0 space-y-2 text-end">
                     <RequestStatusBadge status={proposal.status} />
@@ -244,7 +244,7 @@ export default async function SupplierProductsPage() {
                     {submission.decisionNote ? (
                       <p className="mt-1 text-xs text-gray-500">{submission.decisionNote}</p>
                     ) : null}
-                    <p className="mt-1 text-xs text-gray-400">{formatDate(submission.createdAt)}</p>
+                    <p className="mt-1 text-xs text-muted">{formatDate(submission.createdAt)}</p>
                   </div>
                   <div className="shrink-0 space-y-2 text-end">
                     <RequestStatusBadge status={submission.status} />

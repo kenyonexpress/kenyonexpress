@@ -94,13 +94,13 @@ export default function SupplierOnboarding({ supplierId, summary, members, candi
         {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
 
         {members.length === 0 ? (
-          <p className="text-sm text-gray-400 mb-3">אין משתמשים משויכים</p>
+          <p className="text-sm text-muted mb-3">אין משתמשים משויכים</p>
         ) : (
           <ul className="divide-y divide-gray-100 text-sm mb-3">
             {members.map((m) => (
               <li key={m.user_id} className="flex items-center justify-between py-2">
                 <div>
-                  <div className={m.is_active ? 'text-gray-800' : 'text-gray-400 line-through'}>
+                  <div className={m.is_active ? 'text-gray-800' : 'text-muted line-through'}>
                     {m.full_name ?? m.email ?? m.user_id}
                   </div>
                   <div className="text-xs text-gray-500">

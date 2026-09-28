@@ -89,7 +89,7 @@ export default function CategoryDialog({ open, onClose, category, parentOptions 
               <button
                 type="button"
                 aria-label="סגירת החלון"
-                className="text-gray-400 hover:text-gray-700 transition-colors"
+                className="text-muted hover:text-gray-700 transition-colors"
               >
                 <X size={20} />
               </button>

@@ -4,7 +4,11 @@
 .account-page {
   --account-yellow: #fed700;
   --account-ink: #333e48;
-  --account-muted: #657888;
+  /* #657888 measured 4.57:1 on white, 4.05:1 on the .account-chip--dead
+     background -- both technically over/under 4.5:1 by a hair, and axe
+     measured the nav email (rendered on every /account/* page) as a real
+     failure. Darkened 20% for margin against real anti-aliased text. */
+  --account-muted: #51606d;
   --account-line: #e4e4e4;
   --account-blue: #0062bd;
   --account-red: #e4002b;
@@ -261,7 +265,8 @@
 .wallet-balance__note {
   font-size: 13px;
   margin: 8px 0 0;
-  opacity: 0.75;
+  /* 0.75 measured 4.33:1 against the yellow card, under 4.5:1. */
+  opacity: 0.85;
 }
 
 .wallet-ledger {

@@ -35,21 +35,21 @@ export default function AuditDiffCell({ changes }: { changes: unknown }) {
   const summary = summariseAuditDiff(diff)
 
   if (diff.changes.length === 0) {
-    return <span className="text-xs text-black/40">{summary}</span>
+    return <span className="text-xs text-black/60">{summary}</span>
   }
 
   return (
     <details className="group">
       <summary className="cursor-pointer list-none text-xs text-black/70 hover:text-black">
         <span className="underline decoration-dotted underline-offset-2">{summary}</span>
-        <span className="ms-1 text-black/40 group-open:hidden">▾</span>
-        <span className="ms-1 hidden text-black/40 group-open:inline">▴</span>
+        <span className="ms-1 text-black/60 group-open:hidden">▾</span>
+        <span className="ms-1 hidden text-black/60 group-open:inline">▴</span>
       </summary>
 
       <div className="mt-2 overflow-x-auto">
         <table className="w-full text-xs" dir="rtl">
           <thead>
-            <tr className="text-black/50">
+            <tr className="text-black/60">
               <th className="p-1 text-start font-medium">שדה</th>
               <th className="p-1 text-start font-medium">לפני</th>
               <th className="p-1 text-start font-medium">אחרי</th>
@@ -60,9 +60,9 @@ export default function AuditDiffCell({ changes }: { changes: unknown }) {
               <tr key={change.field} className="border-t border-black/5 align-top">
                 <td className="p-1 font-mono text-micro" dir="ltr">
                   {change.field}
-                  <span className="ms-1 text-black/40">{KIND_LABEL[change.kind]}</span>
+                  <span className="ms-1 text-black/60">{KIND_LABEL[change.kind]}</span>
                 </td>
-                <td className="max-w-[18rem] break-words p-1 text-black/50 line-through">
+                <td className="max-w-[18rem] break-words p-1 text-black/60 line-through">
                   {render(change.before)}
                 </td>
                 <td className="max-w-[18rem] break-words p-1 text-black">{render(change.after)}</td>

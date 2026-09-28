@@ -137,7 +137,7 @@ export default async function AdminSuppliersPage({ searchParams }: Props) {
                 <td className="px-5 py-3">
                   <Link
                     href={`/admin/suppliers/${supplier.id}`}
-                    className="text-brand hover:underline font-medium"
+                    className="text-brand-dark hover:underline font-medium"
                   >
                     {supplier.name}
                   </Link>
@@ -171,7 +171,7 @@ export default async function AdminSuppliersPage({ searchParams }: Props) {
                 <td className="px-5 py-3">
                   <Link
                     href={`/admin/suppliers/${supplier.id}`}
-                    className="text-brand text-sm hover:underline"
+                    className="text-brand-dark text-sm hover:underline"
                   >
                     עריכה
                   </Link>
@@ -180,7 +180,7 @@ export default async function AdminSuppliersPage({ searchParams }: Props) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-gray-400">
+                <td colSpan={7} className="px-5 py-10 text-center text-muted">
                   אין ספקים להצגה
                 </td>
               </tr>

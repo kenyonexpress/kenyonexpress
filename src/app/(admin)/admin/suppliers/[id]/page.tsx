@@ -90,7 +90,7 @@ export default async function EditSupplierPage({ params }: Props) {
         {ledger.failed ? (
           <p className="text-sm text-red-600">יומן התשלומים לא נטען: {ledger.reason}</p>
         ) : ledger.lines.length === 0 ? (
-          <p className="text-sm text-gray-400">אין עדיין שורות תשלום לספק הזה</p>
+          <p className="text-sm text-muted">אין עדיין שורות תשלום לספק הזה</p>
         ) : (
           <dl className="grid grid-cols-3 gap-3 text-sm">
             <div>
@@ -112,13 +112,13 @@ export default async function EditSupplierPage({ params }: Props) {
           </dl>
         )}
         <p className="mt-3 flex flex-wrap gap-3 text-xs">
-          <Link href={`/admin/payouts?supplier=${id}`} className="text-brand hover:underline">
+          <Link href={`/admin/payouts?supplier=${id}`} className="text-brand-dark hover:underline">
             דוחות התשלום של הספק
           </Link>
           {!ledger.failed && ledger.lines.length > 0 && (
             <a
               href={`/api/admin/payouts/ledger?supplier=${id}`}
-              className="text-brand hover:underline"
+              className="text-brand-dark hover:underline"
             >
               ייצוא היומן ל-CSV
             </a>
@@ -131,12 +131,15 @@ export default async function EditSupplierPage({ params }: Props) {
           מוצרים של הספק ({productRows.length})
         </h2>
         {productRows.length === 0 ? (
-          <p className="text-sm text-gray-400">אין מוצרים משויכים</p>
+          <p className="text-sm text-muted">אין מוצרים משויכים</p>
         ) : (
           <ul className="divide-y divide-gray-100 text-sm">
             {productRows.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2">
-                <Link href={`/admin/products/${p.id}/edit`} className="text-brand hover:underline">
+                <Link
+                  href={`/admin/products/${p.id}/edit`}
+                  className="text-brand-dark hover:underline"
+                >
                   {p.name_he}
                 </Link>
                 <span className="text-xs text-gray-500">

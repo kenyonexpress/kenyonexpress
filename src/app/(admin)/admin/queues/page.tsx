@@ -175,7 +175,7 @@ export default async function AdminQueuesPage() {
           <p className="mt-1 mb-4 text-sm text-gray-500">{section.note}</p>
 
           {section.rows.length === 0 ? (
-            <p className="text-sm text-gray-400">ריק.</p>
+            <p className="text-sm text-muted">ריק.</p>
           ) : (
             <ul className="divide-y divide-gray-100">
               {section.rows.map((row) => (
@@ -187,7 +187,7 @@ export default async function AdminQueuesPage() {
                         {row.detail}
                       </p>
                     )}
-                    <p className="mt-0.5 text-xs text-gray-400">
+                    <p className="mt-0.5 text-xs text-muted">
                       {whenText(row.when)} · {row.attempts} ניסיונות
                     </p>
                   </div>

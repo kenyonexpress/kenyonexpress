@@ -124,7 +124,7 @@ export default async function AdminUsersPage(props: {
            resolves to one person is otherwise indistinguishable from a name
            search that happened to match them, and the operator needs to know
            which question was actually answered. */
-        <p className="text-xs text-black/50">
+        <p className="text-xs text-black/60">
           {lookup.hits.length === 0
             ? `לא נמצא לקוח עבור "${lookup.term.raw}"`
             : `${users.length} תוצאות עבור "${lookup.term.raw}" (${lookup.hits[0]?.matchedOnHe})`}

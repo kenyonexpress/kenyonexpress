@@ -25,7 +25,7 @@ export default function FunnelBars({ steps }: { steps: FunnelStep[] }) {
               <span className="text-black/70">{step.label}</span>
               <span className="flex items-baseline gap-2">
                 <span className="font-medium text-heading">{formatInt(step.value)}</span>
-                <span className="text-xs text-black/40">
+                <span className="text-xs text-black/60">
                   {step.fromPreviousPct === null ? '—' : `${step.fromPreviousPct}% מהשלב הקודם`}
                 </span>
               </span>

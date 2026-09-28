@@ -44,7 +44,7 @@ export default function BulkImageMatchClient() {
     <div className="space-y-5">
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="text-sm font-bold text-heading">1. העלאת הקבצים</h2>
-        <p className="mt-1 text-xs text-black/50">
+        <p className="mt-1 text-xs text-black/60">
           שם כל קובץ צריך להיות המק"ט של המוצר, ואם אין מק"ט אז ה-slug שלו. הסיומת אינה חשובה.
         </p>
         <div className="mt-4">
@@ -63,7 +63,7 @@ export default function BulkImageMatchClient() {
       {pairs.length > 0 && (
         <section className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-sm font-bold text-heading">2. שיוך למוצרים</h2>
-          <p className="mt-1 text-xs text-black/50">
+          <p className="mt-1 text-xs text-black/60">
             {pairs.length} קבצים הועלו. השיוך עצמו עוד לא בוצע.
           </p>
           <ul className="mt-3 space-y-1 text-xs text-black/70">

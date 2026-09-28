@@ -238,7 +238,7 @@ export default function ImageUploader({
               <button
                 type="button"
                 onClick={() => unstage(s.key)}
-                className="text-gray-400 hover:text-red-600 shrink-0"
+                className="text-muted hover:text-red-600 shrink-0"
                 aria-label={`הסרת ${s.file.name}`}
               >
                 <Trash2 size={15} />
@@ -270,14 +270,14 @@ export default function ImageUploader({
           className={`flex w-full flex-col items-center gap-1.5 px-4 py-6 border-2 border-dashed rounded-lg text-sm transition-colors disabled:opacity-60 ${
             isDragging
               ? 'border-brand bg-brand/5 text-brand'
-              : 'border-gray-300 text-gray-500 hover:border-brand hover:text-brand'
+              : 'border-gray-300 text-gray-600 hover:border-brand hover:text-brand'
           }`}
         >
           <ImagePlus size={20} />
           <span className="font-medium">
             {isDragging ? 'שחררו כדי להוסיף את התמונות' : 'גרירת תמונות לכאן או לחיצה לבחירה'}
           </span>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-muted">
             JPG, PNG, WebP עד 25MB - התמונות נדחסות אוטומטית לפני ההעלאה
           </span>
         </button>

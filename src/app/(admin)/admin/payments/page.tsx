@@ -112,7 +112,7 @@ export default async function AdminPaymentsPage(props: {
         cell: (p) => (
           <Link
             href={`/admin/orders/${p.order_id}`}
-            className="font-mono text-xs text-brand hover:underline"
+            className="font-mono text-xs text-brand-dark hover:underline"
           >
             {p.order_id.slice(0, 8)}
           </Link>
@@ -146,7 +146,7 @@ export default async function AdminPaymentsPage(props: {
       {
         id: 'cardcom',
         header: 'עסקת Cardcom',
-        className: 'font-mono text-xs text-black/40',
+        className: 'font-mono text-xs text-black/60',
         cell: (p) => p.cardcom_transaction_id ?? '',
       },
       {
@@ -159,7 +159,7 @@ export default async function AdminPaymentsPage(props: {
         id: 'created_at',
         header: 'תאריך',
         sortKey: 'created_at',
-        className: 'whitespace-nowrap text-xs text-black/50',
+        className: 'whitespace-nowrap text-xs text-black/60',
         cell: (p) => new Date(p.created_at).toLocaleString('he-IL'),
       },
     ]
@@ -206,14 +206,14 @@ export default async function AdminPaymentsPage(props: {
       {
         id: 'processed',
         header: 'טופל',
-        className: 'text-xs text-black/50',
+        className: 'text-xs text-black/60',
         cell: (e) => (e.processed_at ? new Date(e.processed_at).toLocaleString('he-IL') : 'טרם'),
       },
       {
         id: 'created_at',
         header: 'התקבל',
         sortKey: 'created_at',
-        className: 'whitespace-nowrap text-xs text-black/50',
+        className: 'whitespace-nowrap text-xs text-black/60',
         cell: (e) => new Date(e.created_at).toLocaleString('he-IL'),
       },
     ]
@@ -241,7 +241,7 @@ export default async function AdminPaymentsPage(props: {
         cell: (h) => (
           <Link
             href={`/admin/orders/${h.order_id}`}
-            className="font-mono text-xs text-brand hover:underline"
+            className="font-mono text-xs text-brand-dark hover:underline"
           >
             {h.order_id.slice(0, 8)}
           </Link>
@@ -258,14 +258,14 @@ export default async function AdminPaymentsPage(props: {
       {
         id: 'released_at',
         header: 'שוחרר',
-        className: 'text-xs text-black/50',
+        className: 'text-xs text-black/60',
         cell: (h) => (h.released_at ? new Date(h.released_at).toLocaleString('he-IL') : ''),
       },
       {
         id: 'held_at',
         header: 'הוחזק',
         sortKey: 'created_at',
-        className: 'whitespace-nowrap text-xs text-black/50',
+        className: 'whitespace-nowrap text-xs text-black/60',
         cell: (h) => new Date(h.held_at).toLocaleString('he-IL'),
       },
     ]
@@ -293,7 +293,7 @@ export default async function AdminPaymentsPage(props: {
         cell: (s) => (
           <Link
             href={`/admin/orders/${s.order_id}`}
-            className="font-mono text-xs text-brand hover:underline"
+            className="font-mono text-xs text-brand-dark hover:underline"
           >
             {s.order_id.slice(0, 8)}
           </Link>
@@ -306,7 +306,7 @@ export default async function AdminPaymentsPage(props: {
         id: 'executed_at',
         header: 'בוצע',
         sortKey: 'created_at',
-        className: 'whitespace-nowrap text-xs text-black/50',
+        className: 'whitespace-nowrap text-xs text-black/60',
         cell: (s) => new Date(s.executed_at).toLocaleString('he-IL'),
       },
     ]

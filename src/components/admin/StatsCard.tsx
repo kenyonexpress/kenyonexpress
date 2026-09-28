@@ -48,7 +48,7 @@ export default function StatsCard({
           {value}
         </p>
         {trend && (
-          <p className="mt-1 text-xs text-black/40">
+          <p className="mt-1 text-xs text-black/60">
             {trend.value >= 0 ? '+' : ''}
             {trend.value}% {trend.label}
           </p>

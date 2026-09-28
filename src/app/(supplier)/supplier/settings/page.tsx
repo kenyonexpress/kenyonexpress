@@ -141,7 +141,7 @@ export default async function SupplierSettingsPage() {
                     {request.decisionNote ? (
                       <p className="mt-1 text-xs text-gray-500">תשובה: {request.decisionNote}</p>
                     ) : null}
-                    <p className="mt-1 text-xs text-gray-400">{formatDate(request.createdAt)}</p>
+                    <p className="mt-1 text-xs text-muted">{formatDate(request.createdAt)}</p>
                   </div>
                   <div className="shrink-0 space-y-2 text-end">
                     <span

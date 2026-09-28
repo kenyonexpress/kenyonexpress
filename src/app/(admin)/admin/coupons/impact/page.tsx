@@ -49,22 +49,22 @@ export default async function CouponImpactPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink">השפעת קופונים</h1>
-        <Link href="/admin/coupons" className="text-sm text-brand hover:underline">
+        <Link href="/admin/coupons" className="text-sm text-brand-dark hover:underline">
           חזרה לקופונים
         </Link>
       </div>
 
       <dl className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-lg border border-black/10 p-4">
-          <dt className="text-xs text-black/50">הונפקו</dt>
+          <dt className="text-xs text-black/60">הונפקו</dt>
           <dd className="mt-1 text-2xl font-bold tabular-nums">{impact.issued}</dd>
         </div>
         <div className="rounded-lg border border-black/10 p-4">
-          <dt className="text-xs text-black/50">מומשו</dt>
+          <dt className="text-xs text-black/60">מומשו</dt>
           <dd className="mt-1 text-2xl font-bold tabular-nums">{impact.redeemed}</dd>
         </div>
         <div className="rounded-lg border border-black/10 p-4">
-          <dt className="text-xs text-black/50">הכנסה באתר</dt>
+          <dt className="text-xs text-black/60">הכנסה באתר</dt>
           <dd className="mt-1 text-2xl font-bold tabular-nums">
             {formatIls(agorot(impact.platformRevenueAgorot))}
           </dd>
@@ -72,11 +72,11 @@ export default async function CouponImpactPage() {
       </dl>
 
       {impact.products.length === 0 ? (
-        <p className="text-sm text-black/50">אין שוברים לסיכום.</p>
+        <p className="text-sm text-black/60">אין שוברים לסיכום.</p>
       ) : (
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b text-start text-black/50">
+            <tr className="border-b text-start text-black/60">
               <th className="py-2 font-medium">מוצר</th>
               <th className="py-2 font-medium">הונפקו</th>
               <th className="py-2 font-medium">מומשו</th>

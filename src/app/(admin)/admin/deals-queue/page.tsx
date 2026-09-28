@@ -109,7 +109,7 @@ export default async function DealsQueuePage() {
                     <td className="px-5 py-3 text-gray-700">
                       {shekelsFromIlsRounded(row.price_agorot / 100)}
                       {row.full_price_agorot ? (
-                        <span className="ms-1 text-xs text-gray-400 line-through">
+                        <span className="ms-1 text-xs text-muted line-through">
                           {shekelsFromIlsRounded(row.full_price_agorot / 100)}
                         </span>
                       ) : null}
@@ -121,7 +121,7 @@ export default async function DealsQueuePage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         dir="ltr"
-                        className="text-xs text-brand underline"
+                        className="text-xs text-brand-dark underline"
                       >
                         {new URL(row.link_url).hostname}
                       </a>

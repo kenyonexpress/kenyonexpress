@@ -125,7 +125,7 @@ export default function BlocklistPanel({ entries }: { entries: Entry[] }) {
                   {entry.value}
                 </span>
                 <p className="mt-1 text-gray-600">{entry.reason}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted">
                   {entry.expiresAt ? `עד ${entry.expiresAt.slice(0, 10)}` : 'ללא תוקף'}
                 </p>
               </div>

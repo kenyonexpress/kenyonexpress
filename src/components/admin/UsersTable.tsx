@@ -69,7 +69,7 @@ export default function UsersTable({ users, callerRole, callerId, canEdit = true
       header: 'הצטרפות',
       sortable: true,
       accessor: (u) => u.created_at,
-      cell: (u) => <span className="text-xs text-black/50">{formatDateShort(u.created_at)}</span>,
+      cell: (u) => <span className="text-xs text-black/60">{formatDateShort(u.created_at)}</span>,
     },
   ]
 
@@ -85,6 +85,7 @@ export default function UsersTable({ users, callerRole, callerId, canEdit = true
       cell: (u) => (
         <UserRoleClient
           userId={u.id}
+          userLabel={u.full_name ?? u.email}
           currentRole={u.role}
           callerRole={callerRole}
           isSelf={u.id === callerId}

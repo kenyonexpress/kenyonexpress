@@ -35,18 +35,18 @@ export default function DeleteButton({ label = 'מחיקה', onConfirm }: Props)
           type="button"
           onClick={handleConfirm}
           disabled={pending}
-          className="text-xs text-red-600 font-medium hover:underline disabled:opacity-60"
+          className="text-xs text-red-700 font-medium hover:underline disabled:opacity-60"
         >
           {pending ? 'מוחק...' : 'כן, מחיקה'}
         </button>
         <button
           type="button"
           onClick={() => setConfirming(false)}
-          className="text-xs text-gray-500 hover:underline"
+          className="text-xs text-gray-600 hover:underline"
         >
           ביטול
         </button>
-        {error && <span className="text-xs text-red-600">{error}</span>}
+        {error && <span className="text-xs text-red-700">{error}</span>}
       </span>
     )
   }
@@ -55,7 +55,7 @@ export default function DeleteButton({ label = 'מחיקה', onConfirm }: Props)
     <button
       type="button"
       onClick={() => setConfirming(true)}
-      className="inline-flex items-center gap-1 text-sm text-red-600 hover:underline"
+      className="inline-flex items-center gap-1 text-sm text-red-700 hover:underline"
     >
       <Trash2 size={14} />
       {label}

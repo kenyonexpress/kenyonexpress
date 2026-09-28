@@ -369,7 +369,7 @@ function CouponPreviewCard({
           {titleHe || 'כותרת העסקה'}
         </p>
         {locationHe && (
-          <div className="flex items-center gap-1 text-xs text-gray-400">
+          <div className="flex items-center gap-1 text-xs text-muted">
             <MapPin size={11} />
             {locationHe}
           </div>
@@ -379,9 +379,7 @@ function CouponPreviewCard({
             {platformPrice > 0 ? shekelsFromIls(platformPrice) : '—'}
           </span>
           {originalPrice > 0 && (
-            <span className="text-xs text-gray-400 line-through">
-              {shekelsFromIls(originalPrice)}
-            </span>
+            <span className="text-xs text-muted line-through">{shekelsFromIls(originalPrice)}</span>
           )}
         </div>
       </div>

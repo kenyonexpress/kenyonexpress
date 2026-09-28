@@ -107,7 +107,7 @@ export default async function SupplierPayoutsPage() {
               <li key={row.status} className="flex items-center justify-between gap-3 py-2">
                 <span className="text-gray-600">
                   {SETTLEMENT_LABEL_HE[row.status] ?? row.status}
-                  <span className="ms-1.5 text-xs text-gray-400">({row.count})</span>
+                  <span className="ms-1.5 text-xs text-muted">({row.count})</span>
                 </span>
                 <span className="font-semibold text-heading" dir="ltr">
                   {formatIls(agorot(row.supplierDueAgorot))}
@@ -158,7 +158,7 @@ export default async function SupplierPayoutsPage() {
                     {' · '}
                     {formatDate(line.paidAt)}
                   </p>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-muted">
                     סטטוס:{' '}
                     {SETTLEMENT_LABEL_HE[line.settlementStatus ?? ''] ??
                       line.settlementStatus ??
@@ -190,7 +190,7 @@ export default async function SupplierPayoutsPage() {
         </ul>
       )}
 
-      <p className="text-xs leading-relaxed text-gray-400">
+      <p className="text-xs leading-relaxed text-muted">
         הערה: דוחות תשלום מרוכזים (T+3, מינימום 100 ₪) יופיעו כאן אחרי החלת טבלאות הדוחות. כרגע
         התצוגה נבנית ישירות משורות ההזמנה והפיצול.
       </p>
@@ -205,7 +205,7 @@ function Summary({ label, value, hint }: { label: string; value: string; hint?: 
       <p className="mt-1 text-base font-extrabold text-heading" dir="ltr">
         {value}
       </p>
-      {hint ? <p className="mt-0.5 text-micro text-gray-400">{hint}</p> : null}
+      {hint ? <p className="mt-0.5 text-micro text-muted">{hint}</p> : null}
     </div>
   )
 }

@@ -86,11 +86,11 @@ export default async function AdminUserDetailPage(props: {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-gray-900">
           {profile.full_name ?? profile.email}
-          <span className="ms-3 align-middle text-sm font-normal text-black/50">
+          <span className="ms-3 align-middle text-sm font-normal text-black/60">
             {ROLE_LABELS[profile.role as keyof typeof ROLE_LABELS] ?? profile.role}
           </span>
         </h1>
-        <Link href="/admin/users" className="text-sm text-brand hover:underline">
+        <Link href="/admin/users" className="text-sm text-brand-dark hover:underline">
           חזרה לרשימת המשתמשים
         </Link>
       </div>
@@ -100,40 +100,41 @@ export default async function AdminUserDetailPage(props: {
           <h2 className="mb-3 text-sm font-semibold text-gray-800">פרטים</h2>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-2">
-              <dt className="text-black/50">אימייל</dt>
+              <dt className="text-black/60">אימייל</dt>
               <dd dir="ltr" className="text-black/80">
                 {profile.email}
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt className="text-black/50">טלפון</dt>
+              <dt className="text-black/60">טלפון</dt>
               <dd dir="ltr" className="text-black/80">
                 {profile.phone ?? ''}
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt className="text-black/50">הצטרפות</dt>
+              <dt className="text-black/60">הצטרפות</dt>
               <dd>{new Date(profile.created_at).toLocaleDateString('he-IL')}</dd>
             </div>
             {profile.affiliate_code && (
               <div className="flex justify-between gap-2">
-                <dt className="text-black/50">קוד שותף</dt>
+                <dt className="text-black/60">קוד שותף</dt>
                 <dd className="font-mono text-xs">{profile.affiliate_code}</dd>
               </div>
             )}
           </dl>
           {canEditRoles && (
             <div className="mt-4 border-t border-black/5 pt-3">
-              <p className="mb-2 text-xs text-black/50">שינוי תפקיד</p>
+              <p className="mb-2 text-xs text-black/60">שינוי תפקיד</p>
               <UserRoleClient
                 userId={profile.id}
+                userLabel={profile.full_name ?? profile.email}
                 currentRole={profile.role}
                 callerRole={callerRole}
               />
             </div>
           )}
           <div className="mt-4 border-t border-black/5 pt-3">
-            <p className="mb-2 text-xs text-black/50">
+            <p className="mb-2 text-xs text-black/60">
               חסימה:{' '}
               {banState === 'banned' ? (
                 <span className="font-semibold text-red-600">
@@ -158,12 +159,12 @@ export default async function AdminUserDetailPage(props: {
           </p>
 
           {walletView.totals.complete ? (
-            <p className="mt-1 text-xs text-black/50">
+            <p className="mt-1 text-xs text-black/60">
               נצבר: {shekels(agorot(walletView.totals.earnedAgorot))} | מומש:{' '}
               {shekels(agorot(walletView.totals.redeemedAgorot))}
             </p>
           ) : (
-            <p className="mt-1 text-xs text-black/50">
+            <p className="mt-1 text-xs text-black/60">
               יש יותר מ-{ADMIN_WALLET_LEDGER_CAP} תנועות בארנק הזה, ולכן הסכומים המצטברים אינם
               נספרים כאן.
             </p>
@@ -188,14 +189,14 @@ export default async function AdminUserDetailPage(props: {
                   {entry.direction === 'credit' ? '+' : '-'}
                   {shekels(agorot(entry.amountAgorot))}
                 </span>
-                <span className="text-black/40">
+                <span className="text-black/60">
                   {new Date(entry.createdAt).toLocaleDateString('he-IL')}
                 </span>
               </li>
             ))}
-            {walletView.entries.length === 0 && <li className="text-black/40">אין תנועות ארנק</li>}
+            {walletView.entries.length === 0 && <li className="text-black/60">אין תנועות ארנק</li>}
             {walletView.entries.length > 5 && (
-              <li className="text-black/40">ועוד {walletView.entries.length - 5} תנועות</li>
+              <li className="text-black/60">ועוד {walletView.entries.length - 5} תנועות</li>
             )}
           </ul>
         </section>
@@ -207,12 +208,12 @@ export default async function AdminUserDetailPage(props: {
               <li key={coupon.id} className="flex justify-between gap-2">
                 <span className="font-mono">{coupon.code}</span>
                 <span>{labelFor(COUPON_STATUS_LABELS, coupon.status)}</span>
-                <span className="text-black/40">
+                <span className="text-black/60">
                   {coupon.expires_at ? new Date(coupon.expires_at).toLocaleDateString('he-IL') : ''}
                 </span>
               </li>
             ))}
-            {!coupons?.length && <li className="text-black/40">אין קופונים</li>}
+            {!coupons?.length && <li className="text-black/60">אין קופונים</li>}
           </ul>
         </section>
       </div>
@@ -233,7 +234,7 @@ export default async function AdminUserDetailPage(props: {
         </h2>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/50">
+            <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/60">
               <th className="px-5 py-2.5 font-medium">מס׳ הזמנה</th>
               <th className="px-5 py-2.5 font-medium">סכום</th>
               <th className="px-5 py-2.5 font-medium">סטטוס</th>
@@ -248,7 +249,7 @@ export default async function AdminUserDetailPage(props: {
                   <td className="px-5 py-2.5">
                     <Link
                       href={`/admin/orders/${order.id}`}
-                      className="font-mono text-xs text-brand hover:underline"
+                      className="font-mono text-xs text-brand-dark hover:underline"
                     >
                       {order.invoice_number ?? order.id.slice(0, 8)}
                     </Link>
@@ -257,7 +258,7 @@ export default async function AdminUserDetailPage(props: {
                   <td className="px-5 py-2.5">
                     <StatusBadge label={badge.label} variant={badge.variant} />
                   </td>
-                  <td className="px-5 py-2.5 text-xs text-black/50">
+                  <td className="px-5 py-2.5 text-xs text-black/60">
                     {new Date(order.created_at).toLocaleDateString('he-IL')}
                   </td>
                 </tr>
@@ -265,7 +266,7 @@ export default async function AdminUserDetailPage(props: {
             })}
             {!orders?.length && (
               <tr>
-                <td colSpan={4} className="px-5 py-8 text-center text-sm text-black/40">
+                <td colSpan={4} className="px-5 py-8 text-center text-sm text-black/60">
                   אין הזמנות
                 </td>
               </tr>

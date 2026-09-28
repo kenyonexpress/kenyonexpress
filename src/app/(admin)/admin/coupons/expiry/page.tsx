@@ -125,7 +125,7 @@ function ExpiryTable({ rows }: { rows: SupplierExpiryCounts[] }) {
                 column on the night it is not zero.
               */}
               <td
-                className={`px-4 py-3 ${row.uncreditedAgorot > 0 ? 'font-bold text-amber-700' : 'text-gray-400'}`}
+                className={`px-4 py-3 ${row.uncreditedAgorot > 0 ? 'font-bold text-amber-700' : 'text-muted'}`}
                 dir="ltr"
               >
                 {shekels(agorot(row.uncreditedAgorot))}

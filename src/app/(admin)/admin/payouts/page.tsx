@@ -184,7 +184,7 @@ export default async function AdminPayoutsPage(props: {
             <span className="block font-mono">{row.payment_reference ?? '—'}</span>
           </div>
         ) : (
-          <span className="text-xs text-gray-400">—</span>
+          <span className="text-xs text-muted">—</span>
         ),
     },
     {
