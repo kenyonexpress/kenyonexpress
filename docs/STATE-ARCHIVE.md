@@ -2,6 +2,84 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c52 - DONE (29.09): שער נתיבים מלא, 244 שורות (role, path) ייחודיות, אפס FAIL
+
+**הפריט ביקש לבקש כל נתיב באפליקציה, לצפות ל-200 או הפניה מכוונת, אפס
+שגיאות קונסולה, אפס אזהרות הידרציה ו-RTL תקין בכל דף, ולתקן מה שנכשל.**
+נבנה מחדש בדיוק לפי המתכון המתועד ב-`e2e/route-audit.spec.ts` ובזיכרון
+"route-audit-recipe-and-hydration-dates": `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:PORT pnpm build` ואז `pnpm start`
+מאותה סביבה, `e2e/route-audit.spec.ts` בצ'אנקים עם `ROUTE_AUDIT_REPORT`
+משותף.
+
+**מהמורה בתחילת הריצה: הפורט התבקש היה תפוס על ידי תהליך ישן (שבת, סשן
+מקביל אחר), ו-`next start` עבר אוטומטית לפורט הבא הפנוי בלי לדווח על
+זה בבירור.** אומת ש-BUILD_ID והצ'אנקים על הדיסק תואמים את השרת שרץ בפועל
+לפני הריצה (`curl` על צ'אנק שהHTML מפנה אליו, 200) - ראה זיכרון חדש.
+
+**244 שורות ייחודיות (role, path) על פני כל התפקידים (אנונימי, לקוח,
+ספק, מנהל) ועל פני כל הצ'אנקים: 239 PASS, 5 NO DATA (רשימה ריקה - תוצאה
+מוגדרת ולא כשל), 0 FAIL.** דומה בהיקפו ל-M07-c1 (25.09: 241 נתיבים, 239
+PASS) עם מעט נתיבים חדשים מאז (ניוזלטר, לגל).
+
+**שלוש תקלות נראו בריצה הראשונה ונמחקו בחזרה נקייה, לא היו פגם באפליקציה:**
+1. `/redeem/[בוגוס]` ו-`/supplier/payouts` - timeout חד-פעמי בדפדפן; שניהם
+   עברו נקי בבידוד. יומן השרת מראה `db.query_slow` על עשרות שאילתות שונות
+   (1.5-6 שניות) וגם `supabase.timeout` אמיתי אחד (10s) על `auth/v1/user` -
+   השהיה ברשת לפרויקט Supabase המאוחסן מהמעבדה הזו, לא פגם בקוד.
+2. `/admin/coupons/lookup` ו-`/admin/orders/[id]` "נחתו על /login" בריצה
+   הראשונה - לא פגם: כניסות המנהל חזרו-חזרו במסגרת הריצות המקבילות פגעו
+   ב-rate limiter של `auth.sign_in_email` (10/שעה, נמדד ב-`rate_limit.rejected`
+   ביומן). עם `E2E_FORWARDED_FOR` חדש (bucket נקי) שני הנתיבים עברו נקי.
+3. **תיקון אמיתי אחד, בתשתית הבדיקה בלבד:** `admin detail pages discovered
+   from their lists` (עשרה ביקורי רשימה + עשרה ביקורי פרט בטסט אחד) נתקל
+   ב-timeout הפנימי הקיים של 240,000ms פעמיים ברצף - התקציב הונח על
+   ~12 שניות לביקור, וקצב ה-round trip הנמדד בפועל מול Supabase המאוחסן
+   מהמעבדה עולה על זה בקביעות. הועלה ל-480,000ms
+   (`e2e/route-audit.spec.ts:594-600`); עבר נקי עם התקציב הכפול. אין שינוי
+   קוד באפליקציה - זה תיקון תזמון בסקריפט הבדיקה בלבד.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 604/7182
+(זהה), `pnpm build` exit 0. אין שינוי UI, לא נדרש שער השוואה חזותי.
+`test-results/` ו-`.next` נוקו בסוף.
+
+**קבצים:** `e2e/route-audit.spec.ts` (תיקון תזמון בלבד), `STATE.md`.
+
+## M06-c52 - DONE (29.09): Lighthouse mobile, בית ומוצר — כל ארבעת הציונים מעל 90, אפס תיקון נדרש
+
+**הפריט ביקש להריץ Lighthouse mobile על הבית ועל דף מוצר ולתקן עד שביצועים,
+נגישות, best practices ו-SEO כולם 90+.** נבנה מחדש בדיוק לפי המתכון המתועד
+ב-`docs/BACKLOG.md`/זיכרון (M06-c1, 25.09): `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm build`, אז `pnpm start -p
+3462` מאותה סביבה. שני הדפים אומתו 200 לפני המדידה (`/`, `/product/barbecue-2`).
+
+**המדד הכן על localhost הוא `--throttling-method=devtools`, לא ברירת
+המחדל.** ברירת המחדל (`simulate`, Lantern) ידועה כלא יציבה מול שרת מקומי
+(מתועד ב-`scripts/lighthouse-smoke.mjs` ובזיכרון "Lighthouse local recipe
+and LCP cap"), ולכן לא הורצה שוב כאן - היא לא הראיה הרלוונטית, וההרצה
+הקודמת (M06-c1) כבר תיעדה את הפער (79-84 מדומה מול 96-98 עם devtools) בתור
+תכונת מדידה ולא רגרסיה.
+
+**תוצאות (`node_modules/.bin/lighthouse`, `--throttling-method=devtools
+--emulated-form-factor=mobile`, כל ארבע הקטגוריות):**
+
+| דף | ביצועים | נגישות | ‏BP | ‏SEO |
+|---|---|---|---|---|
+| בית `/` | 98 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונה הציונים מעל 90, ברווח גדול. **דומה ל-M06-c1 (25.09: 96/98
+ביצועים, 100/100/100/100/100/100 שאר) ואף מעט גבוה יותר** - אין רגרסיה,
+אין תיקון נדרש. שני קבצי ה-JSON הזמניים ושרת הבדיקה על פורט 3462 נוקו בסוף
+המדידה.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (627/627 i18n, שאר השערים
+ירוקים), `pnpm test` 604 קבצים / 7182 עברו / 12 דולגו (זהה ל-M05-c52),
+`pnpm build` exit 0, "Compiled successfully". אין שינוי UI/קוד, לא נדרש
+שער השוואה חזותי.
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M05-c52 - DONE (29.09): ביקורת DB, advisors נמדדו שוב, אפס WARN חדש
 
 **הפריט ביקש להריץ `get_advisors` דרך ה-MCP של Supabase (read-only) ולכתוב
