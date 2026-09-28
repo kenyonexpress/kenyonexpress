@@ -19,10 +19,10 @@ operator's, not the agent's — see `CLAUDE.md`'s stop conditions).
 
 ## ידני לאופיר, לפי סדר קריטיות
 
-1. **DNS ברשם.** להחליף את שני ה-NS של `kenyonexpress.co.il` מ-`ns1.vercel.com`
-   / `ns2.vercel.com` ל-`ns1.vercel-dns.com` / `ns2.vercel-dns.com`. פעולה
-   אחת בממשק הרשם; שום דבר בצד Vercel לא משתנה. בלעדיה הדומיין לא נענה כלל.
-   מקור: STATE.md חוסם 1, LAUNCH-READINESS.md שורה חוסמת 1.
+1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52).** ה-NS כבר
+   `ns1.vercel-dns.com` / `ns2.vercel-dns.com`, הדומיין עונה 200 עם התוכן
+   האמיתי. שום פעולה נוספת נדרשת מאופיר על הסעיף הזה. מקור: STATE.md
+   חוסם 1 (עודכן), LAUNCH-READINESS.md שורה חוסמת 1 (טרם עודכן שם).
 2. **`CRON_SECRET` זהה ב-GitHub וב-Vercel.** כרגע 40/40 הרצות מתוזמנות
    נכשלות ב-401 (סוד שונה בכל צד), ו-`notification_outbox` מחזיקה הודעות
    ממתינות מ-10.09. לקרוא את הערך ב-Vercel (פרויקט `kenyonexpress`,

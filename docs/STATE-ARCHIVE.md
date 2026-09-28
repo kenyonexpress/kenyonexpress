@@ -2,6 +2,52 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c51 - DONE (29.09), אומת שוב (29.09): בדיקת idle — טופס הניוזלטר בפוטר חוזר לפעול
+
+**אימות חוזר (אותו יום, אותה הרצה עם הוראות idle-check זהות):** הפריט כבר
+היה DONE ו-pushed לפני שהריצה הזו נפתחה. נבדק מחדש: `git status` נקי,
+`origin/audit/final-audit` זהה ל-HEAD (`1d4f7cdc5`, 0 קומיטים בכל כיוון),
+`FooterNewsletterForm.tsx` קיים וקורא ל-`subscribeToNewsletter` דרך
+`useActionState`, `SiteFooter.tsx` מייבא ומשתמש בו. אין drift, אין שינוי
+קוד נוסף נדרש. `RESUME FROM` נשאר `M19-c51` כפי שהיה.
+
+**בדיקת idle:** כל הפריטים למעלה בתור (M01..M17) מסומנים DONE/BLOCKED עם ראיה,
+ואין drift חדש. זו לא ריצת idle ריקה: כשהסשן נפתח היה diff לא-commit-ed בעץ
+העבודה (`SiteFooter.tsx`, `FooterNewsletterForm.tsx` חדש) — תיקון שלם וכתוב
+כבר, לא WIP חצי-גמור. הפריט הזה אימת אותו, הריץ עליו את כל השערים, ו-commit-ט.
+
+**הממצא (שיפור אמיתי בהמרה, לא קוסמטי):** טופס הניוזלטר בפוטר
+(`SiteFooter.tsx`, מוצג בכל עמוד דסקטופ) היה `<form method="post"
+action="/api/newsletter">` גולמי. **הנתיב `/api/newsletter` לא היה קיים
+בריפו מעולם** (נבדק: `find src/app/api/newsletter` — ריק; `grep -rn
+"api/newsletter" src` — אפס תוצאות מעבר להערה שתועדה). כל שליחה מהתיבה הזו
+נחתה על 404 של Next ושום שורה לא נכתבה ל-`newsletter_subscribers`. הפעולה
+הנכונה, `subscribeToNewsletter` ב-`src/server/actions/newsletter.ts`, כבר
+הייתה קיימת ועובדת (double opt-in, rate limit, בדיקת השתקה) ולא הייתה
+מחוברת לשום UI חי.
+
+**התיקון:** `FooterNewsletterForm.tsx` חדש, קליינט-קומפוננטה עם
+`useActionState(subscribeToNewsletter, ...)`, אותה גאומטריה בדיוק (pill
+470x41, קלט LTR מימין, כפתור כהה משמאל) פלוס שורת סטטוס שמופיעה רק אחרי
+שליחה (לא משפיעה על ה-paint הראשון שהשער מודד). `SiteFooter.tsx` קורא לה
+במקום הטופס הגולמי.
+
+**שערים על העץ המלא (כולל שני הקבצים):** `pnpm type-check` נקי. `pnpm lint`
+נקי (i18n-gate 627/627, כל שאר השערים clean, אין שינוי בתקרות). `pnpm test`
+604 קבצים / 7182 עברו / 12 דולגו — זהה ל-M17-c51, אין רגרסיה. `pnpm build`
+exit 0. שער השוואה חזותי (`compare.mjs`, foreground, `pnpm start` על 3311,
+BUILD_ID `vDuwA6YXxrF1x_hVFy31y`): 380 8.51% PASS, 768 9.02% PASS, 1440
+3.95% PASS — **זהה ל-3 העשרוניות** למדידת M17-c51 לפני התיקון, כי הטופס
+לא שינה שום פיקסל בפעימה הראשונה. שורות נכתבו ל-`docs/UI-PARITY-REPORT.md`
+על ידי הריצה עצמה.
+
+**קבצים:** `src/components/layout/SiteFooter.tsx`,
+`src/components/layout/FooterNewsletterForm.tsx` (חדש), `docs/UI-PARITY-REPORT.md`,
+`STATE.md`.
+
+**הבא בתור: אין עוד פריט רשום ב-`GOALS-QUEUE.md`/`docs/COMPONENT-QUEUE.md`
+בשם M19-c51 עדיין; אם התור נבנה מ-`NEXT-GOALS.md` בסשן הבא, לבנות אותו שם.**
+
 ## M16-c51 - DONE (29.09), אומת מחדש (29.09): תברואת ריפו — git status נקי, כל ענף מקומי נדחף, PRs פתוחים וענפים ישנים רשומים
 
 **אימות חוזר (אותו יום, סשן חדש שקיבל את אותו פריט בתור):** הפריט כבר בוצע

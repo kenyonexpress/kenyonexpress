@@ -1,53 +1,68 @@
-RESUME FROM: M19-c51
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c51)
+RESUME FROM: M02-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c52)
 
 ## המשך מ:
 
-## M18-c51 - DONE (29.09), אומת שוב (29.09): בדיקת idle — טופס הניוזלטר בפוטר חוזר לפעול
+## M01-c52 - DONE (29.09): בדיקת פרודקשן — ה-DNS ברשם תוקן (חוסם 1 RESOLVED), פריסת HEAD עדיין מסורבת מאותה סיבה כמו קודם (חוסם 2/3 פתוח)
 
-**אימות חוזר (אותו יום, אותה הרצה עם הוראות idle-check זהות):** הפריט כבר
-היה DONE ו-pushed לפני שהריצה הזו נפתחה. נבדק מחדש: `git status` נקי,
-`origin/audit/final-audit` זהה ל-HEAD (`1d4f7cdc5`, 0 קומיטים בכל כיוון),
-`FooterNewsletterForm.tsx` קיים וקורא ל-`subscribeToNewsletter` דרך
-`useActionState`, `SiteFooter.tsx` מייבא ומשתמש בו. אין drift, אין שינוי
-קוד נוסף נדרש. `RESUME FROM` נשאר `M19-c51` כפי שהיה.
+**הממצא הגדול:** `dig +short NS kenyonexpress.co.il @1.1.1.1` מחזיר
+`ns1.vercel-dns.com.` / `ns2.vercel-dns.com.` — **לא** `ns1/ns2.vercel.com`
+כפי שנמדד בכל בדיקה קודמת (M01-c1, M02-c1, לאורך כל התור). `dig +short A`
+מחזיר `216.198.79.1` ו-`216.198.79.65`. `curl -sIL https://kenyonexpress.co.il`
+עונה `308` ל-`https://www.kenyonexpress.co.il/`, וזה עונה `200` עם `Server:
+Vercel`, CSP/HSTS/COOP מלאים, `lang="he" dir="rtl"` ו-`<title>קניון EXPRESS —
+מסדרים לך בילוי | קניון אקספרס</title>` — האתר האמיתי, לא placeholder.
+**חוסם 1 (DNS ברשם) RESOLVED.** מי שינה את ה-NS ומתי לא ידוע (ייתכן אופיר,
+ייתכן התפשטות מאוחרת של שינוי קודם) — לא נמדד כאן, רק התוצאה.
 
-**בדיקת idle:** כל הפריטים למעלה בתור (M01..M17) מסומנים DONE/BLOCKED עם ראיה,
-ואין drift חדש. זו לא ריצת idle ריקה: כשהסשן נפתח היה diff לא-commit-ed בעץ
-העבודה (`SiteFooter.tsx`, `FooterNewsletterForm.tsx` חדש) — תיקון שלם וכתוב
-כבר, לא WIP חצי-גמור. הפריט הזה אימת אותו, הריץ עליו את כל השערים, ו-commit-ט.
+**מלכודת נמצאה ותועדה לפני שהיא חזרה על עצמה:** לחשבון יש **שלושה** פרויקטי
+Vercel: `kenyonexpress-prod` (`prj_keQjjnDoTb41AYmHy3ia59BKumyt`),
+`kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`), ו-`kenyonexpress-web`
+(`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk`). הניסיון הראשון לפרוס כוון אל
+`kenyonexpress-prod` (השם הכי מפתה) — **הוא לא מחזיק את הדומיין בכלל**,
+רק `kenyonexpress-prod.vercel.app`; הפריסה שם "הצליחה" להיכשל באותה סיבה
+במקרה, אבל אפילו הצלחה שם לא הייתה נוגעת לאתר החי. `kenyonexpress`
+(השני) הוא זה שמחזיק בפועל את `kenyonexpress.co.il` /
+`www.kenyonexpress.co.il` (`list_project_domains`, מאומת). **כל פעולה
+עתידית על "הפרויקט" חייבת להיות על `kenyonexpress`, לא `kenyonexpress-prod`.**
 
-**הממצא (שיפור אמיתי בהמרה, לא קוסמטי):** טופס הניוזלטר בפוטר
-(`SiteFooter.tsx`, מוצג בכל עמוד דסקטופ) היה `<form method="post"
-action="/api/newsletter">` גולמי. **הנתיב `/api/newsletter` לא היה קיים
-בריפו מעולם** (נבדק: `find src/app/api/newsletter` — ריק; `grep -rn
-"api/newsletter" src` — אפס תוצאות מעבר להערה שתועדה). כל שליחה מהתיבה הזו
-נחתה על 404 של Next ושום שורה לא נכתבה ל-`newsletter_subscribers`. הפעולה
-הנכונה, `subscribeToNewsletter` ב-`src/server/actions/newsletter.ts`, כבר
-הייתה קיימת ועובדת (double opt-in, rate limit, בדיקת השתקה) ולא הייתה
-מחוברת לשום UI חי.
+**מצב פרודקשן החי (פרויקט `kenyonexpress`):** הפריסה ה-READY האחרונה
+(`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`) היא commit `a388118f1` — **אותו commit
+שתועד בכל רשומות התור הקודמות** ("production runs it"), עכשיו כ-48 קומיטים
+מאחורי HEAD (`1083b8d8d`). ה-DNS היה החוליה החסרה היחידה: התוכן שמאחוריו
+לא השתנה.
 
-**התיקון:** `FooterNewsletterForm.tsx` חדש, קליינט-קומפוננטה עם
-`useActionState(subscribeToNewsletter, ...)`, אותה גאומטריה בדיוק (pill
-470x41, קלט LTR מימין, כפתור כהה משמאל) פלוס שורת סטטוס שמופיעה רק אחרי
-שליחה (לא משפיעה על ה-paint הראשון שהשער מודד). `SiteFooter.tsx` קורא לה
-במקום הטופס הגולמי.
+**ניסיון פריסה אמיתי של HEAD (`1083b8d8d`) לפרודקשן, על הפרויקט הנכון:**
+`create_deployment` עם `target=production`, `gitSource` מ-`audit/final-audit`
+על אותו SHA. תוצאה: `state=ERROR`, `errorCode=BUILD_UTILS_SPAWN_1`,
+`errorMessage="Command \"node scripts/deploy-preflight.mjs && pnpm build\"
+exited with 1"` — **בדיוק כמו ב-M01-c1**. נקרא רשימת משתני הסביבה של
+Production על הפרויקט הנכון ישירות (37 משתנים): `CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` — השלושה ש-`deploy-preflight.mjs`
+דורש ושהקוד בפועל קורא — **עדיין לא קיימים**; קיימים במקומם
+`CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY` (שמות שהקוד
+אינו קורא, כפי שתועד כבר ב-BACKLOG.md סעיף 3). `ALLOW_INCOMPLETE_ENV` עדיין
+קיים ב-Production. אלה בדיוק שני התנאים שתועדו כחוסם 2/3 — **פתוח, לא
+תוקן, נמדד עכשיו מול הפרויקט האמיתי במקום מול ההנחה הקודמת.** פרודקשן
+נשאר על `a388118f1` לאורך כל הניסיון; `curl` אחרי הכישלון עדיין מחזיר
+`308`/`200` כרגיל — שום דבר לא נשבר.
 
-**שערים על העץ המלא (כולל שני הקבצים):** `pnpm type-check` נקי. `pnpm lint`
-נקי (i18n-gate 627/627, כל שאר השערים clean, אין שינוי בתקרות). `pnpm test`
-604 קבצים / 7182 עברו / 12 דולגו — זהה ל-M17-c51, אין רגרסיה. `pnpm build`
-exit 0. שער השוואה חזותי (`compare.mjs`, foreground, `pnpm start` על 3311,
-BUILD_ID `vDuwA6YXxrF1x_hVFy31y`): 380 8.51% PASS, 768 9.02% PASS, 1440
-3.95% PASS — **זהה ל-3 העשרוניות** למדידת M17-c51 לפני התיקון, כי הטופס
-לא שינה שום פיקסל בפעימה הראשונה. שורות נכתבו ל-`docs/UI-PARITY-REPORT.md`
-על ידי הריצה עצמה.
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 604 קבצים /
+7182 עברו / 12 דולגו (זהה ל-M18-c51), `pnpm build` exit 0. אין שינוי UI
+בפריט הזה (בדיקת תשתית בלבד) — שער השוואה חזותי לא הורץ, כמו ב-M15-c51.
 
-**קבצים:** `src/components/layout/SiteFooter.tsx`,
-`src/components/layout/FooterNewsletterForm.tsx` (חדש), `docs/UI-PARITY-REPORT.md`,
-`STATE.md`.
+**`docs/BACKLOG.md` סעיף 1 (DNS ברשם) עודכן ל-RESOLVED.**
 
-**הבא בתור: אין עוד פריט רשום ב-`GOALS-QUEUE.md`/`docs/COMPONENT-QUEUE.md`
-בשם M19-c51 עדיין; אם התור נבנה מ-`NEXT-GOALS.md` בסשן הבא, לבנות אותו שם.**
+**קבצים:** `STATE.md`, `docs/BACKLOG.md`. אין שינוי קוד.
+
+**הבא בתור: אין פריט רשום בשם M02-c52 עדיין ב-`GOALS-QUEUE.md`/`NEXT-GOALS.md`;
+לבנות אותו מ-`NEXT-GOALS.md` בסשן הבא אם נדרש.**
+
+## M18-c51 - DONE (29.09), אומת שוב (29.09): פירוט מלא בארכיון
+
+טופס הניוזלטר בפוטר חובר ל-`subscribeToNewsletter` האמיתי במקום
+`/api/newsletter` שלא היה קיים מעולם (404 שקט על כל שליחה). שערים נקיים,
+זהים ל-M17-c51. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
 
 ## M17-c51 - DONE (29.09): מעבר משפטי ולשוני — כל מחרוזת עברית ב-UI וכל דף משפטי, טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח, קישורים שבורים
 
@@ -189,17 +204,24 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
-1. **DNS אצל הרשם** (Q02): להחליף את שני ה-NS של `kenyonexpress.co.il`
-   מ-`ns1.vercel.com`/`ns2.vercel.com` ל-`ns1.vercel-dns.com`/`ns2.vercel-dns.com`.
-   אחרי ההתפשטות: `dig +short A kenyonexpress.co.il @1.1.1.1` צריך להחזיר
-   `216.198.79.1`, ואז `curl -sI https://www.kenyonexpress.co.il/` ל-200.
-   שום דבר בצד Vercel לא דורש שינוי. נמדד שוב 25.09 (M01-c1), ללא שינוי;
-   פלט ה-dig המלא ברשומת M01-c1 בארכיון; נמדד שוב ב-M02-c1, ללא שינוי.
-2. **פריסת פרודקשן של HEAD (`92f8b6904`, 33 קומיטים אחרי `a388118f1` החי)**:
-   נוסתה ב-M01-c1 (REST `POST /v13/deployments`, `target=production`) **וסורבה
-   ב-`deploy-preflight`**: `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
-   `CARDCOM_API_PASSWORD` חסרים ב-Production ו-`ALLOW_INCOMPLETE_ENV=true` מוגדר
-   שם. עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה.
+1. **DNS אצל הרשם — RESOLVED (29.09, M01-c52).** ה-NS של `kenyonexpress.co.il`
+   כבר `ns1.vercel-dns.com`/`ns2.vercel-dns.com` (לא `ns1/ns2.vercel.com`
+   כפי שנמדד בכל בדיקה מ-25.09 ועד M18-c51). `dig +short A` מחזיר
+   `216.198.79.1`/`216.198.79.65`, `curl` ל-`www.kenyonexpress.co.il` מחזיר
+   `200` עם תוכן אמיתי (`lang="he" dir="rtl"`, כותרת קניון EXPRESS). מי שינה
+   ומתי — לא נמדד, רק התוצאה. **לחשבון שלושה פרויקטי Vercel; רק הפרויקט
+   בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
+   — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
+   ביניהם.** פירוט מלא ברשומת M01-c52.
+2. **פריסת פרודקשן של HEAD (`1083b8d8d`, כ-48 קומיטים אחרי `a388118f1` החי)**:
+   נוסתה שוב ב-M01-c52 (REST `POST /v13/deployments`, `target=production`,
+   הפעם על הפרויקט הנכון `kenyonexpress`) **וסורבה שוב ב-`deploy-preflight`**
+   באותה סיבה בדיוק: `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+   `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production (קיימים במקומם
+   `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא קורא) ו-
+   `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם. עד שאופיר יתקן את הסביבה
+   אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על `a388118f1` ולא נפגע
+   מהניסיון.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
    "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
