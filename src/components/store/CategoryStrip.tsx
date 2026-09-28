@@ -96,8 +96,8 @@ export default function CategoryStrip({ inHero = false }: { inHero?: boolean } =
                     <SmartImage
                       src={cat.image}
                       alt=""
-                      fill
-                      sizes={`${C.image.size}px`}
+                      width={C.image.size}
+                      height={C.image.size}
                       className="object-contain transition-transform duration-300 group-hover:scale-105"
                       fallbackClassName="absolute inset-0"
                       iconSize={C.image.fallbackIconSize}
