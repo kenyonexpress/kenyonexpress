@@ -1,6 +1,6 @@
 # DB-SECURITY-MODEL.md — RLS, Policies, SECURITY DEFINER
 
-> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-25 (סעיף 0א: ספירות ו-advisors נמדדו מחדש דרך ה-management API; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
+> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-29 (סעיף 0ב: advisors אומתו שוב, אפס WARN חדש; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
 > כל שורה כאן נשלפה מ-`pg_policies`, `pg_class`, `pg_proc` (aclexplode) בפועל, לא מהזיכרון.
 > **מיגרציה 125 הוחלה ואומתה ב-21.08**: הוסרו הרשאות EXECUTE ל-authenticated מ-6 פונקציות עזר יתומות. אומת שוב ב-01.09: לשש כולן `anon=false, authed=false`.
 > **⚠️ מיגרציה 127 הוחלה ב-01.09**, אחרי שהאתר עלה לאוויר, והיא משנה את סעיף 5.1. ‏`check_rate_limit` **אינה חשופה יותר** ל-anon ול-authenticated. הוכחה, קריאה אמיתית עם המפתח הפומבי: `POST /rest/v1/rpc/check_rate_limit` מחזיר `401` ו-`42501 permission denied for function check_rate_limit`.
@@ -76,6 +76,41 @@ Advisors security אחרי 127: **‏23** ממצאים, כולם מכוונים 
 עדיין מפיל כל ‏UPDATE של לקוח על השורה שלו ב-`profiles` עם ‏`42703 record "new"
 has no field "supplier_id"` (‏5 מתוך 5 לקוחות שנבדקו ב-BEGIN/ROLLBACK; האדמין עובר).
 ‏218 שמתקנת זאת **לא הוחלה**, בניגוד לרישום קודם.
+
+## 0ב. נמדד שוב 29.09.2026 (M05-c52), דרך ה-management API, קריאה בלבד — אפס WARN חדש
+
+**ה-MCP של Supabase מופיע שוב כ"דורש הרשאה"** ואין OAuth בסשן לא-אינטראקטיבי,
+כמו ב-M05-c1. אותו מסלול חלופי בדיוק: טוקן ה-CLI מה-keychain,
+`GET https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/{security,performance}`,
+‏200/200. קריאה בלבד, אין SQL שנשלח בפריט הזה.
+
+**אבטחה: 28 ממצאים, זהה ל-25.09 שורה-שורה** — 4 `rls_enabled_no_policy`
+(INFO), 2 `anon_security_definer_function_executable` (WARN: `is_admin`,
+`is_supplier_member`), 21 `authenticated_security_definer_function_executable`
+(WARN, אותן 21 פונקציות בדיוק כמו בטבלה שבסעיף 0א), 1
+`function_search_path_mutable` (WARN: `fn_wallet_entries_block_mutation`,
+עדיין ממתין ב-220).
+
+**ביצועים: 197 ממצאים (היו 206 ב-25.09), אבל ה-WARN זהים במלואם.**
+‏`multiple_permissive_policies` עדיין 14, על אותן 11 טבלאות (`banners`,
+`cashback_ledger`, `homepage_sections`, `payment_events`,
+`payout_statement_lines`, `payout_statements`, `refunds`
+(`supplier_branches` על ארבע פעולות), `support_ticket_messages`,
+`support_tickets`, `whatsapp_contacts`) — כולן בתוך
+`245_single_permissive_policy_per_action.sql`, שנבדק שהוא עדיין מכיל את כל
+אחת עשרה. ‏`auth_rls_initplan` עדיין 6, על אותן טבלאות
+(`cashback_ledger`, `profiles` (`profiles_super_admin_mfa`),
+`push_subscriptions` ×2, `webauthn_credentials` ×2) — הראשונות ב-`209`
+§2, ‏`profiles_super_admin_mfa` ב-`246`, שניהם נבדקו שעדיין מכילים אותן.
+**ה-9 שירדו הם כולם `unused_index` (INFO, 176 -> 167)** — לא WARN, לא
+פעולה נדרשת; קריאה סבירה היא שתשעה אינדקסים נוצלו בתעבורה האמיתית מאז
+25.09. ‏`unindexed_foreign_keys` (9) ו-`auth_db_connections_absolute` (1)
+ללא שינוי.
+
+**סך הכול: 44 WARN, זהה בדיוק ל-25.09.** ‏21 עם קובץ ממתין (`209`, `220`,
+`245`, `246` — כולם עדיין ב-`migrations/pending/`, אף אחד לא הוחל) ו-23
+by design (אותה רשימת קוראים כמו בסעיף 0א). **אפס WARN חדש, אפס WARN
+שהפסיק לירות.** לא נדרש קובץ מיגרציה חדש בפריט הזה.
 
 ## 1. עקרון-על
 
