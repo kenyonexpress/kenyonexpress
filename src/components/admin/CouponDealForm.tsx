@@ -353,7 +353,13 @@ function CouponPreviewCard({
     >
       <div className="relative h-40 bg-gray-100">
         {imageUrl ? (
-          <Image src={imageUrl} alt="" fill sizes="320px" className="object-cover" />
+          <Image
+            src={imageUrl}
+            alt=""
+            width={320}
+            height={160}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-300">
             <Tag size={40} />
