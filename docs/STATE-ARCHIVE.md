@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c58 (הועבר מ-STATE.md ב-M01-c59, לשמירה על תקרת 300 שורות)
+
+**M17-c58 - DONE (30.09): מעבר קופי ומשפטי בפעם השישית, אפס דריפט
+מ-M17-c57.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי
+בחיפוש טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט פונה-ללקוח,
+וקישורים שבורים, ולתקן.
+
+**נמדד ישירות מ-git, לא הונח:** `git diff --stat 938b56e5..HEAD` (מאז
+הקריאה המלאה האחרונה, M17-c57) על `messages/`, `src/app`, `src/components`
+מחזיר ריק. `git log -1 -- messages/he.json` מצביע על `99b2079c`, מוקדם
+מ-M17-c57. `git log -1 -- 'src/app/(legal)'` מצביע על `46b3b93e`, גם הוא
+מוקדם. שני הבלוקים שנקראו במלואם ב-M17-c53 (591 שורות `he.json`, ארבעת
+מסמכי `_content` וקישורי הפוטר) לא זזו כלל מאז M17-c57: אפס מחרוזת
+חדשה, אפס קישור חדש, אפס עמוד משפטי חדש. ה-`diff` הכולל מול 938b56e5
+נוגע רק ב-`docs/BACKLOG.md`, `docs/DB-SECURITY-MODEL.md`,
+`docs/LAUNCH-READINESS.md`, `docs/UI-PARITY-REPORT.md`, `package.json`,
+`pnpm-lock.yaml` ו-`src/server/payments/refund-wallet.test.ts`
+(M18-c57..M16-c58), אף לא אחד מהם קופי פונה-ללקוח או עמוד משפטי.
+
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
+627/627, `copy-gate` נקי מבלי משפט שיווקי לטיני, `rtl-logical-gate`
+נקי), `test` 608/608 קבצים 7273/7285 (12 skipped, 57.32s), `build`
+`exit 0`. אין שער חזותי נדרש (אפס שינוי UI, `STATE.md`/`docs/STATE-ARCHIVE.md`
+בלבד).
+
 ## M16-c58 (הועבר מ-STATE.md ב-M18-c58, לשמירה על תקרת 300 שורות)
 
 **M16-c58 - DONE (30.09): תברואת ריפו בפעם השמינית, אפס דריפט
