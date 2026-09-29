@@ -1,81 +1,59 @@
-RESUME FROM: M12-c52
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c52)
+RESUME FROM: M13-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c52)
 
 ## המשך מ:
 
-M11-c52 מדד axe מחדש על כל דף, פומבי ומאחורי סשן. אפס הפרות. סשן הבא:
-לבדוק אם אופיר טיפל בפריט כלשהו מ-`docs/BACKLOG.md` ופתח עבודת קוד
-חדשה; אם לא, STATE נשאר CLEAN ואין מה למדוד שוב עד שמשהו ישתנה.
+M12-c52 מדד SEO מחדש (מטא/canonical/og/JSON-LD/sitemap/robots) מול build
+אמיתי. אפס דריפט, אפס שינוי קוד. סשן הבא ממשיך את סבב ה-c52 בסדר של
+c51: M13-c52 אבטחה (CSP/HSTS/X-Frame-Options/Referrer-Policy, rate-limit),
+ואם אין דריפט להמשיך ל-M14-c52 (bundle/images), M15-c52 (סנכרון docs),
+M16-c52 (תברואת ריפו) וכו', עד שנתקל בפריט שדורש תיקון בפועל או ש-אופיר
+טיפל בסעיף מ-`docs/BACKLOG.md`.
 
-## M11-c52 - DONE (29.09): נגישות — axe על כל דף נמדד מחדש, אפס הפרות `serious`/`critical`
+## M12-c52 - DONE (29.09): SEO — מטא/canonical/og/JSON-LD Product+Offer/sitemap/robots נמדדו מחדש מול build אמיתי, אפס דריפט
 
-נמדד ישירות, לא הוערך: מאז ה-axe האחרון (`72df5e898`, M11-c51 ב-28.09)
-נכנסו שינויי UI אמיתיים — `FooterNewsletterForm.tsx` חדש (M18-c51),
-`SiteFooter.tsx`/`LegalFooterLinks.tsx` שונו (M17-c51/M18-c51),
-`CategoryStrip.tsx` נגע (M14-c51) — אז זו לא בדיקת "אין דריפט" אלא הרצה
-אמיתית. `pnpm build` על HEAD הנוכחי (`BUILD_ID HU34r-lrkSqHaQgMSezKz`),
-שרת `pnpm start` נפרד על פורט 3413 (לא נגעתי בשרת של סשן מקביל על 3471).
+נמדד ישירות, לא הוערך: אפס שינוי בכל קובץ SEO (`src/app/sitemap.ts`,
+`src/app/robots.ts`, `src/app/sitemap*.test.ts`, `src/__tests__/canonical-*.test.ts`,
+`src/lib/seo/**`, דפי `product/[slug]`, `category/[slug]`, הבית) מאז
+M12-c51 (`0e6da821b`, 28.09) ועד HEAD הנוכחי — `git log <range> -- <paths>`
+ריק, לא רק "לא ראיתי שינוי".
 
-**מלכודת שנתפסה לפני שהמספרים היו אמינים:** ניסיון ראשון עם
-`PLAYWRIGHT_BASE_URL`/`BASE_URL` (משתנים לא קיימים ב-`playwright.config.ts`,
-שקורא `E2E_BASE_URL`) גרם ל-Playwright להתעלם מהשרת שלי ולהרים `pnpm dev`
-משלו על פורט 3000 — בדיוק המצב ש-`e2e/auth-session.ts` מזהיר מפניו (dev
-שונה מ-prod ב-RTL/caching/server actions), עם 4 timeouts שהיו רעש ולא
-ממצא. תוקן עם `E2E_BASE_URL=http://localhost:3413`; `.next/BUILD_ID` אומת
-שלא נדרס.
+בכל זאת נמדד מחדש מול build אמיתי ולא רק מול הקוד: `pnpm build` נקי,
+שרת `pnpm start` נפרד על פורט 3512 (לא נגעתי בשרתים של סשנים מקבילים).
 
-**‏`e2e/a11y.spec.ts` (פומבי, שני viewports):** ‏80 עברו, 2 דולגו (אותם
-דילוגים מתועדים כבר), **0 נכשלו**.
+- **`robots.txt`**: `Allow: /`, עשרה `Disallow` (redeem/coupon/account/
+  supplier/scan/admin/checkout/cart/auth/api + reset/forgot-password),
+  `Host` ו-`Sitemap` מצביעים על `https://kenyonexpress.co.il`.
+- **`sitemap.xml`**: sitemap index עם חמישה חלקים (content/categories/
+  products/regions/suppliers). `products.xml`: 46 `<loc>`, `lastmod` תקין
+  (2026-08-10T14:10:29Z).
+- **דף מוצר** (`/product/barbecue`): `canonical` נכון, תשעה תגי `og:*`
+  (title/description/url/locale/image+type/width/height/alt/type=website),
+  שני בלוקי JSON-LD תקינים: `Product` (name/url/category/image/brand,
+  `offers` מסוג `Offer` עם `price`/`priceCurrency`/`availability`/`seller`/
+  `priceSpecification` מסוג `StrikethroughPrice`) ו-`BreadcrumbList`.
+- **דף הבית**: `canonical` ושישה תגי `og:*` תקינים.
 
-**‏`e2e/a11y-authenticated.spec.ts` (חשבון/אדמין/ספק):** לקוח 16/16 וספק
-7/7 עברו מיד. אדמין נכשל בהתחלה — `admin sign-in failed: waitForURL
-timeout` — כי ברירת המחדל `E2E_ADMIN_EMAIL=e2e-admin@test.kenyonexpress.local`
-היא כתובת הזרע המקומית, ולא קיימת מול הפרודקשן שהאתר רץ נגדו; הפיקסצ'ר
-האמיתי הוא `e2e-admin@kenyonexpress.co.il` (מתועד קודם, לא ממצא חדש).
-עם הכתובת הנכונה: **57/57 עברו, 0 הפרות**.
-
-**סה"כ: 160 סריקות axe (WCAG 2.1 A+AA), אפס ממצאי `serious`/`critical`
-(ואפס בכלל).** אין קוד שהשתנה — אין ממצא לתקן.
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 604/7188
-(0 חדשים, אין שינוי קוד), `pnpm build` עבר. אין שינוי UI, לכן
-`scripts/compare.mjs` לא רץ (תואם לתקדים ב-M03/M05/M06/M07/M09/M10-c52,
-שרק פריטי parity בפועל מריצים את השער — M02-c52).
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים כולל i18n/
+locale-format על התקרה הקיימת), 180 טסטי SEO ייעודיים (11 קבצים: sitemap/
+robots/canonical-coverage/canonical-host-probe/seo) ירוקים, `pnpm test`
+**604/7188** (זהה, 0 חדשים), `pnpm build` עבר בלי שגיאה. אין שינוי UI,
+לכן `scripts/compare.mjs` לא רץ (תואם לתקדים ב-M03/M05/M06/M07/M09/M10/
+M11-c52, שרק פריטי parity בפועל מריצים את השער — M02-c52).
 
 **קבצים:** `STATE.md` בלבד.
 
-## M10-c52 - DONE (29.09): כיסוי טסטים — `rls-report-fetch.ts` היה הנמוך מבין ששת המועמדים
+## M11-c52 - DONE (29.09): פירוט מלא בארכיון
 
-נמדד ישירות, לא הוערך: הורחב זמנית `coverage.include` ב-`vitest.config.ts`
-(לא נשמר) כדי לכלול את ששת המשפחות שהבריף מנה — `money.ts`,
-`checkout/split.ts`, `server/domain/vouchers/state-machine.ts`,
-`server/domain/orders/state-machine.ts`, משפחת ה-refund
-(`refund.ts`/`refund-request.ts`/`refund-record.ts`/`refund-wallet.ts`),
-ו-RLS helpers — והורצה סוויטה מלאה עם `--coverage` (604 קבצים, 7182
-טסטים, כולם ירוקים). התוצאה: חמשת המשפחות הראשונות כבר ב-100% ענפים
-(`money.ts`, `split.ts`, שני ה-state-machine, `refund-record.ts`) או קרוב
-מאוד (`refund.ts` 96.4%). ה-RLS helper היחיד עם לוגיקת ענפים אמיתית —
-המניפסטים (`rls-manifest`/`rls-write-policies`/`rls-role-matrix`) הם
-בדיקות מונעות-נתונים בלי מודול מקור — הוא `src/lib/supabase/rls-report-fetch.ts`,
-ועמד על **81.1% ענפים (30/37)**, הנמוך מכל ששת המועמדים.
+axe נמדד מחדש על 160 סריקות (פומבי 80/2 דולג, לקוח 16/16, אדמין 57/57
+עם `E2E_ADMIN_EMAIL` הנכון, ספק 7/7), אפס הפרות `serious`/`critical`
+WCAG 2.1 A/AA. אין שינוי קוד.
 
-שבעה ענפים לא מכוסים, כולם ב-`restTarget`/`isRlsDenialBody`/הקשר ה-Sentry:
-קלט שאינו מחרוזת (‏`Request`/`URL`), URL לא תקין שנתפס ב-`catch`, גוף JSON
-תקין שאינו אובייקט, ו-`??` על שני משתני סביבת ה-DSN וברירת המחדל של
-`message`. נוספו שבעה טסטים ל-`rls-report-fetch.test.ts` (13 בסך הכל
-בקובץ) שמכסים כל ענף: קלט `URL`/`Request`, URL בלתי-ניתן-לפענוח, גוף
-`42` (JSON תקין, לא אובייקט), `NEXT_PUBLIC_SENTRY_DSN` כש-`SENTRY_DSN`
-לא מוגדר (לא רק ריק — `??` נופל רק על `undefined`/`null`, לא על `''`),
-וגוף בלי `message`. אומת מחדש עם אותה הרחבה זמנית: **100% ענפים/שורות/
-פונקציות**. `vitest.config.ts` הוחזר בדיוק לגרסה שהייתה ב-HEAD (diff ריק).
+## M10-c52 - DONE (29.09): פירוט מלא בארכיון
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (כל 12 השערים כולל
-i18n/locale-format על התקרה הקיימת), `pnpm test` **604/7188** (13 חדשים,
-כולם ירוקים), `pnpm build` עבר בלי שגיאה. אין שינוי UI, אין צורך בשער
-השוואה חזותי.
-
-**קבצים:** `src/lib/supabase/rls-report-fetch.test.ts` בלבד (+46 שורות),
-`STATE.md`.
+הנמוך מכיסוי הענפים מבין ששת המועמדים היה `src/lib/supabase/rls-report-fetch.ts`
+(81.1%). שבעה טסטים נוספו, 100% ענפים אומת. `vitest.config.ts` הוחזר
+בדיוק ל-HEAD (diff ריק). שערים נקיים, 604/7188.
 
 ## M09-c52 - DONE (29.09): פירוט מלא בארכיון
 
@@ -219,6 +197,7 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 | M09-c52 | DONE (29.09) | **STATE CLEAN**, נמדד בפעם השתים-עשרה, עם בדיקה ישירה נוספת: `git fetch` מול origin (HEAD זהה), `docs/POST-LAUNCH-BACKLOG.md` (כולו דחיות מנומקות) ו-`grep TODO/FIXME` ב-`src/` (שתי תוצאות, שתיהן Cardcom אמיתי, אסור). אין פריט חדש, אין שינוי קוד. |
 | M10-c52 | DONE (29.09) | הרשומה למעלה. נמדד (לא הוערך) שהנמוך מבין ששת המועמדים הוא `src/lib/supabase/rls-report-fetch.ts`, 81.1% ענפים; שאר החמישה כבר ב-95%+. שבעה טסטים נוספו, 100% ענפים אומת. `vitest.config.ts` הורחב זמנית למדידה בלבד והוחזר בדיוק (diff ריק). שערים נקיים, 604/7188. |
 | M11-c52 | DONE (29.09) | הרשומה למעלה. axe נמדד מחדש על 160 סריקות (פומבי 80/2 דולג, לקוח 16/16, אדמין 57/57 עם `E2E_ADMIN_EMAIL` הנכון, ספק 7/7), אפס הפרות WCAG 2.1 A/AA. אין שינוי קוד. |
+| M12-c52 | DONE (29.09) | הרשומה למעלה. SEO נמדד מחדש מול build אמיתי: robots.txt/sitemap.xml (46 מוצרים)/canonical/og/JSON-LD Product+Offer+BreadcrumbList על דף מוצר והבית, כולם תקינים. 180 טסטי SEO ייעודיים ירוקים, 604/7188 זהה. אין שינוי קוד. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 

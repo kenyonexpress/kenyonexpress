@@ -2,6 +2,76 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c52 - DONE (29.09): נגישות — axe על כל דף נמדד מחדש, אפס הפרות `serious`/`critical`
+
+נמדד ישירות, לא הוערך: מאז ה-axe האחרון (`72df5e898`, M11-c51 ב-28.09)
+נכנסו שינויי UI אמיתיים — `FooterNewsletterForm.tsx` חדש (M18-c51),
+`SiteFooter.tsx`/`LegalFooterLinks.tsx` שונו (M17-c51/M18-c51),
+`CategoryStrip.tsx` נגע (M14-c51) — אז זו לא בדיקת "אין דריפט" אלא הרצה
+אמיתית. `pnpm build` על HEAD הנוכחי (`BUILD_ID HU34r-lrkSqHaQgMSezKz`),
+שרת `pnpm start` נפרד על פורט 3413 (לא נגעתי בשרת של סשן מקביל על 3471).
+
+**מלכודת שנתפסה לפני שהמספרים היו אמינים:** ניסיון ראשון עם
+`PLAYWRIGHT_BASE_URL`/`BASE_URL` (משתנים לא קיימים ב-`playwright.config.ts`,
+שקורא `E2E_BASE_URL`) גרם ל-Playwright להתעלם מהשרת שלי ולהרים `pnpm dev`
+משלו על פורט 3000 — בדיוק המצב ש-`e2e/auth-session.ts` מזהיר מפניו (dev
+שונה מ-prod ב-RTL/caching/server actions), עם 4 timeouts שהיו רעש ולא
+ממצא. תוקן עם `E2E_BASE_URL=http://localhost:3413`; `.next/BUILD_ID` אומת
+שלא נדרס.
+
+**‏`e2e/a11y.spec.ts` (פומבי, שני viewports):** ‏80 עברו, 2 דולגו (אותם
+דילוגים מתועדים כבר), **0 נכשלו**.
+
+**‏`e2e/a11y-authenticated.spec.ts` (חשבון/אדמין/ספק):** לקוח 16/16 וספק
+7/7 עברו מיד. אדמין נכשל בהתחלה — `admin sign-in failed: waitForURL
+timeout` — כי ברירת המחדל `E2E_ADMIN_EMAIL=e2e-admin@test.kenyonexpress.local`
+היא כתובת הזרע המקומית, ולא קיימת מול הפרודקשן שהאתר רץ נגדו; הפיקסצ'ר
+האמיתי הוא `e2e-admin@kenyonexpress.co.il` (מתועד קודם, לא ממצא חדש).
+עם הכתובת הנכונה: **57/57 עברו, 0 הפרות**.
+
+**סה"כ: 160 סריקות axe (WCAG 2.1 A+AA), אפס ממצאי `serious`/`critical`
+(ואפס בכלל).** אין קוד שהשתנה — אין ממצא לתקן.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי, `pnpm test` 604/7188
+(0 חדשים, אין שינוי קוד), `pnpm build` עבר. אין שינוי UI, לכן
+`scripts/compare.mjs` לא רץ (תואם לתקדים ב-M03/M05/M06/M07/M09/M10-c52,
+שרק פריטי parity בפועל מריצים את השער — M02-c52).
+
+**קבצים:** `STATE.md` בלבד.
+
+## M10-c52 - DONE (29.09): כיסוי טסטים — `rls-report-fetch.ts` היה הנמוך מבין ששת המועמדים
+
+נמדד ישירות, לא הוערך: הורחב זמנית `coverage.include` ב-`vitest.config.ts`
+(לא נשמר) כדי לכלול את ששת המשפחות שהבריף מנה — `money.ts`,
+`checkout/split.ts`, `server/domain/vouchers/state-machine.ts`,
+`server/domain/orders/state-machine.ts`, משפחת ה-refund
+(`refund.ts`/`refund-request.ts`/`refund-record.ts`/`refund-wallet.ts`),
+ו-RLS helpers — והורצה סוויטה מלאה עם `--coverage` (604 קבצים, 7182
+טסטים, כולם ירוקים). התוצאה: חמשת המשפחות הראשונות כבר ב-100% ענפים
+(`money.ts`, `split.ts`, שני ה-state-machine, `refund-record.ts`) או קרוב
+מאוד (`refund.ts` 96.4%). ה-RLS helper היחיד עם לוגיקת ענפים אמיתית —
+המניפסטים (`rls-manifest`/`rls-write-policies`/`rls-role-matrix`) הם
+בדיקות מונעות-נתונים בלי מודול מקור — הוא `src/lib/supabase/rls-report-fetch.ts`,
+ועמד על **81.1% ענפים (30/37)**, הנמוך מכל ששת המועמדים.
+
+שבעה ענפים לא מכוסים, כולם ב-`restTarget`/`isRlsDenialBody`/הקשר ה-Sentry:
+קלט שאינו מחרוזת (‏`Request`/`URL`), URL לא תקין שנתפס ב-`catch`, גוף JSON
+תקין שאינו אובייקט, ו-`??` על שני משתני סביבת ה-DSN וברירת המחדל של
+`message`. נוספו שבעה טסטים ל-`rls-report-fetch.test.ts` (13 בסך הכל
+בקובץ) שמכסים כל ענף: קלט `URL`/`Request`, URL בלתי-ניתן-לפענוח, גוף
+`42` (JSON תקין, לא אובייקט), `NEXT_PUBLIC_SENTRY_DSN` כש-`SENTRY_DSN`
+לא מוגדר (לא רק ריק — `??` נופל רק על `undefined`/`null`, לא על `''`),
+וגוף בלי `message`. אומת מחדש עם אותה הרחבה זמנית: **100% ענפים/שורות/
+פונקציות**. `vitest.config.ts` הוחזר בדיוק לגרסה שהייתה ב-HEAD (diff ריק).
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (כל 12 השערים כולל
+i18n/locale-format על התקרה הקיימת), `pnpm test` **604/7188** (13 חדשים,
+כולם ירוקים), `pnpm build` עבר בלי שגיאה. אין שינוי UI, אין צורך בשער
+השוואה חזותי.
+
+**קבצים:** `src/lib/supabase/rls-report-fetch.test.ts` בלבד (+46 שורות),
+`STATE.md`.
+
 ## M09-c52 - DONE (29.09): STATE CLEAN
 
 נבדק ישירות (לא רק אומת מול הרשומה הקודמת): `git fetch` — HEAD מקומי
