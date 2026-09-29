@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c54 (הועברה מ-STATE.md ב-M15-c54, לשמירה על תקרת 300 שורות)
+
+**M14-c54 - perf: bundle, צנרת תמונות, תגיות ISR וכותרות cache — ממצא
+אחד אמיתי בעמוד הבית תוקן (29.09).** המשימה: לבדוק גודל bundle, פלט
+צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר.
+**בדיקת ארבעת התחומים, מול הבייסליין הכתוב ב-M14-c53 (`e371afd2f`):**
+1. **גודל bundle: אין רגרסיה, אין שינוי.** `git log e371afd2f..HEAD` על
+`next.config.ts`/`src/lib/images`/`src/components/admin`/`package.json`/
+`pnpm-lock.yaml` מחזיר רק שני קומיטים לא-קשורים (M11-c54 a11y באדמין
+בלבד, M03-c54 נתיב import של Sentry). `scripts/bundle-report.mjs` על
+build טרי, `pnpm start` (פורט 3514): בית 320.4kB, קופה 324.1kB, **345.1kB
+סה"כ על 27 chunks — זהה בדיוק ל-M14-c53**.
+2. **פלט צנרת התמונות: ממצא אמיתי, תוקן.** אותו באג `fill`+`sizes` בפורמט
+px שנמצא ותוקן פעמיים באדמין-בלבד (M14-c51 `CategoryStrip.tsx`, M14-c52
+`ProductGallery.tsx`, M14-c53 `ImageUploader.tsx`+`CouponDealForm.tsx`)
+נמצא **בעמוד הבית עצמו**: `src/components/home/HeroSlider.tsx`, תג "app"
+בסליידר, `fill sizes="286px"` (בלי `vw`) על תיבה קבועה 46x286. `getWidths()`
+(`node_modules/next/dist/shared/lib/get-img-props.js:53`) מזהה `vw` בלבד
+דרך regex; מחרוזת px שטוחה לא תואמת אף `vw`, כך שה-srcset יוצא על פני כל
+17 המועמדים (`imageSizes`+`deviceSizes`, 16w עד 3840w) לתמונה שלא מציגה
+יותר מ-286px CSS באף רוחב. **תוקן**: הוסר `fill`+`sizes`, הוחלף ב-
+`width={286} height={46}` (התיקון שכבר בוצע ל-`ImageUploader`/
+`CouponDealForm` ב-M14-c53) — עם `object-contain` הפריסה זהה חזותית.
+`RS.badgeSizes` (קבוע) הוסר, הוחלף ב-`RS.badgeWidth`/`RS.badgeHeight`.
+**לא נמדד ב-HTML חי**: הסלייד מסוג "app" לא מוגדר בנתוני ה-seed המקומיים
+(אפס הופעות של `286px` ב-HTML של `/`), כלומר הממצא הוא בקוד המקור עצמו
+(אומת ישירות מול לוגיקת `next/image`), לא ממדידת bytes בפועל — אבל
+מדובר בקוד ייצור אמיתי שירוץ בכל פעם שסלייד "app" עם `badge_image_url`
+מוגדר בפרודקשן, לא בקוד מת.
+3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
+"clean" — לפני ואחרי התיקון, זהה.
+4. **כותרות cache: אין רגרסיה.** לא נבדק שינוי קוד רלוונטי מאז M14-c53
+(ראו סעיף 1); `/images/*` נשאר `public, max-age=0, s-maxage=86400,
+stale-while-revalidate=604800` לפי `next.config.ts` (לא נגעתי).
+
+**שער חזותי בית (הדף היחיד שהתיקון נוגע בו), בחזית, שלושת הרוחבים מול
+`refs/ke_live_{width}.png`, אותו `pnpm start` (פורט 3515) אחרי build טרי
+עם התיקון:**
+
+| רוחב | both-painted | סטטוס |
+|---|---|---|
+| 380 | 8.51% | PASS |
+| 768 | 9.02% | PASS |
+| 1440 | 3.95% | PASS |
+
+זהה בדיוק לבייסליין (M02-c54 ואילך) — התיקון לא שינה שום פיקסל (אותו
+גודל תיבה מוצג, רק ה-srcset המיוצר קטן יותר). שורות ב-`docs/UI-PARITY-REPORT.md`.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n 627/627,
+locale 116/116), `pnpm test` **605/605 קבצים, 7217/7229** (12 skipped,
+זהה), `pnpm build` `exit 0`.
+
+**קבצים:** `src/components/home/HeroSlider.tsx`, `docs/UI-PARITY-REPORT.md`
+(שורות מדידה, כולל שתי שורות REFUSED מניסיון ראשון בלי `--baseline`),
+`docs/STATE-ARCHIVE.md` (M13-c54 הועבר לשם), `STATE.md`.
+
 ## M13-c54 (הועברה מ-STATE.md ב-M14-c54, לשמירה על תקרת 300 שורות)
 
 **M13-c54 - docs(security): CSP/HSTS/X-Frame-Options/Referrer-Policy

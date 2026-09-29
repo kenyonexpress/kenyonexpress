@@ -1,61 +1,53 @@
-RESUME FROM: M15-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c54)
+RESUME FROM: M16-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c54)
 
 ## המשך מ:
 
-**M14-c54 - perf: bundle, צנרת תמונות, תגיות ISR וכותרות cache — ממצא
-אחד אמיתי בעמוד הבית תוקן (29.09).** המשימה: לבדוק גודל bundle, פלט
-צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר.
-**בדיקת ארבעת התחומים, מול הבייסליין הכתוב ב-M14-c53 (`e371afd2f`):**
-1. **גודל bundle: אין רגרסיה, אין שינוי.** `git log e371afd2f..HEAD` על
-`next.config.ts`/`src/lib/images`/`src/components/admin`/`package.json`/
-`pnpm-lock.yaml` מחזיר רק שני קומיטים לא-קשורים (M11-c54 a11y באדמין
-בלבד, M03-c54 נתיב import של Sentry). `scripts/bundle-report.mjs` על
-build טרי, `pnpm start` (פורט 3514): בית 320.4kB, קופה 324.1kB, **345.1kB
-סה"כ על 27 chunks — זהה בדיוק ל-M14-c53**.
-2. **פלט צנרת התמונות: ממצא אמיתי, תוקן.** אותו באג `fill`+`sizes` בפורמט
-px שנמצא ותוקן פעמיים באדמין-בלבד (M14-c51 `CategoryStrip.tsx`, M14-c52
-`ProductGallery.tsx`, M14-c53 `ImageUploader.tsx`+`CouponDealForm.tsx`)
-נמצא **בעמוד הבית עצמו**: `src/components/home/HeroSlider.tsx`, תג "app"
-בסליידר, `fill sizes="286px"` (בלי `vw`) על תיבה קבועה 46x286. `getWidths()`
-(`node_modules/next/dist/shared/lib/get-img-props.js:53`) מזהה `vw` בלבד
-דרך regex; מחרוזת px שטוחה לא תואמת אף `vw`, כך שה-srcset יוצא על פני כל
-17 המועמדים (`imageSizes`+`deviceSizes`, 16w עד 3840w) לתמונה שלא מציגה
-יותר מ-286px CSS באף רוחב. **תוקן**: הוסר `fill`+`sizes`, הוחלף ב-
-`width={286} height={46}` (התיקון שכבר בוצע ל-`ImageUploader`/
-`CouponDealForm` ב-M14-c53) — עם `object-contain` הפריסה זהה חזותית.
-`RS.badgeSizes` (קבוע) הוסר, הוחלף ב-`RS.badgeWidth`/`RS.badgeHeight`.
-**לא נמדד ב-HTML חי**: הסלייד מסוג "app" לא מוגדר בנתוני ה-seed המקומיים
-(אפס הופעות של `286px` ב-HTML של `/`), כלומר הממצא הוא בקוד המקור עצמו
-(אומת ישירות מול לוגיקת `next/image`), לא ממדידת bytes בפועל — אבל
-מדובר בקוד ייצור אמיתי שירוץ בכל פעם שסלייד "app" עם `badge_image_url`
-מוגדר בפרודקשן, לא בקוד מת.
-3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
-"clean" — לפני ואחרי התיקון, זהה.
-4. **כותרות cache: אין רגרסיה.** לא נבדק שינוי קוד רלוונטי מאז M14-c53
-(ראו סעיף 1); `/images/*` נשאר `public, max-age=0, s-maxage=86400,
-stale-while-revalidate=604800` לפי `next.config.ts` (לא נגעתי).
+**M15-c54 - docs: סנכרון `STATE.md`, `docs/LAUNCH-READINESS.md` ו-
+`docs/BACKLOG.md` מול `git log` וראיית קוד (29.09).** המשימה: לרענן את
+טבלאות הסטטוס בשלושת הקבצים, לשמור רשימה אחת ללא כפילויות של פעולות
+ידניות לאופיר, מסודרת לפי קריטיות. **נבדק תחילה מה השתנה מאז הסנכרון
+האחרון (M15-c53, `b96a4e8d4`):** תשעה קומיטי שינוי-קוד אמיתיים
+(M06-c54..M14-c54 — תיקון import של Sentry, תחזוקת תלויות, ביקורת DB,
+Lighthouse, route audit, כיסוי טסטים לזיכוי, תיקוני a11y, אימות SEO/אבטחה,
+תיקון srcset בבאדג' הבית), אף אחד מהם לא נגע בשורת חסימה או הוסיף פעולה
+ידנית חדשה — כל אחד תועד כ-DONE בזמנו. **נמדד מחדש, git בלבד, אין בדיקת
+פרודקשן בפריט הזה:**
+- `git rev-list --count a388118f1..HEAD` = **101** (היה 83 ב-M15-c53).
+- `git rev-list --count origin/main..HEAD` = **475** (היה 457 ב-M15-c53);
+  `git rev-list --count HEAD..origin/main` = 109, ללא שינוי.
+- `pnpm test`: **605/605 קבצים, 7217/7229** (12 skipped) — זהה למה שנמדד
+  כבר ב-M14-c54, אומת שוב בהרצה טרייה בפריט הזה.
+- פנקס הקטלוג (`supabase/catalogue-known-issues.json`): `known` מחזיק
+  **26** מפתחות — זהה למה שתועד מ-M15-c53, אין דריפט.
+- `git stash list`: **32** — זהה למה שתועד ב-M09-c54/ידני 15.
 
-**שער חזותי בית (הדף היחיד שהתיקון נוגע בו), בחזית, שלושת הרוחבים מול
-`refs/ke_live_{width}.png`, אותו `pnpm start` (פורט 3515) אחרי build טרי
-עם התיקון:**
-
-| רוחב | both-painted | סטטוס |
-|---|---|---|
-| 380 | 8.51% | PASS |
-| 768 | 9.02% | PASS |
-| 1440 | 3.95% | PASS |
-
-זהה בדיוק לבייסליין (M02-c54 ואילך) — התיקון לא שינה שום פיקסל (אותו
-גודל תיבה מוצג, רק ה-srcset המיוצר קטן יותר). שורות ב-`docs/UI-PARITY-REPORT.md`.
+**עודכן בשלושת הקבצים:** `docs/LAUNCH-READINESS.md` — פסקת "Docs sync"
+בראש הקובץ, שורת חסימה 4 (83→101), שורת ה-gate `pnpm test` (הוסף המדידה
+הטרייה), שורת "Branches" (457→475), ופסקת ה"ידני לאופיר" בתחתית. `docs/BACKLOG.md`
+— נוספה פסקת "Re-checked M15-c54" ועודכן פריט 4 (83→101). **`CLAUDE.md`
+עדיין אומר 25 ממצאי קטלוג** (לא 26) — מחוץ להיקף הפריט הזה (STATE.md,
+LAUNCH-READINESS.md, BACKLOG.md בלבד לפי הוראת המשימה), נרשם כאן ולא נערך.
+רשימת "ידני לאופיר" ב-`docs/BACKLOG.md` נבדקה מחדש מול השורה הזו וכנגד
+`STATE.md`'s חוסמים פתוחים: **עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
+פריט חדש**.
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n 627/627,
-locale 116/116), `pnpm test` **605/605 קבצים, 7217/7229** (12 skipped,
-זהה), `pnpm build` `exit 0`.
+locale 116/116, docs-index 282 מסמכים), `pnpm test` **605/605 קבצים,
+7217/7229** (12 skipped), `pnpm build` `exit 0`. אין שינוי UI, אין שער
+חזותי נדרש.
 
-**קבצים:** `src/components/home/HeroSlider.tsx`, `docs/UI-PARITY-REPORT.md`
-(שורות מדידה, כולל שתי שורות REFUSED מניסיון ראשון בלי `--baseline`),
-`docs/STATE-ARCHIVE.md` (M13-c54 הועבר לשם), `STATE.md`.
+**קבצים:** `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
+`docs/STATE-ARCHIVE.md` (M14-c54 הועבר לשם), `STATE.md`.
+
+## M14-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+bundle/צנרת תמונות/תגיות ISR/כותרות cache נבדקו מול הבייסליין של M14-c53;
+ממצא אמיתי אחד נמצא ותוקן — אותו באג `fill`+`sizes` בפורמט px (שכבר תוקן
+פעמיים באדמין-בלבד) נמצא הפעם בעמוד הבית עצמו (`HeroSlider.tsx` badge),
+הוחלף ב-`width`/`height` מפורשים. שער חזותי בית בשלושת הרוחבים PASS, זהה
+בדיוק לבייסליין (תיקון לא שינה פיקסל, רק srcset קטן יותר). bundle/ISR/cache
+headers ללא רגרסיה. הועבר ב-M15-c54 לשמירה על תקרת 300 שורות.
 
 ## M13-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

@@ -35,6 +35,14 @@ finding count was wrong since 2026-09-10: the ledger
 commit (`00375d705`) that introduced the other 25 and the count was never
 corrected anywhere; fixed below.
 
+**Re-checked 2026-09-29 (M15-c54) against `git log -20`:** still 15 items,
+same order, no duplicate, no new item. Nine code-change commits landed since
+M15-c53 (M06-c54..M14-c54); none touched a blocking line or added a manual
+item — see `STATE.md` for each one's own DONE entry. Item 4's commit count
+changed again (83 -> 101, `git rev-list --count a388118f1..HEAD`, git-only,
+production not re-probed this item). Item 7's finding count (26) re-checked
+against the ledger, unchanged.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -55,11 +63,12 @@ corrected anywhere; fixed below.
    LAUNCH-READINESS.md שורה חוסמת 4.
 4. **אישור פריסת HEAD לפרודקשן**, אחרי סעיף 3. פרודקשן עדיין מגיש
    `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
-   המוקדם (M15-c51), 66 ב-M15-c52, וכעת (29.09, M15-c53, מדידה מקומית
-   בלבד — לא נבדק מול הפריסה החיה בפריט הזה) **83** קומיטים מאחורי HEAD.
-   `POST /v13/deployments` עם `gitSource.sha`, `target=production`, לפי
-   `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2, LAUNCH-READINESS.md שורה
-   חוסמת 4.
+   המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53 (וניסיון פריסה חוזר
+   ב-M01-c54 סורב באותה סיבה בדיוק, פרודקשן נשאר על `a388118f1`), וכעת
+   (29.09, M15-c54, מדידה מקומית בלבד — לא נבדק מול הפריסה החיה בפריט הזה)
+   **101** קומיטים מאחורי HEAD. `POST /v13/deployments` עם `gitSource.sha`,
+   `target=production`, לפי `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2,
+   LAUNCH-READINESS.md שורה חוסמת 4.
 5. **החלת המיגרציות הממתינות**, לפי הסדר והתנאים המוקדמים ב-
    `migrations/pending/APPLY-ORDER.md` ו-`docs/RUNBOOK.md` — **לא** לפי
    סדר מספרי גרידא (218 חייב לקדום ל-217, למשל). האיחוד של שתי הרשימות
