@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c54 (הועברה מ-STATE.md ב-M12-c54, לשמירה על תקרת 300 שורות)
+
+**M11-c54 - fix(a11y): axe על כל דף נמדד מחדש, 8 הפרות `serious` אמיתיות
+נמצאו ותוקנו (29.09).** המשימה: להריץ axe על כל דף, לתקן כל הפרת
+`serious`/`critical`, לשמור WCAG 2.1 AA, לרשום את הספירה הנותרת. `pnpm build`
+על HEAD (M10-c54), `pnpm start` על פורט 3512. **פומבי (`e2e/a11y.spec.ts`,
+80 עברו/2 דולגו על שני הפרויקטים) היה כבר ירוק** (נמדד גם עם `--writes`,
+כולל קופה, עגלה וסל מזוערים). **מאומת (`e2e/a11y-authenticated.spec.ts`,
+160 סריקות: לקוח/אדמין/ספק) חשף 7 מסלולי אדמין שנכשלו רק ב-mobile-chrome**:
+`/admin/analytics`, `/admin/analytics/snapshot`, `/admin/billing`,
+`/admin/cashback`, `/admin/payouts`, `/admin/reports`, `/admin/search` —
+כולם `scrollable-region-focusable` (serious): טבלה שגולשת אופקית בלי
+שהמכל הגולל ניתן להגעה במקלדת. **8 מכלים תוקנו** על פני 9 קבצים:
+`ServerDataTable.tsx` (הרכיב המשותף, מכסה גם `/admin/payouts`),
+ארבע טבלאות ב-`analytics/page.tsx`, שתיים ב-`analytics/snapshot/page.tsx`,
+`BarSeries.tsx` ו-`CohortGrid.tsx` (רכיבי גרף משותפים ששני דפי
+האנליטיקס מייבאים — שני המכלים האלה לא נתפסו בסבב תיקון ראשון, כי הם לא
+ב-`page.tsx` עצמו), `billing/page.tsx`, `cashback/page.tsx`, שני מכלים
+ב-`reports/page.tsx`, ו-`search/page.tsx`. **התיקון: `role="region"`
+(או `<section>` סמנטי) + `aria-label` תיאורי + `tabIndex={0}`**, בדיוק
+הדפוס הקיים כבר ב-`LegalArticle.tsx`. `pnpm lint` דחה `div role="region"
+tabIndex` (`useSemanticElements` + `noNoninteractiveTabindex`) — הומר
+ל-`<section aria-label tabIndex={0}>` עם אותה הערת `biome-ignore` שכבר
+קיימת ב-`LegalArticle.tsx`, כדי לא להמציא חריג שני לאותו כלל. **סריקת
+`overflow-x-auto` נוספת בכל `src/` מול הרשימה שבאמת נבדקת (`route-lists.ts`)
+לא מצאה מסלול תפוס נוסף** — כל שאר השימושים (`data-requests`, `suppliers`,
+`discounts`, `growth`, `coupons/expiry`, `orders/[id]`, `whatsapp/messages`,
+`ReconcileClient`, `ProductImportClient`, `AuditDiff`) כבר עברו 0 הפרות
+במדידה, ולא נגעתי בהם — תיקון ספקולטיבי על מה שלא נמדד כפגום היה סוטה
+מהכלל של הריפו הזה. **נמדד מחדש עד סוף ירוק**: build חדש, שרת חדש, שבעת
+המסלולים שנכשלו קודם עברו 6/6 ואז (אחרי מגבלת קצב login, `E2E_FORWARDED_FOR`
+טרי) 14/14 עם `<section>`, ואז הסוויטה המלאה המאומתת **160/160 עברו, אפס
+הפרות**, בשני הפרויקטים. **סה"כ: 242 סריקות axe (WCAG 2.1 A+AA) ירוקות,
+אפס הפרות `serious`/`critical`/כלשהן שנותרו.** שערים: `type-check` נקי,
+`lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116),
+`test` 605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`.
+אין שער חזותי נדרש (שינוי מבני/a11y בלבד, לא ויזואלי — הוספת `tabIndex`/
+`aria-label`/`section` סמנטי לא משנה מראה). **קבצים ששונו:**
+`src/components/admin/ServerDataTable.tsx`,
+`src/app/(admin)/admin/analytics/page.tsx`,
+`src/app/(admin)/admin/analytics/snapshot/page.tsx`,
+`src/app/(admin)/admin/billing/page.tsx`,
+`src/app/(admin)/admin/cashback/page.tsx`,
+`src/app/(admin)/admin/reports/page.tsx`,
+`src/app/(admin)/admin/search/page.tsx`,
+`src/components/admin/analytics/BarSeries.tsx`,
+`src/components/admin/analytics/CohortGrid.tsx`.
+
 ## M07-c54..M10-c54 (הועברו מ-STATE.md ב-M11-c54, לשמירה על תקרת 300 שורות)
 
 **M10-c54 - test(refund): כיסוי ענפים לשני מודולי ה-refund (29.09).**

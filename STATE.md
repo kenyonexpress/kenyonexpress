@@ -1,53 +1,39 @@
-RESUME FROM: M12-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c54)
+RESUME FROM: M13-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c54)
 
 ## המשך מ:
 
-**M11-c54 - fix(a11y): axe על כל דף נמדד מחדש, 8 הפרות `serious` אמיתיות
-נמצאו ותוקנו (29.09).** המשימה: להריץ axe על כל דף, לתקן כל הפרת
-`serious`/`critical`, לשמור WCAG 2.1 AA, לרשום את הספירה הנותרת. `pnpm build`
-על HEAD (M10-c54), `pnpm start` על פורט 3512. **פומבי (`e2e/a11y.spec.ts`,
-80 עברו/2 דולגו על שני הפרויקטים) היה כבר ירוק** (נמדד גם עם `--writes`,
-כולל קופה, עגלה וסל מזוערים). **מאומת (`e2e/a11y-authenticated.spec.ts`,
-160 סריקות: לקוח/אדמין/ספק) חשף 7 מסלולי אדמין שנכשלו רק ב-mobile-chrome**:
-`/admin/analytics`, `/admin/analytics/snapshot`, `/admin/billing`,
-`/admin/cashback`, `/admin/payouts`, `/admin/reports`, `/admin/search` —
-כולם `scrollable-region-focusable` (serious): טבלה שגולשת אופקית בלי
-שהמכל הגולל ניתן להגעה במקלדת. **8 מכלים תוקנו** על פני 9 קבצים:
-`ServerDataTable.tsx` (הרכיב המשותף, מכסה גם `/admin/payouts`),
-ארבע טבלאות ב-`analytics/page.tsx`, שתיים ב-`analytics/snapshot/page.tsx`,
-`BarSeries.tsx` ו-`CohortGrid.tsx` (רכיבי גרף משותפים ששני דפי
-האנליטיקס מייבאים — שני המכלים האלה לא נתפסו בסבב תיקון ראשון, כי הם לא
-ב-`page.tsx` עצמו), `billing/page.tsx`, `cashback/page.tsx`, שני מכלים
-ב-`reports/page.tsx`, ו-`search/page.tsx`. **התיקון: `role="region"`
-(או `<section>` סמנטי) + `aria-label` תיאורי + `tabIndex={0}`**, בדיוק
-הדפוס הקיים כבר ב-`LegalArticle.tsx`. `pnpm lint` דחה `div role="region"
-tabIndex` (`useSemanticElements` + `noNoninteractiveTabindex`) — הומר
-ל-`<section aria-label tabIndex={0}>` עם אותה הערת `biome-ignore` שכבר
-קיימת ב-`LegalArticle.tsx`, כדי לא להמציא חריג שני לאותו כלל. **סריקת
-`overflow-x-auto` נוספת בכל `src/` מול הרשימה שבאמת נבדקת (`route-lists.ts`)
-לא מצאה מסלול תפוס נוסף** — כל שאר השימושים (`data-requests`, `suppliers`,
-`discounts`, `growth`, `coupons/expiry`, `orders/[id]`, `whatsapp/messages`,
-`ReconcileClient`, `ProductImportClient`, `AuditDiff`) כבר עברו 0 הפרות
-במדידה, ולא נגעתי בהם — תיקון ספקולטיבי על מה שלא נמדד כפגום היה סוטה
-מהכלל של הריפו הזה. **נמדד מחדש עד סוף ירוק**: build חדש, שרת חדש, שבעת
-המסלולים שנכשלו קודם עברו 6/6 ואז (אחרי מגבלת קצב login, `E2E_FORWARDED_FOR`
-טרי) 14/14 עם `<section>`, ואז הסוויטה המלאה המאומתת **160/160 עברו, אפס
-הפרות**, בשני הפרויקטים. **סה"כ: 242 סריקות axe (WCAG 2.1 A+AA) ירוקות,
-אפס הפרות `serious`/`critical`/כלשהן שנותרו.** שערים: `type-check` נקי,
-`lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116),
-`test` 605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`.
-אין שער חזותי נדרש (שינוי מבני/a11y בלבד, לא ויזואלי — הוספת `tabIndex`/
-`aria-label`/`section` סמנטי לא משנה מראה). **קבצים ששונו:**
-`src/components/admin/ServerDataTable.tsx`,
-`src/app/(admin)/admin/analytics/page.tsx`,
-`src/app/(admin)/admin/analytics/snapshot/page.tsx`,
-`src/app/(admin)/admin/billing/page.tsx`,
-`src/app/(admin)/admin/cashback/page.tsx`,
-`src/app/(admin)/admin/reports/page.tsx`,
-`src/app/(admin)/admin/search/page.tsx`,
-`src/components/admin/analytics/BarSeries.tsx`,
-`src/components/admin/analytics/CohortGrid.tsx`.
+**M12-c54 - docs(seo): מטא-דאטה, canonical, og, schema.org Product/Offer,
+עדכניות sitemap ו-robots נמדדו מחדש, אפס דריפט (29.09).** המשימה: לוודא
+metadata, canonical, og tags, schema.org Product ו-Offer בדפי מוצר, עדכניות
+ה-sitemap ו-robots, ולתקן דריפט. **נבדק קודם מה השתנה מאז האימות האחרון
+(M12-c53, `7773958a2`)**: `git diff 7773958a2..HEAD --stat` על 23 קבצים —
+אף אחד לא נוגע ל-SEO (layout/sitemap/robots/json-ld); השינוי הקרוב ביותר
+היה `next.config.ts` (ייבוא Sentry לא-מיושן, M03-c54), לא רלוונטי. **אומת
+בכל זאת ישירות מול build אמיתי** (`pnpm build` נקי, `PORT=3513 pnpm start`):
+`robots.txt` (Disallow על admin/checkout/cart/auth/api/redeem/coupon/account/
+supplier/scan/reset-password/forgot-password, Host+Sitemap תקינים),
+`sitemap.xml` (5 סקשנים: content/categories/products/regions/suppliers,
+זהה ל-M12-c53), `sitemap/products.xml` (46 `loc`/`lastmod`, זהה), דף מוצר
+(`/product/barbecue`): canonical נכון, כל תגי `og:*` (title/description/
+url/locale/image עם type+width+height+alt/type=website), JSON-LD תקין —
+`Product` (name/url/category/image/brand/offers עם `Offer` מלא: price,
+priceCurrency, availability, seller, priceSpecification להצגת המחיר
+המקורי) ו-`BreadcrumbList` (3 שלבים) — ו-`aggregateRating` נעדר כראוי
+למוצר בלי ביקורות (כמדד גם ב-M12-c53 וב-`json-ld.test.ts`). עמוד הבית
+נבדק גם: canonical, title, `og:type=website`, JSON-LD `Organization`+
+`WebSite`. **אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי, `lint`
+נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116), `test`
+605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`. אין שער חזותי
+נדרש (אין שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/
+תיעוד בלבד).
+
+## M11-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+axe נמדד מחדש על כל דף, 8 הפרות `serious` אמיתיות (טבלאות אדמין גולשות
+בלי מקלדת ב-mobile-chrome) נמצאו ותוקנו ב-9 קבצים (`role="region"`+
+`aria-label`+`tabIndex`); 242 סריקות axe ירוקות, אפס הפרות שנותרו. הועבר
+ב-M12-c54 לשמירה על תקרת 300 שורות.
 
 ## M07-c54..M10-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
