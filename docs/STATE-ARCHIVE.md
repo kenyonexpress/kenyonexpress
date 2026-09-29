@@ -2,6 +2,92 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c54 (הועבר מ-STATE.md ב-M01-c55, לשמירה על תקרת 300 שורות)
+
+**M17-c54 - DONE (29.09): מעבר קופי ומשפטי בפעם השנייה — אפס ממצא חדש.**
+המשימה: לקרוא כל מחרוזת UI בעברית ודף משפטי, ולתקן שגיאות כתיב, דליפות
+LTR, מילים באנגלית בקופי פונה-לקוח, וקישורים שבורים. **הפריט כבר בוצע
+ב-M17-c53** (`15c97abff`, אותו יום): קריאה מלאה של `messages/he.json`
+(591 שורות), ארבעת מסמכי ה-legal החיים תחת `src/app/(legal)/_content`,
+וכל href/עוגן-hash בפוטר/ניווט מול הראוטינג בפועל — פלוס סוכן נפרד שסרק
+כ-700 מחרוזות ב-`src/app`/`src/components` — ומצא ותיקן שלושה ממצאים
+אמיתיים אז. **המדידה הזו לא הניחה שזה עדיין תקף; נמדד מחדש מה ה-delta
+מאז `15c97abff`:**
+
+- `git diff 15c97abff..HEAD --stat -- src/app src/components`: **רק
+  10 קבצים שונו** (מ-M11-c54, M14-c54), כולם אדמין-בלבד או ה-badge
+  בעמוד הבית — **אפס שינוי בקבצי legal, ב-`messages/he.json`, בפוטר
+  או בניווט**. שער ה-lint מאשר: **i18n עדיין 627/627** (זהה ל-M17-c53),
+  כלומר סט המחרוזות בעברית לא זז כלל.
+- **תשע מחרוזות `aria-label` חדשות נוספו ב-M11-c54** (`analytics`,
+  `analytics/snapshot`, `billing`, `cashback`, `reports`, `search`,
+  `ServerDataTable`, `BarSeries`, `CohortGrid`) — נקראו כולן במלואן
+  (כולל שתי המחרוזות דינמיות שהוזנו ל-`BarSeries`, `title="מכירות
+  לאורך זמן"` ו-`title="הכנסות נטו ליום"`, ול-`CashbackPage`
+  `` `תנועות אחרונות (${rows.length})` ``): עברית תקנית, אפס דליפת
+  LTR, אפס מילה זרה, אפס שגיאת כתיב.
+- **`node -e` שסרק כל `messages/he.json` דרך `JSON.parse`** (לא grep
+  טקסטואלי, שנתן false-positive על שמות מפתח) איתר כל מחרוזת עם אות
+  לטינית: כולן שם מותג (`KenyonExpress`, `קניון EXPRESS`), מונח טכני
+  בלי מקביל עברי מקובל (`SMS`, `JSON`, `CSV`, `https`, `QR`, `Face ID`)
+  או placeholder (`{name}`, `{amount}`) — אף אחת לא "מילה באנגלית
+  בקופי פונה-לקוח" במובן הפגום, וכולן כבר נסקרו ב-M17-c53.
+- **קבצי legal, href פוטר/ניווט**: אפס diff מ-`15c97abff`, ולכן אפס
+  קישור חדש לבדוק — הסריקה המלאה של M17-c53 עדיין מתארת את המצב הנוכחי.
+
+**אפס תיקון קוד נדרש.** שערים: `pnpm type-check` נקי, `pnpm lint` נקי
+(12 שערים, i18n 627/627, locale 116/116, copy-gate נקי), `pnpm test`
+**605/605 קבצים, 7217/7229** (12 skipped, זהה), `pnpm build` `exit 0`.
+**שער חזותי בית הורץ בפורגראונד** על `pnpm start` פעיל על פורט 3311
+(`BUILD_ID=-oYygG_cFwi5nbhuAwF6u`, תואם ל-HEAD) מול הבייסליין הקפוא
+`refs/ke_live_{width}.png`:
+
+| רוחב | תוצאה | סטטוס |
+|---|---|---|
+| 380 | 8.51% | PASS |
+| 768 | 9.02% | PASS |
+| 1440 | 3.95% | PASS |
+
+זהה בדיוק ל-M17-c53/M02-c54 — צפוי, כי אפס שינוי UI. השער כתב ארבע
+שורות ל-`docs/UI-PARITY-REPORT.md` בעצמו.
+
+**קבצים:** `docs/UI-PARITY-REPORT.md` (שורות מדידה), `docs/STATE-ARCHIVE.md`
+(M16-c54 הועבר לשם), `STATE.md` בלבד.
+
+## M18-c54 (הועבר מ-STATE.md ב-M01-c55, לשמירה על תקרת 300 שורות)
+
+**M18-c54 - DONE (29.09): בדיקת אפס-פעילות (idle check) — המחזור לא היה
+אפס-פעילות, אין שיפור מומחש.** המשימה: אם כל פריטי המחזור (c54) לא הפיקו
+שינוי קוד, לכתוב "MAINTENANCE IDLE" ואז לחפש שיפור המרה אחד אמיתי בעמוד
+הבית או המוצר לפי Electro v7. **נמדד ישירות מול `git log 7a57c8049..HEAD`,
+לא הונח:** ארבעה קומיטים ב-c54 כן הפיקו שינוי קוד אמיתי — `0ab5cd9e3`
+(M03, import `withSentryConfig` לא-דפרקייטד ב-`next.config.ts`),
+`3dbacd5cf` (M10, 20 טסטים חדשים ל-`refund-request.ts`/`refund.ts`),
+`1ef1c1b65` (M11, שמונה תיקוני a11y אמיתיים בשלושה רכיבי אדמין),
+`505ba8e52` (M14, תיקון באג `fill`+px `sizes` ב-badge של `HeroSlider.tsx`
+בעמוד הבית). תנאי ה-idle הוא `false` — **לא** נכתב MAINTENANCE IDLE,
+ולפי הניסוח המותנה של המשימה השיפור המומחש רלוונטי רק לענף ה-true (זהה
+לתקדים שנקבע ב-M18-c53, `0bcbdac18`).
+
+עמוד הבית ועמוד המוצר נסקרו בכל זאת כדי לוודא שאין החמצה: `git diff
+0bcbdac18..HEAD --stat -- 'src/app/(store)' src/components` מראה **רק
+ארבעה קבצים שונו** מאז M18-c53 — שלושה אדמין-בלבד
+(`ServerDataTable.tsx`, `BarSeries.tsx`, `CohortGrid.tsx`, aria-label
+בלבד) ו-`HeroSlider.tsx` (אותו תיקון srcset מ-M14-c54 למעלה, לא פיצ'ר
+המרה חדש) — **אפס שינוי בעמוד הבית או המוצר שהוא לא כבר תועד**. הבדיקה
+הקודמת (M18-c53) כבר אישרה שדף הבית ודף המוצר נושאים כוכבי דירוג, מחסור
+מלאי חי, "נקנה השבוע", wishlist, שיתוף, related products ותגי הנחה —
+כל תוספת חזותית נוספת דורשת מדידת שער חזותי (11%) שקומיטים קודמים
+מראים שהיא שוברת בקלות. לא הוספתי UI לא-נמדד כדי "למלא" את הענף השגוי
+של תנאי.
+
+**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+`pnpm lint` נקי (biome, 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale
+116/116), `pnpm test` **605/605 קבצים, 7217/7229** (12 skipped, זהה),
+`pnpm build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`** (M02-c54/M01-c54
+הועברו לשמירה על תקרת 300 שורות, ותוכן חדש נוסף).
+
 ## M02-c54, M01-c54 (הועברו מ-STATE.md ב-M18-c54, לשמירה על תקרת 300 שורות)
 
 **M02-c54 - DONE (29.09): שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים,

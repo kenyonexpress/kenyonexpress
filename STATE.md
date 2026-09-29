@@ -1,91 +1,70 @@
-RESUME FROM: M01-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c54)
+RESUME FROM: M02-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c55)
 
 ## המשך מ:
 
-**M18-c54 - DONE (29.09): בדיקת אפס-פעילות (idle check) — המחזור לא היה
-אפס-פעילות, אין שיפור מומחש.** המשימה: אם כל פריטי המחזור (c54) לא הפיקו
-שינוי קוד, לכתוב "MAINTENANCE IDLE" ואז לחפש שיפור המרה אחד אמיתי בעמוד
-הבית או המוצר לפי Electro v7. **נמדד ישירות מול `git log 7a57c8049..HEAD`,
-לא הונח:** ארבעה קומיטים ב-c54 כן הפיקו שינוי קוד אמיתי — `0ab5cd9e3`
-(M03, import `withSentryConfig` לא-דפרקייטד ב-`next.config.ts`),
-`3dbacd5cf` (M10, 20 טסטים חדשים ל-`refund-request.ts`/`refund.ts`),
-`1ef1c1b65` (M11, שמונה תיקוני a11y אמיתיים בשלושה רכיבי אדמין),
-`505ba8e52` (M14, תיקון באג `fill`+px `sizes` ב-badge של `HeroSlider.tsx`
-בעמוד הבית). תנאי ה-idle הוא `false` — **לא** נכתב MAINTENANCE IDLE,
-ולפי הניסוח המותנה של המשימה השיפור המומחש רלוונטי רק לענף ה-true (זהה
-לתקדים שנקבע ב-M18-c53, `0bcbdac18`).
+**M01-c55 - BLOCKED (29.09): בדיקת פרודקשן — DNS תקין, פריסת HEAD סורבה
+בפעם החמישית ברציפות, באותה סיבה בדיוק.** המשימה: build+deploy לפרודקשן
+דרך Vercel, ואז `dig`/`curl` על שני הדומיינים.
 
-עמוד הבית ועמוד המוצר נסקרו בכל זאת כדי לוודא שאין החמצה: `git diff
-0bcbdac18..HEAD --stat -- 'src/app/(store)' src/components` מראה **רק
-ארבעה קבצים שונו** מאז M18-c53 — שלושה אדמין-בלבד
-(`ServerDataTable.tsx`, `BarSeries.tsx`, `CohortGrid.tsx`, aria-label
-בלבד) ו-`HeroSlider.tsx` (אותו תיקון srcset מ-M14-c54 למעלה, לא פיצ'ר
-המרה חדש) — **אפס שינוי בעמוד הבית או המוצר שהוא לא כבר תועד**. הבדיקה
-הקודמת (M18-c53) כבר אישרה שדף הבית ודף המוצר נושאים כוכבי דירוג, מחסור
-מלאי חי, "נקנה השבוע", wishlist, שיתוף, related products ותגי הנחה —
-כל תוספת חזותית נוספת דורשת מדידת שער חזותי (11%) שקומיטים קודמים
-מראים שהיא שוברת בקלות. לא הוספתי UI לא-נמדד כדי "למלא" את הענף השגוי
-של תנאי.
+**build מקומי:** `pnpm build` רץ בפורגראונד, `exit 0`, כל המסלולים
+נבנו (כולל `/sitemap/*`, `/supplier/*`, `/wishlist/s/[token]`). HEAD
+תקין ובר-בנייה.
+
+**פריסה:** נוסתה בפועל דרך Vercel MCP `create_deployment`, `gitSource`
+github, `audit/final-audit`@`291bc2d884eb6c727d5d66402152bcac576a7a3a`
+(HEAD), `target=production`, פרויקט `kenyonexpress`
+(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`). התקדמה הפעם עד `BUILDING` (בניגוד
+לסירוב המיידי בניסיונות קודמים) ואז נכשלה: `dpl_FJYf483tkqSNf5pkG9MenghGQF46`,
+`state=ERROR`, `errorCode=BUILD_UTILS_SPAWN_1`,
+`errorMessage="Command \"node scripts/deploy-preflight.mjs && pnpm build\" exited with 1"`.
+**שורש הסיבה נבדק ישירות מול `filter_project_envs` (קריאה בלבד):**
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD` (השמות
+שהקוד קורא בפועל) עדיין חסרים ב-Production; `CARDCOM_MERCHANT_ID`/
+`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY` קיימים אך הקוד לא קורא אותם;
+`ALLOW_INCOMPLETE_ENV` עדיין מוגדר ב-Production. לא בוצע שינוי בסביבת
+Vercel (אסור לפי הכללים). **זו הפעם החמישית ברציפות עם אותו כשל בדיוק**
+(M01-c1, M01-c52, M01-c53, M01-c54, ועכשיו M01-c55). **החלטה שהתקבלה
+לבד:** לפי כלל "goal שנתקע פעמיים — לדלג", הבדיקה התקופתית של DNS/200
+תמשיך בכל מחזור, אבל ניסיון פריסה חוזר דרך Vercel MCP לא ירוץ שוב עד
+שאופיר יוסיף בפועל את שלושת השמות החסרים ויסיר `ALLOW_INCOMPLETE_ENV`
+(סעיף 3 ב-`docs/BACKLOG.md`) — כי כל ניסיון נוסף יחזור לאותה תוצאה
+הנמדדת כבר חמש פעמים, ופעולה חוזרת בלי שינוי תנאי היא לא בדיקה, היא
+בזבוז. פרודקשן **לא נפגע**: עדיין מגיש `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`
+(`a388118f1`, `READY`), אומת עם `list_deployments`. HEAD כעת **105**
+קומיטים לפניו (`git rev-list --count a388118f1..HEAD`, עלה מ-101
+ב-M01-c54).
+
+**DNS ו-curl (נמדד ישירות, לא DNS BLOCKER):**
+`dig +short A kenyonexpress.co.il` -> `216.198.79.65`/`64.29.17.65`,
+`dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
+`ns2.vercel-dns.com`. `dig +short A www.kenyonexpress.co.il` ->
+`216.198.79.1`/`216.198.79.65`. `curl https://kenyonexpress.co.il` ->
+**308** ל-`https://www.kenyonexpress.co.il/` (הפניה תקינה של Vercel, לא
+כשל). `curl https://www.kenyonexpress.co.il` -> **200**, HTML אמיתי
+(`lang="he" dir="rtl"`, `content-security-policy`/`strict-transport-security`
+תקינים, `x-vercel-cache: HIT`). DNS תקין, הבעיה היחידה היא שהתוכן המוגש
+הוא `a388118f1` הישן, לא HEAD.
 
 **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
-`pnpm lint` נקי (biome, 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale
-116/116), `pnpm test` **605/605 קבצים, 7217/7229** (12 skipped, זהה),
-`pnpm build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
-**קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`** (M02-c54/M01-c54
-הועברו לשמירה על תקרת 300 שורות, ותוכן חדש נוסף).
+`pnpm lint` נקי (biome + 12 שערי תוכן, i18n 627/627, locale 116/116),
+`pnpm test` **605/605 קבצים, 7217/7229** (12 skipped, זהה), `pnpm build`
+`exit 0`. אין שינוי קוד. **קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`** (M18-c54 הועבר לשמירה על תקרת 300 שורות).
 
-## M17-c54 (ארכיון)
+## M18-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M17-c54 - DONE (29.09): מעבר קופי ומשפטי בפעם השנייה — אפס ממצא חדש.**
-המשימה: לקרוא כל מחרוזת UI בעברית ודף משפטי, ולתקן שגיאות כתיב, דליפות
-LTR, מילים באנגלית בקופי פונה-לקוח, וקישורים שבורים. **הפריט כבר בוצע
-ב-M17-c53** (`15c97abff`, אותו יום): קריאה מלאה של `messages/he.json`
-(591 שורות), ארבעת מסמכי ה-legal החיים תחת `src/app/(legal)/_content`,
-וכל href/עוגן-hash בפוטר/ניווט מול הראוטינג בפועל — פלוס סוכן נפרד שסרק
-כ-700 מחרוזות ב-`src/app`/`src/components` — ומצא ותיקן שלושה ממצאים
-אמיתיים אז. **המדידה הזו לא הניחה שזה עדיין תקף; נמדד מחדש מה ה-delta
-מאז `15c97abff`:**
+בדיקת אפס-פעילות (idle check): המחזור **לא** היה אפס-פעילות (ארבעה
+קומיטי שינוי-קוד אמיתיים ב-c54), ולכן MAINTENANCE IDLE לא נכתב ושיפור
+המרה מומחש לא חיפש — תנאי ה-idle `false`. עמוד הבית/מוצר נסקרו בכל זאת,
+אפס שינוי לא-מתועד. הועבר ב-M01-c55 לשמירה על תקרת 300 שורות.
 
-- `git diff 15c97abff..HEAD --stat -- src/app src/components`: **רק
-  10 קבצים שונו** (מ-M11-c54, M14-c54), כולם אדמין-בלבד או ה-badge
-  בעמוד הבית — **אפס שינוי בקבצי legal, ב-`messages/he.json`, בפוטר
-  או בניווט**. שער ה-lint מאשר: **i18n עדיין 627/627** (זהה ל-M17-c53),
-  כלומר סט המחרוזות בעברית לא זז כלל.
-- **תשע מחרוזות `aria-label` חדשות נוספו ב-M11-c54** (`analytics`,
-  `analytics/snapshot`, `billing`, `cashback`, `reports`, `search`,
-  `ServerDataTable`, `BarSeries`, `CohortGrid`) — נקראו כולן במלואן
-  (כולל שתי המחרוזות דינמיות שהוזנו ל-`BarSeries`, `title="מכירות
-  לאורך זמן"` ו-`title="הכנסות נטו ליום"`, ול-`CashbackPage`
-  `` `תנועות אחרונות (${rows.length})` ``): עברית תקנית, אפס דליפת
-  LTR, אפס מילה זרה, אפס שגיאת כתיב.
-- **`node -e` שסרק כל `messages/he.json` דרך `JSON.parse`** (לא grep
-  טקסטואלי, שנתן false-positive על שמות מפתח) איתר כל מחרוזת עם אות
-  לטינית: כולן שם מותג (`KenyonExpress`, `קניון EXPRESS`), מונח טכני
-  בלי מקביל עברי מקובל (`SMS`, `JSON`, `CSV`, `https`, `QR`, `Face ID`)
-  או placeholder (`{name}`, `{amount}`) — אף אחת לא "מילה באנגלית
-  בקופי פונה-לקוח" במובן הפגום, וכולן כבר נסקרו ב-M17-c53.
-- **קבצי legal, href פוטר/ניווט**: אפס diff מ-`15c97abff`, ולכן אפס
-  קישור חדש לבדוק — הסריקה המלאה של M17-c53 עדיין מתארת את המצב הנוכחי.
+## M17-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**אפס תיקון קוד נדרש.** שערים: `pnpm type-check` נקי, `pnpm lint` נקי
-(12 שערים, i18n 627/627, locale 116/116, copy-gate נקי), `pnpm test`
-**605/605 קבצים, 7217/7229** (12 skipped, זהה), `pnpm build` `exit 0`.
-**שער חזותי בית הורץ בפורגראונד** על `pnpm start` פעיל על פורט 3311
-(`BUILD_ID=-oYygG_cFwi5nbhuAwF6u`, תואם ל-HEAD) מול הבייסליין הקפוא
-`refs/ke_live_{width}.png`:
-
-| רוחב | תוצאה | סטטוס |
-|---|---|---|
-| 380 | 8.51% | PASS |
-| 768 | 9.02% | PASS |
-| 1440 | 3.95% | PASS |
-
-זהה בדיוק ל-M17-c53/M02-c54 — צפוי, כי אפס שינוי UI. השער כתב ארבע
-שורות ל-`docs/UI-PARITY-REPORT.md` בעצמו.
-
-**קבצים:** `docs/UI-PARITY-REPORT.md` (שורות מדידה), `docs/STATE-ARCHIVE.md`
-(M16-c54 הועבר לשם), `STATE.md` בלבד.
+מעבר קופי ומשפטי בפעם השנייה: אפס ממצא חדש (הפריט כבר בוצע ב-M17-c53,
+`15c97abff`; ה-delta מאז הוא 10 קבצים אדמין-בלבד/badge, i18n עדיין
+627/627). שער חזותי בית PASS בשלושת הרוחבים (8.51/9.02/3.95), זהה
+ל-M17-c53. הועבר ב-M01-c55 לשמירה על תקרת 300 שורות.
 
 ## M16-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
