@@ -1,7 +1,43 @@
-RESUME FROM: M05-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c55)
+RESUME FROM: M06-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c55)
 
 ## המשך מ:
+
+**M05-c55 - DONE (29.09): ביקורת DB — `get_advisors` (security +
+performance), מיגרציה לכל WARN ב-`migrations/pending` בלבד, לעולם לא
+מוחל.** ה-MCP של Supabase עדיין ברשימת "דורש הרשאה" (אין OAuth בסשן
+לא-אינטראקטיבי, כמו ב-0א..0ד ב-`docs/DB-SECURITY-MODEL.md`); אותו מסלול
+חלופי קריאה-בלבד: טוקן ה-CLI מה-keychain (`security find-generic-password
+-s "Supabase CLI" -w`, עטיפת `go-keyring-base64:` ואז פענוח base64 נותנת
+`sbp_...`), שני `GET https://api.supabase.com/v1/projects/
+ixvwfbuvfxxsjiywhbbb/advisors/{security,performance}`, ‏200/200. הטוקן
+וקבצי הפלט הזמניים נמחקו בסוף הפריט, לא נדפסו ולא נשמרו לריפו.
+
+**44 WARN בסך הכול, זהה שדה-שדה למדידה הרביעית (0ד, M05-c54):** אבטחה
+28 ממצאים (4 `rls_enabled_no_policy` INFO, 2
+`anon_security_definer_function_executable` WARN על
+`is_admin`/`is_supplier_member`, 21
+`authenticated_security_definer_function_executable` WARN, 1
+`function_search_path_mutable` WARN על
+`fn_wallet_entries_block_mutation`); ביצועים 197 ממצאים (14
+`multiple_permissive_policies` WARN על אותן 11 טבלאות, 6
+`auth_rls_initplan` WARN על אותן טבלאות, 167 `unused_index` INFO, 9
+`unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute` INFO).
+**אפס WARN חדש, אפס שהפסיק לירות** — ארבעת הקבצים הממתינים
+(`migrations/pending/209_advisor_warnings.sql`,
+`220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql`,
+`246_profiles_mfa_initplan.sql`) עדיין קיימים ולא נערכו, ומכסים את כל
+ה-44 כמו שאומת ארבע פעמים קודם. **לא נדרש קובץ מיגרציה חדש.**
+
+`docs/DB-SECURITY-MODEL.md` עודכן (סעיף חדש 0ה). שערים: `type-check`
+נקי, `lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627), `test`
+605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`, `✓
+Compiled successfully`. אין שינוי UI, אין שער חזותי נדרש. **קבצים
+ששונו: `docs/DB-SECURITY-MODEL.md`, `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M03-c55 הועבר לשמירה על תקרת 300 שורות).
+
+## M04-c55 (ארכיון)
 
 **M04-c55 - DONE (29.09): תחזוקת תלויות — עדכון פטץ' יחיד שהיה בהיקף,
 `pnpm audit` אפס חולשות.** `pnpm audit`: "No known vulnerabilities found".
@@ -28,33 +64,11 @@ update` גם עיצב מחדש את `pnpm.onlyBuiltDependencies` למערך מר
 Compiled successfully`. אין שינוי UI, אין שער חזותי נדרש. **קבצים
 ששונו: `package.json`, `pnpm-lock.yaml`, `STATE.md`.**
 
-## M03-c55 (ארכיון)
+## M03-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M03-c55 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
-`build`.** המשימה: להריץ את ארבעת הפקודות ולתקן כל שגיאה/אזהרה
-שניתן לתקן בלי לשנות התנהגות מוצר.
-
-**נמדד ישירות, כל ארבעת השערים ירוקים כבר, אין מה לתקן:**
-
-- `pnpm type-check`: `tsc --noEmit`, אפס פלט.
-- `pnpm lint`: `biome check` — 2020 קבצים, "No fixes applied" — פלוס
-  12 שערי תוכן (tokens, copy, asset, raw-html, postgrest-or,
-  cache-invalidation, rtl-logical, i18n 627/627, locale-format
-  116/116, input-dir 24/24, docs-index, docs-path-audit) — כולם
-  `clean`/`OK`.
-- `pnpm test`: **605/605 קבצים, 7217/7229** (12 skipped, זהה לכל
-  המחזורים הקודמים).
-- `pnpm build`: `next build` **`✓ Compiled successfully`**, `exit 0`,
-  337 נתיבים. שורות ה-JSON שנרשמו במהלך ה-build (`supabase.rls_denied`
-  על `reviews`, `db.optional_column_missing` על
-  `migrations/pending/242`, `phases.not_applied`/`content_pages.not_applied`
-  על מיגרציות 210/205) הן לוגים תפעוליים של האפליקציה על מיגרציות
-  ממתינות ידועות (חוסמים 3 ו-11 ב"חוסמים פתוחים" למטה, ו-`docs/BACKLOG.md`)
-  — **לא** אזהרות מכלי ה-build עצמו. לתקן אותן דורש להחיל migration, וזה
-  אסור לפי הכללים (SQL רק כקובץ ב-`migrations/pending`, לעולם לא מוחל).
-
-אין שינוי קוד. **קובץ יחיד ששונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`
-— M02-c55 הועבר לשמירה על תקרת 300 שורות).
+שער ירוק — `type-check`/`lint`/`test`/`build`, כל ארבעתם ירוקים כבר,
+אין מה לתקן (605/605 קבצים, 7217/7229, `build` `exit 0`, 337 נתיבים).
+אין שינוי קוד. הועבר ב-M05-c55 לשמירה על תקרת 300 שורות.
 
 ## M02-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
