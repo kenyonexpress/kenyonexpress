@@ -116,6 +116,23 @@ describe('resolvePaymentMoneySchema', () => {
     expect(console.warn).toHaveBeenCalledTimes(1)
   })
 
+  // Two requests can both see `cached === null` and both reach the pre-059
+  // branch before either has finished: nothing awaits between the top-of-
+  // function cache check and the probe. `cached` alone would not stop the
+  // second one from logging too, since it is only written at the very end;
+  // `warned` is set synchronously the moment the first one resolves, so the
+  // second sees it and skips the duplicate log.
+  it('does not double-log when two resolutions race before either caches', async () => {
+    const probe = vi.fn().mockResolvedValue({ error: { code: '42703', message: 'no column' } })
+    const [a, b] = await Promise.all([
+      resolvePaymentMoneySchema(probe),
+      resolvePaymentMoneySchema(probe),
+    ])
+    expect(a).toBe(ILS_SCHEMA)
+    expect(b).toBe(ILS_SCHEMA)
+    expect(console.warn).toHaveBeenCalledTimes(1)
+  })
+
   // A database that is briefly unreachable must not pin the process to the
   // wrong schema for the rest of its life.
   it('does not cache an answer derived from an unrelated error', async () => {

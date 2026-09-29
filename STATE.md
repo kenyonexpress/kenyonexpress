@@ -1,7 +1,43 @@
-RESUME FROM: M10-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c59)
+RESUME FROM: M11-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c59)
 
 ## המשך מ:
+
+**M10-c59 - DONE (30.09): כיסוי טסטים, ה-branch הכי חסר בין ששת המודולים
+הקריטיים.** משימת התור: למצוא את המודול הקריטי עם כיסוי הבדיקות הנמוך
+ביותר מבין `packages/money`, פיצול תשלום, מכונת מצבים של שוברים, מכונת
+מצבים של הזמנות, החזרים ועוזרי RLS, ולהוסיף טסטים עד שהענפים מכוסים.
+נמדד עם `vitest run --coverage` (include מורחב זמנית ב-CLI, לא בקובץ
+מחויב) על כל שש הקטגוריות: `src/lib/money.ts`, `src/lib/checkout/split.ts`,
+`src/server/domain/vouchers/state-machine.ts`,
+`src/server/domain/orders/state-machine.ts`, ליבת ההחזרים
+(`src/server/domain/orders/refund.ts`, `refund-request.ts`,
+`src/server/payments/refund-record.ts`, `refund-wallet.ts`) ו-`src/lib/supabase/rls-report-fetch.ts`
+(עוזר ה-RLS היחיד עם קוד ממשי — שאר קבצי ה-`rls-*` הם טסטים סטטיים מול
+קובצי SQL, בלי מקור משלהם) — **כולם 100% על ארבעת המדדים.**
+הורחב החיפוש לשכבת הפעולות של ההחזרים שמשתמשת בליבה
+(`src/server/actions/refund-requests.ts` 98% ענפים,
+`src/server/actions/payments/refund.ts` 100%,
+`src/lib/payments/refund-destination.ts` 100%) ונמצא
+`src/lib/payments/payment-money-columns.ts` (עוזר סכימת הכסף שמייבא
+`refund.ts` עצמו, חלק ישיר ממסלול הכסף של החזר) על **95.23% ענפים**,
+הנמוך ביותר שנמדד. שורה 143 (`if (!warned)`) לא הייתה מכוסה: לא קוד מת
+— `warned` שונה מ-`cached` בכך שהוא נכתב סינכרונית לפני שה-probe הראשון
+מסתיים, ומונע לוג כפול כששתי קריאות חופפות (race, למשל cold start עם
+כמה בקשות בו-זמנית) שתיהן רואות `cached === null` ומגיעות ל-branch
+לפני ששתיהן מסתיימות. נוסף טסט יחיד ל-`payment-money-columns.test.ts`:
+שתי קריאות ל-`resolvePaymentMoneySchema` דרך `Promise.all` עם אותו probe
+כושל (42703), מוודא ששתיהן מחזירות `ILS_SCHEMA` ו-`console.warn` נקרא
+פעם אחת בלבד. **הריצה עם coverage ל-`payment-money-columns.ts` בלבד
+מאשרת 100/100/100/100 אחרי התיקון.** אין שינוי קוד ייצור — קובץ טסט
+יחיד שונה. שערים הורצו במלואם: `type-check` נקי, `lint` נקי (כל השערים
+ירוקים, זהה ל-M09-c59), `test` 608/608 קבצים, **7274/7286** (עלה ב-1
+מהטסט החדש, 12 skipped, 60.40s), `build`
+(`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`)
+`exit 0`. אין שינוי UI, אין שער חזותי נדרש (`scripts/compare.mjs` לא
+רלוונטי לפריט הזה).
+
+## M09-c59
 
 **M09-c59 - STATE CLEAN (30.09): אפס פריט בר-ביצוע לסוכן קוד.** משימת
 התור: "State cleanup: take the single highest-impact open item listed
