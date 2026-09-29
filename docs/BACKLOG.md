@@ -17,6 +17,10 @@ Nothing here is an action an agent may take alone (Vercel env, DNS, secret
 rotation, a value only Ofir has, or a decision the ledger says is an
 operator's, not the agent's — see `CLAUDE.md`'s stop conditions).
 
+**Re-checked 2026-09-29 (M15-c52) against `git log -20`:** still 15 items,
+same order, no duplicate, no new item. Only item 4's commit count changed
+(47 -> 66, git-only, production not re-probed).
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52).** ה-NS כבר
@@ -36,8 +40,9 @@ operator's, not the agent's — see `CLAUDE.md`'s stop conditions).
    `deploy-preflight` מסרב לכל build. מקור: STATE.md חוסם 2,
    LAUNCH-READINESS.md שורה חוסמת 4.
 4. **אישור פריסת HEAD לפרודקשן**, אחרי סעיף 3. פרודקשן עדיין מגיש
-   `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09 וכעת (29.09, מדידה מקומית
-   בלבד — לא נבדק מול הפריסה החיה בפריט הזה) 47 קומיטים מאחורי HEAD.
+   `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
+   המוקדם (M15-c51) וכעת (29.09, M15-c52, מדידה מקומית בלבד — לא נבדק מול
+   הפריסה החיה בפריט הזה) **66** קומיטים מאחורי HEAD.
    `POST /v13/deployments` עם `gitSource.sha`, `target=production`, לפי
    `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2, LAUNCH-READINESS.md שורה
    חוסמת 4.

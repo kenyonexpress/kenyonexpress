@@ -2,6 +2,59 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c52 - DONE (29.09): ביצועים: bundle, פלט צנרת התמונות, תגיות ISR, כותרות cache. ממצא אחד תוקן (thumbnail srcset), אין רגרסיה בשאר השלושה
+
+**1. גודל bundle: אין רגרסיה, שינוי זניח.** מול הבייסליין הכתוב ב-M14-c51
+(`fae38f9f0`, `scripts/bundle-report.mjs` על build טרי, `pnpm start` על
+3512): בית 341.2kB -> 341.7kB gzip, קופה 344.9kB -> 345.4kB gzip, סה"כ
+365.9kB -> 366.4kB על אותם 27 chunks. ההפרש (כ-0.5kB) תואם את התוספת של
+`FooterNewsletterForm` ב-M18-c51 (רכיב חדש בפוטר, מרונדר בכל דף) ולא נדרש
+תיקון: מתחת לרעש.
+
+**2. פלט צנרת התמונות: ממצא ותיקון.** `src/components/storefront/
+ProductGallery.tsx` (תמונות ממוזערות 64x64px מתחת לתמונה הראשית בדף מוצר)
+השתמש ב-`fill` עם `sizes="64px"`, אותו דפוס שתוקן ב-`CategoryStrip.tsx`
+ב-M14-c51: ערך px גולמי לא נכנס ל-regex `getWidths` שמזהה רק יחידת `vw`,
+כך שהרשימה המלאה `imageSizes`+`deviceSizes` יוצאת: **17 מועמדים, 16w עד
+3840w, לתמונה ש-CSS (`product-page.css:175`) מציב במסגרת 64x64px קבועה
+(`position:relative; overflow:hidden`)**. לא נתפס ב-M14-c51 כי הבדיקה שם
+הסתכלה על HTML הבית, לא דף המוצר. תוקן ל-`width={64} height={64}` (בלי
+`fill`), שמפעיל את ה-branch הקומפקטי 1x/2x: **2 מועמדים**. נמדד על מוצר
+עם 4 תמונות גלריה (`/product/6253`): HTML גולמי 159,377 -> 155,207 בייט
+(-4,170B, -2.6%).
+
+**3. תגיות ISR: אין רגרסיה.** `cache-invalidation-gate` נקי (16/16). אין
+שינוי ב-`lib/homepage/{deals,rails}.ts`, `category-page.ts`,
+`product-detail.ts` מאז M14-c51.
+
+**4. כותרות cache: אין רגרסיה.** `/images/*` עדיין `public, max-age=0,
+s-maxage=86400, stale-while-revalidate=604800`. דפי הבית/מוצר עדיין
+`private, no-cache, no-store, max-age=0, must-revalidate` עם
+`x-nextjs-prerender:1`, זהה בדיוק למצב המתועד ב-M14-c51 (Origin-Only
+serving תחת `next start`, צפוי).
+
+**שער השוואה חזותי, דף המוצר (הדף שנגעתי בו), בחזית, `barbecue-2` מול
+`refs/electro_product_{width}.png`:**
+
+| רוחב | both-painted | סטטוס |
+|---|---|---|
+| 380 | 5.61% | PASS |
+| 768 | 4.92% | PASS |
+| 1440 | 2.99% | PASS |
+
+זהה עד כדי רעש למדידה ההיסטורית (5.65/4.95/2.92, M02-c52). הריצה מדפיסה
+אזהרת `HEIGHT RATIO ~0.3x` (`scripts/diff-bands.mjs`): הדף שלנו מסתיים
+ב-~3,100-3,400px ומול reference ה-Electro באורך 7,653-11,181px, פער מבני
+ידוע ומתועד (הדגמת Electro נושאת תוכן שלנו לא בונה, "reference blank"
+ברוב הפער) ולא רגרסיה חדשה: מספר ה-both-painted (השער המחייב) תואם בדיוק
+את הבייסליין. הבית לא נגעתי בו, לא נמדד.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test`
+**604/7188** (זהה), `pnpm build` נקי.
+
+**קבצים:** `src/components/storefront/ProductGallery.tsx`,
+`docs/UI-PARITY-REPORT.md` (שורות מדידה), `STATE.md`.
+
 ## M13-c52 - DONE (29.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy/rate-limit על login+checkout+redeem נמדדו מחדש מול build אמיתי, אפס דריפט
 
 נמדד ישירות: אפס שינוי ב-`next.config.ts`, `src/lib/security/frame-policy.ts`

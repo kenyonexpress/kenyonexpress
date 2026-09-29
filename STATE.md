@@ -1,69 +1,60 @@
-RESUME FROM: M15-c52
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c52)
+RESUME FROM: M16-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c52)
 
 ## המשך מ:
 
-M14-c52 בדק bundle/תמונות/ISR/cache headers. נמצא ותוקן ממצא אמיתי אחד:
-`ProductGallery.tsx` (תמונות ממוזערות בדף מוצר) נשא את אותו באג שתוקן
-ב-`CategoryStrip.tsx` ב-M14-c51 (`fill` עם `sizes` ב-px גורם ל-srcset מלא
-של 17 מועמדים במקום 2), לא נתפס אז כי הוא קובץ אחר. תוקן. שער השוואה חזותי
-על דף המוצר (הדף שנגעתי בו) רץ בחזית: 380/768/1440 כולם PASS, זהה
-לבייסליין ההיסטורי. סשן הבא ממשיך את סבב ה-c52: M15-c52 (סנכרון docs),
-M16-c52 (תברואת ריפו) וכו', עד שנתקל בפריט שדורש תיקון בפועל או ש-אופיר
-טיפל בסעיף מ-`docs/BACKLOG.md`.
+M15-c52 רענן את שלושת קבצי התיעוד (`STATE.md`, `docs/LAUNCH-READINESS.md`,
+`docs/BACKLOG.md`) מול `git log` וראיית קוד טרייה: מספרי הקומיטים שהתיישנו
+מאז M15-c51 (25.09/29.09 מוקדם יותר) עודכנו, ורשימת "ידני לאופיר" נבדקה
+ונשארה רשימה יחידה בסדר קריטיות בלי כפילויות. אין שינוי קוד, אין שינוי UI,
+לא נדרש שער השוואה חזותי. סשן הבא ממשיך את סבב ה-c52: M16-c52 (תברואת
+ריפו) וכו', עד שנתקל בפריט שדורש תיקון בפועל או ש-אופיר טיפל בסעיף מ-
+`docs/BACKLOG.md`.
 
-## M14-c52 - DONE (29.09): ביצועים: bundle, פלט צנרת התמונות, תגיות ISR, כותרות cache. ממצא אחד תוקן (thumbnail srcset), אין רגרסיה בשאר השלושה
+## M15-c52 - DONE (29.09): סנכרון תיעוד — רענון מספרי git ב-STATE.md, docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md, רשימת "ידני לאופיר" אחת נבדקה מחדש
 
-**1. גודל bundle: אין רגרסיה, שינוי זניח.** מול הבייסליין הכתוב ב-M14-c51
-(`fae38f9f0`, `scripts/bundle-report.mjs` על build טרי, `pnpm start` על
-3512): בית 341.2kB -> 341.7kB gzip, קופה 344.9kB -> 345.4kB gzip, סה"כ
-365.9kB -> 366.4kB על אותם 27 chunks. ההפרש (כ-0.5kB) תואם את התוספת של
-`FooterNewsletterForm` ב-M18-c51 (רכיב חדש בפוטר, מרונדר בכל דף) ולא נדרש
-תיקון: מתחת לרעש.
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם לפני שינוי. שלושת הקבצים כבר החזיקו רשימה יחידה ("ידני
+לאופיר", ממוזגת ב-M15-c51) — לא נמצאה כפילות או פריט חדש שדורש הוספה,
+רק מספרים שהתיישנו מאז שנכתבו.
 
-**2. פלט צנרת התמונות: ממצא ותיקון.** `src/components/storefront/
-ProductGallery.tsx` (תמונות ממוזערות 64x64px מתחת לתמונה הראשית בדף מוצר)
-השתמש ב-`fill` עם `sizes="64px"`, אותו דפוס שתוקן ב-`CategoryStrip.tsx`
-ב-M14-c51: ערך px גולמי לא נכנס ל-regex `getWidths` שמזהה רק יחידת `vw`,
-כך שהרשימה המלאה `imageSizes`+`deviceSizes` יוצאת: **17 מועמדים, 16w עד
-3840w, לתמונה ש-CSS (`product-page.css:175`) מציב במסגרת 64x64px קבועה
-(`position:relative; overflow:hidden`)**. לא נתפס ב-M14-c51 כי הבדיקה שם
-הסתכלה על HTML הבית, לא דף המוצר. תוקן ל-`width={64} height={64}` (בלי
-`fill`), שמפעיל את ה-branch הקומפקטי 1x/2x: **2 מועמדים**. נמדד על מוצר
-עם 4 תמונות גלריה (`/product/6253`): HTML גולמי 159,377 -> 155,207 בייט
-(-4,170B, -2.6%).
+**מה השתנה, נמדד מ-`git`, לא מפרודקשן (אין הרשאה לגעת ב-DNS/Vercel/פריסה
+בפריט הזה):**
 
-**3. תגיות ISR: אין רגרסיה.** `cache-invalidation-gate` נקי (16/16). אין
-שינוי ב-`lib/homepage/{deals,rails}.ts`, `category-page.ts`,
-`product-detail.ts` מאז M14-c51.
+- `git rev-list --count a388118f1..HEAD` (מספר הקומיטים שהבנייה החיה
+  הידועה אחרונה מאחורי, `a388118f1`) עלה מ-**47** (M15-c51, 29.09 מוקדם)
+  ל-**66** היום, אחרי ארבע-עשרה קומיטים של סבב ה-c52.
+- `git rev-list --count origin/main..HEAD` עלה מ-**421** ל-**440**;
+  `git rev-list --count HEAD..origin/main` (autopilot הייחודי ל-`main`)
+  נשאר **109**, ללא שינוי.
+- `pnpm test` עלה מ-604/7182 (המספר שהיה כתוב ב-`docs/LAUNCH-READINESS.md`,
+  ישן מ-M14-c51) ל-**604/7188** (שבעת הטסטים שהוספו ב-M10-c52), התואם כבר
+  את מה ש-`STATE.md` רשם.
 
-**4. כותרות cache: אין רגרסיה.** `/images/*` עדיין `public, max-age=0,
-s-maxage=86400, stale-while-revalidate=604800`. דפי הבית/מוצר עדיין
-`private, no-cache, no-store, max-age=0, must-revalidate` עם
-`x-nextjs-prerender:1`, זהה בדיוק למצב המתועד ב-M14-c51 (Origin-Only
-serving תחת `next start`, צפוי).
+**תוקן בפועל:** שורת חוסם 4 וטבלת "Green" ב-`docs/LAUNCH-READINESS.md`
+(מספר הקומיטים, ספירת הטסטים, פער הענפים), וסעיף 4 ב-`docs/BACKLOG.md`
+(אותו מספר קומיטים). `STATE.md`'s "חוסמים פתוחים" כבר לא נקב במספר קומיט
+ספציפי (רק בשם ה-commit `a388118f1`), כך שלא נדרש שם תיקון מספרי.
 
-**שער השוואה חזותי, דף המוצר (הדף שנגעתי בו), בחזית, `barbecue-2` מול
-`refs/electro_product_{width}.png`:**
+**מה לא השתנה, ואומת שלא השתנה:** כל שמונה שורות החסימה ב-
+`docs/LAUNCH-READINESS.md` וכל 15 הסעיפים ב-`docs/BACKLOG.md` — DNS,
+mock Cardcom, cron 401, המיגרציות הממתינות (17 קבצים), 25 שורות הקטלוג,
+`SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, R2, `cron-jobs.json` — נשארים
+פתוחים באותה סיבה, אין אירוע ב-`git log -20` שנוגע בהם.
 
-| רוחב | both-painted | סטטוס |
-|---|---|---|
-| 380 | 5.61% | PASS |
-| 768 | 4.92% | PASS |
-| 1440 | 2.99% | PASS |
+**שערים (הרצה מלאה, ללא שינוי קוד):** `pnpm type-check` נקי; `pnpm lint`
+נקי (12 שערים, i18n 627/627); `pnpm test` **604 קבצים / 7188 עברו / 12
+דולגו**; `pnpm build` ירוק. אין שינוי UI, לא נדרש שער השוואה חזותי.
 
-זהה עד כדי רעש למדידה ההיסטורית (5.65/4.95/2.92, M02-c52). הריצה מדפיסה
-אזהרת `HEIGHT RATIO ~0.3x` (`scripts/diff-bands.mjs`): הדף שלנו מסתיים
-ב-~3,100-3,400px ומול reference ה-Electro באורך 7,653-11,181px, פער מבני
-ידוע ומתועד (הדגמת Electro נושאת תוכן שלנו לא בונה, "reference blank"
-ברוב הפער) ולא רגרסיה חדשה: מספר ה-both-painted (השער המחייב) תואם בדיוק
-את הבייסליין. הבית לא נגעתי בו, לא נמדד.
+**קבצים:** `STATE.md`, `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
+`docs/STATE-ARCHIVE.md` (ארכוב הרשומה המלאה של M14-c52).
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test`
-**604/7188** (זהה), `pnpm build` נקי.
+## M14-c52 - DONE (29.09): פירוט מלא בארכיון
 
-**קבצים:** `src/components/storefront/ProductGallery.tsx`,
-`docs/UI-PARITY-REPORT.md` (שורות מדידה), `STATE.md`.
+ביצועים: bundle ללא רגרסיה (0.5kB, רעש); `ProductGallery.tsx` תוקן (אותו
+באג `fill`+`sizes` ב-px שתוקן ב-`CategoryStrip.tsx` ב-M14-c51, HTML מוצר
+-2.6%); ISR וכותרות cache ללא רגרסיה. שער מוצר בחזית 5.61/4.92/2.99 PASS,
+זהה לבייסליין. אין רגרסיה בשאר השלושה.
 
 ## M13-c52 - DONE (29.09): פירוט מלא בארכיון
 
@@ -224,6 +215,7 @@ M12-c51: SEO, 261 בדיקות, אפס drift.
 | M12-c52 | DONE (29.09) | הרשומה למעלה. SEO נמדד מחדש מול build אמיתי: robots.txt/sitemap.xml (46 מוצרים)/canonical/og/JSON-LD Product+Offer+BreadcrumbList על דף מוצר והבית, כולם תקינים. 180 טסטי SEO ייעודיים ירוקים, 604/7188 זהה. אין שינוי קוד. |
 | M13-c52 | DONE (29.09) | הארכיון. CSP/HSTS/X-Frame-Options/Referrer-Policy נמדדו מחדש ב-`curl` על חמישה נתיבים כולל חריג `/checkout/frame-return`; rate-limit על login/checkout/redeem מכוסה בטסטים ירוקים. Upstash לא מוגדר מקומית, Postgres fallback פעיל. אין שינוי קוד. |
 | M14-c52 | DONE (29.09) | הרשומה למעלה. bundle: אין רגרסיה (341.2->341.7kB בית, 344.9->345.4kB קופה, רעש). תמונות: `ProductGallery.tsx` נשא את אותו באג `fill`+px `sizes` שתוקן ב-`CategoryStrip.tsx` ב-M14-c51, לא נתפס אז; תוקן ל-`width`/`height`, HTML מוצר -2.6%. ISR ו-cache headers: אין רגרסיה. שער מוצר בחזית: 5.61/4.92/2.99 PASS, זהה לבייסליין. |
+| M15-c52 | DONE (29.09) | הרשומה למעלה. סנכרון תיעוד: מספר הקומיטים שפרודקשן מאחורי HEAD עודכן 47->66, פער `origin/main` עודכן 421->440 (109 ל-פנים ללא שינוי), ספירת טסטים ב-`docs/LAUNCH-READINESS.md` עודכנה ל-604/7188. אין כפילות או פריט חדש ברשימת "ידני לאופיר" (15 סעיפים, ללא שינוי תוכני). אין שינוי קוד. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
