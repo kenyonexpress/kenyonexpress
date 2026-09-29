@@ -174,6 +174,19 @@ describe('a status that does not move is always legal', () => {
   }
 })
 
+describe('an origin the table has no row for', () => {
+  it('is illegal, not a crash, for every guarded column', () => {
+    // `from` is a plain string, not a literal type, so nothing stops a caller
+    // (or a row written by code this table has not caught up with yet) from
+    // passing a status these four tables have never heard of. The lookup
+    // must fall back to "no rule" and refuse the move, not throw on an
+    // undefined index.
+    for (const column of GUARDED_COLUMNS) {
+      expect(isLegalTransition(column, 'not_a_real_status', 'paid')).toBe(false)
+    }
+  })
+})
+
 describe('the moves the previous guard got wrong', () => {
   // Each of these is a bug that version would have shipped to production.
 
