@@ -2,6 +2,67 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c55, M05-c55 (הועברו מ-STATE.md ב-M06-c55, לשמירה על תקרת 300 שורות)
+
+**M05-c55 - DONE (29.09): ביקורת DB — `get_advisors` (security +
+performance), מיגרציה לכל WARN ב-`migrations/pending` בלבד, לעולם לא
+מוחל.** ה-MCP של Supabase עדיין ברשימת "דורש הרשאה" (אין OAuth בסשן
+לא-אינטראקטיבי, כמו ב-0א..0ד ב-`docs/DB-SECURITY-MODEL.md`); אותו מסלול
+חלופי קריאה-בלבד: טוקן ה-CLI מה-keychain (`security find-generic-password
+-s "Supabase CLI" -w`, עטיפת `go-keyring-base64:` ואז פענוח base64 נותנת
+`sbp_...`), שני `GET https://api.supabase.com/v1/projects/
+ixvwfbuvfxxsjiywhbbb/advisors/{security,performance}`, ‏200/200. הטוקן
+וקבצי הפלט הזמניים נמחקו בסוף הפריט, לא נדפסו ולא נשמרו לריפו.
+
+**44 WARN בסך הכול, זהה שדה-שדה למדידה הרביעית (0ד, M05-c54):** אבטחה
+28 ממצאים (4 `rls_enabled_no_policy` INFO, 2
+`anon_security_definer_function_executable` WARN על
+`is_admin`/`is_supplier_member`, 21
+`authenticated_security_definer_function_executable` WARN, 1
+`function_search_path_mutable` WARN על
+`fn_wallet_entries_block_mutation`); ביצועים 197 ממצאים (14
+`multiple_permissive_policies` WARN על אותן 11 טבלאות, 6
+`auth_rls_initplan` WARN על אותן טבלאות, 167 `unused_index` INFO, 9
+`unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute` INFO).
+**אפס WARN חדש, אפס שהפסיק לירות** — ארבעת הקבצים הממתינים
+(`migrations/pending/209_advisor_warnings.sql`,
+`220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql`,
+`246_profiles_mfa_initplan.sql`) עדיין קיימים ולא נערכו, ומכסים את כל
+ה-44 כמו שאומת ארבע פעמים קודם. **לא נדרש קובץ מיגרציה חדש.**
+
+`docs/DB-SECURITY-MODEL.md` עודכן (סעיף חדש 0ה). שערים: `type-check`
+נקי, `lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627), `test`
+605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`, `✓
+Compiled successfully`. אין שינוי UI, אין שער חזותי נדרש. **קבצים
+ששונו: `docs/DB-SECURITY-MODEL.md`, `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M03-c55 הועבר לשמירה על תקרת 300 שורות).
+
+**M04-c55 - DONE (29.09): תחזוקת תלויות — עדכון פטץ' יחיד שהיה בהיקף,
+`pnpm audit` אפס חולשות.** `pnpm audit`: "No known vulnerabilities found".
+`pnpm outdated --format json`: 17 חבילות מוצגות. עדכון קודם (M04-c54) קבע
+ש-16 מתוכן ב-`wanted === current` (אין מה לעדכן בתוך טווח ה-caret) —
+המדידה הזו חוזרת עליו ומאשרת: 14 עדיין major אמיתית (`@biomejs/biome`,
+`typescript`, `zod`, `@sentry/nextjs`/`node`, `@vitejs/plugin-react`,
+`@vitest/coverage-v8`+`vitest`, `jsdom`, `lint-staged`, `tailwind-merge`,
+`@hookform/resolvers`, `@testing-library/jest-dom`, `@types/node`), ושתיים
+עדיין 0.x עם קפיצת ספרה שנייה מחוץ לטווח ה-caret (`@anthropic-ai/sdk`,
+`@supabase/ssr`) — לפי התקדים מ-M04-c53, לא בהיקף.
+
+**החדש הפעם: `posthog-js` ‏1.434.15→1.434.16 היה בתוך טווח ה-caret
+(`^1.434.15`) ופספס אתמול.** `pnpm update` (בלי `--latest`, מכבד את
+הטווח המוצהר) העלה אותו + את התלות הטרנזיטיבית `browserslist`
+4.29.1→4.29.2 (מ-`@babel/preset-env`), `pnpm-lock.yaml` בלבד. `pnpm
+update` גם עיצב מחדש את `pnpm.onlyBuiltDependencies` למערך מרובה-שורות
+ב-`package.json` — שינוי פורמט לא-קשור, הוחזר ידנית לשורה אחת כדי
+לשמור על diff מינימלי. `pnpm audit` נשאר אפס אחרי העדכון.
+
+שערים על ה-HEAD אחרי העדכון: `type-check` נקי, `lint` נקי (biome 2020
+קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605
+קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`, 337 נתיבים, `✓
+Compiled successfully`. אין שינוי UI, אין שער חזותי נדרש. **קבצים
+ששונו: `package.json`, `pnpm-lock.yaml`, `STATE.md`.**
+
 ## M03-c55 (הועבר מ-STATE.md ב-M05-c55, לשמירה על תקרת 300 שורות)
 
 **M03-c55 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
