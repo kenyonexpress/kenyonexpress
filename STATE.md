@@ -1,30 +1,56 @@
-RESUME FROM: M16-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c56)
+RESUME FROM: M17-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c56)
 
 ## המשך מ:
 
-**M15-c56 - DONE (29.09): סנכרון תיעוד — `STATE.md`/`docs/
-LAUNCH-READINESS.md`/`docs/BACKLOG.md` מול `git log` ומדידה ישירה,
-אפס פריט חדש.** המשימה: לרענן את טבלת הסטטוס בשלושת הקבצים מול
-`git log` וראיית קוד, לשמור על רשימה אחת ממוינת לפי קריטיות בלי
-כפילות. אותו דפוס אימות מחזורי כמו M15-c55 (`09ad4a4e5`). **נבדק מה
-השתנה מאז**: 14 קומיטים (M01-c56..M14-c56), מהם שניים בלבד נוגעים
-בקוד/תלויות — `fa6188c56` (פטץ' `posthog-js`, M04-c56) ו-`20e0adc61`
-(טסטים ל-`orders/status-transitions.ts`, M10-c56) — **אף אחד לא נוגע
-בשורת חסימה**; שאר השנים עשר הם תיעוד/אימות בלבד. **נמדד ישירות**:
-`git rev-list --count a388118f1..HEAD` = **136** (עלה מ-122 ב-M01-c56,
-git בלבד, פרודקשן לא נבדק מחדש בפריט הזה); `git rev-list --count
-origin/main..HEAD` = **510** (עלה מ-492), `HEAD..origin/main` = 109
-(ללא שינוי, autopilot בלבד). `migrations/pending/` מכיל את כל 18
-הקבצים שסעיף 5 ב-`docs/BACKLOG.md` דורש (204, 209, 218, 220, 223,
-224, 234-236, 239-247), אפס קובץ חדש. `supabase/catalogue-known-
-issues.json` עדיין 26 רשומות. **הרשימה ב-`docs/BACKLOG.md` עדיין 15
-סעיפים, אותו סדר, אפס כפילות, אפס פריט חדש.** שערים נמדדו ישירות
-מחדש (לא רק צוטטו): `type-check` נקי, `lint` נקי (2023 קבצים, 12
-שערים, i18n 627/627, locale 116/116, docs-index 282 מסמכים,
-docs-path-audit 152 ידועים — זהה ל-M15-c55), `test` 608/608 קבצים,
-7242/7254 (12 skipped, זהה ל-M14-c56), `build` `exit 0`. אין שער חזותי
-נדרש (אין שינוי UI/קוד, שלושת הקבצים ששונו הם תיעוד בלבד).
+**M16-c56 - DONE (29.09): תברואת ריפו בפעם השישית, אפס דריפט
+מ-M16-c55.** המשימה: לוודא `git status` נקי, שכל ענף מקומי דחוף, ולרשום
+PR פתוחים וענפים ישנים ב-`STATE.md`. אותו דפוס אימות מחזורי כמו M16-c55
+(`dad53d668`). **נמדד**: `git status` נקי, `audit/final-audit` תואם
+ל-`origin/audit/final-audit`. **43 ענפים מקומיים, זהה בדיוק ל-M16-c55**
+(אפס ענף חדש, אפס ענף שנעלם). **נבדק ענף-ענף שכל אחד מהם דחוף**, לא רק
+נספר: 32 עוקבים אחרי מקבילם ב-remote עם 0 קומיטים קדימה; 4 ענפי
+`arch/*` (`account-area`, `checkout-cardcom-verification`,
+`notifications-v2`, `wp-migration`) עוקבים בטעות אחרי `origin/main`
+במקום אחרי הענף שלהם, אך ה-SHA שלהם זהה ל-`origin/arch/*` המתאים; 8
+ענפים (`arch/seed-data`, `feat/auth-hardening`, `feat/monitoring-sentry`,
+`feat/notifications-full`, `feat/performance-seo`,
+`feat/search-meilisearch`, `release/v1.0`, `release/v1.2`) חסרי הגדרת
+upstream מקומית אך ה-SHA שלהם זהה בדיוק לענף remote באותו שם; 6 ענפים
+(`pr36`, `release/v1.1`, `wip/refund-record-rebase-head`,
+`chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`)
+אין להם ענף remote באותו שם כלל, אך ראש הענף שלהם מוכל ב-10 עד 20 ענפי
+remote אחרים (`git branch -r --contains`). **אפס קומיט ייחודי לא-דחוף
+נמצא בשום ענף מקומי.** `main` המקומי נשאר הסטייה הידועה (חוסם 13
+למטה, ללא שינוי). **24 PR פתוחים** (`gh pr list --state open`, זהה
+בדיוק ל-M16-c55), **116 ענפי remote** (זהה בדיוק ל-M16-c55). **11 מ-43
+הענפים המקומיים כבר ממוזגים לתוך HEAD** (`git merge-base --is-ancestor`
+מול `audit/final-audit`) והם מועמדים לניקוי, לא נמחקו (הכלל אוסר מחיקת
+ענפים). **28 ענפים ישנים** (קומיט אחרון לפני 15.09, 14+ יום, ולא
+ממוזגים ל-HEAD): `save/ke-visual-work`, `arch/account-area`,
+`arch/checkout-cardcom-verification`, `arch/notifications-v2`,
+`arch/seed-data`, `arch/wp-migration`, `docs/final-pack`,
+`arch/docs-batch-2`, `arch/docs-queue`, `feat/e2e-quality`,
+`feat/auth-model`, `feat/db-hardening-v2`, `feat/product-type`,
+`merge/supplier-and-arch-night`, `feat/auth-hardening`,
+`feat/checkout-e2e`, `feat/monitoring-sentry`, `feat/notifications-full`,
+`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`,
+`feat/rate-limit-layer`, `docs/final-pass`, `worktree-ke-fetch-timeout`,
+`worktree-mega-63-72`, `closeout/v1-final`, `feat/coupon-qr`,
+`worktree-order-state-machine` (שלושת ה-`worktree-*` והאחרונים תפוסים
+בעצי עבודה חיים כרגע, לא באמת נטושים). לא נמזג ולא נמחק דבר. שערים
+נמדדו מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, זהה ל-M15-c56),
+`test` 608/608 קבצים, 7242/7254 (זהה), `build` `exit 0`. אין שער חזותי
+נדרש (אין שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md` בלבד).
+
+## M15-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+סנכרון תיעוד — `STATE.md`/`docs/LAUNCH-READINESS.md`/`docs/BACKLOG.md`
+מול `git log` ומדידה ישירה, אפס פריט חדש. 14 קומיטים נבדקו
+(M01-c56..M14-c56), שניים נוגעים בקוד (`posthog-js` פטץ',
+`orders/status-transitions.ts` טסטים), אף אחד לא בשורת חסימה.
+`type-check`/`lint`/`test` (608/608, 7242/7254)/`build` ירוקים. הועבר
+ב-M16-c56 לשמירה על תקרת 300 שורות.
 
 ## M14-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

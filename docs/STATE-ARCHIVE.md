@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c56 (הועבר מ-STATE.md ב-M16-c56, לשמירה על תקרת 300 שורות)
+
+**M15-c56 - DONE (29.09): סנכרון תיעוד — `STATE.md`/`docs/
+LAUNCH-READINESS.md`/`docs/BACKLOG.md` מול `git log` ומדידה ישירה,
+אפס פריט חדש.** המשימה: לרענן את טבלת הסטטוס בשלושת הקבצים מול
+`git log` וראיית קוד, לשמור על רשימה אחת ממוינת לפי קריטיות בלי
+כפילות. אותו דפוס אימות מחזורי כמו M15-c55 (`09ad4a4e5`). **נבדק מה
+השתנה מאז**: 14 קומיטים (M01-c56..M14-c56), מהם שניים בלבד נוגעים
+בקוד/תלויות — `fa6188c56` (פטץ' `posthog-js`, M04-c56) ו-`20e0adc61`
+(טסטים ל-`orders/status-transitions.ts`, M10-c56) — **אף אחד לא נוגע
+בשורת חסימה**; שאר השנים עשר הם תיעוד/אימות בלבד. **נמדד ישירות**:
+`git rev-list --count a388118f1..HEAD` = **136** (עלה מ-122 ב-M01-c56,
+git בלבד, פרודקשן לא נבדק מחדש בפריט הזה); `git rev-list --count
+origin/main..HEAD` = **510** (עלה מ-492), `HEAD..origin/main` = 109
+(ללא שינוי, autopilot בלבד). `migrations/pending/` מכיל את כל 18
+הקבצים שסעיף 5 ב-`docs/BACKLOG.md` דורש (204, 209, 218, 220, 223,
+224, 234-236, 239-247), אפס קובץ חדש. `supabase/catalogue-known-
+issues.json` עדיין 26 רשומות. **הרשימה ב-`docs/BACKLOG.md` עדיין 15
+סעיפים, אותו סדר, אפס כפילות, אפס פריט חדש.** שערים נמדדו ישירות
+מחדש (לא רק צוטטו): `type-check` נקי, `lint` נקי (2023 קבצים, 12
+שערים, i18n 627/627, locale 116/116, docs-index 282 מסמכים,
+docs-path-audit 152 ידועים — זהה ל-M15-c55), `test` 608/608 קבצים,
+7242/7254 (12 skipped, זהה ל-M14-c56), `build` `exit 0`. אין שער חזותי
+נדרש (אין שינוי UI/קוד, שלושת הקבצים ששונו הם תיעוד בלבד).
+
 ## M14-c56 (הועבר מ-STATE.md ב-M15-c56, לשמירה על תקרת 300 שורות)
 
 **M14-c56 - DONE (29.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
