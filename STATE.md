@@ -1,31 +1,44 @@
-RESUME FROM: M10-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c57)
+RESUME FROM: M11-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c57)
 
 ## המשך מ:
 
-**M09-c57 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup:
-take the single highest-impact open item listed in STATE.md that a code
-agent can complete without Ofir." נקראו `CLAUDE.md`, `STATE.md` (289
-שורות, מתחת לתקרה, אין צורך בארכוב), `docs/BACKLOG.md` (176 שורות, 15
-פריטים) ו-`git log -20`. `git log --oneline -1 -- docs/BACKLOG.md
-STATE.md` מצביע על `c16b95c3e` (M08-c57, ה-commit הנוכחי) — אין קומיט
-חדש מאז שנוגע באחד מהם. M08-c57 כבר בדק את 15 הפריטים אחד-אחד וקבע
-שכולם דורשים אופיר (ערך סוד, Vercel env, DNS, או הכרעת מפעיל מפורשת);
-נבדק כאן שוב מול הבאנר של `docs/BACKLOG.md` עצמו ("Nothing here is an
-action an agent may take alone") ואין חריג. בדיקת סניטי נוספת: מספר
-הממצאים ב-`supabase/catalogue-known-issues.json` עדיין 26 (`known`),
-זהה לרשום. **מסקנה: אין פריט יחיד בר-ביצוע לסוכן קוד. STATE CLEAN.**
-שערים הורצו במלואם (לא רק נבדקו כמדד עקיף): `type-check` נקי, `lint`
-נקי (biome 2023 קבצים, כל 12 שערי התוכן ירוקים, i18n 627/627, locale
-116/116), `test` 608/608 קבצים, 7242/7254 (12 skipped) — זהה למדידה
-הקודמת, `build` הושלם ללא שגיאה. אין שינוי קוד, אין שער חזותי נדרש
-(אין שינוי UI). **קובץ יחיד שונה: `STATE.md`.**
+**M10-c57 - DONE (30.09): כיסוי טסטים, `money-format.ts`.** משימת התור:
+"find the critical module with the lowest coverage among packages/money,
+payment split, voucher state machine, order state machine, refunds and
+RLS helpers. Add unit tests until branches are covered." נמדד כיסוי
+בפועל (לא הערכה) על כל אחת משש הקטגוריות: `src/lib/money.ts`,
+`src/lib/commerce/commission.ts` (payment split), `src/server/domain/
+vouchers/state-machine.ts`, `src/server/domain/orders/state-machine.ts`
+ו-`status-transitions.ts` (100% מ-M10-c56), חמשת קבצי הרפאנד
+(`refund.ts`, `refund-request.ts`, `refund-wallet.ts`, `refund-record.ts`,
+`refund-requests.ts`, `refund-destination.ts`) ושלושת עוזרי ה-RLS
+(`rls-report-fetch.ts`, `rls-manifest.ts`, `rls-write-policies.ts`,
+`rls-role-matrix.ts`). כולם 93 עד 100 אחוז ענפים. החריג היחיד:
+`src/lib/money-format.ts`, בן-הזוג של `money.ts` (מעצב `Agorot` לתצוגה),
+52.94% הצהרות / **20.83% ענפים** / 38.46% פונקציות. שבע מתוך 13
+הפונקציות המיוצאות (`shekelsFromIls`, `shekelsFromIlsRounded`,
+`shekelsFromIlsPlain`, `shekelsFromIlsPlainRounded`, `shekelsFromIlsCompact`,
+`shekelsFromIlsCompactPlain`, `repairPriceOrder`) לא היו לגמרי מטופלות.
+נוספו 30 טסטים: `null`/`undefined`/מחרוזת/`NaN`/`Infinity` בכניסה, עיגול,
+השמטת השבר ב-compact, ו-`repairPriceOrder` (אין התאמה, התאמה יחידה,
+כמה התאמות, מחרוזת מבודדת כבר, ספרות מקובצות ועשרוניות, רווח בין הסימן
+לספרות). תוך כדי כך נמצא ש-`shekelBody`'s `withFraction` נקרא `true` בכל
+שתי קריאותיו הקיימות, ענף מת ולא ניתן לבדיקה: הפרמטר הוסר, לא רק תועד,
+כי ההשארה הייתה משאירה ענף שלא ניתן לכסות בעדות. **תוצאה: `money-format.ts`
+100/100/100/100** (מ-52.94/20.83/38.46/53.12). חוקי הכסף לא הופרו: אין
+`float` חדש בשום מקום, כל החישוב עדיין דרך `src/lib/money.ts`. שערים:
+`type-check` נקי, `lint` נקי (biome 2023 קבצים, 12 שערי תוכן ירוקים,
+i18n 627/627, locale 116/116), `test` 608/608 קבצים, **7272/7284**
+(12 skipped, היה 7242, פלוס 30) הכל ירוק, `build` הושלם ללא שגיאה. אין
+שינוי UI, אין שער חזותי נדרש. **קבצים ששונו:** `src/lib/money-format.ts`,
+`src/lib/money-format.test.ts`.
 
-## M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M09-c57, M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1 בידי הסוכן; כל 15 הפריטים
-דורשים אופיר (ערך סוד, Vercel env, DNS, או הכרעת מפעיל). הועבר
-ב-M09-c57 לשמירה על תקרת 300 שורות.
+שני STATE CLEAN רצופים: אין פריט יחיד בר-ביצוע לסוכן קוד בבאנר
+`docs/BACKLOG.md`, כל 15 הפריטים דורשים אופיר. שערים הורצו במלואם בשני
+הפריטים, זהה למדידה הקודמת. הועברו ב-M10-c57 לשמירה על תקרת 300 שורות.
 
 ## M06-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

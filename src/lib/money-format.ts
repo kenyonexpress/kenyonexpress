@@ -64,13 +64,13 @@ const PDI = '\u2069'
 const NBSP = '\u00a0'
 
 /** The digits and the sign, with no isolate. Everything shared lives here. */
-function shekelBody(value: Agorot, withFraction: boolean): string {
+function shekelBody(value: Agorot): string {
   const negative = value < 0
   const absolute = Math.abs(value)
   const whole = Math.trunc(absolute / AGOROT_PER_ILS)
   const fraction = absolute % AGOROT_PER_ILS
   const grouped = whole.toLocaleString('he-IL', { useGrouping: true })
-  const digits = withFraction ? `${grouped}.${String(fraction).padStart(2, '0')}` : grouped
+  const digits = `${grouped}.${String(fraction).padStart(2, '0')}`
   return `${negative ? '-' : ''}${digits}${NBSP}₪`
 }
 
@@ -80,7 +80,7 @@ function isolate(body: string): string {
 }
 
 export function shekels(value: Agorot): string {
-  return isolate(shekelBody(value, true))
+  return isolate(shekelBody(value))
 }
 
 /**
@@ -92,7 +92,7 @@ export function shekels(value: Agorot): string {
  * that is what `shekels` is for, and the whole point of it.
  */
 export function shekelsPlain(value: Agorot): string {
-  return shekelBody(value, true)
+  return shekelBody(value)
 }
 
 export function shekelsRounded(value: Agorot): string {

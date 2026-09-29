@@ -1,5 +1,16 @@
 import { agorot } from '@/lib/money'
-import { shekels, shekelsPlain, shekelsRounded } from '@/lib/money-format'
+import {
+  repairPriceOrder,
+  shekels,
+  shekelsFromIls,
+  shekelsFromIlsCompact,
+  shekelsFromIlsCompactPlain,
+  shekelsFromIlsPlain,
+  shekelsFromIlsPlainRounded,
+  shekelsFromIlsRounded,
+  shekelsPlain,
+  shekelsRounded,
+} from '@/lib/money-format'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -97,5 +108,104 @@ describe('shekelsRounded', () => {
     // Documented, not accidental: this formats the cart-count badge, and a cart
     // total cannot be negative. A refund is never rendered through this one.
     expect(shekelsRounded(agorot(-9900))).toBe(`${LRI}0${NBSP}₪${PDI}`)
+  })
+})
+
+describe('shekelsFromIls', () => {
+  it.each([
+    [99, `99.00${NBSP}₪`],
+    ['99', `99.00${NBSP}₪`],
+    ['99.5', `99.50${NBSP}₪`],
+    [0, `0.00${NBSP}₪`],
+    [null, `0.00${NBSP}₪`],
+    [undefined, `0.00${NBSP}₪`],
+    ['not-a-number', `0.00${NBSP}₪`],
+    [Number.POSITIVE_INFINITY, `0.00${NBSP}₪`],
+  ])('formats %p', (value, body) => {
+    expect(shekelsFromIls(value)).toBe(`${LRI}${body}${PDI}`)
+  })
+
+  it('groups thousands the Hebrew locale way', () => {
+    expect(shekelsFromIls(123456.7)).toBe(`${LRI}123,456.70${NBSP}₪${PDI}`)
+  })
+})
+
+describe('shekelsFromIlsRounded', () => {
+  it.each([
+    [99, `99${NBSP}₪`],
+    ['99.6', `100${NBSP}₪`],
+    [0, `0${NBSP}₪`],
+    [null, `0${NBSP}₪`],
+    [undefined, `0${NBSP}₪`],
+    ['not-a-number', `0${NBSP}₪`],
+    [Number.POSITIVE_INFINITY, `0${NBSP}₪`],
+  ])('rounds %p to whole shekels', (value, body) => {
+    expect(shekelsFromIlsRounded(value)).toBe(`${LRI}${body}${PDI}`)
+  })
+})
+
+describe('shekelsFromIlsPlain', () => {
+  it('is shekelsFromIls with the isolate characters stripped', () => {
+    expect(shekelsFromIlsPlain(99)).toBe(`99.00${NBSP}₪`)
+    expect(shekelsFromIlsPlain(99)).not.toContain(LRI)
+    expect(shekelsFromIlsPlain(99)).not.toContain(PDI)
+  })
+})
+
+describe('shekelsFromIlsPlainRounded', () => {
+  it('is shekelsFromIlsRounded with the isolate characters stripped', () => {
+    expect(shekelsFromIlsPlainRounded(99.6)).toBe(`100${NBSP}₪`)
+    expect(shekelsFromIlsPlainRounded(99.6)).not.toContain(LRI)
+    expect(shekelsFromIlsPlainRounded(99.6)).not.toContain(PDI)
+  })
+})
+
+describe('shekelsFromIlsCompact', () => {
+  it('drops the fraction when the price is whole', () => {
+    expect(shekelsFromIlsCompact(399)).toBe(`${LRI}399${NBSP}₪${PDI}`)
+  })
+
+  it('keeps the fraction when the price has one', () => {
+    expect(shekelsFromIlsCompact(399.5)).toBe(`${LRI}399.5${NBSP}₪${PDI}`)
+  })
+
+  it.each([
+    [null, `0${NBSP}₪`],
+    [undefined, `0${NBSP}₪`],
+    ['not-a-number', `0${NBSP}₪`],
+    ['250', `250${NBSP}₪`],
+  ])('handles %p', (value, body) => {
+    expect(shekelsFromIlsCompact(value)).toBe(`${LRI}${body}${PDI}`)
+  })
+})
+
+describe('shekelsFromIlsCompactPlain', () => {
+  it('is shekelsFromIlsCompact with the isolate characters stripped', () => {
+    expect(shekelsFromIlsCompactPlain(399)).toBe(`399${NBSP}₪`)
+    expect(shekelsFromIlsCompactPlain(399)).not.toContain(LRI)
+    expect(shekelsFromIlsCompactPlain(399)).not.toContain(PDI)
+  })
+})
+
+describe('repairPriceOrder', () => {
+  it('rewrites a sign-first price to digits-then-sign, isolated', () => {
+    expect(repairPriceOrder('עד ₪99 בלבד')).toBe(`עד ${LRI}99${NBSP}₪${PDI} בלבד`)
+  })
+
+  it('leaves text with no price untouched', () => {
+    expect(repairPriceOrder('קטגוריה רגילה')).toBe('קטגוריה רגילה')
+  })
+
+  it('leaves a price already written digits-first untouched', () => {
+    expect(repairPriceOrder(`99${NBSP}₪`)).toBe(`99${NBSP}₪`)
+  })
+
+  it('handles grouped and decimal digits, and a space between sign and digits', () => {
+    expect(repairPriceOrder('₪1,234.50')).toBe(`${LRI}1,234.50${NBSP}₪${PDI}`)
+    expect(repairPriceOrder('₪ 99')).toBe(`${LRI}99${NBSP}₪${PDI}`)
+  })
+
+  it('rewrites every match when a string has more than one', () => {
+    expect(repairPriceOrder('₪10 או ₪20')).toBe(`${LRI}10${NBSP}₪${PDI} או ${LRI}20${NBSP}₪${PDI}`)
   })
 })
