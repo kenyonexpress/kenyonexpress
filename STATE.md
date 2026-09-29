@@ -1,36 +1,31 @@
-RESUME FROM: M05-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c56)
+RESUME FROM: M06-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c56)
 
 ## המשך מ:
 
-**M04-c56 - DONE (29.09): תחזוקת תלויות — `pnpm audit` + `pnpm outdated`,
-עדכוני patch/minor בלבד, אף פעם major.** המשימה: להריץ את שני הכלים
-ולהחיל כל עדכון patch/minor ששומר `type-check`/`test`/`build` ירוקים.
+**M05-c56 - DONE (29.09): ביקורת DB — `get_advisors` דרך ה-management
+API, קריאה בלבד, ומיגרציה ממתינה לכל WARN.** פרטים מלאים
+ב-`docs/DB-SECURITY-MODEL.md` §0ו.
 
-**נמדד ישירות:**
+MCP של Supabase עדיין "דורש הרשאה"; אותו מסלול חלופי (טוקן CLI
+מה-keychain, שני `GET .../advisors/{security,performance}`, 200/200,
+טוקן לא נדפס). **44 WARN בסך הכול, זהה שדה-שדה ל-0ה (M05-c55) בפעם
+השישית ברציפות** (21 `authenticated_security_definer`, 2
+`anon_security_definer`, 1 `function_search_path_mutable`, 14
+`multiple_permissive_policies`, 6 `auth_rls_initplan`). ארבעת הקבצים
+הממתינים (`209`, `220`, `245`, `246`) נבדקו שעדיין קיימים ומכסים את
+כל 21 ה-WARN הניתנים לתיקון; ה-23 הנותרים by design. **אפס WARN חדש,
+אפס שהפסיק לירות, אפס קובץ מיגרציה חדש נדרש.**
 
-- `pnpm audit`: **אפס חולשות ידועות**, לפני ואחרי.
-- `pnpm outdated`: 18 מיושנות. **אחת patch בתוך caret קיים**:
-  `posthog-js` `1.434.16` -> `1.434.17`. שאר ה-17: קפיצות major
-  (`@biomejs/biome`, `@hookform/resolvers`, `@sentry/*`,
-  `@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
-  `@vitest/coverage-v8`/`vitest`, `jsdom`, `lint-staged`,
-  `tailwind-merge`, `typescript`, `zod`) **או minor על `0.x`**
-  (`@anthropic-ai/sdk`, `@supabase/ssr`) — ב-`0.x` הציר השני הוא ציר
-  השבירה לפי סמנטיקת caret עצמה, שקול-major. **הוחלט לא להחיל,
-  החלטה שהתקבלה לבד.**
-- `pnpm update posthog-js` הוחל: `package.json`/`pnpm-lock.yaml` בלבד
-  (עיצוב `onlyBuiltDependencies` שנכתב מחדש אוטומטית הוחזר ידנית
-  לשורה אחת). שינוי-לוואי לא-קשור: שדה `specifier` של `sharp`
-  ב-`pnpm-lock.yaml` סונכרן מ-`^0.35.5` ל-`^0.35.3` מול ה-override
-  ב-`pnpm-workspace.yaml` (הגרסה שנפתרת נשארת `0.35.5`), לא נגעתי בו.
-- `pnpm type-check`: אפס פלט. `pnpm lint`: 2021 קבצים + 12 שערי תוכן,
-  כולם clean/OK. `pnpm test`: **606/606, 7239/7251** (זהה ל-M03-c56).
-  `pnpm build`: `exit 0`.
+אין שינוי UI. קובץ שונה: `docs/DB-SECURITY-MODEL.md` (פלוס
+`STATE.md`/`docs/STATE-ARCHIVE.md` — M04-c56 הועבר לתקרת 300 שורות).
 
-אין שינוי UI, אין קריאה לשער החזותי (אין שינוי קוד באפליקציה). שני
-קבצים שונו: `package.json`, `pnpm-lock.yaml` (פלוס `STATE.md`/
-`docs/STATE-ARCHIVE.md` — M03-c56 הועבר לשמירה על תקרת 300 שורות).
+## M04-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+תחזוקת תלויות — `pnpm audit` אפס חולשות, `pnpm outdated` עדכון patch
+יחיד בהיקף (`posthog-js`) הוחל, שאר 17 העדכונים major/שקול-major לא
+הוחלו. `type-check`/`lint`/`test`/`build` ירוקים. הועבר ב-M05-c56
+לשמירה על תקרת 300 שורות.
 
 ## M03-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

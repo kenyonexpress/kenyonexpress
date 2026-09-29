@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c56 (הועבר מ-STATE.md ב-M05-c56, לשמירה על תקרת 300 שורות)
+
+**M04-c56 - DONE (29.09): תחזוקת תלויות — `pnpm audit` + `pnpm outdated`,
+עדכוני patch/minor בלבד, אף פעם major.** המשימה: להריץ את שני הכלים
+ולהחיל כל עדכון patch/minor ששומר `type-check`/`test`/`build` ירוקים.
+
+**נמדד ישירות:**
+
+- `pnpm audit`: **אפס חולשות ידועות**, לפני ואחרי.
+- `pnpm outdated`: 18 מיושנות. **אחת patch בתוך caret קיים**:
+  `posthog-js` `1.434.16` -> `1.434.17`. שאר ה-17: קפיצות major
+  (`@biomejs/biome`, `@hookform/resolvers`, `@sentry/*`,
+  `@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
+  `@vitest/coverage-v8`/`vitest`, `jsdom`, `lint-staged`,
+  `tailwind-merge`, `typescript`, `zod`) **או minor על `0.x`**
+  (`@anthropic-ai/sdk`, `@supabase/ssr`) — ב-`0.x` הציר השני הוא ציר
+  השבירה לפי סמנטיקת caret עצמה, שקול-major. **הוחלט לא להחיל,
+  החלטה שהתקבלה לבד.**
+- `pnpm update posthog-js` הוחל: `package.json`/`pnpm-lock.yaml` בלבד
+  (עיצוב `onlyBuiltDependencies` שנכתב מחדש אוטומטית הוחזר ידנית
+  לשורה אחת). שינוי-לוואי לא-קשור: שדה `specifier` של `sharp`
+  ב-`pnpm-lock.yaml` סונכרן מ-`^0.35.5` ל-`^0.35.3` מול ה-override
+  ב-`pnpm-workspace.yaml` (הגרסה שנפתרת נשארת `0.35.5`), לא נגעתי בו.
+- `pnpm type-check`: אפס פלט. `pnpm lint`: 2021 קבצים + 12 שערי תוכן,
+  כולם clean/OK. `pnpm test`: **606/606, 7239/7251** (זהה ל-M03-c56).
+  `pnpm build`: `exit 0`.
+
+אין שינוי UI, אין קריאה לשער החזותי (אין שינוי קוד באפליקציה). שני
+קבצים שונו: `package.json`, `pnpm-lock.yaml` (פלוס `STATE.md`/
+`docs/STATE-ARCHIVE.md` — M03-c56 הועבר לשמירה על תקרת 300 שורות).
+
 ## M03-c56 (הועבר מ-STATE.md ב-M04-c56, לשמירה על תקרת 300 שורות)
 
 **M03-c56 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
