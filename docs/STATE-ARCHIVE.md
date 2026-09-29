@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c58 (הועבר מ-STATE.md ב-M07-c58, לשמירה על תקרת 300 שורות)
+
+**M06-c58 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52..M06-c57:
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3494 pnpm
+build` -> `exit 0`; `pnpm start -p 3494` מאותה סביבה (פורט אומת פנוי
+לפני ואחרי ההרצה). `curl` אישר `200` על `/` ועל `/product/barbecue-2`.
+`node_modules/.bin/lighthouse` על שני ה-URL, `--throttling-method=
+devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 98 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90. `git log 07b2d9bc8..HEAD -- src/app
+src/components src/lib` החזיר קומיט קוד יחיד (`f65b63176`, M10-c57):
+כיסוי טסטים ל-`money-format.ts` והסרת פרמטר מת (`withFraction`), שינוי
+לוגי-פורמט בלבד, לא ויזואלי, ולכן לא צפוי לזוז ציון; אושר בפועל במדידה
+הטרייה למעלה (98/99 ביצועים, לא נמוך מ-M06-c57). השרת נעצר (`kill`,
+פורט 3494 אומת פנוי מחדש), קבצי ה-JSON הזמניים נמחקו. שערים: `type-check`
+נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627,
+locale 116/116), `test` 608/608 קבצים, 7272/7284 (12 skipped, זהה),
+`build` `exit 0` (חלק מהמדידה עצמה). אין שינוי קוד, אין שער חזותי נדרש
+(אין שינוי UI). **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
+M05-c58 הועבר לתקרת 300 שורות).
+
 ## M05-c58 (הועבר מ-STATE.md ב-M06-c58, לשמירה על תקרת 300 שורות)
 
 **M05-c58 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם השמינית ברציפות
