@@ -448,7 +448,7 @@ export default function CheckoutForm({
     <>
       {!isAuthenticated && (
         <div className="checkout-guest-notice">
-          <span>קונית כאן בעבר?</span>
+          <span>כבר קניתם כאן בעבר?</span>
           <button
             type="button"
             className="checkout-guest-notice__link"

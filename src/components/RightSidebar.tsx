@@ -12,7 +12,7 @@ const categories = [
   { id: 'hotels', label: 'צימרים ובתי מלון', icon: '🏨', href: '/products' },
   { id: 'pets', label: 'ציוד ומזון לבעלי חיים', icon: '🐾', href: '/products' },
   { id: 'pro', label: 'בעלי מקצוע', icon: '🔧', href: '/products' },
-  { id: 'courses', label: 'קורסים Express - בקרוב...', icon: '🎓', href: '/', muted: true },
+  { id: 'courses', label: 'קורסים Express – בקרוב . . .', icon: '🎓', href: '/', muted: true },
 ]
 
 export default function RightSidebar() {
