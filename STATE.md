@@ -1,7 +1,30 @@
-RESUME FROM: M04-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c54)
+RESUME FROM: M05-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c54)
 
 ## המשך מ:
+
+**M04-c54 - DONE (29.09): תחזוקת תלויות — `pnpm audit` אפס חולשות,
+`pnpm outdated` בלי שדרוג פטץ'/מיינור זמין, אפס שינוי.** `pnpm audit`:
+"No known vulnerabilities found". `pnpm outdated --format json`: 16 חבילות
+מוצגות, וב-**כולן** `wanted === current` — כלומר כל שדרוג פטץ'/מיינור
+שבתוך טווח ה-caret כבר הוחל (lockfile מסונכרן), ומה שנשאר לכל אחת מה-16
+הוא קפיצה שחורגת מטווח ה-caret: 14 מהן מספרת major אמיתית (למשל
+`@biomejs/biome` 1.9.4→2.5.14, `zod` 3.25.76→4.6.5, `typescript`
+5.9.3→7.0.2), ושתיים הן חבילות `0.x` שהספרה השנייה שלהן קפצה
+(`@anthropic-ai/sdk` 0.122.0→0.128.0, `@supabase/ssr` 0.10.3→0.12.7) —
+לפי התקדים שנקבע ב-M04-c53 (`f920dc5ec`), קפיצה כזו נחשבת מיינור-שהוא-בפועל
+major לחבילת `0.x` ואינה בהיקף הפריט ("לעולם לא שדרוג major"). **לכן: אין
+שדרוג אחד שעומד בקריטריון, אפס שינוי ב-`package.json`/`pnpm-lock.yaml`.**
+כל ארבעת השערים הורצו במלואם על אותו HEAD בכל זאת (כנדרש "לפני commit"):
+`type-check` נקי, `lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n
+627/627, locale 116/116), `test` 605/605 קבצים, 7213/7225 (12 skipped,
+זהה), `build` `exit 0` בלי אזהרת דפרקציה (התיקון מ-M03-c54 עדיין תקף) —
+שורות ה-runtime שנצפו ב-build (`supabase.rls_denied` על `reviews`,
+`db.optional_column_missing` על `242`) זהות לאלה שתועדו ב-M03-c54, חוסמי
+מיגרציה ידועים (`247`, `242`), לא תקלת build. אין פריט UI, אין שער חזותי
+נדרש. **קובץ יחיד שונה: `STATE.md`.**
+
+## M03-c54 (ארכיון)
 
 **M03-c54 - DONE (29.09): בדיקת שער ירוק — type-check, lint, test, build,
 ותיקון אחד שנמצא בר-תיקון בלי שינוי התנהגות.** `pnpm type-check` נקי.
