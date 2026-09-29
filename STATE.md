@@ -1,10 +1,50 @@
 RESUME FROM: M11-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c53)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c53)
 
 ## המשך מ:
 
-M11-c53: עדיין לא קיים ב-`HEAD`/`origin` (נבדק שוב עם `git fetch` ב-M14-c53).
-פריטים M12-c53..M15-c53 בוצעו מחוץ לסדר לפי הקצאה מפורשת, כמו שתועד בכל אחד.
+M11-c53: עדיין לא קיים ב-`HEAD`/`origin` (נבדק שוב עם `git fetch` ב-M16-c53).
+פריטים M12-c53..M16-c53 בוצעו מחוץ לסדר לפי הקצאה מפורשת, כמו שתועד בכל אחד.
+
+## M16-c53 - DONE (29.09): תברואת ריפו בפעם השלישית — git status נקי, כל הענפים דחופים (אימות SHA מלא, לא רק `git branch -vv`), 24 PRs פתוחים, 24 ענפים ממוזגים-בלי-PR, 63 רדומים + 4 עם קומיט בשבועיים האחרונים
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. הפריט כבר בוצע פעמיים (M16-c51, M16-c52) — המדידה חוזרת
+עליו במלואו כדי לתפוס דריפט, לא מניחה שהוא עדיין תקף.
+
+**מה נמדד, בפועל:**
+
+- `git status`: עץ נקי, `audit/final-audit` מעודכן מול `origin/audit/final-audit`.
+- `git fetch origin --prune`: נקי, אין שינוי מאז המדידה הקודמת.
+- **כל 116 הענפים המקומיים נבדקו ב-SHA מול `origin/<אותו שם>`**, לא רק
+  `git branch -vv` (שמציג ענפים שעוקבים אחרי `origin/main` במקום אחרי ענף
+  בשם זהה — `arch/account-area`, `arch/checkout-cardcom-verification`,
+  `arch/notifications-v2`, `arch/wp-migration` — כאילו "לא דחוף" כשהם כן
+  דחופים, קוסמטי בלבד). **כל ענף מקומי דחוף**: או שה-SHA זהה לענף
+  המרוחק באותו שם, או שהוא אחד משישה שכבר מוזגו ל-`main`/`audit` ואין
+  להם עוד remote בשם הזה (`chore/vitest-4`, `docs/nightly-health-green`,
+  `fix/main-nightly-red`, `pr36`, `release/v1.1`,
+  `wip/refund-record-rebase-head` — אותם שישה שנרשמו כבר ב-M16-c51/
+  M16-c52, נמדד שוב עם `git merge-base --is-ancestor`: כל אחד ancestor
+  של `origin/main`, אין קומיט חדש לדחוף).
+- **PRs פתוחים: 24** (`gh pr list --state open`), זהה למספר ב-M16-c52.
+- **116 ענפי remote סה"כ** (ירד ב-1 מ-117 ב-M16-c52). **92 בלי PR פתוח.**
+  מתוכם **25 ancestors של `origin/main`** (אחד מהם `origin/main` עצמו —
+  טריוויאלי, ancestor-of-itself; **24 בפועל "ממוזגים-בלי-PR"**). **67 לא
+  ממוזגים: 63 רדומים** (קומיט אחרון לפני 15.09.2026, סף 14 יום) **ו-4 עם
+  קומיט בשבועיים האחרונים**: `pull/6/merge` (ref מיזוג אוטומטי של
+  GitHub, לא ענף שמישהו דחף), `audit/final-audit` (הענף הנוכחי, זה
+  הסשן), `phase5/homepage-closeout` ו-`work/goal-queue-0923` (worktrees
+  של סוכנים מקבילים, לפי [[parallel-claude-sessions]]).
+
+**לא בוצע ולא נדרש:** שום מיזוג, מחיקת ענף, מחיקת PR — אסור לפי הכללים.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test`
+**605/7213** (זהה), `pnpm build` `exit 0`. אין שינוי קוד/UI, לכן
+`scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריט תברואה/re-verify קודם
+ללא שינוי קוד).
+
+**קבצים:** `STATE.md` בלבד.
 
 ## M15-c53 - DONE (29.09): סנכרון תיעוד — טבלת המצב ב-STATE.md/LAUNCH-READINESS.md/BACKLOG.md רועננה מ-git log, DNS RESOLVED שוקף ב-LAUNCH-READINESS.md, ותוקן ממצא ספירה בן 19 יום: הפנקס מחזיק 26 שורות, לא 25
 
