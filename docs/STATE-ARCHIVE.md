@@ -2,6 +2,69 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c55 (הועבר מ-STATE.md ב-M10-c55, לשמירה על תקרת 300 שורות)
+
+**M09-c55 - STATE CLEAN (29.09): backlog נמדד מחדש בפעם השש-עשרה
+ברציפות, אפס פריט שלב 1 בידי הסוכן.** המשימה: לקחת את הפריט הפתוח בעל
+ההשפעה הגבוהה ביותר הרשום ב-`STATE.md` שסוכן קוד יכול לבצע בלי אופיר,
+לממש במלואו עם טסטים; אם אין — STATE CLEAN. `CLAUDE.md`, `STATE.md`
+(כולל כל 13 "חוסמים פתוחים") ו-`docs/BACKLOG.md` (15 סעיפים) נקראו
+במלואם, וכן `git log -20`. `git log -5 -- docs/BACKLOG.md
+docs/POST-LAUNCH-BACKLOG.md docs/MIGRATION-BACKLOG.md` מאשר אפס דחיפה
+חדשה מאז `598ea2842` (M08-c55). כל 15 הסעיפים נבדקו שוב מול תנאי
+העצירה: env/secret של Vercel (2,3,6,8,9), פריסת HEAD (4), מיגרציה על
+פרודקשן (5), הכרעת מפעיל על קטלוג (7), חשבון Cloudflare חיצוני (10),
+מיזוג ענף (11), בדיקת תהליך רקע (12), ערך שרק אופיר מחזיק (13), ספק SMS
+חיצוני (14), מחיקת נתונים הדורשת אישור (15) — אף אחד לא שלב 1 בידי
+הסוכן.
+
+**בדיקה עצמאית נוספת השבוע (שונה מ-M08-c55 שכיסה TODO/FIXME, ומ-M09-c54
+שכיסה `git stash list`): קריאה ישירה מה-Vercel API (`filter_project_envs`
+על `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`, ללא פענוח ערך) על 39 משתני
+הסביבה של הפרויקט `kenyonexpress`.** אישר, בקריאה בלבד וללא שינוי:
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
+(השמות שהקוד קורא) **עדיין לא קיימים** ב-Production, `ALLOW_INCOMPLETE_ENV`
+עדיין קיים, ו-`SUPABASE_SECRET_KEY` עדיין מסומן `readable-secret` על ידי
+Vercel עצמו (חוסם 7/8). ממצא נלווה, לא לפעולה: `CARDCOM_WEBHOOK_SECRET`
+נושא אותו תג `readable-secret` — לא היה רשום קודם, אך רוטציה של סוד היא
+עדיין פעולת אופיר בלבד לפי כללי הפרויקט, כך שאין כאן פריט חדש לסוכן,
+רק אישור נוסף שחוסמים 3 ו-8 עדיין פתוחים בדיוק כפי שנמדדו. **אין פריט
+אחר שדורש שינוי.** זו הפעם השש-עשרה ברציפות שאותה מסקנה נמדדת (M08-c1..
+M08-c55, ועכשיו M09-c55). שערים: `type-check` נקי, `lint` נקי (biome
+2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605
+קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`. אין שינוי קוד
+יישומי, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`.**
+
+## M08-c55 (הועבר מ-STATE.md ב-M10-c55, לשמירה על תקרת 300 שורות)
+
+**M08-c55 - BACKLOG EMPTY (29.09): אפס פריט שלב 1 בידי הסוכן, נמדד
+מחדש.** המשימה: לקחת את פריט שלב 1 הפתוח בעל ההשפעה הגבוהה ביותר
+מ-`docs/BACKLOG.md` (לא נדחה, לא שלב 2) ולממש אותו במלואו עם טסטים; אם
+אין — לכתוב BACKLOG EMPTY. `CLAUDE.md`, `STATE.md` (כולל 13 "חוסמים
+פתוחים") ו-`docs/BACKLOG.md` (15 סעיפים) נקראו במלואם, וכן `git log -20`.
+**`docs/BACKLOG.md` לא זז מאז `598ea2842` (M15-c54)** — `git log -3 --
+docs/BACKLOG.md docs/POST-LAUNCH-BACKLOG.md docs/MIGRATION-BACKLOG.md`
+מאשר. הקובץ עצמו אומר במפורש בשורה 16-18: "Nothing here is an action an
+agent may take alone" — כל 15 הסעיפים הם env/secret של Vercel (2,3,6,8,9),
+פריסת HEAD (4), מיגרציה על פרודקשן הדורשת אישור (5), הכרעת מפעיל על נתוני
+קטלוג (7), חשבון Cloudflare חיצוני (10), מיזוג ענף (11), בדיקת תהליך רקע
+(12), ערך שרק אופיר מחזיק (13), ספק SMS חיצוני (14), ומחיקת נתונים
+הדורשת אישור (15) — כל אחד מהם חוסם לפי תנאי העצירה של `CLAUDE.md`, אף
+אחד לא שלב 1 בידי הסוכן. אותה מסקנה שנמדדה ברצף מ-M08-c1 ועד M09-c54.
+בדיקות עצמאיות נוספות: `grep` על `TODO|FIXME|XXX` בכל `src/` (**23**
+תוצאות, לא 20 כמו ב-M08-c54 — שלוש חדשות מ-`whatsapp/twilio.ts`,
+`sms/twilio.ts` ו-`auth/phone-otp.ts`; נבדקו כולן: 20 הן placeholder-י
+פורמט טלפון/קוד כמו `05XXXXXXXX`/`XXXXX-XXXXX`, אחת היא מחרוזת בדיקה
+(`whatsapp.test.ts:91`, לא marker), ו-2 הן `TODO(cardcom)` אמיתיים
+ב-`src/lib/payments/cardcom.ts` שורות 254 ו-319 — זהות למדידות קודמות,
+חסומות על מפתחות Cardcom של פרודקשן (חוסם 6 ב-`BACKLOG.md`, וגם אינטגרציית
+ספק תשלום אסורה לפי חוקי הפריט הזה עצמו). `test.skip`/`it.todo` תחת
+`e2e/`: **57**, זהה למדידה הקודמת. **אפס פריט בר-ביצוע לסוכן.** שערים:
+`type-check` נקי, `lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n
+627/627, locale 116/116), `test` 605/605 קבצים, 7217/7229 (12 skipped,
+זהה), `build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה: `STATE.md`.**
+
 ## M07-c55 (הועבר מ-STATE.md ב-M09-c55, לשמירה על תקרת 300 שורות)
 
 **M07-c55 - DONE (29.09): route audit נמדד שוב, 242 שורות, אפס כשל
