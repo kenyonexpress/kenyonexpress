@@ -68,6 +68,15 @@ describe('every transition, legal and illegal', () => {
   it('always allows a state to itself, so an unrelated column update is not blocked', () => {
     for (const s of ALL_STATES) expect(isLegalWalletRefundTransition(s, s)).toBe(true)
   })
+
+  // `from` is typed as RefundState, but the enum can gain a member the table
+  // has not caught up to yet -- a row read back from the database is not
+  // actually guaranteed to be one of the six names this file knows. The `?? []`
+  // fallback is what keeps that case a refusal instead of a thrown TypeError.
+  it('refuses a transition from a state the table does not recognize', () => {
+    const unknown = 'archived' as RefundState
+    expect(isLegalWalletRefundTransition(unknown, 'completed')).toBe(false)
+  })
 })
 
 describe('terminal states', () => {
