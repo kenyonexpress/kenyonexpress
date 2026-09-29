@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c56 (הועבר מ-STATE.md ב-M08-c56, לשמירה על תקרת 300 שורות)
+
+**M06-c56 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52/M06-c53/
+M06-c54/M06-c55: `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3463 pnpm build` -> `exit 0`; `pnpm start -p 3463` מאותה
+סביבה (פורט אומת פנוי לפני ואחרי ההרצה); `curl` אישר `200` על `/`
+ועל `/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני
+ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90, אין קומיט קוד בין M06-c55 לכאן שנוגע בעמוד
+הבית או המוצר, ולכן אין תיקון נדרש. השרת נעצר, פורט 3463 אומת פנוי,
+קבצי ה-JSON הזמניים נמחקו. שערים: `type-check` נקי, `lint` נקי (biome
+2021 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116), `test`
+606/606 קבצים, 7239/7251 (12 skipped, זהה), `build` `exit 0` (חלק
+מהמדידה עצמה). אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` —
+M05-c56 הועבר לתקרת 300 שורות).
+
 ## M05-c56 (הועבר מ-STATE.md ב-M06-c56, לשמירה על תקרת 300 שורות)
 
 **M05-c56 - DONE (29.09): ביקורת DB — `get_advisors` דרך ה-management
@@ -1107,6 +1131,13 @@ page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`, תואם ל-
 שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605 קבצים, 7217/7229
 (12 skipped, זהה), `build` `exit 0`. אין שער חזותי נדרש (אין שינוי UI).
 **קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/תיעוד בלבד).
+
+## M12-c54 (שוחזרה מהעתק ב-STATE.md ב-M08-c56 — התקציר של M13-c54 היה
+הכניסה היחידה שהתייחסה אליה, לא נשמר עותק מלא כאן קודם)
+
+מטא-דאטה, canonical, og, schema.org Product/Offer, עדכניות sitemap
+ו-robots נמדדו מחדש מול build אמיתי, אפס דריפט מ-M12-c53. הועבר ב-M13-c54
+לשמירה על תקרת 300 שורות.
 
 ## M11-c54 (הועברה מ-STATE.md ב-M12-c54, לשמירה על תקרת 300 שורות)
 
