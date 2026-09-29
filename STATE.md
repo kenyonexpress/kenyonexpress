@@ -1,7 +1,33 @@
-RESUME FROM: M03-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c59)
+RESUME FROM: M04-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c59)
 
 ## המשך מ:
+
+**M03-c59 - DONE (30.09): שער ירוק, ארבעתם נקיים, אפס תיקון נדרש.**
+משימת התור: להריץ `pnpm type-check`, `pnpm lint`, `pnpm test` ו-`pnpm
+build`, לתקן כל שגיאה ואזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר.
+
+נמדד ישירות, כל ארבעת השערים בהרצה טרייה מלאה על HEAD `a2100c518`:
+- `type-check` (`tsc --noEmit`): נקי, אפס פלט.
+- `lint` (`biome check .` + עשר שערי `scripts/*-gate.mjs`): נקי — 2023
+  קבצים, אפס תיקונים; tokens/copy/asset/raw-html/postgrest-or/
+  cache-invalidation/rtl-logical נקיים; i18n 627/627, locale-format
+  116/116 (בתקרה, לא מעליה); input-dir 24/24; docs-index 282 מתועדים;
+  docs-path-audit 152 ידועים, אפס שינוי.
+- `test` (`vitest run`): 608/608 קבצים, 7273 עברו + 12 דולגו (7285),
+  58.88s.
+- `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+  NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`): `exit 0`,
+  `✓ Compiled successfully`, TypeScript עבר בתוך הבנייה, 337/337 עמודים
+  נוצרו. לוגים בזמן ריצה (`db.optional_column_missing` על מיגרציה 242
+  ממתינה, `supabase.rls_denied` על `reviews` בגלל מיגרציה 247 ממתינה
+  שלא הוחלה מקומית — שתיהן כבר בחוסמים 3 ב-STATE.md) הם פלט אפליקציה
+  צפוי, לא אזהרת קומפיילר — אין שם שום `Failed to compile` או אזהרת
+  ESLint/TS.
+
+אפס תיקון נדרש, אפס שינוי קוד יישומי. עדכון `STATE.md` בלבד.
+
+## M02-c59 (הועבר מ-STATE.md ב-M03-c59, לשמירה על תקרת 300 שורות)
 
 **M02-c59 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים, אפס
 רגרסיה, כל שש המדידות PASS מתחת ל-11%.** משימת התור: להריץ
