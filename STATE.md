@@ -1,45 +1,46 @@
 RESUME FROM: M11-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c55)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c55)
 
 ## המשך מ:
 
-**M13-c55 - DONE (29.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
-ומגבלות קצב Upstash על login/checkout/redeem נמדדו מחדש, אפס דריפט.**
-המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy, ומגבלות קצב
-Upstash על login, checkout ו-redeem, ולתקן פערים עם טסטים. אותו דפוס
-אימות מחזורי כמו M13-c54 (`0e733d6ef`). **נבדק קודם מה השתנה מאז**:
-`git diff 0e733d6ef..HEAD --stat` על 10 קבצים — `STATE.md`, `docs/
-BACKLOG.md`, `docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
-`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`, `package.json`/
-`pnpm-lock.yaml` (פטץ' `posthog-js`, M04-c55), `src/components/home/
-HeroSlider.tsx` (srcset, קדם ל-M13-c54), `src/server/actions/
-refund-requests.test.ts` (חדש, M10-c55) — **אף אחד לא נוגע לכותרות
-אבטחה או ל-rate limiting** (`next.config.ts` ו-`src/lib/rate-limit/*`
-לא ברשימה). **אומת בכל זאת ישירות מול build אמיתי** (`pnpm build`
-נקי, `PORT=3921 pnpm start`, שרת טרי): כותרות תגובה על `/` (בית),
-`/checkout`, `/login` ו-`/redeem/test-token`, כל ארבעתן זהות:
-`Content-Security-Policy` (default-src 'self', frame-ancestors 'none',
-frame-src/form-action מוגבלים ל-`secure.cardcom.solutions` בלבד),
-`Strict-Transport-Security: max-age=63072000; includeSubDomains;
-preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
-`Referrer-Policy: strict-origin-when-cross-origin`. **מגבלות קצב
-נמדדו בקוד עצמו**: `login` נאכף ב-`src/server/actions/auth.ts:141`
-(`checkRateLimit('login:${ip}')`, 10/שעה לפי `policies.ts:40`),
-`begin_checkout` נאכף ב-`src/server/actions/payments/checkout.ts:351`
-(`checkRateLimit('begin_checkout:user:${user.id}', 10, 60)`, תואם
-ל-`policies.ts:125`), `redeem` (דף לקוח) נאכף ב-`src/app/redeem/
-[token]/page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`,
-תואם ל-`policies.ts:200`), ו-`voucher-redeem` (סריקת ספק) נאכף
-ב-`src/app/api/supplier/vouchers/redeem/route.ts:223`
-(`rateLimit('voucher-redeem', user.id)`, תואם ל-`policies.ts:201`).
-כל ארבעת שורות הקוד ומספרי השורות זהים ל-M13-c54. **אפס דריפט, אפס
-שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2021 קבצים + 12
-שערי תוכן, i18n 627/627, locale 116/116), `test` 606/606 קבצים,
-7239/7251 (12 skipped, זהה), `build` `exit 0`. אין שער חזותי נדרש (אין
-שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/תיעוד
-בלבד).
+**M14-c55 - DONE (29.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
+וכותרות cache נמדדו מחדש, אפס דריפט.** המשימה: לבדוק גודל bundle, פלט
+צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר.
+הוקצתה מחוץ לסדר (M11-c55 עדיין לא בוצע). אותו דפוס אימות מחזורי
+כמו M14-c54 (`505ba8e52`). **נבדק קודם מה השתנה מאז**: `git log
+505ba8e52..HEAD` על `next.config.ts`/`src/lib/images`/
+`src/lib/catalogue-cache.ts`/`src/components`/`src/app`/`package.json`/
+`pnpm-lock.yaml`/`scripts/bundle-report.mjs`/
+`scripts/cache-invalidation-gate.mjs` מחזיר קומיט לא-קשור יחיד
+(`ff7a12727`, פטץ' `posthog-js`, M04-c55). **אומת בכל זאת ישירות מול
+build אמיתי** (`pnpm build` נקי, `PORT=3517 pnpm start`, שרת טרי):
+1. **bundle: אין רגרסיה, אין שינוי.** `scripts/bundle-report.mjs`: בית
+320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה בדיוק
+ל-M14-c54**.
+2. **צנרת תמונות: אין ממצא חדש.** כל שימושי `fill`+`sizes` בקוד נבדקו
+(`ProductCard`, `CouponCard`, `HeroSlider`, `ProductGallery`, דף
+הקופונים) — כולם נושאים `vw` בערך ה-`sizes` שלהם, פרט לשני קבועי
+`HeroSlider.tsx` (`HERO_IMAGE_SIZES`/`HERO_STILL_SIZES`) שכבר תועדו
+בקוד עצמו (שורות 254-277) כפתרון מכוון: ערך px שטוח מחזיר את **מלוא**
+רשימת המועמדים ב-`getWidths()` (לא מסונן), וזה מגיש את התמונה טוב
+יותר לתיבה הקטנה הזו מ-`vw` שמסנן מועמדים קטנים. אין באג חדש מסוג
+זה שנמצא ותוקן ב-M14-c51..M14-c54.
+3. **תגיות ISR: נקי.** `node scripts/cache-invalidation-gate.mjs`
+מדווח נקי (כל כתיבה לטבלה מטמונה מבטלת אותה, כל scope נושא תג).
+4. **כותרות cache: זהות.** `/_next/static/chunks/*.js` מחזיר
+`public, max-age=31536000, immutable`; `/images/logo-footer.webp`
+מחזיר `public, max-age=0, s-maxage=86400,
+stale-while-revalidate=604800` (התאמה מדויקת לכלל ב-`next.config.ts`
+שורה 156); דפי `/` ו-`/product/e2e-test-physical` מחזירים
+`private, no-cache, no-store, max-age=0, must-revalidate` +
+`x-nextjs-stale-time: 300` (PPR, תואם למדיניות המוצהרת).
+**אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי, `lint` נקי
+(biome 2021 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116),
+`test` 606/606 קבצים, 7239/7251 (12 skipped, זהה), `build` `exit 0`.
+אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`:
+אין** (פריט מדידה בלבד).
 
-## M12-c55, M10-c55, M09-c55, M08-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M13-c55, M12-c55, M10-c55, M09-c55, M08-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
 M09-c55: STATE CLEAN בפעם השש-עשרה ברציפות, אפס פריט שלב 1 בידי הסוכן;
 בדיקת `filter_project_envs` בקריאה בלבד על 39 משתני הסביבה אישרה חוסמים
