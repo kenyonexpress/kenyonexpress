@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c59 (הועבר מ-STATE.md ב-M07-c59, לשמירה על תקרת 300 שורות)
+
+**M06-c59 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת מ-M06-c1 ועד M06-c58:
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3494 pnpm build` → `exit 0` (בלי
+`Failed to compile`, טבלת המסלולים המלאה נדפסה); `pnpm start -p 3494`
+מאותה בנייה (פורט 3494 אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`
+ועל `/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני
+ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90. `git log 8e4debc50..HEAD -- src/app
+src/components src/lib` ריק — אפס שינוי קוד תצוגה מאז המדידה הקודמת
+(M06-c58: 98/99 ביצועים), ולכן העלייה ל-99/99 היא רעש מדידה, לא שיפור
+אמיתי. השרת נעצר (`kill`, פורט 3494 אומת פנוי מחדש), קבצי ה-JSON
+הזמניים (`/tmp/ke-lh-m06c59/`) נמחקו. שערים: `type-check` נקי, `lint`
+נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale
+116/116, docs-index 282, docs-path-audit 152), `test` 608/608 קבצים,
+7273/7285 (12 skipped, 58.04s), `build` `exit 0` (חלק מהמדידה עצמה).
+אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
+`STATE.md`.**
+
 ## M01-c59 (הועבר מ-STATE.md ב-M06-c59, לשמירה על תקרת 300 שורות)
 
 **M01-c59 - DONE (30.09): בדיקת פרודקשן בפעם השישית, DNS ו-HTTP תקינים,

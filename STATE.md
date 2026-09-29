@@ -1,32 +1,41 @@
-RESUME FROM: M07-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c59)
+RESUME FROM: M08-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c59)
 
 ## המשך מ:
 
-**M06-c59 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
-90+, אפס תיקון נדרש.** אותו מתכון שאומת מ-M06-c1 ועד M06-c58:
-`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3494 pnpm build` → `exit 0` (בלי
-`Failed to compile`, טבלת המסלולים המלאה נדפסה); `pnpm start -p 3494`
-מאותה בנייה (פורט 3494 אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`
-ועל `/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני
-ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
+**M07-c59 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל
+אמיתי, אפס דלתא קוד שנוגעת במסלול.** אותו מתכון מ-M07-c1/M07-c52..
+M07-c58 (`route-audit-recipe-and-hydration-dates`): `git diff --stat
+f57971b42..HEAD -- src/app src/components src/lib e2e` ריק — אפס שינוי
+קוד תצוגה/ניתוב מאז המדידה הקודמת, אבל המדידה עצמה הורצה מחדש במלואה
+ולא סומכת על הדלתא בלבד. `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3483 pnpm build` הצליח (`exit 0`),
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3483
+PORT=3483 pnpm start` מאותה בנייה, פורט אומת פנוי לפני ואחרי. `curl`
+אישר `200` על `/` ועל `/product/barbecue-2`. `pnpm exec playwright test
+e2e/route-audit.spec.ts --project=chromium --workers=1` בשישה צ'אנקים
+לפי תפקיד (`--grep`): anon (60), GET קבצים/API + ספק (82), לקוח (25),
+אדמין בשלושה מקטעים (19, 21, 19 כולל דפי הפירוט המתגלים). סה"כ 226
+טסטים, כולם PASS, אפס FAIL. הדוח
+(`ROUTE_AUDIT_REPORT=/tmp/route-audit-m07c59.jsonl`) נותח תכנותית
+(סקריפט Node, לא רק סיכום ה-reporter): 241 שורות ייחודיות (role+path),
+**239 PASS, 2 NO DATA** (`customer /account/tickets/[id]`, `admin
+/admin/discounts/[id]`, שתיהן זהות לכל מדידה קודמת מאז M07-c1, הרשימה
+לא מקשרת לשום שורה בסביבת הבדיקה). **אפס `consoleErrors`, אפס
+`hydrationWarnings`, אפס `rtl: false`** על פני כל 241 השורות — זהה
+מספרית ל-M07-c58. אין תיקון נדרש. השרת נעצר (`kill`, פורט 3483 אומת
+פנוי מחדש), קובץ הדוח וקובץ הלוג הזמניים נמחקו. שערים: `type-check`
+נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627,
+locale 116/116, docs-index 282, docs-path-audit 152), `test` 608/608
+קבצים, 7273/7285 (12 skipped, 57.32s), `build` `exit 0` (חלק מהמדידה
+עצמה). אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד
+שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M06-c59 הועבר לתקרת
+300 שורות).
 
-| דף | ביצועים | נגישות | BP | SEO |
-|---|---|---|---|---|
-| בית `/` | 99 | 100 | 100 | 100 |
-| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+## M06-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-כל שמונת הציונים מעל 90. `git log 8e4debc50..HEAD -- src/app
-src/components src/lib` ריק — אפס שינוי קוד תצוגה מאז המדידה הקודמת
-(M06-c58: 98/99 ביצועים), ולכן העלייה ל-99/99 היא רעש מדידה, לא שיפור
-אמיתי. השרת נעצר (`kill`, פורט 3494 אומת פנוי מחדש), קבצי ה-JSON
-הזמניים (`/tmp/ke-lh-m06c59/`) נמחקו. שערים: `type-check` נקי, `lint`
-נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale
-116/116, docs-index 282, docs-path-audit 152), `test` 608/608 קבצים,
-7273/7285 (12 skipped, 58.04s), `build` `exit 0` (חלק מהמדידה עצמה).
-אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
-`STATE.md`.**
+M06-c59: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית
+99/100/100/100, מוצר 99/100/100/100), אפס תיקון נדרש, אפס דריפט מ-M06-c58.
 
 ## M05-c59 (הועבר מ-STATE.md ב-M06-c59, לשמירה על תקרת 300 שורות)
 
