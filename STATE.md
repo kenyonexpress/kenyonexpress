@@ -1,7 +1,34 @@
-RESUME FROM: M04-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c55)
+RESUME FROM: M05-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c55)
 
 ## המשך מ:
+
+**M04-c55 - DONE (29.09): תחזוקת תלויות — עדכון פטץ' יחיד שהיה בהיקף,
+`pnpm audit` אפס חולשות.** `pnpm audit`: "No known vulnerabilities found".
+`pnpm outdated --format json`: 17 חבילות מוצגות. עדכון קודם (M04-c54) קבע
+ש-16 מתוכן ב-`wanted === current` (אין מה לעדכן בתוך טווח ה-caret) —
+המדידה הזו חוזרת עליו ומאשרת: 14 עדיין major אמיתית (`@biomejs/biome`,
+`typescript`, `zod`, `@sentry/nextjs`/`node`, `@vitejs/plugin-react`,
+`@vitest/coverage-v8`+`vitest`, `jsdom`, `lint-staged`, `tailwind-merge`,
+`@hookform/resolvers`, `@testing-library/jest-dom`, `@types/node`), ושתיים
+עדיין 0.x עם קפיצת ספרה שנייה מחוץ לטווח ה-caret (`@anthropic-ai/sdk`,
+`@supabase/ssr`) — לפי התקדים מ-M04-c53, לא בהיקף.
+
+**החדש הפעם: `posthog-js` ‏1.434.15→1.434.16 היה בתוך טווח ה-caret
+(`^1.434.15`) ופספס אתמול.** `pnpm update` (בלי `--latest`, מכבד את
+הטווח המוצהר) העלה אותו + את התלות הטרנזיטיבית `browserslist`
+4.29.1→4.29.2 (מ-`@babel/preset-env`), `pnpm-lock.yaml` בלבד. `pnpm
+update` גם עיצב מחדש את `pnpm.onlyBuiltDependencies` למערך מרובה-שורות
+ב-`package.json` — שינוי פורמט לא-קשור, הוחזר ידנית לשורה אחת כדי
+לשמור על diff מינימלי. `pnpm audit` נשאר אפס אחרי העדכון.
+
+שערים על ה-HEAD אחרי העדכון: `type-check` נקי, `lint` נקי (biome 2020
+קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605
+קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`, 337 נתיבים, `✓
+Compiled successfully`. אין שינוי UI, אין שער חזותי נדרש. **קבצים
+ששונו: `package.json`, `pnpm-lock.yaml`, `STATE.md`.**
+
+## M03-c55 (ארכיון)
 
 **M03-c55 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
 `build`.** המשימה: להריץ את ארבעת הפקודות ולתקן כל שגיאה/אזהרה
