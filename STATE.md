@@ -1,48 +1,43 @@
-RESUME FROM: M13-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c57)
+RESUME FROM: M14-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c57)
 
 ## המשך מ:
 
-**M12-c57 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
-sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c56.** משימת התור: לוודא
-metadata, canonical, og, schema.org Product+Offer בדפי מוצר, טריות
-sitemap ו-robots, ולתקן דריפט. **אפס קומיט נגע בקוד SEO מאז M12-c56**
-(`9551fadd2`, 29.09): `git diff --stat 9551fadd2..HEAD -- src/app src/lib`
-מראה שינוי יחיד — `money-format.ts`+טסטים (M10-c57) — ולא נוגע ב-sitemap/
-robots/metadata/JSON-LD. נמדד מחדש מול build אמיתי (`pnpm build` על HEAD
-`3e82839c7`), דרך `pnpm start` על פורט 3315 (3312/3313 תפוסים ע"י סשנים
-מקבילים אחרים, לא נגעו בהם):
-- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
-  לדומיין הנכון.
-- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
-  regions/suppliers).
-- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c56), `lastmod`
-  פר-מוצר משתנה בפועל (חמישה ערכים שונים נמדדו, לא תאריך בנייה קבוע) —
-  הטריות אמיתית, לא מזויפת.
-- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
-  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
-  height/alt)/type`, JSON-LD `Product`+`Offer` (מחיר, מטבע, `availability`,
-  `seller`, `priceSpecification` להשוואת מחיר) ובלוק `BreadcrumbList`.
-- דף הבית: `title`, `canonical`, `og:*` ושני בלוקי JSON-LD, כולם תקינים.
-- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
-  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
-  מ-M12-c56.
-**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
-קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
-608/608 קבצים, 7272/7284 (12 skipped) ירוקים, `build` הושלם ללא שגיאה.
-אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
-`docs/STATE-ARCHIVE.md` — M11-c57 הועבר לתקרת 300 שורות).
+**M13-c57 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
+מ-M13-c56.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
+Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
+**אפס קומיט נגע בכותרות אבטחה או rate limiting מאז M13-c56**
+(`dc842dc2f`, 29.09): `git diff --stat dc842dc2f..HEAD` מראה עשרה
+קבצי STATE/docs, שני עדכוני תלות minor ו-`money-format.ts` (M10-c57)
+בלבד — `next.config.ts`/`src/lib/rate-limit/*`/`src/lib/utils/
+rate-limit.ts` לא ברשימה. **אומת בכל זאת מול build אמיתי** (`pnpm
+build` נקי, `PORT=3319 pnpm start`, שרת טרי): כותרות תגובה על `/`,
+`/checkout`, `/login`, `/redeem/test-token` זהות בארבעתן: CSP
+(frame-ancestors 'none', frame-src/form-action ל-`secure.cardcom.
+solutions` בלבד), HSTS `max-age=63072000; includeSubDomains;
+preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+`Referrer-Policy: strict-origin-when-cross-origin`. **מגבלות קצב
+נמדדו בקוד, אותן שורות בדיוק כמו M13-c56**: `login`
+(`auth.ts:141`), `begin_checkout` (`checkout.ts:351`), `redeem`
+(`page.tsx:109`), `voucher-redeem` (`route.ts:223`). **אפס שינוי
+קוד**: `type-check` נקי, `lint` נקי (2023 קבצים, i18n 627/627, locale
+116/116), `test` 608/608 קבצים 7272/7284 (12 skipped), `build` נקי.
+אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`**
+(פלוס `docs/STATE-ARCHIVE.md` — M12-c57 הועבר לתקרת 300 שורות).
 
-## M11-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M12-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-M11-c57: נגישות, axe אומתה מחדש בפעם השלישית, ‏0 הפרות `serious`/
-`critical` (אדמין 57/57 דילוג, כשל התחברות פרודקשן לא קשור לקוד),
-`moderate` אחד מתועד (`target-size`, WCAG 2.2). M10-c57: כיסוי טסטים,
-`money-format.ts` 52.94/20.83/38.46 ← **100/100/100/100**, פרמטר מת
-(`withFraction`) הוסר. M09-c57, M08-c57: שני STATE CLEAN רצופים, אין
-פריט בר-ביצוע לסוכן קוד ב-`docs/BACKLOG.md`. כולם `type-check`/`lint`/
-`test`/`build` ירוקים, אפס שינוי UI. הועברו ב-M12-c57 לשמירה על תקרת
-300 שורות.
+M12-c57: SEO, meta/canonical/og/JSON-LD/sitemap/robots אומתו מחדש,
+אפס דריפט (`sitemap/products.xml` 46 כתובות, `noindex` למוצר לא
+פעיל). M11-c57: נגישות, axe אומתה מחדש בפעם השלישית, ‏0 הפרות
+`serious`/`critical` (אדמין 57/57 דילוג, כשל התחברות פרודקשן לא
+קשור לקוד), `moderate` אחד מתועד (`target-size`, WCAG 2.2). M10-c57:
+כיסוי טסטים, `money-format.ts` 52.94/20.83/38.46 ← **100/100/100/
+100**, פרמטר מת (`withFraction`) הוסר. M09-c57, M08-c57: שני STATE
+CLEAN רצופים, אין פריט בר-ביצוע לסוכן קוד ב-`docs/BACKLOG.md`. כולם
+`type-check`/`lint`/`test`/`build` ירוקים, אפס שינוי UI. הועברו
+ב-M13-c57 לשמירה על תקרת 300 שורות.
 
 ## M06-c57..M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

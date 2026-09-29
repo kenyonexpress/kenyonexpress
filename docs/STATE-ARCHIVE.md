@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c57 (הועבר מ-STATE.md ב-M13-c57, לשמירה על תקרת 300 שורות)
+
+**M12-c57 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c56.** משימת התור: לוודא
+metadata, canonical, og, schema.org Product+Offer בדפי מוצר, טריות
+sitemap ו-robots, ולתקן דריפט. **אפס קומיט נגע בקוד SEO מאז M12-c56**
+(`9551fadd2`, 29.09): `git diff --stat 9551fadd2..HEAD -- src/app src/lib`
+מראה שינוי יחיד — `money-format.ts`+טסטים (M10-c57) — ולא נוגע ב-sitemap/
+robots/metadata/JSON-LD. נמדד מחדש מול build אמיתי (`pnpm build` על HEAD
+`3e82839c7`), דרך `pnpm start` על פורט 3315 (3312/3313 תפוסים ע"י סשנים
+מקבילים אחרים, לא נגעו בהם):
+- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
+  לדומיין הנכון.
+- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
+  regions/suppliers).
+- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c56), `lastmod`
+  פר-מוצר משתנה בפועל (חמישה ערכים שונים נמדדו, לא תאריך בנייה קבוע) —
+  הטריות אמיתית, לא מזויפת.
+- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
+  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
+  height/alt)/type`, JSON-LD `Product`+`Offer` (מחיר, מטבע, `availability`,
+  `seller`, `priceSpecification` להשוואת מחיר) ובלוק `BreadcrumbList`.
+- דף הבית: `title`, `canonical`, `og:*` ושני בלוקי JSON-LD, כולם תקינים.
+- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
+  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
+  מ-M12-c56.
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
+608/608 קבצים, 7272/7284 (12 skipped) ירוקים, `build` הושלם ללא שגיאה.
+אין שינוי UI, אין שער חזותי נדרש.
+
 ## M11-c57 (הועבר מ-STATE.md ב-M12-c57, לשמירה על תקרת 300 שורות)
 
 **M11-c57 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
