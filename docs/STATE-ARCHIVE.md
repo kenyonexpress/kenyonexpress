@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c55 (הועבר מ-STATE.md ב-M07-c55, לשמירה על תקרת 300 שורות)
+
+**M06-c55 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52/M06-c53/M06-c54:
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm
+build` -> `exit 0`; `pnpm start -p 3462` מאותה סביבה (פורט אומת פנוי
+לפני ואחרי ההרצה); `curl` אישר `200` על `/` ועל `/product/barbecue-2`
+(שרת שהותחל אחרי ה-build, זמן ההתחלה אומת). `node_modules/.bin/lighthouse`
+על שני ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 93 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90. ביצועי הבית ירדו מ-98 (M06-c54) ל-93 — עדיין
+הרבה מעל הסף, בתוך הרעש הרגיל של מדידת devtools throttling מקומית (ראו
+זיכרון `lighthouse-local-recipe-and-lcp-cap`), אין קומיט קוד בין שתי
+המדידות שנוגע בעמוד הבית, ולכן אין תיקון נדרש. שני קבצי ה-JSON הזמניים
+והשרת נמחקו/נעצרו, פורט 3462 אומת פנוי. שערים: `type-check` נקי, `lint`
+נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116),
+`test` 605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0` (חלק
+מהמדידה עצמה). אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ
+יחיד שונה: `STATE.md`.**
+
 ## M04-c55, M05-c55 (הועברו מ-STATE.md ב-M06-c55, לשמירה על תקרת 300 שורות)
 
 **M05-c55 - DONE (29.09): ביקורת DB — `get_advisors` (security +

@@ -1,38 +1,57 @@
-RESUME FROM: M07-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c55)
+RESUME FROM: M08-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c55)
 
 ## המשך מ:
 
-**M06-c55 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
-90+, אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52/M06-c53/M06-c54:
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm
-build` -> `exit 0`; `pnpm start -p 3462` מאותה סביבה (פורט אומת פנוי
-לפני ואחרי ההרצה); `curl` אישר `200` על `/` ועל `/product/barbecue-2`
-(שרת שהותחל אחרי ה-build, זמן ההתחלה אומת). `node_modules/.bin/lighthouse`
-על שני ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
+**M07-c55 - DONE (29.09): route audit נמדד שוב, 242 שורות, אפס כשל
+אמיתי.** אותו מתכון מ-M07-c1/M07-c52/M07-c53/M07-c54: `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3472 pnpm build` -> `exit 0`;
+`PORT=3472 pnpm start` מאותה סביבה (פורט אומת פנוי לפני ואחרי, `curl`
+אישר `200` על `/` ועל `/product/barbecue-2`); `pnpm exec playwright test
+e2e/route-audit.spec.ts --project=chromium --workers=1` בחמישה צ'אנקים
+לפי תפקיד (`--grep`): anon (60), GET קבצים/API (72), customer (25), admin
+(59), supplier (10) — סה"כ 226 טסטים, כל שורה נכתבת ל-`ROUTE_AUDIT_REPORT`.
 
-| דף | ביצועים | נגישות | BP | SEO |
-|---|---|---|---|---|
-| בית `/` | 93 | 100 | 100 | 100 |
-| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+**תוצאה: 240 PASS, 2 NO DATA (`customer /account/tickets/[id]`,
+`admin /admin/discounts/[id]` — הרשימה לא מקשרת לשום שורה, זהה לריצות
+קודמות), 0 FAIL, 0 SKIPPED.** בריצה הראשונה של צ'אנק ה-admin שני טסטים
+נכשלו בתזמון (`/admin/suppliers/price-proposals`: "Execution context was
+destroyed" ב-`page.evaluate`, `/admin/support`: `beforeAll` timeout של
+30 שנ' אחרי שה-worker התאושש מהכשל הקודם) ועוד חמישה טסטים לא רצו בגלל
+זה. **נמדד שאינו רגרסיה אמיתית**: שני הנתיבים רצו שוב בבידוד ועברו
+(`28.7s`, כולל כניסה מלאה), וחמשת הטסטים שלא רצו רצו אחר כך ועברו כולם
+(`4.3m`) — תואם לזיכרון `route-audit-recipe-and-hydration-dates` על
+שאילתות איטיות מדי פעם מול ה-Supabase המאוחסן. אפס שגיאת console, אפס
+אזהרת hydration, RTL תקין (`dir=rtl lang=he body=rtl`) על כל דף HTML
+שנמדד.
 
-כל שמונת הציונים מעל 90. ביצועי הבית ירדו מ-98 (M06-c54) ל-93 — עדיין
-הרבה מעל הסף, בתוך הרעש הרגיל של מדידת devtools throttling מקומית (ראו
-זיכרון `lighthouse-local-recipe-and-lcp-cap`), אין קומיט קוד בין שתי
-המדידות שנוגע בעמוד הבית, ולכן אין תיקון נדרש. שני קבצי ה-JSON הזמניים
-והשרת נמחקו/נעצרו, פורט 3462 אומת פנוי. שערים: `type-check` נקי, `lint`
-נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116),
-`test` 605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0` (חלק
-מהמדידה עצמה). אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ
-יחיד שונה: `STATE.md`.**
+**דלתא קוד מאז M07-c54** (`git diff --stat 5081decc5..HEAD`, לא כולל
+`STATE.md`/`docs/BACKLOG.md`/`docs/STATE-ARCHIVE.md`/`LAUNCH-READINESS.md`):
+תיקוני נגישות ב-9 קבצי אדמין (M11-c54, `role`/`aria-label`/`tabIndex` על
+טבלאות גולשות), תיקון `fill`+`sizes` ב-`HeroSlider.tsx` (M14-c54),
+שדרוג פטץ' ל-`posthog-js` (M04-c55), טסטים חדשים ל-`refund`/
+`refund-request` (M10-c54) — אף אחד מהם לא נגע במסלול, בניתוב, או
+בבדיקת RTL. אין תיקון נדרש. שערים: `type-check` נקי, `lint` נקי
+(biome 2020 קבצים + 12 שערי תוכן, i18n 627/627), `test` 605/605 קבצים,
+7217/7229 (12 skipped, זהה), `build` `exit 0` (חלק מהמדידה עצמה). אין
+שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). כל קבצי הדוח הזמניים
+(`/tmp/route-audit-c55*.jsonl`, `/tmp/ke-start-c55.log`) נמחקו, השרת
+על פורט 3472 נעצר ואומת פנוי. **קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`** (M06-c55 הועבר לשמירה על תקרת 300 שורות).
 
-## M03-c55..M05-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M03-c55, M04-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-M05-c55: ביקורת DB, 44 WARN זהה שדה-שדה למדידה הרביעית, אפס WARN חדש,
-אפס קובץ מיגרציה חדש. M04-c55: תחזוקת תלויות, עדכון פטץ' יחיד בהיקף
-(`posthog-js`), `pnpm audit` אפס חולשות. M03-c55: שער ירוק
-(`type-check`/`lint`/`test`/`build`), אין מה לתקן. שלושתם DONE, אפס
-שינוי UI. הועברו ב-M06-c55 לשמירה על תקרת 300 שורות.
+M04-c55: תחזוקת תלויות, עדכון פטץ' יחיד בהיקף (`posthog-js`), `pnpm
+audit` אפס חולשות. M03-c55: שער ירוק (`type-check`/`lint`/`test`/
+`build`), אין מה לתקן. שניהם DONE, אפס שינוי UI. הועברו ב-M06-c55
+לשמירה על תקרת 300 שורות.
+
+## M05-c55, M06-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M06-c55: Lighthouse mobile, כל שמונת הציונים 90+ (בית 93/100/100/100,
+מוצר 99/100/100/100), אפס תיקון נדרש. M05-c55: ביקורת DB, 44 WARN זהה
+שדה-שדה למדידה הרביעית, אפס WARN חדש, אפס קובץ מיגרציה חדש. שניהם DONE,
+אפס שינוי UI. הועברו ב-M07-c55 לשמירה על תקרת 300 שורות.
 
 ## M02-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
