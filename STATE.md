@@ -1,9 +1,35 @@
-RESUME FROM: M03-c57
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c57)
+RESUME FROM: M04-c57
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c57)
 
 ## המשך מ:
 
-**M02-c57 - DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —
+**M03-c57 - DONE (29.09): שער ירוק, `type-check`/`lint`/`test`/`build` —
+כל הארבעה נקיים, אפס תיקון נדרש.**
+המשימה: להריץ את ארבעת השערים ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי
+לשנות התנהגות מוצר.
+
+- `pnpm type-check` (`tsc --noEmit`): נקי, אפס שגיאה.
+- `pnpm lint` (biome + 12 שערי custom): `Checked 2023 files... No fixes
+  applied`, כל 12 השערים (`tokens`/`copy`/`asset`/`raw-html`/
+  `postgrest-or`/`cache-invalidation`/`rtl-logical`/`i18n`/
+  `locale-format`/`input-dir`/`docs-index`/`docs-path-audit`) clean,
+  זהה ל-M03-c56.
+- `pnpm test`: 608/608 קבצים, 7242/7254 (12 skipped) — זהה בדיוק
+  ל-M02-c57/M18-c56.
+- `pnpm build`: `✓ Compiled successfully`, `exit 0`, 337 נתיבים
+  נבנו. שורות JSON שנרשמות בזמן ה-build (`supabase.rls_denied` על
+  `reviews` לקורא אנונימי, `db.optional_column_missing` למיגרציה
+  ממתינה 242, `phases.not_applied`/`content_pages.not_applied`
+  למיגרציות 210/205) הן לוגים תפעוליים צפויים של שלב ה-prerender על
+  מיגרציות pending מתועדות — לא אזהרת קומפיילר, ולא ניתנות לתיקון בלי
+  להחיל מיגרציה על פרודקשן (אסור) או להחליש RLS (רגרסיית אבטחה). אין
+  שורת "Compiled with warnings" ואין שגיאת TypeScript/ESLint בפלט.
+- **מסקנה:** אין מה לתקן. הפריט הוא וידוא בלבד, זהה במהות ל-M03-c56.
+- **קבצים:** `STATE.md` בלבד.
+
+## M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+**DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —
 אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%, זהה בדיוק ל-M02-c56.**
 המשימה: להריץ `scripts/compare.mjs` בפורגראונד ולחכות למספרים
 באותה הרצה, לתקן כל רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
@@ -32,22 +58,12 @@ Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c57)
   הרצה, שורות חדשות מהסשן הזה), `docs/STATE-ARCHIVE.md` (M01-c57
   הועבר לשם), `STATE.md` בלבד.
 
-## M18-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M18-c56, M17-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-בדיקת אפס-פעילות בפעם השלישית: המחזור c56 *לא* היה אפס-פעילות (שני
-קומיטי שינוי-קוד אמיתיים, `posthog-js` + טסטי
-`orders/status-transitions.ts`), ולכן MAINTENANCE IDLE לא נכתב ושיפור
-המרה מומחש לא חיפש, זהה מבחינה מהותית ל-M18-c55. `type-check`/`lint`/
-`test`/`build` ירוקים. הועבר ב-M01-c57 לשמירה על תקרת 300 שורות.
-
-## M17-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא חדש: `git diff` מול M17-c55 על
-`src/app`/`src/components`/`messages/he.json` ריק, סריקת `JSON.parse`
-על `he.json` נותנת 28 מחרוזות לטיניות זהות (שם מותג/מונח טכני/
-placeholder), ארבעת מסמכי ה-legal ללא שינוי. `type-check`/`lint`/
-`test` (608/608, 7242/7254)/`build` ירוקים, אפס שינוי קוד. הועבר
-ב-M18-c56 לשמירה על תקרת 300 שורות.
+M18-c56: בדיקת אפס-פעילות בפעם השלישית, המחזור *לא* היה אפס-פעילות.
+M17-c56: מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא חדש. שניהם
+`type-check`/`lint`/`test`/`build` ירוקים. הועברו ב-M03-c57 לשמירה על
+תקרת 300 שורות.
 
 ## M16-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

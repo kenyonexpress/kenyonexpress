@@ -2,6 +2,19 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c56, M17-c56 (הועברו מ-STATE.md ב-M03-c57, לשמירה על תקרת 300 שורות)
+
+M18-c56: בדיקת אפס-פעילות בפעם השלישית: המחזור c56 *לא* היה אפס-פעילות
+(שני קומיטי שינוי-קוד אמיתיים, `posthog-js` + טסטי
+`orders/status-transitions.ts`), ולכן MAINTENANCE IDLE לא נכתב ושיפור
+המרה מומחש לא חיפש, זהה מבחינה מהותית ל-M18-c55. `type-check`/`lint`/
+`test`/`build` ירוקים. M17-c56: מעבר קופי ומשפטי בפעם הרביעית, אפס
+ממצא חדש: `git diff` מול M17-c55 על `src/app`/`src/components`/
+`messages/he.json` ריק, סריקת `JSON.parse` על `he.json` נותנת 28
+מחרוזות לטיניות זהות (שם מותג/מונח טכני/placeholder), ארבעת מסמכי
+ה-legal ללא שינוי. `type-check`/`lint`/`test` (608/608, 7242/7254)/
+`build` ירוקים, אפס שינוי קוד. שניהם DONE, אפס שינוי UI.
+
 ## M01-c57 (הועבר מ-STATE.md ב-M02-c57, לשמירה על תקרת 300 שורות)
 
 **M01-c57 - BLOCKED (29.09): בדיקת פרודקשן — DNS ו-HTTP תקינים, פריסת
