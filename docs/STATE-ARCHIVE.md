@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c52 - DONE (29.09): STATE CLEAN
+
+נבדק ישירות (לא רק אומת מול הרשומה הקודמת): `git fetch` — HEAD מקומי
+זהה ל-`origin/audit/final-audit` (`554998949`), עץ עבודה נקי. `docs/BACKLOG.md`
+נקרא במלואו שוב: 15 סעיפים, כולם DNS/סודות/Vercel env, החלת מיגרציה על
+פרודקשן, Cardcom אמיתי, הכרעת קטלוג, הפעלת R2 בדשבורד, כניסה בטלפון
+(הגדרת ספק SMS ב-Supabase), מחיקת stash — כל אחד חוסם מפורש בכללי הסוכן
+לפריט הזה. `docs/POST-LAUNCH-BACKLOG.md` נקרא: כל סעיף הוא דחייה מנומקת
+(policy merge, unindexed FK, i18n, homepage merchandising), לא ממצא
+לתיקון. חיפוש `TODO|FIXME|XXX:` ב-`src/`: שתי תוצאות, שתיהן ב-
+`src/lib/payments/cardcom.ts` (אימות endpoint זיכוי מול הטרמינל החי) —
+אינטגרציית תשלום אמיתית, אסורה לפריט הזה. אין פריט חדש. אין שינוי קוד.
+
+**שערים:** לא נדרשו (אין שינוי קוד/UI); `git status`/`git fetch` נבדקו.
+
+**קבצים:** `STATE.md` בלבד.
+
+## M08-c52 - DONE (29.09): BACKLOG EMPTY, נמדד בפעם האחת-עשרה
+
+`docs/BACKLOG.md` נקרא במלואו (15 סעיפים). כל סעיף הוא פעולה שהכללים
+אוסרים על הסוכן: DNS/סודות/Vercel env (2,3,8), פריסת HEAD לפרודקשן (4),
+החלת מיגרציה על פרודקשן (5), אינטגרציית תשלום אמיתית (6), הכרעת מפעיל
+על שורות קטלוג או מחיקת נתונים (7, 15), ערך שרק אופיר מחזיק (9, 13),
+פעולה בדשבורד חיצוני (10, 14), החלטה שנפתרת מעצמה במיזוג לענף `main`
+(11), ובדיקת תהליך קיים בלבד (12). סעיף 1 (DNS) כבר RESOLVED. זהה
+במהות לתוצאה שנמדדה עשר פעמים קודם (B02..B10, M08-c1); אין פריט חדש
+שנוסף מאז M15-c51 (29.09) שיצר את הרשימה. אין שינוי קוד.
+
+**שערים:** לא נדרשו (אין שינוי קוד/UI); `git status` נבדק נקי לפני ואחרי.
+
+**קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת M06/M07-c52 לפירוט מלא).
+
 ## M07-c52 - DONE (29.09): שער נתיבים מלא, 244 שורות (role, path) ייחודיות, אפס FAIL
 
 **הפריט ביקש לבקש כל נתיב באפליקציה, לצפות ל-200 או הפניה מכוונת, אפס
