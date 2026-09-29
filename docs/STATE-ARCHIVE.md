@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c57 (הועבר מ-STATE.md ב-M01-c58, לשמירה על תקרת 300 שורות)
+
+**M18-c57 - DONE (30.09): בדיקת אפס-פעילות בפעם הרביעית, המחזור *לא*
+היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c57..M17-c57)
+לא ייצרו שינוי קוד במחזור הזה, לכתוב `MAINTENANCE IDLE` עם התאריך
+ב-`STATE.md`, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף
+מוצר שתואם Electro v7 וליישם אותו.
+
+**נמדד ישירות מ-`git log`, לא הונח:** שני קומיטים במחזור c57 שינו קוד,
+לא רק תיעוד:
+
+- M04-c57 (`a6183cca6`): `package.json`/`pnpm-lock.yaml` — עדכון
+  `@anthropic-ai/sdk` 0.122.0→0.129.0 ו-`@supabase/ssr` 0.10.3→0.12.7.
+- M10-c57 (`f65b63176`): `src/lib/money-format.ts`/`money-format.test.ts`
+  — כיסוי ענפים 20.83%→100%, הוסרה פרמטר מתה (`withFraction`).
+
+כלומר המחזור אינו אפס-פעילות — אותה תוצאה בדיוק כמו M18-c55 ו-M18-c56
+(שניהם נמצאו שני קומיטי שינוי-קוד, ושניהם `MAINTENANCE IDLE` לא נכתב).
+**החלטה שהתקבלה לבד, לפי אותם תקדימים:** `MAINTENANCE IDLE` לא נכתב,
+וסעיף "אז לחפש שיפור המרה" מותנה במחזור אפס-פעילות שלא התקיים — לא בוצע
+שינוי המרה בפריט הזה.
+
+שערים הורצו במלואם עכשיו, לא הונחו ממדידה קודמת: `type-check` נקי,
+`lint` נקי (2023 קבצים, i18n 627/627), `test` 608/608 קבצים 7272/7284
+(12 skipped, 59.51s), `build` `exit 0` (337 נתיבים). כולם זהים ל-M17-c57.
+אפס שינוי קוד יישומי בפריט הזה עצמו (`STATE.md`/`docs/STATE-ARCHIVE.md`
+בלבד), אין שער חזותי נדרש (אין שינוי UI).
+
 ## M17-c57 (הועבר מ-STATE.md ב-M18-c57, לשמירה על תקרת 300 שורות)
 
 **M17-c57 - DONE (30.09): מעבר קופי ומשפטי בפעם החמישית, אפס ממצא

@@ -1,35 +1,53 @@
-RESUME FROM: M01-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c57)
+RESUME FROM: M02-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c58)
 
 ## המשך מ:
 
-**M18-c57 - DONE (30.09): בדיקת אפס-פעילות בפעם הרביעית, המחזור *לא*
-היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c57..M17-c57)
-לא ייצרו שינוי קוד במחזור הזה, לכתוב `MAINTENANCE IDLE` עם התאריך
-ב-`STATE.md`, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף
-מוצר שתואם Electro v7 וליישם אותו.
+**M01-c58 - BLOCKED (30.09): בדיקת פרודקשן — DNS ו-HTTP תקינים, פריסת
+HEAD נשארת חסומה באותה סיבה בדיוק, לא נוסתה מחדש הפעם (פעם רביעית).**
+המשימה: build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני
+הדומיינים; אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן
+אין DNS BLOCKER:**
 
-**נמדד ישירות מ-`git log`, לא הונח:** שני קומיטים במחזור c57 שינו קוד,
-לא רק תיעוד:
+- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com.`/
+  `ns2.vercel-dns.com.`. `dig +short A kenyonexpress.co.il` ->
+  `216.198.79.1`/`64.29.17.65`. `dig +short A www.kenyonexpress.co.il`
+  -> `64.29.17.1`/`64.29.17.65`.
+- `curl -sI https://kenyonexpress.co.il` -> **308** ל-`https://www.
+  kenyonexpress.co.il/`. `curl -sI https://www.kenyonexpress.co.il` ->
+  **200**, HTML אמיתי, CSP/HSTS/`server: Vercel` תקינים,
+  `x-vercel-cache: HIT`.
 
-- M04-c57 (`a6183cca6`): `package.json`/`pnpm-lock.yaml` — עדכון
-  `@anthropic-ai/sdk` 0.122.0→0.129.0 ו-`@supabase/ssr` 0.10.3→0.12.7.
-- M10-c57 (`f65b63176`): `src/lib/money-format.ts`/`money-format.test.ts`
-  — כיסוי ענפים 20.83%→100%, הוסרה פרמטר מתה (`withFraction`).
+**פריסה: לא נוסתה מחדש הפעם, לפי כלל "goal שנתקע פעמיים — לדלג"
+(כבר הוחל ב-M01-c55, M01-c56, M01-c57 — זו הפעם הרביעית עם אותו
+תנאי).** תנאי החסימה נבדק מחדש בפועל דרך Vercel MCP (קריאה בלבד,
+`filter_project_envs` על הפרויקט `kenyonexpress`), לא הונח:
 
-כלומר המחזור אינו אפס-פעילות — אותה תוצאה בדיוק כמו M18-c55 ו-M18-c56
-(שניהם נמצאו שני קומיטי שינוי-קוד, ושניהם `MAINTENANCE IDLE` לא נכתב).
-**החלטה שהתקבלה לבד, לפי אותם תקדימים:** `MAINTENANCE IDLE` לא נכתב,
-וסעיף "אז לחפש שיפור המרה" מותנה במחזור אפס-פעילות שלא התקיים — לא בוצע
-שינוי המרה בפריט הזה.
+- Production עדיין מחזיק רק `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/
+  `CARDCOM_API_KEY` ו-`ALLOW_INCOMPLETE_ENV` (מוגדר, ערך ריק במקור
+  ה-API); שלושת השמות ש-`deploy-preflight.mjs`/`src/lib/env.ts`/
+  `src/server/payments/invoices.ts` דורשים בפועל —
+  `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
+  — עדיין חסרים לגמרי, אושר ב-`grep` על שלושת הקבצים. זהה למדידה
+  ב-M01-c57, אפס דריפט.
+- קומיטים מאחורי פרודקשן: `git rev-list --count a388118f1..HEAD` =
+  **157** (עלה מ-153 ב-M01-c57). הפריסה החיה עדיין `a388118f1`.
 
-שערים הורצו במלואם עכשיו, לא הונחו ממדידה קודמת: `type-check` נקי,
-`lint` נקי (2023 קבצים, i18n 627/627), `test` 608/608 קבצים 7272/7284
-(12 skipped, 59.51s), `build` `exit 0` (337 נתיבים). כולם זהים ל-M17-c57.
-אפס שינוי קוד יישומי בפריט הזה עצמו (`STATE.md`/`docs/STATE-ARCHIVE.md`
-בלבד), אין שער חזותי נדרש (אין שינוי UI).
+**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
+במשימה):** `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3493 pnpm build` -> `exit 0`, כל
+המסלולים נבנו. שערים נוספים הורצו במלואם: `type-check` נקי, `lint`
+נקי (biome 2023 קבצים, i18n 627/627, locale 116/116, docs-index 282,
+docs-path-audit 152), `test` 608/608 קבצים, 7272/7284 (12 skipped,
+57.42s). אפס שינוי קוד יישומי, אין שער חזותי נדרש (אין שינוי UI).
+HEAD תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד.
 
-## M17-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M18-c57: בדיקת אפס-פעילות בפעם הרביעית, המחזור *לא* היה אפס-פעילות
+(שני קומיטי שינוי-קוד אמיתיים: עדכון תלות `@anthropic-ai/sdk`/
+`@supabase/ssr`, וכיסוי `money-format.ts` 20.83%→100%), `MAINTENANCE
+IDLE` לא נכתב, זהה מבחינה מהותית ל-M18-c55/M18-c56.
 
 M17-c57: מעבר קופי ומשפטי בפעם החמישית, אפס ממצא חדש בר-תיקון
 (`he.json` 627 מחרוזות, 15 `href` בפוטר, ארבעת עמודי ה-legal החיים
@@ -182,25 +200,24 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (136 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, M15-c56; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
+2. **פריסת פרודקשן של HEAD (157 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, M01-c58; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
    אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   **ב-M01-c56 לא נוסה ניסיון פריסה נוסף** (כלל "goal שנתקע פעמיים —
-   לדלג", מוחל מ-M01-c55), אך התנאי נבדק שוב בקריאה בלבד ואושר ללא
-   שינוי: `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
-   `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production (קיימים במקומם
-   `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא קורא) ו-
-   `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם (`filter_project_envs`,
-   קריאה בלבד). עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה;
-   פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY,
-   אושר שוב ב-M01-c56 עם `list_deployments`). **DNS אינו קשור לחוסם הזה**
-   — נמדד שוב ב-M01-c56, `www.kenyonexpress.co.il` מחזיר 200 עם התוכן
-   החי (`a388118f1`), `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS עדיין
-   `ns1/ns2.vercel-dns.com`.
+   **מ-M01-c56 ועד M01-c58 לא נוסה ניסיון פריסה נוסף** (כלל "goal שנתקע
+   פעמיים — לדלג", מוחל מ-M01-c55, פעם רביעית ב-M01-c58), אך התנאי נבדק
+   שוב בקריאה בלבד בכל פעם ואושר ללא שינוי: `CARDCOM_TERMINAL_NUMBER`,
+   `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
+   (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא
+   קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (`filter_project_envs`,
+   קריאה בלבד, M01-c58). עד שאופיר יתקן את הסביבה אין פריסה אפשרית
+   מהענף הזה; פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx
+   3DQa`, READY). **DNS אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c58,
+   `www.kenyonexpress.co.il` מחזיר 200 עם התוכן החי, `kenyonexpress.co.il`
+   מפנה 308 ל-`www`, ה-NS עדיין `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
    "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
