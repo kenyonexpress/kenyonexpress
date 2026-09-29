@@ -1,44 +1,64 @@
-RESUME FROM: M12-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c59)
+RESUME FROM: M13-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c59)
 
 ## המשך מ:
 
-**M11-c59 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
-חמישית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
-דף, לתקן כל הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את
-המונה שנשאר. בדיקת דריפט קודם: `git log 3996a1477..HEAD` (מאז המדידה
-הקודמת, M11-c58) מחזיר 9 קומיטים (M12-c58..M10-c59), ו-`git diff
---stat 3996a1477..HEAD -- src/app src/components src/styles
-'e2e/*a11y*' middleware.ts src/server/actions/auth` ריק — **אפס קומיט
-נגע בשטח הנגישות**.
+**M12-c59 - DONE (30.09): SEO — meta/canonical/og/JSON-LD
+Product+Offer/sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c58.**
+משימת התור: לוודא metadata, canonical, og, schema.org Product+Offer
+בדפי מוצר, טריות sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם:
+`git log 9ea3603b0..HEAD` (מאז המדידה הקודמת, M12-c58) מחזיר 17
+קומיטים (M13-c58..M11-c59), כולם תיעוד/מדידה/תלות/טסטים (אבטחה,
+ביצועים, תברואת ריפו, סנכרון תיעוד, מעבר קופי ומשפטי, אפס-פעילות,
+בדיקת פרודקשן, שער חזותי, שער ירוק, תלות, DB advisors, Lighthouse,
+route audit, backlog/state, STATE CLEAN, כיסוי `payment-money-columns.ts`,
+נגישות): `git diff --stat 9ea3603b0..HEAD -- src/app/robots.ts
+src/app/robots.test.ts src/app/sitemap src/app/sitemap.xml
+src/app/sitemap.test.ts src/app/sitemap-robots-agree.test.ts
+src/app/sitemap-canonicals.test.ts src/lib/seo src/lib/product-seo.ts
+src/lib/category-tree.ts src/lib/regions.ts src/lib/content/pages.ts
+src/lib/feeds src/components/storefront/BlogPostHeader.tsx
+src/components/storefront/ProductInfo.tsx 'src/app/(store)/**/page.tsx'
+'src/app/(main)/coupons/[id]/page.tsx'` חוזר ריק — **אפס קומיט נגע
+בקוד SEO** (הקובץ היחיד ששונה בכל 17 הקומיטים תחת `src/`/`supabase/`
+הוא `src/lib/payments/payment-money-columns.test.ts`, לא קשור).
 
-נמדד בכל זאת מחדש מול build אמיתי על HEAD (`58b5301af`, `.next` תואם
-בדיוק — נבנה תחת M10-c59 לפני ה-commit שלו, `git status` נקי, `pnpm
-start` על פורט 3316):
-- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
-  `--grep-invert=@writes`): **72/74 עברו, 2 דולגו** (אותם דילוגים
-  מכוונים כמו בכל מדידה קודמת) — **0 הפרות**.
-- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
-  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, שניהם **0 הפרות**.
-  תפקיד **אדמין: 57/57 דולגו** — אומת ישירות בקוד הבדיקה
-  (`e2e/a11y-authenticated.spec.ts:98`, `test.skip` על כשל
-  `signInWithEmail`) שזו אותה סיבה שתועדה ב-M11-c56/M11-c57/M11-c58:
-  כשל התחברות פרודקשן קיים מראש, לא תקלת נגישות ולא רגרסיית קוד.
-- שני השערים נכשלים על **כל** הפרה (לא רק `serious`/`critical`, ראו
-  הערת "WHY axe FAILS ON ANY VIOLATION" בקובץ הבדיקה), אז 0 כשל הוא גם
-  0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה שנסרק.
+נמדד בכל זאת מחדש מול build אמיתי (`.next` נבנה תחת M10-c59, תואם
+ל-HEAD כי שני הקומיטים שאחריו נגעו רק ב-`STATE.md`/`docs`/טסט תשלומים
+יחיד — אפס שינוי קוד ייצור, `pnpm start` על פורט 3327):
+- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
+  לדומיין הנכון (baked-at-build, ראו `site-url-baked-at-build-time`).
+- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
+  regions/suppliers).
+- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c58), חמישה ערכי
+  `lastmod` שונים בפועל — טריות אמיתית, לא מזויפת.
+- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
+  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
+  height/alt)/type`, JSON-LD `Product` (מחיר `49.50`, `priceCurrency
+  ILS`, `brand`, `category`, `image`) + `Offer` (`availability
+  InStock`, `seller`, `priceSpecification`) + `BreadcrumbList` (3
+  שלבים), אפס `<meta name="robots">` (מוצר פעיל, לא `noindex`).
+- דף הבית: `title`, `canonical`, `og:*`, JSON-LD `WebSite`+`SearchAction`+
+  `Organization`, שניהם תקינים.
+- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
+  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
+  מ-M12-c58.
 
-**המונה שנשאר: 0 `serious`/`critical`.** ממצא `target-size` (דרישת
-WCAG **2.2** ולא 2.1, מחוץ ליעד המוצהר של הפרויקט) שתועד
-ב-`docs/A11Y-SWEEP-REPORT.md` נשאר כהחלטה פתוחה ללא שינוי — אין הפרת
-2.1 AA לתקן. **אפס שינוי קוד.** שערים: `type-check` נקי, `lint` נקי
-(biome + כל תשעת השערים המשניים), `test` 608/608 קבצים 7274/7286 (12
-skipped, זהה במהות ל-M10-c59). `build`: נעשה שימוש ב-`.next` הקיים
-התואם בדיוק ל-HEAD (נבנה תחת M10-c59, `exit 0`) במקום בנייה חוזרת, כדי
-לא להתחרות במשאבים עם סשנים מקבילים (load average כ-11 בזמן המדידה) —
-ואומת ישירות: שתי ריצות ה-Playwright הגישו דפים אמיתיים ממנו בהצלחה.
-אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
-`docs/STATE-ARCHIVE.md`, M09-c59 הועבר לתקרת 300 שורות).
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale-format 116/116),
+`test` 608/608 קבצים 7274/7286 (12 skipped, זהה ל-M11-c59), `build`:
+נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD, לא נבנה מחדש כדי לא
+להתחרות במשאבים עם סשנים מקבילים (`node` מאזין על כ-19 פורטים בזמן
+המדידה), אומת חי דרך `pnpm start` על פורט 3327. אין שינוי UI, אין שער
+חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
+M11-c59 הועבר לתקרת 300 שורות).
+
+## M11-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M11-c59: נגישות, axe אומתה מחדש בפעם חמישית, 0 הפרות `serious`/
+`critical` (ציבורי 72/74 + 2 דולג, מאומת לקוח 16/16 + ספק 7/7, אדמין
+57/57 דולג — כשל התחברות פרודקשן קיים מראש). `target-size` (WCAG 2.2,
+מחוץ ליעד) נשאר כהחלטה פתוחה. אפס שינוי קוד.
 
 ## M10-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -74,90 +94,22 @@ M06-c59: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (
 M05-c59: advisors נמדדו בפעם התשיעית, 44 WARN זהים ב-100% ל-M05-c58,
 אפס מיגרציה חדשה נדרשת, אפס שינוי סכימה.
 
-## M04-c59 (הועבר מ-STATE.md ב-M05-c59, לשמירה על תקרת 300 שורות)
+## M04-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M04-c59 - DONE (30.09): תברואת תלויות, `pnpm audit` נקי, אפס עדכון
-זכאי (כל 14 השורות של `pnpm outdated` הן major).** משימת התור: להריץ
-`pnpm audit` ו-`pnpm outdated`, להחיל שדרוגי patch/minor שנשארים ירוקים
-בארבעת השערים, לעולם לא major.
+M04-c59: תברואת תלויות, `pnpm audit` נקי, אפס עדכון זכאי (14 שורות
+`pnpm outdated`, כולן major). שינוי יחיד: `caniuse-lite` ב-`pnpm-lock.yaml`.
+ארבעת השערים ירוקים.
 
-- `pnpm audit`: **אפס חולשות ידועות**.
-- `pnpm outdated`: 14 שורות, וכל אחת מהן major (`@biomejs/biome` 1→2,
-  `@hookform/resolvers` 3→5, `@sentry/nextjs`+`@sentry/node` 10→11,
-  `@testing-library/jest-dom` 6→7, `@types/node` 20→26,
-  `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8` 4→5, `jsdom` 25→30,
-  `lint-staged` 15→17, `tailwind-merge` 2→3, `typescript` 5→7,
-  `vitest` 4→5, `zod` 3→4) — כולן מחוץ לתחום המותר (אסור major).
-- `pnpm update --no-save` (מכבד את הטווחים ב-`package.json`, אינו נוגע
-  ב-major): שינוי יחיד, `caniuse-lite` `1.0.30001812`→`1.0.30001813`
-  (נתוני `browserslist`, טרנזיטיבי, אין שורה תואמת ב-`package.json`).
-  `git diff package.json` ריק — אין תלות ישירה לעדכן בתוך הטווח.
-- שערים הורצו במלואם על המצב הזה: `type-check` נקי; `lint` נקי (2023
-  קבצים, i18n 627/627, locale 116/116, docs-index 282, docs-path-audit
-  152); `test` 608/608 קבצים, 7273 עברו + 12 דולגו (7285), 57.36s;
-  `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
-  NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`) `exit 0`,
-  `✓ Compiled successfully`, 337/337 עמודים נוצרו (`supabase.rls_denied`
-  על `reviews` הוא פלט צפוי ממיגרציה 247 ממתינה, כבר בחוסם 3, לא אזהרת
-  קומפיילר).
+## M03-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-עדכון יחיד ל-`pnpm-lock.yaml` (נתוני `caniuse-lite` בלבד), אפס שינוי
-ל-`package.json`, אפס שינוי קוד יישומי.
+M03-c59: שער ירוק, `type-check`/`lint`/`test` (608/608, 7273/7285)/`build`
+כולם נקיים, אפס תיקון נדרש.
 
-## M03-c59 (הועבר מ-STATE.md ב-M04-c59, לשמירה על תקרת 300 שורות)
+## M02-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M03-c59 - DONE (30.09): שער ירוק, ארבעתם נקיים, אפס תיקון נדרש.**
-משימת התור: להריץ `pnpm type-check`, `pnpm lint`, `pnpm test` ו-`pnpm
-build`, לתקן כל שגיאה ואזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר.
-
-נמדד ישירות, כל ארבעת השערים בהרצה טרייה מלאה על HEAD `a2100c518`:
-- `type-check` (`tsc --noEmit`): נקי, אפס פלט.
-- `lint` (`biome check .` + עשר שערי `scripts/*-gate.mjs`): נקי — 2023
-  קבצים, אפס תיקונים; tokens/copy/asset/raw-html/postgrest-or/
-  cache-invalidation/rtl-logical נקיים; i18n 627/627, locale-format
-  116/116 (בתקרה, לא מעליה); input-dir 24/24; docs-index 282 מתועדים;
-  docs-path-audit 152 ידועים, אפס שינוי.
-- `test` (`vitest run`): 608/608 קבצים, 7273 עברו + 12 דולגו (7285),
-  58.88s.
-- `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
-  NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`): `exit 0`,
-  `✓ Compiled successfully`, TypeScript עבר בתוך הבנייה, 337/337 עמודים
-  נוצרו. לוגים בזמן ריצה (`db.optional_column_missing` על מיגרציה 242
-  ממתינה, `supabase.rls_denied` על `reviews` בגלל מיגרציה 247 ממתינה
-  שלא הוחלה מקומית — שתיהן כבר בחוסמים 3 ב-STATE.md) הם פלט אפליקציה
-  צפוי, לא אזהרת קומפיילר — אין שם שום `Failed to compile` או אזהרת
-  ESLint/TS.
-
-אפס תיקון נדרש, אפס שינוי קוד יישומי. עדכון `STATE.md` בלבד.
-
-## M02-c59 (הועבר מ-STATE.md ב-M03-c59, לשמירה על תקרת 300 שורות)
-
-**M02-c59 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים, אפס
-רגרסיה, כל שש המדידות PASS מתחת ל-11%.** משימת התור: להריץ
-`scripts/compare.mjs` בפורגראונד ולחכות למספרים באותה הרצה, לתקן כל
-רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
-
-- `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-  localhost:3311 pnpm build` -> `exit 0`, בנייה טרייה על HEAD
-  `725c64ba4`. `PORT=3311 pnpm start` מול הבנייה הזו (לא שרת ישן).
-- **בית** (`--widths=380,768,1440`, `--baseline='refs/ke_live_{width}.png'`,
-  בפורגראונד, חיכה למספרים באותה הרצה): **380 8.51% PASS, 768 9.02%
-  PASS, 1440 3.95% PASS** — זהה בדיוק ל-M02-c58.
-- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`, `--widths=380,768,1440`,
-  `--baseline='refs/electro_product_{width}.png'`, בפורגראונד): **380
-  5.65% PASS, 768 4.95% PASS, 1440 2.92% PASS** — תנודה קטנה מ-M02-c58
-  (5.61/4.92/2.99), כולם עדיין PASS, אפס תיקון נדרש. תהליך ה-driver
-  (`--widths`) נתקע אחרי שהילד של 1440 כבר סיים והדפיס את מספרו (אפס
-  תהליך דפדפן חי, `lsof`/`ps` אישרו) — שתי השורות כבר נכתבו
-  ל-`docs/UI-PARITY-REPORT.md` על ידי הילדים עצמם לפני התקיעה, אז
-  התהליך התקוע נהרג (`kill -9`) אחרי שהמספרים כבר היו בידיים; לא היה
-  צורך בניסיון נוסף.
-- כל שש השורות נכתבות אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי
-  השער עצמו (`live side: frozen capture`, HEAD `725c64ba4-dirty`).
-- שערים נוספים הורצו במלואם אחרי המדידה: `type-check` נקי, `lint` נקי
-  (2023 קבצים, i18n 627/627), `test` 608/608 קבצים 7273/7285 (12
-  skipped, 58.04s), `build` `exit 0` (מהריצה הטרייה למעלה). אפס שינוי
-  קוד יישומי (רק `STATE.md`/`docs/UI-PARITY-REPORT.md`).
+M02-c59: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה, כל שש המדידות
+PASS מתחת ל-11% (בית 8.51/9.02/3.95, מוצר 5.65/4.95/2.92). ארבעת השערים
+ירוקים.
 
 M01-c59: בדיקת פרודקשן בפעם השישית, DNS ו-HTTP תקינים, פריסת HEAD עדיין
 חסומה באותה סיבה (env חסר + `ALLOW_INCOMPLETE_ENV`); לא נוסה deploy
