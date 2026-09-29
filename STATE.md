@@ -1,48 +1,43 @@
-RESUME FROM: M02-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c58)
+RESUME FROM: M03-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c58)
 
 ## המשך מ:
 
-**M01-c58 - BLOCKED (30.09): בדיקת פרודקשן — DNS ו-HTTP תקינים, פריסת
-HEAD נשארת חסומה באותה סיבה בדיוק, לא נוסתה מחדש הפעם (פעם רביעית).**
-המשימה: build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני
-הדומיינים; אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן
-אין DNS BLOCKER:**
+**M02-c58 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים —
+אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%, זהה בדיוק ל-M02-c57.**
+המשימה: להריץ `scripts/compare.mjs` בפורגראונד ולחכות למספרים
+באותה הרצה, לתקן כל רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
 
-- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com.`/
-  `ns2.vercel-dns.com.`. `dig +short A kenyonexpress.co.il` ->
-  `216.198.79.1`/`64.29.17.65`. `dig +short A www.kenyonexpress.co.il`
-  -> `64.29.17.1`/`64.29.17.65`.
-- `curl -sI https://kenyonexpress.co.il` -> **308** ל-`https://www.
-  kenyonexpress.co.il/`. `curl -sI https://www.kenyonexpress.co.il` ->
-  **200**, HTML אמיתי, CSP/HSTS/`server: Vercel` תקינים,
-  `x-vercel-cache: HIT`.
+- `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+  localhost:3311 pnpm build` -> `exit 0`, בנייה טרייה על HEAD
+  `856107bcb`. `PORT=3311 pnpm start` מול הבנייה הזו (לא שרת ישן שתפס
+  את הפורט).
+- **בית** (`--baseline 'refs/ke_live_{width}.png'`, בפורגראונד, חיכה
+  למספרים באותה הרצה): **380 8.51% PASS, 768 9.02% PASS, 1440 3.95%
+  PASS** — זהה בדיוק ל-M02-c57.
+- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`,
+  `--baseline='refs/electro_product_{width}.png'`, בפורגראונד): **380
+  5.61% PASS, 768 4.92% PASS, 1440 2.99% PASS** — זהה בדיוק ל-M02-c57.
+  אזהרת `HEIGHT RATIO` מופיעה (תפיסה קפואה מול הדף החי, לא אותו גובה
+  עמוד), אך השער עצמו עדיין מדווח PASS על שלושתם — אין דריפט מהמדידה
+  הקודמת, לא בוצע תיקון (אין רגרסיה לתקן).
+- **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+  `pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
+  7272/7284 (12 skipped, זהה), `pnpm build` `exit 0` (הורץ בתחילת
+  הפריט, אין שינוי קוד אחריו). אין שינוי קוד — פריט מדידה בלבד.
+- **קבצים:** `docs/UI-PARITY-REPORT.md` (השער עצמו כותב שורה בכל
+  הרצה, שבע שורות חדשות מהסשן הזה כולל REFUSED אחת ל-1440 על
+  `is our-build` בהרצה הראשונה של הסשן על SHA נקי — אותה תבנית קבועה
+  שחוזרת בתחילת כל סשן קודם, PASS מיד אח"כ על אותו SHA עם סיומת
+  `-dirty`), `STATE.md` בלבד.
 
-**פריסה: לא נוסתה מחדש הפעם, לפי כלל "goal שנתקע פעמיים — לדלג"
-(כבר הוחל ב-M01-c55, M01-c56, M01-c57 — זו הפעם הרביעית עם אותו
-תנאי).** תנאי החסימה נבדק מחדש בפועל דרך Vercel MCP (קריאה בלבד,
-`filter_project_envs` על הפרויקט `kenyonexpress`), לא הונח:
+## M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-- Production עדיין מחזיק רק `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/
-  `CARDCOM_API_KEY` ו-`ALLOW_INCOMPLETE_ENV` (מוגדר, ערך ריק במקור
-  ה-API); שלושת השמות ש-`deploy-preflight.mjs`/`src/lib/env.ts`/
-  `src/server/payments/invoices.ts` דורשים בפועל —
-  `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
-  — עדיין חסרים לגמרי, אושר ב-`grep` על שלושת הקבצים. זהה למדידה
-  ב-M01-c57, אפס דריפט.
-- קומיטים מאחורי פרודקשן: `git rev-list --count a388118f1..HEAD` =
-  **157** (עלה מ-153 ב-M01-c57). הפריסה החיה עדיין `a388118f1`.
-
-**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
-במשימה):** `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3493 pnpm build` -> `exit 0`, כל
-המסלולים נבנו. שערים נוספים הורצו במלואם: `type-check` נקי, `lint`
-נקי (biome 2023 קבצים, i18n 627/627, locale 116/116, docs-index 282,
-docs-path-audit 152), `test` 608/608 קבצים, 7272/7284 (12 skipped,
-57.42s). אפס שינוי קוד יישומי, אין שער חזותי נדרש (אין שינוי UI).
-HEAD תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד.
-
-## M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+M01-c58: בדיקת פרודקשן, DNS ו-HTTP תקינים (`www.kenyonexpress.co.il`
+200, redirect 308 מהעירום), פריסת HEAD חסומה באותה סיבה בדיוק (שלושת
+שמות Cardcom חסרים ב-Production), פעם רביעית עם "goal שנתקע פעמיים —
+לדלג", 157 קומיטים מאחורי פרודקשן. build/type-check/lint/test ירוקים.
+הועבר ב-M02-c58 לשמירה על תקרת 300 שורות.
 
 M18-c57: בדיקת אפס-פעילות בפעם הרביעית, המחזור *לא* היה אפס-פעילות
 (שני קומיטי שינוי-קוד אמיתיים: עדכון תלות `@anthropic-ai/sdk`/
