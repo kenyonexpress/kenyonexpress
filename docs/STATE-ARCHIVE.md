@@ -2,6 +2,80 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c53 - DONE (29.09): advisors נמדדו שוב, 44 WARN זהה ב-100% ל-M05-c52, אפס קובץ חדש נדרש
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. M05-c1 (25.09) ו-M05-c52 (29.09, אותו יום) כבר ביצעו את
+אותה בדיקה בדיוק דרך אותו מסלול; הוחלט לחזור על המדידה במקום להניח
+שהיא עדיין נכונה, כי היא זולה (שתי קריאות `GET` בלבד) והתוצאה קובעת אם
+נדרש קובץ מיגרציה חדש.
+
+**מה נמדד:**
+1. Supabase MCP: `ToolSearch` על `get_advisors` לא מצא כלי — השרת
+   מופיע ברשימת "דורש הרשאה" (כמו בשני הפריטים הקודמים).
+2. `security find-generic-password -s "Supabase CLI" -w` -> טוקן
+   `go-keyring-base64:...`, פוענח ל-`sbp_...`.
+3. `GET /v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/security` -> `200`,
+   28 ממצאים: 4 `rls_enabled_no_policy` (INFO), 2
+   `anon_security_definer_function_executable` (WARN: `is_admin`,
+   `is_supplier_member`), 21 `authenticated_security_definer_function_executable`
+   (WARN, אותה רשימת 21 פונקציות בדיוק כמו בסעיף 0א/0ב), 1
+   `function_search_path_mutable` (WARN: `fn_wallet_entries_block_mutation`).
+4. `GET /v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/performance` -> `200`,
+   197 ממצאים: 14 `multiple_permissive_policies` (WARN, אותן 11 טבלאות),
+   6 `auth_rls_initplan` (WARN, אותן טבלאות), 167 `unused_index` (INFO),
+   9 `unindexed_foreign_keys` (INFO), 1 `auth_db_connections_absolute` (INFO).
+5. נבדק תוכן ארבעת הקבצים הממתינים מול המדידה: `209_advisor_warnings.sql`
+   (§2, 5/6 `auth_rls_initplan`), `220_wallet_entries_search_path.sql`
+   (ה-`function_search_path_mutable` היחיד), `245_single_permissive_policy_per_action.sql`
+   (53 שורות `CREATE POLICY`/`DROP POLICY`, מכסה את כל 14
+   `multiple_permissive_policies`), `246_profiles_mfa_initplan.sql`
+   (השישי מ-`auth_rls_initplan`, `profiles_super_admin_mfa`) — כולם עדיין
+   ב-`migrations/pending/`, אף אחד לא הוחל, אף אחד לא נערך.
+
+**מסקנה:** 44 WARN, זהה ב-100% ל-M05-c52 בכל מדד (לא רק בסך-הכול):
+28/197/167/9 כולם זהים אות באות. כל ה-44 מכוסים על ידי קובץ קיים
+(21 by design + 23 עם קובץ). אפס קובץ מיגרציה חדש נדרש בפריט הזה.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 11 שערי תוכן),
+`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0`. אין שינוי קוד
+יישומי, אין שער חזותי נדרש (אין שינוי UI).
+
+**קבצים:** `docs/DB-SECURITY-MODEL.md` (סעיף 0ג), `STATE.md`.
+
+## M03-c53 - DONE (29.09): green check מחדש, ארבעת השערים נקיים ללא תיקון
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. אין פריט קודם באותו שם בתור הנוכחי; הפריט המקביל האחרון
+(M03-c52, `2ddc71256`) היה DONE עם אותה תוצאה בדיוק.
+
+**מה נמדד, בקדמת הבמה, כל ארבעת השערים:**
+1. `pnpm type-check` -> נקי, `tsc --noEmit` ללא פלט.
+2. `pnpm lint` -> נקי: `biome check` (2020 קבצים, "No fixes applied") +
+   כל אחד עשר שערי התוכן (`tokens`, `copy`, `asset`, `raw-html`,
+   `postgrest-or`, `cache-invalidation`, `rtl-logical`, `i18n` (627/627),
+   `locale-format` (116/116), `input-dir`, `docs-index`, `docs-path-audit`).
+3. `pnpm test` -> `605 test files passed`, `7195 tests passed | 12 skipped`,
+   זהה למדידה האחרונה.
+4. `pnpm build` -> `exit 0`, `✓ Compiled successfully in 1453ms`. אומת עם
+   `grep -iE "warn|error"` על הפלט המלא: כל שורה שחזרה היא לוג `pino` של
+   האפליקציה בזמן `generateStaticParams`/ISR (`supabase.rls_denied` על
+   `reviews`, `db.optional_column_missing` על מיגרציה 242, `db.query_slow`
+   על `suppliers`) — לא אזהרת webpack/Next, ולא דבר חדש: שלושתן כבר
+   מתועדות כחוסמים פתוחים (חוסם 3 למיגרציה 242, חוסם 3 נפרד ל-247 עבור
+   ה-RLS על reviews). חיפוש נפרד אחר `Compiled|Failed to compile` הניב רק
+   את שורת ההצלחה.
+
+**מסקנה:** אין תיקון fixable לבצע — אפס warnings/errors אמיתיים בארבעת
+השערים. זהה ל-M03-c52 (25.09->29.09 שוב אפס דריפט).
+
+**שערים:** ראו למעלה, כל הארבעה. אין שינוי קוד, אין קובץ מיגרציה. אין
+שער חזותי נדרש (אין שינוי UI, לפי התבנית של M08-c52/M09-c52/M01-c53
+ל"אין שינוי קוד").
+
+**קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (הועבר אליו הפירוט המלא
+של M01-c53).
+
 ## M02-c53 - DONE (29.09): שער חזותי בית+מוצר PASS בשלושת הרוחבים, אפס רגרסיה
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`

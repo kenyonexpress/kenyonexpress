@@ -1,63 +1,58 @@
-RESUME FROM: M06-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c53)
+RESUME FROM: M07-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c53)
 
 ## המשך מ:
 
-M05-c53 היה audit DB דרך advisors: Supabase MCP עדיין דורש OAuth לא זמין,
-אותו מסלול חלופי כמו M05-c1/M05-c52 (טוקן ה-CLI מה-keychain נגד
-`GET /v1/projects/<ref>/advisors/{security,performance}`, קריאה בלבד,
-200/200). **התוצאה זהה ב-100% ל-M05-c52, כל מדד, כל מספר**: 44 WARN
-(24 אבטחה + 20 ביצועים), 28 ממצאי אבטחה, 197 ממצאי ביצועים, 167
-`unused_index`, 9 `unindexed_foreign_keys` — אפס WARN חדש, אפס WARN
-שהפסיק לירות. כל ה-44 עדיין מכוסים בקבצים קיימים ב-`migrations/pending/`
-(209, 220, 245, 246), תוכנם אומת שעדיין תואם את המדידה (209 §2 מכסה
-5/6 מ-`auth_rls_initplan`, 246 את השישי; 245 מכסה את כל 14
-`multiple_permissive_policies`; 220 את `function_search_path_mutable`
-היחיד; 21+2 `security_definer` נשארים by design). **לא נכתב קובץ
-מיגרציה חדש — אין WARN לא מכוסה.** `docs/DB-SECURITY-MODEL.md` קיבל
-סעיף 0ג עם המדידה המתועדת. אין שינוי קוד, אין שער חזותי נדרש. פירוט
-מלא למטה.
+M06-c53 היה Lighthouse mobile על הבית ועל דף מוצר, לתקן עד שכל ארבעת
+הציונים 90+. נבנה מחדש לפי המתכון המתועד (M06-c1/M06-c52):
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm
+build`, אז `pnpm start -p 3462`, שני הדפים אומתו 200 לפני המדידה.
+`--throttling-method=devtools --emulated-form-factor=mobile` (לא ברירת
+המחדל `simulate`, ידועה לא יציבה מול שרת מקומי). **תוצאות: בית
+99/100/100/100, מוצר 99/100/100/100** — כל שמונת הציונים מעל 90 בברווח
+גדול, דומה ל-M06-c52 (98/100/100/100 ו-99/100/100/100). **אפס תיקון
+נדרש, אפס שינוי קוד.** שרת הבדיקה על פורט 3462 ושני קבצי ה-JSON הזמניים
+נוקו בסוף המדידה. פירוט מלא למטה.
 
-## M05-c53 - DONE (29.09): advisors נמדדו שוב, 44 WARN זהה ב-100% ל-M05-c52, אפס קובץ חדש נדרש
+## M06-c53 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+, אפס תיקון נדרש
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. M05-c1 (25.09) ו-M05-c52 (29.09, אותו יום) כבר ביצעו את
-אותה בדיקה בדיוק דרך אותו מסלול; הוחלט לחזור על המדידה במקום להניח
-שהיא עדיין נכונה, כי היא זולה (שתי קריאות `GET` בלבד) והתוצאה קובעת אם
-נדרש קובץ מיגרציה חדש.
+נקראו במלואם. M06-c1 (25.09) ו-M06-c52 (29.09) כבר ביצעו את אותה מדידה
+בדיוק דרך אותו מתכון; הוחלט לחזור על המדידה במקום להניח שהיא עדיין
+נכונה, כי ה-item דורש עדות טרייה ל-Lighthouse בפועל.
 
 **מה נמדד:**
-1. Supabase MCP: `ToolSearch` על `get_advisors` לא מצא כלי — השרת
-   מופיע ברשימת "דורש הרשאה" (כמו בשני הפריטים הקודמים).
-2. `security find-generic-password -s "Supabase CLI" -w` -> טוקן
-   `go-keyring-base64:...`, פוענח ל-`sbp_...`.
-3. `GET /v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/security` -> `200`,
-   28 ממצאים: 4 `rls_enabled_no_policy` (INFO), 2
-   `anon_security_definer_function_executable` (WARN: `is_admin`,
-   `is_supplier_member`), 21 `authenticated_security_definer_function_executable`
-   (WARN, אותה רשימת 21 פונקציות בדיוק כמו בסעיף 0א/0ב), 1
-   `function_search_path_mutable` (WARN: `fn_wallet_entries_block_mutation`).
-4. `GET /v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/performance` -> `200`,
-   197 ממצאים: 14 `multiple_permissive_policies` (WARN, אותן 11 טבלאות),
-   6 `auth_rls_initplan` (WARN, אותן טבלאות), 167 `unused_index` (INFO),
-   9 `unindexed_foreign_keys` (INFO), 1 `auth_db_connections_absolute` (INFO).
-5. נבדק תוכן ארבעת הקבצים הממתינים מול המדידה: `209_advisor_warnings.sql`
-   (§2, 5/6 `auth_rls_initplan`), `220_wallet_entries_search_path.sql`
-   (ה-`function_search_path_mutable` היחיד), `245_single_permissive_policy_per_action.sql`
-   (53 שורות `CREATE POLICY`/`DROP POLICY`, מכסה את כל 14
-   `multiple_permissive_policies`), `246_profiles_mfa_initplan.sql`
-   (השישי מ-`auth_rls_initplan`, `profiles_super_admin_mfa`) — כולם עדיין
-   ב-`migrations/pending/`, אף אחד לא הוחל, אף אחד לא נערך.
+1. `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm
+   build` -> `exit 0`, "Compiled successfully".
+2. `pnpm start -p 3462` מאותה סביבה; `curl` אישר `200` על `/` ועל
+   `/product/barbecue-2` לפני המדידה.
+3. `node_modules/.bin/lighthouse` על שני ה-URL, `--throttling-method=
+   devtools --emulated-form-factor=mobile`, ארבעת הקטגוריות:
 
-**מסקנה:** 44 WARN, זהה ב-100% ל-M05-c52 בכל מדד (לא רק בסך-הכול):
-28/197/167/9 כולם זהים אות באות. כל ה-44 מכוסים על ידי קובץ קיים
-(21 by design + 23 עם קובץ). אפס קובץ מיגרציה חדש נדרש בפריט הזה.
+   | דף | ביצועים | נגישות | BP | SEO |
+   |---|---|---|---|---|
+   | בית `/` | 99 | 100 | 100 | 100 |
+   | מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 11 שערי תוכן),
-`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0`. אין שינוי קוד
-יישומי, אין שער חזותי נדרש (אין שינוי UI).
+   כל שמונת הציונים מעל 90. דומה ל-M06-c52 (98/100/100/100,
+   99/100/100/100) — אין רגרסיה, אין תיקון נדרש.
+4. שרת הבדיקה נעצר (`pkill`), פורט 3462 אומת פנוי, שני קבצי ה-JSON
+   הזמניים נמחקו.
 
-**קבצים:** `docs/DB-SECURITY-MODEL.md` (סעיף 0ג), `STATE.md`.
+**מסקנה:** אפס תיקון fixable — כל שמונת הציונים כבר 90+, ברווח גדול.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 12 שערי תוכן),
+`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0`. אין שינוי קוד יישומי,
+אין שער חזותי נדרש (אין שינוי UI).
+
+**קבצים:** `STATE.md` בלבד.
+
+## M05-c53 - DONE (29.09): פירוט מלא בארכיון
+
+advisors נמדדו שוב דרך ה-management API: 44 WARN, זהה ב-100% ל-M05-c52
+בכל מדד (28/197/167/9). כל ה-44 מכוסים בקבצים קיימים ב-`migrations/pending/`
+(209, 220, 245, 246) או by design. אפס קובץ מיגרציה חדש נדרש. אין שינוי
+קוד.
 
 ## M04-c53 - DONE (29.09): תברואת תלויות — audit אפס, 13 חבילות patch/minor, אפס major
 
@@ -67,38 +62,10 @@ M05-c53 היה audit DB דרך advisors: Supabase MCP עדיין דורש OAuth 
 (13 חבילות major + 2 `0.x` דולגו). `pnpm audit` אפס חולשות. ארבעת השערים
 ירוקים, 605/7195. אין שינוי קוד יישומי. פירוט מלא בארכיון.
 
-## M03-c53 - DONE (29.09): green check מחדש, ארבעת השערים נקיים ללא תיקון
+## M03-c53 - DONE (29.09): פירוט מלא בארכיון
 
-**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. אין פריט קודם באותו שם בתור הנוכחי; הפריט המקביל האחרון
-(M03-c52, `2ddc71256`) היה DONE עם אותה תוצאה בדיוק.
-
-**מה נמדד, בקדמת הבמה, כל ארבעת השערים:**
-1. `pnpm type-check` -> נקי, `tsc --noEmit` ללא פלט.
-2. `pnpm lint` -> נקי: `biome check` (2020 קבצים, "No fixes applied") +
-   כל אחד עשר שערי התוכן (`tokens`, `copy`, `asset`, `raw-html`,
-   `postgrest-or`, `cache-invalidation`, `rtl-logical`, `i18n` (627/627),
-   `locale-format` (116/116), `input-dir`, `docs-index`, `docs-path-audit`).
-3. `pnpm test` -> `605 test files passed`, `7195 tests passed | 12 skipped`,
-   זהה למדידה האחרונה.
-4. `pnpm build` -> `exit 0`, `✓ Compiled successfully in 1453ms`. אומת עם
-   `grep -iE "warn|error"` על הפלט המלא: כל שורה שחזרה היא לוג `pino` של
-   האפליקציה בזמן `generateStaticParams`/ISR (`supabase.rls_denied` על
-   `reviews`, `db.optional_column_missing` על מיגרציה 242, `db.query_slow`
-   על `suppliers`) — לא אזהרת webpack/Next, ולא דבר חדש: שלושתן כבר
-   מתועדות כחוסמים פתוחים (חוסם 3 למיגרציה 242, חוסם 3 נפרד ל-247 עבור
-   ה-RLS על reviews). חיפוש נפרד אחר `Compiled|Failed to compile` הניב רק
-   את שורת ההצלחה.
-
-**מסקנה:** אין תיקון fixable לבצע — אפס warnings/errors אמיתיים בארבעת
-השערים. זהה ל-M03-c52 (25.09->29.09 שוב אפס דריפט).
-
-**שערים:** ראו למעלה, כל הארבעה. אין שינוי קוד, אין קובץ מיגרציה. אין
-שער חזותי נדרש (אין שינוי UI, לפי התבנית של M08-c52/M09-c52/M01-c53
-ל"אין שינוי קוד").
-
-**קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (הועבר אליו הפירוט המלא
-של M01-c53).
+green check מחדש: כל ארבעת השערים נקיים ללא תיקון (`type-check`, `lint`,
+605/7195, `build` exit 0). זהה ל-M03-c52, אפס דריפט. אין שינוי קוד.
 
 ## M02-c53 - DONE (29.09): פירוט מלא בארכיון
 
