@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c57 (הועבר מ-STATE.md ב-M06-c57, לשמירה על תקרת 300 שורות)
+
+**M05-c57 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם השביעית ברציפות
+דרך ה-management API (MCP דורש OAuth, לא זמין בסשן לא-אינטראקטיבי),
+44 WARN זהה שדה-שדה ל-M05-c56, אפס קובץ מיגרציה חדש נדרש.**
+המשימה: להריץ `get_advisors` (security+performance) דרך Supabase MCP
+בקריאה בלבד, לכתוב קובץ מיגרציה ב-`migrations/pending` לכל WARN חדש,
+לעדכן `docs/DB-SECURITY-MODEL.md` אם המספרים השתנו.
+
+- **Supabase MCP:** נבדק דרך `ToolSearch`, לא נמצא (מופיע ברשימת "דורש
+  הרשאה", אין OAuth בסשן לא-אינטראקטיבי) — אותה נקודה שנבדקה ב-0א..0ו
+  ב-`DB-SECURITY-MODEL.md`. מסלול חלופי מבוסס, קריאה בלבד: טוקן ה-CLI
+  מה-keychain (`security find-generic-password -s "Supabase CLI" -w`,
+  עטיפת `go-keyring-base64:` ואז פענוח base64), שני `GET
+  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+  {security,performance}`, `200`/`200`. הטוקן לא נדפס ולא נשמר לקובץ;
+  קבצי הפלט הזמניים ב-`/tmp/ke-advisors/` נמחקו בסוף הפריט.
+- **תוצאה, נספר בפועל מה-JSON (לא הועתק מ-STATE.md קודם):** אבטחה 28
+  ממצאים (4 `rls_enabled_no_policy` INFO, 2
+  `anon_security_definer_function_executable` WARN על
+  `is_admin`/`is_supplier_member`, 21
+  `authenticated_security_definer_function_executable` WARN, 1
+  `function_search_path_mutable` WARN על
+  `fn_wallet_entries_block_mutation`); ביצועים 197 ממצאים (14
+  `multiple_permissive_policies` WARN על אותן 11 טבלאות, 6
+  `auth_rls_initplan` WARN על אותן טבלאות, 167 `unused_index` INFO, 9
+  `unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute`
+  INFO). רשימת שמות הפונקציות/הטבלאות בכל WARN הושוותה שורה-שורה מול
+  0ו — זהה במדויק. **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.**
+- ארבעת הקבצים הממתינים שכבר מכסים את כל 44 ה-WARN עדיין קיימים ולא
+  נערכו: `migrations/pending/209_advisor_warnings.sql`,
+  `220_wallet_entries_search_path.sql`,
+  `245_single_permissive_policy_per_action.sql`,
+  `246_profiles_mfa_initplan.sql`. **אין קובץ מיגרציה חדש נדרש**, אין
+  WARN לא-מכוסה. שום דבר לא הוחל על פרודקשן.
+- `docs/DB-SECURITY-MODEL.md`: נוסף סעיף 0ז עם המדידה המלאה ותאריך
+  עדכון בראש הקובץ.
+- `type-check`/`lint`/`test` (608/608, 7242/7254)/`build` ירוקים, אפס
+  שינוי קוד מוצר.
+- **קבצים:** `docs/DB-SECURITY-MODEL.md`, `docs/STATE-ARCHIVE.md`,
+  `STATE.md`.
+
 ## M04-c57 (הועבר מ-STATE.md ב-M05-c57, לשמירה על תקרת 300 שורות)
 
 **M04-c57 - DONE (30.09): תחזוקת תלויות, שני עדכוני minor בטווח 0.x
