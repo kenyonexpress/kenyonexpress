@@ -2,6 +2,39 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c52 - DONE (29.09): SEO — מטא/canonical/og/JSON-LD Product+Offer/sitemap/robots נמדדו מחדש מול build אמיתי, אפס דריפט
+
+נמדד ישירות, לא הוערך: אפס שינוי בכל קובץ SEO (`src/app/sitemap.ts`,
+`src/app/robots.ts`, `src/app/sitemap*.test.ts`, `src/__tests__/canonical-*.test.ts`,
+`src/lib/seo/**`, דפי `product/[slug]`, `category/[slug]`, הבית) מאז
+M12-c51 (`0e6da821b`, 28.09) ועד HEAD הנוכחי — `git log <range> -- <paths>`
+ריק, לא רק "לא ראיתי שינוי".
+
+בכל זאת נמדד מחדש מול build אמיתי ולא רק מול הקוד: `pnpm build` נקי,
+שרת `pnpm start` נפרד על פורט 3512 (לא נגעתי בשרתים של סשנים מקבילים).
+
+- **`robots.txt`**: `Allow: /`, עשרה `Disallow` (redeem/coupon/account/
+  supplier/scan/admin/checkout/cart/auth/api + reset/forgot-password),
+  `Host` ו-`Sitemap` מצביעים על `https://kenyonexpress.co.il`.
+- **`sitemap.xml`**: sitemap index עם חמישה חלקים (content/categories/
+  products/regions/suppliers). `products.xml`: 46 `<loc>`, `lastmod` תקין
+  (2026-08-10T14:10:29Z).
+- **דף מוצר** (`/product/barbecue`): `canonical` נכון, תשעה תגי `og:*`
+  (title/description/url/locale/image+type/width/height/alt/type=website),
+  שני בלוקי JSON-LD תקינים: `Product` (name/url/category/image/brand,
+  `offers` מסוג `Offer` עם `price`/`priceCurrency`/`availability`/`seller`/
+  `priceSpecification` מסוג `StrikethroughPrice`) ו-`BreadcrumbList`.
+- **דף הבית**: `canonical` ושישה תגי `og:*` תקינים.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים כולל i18n/
+locale-format על התקרה הקיימת), 180 טסטי SEO ייעודיים (11 קבצים: sitemap/
+robots/canonical-coverage/canonical-host-probe/seo) ירוקים, `pnpm test`
+**604/7188** (זהה, 0 חדשים), `pnpm build` עבר בלי שגיאה. אין שינוי UI,
+לכן `scripts/compare.mjs` לא רץ (תואם לתקדים ב-M03/M05/M06/M07/M09/M10/
+M11-c52, שרק פריטי parity בפועל מריצים את השער — M02-c52).
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M11-c52 - DONE (29.09): נגישות — axe על כל דף נמדד מחדש, אפס הפרות `serious`/`critical`
 
 נמדד ישירות, לא הוערך: מאז ה-axe האחרון (`72df5e898`, M11-c51 ב-28.09)

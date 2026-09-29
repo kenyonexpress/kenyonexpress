@@ -1,47 +1,53 @@
-RESUME FROM: M13-c52
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c52)
+RESUME FROM: M14-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c52)
 
 ## המשך מ:
 
-M12-c52 מדד SEO מחדש (מטא/canonical/og/JSON-LD/sitemap/robots) מול build
-אמיתי. אפס דריפט, אפס שינוי קוד. סשן הבא ממשיך את סבב ה-c52 בסדר של
-c51: M13-c52 אבטחה (CSP/HSTS/X-Frame-Options/Referrer-Policy, rate-limit),
-ואם אין דריפט להמשיך ל-M14-c52 (bundle/images), M15-c52 (סנכרון docs),
-M16-c52 (תברואת ריפו) וכו', עד שנתקל בפריט שדורש תיקון בפועל או ש-אופיר
-טיפל בסעיף מ-`docs/BACKLOG.md`.
+M13-c52 אימת מחדש אבטחה (CSP/HSTS/X-Frame-Options/Referrer-Policy,
+rate-limit על login/checkout/redeem) מול build אמיתי. אפס דריפט, אפס שינוי
+קוד. סשן הבא ממשיך את סבב ה-c52 בסדר של c51: M14-c52 (bundle/images),
+ואם אין דריפט להמשיך ל-M15-c52 (סנכרון docs), M16-c52 (תברואת ריפו) וכו',
+עד שנתקל בפריט שדורש תיקון בפועל או ש-אופיר טיפל בסעיף מ-`docs/BACKLOG.md`.
 
-## M12-c52 - DONE (29.09): SEO — מטא/canonical/og/JSON-LD Product+Offer/sitemap/robots נמדדו מחדש מול build אמיתי, אפס דריפט
+## M13-c52 - DONE (29.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy/rate-limit על login+checkout+redeem נמדדו מחדש מול build אמיתי, אפס דריפט
 
-נמדד ישירות, לא הוערך: אפס שינוי בכל קובץ SEO (`src/app/sitemap.ts`,
-`src/app/robots.ts`, `src/app/sitemap*.test.ts`, `src/__tests__/canonical-*.test.ts`,
-`src/lib/seo/**`, דפי `product/[slug]`, `category/[slug]`, הבית) מאז
-M12-c51 (`0e6da821b`, 28.09) ועד HEAD הנוכחי — `git log <range> -- <paths>`
-ריק, לא רק "לא ראיתי שינוי".
+נמדד ישירות: אפס שינוי ב-`next.config.ts`, `src/lib/security/frame-policy.ts`
+וב-`src/lib/rate-limit/**` מאז M13-c51 (`506f0cd28`, 28.09) ועד HEAD —
+`git log <range> -- <paths>` ריק.
 
-בכל זאת נמדד מחדש מול build אמיתי ולא רק מול הקוד: `pnpm build` נקי,
-שרת `pnpm start` נפרד על פורט 3512 (לא נגעתי בשרתים של סשנים מקבילים).
+בכל זאת נמדד מחדש מול build אמיתי: `pnpm build` נקי, שרת `pnpm start`
+נפרד על פורט 3513 (לא נגעתי בשרת סשן מקביל על 3471).
 
-- **`robots.txt`**: `Allow: /`, עשרה `Disallow` (redeem/coupon/account/
-  supplier/scan/admin/checkout/cart/auth/api + reset/forgot-password),
-  `Host` ו-`Sitemap` מצביעים על `https://kenyonexpress.co.il`.
-- **`sitemap.xml`**: sitemap index עם חמישה חלקים (content/categories/
-  products/regions/suppliers). `products.xml`: 46 `<loc>`, `lastmod` תקין
-  (2026-08-10T14:10:29Z).
-- **דף מוצר** (`/product/barbecue`): `canonical` נכון, תשעה תגי `og:*`
-  (title/description/url/locale/image+type/width/height/alt/type=website),
-  שני בלוקי JSON-LD תקינים: `Product` (name/url/category/image/brand,
-  `offers` מסוג `Offer` עם `price`/`priceCurrency`/`availability`/`seller`/
-  `priceSpecification` מסוג `StrikethroughPrice`) ו-`BreadcrumbList`.
-- **דף הבית**: `canonical` ושישה תגי `og:*` תקינים.
+- **`curl` על חמישה נתיבים** (`/`, `/login`, `/checkout`,
+  `/checkout/frame-return`, `/redeem/[token]`): כל אחד עם `Content-Security-
+  Policy`, `Strict-Transport-Security` (`max-age=63072000; includeSubDomains;
+  preload`), `X-Frame-Options`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`.
+  ה-CSP `frame-ancestors` וה-`X-Frame-Options` הופכים נכון רק ב-
+  `/checkout/frame-return` (`'self'`/`SAMEORIGIN` שם, `'none'`/`DENY`
+  בארבעת האחרים) — עדות ישירה לתיעוד ב-`next.config.ts` על שני מקורות
+  headers שלא חופפים.
+- **rate-limit על שלושת הנתיבים**: `src/server/actions/auth.test.ts`
+  (`describe('signInWithEmail rate limiting')`), `src/server/actions/
+  payments/checkout.test.ts` (`describe('beginCheckout: the begin_checkout
+  rate limit')`), `src/app/api/supplier/vouchers/redeem/route.test.ts`
+  (429 עם ותק בלי לגעת בשובר כשהתקרה מגיעה) — שלושתם ירוקים, מוסיפים על
+  הכיסוי מ-M13-c51.
+- **Upstash**: לא מוגדר מקומית (`.env.local` בלי `UPSTASH_REDIS_REST_URL`),
+  fallback ל-Postgres פעיל — זהה למצב שתועד ב-M13-c51.
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים כולל i18n/
-locale-format על התקרה הקיימת), 180 טסטי SEO ייעודיים (11 קבצים: sitemap/
-robots/canonical-coverage/canonical-host-probe/seo) ירוקים, `pnpm test`
-**604/7188** (זהה, 0 חדשים), `pnpm build` עבר בלי שגיאה. אין שינוי UI,
-לכן `scripts/compare.mjs` לא רץ (תואם לתקדים ב-M03/M05/M06/M07/M09/M10/
-M11-c52, שרק פריטי parity בפועל מריצים את השער — M02-c52).
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test`
+**604/7188** (זהה, 0 חדשים, 0 דולגו חדשים), `pnpm build` עבר בלי שגיאה.
+אין שינוי UI, לכן `scripts/compare.mjs` לא רץ (תואם לתקדים M03/M05/M06/
+M07/M09/M10/M11/M12-c52).
 
 **קבצים:** `STATE.md` בלבד.
+
+## M12-c52 - DONE (29.09): פירוט מלא בארכיון
+
+SEO נמדד מחדש מול build אמיתי: robots.txt/sitemap.xml (46 מוצרים)/
+canonical/og/JSON-LD Product+Offer+BreadcrumbList על דף מוצר והבית, כולם
+תקינים. 180 טסטי SEO ייעודיים ירוקים, 604/7188 זהה. אין שינוי קוד.
 
 ## M11-c52 - DONE (29.09): פירוט מלא בארכיון
 
@@ -198,6 +204,7 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 | M10-c52 | DONE (29.09) | הרשומה למעלה. נמדד (לא הוערך) שהנמוך מבין ששת המועמדים הוא `src/lib/supabase/rls-report-fetch.ts`, 81.1% ענפים; שאר החמישה כבר ב-95%+. שבעה טסטים נוספו, 100% ענפים אומת. `vitest.config.ts` הורחב זמנית למדידה בלבד והוחזר בדיוק (diff ריק). שערים נקיים, 604/7188. |
 | M11-c52 | DONE (29.09) | הרשומה למעלה. axe נמדד מחדש על 160 סריקות (פומבי 80/2 דולג, לקוח 16/16, אדמין 57/57 עם `E2E_ADMIN_EMAIL` הנכון, ספק 7/7), אפס הפרות WCAG 2.1 A/AA. אין שינוי קוד. |
 | M12-c52 | DONE (29.09) | הרשומה למעלה. SEO נמדד מחדש מול build אמיתי: robots.txt/sitemap.xml (46 מוצרים)/canonical/og/JSON-LD Product+Offer+BreadcrumbList על דף מוצר והבית, כולם תקינים. 180 טסטי SEO ייעודיים ירוקים, 604/7188 זהה. אין שינוי קוד. |
+| M13-c52 | DONE (29.09) | הרשומה למעלה. CSP/HSTS/X-Frame-Options/Referrer-Policy נמדדו מחדש ב-`curl` על חמישה נתיבים כולל חריג `/checkout/frame-return`; rate-limit על login/checkout/redeem מכוסה בטסטים ירוקים. Upstash לא מוגדר מקומית, Postgres fallback פעיל. אין שינוי קוד. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
