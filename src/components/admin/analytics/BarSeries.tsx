@@ -72,7 +72,12 @@ export default function BarSeries({
         ))}
       </div>
 
-      <div className="mt-4 overflow-x-auto">
+      <section
+        className="mt-4 overflow-x-auto"
+        aria-label={title}
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+        tabIndex={0}
+      >
         <table className="w-full text-start text-sm">
           <thead>
             <tr className="border-b border-gray-200 text-xs text-black/60">
@@ -105,7 +110,7 @@ export default function BarSeries({
             ))}
           </tbody>
         </table>
-      </div>
+      </section>
     </section>
   )
 }

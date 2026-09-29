@@ -262,7 +262,12 @@ export default async function AnalyticsPage({
           <p className="mt-1 text-xs text-black/60">
             מחזור קופון נמדד בשווי פנים, ולכן גדול ממה שנגבה באתר. הפער הוא מה שנגבה בעסק.
           </p>
-          <div className="mt-4 overflow-x-auto">
+          <section
+            className="mt-4 overflow-x-auto"
+            aria-label="קופונים מול מוצרים פיזיים"
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+            tabIndex={0}
+          >
             <table className="w-full text-start text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs text-black/60">
@@ -300,7 +305,7 @@ export default async function AnalyticsPage({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         </section>
 
         <section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -308,7 +313,12 @@ export default async function AnalyticsPage({
           <p className="mt-1 text-xs text-black/60">
             לפי GMV בטווח הנבחר; אותן שורות מכירה של שאר העמוד.
           </p>
-          <div className="mt-4 overflow-x-auto">
+          <section
+            className="mt-4 overflow-x-auto"
+            aria-label="עשרת הספקים המובילים"
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+            tabIndex={0}
+          >
             <table className="w-full text-start text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs text-black/60">
@@ -351,7 +361,7 @@ export default async function AnalyticsPage({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         </section>
 
         <section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -359,7 +369,12 @@ export default async function AnalyticsPage({
           <p className="mt-1 text-xs text-black/60">
             לפי האחוז שצולם בזמן הרכישה. שינוי אחוז היום אינו מזיז שורה בטבלה הזו.
           </p>
-          <div className="mt-4 overflow-x-auto">
+          <section
+            className="mt-4 overflow-x-auto"
+            aria-label="הכנסות לפי אחוז פלטפורמה"
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+            tabIndex={0}
+          >
             <table className="w-full text-start text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs text-black/60">
@@ -404,14 +419,19 @@ export default async function AnalyticsPage({
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         </section>
       </div>
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="text-sm font-bold text-heading">מוצרים מובילים</h2>
         <p className="mt-1 text-xs text-black/60">לפי מחזור בטווח הנבחר.</p>
-        <div className="mt-4 overflow-x-auto">
+        <section
+          className="mt-4 overflow-x-auto"
+          aria-label="מוצרים מובילים"
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+          tabIndex={0}
+        >
           <table className="w-full text-start text-sm">
             <thead>
               <tr className="border-b border-gray-200 text-xs text-black/60">
@@ -467,7 +487,7 @@ export default async function AnalyticsPage({
               ))}
             </tbody>
           </table>
-        </div>
+        </section>
       </section>
     </div>
   )

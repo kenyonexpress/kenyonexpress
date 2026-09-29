@@ -148,7 +148,12 @@ export default async function CashbackPage() {
               : ''}
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+          <section
+            className="overflow-x-auto rounded-lg border border-gray-200 bg-white"
+            aria-label={`תנועות אחרונות (${rows.length})`}
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+            tabIndex={0}
+          >
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 text-start">
                 <tr>
@@ -189,7 +194,7 @@ export default async function CashbackPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         )}
       </section>
     </div>

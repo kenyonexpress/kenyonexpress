@@ -247,7 +247,12 @@ export default async function ReportsPage({
           <SalesChart points={points} />
         </div>
 
-        <div className="mt-4 overflow-x-auto">
+        <section
+          className="mt-4 overflow-x-auto"
+          aria-label="מכירות, עמלות והחזרים לפי תקופה"
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+          tabIndex={0}
+        >
           <table className="w-full text-start text-sm">
             <caption className="sr-only">מכירות, עמלות והחזרים לפי תקופה</caption>
             <thead>
@@ -302,7 +307,7 @@ export default async function ReportsPage({
               ))}
             </tbody>
           </table>
-        </div>
+        </section>
       </section>
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -317,7 +322,12 @@ export default async function ReportsPage({
           <ExportLink href={`/api/admin/reports/suppliers?${query}`}>ייצוא CSV</ExportLink>
         </div>
 
-        <div className="mt-4 overflow-x-auto">
+        <section
+          className="mt-4 overflow-x-auto"
+          aria-label="התחייבות פתוחה לכל ספק"
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+          tabIndex={0}
+        >
           <table className="w-full text-start text-sm">
             <caption className="sr-only">התחייבות פתוחה לכל ספק</caption>
             <thead>
@@ -373,7 +383,7 @@ export default async function ReportsPage({
               ))}
             </tbody>
           </table>
-        </div>
+        </section>
       </section>
     </div>
   )

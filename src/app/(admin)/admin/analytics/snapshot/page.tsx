@@ -257,7 +257,12 @@ export default async function ReportSnapshotPage({
           </p>
           {orders.available ? (
             <>
-              <div className="mt-4 overflow-x-auto">
+              <section
+                className="mt-4 overflow-x-auto"
+                aria-label="הזמנות לפי יום ולפי סטטוס"
+                // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+                tabIndex={0}
+              >
                 <table className="w-full text-start text-sm">
                   <caption className="sr-only">הזמנות לפי יום ולפי סטטוס</caption>
                   <thead>
@@ -312,7 +317,7 @@ export default async function ReportSnapshotPage({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </section>
               <Stale refreshedAt={orderRows[0]?.refreshedAt} />
             </>
           ) : (
@@ -330,7 +335,12 @@ export default async function ReportSnapshotPage({
           </p>
           {top.available ? (
             <>
-              <div className="mt-4 overflow-x-auto">
+              <section
+                className="mt-4 overflow-x-auto"
+                aria-label="מוצרים מובילים לפי הכנסה בחלון הנבחר"
+                // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+                tabIndex={0}
+              >
                 <table className="w-full text-start text-sm">
                   <caption className="sr-only">מוצרים מובילים לפי הכנסה בחלון הנבחר</caption>
                   <thead>
@@ -379,7 +389,7 @@ export default async function ReportSnapshotPage({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </section>
               <Stale refreshedAt={topRows[0]?.refreshedAt} />
             </>
           ) : (

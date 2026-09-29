@@ -231,7 +231,12 @@ export default async function BillingPage() {
           אף ספק תשתית אינו נמשך אוטומטית היום. לכל שורה כתוב איזה משתנה סביבה היה מחליף את ההזנה
           הידנית.
         </p>
-        <div className="mt-4 overflow-x-auto">
+        <section
+          className="mt-4 overflow-x-auto"
+          aria-label="מאיפה מגיעים המספרים"
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+          tabIndex={0}
+        >
           <table className="w-full text-sm">
             <thead>
               <tr className="border-border border-b text-muted text-xs">
@@ -257,7 +262,7 @@ export default async function BillingPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </section>
         {costs.smsMessages > 0 && (
           <p className="mt-3 text-muted text-sm">
             SMS: {costs.smsMessages} הודעות בעלות מדודה של{' '}

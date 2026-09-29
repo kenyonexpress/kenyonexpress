@@ -42,7 +42,12 @@ export default function CohortGrid({ grid }: { grid: Grid }) {
   const offsets = Array.from({ length: grid.maxOffset + 1 }, (_, i) => i)
 
   return (
-    <div className="overflow-x-auto">
+    <section
+      className="overflow-x-auto"
+      aria-label="שיעור הלקוחות מכל חודש הצטרפות שביצעו רכישה משולמת נוספת בחודשים שאחריו"
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+      tabIndex={0}
+    >
       <table className="w-full text-start text-sm">
         <caption className="sr-only">
           שיעור הלקוחות מכל חודש הצטרפות שביצעו רכישה משולמת נוספת בחודשים שאחריו
@@ -97,6 +102,6 @@ export default function CohortGrid({ grid }: { grid: Grid }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </section>
   )
 }

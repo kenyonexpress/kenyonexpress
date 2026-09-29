@@ -41,7 +41,12 @@ export default function ServerDataTable<T>({
   const currentDir = (params.dir as string | undefined) ?? 'desc'
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-black/10 bg-surface">
+    <section
+      className="overflow-x-auto rounded-xl border border-black/10 bg-surface"
+      aria-label="טבלת נתונים, גלילה אופקית"
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+      tabIndex={0}
+    >
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/60">
@@ -108,6 +113,6 @@ export default function ServerDataTable<T>({
           )}
         </tbody>
       </table>
-    </div>
+    </section>
   )
 }

@@ -93,7 +93,12 @@ export default async function AdminSearchPage() {
         {empty.length === 0 ? (
           <p className="text-sm text-gray-500">אין עדיין חיפושים ריקים.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <section
+            className="overflow-x-auto"
+            aria-label="חיפושים ללא תוצאות"
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+            tabIndex={0}
+          >
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-start text-xs text-gray-500">
@@ -116,7 +121,7 @@ export default async function AdminSearchPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </section>
         )}
       </section>
 
