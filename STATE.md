@@ -1,36 +1,31 @@
-RESUME FROM: M09-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c57)
+RESUME FROM: M10-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c57)
 
 ## המשך מ:
 
-**M08-c57 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
-בידי הסוכן.** משימת התור: "Backlog: take the single highest-impact
-open phase 1 item from docs/BACKLOG.md, skipping deferred and phase 2
-items." `docs/BACKLOG.md` נקרא בשלמותו (175 שורות, 15 פריטים ממוספרים)
-— הבאנר שלו עצמו קובע: **"Nothing here is an action an agent may take
-alone (Vercel env, DNS, secret rotation, a value only Ofir has, or a
-decision the ledger says is an operator's, not the agent's)."** כל 15
-הפריטים זהים למה שנבדק ב-M08-c56 ובכל מחזור קודם, אחד-אחד: (1) DNS —
-RESOLVED, אין פעולה. (2) `CRON_SECRET` ב-GitHub — דורש הדבקת ערך
-מ-Vercel, אסור על הסוכן. (3)+(4) סביבת Production ופריסת HEAD — חוסם
-env + `deploy-preflight`. (5) מיגרציות ממתינות — `migrations/pending`
-בלבד, אסור להחיל בלי אישור. (6) Cardcom אמיתי — ערכי secret וחיוב
-אמיתי, אסור ("no payment provider integration"). (7) 26 שורות קטלוג —
-הכרעת מפעיל מפורשת. (8) רוטציית סודות — אסורה במפורש. (9)
-`RESEND_API_KEY` — ערך רק אצל אופיר. (10) הפעלת R2 — לוח בקרה חיצוני.
-(11) `cron-jobs.json`/`main` — נפתר מעצמו במיזוג. (12) `dns-watch.sh`
-— בדיקת מצב בלבד. (13) ח.פ בהודעת רכישה — ממתין לערך מאופיר. (14)
-כניסה בטלפון — ספק חיצוני + env. (15) 32 stash — מחיקת נתונים דורשת
-אישור. `git log --oneline ac2d73183..HEAD -- docs/BACKLOG.md` ריק —
-אין קומיט מאז M01-c57 (בדיקה מלאה קודמת של הקובץ) שנוגע בו, וקומיטי
-הביניים (M02-c57..M06-c57) הם parity/green-check/deps/db-advisors/
-lighthouse, כולם ללא שינוי ל-`docs/BACKLOG.md`. **מסקנה: BACKLOG
-EMPTY, זהה ל-M08-c56 ולכל בדיקה קודמת.** שערים: `type-check` נקי,
-`lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627,
-locale 116/116), `test` 608/608 קבצים, 7242/7254 (12 skipped, זהה),
-`build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
-**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` —
-M06-c57 הועבר לתקרת 300 שורות).
+**M09-c57 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup:
+take the single highest-impact open item listed in STATE.md that a code
+agent can complete without Ofir." נקראו `CLAUDE.md`, `STATE.md` (289
+שורות, מתחת לתקרה, אין צורך בארכוב), `docs/BACKLOG.md` (176 שורות, 15
+פריטים) ו-`git log -20`. `git log --oneline -1 -- docs/BACKLOG.md
+STATE.md` מצביע על `c16b95c3e` (M08-c57, ה-commit הנוכחי) — אין קומיט
+חדש מאז שנוגע באחד מהם. M08-c57 כבר בדק את 15 הפריטים אחד-אחד וקבע
+שכולם דורשים אופיר (ערך סוד, Vercel env, DNS, או הכרעת מפעיל מפורשת);
+נבדק כאן שוב מול הבאנר של `docs/BACKLOG.md` עצמו ("Nothing here is an
+action an agent may take alone") ואין חריג. בדיקת סניטי נוספת: מספר
+הממצאים ב-`supabase/catalogue-known-issues.json` עדיין 26 (`known`),
+זהה לרשום. **מסקנה: אין פריט יחיד בר-ביצוע לסוכן קוד. STATE CLEAN.**
+שערים הורצו במלואם (לא רק נבדקו כמדד עקיף): `type-check` נקי, `lint`
+נקי (biome 2023 קבצים, כל 12 שערי התוכן ירוקים, i18n 627/627, locale
+116/116), `test` 608/608 קבצים, 7242/7254 (12 skipped) — זהה למדידה
+הקודמת, `build` הושלם ללא שגיאה. אין שינוי קוד, אין שער חזותי נדרש
+(אין שינוי UI). **קובץ יחיד שונה: `STATE.md`.**
+
+## M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1 בידי הסוכן; כל 15 הפריטים
+דורשים אופיר (ערך סוד, Vercel env, DNS, או הכרעת מפעיל). הועבר
+ב-M09-c57 לשמירה על תקרת 300 שורות.
 
 ## M06-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
