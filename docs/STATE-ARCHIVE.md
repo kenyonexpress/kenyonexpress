@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c55 (הועבר מ-STATE.md ב-M13-c55, לשמירה על תקרת 300 שורות)
+
+**M12-c55 - DONE (29.09): SEO — metadata, canonical, og, schema.org
+Product/Offer, עדכניות sitemap ו-robots נמדדו מחדש, אפס דריפט.** המשימה
+הוקצתה מחוץ לסדר (M11-c55 עדיין לא בוצע, כמו M12-c53 בזמנו) — אותו
+דפוס אימות מחזורי כמו M12-c54 (`1dabfc80d`) ולפניו M12-c53. **נבדק קודם
+מה השתנה מאז**: `git diff 1dabfc80d..HEAD --stat` על 10 קבצים —
+`src/components/home/HeroSlider.tsx` (תיקון srcset מ-M14-c54, קדם
+ל-M12-c54 עצמו), `src/server/actions/refund-requests.test.ts` (חדש,
+M10-c55), `package.json`/`pnpm-lock.yaml` (עדכון פטץ' `posthog-js`,
+M04-c55), ומסמכי `docs/`+`STATE.md` — **אף אחד לא נוגע למשטחי SEO**
+(`layout.tsx`, `robots.ts`, `sitemap*.xml/route.ts`, JSON-LD). **אומת
+בכל זאת ישירות מול build אמיתי** (`pnpm build` נקי, `PORT=3919 pnpm
+start`, `Ready in 71ms` — שרת טרי, לא ישן): `robots.txt` (אותו Disallow
+על admin/checkout/cart/auth/api/redeem/coupon/account/supplier/scan/
+reset-password/forgot-password, Host+Sitemap תקינים, זהה ל-M12-c54),
+`sitemap.xml` (5 סקשנים: content/categories/products/regions/suppliers,
+זהה), `sitemap/products.xml` (46 `loc`/46 `lastmod`, זהה), דף מוצר
+(`/product/barbecue`): canonical נכון, כל תגי `og:*` (title/description/
+url/locale/image עם type+width+height+alt/type=website), JSON-LD תקין —
+`Product` (name/url/category/image/brand/offers עם `Offer` מלא: price,
+priceCurrency, availability, seller, priceSpecification להצגת המחיר
+המקורי) ו-`BreadcrumbList` (3 שלבים) — ו-`aggregateRating` נעדר כראוי
+למוצר בלי ביקורות. עמוד הבית נבדק גם: canonical, title, `og:type=
+website`, JSON-LD `Organization`+`WebSite` (זהה, כולל `SearchAction`
+הקיים כבר ב-schema — לא שדה חיפוש ב-UI, לא נגוע). **אפס דריפט, אפס
+שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2021 קבצים + 12
+שערי תוכן, i18n 627/627, locale 116/116), `test` 606/606 קבצים,
+7239/7251 (12 skipped, זהה), `build` `exit 0`. אין שער חזותי נדרש (אין
+שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/תיעוד
+בלבד).
+
 ## M10-c55 (הועבר מ-STATE.md ב-M12-c55, לשמירה על תקרת 300 שורות)
 
 **M10-c55 - DONE (29.09): כיסוי ענפים, המודול הקריטי הנמוך ביותר בין

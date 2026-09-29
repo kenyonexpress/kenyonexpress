@@ -1,39 +1,45 @@
-RESUME FROM: M13-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c55)
+RESUME FROM: M11-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c55)
 
 ## המשך מ:
 
-**M12-c55 - DONE (29.09): SEO — metadata, canonical, og, schema.org
-Product/Offer, עדכניות sitemap ו-robots נמדדו מחדש, אפס דריפט.** המשימה
-הוקצתה מחוץ לסדר (M11-c55 עדיין לא בוצע, כמו M12-c53 בזמנו) — אותו
-דפוס אימות מחזורי כמו M12-c54 (`1dabfc80d`) ולפניו M12-c53. **נבדק קודם
-מה השתנה מאז**: `git diff 1dabfc80d..HEAD --stat` על 10 קבצים —
-`src/components/home/HeroSlider.tsx` (תיקון srcset מ-M14-c54, קדם
-ל-M12-c54 עצמו), `src/server/actions/refund-requests.test.ts` (חדש,
-M10-c55), `package.json`/`pnpm-lock.yaml` (עדכון פטץ' `posthog-js`,
-M04-c55), ומסמכי `docs/`+`STATE.md` — **אף אחד לא נוגע למשטחי SEO**
-(`layout.tsx`, `robots.ts`, `sitemap*.xml/route.ts`, JSON-LD). **אומת
-בכל זאת ישירות מול build אמיתי** (`pnpm build` נקי, `PORT=3919 pnpm
-start`, `Ready in 71ms` — שרת טרי, לא ישן): `robots.txt` (אותו Disallow
-על admin/checkout/cart/auth/api/redeem/coupon/account/supplier/scan/
-reset-password/forgot-password, Host+Sitemap תקינים, זהה ל-M12-c54),
-`sitemap.xml` (5 סקשנים: content/categories/products/regions/suppliers,
-זהה), `sitemap/products.xml` (46 `loc`/46 `lastmod`, זהה), דף מוצר
-(`/product/barbecue`): canonical נכון, כל תגי `og:*` (title/description/
-url/locale/image עם type+width+height+alt/type=website), JSON-LD תקין —
-`Product` (name/url/category/image/brand/offers עם `Offer` מלא: price,
-priceCurrency, availability, seller, priceSpecification להצגת המחיר
-המקורי) ו-`BreadcrumbList` (3 שלבים) — ו-`aggregateRating` נעדר כראוי
-למוצר בלי ביקורות. עמוד הבית נבדק גם: canonical, title, `og:type=
-website`, JSON-LD `Organization`+`WebSite` (זהה, כולל `SearchAction`
-הקיים כבר ב-schema — לא שדה חיפוש ב-UI, לא נגוע). **אפס דריפט, אפס
+**M13-c55 - DONE (29.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem נמדדו מחדש, אפס דריפט.**
+המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy, ומגבלות קצב
+Upstash על login, checkout ו-redeem, ולתקן פערים עם טסטים. אותו דפוס
+אימות מחזורי כמו M13-c54 (`0e733d6ef`). **נבדק קודם מה השתנה מאז**:
+`git diff 0e733d6ef..HEAD --stat` על 10 קבצים — `STATE.md`, `docs/
+BACKLOG.md`, `docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`, `package.json`/
+`pnpm-lock.yaml` (פטץ' `posthog-js`, M04-c55), `src/components/home/
+HeroSlider.tsx` (srcset, קדם ל-M13-c54), `src/server/actions/
+refund-requests.test.ts` (חדש, M10-c55) — **אף אחד לא נוגע לכותרות
+אבטחה או ל-rate limiting** (`next.config.ts` ו-`src/lib/rate-limit/*`
+לא ברשימה). **אומת בכל זאת ישירות מול build אמיתי** (`pnpm build`
+נקי, `PORT=3921 pnpm start`, שרת טרי): כותרות תגובה על `/` (בית),
+`/checkout`, `/login` ו-`/redeem/test-token`, כל ארבעתן זהות:
+`Content-Security-Policy` (default-src 'self', frame-ancestors 'none',
+frame-src/form-action מוגבלים ל-`secure.cardcom.solutions` בלבד),
+`Strict-Transport-Security: max-age=63072000; includeSubDomains;
+preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+`Referrer-Policy: strict-origin-when-cross-origin`. **מגבלות קצב
+נמדדו בקוד עצמו**: `login` נאכף ב-`src/server/actions/auth.ts:141`
+(`checkRateLimit('login:${ip}')`, 10/שעה לפי `policies.ts:40`),
+`begin_checkout` נאכף ב-`src/server/actions/payments/checkout.ts:351`
+(`checkRateLimit('begin_checkout:user:${user.id}', 10, 60)`, תואם
+ל-`policies.ts:125`), `redeem` (דף לקוח) נאכף ב-`src/app/redeem/
+[token]/page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`,
+תואם ל-`policies.ts:200`), ו-`voucher-redeem` (סריקת ספק) נאכף
+ב-`src/app/api/supplier/vouchers/redeem/route.ts:223`
+(`rateLimit('voucher-redeem', user.id)`, תואם ל-`policies.ts:201`).
+כל ארבעת שורות הקוד ומספרי השורות זהים ל-M13-c54. **אפס דריפט, אפס
 שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2021 קבצים + 12
 שערי תוכן, i18n 627/627, locale 116/116), `test` 606/606 קבצים,
 7239/7251 (12 skipped, זהה), `build` `exit 0`. אין שער חזותי נדרש (אין
 שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/תיעוד
 בלבד).
 
-## M10-c55, M09-c55, M08-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M12-c55, M10-c55, M09-c55, M08-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
 M09-c55: STATE CLEAN בפעם השש-עשרה ברציפות, אפס פריט שלב 1 בידי הסוכן;
 בדיקת `filter_project_envs` בקריאה בלבד על 39 משתני הסביבה אישרה חוסמים
