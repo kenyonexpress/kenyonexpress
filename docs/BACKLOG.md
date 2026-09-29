@@ -77,6 +77,20 @@ present, no new file. Item 7's finding count (26) re-checked directly
 against `supabase/catalogue-known-issues.json`'s `known` object,
 unchanged.
 
+**Re-checked 2026-09-30 (M15-c57) against `git log f96702549..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Sixteen commits
+landed since M15-c56 (M16-c56..M18-c56, M01-c57..M14-c57); only two
+touched code (`money-format.ts` branch-coverage tests, 20.83% to 100%,
+M10-c57; two minor 0.x dependency bumps, `@anthropic-ai/sdk` and
+`@supabase/ssr`, M04-c57), neither touched a blocking line or added a
+manual item. Item 4's commit count changed again (136 -> 153, `git
+rev-list --count a388118f1..HEAD`, git-only, production not re-probed
+this item). Item 5's 18-file list re-checked directly against
+`migrations/pending/`, all present, no new file. Item 7's finding count
+(26) re-checked directly against
+`supabase/catalogue-known-issues.json`'s `known` object, unchanged. Item
+15's stash count (32) re-checked with `git stash list`, unchanged.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -100,11 +114,9 @@ unchanged.
    המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54, 118
    ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56 (וניסיונות פריסה חוזרים
    ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן נשאר על
-   `a388118f1`), וכעת (29.09, M01-c57, `git rev-list --count
-   a388118f1..HEAD` + `vercel env ls production`/`vercel inspect` קריאה
-   בלבד — לא נוסתה פריסה חוזרת בפריט הזה, שלוש פריסות Production ממקור
-   אחר נכשלו ב-6..10 השעות האחרונות באותה שגיאה) **140** קומיטים מאחורי
-   HEAD.
+   `a388118f1`), וכעת (30.09, M15-c57, `git rev-list --count
+   a388118f1..HEAD`, git-only — לא נוסתה פריסה חוזרת בפריט הזה) **153**
+   קומיטים מאחורי HEAD.
    `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, לפי `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2,
    LAUNCH-READINESS.md שורה חוסמת 4.

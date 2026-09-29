@@ -1,43 +1,43 @@
-RESUME FROM: M15-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c57)
+RESUME FROM: M16-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c57)
 
 ## המשך מ:
 
-**M14-c57 - DONE (30.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
-וכותרות cache, אימות מחדש, אפס דריפט מ-M14-c56.** משימת התור: לבדוק
-גודל bundle, פלט צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את
-הרגרסיה הגדולה ביותר. **נבדק קודם מה השתנה מאז** `7ff17232b`
-(M14-c56, 29.09): `git log 7ff17232b..HEAD --oneline -- next.config.ts
-src/lib/images src/components package.json pnpm-lock.yaml
-scripts/bundle-report.mjs scripts/cache-invalidation-gate.mjs` מחזיר
-קומיט יחיד, `a6183cca6` (M04-c57) — שני עדכוני תלות minor
-(`@anthropic-ai/sdk`, `@supabase/ssr`, שניהם שרת-בלבד) שאותו קומיט
-כבר מדד מול build שלם ומצא זהה. **נמדד בכל זאת מחדש מול build אמיתי**
-(`rm -rf .next && pnpm build` נקי, `PORT=3311 pnpm start`, שרת טרי):
-1. **גודל bundle: אין רגרסיה.** `scripts/bundle-report.mjs`: בית
-   320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה
-   בדיוק ל-M14-c56/M14-c55**.
-2. **פלט צנרת התמונות: אין רגרסיה.** נסרקו כל חמשת שימושי `fill` עם
-   `sizes` (`ProductCard.tsx:282`, `CouponCard.tsx:57`,
-   `HeroSlider.tsx:414`, `ProductGallery.tsx:109`,
-   `coupons/[id]/page.tsx:95`) — כולם נושאים `vw`; קבועי הרוחב הקבוע
-   ב-`HeroSlider` (`badgeBox`) משתמשים ב-`width`/`height`, לא `fill`,
-   בחירה מכוונת מתועדת כבר מ-M14-c54. אין מופע חדש של הבאג.
-3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
-   "clean" (גם כחלק מ-`pnpm lint`).
-4. **כותרות cache: אין רגרסיה.** `/images/logo.webp` מחזיר `public,
-   max-age=0, s-maxage=86400, stale-while-revalidate=604800`, chunk
-   סטטי מחזיר `public, max-age=31536000, immutable`, HTML דינמי (`/`)
-   מחזיר `private, no-cache, no-store, max-age=0, must-revalidate` —
-   שלושתם תואמים בדיוק למדיניות המתועדת ב-`next.config.ts`.
+**M15-c57 - DONE (30.09): סנכרון תיעוד — STATE.md/docs/LAUNCH-READINESS.md/
+docs/BACKLOG.md מול git log וקוד, אפס פריט חדש.** משימת התור: לרענן את
+טבלת המצב בשלושת הקבצים, לשמור רשימה אחת ממוינת-קריטיות לאופיר בלי
+כפילויות. **נבדק מה השתנה מאז** `f96702549` (M15-c56, 29.09): `git log
+f96702549..HEAD --oneline` מחזיר 16 קומיטים (M16-c56..M18-c56,
+M01-c57..M14-c57), שניים נוגעים בקוד — M10-c57 (כיסוי `money-format.ts`,
+20.83%→100%) ו-M04-c57 (שני עדכוני תלות minor,
+`@anthropic-ai/sdk`/`@supabase/ssr`) — אף אחד לא נוגע בשורת חסימה, כל
+אחד DONE משלו ב-STATE.md. המספרים שדורשים מדידה מחדש כל מחזור נמדדו
+ישירות כאן, לא צוטטו:
+1. **קומיטים מאחורי פרודקשן**: `git rev-list --count a388118f1..HEAD` =
+   **153** (עלה מ-136 ב-M15-c56).
+2. **פער הענפים**: `git rev-list --count origin/main..HEAD` = **527**
+   (עלה מ-510 ב-M15-c56).
+3. **פנקס הקטלוג**: `supabase/catalogue-known-issues.json` עדיין 26
+   ממצאים, ללא שינוי.
+4. **מיגרציות ממתינות**: כל 18 הקבצים (204, 209, 218, 220, 223, 224,
+   234-236, 239-247) עדיין ב-`migrations/pending/`, ללא שינוי.
+5. **`docs/BACKLOG.md`**: עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
+   פריט חדש.
+6. **`git stash list`**: 32, ללא שינוי (סעיף 15 ב-BACKLOG, החלטת אופיר).
 
-**אין רגרסיה לתקן.** שערים: `type-check` נקי, `lint` נקי (2023
-קבצים, i18n 627/627, locale 116/116), `test` 608/608 קבצים 7272/7284
-(12 skipped), `build` נקי. אין שער חזותי נדרש (אין שינוי UI/קוד).
-קובץ יחיד שונה: `STATE.md` (פלוס `docs/STATE-ARCHIVE.md` — M13-c57
-הועבר לתקרת 300 שורות).
+שערים הורצו ישירות: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
+627/627, locale 116/116, docs-index 282, docs-path-audit 152), `test`
+608/608 קבצים 7272/7284 (12 skipped) — זהה בדיוק ל-M14-c57, `build` נקי
+(`rm -rf .next && pnpm build`). אין שער חזותי נדרש (אין שינוי UI).
+שלושה קבצים עודכנו: `STATE.md`, `docs/LAUNCH-READINESS.md`,
+`docs/BACKLOG.md`.
 
-## M13-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M14-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M14-c57: ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו
+מחדש מול build אמיתי, אפס דריפט מ-M14-c56: bundle 345.1kB/27 chunks
+זהה, אין באג `fill`+px `sizes` חדש, `cache-invalidation-gate` נקי,
+כותרות cache תואמות למדיניות.
 
 M13-c57: CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash
 על login/checkout/redeem אומתו מחדש, אפס דריפט מ-M13-c56. M12-c57:
