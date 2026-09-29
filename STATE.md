@@ -1,67 +1,56 @@
-RESUME FROM: M11-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c59)
+RESUME FROM: M12-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c59)
 
 ## המשך מ:
 
-**M10-c59 - DONE (30.09): כיסוי טסטים, ה-branch הכי חסר בין ששת המודולים
-הקריטיים.** משימת התור: למצוא את המודול הקריטי עם כיסוי הבדיקות הנמוך
-ביותר מבין `packages/money`, פיצול תשלום, מכונת מצבים של שוברים, מכונת
-מצבים של הזמנות, החזרים ועוזרי RLS, ולהוסיף טסטים עד שהענפים מכוסים.
-נמדד עם `vitest run --coverage` (include מורחב זמנית ב-CLI, לא בקובץ
-מחויב) על כל שש הקטגוריות: `src/lib/money.ts`, `src/lib/checkout/split.ts`,
-`src/server/domain/vouchers/state-machine.ts`,
-`src/server/domain/orders/state-machine.ts`, ליבת ההחזרים
-(`src/server/domain/orders/refund.ts`, `refund-request.ts`,
-`src/server/payments/refund-record.ts`, `refund-wallet.ts`) ו-`src/lib/supabase/rls-report-fetch.ts`
-(עוזר ה-RLS היחיד עם קוד ממשי — שאר קבצי ה-`rls-*` הם טסטים סטטיים מול
-קובצי SQL, בלי מקור משלהם) — **כולם 100% על ארבעת המדדים.**
-הורחב החיפוש לשכבת הפעולות של ההחזרים שמשתמשת בליבה
-(`src/server/actions/refund-requests.ts` 98% ענפים,
-`src/server/actions/payments/refund.ts` 100%,
-`src/lib/payments/refund-destination.ts` 100%) ונמצא
-`src/lib/payments/payment-money-columns.ts` (עוזר סכימת הכסף שמייבא
-`refund.ts` עצמו, חלק ישיר ממסלול הכסף של החזר) על **95.23% ענפים**,
-הנמוך ביותר שנמדד. שורה 143 (`if (!warned)`) לא הייתה מכוסה: לא קוד מת
-— `warned` שונה מ-`cached` בכך שהוא נכתב סינכרונית לפני שה-probe הראשון
-מסתיים, ומונע לוג כפול כששתי קריאות חופפות (race, למשל cold start עם
-כמה בקשות בו-זמנית) שתיהן רואות `cached === null` ומגיעות ל-branch
-לפני ששתיהן מסתיימות. נוסף טסט יחיד ל-`payment-money-columns.test.ts`:
-שתי קריאות ל-`resolvePaymentMoneySchema` דרך `Promise.all` עם אותו probe
-כושל (42703), מוודא ששתיהן מחזירות `ILS_SCHEMA` ו-`console.warn` נקרא
-פעם אחת בלבד. **הריצה עם coverage ל-`payment-money-columns.ts` בלבד
-מאשרת 100/100/100/100 אחרי התיקון.** אין שינוי קוד ייצור — קובץ טסט
-יחיד שונה. שערים הורצו במלואם: `type-check` נקי, `lint` נקי (כל השערים
-ירוקים, זהה ל-M09-c59), `test` 608/608 קבצים, **7274/7286** (עלה ב-1
-מהטסט החדש, 12 skipped, 60.40s), `build`
-(`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`)
-`exit 0`. אין שינוי UI, אין שער חזותי נדרש (`scripts/compare.mjs` לא
-רלוונטי לפריט הזה).
+**M11-c59 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
+חמישית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
+דף, לתקן כל הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את
+המונה שנשאר. בדיקת דריפט קודם: `git log 3996a1477..HEAD` (מאז המדידה
+הקודמת, M11-c58) מחזיר 9 קומיטים (M12-c58..M10-c59), ו-`git diff
+--stat 3996a1477..HEAD -- src/app src/components src/styles
+'e2e/*a11y*' middleware.ts src/server/actions/auth` ריק — **אפס קומיט
+נגע בשטח הנגישות**.
 
-## M09-c59
+נמדד בכל זאת מחדש מול build אמיתי על HEAD (`58b5301af`, `.next` תואם
+בדיוק — נבנה תחת M10-c59 לפני ה-commit שלו, `git status` נקי, `pnpm
+start` על פורט 3316):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes`): **72/74 עברו, 2 דולגו** (אותם דילוגים
+  מכוונים כמו בכל מדידה קודמת) — **0 הפרות**.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
+  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, שניהם **0 הפרות**.
+  תפקיד **אדמין: 57/57 דולגו** — אומת ישירות בקוד הבדיקה
+  (`e2e/a11y-authenticated.spec.ts:98`, `test.skip` על כשל
+  `signInWithEmail`) שזו אותה סיבה שתועדה ב-M11-c56/M11-c57/M11-c58:
+  כשל התחברות פרודקשן קיים מראש, לא תקלת נגישות ולא רגרסיית קוד.
+- שני השערים נכשלים על **כל** הפרה (לא רק `serious`/`critical`, ראו
+  הערת "WHY axe FAILS ON ANY VIOLATION" בקובץ הבדיקה), אז 0 כשל הוא גם
+  0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה שנסרק.
 
-**M09-c59 - STATE CLEAN (30.09): אפס פריט בר-ביצוע לסוכן קוד.** משימת
-התור: "State cleanup: take the single highest-impact open item listed
-in STATE.md that a code agent can complete without Ofir... If none is
-left write STATE CLEAN." אפס דריפט מ-M08-c59 (`9342b1bba`): `git
-status` נקי, `HEAD` לא זז, שלושת המונים נבדקו ישירות ותואמים —
-`migrations/pending/*.sql` עדיין **59** קבצים (זהה), `git rev-list
---count a388118f1..HEAD` עלה ל-**183** (git-only, פער-ספירה גרידא),
-`git stash list` עדיין **32**. שני המקורות שהמשימה מפנה אליהם —
-`docs/BACKLOG.md` (15 סעיפים) וסעיף "חוסמים פתוחים" למטה (13 סעיפים)
-— כבר עברו בדיקה ממצה ב-M08-c59 ובכל מחזור לפניו (וזהה במהות
-ל-M09-c58, אותה משימה בדיוק, ראו `docs/STATE-ARCHIVE.md`): כל אחד מהם
-הוא DNS/Vercel env/סוד/אישור פריסת פרודקשן/אישור מיגרציה על
-פרודקשן/הכרעה עסקית על הקטלוג/מחיקת נתונים — כולם חסומים לפי
-`CLAUDE.md` §"ארבעת המצבים היחידים" ו-§"חוקים קבועים". אין ביניהם אף
-אחד ש"סוכן קוד יכול להשלים בלי אופיר". שערים הורצו במלואם לאימות (לא
-רק נקראו ממחזור קודם): `type-check` נקי, `lint` נקי (biome 2023
-קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale 116/116, docs-index
-282, docs-path-audit 152), `test` 608/608 קבצים 7273/7285 (12 skipped,
-57.50s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`) `exit 0`,
-`✓ Compiled successfully`. אין שינוי קוד, אין שער חזותי נדרש (אין
-שינוי UI). **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
-M08-c59 הועבר לתקרת 300 שורות).
+**המונה שנשאר: 0 `serious`/`critical`.** ממצא `target-size` (דרישת
+WCAG **2.2** ולא 2.1, מחוץ ליעד המוצהר של הפרויקט) שתועד
+ב-`docs/A11Y-SWEEP-REPORT.md` נשאר כהחלטה פתוחה ללא שינוי — אין הפרת
+2.1 AA לתקן. **אפס שינוי קוד.** שערים: `type-check` נקי, `lint` נקי
+(biome + כל תשעת השערים המשניים), `test` 608/608 קבצים 7274/7286 (12
+skipped, זהה במהות ל-M10-c59). `build`: נעשה שימוש ב-`.next` הקיים
+התואם בדיוק ל-HEAD (נבנה תחת M10-c59, `exit 0`) במקום בנייה חוזרת, כדי
+לא להתחרות במשאבים עם סשנים מקבילים (load average כ-11 בזמן המדידה) —
+ואומת ישירות: שתי ריצות ה-Playwright הגישו דפים אמיתיים ממנו בהצלחה.
+אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md`, M09-c59 הועבר לתקרת 300 שורות).
+
+## M10-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M10-c59: כיסוי טסטים, `payment-money-columns.ts` 95.23%→100% ענפים
+(הענף החסר היה הגנת race על `warned` בקריאות מקבילות ל-`resolvePaymentMoneySchema`).
+טסט יחיד נוסף, אפס שינוי קוד ייצור. ארבעת השערים ירוקים.
+
+## M09-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M09-c59: STATE CLEAN, אפס פריט בר-ביצוע לסוכן קוד, אפס דריפט מ-M08-c59
+(מונים זהים: pending 59, git-gap 183, stash 32). כל ארבעת השערים
+ירוקים.
 
 ## M08-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

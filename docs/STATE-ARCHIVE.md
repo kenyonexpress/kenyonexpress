@@ -2,6 +2,68 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c59 (הועבר מ-STATE.md ב-M11-c59, לשמירה על תקרת 300 שורות)
+
+**M10-c59 - DONE (30.09): כיסוי טסטים, ה-branch הכי חסר בין ששת המודולים
+הקריטיים.** משימת התור: למצוא את המודול הקריטי עם כיסוי הבדיקות הנמוך
+ביותר מבין `packages/money`, פיצול תשלום, מכונת מצבים של שוברים, מכונת
+מצבים של הזמנות, החזרים ועוזרי RLS, ולהוסיף טסטים עד שהענפים מכוסים.
+נמדד עם `vitest run --coverage` (include מורחב זמנית ב-CLI, לא בקובץ
+מחויב) על כל שש הקטגוריות: `src/lib/money.ts`, `src/lib/checkout/split.ts`,
+`src/server/domain/vouchers/state-machine.ts`,
+`src/server/domain/orders/state-machine.ts`, ליבת ההחזרים
+(`src/server/domain/orders/refund.ts`, `refund-request.ts`,
+`src/server/payments/refund-record.ts`, `refund-wallet.ts`) ו-`src/lib/supabase/rls-report-fetch.ts`
+(עוזר ה-RLS היחיד עם קוד ממשי — שאר קבצי ה-`rls-*` הם טסטים סטטיים מול
+קובצי SQL, בלי מקור משלהם) — **כולם 100% על ארבעת המדדים.**
+הורחב החיפוש לשכבת הפעולות של ההחזרים שמשתמשת בליבה
+(`src/server/actions/refund-requests.ts` 98% ענפים,
+`src/server/actions/payments/refund.ts` 100%,
+`src/lib/payments/refund-destination.ts` 100%) ונמצא
+`src/lib/payments/payment-money-columns.ts` (עוזר סכימת הכסף שמייבא
+`refund.ts` עצמו, חלק ישיר ממסלול הכסף של החזר) על **95.23% ענפים**,
+הנמוך ביותר שנמדד. שורה 143 (`if (!warned)`) לא הייתה מכוסה: לא קוד מת
+— `warned` שונה מ-`cached` בכך שהוא נכתב סינכרונית לפני שה-probe הראשון
+מסתיים, ומונע לוג כפול כששתי קריאות חופפות (race, למשל cold start עם
+כמה בקשות בו-זמנית) שתיהן רואות `cached === null` ומגיעות ל-branch
+לפני ששתיהן מסתיימות. נוסף טסט יחיד ל-`payment-money-columns.test.ts`:
+שתי קריאות ל-`resolvePaymentMoneySchema` דרך `Promise.all` עם אותו probe
+כושל (42703), מוודא ששתיהן מחזירות `ILS_SCHEMA` ו-`console.warn` נקרא
+פעם אחת בלבד. **הריצה עם coverage ל-`payment-money-columns.ts` בלבד
+מאשרת 100/100/100/100 אחרי התיקון.** אין שינוי קוד ייצור — קובץ טסט
+יחיד שונה. שערים הורצו במלואם: `type-check` נקי, `lint` נקי (כל השערים
+ירוקים, זהה ל-M09-c59), `test` 608/608 קבצים, **7274/7286** (עלה ב-1
+מהטסט החדש, 12 skipped, 60.40s), `build`
+(`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`)
+`exit 0`. אין שינוי UI, אין שער חזותי נדרש (`scripts/compare.mjs` לא
+רלוונטי לפריט הזה).
+
+## M09-c59 (הועבר מ-STATE.md ב-M11-c59, לשמירה על תקרת 300 שורות)
+
+**M09-c59 - STATE CLEAN (30.09): אפס פריט בר-ביצוע לסוכן קוד.** משימת
+התור: "State cleanup: take the single highest-impact open item listed
+in STATE.md that a code agent can complete without Ofir... If none is
+left write STATE CLEAN." אפס דריפט מ-M08-c59 (`9342b1bba`): `git
+status` נקי, `HEAD` לא זז, שלושת המונים נבדקו ישירות ותואמים —
+`migrations/pending/*.sql` עדיין **59** קבצים (זהה), `git rev-list
+--count a388118f1..HEAD` עלה ל-**183** (git-only, פער-ספירה גרידא),
+`git stash list` עדיין **32**. שני המקורות שהמשימה מפנה אליהם —
+`docs/BACKLOG.md` (15 סעיפים) וסעיף "חוסמים פתוחים" למטה (13 סעיפים)
+— כבר עברו בדיקה ממצה ב-M08-c59 ובכל מחזור לפניו (וזהה במהות
+ל-M09-c58, אותה משימה בדיוק, ראו `docs/STATE-ARCHIVE.md`): כל אחד מהם
+הוא DNS/Vercel env/סוד/אישור פריסת פרודקשן/אישור מיגרציה על
+פרודקשן/הכרעה עסקית על הקטלוג/מחיקת נתונים — כולם חסומים לפי
+`CLAUDE.md` §"ארבעת המצבים היחידים" ו-§"חוקים קבועים". אין ביניהם אף
+אחד ש"סוכן קוד יכול להשלים בלי אופיר". שערים הורצו במלואם לאימות (לא
+רק נקראו ממחזור קודם): `type-check` נקי, `lint` נקי (biome 2023
+קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale 116/116, docs-index
+282, docs-path-audit 152), `test` 608/608 קבצים 7273/7285 (12 skipped,
+57.50s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`) `exit 0`,
+`✓ Compiled successfully`. אין שינוי קוד, אין שער חזותי נדרש (אין
+שינוי UI). **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
+M08-c59 הועבר לתקרת 300 שורות).
+
 ## M08-c59 (הועבר מ-STATE.md ב-M09-c59, לשמירה על תקרת 300 שורות)
 
 **M08-c59 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם השלוש-עשרה,
