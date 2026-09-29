@@ -1,7 +1,29 @@
-RESUME FROM: M06-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c54)
+RESUME FROM: M07-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c54)
 
 ## המשך מ:
+
+**M06-c54 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+,
+אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52/M06-c53: `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm build` -> `exit 0`; `pnpm
+start -p 3462` מאותה סביבה (פורט אומת פנוי לפני ההרצה); `curl` אישר `200`
+על `/` ועל `/product/barbecue-2`; `node_modules/.bin/lighthouse` על שני
+ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 98 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90, ברווח גדול. דומה ל-M06-c53 (99/100/100/100,
+99/100/100/100) — אפס רגרסיה, אפס תיקון fixable. שרת הבדיקה נעצר, פורט
+3462 אומת פנוי, שני קבצי ה-JSON הזמניים נמחקו. שערים: `type-check` נקי,
+`lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale
+116/116), `test` 605/605 קבצים, 7213/7225 (12 skipped, זהה), `build`
+`exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד
+שונה: `STATE.md`.**
+
+## M05-c54 (ארכיון)
 
 **M05-c54 - DONE (29.09): ביקורת DB — `get_advisors` (security+performance),
 אפס WARN חדש, אפס קובץ מיגרציה חדש.** ה-MCP של Supabase עדיין ברשימת
