@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c55 (הועבר מ-STATE.md ב-M12-c55, לשמירה על תקרת 300 שורות)
+
+**M10-c55 - DONE (29.09): כיסוי ענפים, המודול הקריטי הנמוך ביותר בין
+money/split/voucher-state-machine/order-state-machine/refunds/RLS.**
+המשימה: לאתר את המודול הקריטי עם הכיסוי הנמוך ביותר ולהוסיף טסטים עד
+שהענפים מכוסים. מדידה עם `vitest --coverage` (v8, ענפים) על כל קבצי
+המועמדים: `src/lib/money.ts`, `src/lib/checkout/split.ts`,
+`src/server/domain/vouchers/state-machine.ts`,
+`src/server/domain/orders/state-machine.ts`,
+`src/lib/supabase/rls-report-fetch.ts`, וכל קובצי refund (domain,
+actions, payments) — כולם היו ב-100% מלבד שניים: **`src/server/actions/
+refund-requests.ts` (בקשת החזר מצד הלקוח) עמד על 0/50 ענפים — אפס קובץ
+טסט קיים בכלל**, ו-`src/server/payments/refund-wallet.ts` על 15/16 (לא
+נבחר, כי הפער היה גדול משמעותית בקובץ הראשון). M10-c54 (המחזור הקודם
+באותו יום) כיסה רק את קובצי ה-domain (`refund.ts`/`refund-request.ts`)
+ולא בדק את שכבת ה-actions, ולכן פספס את הפער האמיתי.
+
+נוצר `src/server/actions/refund-requests.test.ts` (22 טסטים) עם לקוח
+Supabase מזויף באותה תבנית כמו `payments/refund.test.ts`: כל הענפים של
+`requestRefund` (לא מחובר, קלט לא תקין, מעל קצב הבקשות, כשל בקריאת
+ההזמנה, הזמנה לא קיימת/לא שייכת, סירוב ה-decision, שלושת ענפי שגיאת
+ה-insert כולל `?? ''` על קוד חסר, הצלחה) ושל `refundRequestStatus` (לא
+מחובר, כשל קריאה, לא הבעלים, שגיאת קריאת בקשות עם/בלי קוד, הצלחה) כוסו.
+**49/50 ענפים (98%).** הענף היחיד שנותר לא מכוסה
+(`parsed.error.issues[0]?.message ?? '...'`, שורה 81) הוא נפילה הגנתית
+שאינה ניתנת להשגה דרך `zod.safeParse` אמיתי — כישלון תמיד מייצר לפחות
+issue אחד, בדיוק כמו התבנית התיעודית הקיימת ב-`payments/refund.test.ts`
+לענף ה-`??` המקביל שם. שערים: `type-check` נקי, `lint` נקי (biome אחרי
+`--write` על קובץ הטסט החדש, 2021 קבצים + 12 שערי תוכן, i18n 627/627,
+locale 116/116), `test` 606/606 קבצים, 7239/7251 (12 skipped, +22 טסטים
+חדשים), `build` `exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קבצים
+ששונו: `src/server/actions/refund-requests.test.ts` (חדש), `STATE.md`,
+`docs/STATE-ARCHIVE.md`.**
+
 ## M09-c55 (הועבר מ-STATE.md ב-M10-c55, לשמירה על תקרת 300 שורות)
 
 **M09-c55 - STATE CLEAN (29.09): backlog נמדד מחדש בפעם השש-עשרה
