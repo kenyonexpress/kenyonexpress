@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c58 (הועבר מ-STATE.md ב-M05-c58, לשמירה על תקרת 300 שורות)
+
+**M04-c58 - DONE (30.09): תחזוקת תלויות, `pnpm audit` אפס חולשות,
+`pnpm outdated` העלה 15 שורות — 13 מהן major (biome 1→2, `@hookform/
+resolvers` 3→5, `@sentry/nextjs`+`@sentry/node` 10→11, `jest-dom` 6→7,
+`@types/node` 20→26, `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8`
+4→5, `jsdom` 25→30, `lint-staged` 15→17, `tailwind-merge` 2→3,
+`typescript` 5→7, `vitest` 4→5, `zod` 3→4) שנדלגו לפי הכלל "לעולם לא
+major". רק שתי שורות עמדו בקריטריון (`@aws-sdk/client-s3` ו-`@aws-sdk/
+s3-request-presigner`, `3.1141.0`→`3.1142.0`, מינור) והוחלו.**
+`pnpm update` עצמו ריפורמט את `onlyBuiltDependencies` ב-`package.json`
+לפריסה מרובת-שורות שנפלה על `biome check`; תוקן חזרה לשורה אחת כדי
+לעבור את השער, בלי שינוי תוכן.
+- `pnpm type-check`: נקי.
+- `pnpm lint`: נקי אחרי תיקון הפורמט (עשרת שערי הקוד הנוספים ללא שינוי:
+  627 מחרוזות עברית, 116 `he-IL`, 24 שדות `dir`, 282/152 בשערי docs).
+- `pnpm test`: 608/608 קבצים, 7272/7284 (12 skipped) — זהה לבסיס.
+- `pnpm build`: `exit 0`, `rm -rf .next` מלא לפני.
+- **קבצים:** `package.json`, `pnpm-lock.yaml`, `STATE.md`.
+
+## M03-c58 (הועבר מ-STATE.md ב-M05-c58, לשמירה על תקרת 300 שורות; לא הועבר כראוי ב-M04-c58, נשאר גוף-טקסט בלי כותרת עד עכשיו)
+
+**M03-c58 - DONE (29.09): שער ירוק, `type-check`/`lint`/`test`/`build`
+כולם נקיים, אפס תיקון נדרש.**
+- `pnpm type-check` (`tsc --noEmit`): נקי, אפס שגיאה.
+- `pnpm lint`: נקי — `biome check .` (2023 קבצים, "No fixes applied")
+  ועשרת שערי הקוד הנוספים (tokens/copy/asset/raw-html/postgrest-or/
+  cache-invalidation/rtl-logical/i18n/locale-format/input-dir) בתוספת
+  `docs-index-gate` ו-`docs-path-audit`, כולם "clean"/"OK" ללא שינוי
+  ממדידה קודמת (627 מחרוזות עברית בתקרה, 116 `he-IL` בתקרה, 24 שדות
+  קלט עם `dir`, 282 מסמכים ברשימה, 152 הפניות תלויות ידועות).
+- `pnpm test` (`vitest run`): 608/608 קבצים, 7272/7284 טסטים עברו
+  (12 skipped, זהה לכל מדידה קודמת).
+- `pnpm build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+  NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`): `exit 0`,
+  הורץ פעמיים בפועל (פעם ראשונה עם צנרת ל-`tail`, פעם שנייה עם
+  ניתוב ל-`/tmp/build-m03c58.log` כדי לוודא קוד יציאה אמיתי ולא של
+  `tail`), שתיהן `exit 0`, שום שגיאה או אזהרת build.
+- אין שינוי קוד — כל ארבעת השערים היו ירוקים מלכתחילה, זהה מהותית
+  ל-M03-c57. `git status --short` ריק לפני ואחרי.
+- **קבצים:** `STATE.md` בלבד.
+
 ## M01-c58 (הועבר מ-STATE.md ב-M02-c58, לשמירה על תקרת 300 שורות)
 
 **M01-c58 - BLOCKED (30.09): בדיקת פרודקשן — DNS ו-HTTP תקינים, פריסת

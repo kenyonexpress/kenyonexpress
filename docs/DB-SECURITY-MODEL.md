@@ -1,6 +1,6 @@
 # DB-SECURITY-MODEL.md — RLS, Policies, SECURITY DEFINER
 
-> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-30 (סעיף 0ז: advisors אומתו בפעם השביעית, זהה ב-100% ל-0ו; סעיף 0ו מ-29.09; סעיף 0ה מאותו יום; סעיף 0ד מאותו יום; סעיף 0ג מאותו יום; סעיף 0ב מאותו יום; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
+> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-30 (סעיף 0ח: advisors אומתו בפעם השמינית, זהה ב-100% ל-0ז; סעיף 0ז מאותו יום; סעיף 0ו מ-29.09; סעיף 0ה מאותו יום; סעיף 0ד מאותו יום; סעיף 0ג מאותו יום; סעיף 0ב מאותו יום; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
 > כל שורה כאן נשלפה מ-`pg_policies`, `pg_class`, `pg_proc` (aclexplode) בפועל, לא מהזיכרון.
 > **מיגרציה 125 הוחלה ואומתה ב-21.08**: הוסרו הרשאות EXECUTE ל-authenticated מ-6 פונקציות עזר יתומות. אומת שוב ב-01.09: לשש כולן `anon=false, authed=false`.
 > **⚠️ מיגרציה 127 הוחלה ב-01.09**, אחרי שהאתר עלה לאוויר, והיא משנה את סעיף 5.1. ‏`check_rate_limit` **אינה חשופה יותר** ל-anon ול-authenticated. הוכחה, קריאה אמיתית עם המפתח הפומבי: `POST /rest/v1/rpc/check_rate_limit` מחזיר `401` ו-`42501 permission denied for function check_rate_limit`.
@@ -259,6 +259,39 @@ INFO, 1 `auth_db_connections_absolute` INFO). **44 WARN בסך הכול, אפס
 `245_single_permissive_policy_per_action.sql`,
 `246_profiles_mfa_initplan.sql` — תוכנם כבר אומת מול המדידה הזהה
 שש פעמים קודם. אין קובץ מיגרציה חדש נדרש, אין WARN לא-מכוסה.
+
+## 0ח. נמדד שוב 30.09.2026 (M05-c58), דרך ה-management API, קריאה בלבד — זהה ב-100% ל-0ז
+
+**‏MCP של Supabase עדיין ברשימת "דורש הרשאה"**, אין OAuth בסשן לא-אינטראקטיבי
+(אותה נקודה שנבדקה ב-0א..0ז). אותו מסלול חלופי, קריאה בלבד: טוקן ה-CLI
+מה-keychain (`security find-generic-password -s "Supabase CLI" -w`, עטיפת
+`go-keyring-base64:` ואז פענוח base64 נותנת `sbp_...`), שני `GET
+https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+{security,performance}`, ‏200/200. הטוקן לא נדפס ולא נשמר לקובץ; קבצי
+הפלט הזמניים (`/tmp/ke-advisors/*.json`) נמחקו בסוף הפריט.
+
+**כל שדה זהה ל-0ז, לא רק הסך-הכול.** אבטחה 28 ממצאים (4
+`rls_enabled_no_policy` INFO, 2 `anon_security_definer_function_executable`
+WARN על `is_admin`/`is_supplier_member`, 21
+`authenticated_security_definer_function_executable` WARN על אותן 21
+הפונקציות, 1 `function_search_path_mutable` WARN על
+`fn_wallet_entries_block_mutation`). ביצועים 197 ממצאים (14
+`multiple_permissive_policies` WARN על אותן 11 טבלאות —
+`banners`, `cashback_ledger`, `homepage_sections`, `payment_events`,
+`payout_statement_lines`, `payout_statements`, `refunds`,
+`supplier_branches` (ארבע פעולות), `support_ticket_messages`,
+`support_tickets`, `whatsapp_contacts` — 6 `auth_rls_initplan` WARN על
+`profiles`, `webauthn_credentials` ×2, `push_subscriptions` ×2,
+`cashback_ledger`, 167 `unused_index` INFO, 9 `unindexed_foreign_keys`
+INFO, 1 `auth_db_connections_absolute` INFO). **44 WARN בסך הכול, אפס
+חדש, אפס שהפסיק לירות.**
+
+ארבעת הקבצים הממתינים נבדקו שעדיין קיימים ולא נערכו מ-M05-c57:
+`migrations/pending/209_advisor_warnings.sql`,
+`220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql`,
+`246_profiles_mfa_initplan.sql` — תוכנם כבר אומת מול המדידה הזהה
+שבע פעמים קודם. אין קובץ מיגרציה חדש נדרש, אין WARN לא-מכוסה.
 
 ## 1. עקרון-על
 
