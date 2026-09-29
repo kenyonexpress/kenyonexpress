@@ -177,10 +177,10 @@ export default function SiteFooter() {
             {/* live: 20.006px / 48.5946px / 500, with the marketing line beside
                 it at 14.994px / 25.6997px */}
             <h2 className="m-0 text-newsletter-head font-medium leading-newsletter-head">
-              קנה וחסוך, הירשם ל Newsletter
+              קנה וחסוך, הירשם לניוזלטר
             </h2>
             <span className="text-newsletter-note leading-newsletter-note">
-              לקבלת הנחות והטבות $ נוספות . . .
+              לקבלת הנחות והטבות נוספות . . .
             </span>
           </div>
 
