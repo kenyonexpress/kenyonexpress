@@ -25,12 +25,22 @@ same order, no duplicate, no new item. Only item 4's commit count changed
 holds zero grants on `public.reviews`, measured read-only against
 production; see `migrations/pending/247_reviews_grant_anon_select.sql`).
 
+**Re-checked 2026-09-29 (M15-c53) against `git log -20`:** still 15 items,
+same order, no duplicate, no new item. Item 1 (DNS) was already RESOLVED
+(M01-c52) but this file's own wording still called it an open action; fixed
+below. Item 4's commit count changed again (66 -> 83, git-only). Item 7's
+finding count was wrong since 2026-09-10: the ledger
+(`supabase/catalogue-known-issues.json`) holds 26 rows, not 25 — a
+`no-image` entry (`מזקקת וויסקי`, empty images array) was added in the same
+commit (`00375d705`) that introduced the other 25 and the count was never
+corrected anywhere; fixed below.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
-1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52).** ה-NS כבר
-   `ns1.vercel-dns.com` / `ns2.vercel-dns.com`, הדומיין עונה 200 עם התוכן
-   האמיתי. שום פעולה נוספת נדרשת מאופיר על הסעיף הזה. מקור: STATE.md
-   חוסם 1 (עודכן), LAUNCH-READINESS.md שורה חוסמת 1 (טרם עודכן שם).
+1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
+   ה-NS כבר `ns1.vercel-dns.com` / `ns2.vercel-dns.com`, הדומיין עונה 200 עם
+   התוכן האמיתי. שום פעולה נוספת נדרשת מאופיר על הסעיף הזה. מקור: STATE.md
+   חוסם 1 (עודכן), LAUNCH-READINESS.md שורה חוסמת 1 (עודכן ב-M15-c53).
 2. **`CRON_SECRET` זהה ב-GitHub וב-Vercel.** כרגע 40/40 הרצות מתוזמנות
    נכשלות ב-401 (סוד שונה בכל צד), ו-`notification_outbox` מחזיקה הודעות
    ממתינות מ-10.09. לקרוא את הערך ב-Vercel (פרויקט `kenyonexpress`,
@@ -45,8 +55,8 @@ production; see `migrations/pending/247_reviews_grant_anon_select.sql`).
    LAUNCH-READINESS.md שורה חוסמת 4.
 4. **אישור פריסת HEAD לפרודקשן**, אחרי סעיף 3. פרודקשן עדיין מגיש
    `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
-   המוקדם (M15-c51) וכעת (29.09, M15-c52, מדידה מקומית בלבד — לא נבדק מול
-   הפריסה החיה בפריט הזה) **66** קומיטים מאחורי HEAD.
+   המוקדם (M15-c51), 66 ב-M15-c52, וכעת (29.09, M15-c53, מדידה מקומית
+   בלבד — לא נבדק מול הפריסה החיה בפריט הזה) **83** קומיטים מאחורי HEAD.
    `POST /v13/deployments` עם `gitSource.sha`, `target=production`, לפי
    `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2, LAUNCH-READINESS.md שורה
    חוסמת 4.
@@ -63,10 +73,14 @@ production; see `migrations/pending/247_reviews_grant_anon_select.sql`).
    `CHECKOUT_ENABLED=true`, לפרוס מחדש (ה-CSP נאפה בזמן build, לא בזמן
    ריצה), ולבצע חיוב אמיתי אחד קטן וזיכוי דרכו. מקור: STATE.md חוסם 8,
    LAUNCH-READINESS.md שורה חוסמת 2.
-7. **הכרעה על 25 שורות הקטלוג** ב-`supabase/catalogue-known-issues.json`:
+7. **הכרעה על 26 שורות הקטלוג** ב-`supabase/catalogue-known-issues.json`
+   (26, לא 25 — שורה `no-image` נוספה ל-`מזקקת וויסקי` ב-00375d705,
+   09.09.2026, יחד עם ה-25 האחרות, ומספר הממצאים לא תוקן בשום מסמך מאז;
+   תוקן כאן ב-M15-c53):
    אילו משתי ה-`עיסוי מאסטר` הכפולות היא האמיתית, מה המחיר שלה (₪9 או
-   ₪108, לפי מה שה-slug של ארבע שורות טוען), ומחיקת חמש שורות ה-`-copy`/
-   `-העתק`/`-לדוגמא`. שום דבר כאן אינו לתיקון אוטומטי — ראו `CLAUDE.md`
+   ₪108, לפי מה שה-slug של ארבע שורות טוען), מחיקת חמש שורות ה-`-copy`/
+   `-העתק`/`-לדוגמא`, ובחירת תמונה ל-`מזקקת וויסקי` (מערך תמונות ריק, אין
+   מקור לשחזר ממנו). שום דבר כאן אינו לתיקון אוטומטי — ראו `CLAUDE.md`
    §"מצב נוכחי" סעיף 1. **לא היה ברשימת STATE.md;** מקור:
    LAUNCH-READINESS.md שורה חוסמת 6, `CLAUDE.md`.
 8. **רוטציית `SUPABASE_SECRET_KEY`.** המפתח בשימוש נחשף בהתקנה; מסומן
