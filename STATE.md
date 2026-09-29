@@ -1,36 +1,42 @@
 RESUME FROM: M11-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c53)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c53)
 
 ## המשך מ:
 
-M10-c53: **כיסוי טסטים: `refund.ts` (server action) מ-67.1% ל-100% ענפים.**
-ששת המועמדים (`money`, `payment split`, `voucher state machine`,
-`order state machine`, `refunds`, `RLS helpers`) נמדדו (לא הוערכו) על ידי
-הרחבה זמנית של `include`/`reporter: json` ב-`vitest.config.ts` (הוחזר בדיוק
-בסוף, `git diff` ריק — כמו ב-M10-c52). ארבעה מהם כבר ב-100%
-(‏`src/lib/money.ts`, ‏`src/lib/checkout/split.ts`,
-‏`src/server/domain/vouchers/state-machine.ts`,
-‏`src/server/domain/orders/state-machine.ts`, וגם
-‏`src/lib/supabase/rls-report-fetch.ts` מ-M10-c52). בקטגוריית "refunds"
-נבדקו שישה קבצים; החלש מכולם היה
-**‏`src/server/actions/payments/refund.ts`: 67.1% ענפים (76 סה"כ, 51
-מכוסים, 25 לא)**, מול 96.36% ב-`server/domain/orders/refund.ts` (המתכנן
-הטהור) ו-93%+ בשאר. מופעל דרך `cardcom-payments` skill (הקובץ תחת
-`src/server/actions/payments/`). 20 ענפים לא מכוסים מופו ל-19 שורות
-(NOT_FOUND על הזמנה/תשלום חסרים, transactionId/סכום לא קריא, אפס פריטים,
-`vouchers ?? []`, שובר `expired` לצד `redeemed`, RefundError אמיתי
-מ-`planOrderRefund` (שורת `redeemed` בלי REFUND legal) לעומת שגיאה לא-RefundError
-שמשתחררת בלי טיפול (`NaN.toFixed(2)` דרך `ilsToAgorot`), fallback הודעת
-Cardcom, `describeRefundBlockers` מוחזר ריק (מוק חלקי, כי מסלול אמיתי לא
-יכול לייצר את זה — התלות זהה לתלות של הבדיקה שמעליו), `voucherRefunds.length>0`,
-`refundPaymentId` אמיתי + תור חשבונית (‏`enqueueRefundCreditNote`/
-`issueQueuedInvoice` מוקים מלאים, המודול הזה נבדק בנפרד ב-`invoices.test.ts`),
-replay/refused על התור, `order.user_id`/מייל לקוח/שגיאת RPC, וזריקה
-לא-Error בבלוק ה-catch. 18 טסטים נוספו ל-`refund.test.ts` (38 בסה"כ),
-כולל `admin.rpc` שנוסף לסטאב ה-Supabase המזויף (לא היה קיים). שערים ירוקים:
-type-check נקי, lint נקי (biome + 12 שערי תוכן), 605/7213 (+18), build
-`exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה:
-`src/server/actions/payments/refund.test.ts`.**
+M11-c53: עדיין לא קיים ב-`HEAD`/`origin` (נבדק שוב עם `git fetch` ב-M13-c53).
+פריטים M12-c53 ו-M13-c53 בוצעו מחוץ לסדר לפי הקצאה מפורשת, כמו שתועד שם.
+
+## M10-c53 - DONE (29.09): פירוט מלא בארכיון
+
+כיסוי טסטים: `refund.ts` (server action) מ-67.1% ל-100% ענפים, 18 טסטים
+נוספו (38 בסה"כ). שערים ירוקים, 605/7213 (+18). קובץ יחיד שונה:
+`src/server/actions/payments/refund.test.ts`.
+
+## M13-c53 - DONE (29.09): אבטחה נמדדה מחדש — CSP/HSTS/X-Frame-Options/Referrer-Policy/rate-limit על login+checkout+redeem, אפס דריפט
+
+נבדק ישירות: `git log e5197b512..HEAD -- next.config.ts src/lib/security src/lib/rate-limit src/server/actions/auth.ts src/server/actions/payments/checkout.ts src/app/redeem docs/RATE-LIMITS.md`
+ריק — אפס שינוי בכל קובץ רלוונטי מאז M13-c52 (`e5197b512`, אותו יום).
+
+בכל זאת נמדד מחדש מול build אמיתי, לא רק מול הקוד: `pnpm build` נקי,
+שרת `pnpm start` נפרד על פורט 3553 (לא נגעתי בשרת סשן מקביל).
+
+- **`curl -D -` על חמישה נתיבים** (`/`, `/login`, `/checkout`,
+  `/checkout/frame-return`, `/redeem/abc`): כל אחד עם `Content-Security-
+  Policy`, `Strict-Transport-Security: max-age=63072000; includeSubDomains;
+  preload`, `X-Frame-Options`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`.
+  `/checkout/frame-return` הופך נכון ל-`frame-ancestors 'self'`/
+  `X-Frame-Options: SAMEORIGIN`; ארבעת האחרים ב-`'none'`/`DENY`.
+- **rate-limit**: שלושת קבצי הטסט (`auth.test.ts`, `payments/checkout.test.ts`,
+  `api/supplier/vouchers/redeem/route.test.ts`) רצו ישירות — 45/45 ירוקים.
+- **Upstash**: `UPSTASH_REDIS_REST_URL` עדיין נעדר מ-`.env.local`, fallback
+  ל-Postgres פעיל — זהה ל-M13-c52.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test`
+**605/7213** (זהה), `pnpm build` `exit 0`. אין שינוי UI, לכן `scripts/compare.mjs`
+לא רץ (תואם לתקדים ב-M12-c53 ובכל פריט re-verify קודם ללא שינוי קוד).
+
+**קבצים:** `STATE.md` בלבד.
 
 ## M12-c53 - DONE (29.09): SEO נמדד מחדש בפעם הרביעית — מטא/canonical/og/JSON-LD Product+Offer/sitemap/robots, אפס דריפט
 
