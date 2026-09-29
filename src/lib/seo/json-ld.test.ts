@@ -93,6 +93,29 @@ describe('buildProductJsonLd, physical', () => {
   })
 })
 
+describe('buildProductJsonLd, rating', () => {
+  it('emits no aggregateRating at all when rating is absent', () => {
+    const node = buildProductJsonLd(physical)
+    expect(node.aggregateRating).toBeUndefined()
+  })
+
+  it('emits no aggregateRating for a zero-review claim', () => {
+    const node = buildProductJsonLd({ ...physical, rating: { average: 0, count: 0 } })
+    expect(node.aggregateRating).toBeUndefined()
+  })
+
+  it('emits ratingValue and reviewCount from real approved reviews', () => {
+    const node = buildProductJsonLd({ ...physical, rating: { average: 4.5, count: 12 } })
+    expect(node.aggregateRating).toEqual({
+      '@type': 'AggregateRating',
+      ratingValue: 4.5,
+      reviewCount: 12,
+      bestRating: 5,
+      worstRating: 1,
+    })
+  })
+})
+
 describe('buildProductJsonLd, coupon', () => {
   const couponProduct = {
     ...physical,

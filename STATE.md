@@ -1,109 +1,97 @@
-RESUME FROM: M18-c52
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c52)
+RESUME FROM: M01-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c52)
 
 ## המשך מ:
 
-M17-c52 חזר על מעבר משפטי ולשוני (כמו M17-c51, 29.09 מוקדם יותר) ומצא
-דריפט אמיתי: שני פגמים חיים בפוטר שהפריט הקודם לא נגע בו. `git log` אושר
-תחילה — ארבעת מסמכי `src/app/(legal)/_content/*.ts` ו-`messages/he.json`
-לא השתנו מאז `46b3b93ea` (M17-c51), כך שהם עדיין נכונים כפי שנמדדו אז. סוכן
-חקר סרק את כל `src/app/` ו-`src/components/` (528 קבצים) בעברית מעורבת עם
-לטינית, ומצא **שתיים** ב-`SiteFooter.tsx` (הפוטר החי, מוצג בכל עמוד):
-"הירשם ל Newsletter" (מילה זרה במקום "ניוזלטר" הקיים כבר ב-he.json
-וב-`newsletter.ts`) ו-"$" בודד לא תקין באמצע משפט עברי ("והטבות $ נוספות"),
-כנראה שריד מתבנית Electro. שניהם תוקנו. שער `latin-copy-scan.mjs`,
-type-check, lint (12 שערים), test (604/604, 7188/7200) ו-build ירוקים. שער
-השוואה בחזית על `pnpm start` אמיתי (3311): 380 8.51% / 768 9.02% / 1440
-3.95%, כולם PASS, זהים ל-3 העשרוניות לבייסליין (השינוי הוא טקסט בלבד,
-ללא שינוי פיקסלים). סשן הבא ממשיך את סבב ה-c52: M18-c52 וכו'.
+M18-c52 היה פריט idle-check: קודם לבדוק אם סבב ה-c52 כולו לא הזיז קוד
+(ואם כן, לכתוב MAINTENANCE IDLE), אחרת לחפש שיפור המרה אמיתי אחד בדף הבית
+או המוצר, בהתאמה ל-Electro v7. הסבב **לא** היה idle (M10/M14/M17-c52 כולם
+שינו קוד), אז לא נכתבה שורת IDLE, ובוצע החלק השני: חובר דף המוצר לתא
+הדירוג בכוכבים ש-`product-page.css` שומר לו (`.pdp-summary__rating`) מאז
+שהוסר עם כל מנגנון הביקורות ב-18.09 (`4c7019d66`) ומעולם לא חובר מחדש
+כש-Phase 15 שיחזר את המנגנון ב-23.09 (`4dab065ef`) — דף `/reviews` ציבורי
+קיים אבל שום דבר בדף המוצר לא מקשר אליו ולא מציג ממנו כלום.
+`loadProductBySlug` מקפל כעת ביקורות מאושרות ל-`ratingSummary` (null באפס),
+`RatingStars` חדש מציג זאת לצד ה-SKU ומקשר ל-`/reviews`, ו-JSON-LD מקבל
+`aggregateRating` אמיתי. **ממצא לוואי, נמדד מול פרודקשן דרך ה-management
+API (קריאה בלבד):** ל-`anon` אין שום הרשאה על `public.reviews` — לא
+SELECT — כך שה-policy הציבורי מ-154 מעולם לא רץ וכל קריאת ביקורות ציבורית
+נכשלת ב-401 מאז 23.09, בשקט. תוקן ב-`migrations/pending/247_reviews_grant_anon_select.sql`
+(GRANT בלבד, לא הוחל). שערים: type-check/lint (i18n 627/627, המחרוזת עברה
+דרך t()) נקיים; test 605/7195 (+7); build ירוק (46 אזהרות
+`reviews_read_failed` צפויות, זה בדיוק הממצא). שער חזותי בחזית: בית
+8.51/9.02/3.95 PASS, מוצר 5.65/4.95/2.92 PASS — זהים לבייסליין (0 ביקורות
+מאושרות היום, הרכיב מציג null). פירוט מלא למטה. הסשן הבא פותח סבב חדש:
+M01-c53.
 
-## M17-c52 - DONE (29.09): מעבר משפטי ולשוני שוב — שני פגמים חיים נמצאו בפוטר, תוקנו
+## M18-c52 - DONE (29.09): idle-check (לא idle) + דירוג בכוכבים בדף המוצר, ממצא לוואי: `anon` בלי הרשאה על `reviews`
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. הפריט הזה כבר בוצע פעם ב-M17-c51 (`46b3b93ea`, 29.09 מוקדם
-יותר) — המדידה הזו חוזרת עליו במלואו כדי לתפוס דריפט, לא מניחה שהוא עדיין
-תקף.
+נקראו במלואם.
 
-**מה נבדק שלא השתנה:** `git log 46b3b93ea..HEAD` על ארבעת מסמכי
-`src/app/(legal)/_content/*.ts` (privacy/terms/returns/accessibility) ועל
-`messages/he.json` — ריק. שני הקבצים המשפטיים הכפולים והמתים
-(`src/content/legal/*.ts`) נבדקו גם הם ואינם מקושרים משום מקום (מתועד
-במכוון ב-`legal-duplication.test.ts`), לא בהיקף.
+**בדיקת idle:** שלושה מתוך שבעה עשר הפריטים הקודמים בסבב (M10-c52,
+M14-c52, M17-c52) שינו קוד אמיתי. הסבב אינו idle, אז לא נכתבה שורת
+MAINTENANCE IDLE; מבוצע החלק השני של הפריט.
 
-**מה נמצא ותוקן, `src/components/layout/SiteFooter.tsx` (הפוטר החי, בכל
-עמוד):**
+**מה נמצא:** `.pdp-summary__meta` ב-`src/styles/product-page.css` שומר תא
+ל-star rating (`.pdp-summary__rating`) לצד ה-SKU, בדיוק כמו ב-Electro v7.
+המאפיין הוסר במלואו ב-`4c7019d66` (18.09, "reviews never had any data")
+ומעולם לא חובר מחדש כש-Phase 15 שיחזר את מנגנון הביקורות (`4dab065ef`,
+23.09): טופס ביקורת, תור אישור אדמין ודף `/product/[slug]/reviews` ציבורי
+— בלי שום קישור אליו מדף המוצר, ובלי חיבור ל-JSON-LD (`rating` כבר קיים
+כשדה ב-`buildProductJsonLd` אבל אף קורא לא העביר אותו מעולם).
 
-1. **שורה 180, מילה זרה:** `"קנה וחסוך, הירשם ל Newsletter"` — "ניוזלטר"
-   כבר קיים כתעתיק עברי עקבי ב-`he.json` (`newsletterAriaLabel`) וב-
-   `newsletter.ts` (נושא המייל). תוקן ל-`"קנה וחסוך, הירשם לניוזלטר"`.
-2. **שורה 183, תו זר בודד:** `"לקבלת הנחות והטבות $ נוספות . . ."` — סימן
-   `$` באמצע משפט עברי באתר שכולו ₪, ככל הנראה שריד מתבנית Electro
-   שלא הוחלף. תוקן ל-`"לקבלת הנחות והטבות נוספות . . ."`.
+**מה בוצע:**
+1. `src/lib/product-detail.ts`: `loadProductBySlug` מקפל דירוגי ביקורות
+   מאושרות (`aggregateRatings` הקיים) ל-`ratingSummary`, `null` באפס.
+   השאילתה מוטבעת (לא קוראת ל-`server/queries/reviews.ts`) כי אותו מודול
+   מייצא גם קריאה מבוססת-עוגיות, וייבואו היה מכניס את `@/lib/supabase/server`
+   לגרף הסטטי של דף המוצר ומפיל את `catalogue-render-path.test.ts`.
+2. `src/components/product/RatingStars.tsx` (חדש): חמישה כוכבים, קישור
+   ל-`/reviews`, טקסט מדויק ("4.5 מתוך 5 · 12 ביקורות", מפתח i18n חדש
+   `reviewsPage.summaryLink`). `null` באפס ביקורות — אותו כלל שהקוד שהוסר
+   ב-18.09 כבר הצהיר עליו.
+3. `ProductInfo.tsx`: הרכיב בתוך `.pdp-summary__meta`, לצד ה-SKU.
+4. `page.tsx`: `ratingSummary` מוזן ל-JSON-LD (`aggregateRating` אמיתי)
+   ול-`ProductInfo`.
+5. **ממצא לוואי, נמדד מול פרודקשן (קריאה בלבד, טוקן ה-CLI מה-keychain):**
+   `information_schema.role_table_grants` על `public.reviews` לא מחזיק שום
+   שורת `anon`. ה-policy `reviews_public_read_approved` (154) קיים ותקין
+   אבל אף פעם לא רץ — PostgREST דוחה ב-`42501` לפני שה-policy נבדק.
+   `listApprovedReviews` תמיד עובר דרך מפתח ה-anon, גם למשתמש מחובר, כך
+   שדף הביקורות הציבורי נכשל תמיד מאז 23.09, בשקט. `reviews` מחזיקה 0
+   שורות בפרודקשן (נמדד מחדש) — אין נזק ללקוח עדיין. **תוקן
+   ב-`migrations/pending/247_reviews_grant_anon_select.sql`** (GRANT
+   בלבד, אין שינוי ל-policy), רשום ב-`APPLY-ORDER.md`, `README.md`
+   ו-`docs/BACKLOG.md` סעיף 5, לא הוחל.
 
-קבצים שנגעו בהם מאז M17-c51 (`FooterNewsletterForm.tsx`, `SiteFooter.tsx`
-עצמו לחיווט, `ProductGallery.tsx`) נבדקו בדיפ מלא — אין בהם תוכן חדש,
-רק חיווט/תמונה.
+**שערים:** `pnpm type-check` נקי; `pnpm lint` נקי (12 שערים, i18n 627/627 —
+המחרוזת החדשה עברה דרך `t()`); `pnpm test` **605 קבצים / 7195 עברו / 12
+דולגו** (+7: 4 ב-`RatingStars.test.tsx`, 3 ב-`json-ld.test.ts`); `pnpm build`
+ירוק (exit 0) — 46 אזהרות `product_detail.reviews_read_failed` בלוג
+הבנייה, צפויות: זה בדיוק הממצא בסעיף 5, לא regression. שער חזותי בחזית
+(`pnpm build` + `pnpm start` אמיתי על 3311): בית 8.51/9.02/3.95 PASS, מוצר
+5.65/4.95/2.92 PASS — זהים לביט לבייסליין (0 ביקורות מאושרות היום, הרכיב
+מציג `null`, אין שינוי פיקסלים).
 
-**שערים:** `scripts/latin-copy-scan.mjs` נקי (0 ממצאים). `pnpm type-check`
-נקי; `pnpm lint` נקי (12 שערים, i18n 627/627 ללא שינוי — התיקון לא הוסיף
-מחרוזת עברית חדשה ל-`he.json`); `pnpm test` 604 קבצים / 7188 עברו / 12
-דולגו, זהה; `pnpm build` ירוק. **שער השוואה בחזית**, `pnpm build` + `pnpm
-start` על 3311 אמיתי, `--page=home --widths=380,768,1440
---baseline='refs/ke_live_{width}.png'`: **380 8.51% PASS, 768 9.02% PASS,
-1440 3.95% PASS** — זהים ל-3 העשרוניות לבייסליין (טקסט בלבד, אין שינוי
-פיקסלים). שורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי הריצה עצמה.
-
-**קבצים:** `src/components/layout/SiteFooter.tsx`,
+**קבצים:** `src/lib/product-detail.ts`,
+`src/components/product/RatingStars.tsx` (חדש),
+`src/components/product/RatingStars.test.tsx` (חדש),
+`src/components/storefront/ProductInfo.tsx`,
+`src/components/storefront/product-variant-quantity.test.tsx`,
+`src/app/(store)/product/[slug]/page.tsx`, `src/lib/seo/json-ld.test.ts`,
+`messages/he.json`, `messages/en.json`,
+`migrations/pending/247_reviews_grant_anon_select.sql` (חדש),
+`migrations/pending/APPLY-ORDER.md`, `migrations/pending/README.md`,
+`src/__tests__/pending-migrations-inventory.test.ts`, `docs/BACKLOG.md`,
 `docs/UI-PARITY-REPORT.md`, `STATE.md`.
 
-## M16-c52 - DONE (29.09): תברואת ריפו שוב — git status נקי, כל הענפים דחופים, 24 PRs + 26 ממוזגים-בלי-PR + 83 רדומים רשומים
+## M17-c52 / M16-c52 - DONE (29.09): פירוט מלא בארכיון
 
-**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. הפריט הזה כבר בוצע פעם ב-M16-c51 (29.09 מוקדם יותר, תשעה
-ענפים ללא remote בכלל נדחפו) — המדידה הזו חוזרת עליו במלואו כדי לתפוס
-דריפט, לא מניחה שהוא עדיין תקף.
-
-**מה נמדד, בפועל:**
-
-- `git status`: עץ נקי, `audit/final-audit` מעודכן מול `origin/audit/final-audit`.
-- `git fetch origin --prune` (הניסיון הראשון נכשל ב-timeout SSH חולף מול
-  `ssh.github.com`; ניסיון שני הצליח, ללא שינוי מאז הפעם הקודמת).
-- **בדיקת "כל הענפים דחופים" נעשתה נכון הפעם עם השוואת SHA, לא רק
-  `git branch -vv`**: `git branch -vv` מציג בלי סוגריים (כאילו "לא דחוף")
-  שישה ענפים (`arch/seed-data`, `feat/auth-hardening`,
-  `feat/monitoring-sentry`, `feat/notifications-full`,
-  `feat/performance-seo`, `feat/search-meilisearch`) ועוד שניים
-  (`release/v1.0`, `release/v1.2`) — אבל `git rev-parse` על כל אחד מול
-  `origin/<אותו שם>` הראה **SHA זהה בכולם**: הם כבר דחופים, רק חסר להם
-  תצורת מעקב מקומית (קוסמטי, לא משפיע על "האם זה בשרת"). **שישה ענפים
-  בלבד באמת בלי remote תואם בשום שם** (`comm` בין רשימת שמות ענפים
-  מקומיים לרשימת שמות ענפים מרוחקים, אחרי תיקון רווחים מובילים שקלקלו
-  השוואה ראשונה): `chore/vitest-4`, `docs/nightly-health-green`,
-  `fix/main-nightly-red`, `pr36`, `release/v1.1`,
-  `wip/refund-record-rebase-head` — **אותם שישה בדיוק** שנרשמו ב-M16-c51
-  כ"כבר ממוזגים ל-main וגם ל-audit/final-audit, remote נמחק אחרי מיזוג,
-  להשאיר כמו שהם" — אין ענף חדש-לא-דחוף. `main` עצמו נשאר לא-דחוף (193
-  לפנים / 109 מאחורי `origin/main`), ענף מוגן, דורש PR, לא נגעתי בו.
-- **PRs פתוחים: 24** (`gh pr list --state open`), עלה ב-1 מ-23 שנרשמו
-  ב-M16-c51 (PR #47, `dependabot/npm_and_yarn/minor-dev-0fc32dfca6`,
-  נפתח 28.09).
-- **117 ענפי remote סה"כ. 26 ממוזגים ל-`origin/main` בלי PR פתוח** (עלה
-  מ-22 ב-M16-c51). **91 לא-ממוזגים; מתוכם 83 רדומים (בלי commit 14+ יום,
-  לפני 15.09) ו-7 עם commit בשבועיים האחרונים** (כנראה סוכנים מקבילים
-  שרצים על הריפו הזה עכשיו, לפי [[parallel-claude-sessions]]) — עלה
-  משמעותית מ-59 הרדומים שנרשמו ב-M16-c51, סביר שממקורו בתהליכי
-  autopilot/worktree-* שיוצרים ענף חדש בכל הרצה.
-
-**לא בוצע ולא נדרש:** שום מיזוג, מחיקת ענף, מחיקת PR — אסור לפי הכללים.
-`README.md` (מונה מסמכים) נבדק מול `docs-index-gate`: 282, תואם, אין
-דריפט מאז M16-c51 תיקן אותו.
-
-**שערים (הרצה מלאה, ללא שינוי קוד):** `pnpm type-check` נקי; `pnpm lint`
-נקי (12 שערים, i18n 627/627, docs-index-gate 282 תואם); `pnpm test` **604
-קבצים / 7188 עברו / 12 דולגו**, זהה ל-M15-c52; `pnpm build` ירוק, exit 0.
-אין שינוי UI, לא נדרש שער השוואה חזותי.
-
-**קבצים:** `STATE.md` בלבד.
+M17-c52: מעבר משפטי ולשוני חזר בשלישית, שני פגמים חיים נמצאו בפוטר
+(`SiteFooter.tsx`, "Newsletter" זר ו-`$` בודד) ותוקנו; שער 8.51/9.02/3.95
+PASS. M16-c52: תברואת ריפו — git status נקי, כל הענפים דחופים (בדיקת SHA),
+24 PRs פתוחים, 26 ממוזגים-בלי-PR, 83 רדומים; אין שינוי קוד.
 
 ## M15-c52 - DONE (29.09): פירוט מלא בארכיון
 
@@ -237,7 +225,9 @@ M12-c51: SEO, 261 בדיקות, אפס drift.
    "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
    עונה "עדיין לא פעיל"), 240 (הסכמת "הכל באפליקציה"), 241 (עיר משלוש
    כותרות), 242 (מקור מחיר + ביקורות גוגל), 243 (תנאי מוצר), 244 (קמפיינים
-   והמרות של תוכנית השותפים; בלעדיה התוכנית "עדיין לא פתוחה"). סדר והתנאים
+   והמרות של תוכנית השותפים; בלעדיה התוכנית "עדיין לא פתוחה"), 247 (`anon`
+   בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
+   נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר.
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.

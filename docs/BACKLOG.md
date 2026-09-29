@@ -21,6 +21,10 @@ operator's, not the agent's — see `CLAUDE.md`'s stop conditions).
 same order, no duplicate, no new item. Only item 4's commit count changed
 (47 -> 66, git-only, production not re-probed).
 
+**Updated 2026-09-29 (M18-c52):** item 5's file list gained `247` (`anon`
+holds zero grants on `public.reviews`, measured read-only against
+production; see `migrations/pending/247_reviews_grant_anon_select.sql`).
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52).** ה-NS כבר
@@ -52,8 +56,8 @@ same order, no duplicate, no new item. Only item 4's commit count changed
    שהיו כתובות בנפרד (STATE.md חוסם 3: 218, 245, 246, 204, 240-244;
    LAUNCH-READINESS.md שורה 5: 204, 223, 224, 234-236, 239-244), פלוס 209
    ו-220 שנזכרים כתלות של 245/246 באותה רשומה: **204, 209, 218, 220, 223,
-   224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246** (17
-   קבצים). אחרי ההחלה: `pnpm db:types` ו-commit.
+   224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247** (18
+   קבצים, ‏247 בלי תלות בשום קובץ אחר). אחרי ההחלה: `pnpm db:types` ו-commit.
 6. **Cardcom אמיתי.** לבדוק את הערכים של `CARDCOM_API_KEY`/`CLIENT_ID`/
    `MERCHANT_ID` הקיימים בשם ב-Vercel, לקבוע `CARDCOM_USE_MOCK=false` ו-
    `CHECKOUT_ENABLED=true`, לפרוס מחדש (ה-CSP נאפה בזמן build, לא בזמן

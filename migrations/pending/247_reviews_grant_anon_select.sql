@@ -1,0 +1,86 @@
+-- 247_reviews_grant_anon_select.sql
+--
+-- `anon` cannot read `public.reviews` at all today, and the policy that
+-- should be doing the filtering never gets the chance to run.
+--
+-- =============================================================================
+-- MEASURED AGAINST PRODUCTION, 2026-09-29, READ-ONLY
+-- =============================================================================
+--
+-- `SELECT grantee, privilege_type FROM information_schema.role_table_grants
+-- WHERE table_schema='public' AND table_name='reviews'` through the
+-- management API (the CLI's own keychain token; no psql, no MCP, no write):
+--
+--   authenticated  DELETE, INSERT, REFERENCES, SELECT, TRIGGER
+--   postgres       DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE
+--   service_role   DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE
+--
+-- `anon` holds nothing on this table. Not one privilege.
+--
+-- =============================================================================
+-- WHY THIS IS A REAL OUTAGE AND NOT A THEORETICAL GAP
+-- =============================================================================
+--
+-- `src/server/queries/reviews.ts#listApprovedReviews`, the only read path for
+-- the public review list, goes through `createPublicClient()` -- the anon-key
+-- client, by design and regardless of whether the visitor is signed in (see
+-- that file's own docstring: "Server-side clients that carry NO elevated
+-- key"). With `anon` holding zero grants, PostgREST refuses the request
+-- before `154`'s policy is ever evaluated: `42501 permission denied for table
+-- reviews`. Reproduced locally against this same project during `pnpm build`,
+-- once per prerendered product slug (46/46), which is what surfaced this --
+-- product/[slug]/page.tsx was wired in this branch to read the same table for
+-- a star-rating summary, and every single read came back denied.
+--
+-- The customer-facing consequence: `/product/[slug]/reviews` has rendered
+-- "עדיין אין ביקורות מאושרות למוצר הזה" for every product since Phase 15
+-- shipped it on 2026-09-23, regardless of how many reviews are actually
+-- approved, because the query never gets past the grant. `reviews` holds 0
+-- rows in production as of this writing (099/154/`STATE.md`), so nothing has
+-- been silently hidden from a real shopper yet -- but the first approved
+-- review would have gone into that same hole with no error anywhere a human
+-- would see it: `listApprovedReviews` and the new `product-detail.ts` read
+-- both swallow the error and render "no reviews" indistinguishably from the
+-- true empty state.
+--
+-- 154's own dry run ("the pending row invisible to anon") verified the
+-- STATUS FILTER, not that `anon` could reach the table at all -- a dry run
+-- inside `BEGIN`/`ROLLBACK` as the actual `postgres` role never exercises the
+-- grant a real PostgREST request needs.
+--
+-- =============================================================================
+-- WHY GRANTING anon SELECT HERE IS SAFE
+-- =============================================================================
+--
+-- `154_reviews_wishlist.sql` already installed
+-- `reviews_public_read_approved ON public.reviews FOR SELECT USING (status =
+-- 'approved')` with no `TO` clause, so it applies to every role including
+-- `anon` the moment the grant beneath it exists. A grant with no permissive
+-- policy is a hole (the lesson `111` and `230` both write down); a policy
+-- with no grant, which is what stands today, is simply mute. Adding the grant
+-- makes the policy that was always meant to gate `anon` finally reachable,
+-- and reachable ONLY on the terms it already states: pending and rejected
+-- reviews stay invisible to `anon`, exactly as `154`'s dry run measured for
+-- the `postgres` role.
+--
+-- ROLLBACK
+--
+--   REVOKE SELECT ON public.reviews FROM anon;
+
+BEGIN;
+
+GRANT SELECT ON public.reviews TO anon;
+
+COMMIT;
+
+-- =============================================================================
+-- VERIFY
+-- =============================================================================
+--
+-- SELECT grantee, privilege_type FROM information_schema.role_table_grants
+--   WHERE table_schema = 'public' AND table_name = 'reviews' AND grantee = 'anon';
+-- -- expect exactly one row: anon | SELECT
+--
+-- Then, with the anon key, `GET /rest/v1/reviews?select=id&limit=1` should
+-- answer 200 (empty array, since production holds 0 rows) instead of the
+-- current 401 `{"code":"42501", ...}`.

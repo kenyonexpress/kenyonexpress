@@ -210,7 +210,8 @@
     "titleFor": "ביקורות: {name}",
     "average": "ממוצע {avg} מתוך 5, מתוך {count} ביקורות.",
     "none": "עדיין אין ביקורות מאושרות למוצר הזה.",
-    "outOf": "{value} מתוך 5"
+    "outOf": "{value} מתוך 5",
+    "summaryLink": "{avg} מתוך 5 · {count} ביקורות"
   },
   "reviewForm": {
     "sent": "הביקורת נשלחה וממתינה לאישור.",

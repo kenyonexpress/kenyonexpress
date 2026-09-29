@@ -151,6 +151,7 @@ export default async function ProductPage({ params }: Props) {
     couponOffer,
     recurringOffer,
     suppressReferencePrice,
+    ratingSummary,
   } = detail
 
   // Section 94: "ask the business". The supplier's own WhatsApp only when the
@@ -233,6 +234,9 @@ export default async function ProductPage({ params }: Props) {
     fullPriceIls: isCoupon ? null : oldPrice,
     couponOffer,
     stockQuantity: product.stock_quantity ?? null,
+    rating: ratingSummary
+      ? { average: ratingSummary.averageTenths / 10, count: ratingSummary.count }
+      : null,
   })
   /**
    * The product's category AND everything above it.
@@ -362,6 +366,8 @@ export default async function ProductPage({ params }: Props) {
               </Suspense>
             }
             sku={product.sku}
+            ratingSummary={ratingSummary}
+            reviewsHref={`/product/${encodeURIComponent(product.slug)}/reviews`}
             categoryName={category?.name_he ?? null}
             city={productLocation({ ...product, supplier }).city?.name ?? null}
             attributes={attributes}

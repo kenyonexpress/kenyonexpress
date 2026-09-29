@@ -1,5 +1,20 @@
 # Apply order
 
+## 2026-09-29: 247, any order, one GRANT
+
+`247_reviews_grant_anon_select.sql` grants `anon` SELECT on `public.reviews`.
+Measured against production, read-only, through the management API:  `anon`
+holds zero privileges on that table today, so `154`'s
+`reviews_public_read_approved` policy (status = 'approved') never gets to run
+and every anonymous read -- which is every read, since
+`listApprovedReviews` always uses the anon-key client -- fails `42501`. No
+dependency on any other pending file. **Reversal:** `REVOKE SELECT ON
+public.reviews FROM anon;`. Until applied, `/product/[slug]/reviews` and the
+PDP's star-rating row both fail closed and show no reviews rather than an
+error, which is why this shipped without being blocking: `reviews` holds 0
+rows in production (re-measured 2026-09-29), so nothing is hidden from a
+shopper yet.
+
 ## 2026-09-25: 246, AFTER 209, one ALTER POLICY
 
 `246_profiles_mfa_initplan.sql` re-issues 209 §2's rewrite of

@@ -210,7 +210,8 @@
     "titleFor": "Reviews: {name}",
     "average": "Average {avg} out of 5, from {count} reviews.",
     "none": "There are no approved reviews for this product yet.",
-    "outOf": "{value} out of 5"
+    "outOf": "{value} out of 5",
+    "summaryLink": "{avg} out of 5 · {count} reviews"
   },
   "reviewForm": {
     "sent": "Your review was sent and is waiting for approval.",

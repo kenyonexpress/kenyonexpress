@@ -1,5 +1,21 @@
 # `migrations/pending/`
 
+## 2026-09-29: 247 WRITTEN, not applied - `anon` בלי אף הרשאה על `reviews`, כל קריאה ציבורית 401
+
+‏`247_reviews_grant_anon_select.sql`. ‏M18-c52. נמדד מול פרודקשן, קריאה
+בלבד, דרך ה-management API: `information_schema.role_table_grants` על
+‏`public.reviews` לא מחזיק שורת `anon` בכלל — לא `SELECT`, לא שום דבר. ה-policy
+‏`reviews_public_read_approved` (154, `status = 'approved'`) קיים ותקין אבל
+אף פעם לא רץ, כי ‏PostgREST דוחה את הבקשה ב-`42501` לפני שה-policy נבדק.
+‏`listApprovedReviews` תמיד עובר דרך מפתח ה-anon (`createPublicClient`), גם
+למשתמש מחובר, כך שהקריאה הציבורית היחידה לביקורות נכשלת תמיד. נגלה בענף הזה
+כש-`product-detail.ts` חובר לאותה טבלה לשורת דירוג בכוכבים בדף המוצר, ו-46
+מתוך 46 המוצרים שנבנו מראש הפיקו `42501` בלוג הבנייה. `reviews` מחזיקה 0
+שורות בפרודקשן (נמדד מחדש), כך שאין נזק ללקוח עדיין — אבל הביקורת המאושרת
+הראשונה הייתה נופלת לאותו בור בשקט. **הפתרון:** `GRANT SELECT ON
+public.reviews TO anon;` בלבד, אין שינוי ל-policy. בלי תלות בקובץ ממתין אחר.
+**Reversal:** `REVOKE SELECT ON public.reviews FROM anon;`.
+
 ## 2026-09-25: 246 WRITTEN, not applied - ה-`auth_rls_initplan` היחיד ש-209 לא סוגר, נמדד
 
 ‏`246_profiles_mfa_initplan.sql`. ‏M05-c1. ‏209 §2 כותב את

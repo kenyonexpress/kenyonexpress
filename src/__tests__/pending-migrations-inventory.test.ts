@@ -1020,6 +1020,11 @@ describe('the pending migration inventory', () => {
       // the advisor's lint accepts; 209's form is measured as still flagged.
       // After 209.
       '246_profiles_mfa_initplan.sql',
+      // M18-c52 (29.09): `anon` holds zero grants on `reviews`, measured
+      // read-only against production, so the approved-only policy from 154
+      // never runs and every public review read fails 42501. One GRANT, no
+      // policy change, no dependency on any other pending file.
+      '247_reviews_grant_anon_select.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

@@ -2,6 +2,94 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c52 - DONE (29.09): מעבר משפטי ולשוני שוב — שני פגמים חיים נמצאו בפוטר, תוקנו
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. הפריט הזה כבר בוצע פעם ב-M17-c51 (`46b3b93ea`, 29.09 מוקדם
+יותר) — המדידה הזו חוזרת עליו במלואו כדי לתפוס דריפט, לא מניחה שהוא עדיין
+תקף.
+
+**מה נבדק שלא השתנה:** `git log 46b3b93ea..HEAD` על ארבעת מסמכי
+`src/app/(legal)/_content/*.ts` (privacy/terms/returns/accessibility) ועל
+`messages/he.json` — ריק. שני הקבצים המשפטיים הכפולים והמתים
+(`src/content/legal/*.ts`) נבדקו גם הם ואינם מקושרים משום מקום (מתועד
+במכוון ב-`legal-duplication.test.ts`), לא בהיקף.
+
+**מה נמצא ותוקן, `src/components/layout/SiteFooter.tsx` (הפוטר החי, בכל
+עמוד):**
+
+1. **שורה 180, מילה זרה:** `"קנה וחסוך, הירשם ל Newsletter"` — "ניוזלטר"
+   כבר קיים כתעתיק עברי עקבי ב-`he.json` (`newsletterAriaLabel`) וב-
+   `newsletter.ts` (נושא המייל). תוקן ל-`"קנה וחסוך, הירשם לניוזלטר"`.
+2. **שורה 183, תו זר בודד:** `"לקבלת הנחות והטבות $ נוספות . . ."` — סימן
+   `$` באמצע משפט עברי באתר שכולו ₪, ככל הנראה שריד מתבנית Electro
+   שלא הוחלף. תוקן ל-`"לקבלת הנחות והטבות נוספות . . ."`.
+
+קבצים שנגעו בהם מאז M17-c51 (`FooterNewsletterForm.tsx`, `SiteFooter.tsx`
+עצמו לחיווט, `ProductGallery.tsx`) נבדקו בדיפ מלא — אין בהם תוכן חדש,
+רק חיווט/תמונה.
+
+**שערים:** `scripts/latin-copy-scan.mjs` נקי (0 ממצאים). `pnpm type-check`
+נקי; `pnpm lint` נקי (12 שערים, i18n 627/627 ללא שינוי — התיקון לא הוסיף
+מחרוזת עברית חדשה ל-`he.json`); `pnpm test` 604 קבצים / 7188 עברו / 12
+דולגו, זהה; `pnpm build` ירוק. **שער השוואה בחזית**, `pnpm build` + `pnpm
+start` על 3311 אמיתי, `--page=home --widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'`: **380 8.51% PASS, 768 9.02% PASS,
+1440 3.95% PASS** — זהים ל-3 העשרוניות לבייסליין (טקסט בלבד, אין שינוי
+פיקסלים). שורות נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי הריצה עצמה.
+
+**קבצים:** `src/components/layout/SiteFooter.tsx`,
+`docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
+## M16-c52 - DONE (29.09): תברואת ריפו שוב — git status נקי, כל הענפים דחופים, 24 PRs + 26 ממוזגים-בלי-PR + 83 רדומים רשומים
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. הפריט הזה כבר בוצע פעם ב-M16-c51 (29.09 מוקדם יותר, תשעה
+ענפים ללא remote בכלל נדחפו) — המדידה הזו חוזרת עליו במלואו כדי לתפוס
+דריפט, לא מניחה שהוא עדיין תקף.
+
+**מה נמדד, בפועל:**
+
+- `git status`: עץ נקי, `audit/final-audit` מעודכן מול `origin/audit/final-audit`.
+- `git fetch origin --prune` (הניסיון הראשון נכשל ב-timeout SSH חולף מול
+  `ssh.github.com`; ניסיון שני הצליח, ללא שינוי מאז הפעם הקודמת).
+- **בדיקת "כל הענפים דחופים" נעשתה נכון הפעם עם השוואת SHA, לא רק
+  `git branch -vv`**: `git branch -vv` מציג בלי סוגריים (כאילו "לא דחוף")
+  שישה ענפים (`arch/seed-data`, `feat/auth-hardening`,
+  `feat/monitoring-sentry`, `feat/notifications-full`,
+  `feat/performance-seo`, `feat/search-meilisearch`) ועוד שניים
+  (`release/v1.0`, `release/v1.2`) — אבל `git rev-parse` על כל אחד מול
+  `origin/<אותו שם>` הראה **SHA זהה בכולם**: הם כבר דחופים, רק חסר להם
+  תצורת מעקב מקומית (קוסמטי, לא משפיע על "האם זה בשרת"). **שישה ענפים
+  בלבד באמת בלי remote תואם בשום שם** (`comm` בין רשימת שמות ענפים
+  מקומיים לרשימת שמות ענפים מרוחקים, אחרי תיקון רווחים מובילים שקלקלו
+  השוואה ראשונה): `chore/vitest-4`, `docs/nightly-health-green`,
+  `fix/main-nightly-red`, `pr36`, `release/v1.1`,
+  `wip/refund-record-rebase-head` — **אותם שישה בדיוק** שנרשמו ב-M16-c51
+  כ"כבר ממוזגים ל-main וגם ל-audit/final-audit, remote נמחק אחרי מיזוג,
+  להשאיר כמו שהם" — אין ענף חדש-לא-דחוף. `main` עצמו נשאר לא-דחוף (193
+  לפנים / 109 מאחורי `origin/main`), ענף מוגן, דורש PR, לא נגעתי בו.
+- **PRs פתוחים: 24** (`gh pr list --state open`), עלה ב-1 מ-23 שנרשמו
+  ב-M16-c51 (PR #47, `dependabot/npm_and_yarn/minor-dev-0fc32dfca6`,
+  נפתח 28.09).
+- **117 ענפי remote סה"כ. 26 ממוזגים ל-`origin/main` בלי PR פתוח** (עלה
+  מ-22 ב-M16-c51). **91 לא-ממוזגים; מתוכם 83 רדומים (בלי commit 14+ יום,
+  לפני 15.09) ו-7 עם commit בשבועיים האחרונים** (כנראה סוכנים מקבילים
+  שרצים על הריפו הזה עכשיו, לפי [[parallel-claude-sessions]]) — עלה
+  משמעותית מ-59 הרדומים שנרשמו ב-M16-c51, סביר שממקורו בתהליכי
+  autopilot/worktree-* שיוצרים ענף חדש בכל הרצה.
+
+**לא בוצע ולא נדרש:** שום מיזוג, מחיקת ענף, מחיקת PR — אסור לפי הכללים.
+`README.md` (מונה מסמכים) נבדק מול `docs-index-gate`: 282, תואם, אין
+דריפט מאז M16-c51 תיקן אותו.
+
+**שערים (הרצה מלאה, ללא שינוי קוד):** `pnpm type-check` נקי; `pnpm lint`
+נקי (12 שערים, i18n 627/627, docs-index-gate 282 תואם); `pnpm test` **604
+קבצים / 7188 עברו / 12 דולגו**, זהה ל-M15-c52; `pnpm build` ירוק, exit 0.
+אין שינוי UI, לא נדרש שער השוואה חזותי.
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M15-c52 - DONE (29.09): סנכרון תיעוד — רענון מספרי git ב-STATE.md, docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md, רשימת "ידני לאופיר" אחת נבדקה מחדש
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`

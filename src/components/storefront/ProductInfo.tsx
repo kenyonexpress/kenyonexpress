@@ -3,6 +3,7 @@
 import { useCart } from '@/components/cart/CartProvider'
 import ProductQuestionLink from '@/components/contact/ProductQuestionLink'
 import CityTag from '@/components/geo/CityTag'
+import RatingStars from '@/components/product/RatingStars'
 import ProductShareRow from '@/components/shared/ProductShareRow'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import WaitlistButton from '@/components/storefront/WaitlistButton'
@@ -61,6 +62,14 @@ interface Props {
    */
   proofSlot?: ReactNode
   sku: string | null
+  /**
+   * Approved-review aggregate, or null with zero of them. The page reads the
+   * same value for the JSON-LD, so passing it down costs nothing; `RatingStars`
+   * renders nothing without it, same as the SKU line always has.
+   */
+  ratingSummary?: { count: number; averageTenths: number } | null
+  /** Where the star row and the review count link to. */
+  reviewsHref: string
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
   /**
@@ -70,10 +79,6 @@ interface Props {
   city: string | null
   attributes: Attribute[]
   variants: Variant[]
-  /**
-   * Approved-review summary. The page already reads it for the JSON-LD, so
-   * passing it down costs nothing; null renders no row at all.
-   */
   isCoupon: boolean
   /**
    * Present only for coupon products. Built server-side from
@@ -102,10 +107,10 @@ function shekelsFromIls(value: number): string {
  * The vertical order and every gap in it are measured off the live
  * single-product template (see PDP in src/styles/tokens.ts): eyebrow, title,
  * meta, hairline, stock, the two price lines, the sale price, the buy controls,
- * then the tag line. Live fills two of those slots with features we do not have
- * -- a star rating and a wishlist link -- and those carry real data here rather
- * than a fabricated score, because the rhythm depends on the slots existing,
- * not on what live happens to put in them.
+ * then the tag line. Live fills the meta slot with its star rating and the
+ * wishlist link with its heart; both carry real data here (`ratingSummary`,
+ * `WishlistHeart`) rather than a fabricated score, because the rhythm depends
+ * on the slots existing, not on what live happens to put in them.
  */
 export default function ProductInfo({
   productId,
@@ -118,6 +123,8 @@ export default function ProductInfo({
   scarcitySlot = null,
   proofSlot = null,
   sku,
+  ratingSummary = null,
+  reviewsHref,
   categoryName,
   city,
   attributes,
@@ -238,15 +245,12 @@ export default function ProductInfo({
       )}
 
       {/* THE SLOT LIVE FILLS WITH ITS STAR RATING, and `product-page.css` says
-          so on `.pdp-summary__meta`: we have no ratings, so the slot carries the
-          SKU instead -- real information rather than a fabricated score -- and
-          the rhythm below depends on its height.
-
-          The star row that briefly sat inside this slot is gone with the rest
-          of the reviews feature. It rendered nothing without an approved
-          review and there were never any, so its removal is byte-identical to
-          what shipped. */}
+          so on `.pdp-summary__meta`. The stars share the row with the SKU
+          rather than taking one of their own, so a product's first approved
+          review does not push the rest of the page down a line; `RatingStars`
+          still renders nothing without one, same as before. */}
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
+        <RatingStars summary={ratingSummary} href={reviewsHref} className="pdp-summary__rating" />
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>

@@ -38,6 +38,7 @@ const BASE = {
   oldPrice: null,
   baseStock: 50,
   sku: null,
+  reviewsHref: '/product/tik-gav/reviews',
   categoryName: null,
   city: null,
   attributes: [],

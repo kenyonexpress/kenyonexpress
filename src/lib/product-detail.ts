@@ -7,8 +7,10 @@ import { buildRecurringOffer } from '@/lib/commerce/recurring'
 import { log } from '@/lib/observability/log'
 import { describeOriginalPriceSource } from '@/lib/pricing/original-price-source'
 import { loadReferenceVerdicts, suppressReference } from '@/lib/pricing/price-history'
+import { aggregateRatings } from '@/lib/reviews/eligibility'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/anon'
+import { TABLE_MISSING } from '@/lib/supabase/error-codes'
 import {
   COUPON_054_COLUMNS,
   type Coupon054Row,
@@ -101,42 +103,76 @@ export async function loadProductBySlug(slug: string) {
 
   // Independent reads, so they go together rather than in sequence. On a cache
   // miss this is the difference between one round trip and several.
-  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls, priceSourceRow] =
-    await Promise.all([
-      loadSupplierPublicContact(product.supplier_id),
-      supabase
-        .from('product_variants')
-        .select('id, name_he, price, price_modifier, stock_quantity, sku')
-        .eq('product_id', product.id)
-        .eq('is_active', true)
-        .is('deleted_at', null)
-        .order('name_he')
-        .then(({ data }) => data),
-      loadGalleryAssets(images),
-      isCoupon
-        ? readOptionalColumns<Coupon054Row>(
-            probe,
-            COUPON_054_COLUMNS,
-            [product.id],
-            'product page',
-          ).then((rows) => rows.get(product.id))
-        : Promise.resolve(undefined),
-      isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
-      // The stated basis of the struck-through price (pending 242). Probed for
-      // every type: a physical product strikes `full_price` and a coupon strikes
-      // the sticker price, and both claims need the same sentence under them.
-      // Skipped when there is no `full_price` at all, because then there is no
-      // strike for a source to describe.
-      product.full_price == null
-        ? Promise.resolve(undefined)
-        : readOptionalColumns<OriginalPriceSourceRow>(
-            probe,
-            ORIGINAL_PRICE_SOURCE_COLUMNS,
-            [product.id],
-            'product page (original price source)',
-            MIGRATION_242_HINT,
-          ).then((rows) => rows.get(product.id)),
-    ])
+  const [
+    supplier,
+    variants,
+    galleryAssets,
+    coupon054,
+    stickerPriceIls,
+    priceSourceRow,
+    ratingSummary,
+  ] = await Promise.all([
+    loadSupplierPublicContact(product.supplier_id),
+    supabase
+      .from('product_variants')
+      .select('id, name_he, price, price_modifier, stock_quantity, sku')
+      .eq('product_id', product.id)
+      .eq('is_active', true)
+      .is('deleted_at', null)
+      .order('name_he')
+      .then(({ data }) => data),
+    loadGalleryAssets(images),
+    isCoupon
+      ? readOptionalColumns<Coupon054Row>(
+          probe,
+          COUPON_054_COLUMNS,
+          [product.id],
+          'product page',
+        ).then((rows) => rows.get(product.id))
+      : Promise.resolve(undefined),
+    isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
+    // The stated basis of the struck-through price (pending 242). Probed for
+    // every type: a physical product strikes `full_price` and a coupon strikes
+    // the sticker price, and both claims need the same sentence under them.
+    // Skipped when there is no `full_price` at all, because then there is no
+    // strike for a source to describe.
+    product.full_price == null
+      ? Promise.resolve(undefined)
+      : readOptionalColumns<OriginalPriceSourceRow>(
+          probe,
+          ORIGINAL_PRICE_SOURCE_COLUMNS,
+          [product.id],
+          'product page (original price source)',
+          MIGRATION_242_HINT,
+        ).then((rows) => rows.get(product.id)),
+    // The read-time fold pending 221 will replace with a trigger-maintained
+    // counter (see that migration for why it does not stay correct at
+    // scale). At today's catalogue size it is both correct and fast.
+    //
+    // Inlined rather than calling `server/queries/reviews.ts`'s
+    // `listApprovedReviews`: that module also exports a cookie-reading query
+    // for "my own review", and importing it at all -- even the half of it
+    // this page never calls -- would put `@/lib/supabase/server` in this
+    // page's static import graph and make the whole route dynamic again,
+    // which `catalogue-render-path.test.ts` walks the tree to catch. A
+    // missing `reviews` table degrades to "no rating shown", the same way a
+    // missing column degrades elsewhere in this function.
+    supabase
+      .from('reviews')
+      .select('rating')
+      .eq('product_id', product.id)
+      .eq('status', 'approved')
+      .is('deleted_at', null)
+      .then(({ data, error }) => {
+        if (error) {
+          if (error.code !== TABLE_MISSING) {
+            log.warn('product_detail.reviews_read_failed', { code: error.code ?? null })
+          }
+          return null
+        }
+        return aggregateRatings((data ?? []).map((row) => row.rating))
+      }),
+  ])
 
   const basePrice = Number(product.kenyon_price ?? 0)
 
@@ -218,6 +254,8 @@ export async function loadProductBySlug(slug: string) {
     recurringOffer,
     referenceVerdict,
     originalPriceSource,
+    /** Null with zero approved reviews, never a fabricated 0.0. */
+    ratingSummary,
     /**
      * The page reads THIS, not `referenceVerdict`, so a surface cannot forget
      * to ask. `suppressReference` is false for every verdict except `violating`
