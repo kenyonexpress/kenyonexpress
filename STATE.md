@@ -1,7 +1,35 @@
-RESUME FROM: M07-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c54)
+RESUME FROM: M08-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c54)
 
 ## המשך מ:
+
+**M07-c54 - DONE (29.09): route audit נמדד מחדש, 241 מסלולים, אפס כשל
+אמיתי.** אותו מתכון שאומת ב-M07-c1/M07-c53: `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3491 pnpm build` -> `exit 0`; `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3491 PORT=3491 pnpm start` (פורט אומת
+פנוי לפני ההרצה, לא התנגש עם שש בניות אחרות שרצות במקביל בפורטים 3419-3488);
+`curl` אישר `200` על `/` ועל `/product/barbecue-2`. `e2e/route-audit.spec.ts`
+בשישה chunks בפורגראונד נגד אותו שרת, `ROUTE_AUDIT_REPORT=/tmp/route-audit.jsonl`,
+`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il`, `E2E_FORWARDED_FOR` שונה
+לכל chunk (10.77.0.31..36): `"anon /"` (59 עברו), `"GET /|route audit:
+supplier|anon dynamic"` (83 עברו), `"route audit: customer"` (25 עברו),
+שלושה chunks אדמין `"admin /admin$|admin /admin/(a|b|c|d)"` (23 עברו),
+`"(f|g|h|i|o|p|q|r)"` (20 עברו), `"(s|u|v|w)|admin detail pages"` (16 עברו)
+— **226/226 טסטים עברו, אפס כישלון**. ניתוח ה-jsonl (דה-דופ לפי role+path,
+241 שורות ייחודיות): **239 PASS / 2 NO DATA / 0 FAIL** — שתי ה-NO DATA
+זהות ל-M07-c53: `customer /account/tickets/[id]`, `admin
+/admin/discounts/[id]` (רשימות ריקות, אין שורה לגלות ממנה id אמיתי, לא
+תקלה). **אפס שגיאת קונסול, אפס אזהרת hydration, RTL תקין בכל דף HTML**
+(74 שורות עם `rtl: null` הן נתיבי לא-HTML כמו `sitemap.xml`, `robots.txt`,
+`manifest.webmanifest`, `api/*` — נכון שאין להן כיווניות, לא כשל). זהה
+ב-100% לתוצאת M07-c53 (239/2/0, אותן שתי NO DATA). שרת הבדיקה נעצר, פורט
+3491 אומת פנוי, קובץ ה-jsonl הזמני נמחק. **אין תיקון קוד נדרש.** שערים:
+`type-check` נקי, `lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n
+627/627, locale 116/116), `test` 605/605 קבצים, 7213/7225 (12 skipped,
+זהה), `build` `exit 0`. אין פריט UI, אין שער חזותי נדרש. **קובץ יחיד שונה:
+`STATE.md`.**
+
+## M06-c54 (ארכיון)
 
 **M06-c54 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+,
 אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52/M06-c53: `CARDCOM_USE_MOCK=true
