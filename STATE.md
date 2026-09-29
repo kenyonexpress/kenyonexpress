@@ -1,45 +1,38 @@
-RESUME FROM: M06-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c58)
+RESUME FROM: M08-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c58)
 
 ## המשך מ:
 
-**M05-c58 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם השמינית ברציפות
-דרך ה-management API (MCP דורש OAuth, לא זמין בסשן לא-אינטראקטיבי),
-44 WARN זהה שדה-שדה ל-M05-c57, אפס קובץ מיגרציה חדש נדרש.**
-המשימה: להריץ `get_advisors` (security+performance) דרך Supabase MCP
-בקריאה בלבד, לכתוב קובץ מיגרציה ב-`migrations/pending` לכל WARN חדש,
-לעדכן `docs/DB-SECURITY-MODEL.md` אם המספרים השתנו.
+**M06-c58 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52..M06-c57:
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3494 pnpm
+build` → `exit 0`; `pnpm start -p 3494` מאותה סביבה (פורט אומת פנוי
+לפני ואחרי ההרצה). `curl` אישר `200` על `/` ועל `/product/barbecue-2`.
+`node_modules/.bin/lighthouse` על שני ה-URL, `--throttling-method=
+devtools --emulated-form-factor=mobile`:
 
-- **Supabase MCP:** נבדק דרך `ToolSearch`, לא זמין (ברשימת "דורש הרשאה",
-  אין OAuth בסשן לא-אינטראקטיבי) — אותה נקודה שנבדקה ב-0א..0ז
-  ב-`DB-SECURITY-MODEL.md`. מסלול חלופי מבוסס, קריאה בלבד: טוקן ה-CLI
-  מה-keychain (`security find-generic-password -s "Supabase CLI" -w`,
-  עטיפת `go-keyring-base64:` ואז פענוח base64), שני `GET
-  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
-  {security,performance}`, `200`/`200`. הטוקן לא נדפס ולא נשמר לקובץ;
-  קבצי הפלט הזמניים ב-`/tmp/ke-advisors/` נמחקו בסוף הפריט.
-- **תוצאה, נספר בפועל מה-JSON:** אבטחה 28 ממצאים (4 `rls_enabled_no_policy`
-  INFO, 2 `anon_security_definer_function_executable` WARN, 21
-  `authenticated_security_definer_function_executable` WARN, 1
-  `function_search_path_mutable` WARN); ביצועים 197 ממצאים (14
-  `multiple_permissive_policies` WARN, 6 `auth_rls_initplan` WARN, 167
-  `unused_index` INFO, 9 `unindexed_foreign_keys` INFO, 1
-  `auth_db_connections_absolute` INFO). כל שם פונקציה/טבלה בכל WARN
-  הושווה שורה-שורה מול 0ז — זהה במדויק. **44 WARN בסך הכול, אפס חדש.**
-- ארבעת הקבצים הממתינים שכבר מכסים את כל 44 ה-WARN עדיין קיימים ולא
-  נערכו: `migrations/pending/209_advisor_warnings.sql`,
-  `220_wallet_entries_search_path.sql`,
-  `245_single_permissive_policy_per_action.sql`,
-  `246_profiles_mfa_initplan.sql`. **אין קובץ מיגרציה חדש נדרש**, אין
-  WARN לא-מכוסה. שום דבר לא הוחל על פרודקשן.
-- `docs/DB-SECURITY-MODEL.md`: נוסף סעיף 0ח עם המדידה המלאה. אגב
-  התיקייה: תוקן תקלת ארכוב מ-M04-c58 (גוף M03-c58 יתום בלי כותרת) —
-  הועבר ל-`docs/STATE-ARCHIVE.md` עם כותרת משלו, שום תוכן לא נמחק.
-- `type-check`/`lint`/`test`/`build` ירוקים, אפס שינוי קוד מוצר.
-- **קבצים:** `docs/DB-SECURITY-MODEL.md`, `docs/STATE-ARCHIVE.md`,
-  `STATE.md`.
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 98 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
 
-## M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+כל שמונת הציונים מעל 90. `git log 07b2d9bc8..HEAD -- src/app
+src/components src/lib` החזיר קומיט קוד יחיד (`f65b63176`, M10-c57):
+כיסוי טסטים ל-`money-format.ts` והסרת פרמטר מת (`withFraction`) —
+שינוי לוגי-פורמט בלבד, לא ויזואלי, ולכן לא צפוי לזוז ציון; אושר
+בפועל במדידה הטרייה למעלה (98/99 ביצועים, לא נמוך מ-M06-c57). השרת
+נעצר (`kill`, פורט 3494 אומת פנוי מחדש), קבצי ה-JSON הזמניים נמחקו.
+שערים: `type-check` נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן
+ירוקים, i18n 627/627, locale 116/116), `test` 608/608 קבצים,
+7272/7284 (12 skipped, זהה), `build` `exit 0` (חלק מהמדידה עצמה). אין
+שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
+`STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` — M05-c58 הועבר לתקרת 300
+שורות).
+
+## M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M05-c58: ביקורת DB, advisors נמדדו בפעם השמינית ברציפות דרך ה-management
+API, 44 WARN זהה שדה-שדה ל-M05-c57, אפס קובץ מיגרציה חדש נדרש.
 
 M04-c58: תחזוקת תלויות, `pnpm audit` אפס חולשות, 13 מ-15 שורות
 `pnpm outdated` דולגו כי הן major, שתי שורות מינור (`@aws-sdk/client-s3`,
