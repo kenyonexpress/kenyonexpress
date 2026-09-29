@@ -1,7 +1,35 @@
-RESUME FROM: M11-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c53)
+RESUME FROM: M02-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c54)
 
 ## המשך מ:
+
+M01-c54 היה בדיקת פרודקשן: build+deploy לפרודקשן, ואז `dig`/`curl` על שני
+הדומיינים. **DNS: עדיין תקין**, נמדד שוב היום — `kenyonexpress.co.il` ->
+`216.198.79.1`/`216.198.79.65`, NS `ns1/ns2.vercel-dns.com`,
+`www.kenyonexpress.co.il` -> `64.29.17.1`/`64.29.17.65`.
+`curl https://www.kenyonexpress.co.il` **200** עם HTML אמיתי (`lang="he"
+dir="rtl"`, לוגו קניון EXPRESS); `curl https://kenyonexpress.co.il` (בלי
+www) **308** ל-`https://www.kenyonexpress.co.il/` (הפניה תקינה של Vercel,
+לא כשל). **לא DNS BLOCKER** — אין מה לכתוב שם. **פריסה: נוסתה בפועל**
+דרך Vercel MCP `create_deployment`, `gitSource` github,
+`audit/final-audit`@`0bcbdac18` (HEAD), `target=production`, פרויקט
+`kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) — **וסורבה שוב**, אותו
+קוד שגיאה בדיוק: `dpl_BjMEzT55uBAcYWotmvpZkAuzmNdR`, `state=ERROR`,
+`errorCode=BUILD_UTILS_SPAWN_1`, `errorMessage="Command \"node
+scripts/deploy-preflight.mjs && pnpm build\" exited with 1"`.
+`filter_project_envs` (קריאה בלבד, אין שינוי) מאשר שהסיבה לא זזה:
+`CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` עדיין קיימים ב-Production במקום
+`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` שהקוד קורא, ו-
+`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. **זו הפעם הרביעית** שאותו חוסם נמדד
+(M01-c1, M01-c52, M01-c53, ועכשיו M01-c54) — אין פעולה חדשה לנסות, הפתרון
+תלוי אך ורק בעדכון סביבת Vercel בידי אופיר (`docs/BACKLOG.md` סעיף 3).
+נבדק גם שפרודקשן לא נפגע: `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` עדיין
+`READY` ומחזיק את כל ה-aliases (`www.kenyonexpress.co.il` וכו'), עדיין על
+`a388118f1`, עכשיו **87** קומיטים מאחורי HEAD (היה 83 ב-M01-c53/M15-c53).
+אין שינוי קוד, אין שער חזותי נדרש (לא UI). פריט תיעוד/מדידה בלבד, קובץ
+יחיד שונה: `STATE.md`.
+
+## M11-c53..M18-c53 (ארכיון)
 
 M11-c53: עדיין לא קיים ב-`HEAD`/`origin` (נבדק שוב עם `git fetch` ב-M16-c53).
 פריטים M12-c53..M18-c53 בוצעו מחוץ לסדר לפי הקצאה מפורשת, כמו שתועד בכל אחד.
@@ -49,17 +77,18 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (83 קומיטים אחרי `a388118f1` החי, עודכן M15-c53)**:
-   נוסתה שוב ב-M01-c53 (הפעם דרך כלי ה-Vercel MCP, `create_deployment` עם
-   `gitSource` github, לא REST גולמי) **וסורבה שוב ב-`deploy-preflight`**
-   באותה סיבה בדיוק: `dpl_CUUU98iiF1RiU1qxHojWyGbT8JuQ`,
-   `BUILD_UTILS_SPAWN_1`. `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
-   `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production (קיימים במקומם
+2. **פריסת פרודקשן של HEAD (87 קומיטים אחרי `a388118f1` החי, עודכן M01-c54)**:
+   נוסתה שוב ב-M01-c54 (Vercel MCP, `create_deployment`, `gitSource` github,
+   `audit/final-audit`@`0bcbdac18`) **וסורבה שוב ב-`deploy-preflight`**
+   באותה סיבה בדיוק, פעם רביעית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54):
+   `dpl_BjMEzT55uBAcYWotmvpZkAuzmNdR`, `BUILD_UTILS_SPAWN_1`.
+   `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`
+   עדיין חסרים ב-Production (קיימים במקומם
    `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא קורא) ו-
    `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם (נמדד עם `filter_project_envs`,
    קריאה בלבד). עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה;
    פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY)
-   ולא נפגע מהניסיון. **DNS אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c53,
+   ולא נפגע מהניסיון. **DNS אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c54,
    `www.kenyonexpress.co.il` מחזיר 200 עם התוכן החי (`a388118f1`).
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
