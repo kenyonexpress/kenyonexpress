@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c58 (הועבר מ-STATE.md ב-M17-c58, לשמירה על תקרת 300 שורות)
+
+**M15-c58 - DONE (30.09): סנכרון תיעוד — STATE.md/docs/BACKLOG.md/
+docs/LAUNCH-READINESS.md מול git log וקוד, אפס פריט חדש.** משימת
+התור: לרענן את טבלת הסטטוס בשלושת הקבצים מ-git log וראיות קוד, פריט
+ידני אחד לאופיר לפי סדר קריטיות, בלי כפילות. בדיקת דריפט: `git log
+e636a64f9..HEAD` (מאז הסנכרון הקודם, M15-c57) מחזיר 17 קומיטים
+(M16-c57..M18-c57, M01-c58..M14-c58). `git diff --stat e636a64f9..HEAD
+-- . ':!STATE.md' ':!docs/STATE-ARCHIVE.md'` נוגע רק ב-
+`docs/DB-SECURITY-MODEL.md` (סעיף 0ח, אימות advisors מחדש, M05-c58),
+`docs/UI-PARITY-REPORT.md` (שורת שער חזותי, M02-c58),
+`package.json`+`pnpm-lock.yaml` (עדכון מינור `aws-sdk`, M04-c58) ו-
+`src/server/payments/refund-wallet.test.ts` (טסט ענף חדש, M10-c58) —
+**אפס קומיט נגע בשורת חסימה או הוסיף פריט ידני חדש**.
+
+מספרים עודכנו (git-only, לא נבדק שוב מול פרודקשן/Vercel בפריט הזה):
+- קומיטים מאחורי פרודקשן (`git rev-list --count a388118f1..HEAD`):
+  153 → **171**.
+- פער ענפים (`git rev-list --count origin/main..HEAD`): 527 → **545**.
+- stash-ים (`git stash list`): **32**, ללא שינוי.
+- ממצאי קטלוג (`supabase/catalogue-known-issues.json`): **26**, ללא
+  שינוי.
+- מיגרציות ממתינות (18 קבצים: 204, 209, 218, 220, 223, 224, 234-236,
+  239-247): כולן קיימות ב-`migrations/pending/`, אפס קובץ חדש.
+
+`docs/BACKLOG.md` נבדק מחדש: עדיין 15 סעיפים, אותו סדר, אפס כפילות,
+אפס פריט חדש — עודכן רק מספר הקומיטים בסעיף 4 (171) וסימון הבדיקה.
+`docs/LAUNCH-READINESS.md`: שורת חסימה 4 ("live build behind HEAD")
+ושורת "Branches" בטבלת ה-Green עודכנו לאותם מספרים, פסקת "Docs sync"
+בראש הקובץ עודכנה בתמצית הדריפט הזו; שאר הטבלה ללא שינוי.
+
+**אפס שינוי קוד**: `type-check` נקי, `lint` נקי (2023 קבצים, 12 שערי
+תוכן ירוקים, i18n 627/627, locale 116/116, docs-index 282,
+docs-path-audit 152), `test` 608/608 קבצים 7273/7285 (12 skipped, זהה
+ל-M14-c58), `build` ירוק (exit 0). אין שינוי UI, אין שער חזותי נדרש.
+**קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`** (M13-c58 הועבר
+לתקרת 300 שורות), `docs/BACKLOG.md`, `docs/LAUNCH-READINESS.md`.
+
 ## M14-c58 (הועבר מ-STATE.md ב-M16-c58, לשמירה על תקרת 300 שורות)
 
 **M14-c58 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/
