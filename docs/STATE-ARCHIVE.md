@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c57 (הועבר מ-STATE.md ב-M14-c57, לשמירה על תקרת 300 שורות)
+
+**M13-c57 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
+מ-M13-c56.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
+Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
+**אפס קומיט נגע בכותרות אבטחה או rate limiting מאז M13-c56**
+(`dc842dc2f`, 29.09): `git diff --stat dc842dc2f..HEAD` מראה עשרה
+קבצי STATE/docs, שני עדכוני תלות minor ו-`money-format.ts` (M10-c57)
+בלבד — `next.config.ts`/`src/lib/rate-limit/*`/`src/lib/utils/
+rate-limit.ts` לא ברשימה. **אומת בכל זאת מול build אמיתי** (`pnpm
+build` נקי, `PORT=3319 pnpm start`, שרת טרי): כותרות תגובה על `/`,
+`/checkout`, `/login`, `/redeem/test-token` זהות בארבעתן: CSP
+(frame-ancestors 'none', frame-src/form-action ל-`secure.cardcom.
+solutions` בלבד), HSTS `max-age=63072000; includeSubDomains;
+preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+`Referrer-Policy: strict-origin-when-cross-origin`. **מגבלות קצב
+נמדדו בקוד, אותן שורות בדיוק כמו M13-c56**: `login`
+(`auth.ts:141`), `begin_checkout` (`checkout.ts:351`), `redeem`
+(`page.tsx:109`), `voucher-redeem` (`route.ts:223`). **אפס שינוי
+קוד**: `type-check` נקי, `lint` נקי (2023 קבצים, i18n 627/627, locale
+116/116), `test` 608/608 קבצים 7272/7284 (12 skipped), `build` נקי.
+אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`**
+(פלוס `docs/STATE-ARCHIVE.md` — M12-c57 הועבר לתקרת 300 שורות).
+
 ## M12-c57 (הועבר מ-STATE.md ב-M13-c57, לשמירה על תקרת 300 שורות)
 
 **M12-c57 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/

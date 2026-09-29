@@ -1,43 +1,56 @@
-RESUME FROM: M14-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c57)
+RESUME FROM: M15-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c57)
 
 ## המשך מ:
 
-**M13-c57 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
-ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
-מ-M13-c56.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
-Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
-**אפס קומיט נגע בכותרות אבטחה או rate limiting מאז M13-c56**
-(`dc842dc2f`, 29.09): `git diff --stat dc842dc2f..HEAD` מראה עשרה
-קבצי STATE/docs, שני עדכוני תלות minor ו-`money-format.ts` (M10-c57)
-בלבד — `next.config.ts`/`src/lib/rate-limit/*`/`src/lib/utils/
-rate-limit.ts` לא ברשימה. **אומת בכל זאת מול build אמיתי** (`pnpm
-build` נקי, `PORT=3319 pnpm start`, שרת טרי): כותרות תגובה על `/`,
-`/checkout`, `/login`, `/redeem/test-token` זהות בארבעתן: CSP
-(frame-ancestors 'none', frame-src/form-action ל-`secure.cardcom.
-solutions` בלבד), HSTS `max-age=63072000; includeSubDomains;
-preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
-`Referrer-Policy: strict-origin-when-cross-origin`. **מגבלות קצב
-נמדדו בקוד, אותן שורות בדיוק כמו M13-c56**: `login`
-(`auth.ts:141`), `begin_checkout` (`checkout.ts:351`), `redeem`
-(`page.tsx:109`), `voucher-redeem` (`route.ts:223`). **אפס שינוי
-קוד**: `type-check` נקי, `lint` נקי (2023 קבצים, i18n 627/627, locale
-116/116), `test` 608/608 קבצים 7272/7284 (12 skipped), `build` נקי.
-אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`**
-(פלוס `docs/STATE-ARCHIVE.md` — M12-c57 הועבר לתקרת 300 שורות).
+**M14-c57 - DONE (30.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
+וכותרות cache, אימות מחדש, אפס דריפט מ-M14-c56.** משימת התור: לבדוק
+גודל bundle, פלט צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את
+הרגרסיה הגדולה ביותר. **נבדק קודם מה השתנה מאז** `7ff17232b`
+(M14-c56, 29.09): `git log 7ff17232b..HEAD --oneline -- next.config.ts
+src/lib/images src/components package.json pnpm-lock.yaml
+scripts/bundle-report.mjs scripts/cache-invalidation-gate.mjs` מחזיר
+קומיט יחיד, `a6183cca6` (M04-c57) — שני עדכוני תלות minor
+(`@anthropic-ai/sdk`, `@supabase/ssr`, שניהם שרת-בלבד) שאותו קומיט
+כבר מדד מול build שלם ומצא זהה. **נמדד בכל זאת מחדש מול build אמיתי**
+(`rm -rf .next && pnpm build` נקי, `PORT=3311 pnpm start`, שרת טרי):
+1. **גודל bundle: אין רגרסיה.** `scripts/bundle-report.mjs`: בית
+   320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה
+   בדיוק ל-M14-c56/M14-c55**.
+2. **פלט צנרת התמונות: אין רגרסיה.** נסרקו כל חמשת שימושי `fill` עם
+   `sizes` (`ProductCard.tsx:282`, `CouponCard.tsx:57`,
+   `HeroSlider.tsx:414`, `ProductGallery.tsx:109`,
+   `coupons/[id]/page.tsx:95`) — כולם נושאים `vw`; קבועי הרוחב הקבוע
+   ב-`HeroSlider` (`badgeBox`) משתמשים ב-`width`/`height`, לא `fill`,
+   בחירה מכוונת מתועדת כבר מ-M14-c54. אין מופע חדש של הבאג.
+3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
+   "clean" (גם כחלק מ-`pnpm lint`).
+4. **כותרות cache: אין רגרסיה.** `/images/logo.webp` מחזיר `public,
+   max-age=0, s-maxage=86400, stale-while-revalidate=604800`, chunk
+   סטטי מחזיר `public, max-age=31536000, immutable`, HTML דינמי (`/`)
+   מחזיר `private, no-cache, no-store, max-age=0, must-revalidate` —
+   שלושתם תואמים בדיוק למדיניות המתועדת ב-`next.config.ts`.
 
-## M12-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+**אין רגרסיה לתקן.** שערים: `type-check` נקי, `lint` נקי (2023
+קבצים, i18n 627/627, locale 116/116), `test` 608/608 קבצים 7272/7284
+(12 skipped), `build` נקי. אין שער חזותי נדרש (אין שינוי UI/קוד).
+קובץ יחיד שונה: `STATE.md` (פלוס `docs/STATE-ARCHIVE.md` — M13-c57
+הועבר לתקרת 300 שורות).
 
-M12-c57: SEO, meta/canonical/og/JSON-LD/sitemap/robots אומתו מחדש,
-אפס דריפט (`sitemap/products.xml` 46 כתובות, `noindex` למוצר לא
-פעיל). M11-c57: נגישות, axe אומתה מחדש בפעם השלישית, ‏0 הפרות
-`serious`/`critical` (אדמין 57/57 דילוג, כשל התחברות פרודקשן לא
-קשור לקוד), `moderate` אחד מתועד (`target-size`, WCAG 2.2). M10-c57:
-כיסוי טסטים, `money-format.ts` 52.94/20.83/38.46 ← **100/100/100/
-100**, פרמטר מת (`withFraction`) הוסר. M09-c57, M08-c57: שני STATE
-CLEAN רצופים, אין פריט בר-ביצוע לסוכן קוד ב-`docs/BACKLOG.md`. כולם
+## M13-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M13-c57: CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash
+על login/checkout/redeem אומתו מחדש, אפס דריפט מ-M13-c56. M12-c57:
+SEO, meta/canonical/og/JSON-LD/sitemap/robots אומתו מחדש, אפס דריפט
+(`sitemap/products.xml` 46 כתובות, `noindex` למוצר לא פעיל). M11-c57:
+נגישות, axe אומתה מחדש בפעם השלישית, ‏0 הפרות `serious`/`critical`
+(אדמין 57/57 דילוג, כשל התחברות פרודקשן לא קשור לקוד), `moderate`
+אחד מתועד (`target-size`, WCAG 2.2). M10-c57: כיסוי טסטים,
+`money-format.ts` 52.94/20.83/38.46 ← **100/100/100/100**, פרמטר מת
+(`withFraction`) הוסר. M09-c57, M08-c57: שני STATE CLEAN רצופים, אין
+פריט בר-ביצוע לסוכן קוד ב-`docs/BACKLOG.md`. כולם
 `type-check`/`lint`/`test`/`build` ירוקים, אפס שינוי UI. הועברו
-ב-M13-c57 לשמירה על תקרת 300 שורות.
+ב-M14-c57 לשמירה על תקרת 300 שורות.
 
 ## M06-c57..M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -51,22 +64,14 @@ M06-c57: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (
 זהה בדיוק ל-M02-c56. כל חמשתם DONE, אפס שינוי UI. הועברו ב-M08-c57/
 M11-c57 לשמירה על תקרת 300 שורות.
 
-## M18-c56, M17-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M18-c56..M16-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
 M18-c56: בדיקת אפס-פעילות בפעם השלישית, המחזור *לא* היה אפס-פעילות.
-M17-c56: מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא חדש. שניהם
-`type-check`/`lint`/`test`/`build` ירוקים. הועברו ב-M03-c57 לשמירה על
+M17-c56: מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא חדש. M16-c56: תברואת
+ריפו בפעם השישית, אפס דריפט מ-M16-c55 (`git status` נקי, 43 ענפים
+מקומיים זהה, 24 PR פתוחים זהה, 116 ענפי remote זהה). כולם
+`type-check`/`lint`/`test`/`build` ירוקים. הועברו ב-M14-c57 לשמירה על
 תקרת 300 שורות.
-
-## M16-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-תברואת ריפו בפעם השישית, אפס דריפט מ-M16-c55: `git status` נקי, 43
-ענפים מקומיים זהה בדיוק, כל ענף נבדק דחוף (32 עוקבים, 4 `arch/*`
-עוקבים אחרי `origin/main` אך SHA זהה, 8 בלי upstream מקומי אך SHA
-זהה, 6 בלי מקביל remote אך מוכלים בענפי remote אחרים), 24 PR פתוחים
-זהה, 116 ענפי remote זהה, 11 ממוזגים ל-HEAD, 28 ישנים. `type-check`/
-`lint`/`test`/`build` ירוקים. הועבר ב-M17-c56 לשמירה על תקרת 300
-שורות.
 
 ## M15-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
