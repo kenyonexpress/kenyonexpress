@@ -147,6 +147,26 @@ describe('decideRefundRequest', () => {
     ).toBe(true)
   })
 
+  it('accepts a Date instance for paidAt, not only an ISO string', () => {
+    expect(
+      decideRefundRequest({
+        orderStatus: 'paid',
+        paidAt: new Date(PAID),
+        existing: [],
+        now: NOW,
+      }).allowed,
+    ).toBe(true)
+
+    const oldDate = new Date(NOW.getTime() - (REFUND_REQUEST_WINDOW_DAYS + 1) * 86_400_000)
+    const closed = decideRefundRequest({
+      orderStatus: 'paid',
+      paidAt: oldDate,
+      existing: [],
+      now: NOW,
+    })
+    expect(closed.allowed === false && closed.reason).toBe('WINDOW_CLOSED')
+  })
+
   it('every refusal carries a Hebrew sentence with nothing unrendered in it', () => {
     const cases = [
       { orderStatus: 'pending', paidAt: null, existing: [] },

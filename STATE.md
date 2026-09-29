@@ -1,7 +1,38 @@
-RESUME FROM: M10-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c54)
+RESUME FROM: M11-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c54)
 
 ## המשך מ:
+
+**M10-c54 - test(refund): כיסוי ענפים לשני מודולי ה-refund (29.09).**
+המשימה: למצוא את המודול הקריטי עם הכיסוי הנמוך ביותר מבין
+`packages/money` (`src/lib/money.ts`), פיצול תשלום (`src/lib/checkout/split.ts`),
+מכונת המצבים של שוברים (`src/server/domain/vouchers/state-machine.ts`),
+מכונת המצבים של הזמנות (`src/server/domain/orders/state-machine.ts`),
+refunds (`src/server/domain/orders/refund.ts` + `refund-request.ts`)
+ו-RLS helpers (`src/lib/supabase/rls-report-fetch.ts`), ולהוסיף טסטים
+עד כיסוי ענפים מלא. נמדד עם `vitest run --coverage` ו-`--coverage.include`
+ממוקד לכל מודול בנפרד (הדוח הגלובלי ב-`vitest.config.ts` מציג רק
+`orders/**`, כי הראשי מכסה רק את נתיב הכסף): חמשת המודולים האחרים
+עמדו על **100% ענפים** כל אחד (money.ts 21/21, split.ts 4/4,
+voucher state-machine 22/22, order state-machine 19/19,
+rls-report-fetch.ts 37/37). המודול הנמוך ביותר היה **refunds**:
+`refund-request.ts` 93.75% (21/24 → חסר את ה-`instanceof Date` האמיתי
+ב-paidAt, שורה 89, כי כל הטסטים העבירו מחרוזת) ו-`refund.ts` 96.36%
+(53/55 → חסר את זריקת `INVALID_AMOUNT` בשורה 291 ואת הענף
+לא-חוסם/`hasBlocking=false` של הודעת `NOT_REFUNDABLE` בשורה 265).
+**נוספו 4 טסטים**: `refund-request.test.ts` — קבלת `Date` ממשי
+כ-paidAt (בתוך החלון ומחוץ לו, טסט אחד); `refund.test.ts` — refund
+חלקי גדול מהחיוב, refund חלקי שלילי, והודעת "אין שורות שניתן
+להחזיר" כששורה כבר `refunded`/`cancelled` בלי חסימה אמיתית (שלושה
+טסטים). שני המודולים עכשיו **100% ענפים** (refund-request.ts 24/24,
+refund.ts 55/55, יחד 71/71 כשנמדדים במשותף). שערים: `type-check`
+נקי, `lint` נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627,
+locale 116/116), `test` 605/605 קבצים, 7217/7229 (12 skipped — עלה
+ב-4 מ-7213, תואם ל-4 הטסטים החדשים), `build` `exit 0`. אין שינוי UI,
+אין שער חזותי נדרש. קבצים ששונו: `src/server/domain/orders/refund.test.ts`,
+`src/server/domain/orders/refund-request.test.ts`.
+
+## M09-c54 (ארכיון)
 
 **M09-c54 - STATE CLEAN (29.09): backlog נמדד מחדש בפעם החמש-עשרה
 ברציפות, אפס פריט שלב 1 בידי הסוכן.** המשימה: לקחת את הפריט הפתוח בעל

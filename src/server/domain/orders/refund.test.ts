@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  RefundError,
   computeCancellationFee,
   describeRefundBlockers,
   isSameClearingDay,
@@ -126,6 +127,63 @@ describe('describeRefundBlockers', () => {
       now: new Date('2026-07-28T00:00:00Z'),
     })
     expect(plan.voucherRefunds).toEqual(['v1'])
+  })
+
+  it('rejects a partial refund larger than the amount actually charged', () => {
+    expect(() =>
+      planOrderRefund({
+        cardChargedAgorot: 10_000,
+        lines: [paidPhysical],
+        vouchers: [],
+        isDefectClaim: false,
+        now: new Date('2026-07-28T00:00:00Z'),
+        partialAmountAgorot: 10_001,
+      }),
+    ).toThrow(RefundError)
+    try {
+      planOrderRefund({
+        cardChargedAgorot: 10_000,
+        lines: [paidPhysical],
+        vouchers: [],
+        isDefectClaim: false,
+        now: new Date('2026-07-28T00:00:00Z'),
+        partialAmountAgorot: 10_001,
+      })
+    } catch (error) {
+      expect(error).toBeInstanceOf(RefundError)
+      expect((error as RefundError).code).toBe('INVALID_AMOUNT')
+    }
+  })
+
+  it('refuses with the non-blocking message when every line is already terminal', () => {
+    // Already-refunded/cancelled lines are skipped, not counted as blocking, so
+    // the message must not claim anything was redeemed or released to a supplier.
+    try {
+      planOrderRefund({
+        cardChargedAgorot: 10_000,
+        lines: [{ ...paidPhysical, settlementStatus: 'refunded' }],
+        vouchers: [],
+        isDefectClaim: false,
+        now: new Date('2026-07-28T00:00:00Z'),
+      })
+      throw new Error('expected planOrderRefund to throw')
+    } catch (error) {
+      expect(error).toBeInstanceOf(RefundError)
+      expect((error as RefundError).message).toBe('order has no refundable lines')
+    }
+  })
+
+  it('rejects a negative partial refund', () => {
+    expect(() =>
+      planOrderRefund({
+        cardChargedAgorot: 10_000,
+        lines: [paidPhysical],
+        vouchers: [],
+        isDefectClaim: false,
+        now: new Date('2026-07-28T00:00:00Z'),
+        partialAmountAgorot: -1,
+      }),
+    ).toThrow(RefundError)
   })
 })
 
