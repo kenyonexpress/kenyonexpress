@@ -1,39 +1,41 @@
-RESUME FROM: M03-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c56)
+RESUME FROM: M04-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c56)
 
 ## המשך מ:
 
-**M02-c56 - DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —
-אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%.** המשימה: להריץ
-`scripts/compare.mjs` בפורגראונד ולחכות למספרים באותה הרצה, לתקן כל
-רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
+**M03-c56 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
+`build`.** המשימה: להריץ את ארבעת הפקודות ולתקן כל שגיאה/אזהרה
+שניתן לתקן בלי לשנות התנהגות מוצר.
 
-- שרת build אמיתי (`PORT=3311 pnpm start`, נבנה על HEAD `7274ff68f`,
-  `.next/BUILD_ID` מאוחר יותר מהקומיט — build טרי, לא stale server).
-- **בית** (`--baseline 'refs/ke_live_{width}.png'`): **380 8.51% PASS,
-  768 9.02% PASS, 1440 3.95% PASS** — זהה בדיוק ל-M17-c55/M02-c55, אין
-  דריפט.
-- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`,
-  `--baseline='refs/electro_product_{width}.png'`): **380 5.61% PASS,
-  768 4.92% PASS, 1440 2.99% PASS**.
-- **הערה למספרי המוצר:** הסקריפט הדפיס אזהרת `HEIGHT RATIO` (0.28x/
-  0.31x/0.34x) כי הצילום שלנו קצר בהרבה מהרפרנס (2740-3101px מול
-  7653-11181px). **נבדק ישירות, לא הונח:** צילום מסך ידני
-  (`/tmp/product-1440-check.png`, `document.body.scrollHeight` 2740)
-  מראה דף מוצר מלא ותקין — כותרת, גלריה, מחיר, קניה, מדיניות ביטול,
-  5 מוצרים מומלצים, פוטר — לא דף fallback/שגיאה. ההבדל הוא תוכן: דף
-  המוצר של Electro נושא תיאור/מפרט/ביקורות ארוכים בהרבה מהתבנית שלנו
-  לאותו slug. `bothPaintedPct` (המדד שהשער בפועל שופט לפיו) לא מושפע
-  מהאזהרה הזו, וכל שלוש התוצאות עברו בנוח מתחת ל-11%. זהה למגמה
-  שכבר תועדה ב-M02-c55/Q05b (מספרים דומים, אותה תבנית slug). אין
-  תיקון קוד נדרש.
-- **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
-  `pnpm lint` נקי (12 שערים), `pnpm test` 606/606 קבצים 7239/7251 (12
-  skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד — פריט מדידה
-  בלבד.
-- **קבצים:** `docs/UI-PARITY-REPORT.md` (השער עצמו כותב שורה בכל
-  הרצה, 6 שורות חדשות מהסשן הזה בנוסף לשורות ישנות שלא הוחלו קודם),
-  `docs/STATE-ARCHIVE.md` (M01-c56 הועבר לשם), `STATE.md` בלבד.
+**נמדד ישירות, כל ארבעת השערים ירוקים כבר, אין מה לתקן:**
+
+- `pnpm type-check`: `tsc --noEmit`, אפס פלט.
+- `pnpm lint`: `biome check` — 2021 קבצים, "No fixes applied" — פלוס
+  12 שערי תוכן (tokens, copy, asset, raw-html, postgrest-or,
+  cache-invalidation, rtl-logical, i18n 627/627, locale-format
+  116/116, input-dir 24/24, docs-index 282/282, docs-path-audit
+  152) — כולם `clean`/`OK`.
+- `pnpm test`: **606/606 קבצים, 7239/7251** (12 skipped, זהה
+  ל-M02-c56).
+- `pnpm build`: `next build` `exit 0`, ללא אזהרת compiler. שורות
+  ה-JSON שנרשמו במהלך ה-build (`supabase.rls_denied`/
+  `product_detail.reviews_read_failed` על `reviews`,
+  `db.optional_column_missing` על `migrations/pending/242`,
+  `phases.not_applied`/`content_pages.not_applied`, `db.query_slow`)
+  הן לוגים תפעוליים של האפליקציה על מיגרציות ממתינות ידועות (חוסם 5
+  למטה ו-`docs/BACKLOG.md` פריט 5, מיגרציה `247`/`242`) — **לא**
+  אזהרות מכלי ה-build עצמו. לתקן דורש להחיל migration, אסור לפי
+  הכללים.
+
+אין שינוי קוד. **קובץ יחיד ששונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M02-c56 הועבר לשמירה על תקרת 300 שורות).
+
+## M02-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים, אפס רגרסיה (8.51/9.02/
+3.95 בית, 5.61/4.92/2.99 מוצר, זהה בתוך רעש ל-M17-c55/M02-c55).
+`type-check`/`lint`/`test`/`build` ירוקים, אין שינוי קוד. הועבר
+ב-M03-c56 לשמירה על תקרת 300 שורות.
 
 ## M01-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
