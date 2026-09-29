@@ -1,12 +1,25 @@
-RESUME FROM: M04-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c58)
+RESUME FROM: M05-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c58)
 
 ## המשך מ:
 
-**M03-c58 - DONE (30.09): שער ירוק, `type-check`/`lint`/`test`/`build`
-כולם הורצו מחדש בפועל בסשן הזה, כל הארבעה נקיים, אין מה לתקן.**
-המשימה: להריץ את ארבעת השערים ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי
-לשנות התנהגות מוצר.
+**M04-c58 - DONE (30.09): תחזוקת תלויות, `pnpm audit` אפס חולשות,
+`pnpm outdated` העלה 15 שורות — 13 מהן major (biome 1→2, `@hookform/
+resolvers` 3→5, `@sentry/nextjs`+`@sentry/node` 10→11, `jest-dom` 6→7,
+`@types/node` 20→26, `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8`
+4→5, `jsdom` 25→30, `lint-staged` 15→17, `tailwind-merge` 2→3,
+`typescript` 5→7, `vitest` 4→5, `zod` 3→4) שנדלגו לפי הכלל "לעולם לא
+major". רק שתי שורות עמדו בקריטריון (`@aws-sdk/client-s3` ו-`@aws-sdk/
+s3-request-presigner`, `3.1141.0`→`3.1142.0`, מינור) והוחלו.**
+`pnpm update` עצמו ריפורמט את `onlyBuiltDependencies` ב-`package.json`
+לפריסה מרובת-שורות שנפלה על `biome check`; תוקן חזרה לשורה אחת כדי
+לעבור את השער, בלי שינוי תוכן.
+- `pnpm type-check`: נקי.
+- `pnpm lint`: נקי אחרי תיקון הפורמט (עשרת שערי הקוד הנוספים ללא שינוי:
+  627 מחרוזות עברית, 116 `he-IL`, 24 שדות `dir`, 282/152 בשערי docs).
+- `pnpm test`: 608/608 קבצים, 7272/7284 (12 skipped) — זהה לבסיס.
+- `pnpm build`: `exit 0`, `rm -rf .next` מלא לפני.
+- **קבצים:** `package.json`, `pnpm-lock.yaml`, `STATE.md`.
 
 - `pnpm type-check` (`tsc --noEmit`): נקי, אפס שגיאה.
 - `pnpm lint`: נקי — `biome check .` (2023 קבצים, "No fixes applied")
