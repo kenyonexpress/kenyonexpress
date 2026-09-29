@@ -2,6 +2,58 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c54, M01-c54 (הועברו מ-STATE.md ב-M18-c54, לשמירה על תקרת 300 שורות)
+
+**M02-c54 - DONE (29.09): שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים,
+אפס רגרסיה.** הרצה בפורגראונד על שרת `pnpm start` על פורט 3311
+(`BUILD_ID=ucTZms1q6GMwozCalBEsz`, תואם ל-HEAD `7a57c8049`). הבסיס
+ל-`--page=home` נשאר `refs/ke_live_{width}.png` (התקציב לפני חיתוך ה-DNS,
+09.09) לפי ההחלטה התיעודית ב-`docs/PARITY-REFERENCE.md` (מסלול 3: שער
+רגרסיה מול צילום קפוא, לא מול הדומיין החי — הדומיין החי עכשיו מגיש את
+הבנייה שלנו עצמה ומסרב עם exit 5, נמדד גם כאן: `REFUSING to measure`).
+הבסיס ל-`--page=product` נשאר `refs/electro_product_{width}.png` (Electro
+v7 אמיתי, שלוש רוחבים, מ-25.09). תוצאות, כולן PASS מתחת ל-11%:
+
+| עמוד | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית | 8.51% | 9.02% | 3.95% |
+| מוצר | 4.96% | 4.56% | 3.25% |
+
+תואם בתוך רעש למדידה הקודמת (M02-c53: 8.51/9.19/3.95 בית,
+4.96/4.56/3.25 מוצר) — אפס רגרסיה, אין צורך בתיקון UI. השער כתב שש שורות
+חדשות ל-`docs/UI-PARITY-REPORT.md` בעצמו (כולל שורת REFUSED אחת על ניסיון
+ראשון ללא `--baseline`, exit 5 תקין). שערים: `type-check` נקי, `lint` נקי
+(ביומי + 12 שערי תוכן, i18n 627/627), `test` 605/605 קבצים, 7213/7225 (12
+skipped, זהה), `build` `exit 0`. אין שינוי קוד נדרש. קובץ יחיד שונה מלבד
+`STATE.md`: `docs/UI-PARITY-REPORT.md` (נכתב אוטומטית ע"י השער).
+
+**M01-c54 - DONE (29.09): בדיקת פרודקשן — DNS תקין, פריסת HEAD סורבה
+בפעם הרביעית.** build+deploy לפרודקשן, ואז `dig`/`curl` על שני הדומיינים.
+DNS: עדיין תקין, נמדד שוב היום — `kenyonexpress.co.il` ->
+`216.198.79.1`/`216.198.79.65`, NS `ns1/ns2.vercel-dns.com`,
+`www.kenyonexpress.co.il` -> `64.29.17.1`/`64.29.17.65`.
+`curl https://www.kenyonexpress.co.il` **200** עם HTML אמיתי (`lang="he"
+dir="rtl"`, לוגו קניון EXPRESS); `curl https://kenyonexpress.co.il` (בלי
+www) **308** ל-`https://www.kenyonexpress.co.il/` (הפניה תקינה של Vercel,
+לא כשל). לא DNS BLOCKER. פריסה: נוסתה בפועל דרך Vercel MCP
+`create_deployment`, `gitSource` github, `audit/final-audit`@`0bcbdac18`
+(HEAD), `target=production`, פרויקט `kenyonexpress`
+(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) — וסורבה שוב, אותו קוד שגיאה בדיוק:
+`dpl_BjMEzT55uBAcYWotmvpZkAuzmNdR`, `state=ERROR`,
+`errorCode=BUILD_UTILS_SPAWN_1`, `errorMessage="Command \"node
+scripts/deploy-preflight.mjs && pnpm build\" exited with 1"`.
+`filter_project_envs` (קריאה בלבד, אין שינוי) מאשר שהסיבה לא זזה:
+`CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` עדיין קיימים ב-Production במקום
+`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` שהקוד קורא, ו-
+`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. זו הפעם הרביעית שאותו חוסם נמדד
+(M01-c1, M01-c52, M01-c53, ועכשיו M01-c54) — אין פעולה חדשה לנסות, הפתרון
+תלוי אך ורק בעדכון סביבת Vercel בידי אופיר (`docs/BACKLOG.md` סעיף 3).
+נבדק גם שפרודקשן לא נפגע: `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` עדיין
+`READY` ומחזיק את כל ה-aliases (`www.kenyonexpress.co.il` וכו'), עדיין על
+`a388118f1`, עכשיו 87 קומיטים מאחורי HEAD (היה 83 ב-M01-c53/M15-c53). אין
+שינוי קוד, אין שער חזותי נדרש (לא UI). פריט תיעוד/מדידה בלבד, קובץ יחיד
+שונה: `STATE.md`.
+
 ## M16-c54 (הועברה מ-STATE.md ב-M17-c54, לשמירה על תקרת 300 שורות)
 
 **M16-c54 - תברואת ריפו בפעם הרביעית: git נקי, כל 40 הענפים המקומיים

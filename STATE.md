@@ -1,7 +1,41 @@
-RESUME FROM: M18-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c54)
+RESUME FROM: M01-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c54)
 
 ## המשך מ:
+
+**M18-c54 - DONE (29.09): בדיקת אפס-פעילות (idle check) — המחזור לא היה
+אפס-פעילות, אין שיפור מומחש.** המשימה: אם כל פריטי המחזור (c54) לא הפיקו
+שינוי קוד, לכתוב "MAINTENANCE IDLE" ואז לחפש שיפור המרה אחד אמיתי בעמוד
+הבית או המוצר לפי Electro v7. **נמדד ישירות מול `git log 7a57c8049..HEAD`,
+לא הונח:** ארבעה קומיטים ב-c54 כן הפיקו שינוי קוד אמיתי — `0ab5cd9e3`
+(M03, import `withSentryConfig` לא-דפרקייטד ב-`next.config.ts`),
+`3dbacd5cf` (M10, 20 טסטים חדשים ל-`refund-request.ts`/`refund.ts`),
+`1ef1c1b65` (M11, שמונה תיקוני a11y אמיתיים בשלושה רכיבי אדמין),
+`505ba8e52` (M14, תיקון באג `fill`+px `sizes` ב-badge של `HeroSlider.tsx`
+בעמוד הבית). תנאי ה-idle הוא `false` — **לא** נכתב MAINTENANCE IDLE,
+ולפי הניסוח המותנה של המשימה השיפור המומחש רלוונטי רק לענף ה-true (זהה
+לתקדים שנקבע ב-M18-c53, `0bcbdac18`).
+
+עמוד הבית ועמוד המוצר נסקרו בכל זאת כדי לוודא שאין החמצה: `git diff
+0bcbdac18..HEAD --stat -- 'src/app/(store)' src/components` מראה **רק
+ארבעה קבצים שונו** מאז M18-c53 — שלושה אדמין-בלבד
+(`ServerDataTable.tsx`, `BarSeries.tsx`, `CohortGrid.tsx`, aria-label
+בלבד) ו-`HeroSlider.tsx` (אותו תיקון srcset מ-M14-c54 למעלה, לא פיצ'ר
+המרה חדש) — **אפס שינוי בעמוד הבית או המוצר שהוא לא כבר תועד**. הבדיקה
+הקודמת (M18-c53) כבר אישרה שדף הבית ודף המוצר נושאים כוכבי דירוג, מחסור
+מלאי חי, "נקנה השבוע", wishlist, שיתוף, related products ותגי הנחה —
+כל תוספת חזותית נוספת דורשת מדידת שער חזותי (11%) שקומיטים קודמים
+מראים שהיא שוברת בקלות. לא הוספתי UI לא-נמדד כדי "למלא" את הענף השגוי
+של תנאי.
+
+**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+`pnpm lint` נקי (biome, 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale
+116/116), `pnpm test` **605/605 קבצים, 7217/7229** (12 skipped, זהה),
+`pnpm build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`** (M02-c54/M01-c54
+הועברו לשמירה על תקרת 300 שורות, ותוכן חדש נוסף).
+
+## M17-c54 (ארכיון)
 
 **M17-c54 - DONE (29.09): מעבר קופי ומשפטי בפעם השנייה — אפס ממצא חדש.**
 המשימה: לקרוא כל מחרוזת UI בעברית ודף משפטי, ולתקן שגיאות כתיב, דליפות
@@ -107,58 +141,13 @@ M03-c54 (תיקון import דפרקציה של Sentry), M04-c54 (תחזוקת ת
 mobile, כל שמונת הציונים 90+) — כולם DONE, אפס שינוי UI, ארבעתם עם
 שערים ירוקים. הועברו ב-M08-c54 לשמירה על תקרת 300 שורות.
 
-## M02-c54 (ארכיון)
+## M01-c54, M02-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M02-c54 - DONE (29.09): שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים,
-אפס רגרסיה.** הרצה בפורגראונד על שרת `pnpm start` על פורט 3311
-(`BUILD_ID=ucTZms1q6GMwozCalBEsz`, תואם ל-HEAD `7a57c8049`). הבסיס
-ל-`--page=home` נשאר `refs/ke_live_{width}.png` (התקציב לפני חיתוך ה-DNS,
-09.09) לפי ההחלטה התיעודית ב-`docs/PARITY-REFERENCE.md` (מסלול 3: שער
-רגרסיה מול צילום קפוא, לא מול הדומיין החי — הדומיין החי עכשיו מגיש את
-הבנייה שלנו עצמה ומסרב עם exit 5, נמדד גם כאן: `REFUSING to measure`).
-הבסיס ל-`--page=product` נשאר `refs/electro_product_{width}.png` (Electro
-v7 אמיתי, שלוש רוחבים, מ-25.09). **תוצאות, כולן PASS מתחת ל-11%:**
-
-| עמוד | 380 | 768 | 1440 |
-|---|---|---|---|
-| בית | 8.51% | 9.02% | 3.95% |
-| מוצר | 4.96% | 4.56% | 3.25% |
-
-תואם בתוך רעש למדידה הקודמת (M02-c53: 8.51/9.19/3.95 בית,
-4.96/4.56/3.25 מוצר) — אפס רגרסיה, אין צורך בתיקון UI. השער כתב שש שורות
-חדשות ל-`docs/UI-PARITY-REPORT.md` בעצמו (כולל שורת REFUSED אחת על ניסיון
-ראשון ללא `--baseline`, exit 5 תקין). שערים: `type-check` נקי, `lint` נקי
-(ביומי + 12 שערי תוכן, i18n 627/627), `test` 605/605 קבצים, 7213/7225 (12
-skipped, זהה), `build` `exit 0`. אין שינוי קוד נדרש. **קובץ יחיד שונה מלבד
-`STATE.md`: `docs/UI-PARITY-REPORT.md`** (נכתב אוטומטית ע"י השער).
-
-## M01-c54 (ארכיון)
-
-M01-c54 היה בדיקת פרודקשן: build+deploy לפרודקשן, ואז `dig`/`curl` על שני
-הדומיינים. **DNS: עדיין תקין**, נמדד שוב היום — `kenyonexpress.co.il` ->
-`216.198.79.1`/`216.198.79.65`, NS `ns1/ns2.vercel-dns.com`,
-`www.kenyonexpress.co.il` -> `64.29.17.1`/`64.29.17.65`.
-`curl https://www.kenyonexpress.co.il` **200** עם HTML אמיתי (`lang="he"
-dir="rtl"`, לוגו קניון EXPRESS); `curl https://kenyonexpress.co.il` (בלי
-www) **308** ל-`https://www.kenyonexpress.co.il/` (הפניה תקינה של Vercel,
-לא כשל). **לא DNS BLOCKER** — אין מה לכתוב שם. **פריסה: נוסתה בפועל**
-דרך Vercel MCP `create_deployment`, `gitSource` github,
-`audit/final-audit`@`0bcbdac18` (HEAD), `target=production`, פרויקט
-`kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) — **וסורבה שוב**, אותו
-קוד שגיאה בדיוק: `dpl_BjMEzT55uBAcYWotmvpZkAuzmNdR`, `state=ERROR`,
-`errorCode=BUILD_UTILS_SPAWN_1`, `errorMessage="Command \"node
-scripts/deploy-preflight.mjs && pnpm build\" exited with 1"`.
-`filter_project_envs` (קריאה בלבד, אין שינוי) מאשר שהסיבה לא זזה:
-`CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` עדיין קיימים ב-Production במקום
-`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` שהקוד קורא, ו-
-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. **זו הפעם הרביעית** שאותו חוסם נמדד
-(M01-c1, M01-c52, M01-c53, ועכשיו M01-c54) — אין פעולה חדשה לנסות, הפתרון
-תלוי אך ורק בעדכון סביבת Vercel בידי אופיר (`docs/BACKLOG.md` סעיף 3).
-נבדק גם שפרודקשן לא נפגע: `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` עדיין
-`READY` ומחזיק את כל ה-aliases (`www.kenyonexpress.co.il` וכו'), עדיין על
-`a388118f1`, עכשיו **87** קומיטים מאחורי HEAD (היה 83 ב-M01-c53/M15-c53).
-אין שינוי קוד, אין שער חזותי נדרש (לא UI). פריט תיעוד/מדידה בלבד, קובץ
-יחיד שונה: `STATE.md`.
+M02-c54: שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים, אפס רגרסיה (8.51/9.02/3.95
+בית, 4.96/4.56/3.25 מוצר, זהה בתוך רעש ל-M02-c53). M01-c54: בדיקת פרודקשן,
+DNS תקין, פריסת HEAD דרך Vercel MCP סורבה בפעם הרביעית באותה סיבה
+(`CARDCOM_*` חסרים, `ALLOW_INCOMPLETE_ENV`), פרודקשן לא נפגע. שניהם DONE, אפס
+שינוי קוד. הועברו ב-M18-c54 לשמירה על תקרת 300 שורות.
 
 ## M11-c53..M18-c53 (ארכיון)
 
