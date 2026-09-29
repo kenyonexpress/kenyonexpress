@@ -1,16 +1,64 @@
-RESUME FROM: M04-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c53)
+RESUME FROM: M05-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c53)
 
 ## המשך מ:
 
-M03-c53 היה green check: `pnpm type-check`, `lint`, `test`, `build`. כל
-ארבעת השערים נקיים ללא שום תיקון נדרש — `type-check` נקי, `lint` נקי
-(כולל כל שערי התוכן), `test` 605/7195 (זהה ל-M03-c53 הקודם וכל הסבב האחרון),
-`build` `exit 0` עם "Compiled successfully". שורות ה-`warn`/`error` בפלט
-ה-build הן לוגים תפעוליים של האפליקציה בזמן קריית סטטי (מיגרציה 242 pending,
-`anon` בלי הרשאה על `reviews` כבר ידוע כחוסם 3, זמן תגובת DB), לא אזהרות
-build — אותה תבנית שנמדדה ב-M03-c52. אין שינוי קוד, אין קובץ מיגרציה, אין
-שער חזותי נדרש (אין שינוי UI). פירוט מלא למטה.
+M04-c53 היה תברואת תלויות: `pnpm audit` אפס חולשות, `pnpm outdated` נבדק
+ונמצא WIP לא-committed קיים כבר בעץ העבודה בתחילת הפריט (`package.json`,
+`pnpm-lock.yaml`) עם בדיוק עדכוני patch/minor — הוא אומת (`pnpm install`
+"Already up to date", כלומר תואם ל-lockfile), לא נכתב מחדש. כל שאר
+ה-outdated הם קפיצת major או חבילת `0.x` שקפיצת ה-minor שלה שקולה ל-major
+לפי semver (`@anthropic-ai/sdk`, `@supabase/ssr`) — לא הוחל דבר מהם. ארבעת
+השערים ירוקים על ה-WIP: `type-check` נקי, `lint` נקי, `test` 605/7195
+(זהה), `build` `exit 0`. אין שינוי קוד יישומי, אין קובץ מיגרציה, אין שער
+חזותי נדרש (עדכון תלויות בלבד, אין שינוי UI). פירוט מלא למטה.
+
+## M04-c53 - DONE (29.09): תברואת תלויות — audit אפס, 13 חבילות patch/minor, אפס major
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. הפריט המקביל האחרון (M04-c1, `2026-09-25`) עדכן 30 חבילות
+patch/minor (`next` 16.3.6, `React` 19.3.0, `supabase-js` 2.117.1,
+`lucide` 1.47.0) ודילג על 14 major + 3. `git status` בתחילת הפריט הראה
+`package.json`/`pnpm-lock.yaml` כבר בעץ העבודה, לא committed — נבדק
+שאין סוכן מקביל רץ על הריפו (`ps aux`, רק התהליך של הפריט הזה), ושה-diff
+הוא בדיוק עדכוני patch/minor (אין קפיצת מספר גרסה ראשי בשום שורה) — הוחלט
+לאמת ולהשלים אותו, לא לזרוק אותו.
+
+**מה נמדד:**
+1. `pnpm audit` -> "No known vulnerabilities found".
+2. `pnpm outdated` -> 16 שורות. שלוש-עשרה כבר עודכנו ב-WIP (`@aws-sdk/*`,
+   `@sentry/nextjs`+`node`, `@simplewebauthn/server`, `@supabase/ssr`+
+   `supabase-js`, `lucide-react`, `next-intl`, `posthog-js`,
+   `react-hook-form`, `sharp`, `tailwind-merge`, `@playwright/test`,
+   `@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
+   `lint-staged`, `typescript` — כולן קפיצות patch/minor בתוך אותו major).
+   הנותרות ברשימה: `@biomejs/biome` 1.9.4->2.5.14, `@hookform/resolvers`
+   3.10.0->5.9.1, `@sentry/nextjs`+`node` 10.75.3->11.0.0,
+   `@testing-library/jest-dom` 6.10.0->7.0.1, `@types/node` 20.19.43->26.6.3,
+   `@vitejs/plugin-react` 4.7.0->6.1.1, `@vitest/coverage-v8` 4.1.11->5.0.2,
+   `jsdom` 25.0.1->30.1.1, `lint-staged` 15.5.2->17.6.0, `tailwind-merge`
+   2.6.1->3.7.0, `typescript` 5.9.3->7.0.2, `vitest` 4.1.11->5.0.2, `zod`
+   3.25.76->4.6.5 — כולן קפיצת major. `@anthropic-ai/sdk` 0.122.0->0.128.0
+   ו-`@supabase/ssr` 0.10.3->0.12.7 הן `0.x`, שם קפיצת ה-minor שקולה ל-major
+   לפי semver (אין יציבות API מובטחת מתחת ל-1.0) — לא הוחלו, לפי "אסור
+   major" בכלל הפריט.
+3. `pnpm install` -> "Already up to date": ה-lockfile כבר תואם ל-`node_modules`
+   המותקן, כלומר ה-WIP כלל גם `pnpm install`, לא רק עריכת `package.json`.
+4. `pnpm type-check` -> נקי, `tsc --noEmit` ללא פלט.
+5. `pnpm lint` -> נקי: `biome check` (2020 קבצים) + כל אחד עשר שערי
+   התוכן, זהה לרשימת M03-c53.
+6. `pnpm test` -> `605 test files passed`, `7195 tests passed | 12 skipped`,
+   זהה למדידה האחרונה.
+7. `pnpm build` -> `exit 0`, `✓ Compiled successfully in 1562ms`. שורות
+   ה-`warn`/`error` בפלט הן לוגים תפעוליים ידועים (`anon` בלי הרשאה על
+   `reviews`, חוסם 3/247), לא אזהרות build.
+
+**מסקנה:** 13 חבילות patch/minor אומתו ונשארות בעץ (כבר בעץ בתחילת הפריט,
+לא הוחל שום דבר נוסף); אפס major הוחל; אפס חולשות. ארבעת השערים ירוקים.
+
+**שערים:** ראו למעלה, כל הארבעה. אין שער חזותי נדרש (אין שינוי UI).
+
+**קבצים:** `package.json`, `pnpm-lock.yaml`, `STATE.md`.
 
 ## M03-c53 - DONE (29.09): green check מחדש, ארבעת השערים נקיים ללא תיקון
 
@@ -45,39 +93,10 @@ build — אותה תבנית שנמדדה ב-M03-c52. אין שינוי קוד,
 **קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (הועבר אליו הפירוט המלא
 של M01-c53).
 
-## M02-c53 - DONE (29.09): שער חזותי בית+מוצר PASS בשלושת הרוחבים, אפס רגרסיה
+## M02-c53 - DONE (29.09): פירוט מלא בארכיון
 
-**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. הפריט הקודם באותו תחום (M02-c52, `d0b811f07`) היה DONE עם
-8.51/9.02/3.95 (בית) ו-5.65/4.95/2.92 (מוצר), כל שש המדידות PASS.
-
-**מה נמדד:** `pnpm build` רץ נקי, שרת `PORT=3311 pnpm start` הועלה טרי
-(אומת עם `lsof` שאין תהליך ישן תפוס על הפורט לפני ההרצה, לפי הזיכרון על
-נפילת פורט שקטה). `compare.mjs --widths=380,768,1440` רץ בקדמת הבמה, בתוך
-אותה הרצה, לכל דף בנפרד:
-
-1. **בית**, מול `refs/ke_live_{width}.png` (הפניה נכונה, האתר החי נותן
-   תוכן): 380 = 8.51% PASS, 768 = 9.19% PASS, 1440 = 3.95% PASS. כמעט זהה
-   לבייסליין (9.19 מול 9.02 ב-768, הפרש רעש), אפס רגרסיה.
-2. **מוצר**, מול `refs/electro_product_{width}.png` (הפניה נכונה, Electro
-   נותן צורה למוצר לפי Q05b): 380 = 4.96% PASS, 768 = 4.56% PASS,
-   1440 = 3.25% PASS. משתפר קלות מהבייסליין (4.96/4.56/3.25 מול
-   5.65/4.95/2.92), אפס רגרסיה.
-
-**ממצא בדרך:** ניסיון ראשון על הבית עם `--baseline=refs/electro_home_{width}.png`
-(הפניה שגויה, ה-home reference הנכון הוא `ke_live`) הניב 9.11/10.11/7.45,
-כולם עדיין PASS אך שונים מהותית מההיסטוריה (7.45 מול 3.95 ב-1440). זה לא
-נרשם כרגרסיה: זו הפניה שגויה שנוסתה ותוקנה באותה הרצה, לא שינוי בקוד או
-בעיצוב. `refs/ke_live_{width}.png` ו-`refs/electro_product_{width}.png`
-שניהם קיימים בדיסק (לא ב-git, לפי `docs/REFS-POLICY.md`), נוצרו קודם
-ב-Q05b/M02-c1 ומעלה, ולא נגעו בהם.
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (כולל כל שערי התוכן),
-`pnpm test` 605/7195 (12 דולגו), זהה לספירה האחרונה. `pnpm build` נקי
-(רץ בתחילת הפריט כדי להעלות את `pnpm start`). אין שינוי קוד, אין קובץ
-מיגרציה.
-
-**קבצים:** `STATE.md` בלבד.
+שער חזותי בית+מוצר בשלושת הרוחבים: 8.51/9.19/3.95 (בית) ו-4.96/4.56/3.25
+(מוצר), כל שש המדידות PASS, אפס רגרסיה מול הבייסליין. אין שינוי קוד.
 
 ## M01-c53 - DONE (29.09): פירוט מלא בארכיון
 
@@ -111,28 +130,8 @@ PASS. M16-c52: תברואת ריפו — git status נקי, כל הענפים ד
 ב-`docs/LAUNCH-READINESS.md` עודכנה ל-604/7188. אין כפילות או פריט חדש
 ברשימת "ידני לאופיר" (15 סעיפים). אין שינוי קוד.
 
-**M14-c52..M01-c52 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M14-c52:
-bundle ללא רגרסיה, `ProductGallery.tsx` תוקן (אותו באג `fill`+px `sizes`
-שתוקן ב-`CategoryStrip.tsx` ב-M14-c51), שער מוצר 5.61/4.92/2.99 PASS.
-M13-c52: אבטחה (CSP/HSTS/X-Frame-Options/Referrer-Policy/rate-limit) נמדדה
-מחדש, אפס דריפט. M12-c52: SEO נמדד מחדש מול build אמיתי, אפס דריפט.
-M11-c52: axe 160 סריקות, אפס הפרות WCAG. M10-c52: כיסוי ענפים 100% על
-`rls-report-fetch.ts` (81.1%->100%), +7 טסטים. M09-c52: STATE CLEAN, אין
-פריט חדש. M08-c52: BACKLOG EMPTY בפעם ה-11. M07-c52: שער נתיבים 244
-שורות, 239 PASS/5 NO DATA/0 FAIL. M06-c52: Lighthouse mobile 98-100 בכל
-שמונה הציונים. M05-c52: advisors 44 WARN זהה ל-M05-c1, `node_modules`
-תוקן. M03-c52: green check מחדש נקי. M02-c52: שער חזותי בית+מוצר PASS
-בשלושת הרוחבים. M01-c52: DNS ברשם תוקן (חוסם 1 RESOLVED), פריסת HEAD
-עדיין מסורבת (חוסם 2/3), שלושת פרויקטי Vercel זוהו.
-
-**M18-c51..M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M18-c51:
-טופס ניוזלטר בפוטר חובר ל-`subscribeToNewsletter` האמיתי. M17-c51: מעבר
-משפטי ולשוני מלא (LTR, placeholder, קישורים שבורים, טעויות כתיב). M16-c51:
-תברואת ריפו, git status נקי, 9 ענפים נדחפו, 23 PRs פתוחים ו-81 ענפים ישנים
-רשומים (22 בטוחים למחיקה, 59 בלי PR). M15-c51: `docs/BACKLOG.md` נוצר
-כרשימת "ידני לאופיר" יחידה. M14-c51: bundle ירד, `CategoryStrip.tsx` תוקן.
-M13-c51: CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על build אמיתי.
-M12-c51: SEO, 261 בדיקות, אפס drift.
+**M14-c52..M01-c52 ו-M18-c51..M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`),
+כותרות השורה בכל רשומה שם.
 
 ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M13-c51, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.

@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c53 - DONE (29.09): שער חזותי בית+מוצר PASS בשלושת הרוחבים, אפס רגרסיה
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. הפריט הקודם באותו תחום (M02-c52, `d0b811f07`) היה DONE עם
+8.51/9.02/3.95 (בית) ו-5.65/4.95/2.92 (מוצר), כל שש המדידות PASS.
+
+**מה נמדד:** `pnpm build` רץ נקי, שרת `PORT=3311 pnpm start` הועלה טרי
+(אומת עם `lsof` שאין תהליך ישן תפוס על הפורט לפני ההרצה, לפי הזיכרון על
+נפילת פורט שקטה). `compare.mjs --widths=380,768,1440` רץ בקדמת הבמה, בתוך
+אותה הרצה, לכל דף בנפרד:
+
+1. **בית**, מול `refs/ke_live_{width}.png` (הפניה נכונה, האתר החי נותן
+   תוכן): 380 = 8.51% PASS, 768 = 9.19% PASS, 1440 = 3.95% PASS. כמעט זהה
+   לבייסליין (9.19 מול 9.02 ב-768, הפרש רעש), אפס רגרסיה.
+2. **מוצר**, מול `refs/electro_product_{width}.png` (הפניה נכונה, Electro
+   נותן צורה למוצר לפי Q05b): 380 = 4.96% PASS, 768 = 4.56% PASS,
+   1440 = 3.25% PASS. משתפר קלות מהבייסליין (4.96/4.56/3.25 מול
+   5.65/4.95/2.92), אפס רגרסיה.
+
+**ממצא בדרך:** ניסיון ראשון על הבית עם `--baseline=refs/electro_home_{width}.png`
+(הפניה שגויה, ה-home reference הנכון הוא `ke_live`) הניב 9.11/10.11/7.45,
+כולם עדיין PASS אך שונים מהותית מההיסטוריה (7.45 מול 3.95 ב-1440). זה לא
+נרשם כרגרסיה: זו הפניה שגויה שנוסתה ותוקנה באותה הרצה, לא שינוי בקוד או
+בעיצוב. `refs/ke_live_{width}.png` ו-`refs/electro_product_{width}.png`
+שניהם קיימים בדיסק (לא ב-git, לפי `docs/REFS-POLICY.md`), נוצרו קודם
+ב-Q05b/M02-c1 ומעלה, ולא נגעו בהם.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (כולל כל שערי התוכן),
+`pnpm test` 605/7195 (12 דולגו), זהה לספירה האחרונה. `pnpm build` נקי
+(רץ בתחילת הפריט כדי להעלות את `pnpm start`). אין שינוי קוד, אין קובץ
+מיגרציה.
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M01-c53 - DONE (29.09): DNS עדיין תקין, פריסת HEAD סורבה שוב (אותה סיבה, נמדד עם MCP)
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
