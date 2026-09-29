@@ -1,6 +1,6 @@
 # DB-SECURITY-MODEL.md — RLS, Policies, SECURITY DEFINER
 
-> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-29 (סעיף 0ג: advisors אומתו בפעם השלישית, זהה ב-100% ל-0ב; סעיף 0ב מאותו יום; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
+> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-29 (סעיף 0ד: advisors אומתו בפעם הרביעית, זהה ב-100% ל-0ג; סעיף 0ג מאותו יום; סעיף 0ב מאותו יום; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
 > כל שורה כאן נשלפה מ-`pg_policies`, `pg_class`, `pg_proc` (aclexplode) בפועל, לא מהזיכרון.
 > **מיגרציה 125 הוחלה ואומתה ב-21.08**: הוסרו הרשאות EXECUTE ל-authenticated מ-6 פונקציות עזר יתומות. אומת שוב ב-01.09: לשש כולן `anon=false, authed=false`.
 > **⚠️ מיגרציה 127 הוחלה ב-01.09**, אחרי שהאתר עלה לאוויר, והיא משנה את סעיף 5.1. ‏`check_rate_limit` **אינה חשופה יותר** ל-anon ול-authenticated. הוכחה, קריאה אמיתית עם המפתח הפומבי: `POST /rest/v1/rpc/check_rate_limit` מחזיר `401` ו-`42501 permission denied for function check_rate_limit`.
@@ -131,6 +131,35 @@ WARN); ביצועים 197 ממצאים (14 `multiple_permissive_policies` WARN �
 פער דיוק ב-lint 0003 שמתועד בראש הקובץ); `220` מכסה את
 `function_search_path_mutable` היחיד. אף קובץ לא נערך, אף אחד לא הוחל,
 אפס קובץ מיגרציה חדש נדרש.
+
+## 0ד. נמדד שוב 29.09.2026 (M05-c54), דרך ה-management API, קריאה בלבד — זהה ב-100% ל-0ג
+
+**‏MCP של Supabase עדיין ברשימת "דורש הרשאה"**, אין OAuth בסשן לא-אינטראקטיבי
+(אותה נקודה שנבדקה ב-0א/0ב/0ג). אותו מסלול חלופי, קריאה בלבד: טוקן ה-CLI
+מה-keychain (`security find-generic-password -s "Supabase CLI" -w`, פענוח
+base64), שני `GET https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/
+advisors/{security,performance}`, ‏200/200. הטוקן לא נדפס ולא נשמר לקובץ.
+
+**כל שדה זהה ל-0ג, לא רק הסך-הכול.** אבטחה 28 ממצאים (4
+`rls_enabled_no_policy` INFO, 2 `anon_security_definer_function_executable`
+WARN על `is_admin`/`is_supplier_member`, 21
+`authenticated_security_definer_function_executable` WARN על אותן 21
+הפונקציות, 1 `function_search_path_mutable` WARN על
+`fn_wallet_entries_block_mutation`). ביצועים 197 ממצאים (14
+`multiple_permissive_policies` WARN על אותן 11 טבלאות —
+`supplier_branches` ארבע פעולות, שאר העשר פעם אחת — 6 `auth_rls_initplan`
+WARN על `profiles`, `webauthn_credentials` ×2, `push_subscriptions` ×2,
+`cashback_ledger`, 167 `unused_index` INFO, 9 `unindexed_foreign_keys`
+INFO, 1 `auth_db_connections_absolute` INFO). **44 WARN בסך הכול, אפס
+חדש, אפס שהפסיק לירות.**
+
+ארבעת הקבצים הממתינים נבדקו שעדיין קיימים ולא נערכו מ-M05-c53:
+`migrations/pending/209_advisor_warnings.sql` (‏`09.09`),
+`220_wallet_entries_search_path.sql` (‏`09.09`),
+`245_single_permissive_policy_per_action.sql` (‏`25.09`),
+`246_profiles_mfa_initplan.sql` (‏`25.09`) — כולם מ-`git log -1` על
+הנתיב, לפני מדידת 0ג, כלומר תוכנם כבר אומת מול המדידה הזהה פעמיים
+קודם. אין קובץ מיגרציה חדש נדרש, אין WARN לא-מכוסה.
 
 ## 1. עקרון-על
 

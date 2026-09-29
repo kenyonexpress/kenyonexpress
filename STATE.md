@@ -1,7 +1,34 @@
-RESUME FROM: M05-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c54)
+RESUME FROM: M06-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c54)
 
 ## המשך מ:
+
+**M05-c54 - DONE (29.09): ביקורת DB — `get_advisors` (security+performance),
+אפס WARN חדש, אפס קובץ מיגרציה חדש.** ה-MCP של Supabase עדיין ברשימת
+"דורש הרשאה" בסשן לא-אינטראקטיבי (כמו בכל מדידה קודמת). אותו מסלול חלופי
+שכבר אומת שלוש פעמים: טוקן ה-CLI מה-keychain (`security
+find-generic-password -s "Supabase CLI" -w`, פענוח base64), שני `GET
+https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+{security,performance}`, ‏200/200, קריאה בלבד, הטוקן לא נדפס ולא נשמר.
+**44 WARN בסך הכול, זהה ב-100% ל-M05-c53 (0ג) שדה-שדה**: 2
+`anon_security_definer_function_executable` (`is_admin`,
+`is_supplier_member`), 21 `authenticated_security_definer_function_executable`,
+1 `function_search_path_mutable` (`fn_wallet_entries_block_mutation`), 6
+`auth_rls_initplan` (`profiles`, `webauthn_credentials`×2,
+`push_subscriptions`×2, `cashback_ledger`), 14 `multiple_permissive_policies`
+על אותן 11 טבלאות. אפס WARN חדש, אפס שהפסיק לירות. ארבעת הקבצים הממתינים
+שכבר מכסים את כל 44 (`migrations/pending/209_advisor_warnings.sql`,
+`220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql`,
+`246_profiles_mfa_initplan.sql`) נבדקו קיימים ולא נערכו מ-M05-c53
+(`git log -1` על כל נתיב, כולם מלפני 0ג) — **אין קובץ מיגרציה חדש נדרש,
+שום קובץ לא הוחל.** `docs/DB-SECURITY-MODEL.md` קיבל סעיף 0ד חדש עם
+המדידה. שערים: `type-check` נקי, `lint` נקי (biome 2020 קבצים + 12 שערי
+תוכן, i18n 627/627, locale 116/116), `test` 605/605 קבצים, 7213/7225 (12
+skipped, זהה), `build` `exit 0`. אין פריט UI, אין שער חזותי נדרש. **קובץ
+יחיד שונה מלבד `STATE.md`: `docs/DB-SECURITY-MODEL.md`.**
+
+## M04-c54 (ארכיון)
 
 **M04-c54 - DONE (29.09): תחזוקת תלויות — `pnpm audit` אפס חולשות,
 `pnpm outdated` בלי שדרוג פטץ'/מיינור זמין, אפס שינוי.** `pnpm audit`:
