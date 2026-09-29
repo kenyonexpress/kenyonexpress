@@ -1,7 +1,49 @@
-RESUME FROM: M14-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c58)
+RESUME FROM: M15-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c58)
 
 ## המשך מ:
+
+**M14-c58 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/
+כותרות cache, אימות מחדש מול build אמיתי, אפס דריפט מ-M14-c57.**
+משימת התור: לבדוק גודל bundle, פלט צנרת תמונות, תגיות ISR וכותרות
+cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log
+e1bb6a2c5..HEAD` (מאז המדידה הקודמת, M14-c57) מחזיר 17 קומיטים
+(M15-c57..M13-c58), `git diff --stat e1bb6a2c5..HEAD -- . ':!STATE.md'
+':!docs/STATE-ARCHIVE.md'` נוגע רק ב-`docs/BACKLOG.md`,
+`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
+`docs/UI-PARITY-REPORT.md`, `package.json`+`pnpm-lock.yaml` (עדכון
+מינור `aws-sdk`, M04-c58, שרת-בלבד ולא ב-bundle הלקוח) ו-
+`refund-wallet.test.ts` — **אפס קומיט נגע ב-`next.config.*`, ברכיבי
+תמונה, ב-cache/ISR או ב-routes**.
+
+נמדד בכל זאת מחדש מול build אמיתי קיים (`.next` התואם בדיוק ל-HEAD
+`49750d2a8`, נבנה 03:54 אחרי M04-c58 ולפני שאר הקומיטים שכולם
+תיעוד/טסט, `pnpm start` על פורט 3331):
+- **`scripts/bundle-report.mjs`**: בית 320.4kB, מוצרים 319.2kB, קטגוריה
+  319.9kB, סל 317.3kB, קופה 324.1kB (הכבד ביותר), FAQ 313.9kB —
+  **345.1kB סה"כ על 27 chunks, זהה בדיוק ל-M14-c57**.
+- **`scripts/cache-invalidation-gate.mjs`**: נקי (כל כתיבה לטבלה
+  cached מבטלת אותה, כל scope cached נושא תגית).
+- **צנרת תמונות**: כל שישה הרכיבים עם `fill`+`sizes` (`CouponCard`,
+  `coupons/[id]/page`, `ProductCard` פעמיים, `HeroSlider`,
+  `ProductGallery`, `CategoryProductCard`) עדיין נושאים `vw`/`calc(vw)`,
+  אין מופע חדש של הבאג `fill`+px קבוע.
+- **כותרות cache**: chunk סטטי `public, max-age=31536000, immutable`;
+  HTML דינמי (בית, מוצר) `private, no-cache, no-store, max-age=0,
+  must-revalidate` + `x-nextjs-prerender: 1`/`x-nextjs-postponed: 1`/
+  `x-nextjs-stale-time: 300` (PPR); `/_next/image` על `logo.webp`
+  `public, max-age=86400, must-revalidate` — כולן זהות למדיניות
+  המתועדת, אפס דריפט.
+
+**אפס שינוי קוד** (אין רגרסיה לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים כולל cache-invalidation, i18n 627/627,
+locale 116/116), `test` 608/608 קבצים 7273/7285 (12 skipped, זהה
+ל-M13-c58). `build`: נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD, לא
+נבנה מחדש כדי לא להתחרות במשאבים עם סשנים מקבילים (load average 5.65
+בזמן המדידה, ראו `concurrent-worktree-builds-oom`). אין שינוי UI, אין
+שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`.**
+
+## M13-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
 
 **M13-c58 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
 ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
@@ -46,50 +88,11 @@ middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*'
 **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` — M11-c58
 הועבר לתקרת 300 שורות).
 
-## M12-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
+## M12-c58, M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M12-c58 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
-sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c57.** משימת התור: לוודא
-metadata, canonical, og, schema.org Product+Offer בדפי מוצר, טריות
-sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם: `git log
-3ea897906..HEAD` (מאז המדידה הקודמת, M12-c57) מחזיר 11 קומיטים
-(M13-c57..M11-c58), כולם תיעוד/מדידה/תלות/טסטים (נגישות, כיסוי
-`refund-wallet.ts`, backlog/state, route audit, Lighthouse, DB
-advisors, תלות `aws-sdk` מינור, שער ירוק, שער חזותי, בדיקת פרודקשן):
-`git diff --stat 3ea897906..HEAD -- src/app/sitemap* src/app/robots*
-'**/metadata*' '**/*schema*' '**/*seo*' src/lib/seo* 'src/app/**/layout.tsx'
-'src/app/**/page.tsx'` חוזר ריק — **אפס קומיט נגע בקוד SEO**.
-
-נמדד בכל זאת מחדש מול build אמיתי (`.next` התואם בדיוק ל-HEAD
-`a1dd26ac2`, נבנה תחת M11-c58, `pnpm start` על פורט 3317):
-- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
-  לדומיין הנכון.
-- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
-  regions/suppliers).
-- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c57), חמישה ערכי
-  `lastmod` שונים בפועל — טריות אמיתית, לא מזויפת.
-- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
-  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
-  height/alt)/type`, JSON-LD `Product` (מחיר `49.50`, `priceCurrency
-  ILS`, `brand`, `category`, `image`) + `Offer` (`availability
-  InStock`, `seller`, `priceSpecification`) + `BreadcrumbList` (3
-  שלבים), אפס `<meta name="robots">` (מוצר פעיל, לא `noindex`).
-- דף הבית: `title`, `canonical`, `og:*`, JSON-LD `WebSite`+`SearchAction`+
-  `Organization`, שניהם תקינים.
-- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
-  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
-  מ-M12-c57.
-
-**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
-קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
-608/608 קבצים 7273/7285 (12 skipped, זהה ל-M11-c58), `build`: נעשה
-שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD (נבנה תחת M11-c58, אומת חי
-דרך `pnpm start` על פורט 3317), לא נבנה מחדש כדי לא להתחרות במשאבים
-עם סשנים מקבילים (load average 11.38 בזמן המדידה, ראו
-`concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
-**קובץ יחיד שונה: `STATE.md`.**
-
-## M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+M12-c58: SEO, meta/canonical/og/JSON-LD Product+Offer/sitemap/robots
+אומתו מחדש, אפס דריפט מ-M12-c57 (`sitemap/products.xml` 46 כתובות,
+`noindex` למוצר לא פעיל קיים ולא שונה). אפס שינוי קוד.
 
 M11-c58: נגישות, axe אומתה מחדש בפעם רביעית, 0 הפרות `serious`/
 `critical` (ציבורי 72/74 + 2 דולג, מאומת לקוח 16/16 + ספק 7/7, אדמין

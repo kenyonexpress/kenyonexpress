@@ -2,6 +2,49 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c58 (הועבר מ-STATE.md ב-M14-c58, לשמירה על תקרת 300 שורות)
+
+**M12-c58 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c57.** משימת התור: לוודא
+metadata, canonical, og, schema.org Product+Offer בדפי מוצר, טריות
+sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם: `git log
+3ea897906..HEAD` (מאז המדידה הקודמת, M12-c57) מחזיר 11 קומיטים
+(M13-c57..M11-c58), כולם תיעוד/מדידה/תלות/טסטים (נגישות, כיסוי
+`refund-wallet.ts`, backlog/state, route audit, Lighthouse, DB
+advisors, תלות `aws-sdk` מינור, שער ירוק, שער חזותי, בדיקת פרודקשן):
+`git diff --stat 3ea897906..HEAD -- src/app/sitemap* src/app/robots*
+'**/metadata*' '**/*schema*' '**/*seo*' src/lib/seo* 'src/app/**/layout.tsx'
+'src/app/**/page.tsx'` חוזר ריק — **אפס קומיט נגע בקוד SEO**.
+
+נמדד בכל זאת מחדש מול build אמיתי (`.next` התואם בדיוק ל-HEAD
+`a1dd26ac2`, נבנה תחת M11-c58, `pnpm start` על פורט 3317):
+- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
+  לדומיין הנכון.
+- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
+  regions/suppliers).
+- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c57), חמישה ערכי
+  `lastmod` שונים בפועל — טריות אמיתית, לא מזויפת.
+- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
+  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
+  height/alt)/type`, JSON-LD `Product` (מחיר `49.50`, `priceCurrency
+  ILS`, `brand`, `category`, `image`) + `Offer` (`availability
+  InStock`, `seller`, `priceSpecification`) + `BreadcrumbList` (3
+  שלבים), אפס `<meta name="robots">` (מוצר פעיל, לא `noindex`).
+- דף הבית: `title`, `canonical`, `og:*`, JSON-LD `WebSite`+`SearchAction`+
+  `Organization`, שניהם תקינים.
+- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
+  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
+  מ-M12-c57.
+
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
+608/608 קבצים 7273/7285 (12 skipped, זהה ל-M11-c58), `build`: נעשה
+שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD (נבנה תחת M11-c58, אומת חי
+דרך `pnpm start` על פורט 3317), לא נבנה מחדש כדי לא להתחרות במשאבים
+עם סשנים מקבילים (load average 11.38 בזמן המדידה, ראו
+`concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
+**קובץ יחיד שונה: `STATE.md`.**
+
 ## M11-c58 (הועבר מ-STATE.md ב-M13-c58, לשמירה על תקרת 300 שורות)
 
 **M11-c58 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
