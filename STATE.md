@@ -1,44 +1,59 @@
-RESUME FROM: M16-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c54)
+RESUME FROM: M17-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c54)
 
 ## המשך מ:
 
-**M15-c54 - docs: סנכרון `STATE.md`, `docs/LAUNCH-READINESS.md` ו-
-`docs/BACKLOG.md` מול `git log` וראיית קוד (29.09).** המשימה: לרענן את
-טבלאות הסטטוס בשלושת הקבצים, לשמור רשימה אחת ללא כפילויות של פעולות
-ידניות לאופיר, מסודרת לפי קריטיות. **נבדק תחילה מה השתנה מאז הסנכרון
-האחרון (M15-c53, `b96a4e8d4`):** תשעה קומיטי שינוי-קוד אמיתיים
-(M06-c54..M14-c54 — תיקון import של Sentry, תחזוקת תלויות, ביקורת DB,
-Lighthouse, route audit, כיסוי טסטים לזיכוי, תיקוני a11y, אימות SEO/אבטחה,
-תיקון srcset בבאדג' הבית), אף אחד מהם לא נגע בשורת חסימה או הוסיף פעולה
-ידנית חדשה — כל אחד תועד כ-DONE בזמנו. **נמדד מחדש, git בלבד, אין בדיקת
-פרודקשן בפריט הזה:**
-- `git rev-list --count a388118f1..HEAD` = **101** (היה 83 ב-M15-c53).
-- `git rev-list --count origin/main..HEAD` = **475** (היה 457 ב-M15-c53);
-  `git rev-list --count HEAD..origin/main` = 109, ללא שינוי.
-- `pnpm test`: **605/605 קבצים, 7217/7229** (12 skipped) — זהה למה שנמדד
-  כבר ב-M14-c54, אומת שוב בהרצה טרייה בפריט הזה.
-- פנקס הקטלוג (`supabase/catalogue-known-issues.json`): `known` מחזיק
-  **26** מפתחות — זהה למה שתועד מ-M15-c53, אין דריפט.
-- `git stash list`: **32** — זהה למה שתועד ב-M09-c54/ידני 15.
+**M16-c54 - תברואת ריפו בפעם הרביעית: git נקי, כל 40 הענפים המקומיים
+דחופים (אימות SHA מלא), 24 PR פתוחים, 116 ענפי remote, ממצא חדש על
+`main` מקומי (29.09).** המשימה: לוודא `git status` נקי, שכל ענף מקומי
+דחוף, לרשום PR פתוחים וענפים רדומים ב-STATE.md, בלי מיזוג ובלי מחיקה.
+בוצע בפעם הרביעית (אחרי M16-c51, M16-c52, M16-c53) — נמדד מחדש במלואו כדי
+לתפוס דריפט, לא הונח שהוא עדיין תקף.
 
-**עודכן בשלושת הקבצים:** `docs/LAUNCH-READINESS.md` — פסקת "Docs sync"
-בראש הקובץ, שורת חסימה 4 (83→101), שורת ה-gate `pnpm test` (הוסף המדידה
-הטרייה), שורת "Branches" (457→475), ופסקת ה"ידני לאופיר" בתחתית. `docs/BACKLOG.md`
-— נוספה פסקת "Re-checked M15-c54" ועודכן פריט 4 (83→101). **`CLAUDE.md`
-עדיין אומר 25 ממצאי קטלוג** (לא 26) — מחוץ להיקף הפריט הזה (STATE.md,
-LAUNCH-READINESS.md, BACKLOG.md בלבד לפי הוראת המשימה), נרשם כאן ולא נערך.
-רשימת "ידני לאופיר" ב-`docs/BACKLOG.md` נבדקה מחדש מול השורה הזו וכנגד
-`STATE.md`'s חוסמים פתוחים: **עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
-פריט חדש**.
+**נמדד בפועל:**
+- `git status`: עץ נקי, `audit/final-audit` מעודכן מול `origin/audit/final-audit`.
+- `git fetch --all --prune`: נקי, אין שינוי מאז המדידה הקודמת.
+- **כל 40 הענפים המקומיים נבדקו ב-SHA מול `origin/<אותו שם>` (`--verify -q`,
+  לא רק `git branch -vv` הקוסמטי).** 33 זהים ל-remote שלהם (חלקם בלי
+  upstream מוגדר אך עם SHA תואם). 6 בלי remote בשם הזה אבל ancestors של
+  `origin/main` — **אותה שישה בדיוק כמו ב-M16-c53**: `chore/vitest-4`,
+  `docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`,
+  `release/v1.1`, `wip/refund-record-rebase-head`. אפס דריפט בקבוצה הזו.
+- **ממצא חדש: `main` המקומי סטה מ-`origin/main`** (מ-193 קדימה/109
+  מאחורה) — לא רק "מאחורה" כמו שתועד קודם. **נבדק ולא לפעולה:** קצה
+  `main` המקומי (`3f6ca53c3`, 10.09) הוא ancestor של
+  `origin/audit/final-audit` וגם `origin/work/goal-queue-0923` — כלומר
+  שום עבודה לא אבודה, זה פשוט מצביע-ישן משורשלת ה-`audit/final-audit`
+  שאף פעם לא עודכן לשם `main`. **לא נדחף** — `main` מוגן ב-GitHub וסטייה
+  אמיתית (לא fast-forward) תדרוש force-push, אסור לפי הכללים. נרשם כממצא
+  ל"חוסמים פתוחים" למטה, לא פעולה.
+- **PRs פתוחים: 24** (`gh pr list --state open`), זהה ל-M16-c53.
+- **116 ענפי remote** (זהה ל-M16-c53, אין שינוי). **92 בלי PR פתוח**:
+  **25 ancestors של `origin/main`** (אחד מהם `origin/main` עצמו, טריוויאלי
+  — 24 בפועל "ממוזגים-בלי-PR", זהה למספר ב-M16-c53), **67 לא ממוזגים: 64
+  רדומים** (קומיט אחרון לפני 15.09, סף 14 יום) **ו-3 עם קומיט
+  בשבועיים האחרונים**: `audit/final-audit` (הענף הנוכחי), `phase5/homepage-closeout`
+  ו-`work/goal-queue-0923` (worktrees מקבילים, [[parallel-claude-sessions]]).
+  ירד ב-1 מ-4 ל-3 מ-M16-c53 — `pull/6/merge` (ref מיזוג אוטומטי של
+  GitHub) לא קיים יותר, לא ענף שמישהו דחף, אין דריפט אמיתי.
+
+**לא בוצע ולא נדרש:** שום מיזוג, מחיקת ענף, מחיקת PR, ושום push ל-`main`
+— אסור לפי הכללים.
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n 627/627,
 locale 116/116, docs-index 282 מסמכים), `pnpm test` **605/605 קבצים,
-7217/7229** (12 skipped), `pnpm build` `exit 0`. אין שינוי UI, אין שער
-חזותי נדרש.
+7217/7229** (12 skipped, זהה ל-M15-c54), `pnpm build` `exit 0`. אין שינוי
+קוד/UI, לכן `scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריט
+תברואה/re-verify קודם ללא שינוי קוד).
 
-**קבצים:** `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
-`docs/STATE-ARCHIVE.md` (M14-c54 הועבר לשם), `STATE.md`.
+**קבצים:** `docs/STATE-ARCHIVE.md` (M15-c54 הועבר לשם), `STATE.md` בלבד.
+
+## M15-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+`STATE.md`/`docs/LAUNCH-READINESS.md`/`docs/BACKLOG.md` סונכרנו מול
+`git log`; תשעה קומיטי שינוי-קוד מ-M15-c53 נבדקו, אף אחד לא נגע בשורת
+חסימה. פנקס הקטלוג 26 מפתחות (זהה), `git stash list` 32 (זהה). הועבר
+ב-M16-c54 לשמירה על תקרת 300 שורות.
 
 ## M14-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -245,6 +260,15 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
     `email-retry`, `expire-cashback`, `expire-coupons`), כל אחד עונה 404 גם
     אחרי שחוסם 10 נסגר. נפתר מעצמו במיזוג הענף הזה ל-`main`. **לא היה רשום
     ב-STATE.md עד M15-c51** (נמדד ב-`docs/LAUNCH-READINESS.md` ידני 9).
+13. **הענף המקומי `main` בריפו הזה סוטה מ-`origin/main`, לא רק מאחורה**
+    (נמדד M16-c54): קצה מקומי `3f6ca53c3` (10.09), קצה remote
+    `18ed044b2` (18.09), אין קשר-אב בין השניים. **לא עבודה אבודה**: קצה
+    ה-`main` המקומי הוא ancestor של `origin/audit/final-audit` וגם
+    `origin/work/goal-queue-0923` — מצביע-ישן משורשלת ה-`audit`, לא ענף
+    נפרד. **לא לפעולה מצד הסוכן**: `main` מוגן ב-GitHub, וסטייה כזו
+    תדרוש force-push כדי לדחוף, אסור לפי הכללים. אם רוצים לנקות את
+    ה-ref המקומי המבולבל (`git branch -f main origin/main`, לא מיזוג
+    ולא מחיקה) — החלטה של אופיר.
 
 ## ידני לאופיר, לפי סדר קריטיות
 

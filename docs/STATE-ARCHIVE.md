@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c54 (הועברה מ-STATE.md ב-M16-c54, לשמירה על תקרת 300 שורות)
+
+**M15-c54 - docs: סנכרון `STATE.md`, `docs/LAUNCH-READINESS.md` ו-
+`docs/BACKLOG.md` מול `git log` וראיית קוד (29.09).** המשימה: לרענן את
+טבלאות הסטטוס בשלושת הקבצים, לשמור רשימה אחת ללא כפילויות של פעולות
+ידניות לאופיר, מסודרת לפי קריטיות. **נבדק תחילה מה השתנה מאז הסנכרון
+האחרון (M15-c53, `b96a4e8d4`):** תשעה קומיטי שינוי-קוד אמיתיים
+(M06-c54..M14-c54 — תיקון import של Sentry, תחזוקת תלויות, ביקורת DB,
+Lighthouse, route audit, כיסוי טסטים לזיכוי, תיקוני a11y, אימות SEO/אבטחה,
+תיקון srcset בבאדג' הבית), אף אחד מהם לא נגע בשורת חסימה או הוסיף פעולה
+ידנית חדשה — כל אחד תועד כ-DONE בזמנו. **נמדד מחדש, git בלבד, אין בדיקת
+פרודקשן בפריט הזה:**
+- `git rev-list --count a388118f1..HEAD` = **101** (היה 83 ב-M15-c53).
+- `git rev-list --count origin/main..HEAD` = **475** (היה 457 ב-M15-c53);
+  `git rev-list --count HEAD..origin/main` = 109, ללא שינוי.
+- `pnpm test`: **605/605 קבצים, 7217/7229** (12 skipped) — זהה למה שנמדד
+  כבר ב-M14-c54, אומת שוב בהרצה טרייה בפריט הזה.
+- פנקס הקטלוג (`supabase/catalogue-known-issues.json`): `known` מחזיק
+  **26** מפתחות — זהה למה שתועד מ-M15-c53, אין דריפט.
+- `git stash list`: **32** — זהה למה שתועד ב-M09-c54/ידני 15.
+
+**עודכן בשלושת הקבצים:** `docs/LAUNCH-READINESS.md` — פסקת "Docs sync"
+בראש הקובץ, שורת חסימה 4 (83→101), שורת ה-gate `pnpm test` (הוסף המדידה
+הטרייה), שורת "Branches" (457→475), ופסקת ה"ידני לאופיר" בתחתית. `docs/BACKLOG.md`
+— נוספה פסקת "Re-checked M15-c54" ועודכן פריט 4 (83→101). **`CLAUDE.md`
+עדיין אומר 25 ממצאי קטלוג** (לא 26) — מחוץ להיקף הפריט הזה (STATE.md,
+LAUNCH-READINESS.md, BACKLOG.md בלבד לפי הוראת המשימה), נרשם כאן ולא נערך.
+רשימת "ידני לאופיר" ב-`docs/BACKLOG.md` נבדקה מחדש מול השורה הזו וכנגד
+`STATE.md`'s חוסמים פתוחים: **עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
+פריט חדש**.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n 627/627,
+locale 116/116, docs-index 282 מסמכים), `pnpm test` **605/605 קבצים,
+7217/7229** (12 skipped), `pnpm build` `exit 0`. אין שינוי UI, אין שער
+חזותי נדרש.
+
+**קבצים:** `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
+`docs/STATE-ARCHIVE.md` (M14-c54 הועבר לשם), `STATE.md`.
+
 ## M14-c54 (הועברה מ-STATE.md ב-M15-c54, לשמירה על תקרת 300 שורות)
 
 **M14-c54 - perf: bundle, צנרת תמונות, תגיות ISR וכותרות cache — ממצא
