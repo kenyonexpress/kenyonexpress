@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c52 - DONE (29.09): סנכרון תיעוד — רענון מספרי git ב-STATE.md, docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md, רשימת "ידני לאופיר" אחת נבדקה מחדש
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם לפני שינוי. שלושת הקבצים כבר החזיקו רשימה יחידה ("ידני
+לאופיר", ממוזגת ב-M15-c51) — לא נמצאה כפילות או פריט חדש שדורש הוספה,
+רק מספרים שהתיישנו מאז שנכתבו.
+
+**מה השתנה, נמדד מ-`git`, לא מפרודקשן (אין הרשאה לגעת ב-DNS/Vercel/פריסה
+בפריט הזה):**
+
+- `git rev-list --count a388118f1..HEAD` (מספר הקומיטים שהבנייה החיה
+  הידועה אחרונה מאחורי, `a388118f1`) עלה מ-**47** (M15-c51, 29.09 מוקדם)
+  ל-**66** היום, אחרי ארבע-עשרה קומיטים של סבב ה-c52.
+- `git rev-list --count origin/main..HEAD` עלה מ-**421** ל-**440**;
+  `git rev-list --count HEAD..origin/main` (autopilot הייחודי ל-`main`)
+  נשאר **109**, ללא שינוי.
+- `pnpm test` עלה מ-604/7182 (המספר שהיה כתוב ב-`docs/LAUNCH-READINESS.md`,
+  ישן מ-M14-c51) ל-**604/7188** (שבעת הטסטים שהוספו ב-M10-c52), התואם כבר
+  את מה ש-`STATE.md` רשם.
+
+**תוקן בפועל:** שורת חוסם 4 וטבלת "Green" ב-`docs/LAUNCH-READINESS.md`
+(מספר הקומיטים, ספירת הטסטים, פער הענפים), וסעיף 4 ב-`docs/BACKLOG.md`
+(אותו מספר קומיטים). `STATE.md`'s "חוסמים פתוחים" כבר לא נקב במספר קומיט
+ספציפי (רק בשם ה-commit `a388118f1`), כך שלא נדרש שם תיקון מספרי.
+
+**מה לא השתנה, ואומת שלא השתנה:** כל שמונה שורות החסימה ב-
+`docs/LAUNCH-READINESS.md` וכל 15 הסעיפים ב-`docs/BACKLOG.md` — DNS,
+mock Cardcom, cron 401, המיגרציות הממתינות (17 קבצים), 25 שורות הקטלוג,
+`SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, R2, `cron-jobs.json` — נשארים
+פתוחים באותה סיבה, אין אירוע ב-`git log -20` שנוגע בהם.
+
+**שערים (הרצה מלאה, ללא שינוי קוד):** `pnpm type-check` נקי; `pnpm lint`
+נקי (12 שערים, i18n 627/627); `pnpm test` **604 קבצים / 7188 עברו / 12
+דולגו**; `pnpm build` ירוק. אין שינוי UI, לא נדרש שער השוואה חזותי.
+
+**קבצים:** `STATE.md`, `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
+`docs/STATE-ARCHIVE.md` (ארכוב הרשומה המלאה של M14-c52).
+
 ## M14-c52 - DONE (29.09): ביצועים: bundle, פלט צנרת התמונות, תגיות ISR, כותרות cache. ממצא אחד תוקן (thumbnail srcset), אין רגרסיה בשאר השלושה
 
 **1. גודל bundle: אין רגרסיה, שינוי זניח.** מול הבייסליין הכתוב ב-M14-c51
