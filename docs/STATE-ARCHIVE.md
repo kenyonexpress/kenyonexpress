@@ -2,6 +2,61 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c57 (הועבר מ-STATE.md ב-M18-c57, לשמירה על תקרת 300 שורות)
+
+**M17-c57 - DONE (30.09): מעבר קופי ומשפטי בפעם החמישית, אפס ממצא
+חדש בר-תיקון.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי
+בחיפוש טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט פונה-ללקוח, וקישורים
+שבורים, ולתקן.
+
+**מה נבדק, בפועל, לא הונח:**
+1. **`messages/he.json`** (591 שורות, סריקה עצמאית של כל 627 המחרוזות):
+   אפס פערי מפתחות בין `he.json`/`en.json`, אפס רווח כפול, אפס סמן
+   placeholder (`TODO`/`TBD`/`lorem`/`{{`/`&nbsp;`/תגית `<`). `scripts/
+   latin-copy-scan.mjs` (אותו שער שרץ ב-`lint`/`test`) מחזיר יציאה 0.
+   סריקת Latin עצמאית (regex על מילה+מילה) מצאה מחרוזת אחת: "Face ID"
+   ב-`securityAlert.passkeyAddedSentence` — שם מוצר של אפל בתוך משפט
+   עברי, אותו סוג בדיוק כמו "Samsung Galaxy S22" שכבר אושר ב-`docs/
+   COPY-AUDIT.md`, לא תקלה.
+2. **`SiteFooter.tsx`, `LegalFooterLinks.tsx`**: כל 15 ה-`href` נבדקו
+   מול נתיבי אמת (`/account`, `/cart`, `/account/orders`, `/about`,
+   `/page/how-it-works`, `/contact`, `/faq`, `/blog`, `/suppliers`,
+   `/terms-and-conditions`, `/privacy-policy`, `/refund_returns`
+   (+`#how-to-cancel`), `/accessibility`) — אפס קישור שבור. אפס
+   `aria-label`/`alt` באנגלית מחוץ לשמות מותג (Visa/Mastercard/
+   Discover/American Express/הרשתות החברתיות).
+3. **ארבעת העמודים המשפטיים החיים**, `src/app/(legal)/_content/{terms,
+   returns,privacy,accessibility}.ts` (1,134 שורות, אלה שבאמת מוגשים
+   ב-`/terms-and-conditions`/`/refund_returns`/`/privacy-policy`/
+   `/accessibility`, אומת דרך קריאת ה-`page.tsx` של כל ארבעתם): נקרא
+   כל מחרוזת, כולל סוכן שני עצמאי. **אפס טעות כתיב, אפס דליפת LTR, אפס
+   פרוזה אנגלית, אפס placeholder, אפס קישור שבור.** ממצא אחד עלה
+   ונבדק בנפרד ונמצא **לא-תקלה**: `accessibility.ts` שורה 30 טוענת
+   "19 עמודים" ושורה 61 טוענת "שישה עמודים מרכזיים" לאותה משפחת בדיקות
+   axe — נראה כסתירה, אבל אלה שתי טענות שונות שאומתו בנפרד: "19" תואם
+   **בדיוק** את מספר הערכים במערך `PAGES` ב-`e2e/a11y.spec.ts` (נספר
+   ישירות, 19 שורות `{ name: }`), ו-"שישה" תואם את המדידה ההיסטורית
+   הספציפית לתיקון הניגודיות, המתועדת גם ב-`docs/legal/
+   COUNSEL-REVIEW.md` ("סריקת axe על שישה עמודי ייצור"). שני המספרים
+   נכונים, כל אחד להיקף שלו.
+4. **`src/content/legal/wp-migrated.ts`** (עברית, קרדיט מסביר "SEQ
+   Legal"/"Website Planet", כולל placeholder-ים לא-ממולאים כמו
+   `{הזינו תאריך/שעה}` ו-`{בחרו בניסוח המדויק...}`) **הוא קוד מת ולא
+   מוגש בשום נתיב חי** — אושר מחדש: `src/app/(store)/{privacy-policy,
+   terms-and-conditions,refund_returns}/page.tsx` כולם קוראים
+   מ-`(legal)/_content` (התוכן הנכון), ו-`/legal/{privacy,terms,
+   returns,accessibility}/page.tsx` הם רק `permanentRedirect` לנתיבים
+   הקנוניים. הצרכן היחיד שנשאר של `content/legal/index.ts` הוא
+   `src/lib/seo/sitemap-sections.ts` (תאריך `lastModified` בלבד, לא
+   תוכן מוצג). **אותו ממצא בדיוק כבר תועד ב-M17-c53** ("קוד מת... מחוץ
+   להיקף הפריט הזה"), אומת שוב ונשאר מחוץ להיקף.
+
+שערים: `type-check` נקי, `lint` נקי (2023 קבצים, i18n 627/627), `test`
+608/608 קבצים 7272/7284 (12 skipped), `build` `exit 0`. **שער חזותי
+בית** (build אמיתי, `PORT=3391 pnpm start`, `--baseline='refs/
+ke_live_{width}.png'`): **380 8.51% PASS, 768 9.02% PASS, 1440 3.95%
+PASS** — זהה בדיוק ל-M02-c57, אפס שינוי UI/קוד בפריט הזה.
+
 ## M16-c57 (הועבר מ-STATE.md ב-M17-c57, לשמירה על תקרת 300 שורות)
 
 **M16-c57 - DONE (30.09): תברואת ריפו בפעם השביעית, אפס דריפט

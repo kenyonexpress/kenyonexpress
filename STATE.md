@@ -1,63 +1,40 @@
-RESUME FROM: M18-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c57)
+RESUME FROM: M01-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c57)
 
 ## המשך מ:
 
-**M17-c57 - DONE (30.09): מעבר קופי ומשפטי בפעם החמישית, אפס ממצא
-חדש בר-תיקון.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי
-בחיפוש טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט פונה-ללקוח, וקישורים
-שבורים, ולתקן.
+**M18-c57 - DONE (30.09): בדיקת אפס-פעילות בפעם הרביעית, המחזור *לא*
+היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c57..M17-c57)
+לא ייצרו שינוי קוד במחזור הזה, לכתוב `MAINTENANCE IDLE` עם התאריך
+ב-`STATE.md`, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף
+מוצר שתואם Electro v7 וליישם אותו.
 
-**מה נבדק, בפועל, לא הונח:**
-1. **`messages/he.json`** (591 שורות, סריקה עצמאית של כל 627 המחרוזות):
-   אפס פערי מפתחות בין `he.json`/`en.json`, אפס רווח כפול, אפס סמן
-   placeholder (`TODO`/`TBD`/`lorem`/`{{`/`&nbsp;`/תגית `<`). `scripts/
-   latin-copy-scan.mjs` (אותו שער שרץ ב-`lint`/`test`) מחזיר יציאה 0.
-   סריקת Latin עצמאית (regex על מילה+מילה) מצאה מחרוזת אחת: "Face ID"
-   ב-`securityAlert.passkeyAddedSentence` — שם מוצר של אפל בתוך משפט
-   עברי, אותו סוג בדיוק כמו "Samsung Galaxy S22" שכבר אושר ב-`docs/
-   COPY-AUDIT.md`, לא תקלה.
-2. **`SiteFooter.tsx`, `LegalFooterLinks.tsx`**: כל 15 ה-`href` נבדקו
-   מול נתיבי אמת (`/account`, `/cart`, `/account/orders`, `/about`,
-   `/page/how-it-works`, `/contact`, `/faq`, `/blog`, `/suppliers`,
-   `/terms-and-conditions`, `/privacy-policy`, `/refund_returns`
-   (+`#how-to-cancel`), `/accessibility`) — אפס קישור שבור. אפס
-   `aria-label`/`alt` באנגלית מחוץ לשמות מותג (Visa/Mastercard/
-   Discover/American Express/הרשתות החברתיות).
-3. **ארבעת העמודים המשפטיים החיים**, `src/app/(legal)/_content/{terms,
-   returns,privacy,accessibility}.ts` (1,134 שורות, אלה שבאמת מוגשים
-   ב-`/terms-and-conditions`/`/refund_returns`/`/privacy-policy`/
-   `/accessibility`, אומת דרך קריאת ה-`page.tsx` של כל ארבעתם): נקרא
-   כל מחרוזת, כולל סוכן שני עצמאי. **אפס טעות כתיב, אפס דליפת LTR, אפס
-   פרוזה אנגלית, אפס placeholder, אפס קישור שבור.** ממצא אחד עלה
-   ונבדק בנפרד ונמצא **לא-תקלה**: `accessibility.ts` שורה 30 טוענת
-   "19 עמודים" ושורה 61 טוענת "שישה עמודים מרכזיים" לאותה משפחת בדיקות
-   axe — נראה כסתירה, אבל אלה שתי טענות שונות שאומתו בנפרד: "19" תואם
-   **בדיוק** את מספר הערכים במערך `PAGES` ב-`e2e/a11y.spec.ts` (נספר
-   ישירות, 19 שורות `{ name: }`), ו-"שישה" תואם את המדידה ההיסטורית
-   הספציפית לתיקון הניגודיות, המתועדת גם ב-`docs/legal/
-   COUNSEL-REVIEW.md` ("סריקת axe על שישה עמודי ייצור"). שני המספרים
-   נכונים, כל אחד להיקף שלו.
-4. **`src/content/legal/wp-migrated.ts`** (עברית, קרדיט מסביר "SEQ
-   Legal"/"Website Planet", כולל placeholder-ים לא-ממולאים כמו
-   `{הזינו תאריך/שעה}` ו-`{בחרו בניסוח המדויק...}`) **הוא קוד מת ולא
-   מוגש בשום נתיב חי** — אושר מחדש: `src/app/(store)/{privacy-policy,
-   terms-and-conditions,refund_returns}/page.tsx` כולם קוראים
-   מ-`(legal)/_content` (התוכן הנכון), ו-`/legal/{privacy,terms,
-   returns,accessibility}/page.tsx` הם רק `permanentRedirect` לנתיבים
-   הקנוניים. הצרכן היחיד שנשאר של `content/legal/index.ts` הוא
-   `src/lib/seo/sitemap-sections.ts` (תאריך `lastModified` בלבד, לא
-   תוכן מוצג). **אותו ממצא בדיוק כבר תועד ב-M17-c53** ("קוד מת... מחוץ
-   להיקף הפריט הזה"), אומת שוב ונשאר מחוץ להיקף.
+**נמדד ישירות מ-`git log`, לא הונח:** שני קומיטים במחזור c57 שינו קוד,
+לא רק תיעוד:
 
-שערים: `type-check` נקי, `lint` נקי (2023 קבצים, i18n 627/627), `test`
-608/608 קבצים 7272/7284 (12 skipped), `build` `exit 0`. **שער חזותי
-בית** (build אמיתי, `PORT=3391 pnpm start`, `--baseline='refs/
-ke_live_{width}.png'`): **380 8.51% PASS, 768 9.02% PASS, 1440 3.95%
-PASS** — זהה בדיוק ל-M02-c57, אפס שינוי UI/קוד בפריט הזה.
+- M04-c57 (`a6183cca6`): `package.json`/`pnpm-lock.yaml` — עדכון
+  `@anthropic-ai/sdk` 0.122.0→0.129.0 ו-`@supabase/ssr` 0.10.3→0.12.7.
+- M10-c57 (`f65b63176`): `src/lib/money-format.ts`/`money-format.test.ts`
+  — כיסוי ענפים 20.83%→100%, הוסרה פרמטר מתה (`withFraction`).
 
-## M16-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+כלומר המחזור אינו אפס-פעילות — אותה תוצאה בדיוק כמו M18-c55 ו-M18-c56
+(שניהם נמצאו שני קומיטי שינוי-קוד, ושניהם `MAINTENANCE IDLE` לא נכתב).
+**החלטה שהתקבלה לבד, לפי אותם תקדימים:** `MAINTENANCE IDLE` לא נכתב,
+וסעיף "אז לחפש שיפור המרה" מותנה במחזור אפס-פעילות שלא התקיים — לא בוצע
+שינוי המרה בפריט הזה.
 
+שערים הורצו במלואם עכשיו, לא הונחו ממדידה קודמת: `type-check` נקי,
+`lint` נקי (2023 קבצים, i18n 627/627), `test` 608/608 קבצים 7272/7284
+(12 skipped, 59.51s), `build` `exit 0` (337 נתיבים). כולם זהים ל-M17-c57.
+אפס שינוי קוד יישומי בפריט הזה עצמו (`STATE.md`/`docs/STATE-ARCHIVE.md`
+בלבד), אין שער חזותי נדרש (אין שינוי UI).
+
+## M17-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M17-c57: מעבר קופי ומשפטי בפעם החמישית, אפס ממצא חדש בר-תיקון
+(`he.json` 627 מחרוזות, 15 `href` בפוטר, ארבעת עמודי ה-legal החיים
+ו-`wp-migrated.ts` הקוד המת נבדקו מחדש, ממצא "Face ID" אושר לא-תקלה
+כמו "Samsung Galaxy S22" הקודם).
 M16-c57: תברואת ריפו בפעם השביעית, אפס דריפט מ-M16-c56 (43 ענפים
 מקומיים, כולם דחופים/מוזגים בפועל; 24 PR פתוחים; 117 ענפי remote).
 M15-c57: סנכרון תיעוד, STATE.md/docs/LAUNCH-READINESS.md/docs/BACKLOG.md
