@@ -1,7 +1,34 @@
-RESUME FROM: M06-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c59)
+RESUME FROM: M07-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c59)
 
 ## המשך מ:
+
+**M06-c59 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת מ-M06-c1 ועד M06-c58:
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3494 pnpm build` → `exit 0` (בלי
+`Failed to compile`, טבלת המסלולים המלאה נדפסה); `pnpm start -p 3494`
+מאותה בנייה (פורט 3494 אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`
+ועל `/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני
+ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90. `git log 8e4debc50..HEAD -- src/app
+src/components src/lib` ריק — אפס שינוי קוד תצוגה מאז המדידה הקודמת
+(M06-c58: 98/99 ביצועים), ולכן העלייה ל-99/99 היא רעש מדידה, לא שיפור
+אמיתי. השרת נעצר (`kill`, פורט 3494 אומת פנוי מחדש), קבצי ה-JSON
+הזמניים (`/tmp/ke-lh-m06c59/`) נמחקו. שערים: `type-check` נקי, `lint`
+נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale
+116/116, docs-index 282, docs-path-audit 152), `test` 608/608 קבצים,
+7273/7285 (12 skipped, 58.04s), `build` `exit 0` (חלק מהמדידה עצמה).
+אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
+`STATE.md`.**
+
+## M05-c59 (הועבר מ-STATE.md ב-M06-c59, לשמירה על תקרת 300 שורות)
 
 **M05-c59 - DONE (30.09): advisors נמדדו בפעם התשיעית, 44 WARN זהים
 ב-100% ל-M05-c58, אפס מיגרציה חדשה נדרשת.** משימת התור: להריץ
@@ -127,37 +154,9 @@ build`, לתקן כל שגיאה ואזהרה ניתנת לתיקון בלי ל�
   skipped, 58.04s), `build` `exit 0` (מהריצה הטרייה למעלה). אפס שינוי
   קוד יישומי (רק `STATE.md`/`docs/UI-PARITY-REPORT.md`).
 
-## M01-c59 (הועבר מ-STATE.md ב-M02-c59, לשמירה על תקרת 300 שורות)
-
-**M01-c59 - DONE (30.09): בדיקת פרודקשן בפעם השישית, DNS ו-HTTP תקינים,
-פריסת HEAD עדיין חסומה באותה סיבה.** משימת התור: להריץ build+deploy של
-Vercel לפרודקשן, ואז `dig`+`curl` על `kenyonexpress.co.il` ו-
-`www.kenyonexpress.co.il`; אם DNS נכשל, לתעד DNS BLOCKER ולסיים.
-
-**נמדד ישירות, לא הונח:** `dig +short kenyonexpress.co.il A` ->
-`216.198.79.1`/`64.29.17.65`, `dig +short www.kenyonexpress.co.il A` ->
-`216.198.79.65`/`64.29.17.1`, `dig +short kenyonexpress.co.il NS` ->
-עדיין `ns1.vercel-dns.com`/`ns2.vercel-dns.com`. `curl` על
-`kenyonexpress.co.il` -> `308` ל-`https://www.kenyonexpress.co.il/`,
-`curl` על `www.kenyonexpress.co.il` -> `200` עם תוכן חי (`lang="he"
-dir="rtl"`, לוגו קניון EXPRESS). DNS תקין — **לא היה צורך ב-DNS
-BLOCKER**.
-
-לפי כלל "goal שנתקע פעמיים — לדלג" (מוחל מ-M01-c55, פעם חמישית
-עכשיו): לא נוסה ניסיון deploy חדש. נבדק קריאה-בלבד דרך Vercel MCP:
-`filter_project_envs` על הפרויקט מאשר `CARDCOM_TERMINAL_NUMBER`/
-`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
-(קיימים רק `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`/`USE_MOCK`/
-`WEBHOOK_SECRET` שהקוד לא קורא), ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר
-שם. `list_deployments` (target=production, 3 אחרונים, כולם מניסיונות
-קודמים מ-M01-c54/M01-c55, לא נוסה חדש הפעם) מאשר כל השלוש עדיין
-`ERROR`. `get_deployment` על `www.kenyonexpress.co.il` מאשר הדומיין
-עדיין מכוון ל-`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` (`a388118f1`, READY).
-קומיטים מאחורי פרודקשן: 171 → **175** (git-only).
-
-שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
-627/627), `test` 608/608 קבצים 7273/7285 (12 skipped, 58.58s), `build`
-`exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+M01-c59: בדיקת פרודקשן בפעם השישית, DNS ו-HTTP תקינים, פריסת HEAD עדיין
+חסומה באותה סיבה (env חסר + `ALLOW_INCOMPLETE_ENV`); לא נוסה deploy
+חדש לפי כלל "נתקע פעמיים — לדלג". פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
 
 **כל סעיף מ-M18-c58 ועד M08-c57 (כולל M17-c58..M01-c58, M18-c57..M08-c57)**
 היה מסומן כאן "ארכיון מלא ב-`docs/STATE-ARCHIVE.md`" וכווץ לשורה הזו

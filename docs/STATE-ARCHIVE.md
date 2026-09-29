@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c59 (הועבר מ-STATE.md ב-M06-c59, לשמירה על תקרת 300 שורות)
+
+**M01-c59 - DONE (30.09): בדיקת פרודקשן בפעם השישית, DNS ו-HTTP תקינים,
+פריסת HEAD עדיין חסומה באותה סיבה.** משימת התור: להריץ build+deploy של
+Vercel לפרודקשן, ואז `dig`+`curl` על `kenyonexpress.co.il` ו-
+`www.kenyonexpress.co.il`; אם DNS נכשל, לתעד DNS BLOCKER ולסיים.
+
+**נמדד ישירות, לא הונח:** `dig +short kenyonexpress.co.il A` ->
+`216.198.79.1`/`64.29.17.65`, `dig +short www.kenyonexpress.co.il A` ->
+`216.198.79.65`/`64.29.17.1`, `dig +short kenyonexpress.co.il NS` ->
+עדיין `ns1.vercel-dns.com`/`ns2.vercel-dns.com`. `curl` על
+`kenyonexpress.co.il` -> `308` ל-`https://www.kenyonexpress.co.il/`,
+`curl` על `www.kenyonexpress.co.il` -> `200` עם תוכן חי (`lang="he"
+dir="rtl"`, לוגו קניון EXPRESS). DNS תקין — **לא היה צורך ב-DNS
+BLOCKER**.
+
+לפי כלל "goal שנתקע פעמיים — לדלג" (מוחל מ-M01-c55, פעם חמישית
+עכשיו): לא נוסה ניסיון deploy חדש. נבדק קריאה-בלבד דרך Vercel MCP:
+`filter_project_envs` על הפרויקט מאשר `CARDCOM_TERMINAL_NUMBER`/
+`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
+(קיימים רק `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`/`USE_MOCK`/
+`WEBHOOK_SECRET` שהקוד לא קורא), ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר
+שם. `list_deployments` (target=production, 3 אחרונים, כולם מניסיונות
+קודמים מ-M01-c54/M01-c55, לא נוסה חדש הפעם) מאשר כל השלוש עדיין
+`ERROR`. `get_deployment` על `www.kenyonexpress.co.il` מאשר הדומיין
+עדיין מכוון ל-`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa` (`a388118f1`, READY).
+קומיטים מאחורי פרודקשן: 171 → **175** (git-only).
+
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
+627/627), `test` 608/608 קבצים 7273/7285 (12 skipped, 58.58s), `build`
+`exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+
 ## M18-c58 (הועבר מ-STATE.md ב-M04-c59, לשמירה על תקרת 300 שורות)
 
 **M18-c58 - DONE (30.09): בדיקת אפס-פעילות בפעם החמישית, המחזור *לא*
