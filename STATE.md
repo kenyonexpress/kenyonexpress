@@ -1,34 +1,38 @@
-RESUME FROM: M15-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c56)
+RESUME FROM: M16-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c56)
 
 ## המשך מ:
 
-**M14-c56 - DONE (29.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
-וכותרות cache, אימות מחדש, אפס דריפט.** המשימה: לבדוק גודל bundle,
-פלט צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה
-ביותר. אותו דפוס אימות מחזורי כמו M14-c55 (`a1bc457fe`). **נבדק קודם
-מה השתנה מאז**: `git log a1bc457fe..HEAD --oneline -- next.config.ts
-src/lib/images src/components package.json pnpm-lock.yaml` מחזיר קומיט
-יחיד, `fa6188c56` (M04-c56, פטץ' `posthog-js`) — **לא נוגע ב-bundle,
-צנרת תמונות או כותרות cache**. **נמדד בכל זאת מחדש מול build אמיתי**
-(`pnpm build` נקי, `PORT=3311 pnpm start`, שרת טרי):
-1. **גודל bundle: אין רגרסיה.** `scripts/bundle-report.mjs`: בית
-   320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה
-   בדיוק ל-M14-c55/M14-c54**.
-2. **פלט צנרת התמונות: אין רגרסיה.** נסרקו כל שימושי `fill`+`sizes`
-   ב-`src/components`/`src/app` — כל `sizes` נושא `vw` פרט לקבועים
-   מתועדים כבר כבחירת px שטוחה מכוונת (`HeroSlider.badgeWidth/Height`
-   מ-M14-c54). אין מופע חדש של הבאג.
-3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
-   "clean".
-4. **כותרות cache: אין רגרסיה.** `/images/logo.webp` מחזיר `public,
-   max-age=0, s-maxage=86400, stale-while-revalidate=604800` (תואם
-   `next.config.ts`), chunk סטטי מחזיר `public, max-age=31536000,
-   immutable`, HTML דינמי מחזיר `private, no-cache, no-store,
-   max-age=0, must-revalidate` — כל השלושה כמדיניות המתועדת.
+**M15-c56 - DONE (29.09): סנכרון תיעוד — `STATE.md`/`docs/
+LAUNCH-READINESS.md`/`docs/BACKLOG.md` מול `git log` ומדידה ישירה,
+אפס פריט חדש.** המשימה: לרענן את טבלת הסטטוס בשלושת הקבצים מול
+`git log` וראיית קוד, לשמור על רשימה אחת ממוינת לפי קריטיות בלי
+כפילות. אותו דפוס אימות מחזורי כמו M15-c55 (`09ad4a4e5`). **נבדק מה
+השתנה מאז**: 14 קומיטים (M01-c56..M14-c56), מהם שניים בלבד נוגעים
+בקוד/תלויות — `fa6188c56` (פטץ' `posthog-js`, M04-c56) ו-`20e0adc61`
+(טסטים ל-`orders/status-transitions.ts`, M10-c56) — **אף אחד לא נוגע
+בשורת חסימה**; שאר השנים עשר הם תיעוד/אימות בלבד. **נמדד ישירות**:
+`git rev-list --count a388118f1..HEAD` = **136** (עלה מ-122 ב-M01-c56,
+git בלבד, פרודקשן לא נבדק מחדש בפריט הזה); `git rev-list --count
+origin/main..HEAD` = **510** (עלה מ-492), `HEAD..origin/main` = 109
+(ללא שינוי, autopilot בלבד). `migrations/pending/` מכיל את כל 18
+הקבצים שסעיף 5 ב-`docs/BACKLOG.md` דורש (204, 209, 218, 220, 223,
+224, 234-236, 239-247), אפס קובץ חדש. `supabase/catalogue-known-
+issues.json` עדיין 26 רשומות. **הרשימה ב-`docs/BACKLOG.md` עדיין 15
+סעיפים, אותו סדר, אפס כפילות, אפס פריט חדש.** שערים נמדדו ישירות
+מחדש (לא רק צוטטו): `type-check` נקי, `lint` נקי (2023 קבצים, 12
+שערים, i18n 627/627, locale 116/116, docs-index 282 מסמכים,
+docs-path-audit 152 ידועים — זהה ל-M15-c55), `test` 608/608 קבצים,
+7242/7254 (12 skipped, זהה ל-M14-c56), `build` `exit 0`. אין שער חזותי
+נדרש (אין שינוי UI/קוד, שלושת הקבצים ששונו הם תיעוד בלבד).
 
-**אין רגרסיה לתקן.** שערים: `type-check`/`lint`/`test` (608/608,
-7242/7254)/`build` ירוקים. אין שער חזותי נדרש (אין שינוי UI/קוד).
+## M14-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו מחדש מול
+build אמיתי, אפס דריפט מ-M14-c55: bundle 345.1kB/27 chunks זהה, אין
+באג `fill`+px `sizes` חדש, `cache-invalidation-gate` נקי, כותרות cache
+תואמות למדיניות. `type-check`/`lint`/`test` (608/608, 7242/7254)/
+`build` ירוקים. הועבר ב-M15-c56 לשמירה על תקרת 300 שורות.
 
 ## M13-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -49,72 +53,18 @@ SEO — meta/canonical/og/JSON-LD Product+Offer/sitemap/robots אומתו
 (608/608, 7242/7254)/`build` ירוקים, אפס שינוי קוד. הועבר ב-M13-c56
 לשמירה על תקרת 300 שורות.
 
-## M11-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M01-c56..M11-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-נגישות axe אומתה מחדש, 0 הפרות `serious`/`critical`. תפקיד אדמין
-בשער המאומת דולג (57/57) על כשל התחברות שאינו רגרסיית קוד ואינו
-רגרסיית סיסמה מכוונת — לא תוקן (מחוץ להיקף, דורש סיבוב סיסמה אסור).
-הועבר ב-M12-c56 לשמירה על תקרת 300 שורות.
-
-## M10-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-כיסוי ענפים, `orders/status-transitions.ts` 66.66% ← 100% ו-`orders/
-order-transitions.ts` 83.33% ← 100% (שני fallback הגנתיים ש-DB
-המעברים תמיד מונע מהם לירות, מוכחים עם `vi.mock`). שאר ששת המודולים
-הממופים כבר היו בתקרה. `type-check`/`lint`/`test`/`build` ירוקים
-(608/608, 7242/7254). הועבר ב-M11-c56 לשמירה על תקרת 300 שורות.
-
-## M09-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-STATE CLEAN, נמדד מחדש: `git status` נקי, אפס קומיט חדש מ-M08-c56,
-שלוש בדיקות נוספות (TODO/FIXME, `test:coverage` על ששת מודולי הכסף,
-`pnpm audit`) לא חשפו פריט חדש שקוד-אגנט יכול להשלים לבד. הועבר
-ב-M10-c56 לשמירה על תקרת 300 שורות.
-
-## M08-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-בדיקת BACKLOG מלאה בפעם השבע-עשרה: כל 15 הפריטים ב-`docs/BACKLOG.md`
-נבדקו אחד-אחד, כולם חסומים ב-Ofir/env/secret/הכרעת מפעיל, אפס פריט
-חדש מאז M15-c55. הועבר ב-M09-c56 לשמירה על תקרת 300 שורות.
-
-## M06-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית ומוצר 99/100/
-100/100), אפס תיקון נדרש, אין קומיט קוד מ-M06-c55 שנוגע בעמוד הבית או
-המוצר. הועבר ב-M08-c56 לשמירה על תקרת 300 שורות.
-
-## M05-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-ביקורת DB — `get_advisors` דרך ה-management API, קריאה בלבד. 44 WARN
-זהה שדה-שדה למדידה הקודמת בפעם השישית ברציפות, אפס WARN חדש, אפס
-קובץ מיגרציה חדש נדרש. הועבר ב-M06-c56 לשמירה על תקרת 300 שורות.
-
-## M04-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-תחזוקת תלויות — `pnpm audit` אפס חולשות, `pnpm outdated` עדכון patch
-יחיד בהיקף (`posthog-js`) הוחל, שאר 17 העדכונים major/שקול-major לא
-הוחלו. `type-check`/`lint`/`test`/`build` ירוקים. הועבר ב-M05-c56
-לשמירה על תקרת 300 שורות.
-
-## M03-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-שער ירוק נמדד מחדש — `type-check`/`lint`/`test`/`build`, כולם ירוקים
-כבר, אין מה לתקן (606/606 קבצי טסט, 7239/7251). אין שינוי קוד. הועבר
-ב-M04-c56 לשמירה על תקרת 300 שורות.
-
-## M02-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים, אפס רגרסיה (8.51/9.02/
-3.95 בית, 5.61/4.92/2.99 מוצר, זהה בתוך רעש ל-M17-c55/M02-c55).
-`type-check`/`lint`/`test`/`build` ירוקים, אין שינוי קוד. הועבר
-ב-M03-c56 לשמירה על תקרת 300 שורות.
-
-## M01-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-בדיקת פרודקשן: DNS תקין ומגיש 200, פריסת HEAD נשארת חסומה באותה סיבה
-בדיוק (חוסרי env Cardcom + `ALLOW_INCOMPLETE_ENV`), לא נוסתה מחדש
-(כלל "goal שנתקע פעמיים — לדלג"). HEAD 122 קומיטים לפני הפרודקשן
-החי. הועבר ב-M02-c56 לשמירה על תקרת 300 שורות.
+M11-c56: axe אומתה מחדש, 0 הפרות serious/critical (אדמין 57/57 דילוג,
+כשל התחברות לא קשור לקוד). M10-c56: כיסוי ענפים,
+`orders/status-transitions.ts` 66.66%→100%, `orders/order-transitions.ts`
+83.33%→100%. M09-c56: STATE CLEAN, אפס פריט חדש. M08-c56: BACKLOG מלא
+בפעם ה-17, אפס פריט חדש. M06-c56: Lighthouse mobile 90+ בשמונתם.
+M05-c56: DB advisors 44 WARN זהה בפעם השישית. M04-c56: תלויות,
+`posthog-js` patch יחיד הוחל. M03-c56: שער ירוק, אין מה לתקן. M02-c56:
+שער חזותי אפס רגרסיה. M01-c56: DNS תקין, פריסת HEAD חסומה (Cardcom env),
+HEAD 122 קומיטים לפני פרודקשן אז. כולם DONE, אפס שינוי UI. הועברו
+ב-M15-c56 לשמירה על תקרת 300 שורות.
 
 ## M18-c55, M17-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -212,8 +162,8 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (122 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, M01-c56; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
+2. **פריסת פרודקשן של HEAD (136 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, M15-c56; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
    אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**

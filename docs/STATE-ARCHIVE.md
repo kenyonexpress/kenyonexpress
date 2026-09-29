@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c56 (הועבר מ-STATE.md ב-M15-c56, לשמירה על תקרת 300 שורות)
+
+**M14-c56 - DONE (29.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
+וכותרות cache, אימות מחדש, אפס דריפט.** המשימה: לבדוק גודל bundle,
+פלט צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה
+ביותר. אותו דפוס אימות מחזורי כמו M14-c55 (`a1bc457fe`). **נבדק קודם
+מה השתנה מאז**: `git log a1bc457fe..HEAD --oneline -- next.config.ts
+src/lib/images src/components package.json pnpm-lock.yaml` מחזיר קומיט
+יחיד, `fa6188c56` (M04-c56, פטץ' `posthog-js`) — **לא נוגע ב-bundle,
+צנרת תמונות או כותרות cache**. **נמדד בכל זאת מחדש מול build אמיתי**
+(`pnpm build` נקי, `PORT=3311 pnpm start`, שרת טרי):
+1. **גודל bundle: אין רגרסיה.** `scripts/bundle-report.mjs`: בית
+   320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה
+   בדיוק ל-M14-c55/M14-c54**.
+2. **פלט צנרת התמונות: אין רגרסיה.** נסרקו כל שימושי `fill`+`sizes`
+   ב-`src/components`/`src/app` — כל `sizes` נושא `vw` פרט לקבועים
+   מתועדים כבר כבחירת px שטוחה מכוונת (`HeroSlider.badgeWidth/Height`
+   מ-M14-c54). אין מופע חדש של הבאג.
+3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
+   "clean".
+4. **כותרות cache: אין רגרסיה.** `/images/logo.webp` מחזיר `public,
+   max-age=0, s-maxage=86400, stale-while-revalidate=604800` (תואם
+   `next.config.ts`), chunk סטטי מחזיר `public, max-age=31536000,
+   immutable`, HTML דינמי מחזיר `private, no-cache, no-store,
+   max-age=0, must-revalidate` — כל השלושה כמדיניות המתועדת.
+
+**אין רגרסיה לתקן.** שערים: `type-check`/`lint`/`test` (608/608,
+7242/7254)/`build` ירוקים. אין שער חזותי נדרש (אין שינוי UI/קוד).
+
 ## M13-c56 (הועבר מ-STATE.md ב-M14-c56, לשמירה על תקרת 300 שורות)
 
 **M13-c56 - DONE (29.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
