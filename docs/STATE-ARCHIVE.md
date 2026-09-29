@@ -2,6 +2,53 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c54 (הועברה מ-STATE.md ב-M17-c54, לשמירה על תקרת 300 שורות)
+
+**M16-c54 - תברואת ריפו בפעם הרביעית: git נקי, כל 40 הענפים המקומיים
+דחופים (אימות SHA מלא), 24 PR פתוחים, 116 ענפי remote, ממצא חדש על
+`main` מקומי (29.09).** המשימה: לוודא `git status` נקי, שכל ענף מקומי
+דחוף, לרשום PR פתוחים וענפים רדומים ב-STATE.md, בלי מיזוג ובלי מחיקה.
+בוצע בפעם הרביעית (אחרי M16-c51, M16-c52, M16-c53) — נמדד מחדש במלואו כדי
+לתפוס דריפט, לא הונח שהוא עדיין תקף.
+
+**נמדד בפועל:**
+- `git status`: עץ נקי, `audit/final-audit` מעודכן מול `origin/audit/final-audit`.
+- `git fetch --all --prune`: נקי, אין שינוי מאז המדידה הקודמת.
+- **כל 40 הענפים המקומיים נבדקו ב-SHA מול `origin/<אותו שם>` (`--verify -q`,
+  לא רק `git branch -vv` הקוסמטי).** 33 זהים ל-remote שלהם (חלקם בלי
+  upstream מוגדר אך עם SHA תואם). 6 בלי remote בשם הזה אבל ancestors של
+  `origin/main` — **אותה שישה בדיוק כמו ב-M16-c53**: `chore/vitest-4`,
+  `docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`,
+  `release/v1.1`, `wip/refund-record-rebase-head`. אפס דריפט בקבוצה הזו.
+- **ממצא חדש: `main` המקומי סטה מ-`origin/main`** (מ-193 קדימה/109
+  מאחורה) — לא רק "מאחורה" כמו שתועד קודם. **נבדק ולא לפעולה:** קצה
+  `main` המקומי (`3f6ca53c3`, 10.09) הוא ancestor של
+  `origin/audit/final-audit` וגם `origin/work/goal-queue-0923` — כלומר
+  שום עבודה לא אבודה, זה פשוט מצביע-ישן משורשלת ה-`audit/final-audit`
+  שאף פעם לא עודכן לשם `main`. **לא נדחף** — `main` מוגן ב-GitHub וסטייה
+  אמיתית (לא fast-forward) תדרוש force-push, אסור לפי הכללים. נרשם כממצא
+  ל"חוסמים פתוחים" למטה, לא פעולה.
+- **PRs פתוחים: 24** (`gh pr list --state open`), זהה ל-M16-c53.
+- **116 ענפי remote** (זהה ל-M16-c53, אין שינוי). **92 בלי PR פתוח**:
+  **25 ancestors של `origin/main`** (אחד מהם `origin/main` עצמו, טריוויאלי
+  — 24 בפועל "ממוזגים-בלי-PR", זהה למספר ב-M16-c53), **67 לא ממוזגים: 64
+  רדומים** (קומיט אחרון לפני 15.09, סף 14 יום) **ו-3 עם קומיט
+  בשבועיים האחרונים**: `audit/final-audit` (הענף הנוכחי), `phase5/homepage-closeout`
+  ו-`work/goal-queue-0923` (worktrees מקבילים, [[parallel-claude-sessions]]).
+  ירד ב-1 מ-4 ל-3 מ-M16-c53 — `pull/6/merge` (ref מיזוג אוטומטי של
+  GitHub) לא קיים יותר, לא ענף שמישהו דחף, אין דריפט אמיתי.
+
+**לא בוצע ולא נדרש:** שום מיזוג, מחיקת ענף, מחיקת PR, ושום push ל-`main`
+— אסור לפי הכללים.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n 627/627,
+locale 116/116, docs-index 282 מסמכים), `pnpm test` **605/605 קבצים,
+7217/7229** (12 skipped, זהה ל-M15-c54), `pnpm build` `exit 0`. אין שינוי
+קוד/UI, לכן `scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריט
+תברואה/re-verify קודם ללא שינוי קוד).
+
+**קבצים:** `docs/STATE-ARCHIVE.md` (M15-c54 הועבר לשם), `STATE.md` בלבד.
+
 ## M15-c54 (הועברה מ-STATE.md ב-M16-c54, לשמירה על תקרת 300 שורות)
 
 **M15-c54 - docs: סנכרון `STATE.md`, `docs/LAUNCH-READINESS.md` ו-
