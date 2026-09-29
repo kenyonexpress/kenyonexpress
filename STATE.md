@@ -1,57 +1,59 @@
-RESUME FROM: M13-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c59)
+RESUME FROM: M14-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c59)
 
 ## המשך מ:
 
-**M12-c59 - DONE (30.09): SEO — meta/canonical/og/JSON-LD
-Product+Offer/sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c58.**
-משימת התור: לוודא metadata, canonical, og, schema.org Product+Offer
-בדפי מוצר, טריות sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם:
-`git log 9ea3603b0..HEAD` (מאז המדידה הקודמת, M12-c58) מחזיר 17
-קומיטים (M13-c58..M11-c59), כולם תיעוד/מדידה/תלות/טסטים (אבטחה,
-ביצועים, תברואת ריפו, סנכרון תיעוד, מעבר קופי ומשפטי, אפס-פעילות,
-בדיקת פרודקשן, שער חזותי, שער ירוק, תלות, DB advisors, Lighthouse,
-route audit, backlog/state, STATE CLEAN, כיסוי `payment-money-columns.ts`,
-נגישות): `git diff --stat 9ea3603b0..HEAD -- src/app/robots.ts
-src/app/robots.test.ts src/app/sitemap src/app/sitemap.xml
-src/app/sitemap.test.ts src/app/sitemap-robots-agree.test.ts
-src/app/sitemap-canonicals.test.ts src/lib/seo src/lib/product-seo.ts
-src/lib/category-tree.ts src/lib/regions.ts src/lib/content/pages.ts
-src/lib/feeds src/components/storefront/BlogPostHeader.tsx
-src/components/storefront/ProductInfo.tsx 'src/app/(store)/**/page.tsx'
-'src/app/(main)/coupons/[id]/page.tsx'` חוזר ריק — **אפס קומיט נגע
-בקוד SEO** (הקובץ היחיד ששונה בכל 17 הקומיטים תחת `src/`/`supabase/`
-הוא `src/lib/payments/payment-money-columns.test.ts`, לא קשור).
+**M13-c59 - DONE (30.09): אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
+מ-M13-c58.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
+Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
+בדיקת דריפט קודם: `git log 49750d2a8..HEAD` (מאז המדידה הקודמת,
+M13-c58) מחזיר 17 קומיטים (M14-c58..M12-c59), כולם תיעוד/מדידה/תלות/
+טסטים (ביצועים, תברואת ריפו, סנכרון תיעוד, נגישות, SEO, תלות, DB
+advisors, Lighthouse, route audit, backlog/state, STATE CLEAN, כיסוי
+`payment-money-columns.ts`): `git diff --stat 49750d2a8..HEAD --
+middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*'
+'src/lib/security*' 'src/lib/headers*' next.config.* vercel.json
+'src/server/actions/auth*' 'src/server/actions/checkout*'
+'src/server/actions/*voucher*' 'src/server/actions/*redeem*'` חוזר ריק
+(הקובץ היחיד ששונה בכל 17 הקומיטים תחת `src/`/`supabase/` הוא
+`src/lib/payments/payment-money-columns.test.ts`, לא קשור) — **אפס
+קומיט נגע בכותרות אבטחה או ב-rate limiting**.
 
-נמדד בכל זאת מחדש מול build אמיתי (`.next` נבנה תחת M10-c59, תואם
-ל-HEAD כי שני הקומיטים שאחריו נגעו רק ב-`STATE.md`/`docs`/טסט תשלומים
-יחיד — אפס שינוי קוד ייצור, `pnpm start` על פורט 3327):
-- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
-  לדומיין הנכון (baked-at-build, ראו `site-url-baked-at-build-time`).
-- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
-  regions/suppliers).
-- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c58), חמישה ערכי
-  `lastmod` שונים בפועל — טריות אמיתית, לא מזויפת.
-- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
-  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
-  height/alt)/type`, JSON-LD `Product` (מחיר `49.50`, `priceCurrency
-  ILS`, `brand`, `category`, `image`) + `Offer` (`availability
-  InStock`, `seller`, `priceSpecification`) + `BreadcrumbList` (3
-  שלבים), אפס `<meta name="robots">` (מוצר פעיל, לא `noindex`).
-- דף הבית: `title`, `canonical`, `og:*`, JSON-LD `WebSite`+`SearchAction`+
-  `Organization`, שניהם תקינים.
-- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
-  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
-  מ-M12-c58.
+נמדד בכל זאת מחדש מול build אמיתי (`.next` נבנה מוקדם יותר באותו יום,
+תואם ל-HEAD `5bd92df0d` כי כל הקומיטים שאחריו נגעו רק ב-`STATE.md`/
+`docs`/טסט תשלומים יחיד, אפס שינוי קוד ייצור, `pnpm start` על פורט
+3391):
+- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
+  זהות בארבעתן: CSP (`frame-ancestors 'none'`, `frame-src`/
+  `form-action` ל-`secure.cardcom.solutions` בלבד, `object-src
+  'none'`, `upgrade-insecure-requests`), `Strict-Transport-Security:
+  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
+  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`.
+- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c58: `login`
+  (`src/server/actions/auth.ts:141`, `checkRateLimit('login:'+ip)`),
+  `begin_checkout` (`src/server/actions/payments/checkout.ts:351`,
+  `checkRateLimit('begin_checkout:user:'+userId, 10, 60)`), `redeem`
+  (`src/app/redeem/[token]/page.tsx:109`,
+  `checkRateLimit('redeem:'+ip, 60, 3600)`), `voucher-redeem`
+  (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
+  `rateLimit('voucher-redeem', userId)`, 429 + `rateLimitHeaders`).
 
 **אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
 קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale-format 116/116),
-`test` 608/608 קבצים 7274/7286 (12 skipped, זהה ל-M11-c59), `build`:
+`test` 608/608 קבצים 7274/7286 (12 skipped, זהה ל-M12-c59). `build`:
 נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD, לא נבנה מחדש כדי לא
-להתחרות במשאבים עם סשנים מקבילים (`node` מאזין על כ-19 פורטים בזמן
-המדידה), אומת חי דרך `pnpm start` על פורט 3327. אין שינוי UI, אין שער
-חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
-M11-c59 הועבר לתקרת 300 שורות).
+להתחרות במשאבים עם סשנים מקבילים, אומת חי דרך `pnpm start` על פורט
+3391 עם ארבעת הכותרות לעיל. אין שינוי UI, אין שער חזותי נדרש. **קובץ
+יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M12-c59 הועבר
+לתקרת 300 שורות).
+
+## M12-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M12-c59: SEO, meta/canonical/og/JSON-LD Product+Offer/sitemap/robots
+אומתו מחדש, אפס דריפט מ-M12-c58 (`sitemap/products.xml` 46 כתובות,
+`noindex` למוצר לא פעיל קיים ולא שונה). אפס שינוי קוד.
 
 ## M11-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
