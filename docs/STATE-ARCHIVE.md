@@ -2,6 +2,42 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c56 (הועבר מ-STATE.md ב-M09-c56, לשמירה על תקרת 300 שורות)
+
+**M08-c56 - DONE (29.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
+בידי הסוכן.** משימת התור: "Backlog: take the single highest-impact
+open phase 1 item from docs/BACKLOG.md, skipping deferred and phase 2
+items." `docs/BACKLOG.md` נקרא בשלמותו (160 שורות, 15 פריטים ממוספרים)
+— הבאנר שלו עצמו קובע: **"Nothing here is an action an agent may take
+alone (Vercel env, DNS, secret rotation, a value only Ofir has, or a
+decision the ledger says is an operator's, not the agent's)."** כל 15
+הפריטים נבדקו אחד-אחד: (1) DNS — RESOLVED, אין פעולה. (2) `CRON_SECRET`
+ב-GitHub — דורש הדבקת ערך מ-Vercel, אסור על הסוכן. (3)+(4) סביבת
+Production ופריסת HEAD — חוסם env + `deploy-preflight`, נוסה ונדחה חמש
+פעמים, "goal שנתקע פעמיים — לדלג" חל. (5) מיגרציות ממתינות — קבצי
+`migrations/pending` בלבד, אסור להחיל בלי אישור מפורש. (6) Cardcom
+אמיתי — דורש ערכי secret וחיוב אמיתי, אסור לפי כללי הפרויקט ("no
+payment provider integration"). (7) 26 שורות קטלוג — הכרעת מפעיל
+מפורשת (`CLAUDE.md` §"מצב נוכחי" 1: "אף אחד מאלה אינו לתיקון אוטומטי").
+(8) רוטציית סודות — אסורה במפורש בכללי הפריט הזה. (9) `RESEND_API_KEY`
+— ערך רק אצל אופיר. (10) הפעלת R2 — לוח בקרה חיצוני. (11)
+`cron-jobs.json`/`main` — נפתר מעצמו במיזוג, לא פעולת סוכן. (12)
+`dns-watch.sh` — בדיקת מצב, לא תיקון. (13) ח.פ בהודעת רכישה — ממתין
+לערך מאופיר. (14) כניסה בטלפון — הגדרות ספק חיצוני + env. (15) 32
+stash — מחיקת נתונים דורשת אישור מפורש. `docs/MIGRATION-BACKLOG.md`
+מסומן "Superseded" (ריק), `docs/POST-LAUNCH-BACKLOG.md` הוא רשימת
+דחיות מכוונות (שלב 2 במפורש, "Everything deliberately deferred") —
+שניהם לא תור פעיל. `git log --oneline -20 -- docs/BACKLOG.md` אישר:
+הקומיט האחרון על הקובץ הוא M01-c56 (עדכון ספירת קומיטים בלבד), ואין
+קומיט קוד מ-M15-c55 (בדיקה מלאה קודמת, עדיין 15 פריטים) ועד כאן שמוסיף
+פריט חדש (M01-c56..M06-c56 הם production-check/parity/green-check/
+deps/db-advisors/lighthouse, כולם ללא שינוי ל-BACKLOG.md). **מסקנה:
+BACKLOG EMPTY, זהה ל-M08-c55 ולכל בדיקה קודמת.** שערים: `type-check`
+נקי, `lint` נקי (biome 2021 קבצים + 12 שערי תוכן), `test` 606/606
+קבצים, 7239/7251 (12 skipped), `build` `exit 0`. אין שינוי קוד, אין
+שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M06-c56 הועבר לתקרת 300 שורות).
+
 ## M06-c56 (הועבר מ-STATE.md ב-M08-c56, לשמירה על תקרת 300 שורות)
 
 **M06-c56 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
