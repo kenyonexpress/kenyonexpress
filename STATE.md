@@ -1,7 +1,45 @@
-RESUME FROM: M15-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c58)
+RESUME FROM: M16-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c58)
 
 ## המשך מ:
+
+**M15-c58 - DONE (30.09): סנכרון תיעוד — STATE.md/docs/BACKLOG.md/
+docs/LAUNCH-READINESS.md מול git log וקוד, אפס פריט חדש.** משימת
+התור: לרענן את טבלת הסטטוס בשלושת הקבצים מ-git log וראיות קוד, פריט
+ידני אחד לאופיר לפי סדר קריטיות, בלי כפילות. בדיקת דריפט: `git log
+e636a64f9..HEAD` (מאז הסנכרון הקודם, M15-c57) מחזיר 17 קומיטים
+(M16-c57..M18-c57, M01-c58..M14-c58). `git diff --stat e636a64f9..HEAD
+-- . ':!STATE.md' ':!docs/STATE-ARCHIVE.md'` נוגע רק ב-
+`docs/DB-SECURITY-MODEL.md` (סעיף 0ח, אימות advisors מחדש, M05-c58),
+`docs/UI-PARITY-REPORT.md` (שורת שער חזותי, M02-c58),
+`package.json`+`pnpm-lock.yaml` (עדכון מינור `aws-sdk`, M04-c58) ו-
+`src/server/payments/refund-wallet.test.ts` (טסט ענף חדש, M10-c58) —
+**אפס קומיט נגע בשורת חסימה או הוסיף פריט ידני חדש**.
+
+מספרים עודכנו (git-only, לא נבדק שוב מול פרודקשן/Vercel בפריט הזה):
+- קומיטים מאחורי פרודקשן (`git rev-list --count a388118f1..HEAD`):
+  153 → **171**.
+- פער ענפים (`git rev-list --count origin/main..HEAD`): 527 → **545**.
+- stash-ים (`git stash list`): **32**, ללא שינוי.
+- ממצאי קטלוג (`supabase/catalogue-known-issues.json`): **26**, ללא
+  שינוי.
+- מיגרציות ממתינות (18 קבצים: 204, 209, 218, 220, 223, 224, 234-236,
+  239-247): כולן קיימות ב-`migrations/pending/`, אפס קובץ חדש.
+
+`docs/BACKLOG.md` נבדק מחדש: עדיין 15 סעיפים, אותו סדר, אפס כפילות,
+אפס פריט חדש — עודכן רק מספר הקומיטים בסעיף 4 (171) וסימון הבדיקה.
+`docs/LAUNCH-READINESS.md`: שורת חסימה 4 ("live build behind HEAD")
+ושורת "Branches" בטבלת ה-Green עודכנו לאותם מספרים, פסקת "Docs sync"
+בראש הקובץ עודכנה בתמצית הדריפט הזו; שאר הטבלה ללא שינוי.
+
+**אפס שינוי קוד**: `type-check` נקי, `lint` נקי (2023 קבצים, 12 שערי
+תוכן ירוקים, i18n 627/627, locale 116/116, docs-index 282,
+docs-path-audit 152), `test` 608/608 קבצים 7273/7285 (12 skipped, זהה
+ל-M14-c58), `build` ירוק (exit 0). אין שינוי UI, אין שער חזותי נדרש.
+**קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`** (M13-c58 הועבר
+לתקרת 300 שורות), `docs/BACKLOG.md`, `docs/LAUNCH-READINESS.md`.
+
+## M14-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
 
 **M14-c58 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/
 כותרות cache, אימות מחדש מול build אמיתי, אפס דריפט מ-M14-c57.**
@@ -43,52 +81,13 @@ locale 116/116), `test` 608/608 קבצים 7273/7285 (12 skipped, זהה
 בזמן המדידה, ראו `concurrent-worktree-builds-oom`). אין שינוי UI, אין
 שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`.**
 
-## M13-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
+## M13-c58, M12-c58, M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M13-c58 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
-ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
-מ-M13-c57.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
-Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
-בדיקת דריפט קודם: `git log ee47880b6..HEAD` (מאז המדידה הקודמת,
-M13-c57) מחזיר 12 קומיטים (M14-c57..M12-c58), כולם תיעוד/מדידה/טסטים
-(ביצועים, תברואת ריפו, סנכרון תיעוד, נגישות, SEO, כיסוי
-`refund-wallet.ts`, backlog/state, route audit, Lighthouse, DB
-advisors, תלות `aws-sdk` מינור): `git diff --stat ee47880b6..HEAD --
-middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*'
-'src/lib/security*' 'src/lib/headers*' next.config.* vercel.json
-'src/server/actions/auth*' 'src/server/actions/checkout*'
-'src/server/actions/*voucher*' 'src/server/actions/*redeem*'` חוזר
-ריק — **אפס קומיט נגע בכותרות אבטחה או ב-rate limiting**.
-
-נמדד בכל זאת מחדש מול build אמיתי (`.next` התואם בדיוק ל-HEAD
-`9ea3603b0`, נבנה תחת M12-c58, `pnpm start` על פורט 3321, שרת טרי):
-- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
-  זהות בארבעתן: CSP (`frame-ancestors 'none'`, `frame-src`/
-  `form-action` ל-`secure.cardcom.solutions` בלבד, `object-src
-  'none'`, `upgrade-insecure-requests`), `Strict-Transport-Security:
-  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
-  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
-  strict-origin-when-cross-origin`.
-- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c57: `login`
-  (`src/server/actions/auth.ts:141`, `checkRateLimit('login:'+ip)`),
-  `begin_checkout` (`src/server/actions/payments/checkout.ts:351`,
-  `checkRateLimit('begin_checkout:user:'+userId, 10, 60)`), `redeem`
-  (`src/app/redeem/[token]/page.tsx:109`,
-  `checkRateLimit('redeem:'+ip, 60, 3600)`), `voucher-redeem`
-  (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
-  `rateLimit('voucher-redeem', userId)`, 429 + `rateLimitHeaders`).
-
-**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
-קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
-608/608 קבצים 7273/7285 (12 skipped, זהה ל-M12-c58). `build`: נעשה
-שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD (נבנה תחת M12-c58, אומת חי
-מול `pnpm start` על פורט 3321 עם ארבעת הכותרות לעיל), לא נבנה מחדש כדי
-לא להתחרות במשאבים עם סשנים מקבילים (ראו
-`concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
-**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` — M11-c58
-הועבר לתקרת 300 שורות).
-
-## M12-c58, M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+M13-c58: אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב
+Upstash על login/checkout/redeem אומתו מחדש מול build אמיתי (פורט
+3321), אפס דריפט מ-M13-c57 — כותרות זהות בארבעה נתיבים
+(`/`, `/checkout`, `/login`, `/redeem/test-token`), ארבע מגבלות הקצב
+באותן שורות קוד בדיוק. אפס שינוי קוד.
 
 M12-c58: SEO, meta/canonical/og/JSON-LD Product+Offer/sitemap/robots
 אומתו מחדש, אפס דריפט מ-M12-c57 (`sitemap/products.xml` 46 כתובות,
@@ -206,9 +205,9 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (157 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, M01-c58; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
-   אז)**:
+2. **פריסת פרודקשן של HEAD (171 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, עודכן ב-M15-c58; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105
+   קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
