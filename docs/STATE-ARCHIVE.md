@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c58 (הועבר מ-STATE.md ב-M16-c58, לשמירה על תקרת 300 שורות)
+
+**M14-c58 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/
+כותרות cache, אימות מחדש מול build אמיתי, אפס דריפט מ-M14-c57.**
+משימת התור: לבדוק גודל bundle, פלט צנרת תמונות, תגיות ISR וכותרות
+cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log
+e1bb6a2c5..HEAD` (מאז המדידה הקודמת, M14-c57) מחזיר 17 קומיטים
+(M15-c57..M13-c58), `git diff --stat e1bb6a2c5..HEAD -- . ':!STATE.md'
+':!docs/STATE-ARCHIVE.md'` נוגע רק ב-`docs/BACKLOG.md`,
+`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
+`docs/UI-PARITY-REPORT.md`, `package.json`+`pnpm-lock.yaml` (עדכון
+מינור `aws-sdk`, M04-c58, שרת-בלבד ולא ב-bundle הלקוח) ו-
+`refund-wallet.test.ts` — **אפס קומיט נגע ב-`next.config.*`, ברכיבי
+תמונה, ב-cache/ISR או ב-routes**.
+
+נמדד בכל זאת מחדש מול build אמיתי קיים (`.next` התואם בדיוק ל-HEAD
+`49750d2a8`, נבנה 03:54 אחרי M04-c58 ולפני שאר הקומיטים שכולם
+תיעוד/טסט, `pnpm start` על פורט 3331):
+- **`scripts/bundle-report.mjs`**: בית 320.4kB, מוצרים 319.2kB, קטגוריה
+  319.9kB, סל 317.3kB, קופה 324.1kB (הכבד ביותר), FAQ 313.9kB —
+  **345.1kB סה"כ על 27 chunks, זהה בדיוק ל-M14-c57**.
+- **`scripts/cache-invalidation-gate.mjs`**: נקי (כל כתיבה לטבלה
+  cached מבטלת אותה, כל scope cached נושא תגית).
+- **צנרת תמונות**: כל שישה הרכיבים עם `fill`+`sizes` (`CouponCard`,
+  `coupons/[id]/page`, `ProductCard` פעמיים, `HeroSlider`,
+  `ProductGallery`, `CategoryProductCard`) עדיין נושאים `vw`/`calc(vw)`,
+  אין מופע חדש של הבאג `fill`+px קבוע.
+- **כותרות cache**: chunk סטטי `public, max-age=31536000, immutable`;
+  HTML דינמי (בית, מוצר) `private, no-cache, no-store, max-age=0,
+  must-revalidate` + `x-nextjs-prerender: 1`/`x-nextjs-postponed: 1`/
+  `x-nextjs-stale-time: 300` (PPR); `/_next/image` על `logo.webp`
+  `public, max-age=86400, must-revalidate` — כולן זהות למדיניות
+  המתועדת, אפס דריפט.
+
+**אפס שינוי קוד** (אין רגרסיה לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים כולל cache-invalidation, i18n 627/627,
+locale 116/116), `test` 608/608 קבצים 7273/7285 (12 skipped, זהה
+ל-M13-c58). `build`: נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD, לא
+נבנה מחדש כדי לא להתחרות במשאבים עם סשנים מקבילים (load average 5.65
+בזמן המדידה, ראו `concurrent-worktree-builds-oom`). אין שינוי UI, אין
+שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`.**
+
 ## M13-c58 (הועבר מ-STATE.md ב-M15-c58, לשמירה על תקרת 300 שורות)
 
 **M13-c58 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy

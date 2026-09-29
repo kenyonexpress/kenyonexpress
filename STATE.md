@@ -1,7 +1,61 @@
-RESUME FROM: M16-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c58)
+RESUME FROM: M17-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c58)
 
 ## המשך מ:
+
+**M16-c58 - DONE (30.09): תברואת ריפו בפעם השמינית, אפס דריפט
+מ-M16-c57.** משימת התור: לוודא `git status` נקי, שכל ענף מקומי דחוף,
+ולרשום PR פתוחים וענפים ישנים ב-STATE.md, בלי למזג או למחוק דבר. אותו
+דפוס אימות מחזורי כמו M16-c57 (SHA לכל ענף, לא רק `git branch -vv`).
+
+**נמדד:** `git status` נקי, `audit/final-audit` תואם ל-
+`origin/audit/final-audit`. **43 ענפים מקומיים, זהה בדיוק ל-M16-c57**
+(אפס ענף חדש, אפס ענף שנעלם). כל הענפים נבדקו ענף-ענף: 32 עוקבים אחרי
+מקבילם ב-remote עם 0 קומיטים קדימה; 4 ענפי `arch/*` (`account-area`,
+`checkout-cardcom-verification`, `notifications-v2`, `wp-migration`)
+עוקבים בטעות אחרי `origin/main` אך ה-SHA שלהם זהה ל-`origin/arch/*`
+המתאים (נמדד `git rev-parse` משני הצדדים); 8 ענפים חסרי הגדרת upstream
+מקומית (`arch/seed-data`, `feat/auth-hardening`, `feat/monitoring-sentry`,
+`feat/notifications-full`, `feat/performance-seo`,
+`feat/search-meilisearch`, `release/v1.0`, `release/v1.2`) אך ה-SHA שלהם
+זהה בדיוק לענף remote באותו שם; 6 ענפים (`pr36`, `release/v1.1`,
+`wip/refund-record-rebase-head`, `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`) אין להם ענף remote
+באותו שם כלל, אך ראש הענף שלהם מוכל ב-10 עד 20 ענפי remote אחרים
+(`git branch -r --contains`). **אפס קומיט ייחודי לא-דחוף נמצא בשום ענף
+מקומי.** `main` המקומי נשאר על `3f6ca53c3`, אותה סטייה ידועה (חוסם 13
+למטה, ללא שינוי).
+
+**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c57). **117
+ענפי remote** (זהה בדיוק ל-M16-c57). **12 מ-43 הענפים המקומיים כבר
+ממוזגים לתוך HEAD** (`git merge-base --is-ancestor` מול
+`audit/final-audit`, זהה ל-M16-c57: `chore/vitest-4`,
+`docs/nightly-health-green`, `docs/v1-final`, `fix/main-nightly-red`,
+`main`, `pr36`, `release/v1.0`, `release/v1.1`, `release/v1.2`,
+`wip/refund-record-rebase-head`, `work/goal-queue-0923`, וענף ה-HEAD
+עצמו), מועמדים לניקוי, לא נמחקו (הכלל אוסר מחיקת ענפים). **28 ענפים
+ישנים** (קומיט אחרון לפני 16.09, 14+ יום, לא ממוזגים ל-HEAD, רשימה זהה
+ל-M16-c57): `save/ke-visual-work`, `arch/account-area`,
+`arch/checkout-cardcom-verification`, `arch/notifications-v2`,
+`arch/seed-data`, `arch/wp-migration`, `docs/final-pack`,
+`arch/docs-batch-2`, `arch/docs-queue`, `feat/e2e-quality`,
+`feat/auth-model`, `feat/db-hardening-v2`, `feat/product-type`,
+`merge/supplier-and-arch-night`, `feat/auth-hardening`,
+`feat/checkout-e2e`, `feat/monitoring-sentry`, `feat/notifications-full`,
+`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`,
+`feat/rate-limit-layer`, `docs/final-pass`, `worktree-ke-fetch-timeout`,
+`worktree-mega-63-72`, `closeout/v1-final`, `feat/coupon-qr`,
+`worktree-order-state-machine` (שלושת ה-`worktree-*` ו-`closeout/v1-final`
+תפוסים בעצי עבודה חיים כרגע, לא באמת נטושים). **3 ענפים לא ממוזגים עם
+קומיט בשבועיים האחרונים** (לא נטושים): `autopilot` (17.09),
+`docs/ui-design-system` (23.09), `phase5/homepage-closeout` (24.09). לא
+מוזג ולא נמחק דבר.
+
+שערים נמדדו מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, זהה
+ל-M15-c58), `test` 608/608 קבצים, 7273/7285 (12 skipped, זהה), `build`
+ירוק. אין שער חזותי נדרש (אין שינוי UI/קוד, `STATE.md` בלבד).
+
+## M15-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
 
 **M15-c58 - DONE (30.09): סנכרון תיעוד — STATE.md/docs/BACKLOG.md/
 docs/LAUNCH-READINESS.md מול git log וקוד, אפס פריט חדש.** משימת
@@ -39,49 +93,12 @@ docs-path-audit 152), `test` 608/608 קבצים 7273/7285 (12 skipped, זהה
 **קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`** (M13-c58 הועבר
 לתקרת 300 שורות), `docs/BACKLOG.md`, `docs/LAUNCH-READINESS.md`.
 
-## M14-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
+## M14-c58, M13-c58, M12-c58, M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M14-c58 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/
-כותרות cache, אימות מחדש מול build אמיתי, אפס דריפט מ-M14-c57.**
-משימת התור: לבדוק גודל bundle, פלט צנרת תמונות, תגיות ISR וכותרות
-cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log
-e1bb6a2c5..HEAD` (מאז המדידה הקודמת, M14-c57) מחזיר 17 קומיטים
-(M15-c57..M13-c58), `git diff --stat e1bb6a2c5..HEAD -- . ':!STATE.md'
-':!docs/STATE-ARCHIVE.md'` נוגע רק ב-`docs/BACKLOG.md`,
-`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
-`docs/UI-PARITY-REPORT.md`, `package.json`+`pnpm-lock.yaml` (עדכון
-מינור `aws-sdk`, M04-c58, שרת-בלבד ולא ב-bundle הלקוח) ו-
-`refund-wallet.test.ts` — **אפס קומיט נגע ב-`next.config.*`, ברכיבי
-תמונה, ב-cache/ISR או ב-routes**.
-
-נמדד בכל זאת מחדש מול build אמיתי קיים (`.next` התואם בדיוק ל-HEAD
-`49750d2a8`, נבנה 03:54 אחרי M04-c58 ולפני שאר הקומיטים שכולם
-תיעוד/טסט, `pnpm start` על פורט 3331):
-- **`scripts/bundle-report.mjs`**: בית 320.4kB, מוצרים 319.2kB, קטגוריה
-  319.9kB, סל 317.3kB, קופה 324.1kB (הכבד ביותר), FAQ 313.9kB —
-  **345.1kB סה"כ על 27 chunks, זהה בדיוק ל-M14-c57**.
-- **`scripts/cache-invalidation-gate.mjs`**: נקי (כל כתיבה לטבלה
-  cached מבטלת אותה, כל scope cached נושא תגית).
-- **צנרת תמונות**: כל שישה הרכיבים עם `fill`+`sizes` (`CouponCard`,
-  `coupons/[id]/page`, `ProductCard` פעמיים, `HeroSlider`,
-  `ProductGallery`, `CategoryProductCard`) עדיין נושאים `vw`/`calc(vw)`,
-  אין מופע חדש של הבאג `fill`+px קבוע.
-- **כותרות cache**: chunk סטטי `public, max-age=31536000, immutable`;
-  HTML דינמי (בית, מוצר) `private, no-cache, no-store, max-age=0,
-  must-revalidate` + `x-nextjs-prerender: 1`/`x-nextjs-postponed: 1`/
-  `x-nextjs-stale-time: 300` (PPR); `/_next/image` על `logo.webp`
-  `public, max-age=86400, must-revalidate` — כולן זהות למדיניות
-  המתועדת, אפס דריפט.
-
-**אפס שינוי קוד** (אין רגרסיה לתקן): `type-check` נקי, `lint` נקי (2023
-קבצים, 12 שערי תוכן ירוקים כולל cache-invalidation, i18n 627/627,
-locale 116/116), `test` 608/608 קבצים 7273/7285 (12 skipped, זהה
-ל-M13-c58). `build`: נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD, לא
-נבנה מחדש כדי לא להתחרות במשאבים עם סשנים מקבילים (load average 5.65
-בזמן המדידה, ראו `concurrent-worktree-builds-oom`). אין שינוי UI, אין
-שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`.**
-
-## M13-c58, M12-c58, M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+M14-c58: ביצועים, bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו מחדש
+מול build אמיתי קיים (פורט 3331), אפס דריפט מ-M14-c57 (bundle 345.1kB/
+27 chunks זהה, אין באג `fill`+px `sizes` חדש, `cache-invalidation-gate`
+נקי, כותרות cache תואמות למדיניות). אפס שינוי קוד.
 
 M13-c58: אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב
 Upstash על login/checkout/redeem אומתו מחדש מול build אמיתי (פורט
@@ -92,7 +109,6 @@ Upstash על login/checkout/redeem אומתו מחדש מול build אמיתי (
 M12-c58: SEO, meta/canonical/og/JSON-LD Product+Offer/sitemap/robots
 אומתו מחדש, אפס דריפט מ-M12-c57 (`sitemap/products.xml` 46 כתובות,
 `noindex` למוצר לא פעיל קיים ולא שונה). אפס שינוי קוד.
-
 M11-c58: נגישות, axe אומתה מחדש בפעם רביעית, 0 הפרות `serious`/
 `critical` (ציבורי 72/74 + 2 דולג, מאומת לקוח 16/16 + ספק 7/7, אדמין
 57/57 דולג — כשל התחברות פרודקשן קיים מראש). `target-size` (WCAG 2.2,
@@ -103,25 +119,20 @@ M10-c58: כיסוי טסטים, `refund-wallet.ts` 93.75%→100% ענפים. ה�
 (`'archived' as RefundState`). שאר חמש הקטגוריות הקריטיות כבר היו
 93-100%; RLS helpers נמצא ללא מודול מקור (טסטים על JSON סטטי בלבד).
 `type-check`/`lint`/`test` (7272→7273/7285)/`build` ירוקים.
-
 M09-c58: STATE CLEAN, אפס פריט בר-ביצוע לסוכן קוד — שני המקורות
 (`docs/BACKLOG.md` 15 סעיפים, "חוסמים פתוחים" 13 סעיפים) כולם
 DNS/Vercel env/סוד/אישור פריסה/אישור מיגרציה/הכרעה עסקית, חסומים לפי
 כללי `CLAUDE.md`. M08-c58: BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
 בידי הסוכן — `docs/BACKLOG.md` עדיין 15 סעיפים אותו סדר, אפס דריפט
-מ-M08-c57. שניהם `type-check`/`lint`/`test`/`build` ירוקים, אפס שינוי
-קוד.
-
+מ-M08-c57. שניהם `type-check`/`lint`/`test`/`build` ירוקים, אפס שינוי קוד.
 M07-c58: route audit נמדד שוב, 241 שורות, אפס כשל אמיתי, אפס דלתא קוד
 שנוגעת במסלול (`route-audit-recipe-and-hydration-dates`): 226 טסטים
 PASS בחמישה צ'אנקים, 241 שורות ייחודיות נותחו (239 PASS, 2 NO DATA
 זהות לכל מדידה קודמת), אפס `consoleErrors`/`hydrationWarnings`/
 `rtl: false`. דלתא קוד מאז M07-c55: רק `money-format.ts`/`.test.ts`
 (M10-c57), אפס שינוי בניתוב/הידרציה/RTL.
-
 M06-c58: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית
 98/100/100/100, מוצר 99/100/100/100), אפס תיקון נדרש, אפס דריפט מ-M06-c57.
-
 M05-c58: ביקורת DB, advisors נמדדו בפעם השמינית ברציפות דרך ה-management
 API, 44 WARN זהה שדה-שדה ל-M05-c57, אפס קובץ מיגרציה חדש נדרש.
 
@@ -136,7 +147,6 @@ M02-c58: שער חזותי, בית ומוצר, שלושה רוחבים, אפס �
 זהה בדיוק ל-M02-c57. אזהרת `HEIGHT RATIO` על תפיסת המוצר (תפיסה
 קפואה מול הדף החי) אך השער עדיין PASS על שלושתם. `type-check`/`lint`/
 `test`/`build` כולם ירוקים, אין שינוי קוד.
-
 M01-c58: בדיקת פרודקשן, DNS ו-HTTP תקינים (`www.kenyonexpress.co.il`
 200, redirect 308 מהעירום), פריסת HEAD חסומה באותה סיבה בדיוק (שלושת
 שמות Cardcom חסרים ב-Production), פעם רביעית עם "goal שנתקע פעמיים —
@@ -162,10 +172,9 @@ M01-c57..M14-c57), שניים נוגעים בקוד (כיסוי `money-format.ts
 `type-check`/`lint`/`test` (608/608, 7272/7284)/`build` ירוקים. הועבר
 ב-M16-c57 לשמירה על תקרת 300 שורות.
 
-M14-c57: ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו
-מחדש מול build אמיתי, אפס דריפט מ-M14-c56: bundle 345.1kB/27 chunks
-זהה, אין באג `fill`+px `sizes` חדש, `cache-invalidation-gate` נקי,
-כותרות cache תואמות למדיניות.
+M14-c57: ביצועים, bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו מחדש
+מול build אמיתי, אפס דריפט מ-M14-c56 (bundle 345.1kB/27 chunks זהה, אין
+באג `fill`+px `sizes` חדש, כותרות cache תואמות למדיניות).
 
 M13-c57: CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash
 על login/checkout/redeem אומתו מחדש, אפס דריפט מ-M13-c56. M12-c57:
