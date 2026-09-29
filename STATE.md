@@ -1,49 +1,46 @@
-RESUME FROM: M02-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c56)
+RESUME FROM: M03-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c56)
 
 ## המשך מ:
 
-**M01-c56 - BLOCKED (29.09): בדיקת פרודקשן — DNS תקין ומגיש 200,
-פריסת HEAD נשארת חסומה באותה סיבה בדיוק, ולא נוסתה מחדש הפעם.**
-המשימה: build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני
-הדומיינים; אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן
-אין DNS BLOCKER חדש:**
+**M02-c56 - DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —
+אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%.** המשימה: להריץ
+`scripts/compare.mjs` בפורגראונד ולחכות למספרים באותה הרצה, לתקן כל
+רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
 
-- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
-  `ns2.vercel-dns.com`. `dig +short A kenyonexpress.co.il` ->
-  `64.29.17.65`/`216.198.79.1`. `dig +short A www.kenyonexpress.co.il`
-  -> `216.198.79.1`/`64.29.17.65`.
-- `curl -I https://kenyonexpress.co.il` -> **308** ל-`https://www.
-  kenyonexpress.co.il/` (הפניית Vercel תקינה). `curl
-  https://www.kenyonexpress.co.il` -> **200**, HTML אמיתי (`lang="he"
-  dir="rtl"`, `content-security-policy`/`strict-transport-security`
-  תקינים, `server: vercel`).
+- שרת build אמיתי (`PORT=3311 pnpm start`, נבנה על HEAD `7274ff68f`,
+  `.next/BUILD_ID` מאוחר יותר מהקומיט — build טרי, לא stale server).
+- **בית** (`--baseline 'refs/ke_live_{width}.png'`): **380 8.51% PASS,
+  768 9.02% PASS, 1440 3.95% PASS** — זהה בדיוק ל-M17-c55/M02-c55, אין
+  דריפט.
+- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`,
+  `--baseline='refs/electro_product_{width}.png'`): **380 5.61% PASS,
+  768 4.92% PASS, 1440 2.99% PASS**.
+- **הערה למספרי המוצר:** הסקריפט הדפיס אזהרת `HEIGHT RATIO` (0.28x/
+  0.31x/0.34x) כי הצילום שלנו קצר בהרבה מהרפרנס (2740-3101px מול
+  7653-11181px). **נבדק ישירות, לא הונח:** צילום מסך ידני
+  (`/tmp/product-1440-check.png`, `document.body.scrollHeight` 2740)
+  מראה דף מוצר מלא ותקין — כותרת, גלריה, מחיר, קניה, מדיניות ביטול,
+  5 מוצרים מומלצים, פוטר — לא דף fallback/שגיאה. ההבדל הוא תוכן: דף
+  המוצר של Electro נושא תיאור/מפרט/ביקורות ארוכים בהרבה מהתבנית שלנו
+  לאותו slug. `bothPaintedPct` (המדד שהשער בפועל שופט לפיו) לא מושפע
+  מהאזהרה הזו, וכל שלוש התוצאות עברו בנוח מתחת ל-11%. זהה למגמה
+  שכבר תועדה ב-M02-c55/Q05b (מספרים דומים, אותה תבנית slug). אין
+  תיקון קוד נדרש.
+- **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+  `pnpm lint` נקי (12 שערים), `pnpm test` 606/606 קבצים 7239/7251 (12
+  skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד — פריט מדידה
+  בלבד.
+- **קבצים:** `docs/UI-PARITY-REPORT.md` (השער עצמו כותב שורה בכל
+  הרצה, 6 שורות חדשות מהסשן הזה בנוסף לשורות ישנות שלא הוחלו קודם),
+  `docs/STATE-ARCHIVE.md` (M01-c56 הועבר לשם), `STATE.md` בלבד.
 
-**פריסה: לא נוסתה מחדש דרך Vercel MCP הפעם — זו הפעילה
-מ-M01-c55 ("goal שנתקע פעמיים — לדלג"), ותנאיה נבדקו כלא-השתנו לפני
-שהוחל עליה שוב:** `filter_project_envs` בקריאה בלבד על פרויקט
-`kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אישר
-`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` עדיין חסרים
-מ-Production (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/
-`API_KEY` שהקוד לא קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם —
-זהה למדידה ב-M09-c55. כלומר ניסיון פריסה חוזר היה חוזר לאותה שגיאת
-`deploy-preflight` בדיוק פעם שישית ברציפות (M01-c1, M01-c52..M01-c55)
-בלי שום תנאי חדש, ולכן לא נוסה. `list_deployments`
-(`target=production`, פרויקט `kenyonexpress`) מאשר פרודקשן עדיין
-מגיש `a388118f1` (`READY`); שלושת ניסיונות הפריסה האחרונים (c53/c54,
-פעמיים ב-c55 עצמו) כולם `state=ERROR`. HEAD כעת **122** קומיטים
-לפניו (`git rev-list --count a388118f1..HEAD`, עלה מ-118 ב-M15-c55).
+## M01-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
-במשימה):** `pnpm build` בפורגראונד, `exit 0`, כל המסלולים נבנו. HEAD
-תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד, לא הקוד.
-
-**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
-`pnpm lint` נקי (12 שערים), `pnpm test` 606/606 קבצים 7239/7251 (12
-skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד.
-
-**קבצים:** `docs/BACKLOG.md` (ספירת קומיטי חוסם 2 עודכנה ל-122),
-`docs/STATE-ARCHIVE.md` (M18-c55 הועבר לשם), `STATE.md` בלבד.
+בדיקת פרודקשן: DNS תקין ומגיש 200, פריסת HEAD נשארת חסומה באותה סיבה
+בדיוק (חוסרי env Cardcom + `ALLOW_INCOMPLETE_ENV`), לא נוסתה מחדש
+(כלל "goal שנתקע פעמיים — לדלג"). HEAD 122 קומיטים לפני הפרודקשן
+החי. הועבר ב-M02-c56 לשמירה על תקרת 300 שורות.
 
 ## M18-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

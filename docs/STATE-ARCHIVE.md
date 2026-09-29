@@ -2,6 +2,50 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c56 (הועבר מ-STATE.md ב-M02-c56, לשמירה על תקרת 300 שורות)
+
+**M01-c56 - BLOCKED (29.09): בדיקת פרודקשן — DNS תקין ומגיש 200,
+פריסת HEAD נשארת חסומה באותה סיבה בדיוק, ולא נוסתה מחדש הפעם.**
+המשימה: build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני
+הדומיינים; אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן
+אין DNS BLOCKER חדש:**
+
+- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
+  `ns2.vercel-dns.com`. `dig +short A kenyonexpress.co.il` ->
+  `64.29.17.65`/`216.198.79.1`. `dig +short A www.kenyonexpress.co.il`
+  -> `216.198.79.1`/`64.29.17.65`.
+- `curl -I https://kenyonexpress.co.il` -> **308** ל-`https://www.
+  kenyonexpress.co.il/` (הפניית Vercel תקינה). `curl
+  https://www.kenyonexpress.co.il` -> **200**, HTML אמיתי (`lang="he"
+  dir="rtl"`, `content-security-policy`/`strict-transport-security`
+  תקינים, `server: vercel`).
+
+**פריסה: לא נוסתה מחדש דרך Vercel MCP הפעם — זו הפעילה
+מ-M01-c55 ("goal שנתקע פעמיים — לדלג"), ותנאיה נבדקו כלא-השתנו לפני
+שהוחל עליה שוב:** `filter_project_envs` בקריאה בלבד על פרויקט
+`kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אישר
+`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` עדיין חסרים
+מ-Production (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/
+`API_KEY` שהקוד לא קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם —
+זהה למדידה ב-M09-c55. כלומר ניסיון פריסה חוזר היה חוזר לאותה שגיאת
+`deploy-preflight` בדיוק פעם שישית ברציפות (M01-c1, M01-c52..M01-c55)
+בלי שום תנאי חדש, ולכן לא נוסה. `list_deployments`
+(`target=production`, פרויקט `kenyonexpress`) מאשר פרודקשן עדיין
+מגיש `a388118f1` (`READY`); שלושת ניסיונות הפריסה האחרונים (c53/c54,
+פעמיים ב-c55 עצמו) כולם `state=ERROR`. HEAD כעת **122** קומיטים
+לפניו (`git rev-list --count a388118f1..HEAD`, עלה מ-118 ב-M15-c55).
+
+**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
+במשימה):** `pnpm build` בפורגראונד, `exit 0`, כל המסלולים נבנו. HEAD
+תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד, לא הקוד.
+
+**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+`pnpm lint` נקי (12 שערים), `pnpm test` 606/606 קבצים 7239/7251 (12
+skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד.
+
+**קבצים:** `docs/BACKLOG.md` (ספירת קומיטי חוסם 2 עודכנה ל-122),
+`docs/STATE-ARCHIVE.md` (M18-c55 הועבר לשם), `STATE.md` בלבד.
+
 ## M18-c55 (הועבר מ-STATE.md ב-M01-c56, לשמירה על תקרת 300 שורות)
 
 **M18-c55 - DONE (29.09): בדיקת אפס-פעילות (idle check) — המחזור *לא*
