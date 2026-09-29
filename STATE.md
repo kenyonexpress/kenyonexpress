@@ -1,43 +1,54 @@
-RESUME FROM: M12-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c56)
+RESUME FROM: M13-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c56)
 
 ## המשך מ:
 
-**M11-c56 - DONE (29.09): נגישות — axe על כל דף, אימות מחדש, 0 הפרות
-`serious`/`critical` שנמדדות.** משימת התור: להריץ axe על כל דף, לתקן כל
-הפרה `serious`/`critical`, לשמור `WCAG 2.1 AA`, ולרשום את המונה שנשאר.
-**המשימה כבר בוצעה במלואה ב-`72df5e898` (28.09, לפני החלון הזה):** שער
-ציבורי בן 19 מסלולים (`e2e/a11y.spec.ts`, כולל דף מוצר, עגלה, קופה
-בשלושת שלביה ופאנל העגלה, שני ויופורטים) פלוס שער מאומת חדש
-(`e2e/a11y-authenticated.spec.ts`, 80 מסלולים בשלושה תפקידים —
-לקוח/אדמין/ספק) שתיקן אז 77 מתוך 80 הפרות, ותועד ב-`docs/A11Y-SWEEP-REPORT.md`.
-**נמדד מחדש היום, מול build אמיתי (`pnpm build` מ-M10-c56, אותו HEAD),
-דרך `pnpm start` על פורט 3312:**
-- השער הציבורי: **‏36/36 עברו** (סבב ללא כתיבה) **+ 4/4 עברו** (`@writes`
-  — קופה עם עגלה זרועה, אשף הקופה שלב-שלב, פאנל העגלה), סבב אחד דולג
-  (ווידג'ט חיפוש שהוסר ב-D3, מתועד כ-skip מכוון). **‏0 הפרות.**
-- השער המאומת: תפקיד **לקוח ‏16/16 עברו**, תפקיד **ספק ‏7/7 עברו**, **‏0
-  הפרות** בשניהם. תפקיד **אדמין: ‏57/57 דולגו** — לא כשל נגישות, כשל
-  התחברות (`page.waitForURL: Timeout 20000ms exceeded`, מאומת ידנית:
-  הדף מחזיר "כתובת אימייל או סיסמה שגויים" על אותה סיסמה שהפיקסצ'ר
-  אמורה להחזיק). **נבדק שזה לא רגרסיית קוד**: `git log` בין `72df5e898`
-  ל-HEAD על `auth.ts`/`middleware.ts`/`rate-limit` — אפס קומיט. **נבדק
-  שזו לא רגרסיית סיסמה מכוונת**: `node scripts/seed-test-data.mjs
-  --check` מסרב לרוץ על פרודקשן בלי `SEED_ALLOW_PRODUCTION=i-understand`,
-  והדגל דורש "expect to rotate those passwords afterwards" — סיבוב
-  סיסמה אסור לפי כללי הפרויקט, ולכן **לא רוענן**. הפיקסצ'ר של אדמין
-  ככל הנראה ננעל/סוטה מסשן מקביל אחר על אותו ריפו (`parallel-claude-sessions`
-  בזיכרון). **התיקון של תפקיד אדמין עצמו כבר אומת נקי שלוש פעמים
-  ברציפות ב-`72df5e898`** (מצוטט בקומיט: "Verified clean across three
-  consecutive full runs"), ואין קומיט קוד שנוגע בו מאז. **החלטה שהתקבלה
-  לבד:** לא לנסות לתקן/לאפס את פיקסצ'ר האדמין (מחוץ להיקף המשימה, נוגע
-  בפרודקשן, ודורש דגל שהתיעוד שלו עצמו אומר לסבב סיסמאות אחריו — אסור).
-**המונה שנשאר (`serious`/`critical`, נמדד היום): ‏0.** מונה `moderate`
-פתוח ותיעוד מכוון אחד: `target-size` (2.5.8) על שלוש נקודות הקרוסלה
-בבית — דרישת WCAG **2.2**, לא 2.1, מחוץ ליעד המוצהר של הפרויקט, מתועד
-ב-`A11Y-SWEEP-REPORT.md` בכוונה כהחלטה לא כשתיקה. **אפס שינוי קוד היום**
-(`type-check`/`lint`/`pnpm test` 608/608, 7242/7254 נשארו ירוקים ללא
-נגיעה), ולכן אפס נזק לשער הפיקסלים.
+**M12-c56 - DONE (29.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots, אימות מחדש, אפס דריפט.** משימת התור: לאמת meta,
+canonical, og, `schema.org` Product ו-Offer בדפי מוצר, טריות sitemap
+ו-robots, ולתקן דריפט. **המשימה עברה אימות מלא לאחרונה ב-`ab149286f`
+(M12-c55, 29.09, אותו יום)**; `git diff --stat ab149286f..HEAD` מראה
+תשעה קומיטים מאז, אפס נוגע במשטח SEO (STATE/BACKLOG/docs, טסטי
+`orders/*`, `posthog-js`). **נמדד מחדש מהתחלה מול build אמיתי
+(`pnpm build`, `pnpm start` על פורט 3913, "Ready in 141ms"):**
+- **`robots.txt`**: `Allow: /` עם 11 `Disallow` (checkout/cart/admin/
+  supplier/auth/api/account/coupon/redeem/reset-password/
+  forgot-password), `Host` ו-`Sitemap` מצביעים ל-`kenyonexpress.co.il`.
+- **`sitemap.xml`**: אינדקס תקין של חמש סקציות (content/categories/
+  products/regions/suppliers).
+- **`sitemap/products.xml`**: **46 כתובות**, כל אחת עם `lastmod` אמיתי
+  ומשתנה (חמישה חותמות זמן שונות, לא תאריך קפוא) — קורא מ-
+  `src/lib/seo/sitemap-data.ts` עם `.eq('status','active').is('deleted_at',
+  null)`, כך ש-46 (לא 44) תואם את הטווח שהפנקס עצמו מדווח
+  ("44-46 מוצרים פעילים לפי המדידה", חוסם 11 למטה) ואינו דריפט.
+- **דף מוצר חי** (`/product/barbecue`): `canonical` יחיד ותואם URL,
+  שבעה תגי `og:*` תקינים (`title`/`description`/`url`/`locale`/`image`
+  עם מידות ו-`alt`/`type`), `<title>`/`description` בעברית תקינים.
+  JSON-LD: **`Product`** עם `name`/`url`/`category`/`image`/`brand`
+  ו-**`offers`** מקונן (`Offer` עם `price`/`priceCurrency`/`availability`/
+  `seller`/`priceSpecification` strikethrough כשיש הנחה) — נקרא מ-
+  `src/lib/seo/json-ld.ts`, בדוק ידנית תואם לקוד. `BreadcrumbList` שני
+  בלוק תקין. **`aggregateRating`** לא נבדק חי (15 המוצרים הראשונים
+  שנבדקו בלי ביקורות מאושרות), אך מכוסה ב-`json-ld.test.ts` (בתוך
+  7242/7254 שעברו) עבור `count > 0`, ותנאי ה-`count > 0` נקרא נכון בקוד
+  (שורה 130) — אין דריפט בין קוד לטסט.
+- **מוצר לא פעיל/נמחק**: `generateMetadata` ב-
+  `src/app/(store)/product/[slug]/page.tsx` שורות 41-44 מחזיר
+  `robots: { index: false, follow: true }` לפני שהגוף קורא ל-`notFound()`
+  — noindex גם אם זחילה תתפוס את התגובה לפני ה-404.
+- **דף הבית**: `canonical` תואם, JSON-LD `Organization`+`WebSite` עם
+  `SearchAction` (מצביע ל-`/search?q=`, מסלול קיים ב-`src/app/(store)/
+  search/page.tsx` — לא "שדה חיפוש" ב-UI, אלא sitelinks search box
+  ל-Google; לא בהיקף המשימה, אין UI חדש).
+**`type-check`/`lint`/`pnpm test` (608/608, 7242 עברו + 12 דולגו)/
+`pnpm build` — כולם ירוקים.** אפס שינוי קוד, אפס דריפט מ-M12-c55.
+
+## M11-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+נגישות axe אומתה מחדש, 0 הפרות `serious`/`critical`. תפקיד אדמין
+בשער המאומת דולג (57/57) על כשל התחברות שאינו רגרסיית קוד ואינו
+רגרסיית סיסמה מכוונת — לא תוקן (מחוץ להיקף, דורש סיבוב סיסמה אסור).
+הועבר ב-M12-c56 לשמירה על תקרת 300 שורות.
 
 ## M10-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
