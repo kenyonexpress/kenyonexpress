@@ -1,61 +1,65 @@
-RESUME FROM: M17-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c57)
+RESUME FROM: M18-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c57)
 
 ## המשך מ:
 
-**M16-c57 - DONE (30.09): תברואת ריפו בפעם השביעית, אפס דריפט
-מ-M16-c56.** משימת התור: לוודא `git status` נקי, שכל ענף מקומי דחוף,
-ולרשום PR פתוחים וענפים ישנים ב-STATE.md. אותו דפוס אימות מחזורי כמו
-M16-c56 (SHA לכל ענף, לא רק `git branch -vv`).
+**M17-c57 - DONE (30.09): מעבר קופי ומשפטי בפעם החמישית, אפס ממצא
+חדש בר-תיקון.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי
+בחיפוש טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט פונה-ללקוח, וקישורים
+שבורים, ולתקן.
 
-**נמדד:** `git status` נקי, `audit/final-audit` תואם ל-
-`origin/audit/final-audit`. **43 ענפים מקומיים, זהה בדיוק ל-M16-c56**
-(אפס ענף חדש, אפס ענף שנעלם). **כל 43 נבדקו ענף-ענף, לא רק נספרו**:
-32 עוקבים אחרי מקבילם ב-remote עם 0 קומיטים קדימה; 4 ענפי `arch/*`
-(`account-area`, `checkout-cardcom-verification`, `notifications-v2`,
-`wp-migration`) עוקבים בטעות אחרי `origin/main` במקום אחרי הענף שלהם,
-אך ה-SHA שלהם זהה ל-`origin/arch/*` המתאים; 8 ענפים חסרי הגדרת upstream
-מקומית (`arch/seed-data`, `feat/auth-hardening`,
-`feat/monitoring-sentry`, `feat/notifications-full`,
-`feat/performance-seo`, `feat/search-meilisearch`, `release/v1.0`,
-`release/v1.2`) אך ה-SHA שלהם זהה בדיוק לענף remote באותו שם; 6 ענפים
-(`pr36`, `release/v1.1`, `wip/refund-record-rebase-head`,
-`chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`)
-אין להם ענף remote באותו שם כלל, אך ראש הענף שלהם מוכל ב-10 עד 23 ענפי
-remote אחרים (`git branch -r --contains`). **אפס קומיט ייחודי לא-דחוף
-נמצא בשום ענף מקומי.** `main` המקומי נשאר הסטייה הידועה (חוסם 13 למטה,
-ללא שינוי).
+**מה נבדק, בפועל, לא הונח:**
+1. **`messages/he.json`** (591 שורות, סריקה עצמאית של כל 627 המחרוזות):
+   אפס פערי מפתחות בין `he.json`/`en.json`, אפס רווח כפול, אפס סמן
+   placeholder (`TODO`/`TBD`/`lorem`/`{{`/`&nbsp;`/תגית `<`). `scripts/
+   latin-copy-scan.mjs` (אותו שער שרץ ב-`lint`/`test`) מחזיר יציאה 0.
+   סריקת Latin עצמאית (regex על מילה+מילה) מצאה מחרוזת אחת: "Face ID"
+   ב-`securityAlert.passkeyAddedSentence` — שם מוצר של אפל בתוך משפט
+   עברי, אותו סוג בדיוק כמו "Samsung Galaxy S22" שכבר אושר ב-`docs/
+   COPY-AUDIT.md`, לא תקלה.
+2. **`SiteFooter.tsx`, `LegalFooterLinks.tsx`**: כל 15 ה-`href` נבדקו
+   מול נתיבי אמת (`/account`, `/cart`, `/account/orders`, `/about`,
+   `/page/how-it-works`, `/contact`, `/faq`, `/blog`, `/suppliers`,
+   `/terms-and-conditions`, `/privacy-policy`, `/refund_returns`
+   (+`#how-to-cancel`), `/accessibility`) — אפס קישור שבור. אפס
+   `aria-label`/`alt` באנגלית מחוץ לשמות מותג (Visa/Mastercard/
+   Discover/American Express/הרשתות החברתיות).
+3. **ארבעת העמודים המשפטיים החיים**, `src/app/(legal)/_content/{terms,
+   returns,privacy,accessibility}.ts` (1,134 שורות, אלה שבאמת מוגשים
+   ב-`/terms-and-conditions`/`/refund_returns`/`/privacy-policy`/
+   `/accessibility`, אומת דרך קריאת ה-`page.tsx` של כל ארבעתם): נקרא
+   כל מחרוזת, כולל סוכן שני עצמאי. **אפס טעות כתיב, אפס דליפת LTR, אפס
+   פרוזה אנגלית, אפס placeholder, אפס קישור שבור.** ממצא אחד עלה
+   ונבדק בנפרד ונמצא **לא-תקלה**: `accessibility.ts` שורה 30 טוענת
+   "19 עמודים" ושורה 61 טוענת "שישה עמודים מרכזיים" לאותה משפחת בדיקות
+   axe — נראה כסתירה, אבל אלה שתי טענות שונות שאומתו בנפרד: "19" תואם
+   **בדיוק** את מספר הערכים במערך `PAGES` ב-`e2e/a11y.spec.ts` (נספר
+   ישירות, 19 שורות `{ name: }`), ו-"שישה" תואם את המדידה ההיסטורית
+   הספציפית לתיקון הניגודיות, המתועדת גם ב-`docs/legal/
+   COUNSEL-REVIEW.md` ("סריקת axe על שישה עמודי ייצור"). שני המספרים
+   נכונים, כל אחד להיקף שלו.
+4. **`src/content/legal/wp-migrated.ts`** (עברית, קרדיט מסביר "SEQ
+   Legal"/"Website Planet", כולל placeholder-ים לא-ממולאים כמו
+   `{הזינו תאריך/שעה}` ו-`{בחרו בניסוח המדויק...}`) **הוא קוד מת ולא
+   מוגש בשום נתיב חי** — אושר מחדש: `src/app/(store)/{privacy-policy,
+   terms-and-conditions,refund_returns}/page.tsx` כולם קוראים
+   מ-`(legal)/_content` (התוכן הנכון), ו-`/legal/{privacy,terms,
+   returns,accessibility}/page.tsx` הם רק `permanentRedirect` לנתיבים
+   הקנוניים. הצרכן היחיד שנשאר של `content/legal/index.ts` הוא
+   `src/lib/seo/sitemap-sections.ts` (תאריך `lastModified` בלבד, לא
+   תוכן מוצג). **אותו ממצא בדיוק כבר תועד ב-M17-c53** ("קוד מת... מחוץ
+   להיקף הפריט הזה"), אומת שוב ונשאר מחוץ להיקף.
 
-**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c56).
-**117 ענפי remote** (עלה מ-116 ב-M16-c56: `dependabot/npm_and_yarn/
-minor-dev-0fc32dfca6`, PR #47, לא נספר עדיין ב-M16-c56). **12 מ-43
-הענפים המקומיים כבר ממוזגים לתוך HEAD** (`git merge-base
---is-ancestor` מול `audit/final-audit`, עלה מ-11 ב-M16-c56: `work/
-goal-queue-0923` עבר למוזג כש-HEAD התקדם), מועמדים לניקוי, לא נמחקו
-(הכלל אוסר מחיקת ענפים). **28 ענפים ישנים** (קומיט אחרון לפני 16.09,
-14+ יום, לא ממוזגים ל-HEAD, רשימה זהה ל-M16-c56): `save/ke-visual-work`,
-`arch/account-area`, `arch/checkout-cardcom-verification`,
-`arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration`,
-`docs/final-pack`, `arch/docs-batch-2`, `arch/docs-queue`,
-`feat/e2e-quality`, `feat/auth-model`, `feat/db-hardening-v2`,
-`feat/product-type`, `merge/supplier-and-arch-night`,
-`feat/auth-hardening`, `feat/checkout-e2e`, `feat/monitoring-sentry`,
-`feat/notifications-full`, `feat/performance-seo`,
-`feat/search-meilisearch`, `feat/ux-wave-final`, `feat/rate-limit-layer`,
-`docs/final-pass`, `worktree-ke-fetch-timeout`, `worktree-mega-63-72`,
-`closeout/v1-final`, `feat/coupon-qr`, `worktree-order-state-machine`
-(שלושת ה-`worktree-*` ו-`closeout/v1-final` תפוסים בעצי עבודה חיים
-כרגע, לא באמת נטושים). **3 ענפים לא ממוזגים עם קומיט בשבועיים
-האחרונים** (לא נטושים): `autopilot` (17.09), `docs/ui-design-system`
-(23.09), `phase5/homepage-closeout` (24.09). לא מוזג ולא נמחק דבר.
+שערים: `type-check` נקי, `lint` נקי (2023 קבצים, i18n 627/627), `test`
+608/608 קבצים 7272/7284 (12 skipped), `build` `exit 0`. **שער חזותי
+בית** (build אמיתי, `PORT=3391 pnpm start`, `--baseline='refs/
+ke_live_{width}.png'`): **380 8.51% PASS, 768 9.02% PASS, 1440 3.95%
+PASS** — זהה בדיוק ל-M02-c57, אפס שינוי UI/קוד בפריט הזה.
 
-שערים נמדדו מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, זהה
-ל-M15-c57), `test` 608/608 קבצים, 7272/7284 (12 skipped, זהה),
-`build` `exit 0`. אין שער חזותי נדרש (אין שינוי UI/קוד, `STATE.md`/
-`docs/STATE-ARCHIVE.md` בלבד).
+## M16-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-## M15-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
+M16-c57: תברואת ריפו בפעם השביעית, אפס דריפט מ-M16-c56 (43 ענפים
+מקומיים, כולם דחופים/מוזגים בפועל; 24 PR פתוחים; 117 ענפי remote).
 M15-c57: סנכרון תיעוד, STATE.md/docs/LAUNCH-READINESS.md/docs/BACKLOG.md
 מול git log וקוד, אפס פריט חדש. 16 קומיטים נבדקו (M16-c56..M18-c56,
 M01-c57..M14-c57), שניים נוגעים בקוד (כיסוי `money-format.ts`
