@@ -1,7 +1,27 @@
-RESUME FROM: M09-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c58)
+RESUME FROM: STATE CLEAN
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c58)
 
 ## המשך מ:
+
+**M09-c58 - STATE CLEAN (30.09): אפס פריט בר-ביצוע לסוכן קוד.** משימת
+התור: "State cleanup: take the single highest-impact open item listed in
+STATE.md that a code agent can complete without Ofir... If none is left
+write STATE CLEAN." אפס דריפט מ-M08-c58 (`e12bac3c8`): `git status`
+נקי, `HEAD` לא זז, שלושת המונים נבדקו ישירות ותואמים — `migrations/pending/*.sql`
+עדיין **59** קבצים (זהה), `git rev-list --count a388118f1..HEAD` עלה
+ל-**165** (git-only, פער-ספירה גרידא), `git stash list` עדיין **32**.
+שני המקורות שהמשימה מפנה אליהם — `docs/BACKLOG.md` (15 סעיפים) וסעיף
+"חוסמים פתוחים" למטה (13 סעיפים) — כבר עברו בדיקה ממצה ב-M08-c58 ובכל
+מחזור לפניו: כל אחד מהם הוא DNS/Vercel env/סוד/אישור פריסת פרודקשן/אישור
+מיגרציה על פרודקשן/הכרעה עסקית על הקטלוג/מחיקת נתונים — כולם חסומים
+לפי `CLAUDE.md` §"ארבעת המצבים היחידים" ו-§"חוקים קבועים". אין ביניהם
+אף אחד ש"סוכן קוד יכול להשלים בלי אופיר". שערים הורצו במלואם לאימות
+(לא רק נקראו מ-M08-c58): `type-check` נקי, `lint` נקי (`biome` + כל
+תשעת השערים המשניים), `test` 608/608 קבצים 7272/7284 (12 skipped, זהה),
+`build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). קובץ
+יחיד שונה: `STATE.md`.
+
+## M08-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
 
 **M08-c58 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
 בידי הסוכן.** משימת התור: "Backlog: take the single highest-impact open
