@@ -1,31 +1,39 @@
-RESUME FROM: M03-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c55)
+RESUME FROM: M04-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c55)
 
 ## המשך מ:
 
-**M02-c55 - DONE (29.09): שער חזותי (parity) — בית ומוצר, שלושה רוחבים,
-אפס רגרסיה.** המשימה: להריץ `scripts/compare.mjs` על עמוד הבית ועמוד
-המוצר ב-380/768/1440 מול רפרנס Electro v7 ולתקן כל רגרסיה מעל 11%.
+**M03-c55 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
+`build`.** המשימה: להריץ את ארבעת הפקודות ולתקן כל שגיאה/אזהרה
+שניתן לתקן בלי לשנות התנהגות מוצר.
 
-**נמדד בפורגראונד, מול build טרי (`pnpm build` `exit 0`, HEAD
-`52b5f97b4`, שרת `pnpm start` על פורט 3312, `BUILD_ID` אומת תואם):**
-פורט 3311 היה תפוס על ידי `next-server` ישן (עלה 13:51, לפני ה-build
-הנוכחי, כנראה שריד סשן קודם) — לא נגעתי בו, ורק עברתי לפורט פנוי.
+**נמדד ישירות, כל ארבעת השערים ירוקים כבר, אין מה לתקן:**
 
-- **בית** (baseline `refs/ke_live_{width}.png`): 380 = **8.51%** PASS,
-  768 = **9.02%** PASS, 1440 = **3.95%** PASS.
-- **מוצר** (baseline `refs/electro_product_{width}.png`): 380 =
-  **4.96%** PASS, 768 = **4.56%** PASS, 1440 = **3.25%** PASS.
+- `pnpm type-check`: `tsc --noEmit`, אפס פלט.
+- `pnpm lint`: `biome check` — 2020 קבצים, "No fixes applied" — פלוס
+  12 שערי תוכן (tokens, copy, asset, raw-html, postgrest-or,
+  cache-invalidation, rtl-logical, i18n 627/627, locale-format
+  116/116, input-dir 24/24, docs-index, docs-path-audit) — כולם
+  `clean`/`OK`.
+- `pnpm test`: **605/605 קבצים, 7217/7229** (12 skipped, זהה לכל
+  המחזורים הקודמים).
+- `pnpm build`: `next build` **`✓ Compiled successfully`**, `exit 0`,
+  337 נתיבים. שורות ה-JSON שנרשמו במהלך ה-build (`supabase.rls_denied`
+  על `reviews`, `db.optional_column_missing` על
+  `migrations/pending/242`, `phases.not_applied`/`content_pages.not_applied`
+  על מיגרציות 210/205) הן לוגים תפעוליים של האפליקציה על מיגרציות
+  ממתינות ידועות (חוסמים 3 ו-11 ב"חוסמים פתוחים" למטה, ו-`docs/BACKLOG.md`)
+  — **לא** אזהרות מכלי ה-build עצמו. לתקן אותן דורש להחיל migration, וזה
+  אסור לפי הכללים (SQL רק כקובץ ב-`migrations/pending`, לעולם לא מוחל).
 
-כל שש התוצאות מתחת לשער 11%, **זהות בתוך רעש ל-M02-c54** (אותם המספרים
-בדיוק). אין רגרסיה, אין תיקון קוד נדרש. השער כתב את ששת השורות
-ל-`docs/UI-PARITY-REPORT.md` בעצמו (commit `52b5f97b4`).
+אין שינוי קוד. **קובץ יחיד ששונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`
+— M02-c55 הועבר לשמירה על תקרת 300 שורות).
 
-שערים: `type-check` נקי, `lint` נקי (biome + 12 שערי תוכן, i18n
-627/627, locale 116/116), `test` **605/605 קבצים, 7217/7229** (12
-skipped, זהה), `build` `exit 0` (נמדד לפני הריצה). אין שינוי קוד.
-**קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`,
-`docs/STATE-ARCHIVE.md`** (M01-c55 הועבר לשמירה על תקרת 300 שורות).
+## M02-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים, אפס רגרסיה (8.51/9.02/3.95
+בית, 4.96/4.56/3.25 מוצר, זהה בתוך רעש ל-M02-c54). `type-check`/`lint`/`test`/
+`build` ירוקים, אין שינוי קוד. הועבר ב-M03-c55 לשמירה על תקרת 300 שורות.
 
 ## M01-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

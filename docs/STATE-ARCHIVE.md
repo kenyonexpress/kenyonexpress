@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c55 (הועבר מ-STATE.md ב-M03-c55, לשמירה על תקרת 300 שורות)
+
+**M02-c55 - DONE (29.09): שער חזותי (parity) — בית ומוצר, שלושה רוחבים,
+אפס רגרסיה.** המשימה: להריץ `scripts/compare.mjs` על עמוד הבית ועמוד
+המוצר ב-380/768/1440 מול רפרנס Electro v7 ולתקן כל רגרסיה מעל 11%.
+
+**נמדד בפורגראונד, מול build טרי (`pnpm build` `exit 0`, HEAD
+`52b5f97b4`, שרת `pnpm start` על פורט 3312, `BUILD_ID` אומת תואם):**
+פורט 3311 היה תפוס על ידי `next-server` ישן (עלה 13:51, לפני ה-build
+הנוכחי, כנראה שריד סשן קודם) — לא נגעתי בו, ורק עברתי לפורט פנוי.
+
+- **בית** (baseline `refs/ke_live_{width}.png`): 380 = **8.51%** PASS,
+  768 = **9.02%** PASS, 1440 = **3.95%** PASS.
+- **מוצר** (baseline `refs/electro_product_{width}.png`): 380 =
+  **4.96%** PASS, 768 = **4.56%** PASS, 1440 = **3.25%** PASS.
+
+כל שש התוצאות מתחת לשער 11%, **זהות בתוך רעש ל-M02-c54** (אותם המספרים
+בדיוק). אין רגרסיה, אין תיקון קוד נדרש. השער כתב את ששת השורות
+ל-`docs/UI-PARITY-REPORT.md` בעצמו (commit `52b5f97b4`).
+
+שערים: `type-check` נקי, `lint` נקי (biome + 12 שערי תוכן, i18n
+627/627, locale 116/116), `test` **605/605 קבצים, 7217/7229** (12
+skipped, זהה), `build` `exit 0` (נמדד לפני הריצה). אין שינוי קוד.
+**קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`** (M01-c55 הועבר לשמירה על תקרת 300 שורות).
+
 ## M01-c55 (הועבר מ-STATE.md ב-M02-c55, לשמירה על תקרת 300 שורות)
 
 **M01-c55 - BLOCKED (29.09): בדיקת פרודקשן — DNS תקין, פריסת HEAD סורבה
