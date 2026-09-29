@@ -1,33 +1,47 @@
-RESUME FROM: M10-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c56)
+RESUME FROM: M11-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c56)
 
 ## המשך מ:
 
-**M09-c56 - STATE CLEAN (29.09): אפס פריט שלב 1 בידי הסוכן, HEAD ללא
-שינוי מ-M08-c56.** משימת התור: "State cleanup: take the single
-highest-impact open item listed in STATE.md that a code agent can
-complete without Ofir; if none is left write STATE CLEAN." `git
-status` נקי, ואין קומיט חדש בין `b7d650fae` (קצה M08-c56) לתחילת
-הפריט הזה — כלומר בדיקת ה-BACKLOG המלאה שנעשתה שם (כל 15 הפריטים,
-כל אחד חסום ב-Ofir/env/secret/הכרעת מפעיל, פרטים בארכיון) עדיין
-תקפה מילה במילה. שלוש בדיקות נוספות, לא חופפות ל-M08-c56, כדי לוודא
-שלא נפתח משהו חדש: (1) `grep -rn "TODO\|FIXME" src/` — 3 תוצאות,
-שתיים ב-`src/lib/payments/cardcom.ts` (מחכות לפרטי ה-endpoint
-האמיתי של Cardcom מול הטרמינל החי — "no payment provider integration"
-חוסם), אחת ב-`whatsapp.test.ts` שהיא ערך placeholder בתוך בדיקה
-(`'TODO'` כמחרוזת טלפון מזויפת), לא TODO קוד אמיתי. (2) `pnpm
-test:coverage` — 606/606 קבצים, 7239/7251 (12 skipped, זהה), אפס
-כשל סף על אף אחד משישה מודולי הכסף הממופים ב-`vitest.config.ts`
-(`money.ts`/`commerce/money.ts`/`commerce/commission.ts`/
-`checkout/split.ts`/`orders/settlement.ts`/`orders/state-machine.ts`,
-כולם בדרישת 95% קווים/ענפים/פונקציות/statements) — המסלול הכספי כבר
-בתקרה, אין כאן "מודול הכיסוי הנמוך ביותר" חדש בסגנון M10-c55.
-(3) `pnpm audit` — אפס חולשות, זהה ל-M04-c56 (אין דריפט תלויות מאז).
-**מסקנה: אין פריט אחד שקוד-אגנט יכול להשלים בלי אופיר.** שערים:
-`type-check` נקי, `lint` נקי, `test` כאמור, `build` לא נדרש מחדש
-(אין שינוי קוד). אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
-`STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` — M08-c56 הועבר לתקרת 300
-שורות).
+**M10-c56 - DONE (29.09): כיסוי ענפים, `status-transitions.ts` 66.66%
+← 100%.** משימת התור: מציאת המודול הקריטי עם הכיסוי הנמוך ביותר מבין
+`packages/money`, payment split, מכונת מצבי שובר, מכונת מצבי הזמנה,
+זיכויים ו-RLS helpers, והוספת טסטים עד כיסוי ענפים מלא. נמדד עם
+`--coverage.include` ממוקד לכל קובץ מהרשימה: `money.ts` 100% (21/21),
+`checkout/split.ts` 100% (4/4), `commerce/money.ts` 100% (20/20),
+`commerce/commission.ts` 100% (42/42), `orders/state-machine.ts` 100%
+(19/19), `orders/refund.ts` 100% (55/55), `orders/refund-request.ts`
+100% (16/16), `vouchers/state-machine.ts` 100% (22/22),
+`lib/supabase/rls-report-fetch.ts` 100% (37/37) — כל אלה כבר בתקרה,
+כמו ש-M09-c56 קבע לששת המודולים הממופים ב-`vitest.config.ts`. **החריג
+בתוך משפחת "מכונת מצבי הזמנה":** `orders/status-transitions.ts`
+(טבלת המעברים החוקיים לארבע העמודות המשוגחות ע"י ה-DB, השכבה שמתחת
+ל-`state-machine.ts` עצמו) עמד על **66.66% (4/6)**, ו-`orders/
+order-transitions.ts` (תוכנית האפקטים פר-מעבר) על **83.33% (5/6)** —
+שני הענפים החסרים היו אותה צורת פגם: fallback הגנתי `?? []` שהנתונים
+האמיתיים לעולם לא מפעילים, כי `statesOf`/`terminalStatesOf` תמיד
+אינדקסים מפתח שכבר הוכח קיים דרך `Object.keys`, ו-`orderMachine`
+תואם `ORDER_TRANSITION_EFFECTS` מעבר-למעבר לפי הטסט הקיים של הקובץ.
+**נוספו:** טסט אחד ב-`status-transitions.test.ts` ל-`isLegalTransition`
+עם origin לא מוכר (בר-הפעלה דרך ה-API האמיתי, בלי mock) — מכסה את ה-
+fallback ב-`isLegalTransition`; ושני קבצי טסט חדשים עם `vi.mock` (על
+ה-JSON ועל `orderMachine` בהתאמה) שמזריקים טבלה פגומה כדי להוכיח
+שה-fallback ב-`terminalStatesOf` וב-`effectsFor` באמת נסוג ל"אין
+כלל" במקום לזרוק, ליום שהאינווריאנטה שהם שומרים עליה תיסדק.
+**נמדד אחרי:** ארבעת הקבצים ב-100% ענפים. שערים: `type-check` נקי,
+`lint` נקי, `pnpm test` — **608/608 קבצים, 7242/7254 (12 skipped)**,
+`pnpm build` ירוק. אין שינוי UI, אין שער חזותי נדרש. שלושה קבצים
+שונו/נוספו: `src/server/domain/orders/status-transitions.test.ts`
+(עריכה), `status-transitions-guard.test.ts` ו-
+`order-transitions-plan-fallback.test.ts` (חדשים). קומיט `20e0adc61`,
+נדחף.
+
+## M09-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+STATE CLEAN, נמדד מחדש: `git status` נקי, אפס קומיט חדש מ-M08-c56,
+שלוש בדיקות נוספות (TODO/FIXME, `test:coverage` על ששת מודולי הכסף,
+`pnpm audit`) לא חשפו פריט חדש שקוד-אגנט יכול להשלים לבד. הועבר
+ב-M10-c56 לשמירה על תקרת 300 שורות.
 
 ## M08-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

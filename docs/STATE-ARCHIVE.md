@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c56 (הועבר מ-STATE.md ב-M10-c56, לשמירה על תקרת 300 שורות)
+
+**M09-c56 - STATE CLEAN (29.09): אפס פריט שלב 1 בידי הסוכן, HEAD ללא
+שינוי מ-M08-c56.** משימת התור: "State cleanup: take the single
+highest-impact open item listed in STATE.md that a code agent can
+complete without Ofir; if none is left write STATE CLEAN." `git
+status` נקי, ואין קומיט חדש בין `b7d650fae` (קצה M08-c56) לתחילת
+הפריט הזה — כלומר בדיקת ה-BACKLOG המלאה שנעשתה שם (כל 15 הפריטים,
+כל אחד חסום ב-Ofir/env/secret/הכרעת מפעיל, פרטים בארכיון) עדיין
+תקפה מילה במילה. שלוש בדיקות נוספות, לא חופפות ל-M08-c56, כדי לוודא
+שלא נפתח משהו חדש: (1) `grep -rn "TODO\|FIXME" src/` — 3 תוצאות,
+שתיים ב-`src/lib/payments/cardcom.ts` (מחכות לפרטי ה-endpoint
+האמיתי של Cardcom מול הטרמינל החי — "no payment provider integration"
+חוסם), אחת ב-`whatsapp.test.ts` שהיא ערך placeholder בתוך בדיקה
+(`'TODO'` כמחרוזת טלפון מזויפת), לא TODO קוד אמיתי. (2) `pnpm
+test:coverage` — 606/606 קבצים, 7239/7251 (12 skipped, זהה), אפס
+כשל סף על אף אחד משישה מודולי הכסף הממופים ב-`vitest.config.ts`
+(`money.ts`/`commerce/money.ts`/`commerce/commission.ts`/
+`checkout/split.ts`/`orders/settlement.ts`/`orders/state-machine.ts`,
+כולם בדרישת 95% קווים/ענפים/פונקציות/statements) — המסלול הכספי כבר
+בתקרה, אין כאן "מודול הכיסוי הנמוך ביותר" חדש בסגנון M10-c55.
+(3) `pnpm audit` — אפס חולשות, זהה ל-M04-c56 (אין דריפט תלויות מאז).
+**מסקנה: אין פריט אחד שקוד-אגנט יכול להשלים בלי אופיר.** שערים:
+`type-check` נקי, `lint` נקי, `test` כאמור, `build` לא נדרש מחדש
+(אין שינוי קוד). אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
+`STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` — M08-c56 הועבר לתקרת 300
+שורות).
+
 ## M08-c56 (הועבר מ-STATE.md ב-M09-c56, לשמירה על תקרת 300 שורות)
 
 **M08-c56 - DONE (29.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
