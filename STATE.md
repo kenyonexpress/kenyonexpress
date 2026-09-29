@@ -1,47 +1,43 @@
-RESUME FROM: M17-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c56)
+RESUME FROM: M18-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c56)
 
 ## המשך מ:
 
-**M16-c56 - DONE (29.09): תברואת ריפו בפעם השישית, אפס דריפט
-מ-M16-c55.** המשימה: לוודא `git status` נקי, שכל ענף מקומי דחוף, ולרשום
-PR פתוחים וענפים ישנים ב-`STATE.md`. אותו דפוס אימות מחזורי כמו M16-c55
-(`dad53d668`). **נמדד**: `git status` נקי, `audit/final-audit` תואם
-ל-`origin/audit/final-audit`. **43 ענפים מקומיים, זהה בדיוק ל-M16-c55**
-(אפס ענף חדש, אפס ענף שנעלם). **נבדק ענף-ענף שכל אחד מהם דחוף**, לא רק
-נספר: 32 עוקבים אחרי מקבילם ב-remote עם 0 קומיטים קדימה; 4 ענפי
-`arch/*` (`account-area`, `checkout-cardcom-verification`,
-`notifications-v2`, `wp-migration`) עוקבים בטעות אחרי `origin/main`
-במקום אחרי הענף שלהם, אך ה-SHA שלהם זהה ל-`origin/arch/*` המתאים; 8
-ענפים (`arch/seed-data`, `feat/auth-hardening`, `feat/monitoring-sentry`,
-`feat/notifications-full`, `feat/performance-seo`,
-`feat/search-meilisearch`, `release/v1.0`, `release/v1.2`) חסרי הגדרת
-upstream מקומית אך ה-SHA שלהם זהה בדיוק לענף remote באותו שם; 6 ענפים
-(`pr36`, `release/v1.1`, `wip/refund-record-rebase-head`,
-`chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`)
-אין להם ענף remote באותו שם כלל, אך ראש הענף שלהם מוכל ב-10 עד 20 ענפי
-remote אחרים (`git branch -r --contains`). **אפס קומיט ייחודי לא-דחוף
-נמצא בשום ענף מקומי.** `main` המקומי נשאר הסטייה הידועה (חוסם 13
-למטה, ללא שינוי). **24 PR פתוחים** (`gh pr list --state open`, זהה
-בדיוק ל-M16-c55), **116 ענפי remote** (זהה בדיוק ל-M16-c55). **11 מ-43
-הענפים המקומיים כבר ממוזגים לתוך HEAD** (`git merge-base --is-ancestor`
-מול `audit/final-audit`) והם מועמדים לניקוי, לא נמחקו (הכלל אוסר מחיקת
-ענפים). **28 ענפים ישנים** (קומיט אחרון לפני 15.09, 14+ יום, ולא
-ממוזגים ל-HEAD): `save/ke-visual-work`, `arch/account-area`,
-`arch/checkout-cardcom-verification`, `arch/notifications-v2`,
-`arch/seed-data`, `arch/wp-migration`, `docs/final-pack`,
-`arch/docs-batch-2`, `arch/docs-queue`, `feat/e2e-quality`,
-`feat/auth-model`, `feat/db-hardening-v2`, `feat/product-type`,
-`merge/supplier-and-arch-night`, `feat/auth-hardening`,
-`feat/checkout-e2e`, `feat/monitoring-sentry`, `feat/notifications-full`,
-`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`,
-`feat/rate-limit-layer`, `docs/final-pass`, `worktree-ke-fetch-timeout`,
-`worktree-mega-63-72`, `closeout/v1-final`, `feat/coupon-qr`,
-`worktree-order-state-machine` (שלושת ה-`worktree-*` והאחרונים תפוסים
-בעצי עבודה חיים כרגע, לא באמת נטושים). לא נמזג ולא נמחק דבר. שערים
-נמדדו מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, זהה ל-M15-c56),
-`test` 608/608 קבצים, 7242/7254 (זהה), `build` `exit 0`. אין שער חזותי
-נדרש (אין שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md` בלבד).
+**M17-c56 - DONE (29.09): מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא
+חדש.** המשימה: לקרוא כל מחרוזת UI בעברית ודף משפטי, ולתקן שגיאות כתיב,
+דליפות LTR, מילים באנגלית בקופי פונה-לקוח, וקישורים שבורים. הפריט
+נקרא במלואו ב-M17-c53 (`15c97abff`, 591 שורות `he.json` + ארבעת מסמכי
+ה-legal + כל href פוטר/ניווט, שלושה ממצאים אמיתיים תוקנו אז) ונבדק
+אפס-דריפט פעמיים נוספות (M17-c54, M17-c55). **נמדד מחדש, לא הונח שהמדידה
+הקודמת עדיין תקפה:**
+
+- `git diff a5723c307..HEAD --stat -- src/app src/components
+  messages/he.json` (`a5723c307` = M17-c55, הפעם האחרונה שנקרא מלא):
+  **פלט ריק — אפס קובץ שונה**, כולל `src/app/(legal)/_content` וכל
+  קובץ פוטר/ניווט בנפרד. i18n gate עדיין 627/627.
+- **סריקה עצמאית של `messages/he.json` דרך `JSON.parse`** (לא grep
+  טקסטואלי) על כל מחרוזת עם אות לטינית: **28 מחרוזות**, זהה בדיוק
+  ל-M17-c55 — שם מותג, מונח טכני בלי מקביל עברי מקובל, או placeholder.
+  אפס דליפת LTR, אפס מילה זרה במובן הפגום.
+- ארבעת מסמכי ה-legal (`terms-and-conditions`, `privacy-policy`,
+  `refund_returns`, `accessibility`) קיימים תחת `src/app/(store)`, אפס
+  שינוי מאז M17-c53. קישורי הפוטר/ניווט אליהם ואל העוגנים
+  (`#how-to-cancel`, `#cookies`) לא זזו.
+
+`type-check`/`lint` (2023 קבצים, i18n 627/627, locale-format 116/116
+בתקרה)/`test` (608/608, 7242/7254)/`build` `exit 0` — כולם ירוקים. אין
+שער חזותי נדרש (אפס שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md`
+בלבד) — עקבי עם M02-c55/M17-c55.
+
+## M16-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+תברואת ריפו בפעם השישית, אפס דריפט מ-M16-c55: `git status` נקי, 43
+ענפים מקומיים זהה בדיוק, כל ענף נבדק דחוף (32 עוקבים, 4 `arch/*`
+עוקבים אחרי `origin/main` אך SHA זהה, 8 בלי upstream מקומי אך SHA
+זהה, 6 בלי מקביל remote אך מוכלים בענפי remote אחרים), 24 PR פתוחים
+זהה, 116 ענפי remote זהה, 11 ממוזגים ל-HEAD, 28 ישנים. `type-check`/
+`lint`/`test`/`build` ירוקים. הועבר ב-M17-c56 לשמירה על תקרת 300
+שורות.
 
 ## M15-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
