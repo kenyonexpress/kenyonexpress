@@ -1,37 +1,44 @@
-RESUME FROM: M11-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c58)
+RESUME FROM: M12-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c58)
 
 ## המשך מ:
 
-**M10-c58 - DONE (30.09): כיסוי טסטים, `refund-wallet.ts` 93.75%→100%
-ענפים.** משימת התור: "find the critical module with the lowest coverage
-among packages/money, payment split, voucher state machine, order state
-machine, refunds and RLS helpers. Add unit tests until branches are
-covered." נמדדו שש הקטגוריות בנפרד (`vitest run --coverage` עם
-`--coverage.include` ממוקד לכל אחת): `src/lib/money.ts` (packages/money,
-CLAUDE.md §"חוקים קבועים") 100/100/100/100; `src/lib/checkout/split.ts`
-(payment split) 100/100/100/100; `src/server/domain/vouchers/state-machine.ts`
-(voucher state machine) 100/100/100/100; `src/server/domain/orders/state-machine.ts`
-(order state machine) 100/100/100/100; refunds — `refund.ts`/
-`refund-request.ts`/`server/actions/payments/refund.ts`/
-`refund-record.ts`/`refund-destination.ts` כולם 100%, אבל
-`src/server/payments/refund-wallet.ts` **93.75% ענפים (15/16)**; RLS
-helpers — נבדק ונמצא **ללא מודול מקור כלל**: שלושת קבצי הטסט
-(`rls-manifest`/`rls-write-policies`/`rls-role-matrix`) מייבאים רק
-`node:fs`/`node:path`, קוראים JSON סטטי (`supabase/rls-*.json`) וטוענים
-עליו טענות — אין קוד אפליקציה להריץ כיסוי מולו. `refund-wallet.ts` הוא
-אפוא המודול הקריטי היחיד עם ענף לא מכוסה. הענף החסר: שורה 58,
-`(WALLET_REFUND_TRANSITIONS[from] ?? []).includes(to)` — צד ה-`?? []`
-לא נורה כי `from` תמיד היה אחד משישה המצבים הידועים בטסטים הקיימים;
-זו הגנה מפני ערך `RefundState` לא מוכר שנקרא בחזרה מה-DB (למשל עמודת enum
-שקיבלה חבר חדש). נוסף טסט אחד: `isLegalWalletRefundTransition('archived'
-as RefundState, 'completed')` מצפה ל-`false`. אומת בנפרד (קובץ הטסט לבדו,
-`--coverage.include` ממוקד): 100/100/100/100 (18/18 statements, 16/16
-branches, 5/5 functions, 15/15 lines). שערים על כל הריפו: `type-check`
-נקי, `lint` נקי (biome + כל תשעת השערים המשניים), `test` 608/608 קבצים
-7273/7285 (12 skipped, +1 מהטסט החדש), `build` `exit 0`. אין שינוי UI,
-אין שער חזותי נדרש. קובץ יחיד שונה מלבד `STATE.md`:
-`src/server/payments/refund-wallet.test.ts`.
+**M11-c58 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
+רביעית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
+דף, לתקן כל הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את
+המונה שנשאר. בדיקת דריפט קודם: `git log 3e82839c7..HEAD` (מאז המדידה
+הקודמת, M11-c57) מחזיר 17 קומיטים (M12-c57..M10-c58), כולם תיעוד/מדידה/
+תלות/טסטים (SEO, אבטחה, ביצועים, תברואת ריפו, שער חזותי, שער ירוק, תלות
+`aws-sdk` מינור, DB advisors, Lighthouse, route audit, כיסוי
+`refund-wallet.ts`) — **אפס קומיט נגע בשטח הנגישות** (`src/app`,
+`src/components`, CSS, routes, `middleware.ts`,
+`src/server/actions/auth`, rate-limit).
+
+נמדד בכל זאת מחדש מול build אמיתי על HEAD (`3996a147`, `.next` תואם
+בדיוק, `pnpm start` על פורט 3316):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes`): **72/74 עברו, 2 דולגו** (אותם דילוגים
+  מכוונים כמו בכל מדידה קודמת) — **0 הפרות**.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
+  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, שניהם **0 הפרות**.
+  תפקיד **אדמין: 57/57 דולגו** — אומת ישירות בקוד הבדיקה
+  (`e2e/a11y-authenticated.spec.ts:98`, `test.skip` על כשל `signInWithEmail`)
+  שזו אותה סיבה שתועדה ב-M11-c56/M11-c57: כשל התחברות פרודקשן קיים
+  מראש, לא תקלת נגישות ולא רגרסיית קוד.
+- שני השערים נכשלים על **כל** הפרה (לא רק `serious`/`critical`, ראו
+  הערת "WHY axe FAILS ON ANY VIOLATION" בקובץ הבדיקה), אז 0 כשל הוא גם
+  0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה שנסרק.
+
+**המונה שנשאר: 0 `serious`/`critical`.** ממצא `target-size` (דרישת
+WCAG **2.2** ולא 2.1, מחוץ ליעד המוצהר של הפרויקט) שתועד
+ב-`docs/A11Y-SWEEP-REPORT.md` נשאר כהחלטה פתוחה ללא שינוי — אין הפרת
+2.1 AA לתקן. **אפס שינוי קוד.** שערים: `type-check` נקי, `lint` נקי
+(biome + כל תשעת השערים המשניים), `test` 608/608 קבצים 7273/7285 (12
+skipped, זהה). `build`: נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD
+(נבנה תחת M10-c58, `exit 0`) במקום בנייה חוזרת, כדי לא להתחרות
+במשאבים עם סשנים מקבילים (load average 11–13 בזמן המדידה, ראו
+`concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
+**קובץ יחיד שונה: `STATE.md`.**
 
 ## M09-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
 
@@ -82,7 +89,13 @@ advisors, ‏Lighthouse, route audit) — אפס שינוי ב-`docs/BACKLOG.md`
 (פלוס `docs/STATE-ARCHIVE.md` — סעיפי M06-c57..M01-c55, שכולם כבר
 "ארכיון מלא" שם, כווצו לשורת סיכום אחת כדי לשמור על תקרת 300 שורות).
 
-## M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M10-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M10-c58: כיסוי טסטים, `refund-wallet.ts` 93.75%→100% ענפים. הענף החסר
+היה הגנה על ערך `RefundState` לא מוכר (`?? []`), נוסף טסט אחד
+(`'archived' as RefundState`). שאר חמש הקטגוריות הקריטיות כבר היו
+93-100%; RLS helpers נמצא ללא מודול מקור (טסטים על JSON סטטי בלבד).
+`type-check`/`lint`/`test` (7272→7273/7285)/`build` ירוקים.
 
 M07-c58: route audit נמדד שוב, 241 שורות, אפס כשל אמיתי, אפס דלתא קוד
 שנוגעת במסלול (`route-audit-recipe-and-hydration-dates`): 226 טסטים

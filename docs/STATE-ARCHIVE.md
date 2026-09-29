@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c58 (הועבר מ-STATE.md ב-M11-c58, לשמירה על תקרת 300 שורות)
+
+**M10-c58 - DONE (30.09): כיסוי טסטים, `refund-wallet.ts` 93.75%→100%
+ענפים.** משימת התור: "find the critical module with the lowest coverage
+among packages/money, payment split, voucher state machine, order state
+machine, refunds and RLS helpers. Add unit tests until branches are
+covered." נמדדו שש הקטגוריות בנפרד (`vitest run --coverage` עם
+`--coverage.include` ממוקד לכל אחת): `src/lib/money.ts` (packages/money,
+CLAUDE.md §"חוקים קבועים") 100/100/100/100; `src/lib/checkout/split.ts`
+(payment split) 100/100/100/100; `src/server/domain/vouchers/state-machine.ts`
+(voucher state machine) 100/100/100/100; `src/server/domain/orders/state-machine.ts`
+(order state machine) 100/100/100/100; refunds — `refund.ts`/
+`refund-request.ts`/`server/actions/payments/refund.ts`/
+`refund-record.ts`/`refund-destination.ts` כולם 100%, אבל
+`src/server/payments/refund-wallet.ts` **93.75% ענפים (15/16)**; RLS
+helpers — נבדק ונמצא **ללא מודול מקור כלל**: שלושת קבצי הטסט
+(`rls-manifest`/`rls-write-policies`/`rls-role-matrix`) מייבאים רק
+`node:fs`/`node:path`, קוראים JSON סטטי (`supabase/rls-*.json`) וטוענים
+עליו טענות — אין קוד אפליקציה להריץ כיסוי מולו. `refund-wallet.ts` הוא
+אפוא המודול הקריטי היחיד עם ענף לא מכוסה. הענף החסר: שורה 58,
+`(WALLET_REFUND_TRANSITIONS[from] ?? []).includes(to)` — צד ה-`?? []`
+לא נורה כי `from` תמיד היה אחד משישה המצבים הידועים בטסטים הקיימים;
+זו הגנה מפני ערך `RefundState` לא מוכר שנקרא בחזרה מה-DB (למשל עמודת enum
+שקיבלה חבר חדש). נוסף טסט אחד: `isLegalWalletRefundTransition('archived'
+as RefundState, 'completed')` מצפה ל-`false`. אומת בנפרד (קובץ הטסט לבדו,
+`--coverage.include` ממוקד): 100/100/100/100 (18/18 statements, 16/16
+branches, 5/5 functions, 15/15 lines). שערים על כל הריפו: `type-check`
+נקי, `lint` נקי (biome + כל תשעת השערים המשניים), `test` 608/608 קבצים
+7273/7285 (12 skipped, +1 מהטסט החדש), `build` `exit 0`. אין שינוי UI,
+אין שער חזותי נדרש. קובץ יחיד שונה מלבד `STATE.md`:
+`src/server/payments/refund-wallet.test.ts`.
+
 ## M06-c58 (הועבר מ-STATE.md ב-M07-c58, לשמירה על תקרת 300 שורות)
 
 **M06-c58 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
