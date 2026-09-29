@@ -131,8 +131,8 @@ export default function ProductGallery({
               <Image
                 src={url}
                 alt=""
-                fill
-                sizes="64px"
+                width={64}
+                height={64}
                 className="object-contain"
                 {...(assets[url]?.blurDataURL
                   ? { placeholder: 'blur' as const, blurDataURL: assets[url]?.blurDataURL ?? '' }

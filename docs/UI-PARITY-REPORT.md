@@ -472,3 +472,12 @@ to an already large session.
 | 2026-09-28 20:22 | product | 380 | 5.65% | PASS | `f8a5e8436-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 33.28% (reference blank 21.2%, ours blank 6.43%) |
 | 2026-09-28 20:24 | product | 768 | 4.95% | PASS | `f8a5e8436-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 34.74% (reference blank 23.75%, ours blank 6.04%) |
 | 2026-09-28 20:26 | product | 1440 | 2.92% | PASS | `f8a5e8436-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 21.16% (reference blank 13.01%, ours blank 5.22%) |
+| 2026-09-29 00:17 | home | 1440 | n/a | REFUSED | `e5197b512-dirty` | live side is our-build |
+| 2026-09-29 00:17 | home | 1440 | n/a | REFUSED | `e5197b512-dirty` | live side is our-build |
+| 2026-09-29 00:18 | product | 380 | 5.61% | PASS | `e5197b512-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 33.95% (reference blank 21.83%, ours blank 6.51%) |
+| 2026-09-29 00:20 | product | 768 | 4.92% | PASS | `e5197b512-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 35.14% (reference blank 24.27%, ours blank 5.95%) |
+| 2026-09-29 00:22 | product | 1440 | 2.99% | PASS | `e5197b512-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 21.24% (reference blank 13.1%, ours blank 5.15%) |
+| 2026-09-29 00:25 | product | 380 | 5.61% | PASS | `e5197b512-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 33.95% (reference blank 21.83%, ours blank 6.51%) |
+| 2026-09-29 00:28 | product | 380 | 5.61% | PASS | `e5197b512-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 33.95% (reference blank 21.83%, ours blank 6.51%) |
+| 2026-09-29 00:30 | product | 768 | 4.92% | PASS | `e5197b512-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 35.14% (reference blank 24.27%, ours blank 5.95%) |
+| 2026-09-29 00:33 | product | 1440 | 2.99% | PASS | `e5197b512-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 21.24% (reference blank 13.1%, ours blank 5.15%) |

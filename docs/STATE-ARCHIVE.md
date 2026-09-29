@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c52 - DONE (29.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy/rate-limit על login+checkout+redeem נמדדו מחדש מול build אמיתי, אפס דריפט
+
+נמדד ישירות: אפס שינוי ב-`next.config.ts`, `src/lib/security/frame-policy.ts`
+וב-`src/lib/rate-limit/**` מאז M13-c51 (`506f0cd28`, 28.09) ועד HEAD —
+`git log <range> -- <paths>` ריק.
+
+בכל זאת נמדד מחדש מול build אמיתי: `pnpm build` נקי, שרת `pnpm start`
+נפרד על פורט 3513 (לא נגעתי בשרת סשן מקביל על 3471).
+
+- **`curl` על חמישה נתיבים** (`/`, `/login`, `/checkout`,
+  `/checkout/frame-return`, `/redeem/[token]`): כל אחד עם `Content-Security-
+  Policy`, `Strict-Transport-Security` (`max-age=63072000; includeSubDomains;
+  preload`), `X-Frame-Options`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`.
+  ה-CSP `frame-ancestors` וה-`X-Frame-Options` הופכים נכון רק ב-
+  `/checkout/frame-return` (`'self'`/`SAMEORIGIN` שם, `'none'`/`DENY`
+  בארבעת האחרים) — עדות ישירה לתיעוד ב-`next.config.ts` על שני מקורות
+  headers שלא חופפים.
+- **rate-limit על שלושת הנתיבים**: `src/server/actions/auth.test.ts`
+  (`describe('signInWithEmail rate limiting')`), `src/server/actions/
+  payments/checkout.test.ts` (`describe('beginCheckout: the begin_checkout
+  rate limit')`), `src/app/api/supplier/vouchers/redeem/route.test.ts`
+  (429 עם ותק בלי לגעת בשובר כשהתקרה מגיעה) — שלושתם ירוקים, מוסיפים על
+  הכיסוי מ-M13-c51.
+- **Upstash**: לא מוגדר מקומית (`.env.local` בלי `UPSTASH_REDIS_REST_URL`),
+  fallback ל-Postgres פעיל — זהה למצב שתועד ב-M13-c51.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test`
+**604/7188** (זהה, 0 חדשים, 0 דולגו חדשים), `pnpm build` עבר בלי שגיאה.
+אין שינוי UI, לכן `scripts/compare.mjs` לא רץ (תואם לתקדים M03/M05/M06/
+M07/M09/M10/M11/M12-c52).
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M12-c52 - DONE (29.09): SEO — מטא/canonical/og/JSON-LD Product+Offer/sitemap/robots נמדדו מחדש מול build אמיתי, אפס דריפט
 
 נמדד ישירות, לא הוערך: אפס שינוי בכל קובץ SEO (`src/app/sitemap.ts`,

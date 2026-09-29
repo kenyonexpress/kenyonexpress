@@ -1,47 +1,76 @@
-RESUME FROM: M14-c52
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c52)
+RESUME FROM: M15-c52
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c52)
 
 ## המשך מ:
 
-M13-c52 אימת מחדש אבטחה (CSP/HSTS/X-Frame-Options/Referrer-Policy,
-rate-limit על login/checkout/redeem) מול build אמיתי. אפס דריפט, אפס שינוי
-קוד. סשן הבא ממשיך את סבב ה-c52 בסדר של c51: M14-c52 (bundle/images),
-ואם אין דריפט להמשיך ל-M15-c52 (סנכרון docs), M16-c52 (תברואת ריפו) וכו',
-עד שנתקל בפריט שדורש תיקון בפועל או ש-אופיר טיפל בסעיף מ-`docs/BACKLOG.md`.
+M14-c52 בדק bundle/תמונות/ISR/cache headers. נמצא ותוקן ממצא אמיתי אחד:
+`ProductGallery.tsx` (תמונות ממוזערות בדף מוצר) נשא את אותו באג שתוקן
+ב-`CategoryStrip.tsx` ב-M14-c51 (`fill` עם `sizes` ב-px גורם ל-srcset מלא
+של 17 מועמדים במקום 2), לא נתפס אז כי הוא קובץ אחר. תוקן. שער השוואה חזותי
+על דף המוצר (הדף שנגעתי בו) רץ בחזית: 380/768/1440 כולם PASS, זהה
+לבייסליין ההיסטורי. סשן הבא ממשיך את סבב ה-c52: M15-c52 (סנכרון docs),
+M16-c52 (תברואת ריפו) וכו', עד שנתקל בפריט שדורש תיקון בפועל או ש-אופיר
+טיפל בסעיף מ-`docs/BACKLOG.md`.
 
-## M13-c52 - DONE (29.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy/rate-limit על login+checkout+redeem נמדדו מחדש מול build אמיתי, אפס דריפט
+## M14-c52 - DONE (29.09): ביצועים: bundle, פלט צנרת התמונות, תגיות ISR, כותרות cache. ממצא אחד תוקן (thumbnail srcset), אין רגרסיה בשאר השלושה
 
-נמדד ישירות: אפס שינוי ב-`next.config.ts`, `src/lib/security/frame-policy.ts`
-וב-`src/lib/rate-limit/**` מאז M13-c51 (`506f0cd28`, 28.09) ועד HEAD —
-`git log <range> -- <paths>` ריק.
+**1. גודל bundle: אין רגרסיה, שינוי זניח.** מול הבייסליין הכתוב ב-M14-c51
+(`fae38f9f0`, `scripts/bundle-report.mjs` על build טרי, `pnpm start` על
+3512): בית 341.2kB -> 341.7kB gzip, קופה 344.9kB -> 345.4kB gzip, סה"כ
+365.9kB -> 366.4kB על אותם 27 chunks. ההפרש (כ-0.5kB) תואם את התוספת של
+`FooterNewsletterForm` ב-M18-c51 (רכיב חדש בפוטר, מרונדר בכל דף) ולא נדרש
+תיקון: מתחת לרעש.
 
-בכל זאת נמדד מחדש מול build אמיתי: `pnpm build` נקי, שרת `pnpm start`
-נפרד על פורט 3513 (לא נגעתי בשרת סשן מקביל על 3471).
+**2. פלט צנרת התמונות: ממצא ותיקון.** `src/components/storefront/
+ProductGallery.tsx` (תמונות ממוזערות 64x64px מתחת לתמונה הראשית בדף מוצר)
+השתמש ב-`fill` עם `sizes="64px"`, אותו דפוס שתוקן ב-`CategoryStrip.tsx`
+ב-M14-c51: ערך px גולמי לא נכנס ל-regex `getWidths` שמזהה רק יחידת `vw`,
+כך שהרשימה המלאה `imageSizes`+`deviceSizes` יוצאת: **17 מועמדים, 16w עד
+3840w, לתמונה ש-CSS (`product-page.css:175`) מציב במסגרת 64x64px קבועה
+(`position:relative; overflow:hidden`)**. לא נתפס ב-M14-c51 כי הבדיקה שם
+הסתכלה על HTML הבית, לא דף המוצר. תוקן ל-`width={64} height={64}` (בלי
+`fill`), שמפעיל את ה-branch הקומפקטי 1x/2x: **2 מועמדים**. נמדד על מוצר
+עם 4 תמונות גלריה (`/product/6253`): HTML גולמי 159,377 -> 155,207 בייט
+(-4,170B, -2.6%).
 
-- **`curl` על חמישה נתיבים** (`/`, `/login`, `/checkout`,
-  `/checkout/frame-return`, `/redeem/[token]`): כל אחד עם `Content-Security-
-  Policy`, `Strict-Transport-Security` (`max-age=63072000; includeSubDomains;
-  preload`), `X-Frame-Options`, `X-Content-Type-Options: nosniff`,
-  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`.
-  ה-CSP `frame-ancestors` וה-`X-Frame-Options` הופכים נכון רק ב-
-  `/checkout/frame-return` (`'self'`/`SAMEORIGIN` שם, `'none'`/`DENY`
-  בארבעת האחרים) — עדות ישירה לתיעוד ב-`next.config.ts` על שני מקורות
-  headers שלא חופפים.
-- **rate-limit על שלושת הנתיבים**: `src/server/actions/auth.test.ts`
-  (`describe('signInWithEmail rate limiting')`), `src/server/actions/
-  payments/checkout.test.ts` (`describe('beginCheckout: the begin_checkout
-  rate limit')`), `src/app/api/supplier/vouchers/redeem/route.test.ts`
-  (429 עם ותק בלי לגעת בשובר כשהתקרה מגיעה) — שלושתם ירוקים, מוסיפים על
-  הכיסוי מ-M13-c51.
-- **Upstash**: לא מוגדר מקומית (`.env.local` בלי `UPSTASH_REDIS_REST_URL`),
-  fallback ל-Postgres פעיל — זהה למצב שתועד ב-M13-c51.
+**3. תגיות ISR: אין רגרסיה.** `cache-invalidation-gate` נקי (16/16). אין
+שינוי ב-`lib/homepage/{deals,rails}.ts`, `category-page.ts`,
+`product-detail.ts` מאז M14-c51.
+
+**4. כותרות cache: אין רגרסיה.** `/images/*` עדיין `public, max-age=0,
+s-maxage=86400, stale-while-revalidate=604800`. דפי הבית/מוצר עדיין
+`private, no-cache, no-store, max-age=0, must-revalidate` עם
+`x-nextjs-prerender:1`, זהה בדיוק למצב המתועד ב-M14-c51 (Origin-Only
+serving תחת `next start`, צפוי).
+
+**שער השוואה חזותי, דף המוצר (הדף שנגעתי בו), בחזית, `barbecue-2` מול
+`refs/electro_product_{width}.png`:**
+
+| רוחב | both-painted | סטטוס |
+|---|---|---|
+| 380 | 5.61% | PASS |
+| 768 | 4.92% | PASS |
+| 1440 | 2.99% | PASS |
+
+זהה עד כדי רעש למדידה ההיסטורית (5.65/4.95/2.92, M02-c52). הריצה מדפיסה
+אזהרת `HEIGHT RATIO ~0.3x` (`scripts/diff-bands.mjs`): הדף שלנו מסתיים
+ב-~3,100-3,400px ומול reference ה-Electro באורך 7,653-11,181px, פער מבני
+ידוע ומתועד (הדגמת Electro נושאת תוכן שלנו לא בונה, "reference blank"
+ברוב הפער) ולא רגרסיה חדשה: מספר ה-both-painted (השער המחייב) תואם בדיוק
+את הבייסליין. הבית לא נגעתי בו, לא נמדד.
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test`
-**604/7188** (זהה, 0 חדשים, 0 דולגו חדשים), `pnpm build` עבר בלי שגיאה.
-אין שינוי UI, לכן `scripts/compare.mjs` לא רץ (תואם לתקדים M03/M05/M06/
-M07/M09/M10/M11/M12-c52).
+**604/7188** (זהה), `pnpm build` נקי.
 
-**קבצים:** `STATE.md` בלבד.
+**קבצים:** `src/components/storefront/ProductGallery.tsx`,
+`docs/UI-PARITY-REPORT.md` (שורות מדידה), `STATE.md`.
+
+## M13-c52 - DONE (29.09): פירוט מלא בארכיון
+
+אבטחה נמדדה מחדש מול build אמיתי: CSP/HSTS/X-Frame-Options/Referrer-Policy
+על חמישה נתיבים כולל חריג `/checkout/frame-return`, rate-limit על
+login/checkout/redeem מכוסה בטסטים ירוקים. Upstash לא מוגדר מקומית,
+Postgres fallback פעיל. אין שינוי קוד. 604/7188 זהה.
 
 ## M12-c52 - DONE (29.09): פירוט מלא בארכיון
 
@@ -111,25 +140,14 @@ green check מחדש: type-check/lint/test (604/7182)/build כולם נקיים,
 Vercel זוהו ותועדו; `kenyonexpress` הוא זה שמחזיק את הדומיין החי, לא
 `kenyonexpress-prod`. שערים נקיים, אין שינוי קוד. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
 
-## M18-c51 - DONE (29.09), אומת שוב (29.09): פירוט מלא בארכיון
-
-טופס הניוזלטר בפוטר חובר ל-`subscribeToNewsletter` האמיתי במקום
-`/api/newsletter` שלא היה קיים מעולם (404 שקט על כל שליחה). שערים נקיים,
-זהים ל-M17-c51. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
-
-## M17-c51 - DONE (29.09): פירוט מלא בארכיון
-
-מעבר משפטי ולשוני מלא: דליפת LTR + מילה זרה בכתובת המוכר במייל אישור רכישה
-(`messages/he.json:487`), placeholder באנגלית בשדה הניוזלטר, שני קישורים
-שבורים ל-`/legal/*` (stub redirect) תוקנו לנתיב החי הישיר, תשע טעויות כתיב
-בקוד משפטי מת. שער 8.51/9.02/3.95 PASS, אין רגרסיה. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
-
-**M16-c51..M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M16-c51 —
+**M18-c51..M12-c51 פירוט מלא בארכיון** (`docs/STATE-ARCHIVE.md`): M18-c51:
+טופס ניוזלטר בפוטר חובר ל-`subscribeToNewsletter` האמיתי. M17-c51: מעבר
+משפטי ולשוני מלא (LTR, placeholder, קישורים שבורים, טעויות כתיב). M16-c51:
 תברואת ריפו, git status נקי, 9 ענפים נדחפו, 23 PRs פתוחים ו-81 ענפים ישנים
-רשומים (22 בטוחים למחיקה, 59 בלי PR). M15-c51 — `docs/BACKLOG.md` נוצר
-כרשימת "ידני לאופיר" יחידה. M14-c51 — bundle ירד, `CategoryStrip.tsx` תוקן.
-M13-c51 — CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על build אמיתי.
-M12-c51 — SEO, 261 בדיקות, אפס drift.
+רשומים (22 בטוחים למחיקה, 59 בלי PR). M15-c51: `docs/BACKLOG.md` נוצר
+כרשימת "ידני לאופיר" יחידה. M14-c51: bundle ירד, `CategoryStrip.tsx` תוקן.
+M13-c51: CSP/HSTS/X-Frame-Options/Referrer-Policy אומתו על build אמיתי.
+M12-c51: SEO, 261 בדיקות, אפס drift.
 
 ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M13-c51, תור 23.09, וכל מה שקדם)
 ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
@@ -204,7 +222,8 @@ M12-c51 — SEO, 261 בדיקות, אפס drift.
 | M10-c52 | DONE (29.09) | הרשומה למעלה. נמדד (לא הוערך) שהנמוך מבין ששת המועמדים הוא `src/lib/supabase/rls-report-fetch.ts`, 81.1% ענפים; שאר החמישה כבר ב-95%+. שבעה טסטים נוספו, 100% ענפים אומת. `vitest.config.ts` הורחב זמנית למדידה בלבד והוחזר בדיוק (diff ריק). שערים נקיים, 604/7188. |
 | M11-c52 | DONE (29.09) | הרשומה למעלה. axe נמדד מחדש על 160 סריקות (פומבי 80/2 דולג, לקוח 16/16, אדמין 57/57 עם `E2E_ADMIN_EMAIL` הנכון, ספק 7/7), אפס הפרות WCAG 2.1 A/AA. אין שינוי קוד. |
 | M12-c52 | DONE (29.09) | הרשומה למעלה. SEO נמדד מחדש מול build אמיתי: robots.txt/sitemap.xml (46 מוצרים)/canonical/og/JSON-LD Product+Offer+BreadcrumbList על דף מוצר והבית, כולם תקינים. 180 טסטי SEO ייעודיים ירוקים, 604/7188 זהה. אין שינוי קוד. |
-| M13-c52 | DONE (29.09) | הרשומה למעלה. CSP/HSTS/X-Frame-Options/Referrer-Policy נמדדו מחדש ב-`curl` על חמישה נתיבים כולל חריג `/checkout/frame-return`; rate-limit על login/checkout/redeem מכוסה בטסטים ירוקים. Upstash לא מוגדר מקומית, Postgres fallback פעיל. אין שינוי קוד. |
+| M13-c52 | DONE (29.09) | הארכיון. CSP/HSTS/X-Frame-Options/Referrer-Policy נמדדו מחדש ב-`curl` על חמישה נתיבים כולל חריג `/checkout/frame-return`; rate-limit על login/checkout/redeem מכוסה בטסטים ירוקים. Upstash לא מוגדר מקומית, Postgres fallback פעיל. אין שינוי קוד. |
+| M14-c52 | DONE (29.09) | הרשומה למעלה. bundle: אין רגרסיה (341.2->341.7kB בית, 344.9->345.4kB קופה, רעש). תמונות: `ProductGallery.tsx` נשא את אותו באג `fill`+px `sizes` שתוקן ב-`CategoryStrip.tsx` ב-M14-c51, לא נתפס אז; תוקן ל-`width`/`height`, HTML מוצר -2.6%. ISR ו-cache headers: אין רגרסיה. שער מוצר בחזית: 5.61/4.92/2.99 PASS, זהה לבייסליין. |
 
 ## חוסמים פתוחים (לא בידי הסוכן)
 
