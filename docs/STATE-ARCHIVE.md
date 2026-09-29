@@ -2,6 +2,39 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c57 (הועבר מ-STATE.md ב-M11-c57, לשמירה על תקרת 300 שורות)
+
+**M10-c57 - DONE (30.09): כיסוי טסטים, `money-format.ts`.** משימת התור:
+"find the critical module with the lowest coverage among packages/money,
+payment split, voucher state machine, order state machine, refunds and
+RLS helpers. Add unit tests until branches are covered." נמדד כיסוי
+בפועל (לא הערכה) על כל אחת משש הקטגוריות: `src/lib/money.ts`,
+`src/lib/commerce/commission.ts` (payment split), `src/server/domain/
+vouchers/state-machine.ts`, `src/server/domain/orders/state-machine.ts`
+ו-`status-transitions.ts` (100% מ-M10-c56), חמשת קבצי הרפאנד
+(`refund.ts`, `refund-request.ts`, `refund-wallet.ts`, `refund-record.ts`,
+`refund-requests.ts`, `refund-destination.ts`) ושלושת עוזרי ה-RLS
+(`rls-report-fetch.ts`, `rls-manifest.ts`, `rls-write-policies.ts`,
+`rls-role-matrix.ts`). כולם 93 עד 100 אחוז ענפים. החריג היחיד:
+`src/lib/money-format.ts`, בן-הזוג של `money.ts` (מעצב `Agorot` לתצוגה),
+52.94% הצהרות / **20.83% ענפים** / 38.46% פונקציות. שבע מתוך 13
+הפונקציות המיוצאות (`shekelsFromIls`, `shekelsFromIlsRounded`,
+`shekelsFromIlsPlain`, `shekelsFromIlsPlainRounded`, `shekelsFromIlsCompact`,
+`shekelsFromIlsCompactPlain`, `repairPriceOrder`) לא היו לגמרי מטופלות.
+נוספו 30 טסטים: `null`/`undefined`/מחרוזת/`NaN`/`Infinity` בכניסה, עיגול,
+השמטת השבר ב-compact, ו-`repairPriceOrder` (אין התאמה, התאמה יחידה,
+כמה התאמות, מחרוזת מבודדת כבר, ספרות מקובצות ועשרוניות, רווח בין הסימן
+לספרות). תוך כדי כך נמצא ש-`shekelBody`'s `withFraction` נקרא `true` בכל
+שתי קריאותיו הקיימות, ענף מת ולא ניתן לבדיקה: הפרמטר הוסר, לא רק תועד,
+כי ההשארה הייתה משאירה ענף שלא ניתן לכסות בעדות. **תוצאה: `money-format.ts`
+100/100/100/100** (מ-52.94/20.83/38.46/53.12). חוקי הכסף לא הופרו: אין
+`float` חדש בשום מקום, כל החישוב עדיין דרך `src/lib/money.ts`. שערים:
+`type-check` נקי, `lint` נקי (biome 2023 קבצים, 12 שערי תוכן ירוקים,
+i18n 627/627, locale 116/116), `test` 608/608 קבצים, **7272/7284**
+(12 skipped, היה 7242, פלוס 30) הכל ירוק, `build` הושלם ללא שגיאה. אין
+שינוי UI, אין שער חזותי נדרש. **קבצים ששונו:** `src/lib/money-format.ts`,
+`src/lib/money-format.test.ts`.
+
 ## M08-c57 (הועבר מ-STATE.md ב-M09-c57, לשמירה על תקרת 300 שורות)
 
 **M08-c57 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1

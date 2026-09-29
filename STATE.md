@@ -1,38 +1,45 @@
-RESUME FROM: M11-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c57)
+RESUME FROM: M12-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c57)
 
 ## המשך מ:
 
-**M10-c57 - DONE (30.09): כיסוי טסטים, `money-format.ts`.** משימת התור:
-"find the critical module with the lowest coverage among packages/money,
-payment split, voucher state machine, order state machine, refunds and
-RLS helpers. Add unit tests until branches are covered." נמדד כיסוי
-בפועל (לא הערכה) על כל אחת משש הקטגוריות: `src/lib/money.ts`,
-`src/lib/commerce/commission.ts` (payment split), `src/server/domain/
-vouchers/state-machine.ts`, `src/server/domain/orders/state-machine.ts`
-ו-`status-transitions.ts` (100% מ-M10-c56), חמשת קבצי הרפאנד
-(`refund.ts`, `refund-request.ts`, `refund-wallet.ts`, `refund-record.ts`,
-`refund-requests.ts`, `refund-destination.ts`) ושלושת עוזרי ה-RLS
-(`rls-report-fetch.ts`, `rls-manifest.ts`, `rls-write-policies.ts`,
-`rls-role-matrix.ts`). כולם 93 עד 100 אחוז ענפים. החריג היחיד:
-`src/lib/money-format.ts`, בן-הזוג של `money.ts` (מעצב `Agorot` לתצוגה),
-52.94% הצהרות / **20.83% ענפים** / 38.46% פונקציות. שבע מתוך 13
-הפונקציות המיוצאות (`shekelsFromIls`, `shekelsFromIlsRounded`,
-`shekelsFromIlsPlain`, `shekelsFromIlsPlainRounded`, `shekelsFromIlsCompact`,
-`shekelsFromIlsCompactPlain`, `repairPriceOrder`) לא היו לגמרי מטופלות.
-נוספו 30 טסטים: `null`/`undefined`/מחרוזת/`NaN`/`Infinity` בכניסה, עיגול,
-השמטת השבר ב-compact, ו-`repairPriceOrder` (אין התאמה, התאמה יחידה,
-כמה התאמות, מחרוזת מבודדת כבר, ספרות מקובצות ועשרוניות, רווח בין הסימן
-לספרות). תוך כדי כך נמצא ש-`shekelBody`'s `withFraction` נקרא `true` בכל
-שתי קריאותיו הקיימות, ענף מת ולא ניתן לבדיקה: הפרמטר הוסר, לא רק תועד,
-כי ההשארה הייתה משאירה ענף שלא ניתן לכסות בעדות. **תוצאה: `money-format.ts`
-100/100/100/100** (מ-52.94/20.83/38.46/53.12). חוקי הכסף לא הופרו: אין
-`float` חדש בשום מקום, כל החישוב עדיין דרך `src/lib/money.ts`. שערים:
+**M11-c57 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
+השלישית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
+דף, לתקן כל הפרה `serious`/`critical`, לשמור `WCAG 2.1 AA`, ולרשום את
+המונה שנשאר. **אפס קומיט נגע בשטח הנגישות (CSS/JSX/routes/auth) מאז
+M11-c56** (29.09, `b16381a55`): שני הקומיטים היחידים שנגעו בקוד מאז הם
+תלויות minor (`a6183cca6`) וטסטים ל-`money-format.ts` (`f65b63176`),
+אף אחד לא ב-UI או ב-auth/middleware/rate-limit. **נמדד מחדש היום מול
+build אמיתי (`pnpm build` על HEAD `f65b63176`), דרך `pnpm start` על
+פורט 3314** (3313 תפוס ע"י סשן מקביל אחר, לא נגעו בו):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes` כמו ב-`ci.yml`): **‏72/74 עברו, 2 דולגו**
+  (ווידג'ט חיפוש שהוסר ב-D3, skip מכוון) — **‏0 הפרות**.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
+  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, **‏0 הפרות** בשניהם.
+  תפקיד **אדמין: 57/57 דולגו** — **אותה שגיאה המדויקת שנמדדה ב-M11-c56**
+  (`page.waitForURL: Timeout 20000ms exceeded`, אומת ב-annotation של
+  הריצה), ואומת ישירות ש-`git log b16381a55..HEAD` על
+  `src/server/actions/auth`/`middleware.ts`/`rate-limit*`/`src/app/(auth)`
+  ריק לגמרי — כשל התחברות פרודקשן קיים מראש, לא רגרסיית נגישות ולא
+  רגרסיית קוד. לא נסובבה סיסמה (אסור לפי כללי הפרויקט).
+**המונה שנשאר (`serious`/`critical`, נמדד היום): ‏0.** מונה `moderate`
+פתוח ומתועד בכוונה כהחלטה: `target-size` (2.5.8, דרישת WCAG **2.2**
+ולא 2.1, מחוץ ליעד המוצהר) על שלוש נקודות הקרוסלה בבית, מתועד
+ב-`docs/A11Y-SWEEP-REPORT.md`. **אפס שינוי קוד** (אין הפרה לתקן): שערים
 `type-check` נקי, `lint` נקי (biome 2023 קבצים, 12 שערי תוכן ירוקים,
-i18n 627/627, locale 116/116), `test` 608/608 קבצים, **7272/7284**
-(12 skipped, היה 7242, פלוס 30) הכל ירוק, `build` הושלם ללא שגיאה. אין
-שינוי UI, אין שער חזותי נדרש. **קבצים ששונו:** `src/lib/money-format.ts`,
-`src/lib/money-format.test.ts`.
+i18n 627/627, locale 116/116), `pnpm test` 608/608 קבצים, 7272/7284
+(12 skipped) ירוקים ללא נגיעה, `build` הושלם ללא שגיאה. אין שינוי UI,
+אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M10-c57 הועבר לתקרת 300 שורות).
+
+## M10-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+כיסוי טסטים, `money-format.ts`: 52.94/20.83/38.46 סטייטמנטס/ענפים/
+פונקציות ← **100/100/100/100**, 30 טסטים נוספו, פרמטר מת אחד
+(`withFraction`) הוסר. שאר חמש הקטגוריות הקריטיות (money, payment
+split, שתי מכונות המצבים, רפאנד, RLS helpers) כבר היו 93-100%.
+`type-check`/`lint`/`test` (7242→7272)/`build` ירוקים.
 
 ## M09-c57, M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -40,22 +47,17 @@ i18n 627/627, locale 116/116), `test` 608/608 קבצים, **7272/7284**
 `docs/BACKLOG.md`, כל 15 הפריטים דורשים אופיר. שערים הורצו במלואם בשני
 הפריטים, זהה למדידה הקודמת. הועברו ב-M10-c57 לשמירה על תקרת 300 שורות.
 
-## M06-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M06-c57..M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית ומוצר 99/100/
-100/100), אפס תיקון נדרש, אין קומיט קוד מ-M06-c56 שנוגע בעמוד הבית או
-המוצר. הועבר ב-M08-c57 לשמירה על תקרת 300 שורות.
-
-## M05-c57, M04-c57, M03-c57, M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M05-c57: ביקורת DB, advisors נמדדו בפעם השביעית ברציפות, 44 WARN זהה
-שדה-שדה ל-M05-c56, אפס קובץ מיגרציה חדש נדרש. M04-c57: תחזוקת תלויות,
-שני עדכוני minor בטווח 0.x הוחלו (`@anthropic-ai/sdk`, `@supabase/ssr`),
-`pnpm audit` אפס חולשות. M03-c57: שער ירוק, `type-check`/`lint`/`test`/
-`build` — כל הארבעה נקיים, אפס תיקון נדרש, זהה במהות ל-M03-c56.
-M02-c57: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה, זהה בדיוק
-ל-M02-c56. ארבעתם DONE, אפס שינוי UI. הועברו ב-M06-c57 לשמירה על
-תקרת 300 שורות.
+M06-c57: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית ומוצר
+99/100/100/100), אפס תיקון נדרש. M05-c57: ביקורת DB, advisors נמדדו
+בפעם השביעית ברציפות, 44 WARN זהה שדה-שדה ל-M05-c56. M04-c57: תחזוקת
+תלויות, שני עדכוני minor בטווח 0.x הוחלו (`@anthropic-ai/sdk`,
+`@supabase/ssr`), `pnpm audit` אפס חולשות. M03-c57: שער ירוק,
+`type-check`/`lint`/`test`/`build` — כל הארבעה נקיים, זהה במהות
+ל-M03-c56. M02-c57: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה,
+זהה בדיוק ל-M02-c56. כל חמשתם DONE, אפס שינוי UI. הועברו ב-M08-c57/
+M11-c57 לשמירה על תקרת 300 שורות.
 
 ## M18-c56, M17-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
