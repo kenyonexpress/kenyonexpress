@@ -1,40 +1,51 @@
-RESUME FROM: M11-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c56)
+RESUME FROM: M12-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c56)
 
 ## המשך מ:
 
-**M10-c56 - DONE (29.09): כיסוי ענפים, `status-transitions.ts` 66.66%
-← 100%.** משימת התור: מציאת המודול הקריטי עם הכיסוי הנמוך ביותר מבין
-`packages/money`, payment split, מכונת מצבי שובר, מכונת מצבי הזמנה,
-זיכויים ו-RLS helpers, והוספת טסטים עד כיסוי ענפים מלא. נמדד עם
-`--coverage.include` ממוקד לכל קובץ מהרשימה: `money.ts` 100% (21/21),
-`checkout/split.ts` 100% (4/4), `commerce/money.ts` 100% (20/20),
-`commerce/commission.ts` 100% (42/42), `orders/state-machine.ts` 100%
-(19/19), `orders/refund.ts` 100% (55/55), `orders/refund-request.ts`
-100% (16/16), `vouchers/state-machine.ts` 100% (22/22),
-`lib/supabase/rls-report-fetch.ts` 100% (37/37) — כל אלה כבר בתקרה,
-כמו ש-M09-c56 קבע לששת המודולים הממופים ב-`vitest.config.ts`. **החריג
-בתוך משפחת "מכונת מצבי הזמנה":** `orders/status-transitions.ts`
-(טבלת המעברים החוקיים לארבע העמודות המשוגחות ע"י ה-DB, השכבה שמתחת
-ל-`state-machine.ts` עצמו) עמד על **66.66% (4/6)**, ו-`orders/
-order-transitions.ts` (תוכנית האפקטים פר-מעבר) על **83.33% (5/6)** —
-שני הענפים החסרים היו אותה צורת פגם: fallback הגנתי `?? []` שהנתונים
-האמיתיים לעולם לא מפעילים, כי `statesOf`/`terminalStatesOf` תמיד
-אינדקסים מפתח שכבר הוכח קיים דרך `Object.keys`, ו-`orderMachine`
-תואם `ORDER_TRANSITION_EFFECTS` מעבר-למעבר לפי הטסט הקיים של הקובץ.
-**נוספו:** טסט אחד ב-`status-transitions.test.ts` ל-`isLegalTransition`
-עם origin לא מוכר (בר-הפעלה דרך ה-API האמיתי, בלי mock) — מכסה את ה-
-fallback ב-`isLegalTransition`; ושני קבצי טסט חדשים עם `vi.mock` (על
-ה-JSON ועל `orderMachine` בהתאמה) שמזריקים טבלה פגומה כדי להוכיח
-שה-fallback ב-`terminalStatesOf` וב-`effectsFor` באמת נסוג ל"אין
-כלל" במקום לזרוק, ליום שהאינווריאנטה שהם שומרים עליה תיסדק.
-**נמדד אחרי:** ארבעת הקבצים ב-100% ענפים. שערים: `type-check` נקי,
-`lint` נקי, `pnpm test` — **608/608 קבצים, 7242/7254 (12 skipped)**,
-`pnpm build` ירוק. אין שינוי UI, אין שער חזותי נדרש. שלושה קבצים
-שונו/נוספו: `src/server/domain/orders/status-transitions.test.ts`
-(עריכה), `status-transitions-guard.test.ts` ו-
-`order-transitions-plan-fallback.test.ts` (חדשים). קומיט `20e0adc61`,
-נדחף.
+**M11-c56 - DONE (29.09): נגישות — axe על כל דף, אימות מחדש, 0 הפרות
+`serious`/`critical` שנמדדות.** משימת התור: להריץ axe על כל דף, לתקן כל
+הפרה `serious`/`critical`, לשמור `WCAG 2.1 AA`, ולרשום את המונה שנשאר.
+**המשימה כבר בוצעה במלואה ב-`72df5e898` (28.09, לפני החלון הזה):** שער
+ציבורי בן 19 מסלולים (`e2e/a11y.spec.ts`, כולל דף מוצר, עגלה, קופה
+בשלושת שלביה ופאנל העגלה, שני ויופורטים) פלוס שער מאומת חדש
+(`e2e/a11y-authenticated.spec.ts`, 80 מסלולים בשלושה תפקידים —
+לקוח/אדמין/ספק) שתיקן אז 77 מתוך 80 הפרות, ותועד ב-`docs/A11Y-SWEEP-REPORT.md`.
+**נמדד מחדש היום, מול build אמיתי (`pnpm build` מ-M10-c56, אותו HEAD),
+דרך `pnpm start` על פורט 3312:**
+- השער הציבורי: **‏36/36 עברו** (סבב ללא כתיבה) **+ 4/4 עברו** (`@writes`
+  — קופה עם עגלה זרועה, אשף הקופה שלב-שלב, פאנל העגלה), סבב אחד דולג
+  (ווידג'ט חיפוש שהוסר ב-D3, מתועד כ-skip מכוון). **‏0 הפרות.**
+- השער המאומת: תפקיד **לקוח ‏16/16 עברו**, תפקיד **ספק ‏7/7 עברו**, **‏0
+  הפרות** בשניהם. תפקיד **אדמין: ‏57/57 דולגו** — לא כשל נגישות, כשל
+  התחברות (`page.waitForURL: Timeout 20000ms exceeded`, מאומת ידנית:
+  הדף מחזיר "כתובת אימייל או סיסמה שגויים" על אותה סיסמה שהפיקסצ'ר
+  אמורה להחזיק). **נבדק שזה לא רגרסיית קוד**: `git log` בין `72df5e898`
+  ל-HEAD על `auth.ts`/`middleware.ts`/`rate-limit` — אפס קומיט. **נבדק
+  שזו לא רגרסיית סיסמה מכוונת**: `node scripts/seed-test-data.mjs
+  --check` מסרב לרוץ על פרודקשן בלי `SEED_ALLOW_PRODUCTION=i-understand`,
+  והדגל דורש "expect to rotate those passwords afterwards" — סיבוב
+  סיסמה אסור לפי כללי הפרויקט, ולכן **לא רוענן**. הפיקסצ'ר של אדמין
+  ככל הנראה ננעל/סוטה מסשן מקביל אחר על אותו ריפו (`parallel-claude-sessions`
+  בזיכרון). **התיקון של תפקיד אדמין עצמו כבר אומת נקי שלוש פעמים
+  ברציפות ב-`72df5e898`** (מצוטט בקומיט: "Verified clean across three
+  consecutive full runs"), ואין קומיט קוד שנוגע בו מאז. **החלטה שהתקבלה
+  לבד:** לא לנסות לתקן/לאפס את פיקסצ'ר האדמין (מחוץ להיקף המשימה, נוגע
+  בפרודקשן, ודורש דגל שהתיעוד שלו עצמו אומר לסבב סיסמאות אחריו — אסור).
+**המונה שנשאר (`serious`/`critical`, נמדד היום): ‏0.** מונה `moderate`
+פתוח ותיעוד מכוון אחד: `target-size` (2.5.8) על שלוש נקודות הקרוסלה
+בבית — דרישת WCAG **2.2**, לא 2.1, מחוץ ליעד המוצהר של הפרויקט, מתועד
+ב-`A11Y-SWEEP-REPORT.md` בכוונה כהחלטה לא כשתיקה. **אפס שינוי קוד היום**
+(`type-check`/`lint`/`pnpm test` 608/608, 7242/7254 נשארו ירוקים ללא
+נגיעה), ולכן אפס נזק לשער הפיקסלים.
+
+## M10-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+כיסוי ענפים, `orders/status-transitions.ts` 66.66% ← 100% ו-`orders/
+order-transitions.ts` 83.33% ← 100% (שני fallback הגנתיים ש-DB
+המעברים תמיד מונע מהם לירות, מוכחים עם `vi.mock`). שאר ששת המודולים
+הממופים כבר היו בתקרה. `type-check`/`lint`/`test`/`build` ירוקים
+(608/608, 7242/7254). הועבר ב-M11-c56 לשמירה על תקרת 300 שורות.
 
 ## M09-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

@@ -2,6 +2,41 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c56 (הועבר מ-STATE.md ב-M11-c56, לשמירה על תקרת 300 שורות)
+
+**M10-c56 - DONE (29.09): כיסוי ענפים, `status-transitions.ts` 66.66%
+← 100%.** משימת התור: מציאת המודול הקריטי עם הכיסוי הנמוך ביותר מבין
+`packages/money`, payment split, מכונת מצבי שובר, מכונת מצבי הזמנה,
+זיכויים ו-RLS helpers, והוספת טסטים עד כיסוי ענפים מלא. נמדד עם
+`--coverage.include` ממוקד לכל קובץ מהרשימה: `money.ts` 100% (21/21),
+`checkout/split.ts` 100% (4/4), `commerce/money.ts` 100% (20/20),
+`commerce/commission.ts` 100% (42/42), `orders/state-machine.ts` 100%
+(19/19), `orders/refund.ts` 100% (55/55), `orders/refund-request.ts`
+100% (16/16), `vouchers/state-machine.ts` 100% (22/22),
+`lib/supabase/rls-report-fetch.ts` 100% (37/37) — כל אלה כבר בתקרה,
+כמו ש-M09-c56 קבע לששת המודולים הממופים ב-`vitest.config.ts`. **החריג
+בתוך משפחת "מכונת מצבי הזמנה":** `orders/status-transitions.ts`
+(טבלת המעברים החוקיים לארבע העמודות המשוגחות ע"י ה-DB, השכבה שמתחת
+ל-`state-machine.ts` עצמו) עמד על **66.66% (4/6)**, ו-`orders/
+order-transitions.ts` (תוכנית האפקטים פר-מעבר) על **83.33% (5/6)** —
+שני הענפים החסרים היו אותה צורת פגם: fallback הגנתי `?? []` שהנתונים
+האמיתיים לעולם לא מפעילים, כי `statesOf`/`terminalStatesOf` תמיד
+אינדקסים מפתח שכבר הוכח קיים דרך `Object.keys`, ו-`orderMachine`
+תואם `ORDER_TRANSITION_EFFECTS` מעבר-למעבר לפי הטסט הקיים של הקובץ.
+**נוספו:** טסט אחד ב-`status-transitions.test.ts` ל-`isLegalTransition`
+עם origin לא מוכר (בר-הפעלה דרך ה-API האמיתי, בלי mock) — מכסה את ה-
+fallback ב-`isLegalTransition`; ושני קבצי טסט חדשים עם `vi.mock` (על
+ה-JSON ועל `orderMachine` בהתאמה) שמזריקים טבלה פגומה כדי להוכיח
+שה-fallback ב-`terminalStatesOf` וב-`effectsFor` באמת נסוג ל"אין
+כלל" במקום לזרוק, ליום שהאינווריאנטה שהם שומרים עליה תיסדק.
+**נמדד אחרי:** ארבעת הקבצים ב-100% ענפים. שערים: `type-check` נקי,
+`lint` נקי, `pnpm test` — **608/608 קבצים, 7242/7254 (12 skipped)**,
+`pnpm build` ירוק. אין שינוי UI, אין שער חזותי נדרש. שלושה קבצים
+שונו/נוספו: `src/server/domain/orders/status-transitions.test.ts`
+(עריכה), `status-transitions-guard.test.ts` ו-
+`order-transitions-plan-fallback.test.ts` (חדשים). קומיט `20e0adc61`,
+נדחף.
+
 ## M09-c56 (הועבר מ-STATE.md ב-M10-c56, לשמירה על תקרת 300 שורות)
 
 **M09-c56 - STATE CLEAN (29.09): אפס פריט שלב 1 בידי הסוכן, HEAD ללא
