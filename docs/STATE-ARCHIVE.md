@@ -2,6 +2,57 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c55 (הועבר מ-STATE.md ב-M02-c55, לשמירה על תקרת 300 שורות)
+
+**M01-c55 - BLOCKED (29.09): בדיקת פרודקשן — DNS תקין, פריסת HEAD סורבה
+בפעם החמישית ברציפות, באותה סיבה בדיוק.** המשימה: build+deploy לפרודקשן
+דרך Vercel, ואז `dig`/`curl` על שני הדומיינים.
+
+**build מקומי:** `pnpm build` רץ בפורגראונד, `exit 0`, כל המסלולים
+נבנו (כולל `/sitemap/*`, `/supplier/*`, `/wishlist/s/[token]`). HEAD
+תקין ובר-בנייה.
+
+**פריסה:** נוסתה בפועל דרך Vercel MCP `create_deployment`, `gitSource`
+github, `audit/final-audit`@`291bc2d884eb6c727d5d66402152bcac576a7a3a`
+(HEAD), `target=production`, פרויקט `kenyonexpress`
+(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`). התקדמה הפעם עד `BUILDING` (בניגוד
+לסירוב המיידי בניסיונות קודמים) ואז נכשלה: `dpl_FJYf483tkqSNf5pkG9MenghGQF46`,
+`state=ERROR`, `errorCode=BUILD_UTILS_SPAWN_1`,
+`errorMessage="Command \"node scripts/deploy-preflight.mjs && pnpm build\" exited with 1"`.
+**שורש הסיבה נבדק ישירות מול `filter_project_envs` (קריאה בלבד):**
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD` (השמות
+שהקוד קורא בפועל) עדיין חסרים ב-Production; `CARDCOM_MERCHANT_ID`/
+`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY` קיימים אך הקוד לא קורא אותם;
+`ALLOW_INCOMPLETE_ENV` עדיין מוגדר ב-Production. לא בוצע שינוי בסביבת
+Vercel (אסור לפי הכללים). **זו הפעם החמישית ברציפות עם אותו כשל בדיוק**
+(M01-c1, M01-c52, M01-c53, M01-c54, ועכשיו M01-c55). **החלטה שהתקבלה
+לבד:** לפי כלל "goal שנתקע פעמיים — לדלג", הבדיקה התקופתית של DNS/200
+תמשיך בכל מחזור, אבל ניסיון פריסה חוזר דרך Vercel MCP לא ירוץ שוב עד
+שאופיר יוסיף בפועל את שלושת השמות החסרים ויסיר `ALLOW_INCOMPLETE_ENV`
+(סעיף 3 ב-`docs/BACKLOG.md`) — כי כל ניסיון נוסף יחזור לאותה תוצאה
+הנמדדת כבר חמש פעמים, ופעולה חוזרת בלי שינוי תנאי היא לא בדיקה, היא
+בזבוז. פרודקשן **לא נפגע**: עדיין מגיש `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`
+(`a388118f1`, `READY`), אומת עם `list_deployments`. HEAD כעת **105**
+קומיטים לפניו (`git rev-list --count a388118f1..HEAD`, עלה מ-101
+ב-M01-c54).
+
+**DNS ו-curl (נמדד ישירות, לא DNS BLOCKER):**
+`dig +short A kenyonexpress.co.il` -> `216.198.79.65`/`64.29.17.65`,
+`dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
+`ns2.vercel-dns.com`. `dig +short A www.kenyonexpress.co.il` ->
+`216.198.79.1`/`216.198.79.65`. `curl https://kenyonexpress.co.il` ->
+**308** ל-`https://www.kenyonexpress.co.il/` (הפניה תקינה של Vercel, לא
+כשל). `curl https://www.kenyonexpress.co.il` -> **200**, HTML אמיתי
+(`lang="he" dir="rtl"`, `content-security-policy`/`strict-transport-security`
+תקינים, `x-vercel-cache: HIT`). DNS תקין, הבעיה היחידה היא שהתוכן המוגש
+הוא `a388118f1` הישן, לא HEAD.
+
+**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+`pnpm lint` נקי (biome + 12 שערי תוכן, i18n 627/627, locale 116/116),
+`pnpm test` **605/605 קבצים, 7217/7229** (12 skipped, זהה), `pnpm build`
+`exit 0`. אין שינוי קוד. **קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`** (M18-c54 הועבר לשמירה על תקרת 300 שורות).
+
 ## M17-c54 (הועבר מ-STATE.md ב-M01-c55, לשמירה על תקרת 300 שורות)
 
 **M17-c54 - DONE (29.09): מעבר קופי ומשפטי בפעם השנייה — אפס ממצא חדש.**
