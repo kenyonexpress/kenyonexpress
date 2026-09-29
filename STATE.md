@@ -1,57 +1,60 @@
 RESUME FROM: M11-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c55)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c55)
 
 ## המשך מ:
 
-**M16-c55 - DONE (29.09): תברואת ריפו בפעם החמישית — git נקי, כל 43
-הענפים המקומיים נבדקו ב-SHA מול `origin/<אותו שם>`, 24 PR פתוחים, 116
-ענפי remote, אפס דריפט מ-M16-c54.** המשימה: לוודא `git status` נקי,
-שכל ענף מקומי דחוף, לרשום PR פתוחים וענפים רדומים ב-STATE.md, בלי
-מיזוג ובלי מחיקה. הוקצתה מחוץ לסדר (M11-c55 עדיין לא בוצע), כמו
-M12-c55/M14-c55 לפניה. **נמדד בפועל, לא הונח שהמדידה הקודמת עדיין
-תקפה:**
+**M17-c55 - DONE (29.09): מעבר קופי ומשפטי בפעם השלישית — אפס ממצא
+חדש.** המשימה: לקרוא כל מחרוזת UI בעברית ודף משפטי, ולתקן שגיאות
+כתיב, דליפות LTR, מילים באנגלית בקופי פונה-לקוח, וקישורים שבורים.
+הפריט כבר בוצע ב-M17-c53 (`15c97abff`, קריאה מלאה של `messages/he.json`
+591 שורות + ארבעת מסמכי ה-legal + כל href פוטר/ניווט, שלושה ממצאים
+אמיתיים תוקנו אז) ונבדק שוב אפס-דריפט ב-M17-c54. הוקצתה מחוץ לסדר
+(M11-c55 עדיין לא בוצע), כמו M12-c55/M14-c55/M16-c55 לפניה. **נמדד
+מחדש, לא הונח שהמדידה הקודמת עדיין תקפה:**
 
-- `git status`: עץ נקי, `audit/final-audit` מעודכן מול
-  `origin/audit/final-audit`. `git fetch --all --prune` נקי, אין שינוי.
-- **43 ענפים מקומיים** (עלה מ-40 ב-M16-c54 — שלושה worktrees שנוספו:
-  `worktree-ke-fetch-timeout`, `worktree-mega-63-72`,
-  `worktree-order-state-machine`). **36 זהים ב-SHA ל-`origin/<אותו שם>`**
-  (כולל שלושת חדשים). **6 בלי remote בשם הזה, אך ancestors מאומתים של
-  `origin/main`** — **אותה שישה בדיוק כמו ב-M16-c54, אפס דריפט**:
-  `chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`,
-  `pr36`, `release/v1.1`, `wip/refund-record-rebase-head`. **לא נדחפו**:
-  אין עבודה אבודה (התוכן כבר חי ב-`origin/main`), ו-remote המקורי שלהם
-  נמחק על ידי GitHub אחרי מיזוג — דחיפה מחדש רק הייתה משחזרת ענפים
-  שנוקו במכוון, בלי תועלת. אותה החלטה בדיוק כמו ב-M16-c51..M16-c54.
-- **`main` המקומי** (blocker 13 למטה): עדיין `3f6ca53c3`, עדיין 193
-  קדימה/109 מאחורה מול `origin/main`, עדיין ancestor של
-  `origin/audit/final-audit` — אפס דריפט, לא נדחף (מוגן, ידרוש
-  force-push).
-- **PRs פתוחים: 24** (`gh pr list --state open --json number`, מספרים
-  #2..#47), זהה ל-M16-c54.
-- **116 ענפי remote** (`git branch -r`, לא כולל `HEAD ->`), זהה
-  ל-M16-c54. מתוכם: `origin/main` עצמו (1), `pull/6/merge` (1, ref
-  תצוגה-מקדימה אוטומטי של GitHub ל-PR #6 הסגור — לא ענף אמיתי, תמיד
-  קיים, לא לפעולה), **24 ancestors של `origin/main` בלי PR פתוח**
-  (ממוזגים-בלי-ניקוי, זהה ל-M16-c54), ו-**67 לא ממוזגים ובלי PR**
-  (כולל `pull/6/merge`): **64 רדומים** (קומיט אחרון לפני 15.09, סף 14
-  יום — 63 ענפים אמיתיים + `pull/6/merge`) **ו-3 עם קומיט בשבועיים
-  האחרונים**: `audit/final-audit` (הענף הנוכחי), `phase5/homepage-closeout`
-  ו-`work/goal-queue-0923` (worktrees מקבילים, סוכנים אחרים באותו ריפו).
-  **כל שלוש הספירות (116/24/67) זהות ל-M16-c54, אפס דריפט אמיתי.**
-
-**לא בוצע ולא נדרש:** שום מיזוג, מחיקת ענף, מחיקת PR, ושום push
-ל-`main` — אסור לפי הכללים.
+- `git diff fb31c7ed2..HEAD --stat -- src/app src/components
+  messages/he.json` (`fb31c7ed2` = M17-c54, הפעם האחרונה שנקרא מלא):
+  **פלט ריק — אפס קובץ שונה.** i18n gate עדיין 627/627. אין קובץ legal,
+  `messages/he.json`, פוטר או ניווט שזז מאז.
+- **סריקה עצמאית של `messages/he.json` דרך `JSON.parse` (לא grep
+  טקסטואלי)** על כל מחרוזת עם אות לטינית: **28 מחרוזות**, כולן שם
+  מותג (`KenyonExpress`, `קניון EXPRESS`), מונח טכני בלי מקביל עברי
+  מקובל (`SMS`, `JSON`, `CSV`, `https`, `QR`, `Face ID`) או placeholder
+  (`{name}`, `{amount}`) — אפס דליפת LTR, אפס מילה זרה במובן הפגום,
+  זהה למה שכבר נסקר ב-M17-c53/M17-c54.
+- **קישורי הפוטר נבדקו ישירות מול המסלולים בפועל**, לא רק מול diff:
+  `LegalFooterLinks.tsx`/`SiteFooter.tsx` ממפים לארבעת מסמכי ה-legal
+  (`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
+  `/accessibility`) ולעוגני hash (`#how-to-cancel`, `#cookies`) — כל
+  ארבעת התיקיות קיימות תחת `src/app/(store)`. אייקון הטלגרם עדיין
+  `href="#"` (אין ערוץ טלגרם אמיתי לחברה) — placeholder מכוון, לא
+  קישור שבור במובן של 404, ולא ניתן לתקן בלי כתובת אמיתית מאופיר; לא
+  ממצא חדש (הקובץ לא זז מאז M17-c53).
+- **אפס תיקון קוד נדרש.**
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n
-627/627, locale 116/116, docs-index 282 מסמכים, docs-path-audit 152
-ידועים), `pnpm test` **606/606 קבצים, 7239/7251** (12 skipped, זהה
-ל-M15-c55), `pnpm build` `exit 0`, `BUILD_ID
-5-ple8mUYEdEBS-o8qIw5`. אין שינוי קוד/UI, לכן `scripts/compare.mjs`
-לא רץ (תואם לתקדים בכל פריט תברואה/re-verify קודם ללא שינוי קוד).
+627/627, locale 116/116), `pnpm test` **606/606 קבצים, 7239/7251** (12
+skipped, זהה), `pnpm build` `exit 0`, `BUILD_ID cxZgPDUsX8IsHK2WnTsna`.
+**שער חזותי בית הורץ בפורגראונד** על `pnpm start` בפורט 3311 מול
+הבייסליין הקפוא `refs/ke_live_{width}.png`, שלוש הרצות נפרדות, המספרים
+נכתבו ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו (שורות `dad53d668-dirty`):
 
-**קבצים:** `docs/STATE-ARCHIVE.md` (M15-c55 הועבר לשם), `STATE.md`
-בלבד.
+| רוחב | תוצאה | סטטוס |
+|---|---|---|
+| 380 | 8.51% | PASS |
+| 768 | 9.02% | PASS |
+| 1440 | 3.95% | PASS |
+
+זהה בדיוק ל-M17-c54/M17-c53 — צפוי, אפס שינוי UI.
+
+**קבצים:** `docs/UI-PARITY-REPORT.md` (שורות מדידה), `docs/STATE-ARCHIVE.md`
+(M16-c55 הועבר לשם), `STATE.md` בלבד.
+
+## M16-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+תברואת ריפו בפעם החמישית: git נקי, כל 43 הענפים המקומיים (עלה מ-40,
+שלושה worktrees חדשים) נבדקו ב-SHA מול remote, 24 PR פתוחים, 116 ענפי
+remote, אפס דריפט מ-M16-c54. הועבר ב-M17-c55 לשמירה על תקרת 300 שורות.
 
 ## M15-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

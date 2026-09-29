@@ -2,6 +2,58 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c55 (הועבר מ-STATE.md ב-M17-c55, לשמירה על תקרת 300 שורות)
+
+**M16-c55 - DONE (29.09): תברואת ריפו בפעם החמישית — git נקי, כל 43
+הענפים המקומיים נבדקו ב-SHA מול `origin/<אותו שם>`, 24 PR פתוחים, 116
+ענפי remote, אפס דריפט מ-M16-c54.** המשימה: לוודא `git status` נקי,
+שכל ענף מקומי דחוף, לרשום PR פתוחים וענפים רדומים ב-STATE.md, בלי
+מיזוג ובלי מחיקה. הוקצתה מחוץ לסדר (M11-c55 עדיין לא בוצע), כמו
+M12-c55/M14-c55 לפניה. **נמדד בפועל, לא הונח שהמדידה הקודמת עדיין
+תקפה:**
+
+- `git status`: עץ נקי, `audit/final-audit` מעודכן מול
+  `origin/audit/final-audit`. `git fetch --all --prune` נקי, אין שינוי.
+- **43 ענפים מקומיים** (עלה מ-40 ב-M16-c54 — שלושה worktrees שנוספו:
+  `worktree-ke-fetch-timeout`, `worktree-mega-63-72`,
+  `worktree-order-state-machine`). **36 זהים ב-SHA ל-`origin/<אותו שם>`**
+  (כולל שלושת חדשים). **6 בלי remote בשם הזה, אך ancestors מאומתים של
+  `origin/main`** — **אותה שישה בדיוק כמו ב-M16-c54, אפס דריפט**:
+  `chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`,
+  `pr36`, `release/v1.1`, `wip/refund-record-rebase-head`. **לא נדחפו**:
+  אין עבודה אבודה (התוכן כבר חי ב-`origin/main`), ו-remote המקורי שלהם
+  נמחק על ידי GitHub אחרי מיזוג — דחיפה מחדש רק הייתה משחזרת ענפים
+  שנוקו במכוון, בלי תועלת. אותה החלטה בדיוק כמו ב-M16-c51..M16-c54.
+- **`main` המקומי** (blocker 13 למטה): עדיין `3f6ca53c3`, עדיין 193
+  קדימה/109 מאחורה מול `origin/main`, עדיין ancestor של
+  `origin/audit/final-audit` — אפס דריפט, לא נדחף (מוגן, ידרוש
+  force-push).
+- **PRs פתוחים: 24** (`gh pr list --state open --json number`, מספרים
+  #2..#47), זהה ל-M16-c54.
+- **116 ענפי remote** (`git branch -r`, לא כולל `HEAD ->`), זהה
+  ל-M16-c54. מתוכם: `origin/main` עצמו (1), `pull/6/merge` (1, ref
+  תצוגה-מקדימה אוטומטי של GitHub ל-PR #6 הסגור — לא ענף אמיתי, תמיד
+  קיים, לא לפעולה), **24 ancestors של `origin/main` בלי PR פתוח**
+  (ממוזגים-בלי-ניקוי, זהה ל-M16-c54), ו-**67 לא ממוזגים ובלי PR**
+  (כולל `pull/6/merge`): **64 רדומים** (קומיט אחרון לפני 15.09, סף 14
+  יום — 63 ענפים אמיתיים + `pull/6/merge`) **ו-3 עם קומיט בשבועיים
+  האחרונים**: `audit/final-audit` (הענף הנוכחי), `phase5/homepage-closeout`
+  ו-`work/goal-queue-0923` (worktrees מקבילים, סוכנים אחרים באותו ריפו).
+  **כל שלוש הספירות (116/24/67) זהות ל-M16-c54, אפס דריפט אמיתי.**
+
+**לא בוצע ולא נדרש:** שום מיזוג, מחיקת ענף, מחיקת PR, ושום push
+ל-`main` — אסור לפי הכללים.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n
+627/627, locale 116/116, docs-index 282 מסמכים, docs-path-audit 152
+ידועים), `pnpm test` **606/606 קבצים, 7239/7251** (12 skipped, זהה
+ל-M15-c55), `pnpm build` `exit 0`, `BUILD_ID
+5-ple8mUYEdEBS-o8qIw5`. אין שינוי קוד/UI, לכן `scripts/compare.mjs`
+לא רץ (תואם לתקדים בכל פריט תברואה/re-verify קודם ללא שינוי קוד).
+
+**קבצים:** `docs/STATE-ARCHIVE.md` (M15-c55 הועבר לשם), `STATE.md`
+בלבד.
+
 ## M15-c55 (הועבר מ-STATE.md ב-M16-c55, לשמירה על תקרת 300 שורות)
 
 **M15-c55 - DONE (29.09): docs sync — STATE.md, `docs/LAUNCH-READINESS.md`
