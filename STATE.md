@@ -1,7 +1,37 @@
-RESUME FROM: M04-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c59)
+RESUME FROM: M05-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c59)
 
 ## המשך מ:
+
+**M04-c59 - DONE (30.09): תברואת תלויות, `pnpm audit` נקי, אפס עדכון
+זכאי (כל 14 השורות של `pnpm outdated` הן major).** משימת התור: להריץ
+`pnpm audit` ו-`pnpm outdated`, להחיל שדרוגי patch/minor שנשארים ירוקים
+בארבעת השערים, לעולם לא major.
+
+- `pnpm audit`: **אפס חולשות ידועות**.
+- `pnpm outdated`: 14 שורות, וכל אחת מהן major (`@biomejs/biome` 1→2,
+  `@hookform/resolvers` 3→5, `@sentry/nextjs`+`@sentry/node` 10→11,
+  `@testing-library/jest-dom` 6→7, `@types/node` 20→26,
+  `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8` 4→5, `jsdom` 25→30,
+  `lint-staged` 15→17, `tailwind-merge` 2→3, `typescript` 5→7,
+  `vitest` 4→5, `zod` 3→4) — כולן מחוץ לתחום המותר (אסור major).
+- `pnpm update --no-save` (מכבד את הטווחים ב-`package.json`, אינו נוגע
+  ב-major): שינוי יחיד, `caniuse-lite` `1.0.30001812`→`1.0.30001813`
+  (נתוני `browserslist`, טרנזיטיבי, אין שורה תואמת ב-`package.json`).
+  `git diff package.json` ריק — אין תלות ישירה לעדכן בתוך הטווח.
+- שערים הורצו במלואם על המצב הזה: `type-check` נקי; `lint` נקי (2023
+  קבצים, i18n 627/627, locale 116/116, docs-index 282, docs-path-audit
+  152); `test` 608/608 קבצים, 7273 עברו + 12 דולגו (7285), 57.36s;
+  `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+  NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`) `exit 0`,
+  `✓ Compiled successfully`, 337/337 עמודים נוצרו (`supabase.rls_denied`
+  על `reviews` הוא פלט צפוי ממיגרציה 247 ממתינה, כבר בחוסם 3, לא אזהרת
+  קומפיילר).
+
+עדכון יחיד ל-`pnpm-lock.yaml` (נתוני `caniuse-lite` בלבד), אפס שינוי
+ל-`package.json`, אפס שינוי קוד יישומי.
+
+## M03-c59 (הועבר מ-STATE.md ב-M04-c59, לשמירה על תקרת 300 שורות)
 
 **M03-c59 - DONE (30.09): שער ירוק, ארבעתם נקיים, אפס תיקון נדרש.**
 משימת התור: להריץ `pnpm type-check`, `pnpm lint`, `pnpm test` ו-`pnpm
@@ -88,34 +118,9 @@ BLOCKER**.
 627/627), `test` 608/608 קבצים 7273/7285 (12 skipped, 58.58s), `build`
 `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
 
-## M18-c58 (הועבר מ-STATE.md ב-M01-c59, לשמירה על תקרת 300 שורות)
-
-**M18-c58 - DONE (30.09): בדיקת אפס-פעילות בפעם החמישית, המחזור *לא*
-היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c58..M17-c58)
-לא הפיקו שינוי קוד השבוע, לכתוב `MAINTENANCE IDLE` עם התאריך ב-STATE.md,
-ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף המוצר שתואם
-Electro v7 וליישם אותו.
-
-**נמדד ישירות מ-git, לא הונח:** שני קומיטים נגעו בקוד במחזור הזה —
-M04-c58 (עדכון תלות מינור, `@aws-sdk/client-s3`+
-`@aws-sdk/s3-request-presigner`, `package.json`/`pnpm-lock.yaml`)
-ו-M10-c58 (כיסוי ענפים `refund-wallet.ts` 93.75%→100%,
-`src/server/payments/refund-wallet.test.ts`). `git diff-tree` על כל
-שבעה-עשר הקומיטים של המחזור (M01-c58..M17-c58) מאשר: רק שני אלה נגעו
-בקובץ שאינו `STATE.md`/`docs/*`. אותו דפוס בדיוק כמו M18-c55, M18-c56
-ו-M18-c57 (כל אחד משלושתם מצא שני קומיטי שינוי-קוד אמיתיים באותו
-מחזור — לא נצפה עדיין מחזור אפס-פעילות אמיתי). `MAINTENANCE IDLE` לא
-נכתב, שלב חיפוש שיפור ההמרה לא הופעל.
-
-שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
-627/627, locale 116/116, docs-index 282, docs-path-audit 152), `test`
-608/608 קבצים 7273/7285 (12 skipped, 56.97s), `build` `exit 0`. אין
-שער חזותי נדרש (אפס שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md`
-בלבד).
-
-**כל סעיף מ-M17-c58 ועד M08-c57 (כולל M16-c58..M01-c58, M18-c57..M08-c57)**
+**כל סעיף מ-M18-c58 ועד M08-c57 (כולל M17-c58..M01-c58, M18-c57..M08-c57)**
 היה מסומן כאן "ארכיון מלא ב-`docs/STATE-ARCHIVE.md`" וכווץ לשורה הזו
-ב-M02-c59 לשמירה על תקרת 300 שורות — שום שורה לא נמחקה מהארכיון עצמו,
+ב-M04-c59 לשמירה על תקרת 300 שורות — שום שורה לא נמחקה מהארכיון עצמו,
 רק הוסרה כאן הכפילות.
 
 ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M15-c56, תור 23.09, וכל מה

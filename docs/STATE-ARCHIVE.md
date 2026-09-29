@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c58 (הועבר מ-STATE.md ב-M04-c59, לשמירה על תקרת 300 שורות)
+
+**M18-c58 - DONE (30.09): בדיקת אפס-פעילות בפעם החמישית, המחזור *לא*
+היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c58..M17-c58)
+לא הפיקו שינוי קוד השבוע, לכתוב `MAINTENANCE IDLE` עם התאריך ב-STATE.md,
+ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף המוצר שתואם
+Electro v7 וליישם אותו.
+
+**נמדד ישירות מ-git, לא הונח:** שני קומיטים נגעו בקוד במחזור הזה —
+M04-c58 (עדכון תלות מינור, `@aws-sdk/client-s3`+
+`@aws-sdk/s3-request-presigner`, `package.json`/`pnpm-lock.yaml`)
+ו-M10-c58 (כיסוי ענפים `refund-wallet.ts` 93.75%→100%,
+`src/server/payments/refund-wallet.test.ts`). `git diff-tree` על כל
+שבעה-עשר הקומיטים של המחזור (M01-c58..M17-c58) מאשר: רק שני אלה נגעו
+בקובץ שאינו `STATE.md`/`docs/*`. אותו דפוס בדיוק כמו M18-c55, M18-c56
+ו-M18-c57 (כל אחד משלושתם מצא שני קומיטי שינוי-קוד אמיתיים באותו
+מחזור — לא נצפה עדיין מחזור אפס-פעילות אמיתי). `MAINTENANCE IDLE` לא
+נכתב, שלב חיפוש שיפור ההמרה לא הופעל.
+
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
+627/627, locale 116/116, docs-index 282, docs-path-audit 152), `test`
+608/608 קבצים 7273/7285 (12 skipped, 56.97s), `build` `exit 0`. אין
+שער חזותי נדרש (אפס שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md`
+בלבד).
+
 ## M17-c58, M16-c58, M15-c58, M14-c58, M13-c58, M12-c58, M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (הועבר מ-STATE.md ב-M02-c59, לשמירה על תקרת 300 שורות)
 
 M16-c58: תברואת ריפו בפעם השמינית, אפס דריפט מ-M16-c57: `git status`
