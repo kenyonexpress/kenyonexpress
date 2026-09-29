@@ -1,42 +1,44 @@
-RESUME FROM: M14-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c56)
+RESUME FROM: M15-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c56)
 
 ## המשך מ:
 
-**M13-c56 - DONE (29.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
-ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס
-דריפט.** המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy,
-ומגבלות קצב Upstash על login, checkout ו-redeem, ולתקן פערים עם
-טסטים. אותו דפוס אימות מחזורי כמו M13-c55 (`b44615e42`). **נבדק קודם
-מה השתנה מאז**: `git diff b44615e42..HEAD --stat` על 11 קבצים —
-`STATE.md`/`docs/BACKLOG.md`/`docs/DB-SECURITY-MODEL.md`/`docs/
-LAUNCH-READINESS.md`/`docs/STATE-ARCHIVE.md`/`docs/UI-PARITY-REPORT.md`,
-`package.json`/`pnpm-lock.yaml` (פטץ' תלות), ושלושה טסטים חדשים תחת
-`orders/*` (M10-c56) — **אף אחד לא נוגע לכותרות אבטחה או ל-rate
-limiting** (`next.config.ts`, `src/lib/rate-limit/*`, `src/lib/utils/
-rate-limit.ts` לא ברשימה). **אומת בכל זאת ישירות מול build אמיתי**
-(`pnpm build` נקי, `PORT=3927 pnpm start`, "Ready in 134ms" — שרת טרי):
-כותרות תגובה על `/` (בית), `/checkout`, `/login` ו-`/redeem/test-token`,
-כל ארבעתן זהות: `Content-Security-Policy` (default-src 'self',
-frame-ancestors 'none', frame-src/form-action מוגבלים ל-
-`secure.cardcom.solutions` בלבד), `Strict-Transport-Security:
-max-age=63072000; includeSubDomains; preload`, `X-Frame-Options: DENY`,
-`X-Content-Type-Options: nosniff`, `Referrer-Policy:
-strict-origin-when-cross-origin`. **מגבלות קצב נמדדו בקוד עצמו**:
-`login` נאכף ב-`src/server/actions/auth.ts:141`
-(`checkRateLimit('login:${ip}')`, ברירת מחדל 10/3600 תואמת
-`policies.ts:40`), `begin_checkout` נאכף ב-`src/server/actions/
-payments/checkout.ts:351` (`checkRateLimit('begin_checkout:user:
-${user.id}', 10, 60)`), `redeem` (דף לקוח) נאכף ב-`src/app/redeem/
-[token]/page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`),
-ו-`voucher-redeem` (סריקת ספק) נאכף ב-`src/app/api/supplier/vouchers/
-redeem/route.ts:223` (`rateLimit('voucher-redeem', user.id)`, תואם
-ל-`policies.ts:201`, limit 120/3600). כל שורות הקוד ומספרי השורות
-זהים ל-M13-c55. **אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי,
-`lint` נקי (biome 2023 קבצים + 12 שערי תוכן, i18n 627/627, locale
-116/116), `test` 608/608 קבצים, 7242/7254 (12 skipped, זהה), `build`
-`exit 0`. אין שער חזותי נדרש (אין שינוי UI). קובץ יחיד שונה מלבד
-`STATE.md`: אין (פריט מדידה/תיעוד בלבד).
+**M14-c56 - DONE (29.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
+וכותרות cache, אימות מחדש, אפס דריפט.** המשימה: לבדוק גודל bundle,
+פלט צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה
+ביותר. אותו דפוס אימות מחזורי כמו M14-c55 (`a1bc457fe`). **נבדק קודם
+מה השתנה מאז**: `git log a1bc457fe..HEAD --oneline -- next.config.ts
+src/lib/images src/components package.json pnpm-lock.yaml` מחזיר קומיט
+יחיד, `fa6188c56` (M04-c56, פטץ' `posthog-js`) — **לא נוגע ב-bundle,
+צנרת תמונות או כותרות cache**. **נמדד בכל זאת מחדש מול build אמיתי**
+(`pnpm build` נקי, `PORT=3311 pnpm start`, שרת טרי):
+1. **גודל bundle: אין רגרסיה.** `scripts/bundle-report.mjs`: בית
+   320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה
+   בדיוק ל-M14-c55/M14-c54**.
+2. **פלט צנרת התמונות: אין רגרסיה.** נסרקו כל שימושי `fill`+`sizes`
+   ב-`src/components`/`src/app` — כל `sizes` נושא `vw` פרט לקבועים
+   מתועדים כבר כבחירת px שטוחה מכוונת (`HeroSlider.badgeWidth/Height`
+   מ-M14-c54). אין מופע חדש של הבאג.
+3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
+   "clean".
+4. **כותרות cache: אין רגרסיה.** `/images/logo.webp` מחזיר `public,
+   max-age=0, s-maxage=86400, stale-while-revalidate=604800` (תואם
+   `next.config.ts`), chunk סטטי מחזיר `public, max-age=31536000,
+   immutable`, HTML דינמי מחזיר `private, no-cache, no-store,
+   max-age=0, must-revalidate` — כל השלושה כמדיניות המתועדת.
+
+**אין רגרסיה לתקן.** שערים: `type-check`/`lint`/`test` (608/608,
+7242/7254)/`build` ירוקים. אין שער חזותי נדרש (אין שינוי UI/קוד).
+
+## M13-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash על
+login/checkout/redeem אומתו מחדש מול build אמיתי, אפס דריפט מ-M13-c55:
+כל ארבע כותרות האבטחה זהות על `/`/`/checkout`/`/login`/`/redeem/
+[token]`, כל ארבע מגבלות הקצב (`login`/`begin_checkout`/`redeem`/
+`voucher-redeem`) נאכפות באותן שורות קוד. `type-check`/`lint`/`test`
+(608/608, 7242/7254)/`build` ירוקים, אפס שינוי קוד. הועבר ב-M14-c56
+לשמירה על תקרת 300 שורות.
 
 ## M12-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

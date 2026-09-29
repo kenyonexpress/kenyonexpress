@@ -2,6 +2,43 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c56 (הועבר מ-STATE.md ב-M14-c56, לשמירה על תקרת 300 שורות)
+
+**M13-c56 - DONE (29.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס
+דריפט.** המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy,
+ומגבלות קצב Upstash על login, checkout ו-redeem, ולתקן פערים עם
+טסטים. אותו דפוס אימות מחזורי כמו M13-c55 (`b44615e42`). **נבדק קודם
+מה השתנה מאז**: `git diff b44615e42..HEAD --stat` על 11 קבצים —
+`STATE.md`/`docs/BACKLOG.md`/`docs/DB-SECURITY-MODEL.md`/`docs/
+LAUNCH-READINESS.md`/`docs/STATE-ARCHIVE.md`/`docs/UI-PARITY-REPORT.md`,
+`package.json`/`pnpm-lock.yaml` (פטץ' תלות), ושלושה טסטים חדשים תחת
+`orders/*` (M10-c56) — **אף אחד לא נוגע לכותרות אבטחה או ל-rate
+limiting** (`next.config.ts`, `src/lib/rate-limit/*`, `src/lib/utils/
+rate-limit.ts` לא ברשימה). **אומת בכל זאת ישירות מול build אמיתי**
+(`pnpm build` נקי, `PORT=3927 pnpm start`, "Ready in 134ms" — שרת טרי):
+כותרות תגובה על `/` (בית), `/checkout`, `/login` ו-`/redeem/test-token`,
+כל ארבעתן זהות: `Content-Security-Policy` (default-src 'self',
+frame-ancestors 'none', frame-src/form-action מוגבלים ל-
+`secure.cardcom.solutions` בלבד), `Strict-Transport-Security:
+max-age=63072000; includeSubDomains; preload`, `X-Frame-Options: DENY`,
+`X-Content-Type-Options: nosniff`, `Referrer-Policy:
+strict-origin-when-cross-origin`. **מגבלות קצב נמדדו בקוד עצמו**:
+`login` נאכף ב-`src/server/actions/auth.ts:141`
+(`checkRateLimit('login:${ip}')`, ברירת מחדל 10/3600 תואמת
+`policies.ts:40`), `begin_checkout` נאכף ב-`src/server/actions/
+payments/checkout.ts:351` (`checkRateLimit('begin_checkout:user:
+${user.id}', 10, 60)`), `redeem` (דף לקוח) נאכף ב-`src/app/redeem/
+[token]/page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`),
+ו-`voucher-redeem` (סריקת ספק) נאכף ב-`src/app/api/supplier/vouchers/
+redeem/route.ts:223` (`rateLimit('voucher-redeem', user.id)`, תואם
+ל-`policies.ts:201`, limit 120/3600). כל שורות הקוד ומספרי השורות
+זהים ל-M13-c55. **אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי,
+`lint` נקי (biome 2023 קבצים + 12 שערי תוכן, i18n 627/627, locale
+116/116), `test` 608/608 קבצים, 7242/7254 (12 skipped, זהה), `build`
+`exit 0`. אין שער חזותי נדרש (אין שינוי UI). קובץ יחיד שונה מלבד
+`STATE.md`: אין (פריט מדידה/תיעוד בלבד).
+
 ## M12-c56 (הועבר מ-STATE.md ב-M13-c56, לשמירה על תקרת 300 שורות)
 
 **M12-c56 - DONE (29.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
