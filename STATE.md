@@ -1,32 +1,43 @@
-RESUME FROM: M13-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c54)
+RESUME FROM: M14-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c54)
 
 ## המשך מ:
 
-**M12-c54 - docs(seo): מטא-דאטה, canonical, og, schema.org Product/Offer,
-עדכניות sitemap ו-robots נמדדו מחדש, אפס דריפט (29.09).** המשימה: לוודא
-metadata, canonical, og tags, schema.org Product ו-Offer בדפי מוצר, עדכניות
-ה-sitemap ו-robots, ולתקן דריפט. **נבדק קודם מה השתנה מאז האימות האחרון
-(M12-c53, `7773958a2`)**: `git diff 7773958a2..HEAD --stat` על 23 קבצים —
-אף אחד לא נוגע ל-SEO (layout/sitemap/robots/json-ld); השינוי הקרוב ביותר
-היה `next.config.ts` (ייבוא Sentry לא-מיושן, M03-c54), לא רלוונטי. **אומת
-בכל זאת ישירות מול build אמיתי** (`pnpm build` נקי, `PORT=3513 pnpm start`):
-`robots.txt` (Disallow על admin/checkout/cart/auth/api/redeem/coupon/account/
-supplier/scan/reset-password/forgot-password, Host+Sitemap תקינים),
-`sitemap.xml` (5 סקשנים: content/categories/products/regions/suppliers,
-זהה ל-M12-c53), `sitemap/products.xml` (46 `loc`/`lastmod`, זהה), דף מוצר
-(`/product/barbecue`): canonical נכון, כל תגי `og:*` (title/description/
-url/locale/image עם type+width+height+alt/type=website), JSON-LD תקין —
-`Product` (name/url/category/image/brand/offers עם `Offer` מלא: price,
-priceCurrency, availability, seller, priceSpecification להצגת המחיר
-המקורי) ו-`BreadcrumbList` (3 שלבים) — ו-`aggregateRating` נעדר כראוי
-למוצר בלי ביקורות (כמדד גם ב-M12-c53 וב-`json-ld.test.ts`). עמוד הבית
-נבדק גם: canonical, title, `og:type=website`, JSON-LD `Organization`+
-`WebSite`. **אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי, `lint`
-נקי (biome 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116), `test`
-605/605 קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`. אין שער חזותי
-נדרש (אין שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/
-תיעוד בלבד).
+**M13-c54 - docs(security): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ו-Upstash rate limits על login/checkout/redeem נמדדו מחדש, אפס דריפט
+(29.09).** המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy,
+ומגבלות קצב Upstash על login, checkout ו-redeem, ולתקן פערים עם טסטים.
+**נבדק קודם מה השתנה מאז האימות האחרון (M13-c53, `42b41949d`)**:
+`git diff 42b41949d..HEAD --stat` על 23 קבצים, אף אחד לא נוגע לכותרות
+אבטחה או ל-rate limiting (`src/lib/rate-limit/*` לא ברשימה); השינוי היחיד
+ב-`next.config.ts` הוא נתיב ה-import של Sentry (M03-c54, לא נוגע לכותרות).
+**אומת בכל זאת ישירות מול build אמיתי** (`pnpm build` נקי, `PORT=3513
+pnpm start`): כותרות תגובה על `/` (בית), `/checkout`, `/login` ו-
+`/redeem/test-token`, כל ארבעתן זהות: `Content-Security-Policy` (default-src
+'self', frame-ancestors 'none', frame-src/form-action מוגבלים ל-
+`secure.cardcom.solutions` בלבד), `Strict-Transport-Security: max-age=
+63072000; includeSubDomains; preload`, `X-Frame-Options: DENY`,
+`X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-
+cross-origin`. **מגבלות קצב נמדדו בקוד עצמו, לא רק בטבלת המדיניות**:
+`login` נאכף ב-`src/server/actions/auth.ts:141` (`checkRateLimit('login:
+${ip}')`, 10/שעה לפי `policies.ts:40`), `begin_checkout` נאכף ב-
+`src/server/actions/payments/checkout.ts:351` (`checkRateLimit(
+'begin_checkout:user:${user.id}', 10, 60)`, תואם ל-`policies.ts:125`),
+`redeem` (דף לקוח `/redeem/[token]`) נאכף ב-`src/app/redeem/[token]/
+page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`, תואם ל-
+`policies.ts:200`), ו-`voucher-redeem` (סריקת ספק) נאכף ב-
+`src/app/api/supplier/vouchers/redeem/route.ts:223` (`rateLimit(
+'voucher-redeem', user.id)`, תואם ל-`policies.ts:201`). **אפס דריפט, אפס
+שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2020 קבצים + 12
+שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605 קבצים, 7217/7229
+(12 skipped, זהה), `build` `exit 0`. אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/תיעוד בלבד).
+
+## M12-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+מטא-דאטה, canonical, og, schema.org Product/Offer, עדכניות sitemap
+ו-robots נמדדו מחדש מול build אמיתי, אפס דריפט מ-M12-c53. הועבר ב-M13-c54
+לשמירה על תקרת 300 שורות.
 
 ## M11-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
