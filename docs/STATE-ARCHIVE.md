@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c57 (הועבר מ-STATE.md ב-M16-c57, לשמירה על תקרת 300 שורות)
+
+**M15-c57 - DONE (30.09): סנכרון תיעוד — STATE.md/docs/LAUNCH-READINESS.md/
+docs/BACKLOG.md מול git log וקוד, אפס פריט חדש.** משימת התור: לרענן את
+טבלת המצב בשלושת הקבצים, לשמור רשימה אחת ממוינת-קריטיות לאופיר בלי
+כפילויות. **נבדק מה השתנה מאז** `f96702549` (M15-c56, 29.09): `git log
+f96702549..HEAD --oneline` מחזיר 16 קומיטים (M16-c56..M18-c56,
+M01-c57..M14-c57), שניים נוגעים בקוד — M10-c57 (כיסוי `money-format.ts`,
+20.83%→100%) ו-M04-c57 (שני עדכוני תלות minor,
+`@anthropic-ai/sdk`/`@supabase/ssr`) — אף אחד לא נוגע בשורת חסימה, כל
+אחד DONE משלו ב-STATE.md. המספרים שדורשים מדידה מחדש כל מחזור נמדדו
+ישירות כאן, לא צוטטו:
+1. **קומיטים מאחורי פרודקשן**: `git rev-list --count a388118f1..HEAD` =
+   **153** (עלה מ-136 ב-M15-c56).
+2. **פער הענפים**: `git rev-list --count origin/main..HEAD` = **527**
+   (עלה מ-510 ב-M15-c56).
+3. **פנקס הקטלוג**: `supabase/catalogue-known-issues.json` עדיין 26
+   ממצאים, ללא שינוי.
+4. **מיגרציות ממתינות**: כל 18 הקבצים (204, 209, 218, 220, 223, 224,
+   234-236, 239-247) עדיין ב-`migrations/pending/`, ללא שינוי.
+5. **`docs/BACKLOG.md`**: עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
+   פריט חדש.
+6. **`git stash list`**: 32, ללא שינוי (סעיף 15 ב-BACKLOG, החלטת אופיר).
+
+שערים הורצו ישירות: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
+627/627, locale 116/116, docs-index 282, docs-path-audit 152), `test`
+608/608 קבצים 7272/7284 (12 skipped) — זהה בדיוק ל-M14-c57, `build` נקי
+(`rm -rf .next && pnpm build`). אין שער חזותי נדרש (אין שינוי UI).
+שלושה קבצים עודכנו: `STATE.md`, `docs/LAUNCH-READINESS.md`,
+`docs/BACKLOG.md`.
+
 ## M13-c57 (הועבר מ-STATE.md ב-M14-c57, לשמירה על תקרת 300 שורות)
 
 **M13-c57 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy

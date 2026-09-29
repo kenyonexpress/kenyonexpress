@@ -1,38 +1,68 @@
-RESUME FROM: M16-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c57)
+RESUME FROM: M17-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c57)
 
 ## המשך מ:
 
-**M15-c57 - DONE (30.09): סנכרון תיעוד — STATE.md/docs/LAUNCH-READINESS.md/
-docs/BACKLOG.md מול git log וקוד, אפס פריט חדש.** משימת התור: לרענן את
-טבלת המצב בשלושת הקבצים, לשמור רשימה אחת ממוינת-קריטיות לאופיר בלי
-כפילויות. **נבדק מה השתנה מאז** `f96702549` (M15-c56, 29.09): `git log
-f96702549..HEAD --oneline` מחזיר 16 קומיטים (M16-c56..M18-c56,
-M01-c57..M14-c57), שניים נוגעים בקוד — M10-c57 (כיסוי `money-format.ts`,
-20.83%→100%) ו-M04-c57 (שני עדכוני תלות minor,
-`@anthropic-ai/sdk`/`@supabase/ssr`) — אף אחד לא נוגע בשורת חסימה, כל
-אחד DONE משלו ב-STATE.md. המספרים שדורשים מדידה מחדש כל מחזור נמדדו
-ישירות כאן, לא צוטטו:
-1. **קומיטים מאחורי פרודקשן**: `git rev-list --count a388118f1..HEAD` =
-   **153** (עלה מ-136 ב-M15-c56).
-2. **פער הענפים**: `git rev-list --count origin/main..HEAD` = **527**
-   (עלה מ-510 ב-M15-c56).
-3. **פנקס הקטלוג**: `supabase/catalogue-known-issues.json` עדיין 26
-   ממצאים, ללא שינוי.
-4. **מיגרציות ממתינות**: כל 18 הקבצים (204, 209, 218, 220, 223, 224,
-   234-236, 239-247) עדיין ב-`migrations/pending/`, ללא שינוי.
-5. **`docs/BACKLOG.md`**: עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
-   פריט חדש.
-6. **`git stash list`**: 32, ללא שינוי (סעיף 15 ב-BACKLOG, החלטת אופיר).
+**M16-c57 - DONE (30.09): תברואת ריפו בפעם השביעית, אפס דריפט
+מ-M16-c56.** משימת התור: לוודא `git status` נקי, שכל ענף מקומי דחוף,
+ולרשום PR פתוחים וענפים ישנים ב-STATE.md. אותו דפוס אימות מחזורי כמו
+M16-c56 (SHA לכל ענף, לא רק `git branch -vv`).
 
-שערים הורצו ישירות: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
-627/627, locale 116/116, docs-index 282, docs-path-audit 152), `test`
-608/608 קבצים 7272/7284 (12 skipped) — זהה בדיוק ל-M14-c57, `build` נקי
-(`rm -rf .next && pnpm build`). אין שער חזותי נדרש (אין שינוי UI).
-שלושה קבצים עודכנו: `STATE.md`, `docs/LAUNCH-READINESS.md`,
-`docs/BACKLOG.md`.
+**נמדד:** `git status` נקי, `audit/final-audit` תואם ל-
+`origin/audit/final-audit`. **43 ענפים מקומיים, זהה בדיוק ל-M16-c56**
+(אפס ענף חדש, אפס ענף שנעלם). **כל 43 נבדקו ענף-ענף, לא רק נספרו**:
+32 עוקבים אחרי מקבילם ב-remote עם 0 קומיטים קדימה; 4 ענפי `arch/*`
+(`account-area`, `checkout-cardcom-verification`, `notifications-v2`,
+`wp-migration`) עוקבים בטעות אחרי `origin/main` במקום אחרי הענף שלהם,
+אך ה-SHA שלהם זהה ל-`origin/arch/*` המתאים; 8 ענפים חסרי הגדרת upstream
+מקומית (`arch/seed-data`, `feat/auth-hardening`,
+`feat/monitoring-sentry`, `feat/notifications-full`,
+`feat/performance-seo`, `feat/search-meilisearch`, `release/v1.0`,
+`release/v1.2`) אך ה-SHA שלהם זהה בדיוק לענף remote באותו שם; 6 ענפים
+(`pr36`, `release/v1.1`, `wip/refund-record-rebase-head`,
+`chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`)
+אין להם ענף remote באותו שם כלל, אך ראש הענף שלהם מוכל ב-10 עד 23 ענפי
+remote אחרים (`git branch -r --contains`). **אפס קומיט ייחודי לא-דחוף
+נמצא בשום ענף מקומי.** `main` המקומי נשאר הסטייה הידועה (חוסם 13 למטה,
+ללא שינוי).
 
-## M14-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c56).
+**117 ענפי remote** (עלה מ-116 ב-M16-c56: `dependabot/npm_and_yarn/
+minor-dev-0fc32dfca6`, PR #47, לא נספר עדיין ב-M16-c56). **12 מ-43
+הענפים המקומיים כבר ממוזגים לתוך HEAD** (`git merge-base
+--is-ancestor` מול `audit/final-audit`, עלה מ-11 ב-M16-c56: `work/
+goal-queue-0923` עבר למוזג כש-HEAD התקדם), מועמדים לניקוי, לא נמחקו
+(הכלל אוסר מחיקת ענפים). **28 ענפים ישנים** (קומיט אחרון לפני 16.09,
+14+ יום, לא ממוזגים ל-HEAD, רשימה זהה ל-M16-c56): `save/ke-visual-work`,
+`arch/account-area`, `arch/checkout-cardcom-verification`,
+`arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration`,
+`docs/final-pack`, `arch/docs-batch-2`, `arch/docs-queue`,
+`feat/e2e-quality`, `feat/auth-model`, `feat/db-hardening-v2`,
+`feat/product-type`, `merge/supplier-and-arch-night`,
+`feat/auth-hardening`, `feat/checkout-e2e`, `feat/monitoring-sentry`,
+`feat/notifications-full`, `feat/performance-seo`,
+`feat/search-meilisearch`, `feat/ux-wave-final`, `feat/rate-limit-layer`,
+`docs/final-pass`, `worktree-ke-fetch-timeout`, `worktree-mega-63-72`,
+`closeout/v1-final`, `feat/coupon-qr`, `worktree-order-state-machine`
+(שלושת ה-`worktree-*` ו-`closeout/v1-final` תפוסים בעצי עבודה חיים
+כרגע, לא באמת נטושים). **3 ענפים לא ממוזגים עם קומיט בשבועיים
+האחרונים** (לא נטושים): `autopilot` (17.09), `docs/ui-design-system`
+(23.09), `phase5/homepage-closeout` (24.09). לא מוזג ולא נמחק דבר.
+
+שערים נמדדו מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, זהה
+ל-M15-c57), `test` 608/608 קבצים, 7272/7284 (12 skipped, זהה),
+`build` `exit 0`. אין שער חזותי נדרש (אין שינוי UI/קוד, `STATE.md`/
+`docs/STATE-ARCHIVE.md` בלבד).
+
+## M15-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M15-c57: סנכרון תיעוד, STATE.md/docs/LAUNCH-READINESS.md/docs/BACKLOG.md
+מול git log וקוד, אפס פריט חדש. 16 קומיטים נבדקו (M16-c56..M18-c56,
+M01-c57..M14-c57), שניים נוגעים בקוד (כיסוי `money-format.ts`
+20.83%→100%, שני עדכוני תלות minor), אף אחד לא בשורת חסימה. קומיטים
+מאחורי פרודקשן עלה ל-153, פער הענפים ל-527, שאר המספרים ללא שינוי.
+`type-check`/`lint`/`test` (608/608, 7272/7284)/`build` ירוקים. הועבר
+ב-M16-c57 לשמירה על תקרת 300 שורות.
 
 M14-c57: ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו
 מחדש מול build אמיתי, אפס דריפט מ-M14-c56: bundle 345.1kB/27 chunks
@@ -52,64 +82,24 @@ SEO, meta/canonical/og/JSON-LD/sitemap/robots אומתו מחדש, אפס דרי
 `type-check`/`lint`/`test`/`build` ירוקים, אפס שינוי UI. הועברו
 ב-M14-c57 לשמירה על תקרת 300 שורות.
 
-## M06-c57..M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M06-c57..M15-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-M06-c57: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית ומוצר
-99/100/100/100), אפס תיקון נדרש. M05-c57: ביקורת DB, advisors נמדדו
-בפעם השביעית ברציפות, 44 WARN זהה שדה-שדה ל-M05-c56. M04-c57: תחזוקת
-תלויות, שני עדכוני minor בטווח 0.x הוחלו (`@anthropic-ai/sdk`,
-`@supabase/ssr`), `pnpm audit` אפס חולשות. M03-c57: שער ירוק,
-`type-check`/`lint`/`test`/`build` — כל הארבעה נקיים, זהה במהות
-ל-M03-c56. M02-c57: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה,
-זהה בדיוק ל-M02-c56. כל חמשתם DONE, אפס שינוי UI. הועברו ב-M08-c57/
-M11-c57 לשמירה על תקרת 300 שורות.
+M06-c57..M02-c57: Lighthouse mobile 90+ בשמונתם, DB advisors 44 WARN
+זהה, תחזוקת תלויות minor, שער ירוק, שער חזותי אפס רגרסיה. כל חמשתם
+DONE, אפס שינוי UI. M18-c56..M16-c56: בדיקת אפס-פעילות (המחזור *לא*
+היה אפס-פעילות), מעבר קופי ומשפטי בפעם הרביעית אפס ממצא חדש, תברואת
+ריפו בפעם השישית אפס דריפט (43 ענפים מקומיים, 24 PR, 116 ענפי remote).
+M15-c56: סנכרון תיעוד, אפס פריט חדש (14 קומיטים נבדקו, שניים בקוד, אף
+אחד בשורת חסימה). כולם `type-check`/`lint`/`test`/`build` ירוקים, אפס
+שינוי UI. הועברו במחזוריהם לשמירה על תקרת 300 שורות.
 
-## M18-c56..M16-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M01-c56..M14-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-M18-c56: בדיקת אפס-פעילות בפעם השלישית, המחזור *לא* היה אפס-פעילות.
-M17-c56: מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא חדש. M16-c56: תברואת
-ריפו בפעם השישית, אפס דריפט מ-M16-c55 (`git status` נקי, 43 ענפים
-מקומיים זהה, 24 PR פתוחים זהה, 116 ענפי remote זהה). כולם
-`type-check`/`lint`/`test`/`build` ירוקים. הועברו ב-M14-c57 לשמירה על
-תקרת 300 שורות.
-
-## M15-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-סנכרון תיעוד — `STATE.md`/`docs/LAUNCH-READINESS.md`/`docs/BACKLOG.md`
-מול `git log` ומדידה ישירה, אפס פריט חדש. 14 קומיטים נבדקו
-(M01-c56..M14-c56), שניים נוגעים בקוד (`posthog-js` פטץ',
-`orders/status-transitions.ts` טסטים), אף אחד לא בשורת חסימה.
-`type-check`/`lint`/`test` (608/608, 7242/7254)/`build` ירוקים. הועבר
-ב-M16-c56 לשמירה על תקרת 300 שורות.
-
-## M14-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו מחדש מול
-build אמיתי, אפס דריפט מ-M14-c55: bundle 345.1kB/27 chunks זהה, אין
-באג `fill`+px `sizes` חדש, `cache-invalidation-gate` נקי, כותרות cache
-תואמות למדיניות. `type-check`/`lint`/`test` (608/608, 7242/7254)/
-`build` ירוקים. הועבר ב-M15-c56 לשמירה על תקרת 300 שורות.
-
-## M13-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash על
-login/checkout/redeem אומתו מחדש מול build אמיתי, אפס דריפט מ-M13-c55:
-כל ארבע כותרות האבטחה זהות על `/`/`/checkout`/`/login`/`/redeem/
-[token]`, כל ארבע מגבלות הקצב (`login`/`begin_checkout`/`redeem`/
-`voucher-redeem`) נאכפות באותן שורות קוד. `type-check`/`lint`/`test`
-(608/608, 7242/7254)/`build` ירוקים, אפס שינוי קוד. הועבר ב-M14-c56
-לשמירה על תקרת 300 שורות.
-
-## M12-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-SEO — meta/canonical/og/JSON-LD Product+Offer/sitemap/robots אומתו
-מחדש מול build אמיתי, אפס דריפט מ-M12-c55: `sitemap/products.xml` 46
-כתובות, `robots.txt` 11 Disallow, דף מוצר עם canonical/og/JSON-LD
-תקינים, מוצר לא פעיל מחזיר `noindex`. `type-check`/`lint`/`test`
-(608/608, 7242/7254)/`build` ירוקים, אפס שינוי קוד. הועבר ב-M13-c56
-לשמירה על תקרת 300 שורות.
-
-## M01-c56..M11-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+M14-c56: ביצועים, bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו
+מחדש, אפס דריפט מ-M14-c55. M13-c56: CSP/HSTS/X-Frame-Options/
+Referrer-Policy ומגבלות קצב Upstash אומתו מחדש, אפס דריפט מ-M13-c55.
+M12-c56: SEO, meta/canonical/og/JSON-LD/sitemap/robots אומתו מחדש, אפס
+דריפט מ-M12-c55.
 
 M11-c56: axe אומתה מחדש, 0 הפרות serious/critical (אדמין 57/57 דילוג,
 כשל התחברות לא קשור לקוד). M10-c56: כיסוי ענפים,
