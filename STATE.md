@@ -1,37 +1,38 @@
-RESUME FROM: M03-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c58)
+RESUME FROM: M04-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c58)
 
 ## המשך מ:
 
-**M02-c58 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים —
-אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%, זהה בדיוק ל-M02-c57.**
-המשימה: להריץ `scripts/compare.mjs` בפורגראונד ולחכות למספרים
-באותה הרצה, לתקן כל רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
+**M03-c58 - DONE (30.09): שער ירוק, `type-check`/`lint`/`test`/`build`
+כולם הורצו מחדש בפועל בסשן הזה, כל הארבעה נקיים, אין מה לתקן.**
+המשימה: להריץ את ארבעת השערים ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי
+לשנות התנהגות מוצר.
 
-- `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-  localhost:3311 pnpm build` -> `exit 0`, בנייה טרייה על HEAD
-  `856107bcb`. `PORT=3311 pnpm start` מול הבנייה הזו (לא שרת ישן שתפס
-  את הפורט).
-- **בית** (`--baseline 'refs/ke_live_{width}.png'`, בפורגראונד, חיכה
-  למספרים באותה הרצה): **380 8.51% PASS, 768 9.02% PASS, 1440 3.95%
-  PASS** — זהה בדיוק ל-M02-c57.
-- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`,
-  `--baseline='refs/electro_product_{width}.png'`, בפורגראונד): **380
-  5.61% PASS, 768 4.92% PASS, 1440 2.99% PASS** — זהה בדיוק ל-M02-c57.
-  אזהרת `HEIGHT RATIO` מופיעה (תפיסה קפואה מול הדף החי, לא אותו גובה
-  עמוד), אך השער עצמו עדיין מדווח PASS על שלושתם — אין דריפט מהמדידה
-  הקודמת, לא בוצע תיקון (אין רגרסיה לתקן).
-- **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
-  `pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
-  7272/7284 (12 skipped, זהה), `pnpm build` `exit 0` (הורץ בתחילת
-  הפריט, אין שינוי קוד אחריו). אין שינוי קוד — פריט מדידה בלבד.
-- **קבצים:** `docs/UI-PARITY-REPORT.md` (השער עצמו כותב שורה בכל
-  הרצה, שבע שורות חדשות מהסשן הזה כולל REFUSED אחת ל-1440 על
-  `is our-build` בהרצה הראשונה של הסשן על SHA נקי — אותה תבנית קבועה
-  שחוזרת בתחילת כל סשן קודם, PASS מיד אח"כ על אותו SHA עם סיומת
-  `-dirty`), `STATE.md` בלבד.
+- `pnpm type-check` (`tsc --noEmit`): נקי, אפס שגיאה.
+- `pnpm lint`: נקי — `biome check .` (2023 קבצים, "No fixes applied")
+  ועשרת שערי הקוד הנוספים (tokens/copy/asset/raw-html/postgrest-or/
+  cache-invalidation/rtl-logical/i18n/locale-format/input-dir) בתוספת
+  `docs-index-gate` ו-`docs-path-audit`, כולם "clean"/"OK" ללא שינוי
+  ממדידה קודמת (627 מחרוזות עברית בתקרה, 116 `he-IL` בתקרה, 24 שדות
+  קלט עם `dir`, 282 מסמכים ברשימה, 152 הפניות תלויות ידועות).
+- `pnpm test` (`vitest run`): 608/608 קבצים, 7272/7284 טסטים עברו
+  (12 skipped, זהה לכל מדידה קודמת).
+- `pnpm build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+  NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`): `exit 0`,
+  הורץ פעמיים בפועל (פעם ראשונה עם צנרת ל-`tail`, פעם שנייה עם
+  ניתוב ל-`/tmp/build-m03c58.log` כדי לוודא קוד יציאה אמיתי ולא של
+  `tail`), שתיהן `exit 0`, שום שגיאה או אזהרת build.
+- אין שינוי קוד — כל ארבעת השערים היו ירוקים מלכתחילה, זהה מהותית
+  ל-M03-c57. `git status --short` ריק לפני ואחרי.
+- **קבצים:** `STATE.md` בלבד.
 
-## M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M02-c58: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה, כל שש
+המדידות PASS מתחת ל-11% (בית 8.51/9.02/3.95, מוצר 5.61/4.92/2.99) —
+זהה בדיוק ל-M02-c57. אזהרת `HEIGHT RATIO` על תפיסת המוצר (תפיסה
+קפואה מול הדף החי) אך השער עדיין PASS על שלושתם. `type-check`/`lint`/
+`test`/`build` כולם ירוקים, אין שינוי קוד.
 
 M01-c58: בדיקת פרודקשן, DNS ו-HTTP תקינים (`www.kenyonexpress.co.il`
 200, redirect 308 מהעירום), פריסת HEAD חסומה באותה סיבה בדיוק (שלושת
