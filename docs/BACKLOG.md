@@ -43,6 +43,17 @@ changed again (83 -> 101, `git rev-list --count a388118f1..HEAD`, git-only,
 production not re-probed this item). Item 7's finding count (26) re-checked
 against the ledger, unchanged.
 
+**Re-checked 2026-09-29 (M15-c55) against `git log -20`:** still 15 items,
+same order, no duplicate, no new item. Sixteen commits landed since M15-c54
+(M01-c55..M14-c55); only two touched code (`posthog-js` patch bump, M04-c55;
+new `refund-requests` branch-coverage tests, M10-c55), neither touched a
+blocking line or added a manual item. Item 4's commit count changed again
+(101 -> 118, `git rev-list --count a388118f1..HEAD`, git-only, production
+not re-probed this item — M01-c55's own deploy attempt measured 105 on the
+same day, before nine more commits landed). Item 7's finding count (26)
+re-checked directly against `supabase/catalogue-known-issues.json`'s
+`known` object, unchanged.
+
 **Re-checked 2026-09-29 (M09-c55) via a direct read-only Vercel API call
 (`filter_project_envs`, no value decrypted) on all 39 env vars of project
 `kenyonexpress`:** item 3 and item 8 both confirmed unchanged (still no
@@ -74,10 +85,10 @@ folded into item 8's wording below rather than given its own number.
    LAUNCH-READINESS.md שורה חוסמת 4.
 4. **אישור פריסת HEAD לפרודקשן**, אחרי סעיף 3. פרודקשן עדיין מגיש
    `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
-   המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53 (וניסיון פריסה חוזר
-   ב-M01-c54 סורב באותה סיבה בדיוק, פרודקשן נשאר על `a388118f1`), וכעת
-   (29.09, M15-c54, מדידה מקומית בלבד — לא נבדק מול הפריסה החיה בפריט הזה)
-   **101** קומיטים מאחורי HEAD. `POST /v13/deployments` עם `gitSource.sha`,
+   המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54 (וניסיוני
+   פריסה חוזרים ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן נשאר
+   על `a388118f1`), וכעת (29.09, M15-c55, מדידה מקומית בלבד — לא נבדק מול
+   הפריסה החיה בפריט הזה) **118** קומיטים מאחורי HEAD. `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, לפי `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2,
    LAUNCH-READINESS.md שורה חוסמת 4.
 5. **החלת המיגרציות הממתינות**, לפי הסדר והתנאים המוקדמים ב-

@@ -1,44 +1,46 @@
 RESUME FROM: M11-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c55)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c55)
 
 ## המשך מ:
 
-**M14-c55 - DONE (29.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
-וכותרות cache נמדדו מחדש, אפס דריפט.** המשימה: לבדוק גודל bundle, פלט
-צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר.
-הוקצתה מחוץ לסדר (M11-c55 עדיין לא בוצע). אותו דפוס אימות מחזורי
-כמו M14-c54 (`505ba8e52`). **נבדק קודם מה השתנה מאז**: `git log
-505ba8e52..HEAD` על `next.config.ts`/`src/lib/images`/
-`src/lib/catalogue-cache.ts`/`src/components`/`src/app`/`package.json`/
-`pnpm-lock.yaml`/`scripts/bundle-report.mjs`/
-`scripts/cache-invalidation-gate.mjs` מחזיר קומיט לא-קשור יחיד
-(`ff7a12727`, פטץ' `posthog-js`, M04-c55). **אומת בכל זאת ישירות מול
-build אמיתי** (`pnpm build` נקי, `PORT=3517 pnpm start`, שרת טרי):
-1. **bundle: אין רגרסיה, אין שינוי.** `scripts/bundle-report.mjs`: בית
-320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה בדיוק
-ל-M14-c54**.
-2. **צנרת תמונות: אין ממצא חדש.** כל שימושי `fill`+`sizes` בקוד נבדקו
-(`ProductCard`, `CouponCard`, `HeroSlider`, `ProductGallery`, דף
-הקופונים) — כולם נושאים `vw` בערך ה-`sizes` שלהם, פרט לשני קבועי
-`HeroSlider.tsx` (`HERO_IMAGE_SIZES`/`HERO_STILL_SIZES`) שכבר תועדו
-בקוד עצמו (שורות 254-277) כפתרון מכוון: ערך px שטוח מחזיר את **מלוא**
-רשימת המועמדים ב-`getWidths()` (לא מסונן), וזה מגיש את התמונה טוב
-יותר לתיבה הקטנה הזו מ-`vw` שמסנן מועמדים קטנים. אין באג חדש מסוג
-זה שנמצא ותוקן ב-M14-c51..M14-c54.
-3. **תגיות ISR: נקי.** `node scripts/cache-invalidation-gate.mjs`
-מדווח נקי (כל כתיבה לטבלה מטמונה מבטלת אותה, כל scope נושא תג).
-4. **כותרות cache: זהות.** `/_next/static/chunks/*.js` מחזיר
-`public, max-age=31536000, immutable`; `/images/logo-footer.webp`
-מחזיר `public, max-age=0, s-maxage=86400,
-stale-while-revalidate=604800` (התאמה מדויקת לכלל ב-`next.config.ts`
-שורה 156); דפי `/` ו-`/product/e2e-test-physical` מחזירים
-`private, no-cache, no-store, max-age=0, must-revalidate` +
-`x-nextjs-stale-time: 300` (PPR, תואם למדיניות המוצהרת).
-**אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי, `lint` נקי
-(biome 2021 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116),
-`test` 606/606 קבצים, 7239/7251 (12 skipped, זהה), `build` `exit 0`.
-אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`:
-אין** (פריט מדידה בלבד).
+**M15-c55 - DONE (29.09): docs sync — STATE.md, `docs/LAUNCH-READINESS.md`
+ו-`docs/BACKLOG.md` סונכרנו מול `git log` ו-evidence קוד, אפס פריט חדש.**
+המשימה: לרענן את טבלת המצב בשלושת הקבצים, שורה אחת לכל פריט ידני
+לאופיר, ממוינת לפי קריטיות, אפס כפילות. **נבדק תחילה מה השתנה מאז
+הסנכרון הקודם** (`598ea2842`, M15-c54): `git log 598ea2842..HEAD` מחזיר
+16 קומיטים (M01-c55..M14-c55), מתוכם **שניים בלבד נגעו בקוד/תלויות**
+(`ff7a12727` עדכון פטץ' `posthog-js`, M04-c55; `4fcda1bf5` טסטים
+ל-`refund-requests`, M10-c55) — אף אחד לא נגע בשורת חסימה. שאר 14
+הקומיטים הם דוחות מדידה בלבד. **שערים הורצו מחדש בפועל בפריט הזה**:
+`type-check` נקי; `lint` נקי (biome 2021 קבצים, 12 שערי תוכן — i18n
+627/627, locale 116/116, `docs-index-gate` **282** מסמכים [עלה מ-281
+שרשום ב-`LAUNCH-READINESS.md`], `docs-path-audit` **152** ידועים [ירד
+מ-154 הרשום]); `test` **606/606** קבצים, **7239/7251** עברו (12
+skipped — עלה מ-605/7217 ב-M15-c54, השינוי הוא תוספת הטסטים של
+M10-c55, לא דריפט); `build` `exit 0`, `BUILD_ID xKzG91daywXhw3-YBtHmj`.
+אין שינוי UI, אין שער חזותי נדרש. **מספרים נגזרי-git רועננו** (git
+בלבד, לא נבדק מול הפריסה החיה או ה-DB בפריט הזה):
+פרודקשן מאחורי HEAD **118** קומיטים (`git rev-list --count
+a388118f1..HEAD`, עלה מ-101 ב-M15-c54 / 105 שנמדד בניסיון הפריסה של
+M01-c55 עצמו); `origin/main` לפני HEAD — **109**, ללא שינוי; HEAD לפני
+`origin/main` — **492** (עלה מ-475); `git stash list` — **32**, ללא
+שינוי; פנקס הקטלוג — **26** ממצאים (נספר ישירות מול `Object.keys(known)`
+ב-`supabase/catalogue-known-issues.json`, ללא שינוי, תואם למה ששני
+המסמכים האחרים כבר רשמו). **ממצא ותיקון**: שורה 2 ב"חוסמים פתוחים"
+למטה הייתה קפואה על **87** קומיטים תחת התווית "עודכן M01-c54" — אך
+M01-c54 עצמו מדד 101 ו-M01-c55 מדד 105; 87 היה שריד ממדידה ישנה יותר
+שלא תוקן מעולם. תוקן כאן ל-118 עם ייחוס נכון. `docs/BACKLOG.md`
+נבדק מול `git log -20`: עדיין **15** פריטים, אותו סדר, אפס כפילות,
+אפס פריט חדש — עודכן שם רק מספר הקומיטים בסעיף 4. `docs/LAUNCH-READINESS.md`
+עודכן: שורת חסימה 4 (118), שורת Branches (492), שורת `pnpm test`
+(606/7239), ושתי ספירות שער ה-lint למעלה.
+
+## M14-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+bundle/צנרת תמונות/תגיות ISR/כותרות cache נמדדו מחדש מול build אמיתי,
+אפס דריפט מ-M14-c54: bundle 345.1kB/27 chunks זהה, אין באג `fill`+px
+`sizes` חדש, `cache-invalidation-gate` נקי, כותרות cache תואמות
+למדיניות. הועבר ב-M15-c55 לשמירה על תקרת 300 שורות.
 
 ## M13-c55, M12-c55, M10-c55, M09-c55, M08-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -186,18 +188,20 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (87 קומיטים אחרי `a388118f1` החי, עודכן M01-c54)**:
-   נוסתה שוב ב-M01-c54 (Vercel MCP, `create_deployment`, `gitSource` github,
-   `audit/final-audit`@`0bcbdac18`) **וסורבה שוב ב-`deploy-preflight`**
-   באותה סיבה בדיוק, פעם רביעית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54):
-   `dpl_BjMEzT55uBAcYWotmvpZkAuzmNdR`, `BUILD_UTILS_SPAWN_1`.
+2. **פריסת פרודקשן של HEAD (118 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, M15-c55; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
+   אז)**:
+   נוסתה שוב ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource` github,
+   `audit/final-audit`@`291bc2d88`) **וסורבה שוב ב-`deploy-preflight`**
+   באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
+   M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
    `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`
    עדיין חסרים ב-Production (קיימים במקומם
    `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא קורא) ו-
    `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם (נמדד עם `filter_project_envs`,
    קריאה בלבד). עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה;
    פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY)
-   ולא נפגע מהניסיון. **DNS אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c54,
+   ולא נפגע מהניסיון. **DNS אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c55,
    `www.kenyonexpress.co.il` מחזיר 200 עם התוכן החי (`a388118f1`).
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום

@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c55 (הועבר מ-STATE.md ב-M15-c55, לשמירה על תקרת 300 שורות)
+
+**M14-c55 - DONE (29.09): ביצועים — bundle, צנרת תמונות, תגיות ISR
+וכותרות cache נמדדו מחדש, אפס דריפט.** המשימה: לבדוק גודל bundle, פלט
+צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר.
+הוקצתה מחוץ לסדר (M11-c55 עדיין לא בוצע). אותו דפוס אימות מחזורי
+כמו M14-c54 (`505ba8e52`). **נבדק קודם מה השתנה מאז**: `git log
+505ba8e52..HEAD` על `next.config.ts`/`src/lib/images`/
+`src/lib/catalogue-cache.ts`/`src/components`/`src/app`/`package.json`/
+`pnpm-lock.yaml`/`scripts/bundle-report.mjs`/
+`scripts/cache-invalidation-gate.mjs` מחזיר קומיט לא-קשור יחיד
+(`ff7a12727`, פטץ' `posthog-js`, M04-c55). **אומת בכל זאת ישירות מול
+build אמיתי** (`pnpm build` נקי, `PORT=3517 pnpm start`, שרת טרי):
+1. **bundle: אין רגרסיה, אין שינוי.** `scripts/bundle-report.mjs`: בית
+320.4kB, קופה 324.1kB gzip, **345.1kB סה"כ על 27 chunks — זהה בדיוק
+ל-M14-c54**.
+2. **צנרת תמונות: אין ממצא חדש.** כל שימושי `fill`+`sizes` בקוד נבדקו
+(`ProductCard`, `CouponCard`, `HeroSlider`, `ProductGallery`, דף
+הקופונים) — כולם נושאים `vw` בערך ה-`sizes` שלהם, פרט לשני קבועי
+`HeroSlider.tsx` (`HERO_IMAGE_SIZES`/`HERO_STILL_SIZES`) שכבר תועדו
+בקוד עצמו (שורות 254-277) כפתרון מכוון: ערך px שטוח מחזיר את **מלוא**
+רשימת המועמדים ב-`getWidths()` (לא מסונן), וזה מגיש את התמונה טוב
+יותר לתיבה הקטנה הזו מ-`vw` שמסנן מועמדים קטנים. אין באג חדש מסוג
+זה שנמצא ותוקן ב-M14-c51..M14-c54.
+3. **תגיות ISR: נקי.** `node scripts/cache-invalidation-gate.mjs`
+מדווח נקי (כל כתיבה לטבלה מטמונה מבטלת אותה, כל scope נושא תג).
+4. **כותרות cache: זהות.** `/_next/static/chunks/*.js` מחזיר
+`public, max-age=31536000, immutable`; `/images/logo-footer.webp`
+מחזיר `public, max-age=0, s-maxage=86400,
+stale-while-revalidate=604800` (התאמה מדויקת לכלל ב-`next.config.ts`
+שורה 156); דפי `/` ו-`/product/e2e-test-physical` מחזירים
+`private, no-cache, no-store, max-age=0, must-revalidate` +
+`x-nextjs-stale-time: 300` (PPR, תואם למדיניות המוצהרת).
+**אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי, `lint` נקי
+(biome 2021 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116),
+`test` 606/606 קבצים, 7239/7251 (12 skipped, זהה), `build` `exit 0`.
+אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה מלבד `STATE.md`:
+אין** (פריט מדידה בלבד).
+
 ## M13-c55 (הועבר מ-STATE.md ב-M14-c55, לשמירה על תקרת 300 שורות)
 
 **M13-c55 - DONE (29.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
