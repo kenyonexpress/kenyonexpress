@@ -1,25 +1,52 @@
-RESUME FROM: M02-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c53)
+RESUME FROM: M03-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c53)
 
 ## המשך מ:
 
-M01-c53 היה בדיקת פרודקשן: להריץ build+deploy לפרודקשן ואז `dig`/`curl` על
-שני הדומיינים. **DNS: עדיין תקין** (RESOLVED מ-M01-c52, נמדד שוב) —
-`kenyonexpress.co.il` -> `64.29.17.1`/`64.29.17.65`, NS `ns1/ns2.vercel-dns.com`,
-`curl https://www.kenyonexpress.co.il` **200** עם HTML אמיתי (`lang="he"
-dir="rtl"`), `https://kenyonexpress.co.il` **308** לכיוון `www` (הפניה
-תקינה, לא כשל). **לא DNS BLOCKER** — אין מה לכתוב שם. **פריסה: נוסתה
-בפועל דרך Vercel MCP** (`create_deployment`, `gitSource` github,
-`audit/final-audit`@`99b2079cb6`, target production, פרויקט `kenyonexpress`
-`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) **וסורבה שוב**, אותו קוד שגיאה בדיוק:
-`dpl_CUUU98iiF1RiU1qxHojWyGbT8JuQ`, `BUILD_UTILS_SPAWN_1`, `"node
-scripts/deploy-preflight.mjs && pnpm build" exited with 1`. `filter_project_envs`
-(קריאה בלבד) מאשר שהסיבה לא זזה: `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`
-עדיין קיימים ב-Production במקום `CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD`
-שהקוד קורא, ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. פרודקשן נשאר על
-`a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY), עכשיו **70** קומיטים
-מאחורי HEAD (היה 48 ב-M01-c52, 66 לפי M15-c52). אין שינוי קוד, אין שער
-חזותי נדרש (לא UI). פירוט מלא למטה.
+M02-c53 היה שער השוואה חזותי: `compare.mjs` על בית ומוצר בשלושת הרוחבים
+מול Electro v7. **כל שש המדידות PASS** (בית 8.51/9.19/3.95, מוצר
+4.96/4.56/3.25), אפס רגרסיה מול הבייסליין ב-`d5afdc5fd`. ממצא תפעולי
+בדרך: הרצה ראשונה עם `--baseline=refs/electro_home_{width}.png` הניבה
+מספרים מנופחים (עד 10.11%, עדיין PASS אך שונה מהותית מההיסטוריה); זו
+הפניה שגויה לבית (Electro נותן צורה, לא תוכן, לפי `docs/SOURCING-RULES.md`).
+הרצה חוזרת עם `--baseline=refs/ke_live_{width}.png` (ההפניה הנכונה לבית)
+הניבה מספרים תואמים היסטוריה. מוצר תמיד השתמש ב-`electro_product_*` והיה
+תקין משתי ההרצות. אין שינוי קוד, type-check/lint/test (605/7195)/build
+נקיים. פירוט מלא למטה.
+
+## M02-c53 - DONE (29.09): שער חזותי בית+מוצר PASS בשלושת הרוחבים, אפס רגרסיה
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. הפריט הקודם באותו תחום (M02-c52, `d0b811f07`) היה DONE עם
+8.51/9.02/3.95 (בית) ו-5.65/4.95/2.92 (מוצר), כל שש המדידות PASS.
+
+**מה נמדד:** `pnpm build` רץ נקי, שרת `PORT=3311 pnpm start` הועלה טרי
+(אומת עם `lsof` שאין תהליך ישן תפוס על הפורט לפני ההרצה, לפי הזיכרון על
+נפילת פורט שקטה). `compare.mjs --widths=380,768,1440` רץ בקדמת הבמה, בתוך
+אותה הרצה, לכל דף בנפרד:
+
+1. **בית**, מול `refs/ke_live_{width}.png` (הפניה נכונה, האתר החי נותן
+   תוכן): 380 = 8.51% PASS, 768 = 9.19% PASS, 1440 = 3.95% PASS. כמעט זהה
+   לבייסליין (9.19 מול 9.02 ב-768, הפרש רעש), אפס רגרסיה.
+2. **מוצר**, מול `refs/electro_product_{width}.png` (הפניה נכונה, Electro
+   נותן צורה למוצר לפי Q05b): 380 = 4.96% PASS, 768 = 4.56% PASS,
+   1440 = 3.25% PASS. משתפר קלות מהבייסליין (4.96/4.56/3.25 מול
+   5.65/4.95/2.92), אפס רגרסיה.
+
+**ממצא בדרך:** ניסיון ראשון על הבית עם `--baseline=refs/electro_home_{width}.png`
+(הפניה שגויה, ה-home reference הנכון הוא `ke_live`) הניב 9.11/10.11/7.45,
+כולם עדיין PASS אך שונים מהותית מההיסטוריה (7.45 מול 3.95 ב-1440). זה לא
+נרשם כרגרסיה: זו הפניה שגויה שנוסתה ותוקנה באותה הרצה, לא שינוי בקוד או
+בעיצוב. `refs/ke_live_{width}.png` ו-`refs/electro_product_{width}.png`
+שניהם קיימים בדיסק (לא ב-git, לפי `docs/REFS-POLICY.md`), נוצרו קודם
+ב-Q05b/M02-c1 ומעלה, ולא נגעו בהם.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (כולל כל שערי התוכן),
+`pnpm test` 605/7195 (12 דולגו), זהה לספירה האחרונה. `pnpm build` נקי
+(רץ בתחילת הפריט כדי להעלות את `pnpm start`). אין שינוי קוד, אין קובץ
+מיגרציה.
+
+**קבצים:** `STATE.md` בלבד.
 
 ## M01-c53 - DONE (29.09): DNS עדיין תקין, פריסת HEAD סורבה שוב (אותה סיבה, נמדד עם MCP)
 
