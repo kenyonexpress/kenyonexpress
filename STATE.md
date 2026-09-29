@@ -1,7 +1,29 @@
-RESUME FROM: M03-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c54)
+RESUME FROM: M04-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c54)
 
 ## המשך מ:
+
+**M03-c54 - DONE (29.09): בדיקת שער ירוק — type-check, lint, test, build,
+ותיקון אחד שנמצא בר-תיקון בלי שינוי התנהגות.** `pnpm type-check` נקי.
+`pnpm lint` נקי (biome על 2020 קבצים + 12 שערי תוכן, i18n 627/627, locale
+116/116). `pnpm test`: 605/605 קבצים, 7213/7225 טסטים (12 skipped, זהה
+לכל מדידה קודמת). `pnpm build`: `exit 0`, אבל עם אזהרת דפרקציה מ-Sentry
+(`Importing withSentryConfig from '@sentry/nextjs' is deprecated and will
+stop working in v11. Import it from '@sentry/nextjs/config' instead`) —
+נמצאה ותוקנה: `next.config.ts` שורה 2,
+`import { withSentryConfig } from '@sentry/nextjs'` ->
+`import { withSentryConfig } from '@sentry/nextjs/config'` (אימות שהנתיב
+המשני קיים ב-`@sentry/nextjs@10.75.3` package.json `exports`, לפני העריכה).
+כל ארבעת השערים הורצו שוב אחרי התיקון: זהים, ובלי אזהרת הדפרקציה.
+שאר השורות שנצפו ב-build (`supabase.rls_denied` על `reviews`,
+`db.optional_column_missing` על `242`) הן פלט זמן-ריצה של פריסה מקדימה
+(prerender) שכבר מתועד כחוסם ידוע (`247`, `242` ב"חוסמים פתוחים" למטה),
+לא אזהרת build ולא תקלה חדשה — לא לתיקון בפריט הזה (מיגרציה, לא קוד).
+אין פריט UI, אין שער חזותי נדרש. **קובץ יחיד שונה מלבד `STATE.md`:
+`next.config.ts`.** התור ל-c54 אחרי M03 לא הוגדר בנפרד; ממשיך לפי סבב
+c53 (M04 היה תחזוקת תלויות) — הוחלט אוטומטית, ראו "החלטות שהתקבלו לבד".
+
+## M02-c54 (ארכיון)
 
 **M02-c54 - DONE (29.09): שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים,
 אפס רגרסיה.** הרצה בפורגראונד על שרת `pnpm start` על פורט 3311

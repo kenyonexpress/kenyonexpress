@@ -1,5 +1,5 @@
 import createMDX from '@next/mdx'
-import { withSentryConfig } from '@sentry/nextjs'
+import { withSentryConfig } from '@sentry/nextjs/config'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
