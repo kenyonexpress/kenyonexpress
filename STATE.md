@@ -1,47 +1,51 @@
-RESUME FROM: M13-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c56)
+RESUME FROM: M14-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c56)
 
 ## המשך מ:
 
-**M12-c56 - DONE (29.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
-sitemap/robots, אימות מחדש, אפס דריפט.** משימת התור: לאמת meta,
-canonical, og, `schema.org` Product ו-Offer בדפי מוצר, טריות sitemap
-ו-robots, ולתקן דריפט. **המשימה עברה אימות מלא לאחרונה ב-`ab149286f`
-(M12-c55, 29.09, אותו יום)**; `git diff --stat ab149286f..HEAD` מראה
-תשעה קומיטים מאז, אפס נוגע במשטח SEO (STATE/BACKLOG/docs, טסטי
-`orders/*`, `posthog-js`). **נמדד מחדש מהתחלה מול build אמיתי
-(`pnpm build`, `pnpm start` על פורט 3913, "Ready in 141ms"):**
-- **`robots.txt`**: `Allow: /` עם 11 `Disallow` (checkout/cart/admin/
-  supplier/auth/api/account/coupon/redeem/reset-password/
-  forgot-password), `Host` ו-`Sitemap` מצביעים ל-`kenyonexpress.co.il`.
-- **`sitemap.xml`**: אינדקס תקין של חמש סקציות (content/categories/
-  products/regions/suppliers).
-- **`sitemap/products.xml`**: **46 כתובות**, כל אחת עם `lastmod` אמיתי
-  ומשתנה (חמישה חותמות זמן שונות, לא תאריך קפוא) — קורא מ-
-  `src/lib/seo/sitemap-data.ts` עם `.eq('status','active').is('deleted_at',
-  null)`, כך ש-46 (לא 44) תואם את הטווח שהפנקס עצמו מדווח
-  ("44-46 מוצרים פעילים לפי המדידה", חוסם 11 למטה) ואינו דריפט.
-- **דף מוצר חי** (`/product/barbecue`): `canonical` יחיד ותואם URL,
-  שבעה תגי `og:*` תקינים (`title`/`description`/`url`/`locale`/`image`
-  עם מידות ו-`alt`/`type`), `<title>`/`description` בעברית תקינים.
-  JSON-LD: **`Product`** עם `name`/`url`/`category`/`image`/`brand`
-  ו-**`offers`** מקונן (`Offer` עם `price`/`priceCurrency`/`availability`/
-  `seller`/`priceSpecification` strikethrough כשיש הנחה) — נקרא מ-
-  `src/lib/seo/json-ld.ts`, בדוק ידנית תואם לקוד. `BreadcrumbList` שני
-  בלוק תקין. **`aggregateRating`** לא נבדק חי (15 המוצרים הראשונים
-  שנבדקו בלי ביקורות מאושרות), אך מכוסה ב-`json-ld.test.ts` (בתוך
-  7242/7254 שעברו) עבור `count > 0`, ותנאי ה-`count > 0` נקרא נכון בקוד
-  (שורה 130) — אין דריפט בין קוד לטסט.
-- **מוצר לא פעיל/נמחק**: `generateMetadata` ב-
-  `src/app/(store)/product/[slug]/page.tsx` שורות 41-44 מחזיר
-  `robots: { index: false, follow: true }` לפני שהגוף קורא ל-`notFound()`
-  — noindex גם אם זחילה תתפוס את התגובה לפני ה-404.
-- **דף הבית**: `canonical` תואם, JSON-LD `Organization`+`WebSite` עם
-  `SearchAction` (מצביע ל-`/search?q=`, מסלול קיים ב-`src/app/(store)/
-  search/page.tsx` — לא "שדה חיפוש" ב-UI, אלא sitelinks search box
-  ל-Google; לא בהיקף המשימה, אין UI חדש).
-**`type-check`/`lint`/`pnpm test` (608/608, 7242 עברו + 12 דולגו)/
-`pnpm build` — כולם ירוקים.** אפס שינוי קוד, אפס דריפט מ-M12-c55.
+**M13-c56 - DONE (29.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס
+דריפט.** המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy,
+ומגבלות קצב Upstash על login, checkout ו-redeem, ולתקן פערים עם
+טסטים. אותו דפוס אימות מחזורי כמו M13-c55 (`b44615e42`). **נבדק קודם
+מה השתנה מאז**: `git diff b44615e42..HEAD --stat` על 11 קבצים —
+`STATE.md`/`docs/BACKLOG.md`/`docs/DB-SECURITY-MODEL.md`/`docs/
+LAUNCH-READINESS.md`/`docs/STATE-ARCHIVE.md`/`docs/UI-PARITY-REPORT.md`,
+`package.json`/`pnpm-lock.yaml` (פטץ' תלות), ושלושה טסטים חדשים תחת
+`orders/*` (M10-c56) — **אף אחד לא נוגע לכותרות אבטחה או ל-rate
+limiting** (`next.config.ts`, `src/lib/rate-limit/*`, `src/lib/utils/
+rate-limit.ts` לא ברשימה). **אומת בכל זאת ישירות מול build אמיתי**
+(`pnpm build` נקי, `PORT=3927 pnpm start`, "Ready in 134ms" — שרת טרי):
+כותרות תגובה על `/` (בית), `/checkout`, `/login` ו-`/redeem/test-token`,
+כל ארבעתן זהות: `Content-Security-Policy` (default-src 'self',
+frame-ancestors 'none', frame-src/form-action מוגבלים ל-
+`secure.cardcom.solutions` בלבד), `Strict-Transport-Security:
+max-age=63072000; includeSubDomains; preload`, `X-Frame-Options: DENY`,
+`X-Content-Type-Options: nosniff`, `Referrer-Policy:
+strict-origin-when-cross-origin`. **מגבלות קצב נמדדו בקוד עצמו**:
+`login` נאכף ב-`src/server/actions/auth.ts:141`
+(`checkRateLimit('login:${ip}')`, ברירת מחדל 10/3600 תואמת
+`policies.ts:40`), `begin_checkout` נאכף ב-`src/server/actions/
+payments/checkout.ts:351` (`checkRateLimit('begin_checkout:user:
+${user.id}', 10, 60)`), `redeem` (דף לקוח) נאכף ב-`src/app/redeem/
+[token]/page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`),
+ו-`voucher-redeem` (סריקת ספק) נאכף ב-`src/app/api/supplier/vouchers/
+redeem/route.ts:223` (`rateLimit('voucher-redeem', user.id)`, תואם
+ל-`policies.ts:201`, limit 120/3600). כל שורות הקוד ומספרי השורות
+זהים ל-M13-c55. **אפס דריפט, אפס שינוי קוד.** שערים: `type-check` נקי,
+`lint` נקי (biome 2023 קבצים + 12 שערי תוכן, i18n 627/627, locale
+116/116), `test` 608/608 קבצים, 7242/7254 (12 skipped, זהה), `build`
+`exit 0`. אין שער חזותי נדרש (אין שינוי UI). קובץ יחיד שונה מלבד
+`STATE.md`: אין (פריט מדידה/תיעוד בלבד).
+
+## M12-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+SEO — meta/canonical/og/JSON-LD Product+Offer/sitemap/robots אומתו
+מחדש מול build אמיתי, אפס דריפט מ-M12-c55: `sitemap/products.xml` 46
+כתובות, `robots.txt` 11 Disallow, דף מוצר עם canonical/og/JSON-LD
+תקינים, מוצר לא פעיל מחזיר `noindex`. `type-check`/`lint`/`test`
+(608/608, 7242/7254)/`build` ירוקים, אפס שינוי קוד. הועבר ב-M13-c56
+לשמירה על תקרת 300 שורות.
 
 ## M11-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
