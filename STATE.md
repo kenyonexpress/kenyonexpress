@@ -1,31 +1,42 @@
-RESUME FROM: M07-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c57)
+RESUME FROM: M09-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c57)
 
 ## המשך מ:
 
-**M06-c57 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
-90+, אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52..M06-c56:
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3493 pnpm
-build` -> `exit 0`; `pnpm start -p 3493` מאותה סביבה (פורט אומת פנוי
-לפני ואחרי ההרצה, מתוך תשעה שרתי dev מקביליים על פורטים אחרים).
-`curl` אישר `200` על `/` ועל `/product/barbecue-2`.
-`node_modules/.bin/lighthouse` על שני ה-URL, `--throttling-method=
-devtools --emulated-form-factor=mobile`:
+**M08-c57 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
+בידי הסוכן.** משימת התור: "Backlog: take the single highest-impact
+open phase 1 item from docs/BACKLOG.md, skipping deferred and phase 2
+items." `docs/BACKLOG.md` נקרא בשלמותו (175 שורות, 15 פריטים ממוספרים)
+— הבאנר שלו עצמו קובע: **"Nothing here is an action an agent may take
+alone (Vercel env, DNS, secret rotation, a value only Ofir has, or a
+decision the ledger says is an operator's, not the agent's)."** כל 15
+הפריטים זהים למה שנבדק ב-M08-c56 ובכל מחזור קודם, אחד-אחד: (1) DNS —
+RESOLVED, אין פעולה. (2) `CRON_SECRET` ב-GitHub — דורש הדבקת ערך
+מ-Vercel, אסור על הסוכן. (3)+(4) סביבת Production ופריסת HEAD — חוסם
+env + `deploy-preflight`. (5) מיגרציות ממתינות — `migrations/pending`
+בלבד, אסור להחיל בלי אישור. (6) Cardcom אמיתי — ערכי secret וחיוב
+אמיתי, אסור ("no payment provider integration"). (7) 26 שורות קטלוג —
+הכרעת מפעיל מפורשת. (8) רוטציית סודות — אסורה במפורש. (9)
+`RESEND_API_KEY` — ערך רק אצל אופיר. (10) הפעלת R2 — לוח בקרה חיצוני.
+(11) `cron-jobs.json`/`main` — נפתר מעצמו במיזוג. (12) `dns-watch.sh`
+— בדיקת מצב בלבד. (13) ח.פ בהודעת רכישה — ממתין לערך מאופיר. (14)
+כניסה בטלפון — ספק חיצוני + env. (15) 32 stash — מחיקת נתונים דורשת
+אישור. `git log --oneline ac2d73183..HEAD -- docs/BACKLOG.md` ריק —
+אין קומיט מאז M01-c57 (בדיקה מלאה קודמת של הקובץ) שנוגע בו, וקומיטי
+הביניים (M02-c57..M06-c57) הם parity/green-check/deps/db-advisors/
+lighthouse, כולם ללא שינוי ל-`docs/BACKLOG.md`. **מסקנה: BACKLOG
+EMPTY, זהה ל-M08-c56 ולכל בדיקה קודמת.** שערים: `type-check` נקי,
+`lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627,
+locale 116/116), `test` 608/608 קבצים, 7242/7254 (12 skipped, זהה),
+`build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` —
+M06-c57 הועבר לתקרת 300 שורות).
 
-| דף | ביצועים | נגישות | BP | SEO |
-|---|---|---|---|---|
-| בית `/` | 99 | 100 | 100 | 100 |
-| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+## M06-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-כל שמונת הציונים מעל 90. `git log 0ebbeba8d..HEAD -- src/app
-src/components src/lib` ריק — אין קומיט קוד בין M06-c56 לכאן שנוגע
-בעמוד הבית או במוצר, ולכן אין תיקון נדרש. השרת נעצר (`kill`, פורט
-3493 אומת פנוי מחדש), קבצי ה-JSON הזמניים נמחקו. שערים: `type-check`
-נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n
-627/627, locale 116/116), `test` 608/608 קבצים, 7242/7254 (12
-skipped, זהה), `build` `exit 0` (חלק מהמדידה עצמה). אין שינוי קוד,
-אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`**
-(פלוס `docs/STATE-ARCHIVE.md` — M05-c57 הועבר לתקרת 300 שורות).
+Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית ומוצר 99/100/
+100/100), אפס תיקון נדרש, אין קומיט קוד מ-M06-c56 שנוגע בעמוד הבית או
+המוצר. הועבר ב-M08-c57 לשמירה על תקרת 300 שורות.
 
 ## M05-c57, M04-c57, M03-c57, M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

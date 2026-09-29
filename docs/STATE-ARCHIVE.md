@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c57 (הועבר מ-STATE.md ב-M08-c57, לשמירה על תקרת 300 שורות)
+
+**M06-c57 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת ב-M06-c1/M06-c52..M06-c56:
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3493 pnpm
+build` -> `exit 0`; `pnpm start -p 3493` מאותה סביבה (פורט אומת פנוי
+לפני ואחרי ההרצה, מתוך תשעה שרתי dev מקביליים על פורטים אחרים).
+`curl` אישר `200` על `/` ועל `/product/barbecue-2`.
+`node_modules/.bin/lighthouse` על שני ה-URL, `--throttling-method=
+devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90. `git log 0ebbeba8d..HEAD -- src/app
+src/components src/lib` ריק — אין קומיט קוד בין M06-c56 לכאן שנוגע
+בעמוד הבית או במוצר, ולכן אין תיקון נדרש. השרת נעצר (`kill`, פורט
+3493 אומת פנוי מחדש), קבצי ה-JSON הזמניים נמחקו. שערים: `type-check`
+נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n
+627/627, locale 116/116), `test` 608/608 קבצים, 7242/7254 (12
+skipped, זהה), `build` `exit 0` (חלק מהמדידה עצמה). אין שינוי קוד,
+אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`**
+(פלוס `docs/STATE-ARCHIVE.md` — M05-c57 הועבר לתקרת 300 שורות).
+
 ## M05-c57 (הועבר מ-STATE.md ב-M06-c57, לשמירה על תקרת 300 שורות)
 
 **M05-c57 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם השביעית ברציפות
