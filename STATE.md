@@ -1,5 +1,5 @@
 RESUME FROM: M11-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c53)
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c53)
 
 ## המשך מ:
 
@@ -32,37 +32,38 @@ type-check נקי, lint נקי (biome + 12 שערי תוכן), 605/7213 (+18), b
 `exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה:
 `src/server/actions/payments/refund.test.ts`.**
 
-## M09-c53 - DONE (29.09): STATE CLEAN, backlog re-verified with a direct check
-היתה למצוא את פריט התור הפתוח בעל ההשפעה הגבוהה ביותר שסוכן קוד יכול
-לסגור בלי אופיר. `CLAUDE.md`, `STATE.md` (כולל "חוסמים פתוחים", 12 סעיפים)
-ו-`docs/BACKLOG.md` (15 סעיפים) נקראו במלואם; `git log -3 -- docs/BACKLOG.md
-docs/POST-LAUNCH-BACKLOG.md docs/MIGRATION-BACKLOG.md` אישר שאף אחד משלושת
-הקבצים לא זז מאז 63cbf363c (M15-c52) — אין דריפט. מעבר לחזרה על בדיקת
-M08-c53, נעשה מעבר עצמאי נוסף: `grep` על `TODO|FIXME|XXX` בכל `src/`
-(19 תוצאות, כולן placeholder-י UI/הערות תיעוד לגיטימיות, לא קוד חסר),
-`grep` על `test.skip`/`it.todo` תחת `e2e/` (כל דילוג מותנה בדגל סביבה,
-seed חסר או fixture — לא באג), ו-`docs/POST-LAUNCH-BACKLOG.md` נקרא
-במלואו (כל סעיף הוא דחייה מנומקת עם תאריך והחלטה, לא פריט שנשכח).
-כל 12 החוסמים ב-STATE.md וכל 15 סעיפי BACKLOG.md נבדקו שוב מול תנאי
-העצירה ב-`CLAUDE.md`: כולם env/secret של Vercel, migration על פרודקשן,
-הכרעת מפעיל מפורשת (קטלוג), חשבון Cloudflare חיצוני, או ערך שרק אופיר
-מחזיק. **אפס פריט בר-ביצוע לסוכן — הפעם השלוש-עשרה ברציפות
-(M08-c1..M08-c53, ועכשיו M09-c53 בבדיקה ישירה משלו).** שערים: כל ארבעת
-השערים ירוקים — `type-check` נקי, `lint` נקי (biome + 12 שערי תוכן, i18n
-627/627), `test` 605/605 קבצים, 7195/7207 (12 skipped, זהה), `build`
-`exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קבצים:
-`STATE.md` ו-`docs/STATE-ARCHIVE.md` בלבד** (ארכוב M07-c53 לשמירה על
-תקרת 300 השורות).
+## M12-c53 - DONE (29.09): SEO נמדד מחדש בפעם הרביעית — מטא/canonical/og/JSON-LD Product+Offer/sitemap/robots, אפס דריפט
 
-## M08-c53 - DONE (29.09): BACKLOG EMPTY נמדד בפעם השתים-עשרה
+נבדק מה השתנה מאז M12-c52 (‏`c379eeb15`): `git log c379eeb15..HEAD` על נתיבי
+SEO מצא קומיט אחד רלוונטי, `99b2079cb` (M18-c52), שחיבר את דירוג הכוכבים
+ל-`aggregateRating` ב-JSON-LD (`src/lib/seo/json-ld.ts`,
+`src/app/(store)/product/[slug]/page.tsx`) — לא היה קיים בבדיקה הקודמת.
+ארבעת השערים נקיים: type-check, lint (biome + 12 שערי תוכן, i18n
+627/627), 605/7213 (זהה למדוד ב-M10-c53), `build` `exit 0`. נבדק חי מול
+build אמיתי על `PORT=3311 pnpm start`: `robots.txt` (12 `Disallow`, host
++ sitemap תקינים), `sitemap.xml` (5 חלקים), `sitemap/products.xml` (46
+`<loc>`, 46 `<lastmod>`, כולם עם timestamp תקין), דף מוצר (`/product/barbecue`):
+canonical נכון, `og:title/description/url/locale/image*` נכונים, JSON-LD
+`Product`+`Offer` (מחיר, `priceCurrency`, `availability`,
+`priceSpecification` עם `StrikethroughPrice`) ו-`BreadcrumbList` תקינים,
+**`aggregateRating` נעדר נכון** למוצר בלי ביקורות (הענף הנגדי — מוצר עם
+ביקורות — מכוסה ב-`src/lib/seo/json-ld.test.ts`, לא נמדד חי כי אין מוצר
+עם ביקורות זמין כרגע). דף הבית: canonical, `og:*`, כותרת — תקינים. אפס
+דריפט, אפס תיקון נדרש. אין שינוי קוד, אין שער חזותי נדרש. **`RESUME FROM`
+נשאר `M11-c53`**: אין קומיט `M11-c53` ב-`HEAD`/`origin` (נבדק עם
+`git fetch` לפני ואחרי), כלומר עדיין פתוח (סביר שסוכן מקביל אחר עליו) —
+הפריט הזה (`M12-c53`) בוצע מחוץ לסדר לפי הקצאה מפורשת.
 
-`docs/BACKLOG.md` (109 שורות, לא עודכן מ-M18-c52) נקרא במלואו: 15 הסעיפים
-זהים בסדר ובתוכן ל-M08-c52, אפס פריט חדש. כל אחד מ-15 הסעיפים נבדק מול
-תנאי העצירה ב-`CLAUDE.md`: DNS (סעיף 1, RESOLVED), `CRON_SECRET` וסביבת
-Vercel (2, 3, 6, 9), פריסת HEAD (4), מיגרציות ממתינות (5), הכרעת קטלוג
-(7), רוטציית מפתח (8), R2 (10), `cron-jobs.json`/`main` (11),
-`dns-watch.sh` (12), ח.פ (13), כניסה בטלפון (14), stashes (15) — כולם
-חוסמים לפי CLAUDE.md. שערים ירוקים (605/7195, `exit 0`). אין שינוי קוד.
+## M09-c53 - DONE (29.09): פירוט מלא בארכיון
+
+STATE CLEAN, backlog נבדק שוב באופן ישיר (grep TODO/FIXME, test.skip/it.todo,
+POST-LAUNCH-BACKLOG מלא) — אפס פריט בר-ביצוע בפעם השלוש-עשרה. שערים ירוקים,
+605/7195 (12 skipped). אין שינוי קוד.
+
+## M08-c53 - DONE (29.09): פירוט מלא בארכיון
+
+BACKLOG EMPTY נמדד בפעם השתים-עשרה: 15 הסעיפים זהים ל-M08-c52, כולם חוסמים
+לפי CLAUDE.md. שערים ירוקים (605/7195). אין שינוי קוד.
 
 ## M07-c53 - DONE (29.09): פירוט מלא בארכיון
 

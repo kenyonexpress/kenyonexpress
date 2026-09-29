@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c53 - DONE (29.09): STATE CLEAN, backlog re-verified with a direct check
+היתה למצוא את פריט התור הפתוח בעל ההשפעה הגבוהה ביותר שסוכן קוד יכול
+לסגור בלי אופיר. `CLAUDE.md`, `STATE.md` (כולל "חוסמים פתוחים", 12 סעיפים)
+ו-`docs/BACKLOG.md` (15 סעיפים) נקראו במלואם; `git log -3 -- docs/BACKLOG.md
+docs/POST-LAUNCH-BACKLOG.md docs/MIGRATION-BACKLOG.md` אישר שאף אחד משלושת
+הקבצים לא זז מאז 63cbf363c (M15-c52) — אין דריפט. מעבר לחזרה על בדיקת
+M08-c53, נעשה מעבר עצמאי נוסף: `grep` על `TODO|FIXME|XXX` בכל `src/`
+(19 תוצאות, כולן placeholder-י UI/הערות תיעוד לגיטימיות, לא קוד חסר),
+`grep` על `test.skip`/`it.todo` תחת `e2e/` (כל דילוג מותנה בדגל סביבה,
+seed חסר או fixture — לא באג), ו-`docs/POST-LAUNCH-BACKLOG.md` נקרא
+במלואו (כל סעיף הוא דחייה מנומקת עם תאריך והחלטה, לא פריט שנשכח).
+כל 12 החוסמים ב-STATE.md וכל 15 סעיפי BACKLOG.md נבדקו שוב מול תנאי
+העצירה ב-`CLAUDE.md`: כולם env/secret של Vercel, migration על פרודקשן,
+הכרעת מפעיל מפורשת (קטלוג), חשבון Cloudflare חיצוני, או ערך שרק אופיר
+מחזיק. **אפס פריט בר-ביצוע לסוכן — הפעם השלוש-עשרה ברציפות
+(M08-c1..M08-c53, ועכשיו M09-c53 בבדיקה ישירה משלו).** שערים: כל ארבעת
+השערים ירוקים — `type-check` נקי, `lint` נקי (biome + 12 שערי תוכן, i18n
+627/627), `test` 605/605 קבצים, 7195/7207 (12 skipped, זהה), `build`
+`exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קבצים:
+`STATE.md` ו-`docs/STATE-ARCHIVE.md` בלבד** (ארכוב M07-c53 לשמירה על
+תקרת 300 השורות).
+
+## M08-c53 - DONE (29.09): BACKLOG EMPTY נמדד בפעם השתים-עשרה
+
+`docs/BACKLOG.md` (109 שורות, לא עודכן מ-M18-c52) נקרא במלואו: 15 הסעיפים
+זהים בסדר ובתוכן ל-M08-c52, אפס פריט חדש. כל אחד מ-15 הסעיפים נבדק מול
+תנאי העצירה ב-`CLAUDE.md`: DNS (סעיף 1, RESOLVED), `CRON_SECRET` וסביבת
+Vercel (2, 3, 6, 9), פריסת HEAD (4), מיגרציות ממתינות (5), הכרעת קטלוג
+(7), רוטציית מפתח (8), R2 (10), `cron-jobs.json`/`main` (11),
+`dns-watch.sh` (12), ח.פ (13), כניסה בטלפון (14), stashes (15) — כולם
+חוסמים לפי CLAUDE.md. שערים ירוקים (605/7195, `exit 0`). אין שינוי קוד.
+
 ## M07-c53 - DONE (29.09): שער נתיבים מלא נמדד שוב, 241 נתיבים, 0 FAIL, אפס תיקון נדרש
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
