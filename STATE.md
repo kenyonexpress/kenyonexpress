@@ -1,7 +1,40 @@
-RESUME FROM: M09-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c55)
+RESUME FROM: M10-c55
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c55)
 
 ## המשך מ:
+
+**M09-c55 - STATE CLEAN (29.09): backlog נמדד מחדש בפעם השש-עשרה
+ברציפות, אפס פריט שלב 1 בידי הסוכן.** המשימה: לקחת את הפריט הפתוח בעל
+ההשפעה הגבוהה ביותר הרשום ב-`STATE.md` שסוכן קוד יכול לבצע בלי אופיר,
+לממש במלואו עם טסטים; אם אין — STATE CLEAN. `CLAUDE.md`, `STATE.md`
+(כולל כל 13 "חוסמים פתוחים") ו-`docs/BACKLOG.md` (15 סעיפים) נקראו
+במלואם, וכן `git log -20`. `git log -5 -- docs/BACKLOG.md
+docs/POST-LAUNCH-BACKLOG.md docs/MIGRATION-BACKLOG.md` מאשר אפס דחיפה
+חדשה מאז `598ea2842` (M08-c55). כל 15 הסעיפים נבדקו שוב מול תנאי
+העצירה: env/secret של Vercel (2,3,6,8,9), פריסת HEAD (4), מיגרציה על
+פרודקשן (5), הכרעת מפעיל על קטלוג (7), חשבון Cloudflare חיצוני (10),
+מיזוג ענף (11), בדיקת תהליך רקע (12), ערך שרק אופיר מחזיק (13), ספק SMS
+חיצוני (14), מחיקת נתונים הדורשת אישור (15) — אף אחד לא שלב 1 בידי
+הסוכן.
+
+**בדיקה עצמאית נוספת השבוע (שונה מ-M08-c55 שכיסה TODO/FIXME, ומ-M09-c54
+שכיסה `git stash list`): קריאה ישירה מה-Vercel API (`filter_project_envs`
+על `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`, ללא פענוח ערך) על 39 משתני
+הסביבה של הפרויקט `kenyonexpress`.** אישר, בקריאה בלבד וללא שינוי:
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
+(השמות שהקוד קורא) **עדיין לא קיימים** ב-Production, `ALLOW_INCOMPLETE_ENV`
+עדיין קיים, ו-`SUPABASE_SECRET_KEY` עדיין מסומן `readable-secret` על ידי
+Vercel עצמו (חוסם 7/8). ממצא נלווה, לא לפעולה: `CARDCOM_WEBHOOK_SECRET`
+נושא אותו תג `readable-secret` — לא היה רשום קודם, אך רוטציה של סוד היא
+עדיין פעולת אופיר בלבד לפי כללי הפרויקט, כך שאין כאן פריט חדש לסוכן,
+רק אישור נוסף שחוסמים 3 ו-8 עדיין פתוחים בדיוק כפי שנמדדו. **אין פריט
+אחר שדורש שינוי.** זו הפעם השש-עשרה ברציפות שאותה מסקנה נמדדת (M08-c1..
+M08-c55, ועכשיו M09-c55). שערים: `type-check` נקי, `lint` נקי (biome
+2020 קבצים + 12 שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605
+קבצים, 7217/7229 (12 skipped, זהה), `build` `exit 0`. אין שינוי קוד
+יישומי, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`.**
+
+## M08-c55 (ארכיון)
 
 **M08-c55 - BACKLOG EMPTY (29.09): אפס פריט שלב 1 בידי הסוכן, נמדד
 מחדש.** המשימה: לקחת את פריט שלב 1 הפתוח בעל ההשפעה הגבוהה ביותר
@@ -31,43 +64,10 @@ agent may take alone" — כל 15 הסעיפים הם env/secret של Vercel (2,
 זהה), `build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
 **קובץ יחיד שונה: `STATE.md`.**
 
-## M07-c55 (ארכיון)
+## M07-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M07-c55 - DONE (29.09): route audit נמדד שוב, 242 שורות, אפס כשל
-אמיתי.** אותו מתכון מ-M07-c1/M07-c52/M07-c53/M07-c54: `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3472 pnpm build` -> `exit 0`;
-`PORT=3472 pnpm start` מאותה סביבה (פורט אומת פנוי לפני ואחרי, `curl`
-אישר `200` על `/` ועל `/product/barbecue-2`); `pnpm exec playwright test
-e2e/route-audit.spec.ts --project=chromium --workers=1` בחמישה צ'אנקים
-לפי תפקיד (`--grep`): anon (60), GET קבצים/API (72), customer (25), admin
-(59), supplier (10) — סה"כ 226 טסטים, כל שורה נכתבת ל-`ROUTE_AUDIT_REPORT`.
-
-**תוצאה: 240 PASS, 2 NO DATA (`customer /account/tickets/[id]`,
-`admin /admin/discounts/[id]` — הרשימה לא מקשרת לשום שורה, זהה לריצות
-קודמות), 0 FAIL, 0 SKIPPED.** בריצה הראשונה של צ'אנק ה-admin שני טסטים
-נכשלו בתזמון (`/admin/suppliers/price-proposals`: "Execution context was
-destroyed" ב-`page.evaluate`, `/admin/support`: `beforeAll` timeout של
-30 שנ' אחרי שה-worker התאושש מהכשל הקודם) ועוד חמישה טסטים לא רצו בגלל
-זה. **נמדד שאינו רגרסיה אמיתית**: שני הנתיבים רצו שוב בבידוד ועברו
-(`28.7s`, כולל כניסה מלאה), וחמשת הטסטים שלא רצו רצו אחר כך ועברו כולם
-(`4.3m`) — תואם לזיכרון `route-audit-recipe-and-hydration-dates` על
-שאילתות איטיות מדי פעם מול ה-Supabase המאוחסן. אפס שגיאת console, אפס
-אזהרת hydration, RTL תקין (`dir=rtl lang=he body=rtl`) על כל דף HTML
-שנמדד.
-
-**דלתא קוד מאז M07-c54** (`git diff --stat 5081decc5..HEAD`, לא כולל
-`STATE.md`/`docs/BACKLOG.md`/`docs/STATE-ARCHIVE.md`/`LAUNCH-READINESS.md`):
-תיקוני נגישות ב-9 קבצי אדמין (M11-c54, `role`/`aria-label`/`tabIndex` על
-טבלאות גולשות), תיקון `fill`+`sizes` ב-`HeroSlider.tsx` (M14-c54),
-שדרוג פטץ' ל-`posthog-js` (M04-c55), טסטים חדשים ל-`refund`/
-`refund-request` (M10-c54) — אף אחד מהם לא נגע במסלול, בניתוב, או
-בבדיקת RTL. אין תיקון נדרש. שערים: `type-check` נקי, `lint` נקי
-(biome 2020 קבצים + 12 שערי תוכן, i18n 627/627), `test` 605/605 קבצים,
-7217/7229 (12 skipped, זהה), `build` `exit 0` (חלק מהמדידה עצמה). אין
-שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). כל קבצי הדוח הזמניים
-(`/tmp/route-audit-c55*.jsonl`, `/tmp/ke-start-c55.log`) נמחקו, השרת
-על פורט 3472 נעצר ואומת פנוי. **קבצים ששונו: `STATE.md`,
-`docs/STATE-ARCHIVE.md`** (M06-c55 הועבר לשמירה על תקרת 300 שורות).
+route audit נמדד שוב, 242 שורות, אפס כשל אמיתי, אפס דלתא קוד שנוגעת
+במסלול. הועבר ב-M09-c55 לשמירה על תקרת 300 שורות.
 
 ## M03-c55, M04-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

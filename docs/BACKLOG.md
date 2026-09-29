@@ -43,6 +43,17 @@ changed again (83 -> 101, `git rev-list --count a388118f1..HEAD`, git-only,
 production not re-probed this item). Item 7's finding count (26) re-checked
 against the ledger, unchanged.
 
+**Re-checked 2026-09-29 (M09-c55) via a direct read-only Vercel API call
+(`filter_project_envs`, no value decrypted) on all 39 env vars of project
+`kenyonexpress`:** item 3 and item 8 both confirmed unchanged (still no
+`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` in Production, still
+`ALLOW_INCOMPLETE_ENV` set, `SUPABASE_SECRET_KEY` still flagged
+`readable-secret` by Vercel itself). Same call surfaced that
+`CARDCOM_WEBHOOK_SECRET` also carries the `readable-secret` flag — not
+previously recorded anywhere. No new numbered item: rotating it is the same
+Ofir-only action as item 8 (secret rotation), just a second key needing it;
+folded into item 8's wording below rather than given its own number.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -92,10 +103,12 @@ against the ledger, unchanged.
    מקור לשחזר ממנו). שום דבר כאן אינו לתיקון אוטומטי — ראו `CLAUDE.md`
    §"מצב נוכחי" סעיף 1. **לא היה ברשימת STATE.md;** מקור:
    LAUNCH-READINESS.md שורה חוסמת 6, `CLAUDE.md`.
-8. **רוטציית `SUPABASE_SECRET_KEY`.** המפתח בשימוש נחשף בהתקנה; מסומן
-   ב-`scripts/compromised-keys.mjs`, ו-`deploy-preflight` מסרב לבנות
-   איתו. נוהל ב-`docs/RUNBOOK.md`. מקור: STATE.md חוסם 7,
-   LAUNCH-READINESS.md שורה חוסמת 7.
+8. **רוטציית `SUPABASE_SECRET_KEY`, וגם `CARDCOM_WEBHOOK_SECRET`.** המפתח
+   הראשון בשימוש נחשף בהתקנה; מסומן ב-`scripts/compromised-keys.mjs`,
+   ו-`deploy-preflight` מסרב לבנות איתו. Vercel מסמן את שניהם
+   `readable-secret` (נמדד M09-c55, `filter_project_envs` בקריאה בלבד).
+   נוהל ב-`docs/RUNBOOK.md`. מקור: STATE.md חוסם 7, LAUNCH-READINESS.md
+   שורה חוסמת 7.
 9. **`RESEND_API_KEY` בפרודקשן.** השם קיים ב-target Production אך הערך לא
    נקרא; בלעדיו כל חמשת סוגי המייל נופלים בשקט ל-`skipped` ואיפוס סיסמה
    חוזר ל-SMTP של Supabase. **לא היה ברשימת הפעולות של STATE.md** (רק
