@@ -1,6 +1,6 @@
 # DB-SECURITY-MODEL.md — RLS, Policies, SECURITY DEFINER
 
-> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-29 (סעיף 0ב: advisors אומתו שוב, אפס WARN חדש; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
+> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-29 (סעיף 0ג: advisors אומתו בפעם השלישית, זהה ב-100% ל-0ב; סעיף 0ב מאותו יום; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
 > כל שורה כאן נשלפה מ-`pg_policies`, `pg_class`, `pg_proc` (aclexplode) בפועל, לא מהזיכרון.
 > **מיגרציה 125 הוחלה ואומתה ב-21.08**: הוסרו הרשאות EXECUTE ל-authenticated מ-6 פונקציות עזר יתומות. אומת שוב ב-01.09: לשש כולן `anon=false, authed=false`.
 > **⚠️ מיגרציה 127 הוחלה ב-01.09**, אחרי שהאתר עלה לאוויר, והיא משנה את סעיף 5.1. ‏`check_rate_limit` **אינה חשופה יותר** ל-anon ול-authenticated. הוכחה, קריאה אמיתית עם המפתח הפומבי: `POST /rest/v1/rpc/check_rate_limit` מחזיר `401` ו-`42501 permission denied for function check_rate_limit`.
@@ -111,6 +111,26 @@ has no field "supplier_id"` (‏5 מתוך 5 לקוחות שנבדקו ב-BEGIN/
 `245`, `246` — כולם עדיין ב-`migrations/pending/`, אף אחד לא הוחל) ו-23
 by design (אותה רשימת קוראים כמו בסעיף 0א). **אפס WARN חדש, אפס WARN
 שהפסיק לירות.** לא נדרש קובץ מיגרציה חדש בפריט הזה.
+
+## 0ג. נמדד שוב 29.09.2026 (M05-c53), דרך ה-management API, קריאה בלבד — זהה ב-100% ל-0ב
+
+אותו מסלול חלופי שוב (MCP דורש OAuth, טוקן ה-CLI מה-keychain, אותם שני
+`GET`, ‏200/200). **כל מספר זהה ל-0ב, לא רק הסך-הכול:** אבטחה 28 ממצאים
+(4 `rls_enabled_no_policy` INFO, 2 `anon_security_definer` WARN, 21
+`authenticated_security_definer` WARN, 1 `function_search_path_mutable`
+WARN); ביצועים 197 ממצאים (14 `multiple_permissive_policies` WARN על
+אותן 11 טבלאות, 6 `auth_rls_initplan` WARN על אותן טבלאות, 167
+`unused_index` INFO, 9 `unindexed_foreign_keys` INFO, 1
+`auth_db_connections_absolute` INFO). ‏44 WARN בסך הכול, אפס חדש, אפס
+שהפסיק לירות.
+
+תוכן ארבעת הקבצים הממתינים (`209`, `220`, `245`, `246`) נבדק מול המדידה
+ונשאר תואם: `245` מחזיקה בדיוק 53 שורות `CREATE POLICY`/`DROP POLICY`
+שמכסות את כל 14 `multiple_permissive_policies`; `209` §2 מכסה 5 מ-6
+`auth_rls_initplan` ו-`246` את השישי (`profiles_super_admin_mfa`, בגלל
+פער דיוק ב-lint 0003 שמתועד בראש הקובץ); `220` מכסה את
+`function_search_path_mutable` היחיד. אף קובץ לא נערך, אף אחד לא הוחל,
+אפס קובץ מיגרציה חדש נדרש.
 
 ## 1. עקרון-על
 

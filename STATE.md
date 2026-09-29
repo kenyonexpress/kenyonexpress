@@ -1,64 +1,71 @@
-RESUME FROM: M05-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c53)
+RESUME FROM: M06-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c53)
 
 ## המשך מ:
 
-M04-c53 היה תברואת תלויות: `pnpm audit` אפס חולשות, `pnpm outdated` נבדק
-ונמצא WIP לא-committed קיים כבר בעץ העבודה בתחילת הפריט (`package.json`,
-`pnpm-lock.yaml`) עם בדיוק עדכוני patch/minor — הוא אומת (`pnpm install`
-"Already up to date", כלומר תואם ל-lockfile), לא נכתב מחדש. כל שאר
-ה-outdated הם קפיצת major או חבילת `0.x` שקפיצת ה-minor שלה שקולה ל-major
-לפי semver (`@anthropic-ai/sdk`, `@supabase/ssr`) — לא הוחל דבר מהם. ארבעת
-השערים ירוקים על ה-WIP: `type-check` נקי, `lint` נקי, `test` 605/7195
-(זהה), `build` `exit 0`. אין שינוי קוד יישומי, אין קובץ מיגרציה, אין שער
-חזותי נדרש (עדכון תלויות בלבד, אין שינוי UI). פירוט מלא למטה.
+M05-c53 היה audit DB דרך advisors: Supabase MCP עדיין דורש OAuth לא זמין,
+אותו מסלול חלופי כמו M05-c1/M05-c52 (טוקן ה-CLI מה-keychain נגד
+`GET /v1/projects/<ref>/advisors/{security,performance}`, קריאה בלבד,
+200/200). **התוצאה זהה ב-100% ל-M05-c52, כל מדד, כל מספר**: 44 WARN
+(24 אבטחה + 20 ביצועים), 28 ממצאי אבטחה, 197 ממצאי ביצועים, 167
+`unused_index`, 9 `unindexed_foreign_keys` — אפס WARN חדש, אפס WARN
+שהפסיק לירות. כל ה-44 עדיין מכוסים בקבצים קיימים ב-`migrations/pending/`
+(209, 220, 245, 246), תוכנם אומת שעדיין תואם את המדידה (209 §2 מכסה
+5/6 מ-`auth_rls_initplan`, 246 את השישי; 245 מכסה את כל 14
+`multiple_permissive_policies`; 220 את `function_search_path_mutable`
+היחיד; 21+2 `security_definer` נשארים by design). **לא נכתב קובץ
+מיגרציה חדש — אין WARN לא מכוסה.** `docs/DB-SECURITY-MODEL.md` קיבל
+סעיף 0ג עם המדידה המתועדת. אין שינוי קוד, אין שער חזותי נדרש. פירוט
+מלא למטה.
+
+## M05-c53 - DONE (29.09): advisors נמדדו שוב, 44 WARN זהה ב-100% ל-M05-c52, אפס קובץ חדש נדרש
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. M05-c1 (25.09) ו-M05-c52 (29.09, אותו יום) כבר ביצעו את
+אותה בדיקה בדיוק דרך אותו מסלול; הוחלט לחזור על המדידה במקום להניח
+שהיא עדיין נכונה, כי היא זולה (שתי קריאות `GET` בלבד) והתוצאה קובעת אם
+נדרש קובץ מיגרציה חדש.
+
+**מה נמדד:**
+1. Supabase MCP: `ToolSearch` על `get_advisors` לא מצא כלי — השרת
+   מופיע ברשימת "דורש הרשאה" (כמו בשני הפריטים הקודמים).
+2. `security find-generic-password -s "Supabase CLI" -w` -> טוקן
+   `go-keyring-base64:...`, פוענח ל-`sbp_...`.
+3. `GET /v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/security` -> `200`,
+   28 ממצאים: 4 `rls_enabled_no_policy` (INFO), 2
+   `anon_security_definer_function_executable` (WARN: `is_admin`,
+   `is_supplier_member`), 21 `authenticated_security_definer_function_executable`
+   (WARN, אותה רשימת 21 פונקציות בדיוק כמו בסעיף 0א/0ב), 1
+   `function_search_path_mutable` (WARN: `fn_wallet_entries_block_mutation`).
+4. `GET /v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/performance` -> `200`,
+   197 ממצאים: 14 `multiple_permissive_policies` (WARN, אותן 11 טבלאות),
+   6 `auth_rls_initplan` (WARN, אותן טבלאות), 167 `unused_index` (INFO),
+   9 `unindexed_foreign_keys` (INFO), 1 `auth_db_connections_absolute` (INFO).
+5. נבדק תוכן ארבעת הקבצים הממתינים מול המדידה: `209_advisor_warnings.sql`
+   (§2, 5/6 `auth_rls_initplan`), `220_wallet_entries_search_path.sql`
+   (ה-`function_search_path_mutable` היחיד), `245_single_permissive_policy_per_action.sql`
+   (53 שורות `CREATE POLICY`/`DROP POLICY`, מכסה את כל 14
+   `multiple_permissive_policies`), `246_profiles_mfa_initplan.sql`
+   (השישי מ-`auth_rls_initplan`, `profiles_super_admin_mfa`) — כולם עדיין
+   ב-`migrations/pending/`, אף אחד לא הוחל, אף אחד לא נערך.
+
+**מסקנה:** 44 WARN, זהה ב-100% ל-M05-c52 בכל מדד (לא רק בסך-הכול):
+28/197/167/9 כולם זהים אות באות. כל ה-44 מכוסים על ידי קובץ קיים
+(21 by design + 23 עם קובץ). אפס קובץ מיגרציה חדש נדרש בפריט הזה.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 11 שערי תוכן),
+`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0`. אין שינוי קוד
+יישומי, אין שער חזותי נדרש (אין שינוי UI).
+
+**קבצים:** `docs/DB-SECURITY-MODEL.md` (סעיף 0ג), `STATE.md`.
 
 ## M04-c53 - DONE (29.09): תברואת תלויות — audit אפס, 13 חבילות patch/minor, אפס major
 
-**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. הפריט המקביל האחרון (M04-c1, `2026-09-25`) עדכן 30 חבילות
-patch/minor (`next` 16.3.6, `React` 19.3.0, `supabase-js` 2.117.1,
-`lucide` 1.47.0) ודילג על 14 major + 3. `git status` בתחילת הפריט הראה
-`package.json`/`pnpm-lock.yaml` כבר בעץ העבודה, לא committed — נבדק
-שאין סוכן מקביל רץ על הריפו (`ps aux`, רק התהליך של הפריט הזה), ושה-diff
-הוא בדיוק עדכוני patch/minor (אין קפיצת מספר גרסה ראשי בשום שורה) — הוחלט
-לאמת ולהשלים אותו, לא לזרוק אותו.
-
-**מה נמדד:**
-1. `pnpm audit` -> "No known vulnerabilities found".
-2. `pnpm outdated` -> 16 שורות. שלוש-עשרה כבר עודכנו ב-WIP (`@aws-sdk/*`,
-   `@sentry/nextjs`+`node`, `@simplewebauthn/server`, `@supabase/ssr`+
-   `supabase-js`, `lucide-react`, `next-intl`, `posthog-js`,
-   `react-hook-form`, `sharp`, `tailwind-merge`, `@playwright/test`,
-   `@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
-   `lint-staged`, `typescript` — כולן קפיצות patch/minor בתוך אותו major).
-   הנותרות ברשימה: `@biomejs/biome` 1.9.4->2.5.14, `@hookform/resolvers`
-   3.10.0->5.9.1, `@sentry/nextjs`+`node` 10.75.3->11.0.0,
-   `@testing-library/jest-dom` 6.10.0->7.0.1, `@types/node` 20.19.43->26.6.3,
-   `@vitejs/plugin-react` 4.7.0->6.1.1, `@vitest/coverage-v8` 4.1.11->5.0.2,
-   `jsdom` 25.0.1->30.1.1, `lint-staged` 15.5.2->17.6.0, `tailwind-merge`
-   2.6.1->3.7.0, `typescript` 5.9.3->7.0.2, `vitest` 4.1.11->5.0.2, `zod`
-   3.25.76->4.6.5 — כולן קפיצת major. `@anthropic-ai/sdk` 0.122.0->0.128.0
-   ו-`@supabase/ssr` 0.10.3->0.12.7 הן `0.x`, שם קפיצת ה-minor שקולה ל-major
-   לפי semver (אין יציבות API מובטחת מתחת ל-1.0) — לא הוחלו, לפי "אסור
-   major" בכלל הפריט.
-3. `pnpm install` -> "Already up to date": ה-lockfile כבר תואם ל-`node_modules`
-   המותקן, כלומר ה-WIP כלל גם `pnpm install`, לא רק עריכת `package.json`.
-4. `pnpm type-check` -> נקי, `tsc --noEmit` ללא פלט.
-5. `pnpm lint` -> נקי: `biome check` (2020 קבצים) + כל אחד עשר שערי
-   התוכן, זהה לרשימת M03-c53.
-6. `pnpm test` -> `605 test files passed`, `7195 tests passed | 12 skipped`,
-   זהה למדידה האחרונה.
-7. `pnpm build` -> `exit 0`, `✓ Compiled successfully in 1562ms`. שורות
-   ה-`warn`/`error` בפלט הן לוגים תפעוליים ידועים (`anon` בלי הרשאה על
-   `reviews`, חוסם 3/247), לא אזהרות build.
-
-**מסקנה:** 13 חבילות patch/minor אומתו ונשארות בעץ (כבר בעץ בתחילת הפריט,
-לא הוחל שום דבר נוסף); אפס major הוחל; אפס חולשות. ארבעת השערים ירוקים.
-
-**שערים:** ראו למעלה, כל הארבעה. אין שער חזותי נדרש (אין שינוי UI).
-
-**קבצים:** `package.json`, `pnpm-lock.yaml`, `STATE.md`.
+13 חבילות patch/minor אומתו מ-WIP קיים בעץ (`@aws-sdk/*`, `@sentry/*`,
+`@supabase/ssr`+`supabase-js`, `lucide-react`, `next-intl`, `posthog-js`,
+`react-hook-form`, `sharp`, `tailwind-merge`, ועוד), אפס major הוחל
+(13 חבילות major + 2 `0.x` דולגו). `pnpm audit` אפס חולשות. ארבעת השערים
+ירוקים, 605/7195. אין שינוי קוד יישומי. פירוט מלא בארכיון.
 
 ## M03-c53 - DONE (29.09): green check מחדש, ארבעת השערים נקיים ללא תיקון
 
