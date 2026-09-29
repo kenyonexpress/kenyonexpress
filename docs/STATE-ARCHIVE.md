@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c55 (הועבר מ-STATE.md ב-M01-c56, לשמירה על תקרת 300 שורות)
+
+**M18-c55 - DONE (29.09): בדיקת אפס-פעילות (idle check) — המחזור *לא*
+היה אפס-פעילות, ולכן MAINTENANCE IDLE לא נכתב ושיפור המרה מומחש לא
+חיפש, בדיוק כמו התקדים ב-M18-c54.** המשימה: אם כל הפריטים במחזור הזה
+לא הפיקו שינוי קוד, לכתוב MAINTENANCE IDLE עם תאריך ואז לחפש שיפור
+המרה אחד בעמוד הבית/מוצר לפי Electro v7 וליישם אותו. **תנאי ה-idle
+נבדק ישירות, לא הונח:**
+
+- `git show --stat` על שני הקומיטים היחידים במחזור c55 שאינם `docs`:
+  `ff7a12727` (M04-c55, עדכון פטץ' `posthog-js` — `package.json` +
+  `pnpm-lock.yaml`) ו-`4fcda1bf5` (M10-c55, טסטים חדשים ל-
+  `src/server/actions/refund-requests.test.ts`, 0→49/50 branches).
+  **שני קומיטים אמיתיים של שינוי קוד קיימים במחזור** — תנאי ה-idle
+  `false`, זהה מבחינה מהותית ל-M18-c54 (שם היו ארבעה).
+- `git log --oneline a388118f1..HEAD -- src/app`: העריכה האחרונה
+  שנגעה בעמוד בית/מוצר היא `99b2079cb` (M18-c52, חיווט דירוג-כוכבים
+  לביקורות אמיתיות) — **לפני** תחילת c55, לא בתוכו. שני קומיטי הקוד
+  של c55 עצמו לא נגעו ב-`src/app`/`src/components` בכלל (`git show
+  --stat` על שניהם, למעלה, מאשר).
+- לכן, כמו ב-M18-c54: **אין חיפוש שיפור המרה ואין יישום** — הענף
+  המותנה של המשימה (כתיבת MAINTENANCE IDLE + חיפוש שיפור) חל רק כש-
+  כל הפריטים במחזור הפיקו אפס שינוי קוד, ולא כאן.
+- עמוד הבית ועמוד המוצר נבדקו בכל זאת בקצרה (לא כחלק מהענף המותנה,
+  אלא כבדיקת שפיות): `git diff 99b2079cb..HEAD --stat -- src/app
+  src/components messages/he.json` **ריק** — אפס שינוי לא-מתועד
+  מאז M18-c52. i18n gate עדיין 627/627, שער חזותי בית עדיין
+  8.51/9.02/3.95 PASS (M17-c55/M02-c55, לא נמדד מחדש כאן — אין שינוי
+  UI שמצדיק מדידה שלישית באותה תוצאה).
+
+**אפס תיקון קוד, אפס שער חזותי חדש נדרש (אין שינוי UI).**
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm
+test` 606/606 קבצים 7239/7251 (12 skipped, זהה ל-M17-c55), `pnpm
+build` `exit 0`.
+
+**קבצים:** `docs/STATE-ARCHIVE.md` (M17-c55 הועבר לשם), `STATE.md`
+בלבד.
+
 ## M17-c55 (הועבר מ-STATE.md ב-M18-c55, לשמירה על תקרת 300 שורות)
 
 **M17-c55 - DONE (29.09): מעבר קופי ומשפטי בפעם השלישית — אפס ממצא

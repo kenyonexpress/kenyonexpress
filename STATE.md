@@ -1,44 +1,57 @@
-RESUME FROM: M11-c55
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c55)
+RESUME FROM: M02-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c56)
 
 ## המשך מ:
 
-**M18-c55 - DONE (29.09): בדיקת אפס-פעילות (idle check) — המחזור *לא*
-היה אפס-פעילות, ולכן MAINTENANCE IDLE לא נכתב ושיפור המרה מומחש לא
-חיפש, בדיוק כמו התקדים ב-M18-c54.** המשימה: אם כל הפריטים במחזור הזה
-לא הפיקו שינוי קוד, לכתוב MAINTENANCE IDLE עם תאריך ואז לחפש שיפור
-המרה אחד בעמוד הבית/מוצר לפי Electro v7 וליישם אותו. **תנאי ה-idle
-נבדק ישירות, לא הונח:**
+**M01-c56 - BLOCKED (29.09): בדיקת פרודקשן — DNS תקין ומגיש 200,
+פריסת HEAD נשארת חסומה באותה סיבה בדיוק, ולא נוסתה מחדש הפעם.**
+המשימה: build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני
+הדומיינים; אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן
+אין DNS BLOCKER חדש:**
 
-- `git show --stat` על שני הקומיטים היחידים במחזור c55 שאינם `docs`:
-  `ff7a12727` (M04-c55, עדכון פטץ' `posthog-js` — `package.json` +
-  `pnpm-lock.yaml`) ו-`4fcda1bf5` (M10-c55, טסטים חדשים ל-
-  `src/server/actions/refund-requests.test.ts`, 0→49/50 branches).
-  **שני קומיטים אמיתיים של שינוי קוד קיימים במחזור** — תנאי ה-idle
-  `false`, זהה מבחינה מהותית ל-M18-c54 (שם היו ארבעה).
-- `git log --oneline a388118f1..HEAD -- src/app`: העריכה האחרונה
-  שנגעה בעמוד בית/מוצר היא `99b2079cb` (M18-c52, חיווט דירוג-כוכבים
-  לביקורות אמיתיות) — **לפני** תחילת c55, לא בתוכו. שני קומיטי הקוד
-  של c55 עצמו לא נגעו ב-`src/app`/`src/components` בכלל (`git show
-  --stat` על שניהם, למעלה, מאשר).
-- לכן, כמו ב-M18-c54: **אין חיפוש שיפור המרה ואין יישום** — הענף
-  המותנה של המשימה (כתיבת MAINTENANCE IDLE + חיפוש שיפור) חל רק כש-
-  כל הפריטים במחזור הפיקו אפס שינוי קוד, ולא כאן.
-- עמוד הבית ועמוד המוצר נבדקו בכל זאת בקצרה (לא כחלק מהענף המותנה,
-  אלא כבדיקת שפיות): `git diff 99b2079cb..HEAD --stat -- src/app
-  src/components messages/he.json` **ריק** — אפס שינוי לא-מתועד
-  מאז M18-c52. i18n gate עדיין 627/627, שער חזותי בית עדיין
-  8.51/9.02/3.95 PASS (M17-c55/M02-c55, לא נמדד מחדש כאן — אין שינוי
-  UI שמצדיק מדידה שלישית באותה תוצאה).
+- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
+  `ns2.vercel-dns.com`. `dig +short A kenyonexpress.co.il` ->
+  `64.29.17.65`/`216.198.79.1`. `dig +short A www.kenyonexpress.co.il`
+  -> `216.198.79.1`/`64.29.17.65`.
+- `curl -I https://kenyonexpress.co.il` -> **308** ל-`https://www.
+  kenyonexpress.co.il/` (הפניית Vercel תקינה). `curl
+  https://www.kenyonexpress.co.il` -> **200**, HTML אמיתי (`lang="he"
+  dir="rtl"`, `content-security-policy`/`strict-transport-security`
+  תקינים, `server: vercel`).
 
-**אפס תיקון קוד, אפס שער חזותי חדש נדרש (אין שינוי UI).**
+**פריסה: לא נוסתה מחדש דרך Vercel MCP הפעם — זו הפעילה
+מ-M01-c55 ("goal שנתקע פעמיים — לדלג"), ותנאיה נבדקו כלא-השתנו לפני
+שהוחל עליה שוב:** `filter_project_envs` בקריאה בלבד על פרויקט
+`kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אישר
+`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` עדיין חסרים
+מ-Production (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/
+`API_KEY` שהקוד לא קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם —
+זהה למדידה ב-M09-c55. כלומר ניסיון פריסה חוזר היה חוזר לאותה שגיאת
+`deploy-preflight` בדיוק פעם שישית ברציפות (M01-c1, M01-c52..M01-c55)
+בלי שום תנאי חדש, ולכן לא נוסה. `list_deployments`
+(`target=production`, פרויקט `kenyonexpress`) מאשר פרודקשן עדיין
+מגיש `a388118f1` (`READY`); שלושת ניסיונות הפריסה האחרונים (c53/c54,
+פעמיים ב-c55 עצמו) כולם `state=ERROR`. HEAD כעת **122** קומיטים
+לפניו (`git rev-list --count a388118f1..HEAD`, עלה מ-118 ב-M15-c55).
 
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm
-test` 606/606 קבצים 7239/7251 (12 skipped, זהה ל-M17-c55), `pnpm
-build` `exit 0`.
+**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
+במשימה):** `pnpm build` בפורגראונד, `exit 0`, כל המסלולים נבנו. HEAD
+תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד, לא הקוד.
 
-**קבצים:** `docs/STATE-ARCHIVE.md` (M17-c55 הועבר לשם), `STATE.md`
-בלבד.
+**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+`pnpm lint` נקי (12 שערים), `pnpm test` 606/606 קבצים 7239/7251 (12
+skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד.
+
+**קבצים:** `docs/BACKLOG.md` (ספירת קומיטי חוסם 2 עודכנה ל-122),
+`docs/STATE-ARCHIVE.md` (M18-c55 הועבר לשם), `STATE.md` בלבד.
+
+## M18-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+בדיקת אפס-פעילות בפעם השנייה: המחזור c55 *לא* היה אפס-פעילות (שני
+קומיטי שינוי-קוד אמיתיים, `posthog-js` + טסטי `refund-requests`),
+ולכן MAINTENANCE IDLE לא נכתב ושיפור המרה מומחש לא חיפש, זהה
+מבחינה מהותית ל-M18-c54. עמוד הבית/מוצר נסקרו בכל זאת, אפס שינוי
+לא-מתועד מאז M18-c52. הועבר ב-M01-c56 לשמירה על תקרת 300 שורות.
 
 ## M17-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -167,35 +180,11 @@ axe נמדד מחדש על כל דף, 8 הפרות `serious` אמיתיות (ט�
 `aria-label`+`tabIndex`); 242 סריקות axe ירוקות, אפס הפרות שנותרו. הועבר
 ב-M12-c54 לשמירה על תקרת 300 שורות.
 
-## M07-c54..M10-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-route audit (M07, 241 מסלולים, 0 כשל), BACKLOG EMPTY בפעם ה-14 (M08),
-STATE CLEAN בפעם ה-15 (M09), כיסוי ענפים ל-refund/refund-request ל-100%
-(M10) — כולם DONE, אפס שינוי UI. הועברו ב-M11-c54 לשמירה על תקרת 300 שורות.
-
-## M03-c54..M06-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M03-c54 (תיקון import דפרקציה של Sentry), M04-c54 (תחזוקת תלויות, אפס
-שדרוג בהיקף), M05-c54 (ביקורת DB, 44 WARN זהה), M06-c54 (Lighthouse
-mobile, כל שמונת הציונים 90+) — כולם DONE, אפס שינוי UI, ארבעתם עם
-שערים ירוקים. הועברו ב-M08-c54 לשמירה על תקרת 300 שורות.
-
-## M01-c54, M02-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M02-c54: שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים, אפס רגרסיה (8.51/9.02/3.95
-בית, 4.96/4.56/3.25 מוצר, זהה בתוך רעש ל-M02-c53). M01-c54: בדיקת פרודקשן,
-DNS תקין, פריסת HEAD דרך Vercel MCP סורבה בפעם הרביעית באותה סיבה
-(`CARDCOM_*` חסרים, `ALLOW_INCOMPLETE_ENV`), פרודקשן לא נפגע. שניהם DONE, אפס
-שינוי קוד. הועברו ב-M18-c54 לשמירה על תקרת 300 שורות.
-
-## M11-c53..M18-c53 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M11-c53: עדיין לא קיים ב-`HEAD`/`origin`. M12-c53..M18-c53 בוצעו מחוץ לסדר
-לפי הקצאה מפורשת; M18-c53 היה בדיקת אפס-פעילות (idle check) שקבעה
-שהמחזור **לא** היה אפס-פעילות (ארבעה קומיטים אמיתיים) ולכן MAINTENANCE
-IDLE לא נכתב. הועבר ב-M08-c55 לשמירה על תקרת 300 שורות.
-
-ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M11-c53, תור 23.09, וכל מה שקדם) ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
+ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M18-c55, תור 23.09, וכל מה שקדם,
+כולל M11-c53..M18-c53 ו-M01-c54..M10-c54 שהפסקאות שלהן הוסרו מכאן ב-M01-c56
+כדי לשמור על תקרת 300 שורות — נשארות שלמות בארכיון, לא נמחקו)
+ב-`docs/STATE-ARCHIVE.md`, החדש למעלה. הקובץ הזה מחזיק רק את מה שחי.
 
 ## טבלת מצב לתור `final-queue.txt`
 
@@ -215,21 +204,25 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (118 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, M15-c55; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
+2. **פריסת פרודקשן של HEAD (122 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, M01-c56; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105 קומיטים
    אז)**:
-   נוסתה שוב ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource` github,
-   `audit/final-audit`@`291bc2d88`) **וסורבה שוב ב-`deploy-preflight`**
+   נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
+   github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`
-   עדיין חסרים ב-Production (קיימים במקומם
+   **ב-M01-c56 לא נוסה ניסיון פריסה נוסף** (כלל "goal שנתקע פעמיים —
+   לדלג", מוחל מ-M01-c55), אך התנאי נבדק שוב בקריאה בלבד ואושר ללא
+   שינוי: `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+   `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production (קיימים במקומם
    `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא קורא) ו-
-   `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם (נמדד עם `filter_project_envs`,
+   `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם (`filter_project_envs`,
    קריאה בלבד). עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה;
-   פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY)
-   ולא נפגע מהניסיון. **DNS אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c55,
-   `www.kenyonexpress.co.il` מחזיר 200 עם התוכן החי (`a388118f1`).
+   פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY,
+   אושר שוב ב-M01-c56 עם `list_deployments`). **DNS אינו קשור לחוסם הזה**
+   — נמדד שוב ב-M01-c56, `www.kenyonexpress.co.il` מחזיר 200 עם התוכן
+   החי (`a388118f1`), `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS עדיין
+   `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
    "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
