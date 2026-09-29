@@ -1,51 +1,68 @@
-RESUME FROM: M07-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c53)
+RESUME FROM: M08-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c53)
 
 ## המשך מ:
 
-M06-c53 היה Lighthouse mobile על הבית ועל דף מוצר, לתקן עד שכל ארבעת
-הציונים 90+. נבנה מחדש לפי המתכון המתועד (M06-c1/M06-c52):
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm
-build`, אז `pnpm start -p 3462`, שני הדפים אומתו 200 לפני המדידה.
-`--throttling-method=devtools --emulated-form-factor=mobile` (לא ברירת
-המחדל `simulate`, ידועה לא יציבה מול שרת מקומי). **תוצאות: בית
-99/100/100/100, מוצר 99/100/100/100** — כל שמונת הציונים מעל 90 בברווח
-גדול, דומה ל-M06-c52 (98/100/100/100 ו-99/100/100/100). **אפס תיקון
-נדרש, אפס שינוי קוד.** שרת הבדיקה על פורט 3462 ושני קבצי ה-JSON הזמניים
-נוקו בסוף המדידה. פירוט מלא למטה.
+M07-c53 היה שער נתיבים מלא: כל נתיב באפליקציה, 200 או redirect מכוון,
+אפס שגיאות קונסולה, אפס אזהרות הידרציה, RTL נכון בכל דף. נבנה מחדש לפי
+המתכון המתועד (M07-c1/M07-c52): `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3488 pnpm build`, `pnpm start -p
+3488`, שני נתיבי בדיקה אומתו 200. שש חתיכות `route-audit.spec.ts`
+(`anon /`, `GET /|supplier|anon dynamic`, `customer`, שלוש חתיכות
+`admin`) הורצו במקביל מול אותו שרת (נמדד בעבר: בטוח), `ROUTE_AUDIT_REPORT`
+משותף. **תוצאות: 241 נתיבים ייחודיים, 239 PASS / 2 NO DATA (רשימות בלי
+מה לקשר, לפי עיצוב) / 0 FAIL, אפס שורת FAIL גם בקובץ הגולמי לפני
+דה-דופ, אפס שגיאת קונסולה, אפס אזהרת הידרציה בכל 681 השורות.** שורות
+ה-`rtl=None` הן כולן נתיבי API/XML/JSON/PDF שאינם HTML ואינם בבדיקת
+ה-RTL מלכתחילה. **אפס תיקון נדרש, אפס שינוי קוד.** שרת הבדיקה על פורט
+3488 וכל קבצי ה-JSON/log הזמניים נוקו בסוף המדידה. פירוט מלא למטה.
 
-## M06-c53 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+, אפס תיקון נדרש
+## M07-c53 - DONE (29.09): שער נתיבים מלא נמדד שוב, 241 נתיבים, 0 FAIL, אפס תיקון נדרש
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. M06-c1 (25.09) ו-M06-c52 (29.09) כבר ביצעו את אותה מדידה
-בדיוק דרך אותו מתכון; הוחלט לחזור על המדידה במקום להניח שהיא עדיין
-נכונה, כי ה-item דורש עדות טרייה ל-Lighthouse בפועל.
+נקראו במלואם. M07-c1 (25.09) ו-M07-c52 (29.09) כבר ביצעו את אותה מדידה
+בדיוק דרך אותו מתכון (`e2e/route-audit.spec.ts`, ראה גם זיכרון
+"route-audit-recipe-and-hydration-dates"); הוחלט לחזור על המדידה במקום
+להניח שהיא עדיין נכונה, כי ה-item דורש עדות טרייה בפועל.
 
 **מה נמדד:**
-1. `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm
+1. `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3488 pnpm
    build` -> `exit 0`, "Compiled successfully".
-2. `pnpm start -p 3462` מאותה סביבה; `curl` אישר `200` על `/` ועל
+2. `pnpm start -p 3488` מאותה סביבה; `curl` אישר `200` על `/` ועל
    `/product/barbecue-2` לפני המדידה.
-3. `node_modules/.bin/lighthouse` על שני ה-URL, `--throttling-method=
-   devtools --emulated-form-factor=mobile`, ארבעת הקטגוריות:
+3. שש חתיכות (`--grep`) של `e2e/route-audit.spec.ts` הורצו במקביל,
+   `E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il`, `E2E_FORWARDED_FOR`
+   שונה לכל חתיכה (כדי לא לפגוע במגבלת הקצב של login), כולן כותבות
+   ל-`ROUTE_AUDIT_REPORT=/tmp/route-audit.jsonl` משותף: `"anon /"`,
+   `"GET /|route audit: supplier|anon dynamic"`, `"route audit:
+   customer"`, `"admin /admin$|admin /admin/(a|b|c|d)"`,
+   `"(f|g|h|i|o|p|q|r)"`, `"(s|u|v|w)|admin detail pages"`. כל שש
+   הריצות: `passed`, 0 `failed`, 0 `skipped` (59/83/25/23/226/226).
+4. הקובץ הגולמי (681 שורות) ואחרי דה-דופ לפי (role, path) (241 שורות
+   ייחודיות): 239 PASS, 2 NO DATA (`customer /account/tickets/[id]`,
+   `admin /admin/discounts/[id]` — רשימות בלי מה לקשר, לפי עיצוב
+   הבדיקה), **0 FAIL בשני הקבצים**, 0 שגיאת קונסולה, 0 אזהרת הידרציה.
+   שורות עם `rtl=None` (כ-70) הן כולן נתיבי `/api/*`, `/sitemap*`,
+   `robots.txt`, `manifest.webmanifest`, `opengraph-image` וכדומה —
+   תגובות שאינן HTML, מחוץ לבדיקת RTL לפי עיצוב הבדיקה עצמה; כל דף HTML
+   אמיתי חזר `rtl=true`.
+5. שרת הבדיקה נעצר (`lsof`+`kill`), פורט 3488 אומת פנוי, כל קבצי
+   `/tmp/route-audit.jsonl` ו-`/tmp/chunk*.log` נמחקו.
 
-   | דף | ביצועים | נגישות | BP | SEO |
-   |---|---|---|---|---|
-   | בית `/` | 99 | 100 | 100 | 100 |
-   | מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
-
-   כל שמונת הציונים מעל 90. דומה ל-M06-c52 (98/100/100/100,
-   99/100/100/100) — אין רגרסיה, אין תיקון נדרש.
-4. שרת הבדיקה נעצר (`pkill`), פורט 3462 אומת פנוי, שני קבצי ה-JSON
-   הזמניים נמחקו.
-
-**מסקנה:** אפס תיקון fixable — כל שמונת הציונים כבר 90+, ברווח גדול.
+**מסקנה:** אפס תיקון fixable — 0 FAIL, 0 שגיאה, 0 אזהרה, RTL תקין בכל
+דף HTML. תוצאה דומה ל-M07-c52 (244 שורות, 239 PASS / 5 NO DATA / 0
+FAIL) בהפרש קטן במספר ה-NO DATA/שורות שנספרו, ללא רגרסיה איכותית.
 
 **שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 12 שערי תוכן),
-`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0`. אין שינוי קוד יישומי,
-אין שער חזותי נדרש (אין שינוי UI).
+`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0` (אותו build ששימש
+למדידה עצמה). אין שינוי קוד יישומי, אין שער חזותי נדרש (אין שינוי UI).
 
 **קבצים:** `STATE.md` בלבד.
+
+## M06-c53 - DONE (29.09): פירוט מלא בארכיון
+
+Lighthouse mobile נמדד שוב: בית ומוצר 99/100/100/100, כל שמונת הציונים
+90+, דומה ל-M06-c52. אפס תיקון נדרש, אפס שינוי קוד.
 
 ## M05-c53 - DONE (29.09): פירוט מלא בארכיון
 

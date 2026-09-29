@@ -2,6 +2,39 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c53 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+, אפס תיקון נדרש
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. M06-c1 (25.09) ו-M06-c52 (29.09) כבר ביצעו את אותה מדידה
+בדיוק דרך אותו מתכון; הוחלט לחזור על המדידה במקום להניח שהיא עדיין
+נכונה, כי ה-item דורש עדות טרייה ל-Lighthouse בפועל.
+
+**מה נמדד:**
+1. `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm
+   build` -> `exit 0`, "Compiled successfully".
+2. `pnpm start -p 3462` מאותה סביבה; `curl` אישר `200` על `/` ועל
+   `/product/barbecue-2` לפני המדידה.
+3. `node_modules/.bin/lighthouse` על שני ה-URL, `--throttling-method=
+   devtools --emulated-form-factor=mobile`, ארבעת הקטגוריות:
+
+   | דף | ביצועים | נגישות | BP | SEO |
+   |---|---|---|---|---|
+   | בית `/` | 99 | 100 | 100 | 100 |
+   | מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+   כל שמונת הציונים מעל 90. דומה ל-M06-c52 (98/100/100/100,
+   99/100/100/100) — אין רגרסיה, אין תיקון נדרש.
+4. שרת הבדיקה נעצר (`pkill`), פורט 3462 אומת פנוי, שני קבצי ה-JSON
+   הזמניים נמחקו.
+
+**מסקנה:** אפס תיקון fixable — כל שמונת הציונים כבר 90+, ברווח גדול.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 12 שערי תוכן),
+`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0`. אין שינוי קוד יישומי,
+אין שער חזותי נדרש (אין שינוי UI).
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M05-c53 - DONE (29.09): advisors נמדדו שוב, 44 WARN זהה ב-100% ל-M05-c52, אפס קובץ חדש נדרש
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
