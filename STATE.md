@@ -1,7 +1,52 @@
-RESUME FROM: M13-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c58)
+RESUME FROM: M14-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c58)
 
 ## המשך מ:
+
+**M13-c58 - DONE (30.09): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
+מ-M13-c57.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
+Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
+בדיקת דריפט קודם: `git log ee47880b6..HEAD` (מאז המדידה הקודמת,
+M13-c57) מחזיר 12 קומיטים (M14-c57..M12-c58), כולם תיעוד/מדידה/טסטים
+(ביצועים, תברואת ריפו, סנכרון תיעוד, נגישות, SEO, כיסוי
+`refund-wallet.ts`, backlog/state, route audit, Lighthouse, DB
+advisors, תלות `aws-sdk` מינור): `git diff --stat ee47880b6..HEAD --
+middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*'
+'src/lib/security*' 'src/lib/headers*' next.config.* vercel.json
+'src/server/actions/auth*' 'src/server/actions/checkout*'
+'src/server/actions/*voucher*' 'src/server/actions/*redeem*'` חוזר
+ריק — **אפס קומיט נגע בכותרות אבטחה או ב-rate limiting**.
+
+נמדד בכל זאת מחדש מול build אמיתי (`.next` התואם בדיוק ל-HEAD
+`9ea3603b0`, נבנה תחת M12-c58, `pnpm start` על פורט 3321, שרת טרי):
+- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
+  זהות בארבעתן: CSP (`frame-ancestors 'none'`, `frame-src`/
+  `form-action` ל-`secure.cardcom.solutions` בלבד, `object-src
+  'none'`, `upgrade-insecure-requests`), `Strict-Transport-Security:
+  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
+  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`.
+- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c57: `login`
+  (`src/server/actions/auth.ts:141`, `checkRateLimit('login:'+ip)`),
+  `begin_checkout` (`src/server/actions/payments/checkout.ts:351`,
+  `checkRateLimit('begin_checkout:user:'+userId, 10, 60)`), `redeem`
+  (`src/app/redeem/[token]/page.tsx:109`,
+  `checkRateLimit('redeem:'+ip, 60, 3600)`), `voucher-redeem`
+  (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
+  `rateLimit('voucher-redeem', userId)`, 429 + `rateLimitHeaders`).
+
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
+608/608 קבצים 7273/7285 (12 skipped, זהה ל-M12-c58). `build`: נעשה
+שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD (נבנה תחת M12-c58, אומת חי
+מול `pnpm start` על פורט 3321 עם ארבעת הכותרות לעיל), לא נבנה מחדש כדי
+לא להתחרות במשאבים עם סשנים מקבילים (ראו
+`concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
+**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md` — M11-c58
+הועבר לתקרת 300 שורות).
+
+## M12-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
 
 **M12-c58 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
 sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c57.** משימת התור: לוודא
@@ -44,46 +89,12 @@ advisors, תלות `aws-sdk` מינור, שער ירוק, שער חזותי, ב�
 `concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
 **קובץ יחיד שונה: `STATE.md`.**
 
-## M11-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
+## M11-c58, M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**M11-c58 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
-רביעית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
-דף, לתקן כל הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את
-המונה שנשאר. בדיקת דריפט קודם: `git log 3e82839c7..HEAD` (מאז המדידה
-הקודמת, M11-c57) מחזיר 17 קומיטים (M12-c57..M10-c58), כולם תיעוד/מדידה/
-תלות/טסטים (SEO, אבטחה, ביצועים, תברואת ריפו, שער חזותי, שער ירוק, תלות
-`aws-sdk` מינור, DB advisors, Lighthouse, route audit, כיסוי
-`refund-wallet.ts`) — **אפס קומיט נגע בשטח הנגישות** (`src/app`,
-`src/components`, CSS, routes, `middleware.ts`,
-`src/server/actions/auth`, rate-limit).
-
-נמדד בכל זאת מחדש מול build אמיתי על HEAD (`3996a147`, `.next` תואם
-בדיוק, `pnpm start` על פורט 3316):
-- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
-  `--grep-invert=@writes`): **72/74 עברו, 2 דולגו** (אותם דילוגים
-  מכוונים כמו בכל מדידה קודמת) — **0 הפרות**.
-- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
-  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, שניהם **0 הפרות**.
-  תפקיד **אדמין: 57/57 דולגו** — אומת ישירות בקוד הבדיקה
-  (`e2e/a11y-authenticated.spec.ts:98`, `test.skip` על כשל `signInWithEmail`)
-  שזו אותה סיבה שתועדה ב-M11-c56/M11-c57: כשל התחברות פרודקשן קיים
-  מראש, לא תקלת נגישות ולא רגרסיית קוד.
-- שני השערים נכשלים על **כל** הפרה (לא רק `serious`/`critical`, ראו
-  הערת "WHY axe FAILS ON ANY VIOLATION" בקובץ הבדיקה), אז 0 כשל הוא גם
-  0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה שנסרק.
-
-**המונה שנשאר: 0 `serious`/`critical`.** ממצא `target-size` (דרישת
-WCAG **2.2** ולא 2.1, מחוץ ליעד המוצהר של הפרויקט) שתועד
-ב-`docs/A11Y-SWEEP-REPORT.md` נשאר כהחלטה פתוחה ללא שינוי — אין הפרת
-2.1 AA לתקן. **אפס שינוי קוד.** שערים: `type-check` נקי, `lint` נקי
-(biome + כל תשעת השערים המשניים), `test` 608/608 קבצים 7273/7285 (12
-skipped, זהה). `build`: נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD
-(נבנה תחת M10-c58, `exit 0`) במקום בנייה חוזרת, כדי לא להתחרות
-במשאבים עם סשנים מקבילים (load average 11–13 בזמן המדידה, ראו
-`concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
-**קובץ יחיד שונה: `STATE.md`.**
-
-## M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+M11-c58: נגישות, axe אומתה מחדש בפעם רביעית, 0 הפרות `serious`/
+`critical` (ציבורי 72/74 + 2 דולג, מאומת לקוח 16/16 + ספק 7/7, אדמין
+57/57 דולג — כשל התחברות פרודקשן קיים מראש). `target-size` (WCAG 2.2,
+מחוץ ליעד) נשאר כהחלטה פתוחה. אפס שינוי קוד.
 
 M10-c58: כיסוי טסטים, `refund-wallet.ts` 93.75%→100% ענפים. הענף החסר
 היה הגנה על ערך `RefundState` לא מוכר (`?? []`), נוסף טסט אחד
