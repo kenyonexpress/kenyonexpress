@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c59 (הועבר מ-STATE.md ב-M09-c59, לשמירה על תקרת 300 שורות)
+
+**M08-c59 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם השלוש-עשרה,
+אפס פריט שלב 1 בידי הסוכן.** משימת התור: "Backlog: take the single
+highest-impact open phase 1 item from `docs/BACKLOG.md`, skipping
+deferred and phase 2 items." `docs/BACKLOG.md` עדיין מעודכן לאחרונה
+ב-M15-c58 (`456becb9c`), עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
+סעיף חדש. כל ה-15 עדיין פעולות שהמסמך עצמו מציין במפורש ש"אין דבר כאן
+שסוכן רשאי לבצע לבד" (DNS ברשם, Vercel env/סודות, אישור פריסת
+פרודקשן, אישור מיגרציה על פרודקשן, אישורי Cardcom אמיתיים, הכרעת
+קטלוג עסקית, מחיקת נתונים, ערך שרק אופיר מחזיק). בדיקת דריפט מ-M08-c58
+(`e12bac3c8`): שלושת המונים שהרשימה תלויה בהם נבדקו ישירות,
+`migrations/pending/*.sql` עדיין **59** קבצים (ללא תוספת), `git
+rev-list --count a388118f1..HEAD` עלה ל-**182** (git-only, פער-ספירה
+גרידא), `git stash list` עדיין **32**. `docs/MIGRATION-BACKLOG.md`
+ו-`docs/POST-LAUNCH-BACKLOG.md` נבדקו שוב, אינם תורים פעילים (הראשון
+מוחלף רשמית, השני "everything deliberately deferred", מחוץ להיקף
+המשימה). אין פריט בר-ביצוע לסוכן. שערים הורצו במלואם: `type-check`
+נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627,
+locale 116/116, docs-index 282, docs-path-audit 152), `test` 608/608
+קבצים 7273/7285 (12 skipped, 58.37s), `build` (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3483 pnpm
+build`) `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M05-c59
+הועבר לתקרת 300 שורות).
+
 ## M07-c59 (הועבר מ-STATE.md ב-M08-c59, לשמירה על תקרת 300 שורות)
 
 **M07-c59 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל

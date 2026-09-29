@@ -1,31 +1,37 @@
-RESUME FROM: M09-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c59)
+RESUME FROM: M10-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c59)
 
 ## המשך מ:
 
-**M08-c59 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם השלוש-עשרה,
-אפס פריט שלב 1 בידי הסוכן.** משימת התור: "Backlog: take the single
-highest-impact open phase 1 item from `docs/BACKLOG.md`, skipping
-deferred and phase 2 items." `docs/BACKLOG.md` עדיין מעודכן לאחרונה
-ב-M15-c58 (`456becb9c`), עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
-סעיף חדש. כל ה-15 עדיין פעולות שהמסמך עצמו מציין במפורש ש"אין דבר כאן
-שסוכן רשאי לבצע לבד" (DNS ברשם, Vercel env/סודות, אישור פריסת
-פרודקשן, אישור מיגרציה על פרודקשן, אישורי Cardcom אמיתיים, הכרעת
-קטלוג עסקית, מחיקת נתונים, ערך שרק אופיר מחזיק). בדיקת דריפט מ-M08-c58
-(`e12bac3c8`): שלושת המונים שהרשימה תלויה בהם נבדקו ישירות,
-`migrations/pending/*.sql` עדיין **59** קבצים (ללא תוספת), `git
-rev-list --count a388118f1..HEAD` עלה ל-**182** (git-only, פער-ספירה
-גרידא), `git stash list` עדיין **32**. `docs/MIGRATION-BACKLOG.md`
-ו-`docs/POST-LAUNCH-BACKLOG.md` נבדקו שוב, אינם תורים פעילים (הראשון
-מוחלף רשמית, השני "everything deliberately deferred", מחוץ להיקף
-המשימה). אין פריט בר-ביצוע לסוכן. שערים הורצו במלואם: `type-check`
-נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627,
-locale 116/116, docs-index 282, docs-path-audit 152), `test` 608/608
-קבצים 7273/7285 (12 skipped, 58.37s), `build` (`rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3483 pnpm
-build`) `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
-**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M05-c59
-הועבר לתקרת 300 שורות).
+**M09-c59 - STATE CLEAN (30.09): אפס פריט בר-ביצוע לסוכן קוד.** משימת
+התור: "State cleanup: take the single highest-impact open item listed
+in STATE.md that a code agent can complete without Ofir... If none is
+left write STATE CLEAN." אפס דריפט מ-M08-c59 (`9342b1bba`): `git
+status` נקי, `HEAD` לא זז, שלושת המונים נבדקו ישירות ותואמים —
+`migrations/pending/*.sql` עדיין **59** קבצים (זהה), `git rev-list
+--count a388118f1..HEAD` עלה ל-**183** (git-only, פער-ספירה גרידא),
+`git stash list` עדיין **32**. שני המקורות שהמשימה מפנה אליהם —
+`docs/BACKLOG.md` (15 סעיפים) וסעיף "חוסמים פתוחים" למטה (13 סעיפים)
+— כבר עברו בדיקה ממצה ב-M08-c59 ובכל מחזור לפניו (וזהה במהות
+ל-M09-c58, אותה משימה בדיוק, ראו `docs/STATE-ARCHIVE.md`): כל אחד מהם
+הוא DNS/Vercel env/סוד/אישור פריסת פרודקשן/אישור מיגרציה על
+פרודקשן/הכרעה עסקית על הקטלוג/מחיקת נתונים — כולם חסומים לפי
+`CLAUDE.md` §"ארבעת המצבים היחידים" ו-§"חוקים קבועים". אין ביניהם אף
+אחד ש"סוכן קוד יכול להשלים בלי אופיר". שערים הורצו במלואם לאימות (לא
+רק נקראו ממחזור קודם): `type-check` נקי, `lint` נקי (biome 2023
+קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale 116/116, docs-index
+282, docs-path-audit 152), `test` 608/608 קבצים 7273/7285 (12 skipped,
+57.50s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`) `exit 0`,
+`✓ Compiled successfully`. אין שינוי קוד, אין שער חזותי נדרש (אין
+שינוי UI). **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
+M08-c59 הועבר לתקרת 300 שורות).
+
+## M08-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M08-c59: BACKLOG EMPTY, נמדד מחדש בפעם השלוש-עשרה, אפס פריט שלב 1
+בידי הסוכן, `docs/BACKLOG.md` עדיין 15 סעיפים אותו סדר, אפס דריפט
+מ-M08-c58.
 
 ## M07-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
