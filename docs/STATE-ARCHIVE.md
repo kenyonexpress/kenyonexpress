@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c56 (הועבר מ-STATE.md ב-M01-c57, לשמירה על תקרת 300 שורות)
+
+**M18-c56 - DONE (29.09): בדיקת אפס-פעילות בפעם השלישית, המחזור *לא*
+היה אפס-פעילות.** המשימה: אם כל פריטי התור מעלה (M01-c56..M17-c56) לא
+ייצרו שינוי קוד במחזור הזה, לכתוב `MAINTENANCE IDLE` עם התאריך
+ב-`STATE.md`, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף
+מוצר שתואם Electro v7 וליישם אותו.
+
+**נמדד ישירות מ-`git log`, לא הונח:** שני קומיטים במחזור c56 שינו קוד,
+לא רק תיעוד:
+
+- M04-c56 (`fa6188c56`): `package.json`/`pnpm-lock.yaml` — עדכון
+  `posthog-js` 1.434.16→1.434.17.
+- M10-c56 (`20e0adc61`): קובץ בדיקה חדש ל-`orders/status-transitions.ts`,
+  כיסוי ענפים 66.66%→100%.
+
+כלומר המחזור אינו אפס-פעילות — אותה תוצאה בדיוק כמו M18-c55 (שם נמצאו
+שני קומיטי שינוי-קוד אחרים, `posthog-js` ו-`refund-requests`, וגם שם
+`MAINTENANCE IDLE` לא נכתב). **החלטה שהתקבלה לבד, לפי אותה תקדימיה:**
+`MAINTENANCE IDLE` לא נכתב, וסעיף "אז לחפש שיפור המרה" מותנה במחזור
+אפס-פעילות שלא התקיים — לא בוצע שינוי המרה בפריט הזה.
+
+`type-check`/`lint` (2023 קבצים)/`test` (608/608, 7242/7254)/`build`
+`exit 0` — כולם ירוקים. אפס שינוי קוד יישומי בפריט הזה עצמו (`STATE.md`/
+`docs/STATE-ARCHIVE.md` בלבד), אין שער חזותי נדרש.
+
 ## M17-c56 (הועבר מ-STATE.md ב-M18-c56, לשמירה על תקרת 300 שורות)
 
 **M17-c56 - DONE (29.09): מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא

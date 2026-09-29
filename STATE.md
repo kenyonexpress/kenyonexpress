@@ -1,31 +1,60 @@
-RESUME FROM: M01-c57
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c56)
+RESUME FROM: M02-c57
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c57)
 
 ## המשך מ:
 
-**M18-c56 - DONE (29.09): בדיקת אפס-פעילות בפעם השלישית, המחזור *לא*
-היה אפס-פעילות.** המשימה: אם כל פריטי התור מעלה (M01-c56..M17-c56) לא
-ייצרו שינוי קוד במחזור הזה, לכתוב `MAINTENANCE IDLE` עם התאריך
-ב-`STATE.md`, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף
-מוצר שתואם Electro v7 וליישם אותו.
+**M01-c57 - BLOCKED (29.09): בדיקת פרודקשן — DNS ו-HTTP תקינים, פריסת
+HEAD נשארת חסומה באותה סיבה בדיוק, לא נוסתה מחדש הפעם.** המשימה:
+build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני הדומיינים;
+אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן אין DNS
+BLOCKER:**
 
-**נמדד ישירות מ-`git log`, לא הונח:** שני קומיטים במחזור c56 שינו קוד,
-לא רק תיעוד:
+- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
+  `ns2.vercel-dns.com`. `dig +short A kenyonexpress.co.il` ->
+  `64.29.17.65`/`64.29.17.1`. `dig +short A www.kenyonexpress.co.il`
+  -> `64.29.17.65`/`216.198.79.65`.
+- `curl -I https://kenyonexpress.co.il` -> **308** ל-`https://www.
+  kenyonexpress.co.il/`. `curl -I https://www.kenyonexpress.co.il` ->
+  **200**, HTML אמיתי (`lang="he" dir="rtl"`, CSP/HSTS תקינים,
+  `server: Vercel`).
 
-- M04-c56 (`fa6188c56`): `package.json`/`pnpm-lock.yaml` — עדכון
-  `posthog-js` 1.434.16→1.434.17.
-- M10-c56 (`20e0adc61`): קובץ בדיקה חדש ל-`orders/status-transitions.ts`,
-  כיסוי ענפים 66.66%→100%.
+**פריסה: לא נוסתה מחדש הפעם, לפי כלל "goal שנתקע פעמיים — לדלג"
+(כבר הוחל ב-M01-c55 וב-M01-c56, זו הפעם השלישית עם אותו תנאי).**
+תנאי החסימה נבדק מחדש בפועל, לא הונח:
 
-כלומר המחזור אינו אפס-פעילות — אותה תוצאה בדיוק כמו M18-c55 (שם נמצאו
-שני קומיטי שינוי-קוד אחרים, `posthog-js` ו-`refund-requests`, וגם שם
-`MAINTENANCE IDLE` לא נכתב). **החלטה שהתקבלה לבד, לפי אותה תקדימיה:**
-`MAINTENANCE IDLE` לא נכתב, וסעיף "אז לחפש שיפור המרה" מותנה במחזור
-אפס-פעילות שלא התקיים — לא בוצע שינוי המרה בפריט הזה.
+- `vercel env ls production` (פרויקט `kenyonexpress`, CLI מקומי, קריאה
+  בלבד) מאשר `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/
+  `CARDCOM_API_PASSWORD` עדיין חסרים לגמרי מ-Production (קיימים שם רק
+  `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`) ו-`ALLOW_INCOMPLETE_ENV`
+  עדיין מוגדר — זהה למדידה ב-M01-c56. `grep` על
+  `scripts/deploy-preflight.mjs`/`src/lib/env.ts`/
+  `src/server/payments/invoices.ts` מאשר שהקוד עדיין קורא דווקא את
+  שלוש השמות החסרים, לא את השמות הקיימים.
+- `vercel ls --prod` מראה שלוש פריסות Production נכשלות (`Error`) ב-6
+  וב-10 השעות האחרונות ממקור אחר (לא הסשן הזה) — אותה שגיאת
+  `deploy-preflight` שוב, בלי תנאי חדש. `vercel inspect
+  kenyonexpress.co.il` מאשר הפריסה החיה עדיין `dpl_EMtv9KbPfdGq75J…`
+  מ-25.09 (`a388118f1`). HEAD כעת **140** קומיטים לפניו (`git
+  rev-list --count a388118f1..HEAD`, עלה מ-136 ב-M15-c56).
 
-`type-check`/`lint` (2023 קבצים)/`test` (608/608, 7242/7254)/`build`
-`exit 0` — כולם ירוקים. אפס שינוי קוד יישומי בפריט הזה עצמו (`STATE.md`/
-`docs/STATE-ARCHIVE.md` בלבד), אין שער חזותי נדרש.
+**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
+במשימה):** `pnpm build` בפורגראונד, `exit 0`, כל המסלולים נבנו. HEAD
+תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד, לא הקוד.
+
+**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+`pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
+7242/7254 (12 skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד.
+
+**קבצים:** `docs/BACKLOG.md` (ספירת קומיטי חוסם 4 עודכנה ל-140),
+`docs/STATE-ARCHIVE.md` (M18-c56 הועבר לשם), `STATE.md` בלבד.
+
+## M18-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+בדיקת אפס-פעילות בפעם השלישית: המחזור c56 *לא* היה אפס-פעילות (שני
+קומיטי שינוי-קוד אמיתיים, `posthog-js` + טסטי
+`orders/status-transitions.ts`), ולכן MAINTENANCE IDLE לא נכתב ושיפור
+המרה מומחש לא חיפש, זהה מבחינה מהותית ל-M18-c55. `type-check`/`lint`/
+`test`/`build` ירוקים. הועבר ב-M01-c57 לשמירה על תקרת 300 שורות.
 
 ## M17-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -151,21 +180,14 @@ M06-c55: Lighthouse mobile, כל שמונת הציונים 90+ (בית 93/100/10
 שדה-שדה למדידה הרביעית, אפס WARN חדש, אפס קובץ מיגרציה חדש. שניהם DONE,
 אפס שינוי UI. הועברו ב-M07-c55 לשמירה על תקרת 300 שורות.
 
-## M02-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M02-c55, M01-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-שער חזותי נמדד מחדש, בית ומוצר, שלושה רוחבים, אפס רגרסיה (8.51/9.02/3.95
-בית, 4.96/4.56/3.25 מוצר, זהה בתוך רעש ל-M02-c54). `type-check`/`lint`/`test`/
-`build` ירוקים, אין שינוי קוד. הועבר ב-M03-c55 לשמירה על תקרת 300 שורות.
-
-## M01-c55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-בדיקת פרודקשן: DNS תקין (`www.kenyonexpress.co.il` מחזיר 200 עם תוכן
-חי), פריסת HEAD (`291bc2d88`) דרך Vercel MCP סורבה **בפעם החמישית
-ברציפות** באותה סיבה (`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD`
-חסרים ב-Production, `ALLOW_INCOMPLETE_ENV` עדיין מוגדר). פרודקשן לא
-נפגע, עדיין מגיש `a388118f1`. **החלטה שהתקבלה לבד:** לפי כלל "goal
-שנתקע פעמיים — לדלג", ניסיון פריסה חוזר לא ירוץ שוב עד שאופיר יתקן
-את הסביבה; בדיקת DNS/200 התקופתית ממשיכה בכל מחזור.
+M02-c55: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה. M01-c55: DNS
+תקין, פריסת HEAD דרך Vercel MCP סורבה בפעם החמישית ברציפות (`CARDCOM_
+TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD` חסרים, `ALLOW_INCOMPLETE_ENV`
+מוגדר), פרודקשן לא נפגע. **כאן הוחל לראשונה כלל "goal שנתקע פעמיים —
+לדלג"**, ומאז ניסיון פריסה לא רץ שוב. שניהם `type-check`/`lint`/`test`/
+`build` ירוקים. הועברו ב-M03-c55 לשמירה על תקרת 300 שורות.
 
 ההיסטוריה המלאה (Q01..Q24, B01..B10, M01-c1..M18-c55, תור 23.09, וכל מה שקדם,
 כולל M11-c53..M18-c53 ו-M01-c54..M18-c54 שהפסקאות שלהן הוסרו מכאן — עד
