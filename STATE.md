@@ -1,7 +1,48 @@
-RESUME FROM: M05-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c59)
+RESUME FROM: M06-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c59)
 
 ## המשך מ:
+
+**M05-c59 - DONE (30.09): advisors נמדדו בפעם התשיעית, 44 WARN זהים
+ב-100% ל-M05-c58, אפס מיגרציה חדשה נדרשת.** משימת התור: להריץ
+`get_advisors` (security+performance) דרך MCP של Supabase, לכתוב מיגרציה
+ב-`migrations/pending` על כל WARN, לעדכן `docs/DB-SECURITY-MODEL.md` אם
+המספרים השתנו.
+
+- **Supabase MCP עדיין "דורש הרשאה"** (`claude.ai Supabase`), אין OAuth
+  בסשן לא-אינטראקטיבי — נבדק ב-`ToolSearch`, אפס תוצאה. אותו מסלול חלופי
+  שכל M05-c1..M05-c58 השתמשו בו: טוקן ה-CLI מה-keychain (`security
+  find-generic-password -s "Supabase CLI" -w`, פענוח `go-keyring-base64:`),
+  שני `GET https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/
+  advisors/{security,performance}`, `200`/`200`. קריאה בלבד, הטוקן לא
+  נדפס ולא נשמר, קבצי הפלט הזמניים (`/tmp/ke-advisors/*.json`) נמחקו
+  בסוף הפריט.
+- **אבטחה 28 ממצאים, ביצועים 196 (היו 197 — `unused_index` INFO 167→166,
+  תנודת cache, לא WARN).** **44 WARN בסך הכול, זהים שם-שם ל-M05-c58**: 21
+  `authenticated_security_definer_function_executable` (אותן 21
+  הפונקציות בדיוק), 2 `anon_security_definer_function_executable`
+  (`is_admin`, `is_supplier_member`), 1 `function_search_path_mutable`
+  (`fn_wallet_entries_block_mutation`), 14 `multiple_permissive_policies`
+  (אותן 11 טבלאות), 6 `auth_rls_initplan` (אותן טבלאות). אפס WARN חדש,
+  אפס שהפסיק לירות.
+- ארבעת הקבצים הממתינים (`209_advisor_warnings.sql`,
+  `220_wallet_entries_search_path.sql`,
+  `245_single_permissive_policy_per_action.sql`,
+  `246_profiles_mfa_initplan.sql`) נבדקו שעדיין קיימים בלי שינוי — כולם
+  כבר מכסים את 44 ה-WARN. **אין קובץ מיגרציה חדש נדרש.**
+- `docs/DB-SECURITY-MODEL.md` עודכן: סעיף חדש `0ט` עם הפירוט המלא, וכותרת
+  ה-frontmatter עודכנה בהתאם.
+- שערים הורצו במלואם: `type-check` נקי; `lint` נקי (2023 קבצים, i18n
+  627/627, locale 116/116, docs-index 282, docs-path-audit 152); `test`
+  608/608 קבצים, 7273 עברו + 12 דולגו (7285), 56.98s; `build` (`rm -rf
+  .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+  pnpm build`) הושלם, `BUILD_ID`+`server/` נוכחים, טבלת המסלולים המלאה
+  נדפסה בלי `Failed to compile`. אין שער חזותי נדרש (אפס שינוי UI).
+
+אפס שינוי סכימה, אפס שינוי קוד יישומי, עדכון `docs/DB-SECURITY-MODEL.md`
+ו-`STATE.md` בלבד.
+
+## M04-c59 (הועבר מ-STATE.md ב-M05-c59, לשמירה על תקרת 300 שורות)
 
 **M04-c59 - DONE (30.09): תברואת תלויות, `pnpm audit` נקי, אפס עדכון
 זכאי (כל 14 השורות של `pnpm outdated` הן major).** משימת התור: להריץ
