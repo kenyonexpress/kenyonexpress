@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c56 (הועבר מ-STATE.md ב-M18-c56, לשמירה על תקרת 300 שורות)
+
+**M17-c56 - DONE (29.09): מעבר קופי ומשפטי בפעם הרביעית, אפס ממצא
+חדש.** המשימה: לקרוא כל מחרוזת UI בעברית ודף משפטי, ולתקן שגיאות כתיב,
+דליפות LTR, מילים באנגלית בקופי פונה-לקוח, וקישורים שבורים. הפריט
+נקרא במלואו ב-M17-c53 (`15c97abff`, 591 שורות `he.json` + ארבעת מסמכי
+ה-legal + כל href פוטר/ניווט, שלושה ממצאים אמיתיים תוקנו אז) ונבדק
+אפס-דריפט פעמיים נוספות (M17-c54, M17-c55). **נמדד מחדש, לא הונח שהמדידה
+הקודמת עדיין תקפה:**
+
+- `git diff a5723c307..HEAD --stat -- src/app src/components
+  messages/he.json` (`a5723c307` = M17-c55, הפעם האחרונה שנקרא מלא):
+  **פלט ריק — אפס קובץ שונה**, כולל `src/app/(legal)/_content` וכל
+  קובץ פוטר/ניווט בנפרד. i18n gate עדיין 627/627.
+- **סריקה עצמאית של `messages/he.json` דרך `JSON.parse`** (לא grep
+  טקסטואלי) על כל מחרוזת עם אות לטינית: **28 מחרוזות**, זהה בדיוק
+  ל-M17-c55 — שם מותג, מונח טכני בלי מקביל עברי מקובל, או placeholder.
+  אפס דליפת LTR, אפס מילה זרה במובן הפגום.
+- ארבעת מסמכי ה-legal (`terms-and-conditions`, `privacy-policy`,
+  `refund_returns`, `accessibility`) קיימים תחת `src/app/(store)`, אפס
+  שינוי מאז M17-c53. קישורי הפוטר/ניווט אליהם ואל העוגנים
+  (`#how-to-cancel`, `#cookies`) לא זזו.
+
+`type-check`/`lint` (2023 קבצים, i18n 627/627, locale-format 116/116
+בתקרה)/`test` (608/608, 7242/7254)/`build` `exit 0` — כולם ירוקים. אין
+שער חזותי נדרש (אפס שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md`
+בלבד) — עקבי עם M02-c55/M17-c55.
+
 ## M16-c56 (הועבר מ-STATE.md ב-M17-c56, לשמירה על תקרת 300 שורות)
 
 **M16-c56 - DONE (29.09): תברואת ריפו בפעם השישית, אפס דריפט
