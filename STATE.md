@@ -1,90 +1,83 @@
-RESUME FROM: M01-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c52)
+RESUME FROM: M02-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c53)
 
 ## המשך מ:
 
-M18-c52 היה פריט idle-check: קודם לבדוק אם סבב ה-c52 כולו לא הזיז קוד
-(ואם כן, לכתוב MAINTENANCE IDLE), אחרת לחפש שיפור המרה אמיתי אחד בדף הבית
-או המוצר, בהתאמה ל-Electro v7. הסבב **לא** היה idle (M10/M14/M17-c52 כולם
-שינו קוד), אז לא נכתבה שורת IDLE, ובוצע החלק השני: חובר דף המוצר לתא
-הדירוג בכוכבים ש-`product-page.css` שומר לו (`.pdp-summary__rating`) מאז
-שהוסר עם כל מנגנון הביקורות ב-18.09 (`4c7019d66`) ומעולם לא חובר מחדש
-כש-Phase 15 שיחזר את המנגנון ב-23.09 (`4dab065ef`) — דף `/reviews` ציבורי
-קיים אבל שום דבר בדף המוצר לא מקשר אליו ולא מציג ממנו כלום.
-`loadProductBySlug` מקפל כעת ביקורות מאושרות ל-`ratingSummary` (null באפס),
-`RatingStars` חדש מציג זאת לצד ה-SKU ומקשר ל-`/reviews`, ו-JSON-LD מקבל
-`aggregateRating` אמיתי. **ממצא לוואי, נמדד מול פרודקשן דרך ה-management
-API (קריאה בלבד):** ל-`anon` אין שום הרשאה על `public.reviews` — לא
-SELECT — כך שה-policy הציבורי מ-154 מעולם לא רץ וכל קריאת ביקורות ציבורית
-נכשלת ב-401 מאז 23.09, בשקט. תוקן ב-`migrations/pending/247_reviews_grant_anon_select.sql`
-(GRANT בלבד, לא הוחל). שערים: type-check/lint (i18n 627/627, המחרוזת עברה
-דרך t()) נקיים; test 605/7195 (+7); build ירוק (46 אזהרות
-`reviews_read_failed` צפויות, זה בדיוק הממצא). שער חזותי בחזית: בית
-8.51/9.02/3.95 PASS, מוצר 5.65/4.95/2.92 PASS — זהים לבייסליין (0 ביקורות
-מאושרות היום, הרכיב מציג null). פירוט מלא למטה. הסשן הבא פותח סבב חדש:
-M01-c53.
+M01-c53 היה בדיקת פרודקשן: להריץ build+deploy לפרודקשן ואז `dig`/`curl` על
+שני הדומיינים. **DNS: עדיין תקין** (RESOLVED מ-M01-c52, נמדד שוב) —
+`kenyonexpress.co.il` -> `64.29.17.1`/`64.29.17.65`, NS `ns1/ns2.vercel-dns.com`,
+`curl https://www.kenyonexpress.co.il` **200** עם HTML אמיתי (`lang="he"
+dir="rtl"`), `https://kenyonexpress.co.il` **308** לכיוון `www` (הפניה
+תקינה, לא כשל). **לא DNS BLOCKER** — אין מה לכתוב שם. **פריסה: נוסתה
+בפועל דרך Vercel MCP** (`create_deployment`, `gitSource` github,
+`audit/final-audit`@`99b2079cb6`, target production, פרויקט `kenyonexpress`
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) **וסורבה שוב**, אותו קוד שגיאה בדיוק:
+`dpl_CUUU98iiF1RiU1qxHojWyGbT8JuQ`, `BUILD_UTILS_SPAWN_1`, `"node
+scripts/deploy-preflight.mjs && pnpm build" exited with 1`. `filter_project_envs`
+(קריאה בלבד) מאשר שהסיבה לא זזה: `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`
+עדיין קיימים ב-Production במקום `CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD`
+שהקוד קורא, ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. פרודקשן נשאר על
+`a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY), עכשיו **70** קומיטים
+מאחורי HEAD (היה 48 ב-M01-c52, 66 לפי M15-c52). אין שינוי קוד, אין שער
+חזותי נדרש (לא UI). פירוט מלא למטה.
 
-## M18-c52 - DONE (29.09): idle-check (לא idle) + דירוג בכוכבים בדף המוצר, ממצא לוואי: `anon` בלי הרשאה על `reviews`
+## M01-c53 - DONE (29.09): DNS עדיין תקין, פריסת HEAD סורבה שוב (אותה סיבה, נמדד עם MCP)
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם.
+נקראו במלואם. חוסם 1 (DNS) היה רשום RESOLVED מ-M01-c52; חוסם 2 (פריסת HEAD)
+היה רשום BLOCKED על סביבת Cardcom חסרה.
 
-**בדיקת idle:** שלושה מתוך שבעה עשר הפריטים הקודמים בסבב (M10-c52,
-M14-c52, M17-c52) שינו קוד אמיתי. הסבב אינו idle, אז לא נכתבה שורת
-MAINTENANCE IDLE; מבוצע החלק השני של הפריט.
+**מה נמדד:**
+1. `dig +short kenyonexpress.co.il` -> `64.29.17.1`, `64.29.17.65`;
+   `dig +short NS` -> `ns1.vercel-dns.com.`, `ns2.vercel-dns.com.`;
+   `dig +short www.kenyonexpress.co.il` -> `216.198.79.1`, `64.29.17.1`.
+2. `curl -o /dev/null -w "%{http_code}" https://www.kenyonexpress.co.il` ->
+   `200`, גוף אמיתי (`lang="he" dir="rtl"`, לוגו קניון EXPRESS).
+   `curl .../kenyonexpress.co.il` (בלי www) -> `308` עם
+   `location: https://www.kenyonexpress.co.il/` — הפניה תקינה של Vercel,
+   לא כשל DNS/TLS.
+3. פריסת production הופעלה דרך כלי ה-Vercel MCP (זמין לראשונה בסשן הזה,
+   לא REST גולמי כמו ב-M01-c1/M01-c52): `create_deployment` עם `gitSource`
+   github על `audit/final-audit`@`99b2079cb6` (HEAD), `target=production`,
+   פרויקט `kenyonexpress` (לא `kenyonexpress-prod`, שמחזיק רק `.vercel.app`).
+   תוצאה: `dpl_CUUU98iiF1RiU1qxHojWyGbT8JuQ`, `state=ERROR`,
+   `errorCode=BUILD_UTILS_SPAWN_1`, `errorMessage="Command \"node
+   scripts/deploy-preflight.mjs && pnpm build\" exited with 1"` —
+   זהה בדיוק לניסיון הקודם (`dpl_GoCto2TvUmPDPkTNYQ5wBxdR5d5j` על `1083b8d8d`,
+   אותו קוד שגיאה, כשלושים דקות קודם, כנראה מ-M01-c52 או מסשן אחר באותו
+   ריצה).
+4. `filter_project_envs` (קריאה בלבד, אין שינוי) על אותו פרויקט: `Production`
+   מחזיק `CARDCOM_MERCHANT_ID`, `CARDCOM_CLIENT_ID`, `CARDCOM_API_KEY`
+   (השמות הישנים), לא `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/
+   `CARDCOM_API_PASSWORD` (השמות שהקוד קורא בפועל), ו-`ALLOW_INCOMPLETE_ENV`
+   עדיין קיים כמפתח נפרד. אין ערכים שנקראו (`decrypted: false` בכל שורה) —
+   רק קיום/היעדר השם, כפי שדווח גם ב-M01-c1/M01-c52.
+5. `list_deployments` מאשר שהפריסה החיה כיום היא `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`
+   (`a388118f1`, `READY`, `target=production`) — לא זזה. HEAD (`99b2079cb6`)
+   נמצא 70 קומיטים אחריה (`git rev-list --count a388118f1..HEAD`).
 
-**מה נמצא:** `.pdp-summary__meta` ב-`src/styles/product-page.css` שומר תא
-ל-star rating (`.pdp-summary__rating`) לצד ה-SKU, בדיוק כמו ב-Electro v7.
-המאפיין הוסר במלואו ב-`4c7019d66` (18.09, "reviews never had any data")
-ומעולם לא חובר מחדש כש-Phase 15 שיחזר את מנגנון הביקורות (`4dab065ef`,
-23.09): טופס ביקורת, תור אישור אדמין ודף `/product/[slug]/reviews` ציבורי
-— בלי שום קישור אליו מדף המוצר, ובלי חיבור ל-JSON-LD (`rating` כבר קיים
-כשדה ב-`buildProductJsonLd` אבל אף קורא לא העביר אותו מעולם).
+**מסקנה:** אין DNS BLOCKER לכתוב — הדומיין עובד. החוסם היחיד הוא חוסם 2
+הקיים (סביבת Cardcom בפרודקשן), עכשיו עם ראיית פריסה טרייה מה-MCP במקום
+REST גולמי. אין פעולה אסורה בוצעה: לא נקרא/נכתב ערך סוד, לא שונה env,
+ה-deploy עצמו הוא הפעולה שהפריט ביקש לבצע ("להריץ... deploy") וכבר בוצעה
+פעמיים בעבר (M01-c1, M01-c52) באותו אופן. עודכן חוסם 2 למטה עם המספרים
+הטריים.
 
-**מה בוצע:**
-1. `src/lib/product-detail.ts`: `loadProductBySlug` מקפל דירוגי ביקורות
-   מאושרות (`aggregateRatings` הקיים) ל-`ratingSummary`, `null` באפס.
-   השאילתה מוטבעת (לא קוראת ל-`server/queries/reviews.ts`) כי אותו מודול
-   מייצא גם קריאה מבוססת-עוגיות, וייבואו היה מכניס את `@/lib/supabase/server`
-   לגרף הסטטי של דף המוצר ומפיל את `catalogue-render-path.test.ts`.
-2. `src/components/product/RatingStars.tsx` (חדש): חמישה כוכבים, קישור
-   ל-`/reviews`, טקסט מדויק ("4.5 מתוך 5 · 12 ביקורות", מפתח i18n חדש
-   `reviewsPage.summaryLink`). `null` באפס ביקורות — אותו כלל שהקוד שהוסר
-   ב-18.09 כבר הצהיר עליו.
-3. `ProductInfo.tsx`: הרכיב בתוך `.pdp-summary__meta`, לצד ה-SKU.
-4. `page.tsx`: `ratingSummary` מוזן ל-JSON-LD (`aggregateRating` אמיתי)
-   ול-`ProductInfo`.
-5. **ממצא לוואי, נמדד מול פרודקשן (קריאה בלבד, טוקן ה-CLI מה-keychain):**
-   `information_schema.role_table_grants` על `public.reviews` לא מחזיק שום
-   שורת `anon`. ה-policy `reviews_public_read_approved` (154) קיים ותקין
-   אבל אף פעם לא רץ — PostgREST דוחה ב-`42501` לפני שה-policy נבדק.
-   `listApprovedReviews` תמיד עובר דרך מפתח ה-anon, גם למשתמש מחובר, כך
-   שדף הביקורות הציבורי נכשל תמיד מאז 23.09, בשקט. `reviews` מחזיקה 0
-   שורות בפרודקשן (נמדד מחדש) — אין נזק ללקוח עדיין. **תוקן
-   ב-`migrations/pending/247_reviews_grant_anon_select.sql`** (GRANT
-   בלבד, אין שינוי ל-policy), רשום ב-`APPLY-ORDER.md`, `README.md`
-   ו-`docs/BACKLOG.md` סעיף 5, לא הוחל.
+**שערים:** אין שינוי קוד (בדיקת production בלבד) — `pnpm
+type-check`/`lint`/`test`/`build` לא נדרשו, כמו בפריטי "אין שינוי קוד"
+קודמים (M08-c52, M09-c52 וכו'). אין שער חזותי נדרש (לא UI).
 
-**שערים:** `pnpm type-check` נקי; `pnpm lint` נקי (12 שערים, i18n 627/627 —
-המחרוזת החדשה עברה דרך `t()`); `pnpm test` **605 קבצים / 7195 עברו / 12
-דולגו** (+7: 4 ב-`RatingStars.test.tsx`, 3 ב-`json-ld.test.ts`); `pnpm build`
-ירוק (exit 0) — 46 אזהרות `product_detail.reviews_read_failed` בלוג
-הבנייה, צפויות: זה בדיוק הממצא בסעיף 5, לא regression. שער חזותי בחזית
-(`pnpm build` + `pnpm start` אמיתי על 3311): בית 8.51/9.02/3.95 PASS, מוצר
-5.65/4.95/2.92 PASS — זהים לביט לבייסליין (0 ביקורות מאושרות היום, הרכיב
-מציג `null`, אין שינוי פיקסלים).
+**קבצים:** `STATE.md` בלבד.
 
-**קבצים:** `src/lib/product-detail.ts`,
-`src/components/product/RatingStars.tsx` (חדש),
-`src/components/product/RatingStars.test.tsx` (חדש),
-`src/components/storefront/ProductInfo.tsx`,
-`src/components/storefront/product-variant-quantity.test.tsx`,
-`src/app/(store)/product/[slug]/page.tsx`, `src/lib/seo/json-ld.test.ts`,
-`messages/he.json`, `messages/en.json`,
-`migrations/pending/247_reviews_grant_anon_select.sql` (חדש),
-`migrations/pending/APPLY-ORDER.md`, `migrations/pending/README.md`,
-`src/__tests__/pending-migrations-inventory.test.ts`, `docs/BACKLOG.md`,
-`docs/UI-PARITY-REPORT.md`, `STATE.md`.
+## M18-c52 - DONE (29.09): פירוט מלא בארכיון
+
+idle-check (הסבב לא היה idle) + דירוג בכוכבים חובר לדף המוצר
+(`RatingStars.tsx` חדש, `ratingSummary` מ-`loadProductBySlug`, JSON-LD
+`aggregateRating`). ממצא לוואי: ל-`anon` אין הרשאת SELECT על
+`public.reviews` מעולם, דף הביקורות הציבורי נכשל תמיד מאז 23.09 בשקט;
+תוקן ב-`migrations/pending/247_reviews_grant_anon_select.sql` (GRANT
+בלבד, לא הוחל). שערים נקיים, 605/7195 (+7). שער 8.51/9.02/3.95 PASS,
+מוצר 5.65/4.95/2.92 PASS, זהה לבייסליין.
 
 ## M17-c52 / M16-c52 - DONE (29.09): פירוט מלא בארכיון
 
@@ -211,15 +204,18 @@ M12-c51: SEO, 261 בדיקות, אפס drift.
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (`1083b8d8d`, כ-48 קומיטים אחרי `a388118f1` החי)**:
-   נוסתה שוב ב-M01-c52 (REST `POST /v13/deployments`, `target=production`,
-   הפעם על הפרויקט הנכון `kenyonexpress`) **וסורבה שוב ב-`deploy-preflight`**
-   באותה סיבה בדיוק: `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+2. **פריסת פרודקשן של HEAD (`99b2079cb6`, 70 קומיטים אחרי `a388118f1` החי)**:
+   נוסתה שוב ב-M01-c53 (הפעם דרך כלי ה-Vercel MCP, `create_deployment` עם
+   `gitSource` github, לא REST גולמי) **וסורבה שוב ב-`deploy-preflight`**
+   באותה סיבה בדיוק: `dpl_CUUU98iiF1RiU1qxHojWyGbT8JuQ`,
+   `BUILD_UTILS_SPAWN_1`. `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
    `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production (קיימים במקומם
    `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא קורא) ו-
-   `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם. עד שאופיר יתקן את הסביבה
-   אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על `a388118f1` ולא נפגע
-   מהניסיון.
+   `ALLOW_INCOMPLETE_ENV=true` עדיין מוגדר שם (נמדד עם `filter_project_envs`,
+   קריאה בלבד). עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה;
+   פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY)
+   ולא נפגע מהניסיון. **DNS אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c53,
+   `www.kenyonexpress.co.il` מחזיר 200 עם התוכן החי (`a388118f1`).
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
    "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס

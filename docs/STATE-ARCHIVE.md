@@ -2,6 +2,68 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c52 - DONE (29.09): idle-check (לא idle) + דירוג בכוכבים בדף המוצר, ממצא לוואי: `anon` בלי הרשאה על `reviews`
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם.
+
+**בדיקת idle:** שלושה מתוך שבעה עשר הפריטים הקודמים בסבב (M10-c52,
+M14-c52, M17-c52) שינו קוד אמיתי. הסבב אינו idle, אז לא נכתבה שורת
+MAINTENANCE IDLE; מבוצע החלק השני של הפריט.
+
+**מה נמצא:** `.pdp-summary__meta` ב-`src/styles/product-page.css` שומר תא
+ל-star rating (`.pdp-summary__rating`) לצד ה-SKU, בדיוק כמו ב-Electro v7.
+המאפיין הוסר במלואו ב-`4c7019d66` (18.09, "reviews never had any data")
+ומעולם לא חובר מחדש כש-Phase 15 שיחזר את מנגנון הביקורות (`4dab065ef`,
+23.09): טופס ביקורת, תור אישור אדמין ודף `/product/[slug]/reviews` ציבורי
+— בלי שום קישור אליו מדף המוצר, ובלי חיבור ל-JSON-LD (`rating` כבר קיים
+כשדה ב-`buildProductJsonLd` אבל אף קורא לא העביר אותו מעולם).
+
+**מה בוצע:**
+1. `src/lib/product-detail.ts`: `loadProductBySlug` מקפל דירוגי ביקורות
+   מאושרות (`aggregateRatings` הקיים) ל-`ratingSummary`, `null` באפס.
+   השאילתה מוטבעת (לא קוראת ל-`server/queries/reviews.ts`) כי אותו מודול
+   מייצא גם קריאה מבוססת-עוגיות, וייבואו היה מכניס את `@/lib/supabase/server`
+   לגרף הסטטי של דף המוצר ומפיל את `catalogue-render-path.test.ts`.
+2. `src/components/product/RatingStars.tsx` (חדש): חמישה כוכבים, קישור
+   ל-`/reviews`, טקסט מדויק ("4.5 מתוך 5 · 12 ביקורות", מפתח i18n חדש
+   `reviewsPage.summaryLink`). `null` באפס ביקורות — אותו כלל שהקוד שהוסר
+   ב-18.09 כבר הצהיר עליו.
+3. `ProductInfo.tsx`: הרכיב בתוך `.pdp-summary__meta`, לצד ה-SKU.
+4. `page.tsx`: `ratingSummary` מוזן ל-JSON-LD (`aggregateRating` אמיתי)
+   ול-`ProductInfo`.
+5. **ממצא לוואי, נמדד מול פרודקשן (קריאה בלבד, טוקן ה-CLI מה-keychain):**
+   `information_schema.role_table_grants` על `public.reviews` לא מחזיק שום
+   שורת `anon`. ה-policy `reviews_public_read_approved` (154) קיים ותקין
+   אבל אף פעם לא רץ — PostgREST דוחה ב-`42501` לפני שה-policy נבדק.
+   `listApprovedReviews` תמיד עובר דרך מפתח ה-anon, גם למשתמש מחובר, כך
+   שדף הביקורות הציבורי נכשל תמיד מאז 23.09, בשקט. `reviews` מחזיקה 0
+   שורות בפרודקשן (נמדד מחדש) — אין נזק ללקוח עדיין. **תוקן
+   ב-`migrations/pending/247_reviews_grant_anon_select.sql`** (GRANT
+   בלבד, אין שינוי ל-policy), רשום ב-`APPLY-ORDER.md`, `README.md`
+   ו-`docs/BACKLOG.md` סעיף 5, לא הוחל.
+
+**שערים:** `pnpm type-check` נקי; `pnpm lint` נקי (12 שערים, i18n 627/627 —
+המחרוזת החדשה עברה דרך `t()`); `pnpm test` **605 קבצים / 7195 עברו / 12
+דולגו** (+7: 4 ב-`RatingStars.test.tsx`, 3 ב-`json-ld.test.ts`); `pnpm build`
+ירוק (exit 0) — 46 אזהרות `product_detail.reviews_read_failed` בלוג
+הבנייה, צפויות: זה בדיוק הממצא בסעיף 5, לא regression. שער חזותי בחזית
+(`pnpm build` + `pnpm start` אמיתי על 3311): בית 8.51/9.02/3.95 PASS, מוצר
+5.65/4.95/2.92 PASS — זהים לביט לבייסליין (0 ביקורות מאושרות היום, הרכיב
+מציג `null`, אין שינוי פיקסלים).
+
+**קבצים:** `src/lib/product-detail.ts`,
+`src/components/product/RatingStars.tsx` (חדש),
+`src/components/product/RatingStars.test.tsx` (חדש),
+`src/components/storefront/ProductInfo.tsx`,
+`src/components/storefront/product-variant-quantity.test.tsx`,
+`src/app/(store)/product/[slug]/page.tsx`, `src/lib/seo/json-ld.test.ts`,
+`messages/he.json`, `messages/en.json`,
+`migrations/pending/247_reviews_grant_anon_select.sql` (חדש),
+`migrations/pending/APPLY-ORDER.md`, `migrations/pending/README.md`,
+`src/__tests__/pending-migrations-inventory.test.ts`, `docs/BACKLOG.md`,
+`docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
 ## M17-c52 - DONE (29.09): מעבר משפטי ולשוני שוב — שני פגמים חיים נמצאו בפוטר, תוקנו
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
