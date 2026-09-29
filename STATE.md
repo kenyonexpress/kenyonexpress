@@ -1,9 +1,38 @@
-RESUME FROM: M10-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c53)
+RESUME FROM: M11-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c53)
 
 ## המשך מ:
 
-M09-c53: **STATE CLEAN, backlog re-verified with a direct check.** המשימה
+M10-c53: **כיסוי טסטים: `refund.ts` (server action) מ-67.1% ל-100% ענפים.**
+ששת המועמדים (`money`, `payment split`, `voucher state machine`,
+`order state machine`, `refunds`, `RLS helpers`) נמדדו (לא הוערכו) על ידי
+הרחבה זמנית של `include`/`reporter: json` ב-`vitest.config.ts` (הוחזר בדיוק
+בסוף, `git diff` ריק — כמו ב-M10-c52). ארבעה מהם כבר ב-100%
+(‏`src/lib/money.ts`, ‏`src/lib/checkout/split.ts`,
+‏`src/server/domain/vouchers/state-machine.ts`,
+‏`src/server/domain/orders/state-machine.ts`, וגם
+‏`src/lib/supabase/rls-report-fetch.ts` מ-M10-c52). בקטגוריית "refunds"
+נבדקו שישה קבצים; החלש מכולם היה
+**‏`src/server/actions/payments/refund.ts`: 67.1% ענפים (76 סה"כ, 51
+מכוסים, 25 לא)**, מול 96.36% ב-`server/domain/orders/refund.ts` (המתכנן
+הטהור) ו-93%+ בשאר. מופעל דרך `cardcom-payments` skill (הקובץ תחת
+`src/server/actions/payments/`). 20 ענפים לא מכוסים מופו ל-19 שורות
+(NOT_FOUND על הזמנה/תשלום חסרים, transactionId/סכום לא קריא, אפס פריטים,
+`vouchers ?? []`, שובר `expired` לצד `redeemed`, RefundError אמיתי
+מ-`planOrderRefund` (שורת `redeemed` בלי REFUND legal) לעומת שגיאה לא-RefundError
+שמשתחררת בלי טיפול (`NaN.toFixed(2)` דרך `ilsToAgorot`), fallback הודעת
+Cardcom, `describeRefundBlockers` מוחזר ריק (מוק חלקי, כי מסלול אמיתי לא
+יכול לייצר את זה — התלות זהה לתלות של הבדיקה שמעליו), `voucherRefunds.length>0`,
+`refundPaymentId` אמיתי + תור חשבונית (‏`enqueueRefundCreditNote`/
+`issueQueuedInvoice` מוקים מלאים, המודול הזה נבדק בנפרד ב-`invoices.test.ts`),
+replay/refused על התור, `order.user_id`/מייל לקוח/שגיאת RPC, וזריקה
+לא-Error בבלוק ה-catch. 18 טסטים נוספו ל-`refund.test.ts` (38 בסה"כ),
+כולל `admin.rpc` שנוסף לסטאב ה-Supabase המזויף (לא היה קיים). שערים ירוקים:
+type-check נקי, lint נקי (biome + 12 שערי תוכן), 605/7213 (+18), build
+`exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה:
+`src/server/actions/payments/refund.test.ts`.**
+
+## M09-c53 - DONE (29.09): STATE CLEAN, backlog re-verified with a direct check
 היתה למצוא את פריט התור הפתוח בעל ההשפעה הגבוהה ביותר שסוכן קוד יכול
 לסגור בלי אופיר. `CLAUDE.md`, `STATE.md` (כולל "חוסמים פתוחים", 12 סעיפים)
 ו-`docs/BACKLOG.md` (15 סעיפים) נקראו במלואם; `git log -3 -- docs/BACKLOG.md

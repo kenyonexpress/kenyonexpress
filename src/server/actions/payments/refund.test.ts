@@ -59,6 +59,12 @@ function builder(table: string, op: string, payload?: unknown): never {
   return proxy as never
 }
 
+/** `rpc:<name>` is not a real table; it just gives the call an identity in `calls`. */
+function rpcCall(name: string, payload: unknown): Promise<Result> {
+  calls.push({ table: `rpc:${name}`, op: 'rpc', payload, chain: [] })
+  return Promise.resolve(settle(`rpc.${name}`))
+}
+
 const adminClient = {
   from: (table: string) => ({
     select: (...args: unknown[]) => builder(table, 'select', args[0]),
@@ -66,11 +72,25 @@ const adminClient = {
     update: (payload: unknown) => builder(table, 'update', payload),
     upsert: (payload: unknown) => builder(table, 'upsert', payload),
   }),
+  rpc: (name: string, payload: unknown) => rpcCall(name, payload),
 }
 
 const requireAdminSession = vi.fn()
 const refundByTransactionId = vi.fn()
 const capturePaymentError = vi.fn()
+const enqueueRefundCreditNote = vi.fn()
+const issueQueuedInvoice = vi.fn()
+
+/**
+ * Overridable only for the one blocker-message test: `describeRefundBlockers`
+ * always finds a blocker whenever `planOrderRefund`'s own consumed-voucher
+ * check fires (same input, same rule), so the `??` fallback string in
+ * `refund.ts` has no real-data path to it. Everything else runs the actual
+ * domain function.
+ */
+let describeRefundBlockersImpl:
+  | typeof import('@/server/domain/orders/refund').describeRefundBlockers
+  | null = null
 
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient }))
 vi.mock('@/lib/admin/rbac', () => ({ requireAdminSession: () => requireAdminSession() }))
@@ -80,6 +100,18 @@ vi.mock('@/lib/payments', () => ({
 vi.mock('@/lib/observability/sentry', () => ({
   capturePaymentError: (...args: unknown[]) => capturePaymentError(...args),
 }))
+vi.mock('@/server/payments/invoices', () => ({
+  enqueueRefundCreditNote: (...args: unknown[]) => enqueueRefundCreditNote(...args),
+  issueQueuedInvoice: (...args: unknown[]) => issueQueuedInvoice(...args),
+}))
+vi.mock('@/server/domain/orders/refund', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/server/domain/orders/refund')>()
+  return {
+    ...actual,
+    describeRefundBlockers: (...args: Parameters<typeof actual.describeRefundBlockers>) =>
+      (describeRefundBlockersImpl ?? actual.describeRefundBlockers)(...args),
+  }
+})
 
 import { refundOrder } from './refund'
 
@@ -142,6 +174,11 @@ beforeEach(() => {
     failureMessage: null,
     raw: {},
   })
+  enqueueRefundCreditNote
+    .mockReset()
+    .mockResolvedValue({ enqueued: false, reason: 'not queued in test' })
+  issueQueuedInvoice.mockReset().mockResolvedValue(undefined)
+  describeRefundBlockersImpl = null
   __resetPaymentMoneySchemaCache()
 })
 
@@ -452,5 +489,344 @@ describe('refundOrder: refusals', () => {
     const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
     expect(result).toMatchObject({ ok: false, code: 'FORBIDDEN' })
     expect(calls).toHaveLength(0)
+  })
+
+  it('answers NOT_FOUND when the order itself does not exist', async () => {
+    queue('orders.select', { data: null, error: null })
+    const result = await refundOrder({ orderId: 'missing', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'NOT_FOUND' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('answers NOT_FOUND when the order has no charge to refund', async () => {
+    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, { data: null, error: null })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, error: 'לא נמצא תשלום לזיכוי', code: 'NOT_FOUND' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('refuses a payment with no Cardcom transaction id', async () => {
+    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, {
+      data: {
+        id: 'pay-1',
+        amount_ils: 100,
+        cardcom_transaction_id: null,
+        status: 'succeeded',
+        cardcom_account_id: null,
+        succeeded_at: null,
+      },
+      error: null,
+    })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'STATE_INVALID' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('refuses a payment whose charged amount cannot be read', async () => {
+    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, {
+      data: {
+        id: 'pay-1',
+        amount_ils: null,
+        cardcom_transaction_id: 'tx-9',
+        status: 'succeeded',
+        cardcom_account_id: null,
+        succeeded_at: null,
+      },
+      error: null,
+    })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({
+      ok: false,
+      error: 'לתשלום אין סכום קריא',
+      code: 'STATE_INVALID',
+    })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('refuses an order with no line items', async () => {
+    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, {
+      data: {
+        id: 'pay-1',
+        amount_ils: 100,
+        cardcom_transaction_id: 'tx-9',
+        status: 'succeeded',
+        cardcom_account_id: null,
+        succeeded_at: null,
+      },
+      error: null,
+    })
+    queue('order_items.select', { data: [], error: null })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, error: 'להזמנה אין פריטים', code: 'STATE_INVALID' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('treats a null vouchers read the same as no vouchers', async () => {
+    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, {
+      data: {
+        id: 'pay-1',
+        amount_ils: 100,
+        cardcom_transaction_id: 'tx-9',
+        status: 'succeeded',
+        cardcom_account_id: null,
+        succeeded_at: null,
+      },
+      error: null,
+    })
+    queue('order_items.select', {
+      data: [
+        {
+          id: 'line-1',
+          product_type: 'physical',
+          settlement_status: 'paid',
+          supplier_id: 'sup-1',
+          supplier_immediate_agorot: 0,
+        },
+      ],
+      error: null,
+    })
+    queue('vouchers.select', { data: null, error: null })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result.ok).toBe(true)
+  })
+
+  it('answers STATE_INVALID from the planner when no line can be refunded', async () => {
+    // Every line already `redeemed` (goods consumed at the old coupon_codes
+    // model): the state machine has no REFUND edge out of it, so the planner
+    // throws RefundError rather than silently refunding nothing.
+    seedHappyPath({
+      items: [
+        {
+          id: 'line-1',
+          product_type: 'physical',
+          settlement_status: 'redeemed',
+          supplier_id: 'sup-1',
+          supplier_immediate_agorot: 0,
+        },
+      ],
+    })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'STATE_INVALID' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('lets a non-RefundError from planning propagate rather than swallowing it', async () => {
+    // NaN.toFixed(2) is the string "NaN", which ilsToAgorot rejects with a
+    // plain TypeError -- not a RefundError -- while still inside the planner's
+    // try block. That error must reach the caller, not be reported as a
+    // refusal the admin could retry past.
+    seedHappyPath()
+    await expect(
+      refundOrder({ orderId: 'order-1', reason: 'test', partialAmountIls: Number.NaN }),
+    ).rejects.toThrow(/decimal/)
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('falls back to the generic Hebrew message when describeRefundBlockers finds nothing', async () => {
+    // Defensive-only: describeRefundBlockers always reports a blocker whenever
+    // the consumed-voucher check above it fires on the same data, so this path
+    // is exercised by forcing the helper's return value directly.
+    describeRefundBlockersImpl = () => []
+    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, {
+      data: {
+        id: 'pay-1',
+        amount_ils: 100,
+        cardcom_transaction_id: 'tx-9',
+        status: 'succeeded',
+        cardcom_account_id: null,
+        succeeded_at: null,
+      },
+      error: null,
+    })
+    queue('order_items.select', {
+      data: [{ id: 'line-1', product_type: 'coupon', settlement_status: 'paid' }],
+      error: null,
+    })
+    queue('vouchers.select', { data: [{ id: 'v1', status: 'redeemed' }], error: null })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MANUAL_RESOLUTION',
+      error: 'שוברים שכבר מומשו או פגו דורשים טיפול ידני',
+    })
+  })
+
+  it('answers MANUAL_RESOLUTION on an expired voucher too, not only a redeemed one', async () => {
+    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, {
+      data: {
+        id: 'pay-1',
+        amount_ils: 100,
+        cardcom_transaction_id: 'tx-9',
+        status: 'succeeded',
+        cardcom_account_id: null,
+        succeeded_at: null,
+      },
+      error: null,
+    })
+    queue('order_items.select', {
+      data: [{ id: 'line-1', product_type: 'coupon', settlement_status: 'paid' }],
+      error: null,
+    })
+    queue('vouchers.select', { data: [{ id: 'v1', status: 'expired' }], error: null })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'MANUAL_RESOLUTION' })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+  })
+
+  it('raises the alarm with the fallback message when Cardcom declines without one', async () => {
+    seedHappyPath()
+    refundByTransactionId.mockResolvedValue({
+      success: false,
+      refundTransactionId: null,
+      refundedAgorot: 0,
+      failureCode: null,
+      failureMessage: null,
+      raw: {},
+    })
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'PROVIDER_ERROR',
+      error: 'הזיכוי נדחה על ידי Cardcom',
+    })
+    expect(capturePaymentError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ detail: expect.objectContaining({ failure_code: null }) }),
+    )
+  })
+
+  it('raises the alarm on a non-Error thrown value after the card was credited', async () => {
+    seedHappyPath()
+    const original = adminClient.from
+    adminClient.from = ((table: string) => {
+      if (table === 'payments') {
+        return {
+          ...original(table),
+          insert: () => {
+            throw 'constraint violation'
+          },
+        }
+      }
+      return original(table)
+    }) as typeof adminClient.from
+
+    try {
+      const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+      expect(result).toMatchObject({
+        ok: false,
+        code: 'INTERNAL',
+        error: 'refund persistence failed',
+      })
+      expect(capturePaymentError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({ stage: 'refund_persist' }),
+      )
+    } finally {
+      adminClient.from = original
+    }
+  })
+
+  it('refunds an issued voucher back to the card and marks it refunded', async () => {
+    seedHappyPath({
+      items: [{ id: 'line-1', product_type: 'coupon', settlement_status: 'paid' }],
+    })
+    queues.set('vouchers.select', [{ data: [{ id: 'v1', status: 'issued' }], error: null }])
+
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    const update = find('vouchers', 'update')
+    expect(update?.payload).toMatchObject({ status: 'refunded' })
+    expect(update?.chain).toContainEqual(['in', ['id', ['v1']]])
+  })
+
+  it('queues the credit note and issues it once the refund payment row has an id', async () => {
+    seedHappyPath()
+    queues.set('payments.insert', [{ data: { id: 'refund-pay-1' }, error: null }])
+    enqueueRefundCreditNote.mockResolvedValue({ enqueued: true, replay: false, invoiceId: 'inv-1' })
+
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    expect(enqueueRefundCreditNote).toHaveBeenCalledWith(
+      adminClient,
+      expect.objectContaining({ orderId: 'order-1', refundPaymentId: 'refund-pay-1' }),
+    )
+    expect(issueQueuedInvoice).toHaveBeenCalledWith(adminClient, 'inv-1')
+  })
+
+  it('does not issue an invoice for a credit note that was only a replay', async () => {
+    seedHappyPath()
+    queues.set('payments.insert', [{ data: { id: 'refund-pay-1' }, error: null }])
+    enqueueRefundCreditNote.mockResolvedValue({ enqueued: true, replay: true, invoiceId: 'inv-1' })
+
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    expect(issueQueuedInvoice).not.toHaveBeenCalled()
+  })
+
+  it('does not issue an invoice the queue refused', async () => {
+    seedHappyPath()
+    queues.set('payments.insert', [{ data: { id: 'refund-pay-1' }, error: null }])
+    enqueueRefundCreditNote.mockResolvedValue({ enqueued: false, reason: 'nothing_refunded' })
+
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    expect(issueQueuedInvoice).not.toHaveBeenCalled()
+  })
+
+  it('notifies the customer by profile email when the order has a user', async () => {
+    seedHappyPath({
+      items: [
+        {
+          id: 'line-1',
+          product_type: 'physical',
+          settlement_status: 'paid',
+          supplier_id: 'sup-1',
+          supplier_immediate_agorot: 0,
+        },
+      ],
+    })
+    queues.set('orders.select', [
+      { data: { id: 'order-1', status: 'paid', user_id: 'user-1' }, error: null },
+    ])
+    queue('profiles.select', { data: { email: 'customer@example.com' }, error: null })
+
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    const rpc = calls.find((c) => c.table === 'rpc:fn_enqueue_notification')
+    expect(rpc?.payload).toMatchObject({ p_email: 'customer@example.com', p_user_id: 'user-1' })
+  })
+
+  it('sends an empty email and logs when the notification enqueue itself errors', async () => {
+    seedHappyPath({
+      items: [
+        {
+          id: 'line-1',
+          product_type: 'physical',
+          settlement_status: 'paid',
+          supplier_id: 'sup-1',
+          supplier_immediate_agorot: 0,
+        },
+      ],
+    })
+    queues.set('orders.select', [
+      { data: { id: 'order-1', status: 'paid', user_id: 'user-1' }, error: null },
+    ])
+    queue('profiles.select', { data: null, error: null })
+    queue('rpc.fn_enqueue_notification', { data: null, error: { message: 'outbox down' } })
+
+    const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    expect(result.ok).toBe(true)
+    const rpc = calls.find((c) => c.table === 'rpc:fn_enqueue_notification')
+    expect(rpc?.payload).toMatchObject({ p_email: '' })
   })
 })
