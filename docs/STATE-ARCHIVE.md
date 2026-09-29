@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c56 (הועבר מ-STATE.md ב-M04-c56, לשמירה על תקרת 300 שורות)
+
+**M03-c56 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
+`build`.** המשימה: להריץ את ארבעת הפקודות ולתקן כל שגיאה/אזהרה
+שניתן לתקן בלי לשנות התנהגות מוצר.
+
+**נמדד ישירות, כל ארבעת השערים ירוקים כבר, אין מה לתקן:**
+
+- `pnpm type-check`: `tsc --noEmit`, אפס פלט.
+- `pnpm lint`: `biome check` — 2021 קבצים, "No fixes applied" — פלוס
+  12 שערי תוכן (tokens, copy, asset, raw-html, postgrest-or,
+  cache-invalidation, rtl-logical, i18n 627/627, locale-format
+  116/116, input-dir 24/24, docs-index 282/282, docs-path-audit
+  152) — כולם `clean`/`OK`.
+- `pnpm test`: **606/606 קבצים, 7239/7251** (12 skipped, זהה
+  ל-M02-c56).
+- `pnpm build`: `next build` `exit 0`, ללא אזהרת compiler. שורות
+  ה-JSON שנרשמו במהלך ה-build (`supabase.rls_denied`/
+  `product_detail.reviews_read_failed` על `reviews`,
+  `db.optional_column_missing` על `migrations/pending/242`,
+  `phases.not_applied`/`content_pages.not_applied`, `db.query_slow`)
+  הן לוגים תפעוליים של האפליקציה על מיגרציות ממתינות ידועות (חוסם 5
+  למטה ו-`docs/BACKLOG.md` פריט 5, מיגרציה `247`/`242`) — **לא**
+  אזהרות מכלי ה-build עצמו. לתקן דורש להחיל migration, אסור לפי
+  הכללים.
+
+אין שינוי קוד. **קובץ יחיד ששונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M02-c56 הועבר לשמירה על תקרת 300 שורות).
+
 ## M02-c56 (הועבר מ-STATE.md ב-M03-c56, לשמירה על תקרת 300 שורות)
 
 **M02-c56 - DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —

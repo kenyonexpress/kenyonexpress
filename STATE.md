@@ -1,34 +1,42 @@
-RESUME FROM: M04-c56
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c56)
+RESUME FROM: M05-c56
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c56)
 
 ## המשך מ:
 
-**M03-c56 - DONE (29.09): שער ירוק — `type-check`, `lint`, `test`,
-`build`.** המשימה: להריץ את ארבעת הפקודות ולתקן כל שגיאה/אזהרה
-שניתן לתקן בלי לשנות התנהגות מוצר.
+**M04-c56 - DONE (29.09): תחזוקת תלויות — `pnpm audit` + `pnpm outdated`,
+עדכוני patch/minor בלבד, אף פעם major.** המשימה: להריץ את שני הכלים
+ולהחיל כל עדכון patch/minor ששומר `type-check`/`test`/`build` ירוקים.
 
-**נמדד ישירות, כל ארבעת השערים ירוקים כבר, אין מה לתקן:**
+**נמדד ישירות:**
 
-- `pnpm type-check`: `tsc --noEmit`, אפס פלט.
-- `pnpm lint`: `biome check` — 2021 קבצים, "No fixes applied" — פלוס
-  12 שערי תוכן (tokens, copy, asset, raw-html, postgrest-or,
-  cache-invalidation, rtl-logical, i18n 627/627, locale-format
-  116/116, input-dir 24/24, docs-index 282/282, docs-path-audit
-  152) — כולם `clean`/`OK`.
-- `pnpm test`: **606/606 קבצים, 7239/7251** (12 skipped, זהה
-  ל-M02-c56).
-- `pnpm build`: `next build` `exit 0`, ללא אזהרת compiler. שורות
-  ה-JSON שנרשמו במהלך ה-build (`supabase.rls_denied`/
-  `product_detail.reviews_read_failed` על `reviews`,
-  `db.optional_column_missing` על `migrations/pending/242`,
-  `phases.not_applied`/`content_pages.not_applied`, `db.query_slow`)
-  הן לוגים תפעוליים של האפליקציה על מיגרציות ממתינות ידועות (חוסם 5
-  למטה ו-`docs/BACKLOG.md` פריט 5, מיגרציה `247`/`242`) — **לא**
-  אזהרות מכלי ה-build עצמו. לתקן דורש להחיל migration, אסור לפי
-  הכללים.
+- `pnpm audit`: **אפס חולשות ידועות**, לפני ואחרי.
+- `pnpm outdated`: 18 מיושנות. **אחת patch בתוך caret קיים**:
+  `posthog-js` `1.434.16` -> `1.434.17`. שאר ה-17: קפיצות major
+  (`@biomejs/biome`, `@hookform/resolvers`, `@sentry/*`,
+  `@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
+  `@vitest/coverage-v8`/`vitest`, `jsdom`, `lint-staged`,
+  `tailwind-merge`, `typescript`, `zod`) **או minor על `0.x`**
+  (`@anthropic-ai/sdk`, `@supabase/ssr`) — ב-`0.x` הציר השני הוא ציר
+  השבירה לפי סמנטיקת caret עצמה, שקול-major. **הוחלט לא להחיל,
+  החלטה שהתקבלה לבד.**
+- `pnpm update posthog-js` הוחל: `package.json`/`pnpm-lock.yaml` בלבד
+  (עיצוב `onlyBuiltDependencies` שנכתב מחדש אוטומטית הוחזר ידנית
+  לשורה אחת). שינוי-לוואי לא-קשור: שדה `specifier` של `sharp`
+  ב-`pnpm-lock.yaml` סונכרן מ-`^0.35.5` ל-`^0.35.3` מול ה-override
+  ב-`pnpm-workspace.yaml` (הגרסה שנפתרת נשארת `0.35.5`), לא נגעתי בו.
+- `pnpm type-check`: אפס פלט. `pnpm lint`: 2021 קבצים + 12 שערי תוכן,
+  כולם clean/OK. `pnpm test`: **606/606, 7239/7251** (זהה ל-M03-c56).
+  `pnpm build`: `exit 0`.
 
-אין שינוי קוד. **קובץ יחיד ששונה: `STATE.md`** (פלוס
-`docs/STATE-ARCHIVE.md` — M02-c56 הועבר לשמירה על תקרת 300 שורות).
+אין שינוי UI, אין קריאה לשער החזותי (אין שינוי קוד באפליקציה). שני
+קבצים שונו: `package.json`, `pnpm-lock.yaml` (פלוס `STATE.md`/
+`docs/STATE-ARCHIVE.md` — M03-c56 הועבר לשמירה על תקרת 300 שורות).
+
+## M03-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+שער ירוק נמדד מחדש — `type-check`/`lint`/`test`/`build`, כולם ירוקים
+כבר, אין מה לתקן (606/606 קבצי טסט, 7239/7251). אין שינוי קוד. הועבר
+ב-M04-c56 לשמירה על תקרת 300 שורות.
 
 ## M02-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
