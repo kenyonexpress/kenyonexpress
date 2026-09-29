@@ -1,62 +1,48 @@
-RESUME FROM: M04-c57
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c57)
+RESUME FROM: M05-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c57)
 
 ## המשך מ:
 
-**M03-c57 - DONE (29.09): שער ירוק, `type-check`/`lint`/`test`/`build` —
-כל הארבעה נקיים, אפס תיקון נדרש.**
-המשימה: להריץ את ארבעת השערים ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי
-לשנות התנהגות מוצר.
+**M04-c57 - DONE (30.09): תחזוקת תלויות, שני עדכוני minor בטווח 0.x
+הוחלו (`@anthropic-ai/sdk` 0.122.0→0.129.0, `@supabase/ssr` 0.10.3→0.12.7),
+`pnpm audit` אפס חולשות לפני ואחרי.**
+המשימה: להריץ `pnpm audit` ו-`pnpm outdated`, להחיל עדכוני patch/minor
+ששומרים type-check/test/build ירוקים, לעולם לא major, לתעד ב-STATE.md.
 
-- `pnpm type-check` (`tsc --noEmit`): נקי, אפס שגיאה.
-- `pnpm lint` (biome + 12 שערי custom): `Checked 2023 files... No fixes
-  applied`, כל 12 השערים (`tokens`/`copy`/`asset`/`raw-html`/
-  `postgrest-or`/`cache-invalidation`/`rtl-logical`/`i18n`/
-  `locale-format`/`input-dir`/`docs-index`/`docs-path-audit`) clean,
-  זהה ל-M03-c56.
-- `pnpm test`: 608/608 קבצים, 7242/7254 (12 skipped) — זהה בדיוק
-  ל-M02-c57/M18-c56.
-- `pnpm build`: `✓ Compiled successfully`, `exit 0`, 337 נתיבים
-  נבנו. שורות JSON שנרשמות בזמן ה-build (`supabase.rls_denied` על
-  `reviews` לקורא אנונימי, `db.optional_column_missing` למיגרציה
-  ממתינה 242, `phases.not_applied`/`content_pages.not_applied`
-  למיגרציות 210/205) הן לוגים תפעוליים צפויים של שלב ה-prerender על
-  מיגרציות pending מתועדות — לא אזהרת קומפיילר, ולא ניתנות לתיקון בלי
-  להחיל מיגרציה על פרודקשן (אסור) או להחליש RLS (רגרסיית אבטחה). אין
-  שורת "Compiled with warnings" ואין שגיאת TypeScript/ESLint בפלט.
-- **מסקנה:** אין מה לתקן. הפריט הוא וידוא בלבד, זהה במהות ל-M03-c56.
-- **קבצים:** `STATE.md` בלבד.
+- `pnpm audit`: אפס חולשות, לפני ואחרי השינוי.
+- `pnpm outdated`: 16 חבילות מיושנות, אך ל-14 מהן `wanted == current`
+  (הטווח ב-`package.json` כבר נעול על ה-patch העדכני) וה-`latest` הוא
+  קפיצת major אמיתית (`@biomejs/biome` 1→2, `@hookform/resolvers` 3→5,
+  `@sentry/nextjs`/`@sentry/node` 10→11, `@testing-library/jest-dom` 6→7,
+  `@types/node` 20→26, `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8`
+  4→5, `jsdom` 25→30, `lint-staged` 15→17, `tailwind-merge` 2→3,
+  `typescript` 5→7, `vitest` 4→5, `zod` 3→4) — כולן נדחו, אסור major.
+- שתי החבילות הנותרות הן `0.x` עם עלייה בספרה השנייה (`minor` לפי
+  semver קפדני, ה-`major` נשאר `0` בשתיהן): `@anthropic-ai/sdk`
+  0.122.0→0.128.0/0.129.0 (גרסה חדשה יצאה תוך כדי הפריט; הוחל 0.129.0)
+  ו-`@supabase/ssr` 0.10.3→0.12.7. שתיהן היו מחוץ לטווח ה-caret
+  הקיים (`^0.x.y` על חבילת `0.x` נועל patch בלבד), ולכן `wanted`
+  זהה ל-`current` ב-`pnpm outdated` — נדרשה עריכת `package.json`
+  בפועל, לא `pnpm update` רגיל.
+- **`@anthropic-ai/sdk`**: שימוש יחיד ב-`src/server/ai/client.ts`,
+  גרסאות רציפות בין 0.122 ל-0.129 (אין דילוג), הוחל וסומן safe.
+- **`@supabase/ssr`**: שימוש רחב וקריטי (עוגיות אימות, לקוח/שרת/proxy,
+  11 קבצים כולל טסטים). קיים דילוג בגרסאות שם החבילה
+  (0.10.3 → 0.12.0 ישירות, אין `0.11.x` שפורסמה) — נבדק במפורש לפני
+  ההחלה כי זה סימן סיכון. הוחל בכל זאת כי הבדיקה האמפירית (type-check,
+  lint, 608/608 קבצי טסט זהה במדויק ל-7242/7254, build עם 337/337
+  נתיבים ו-`exit 0`) יצאה נקייה בלי שום שינוי קוד נדרש.
+- **`pnpm build`**: אותן שורות `supabase.rls_denied`/`db.optional_
+  column_missing`/`phases.not_applied` תפעוליות שתועדו ב-M03-c57 —
+  זהות, לא רגרסיה חדשה.
+- **קבצים:** `package.json`, `pnpm-lock.yaml`, `STATE.md`.
 
-## M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M03-c57, M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —
-אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%, זהה בדיוק ל-M02-c56.**
-המשימה: להריץ `scripts/compare.mjs` בפורגראונד ולחכות למספרים
-באותה הרצה, לתקן כל רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
-
-- **בדיקה מקדימה:** `git log --oneline 7274ff68f..HEAD -- src/app
-  src/components messages` (הקומיט של M02-c56 עד HEAD) ריק — אפס
-  קומיט נוגע ב-UI מאז המדידה הקודמת.
-- שרת build אמיתי (`PORT=3311 pnpm start`, נבנה על HEAD `ac2d73183`,
-  `.next/BUILD_ID` מהבנייה הטרייה שהורצה בסשן הזה — לא stale server).
-- **בית** (`--baseline 'refs/ke_live_{width}.png'`): **380 8.51% PASS,
-  768 9.02% PASS, 1440 3.95% PASS** — זהה בדיוק ל-M02-c56/M17-c55/
-  M02-c55, אין דריפט.
-- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`,
-  `--baseline='refs/electro_product_{width}.png'`): **380 5.61% PASS,
-  768 4.92% PASS, 1440 2.99% PASS** — זהה בדיוק ל-M02-c56.
-- **הערה על תזמון:** שתי הריצות (`--widths=380,768,1440` לכל דף)
-  חרגו מ-timeout ברירת המחדל של כלי ה-Bash (180 ש'/300 ש') ועברו
-  ל-background של הכלי עצמו; הסוכן חיכה למספרים בפועל דרך Monitor על
-  קובץ הפלט לפני שהמשיך — לא הוערך מספר, לא הסתיים הפריט לפני שהמספרים
-  נכתבו כאן. אותה הרצה יחידה, לא ריצה נפרדת שלא נצפתה.
-- **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
-  `pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
-  7242/7254 (12 skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד —
-  פריט מדידה בלבד.
-- **קבצים:** `docs/UI-PARITY-REPORT.md` (השער עצמו כותב שורה בכל
-  הרצה, שורות חדשות מהסשן הזה), `docs/STATE-ARCHIVE.md` (M01-c57
-  הועבר לשם), `STATE.md` בלבד.
+M03-c57: שער ירוק, `type-check`/`lint`/`test`/`build` — כל הארבעה
+נקיים, אפס תיקון נדרש, זהה במהות ל-M03-c56. M02-c57: שער חזותי, בית
+ומוצר, שלושה רוחבים, אפס רגרסיה, זהה בדיוק ל-M02-c56. שניהם DONE, אפס
+שינוי UI. הועברו ב-M04-c57 לשמירה על תקרת 300 שורות.
 
 ## M18-c56, M17-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

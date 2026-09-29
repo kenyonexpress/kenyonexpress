@@ -2,6 +2,63 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c57 (הועבר מ-STATE.md ב-M04-c57, לשמירה על תקרת 300 שורות)
+
+**M03-c57 - DONE (29.09): שער ירוק, `type-check`/`lint`/`test`/`build` —
+כל הארבעה נקיים, אפס תיקון נדרש.**
+המשימה: להריץ את ארבעת השערים ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי
+לשנות התנהגות מוצר.
+
+- `pnpm type-check` (`tsc --noEmit`): נקי, אפס שגיאה.
+- `pnpm lint` (biome + 12 שערי custom): `Checked 2023 files... No fixes
+  applied`, כל 12 השערים (`tokens`/`copy`/`asset`/`raw-html`/
+  `postgrest-or`/`cache-invalidation`/`rtl-logical`/`i18n`/
+  `locale-format`/`input-dir`/`docs-index`/`docs-path-audit`) clean,
+  זהה ל-M03-c56.
+- `pnpm test`: 608/608 קבצים, 7242/7254 (12 skipped) — זהה בדיוק
+  ל-M02-c57/M18-c56.
+- `pnpm build`: `✓ Compiled successfully`, `exit 0`, 337 נתיבים
+  נבנו. שורות JSON שנרשמות בזמן ה-build (`supabase.rls_denied` על
+  `reviews` לקורא אנונימי, `db.optional_column_missing` למיגרציה
+  ממתינה 242, `phases.not_applied`/`content_pages.not_applied`
+  למיגרציות 210/205) הן לוגים תפעוליים צפויים של שלב ה-prerender על
+  מיגרציות pending מתועדות — לא אזהרת קומפיילר, ולא ניתנות לתיקון בלי
+  להחיל מיגרציה על פרודקשן (אסור) או להחליש RLS (רגרסיית אבטחה). אין
+  שורת "Compiled with warnings" ואין שגיאת TypeScript/ESLint בפלט.
+- **מסקנה:** אין מה לתקן. הפריט הוא וידוא בלבד, זהה במהות ל-M03-c56.
+- **קבצים:** `STATE.md` בלבד.
+
+## M02-c57 (הועבר מ-STATE.md ב-M04-c57, לשמירה על תקרת 300 שורות)
+
+**DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —
+אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%, זהה בדיוק ל-M02-c56.**
+המשימה: להריץ `scripts/compare.mjs` בפורגראונד ולחכות למספרים
+באותה הרצה, לתקן כל רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
+
+- **בדיקה מקדימה:** `git log --oneline 7274ff68f..HEAD -- src/app
+  src/components messages` (הקומיט של M02-c56 עד HEAD) ריק — אפס
+  קומיט נוגע ב-UI מאז המדידה הקודמת.
+- שרת build אמיתי (`PORT=3311 pnpm start`, נבנה על HEAD `ac2d73183`,
+  `.next/BUILD_ID` מהבנייה הטרייה שהורצה בסשן הזה — לא stale server).
+- **בית** (`--baseline 'refs/ke_live_{width}.png'`): **380 8.51% PASS,
+  768 9.02% PASS, 1440 3.95% PASS** — זהה בדיוק ל-M02-c56/M17-c55/
+  M02-c55, אין דריפט.
+- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`,
+  `--baseline='refs/electro_product_{width}.png'`): **380 5.61% PASS,
+  768 4.92% PASS, 1440 2.99% PASS** — זהה בדיוק ל-M02-c56.
+- **הערה על תזמון:** שתי הריצות (`--widths=380,768,1440` לכל דף)
+  חרגו מ-timeout ברירת המחדל של כלי ה-Bash (180 ש'/300 ש') ועברו
+  ל-background של הכלי עצמו; הסוכן חיכה למספרים בפועל דרך Monitor על
+  קובץ הפלט לפני שהמשיך — לא הוערך מספר, לא הסתיים הפריט לפני שהמספרים
+  נכתבו כאן. אותה הרצה יחידה, לא ריצה נפרדת שלא נצפתה.
+- **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+  `pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
+  7242/7254 (12 skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד —
+  פריט מדידה בלבד.
+- **קבצים:** `docs/UI-PARITY-REPORT.md` (השער עצמו כותב שורה בכל
+  הרצה, שורות חדשות מהסשן הזה), `docs/STATE-ARCHIVE.md` (M01-c57
+  הועבר לשם), `STATE.md` בלבד.
+
 ## M18-c56, M17-c56 (הועברו מ-STATE.md ב-M03-c57, לשמירה על תקרת 300 שורות)
 
 M18-c56: בדיקת אפס-פעילות בפעם השלישית: המחזור c56 *לא* היה אפס-פעילות
