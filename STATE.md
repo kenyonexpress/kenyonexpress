@@ -1,37 +1,67 @@
-RESUME FROM: M14-c54
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c54)
+RESUME FROM: M15-c54
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c54)
 
 ## המשך מ:
 
-**M13-c54 - docs(security): CSP/HSTS/X-Frame-Options/Referrer-Policy
-ו-Upstash rate limits על login/checkout/redeem נמדדו מחדש, אפס דריפט
-(29.09).** המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy,
-ומגבלות קצב Upstash על login, checkout ו-redeem, ולתקן פערים עם טסטים.
-**נבדק קודם מה השתנה מאז האימות האחרון (M13-c53, `42b41949d`)**:
-`git diff 42b41949d..HEAD --stat` על 23 קבצים, אף אחד לא נוגע לכותרות
-אבטחה או ל-rate limiting (`src/lib/rate-limit/*` לא ברשימה); השינוי היחיד
-ב-`next.config.ts` הוא נתיב ה-import של Sentry (M03-c54, לא נוגע לכותרות).
-**אומת בכל זאת ישירות מול build אמיתי** (`pnpm build` נקי, `PORT=3513
-pnpm start`): כותרות תגובה על `/` (בית), `/checkout`, `/login` ו-
-`/redeem/test-token`, כל ארבעתן זהות: `Content-Security-Policy` (default-src
-'self', frame-ancestors 'none', frame-src/form-action מוגבלים ל-
-`secure.cardcom.solutions` בלבד), `Strict-Transport-Security: max-age=
-63072000; includeSubDomains; preload`, `X-Frame-Options: DENY`,
-`X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-
-cross-origin`. **מגבלות קצב נמדדו בקוד עצמו, לא רק בטבלת המדיניות**:
-`login` נאכף ב-`src/server/actions/auth.ts:141` (`checkRateLimit('login:
-${ip}')`, 10/שעה לפי `policies.ts:40`), `begin_checkout` נאכף ב-
-`src/server/actions/payments/checkout.ts:351` (`checkRateLimit(
-'begin_checkout:user:${user.id}', 10, 60)`, תואם ל-`policies.ts:125`),
-`redeem` (דף לקוח `/redeem/[token]`) נאכף ב-`src/app/redeem/[token]/
-page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`, תואם ל-
-`policies.ts:200`), ו-`voucher-redeem` (סריקת ספק) נאכף ב-
-`src/app/api/supplier/vouchers/redeem/route.ts:223` (`rateLimit(
-'voucher-redeem', user.id)`, תואם ל-`policies.ts:201`). **אפס דריפט, אפס
-שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2020 קבצים + 12
-שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605 קבצים, 7217/7229
-(12 skipped, זהה), `build` `exit 0`. אין שער חזותי נדרש (אין שינוי UI).
-**קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/תיעוד בלבד).
+**M14-c54 - perf: bundle, צנרת תמונות, תגיות ISR וכותרות cache — ממצא
+אחד אמיתי בעמוד הבית תוקן (29.09).** המשימה: לבדוק גודל bundle, פלט
+צנרת התמונות, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר.
+**בדיקת ארבעת התחומים, מול הבייסליין הכתוב ב-M14-c53 (`e371afd2f`):**
+1. **גודל bundle: אין רגרסיה, אין שינוי.** `git log e371afd2f..HEAD` על
+`next.config.ts`/`src/lib/images`/`src/components/admin`/`package.json`/
+`pnpm-lock.yaml` מחזיר רק שני קומיטים לא-קשורים (M11-c54 a11y באדמין
+בלבד, M03-c54 נתיב import של Sentry). `scripts/bundle-report.mjs` על
+build טרי, `pnpm start` (פורט 3514): בית 320.4kB, קופה 324.1kB, **345.1kB
+סה"כ על 27 chunks — זהה בדיוק ל-M14-c53**.
+2. **פלט צנרת התמונות: ממצא אמיתי, תוקן.** אותו באג `fill`+`sizes` בפורמט
+px שנמצא ותוקן פעמיים באדמין-בלבד (M14-c51 `CategoryStrip.tsx`, M14-c52
+`ProductGallery.tsx`, M14-c53 `ImageUploader.tsx`+`CouponDealForm.tsx`)
+נמצא **בעמוד הבית עצמו**: `src/components/home/HeroSlider.tsx`, תג "app"
+בסליידר, `fill sizes="286px"` (בלי `vw`) על תיבה קבועה 46x286. `getWidths()`
+(`node_modules/next/dist/shared/lib/get-img-props.js:53`) מזהה `vw` בלבד
+דרך regex; מחרוזת px שטוחה לא תואמת אף `vw`, כך שה-srcset יוצא על פני כל
+17 המועמדים (`imageSizes`+`deviceSizes`, 16w עד 3840w) לתמונה שלא מציגה
+יותר מ-286px CSS באף רוחב. **תוקן**: הוסר `fill`+`sizes`, הוחלף ב-
+`width={286} height={46}` (התיקון שכבר בוצע ל-`ImageUploader`/
+`CouponDealForm` ב-M14-c53) — עם `object-contain` הפריסה זהה חזותית.
+`RS.badgeSizes` (קבוע) הוסר, הוחלף ב-`RS.badgeWidth`/`RS.badgeHeight`.
+**לא נמדד ב-HTML חי**: הסלייד מסוג "app" לא מוגדר בנתוני ה-seed המקומיים
+(אפס הופעות של `286px` ב-HTML של `/`), כלומר הממצא הוא בקוד המקור עצמו
+(אומת ישירות מול לוגיקת `next/image`), לא ממדידת bytes בפועל — אבל
+מדובר בקוד ייצור אמיתי שירוץ בכל פעם שסלייד "app" עם `badge_image_url`
+מוגדר בפרודקשן, לא בקוד מת.
+3. **תגיות ISR: אין רגרסיה.** `node scripts/cache-invalidation-gate.mjs`:
+"clean" — לפני ואחרי התיקון, זהה.
+4. **כותרות cache: אין רגרסיה.** לא נבדק שינוי קוד רלוונטי מאז M14-c53
+(ראו סעיף 1); `/images/*` נשאר `public, max-age=0, s-maxage=86400,
+stale-while-revalidate=604800` לפי `next.config.ts` (לא נגעתי).
+
+**שער חזותי בית (הדף היחיד שהתיקון נוגע בו), בחזית, שלושת הרוחבים מול
+`refs/ke_live_{width}.png`, אותו `pnpm start` (פורט 3515) אחרי build טרי
+עם התיקון:**
+
+| רוחב | both-painted | סטטוס |
+|---|---|---|
+| 380 | 8.51% | PASS |
+| 768 | 9.02% | PASS |
+| 1440 | 3.95% | PASS |
+
+זהה בדיוק לבייסליין (M02-c54 ואילך) — התיקון לא שינה שום פיקסל (אותו
+גודל תיבה מוצג, רק ה-srcset המיוצר קטן יותר). שורות ב-`docs/UI-PARITY-REPORT.md`.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים, i18n 627/627,
+locale 116/116), `pnpm test` **605/605 קבצים, 7217/7229** (12 skipped,
+זהה), `pnpm build` `exit 0`.
+
+**קבצים:** `src/components/home/HeroSlider.tsx`, `docs/UI-PARITY-REPORT.md`
+(שורות מדידה, כולל שתי שורות REFUSED מניסיון ראשון בלי `--baseline`),
+`docs/STATE-ARCHIVE.md` (M13-c54 הועבר לשם), `STATE.md`.
+
+## M13-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash על
+login/checkout/redeem נמדדו מחדש מול build אמיתי, אפס דריפט מ-M13-c53.
+הועבר ב-M14-c54 לשמירה על תקרת 300 שורות.
 
 ## M12-c54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

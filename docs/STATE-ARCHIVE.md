@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c54 (הועברה מ-STATE.md ב-M14-c54, לשמירה על תקרת 300 שורות)
+
+**M13-c54 - docs(security): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ו-Upstash rate limits על login/checkout/redeem נמדדו מחדש, אפס דריפט
+(29.09).** המשימה: לוודא CSP, HSTS, X-Frame-Options, Referrer-Policy,
+ומגבלות קצב Upstash על login, checkout ו-redeem, ולתקן פערים עם טסטים.
+**נבדק קודם מה השתנה מאז האימות האחרון (M13-c53, `42b41949d`)**:
+`git diff 42b41949d..HEAD --stat` על 23 קבצים, אף אחד לא נוגע לכותרות
+אבטחה או ל-rate limiting (`src/lib/rate-limit/*` לא ברשימה); השינוי היחיד
+ב-`next.config.ts` הוא נתיב ה-import של Sentry (M03-c54, לא נוגע לכותרות).
+**אומת בכל זאת ישירות מול build אמיתי** (`pnpm build` נקי, `PORT=3513
+pnpm start`): כותרות תגובה על `/` (בית), `/checkout`, `/login` ו-
+`/redeem/test-token`, כל ארבעתן זהות: `Content-Security-Policy` (default-src
+'self', frame-ancestors 'none', frame-src/form-action מוגבלים ל-
+`secure.cardcom.solutions` בלבד), `Strict-Transport-Security: max-age=
+63072000; includeSubDomains; preload`, `X-Frame-Options: DENY`,
+`X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-
+cross-origin`. **מגבלות קצב נמדדו בקוד עצמו, לא רק בטבלת המדיניות**:
+`login` נאכף ב-`src/server/actions/auth.ts:141` (`checkRateLimit('login:
+${ip}')`, 10/שעה לפי `policies.ts:40`), `begin_checkout` נאכף ב-
+`src/server/actions/payments/checkout.ts:351` (`checkRateLimit(
+'begin_checkout:user:${user.id}', 10, 60)`, תואם ל-`policies.ts:125`),
+`redeem` (דף לקוח `/redeem/[token]`) נאכף ב-`src/app/redeem/[token]/
+page.tsx:109` (`checkRateLimit('redeem:${ip}', 60, 3600)`, תואם ל-
+`policies.ts:200`), ו-`voucher-redeem` (סריקת ספק) נאכף ב-
+`src/app/api/supplier/vouchers/redeem/route.ts:223` (`rateLimit(
+'voucher-redeem', user.id)`, תואם ל-`policies.ts:201`). **אפס דריפט, אפס
+שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2020 קבצים + 12
+שערי תוכן, i18n 627/627, locale 116/116), `test` 605/605 קבצים, 7217/7229
+(12 skipped, זהה), `build` `exit 0`. אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה מלבד `STATE.md`: אין** (פריט מדידה/תיעוד בלבד).
+
 ## M11-c54 (הועברה מ-STATE.md ב-M12-c54, לשמירה על תקרת 300 שורות)
 
 **M11-c54 - fix(a11y): axe על כל דף נמדד מחדש, 8 הפרות `serious` אמיתיות

@@ -199,15 +199,16 @@ const RS = {
   appHeadOffset: 'mt-[52px]',
   badgeBox: 'h-[46px] w-[286px]',
   /**
-   * The badge slot in CSS pixels. It used to say 572px, "2x the badge width so
-   * the 2x raster is fetched", which double-counts: `sizes` is the CSS width of
-   * the slot and the browser multiplies by devicePixelRatio itself, so a 2x
-   * value asks a 2x screen for 4x. Byte-neutral for this one asset - the source
-   * is 537px wide, so both 1080 and 640 come back as the same 537px file - and
-   * corrected anyway, because the next badge that ships larger than 537px would
-   * pay for the mistake with no signal.
+   * `width`/`height` (not `fill` + `sizes="286px"`): the box is a fixed
+   * 46x286 on every viewport, and a flat px string has no `vw` for
+   * `getWidths()` (node_modules/next/dist/shared/lib/get-img-props.js) to
+   * parse, so it fell back to the full 17-candidate imageSizes+deviceSizes
+   * srcset (16w..3840w) for a slot that never renders past 286 CSS px - the
+   * same bug already found and fixed twice in admin-only components
+   * (ImageUploader, CouponDealForm), here on the home page itself.
    */
-  badgeSizes: '286px',
+  badgeWidth: 286,
+  badgeHeight: 46,
   /** welcome slide insets its two promo lines by different amounts */
   promoSmallInset: 'ps-[11px]',
   promoLargeInset: 'ps-[10px]',
@@ -507,8 +508,8 @@ function AppSlideCopy({ slide, mountMedia }: { slide: HeroSlide; mountMedia: boo
           <SmartImage
             src={slide.badge_image_url}
             alt=""
-            fill
-            sizes={RS.badgeSizes}
+            width={RS.badgeWidth}
+            height={RS.badgeHeight}
             quality={90}
             className="object-contain object-left"
             fallbackClassName="absolute inset-0"
