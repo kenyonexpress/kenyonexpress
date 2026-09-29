@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c53 - DONE (29.09): DNS עדיין תקין, פריסת HEAD סורבה שוב (אותה סיבה, נמדד עם MCP)
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. חוסם 1 (DNS) היה רשום RESOLVED מ-M01-c52; חוסם 2 (פריסת HEAD)
+היה רשום BLOCKED על סביבת Cardcom חסרה.
+
+**מה נמדד:**
+1. `dig +short kenyonexpress.co.il` -> `64.29.17.1`, `64.29.17.65`;
+   `dig +short NS` -> `ns1.vercel-dns.com.`, `ns2.vercel-dns.com.`;
+   `dig +short www.kenyonexpress.co.il` -> `216.198.79.1`, `64.29.17.1`.
+2. `curl -o /dev/null -w "%{http_code}" https://www.kenyonexpress.co.il` ->
+   `200`, גוף אמיתי (`lang="he" dir="rtl"`, לוגו קניון EXPRESS).
+   `curl .../kenyonexpress.co.il` (בלי www) -> `308` עם
+   `location: https://www.kenyonexpress.co.il/` — הפניה תקינה של Vercel,
+   לא כשל DNS/TLS.
+3. פריסת production הופעלה דרך כלי ה-Vercel MCP (זמין לראשונה בסשן הזה,
+   לא REST גולמי כמו ב-M01-c1/M01-c52): `create_deployment` עם `gitSource`
+   github על `audit/final-audit`@`99b2079cb6` (HEAD), `target=production`,
+   פרויקט `kenyonexpress` (לא `kenyonexpress-prod`, שמחזיק רק `.vercel.app`).
+   תוצאה: `dpl_CUUU98iiF1RiU1qxHojWyGbT8JuQ`, `state=ERROR`,
+   `errorCode=BUILD_UTILS_SPAWN_1`, `errorMessage="Command \"node
+   scripts/deploy-preflight.mjs && pnpm build\" exited with 1"` —
+   זהה בדיוק לניסיון הקודם (`dpl_GoCto2TvUmPDPkTNYQ5wBxdR5d5j` על `1083b8d8d`,
+   אותו קוד שגיאה, כשלושים דקות קודם, כנראה מ-M01-c52 או מסשן אחר באותו
+   ריצה).
+4. `filter_project_envs` (קריאה בלבד, אין שינוי) על אותו פרויקט: `Production`
+   מחזיק `CARDCOM_MERCHANT_ID`, `CARDCOM_CLIENT_ID`, `CARDCOM_API_KEY`
+   (השמות הישנים), לא `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/
+   `CARDCOM_API_PASSWORD` (השמות שהקוד קורא בפועל), ו-`ALLOW_INCOMPLETE_ENV`
+   עדיין קיים כמפתח נפרד. אין ערכים שנקראו (`decrypted: false` בכל שורה) —
+   רק קיום/היעדר השם, כפי שדווח גם ב-M01-c1/M01-c52.
+5. `list_deployments` מאשר שהפריסה החיה כיום היא `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`
+   (`a388118f1`, `READY`, `target=production`) — לא זזה. HEAD (`99b2079cb6`)
+   נמצא 70 קומיטים אחריה (`git rev-list --count a388118f1..HEAD`).
+
+**מסקנה:** אין DNS BLOCKER לכתוב — הדומיין עובד. החוסם היחיד הוא חוסם 2
+הקיים (סביבת Cardcom בפרודקשן), עכשיו עם ראיית פריסה טרייה מה-MCP במקום
+REST גולמי. אין פעולה אסורה בוצעה: לא נקרא/נכתב ערך סוד, לא שונה env,
+ה-deploy עצמו הוא הפעולה שהפריט ביקש לבצע ("להריץ... deploy") וכבר בוצעה
+פעמיים בעבר (M01-c1, M01-c52) באותו אופן. עודכן חוסם 2 למטה עם המספרים
+הטריים.
+
+**שערים:** אין שינוי קוד (בדיקת production בלבד) — `pnpm
+type-check`/`lint`/`test`/`build` לא נדרשו, כמו בפריטי "אין שינוי קוד"
+קודמים (M08-c52, M09-c52 וכו'). אין שער חזותי נדרש (לא UI).
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M18-c52 - DONE (29.09): idle-check (לא idle) + דירוג בכוכבים בדף המוצר, ממצא לוואי: `anon` בלי הרשאה על `reviews`
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`

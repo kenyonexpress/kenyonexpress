@@ -1,18 +1,49 @@
-RESUME FROM: M03-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c53)
+RESUME FROM: M04-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c53)
 
 ## המשך מ:
 
-M02-c53 היה שער השוואה חזותי: `compare.mjs` על בית ומוצר בשלושת הרוחבים
-מול Electro v7. **כל שש המדידות PASS** (בית 8.51/9.19/3.95, מוצר
-4.96/4.56/3.25), אפס רגרסיה מול הבייסליין ב-`d5afdc5fd`. ממצא תפעולי
-בדרך: הרצה ראשונה עם `--baseline=refs/electro_home_{width}.png` הניבה
-מספרים מנופחים (עד 10.11%, עדיין PASS אך שונה מהותית מההיסטוריה); זו
-הפניה שגויה לבית (Electro נותן צורה, לא תוכן, לפי `docs/SOURCING-RULES.md`).
-הרצה חוזרת עם `--baseline=refs/ke_live_{width}.png` (ההפניה הנכונה לבית)
-הניבה מספרים תואמים היסטוריה. מוצר תמיד השתמש ב-`electro_product_*` והיה
-תקין משתי ההרצות. אין שינוי קוד, type-check/lint/test (605/7195)/build
-נקיים. פירוט מלא למטה.
+M03-c53 היה green check: `pnpm type-check`, `lint`, `test`, `build`. כל
+ארבעת השערים נקיים ללא שום תיקון נדרש — `type-check` נקי, `lint` נקי
+(כולל כל שערי התוכן), `test` 605/7195 (זהה ל-M03-c53 הקודם וכל הסבב האחרון),
+`build` `exit 0` עם "Compiled successfully". שורות ה-`warn`/`error` בפלט
+ה-build הן לוגים תפעוליים של האפליקציה בזמן קריית סטטי (מיגרציה 242 pending,
+`anon` בלי הרשאה על `reviews` כבר ידוע כחוסם 3, זמן תגובת DB), לא אזהרות
+build — אותה תבנית שנמדדה ב-M03-c52. אין שינוי קוד, אין קובץ מיגרציה, אין
+שער חזותי נדרש (אין שינוי UI). פירוט מלא למטה.
+
+## M03-c53 - DONE (29.09): green check מחדש, ארבעת השערים נקיים ללא תיקון
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. אין פריט קודם באותו שם בתור הנוכחי; הפריט המקביל האחרון
+(M03-c52, `2ddc71256`) היה DONE עם אותה תוצאה בדיוק.
+
+**מה נמדד, בקדמת הבמה, כל ארבעת השערים:**
+1. `pnpm type-check` -> נקי, `tsc --noEmit` ללא פלט.
+2. `pnpm lint` -> נקי: `biome check` (2020 קבצים, "No fixes applied") +
+   כל אחד עשר שערי התוכן (`tokens`, `copy`, `asset`, `raw-html`,
+   `postgrest-or`, `cache-invalidation`, `rtl-logical`, `i18n` (627/627),
+   `locale-format` (116/116), `input-dir`, `docs-index`, `docs-path-audit`).
+3. `pnpm test` -> `605 test files passed`, `7195 tests passed | 12 skipped`,
+   זהה למדידה האחרונה.
+4. `pnpm build` -> `exit 0`, `✓ Compiled successfully in 1453ms`. אומת עם
+   `grep -iE "warn|error"` על הפלט המלא: כל שורה שחזרה היא לוג `pino` של
+   האפליקציה בזמן `generateStaticParams`/ISR (`supabase.rls_denied` על
+   `reviews`, `db.optional_column_missing` על מיגרציה 242, `db.query_slow`
+   על `suppliers`) — לא אזהרת webpack/Next, ולא דבר חדש: שלושתן כבר
+   מתועדות כחוסמים פתוחים (חוסם 3 למיגרציה 242, חוסם 3 נפרד ל-247 עבור
+   ה-RLS על reviews). חיפוש נפרד אחר `Compiled|Failed to compile` הניב רק
+   את שורת ההצלחה.
+
+**מסקנה:** אין תיקון fixable לבצע — אפס warnings/errors אמיתיים בארבעת
+השערים. זהה ל-M03-c52 (25.09->29.09 שוב אפס דריפט).
+
+**שערים:** ראו למעלה, כל הארבעה. אין שינוי קוד, אין קובץ מיגרציה. אין
+שער חזותי נדרש (אין שינוי UI, לפי התבנית של M08-c52/M09-c52/M01-c53
+ל"אין שינוי קוד").
+
+**קבצים:** `STATE.md`, `docs/STATE-ARCHIVE.md` (הועבר אליו הפירוט המלא
+של M01-c53).
 
 ## M02-c53 - DONE (29.09): שער חזותי בית+מוצר PASS בשלושת הרוחבים, אפס רגרסיה
 
@@ -48,53 +79,13 @@ M02-c53 היה שער השוואה חזותי: `compare.mjs` על בית ומו�
 
 **קבצים:** `STATE.md` בלבד.
 
-## M01-c53 - DONE (29.09): DNS עדיין תקין, פריסת HEAD סורבה שוב (אותה סיבה, נמדד עם MCP)
+## M01-c53 - DONE (29.09): פירוט מלא בארכיון
 
-**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. חוסם 1 (DNS) היה רשום RESOLVED מ-M01-c52; חוסם 2 (פריסת HEAD)
-היה רשום BLOCKED על סביבת Cardcom חסרה.
-
-**מה נמדד:**
-1. `dig +short kenyonexpress.co.il` -> `64.29.17.1`, `64.29.17.65`;
-   `dig +short NS` -> `ns1.vercel-dns.com.`, `ns2.vercel-dns.com.`;
-   `dig +short www.kenyonexpress.co.il` -> `216.198.79.1`, `64.29.17.1`.
-2. `curl -o /dev/null -w "%{http_code}" https://www.kenyonexpress.co.il` ->
-   `200`, גוף אמיתי (`lang="he" dir="rtl"`, לוגו קניון EXPRESS).
-   `curl .../kenyonexpress.co.il` (בלי www) -> `308` עם
-   `location: https://www.kenyonexpress.co.il/` — הפניה תקינה של Vercel,
-   לא כשל DNS/TLS.
-3. פריסת production הופעלה דרך כלי ה-Vercel MCP (זמין לראשונה בסשן הזה,
-   לא REST גולמי כמו ב-M01-c1/M01-c52): `create_deployment` עם `gitSource`
-   github על `audit/final-audit`@`99b2079cb6` (HEAD), `target=production`,
-   פרויקט `kenyonexpress` (לא `kenyonexpress-prod`, שמחזיק רק `.vercel.app`).
-   תוצאה: `dpl_CUUU98iiF1RiU1qxHojWyGbT8JuQ`, `state=ERROR`,
-   `errorCode=BUILD_UTILS_SPAWN_1`, `errorMessage="Command \"node
-   scripts/deploy-preflight.mjs && pnpm build\" exited with 1"` —
-   זהה בדיוק לניסיון הקודם (`dpl_GoCto2TvUmPDPkTNYQ5wBxdR5d5j` על `1083b8d8d`,
-   אותו קוד שגיאה, כשלושים דקות קודם, כנראה מ-M01-c52 או מסשן אחר באותו
-   ריצה).
-4. `filter_project_envs` (קריאה בלבד, אין שינוי) על אותו פרויקט: `Production`
-   מחזיק `CARDCOM_MERCHANT_ID`, `CARDCOM_CLIENT_ID`, `CARDCOM_API_KEY`
-   (השמות הישנים), לא `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/
-   `CARDCOM_API_PASSWORD` (השמות שהקוד קורא בפועל), ו-`ALLOW_INCOMPLETE_ENV`
-   עדיין קיים כמפתח נפרד. אין ערכים שנקראו (`decrypted: false` בכל שורה) —
-   רק קיום/היעדר השם, כפי שדווח גם ב-M01-c1/M01-c52.
-5. `list_deployments` מאשר שהפריסה החיה כיום היא `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`
-   (`a388118f1`, `READY`, `target=production`) — לא זזה. HEAD (`99b2079cb6`)
-   נמצא 70 קומיטים אחריה (`git rev-list --count a388118f1..HEAD`).
-
-**מסקנה:** אין DNS BLOCKER לכתוב — הדומיין עובד. החוסם היחיד הוא חוסם 2
-הקיים (סביבת Cardcom בפרודקשן), עכשיו עם ראיית פריסה טרייה מה-MCP במקום
-REST גולמי. אין פעולה אסורה בוצעה: לא נקרא/נכתב ערך סוד, לא שונה env,
-ה-deploy עצמו הוא הפעולה שהפריט ביקש לבצע ("להריץ... deploy") וכבר בוצעה
-פעמיים בעבר (M01-c1, M01-c52) באותו אופן. עודכן חוסם 2 למטה עם המספרים
-הטריים.
-
-**שערים:** אין שינוי קוד (בדיקת production בלבד) — `pnpm
-type-check`/`lint`/`test`/`build` לא נדרשו, כמו בפריטי "אין שינוי קוד"
-קודמים (M08-c52, M09-c52 וכו'). אין שער חזותי נדרש (לא UI).
-
-**קבצים:** `STATE.md` בלבד.
+DNS עדיין תקין (200 עם תוכן אמיתי, NS `vercel-dns.com` תקין). פריסת HEAD
+(`99b2079cb6`) נוסתה דרך כלי ה-Vercel MCP (`create_deployment`, לא REST
+גולמי) וסורבה שוב באותו `BUILD_UTILS_SPAWN_1` (סביבת Cardcom חסרה
+בפרודקשן, `ALLOW_INCOMPLETE_ENV` עדיין מוגדר). פרודקשן נשאר `a388118f1`,
+70 קומיטים מאחורי HEAD. אין שינוי קוד, אין שער נדרש.
 
 ## M18-c52 - DONE (29.09): פירוט מלא בארכיון
 
