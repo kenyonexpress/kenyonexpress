@@ -1,7 +1,50 @@
-RESUME FROM: M12-c58
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c58)
+RESUME FROM: M13-c58
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c58)
 
 ## המשך מ:
+
+**M12-c58 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c57.** משימת התור: לוודא
+metadata, canonical, og, schema.org Product+Offer בדפי מוצר, טריות
+sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם: `git log
+3ea897906..HEAD` (מאז המדידה הקודמת, M12-c57) מחזיר 11 קומיטים
+(M13-c57..M11-c58), כולם תיעוד/מדידה/תלות/טסטים (נגישות, כיסוי
+`refund-wallet.ts`, backlog/state, route audit, Lighthouse, DB
+advisors, תלות `aws-sdk` מינור, שער ירוק, שער חזותי, בדיקת פרודקשן):
+`git diff --stat 3ea897906..HEAD -- src/app/sitemap* src/app/robots*
+'**/metadata*' '**/*schema*' '**/*seo*' src/lib/seo* 'src/app/**/layout.tsx'
+'src/app/**/page.tsx'` חוזר ריק — **אפס קומיט נגע בקוד SEO**.
+
+נמדד בכל זאת מחדש מול build אמיתי (`.next` התואם בדיוק ל-HEAD
+`a1dd26ac2`, נבנה תחת M11-c58, `pnpm start` על פורט 3317):
+- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
+  לדומיין הנכון.
+- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
+  regions/suppliers).
+- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c57), חמישה ערכי
+  `lastmod` שונים בפועל — טריות אמיתית, לא מזויפת.
+- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
+  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
+  height/alt)/type`, JSON-LD `Product` (מחיר `49.50`, `priceCurrency
+  ILS`, `brand`, `category`, `image`) + `Offer` (`availability
+  InStock`, `seller`, `priceSpecification`) + `BreadcrumbList` (3
+  שלבים), אפס `<meta name="robots">` (מוצר פעיל, לא `noindex`).
+- דף הבית: `title`, `canonical`, `og:*`, JSON-LD `WebSite`+`SearchAction`+
+  `Organization`, שניהם תקינים.
+- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
+  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
+  מ-M12-c57.
+
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
+608/608 קבצים 7273/7285 (12 skipped, זהה ל-M11-c58), `build`: נעשה
+שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD (נבנה תחת M11-c58, אומת חי
+דרך `pnpm start` על פורט 3317), לא נבנה מחדש כדי לא להתחרות במשאבים
+עם סשנים מקבילים (load average 11.38 בזמן המדידה, ראו
+`concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
+**קובץ יחיד שונה: `STATE.md`.**
+
+## M11-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
 
 **M11-c58 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
 רביעית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
@@ -40,62 +83,21 @@ skipped, זהה). `build`: נעשה שימוש ב-`.next` הקיים התואם 
 `concurrent-worktree-builds-oom`). אין שינוי UI, אין שער חזותי נדרש.
 **קובץ יחיד שונה: `STATE.md`.**
 
-## M09-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
-
-**M09-c58 - STATE CLEAN (30.09): אפס פריט בר-ביצוע לסוכן קוד.** משימת
-התור: "State cleanup: take the single highest-impact open item listed in
-STATE.md that a code agent can complete without Ofir... If none is left
-write STATE CLEAN." אפס דריפט מ-M08-c58 (`e12bac3c8`): `git status`
-נקי, `HEAD` לא זז, שלושת המונים נבדקו ישירות ותואמים — `migrations/pending/*.sql`
-עדיין **59** קבצים (זהה), `git rev-list --count a388118f1..HEAD` עלה
-ל-**165** (git-only, פער-ספירה גרידא), `git stash list` עדיין **32**.
-שני המקורות שהמשימה מפנה אליהם — `docs/BACKLOG.md` (15 סעיפים) וסעיף
-"חוסמים פתוחים" למטה (13 סעיפים) — כבר עברו בדיקה ממצה ב-M08-c58 ובכל
-מחזור לפניו: כל אחד מהם הוא DNS/Vercel env/סוד/אישור פריסת פרודקשן/אישור
-מיגרציה על פרודקשן/הכרעה עסקית על הקטלוג/מחיקת נתונים — כולם חסומים
-לפי `CLAUDE.md` §"ארבעת המצבים היחידים" ו-§"חוקים קבועים". אין ביניהם
-אף אחד ש"סוכן קוד יכול להשלים בלי אופיר". שערים הורצו במלואם לאימות
-(לא רק נקראו מ-M08-c58): `type-check` נקי, `lint` נקי (`biome` + כל
-תשעת השערים המשניים), `test` 608/608 קבצים 7272/7284 (12 skipped, זהה),
-`build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). קובץ
-יחיד שונה: `STATE.md`.
-
-## M08-c58 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md` אחרי הכיווץ למטה)
-
-**M08-c58 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
-בידי הסוכן.** משימת התור: "Backlog: take the single highest-impact open
-phase 1 item from `docs/BACKLOG.md`, skipping deferred and phase 2
-items." `docs/BACKLOG.md` (עודכן לאחרונה ב-M15-c57, `e636a64f9`) עדיין
-מחזיק 15 סעיפים, אותו סדר, אפס כפילות, אפס סעיף חדש — כל ה-15 הם פעולות
-שהמסמך עצמו מציין במפורש ש"אין דבר כאן שסוכן רשאי לבצע לבד" (DNS
-ברשם, ‏Vercel env/סודות, אישור פריסת פרודקשן, אישור מיגרציה על
-פרודקשן, אישורי Cardcom אמיתיים, הכרעת קטלוג עסקית, מחיקת נתונים, ערך
-שרק אופיר מחזיק). `docs/MIGRATION-BACKLOG.md` מוחלף רשמית ("Superseded
-2026-09-01", כל המיגרציות מוחלות, הפנקס ריק). `docs/POST-LAUNCH-BACKLOG.md`
-הוא "everything deliberately deferred" מיזמו — לא תור פעיל, ונדחה
-במפורש מהיקף המשימה ("skipping deferred").
-
-בדיקת דריפט מ-M08-c57 (`c16b95c3e`): `git log --oneline c16b95c3e..HEAD`
-מחזיר שבעה קומיטים (M01-c58..M07-c58), כולם תיעוד/מדידה/תלויות
-(בדיקת פרודקשן, שער חזותי, שער ירוק, תלות `aws-sdk` מינור, ‏DB
-advisors, ‏Lighthouse, route audit) — אפס שינוי ב-`docs/BACKLOG.md`
-עצמו ואפס תוספת לתור. שלושת המונים שהרשימה תלויה בהם נבדקו ישירות:
-`migrations/pending/*.sql` עדיין 59 קבצים (18-הרשימה-שבסעיף-5 בתוכם, ללא
-תוספת), `git rev-list --count a388118f1..HEAD` עלה ל-**164** (git-only,
-תואם את חוסם 2 למטה), `git stash list` עדיין **32** (ללא שינוי). אין
-פריט בר-ביצוע לסוכן. שערים: `type-check` נקי, `lint` נקי, `test`
-608/608 קבצים 7272/7284 (12 skipped, זהה), `build` `exit 0`. אין שינוי
-קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`**
-(פלוס `docs/STATE-ARCHIVE.md` — סעיפי M06-c57..M01-c55, שכולם כבר
-"ארכיון מלא" שם, כווצו לשורת סיכום אחת כדי לשמור על תקרת 300 שורות).
-
-## M10-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M10-c58, M09-c58, M08-c58, M07-c58, M06-c58, M05-c58, M04-c58, M03-c58, M02-c58, M01-c58, M18-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
 M10-c58: כיסוי טסטים, `refund-wallet.ts` 93.75%→100% ענפים. הענף החסר
 היה הגנה על ערך `RefundState` לא מוכר (`?? []`), נוסף טסט אחד
 (`'archived' as RefundState`). שאר חמש הקטגוריות הקריטיות כבר היו
 93-100%; RLS helpers נמצא ללא מודול מקור (טסטים על JSON סטטי בלבד).
 `type-check`/`lint`/`test` (7272→7273/7285)/`build` ירוקים.
+
+M09-c58: STATE CLEAN, אפס פריט בר-ביצוע לסוכן קוד — שני המקורות
+(`docs/BACKLOG.md` 15 סעיפים, "חוסמים פתוחים" 13 סעיפים) כולם
+DNS/Vercel env/סוד/אישור פריסה/אישור מיגרציה/הכרעה עסקית, חסומים לפי
+כללי `CLAUDE.md`. M08-c58: BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
+בידי הסוכן — `docs/BACKLOG.md` עדיין 15 סעיפים אותו סדר, אפס דריפט
+מ-M08-c57. שניהם `type-check`/`lint`/`test`/`build` ירוקים, אפס שינוי
+קוד.
 
 M07-c58: route audit נמדד שוב, 241 שורות, אפס כשל אמיתי, אפס דלתא קוד
 שנוגעת במסלול (`route-audit-recipe-and-hydration-dates`): 226 טסטים

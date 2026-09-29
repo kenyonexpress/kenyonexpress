@@ -34,6 +34,55 @@ branches, 5/5 functions, 15/15 lines). שערים על כל הריפו: `type-ch
 אין שער חזותי נדרש. קובץ יחיד שונה מלבד `STATE.md`:
 `src/server/payments/refund-wallet.test.ts`.
 
+## M09-c58 (הועבר מ-STATE.md ב-M12-c58, לשמירה על תקרת 300 שורות)
+
+**M09-c58 - STATE CLEAN (30.09): אפס פריט בר-ביצוע לסוכן קוד.** משימת
+התור: "State cleanup: take the single highest-impact open item listed in
+STATE.md that a code agent can complete without Ofir... If none is left
+write STATE CLEAN." אפס דריפט מ-M08-c58 (`e12bac3c8`): `git status`
+נקי, `HEAD` לא זז, שלושת המונים נבדקו ישירות ותואמים — `migrations/pending/*.sql`
+עדיין **59** קבצים (זהה), `git rev-list --count a388118f1..HEAD` עלה
+ל-**165** (git-only, פער-ספירה גרידא), `git stash list` עדיין **32**.
+שני המקורות שהמשימה מפנה אליהם — `docs/BACKLOG.md` (15 סעיפים) וסעיף
+"חוסמים פתוחים" למטה (13 סעיפים) — כבר עברו בדיקה ממצה ב-M08-c58 ובכל
+מחזור לפניו: כל אחד מהם הוא DNS/Vercel env/סוד/אישור פריסת פרודקשן/אישור
+מיגרציה על פרודקשן/הכרעה עסקית על הקטלוג/מחיקת נתונים — כולם חסומים
+לפי `CLAUDE.md` §"ארבעת המצבים היחידים" ו-§"חוקים קבועים". אין ביניהם
+אף אחד ש"סוכן קוד יכול להשלים בלי אופיר". שערים הורצו במלואם לאימות
+(לא רק נקראו מ-M08-c58): `type-check` נקי, `lint` נקי (`biome` + כל
+תשעת השערים המשניים), `test` 608/608 קבצים 7272/7284 (12 skipped, זהה),
+`build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). קובץ
+יחיד שונה: `STATE.md`.
+
+## M08-c58 (הועבר מ-STATE.md ב-M12-c58, לשמירה על תקרת 300 שורות)
+
+**M08-c58 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש, אפס פריט שלב 1
+בידי הסוכן.** משימת התור: "Backlog: take the single highest-impact open
+phase 1 item from `docs/BACKLOG.md`, skipping deferred and phase 2
+items." `docs/BACKLOG.md` (עודכן לאחרונה ב-M15-c57, `e636a64f9`) עדיין
+מחזיק 15 סעיפים, אותו סדר, אפס כפילות, אפס סעיף חדש — כל ה-15 הם פעולות
+שהמסמך עצמו מציין במפורש ש"אין דבר כאן שסוכן רשאי לבצע לבד" (DNS
+ברשם, ‏Vercel env/סודות, אישור פריסת פרודקשן, אישור מיגרציה על
+פרודקשן, אישורי Cardcom אמיתיים, הכרעת קטלוג עסקית, מחיקת נתונים, ערך
+שרק אופיר מחזיק). `docs/MIGRATION-BACKLOG.md` מוחלף רשמית ("Superseded
+2026-09-01", כל המיגרציות מוחלות, הפנקס ריק). `docs/POST-LAUNCH-BACKLOG.md`
+הוא "everything deliberately deferred" מיזמו — לא תור פעיל, ונדחה
+במפורש מהיקף המשימה ("skipping deferred").
+
+בדיקת דריפט מ-M08-c57 (`c16b95c3e`): `git log --oneline c16b95c3e..HEAD`
+מחזיר שבעה קומיטים (M01-c58..M07-c58), כולם תיעוד/מדידה/תלויות
+(בדיקת פרודקשן, שער חזותי, שער ירוק, תלות `aws-sdk` מינור, ‏DB
+advisors, ‏Lighthouse, route audit) — אפס שינוי ב-`docs/BACKLOG.md`
+עצמו ואפס תוספת לתור. שלושת המונים שהרשימה תלויה בהם נבדקו ישירות:
+`migrations/pending/*.sql` עדיין 59 קבצים (18-הרשימה-שבסעיף-5 בתוכם, ללא
+תוספת), `git rev-list --count a388118f1..HEAD` עלה ל-**164** (git-only,
+תואם את חוסם 2 למטה), `git stash list` עדיין **32** (ללא שינוי). אין
+פריט בר-ביצוע לסוכן. שערים: `type-check` נקי, `lint` נקי, `test`
+608/608 קבצים 7272/7284 (12 skipped, זהה), `build` `exit 0`. אין שינוי
+קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`**
+(פלוס `docs/STATE-ARCHIVE.md` — סעיפי M06-c57..M01-c55, שכולם כבר
+"ארכיון מלא" שם, כווצו לשורת סיכום אחת כדי לשמור על תקרת 300 שורות).
+
 ## M06-c58 (הועבר מ-STATE.md ב-M07-c58, לשמירה על תקרת 300 שורות)
 
 **M06-c58 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
