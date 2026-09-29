@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c53 - DONE (29.09): שער נתיבים מלא נמדד שוב, 241 נתיבים, 0 FAIL, אפס תיקון נדרש
+
+**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
+נקראו במלואם. M07-c1 (25.09) ו-M07-c52 (29.09) כבר ביצעו את אותה מדידה
+בדיוק דרך אותו מתכון (`e2e/route-audit.spec.ts`, ראה גם זיכרון
+"route-audit-recipe-and-hydration-dates"); הוחלט לחזור על המדידה במקום
+להניח שהיא עדיין נכונה, כי ה-item דורש עדות טרייה בפועל.
+
+**מה נמדד:**
+1. `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3488 pnpm
+   build` -> `exit 0`, "Compiled successfully".
+2. `pnpm start -p 3488` מאותה סביבה; `curl` אישר `200` על `/` ועל
+   `/product/barbecue-2` לפני המדידה.
+3. שש חתיכות (`--grep`) של `e2e/route-audit.spec.ts` הורצו במקביל,
+   `E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il`, `E2E_FORWARDED_FOR`
+   שונה לכל חתיכה (כדי לא לפגוע במגבלת הקצב של login), כולן כותבות
+   ל-`ROUTE_AUDIT_REPORT=/tmp/route-audit.jsonl` משותף: `"anon /"`,
+   `"GET /|route audit: supplier|anon dynamic"`, `"route audit:
+   customer"`, `"admin /admin$|admin /admin/(a|b|c|d)"`,
+   `"(f|g|h|i|o|p|q|r)"`, `"(s|u|v|w)|admin detail pages"`. כל שש
+   הריצות: `passed`, 0 `failed`, 0 `skipped` (59/83/25/23/226/226).
+4. הקובץ הגולמי (681 שורות) ואחרי דה-דופ לפי (role, path) (241 שורות
+   ייחודיות): 239 PASS, 2 NO DATA (`customer /account/tickets/[id]`,
+   `admin /admin/discounts/[id]` — רשימות בלי מה לקשר, לפי עיצוב
+   הבדיקה), **0 FAIL בשני הקבצים**, 0 שגיאת קונסולה, 0 אזהרת הידרציה.
+   שורות עם `rtl=None` (כ-70) הן כולן נתיבי `/api/*`, `/sitemap*`,
+   `robots.txt`, `manifest.webmanifest`, `opengraph-image` וכדומה —
+   תגובות שאינן HTML, מחוץ לבדיקת RTL לפי עיצוב הבדיקה עצמה; כל דף HTML
+   אמיתי חזר `rtl=true`.
+5. שרת הבדיקה נעצר (`lsof`+`kill`), פורט 3488 אומת פנוי, כל קבצי
+   `/tmp/route-audit.jsonl` ו-`/tmp/chunk*.log` נמחקו.
+
+**מסקנה:** אפס תיקון fixable — 0 FAIL, 0 שגיאה, 0 אזהרה, RTL תקין בכל
+דף HTML. תוצאה דומה ל-M07-c52 (244 שורות, 239 PASS / 5 NO DATA / 0
+FAIL) בהפרש קטן במספר ה-NO DATA/שורות שנספרו, ללא רגרסיה איכותית.
+
+**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 12 שערי תוכן),
+`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0` (אותו build ששימש
+למדידה עצמה). אין שינוי קוד יישומי, אין שער חזותי נדרש (אין שינוי UI).
+
+**קבצים:** `STATE.md` בלבד.
+
 ## M06-c53 - DONE (29.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+, אפס תיקון נדרש
 
 **מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`

@@ -1,70 +1,45 @@
-RESUME FROM: M09-c53
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c53)
+RESUME FROM: M10-c53
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c53)
 
 ## המשך מ:
 
-M08-c53: **BACKLOG EMPTY**, נמדד בפעם השתים-עשרה. `docs/BACKLOG.md`
-(109 שורות, לא עודכן מ-M18-c52) נקרא במלואו: 15 הסעיפים זהים בסדר
-ובתוכן ל-M08-c52, אפס פריט חדש, אפס שינוי (`git log -5 -- docs/BACKLOG.md`
-מלמד ש-63cbf363c הוא העדכון האחרון). כל אחד מ-15 הסעיפים נבדק מול תנאי
-העצירה ב-`CLAUDE.md`: DNS (סעיף 1, RESOLVED, אין פעולה), `CRON_SECRET`
-וסביבת Vercel (2, 3, 6, 9) — סוד/env של Vercel, אסור; פריסת HEAD (4) —
-push לפרודקשן, אסור; מיגרציות ממתינות (5) — migration על פרודקשן בלי
-אישור, אסור; הכרעת קטלוג (7) — הכרעת מפעיל מפורשת, לא אוטומטית; רוטציית
-מפתח (8) — אסור לרוטט סוד; R2 (10) — חשבון Cloudflare חיצוני, לא בידי
-הסוכן; `cron-jobs.json`/`main` (11) — נפתר מעצמו במיזוג ל-`main`, לא
-פעולה כרגע; `dns-watch.sh` (12) — בדיקה בלבד; ח.פ (13) — ערך שרק אופיר
-מחזיק; כניסה בטלפון (14) — סוד/env של Vercel + הגדרת ספק SMS; stashes
-(15) — מחיקת נתונים בלי אישור, אסור. **אפס פריט בר-ביצוע לסוכן, כמו
-ב-11 המדידות הקודמות (M08-c1..M08-c52).** גם `docs/MIGRATION-BACKLOG.md`
-(ריק, מוחל במלואו) ו-`docs/POST-LAUNCH-BACKLOG.md` (כולו דחיות מנומקות,
-כולל ארבעה סעיפי PHASE2 מפורשים) נבדקו ואינם מוסיפים פריט. שערים: כל
-ארבעת השערים ירוקים במפורש בפריט הזה — `type-check` נקי, `lint` נקי
-(biome + 12 שערי תוכן, i18n 627/627), `test` 605/7195 (12 skipped, זהה),
-`build` `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
-**קבצים: `STATE.md` בלבד.**
+M09-c53: **STATE CLEAN, backlog re-verified with a direct check.** המשימה
+היתה למצוא את פריט התור הפתוח בעל ההשפעה הגבוהה ביותר שסוכן קוד יכול
+לסגור בלי אופיר. `CLAUDE.md`, `STATE.md` (כולל "חוסמים פתוחים", 12 סעיפים)
+ו-`docs/BACKLOG.md` (15 סעיפים) נקראו במלואם; `git log -3 -- docs/BACKLOG.md
+docs/POST-LAUNCH-BACKLOG.md docs/MIGRATION-BACKLOG.md` אישר שאף אחד משלושת
+הקבצים לא זז מאז 63cbf363c (M15-c52) — אין דריפט. מעבר לחזרה על בדיקת
+M08-c53, נעשה מעבר עצמאי נוסף: `grep` על `TODO|FIXME|XXX` בכל `src/`
+(19 תוצאות, כולן placeholder-י UI/הערות תיעוד לגיטימיות, לא קוד חסר),
+`grep` על `test.skip`/`it.todo` תחת `e2e/` (כל דילוג מותנה בדגל סביבה,
+seed חסר או fixture — לא באג), ו-`docs/POST-LAUNCH-BACKLOG.md` נקרא
+במלואו (כל סעיף הוא דחייה מנומקת עם תאריך והחלטה, לא פריט שנשכח).
+כל 12 החוסמים ב-STATE.md וכל 15 סעיפי BACKLOG.md נבדקו שוב מול תנאי
+העצירה ב-`CLAUDE.md`: כולם env/secret של Vercel, migration על פרודקשן,
+הכרעת מפעיל מפורשת (קטלוג), חשבון Cloudflare חיצוני, או ערך שרק אופיר
+מחזיק. **אפס פריט בר-ביצוע לסוכן — הפעם השלוש-עשרה ברציפות
+(M08-c1..M08-c53, ועכשיו M09-c53 בבדיקה ישירה משלו).** שערים: כל ארבעת
+השערים ירוקים — `type-check` נקי, `lint` נקי (biome + 12 שערי תוכן, i18n
+627/627), `test` 605/605 קבצים, 7195/7207 (12 skipped, זהה), `build`
+`exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קבצים:
+`STATE.md` ו-`docs/STATE-ARCHIVE.md` בלבד** (ארכוב M07-c53 לשמירה על
+תקרת 300 השורות).
 
-## M07-c53 - DONE (29.09): שער נתיבים מלא נמדד שוב, 241 נתיבים, 0 FAIL, אפס תיקון נדרש
+## M08-c53 - DONE (29.09): BACKLOG EMPTY נמדד בפעם השתים-עשרה
 
-**מה נבדק:** `CLAUDE.md`, `STATE.md`, `docs/BACKLOG.md` ו-`git log -20`
-נקראו במלואם. M07-c1 (25.09) ו-M07-c52 (29.09) כבר ביצעו את אותה מדידה
-בדיוק דרך אותו מתכון (`e2e/route-audit.spec.ts`, ראה גם זיכרון
-"route-audit-recipe-and-hydration-dates"); הוחלט לחזור על המדידה במקום
-להניח שהיא עדיין נכונה, כי ה-item דורש עדות טרייה בפועל.
+`docs/BACKLOG.md` (109 שורות, לא עודכן מ-M18-c52) נקרא במלואו: 15 הסעיפים
+זהים בסדר ובתוכן ל-M08-c52, אפס פריט חדש. כל אחד מ-15 הסעיפים נבדק מול
+תנאי העצירה ב-`CLAUDE.md`: DNS (סעיף 1, RESOLVED), `CRON_SECRET` וסביבת
+Vercel (2, 3, 6, 9), פריסת HEAD (4), מיגרציות ממתינות (5), הכרעת קטלוג
+(7), רוטציית מפתח (8), R2 (10), `cron-jobs.json`/`main` (11),
+`dns-watch.sh` (12), ח.פ (13), כניסה בטלפון (14), stashes (15) — כולם
+חוסמים לפי CLAUDE.md. שערים ירוקים (605/7195, `exit 0`). אין שינוי קוד.
 
-**מה נמדד:**
-1. `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3488 pnpm
-   build` -> `exit 0`, "Compiled successfully".
-2. `pnpm start -p 3488` מאותה סביבה; `curl` אישר `200` על `/` ועל
-   `/product/barbecue-2` לפני המדידה.
-3. שש חתיכות (`--grep`) של `e2e/route-audit.spec.ts` הורצו במקביל,
-   `E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il`, `E2E_FORWARDED_FOR`
-   שונה לכל חתיכה (כדי לא לפגוע במגבלת הקצב של login), כולן כותבות
-   ל-`ROUTE_AUDIT_REPORT=/tmp/route-audit.jsonl` משותף: `"anon /"`,
-   `"GET /|route audit: supplier|anon dynamic"`, `"route audit:
-   customer"`, `"admin /admin$|admin /admin/(a|b|c|d)"`,
-   `"(f|g|h|i|o|p|q|r)"`, `"(s|u|v|w)|admin detail pages"`. כל שש
-   הריצות: `passed`, 0 `failed`, 0 `skipped` (59/83/25/23/226/226).
-4. הקובץ הגולמי (681 שורות) ואחרי דה-דופ לפי (role, path) (241 שורות
-   ייחודיות): 239 PASS, 2 NO DATA (`customer /account/tickets/[id]`,
-   `admin /admin/discounts/[id]` — רשימות בלי מה לקשר, לפי עיצוב
-   הבדיקה), **0 FAIL בשני הקבצים**, 0 שגיאת קונסולה, 0 אזהרת הידרציה.
-   שורות עם `rtl=None` (כ-70) הן כולן נתיבי `/api/*`, `/sitemap*`,
-   `robots.txt`, `manifest.webmanifest`, `opengraph-image` וכדומה —
-   תגובות שאינן HTML, מחוץ לבדיקת RTL לפי עיצוב הבדיקה עצמה; כל דף HTML
-   אמיתי חזר `rtl=true`.
-5. שרת הבדיקה נעצר (`lsof`+`kill`), פורט 3488 אומת פנוי, כל קבצי
-   `/tmp/route-audit.jsonl` ו-`/tmp/chunk*.log` נמחקו.
+## M07-c53 - DONE (29.09): פירוט מלא בארכיון
 
-**מסקנה:** אפס תיקון fixable — 0 FAIL, 0 שגיאה, 0 אזהרה, RTL תקין בכל
-דף HTML. תוצאה דומה ל-M07-c52 (244 שורות, 239 PASS / 5 NO DATA / 0
-FAIL) בהפרש קטן במספר ה-NO DATA/שורות שנספרו, ללא רגרסיה איכותית.
-
-**שערים:** `pnpm type-check` נקי, `pnpm lint` נקי (biome + 12 שערי תוכן),
-`pnpm test` 605/7195 (זהה), `pnpm build` `exit 0` (אותו build ששימש
-למדידה עצמה). אין שינוי קוד יישומי, אין שער חזותי נדרש (אין שינוי UI).
-
-**קבצים:** `STATE.md` בלבד.
+שער נתיבים מלא נמדד שוב: 241 נתיבים ייחודיים, 239 PASS, 2 NO DATA
+(רשימות בלי מה לקשר), 0 FAIL, 0 שגיאת קונסולה, 0 אזהרת הידרציה. תוצאה
+דומה ל-M07-c52, ללא רגרסיה. אפס תיקון נדרש, אין שינוי קוד.
 
 ## M06-c53 - DONE (29.09): פירוט מלא בארכיון
 
