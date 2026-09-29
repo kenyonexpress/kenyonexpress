@@ -2,6 +2,42 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c57 (הועבר מ-STATE.md ב-M05-c57, לשמירה על תקרת 300 שורות)
+
+**M04-c57 - DONE (30.09): תחזוקת תלויות, שני עדכוני minor בטווח 0.x
+הוחלו (`@anthropic-ai/sdk` 0.122.0→0.129.0, `@supabase/ssr` 0.10.3→0.12.7),
+`pnpm audit` אפס חולשות לפני ואחרי.**
+המשימה: להריץ `pnpm audit` ו-`pnpm outdated`, להחיל עדכוני patch/minor
+ששומרים type-check/test/build ירוקים, לעולם לא major, לתעד ב-STATE.md.
+
+- `pnpm audit`: אפס חולשות, לפני ואחרי השינוי.
+- `pnpm outdated`: 16 חבילות מיושנות, אך ל-14 מהן `wanted == current`
+  (הטווח ב-`package.json` כבר נעול על ה-patch העדכני) וה-`latest` הוא
+  קפיצת major אמיתית (`@biomejs/biome` 1→2, `@hookform/resolvers` 3→5,
+  `@sentry/nextjs`/`@sentry/node` 10→11, `@testing-library/jest-dom` 6→7,
+  `@types/node` 20→26, `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8`
+  4→5, `jsdom` 25→30, `lint-staged` 15→17, `tailwind-merge` 2→3,
+  `typescript` 5→7, `vitest` 4→5, `zod` 3→4) — כולן נדחו, אסור major.
+- שתי החבילות הנותרות הן `0.x` עם עלייה בספרה השנייה (`minor` לפי
+  semver קפדני, ה-`major` נשאר `0` בשתיהן): `@anthropic-ai/sdk`
+  0.122.0→0.128.0/0.129.0 (גרסה חדשה יצאה תוך כדי הפריט; הוחל 0.129.0)
+  ו-`@supabase/ssr` 0.10.3→0.12.7. שתיהן היו מחוץ לטווח ה-caret
+  הקיים (`^0.x.y` על חבילת `0.x` נועל patch בלבד), ולכן `wanted`
+  זהה ל-`current` ב-`pnpm outdated` — נדרשה עריכת `package.json`
+  בפועל, לא `pnpm update` רגיל.
+- **`@anthropic-ai/sdk`**: שימוש יחיד ב-`src/server/ai/client.ts`,
+  גרסאות רציפות בין 0.122 ל-0.129 (אין דילוג), הוחל וסומן safe.
+- **`@supabase/ssr`**: שימוש רחב וקריטי (עוגיות אימות, לקוח/שרת/proxy,
+  11 קבצים כולל טסטים). קיים דילוג בגרסאות שם החבילה
+  (0.10.3 → 0.12.0 ישירות, אין `0.11.x` שפורסמה) — נבדק במפורש לפני
+  ההחלה כי זה סימן סיכון. הוחל בכל זאת כי הבדיקה האמפירית (type-check,
+  lint, 608/608 קבצי טסט זהה במדויק ל-7242/7254, build עם 337/337
+  נתיבים ו-`exit 0`) יצאה נקייה בלי שום שינוי קוד נדרש.
+- **`pnpm build`**: אותן שורות `supabase.rls_denied`/`db.optional_
+  column_missing`/`phases.not_applied` תפעוליות שתועדו ב-M03-c57 —
+  זהות, לא רגרסיה חדשה.
+- **קבצים:** `package.json`, `pnpm-lock.yaml`, `STATE.md`.
+
 ## M03-c57 (הועבר מ-STATE.md ב-M04-c57, לשמירה על תקרת 300 שורות)
 
 **M03-c57 - DONE (29.09): שער ירוק, `type-check`/`lint`/`test`/`build` —

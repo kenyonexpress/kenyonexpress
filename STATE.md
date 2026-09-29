@@ -1,48 +1,56 @@
-RESUME FROM: M05-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c57)
+RESUME FROM: M06-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c57)
 
 ## המשך מ:
 
-**M04-c57 - DONE (30.09): תחזוקת תלויות, שני עדכוני minor בטווח 0.x
-הוחלו (`@anthropic-ai/sdk` 0.122.0→0.129.0, `@supabase/ssr` 0.10.3→0.12.7),
-`pnpm audit` אפס חולשות לפני ואחרי.**
-המשימה: להריץ `pnpm audit` ו-`pnpm outdated`, להחיל עדכוני patch/minor
-ששומרים type-check/test/build ירוקים, לעולם לא major, לתעד ב-STATE.md.
+**M05-c57 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם השביעית ברציפות
+דרך ה-management API (MCP דורש OAuth, לא זמין בסשן לא-אינטראקטיבי),
+44 WARN זהה שדה-שדה ל-M05-c56, אפס קובץ מיגרציה חדש נדרש.**
+המשימה: להריץ `get_advisors` (security+performance) דרך Supabase MCP
+בקריאה בלבד, לכתוב קובץ מיגרציה ב-`migrations/pending` לכל WARN חדש,
+לעדכן `docs/DB-SECURITY-MODEL.md` אם המספרים השתנו.
 
-- `pnpm audit`: אפס חולשות, לפני ואחרי השינוי.
-- `pnpm outdated`: 16 חבילות מיושנות, אך ל-14 מהן `wanted == current`
-  (הטווח ב-`package.json` כבר נעול על ה-patch העדכני) וה-`latest` הוא
-  קפיצת major אמיתית (`@biomejs/biome` 1→2, `@hookform/resolvers` 3→5,
-  `@sentry/nextjs`/`@sentry/node` 10→11, `@testing-library/jest-dom` 6→7,
-  `@types/node` 20→26, `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8`
-  4→5, `jsdom` 25→30, `lint-staged` 15→17, `tailwind-merge` 2→3,
-  `typescript` 5→7, `vitest` 4→5, `zod` 3→4) — כולן נדחו, אסור major.
-- שתי החבילות הנותרות הן `0.x` עם עלייה בספרה השנייה (`minor` לפי
-  semver קפדני, ה-`major` נשאר `0` בשתיהן): `@anthropic-ai/sdk`
-  0.122.0→0.128.0/0.129.0 (גרסה חדשה יצאה תוך כדי הפריט; הוחל 0.129.0)
-  ו-`@supabase/ssr` 0.10.3→0.12.7. שתיהן היו מחוץ לטווח ה-caret
-  הקיים (`^0.x.y` על חבילת `0.x` נועל patch בלבד), ולכן `wanted`
-  זהה ל-`current` ב-`pnpm outdated` — נדרשה עריכת `package.json`
-  בפועל, לא `pnpm update` רגיל.
-- **`@anthropic-ai/sdk`**: שימוש יחיד ב-`src/server/ai/client.ts`,
-  גרסאות רציפות בין 0.122 ל-0.129 (אין דילוג), הוחל וסומן safe.
-- **`@supabase/ssr`**: שימוש רחב וקריטי (עוגיות אימות, לקוח/שרת/proxy,
-  11 קבצים כולל טסטים). קיים דילוג בגרסאות שם החבילה
-  (0.10.3 → 0.12.0 ישירות, אין `0.11.x` שפורסמה) — נבדק במפורש לפני
-  ההחלה כי זה סימן סיכון. הוחל בכל זאת כי הבדיקה האמפירית (type-check,
-  lint, 608/608 קבצי טסט זהה במדויק ל-7242/7254, build עם 337/337
-  נתיבים ו-`exit 0`) יצאה נקייה בלי שום שינוי קוד נדרש.
-- **`pnpm build`**: אותן שורות `supabase.rls_denied`/`db.optional_
-  column_missing`/`phases.not_applied` תפעוליות שתועדו ב-M03-c57 —
-  זהות, לא רגרסיה חדשה.
-- **קבצים:** `package.json`, `pnpm-lock.yaml`, `STATE.md`.
+- **Supabase MCP:** נבדק דרך `ToolSearch`, לא נמצא (מופיע ברשימת "דורש
+  הרשאה", אין OAuth בסשן לא-אינטראקטיבי) — אותה נקודה שנבדקה ב-0א..0ו
+  ב-`DB-SECURITY-MODEL.md`. מסלול חלופי מבוסס, קריאה בלבד: טוקן ה-CLI
+  מה-keychain (`security find-generic-password -s "Supabase CLI" -w`,
+  עטיפת `go-keyring-base64:` ואז פענוח base64), שני `GET
+  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+  {security,performance}`, `200`/`200`. הטוקן לא נדפס ולא נשמר לקובץ;
+  קבצי הפלט הזמניים ב-`/tmp/ke-advisors/` נמחקו בסוף הפריט.
+- **תוצאה, נספר בפועל מה-JSON (לא הועתק מ-STATE.md קודם):** אבטחה 28
+  ממצאים (4 `rls_enabled_no_policy` INFO, 2
+  `anon_security_definer_function_executable` WARN על
+  `is_admin`/`is_supplier_member`, 21
+  `authenticated_security_definer_function_executable` WARN, 1
+  `function_search_path_mutable` WARN על
+  `fn_wallet_entries_block_mutation`); ביצועים 197 ממצאים (14
+  `multiple_permissive_policies` WARN על אותן 11 טבלאות, 6
+  `auth_rls_initplan` WARN על אותן טבלאות, 167 `unused_index` INFO, 9
+  `unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute`
+  INFO). רשימת שמות הפונקציות/הטבלאות בכל WARN הושוותה שורה-שורה מול
+  0ו — זהה במדויק. **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.**
+- ארבעת הקבצים הממתינים שכבר מכסים את כל 44 ה-WARN עדיין קיימים ולא
+  נערכו: `migrations/pending/209_advisor_warnings.sql`,
+  `220_wallet_entries_search_path.sql`,
+  `245_single_permissive_policy_per_action.sql`,
+  `246_profiles_mfa_initplan.sql`. **אין קובץ מיגרציה חדש נדרש**, אין
+  WARN לא-מכוסה. שום דבר לא הוחל על פרודקשן.
+- `docs/DB-SECURITY-MODEL.md`: נוסף סעיף 0ז עם המדידה המלאה ותאריך
+  עדכון בראש הקובץ.
+- `type-check`/`lint`/`test` (608/608, 7242/7254)/`build` ירוקים, אפס
+  שינוי קוד מוצר.
+- **קבצים:** `docs/DB-SECURITY-MODEL.md`, `docs/STATE-ARCHIVE.md`,
+  `STATE.md`.
 
-## M03-c57, M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M04-c57, M03-c57, M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-M03-c57: שער ירוק, `type-check`/`lint`/`test`/`build` — כל הארבעה
-נקיים, אפס תיקון נדרש, זהה במהות ל-M03-c56. M02-c57: שער חזותי, בית
-ומוצר, שלושה רוחבים, אפס רגרסיה, זהה בדיוק ל-M02-c56. שניהם DONE, אפס
-שינוי UI. הועברו ב-M04-c57 לשמירה על תקרת 300 שורות.
+M04-c57: תחזוקת תלויות, שני עדכוני minor בטווח 0.x הוחלו
+(`@anthropic-ai/sdk`, `@supabase/ssr`), `pnpm audit` אפס חולשות. M03-c57:
+שער ירוק, `type-check`/`lint`/`test`/`build` — כל הארבעה נקיים, אפס
+תיקון נדרש, זהה במהות ל-M03-c56. M02-c57: שער חזותי, בית ומוצר, שלושה
+רוחבים, אפס רגרסיה, זהה בדיוק ל-M02-c56. שלושתם DONE, אפס שינוי UI.
+הועברו ב-M05-c57 לשמירה על תקרת 300 שורות.
 
 ## M18-c56, M17-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
