@@ -2,6 +2,53 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c57 (הועבר מ-STATE.md ב-M02-c57, לשמירה על תקרת 300 שורות)
+
+**M01-c57 - BLOCKED (29.09): בדיקת פרודקשן — DNS ו-HTTP תקינים, פריסת
+HEAD נשארת חסומה באותה סיבה בדיוק, לא נוסתה מחדש הפעם.** המשימה:
+build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני הדומיינים;
+אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן אין DNS
+BLOCKER:**
+
+- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
+  `ns2.vercel-dns.com`. `dig +short A kenyonexpress.co.il` ->
+  `64.29.17.65`/`64.29.17.1`. `dig +short A www.kenyonexpress.co.il`
+  -> `64.29.17.65`/`216.198.79.65`.
+- `curl -I https://kenyonexpress.co.il` -> **308** ל-`https://www.
+  kenyonexpress.co.il/`. `curl -I https://www.kenyonexpress.co.il` ->
+  **200**, HTML אמיתי (`lang="he" dir="rtl"`, CSP/HSTS תקינים,
+  `server: Vercel`).
+
+**פריסה: לא נוסתה מחדש הפעם, לפי כלל "goal שנתקע פעמיים — לדלג"
+(כבר הוחל ב-M01-c55 וב-M01-c56, זו הפעם השלישית עם אותו תנאי).**
+תנאי החסימה נבדק מחדש בפועל, לא הונח:
+
+- `vercel env ls production` (פרויקט `kenyonexpress`, CLI מקומי, קריאה
+  בלבד) מאשר `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/
+  `CARDCOM_API_PASSWORD` עדיין חסרים לגמרי מ-Production (קיימים שם רק
+  `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`) ו-`ALLOW_INCOMPLETE_ENV`
+  עדיין מוגדר — זהה למדידה ב-M01-c56. `grep` על
+  `scripts/deploy-preflight.mjs`/`src/lib/env.ts`/
+  `src/server/payments/invoices.ts` מאשר שהקוד עדיין קורא דווקא את
+  שלוש השמות החסרים, לא את השמות הקיימים.
+- `vercel ls --prod` מראה שלוש פריסות Production נכשלות (`Error`) ב-6
+  וב-10 השעות האחרונות ממקור אחר (לא הסשן הזה) — אותה שגיאת
+  `deploy-preflight` שוב, בלי תנאי חדש. `vercel inspect
+  kenyonexpress.co.il` מאשר הפריסה החיה עדיין `dpl_EMtv9KbPfdGq75J…`
+  מ-25.09 (`a388118f1`). HEAD כעת **140** קומיטים לפניו (`git
+  rev-list --count a388118f1..HEAD`, עלה מ-136 ב-M15-c56).
+
+**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
+במשימה):** `pnpm build` בפורגראונד, `exit 0`, כל המסלולים נבנו. HEAD
+תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד, לא הקוד.
+
+**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+`pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
+7242/7254 (12 skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד.
+
+**קבצים:** `docs/BACKLOG.md` (ספירת קומיטי חוסם 4 עודכנה ל-140),
+`docs/STATE-ARCHIVE.md` (M18-c56 הועבר לשם), `STATE.md` בלבד.
+
 ## M18-c56 (הועבר מ-STATE.md ב-M01-c57, לשמירה על תקרת 300 שורות)
 
 **M18-c56 - DONE (29.09): בדיקת אפס-פעילות בפעם השלישית, המחזור *לא*

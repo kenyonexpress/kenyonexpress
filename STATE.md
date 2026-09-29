@@ -1,52 +1,36 @@
-RESUME FROM: M02-c57
-Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c57)
+RESUME FROM: M03-c57
+Updated: 2026-09-29 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c57)
 
 ## המשך מ:
 
-**M01-c57 - BLOCKED (29.09): בדיקת פרודקשן — DNS ו-HTTP תקינים, פריסת
-HEAD נשארת חסומה באותה סיבה בדיוק, לא נוסתה מחדש הפעם.** המשימה:
-build+deploy לפרודקשן דרך Vercel, ואז `dig`/`curl` על שני הדומיינים;
-אם DNS נכשל — לתעד תחת DNS BLOCKER. **DNS לא נכשל, ולכן אין DNS
-BLOCKER:**
+**M02-c57 - DONE (29.09): שער חזותי, בית ומוצר, שלושה רוחבים —
+אפס רגרסיה, כל שש המדידות PASS מתחת ל-11%, זהה בדיוק ל-M02-c56.**
+המשימה: להריץ `scripts/compare.mjs` בפורגראונד ולחכות למספרים
+באותה הרצה, לתקן כל רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
 
-- `dig +short NS kenyonexpress.co.il` -> `ns1.vercel-dns.com`/
-  `ns2.vercel-dns.com`. `dig +short A kenyonexpress.co.il` ->
-  `64.29.17.65`/`64.29.17.1`. `dig +short A www.kenyonexpress.co.il`
-  -> `64.29.17.65`/`216.198.79.65`.
-- `curl -I https://kenyonexpress.co.il` -> **308** ל-`https://www.
-  kenyonexpress.co.il/`. `curl -I https://www.kenyonexpress.co.il` ->
-  **200**, HTML אמיתי (`lang="he" dir="rtl"`, CSP/HSTS תקינים,
-  `server: Vercel`).
-
-**פריסה: לא נוסתה מחדש הפעם, לפי כלל "goal שנתקע פעמיים — לדלג"
-(כבר הוחל ב-M01-c55 וב-M01-c56, זו הפעם השלישית עם אותו תנאי).**
-תנאי החסימה נבדק מחדש בפועל, לא הונח:
-
-- `vercel env ls production` (פרויקט `kenyonexpress`, CLI מקומי, קריאה
-  בלבד) מאשר `CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/
-  `CARDCOM_API_PASSWORD` עדיין חסרים לגמרי מ-Production (קיימים שם רק
-  `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`) ו-`ALLOW_INCOMPLETE_ENV`
-  עדיין מוגדר — זהה למדידה ב-M01-c56. `grep` על
-  `scripts/deploy-preflight.mjs`/`src/lib/env.ts`/
-  `src/server/payments/invoices.ts` מאשר שהקוד עדיין קורא דווקא את
-  שלוש השמות החסרים, לא את השמות הקיימים.
-- `vercel ls --prod` מראה שלוש פריסות Production נכשלות (`Error`) ב-6
-  וב-10 השעות האחרונות ממקור אחר (לא הסשן הזה) — אותה שגיאת
-  `deploy-preflight` שוב, בלי תנאי חדש. `vercel inspect
-  kenyonexpress.co.il` מאשר הפריסה החיה עדיין `dpl_EMtv9KbPfdGq75J…`
-  מ-25.09 (`a388118f1`). HEAD כעת **140** קומיטים לפניו (`git
-  rev-list --count a388118f1..HEAD`, עלה מ-136 ב-M15-c56).
-
-**בדיקת build מקומית כן רצה (כחלק מ"run the production build"
-במשימה):** `pnpm build` בפורגראונד, `exit 0`, כל המסלולים נבנו. HEAD
-תקין ובר-בנייה, החסימה היא סביבת Vercel Production בלבד, לא הקוד.
-
-**שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
-`pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
-7242/7254 (12 skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד.
-
-**קבצים:** `docs/BACKLOG.md` (ספירת קומיטי חוסם 4 עודכנה ל-140),
-`docs/STATE-ARCHIVE.md` (M18-c56 הועבר לשם), `STATE.md` בלבד.
+- **בדיקה מקדימה:** `git log --oneline 7274ff68f..HEAD -- src/app
+  src/components messages` (הקומיט של M02-c56 עד HEAD) ריק — אפס
+  קומיט נוגע ב-UI מאז המדידה הקודמת.
+- שרת build אמיתי (`PORT=3311 pnpm start`, נבנה על HEAD `ac2d73183`,
+  `.next/BUILD_ID` מהבנייה הטרייה שהורצה בסשן הזה — לא stale server).
+- **בית** (`--baseline 'refs/ke_live_{width}.png'`): **380 8.51% PASS,
+  768 9.02% PASS, 1440 3.95% PASS** — זהה בדיוק ל-M02-c56/M17-c55/
+  M02-c55, אין דריפט.
+- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`,
+  `--baseline='refs/electro_product_{width}.png'`): **380 5.61% PASS,
+  768 4.92% PASS, 1440 2.99% PASS** — זהה בדיוק ל-M02-c56.
+- **הערה על תזמון:** שתי הריצות (`--widths=380,768,1440` לכל דף)
+  חרגו מ-timeout ברירת המחדל של כלי ה-Bash (180 ש'/300 ש') ועברו
+  ל-background של הכלי עצמו; הסוכן חיכה למספרים בפועל דרך Monitor על
+  קובץ הפלט לפני שהמשיך — לא הוערך מספר, לא הסתיים הפריט לפני שהמספרים
+  נכתבו כאן. אותה הרצה יחידה, לא ריצה נפרדת שלא נצפתה.
+- **שערים (כל ארבעה הורצו בפועל בסשן הזה):** `pnpm type-check` נקי,
+  `pnpm lint` נקי (12 שערים, 2023 קבצים), `pnpm test` 608/608 קבצים
+  7242/7254 (12 skipped, זהה), `pnpm build` `exit 0`. אין שינוי קוד —
+  פריט מדידה בלבד.
+- **קבצים:** `docs/UI-PARITY-REPORT.md` (השער עצמו כותב שורה בכל
+  הרצה, שורות חדשות מהסשן הזה), `docs/STATE-ARCHIVE.md` (M01-c57
+  הועבר לשם), `STATE.md` בלבד.
 
 ## M18-c56 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
