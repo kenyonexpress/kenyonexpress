@@ -1,51 +1,48 @@
-RESUME FROM: M12-c57
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c57)
+RESUME FROM: M13-c57
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c57)
 
 ## המשך מ:
 
-**M11-c57 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
-השלישית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
-דף, לתקן כל הפרה `serious`/`critical`, לשמור `WCAG 2.1 AA`, ולרשום את
-המונה שנשאר. **אפס קומיט נגע בשטח הנגישות (CSS/JSX/routes/auth) מאז
-M11-c56** (29.09, `b16381a55`): שני הקומיטים היחידים שנגעו בקוד מאז הם
-תלויות minor (`a6183cca6`) וטסטים ל-`money-format.ts` (`f65b63176`),
-אף אחד לא ב-UI או ב-auth/middleware/rate-limit. **נמדד מחדש היום מול
-build אמיתי (`pnpm build` על HEAD `f65b63176`), דרך `pnpm start` על
-פורט 3314** (3313 תפוס ע"י סשן מקביל אחר, לא נגעו בו):
-- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
-  `--grep-invert=@writes` כמו ב-`ci.yml`): **‏72/74 עברו, 2 דולגו**
-  (ווידג'ט חיפוש שהוסר ב-D3, skip מכוון) — **‏0 הפרות**.
-- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
-  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, **‏0 הפרות** בשניהם.
-  תפקיד **אדמין: 57/57 דולגו** — **אותה שגיאה המדויקת שנמדדה ב-M11-c56**
-  (`page.waitForURL: Timeout 20000ms exceeded`, אומת ב-annotation של
-  הריצה), ואומת ישירות ש-`git log b16381a55..HEAD` על
-  `src/server/actions/auth`/`middleware.ts`/`rate-limit*`/`src/app/(auth)`
-  ריק לגמרי — כשל התחברות פרודקשן קיים מראש, לא רגרסיית נגישות ולא
-  רגרסיית קוד. לא נסובבה סיסמה (אסור לפי כללי הפרויקט).
-**המונה שנשאר (`serious`/`critical`, נמדד היום): ‏0.** מונה `moderate`
-פתוח ומתועד בכוונה כהחלטה: `target-size` (2.5.8, דרישת WCAG **2.2**
-ולא 2.1, מחוץ ליעד המוצהר) על שלוש נקודות הקרוסלה בבית, מתועד
-ב-`docs/A11Y-SWEEP-REPORT.md`. **אפס שינוי קוד** (אין הפרה לתקן): שערים
-`type-check` נקי, `lint` נקי (biome 2023 קבצים, 12 שערי תוכן ירוקים,
-i18n 627/627, locale 116/116), `pnpm test` 608/608 קבצים, 7272/7284
-(12 skipped) ירוקים ללא נגיעה, `build` הושלם ללא שגיאה. אין שינוי UI,
-אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
-`docs/STATE-ARCHIVE.md` — M10-c57 הועבר לתקרת 300 שורות).
+**M12-c57 - DONE (30.09): SEO — meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c56.** משימת התור: לוודא
+metadata, canonical, og, schema.org Product+Offer בדפי מוצר, טריות
+sitemap ו-robots, ולתקן דריפט. **אפס קומיט נגע בקוד SEO מאז M12-c56**
+(`9551fadd2`, 29.09): `git diff --stat 9551fadd2..HEAD -- src/app src/lib`
+מראה שינוי יחיד — `money-format.ts`+טסטים (M10-c57) — ולא נוגע ב-sitemap/
+robots/metadata/JSON-LD. נמדד מחדש מול build אמיתי (`pnpm build` על HEAD
+`3e82839c7`), דרך `pnpm start` על פורט 3315 (3312/3313 תפוסים ע"י סשנים
+מקבילים אחרים, לא נגעו בהם):
+- `robots.txt`: 11 שורות `Disallow` זהות לתיעוד, `Host`+`Sitemap`
+  לדומיין הנכון.
+- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
+  regions/suppliers).
+- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c56), `lastmod`
+  פר-מוצר משתנה בפועל (חמישה ערכים שונים נמדדו, לא תאריך בנייה קבוע) —
+  הטריות אמיתית, לא מזויפת.
+- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`
+  לדומיין הנכון, `og:title/description/url/locale/image(+type/width/
+  height/alt)/type`, JSON-LD `Product`+`Offer` (מחיר, מטבע, `availability`,
+  `seller`, `priceSpecification` להשוואת מחיר) ובלוק `BreadcrumbList`.
+- דף הבית: `title`, `canonical`, `og:*` ושני בלוקי JSON-LD, כולם תקינים.
+- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
+  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
+  מ-M12-c56.
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale 116/116), `test`
+608/608 קבצים, 7272/7284 (12 skipped) ירוקים, `build` הושלם ללא שגיאה.
+אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M11-c57 הועבר לתקרת 300 שורות).
 
-## M10-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+## M11-c57..M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-כיסוי טסטים, `money-format.ts`: 52.94/20.83/38.46 סטייטמנטס/ענפים/
-פונקציות ← **100/100/100/100**, 30 טסטים נוספו, פרמטר מת אחד
-(`withFraction`) הוסר. שאר חמש הקטגוריות הקריטיות (money, payment
-split, שתי מכונות המצבים, רפאנד, RLS helpers) כבר היו 93-100%.
-`type-check`/`lint`/`test` (7242→7272)/`build` ירוקים.
-
-## M09-c57, M08-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-שני STATE CLEAN רצופים: אין פריט יחיד בר-ביצוע לסוכן קוד בבאנר
-`docs/BACKLOG.md`, כל 15 הפריטים דורשים אופיר. שערים הורצו במלואם בשני
-הפריטים, זהה למדידה הקודמת. הועברו ב-M10-c57 לשמירה על תקרת 300 שורות.
+M11-c57: נגישות, axe אומתה מחדש בפעם השלישית, ‏0 הפרות `serious`/
+`critical` (אדמין 57/57 דילוג, כשל התחברות פרודקשן לא קשור לקוד),
+`moderate` אחד מתועד (`target-size`, WCAG 2.2). M10-c57: כיסוי טסטים,
+`money-format.ts` 52.94/20.83/38.46 ← **100/100/100/100**, פרמטר מת
+(`withFraction`) הוסר. M09-c57, M08-c57: שני STATE CLEAN רצופים, אין
+פריט בר-ביצוע לסוכן קוד ב-`docs/BACKLOG.md`. כולם `type-check`/`lint`/
+`test`/`build` ירוקים, אפס שינוי UI. הועברו ב-M12-c57 לשמירה על תקרת
+300 שורות.
 
 ## M06-c57..M02-c57 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

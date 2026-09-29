@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c57 (הועבר מ-STATE.md ב-M12-c57, לשמירה על תקרת 300 שורות)
+
+**M11-c57 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם
+השלישית, 0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל
+דף, לתקן כל הפרה `serious`/`critical`, לשמור `WCAG 2.1 AA`, ולרשום את
+המונה שנשאר. **אפס קומיט נגע בשטח הנגישות (CSS/JSX/routes/auth) מאז
+M11-c56** (29.09, `b16381a55`): שני הקומיטים היחידים שנגעו בקוד מאז הם
+תלויות minor (`a6183cca6`) וטסטים ל-`money-format.ts` (`f65b63176`),
+אף אחד לא ב-UI או ב-auth/middleware/rate-limit. **נמדד מחדש היום מול
+build אמיתי (`pnpm build` על HEAD `f65b63176`), דרך `pnpm start` על
+פורט 3314** (3313 תפוס ע"י סשן מקביל אחר, לא נגעו בו):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes` כמו ב-`ci.yml`): **‏72/74 עברו, 2 דולגו**
+  (ווידג'ט חיפוש שהוסר ב-D3, skip מכוון) — **‏0 הפרות**.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
+  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, **‏0 הפרות** בשניהם.
+  תפקיד **אדמין: 57/57 דולגו** — **אותה שגיאה המדויקת שנמדדה ב-M11-c56**
+  (`page.waitForURL: Timeout 20000ms exceeded`, אומת ב-annotation של
+  הריצה), ואומת ישירות ש-`git log b16381a55..HEAD` על
+  `src/server/actions/auth`/`middleware.ts`/`rate-limit*`/`src/app/(auth)`
+  ריק לגמרי — כשל התחברות פרודקשן קיים מראש, לא רגרסיית נגישות ולא
+  רגרסיית קוד. לא נסובבה סיסמה (אסור לפי כללי הפרויקט).
+**המונה שנשאר (`serious`/`critical`, נמדד היום): ‏0.** מונה `moderate`
+פתוח ומתועד בכוונה כהחלטה: `target-size` (2.5.8, דרישת WCAG **2.2**
+ולא 2.1, מחוץ ליעד המוצהר) על שלוש נקודות הקרוסלה בבית, מתועד
+ב-`docs/A11Y-SWEEP-REPORT.md`. **אפס שינוי קוד** (אין הפרה לתקן): שערים
+`type-check` נקי, `lint` נקי (biome 2023 קבצים, 12 שערי תוכן ירוקים,
+i18n 627/627, locale 116/116), `pnpm test` 608/608 קבצים, 7272/7284
+(12 skipped) ירוקים ללא נגיעה, `build` הושלם ללא שגיאה. אין שינוי UI,
+אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md` — M10-c57 הועבר לתקרת 300 שורות).
+
 ## M10-c57 (הועבר מ-STATE.md ב-M11-c57, לשמירה על תקרת 300 שורות)
 
 **M10-c57 - DONE (30.09): כיסוי טסטים, `money-format.ts`.** משימת התור:
