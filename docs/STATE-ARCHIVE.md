@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c56 (הועבר מ-STATE.md ב-M06-c56, לשמירה על תקרת 300 שורות)
+
+**M05-c56 - DONE (29.09): ביקורת DB — `get_advisors` דרך ה-management
+API, קריאה בלבד, ומיגרציה ממתינה לכל WARN.** פרטים מלאים
+ב-`docs/DB-SECURITY-MODEL.md` §0ו.
+
+MCP של Supabase עדיין "דורש הרשאה"; אותו מסלול חלופי (טוקן CLI
+מה-keychain, שני `GET .../advisors/{security,performance}`, 200/200,
+טוקן לא נדפס). **44 WARN בסך הכול, זהה שדה-שדה ל-0ה (M05-c55) בפעם
+השישית ברציפות** (21 `authenticated_security_definer`, 2
+`anon_security_definer`, 1 `function_search_path_mutable`, 14
+`multiple_permissive_policies`, 6 `auth_rls_initplan`). ארבעת הקבצים
+הממתינים (`209`, `220`, `245`, `246`) נבדקו שעדיין קיימים ומכסים את
+כל 21 ה-WARN הניתנים לתיקון; ה-23 הנותרים by design. **אפס WARN חדש,
+אפס שהפסיק לירות, אפס קובץ מיגרציה חדש נדרש.**
+
+אין שינוי UI. קובץ שונה: `docs/DB-SECURITY-MODEL.md` (פלוס
+`STATE.md`/`docs/STATE-ARCHIVE.md` — M04-c56 הועבר לתקרת 300 שורות).
+
 ## M04-c56 (הועבר מ-STATE.md ב-M05-c56, לשמירה על תקרת 300 שורות)
 
 **M04-c56 - DONE (29.09): תחזוקת תלויות — `pnpm audit` + `pnpm outdated`,
