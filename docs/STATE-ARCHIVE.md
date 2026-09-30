@@ -2,6 +2,65 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c64 (פירוט מלא, כווץ ב-STATE.md ל-M15-c64 לשמירה על תקרת 300 שורות)
+
+**M14-c64 - DONE (01.10): bundle sizes, image pipeline, תגיות ISR
+וכותרות cache נבדקו מחדש מול build טרי, אפס רגרסיה בפועל.** משימת
+התור: "Performance: check bundle sizes, image pipeline output, ISR
+tags and cache headers. Fix the largest regression."
+
+**בדיקת דריפט מול המדידה הקודמת (M14-c63, `eef1d0aab`):** `git diff
+--stat eef1d0aab..HEAD -- next.config.ts middleware.ts vercel.json
+src/ package.json pnpm-lock.yaml scripts/bundle-report.mjs
+scripts/bundle-gate.mjs scripts/cache-invalidation-gate.mjs` הראה שני
+קבצים: `src/components/ProductCard.tsx` (+21) ו-`src/lib/related-products.ts`
+(+52), שניהם מקומיט `00587d376` (M18-c63, שורת דירוג כוכבים על כרטיס
+"מומלצים") — דריפט אמיתי, לא קריאה בלבד, כי `ProductCard.tsx` תלות
+משותפת של `/`, `/products`, `/category/*` ו-`/product/[slug]`.
+
+**נבנה מחדש בפועל פעמיים** (`rm -rf .next && CARDCOM_USE_MOCK=true
+pnpm build`, לא נסמך על `.next` קיים). **הבנייה הראשונה נתנה תוצאה
+מטעה**: `bundle-report.mjs` (מול שרת ייעודי, `PORT=3417`, cwd אומת
+ב-`lsof -p <pid>`) דיווח `/`, `/products`, `/category/hot-deals`
+ו-`/cart` עם 5-6 "chunks not on disk" — כלומר תגי `<script async>`
+אמיתיים ב-HTML שמצביעים לקבצים שלא קיימים ב-`.next/static/chunks`
+(אומת ב-`curl` ישיר, 404 בפועל על שלושה מהם). **לא רגרסיית קוד**: `ps
+aux` באותו רגע הראה תהליך `autopilot` שני (`claude-fable-5-1 -p /goal
+STEP 10...`) שרץ "`pnpm build`" על **אותו checkout בדיוק** (אין
+worktree נפרד), תואם לדפוס המתועד ב-memory
+`parallel-claude-sessions`/`gate-measured-foreign-server-on-3311`
+(build מקביל על אותו `.next` מייצר chunk hashes לא-דטרמיניסטיים).
+**בנייה שנייה, נקייה** (`PORT=3418`, `BUILD_ID` נבדק ללא שינוי לאורך כל
+חלון המדידה): אפס "chunks not on disk", כל המספרים זהים לבייסליין.
+
+**לפני (M14-c63):** `bundle-gate.mjs` shared first-load 223.8 KB gz
+על 8 chunks. `/product/e2e-test-physical` 326.9 kB gzip (21 chunks),
+`/checkout` 324.2 kB, `/` 320.5kB, `/products` 319.3kB,
+`/category/hot-deals` 320.0kB, `/cart` 317.4kB, `/faq` 314.0kB. image
+proxy `Cache-Control: public, max-age=86400, must-revalidate`. static
+chunks `immutable, max-age=31536000`. HTML דינמי `private, no-cache,
+no-store, max-age=0, must-revalidate`. `/products`
+ו-`/product/e2e-test-physical` שניהם `x-nextjs-stale-time: 300`,
+`prerender: 1`, `postponed: 1`.
+
+**אחרי (M14-c64, בנייה נקייה שנייה, נמדד עכשיו):** `bundle-gate.mjs`
+**223.8 KB gz על 8 chunks, זהה בייט לבייט**. `/product/e2e-test-physical`
+**327.0 kB gzip** (21 chunks, הפרש 0.1kB רעש). `/checkout` 324.2 kB
+(זהה). `/` 321.0kB (+0.5kB רעש), `/products` 319.3kB (זהה),
+`/category/hot-deals` 320.0kB (זהה), `/cart` 317.4kB (זהה), `/faq`
+314.1kB (+0.1kB רעש). image proxy, static chunks, HTML דינמי ותגיות
+ISR — זהים מילה במילה לבייסליין. `cache-invalidation-gate.mjs` נקי.
+
+**המסקנה: אפס רגרסיה אמיתית לתקן.** ה"רגרסיה" שנראתה בבנייה הראשונה
+הייתה תוצר לוואי של build מקביל על אותו checkout, לא שינוי קוד — לא
+תוקן קוד, כי אין מה לתקן בקוד. שני שרתי `pnpm start` (3417, 3418)
+נסגרו בסוף המדידה. ארבעת השערים: `type-check` נקי. `lint` נקי (biome
+2028 קבצים, 12 שערים ירוקים). `test` 610/610 קבצים, 7296/7308 (12
+דולגים). `build` רץ בפועל פעמיים כחלק מהמדידה, exit 0 בשתיהן. אפס
+שינוי קוד ייצור.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M13-c64 (פירוט מלא, כווץ ב-STATE.md ל-M14-c64 לשמירה על תקרת 300 שורות)
 
 **M13-c64 - DONE (01.10): CSP/HSTS/X-Frame-Options/Referrer-Policy
