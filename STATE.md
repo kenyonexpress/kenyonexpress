@@ -1,48 +1,38 @@
-RESUME FROM: M06-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c62)
+RESUME FROM: M07-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c62)
 
 ## המשך מ:
 
-**M05-c62 - DONE (30.09): advisors נמדדו שוב דרך ה-management API (MCP
-של Supabase עדיין "דורש הרשאה", אין OAuth בסשן לא-אינטראקטיבי — אותו
-מסלול חלופי כמו M05-c52..c61: טוקן ה-CLI מה-keychain
-(`security find-generic-password -s "Supabase CLI" -w`, עטיפת
-`go-keyring-base64:` ואז פענוח base64 נותן `sbp_...`), שני `GET
-https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
-{security,performance}`, 200/200, קריאה בלבד, אין SQL שנשלח).**
+**M06-c62 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+.** הפעם היה שינוי קוד אמיתי מאז המדידה הקודמת (M06-c61, `a805f03e1`):
+`git diff --stat a805f03e1..HEAD -- src/app src/components src/lib
+package.json ...` הראה שלושה קבצים חדשים — `RecentlyViewedRail.tsx`
+ותשתית `recently-viewed/guest-storage.ts` שנוספו לדף המוצר ב-M18-c61
+(רכיב `'use client'`, מרונדר `null` עד אחרי mount, קורא `localStorage`) —
+כך שהמדידה הזו לא הסתמכה על הנחת "אפס דריפט" אלא הורצה במלואה מחדש.
+אותו מתכון כמו M06-c1..M06-c61: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3497 pnpm build` → `exit 0`
+(`.next/BUILD_ID` נוצר); `pnpm start -p 3497` מאותה בנייה (פורט 3497
+אומת פנוי לפני ואחרי). `curl` אישר `200` על `/` ועל
+`/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני ה-URL,
+`--throttling-method=devtools --emulated-form-factor=mobile`:
 
-**אבטחה: 28 ממצאים, זהה ב-100% ל-M05-c61** — 4 `rls_enabled_no_policy`
-(INFO, deny-all מכוון), 2 `anon_security_definer_function_executable`
-(WARN: `is_admin`, `is_supplier_member`), 21
-`authenticated_security_definer_function_executable` (WARN, אותן 21
-פונקציות), 1 `function_search_path_mutable` (WARN:
-`fn_wallet_entries_block_mutation`, ממתין ב-`220`).
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
 
-**ביצועים: 196 ממצאים, זהה ל-M05-c61 בדיוק (לא ירידה נוספת).**
-`multiple_permissive_policies` עדיין 14 על אותן 11 טבלאות (`banners`,
-`cashback_ledger`, `homepage_sections`, `payment_events`,
-`payout_statement_lines`, `payout_statements`, `refunds`,
-`supplier_branches` ארבע פעולות, `support_ticket_messages`,
-`support_tickets`, `whatsapp_contacts`) — כולן ב-`245`. `auth_rls_initplan`
-עדיין 6 על אותן טבלאות (`cashback_ledger`, `profiles`
-`profiles_super_admin_mfa`, `push_subscriptions` ×2,
-`webauthn_credentials` ×2) — חמש ב-`209` §2, השישית ב-`246`. `unused_index`
-עדיין 166 (INFO, לא WARN). `unindexed_foreign_keys` (9) ו-
-`auth_db_connections_absolute` (1) ללא שינוי.
+כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c61 למרות התוספת ל-PDP
+(הרכיב לא מרונדר בשרת ולא חוסם LCP). **אין תיקון קוד נדרש.** השרת
+נעצר, פורט 3497 אומת פנוי מחדש, קבצי הפלט הזמניים (`/tmp/ke-lh-m06c62/*`)
+נמחקו. שערים: `type-check` נקי; `lint` נקי (2028 קבצים, כל שערי
+התוכן ירוקים, i18n 627/627, locale 116/64); `test` 610/610 קבצים,
+7296/7308 (12 דולגים, 57.45s); `build` `exit 0` (חלק מהמדידה עצמה).
+**קובץ יחיד שונה: `STATE.md`** (וכיווץ M05-c62 ל-`docs/STATE-ARCHIVE.md`).
 
-**סך הכול: 44 WARN, זהה בדיוק לאחת-עשרה המדידות הקודמות (M05-c1
-ועד M05-c61). אפס WARN חדש, אפס WARN שהפסיק לירות.** ארבעת הקבצים
-הממתינים נבדקו שעדיין קיימים ולא נערכו מאז המדידה הקודמת:
-`migrations/pending/209_advisor_warnings.sql`,
-`220_wallet_entries_search_path.sql`,
-`245_single_permissive_policy_per_action.sql` (עדיין 53 שורות
-`CREATE POLICY`/`DROP POLICY`, מכסה את כל 14), `246_profiles_mfa_
-initplan.sql` — תוכנם עדיין תואם למדידה. **אין קובץ מיגרציה חדש
-נדרש, אין WARN לא-מכוסה, אף קובץ לא הוחל.** קבצי הפלט הזמניים
-(`/tmp/ke-advisors/*.json`) והטוקן הזמני נמחקו בסוף הפריט. שער נוסף
-ל-`docs/DB-SECURITY-MODEL.md` (סעיף 0יב). קובץ ששונה מלבד `STATE.md`:
-`docs/DB-SECURITY-MODEL.md`, `docs/STATE-ARCHIVE.md` (S03 כווץ לפריט
-הזה).
+**M05-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M06-c62
+לשמירה על תקרת 300 שורות).** advisors נמדדו שוב דרך ה-management API,
+44 WARN זהים ב-100% לאחת-עשרה המדידות הקודמות, אפס מיגרציה חדשה נדרשת.
 
 **M04-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c62
 לשמירה על תקרת 300 שורות).** תברואת תלויות: `pnpm audit` אפס חולשות,

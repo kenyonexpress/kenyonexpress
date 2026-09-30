@@ -2,6 +2,49 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c62 (הועבר מ-STATE.md ב-M06-c62, לשמירה על תקרת 300 שורות)
+
+**M05-c62 - DONE (30.09): advisors נמדדו שוב דרך ה-management API (MCP
+של Supabase עדיין "דורש הרשאה", אין OAuth בסשן לא-אינטראקטיבי — אותו
+מסלול חלופי כמו M05-c52..c61: טוקן ה-CLI מה-keychain
+(`security find-generic-password -s "Supabase CLI" -w`, עטיפת
+`go-keyring-base64:` ואז פענוח base64 נותן `sbp_...`), שני `GET
+https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+{security,performance}`, 200/200, קריאה בלבד, אין SQL שנשלח).**
+
+**אבטחה: 28 ממצאים, זהה ב-100% ל-M05-c61** — 4 `rls_enabled_no_policy`
+(INFO, deny-all מכוון), 2 `anon_security_definer_function_executable`
+(WARN: `is_admin`, `is_supplier_member`), 21
+`authenticated_security_definer_function_executable` (WARN, אותן 21
+פונקציות), 1 `function_search_path_mutable` (WARN:
+`fn_wallet_entries_block_mutation`, ממתין ב-`220`).
+
+**ביצועים: 196 ממצאים, זהה ל-M05-c61 בדיוק (לא ירידה נוספת).**
+`multiple_permissive_policies` עדיין 14 על אותן 11 טבלאות (`banners`,
+`cashback_ledger`, `homepage_sections`, `payment_events`,
+`payout_statement_lines`, `payout_statements`, `refunds`,
+`supplier_branches` ארבע פעולות, `support_ticket_messages`,
+`support_tickets`, `whatsapp_contacts`) — כולן ב-`245`. `auth_rls_initplan`
+עדיין 6 על אותן טבלאות (`cashback_ledger`, `profiles`
+`profiles_super_admin_mfa`, `push_subscriptions` ×2,
+`webauthn_credentials` ×2) — חמש ב-`209` §2, השישית ב-`246`. `unused_index`
+עדיין 166 (INFO, לא WARN). `unindexed_foreign_keys` (9) ו-
+`auth_db_connections_absolute` (1) ללא שינוי.
+
+**סך הכול: 44 WARN, זהה בדיוק לאחת-עשרה המדידות הקודמות (M05-c1
+ועד M05-c61). אפס WARN חדש, אפס WARN שהפסיק לירות.** ארבעת הקבצים
+הממתינים נבדקו שעדיין קיימים ולא נערכו מאז המדידה הקודמת:
+`migrations/pending/209_advisor_warnings.sql`,
+`220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql` (עדיין 53 שורות
+`CREATE POLICY`/`DROP POLICY`, מכסה את כל 14), `246_profiles_mfa_
+initplan.sql` — תוכנם עדיין תואם למדידה. **אין קובץ מיגרציה חדש
+נדרש, אין WARN לא-מכוסה, אף קובץ לא הוחל.** קבצי הפלט הזמניים
+(`/tmp/ke-advisors/*.json`) והטוקן הזמני נמחקו בסוף הפריט. שער נוסף
+ל-`docs/DB-SECURITY-MODEL.md` (סעיף 0יב). קובץ ששונה מלבד `STATE.md`:
+`docs/DB-SECURITY-MODEL.md`, `docs/STATE-ARCHIVE.md` (S03 כווץ לפריט
+הזה).
+
 ## M04-c62 (הועבר מ-STATE.md ב-M05-c62, לשמירה על תקרת 300 שורות)
 
 **M04-c62 - DONE (30.09): תברואת תלויות, `pnpm audit` ו-`pnpm outdated`
