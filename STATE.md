@@ -1,5 +1,7 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-30 21:40 (STEP 06 דף קטגוריה חלק ב': ‏ItemList JSON-LD, מצב ריק עם יציאה, שער ‏e2e ל-SEO ו-RTL; commit ‏ff9955a35)
+
 Updated: 2026-09-30 21:15 (STEP 06 דף קטגוריה: מסנני מותג והנחה, ‏sort=relevance, ‏24 בעמוד, ‏cache ‏300s; commit ‏5092a8b79)
 
 Updated: 2026-09-17 05:20 (goal שהוזרק ב-/goal: ‏PWA מלא - ‏Service Worker עם cache-first לא מקוון, ‏manifest, ‏prompt התקנה ל-iOS ו-Android, דף offline, טסטים). נמדד לפני כתיבה: ‏manifest.ts, ‏sw.js (ke-v2, network-first לדפים, cache-first ל-/_next/static ו-/icons), דף ‏/offline, ‏ServiceWorkerRegistrar ובאנר ההתקנה של ‏Chrome כבר היו קיימים ומכוסים. מה שחסר ונבנה, commit ‏1fe144570 על ‏autopilot: (1) **‏iOS לא קיבל שום הצעת התקנה** - ‏Safari וכל דפדפן אחר ב-iOS (כולם WebKit) לא יורים ‏beforeinstallprompt, כך שהבאנר רונדר לאף אחד באייפון בעוד ‏apple-touch-icon ב-layout תיאר התקנה שאיש לא הודרך לבצע. ‏src/lib/pwa/install-surface.ts מכריע ‏installed/ios/prompt מ-navigator בלבד (אייפד במצב דסקטופ נתפס לפי ‏MacIntel + נקודות מגע), ו-InstallPrompt מציג ב-iOS הוראות שיתוף ← הוסף למסך הבית עם כפתור ‏הבנתי אחד, אותו שער אינטראקציה, אותה שמירת מקום ‏data-pwa-prompt ואותו מפתח ‏dismiss. (2) **תמונות לא נשמרו מעולם**, כך שדף קטלוג לא מקוון היה רשת של ‏alt. ‏sw.js ‏ke-v3 מוסיף ‏cache חסום-גודל (80) ‏cache-first ל-/_next/image, ‏/images והלוגו, עם אותה הדחה של הישן-ראשון דרך ‏putBounded משותף לדפים. ‏network-first לדפים נשמר בכוונה, ‏cache-first למסמכים היה מגיש build שבור לאורך זמן. (3) **הטסטים של ה-worker רק קראו את המקור.** ‏sw-runtime.test.ts מריץ את ‏public/sw.js בתוך ‏ServiceWorkerGlobalScope מזויף עם ‏CacheStorage בזיכרון ורשת מתוסרטת: ‏28 מקרים - התקנה עם ‏precache חסר, ניקוי גרסאות, כל ה-bypass, ‏cache-first לנכסים ותמונות כולל הדחה, ‏network-first עם שלוש הנפילות, וריסון יעד ה-push. (4) ‏/offline עכשיו ‏noindex ועם טסט משלו (סטטי, בלי hooks, הניסיון-מחדש הוא קישור); ‏e2e/pwa.spec.ts שואל את השרת על כל URL שמתקין צריך. בנוסף תוקנו שני טסטים שהיו אדומים ב-HEAD ולא על הקוד שלהם: ‏postal-code ציפה ל-'no-store' מילולי שה-route החליף ב-CacheControl.private; ‏SentryUserSync בדק סינכרונית מנוי שמגיע אחרי ‏import דינמי נדחה. **שערים:** ‏5768 טסטים ירוקים חוץ מ-6 בשלושה קבצים של סשן מקביל (‏sitemap.test, ‏catalogue-cache.test, ‏rate-limit/graduated.test) שכולם על קבצים לא-מקומטים שלו (‏read-replica*, ‏graduated.ts, ‏supplier-storefront.ts ועוד, נגעו בהם ב-05:11-05:13); ‏lint נקי על כל הקבצים שלי ושני קבצי ‏format אדומים שלו; ‏build קומפל בהצלחה ונכשל רק בשלב ‏TypeScript על שתי השגיאות שלו (‏read-replica.test.ts:8, ‏supplier-storefront.ts:108). **החלטה שהתקבלה לבד:** לא לתקן קבצים של סשן חי ולא להמתין לו; ‏commit בנתיבים מפורשים בלבד. ‏e2e/pwa.spec.ts רץ מול ‏dev על פורט 3377: ‏4/4 ירוקים אחרי תיקון אחד - ‏Next 16 מרנדר את ‏appleWebApp.capable כ-mobile-web-app-capable ולא עם קידומת ‏apple (נמדד, לא הונח). גיבוי יומי ל-Desktop נוצר (‏2026-09-17-0518, 736MB) והישן מ-10.09 נמחק כדי להשאיר שלושה; ‏caffeinate חי ו-sleep מנוע.
@@ -126,6 +128,47 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
+
+### ‏30.09 ‏21:40: ‏STEP 06 דף קטגוריה, חלק ב' (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, commit ‏ff9955a35)
+
+**המשך מ: ה-goal הבא בתור ‏/goal (‏STEP 07).** עדיין פתוח מלפני: ‏STEP 05 חלק ב' סעיף (1),
+‏`docs/LIGHTHOUSE-HOME-STEP05.md` ורישומו ב-`docs/INDEX.md`.
+
+**מה נמדד לפני שנכתב.** מתוך חמשת הסעיפים של ה-goal (פירורי לחם, ‏meta עם ‏canonical,
+‏JSON-LD ‏ItemList, ‏RTL, מצב ריק), שלושה כבר היו בדף: ‏`CategoryBreadcrumb` עם ‏`nav`
+מסומן, ‏`BreadcrumbList`, ו-`generateMetadata` עם ‏canonical לנתיב החשוף ו-description עם
+נפילה. לא היה ‏ItemList בשום מקום ב-`src/`, מצב הריק היה שורה אחת בלי יציאה, ולא היה שער
+שמודד ‏RTL על הארכיון (‏`home-rtl.spec.ts` מודד רק את ‏`/`).
+
+**מה נוסף.** ‏`buildItemListJsonLd` ב-`lib/seo/json-ld.ts` (שם ו-URL בלבד לכל פריט, מספור
+מהיסט העמוד כך שעמוד 2 מתחיל ב-25, ‏null לארכיון ריק), נבנה מאותו מערך ‏`ordered`
+שה-`<ul>` ממפה; ה-`BreadcrumbList` ממפה עכשיו את ‏`crumbs` של ה-`nav` הנראה, כך שתווית
+הבית זהה בשניהם (‏"עמוד הבית", היה ‏"בית" ב-JSON-LD בלבד); ‏`CategoryEmptyState` עם המשפט
+ש-e2e מחפש, רמז, ופעולה אחת: ארכיון מסונן מקבל קישור שמפיל את כל המסננים, ארכיון ריק
+מעצמו מקבל קישור ל-`/products`; ‏`e2e/category-seo.spec.ts` עם חמישה טסטים (‏canonical,
+‏BreadcrumbList מול ה-nav, ‏ItemList מול קישורי הכרטיסים, חמישה עוגני ‏RTL בלי ‏`dir=ltr`
+בפנים, מצב ריק עם יציאה ובלי ‏ItemList).
+
+**נמדד ולא הונח: שני ‏canonical בדף המהודר.** ה-HTML המוגש נושא אחד, אבל בדפדפן היו שניים,
+‏`https://kenyonexpress.co.il/...` (נאפה ב-build) ו-`http://localhost:3327/...` (מה-metadata
+המוזרם בזמן ריצה); ‏React מרים את שניהם ומאחד רק לפי ‏href זהה. שרת שהורם עם אותו
+‏`NEXT_PUBLIC_APP_URL` של ה-build הראה אחד בדיוק, בקטגוריה ובמוצר, וזה מצב הפרודקשן.
+הטסט קובע: אחד ב-HTML המוגש, כולם על הנתיב החשוף בלי שאילתה, ואחד לכל ‏host.
+
+**שערים.** ‏type-check נקי, ‏lint נקי (אזהרה אחת ישנה ב-`import-products` שאינה שלי),
+‏`pnpm test` ‏549 קבצים ‏6584 ירוקים (שער ה-hex ב-`tokens.test.ts` תפס ארבעה ערכים גולמיים
+ב-CSS החדש; הוחלפו ב-`--cat-brand`/`--cat-ink`), ‏`pnpm build` ‏exit 0, ‏e2e ‏`category.spec`
+‏18/18 ו-`category-seo.spec` ‏5/5 מול ‏`pnpm start` על ‏3327 (‏3311 תפוס לסשן אחר).
+
+**החלטות שהתקבלו לבד.**
+1. ‏ItemList בלי מחיר: מחיר ב-ItemList הוא עותק שני של הטענה שדף המוצר כבר עושה ב-`Product`,
+   ושני עותקים נסחפים. ‏Google קורא את דף המוצר המקושר לשאר.
+2. כפתור מצב הריק צהוב-מותג (‏`--cat-brand`) ולא כחול-קישור: זה כפתור התבנית החיה, והוא
+   הטוקן היחיד הקיים לרקע כפתור. ‏44px רצפה.
+3. בלי ‏`role="status"` על מצב הריק: ‏biome דורש אלמנט סמנטי, ואזור חי שנולד יחד עם השינוי
+   ממילא לא מכריז עליו.
+4. אין מיגרציה ואין ‏DB: כל הנתונים כבר בשאילתות הקיימות. ‏Supabase MCP ו-GitHub MCP לא
+   מאומתים בסשן הזה, והענף נדחף ישירות כמו כל ‏STEP קודם.
 
 ### ‏30.09 ‏21:15: ‏STEP 06 דף קטגוריה (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, commit ‏5092a8b79)
 
