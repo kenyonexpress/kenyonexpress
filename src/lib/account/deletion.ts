@@ -48,6 +48,7 @@ export const PURGED_ROWS: ReadonlyArray<{ table: string; column: string }> = [
   { table: 'push_tokens', column: 'user_id' },
   { table: 'webauthn_credentials', column: 'user_id' },
   { table: 'reviews', column: 'user_id' },
+  { table: 'order_feedback', column: 'user_id' },
   { table: 'newsletter_subscribers', column: 'user_id' },
   { table: 'whatsapp_contacts', column: 'user_id' },
   { table: 'abandoned_cart_nudges', column: 'user_id' },

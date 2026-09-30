@@ -1,5 +1,21 @@
 # `migrations/pending/`
 
+## 2026-10-01: 247 PENDING (private order feedback)
+
+`247_order_feedback.sql` adds `order_feedback`: one row per paid order with a
+1..5 rating and up to 2000 characters, from the customer to the shop owner
+and to nobody else. RLS on; the customer gets owner-only SELECT and an
+INSERT whose policy re-checks that the order is theirs, paid and not
+soft-deleted; no UPDATE, no DELETE, no anon grant, no policy naming anon.
+Staff read it on the service role from the admin order page only. Written by
+`src/server/actions/order-feedback.ts` (user client, then a mail to the shop
+inbox with the order id as idempotency key), read by
+`src/server/queries/order-feedback.ts`, deleted with the account in
+`src/lib/account/deletion.ts`. Additive, idempotent; rollback is one DROP
+TABLE IF EXISTS. Not applied; the account order page hides the form while
+the table is missing (PGRST205). Not yet dry-run on production (Supabase MCP
+unauthenticated in the session that filed it).
+
 ## 2026-10-01: 246 PENDING (orders: preferred delivery slot)
 
 `246_orders_delivery_slot.sql` adds `orders.delivery_slot_date` (date,

@@ -880,3 +880,84 @@
   font-weight: 700;
   text-decoration: underline;
 }
+
+/* Private order feedback (STEP 11): the form on a paid order, then the row
+   it stored. Star 1 sits on the right because the document is RTL; nothing
+   here reverses the row. */
+.account-feedback {
+  display: grid;
+  gap: 12px;
+}
+
+.account-feedback__note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--account-muted);
+}
+
+.account-feedback__rating {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.account-feedback__legend-word {
+  font-weight: 400;
+  color: var(--account-muted);
+}
+
+.account-feedback__stars-row {
+  display: flex;
+  gap: 4px;
+}
+
+.account-feedback__star {
+  cursor: pointer;
+}
+
+.account-feedback__star-glyph {
+  font-size: 28px;
+  line-height: 1;
+  color: #cfd5db;
+}
+
+.account-feedback__star-glyph[data-filled="true"] {
+  color: var(--account-yellow);
+}
+
+.account-feedback__star:focus-within .account-feedback__star-glyph {
+  outline: 2px solid var(--account-yellow);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.account-feedback__textarea {
+  min-height: 88px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.account-feedback__error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--account-red);
+}
+
+.account-feedback__sent {
+  display: block;
+  font-weight: 700;
+}
+
+.account-feedback__stars {
+  color: var(--account-yellow);
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+
+.account-feedback__body {
+  margin: 0;
+  white-space: pre-wrap;
+}

@@ -407,6 +407,13 @@ describe('the pending migration inventory', () => {
       // carries the row; not yet dry-run on production (Supabase MCP
       // unauthenticated in the session that filed it).
       '246_orders_delivery_slot.sql',
+      // 247 is PENDING (2026-10-01, STEP 11 account): `order_feedback`, the
+      // customer's private 1..5 word on a paid order, owner-only RLS with
+      // no UPDATE/DELETE and no anon grant; staff read it on the service
+      // role from the admin order page. README carries the row; not yet
+      // dry-run on production (Supabase MCP unauthenticated in the session
+      // that filed it).
+      '247_order_feedback.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

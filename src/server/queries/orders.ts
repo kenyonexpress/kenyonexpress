@@ -8,6 +8,7 @@ import {
   resolveOrderItemGeneration,
 } from '@/lib/commerce/order-money-columns'
 import { type Agorot, agorot } from '@/lib/money'
+import { type ShippingSummary, summarizeShipping } from '@/lib/orders/shipping-summary'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
@@ -27,6 +28,8 @@ export interface OrderSummary {
   totalAgorot: Agorot
   itemCount: number
   hasVouchers: boolean
+  /** The physical lines folded into one chip; `kind: 'none'` for coupons only. */
+  shipping: ShippingSummary
 }
 
 export interface OrderVoucher {
@@ -144,7 +147,7 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
     await admin
       .from('orders')
       .select(
-        `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(quantity, product_type, settlement_status)`,
+        `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(quantity, product_type, settlement_status, item_status, carrier, tracking_number)`,
       )
       .eq('user_id', userId)
       .is('deleted_at', null)
@@ -160,7 +163,14 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
     created_at: string
     paid_at: string | null
     order_items:
-      | { quantity: number | null; product_type: string; settlement_status: string }[]
+      | {
+          quantity: number | null
+          product_type: string
+          settlement_status: string
+          item_status: string | null
+          carrier: string | null
+          tracking_number: string | null
+        }[]
       | null
   }
   const orders = rows as unknown as OrderListRow[] | null
@@ -176,6 +186,14 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
       totalAgorot: agorot(readOrderMoney(generation, order).totalAgorot),
       itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
       hasVouchers: items.some((i) => i.product_type === 'coupon'),
+      shipping: summarizeShipping(
+        items.map((i) => ({
+          productType: i.product_type === 'coupon' ? 'coupon' : 'physical',
+          itemStatus: i.item_status ?? 'pending',
+          carrier: i.carrier,
+          trackingNumber: i.tracking_number,
+        })),
+      ),
     }
   })
 }

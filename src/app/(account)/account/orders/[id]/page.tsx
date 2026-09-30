@@ -1,8 +1,11 @@
+import OrderFeedbackForm from '@/components/account/OrderFeedbackForm'
 import ReorderButton from '@/components/account/ReorderButton'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { summarizeShipping } from '@/lib/orders/shipping-summary'
 import { readPaymentProviderGate } from '@/lib/payments/provider-gate'
 import { resolveCarrier } from '@/lib/shipping/carriers'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
+import { getMyOrderFeedback } from '@/server/queries/order-feedback'
 import { getOrderDetail } from '@/server/queries/orders'
 import { getReorderOffer } from '@/server/queries/reorder'
 import Link from 'next/link'
@@ -20,8 +23,13 @@ export default async function OrderDetailPage({ params }: Props) {
   if (!order) notFound()
   // Only a paid order is offered again; the offer itself (which card, what the
   // click replaces) is read once here and re-checked by the action on click.
-  const reorder = order.paidAt ? await getReorderOffer() : null
+  // Both reads are the customer's, both only matter once money has moved,
+  // and neither depends on the other.
+  const [reorder, feedback] = order.paidAt
+    ? await Promise.all([getReorderOffer(), getMyOrderFeedback(order.id)])
+    : [null, { available: false, feedback: null }]
   const paymentGate = readPaymentProviderGate()
+  const shipping = summarizeShipping(order.lines)
 
   return (
     <>
@@ -30,6 +38,12 @@ export default async function OrderDetailPage({ params }: Props) {
         <span className={`account-chip account-chip--${orderStatusTone(order.settlementStatus)}`}>
           {orderStatusLabel(order.settlementStatus)}
         </span>
+        {order.paidAt && shipping.label && (
+          <>
+            {' '}
+            <span className={`account-chip account-chip--${shipping.tone}`}>{shipping.label}</span>
+          </>
+        )}
       </p>
 
       <section className="account-card">
@@ -202,6 +216,21 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
         ))}
       </section>
+
+      {order.paidAt && feedback.available && (
+        <section className="account-card" data-section="order-feedback">
+          <h2 className="account-card__title">חוויית ההזמנה</h2>
+          {/* Private by construction: the row is owner-scoped (247), the copy
+              goes to the shop inbox, and nothing renders it to anyone else.
+              Hidden entirely while the table is unapplied, rather than
+              offering a form whose submit would answer "not open yet". */}
+          <OrderFeedbackForm
+            orderId={order.id}
+            existing={feedback.feedback}
+            existingDate={feedback.feedback ? formatDate(feedback.feedback.createdAt) : null}
+          />
+        </section>
+      )}
 
       {reorder && (
         <section className="account-card">

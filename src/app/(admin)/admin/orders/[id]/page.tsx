@@ -1,11 +1,13 @@
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import { requireSection } from '@/lib/admin/rbac'
+import { feedbackRatingLabel, feedbackStars } from '@/lib/orders/feedback'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
 import { adminOverridableTargets } from '@/server/domain/orders/order-transitions'
 import { describeRefundBlockers } from '@/server/domain/orders/refund'
+import { readOrderFeedbackForAdmin } from '@/server/queries/order-feedback'
 import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -127,6 +129,11 @@ export default async function OrderDetailPage({ params }: Props) {
       : { data: [] }
   const vouchers = (voucherRows ?? []) as VoucherRow[]
 
+  // The customer's private word on this order (247). Service role, behind
+  // the RBAC gate above: the table has no staff policy on purpose, so this
+  // page is the only place staff ever see the text.
+  const feedback = await readOrderFeedbackForAdmin(admin, order.id)
+
   const blockers = describeRefundBlockers({
     lines: items.map((i) => ({
       orderItemId: i.id,
@@ -240,6 +247,35 @@ export default async function OrderDetailPage({ params }: Props) {
         כל הערכים בטבלאות הם עותק שנשמר ברגע הרכישה. עריכת המוצר או הספק אחרי הרכישה אינה משנה שורה
         קיימת.
       </p>
+
+      {feedback && (
+        <section
+          className="bg-white border border-gray-200 rounded-xl p-5 space-y-2"
+          data-section="order-feedback"
+        >
+          <h2 className="font-bold text-base">משוב הלקוח על ההזמנה (פרטי)</h2>
+          <p className="text-sm">
+            <span className="text-yellow-500 tracking-widest" aria-hidden="true">
+              {feedbackStars(feedback.rating)}
+            </span>{' '}
+            {feedback.rating}/5 {feedbackRatingLabel(feedback.rating)}
+            <span className="text-gray-500">
+              {' · '}
+              {new Date(feedback.createdAt).toLocaleDateString('he-IL', {
+                timeZone: 'Asia/Jerusalem',
+              })}
+            </span>
+          </p>
+          {feedback.body ? (
+            <p className="text-sm whitespace-pre-wrap">{feedback.body}</p>
+          ) : (
+            <p className="text-sm text-gray-500">דירוג בלבד, ללא טקסט.</p>
+          )}
+          <p className="text-xs text-gray-500">
+            נשלח מהאזור האישי של הלקוח ומוצג כאן בלבד. לא מתפרסם באתר.
+          </p>
+        </section>
+      )}
 
       <OrderAdminActions
         orderId={order.id}
