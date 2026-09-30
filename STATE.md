@@ -1,37 +1,63 @@
-RESUME FROM: M12-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c61)
+RESUME FROM: M13-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c61)
 
 ## המשך מ:
 
-**M11-c61 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם שביעית,
-0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל דף, לתקן כל
-הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את המונה שנשאר.
-בדיקת דריפט קודם: `git diff --stat a7f5812a5..HEAD -- src/app
-src/components src/styles 'e2e/*a11y*' middleware.ts
-src/server/actions/auth` (מאז המדידה הקודמת, M11-c60) — **ריק, אפס
-קומיט נגע בשטח הנגישות**.
+**M12-c61 - DONE (30.09): SEO, meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots, אימות מחדש, אפס דריפט קוד מ-M12-c60.** משימת התור:
+לוודא metadata, canonical, og, schema.org Product+Offer בדפי מוצר,
+טריות sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם: `git log
+44243439e..HEAD` (מאז המדידה הקודמת, M12-c60) מחזיר 17 קומיטים
+(M13-c60..M11-c61), כולם תיעוד/מדידה/תלות/טסטים. `git diff --stat
+44243439e..HEAD -- src/app/robots.ts src/app/robots.test.ts
+src/app/sitemap src/app/sitemap.xml src/app/sitemap.test.ts
+src/app/sitemap-robots-agree.test.ts src/app/sitemap-canonicals.test.ts
+src/lib/seo src/lib/product-seo.ts src/lib/category-tree.ts
+src/lib/regions.ts src/lib/content/pages.ts src/lib/feeds
+src/components/storefront/BlogPostHeader.tsx
+src/components/storefront/ProductInfo.tsx 'src/app/(store)/**/page.tsx'
+'src/app/(main)/coupons/[id]/page.tsx'` חוזר ריק: אפס קומיט נגע בקוד
+SEO.
 
-נמדד בכל זאת מחדש מול build אמיתי טרי על HEAD (`e54734eee`, `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3611
-pnpm build`, `pnpm start -p 3611`):
-- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
-  `--grep-invert=@writes`): **72/74 עברו, 2 דולגו** (אותם דילוגים
-  מכוונים כמו בכל מדידה קודמת — search combobox הוסר ב-D3, וה-viewport
-  תחת 768) — **0 הפרות**.
-- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): **23
-  עברו, 57 דולגו** — זהה במדויק ל-M11-c60 (לקוח 16/16 + ספק 7/7 = 23,
-  אדמין 57/57 דולג על אותו כשל התחברות פרודקשן קיים מראש, לא תקלת
-  נגישות ולא רגרסיית קוד).
-- שני השערים נכשלים על **כל** הפרה, לא רק `serious`/`critical`, אז 0
-  כשל הוא גם 0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה
-  שנסרק.
+נמדד בכל זאת מחדש חי: `pnpm start -p 3812` על ה-`.next` הקיים (נבנה
+תחת M04-c61, אפס שינוי קוד ייצור מאז, שער `type-check`/`lint`/`test`
+מאמת זאת שוב למטה):
+- `robots.txt`: 12 שורות `Disallow` (`/redeem/`, `/coupon/`,
+  `/account/`, `/supplier/`, `/scan`, `/admin/`, `/checkout`, `/cart`,
+  `/auth/`, `/api/`, `/reset-password`, `/forgot-password`), `Host`+
+  `Sitemap` לדומיין הנאפה.
+- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
+  regions/suppliers), זהה למדידה הקודמת.
+- `sitemap/products.xml`: 46 כתובות, 5 ערכי `lastmod` שונים בפועל.
+- דף מוצר פעיל (`/product/barbecue`): `canonical`, `og:title/
+  description/url/locale/image(+type/width/height/alt)/type`, twitter
+  card תקינים; JSON-LD `Product` (name/url/category/image/brand/offers
+  עם price/priceCurrency/availability/priceSpecification) + JSON-LD
+  `BreadcrumbList` תקינים.
+- בית: `canonical` + JSON-LD `Organization` + `WebSite` (עם
+  `potentialAction`) תקינים.
+- קוד ה-`noindex` למוצר לא פעיל/נמחק (`src/app/(store)/product/[slug]/
+  page.tsx:41`, `robots: {index:false}` כש-`status !== 'active'` או
+  `deleted_at`) נבדק בקריאה, לא השתנה מאז המדידה הקודמת.
 
-**המונה שנשאר: 0 `serious`/`critical`.** אפס דריפט מ-M11-c60. **אפס
-שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2025 קבצים +
-כל שנים-עשר השערים המשניים, כולל `i18n` 627/627), `test` המלא 610/610
-קבצים 7296/7308 (12 דולגים, 56.60s), `build` (`rm -rf .next` + build
-טרי) `exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה:
-`STATE.md`.**
+**תיקון דיוק תיעוד, לא דריפט קוד:** ספירת שורות ה-`Disallow` שנרשמה
+כ-11 בכל מדידת SEO קודמת (M12-c56 עד M12-c60 לפחות) שגויה. קובץ המקור
+(`src/app/robots.ts`) מכיל 12 ערכים ברשימה, ולא השתנה: הקומיט האחרון
+שנגע בו (`1f53e74b6`) קדם בהרבה ל-M12-c56. הספירה הנכונה היא 12,
+מתוקנת כאן כדי לא להנציח את המספר השגוי הלאה.
+
+אפס דריפט אמיתי. שערים: `type-check` נקי, `lint` נקי (2025 קבצים +
+שנים-עשר השערים המשניים, `i18n` 627/627), `test` המלא 610/610 קבצים
+7296/7308 (12 דולגים, 57.49s). `build` לא הורץ מחדש: אפס שינוי קוד
+מ-M04-c61, ה-`.next` הקיים אומת חי מול curl ומשרת robots/sitemap/
+canonical/JSON-LD תקינים (לא נבנה מחדש כדי לא להתחרות במשאבים מול
+כעשרים `pnpm start` מקבילים שרצים מאותה תיקייה). קובץ קוד שונה: אין.
+תיעוד: `STATE.md` + `docs/STATE-ARCHIVE.md`.
+
+## M11-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M11-c61: נגישות, axe על כל דף, אימות מחדש בפעם שביעית, 0 הפרות
+`serious`/`critical`, אפס דריפט מ-M11-c60.
 
 ## M10-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

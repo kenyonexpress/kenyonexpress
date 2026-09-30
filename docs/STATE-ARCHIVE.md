@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c61 (הועבר מ-STATE.md ב-M12-c61, לשמירה על תקרת 300 שורות)
+
+**M11-c61 - DONE (30.09): נגישות, axe על כל דף, אימות מחדש בפעם שביעית,
+0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל דף, לתקן כל
+הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את המונה שנשאר.
+בדיקת דריפט קודם: `git diff --stat a7f5812a5..HEAD -- src/app
+src/components src/styles 'e2e/*a11y*' middleware.ts
+src/server/actions/auth` (מאז המדידה הקודמת, M11-c60): ריק, אפס
+קומיט נגע בשטח הנגישות.
+
+נמדד בכל זאת מחדש מול build אמיתי טרי על HEAD (`e54734eee`, `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3611
+pnpm build`, `pnpm start -p 3611`):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes`): 72/74 עברו, 2 דולגו (אותם דילוגים
+  מכוונים כמו בכל מדידה קודמת, search combobox הוסר ב-D3, וה-viewport
+  תחת 768): 0 הפרות.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): 23
+  עברו, 57 דולגו, זהה במדויק ל-M11-c60 (לקוח 16/16 + ספק 7/7 = 23,
+  אדמין 57/57 דולג על אותו כשל התחברות פרודקשן קיים מראש, לא תקלת
+  נגישות ולא רגרסיית קוד).
+- שני השערים נכשלים על כל הפרה, לא רק `serious`/`critical`, אז 0
+  כשל הוא גם 0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה
+  שנסרק.
+
+המונה שנשאר: 0 `serious`/`critical`. אפס דריפט מ-M11-c60. אפס
+שינוי קוד. שערים: `type-check` נקי, `lint` נקי (biome 2025 קבצים +
+כל שנים-עשר השערים המשניים, כולל `i18n` 627/627), `test` המלא 610/610
+קבצים 7296/7308 (12 דולגים, 56.60s), `build` (`rm -rf .next` + build
+טרי) `exit 0`. אין שינוי UI, אין שער חזותי נדרש. קובץ יחיד שונה:
+`STATE.md`.
+
 ## M10-c61 (הועבר מ-STATE.md ב-M11-c61, לשמירה על תקרת 300 שורות)
 
 **M10-c61 - DONE (30.09): כיסוי טסטים, שש הקטגוריות הקריטיות נמדדו
