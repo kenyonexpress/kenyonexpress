@@ -1,9 +1,21 @@
-RESUME FROM: M04-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c61)
+RESUME FROM: M05-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c61)
 
 ## המשך מ:
 
-**M03-c61 - DONE (30.09): בדיקה ירוקה — ארבעת השערים נמדדו מהתחלה,
+**M04-c61 - DONE (30.09): תברואת תלויות — `pnpm audit` אפס חולשות
+(זהה למדידות קודמות), `pnpm outdated` הראה 16 חבילות, 15 מהן קפיצת
+major (אסור לפי הכלל) ורק אחת same-major: `fast-xml-parser` 5.11.1→5.11.2
+(dev, dep. של `fast-xml-parser`/`@nodable/entities` 3.0.0→3.1.0). הוחל
+עם `pnpm add -D fast-xml-parser@5.11.2`. תופעת לוואי: הפקודה עצמה שינתה
+פורמט של `onlyBuiltDependencies` ב-`package.json` למבנה מרובה-שורות
+שנכשל בבודק הפורמט של biome — תוקן בחזרה לשורה אחת (ללא שינוי תוכן,
+רק פורמט). ארבעת השערים ירוקים אחרי התיקון: `type-check` (`tsc --noEmit`
+exit 0), `lint` (biome + 12 שערים מותאמים, כולם clean), `test` (610
+קבצים, 7296 עברו, 12 דולגו), `build` (`Compiled successfully`, אפס
+שגיאת build אמיתית — `rls_denied`/`reviews` הוא רעש prerender ידוע).
+קבצים ששונו: `package.json`, `pnpm-lock.yaml`, `STATE.md`. אין שער
+חזותי נדרש (אין שינוי UI).
 אפס שגיאה, אפס אזהרה לתיקון, אפס שינוי קוד.** משימת התור: להריץ
 `pnpm type-check`, `pnpm lint`, `pnpm test` ו-`pnpm build`, ולתקן כל
 שגיאה/אזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר. **נמדד עכשיו, קדמי:**
