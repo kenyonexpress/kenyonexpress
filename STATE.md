@@ -1,32 +1,47 @@
-RESUME FROM: M06-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c64)
+RESUME FROM: M07-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c64)
 
 ## המשך מ:
 
-**M05-c64 - DONE (30.09): advisors אומתו בפעם הארבע-עשרה ברציפות (management
-API, קריאה בלבד, טוקן CLI מה-keychain — Supabase MCP עדיין דורש OAuth
-שלא ניתן להריץ בסשן לא-אינטראקטיבי), זהה ב-100% ל-M05-c63.** משימת התור:
-להריץ `get_advisors` אבטחה+ביצועים ולכתוב מיגרציה ב-`migrations/pending`
-לכל WARN.
+**M06-c64 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** משימת התור: Lighthouse mobile על דף הבית ודף
+מוצר, לתקן ביצועים/נגישות/best practices/SEO עד שכל ציון 90+, לרשום
+ב-STATE.md.
 
-**44 WARN בסך הכול (24 אבטחה + 20 ביצועים), שם-שם זהה למדידה הקודמת**
-(21 `authenticated_security_definer_function_executable`, 2
-`anon_security_definer_function_executable`, 1
-`function_search_path_mutable`; 14 `multiple_permissive_policies`, 6
-`auth_rls_initplan`) — נבדק דרך `jq` על שני קבצי ה-JSON, לא רק ספירה.
-**אפס WARN חדש, אפס WARN שהפסיק לירות.** ארבעת הקבצים הממתינים
-(`209_advisor_warnings.sql`, `220_wallet_entries_search_path.sql`,
-`245_single_permissive_policy_per_action.sql`,
-`246_profiles_mfa_initplan.sql`) עדיין קיימים ומכסים את כל 44 ה-WARN —
-**אין קובץ מיגרציה חדש נדרש**, כי אין WARN לא-מכוסה. פורט
-ב-`docs/DB-SECURITY-MODEL.md` סעיף 0יד. קבצי הפלט הזמניים
-(`/tmp/ke-advisors/*.json`) נמחקו בסוף הפריט, הטוקן לא נדפס ולא נשמר.
+**שינוי קוד אמיתי מאז המדידה הקודמת (M06-c63, `a799eeed6`):** `git diff
+--stat a799eeed6..HEAD -- src/app src/components src/lib package.json`
+הראה `src/components/ProductCard.tsx` ו-`src/lib/related-products.ts`
+(שורת דירוג כוכבים על כרטיס "מומלצים", M18-c63) — כך שהמדידה הורצה
+במלואה מחדש ולא הונחה "אפס דריפט".
 
-ארבעת השערים רצו במלואם: type-check אפס שגיאות, lint (biome + שנים-עשר
-השערים הנלווים) נקי, test 610/610 קבצים, 7296/7308 ירוק (12 דולגים, זהה
-ל-M04-c64), build exit 0.
+אותו מתכון כמו M06-c1..M06-c63: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3498 pnpm build` → exit 0
+(`.next/BUILD_ID` נוצר, פורט 3498 אומת פנוי לפני עם `/usr/sbin/lsof`);
+`pnpm start -p 3498` מאותה בנייה. `curl` אישר `200` על `/` ועל
+`/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני ה-URL,
+`--throttling-method=devtools --emulated-form-factor=mobile`:
 
-קבצים ששונו: `docs/DB-SECURITY-MODEL.md`, `STATE.md`.
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c63 למרות שורת הדירוג
+החדשה (אינה מרונדרת בשרת בצורה שחוסמת LCP). **אין תיקון קוד נדרש.**
+השרת נעצר, פורט 3498 אומת פנוי מחדש, קובץ הפלט הזמני
+(`/tmp/ke-lh-m06c64/*`) נמחק.
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
+זהה ל-M05-c64). `test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) —
+זהה. `build` "Compiled successfully", exit 0 — זהה. אין שינוי UI,
+`scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריטי M06 הקודמים).
+
+קבצים ששונו: `STATE.md`.
+
+**M05-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M06-c64 לשמירה על תקרת 300 שורות).** advisors אומתו בפעם
+הארבע-עשרה ברציפות, 44 WARN זהה ל-M05-c63, אפס מיגרציה חדשה נדרשת.
+ארבעת השערים ירוקים.
 
 **M04-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c64
 לשמירה על תקרת 300 שורות).** תברואת תלויות, `pnpm audit` אפס חולשות,
