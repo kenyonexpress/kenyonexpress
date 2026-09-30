@@ -40,6 +40,74 @@ Everything that used to live in `STATE.md` before it was trimmed to the resume l
 נשאר היעד הבא של הלולאה האוטונומית. קובץ ששונה: `STATE.md`,
 `docs/UI-PARITY-REPORT.md` (נכתב אוטומטית על ידי השער).
 
+## M18-c61 ו-M17-c61 (הועבר מ-STATE.md ב-M01-c62, לשמירה על תקרת 300 שורות)
+
+**M18-c61 - DONE (30.09): בדיקת idle — כל 17 הפריטים הקודמים במחזור לא
+שינו קוד, MAINTENANCE IDLE נרשם, ונוסף שיפור המרה אמיתי אחד: "נצפו
+לאחרונה" בדף המוצר.** משימת התור: אם כל הפריטים למעלה לא הפיקו שינוי קוד
+במחזור הזה, לרשום MAINTENANCE IDLE עם התאריך, ואז לחפש שיפור אחד אמיתי
+בהמרת לקוחות בדף הבית או בדף המוצר שתואם Electro v7 וליישם אותו.
+
+**נמדד ישירות מ-git:** `git diff --stat adbbae4c9..HEAD` (טווח M01-c61
+עד M17-c61) מחזיר רק `STATE.md`, `docs/BACKLOG.md`,
+`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`, `package.json`,
+`pnpm-lock.yaml` (bump גרסה של `fast-xml-parser` בלבד, M04-c61) — אפס
+נגיעה ב-`src/`. **MAINTENANCE IDLE 2026-09-30.**
+
+**השיפור שיושם: "נצפו לאחרונה" (Recently Viewed Products), רכיב Electro
+v7 בתבנית המוצר שלא היה קיים באתר שלנו.** רשימת מזהי מוצרים ב-`localStorage`
+בלבד (אותו דפוס בדיוק כמו `lib/wishlist/guest-storage.ts`: גרסה, uuid
+בלבד, דה-דופ, מוגבל ל-12, כל קורא סובל מ-storage פגום), מתורגמת חזרה
+למוצרים חיים דרך server action חדש וקריא-בלבד (`getRecentlyViewedProducts`,
+ללא אימות — המזהים מעולם לא עוזבים את הדפדפן של הקונה, ואין נתון פר-חשבון
+לדלוף). מוצג עם `ProductCard` ו-CSS קיים (`pdp-related`) מתחת ל"מומלצים",
+כך שאין CSS חדש. **קובץ חדש:** `src/lib/recently-viewed/guest-storage.ts`,
+`src/server/actions/recently-viewed.ts`,
+`src/components/storefront/RecentlyViewedRail.tsx`. **חוברו:**
+`src/app/(store)/product/[slug]/page.tsx` (אחרי `RelatedProducts`).
+
+**רכיב קליינט בלבד, ולא בתוך ה-cache.** מזהי הצפייה הם per-browser ולא
+ניתנים לקריאה בזמן ה-prerender הסטטי; הרכיב קורא וכותב אחרי mount בלבד
+(כמו `WishlistHeart`), כך שהעמוד נשאר `◐ Partial Prerender` בדיוק כמו
+לפני — נבדק ב-`pnpm build`. אין נגיעה בכסף/מחיר/מלאי.
+
+**שער ה-i18n נשאר 627/627.** הטקסט "נצפו לאחרונה" עבר דרך `t('pdp.recentlyViewed')`
+ומפתח חדש ב-`messages/he.json`+`messages/en.json`, לא מחרוזת ליטרלית ברכיב —
+בדיוק הכלל ש-`scripts/hebrew-literal-scan.mjs` אוכף. ה-action החדש נרשם
+ב-`PUBLIC_ACTIONS` של `src/server/actions/auth-coverage.test.ts` (קריאת
+קטלוג ציבורית, המזהים מגיעים מה-`localStorage` של הקורא עצמו) — בלי זה
+`pnpm test` נכשל על "every exported action reaches a guard".
+
+**כל השערים רצו במלואם:** `type-check` נקי, `lint` נקי (12 שערים, כולל
+i18n 627/627 ללא שינוי), `test` 610/610 קבצים 7296/7308 (12 דולגים) ירוק,
+`build` עבר (`/product/[slug]` נשאר `◐`).
+
+**שער חזותי הורץ בחזית, product בשלושת הרוחבים, מספרים נרשמו
+ב-`docs/UI-PARITY-REPORT.md`:** 380 → **4.96% PASS**, 768 → **4.56% PASS**,
+1440 → **3.25% PASS** (כל השלושה זהים ל-ספרה האחרונה שנרשמה לפני השינוי,
+M01-c61 04:37-04:41 — מוכיח שהרכיב החדש יושב מתחת לחלון ה-2600px הנמדד
+בכל רוחב ולא הזיז אף פיקסל בתוך הטווח הנמדד). דף הבית לא נגע ולא נמדד
+מחדש. השרת רץ על פורט 3314 (3311 היה תפוס על ידי תהליך `next-server`
+יתום בן כ-3 שעות מסשן קודם — נהרג יחד עם השרת של הפריט הזה בתום המדידה,
+ניקוי, לא מחיקת נתונים).
+
+**M17-c61 - נמדד ישירות מ-git, לא הונח:** `git log c6066ae85..HEAD -- messages/he.json
+"src/app/(legal)" src/content/legal src/components/layout/SiteFooter.tsx`
+(מאז המדידה הקודמת, M17-c60) מחזיר **אפס קומיטים** — אף מחרוזת עברית, עמוד
+משפטי או קובץ פוטר לא זזו. `git diff --stat c6066ae85..HEAD` (כל הריפו)
+מראה רק `STATE.md`, `docs/BACKLOG.md`, `docs/DB-SECURITY-MODEL.md`,
+`docs/LAUNCH-READINESS.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`,
+`package.json`, `pnpm-lock.yaml` — כולם תיעוד/תלויות, אפס נגיעה בקוד UI.
+
+**שערים הורצו במלואם (לא רק נבדק דריפט):** `type-check` נקי, `lint` נקי
+(12 שערים: `copy-gate` נקי — אין משפט שיווקי לטיני ברכיב מרונדר, `rtl-logical`
+נקי, i18n 627/627, `locale-format` 116/116, `docs-index` 282, `docs-path-audit`
+152), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 57.84s) — זהה ל-100%
+ל-M17-c60. טסטי קופי/משפטי ממוקדים (`pnpm test src/app/hebrew-copy.test.ts
+src/content/legal`): 4 קבצים 33/33 ירוקים. **אין שער חזותי נדרש** — אפס
+שינוי UI/קוד ייצור, אין דף חדש ואין רכיב שהשתנה.
+
 ## M16-c61 (הועבר מ-STATE.md ב-M17-c61, לשמירה על תקרת 300 שורות)
 
 **M16-c61 - DONE (30.09): תברואת ריפו בפעם האחת-עשרה, אפס דריפט

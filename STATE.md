@@ -1,7 +1,48 @@
-RESUME FROM: M01-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריטים חד-פעמיים S02 ו-S03)
+RESUME FROM: M02-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c62)
 
 ## המשך מ:
+
+**M01-c62 - BLOCKED (30.09): בדיקת פרודקשן בפעם התשיעית — DNS/HTTP
+תקינים, פריסת HEAD עדיין חסומה, אין שינוי מהמצב שתועד ב-M01-c61.**
+משימת התור: להריץ build+deploy של פרודקשן ב-Vercel, ואז `dig`+`curl`
+על שני הדומיינים ולצפות ל-200 עם האתר החדש; אם ה-DNS נכשל — לתעד תחת
+DNS BLOCKER ולסיים.
+
+**DNS/HTTP לא נכשלו, נמדד עכשיו:** `dig +short A kenyonexpress.co.il`
+→ `216.198.79.1`/`64.29.17.65`; `dig +short A www.kenyonexpress.co.il`
+→ `64.29.17.65`/`216.198.79.1`; `dig +short NS kenyonexpress.co.il`
+→ `ns1.vercel-dns.com`/`ns2.vercel-dns.com` (זהה ל-M01-c52..M01-c61).
+`curl` ל-`kenyonexpress.co.il` מחזיר `308` ל-`https://www.kenyonexpress.co.il/`;
+`curl` ל-`www.kenyonexpress.co.il` מחזיר `200`, גוף אמיתי (`lang="he"
+dir="rtl"`). **אין תנאי DNS BLOCKER.**
+
+**הפריסה עצמה נבדקה מראש, בקריאה בלבד, ולא נוסתה בפעם שמינית — אותה
+סיבה בדיוק:** `filter_project_envs` על הפרויקט `kenyonexpress`
+(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אושר שוב: אין
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
+ב-Production (קיימים רק `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`/
+`WEBHOOK_SECRET`/`USE_MOCK` שהקוד לא קורא באותם שמות), ו-
+`ALLOW_INCOMPLETE_ENV` עדיין מוגדר. `list_deployments` (target=production,
+5 אחרונות) מראה **בדיוק את אותן חמש פריסות `ERROR`** שנמדדו ב-M01-c61
+(`dpl_FJYf483tkqSNf5pkG9MenghGQF46` ומטה, האחרונה מ-29.09 17:08 — לפני
+M01-c61, כלומר גם דחיפות התיעוד האחרונות S02/S03/M18-c61 לא הפעילו
+build אוטומטי חדש). תנאי העצירה `deploy-preflight` לא השתנה: הרצת
+`create_deployment` נוספת תיצור פריסת `ERROR` שישית-ומעלה מאותה שרשרת
+ללא מידע חדש. לפי כלל "goal שנתקע פעמיים — לדלג" (מוחל מ-M01-c55):
+**דילוג על ניסיון פריסה נוסף, בפעם השמינית**, ותיעוד ההחלטה כאן. חוסם 2
+עדיין פתוח, לאופיר בלבד (הוספת שלושת משתני Cardcom החסרים ל-Production
+והסרת `ALLOW_INCOMPLETE_ENV`).
+
+פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY).
+HEAD (`bf9780976`) עכשיו **231 קומיטים** אחרי `a388118f1`
+(`git rev-list --count a388118f1..HEAD`, עלה מ-211 ב-M01-c61). עץ עבודה
+נקי. **שערים הורצו במלואם:** `type-check` נקי, `lint` נקי (12 שערים,
+i18n 627/627 ללא שינוי), `test` 610/610 קבצים 7296/7308 (12 דולגים,
+56.84s) ירוק. `build` לא הורץ מחדש: `git diff --stat fd820969f..HEAD --
+next.config.ts next.config.js middleware.ts vercel.json src/ package.json
+pnpm-lock.yaml` ריק — אפס קובץ קוד נגע מאז ה-build האחרון, `.next/BUILD_ID`
+(`eFCMHZ6OS1MHw3jQ6GSzL`) נשאר תואם-מקור.
 
 **SHOWABLE: yes.** דף הבית ודף המוצר עוברים את שער הפריטיות בשלושת הרוחבים
 על HEAD (`ebb6af19b`, פלוס commit התיעוד של הפריט הזה). בית (S02): 8.51% /
@@ -55,73 +96,15 @@ next.config.ts next.config.js middleware.ts vercel.json src/ package.json`,
 (`compare.mjs --page=home` מול `refs/ke_live_{width}.png`), אותה תוצאה:
 380 8.51% / 768 9.02% / 1440 3.95%, כולם PASS, אפס דריפט מ-M02-c61/M15-c61.
 
-**M18-c61 - DONE (30.09): בדיקת idle — כל 17 הפריטים הקודמים במחזור לא
-שינו קוד, MAINTENANCE IDLE נרשם, ונוסף שיפור המרה אמיתי אחד: "נצפו
-לאחרונה" בדף המוצר.** משימת התור: אם כל הפריטים למעלה לא הפיקו שינוי קוד
-במחזור הזה, לרשום MAINTENANCE IDLE עם התאריך, ואז לחפש שיפור אחד אמיתי
-בהמרת לקוחות בדף הבית או בדף המוצר שתואם Electro v7 וליישם אותו.
-
-**נמדד ישירות מ-git:** `git diff --stat adbbae4c9..HEAD` (טווח M01-c61
-עד M17-c61) מחזיר רק `STATE.md`, `docs/BACKLOG.md`,
-`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
-`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`, `package.json`,
-`pnpm-lock.yaml` (bump גרסה של `fast-xml-parser` בלבד, M04-c61) — אפס
-נגיעה ב-`src/`. **MAINTENANCE IDLE 2026-09-30.**
-
-**השיפור שיושם: "נצפו לאחרונה" (Recently Viewed Products), רכיב Electro
-v7 בתבנית המוצר שלא היה קיים באתר שלנו.** רשימת מזהי מוצרים ב-`localStorage`
-בלבד (אותו דפוס בדיוק כמו `lib/wishlist/guest-storage.ts`: גרסה, uuid
-בלבד, דה-דופ, מוגבל ל-12, כל קורא סובל מ-storage פגום), מתורגמת חזרה
-למוצרים חיים דרך server action חדש וקריא-בלבד (`getRecentlyViewedProducts`,
-ללא אימות — המזהים מעולם לא עוזבים את הדפדפן של הקונה, ואין נתון פר-חשבון
-לדלוף). מוצג עם `ProductCard` ו-CSS קיים (`pdp-related`) מתחת ל"מומלצים",
-כך שאין CSS חדש. **קובץ חדש:** `src/lib/recently-viewed/guest-storage.ts`,
-`src/server/actions/recently-viewed.ts`,
-`src/components/storefront/RecentlyViewedRail.tsx`. **חוברו:**
-`src/app/(store)/product/[slug]/page.tsx` (אחרי `RelatedProducts`).
-
-**רכיב קליינט בלבד, ולא בתוך ה-cache.** מזהי הצפייה הם per-browser ולא
-ניתנים לקריאה בזמן ה-prerender הסטטי; הרכיב קורא וכותב אחרי mount בלבד
-(כמו `WishlistHeart`), כך שהעמוד נשאר `◐ Partial Prerender` בדיוק כמו
-לפני — נבדק ב-`pnpm build`. אין נגיעה בכסף/מחיר/מלאי.
-
-**שער ה-i18n נשאר 627/627.** הטקסט "נצפו לאחרונה" עבר דרך `t('pdp.recentlyViewed')`
-ומפתח חדש ב-`messages/he.json`+`messages/en.json`, לא מחרוזת ליטרלית ברכיב —
-בדיוק הכלל ש-`scripts/hebrew-literal-scan.mjs` אוכף. ה-action החדש נרשם
-ב-`PUBLIC_ACTIONS` של `src/server/actions/auth-coverage.test.ts` (קריאת
-קטלוג ציבורית, המזהים מגיעים מה-`localStorage` של הקורא עצמו) — בלי זה
-`pnpm test` נכשל על "every exported action reaches a guard".
-
-**כל השערים רצו במלואם:** `type-check` נקי, `lint` נקי (12 שערים, כולל
-i18n 627/627 ללא שינוי), `test` 610/610 קבצים 7296/7308 (12 דולגים) ירוק,
-`build` עבר (`/product/[slug]` נשאר `◐`).
-
-**שער חזותי הורץ בחזית, product בשלושת הרוחבים, מספרים נרשמו
-ב-`docs/UI-PARITY-REPORT.md`:** 380 → **4.96% PASS**, 768 → **4.56% PASS**,
-1440 → **3.25% PASS** (כל השלושה זהים ל-ספרה האחרונה שנרשמה לפני השינוי,
-M01-c61 04:37-04:41 — מוכיח שהרכיב החדש יושב מתחת לחלון ה-2600px הנמדד
-בכל רוחב ולא הזיז אף פיקסל בתוך הטווח הנמדד). דף הבית לא נגע ולא נמדד
-מחדש. השרת רץ על פורט 3314 (3311 היה תפוס על ידי תהליך `next-server`
-יתום בן כ-3 שעות מסשן קודם — נהרג יחד עם השרת של הפריט הזה בתום המדידה,
-ניקוי, לא מחיקת נתונים).
-
-**נמדד ישירות מ-git, לא הונח:** `git log c6066ae85..HEAD -- messages/he.json
-"src/app/(legal)" src/content/legal src/components/layout/SiteFooter.tsx`
-(מאז המדידה הקודמת, M17-c60) מחזיר **אפס קומיטים** — אף מחרוזת עברית, עמוד
-משפטי או קובץ פוטר לא זזו. `git diff --stat c6066ae85..HEAD` (כל הריפו)
-מראה רק `STATE.md`, `docs/BACKLOG.md`, `docs/DB-SECURITY-MODEL.md`,
-`docs/LAUNCH-READINESS.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`,
-`package.json`, `pnpm-lock.yaml` — כולם תיעוד/תלויות, אפס נגיעה בקוד UI.
-
-**שערים הורצו במלואם (לא רק נבדק דריפט):** `type-check` נקי, `lint` נקי
-(12 שערים: `copy-gate` נקי — אין משפט שיווקי לטיני ברכיב מרונדר, `rtl-logical`
-נקי, i18n 627/627, `locale-format` 116/116, `docs-index` 282, `docs-path-audit`
-152), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 57.84s) — זהה ל-100%
-ל-M17-c60. טסטי קופי/משפטי ממוקדים (`pnpm test src/app/hebrew-copy.test.ts
-src/content/legal`): 4 קבצים 33/33 ירוקים. **אין שער חזותי נדרש** — אפס
-שינוי UI/קוד ייצור, אין דף חדש ואין רכיב שהשתנה.
-
-קובץ ששונה: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M18-c61 ו-M17-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
+הזו ב-M01-c62 לשמירה על תקרת 300 שורות):** M18-c61 — בדיקת idle, המחזור
+לא היה אפס-פעילות (רק תיעוד/lockfile), אז MAINTENANCE IDLE לא נכתב;
+נוסף שיפור המרה אמיתי אחד: "נצפו לאחרונה" (Recently Viewed Products)
+בדף המוצר, לקוח-בלבד דרך `localStorage`+server action קריא-בלבד, שער
+חזותי PASS בשלושת הרוחבים (4.96%/4.56%/3.25%), ארבעת השערים ירוקים.
+M17-c61 — קופי/משפטי, אפס דריפט (`git log` על `messages/he.json` וקבצי
+העמודים המשפטיים מחזיר אפס קומיטים מאז M17-c60), ארבעת השערים ירוקים,
+אין שער חזותי נדרש.
 
 **M15-c61..M01-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
 הזו ב-M16-c61 לשמירה על תקרת 300 שורות):** סנכרון תיעוד (אפס דריפט),
@@ -208,29 +191,29 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (211 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, עודכן ב-M01-c61 מ-194 שנמדד ב-M01-c60; ניסיון הפריסה הידני האחרון
+2. **פריסת פרודקשן של HEAD (231 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, עודכן ב-M01-c62 מ-211 שנמדד ב-M01-c61; ניסיון הפריסה הידני האחרון
    היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   **מ-M01-c56 ועד M01-c61 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
-   פעמיים — לדלג", מוחל מ-M01-c55, פעם שביעית ב-M01-c61 — כולל דחיית משימת
-   התור שביקשה בפירוש build+deploy חדש, ראו M01-c61 למעלה), אך התנאי נבדק
+   **מ-M01-c56 ועד M01-c62 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
+   פעמיים — לדלג", מוחל מ-M01-c55, פעם שמינית ב-M01-c62 — כולל דחיית משימת
+   התור שביקשה בפירוש build+deploy חדש, ראו M01-c62 למעלה), אך התנאי נבדק
    שוב בקריאה בלבד בכל פעם ואושר ללא שינוי: `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
    (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא
    קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (`filter_project_envs`,
-   קריאה בלבד, M01-c61). **`list_deployments` (target=production, 5
-   אחרונות) חושף שVercel מריץ build אוטומטי על כל push ל-`audit/final-audit`
-   דרך חיבור ה-GitHub** — לא רק בניסיונות ידניים — וכל חמשת האחרונות
-   (`1083b8d8d`, `99b2079cb`, `0bcbdac18`, `291bc2d88` פעמיים) `ERROR`
-   באותה סיבה, נמדד M01-c61.
+   קריאה בלבד, M01-c62). **`list_deployments` (target=production, 5
+   אחרונות) מראה בדיוק את אותן חמש פריסות `ERROR` שנמדדו ב-M01-c61** —
+   שום push מאז (כולל S02/S03/M18-c61 התיעודיים) לא הפעיל build אוטומטי
+   חדש (`1083b8d8d`, `99b2079cb`, `0bcbdac18`, `291bc2d88` פעמיים), כולן
+   `ERROR` באותה סיבה, נמדד שוב M01-c62.
    עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על
    `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, מאושר שוב
-   ב-M01-c61 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
-   אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c61, `www.kenyonexpress.co.il`
+   ב-M01-c62 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
+   אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c62, `www.kenyonexpress.co.il`
    מחזיר 200 עם התוכן החי, `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS
    עדיין `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
