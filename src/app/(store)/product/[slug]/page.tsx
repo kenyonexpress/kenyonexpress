@@ -4,6 +4,7 @@ import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import ProductSmallPrint from '@/components/storefront/ProductSmallPrint'
+import RecentlyViewedRail from '@/components/storefront/RecentlyViewedRail'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
@@ -441,6 +442,11 @@ export default async function ProductPage({ params }: Props) {
 
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
+
+        {/* "נצפו לאחרונה" -- per-browser, so it can only be read after mount.
+            See RecentlyViewedRail for why that does not cost this page its
+            static prerender. */}
+        <RecentlyViewedRail productId={product.id} />
       </div>
     </div>
   )

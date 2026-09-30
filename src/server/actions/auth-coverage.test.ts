@@ -67,6 +67,13 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['newsletter.ts:confirmNewsletter', 'token in the confirmation link is the authorisation'],
   ['newsletter.ts:unsubscribeByToken', 'unsubscribe must work from an email client'],
   ['gifts.ts:loadGiftPreview', 'claim token is the authorisation'],
+  // Read-only and per-browser: the id list lives in the caller's own
+  // localStorage and never identifies an account, so there is nothing here a
+  // session check would protect.
+  [
+    'recently-viewed.ts:getRecentlyViewedProducts',
+    "public catalogue read, ids come from the caller's own localStorage",
+  ],
 ])
 
 function filesUnder(dir: string): string[] {

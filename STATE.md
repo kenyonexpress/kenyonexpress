@@ -1,14 +1,57 @@
-RESUME FROM: M18-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c61)
+RESUME FROM: M01-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c61)
 
 ## המשך מ:
 
-**M17-c61 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם התשיעית, אפס
-דריפט.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי, לאתר
-שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח וקישורים שבורים,
-ולתקן. **בסיס המדידה: התיקון האמיתי האחרון עדיין `46b3b93ea` (M17-c51,
-דליפת LTR + placeholder אנגלי + שני redirect ישנים ל-`/legal`) —
-מ-M17-c52 ועד M17-c60 כל מחזור אימת מחדש בלי שינוי.**
+**M18-c61 - DONE (30.09): בדיקת idle — כל 17 הפריטים הקודמים במחזור לא
+שינו קוד, MAINTENANCE IDLE נרשם, ונוסף שיפור המרה אמיתי אחד: "נצפו
+לאחרונה" בדף המוצר.** משימת התור: אם כל הפריטים למעלה לא הפיקו שינוי קוד
+במחזור הזה, לרשום MAINTENANCE IDLE עם התאריך, ואז לחפש שיפור אחד אמיתי
+בהמרת לקוחות בדף הבית או בדף המוצר שתואם Electro v7 וליישם אותו.
+
+**נמדד ישירות מ-git:** `git diff --stat adbbae4c9..HEAD` (טווח M01-c61
+עד M17-c61) מחזיר רק `STATE.md`, `docs/BACKLOG.md`,
+`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`, `package.json`,
+`pnpm-lock.yaml` (bump גרסה של `fast-xml-parser` בלבד, M04-c61) — אפס
+נגיעה ב-`src/`. **MAINTENANCE IDLE 2026-09-30.**
+
+**השיפור שיושם: "נצפו לאחרונה" (Recently Viewed Products), רכיב Electro
+v7 בתבנית המוצר שלא היה קיים באתר שלנו.** רשימת מזהי מוצרים ב-`localStorage`
+בלבד (אותו דפוס בדיוק כמו `lib/wishlist/guest-storage.ts`: גרסה, uuid
+בלבד, דה-דופ, מוגבל ל-12, כל קורא סובל מ-storage פגום), מתורגמת חזרה
+למוצרים חיים דרך server action חדש וקריא-בלבד (`getRecentlyViewedProducts`,
+ללא אימות — המזהים מעולם לא עוזבים את הדפדפן של הקונה, ואין נתון פר-חשבון
+לדלוף). מוצג עם `ProductCard` ו-CSS קיים (`pdp-related`) מתחת ל"מומלצים",
+כך שאין CSS חדש. **קובץ חדש:** `src/lib/recently-viewed/guest-storage.ts`,
+`src/server/actions/recently-viewed.ts`,
+`src/components/storefront/RecentlyViewedRail.tsx`. **חוברו:**
+`src/app/(store)/product/[slug]/page.tsx` (אחרי `RelatedProducts`).
+
+**רכיב קליינט בלבד, ולא בתוך ה-cache.** מזהי הצפייה הם per-browser ולא
+ניתנים לקריאה בזמן ה-prerender הסטטי; הרכיב קורא וכותב אחרי mount בלבד
+(כמו `WishlistHeart`), כך שהעמוד נשאר `◐ Partial Prerender` בדיוק כמו
+לפני — נבדק ב-`pnpm build`. אין נגיעה בכסף/מחיר/מלאי.
+
+**שער ה-i18n נשאר 627/627.** הטקסט "נצפו לאחרונה" עבר דרך `t('pdp.recentlyViewed')`
+ומפתח חדש ב-`messages/he.json`+`messages/en.json`, לא מחרוזת ליטרלית ברכיב —
+בדיוק הכלל ש-`scripts/hebrew-literal-scan.mjs` אוכף. ה-action החדש נרשם
+ב-`PUBLIC_ACTIONS` של `src/server/actions/auth-coverage.test.ts` (קריאת
+קטלוג ציבורית, המזהים מגיעים מה-`localStorage` של הקורא עצמו) — בלי זה
+`pnpm test` נכשל על "every exported action reaches a guard".
+
+**כל השערים רצו במלואם:** `type-check` נקי, `lint` נקי (12 שערים, כולל
+i18n 627/627 ללא שינוי), `test` 610/610 קבצים 7296/7308 (12 דולגים) ירוק,
+`build` עבר (`/product/[slug]` נשאר `◐`).
+
+**שער חזותי הורץ בחזית, product בשלושת הרוחבים, מספרים נרשמו
+ב-`docs/UI-PARITY-REPORT.md`:** 380 → **4.96% PASS**, 768 → **4.56% PASS**,
+1440 → **3.25% PASS** (כל השלושה זהים ל-ספרה האחרונה שנרשמה לפני השינוי,
+M01-c61 04:37-04:41 — מוכיח שהרכיב החדש יושב מתחת לחלון ה-2600px הנמדד
+בכל רוחב ולא הזיז אף פיקסל בתוך הטווח הנמדד). דף הבית לא נגע ולא נמדד
+מחדש. השרת רץ על פורט 3314 (3311 היה תפוס על ידי תהליך `next-server`
+יתום בן כ-3 שעות מסשן קודם — נהרג יחד עם השרת של הפריט הזה בתום המדידה,
+ניקוי, לא מחיקת נתונים).
 
 **נמדד ישירות מ-git, לא הונח:** `git log c6066ae85..HEAD -- messages/he.json
 "src/app/(legal)" src/content/legal src/components/layout/SiteFooter.tsx`
