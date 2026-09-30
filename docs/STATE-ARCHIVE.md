@@ -2,6 +2,50 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c64 (הועבר מ-STATE.md ב-M16-c64, לשמירה על תקרת 300 שורות)
+
+**M15-c64 - DONE (01.10): טבלת הסטטוס ב-STATE.md, ב-`docs/LAUNCH-READINESS.md`
+וב-`docs/BACKLOG.md` סונכרנה מחדש מול `git log` וראיות קוד, אפס דריפט.**
+משימת התור: "Docs sync: refresh the status table in STATE.md,
+docs/LAUNCH-READINESS.md and docs/BACKLOG.md from git log and code
+evidence. Keep manual items for Ofir in order of criticality, one
+list, no duplicates."
+
+**בדיקת דריפט מול המדידה הקודמת (M08-c64, `8d3abea1e`):** `git diff
+--stat 8d3abea1e..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+חזר ריק, ששת הקומיטים שנחתו מאז (M09-c64..M14-c64) הם כולם commits
+תיעוד של re-verification, כל אחד עם רשומת DONE משלו ב-STATE.md, אף
+אחד לא נגע בשורת חסימה, במיגרציה ממתינה או בפנקס הקטלוג.
+
+**נספרו ישירות, לא רק נקראו מהמסמכים הישנים:** `docs/BACKLOG.md`
+עדיין 15 פריטים, אותו סדר, אפס כפילות, אפס פריט חדש. `migrations/pending/*.sql`
+59 קבצים (זהה). `git stash list` 32 (זהה).
+`supabase/catalogue-known-issues.json`'s `known` object 26 ממצאים
+(זהה). `scripts/dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid 999
+(זהה). **מונה קומיטים עודכן**: סעיף 4 (פריסת HEAD), `git rev-list
+--count a388118f1..HEAD` עבר מ-274 (M08-c64) ל-**281** (01.10,
+git בלבד, לא נבדק שוב מול הפריסה החיה). `origin/main` behind, `git
+rev-list --count origin/main..HEAD` עבר מ-637 (M15-c63) ל-**655**
+(01.10); `HEAD..origin/main` עדיין 109 (זהה, ללא שינוי).
+
+**עודכן בפועל:** `docs/BACKLOG.md` (פסקת re-check חדשה + מונה
+הקומיטים בסעיף 4 של הרשימה התחתונה), `docs/LAUNCH-READINESS.md`
+(שורת חסימה 4, שורת "Branches" בטבלת Green, והפסקה התחתונה של "ידני
+לאופיר"). `STATE.md` עצמו.
+
+**ארבעת השערים:** `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12
+שערים ירוקים: docs-index 282 מסמכים, docs-path-audit 154 הפניות
+תלויות ללא שינוי, i18n 627 ללא שינוי). `test` 610/610 קבצים,
+7296/7308 (12 דולגים), זהה בייט למדידה הקודמת. `build` לא רץ מחדש,
+`.next` הקיים (`BUILD_ID SnN_M0tY4BUXd564swDgn`) אומת כמאוחר
+מהקומיט האחרון שנוגע בנתיב רלוונטי לבנייה (`00587d376`, M18-c63, לפי
+mtime של `BUILD_ID`, Oct 1 00:19). אפס שינוי קוד ייצור.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`,
+`docs/LAUNCH-READINESS.md`.
+
 ## M14-c64 (פירוט מלא, כווץ ב-STATE.md ל-M15-c64 לשמירה על תקרת 300 שורות)
 
 **M14-c64 - DONE (01.10): bundle sizes, image pipeline, תגיות ISR
