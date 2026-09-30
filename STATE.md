@@ -1,34 +1,37 @@
-RESUME FROM: M07-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c60)
+RESUME FROM: M08-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c60)
 
 ## המשך מ:
 
-**M06-c60 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
-90+, אפס תיקון נדרש.** אותו מתכון שאומת מ-M06-c1 ועד M06-c59:
-`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3494 pnpm build` → `exit 0` (בלי
-`Failed to compile`, טבלת המסלולים המלאה נדפסה); `pnpm start -p 3494`
-מאותה בנייה (פורט 3494 אומת פנוי לפני ואחרי, `ps -o lstart` אישר שרת
-מאוחר מ-`.next`). `curl` אישר `200` על `/` ועל `/product/barbecue-2`.
-`node_modules/.bin/lighthouse` על שני ה-URL,
-`--throttling-method=devtools --emulated-form-factor=mobile`:
+**M07-c60 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל
+אמיתי.** אותו מתכון שאומת מ-M07-c1 ועד M07-c59: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm
+build` → `exit 0`; `pnpm start -p 3512` מאותה בנייה (פורט 3512 אומת
+פנוי לפני ואחרי, `ps -o lstart` אישר שרת מאוחר מ-`.next`). `curl`
+אישר `200` על `/`. ארבעה chunks של chromium לפי תפקיד (`--grep
+anon/customer/admin/supplier`, worker יחיד), כולם נכתבו לאותו
+`ROUTE_AUDIT_REPORT` משותף: 132 + 25 + 68 + 32 טסטים, כולם עברו
+(playwright מדווח `passed`). נותח בקוד: **241 שורות ייחודיות
+(role+path)**, 239 PASS + 2 NO DATA (זהה לכל מדידה קודמת מ-M07-c1:
+`customer /account/tickets/[id]`, `admin /admin/discounts/[id]`, שני
+פערי seed ידועים), **אפס FAIL, אפס consoleErrors, אפס
+hydrationWarnings, אפס rtl:false** בכל 241 השורות. `git log
+19b363961..HEAD -- src/app src/components src/lib e2e` מחזיר קומיט
+יחיד (`58b5301af`, טסט `payment-money-columns.test.ts` בלבד, אפס
+שינוי קוד/מסלול), ולכן 241/239/2 (זהה ל-M07-c59) הוא לא רעש — אין
+דריפט. השרת נעצר (`kill`, פורט 3512 אומת פנוי מחדש), קובץ ה-JSONL
+הזמני (`/tmp/ke-route-audit-m07c60.jsonl`) נמחק. שערים: `type-check`
+נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n
+627/627, locale 116/64, docs-index 282, docs-path-audit 152), `test`
+608/608 קבצים, 7274/7286 (12 skipped, 56.16s), `build` `exit 0` (חלק
+מהמדידה עצמה). אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה: `STATE.md`.**
 
-| דף | ביצועים | נגישות | BP | SEO |
-|---|---|---|---|---|
-| בית `/` | 99 | 100 | 100 | 100 |
-| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+## M06-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-כל שמונת הציונים מעל 90. `git log 1ca3034b2..HEAD -- src/app
-src/components src/lib` מחזיר קומיט יחיד (`58b5301af`, טסט
-`payment-money-columns.test.ts` בלבד, אפס שינוי קוד תצוגה), ולכן
-99/99 (זהה ל-M06-c59) הוא לא רעש ולא שיפור — אין דריפט. השרת נעצר
-(`kill`, פורט 3494 אומת פנוי מחדש), קבצי ה-JSON הזמניים
-(`/tmp/ke-lh-m06c60/`) נמחקו. שערים: `type-check` נקי, `lint` נקי
-(biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale
-116/116, docs-index 282, docs-path-audit 152), `test` 608/608 קבצים,
-7274/7286 (12 skipped, 58.06s), `build` `exit 0` (חלק מהמדידה עצמה).
-אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
-`STATE.md`.**
+M06-c60: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית
+99/100/100/100, מוצר 99/100/100/100), אפס תיקון נדרש, אפס דריפט
+מ-M06-c59.
 
 ## M05-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
