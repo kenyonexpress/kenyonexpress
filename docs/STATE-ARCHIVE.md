@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c61 (הועבר מ-STATE.md ב-M10-c61, לשמירה על תקרת 300 שורות)
+
+M09-c61 - DONE (30.09): STATE CLEAN. משימת התור: "State cleanup:
+take the single highest-impact open item listed in STATE.md that a
+code agent can complete without Ofir. Implement it fully with tests.
+If none is left write STATE CLEAN in STATE.md and end this item."
+נבדקו שוב, בקריאה בלבד, שני המקורות: 13 הסעיפים ב-"חוסמים פתוחים" למטה
+וכל 15 הסעיפים ב-`docs/BACKLOG.md`. כל אחד מהם דורש פעולה שרק אופיר
+מחזיק: DNS ברשם (פתור בפועל, לא פעולה), משתני סביבה/סודות ב-Vercel,
+אישור והחלת מיגרציה על פרודקשן, הכרעה עסקית על שורות קטלוג כפולות,
+אישורי Cardcom אמיתיים, הפעלת R2 בדשבורד Cloudflare, `CRON_SECRET`
+ב-GitHub Secrets, `RESEND_API_KEY`, מספר ח.פ, ומחיקת stash (מחיקת
+נתונים דורשת אישור מפורש לפי חוק הפרויקט). שלושת המונים שהרשימה תלויה
+בהם נבדקו ישירות ואינם השתנו מ-M08-c61: `migrations/pending/*.sql`
+עדיין **59** קבצים, `supabase/catalogue-known-issues.json` עדיין
+**26** ממצאים, `git stash list` עדיין **32**. `git rev-list --count
+a388118f1..HEAD` עלה מ-218 ל-**219** (הקומיט של M08-c61 עצמו, git-only,
+אינו חוסם חדש). `git status --short` נקי, `HEAD` זהה לקומיט שהמדידה
+הקודמת בדקה. **אין פריט אחד בין 28 הסעיפים ששום כלל בפרויקט לא אוסר על
+סוכן קוד לבצע לבד** — זו הסיבה שהמחזור הקודם (M08-c61) ואחת-עשרה
+המחזורים שקדמו לו כולם הגיעו לאותה מסקנה תחת שם אחר ("BACKLOG EMPTY").
+אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). ארבעת השערים הורצו
+במלואם: `type-check` נקי, `lint` נקי (biome 2025 קבצים, כל שערי התוכן
+ירוקים, i18n 627/627, locale 116/64, docs-index 282, docs-path-audit
+152), `test` 610/610 קבצים 7296/7308 (12 דולגו, 59.69s), `build` (`rm
+-rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3491
+pnpm build`) `exit 0` נקי. **קובץ יחיד שונה: `STATE.md`** (קיפול
+M10-c60 לשורה המכווצת שמתחתיו, לשמירה על תקרת 300 שורות).
+
 ## M08-c61 (הועבר מ-STATE.md ב-M09-c61, לשמירה על תקרת 300 שורות)
 
 **M08-c61 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם חמש-עשרה,
