@@ -2,6 +2,42 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c60 (הועבר מ-STATE.md ב-M01-c61, לשמירה על תקרת 300 שורות)
+
+**M18-c60 - DONE (30.09): בדיקת אפס-פעילות בפעם השביעית, המחזור *לא*
+היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c60..M17-c60)
+לא הפיקו שינוי קוד המחזור, לכתוב `MAINTENANCE IDLE` עם התאריך
+ב-STATE.md, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף המוצר
+שתואם Electro v7 וליישם אותו.
+
+**נמדד ישירות מ-git, לא הונח:** `git diff --stat be089d2b4^..HEAD --
+. ':!STATE.md' ':!docs/'` על שבעה-עשר קומיטי המחזור (M01-c60..M17-c60)
+מחזיר בדיוק שני קבצים, שניהם טסטים בלבד —
+`src/lib/commerce/bought-this-week.test.ts` +
+`src/lib/commerce/stock-live.test.ts` (M09-c60) ו-
+`src/server/domain/vouchers/scan-context.test.ts` (M10-c60). אפס שינוי
+ב-`package.json`/`pnpm-lock.yaml` הפעם (M04-c60 לא מצא bump זכאי כלל,
+בניגוד ל-M04-c59 שריענן `caniuse-lite`) — פחות שינוי מ-c59, לא יותר.
+**אותו דפוס בדיוק כמו M18-c55 עד M18-c59** (בכל אחד מהם נמצאו שני קומיטי
+שינוי-קוד אמיתיים באותו מחזור, תמיד טסטים ולפעמים גם lockfile, מעולם לא
+קוד ייצור) — עדיין לא נצפה מחזור אפס-פעילות מילולי. בעקבות התקדים
+שנקבע שם: `MAINTENANCE IDLE` לא נכתב, ושלב חיפוש שיפור ההמרה לא הופעל,
+כי שני קבצי הטסט אינם שינוי בקוד הייצור שמזין את דף הבית או דף המוצר
+(אין קובץ תחת `src/app` או `src/components` בדיפף), ולכן אין בסיס קוד
+חדש למדוד מולו שיפור המרה — וכפיית פיצ'ר שכזה כל מחזור בלי ליד אמיתי
+תהיה עבודה לא ממוקדת בניגוד לכלל "no half-finished implementations" /
+"don't design for hypothetical future requirements" של הפרויקט.
+
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2025 קבצים, i18n
+627/627, locale-format 116/116, docs-index 282, docs-path-audit 152),
+`test` 610/610 קבצים 7296/7308 (12 skipped, 61.99s) — זהה למדידת
+M17-c60. אין שער חזותי נדרש (אפס שינוי UI/קוד ייצור). `build` לא הורץ
+מחדש: `.next/BUILD_ID` (`_q_e1hFe7GBgP05yPvgZC`) כבר אומת תואם ל-HEAD
+ב-M16-c60/M17-c60, ואף קומיט מאז לא נגע בנתיב build (שני קומיטי הטסט
+בלבד), ועשרות `next-server`/`pnpm start` מקבילים עדיין רצים על המכונה
+(סיכון OOM ל-build מקביל, ללא תועלת מדידה). קובץ ששונה: `STATE.md`
+בלבד.
+
 ## M17-c60 (הועבר מ-STATE.md ב-M18-c60, לשמירה על תקרת 300 שורות)
 
 **M17-c60 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם שמינית, אפס

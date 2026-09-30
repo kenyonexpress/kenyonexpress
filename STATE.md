@@ -1,41 +1,54 @@
-RESUME FROM: M01-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c60)
+RESUME FROM: M02-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c61)
 
 ## המשך מ:
 
-**M18-c60 - DONE (30.09): בדיקת אפס-פעילות בפעם השביעית, המחזור *לא*
-היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c60..M17-c60)
-לא הפיקו שינוי קוד המחזור, לכתוב `MAINTENANCE IDLE` עם התאריך
-ב-STATE.md, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף המוצר
-שתואם Electro v7 וליישם אותו.
+**M01-c61 - BLOCKED (30.09): בדיקת פרודקשן בפעם השמינית — DNS/HTTP
+תקינים, פריסת HEAD עדיין חסומה, אין שינוי מהמצב שתועד ב-M01-c60.**
+משימת התור: להריץ build+deploy של פרודקשן ב-Vercel, ואז `dig`+`curl`
+על שני הדומיינים ולצפות ל-200 עם האתר החדש; אם ה-DNS נכשל — לתעד תחת
+DNS BLOCKER ולסיים.
 
-**נמדד ישירות מ-git, לא הונח:** `git diff --stat be089d2b4^..HEAD --
-. ':!STATE.md' ':!docs/'` על שבעה-עשר קומיטי המחזור (M01-c60..M17-c60)
-מחזיר בדיוק שני קבצים, שניהם טסטים בלבד —
-`src/lib/commerce/bought-this-week.test.ts` +
-`src/lib/commerce/stock-live.test.ts` (M09-c60) ו-
-`src/server/domain/vouchers/scan-context.test.ts` (M10-c60). אפס שינוי
-ב-`package.json`/`pnpm-lock.yaml` הפעם (M04-c60 לא מצא bump זכאי כלל,
-בניגוד ל-M04-c59 שריענן `caniuse-lite`) — פחות שינוי מ-c59, לא יותר.
-**אותו דפוס בדיוק כמו M18-c55 עד M18-c59** (בכל אחד מהם נמצאו שני קומיטי
-שינוי-קוד אמיתיים באותו מחזור, תמיד טסטים ולפעמים גם lockfile, מעולם לא
-קוד ייצור) — עדיין לא נצפה מחזור אפס-פעילות מילולי. בעקבות התקדים
-שנקבע שם: `MAINTENANCE IDLE` לא נכתב, ושלב חיפוש שיפור ההמרה לא הופעל,
-כי שני קבצי הטסט אינם שינוי בקוד הייצור שמזין את דף הבית או דף המוצר
-(אין קובץ תחת `src/app` או `src/components` בדיפף), ולכן אין בסיס קוד
-חדש למדוד מולו שיפור המרה — וכפיית פיצ'ר שכזה כל מחזור בלי ליד אמיתי
-תהיה עבודה לא ממוקדת בניגוד לכלל "no half-finished implementations" /
-"don't design for hypothetical future requirements" של הפרויקט.
+**DNS/HTTP לא נכשלו, נמדד עכשיו:** `dig +short A kenyonexpress.co.il`
+→ `216.198.79.1`/`64.29.17.65`; `dig +short A www.kenyonexpress.co.il`
+→ `216.198.79.1`/`216.198.79.65`; `dig +short NS kenyonexpress.co.il`
+→ `ns1.vercel-dns.com`/`ns2.vercel-dns.com` (זהה ל-M01-c52..M01-c60).
+`curl` ל-`kenyonexpress.co.il` מחזיר `308` ל-`https://www.kenyonexpress.co.il/`;
+`curl` ל-`www.kenyonexpress.co.il` מחזיר `200`, גוף אמיתי (`lang="he"
+dir="rtl"`, לוגו קניון EXPRESS). **אין תנאי DNS BLOCKER.**
 
-שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2025 קבצים, i18n
-627/627, locale-format 116/116, docs-index 282, docs-path-audit 152),
-`test` 610/610 קבצים 7296/7308 (12 skipped, 61.99s) — זהה למדידת
-M17-c60. אין שער חזותי נדרש (אפס שינוי UI/קוד ייצור). `build` לא הורץ
-מחדש: `.next/BUILD_ID` (`_q_e1hFe7GBgP05yPvgZC`) כבר אומת תואם ל-HEAD
-ב-M16-c60/M17-c60, ואף קומיט מאז לא נגע בנתיב build (שני קומיטי הטסט
-בלבד), ועשרות `next-server`/`pnpm start` מקבילים עדיין רצים על המכונה
-(סיכון OOM ל-build מקביל, ללא תועלת מדידה). קובץ ששונה: `STATE.md`
-בלבד.
+**הפריסה עצמה נבדקה מראש, בקריאה בלבד, ולא נוסתה בפעם שישית — אותה
+סיבה בדיוק:** `filter_project_envs` על הפרויקט `kenyonexpress`
+(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אושר שוב: אין
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
+ב-Production (קיימים רק `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/
+`CARDCOM_API_KEY`/`CARDCOM_WEBHOOK_SECRET`/`CARDCOM_USE_MOCK` שהקוד
+לא קורא באותם שמות), ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר. `list_deployments`
+(target=production, 5 אחרונות) מראה **חמש פריסות `ERROR` רצופות**
+מקומיטים `1083b8d8d`(M18-c51) → `99b2079cb`(M18-c52) → `0bcbdac18`(M18-c53)
+→ `291bc2d88`(M18-c54, פעמיים — `dpl_46ohZTeWTNay3kfkDKQPDcTjPRcE` ו-
+`dpl_FJYf483tkqSNf5pkG9MenghGQF46` שכבר תועד ב-M01-c55) — **כלומר
+Vercel מפעיל build אוטומטי על כל push ל-`audit/final-audit` דרך
+GitHub, ולא רק בניסיונות ידניים**, וכולם נכשלים באותה סיבה. תנאי
+העצירה `deploy-preflight` לא השתנה: הרצת `create_deployment` נוספת
+תיצור פריסת `ERROR` שביעית-ומעלה ללא מידע חדש. לפי כלל "goal שנתקע
+פעמיים — לדלג" (מוחל לראשונה ב-M01-c55, נשמר עד M01-c60): **דילוג על
+ניסיון פריסה נוסף, בפעם השישית**, ותיעוד ההחלטה כאן. **חוסם 2 עדיין
+פתוח, לאופיר בלבד** (הוספת שלושת משתני Cardcom החסרים ל-Production
+והסרת `ALLOW_INCOMPLETE_ENV`).
+
+פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY).
+HEAD (`adbbae4c9`) עכשיו **211 קומיטים** אחרי `a388118f1`
+(`git rev-list --count a388118f1..HEAD`, עלה מ-194 ב-M01-c60). עץ עבודה
+נקי. שערים לא הורצו מחדש (בדיקה, לא שינוי קוד — אפס קובץ קוד השתנה,
+רק `STATE.md`/`docs/STATE-ARCHIVE.md`).
+
+## M18-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M18-c60: בדיקת אפס-פעילות בפעם השביעית, המחזור *לא* היה אפס-פעילות —
+שני קומיטי טסט בלבד (`bought-this-week`/`stock-live`, `scan-context`),
+אפס קוד ייצור, לפי אותו תקדים כמו M18-c55..M18-c59. ארבעת השערים
+ירוקים, אין שער חזותי נדרש.
 
 ## M17-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -159,26 +172,29 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (194 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, עודכן ב-M01-c60 מ-189 שנמדד ב-M15-c59; ניסיון הפריסה עצמו האחרון
+2. **פריסת פרודקשן של HEAD (211 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, עודכן ב-M01-c61 מ-194 שנמדד ב-M01-c60; ניסיון הפריסה הידני האחרון
    היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   **מ-M01-c56 ועד M01-c60 לא נוסה ניסיון פריסה נוסף** (כלל "goal שנתקע
-   פעמיים — לדלג", מוחל מ-M01-c55, פעם שישית ב-M01-c60 — כולל דחיית משימת
-   התור שביקשה בפירוש build+deploy חדש, ראו M01-c60 למעלה), אך התנאי נבדק
+   **מ-M01-c56 ועד M01-c61 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
+   פעמיים — לדלג", מוחל מ-M01-c55, פעם שביעית ב-M01-c61 — כולל דחיית משימת
+   התור שביקשה בפירוש build+deploy חדש, ראו M01-c61 למעלה), אך התנאי נבדק
    שוב בקריאה בלבד בכל פעם ואושר ללא שינוי: `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
    (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא
    קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (`filter_project_envs`,
-   קריאה בלבד, M01-c60). `list_deployments` (target=production) מאשר חמש
-   הפריסות האחרונות (כולן מניסיונות קודמים, לא חדש) עדיין `ERROR`.
+   קריאה בלבד, M01-c61). **`list_deployments` (target=production, 5
+   אחרונות) חושף שVercel מריץ build אוטומטי על כל push ל-`audit/final-audit`
+   דרך חיבור ה-GitHub** — לא רק בניסיונות ידניים — וכל חמשת האחרונות
+   (`1083b8d8d`, `99b2079cb`, `0bcbdac18`, `291bc2d88` פעמיים) `ERROR`
+   באותה סיבה, נמדד M01-c61.
    עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על
    `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, מאושר שוב
-   ב-M01-c60 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
-   אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c60, `www.kenyonexpress.co.il`
+   ב-M01-c61 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
+   אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c61, `www.kenyonexpress.co.il`
    מחזיר 200 עם התוכן החי, `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS
    עדיין `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
