@@ -1,7 +1,27 @@
-RESUME FROM: M02-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c62)
+RESUME FROM: M03-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c62)
 
 ## המשך מ:
+
+**M02-c62 - DONE (30.09): שער פריטיות (`scripts/compare.mjs`) הורץ מחדש
+בחזית, שרת זמני על פורט 3919 (`.next` אומת source-identical ל-HEAD דרך
+`git diff --stat fd820969f..HEAD -- next.config.ts next.config.js
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml`, ריק).** דף
+הבית מול `refs/ke_live_{width}.png`, דף המוצר מול
+`refs/electro_product_{width}.png` (ברירת המחדל `מוצר-לדוגמא`, אותה שורה
+שהשער השתמש בה ב-`eb1768c50`/`fd820969f`):
+
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית | 8.51% PASS | 9.02% PASS | 3.95% PASS |
+| מוצר | 4.96% PASS | 4.56% PASS | 3.25% PASS |
+
+כל שש המדידות מתחת לסף 11%, אפס רגרסיה, אפס תיקון קוד נדרש. השורות נכתבו
+אוטומטית על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md` (08:01-08:13,
+תג `2342c2680-dirty`). השרת הזמני נהרג בסיום, לא נותר תהליך יתום. שערים:
+`type-check` נקי, `lint` נקי, `test` ירוק, `build` לא נדרש מחדש (אפס שינוי
+קוד). קובץ ששונה מלבד `STATE.md`: `docs/UI-PARITY-REPORT.md` (נכתב
+אוטומטית על ידי השער).
 
 **M01-c62 - BLOCKED (30.09): בדיקת פרודקשן בפעם התשיעית — DNS/HTTP
 תקינים, פריסת HEAD עדיין חסומה, אין שינוי מהמצב שתועד ב-M01-c61.**
@@ -97,14 +117,10 @@ next.config.ts next.config.js middleware.ts vercel.json src/ package.json`,
 380 8.51% / 768 9.02% / 1440 3.95%, כולם PASS, אפס דריפט מ-M02-c61/M15-c61.
 
 **M18-c61 ו-M17-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M01-c62 לשמירה על תקרת 300 שורות):** M18-c61 — בדיקת idle, המחזור
-לא היה אפס-פעילות (רק תיעוד/lockfile), אז MAINTENANCE IDLE לא נכתב;
-נוסף שיפור המרה אמיתי אחד: "נצפו לאחרונה" (Recently Viewed Products)
-בדף המוצר, לקוח-בלבד דרך `localStorage`+server action קריא-בלבד, שער
-חזותי PASS בשלושת הרוחבים (4.96%/4.56%/3.25%), ארבעת השערים ירוקים.
-M17-c61 — קופי/משפטי, אפס דריפט (`git log` על `messages/he.json` וקבצי
-העמודים המשפטיים מחזיר אפס קומיטים מאז M17-c60), ארבעת השערים ירוקים,
-אין שער חזותי נדרש.
+הזו ב-M02-c62 לשמירה על תקרת 300 שורות):** M18-c61 — שיפור המרה אמיתי
+אחד, "נצפו לאחרונה" (Recently Viewed Products) בדף המוצר, שער חזותי PASS
+בשלושת הרוחבים (4.96%/4.56%/3.25%). M17-c61 — קופי/משפטי, אפס דריפט.
+ארבעת השערים ירוקים בשניהם.
 
 **M15-c61..M01-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
 הזו ב-M16-c61 לשמירה על תקרת 300 שורות):** סנכרון תיעוד (אפס דריפט),
