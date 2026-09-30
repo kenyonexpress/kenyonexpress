@@ -2,6 +2,56 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c59 (הועבר מ-STATE.md ב-M15-c59, לשמירה על תקרת 300 שורות)
+
+**M14-c59 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
+cache, אימות מחדש מול build אמיתי, אפס דריפט מ-M14-c58.** משימת התור:
+לבדוק bundle sizes, image pipeline output, ISR tags ו-cache headers,
+ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log
+d80244763..HEAD` (מאז המדידה הקודמת, M14-c58) מחזיר 17 קומיטים
+(M13-c58..M13-c59), כולם תיעוד/מדידה/תלות/טסטים (אבטחה, SEO, נגישות,
+כיסוי טסטים, STATE CLEAN, backlog, route audit, Lighthouse, DB
+advisors, תלות). `git diff --stat d80244763..HEAD -- src/ supabase/
+package.json pnpm-lock.yaml next.config.mjs vercel.json` מחזיר רק שני
+קבצים: `pnpm-lock.yaml` (עדכון `caniuse-lite`, M04-c59, לא נוגע ל-JS
+נשלח) ו-`src/lib/payments/payment-money-columns.test.ts` (טסט בלבד,
+M10-c59) — **אפס קומיט נגע בקוד ייצור על משטח הביצועים**.
+
+נמדד בכל זאת מחדש: **build אמיתי חדש נבנה** (`pnpm build`, HEAD
+`0d5f34abb`, 29.6s, `Cache Components enabled`, אפס אזהרה):
+- **Bundle**: `scripts/bundle-gate.mjs` על `.next/build-manifest.json`
+  הטרי — shared first-load **223.8 KB gz על 8 chunks** (budget 260KB,
+  ok). `scripts/bundle-report.mjs` מול `pnpm start` על פורט 3391 —
+  heaviest route `/checkout` ב-324.1 kB gzipped; **27 chunks נבדלים,
+  345.1 kB gz בסך הכל — זהה ל-100% ל-M14-c58**.
+- **צנרת תמונות**: שש שימושי `fill`+`sizes` בקוד (`ProductCard.tsx`
+  (×2), `CouponCard.tsx`, `coupons/[id]/page.tsx`, `ProductGallery.tsx`,
+  `CategoryProductCard.tsx`) כולם עם `vw`/`calc(...vw...)` בביטוי;
+  `HeroSlider.tsx` (`HERO_IMAGE_SIZES`) הוא `px` קבוע במתכוון — box
+  בגובה קבוע בכל viewport (מתועד בקוד, ה-bug שכבר תוקן פעמיים
+  ב-`ImageUploader`/`CouponDealForm` לא חוזר. **אפס שימוש `fill` חדש
+  נמצא** (חיפוש רחב בכל `src/**/*.tsx` שמייבא `next/image`, שלוש
+  תוצאות נוספות היו טקסט הערה/placeholder, לא `fill` אמיתי).
+- **ISR/tags**: פלט ה-build מציג `Revalidate`/`Expire` על כל דף
+  (`1h`/`1d` על רוב הנתיבים הדינמיים), זהה למבנה הקודם; `pnpm lint`
+  כולל `node scripts/cache-invalidation-gate.mjs` בנפרד — **נקי**
+  (כל כתיבה לטבלה במטמון מבטלת אותה, כל scope במטמון נושא תג).
+- **כותרות cache** (מול `pnpm start` פורט 3391): `/_next/static/chunks/*`
+  `public, max-age=31536000, immutable`; `/` (HTML דינמי) `private,
+  no-cache, no-store, max-age=0, must-revalidate`; `/_next/image?...`
+  `public, max-age=86400, must-revalidate`. שלושתן תואמות למדיניות
+  שנמדדה ב-M14-c58 (`docs/ARCHITECTURE-PERFORMANCE.md` §3.2
+  (`minimumCacheTTL: 2_678_400`) הוא מסמך ספק/ארכיטקטורה מוקדם עם שמות
+  קומפוננטה שלא קיימים בקוד (`HomeHeroImage`, `ProductCardImage`) —
+  לא ה-implementation בפועל, לא נבדק כאמת).
+
+**אפס רגרסיה נמצאה, אפס תיקון נדרש.** `type-check` נקי, `lint` נקי
+(2023 קבצים, 12 שערי תוכן ירוקים כולל cache-invalidation, i18n
+627/627, locale-format 116/116), `test` 608/608 קבצים 7274/7286 (12
+skipped, זהה ל-M13-c59), `build` נבנה מחדש בהצלחה. **קבצים ששונו:
+`STATE.md` + `docs/STATE-ARCHIVE.md`** (M13-c59 הועבר לתקרת 300
+שורות) — אפס שינוי קוד ייצור.
+
 ## M13-c59 (הועבר מ-STATE.md ב-M14-c59, לשמירה על תקרת 300 שורות)
 
 **M13-c59 - DONE (30.09): אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy

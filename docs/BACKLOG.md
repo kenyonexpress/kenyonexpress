@@ -105,6 +105,21 @@ against `supabase/catalogue-known-issues.json`'s `known` object,
 unchanged. Item 15's stash count (32) re-checked with `git stash list`,
 unchanged.
 
+**Re-checked 2026-09-30 (M15-c59) against `git log 456becb9c..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Seventeen commits
+landed since M15-c58 (M16-c58..M18-c58, M01-c59..M14-c59); only two
+touched a path this file's items depend on (`pnpm-lock.yaml`
+`caniuse-lite` bump, M04-c59; `payment-money-columns.test.ts` test-only,
+M10-c59), neither touched a blocking line or added a manual item. Item
+4's commit count changed again (171 -> 189, `git rev-list --count
+a388118f1..HEAD`, git-only, production not re-probed this item). Item
+5's 18-file list re-checked directly against `migrations/pending/`, all
+present, no new file. Item 7's finding count (26) re-checked directly
+against `supabase/catalogue-known-issues.json`'s `known` object,
+unchanged. Item 12's `dns-watch.sh` process re-checked with `pgrep -fl`,
+still pid 957 under `caffeinate` pid 999, unchanged. Item 15's stash
+count (32) re-checked with `git stash list`, unchanged.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -126,11 +141,11 @@ unchanged.
 4. **אישור פריסת HEAD לפרודקשן**, אחרי סעיף 3. פרודקשן עדיין מגיש
    `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
    המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54, 118
-   ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57 (וניסיונות
-   פריסה חוזרים ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן
-   נשאר על `a388118f1`), וכעת (30.09, M15-c58, `git rev-list --count
-   a388118f1..HEAD`, git-only — לא נוסתה פריסה חוזרת בפריט הזה) **171**
-   קומיטים מאחורי HEAD.
+   ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57, 171 ב-M15-c58
+   (וניסיונות פריסה חוזרים ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק,
+   פרודקשן נשאר על `a388118f1`), וכעת (30.09, M15-c59, `git rev-list
+   --count a388118f1..HEAD`, git-only — לא נוסתה פריסה חוזרת בפריט הזה)
+   **189** קומיטים מאחורי HEAD.
    `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, לפי `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2,
    LAUNCH-READINESS.md שורה חוסמת 4.

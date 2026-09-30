@@ -1,55 +1,53 @@
-RESUME FROM: M15-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c59)
+RESUME FROM: M16-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c59)
 
 ## המשך מ:
 
-**M14-c59 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
-cache, אימות מחדש מול build אמיתי, אפס דריפט מ-M14-c58.** משימת התור:
-לבדוק bundle sizes, image pipeline output, ISR tags ו-cache headers,
-ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log
-d80244763..HEAD` (מאז המדידה הקודמת, M14-c58) מחזיר 17 קומיטים
-(M13-c58..M13-c59), כולם תיעוד/מדידה/תלות/טסטים (אבטחה, SEO, נגישות,
-כיסוי טסטים, STATE CLEAN, backlog, route audit, Lighthouse, DB
-advisors, תלות). `git diff --stat d80244763..HEAD -- src/ supabase/
-package.json pnpm-lock.yaml next.config.mjs vercel.json` מחזיר רק שני
-קבצים: `pnpm-lock.yaml` (עדכון `caniuse-lite`, M04-c59, לא נוגע ל-JS
-נשלח) ו-`src/lib/payments/payment-money-columns.test.ts` (טסט בלבד,
-M10-c59) — **אפס קומיט נגע בקוד ייצור על משטח הביצועים**.
+**M15-c59 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
+docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md רועננה מול git log וראיית קוד,
+אפס דריפט מ-M15-c58.** משימת התור: לרענן את טבלת המצב בשלושת הקבצים
+מ-git log וראיית קוד, לשמור פריט אחד לכל סעיף ידני לאופיר לפי סדר
+קריטיות, בלי כפילות. בדיקת דריפט: `git log 456becb9c..HEAD` (מאז
+המדידה הקודמת, M15-c58) מחזיר 17 קומיטים (M16-c58..M18-c58,
+M01-c59..M14-c59), כולם תיעוד/מדידה/תלות/טסטים (ביצועים, אבטחה, SEO,
+נגישות, כיסוי טסטים, STATE CLEAN, backlog, route audit, Lighthouse, DB
+advisors, תברואת תלויות). `git diff --stat 456becb9c..HEAD -- src/
+supabase/ migrations/ package.json pnpm-lock.yaml next.config.mjs
+vercel.json scripts/cron-jobs.json .github/workflows/` מחזיר רק שני
+קבצים: `pnpm-lock.yaml` (עדכון `caniuse-lite`, M04-c59) ו-
+`src/lib/payments/payment-money-columns.test.ts` (טסט בלבד, M10-c59) —
+**אפס קומיט נגע בשורת חסימה**.
 
-נמדד בכל זאת מחדש: **build אמיתי חדש נבנה** (`pnpm build`, HEAD
-`0d5f34abb`, 29.6s, `Cache Components enabled`, אפס אזהרה):
-- **Bundle**: `scripts/bundle-gate.mjs` על `.next/build-manifest.json`
-  הטרי — shared first-load **223.8 KB gz על 8 chunks** (budget 260KB,
-  ok). `scripts/bundle-report.mjs` מול `pnpm start` על פורט 3391 —
-  heaviest route `/checkout` ב-324.1 kB gzipped; **27 chunks נבדלים,
-  345.1 kB gz בסך הכל — זהה ל-100% ל-M14-c58**.
-- **צנרת תמונות**: שש שימושי `fill`+`sizes` בקוד (`ProductCard.tsx`
-  (×2), `CouponCard.tsx`, `coupons/[id]/page.tsx`, `ProductGallery.tsx`,
-  `CategoryProductCard.tsx`) כולם עם `vw`/`calc(...vw...)` בביטוי;
-  `HeroSlider.tsx` (`HERO_IMAGE_SIZES`) הוא `px` קבוע במתכוון — box
-  בגובה קבוע בכל viewport (מתועד בקוד, ה-bug שכבר תוקן פעמיים
-  ב-`ImageUploader`/`CouponDealForm` לא חוזר. **אפס שימוש `fill` חדש
-  נמצא** (חיפוש רחב בכל `src/**/*.tsx` שמייבא `next/image`, שלוש
-  תוצאות נוספות היו טקסט הערה/placeholder, לא `fill` אמיתי).
-- **ISR/tags**: פלט ה-build מציג `Revalidate`/`Expire` על כל דף
-  (`1h`/`1d` על רוב הנתיבים הדינמיים), זהה למבנה הקודם; `pnpm lint`
-  כולל `node scripts/cache-invalidation-gate.mjs` בנפרד — **נקי**
-  (כל כתיבה לטבלה במטמון מבטלת אותה, כל scope במטמון נושא תג).
-- **כותרות cache** (מול `pnpm start` פורט 3391): `/_next/static/chunks/*`
-  `public, max-age=31536000, immutable`; `/` (HTML דינמי) `private,
-  no-cache, no-store, max-age=0, must-revalidate`; `/_next/image?...`
-  `public, max-age=86400, must-revalidate`. שלושתן תואמות למדיניות
-  שנמדדה ב-M14-c58 (`docs/ARCHITECTURE-PERFORMANCE.md` §3.2
-  (`minimumCacheTTL: 2_678_400`) הוא מסמך ספק/ארכיטקטורה מוקדם עם שמות
-  קומפוננטה שלא קיימים בקוד (`HomeHeroImage`, `ProductCardImage`) —
-  לא ה-implementation בפועל, לא נבדק כאמת).
+נמדד בכל זאת מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, 12 שערים,
+docs-index 282 מסמכים ללא שינוי, docs-path-audit 152 ידועים ללא שינוי,
+i18n 627/627, locale-format 116/116), `test` 608/608 קבצים, 7274/7286
+(12 skipped) — זהה ל-100% למה שנמדד ב-M14-c59, `build` נבנה מחדש
+בהצלחה. מספרים שהשתנו (git בלבד, לא פרודקשן):
+- **קומיטים מאחורי `a388118f1` (החי בפרודקשן)**: `git rev-list --count
+  a388118f1..HEAD` = **189** (היה 175 ב-M01-c59, 171 ב-M15-c58) — חוסם 2
+  למטה ו-`docs/BACKLOG.md` סעיף 4 עודכנו.
+- **מרחק מ-`origin/main`**: `git rev-list --count origin/main..HEAD` =
+  **563** (היה 545 ב-M15-c58); `origin/main..HEAD` (autopilot) נשאר
+  **109**, ללא שינוי — `docs/LAUNCH-READINESS.md` עודכן.
+- **פנקס הקטלוג** (`supabase/catalogue-known-issues.json`): **26**
+  ממצאים, ללא שינוי. **מיגרציות ממתינות**: כל 18 הקבצים בסדר ההחלה
+  (204, 209, 218, 220, 223, 224, 234-236, 239-247) עדיין קיימים
+  ב-`migrations/pending/`, אפס קובץ חדש. **stash**: `git stash list`
+  מחזיר **32**, ללא שינוי. **`dns-watch.sh`**: עדיין רץ תחת `caffeinate`
+  (pid 957/999), ללא שינוי.
 
-**אפס רגרסיה נמצאה, אפס תיקון נדרש.** `type-check` נקי, `lint` נקי
-(2023 קבצים, 12 שערי תוכן ירוקים כולל cache-invalidation, i18n
-627/627, locale-format 116/116), `test` 608/608 קבצים 7274/7286 (12
-skipped, זהה ל-M13-c59), `build` נבנה מחדש בהצלחה. **קבצים ששונו:
-`STATE.md` + `docs/STATE-ARCHIVE.md`** (M13-c59 הועבר לתקרת 300
-שורות) — אפס שינוי קוד ייצור.
+`docs/BACKLOG.md` נבדק מול הרשימה הקיימת: עדיין 15 סעיפים, אותו סדר,
+אפס כפילות, אפס פריט חדש — נוסף פסקת "נבדק מחדש (M15-c59)" ועודכן סעיף
+4 (189). **קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (M14-c59
+הועבר לתקרת 300 שורות), `docs/BACKLOG.md`, `docs/LAUNCH-READINESS.md`**
+— אפס שינוי קוד ייצור.
+
+## M14-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M14-c59: ביצועים, bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו מחדש
+מול build אמיתי (223.8 KB gz shared first-load, 8 chunks; `/checkout`
+324.1 kB gz הכבד ביותר), אפס דריפט מ-M14-c58 — זהה ל-100%. אפס שינוי
+קוד.
 
 ## M13-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -157,9 +155,9 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (175 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, עודכן ב-M01-c59; ניסיון הפריסה עצמו האחרון היה ב-M01-c55, 105
-   קומיטים אז)**:
+2. **פריסת פרודקשן של HEAD (189 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, עודכן ב-M15-c59 מ-175 שנמדד ב-M01-c59; ניסיון הפריסה עצמו האחרון
+   היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
