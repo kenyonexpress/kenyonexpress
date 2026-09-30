@@ -2,6 +2,49 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c64 (פירוט מלא, כווץ ב-STATE.md ל-M11-c64 לשמירה על תקרת 300 שורות)
+
+**M10-c64 - DONE (30.09): כיסוי טסטים נבדק מחדש בפעם רביעית, שש
+הקטגוריות הקריטיות עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש.**
+משימת התור: "find the critical module with the lowest coverage among
+packages/money, payment split, voucher state machine, order state
+machine, refunds and RLS helpers. Add unit tests until branches are
+covered." זהה למילה למשימת M10-c61/M10-c62/M10-c63.
+
+**בדיקת דריפט קודם מדידה מחדש:** `git log c64f243d7..HEAD` (קצה
+M10-c63) ו-`git diff --stat` על `src/ vitest.config.ts package.json
+pnpm-lock.yaml` הראו רק `src/components/ProductCard.tsx` ו-
+`src/lib/related-products.ts` (שורת דירוג הכוכבים, M18-c63 — פיצ'ר
+תור קודם שכבר נשלח) — אף אחד מהם לא נוגע באחת משש הקטגוריות. אין
+`packages/` בריפו הזה (נבדק שוב); שם הקבוצה במשימה מתייחס למודול
+`money` עצמו, לא לתיקיית חבילה.
+
+הורצה מדידה ישירה בכל זאת (לא הוסתמך על "אפס דריפט" בלבד): נתיבי
+14 קבצי היעד אומתו אחד-אחד עם `test -f` (לא רק זכרון) — שני נתיבים
+מהמדידות הקודמות לא קיימים בפועל ותוקנו כאן: `refund-destination.ts`
+ו-`expiry-refund.ts` יושבים תחת `src/lib/payments/` ו-`src/lib/vouchers/`
+(לא `src/server/...` כפי שנרשם ב-M10-c62/M10-c63 — השם המקוצר הטעה,
+הקוד עצמו לא זז). `vitest run --coverage` עם `--coverage.include`
+נפרד לכל אחד מ-14 הקבצים המאומתים (`money.ts`, `commerce/money.ts`,
+`checkout/split.ts`, `commerce/commission.ts`,
+`vouchers/state-machine.ts`, `orders/state-machine.ts`,
+`orders/refund.ts`, `orders/refund-request.ts`,
+`actions/payments/refund.ts`, `payments/refund-record.ts`,
+`lib/payments/refund-destination.ts`, `lib/vouchers/expiry-refund.ts`,
+`supabase/rls-report-fetch.ts`, `payments/refund-wallet.ts`): **354/354
+ענפים, 470/470 statements, 98/98 functions, 406/406 lines — 100% על
+פני כל שש הקטגוריות**, זהה בדיוק ל-M10-c61/M10-c62/M10-c63. **אפס קוד
+שונה, אפס טסט חדש נדרש.**
+
+**שערים:** `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282,
+docs-path-audit 154). `test` רץ כחלק ממדידת הכיסוי, 610/610 קבצים,
+7296/7308 ירוקים (12 דולגים). `build` לא הורץ מחדש: אפס שינוי ב-`src/`
+בפריט הזה (תיעוד בלבד), ואין נתיב רלוונטי ל-build שהשתנה מאז האימות
+האחרון (M07-c64, על אותו HEAD).
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M09-c64 (פירוט מלא, כווץ ב-STATE.md ל-M10-c64 לשמירה על תקרת 300 שורות)
 
 **M09-c64 - STATE CLEAN (30.09): אפס פריט שסוכן קוד יכול לסגור לבד
