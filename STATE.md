@@ -1,41 +1,47 @@
-RESUME FROM: M02-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c64)
+RESUME FROM: M03-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c64)
 
 ## המשך מ:
 
-**M01-c64: BLOCKED (30.09), נבדק מחדש, build/deploy חדש לא הופעל
-(פעם עשירית).** משימת התור: build+deploy פרודקשן חדש דרך Vercel, ואז
-dig+curl על שני הדומיינים, תיעוד DNS BLOCKER אם ה-DNS נכשל.
+**M02-c64 - DONE (30.09): שער חזותי הורץ בפורגראונד, בית ומוצר, שלושת
+הרוחבים, אפס רגרסיה.** משימת התור: להריץ `scripts/compare.mjs` לדף הבית
+ולדף המוצר ב-380/768/1440 מול reference Electro v7, לתקן כל רגרסיה עד
+שכולן מתחת ל-11%, ולרשום ב-STATE.md.
 
-**DNS ו-HTTP נבדקו בפועל, שניהם תקינים, אין DNS BLOCKER.**
-`dig +short A kenyonexpress.co.il` מחזיר `64.29.17.1`/`216.198.79.1`,
-`dig +short A www.kenyonexpress.co.il` מחזיר `216.198.79.1`/
-`216.198.79.65`, `dig +short NS kenyonexpress.co.il` מחזיר
-`ns1.vercel-dns.com`/`ns2.vercel-dns.com`. `curl` לאפקס מחזיר `308`
-אל `www`, `curl` ל-`www.kenyonexpress.co.il` מחזיר `200` עם תוכן חי
-(`lang="he" dir="rtl"`, "קניון EXPRESS").
+**התהליך:** `pnpm build` נקי, שרת `PORT=3312 pnpm start` הורם (3311 היה
+תפוס על ידי סשן מקביל אחר על אותו ריפו, לא נגעתי בו), שש ריצות
+`compare.mjs` — דף הבית מול `refs/ke_live_{width}.png` (baseline
+ה-CLAUDE.md), דף המוצר מול `refs/electro_product_{width}.png` על
+`barbecue-2` — כל ריצה חוכתה למספרים שלה בתוך אותו הרצף. ריצת דף המוצר
+חצתה את מגבלת ה-300 שניות של כלי ה-Bash ועברה לרקע אוטומטית מצד הכלי;
+לא הוכרזה כהושלמה ולא הופק מספר עד שהתוצאה בפועל התקבלה (Monitor על
+תהליך `compare.mjs`, לא ניחוש).
 
-**Build+deploy חדש לא הופעל, בכוונה, פעם עשירית.** כלל "goal שנתקע
-פעמיים, לדלג" כבר הופעל תשע פעמים ברציפות (M01-c56..M01-c63) על אותו
-חוסם בדיוק. לפני שדילגתי בפעם העשירית וידאתי מחדש, בקריאה בלבד, שהתנאי
-לא השתנה: `filter_project_envs` (Vercel MCP, פרויקט `kenyonexpress`)
-מראה סביבת Production **עדיין ללא** שלושת השמות ש-
-`scripts/deploy-preflight.mjs` דורש (`CARDCOM_TERMINAL_NUMBER`,
-`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`; מה שקיים במקומם הוא
-`CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY`, שהקוד לא
-קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. `list_deployments`
-(target=production, 5 אחרונות) מראה בדיוק את אותן חמש `dpl_` שנמדדו
-מ-M01-c61 ואילך, שום build אוטומטי חדש לא רץ מאז. HEAD עכשיו 267
-קומיטים אחרי `a388118f1` (עלה מ-249 ב-M01-c63). התיקון האמיתי (שינוי
-env ב-Vercel) אסור לסוכן לפי כללי הפריט הזה, אז ניסיון פריסה נוסף היה
-רק מייצר `ERROR` שישי בלי מידע חדש.
+**תוצאות, כולן PASS, אפס דריפט מ-M02-c63:**
 
-**מסקנה: BLOCKED, לא DNS, חוסם ה-env הידוע.** DNS ו-HTTP תקינים; החוסם
-הבלעדי הוא שלושת משתני Cardcom החסרים ועוד `ALLOW_INCOMPLETE_ENV` ב-
-Production, פעולה של אופיר בלבד. אפס שינוי קוד בפריט הזה, לכן לא רצו
-`pnpm test`/`lint`/`type-check`/`build`.
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית | 8.51% | 9.02% | 3.95% |
+| מוצר | 5.61% | 4.92% | 2.99% |
 
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M18-c63).
+השער עצמו רשם את שש השורות ל-`docs/UI-PARITY-REPORT.md` (חותמת
+`9a7c8f839`/`9a7c8f839-dirty`). אזהרת `HEIGHT RATIO` בריצות דף המוצר
+(העמוד המקומי קצר בהרבה מ-reference ה-Electro המלא) זהה למספרים שנמדדו
+כבר ב-M18-c62/M08-c62/M02-c63 — ידועה ואינה רגרסיה חדשה, לא נדרש תיקון.
+
+**אין קוד לתקן.** ששת המספרים כולם מתחת לתקרת 11% ללא שינוי, ולכן אין
+שינוי קוד פונה-ללקוח בפריט הזה.
+
+**שערים:** `pnpm build` עבר (הרצה מלאה), `type-check` נקי, `lint` נקי
+(12 שערים, i18n 627/627), `test` 610/610 קבצים 7296/7308 ירוק (12
+דולגים), זהה ל-100% למדידה הקודמת. שרת ה-3312 הופסק בסוף הפריט.
+
+קבצים ששונו: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
+
+**M01-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M02-c64
+לשמירה על תקרת 300 שורות).** BLOCKED, נבדק מחדש פעם עשירית: DNS/HTTP
+תקינים (אין DNS BLOCKER), אך build+deploy חדש לא הופעל בכוונה — חוסם
+ה-env של Cardcom ב-Production עדיין קיים (נבדק בקריאה בלבד, אפס שינוי).
 
 **M18-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M01-c64 לשמירה על תקרת 300 שורות).** בדיקת אפס-פעילות במחזור c63
