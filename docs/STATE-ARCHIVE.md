@@ -2,6 +2,49 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c64 (פירוט מלא, כווץ ב-STATE.md ל-M14-c64 לשמירה על תקרת 300 שורות)
+
+**M13-c64 - DONE (01.10): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem נבדקו מחדש, אפס דריפט
+בקוד, אפס תיקון נדרש.** משימת התור: "Security headers and limits:
+verify CSP, HSTS, X-Frame-Options, Referrer-Policy, Upstash rate
+limits on login, checkout and redeem. Fix gaps with tests."
+
+**בדיקת דריפט מול המדידה הקודמת (M13-c63, `2df7cb697`):** `git log
+2df7cb697..HEAD -- src/ e2e/ messages/ packages/ next.config.ts` הראה
+קומיט יחיד, `00587d376` (M18-c63, שורת דירוג כוכבים על
+`DefaultProductCard`/`related-products.ts`) — נוגע רק ב-`ProductCard.tsx`
+ו-`related-products.ts`, לא ב-`next.config.ts`, `src/lib/rate-limit/`
+או `src/lib/security/`. אפס קובץ אבטחה שונה.
+
+**נבדק ישירות, לא רק דרך git log:** `next.config.ts` (`headers()`,
+שורות 81 ואילך) עדיין מגדיר שתי קבוצות כותרות שלא חופפות (default +
+יוצא-דופן ל-`/checkout/frame-return`, כדי שלא יווצרו שני
+`Content-Security-Policy` על אותו נתיב) — `Content-Security-Policy`
+דינמי (`csp`), `Strict-Transport-Security: max-age=63072000;
+includeSubDomains; preload`, `X-Frame-Options` דינמי (`frameOptions`,
+`src/lib/security/frame-policy.ts`), `Referrer-Policy:
+strict-origin-when-cross-origin`. `src/lib/rate-limit/policies.ts`
+עדיין מגדיר `login` (10/שעה, per IP), `login-account` (20/שעה),
+`begin_checkout` (10/דקה, יצירת low-profile של Cardcom), `redeem`
+(60/שעה, דף redeem הציבורי, per IP) ו-`voucher-redeem` (120/שעה, per
+supplier user) — כל השמות מוגנים ע"י `docs-table.test.ts` שנכשל אם
+קריאה לא מופיעה בטבלה.
+
+הורצו הטסטים הממוקדים: `vitest run src/lib/rate-limit
+src/__tests__/security/mutating-route-guards.test.ts
+src/app/api/search/rate-limit.test.ts src/app/api/supplier/vouchers
+src/app/api/supplier/app/pin/route.test.ts
+src/lib/utils/rate-limit.test.ts src/__tests__/asset-cache-headers.test.ts`
+— **150/150 עברו, 15 קבצי טסט, אפס נכשל.**
+
+**שערים:** `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282,
+docs-path-audit 154). `test` 610/610 קבצים, 7296/7308 ירוקים (12
+דולגים). `build` (`CARDCOM_USE_MOCK=true pnpm build`) עבר נקי.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M12-c64 (פירוט מלא, כווץ ב-STATE.md ל-M13-c64 לשמירה על תקרת 300 שורות)
 
 **M12-c64 - DONE (01.10): meta/canonical/og/JSON-LD Product+Offer/
