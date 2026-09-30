@@ -2,6 +2,113 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c63 (פירוט מלא, נוצר ישירות כאן ב-M16-c63, שלא נכנס ל-STATE.md מלכתחילה)
+
+**24 PR פתוחים, מסודרים לפי תאריך פתיחה** (`gh pr list --state open
+--json number,title,headRefName,createdAt,isDraft`, 30.09.2026):
+
+| PR | כותרת | ענף | נפתח | מצב |
+|---|---|---|---|---|
+| #2 | scripts: measure electro home-v7 sections (hero, deals, categories, carousel) | `claude/terminal-cursor-work-2mr2pq` | 02.08 | DRAFT |
+| #3 | docs(launch): mobile, launch validation, and launch-day runbook | `arch/docs-launch-pack` | 10.08 | OPEN |
+| #4 | feat(supplier): Supplier-View order queue, and the last escrow promise removed | `feat/supplier-portal` | 11.08 | OPEN |
+| #5 | test(quality): the money paths, RTL and web vitals become gates | `feat/e2e-quality` | 11.08 | OPEN |
+| #9 | ci(deps): bump the actions group across 1 directory with 8 updates | `dependabot/github_actions/phase5/homepage/actions-c0d523b34e` | 31.08 | OPEN |
+| #12 | chore(deps): bump @radix-ui/react-select from 2.2.6 to 2.3.7 | `dependabot/npm_and_yarn/phase5/homepage/radix-ui/react-select-2.3.7` | 31.08 | OPEN |
+| #13 | chore(deps-dev): bump @vitest/coverage-v8 from 3.2.7 to 4.1.11 | `dependabot/npm_and_yarn/phase5/homepage/vitest/coverage-v8-4.1.11` | 31.08 | OPEN |
+| #14 | chore(deps-dev): bump @types/node from 20.19.41 to 26.4.0 | `dependabot/npm_and_yarn/phase5/homepage/types/node-26.4.0` | 31.08 | OPEN |
+| #16 | feat(cron): מתזמן GitHub Actions לעשרת ה-jobs | `cursor/scheduled-jobs-24-7-75b4` | 31.08 | OPEN |
+| #17 | docs: שער כניסה (README) ו-onboarding ליום הראשון | `cursor/docs-project-entrance-20c4` | 01.09 | DRAFT |
+| #18 | docs: שער כניסה מקצועי (README) ו-onboarding ליום הראשון | `cursor/project-readme-onboarding-47b2` | 01.09 | OPEN |
+| #19 | feat(about): עמודי אמון, ושתי הטענות שהם מסרבים לומר | `claude/feat-about-trust-ax43xs` | 01.09 | DRAFT |
+| #20 | docs: ROADMAP for eight deferred feature flags | `cursor/docs-roadmap-47b2` | 01.09 | DRAFT |
+| #21 | feat(og): מחולל תמונות שיתוף דינמי ב-/api/og עם ארבע תבניות RTL | `claude/og-images-p8v8cd` | 01.09 | DRAFT |
+| #22 | feat(payments): wallet-first refund execution machine | `cursor/refund-state-machine-47b2` | 01.09 | DRAFT |
+| #23 | MEGA BLOCK 5: E2E tests and published Hebrew legal docs | `cursor/e2e-legal-3ceb` | 02.09 | DRAFT |
+| #25 | MEGA BLOCK 6: CI/CD + launch checklist | `cursor/ci-launch-3ceb` | 02.09 | OPEN |
+| #28 | docs: support FAQs, wireframes, WhatsApp, KPIs, v2 roadmap, ops and 2027 | `cursor/docs-batch-1` | 02.09 | OPEN |
+| #30 | docs: product specs batch 2 (payments through i18n) | `cursor/docs-batch-2` | 03.09 | DRAFT |
+| #31 | chore(deps): bump lucide-react from 1.16.0 to 1.45.0 | `dependabot/npm_and_yarn/lucide-react-1.39.0` | 05.09 | OPEN |
+| #32 | docs(ui): W1 block 14, ten UI backlog specs | `cursor/w1-block-14-docs-08a9` | 07.09 | DRAFT |
+| #33 | docs(audit): read-only DB, schema, migrations, Cardcom, key rotation and business rules audit | `claude/db-audits-schema-migrations-qpcbyh` | 08.09 | DRAFT |
+| #46 | docs: storefront design system, architecture contract, and launch runbooks | `docs/ui-design-system` | 22.09 | DRAFT |
+| #47 | chore(deps-dev): bump the minor-dev group across 1 directory with 4 updates | `dependabot/npm_and_yarn/minor-dev-0fc32dfca6` | 28.09 | OPEN |
+
+שום פעולה לא בוצעה על אף PR (לא מיזוג, לא סגירה, לא תגובה), בהתאם
+לכלל "לא למזג ולא למחוק דבר".
+
+**22 ענפים מקומיים ישנים** (בלי commit 30 יום ומעלה נכון ל-30.09.2026,
+מהחדש לישן): `feat/rate-limit-layer` (21.08, 40 יום), `feat/auth-hardening`,
+`feat/checkout-e2e`, `feat/monitoring-sentry`, `feat/notifications-full`,
+`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`
+(כולם 20.08, 41 יום), `feat/auth-model`, `feat/db-hardening-v2`,
+`feat/product-type`, `merge/supplier-and-arch-night` (כולם 19.08, 42
+יום), `feat/e2e-quality` (12.08, 49 יום), `arch/docs-batch-2` (12.08,
+49 יום), `arch/docs-queue` (12.08, 48 יום), `docs/final-pack` (03.08,
+58 יום), `arch/account-area`, `arch/checkout-cardcom-verification`,
+`arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration` (כולם
+01.08, 60 יום), `save/ke-visual-work` (28.07, 63 יום).
+
+**21 ענפים פעילים** (פחות מ-30 יום): `audit/final-audit`,
+`phase5/homepage-closeout` (שניהם היום, 30.09), `work/goal-queue-0923`
+(24.09), `docs/ui-design-system` (23.09), `autopilot` (17.09),
+`feat/coupon-qr`, `main`, `worktree-order-state-machine` (כולם 09.09/
+10.09), `closeout/v1-final`, `chore/vitest-4`, `docs/nightly-health-green`,
+`fix/main-nightly-red`, `pr36` (כולם 08.09-09.09), `worktree-ke-fetch-timeout`,
+`worktree-mega-63-72` (שניהם 08.09), `release/v1.0`, `release/v1.1`,
+`release/v1.2`, `wip/refund-record-rebase-head` (כולם 02.09), `docs/final-pass`,
+`docs/v1-final` (שניהם 01.09).
+
+**11 מ-43 ענפים מקומיים כבר מוכלים ב-`origin/main`** (`git merge-base
+--is-ancestor <sha> origin/main`, לא נמחקו, הכלל אוסר מחיקת ענפים):
+`autopilot`, `worktree-order-state-machine`, `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`,
+`release/v1.0`, `release/v1.1`, `release/v1.2`,
+`wip/refund-record-rebase-head`, `docs/v1-final`.
+
+**6 ענפים בלי ענף remote באותו שם** (נמחק אחרי מיזוג, או שלא נדחף בשם
+הזה מעולם), כולם מוכלים ב-`origin/main`: `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`,
+`release/v1.1`, `wip/refund-record-rebase-head`.
+
+## M15-c63 (הועבר מ-STATE.md ב-M16-c63, לשמירה על תקרת 300 שורות)
+
+**M15-c63 - DONE (30.09): סנכרון תיעוד, `STATE.md`/`LAUNCH-READINESS.md`/
+`BACKLOG.md` נבדקו מחדש מול `git log 947553fa0..HEAD` (עשרים קומיטים,
+M16-c62..M18-c62, M01-c63..M14-c63), אפס דריפט.** משימת התור: לרענן את
+טבלת הסטטוס בשלושת הקבצים מ-`git log` וראיות קוד, לשמור פריטים ידניים
+לאופיר לפי סדר קריטיות, רשימה אחת בלי כפילויות. `git diff --stat
+947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/` מראה שלושה דברים
+בלבד: הערות הבדיקה החוזרת של הקבצים האלה עצמם (M08-c62, M15-c62,
+M08-c63), עדכון patch לתלויות (`next`/`@next/mdx`/`next-intl`/
+`posthog-js`, M04-c63), והתכונה `WishlistHeart` על `ProductCard.tsx`
+(M18-c62, פריט תור קודם, לא שורת חסימה). אף אחד לא נגע בשורת חסימה,
+במיגרציה ממתינה או בפנקס הקטלוג.
+
+**עודכן:** מספר הקומיטים מאחורי פרודקשן (`a388118f1`) **245 → 263**
+(`git rev-list --count a388118f1..HEAD`, git-only, לא נוסתה פריסה
+חוזרת), ומספר הקומיטים מאחורי `origin/main` **619 → 637**
+(`HEAD..origin/main` נשאר 109 קדימה, ללא שינוי). ספירות אחרות נבדקו
+ונמצאו ללא שינוי: `migrations/pending/*.sql` 59, `git stash list` 32,
+`supabase/catalogue-known-issues.json`'s `known` object 26, `dns-watch.sh`
+עדיין pid 957 תחת `caffeinate` pid 999, `docs-path-audit` 154,
+`docs-index` 282. עודכנו שלושת הקבצים: `docs/LAUNCH-READINESS.md`
+(פסקת פתיחה, שורת חסימה 4, טבלת השערים הירוקים, שורת ה-Branches, הערת
+ה"ידני לאופיר"), `docs/BACKLOG.md` (הערת בדיקה חוזרת חדשה, מונה
+הקומיטים בסעיף 4), ו-`STATE.md` עצמו.
+
+ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים, `docs-path-audit` 154, `docs-index` 282). `test` 610/610 קבצים,
+7296/7308 (12 דולגים), זהה בייט לבייט למדידה הקודמת. `build` לא הורץ
+מחדש — `.next` הקיים (`BUILD_ID` `D4-tHth7KvanPpP6tU41c`) אומת כבנוי
+אחרי הקומיט האחרון שנגע בנתיב רלוונטי לבנייה (`0428b4726`, M04-c63,
+לפי `mtime`). אפס שינוי קוד ייצור.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/LAUNCH-READINESS.md`,
+`docs/BACKLOG.md`.
+
 ## M14-c63 (הועבר מ-STATE.md ב-M15-c63, לשמירה על תקרת 300 שורות)
 
 **M14-c63 - DONE (30.09): ביצועים נבדקו מחדש מול build טרי, אפס רגרסיה
