@@ -127,6 +127,40 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
 
+### ‏30.09 ‏20:27: ‏STEP 05 דף הבית (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, ‏commit ‏d75224327)
+
+**המשך מ: ‏STEP 05 חלק ב'.** נותר: (1) לכתוב ‏`docs/LIGHTHOUSE-HOME-STEP05.md` מהמספרים
+למטה ולרשום אותו ב-`docs/INDEX.md` (שער המלאי נופל על ‏docs חדש בלי שורה), (2) ‏`pnpm test`
+מלא, (3) ‏build מחדש אחרי ‏d75224327 (ה-build שנמדד הכיל את ‏`priority` אבל לא את
+‏`fetchPriority`, שנוסף אחרי שה-build התחיל; ‏Lighthouse סימן "priority hinted" ירוק
+בזכות ה-preload). ה-JSONים ב-`refs/lighthouse-step05/` (לא בגיט).
+
+**נמדד, ‏Lighthouse 13.4.1 מובייל, ‏devtools throttling (‏slow 4G, ‏4x CPU), ‏pnpm start על ‏3465:**
+
+| | לפני (‏6881f7a3f) | אחרי (‏priority על כרטיס 0) |
+|---|---|---|
+| ‏LCP | ‏3.2s (‏resource load delay ‏1783ms) | **‏1.8s** (‏delay ‏615ms) |
+| ‏FCP | ‏1.8s | ‏1.8s |
+| ‏CLS | ‏0.002 | ‏0.002 |
+| ‏Perf | ‏83 | ‏89 |
+| רשימת ‏LCP | ‏lazy, בלי ‏priority | discoverable, eager, priority hinted |
+
+אלמנט ה-LCP בטלפון הוא תמונת כרטיס המבצע הראשון (ל-hero אין צילום ברוחב טלפון; תיבת
+המובייל מציירת ‏placeholder). דסקטופ: ‏LCP ‏0.4s (פסקה), ‏CLS ‏0.011, ‏Perf ‏100, לא נגעתי.
+**‏LCP לא יכול לרדת מתחת ל-FCP**, ו-FCP ‏1.8s ב-slow 4G הוא ה-CSS (‏25KB) שמתחרה עם
+‏390KB סקריפטים על צינור ‏1.6Mbps (‏41% ‏Sentry); זה מחוץ לשלב תמונות. בפרופיל "4G"
+(‏4Mbps/40ms) המדידה הראשונה נתנה ‏0.2s אבל היא רצה מול השרת הישן (ראה מלכודת) ויש
+למדוד מחדש.
+
+**החלטות שהתקבלו לבד:** ‏priority על כרטיס אחד בלבד (עוד כרטיסים = ‏rasters מחוץ למסך
+שמתחרים ב-LCP). ‏`sizes` של הכרטיס לא שונה: כל הדרגות של ‏AVIF מחזירות אותו קובץ
+(‏20215 בייט, האופטימייזר מעביר ‏AVIF כמות שהוא). לוגו: ‏`aspect-[19/5]` במקום רוחב קבוע.
+
+**מלכודת שנמדדה:** ‏`kill` על ‏`next start` משאיר את הילד ‏`next-server` על הפורט, ו-`pnpm start`
+הבא נופל ב-EADDRINUSE בשקט בלוג; שתי ריצות ‏Lighthouse נמדדו מול ה-build הישן. הבדיקה
+‏`/dev/tcp` לא עובדת ב-zsh. לבדוק ‏`ps -o pid,command | grep next-server` ולהרוג לפי ‏pid.
+
+
 ### ‏30.09 ‏20:05: ריצת ‏autopilot (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, תקציב ‏20 דקות ב-`gtimeout 1200`)
 
 **‏PRE-SAFETY, ארבע הבדיקות בלבד:**
