@@ -273,6 +273,27 @@ build-relevant commit (`0428b4726`, M04-c63) by file mtime. All 15 items
 remain actions this file's own preamble excludes an agent from taking
 alone.
 
+**Re-checked 2026-09-30 (M08-c64) against `git log 947553fa0..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Thirty-five
+commits landed since M15-c63's own checkpoint; `git diff --stat
+947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/
+scripts/cron-jobs.json` shows only `docs/BACKLOG.md` (this file's own
+re-check notes), the dependency patch bump (M04-c63,
+`package.json`+`pnpm-lock.yaml`), and the star-rating-row feature
+(M18-c63, `src/components/ProductCard.tsx`+`src/lib/related-products.ts`)
+— a prior cycle's queue item, not a `BACKLOG.md` entry. None touched a
+blocking line, a pending migration, or the catalogue ledger. Counts
+re-checked directly: `migrations/pending/*.sql` 59, `git stash list` 32,
+`supabase/catalogue-known-issues.json`'s `known` object 26,
+`dns-watch.sh` still pid 957 under `caffeinate` pid 999 — all unchanged
+from M15-c63. Item 4's commit count changed again (263 -> 274, `git
+rev-list --count a388118f1..HEAD`, git-only, production not re-probed
+this item). All 15 items remain actions this file's own preamble
+excludes an agent from taking alone. No phase 1 item available for the
+queue task this cycle (M08-c64 result: BACKLOG EMPTY).
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -296,8 +317,8 @@ alone.
    המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54, 118
    ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57, 171 ב-M15-c58,
    189 ב-M15-c59, 207 ב-M15-c60, 225 ב-M15-c61, 245 ב-M15-c62, 256
-   ב-M08-c63, וכעת (30.09, M15-c63, `git rev-list --count
-   a388118f1..HEAD`, git-only — לא נוסתה פריסה חוזרת בפריט הזה) **263**
+   ב-M08-c63, 263 ב-M15-c63, וכעת (30.09, M08-c64, `git rev-list --count
+   a388118f1..HEAD`, git-only — לא נוסתה פריסה חוזרת בפריט הזה) **274**
    קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים ב-M01-c54 וב-M01-c55
    סורבו באותה סיבה בדיוק, פרודקשן נשאר על `a388118f1`).
    `POST /v13/deployments` עם `gitSource.sha`,

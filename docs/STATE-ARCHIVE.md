@@ -2,6 +2,42 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c64 (פירוט מלא, כווץ ב-STATE.md ל-M09-c64 לשמירה על תקרת 300 שורות)
+
+**M08-c64 - BACKLOG EMPTY (30.09): re-checked `docs/BACKLOG.md` against
+`git log`, still 15 items, same order, no duplicate, no new phase 1
+item for the queue.** משימת התור: לקחת את הפריט הכי-משפיע מ-Phase 1
+הפתוח ב-`docs/BACKLOG.md`, לדלג על Phase 2/נדחה, לממש עם טסטים; אם
+אין — לכתוב BACKLOG EMPTY.
+
+`git diff --stat 947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+(35 קומיטים מאז M15-c63's own checkpoint) הראה חמישה נתיבים בלבד:
+`docs/BACKLOG.md` (הערות re-check עצמן), `package.json`+`pnpm-lock.yaml`
+(bump patch של תלויות, M04-c63), ו-`src/components/ProductCard.tsx`+
+`src/lib/related-products.ts` (שורת דירוג כוכבים, M18-c63 — פיצ'ר
+תור קודם שכבר נשלח, לא רשומה חדשה ב-`BACKLOG.md`). אף אחד לא נגע
+בשורת חסימה, במיגרציה ממתינה חדשה או בפנקס הקטלוג.
+
+ספירות נבדקו ישירות: `migrations/pending/*.sql` 59 (זהה),
+`git stash list` 32 (זהה), `supabase/catalogue-known-issues.json`'s
+`known` object 26 (זהה), `scripts/dns-watch.sh` עדיין pid 957 תחת
+`caffeinate` pid 999 (זהה). מונה הקומיטים מאחורי `a388118f1` בפרודקשן
+עודכן 263 → 274 (`git rev-list --count a388118f1..HEAD`, git בלבד,
+פריסה לא נוסתה בפריט הזה — חוסם 2 ב-STATE.md).
+
+כל 15 הפריטים ב-`docs/BACKLOG.md` נשארים פעולות שההקדמה של הקובץ עצמו
+שוללת מסוכן לקחת לבד (DNS, Vercel env/סודות, אישור פריסה/מיגרציה
+לפרודקשן, הכרעה עסקית על הקטלוג, מחיקת נתונים). אין פריט Phase 1 זמין
+לתור הזה (M08-c64 result: BACKLOG EMPTY).
+
+**שערים:** לא רץ קוד ייצור חדש בפריט הזה (בדיקה תיעודית בלבד), אין
+build/test/lint/type-check נוספים מעבר למה שכבר אומת ב-M07-c64/M03-c64
+על אותו HEAD.
+
+קבצים ששונו: `docs/BACKLOG.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M06-c64 (פירוט מלא, כווץ ב-STATE.md ל-M07-c64 לשמירה על תקרת 300 שורות)
 
 **M06-c64 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
