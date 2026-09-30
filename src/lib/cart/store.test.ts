@@ -33,6 +33,7 @@ vi.mock('@/server/actions/cart', () => ({
 const { CART_MIRROR_KEY, applyOptimistic, createCartStore, displayItemCount } = await import(
   '@/lib/cart/store'
 )
+const { CART_FALLBACK_KEY, readCartFallback } = await import('@/lib/cart/local-fallback')
 
 function item(overrides: Partial<CartViewItem> = {}): CartViewItem {
   return {
@@ -439,6 +440,93 @@ describe('cart store', () => {
 
       expect(store.getState().cart.item_count).toBe(0)
       expect(store.getState().mirrorCount).toBe(0)
+    })
+  })
+
+  describe('the line fallback', () => {
+    it('records every server-confirmed cart, and never the optimistic one', async () => {
+      const store = createCartStore(EMPTY_CART)
+      let release: (value: unknown) => void = () => undefined
+      addToCart.mockReturnValue(
+        new Promise((r) => {
+          release = r
+        }),
+      )
+      const pending = store.getState().addToCart('p1', null, 2)
+      // Mid-flight the optimistic count is 2 and nothing has been recorded.
+      expect(store.getState().cart.item_count).toBe(2)
+      expect(localStorage.getItem(CART_FALLBACK_KEY)).toBeNull()
+
+      release({ ok: true, cart: cart([item({ quantity: 2 })]) })
+      await pending
+      expect(readCartFallback()?.items).toHaveLength(1)
+    })
+
+    it('restores the snapshot when the server has not answered, flagged as such', () => {
+      const store = createCartStore(EMPTY_CART)
+      store.getState().restoreFallback(cart([item({ quantity: 3 })]))
+
+      const state = store.getState()
+      expect(state.cart.item_count).toBe(3)
+      expect(state.fallbackActive).toBe(true)
+      expect(state.serverConfirmed).toBe(false)
+      // The rollback target and the "server answered" signal are untouched.
+      expect(state.serverCart).toBe(EMPTY_CART)
+      expect(displayItemCount(state)).toBe(3)
+    })
+
+    it('refuses to paint over a server answer', () => {
+      const store = createCartStore(EMPTY_CART)
+      store.getState().setCart(cart([item({ quantity: 1 })]))
+      store.getState().restoreFallback(cart([item({ quantity: 9 })]))
+      expect(store.getState().cart.item_count).toBe(1)
+      expect(store.getState().fallbackActive).toBe(false)
+    })
+
+    it('refuses while a write is in flight', () => {
+      const store = createCartStore(EMPTY_CART)
+      addToCart.mockReturnValue(new Promise(() => undefined))
+      void store.getState().addToCart('p1', null, 1)
+      store.getState().restoreFallback(cart([item({ quantity: 9 })]))
+      expect(store.getState().cart.item_count).toBe(1)
+      expect(store.getState().fallbackActive).toBe(false)
+    })
+
+    it('is cleared by the first server answer, which wins', () => {
+      const store = createCartStore(EMPTY_CART)
+      store.getState().restoreFallback(cart([item({ quantity: 3 })]))
+      store.getState().setCart(cart([item({ quantity: 1 })]))
+      expect(store.getState().fallbackActive).toBe(false)
+      expect(store.getState().cart.item_count).toBe(1)
+      expect(store.getState().serverConfirmed).toBe(true)
+    })
+
+    it('is cleared by a settled mutation too', async () => {
+      const store = createCartStore(EMPTY_CART)
+      store.getState().restoreFallback(cart([item({ quantity: 3 })]))
+      updateCartItem.mockResolvedValue({ ok: true, cart: cart([item({ quantity: 4 })]) })
+      await store.getState().updateQuantity('p1', null, 4)
+      expect(store.getState().fallbackActive).toBe(false)
+      expect(store.getState().cart.item_count).toBe(4)
+    })
+
+    it('rolls a failed write back to the snapshot, not to the empty cart', async () => {
+      // `serverCart` is still EMPTY_CART here. Rolling back to it would blank
+      // three lines over one refused press.
+      const store = createCartStore(EMPTY_CART)
+      store.getState().restoreFallback(cart([item({ quantity: 3 })]))
+      updateCartItem.mockResolvedValue({ ok: false, error: 'אין חיבור' })
+      await store.getState().updateQuantity('p1', null, 4)
+      expect(store.getState().cart.item_count).toBe(3)
+      expect(store.getState().fallbackActive).toBe(true)
+    })
+
+    it('forgets the snapshot when the server says the cart is empty', () => {
+      const store = createCartStore(EMPTY_CART)
+      store.getState().setCart(cart([item()]))
+      expect(localStorage.getItem(CART_FALLBACK_KEY)).not.toBeNull()
+      store.getState().setCart(EMPTY_CART)
+      expect(localStorage.getItem(CART_FALLBACK_KEY)).toBeNull()
     })
   })
 

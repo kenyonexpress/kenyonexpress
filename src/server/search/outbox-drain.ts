@@ -1,4 +1,4 @@
-import type { SearchIndexJob } from '@/lib/search/pipeline-contracts'
+import type { AnyIndexJob } from '@/lib/search/pipeline-contracts'
 import {
   type OutboxJobRow,
   pendingOutboxRpc,
@@ -45,27 +45,59 @@ export type OutboxClient = {
 
 export interface DrainSummary {
   claimed: number
-  /** Products (not rows) whose job ran to completion. */
+  /** Targets (products or categories, not rows) whose job ran to completion. */
   succeeded: number
-  /** Products whose job threw; their rows got last_error and a backoff. */
+  /** Targets whose job threw; their rows got last_error and a backoff. */
   failed: number
   errors: string[]
 }
 
 /**
- * Rows grouped per product, the NEWEST row's op deciding the job. Ordering
- * matters only for that choice: an upsert enqueued after a delete means the
- * product came back, and vice versa. Either way the worker re-reads the truth
- * before touching the index, so the op is a hint, not a claim.
+ * The entity a row describes and its id. A row without `entity` (every row
+ * written before pending/244) is a product row; a category row is one 244's
+ * categories trigger wrote. A row that claims to be a category but carries no
+ * category id, or a product row with no product id, is malformed and is
+ * grouped under its own row id so it is stamped with an error rather than
+ * silently merged into a neighbour.
  */
-function groupByProduct(rows: OutboxJobRow[]): Map<string, OutboxJobRow[]> {
-  const byProduct = new Map<string, OutboxJobRow[]>()
-  for (const row of rows) {
-    const group = byProduct.get(row.product_id) ?? []
-    group.push(row)
-    byProduct.set(row.product_id, group)
+export function rowTarget(row: OutboxJobRow): AnyIndexJob | null {
+  const enqueuedAt = new Date(row.enqueued_at).toISOString()
+  if (row.entity === 'category') {
+    if (!row.category_id) return null
+    return {
+      entity: 'category',
+      op: row.op,
+      categoryId: row.category_id,
+      reason: 'outbox-drain',
+      enqueuedAt,
+    }
   }
-  return byProduct
+  if (!row.product_id) return null
+  return { op: row.op, productId: row.product_id, reason: 'outbox-drain', enqueuedAt }
+}
+
+function groupKey(row: OutboxJobRow): string {
+  if (row.entity === 'category')
+    return row.category_id ? `category:${row.category_id}` : `row:${row.id}`
+  return row.product_id ? `product:${row.product_id}` : `row:${row.id}`
+}
+
+/**
+ * Rows grouped per entity (one product or one category), the NEWEST row's op
+ * deciding the job. Ordering matters only for that choice: an upsert enqueued
+ * after a delete means the row came back, and vice versa. Either way the
+ * worker re-reads the truth before touching the index, so the op is a hint,
+ * not a claim.
+ */
+function groupByTarget(rows: OutboxJobRow[]): Map<string, OutboxJobRow[]> {
+  const byTarget = new Map<string, OutboxJobRow[]>()
+  for (const row of rows) {
+    const key = groupKey(row)
+    const group = byTarget.get(key) ?? []
+    group.push(row)
+    byTarget.set(key, group)
+  }
+  return byTarget
 }
 
 function newestFirst(a: OutboxJobRow, b: OutboxJobRow): number {
@@ -74,7 +106,7 @@ function newestFirst(a: OutboxJobRow, b: OutboxJobRow): number {
 
 export async function drainSearchOutbox(
   admin: OutboxClient,
-  runJob: (job: SearchIndexJob) => Promise<string>,
+  runJob: (job: AnyIndexJob) => Promise<string>,
   now: Date = new Date(),
 ): Promise<DrainSummary> {
   const { data, error } = await admin.rpc(pendingOutboxRpc('claim_search_index_jobs'), {
@@ -87,18 +119,15 @@ export async function drainSearchOutbox(
   const rows = Array.isArray(data) ? (data as OutboxJobRow[]) : []
   const summary: DrainSummary = { claimed: rows.length, succeeded: 0, failed: 0, errors: [] }
 
-  for (const [productId, group] of groupByProduct(rows)) {
+  for (const [target, group] of groupByTarget(rows)) {
     const newest = [...group].sort(newestFirst)[0] as OutboxJobRow
     const ids = group.map((row) => row.id)
 
     let outcome: { ok: true } | { ok: false; message: string }
     try {
-      await runJob({
-        op: newest.op,
-        productId,
-        reason: 'outbox-drain',
-        enqueuedAt: new Date(newest.enqueued_at).toISOString(),
-      })
+      const job = rowTarget(newest)
+      if (!job) throw new Error(`malformed outbox row ${newest.id}: no id for ${target}`)
+      await runJob(job)
       outcome = { ok: true }
     } catch (cause) {
       outcome = { ok: false, message: cause instanceof Error ? cause.message : String(cause) }
@@ -121,12 +150,12 @@ export async function drainSearchOutbox(
     if (outcome.ok) summary.succeeded += 1
     else {
       summary.failed += 1
-      summary.errors.push(`${productId}: ${outcome.message}`)
+      summary.errors.push(`${target}: ${outcome.message}`)
     }
     // A failed stamp leaves the row claimed-but-undone; the next sweep's claim
     // picks it up again once COALESCE(next_try_at, enqueued_at) passes. Loud in
     // the summary so a broken stamp path cannot stay a silent re-run loop.
-    if (stampError) summary.errors.push(`stamp failed for ${productId}: ${stampError.message}`)
+    if (stampError) summary.errors.push(`stamp failed for ${target}: ${stampError.message}`)
   }
 
   return summary

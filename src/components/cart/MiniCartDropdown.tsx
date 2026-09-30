@@ -1,11 +1,13 @@
 'use client'
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
+import { CartOfflineNotice } from '@/components/cart/CartOfflineNotice'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
+import { lineQuantityCeiling } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
-import { ShoppingCart, X } from 'lucide-react'
+import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
@@ -21,7 +23,11 @@ import { useEffect, useRef } from 'react'
  * that works until someone resizes the window.
  */
 function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: () => void }) {
-  const { removeItem, isPending } = useCart()
+  const { removeItem, updateQuantity, isPending } = useCart()
+  // The phone sheet and the cart page both had a stepper; this panel, the
+  // desktop's first cart, only had remove. A shopper who added one and wanted
+  // two had to leave the panel for /cart. Same ceiling as the other two.
+  const maxQty = lineQuantityCeiling(item)
 
   return (
     <li className="mini-cart__item">
@@ -46,9 +52,36 @@ function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: ()
         <Link href={`/product/${item.slug}`} className="mini-cart__item-name" onClick={onNavigate}>
           {item.name_he}
         </Link>
-        <span className="mini-cart__item-meta tabular-nums">
-          {item.quantity} × {shekels(item.unit_price)}
-        </span>
+        <div className="mini-cart__item-meta">
+          <div className="mini-cart__qty">
+            <button
+              type="button"
+              onClick={() =>
+                item.quantity <= 1
+                  ? void removeItem(item.product_id, item.variant_id)
+                  : void updateQuantity(item.product_id, item.variant_id, item.quantity - 1)
+              }
+              disabled={isPending}
+              aria-label="הפחת כמות"
+              className="mini-cart__qty-btn"
+            >
+              <Minus size={12} aria-hidden="true" />
+            </button>
+            <span className="tabular-nums">{item.quantity}</span>
+            <button
+              type="button"
+              onClick={() =>
+                void updateQuantity(item.product_id, item.variant_id, item.quantity + 1)
+              }
+              disabled={isPending || item.quantity >= maxQty}
+              aria-label="הוסף כמות"
+              className="mini-cart__qty-btn"
+            >
+              <Plus size={12} aria-hidden="true" />
+            </button>
+          </div>
+          <span className="tabular-nums">× {shekels(item.unit_price)}</span>
+        </div>
         {item.type === 'coupon' && item.balance_due_at_business > 0 && (
           <span className="mini-cart__item-note">
             יתרה בחנות: {shekels(item.balance_due_at_business)}
@@ -75,7 +108,7 @@ function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: ()
 }
 
 export default function MiniCartDropdown() {
-  const { cart, drawerOpen, closeDrawer, isPending } = useCart()
+  const { cart, drawerOpen, closeDrawer, isPending, fallbackActive } = useCart()
   const isAuthenticated = useCartAuth()
   const panelRef = useRef<HTMLDialogElement | null>(null)
   const pathname = usePathname()
@@ -171,6 +204,7 @@ export default function MiniCartDropdown() {
         </div>
       ) : (
         <>
+          {fallbackActive && <CartOfflineNotice className="mini-cart__offline" />}
           <ul className="mini-cart__list">
             {cart.items.map((item) => (
               <MiniCartLine
@@ -202,7 +236,7 @@ export default function MiniCartDropdown() {
                   the refusal just moves to the pay button. */}
               <CartCheckoutButton
                 isAuthenticated={isAuthenticated}
-                disabled={cart.items.some((item) => !item.available)}
+                disabled={cart.items.some((item) => !item.available) || fallbackActive}
                 className="mini-cart__checkout"
                 onNavigate={closeDrawer}
               />

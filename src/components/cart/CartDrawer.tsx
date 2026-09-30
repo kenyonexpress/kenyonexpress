@@ -1,6 +1,7 @@
 'use client'
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
+import { CartOfflineNotice } from '@/components/cart/CartOfflineNotice'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
@@ -81,7 +82,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
 }
 
 export default function CartDrawer() {
-  const { cart, drawerOpen, closeDrawer, isPending } = useCart()
+  const { cart, drawerOpen, closeDrawer, isPending, fallbackActive } = useCart()
   const isAuthenticated = useCartAuth()
 
   /**
@@ -225,6 +226,7 @@ export default function CartDrawer() {
         </header>
 
         <div className={`cart-drawer__body ${isPending ? 'opacity-70' : ''}`}>
+          {fallbackActive && <CartOfflineNotice className="cart-drawer__offline" />}
           {cart.items.length === 0 ? (
             <div className="cart-drawer__empty">
               <ShoppingCart size={40} className="text-icon-empty" aria-hidden="true" />
@@ -267,7 +269,7 @@ export default function CartDrawer() {
                 is the route out: that page names the lines and removes them. */}
             <CartCheckoutButton
               isAuthenticated={isAuthenticated}
-              disabled={cart.items.some((item) => !item.available)}
+              disabled={cart.items.some((item) => !item.available) || fallbackActive}
               className="cart-drawer__checkout"
               onNavigate={closeDrawer}
             />

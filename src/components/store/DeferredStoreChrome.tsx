@@ -16,11 +16,18 @@ const CartDrawer = dynamic(() => import('@/components/cart/CartDrawer'), {
 const Toaster = dynamic(() => import('@/components/ui/sonner').then((m) => m.Toaster), {
   ssr: false,
 })
+// The phone's sticky cart bar. It can only ever paint after the cart has
+// arrived, which is after hydration by design (see CartBootstrap), so
+// deferring the module costs it nothing and keeps it out of the first load.
+const MobileCartBar = dynamic(() => import('@/components/cart/MobileCartBar'), {
+  ssr: false,
+})
 
 export default function DeferredStoreChrome() {
   return (
     <>
       <CartDrawer />
+      <MobileCartBar />
       <Toaster position="top-center" dir="rtl" richColors closeButton />
     </>
   )

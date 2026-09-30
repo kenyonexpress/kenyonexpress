@@ -1,6 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
-import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
+import { anyIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Json } from '@/types/database'
@@ -29,7 +29,7 @@ function decodeJob(sourceBody: string | undefined): Json | null {
   if (!sourceBody) return null
   try {
     const decoded = Buffer.from(sourceBody, 'base64').toString('utf8')
-    const parsed = searchIndexJobSchema.safeParse(JSON.parse(decoded))
+    const parsed = anyIndexJobSchema.safeParse(JSON.parse(decoded))
     return parsed.success ? (parsed.data as unknown as Json) : null
   } catch {
     return null

@@ -59,6 +59,7 @@ export const DELETION_EFFECTS = {
     'push_tokens',
     'carts',
     'user_recent_searches',
+    'saved_searches',
     'auth login',
   ],
 } as const

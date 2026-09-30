@@ -1,4 +1,4 @@
-import type { SearchIndexJob } from '@/lib/search/pipeline-contracts'
+import { type AnyIndexJob, isCategoryIndexJob } from '@/lib/search/pipeline-contracts'
 import type { OutboxJobRow } from '@/lib/supabase/pending-outbox'
 import { describe, expect, it } from 'vitest'
 import { OUTBOX_BATCH, type OutboxClient, backoffMinutes, drainSearchOutbox } from './outbox-drain'
@@ -58,7 +58,7 @@ describe('backoffMinutes', () => {
 describe('drainSearchOutbox', () => {
   it('claims a batch and stamps every successful row done', async () => {
     const { client, stamps, claimArgs } = fakeClient([row({ id: 1 }), row({ id: 2, op: 'delete' })])
-    const ran: SearchIndexJob[] = []
+    const ran: AnyIndexJob[] = []
 
     const summary = await drainSearchOutbox(
       client,
@@ -123,7 +123,7 @@ describe('drainSearchOutbox', () => {
     const summary = await drainSearchOutbox(
       client,
       async (job) => {
-        if (job.productId === bad) throw new Error('boom')
+        if (!isCategoryIndexJob(job) && job.productId === bad) throw new Error('boom')
         return 'ok'
       },
       NOW,

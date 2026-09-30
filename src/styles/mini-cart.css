@@ -551,9 +551,174 @@
    a sheet covering a page that had room for a dropdown. Both read the same
    `drawerOpen` flag, so whichever one is visible is already in the right
    state. */
+/* Desktop dropdown quantity stepper: the sheet's pill at the dropdown's
+   scale, so a line can be raised without leaving the panel. */
+.mini-cart__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid #ddd;
+  border-radius: 0.375rem;
+  padding: 0.0625rem;
+  vertical-align: middle;
+}
+
+.mini-cart__qty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  color: #515151;
+  border-radius: 0.25rem;
+}
+
+.mini-cart__qty-btn:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.mini-cart__qty-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.mini-cart__item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The "prices as of the last connection" sentence, in each surface's
+   rhythm. The tone is the amber of a warning, not the red of a refusal: the
+   cart is fine, the number beside it is merely old. */
+.mini-cart__offline,
+.cart-drawer__offline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 1.25rem 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #f0c36d;
+  border-radius: 0.375rem;
+  background: #fff8e5;
+  color: #6b5416;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.mini-cart__offline {
+  margin: 0.75rem 1rem 0;
+}
+
+.mini-cart__offline svg,
+.cart-drawer__offline svg {
+  flex: none;
+  margin-top: 0.125rem;
+}
+
 @media (max-width: 767px) {
   .mini-cart__panel {
     display: none;
+  }
+
+  /* The sticky cart bar. Pinned to the bottom edge, under the drawer (z 50)
+     and level with the WhatsApp float (z 40), which the body class below
+     lifts out of its way. Height is one number, read by the two rules that
+     make room for it. */
+  .mobile-cart-bar {
+    --mobile-cart-bar-height: 4.25rem;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: var(--mobile-cart-bar-height);
+    padding: 0.5rem 1rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid #eee;
+    box-shadow: 0 -4px 16px rgb(0 0 0 / 8%);
+  }
+
+  .mobile-cart-bar__summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+    min-height: var(--cart-touch);
+    text-align: start;
+    color: #333e48;
+  }
+
+  .mobile-cart-bar__icon {
+    position: relative;
+    display: flex;
+    color: #0062bd;
+  }
+
+  .mobile-cart-bar__count {
+    position: absolute;
+    top: -0.375rem;
+    inset-inline-start: -0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1rem;
+    min-width: 1rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: #fedd26;
+    color: #333e48;
+    font-size: 0.625rem;
+    font-weight: 700;
+  }
+
+  .mobile-cart-bar__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .mobile-cart-bar__label {
+    font-size: 0.75rem;
+    color: #657888;
+  }
+
+  .mobile-cart-bar__total {
+    font-size: 1rem;
+    color: var(--cart-price-red);
+  }
+
+  .mobile-cart-bar__checkout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--cart-touch);
+    padding: 0 1.25rem;
+    border-radius: 22px;
+    background: #fedd26;
+    color: #333e48;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .mobile-cart-bar__checkout[aria-disabled="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* Room for the bar: the page's last row and the WhatsApp float both move
+     up by its height while it is on screen. The class is set by the bar
+     itself (MobileCartBar.tsx) and only exists while it renders. */
+  body.mobile-cart-bar-visible {
+    padding-bottom: 4.25rem;
+  }
+
+  body.mobile-cart-bar-visible .whatsapp-float {
+    bottom: calc(4.25rem + 1.25rem);
   }
 
   /* The scroll lock belongs to the SHEET, so it lives at the sheet's width.

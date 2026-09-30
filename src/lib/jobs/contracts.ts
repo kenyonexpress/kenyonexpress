@@ -1,4 +1,4 @@
-import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
+import { anyIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { z } from 'zod'
 
 /**
@@ -34,7 +34,7 @@ export const cacheWarmPayloadSchema = z.object({
 })
 
 export const JOB_PAYLOAD_SCHEMAS = {
-  'search-index': searchIndexJobSchema,
+  'search-index': anyIndexJobSchema,
   'search-outbox-drain': z.object({}).strict(),
   'cache-warm': cacheWarmPayloadSchema,
 } as const satisfies Record<JobType, z.ZodTypeAny>

@@ -25,6 +25,14 @@
 import { HEBREW_PREFIXES } from '@/lib/search/hebrew-synonyms'
 
 export type PopularSearch = { term: string; target_url: string | null }
+
+/**
+ * The cache tag on every cached read of `popular_searches`. The home page
+ * widget (lib/homepage/below-fold.ts) is `'use cache'` for an hour; the admin
+ * editor calls `updateTag` with this so a promoted term reaches the home page
+ * on the next request, not the next hour.
+ */
+export const POPULAR_SEARCHES_TAG = 'popular-searches'
 export type CategoryLink = { slug: string; name_he: string }
 
 export type EmptyStateSuggestions = {

@@ -1,13 +1,14 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { runSearchIndexJob } from '@/lib/search/indexer'
-import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
+import { anyIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
- * Queue worker: QStash delivers one search-index job per request.
+ * Queue worker: QStash delivers one search-index job per request, a product
+ * job or (STEP 08) a category job; `anyIndexJobSchema` tells them apart.
  *
  * Auth: the `Upstash-Signature` JWS, or — for manual replays from the DLQ and
  * for ops — `Authorization: Bearer CRON_SECRET` (the cron-route convention).
@@ -41,7 +42,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, dropped: 'invalid json' })
   }
 
-  const parsed = searchIndexJobSchema.safeParse(json)
+  const parsed = anyIndexJobSchema.safeParse(json)
   if (!parsed.success) {
     return NextResponse.json({ ok: true, dropped: 'unrecognized job' })
   }

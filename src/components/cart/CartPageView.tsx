@@ -2,6 +2,7 @@
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import CartLineItem, { CartEmptyState } from '@/components/cart/CartLineItem'
+import { CartOfflineNotice } from '@/components/cart/CartOfflineNotice'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import CartTotalsSidebar from '@/components/cart/CartTotalsSidebar'
 import Link from 'next/link'
@@ -19,7 +20,7 @@ import Link from 'next/link'
  * whole route in the static shell.
  */
 export default function CartPageView() {
-  const { cart, clear, removeUnavailable, isPending } = useCart()
+  const { cart, clear, removeUnavailable, isPending, fallbackActive } = useCart()
   const isAuthenticated = useCartAuth()
 
   const unavailableCount = cart.items.filter((item) => !item.available).length
@@ -47,6 +48,7 @@ export default function CartPageView() {
       ) : (
         <div className="cart-page__grid">
           <section aria-label="פריטים בעגלה">
+            {fallbackActive && <CartOfflineNotice className="cart-page__offline" />}
             {/* The checkout button below is disabled while any line is
                 unavailable, and until now the only way past it was to find each
                 offending line and remove it by hand, one round trip each. With
@@ -94,9 +96,13 @@ export default function CartPageView() {
           <div>
             <CartTotalsSidebar cart={cart} />
             <div className="mt-4">
+              {/* The third half of the gate, after availability and emptiness:
+                  a cart restored from the device is not one the server has
+                  priced, and the button says so rather than sending the
+                  shopper into a checkout that will fail to load. */}
               <CartCheckoutButton
                 isAuthenticated={isAuthenticated}
-                disabled={hasUnavailable || isEmpty}
+                disabled={hasUnavailable || isEmpty || fallbackActive}
               />
             </div>
             <p className="cart-sidebar__note mt-3 px-gutter">

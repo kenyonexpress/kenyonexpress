@@ -395,6 +395,11 @@ describe('the pending migration inventory', () => {
       // commit 3369ce826 without a README row; this entry and the row were
       // added when the inventory test caught it. Not yet dry-run on production.
       '243_homepage_hero_seed.sql',
+      // 244 and 245 are PENDING (2026-09-30, STEP 08): the search outbox
+      // trigger on categories, and the saved_searches table. README carries
+      // both; neither is applied.
+      '244_search_outbox_categories.sql',
+      '245_saved_searches.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

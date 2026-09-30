@@ -32,7 +32,9 @@ export function searchBackoffMinutes(attempts: number): number {
 
 type OutboxJob = {
   id: number
-  product_id: string
+  /** NULL for a category row once pending/244 is applied; this twin drain
+   * skips those, the live drain in server/search handles them. */
+  product_id: string | null
   op: string
   attempts: number
 }
@@ -60,6 +62,7 @@ export async function drainSearchOutbox(admin: SupabaseClient, limit = 50): Prom
   let failed = 0
 
   for (const job of jobs) {
+    if (!job.product_id) continue
     try {
       await runSearchIndexJob({
         op: job.op === 'delete' ? 'delete' : 'upsert',

@@ -1,5 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
-import type { SearchIndexJob } from '@/lib/search/pipeline-contracts'
+import { type AnyIndexJob, isCategoryIndexJob } from '@/lib/search/pipeline-contracts'
 
 /**
  * Upstash QStash transport for search-index jobs.
@@ -39,8 +39,8 @@ function appUrl(): string {
  * indexer's Supabase dependency (and trivially testable).
  */
 export async function enqueueSearchIndexJob(
-  job: SearchIndexJob,
-  runInline: (job: SearchIndexJob) => Promise<string>,
+  job: AnyIndexJob,
+  runInline: (job: AnyIndexJob) => Promise<string>,
 ): Promise<EnqueueOutcome> {
   const token = process.env.QSTASH_TOKEN
   if (!token) {
@@ -55,9 +55,13 @@ export async function enqueueSearchIndexJob(
       'Content-Type': 'application/json',
       'Upstash-Retries': String(QSTASH_RETRIES),
       'Upstash-Failure-Callback': `${appUrl()}/api/search/index-dlq`,
-      // One logical change per product may fire many times in a burst (bulk
-      // edits); dedup on content so the queue collapses identical jobs.
-      'Upstash-Deduplication-Id': `${job.op}:${job.productId}:${job.enqueuedAt}`,
+      // One logical change per row may fire many times in a burst (bulk
+      // edits); dedup on content so the queue collapses identical jobs. The
+      // product form is unchanged; a category job is namespaced so a product
+      // and a category can never share an id string.
+      'Upstash-Deduplication-Id': isCategoryIndexJob(job)
+        ? `${job.op}:category:${job.categoryId}:${job.enqueuedAt}`
+        : `${job.op}:${job.productId}:${job.enqueuedAt}`,
     },
     body: JSON.stringify(job),
     cache: 'no-store',

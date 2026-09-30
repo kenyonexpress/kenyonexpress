@@ -1,9 +1,15 @@
 import { log } from '@/lib/observability/log'
 import {
+  BRANDS_INDEX,
+  BRANDS_INDEX_SETTINGS,
+  CATEGORIES_INDEX,
+  CATEGORIES_INDEX_SETTINGS,
   INDEX_SETTINGS,
   PRIMARY_KEY,
   PRODUCTS_INDEX,
   type ProductDocument,
+  toBrandDocuments,
+  toCategoryDocuments,
   toProductDocument,
 } from '@/lib/search/meili-settings'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -141,7 +147,12 @@ async function meiliRequest<T = unknown>(path: string, method: string, body?: un
  * detects Hebrew script on its own — so a warn log beats failing the entire
  * rebuild over an optimization.
  */
-async function ensureIndex(uid: string, settings: MeiliIndexSettings): Promise<void> {
+/**
+ * `settings` is typed loosely on purpose: the brands and categories settings
+ * in meili-settings.ts carry `localizedAttributes`, which the products shape
+ * above does not name, and Meilisearch's PATCH accepts any subset.
+ */
+async function ensureIndex(uid: string, settings: object): Promise<void> {
   const env = meiliEnv()
   if (!env) return
   const res = await fetch(`${env.host}/indexes`, {
@@ -224,6 +235,10 @@ export interface ReindexResult {
   skipped: boolean
   products: number
   coupons: number
+  /** Brand documents derived from the same catalogue read (STEP 08). */
+  brands: number
+  /** Category documents, counts from the same catalogue read (STEP 08). */
+  categories: number
   /** Meilisearch task uids enqueued for the document batches, in order. */
   taskUids: number[]
 }
@@ -268,7 +283,12 @@ export interface SyncResult extends ReindexResult {
  */
 export async function syncCatalogue(): Promise<SyncResult> {
   const reindexed = await reindexAll()
-  if (reindexed.skipped) return { ...reindexed, pruned: 0 }
+  if (reindexed.skipped) {
+    // Same shape as the full path below: the derived id lists are internal
+    // to the prune and never part of the result.
+    const { brandIds: _b, categoryIds: _c, ...rest } = reindexed
+    return { ...rest, pruned: 0 }
+  }
 
   // reindexAll read the catalogue once; reading the id set again here keeps
   // the two functions independent at the cost of one cheap projected query.
@@ -285,6 +305,11 @@ export async function syncCatalogue(): Promise<SyncResult> {
       .filter((row) => row.type === 'coupon' || row.is_coupon_enabled)
       .map((row) => row.id),
   )
+  // The derived indexes are pruned by the ids the rebuild just produced: a
+  // brand whose last product left the catalogue, or a category deactivated
+  // since the last run, is a ghost by the same rule as a deleted product.
+  const brandIds = new Set(reindexed.brandIds)
+  const categoryIds = new Set(reindexed.categoryIds)
 
   let pruned = 0
   const prune = async (uid: string, keep: Set<string>) => {
@@ -300,12 +325,50 @@ export async function syncCatalogue(): Promise<SyncResult> {
   }
   await prune(PRODUCTS_INDEX, catalogueIds)
   await prune(COUPONS_INDEX, couponIds)
+  await prune(BRANDS_INDEX, brandIds)
+  await prune(CATEGORIES_INDEX, categoryIds)
 
-  return { ...reindexed, pruned }
+  const { brandIds: _b, categoryIds: _c, ...result } = reindexed
+  return { ...result, pruned }
 }
 
 /**
- * Full rebuild of both indexes from Postgres.
+ * The active categories, for the categories index. Same columns and the same
+ * predicate as the setup script's `loadCategories`.
+ */
+async function readCategories(): Promise<CategoryRow[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('categories')
+    .select('id, parent_id, slug, name_he, name_en, description_he, image_url, sort_order')
+    .eq('is_active', true)
+    .is('deleted_at', null)
+  if (error) throw new Error(`categories read failed: ${error.message}`)
+  return (data ?? []) as CategoryRow[]
+}
+
+type CategoryRow = {
+  id: string
+  parent_id: string | null
+  slug: string
+  name_he: string
+  name_en: string | null
+  description_he: string | null
+  image_url: string | null
+  sort_order: number | null
+}
+
+/** `reindexAll` plus the derived ids the sync's prune needs. Internal. */
+type ReindexWithIds = ReindexResult & { brandIds: string[]; categoryIds: string[] }
+
+/**
+ * Full rebuild of all four indexes from Postgres.
+ *
+ * Products and coupons are the catalogue and its coupon subset. Brands and
+ * categories are DERIVED from the same product documents, in the same run,
+ * so a chip's count can never describe a different catalogue than the one
+ * indexed (the rule `scripts/setup-meilisearch.mjs` set; this is the same
+ * rebuild, now on the hourly cron rather than a script run by hand).
  *
  * Upserts (PUT) rather than swap-and-replace: a document that fell out of the
  * public predicate since the last run is the incremental delete path's job,
@@ -318,19 +381,32 @@ export async function syncCatalogue(): Promise<SyncResult> {
  * server-side; the returned task uids are the handle for anyone who wants to
  * poll completion, and the counts are what was enqueued, not yet confirmed.
  */
-export async function reindexAll(): Promise<ReindexResult> {
+export async function reindexAll(): Promise<ReindexWithIds> {
   if (!meiliEnv()) {
-    return { skipped: true, products: 0, coupons: 0, taskUids: [] }
+    return {
+      skipped: true,
+      products: 0,
+      coupons: 0,
+      brands: 0,
+      categories: 0,
+      taskUids: [],
+      brandIds: [],
+      categoryIds: [],
+    }
   }
 
   const documents = await readCatalogue()
   const coupons = documents.filter((doc): doc is CouponDocument => doc.type === 'coupon')
+  const brands = toBrandDocuments(documents)
+  const categories = toCategoryDocuments(await readCategories(), documents)
 
   await ensureIndex(PRODUCTS_INDEX, PRODUCTS_INDEX_SETTINGS)
   await ensureIndex(COUPONS_INDEX, COUPONS_INDEX_SETTINGS)
+  await ensureIndex(BRANDS_INDEX, BRANDS_INDEX_SETTINGS)
+  await ensureIndex(CATEGORIES_INDEX, CATEGORIES_INDEX_SETTINGS)
 
   const taskUids: number[] = []
-  const enqueueBatches = async (uid: string, docs: ProductDocument[]) => {
+  const enqueueBatches = async (uid: string, docs: { id: string }[]) => {
     for (let from = 0; from < docs.length; from += PAGE_SIZE) {
       const task = await meiliRequest<{ taskUid: number }>(
         `/indexes/${uid}/documents?primaryKey=${PRIMARY_KEY}`,
@@ -343,6 +419,17 @@ export async function reindexAll(): Promise<ReindexResult> {
 
   await enqueueBatches(PRODUCTS_INDEX, documents)
   await enqueueBatches(COUPONS_INDEX, coupons)
+  await enqueueBatches(BRANDS_INDEX, brands)
+  await enqueueBatches(CATEGORIES_INDEX, categories)
 
-  return { skipped: false, products: documents.length, coupons: coupons.length, taskUids }
+  return {
+    skipped: false,
+    products: documents.length,
+    coupons: coupons.length,
+    brands: brands.length,
+    categories: categories.length,
+    taskUids,
+    brandIds: brands.map((doc) => doc.id),
+    categoryIds: categories.map((doc) => doc.id),
+  }
 }

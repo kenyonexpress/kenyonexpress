@@ -3,8 +3,9 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
+import { POPULAR_SEARCHES_TAG } from '@/lib/search/empty-state'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
 /**
@@ -83,6 +84,8 @@ async function runSave(_: PopularSearchState, formData: FormData): Promise<Popul
   })
 
   revalidatePath('/admin/search')
+  // The home page chips are cached for an hour under this tag (STEP 08).
+  updateTag(POPULAR_SEARCHES_TAG)
   return { success: 'נשמר' }
 }
 
@@ -104,6 +107,8 @@ async function runRemove(_: PopularSearchState, formData: FormData): Promise<Pop
   })
 
   revalidatePath('/admin/search')
+  // The home page chips are cached for an hour under this tag (STEP 08).
+  updateTag(POPULAR_SEARCHES_TAG)
   return { success: 'נמחק' }
 }
 

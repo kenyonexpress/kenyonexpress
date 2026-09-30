@@ -4,6 +4,7 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
+import SaveSearch from '@/components/search/SaveSearch'
 import SearchEmptyState from '@/components/search/SearchEmptyState'
 import SearchFacetNav from '@/components/search/SearchFacetNav'
 import SiteSearch from '@/components/search/SiteSearch'
@@ -283,6 +284,14 @@ async function SearchPageBody({ searchParams }: Props) {
               }
             >
               <ResultCount params={params} />
+            </Suspense>
+          )}
+          {/* The bookmark (STEP 08). Its own boundary with a same-height
+              fallback: the session read must not hold the count back, and a
+              44px row that appears late would push the grid down. */}
+          {canSearch && (
+            <Suspense fallback={<div className="search-save__wrap" aria-hidden />}>
+              <SaveSearch params={params} />
             </Suspense>
           )}
         </header>

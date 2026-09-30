@@ -15,10 +15,20 @@
  * types directly. The column names here are the column names in the migration.
  */
 
-/** Row of public.search_index_outbox, as claim_search_index_jobs returns it. */
+/**
+ * Row of public.search_index_outbox, as claim_search_index_jobs returns it.
+ *
+ * `entity` and `category_id` arrive with pending/244 (STEP 08), which lets the
+ * 132 floor carry category changes too. Until 244 is applied neither column
+ * exists, the claim returns rows without them, and the drain reads an absent
+ * `entity` as 'product', which is exactly what every row written so far is.
+ */
 export interface OutboxJobRow {
   id: number
-  product_id: string
+  /** NULL only for a category row, after 244 drops the NOT NULL. */
+  product_id: string | null
+  entity?: 'product' | 'category' | null
+  category_id?: string | null
   op: 'upsert' | 'delete'
   enqueued_at: string
   claimed_at: string | null

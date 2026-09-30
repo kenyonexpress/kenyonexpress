@@ -93,6 +93,7 @@ sequenceDiagram
 | HttpOnly cookie `ke_session_id` | Canonical guest identity (UUID). 30 days, `SameSite=Lax`, path `/` |
 | `public.carts` | Server source of truth. Guest: `session_id` + `profile_id IS NULL`. User: `profile_id` |
 | `localStorage` key `ke_cart_mirror_v1` | **Optimistic UX only** (drawer instant paint). Never trusted for price or checkout. Hydrate from server on mount; overwrite after every Server Action |
+| `localStorage` key `ke_cart_fallback_v1` | **Display fallback only** (STEP 09, 30.09). The last server-confirmed `CartView`, written by the store on every confirmed cart, removed on an empty one. Restored by `CartBootstrap` only when `/api/cart` fails, flagged `fallbackActive`: every checkout button refuses and every cart surface shows "העגלה מוצגת מהמכשיר". The first server answer (retry on `online`, or any settled mutation) overwrites it. Max age `CART_EXPIRY_DAYS`. `src/lib/cart/local-fallback.ts` |
 
 Rules:
 

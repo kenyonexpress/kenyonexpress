@@ -132,8 +132,16 @@ describe('runSearchIndexJob', () => {
   it('deletes directly for a delete job without touching the database', async () => {
     const outcome = await runSearchIndexJob({ ...upsertJob, op: 'delete' })
     expect(outcome).toBe(`deleted ${PRODUCT_ID}`)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect((fetchMock.mock.calls[0]?.[1] as RequestInit).method).toBe('DELETE')
+    // One DELETE per index the product could be in: products, then coupons.
+    // The row is gone, so its type is unknowable; both are tried and a 404 on
+    // either is success.
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const calls = fetchMock.mock.calls as [string, RequestInit][]
+    expect(calls.map(([, init]) => init.method)).toEqual(['DELETE', 'DELETE'])
+    expect(calls.map(([url]) => url)).toEqual([
+      `http://meili.local/indexes/products/documents/${PRODUCT_ID}`,
+      `http://meili.local/indexes/coupons/documents/${PRODUCT_ID}`,
+    ])
   })
 
   it('treats 404 on delete as success (idempotent)', async () => {

@@ -7,9 +7,12 @@ import { enqueueSearchIndexJob } from '@/lib/search/qstash'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
- * Receiver for the Supabase Database Webhook on `public.products`
- * (INSERT / UPDATE / DELETE). Translates the change into a search-index job
- * and hands it to the queue. Never writes anything itself.
+ * Receiver for the Supabase Database Webhooks on `public.products` and
+ * (STEP 08, 30.09) `public.categories`, INSERT / UPDATE / DELETE. Translates
+ * the change into a search-index job and hands it to the queue. Never writes
+ * anything itself. One route for both tables: the dashboard webhook on
+ * `categories` points here with the same static header, and `jobForChange`
+ * reads `payload.table` to decide which job shape to build.
  *
  * Auth, strongest available first:
  * 1. `x-search-signature`: hex HMAC-SHA256 of the raw body with

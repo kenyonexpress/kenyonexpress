@@ -204,6 +204,47 @@
   text-align: center;
   font-weight: 700;
   color: #333e48;
+  /* An <input type="number"> now, so a quantity can be typed: same box as
+     the span it replaced, its own chrome and spinners removed (the pill's
+     buttons are the spinners). */
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.cart-line__qty-value::-webkit-outer-spin-button,
+.cart-line__qty-value::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.cart-line__qty-value:focus-visible {
+  outline: 2px solid #0062bd;
+  outline-offset: -2px;
+}
+
+/* The "prices as of the last connection" sentence above the lines, in the
+   blocked banner's box at a warning's colour rather than a refusal's. */
+.cart-page__offline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+  padding: 14px 18px;
+  border: 1px solid #f0c36d;
+  border-radius: 6px;
+  background: #fff8e5;
+  color: #6b5416;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.cart-page__offline svg {
+  flex: none;
+  margin-top: 0.1875rem;
 }
 
 .cart-line__price {

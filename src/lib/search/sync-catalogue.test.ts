@@ -101,6 +101,9 @@ describe('syncCatalogue', () => {
     from.mockReset().mockImplementation((table: string) => {
       if (table === 'suppliers') return chain({ data: [] })
       if (table === 'products') return chain({ data: CATALOGUE })
+      // The categories index is derived in the same run (STEP 08); an empty
+      // read keeps this suite about products and coupons.
+      if (table === 'categories') return chain({ data: [] })
       throw new Error(`unexpected table ${table}`)
     })
   })
@@ -118,6 +121,8 @@ describe('syncCatalogue', () => {
       skipped: true,
       products: 0,
       coupons: 0,
+      brands: 0,
+      categories: 0,
       taskUids: [],
       pruned: 0,
     })

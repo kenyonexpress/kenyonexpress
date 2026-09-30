@@ -1,5 +1,26 @@
 # `migrations/pending/`
 
+## 2026-09-30: 245 PENDING (saved searches, per customer)
+
+`245_saved_searches.sql` adds `saved_searches`: a signed-in shopper's kept
+query plus the facets that narrowed it, named, owner-only under RLS. 118 gave
+a history (`user_recent_searches`); nothing let a search be kept. Read by
+`src/server/queries/saved-searches.ts`, written by
+`src/server/actions/saved-searches.ts`, and deleted with the account in
+`src/lib/account/deletion.ts`. Additive, idempotent; rollback is one DROP
+TABLE IF EXISTS. Not applied; the page under `/account/saved-searches`
+answers with an empty list while the table is missing.
+
+## 2026-09-30: 244 PENDING (search outbox learns about categories)
+
+`244_search_outbox_categories.sql` puts 132's AFTER trigger on
+`public.categories` too, so a category renamed or deactivated in the admin
+reaches the `categories` Meilisearch index through the same
+`search_index_outbox` drain as a product. The webhook path
+(`src/lib/search/pipeline-contracts.ts`, `jobForChange`) already handles the
+`categories` table; this file is the durable floor under it. Additive,
+idempotent; rollback is one DROP TRIGGER IF EXISTS.
+
 ## 2026-09-30: 243 PENDING (CMS hero seed, inserted inactive)
 
 `243_homepage_hero_seed.sql` inserts five rows into 127's `banners`, one per

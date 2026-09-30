@@ -9,12 +9,32 @@ import { Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+/**
+ * What a typed quantity becomes. Pure so the test can name every edge:
+ * empty and non-numeric revert to what the line had, a fraction is floored,
+ * anything below one is one (typing 0 is not a removal; the trash button is,
+ * and it is next to this field), and anything above the ceiling is the
+ * ceiling. Null means "nothing to write".
+ */
+export function commitTypedQuantity(raw: string, current: number, maxQty: number): number | null {
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed)) return null
+  const next = Math.min(maxQty, Math.max(1, parsed))
+  return next === current ? null : next
+}
+
 export default function CartLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
   const [localQty, setLocalQty] = useState(item.quantity)
+  // The field's text while it is being edited. Kept apart from `localQty`
+  // because an input bound straight to a clamped number cannot be emptied to
+  // type a new value: backspace over "3" would snap to "1" before the "5" was
+  // pressed. It follows `localQty` whenever that moves.
+  const [draft, setDraft] = useState(String(item.quantity))
 
   useEffect(() => {
     setLocalQty(item.quantity)
+    setDraft(String(item.quantity))
   }, [item.quantity])
 
   // Before this, `+` ran to 99 against any stock level, so the only way to
@@ -27,6 +47,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
     const next = Math.max(1, localQty - 1)
     if (next === localQty) return
     setLocalQty(next)
+    setDraft(String(next))
     void updateQuantity(item.product_id, item.variant_id, next)
   }
 
@@ -36,6 +57,22 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
     // would spend a round trip to be told the quantity it already has.
     if (next === localQty) return
     setLocalQty(next)
+    setDraft(String(next))
+    void updateQuantity(item.product_id, item.variant_id, next)
+  }
+
+  // The stepper is one press per unit, and a shopper who wants twelve of
+  // something was pressing "+" eleven times. Live's WooCommerce cart has a
+  // typed number field here (refs/ke_live_computed.json, cart@380, the 75px
+  // quantity row); this is that field, committed on blur and on Enter.
+  const commitDraft = () => {
+    const next = commitTypedQuantity(draft, localQty, maxQty)
+    if (next === null) {
+      setDraft(String(localQty))
+      return
+    }
+    setLocalQty(next)
+    setDraft(String(next))
     void updateQuantity(item.product_id, item.variant_id, next)
   }
 
@@ -127,7 +164,25 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             >
               <Minus size={14} />
             </button>
-            <span className="cart-line__qty-value tabular-nums">{localQty}</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={maxQty}
+              step={1}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onBlur={commitDraft}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  event.currentTarget.blur()
+                }
+              }}
+              disabled={isPending}
+              aria-label={`כמות עבור ${item.name_he}`}
+              className="cart-line__qty-value tabular-nums"
+            />
             <button
               type="button"
               onClick={inc}

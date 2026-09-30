@@ -6,6 +6,7 @@ import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
 import HomeNewsletter from '@/components/home/HomeNewsletter'
 import HotCoupons from '@/components/home/HotCoupons'
+import PopularSearches from '@/components/home/PopularSearches'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
@@ -130,6 +131,7 @@ export default function HomePage() {
       */}
       <DealOfTheDay />
       <CategoryGrid />
+      <PopularSearches />
       <HotCoupons />
       <HomeNewsletter />
     </>

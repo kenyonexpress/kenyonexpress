@@ -1,4 +1,5 @@
 import { type DealCandidate, rankDeals } from '@/lib/pricing/flash-deals'
+import { type PopularSearch, searchHref } from '@/lib/search/empty-state'
 
 /**
  * The rules behind the home page sections that sit BELOW the parity gate's
@@ -19,6 +20,39 @@ export const HOME_CATEGORY_TILE_COUNT = 8
 
 /** The hot coupons row shows one screen of deals and links to the rest. */
 export const HOT_COUPON_COUNT = 8
+
+/** One row of chips on a desktop; two on a phone. */
+export const HOME_POPULAR_SEARCH_COUNT = 8
+
+export interface PopularSearchChip {
+  term: string
+  href: string
+}
+
+/**
+ * The promoted terms as chips: blank terms dropped, duplicates (case- and
+ * whitespace-insensitive) collapsed to the first, an operator's target URL
+ * kept when it is same-site and otherwise replaced by the search page for
+ * that term. CURATED, NOT COMPUTED: the rows are the operator's list
+ * (`popular_searches`, migration 118); `search_events` is analytics and is
+ * never published, for the reason api/search/quick-links gives.
+ */
+export function pickPopularSearches(rows: PopularSearch[], limit: number): PopularSearchChip[] {
+  const seen = new Set<string>()
+  const chips: PopularSearchChip[] = []
+  for (const row of rows) {
+    const term = row.term.replace(/\s+/g, ' ').trim()
+    if (!term) continue
+    const key = term.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    const target = row.target_url?.trim()
+    const href = target?.startsWith('/') && !target.startsWith('//') ? target : searchHref(term)
+    chips.push({ term, href })
+    if (chips.length >= limit) break
+  }
+  return chips
+}
 
 export interface CategoryTileRow {
   slug: string

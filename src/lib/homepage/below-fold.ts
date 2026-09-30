@@ -3,6 +3,7 @@ import { CATEGORY_TILE_IMAGES } from '@/lib/assets'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orderedByMenu } from '@/lib/category-page'
 import { log } from '@/lib/observability/log'
+import { POPULAR_SEARCHES_TAG } from '@/lib/search/empty-state'
 import { createCatalogueReadClient } from '@/lib/supabase/read-replica'
 import { cacheLife, cacheTag } from 'next/cache'
 import {
@@ -11,9 +12,12 @@ import {
   type DealOfTheDay,
   type DealOfTheDayCandidate,
   HOME_CATEGORY_TILE_COUNT,
+  HOME_POPULAR_SEARCH_COUNT,
   HOT_COUPON_COUNT,
+  type PopularSearchChip,
   pickCategoryTiles,
   pickDealOfTheDay,
+  pickPopularSearches,
 } from './below-fold-rules'
 
 /**
@@ -126,6 +130,43 @@ export async function getHotCouponDeals(): Promise<Coupon[]> {
     return (data ?? []) as Coupon[]
   } catch (error) {
     log.warn('homepage.hot_coupons_read_threw', {
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+    return []
+  }
+}
+
+/**
+ * The promoted search terms for the home page chips (STEP 08). Same table and
+ * same predicate as lib/search/popular.ts, on the cookie-free catalogue client
+ * instead of the request client, because this read is inside the static
+ * shell: the page is prerendered and a cookie read here would turn it dynamic.
+ * The table is world-readable by policy (118), so anon RLS answers it.
+ * Tagged so the admin editor can refresh it on save.
+ */
+export async function getHomePopularSearches(): Promise<PopularSearchChip[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(POPULAR_SEARCHES_TAG)
+  try {
+    const supabase = createCatalogueReadClient()
+    const { data, error } = await supabase
+      .from('popular_searches')
+      .select('term, target_url')
+      .eq('is_active', true)
+      .order('position', { ascending: true })
+      .order('term', { ascending: true })
+      .limit(HOME_POPULAR_SEARCH_COUNT * 2)
+    if (error) {
+      log.warn('homepage.popular_searches_read_failed', { reason: error.message })
+      return []
+    }
+    return pickPopularSearches(
+      (data ?? []) as { term: string; target_url: string | null }[],
+      HOME_POPULAR_SEARCH_COUNT,
+    )
+  } catch (error) {
+    log.warn('homepage.popular_searches_read_threw', {
       reason: error instanceof Error ? error.message : 'unknown',
     })
     return []

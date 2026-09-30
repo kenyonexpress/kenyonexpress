@@ -1,3 +1,4 @@
+import { writeCartFallback } from '@/lib/cart/local-fallback'
 import type { CartView } from '@/lib/cart/types'
 import { type ShippingMethodId, resolveShippingMethod } from '@/lib/shipping/methods'
 import {
@@ -189,6 +190,25 @@ export interface CartStoreState {
   mirrorCount: number
   /** Whether a server cart has landed. Never persisted: it is about this tab. */
   serverConfirmed: boolean
+  /**
+   * Whether the cart on screen came from `lib/cart/local-fallback.ts` rather
+   * than from the server, because `/api/cart` failed. While true, every
+   * checkout button refuses and every cart surface says the prices are as of
+   * the last connection. The first server answer (a bootstrap retry or any
+   * settled mutation) clears it. Never persisted: it describes this tab's
+   * network, not the cart.
+   */
+  fallbackActive: boolean
+  /**
+   * Puts the last confirmed cart on screen when the server cannot be reached.
+   *
+   * A no-op once the server has spoken (`serverConfirmed`) or while a write is
+   * in flight (`pendingOps`): in both cases there is a fresher cart than the
+   * snapshot, and the snapshot must not paint over it. `serverCart` is left
+   * untouched on purpose. It is the rollback target and the "has the server
+   * answered" signal `CartBootstrap` reads, and a snapshot is neither.
+   */
+  restoreFallback: (cart: CartView) => void
 }
 
 export type CartStoreApi = ReturnType<typeof createCartStore>
@@ -209,8 +229,20 @@ export function createCartStore(
     ) => void,
     get: () => CartStoreState,
   ): CartStoreState => {
+    /**
+     * Where a failed write returns the cart to. Normally the last server
+     * answer. On a restored fallback there is no server answer yet and
+     * `serverCart` is still the empty cart the store started with, so rolling
+     * back to it would blank every line over one failed press; the snapshot
+     * on screen is the better of the two truths.
+     */
+    const rollbackTarget = (): CartView => {
+      const state = get()
+      return state.fallbackActive ? state.cart : state.serverCart
+    }
+
     const begin = (action: CartOptimisticAction): CartView => {
-      const rollback = get().serverCart
+      const rollback = rollbackTarget()
       set((state) => {
         const cart = applyOptimistic(state.cart, action)
         return {
@@ -228,6 +260,9 @@ export function createCartStore(
     }
 
     const settle = (confirmed: CartView | null, rollback: CartView): void => {
+      // Written before the state moves, so a subscriber reacting to the new
+      // cart can never observe a snapshot one write behind it.
+      if (confirmed) writeCartFallback(confirmed)
       set((state) => {
         const pendingOps = Math.max(0, state.pendingOps - 1)
         const next = confirmed ?? rollback
@@ -236,6 +271,7 @@ export function createCartStore(
           serverCart: confirmed ?? state.serverCart,
           mirrorCount: next.item_count,
           serverConfirmed: confirmed !== null ? true : state.serverConfirmed,
+          fallbackActive: confirmed !== null ? false : state.fallbackActive,
           pendingOps,
           isPending: pendingOps > 0,
         }
@@ -272,6 +308,7 @@ export function createCartStore(
       // on the server, so that cart IS the server's answer and the mirror has
       // nothing to add. The layouts pass `EMPTY_CART`; the tests pass a cart.
       serverConfirmed: initialCart.item_count > 0,
+      fallbackActive: false,
       pendingOps: 0,
       isPending: false,
       drawerOpen: false,
@@ -333,7 +370,7 @@ export function createCartStore(
       },
 
       removeUnavailable: async () => {
-        const rollback = get().serverCart
+        const rollback = rollbackTarget()
         set((state) => ({ pendingOps: state.pendingOps + 1, isPending: true }))
         try {
           const result = await removeUnavailableItemsAction()
@@ -362,7 +399,7 @@ export function createCartStore(
       },
 
       clear: async () => {
-        const rollback = get().serverCart
+        const rollback = rollbackTarget()
         set((state) => ({
           cart: { ...state.cart, items: [], item_count: 0 },
           pendingOps: state.pendingOps + 1,
@@ -398,8 +435,21 @@ export function createCartStore(
         }
       },
 
-      setCart: (cart) =>
-        set({ cart, serverCart: cart, mirrorCount: cart.item_count, serverConfirmed: true }),
+      setCart: (cart) => {
+        writeCartFallback(cart)
+        set({
+          cart,
+          serverCart: cart,
+          mirrorCount: cart.item_count,
+          serverConfirmed: true,
+          fallbackActive: false,
+        })
+      },
+      restoreFallback: (cart) => {
+        const state = get()
+        if (state.serverConfirmed || state.pendingOps > 0) return
+        set({ cart, mirrorCount: cart.item_count, fallbackActive: true })
+      },
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
     }
   }
