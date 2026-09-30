@@ -79,6 +79,10 @@ export const metadata: Metadata = {
       'application/rss+xml': [{ url: '/feed.xml', title: 'קניון אקספרס — דילים חדשים' }],
     },
   },
+  // A field and not the app/manifest.ts file convention: the file convention
+  // overrides this field everywhere, and /merchant/scan needs its own manifest
+  // with its own start URL. Served by app/manifest.webmanifest/route.ts.
+  manifest: '/manifest.webmanifest',
   // iOS reads none of the manifest's icons and looks only for this link tag.
   // Without it Safari screenshots the page and uses that as the home-screen
   // icon, which on this site is a yellow banner.
@@ -97,7 +101,7 @@ export const metadata: Metadata = {
  *
  * Read from `SITE.brand.primary` rather than written as a literal: the raw-hex
  * sweep in tokens.test.ts rejects a literal here, and rightly so -- this value
- * has to stay equal to `theme_color` in app/manifest.ts and to
+ * has to stay equal to `theme_color` in lib/pwa/site-manifest.ts and to
  * --color-brand-primary. If the three drift, the splash screen flashes one
  * colour and the browser chrome settles on another.
  */

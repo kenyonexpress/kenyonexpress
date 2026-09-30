@@ -242,6 +242,50 @@ describe('bypass: requests the worker must not touch', () => {
   })
 })
 
+describe('the merchant shell: the one privileged page the worker keeps', () => {
+  it('serves from the network, keeps the copy, and replays it only when the network fails', async () => {
+    network = () => new FakeResponse('<till v1>')
+    const first = await nav('/merchant/scan')
+    expect(await first?.text()).toBe('<till v1>')
+    expect(caches.urls()).toContain(`${ORIGIN}/merchant/scan`)
+
+    // Online again with a new build: the network wins and the copy is replaced.
+    network = () => new FakeResponse('<till v2>')
+    expect(await (await nav('/merchant/scan'))?.text()).toBe('<till v2>')
+
+    network = () => {
+      throw new Error('offline')
+    }
+    expect(await (await nav('/merchant/scan'))?.text()).toBe('<till v2>')
+  })
+
+  it('does not keep a redirected answer: the login page must never become the shell', async () => {
+    const redirected = new FakeResponse('<login>')
+    ;(redirected as unknown as { redirected: boolean }).redirected = true
+    network = () => redirected
+    await nav('/merchant/scan')
+    expect(caches.urls()).not.toContain(`${ORIGIN}/merchant/scan`)
+  })
+
+  it('falls back to the offline shell when nothing was ever kept', async () => {
+    await lifecycle('install')
+    network = () => {
+      throw new Error('offline')
+    }
+    const res = await nav('/merchant/scan')
+    expect(res?.status).toBe(200)
+    expect(fetchSpy).toHaveBeenCalled()
+  })
+
+  it('keeps only the bare URL, and nothing else under /merchant/', async () => {
+    network = () => new FakeResponse('<x>')
+    await nav('/merchant/scan?x=1')
+    await nav('/merchant/other')
+    expect(caches.urls()).not.toContain(`${ORIGIN}/merchant/scan?x=1`)
+    expect(caches.urls()).not.toContain(`${ORIGIN}/merchant/other`)
+  })
+})
+
 describe('immutable assets: cache-first', () => {
   it('fetches once, then serves from cache with no network call', async () => {
     network = () => new FakeResponse('chunk-bytes')

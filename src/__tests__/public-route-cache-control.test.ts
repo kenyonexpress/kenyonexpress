@@ -48,6 +48,9 @@ const LEDGER: Record<string, Policy> = {
   // Cache-Control and Vercel does not cache a header-less 3xx.
   'src/app/c/[code]/route.ts': 'redirect',
   'src/app/feed.xml/route.ts': 'public',
+  // The two web app manifests (STEP 14): static JSON, one per start URL.
+  'src/app/manifest.webmanifest/route.ts': 'public',
+  'src/app/merchant/manifest.webmanifest/route.ts': 'public',
   'src/app/merchant.xml/route.ts': 'public',
 }
 

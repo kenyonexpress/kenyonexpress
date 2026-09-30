@@ -26,6 +26,8 @@
  *                     of the same browse page, then the offline shell. A
  *                     document is never served from cache while the network
  *                     works.
+ *   /merchant/scan    network-first, last-seen copy on failure. See
+ *                     MERCHANT_SHELL below for why one privileged page is kept.
  *   browse pages      home, /products, /product/*, /category/* documents that
  *                     came back 200 are kept in a bounded LRU-ish cache
  *                     (PAGES_LIMIT entries, oldest evicted) so the catalogue a
@@ -57,11 +59,20 @@
  * worker can be replaced on the next load rather than on the next tab close.
  */
 
-const VERSION = 'ke-v3'
+const VERSION = 'ke-v4'
 const STATIC_CACHE = `${VERSION}-static`
 const PAGES_CACHE = `${VERSION}-pages`
 const IMAGES_CACHE = `${VERSION}-images`
+const MERCHANT_CACHE = `${VERSION}-merchant`
 const OFFLINE_URL = '/offline'
+// The till's shell (STEP 14). The one privileged document this worker keeps,
+// and the exception is the feature: a scanner whose queue survives an outage
+// but whose page does not open during one is no scanner. What is kept is a
+// shell that names the business and holds no voucher; every read and every
+// burn goes through /api/**, which is bypassed as always. Network-first, so a
+// cashier with a connection never sees a stale build, and the copy is
+// replaced on every successful load.
+const MERCHANT_SHELL = '/merchant/scan'
 
 // Enough for a browsing session over the catalogue, small enough that the
 // eviction sweep in putBounded stays trivial.
@@ -135,6 +146,11 @@ function shouldBypass(request, url) {
   return BYPASS_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))
 }
 
+/** The till's document and nothing near it: no query, no sub-path. */
+function isMerchantShell(url) {
+  return url.search === '' && url.pathname === MERCHANT_SHELL
+}
+
 /** Bare catalogue URLs only; see the header for why a query string is out. */
 function isBrowsePage(url) {
   if (url.search !== '') return false
@@ -194,6 +210,34 @@ self.addEventListener('fetch', (event) => {
 
   if (isImage(url)) {
     event.respondWith(cacheFirstBounded(IMAGES_CACHE, request, IMAGES_LIMIT))
+    return
+  }
+
+  if (request.mode === 'navigate' && isMerchantShell(url)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // A signed-out load answers with the login page after a redirect;
+          // caching THAT as the shell would lock the till out until the next
+          // successful load, so only a direct 200 is kept.
+          if (response.ok && response.type === 'basic' && !response.redirected) {
+            putBounded(MERCHANT_CACHE, request, response.clone(), 1)
+          }
+          return response
+        })
+        .catch(async () => {
+          const shell = await (await caches.open(MERCHANT_CACHE)).match(request)
+          if (shell) return shell
+          const offline = await (await caches.open(STATIC_CACHE)).match(OFFLINE_URL)
+          return (
+            offline ??
+            new Response('אין חיבור לאינטרנט', {
+              status: 503,
+              headers: { 'content-type': 'text/plain; charset=utf-8' },
+            })
+          )
+        }),
+    )
     return
   }
 

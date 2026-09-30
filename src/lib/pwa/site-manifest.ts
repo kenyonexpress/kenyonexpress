@@ -2,9 +2,14 @@ import { SITE } from '@/styles/tokens'
 import type { MetadataRoute } from 'next'
 
 /**
- * Web app manifest, as a metadata route rather than a static public/ file so it
- * is typed and cannot drift from the icons that scripts/generate-pwa-icons.mjs
- * actually produces.
+ * The shop's web app manifest, served by src/app/manifest.webmanifest/route.ts.
+ *
+ * Typed rather than a static public/ file so it cannot drift from the icons
+ * that scripts/generate-pwa-icons.mjs actually produces. It WAS the
+ * app/manifest.ts file convention until STEP 14; that convention overrides the
+ * `manifest` metadata field on every page, which left no way for the merchant
+ * scanner (/merchant/scan) to carry its own start URL. As a route handler
+ * behind a `manifest` field in the root layout, a page can point elsewhere.
  *
  * `start_url` carries no tracking parameter on purpose. The usual
  * `?utm_source=pwa` makes every launch a distinct URL, which defeats the
@@ -20,7 +25,7 @@ import type { MetadataRoute } from 'next'
  * has its own padded asset. Declaring one tight icon as both is what produces
  * a cropped logo on Android launchers.
  */
-export default function manifest(): MetadataRoute.Manifest {
+export function siteManifest(): MetadataRoute.Manifest {
   return {
     // The Hebrew name is what the launcher shows under the icon, and the
     // launcher is the one surface where the Latin brand string reads as a

@@ -32,6 +32,7 @@ export default function robots(): MetadataRoute.Robots {
           '/supplier/',
           '/scan',
           '/voucher/', // the merchant validation page: a voucher's balance, by id or code
+          '/merchant/', // the till's scanner PWA and its manifest
           '/admin/',
           '/checkout',
           '/cart',

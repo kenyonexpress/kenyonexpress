@@ -436,6 +436,7 @@ describe('the pending migration inventory', () => {
       // only, no DDL. Not yet dry-run on production (Supabase MCP
       // unauthenticated in the session that filed it).
       '250_referral_program_seed.sql',
+      '251_voucher_fallback_code.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

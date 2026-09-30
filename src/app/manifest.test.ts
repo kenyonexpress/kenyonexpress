@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
+import { siteManifest as manifest } from '@/lib/pwa/site-manifest'
 import { SITE } from '@/styles/tokens'
 import { describe, expect, it } from 'vitest'
-import manifest from './manifest'
 
 /**
  * Goal 17. Two things are worth locking here, and neither is the manifest

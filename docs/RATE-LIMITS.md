@@ -73,6 +73,7 @@
 | `voucher-redeem` | 120 | 1 h | till scans, per supplier user |
 | `voucher-redeem-batch` | 40 | 1 h | batch scans, per supplier |
 | `voucher-lookup` | 300 | 1 h | till lookups, per supplier |
+| `voucher-page` | 60 | 1 h | merchant voucher page loads, per IP |
 | `staff-pin` | 15 | 1 h | PIN guessing on the till |
 | `search` | 120 | 5 min | search queries hit Meilisearch |
 | `search-suggest` | 300 | 5 min | typeahead fires per keystroke |

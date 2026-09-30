@@ -183,6 +183,9 @@ export const RATE_LIMIT_POLICIES = {
   'voucher-redeem': { limit: 120, windowSeconds: 3600, reason: 'till scans, per supplier user' },
   'voucher-redeem-batch': { limit: 40, windowSeconds: 3600, reason: 'batch scans, per supplier' },
   'voucher-lookup': { limit: 300, windowSeconds: 3600, reason: 'till lookups, per supplier' },
+  // The merchant validation page (STEP 14), keyed on the address: it has no
+  // member yet when it answers, and 60 loads an hour is a busy counter.
+  'voucher-page': { limit: 60, windowSeconds: 3600, reason: 'merchant voucher page loads, per IP' },
   'staff-pin': { limit: 15, windowSeconds: 3600, reason: 'PIN guessing on the till' },
 
   // -- Read paths. Large, because they are cheap and a human browsing hits them.

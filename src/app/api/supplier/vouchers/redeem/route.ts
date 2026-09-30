@@ -317,7 +317,10 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // Funnel event (marathon step 14), replays excluded so one scan is one
     // event. Swallows its own errors. The DB whitelist accepts it since 180;
     // what kept it out of the table until 2026-09-09 was the NOT NULL
-    // `session_id`, since a till has no browser session of ours.
+    // `session_id`, since a till has no browser session of ours. ONCE: until
+    // STEP 14 (01.10) this block appeared twice and every redemption was two
+    // events, which is the double-count the Meta exclusion below exists to
+    // avoid.
     if (!replayed) {
       await trackServerEvent({
         eventName: 'voucher_redeemed',
@@ -338,17 +341,6 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // value is the business's list price and was never our revenue.
     if (!replayed) {
       await reportRedemption(result)
-    }
-
-    // Funnel event, replays excluded so one scan is one event. Swallows its
-    // own errors. Both destinations work now: PostHog always did, and the
-    // first-party copy needed 180 (applied) plus the `session_id` fix.
-    if (!replayed) {
-      await trackServerEvent({
-        eventName: 'voucher_redeemed',
-        userId: user.id,
-        props: { code: (result.code as string) ?? shortCode },
-      })
     }
 
     return respond(

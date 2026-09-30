@@ -11,6 +11,9 @@ const LINKS: Array<{
 }> = [
   { href: '/supplier', label: 'לוח בקרה', minRole: 'scanner' },
   { href: '/supplier/scan', label: 'סריקה', minRole: 'scanner' },
+  // The installable till (STEP 14): camera, offline queue, sync. Outside the
+  // /supplier prefix on purpose, so the service worker may keep its shell.
+  { href: '/merchant/scan', label: 'סורק לא מקוון', minRole: 'scanner' },
   { href: '/supplier/redemptions', label: 'מימושים', minRole: 'scanner' },
   // manager, not scanner: the catalogue and the order queue both show
   // commission and margin, and the scanner role exists so the till phone does

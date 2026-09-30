@@ -184,6 +184,12 @@ export async function proxy(request: NextRequest) {
     // /redeem/[token] is deliberately NOT here: it logs a forged signature
     // before asking for one, and there is no signature on this path to log.
     pathname.startsWith('/voucher/') ||
+    // The merchant scanner (STEP 14): burns vouchers for the caller's own
+    // business. The page itself re-checks membership; this is the outer door.
+    // The trailing slash matters twice: /merchant.xml is the public Google
+    // Merchant feed, and the manifest is fetched by the browser WITHOUT
+    // cookies, so a redirect to login there is an app that cannot install.
+    (pathname.startsWith('/merchant/') && pathname !== '/merchant/manifest.webmanifest') ||
     // The voucher half of /coupon/ only; the coupon variant of a product page
     // shares the prefix and is public. See lib/vouchers/coupon-path.ts.
     couponPathNeedsSession(pathname) ||
