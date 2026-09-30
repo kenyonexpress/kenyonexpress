@@ -1,45 +1,52 @@
-RESUME FROM: M12-c64
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c64)
+RESUME FROM: M13-c64
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c64)
 
 ## המשך מ:
 
-**M11-c64 - DONE (01.10): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
-בכל חומרה, אפס תיקון קוד נדרש.** משימת התור: "Accessibility: run axe
-on every page. Fix every serious and critical violation. Keep WCAG 2.1
-AA. Record the remaining count in STATE.md."
+**M12-c64 - DONE (01.10): meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots נבדקו מחדש, אפס דריפט בקוד, אפס תיקון נדרש.** משימת
+התור: "SEO: verify metadata, canonical, og tags, schema.org Product
+and Offer on product pages, sitemap freshness and robots. Fix drift."
 
-**בדיקת דריפט מול המדידה הקודמת (M11-c63, `1a29c56b8`):** `git log
-1a29c56b8..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
-`00587d376` (M18-c63) — שורת דירוג כוכבים (`RatingStars`) נוספה
-ל-`DefaultProductCard`, שמרונדרת ב-`RelatedProducts` בדף המוצר. סימון
-חדש בדיוק בסקופ שהשערים האלה סורקים (טסטי דף-מוצר), אז לא הוסתמך על
-"אפס דריפט" — הורצה סריקה אמיתית, כמו ב-M11-c63 עצמו.
+**בדיקת דריפט מול המדידה הקודמת (M12-c63, `57cbb7f71`):** `git log
+57cbb7f71..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
+`00587d376` (M18-c63, שורת דירוג כוכבים על `DefaultProductCard`/
+`related-products.ts`) — נבדק ישירות ב-`git show --stat`, נוגע רק
+ב-`ProductCard.tsx` ו-`related-products.ts`, לא ב-`generateMetadata`,
+`src/lib/seo/json-ld.ts`, `robots.ts` או `sitemap`. אפס קובץ SEO שונה.
 
-נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD (`rm -rf .next`
-קודם), הורם `pnpm start -p 3617`, והורצו `e2e/a11y.spec.ts` ו-
-`e2e/a11y-authenticated.spec.ts` (כל 18 הנתיבים הציבוריים הקבועים,
-שלוש תפקידים מאומתים דרך `route-lists.ts`, עגלה/קופה כולל כל שלבי
-האשף ומצב שגיאת האימות, פאנל העגלה, באנר ההתקנה) עם `--workers=1`
-ו-`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il` בפורגראונד:
-**240/242 עברו, 2 דולגו בכוונה (אותו טסט `the search combobox says
-which suggestion is selected` על שני viewport — שדה החיפוש הוסר ב-D3),
-אפס נכשל.** השער נכשל על **כל** הפרה, לא רק `serious`/`critical`, אז
-0 עובר = 0 בכל דרגת חומרה כולל `serious`/`critical`. **המספר הנותר: 0.**
+**נבדק ישירות, לא רק דרך git log:** `generateMetadata` בדף המוצר
+(`src/app/(store)/product/[slug]/page.tsx`) עדיין מגדיר `alternates.
+canonical` ו-`openGraph` (בכוונה בלי `openGraph.images`, ה-og:image
+מגיע מ-route נפרד `opengraph-image-1r2n5f`). `src/lib/seo/json-ld.ts`
+עדיין בונה `@type: Product` עם `Offer` מקונן (מחיר/זמינות) ומוזרק
+ב-`<script type="application/ld+json">` פעמיים בדף (שורות 273, 281).
+`src/app/robots.ts` עדיין חוסם `/redeem/`, `/coupon/`, `/account/`,
+`/supplier/`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/` וכו',
+`/sitemap.xml` הוא ה-route handler של אינדקס ה-sitemap (חמישה קבצים:
+categories/content/products/regions/suppliers.xml, בלי `lastmod`
+על האינדקס עצמו בכוונה, `lastmod` פר-קובץ בכל `<urlset>`).
 
-שורת הכוכבים החדשה עצמה לא נצפתה מרונדרת בריצה הזו: הלוג הדפיס
-`related_products.reviews_read_failed` עם `"code":"42501"` (חסימת
-`anon` על `reviews` — חוסם ידוע #11 ב"חוסמים פתוחים", מיגרציה 247
-ממתינה). `RatingStars` מחזיר `null` בלי סיכום ביקורות, אז הרכיב לא
-הוסיף שום DOM לסרוק בסביבה הזו. אין פעולה נדרשת מהפריט הזה: הרכיב
-עצמו לא נכשל, הוא פשוט לא רונדר; כשמיגרציה 247 תוחל (פעולה של אופיר)
-יידרש סבב axe נוסף שבאמת יראה אותו.
+הורצו הטסטים הממוקדים: `vitest run src/app/sitemap.test.ts
+src/app/sitemap-robots-agree.test.ts src/app/sitemap-canonicals.test.ts
+src/app/robots.test.ts src/app/content-pages.test.ts
+src/app/og-fonts.test.ts src/lib/seo` — **202/202 עברו, 11 קבצי טסט,
+אפס נכשל.**
 
 **שערים:** `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
 קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282,
 docs-path-audit 154). `test` 610/610 קבצים, 7296/7308 ירוקים (12
-דולגים). `build` הורץ מחדש מ-HEAD (למען סריקת axe אמיתית), עבר נקי.
+דולגים). `build` (`CARDCOM_USE_MOCK=true pnpm build`) עבר נקי, כולל
+כל נתיבי ה-sitemap וה-`robots.txt` וה-`opengraph-image` routes.
 
 קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M11-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M12-c64 לשמירה על תקרת 300 שורות).** axe הורץ מחדש על כל דף, אפס
+הפרת WCAG A/AA בכל חומרה (240/242 עברו, 2 דולגים בכוונה). דריפט יחיד
+מ-M11-c63 (`00587d376`, שורת דירוג כוכבים) נבדק ולא השפיע — הרכיב לא
+רונדר בסביבה הזו (חסימת `anon` על `reviews`, חוסם ידוע #11, מיגרציה
+247 ממתינה). ארבעת השערים ירוקים.
 
 **M10-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M11-c64 לשמירה על תקרת 300 שורות).** כיסוי טסטים נבדק מחדש בפעם

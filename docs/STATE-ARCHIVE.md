@@ -2,6 +2,46 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c64 (פירוט מלא, כווץ ב-STATE.md ל-M12-c64 לשמירה על תקרת 300 שורות)
+
+**M11-c64 - DONE (01.10): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
+בכל חומרה, אפס תיקון קוד נדרש.** משימת התור: "Accessibility: run axe
+on every page. Fix every serious and critical violation. Keep WCAG 2.1
+AA. Record the remaining count in STATE.md."
+
+**בדיקת דריפט מול המדידה הקודמת (M11-c63, `1a29c56b8`):** `git log
+1a29c56b8..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
+`00587d376` (M18-c63) — שורת דירוג כוכבים (`RatingStars`) נוספה
+ל-`DefaultProductCard`, שמרונדרת ב-`RelatedProducts` בדף המוצר. סימון
+חדש בדיוק בסקופ שהשערים האלה סורקים (טסטי דף-מוצר), אז לא הוסתמך על
+"אפס דריפט" — הורצה סריקה אמיתית, כמו ב-M11-c63 עצמו.
+
+נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD (`rm -rf .next`
+קודם), הורם `pnpm start -p 3617`, והורצו `e2e/a11y.spec.ts` ו-
+`e2e/a11y-authenticated.spec.ts` (כל 18 הנתיבים הציבוריים הקבועים,
+שלוש תפקידים מאומתים דרך `route-lists.ts`, עגלה/קופה כולל כל שלבי
+האשף ומצב שגיאת האימות, פאנל העגלה, באנר ההתקנה) עם `--workers=1`
+ו-`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il` בפורגראונד:
+**240/242 עברו, 2 דולגו בכוונה (אותו טסט `the search combobox says
+which suggestion is selected` על שני viewport — שדה החיפוש הוסר ב-D3),
+אפס נכשל.** השער נכשל על **כל** הפרה, לא רק `serious`/`critical`, אז
+0 עובר = 0 בכל דרגת חומרה כולל `serious`/`critical`. **המספר הנותר: 0.**
+
+שורת הכוכבים החדשה עצמה לא נצפתה מרונדרת בריצה הזו: הלוג הדפיס
+`related_products.reviews_read_failed` עם `"code":"42501"` (חסימת
+`anon` על `reviews` — חוסם ידוע #11 ב"חוסמים פתוחים", מיגרציה 247
+ממתינה). `RatingStars` מחזיר `null` בלי סיכום ביקורות, אז הרכיב לא
+הוסיף שום DOM לסרוק בסביבה הזו. אין פעולה נדרשת מהפריט הזה: הרכיב
+עצמו לא נכשל, הוא פשוט לא רונדר; כשמיגרציה 247 תוחל (פעולה של אופיר)
+יידרש סבב axe נוסף שבאמת יראה אותו.
+
+**שערים:** `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282,
+docs-path-audit 154). `test` 610/610 קבצים, 7296/7308 ירוקים (12
+דולגים). `build` הורץ מחדש מ-HEAD (למען סריקת axe אמיתית), עבר נקי.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M10-c64 (פירוט מלא, כווץ ב-STATE.md ל-M11-c64 לשמירה על תקרת 300 שורות)
 
 **M10-c64 - DONE (30.09): כיסוי טסטים נבדק מחדש בפעם רביעית, שש
