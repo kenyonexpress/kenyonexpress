@@ -1,25 +1,33 @@
-RESUME FROM: M04-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c65)
+RESUME FROM: M05-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c65)
 
 ## המשך מ:
 
-**M03-c65 - DONE (01.10): שער ירוק אומת מחדש, ארבעת השערים נקיים, אפס
-תיקון נדרש.** משימת התור: להריץ `pnpm type-check`, `lint`, `test`, `build`
-ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר.
+**M04-c65 - DONE (01.10): תברואת תלויות נבדקה מחדש, אפס עדכון patch/minor
+זמין, אפס חולשה.** משימת התור: `pnpm audit` ו-`pnpm outdated`, להחיל
+עדכוני patch/minor ששומרים שער ירוק, לעולם לא major.
 
-**תוצאות:** `type-check` נקי (`tsc --noEmit`, אפס פלט). `lint` נקי, 12
-שערים כולל biome (2029 קבצים, אפס תיקון), i18n (627/627), locale-format
-(116/116). `test` 610/610 קבצים, 7298/7310 טסטים ירוקים (12 דולגים,
-כרגיל). `build` עבר פעמיים (אחת עם `rm -rf .next` מלא, אחת נוספת לאימות
-קוד יציאה), שתיהן `exit 0`. לוגי runtime שנדפסו במהלך prerender (401 RLS
-על `reviews` לקורא אנונימי, עמודות אופציונליות חסרות למיגרציה 242
-הממתינה) הם אזהרות אפליקציה צפויות מול DB אמיתי, לא כשל build ולא חדשות
-מהמחזור הקודם.
+**תוצאות:** `pnpm audit` — "No known vulnerabilities found". `pnpm
+outdated --format json` — 14 חבילות מיושנות (`@biomejs/biome`,
+`@hookform/resolvers`, `@sentry/nextjs`+`@sentry/node`,
+`@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
+`@vitest/coverage-v8`, `jsdom`, `lint-staged`, `tailwind-merge`,
+`typescript`, `vitest`, `zod`), **בכולן `wanted === current`** — כל
+הפער מ-`latest` הוא קפיצת major (חסום ע"י טווח ה-semver ב-`package.json`
+עצמו), אין אף פער patch/minor פתוח. זהה ל-M04-c64.
 
-**אין קוד לתקן.** ארבעת השערים היו נקיים כבר לפני הפריט, ולכן אפס שינוי
-קוד פונה-ללקוח בפריט הזה.
+**אין תלות לעדכן.** ארבעת השערים הורצו במלואם בכל זאת (לפי כלל הפריט):
+`type-check` נקי, `lint` נקי (12 שערים, biome 2029 קבצים), `test`
+610/610 קבצים 7298/7310 ירוקים (12 דולגים), `build` `exit 0`. אפס שינוי
+קוד.
 
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M02-c65).
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M03-c65).
+
+**M03-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M04-c65
+לשמירה על תקרת 300 שורות).** שער ירוק אומת מחדש, ארבעת השערים נקיים, אפס
+תיקון נדרש: `type-check` נקי, `lint` נקי (12 שערים, i18n 627/627,
+locale-format 116/116), `test` 610/610 קבצים 7298/7310 ירוקים (12
+דולגים), `build` `exit 0` פעמיים. אפס שינוי קוד.
 
 **M02-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M03-c65
 לשמירה על תקרת 300 שורות).** שער חזותי הורץ בפורגראונד, בית ומוצר, שלושת

@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c65 (הועבר מ-STATE.md ב-M04-c65, לשמירה על תקרת 300 שורות)
+
+**M03-c65 - DONE (01.10): שער ירוק אומת מחדש, ארבעת השערים נקיים, אפס
+תיקון נדרש.** משימת התור: להריץ `pnpm type-check`, `lint`, `test`, `build`
+ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר.
+
+**תוצאות:** `type-check` נקי (`tsc --noEmit`, אפס פלט). `lint` נקי, 12
+שערים כולל biome (2029 קבצים, אפס תיקון), i18n (627/627), locale-format
+(116/116). `test` 610/610 קבצים, 7298/7310 טסטים ירוקים (12 דולגים,
+כרגיל). `build` עבר פעמיים (אחת עם `rm -rf .next` מלא, אחת נוספת לאימות
+קוד יציאה), שתיהן `exit 0`. לוגי runtime שנדפסו במהלך prerender (401 RLS
+על `reviews` לקורא אנונימי, עמודות אופציונליות חסרות למיגרציה 242
+הממתינה) הם אזהרות אפליקציה צפויות מול DB אמיתי, לא כשל build ולא חדשות
+מהמחזור הקודם.
+
+**אין קוד לתקן.** ארבעת השערים היו נקיים כבר לפני הפריט, ולכן אפס שינוי
+קוד פונה-ללקוח בפריט הזה.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M02-c65).
+
 ## M02-c65 (הועבר מ-STATE.md ב-M03-c65, לשמירה על תקרת 300 שורות)
 
 **M02-c65 - DONE (01.10): שער חזותי הורץ בפורגראונד, בית ומוצר, שלושת
