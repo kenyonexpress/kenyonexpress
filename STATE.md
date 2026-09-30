@@ -1,44 +1,51 @@
-RESUME FROM: M09-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c63)
+RESUME FROM: M10-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c63)
 
 ## המשך מ:
 
-**M08-c63 - DONE (30.09): backlog נבדק מחדש, אפס פריט phase 1 לסוכן,
-BACKLOG EMPTY.** משימת התור: לקחת את פריט phase 1 בעל ההשפעה הגבוהה
-ביותר מ-`docs/BACKLOG.md`, לדלג על נדחה/phase 2, ליישם במלואו עם טסטים;
-אם אין פריט — לכתוב BACKLOG EMPTY ב-STATE.md.
+**M09-c63 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup: take
+the single highest-impact open item listed in STATE.md that a code agent
+can complete without Ofir. Implement it fully with tests. If none is left
+write STATE CLEAN in STATE.md and end this item."
 
-**`docs/BACKLOG.md` עדיין מכיל 15 פריטים, כולם מחוץ לתחום הסוכן לפי
-ההקדמה של הקובץ עצמו** (DNS, Vercel env, רוטציית סוד, החלטה עסקית על
-הקטלוג, אישור פריסה/מיגרציה על פרודקשן, מחיקת נתונים — כל אלה ברשימת
-"ארבעת המצבים" ב-`CLAUDE.md` או הכרעות מפעיל מפורשות). אין אף אחד מהם
-שניתן ליישום קוד עצמאי. נבדק מחדש מול `git log 947553fa0..HEAD` (נקודת
-הבדיקה המלאה הקודמת, M15-c62): `git diff --stat 947553fa0..HEAD --
-docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
-src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
-vercel.json supabase/ scripts/cron-jobs.json` מראה רק ארבעה קבצים:
-`docs/BACKLOG.md` (הערות re-check של M08-c62/M15-c62 עצמן),
-`package.json`+`pnpm-lock.yaml` (עדכון ה-patch ל-`next`/`@next/mdx`/
-`next-intl`/`posthog-js`, M04-c63), ו-`src/components/ProductCard.tsx`
-(לב מועדפים, M18-c62, כבר פריט תור קודם ולא שורת `BACKLOG.md`) — אף
-אחד לא נוגע בשורה חוסמת, במיגרציה ממתינה או בפנקס הקטלוג.
+נבדקו שוב, בקריאה בלבד, שני המקורות: 13 הסעיפים ב-"חוסמים פתוחים" למטה
+וכל 15 הסעיפים ב-`docs/BACKLOG.md`. `git log 947553fa0..HEAD` (קצה
+M08-c62, נקודת הבדיקה המלאה האחרונה של הרשימה) מראה רק תשעה-עשר קומיטים,
+כולם תיעוד/גייטים/עדכון patch/פיצ'ר לב-מועדפים שכבר נבדק כפריט תור קודם
+(M18-c62) — נבדק ישירות ב-M08-c63 עם `git diff --stat` על הנתיבים
+הרלוונטיים ולא נמצא בהם שום נגיעה בשורה חוסמת, במיגרציה ממתינה או בפנקס
+הקטלוג. מאז M08-c63 (הקומיט הקודם, `1f5d6c798`) ועד HEAD — אפס קומיט חדש.
 
-**הספירות נבדקו ישירות, לא רק ב-diff:** `migrations/pending/*.sql` 59
-קבצים (זהה), `supabase/catalogue-known-issues.json` שדה `known` 26
-רשומות (זהה), `git stash list` 32 (זהה), `scripts/dns-watch.sh` עדיין
-pid 957 תחת `caffeinate` pid 999 (זהה). מספר הקומיטים מאחורי פרודקשן
-(`git rev-list --count a388118f1..HEAD`) עלה מ-245 ל-**256**, ספירת git
-בלבד, פרודקשן לא נבדק מחדש בפריט הזה (חוסם 2, לא נגזר מ-`BACKLOG.md`).
+**שלושת המונים שהרשימה תלויה בהם נבדקו ישירות ואינם השתנו:**
+`migrations/pending/*.sql` עדיין **59** קבצים, `git stash list` עדיין
+**32**, `supabase/catalogue-known-issues.json`'s `known` object עדיין
+**26** ממצאים, `scripts/dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid
+999. כל אחד מ-28 הסעיפים (13+15) דורש פעולה שרק אופיר מחזיק: DNS ברשם
+(פתור בפועל, לא פעולה פתוחה), משתני סביבה/סודות ב-Vercel, אישור והחלת
+מיגרציה על פרודקשן, הכרעה עסקית על שורות קטלוג כפולות, אישורי Cardcom
+אמיתיים, הפעלת R2 בדשבורד Cloudflare, `CRON_SECRET` ב-GitHub Secrets,
+`RESEND_API_KEY`, מספר ח.פ, ומחיקת stash (מחיקת נתונים דורשת אישור
+מפורש לפי חוק הפרויקט). **אין פריט אחד ששום כלל בפרויקט לא אוסר על סוכן
+קוד לבצע לבד** — אותה מסקנה כמו M09-c62 ושנים-עשר המחזורים שקדמו לו.
 
-**אין פריט חדש, אין כפילות, אין שינוי סדר.** הערת re-check נוספה
-ל-`docs/BACKLOG.md` עצמו (M08-c63) לפי אותה תבנית כמו M08-c61/M08-c62.
+**אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).** ארבעת השערים
+הורצו במלואם בפורגראונד: `type-check` נקי (`tsc --noEmit`, exit 0).
+`lint` נקי (biome 2028 קבצים, 12 שערים כולם ירוקים, i18n 627/627,
+locale-format 116/64, docs-index 282, docs-path-audit 154). `test`
+610/610 קבצים, 7296/7308 ירוקים (12 דולגים), 63.45s. `build` לא הורץ
+מחדש: `.next/BUILD_ID` (`XdsrbdWehIKbus5S3FyAN`, נכתב 19:32, שלוש דקות
+לפני הבדיקה) מאומת source-identical ל-HEAD (`git diff --stat
+0428b4726..HEAD -- next.config.ts next.config.mjs next.config.js
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml` ריק), וזיכרון
+פנוי נמוך (~68MB, `vm_stat`, סשן autopilot מקביל רץ על אותו ריפו) הפך
+build חוזר בלי שינוי קוד לסיכון מיותר.
 
-**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
-זהה ל-M07-c63). `test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) —
-זהה. `build` "Compiled successfully", exit 0. אין שינוי UI,
-`scripts/compare.mjs` לא רץ (לא פריט חזותי).
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-קבצים ששונו: `docs/BACKLOG.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M08-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c63
+לשמירה על תקרת 300 שורות).** backlog נבדק מחדש מול `git log
+947553fa0..HEAD`, עדיין 15 פריטים, אותו סדר, אפס כפילות, אפס פריט חדש,
+BACKLOG EMPTY. ארבעת השערים ירוקים, אפס שינוי קוד נדרש.
 
 **M07-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c63
 לשמירה על תקרת 300 שורות).** route audit הורץ מחדש במלואו, 241 שורות,
@@ -58,23 +65,10 @@ pid 957 תחת `caffeinate` pid 999 (זהה). מספר הקומיטים מאחו
 (`next`/`@next/mdx`/`next-intl`/`posthog-js`), 16 עדכוני major דולגו
 לפי הכלל "לעולם לא major", אפס רגרסיה.
 
-**M03-c63 - DONE (30.09): שער ירוק אומת מחדש, אפס דריפט מ-M03-c62.**
-משימת התור: להריץ `pnpm type-check`, `lint`, `test` ו-`build`, ולתקן כל
-שגיאה/אזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר.
-
-**תוצאות, כל ארבעת השערים בפורגראונד:** `type-check` נקי (`tsc --noEmit`,
-אפס פלט). `lint` נקי — biome 2028 קבצים, כל 12 השערים ירוקים (`i18n`
-627/627, `locale-format` 116/116, `docs-index` 282, `docs-path-audit`
-154, זהים ל-100% ל-M03-c62). `test` 610/610 קבצים, 7296/7308 טסטים
-ירוקים (12 דולגים), 59.78s. `build` עבר במלואו: "Compiled successfully",
-337/337 עמודים סטטיים נוצרו, exit 0. שורות `rls_denied` על `reviews`
-בלוג ה-build הן ציפוי ידוע (חוסם פתוח 3 למעלה: `anon` בלי SELECT על
-`reviews`, ממתין למיגרציה 247 שממתינה לאישור) ולא כשל build.
-
-**אין תיקון קוד.** ארבעת השערים ירוקים ללא שגיאה או אזהרה לתקן; אפס
-שינוי קוד פונה-ללקוח או פנימי בפריט הזה.
-
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M03-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c63
+לשמירה על תקרת 300 שורות).** שער ירוק אומת מחדש, אפס דריפט מ-M03-c62:
+`type-check` נקי, `lint` נקי (12 שערים), `test` 610/610 קבצים, 7296/7308
+ירוקים, `build` "Compiled successfully". אין תיקון קוד נדרש.
 
 **M02-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c63
 לשמירה על תקרת 300 שורות):** שער חזותי בפורגראונד, בית ומוצר, שלושת

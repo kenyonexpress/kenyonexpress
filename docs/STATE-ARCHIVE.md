@@ -2,6 +2,65 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c63 (הועבר מ-STATE.md ב-M09-c63, לשמירה על תקרת 300 שורות)
+
+**M08-c63 - DONE (30.09): backlog נבדק מחדש, אפס פריט phase 1 לסוכן,
+BACKLOG EMPTY.** משימת התור: לקחת את פריט phase 1 בעל ההשפעה הגבוהה
+ביותר מ-`docs/BACKLOG.md`, לדלג על נדחה/phase 2, ליישם במלואו עם טסטים;
+אם אין פריט — לכתוב BACKLOG EMPTY ב-STATE.md.
+
+**`docs/BACKLOG.md` עדיין מכיל 15 פריטים, כולם מחוץ לתחום הסוכן לפי
+ההקדמה של הקובץ עצמו** (DNS, Vercel env, רוטציית סוד, החלטה עסקית על
+הקטלוג, אישור פריסה/מיגרציה על פרודקשן, מחיקת נתונים — כל אלה ברשימת
+"ארבעת המצבים" ב-`CLAUDE.md` או הכרעות מפעיל מפורשות). אין אף אחד מהם
+שניתן ליישום קוד עצמאי. נבדק מחדש מול `git log 947553fa0..HEAD` (נקודת
+הבדיקה המלאה הקודמת, M15-c62): `git diff --stat 947553fa0..HEAD --
+docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
+src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
+vercel.json supabase/ scripts/cron-jobs.json` מראה רק ארבעה קבצים:
+`docs/BACKLOG.md` (הערות re-check של M08-c62/M15-c62 עצמן),
+`package.json`+`pnpm-lock.yaml` (עדכון ה-patch ל-`next`/`@next/mdx`/
+`next-intl`/`posthog-js`, M04-c63), ו-`src/components/ProductCard.tsx`
+(לב מועדפים, M18-c62, כבר פריט תור קודם ולא שורת `BACKLOG.md`) — אף
+אחד לא נוגע בשורה חוסמת, במיגרציה ממתינה או בפנקס הקטלוג.
+
+**הספירות נבדקו ישירות, לא רק ב-diff:** `migrations/pending/*.sql` 59
+קבצים (זהה), `supabase/catalogue-known-issues.json` שדה `known` 26
+רשומות (זהה), `git stash list` 32 (זהה), `scripts/dns-watch.sh` עדיין
+pid 957 תחת `caffeinate` pid 999 (זהה). מספר הקומיטים מאחורי פרודקשן
+(`git rev-list --count a388118f1..HEAD`) עלה מ-245 ל-**256**, ספירת git
+בלבד, פרודקשן לא נבדק מחדש בפריט הזה (חוסם 2, לא נגזר מ-`BACKLOG.md`).
+
+**אין פריט חדש, אין כפילות, אין שינוי סדר.** הערת re-check נוספה
+ל-`docs/BACKLOG.md` עצמו (M08-c63) לפי אותה תבנית כמו M08-c61/M08-c62.
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
+זהה ל-M07-c63). `test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) —
+זהה. `build` "Compiled successfully", exit 0. אין שינוי UI,
+`scripts/compare.mjs` לא רץ (לא פריט חזותי).
+
+קבצים ששונו: `docs/BACKLOG.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M03-c63 (הועבר מ-STATE.md ב-M09-c63, לשמירה על תקרת 300 שורות)
+
+**M03-c63 - DONE (30.09): שער ירוק אומת מחדש, אפס דריפט מ-M03-c62.**
+משימת התור: להריץ `pnpm type-check`, `lint`, `test` ו-`build`, ולתקן כל
+שגיאה/אזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר.
+
+**תוצאות, כל ארבעת השערים בפורגראונד:** `type-check` נקי (`tsc --noEmit`,
+אפס פלט). `lint` נקי — biome 2028 קבצים, כל 12 השערים ירוקים (`i18n`
+627/627, `locale-format` 116/116, `docs-index` 282, `docs-path-audit`
+154, זהים ל-100% ל-M03-c62). `test` 610/610 קבצים, 7296/7308 טסטים
+ירוקים (12 דולגים), 59.78s. `build` עבר במלואו: "Compiled successfully",
+337/337 עמודים סטטיים נוצרו, exit 0. שורות `rls_denied` על `reviews`
+בלוג ה-build הן ציפוי ידוע (חוסם פתוח 3 למעלה: `anon` בלי SELECT על
+`reviews`, ממתין למיגרציה 247 שממתינה לאישור) ולא כשל build.
+
+**אין תיקון קוד.** ארבעת השערים ירוקים ללא שגיאה או אזהרה לתקן; אפס
+שינוי קוד פונה-ללקוח או פנימי בפריט הזה.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M07-c63 (הועבר מ-STATE.md ב-M08-c63, לשמירה על תקרת 300 שורות)
 
 **M07-c63 - DONE (30.09): route audit הורץ מחדש במלואו, 241 שורות, אפס
