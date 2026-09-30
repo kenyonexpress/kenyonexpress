@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c65 (הועבר מ-STATE.md ב-M05-c65, לשמירה על תקרת 300 שורות)
+
+**M04-c65 - DONE (01.10): תברואת תלויות נבדקה מחדש, אפס עדכון patch/minor
+זמין, אפס חולשה.** משימת התור: `pnpm audit` ו-`pnpm outdated`, להחיל
+עדכוני patch/minor ששומרים שער ירוק, לעולם לא major.
+
+**תוצאות:** `pnpm audit` — "No known vulnerabilities found". `pnpm
+outdated --format json` — 14 חבילות מיושנות (`@biomejs/biome`,
+`@hookform/resolvers`, `@sentry/nextjs`+`@sentry/node`,
+`@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
+`@vitest/coverage-v8`, `jsdom`, `lint-staged`, `tailwind-merge`,
+`typescript`, `vitest`, `zod`), **בכולן `wanted === current`** — כל
+הפער מ-`latest` הוא קפיצת major (חסום ע"י טווח ה-semver ב-`package.json`
+עצמו), אין אף פער patch/minor פתוח. זהה ל-M04-c64.
+
+**אין תלות לעדכן.** ארבעת השערים הורצו במלואם בכל זאת (לפי כלל הפריט):
+`type-check` נקי, `lint` נקי (12 שערים, biome 2029 קבצים), `test`
+610/610 קבצים 7298/7310 ירוקים (12 דולגים), `build` `exit 0`. אפס שינוי
+קוד.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M03-c65).
+
 ## M03-c65 (הועבר מ-STATE.md ב-M04-c65, לשמירה על תקרת 300 שורות)
 
 **M03-c65 - DONE (01.10): שער ירוק אומת מחדש, ארבעת השערים נקיים, אפס

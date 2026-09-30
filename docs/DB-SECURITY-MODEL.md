@@ -1,6 +1,6 @@
 # DB-SECURITY-MODEL.md — RLS, Policies, SECURITY DEFINER
 
-> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-09-30 (סעיף 0יד: advisors אומתו בפעם הארבע-עשרה, זהה ב-100% ל-0יג; סעיף 0יג מאותו יום; סעיף 0יב מאותו יום; סעיף 0יא מאותו יום; סעיף 0י מאותו יום; סעיף 0ט מאותו יום; סעיף 0ח מאותו יום; סעיף 0ז מאותו יום; סעיף 0ו מ-29.09; סעיף 0ה מאותו יום; סעיף 0ד מאותו יום; סעיף 0ג מאותו יום; סעיף 0ב מאותו יום; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
+> נשלף חי מ-Postgres 17, פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`, schema `public`. עדכון אחרון: 2026-10-01 (סעיף 0טו: advisors אומתו בפעם החמש-עשרה, זהה ב-100% ל-0יד; סעיף 0יד מ-2026-09-30: advisors אומתו בפעם הארבע-עשרה, זהה ב-100% ל-0יג; סעיף 0יג מאותו יום; סעיף 0יב מאותו יום; סעיף 0יא מאותו יום; סעיף 0י מאותו יום; סעיף 0ט מאותו יום; סעיף 0ח מאותו יום; סעיף 0ז מאותו יום; סעיף 0ו מ-29.09; סעיף 0ה מאותו יום; סעיף 0ד מאותו יום; סעיף 0ג מאותו יום; סעיף 0ב מאותו יום; סעיף 0א מ-25.09; סעיף 4 מפה מלאה מ-31.08; סעיפים 0 ו-5 מ-01.09).
 > כל שורה כאן נשלפה מ-`pg_policies`, `pg_class`, `pg_proc` (aclexplode) בפועל, לא מהזיכרון.
 > **מיגרציה 125 הוחלה ואומתה ב-21.08**: הוסרו הרשאות EXECUTE ל-authenticated מ-6 פונקציות עזר יתומות. אומת שוב ב-01.09: לשש כולן `anon=false, authed=false`.
 > **⚠️ מיגרציה 127 הוחלה ב-01.09**, אחרי שהאתר עלה לאוויר, והיא משנה את סעיף 5.1. ‏`check_rate_limit` **אינה חשופה יותר** ל-anon ול-authenticated. הוכחה, קריאה אמיתית עם המפתח הפומבי: `POST /rest/v1/rpc/check_rate_limit` מחזיר `401` ו-`42501 permission denied for function check_rate_limit`.
@@ -501,6 +501,47 @@ https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
 `245_single_permissive_policy_per_action.sql`,
 `246_profiles_mfa_initplan.sql` — תוכנם כבר אומת מול המדידה הזהה
 שלוש-עשרה פעמים קודם. אין קובץ מיגרציה חדש נדרש, אין WARN לא-מכוסה.
+
+## 0טו. נמדד שוב 01.10.2026 (M05-c65), דרך ה-management API, קריאה בלבד — זהה ב-100% ל-0יד
+
+**Supabase MCP עדיין ברשימת "דורש הרשאה"**, אין OAuth בסשן לא-אינטראקטיבי
+(אותה נקודה שנבדקה ב-0א..0יד). אותו מסלול חלופי, קריאה בלבד: טוקן ה-CLI
+מה-keychain (`security find-generic-password -s "Supabase CLI" -w`, עטיפת
+`go-keyring-base64:` ואז פענוח base64 נותנת `sbp_...`), שני `GET
+https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+{security,performance}`, 200/200. הטוקן לא נדפס ולא נשמר לקובץ; קבצי
+הפלט הזמניים (`/tmp/advisors_{security,performance}.json`) נמחקו בסוף
+הפריט.
+
+**כל שדה זהה ל-0יד, כולל שמות הפונקציות והטבלאות בפועל** (נבדק שם-שם,
+לא רק ספירה, דרך `jq` על שני קבצי ה-JSON). אבטחה 24 WARN (21
+`authenticated_security_definer_function_executable` על אותן 21 הפונקציות
+בדיוק — `admin_refresh_reports`, `admin_report_cohort_retention`,
+`admin_report_orders_daily`, `admin_report_revenue_daily`,
+`admin_report_top_products`, `approve_payout_statement`,
+`cancel_payout_statement`, `current_user_role`, `fn_cashback_admin_adjust`,
+`generate_payout_statement`, `has_role`, `is_admin`, `is_supplier_member`,
+`is_supplier_order`, `is_supplier_owner`, `is_supplier_shipping_order`,
+`is_support`, `mark_payout_statement_paid`, `redeem_voucher`,
+`supplier_app_context`, `verify_supplier_staff_pin`; 2
+`anon_security_definer_function_executable` על `is_admin`/
+`is_supplier_member`; 1 `function_search_path_mutable` על
+`fn_wallet_entries_block_mutation`). ביצועים 20 WARN (14
+`multiple_permissive_policies` על אותן 11 טבלאות בדיוק —
+`supplier_branches` ×4 פעולות, ו-`banners`, `cashback_ledger`,
+`homepage_sections`, `payment_events`, `payout_statement_lines`,
+`payout_statements`, `refunds`, `support_ticket_messages`,
+`support_tickets`, `whatsapp_contacts` פעם אחת כל אחת; 6
+`auth_rls_initplan` על `cashback_ledger`, `profiles`, `push_subscriptions`
+×2, `webauthn_credentials` ×2). **44 WARN בסך הכול, אפס חדש, אפס שהפסיק
+לירות — זהה למדידה החמש-עשרה ברציפות.**
+
+ארבעת הקבצים הממתינים נבדקו שעדיין קיימים ולא נערכו מ-M05-c64:
+`migrations/pending/209_advisor_warnings.sql`,
+`220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql`,
+`246_profiles_mfa_initplan.sql` — תוכנם כבר אומת מול המדידה הזהה
+ארבע-עשרה פעמים קודם. אין קובץ מיגרציה חדש נדרש, אין WARN לא-מכוסה.
 
 ## 1. עקרון-על
 

@@ -1,33 +1,34 @@
-RESUME FROM: M05-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c65)
+RESUME FROM: M06-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c65)
 
 ## המשך מ:
 
-**M04-c65 - DONE (01.10): תברואת תלויות נבדקה מחדש, אפס עדכון patch/minor
-זמין, אפס חולשה.** משימת התור: `pnpm audit` ו-`pnpm outdated`, להחיל
-עדכוני patch/minor ששומרים שער ירוק, לעולם לא major.
+**M05-c65 - DONE (01.10): advisors נבדקו מחדש בפעם החמש-עשרה ברציפות,
+44 WARN זהים ב-100% ל-M05-c64, אפס מיגרציה חדשה נדרשת.** Supabase MCP
+עדיין "דורש הרשאה" (אין OAuth לא-אינטראקטיבי, כמו M05-c1..M05-c64);
+אותו מסלול חלופי, טוקן CLI מה-keychain, `GET .../advisors/{security,
+performance}`, 200/200, קריאה בלבד, קבצי פלט זמניים נמחקו.
 
-**תוצאות:** `pnpm audit` — "No known vulnerabilities found". `pnpm
-outdated --format json` — 14 חבילות מיושנות (`@biomejs/biome`,
-`@hookform/resolvers`, `@sentry/nextjs`+`@sentry/node`,
-`@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
-`@vitest/coverage-v8`, `jsdom`, `lint-staged`, `tailwind-merge`,
-`typescript`, `vitest`, `zod`), **בכולן `wanted === current`** — כל
-הפער מ-`latest` הוא קפיצת major (חסום ע"י טווח ה-semver ב-`package.json`
-עצמו), אין אף פער patch/minor פתוח. זהה ל-M04-c64.
+**נבדק שם-שם דרך `jq` מול 0יד ב-`DB-SECURITY-MODEL.md`:** אבטחה 24 WARN
+(21 `authenticated_security_definer`, 2 `anon_security_definer`, 1
+`function_search_path_mutable` — אותם שמות בדיוק). ביצועים 20 WARN (14
+`multiple_permissive_policies` על אותן 11 טבלאות, 6 `auth_rls_initplan`
+על אותן 4 טבלאות). **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.**
 
-**אין תלות לעדכן.** ארבעת השערים הורצו במלואם בכל זאת (לפי כלל הפריט):
-`type-check` נקי, `lint` נקי (12 שערים, biome 2029 קבצים), `test`
-610/610 קבצים 7298/7310 ירוקים (12 דולגים), `build` `exit 0`. אפס שינוי
-קוד.
+**אפס מיגרציה חדשה** — ארבעת הקבצים הקיימים (`209`, `220`, `245`, `246`)
+עדיין מכסים את כל ה-WARN הניתנים לתיקון; השאר (23/44) by design.
+`docs/DB-SECURITY-MODEL.md` עודכן בסעיף 0טו.
 
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M03-c65).
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/DB-SECURITY-MODEL.md`.
+
+**M04-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c65
+לשמירה על תקרת 300 שורות).** תברואת תלויות נבדקה מחדש, אפס עדכון
+patch/minor זמין, אפס חולשה, זהה ל-M04-c64. ארבעת השערים ירוקים, אפס
+שינוי קוד.
 
 **M03-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M04-c65
 לשמירה על תקרת 300 שורות).** שער ירוק אומת מחדש, ארבעת השערים נקיים, אפס
-תיקון נדרש: `type-check` נקי, `lint` נקי (12 שערים, i18n 627/627,
-locale-format 116/116), `test` 610/610 קבצים 7298/7310 ירוקים (12
-דולגים), `build` `exit 0` פעמיים. אפס שינוי קוד.
+תיקון נדרש. אפס שינוי קוד.
 
 **M02-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M03-c65
 לשמירה על תקרת 300 שורות).** שער חזותי הורץ בפורגראונד, בית ומוצר, שלושת
