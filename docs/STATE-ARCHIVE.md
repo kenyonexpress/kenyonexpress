@@ -2,6 +2,46 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c62 (הועבר מ-STATE.md ב-M09-c62, לשמירה על תקרת 300 שורות)
+
+**M07-c62 - DONE (30.09): route audit הורץ מחדש במלואו, 241 שורות, אפס
+כשל אמיתי, זהה ל-M07-c61.** שינוי קוד אמיתי מאז המדידה הקודמת
+(`f18ec3d6f`..HEAD): `fd820969f` הוסיף את `RecentlyViewedRail` לדף
+המוצר (M18-c61, כבר נבדק ל-Lighthouse ב-M06-c62 שאינו חוסם LCP) — כך
+שהריצה הזו לא הסתמכה על הנחת "אפס דריפט" אלא בדקה במפורש שהרכיב לא
+מכניס שגיאת console/hydration ל-PDP. המתכון מ-`e2e/route-audit.spec.ts`
+(תיעוד בקובץ עצמו, שורות 50-69): פורט 3471 היה תפוס (שרת `next-server`
+של סשן מקביל אחר, PID 84878), נבחר פורט 3462 חלופי כדי לא להתנגש.
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462
+pnpm build` → `exit 0` (`.next/BUILD_ID` נוצר); `pnpm start -p 3462`
+מאותה בנייה; `curl` אישר `200` על `/` ועל `/product/barbecue-2`. שש
+נתחי `playwright test e2e/route-audit.spec.ts --project=chromium
+--workers=1` עם `E2E_BASE_URL=http://localhost:3462`,
+`E2E_FORWARDED_FOR` שונה בכל נתח (מגבלת הקצב 10/שעה), `E2E_ADMIN_EMAIL=
+e2e-admin@kenyonexpress.co.il`, `ROUTE_AUDIT_REPORT=/tmp/route-audit-
+m07c62.jsonl` משותף לכולם:
+
+| נתח | grep | תוצאה |
+|---|---|---|
+| אנונימי (עמודים) | `anon /` | 59/59 |
+| אנונימי (API+ספק+דינמי) | `GET /\|route audit: supplier\|anon dynamic` | 83/83 |
+| לקוח | `route audit: customer` | 25/25 |
+| אדמין a-d | `admin /admin$\|admin /admin/(a\|b\|c\|d)` | 23/23 |
+| אדמין f-r | `admin /admin/(f\|g\|h\|i\|o\|p\|q\|r)` | 20/20 |
+| אדמין s-w+detail | `admin /admin/(s\|u\|v\|w)\|admin detail pages` | 16/16 |
+
+`226` בדיקות playwright, כולן ירוקות. ה-jsonl (242 שורות גולמיות, 241
+אחרי dedupe על `(role, path)` — זהה בדיוק למספר ב-M07-c61) נותח בפייתון:
+**239 PASS + 2 NO DATA (`customer /account/tickets/[id]`,
+`admin /admin/discounts/[id]` — שני עמודי רשימה בלי שורה לקשר אליה,
+צפוי), אפס `consoleErrors`, אפס `hydrationWarnings`, אפס `rtl: false`
+בכל 241 השורות.** אין תיקון קוד נדרש. השרת נעצר, פורט 3462 אומת פנוי
+מחדש. שערים: `type-check` נקי (exit 0); `lint` נקי (biome 2028 קבצים,
+i18n 627/627, locale 116/64, כל שערי התוכן ירוקים); `test` 610/610
+קבצים, 7296/7308 (12 דולגים, 54.95s); `build` הצליח (חלק מהמתכון עצמו,
+`.next/BUILD_ID` קיים). **קובץ יחיד שונה: `STATE.md`** (וכיווץ M06-c62
+ל-`docs/STATE-ARCHIVE.md`).
+
 ## M03-c62 (הועבר מ-STATE.md ב-M08-c62, לשמירה על תקרת 300 שורות)
 
 **M03-c62 - DONE (30.09): שער ירוק הורץ מחדש במלואו על עץ עבודה נקי,

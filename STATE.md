@@ -1,7 +1,39 @@
-RESUME FROM: M09-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c62)
+RESUME FROM: M10-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c62)
 
 ## המשך מ:
+
+**M09-c62 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup:
+take the single highest-impact open item listed in STATE.md that a
+code agent can complete without Ofir. Implement it fully with tests.
+If none is left write STATE CLEAN in STATE.md and end this item."
+נבדקו שוב, בקריאה בלבד, שני המקורות: 13 הסעיפים ב-"חוסמים פתוחים" למטה
+וכל 15 הסעיפים ב-`docs/BACKLOG.md`. `git log 947553fa0..HEAD` (קצה
+M08-c62) ריק — אפס קומיט חדש מאז המדידה הקודמת, ולכן `git diff --stat`
+על אותם נתיבים (`docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/`) ריק גם הוא. שלושת
+המונים שהרשימה תלויה בהם נבדקו ישירות ואינם השתנו: `migrations/pending/*.sql`
+עדיין **59** קבצים, `git stash list` עדיין **32**,
+`supabase/catalogue-known-issues.json`'s `known` object עדיין **26**
+ממצאים. כל אחד מ-28 הסעיפים (13+15) דורש פעולה שרק אופיר מחזיק: DNS
+ברשם (פתור בפועל, לא פעולה פתוחה), משתני סביבה/סודות ב-Vercel, אישור
+והחלת מיגרציה על פרודקשן, הכרעה עסקית על שורות קטלוג כפולות, אישורי
+Cardcom אמיתיים, הפעלת R2 בדשבורד Cloudflare, `CRON_SECRET` ב-GitHub
+Secrets, `RESEND_API_KEY`, מספר ח.פ, ומחיקת stash (מחיקת נתונים דורשת
+אישור מפורש לפי חוק הפרויקט). **אין פריט אחד ששום כלל בפרויקט לא אוסר
+על סוכן קוד לבצע לבד** — זו הסיבה שהמחזור הקודם (M08-c62) ושנים-עשר
+המחזורים שקדמו לו הגיעו לאותה מסקנה תחת השם "BACKLOG EMPTY". אין שינוי
+קוד, אין שער חזותי נדרש (אין שינוי UI). ארבעת השערים הורצו במלואם:
+`type-check` נקי (`tsc --noEmit`, exit 0), `lint` נקי (biome 2028
+קבצים, 12 שערים כולם ירוקים, i18n 627/627, locale 116/64, docs-index
+282 מסמכים), `test` 610/610 קבצים, 7296/7308 (12 דולגים, 55.43s).
+`build` לא הורץ מחדש: `.next/BUILD_ID` קיים ומאומת source-identical
+ל-HEAD (`git diff --stat 8fd11aae4..HEAD -- next.config.ts
+next.config.js middleware.ts vercel.json src/ package.json` ריק — אותו
+build שהצליח ב-M07-c62), וזיכרון פנוי נמוך (~432MB, `vm_stat`) הפך
+build חוזר בלי שינוי קוד לסיכון מיותר. קובץ יחיד שונה מלבד `STATE.md`:
+`docs/STATE-ARCHIVE.md` (כיווץ M07-c62).
 
 **M08-c62 - BACKLOG EMPTY (30.09): docs/BACKLOG.md נבדק מחדש מול
 `git log 2bb473ad4..HEAD`, עדיין 15 פריטים, אותו סדר, אפס כפילות, אפס
@@ -26,43 +58,10 @@ env של Vercel, אישור פריסה/מיגרציה לפרודקשן, החלט
 פנוי נמוך (~115MB, `vm_stat`) הפך הרצת build מיותרת לסיכון OOM על עבודת
 תהליכים מקבילים.
 
-**M07-c62 - DONE (30.09): route audit הורץ מחדש במלואו, 241 שורות, אפס
-כשל אמיתי, זהה ל-M07-c61.** שינוי קוד אמיתי מאז המדידה הקודמת
-(`f18ec3d6f`..HEAD): `fd820969f` הוסיף את `RecentlyViewedRail` לדף
-המוצר (M18-c61, כבר נבדק ל-Lighthouse ב-M06-c62 שאינו חוסם LCP) — כך
-שהריצה הזו לא הסתמכה על הנחת "אפס דריפט" אלא בדקה במפורש שהרכיב לא
-מכניס שגיאת console/hydration ל-PDP. המתכון מ-`e2e/route-audit.spec.ts`
-(תיעוד בקובץ עצמו, שורות 50-69): פורט 3471 היה תפוס (שרת `next-server`
-של סשן מקביל אחר, PID 84878), נבחר פורט 3462 חלופי כדי לא להתנגש.
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3462
-pnpm build` → `exit 0` (`.next/BUILD_ID` נוצר); `pnpm start -p 3462`
-מאותה בנייה; `curl` אישר `200` על `/` ועל `/product/barbecue-2`. שש
-נתחי `playwright test e2e/route-audit.spec.ts --project=chromium
---workers=1` עם `E2E_BASE_URL=http://localhost:3462`,
-`E2E_FORWARDED_FOR` שונה בכל נתח (מגבלת הקצב 10/שעה), `E2E_ADMIN_EMAIL=
-e2e-admin@kenyonexpress.co.il`, `ROUTE_AUDIT_REPORT=/tmp/route-audit-
-m07c62.jsonl` משותף לכולם:
-
-| נתח | grep | תוצאה |
-|---|---|---|
-| אנונימי (עמודים) | `anon /` | 59/59 |
-| אנונימי (API+ספק+דינמי) | `GET /\|route audit: supplier\|anon dynamic` | 83/83 |
-| לקוח | `route audit: customer` | 25/25 |
-| אדמין a-d | `admin /admin$\|admin /admin/(a\|b\|c\|d)` | 23/23 |
-| אדמין f-r | `admin /admin/(f\|g\|h\|i\|o\|p\|q\|r)` | 20/20 |
-| אדמין s-w+detail | `admin /admin/(s\|u\|v\|w)\|admin detail pages` | 16/16 |
-
-`226` בדיקות playwright, כולן ירוקות. ה-jsonl (242 שורות גולמיות, 241
-אחרי dedupe על `(role, path)` — זהה בדיוק למספר ב-M07-c61) נותח בפייתון:
-**239 PASS + 2 NO DATA (`customer /account/tickets/[id]`,
-`admin /admin/discounts/[id]` — שני עמודי רשימה בלי שורה לקשר אליה,
-צפוי), אפס `consoleErrors`, אפס `hydrationWarnings`, אפס `rtl: false`
-בכל 241 השורות.** אין תיקון קוד נדרש. השרת נעצר, פורט 3462 אומת פנוי
-מחדש. שערים: `type-check` נקי (exit 0); `lint` נקי (biome 2028 קבצים,
-i18n 627/627, locale 116/64, כל שערי התוכן ירוקים); `test` 610/610
-קבצים, 7296/7308 (12 דולגים, 54.95s); `build` הצליח (חלק מהמתכון עצמו,
-`.next/BUILD_ID` קיים). **קובץ יחיד שונה: `STATE.md`** (וכיווץ M06-c62
-ל-`docs/STATE-ARCHIVE.md`).
+**M07-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c62
+לשמירה על תקרת 300 שורות).** route audit הורץ מחדש במלואו, 241 שורות,
+אפס כשל אמיתי, זהה ל-M07-c61; אימת במפורש ש-`RecentlyViewedRail`
+(M18-c61) לא מכניס שגיאת console/hydration ל-PDP.
 
 **M06-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M07-c62
 לשמירה על תקרת 300 שורות).** Lighthouse mobile נמדד שוב אחרי הוספת
