@@ -1,30 +1,32 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import { currentUserId } from '@/server/actions/session'
 import { useEffect, useState } from 'react'
 
+/**
+ * Whether the visitor is signed in, and as whom.
+ *
+ * Answered by the server (`server/actions/session.ts`) rather than by the
+ * browser client: the session cookie is HttpOnly (STEP 18), so the browser
+ * client's `getUser()` would say "nobody" for every signed-in customer. Only
+ * the id crosses; a component that needs the profile reads it under RLS on
+ * the server.
+ */
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const supabase = createClient()
-
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user)
+    let cancelled = false
+    void currentUserId().then((id) => {
+      if (cancelled) return
+      setUserId(id)
       setLoading(false)
     })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  return { user, loading, isAuthenticated: user !== null }
+  return { userId, loading, isAuthenticated: userId !== null }
 }

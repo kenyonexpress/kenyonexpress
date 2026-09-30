@@ -90,7 +90,17 @@ export function buildWhatsAppText(kind: string, payload: Record<string, unknown>
     }
 
     case 'order_fulfilled':
-      return [greeting(payload), `הזמנה ${ref} טופלה וסופקה במלואה.`, '', OPT_OUT_HINT].join('\n')
+      // The delivery confirmation. On this schema `fulfilled` is the end of
+      // the parcel's journey (every line delivered), so the customer reads
+      // "delivered", not an internal state name. The per-line delivery path
+      // enqueues this same kind under the trigger's dedupe key (STEP 17).
+      return [
+        greeting(payload),
+        `הזמנה ${ref} נמסרה. תודה שקניתם ב-KenyonExpress.`,
+        'אם משהו לא תקין, השיבו כאן ונטפל.',
+        '',
+        OPT_OUT_HINT,
+      ].join('\n')
 
     case 'order_shipped': {
       const lines = [greeting(payload), `הזמנה ${ref} יצאה לדרך.`]
@@ -182,5 +192,33 @@ export function refundRequestAckText(ticketRef: string): string {
   return [
     `קיבלנו את בקשת הזיכוי שלך (מספר פנייה ${ticketRef}) והיא תיבדק בהקדם.`,
     'אם לא ציינתם מספר הזמנה, כתבו אותו כאן בהודעה נוספת כדי לזרז את הטיפול.',
+  ].join('\n')
+}
+
+/**
+ * The owner's alert for an inbound support message, as free text: the
+ * fallback while `TWILIO_CONTENT_SID_SUPPORT_INBOUND` is not approved, and
+ * deliverable only while the owner's own number has a service window open
+ * with the sender (the owner writes to it once; replies keep it open). The
+ * excerpt is capped so a pasted essay does not become the whole screen.
+ */
+export function supportForwardText(input: {
+  phoneDisplay: string
+  ticketRef: string
+  body: string
+  intent: string
+}): string {
+  const label =
+    input.intent === 'refund_request'
+      ? 'בקשת זיכוי'
+      : input.intent === 'order_status'
+        ? 'שאלת סטטוס'
+        : 'פנייה'
+  const excerpt = input.body.trim().replace(/\s+/g, ' ').slice(0, 300) || '(הודעה ריקה)'
+  return [
+    `${label} חדשה בוואטסאפ מ-${input.phoneDisplay} (פנייה ${input.ticketRef}):`,
+    excerpt,
+    '',
+    'לתשובה: /admin/support',
   ].join('\n')
 }

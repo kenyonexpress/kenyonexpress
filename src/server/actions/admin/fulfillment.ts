@@ -339,9 +339,10 @@ async function runDeliverOrders(rawIds: unknown): Promise<BulkOutcome> {
       const outcome = await enqueueDeliveredNotification(admin, {
         orderId,
         userId: order.user_id,
+        addressId: order.address_id,
         itemCount: order.order_items.length,
       })
-      if (outcome === 'queued') notified += 1
+      if (outcome.email === 'queued' || outcome.whatsapp === 'queued') notified += 1
     }
 
     const from = order.status as OrderStatus

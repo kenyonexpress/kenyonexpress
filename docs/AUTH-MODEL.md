@@ -283,3 +283,86 @@ select p.proname, pg_get_function_identity_arguments(p.oid) as args,
    פונקציות שנמדדו בלי אף קורא. ממתין לאישור להרצת DDL.
 3. **ההענקה של `check_user_rate_limit`** — סעיף 6, נקודה 2.
 4. **alert על `rate_limit.check_failed`** — בלעדיו fail-open הוא שקט.
+
+## 9. הסשן: עוגיות ורוטציית refresh (נמדד 01.10.2026, STEP 18)
+
+**העוגיות.** ‏`@supabase/ssr` כותב את הסשן (‏`sb-<ref>-auth-token`, מפוצל
+לחלקים כשגדול) עם ברירת מחדל ‏`httpOnly: false`, כי הלקוח שלו בדפדפן קורא
+את הסשן מ-`document.cookie`. מ-01.10 שני אתרי ‏`createServerClient` בריפו
+(‏`lib/supabase/server.ts`, ‏`proxy.ts`) מעבירים ‏`cookieOptions` מ-
+‏`lib/auth/session-cookie.ts`:
+
+| מאפיין | ערך | למה |
+|---|---|---|
+| ‏`HttpOnly` | תמיד | סקריפט מוזרק לא קורא את ה-refresh token; מנעול שני אחרי ה-CSP |
+| ‏`Secure` | אלא אם ‏`NEXT_PUBLIC_APP_URL` מתחיל ב-`http://` | ‏`pnpm start` מקומי הוא ‏`NODE_ENV=production` על ‏http; משתנה חסר נופל **לכיוון** ‏Secure |
+| ‏`SameSite` | ‏`Lax` | ‏Strict היה משמיט את העוגייה בחזרה מ-Google ומקישור המייל (ניווט cross-site) |
+| ‏`Path` | ‏`/` | |
+
+טסט ‏ratchet ב-`session-cookie.test.ts` סורק את ‏`src/` ומחייב שכל
+‏`createServerClient(` יעביר ‏`cookieOptions: sessionCookieOptions()`, ושלקוח
+הדפדפן (‏`lib/supabase/client.ts`) לא יגדיר מדיניות משלו.
+
+**מה זה שינה בדפדפן.** לקוח הדפדפן לא רואה סשן: ‏`getUser()` עונה ‏null,
+‏`from()` רץ כ-`anon`, וערוץ ‏Realtime מצטרף לא-מזוהה. ארבעת הצרכנים שקראו
+סשן מהדפדפן עברו ל-Server Actions:
+
+| היה | עכשיו |
+|---|---|
+| ‏`SecurityClient`: ‏`auth.mfa.*` + ‏`signOut({scope:'global'})` | ‏`listTotpFactors` / ‏`startTotpEnrolment` / ‏`finishTotpEnrolment` / ‏`unenrolTotpFactor` ב-`server/actions/mfa.ts`, ‏`signOutAll` |
+| ‏`MfaChallengeForm`: ‏`challengeAndVerify` | ‏`verifyTotpCode` (אותו ליבה; מפנה ל-`/admin`) |
+| ‏`NotificationBell`: ‏`getUser` + ‏SELECT + ‏UPDATE | ‏`loadBell` (‏`server/actions/bell.ts`), ‏`markNotificationRead(null)`; הסוקט מזדהה ב-`realtime.setAuth(accessToken)` מ-`realtimeCredentials` |
+| ‏`SentryUserSync`: ‏`onAuthStateChange` | ‏`currentUserId` (‏`server/actions/session.ts`) אחרי ‏idle callback |
+
+**ה-access token כן חוצה לדפדפן, ל-bell בלבד.** ‏Realtime מעריך את
+‏policy ה-RLS של ‏`notifications` מול ה-JWT שהסוקט מציג; בלי ‏JWT הוא ‏anon
+ולא מקבל כלום. ה-token תקף לשעה (‏`jwt_exp` נמדד ‏3600) ואינו יכול להטביע
+יורש; ה-refresh token, שכן יכול, לעולם לא יוצא מהשרת. זה ההבדל שבגללו
+דווקא הוא מאחורי ‏HttpOnly.
+
+**רוטציית refresh.** נמדד בפרויקט המאוחסן דרך ‏management API ב-01.10:
+‏`refresh_token_rotation_enabled = true`, ‏`security_refresh_token_reuse_interval = 10`
+שניות, ‏`jwt_exp = 3600`. ‏`supabase/config.toml` אומר את אותו הדבר
+(‏`enable_refresh_token_rotation = true`, ‏`refresh_token_reuse_interval = 10`).
+כל שימוש ב-refresh token מטביע זוג חדש ומבטל את הישן אחרי חלון של 10
+שניות (למרוצי-tabs); ‏`proxy.ts` קורא ‏`auth.getUser()` בכל בקשה עוברת,
+וזוג שרוענן נכתב חזרה דרך ‏`setAll` עם המאפיינים שבטבלה למעלה. ‏`signOutAll`
+(‏`scope: 'global'`) מבטל את כל ה-refresh tokens של החשבון.
+
+## 10. אימות טלפון בהרשמה הראשונה (STEP 18)
+
+**המסלול.** ‏`signUpWithEmail` → ‏`auth.signUp` (אימייל לא מאומת, בלי סשן)
+→ ‏`issueSignupPhoneOtp` (‏`server/auth/signup-phone-otp.ts`) שמנפיק קוד דרך
+‏`lib/sms/otp.ts` ב-purpose ‏`signup_phone` עם ‏`auth.users.id` החדש קשור
+לאתגר, ושולח ‏SMS ישירות ב-Twilio (‏`lib/sms/twilio.ts`) → ‏`/signup/verify-phone`
+→ ‏`verifySignupPhone` (‏`server/actions/signup-phone.ts`): ‏`verifyPhoneOtp`,
+ואז ‏`auth.admin.updateUserById(uid, { phone, phone_confirm: true })` ו-
+‏`profiles.phone_verified_at` (מיגרציה ‏254, ממתינה; עד אז ‏42703 נתפס ונכתב
+‏`phone` בלבד) → ‏`/signup/confirm?phone=verified`.
+
+**למה לא ה-OTP של ‏Supabase.** נמדד ‏01.10: ‏`external_phone_enabled = false`
+ואין ‏Twilio SID בפרויקט, כך ש-`signInWithOtp({ phone })` (הכניסה בטלפון
+ב-`/login`) נכשל לכל לקוח בפרודקשן; וגם מוגדר, המסלול הזה מכניס טלפון ולא
+מוכיח שטלפון שייך לחשבון שנוצר עכשיו. ה-OTP העצמי כבר היה כתוב ל-דף
+הפרופיל (‏`lib/sms/otp.ts`) בלי אף קורא; זה הקורא הראשון שלו.
+
+**נופל ולא חוסם.** אף סביבה שהריפו רואה לא שולחת ‏SMS (‏`SMS_ENABLED` /
+‏`TWILIO_SMS_FROM` לא מוגדרים, שולח ישראלי לא רשום). כשהקוד לא יכול לצאת,
+ההרשמה ממשיכה ישר לשלב המייל כמו קודם, הסיבה נרשמת
+(‏`auth.signup_phone_otp_skipped`, ‏info ל-`sms_unavailable`, ‏warn לכל השאר),
+והמספר נשאר לא-מאומת בפרופיל. ‏"דלגו בינתיים" בדף הקוד הוא קישור אמיתי.
+
+**מגן מניה.** עם אישורי מייל דלוקים ‏GoTrue עונה לכתובת קיימת במשתמש-דמה בלי
+‏identities; לא נשלח ‏SMS עבורו, אחרת המגן היה הופך ל-SMS לזר.
+
+**תקרות.** שליחה: ‏5/שעה ל-IP ו-5/שעה למספר (‏`signup-otp:*`); אימות: ‏20/שעה
+ל-IP (‏`signup-verify:*`) ועוד ‏5 ניחושים לאתגר ב-`lib/sms/otp.ts`. משתמש
+שנשלח אליו קוד נזכר ב-cookie ‏`ke_signup_uid` (‏HttpOnly, ‏Lax, ‏15 דקות)
+לצורך "שלחו שוב" בלבד; האימות עצמו לוקח את ה-uid מהאתגר.
+
+**משתני סביבה** (כולם אופציונליים, נקראים ב-`lib/sms/*`; אינם בסכימת ה-boot):
+‏`SMS_ENABLED=true` (מתג ראשי), ‏`TWILIO_SMS_FROM` (שולח ישראלי רשום, נפרד
+מ-`TWILIO_WHATSAPP_FROM`), ‏`TWILIO_ACCOUNT_SID` / ‏`TWILIO_AUTH_TOKEN` (משותפים
+עם ‏WhatsApp), ‏`OTP_SECRET` (מפתח ה-HMAC; נופל ל-`CRON_SECRET`),
+‏`UPSTASH_REDIS_REST_URL` / ‏`_TOKEN` (מקום האתגר), ‏`TWILIO_SMS_WEBHOOK_URL`
+(קבלות מסירה).

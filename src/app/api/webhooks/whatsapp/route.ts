@@ -1,6 +1,7 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { forwardInboundToOwner } from '@/server/whatsapp/forward-to-owner'
 import { classifyInbound, waPhoneDigits } from '@/server/whatsapp/inbound'
 import {
   NO_ORDERS_TEXT,
@@ -37,6 +38,11 @@ import { type NextRequest, NextResponse } from 'next/server'
  *   reply confirms the request and asks for the order number.
  * - anything else: a support ticket. An open ticket for the same phone absorbs
  *   the message; otherwise one is created, and the reply carries its ref.
+ *
+ * EVERY TICKETED MESSAGE IS ROUTED TO OFIR (STEP 17): once the ticket row is
+ * written, `forwardInboundToOwner` pings the owner's WhatsApp and mails the
+ * store inbox, best-effort, before the reply goes back. A forwarding failure
+ * is a slower answer, never a lost ticket or a 500.
  *
  * ORDERING: replay check first (read), then the side effects, then the
  * inbound row is recorded (write). A failure mid-processing therefore returns
@@ -284,6 +290,11 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // Best effort from here: the side effects landed, so the reply goes out even
   // if the audit row does not. A duplicate delivery in that window re-runs an
   // idempotent path.
+  if (ticketId) {
+    const forwarded = await forwardInboundToOwner({ phone, ticketId, body, intent })
+    log.info('whatsapp.inbound_forwarded', { ticketId, intent, ...forwarded })
+  }
+
   const auditRow = {
     message_sid: messageSid,
     phone,

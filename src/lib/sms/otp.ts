@@ -44,7 +44,15 @@ export const OTP_LENGTH = 6
 export const OTP_TTL_SECONDS = 10 * 60
 export const OTP_MAX_ATTEMPTS = 5
 
-export type OtpPurpose = 'phone_verify'
+/**
+ * `phone_verify`: a signed-in customer proving the number on their profile.
+ * `signup_phone`: the first-time signup (STEP 18), where the challenge is
+ * issued BEFORE any session exists and carries the new `auth.users` id so
+ * the verify step knows whose phone it just proved. Separate purposes keep
+ * the two Redis keys apart: a code sent for one cannot be replayed to the
+ * other.
+ */
+export type OtpPurpose = 'phone_verify' | 'signup_phone'
 
 interface Challenge {
   hash: string

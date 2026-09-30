@@ -450,6 +450,12 @@ describe('the pending migration inventory', () => {
       // README carries the row; not yet dry-run on production (Supabase MCP
       // unauthenticated in the session that filed it).
       '253_notification_outbox_order_delivered.sql',
+      // 254 is PENDING (2026-10-01, STEP 18 auth): one nullable
+      // `profiles.phone_verified_at` timestamptz, stamped by the signup
+      // phone-OTP verify action. No default, no backfill, no trigger, no
+      // grant. README carries the row; measured absent on production the
+      // same day through the management API, not yet dry-run.
+      '254_profiles_phone_verified_at.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

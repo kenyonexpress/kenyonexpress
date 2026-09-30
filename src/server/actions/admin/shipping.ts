@@ -53,12 +53,16 @@ async function runMarkItem(
   const admin = createAdminClient()
   const { data: item, error: readError } = await admin
     .from('order_items')
-    .select('id, item_status, product_type, order_id, orders!inner(status, user_id)')
+    .select('id, item_status, product_type, order_id, orders!inner(status, user_id, address_id)')
     .eq('id', itemId)
     .maybeSingle()
   if (readError || !item) return { ok: false, error: 'השורה לא נמצאה.' }
 
-  const parentOrder = item.orders as unknown as { status: string; user_id: string | null }
+  const parentOrder = item.orders as unknown as {
+    status: string
+    user_id: string | null
+    address_id: string | null
+  }
   const orderStatus = parentOrder.status
   const verdict = planTransition({
     verb,
@@ -115,7 +119,7 @@ async function runMarkItem(
   })
 
   if (verdict.nextStatus === 'delivered') {
-    await notifyIfOrderDelivered(admin, item.order_id, parentOrder.user_id)
+    await notifyIfOrderDelivered(admin, item.order_id, parentOrder.user_id, parentOrder.address_id)
   }
 
   revalidatePath(`/admin/orders/${item.order_id}`)
@@ -138,6 +142,7 @@ async function notifyIfOrderDelivered(
   admin: ReturnType<typeof createAdminClient>,
   orderId: string,
   userId: string | null,
+  addressId: string | null = null,
 ): Promise<void> {
   const { data: lines, error } = await admin
     .from('order_items')
@@ -158,7 +163,12 @@ async function notifyIfOrderDelivered(
     carrier: l.carrier,
   }))
   if (!orderIsDelivered(shaped)) return
-  await enqueueDeliveredNotification(admin, { orderId, userId, itemCount: shaped.length })
+  await enqueueDeliveredNotification(admin, {
+    orderId,
+    userId,
+    addressId,
+    itemCount: shaped.length,
+  })
 }
 
 export async function markItemShipped(

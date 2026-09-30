@@ -1,6 +1,10 @@
 'use client'
 
+import { BELL_PANEL_SIZE, type BellRow } from '@/lib/notifications/bell'
 import { createClient } from '@/lib/supabase/client'
+import { loadBell } from '@/server/actions/bell'
+import { markNotificationRead } from '@/server/actions/notifications'
+import { realtimeCredentials } from '@/server/actions/session'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { Bell } from 'lucide-react'
 import Link from 'next/link'
@@ -41,17 +45,7 @@ import { useEffect, useRef, useState } from 'react'
  * read-transition from an echo.
  */
 
-type BellRow = {
-  id: string
-  kind: string
-  title_he: string
-  body_he: string | null
-  href: string | null
-  read_at: string | null
-  created_at: string
-}
-
-const PANEL_SIZE = 15
+const PANEL_SIZE = BELL_PANEL_SIZE
 
 /** Relative time in Hebrew for the panel rows; absolute date past a month. */
 function relativeHe(iso: string): string {
@@ -74,48 +68,35 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [ready, setReady] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
-  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabaseRef.current = supabase
     let cancelled = false
+    let supabase: ReturnType<typeof createClient> | null = null
     let channel: RealtimeChannel | null = null
 
     const start = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user || cancelled) return
-
-      const { data } = await supabase
-        .from('notifications')
-        .select('id,kind,title_he,body_he,href,read_at,created_at')
-        .order('created_at', { ascending: false })
-        .limit(PANEL_SIZE)
-      if (cancelled) return
-      setRows((data as BellRow[] | null) ?? [])
-
-      // The badge counts ALL unread, not unread-within-the-panel: a customer
-      // who was away long enough to bury an unread row under fifteen newer
-      // ones is exactly the customer the number is for.
-      const { count } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .is('read_at', null)
-      if (cancelled) return
-      setUnread(count ?? 0)
+      // Both reads are Server Actions: the session cookie is HttpOnly (STEP
+      // 18), so the browser client below has no session of its own. It gets
+      // the ACCESS token for the socket, never the refresh token.
+      const creds = await realtimeCredentials()
+      if (!creds || cancelled) return
+      const snapshot = await loadBell()
+      if (!snapshot || cancelled) return
+      setRows(snapshot.rows)
+      setUnread(snapshot.unread)
       setReady(true)
 
+      supabase = createClient()
+      supabase.realtime.setAuth(creds.accessToken)
       channel = supabase
-        .channel(`bell:${user.id}`)
+        .channel(`bell:${creds.userId}`)
         .on(
           'postgres_changes',
           {
             event: 'INSERT',
             schema: 'public',
             table: 'notifications',
-            filter: `user_id=eq.${user.id}`,
+            filter: `user_id=eq.${creds.userId}`,
           },
           (payload) => {
             const row = payload.new as BellRow
@@ -129,7 +110,7 @@ export default function NotificationBell() {
             event: 'UPDATE',
             schema: 'public',
             table: 'notifications',
-            filter: `user_id=eq.${user.id}`,
+            filter: `user_id=eq.${creds.userId}`,
           },
           (payload) => {
             const row = payload.new as BellRow
@@ -148,7 +129,7 @@ export default function NotificationBell() {
     void start()
     return () => {
       cancelled = true
-      if (channel) void supabase.removeChannel(channel)
+      if (supabase && channel) void supabase.removeChannel(channel)
     }
   }, [])
 
@@ -175,11 +156,8 @@ export default function NotificationBell() {
       const readAt = new Date().toISOString()
       setUnread(0)
       setRows((prev) => prev.map((r) => (r.read_at ? r : { ...r, read_at: readAt })))
-      // RLS is the user filter; the column grant is the column filter.
-      void supabaseRef.current
-        ?.from('notifications')
-        .update({ read_at: readAt })
-        .is('read_at', null)
+      // `null` is "all of them"; RLS narrows it to this customer on the server.
+      void markNotificationRead(null)
     }
   }
 

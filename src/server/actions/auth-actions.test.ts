@@ -106,6 +106,10 @@ const logInfo = vi.fn()
 
 vi.mock('@/lib/supabase/server', () => ({ createClient: async () => requestClient }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => adminClient }))
+const issueSignupPhoneOtp = vi.fn()
+vi.mock('@/server/auth/signup-phone-otp', () => ({
+  issueSignupPhoneOtp: (...a: unknown[]) => issueSignupPhoneOtp(...a),
+}))
 vi.mock('@/lib/supabase/anon', () => ({
   createPublicClient: () => ({ auth: { signInWithPassword: vi.fn(), signOut: vi.fn() } }),
 }))
@@ -195,6 +199,7 @@ beforeEach(() => {
     logWarn,
     logError,
     logInfo,
+    issueSignupPhoneOtp,
   ]) {
     fn.mockReset()
   }
@@ -353,6 +358,39 @@ describe('signUpWithEmail', () => {
       error: 'כתובת האימייל כבר רשומה במערכת',
     })
     expect(redirect).not.toHaveBeenCalled()
+  })
+
+  // STEP 18: the phone typed into the form is challenged by SMS before the
+  // email step, for a user that was actually created.
+  const CREATED = { id: '11111111-1111-4111-8111-111111111111', identities: [{ id: 'i-1' }] }
+
+  it('texts the code to the new user and lands on the code screen, carrying next', async () => {
+    signUp.mockResolvedValue({ data: { user: CREATED }, error: null })
+    issueSignupPhoneOtp.mockResolvedValue({
+      ok: true,
+      to: '+972501234567',
+      expiresAt: 'x',
+      segments: 1,
+    })
+    await signUpWithEmail(null, form({ ...VALID, next: '/checkout' }))
+    expect(issueSignupPhoneOtp).toHaveBeenCalledWith({ e164: '+972501234567', userId: CREATED.id })
+    expect(redirect).toHaveBeenCalledWith(
+      '/signup/verify-phone?phone=%2B972501234567&next=%2Fcheckout',
+    )
+  })
+
+  it('skips to the email step when the code cannot be sent, and keeps next', async () => {
+    signUp.mockResolvedValue({ data: { user: CREATED }, error: null })
+    issueSignupPhoneOtp.mockResolvedValue({ ok: false, reason: 'sms_unavailable' })
+    await signUpWithEmail(null, form({ ...VALID, next: '/checkout' }))
+    expect(redirect).toHaveBeenCalledWith('/signup/confirm?next=%2Fcheckout')
+  })
+
+  it('never texts for the placeholder user GoTrue answers a duplicate address with', async () => {
+    signUp.mockResolvedValue({ data: { user: { ...CREATED, identities: [] } }, error: null })
+    await signUpWithEmail(null, form(VALID))
+    expect(issueSignupPhoneOtp).not.toHaveBeenCalled()
+    expect(redirect).toHaveBeenCalledWith('/signup/confirm')
   })
 })
 

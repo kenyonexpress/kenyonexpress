@@ -1,4 +1,5 @@
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
+import { sessionCookieOptions } from '@/lib/auth/session-cookie'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 import { edgeClientAddress, edgeShieldPolicyFor } from '@/lib/rate-limit/edge-shield'
@@ -129,6 +130,9 @@ export async function proxy(request: NextRequest) {
   let supabaseResponse = forward(request, requestId)
 
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
+    // The rotated refresh token is written back through `setAll` below with
+    // these attributes: HttpOnly, Secure, SameSite=Lax (lib/auth/session-cookie.ts).
+    cookieOptions: sessionCookieOptions(),
     cookies: {
       getAll() {
         return request.cookies.getAll()

@@ -4,6 +4,7 @@ import {
   type TwilioWhatsAppEnv,
   loadTwilioEnv,
   sendWhatsAppMessage,
+  sendWhatsAppTemplate,
   twilioSignatureValid,
 } from './twilio'
 
@@ -135,5 +136,36 @@ describe('sendWhatsAppMessage', () => {
       ok: false,
       reason: 'ECONNRESET',
     })
+  })
+
+  it('sends a Content Template by SID with JSON-encoded positional variables and no Body', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ sid: 'MM1' }), { status: 201 }))
+
+    const result = await sendWhatsAppTemplate(
+      '972501234567',
+      'HX0123456789abcdef',
+      { '1': 'דנה', '2': 'ABCDEF12' },
+      ENV,
+    )
+
+    expect(result).toEqual({ ok: true, sid: 'MM1' })
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    const form = new URLSearchParams(String(init.body))
+    expect(form.get('To')).toBe('whatsapp:+972501234567')
+    expect(form.get('ContentSid')).toBe('HX0123456789abcdef')
+    expect(JSON.parse(form.get('ContentVariables') ?? '{}')).toEqual({
+      '1': 'דנה',
+      '2': 'ABCDEF12',
+    })
+    expect(form.has('Body')).toBe(false)
+  })
+
+  it('a template send without credentials is the same skipped result, with no call', async () => {
+    expect(await sendWhatsAppTemplate('972501234567', 'HX1', { '1': 'x' }, null)).toEqual({
+      ok: false,
+      skipped: true,
+      reason: 'not_configured',
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

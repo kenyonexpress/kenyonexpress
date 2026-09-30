@@ -189,6 +189,7 @@ file or a prior document.
 | [CONTENT-OPERATIONS-GUIDE.md](CONTENT-OPERATIONS-GUIDE.md) | ✅ | Content operations, Hebrew. |
 | [SUPPLIER-ONBOARDING-KIT.md](SUPPLIER-ONBOARDING-KIT.md) | ✅ | Supplier onboarding pack. |
 | [ARCHITECTURE-NOTIFICATIONS.md](ARCHITECTURE-NOTIFICATIONS.md) · [V2](ARCHITECTURE-NOTIFICATIONS-V2.md) · [MARKETING](ARCHITECTURE-NOTIFICATIONS-MARKETING.md) | ⚠️ | Notifications. |
+| [WHATSAPP-TEMPLATES.md](WHATSAPP-TEMPLATES.md) | ✅ | The six Twilio Content Templates to submit (post-purchase UTILITY only), the 24-hour window rule the drain follows, and how inbound support is routed to Ofir (STEP 17). |
 | [ARCHITECTURE-REFERRALS.md](ARCHITECTURE-REFERRALS.md) · [AFFILIATES](ARCHITECTURE-AFFILIATES-REFERRALS.md) | ⚠️ | Referrals and affiliates. |
 | [ARCHITECTURE-ANALYTICS.md](ARCHITECTURE-ANALYTICS.md) · [BI](ARCHITECTURE-ANALYTICS-BI.md) · [KPI](ARCHITECTURE-ANALYTICS-KPI.md) | ⚠️ | Analytics. **`analytics_events` was never built.** |
 | [ARCHITECTURE-MOBILE-APP.md](ARCHITECTURE-MOBILE-APP.md) · [SUPERAPP](ARCHITECTURE-MOBILE-SUPERAPP.md) | ⚠️ | The Expo app. |

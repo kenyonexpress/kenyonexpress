@@ -1,5 +1,22 @@
 # `migrations/pending/`
 
+## 2026-10-01: 254 PENDING (`profiles.phone_verified_at`, STEP 18)
+
+`254_profiles_phone_verified_at.sql` adds one nullable `timestamptz` column
+to `profiles`: when the customer proved their phone by SMS code. Nothing
+else: no default, no backfill (every existing row stays NULL, which is
+true), no trigger, no grant, no policy, no index. The writer is the signup
+verify action (`src/server/actions/signup-phone.ts`), through the service
+role, after `auth.admin.updateUserById(.., { phone, phone_confirm: true })`
+has confirmed the number on the identity itself. Until applied the UPDATE
+raises 42703; the action catches it, logs `db.optional_column_missing`
+once per process, and retries with `phone` alone, so the verified number
+is still recorded and only the timestamp is lost. Idempotent (ADD COLUMN IF
+NOT EXISTS); closing DO block raises if the column is absent. Rollback in
+the file header. Not yet dry-run on production (Supabase MCP
+unauthenticated in the session that filed it; the management-API probe
+that measured `profiles` on 2026-10-01 confirmed the column is absent).
+
 ## 2026-10-01: 253 PENDING (`order_delivered` outbox kind, STEP 16)
 
 `253_notification_outbox_order_delivered.sql` widens

@@ -1,63 +1,69 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
+import { signOutAll } from '@/server/actions/auth'
+import {
+  type MfaEnrolState,
+  type TotpFactor,
+  finishTotpEnrolment,
+  listTotpFactors,
+  startTotpEnrolment,
+  unenrolTotpFactor,
+} from '@/server/actions/mfa'
 import { useEffect, useState, useTransition } from 'react'
 
-type Factor = { id: string; status: string; friendly_name?: string | null }
-
 /**
- * TOTP enrollment and management, straight against Supabase Auth's native MFA
- * (no table of ours -- the provider that issues sessions owns the factors).
- * Enrollment shows the provider's QR; verification flips the factor to
- * verified, and from then on the staff gates demand aal2 (lib/auth/mfa.ts).
+ * TOTP enrollment and management, over Supabase Auth's native MFA (no table
+ * of ours -- the provider that issues sessions owns the factors).
+ *
+ * EVERY CALL IS A SERVER ACTION. This component used to talk to GoTrue from
+ * the browser client; since the session cookie went HttpOnly (STEP 18,
+ * lib/auth/session-cookie.ts) that client has no session, so the four
+ * ceremonies here (list, enrol, verify, unenrol) and the global sign-out run
+ * in server/actions/mfa.ts and server/actions/auth.ts on the request-scoped
+ * client, which reads the cookie the browser cannot.
  */
 export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
-  const [factors, setFactors] = useState<Factor[]>([])
-  const [qr, setQr] = useState<string | null>(null)
-  const [enrollingId, setEnrollingId] = useState<string | null>(null)
+  const [factors, setFactors] = useState<TotpFactor[]>([])
+  const [enrolment, setEnrolment] = useState<MfaEnrolState>(null)
   const [code, setCode] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   async function refresh() {
-    const supabase = createClient()
-    const { data } = await supabase.auth.mfa.listFactors()
-    setFactors((data?.totp ?? []) as Factor[])
+    setFactors(await listTotpFactors())
   }
   // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only load; refresh is recreated per render, so listing it would re-fetch MFA factors on every render
   useEffect(() => {
     void refresh()
   }, [])
 
+  const enrolled = enrolment && 'factorId' in enrolment ? enrolment : null
+
   function beginEnroll() {
     setMessage(null)
     startTransition(async () => {
-      const supabase = createClient()
-      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
-      if (error || !data) {
-        setMessage('פתיחת ההרשמה נכשלה. נסה שוב.')
+      const result = await startTotpEnrolment()
+      if (!result || 'error' in result) {
+        setMessage(result?.error ?? 'פתיחת ההרשמה נכשלה. נסה שוב.')
         return
       }
-      setQr(data.totp?.qr_code ?? null)
-      setEnrollingId(data.id)
+      setEnrolment(result)
     })
   }
 
   function verifyEnroll() {
-    if (!enrollingId) return
+    if (!enrolled) return
     setMessage(null)
     startTransition(async () => {
-      const supabase = createClient()
-      const { error } = await supabase.auth.mfa.challengeAndVerify({
-        factorId: enrollingId,
-        code: code.trim(),
-      })
-      if (error) {
-        setMessage('קוד שגוי. נסה שוב.')
+      const formData = new FormData()
+      formData.set('factor_id', enrolled.factorId)
+      formData.set('code', code.trim())
+      const result = await finishTotpEnrolment(null, formData)
+      if (!result || 'error' in result) {
+        setMessage(result?.error ?? 'קוד שגוי. נסה שוב.')
         return
       }
-      setQr(null)
-      setEnrollingId(null)
+      setEnrolment(null)
       setCode('')
       setMessage('האימות הדו-שלבי הופעל.')
       await refresh()
@@ -67,10 +73,8 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
   function unenroll(factorId: string) {
     setMessage(null)
     startTransition(async () => {
-      const supabase = createClient()
-      const { error } = await supabase.auth.mfa.unenroll({ factorId })
-      if (error)
-        setMessage('ההסרה נכשלה — ייתכן שנדרש אימות דו-שלבי בסשן הנוכחי (התחבר מחדש עם קוד).')
+      const result = await unenrolTotpFactor(factorId)
+      if (!result || 'error' in result) setMessage(result?.error ?? 'ההסרה נכשלה.')
       else setMessage('האמצעי הוסר.')
       await refresh()
     })
@@ -78,11 +82,10 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
 
   function signOutEverywhere() {
     setMessage(null)
+    // Revokes every refresh token for the account, this device's included,
+    // and the action itself redirects to /login.
     startTransition(async () => {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signOut({ scope: 'global' })
-      if (error) setMessage('היציאה נכשלה. נסה שוב.')
-      else window.location.href = '/login'
+      await signOutAll()
     })
   }
 
@@ -113,18 +116,31 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
               </li>
             ))}
           </ul>
-        ) : qr ? (
+        ) : enrolled ? (
           <div className="mt-3 space-y-3">
             <p className="text-sm">
               סרוק את הקוד באפליקציית אימות (Google Authenticator, 1Password וכו') והזן את הקוד:
             </p>
-            {/* The QR arrives as an SVG data URL from Supabase itself. */}
-            <img src={qr} alt="קוד QR להרשמת אימות דו-שלבי" width={176} height={176} />
+            {/* The QR arrives from GoTrue as an SVG document; an <img> with a
+                data URL renders it without handing markup to the DOM. */}
+            <img
+              src={`data:image/svg+xml;utf8,${encodeURIComponent(enrolled.qrSvg)}`}
+              alt="קוד QR להרשמת אימות דו-שלבי"
+              width={176}
+              height={176}
+            />
+            <p className="text-xs text-muted">
+              אי אפשר לסרוק? הזינו את המפתח ידנית:{' '}
+              <code dir="ltr" className="font-mono select-all break-all">
+                {enrolled.secret}
+              </code>
+            </p>
             <div className="flex gap-2">
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={6}
                 dir="ltr"
                 aria-label="קוד אימות"

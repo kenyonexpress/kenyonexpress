@@ -12,6 +12,7 @@ import {
   toE164Israeli,
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
+import { confirmPath, signupStepAfterOtp } from '@/lib/auth/signup-phone'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -33,6 +34,7 @@ import {
 import { mergeGuestCart } from '@/server/actions/cart'
 import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
 import { trySendBrandedPasswordReset } from '@/server/auth/password-reset-send'
+import { issueSignupPhoneOtp } from '@/server/auth/signup-phone-otp'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -204,7 +206,7 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -212,7 +214,21 @@ async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<Aut
     },
   })
   if (error) return { error: toHebrew(error.message) }
-  redirect('/signup/confirm')
+
+  // STEP 18: the phone from the form is challenged by SMS before the email
+  // step. Only for a user that was actually created: with confirmations on,
+  // GoTrue answers an existing address with a placeholder user that has no
+  // identities (its enumeration guard), and texting the phone typed next to
+  // somebody else's email would turn that guard into an SMS to a stranger.
+  // A code that cannot be sent skips the step (lib/auth/signup-phone.ts).
+  const next = safeNext(formData.get('next'))
+  const created = data.user && (data.user.identities?.length ?? 0) > 0 ? data.user : null
+  const e164 = toE164Israeli(parsed.data.phone)
+  if (created && e164 && isSmsCapableIsraeli(parsed.data.phone)) {
+    const outcome = await issueSignupPhoneOtp({ e164, userId: created.id })
+    redirect(signupStepAfterOtp(outcome, next === '/' ? null : next).path)
+  }
+  redirect(confirmPath(next === '/' ? null : next, false))
 }
 
 // ──────────────────────────────────────────────

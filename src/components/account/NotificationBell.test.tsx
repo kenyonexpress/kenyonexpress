@@ -11,31 +11,55 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * wiring around those events, so that is what is pinned:
  *
  *   - a signed-out render is NOTHING, not a dead bell;
+ *   - the first paint comes from the Server Action (the session cookie is
+ *     HttpOnly since STEP 18, so the browser client reads nothing itself);
+ *   - the socket is authenticated with the ACCESS token the server handed
+ *     over, before the channel is opened -- without `setAuth` the channel
+ *     joins as `anon` and the RLS filter delivers nothing;
  *   - the badge counts unread and the panel renders the trigger's Hebrew
  *     as given (the component owns no copy);
  *   - the INSERT handler the channel was registered with actually moves the
  *     UI -- the exact spot where a bell "reports SUBSCRIBED and shows
  *     nothing" if the handler is miswired;
- *   - opening the panel writes read_at and nothing else, and clears the
- *     badge optimistically.
+ *   - opening the panel marks everything read through the action and
+ *     clears the badge optimistically.
  */
 
 type Handler = (payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => void
 
 const mock = vi.hoisted(() => {
   const state = {
-    user: { id: 'user-1' } as { id: string } | null,
+    creds: { userId: 'user-1', accessToken: 'jwt-1' } as {
+      userId: string
+      accessToken: string
+    } | null,
     rows: [] as Record<string, unknown>[],
     unreadCount: 0,
-    updates: [] as Record<string, unknown>[],
-    updateFilters: [] as unknown[][],
+    markReadCalls: [] as (string | null)[],
+    setAuthCalls: [] as string[],
     handlers: {} as Record<string, Handler>,
     channelNames: [] as string[],
     subscribed: 0,
+    loadCalls: 0,
   }
   return state
 })
 
+vi.mock('@/server/actions/session', () => ({
+  realtimeCredentials: async () => mock.creds,
+}))
+vi.mock('@/server/actions/bell', () => ({
+  loadBell: async () => {
+    mock.loadCalls += 1
+    return { rows: mock.rows, unread: mock.unreadCount }
+  },
+}))
+vi.mock('@/server/actions/notifications', () => ({
+  markNotificationRead: async (id: string | null) => {
+    mock.markReadCalls.push(id)
+    return { ok: true }
+  },
+}))
 vi.mock('@/lib/supabase/client', () => ({
   createClient: () => {
     const channel = {
@@ -49,23 +73,13 @@ vi.mock('@/lib/supabase/client', () => ({
       },
     }
     return {
-      auth: { getUser: async () => ({ data: { user: mock.user } }) },
-      from: () => ({
-        select: (_cols: string, opts?: { head?: boolean }) => {
-          if (opts?.head) {
-            return { is: async () => ({ count: mock.unreadCount }) }
-          }
-          return { order: () => ({ limit: async () => ({ data: mock.rows }) }) }
+      realtime: {
+        setAuth: (token: string) => {
+          mock.setAuthCalls.push(token)
         },
-        update: (patch: Record<string, unknown>) => ({
-          is: async (...filter: unknown[]) => {
-            mock.updates.push(patch)
-            mock.updateFilters.push(filter)
-            return { error: null }
-          },
-        }),
-      }),
+      },
       channel: (name: string) => {
+        if (mock.setAuthCalls.length === 0) throw new Error('channel opened before setAuth')
         mock.channelNames.push(name)
         return channel
       },
@@ -92,27 +106,39 @@ function row(overrides: Partial<Record<string, unknown>> = {}) {
 async function flush() {
   await act(async () => {
     await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
   })
 }
 
 beforeEach(() => {
-  mock.user = { id: 'user-1' }
+  mock.creds = { userId: 'user-1', accessToken: 'jwt-1' }
   mock.rows = []
   mock.unreadCount = 0
-  mock.updates = []
-  mock.updateFilters = []
+  mock.markReadCalls = []
+  mock.setAuthCalls = []
   mock.handlers = {}
   mock.channelNames = []
   mock.subscribed = 0
+  mock.loadCalls = 0
 })
 
 describe('NotificationBell', () => {
-  it('renders nothing when there is no session', async () => {
-    mock.user = null
+  it('renders nothing when there is no session, and asks for nothing else', async () => {
+    mock.creds = null
     const { container } = render(<NotificationBell />)
     await flush()
     expect(container.firstChild).toBeNull()
+    expect(mock.loadCalls).toBe(0)
     expect(mock.subscribed).toBe(0)
+  })
+
+  it('authenticates the socket with the access token before opening the channel', async () => {
+    render(<NotificationBell />)
+    await flush()
+    expect(mock.setAuthCalls).toEqual(['jwt-1'])
+    expect(mock.channelNames).toEqual(['bell:user-1'])
+    expect(mock.subscribed).toBe(1)
   })
 
   it('shows the unread badge and the Hebrew the trigger wrote', async () => {
@@ -128,69 +154,64 @@ describe('NotificationBell', () => {
     mock.unreadCount = 1
     render(<NotificationBell />)
     await flush()
-
-    const button = screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' })
-    expect(button).toHaveTextContent('1')
-    expect(mock.channelNames).toEqual(['bell:user-1'])
-    expect(mock.subscribed).toBe(1)
-
-    fireEvent.click(button)
+    expect(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button'))
     expect(screen.getByText('נוסף קאשבק לארנק')).toBeInTheDocument()
     expect(screen.getByText('₪42 נוספו לארנק שלך')).toBeInTheDocument()
     expect(screen.getByText('ההזמנה שלך נשלחה')).toBeInTheDocument()
   })
 
-  it('rings on a realtime INSERT: the registered handler moves the badge', async () => {
+  it('shows the empty state when there are no rows', async () => {
     render(<NotificationBell />)
     await flush()
-    expect(screen.getByRole('button', { name: 'התראות' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'התראות' }))
+    expect(screen.getByText(/אין התראות עדיין/)).toBeInTheDocument()
+  })
 
+  it('moves the UI on the INSERT handler the channel registered', async () => {
+    render(<NotificationBell />)
+    await flush()
+    expect(mock.handlers.INSERT).toBeTypeOf('function')
     act(() => {
-      mock.handlers.INSERT?.({ new: row({ id: 'n-live', title_he: 'הקופון שלך מוכן' }), old: {} })
+      mock.handlers.INSERT?.({ new: row({ id: 'n-9', title_he: 'קופון חדש' }), old: {} })
     })
     expect(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' })).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' }))
-    expect(screen.getByText('הקופון שלך מוכן')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button'))
+    expect(screen.getByText('קופון חדש')).toBeInTheDocument()
   })
 
-  it('marks read on open: read_at only, badge cleared, echo UPDATE is inert', async () => {
-    mock.rows = [row()]
-    mock.unreadCount = 1
-    render(<NotificationBell />)
-    await flush()
-
-    fireEvent.click(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' }))
-    await flush()
-
-    expect(mock.updates).toHaveLength(1)
-    expect(Object.keys(mock.updates[0] ?? {})).toEqual(['read_at'])
-    expect(screen.getByRole('button', { name: 'התראות' })).toBeInTheDocument()
-
-    // The UPDATE event for our own write comes back with old.read_at already
-    // null -> set; the badge is at 0 and must stay there.
-    act(() => {
-      mock.handlers.UPDATE?.({
-        new: row({ read_at: '2026-09-10T00:00:00Z' }),
-        old: row({ read_at: null }),
-      })
-    })
-    expect(screen.getByRole('button', { name: 'התראות' })).toBeInTheDocument()
-  })
-
-  it('decrements the badge when another tab marks a row read', async () => {
+  it('decrements on another tab marking a row read, and only on the null to set edge', async () => {
     mock.rows = [row()]
     mock.unreadCount = 2
     render(<NotificationBell />)
     await flush()
-    expect(screen.getByRole('button', { name: 'התראות, 2 שלא נקראו' })).toBeInTheDocument()
-
     act(() => {
       mock.handlers.UPDATE?.({
-        new: row({ read_at: '2026-09-10T00:00:00Z' }),
-        old: row({ read_at: null }),
+        new: row({ read_at: '2026-10-01T00:00:00Z' }),
+        old: { id: 'n-1', read_at: null },
       })
     })
     expect(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' })).toBeInTheDocument()
+    act(() => {
+      mock.handlers.UPDATE?.({
+        new: row({ read_at: '2026-10-01T00:00:01Z' }),
+        old: { id: 'n-1', read_at: '2026-10-01T00:00:00Z' },
+      })
+    })
+    expect(screen.getByRole('button', { name: 'התראות, 1 שלא נקראו' })).toBeInTheDocument()
+  })
+
+  it('marks everything read through the action when opened, and clears the badge at once', async () => {
+    mock.rows = [row()]
+    mock.unreadCount = 3
+    render(<NotificationBell />)
+    await flush()
+    fireEvent.click(screen.getByRole('button', { name: 'התראות, 3 שלא נקראו' }))
+    expect(mock.markReadCalls).toEqual([null])
+    expect(screen.getByRole('button', { name: 'התראות' })).toBeInTheDocument()
+    // Closing and reopening with nothing unread writes nothing.
+    fireEvent.click(screen.getByRole('button', { name: 'התראות' }))
+    fireEvent.click(screen.getByRole('button', { name: 'התראות' }))
+    expect(mock.markReadCalls).toEqual([null])
   })
 })

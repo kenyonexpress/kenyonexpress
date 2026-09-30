@@ -1,3 +1,4 @@
+import { sessionCookieOptions } from '@/lib/auth/session-cookie'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
 import { rlsReportFetch } from '@/lib/supabase/rls-report-fetch'
 import { createServerClient } from '@supabase/ssr'
@@ -8,6 +9,8 @@ export async function createClient() {
 
   return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
     global: { fetch: rlsReportFetch },
+    // HttpOnly, Secure, SameSite=Lax. See lib/auth/session-cookie.ts.
+    cookieOptions: sessionCookieOptions(),
     cookies: {
       getAll() {
         return cookieStore.getAll()

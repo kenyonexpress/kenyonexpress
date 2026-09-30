@@ -77,13 +77,47 @@ export type SendWhatsAppResult =
 let missingCredentialReported = false
 
 /**
- * Sends one WhatsApp message. `toDigits` is international digits with no `+`,
- * the shape `normalizeIsraeliPhone` produces, e.g. `972501234567`.
+ * Sends one free-text WhatsApp message. `toDigits` is international digits
+ * with no `+`, the shape `normalizeIsraeliPhone` produces, e.g.
+ * `972501234567`.
+ *
+ * FREE TEXT ONLY DELIVERS INSIDE THE 24-HOUR SERVICE WINDOW the customer
+ * opened by writing to us; outside it WhatsApp refuses with 63016. The
+ * outbox drain checks the window before calling this and sends a template
+ * otherwise (`sendWhatsAppTemplate`). Replies to an open ticket and the
+ * TwiML answers of the webhook are always inside the window by definition.
  */
 export async function sendWhatsAppMessage(
   toDigits: string,
   body: string,
   env: TwilioWhatsAppEnv | null = loadTwilioEnv(),
+): Promise<SendWhatsAppResult> {
+  return postMessage(toDigits, { Body: body }, env)
+}
+
+/**
+ * Sends one pre-approved Content Template: the ContentSid Meta approved and
+ * the positional variables, as `{ '1': ..., '2': ... }`. This is the only
+ * shape that delivers outside the service window. The catalogue of SIDs and
+ * their variables lives in `templates.ts`.
+ */
+export async function sendWhatsAppTemplate(
+  toDigits: string,
+  contentSid: string,
+  variables: Record<string, string>,
+  env: TwilioWhatsAppEnv | null = loadTwilioEnv(),
+): Promise<SendWhatsAppResult> {
+  return postMessage(
+    toDigits,
+    { ContentSid: contentSid, ContentVariables: JSON.stringify(variables) },
+    env,
+  )
+}
+
+async function postMessage(
+  toDigits: string,
+  fields: Record<string, string>,
+  env: TwilioWhatsAppEnv | null,
 ): Promise<SendWhatsAppResult> {
   if (!env) {
     if (!missingCredentialReported) {
@@ -97,7 +131,7 @@ export async function sendWhatsAppMessage(
     const form = new URLSearchParams({
       From: `whatsapp:${env.fromNumber}`,
       To: `whatsapp:+${toDigits}`,
-      Body: body,
+      ...fields,
     })
 
     const response = await fetch(

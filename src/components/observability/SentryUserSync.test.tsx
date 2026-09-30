@@ -6,14 +6,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * The whole contract is three lines long, so the tests are about the edges:
- * the id and ONLY the id crosses, sign-out clears rather than lingers, and
- * unmount detaches the listener instead of leaking it into the next page.
+ * the id and ONLY the id crosses, a signed-out answer clears rather than
+ * lingers, and an unmount before the answer arrives tags nothing.
  *
- * Every test waits for the subscription. Since 2026-09-17 the component
- * imports the Supabase client lazily, after an idle callback (a 0ms timeout
- * under jsdom, which has no requestIdleCallback), so nothing is subscribed on
- * the same tick as render. Four tests here went red on that change while
- * asserting synchronously against a listener that had not been attached yet.
+ * Since STEP 18 the id comes from the `currentUserId` Server Action (the
+ * session cookie is HttpOnly, so no browser client can read it), scheduled
+ * after an idle callback (a 0ms timeout under jsdom, which has no
+ * requestIdleCallback), so nothing is asked on the same tick as render.
  */
 
 const setUser = vi.hoisted(() => vi.fn())
@@ -21,25 +20,20 @@ vi.mock('@sentry/nextjs', () => ({
   setUser: (...args: unknown[]) => setUser(...args),
 }))
 
-type AuthCallback = (
-  event: string,
-  session: { user: { id: string; email?: string } } | null,
-) => void
-
-const auth = vi.hoisted(() => ({
-  callback: null as AuthCallback | null,
-  unsubscribe: vi.fn(),
+const session = vi.hoisted(() => ({
+  answer: null as string | null,
+  calls: 0,
+  resolve: null as null | ((id: string | null) => void),
 }))
 
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      onAuthStateChange: (cb: AuthCallback) => {
-        auth.callback = cb
-        return { data: { subscription: { unsubscribe: auth.unsubscribe } } }
-      },
-    },
-  }),
+vi.mock('@/server/actions/session', () => ({
+  currentUserId: () => {
+    session.calls += 1
+    return new Promise<string | null>((resolve) => {
+      session.resolve = resolve
+      if (session.answer !== undefined) resolve(session.answer)
+    })
+  },
 }))
 
 import SentryUserSync from './SentryUserSync'
@@ -47,53 +41,48 @@ import SentryUserSync from './SentryUserSync'
 describe('SentryUserSync', () => {
   beforeEach(() => {
     setUser.mockReset()
-    auth.callback = null
-    auth.unsubscribe.mockReset()
+    session.answer = null
+    session.calls = 0
+    session.resolve = null
   })
 
-  const subscribed = () => waitFor(() => expect(auth.callback).not.toBeNull())
+  const asked = () => waitFor(() => expect(session.calls).toBeGreaterThan(0))
 
-  it('renders nothing and subscribes', async () => {
+  it('renders nothing and asks the server after the idle tick, not on render', async () => {
     const { container } = render(<SentryUserSync />)
     expect(container.innerHTML).toBe('')
-    // Not on the render tick: the client is imported after the idle callback.
-    expect(auth.callback).toBeNull()
-    await subscribed()
+    expect(session.calls).toBe(0)
+    await asked()
   })
 
-  it('forwards the id and only the id, never the email on the same object', async () => {
+  it('forwards the id and only the id', async () => {
+    session.answer = 'uuid-1'
     render(<SentryUserSync />)
-    await subscribed()
-    auth.callback?.('INITIAL_SESSION', { user: { id: 'uuid-1', email: 'ofir@example.com' } })
-
-    expect(setUser).toHaveBeenCalledWith({ id: 'uuid-1' })
+    await waitFor(() => expect(setUser).toHaveBeenCalledWith({ id: 'uuid-1' }))
     const sent = setUser.mock.calls[0]?.[0] as Record<string, unknown>
     expect(Object.keys(sent)).toEqual(['id'])
   })
 
-  it('clears the user on sign-out instead of leaving the last one attached', async () => {
+  it('clears the user on a signed-out answer instead of leaving the last one attached', async () => {
+    session.answer = null
     render(<SentryUserSync />)
-    await subscribed()
-    auth.callback?.('SIGNED_IN', { user: { id: 'uuid-1' } })
-    auth.callback?.('SIGNED_OUT', null)
-
-    expect(setUser).toHaveBeenLastCalledWith(null)
+    await waitFor(() => expect(setUser).toHaveBeenCalledWith(null))
   })
 
-  it('unsubscribes on unmount', async () => {
+  it('tags nothing when unmounted before the answer arrives', async () => {
+    session.answer = undefined as unknown as null
     const { unmount } = render(<SentryUserSync />)
-    await subscribed()
+    await asked()
     unmount()
-    expect(auth.unsubscribe).toHaveBeenCalledTimes(1)
+    session.resolve?.('uuid-late')
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(setUser).not.toHaveBeenCalled()
   })
 
-  it('never subscribes when unmounted before the client arrives', async () => {
-    // A navigation away during the deferred import must not leave a listener
-    // attached to a component that no longer exists.
+  it('never asks when unmounted before the idle tick', async () => {
     const { unmount } = render(<SentryUserSync />)
     unmount()
     await new Promise((resolve) => setTimeout(resolve, 10))
-    expect(auth.callback).toBeNull()
-    expect(auth.unsubscribe).not.toHaveBeenCalled()
+    expect(session.calls).toBe(0)
   })
 })
