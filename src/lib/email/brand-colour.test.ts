@@ -39,7 +39,21 @@ function siteBrandColour(): string {
   return match[1].toLowerCase()
 }
 
-const EMAIL_BUILDERS = ['src/lib/email/notifications.ts', 'src/lib/email/voucher-email.ts']
+const EMAIL_BUILDERS = [
+  'src/lib/email/notifications.ts',
+  'src/lib/email/voucher-email.ts',
+  'src/lib/email/magic-link.ts',
+  'src/lib/email/password-reset.ts',
+  'src/lib/email/layout.ts',
+]
+
+/**
+ * Where the font stack is written. Since STEP 16 the builders emit only the
+ * card; the document around it, and therefore the `font-family`, comes from
+ * `layout.ts` once. Asserting the literal in every builder would now be
+ * asserting a copy.
+ */
+const EMAIL_FRAME = 'src/lib/email/layout.ts'
 
 describe('the emails carry the site brand', () => {
   const brand = siteBrandColour()
@@ -76,7 +90,11 @@ describe('the emails carry the site brand', () => {
     // Comments are stripped first, the same way route-guards.test.ts does it.
     // The doc comment on BRAND names the wrong yellow it replaced, which is
     // worth keeping in prose and is not a colour anything renders.
-    const source = read(file).replace(/\/\*[\s\S]*?\*\//g, '')
+    // Line comments too: magic-link.ts records the drifted yellow it replaced
+    // in a `//` note, which is provenance, not a colour anything renders.
+    const source = read(file)
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '')
     const yellows = source.match(/#f[0-9a-fA-F]{5}/gi) ?? []
     expect(
       yellows.filter(
@@ -86,9 +104,22 @@ describe('the emails carry the site brand', () => {
     ).toEqual([])
   })
 
-  it.each(EMAIL_BUILDERS)('%s asks for Heebo before falling back', (file) => {
+  it('the shared frame asks for Heebo before falling back', () => {
     // Hebrew RTL in Heebo, per the brand. Mail clients that will not load a
     // webfont fall through to Arial, which is why the stack still ends there.
-    expect(read(file)).toContain('font-family:Heebo,Arial,Helvetica,sans-serif')
+    expect(read(EMAIL_FRAME)).toContain("'Heebo,Arial,Helvetica,sans-serif'")
   })
+
+  it.each(EMAIL_BUILDERS.filter((f) => f !== EMAIL_FRAME))(
+    '%s renders through the shared frame rather than its own',
+    (file) => {
+      // A builder that writes its own <div style="max-width:560px"> again is
+      // a mail that lost the viewport meta and the media query.
+      const code = read(file)
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/.*$/gm, '')
+      expect(code).toContain("from '@/lib/email/layout'")
+      expect(code).not.toContain('max-width:560px')
+    },
+  )
 })

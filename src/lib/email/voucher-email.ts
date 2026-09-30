@@ -1,3 +1,4 @@
+import { renderEmailDocument } from '@/lib/email/layout'
 import { formatAgorot, formatCouponCode, formatCouponDate } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE } from '@/styles/tokens'
 
@@ -88,15 +89,7 @@ export interface BuiltEmail {
  * beside them were still unguarded, and a `.ts` file was invisible to the hex
  * gate entirely.
  */
-const {
-  brand: BRAND,
-  ink: INK,
-  muted: MUTED,
-  rule: RULE,
-  panel: PANEL,
-  paper: PAPER,
-  panelWarm: PANEL_WARM,
-} = OFF_PAGE
+const { brand: BRAND, ink: INK, muted: MUTED, rule: RULE, panel: PANEL, paper: PAPER } = OFF_PAGE
 
 function escapeHtml(value: string): string {
   return value
@@ -188,13 +181,14 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
   }
   textLines.push(`הזמנה ${input.orderId.slice(0, 8).toUpperCase()}`)
 
-  const html = `
-    <div dir="rtl" style="background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
-      <div style="max-width:560px;margin:0 auto">
-        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:4px">KenyonExpress</div>
-        <div style="font-size:15px;color:${INK};margin-bottom:18px">${escapeHtml(greeting)} ${
-          count === 1 ? 'הקופון שלך מוכן לשימוש.' : `${count} הקופונים שלך מוכנים לשימוש.`
-        }</div>
+  // The frame is the shared responsive document (`./layout.ts`); this builder
+  // owns only the greeting, the coupon cards and the invoice line.
+  const html = renderEmailDocument({
+    title: subject,
+    preheader: subject,
+    bodyHtml: `<div style="font-size:15px;color:${INK};margin-bottom:18px">${escapeHtml(greeting)} ${
+      count === 1 ? 'הקופון שלך מוכן לשימוש.' : `${count} הקופונים שלך מוכנים לשימוש.`
+    }</div>
         ${blocks.join('')}
         <div style="font-size:13px;color:${MUTED};line-height:1.8;margin-top:8px">
           את ה-QR מציגים בעמוד הקופון עצמו, כדי שהוא ייסרק גם כשהמייל חוסם תמונות.
@@ -206,12 +200,9 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
                 input.invoiceNumber,
               )} — <a href="${escapeHtml(invoiceUrl)}" style="color:${INK}">צפייה והורדה</a></div>`
             : ''
-        }
-        <div style="font-size:12px;color:${MUTED};margin-top:14px">הזמנה ${escapeHtml(
-          input.orderId.slice(0, 8).toUpperCase(),
-        )}</div>
-      </div>
-    </div>`
+        }`,
+    footer: `הזמנה ${input.orderId.slice(0, 8).toUpperCase()}`,
+  })
 
   return { subject, html, text: textLines.join('\n') }
 }

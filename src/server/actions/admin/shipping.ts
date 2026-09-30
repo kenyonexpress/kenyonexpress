@@ -5,6 +5,10 @@ import { requireSection } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
 import { type ShippingVerb, planTransition } from '@/lib/shipping/transitions'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  enqueueDeliveredNotification,
+  orderIsDelivered,
+} from '@/server/orders/delivered-notification'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -20,10 +24,17 @@ import { revalidatePath } from 'next/cache'
  * retries without them and the caller is told the tracking was not stored --
  * the status transition itself must not be held hostage by a schema gap.
  *
- * No email from here, deliberately: `tg_orders_notify_shipped` (183, payload
- * widened by 196) enqueues 'order_shipped' when the ORDER reaches fulfilled,
- * with the tracking numbers of every line. Enqueueing from this per-line
- * action too would mail the customer twice for the same shipment.
+ * No SHIPPED email from here, deliberately: `tg_orders_notify_shipped` (183,
+ * payload widened by 196) enqueues 'order_shipped' when the ORDER reaches
+ * fulfilled, with the tracking numbers of every line. Enqueueing from this
+ * per-line action too would mail the customer twice for the same shipment.
+ *
+ * The DELIVERED email is different (STEP 16): "delivered" is a fold over the
+ * lines and no trigger watches it, so after a `deliver` this action re-reads
+ * the order's lines and, when `orderIsDelivered` says the last parcel just
+ * landed, enqueues `order_delivered` once (deduped on the order id) through
+ * server/orders/delivered-notification.ts. The fulfilment board does the
+ * same; whichever writer closes the fold sends the mail.
  */
 
 const UNDEFINED_COLUMN = '42703'
@@ -42,12 +53,13 @@ async function runMarkItem(
   const admin = createAdminClient()
   const { data: item, error: readError } = await admin
     .from('order_items')
-    .select('id, item_status, product_type, order_id, orders!inner(status)')
+    .select('id, item_status, product_type, order_id, orders!inner(status, user_id)')
     .eq('id', itemId)
     .maybeSingle()
   if (readError || !item) return { ok: false, error: 'השורה לא נמצאה.' }
 
-  const orderStatus = (item.orders as unknown as { status: string }).status
+  const parentOrder = item.orders as unknown as { status: string; user_id: string | null }
+  const orderStatus = parentOrder.status
   const verdict = planTransition({
     verb,
     productType: item.product_type,
@@ -102,6 +114,10 @@ async function runMarkItem(
     changes: { item_status: { from: item.item_status, to: verdict.nextStatus }, ...tracking },
   })
 
+  if (verdict.nextStatus === 'delivered') {
+    await notifyIfOrderDelivered(admin, item.order_id, parentOrder.user_id)
+  }
+
   revalidatePath(`/admin/orders/${item.order_id}`)
   return {
     ok: true,
@@ -110,6 +126,39 @@ async function runMarkItem(
       ? { error: 'הסטטוס עודכן, אך המוביל/מעקב לא נשמרו — מיגרציה 155 טרם הוחלה.' }
       : {}),
   }
+}
+
+/**
+ * Re-read every line of the order after a delivery and mail the customer if
+ * that was the last one. Best-effort: a read that fails, or a queue that
+ * refuses, must not undo a status the admin just set; both are logged by the
+ * enqueuer or here and the action still reports success.
+ */
+async function notifyIfOrderDelivered(
+  admin: ReturnType<typeof createAdminClient>,
+  orderId: string,
+  userId: string | null,
+): Promise<void> {
+  const { data: lines, error } = await admin
+    .from('order_items')
+    .select('product_type, item_status, tracking_number, carrier')
+    .eq('order_id', orderId)
+  if (error || !lines) return
+  const shaped = (
+    lines as {
+      product_type: string
+      item_status: string
+      tracking_number: string | null
+      carrier: string | null
+    }[]
+  ).map((l) => ({
+    productType: l.product_type === 'coupon' ? ('coupon' as const) : ('physical' as const),
+    itemStatus: l.item_status,
+    trackingNumber: l.tracking_number,
+    carrier: l.carrier,
+  }))
+  if (!orderIsDelivered(shaped)) return
+  await enqueueDeliveredNotification(admin, { orderId, userId, itemCount: shaped.length })
 }
 
 export async function markItemShipped(

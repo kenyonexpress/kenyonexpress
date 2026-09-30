@@ -50,6 +50,12 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
+  // Which custom-sent mail the hash came from. `magic-link-send.ts` sends
+  // none (magiclink); `password-reset-send.ts` sends `recovery`, and GoTrue
+  // refuses a recovery hash verified as a magic link, so the type has to
+  // travel with the hash. Anything else collapses to magiclink rather than
+  // letting a URL pick an arbitrary OTP type.
+  const otpType = searchParams.get('type') === 'recovery' ? 'recovery' : 'magiclink'
   const safeNext = safeNextPath(searchParams.get('next'))
 
   if (code || tokenHash) {
@@ -74,7 +80,7 @@ export async function GET(request: NextRequest) {
           .exchangeCodeForSession(code)
           .then(({ data, error }) => ({ session: data.session, error }))
       : await supabase.auth
-          .verifyOtp({ type: 'magiclink', token_hash: tokenHash as string })
+          .verifyOtp({ type: otpType, token_hash: tokenHash as string })
           .then(({ data, error }) => ({ session: data.session, error }))
 
     if (!error && session) {

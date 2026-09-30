@@ -1,5 +1,27 @@
 # `migrations/pending/`
 
+## 2026-10-01: 253 PENDING (`order_delivered` outbox kind, STEP 16)
+
+`253_notification_outbox_order_delivered.sql` widens
+`notification_outbox_kind_check` with `order_delivered`, restating the
+seventeen names measured live on 2026-09-10 (`outbox-kinds.test.ts`) plus the
+one. Nothing else: no trigger, no grant, no policy. The writer is the
+application (`src/server/orders/delivered-notification.ts`), called from the
+fulfilment board and the per-line admin action when `summarizeShipping` says
+every live physical line is delivered; "delivered" is a fold over
+`order_items.item_status`, not an order status, so no trigger can fire it.
+Enqueued through `fn_enqueue_notification` (five-argument overload, dedupe
+`order-delivered:<order_id>`). Until applied the INSERT inside the function
+raises 23514; the enqueuer catches it, logs
+`fulfillment.delivered_kind_not_accepted`, and the delivery stands. The
+renderer (`buildOrderDeliveredEmail`) already knows the kind, so the drain can
+send rows the moment this lands. Idempotent (DROP IF EXISTS + ADD); every
+existing row carries one of the seventeen, so no NOT VALID step. Rollback in
+the file header. Not yet dry-run on production (Supabase MCP unauthenticated
+in the session that filed it). AFTER APPLYING: re-measure the constraint, move
+`order_delivered` from `PENDING_KINDS` to `CHECK_ACCEPTS` in
+`src/lib/email/outbox-kinds.test.ts` with the new date.
+
 ## 2026-10-01: 252 PENDING (WhatsApp `order_shipped` kind, STEP 15)
 
 `252_whatsapp_outbox_order_shipped.sql` widens `whatsapp_outbox_kind_check`

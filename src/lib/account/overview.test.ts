@@ -1,4 +1,4 @@
-import type { PreferenceRow } from '@/lib/notifications/preferences'
+import { CHANNELS, OPTIONAL_KINDS, type PreferenceRow } from '@/lib/notifications/preferences'
 import type { AccountAddress, AccountPaymentToken } from '@/server/queries/account'
 import { describe, expect, it } from 'vitest'
 import {
@@ -120,10 +120,14 @@ describe('summarizePaymentMethods', () => {
 })
 
 describe('summarizePreferences', () => {
+  // Derived, not written down: STEP 16 added `order_delivered` and a literal
+  // 20 here went red for a reason that had nothing to do with this module.
+  const TOTAL = OPTIONAL_KINDS.length * CHANNELS.length
+
   it('counts nothing off when nothing was decided', () => {
     const out = summarizePreferences([])
     expect(out.off).toBe(0)
-    expect(out.total).toBe(20)
+    expect(out.total).toBe(TOTAL)
     expect(preferenceSummaryLine(out)).toBe('כל ההתראות פועלות')
   })
 
@@ -135,8 +139,8 @@ describe('summarizePreferences', () => {
     ]
     const out = summarizePreferences(rows)
     expect(out.off).toBe(2)
-    expect(preferenceSummaryLine(out)).toBe('2 התראות כבויות מתוך 20')
-    expect(preferenceSummaryLine({ total: 20, off: 1 })).toBe('התראה אחת כבויה')
+    expect(preferenceSummaryLine(out)).toBe(`2 התראות כבויות מתוך ${TOTAL}`)
+    expect(preferenceSummaryLine({ total: TOTAL, off: 1 })).toBe('התראה אחת כבויה')
   })
 
   it('ignores a stray row for a required kind, like the senders do', () => {

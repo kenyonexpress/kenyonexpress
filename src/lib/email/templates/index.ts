@@ -5,11 +5,19 @@ import type { BuiltEmail } from '@/lib/email/voucher-email'
  * The transactional-email templates, behind one door.
  *
  * Each template is a pure builder: input in, `{ subject, html, text }` out,
- * RTL Hebrew, inline styles only (mail clients do not honour stylesheets), no
- * transport and no network, so what a customer reads is testable directly.
- * Sending is `sendEmail` from `../resend.ts` — Resend's REST endpoint, typed,
+ * RTL Hebrew, a full responsive document out of `../layout.ts` (viewport
+ * meta, a fluid table capped at 600px, one media query for phones) with every
+ * colour and size still inline, because mail clients do not honour
+ * stylesheets. No transport and no network, so what a customer reads is
+ * testable directly; `./catalogue.ts` lists the eight customer-facing ones
+ * with a sample each, and `./catalogue.test.ts` holds all eight to the same
+ * document rule.
+ *
+ * Sending is `sendEmail` from `../resend.ts`, Resend's REST endpoint, typed,
  * and deliberately never-throwing, because a mail provider being down must not
- * turn a completed purchase into a failed one.
+ * turn a completed purchase into a failed one. The outbox kinds are sent by
+ * the drain at `/api/cron/notifications`; the two auth mails by
+ * `server/auth/*-send.ts`.
  *
  * `sendBuiltEmail` is the bridge for callers that hold a built template: it
  * addresses it and hands it to the transport in one typed step, and passing
@@ -22,14 +30,41 @@ export {
   type OrderConfirmationInput,
 } from './order-confirmation'
 export {
+  buildShippingUpdateEmail,
+  type ShippingUpdateInput,
+  type ShippingUpdateShipment,
+} from './shipping-update'
+export {
+  buildDeliveryConfirmationEmail,
+  type DeliveryConfirmationInput,
+} from './delivery-confirmation'
+export { buildCashbackEarnedEmail, type CashbackEarnedInput } from './cashback-earned'
+export {
+  buildCashbackCreditedEmail,
+  type CashbackCreditedInput,
+} from './cashback-credited'
+export { buildPriceDropEmail, type PriceDropInput } from './price-drop'
+export { buildWelcomeEmail, type WelcomeInput } from './welcome'
+export {
+  buildPasswordResetEmail,
+  type BuiltPasswordResetEmail,
+  type PasswordResetEmailInput,
+} from './password-reset'
+export {
+  buildMagicLinkEmail,
+  type BuiltMagicLinkEmail,
+  type MagicLinkEmailInput,
+} from './magic-link'
+export {
   buildCouponDeliveryEmail,
   type CouponDeliveryInput,
   type CouponDeliveryLine,
 } from './coupon-delivery'
 export {
-  buildCashbackCreditedEmail,
-  type CashbackCreditedInput,
-} from './cashback-credited'
+  EMAIL_TEMPLATE_CATALOGUE,
+  type EmailTemplateEntry,
+  type EmailTemplateId,
+} from './catalogue'
 
 export { sendEmail, mailFrom } from '@/lib/email/resend'
 export type { SendEmailInput, SendEmailResult } from '@/lib/email/resend'

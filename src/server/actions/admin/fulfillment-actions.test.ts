@@ -306,7 +306,21 @@ describe('deliverOrders', () => {
     queue('orders.update', { data: { id: A }, error: null })
 
     const result = await deliverOrders([A])
-    expect(result).toEqual({ done: [A], skipped: [] })
+    expect(result).toEqual({ done: [A], skipped: [], notified: 1 })
+
+    // The delivered mail, once the fold closed: through the RPC, keyed on
+    // the order, with the user id so the in-app bell rings.
+    const delivered = rpcCalls.find(
+      (c) =>
+        c.fn === 'fn_enqueue_notification' &&
+        (c.args as { p_kind: string }).p_kind === 'order_delivered',
+    )
+    expect(delivered?.args).toMatchObject({
+      p_email: 'dana@example.com',
+      p_dedupe: `order-delivered:${A}`,
+      p_user_id: USER,
+      p_payload: expect.objectContaining({ order_id: A, item_count: 3 }),
+    })
 
     const lineUpdate = findAll('order_items', 'update')[0]
     expect(lineUpdate?.payload).toMatchObject({ item_status: 'delivered' })
@@ -335,6 +349,8 @@ describe('deliverOrders', () => {
     const result = await deliverOrders([A])
     expect(result.done).toEqual([A])
     expect(findAll('orders', 'update')).toHaveLength(0)
+    // And no "delivered" mail yet: a parcel is still on its way.
+    expect(rpcCalls.filter((c) => c.fn === 'fn_enqueue_notification')).toHaveLength(0)
   })
 
   it('a lost CAS on the status is logged, not fatal: the lines were delivered', async () => {

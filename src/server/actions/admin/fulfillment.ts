@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server'
 import { parcelLines } from '@/server/domain/orders/fulfillment-lanes'
 import { canAdminOverride, effectsFor } from '@/server/domain/orders/order-transitions'
 import { cancelPendingOrderCore } from '@/server/orders/cancel-pending-order'
+import { enqueueDeliveredNotification } from '@/server/orders/delivered-notification'
 import { enqueueShippedNotifications } from '@/server/orders/shipped-notification'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -266,6 +267,7 @@ async function runDeliverOrders(rawIds: unknown): Promise<BulkOutcome> {
   const admin = createAdminClient()
   const done: string[] = []
   const skipped: BulkSkip[] = []
+  let notified = 0
 
   for (const orderId of ids) {
     const order = await readOrder(admin, orderId)
@@ -328,6 +330,20 @@ async function runDeliverOrders(rawIds: unknown): Promise<BulkOutcome> {
     const remaining = parcelLines(order.order_items).filter(
       (l) => !movedIds.includes(l.id) && l.item_status !== 'delivered',
     )
+
+    // The customer's "delivered" mail (STEP 16), once, when the last parcel
+    // lands. App-side because "delivered" is a fold over the lines, not an
+    // order status; see server/orders/delivered-notification.ts. Best-effort:
+    // the lines are already delivered whatever the queue says.
+    if (remaining.length === 0) {
+      const outcome = await enqueueDeliveredNotification(admin, {
+        orderId,
+        userId: order.user_id,
+        itemCount: order.order_items.length,
+      })
+      if (outcome === 'queued') notified += 1
+    }
+
     const from = order.status as OrderStatus
     if (remaining.length === 0 && canAdminOverride(from, 'fulfilled')) {
       const effects = effectsFor(from, 'fulfilled') ?? []
@@ -365,7 +381,7 @@ async function runDeliverOrders(rawIds: unknown): Promise<BulkOutcome> {
   }
 
   revalidate(done)
-  return { done, skipped }
+  return { done, skipped, notified }
 }
 
 // ---------------------------------------------------------------------------

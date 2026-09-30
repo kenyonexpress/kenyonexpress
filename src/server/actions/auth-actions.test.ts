@@ -97,6 +97,7 @@ const getGuestSessionId = vi.fn()
 const mergeGuestCart = vi.fn()
 const claimReferralOnce = vi.fn()
 const trySendBrandedMagicLink = vi.fn()
+const trySendBrandedPasswordReset = vi.fn()
 const redirect = vi.fn()
 const cookieDelete = vi.fn()
 const logWarn = vi.fn()
@@ -121,6 +122,9 @@ vi.mock('@/server/actions/cart', () => ({
 }))
 vi.mock('@/server/referrals/claim', () => ({
   claimReferralOnce: (...a: unknown[]) => claimReferralOnce(...a),
+}))
+vi.mock('@/server/auth/password-reset-send', () => ({
+  trySendBrandedPasswordReset: (...a: unknown[]) => trySendBrandedPasswordReset(...a),
 }))
 vi.mock('@/server/auth/magic-link-send', () => ({
   trySendBrandedMagicLink: (...a: unknown[]) => trySendBrandedMagicLink(...a),
@@ -209,6 +213,7 @@ beforeEach(() => {
   mergeGuestCart.mockResolvedValue(true)
   claimReferralOnce.mockResolvedValue(undefined)
   trySendBrandedMagicLink.mockResolvedValue(false)
+  trySendBrandedPasswordReset.mockResolvedValue(false)
 })
 
 describe('signInWithGoogle', () => {
@@ -576,8 +581,16 @@ describe('signOut / signOutAll', () => {
 describe('sendPasswordReset', () => {
   const NEUTRAL = { success: 'שלחנו לך קישור לאיפוס הסיסמה — בדקו את תיבת הדואר' }
 
-  it('asks GoTrue for the mail with the recovery callback', async () => {
+  it('sends the branded mail first and never asks GoTrue when it went out', async () => {
+    trySendBrandedPasswordReset.mockResolvedValue(true)
     expect(await sendPasswordReset(null, form({ email: 'U@Example.com' }))).toEqual(NEUTRAL)
+    expect(trySendBrandedPasswordReset).toHaveBeenCalledWith('u@example.com')
+    expect(resetPasswordForEmail).not.toHaveBeenCalled()
+  })
+
+  it('asks GoTrue for the mail with the recovery callback when the branded path declined', async () => {
+    expect(await sendPasswordReset(null, form({ email: 'U@Example.com' }))).toEqual(NEUTRAL)
+    expect(trySendBrandedPasswordReset).toHaveBeenCalledWith('u@example.com')
     expect(checkRateLimit).toHaveBeenCalledWith('reset:203.0.113.9', 5, 3600)
     expect(checkRateLimit).toHaveBeenCalledWith('reset-address:u@example.com', 5, 3600)
     expect(resetPasswordForEmail).toHaveBeenCalledWith('u@example.com', {

@@ -1,5 +1,6 @@
 import {
   buildNotification,
+  buildOrderDeliveredEmail,
   buildOrderPaidEmail,
   buildSupplierSaleEmail,
   buildVoucherIssuedEmail,
@@ -532,5 +533,64 @@ describe('the back-in-stock mail', () => {
       SITE,
     )
     expect(mail?.html).not.toContain('<img')
+  })
+})
+
+describe('buildOrderDeliveredEmail (STEP 16)', () => {
+  const payload = {
+    order_id: '79f488aa-549a-40dd-af80-eb66d886668f',
+    order_ref: '79F488AA',
+    customer_name: 'דנה',
+    item_count: 2,
+    delivered_at: '2026-10-03T14:05:00.000Z',
+  }
+
+  it('dispatches through buildNotification under the order_delivered kind', () => {
+    expect(buildNotification('order_delivered', payload, SITE)?.subject).toContain('נמסרה')
+  })
+
+  it('says delivered, not shipped, and names the reference', () => {
+    const mail = buildOrderDeliveredEmail(payload, SITE)
+    expect(mail.subject).toBe('ההזמנה שלך נמסרה · 79F488AA')
+    expect(mail.text).toContain('נמסרו')
+    expect(mail.text).not.toContain('נשלחה')
+    expect(mail.html).toContain(
+      '<strong dir="ltr" style="direction:ltr;unicode-bidi:isolate">79F488AA</strong>',
+    )
+  })
+
+  it('links the order page itself, on the configured origin, without a double slash', () => {
+    const mail = buildOrderDeliveredEmail(payload, 'https://kenyonexpress.co.il/')
+    expect(mail.html).toContain(
+      'href="https://kenyonexpress.co.il/account/orders/79f488aa-549a-40dd-af80-eb66d886668f"',
+    )
+    expect(mail.html).not.toContain('.co.il//')
+    // Without an id there is still somewhere to go: the orders list.
+    expect(buildOrderDeliveredEmail({ order_ref: 'X' }, SITE).html).toContain('/account/orders"')
+  })
+
+  it('greets by name when there is one and stays polite when there is not', () => {
+    expect(buildOrderDeliveredEmail(payload, SITE).text).toContain('שלום דנה')
+    expect(buildOrderDeliveredEmail({ ...payload, customer_name: null }, SITE).text).toContain(
+      'שלום,',
+    )
+  })
+
+  it('never renders Invalid Date for a broken timestamp, and omits the line', () => {
+    const mail = buildOrderDeliveredEmail({ ...payload, delivered_at: 'not a date' }, SITE)
+    expect(mail.text).not.toContain('Invalid Date')
+    expect(mail.text).not.toContain('נמסרה ב-')
+  })
+
+  it('survives an empty payload rather than throwing at send time', () => {
+    const mail = buildOrderDeliveredEmail({}, SITE)
+    expect(mail.subject).toContain('נמסרה')
+    expect(mail.html).not.toContain('undefined')
+  })
+
+  it('carries no money: a delivery notice is not a receipt', () => {
+    const mail = buildOrderDeliveredEmail({ ...payload, total_agorot: 81_700 }, SITE)
+    expect(mail.text).not.toContain('₪')
+    expect(mail.html).not.toContain('₪')
   })
 })

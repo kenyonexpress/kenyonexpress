@@ -73,6 +73,23 @@ const CHECK_ACCEPTS = [
  */
 const CHECK_ACCEPTS_BUT_RENDERS_NOTHING: readonly string[] = ['account_deleted']
 
+/**
+ * Kinds the application enqueues that the measured constraint does NOT yet
+ * accept, each with the pending migration that widens it. The enqueuer must
+ * catch 23514 and log, so a row for one of these is refused loudly at the
+ * caller until the file is applied, never parked silently by the drain.
+ *
+ * The day the migration is applied: re-measure, move the name up into
+ * CHECK_ACCEPTS, delete it here. The inverted assertion below keeps the list
+ * from lingering after that.
+ */
+const PENDING_KINDS: readonly { kind: string; migration: string }[] = [
+  // STEP 16: the delivery-confirmation mail, enqueued app-side by
+  // server/orders/delivered-notification.ts from both writers of
+  // item_status = 'delivered'.
+  { kind: 'order_delivered', migration: '253_notification_outbox_order_delivered.sql' },
+]
+
 // Re-measured 2026-09-09, when 183 restated the constraint. The live list had
 // grown from twelve to fourteen since the 08-19 measurement: `account_deleted`
 // (150) and `order_shipped` (183). 183 as drafted restated only the twelve it
@@ -165,11 +182,26 @@ describe('the outbox kinds three lists have to agree on', () => {
     expect(buildNotification('not_a_kind', PAYLOAD, SITE)).toBeNull()
   })
 
+  it('renders every pending kind, and each names a migration file that exists', () => {
+    for (const { kind, migration } of PENDING_KINDS) {
+      expect(buildNotification(kind, PAYLOAD, SITE), `no builder for ${kind}`).not.toBeNull()
+      expect(
+        readdirSync(resolve(process.cwd(), 'migrations/pending')),
+        `${kind} names a migration that is not pending`,
+      ).toContain(migration)
+      // Still pending means still absent from the measured constraint; once
+      // it is measured present, the name belongs in CHECK_ACCEPTS instead.
+      expect(CHECK_ACCEPTS as readonly string[], `${kind} is measured: move it up`).not.toContain(
+        kind,
+      )
+    }
+  })
+
   it('enqueues nothing the constraint would reject', () => {
     // THE ACTUAL 2026-08-19 BUG, in the form that catches it next time. Every
     // `p_kind:` and `kind:` literal handed to the outbox anywhere in src must
     // be a value the constraint accepts.
-    const accepted = new Set<string>(CHECK_ACCEPTS)
+    const accepted = new Set<string>([...CHECK_ACCEPTS, ...PENDING_KINDS.map((p) => p.kind)])
     const offenders: string[] = []
 
     for (const file of sourceFiles(resolve(process.cwd(), 'src'))) {

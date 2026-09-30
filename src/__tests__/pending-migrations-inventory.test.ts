@@ -443,6 +443,13 @@ describe('the pending migration inventory', () => {
       // trigger it). README carries the row; not yet dry-run on production
       // (Supabase MCP unauthenticated in the session that filed it).
       '252_whatsapp_outbox_order_shipped.sql',
+      // 253 is PENDING (2026-10-01, STEP 16 email templates): widens
+      // notification_outbox_kind_check with `order_delivered`, the
+      // delivery-confirmation mail the fulfilment board and the per-line
+      // admin action enqueue app-side when the last parcel is delivered.
+      // README carries the row; not yet dry-run on production (Supabase MCP
+      // unauthenticated in the session that filed it).
+      '253_notification_outbox_order_delivered.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

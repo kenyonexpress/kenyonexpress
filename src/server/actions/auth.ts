@@ -32,6 +32,7 @@ import {
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
 import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
+import { trySendBrandedPasswordReset } from '@/server/auth/password-reset-send'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -449,6 +450,12 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
   // would turn this endpoint into a registration oracle, which is the whole
   // point of `passwordResetResult` below.
   if (!addressAllowed) return passwordResetResult(null)
+
+  // The branded Hebrew mail first (STEP 16), GoTrue's own template as the
+  // fallback: same arrangement as the magic link. `false` from the sender
+  // means "could not", never "no such user", and the fallback below is silent
+  // for an unknown address too, so the reply stays one sentence either way.
+  if (await trySendBrandedPasswordReset(parsed.data.email)) return passwordResetResult(null)
 
   const supabase = await createClient()
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {

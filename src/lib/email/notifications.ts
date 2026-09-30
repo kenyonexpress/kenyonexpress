@@ -1,4 +1,5 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
+import { renderEmailDocument } from '@/lib/email/layout'
 import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { resolveCarrier } from '@/lib/shipping/carriers'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
@@ -38,15 +39,7 @@ import { OFF_PAGE } from '@/styles/tokens'
  * beside them were still unguarded, and a `.ts` file was invisible to the hex
  * gate entirely.
  */
-const {
-  brand: BRAND,
-  ink: INK,
-  muted: MUTED,
-  rule: RULE,
-  panel: PANEL,
-  paper: PAPER,
-  panelWarm: PANEL_WARM,
-} = OFF_PAGE
+const { brand: BRAND, ink: INK, muted: MUTED, rule: RULE, panel: PANEL, paper: PAPER } = OFF_PAGE
 
 export interface BuiltNotification {
   subject: string
@@ -82,6 +75,14 @@ export type NotificationKind =
    * console and the till app alike.
    */
   | 'order_shipped'
+  /**
+   * Every parcel of the order was marked delivered. Enqueued by the
+   * application (`server/orders/delivered-notification.ts`) from the two
+   * writers of `item_status = 'delivered'`, the fulfilment board and the
+   * per-line admin action, because "delivered" is a fold over the lines and
+   * not an order status a trigger could watch. Constraint widened by 253.
+   */
+  | 'order_delivered'
   /** A saved product got cheaper. Enqueued by /api/cron/wishlist-alerts (200). */
   | 'price_drop'
   /** A saved or waited-on product is back on the shelf. Same cron, same 200. */
@@ -104,15 +105,23 @@ function trimSite(siteUrl: string): string {
   return siteUrl.replace(/\/+$/, '')
 }
 
-function shell(bodyHtml: string, footer: string): string {
-  return `
-    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
-      <div style="max-width:560px;margin:0 auto">
-        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">KenyonExpress</div>
-        ${bodyHtml}
-        <div style="font-size:12px;color:${MUTED};margin-top:18px;text-align:center">${escapeHtml(footer)}</div>
-      </div>
-    </div>`
+/**
+ * The document around every card. Since STEP 16 this is `renderEmailDocument`
+ * in `./layout.ts`: a full responsive RTL document (viewport meta, fluid
+ * table capped at 600px, a media query for phones) instead of the bare
+ * `<div style="max-width:560px">` the builders used to emit. The card markup
+ * each builder passes in is unchanged; only the frame moved.
+ *
+ * `title` is what a client shows in its title bar and a subject-less preview
+ * falls back to. Builders that know their subject pass it; the rest get the
+ * site name.
+ */
+function shell(bodyHtml: string, footer: string, title?: string): string {
+  return renderEmailDocument({
+    bodyHtml,
+    footer,
+    ...(title ? { title, preheader: title } : {}),
+  })
 }
 
 function asNumber(value: unknown): number {
@@ -219,7 +228,7 @@ export function buildOrderPaidEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">התשלום התקבל</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -227,7 +236,7 @@ export function buildOrderPaidEmail(
           <div>סך הכל שולם באתר: <strong>${escapeHtml(total)}</strong></div>
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
         </div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
         ${receiptUrl ? `<div style="font-size:13px;color:${MUTED};margin-top:12px;text-align:center"><a href="${escapeHtml(receiptUrl)}" style="color:${MUTED}">להורדת הקבלה</a></div>` : ''}
       </div>`,
     'קיבלת את המייל הזה כי ביצעת רכישה ב-KenyonExpress.',
@@ -293,7 +302,7 @@ export function buildOrderShippedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">ההזמנה שלך נשלחה</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -312,9 +321,72 @@ export function buildOrderShippedEmail(
             })
             .join('')}
         </div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למעקב אחרי ההזמנה</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למעקב אחרי ההזמנה</a>
       </div>`,
     'קיבלת את המייל הזה כי יש לך הזמנה פעילה ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Delivery confirmation, for the customer.
+ *
+ * Fires once, when the LAST live physical line of the order reaches
+ * `delivered`, never per parcel: `summarizeShipping` owns that fold and the
+ * enqueuer applies it, so a two-parcel order says "delivered" once, when it
+ * is. Deduped on the order id, same as the shipped mail.
+ *
+ * Says nothing about a next step it cannot keep: no return window, no
+ * survey link to a route that may not exist. It confirms the fact, names the
+ * order, and points at the order page, which is where feedback and support
+ * both live.
+ */
+export function buildOrderDeliveredEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification {
+  const orderId = asText(payload.order_id)
+  const ref = asText(payload.order_ref) ?? (orderId ?? '').slice(0, 8).toUpperCase()
+  const name = asText(payload.customer_name)
+  const items = asNumber(payload.item_count)
+  const when = hebrewDateTime(payload.delivered_at)
+  const site = trimSite(siteUrl)
+  const url = orderId ? `${site}/account/orders/${orderId}` : `${site}/account/orders`
+
+  const subject = `ההזמנה שלך נמסרה · ${ref}`
+  const greeting = name ? `שלום ${name},` : 'שלום,'
+
+  const text = [
+    greeting,
+    '',
+    'כל הפריטים בהזמנה שלך נמסרו. מקווים שהכול הגיע כמו שצריך.',
+    '',
+    `מספר הזמנה: ${ltrText(ref)}`,
+    items > 0 ? `פריטים: ${items}` : '',
+    when ? `נמסרה ב-${when}` : '',
+    '',
+    'משהו לא בסדר עם המשלוח? אפשר לכתוב לנו מדף ההזמנה, ונטפל.',
+    `לפרטי ההזמנה: ${ltrText(url)}`,
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">ההזמנה שלך נמסרה</div>
+        <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(greeting)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:12px">כל הפריטים בהזמנה שלך נמסרו. מקווים שהכול הגיע כמו שצריך.</div>
+        <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
+          <div>מספר הזמנה: <strong dir="ltr" style="${LTR_ISOLATE_STYLE}">${escapeHtml(ref)}</strong></div>
+          ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
+          ${when ? `<div style="color:${MUTED}">נמסרה ב-${escapeHtml(when)}</div>` : ''}
+        </div>
+        <div style="font-size:13px;color:${MUTED};margin-top:12px">משהו לא בסדר עם המשלוח? אפשר לכתוב לנו מדף ההזמנה, ונטפל.</div>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
+      </div>`,
+    'קיבלת את המייל הזה כי הזמנה שלך ב-KenyonExpress נמסרה.',
+    subject,
   )
 
   return { subject, html, text }
@@ -370,7 +442,7 @@ export function buildSupplierSaleEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">מכירה חדשה</div>
         <div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:14px">
@@ -390,7 +462,7 @@ export function buildSupplierSaleEmail(
             ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">קופון נפדה בבית העסק בסריקת ה-QR, והיתרה נגבית מהלקוח במקום.</div>`
             : ''
         }
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לניהול ההזמנות</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לניהול ההזמנות</a>
       </div>`,
     'קיבלתם את המייל הזה כספקים ב-KenyonExpress.',
   )
@@ -436,7 +508,7 @@ export function buildVoucherRedeemedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">הקופון מומש</div>
         <div style="font-size:14px;color:${INK};margin-top:8px">${escapeHtml(product)}</div>
         ${supplier ? `<div style="font-size:13px;color:${MUTED};margin-top:2px">${escapeHtml(supplier)}</div>` : ''}
@@ -446,7 +518,7 @@ export function buildVoucherRedeemedEmail(
           ${collected > 0 ? `<div>נגבה בבית העסק: <strong>${escapeHtml(formatAgorot(collected))}</strong></div>` : ''}
         </div>
         <div style="font-size:13px;color:${MUTED};margin-top:12px">אם לא אתם מימשתם את הקופון, פנו אלינו מיד.</div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לכל הקופונים שלי</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לכל הקופונים שלי</a>
       </div>`,
     'קיבלת את המייל הזה כי הקופון רשום על שמך ב-KenyonExpress.',
   )
@@ -545,7 +617,7 @@ export function buildVoucherGiftedEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(
           sender ? `${sender} שלח לך מתנה` : 'קיבלת מתנה',
         )}</div>
@@ -556,7 +628,7 @@ export function buildVoucherGiftedEmail(
             ? `<div style="font-size:14px;color:${INK};line-height:1.9;margin-top:14px;padding:14px;background:${PANEL};border-radius:10px;border:1px solid ${RULE}">${escapeHtml(message)}</div>`
             : ''
         }
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">קבלת הקופון</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">קבלת הקופון</a>
         ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">הקופון בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
         <div style="font-size:13px;color:${MUTED};margin-top:6px">הקישור אישי. אל תעבירו אותו הלאה.</div>
       </div>`,
@@ -603,12 +675,12 @@ export function buildVoucherExpiringEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(`הקופון פג ${when}`)}</div>
         <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
         ${supplier ? `<div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>` : ''}
         ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לצפייה בקופון</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לצפייה בקופון</a>
       </div>`,
     'קיבלת את המייל הזה כי יש לך קופון פעיל ב-KenyonExpress.',
   )
@@ -650,10 +722,10 @@ export function buildCashbackCreditedEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">זיכינו את הארנק שלך${ref ? ` על הזמנה ${escapeHtml(ref)}` : ''}. אפשר להשתמש בסכום בקנייה הבאה.</div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
       </div>`,
     'קיבלת את המייל הזה כי נכנס קאשבק לארנק שלך ב-KenyonExpress.',
   )
@@ -698,7 +770,7 @@ export function buildInvoiceDeadEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};margin-top:10px">${escapeHtml(`הנפקת ${documentType} נכשלה ${attempts} פעמים והפסיקה לנסות.`)}</div>
         <div style="font-size:13px;color:${MUTED};margin-top:10px;padding:12px;background:${PANEL};border-radius:8px;border:1px solid ${RULE}">${escapeHtml(reason)}</div>
@@ -749,7 +821,7 @@ export function buildLowStockEmail(
     .join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};line-height:2;margin-top:12px">
           <div>זמין למכירה: <strong>${available}</strong></div>
@@ -806,7 +878,7 @@ export function buildReconciliationGapEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:14px;color:${INK};margin-top:10px">פער מסוג "אין אצלנו רישום" פירושו לקוח שחויב ואין לו הזמנה, והוא לא ייפתח פנייה כי אין לו מספר הזמנה לצטט.</div>
         <div style="font-size:13px;color:${MUTED};margin-top:12px;line-height:2">
@@ -868,12 +940,12 @@ export function buildRefundCompletedEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(headline)}</div>
         ${feeAgorot > 0 ? `<div style="font-size:14px;color:${MUTED};margin-top:8px">נוכו דמי ביטול בסך ${escapeHtml(formatAgorot(feeAgorot))} לפי התקנון.</div>` : ''}
         <div style="font-size:13px;color:${MUTED};margin-top:12px">הזיכוי מבוצע מול חברת האשראי, וההופעה בפועל בדף החשבון תלויה במנפיק הכרטיס.</div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">להזמנות שלי</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">להזמנות שלי</a>
       </div>`,
     'קיבלת את המייל הזה כי בוצע זיכוי על הזמנה שלך ב-KenyonExpress.',
   )
@@ -915,11 +987,11 @@ export function buildWelcomeEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)} החשבון שלך מוכן.</div>
         <div style="font-size:14px;color:${MUTED};margin-top:8px">הקופונים שתקנו יחכו לך באזור האישי, עם קוד לסריקה בבית העסק.</div>
-        <a href="${escapeHtml(`${site}/account/coupons`)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לקופונים שלי</a>
+        <a href="${escapeHtml(`${site}/account/coupons`)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לקופונים שלי</a>
       </div>`,
     'קיבלת את המייל הזה כי נפתח חשבון ב-KenyonExpress עם כתובת המייל הזאת.',
   )
@@ -977,11 +1049,11 @@ export function buildPriceDropEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(name)} מרשימת המשאלות שלך ירד במחיר:</div>
         <div style="font-size:16px;margin-top:8px"><span style="color:${MUTED};text-decoration:line-through">${escapeHtml(formatAgorot(oldAgorot))}</span> <span style="font-weight:800;color:${INK}">${escapeHtml(formatAgorot(newAgorot))}</span></div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
       </div>${unsubscribeFooterHtml(payload)}`,
     'קיבלת את המייל הזה כי שמרת את המוצר ברשימת המשאלות שלך ב-KenyonExpress.',
   )
@@ -1020,12 +1092,12 @@ export function buildBackInStockEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(name)} חזר למלאי.</div>
         ${priceAgorot > 0 ? `<div style="font-size:15px;color:${INK};margin-top:6px">המחיר עכשיו: <span style="font-weight:800">${escapeHtml(formatAgorot(priceAgorot))}</span></div>` : ''}
         <div style="font-size:13px;color:${MUTED};margin-top:10px">כמות המלאי מוגבלת.</div>
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למוצר</a>
       </div>${unsubscribeFooterHtml(payload)}`,
     'קיבלת את המייל הזה כי ביקשת עדכון כשהמוצר חוזר למלאי ב-KenyonExpress.',
   )
@@ -1069,14 +1141,14 @@ export function buildGiftCardIssuedEmail(
   ].join('\n')
 
   const html = shell(
-    `<div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+    `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
         <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(greeting)}</div>
         <div style="font-size:15px;color:${INK};margin-top:10px">קיבלת גיפט קארד של KenyonExpress על סך <span style="font-weight:800">${escapeHtml(formatAgorot(amountAgorot))}</span>.</div>
         ${giftMessage ? `<div style="font-size:15px;color:${INK};margin-top:10px;background:${PANEL};border-radius:10px;padding:12px">"${escapeHtml(giftMessage)}"</div>` : ''}
         <div dir="ltr" style="font-size:22px;font-weight:800;letter-spacing:2px;color:${INK};background:${PANEL};border:1px dashed ${RULE};border-radius:10px;padding:14px;margin-top:14px;text-align:center;font-family:monospace">${escapeHtml(code)}</div>
         <div style="font-size:13px;color:${MUTED};margin-top:10px">למימוש נכנסים לחשבון באתר ומזינים את הקוד. הסכום נטען לארנק וניתן לשימוש בכל רכישה.</div>
         ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:6px">תוקף הקוד: עד ${escapeHtml(expires)}.</div>` : ''}
-        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למימוש הגיפט קארד</a>
+        <a href="${escapeHtml(url)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">למימוש הגיפט קארד</a>
       </div>`,
     'קיבלת את המייל הזה כי נרכש עבורך גיפט קארד ב-KenyonExpress.',
   )
@@ -1095,6 +1167,8 @@ export function buildNotification(
       return buildOrderPaidEmail(payload, siteUrl)
     case 'order_shipped':
       return buildOrderShippedEmail(payload, siteUrl)
+    case 'order_delivered':
+      return buildOrderDeliveredEmail(payload, siteUrl)
     case 'supplier_sale':
       return buildSupplierSaleEmail(payload, siteUrl)
     case 'voucher_redeemed':

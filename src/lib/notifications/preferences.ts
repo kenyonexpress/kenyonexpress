@@ -61,6 +61,8 @@ export const REQUIRED_KINDS = [
  */
 export const OPTIONAL_KINDS = [
   'order_shipped',
+  /** Same reasoning as `order_shipped`: a service update, not the product. */
+  'order_delivered',
   'voucher_expiring',
   'voucher_redeemed',
   'cashback_credited',
@@ -137,6 +139,7 @@ export function preferenceMatrix(
 /** Hebrew labels for the settings page. */
 export const KIND_LABEL_HE: Record<OptionalKind, string> = {
   order_shipped: 'ההזמנה נשלחה',
+  order_delivered: 'ההזמנה נמסרה',
   voucher_expiring: 'שובר עומד לפוג',
   voucher_redeemed: 'שובר מומש',
   cashback_credited: 'זיכוי לארנק',

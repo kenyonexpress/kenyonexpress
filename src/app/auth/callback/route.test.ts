@@ -21,9 +21,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const exchangeCodeForSession = vi.fn()
+const verifyOtp = vi.fn()
 
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: async () => ({ auth: { exchangeCodeForSession } }),
+  createClient: async () => ({ auth: { exchangeCodeForSession, verifyOtp } }),
 }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({}) }))
 vi.mock('next/headers', () => ({
@@ -47,6 +48,8 @@ async function location(query: string): Promise<URL> {
 
 beforeEach(() => {
   exchangeCodeForSession.mockReset()
+  verifyOtp.mockReset()
+  verifyOtp.mockResolvedValue({ data: { session: { user: { id: 'u1' } } }, error: null })
   // The whole failure surface: no code, a code Supabase rejects, and a code it
   // accepts without handing back a session. All three land in the same branch.
   exchangeCodeForSession.mockResolvedValue({ data: { session: null }, error: { message: 'bad' } })
@@ -104,5 +107,35 @@ describe('a successful exchange', () => {
       expect(url.origin, evil).toBe('https://shop.test')
       expect(url.pathname, evil).toBe('/')
     }
+  })
+})
+
+describe('the custom-sent token_hash leg', () => {
+  it('verifies a magic link as magiclink when no type is named', async () => {
+    const url = await location('?token_hash=pkce_abc&next=%2Faccount')
+    expect(verifyOtp).toHaveBeenCalledWith({ type: 'magiclink', token_hash: 'pkce_abc' })
+    expect(url.pathname).toBe('/account')
+  })
+
+  it('verifies the password-reset mail as recovery and lands on the reset form', async () => {
+    // password-reset-send.ts mints a recovery hash; GoTrue refuses it under
+    // the magiclink type, so the type has to ride along and be honoured.
+    const url = await location('?token_hash=pkce_rec&type=recovery&next=%2Freset-password')
+    expect(verifyOtp).toHaveBeenCalledWith({ type: 'recovery', token_hash: 'pkce_rec' })
+    expect(url.pathname).toBe('/reset-password')
+    expect(url.origin).toBe('https://shop.test')
+  })
+
+  it('collapses any other type to magiclink rather than letting the URL choose', async () => {
+    await location('?token_hash=pkce_abc&type=signup')
+    expect(verifyOtp).toHaveBeenCalledWith({ type: 'magiclink', token_hash: 'pkce_abc' })
+  })
+
+  it('sends a rejected hash to login with the error flag and the destination kept', async () => {
+    verifyOtp.mockResolvedValue({ data: { session: null }, error: { message: 'expired' } })
+    const url = await location('?token_hash=old&type=recovery&next=%2Freset-password')
+    expect(url.pathname).toBe('/login')
+    expect(url.searchParams.get('error')).toBe('auth_callback_error')
+    expect(url.searchParams.get('next')).toBe('/reset-password')
   })
 })

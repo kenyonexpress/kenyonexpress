@@ -1,4 +1,5 @@
 import { LTR_ISOLATE_STYLE, RTL_ISOLATE_STYLE, ltrText } from '@/lib/email/bidi'
+import { renderEmailDocument } from '@/lib/email/layout'
 import { OFF_PAGE } from '@/styles/tokens'
 
 /**
@@ -27,14 +28,7 @@ import { OFF_PAGE } from '@/styles/tokens'
 // place that owns it. These three were local copies of the token values;
 // identical today, and the drift this file's own history records (#f5c518
 // against #fed700) is exactly what a local copy earns over time.
-const {
-  brand: BRAND,
-  ink: INK,
-  muted: MUTED,
-  rule: RULE,
-  paper: PAPER,
-  panelWarm: PANEL_WARM,
-} = OFF_PAGE
+const { brand: BRAND, ink: INK, muted: MUTED, rule: RULE, paper: PAPER } = OFF_PAGE
 
 export interface MagicLinkEmailInput {
   /** The full verification URL. Interpolated escaped, never trimmed or rebuilt. */
@@ -82,14 +76,16 @@ export function buildMagicLinkEmail(input: MagicLinkEmailInput): BuiltMagicLinkE
     'אם לא ביקשתם להתחבר, אפשר להתעלם מהמייל הזה ושום דבר לא ישתנה בחשבון.',
   ].join('\n')
 
-  const html = `
-    <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PANEL_WARM};padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
-      <div style="max-width:560px;margin:0 auto">
-        <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">${escapeHtml(site)}</div>
-        <div dir="rtl" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
+  // The frame is the shared responsive document (`./layout.ts`). It adds no
+  // link of its own, which the "no link but the login link" test relies on.
+  const html = renderEmailDocument({
+    siteName: site,
+    title: subject,
+    preheader: subject,
+    bodyHtml: `<div dir="rtl" class="ke-card" style="${RTL_ISOLATE_STYLE};background:${PAPER};border:1px solid ${RULE};border-radius:14px;padding:22px">
           <div style="font-size:18px;font-weight:700;color:${INK}">כניסה לחשבון שלך</div>
           <div style="font-size:14px;color:${INK};margin-top:10px">ביקשתם להתחבר ל-${escapeHtml(site)}. הכניסה בלחיצה אחת:</div>
-          <a href="${escapeHtml(link)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">כניסה לחשבון</a>
+          <a href="${escapeHtml(link)}" class="ke-btn" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">כניסה לחשבון</a>
           <div style="font-size:13px;color:${MUTED};margin-top:14px">אם הכפתור לא עובד, אפשר להעתיק את הקישור:</div>
           <div dir="ltr" style="${LTR_ISOLATE_STYLE};font-size:12px;color:${MUTED};margin-top:6px;word-break:break-all">${escapeHtml(link)}</div>
 ${
@@ -99,10 +95,9 @@ ${
     : ''
 }
           <div style="font-size:13px;color:${MUTED};margin-top:14px">הקישור אישי, חד פעמי, ותקף לזמן קצר.</div>
-        </div>
-        <div style="font-size:12px;color:${MUTED};margin-top:18px;text-align:center">אם לא ביקשתם להתחבר, אפשר להתעלם מהמייל הזה ושום דבר לא ישתנה בחשבון.</div>
-      </div>
-    </div>`
+        </div>`,
+    footer: 'אם לא ביקשתם להתחבר, אפשר להתעלם מהמייל הזה ושום דבר לא ישתנה בחשבון.',
+  })
 
   return { subject, html, text }
 }
