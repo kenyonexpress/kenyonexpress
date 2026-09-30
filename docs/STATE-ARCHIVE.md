@@ -2,6 +2,46 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c64 (פירוט מלא, כווץ ב-STATE.md ל-M13-c64 לשמירה על תקרת 300 שורות)
+
+**M12-c64 - DONE (01.10): meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots נבדקו מחדש, אפס דריפט בקוד, אפס תיקון נדרש.** משימת
+התור: "SEO: verify metadata, canonical, og tags, schema.org Product
+and Offer on product pages, sitemap freshness and robots. Fix drift."
+
+**בדיקת דריפט מול המדידה הקודמת (M12-c63, `57cbb7f71`):** `git log
+57cbb7f71..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
+`00587d376` (M18-c63, שורת דירוג כוכבים על `DefaultProductCard`/
+`related-products.ts`) — נבדק ישירות ב-`git show --stat`, נוגע רק
+ב-`ProductCard.tsx` ו-`related-products.ts`, לא ב-`generateMetadata`,
+`src/lib/seo/json-ld.ts`, `robots.ts` או `sitemap`. אפס קובץ SEO שונה.
+
+**נבדק ישירות, לא רק דרך git log:** `generateMetadata` בדף המוצר
+(`src/app/(store)/product/[slug]/page.tsx`) עדיין מגדיר `alternates.
+canonical` ו-`openGraph` (בכוונה בלי `openGraph.images`, ה-og:image
+מגיע מ-route נפרד `opengraph-image-1r2n5f`). `src/lib/seo/json-ld.ts`
+עדיין בונה `@type: Product` עם `Offer` מקונן (מחיר/זמינות) ומוזרק
+ב-`<script type="application/ld+json">` פעמיים בדף (שורות 273, 281).
+`src/app/robots.ts` עדיין חוסם `/redeem/`, `/coupon/`, `/account/`,
+`/supplier/`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/` וכו',
+`/sitemap.xml` הוא ה-route handler של אינדקס ה-sitemap (חמישה קבצים:
+categories/content/products/regions/suppliers.xml, בלי `lastmod`
+על האינדקס עצמו בכוונה, `lastmod` פר-קובץ בכל `<urlset>`).
+
+הורצו הטסטים הממוקדים: `vitest run src/app/sitemap.test.ts
+src/app/sitemap-robots-agree.test.ts src/app/sitemap-canonicals.test.ts
+src/app/robots.test.ts src/app/content-pages.test.ts
+src/app/og-fonts.test.ts src/lib/seo` — **202/202 עברו, 11 קבצי טסט,
+אפס נכשל.**
+
+**שערים:** `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282,
+docs-path-audit 154). `test` 610/610 קבצים, 7296/7308 ירוקים (12
+דולגים). `build` (`CARDCOM_USE_MOCK=true pnpm build`) עבר נקי, כולל
+כל נתיבי ה-sitemap וה-`robots.txt` וה-`opengraph-image` routes.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M11-c64 (פירוט מלא, כווץ ב-STATE.md ל-M12-c64 לשמירה על תקרת 300 שורות)
 
 **M11-c64 - DONE (01.10): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA

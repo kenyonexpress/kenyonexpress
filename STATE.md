@@ -1,70 +1,72 @@
-RESUME FROM: M13-c64
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c64)
+RESUME FROM: M14-c64
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c64)
 
 ## המשך מ:
 
-**M12-c64 - DONE (01.10): meta/canonical/og/JSON-LD Product+Offer/
-sitemap/robots נבדקו מחדש, אפס דריפט בקוד, אפס תיקון נדרש.** משימת
-התור: "SEO: verify metadata, canonical, og tags, schema.org Product
-and Offer on product pages, sitemap freshness and robots. Fix drift."
+**M13-c64 - DONE (01.10): CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem נבדקו מחדש, אפס דריפט
+בקוד, אפס תיקון נדרש.** משימת התור: "Security headers and limits:
+verify CSP, HSTS, X-Frame-Options, Referrer-Policy, Upstash rate
+limits on login, checkout and redeem. Fix gaps with tests."
 
-**בדיקת דריפט מול המדידה הקודמת (M12-c63, `57cbb7f71`):** `git log
-57cbb7f71..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
-`00587d376` (M18-c63, שורת דירוג כוכבים על `DefaultProductCard`/
-`related-products.ts`) — נבדק ישירות ב-`git show --stat`, נוגע רק
-ב-`ProductCard.tsx` ו-`related-products.ts`, לא ב-`generateMetadata`,
-`src/lib/seo/json-ld.ts`, `robots.ts` או `sitemap`. אפס קובץ SEO שונה.
+**בדיקת דריפט מול המדידה הקודמת (M13-c63, `2df7cb697`):** `git log
+2df7cb697..HEAD -- src/ e2e/ messages/ packages/ next.config.ts` הראה
+קומיט יחיד, `00587d376` (M18-c63, שורת דירוג כוכבים על
+`DefaultProductCard`/`related-products.ts`) — נוגע רק ב-`ProductCard.tsx`
+ו-`related-products.ts`, לא ב-`next.config.ts`, `src/lib/rate-limit/`
+או `src/lib/security/`. אפס קובץ אבטחה שונה.
 
-**נבדק ישירות, לא רק דרך git log:** `generateMetadata` בדף המוצר
-(`src/app/(store)/product/[slug]/page.tsx`) עדיין מגדיר `alternates.
-canonical` ו-`openGraph` (בכוונה בלי `openGraph.images`, ה-og:image
-מגיע מ-route נפרד `opengraph-image-1r2n5f`). `src/lib/seo/json-ld.ts`
-עדיין בונה `@type: Product` עם `Offer` מקונן (מחיר/זמינות) ומוזרק
-ב-`<script type="application/ld+json">` פעמיים בדף (שורות 273, 281).
-`src/app/robots.ts` עדיין חוסם `/redeem/`, `/coupon/`, `/account/`,
-`/supplier/`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/` וכו',
-`/sitemap.xml` הוא ה-route handler של אינדקס ה-sitemap (חמישה קבצים:
-categories/content/products/regions/suppliers.xml, בלי `lastmod`
-על האינדקס עצמו בכוונה, `lastmod` פר-קובץ בכל `<urlset>`).
+**נבדק ישירות, לא רק דרך git log:** `next.config.ts` (`headers()`,
+שורות 81 ואילך) עדיין מגדיר שתי קבוצות כותרות שלא חופפות (default +
+יוצא-דופן ל-`/checkout/frame-return`, כדי שלא יווצרו שני
+`Content-Security-Policy` על אותו נתיב) — `Content-Security-Policy`
+דינמי (`csp`), `Strict-Transport-Security: max-age=63072000;
+includeSubDomains; preload`, `X-Frame-Options` דינמי (`frameOptions`,
+`src/lib/security/frame-policy.ts`), `Referrer-Policy:
+strict-origin-when-cross-origin`. `src/lib/rate-limit/policies.ts`
+עדיין מגדיר `login` (10/שעה, per IP), `login-account` (20/שעה),
+`begin_checkout` (10/דקה, יצירת low-profile של Cardcom), `redeem`
+(60/שעה, דף redeem הציבורי, per IP) ו-`voucher-redeem` (120/שעה, per
+supplier user) — כל השמות מוגנים ע"י `docs-table.test.ts` שנכשל אם
+קריאה לא מופיעה בטבלה.
 
-הורצו הטסטים הממוקדים: `vitest run src/app/sitemap.test.ts
-src/app/sitemap-robots-agree.test.ts src/app/sitemap-canonicals.test.ts
-src/app/robots.test.ts src/app/content-pages.test.ts
-src/app/og-fonts.test.ts src/lib/seo` — **202/202 עברו, 11 קבצי טסט,
-אפס נכשל.**
+הורצו הטסטים הממוקדים: `vitest run src/lib/rate-limit
+src/__tests__/security/mutating-route-guards.test.ts
+src/app/api/search/rate-limit.test.ts src/app/api/supplier/vouchers
+src/app/api/supplier/app/pin/route.test.ts
+src/lib/utils/rate-limit.test.ts src/__tests__/asset-cache-headers.test.ts`
+— **150/150 עברו, 15 קבצי טסט, אפס נכשל.**
 
 **שערים:** `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
 קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282,
 docs-path-audit 154). `test` 610/610 קבצים, 7296/7308 ירוקים (12
-דולגים). `build` (`CARDCOM_USE_MOCK=true pnpm build`) עבר נקי, כולל
-כל נתיבי ה-sitemap וה-`robots.txt` וה-`opengraph-image` routes.
+דולגים). `build` (`CARDCOM_USE_MOCK=true pnpm build`) עבר נקי.
 
 קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M11-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M12-c64 לשמירה על תקרת 300 שורות).** axe הורץ מחדש על כל דף, אפס
-הפרת WCAG A/AA בכל חומרה (240/242 עברו, 2 דולגים בכוונה). דריפט יחיד
-מ-M11-c63 (`00587d376`, שורת דירוג כוכבים) נבדק ולא השפיע — הרכיב לא
-רונדר בסביבה הזו (חסימת `anon` על `reviews`, חוסם ידוע #11, מיגרציה
-247 ממתינה). ארבעת השערים ירוקים.
+**M12-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M13-c64 לשמירה על תקרת 300 שורות).** meta/canonical/og/JSON-LD
+Product+Offer/sitemap/robots נבדקו מחדש, אפס דריפט בקוד (202/202
+טסטים ייעודיים עברו). ארבעת השערים ירוקים.
 
-**M10-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M11-c64 לשמירה על תקרת 300 שורות).** כיסוי טסטים נבדק מחדש בפעם
-רביעית, שש הקטגוריות הקריטיות ב-100% ענפים כל אחת, אפס טסט חדש נדרש,
-זהה ל-M10-c61/M10-c62/M10-c63. ארבעת השערים ירוקים.
+**M11-c64..M10-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c64 לשמירה על תקרת 300 שורות).** M11-c64 — axe הורץ מחדש על
+כל דף, אפס הפרת WCAG A/AA בכל חומרה (240/242 עברו, 2 דולגים בכוונה),
+דריפט יחיד (`00587d376`, שורת דירוג כוכבים) לא השפיע — הרכיב לא רונדר
+(חסימת `anon` על `reviews`, חוסם #11, מיגרציה 247 ממתינה). M10-c64 —
+כיסוי טסטים נבדק מחדש בפעם רביעית, שש הקטגוריות הקריטיות ב-100% ענפים
+כל אחת, זהה ל-M10-c61/c62/c63. ארבעת השערים ירוקים בשניהם.
 
-**M09-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M10-c64 לשמירה על תקרת 300 שורות).** STATE CLEAN: 13 החוסמים הפתוחים
-ו-15 הפריטים ב-`docs/BACKLOG.md` נבדקו ישירות, אפס שורה חדשה, אפס
-פריט Phase 1 חדש — כולם דורשים אופיר. ארבעת השערים ירוקים.
-
-**M08-c64..M07-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c64 לשמירה על תקרת 300 שורות).** M08-c64 — BACKLOG EMPTY,
-`docs/BACKLOG.md` נבדק מול `git log`, עדיין 15 פריטים, אפס חדש. M07-c64
-— route audit נבדק מחדש, אפס כשל אמיתי; ה-`.next` שהורש מ-M06-c64
-היה תקול (CSP `upgrade-insecure-requests` נאפה בטעות), תוקן ב-build
-מחדש עם `rm -rf .next`, לא בקוד — 242 שורות, 240 PASS + 2 NO DATA,
-אפס `consoleErrors`/`hydrationWarnings`. ארבעת השערים ירוקים בשניהם.
+**M09-c64..M07-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c64 לשמירה על תקרת 300 שורות).** M09-c64 — STATE CLEAN: 13
+החוסמים הפתוחים ו-15 הפריטים ב-`docs/BACKLOG.md` נבדקו ישירות, אפס
+שורה חדשה, אפס פריט Phase 1 חדש — כולם דורשים אופיר. M08-c64 —
+BACKLOG EMPTY, `docs/BACKLOG.md` נבדק מול `git log`, עדיין 15 פריטים,
+אפס חדש. M07-c64 — route audit נבדק מחדש, אפס כשל אמיתי; ה-`.next`
+שהורש מ-M06-c64 היה תקול (CSP `upgrade-insecure-requests` נאפה
+בטעות), תוקן ב-build מחדש עם `rm -rf .next`, לא בקוד — 242 שורות, 240
+PASS + 2 NO DATA, אפס `consoleErrors`/`hydrationWarnings`. ארבעת
+השערים ירוקים בשלושתם.
 
 **M06-c64..M01-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M08-c64 לשמירה על תקרת 300 שורות).** Lighthouse mobile (99/100/
