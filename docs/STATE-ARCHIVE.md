@@ -2,6 +2,52 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c61 (הועבר מ-STATE.md ב-M11-c61, לשמירה על תקרת 300 שורות)
+
+**M10-c61 - DONE (30.09): כיסוי טסטים, שש הקטגוריות הקריטיות נמדדו
+ונמצאו ב-100% ענפים כל אחת, אפס קוד נדרש.** משימת התור: "find the
+critical module with the lowest coverage among packages/money, payment
+split, voucher state machine, order state machine, refunds and RLS
+helpers. Add unit tests until branches are covered." הורצה מדידת כיסוי
+ממוקדת (`vitest run --coverage` עם `--coverage.include` על כל שש
+הקטגוריות) מול 74 קבצי טסט/1321 טסטים תחת התיקיות הרלוונטיות. המיפוי
+ותוצאת הענפים (branches) לכל קטגוריה:
+
+1. **money** — `src/lib/money.ts` 100% (21 ענפים), `src/lib/commerce/money.ts`
+   100% (20 ענפים).
+2. **payment split** — `src/lib/checkout/split.ts` 100% (4 ענפים; עוטף
+   `src/lib/commerce/commission.ts`, גם הוא 100%, 42 ענפים).
+3. **voucher state machine** — `src/server/domain/vouchers/state-machine.ts`
+   100% (22 ענפים).
+4. **order state machine** — `src/server/domain/orders/state-machine.ts`
+   100% (19 ענפים).
+5. **refunds** — כל שבעת הקבצים 100%: `server/domain/orders/refund.ts`
+   (55), `refund-request.ts` (16), `server/actions/payments/refund.ts`
+   (76), `server/payments/refund-record.ts` (14), `refund-wallet.ts`
+   (16), `lib/payments/refund-destination.ts` (4), `lib/vouchers/expiry-refund.ts`
+   (8).
+6. **RLS helpers** — `src/lib/supabase/rls-report-fetch.ts` 100% (37
+   ענפים); קובץ ה-TS היחיד תחת השם הזה (שלוש בדיקות `rls-*.test.ts`
+   ב-`src/lib/auth/` הן אסרציות מול קובצי JSON סטטיים, לא מודול עם
+   ענפים).
+
+**אפס קטגוריה מתחת ל-100%.** זה תואם את הדפוס מששה המחזורים הקודמים
+של פריט הכיסוי (`docs/BACKLOG.md` שורות 49/71/83/97): `refund-requests`
+(M10-c55), `orders/status-transitions.ts` (M04-c56), `money-format.ts`
+(20.83%→100%), `refund-wallet.ts` (M10-c58), `recordRefusedScan`
+(M10-c60) — כל אלה נמדדים כאן שוב וכולם עדיין 100%, אפס דריפט. **הקובץ
+הקרוב ביותר לכשל בתוך אותה תיקיית domain** הוא `server/domain/orders/settlement.ts`
+(95.65% ענפים, 44/46) — לא נכלל ברשימת שש הקטגוריות של משימת התור, אך
+עדיין מעל הרצפה של `vitest.config.ts` (`MONEY_MODULE_FLOOR` 95%), אין
+צורך בפעולה.
+
+**אין קוד שהשתנה.** ארבעת השערים הורצו במלואם: `type-check` נקי, `lint`
+נקי (biome 2025 קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale
+116/64, docs-index 282, docs-path-audit 152), `test` 610/610 קבצים
+7296/7308 (12 דולגו, 57.94s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3491 pnpm build`) נקי, `.next/BUILD_ID`
+נוצר. **קובץ יחיד שונה: `STATE.md`**.
+
 ## M09-c61 (הועבר מ-STATE.md ב-M10-c61, לשמירה על תקרת 300 שורות)
 
 M09-c61 - DONE (30.09): STATE CLEAN. משימת התור: "State cleanup:

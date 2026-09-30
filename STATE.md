@@ -1,51 +1,43 @@
-RESUME FROM: M11-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c61)
+RESUME FROM: M12-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c61)
 
 ## המשך מ:
 
-**M10-c61 - DONE (30.09): כיסוי טסטים, שש הקטגוריות הקריטיות נמדדו
-ונמצאו ב-100% ענפים כל אחת, אפס קוד נדרש.** משימת התור: "find the
-critical module with the lowest coverage among packages/money, payment
-split, voucher state machine, order state machine, refunds and RLS
-helpers. Add unit tests until branches are covered." הורצה מדידת כיסוי
-ממוקדת (`vitest run --coverage` עם `--coverage.include` על כל שש
-הקטגוריות) מול 74 קבצי טסט/1321 טסטים תחת התיקיות הרלוונטיות. המיפוי
-ותוצאת הענפים (branches) לכל קטגוריה:
+**M11-c61 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם שביעית,
+0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל דף, לתקן כל
+הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את המונה שנשאר.
+בדיקת דריפט קודם: `git diff --stat a7f5812a5..HEAD -- src/app
+src/components src/styles 'e2e/*a11y*' middleware.ts
+src/server/actions/auth` (מאז המדידה הקודמת, M11-c60) — **ריק, אפס
+קומיט נגע בשטח הנגישות**.
 
-1. **money** — `src/lib/money.ts` 100% (21 ענפים), `src/lib/commerce/money.ts`
-   100% (20 ענפים).
-2. **payment split** — `src/lib/checkout/split.ts` 100% (4 ענפים; עוטף
-   `src/lib/commerce/commission.ts`, גם הוא 100%, 42 ענפים).
-3. **voucher state machine** — `src/server/domain/vouchers/state-machine.ts`
-   100% (22 ענפים).
-4. **order state machine** — `src/server/domain/orders/state-machine.ts`
-   100% (19 ענפים).
-5. **refunds** — כל שבעת הקבצים 100%: `server/domain/orders/refund.ts`
-   (55), `refund-request.ts` (16), `server/actions/payments/refund.ts`
-   (76), `server/payments/refund-record.ts` (14), `refund-wallet.ts`
-   (16), `lib/payments/refund-destination.ts` (4), `lib/vouchers/expiry-refund.ts`
-   (8).
-6. **RLS helpers** — `src/lib/supabase/rls-report-fetch.ts` 100% (37
-   ענפים); קובץ ה-TS היחיד תחת השם הזה (שלוש בדיקות `rls-*.test.ts`
-   ב-`src/lib/auth/` הן אסרציות מול קובצי JSON סטטיים, לא מודול עם
-   ענפים).
+נמדד בכל זאת מחדש מול build אמיתי טרי על HEAD (`e54734eee`, `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3611
+pnpm build`, `pnpm start -p 3611`):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes`): **72/74 עברו, 2 דולגו** (אותם דילוגים
+  מכוונים כמו בכל מדידה קודמת — search combobox הוסר ב-D3, וה-viewport
+  תחת 768) — **0 הפרות**.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): **23
+  עברו, 57 דולגו** — זהה במדויק ל-M11-c60 (לקוח 16/16 + ספק 7/7 = 23,
+  אדמין 57/57 דולג על אותו כשל התחברות פרודקשן קיים מראש, לא תקלת
+  נגישות ולא רגרסיית קוד).
+- שני השערים נכשלים על **כל** הפרה, לא רק `serious`/`critical`, אז 0
+  כשל הוא גם 0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה
+  שנסרק.
 
-**אפס קטגוריה מתחת ל-100%.** זה תואם את הדפוס מששה המחזורים הקודמים
-של פריט הכיסוי (`docs/BACKLOG.md` שורות 49/71/83/97): `refund-requests`
-(M10-c55), `orders/status-transitions.ts` (M04-c56), `money-format.ts`
-(20.83%→100%), `refund-wallet.ts` (M10-c58), `recordRefusedScan`
-(M10-c60) — כל אלה נמדדים כאן שוב וכולם עדיין 100%, אפס דריפט. **הקובץ
-הקרוב ביותר לכשל בתוך אותה תיקיית domain** הוא `server/domain/orders/settlement.ts`
-(95.65% ענפים, 44/46) — לא נכלל ברשימת שש הקטגוריות של משימת התור, אך
-עדיין מעל הרצפה של `vitest.config.ts` (`MONEY_MODULE_FLOOR` 95%), אין
-צורך בפעולה.
+**המונה שנשאר: 0 `serious`/`critical`.** אפס דריפט מ-M11-c60. **אפס
+שינוי קוד.** שערים: `type-check` נקי, `lint` נקי (biome 2025 קבצים +
+כל שנים-עשר השערים המשניים, כולל `i18n` 627/627), `test` המלא 610/610
+קבצים 7296/7308 (12 דולגים, 56.60s), `build` (`rm -rf .next` + build
+טרי) `exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד שונה:
+`STATE.md`.**
 
-**אין קוד שהשתנה.** ארבעת השערים הורצו במלואם: `type-check` נקי, `lint`
-נקי (biome 2025 קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale
-116/64, docs-index 282, docs-path-audit 152), `test` 610/610 קבצים
-7296/7308 (12 דולגו, 57.94s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3491 pnpm build`) נקי, `.next/BUILD_ID`
-נוצר. **קובץ יחיד שונה: `STATE.md`**.
+## M10-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M10-c61: כיסוי טסטים, שש הקטגוריות הקריטיות (money, payment split,
+voucher/order state machines, refunds, RLS helpers) נמדדו ב-100% ענפים
+כל אחת, אפס קוד נדרש, אפס דריפט מששה המחזורים הקודמים.
 
 ## M09-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
