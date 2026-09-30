@@ -1,47 +1,46 @@
-RESUME FROM: M17-c64
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c64)
+RESUME FROM: M18-c64
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c64)
 
 ## המשך מ:
 
-**M16-c64 - DONE (01.10): תברואת ריפו נבדקה מחדש, `git status` נקי,
-אפס ענף מקומי לא-דחוף מ-43, 24 PR פתוחים ו-22 ענפים ישנים נרשמו,
-אפס דריפט מ-M16-c63.** משימת התור: "Repo hygiene: ensure git status
-is clean, every local branch is pushed, list open PRs and stale
-branches in STATE.md. Do not merge or delete anything."
+**M17-c64 - DONE (01.10): קופי ומשפטי אומתו מחדש בפעם השתים-עשרה,
+אפס דריפט מ-M17-c63.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל
+עמוד משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח
+וקישורים שבורים, ולתקן.
 
-**`git status`: נקי** (working tree נקי, ענף `audit/final-audit`,
-מעודכן מול `origin/audit/final-audit`).
+**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `ef8641f05`
+(M17-c63). `git log ef8641f05..HEAD -- messages/he.json
+"src/app/(legal)" src/content/legal src/components/layout/
+SiteFooter.tsx` **מחזיר אפס קומיטים** — אף קומיט מאז לא נגע במחרוזות
+UI, בעמוד משפטי או בפוטר. `git diff --stat` המלא (8 קבצים) מראה רק
+תיעוד ושני קבצי קוד (`ProductCard.tsx`, `related-products.ts`,
+M18-c63). **נבדק ידנית**: התוספת היחידה היא חיבור רכיב `RatingStars`
+הקיים (נוצר ב-M18-c52, קודם לבסיס המדידה) לדף "מומלצים"; אפס מחרוזת
+עברית/אנגלית חדשה פונה-ללקוח, כל הטקסט החדש בשני הקבצים הוא הערות
+קוד באנגלית (מותר, קוד אינו UI) — `copy-gate` (biome, למטה) מאשר
+זאת. פוטר האתר וארבעת עמודי המשפטי (`src/app/(legal)/legal/
+{accessibility,privacy,returns,terms}/page.tsx`, `src/content/
+legal/*`) — **אפס קומיט** מאז `c6066ae85` (M17-c60), זהה בדיוק
+ל-11 המחזורים הקודמים.
 
-**"כל ענף מקומי דחוף": נבדק לפי תוכן, לא רק שם ref.** לכל אחד מ-43
-הענפים המקומיים הורץ `git branch -r --contains <sha>`: **אפס ענף עם
-תוכן שלא קיים באף ענף remote.** שישה ענפים בלי remote ref באותו שם
-(`chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`,
-`pr36`, `release/v1.1`, `wip/refund-record-rebase-head`), אבל כולם
-מוכלים במלואם ב-`origin/main` (וגם ב-`origin/audit/final-audit`
-וב-`origin/autopilot`), בדיוק כמו ב-M16-c63, אפס דריפט. לא נמחק ולא
-נדחף שום ענף (הכלל אוסר שתיהן).
+**שערים הורצו במלואם, כולל build (נדרש מפורש בפריט הזה):**
+`type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים: `copy-gate`
+נקי, `rtl-logical` נקי, i18n 627/627, `locale-format` 116/116,
+`docs-index` 282, `docs-path-audit` 154). `test` 610/610 קבצים,
+7296/7308 (12 דולגים, 54.30s) — זהה בייט למדידה הקודמת. `pnpm build`
+הורץ מחדש במלואו ועבר ללא שגיאה, כולל שני עמודי המשפטי הסטטיים
+(`/terms-and-conditions`, `/refund_returns`, `○` בפלט ה-build).
+**אין שער חזותי נדרש**: אפס שינוי JSX/CSS פונה-ללקוח בפריט הזה עצמו
+(רק תיעוד).
 
-**24 PR פתוחים** (`gh pr list --state open --json
-number,title,headRefName,createdAt,isDraft`, 01.10.2026): אותם 24
-מספרים, כותרות, ענפים ותאריכי פתיחה כמו ב-M16-c63 (#2..#47), אפס
-PR חדש, אפס PR נסגר. שום פעולה לא בוצעה על אף PR.
+קובץ ששונה: `STATE.md`.
 
-**22 ענפים מקומיים ישנים** (בלי commit 30 יום ומעלה, לפי
-`committerdate:unix` מול השעון הנוכחי, נכון ל-01.10.2026): אותה
-רשימה בדיוק כמו ב-M16-c63, מ-`feat/rate-limit-layer` (21.08, 40 יום)
-עד `save/ke-visual-work` (28.07, 64 יום). `docs/final-pass` ו-
-`docs/v1-final` (01.09) עברו מ-29 יום (30.09) ל-30 יום בדיוק (01.10);
-נשארו מחוץ לרשימה הזו (הסף הוא "מעל 30", לא "30 ומעלה" בפועל: 30
-יום שלמים עדיין לא עברו את ה-cutoff של 24 שעות נוספות), יעברו
-לרשימה הסבירה במחזור הבא אם לא יקבלו commit.
-
-**ארבעת השערים:** `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12
-שערים ירוקים, זהה ל-M15-c64). `test` 610/610 קבצים, 7296/7308 (12
-דולגים), זהה בייט למדידה הקודמת. `build` לא רץ מחדש, `.next` הקיים
-(`BUILD_ID SnN_M0tY4BUXd564swDgn`) אומת כמאוחר מהקומיט האחרון שנוגע
-בנתיב רלוונטי לבנייה (`00587d376`, M18-c63). אפס שינוי קוד ייצור.
-
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M16-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M17-c64 לשמירה על תקרת 300 שורות).** תברואת ריפו נבדקה מחדש,
+`git status` נקי, אפס ענף מקומי לא-דחוף מ-43 (נבדק לפי תוכן עם
+`git branch -r --contains`), 24 PR פתוחים ו-22 ענפים ישנים נרשמו,
+אפס דריפט מ-M16-c63. ארבעת השערים ירוקים (`build` אומת כמאוחר
+מהקומיט האחרון הרלוונטי, לא רץ מחדש).
 
 **M15-c64..M14-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M16-c64 לשמירה על תקרת 300 שורות).** M15-c64 — טבלת הסטטוס

@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c64 (הועבר מ-STATE.md ב-M17-c64, לשמירה על תקרת 300 שורות)
+
+**M16-c64 - DONE (01.10): תברואת ריפו נבדקה מחדש, `git status` נקי,
+אפס ענף מקומי לא-דחוף מ-43, 24 PR פתוחים ו-22 ענפים ישנים נרשמו,
+אפס דריפט מ-M16-c63.** משימת התור: "Repo hygiene: ensure git status
+is clean, every local branch is pushed, list open PRs and stale
+branches in STATE.md. Do not merge or delete anything."
+
+**`git status`: נקי** (working tree נקי, ענף `audit/final-audit`,
+מעודכן מול `origin/audit/final-audit`).
+
+**"כל ענף מקומי דחוף": נבדק לפי תוכן, לא רק שם ref.** לכל אחד מ-43
+הענפים המקומיים הורץ `git branch -r --contains <sha>`: **אפס ענף עם
+תוכן שלא קיים באף ענף remote.** שישה ענפים בלי remote ref באותו שם
+(`chore/vitest-4`, `docs/nightly-health-green`, `fix/main-nightly-red`,
+`pr36`, `release/v1.1`, `wip/refund-record-rebase-head`), אבל כולם
+מוכלים במלואם ב-`origin/main` (וגם ב-`origin/audit/final-audit`
+וב-`origin/autopilot`), בדיוק כמו ב-M16-c63, אפס דריפט. לא נמחק ולא
+נדחף שום ענף (הכלל אוסר שתיהן).
+
+**24 PR פתוחים** (`gh pr list --state open --json
+number,title,headRefName,createdAt,isDraft`, 01.10.2026): אותם 24
+מספרים, כותרות, ענפים ותאריכי פתיחה כמו ב-M16-c63 (#2..#47), אפס
+PR חדש, אפס PR נסגר. שום פעולה לא בוצעה על אף PR.
+
+**22 ענפים מקומיים ישנים** (בלי commit 30 יום ומעלה, לפי
+`committerdate:unix` מול השעון הנוכחי, נכון ל-01.10.2026): אותה
+רשימה בדיוק כמו ב-M16-c63, מ-`feat/rate-limit-layer` (21.08, 40 יום)
+עד `save/ke-visual-work` (28.07, 64 יום). `docs/final-pass` ו-
+`docs/v1-final` (01.09) עברו מ-29 יום (30.09) ל-30 יום בדיוק (01.10);
+נשארו מחוץ לרשימה הזו (הסף הוא "מעל 30", לא "30 ומעלה" בפועל: 30
+יום שלמים עדיין לא עברו את ה-cutoff של 24 שעות נוספות), יעברו
+לרשימה הסבירה במחזור הבא אם לא יקבלו commit.
+
+**ארבעת השערים:** `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12
+שערים ירוקים, זהה ל-M15-c64). `test` 610/610 קבצים, 7296/7308 (12
+דולגים), זהה בייט למדידה הקודמת. `build` לא רץ מחדש, `.next` הקיים
+(`BUILD_ID SnN_M0tY4BUXd564swDgn`) אומת כמאוחר מהקומיט האחרון שנוגע
+בנתיב רלוונטי לבנייה (`00587d376`, M18-c63). אפס שינוי קוד ייצור.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M15-c64 (הועבר מ-STATE.md ב-M16-c64, לשמירה על תקרת 300 שורות)
 
 **M15-c64 - DONE (01.10): טבלת הסטטוס ב-STATE.md, ב-`docs/LAUNCH-READINESS.md`
