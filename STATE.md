@@ -1,116 +1,76 @@
-RESUME FROM: M16-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c61)
+RESUME FROM: M17-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c61)
 
 ## המשך מ:
 
-**M15-c61 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
-`docs/LAUNCH-READINESS.md` ו-`docs/BACKLOG.md` סונכרנו מחדש מ-git log
-וראיות קוד, אפס דריפט מ-M15-c60.** משימת התור: לרענן את שלוש הטבלאות
-ולשמור על רשימת "ידני לאופיר" כרשימה אחת, ללא כפילות, לפי סדר קריטיות.
-בדיקת דריפט: `git log 466ebc6fa..HEAD` (מאז המדידה הקודמת, M15-c60/M08-c61)
-מחזיר 17 קומיטים (M16-c60..M18-c60, M01-c61..M14-c61); `git diff --stat`
-על הנתיבים הרלוונטיים (`docs/BACKLOG.md migrations/pending
-supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
-package.json pnpm-lock.yaml vercel.json supabase/`) מראה רק שינוי
-תיעוד-בלבד (רשומת הבדיקה הקודמת ב-`docs/BACKLOG.md`) ותלות dev בודדת
-(`fast-xml-parser` 5.11.1→5.11.2, M04-c61) — אפס קומיט נגע בשורת חסימה.
+**M16-c61 - DONE (30.09): תברואת ריפו בפעם האחת-עשרה, אפס דריפט
+בענפים מקומיים, ‏1 ענף remote פחות (לא שלנו).** משימת התור: לוודא
+`git status` נקי, שכל ענף מקומי דחוף, ולרשום PR פתוחים וענפים ישנים
+ב-STATE.md, בלי למזג או למחוק דבר.
 
-נמדד מחדש: מספר הקומיטים מאחורי פרודקשן (`git rev-list --count
-a388118f1..HEAD`) עלה מ-207 ל-**225**; `origin/main..HEAD` עלה מ-563
-(M15-c59, לא נמדד ב-M15-c60) ל-**599**; רשימת 18 קבצי המיגרציה
-הממתינים אומתה מול `migrations/pending/` ללא שינוי (59 קבצים בסך הכל);
-26 הממצאים ב-`supabase/catalogue-known-issues.json` ללא שינוי; 32
-ה-stash-ים ללא שינוי; `scripts/dns-watch.sh` עדיין רץ תחת `caffeinate`
-(pid 957/999). שלושת הקבצים עודכנו עם המדידות האלה ורשומת "נבדק מחדש"
-חדשה; רשימת ה-15 הפריטים עצמה נשארה זהה — ללא כפילות, ללא פריט חדש.
+**נמדד:** `git status` נקי, `audit/final-audit` תואם בדיוק ל-`origin/
+audit/final-audit` (`b33f407cd`, אפס עבודה לא-committed, אפס commit
+לא-דחוף). **43 ענפים מקומיים, זהה בדיוק ל-M16-c60** (אפס ענף חדש, אפס
+ענף שנעלם). כל 43 נבדקו ב-SHA ישיר מול `origin/<שם>` (לא רק מצב
+tracking): 36 זהים ל-`origin/<שם>` שלהם (כולל ענפי `arch/*` שעוקבים
+בטעות אחרי `origin/main` אך ה-SHA זהה למקביל ב-remote, ו-7 ענפים חסרי
+upstream מקומי אך זהים ל-remote), ו-6 ענפים (`pr36`, `release/v1.1`,
+`wip/refund-record-rebase-head`, `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`) **אין להם ענף
+remote באותו שם כלל**, אך ראש הענף שלהם מוכל ב-`origin/main` וב-
+`origin/audit/final-audit` (אומת ישירות עם `git merge-base
+--is-ancestor`) — **אפס קומיט ייחודי לא-דחוף בשום ענף מקומי, זהה
+בדיוק ל-M16-c60.** `main` המקומי נשאר בסטייה הידועה (`ahead=193
+behind=109` מול `origin/main`, ללא אב-משותף אמיתי — חוסם 13, ללא
+שינוי).
+
+**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c60,
+אותם מספרים 2-47). **116 ענפי remote** (`git branch -r` אחרי `git
+fetch --prune`, **ירד ב-1** מ-117 ב-M16-c60 — ענף remote שלא שלנו נעלם
+בין המחזורים, ללא PR פתוח תואם, ללא השפעה על 24 ה-PR הפתוחים ועל אף
+ענף מקומי; אין דרך לזהות איזה מ-`git log` בלבד, ואין בכך פעולה נדרשת
+מהפריט הזה). **12 מ-43 הענפים המקומיים כבר ממוזגים לתוך HEAD** (זהה
+בדיוק ל-M16-c60): `audit/final-audit` עצמו, `chore/vitest-4`,
+`docs/nightly-health-green`, `docs/v1-final`, `fix/main-nightly-red`,
+`main`, `pr36`, `release/v1.0`, `release/v1.1`, `release/v1.2`,
+`wip/refund-record-rebase-head`, `work/goal-queue-0923`, מועמדים
+לניקוי, לא נמחקו (הכלל אוסר מחיקת ענפים). **28 ענפים ישנים** (קומיט
+אחרון לפני 16.09, זהה בדיוק ל-M16-c60): `save/ke-visual-work`,
+`arch/account-area`, `arch/checkout-cardcom-verification`,
+`arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration`,
+`docs/final-pack`, `arch/docs-batch-2`, `arch/docs-queue`,
+`feat/e2e-quality`, `feat/auth-model`, `feat/db-hardening-v2`,
+`feat/product-type`, `merge/supplier-and-arch-night`,
+`feat/auth-hardening`, `feat/checkout-e2e`, `feat/monitoring-sentry`,
+`feat/notifications-full`, `feat/performance-seo`,
+`feat/search-meilisearch`, `feat/ux-wave-final`, `feat/rate-limit-layer`,
+`docs/final-pass`, `worktree-ke-fetch-timeout`, `worktree-mega-63-72`,
+`closeout/v1-final`, `feat/coupon-qr`, `worktree-order-state-machine`.
+**3 ענפים לא ממוזגים אך לא נטושים** (זהה בדיוק ל-M16-c60): `autopilot`
+(17.09), `docs/ui-design-system` (23.09), `phase5/homepage-closeout`
+(24.09). **אפס מיזוג, אפס מחיקה.**
 
 **שערים**: `type-check` נקי, `lint` נקי (12 שערים, ספירות זהות: i18n
 627/627, `docs-index` 282 מסמכים, `docs-path-audit` 152), `test` המלא
-610/610 קבצים 7296/7308 (12 דולגים, 57.33s) — זהה ל-100% ל-M14-c61.
-`build` לא הורץ מחדש: כ-48 תהליכי `next-server`/`pnpm start` מקבילים
-רצים (כ-63MB זיכרון פנוי, `vm_stat`) — ראה [[concurrent-worktree-builds-oom]];
-במקום זאת אומת ש-`.next` הקיים (`BUILD_ID` `JvTmoHwdiXPpaSeOjzjaw`) תואם
-מקור ל-HEAD: `git diff --stat 8fd11aae4..HEAD -- next.config.ts
-next.config.js middleware.ts vercel.json src/ package.json` חוזר ריק.
+610/610 קבצים 7296/7308 (12 דולגים, 58.46s) — זהה ל-100% ל-M15-c61.
+`build` לא הורץ מחדש: 46 תהליכי `next-server`/`pnpm start` מקבילים
+רצים — ראה [[concurrent-worktree-builds-oom]]; במקום זאת אומת ש-`.next`
+הקיים (`BUILD_ID` `JvTmoHwdiXPpaSeOjzjaw`) תואם מקור ל-HEAD: `git diff
+--stat 8fd11aae4..HEAD -- next.config.ts next.config.js next.config.mjs
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml` חוזר ריק.
+אין שינוי UI, אין שער חזותי נדרש.
 
-קובץ ששונה: `STATE.md`, `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`.
+קובץ ששונה: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-## M14-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M14-c61: ביצועים, bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו מחדש,
-אפס דריפט מ-M14-c60 (223.8 KB gz shared, 8 chunks; `/checkout` 324.1 kB
-gz הכבד ביותר — זהה ל-100%).
-
-## M13-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M13-c61: אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב
-Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט קוד מ-M13-c60.
-
-## M12-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M12-c61: SEO, meta/canonical/og/JSON-LD Product+Offer/sitemap/robots,
-אימות מחדש, אפס דריפט קוד מ-M12-c60 (12 שורות `Disallow`, 46 כתובות
-`sitemap/products.xml`, `Product`+`BreadcrumbList` JSON-LD תקינים).
-
-## M11-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M11-c61: נגישות, axe על כל דף, אימות מחדש בפעם שביעית, 0 הפרות
-`serious`/`critical`, אפס דריפט מ-M11-c60.
-
-## M10-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M10-c61: כיסוי טסטים, שש הקטגוריות הקריטיות (money, payment split,
-voucher/order state machines, refunds, RLS helpers) נמדדו ב-100% ענפים
-כל אחת, אפס קוד נדרש, אפס דריפט מששה המחזורים הקודמים.
-
-## M09-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M09-c61: STATE CLEAN, נמדד מחדש, אפס פריט בר-ביצוע לסוכן בין 28 הסעיפים
-(13 חוסמים + 15 BACKLOG), אפס דריפט מ-M08-c61.
-
-## M08-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M08-c61: BACKLOG EMPTY, נמדד מחדש בפעם חמש-עשרה, אפס פריט שלב 1
-בידי הסוכן, אפס דריפט מ-M15-c60 (15 סעיפים זהים).
-
-## M07-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M07-c61: route audit נמדד שוב, 241 שורות, אפס כשל אמיתי, אפס דריפט
-מ-M07-c60 (239 PASS, 2 NO DATA זהה לכל מדידה קודמת מ-M07-c1).
-
-## M06-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M06-c61: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (99/100/100/100
-בשני הדפים), אפס דריפט מ-M06-c60.
-
-## M05-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M05-c61: ביקורת DB, advisors נמדדו בפעם האחת-עשרה, 44 WARN זהים
-ב-100% ל-M05-c60, אפס מיגרציה חדשה נדרשת.
-
-## M04-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M04-c61: תברואת תלויות — `pnpm audit` אפס חולשות, `fast-xml-parser`
-5.11.1→5.11.2 הוחל (dev, same-major, היחיד מתוך 16 חבילות שלא היה
-קפיצת major). ארבעת השערים ירוקים.
-
-## M03-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M03-c61: בדיקה ירוקה מחדש, אפס שגיאה/אזהרה לתיקון, אפס שינוי קוד.
-ארבעת השערים ירוקים (610 קבצים, 7296 עברו, 12 דולגו; build נקי).
-
-## M02-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M02-c61: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה — כל שש
-המדידות PASS מתחת ל-11% (8.51/9.02/3.95 בית, 4.96/4.56/3.25 מוצר).
-
-## M01-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M01-c61: בדיקת פרודקשן בפעם השמינית, DNS/HTTP תקינים (`www.kenyonexpress.co.il`
-200, NS עדיין `ns1/ns2.vercel-dns.com`), פריסת HEAD עדיין חסומה על אותו
-חוסם Cardcom/`ALLOW_INCOMPLETE_ENV` (חמש פריסות `ERROR` רצופות, אוטומטיות
-מ-GitHub). דילוג על ניסיון פריסה נוסף לפי כלל "נתקע פעמיים", פעם שביעית.
-HEAD עלה ל-211 קומיטים אחרי `a388118f1` החי. אפס שינוי קוד.
+**M15-c61..M01-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
+הזו ב-M16-c61 לשמירה על תקרת 300 שורות):** סנכרון תיעוד (אפס דריפט),
+ביצועים (אפס דריפט), אבטחה (אפס דריפט), SEO (אפס דריפט), נגישות (0
+`serious`/`critical`), כיסוי טסטים (שש הקטגוריות הקריטיות ב-100%),
+STATE CLEAN, BACKLOG EMPTY (פעם חמש-עשרה), route audit (241 שורות,
+אפס כשל), Lighthouse mobile (כל שמונת הציונים 90+), advisors (44 WARN
+זהים), תברואת תלויות (`fast-xml-parser` 5.11.2), בדיקה ירוקה, שער חזותי
+(אפס רגרסיה), ובדיקת פרודקשן (פעם שמינית, DNS/HTTP תקינים, פריסה עדיין
+חסומה) — שום שורה לא נמחקה מהארכיון עצמו, רק הוסרה כאן הכפילות.
 
 **M18-c60..M11-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
 הזו ב-M10-c61 לשמירה על תקרת 300 שורות):** אפס-פעילות (שני קומיטי טסט

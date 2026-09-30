@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c61 (הועבר מ-STATE.md ב-M16-c61, לשמירה על תקרת 300 שורות)
+
+**M15-c61 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
+`docs/LAUNCH-READINESS.md` ו-`docs/BACKLOG.md` סונכרנו מחדש מ-git log
+וראיות קוד, אפס דריפט מ-M15-c60.** משימת התור: לרענן את שלוש הטבלאות
+ולשמור על רשימת "ידני לאופיר" כרשימה אחת, ללא כפילות, לפי סדר קריטיות.
+בדיקת דריפט: `git log 466ebc6fa..HEAD` (מאז המדידה הקודמת, M15-c60/M08-c61)
+מחזיר 17 קומיטים (M16-c60..M18-c60, M01-c61..M14-c61); `git diff --stat`
+על הנתיבים הרלוונטיים (`docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/`) מראה רק שינוי
+תיעוד-בלבד (רשומת הבדיקה הקודמת ב-`docs/BACKLOG.md`) ותלות dev בודדת
+(`fast-xml-parser` 5.11.1→5.11.2, M04-c61) — אפס קומיט נגע בשורת חסימה.
+
+נמדד מחדש: מספר הקומיטים מאחורי פרודקשן (`git rev-list --count
+a388118f1..HEAD`) עלה מ-207 ל-**225**; `origin/main..HEAD` עלה מ-563
+(M15-c59, לא נמדד ב-M15-c60) ל-**599**; רשימת 18 קבצי המיגרציה
+הממתינים אומתה מול `migrations/pending/` ללא שינוי (59 קבצים בסך הכל);
+26 הממצאים ב-`supabase/catalogue-known-issues.json` ללא שינוי; 32
+ה-stash-ים ללא שינוי; `scripts/dns-watch.sh` עדיין רץ תחת `caffeinate`
+(pid 957/999). שלושת הקבצים עודכנו עם המדידות האלה ורשומת "נבדק מחדש"
+חדשה; רשימת ה-15 הפריטים עצמה נשארה זהה — ללא כפילות, ללא פריט חדש.
+
+**שערים**: `type-check` נקי, `lint` נקי (12 שערים, ספירות זהות: i18n
+627/627, `docs-index` 282 מסמכים, `docs-path-audit` 152), `test` המלא
+610/610 קבצים 7296/7308 (12 דולגים, 57.33s) — זהה ל-100% ל-M14-c61.
+`build` לא הורץ מחדש: כ-48 תהליכי `next-server`/`pnpm start` מקבילים
+רצים (כ-63MB זיכרון פנוי, `vm_stat`) — ראה [[concurrent-worktree-builds-oom]];
+במקום זאת אומת ש-`.next` הקיים (`BUILD_ID` `JvTmoHwdiXPpaSeOjzjaw`) תואם
+מקור ל-HEAD: `git diff --stat 8fd11aae4..HEAD -- next.config.ts
+next.config.js middleware.ts vercel.json src/ package.json` חוזר ריק.
+
+קובץ ששונה: `STATE.md`, `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`.
+
 ## M14-c61 (הועבר מ-STATE.md ב-M15-c61, לשמירה על תקרת 300 שורות)
 
 **M14-c61 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
