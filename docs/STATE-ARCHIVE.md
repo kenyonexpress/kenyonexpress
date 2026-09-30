@@ -2,6 +2,56 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c62 (הועבר מ-STATE.md ב-M15-c62, לשמירה על תקרת 300 שורות)
+
+**M14-c62 - DONE (30.09): ביצועים — bundle sizes/צנרת תמונות/תגיות
+ISR/כותרות cache, ותיקון פער מדידה: `/product/[slug]` נוסף לרשימת
+הנתיבים הנמדדים.** משימת התור: לבדוק bundle sizes, image pipeline
+output, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת
+דריפט קודם (M14-c61, `85c8a5268`): `git diff --stat 85c8a5268..HEAD --
+next.config.ts next.config.mjs middleware.ts vercel.json src/
+package.json pnpm-lock.yaml` מראה חמישה קבצים — `RecentlyViewedRail`
+(M18-c61, כבר קדם ל-M14-c61 עצמו, אך מעולם לא נמדד על משטח הביצועים כי
+`scripts/bundle-report.mjs` לא כלל את `/product/[slug]` ברשימת
+הנתיבים הנמדדים שלו מלכתחילה (רק `/`, `/products`, `/category/hot-deals`,
+`/cart`, `/checkout`, `/account`, `/faq`, `/admin/products`) — הפער היה
+במדידה עצמה, לא רק בקוד.
+
+נבנה מחדש בפועל (`pnpm build`, לא נסמך על `.next` קיים), הורם שרת
+ייעודי (`PORT=3311 pnpm start`) ונסגר בסוף המדידה:
+- **Bundle**: `scripts/bundle-gate.mjs` — shared first-load **223.8 KB
+  gz על 8 chunks** (budget 260KB, ok, זהה ל-M14-c61). `scripts/
+  bundle-report.mjs` אחרי הוספת `/product/e2e-test-physical`
+  (fixture קבוע מ-`scripts/seed-test-data.mjs`) לרשימה: **`/product/
+  [slug]` הוא כעת הנתיב הכבד ביותר שנמדד, 326.8 kB gzip, 21 chunks** —
+  כבד יותר מ-`/checkout` (324.1 kB, זהה ל-M14-c61, אפס דריפט שם).
+  ההפרש מ-`/checkout` (~2.7kB) נובע מ-`RecentlyViewedRail` עצמו +
+  `guest-storage.ts` + הפניית ה-server action, לא מ-`ProductCard`
+  (כבר בבנדל דרך `RelatedProducts` הקיים). הרכיב מיובא סטטית ולא דרך
+  `next/dynamic({ssr:false})`, אך זה תואם תקדים קיים (`WishlistHeart`
+  מיובא סטטית באותו אופן ב-`ProductCard`/`ProductInfo`) — לא רגרסיה
+  שגויה בקוד, אלא פער אמיתי במה שנמדד. **התיקון שבוצע: `/product/
+  e2e-test-physical` נוסף ל-`ROUTES` ב-`scripts/bundle-report.mjs`**
+  (הסקריפט הוא report בלבד, exit 0 תמיד, לא שער חוסם build), כדי
+  שמחזורים הבאים יראו את הנתיב הזה ולא יפספסו רגרסיה אמיתית עתידית בו.
+- **צנרת תמונות**: `curl -I` על `/_next/image?url=...&w=384&q=75`
+  מחזיר 200, `Cache-Control: public, max-age=86400, must-revalidate` —
+  זהה ל-M14-c61.
+- **ISR/תגיות**: `/products` ו-`/product/e2e-test-physical` שניהם
+  מחזירים `x-nextjs-stale-time: 300`, `x-nextjs-prerender: 1`,
+  `x-nextjs-postponed: 1` — זהה ל-M14-c61.
+- **כותרות cache**: `/_next/static/chunks/*` `public, max-age=31536000,
+  immutable`; `/`, `/checkout` (HTML דינמי) `private, no-cache,
+  no-store, max-age=0, must-revalidate`; `/_next/image?...` `public,
+  max-age=86400, must-revalidate`. שלושתן זהות ל-M14-c61.
+
+**הרגרסיה שתוקנה היא פער מדידה, לא בייט אחד שנוסף בטעות**: הנתיב
+הכבד ביותר בפועל (PDP) היה בלתי-גלוי לשער הביצועים מאז שהוא קיים.
+קובץ קוד שונה: `scripts/bundle-report.mjs` (נתיב אחד נוסף ל-`ROUTES`).
+שערים: `type-check` נקי, `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 55.97s),
+`build` רץ בפועל מהתחלה עד סוף. תיעוד: `STATE.md` + `docs/STATE-ARCHIVE.md`.
+
 ## M13-c62 (הועבר מ-STATE.md ב-M14-c62, לשמירה על תקרת 300 שורות)
 
 **M13-c62 - DONE (30.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy

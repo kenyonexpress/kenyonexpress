@@ -1,55 +1,52 @@
-RESUME FROM: M15-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c62)
+RESUME FROM: M16-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c62)
 
 ## המשך מ:
 
-**M14-c62 - DONE (30.09): ביצועים — bundle sizes/צנרת תמונות/תגיות
-ISR/כותרות cache, ותיקון פער מדידה: `/product/[slug]` נוסף לרשימת
-הנתיבים הנמדדים.** משימת התור: לבדוק bundle sizes, image pipeline
-output, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת
-דריפט קודם (M14-c61, `85c8a5268`): `git diff --stat 85c8a5268..HEAD --
-next.config.ts next.config.mjs middleware.ts vercel.json src/
-package.json pnpm-lock.yaml` מראה חמישה קבצים — `RecentlyViewedRail`
-(M18-c61, כבר קדם ל-M14-c61 עצמו, אך מעולם לא נמדד על משטח הביצועים כי
-`scripts/bundle-report.mjs` לא כלל את `/product/[slug]` ברשימת
-הנתיבים הנמדדים שלו מלכתחילה (רק `/`, `/products`, `/category/hot-deals`,
-`/cart`, `/checkout`, `/account`, `/faq`, `/admin/products`) — הפער היה
-במדידה עצמה, לא רק בקוד.
+**M15-c62 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
+`docs/LAUNCH-READINESS.md` ו-`docs/BACKLOG.md` סונכרנו מחדש מ-git log
+וראיות קוד, אפס דריפט בפריטי הרשימה עצמם מ-M15-c61.** משימת התור: לרענן
+את שלוש הטבלאות ולשמור על רשימת "ידני לאופיר" כרשימה אחת, ללא כפילות,
+לפי סדר קריטיות. בדיקת דריפט: `git log 947553fa0..HEAD` (מאז נקודת
+הבדיקה הקודמת ב-`docs/BACKLOG.md`, M08-c62) מחזיר שישה קומיטים
+(M09-c62..M14-c62); `git diff --stat` על הנתיבים הרלוונטיים
+(`docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
+src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
+vercel.json supabase/`) חוזר ריק — אפס קומיט נגע בשורת חסימה או בקובץ
+מיגרציה.
 
-נבנה מחדש בפועל (`pnpm build`, לא נסמך על `.next` קיים), הורם שרת
-ייעודי (`PORT=3311 pnpm start`) ונסגר בסוף המדידה:
-- **Bundle**: `scripts/bundle-gate.mjs` — shared first-load **223.8 KB
-  gz על 8 chunks** (budget 260KB, ok, זהה ל-M14-c61). `scripts/
-  bundle-report.mjs` אחרי הוספת `/product/e2e-test-physical`
-  (fixture קבוע מ-`scripts/seed-test-data.mjs`) לרשימה: **`/product/
-  [slug]` הוא כעת הנתיב הכבד ביותר שנמדד, 326.8 kB gzip, 21 chunks** —
-  כבד יותר מ-`/checkout` (324.1 kB, זהה ל-M14-c61, אפס דריפט שם).
-  ההפרש מ-`/checkout` (~2.7kB) נובע מ-`RecentlyViewedRail` עצמו +
-  `guest-storage.ts` + הפניית ה-server action, לא מ-`ProductCard`
-  (כבר בבנדל דרך `RelatedProducts` הקיים). הרכיב מיובא סטטית ולא דרך
-  `next/dynamic({ssr:false})`, אך זה תואם תקדים קיים (`WishlistHeart`
-  מיובא סטטית באותו אופן ב-`ProductCard`/`ProductInfo`) — לא רגרסיה
-  שגויה בקוד, אלא פער אמיתי במה שנמדד. **התיקון שבוצע: `/product/
-  e2e-test-physical` נוסף ל-`ROUTES` ב-`scripts/bundle-report.mjs`**
-  (הסקריפט הוא report בלבד, exit 0 תמיד, לא שער חוסם build), כדי
-  שמחזורים הבאים יראו את הנתיב הזה ולא יפספסו רגרסיה אמיתית עתידית בו.
-- **צנרת תמונות**: `curl -I` על `/_next/image?url=...&w=384&q=75`
-  מחזיר 200, `Cache-Control: public, max-age=86400, must-revalidate` —
-  זהה ל-M14-c61.
-- **ISR/תגיות**: `/products` ו-`/product/e2e-test-physical` שניהם
-  מחזירים `x-nextjs-stale-time: 300`, `x-nextjs-prerender: 1`,
-  `x-nextjs-postponed: 1` — זהה ל-M14-c61.
-- **כותרות cache**: `/_next/static/chunks/*` `public, max-age=31536000,
-  immutable`; `/`, `/checkout` (HTML דינמי) `private, no-cache,
-  no-store, max-age=0, must-revalidate`; `/_next/image?...` `public,
-  max-age=86400, must-revalidate`. שלושתן זהות ל-M14-c61.
+נמדד מחדש: מספר הקומיטים מאחורי פרודקשן (`git rev-list --count
+a388118f1..HEAD`) עלה מ-225 ל-**245**; `origin/main..HEAD` עלה מ-599
+ל-**619** (`HEAD..origin/main` נשאר 109, ללא שינוי); רשימת 18 קבצי
+המיגרציה הממתינים אומתה מול `migrations/pending/` ללא שינוי (59 קבצים
+בסך הכל); 26 הממצאים ב-`supabase/catalogue-known-issues.json` ללא
+שינוי; 32 ה-stash-ים ללא שינוי (`git stash list`); `scripts/dns-watch.sh`
+עדיין רץ תחת `caffeinate` (pid 957/999). **דריפט קטן שכן נמצא ותוקן**:
+`docs-path-audit` עלה מ-152 ל-**154** — `docs/known-dangling-paths.json`
+עודכן בפועל בקומיט `5e994b7c1` (M11-c62, אחרי הפעם האחרונה שהמספר הזה
+נרשם ב-M15-c61), אך `docs/LAUNCH-READINESS.md` המשיך לומר "152, ללא
+שינוי מ-M15-c55" עד לפריט הזה; תוקן בשלושת הקבצים. רשימת ה-15 הפריטים
+ב-`docs/BACKLOG.md` עצמה נשארה זהה — ללא כפילות, ללא פריט חדש, אותו
+סדר קריטיות.
 
-**הרגרסיה שתוקנה היא פער מדידה, לא בייט אחד שנוסף בטעות**: הנתיב
-הכבד ביותר בפועל (PDP) היה בלתי-גלוי לשער הביצועים מאז שהוא קיים.
-קובץ קוד שונה: `scripts/bundle-report.mjs` (נתיב אחד נוסף ל-`ROUTES`).
-שערים: `type-check` נקי, `lint` נקי (biome 2028 קבצים, 12 שערים
-ירוקים), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 55.97s),
-`build` רץ בפועל מהתחלה עד סוף. תיעוד: `STATE.md` + `docs/STATE-ARCHIVE.md`.
+**שערים**: `type-check` נקי, `lint` נקי (biome 2028 קבצים, 12 שערים,
+i18n 627/627, `docs-index` 282 מסמכים, `docs-path-audit` 154 כאמור
+לעיל), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 57.31s) — זהה
+ב-100% ל-M14-c62. `build` לא הורץ מחדש: `.next` הקיים (`BUILD_ID`
+`VMhGIoPRaTGiEQMEutFaQ`, מזמן ה-`pnpm build` בפועל של M14-c62 עצמו)
+אומת כתואם מקור ל-HEAD (`git log -1 -- next.config.ts next.config.mjs
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml` מצביע על
+`fd820969f`, מוקדם מזמן ה-build).
+
+קבצים ששונו: `STATE.md`, `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`.
+
+**M14-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c62
+לשמירה על תקרת 300 שורות).** ביצועים נבדקו מחדש; תוקן פער מדידה אמיתי:
+`scripts/bundle-report.mjs` לא כלל את `/product/[slug]` ברשימת הנתיבים
+הנמדדים שלו — לאחר התיקון, PDP נמדד ככבד ביותר, 326.8 kB gzip, כבד
+יותר מ-`/checkout` (324.1 kB). Bundle גם, צנרת תמונות, ISR וכותרות
+cache — אפס דריפט מ-M14-c61 בכולם. ארבעת השערים ירוקים, `build` רץ
+בפועל.
 
 **M13-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c62
 לשמירה על תקרת 300 שורות).** אבטחה נבדקה מחדש, אפס דריפט קוד:

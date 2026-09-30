@@ -202,6 +202,34 @@ taking alone (DNS, Vercel env/secrets, production deploy/migration
 approval, catalogue business decision, data deletion). No phase 1 item
 available for the queue task this cycle (M08-c62 result: BACKLOG EMPTY).
 
+**Re-checked 2026-09-30 (M15-c62) against `git log 947553fa0..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Six commits landed
+since M08-c62's own check point (M09-c62..M14-c62); `git diff --stat
+947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/` returns empty — none
+touched a blocking line, a pending migration, or the catalogue ledger.
+Item 4's commit count changed again (225 -> 245, `git rev-list --count
+a388118f1..HEAD`, git-only, production not re-probed this item). Item
+5's 18-file list re-checked directly against `migrations/pending/`, all
+present, no new file (59 files total). Item 7's finding count (26)
+re-checked directly against `supabase/catalogue-known-issues.json`'s
+`known` object, unchanged. Item 12's `dns-watch.sh` process re-checked
+with `pgrep -fl`, still pid 957 under `caffeinate` pid 999, unchanged.
+Item 15's stash count (32) re-checked with `git stash list`, unchanged.
+Small drift found and fixed elsewhere (not a `BACKLOG.md` item): `pnpm
+lint`'s `docs-path-audit` gate moved from 152 to 154 known dangling
+references back in M11-c62 (`docs/known-dangling-paths.json` updated in
+`5e994b7c1`), but `docs/LAUNCH-READINESS.md` kept quoting 152 as
+"unchanged since M15-c55" through M15-c61; corrected in this item.
+`type-check`, `lint` (12 gates) and `test` (610/610 files, 7296/7308) all
+re-run clean this item; `build` not re-run — the existing `.next`
+(`BUILD_ID` `VMhGIoPRaTGiEQMEutFaQ`, from M14-c62's own fresh `pnpm
+build`) was confirmed source-identical to HEAD (`git log -1 --
+next.config.ts next.config.mjs middleware.ts vercel.json src/
+package.json pnpm-lock.yaml` points at `fd820969f`, earlier than the
+build).
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -224,9 +252,9 @@ available for the queue task this cycle (M08-c62 result: BACKLOG EMPTY).
    `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
    המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54, 118
    ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57, 171 ב-M15-c58,
-   189 ב-M15-c59, 207 ב-M15-c60, וכעת (30.09, M15-c61,
+   189 ב-M15-c59, 207 ב-M15-c60, 225 ב-M15-c61, וכעת (30.09, M15-c62,
    `git rev-list --count a388118f1..HEAD`, git-only — לא נוסתה פריסה
-   חוזרת בפריט הזה) **225** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
+   חוזרת בפריט הזה) **245** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
    ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן נשאר על
    `a388118f1`).
    `POST /v13/deployments` עם `gitSource.sha`,
