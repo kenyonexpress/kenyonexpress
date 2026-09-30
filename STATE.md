@@ -1,34 +1,42 @@
-RESUME FROM: M09-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c60)
+RESUME FROM: M10-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c60)
 
 ## המשך מ:
 
-**M08-c60 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם ארבע-עשרה,
-אפס פריט שלב 1 בידי הסוכן.** משימת התור: "Backlog: take the single
-highest-impact open phase 1 item from `docs/BACKLOG.md`, skipping
-deferred and phase 2 items." `docs/BACKLOG.md` עדיין מעודכן לאחרונה
-ב-M15-c59 (`a353fa3db`), עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
-סעיף חדש (`git diff --stat a353fa3db..HEAD -- docs/BACKLOG.md
-migrations/pending supabase/catalogue-known-issues.json` ריק). כל
-ה-15 עדיין פעולות שהמסמך עצמו מציין במפורש ש"אין דבר כאן שסוכן רשאי
-לבצע לבד" (DNS ברשם, Vercel env/סודות, אישור פריסת פרודקשן, אישור
-מיגרציה על פרודקשן, אישורי Cardcom אמיתיים, הכרעת קטלוג עסקית, מחיקת
-נתונים, ערך שרק אופיר מחזיק). בדיקת דריפט מ-M08-c59 (`9342b1bba`):
-שלושת המונים שהרשימה תלויה בהם נבדקו ישירות, `migrations/pending/*.sql`
-עדיין **59** קבצים (ללא תוספת), `git rev-list --count a388118f1..HEAD`
-עלה ל-**200** (git-only, פער-ספירה גרידא), `git stash list` עדיין
-**32**, `supabase/catalogue-known-issues.json` עדיין **26** ממצאים.
-`docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md` נבדקו שוב,
-אינם תורים פעילים (הראשון מוחלף רשמית, השני "everything deliberately
-deferred", מחוץ להיקף המשימה — אלה בדיוק ה"deferred" וה"phase 2" שהתור
-מבקש לדלג עליהם). אין פריט בר-ביצוע לסוכן. שערים הורצו במלואם:
-`type-check` נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים,
-i18n 627/627, locale 116/64, docs-index 282, docs-path-audit 152),
-`test` 608/608 קבצים 7274/7286 (12 skipped, 58.25s), `build` (`rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512
-pnpm build`) `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי
-UI). **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
-M07-c60 הועבר לתקרת 300 שורות).
+**M09-c60 - DONE (30.09): שני קבצי כיסוי חסרים לגמרי נמצאו וטופלו,
+`bought-this-week.ts` ו-`stock-live.ts` מ-0% ל-100% (שורות/הצהרות/
+פונקציות/ענפים).** משימת התור: "State cleanup: take the single
+highest-impact open item listed in STATE.md that a code agent can
+complete without Ofir." קריאת `docs/BACKLOG.md` וחוסמי STATE.md אישרה
+מחדש שכל 15+13 הסעיפים שם דורשים אופיר (DNS/Vercel/סוד/פרודקשן/מיגרציה/
+הכרעת קטלוג/מחיקת נתונים) — אין ביניהם goal לסוכן, כמו ב-M09-c59. אבל
+"פריט פתוח" לא הוגבל לשני המסמכים האלה, אז הורצה `pnpm test:coverage`
+(בלי `CARDCOM_USE_MOCK`; אותו דגל דרך prefix גרם לכישלון בודד ב-`invoices.test.ts`
+— זיהום סביבה מהרצה קודמת בתוך הפריט הזה, לא תקלת קוד, ראו למטה) וזיהתה
+ששני קבצי `src/lib/commerce/**` (בטווח ה-include של הכיסוי הממוגן, אך לא
+ברשימת הרצפה של שישה הקבצים) עמדו על **0%** בכל המדדים: `bought-this-week.ts`
+(מזין את "נקנה השבוע" בעמוד המוצר) ו-`stock-live.ts` (מזין את תג המלאי
+החי וזמינות הרכישה) — שניהם עם צרכן אמיתי (`BoughtThisWeek.tsx`,
+`StockScarcity.tsx`), אף לא קובץ טסט אחד לאף אחד, אפס בדיקה על ההתנהגות
+בפועל (רק פונקציות עזר טהורות נבדקו דרך `social-proof.test.ts`). נכתבו
+`bought-this-week.test.ts` (11 מקרים) ו-`stock-live.test.ts` (7 מקרים),
+ממוקדים ב-`createAdminClient` לפי הדפוס הקיים ב-`route.test.ts` (בונה
+שרשרת PostgREST thenable), מכסים: הנתיב המאושר, כשל בקריאה ראשונה/שנייה,
+תוצאה ריקה בלי קריאה שנייה, דה-דופ הזמנות, `admin` שזורק (`Error` ולא-`Error`),
+שגיאת `available_stock` (כולל prerender-abort, בלי לוג), שורת מוצר חסרה,
+ותוצאת RPC לא-מספרית. `pnpm test:coverage` אחרי: 610/610 קבצים,
+7292/7304 (12 מדולגים), שני הקבצים 100%/100%/100%/100% (היו 0/0/0/0);
+סך-הכל הכיסוי הממוגן עלה 88.92%→93.33% הצהרות, 88.32%→92.85% ענפים —
+תוצר לוואי בלבד, השער עצמו לא היה גייט על שני אלה. `type-check` נקי,
+`lint` נקי (כל שערי התוכן ירוקים, i18n 627/627), `build` (`rm -rf .next
+&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm
+build`) `exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קבצים ששונו: שני
+טסטים חדשים בלבד** (פלוס `STATE.md`).
+
+## M08-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M08-c60: BACKLOG EMPTY, נמדד מחדש בפעם ארבע-עשרה, אפס פריט שלב 1 בידי
+הסוכן, `docs/BACKLOG.md` עדיין 15 סעיפים אותו סדר, אפס דריפט מ-M08-c59.
 
 ## M07-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
