@@ -1,7 +1,27 @@
-RESUME FROM: M04-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c62)
+RESUME FROM: M05-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c62)
 
 ## המשך מ:
+
+**M04-c62 - DONE (30.09): תברואת תלויות, `pnpm audit` ו-`pnpm outdated`
+הורצו מחדש.** `pnpm audit --json`: **אפס חולשות** (552 dependencies, 328
+devDependencies, 178 optionalDependencies, 986 סה"כ). `pnpm outdated
+--format=json`: 14 חבילות מיושנות, **וב-14 מתוך 14 `wanted` == `current`**
+(`@biomejs/biome`, `@hookform/resolvers`, `@sentry/nextjs`, `@sentry/node`,
+`@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
+`@vitest/coverage-v8`, `jsdom`, `lint-staged`, `tailwind-merge`,
+`typescript`, `vitest`, `zod`) — כל אחת כבר בגרסה הגבוהה ביותר בתוך טווח
+ה-`^` שלה ב-`package.json`, וה-`latest` שנשאר גבוה יותר בכולן הוא bump
+מייג'ור (biome 1→2, hookform/resolvers 3→5, sentry 10→11, jest-dom 6→7,
+types/node 20→26, vitejs/plugin-react 4→6, vitest+coverage-v8 4→5, jsdom
+25→30, lint-staged 15→17, tailwind-merge 2→3, typescript 5→7, zod 3→4).
+**אין patch/minor אחד לשדרג** — הכלל "לעולם לא מייג'ור" חוסם את כל 14,
+אז אפס שינוי ל-`package.json`/`pnpm-lock.yaml`. `git diff --stat` על שניהם
+ריק. שערים הורצו לוודא שהעץ עדיין ירוק (`abdf1241d`, זהה ל-M03-c62):
+`type-check` נקי, `lint` נקי (12 שערים, זהה), `test` **610/610 קבצים,
+7296/7308 ירוק, 55.89s**, `build` לא הורץ מחדש (אפס שינוי קוד/תלות על
+אותו commit ש-M03-c62 כבר אימת ✓ Compiled successfully). קובץ ששונה:
+`STATE.md` בלבד.
 
 **M03-c62 - DONE (30.09): שער ירוק הורץ מחדש במלואו על עץ עבודה נקי,
 זהה ל-HEAD (`fa375af11`).** `type-check` נקי (0 שגיאות), `lint` נקי
