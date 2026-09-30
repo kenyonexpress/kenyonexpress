@@ -474,6 +474,10 @@ test('supplier scans a voucher once, and only once', async ({ page, context }) =
 - ‏`assert_seeds_allowed` חוסם seed בפרודקשן. **הבדיקה של החסימה עצמה
   היא בדיקה**, כי סיסמת demo קשיחה בגיט היא SEC-14.
 - לעולם לא טוקן Cardcom אמיתי. ‏sandbox בלבד.
+- ‏משתמש האדמין של ה-E2E מקבל גורם ‏TOTP מאומת בכל ריצת ‏seed (‏STEP 19:
+  כל שכבת האדמין חייבת אימות דו-שלבי). הסוד נכתב ל-`.e2e/admin-totp.secret`
+  (לא בגיט) או מגיע מ-`E2E_ADMIN_TOTP_SECRET`, ו-`signInAsAdmin` ב-`e2e/auth-session.ts`
+  עונה על האתגר ב-`/admin-mfa` בקוד שמחושב ב-`scripts/seed/totp.mjs`.
 
 ### 4.5 מה חסר ב-E2E
 

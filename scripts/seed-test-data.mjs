@@ -13,6 +13,13 @@
  *  - Explicit platform_percent and coupon_price_ils on the coupon product.
  *    There is no default commission anywhere (docs/CONTRADICTIONS.md C1).
  *
+ * The admin fixture also gets a verified TOTP factor (STEP 19: the whole
+ * admin tier is MFA-gated, and this is the weakest admin role). GoTrue mints
+ * the secret at enrolment, so each seed run re-enrols and writes the secret
+ * to .e2e/admin-totp.secret (gitignored) for e2e/auth-session.ts to answer
+ * the challenge with; E2E_ADMIN_TOTP_SECRET in the environment overrides
+ * the file. Enrolment needs the anon key as well as the service key.
+ *
  * Credentials come from the environment, falling back to .env.local.
  *
  * Usage (from the repo root):
@@ -21,8 +28,9 @@
  *   node scripts/seed-test-data.mjs --clean   # remove the fixtures
  */
 
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
+import { totpCode } from './seed/totp.mjs'
 
 const args = new Set(process.argv.slice(2))
 const CHECK_ONLY = args.has('--check')
@@ -56,6 +64,9 @@ if (!url || !key) {
 }
 
 const admin = createClient(url, key, { auth: { persistSession: false } })
+
+const anonKey = env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY || null
+const ADMIN_TOTP_SECRET_FILE = '.e2e/admin-totp.secret'
 
 // Reserved fixture namespace — see the header note on --clean.
 const IDS = {
@@ -208,6 +219,62 @@ async function ensureAuthUser({ email, password, fullName, role = 'customer' }) 
   return data.user.id
 }
 
+/**
+ * A verified TOTP factor on the admin fixture, re-minted every run. Every
+ * earlier factor is removed first through the admin API: the secret of a
+ * factor from a previous run is only in that run's file, which may be gone,
+ * and a pile of factors turns listFactors into noise. Sign-in is with the
+ * anon key because enrolment is a user ceremony, not an admin one.
+ */
+async function ensureAdminTotp({ userId, email, password }) {
+  if (!anonKey) {
+    console.log('  skip admin TOTP factor: no SUPABASE_ANON_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    return
+  }
+  const { data: existing, error: listError } = await admin.auth.admin.mfa.listFactors({ userId })
+  if (listError) throw new Error(`listFactors ${email}: ${listError.message}`)
+  for (const factor of existing?.factors ?? []) {
+    const { error } = await admin.auth.admin.mfa.deleteFactor({ id: factor.id, userId })
+    if (error) throw new Error(`deleteFactor ${email}: ${error.message}`)
+  }
+
+  const user = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { error: signInError } = await user.auth.signInWithPassword({ email, password })
+  if (signInError) throw new Error(`signIn ${email}: ${signInError.message}`)
+
+  const { data: enrolled, error: enrolError } = await user.auth.mfa.enroll({
+    factorType: 'totp',
+    friendlyName: 'e2e',
+  })
+  if (enrolError || !enrolled) {
+    throw new Error(`mfa.enroll ${email}: ${enrolError?.message ?? 'no factor'}`)
+  }
+  const secret = enrolled.totp.secret
+  const { error: verifyError } = await user.auth.mfa.challengeAndVerify({
+    factorId: enrolled.id,
+    code: totpCode(secret),
+  })
+  if (verifyError) throw new Error(`mfa.challengeAndVerify ${email}: ${verifyError.message}`)
+  await user.auth.signOut()
+
+  mkdirSync('.e2e', { recursive: true })
+  writeFileSync(ADMIN_TOTP_SECRET_FILE, `${secret}\n`, { mode: 0o600 })
+  console.log(`  ok   admin TOTP factor (secret written to ${ADMIN_TOTP_SECRET_FILE})`)
+}
+
+async function reportAdminTotp(email) {
+  const user = await findUserByEmail(email)
+  if (!user) return false
+  const { data } = await admin.auth.admin.mfa.listFactors({ userId: user.id })
+  const verified = (data?.factors ?? []).some(
+    (f) => f.factor_type === 'totp' && f.status === 'verified',
+  )
+  console.log(`  ${verified ? 'present' : 'MISSING'.padEnd(7)} admin TOTP factor (${email})`)
+  return verified
+}
+
 async function ensureSupplierMember(userId) {
   const { error } = await admin.from('supplier_members').upsert(
     {
@@ -253,6 +320,7 @@ async function main() {
       await reportUser(CUSTOMER_EMAIL, 'customer user'),
       await reportUser(SUPPLIER_EMAIL, 'supplier user'),
       await reportUser(ADMIN_EMAIL, 'admin user'),
+      await reportAdminTotp(ADMIN_EMAIL),
     ]
     process.exit(results.every(Boolean) ? 0 : 1)
   }
@@ -263,6 +331,7 @@ async function main() {
     await deleteAuthUser(CUSTOMER_EMAIL, 'customer user')
     await deleteAuthUser(SUPPLIER_EMAIL, 'supplier user')
     await deleteAuthUser(ADMIN_EMAIL, 'admin user')
+    rmSync(ADMIN_TOTP_SECRET_FILE, { force: true })
     await remove('products', IDS.couponProduct, 'coupon product')
     await remove('products', IDS.physicalProduct, 'physical product')
     await remove('categories', IDS.category, 'category')
@@ -287,12 +356,13 @@ async function main() {
     fullName: 'ספק בדיקות E2E',
   })
   await ensureSupplierMember(supplierUserId)
-  await ensureAuthUser({
+  const adminUserId = await ensureAuthUser({
     email: ADMIN_EMAIL,
     password: ADMIN_PASSWORD,
     fullName: 'אדמין בדיקות E2E',
     role: 'admin',
   })
+  await ensureAdminTotp({ userId: adminUserId, email: ADMIN_EMAIL, password: ADMIN_PASSWORD })
   console.log('seed-test-data: done')
   console.log(`  customer: ${CUSTOMER_EMAIL}`)
   console.log(`  supplier: ${SUPPLIER_EMAIL}`)

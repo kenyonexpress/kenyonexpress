@@ -1,3 +1,5 @@
+import { adminAllowlistDecision, isAdminPerimeterPath } from '@/lib/admin/ip-allowlist'
+import { isPanelRole } from '@/lib/admin/roles'
 import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { sessionCookieOptions } from '@/lib/auth/session-cookie'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
@@ -204,6 +206,30 @@ export async function proxy(request: NextRequest) {
     return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
   }
 
+  // The admin IP allowlist (STEP 19), edge half: guard layer 1 of 4 for the
+  // panel, its MFA page and /api/admin/. Inert while ADMIN_IP_ALLOWLIST is
+  // unset. When set, an address off the list is answered 403 here, before
+  // the role is read and whether or not there is a session: the perimeter
+  // is about where the request came from, not who sent it. The decision and
+  // its fail-closed rules (no address, unparseable list) live in
+  // lib/admin/ip-allowlist.ts; rbac.ts repeats the same call behind this one.
+  if (isAdminPerimeterPath(pathname)) {
+    const address = edgeClientAddress(request.headers)
+    // No log line here: the proxy has no logger (log-coverage keeps raw
+    // console out of src/), and a 403 with the request id is already a row
+    // in the platform's request log. The guard layer logs the denials that
+    // reach it under `admin.ip_allowlist_denied`.
+    if (adminAllowlistDecision(address, process.env.ADMIN_IP_ALLOWLIST) === 'deny') {
+      return withRequestId(
+        new NextResponse('Forbidden: this address is not on the admin allowlist.', {
+          status: 403,
+          headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+        }),
+        requestId,
+      )
+    }
+  }
+
   if (pathname.startsWith('/admin')) {
     if (!user) {
       return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
@@ -216,15 +242,11 @@ export async function proxy(request: NextRequest) {
       .single()
     // Admin panel is open to panel roles: admin, super_admin,
     // content_uploader, support (049) and read_only (181, the observer tier —
-    // support's SELECT surface, no writes). Optimistic check only; every page
-    // re-gates per section and every server action re-checks its own guard.
-    const isPanel =
-      profile?.role === 'admin' ||
-      profile?.role === 'super_admin' ||
-      profile?.role === 'content_uploader' ||
-      profile?.role === 'support' ||
-      profile?.role === 'read_only'
-    if (!isPanel) {
+    // support's SELECT surface, no writes). One list, in lib/admin/roles.ts,
+    // so the proxy and the layout guard cannot disagree. Optimistic check
+    // only; every page re-gates per section and every server action
+    // re-checks its own guard.
+    if (!isPanelRole(profile?.role)) {
       return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
     }
   }

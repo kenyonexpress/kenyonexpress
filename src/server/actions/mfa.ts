@@ -8,8 +8,8 @@ import { rememberDevice } from '@/server/auth/trusted-device'
 import { redirect } from 'next/navigation'
 
 /**
- * TOTP MFA enrolment and verification, for the super_admin gate in
- * lib/admin/rbac.ts (enforceSuperAdminMfa).
+ * TOTP MFA enrolment and verification, for the admin-tier gate in
+ * lib/admin/rbac.ts (enforceAdminMfa).
  *
  * Everything here is Supabase-native MFA (auth.mfa.*): the factor lives in
  * auth.mfa_factors, a successful verify upgrades the session to aal2, and the
@@ -19,7 +19,8 @@ import { redirect } from 'next/navigation'
  * proves possession at login and nothing afterwards.
  *
  * Any authenticated user may enrol; the factor only strengthens their own
- * account. Only super_admin is ever forced through it.
+ * account. Only the admin tier (admin, super_admin) is ever forced through
+ * it (STEP 19; super_admin alone before that).
  */
 
 const NOT_SIGNED_IN = 'צריך להתחבר כדי להגדיר אימות דו-שלבי'

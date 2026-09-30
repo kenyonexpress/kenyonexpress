@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = { title: 'אמתו את האימייל — KenyonExpress' }
 
@@ -7,12 +8,24 @@ export const metadata: Metadata = { title: 'אמתו את האימייל — Ken
  * The email step. Since STEP 18 the phone step may have come first
  * (`/signup/verify-phone`); `?phone=verified` is that step reporting in, so
  * the customer sees both halves of the signup on one screen.
+ *
+ * Suspense for the same reason as the login and admin-mfa pages: the body
+ * reads `searchParams`, which cacheComponents refuses at the page root
+ * ("uncached or runtime data during prerendering" fails the build).
  */
-export default async function ConfirmPage({
+export default function ConfirmPage({
   searchParams,
 }: {
   searchParams: Promise<{ phone?: string }>
 }) {
+  return (
+    <Suspense fallback={null}>
+      <ConfirmBody searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function ConfirmBody({ searchParams }: { searchParams: Promise<{ phone?: string }> }) {
   const { phone } = await searchParams
   const phoneVerified = phone === 'verified'
   return (

@@ -1,5 +1,24 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-01 05:35 (STEP 19 פאנל ניהול: אימות דו-שלבי חובה לכל שכבת האדמין, ‏admin ו-super_admin, בכל ארבעת השערים ‏`require*` ובדף ‏`/admin-mfa`; שער ‏MFA טהור ‏`adminMfaGate` במקום ‏`superAdminMfaGate`; ‏allowlist של כתובות ‏IP לפאנל דרך ‏`ADMIN_IP_ALLOWLIST` (‏IPv4/IPv6/CIDR, כבוי כשריק, נכשל-סגור על כתובת חסרה ועל רשימה שלא מתפרסרת) בשתי שכבות: ‏proxy עונה ‏403 על ‏`/admin`, ‏`/admin-mfa` ו-`/api/admin/` לפני קריאת הסשן, והשערים בשרת חוזרים על ההחלטה ורושמים ‏`admin.ip_allowlist_denied`; ‏proxy קורא את רשימת תפקידי הפאנל מ-`lib/admin/roles.ts` במקום רשימה כפולה; ‏seed ה-E2E רושם גורם ‏TOTP מאומת לאדמין וכותב את הסוד ל-`.e2e/admin-totp.secret`, ‏`signInAsAdmin` עונה על האתגר עם ‏`scripts/seed/totp.mjs` (‏RFC 6238, וקטורי הבדיקה של ה-RFC); דף ‏`/signup/confirm` שירש קריאת ‏searchParams מחוץ ל-Suspense ושבר את ‏`pnpm build` עטוף ב-Suspense; ‏commit הנושא את הרשומה)
+
+**החלטות שהתקבלו לבד (STEP 19, 05:35):** (1) ‏יומן הביקורת ו-RBAC לפי סעיפים כבר היו
+מלאים ונאכפים בארבעה טסטי ‏ratchet (‏audit-required, ‏audit-call-coverage, ‏audit-actor,
+‏auth-coverage), ‏74 קריאות ‏`writeAuditLog` ב-29 קבצים; לא נבנה יומן שני. (2) המדיניות
+המגבילה ‏`profiles_super_admin_mfa` (‏181b) נשארה על ‏super_admin בלבד ולא הורחבה ל-admin
+במיגרציה: מסלול "זכור את המכשיר" של ‏STEP 18 מייצר סשן ‏aal1 שעובר את שער האפליקציה, ומדיניות
+‏DB שדורשת ‏aal2 הייתה חוסמת אדמין על מכשיר זכור מכל עדכון פרופיל. הרחבה כזו מחכה להחלטה
+על המכשיר הזכור מול ה-DB. (3) ה-proxy לא רושם שורת לוג על דחיית ‏IP: אין לו ‏logger
+(‏log-coverage שומר ‏console גולמי מחוץ ל-src/), וה-403 עם ‏request id הוא כבר שורה בלוג
+הבקשות של ‏Vercel; שכבת השער רושמת. (4) ‏7 טסטי ‏ratchet אדומים שירשתי מ-STEP 18 נשארו
+אדומים ואינם של ‏STEP 19: ‏first-load-client-graph (‏SentryUserSync), ‏discarded-read-inventory
+(‏4 קבצי הזמנות), ‏outbox-kinds (‏`order_fulfilled` ב-WhatsApp), ‏rate-limit/policies
+(‏mfa-unenrol + 3 של ‏signup-phone), ‏legacy-redirects (‏/signup/verify-phone), ‏auth-coverage
+(‏2 של ‏signup-phone). כולם שייכים לעבודה שנכנסה ב-`autopilot residual` ‏901e6b47a; הטסטים של
+‏STEP 19 עצמו ירוקים (‏ip-allowlist ‏38, ‏mfa-gate ‏17, ‏rbac ‏24, ‏wiring ‏5, ‏totp ‏17).
+‏type-check ו-lint נקיים על כל העץ. **המשך מ: ה-goal הבא בתור ‏/goal (‏STEP 20); לפני כן
+כדאי goal קצר לניקוי ‏7 ה-ratchets הירושתיים.**
+
 Updated: 2026-10-01 04:57 (STEP 18 אימות: ‏"זכור את המכשיר" ‏30 יום על אתגר ה-TOTP בעוגייה חתומה ‏HMAC וקשורה ל-user id, עוקפת את חצי האתגר בשער ‏super_admin ולא את הרישום; אימות מחדש כפוי לשינוי אמצעי תשלום לפי חותמות ‏amr של הסשן, חלון ‏10 דקות, כל גורם נחשב, מחיקה וברירת מחדל של כרטיס מסרבות עם קישור להתחברות מחדש; ‏Passkeys ו-magic-link דרך ‏Resend כבר היו חיים ב-/login; commit ‏5ef4caa2b)
 
 **החלטות שהתקבלו לבד (STEP 18, 04:57):** בעץ העבודה ממתינים ‏47 קבצים ב-staging

@@ -1,3 +1,4 @@
+import { isMfaRequiredRole } from '@/lib/admin/mfa-gate'
 import { getSessionWithRole } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
@@ -8,10 +9,10 @@ import AdminMfaForm from './AdminMfaForm'
 export const metadata: Metadata = { title: 'אימות דו-שלבי - KenyonExpress' }
 
 /**
- * The landing spot of enforceSuperAdminMfa (lib/admin/rbac.ts). Deliberately
+ * The landing spot of enforceAdminMfa (lib/admin/rbac.ts). Deliberately
  * OUTSIDE the (admin) group: the layout there calls requirePanelSession,
- * which redirects a non-aal2 super_admin right back here, and a page cannot
- * sit on both sides of that loop.
+ * which redirects a non-aal2 admin-tier session right back here, and a page
+ * cannot sit on both sides of that loop.
  *
  * The mode is decided here from the factor list, not from the query string:
  * the ?mode the gate appends is a hint for nothing but the URL bar, and
@@ -30,8 +31,9 @@ export default function AdminMfaPage() {
 async function AdminMfaBody() {
   const session = await getSessionWithRole()
   if (!session) redirect('/login')
-  // Only super_admin is forced through MFA; anyone else has no business here.
-  if (session.role !== 'super_admin') redirect('/admin')
+  // Only the admin tier is forced through MFA (super_admin since 181, admin
+  // since STEP 19); anyone else has no business here.
+  if (!isMfaRequiredRole(session.role)) redirect('/admin')
 
   const supabase = await createClient()
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
@@ -44,7 +46,7 @@ async function AdminMfaBody() {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       <h2 className="text-xl font-semibold mb-2">אימות דו-שלבי</h2>
       <p className="text-sm text-gray-500 mb-6">
-        חשבון מנהל-על מחייב אימות דו-שלבי לפני כניסה לפאנל הניהול.
+        חשבון מנהל מחייב אימות דו-שלבי לפני כניסה לפאנל הניהול.
       </p>
       <AdminMfaForm
         mode={verifiedTotp ? 'challenge' : 'enrol'}

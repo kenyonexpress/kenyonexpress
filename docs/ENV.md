@@ -141,6 +141,7 @@ touches that path and the failure is in the runtime log:
 | `RESEND_API_KEY` | Email sending is inert and reports `skipped`, which the abandoned-cart job relies on so it does not burn its one-per-cart allowance. |
 | `TWILIO_*` | WhatsApp is inert. |
 | `MEILISEARCH_*` | The search backend and its drain are inert. |
+| `ADMIN_IP_ALLOWLIST` | No IP perimeter on the admin panel; a session and a panel role are the whole gate. Set, it is a comma-separated list of IPv4/IPv6 addresses and CIDR blocks, and `/admin`, `/admin-mfa` and `/api/admin/` answer 403 to any other address before the session is read. Fails closed on a missing address and on a list that parses to nothing (STEP 19, `src/lib/admin/ip-allowlist.ts`). |
 
 ## Rules
 

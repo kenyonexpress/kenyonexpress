@@ -1,11 +1,10 @@
 import { expect, test } from '@playwright/test'
 import {
-  E2E_ADMIN_EMAIL,
-  E2E_ADMIN_PASSWORD,
   E2E_COUPON_SLUG,
   E2E_CUSTOMER_EMAIL,
   E2E_CUSTOMER_PASSWORD,
   paidFlowEnabled,
+  signInAsAdmin,
   signInWithEmail,
 } from './auth-session'
 import { BUY_BUTTON, expectHebrewRtl } from './helpers'
@@ -65,12 +64,9 @@ test.describe('admin cancel and refund @money @admin', () => {
     // ---- leg 2: the admin refunds ----------------------------------------
     const adminCtx = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
     const adminPage = await adminCtx.newPage()
-    await signInWithEmail(
-      adminPage,
-      E2E_ADMIN_EMAIL,
-      E2E_ADMIN_PASSWORD,
-      `/admin/orders/${orderId}`,
-    )
+    // STEP 19: the admin tier is MFA-gated, so the login also answers the
+    // TOTP challenge with the factor `pnpm seed:test` enrolled.
+    await signInAsAdmin(adminPage, `/admin/orders/${orderId}`)
     await adminPage.goto(`/admin/orders/${orderId}`)
     await expectHebrewRtl(adminPage)
     await expect(adminPage.getByRole('heading', { name: 'החזר לכרטיס' })).toBeVisible({

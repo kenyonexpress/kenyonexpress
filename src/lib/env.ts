@@ -113,6 +113,18 @@ const schema = z
      */
     AXIOM_REVENUE_DATASET: z.string().optional().or(z.literal('')),
 
+    /**
+     * The admin-panel IP allowlist (STEP 19): IPv4/IPv6 addresses and CIDR
+     * blocks, comma- or whitespace-separated. OPTIONAL EVERYWHERE and inert
+     * when unset or blank, which is every environment today. Set, the proxy
+     * answers 403 on /admin, /admin-mfa and /api/admin/ for any address off
+     * the list, and the server-side guards repeat the check. A value that
+     * parses to nothing denies everyone rather than switching the perimeter
+     * off: `lib/admin/ip-allowlist.ts`. Read there via process.env because
+     * the proxy runs on the edge and does not import this file.
+     */
+    ADMIN_IP_ALLOWLIST: z.string().optional().or(z.literal('')),
+
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
   })
