@@ -1,28 +1,40 @@
-RESUME FROM: M04-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c64)
+RESUME FROM: M05-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c64)
 
 ## המשך מ:
 
-**M03-c64 - DONE (30.09): שער ירוק, ארבעת השערים הורצו מחדש, אפס
-תיקון נדרש.** משימת התור: להריץ `pnpm type-check`, `pnpm lint`,
-`pnpm test` ו-`pnpm build`, ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי
-לשנות התנהגות מוצר.
+**M04-c64 - DONE (30.09): תברואת תלויות, `pnpm audit` אפס חולשות,
+`pnpm outdated` אפס עדכון patch/minor זמין.** משימת התור: להריץ
+`pnpm audit` ו-`pnpm outdated`, ולהחיל עדכוני patch/minor ששומרים
+type-check/test/build ירוקים, לעולם לא major.
 
-**תוצאות, כל הארבעה נקיים:** `type-check` — אפס שגיאות. `lint` —
-`biome check` על 2028 קבצים אפס תיקונים, וכל שנים-עשר השערים הנלווים
-נקיים (i18n 627/627, locale-format 116/116 בתקרה, docs-index 282
-מסמכים). `test` — 610/610 קבצי טסט, 7296/7308 ירוק (12 דולגים), זהה
-ל-M02-c64. `build` — exit 0, כל הנתיבים נבנו. שורות ה-JSON שנרשמות
-בזמן ה-build (`supabase.rls_denied` על `reviews` לקורא אנונימי,
-`db.optional_column_missing` על `migrations/pending/242`) הן פלט
-runtime של SSG מול Supabase האמיתי, לא אזהרות build tool, וזהות
-לדפוס המתועד מ-M03-c54 ואילך — לא רגרסיה, לא ניתנות לתיקון בלי
-להחיל מיגרציה על פרודקשן (אסור בכלל הפרויקט).
+**`pnpm audit`: "No known vulnerabilities found".** אפס חולשות בעץ
+התלויות כולו.
 
-**אין קוד לתקן.** ארבעת השערים ירוקים ללא שינוי מ-M02-c64; אפס שינוי
-קוד פונה-ללקוח בפריט הזה.
+**`pnpm outdated`: 14 חבילות מופיעות, וכל ה-14 הן קפיצת major בלבד**
+(`@biomejs/biome` 1.9.4→2.5.14, `@hookform/resolvers` 3.10.0→5.9.1,
+`@sentry/nextjs`/`@sentry/node` 10.75.3→11.1.0, `@testing-library/
+jest-dom` 6.10.0→7.0.1, `@types/node` 20.19.43→26.6.3, `@vitejs/
+plugin-react` 4.7.0→6.1.1, `@vitest/coverage-v8`/`vitest` 4.1.11→5.0.2,
+`jsdom` 25.0.1→30.1.1, `lint-staged` 15.5.2→17.6.0, `tailwind-merge`
+2.6.1→3.7.0, `typescript` 5.9.3→7.0.2, `zod` 3.25.76→4.6.5). נבדק גם
+`--long`: אין עמודת Wanted שונה מ-Current, כלומר כל חבילה כבר על
+הגרסה הגבוהה ביותר שמותרת בטווח ה-`^` שלה ב-`package.json` (אומת
+ידנית על 14 השורות). **אין עדכון patch/minor אחד זמין להחלה** —
+כל מה שהיה בר-החלה כבר נלקח ב-M04-c63 (`next`/`@next/mdx`/
+`next-intl`/`posthog-js`). קידום ל-`Latest` בכל השורות ידרוש שינוי
+range ב-`package.json` וקפיצת major, אסור לפי כלל הפריט.
+
+**אפס שינוי תלויות, ולכן אפס סיכון רגרסיה — אך ארבעת השערים הורצו
+בכל זאת לאימות:** `type-check` אפס שגיאות, `lint` (`biome check` +
+שנים-עשר השערים הנלווים) נקי, `test` 610/610 קבצים, 7296/7308 ירוק
+(12 דולגים, זהה ל-M03-c64), `build` exit 0.
 
 קבצים ששונו: `STATE.md`.
+
+**M03-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M04-c64 לשמירה על תקרת 300 שורות).** שער ירוק, ארבעת השערים הורצו
+מחדש, אפס תיקון נדרש, אפס שינוי מ-M02-c64.
 
 **M02-c64 ו-M01-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M03-c64 לשמירה על תקרת 300 שורות).** M02-c64 — שער חזותי בפורגראונד,

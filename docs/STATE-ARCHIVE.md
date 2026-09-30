@@ -2,6 +2,29 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c64 (פירוט מלא, כווץ ב-STATE.md ל-M04-c64 לשמירה על תקרת 300 שורות)
+
+**M03-c64 - DONE (30.09): שער ירוק, ארבעת השערים הורצו מחדש, אפס
+תיקון נדרש.** משימת התור: להריץ `pnpm type-check`, `pnpm lint`,
+`pnpm test` ו-`pnpm build`, ולתקן כל שגיאה/אזהרה ניתנת לתיקון בלי
+לשנות התנהגות מוצר.
+
+**תוצאות, כל הארבעה נקיים:** `type-check` — אפס שגיאות. `lint` —
+`biome check` על 2028 קבצים אפס תיקונים, וכל שנים-עשר השערים הנלווים
+נקיים (i18n 627/627, locale-format 116/116 בתקרה, docs-index 282
+מסמכים). `test` — 610/610 קבצי טסט, 7296/7308 ירוק (12 דולגים), זהה
+ל-M02-c64. `build` — exit 0, כל הנתיבים נבנו. שורות ה-JSON שנרשמות
+בזמן ה-build (`supabase.rls_denied` על `reviews` לקורא אנונימי,
+`db.optional_column_missing` על `migrations/pending/242`) הן פלט
+runtime של SSG מול Supabase האמיתי, לא אזהרות build tool, וזהות
+לדפוס המתועד מ-M03-c54 ואילך — לא רגרסיה, לא ניתנות לתיקון בלי
+להחיל מיגרציה על פרודקשן (אסור בכלל הפרויקט).
+
+**אין קוד לתקן.** ארבעת השערים ירוקים ללא שינוי מ-M02-c64; אפס שינוי
+קוד פונה-ללקוח בפריט הזה.
+
+קבצים ששונו: `STATE.md`.
+
 ## M01-c64 (פירוט מלא, כווץ ב-STATE.md ל-M02-c64 לשמירה על תקרת 300 שורות)
 
 **M01-c64: BLOCKED (30.09), נבדק מחדש, build/deploy חדש לא הופעל
