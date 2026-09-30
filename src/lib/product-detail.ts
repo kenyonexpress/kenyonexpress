@@ -296,3 +296,32 @@ export async function listProductSlugsForPrerender(limit = 200): Promise<string[
 
   return (data ?? []).map((row) => row.slug)
 }
+
+/**
+ * The coupon slugs Next prerenders for `/coupon/[slug]`, same cap and same
+ * trade as `listProductSlugsForPrerender`. The filter is the archive's own
+ * (`category-page.ts`), so a product the archive lists as a coupon has a
+ * prerendered coupon page and a physical one does not; a physical slug asked
+ * for under this prefix renders on demand and is redirected to its product
+ * page by the route.
+ */
+export async function listCouponSlugsForPrerender(limit = 200): Promise<string[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+
+  const data = orFail(
+    await createCatalogueReadClient()
+      .from('products')
+      .select('slug')
+      .or('type.eq.coupon,is_coupon_enabled.is.true')
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    'product_detail.prerender_coupon_slugs_failed',
+    { limit },
+  )
+
+  return (data ?? []).map((row) => row.slug)
+}

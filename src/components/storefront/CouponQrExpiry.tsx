@@ -3,6 +3,7 @@ import { describeCouponExpiry } from '@/lib/commerce/coupon-expiry'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { urlQrDataUrl } from '@/lib/vouchers/qr-image'
 import { cacheLife } from 'next/cache'
+import Link from 'next/link'
 
 /**
  * How a coupon is redeemed, and until when.
@@ -46,9 +47,16 @@ async function encodeProductQr(productUrl: string): Promise<string | null> {
 export default async function CouponQrExpiry({
   offer,
   productUrl,
+  detailHref,
 }: {
   offer: CouponOffer
   productUrl: string
+  /**
+   * The coupon variant of this product (`/coupon/[slug]`), linked from the
+   * product page only. The variant renders this block itself and passes
+   * nothing, so it never links to where the reader already is.
+   */
+  detailHref?: string
 }) {
   const expiryDays = offer.sellable ? offer.expiryDays : null
   const expiry = describeCouponExpiry({
@@ -86,6 +94,13 @@ export default async function CouponQrExpiry({
           {expiry.voucherLabel && <li>{expiry.voucherLabel}</li>}
           {!expiry.deadlineLabel && !expiry.voucherLabel && (
             <li>תוקף השובר מצוין על השובר עצמו לאחר הרכישה.</li>
+          )}
+          {detailHref && (
+            <li>
+              <Link href={detailHref} className="pdp-coupon-qr__detail">
+                לעמוד הקופון: תצוגת השובר, תנאים ומפה
+              </Link>
+            </li>
           )}
         </ul>
       </div>

@@ -10,6 +10,7 @@ import {
   formatCouponDate,
   isCouponLapsedUnswept,
   isCouponPresentable,
+  maskedVoucherCode,
 } from '@/lib/vouchers/coupon-view'
 import { describe, expect, it } from 'vitest'
 
@@ -238,5 +239,26 @@ describe('formatCouponDate', () => {
   it('returns a dash for a missing or invalid date', () => {
     expect(formatCouponDate(null)).toBe('—')
     expect(formatCouponDate('nonsense')).toBe('—')
+  })
+})
+
+describe('maskedVoucherCode', () => {
+  it('has the shape of a real code: ten symbols, grouped 5-5', async () => {
+    const { VOUCHER_CODE_LENGTH, formatVoucherCode } = await import('@/server/domain/vouchers/code')
+    const mask = maskedVoucherCode()
+    expect(mask).toBe('•••••-•••••')
+    expect(mask.replace(/-/g, '')).toHaveLength(VOUCHER_CODE_LENGTH)
+    expect(mask.split('-').map((g) => g.length)).toEqual(
+      formatVoucherCode('ABCDEFGHJK')
+        .split('-')
+        .map((g) => g.length),
+    )
+  })
+
+  it('contains no symbol from the code alphabet, so it cannot be typed in', async () => {
+    const { VOUCHER_CODE_ALPHABET } = await import('@/server/domain/vouchers/code')
+    for (const ch of maskedVoucherCode().replace(/-/g, '')) {
+      expect(VOUCHER_CODE_ALPHABET.includes(ch)).toBe(false)
+    }
   })
 })

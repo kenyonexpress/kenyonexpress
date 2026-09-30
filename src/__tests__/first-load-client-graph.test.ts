@@ -23,7 +23,14 @@ import { describe, expect, it } from 'vitest'
 const root = resolve(__dirname, '../..')
 const read = (path: string) => readFileSync(resolve(root, path), 'utf8')
 
-const LAYOUTS = ['src/app/layout.tsx', 'src/app/(store)/layout.tsx']
+// The walk is one level deep on purpose (a layout's own islands), so the
+// store shell is listed beside the layout that renders it: `(store)/layout.tsx`
+// imports nothing but the shell now, and its islands live in the shell.
+const LAYOUTS = [
+  'src/app/layout.tsx',
+  'src/app/(store)/layout.tsx',
+  'src/components/store/StoreShell.tsx',
+]
 
 /**
  * Packages that have no business on a storefront first load. Each one is a

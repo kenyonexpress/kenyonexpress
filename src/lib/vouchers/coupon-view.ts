@@ -57,6 +57,29 @@ export const COUPON_TONE_CHIP: Record<CouponTone, 'ok' | 'warn' | 'dead'> = {
   void: 'dead',
 }
 
+/**
+ * What the code looks like BEFORE purchase, on the public coupon page.
+ *
+ * Ten masked symbols grouped 5-5, the exact shape `formatVoucherCode` gives a
+ * real code, so the preview on /coupon/[slug] promises the same thing the
+ * voucher on /coupon/[id] delivers. The length is pinned to the DB CHECK
+ * `vouchers_code_format` through the test beside `code.ts`; the STEP 07 brief
+ * said "8-digit", and the constraint says ten Crockford symbols, and a preview
+ * that disagreed with the constraint would be the first thing a buyer
+ * noticed after paying.
+ */
+export const VOUCHER_MASK_LENGTH = 10
+export const VOUCHER_MASK_GROUP = 5
+export const VOUCHER_MASK_GLYPH = '•'
+
+export function maskedVoucherCode(): string {
+  const groups: string[] = []
+  for (let i = 0; i < VOUCHER_MASK_LENGTH; i += VOUCHER_MASK_GROUP) {
+    groups.push(VOUCHER_MASK_GLYPH.repeat(Math.min(VOUCHER_MASK_GROUP, VOUCHER_MASK_LENGTH - i)))
+  }
+  return groups.join('-')
+}
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 export interface CouponSnapshot {

@@ -792,3 +792,9 @@
   background-color: var(--pdp-sale);
   color: var(--pdp-surface);
 }
+
+/* The link from the product page to its coupon variant, one list row. */
+.pdp-coupon-qr__detail {
+  color: var(--pdp-ink);
+  text-decoration: underline;
+}

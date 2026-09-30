@@ -33,6 +33,10 @@ const CATALOGUE_ENTRIES = [
   'app/(store)/category/[slug]/page.tsx',
   'app/(store)/products/page.tsx',
   'app/(store)/layout.tsx',
+  // The coupon variant of the product page. The route's page.tsx also serves
+  // a customer's voucher, which reads the session on purpose, so the entry
+  // here is the offer half alone: that is the tree that must stay cacheable.
+  'app/coupon/[slug]/CouponOfferPage.tsx',
 ]
 
 const EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx']

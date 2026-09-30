@@ -307,6 +307,7 @@ export default async function ProductPage({ params }: Props) {
             <CouponQrExpiry
               offer={couponOffer}
               productUrl={`${siteUrl.replace(/\/+$/, '')}/product/${encodeURIComponent(product.slug)}`}
+              detailHref={`/coupon/${encodeURIComponent(product.slug)}`}
             />
             <CouponTerms
               offer={couponOffer}

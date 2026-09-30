@@ -85,7 +85,10 @@ const BASE_DIRECTIVES = [
   IMG_SRC,
   "font-src 'self'",
   "connect-src 'self' https://*.supabase.co",
-  'frame-src https://secure.cardcom.solutions',
+  // Cardcom's payment page on /checkout, and OpenStreetMap's embed for the
+  // merchant map on /coupon/[slug] (`lib/geo/merchant-map.ts` is the one
+  // builder of that src, and its test pins the origin to this line).
+  'frame-src https://secure.cardcom.solutions https://www.openstreetmap.org',
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",
   "object-src 'none'",

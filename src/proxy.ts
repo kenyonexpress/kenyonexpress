@@ -10,6 +10,7 @@ import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { CROSS_SITE_REJECTION, isCrossSiteApiMutation } from '@/lib/security/same-origin'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { requireAnonKey } from '@/lib/supabase/anon-key'
+import { couponPathNeedsSession } from '@/lib/vouchers/coupon-path'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -174,7 +175,9 @@ export async function proxy(request: NextRequest) {
   const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
   const needsAuth =
     pathname.startsWith('/account') ||
-    pathname.startsWith('/coupon/') ||
+    // The voucher half of /coupon/ only; the coupon variant of a product page
+    // shares the prefix and is public. See lib/vouchers/coupon-path.ts.
+    couponPathNeedsSession(pathname) ||
     (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname)) ||
     (pathname.startsWith('/supplier') && !supplierPublic)
 

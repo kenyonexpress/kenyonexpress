@@ -203,3 +203,13 @@ describe('CSP violation reporting', () => {
     expect(reportingEndpointsHeader(undefined)).toBeNull()
   })
 })
+
+describe('the merchant map embed', () => {
+  it('is allowed as a frame, from the origin merchant-map.ts builds', async () => {
+    const { MERCHANT_MAP_ORIGIN } = await import('../geo/merchant-map')
+    const frameSrc = contentSecurityPolicyFor('/coupon/spa-day')
+      .split('; ')
+      .find((d) => d.startsWith('frame-src')) as string
+    expect(frameSrc.split(' ')).toContain(MERCHANT_MAP_ORIGIN)
+  })
+})

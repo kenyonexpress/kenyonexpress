@@ -12,13 +12,13 @@ import {
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import { buildRedemptionInquiryText } from '@/lib/whatsapp'
 import { getCustomerVoucher } from '@/server/queries/vouchers'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { Suspense } from 'react'
 
 /**
- * The coupon a customer holds up at the counter.
+ * The coupon a customer holds up at the counter: the `/coupon/<uuid>` half of
+ * the shared route. `page.tsx` decides by segment shape and wraps this in the
+ * Suspense boundary the session read needs.
  *
  * Deliberately outside the /account shell. This is the one page opened with a
  * cashier waiting: the code and the QR are the whole content, and the account
@@ -32,32 +32,7 @@ import { Suspense } from 'react'
  * because the page renders a live voucher QR.
  */
 
-export const metadata: Metadata = {
-  title: 'הקופון שלי',
-  robots: { index: false, follow: false },
-}
-
-type Props = { params: Promise<{ id: string }> }
-
-/**
- * The shell is the page's background and column, nothing more: this is one
- * customer's voucher, keyed by an id in the path, and the guard that decides
- * whether they may see it is the first thing the body does. Prerendering any of
- * the card would mean prerendering somebody's coupon.
- */
-export default function CouponPage(props: Props) {
-  return (
-    <Suspense
-      fallback={<main dir="rtl" className="mx-auto min-h-screen max-w-md bg-gray-50 px-4 py-6" />}
-    >
-      <CouponPageBody {...props} />
-    </Suspense>
-  )
-}
-
-async function CouponPageBody({ params }: Props) {
-  const { id } = await params
-
+export default async function VoucherPage({ id }: { id: string }) {
   // No session and no voucher are different situations, and getCustomerVoucher
   // collapses both to null: a signed-out customer who followed a link from an
   // email deserves a login round trip back to this page, not a 404.
