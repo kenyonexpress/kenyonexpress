@@ -2,6 +2,56 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c60 (הועבר מ-STATE.md ב-M16-c60, לשמירה על תקרת 300 שורות)
+
+**M15-c60 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
+`docs/LAUNCH-READINESS.md` ו-`docs/BACKLOG.md` רועננה מול git log
+וראיות קוד, אפס דריפט מ-M15-c59.** משימת התור: לרענן את טבלת המצב
+בשלושת הקבצים מ-git log וראיות קוד, לשמור על פריטי אופיר בסדר קריטיות
+ברשימה אחת בלי כפילות. בדיקת דריפט קודם: `git log a353fa3db..HEAD`
+(מאז המדידה הקודמת, M15-c59) מחזיר 17 קומיטים (M16-c59..M18-c59,
+M01-c60..M14-c60), כולם תיעוד/מדידה/תלות/טסטים (תברואת ריפו, קופי/
+משפטי, אפס-פעילות, בדיקת פרודקשן, שער חזותי, בדיקה ירוקה, תברואת
+תלויות, DB advisors, Lighthouse, route audit, backlog, כיסוי טסטים
+פעמיים, נגישות, SEO, אבטחה, ביצועים): `git diff --stat
+a353fa3db..HEAD -- src/ next.config.ts next.config.mjs package.json
+pnpm-lock.yaml vercel.json supabase/ migrations/` מחזיר רק שלושה
+קבצים, כולם טסט (`bought-this-week.test.ts`, `stock-live.test.ts`,
+`scan-context.test.ts`) — **אפס קומיט נגע בשורה חוסמת, במיגרציה או
+בסכימה**.
+
+נבדקו שלושת המסמכים מול המצב החי:
+- **`docs/BACKLOG.md`**: עדיין 15 פריטים, אותו סדר, אפס כפילות, אפס
+  פריט חדש. פריט 4 (פריסת פרודקשן): `git rev-list --count
+  a388118f1..HEAD` עלה מ-189 (M15-c59) ל-**207** (git בלבד, הכתובת
+  החיה לא נבדקה שוב בפריט הזה — סנכרון תיעוד, לא בדיקת פרודקשן).
+  פריט 5 (18 קבצי מיגרציה) נבדק ישירות מול `migrations/pending/` —
+  כל 18 הקבצים (204, 209, 218, 220, 223, 224, 234-236, 239-247) עדיין
+  שם, אפס קובץ חדש. פריט 7 (26 ממצאי קטלוג) נבדק ישירות מול
+  `supabase/catalogue-known-issues.json`, ללא שינוי. פריט 12
+  (`dns-watch.sh`) נבדק עם `pgrep -fl`, עדיין pid 957 תחת `caffeinate`
+  pid 999, ללא שינוי. פריט 15 (32 stash) נבדק עם `git stash list`,
+  ללא שינוי.
+- **`docs/LAUNCH-READINESS.md`**: שורה חוסמת 4 עודכנה ל-207 קומיטים
+  (אותו מקור, git בלבד). שורת `pnpm test` בטבלת "Green, with evidence"
+  עודכנה ל-610 קבצים / 7,296 עברו (מ-608/7,274 ב-M15-c59). שאר השורות
+  (lint 282 מסמכים / 152 ידועים, build BUILD_ID) ללא שינוי.
+- **`STATE.md`**: טבלת "חוסמים פתוחים" ו"ידני לאופיר" כבר מצביעות
+  ל-`docs/BACKLOG.md` כעותק היחיד (מאז M15-c51) — אין עותק כפול לתקן
+  כאן.
+
+`type-check` נקי, `lint` נקי (2025 קבצים, שנים-עשר השערים כולל `i18n`
+627/627 ו-`locale-format` 116/116, `docs-index` 282 מסמכים,
+`docs-path-audit` 152 ידועים), `test` המלא 610/610 קבצים 7296/7308
+(12 דולגים, 60.2s) — זהה ל-100% ל-M14-c60. `build`: `.next` הקיים
+(`BUILD_ID` `_q_e1hFe7GBgP05yPvgZC`) נבדק תואם קוד ל-HEAD (אחרון שנגע
+בנתיבי build הוא `e1f99e3e7`, קובץ טסט בלבד), לא נבנה מחדש כדי לא
+להתחרות במשאבים עם ~42 `next-server`/`pnpm start` מקבילים שרצים כרגע
+על המכונה (כ-57MB RAM פנויים מתוך 8GB, `vm_stat`). אין שינוי UI, אין
+שער חזותי נדרש. **קבצים ששונו: `STATE.md`, `docs/BACKLOG.md`,
+`docs/LAUNCH-READINESS.md`** (פלוס `docs/STATE-ARCHIVE.md`, M14-c60
+הועבר לתקרת 300 שורות).
+
 ## M14-c60 (הועבר מ-STATE.md ב-M15-c60, לשמירה על תקרת 300 שורות)
 
 **M14-c60 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
