@@ -2,6 +2,42 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c65 (הועבר מ-STATE.md ב-M02-c65, לשמירה על תקרת 300 שורות)
+
+**M01-c65: BLOCKED (01.10), נבדק מחדש, build/deploy חדש לא הופעל
+(פעם אחת-עשרה).** משימת התור: build+deploy פרודקשן חדש דרך Vercel,
+ואז dig+curl על שני הדומיינים, תיעוד DNS BLOCKER אם ה-DNS נכשל.
+
+**DNS ו-HTTP נבדקו בפועל, שניהם תקינים, אין DNS BLOCKER.**
+`dig +short A kenyonexpress.co.il` מחזיר `216.198.79.65`/`64.29.17.65`,
+`dig +short A www.kenyonexpress.co.il` מחזיר `64.29.17.65`/
+`216.198.79.65`, `dig +short NS kenyonexpress.co.il` מחזיר
+`ns1.vercel-dns.com`/`ns2.vercel-dns.com`. `curl` לאפקס מחזיר `308`
+אל `www`, `curl` ל-`www.kenyonexpress.co.il` מחזיר `200` עם תוכן חי
+(`lang="he" dir="rtl"`, "קניון EXPRESS").
+
+**Build+deploy חדש לא הופעל, בכוונה, פעם אחת-עשרה.** כלל "goal שנתקע
+פעמיים, לדלג" כבר הופעל עשר פעמים ברציפות (M01-c56..M01-c64) על אותו
+חוסם בדיוק. לפני שדילגתי בפעם האחת-עשרה וידאתי מחדש, בקריאה בלבד, שהתנאי
+לא השתנה: `filter_project_envs` (Vercel MCP, פרויקט `kenyonexpress`)
+מראה סביבת Production **עדיין ללא** שלושת השמות ש-
+`scripts/deploy-preflight.mjs` דורש (`CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`; מה שקיים במקומם הוא
+`CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY`, שהקוד לא
+קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. `list_deployments`
+(target=production, 5 אחרונות) מראה בדיוק את אותן חמש `dpl_` שנמדדו
+מ-M01-c61 ואילך, שום build אוטומטי חדש לא רץ מאז. HEAD עכשיו 285
+קומיטים אחרי `a388118f1` (עלה מ-267 ב-M01-c64). התיקון האמיתי (שינוי
+env ב-Vercel) אסור לסוכן לפי כללי הפריט הזה, אז ניסיון פריסה נוסף היה
+רק מייצר `ERROR` שישי בלי מידע חדש.
+
+**מסקנה: BLOCKED, לא DNS, חוסם ה-env הידוע.** DNS ו-HTTP תקינים; החוסם
+הבלעדי הוא שלושת משתני Cardcom החסרים ועוד `ALLOW_INCOMPLETE_ENV` ב-
+Production, פעולה של אופיר בלבד. אפס שינוי קוד בפריט הזה, לכן לא רצו
+`pnpm test`/`lint`/`type-check`/`build`.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M18-c64).
+
 ## M18-c64 (הועבר מ-STATE.md ב-M01-c65, לשמירה על תקרת 300 שורות)
 
 **M18-c64 - DONE (01.10): אפס-פעילות אומת ישירות מ-git על כל המחזור**
