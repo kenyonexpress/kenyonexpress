@@ -1,44 +1,54 @@
-RESUME FROM: M16-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c62)
+RESUME FROM: M17-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c62)
 
 ## המשך מ:
 
-**M15-c62 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
-`docs/LAUNCH-READINESS.md` ו-`docs/BACKLOG.md` סונכרנו מחדש מ-git log
-וראיות קוד, אפס דריפט בפריטי הרשימה עצמם מ-M15-c61.** משימת התור: לרענן
-את שלוש הטבלאות ולשמור על רשימת "ידני לאופיר" כרשימה אחת, ללא כפילות,
-לפי סדר קריטיות. בדיקת דריפט: `git log 947553fa0..HEAD` (מאז נקודת
-הבדיקה הקודמת ב-`docs/BACKLOG.md`, M08-c62) מחזיר שישה קומיטים
-(M09-c62..M14-c62); `git diff --stat` על הנתיבים הרלוונטיים
-(`docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
-src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
-vercel.json supabase/`) חוזר ריק — אפס קומיט נגע בשורת חסימה או בקובץ
-מיגרציה.
+**M16-c62 - DONE (30.09): תברואת ריפו בפעם השתים-עשרה, אפס דריפט
+מ-M16-c61.** משימת התור: לוודא `git status` נקי, שכל ענף מקומי דחוף,
+ולרשום PR פתוחים וענפים ישנים ב-STATE.md, בלי למזג או למחוק דבר.
 
-נמדד מחדש: מספר הקומיטים מאחורי פרודקשן (`git rev-list --count
-a388118f1..HEAD`) עלה מ-225 ל-**245**; `origin/main..HEAD` עלה מ-599
-ל-**619** (`HEAD..origin/main` נשאר 109, ללא שינוי); רשימת 18 קבצי
-המיגרציה הממתינים אומתה מול `migrations/pending/` ללא שינוי (59 קבצים
-בסך הכל); 26 הממצאים ב-`supabase/catalogue-known-issues.json` ללא
-שינוי; 32 ה-stash-ים ללא שינוי (`git stash list`); `scripts/dns-watch.sh`
-עדיין רץ תחת `caffeinate` (pid 957/999). **דריפט קטן שכן נמצא ותוקן**:
-`docs-path-audit` עלה מ-152 ל-**154** — `docs/known-dangling-paths.json`
-עודכן בפועל בקומיט `5e994b7c1` (M11-c62, אחרי הפעם האחרונה שהמספר הזה
-נרשם ב-M15-c61), אך `docs/LAUNCH-READINESS.md` המשיך לומר "152, ללא
-שינוי מ-M15-c55" עד לפריט הזה; תוקן בשלושת הקבצים. רשימת ה-15 הפריטים
-ב-`docs/BACKLOG.md` עצמה נשארה זהה — ללא כפילות, ללא פריט חדש, אותו
-סדר קריטיות.
+**נמדד:** `git status` נקי, `audit/final-audit` תואם בדיוק ל-`origin/
+audit/final-audit` (`568ccc16b`, אפס עבודה לא-committed, אפס commit
+לא-דחוף). **43 ענפים מקומיים, זהה בדיוק ל-M16-c61** (אפס ענף חדש, אפס
+ענף שנעלם). כל 43 נבדקו ב-SHA ישיר מול `origin/<שם>`: 37 זהים ל-`origin/
+<שם>` שלהם (כולל ענפי `arch/*` שעוקבים בטעות אחרי `origin/main` אך
+ה-SHA זהה למקביל ב-remote), ו-6 ענפים (`pr36`, `release/v1.1`,
+`wip/refund-record-rebase-head`, `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`) אין להם ענף remote
+באותו שם כלל, אך ראש הענף שלהם מוכל ב-`origin/main` וב-`origin/audit/
+final-audit` (אומת עם `git merge-base --is-ancestor`) — **אפס קומיט
+ייחודי לא-דחוף בשום ענף מקומי, זהה בדיוק ל-M16-c61.** `main` המקומי
+נשאר בסטייה הידועה (`ahead=193 behind=109` מול `origin/main`, ללא
+אב-משותף אמיתי — חוסם 13, ללא שינוי; מוגן ב-GitHub, אין לדחוף ישירות).
+
+**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c61, אותם
+מספרים 2-47, הישן ביותר #2 מ-02.08, החדש ביותר #47 מ-28.09). **116
+ענפי remote** (`git branch -r` אחרי `git fetch --prune`, זהה ל-M16-c61).
+**12 מ-43 הענפים המקומיים כבר ממוזגים לתוך HEAD** (זהה
+רשימה בדיוק ל-M16-c61 — פירוט שמות ב-`docs/STATE-ARCHIVE.md` תחת
+M16-c61 — מועמדים לניקוי, לא נמחקו, הכלל אוסר מחיקת ענפים). **28
+ענפים ישנים** (קומיט אחרון לפני 16.09, מ-`save/ke-visual-work` ב-28.07
+עד `worktree-order-state-machine` ב-09.09, רשימת שמות מלאה זהה בדיוק
+ל-M16-c61). **3 ענפים לא ממוזגים אך לא נטושים**: `autopilot` (17.09),
+`docs/ui-design-system` (23.09), `phase5/homepage-closeout` (24.09).
+**אפס מיזוג, אפס מחיקה, אפס push** (שום ענף לא נזקק לו — הכל כבר על origin בשם זהה או מוכל בו).
 
 **שערים**: `type-check` נקי, `lint` נקי (biome 2028 קבצים, 12 שערים,
-i18n 627/627, `docs-index` 282 מסמכים, `docs-path-audit` 154 כאמור
-לעיל), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 57.31s) — זהה
-ב-100% ל-M14-c62. `build` לא הורץ מחדש: `.next` הקיים (`BUILD_ID`
-`VMhGIoPRaTGiEQMEutFaQ`, מזמן ה-`pnpm build` בפועל של M14-c62 עצמו)
+i18n 627/627, `docs-index` 282 מסמכים, `docs-path-audit` 154), `test`
+המלא 610/610 קבצים 7296/7308 (12 דולגים, 56.11s) — זהה ב-100% ל-M15-c62.
+`build` לא הורץ מחדש: `.next` הקיים (`BUILD_ID` `VMhGIoPRaTGiEQMEutFaQ`)
 אומת כתואם מקור ל-HEAD (`git log -1 -- next.config.ts next.config.mjs
 middleware.ts vercel.json src/ package.json pnpm-lock.yaml` מצביע על
-`fd820969f`, מוקדם מזמן ה-build).
+`fd820969f`, מוקדם מזמן ה-build; אפס שינוי קוד בפריט הזה ממילא — docs
+בלבד). אין שינוי UI, אין שער חזותי נדרש.
 
-קבצים ששונו: `STATE.md`, `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`.
+קובץ ששונה: `STATE.md`.
+
+**M15-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M16-c62 לשמירה על תקרת 300 שורות).** סנכרון תיעוד — STATE.md,
+`docs/LAUNCH-READINESS.md` ו-`docs/BACKLOG.md` סונכרנו מחדש, אפס
+דריפט בפריטי הרשימה עצמם; דריפט קטן שכן נמצא ותוקן: `docs-path-audit`
+152→154 לא היה מסונכרן בשני הקבצים. ארבעת השערים ירוקים.
 
 **M14-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c62
 לשמירה על תקרת 300 שורות).** ביצועים נבדקו מחדש; תוקן פער מדידה אמיתי:
