@@ -1,52 +1,48 @@
-RESUME FROM: M15-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c63)
+RESUME FROM: M16-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c63)
 
 ## המשך מ:
 
-**M14-c63 - DONE (30.09): ביצועים נבדקו מחדש מול build טרי, אפס רגרסיה
-בפועל.** משימת התור: לבדוק bundle sizes, image pipeline output, תגיות
-ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט מאז
-המדידה הקודמת (M14-c62, `14567e211`): `git diff --stat 14567e211..HEAD
--- next.config.ts middleware.ts vercel.json src/ package.json
-pnpm-lock.yaml scripts/bundle-report.mjs scripts/bundle-gate.mjs` מראה
-שלושה קבצים: `package.json`/`pnpm-lock.yaml` (עדכוני patch מ-M04-c63)
-ו-`src/components/ProductCard.tsx` (121 שורות, לב מועדפים על
-`DefaultProductCard` מ-M18-c62). דריפט אמיתי, לא קריאה בלבד, כי
-`ProductCard.tsx` הוא תלות משותפת של `/`, `/products`, `/category/*`
-ו-`/product/[slug]`.
+**M15-c63 - DONE (30.09): סנכרון תיעוד, `STATE.md`/`LAUNCH-READINESS.md`/
+`BACKLOG.md` נבדקו מחדש מול `git log 947553fa0..HEAD` (עשרים קומיטים,
+M16-c62..M18-c62, M01-c63..M14-c63), אפס דריפט.** משימת התור: לרענן את
+טבלת הסטטוס בשלושת הקבצים מ-`git log` וראיות קוד, לשמור פריטים ידניים
+לאופיר לפי סדר קריטיות, רשימה אחת בלי כפילויות. `git diff --stat
+947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/` מראה שלושה דברים
+בלבד: הערות הבדיקה החוזרת של הקבצים האלה עצמם (M08-c62, M15-c62,
+M08-c63), עדכון patch לתלויות (`next`/`@next/mdx`/`next-intl`/
+`posthog-js`, M04-c63), והתכונה `WishlistHeart` על `ProductCard.tsx`
+(M18-c62, פריט תור קודם, לא שורת חסימה). אף אחד לא נגע בשורת חסימה,
+במיגרציה ממתינה או בפנקס הקטלוג.
 
-נבנה מחדש בפועל (`CARDCOM_USE_MOCK=true pnpm build`, לא נסמך על `.next`
-קיים), הורם שרת ייעודי (`PORT=3413 pnpm start`) ונסגר בסוף המדידה
-(`lsof -i :3413`, PID `61062` נמצא ונהרג, לא תהליכים אחרים שרצו על
-המכונה באותו רגע).
+**עודכן:** מספר הקומיטים מאחורי פרודקשן (`a388118f1`) **245 → 263**
+(`git rev-list --count a388118f1..HEAD`, git-only, לא נוסתה פריסה
+חוזרת), ומספר הקומיטים מאחורי `origin/main` **619 → 637**
+(`HEAD..origin/main` נשאר 109 קדימה, ללא שינוי). ספירות אחרות נבדקו
+ונמצאו ללא שינוי: `migrations/pending/*.sql` 59, `git stash list` 32,
+`supabase/catalogue-known-issues.json`'s `known` object 26, `dns-watch.sh`
+עדיין pid 957 תחת `caffeinate` pid 999, `docs-path-audit` 154,
+`docs-index` 282. עודכנו שלושת הקבצים: `docs/LAUNCH-READINESS.md`
+(פסקת פתיחה, שורת חסימה 4, טבלת השערים הירוקים, שורת ה-Branches, הערת
+ה"ידני לאופיר"), `docs/BACKLOG.md` (הערת בדיקה חוזרת חדשה, מונה
+הקומיטים בסעיף 4), ו-`STATE.md` עצמו.
 
-**לפני (M14-c62, הבייסליין הקודם):** `bundle-gate.mjs` shared first-load
-223.8 KB gz על 8 chunks (budget 260KB). `bundle-report.mjs`:
-`/product/e2e-test-physical` הנתיב הכבד ביותר, 326.8 kB gzip, 21 chunks.
-`/checkout` 324.1 kB gzip. image proxy `Cache-Control: public,
-max-age=86400, must-revalidate`. `/products` ו-`/product/e2e-test-physical`
-שניהם `x-nextjs-stale-time: 300`, `prerender: 1`, `postponed: 1`. static
-chunks `immutable, max-age=31536000`; HTML דינמי `private, no-cache,
-no-store, max-age=0, must-revalidate`.
+ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים, `docs-path-audit` 154, `docs-index` 282). `test` 610/610 קבצים,
+7296/7308 (12 דולגים), זהה בייט לבייט למדידה הקודמת. `build` לא הורץ
+מחדש — `.next` הקיים (`BUILD_ID` `D4-tHth7KvanPpP6tU41c`) אומת כבנוי
+אחרי הקומיט האחרון שנגע בנתיב רלוונטי לבנייה (`0428b4726`, M04-c63,
+לפי `mtime`). אפס שינוי קוד ייצור.
 
-**אחרי (M14-c63, נמדד עכשיו):** `bundle-gate.mjs`: shared first-load
-**223.8 KB gz על 8 chunks, זהה בייט לבייט**. `bundle-report.mjs`:
-`/product/e2e-test-physical` עדיין הכבד ביותר, **326.9 kB gzip, 21
-chunks** (הפרש 0.1kB, רעש מדידה ולא רגרסיה). `/checkout` 324.2 kB (אותו
-רעש). שאר הנתיבים: `/` 320.5kB, `/products` 319.3kB, `/category/hot-deals`
-320.0kB, `/cart` 317.4kB, `/faq` 314.0kB. image proxy, תגיות ISR וכל
-שלושת כותרות ה-cache (static/HTML דינמי/image) זהות מילה במילה
-לבייסליין. `cache-invalidation-gate.mjs` נקי (כל כתיבה לטבלה ממוטמנת
-מפילה תג, כל scope ממוטמן נושא תג).
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/LAUNCH-READINESS.md`,
+`docs/BACKLOG.md`.
 
-**המסקנה: לב המועדפים (`WishlistHeart`) שנוסף ל-`DefaultProductCard`
-ב-M18-c62 לא הוסיף בייט אחד ל-bundle הכולל**, כי הרכיב כבר קיים בבנדל
-דרך `DealsProductCard` (webpack מאחד אותו לאותו chunk משותף). אין
-רגרסיה לתקן. ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028
-קבצים, 12 שערים ירוקים). `test` 610/610 קבצים, 7296/7308 (12 דולגים).
-`build` רץ בפועל כחלק מהמדידה, exit 0. אפס שינוי קוד ייצור.
-
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M14-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c63
+לשמירה על תקרת 300 שורות).** ביצועים נבדקו מחדש מול build טרי, אפס
+רגרסיה בפועל — לב המועדפים שנוסף ל-`DefaultProductCard` ב-M18-c62 לא
+הוסיף בייט אחד ל-bundle הכולל. ארבעת השערים ירוקים.
 
 **M13-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c63
 לשמירה על תקרת 300 שורות).** אבטחה נבדקה מחדש מול שרת חי, אפס דריפט קוד

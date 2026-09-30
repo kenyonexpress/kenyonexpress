@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c63 (הועבר מ-STATE.md ב-M15-c63, לשמירה על תקרת 300 שורות)
+
+**M14-c63 - DONE (30.09): ביצועים נבדקו מחדש מול build טרי, אפס רגרסיה
+בפועל.** משימת התור: לבדוק bundle sizes, image pipeline output, תגיות
+ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט מאז
+המדידה הקודמת (M14-c62, `14567e211`): `git diff --stat 14567e211..HEAD
+-- next.config.ts middleware.ts vercel.json src/ package.json
+pnpm-lock.yaml scripts/bundle-report.mjs scripts/bundle-gate.mjs` מראה
+שלושה קבצים: `package.json`/`pnpm-lock.yaml` (עדכוני patch מ-M04-c63)
+ו-`src/components/ProductCard.tsx` (121 שורות, לב מועדפים על
+`DefaultProductCard` מ-M18-c62). דריפט אמיתי, לא קריאה בלבד, כי
+`ProductCard.tsx` הוא תלות משותפת של `/`, `/products`, `/category/*`
+ו-`/product/[slug]`.
+
+נבנה מחדש בפועל (`CARDCOM_USE_MOCK=true pnpm build`, לא נסמך על `.next`
+קיים), הורם שרת ייעודי (`PORT=3413 pnpm start`) ונסגר בסוף המדידה
+(`lsof -i :3413`, PID `61062` נמצא ונהרג, לא תהליכים אחרים שרצו על
+המכונה באותו רגע).
+
+**לפני (M14-c62, הבייסליין הקודם):** `bundle-gate.mjs` shared first-load
+223.8 KB gz על 8 chunks (budget 260KB). `bundle-report.mjs`:
+`/product/e2e-test-physical` הנתיב הכבד ביותר, 326.8 kB gzip, 21 chunks.
+`/checkout` 324.1 kB gzip. image proxy `Cache-Control: public,
+max-age=86400, must-revalidate`. `/products` ו-`/product/e2e-test-physical`
+שניהם `x-nextjs-stale-time: 300`, `prerender: 1`, `postponed: 1`. static
+chunks `immutable, max-age=31536000`; HTML דינמי `private, no-cache,
+no-store, max-age=0, must-revalidate`.
+
+**אחרי (M14-c63, נמדד עכשיו):** `bundle-gate.mjs`: shared first-load
+**223.8 KB gz על 8 chunks, זהה בייט לבייט**. `bundle-report.mjs`:
+`/product/e2e-test-physical` עדיין הכבד ביותר, **326.9 kB gzip, 21
+chunks** (הפרש 0.1kB, רעש מדידה ולא רגרסיה). `/checkout` 324.2 kB (אותו
+רעש). שאר הנתיבים: `/` 320.5kB, `/products` 319.3kB, `/category/hot-deals`
+320.0kB, `/cart` 317.4kB, `/faq` 314.0kB. image proxy, תגיות ISR וכל
+שלושת כותרות ה-cache (static/HTML דינמי/image) זהות מילה במילה
+לבייסליין. `cache-invalidation-gate.mjs` נקי (כל כתיבה לטבלה ממוטמנת
+מפילה תג, כל scope ממוטמן נושא תג).
+
+**המסקנה: לב המועדפים (`WishlistHeart`) שנוסף ל-`DefaultProductCard`
+ב-M18-c62 לא הוסיף בייט אחד ל-bundle הכולל**, כי הרכיב כבר קיים בבנדל
+דרך `DealsProductCard` (webpack מאחד אותו לאותו chunk משותף). אין
+רגרסיה לתקן. ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים). `test` 610/610 קבצים, 7296/7308 (12 דולגים).
+`build` רץ בפועל כחלק מהמדידה, exit 0. אפס שינוי קוד ייצור.
+
 ## M13-c63 (הועבר מ-STATE.md ב-M14-c63, לשמירה על תקרת 300 שורות)
 
 **M13-c63 - DONE (30.09): אבטחה נבדקה מחדש, אפס דריפט קוד.** משימת התור:

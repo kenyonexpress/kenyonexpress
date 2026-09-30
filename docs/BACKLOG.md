@@ -251,6 +251,28 @@ taking alone (DNS, Vercel env/secrets, production deploy/migration
 approval, catalogue business decision, data deletion). No phase 1 item
 available for the queue task this cycle (M08-c63 result: BACKLOG EMPTY).
 
+**Re-checked 2026-09-30 (M15-c63) against `git log 947553fa0..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Twenty commits
+landed since M15-c62's own check point (M16-c62..M18-c62, M01-c63..M14-c63);
+`git diff --stat 947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/` confirms only the same
+three things M08-c63 already found (this file's own re-check notes, the
+dependency patch bump, and the wishlist-heart feature) — none touched a
+blocking line, a pending migration, or the catalogue ledger. Counts
+re-checked directly: `migrations/pending/*.sql` 59, `git stash list` 32,
+`supabase/catalogue-known-issues.json`'s `known` object 26,
+`dns-watch.sh` still pid 957 under `caffeinate` pid 999 — all unchanged
+from M08-c63. Item 4's commit count changed again (256 -> 263, `git
+rev-list --count a388118f1..HEAD`, git-only, production not re-probed
+this item). `type-check`, `lint` (12 gates, docs-path-audit 154,
+docs-index 282) and `test` (610/610 files, 7296/7308) all re-run clean
+this item; `build` not re-run — the existing `.next` (`BUILD_ID`
+`D4-tHth7KvanPpP6tU41c`) was confirmed built after the last
+build-relevant commit (`0428b4726`, M04-c63) by file mtime. All 15 items
+remain actions this file's own preamble excludes an agent from taking
+alone.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -273,11 +295,11 @@ available for the queue task this cycle (M08-c63 result: BACKLOG EMPTY).
    `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
    המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54, 118
    ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57, 171 ב-M15-c58,
-   189 ב-M15-c59, 207 ב-M15-c60, 225 ב-M15-c61, וכעת (30.09, M15-c62,
-   `git rev-list --count a388118f1..HEAD`, git-only — לא נוסתה פריסה
-   חוזרת בפריט הזה) **245** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
-   ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן נשאר על
-   `a388118f1`).
+   189 ב-M15-c59, 207 ב-M15-c60, 225 ב-M15-c61, 245 ב-M15-c62, 256
+   ב-M08-c63, וכעת (30.09, M15-c63, `git rev-list --count
+   a388118f1..HEAD`, git-only — לא נוסתה פריסה חוזרת בפריט הזה) **263**
+   קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים ב-M01-c54 וב-M01-c55
+   סורבו באותה סיבה בדיוק, פרודקשן נשאר על `a388118f1`).
    `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, לפי `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2,
    LAUNCH-READINESS.md שורה חוסמת 4.
