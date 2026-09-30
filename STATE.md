@@ -1,50 +1,39 @@
-RESUME FROM: M12-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c63)
+RESUME FROM: M13-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c63)
 
 ## המשך מ:
 
-**M11-c63 - DONE (30.09): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
-בכל חומרה, אפס תיקון קוד נדרש.** משימת התור: "Accessibility: run axe on
-every page. Fix every serious and critical violation. Keep WCAG 2.1 AA.
-Record the remaining count in STATE.md." זוהה קוד אמיתי שהשתנה מאז
-המדידה הקודמת (M11-c62, `5e994b7c1`): `git log 5e994b7c1..HEAD -- src/
-e2e/ messages/ packages/` הראה קומיט יחיד, `d2f4cba1e` (M18-c62) — לב
-מועדפים (`WishlistHeart`) נוסף ל-`DefaultProductCard`, שמרונדר ב-
-`RelatedProducts`/`RecentlyViewedRail` בדף המוצר. סימון חדש בדיוק בסקופ
-שהשערים האלה סורקים (שני טסטי דף-מוצר וטסט המקלדת של דף מוצר), אז לא
-הוסתמך על "אפס דריפט" — הורצה סריקה אמיתית.
+**M12-c63 - DONE (30.09): SEO נבדק מחדש, אפס דריפט קוד.** משימת התור:
+"SEO: verify metadata, canonical, og tags, schema.org Product and Offer
+on product pages, sitemap freshness and robots. Fix drift." נבדק דריפט
+מאז המדידה הקודמת (M12-c62, `3ffd5a589`): `git diff --stat
+3ffd5a589..HEAD -- src/app/robots.ts src/app/sitemap 'src/app/sitemap.xml'
+src/lib/seo/ 'src/app/(store)/product/[slug]/page.tsx' src/lib/product-seo.ts`
+— **ריק, אפס שינוי בכל קובצי ה-SEO עצמם.** הקומיט היחיד שנוסף מאז
+`3ffd5a589` הוא `d2f4cba1e` (M18-c62, לב מועדפים), שנגע רק ב-
+`src/components/ProductCard.tsx`, לא בקובץ SEO כלשהו.
 
-נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD, הורם `pnpm start -p
-3617`, והורצו `e2e/a11y.spec.ts` ו-`e2e/a11y-authenticated.spec.ts` (שלוש
-תפקידים דרך `route-lists.ts`: לקוח/מנהל/ספק, בנוסף לסריקה הציבורית) עם
-`--workers=1` בפורגראונד. ריצה ראשונה עם ברירות המחדל של `auth-session.ts`
-דילגה על 57 מ-121 (כל נתיבי המנהל): `admin sign-in failed:
-page.waitForURL: Timeout 20000ms exceeded` — כתובת ברירת המחדל
-(`e2e-admin@test.kenyonexpress.local`) אינה קיימת מול הבסיס הזה. תוקן עם
-`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il` (התיעוד הנכון, ראה
-memory `e2e-money-path-needs-mock-build-and-one-login-per-role`), הורץ
-שוב מהתחלה: **120/121 עברו, 1 דולג בכוונה (`the search combobox says
-which suggestion is selected`, שדה החיפוש הוסר בפרויקט ב-D3, מתועד
-בקובץ עצמו), אפס נכשל.** השער עצמו נכשל על **כל** הפרה, לא רק
-`serious`/`critical` (הערת `a11y-authenticated.spec.ts` על שתי סיבות
-היסטוריות שדורגו `moderate` והיו הפרה אמיתית), אז 0 עובר כאן = 0 מכל
-דרגת חומרה, כולל `serious`/`critical`. **המספר הנותר: 0.**
-
-הסקופ: כל 18 הנתיבים הציבוריים הקבועים (בית, קטלוג, עגלה, צור קשר,
-כניסה/הרשמה/איפוס סיסמה, חיפוש עם שאילתה, ארכיון קטגוריה, שש עמודי
-משפט), הצהרת `lang="he" dir="rtl"`, מקלדת על תשע נתיבים ציבוריים ועל
-דף מוצר ועל קופה זרועה, באנר ההסכמה בשלושה רוחבים, שני סוגי דף מוצר
-(רגיל וקופון), עגלה+קופה זרועות, שלושת/ארבעת שלבי אשף הקופה כולל מצב
-שגיאת ולידציה, פאנל העגלה הקופצת, באנר ההתקנה, ו-`route-lists.ts`'s
-`CUSTOMER_PAGES`/`ADMIN_PAGES`/`SUPPLIER_PAGES` המלאים (כל מה שמסוג
-`'page'`) מאחורי סשן אמיתי לכל אחד משלושת התפקידים.
+לא הוסתמך רק על דריפט ריק: נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי
+מ-HEAD (`sitemap.xml`, חמשת קבצי `sitemap/*.xml`, `robots.txt` ו-
+`/product/[slug]/opengraph-image` כולם נבנו), הורם `pnpm start -p 3618`,
+ונבדק ישירות מול שרת חי: `robots.txt` (`Allow: /`, 11 `Disallow`
+נכונים, `Host`+`Sitemap` מצביעים ל-`kenyonexpress.co.il`), `sitemap.xml`
+(אינדקס עם חמשת תת-המפות), ודף מוצר אמיתי (`/product/barbecue`, נשלף
+מ-`sitemap/products.xml` עצמו — לא URL קבוע) עם `<link rel="canonical">`
+נכון, שמונה תגיות `og:*` תקינות (`title`/`description`/`url`/`locale`/
+`image`+מידות+`alt`/`type`), ו-JSON-LD עם `"@type":"Product"` וגם
+`"@type":"Offer"` נוכחים ב-HTML. שרת הבדיקה נעצר בסוף.
 
 ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
-ירוקים, i18n 627/627, locale 116/64, docs-index 282). `test` 610/610
-קבצים, 7296/7308 (12 דולגים). `build` הורץ טרי כחלק מהמדידה עצמה
-(`CARDCOM_USE_MOCK=true pnpm build`, exit 0). אפס שינוי קוד ייצור.
+ירוקים, זהה ל-M11-c63). `test` 610/610 קבצים, 7296/7308 (12 דולגים,
+זהה). `build` רץ בפועל כחלק מהמדידה, exit 0. אפס שינוי קוד ייצור.
 
 קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M11-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M12-c63
+לשמירה על תקרת 300 שורות).** axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
+בכל חומרה, אפס תיקון קוד נדרש. 120/121 עברו, 1 דולג בכוונה (שדה חיפוש
+שהוסר). ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
 
 **M10-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M11-c63
 לשמירה על תקרת 300 שורות).** כיסוי טסטים נבדק מחדש, שש הקטגוריות

@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c63 (הועבר מ-STATE.md ב-M12-c63, לשמירה על תקרת 300 שורות)
+
+**M11-c63 - DONE (30.09): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
+בכל חומרה, אפס תיקון קוד נדרש.** משימת התור: "Accessibility: run axe on
+every page. Fix every serious and critical violation. Keep WCAG 2.1 AA.
+Record the remaining count in STATE.md." זוהה קוד אמיתי שהשתנה מאז
+המדידה הקודמת (M11-c62, `5e994b7c1`): `git log 5e994b7c1..HEAD -- src/
+e2e/ messages/ packages/` הראה קומיט יחיד, `d2f4cba1e` (M18-c62) — לב
+מועדפים (`WishlistHeart`) נוסף ל-`DefaultProductCard`, שמרונדר ב-
+`RelatedProducts`/`RecentlyViewedRail` בדף המוצר. סימון חדש בדיוק בסקופ
+שהשערים האלה סורקים (שני טסטי דף-מוצר וטסט המקלדת של דף מוצר), אז לא
+הוסתמך על "אפס דריפט" — הורצה סריקה אמיתית.
+
+נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD, הורם `pnpm start -p
+3617`, והורצו `e2e/a11y.spec.ts` ו-`e2e/a11y-authenticated.spec.ts` (שלוש
+תפקידים דרך `route-lists.ts`: לקוח/מנהל/ספק, בנוסף לסריקה הציבורית) עם
+`--workers=1` בפורגראונד. ריצה ראשונה עם ברירות המחדל של `auth-session.ts`
+דילגה על 57 מ-121 (כל נתיבי המנהל): `admin sign-in failed:
+page.waitForURL: Timeout 20000ms exceeded` — כתובת ברירת המחדל
+(`e2e-admin@test.kenyonexpress.local`) אינה קיימת מול הבסיס הזה. תוקן עם
+`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il` (התיעוד הנכון, ראה
+memory `e2e-money-path-needs-mock-build-and-one-login-per-role`), הורץ
+שוב מהתחלה: **120/121 עברו, 1 דולג בכוונה (`the search combobox says
+which suggestion is selected`, שדה החיפוש הוסר בפרויקט ב-D3, מתועד
+בקובץ עצמו), אפס נכשל.** השער עצמו נכשל על **כל** הפרה, לא רק
+`serious`/`critical` (הערת `a11y-authenticated.spec.ts` על שתי סיבות
+היסטוריות שדורגו `moderate` והיו הפרה אמיתית), אז 0 עובר כאן = 0 מכל
+דרגת חומרה, כולל `serious`/`critical`. **המספר הנותר: 0.**
+
+הסקופ: כל 18 הנתיבים הציבוריים הקבועים (בית, קטלוג, עגלה, צור קשר,
+כניסה/הרשמה/איפוס סיסמה, חיפוש עם שאילתה, ארכיון קטגוריה, שש עמודי
+משפט), הצהרת `lang="he" dir="rtl"`, מקלדת על תשע נתיבים ציבוריים ועל
+דף מוצר ועל קופה זרועה, באנר ההסכמה בשלושה רוחבים, שני סוגי דף מוצר
+(רגיל וקופון), עגלה+קופה זרועות, שלושת/ארבעת שלבי אשף הקופה כולל מצב
+שגיאת ולידציה, פאנל העגלה הקופצת, באנר ההתקנה, ו-`route-lists.ts`'s
+`CUSTOMER_PAGES`/`ADMIN_PAGES`/`SUPPLIER_PAGES` המלאים (כל מה שמסוג
+`'page'`) מאחורי סשן אמיתי לכל אחד משלושת התפקידים.
+
+ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים, i18n 627/627, locale 116/64, docs-index 282). `test` 610/610
+קבצים, 7296/7308 (12 דולגים). `build` הורץ טרי כחלק מהמדידה עצמה
+(`CARDCOM_USE_MOCK=true pnpm build`, exit 0). אפס שינוי קוד ייצור.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M10-c63 (הועבר מ-STATE.md ב-M11-c63, לשמירה על תקרת 300 שורות)
 
 **M10-c63 - DONE (30.09): כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
