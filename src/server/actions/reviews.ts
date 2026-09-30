@@ -67,7 +67,13 @@ export async function submitReview(formData: FormData): Promise<ReviewActionStat
   return withActionContext('reviews.submit', () => runSubmitReview(formData))
 }
 
-export type WishlistActionState = { ok: boolean; saved?: boolean; error?: string }
+export type WishlistActionState = {
+  ok: boolean
+  saved?: boolean
+  error?: string
+  /** Set only for the one refusal the client can act on: send the shopper to sign in. */
+  reason?: 'signed_out'
+}
 
 async function runToggleWishlist(productId: string): Promise<WishlistActionState> {
   if (typeof productId !== 'string' || !/^[0-9a-f-]{36}$/i.test(productId)) {
@@ -77,7 +83,7 @@ async function runToggleWishlist(productId: string): Promise<WishlistActionState
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'צריך להתחבר כדי לשמור מוצרים.' }
+  if (!user) return { ok: false, error: 'צריך להתחבר כדי לשמור מוצרים.', reason: 'signed_out' }
 
   const allowed = await checkRateLimit(`wishlist-toggle:${user.id}`, 60, 3600)
   if (!allowed) return { ok: false, error: 'יותר מדי פעולות. נסה שוב בעוד רגע.' }
@@ -101,7 +107,7 @@ async function runToggleWishlist(productId: string): Promise<WishlistActionState
       .eq('product_id', productId)
       .eq('user_id', user.id)
     if (error) return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
-    revalidatePath('/account/wishlist')
+    revalidatePath('/wishlist')
     return { ok: true, saved: false }
   }
 
@@ -123,7 +129,7 @@ async function runToggleWishlist(productId: string): Promise<WishlistActionState
     //   row soft-deleted (185's SELECT hides it) insert 23505, re-read 0 rows
     //
     // Only the first is "already saved". Answering the second the same way
-    // fills the heart while /account/wishlist stays empty -- a success the
+    // fills the heart while /wishlist stays empty -- a success the
     // customer can see is false. See wishlist-soft-delete-restore.test.ts.
     const { data: reread, error: rereadError } = await supabase
       .from('wishlists' as never)
@@ -136,7 +142,7 @@ async function runToggleWishlist(productId: string): Promise<WishlistActionState
       return { ok: false, error: 'הפעולה נכשלה. נסה שוב.' }
     }
   }
-  revalidatePath('/account/wishlist')
+  revalidatePath('/wishlist')
   return { ok: true, saved: true }
 }
 

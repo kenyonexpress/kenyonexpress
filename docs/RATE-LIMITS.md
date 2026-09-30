@@ -67,6 +67,7 @@
 | `referral-code` | 10 | 1 h | referral code mint, per user |
 | `review-submit` | 5 | 1 h | review spam, per user |
 | `wishlist-toggle` | 60 | 1 h | held-down heart, per user |
+| `wishlist-share` | 20 | 1 h | share link mint and rotate, per user |
 | `order-feedback` | 10 | 1 h | feedback mail burst, per user |
 | `redeem` | 60 | 1 h | customer-facing redeem page, per IP |
 | `voucher-redeem` | 120 | 1 h | till scans, per supplier user |

@@ -197,7 +197,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
       const current = product.kenyon_price_agorot
       items.push({
         name: product.name_he ?? 'מוצר',
-        url: product.slug ? `${site}/product/${product.slug}` : `${site}/account/wishlist`,
+        url: product.slug ? `${site}/product/${product.slug}` : `${site}/wishlist`,
         priceAgorot: current,
         droppedFromAgorot:
           previous !== null && current !== null && current < previous ? previous : null,
@@ -221,7 +221,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:14px">KenyonExpress</div>
         <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
         <table style="border-collapse:collapse;width:100%;margin-top:12px">${items.map(itemLineHtml).join('')}</table>
-        <a href="${escapeHtml(`${site}/account/wishlist`)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לרשימת המשאלות</a>
+        <a href="${escapeHtml(`${site}/wishlist`)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לרשימת המשאלות</a>
         <div style="font-size:12px;color:${MUTED};margin-top:16px;text-align:center">קיבלת את המייל הזה כי ביקשת סיכום שבועי לרשימת המשאלות. <a href="${escapeHtml(unsubscribeUrl)}" style="color:${MUTED}">להסרה</a></div>
       </div>
     </div>`
@@ -239,7 +239,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
         return `${item.name}${price}${drop}${stock}`
       }),
       '',
-      `לרשימה: ${site}/account/wishlist`,
+      `לרשימה: ${site}/wishlist`,
       `להסרה: ${unsubscribeUrl}`,
     ].join('\n')
 

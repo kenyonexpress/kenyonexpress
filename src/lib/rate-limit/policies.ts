@@ -166,6 +166,13 @@ export const RATE_LIMIT_POLICIES = {
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
   'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
   'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
+  // The share link (248): mint, rotate, on, off. Each rotate kills a URL the
+  // shopper may have posted, so a held-down button is the only thing to bound.
+  'wishlist-share': {
+    limit: 20,
+    windowSeconds: 3600,
+    reason: 'share link mint and rotate, per user',
+  },
   // Private order feedback (247) is once per order by UNIQUE; the limit bounds
   // a burst across orders, and mails the shop inbox once per accepted row.
   'order-feedback': { limit: 10, windowSeconds: 3600, reason: 'feedback mail burst, per user' },

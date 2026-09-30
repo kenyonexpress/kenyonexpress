@@ -1,4 +1,5 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import WishlistButton from '@/components/product/WishlistButton'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -158,7 +159,8 @@ export default function ProductDealCard({
         </Link>
       </div>
 
-      <div className="p_con__image-wrap relative">
+      <div className="p_con__image-wrap group relative">
+        <WishlistButton productId={product.id} variant="overlay" />
         <Link
           href={`/product/${product.slug}`}
           className="p_con__image-link"

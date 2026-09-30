@@ -4,6 +4,7 @@ import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
 import HandheldSearch from '@/components/search/HandheldSearch'
 import SmartImage from '@/components/ui/SmartImage'
+import WishlistNavCount from '@/components/wishlist/WishlistNavCount'
 import { LOGO } from '@/lib/assets'
 import { Heart } from 'lucide-react'
 import Link from 'next/link'
@@ -122,11 +123,14 @@ export default function SiteHeader() {
                 heart-then-cart order the icon gate pins is unchanged. */}
             <HandheldSearch />
             <Link
-              href="/account/wishlist"
+              href="/wishlist"
               aria-label="המועדפים שלי"
               className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
             >
-              <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
+              <span className="relative">
+                <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
+                <WishlistNavCount />
+              </span>
             </Link>
             <HeaderCart />
           </div>

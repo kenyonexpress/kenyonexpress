@@ -963,7 +963,7 @@ export function buildPriceDropEmail(
   if (!name || newAgorot <= 0 || oldAgorot <= newAgorot) return null
 
   const slug = asText(payload.slug)
-  const url = slug ? `${site}/product/${slug}` : `${site}/account/wishlist`
+  const url = slug ? `${site}/product/${slug}` : `${site}/wishlist`
   const subject = `ירידת מחיר: ${name}`
   const line = `${name} מרשימת המשאלות שלך ירד מ-${formatAgorot(oldAgorot)} ל-${formatAgorot(newAgorot)}.`
 
@@ -1004,7 +1004,7 @@ export function buildBackInStockEmail(
   if (!name) return null
 
   const slug = asText(payload.slug)
-  const url = slug ? `${site}/product/${slug}` : `${site}/account/wishlist`
+  const url = slug ? `${site}/product/${slug}` : `${site}/wishlist`
   const subject = `חזר למלאי: ${name}`
   const priceAgorot = asNumber(payload.price_agorot)
 

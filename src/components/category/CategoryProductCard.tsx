@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import WishlistButton from '@/components/product/WishlistButton'
 import { discountPercent } from '@/lib/discount-percent'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
@@ -128,32 +129,39 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
 
         {priceBlock && <span className="category-card__price">{priceBlock}</span>}
 
-        <Link href={`/product/${product.slug}`} className="category-card__link">
-          <h2 className="category-card__title">{product.name_he}</h2>
-          <span className="category-card__thumb">
-            {hasDiscount && (
-              <span className="category-card__badge">
-                -<span className="percentage">{pct}%</span>
-              </span>
-            )}
-            {thumb ? (
-              // width/height stay the 186 square the raw <img> declared: they are
-              // the pre-load reservation, and the CSS is width:auto/height:auto
-              // under a 186 max on both axes, so the real aspect takes over the
-              // moment the file lands. `fill` is what collapsed the deal cards on
-              // the homepage - it writes position:absolute inline and the wrapper
-              // that takes its height from the image drops to 0.
-              <Image
-                src={thumb}
-                alt={product.name_he}
-                width={186}
-                height={186}
-                sizes={THUMB_SIZES}
-                loading="lazy"
-              />
-            ) : null}
-          </span>
-        </Link>
+        <div className="group relative">
+          <WishlistButton
+            productId={product.id}
+            variant="overlay"
+            className="absolute bottom-2 end-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white/95 text-icon opacity-0 shadow-sm transition-opacity hover:border-price focus-visible:opacity-100 disabled:opacity-50 group-hover:opacity-100 data-[saved=true]:text-price data-[saved=true]:opacity-100 [@media(hover:none)]:opacity-100"
+          />
+          <Link href={`/product/${product.slug}`} className="category-card__link">
+            <h2 className="category-card__title">{product.name_he}</h2>
+            <span className="category-card__thumb">
+              {hasDiscount && (
+                <span className="category-card__badge">
+                  -<span className="percentage">{pct}%</span>
+                </span>
+              )}
+              {thumb ? (
+                // width/height stay the 186 square the raw <img> declared: they are
+                // the pre-load reservation, and the CSS is width:auto/height:auto
+                // under a 186 max on both axes, so the real aspect takes over the
+                // moment the file lands. `fill` is what collapsed the deal cards on
+                // the homepage - it writes position:absolute inline and the wrapper
+                // that takes its height from the image drops to 0.
+                <Image
+                  src={thumb}
+                  alt={product.name_he}
+                  width={186}
+                  height={186}
+                  sizes={THUMB_SIZES}
+                  loading="lazy"
+                />
+              ) : null}
+            </span>
+          </Link>
+        </div>
       </div>
 
       {/* Measured live .product-loop-footer > .price-add-to-cart: the price is

@@ -174,6 +174,7 @@ describe('toggleWishlist', () => {
     expect(await toggleWishlist(PRODUCT_ID)).toEqual({
       ok: false,
       error: 'צריך להתחבר כדי לשמור מוצרים.',
+      reason: 'signed_out',
     })
     getUser.mockResolvedValue({ data: { user: { id: USER_ID } } })
     checkRateLimit.mockResolvedValue(false)
@@ -200,7 +201,7 @@ describe('toggleWishlist', () => {
     const del = find('request:wishlists', 'delete')
     expect(del?.chain).toContainEqual(['eq', ['product_id', PRODUCT_ID]])
     expect(del?.chain).toContainEqual(['eq', ['user_id', USER_ID]])
-    expect(revalidatePath).toHaveBeenCalledWith('/account/wishlist')
+    expect(revalidatePath).toHaveBeenCalledWith('/wishlist')
   })
 
   it('reports a failed delete', async () => {
@@ -216,7 +217,7 @@ describe('toggleWishlist', () => {
       user_id: USER_ID,
       product_id: PRODUCT_ID,
     })
-    expect(revalidatePath).toHaveBeenCalledWith('/account/wishlist')
+    expect(revalidatePath).toHaveBeenCalledWith('/wishlist')
   })
 
   it('reports a failed insert that is not a unique violation', async () => {

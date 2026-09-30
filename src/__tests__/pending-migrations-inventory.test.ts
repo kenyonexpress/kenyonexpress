@@ -414,6 +414,13 @@ describe('the pending migration inventory', () => {
       // dry-run on production (Supabase MCP unauthenticated in the session
       // that filed it).
       '247_order_feedback.sql',
+      // 248 is PENDING (2026-10-01, STEP 12 wishlist): `wishlist_shares`, one
+      // unguessable token per user behind `/wishlist/shared/[token]`, read
+      // through fn_shared_wishlist(token) (definer, token-only input, anon
+      // EXECUTE) while `wishlists` itself keeps 154's no-public-read rule.
+      // Owner-only RLS on the table, no anon grant. Not yet dry-run on
+      // production (Supabase MCP unauthenticated in the session that filed it).
+      '248_wishlist_shares.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

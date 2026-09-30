@@ -1,5 +1,24 @@
 # `migrations/pending/`
 
+## 2026-10-01: 248 PENDING (wishlist share link)
+
+`248_wishlist_shares.sql` adds `wishlist_shares`: one row per user holding an
+unguessable token (24 random bytes, base64url, CHECK 32..64 chars), an
+`enabled` flag and the times. RLS on; the owner gets SELECT, INSERT, UPDATE
+and DELETE on their own row; no anon grant, no policy naming anon. The public
+read is `fn_shared_wishlist(token)`, SECURITY DEFINER with an empty
+search_path, granted to anon and authenticated: it takes the token and
+nothing else, returns the saved products (name, slug, price, image, stock,
+saved-at) of an ENABLED share only, filtered to active undeleted products,
+and never a byte about the owner. 154's rule stands: `wishlists` still has no
+public policy, and the file's self-check raises if one ever appears. Minted
+and managed by `src/server/actions/wishlist.ts` (user client), read by
+`src/server/queries/wishlist.ts` for `/wishlist/shared/[token]`, deleted with
+the account in `src/lib/account/deletion.ts`. Additive, idempotent; rollback
+is one DROP FUNCTION and one DROP TABLE. Not applied; `/wishlist` hides the
+share card while the table is missing (PGRST205). Not yet dry-run on
+production (Supabase MCP unauthenticated in the session that filed it).
+
 ## 2026-10-01: 247 PENDING (private order feedback)
 
 `247_order_feedback.sql` adds `order_feedback`: one row per paid order with a

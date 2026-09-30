@@ -56,3 +56,46 @@ export async function getMyWishlistMarks(productIds: readonly string[]): Promise
   if (error) return new Set()
   return new Set((data as unknown as { product_id: string }[]).map((row) => row.product_id))
 }
+
+export interface SharedWishlistItem {
+  product_id: string
+  name_he: string | null
+  slug: string | null
+  price_ils: number | null
+  kenyon_price: number | null
+  full_price: number | null
+  images: unknown
+  stock_quantity: number | null
+  added_at: string
+}
+
+/** PostgREST: the RPC's function does not exist (248 not applied yet). */
+const FUNCTION_MISSING = 'PGRST202'
+
+/**
+ * The products behind a share token, through `fn_shared_wishlist` (248). The
+ * token is the whole authorisation, so this runs on whatever client the
+ * request has, signed in or not: the function is granted to anon, and it
+ * takes nothing from the caller's identity.
+ *
+ * Three answers, kept apart because the page says different things for each:
+ * `null` when the function is not there yet (the feature is not open), an
+ * empty array for an unknown, disabled or empty list (indistinguishable by
+ * design, see the migration), and the rows otherwise.
+ */
+export async function getSharedWishlist(token: string): Promise<SharedWishlistItem[] | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc(
+    'fn_shared_wishlist' as never,
+    {
+      p_token: token,
+    } as never,
+  )
+  if (error) {
+    if (error.code !== FUNCTION_MISSING && error.code !== TABLE_MISSING) {
+      log.warn('wishlist.shared_read_failed', { code: error.code ?? null })
+    }
+    return null
+  }
+  return (data ?? []) as unknown as SharedWishlistItem[]
+}

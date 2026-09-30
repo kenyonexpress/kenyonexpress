@@ -1,6 +1,7 @@
 import HeaderCart from '@/components/cart/HeaderCart'
 import RegionMenu from '@/components/layout/RegionMenu'
 import SiteSearch from '@/components/search/SiteSearch'
+import WishlistNavCount from '@/components/wishlist/WishlistNavCount'
 import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
@@ -51,12 +52,15 @@ export default function MastheadNav() {
         aria-label="פעולות חשבון ועגלה"
       >
         <Link
-          href="/account/wishlist"
+          href="/wishlist"
           aria-label="המועדפים שלי"
           className="-m-1 p-1 transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}
         >
-          <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
+          <span className="relative block">
+            <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
+            <WishlistNavCount />
+          </span>
         </Link>
 
         {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.
