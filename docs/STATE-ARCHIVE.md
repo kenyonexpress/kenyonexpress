@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c62 (הועבר מ-STATE.md ב-M13-c62, לשמירה על תקרת 300 שורות)
+
+**M12-c62 - DONE (30.09): SEO נבדק מחדש, אפס דריפט קוד.** משימת התור:
+"SEO: verify metadata, canonical, og tags, schema.org Product and Offer
+on product pages, sitemap freshness and robots. Fix drift." נבדק דריפט
+מאז המדידה הקודמת (M12-c61, `8fd11aae4`): `git diff --stat
+8fd11aae4..HEAD -- src/app/robots.ts src/app/sitemap src/app/sitemap.xml
+src/lib/seo/ 'src/app/(store)/product/[slug]/page.tsx' src/lib/product-seo.ts`
+— **ריק, אפס שינוי בכל קובצי ה-SEO עצמם.** השינוי היחיד ברפו מאז
+`8fd11aae4` הוא `fd820969f` (`RecentlyViewedRail`, M18-c61): שש שורות
+ב-`product/[slug]/page.tsx`, כולן ב-JSX body אחרי `RelatedProducts`,
+לא נוגעות ב-`generateMetadata`, ב-JSON-LD (`buildProductJsonLd`/
+`buildBreadcrumbJsonLd`), ב-canonical, ב-sitemap או ב-robots. אומת
+ישירות: `generateMetadata` בדף המוצר עדיין בונה `title`/`description`/
+`robots: { index: false }` לפריט לא-פעיל בדיוק כפי שהיה. שש קבצי הטסט
+הרלוונטיים (`src/app/sitemap.test.ts`, `sitemap-canonicals.test.ts`,
+`sitemap-robots-agree.test.ts`, `robots.test.ts`,
+`src/lib/seo/sitemap-sections.test.ts`, `src/lib/seo/json-ld.test.ts`)
+רצים בתוך `pnpm test` המלא למטה. ארבעת השערים: `type-check` נקי, `lint`
+נקי (biome 2028 קבצים, 12 שערים ירוקים, זהה ל-M11-c62), `test` 610/610
+קבצים, 7296/7308 (12 דולגים, זהה), `build` רץ בפועל (לא הורש קיים
+מ-פריט קודם) — `sitemap.xml`, `sitemap/{categories,content,products,
+regions,suppliers}.xml`, `robots.txt` ו-`/product/[slug]/opengraph-image`
+כולם נבנו. אפס שינוי קוד ייצור, אפס קובץ שונה מלבד `STATE.md`.
+
 ## M11-c62 (הועבר מ-STATE.md ב-M12-c62, לשמירה על תקרת 300 שורות)
 
 **M11-c62 - DONE (30.09): axe נבדק מחדש, 0 serious/critical.** משימת
