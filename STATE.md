@@ -1,54 +1,49 @@
-RESUME FROM: M17-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c63)
+RESUME FROM: M18-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c63)
 
 ## המשך מ:
 
-**M16-c63 - DONE (30.09): תברואת ריפו, אפס דריפט מ-M16-c62.** משימת
-התור: לוודא `git status` נקי, שכל ענף מקומי דחוף, ולרשום PR פתוחים
-וענפים ישנים ב-STATE.md, בלי למזג או למחוק דבר.
+**M17-c63 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם האחת-עשרה, אפס
+דריפט מ-M17-c62.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד
+משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח
+וקישורים שבורים, ולתקן.
 
-**נמדד:** `git status` נקי, `audit/final-audit` תואם בדיוק ל-`origin/
-audit/final-audit` (`c5743e02b`), אפס עבודה לא-committed. **43 ענפים
-מקומיים, זהה בדיוק ל-M16-c62** (אפס ענף חדש, אפס ענף שנעלם). כל 43
-נבדקו בשיטה ישירה יותר הפעם: `git branch -r --contains <sha>` על ראש
-כל ענף מקומי, שעונה על השאלה "האם ה-SHA הזה קיים בהיסטוריה של איזשהו
-ענף remote" בלי תלות בהגדרת ה-tracking (חלק מענפי `arch/*` עוקבים
-בטעות אחרי `origin/main` ולא אחרי `origin/<שם>` שלהם, אך זה עניין
-מטא-דאטה ולא תוכן). **התוצאה: 0 ענפים לא-דחופים מתוך 43**: כל ראש ענף
-מקומי מופיע באיזשהו ענף remote. 37 ענפים תואמים ל-`origin/<שם>` שלהם
-SHA-בדיוק; 6 (`chore/vitest-4`, `docs/nightly-health-green`,
-`fix/main-nightly-red`, `pr36`, `release/v1.1`,
-`wip/refund-record-rebase-head`) אין להם ענף remote באותו שם (נמחק
-אחרי מיזוג, או שלא נדחף בשם הזה מעולם), אך כל ששתם מוכלים ב-`origin/
-main` (`git merge-base --is-ancestor`), כבר ממוזגים, אין תוכן ייחודי
-אבוד. **`main` המקומי נבדק שוב בנפרד**: הראש שלו (`3f6ca53c3`) לא מוכל
-ב-`origin/main` (הסטייה הידועה, חוסם 13, אין אב-משותף), אך הוא כן מוכל
-ב-`origin/audit/final-audit` וב-`origin/work/goal-queue-0923`, מצביע
-ישן משורשלת ה-audit, לא ענף עם עבודה אבודה, זהה למסקנה ב-M16-c54.
-מוגן ב-GitHub, לא נגעו בו.
+**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `04adcbfb5`
+(M17-c62, שאימת דריפט אחד ידני-תקין). `git log 04adcbfb5..HEAD --
+messages/he.json "src/app/(legal)" src/content/legal
+src/components/layout/SiteFooter.tsx` **מחזיר אפס קומיטים** — אף
+קומיט מאז לא נגע במחרוזות UI, בעמוד משפטי או בפוטר. `git diff --stat`
+המלא (9 קבצים) מראה רק תיעוד, תלויות (`package.json`/`pnpm-lock.yaml`)
+ו-`ProductCard.tsx` (M18-c62, לב מועדפים). **נבדק ידנית**: השינוי
+היחיד ב-`ProductCard.tsx` שנוגע לטקסט הוא הזזת המחרוזת הקיימת "אזל
+המלאי" (JSX מבנה בלבד, אין מחרוזת חדשה); `git diff` על הקובץ מאשר
+שאין תוספת עברית/אנגלית פרט להזזה. פוטר האתר (`SiteFooter.tsx`) —
+כל 17 הקישורים הפנימיים (`/account`, `/cart`, `/account/orders`,
+`/about`, `/page/how-it-works`, `/contact`, `/faq`, `/blog`,
+`/suppliers`, `/terms-and-conditions`, `/privacy-policy`,
+`/refund_returns` ושני עוגנים, `/accessibility`) קיימים ברשימת
+הנתיבים של `pnpm build` (בדוק שוב בהרצה הזו); קישורי הרשת החברתית
+(`youtube`/`instagram`/`twitter`/`facebook`) חיצוניים וללא שינוי מאז
+M17-c51. עמודי המשפטי עצמם (`src/app/(legal)/legal/{accessibility,
+privacy,returns,terms}/page.tsx`, `src/content/legal/*`) — **אפס
+קומיט** מאז `c6066ae85` (M17-c60), זהה בדיוק ל-10 המחזורים הקודמים.
 
-**24 PR פתוחים** (`gh pr list --state open`, זהה במספר ל-M16-c62,
-טווח #2-#47, הישן ביותר #2 `claude/terminal-cursor-work-2mr2pq` מ-02.08,
-החדש ביותר #47 `dependabot/npm_and_yarn/minor-dev-0fc32dfca6` מ-28.09,
-פירוט מלא ב-`docs/STATE-ARCHIVE.md` תחת הרשומה הזו). אף אחד לא נסגר,
-נמזג או קיבל תגובה. **116 ענפי remote** (`git branch -r` אחרי `git
-fetch --prune`, זהה ל-M16-c62). **22 ענפים מקומיים ישנים** (בלי commit
-30 יום ומעלה, מ-`save/ke-visual-work` ב-28.07/63 יום ועד
-`feat/rate-limit-layer` ב-21.08/40 יום, רשימת שמות מלאה
-ב-`docs/STATE-ARCHIVE.md`), **21 ענפים פעילים** (פחות מ-30 יום, כולל
-`audit/final-audit` ו-`phase5/homepage-closeout` מהיום עצמו). **11
-מ-43 כבר מוכלים ב-`origin/main`** (מועמדים לניקוי, לא נמחקו, הכלל אוסר
-מחיקת ענפים). **אפס מיזוג, אפס מחיקה, אפס push**: שום ענף לא נזקק לו.
+**שערים הורצו במלואם, כולל build (נדרש מפורש בפריט הזה):**
+`type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים: `copy-gate`
+נקי, `rtl-logical` נקי, i18n 627/627, `locale-format` 116/116,
+`docs-index` 282, `docs-path-audit` 154). `test` 610/610 קבצים,
+7296/7308 (12 דולגים, 57.66s) — זהה ל-M16-c63. `pnpm build` הורץ
+מחדש במלואו, עבר ללא שגיאה. **אין שער חזותי נדרש**: אפס שינוי JSX/CSS
+פונה-ללקוח בפריט הזה עצמו (רק תיעוד).
 
-ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
-ירוקים, `docs-index` 282, `docs-path-audit` 154). `test` 610/610
-קבצים, 7296/7308 (12 דולגים), זהה בייט לבייט למדידה הקודמת. `build` לא
-הורץ מחדש: `.next` הקיים (`BUILD_ID` `D4-tHth7KvanPpP6tU41c`) אומת
-כבנוי אחרי הקומיט האחרון שנגע בנתיב רלוונטי לבנייה (`0428b4726`,
-M04-c63, לפי `git log`), ואפס שינוי קוד בפריט הזה ממילא (docs בלבד).
-אין שינוי UI, אין שער חזותי נדרש.
+קובץ ששונה: `STATE.md`.
 
-קובץ ששונה: `STATE.md` (ו-`docs/STATE-ARCHIVE.md` לארכוב).
+**M16-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M17-c63 לשמירה על תקרת 300 שורות).** תברואת ריפו, אפס דריפט
+מ-M16-c62: `git status` נקי, 43 ענפים מקומיים זהים (0 לא-דחופים,
+נבדק ב-`git branch -r --contains`), 24 PR פתוחים, 116 ענפי remote,
+22 ישנים/21 פעילים, `main` המקומי עדיין סוטה (לא-פעולה, ראו חוסם 13).
+ארבעת השערים ירוקים.
 
 **M15-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c63
 לשמירה על תקרת 300 שורות).** סנכרון תיעוד, שלושת הקבצים
