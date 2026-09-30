@@ -2,6 +2,59 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c61 (הועבר מ-STATE.md ב-M13-c61, לשמירה על תקרת 300 שורות)
+
+**M12-c61 - DONE (30.09): SEO, meta/canonical/og/JSON-LD Product+Offer/
+sitemap/robots, אימות מחדש, אפס דריפט קוד מ-M12-c60.** משימת התור:
+לוודא metadata, canonical, og, schema.org Product+Offer בדפי מוצר,
+טריות sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם: `git log
+44243439e..HEAD` (מאז המדידה הקודמת, M12-c60) מחזיר 17 קומיטים
+(M13-c60..M11-c61), כולם תיעוד/מדידה/תלות/טסטים. `git diff --stat
+44243439e..HEAD -- src/app/robots.ts src/app/robots.test.ts
+src/app/sitemap src/app/sitemap.xml src/app/sitemap.test.ts
+src/app/sitemap-robots-agree.test.ts src/app/sitemap-canonicals.test.ts
+src/lib/seo src/lib/product-seo.ts src/lib/category-tree.ts
+src/lib/regions.ts src/lib/content/pages.ts src/lib/feeds
+src/components/storefront/BlogPostHeader.tsx
+src/components/storefront/ProductInfo.tsx 'src/app/(store)/**/page.tsx'
+'src/app/(main)/coupons/[id]/page.tsx'` חוזר ריק: אפס קומיט נגע בקוד
+SEO.
+
+נמדד בכל זאת מחדש חי: `pnpm start -p 3812` על ה-`.next` הקיים (נבנה
+תחת M04-c61, אפס שינוי קוד ייצור מאז, שער `type-check`/`lint`/`test`
+מאמת זאת שוב למטה):
+- `robots.txt`: 12 שורות `Disallow` (`/redeem/`, `/coupon/`,
+  `/account/`, `/supplier/`, `/scan`, `/admin/`, `/checkout`, `/cart`,
+  `/auth/`, `/api/`, `/reset-password`, `/forgot-password`), `Host`+
+  `Sitemap` לדומיין הנאפה.
+- `sitemap.xml`: אינדקס של חמש תת-מפות (content/categories/products/
+  regions/suppliers), זהה למדידה הקודמת.
+- `sitemap/products.xml`: 46 כתובות, 5 ערכי `lastmod` שונים בפועל.
+- דף מוצר פעיל (`/product/barbecue`): `canonical`, `og:title/
+  description/url/locale/image(+type/width/height/alt)/type`, twitter
+  card תקינים; JSON-LD `Product` (name/url/category/image/brand/offers
+  עם price/priceCurrency/availability/priceSpecification) + JSON-LD
+  `BreadcrumbList` תקינים.
+- בית: `canonical` + JSON-LD `Organization` + `WebSite` (עם
+  `potentialAction`) תקינים.
+- קוד ה-`noindex` למוצר לא פעיל/נמחק (`src/app/(store)/product/[slug]/
+  page.tsx:41`, `robots: {index:false}` כש-`status !== 'active'` או
+  `deleted_at`) נבדק בקריאה, לא השתנה מאז המדידה הקודמת.
+
+**תיקון דיוק תיעוד, לא דריפט קוד:** ספירת שורות ה-`Disallow` שנרשמה
+כ-11 בכל מדידת SEO קודמת (M12-c56 עד M12-c60 לפחות) שגויה. קובץ המקור
+(`src/app/robots.ts`) מכיל 12 ערכים ברשימה, ולא השתנה: הקומיט האחרון
+שנגע בו (`1f53e74b6`) קדם בהרבה ל-M12-c56. הספירה הנכונה היא 12,
+מתוקנת כאן כדי לא להנציח את המספר השגוי הלאה.
+
+אפס דריפט אמיתי. שערים: `type-check` נקי, `lint` נקי (2025 קבצים +
+שנים-עשר השערים המשניים, `i18n` 627/627), `test` המלא 610/610 קבצים
+7296/7308 (12 דולגים, 57.49s). `build` לא הורץ מחדש: אפס שינוי קוד
+מ-M04-c61, ה-`.next` הקיים אומת חי מול curl ומשרת robots/sitemap/
+canonical/JSON-LD תקינים (לא נבנה מחדש כדי לא להתחרות במשאבים מול
+כעשרים `pnpm start` מקבילים שרצים מאותה תיקייה). קובץ קוד שונה: אין.
+תיעוד: `STATE.md` + `docs/STATE-ARCHIVE.md`.
+
 ## M11-c61 (הועבר מ-STATE.md ב-M12-c61, לשמירה על תקרת 300 שורות)
 
 **M11-c61 - DONE (30.09): נגישות, axe על כל דף, אימות מחדש בפעם שביעית,
