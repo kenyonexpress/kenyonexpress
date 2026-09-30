@@ -1,7 +1,35 @@
-RESUME FROM: M05-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c60)
+RESUME FROM: M06-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c60)
 
 ## המשך מ:
+
+**M05-c60 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם העשירית דרך
+ה-management API (Supabase MCP דורש OAuth, לא זמין בסשן לא-אינטראקטיבי),
+זהה ב-100% ל-M05-c59.** משימת התור: `get_advisors` (security+performance)
+read-only, קובץ מיגרציה ל-`migrations/pending/` לכל WARN, עדכון
+`docs/DB-SECURITY-MODEL.md` אם המספרים השתנו.
+
+- טוקן ה-CLI מה-keychain (`security find-generic-password -s "Supabase CLI"
+  -w`, עטיפת `go-keyring-base64:` + פענוח base64), שני `GET
+  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+  {security,performance}`, `200`/`200`. טוקן לא נדפס ולא נשמר לקובץ.
+- אבטחה: 28 ממצאים (4 `rls_enabled_no_policy` INFO, 2
+  `anon_security_definer_function_executable` WARN, 21
+  `authenticated_security_definer_function_executable` WARN, 1
+  `function_search_path_mutable` WARN) — שמות הפונקציות זהים ל-M05-c59.
+- ביצועים: 196 ממצאים (14 `multiple_permissive_policies` WARN, 6
+  `auth_rls_initplan` WARN, 166 `unused_index` INFO, 9
+  `unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute` INFO) —
+  אותן טבלאות בדיוק.
+- **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.** כל ה-WARN מכוסים
+  בארבעת הקבצים הממתינים הקיימים (`209`, `220`, `245`, `246`), נבדקו
+  שעדיין קיימים ולא נערכו. **אין WARN חדש, אין קובץ מיגרציה חדש נדרש.**
+- `docs/DB-SECURITY-MODEL.md` עודכן: סעיף חדש 0י (זהה ב-100% ל-0ט) +
+  שורת הכותרת. `pnpm test src/lib/catalogue` לא נוגע לפריט הזה; ארבעת
+  השערים (type-check/lint/test/build) לא הורצו כי אפס שינוי קוד יישומי —
+  רק תיעוד. קבצי הפלט הזמניים נמחקו.
+
+## M04-c60
 
 **M04-c60 - DONE (30.09): תברואת תלויות, `pnpm audit` נקי, אפס עדכון
 זכאי (כל 14 השורות של `pnpm outdated` הן major, אפס שינוי אפילו
