@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c61 (הועבר מ-STATE.md ב-M15-c61, לשמירה על תקרת 300 שורות)
+
+**M14-c61 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
+cache אומתו מחדש, אפס דריפט מ-M14-c60.** משימת התור: לבדוק bundle
+sizes, image pipeline output, תגיות ISR וכותרות cache, ולתקן את
+הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log cd7750310..HEAD`
+(מאז המדידה הקודמת, M14-c60) מחזיר 18 קומיטים (M13-c60..M13-c61),
+כולם תיעוד/מדידה/תלות/טסטים. `git diff --stat cd7750310..HEAD --
+next.config.ts next.config.js middleware.ts vercel.json src/ package.json`
+חוזר ריק — **אפס קומיט נגע בקוד ייצור על משטח הביצועים**; ה-diff המלא
+מראה רק תיעוד ו-`package.json` (`fast-xml-parser` 5.11.1→5.11.2,
+`devDependency` בלבד).
+
+נמדד בכל זאת מחדש חי: `.next` הקיים תואם קוד ל-HEAD (אפס דריפט מקור
+כמוצג למעלה, נבנה תחת M12-c61/HEAD `8fd11aae4`), `PORT=3917 pnpm
+start` הורם ייעודית למדידה ונסגר בסופה (לא נבנה מחדש כדי לא להתחרות
+במשאבים מול 46 `next-server`/`pnpm start` מקבילים תחת כ-102MB זיכרון
+פנוי — ראה [[concurrent-worktree-builds-oom]]):
+- **Bundle**: `scripts/bundle-gate.mjs` על `.next/build-manifest.json`
+  הקיים — shared first-load **223.8 KB gz על 8 chunks** (budget 260KB,
+  ok). `scripts/bundle-report.mjs` מול הפורט הייעודי: heaviest route
+  `/checkout` **324.1 kB gz**, **27 chunks נבדלים, 345.1 kB gz בסך
+  הכל** — זהה ל-100% ל-M14-c60.
+- **צנרת תמונות**: אפס שינוי ב-`src/**/*.tsx` מאז M14-c60 (מאומת
+  ב-git diff למעלה). אומת חי: `curl -I` על
+  `/_next/image?url=%2Fimages%2Flogo.webp&w=384&q=75` מחזיר 200,
+  `Cache-Control: public, max-age=86400, must-revalidate`.
+- **ISR/תגיות**: `/products` מחזיר `x-nextjs-stale-time: 300`,
+  `x-nextjs-prerender: 1`, `x-nextjs-postponed: 1` — זהה ל-M14-c60.
+  `pnpm lint` כולל `cache-invalidation-gate.mjs` נקי (כל כתיבה לטבלה
+  במטמון מבטלת אותה, כל scope במטמון נושא תג).
+- **כותרות cache** (מול הפורט הייעודי): `/_next/static/chunks/*`
+  `public, max-age=31536000, immutable`; `/` (HTML דינמי) `private,
+  no-cache, no-store, max-age=0, must-revalidate`; `/_next/image?...`
+  `public, max-age=86400, must-revalidate`. שלושתן זהות ל-M14-c60.
+
+**אפס רגרסיה נמצאה, אפס תיקון נדרש — לפני/אחרי זהים: 223.8/223.8 KB
+shared, 324.1/324.1 kB heaviest route (`/checkout`), 345.1/345.1 kB
+סה"כ.** שערים: `type-check` נקי, `lint` נקי (2025 קבצים + שנים-עשר
+השערים המשניים, `i18n` 627/627), `test` המלא 610/610 קבצים 7296/7308
+(12 דולגים, 55.97s). `build` לא הורץ מחדש: אפס שינוי קוד ייצור
+מ-M14-c60, אומת חי מול `pnpm start` על ה-`.next` הקיים (לא נבנה מחדש
+כדי לא להתחרות במשאבים מול 46 סשנים מקבילים). קובץ קוד שונה: אין.
+תיעוד: `STATE.md` + `docs/STATE-ARCHIVE.md`.
+
 ## M13-c61 (הועבר מ-STATE.md ב-M14-c61, לשמירה על תקרת 300 שורות)
 
 **M13-c61 - DONE (30.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy

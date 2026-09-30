@@ -156,6 +156,31 @@ unchanged. All 15 items remain actions this file's own preamble
 excludes an agent from taking alone; no phase 1 item available for
 the queue task this cycle (M08-c61 result: BACKLOG EMPTY).
 
+**Re-checked 2026-09-30 (M15-c61) against `git log 466ebc6fa..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Seventeen commits
+landed since M08-c61's own check point (M16-c60..M18-c60, M01-c61..M14-c61);
+only the `fast-xml-parser` patch bump (M04-c61, `package.json`+
+`pnpm-lock.yaml`, dev-only) and this file's own re-check note touched a
+tracked path — `git diff --stat 466ebc6fa..HEAD -- docs/BACKLOG.md
+migrations/pending supabase/catalogue-known-issues.json src/ next.config.ts
+next.config.mjs package.json pnpm-lock.yaml vercel.json supabase/` confirms
+(`docs/BACKLOG.md` +20/-0 from M08-c61's own note, `package.json` +1/-1,
+`pnpm-lock.yaml` +18/-18). Item 4's commit count changed again (207 -> 225,
+`git rev-list --count a388118f1..HEAD`, git-only, production not re-probed
+this item). Item 5's 18-file list re-checked directly against
+`migrations/pending/`, all present, no new file (59 files total). Item 7's
+finding count (26) re-checked directly against
+`supabase/catalogue-known-issues.json`'s `known` object, unchanged. Item
+12's `dns-watch.sh` process re-checked with `pgrep -fl`, still pid 957
+under `caffeinate` pid 999, unchanged. Item 15's stash count (32)
+re-checked with `git stash list`, unchanged. `type-check`, `lint` (12
+gates) and `test` (610/610 files, 7296/7308) all re-run clean this item;
+`build` not re-run — ~48 `next-server`/`pnpm start` processes were running
+concurrently (~63MB RAM free, `vm_stat`), and the existing `.next`
+(`BUILD_ID` `JvTmoHwdiXPpaSeOjzjaw`) was confirmed source-identical to HEAD
+(`git diff --stat 8fd11aae4..HEAD -- next.config.ts next.config.js
+middleware.ts vercel.json src/ package.json` returns empty).
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -178,10 +203,11 @@ the queue task this cycle (M08-c61 result: BACKLOG EMPTY).
    `a388118f1`, שהיה 22 קומיטים מאחורי ב-25.09, 47 קומיטים מאחורי ב-29.09
    המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54, 118
    ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57, 171 ב-M15-c58,
-   189 ב-M15-c59 (וניסיונות פריסה חוזרים ב-M01-c54 וב-M01-c55 סורבו
-   באותה סיבה בדיוק, פרודקשן נשאר על `a388118f1`), וכעת (30.09, M15-c60,
+   189 ב-M15-c59, 207 ב-M15-c60, וכעת (30.09, M15-c61,
    `git rev-list --count a388118f1..HEAD`, git-only — לא נוסתה פריסה
-   חוזרת בפריט הזה) **207** קומיטים מאחורי HEAD.
+   חוזרת בפריט הזה) **225** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
+   ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן נשאר על
+   `a388118f1`).
    `POST /v13/deployments` עם `gitSource.sha`,
    `target=production`, לפי `docs/RUNBOOK.md`. מקור: STATE.md חוסם 2,
    LAUNCH-READINESS.md שורה חוסמת 4.
