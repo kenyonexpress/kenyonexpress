@@ -1,53 +1,63 @@
-RESUME FROM: M14-c59
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c59)
+RESUME FROM: M15-c59
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c59)
 
 ## המשך מ:
 
-**M13-c59 - DONE (30.09): אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy
-ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
-מ-M13-c58.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
-Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
-בדיקת דריפט קודם: `git log 49750d2a8..HEAD` (מאז המדידה הקודמת,
-M13-c58) מחזיר 17 קומיטים (M14-c58..M12-c59), כולם תיעוד/מדידה/תלות/
-טסטים (ביצועים, תברואת ריפו, סנכרון תיעוד, נגישות, SEO, תלות, DB
-advisors, Lighthouse, route audit, backlog/state, STATE CLEAN, כיסוי
-`payment-money-columns.ts`): `git diff --stat 49750d2a8..HEAD --
-middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*'
-'src/lib/security*' 'src/lib/headers*' next.config.* vercel.json
-'src/server/actions/auth*' 'src/server/actions/checkout*'
-'src/server/actions/*voucher*' 'src/server/actions/*redeem*'` חוזר ריק
-(הקובץ היחיד ששונה בכל 17 הקומיטים תחת `src/`/`supabase/` הוא
-`src/lib/payments/payment-money-columns.test.ts`, לא קשור) — **אפס
-קומיט נגע בכותרות אבטחה או ב-rate limiting**.
+**M14-c59 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
+cache, אימות מחדש מול build אמיתי, אפס דריפט מ-M14-c58.** משימת התור:
+לבדוק bundle sizes, image pipeline output, ISR tags ו-cache headers,
+ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log
+d80244763..HEAD` (מאז המדידה הקודמת, M14-c58) מחזיר 17 קומיטים
+(M13-c58..M13-c59), כולם תיעוד/מדידה/תלות/טסטים (אבטחה, SEO, נגישות,
+כיסוי טסטים, STATE CLEAN, backlog, route audit, Lighthouse, DB
+advisors, תלות). `git diff --stat d80244763..HEAD -- src/ supabase/
+package.json pnpm-lock.yaml next.config.mjs vercel.json` מחזיר רק שני
+קבצים: `pnpm-lock.yaml` (עדכון `caniuse-lite`, M04-c59, לא נוגע ל-JS
+נשלח) ו-`src/lib/payments/payment-money-columns.test.ts` (טסט בלבד,
+M10-c59) — **אפס קומיט נגע בקוד ייצור על משטח הביצועים**.
 
-נמדד בכל זאת מחדש מול build אמיתי (`.next` נבנה מוקדם יותר באותו יום,
-תואם ל-HEAD `5bd92df0d` כי כל הקומיטים שאחריו נגעו רק ב-`STATE.md`/
-`docs`/טסט תשלומים יחיד, אפס שינוי קוד ייצור, `pnpm start` על פורט
-3391):
-- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
-  זהות בארבעתן: CSP (`frame-ancestors 'none'`, `frame-src`/
-  `form-action` ל-`secure.cardcom.solutions` בלבד, `object-src
-  'none'`, `upgrade-insecure-requests`), `Strict-Transport-Security:
-  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
-  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
-  strict-origin-when-cross-origin`.
-- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c58: `login`
-  (`src/server/actions/auth.ts:141`, `checkRateLimit('login:'+ip)`),
-  `begin_checkout` (`src/server/actions/payments/checkout.ts:351`,
-  `checkRateLimit('begin_checkout:user:'+userId, 10, 60)`), `redeem`
-  (`src/app/redeem/[token]/page.tsx:109`,
-  `checkRateLimit('redeem:'+ip, 60, 3600)`), `voucher-redeem`
-  (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
-  `rateLimit('voucher-redeem', userId)`, 429 + `rateLimitHeaders`).
+נמדד בכל זאת מחדש: **build אמיתי חדש נבנה** (`pnpm build`, HEAD
+`0d5f34abb`, 29.6s, `Cache Components enabled`, אפס אזהרה):
+- **Bundle**: `scripts/bundle-gate.mjs` על `.next/build-manifest.json`
+  הטרי — shared first-load **223.8 KB gz על 8 chunks** (budget 260KB,
+  ok). `scripts/bundle-report.mjs` מול `pnpm start` על פורט 3391 —
+  heaviest route `/checkout` ב-324.1 kB gzipped; **27 chunks נבדלים,
+  345.1 kB gz בסך הכל — זהה ל-100% ל-M14-c58**.
+- **צנרת תמונות**: שש שימושי `fill`+`sizes` בקוד (`ProductCard.tsx`
+  (×2), `CouponCard.tsx`, `coupons/[id]/page.tsx`, `ProductGallery.tsx`,
+  `CategoryProductCard.tsx`) כולם עם `vw`/`calc(...vw...)` בביטוי;
+  `HeroSlider.tsx` (`HERO_IMAGE_SIZES`) הוא `px` קבוע במתכוון — box
+  בגובה קבוע בכל viewport (מתועד בקוד, ה-bug שכבר תוקן פעמיים
+  ב-`ImageUploader`/`CouponDealForm` לא חוזר. **אפס שימוש `fill` חדש
+  נמצא** (חיפוש רחב בכל `src/**/*.tsx` שמייבא `next/image`, שלוש
+  תוצאות נוספות היו טקסט הערה/placeholder, לא `fill` אמיתי).
+- **ISR/tags**: פלט ה-build מציג `Revalidate`/`Expire` על כל דף
+  (`1h`/`1d` על רוב הנתיבים הדינמיים), זהה למבנה הקודם; `pnpm lint`
+  כולל `node scripts/cache-invalidation-gate.mjs` בנפרד — **נקי**
+  (כל כתיבה לטבלה במטמון מבטלת אותה, כל scope במטמון נושא תג).
+- **כותרות cache** (מול `pnpm start` פורט 3391): `/_next/static/chunks/*`
+  `public, max-age=31536000, immutable`; `/` (HTML דינמי) `private,
+  no-cache, no-store, max-age=0, must-revalidate`; `/_next/image?...`
+  `public, max-age=86400, must-revalidate`. שלושתן תואמות למדיניות
+  שנמדדה ב-M14-c58 (`docs/ARCHITECTURE-PERFORMANCE.md` §3.2
+  (`minimumCacheTTL: 2_678_400`) הוא מסמך ספק/ארכיטקטורה מוקדם עם שמות
+  קומפוננטה שלא קיימים בקוד (`HomeHeroImage`, `ProductCardImage`) —
+  לא ה-implementation בפועל, לא נבדק כאמת).
 
-**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
-קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale-format 116/116),
-`test` 608/608 קבצים 7274/7286 (12 skipped, זהה ל-M12-c59). `build`:
-נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD, לא נבנה מחדש כדי לא
-להתחרות במשאבים עם סשנים מקבילים, אומת חי דרך `pnpm start` על פורט
-3391 עם ארבעת הכותרות לעיל. אין שינוי UI, אין שער חזותי נדרש. **קובץ
-יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M12-c59 הועבר
-לתקרת 300 שורות).
+**אפס רגרסיה נמצאה, אפס תיקון נדרש.** `type-check` נקי, `lint` נקי
+(2023 קבצים, 12 שערי תוכן ירוקים כולל cache-invalidation, i18n
+627/627, locale-format 116/116), `test` 608/608 קבצים 7274/7286 (12
+skipped, זהה ל-M13-c59), `build` נבנה מחדש בהצלחה. **קבצים ששונו:
+`STATE.md` + `docs/STATE-ARCHIVE.md`** (M13-c59 הועבר לתקרת 300
+שורות) — אפס שינוי קוד ייצור.
+
+## M13-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M13-c59: אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב
+Upstash על login/checkout/redeem אומתו מחדש מול build אמיתי (פורט
+3391), אפס דריפט מ-M13-c58 — כותרות זהות בארבעה נתיבים (`/`,
+`/checkout`, `/login`, `/redeem/test-token`), ארבע מגבלות הקצב באותן
+שורות קוד בדיוק. אפס שינוי קוד.
 
 ## M12-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

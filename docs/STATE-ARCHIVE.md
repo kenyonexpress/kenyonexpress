@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c59 (הועבר מ-STATE.md ב-M14-c59, לשמירה על תקרת 300 שורות)
+
+**M13-c59 - DONE (30.09): אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
+מ-M13-c58.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
+Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים.
+בדיקת דריפט קודם: `git log 49750d2a8..HEAD` (מאז המדידה הקודמת,
+M13-c58) מחזיר 17 קומיטים (M14-c58..M12-c59), כולם תיעוד/מדידה/תלות/
+טסטים (ביצועים, תברואת ריפו, סנכרון תיעוד, נגישות, SEO, תלות, DB
+advisors, Lighthouse, route audit, backlog/state, STATE CLEAN, כיסוי
+`payment-money-columns.ts`): `git diff --stat 49750d2a8..HEAD --
+middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*'
+'src/lib/security*' 'src/lib/headers*' next.config.* vercel.json
+'src/server/actions/auth*' 'src/server/actions/checkout*'
+'src/server/actions/*voucher*' 'src/server/actions/*redeem*'` חוזר ריק
+(הקובץ היחיד ששונה בכל 17 הקומיטים תחת `src/`/`supabase/` הוא
+`src/lib/payments/payment-money-columns.test.ts`, לא קשור) — **אפס
+קומיט נגע בכותרות אבטחה או ב-rate limiting**.
+
+נמדד בכל זאת מחדש מול build אמיתי (`.next` נבנה מוקדם יותר באותו יום,
+תואם ל-HEAD `5bd92df0d` כי כל הקומיטים שאחריו נגעו רק ב-`STATE.md`/
+`docs`/טסט תשלומים יחיד, אפס שינוי קוד ייצור, `pnpm start` על פורט
+3391):
+- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
+  זהות בארבעתן: CSP (`frame-ancestors 'none'`, `frame-src`/
+  `form-action` ל-`secure.cardcom.solutions` בלבד, `object-src
+  'none'`, `upgrade-insecure-requests`), `Strict-Transport-Security:
+  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
+  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`.
+- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c58: `login`
+  (`src/server/actions/auth.ts:141`, `checkRateLimit('login:'+ip)`),
+  `begin_checkout` (`src/server/actions/payments/checkout.ts:351`,
+  `checkRateLimit('begin_checkout:user:'+userId, 10, 60)`), `redeem`
+  (`src/app/redeem/[token]/page.tsx:109`,
+  `checkRateLimit('redeem:'+ip, 60, 3600)`), `voucher-redeem`
+  (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
+  `rateLimit('voucher-redeem', userId)`, 429 + `rateLimitHeaders`).
+
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2023
+קבצים, 12 שערי תוכן ירוקים, i18n 627/627, locale-format 116/116),
+`test` 608/608 קבצים 7274/7286 (12 skipped, זהה ל-M12-c59). `build`:
+נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD, לא נבנה מחדש כדי לא
+להתחרות במשאבים עם סשנים מקבילים, אומת חי דרך `pnpm start` על פורט
+3391 עם ארבעת הכותרות לעיל. אין שינוי UI, אין שער חזותי נדרש. **קובץ
+יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M12-c59 הועבר
+לתקרת 300 שורות).
+
 ## M12-c59 (הועבר מ-STATE.md ב-M13-c59, לשמירה על תקרת 300 שורות)
 
 **M12-c59 - DONE (30.09): SEO — meta/canonical/og/JSON-LD
