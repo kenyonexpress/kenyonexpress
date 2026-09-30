@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c60 (הועבר מ-STATE.md ב-M18-c60, לשמירה על תקרת 300 שורות)
+
+**M17-c60 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם שמינית, אפס
+דריפט.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי, לאתר
+שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח וקישורים שבורים,
+ולתקן. **בסיס המדידה: התיקון האמיתי האחרון ב-`46b3b93ea` (M17-c51,
+דליפת LTR + placeholder אנגלי + שני redirect ישנים ל-`/legal`) —
+מ-M17-c52 ועד M17-c59 כל מחזור אימת מחדש בלי שינוי.** `git log
+46b3b93ea..HEAD -- messages/he.json 'src/app/(legal)'` מחזיר קומיט
+אחד בלבד, `99b2079cb` (M18-c52, חיבור דירוג כוכבים אמיתי לעמוד המוצר),
+שהוסיף מחרוזת חדשה אחת ל-`he.json`: `reviewsPage.summaryLink` = `"{avg}
+מתוך 5 · {count} ביקורות"` — עברית תקנית, שני placeholders, ללא דליפת
+LTR וללא מילה באנגלית. תיקיית `src/app/(legal)` ו-`src/content/legal`
+לא זזו כלל מאז `46b3b93ea`.
+
+**קישורים:** 15 ה-href בפוטר (`src/components/layout/SiteFooter.tsx`)
+כולם בלי `built: false` (כל הדגלים הוסרו כשהעמודים עלו) ונבדקו אחד-אחד
+מול `src/app` — כולם מצביעים על route קיים (`/account`, `/cart`,
+`/account/orders`, `/about`, `/page/how-it-works`, `/contact`, `/faq`,
+`/blog`, `/suppliers`, `/terms-and-conditions`, `/privacy-policy`,
+`/refund_returns` פעמיים כולל עוגן, `/accessibility`). שלושת ה-alias
+המשפטיים (`/cancellation-policy`, `/terms`, `/privacy`) נבדקו מול
+`next.config.ts` דרך `legal-routes.test.ts` — `permanent: true` בכל
+השלושה, אפס שינוי. `legal-duplication.test.ts` (מונע שני routes לאותה
+מדיניות) ו-`legal-content.test.ts` ירוקים.
+
+**שערים:** `pnpm test src/app/hebrew-copy.test.ts src/content/legal
+'src/app/(legal)'` — 5 קבצים, 77 טסטים, ירוק. `type-check` נקי. `lint`
+נקי (`copy-gate` — אפס משפט שיווקי לטיני, `i18n-gate` 627/627,
+`rtl-logical-gate` נקי). `test` המלא 610/610 קבצים, 7296/7308 (12
+דולגים) — זהה בדיוק ל-M16-c60. **`build`**: `.next` הקיים
+(`BUILD_ID` `_q_e1hFe7GBgP05yPvgZC`) כבר אומת תואם ל-HEAD ב-M16-c60
+(אחרון שנגע בנתיבי build הוא `e1f99e3e7`, טסט בלבד, ללא שינוי מאז) —
+לא נבנה מחדש, ~42 `next-server`/`pnpm start` מקבילים עדיין רצים על
+המכונה. אין שינוי UI ואין שינוי קוד ייצור — אין צורך בשער חזותי.
+**קובץ ששונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M16-c60
+הועבר לתקרת 300 שורות).
+
 ## M16-c60 (הועבר מ-STATE.md ב-M17-c60, לשמירה על תקרת 300 שורות)
 
 **M16-c60 - DONE (30.09): תברואת ריפו בפעם העשירית, אפס דריפט בענפים

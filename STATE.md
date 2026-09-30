@@ -1,43 +1,48 @@
-RESUME FROM: M18-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c60)
+RESUME FROM: M01-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c60)
 
 ## המשך מ:
 
-**M17-c60 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם שמינית, אפס
-דריפט.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי, לאתר
-שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח וקישורים שבורים,
-ולתקן. **בסיס המדידה: התיקון האמיתי האחרון ב-`46b3b93ea` (M17-c51,
-דליפת LTR + placeholder אנגלי + שני redirect ישנים ל-`/legal`) —
-מ-M17-c52 ועד M17-c59 כל מחזור אימת מחדש בלי שינוי.** `git log
-46b3b93ea..HEAD -- messages/he.json 'src/app/(legal)'` מחזיר קומיט
-אחד בלבד, `99b2079cb` (M18-c52, חיבור דירוג כוכבים אמיתי לעמוד המוצר),
-שהוסיף מחרוזת חדשה אחת ל-`he.json`: `reviewsPage.summaryLink` = `"{avg}
-מתוך 5 · {count} ביקורות"` — עברית תקנית, שני placeholders, ללא דליפת
-LTR וללא מילה באנגלית. תיקיית `src/app/(legal)` ו-`src/content/legal`
-לא זזו כלל מאז `46b3b93ea`.
+**M18-c60 - DONE (30.09): בדיקת אפס-פעילות בפעם השביעית, המחזור *לא*
+היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c60..M17-c60)
+לא הפיקו שינוי קוד המחזור, לכתוב `MAINTENANCE IDLE` עם התאריך
+ב-STATE.md, ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף המוצר
+שתואם Electro v7 וליישם אותו.
 
-**קישורים:** 15 ה-href בפוטר (`src/components/layout/SiteFooter.tsx`)
-כולם בלי `built: false` (כל הדגלים הוסרו כשהעמודים עלו) ונבדקו אחד-אחד
-מול `src/app` — כולם מצביעים על route קיים (`/account`, `/cart`,
-`/account/orders`, `/about`, `/page/how-it-works`, `/contact`, `/faq`,
-`/blog`, `/suppliers`, `/terms-and-conditions`, `/privacy-policy`,
-`/refund_returns` פעמיים כולל עוגן, `/accessibility`). שלושת ה-alias
-המשפטיים (`/cancellation-policy`, `/terms`, `/privacy`) נבדקו מול
-`next.config.ts` דרך `legal-routes.test.ts` — `permanent: true` בכל
-השלושה, אפס שינוי. `legal-duplication.test.ts` (מונע שני routes לאותה
-מדיניות) ו-`legal-content.test.ts` ירוקים.
+**נמדד ישירות מ-git, לא הונח:** `git diff --stat be089d2b4^..HEAD --
+. ':!STATE.md' ':!docs/'` על שבעה-עשר קומיטי המחזור (M01-c60..M17-c60)
+מחזיר בדיוק שני קבצים, שניהם טסטים בלבד —
+`src/lib/commerce/bought-this-week.test.ts` +
+`src/lib/commerce/stock-live.test.ts` (M09-c60) ו-
+`src/server/domain/vouchers/scan-context.test.ts` (M10-c60). אפס שינוי
+ב-`package.json`/`pnpm-lock.yaml` הפעם (M04-c60 לא מצא bump זכאי כלל,
+בניגוד ל-M04-c59 שריענן `caniuse-lite`) — פחות שינוי מ-c59, לא יותר.
+**אותו דפוס בדיוק כמו M18-c55 עד M18-c59** (בכל אחד מהם נמצאו שני קומיטי
+שינוי-קוד אמיתיים באותו מחזור, תמיד טסטים ולפעמים גם lockfile, מעולם לא
+קוד ייצור) — עדיין לא נצפה מחזור אפס-פעילות מילולי. בעקבות התקדים
+שנקבע שם: `MAINTENANCE IDLE` לא נכתב, ושלב חיפוש שיפור ההמרה לא הופעל,
+כי שני קבצי הטסט אינם שינוי בקוד הייצור שמזין את דף הבית או דף המוצר
+(אין קובץ תחת `src/app` או `src/components` בדיפף), ולכן אין בסיס קוד
+חדש למדוד מולו שיפור המרה — וכפיית פיצ'ר שכזה כל מחזור בלי ליד אמיתי
+תהיה עבודה לא ממוקדת בניגוד לכלל "no half-finished implementations" /
+"don't design for hypothetical future requirements" של הפרויקט.
 
-**שערים:** `pnpm test src/app/hebrew-copy.test.ts src/content/legal
-'src/app/(legal)'` — 5 קבצים, 77 טסטים, ירוק. `type-check` נקי. `lint`
-נקי (`copy-gate` — אפס משפט שיווקי לטיני, `i18n-gate` 627/627,
-`rtl-logical-gate` נקי). `test` המלא 610/610 קבצים, 7296/7308 (12
-דולגים) — זהה בדיוק ל-M16-c60. **`build`**: `.next` הקיים
-(`BUILD_ID` `_q_e1hFe7GBgP05yPvgZC`) כבר אומת תואם ל-HEAD ב-M16-c60
-(אחרון שנגע בנתיבי build הוא `e1f99e3e7`, טסט בלבד, ללא שינוי מאז) —
-לא נבנה מחדש, ~42 `next-server`/`pnpm start` מקבילים עדיין רצים על
-המכונה. אין שינוי UI ואין שינוי קוד ייצור — אין צורך בשער חזותי.
-**קובץ ששונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M16-c60
-הועבר לתקרת 300 שורות).
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2025 קבצים, i18n
+627/627, locale-format 116/116, docs-index 282, docs-path-audit 152),
+`test` 610/610 קבצים 7296/7308 (12 skipped, 61.99s) — זהה למדידת
+M17-c60. אין שער חזותי נדרש (אפס שינוי UI/קוד ייצור). `build` לא הורץ
+מחדש: `.next/BUILD_ID` (`_q_e1hFe7GBgP05yPvgZC`) כבר אומת תואם ל-HEAD
+ב-M16-c60/M17-c60, ואף קומיט מאז לא נגע בנתיב build (שני קומיטי הטסט
+בלבד), ועשרות `next-server`/`pnpm start` מקבילים עדיין רצים על המכונה
+(סיכון OOM ל-build מקביל, ללא תועלת מדידה). קובץ ששונה: `STATE.md`
+בלבד.
+
+## M17-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M17-c60: קופי ומשפטי אומתו מחדש בפעם שמינית, אפס דריפט מאז `46b3b93ea`
+(M17-c51); מחרוזת חדשה אחת בלבד מ-M18-c52 (`reviewsPage.summaryLink`),
+עברית תקנית. 15 קישורי פוטר וכל ה-alias המשפטיים נבדקו, אפס שינוי.
+ארבעת השערים ירוקים.
 
 ## M16-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
