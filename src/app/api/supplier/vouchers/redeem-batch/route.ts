@@ -1,9 +1,11 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { settledKeys } from '@/lib/vouchers/offline-scan'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
+import { resolveEnteredVoucherCode } from '@/server/domain/vouchers/fallback-code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext } from '@/server/domain/vouchers/scan-context'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -119,6 +121,11 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   for (const item of parsed.data.items) {
     let shortCode: string | null = null
+    // What the till typed, for the answer it gets back. NOT the resolved code:
+    // an 8-digit fallback that resolves to another business's voucher answers
+    // not_found from the RPC, and echoing the ten-symbol code it resolved to
+    // would hand a guesser a code for a voucher that is not theirs.
+    let enteredCode: string | null = null
 
     if (item.qr_payload) {
       const verified = verifyVoucherQrPayload(item.qr_payload)
@@ -136,8 +143,14 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
         continue
       }
       shortCode = normalizeVoucherCode(verified.c)
+      enteredCode = shortCode
     } else if (item.code) {
-      shortCode = normalizeVoucherCode(item.code)
+      const resolved = await resolveEnteredVoucherCode(
+        item.code,
+        () => createAdminClient() as never,
+      )
+      shortCode = resolved.code
+      enteredCode = resolved.entered
     }
 
     if (!shortCode) {
@@ -145,7 +158,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
         idempotency_key: item.idempotency_key,
         outcome: 'not_found',
         replayed: false,
-        code: null,
+        code: enteredCode,
         message: MESSAGES.not_found ?? null,
       })
       continue
@@ -168,7 +181,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
         idempotency_key: item.idempotency_key,
         outcome: 'error',
         replayed: false,
-        code: shortCode,
+        code: enteredCode,
         message: MESSAGES.error ?? null,
       })
       continue
@@ -180,7 +193,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       idempotency_key: item.idempotency_key,
       outcome,
       replayed: result.replayed === true,
-      code: (result.code as string) ?? shortCode,
+      code: (result.code as string) ?? enteredCode,
       message: MESSAGES[outcome] ?? null,
     })
   }

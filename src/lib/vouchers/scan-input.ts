@@ -5,7 +5,7 @@
  * Three things can arrive, and only the first two used to be handled:
  *
  *   1. a bare signed token, `KEV1.<body>.<mac>`
- *   2. a hand-typed short code, `ABCDE-FGHJK`
+ *   2. a hand-typed short code, `ABCDE-FGHJK`, or its 8-digit fallback `1234-5678`
  *   3. a redeem URL, `https://host/redeem/KEV1.<body>.<mac>`
  *
  * The third is what a QR should encode, because a phone's built-in camera has
@@ -33,6 +33,15 @@ export function normalizeScannedCode(input: string): string {
 const CODE_PATTERN = /^[0-9A-HJKMNP-TV-Z]{10}$/
 
 /**
+ * The 8-digit fallback code (251): 7 random digits and a Luhn check digit,
+ * the same shape as a printed coupon code. Shape only here; the check digit
+ * and the lookup are the server's (domain/vouchers/fallback-code.ts). Length
+ * decides between the two: ten symbols is a code even when all ten are
+ * digits, eight digits is a fallback.
+ */
+const FALLBACK_CODE_PATTERN = /^[0-9]{8}$/
+
+/**
  * Pulls the token out of anything a scanner can hand us.
  *
  * A token is taken whole and never normalised: it is base64url with dots, and
@@ -56,7 +65,9 @@ export function parseScanInput(raw: string): ScanInput {
   }
 
   const code = normalizeScannedCode(trimmed)
-  if (CODE_PATTERN.test(code)) return { kind: 'code', token: null, code }
+  if (CODE_PATTERN.test(code) || FALLBACK_CODE_PATTERN.test(code)) {
+    return { kind: 'code', token: null, code }
+  }
 
   return { kind: 'invalid', token: null, code: null }
 }

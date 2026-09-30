@@ -1,6 +1,7 @@
 import { type Agorot, agorot, ilsToAgorot } from '@/lib/commerce/money'
 import type { VoucherRateColumn } from '@/lib/commerce/order-money-columns'
 import { computeVoucherExpiry, generateUniqueVoucherCode } from './code'
+import { generateVoucherFallbackCode } from './fallback-code'
 import { signVoucherQrPayload } from './qr'
 
 /**
@@ -41,6 +42,16 @@ export interface VoucherIssueInput {
    * A default here would restore exactly that failure for the next caller.
    */
   rateColumn: VoucherRateColumn
+  /**
+   * Whether this database has `vouchers.fallback_code` (251), from probing it
+   * (`resolveVoucherFallbackColumn`). Required and with no default for the
+   * same reason as `rateColumn`: 251 is pending, and naming a column the
+   * hosted table lacks fails the whole INSERT with 42703, which for a coupon
+   * order means a paid customer and no voucher. When true, every voucher is
+   * issued with an 8-digit Luhn-checked fallback code beside its 10-symbol
+   * code; when false the row is byte for byte what it was before 251.
+   */
+  hasFallbackColumn: boolean
   now?: Date
 }
 
@@ -64,6 +75,8 @@ export interface IssuedVoucherRow {
    */
   platform_bp?: number
   platform_percent?: number
+  /** 8 digits, 7 random plus Luhn (251). Present only when `hasFallbackColumn`. */
+  fallback_code?: string
   offer_valid_until: string
   expires_at: string
   issued_at: string
@@ -184,6 +197,10 @@ export async function issueVoucher(
       ...(input.rateColumn === 'platform_bp'
         ? { platform_bp: Math.round(platformPercent * 100) }
         : { platform_percent: platformPercent }),
+      // Minted fresh on every attempt, like `code`: the partial UNIQUE index
+      // on fallback_code is a second 23505 arbiter, and a retry that kept the
+      // digits and only changed the letters would collide on them again.
+      ...(input.hasFallbackColumn ? { fallback_code: generateVoucherFallbackCode() } : {}),
       offer_valid_until: input.offerValidUntil.toISOString(),
       expires_at: expiresAt.toISOString(),
       issued_at: now.toISOString(),
@@ -192,7 +209,7 @@ export async function issueVoucher(
     const { data, error } = await client.from('vouchers').insert(row).select('id').single()
 
     if (!error && data) return { id: data.id, row }
-    if (error?.code === UNIQUE_VIOLATION) continue // code raced; regenerate
+    if (error?.code === UNIQUE_VIOLATION) continue // code or fallback raced; regenerate both
     throw new VoucherIssueError(`voucher insert failed: ${JSON.stringify(error)}`)
   }
 

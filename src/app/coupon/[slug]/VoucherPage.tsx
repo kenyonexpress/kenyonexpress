@@ -11,6 +11,7 @@ import {
 } from '@/lib/vouchers/coupon-view'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import { buildRedemptionInquiryText } from '@/lib/whatsapp'
+import { formatVoucherFallbackCode } from '@/server/domain/vouchers/fallback-code'
 import { getCustomerVoucher } from '@/server/queries/vouchers'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -107,6 +108,14 @@ export default async function VoucherPage({ id }: { id: string }) {
               >
                 {formatCouponCode(voucher.code)}
               </p>
+              {voucher.fallback_code && (
+                <p className="text-sm text-gray-500" data-testid="coupon-fallback-code">
+                  קוד חלופי בספרות:{' '}
+                  <span dir="ltr" className="font-mono font-bold tracking-widest text-gray-700">
+                    {formatVoucherFallbackCode(voucher.fallback_code)}
+                  </span>
+                </p>
+              )}
               <p className="text-xs text-gray-400">הציגו את הקוד בבית העסק</p>
             </div>
           ) : (

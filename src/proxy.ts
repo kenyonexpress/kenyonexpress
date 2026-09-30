@@ -179,6 +179,11 @@ export async function proxy(request: NextRequest) {
     // every read on it is the customer's own money.
     pathname === '/wallet' ||
     pathname.startsWith('/wallet/') ||
+    // The merchant validation page (STEP 14): a voucher's status and balance
+    // for the business it was sold against, so a session before anything.
+    // /redeem/[token] is deliberately NOT here: it logs a forged signature
+    // before asking for one, and there is no signature on this path to log.
+    pathname.startsWith('/voucher/') ||
     // The voucher half of /coupon/ only; the coupon variant of a product page
     // shares the prefix and is public. See lib/vouchers/coupon-path.ts.
     couponPathNeedsSession(pathname) ||

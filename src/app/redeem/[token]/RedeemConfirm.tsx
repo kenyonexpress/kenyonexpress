@@ -19,7 +19,15 @@ import { useState } from 'react'
 type VoucherStatus = 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
 
 type Props = {
-  token: string
+  /**
+   * The signed QR payload when the cashier arrived by scanning one; absent
+   * on the merchant validation page (/voucher/[id]), which was reached by
+   * typing a code, a fallback code or the voucher's id. With a token the
+   * burn request carries the token and the server re-verifies its HMAC;
+   * without one it carries the ten-symbol code, and the RPC decides
+   * everything either way.
+   */
+  token?: string
   code: string
   codeDisplay: string
   status: VoucherStatus
@@ -70,11 +78,11 @@ export default function RedeemConfirm(props: Props) {
       const response = await fetch('/api/supplier/vouchers/redeem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          qr_payload: props.token,
-          method: 'camera',
-          idempotency_key: idempotencyKey,
-        }),
+        body: JSON.stringify(
+          props.token
+            ? { qr_payload: props.token, method: 'camera', idempotency_key: idempotencyKey }
+            : { code: props.code, method: 'manual', idempotency_key: idempotencyKey },
+        ),
       })
       const body = (await response.json().catch(() => null)) as {
         outcome?: string

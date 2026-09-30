@@ -112,3 +112,25 @@ describe('normalizeScannedCode', () => {
     expect(normalizeScannedCode('ab-cd ef')).toBe('ABCDEF')
   })
 })
+
+describe('parseScanInput and the 8-digit fallback code (251)', () => {
+  it('accepts eight digits as a code, with or without the 4-4 separator', () => {
+    expect(parseScanInput('12345678')).toEqual({ kind: 'code', token: null, code: '12345678' })
+    expect(parseScanInput('1234-5678')).toEqual({ kind: 'code', token: null, code: '12345678' })
+    expect(parseScanInput(' 1234 5678 ')).toEqual({ kind: 'code', token: null, code: '12345678' })
+  })
+
+  it('still takes ten digits as a ten-symbol code: length decides', () => {
+    expect(parseScanInput('1234567890')).toEqual({
+      kind: 'code',
+      token: null,
+      code: '1234567890',
+    })
+  })
+
+  it('refuses seven and nine digits, and letters mixed into eight', () => {
+    for (const raw of ['1234567', '123456789', '1234567A', 'ABCD1234']) {
+      expect(parseScanInput(raw).kind).toBe('invalid')
+    }
+  })
+})

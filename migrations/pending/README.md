@@ -1,5 +1,25 @@
 # `migrations/pending/`
 
+## 2026-10-01: 251 PENDING (8-digit voucher fallback code, STEP 14)
+
+`251_voucher_fallback_code.sql` adds `vouchers.fallback_code`: one nullable
+text column, `CHECK (fallback_code IS NULL OR fallback_code ~ '^[0-9]{8}$')`,
+and a partial UNIQUE index where not null. Seven random digits plus a Luhn
+check digit, the printed-coupon shape of 182, minted by the issuer beside the
+ten-symbol code (`src/server/domain/vouchers/issue.ts`). No function is
+created or replaced: `redeem_voucher` (085) still matches on `code`, and the
+application resolves an 8-digit entry to it with a service-role read
+(`src/server/domain/vouchers/fallback-code.ts`), so the single-use UPDATE, the
+membership derivation, the replay guard and the audit row are untouched. RLS
+unchanged (row-scoped policies inherit the column); no grants. Nullable and
+with no backfill on purpose: the issuer, the customer reads and the voucher
+email probe for the column once per process and leave it out until this is
+applied, so a build ahead of the migration keeps issuing vouchers instead of
+raising 42703; `docs/INDEX.md` records zero vouchers ever issued on the hosted
+project, so there is nothing to backfill. Rollback in the file header (drop
+index, constraint, column). Not yet dry-run on production (Supabase MCP
+unauthenticated in the session that filed it).
+
 ## 2026-10-01: 250 PENDING (referral programme on at ₪20, STEP 13)
 
 `250_referral_program_seed.sql` inserts the one row `referral_program_settings`

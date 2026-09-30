@@ -31,6 +31,7 @@ export default function robots(): MetadataRoute.Robots {
           '/wallet', // the account wallet's short door (STEP 13)
           '/supplier/',
           '/scan',
+          '/voucher/', // the merchant validation page: a voucher's balance, by id or code
           '/admin/',
           '/checkout',
           '/cart',

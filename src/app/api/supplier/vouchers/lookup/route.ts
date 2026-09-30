@@ -1,8 +1,10 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { getSupplierMemberships } from '@/lib/supplier/rbac'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
+import { resolveEnteredVoucherCode } from '@/server/domain/vouchers/fallback-code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { toPublicOutcome, validateVoucherRedemption } from '@/server/domain/vouchers/redemption'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
@@ -144,7 +146,21 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     }
     shortCode = normalizeVoucherCode(verified.c)
   } else if (code) {
-    shortCode = normalizeVoucherCode(code)
+    // Ten symbols pass through as before; eight digits (the 251 fallback) are
+    // resolved to the ten with a service-role read, and a fallback nobody
+    // holds is recorded as a miss under the digits that were typed.
+    const resolved = await resolveEnteredVoucherCode(code, () => createAdminClient() as never)
+    if (!resolved.code) {
+      await recordRefusedScan({
+        codeEntered: resolved.entered,
+        outcome: 'not_found',
+        scanMethod: method,
+        context: scanContext,
+        client: supabase,
+      })
+      return respond({ outcome: 'not_found', message: MESSAGES.not_found }, 404)
+    }
+    shortCode = resolved.code
   }
 
   if (!shortCode) return respond({ outcome: 'not_found', message: MESSAGES.not_found }, 404)

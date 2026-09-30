@@ -56,6 +56,8 @@ vi.mock('@/server/domain/vouchers/scan-context', () => ({
   readScanContext: () => ({ ip: '203.0.113.9', userAgent: 'till/1.0' }),
   recordRefusedScan: (args: unknown) => recordRefusedScan(args),
 }))
+const fallbackRow = vi.fn()
+
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     from: (table: string) => {
@@ -63,6 +65,18 @@ vi.mock('@/lib/supabase/admin', () => ({
         return {
           update: (patch: unknown) => ({ eq: (_c: string, v: string) => adminUpdate(patch, v) }),
         }
+      }
+      if (table === 'vouchers') {
+        // The 251 resolver: one row by fallback_code, or none.
+        const chain: Record<string, unknown> = {
+          select: () => chain,
+          eq: (_c: string, v: string) => {
+            fallbackRow.mock.calls.push([v])
+            return chain
+          },
+          maybeSingle: () => Promise.resolve({ data: fallbackRow(), error: null }),
+        }
+        return chain
       }
       const row = table === 'supplier_staff' ? staffRow : membershipRow
       const chain: Record<string, unknown> = {
@@ -125,6 +139,7 @@ describe('supplier scan endpoint', () => {
     adminUpdate.mockReset().mockResolvedValue({ error: null })
     staffRow.mockReset().mockReturnValue({ id: 'staff-1', supplier_id: 'sup-1' })
     membershipRow.mockReset().mockReturnValue({ supplier_id: 'sup-1' })
+    fallbackRow.mockReset().mockReturnValue(null)
   })
 
   afterEach(() => {
@@ -358,6 +373,46 @@ describe('supplier scan endpoint', () => {
       )
       expect(response.status).toBe(200)
       expect((await response.json()).outcome).toBe('success')
+    })
+  })
+
+  describe('the 8-digit fallback code (251)', () => {
+    // 7 digits and their Luhn check digit: 1234567 -> check digit 4.
+    const FALLBACK = '12345674'
+
+    it('resolves eight digits to the ten-symbol code and hands the RPC THAT code', async () => {
+      fallbackRow.mockReturnValue({ code: 'ABCD123456' })
+      const response = await POST(request({ code: '1234-5674', method: 'manual' }))
+      expect(response.status).toBe(200)
+      expect((rpc.mock.calls[0] as [string, { p_code: string }])[1].p_code).toBe('ABCD123456')
+      expect(fallbackRow.mock.calls.some((c) => c[0] === FALLBACK)).toBe(true)
+    })
+
+    it('answers 404 and never reaches the RPC for a fallback nobody holds', async () => {
+      fallbackRow.mockReturnValue(null)
+      const response = await POST(request({ code: FALLBACK }))
+      expect(response.status).toBe(404)
+      expect(rpc).not.toHaveBeenCalled()
+      // Recorded as a miss under the digits typed, like every refused entry.
+      expect(recordRefusedScan).toHaveBeenCalledTimes(1)
+      const [refusal] = recordRefusedScan.mock.calls[0] as [
+        { outcome: string; codeEntered: string },
+      ]
+      expect(refusal).toMatchObject({ outcome: 'not_found', codeEntered: FALLBACK })
+    })
+
+    it('refuses a bad check digit before any read, so nine guesses in ten cost nothing', async () => {
+      const wrong = '12345675'
+      const response = await POST(request({ code: wrong }))
+      expect(response.status).toBe(404)
+      expect(fallbackRow).not.toHaveBeenCalled()
+      expect(rpc).not.toHaveBeenCalled()
+    })
+
+    it('leaves a ten-symbol code exactly as it was: no read, straight to the RPC', async () => {
+      await POST(request({ code: 'abcd-123456' }))
+      expect(fallbackRow).not.toHaveBeenCalled()
+      expect((rpc.mock.calls[0] as [string, { p_code: string }])[1].p_code).toBe('ABCD123456')
     })
   })
 })

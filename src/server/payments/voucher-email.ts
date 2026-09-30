@@ -1,6 +1,10 @@
 import { sendEmail } from '@/lib/email/resend'
 import { type VoucherEmailLine, buildVoucherEmail } from '@/lib/email/voucher-email'
 import { log } from '@/lib/observability/log'
+import {
+  resolveVoucherFallbackColumn,
+  voucherFallbackColumnProbe,
+} from '@/server/domain/vouchers/fallback-code'
 import { getOrderInvoice } from '@/server/payments/invoices'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -32,6 +36,7 @@ export interface VoucherEmailContext {
 type VoucherRow = {
   id: string
   code: string
+  fallback_code?: string | null
   face_value_agorot: number
   coupon_price_agorot: number
   remaining_amount_due_agorot: number
@@ -69,10 +74,16 @@ export async function sendVoucherEmail(
       .maybeSingle()
     if (suppressed) return { sent: false, reason: 'suppressed' }
 
+    // 251 is pending: name the fallback column only on a database that has
+    // it, or this read fails with 42703 and the customer gets no email at all
+    // for a display line.
+    const hasFallback = await resolveVoucherFallbackColumn(
+      voucherFallbackColumnProbe(admin as never),
+    )
     const { data: rows } = await admin
       .from('vouchers')
       .select(
-        `id, code, face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot, expires_at,
+        `id, code, ${hasFallback ? 'fallback_code, ' : ''}face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot, expires_at,
          products(name_he),
          suppliers(name, address, contact_phone)`,
       )
@@ -90,6 +101,7 @@ export async function sendVoucherEmail(
       return {
         id: row.id,
         code: row.code,
+        fallbackCode: row.fallback_code ?? null,
         productName: product?.name_he ?? null,
         supplierName: supplier?.name ?? null,
         supplierAddress: supplier?.address ?? null,

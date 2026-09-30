@@ -113,6 +113,48 @@ in a byte) so no symbol is favoured. A bare `byte % 32` would bias the symbols
 `0` through `7`, which is the classic modulo-bias bug and would shrink the
 effective code space.
 
+### The fallback code (251, pending)
+
+Eight ASCII digits: **seven random and a Luhn check digit**, the same shape
+as the printed coupon codes of 182 (`src/lib/coupons/unit-codes.ts`), so a
+till meets one numeric format everywhere.
+
+```
+column    vouchers.fallback_code   text, nullable, CHECK ^[0-9]{8}$
+index     vouchers_fallback_code_idx   partial UNIQUE where not null
+space     10^7 valid codes; a bad check digit is refused before any read
+```
+
+It exists for the counter with no camera and the cashier who will not read
+"5 then K then V" aloud twice. It is displayed `1234-5678`, stored without the
+separator, and printed on the coupon page and in the voucher email only when
+the row has one.
+
+**It decides nothing.** `redeem_voucher` still matches on `code` and on
+nothing else. `resolveEnteredVoucherCode` (`domain/vouchers/fallback-code.ts`)
+turns an 8-digit entry into the ten-symbol code with a service-role read
+(073 lets a supplier read a voucher only after redemption, so a supplier-scoped
+read could never find the outstanding one) and the RPC is handed what it
+always took. Length decides the shape: ten symbols is a code even when all ten
+are digits; eight digits is a fallback; anything else is invalid without a read.
+A fallback nobody holds, or one whose Luhn digit fails, is recorded as
+`not_found` under the digits typed.
+
+**The column may not exist.** Until 251 is applied, the issuer, the customer
+reads and the voucher email each probe for it once per process
+(`resolveVoucherFallbackColumn`) and leave it out; the resolver answers
+`unknown_fallback` on 42703. A build that ships ahead of the migration keeps
+issuing vouchers, which is the failure 059's rename taught this codebase.
+
+**Three doors, one confirm screen.** `/redeem/[token]` (scanned QR),
+`/scan` (in-app camera or typed code) and `/voucher/[id]` (the merchant
+validation page: a voucher's id, its code or its fallback in the path) all
+render the same `RedeemConfirm` and POST one burn request with one idempotency
+key per mount. The validation page requires a supplier session before it reads
+anything, collapses another business's voucher into "not found", rate limits
+by address, and holds no signature to verify because nothing in its path is
+signed.
+
 ### The QR payload
 
 ```

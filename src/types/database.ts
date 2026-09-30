@@ -4334,6 +4334,7 @@ export type Database = {
           coupon_price_agorot: number
           created_at: string
           expires_at: string
+          fallback_code: string | null
           face_value_agorot: number
           gift_claim_token_hash: string | null
           gift_claimed_at: string | null
@@ -4369,6 +4370,7 @@ export type Database = {
           coupon_price_agorot: number
           created_at?: string
           expires_at: string
+          fallback_code?: string | null
           face_value_agorot: number
           gift_claim_token_hash?: string | null
           gift_claimed_at?: string | null
@@ -4404,6 +4406,7 @@ export type Database = {
           coupon_price_agorot?: number
           created_at?: string
           expires_at?: string
+          fallback_code?: string | null
           face_value_agorot?: number
           gift_claim_token_hash?: string | null
           gift_claimed_at?: string | null

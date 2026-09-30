@@ -128,7 +128,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
     (raw: string, scanMethod: 'camera' | 'manual') => {
       const parsed = parseScanInput(raw)
       if (parsed.kind === 'invalid') {
-        setError('הקוד אינו תקין. קוד שובר הוא 10 תווים, או סרקו את ה-QR של הלקוח.')
+        setError('הקוד אינו תקין. קוד שובר הוא 10 תווים או 8 ספרות, או סרקו את ה-QR של הלקוח.')
         return
       }
       void verify(parsed.code, parsed.token, scanMethod)
@@ -387,7 +387,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
           inputMode="text"
           autoCapitalize="characters"
           autoComplete="off"
-          placeholder="XXXXX-XXXXX"
+          placeholder="XXXXX-XXXXX או 1234-5678"
           dir="ltr"
           className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-widest text-gray-900 placeholder:text-gray-300 focus:border-gray-900 focus:outline-none"
         />

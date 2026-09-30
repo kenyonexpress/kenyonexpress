@@ -28,9 +28,17 @@ import { OFF_PAGE } from '@/styles/tokens'
  * rather than on a wrapper for Outlook to respect it.
  */
 
+/** `1234-5678`, the same grouping the coupon page prints. Digits only in, or unchanged. */
+function formatFallbackCode(code: string): string {
+  const clean = code.replace(/[^0-9]/g, '')
+  return clean.length === 8 ? `${clean.slice(0, 4)}-${clean.slice(4)}` : code
+}
+
 export interface VoucherEmailLine {
   id: string
   code: string
+  /** 8-digit fallback (251); absent or null on a voucher issued before it. */
+  fallbackCode?: string | null
   productName: string | null
   supplierName: string | null
   supplierAddress: string | null
@@ -121,11 +129,13 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
   const blocks = input.vouchers.map((voucher) => {
     const url = couponUrl(input.siteUrl, voucher.id)
     const code = formatCouponCode(voucher.code)
+    const fallback = voucher.fallbackCode ? formatFallbackCode(voucher.fallbackCode) : null
     const expiry = formatCouponDate(voucher.expiresAt)
 
     textLines.push(
       `— ${voucher.productName ?? 'קופון'}${voucher.supplierName ? ` · ${voucher.supplierName}` : ''}`,
       `קוד: ${code}`,
+      ...(fallback ? [`קוד חלופי בספרות: ${fallback}`] : []),
       `שולם באתר: ${formatAgorot(voucher.couponPriceAgorot)}`,
       `לתשלום בבית העסק: ${formatAgorot(voucher.remainingDueAgorot)}`,
       `בתוקף עד: ${expiry}`,
@@ -142,6 +152,11 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
             : ''
         }
         <div dir="ltr" style="font-family:monospace;font-size:26px;font-weight:700;letter-spacing:3px;color:${INK};text-align:center;margin:16px 0;padding:12px;background:${PANEL};border-radius:10px">${escapeHtml(code)}</div>
+        ${
+          fallback
+            ? `<div style="font-size:13px;color:${MUTED};text-align:center;margin:-8px 0 16px">קוד חלופי בספרות: <span dir="ltr" style="font-family:monospace;font-weight:700;letter-spacing:2px;color:${INK}">${escapeHtml(fallback)}</span></div>`
+            : ''
+        }
         <div style="font-size:14px;color:${INK};line-height:1.9">
           <div>שולם באתר: <strong>${escapeHtml(formatAgorot(voucher.couponPriceAgorot))}</strong></div>
           <div>לתשלום בבית העסק: <strong>${escapeHtml(formatAgorot(voucher.remainingDueAgorot))}</strong></div>

@@ -16,6 +16,10 @@ import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { trackServerEvent } from '@/server/analytics/track'
 import { awardOrderCountBonus } from '@/server/cashback/bonus'
+import {
+  resolveVoucherFallbackColumn,
+  voucherFallbackColumnProbe,
+} from '@/server/domain/vouchers/fallback-code'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import {
   issueGiftCardsForItem,
@@ -86,6 +90,7 @@ async function issueVouchersForItem(
   product: { couponExpiryDays: number | null; offerValidUntil: Date | null },
   now: Date,
   rateColumn: VoucherRateColumn,
+  hasFallbackColumn: boolean,
 ): Promise<void> {
   if (!item.product_id || !item.supplier_id) {
     throw new Error(`coupon order item ${item.id} is missing product or supplier`)
@@ -153,6 +158,7 @@ async function issueVouchersForItem(
       couponExpiryDays: expiryDays,
       offerValidUntil,
       rateColumn,
+      hasFallbackColumn,
       now,
     })
     issuedIds.push(issued.id)
@@ -566,6 +572,12 @@ export async function finalizeOrder(input: {
     // per table per process, but a coupon order issues one voucher per unit and
     // the intent is clearer resolved next to the loop that consumes it.
     const rateColumn = await resolveVoucherRateColumn(moneyColumnProbe(admin as never, 'vouchers'))
+    // Same question about the 8-digit fallback code (251, pending): asked once
+    // here, cached per process, and answered "absent" on the hosted table until
+    // the migration lands, so issuance never names a column it does not have.
+    const hasFallbackColumn = await resolveVoucherFallbackColumn(
+      voucherFallbackColumnProbe(admin as never),
+    )
 
     // Which lines are gift cards (234). Resolved before the loop because the
     // branch below must keep them OUT of executeSplitForItem: a gift-card line
@@ -595,7 +607,15 @@ export async function finalizeOrder(input: {
           couponExpiryDays: null,
           offerValidUntil: null,
         }
-        await issueVouchersForItem(admin, item, order.user_id, info, now, rateColumn)
+        await issueVouchersForItem(
+          admin,
+          item,
+          order.user_id,
+          info,
+          now,
+          rateColumn,
+          hasFallbackColumn,
+        )
         // The coupon line is settled the moment it is paid: everything charged
         // online is ours, nothing is deferred, and scanning the voucher moves
         // no money. It shares split_executed with physical lines because the

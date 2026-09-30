@@ -8,6 +8,7 @@ import { identityScopedClient } from '@/lib/supabase/bearer'
 import { expireWalletPasses } from '@/lib/wallet/notify'
 import { trackServerEvent } from '@/server/analytics/track'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
+import { resolveEnteredVoucherCode } from '@/server/domain/vouchers/fallback-code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -242,7 +243,24 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     }
     shortCode = normalizeVoucherCode(verified.c)
   } else if (code) {
-    shortCode = normalizeVoucherCode(code)
+    // Ten symbols pass through exactly as before. Eight digits are the 251
+    // fallback code: resolved to the ten-symbol code with a service-role
+    // read, because 073 lets a supplier read a voucher only AFTER redemption,
+    // and handed to the RPC, which still decides membership, status, expiry
+    // and single use on its own. A fallback nobody holds, or one that fails
+    // its Luhn digit, is a recorded miss under the digits that were typed.
+    const resolved = await resolveEnteredVoucherCode(code, () => createAdminClient() as never)
+    if (!resolved.code) {
+      await recordRefusedScan({
+        codeEntered: resolved.entered,
+        outcome: 'not_found',
+        scanMethod: method,
+        context: scanContext,
+        client: supabase,
+      })
+      return respond({ outcome: 'not_found', message: OUTCOME_MESSAGES.not_found }, 404)
+    }
+    shortCode = resolved.code
   }
 
   if (!shortCode) {

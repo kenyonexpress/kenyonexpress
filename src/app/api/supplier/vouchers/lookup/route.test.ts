@@ -49,6 +49,22 @@ vi.mock('@/server/domain/vouchers/scan-context', () => ({
   readScanContext: () => ({ ip: '203.0.113.7', userAgent: 'test' }),
   recordRefusedScan: (...args: unknown[]) => recordRefusedScan(...args),
 }))
+/** The 251 resolver's one read: `vouchers.code` by `fallback_code`. */
+const fallbackRow = vi.fn()
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => {
+    const chain: Record<string, unknown> = {
+      from: () => chain,
+      select: () => chain,
+      eq: (_c: string, v: string) => {
+        fallbackRow.mock.calls.push([v])
+        return chain
+      },
+      maybeSingle: () => Promise.resolve({ data: fallbackRow(), error: null }),
+    }
+    return chain
+  },
+}))
 
 const { POST } = await import('./route')
 
@@ -82,6 +98,7 @@ function post(body: unknown): NextRequest {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  fallbackRow.mockReturnValue(null)
   getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
   rateLimit.mockResolvedValue(decision(true))
   getSupplierMemberships.mockResolvedValue(['sup-1'])
@@ -292,5 +309,31 @@ describe('POST /api/supplier/vouchers/lookup when the read itself fails', () => 
     expect(res.status).toBe(404)
     expect((await res.json()).outcome).toBe('not_found')
     expect(recordRefusedScan).toHaveBeenCalledTimes(1)
+  })
+
+  describe('the 8-digit fallback code (251)', () => {
+    const FALLBACK = '12345674' // 1234567 + Luhn 4
+
+    it('looks the voucher up by the ten-symbol code the digits resolve to', async () => {
+      fallbackRow.mockReturnValue({ code: 'ABCDEFGHJK' })
+      const res = await POST(post({ code: '1234-5674' }))
+      expect(res.status).toBe(200)
+      expect(getVoucherForRedemption).toHaveBeenCalledWith('ABCDEFGHJK', ['sup-1'])
+      expect((await res.json()).voucher.code).toBe('ABCDEFGHJK')
+    })
+
+    it('answers not_found for a fallback nobody holds, and records the digits', async () => {
+      const res = await POST(post({ code: FALLBACK }))
+      expect(res.status).toBe(404)
+      expect(getVoucherForRedemption).not.toHaveBeenCalled()
+      expect(recordRefusedScan).toHaveBeenCalledWith(
+        expect.objectContaining({ outcome: 'not_found', codeEntered: FALLBACK }),
+      )
+    })
+
+    it('does not read at all for a ten-symbol code', async () => {
+      await POST(post({ code: 'ABCDE-FGHJK' }))
+      expect(fallbackRow).not.toHaveBeenCalled()
+    })
   })
 })

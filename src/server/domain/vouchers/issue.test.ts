@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { isValidVoucherCode } from './code'
+import { isValidVoucherFallbackCode } from './fallback-code'
 import {
   type IssuedVoucherRow,
   type VoucherIssueClient,
@@ -72,6 +73,9 @@ function input(overrides: Partial<VoucherIssueInput> = {}): VoucherIssueInput {
     // The post-059 lineage, which is what most of these cases assert. The
     // hosted project is on the other one; see the pair of cases that name it.
     rateColumn: 'platform_bp',
+    // Post-251: the hosted table lacks the column until the migration is
+    // applied; see the cases that name it.
+    hasFallbackColumn: true,
     now: new Date('2026-07-24T00:00:00.000Z'),
     ...overrides,
   }
@@ -235,5 +239,72 @@ describe('issueVoucher', () => {
     await expect(issueVoucher(client, input({ couponPriceIls: '0' }))).rejects.toBeInstanceOf(
       VoucherIssueError,
     )
+  })
+})
+
+describe('the 8-digit fallback code (251)', () => {
+  beforeEach(() => {
+    process.env.VOUCHER_QR_SECRET = SECRET
+  })
+  afterEach(() => {
+    process.env.VOUCHER_QR_SECRET = undefined
+  })
+
+  it('is minted beside the ten-symbol code, 8 digits with a valid Luhn digit', async () => {
+    const { client, inserted } = fakeClient()
+    await issueVoucher(client, input({ hasFallbackColumn: true }))
+    const row = inserted[0] as IssuedVoucherRow
+    expect(row.fallback_code).toMatch(/^[0-9]{8}$/)
+    expect(isValidVoucherFallbackCode(row.fallback_code as string)).toBe(true)
+    expect(isValidVoucherCode(row.code)).toBe(true)
+  })
+
+  it('is NOT named on a database that lacks the column, so the INSERT cannot raise 42703', async () => {
+    const { client, inserted } = fakeClient()
+    await issueVoucher(client, input({ hasFallbackColumn: false }))
+    expect('fallback_code' in (inserted[0] as IssuedVoucherRow)).toBe(false)
+  })
+
+  it('is regenerated together with the code on a unique violation', async () => {
+    // Every attempt mints a fresh pair. Proven by making the first insert
+    // collide and comparing what the retry carried.
+    const seen: string[] = []
+    let first = true
+    const client: VoucherIssueClient = {
+      from() {
+        return {
+          select() {
+            return {
+              eq() {
+                return {
+                  async maybeSingle() {
+                    return { data: null, error: null }
+                  },
+                }
+              },
+            }
+          },
+          insert(row: IssuedVoucherRow) {
+            seen.push(row.fallback_code as string)
+            return {
+              select() {
+                return {
+                  async single() {
+                    if (first) {
+                      first = false
+                      return { data: null, error: { code: '23505' } }
+                    }
+                    return { data: { id: 'voucher-1' }, error: null }
+                  },
+                }
+              },
+            }
+          },
+        }
+      },
+    }
+    await issueVoucher(client, input({ hasFallbackColumn: true }))
+    expect(seen).toHaveLength(2)
+    expect(seen[0]).not.toBe(seen[1])
   })
 })

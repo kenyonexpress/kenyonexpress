@@ -1,6 +1,10 @@
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import {
+  resolveVoucherFallbackColumn,
+  voucherFallbackColumnProbe,
+} from '@/server/domain/vouchers/fallback-code'
 
 /**
  * Customer-facing voucher reads. RLS (051 vouchers_owner_read) already scopes
@@ -11,6 +15,8 @@ import { createClient } from '@/lib/supabase/server'
 export interface CustomerVoucher {
   id: string
   code: string
+  /** 8 digits (251), or null on a voucher issued before the column existed. */
+  fallback_code: string | null
   qr_payload: string
   status: 'issued' | 'redeemed' | 'expired' | 'cancelled' | 'refunded'
   face_value_agorot: number
@@ -24,11 +30,23 @@ export interface CustomerVoucher {
   supplier: { name: string | null } | null
 }
 
-const VOUCHER_SELECT = `id, code, qr_payload, status,
+/**
+ * The customer's column list, with `fallback_code` only when the database has
+ * it. 251 is pending: naming the column on the hosted table raises 42703 and
+ * the guarded read below would THROW, turning every customer's coupon page
+ * into an error for a display line. Probed once per process, service role,
+ * same shape as the issuer's own check.
+ */
+async function customerSelect(extra = ''): Promise<string> {
+  const hasFallback = await resolveVoucherFallbackColumn(
+    voucherFallbackColumnProbe(createAdminClient() as never),
+  )
+  return `id, code, ${hasFallback ? 'fallback_code, ' : ''}qr_payload, status,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
        product:products(name_he, slug),
-       supplier:suppliers(name)`
+       supplier:suppliers(name${extra})`
+}
 
 /**
  * A voucher read, or a throw. Never a silent absence.
@@ -66,7 +84,7 @@ export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
   const data = voucherReadOrFail(
     await supabase
       .from('vouchers')
-      .select(VOUCHER_SELECT)
+      .select(await customerSelect())
       .eq('user_id', user.id)
       // active vouchers first, then most recent
       .order('status', { ascending: true })
@@ -111,17 +129,11 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
   const data = voucherReadOrFail(
     await supabase
       .from('vouchers')
-      .select(
-        // No platform_percent here on purpose: that column is mid-rename to
-        // platform_bp (059) and the hosted project has not been cut over, so
-        // naming it would tie this page to whichever side of the rename it
-        // lands on. The customer's page has no use for the split anyway.
-        `id, code, qr_payload, status,
-       face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-       offer_valid_until, expires_at, issued_at, redeemed_at,
-       product:products(name_he, slug),
-       supplier:suppliers(name, city, address, contact_phone, whatsapp)`,
-      )
+      // No platform_percent here on purpose: that column is mid-rename to
+      // platform_bp (059) and the hosted project has not been cut over, so
+      // naming it would tie this page to whichever side of the rename it
+      // lands on. The customer's page has no use for the split anyway.
+      .select(await customerSelect(', city, address, contact_phone, whatsapp'))
       .eq('id', id)
       .eq('user_id', user.id)
       .maybeSingle(),
@@ -175,6 +187,28 @@ export async function getVoucherForRedemption(
   code: string,
   supplierIds: string[],
 ): Promise<RedemptionPreview | null> {
+  return loadRedemptionPreview({ column: 'code', value: code }, supplierIds)
+}
+
+/**
+ * The same preview, keyed by `vouchers.id` for the merchant validation page
+ * (/voucher/[id], STEP 14). Same client, same ownership collapse, same
+ * "decides nothing" contract: the id is a UUID a customer's screen shows
+ * and is not a secret, so another business's id answers null exactly as a
+ * made-up one does. A malformed id is refused before Postgres can raise 22P02.
+ */
+export async function getVoucherForRedemptionById(
+  id: string,
+  supplierIds: string[],
+): Promise<RedemptionPreview | null> {
+  if (!/^[0-9a-fA-F-]{36}$/.test(id)) return null
+  return loadRedemptionPreview({ column: 'id', value: id }, supplierIds)
+}
+
+async function loadRedemptionPreview(
+  by: { column: 'code' | 'id'; value: string },
+  supplierIds: string[],
+): Promise<RedemptionPreview | null> {
   if (supplierIds.length === 0) return null
 
   const admin = createAdminClient()
@@ -187,10 +221,10 @@ export async function getVoucherForRedemption(
        expires_at, redeemed_at,
        product:products(name_he)`,
       )
-      .eq('code', code)
+      .eq(by.column, by.value)
       .maybeSingle(),
     'voucher.redemption_read_failed',
-    { code },
+    { [by.column]: by.value },
   )
 
   if (!data) return null
