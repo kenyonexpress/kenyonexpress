@@ -1,6 +1,7 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import {
   buildBreadcrumbJsonLd,
+  buildItemListJsonLd,
   buildProductJsonLd,
   buildSiteJsonLd,
   jsonLdScript,
@@ -150,6 +151,67 @@ describe('buildBreadcrumbJsonLd', () => {
     expect(items[0]?.position).toBe(1)
     expect(items[1]?.position).toBe(2)
     expect(items[1]?.item).toBe('https://kenyonexpress.co.il/category/electronics')
+  })
+})
+
+describe('buildItemListJsonLd', () => {
+  const entries = [
+    { name: 'עיסוי שוודי', path: '/product/swedish-massage' },
+    { name: 'חבילת ספא זוגית', path: '/product/couples-spa' },
+  ]
+
+  it('numbers the cards from one, absolute and in page order', () => {
+    const node = buildItemListJsonLd({
+      name: 'ספא',
+      path: '/category/spa',
+      entries,
+      siteUrl: SITE,
+    })
+    expect(node?.['@type']).toBe('ItemList')
+    expect(node?.url).toBe('https://kenyonexpress.co.il/category/spa')
+    expect(node?.numberOfItems).toBe(2)
+    const items = node?.itemListElement as Record<string, unknown>[]
+    expect(items.map((i) => i.position)).toEqual([1, 2])
+    expect(items[1]?.url).toBe('https://kenyonexpress.co.il/product/couples-spa')
+    expect(items[1]?.name).toBe('חבילת ספא זוגית')
+  })
+
+  it('continues the numbering from the page offset, so page 2 never claims positions 1-24', () => {
+    const node = buildItemListJsonLd({
+      name: 'ספא',
+      path: '/category/spa',
+      entries,
+      startPosition: 25,
+      siteUrl: SITE,
+    })
+    const items = node?.itemListElement as Record<string, unknown>[]
+    expect(items.map((i) => i.position)).toEqual([25, 26])
+  })
+
+  it('carries no price: the product page owns that claim', () => {
+    const node = buildItemListJsonLd({
+      name: 'ספא',
+      path: '/category/spa',
+      entries,
+      siteUrl: SITE,
+    })
+    expect(JSON.stringify(node)).not.toMatch(/price|offers|availability/i)
+  })
+
+  it('is null for an empty archive rather than a zero-item list', () => {
+    expect(
+      buildItemListJsonLd({ name: 'ספא', path: '/category/spa', entries: [], siteUrl: SITE }),
+    ).toBeNull()
+  })
+
+  it('does not double the slash when the site url ends with one', () => {
+    const node = buildItemListJsonLd({
+      name: 'ספא',
+      path: '/category/spa',
+      entries,
+      siteUrl: `${SITE}/`,
+    })
+    expect(node?.url).toBe('https://kenyonexpress.co.il/category/spa')
   })
 })
 

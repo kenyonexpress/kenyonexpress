@@ -196,6 +196,62 @@ export function buildBreadcrumbJsonLd(entries: readonly BreadcrumbEntry[], siteU
   }
 }
 
+export interface ItemListEntry {
+  name: string
+  /** Site-relative path, e.g. `/product/x`. */
+  path: string
+}
+
+export interface ItemListJsonLdInput {
+  /** The archive's own name: the category's Hebrew title. */
+  name: string
+  /** Site-relative path of the page carrying the list, e.g. `/category/spa`. */
+  path: string
+  /** The products in the order the page shows them. */
+  entries: readonly ItemListEntry[]
+  /**
+   * Position of the first entry across the whole archive. Page 2 of a 24-a-page
+   * archive starts at 25, so two pages of one category never both claim to
+   * hold items 1-24.
+   */
+  startPosition?: number
+  /** Origin with no trailing slash. */
+  siteUrl: string
+}
+
+/**
+ * `ItemList` for a category archive: the cards on THIS page, numbered from
+ * where the page starts in the archive.
+ *
+ * Only `name` and `url` per entry, on purpose. A price or availability here
+ * would be a second copy of the claim the product page's own `Product` node
+ * already makes, and two copies drift. Google's carousel guidance reads the
+ * linked product page for the rest, so the list is a table of contents and
+ * nothing more.
+ *
+ * Empty in, `null` out: an ItemList with zero elements is a structured-data
+ * warning, not an empty page, and the empty state already says so in words.
+ */
+export function buildItemListJsonLd(input: ItemListJsonLdInput): JsonLdNode | null {
+  if (input.entries.length === 0) return null
+  const site = trimSite(input.siteUrl)
+  const start = Math.max(1, Math.floor(input.startPosition ?? 1))
+  return {
+    '@context': SCHEMA,
+    '@type': 'ItemList',
+    name: input.name,
+    url: absolute(site, input.path),
+    numberOfItems: input.entries.length,
+    itemListOrder: `${SCHEMA}/ItemListOrderAscending`,
+    itemListElement: input.entries.map((entry, index) => ({
+      '@type': 'ListItem',
+      position: start + index,
+      name: entry.name,
+      url: absolute(site, entry.path),
+    })),
+  }
+}
+
 /**
  * `Organization` and `WebSite` for the home page.
  *

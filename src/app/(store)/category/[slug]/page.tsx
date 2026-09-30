@@ -1,6 +1,7 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
+import CategoryEmptyState from '@/components/category/CategoryEmptyState'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
@@ -27,7 +28,7 @@ import {
 import { type SortValue, isDefaultSort, parseSort } from '@/lib/category-tokens'
 import { parseMinDiscount } from '@/lib/discount-percent'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
-import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { buildBreadcrumbJsonLd, buildItemListJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -36,6 +37,13 @@ type Props = {
   params: Promise<{ slug: string }>
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
+
+/**
+ * Origin for every absolute URL in the structured data. One read, shared by
+ * the BreadcrumbList and the ItemList, so the two nodes cannot name different
+ * hosts. Same fallback as the product page.
+ */
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
 
 function parsePage(raw: string | string[] | undefined): number {
   const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : 1
@@ -205,17 +213,37 @@ async function ResultGrid({
   const ordered = args.near ? sortByDistance(items, args.near) : items
 
   if (items.length === 0) {
-    return (
-      <div className="category-page__empty">
-        <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
-      </div>
-    )
+    // "Filtered" is any facet the page honours, the same set `linkParams`
+    // carries. `near` is not one: it reorders, it never removes.
+    const hasFilters = Object.values(linkParams).some((value) => value != null)
+    return <CategoryEmptyState clearHref={pathname} hasFilters={hasFilters} />
   }
 
   const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
 
+  // The cards on this page as an ItemList, numbered from where the page starts
+  // in the archive. Built from `ordered`, the same array the <ul> maps, so the
+  // list a crawler reads is the list a shopper sees, nearest-first included.
+  const itemListLd = buildItemListJsonLd({
+    name: args.category.name_he,
+    path: pathname,
+    entries: ordered.map((product) => ({
+      name: product.name_he,
+      path: `/product/${encodeURIComponent(product.slug)}`,
+    })),
+    startPosition: from,
+    siteUrl: SITE_URL,
+  })
+
   return (
     <>
+      {itemListLd && (
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListLd) }}
+        />
+      )}
       <ul className="category-products">
         {ordered.map((product) => (
           <li key={product.id} className="category-products__item">
@@ -383,14 +411,11 @@ async function CategoryPageBody({
 
   // The same trail the visible breadcrumb renders, as BreadcrumbList: the two
   // are built from one `crumbs` array so they cannot disagree.
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  // The names come off the same `crumbs` entries the <nav> prints, so the
+  // trail a crawler reads is the trail a shopper sees, home label included.
   const breadcrumbLd = buildBreadcrumbJsonLd(
-    [
-      { name: 'בית', path: '/' },
-      ...(parent ? [{ name: parent.name_he, path: `/category/${parent.slug}` }] : []),
-      { name: category.name_he, path: pathname },
-    ],
-    siteUrl,
+    crumbs.map((crumb) => ({ name: crumb.label, path: crumb.href ?? pathname })),
+    SITE_URL,
   )
 
   return (

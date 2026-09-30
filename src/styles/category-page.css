@@ -863,12 +863,44 @@
   cursor: default;
 }
 
-/* Empty state */
+/* Empty state. Centred, so it reads the same under RTL and LTR, and sized
+   to the header's H1 line so the archive does not look like it lost its body. */
 .category-page__empty {
   padding: 48px 0 64px;
   text-align: center;
   color: var(--cat-muted);
   font-size: 16px;
+}
+
+.category-page__empty-title {
+  color: var(--cat-ink);
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+
+.category-page__empty-hint {
+  margin: 0 0 20px;
+}
+
+/* The one action: the live theme's brand button, at the WCAG 2.5.8 floor. */
+.category-page__empty-action {
+  display: inline-block;
+  min-height: 44px;
+  padding: 11px 24px;
+  border-radius: 3px;
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+  text-decoration: none;
+}
+
+.category-page__empty-action:hover,
+.category-page__empty-action:focus-visible {
+  background: var(--cat-brand-hover);
+  color: var(--cat-ink);
 }
 
 /* Search box sits between the header and the results, at the control-bar width. */
