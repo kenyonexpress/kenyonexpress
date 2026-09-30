@@ -318,6 +318,7 @@ export function buildCartView(
       supplier_due: ZERO,
       customer_pays_now: ZERO,
       balance_due_at_business: ZERO,
+      cashback: ZERO,
       platform_percent_bp: 0,
       // Carried through from storage untouched. This is the percent the
       // catalogue held when the shopper added the line, which is not
@@ -374,6 +375,7 @@ export function buildCartView(
     viewItem.supplier_due = line.supplierDue
     viewItem.customer_pays_now = line.customerPaysNow
     viewItem.balance_due_at_business = line.balanceDueAtBusiness
+    viewItem.cashback = line.cashbackAmount
     viewItem.line_total = line.faceValue
     viewItem.platform_percent_bp = line.platformPercentBps
   }
@@ -418,6 +420,8 @@ export function buildCartView(
         : null,
     discount: discountAgorot,
     shipping,
+    // The engine's own total, not a re-sum of the lines: one calculation.
+    cashback: commission.cashbackAmount,
     total: agorot(payableAgorot - discountAgorot + (shipping?.cost ?? 0)),
   }
 }

@@ -90,6 +90,7 @@ export function isFallbackCart(value: unknown): value is CartView {
     'platform_fee',
     'supplier_due',
     'balance_due_at_business',
+    'cashback',
   ]) {
     if (!Number.isInteger(value[key])) return false
   }

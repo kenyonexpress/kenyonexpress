@@ -39,6 +39,15 @@ export type CartViewItem = {
   customer_pays_now: Agorot
   balance_due_at_business: Agorot
   /**
+   * What this line will credit to the shopper's wallet once it ships or is
+   * redeemed, in agorot. The commission engine has always computed it
+   * (`cashbackAmount`, the product's `cashback_percent` over
+   * `customer_pays_now`) and the cart threw it away; this is that number, the
+   * same one the ledger settles, and never a second calculation. Zero for the
+   * ordinary product with no rate, and zero for a line the engine never saw.
+   */
+  cashback: Agorot
+  /**
    * The rate that actually priced this line, in basis points, as the settlement
    * engine reported it. On a coupon this is 10000: the platform keeps the whole
    * prepayment, so reporting the product's configured percent here would
@@ -170,6 +179,12 @@ export type CartView = {
    */
   shipping: CartShipping | null
   /**
+   * The sum of every line's `cashback`, in agorot. A preview: it is what the
+   * wallet will be credited if every line is delivered, shown so the shopper
+   * knows what the purchase earns before paying for it.
+   */
+  cashback: Agorot
+  /**
    * What the card is actually charged: subtotal - discount + shipping cost,
    * never below zero.
    */
@@ -189,6 +204,7 @@ export const EMPTY_CART: CartView = {
   coupon: null,
   discount: ZERO,
   shipping: null,
+  cashback: ZERO,
   total: ZERO,
 }
 

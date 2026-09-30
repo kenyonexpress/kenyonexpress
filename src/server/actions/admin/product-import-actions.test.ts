@@ -92,7 +92,6 @@ const P2 = '55555555-5555-4555-8555-555555555555'
 const SELECT = 'request:products.select'
 const INSERT = 'request:products.insert'
 const UPDATE = 'request:products.update'
-const DELETE = 'request:products.delete'
 
 function row(line: number, record: RawImportRow['record']): RawImportRow {
   return { line, record }

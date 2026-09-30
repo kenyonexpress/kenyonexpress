@@ -1,11 +1,13 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import { useSavedForLaterStoreApi } from '@/components/cart/SavedForLaterProvider'
 import SmartImage from '@/components/ui/SmartImage'
 import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
+import { savedItemFromLine } from '@/lib/cart/saved-for-later'
 import type { CartViewItem } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { Bookmark, Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -25,6 +27,9 @@ export function commitTypedQuantity(raw: string, current: number, maxQty: number
 
 export default function CartLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
+  // Null outside the cart page (drawer, mini cart), where there is no list
+  // to park a line in and the button is not rendered.
+  const savedStore = useSavedForLaterStoreApi()
   const [localQty, setLocalQty] = useState(item.quantity)
   // The field's text while it is being edited. Kept apart from `localQty`
   // because an input bound straight to a clamped number cannot be emptied to
@@ -80,6 +85,16 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
     void removeItem(item.product_id, item.variant_id)
   }
 
+  // Park first, then remove. The order matters when the remove is refused:
+  // the store rolls the line back into the cart and the parked copy is a
+  // harmless duplicate the shopper can discard. The other order would lose
+  // the line on a refused park, and nothing refuses a localStorage write.
+  const saveForLater = () => {
+    if (!savedStore) return
+    savedStore.getState().save(savedItemFromLine(item))
+    void removeItem(item.product_id, item.variant_id)
+  }
+
   return (
     <article className="cart-line">
       <Link href={`/product/${item.slug}`} className="cart-line__thumb">
@@ -117,6 +132,14 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           </p>
         )}
 
+        {/* The engine's own figure for this line, hidden at zero. Same rule
+            as the product page's preview: "0% cashback" is noise. */}
+        {item.cashback > 0 && (
+          <p className="cart-line__cashback" data-testid="cart-line-cashback">
+            קאשבק לארנק: {shekels(item.cashback)}
+          </p>
+        )}
+
         {/* Below 768 the line renders as live's stacked WooCommerce rows
             (remove / name / unit price / quantity / line total, measured
             57+83+54+75+54 in refs/ke_live_computed.json cart@380). This row is
@@ -143,6 +166,19 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           >
             <Trash2 size={16} aria-hidden="true" />
           </button>
+
+          {savedStore && (
+            <button
+              type="button"
+              onClick={saveForLater}
+              disabled={isPending}
+              className="cart-line__save"
+              aria-label={`שמור ${item.name_he} לאחר כך`}
+            >
+              <Bookmark size={14} aria-hidden="true" />
+              <span>שמור לאחר כך</span>
+            </button>
+          )}
 
           {/* Mobile-only labels for the stacked rows; aria-hidden because the
               controls beside them are already named. */}

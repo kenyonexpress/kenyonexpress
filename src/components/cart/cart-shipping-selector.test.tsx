@@ -48,6 +48,7 @@ function line(overrides: Partial<CartViewItem> = {}): CartViewItem {
     supplier_due: agorot(9_000),
     customer_pays_now: agorot(10_000),
     balance_due_at_business: agorot(0),
+    cashback: agorot(0),
     platform_percent_bp: 1000,
     platform_percent_snapshot: 10,
     coupon_price_unit: null,

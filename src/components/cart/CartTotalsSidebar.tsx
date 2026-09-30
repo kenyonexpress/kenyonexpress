@@ -1,6 +1,7 @@
 'use client'
 
 import CartCouponForm from '@/components/cart/CartCouponForm'
+import CartDeliveryEstimate from '@/components/cart/CartDeliveryEstimate'
 import CartShippingSelector from '@/components/cart/CartShippingSelector'
 import type { CartView } from '@/lib/cart/types'
 import { shekels } from '@/lib/money-format'
@@ -56,6 +57,7 @@ export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
       </dl>
 
       {cart.shipping && <CartShippingSelector shipping={cart.shipping} />}
+      {cart.shipping && <CartDeliveryEstimate shipping={cart.shipping} />}
 
       <CartCouponForm coupon={cart.coupon} />
 
@@ -63,6 +65,18 @@ export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
         <span>לתשלום באתר</span>
         <strong className="tabular-nums">{shekels(cart.total)}</strong>
       </div>
+
+      {/* Under the total, not among the rows: it is not a term of what the
+          card is charged. It is what comes back afterwards, and the engine's
+          own number (`commission.cashbackAmount`), so what is promised here
+          is what the ledger credits. Hidden at zero, the ordinary state. */}
+      {cart.cashback > 0 && (
+        <p className="cart-sidebar__cashback" data-testid="cart-cashback-row">
+          <span>קאשבק צפוי לארנק</span>
+          <strong className="tabular-nums">{shekels(cart.cashback)}</strong>
+          <span className="cart-sidebar__cashback-note">יזוכה לאחר אספקה או מימוש</span>
+        </p>
+      )}
 
       {/* The real-time-pricing note moved below the checkout button
           (CartPageView): live's collaterals end at the total + button, and the

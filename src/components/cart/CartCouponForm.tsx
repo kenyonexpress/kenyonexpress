@@ -1,6 +1,7 @@
 'use client'
 
 import { useCartStoreApi } from '@/components/cart/CartProvider'
+import { MAX_COUPON_CODE_LENGTH, checkCouponInput } from '@/lib/cart/coupon-input'
 import type { AppliedCoupon } from '@/lib/cart/types'
 import { applyCouponCode, removeCouponCode } from '@/server/actions/cart'
 import { useState, useTransition } from 'react'
@@ -15,6 +16,11 @@ import { useState, useTransition } from 'react'
  * failures are shown verbatim from the server. The shopper is told which rule
  * the code fell foul of — expired, exhausted, below the minimum, for a product
  * that is not in the cart — rather than a flat "invalid".
+ *
+ * One check runs BEFORE the action: `checkCouponInput`. A digit-only code is
+ * a printed 8-digit unit code, and one that is not 8 digits or fails its
+ * check digit cannot resolve on the server either, so the field says which of
+ * the two it is without a round trip and without spending a rate-limit slot.
  */
 export default function CartCouponForm({ coupon }: { coupon: AppliedCoupon | null }) {
   const store = useCartStoreApi()
@@ -25,9 +31,14 @@ export default function CartCouponForm({ coupon }: { coupon: AppliedCoupon | nul
   const submit = (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
+    const checked = checkCouponInput(code)
+    if (!checked.ok) {
+      setError(checked.message)
+      return
+    }
     startTransition(async () => {
       try {
-        const result = await applyCouponCode(code)
+        const result = await applyCouponCode(checked.code)
         if (result.ok) {
           store.getState().setCart(result.cart)
           setCode('')
@@ -87,6 +98,7 @@ export default function CartCouponForm({ coupon }: { coupon: AppliedCoupon | nul
             onChange={(event) => setCode(event.target.value)}
             placeholder="הזן קוד"
             autoComplete="off"
+            maxLength={MAX_COUPON_CODE_LENGTH}
             aria-invalid={error ? 'true' : undefined}
             aria-describedby={error ? 'cart-coupon-error' : undefined}
             className="cart-coupon__input"

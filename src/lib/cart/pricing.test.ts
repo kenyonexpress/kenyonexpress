@@ -73,6 +73,7 @@ function allMoney(cart: CartView): number[] {
     i.supplier_due,
     i.customer_pays_now,
     i.balance_due_at_business,
+    i.cashback,
     ...(i.coupon_price_unit === null ? [] : [i.coupon_price_unit]),
   ]
   return [
@@ -114,6 +115,38 @@ describe('buildCartView: physical lines', () => {
     const cart = buildCartView('cart-1', [stored()], [product()], [])
     expect(line(cart).customer_pays_now).toBe(10_000)
     expect(line(cart).balance_due_at_business).toBe(0)
+  })
+})
+
+describe('buildCartView: cashback preview', () => {
+  it('carries the engine cashback per line and in total, from customer_pays_now', () => {
+    // ₪100 at 5% cashback, two of them: ₪10.00 = 1_000 agorot.
+    const cart = buildCartView(
+      'c',
+      [stored({ quantity: 2 })],
+      [product({ cashback_percent: 5 })],
+      [],
+    )
+    expect(line(cart).cashback).toBe(1_000)
+    expect(cart.cashback).toBe(1_000)
+  })
+
+  it('is zero for the ordinary product with no rate', () => {
+    const cart = buildCartView('c', [stored()], [product()], [])
+    expect(line(cart).cashback).toBe(0)
+    expect(cart.cashback).toBe(0)
+  })
+
+  it('is zero on a line the engine never priced', () => {
+    const cart = buildCartView(
+      'c',
+      [stored()],
+      [product({ platform_percent: null as never, cashback_percent: 5 })],
+      [],
+    )
+    expect(line(cart).available).toBe(false)
+    expect(line(cart).cashback).toBe(0)
+    expect(cart.cashback).toBe(0)
   })
 })
 
