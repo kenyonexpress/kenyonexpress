@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c61 (הועבר מ-STATE.md ב-M08-c61, לשמירה על תקרת 300 שורות)
+
+**M07-c61 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל
+אמיתי, אפס דריפט מ-M07-c60.** אותו מתכון שאומת מ-M07-c1 ועד M07-c60:
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3472
+pnpm build` → `exit 0`; `pnpm start -p 3472` מאותה בנייה (פורט 3472
+אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`. שישה chunks של
+chromium (`--grep` לפי `anon /` / `GET /|supplier|anon dynamic` /
+`customer` / שלושה פילוחי `admin`, worker יחיד), כולם נכתבו לאותו
+`ROUTE_AUDIT_REPORT` משותף: 59 + 83 + 25 + 23 + 20 + 16 טסטים, כולם
+עברו (playwright מדווח `passed`). נותח בקוד: **241 שורות ייחודיות
+(role+path)**, 239 PASS + 2 NO DATA (זהה לכל מדידה קודמת מ-M07-c1:
+`customer /account/tickets/[id]`, `admin /admin/discounts/[id]`, שני
+פערי seed ידועים), **אפס FAIL, אפס consoleErrors, אפס
+hydrationWarnings, אפס rtl:false** בכל 241 השורות. `git diff --stat
+8402645de..HEAD -- src/app src/components src/lib e2e package.json
+pnpm-lock.yaml` מחזיר רק שני קבצי טסט (`bought-this-week.test.ts`,
+`stock-live.test.ts`) ובאמפ patch של `fast-xml-parser` — אפס שינוי
+קוד/מסלול, ולכן 241/239/2 (זהה ל-M07-c60) אינו רעש. השרת נעצר, פורט
+3472 אומת פנוי מחדש, קובץ ה-JSONL הזמני (`/tmp/route-audit-m07c61.jsonl`)
+נמחק. שערים: `type-check` נקי; `lint` נקי (2025 קבצים, כל שערי התוכן
+ירוקים, i18n 627/627, locale 116/64, docs-index 282, docs-path-audit
+152); `test` 610/610 קבצים, 7296/7308 (12 skipped, 58.02s); `build`
+`exit 0` (חלק מהמדידה עצמה, בנייה שנייה ללא env דמה). אין שינוי קוד,
+אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`**
+(פלוס `docs/STATE-ARCHIVE.md`, M06-c61 הועבר לתקרת 300 שורות).
+
 ## M06-c61 (הועבר מ-STATE.md ב-M07-c61, לשמירה על תקרת 300 שורות)
 
 **M06-c61 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים

@@ -1,32 +1,44 @@
-RESUME FROM: M08-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c61)
+RESUME FROM: M09-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c61)
 
 ## המשך מ:
 
-**M07-c61 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל
-אמיתי, אפס דריפט מ-M07-c60.** אותו מתכון שאומת מ-M07-c1 ועד M07-c60:
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3472
-pnpm build` → `exit 0`; `pnpm start -p 3472` מאותה בנייה (פורט 3472
-אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`. שישה chunks של
-chromium (`--grep` לפי `anon /` / `GET /|supplier|anon dynamic` /
-`customer` / שלושה פילוחי `admin`, worker יחיד), כולם נכתבו לאותו
-`ROUTE_AUDIT_REPORT` משותף: 59 + 83 + 25 + 23 + 20 + 16 טסטים, כולם
-עברו (playwright מדווח `passed`). נותח בקוד: **241 שורות ייחודיות
-(role+path)**, 239 PASS + 2 NO DATA (זהה לכל מדידה קודמת מ-M07-c1:
-`customer /account/tickets/[id]`, `admin /admin/discounts/[id]`, שני
-פערי seed ידועים), **אפס FAIL, אפס consoleErrors, אפס
-hydrationWarnings, אפס rtl:false** בכל 241 השורות. `git diff --stat
-8402645de..HEAD -- src/app src/components src/lib e2e package.json
-pnpm-lock.yaml` מחזיר רק שני קבצי טסט (`bought-this-week.test.ts`,
-`stock-live.test.ts`) ובאמפ patch של `fast-xml-parser` — אפס שינוי
-קוד/מסלול, ולכן 241/239/2 (זהה ל-M07-c60) אינו רעש. השרת נעצר, פורט
-3472 אומת פנוי מחדש, קובץ ה-JSONL הזמני (`/tmp/route-audit-m07c61.jsonl`)
-נמחק. שערים: `type-check` נקי; `lint` נקי (2025 קבצים, כל שערי התוכן
-ירוקים, i18n 627/627, locale 116/64, docs-index 282, docs-path-audit
-152); `test` 610/610 קבצים, 7296/7308 (12 skipped, 58.02s); `build`
-`exit 0` (חלק מהמדידה עצמה, בנייה שנייה ללא env דמה). אין שינוי קוד,
-אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`**
-(פלוס `docs/STATE-ARCHIVE.md`, M06-c61 הועבר לתקרת 300 שורות).
+**M08-c61 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם חמש-עשרה,
+אפס פריט שלב 1 בידי הסוכן.** משימת התור: "Backlog: take the single
+highest-impact open phase 1 item from `docs/BACKLOG.md`, skipping
+deferred and phase 2 items." `docs/BACKLOG.md` עדיין מעודכן לאחרונה
+ב-M15-c60 (`466ebc6fa`), עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
+סעיף חדש (`git diff --stat 466ebc6fa..HEAD -- docs/BACKLOG.md
+migrations/pending supabase/catalogue-known-issues.json src/
+next.config.ts next.config.mjs package.json pnpm-lock.yaml
+vercel.json supabase/` מחזיר רק `package.json`+`pnpm-lock.yaml`,
+באמפ `fast-xml-parser` מ-M04-c61 בלבד). כל ה-15 עדיין פעולות
+שהמסמך עצמו מציין במפורש ש"אין דבר כאן שסוכן רשאי לבצע לבד" (DNS
+ברשם, Vercel env/סודות, אישור פריסת פרודקשן, אישור מיגרציה על
+פרודקשן, אישורי Cardcom אמיתיים, הכרעת קטלוג עסקית, מחיקת נתונים,
+ערך שרק אופיר מחזיק). בדיקת דריפט: שלושת המונים שהרשימה תלויה בהם
+נבדקו ישירות, `migrations/pending/*.sql` עדיין **59** קבצים (ללא
+תוספת), `git rev-list --count a388118f1..HEAD` עלה ל-**218**
+(git-only, פער-ספירה גרידא), `git stash list` עדיין **32**,
+`supabase/catalogue-known-issues.json` עדיין **26** ממצאים.
+`docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md` נבדקו
+שוב, אינם תורים פעילים (מחוץ להיקף המשימה — אלה בדיוק ה-"deferred"
+וה-"phase 2" שהתור מבקש לדלג עליהם). אין פריט בר-ביצוע לסוכן. שערים
+הורצו במלואם: `type-check` נקי, `lint` נקי (biome 2025 קבצים, כל
+שערי התוכן ירוקים, i18n 627/627, locale 116/64, docs-index 282,
+docs-path-audit 152), `test` 610/610 קבצים 7296/7308 (12 skipped,
+70.00s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3491 pnpm build`) — ריצה
+ראשונה נכשלה על `/coupons/[id]` עם `supabase.rls_denied`/`reviews`
+(401, מיגרציה 247 הממתינה, רעש prerender ידוע גם ב-M04-c61), ריצה
+שנייה מאותו env `exit 0` נקי. אין שינוי קוד, אין שער חזותי נדרש
+(אין שינוי UI). **קובץ יחיד שונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md`, M07-c61 הועבר לתקרת 300 שורות).
+
+## M07-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M07-c61: route audit נמדד שוב, 241 שורות, אפס כשל אמיתי, אפס דריפט
+מ-M07-c60 (239 PASS, 2 NO DATA זהה לכל מדידה קודמת מ-M07-c1).
 
 ## M06-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

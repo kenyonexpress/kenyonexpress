@@ -136,6 +136,26 @@ re-probed this item). Item 5's 18-file list re-checked directly against
 with `pgrep -fl`, still pid 957 under `caffeinate` pid 999, unchanged.
 Item 15's stash count (32) re-checked with `git stash list`, unchanged.
 
+**Re-checked 2026-09-30 (M08-c61) against `git log 466ebc6fa..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Ten commits
+landed since M15-c60 (M16-c60..M18-c60, M01-c61..M07-c61); only two
+touched a path this file's items depend on (`fast-xml-parser` patch
+bump, M04-c61, `package.json`+`pnpm-lock.yaml`), neither touched a
+blocking line or added a manual item (`git diff --stat
+466ebc6fa..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts
+next.config.mjs package.json pnpm-lock.yaml vercel.json supabase/`
+confirms). Item 4's commit count changed again (207 -> 218, `git
+rev-list --count a388118f1..HEAD`, git-only, production not
+re-probed this item). Item 5's 18-file list re-checked directly
+against `migrations/pending/`, all present, no new file (59 files
+total). Item 7's finding count (26) re-checked directly against
+`supabase/catalogue-known-issues.json`'s `known` object, unchanged.
+Item 15's stash count (32) re-checked with `git stash list`,
+unchanged. All 15 items remain actions this file's own preamble
+excludes an agent from taking alone; no phase 1 item available for
+the queue task this cycle (M08-c61 result: BACKLOG EMPTY).
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
