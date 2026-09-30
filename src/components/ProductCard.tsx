@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import RatingStars from '@/components/product/RatingStars'
 import WishlistHeart from '@/components/wishlist/WishlistHeart'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
@@ -16,6 +17,14 @@ export type Product = {
   stock_quantity: number | null
   full_price?: number | null
   category?: { name_he: string; slug: string } | null
+  /**
+   * Null, or absent, renders no stars: `RatingStars` already refuses a
+   * zero-count summary rather than fabricate a score. Populated today only by
+   * `loadRelatedProducts` (see lib/related-products.ts) for the product
+   * page's "מומלצים" strip, matching live's own related-product cards, which
+   * carry a `.product-rating` row under the title (`refs/ke_live_product.html`).
+   */
+  ratingSummary?: { count: number; averageTenths: number } | null
 }
 
 /**
@@ -266,6 +275,18 @@ function DefaultProductCard({ product }: { product: Product }) {
         >
           {product.name_he}
         </Link>
+
+        {/* Electro's own related-product cards carry a star row directly under
+            the title (`.product-rating`, see the `Product.ratingSummary` note
+            above); this is that row's anatomy, filled with this product's real
+            review data instead of demo content. Renders nothing for the common
+            case of zero approved reviews, so it changes nothing a shopper sees
+            until a product actually earns a rating. */}
+        <RatingStars
+          summary={product.ratingSummary ?? null}
+          href={`/product/${product.slug}/reviews`}
+          className="text-xs"
+        />
 
         {/* `relative` moved to this wrapper and off the Link: the heart below
             has to sit OUTSIDE the anchor's hit area, the same reason
