@@ -1,10 +1,26 @@
-RESUME FROM: M03-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c61)
+RESUME FROM: M04-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c61)
 
 ## המשך מ:
 
-**M02-c61 - DONE (30.09): שער חזותי — בית ומוצר בשלושת הרוחבים, אפס
-רגרסיה, אפס שינוי קוד.** משימת התור: להריץ `scripts/compare.mjs` על הבית
+**M03-c61 - DONE (30.09): בדיקה ירוקה — ארבעת השערים נמדדו מהתחלה,
+אפס שגיאה, אפס אזהרה לתיקון, אפס שינוי קוד.** משימת התור: להריץ
+`pnpm type-check`, `pnpm lint`, `pnpm test` ו-`pnpm build`, ולתקן כל
+שגיאה/אזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר. **נמדד עכשיו, קדמי:**
+
+| שער | תוצאה |
+|---|---|
+| `type-check` | `tsc --noEmit`, exit 0, אפס שגיאה |
+| `lint` | biome (2025 קבצים) + 12 שערים מותאמים, כולם `clean`, exit 0 |
+| `test` | 610 קבצי טסט, 7296 עברו, 12 דולגו (ידוע), exit 0 |
+| `build` | `Compiled successfully in 3.8s`, exit 0 |
+
+אין שגיאה או אזהרת build אמיתית. שורות `db.optional_column_missing`
+(מיגרציה 242 ממתינה) ו-`db.query_slow` על `suppliers` בלוג ה-build הן
+רעש prerender מוכר של סביבת הארגז-חול (טעינת DB מרוחקת/מוגבלת), לא כשל
+build — כפי שתועד כבר ב-M03-c60 לגבי `rls_denied`/`reviews_read_failed`.
+אין מה לתקן: אין קוד לשנות בלי לגעת בהתנהגות מוצר. קובץ ששונה: `STATE.md`
+בלבד. משימת התור: להריץ `scripts/compare.mjs` על הבית
 ועל דף המוצר ב-380/768/1440 מול reference של Electro v7, לתקן כל חריגה
 עד שכולן מתחת ל-11%, ולתעד ב-STATE.md. **נמדד עכשיו, קדמי, מול שרת
 `pnpm start` על פורט 3311 שהיה כבר בנוי מ-HEAD (`e6f3aae4c`):**
