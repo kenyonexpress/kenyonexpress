@@ -1,36 +1,37 @@
-RESUME FROM: M05-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c64)
+RESUME FROM: M06-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c64)
 
 ## המשך מ:
 
-**M04-c64 - DONE (30.09): תברואת תלויות, `pnpm audit` אפס חולשות,
-`pnpm outdated` אפס עדכון patch/minor זמין.** משימת התור: להריץ
-`pnpm audit` ו-`pnpm outdated`, ולהחיל עדכוני patch/minor ששומרים
-type-check/test/build ירוקים, לעולם לא major.
+**M05-c64 - DONE (30.09): advisors אומתו בפעם הארבע-עשרה ברציפות (management
+API, קריאה בלבד, טוקן CLI מה-keychain — Supabase MCP עדיין דורש OAuth
+שלא ניתן להריץ בסשן לא-אינטראקטיבי), זהה ב-100% ל-M05-c63.** משימת התור:
+להריץ `get_advisors` אבטחה+ביצועים ולכתוב מיגרציה ב-`migrations/pending`
+לכל WARN.
 
-**`pnpm audit`: "No known vulnerabilities found".** אפס חולשות בעץ
-התלויות כולו.
+**44 WARN בסך הכול (24 אבטחה + 20 ביצועים), שם-שם זהה למדידה הקודמת**
+(21 `authenticated_security_definer_function_executable`, 2
+`anon_security_definer_function_executable`, 1
+`function_search_path_mutable`; 14 `multiple_permissive_policies`, 6
+`auth_rls_initplan`) — נבדק דרך `jq` על שני קבצי ה-JSON, לא רק ספירה.
+**אפס WARN חדש, אפס WARN שהפסיק לירות.** ארבעת הקבצים הממתינים
+(`209_advisor_warnings.sql`, `220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql`,
+`246_profiles_mfa_initplan.sql`) עדיין קיימים ומכסים את כל 44 ה-WARN —
+**אין קובץ מיגרציה חדש נדרש**, כי אין WARN לא-מכוסה. פורט
+ב-`docs/DB-SECURITY-MODEL.md` סעיף 0יד. קבצי הפלט הזמניים
+(`/tmp/ke-advisors/*.json`) נמחקו בסוף הפריט, הטוקן לא נדפס ולא נשמר.
 
-**`pnpm outdated`: 14 חבילות מופיעות, וכל ה-14 הן קפיצת major בלבד**
-(`@biomejs/biome` 1.9.4→2.5.14, `@hookform/resolvers` 3.10.0→5.9.1,
-`@sentry/nextjs`/`@sentry/node` 10.75.3→11.1.0, `@testing-library/
-jest-dom` 6.10.0→7.0.1, `@types/node` 20.19.43→26.6.3, `@vitejs/
-plugin-react` 4.7.0→6.1.1, `@vitest/coverage-v8`/`vitest` 4.1.11→5.0.2,
-`jsdom` 25.0.1→30.1.1, `lint-staged` 15.5.2→17.6.0, `tailwind-merge`
-2.6.1→3.7.0, `typescript` 5.9.3→7.0.2, `zod` 3.25.76→4.6.5). נבדק גם
-`--long`: אין עמודת Wanted שונה מ-Current, כלומר כל חבילה כבר על
-הגרסה הגבוהה ביותר שמותרת בטווח ה-`^` שלה ב-`package.json` (אומת
-ידנית על 14 השורות). **אין עדכון patch/minor אחד זמין להחלה** —
-כל מה שהיה בר-החלה כבר נלקח ב-M04-c63 (`next`/`@next/mdx`/
-`next-intl`/`posthog-js`). קידום ל-`Latest` בכל השורות ידרוש שינוי
-range ב-`package.json` וקפיצת major, אסור לפי כלל הפריט.
+ארבעת השערים רצו במלואם: type-check אפס שגיאות, lint (biome + שנים-עשר
+השערים הנלווים) נקי, test 610/610 קבצים, 7296/7308 ירוק (12 דולגים, זהה
+ל-M04-c64), build exit 0.
 
-**אפס שינוי תלויות, ולכן אפס סיכון רגרסיה — אך ארבעת השערים הורצו
-בכל זאת לאימות:** `type-check` אפס שגיאות, `lint` (`biome check` +
-שנים-עשר השערים הנלווים) נקי, `test` 610/610 קבצים, 7296/7308 ירוק
-(12 דולגים, זהה ל-M03-c64), `build` exit 0.
+קבצים ששונו: `docs/DB-SECURITY-MODEL.md`, `STATE.md`.
 
-קבצים ששונו: `STATE.md`.
+**M04-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c64
+לשמירה על תקרת 300 שורות).** תברואת תלויות, `pnpm audit` אפס חולשות,
+`pnpm outdated` אפס עדכון patch/minor זמין (14 חבילות, כולן קפיצת major
+בלבד). ארבעת השערים ירוקים, אפס שינוי תלויות.
 
 **M03-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M04-c64 לשמירה על תקרת 300 שורות).** שער ירוק, ארבעת השערים הורצו
