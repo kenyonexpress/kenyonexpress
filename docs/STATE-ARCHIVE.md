@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c60 (הועבר מ-STATE.md ב-M12-c60, לשמירה על תקרת 300 שורות)
+
+**M11-c60 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם שישית,
+0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל דף, לתקן כל
+הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את המונה שנשאר.
+בדיקת דריפט קודם: `git diff --stat 58b5301af..HEAD -- src/app
+src/components src/styles 'e2e/*a11y*' middleware.ts
+src/server/actions/auth` (מאז המדידה הקודמת, M11-c59, כולל שני קומיטי
+טסטים שאינם נוגעים בנתיב הזה) — **ריק, אפס קומיט נגע בשטח הנגישות**.
+
+נמדד בכל זאת מחדש מול build אמיתי טרי על HEAD (`e1f99e3e7`, `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512
+pnpm build`, `pnpm start` על פורט 3318 שלא היה בשימוש):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes`, `E2E_BASE_URL=http://localhost:3318`):
+  **72/74 עברו, 2 דולגו** (אותם דילוגים מכוונים כמו בכל מדידה קודמת) —
+  **0 הפרות**.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
+  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, שניהם **0 הפרות**. תפקיד
+  **אדמין: 57/57 דולגו** — אותה סיבה שתועדה ב-M11-c56..M11-c59: כשל
+  התחברות פרודקשן קיים מראש (`signInWithEmail` נכשל ב-`beforeAll`, לא
+  תקלת נגישות ולא רגרסיית קוד).
+- שני השערים נכשלים על **כל** הפרה, לא רק `serious`/`critical`, אז 0
+  כשל הוא גם 0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה
+  שנסרק.
+
+**תקרית תפעולית באמצע המדידה, לא הפרת נגישות ולא נשארה השלכה:**
+ניסיון ראשון להריץ את השער הציבורי בלי `E2E_BASE_URL` גרם ל-
+`playwright.config.ts` לנסות להרים שרת עצמו עם `E2E_WEB_COMMAND`
+המחדל (`pnpm dev` על פורט 3000) — `next dev` מוחק את `.next` של
+`pnpm start` שרץ ([[dev-and-start-share-dot-next]] בזיכרון). נעצר תוך
+שניות (`TaskStop`) לפני שתהליך `next dev` בכלל עלה; `.next` ושלושת
+שרתי ה-`pnpm start` הרצים (3312/3313 של סשנים מקבילים, 3318 שלי) אומתו
+תקינים מיד אחרי (`curl` 200 לשלושתם). הריצה החוזרת עם
+`E2E_BASE_URL=http://localhost:3318` הניבה את התוצאה למעלה.
+
+**המונה שנשאר: 0 `serious`/`critical`.** ממצא `target-size` (דרישת
+WCAG **2.2** ולא 2.1, מחוץ ליעד המוצהר של הפרויקט) נשאר כהחלטה פתוחה
+ללא שינוי — אין הפרת 2.1 AA לתקן. **אפס שינוי קוד.** שערים: `type-check`
+נקי, `lint` נקי (biome 2025 קבצים + כל שנים-עשר השערים המשניים, כולל
+`i18n` 627/627), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים,
+60.28s), `build` (`rm -rf .next` + build טרי) `exit 0` פעמיים (ריצה
+ראשונה לשער הנגישות, ריצה שנייה לאימות `exit=0` מפורש). אין שינוי UI,
+אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`.**
+
 ## M10-c60 (הועבר מ-STATE.md ב-M11-c60, לשמירה על תקרת 300 שורות)
 
 **M10-c60 - DONE (30.09): כיסוי טסטים — `recordRefusedScan` ב-

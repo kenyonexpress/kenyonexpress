@@ -1,50 +1,66 @@
-RESUME FROM: M12-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c60)
+RESUME FROM: M13-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c60)
 
 ## המשך מ:
 
-**M11-c60 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם שישית,
-0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל דף, לתקן כל
-הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את המונה שנשאר.
-בדיקת דריפט קודם: `git diff --stat 58b5301af..HEAD -- src/app
-src/components src/styles 'e2e/*a11y*' middleware.ts
-src/server/actions/auth` (מאז המדידה הקודמת, M11-c59, כולל שני קומיטי
-טסטים שאינם נוגעים בנתיב הזה) — **ריק, אפס קומיט נגע בשטח הנגישות**.
+**M12-c60 - DONE (30.09): SEO — meta/canonical/og/JSON-LD
+Product+Offer/sitemap/robots, אימות מחדש, אפס דריפט מ-M12-c59.**
+משימת התור: לוודא metadata, canonical, og, schema.org Product+Offer
+בדפי מוצר, טריות sitemap ו-robots, ולתקן דריפט. בדיקת דריפט קודם:
+`git log 5bd92df0d..HEAD` (מאז המדידה הקודמת, M12-c59) מחזיר 17
+קומיטים (M13-c59..M11-c60), כולם תיעוד/מדידה/תלות/טסטים (ביצועים,
+נגישות, DB advisors, תברואת תלויות, בדיקת ירוק, שער חזותי, בדיקת
+פרודקשן, אפס-פעילות, קופי/משפטי, תברואת ריפו, סנכרון תיעוד, ביצועים,
+אבטחה, SEO עצמו, נגישות, כיסוי טסטים, backlog, route audit, Lighthouse,
+DB advisors, תברואת תלויות, שער ירוק, שער חזותי): `git diff --stat
+5bd92df0d..HEAD -- src/app/robots.ts src/app/robots.test.ts
+src/app/sitemap src/app/sitemap.xml src/app/sitemap.test.ts
+src/app/sitemap-robots-agree.test.ts src/app/sitemap-canonicals.test.ts
+src/lib/seo src/lib/product-seo.ts src/lib/category-tree.ts
+src/lib/regions.ts src/lib/content/pages.ts src/lib/feeds
+src/components/storefront/BlogPostHeader.tsx
+src/components/storefront/ProductInfo.tsx 'src/app/(store)/**/page.tsx'
+'src/app/(main)/coupons/[id]/page.tsx'` חוזר ריק — **אפס קומיט נגע
+בקוד SEO**.
 
-נמדד בכל זאת מחדש מול build אמיתי טרי על HEAD (`e1f99e3e7`, `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512
-pnpm build`, `pnpm start` על פורט 3318 שלא היה בשימוש):
-- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
-  `--grep-invert=@writes`, `E2E_BASE_URL=http://localhost:3318`):
-  **72/74 עברו, 2 דולגו** (אותם דילוגים מכוונים כמו בכל מדידה קודמת) —
-  **0 הפרות**.
-- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
-  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, שניהם **0 הפרות**. תפקיד
-  **אדמין: 57/57 דולגו** — אותה סיבה שתועדה ב-M11-c56..M11-c59: כשל
-  התחברות פרודקשן קיים מראש (`signInWithEmail` נכשל ב-`beforeAll`, לא
-  תקלת נגישות ולא רגרסיית קוד).
-- שני השערים נכשלים על **כל** הפרה, לא רק `serious`/`critical`, אז 0
-  כשל הוא גם 0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה
-  שנסרק.
+נמדד בכל זאת מחדש חי מול `.next` קיים התואם ל-HEAD (נבנה תחת M11-c60,
+דקתיים לפני קומיט ה-HEAD שאחריו נגע רק ב-`STATE.md` — אפס שינוי קוד
+ייצור בין השניים; `pnpm start` על פורט 3312 של סשן מקביל, אומת חי
+ולא נבנה מחדש כדי לא להתחרות במשאבים מול כ-20 `pnpm start` מקבילים
+שרצים מאותה תיקייה):
+- `robots.txt`: **11 שורות `Disallow`** זהות לתיעוד, `Host`+`Sitemap`
+  לדומיין הנכון (baked-at-build).
+- `sitemap.xml`: אינדקס של **חמש** תת-מפות (content/categories/products/
+  regions/suppliers), זהה ל-M12-c59.
+- `sitemap/products.xml`: **46 כתובות** (זהה ל-M12-c59), **5** ערכי
+  `lastmod` שונים בפועל — טריות אמיתית, לא מזויפת.
+- דף מוצר פעיל (`/product/barbecue`): `<title>` עברי, `canonical`,
+  `og:title/description/url/locale/image(+type/width/height/alt)/type`
+  תקינים, JSON-LD `Product`+`Brand`+`Offer`+`UnitPriceSpecification`+
+  `BreadcrumbList`+`Organization`, אפס `<meta name="robots">` (מוצר
+  פעיל, לא `noindex`).
+- דף הבית: `title`, `canonical` לדומיין הציבורי, JSON-LD
+  `WebSite`+`SearchAction`(`EntryPoint`)+`Organization`, שניהם תקינים.
+- קוד ה-`noindex` למוצר לא פעיל (`src/app/(store)/product/[slug]/
+  page.tsx:44`, `robots: { index: false, follow: true }`) קיים ולא שונה
+  מ-M12-c59.
 
-**תקרית תפעולית באמצע המדידה, לא הפרת נגישות ולא נשארה השלכה:**
-ניסיון ראשון להריץ את השער הציבורי בלי `E2E_BASE_URL` גרם ל-
-`playwright.config.ts` לנסות להרים שרת עצמו עם `E2E_WEB_COMMAND`
-המחדל (`pnpm dev` על פורט 3000) — `next dev` מוחק את `.next` של
-`pnpm start` שרץ ([[dev-and-start-share-dot-next]] בזיכרון). נעצר תוך
-שניות (`TaskStop`) לפני שתהליך `next dev` בכלל עלה; `.next` ושלושת
-שרתי ה-`pnpm start` הרצים (3312/3313 של סשנים מקבילים, 3318 שלי) אומתו
-תקינים מיד אחרי (`curl` 200 לשלושתם). הריצה החוזרת עם
-`E2E_BASE_URL=http://localhost:3318` הניבה את התוצאה למעלה.
+**אפס שינוי קוד** (אין דריפט לתקן): `type-check` נקי, `lint` נקי (2025
+קבצים, כל שנים-עשר השערים המשניים כולל `i18n` 627/627 ו-`locale-format`
+116/116), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 59.53s),
+`build`: נעשה שימוש ב-`.next` הקיים התואם בדיוק ל-HEAD (אומת חי דרך
+`curl` על `robots.txt`/`sitemap.xml`/`sitemap/products.xml`/דף
+מוצר/דף בית, כולם 200 עם התוכן הנכון), לא נבנה מחדש כדי לא להתחרות
+במשאבים עם כ-20 סשנים מקבילים. אין שינוי UI, אין שער חזותי נדרש.
+**קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M11-c60
+הועבר לתקרת 300 שורות).
 
-**המונה שנשאר: 0 `serious`/`critical`.** ממצא `target-size` (דרישת
-WCAG **2.2** ולא 2.1, מחוץ ליעד המוצהר של הפרויקט) נשאר כהחלטה פתוחה
-ללא שינוי — אין הפרת 2.1 AA לתקן. **אפס שינוי קוד.** שערים: `type-check`
-נקי, `lint` נקי (biome 2025 קבצים + כל שנים-עשר השערים המשניים, כולל
-`i18n` 627/627), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים,
-60.28s), `build` (`rm -rf .next` + build טרי) `exit 0` פעמיים (ריצה
-ראשונה לשער הנגישות, ריצה שנייה לאימות `exit=0` מפורש). אין שינוי UI,
-אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`.**
+## M11-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M11-c60: נגישות, axe אומתה מחדש בפעם שישית, 0 הפרות `serious`/
+`critical` (ציבורי 72/74 + 2 דולג, מאומת לקוח 16/16 + ספק 7/7, אדמין
+57/57 דולג — כשל התחברות פרודקשן קיים מראש). `target-size` (WCAG 2.2,
+מחוץ ליעד) נשאר כהחלטה פתוחה. אפס שינוי קוד, build טרי `exit 0`.
 
 ## M10-c60 (הועבר מ-STATE.md ב-M11-c60, לשמירה על תקרת 300 שורות)
 
