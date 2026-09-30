@@ -1,5 +1,19 @@
 # `migrations/pending/`
 
+## 2026-10-01: 246 PENDING (orders: preferred delivery slot)
+
+`246_orders_delivery_slot.sql` adds `orders.delivery_slot_date` (date,
+Sun..Thu by CHECK) and `orders.delivery_slot_window` (`morning` |
+`afternoon`), both nullable, paired by CHECK, with a partial index on the
+date. The checkout's slot picker (`lib/checkout/delivery-slots.ts`,
+`components/checkout/DeliverySlotPicker.tsx`) posts `date|window`;
+`beginCheckout` validates it against the Israeli calendar and writes it
+twice: as a Hebrew line in `orders.notes`, which the admin order page reads
+today, and into these columns in their own UPDATE that fails with 42703 and a
+`checkout.delivery_slot_not_recorded` warning until this is applied, exactly
+as 236 does for `shipping_method`. Additive, idempotent; rollback is two
+DROP COLUMN IF EXISTS. Not applied.
+
 ## 2026-09-30: 245 PENDING (saved searches, per customer)
 
 `245_saved_searches.sql` adds `saved_searches`: a signed-in shopper's kept

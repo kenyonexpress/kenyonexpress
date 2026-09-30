@@ -150,6 +150,32 @@ export const giftSchema = z.object({
  */
 export const checkoutChannelSchema = z.enum(['web', 'app']).default('web')
 
+/**
+ * What the shopper typed into "מידע נוסף", and the delivery slot they picked.
+ *
+ * Both optional, both bounded. The notes are reproduced verbatim on the admin
+ * order page and in the supplier's view, so an unbounded field there is a
+ * payload and not a message; 500 is the same cap the form's own textarea and
+ * the address `notes_for_courier` already carry. The slot is validated for
+ * SHAPE here (`date|window`, at most 40 characters) and for MEANING in the
+ * action, against the clock, because "is this a delivery day from tomorrow"
+ * is not a zod question.
+ */
+export const orderExtrasSchema = z.object({
+  order_notes: z
+    .string()
+    .trim()
+    .max(500, 'ההערות ארוכות מדי')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  delivery_slot: z
+    .string()
+    .trim()
+    .max(40, 'מועד המסירה שנבחר אינו תקין')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+})
+
 export const beginCheckoutInputSchema = checkoutPaymentSchema
   .merge(
     z.object({
@@ -157,6 +183,7 @@ export const beginCheckoutInputSchema = checkoutPaymentSchema
       channel: checkoutChannelSchema,
     }),
   )
+  .merge(orderExtrasSchema)
   .merge(giftSchema)
   .superRefine((data, ctx) => {
     // address_id requirement depends on cart composition; enforced in the action.

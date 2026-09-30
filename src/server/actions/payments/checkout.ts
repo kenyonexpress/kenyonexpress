@@ -1,6 +1,7 @@
 'use server'
 
 import { appReturnUrl } from '@/lib/app/deep-links'
+import { deliverySlotNoteLine, validateDeliverySlot } from '@/lib/checkout/delivery-slots'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
@@ -39,6 +40,10 @@ import {
   readAmountAgorot,
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
+import {
+  PAYMENT_GATE_CLOSED_MESSAGE,
+  assessPaymentProviderGate,
+} from '@/lib/payments/provider-gate'
 import { isThreeDSChallengeRequired } from '@/lib/payments/threeds'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { DEFAULT_SHIPPING_METHOD_ID } from '@/lib/shipping/methods'
@@ -340,6 +345,21 @@ async function chargeSavedToken(args: {
 }
 
 /**
+ * `orders.notes` for a new order: the shopper's text, then the slot line, or
+ * null when there is neither. Null rather than an empty string so the admin
+ * page's "no notes" state stays the one it renders today.
+ */
+function composeOrderNotes(
+  orderNotes: string | undefined,
+  slotLabel: string | null,
+): string | null {
+  const lines: string[] = []
+  if (orderNotes) lines.push(orderNotes)
+  if (slotLabel) lines.push(deliverySlotNoteLine(slotLabel))
+  return lines.length > 0 ? lines.join('\n') : null
+}
+
+/**
  * Creates the pending order snapshot and hands off to the payment provider.
  * Money amounts are computed server-side only; the client contributes ids and
  * consent, never prices.
@@ -348,8 +368,13 @@ async function runBeginCheckout(
   rawInput: unknown,
 ): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
   const env = loadCardcomEnv()
-  if (!env.checkoutEnabled) {
-    return { ok: false, error: 'התשלום מושבת כרגע, נסו שוב מאוחר יותר', code: 'CHECKOUT_DISABLED' }
+  // Both switches at once: the operator's CHECKOUT_ENABLED and the mock
+  // provider in production. See lib/payments/provider-gate.ts for the day
+  // only the first was read here and orders finalized with no card charged.
+  const gate = assessPaymentProviderGate(env)
+  if (!gate.live) {
+    log.warn('checkout.gate_closed', { reasons: gate.reasons })
+    return { ok: false, error: PAYMENT_GATE_CLOSED_MESSAGE, code: 'CHECKOUT_DISABLED' }
   }
 
   const supabase = await createClient()
@@ -372,6 +397,16 @@ async function runBeginCheckout(
       error: parsed.error.issues[0]?.message ?? 'נתוני תשלום לא תקינים',
       code: 'VALIDATION',
     }
+  }
+  // The slot's meaning, against the clock: a delivery day, from tomorrow,
+  // within the month. Its shape was zod's; this is the part zod cannot do.
+  // Checked before anything is written so a bad value costs a message and
+  // not a cancelled order.
+  const deliverySlot = parsed.data.delivery_slot
+    ? validateDeliverySlot(parsed.data.delivery_slot, { now: new Date() })
+    : null
+  if (deliverySlot && !deliverySlot.ok) {
+    return { ok: false, error: deliverySlot.message, code: 'VALIDATION' }
   }
   const input = parsed.data
 
@@ -750,6 +785,15 @@ async function runBeginCheckout(
       address_id: input.address_id,
       accepted_terms_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
+      // `orders.notes` exists in production (it is in the generated types and
+      // order-transitions.ts appends to it), so it may sit in the INSERT
+      // unlike the pending columns below. The shopper's own words first, then
+      // the preferred slot as a line, because the admin order page and the
+      // supplier read THIS column and nothing else today. Until 30.09 the
+      // notes reached only `user_addresses.notes_for_courier`, and only when
+      // a NEW address was being saved; a returning customer's note was
+      // dropped on the floor.
+      notes: composeOrderNotes(input.order_notes, deliverySlot?.ok ? deliverySlot.label : null),
     })
     .select('id')
     .single()
@@ -799,6 +843,30 @@ async function runBeginCheckout(
         order_id: order.id,
         shipping_method: cart.shipping.method,
         err: shippingError.message,
+      })
+    }
+  }
+
+  // The preferred slot as structured columns, under the same rule as the two
+  // above: its own statement, never a key in the INSERT. The columns come with
+  // migrations/pending/246_orders_delivery_slot.sql and do not exist in
+  // production yet, so this UPDATE fails there with 42703; the slot is still
+  // in `notes` (above), which is what the supplier reads, so the failure
+  // costs a filter nobody has built yet and not the information. Written only
+  // for a supplier delivery: a pickup has no slot whatever the form posted.
+  if (deliverySlot?.ok && cart.shipping?.method === 'supplier_delivery') {
+    const { error: slotError } = await admin
+      .from('orders')
+      .update({
+        delivery_slot_date: deliverySlot.date,
+        delivery_slot_window: deliverySlot.window,
+      } as never)
+      .eq('id', order.id)
+    if (slotError) {
+      log.warn('checkout.delivery_slot_not_recorded', {
+        order_id: order.id,
+        delivery_slot: `${deliverySlot.date}|${deliverySlot.window}`,
+        err: slotError.message,
       })
     }
   }
@@ -1215,6 +1283,15 @@ async function runSubmitCheckout(
   } = await supabase.auth.getUser()
   if (!user) return { error: 'יש להתחבר לפני התשלום' }
 
+  // Before the address is saved, not after: a closed gate must leave nothing
+  // behind. beginCheckout asks the same question again for callers that skip
+  // this wrapper (the app), and the page reads it to disable the button, so
+  // the shopper normally never reaches this line with it closed.
+  const gate = assessPaymentProviderGate(loadCardcomEnv())
+  if (!gate.live) {
+    return { error: PAYMENT_GATE_CLOSED_MESSAGE, code: 'CHECKOUT_DISABLED' }
+  }
+
   const text = (name: string) => {
     const v = formData.get(name)
     return typeof v === 'string' ? v.trim() : ''
@@ -1285,6 +1362,10 @@ async function runSubmitCheckout(
     save_card: savedTokenId ? false : formData.get('save_card') === 'on',
     address_id: addressId,
     token_id: savedTokenId,
+    // The "מידע נוסף" textarea and the slot picker. Empty strings become
+    // undefined at the schema, so an untouched field is an absent one.
+    order_notes: text('order_notes'),
+    delivery_slot: text('delivery_slot'),
     // Only forwarded when the shopper actually ticked "this is a gift"; an
     // empty string would fail zod's email check and reject the whole checkout.
     ...(text('gift') === 'on' && text('gift_recipient_email')

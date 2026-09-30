@@ -400,6 +400,13 @@ describe('the pending migration inventory', () => {
       // both; neither is applied.
       '244_search_outbox_categories.sql',
       '245_saved_searches.sql',
+      // 246 is PENDING (2026-10-01, STEP 10 landing the single-page checkout):
+      // `orders.delivery_slot_date` and `orders.delivery_slot_window`, the
+      // slot the shopper picks in the address section. Checkout writes the
+      // slot into `orders.notes` as text until the columns exist. README
+      // carries the row; not yet dry-run on production (Supabase MCP
+      // unauthenticated in the session that filed it).
+      '246_orders_delivery_slot.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

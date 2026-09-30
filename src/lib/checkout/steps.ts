@@ -1,16 +1,18 @@
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 
 /**
- * The checkout split into steps, and the rule for leaving each one.
+ * The checkout's sections, and the rule each one has to satisfy before the
+ * order is sent.
  *
- * The whole form stays mounted in the DOM at every step: only visibility
- * changes. That is not a styling preference, it is what keeps `FormData` whole.
- * Unmounting step 1 to render step 3 would drop the name, phone and email from
- * the submission, and the server action would reject an order whose fields the
- * shopper did in fact fill in. So "which step am I on" is a display concern
- * here, and this module answers only one question: may the shopper move on.
+ * These were the four steps of a wizard until 30.09.2026. The checkout is one
+ * page now, the way the live WooCommerce checkout it is measured against is:
+ * every section is visible at once and there is a single submit. The
+ * grouping survived the stepper because the rules are per section (what the
+ * details block needs, what the address block needs) and because a saved
+ * address still switches two of them off at once. `validateAllSteps` is what
+ * the single submit runs; the per-step functions are what it is made of.
  *
- * Every check is a pure function of the values, so the step gate is testable
+ * Every check is a pure function of the values, so the gate is testable
  * without a browser and cannot drift from what the inputs actually hold.
  */
 
@@ -133,6 +135,29 @@ const VALIDATORS: Record<CheckoutStep, (values: StepValues) => StepErrors> = {
 
 export function validateStep(step: CheckoutStep, values: StepValues): StepErrors {
   return VALIDATORS[step](values)
+}
+
+/**
+ * Every section at once, for the one submit of a single-page checkout.
+ *
+ * `skip` names the sections a saved address answers for: their fields are not
+ * rendered, so validating them would report four missing values over a line
+ * of summary text the shopper cannot edit. The remaining sections are merged
+ * in page order, first message per field, so the form can land focus on the
+ * topmost error rather than the last one found.
+ */
+export function validateAllSteps(
+  values: StepValues,
+  skip: readonly CheckoutStep[] = [],
+): StepErrors {
+  const errors: StepErrors = {}
+  for (const step of CHECKOUT_STEPS) {
+    if (skip.includes(step)) continue
+    for (const [field, message] of Object.entries(validateStep(step, values))) {
+      if (!(field in errors)) errors[field] = message
+    }
+  }
+  return errors
 }
 
 /**

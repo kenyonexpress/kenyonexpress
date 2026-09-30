@@ -34,10 +34,12 @@ describe('checkout brand tokens', () => {
     expect(RULES).toMatch(/\.checkout-pay-btn:hover[^{]*\{[^}]*background:\s*#fedd26/)
   })
 
-  it('uses the same yellow for the step and retry controls', () => {
-    expect(RULES).toMatch(/\.checkout-nav__next\s*\{[^}]*background:\s*#fed700/)
-    expect(RULES).toMatch(/\.checkout-nav__next:hover[^{]*\{[^}]*background:\s*#fedd26/)
+  it('uses the same yellow for the retry control', () => {
+    // The step controls (.checkout-nav__next/back, .checkout-steps__btn) went
+    // with the stepper when the checkout became a single page (STEP 10);
+    // the retry button is the one secondary control left on the page.
     expect(RULES).toMatch(/\.checkout-error__retry\s*\{[^}]*background:\s*#fed700/)
+    expect(RULES).toMatch(/\.checkout-error__retry:hover[^{]*\{[^}]*background:\s*#fedd26/)
   })
 })
 
@@ -50,22 +52,18 @@ describe('checkout geometry', () => {
     expect(RULES).not.toMatch(/\.checkout-page\s*\{[^}]*max-width:\s*1170px/)
   })
 
-  it('sits every step control on the shared 44px touch target', () => {
+  it('sits every secondary control on the shared 44px touch target', () => {
     // --cart-touch is declared once, in mini-cart.css, which the root layout
     // loads everywhere. Redeclaring 44px here is how three surfaces end up
     // with three different ideas of a thumb.
-    for (const selector of [
-      '.checkout-nav__next',
-      '.checkout-nav__back',
-      '.checkout-error__retry',
-    ]) {
+    for (const selector of ['.checkout-error__retry']) {
       const rule = new RegExp(`\\${selector}\\s*\\{[^}]*min-height:\\s*var\\(--cart-touch`)
       expect(RULES, `${selector} is not on --cart-touch`).toMatch(rule)
     }
   })
 
-  it('gives the stepper buttons the same target', () => {
-    expect(RULES).toMatch(/\.checkout-steps__btn\s*\{[^}]*min-height:\s*var\(--cart-touch/)
+  it('leaves no stepper rule behind', () => {
+    expect(RULES).not.toMatch(/\.checkout-nav__|\.checkout-steps__/)
   })
 })
 

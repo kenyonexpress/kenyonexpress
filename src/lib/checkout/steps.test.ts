@@ -10,6 +10,7 @@ import {
   previousStep,
   stepsBefore,
   validateAddressStep,
+  validateAllSteps,
   validateConfirmStep,
   validateDetailsStep,
   validateReviewStep,
@@ -196,6 +197,43 @@ describe('furthestReachableStep', () => {
 
   it('holds at confirm when only the terms are unticked', () => {
     expect(furthestReachableStep({ ...complete, accept_terms: undefined })).toBe('confirm')
+  })
+})
+
+describe('validateAllSteps', () => {
+  it('merges every section, first message per field, in page order', () => {
+    const errors = validateAllSteps({})
+    expect(Object.keys(errors)).toEqual([
+      'first_name',
+      'last_name',
+      'phone',
+      'email',
+      'city',
+      'street',
+      'street_number',
+      'accept_terms',
+    ])
+  })
+
+  it('skips the sections a saved address answers for and still asks for the terms', () => {
+    expect(validateAllSteps({}, ['details', 'address'])).toEqual({
+      accept_terms: 'יש לאשר את תנאי השימוש',
+    })
+  })
+
+  it('is empty on a complete form', () => {
+    expect(
+      validateAllSteps({
+        first_name: 'דנה',
+        last_name: 'כהן',
+        phone: '0501234567',
+        email: 'dana@example.com',
+        city: 'תל אביב',
+        street: 'דיזנגוף',
+        street_number: '1',
+        accept_terms: 'on',
+      }),
+    ).toEqual({})
   })
 })
 

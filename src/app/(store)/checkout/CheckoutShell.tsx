@@ -1,4 +1,4 @@
-import { CHECKOUT_STEPS, STEP_TITLES } from '@/lib/checkout/steps'
+import { STEP_TITLES } from '@/lib/checkout/steps'
 
 /**
  * The Suspense fallback for /checkout, at the height of what replaces it.
@@ -15,49 +15,61 @@ import { CHECKOUT_STEPS, STEP_TITLES } from '@/lib/checkout/steps'
  * gate that found it seeds first.
  *
  * Every box below carries the real class, not a copy of its measurements, so
- * the reservation follows `checkout-page.css` at any viewport -- including the
- * 560px breakpoint where the step labels are hidden and the row gets shorter.
- * Numbers written into a skeleton are correct at exactly one width.
+ * the reservation follows `checkout-page.css` at any viewport. Numbers written
+ * into a skeleton are correct at exactly one width.
+ *
+ * SHAPED LIKE THE SINGLE PAGE. Since 30.09.2026 the checkout has no stepper
+ * and shows every section at once, so the shell reserves the two sections a
+ * guest always sees first: two rows of personal details and four rows of
+ * address. The rest of the page (notes, the order panel) arrives with the
+ * body below the fold on a phone and beside it on desktop, where its column
+ * does not move the footer.
  *
  * THE GUEST NOTICE IS RESERVED, AND THAT IS A CHOICE ABOUT WHO IS HERE. It
  * renders only for a visitor with no session, and the shell cannot know which
  * it has without awaiting the auth round trip the boundary exists to skip. A
- * guest is the documented default for this route -- the cart is open, the
- * sign-in happens on the pay button, and `CheckoutPageBody` says so in as many
- * words. Reserving it makes the guest exact and leaves a signed-in shopper the
- * 88px this strip occupies. The reverse would have left the common path with
- * that shift instead.
+ * guest is the documented default for this route, so reserving it makes the
+ * guest exact and leaves a signed-in shopper the 88px this strip occupies. The
+ * reverse would have left the common path with that shift instead.
  */
 export function CheckoutShell() {
   return (
     <>
       <div className="checkout-guest-notice" aria-hidden="true" />
 
-      <ol className="checkout-steps" aria-hidden="true">
-        {CHECKOUT_STEPS.map((entry, index) => (
-          <li key={entry} className="checkout-steps__item" data-state="upcoming">
-            {/* A span, not a button: the real row is four controls and this one
-                is scenery. Nothing here is focusable, so there is no control
-                that announces itself before it can do anything. */}
-            <span className="checkout-steps__btn">
-              <span className="checkout-steps__index">{index + 1}</span>
-              <span className="checkout-steps__label">{STEP_TITLES[entry]}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
-
       <div className="checkout-page__grid" aria-hidden="true">
         <div className="checkout-col-main">
           <section className="checkout-section">
             <h2 className="checkout-section__title">
-              <span>{STEP_TITLES[CHECKOUT_STEPS[0]]}</span>
+              <span>{STEP_TITLES.details}</span>
             </h2>
 
-            {/* Three rows of two, which is the personal-details step the page
-                always opens on. Divs rather than disabled inputs: a disabled
-                control is still a control in the document, and this is a grey
-                box that happens to be 45px tall. */}
+            {/* Divs rather than disabled inputs: a disabled control is still a
+                control in the document, and this is a grey box that happens
+                to be 45px tall. */}
+            {[0, 1].map((row) => (
+              <div key={row} className="checkout-fields-row">
+                {[0, 1].map((cell) => (
+                  <div key={cell} className="checkout-field">
+                    <span className="checkout-skeleton__label" />
+                    <span className="checkout-skeleton__input" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </section>
+
+          <section className="checkout-section">
+            <h2 className="checkout-section__title">
+              <span>{STEP_TITLES.address}</span>
+            </h2>
+
+            <div className="checkout-fields-row checkout-fields-row--single">
+              <div className="checkout-field">
+                <span className="checkout-skeleton__label" />
+                <span className="checkout-skeleton__input" />
+              </div>
+            </div>
             {[0, 1, 2].map((row) => (
               <div key={row} className="checkout-fields-row">
                 {[0, 1].map((cell) => (
@@ -68,8 +80,6 @@ export function CheckoutShell() {
                 ))}
               </div>
             ))}
-
-            <div className="checkout-skeleton__nav" />
           </section>
         </div>
       </div>

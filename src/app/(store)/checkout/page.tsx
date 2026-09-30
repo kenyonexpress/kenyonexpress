@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
+import { listDeliverySlots } from '@/lib/checkout/delivery-slots'
 import { validateCartView } from '@/lib/checkout/validate-cart'
+import { readPaymentProviderGate } from '@/lib/payments/provider-gate'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
@@ -165,6 +167,16 @@ async function CheckoutPageBody({
 
   const { resume, channel } = await searchParams
 
+  // One clock for the slot list, on the server, so the client hydrates the
+  // same options it was sent. Only generated when something is delivered.
+  const deliverySlots =
+    cart.shipping?.method === 'supplier_delivery' ? listDeliverySlots({ now: new Date() }) : []
+
+  // Read here and passed down, not decided in the browser: the gate is made of
+  // server-only variables. The form disables its button on it and the action
+  // refuses on it, so a closed gate is closed at every layer.
+  const paymentGate = readPaymentProviderGate()
+
   return (
     <div className="checkout-page">
       <CheckoutBreadcrumb />
@@ -179,6 +191,8 @@ async function CheckoutPageBody({
         isAuthenticated={Boolean(user)}
         resuming={resume === '1'}
         channel={channel === 'app' ? 'app' : 'web'}
+        deliverySlots={deliverySlots}
+        paymentGateOpen={paymentGate.live}
       />
     </div>
   )

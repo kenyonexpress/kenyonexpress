@@ -581,6 +581,141 @@ describe('beginCheckout: the discount claim spends the code before the charge', 
   })
 })
 
+describe('beginCheckout: the notes and the preferred delivery slot reach the order', () => {
+  function orderInsert(): Record<string, unknown> | undefined {
+    return calls.find((c) => c.table === 'orders' && c.op === 'insert')?.payload as
+      | Record<string, unknown>
+      | undefined
+  }
+
+  function orderUpdates(): Record<string, unknown>[] {
+    return calls
+      .filter((c) => c.table === 'orders' && c.op === 'update')
+      .map((c) => c.payload as Record<string, unknown>)
+  }
+
+  /** A date the validator accepts whatever today is: the first delivery day at least two days out. */
+  function nextDeliveryDay(): string {
+    const date = new Date()
+    date.setUTCDate(date.getUTCDate() + 2)
+    // Sunday..Thursday only; step past Friday and Saturday.
+    while (date.getUTCDay() === 5 || date.getUTCDay() === 6) date.setUTCDate(date.getUTCDate() + 1)
+    return date.toISOString().slice(0, 10)
+  }
+
+  function queueToHostedPage(): void {
+    queueThroughReservation()
+    queue('payments.insert', { data: { id: 'pay-lp' }, error: null })
+    provider.createLowProfile.mockResolvedValue({
+      lowProfileId: 'lp-1',
+      redirectUrl: 'https://pay.example/lp-1',
+      raw: {},
+    })
+  }
+
+  it('writes the shopper notes into orders.notes on the INSERT, for a saved address too', async () => {
+    // Until 30.09 the notes reached only user_addresses.notes_for_courier and
+    // only when a NEW address was created; with address_id set (this input)
+    // they were dropped. The order row is what the admin page reads.
+    queueToHostedPage()
+    const result = await beginCheckout(input({ order_notes: 'להשאיר אצל השכן בקומה 2' }))
+    expect(result.ok).toBe(true)
+    expect(orderInsert()?.notes).toBe('להשאיר אצל השכן בקומה 2')
+  })
+
+  it('leaves notes null when nothing was typed and no slot was picked', async () => {
+    queueToHostedPage()
+    await beginCheckout(input({ order_notes: '' }))
+    expect(orderInsert()?.notes).toBeNull()
+    expect(orderUpdates().some((u) => 'delivery_slot_date' in u)).toBe(false)
+  })
+
+  it('records a valid slot twice: as a line in the notes and as the pending columns, in their own statement', async () => {
+    getCart.mockResolvedValue({
+      ...cartWithOnePhysicalLine(),
+      shipping: { method: 'supplier_delivery', label: 'משלוח עד הבית', cost: agorot(0) },
+    })
+    queueToHostedPage()
+    queue('orders.update', { data: null, error: null })
+    const day = nextDeliveryDay()
+
+    const result = await beginCheckout(input({ delivery_slot: `${day}|afternoon` }))
+
+    expect(result.ok).toBe(true)
+    const notes = String(orderInsert()?.notes)
+    expect(notes).toContain('מועד מסירה מועדף:')
+    expect(notes).toContain('אחר הצהריים (13:00-17:00)')
+    expect(Object.keys(orderInsert() ?? {})).not.toContain('delivery_slot_date')
+    expect(orderUpdates()).toContainEqual({
+      delivery_slot_date: day,
+      delivery_slot_window: 'afternoon',
+    })
+  })
+
+  it('keeps the shopper text ahead of the slot line', async () => {
+    getCart.mockResolvedValue({
+      ...cartWithOnePhysicalLine(),
+      shipping: { method: 'supplier_delivery', label: 'משלוח עד הבית', cost: agorot(0) },
+    })
+    queueToHostedPage()
+    await beginCheckout(
+      input({ order_notes: 'בלי לצלצל', delivery_slot: `${nextDeliveryDay()}|morning` }),
+    )
+    const lines = String(orderInsert()?.notes).split('\n')
+    expect(lines[0]).toBe('בלי לצלצל')
+    expect(lines[1]).toMatch(/^מועד מסירה מועדף: /)
+  })
+
+  it('still creates the order when the slot columns are missing from this database', async () => {
+    getCart.mockResolvedValue({
+      ...cartWithOnePhysicalLine(),
+      shipping: { method: 'supplier_delivery', label: 'משלוח עד הבית', cost: agorot(0) },
+    })
+    queueToHostedPage()
+    queue('orders.update', {
+      data: null,
+      error: { code: '42703', message: 'column "delivery_slot_date" does not exist' },
+    })
+    const result = await beginCheckout(input({ delivery_slot: `${nextDeliveryDay()}|morning` }))
+    expect(result).toMatchObject({ ok: true, data: { kind: 'redirect' } })
+    // The information survived in the notes regardless.
+    expect(String(orderInsert()?.notes)).toContain('מועד מסירה מועדף:')
+  })
+
+  it('does not write the columns for a pickup, whatever the form posted', async () => {
+    getCart.mockResolvedValue({
+      ...cartWithOnePhysicalLine(),
+      shipping: { method: 'pickup', label: 'איסוף עצמי מהספק', cost: agorot(0) },
+    })
+    queueToHostedPage()
+    await beginCheckout(input({ delivery_slot: `${nextDeliveryDay()}|morning` }))
+    expect(orderUpdates().some((u) => 'delivery_slot_date' in u)).toBe(false)
+  })
+
+  it('refuses a slot on a Saturday before anything is written', async () => {
+    const date = new Date()
+    date.setUTCDate(date.getUTCDate() + 1)
+    while (date.getUTCDay() !== 6) date.setUTCDate(date.getUTCDate() + 1)
+    const saturday = date.toISOString().slice(0, 10)
+
+    const result = await beginCheckout(input({ delivery_slot: `${saturday}|morning` }))
+
+    expect(result).toMatchObject({ ok: false, code: 'VALIDATION' })
+    expect(wrote('orders')).toBe(false)
+  })
+
+  it('refuses a malformed slot value the same way', async () => {
+    const result = await beginCheckout(input({ delivery_slot: 'whenever' }))
+    expect(result).toMatchObject({ ok: false, code: 'VALIDATION' })
+    expect(wrote('orders')).toBe(false)
+  })
+
+  it('caps the notes at 500 characters at the schema', async () => {
+    const result = await beginCheckout(input({ order_notes: 'א'.repeat(501) }))
+    expect(result).toMatchObject({ ok: false, code: 'VALIDATION', error: 'ההערות ארוכות מדי' })
+  })
+})
+
 describe('reconcileOrderReturn: the return page after the card was charged', () => {
   it('answers pending, not a 404, when the order read fails', async () => {
     queue('orders.select', READ_FAILED)
