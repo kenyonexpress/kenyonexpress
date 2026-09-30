@@ -125,7 +125,47 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: ‏FINAL-AUDIT (‏SECTIONS 23) — ספירה מדודה לפני ואחרי
+## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
+
+### ‏30.09 ‏20:05: ריצת ‏autopilot (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, תקציב ‏20 דקות ב-`gtimeout 1200`)
+
+**‏PRE-SAFETY, ארבע הבדיקות בלבד:**
+
+1. ‏`claude auth status`: ‏loggedIn, ‏max. אין התראה.
+2. ‏`tmux ls`: ‏`ke-final` (מ-28.09) נהרג ונשלחה ‏`KE killed ke-final`.
+   **תוך פחות מדקה הוא נוצר מחדש** על ידי שומר (‏`claude_watch.sh`, ‏pid 954,
+   רץ חמישה ימים) והמשיך את ‏`run-final.sh` עם סשן ‏Sonnet על ‏`M11-c63`
+   (‏axe על כל עמוד). נמדד: ‏`pnpm exec playwright test e2e/a11y.spec.ts`
+   ושלושה ‏`next-server` חיים מתוך ‏`/Users/ofir/kenyonexpress-web/kenyonexpress`.
+3. ‏Vercel ‏MCP: ‏`kenyonexpress-prod` מחזיר ‏403 (לא נראה לחיבור). הפרויקט
+   היחיד בצוות ‏`kenyonexpress-projects` הוא ‏`kenyonexpress-web`, והפריסה
+   האחרונה שלו היא ‏ERROR ישן (מאי, ענף ‏cursor). נשלחה התראה מדויקת.
+4. ‏`curl -sIL https://kenyonexpress.co.il`: ‏308 ואז ‏200. האתר חי.
+
+**החלטות שהתקבלו לבד:**
+
+1. **לא הורג את ‏`ke-final` שוב ולא נוגע ב-checkout הראשי.** ההריגה השנייה
+   תיכשל באותו אופן (השומר מחזיר אותו) ורק תזרוק עבודה של סשן חי באמצע
+   מדידת ‏axe. זה בדיוק המצב הרביעי ברשימת ארבעת המצבים (סוכן קוד שני על
+   אותו ריפו), ולכן ההחלטה השמרנית היא לעבוד רק ב-worktree הזה.
+2. **ה-goal הקודם בתור כאן (‏FINAL-AUDIT, סעיף 23) כבר בוצע במקום אחר.**
+   ‏`docs/FINAL-AUDIT.md` קיים ב-`origin/audit/final-audit` (נמדד ב-09.09
+   ו-10.09, ‏11 ממדים, רץ לילית ב-`nightly-health.yml`). לא בוצע שוב כאן.
+3. **ה-worktree הזה מיושן:** ‏`phase5/homepage-closeout` נמצא ‏633 commits
+   מאחורי ‏`origin/audit/final-audit` ו-98 לפניו (‏HEAD ‏3369ce826, ‏24.09).
+   ‏`origin/main` עצמו עומד על ‏18.09. מיזוג של ‏633 commits עם ‏STATE.md
+   משני הצדדים לא נכנס לתקציב ‏20 דקות ולא בטוח כשסשן שני כותב לאותו ענף.
+   לכן ה-goal הבא בתור הוא האיחוד, בתנאי מפורש: רק כש-`ps` לא מראה
+   ‏`run-final.sh` וסשן ‏claude נוסף.
+4. **לא הורץ ‏`pnpm build`.** שלושה ‏next-server ו-playwright של הסשן השני
+   כבר רצים; build מקביל נופל על זיכרון (ראו ‏`concurrent-worktree-builds-oom`).
+   שונה כאן קובץ יחיד, ‏STATE.md, ולכן ‏type-check אינו רלוונטי; ‏lint הורץ
+   (תוצאה בשורת ה-commit).
+
+**המשך מ: ‏M11-c63** ממשיך על ‏`audit/final-audit` בידי הלולאה
+‏`run-final.sh`. ה-worktree הזה ממתין לאיחוד.
+
+## היסטורי: ‏FINAL-AUDIT (‏SECTIONS 23) — ספירה מדודה לפני ואחרי
 
 **‏`migrations/pending/` מחזיק שני קבצים, ושניהם חסומים מסיבות שאינן אישור:**
 
