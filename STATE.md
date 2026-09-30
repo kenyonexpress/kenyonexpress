@@ -1,74 +1,49 @@
-RESUME FROM: M17-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c60)
+RESUME FROM: M18-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c60)
 
 ## המשך מ:
 
-**M16-c60 - DONE (30.09): תברואת ריפו בפעם העשירית, אפס דריפט בענפים
-מקומיים, ‏1 ענף remote יותר (לא שלנו).** משימת התור: לוודא `git status`
-נקי, שכל ענף מקומי דחוף, ולרשום PR פתוחים וענפים ישנים ב-STATE.md, בלי
-למזג או למחוק דבר.
+**M17-c60 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם שמינית, אפס
+דריפט.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי, לאתר
+שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח וקישורים שבורים,
+ולתקן. **בסיס המדידה: התיקון האמיתי האחרון ב-`46b3b93ea` (M17-c51,
+דליפת LTR + placeholder אנגלי + שני redirect ישנים ל-`/legal`) —
+מ-M17-c52 ועד M17-c59 כל מחזור אימת מחדש בלי שינוי.** `git log
+46b3b93ea..HEAD -- messages/he.json 'src/app/(legal)'` מחזיר קומיט
+אחד בלבד, `99b2079cb` (M18-c52, חיבור דירוג כוכבים אמיתי לעמוד המוצר),
+שהוסיף מחרוזת חדשה אחת ל-`he.json`: `reviewsPage.summaryLink` = `"{avg}
+מתוך 5 · {count} ביקורות"` — עברית תקנית, שני placeholders, ללא דליפת
+LTR וללא מילה באנגלית. תיקיית `src/app/(legal)` ו-`src/content/legal`
+לא זזו כלל מאז `46b3b93ea`.
 
-**נמדד:** `git status` נקי, `audit/final-audit` תואם ל-`origin/audit/
-final-audit` בדיוק (`466ebc6fa`, אפס עבודה לא-committed, אפס commit
-לא-דחוף). **43 ענפים מקומיים, זהה בדיוק ל-M16-c59** (אפס ענף חדש, אפס
-ענף שנעלם). כל הענפים נבדקו לפי SHA מול upstream ומול `origin/<שם>`:
-32 עוקבים אחרי מקבילם ב-remote עם 0 קומיטים קדימה/אחורה; 4 ענפי
-`arch/*` (`account-area`, `checkout-cardcom-verification`,
-`notifications-v2`, `wp-migration`) עוקבים בטעות אחרי `origin/main` אך
-ה-SHA שלהם זהה בדיוק ל-`origin/arch/*` המתאים (אומת ישירות); 7 ענפים
-חסרי הגדרת upstream מקומית (`arch/seed-data`, `feat/auth-hardening`,
-`feat/monitoring-sentry`, `feat/notifications-full`,
-`feat/performance-seo`, `feat/search-meilisearch`, `release/v1.0`) אך
-ה-SHA שלהם זהה בדיוק לענף remote באותו שם; 6 ענפים (`pr36`,
-`release/v1.1`, `wip/refund-record-rebase-head`, `chore/vitest-4`,
-`docs/nightly-health-green`, `fix/main-nightly-red`) **אין להם ענף
-remote באותו שם כלל** (`git rev-parse origin/<שם>` נכשל, לא רק "שונה"),
-אך ראש הענף שלהם מוכל ב-10 עד 20 ענפי remote אחרים
-(`git branch -r --contains`). **אפס קומיט ייחודי לא-דחוף נמצא בשום
-ענף מקומי — כל 43 הענפים כבר קיימים ב-origin תחת שם זהה או אחר.**
-`main` המקומי נשאר בסטייה הידועה (`ahead=193 behind=109` מול
-`origin/main`, ללא אב-משותף אמיתי — חוסם 13 למטה, ללא שינוי).
+**קישורים:** 15 ה-href בפוטר (`src/components/layout/SiteFooter.tsx`)
+כולם בלי `built: false` (כל הדגלים הוסרו כשהעמודים עלו) ונבדקו אחד-אחד
+מול `src/app` — כולם מצביעים על route קיים (`/account`, `/cart`,
+`/account/orders`, `/about`, `/page/how-it-works`, `/contact`, `/faq`,
+`/blog`, `/suppliers`, `/terms-and-conditions`, `/privacy-policy`,
+`/refund_returns` פעמיים כולל עוגן, `/accessibility`). שלושת ה-alias
+המשפטיים (`/cancellation-policy`, `/terms`, `/privacy`) נבדקו מול
+`next.config.ts` דרך `legal-routes.test.ts` — `permanent: true` בכל
+השלושה, אפס שינוי. `legal-duplication.test.ts` (מונע שני routes לאותה
+מדיניות) ו-`legal-content.test.ts` ירוקים.
 
-**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c59,
-מספרים 2-47): הישן ביותר #2 (10.08, draft) ו-#3 (10.08); העדכני
-ביותר #47 ו-#9 (שני dependabot, 28.09). רוב הרשימה (2-33, למעט #31,
-#9, #46, #47) לא זזה מ-08.09 ומוקדם יותר — 15 מתוכם `draft`. **117
-ענפי remote** (`git branch -r` אחרי `git fetch --prune`, **עלה ב-1**
-מ-116 ב-M16-c59 — ענף חדש נדחף על ידי סשן מקביל אחר על הריפו הזה בין
-המחזורים, ללא PR פתוח תואם וללא ענף מקומי תואם; אין דרך לזהות איזה
-מ-`git log` בלבד, ואין בכך פעולה נדרשת מהפריט הזה). **12 מ-43 הענפים
-המקומיים כבר ממוזגים לתוך HEAD** (`git merge-base --is-ancestor`, זהה
-בדיוק ל-M16-c59): `audit/final-audit` עצמו, `chore/vitest-4`,
-`docs/nightly-health-green`, `docs/v1-final`, `fix/main-nightly-red`,
-`main`, `pr36`, `release/v1.0`, `release/v1.1`, `release/v1.2`,
-`wip/refund-record-rebase-head`, `work/goal-queue-0923`, מועמדים
-לניקוי, לא נמחקו (הכלל אוסר מחיקת ענפים). **28 ענפים ישנים** (קומיט
-אחרון לפני 16.09, 14+ יום, לא ממוזגים ל-HEAD, זהה בדיוק ל-M16-c59):
-`save/ke-visual-work`, `arch/account-area`,
-`arch/checkout-cardcom-verification`, `arch/notifications-v2`,
-`arch/seed-data`, `arch/wp-migration`, `docs/final-pack`,
-`arch/docs-batch-2`, `arch/docs-queue`, `feat/e2e-quality`,
-`feat/auth-model`, `feat/db-hardening-v2`, `feat/product-type`,
-`merge/supplier-and-arch-night`, `feat/auth-hardening`,
-`feat/checkout-e2e`, `feat/monitoring-sentry`, `feat/notifications-full`,
-`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`,
-`feat/rate-limit-layer`, `docs/final-pass`, `worktree-ke-fetch-timeout`,
-`worktree-mega-63-72`, `closeout/v1-final`, `feat/coupon-qr`,
-`worktree-order-state-machine`. **3 ענפים לא ממוזגים אך לא נטושים**
-(קומיט תוך 14 יום, זהה בדיוק ל-M16-c59): `autopilot` (17.09),
-`docs/ui-design-system` (23.09), `phase5/homepage-closeout` (24.09).
-**אפס מיזוג, אפס מחיקה.**
+**שערים:** `pnpm test src/app/hebrew-copy.test.ts src/content/legal
+'src/app/(legal)'` — 5 קבצים, 77 טסטים, ירוק. `type-check` נקי. `lint`
+נקי (`copy-gate` — אפס משפט שיווקי לטיני, `i18n-gate` 627/627,
+`rtl-logical-gate` נקי). `test` המלא 610/610 קבצים, 7296/7308 (12
+דולגים) — זהה בדיוק ל-M16-c60. **`build`**: `.next` הקיים
+(`BUILD_ID` `_q_e1hFe7GBgP05yPvgZC`) כבר אומת תואם ל-HEAD ב-M16-c60
+(אחרון שנגע בנתיבי build הוא `e1f99e3e7`, טסט בלבד, ללא שינוי מאז) —
+לא נבנה מחדש, ~42 `next-server`/`pnpm start` מקבילים עדיין רצים על
+המכונה. אין שינוי UI ואין שינוי קוד ייצור — אין צורך בשער חזותי.
+**קובץ ששונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M16-c60
+הועבר לתקרת 300 שורות).
 
-שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2025 קבצים, שנים-עשר
-השערים כולל `i18n` 627/627 ו-`locale-format` 116/116, `docs-index` 282
-מסמכים, `docs-path-audit` 152 ידועים), `test` המלא 610/610 קבצים
-7296/7308 (12 דולגים, 59.35s) — זהה ל-100% ל-M15-c60. `build`: `.next`
-הקיים (`BUILD_ID` `_q_e1hFe7GBgP05yPvgZC`) נבדק תואם קוד ל-HEAD (אחרון
-שנגע בנתיבי build הוא `e1f99e3e7`, קובץ טסט בלבד), לא נבנה מחדש כדי
-לא להתחרות במשאבים עם ~42 `next-server`/`pnpm start` מקבילים שרצים
-כרגע על המכונה. אין שינוי UI, אין שער חזותי נדרש. **קבצים ששונו:
-`STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M15-c60 הועבר לתקרת 300
-שורות).
+## M16-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M16-c60: תברואת ריפו בפעם העשירית, אפס דריפט בענפים מקומיים (43 ענפים
+זהה ל-M16-c59, אפס קומיט ייחודי לא-דחוף בשום ענף), 117 ענפי remote
+(עלה ב-1, לא שלנו), 24 PR פתוחים זהה ל-M16-c59. ארבעת השערים ירוקים.
 
 ## M15-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
