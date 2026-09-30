@@ -109,7 +109,11 @@ describe('wishlists soft delete: the restore that does not work', () => {
     // 185 cannot get it out of. Red here means: pick a restore path.
     const offenders = sourceFiles(SRC).filter((path) => {
       const text = readFileSync(path, 'utf8')
-      return text.includes("from('wishlists'") && /deleted_at\s*:/.test(text)
+      // A WRITE of the column, `deleted_at: <value>`; not the type annotation
+      // `deleted_at: string | null` a reader declares for the joined product
+      // row (server/actions/wishlist.ts reads products.deleted_at to hide a
+      // removed product, and never touches wishlists.deleted_at).
+      return text.includes("from('wishlists'") && /deleted_at\s*:(?!\s*string\b)/.test(text)
     })
     expect(offenders.map((p) => p.slice(SRC.length + 1))).toEqual([])
   })

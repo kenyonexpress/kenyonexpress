@@ -1,3 +1,4 @@
+import { MIN_WALLET_REDEMPTION_ILS, REDEMPTION_REFUSAL_MESSAGES } from '@/lib/cashback/redemption'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { z } from 'zod'
 
@@ -193,6 +194,14 @@ export const beginCheckoutInputSchema = checkoutPaymentSchema
         path: ['apply_wallet_ils'],
         message: 'סכום ארנק לא יכול להיות שלילי',
       })
+    } else if (data.apply_wallet_ils > 0 && data.apply_wallet_ils < MIN_WALLET_REDEMPTION_ILS) {
+      // STEP 13: a redemption is ₪10 or nothing. Refused here in the shopper's
+      // own field, before any balance read, so the message lands on the box.
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['apply_wallet_ils'],
+        message: REDEMPTION_REFUSAL_MESSAGES.BELOW_MINIMUM,
+      })
     }
   })
 
@@ -249,6 +258,7 @@ export type CheckoutActionErrorCode =
   | 'NOT_FOUND'
   | 'INSUFFICIENT_STOCK'
   | 'INSUFFICIENT_WALLET'
+  | 'WALLET_MIN_REDEMPTION'
   | 'COUPON_INVALID'
   | 'CONSENT_REQUIRED'
   | 'ADDRESS_REQUIRED'

@@ -31,15 +31,25 @@ function toAgorotPrecision(value: number): number {
 /**
  * @param raw the field's value, exactly as typed
  * @param maxIls min(wallet balance, on-site charge), in shekels
+ * @param minIls the redemption floor (STEP 13: ₪10). A positive amount under
+ *   it is lifted TO it when the ceiling allows, for the same reason the
+ *   ceiling clamps down: someone who typed ₪5 into the wallet box wants the
+ *   wallet used, and the smallest use there is, is the floor. When the
+ *   ceiling itself is under the floor the box should not have been offered;
+ *   the value becomes 0 so nothing the server refuses is posted.
  * @returns the clamped value, or '' when the field is empty and should stay so
  */
-export function clampWalletIls(raw: string, maxIls: number): string {
+export function clampWalletIls(raw: string, maxIls: number, minIls = 0): string {
   if (raw.trim() === '') return ''
   const parsed = Number(raw)
   // A number input can still hold an unparseable string ('e', '1-2'); the
   // browser reports those as '' but a paste into a text field would not.
   if (!Number.isFinite(parsed)) return ''
   const ceiling = Math.max(0, toAgorotPrecision(maxIls))
+  const floor = Math.max(0, toAgorotPrecision(minIls))
   const clamped = Math.min(Math.max(0, toAgorotPrecision(parsed)), ceiling)
+  if (clamped > 0 && clamped < floor) {
+    return floor <= ceiling ? String(floor) : '0'
+  }
   return String(clamped)
 }

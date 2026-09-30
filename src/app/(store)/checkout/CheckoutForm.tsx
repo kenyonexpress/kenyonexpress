@@ -6,6 +6,7 @@ import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { getCheckoutVariant } from '@/lib/analytics/feature-flags'
 import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
+import { MIN_WALLET_REDEMPTION_ILS, redeemableCeilingAgorot } from '@/lib/cashback/redemption'
 import type { DeliverySlot } from '@/lib/checkout/delivery-slots'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
@@ -270,7 +271,10 @@ export default function CheckoutForm({
   // shekel balance against the agorot subtotal would have offered a wallet
   // ceiling a hundred times the cart.
   const walletBalanceAgorot: Agorot = parseIls(walletBalance.toFixed(2))
-  const walletMaxIls = Math.min(walletBalanceAgorot, cart.subtotal) / 100
+  // STEP 13: min(balance, on-site charge), or 0 when that sits under the ₪10
+  // floor. Zero means the box is replaced by a sentence, not offered and
+  // then refused.
+  const walletMaxIls = redeemableCeilingAgorot(walletBalanceAgorot, cart.subtotal) / 100
 
   const [firstName, ...restName] = (address.full_name ?? '').split(' ')
   const prefill = {
@@ -546,17 +550,24 @@ export default function CheckoutForm({
             </fieldset>
           )}
 
-          {walletBalance > 0 && (
+          {walletBalance > 0 && walletMaxIls <= 0 && (
+            <p className="checkout-wallet-note" data-testid="wallet-floor-note">
+              מימוש קאשבק מהארנק אפשרי מסכום של ₪{MIN_WALLET_REDEMPTION_ILS} ומעלה (יתרה זמינה:{' '}
+              {shekels(walletBalanceAgorot)})
+            </p>
+          )}
+          {walletBalance > 0 && walletMaxIls > 0 && (
             <div className="checkout-wallet">
               <label htmlFor="co-wallet">
-                שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})
+                שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)}, מינימום ₪
+                {MIN_WALLET_REDEMPTION_ILS})
               </label>
               <input
                 id="co-wallet"
                 name="apply_wallet_ils"
                 type="number"
                 inputMode="decimal"
-                min={0}
+                min={MIN_WALLET_REDEMPTION_ILS}
                 max={walletMaxIls}
                 step="0.01"
                 defaultValue={0}
@@ -574,6 +585,7 @@ export default function CheckoutForm({
                   event.currentTarget.value = clampWalletIls(
                     event.currentTarget.value,
                     walletMaxIls,
+                    MIN_WALLET_REDEMPTION_ILS,
                   )
                 }}
               />

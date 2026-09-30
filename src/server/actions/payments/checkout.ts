@@ -1,6 +1,7 @@
 'use server'
 
 import { appReturnUrl } from '@/lib/app/deep-links'
+import { REDEMPTION_REFUSAL_MESSAGES, checkWalletRedemption } from '@/lib/cashback/redemption'
 import { deliverySlotNoteLine, validateDeliverySlot } from '@/lib/checkout/delivery-slots'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
@@ -711,10 +712,24 @@ async function runBeginCheckout(
       user.id,
     )
     const requestedAgorot = ilsToAgorot(input.apply_wallet_ils.toFixed(2))
-    if (requestedAgorot > balanceAgorot) {
-      return { ok: false, error: 'יתרת הארנק אינה מספיקה', code: 'INSUFFICIENT_WALLET' }
+    // STEP 13: floor (₪10), balance, then the on-site charge, in that order.
+    // The charge ceiling used to be caught later by the settlement engine as
+    // an English RangeError classified retryable; here it is a Hebrew
+    // sentence on the wallet box. The subtotal is the on-site charge before
+    // discount; the engine below re-checks against the final split.
+    const verdict = checkWalletRedemption(
+      requestedAgorot,
+      agorot(balanceAgorot),
+      agorot(cart.subtotal),
+    )
+    if (!verdict.ok) {
+      return {
+        ok: false,
+        error: REDEMPTION_REFUSAL_MESSAGES[verdict.code],
+        code: verdict.code === 'BELOW_MINIMUM' ? 'WALLET_MIN_REDEMPTION' : 'INSUFFICIENT_WALLET',
+      }
     }
-    walletAppliedAgorot = requestedAgorot
+    walletAppliedAgorot = verdict.agorot
   }
 
   // The discount is re-evaluated here, from the coupons table, against the cart

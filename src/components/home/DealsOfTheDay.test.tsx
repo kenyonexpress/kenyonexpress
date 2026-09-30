@@ -4,6 +4,8 @@ import DealsOfTheDay from './DealsOfTheDay'
 
 // The island needs the cart provider; the grid's image hints do not.
 vi.mock('@/components/cart/AddToCartButton', () => ({ default: () => null }))
+// Same for the wishlist heart (STEP 12): a client island on useRouter().
+vi.mock('@/components/product/WishlistButton', () => ({ default: () => null }))
 
 /**
  * THE PHONE'S LCP IMAGE IS EAGER AND HIGH PRIORITY, AND ONLY THAT ONE.

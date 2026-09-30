@@ -272,6 +272,7 @@ describe('classifyCheckoutFailure', () => {
     expect(classifyCheckoutFailure('UNAUTHENTICATED')).toBe('terminal')
     expect(classifyCheckoutFailure('ADDRESS_REQUIRED')).toBe('terminal')
     expect(classifyCheckoutFailure('INSUFFICIENT_WALLET')).toBe('terminal')
+    expect(classifyCheckoutFailure('WALLET_MIN_REDEMPTION')).toBe('terminal')
     expect(classifyCheckoutFailure('IDEMPOTENT_REPLAY')).toBe('terminal')
     expect(classifyCheckoutFailure('INTERNAL')).toBe('terminal')
   })

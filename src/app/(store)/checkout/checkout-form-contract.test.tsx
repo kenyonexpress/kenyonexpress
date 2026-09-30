@@ -170,6 +170,27 @@ describe('the checkout wallet box', () => {
     fireEvent.blur(field)
     expect(field.value).toBe('0')
   })
+
+  it('is replaced by the floor sentence when the balance is under ₪10 (STEP 13)', () => {
+    // ₪9.99 in the wallet: a box would be offered and then refused. The
+    // sentence says what is needed and what is there.
+    const { container } = renderCheckout({ walletBalance: 9.99 })
+    expect(walletField(container)).toBeNull()
+    const note = container.querySelector('[data-testid="wallet-floor-note"]')
+    expect(note?.textContent).toContain('₪10')
+    expect(note?.textContent).toContain('9.99')
+  })
+
+  it('names the floor on the box and lifts a small amount to it on blur', () => {
+    const { container } = renderCheckout({ walletBalance: 500 })
+    const field = walletField(container)
+    if (!field) throw new Error('wallet field missing')
+    expect(field.min).toBe('10')
+    expect(container.querySelector('label[for="co-wallet"]')?.textContent).toContain('מינימום')
+    fireEvent.change(field, { target: { value: '5' } })
+    fireEvent.blur(field)
+    expect(field.value).toBe('10')
+  })
 })
 
 describe('the checkout confirm step', () => {

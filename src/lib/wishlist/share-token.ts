@@ -30,15 +30,20 @@ function base64url(bytes: Uint8Array): string {
   for (; i + 2 < bytes.length; i += 3) {
     const n =
       ((bytes[i] as number) << 16) | ((bytes[i + 1] as number) << 8) | (bytes[i + 2] as number)
-    out += B64URL[(n >> 18) & 63] + B64URL[(n >> 12) & 63] + B64URL[(n >> 6) & 63] + B64URL[n & 63]
+    out +=
+      B64URL.charAt((n >> 18) & 63) +
+      B64URL.charAt((n >> 12) & 63) +
+      B64URL.charAt((n >> 6) & 63) +
+      B64URL.charAt(n & 63)
   }
   const rest = bytes.length - i
   if (rest === 1) {
     const n = (bytes[i] as number) << 16
-    out += B64URL[(n >> 18) & 63] + B64URL[(n >> 12) & 63]
+    out += B64URL.charAt((n >> 18) & 63) + B64URL.charAt((n >> 12) & 63)
   } else if (rest === 2) {
     const n = ((bytes[i] as number) << 16) | ((bytes[i + 1] as number) << 8)
-    out += B64URL[(n >> 18) & 63] + B64URL[(n >> 12) & 63] + B64URL[(n >> 6) & 63]
+    out +=
+      B64URL.charAt((n >> 18) & 63) + B64URL.charAt((n >> 12) & 63) + B64URL.charAt((n >> 6) & 63)
   }
   return out
 }

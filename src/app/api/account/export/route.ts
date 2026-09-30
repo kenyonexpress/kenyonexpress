@@ -54,6 +54,13 @@ const SECTION_QUERIES = {
         'type, source, amount_ils, gross_amount_ils, cashback_percent, notes, related_order_id, created_at',
       )
       .order('created_at', { ascending: false }),
+  // STEP 13: the cashback decision record (why each credit was awarded),
+  // alongside the wallet movements above. Reported empty until 249 is live.
+  cashback_events: (db: Db) =>
+    db
+      .from('cashback_events')
+      .select('order_id, agorot, reason, note, created_at')
+      .order('created_at', { ascending: false }),
   vouchers: (db: Db) =>
     db
       .from('vouchers')

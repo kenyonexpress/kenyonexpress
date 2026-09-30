@@ -96,3 +96,64 @@ export async function getCashbackTracker(now?: Date): Promise<CashbackTracker> {
     history,
   }
 }
+
+/**
+ * One row of the STEP 13 ledger view (`cashback_events`, migration 249):
+ * the ledger in the four-column vocabulary the step names, integer agorot.
+ * `reason` is 177's entry_type; `note` is the free text an admin adjustment
+ * carries.
+ */
+export interface CashbackEvent {
+  id: string
+  orderId: string | null
+  agorot: Agorot
+  reason: string
+  note: string | null
+  createdAt: string
+}
+
+/**
+ * The signed-in customer's cashback events, newest first, through the
+ * request-scoped client so 177's owner policy decides the rows. Consumed by
+ * the account data export; the tracker keeps reading the base table because
+ * it also needs the rate and basis columns.
+ *
+ * Until 249 is applied the view does not exist and PostgREST answers
+ * PGRST205; that is reported as an empty list rather than a failed export,
+ * because a missing decision record is not a reason to withhold the rest of
+ * someone's data.
+ */
+export async function getCashbackEvents(limit = 500): Promise<CashbackEvent[]> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('cashback_events')
+    .select('id, order_id, agorot, reason, note, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) {
+    if (error.code === 'PGRST205' || error.code === '42P01') return []
+    throw new Error(`account.cashback_events_read_failed: ${error.message}`)
+  }
+
+  return (data ?? []).flatMap((row) => {
+    if (row.id == null || row.agorot == null || row.reason == null || row.created_at == null) {
+      return []
+    }
+    return [
+      {
+        id: row.id,
+        orderId: row.order_id,
+        agorot: agorot(row.agorot),
+        reason: row.reason,
+        note: row.note,
+        createdAt: row.created_at,
+      },
+    ]
+  })
+}

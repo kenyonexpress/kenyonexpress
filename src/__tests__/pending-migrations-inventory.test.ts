@@ -421,6 +421,13 @@ describe('the pending migration inventory', () => {
       // Owner-only RLS on the table, no anon grant. Not yet dry-run on
       // production (Supabase MCP unauthenticated in the session that filed it).
       '248_wishlist_shares.sql',
+      // 249 is PENDING (2026-10-01, STEP 13 cashback wallet): `cashback_events`,
+      // a security_invoker VIEW over 177's cashback_ledger in the step's
+      // vocabulary (order_id, agorot, reason, created_at). No second ledger,
+      // no policy of its own, no anon grant. Read by getCashbackEvents for the
+      // account export. Not yet dry-run on production (Supabase MCP
+      // unauthenticated in the session that filed it).
+      '249_cashback_events.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

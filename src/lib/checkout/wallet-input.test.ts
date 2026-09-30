@@ -50,4 +50,30 @@ describe('clampWalletIls', () => {
     expect(clampWalletIls('25', 100)).toBe('25')
     expect(clampWalletIls('100', 100)).toBe('100')
   })
+
+  describe('the ₪10 redemption floor (STEP 13)', () => {
+    it('lifts a small positive amount to the floor when the ceiling allows it', () => {
+      // The shopper wants the wallet used; the smallest use there is, is ₪10.
+      expect(clampWalletIls('5', 100, 10)).toBe('10')
+      expect(clampWalletIls('9.99', 100, 10)).toBe('10')
+    })
+
+    it('posts nothing when even the floor does not fit under the ceiling', () => {
+      // A ₪7 cart, or a ₪7 balance: the box should not have been offered, and
+      // whatever was typed must not reach the server as a refusable number.
+      expect(clampWalletIls('5', 7, 10)).toBe('0')
+      expect(clampWalletIls('7', 7, 10)).toBe('0')
+    })
+
+    it('leaves zero, the empty field and amounts at or above the floor alone', () => {
+      expect(clampWalletIls('0', 100, 10)).toBe('0')
+      expect(clampWalletIls('', 100, 10)).toBe('')
+      expect(clampWalletIls('10', 100, 10)).toBe('10')
+      expect(clampWalletIls('25', 100, 10)).toBe('25')
+    })
+
+    it('still clamps to the ceiling above the floor', () => {
+      expect(clampWalletIls('500', 40, 10)).toBe('40')
+    })
+  })
 })

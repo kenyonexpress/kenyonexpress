@@ -374,6 +374,62 @@ describe('beginCheckout: a read that failed is not an answer', () => {
   })
 })
 
+describe('beginCheckout: the ₪10 cashback redemption floor (STEP 13)', () => {
+  // The probe asks for `id, balance_agorot` or `id, balance_ils` depending on
+  // which column it remembers winning; the stand-in answers every select the
+  // same way, so the row carries both spellings of the one balance.
+  function walletWithBalanceIls(balanceIls: number): void {
+    queue('wallet_accounts.select', {
+      data: [{ id: 'wallet-1', balance_agorot: balanceIls * 100, balance_ils: balanceIls }],
+      error: null,
+    })
+  }
+
+  it('refuses a positive amount under ₪10 in the field itself, before any wallet read', async () => {
+    queueThroughReservation()
+
+    const result = await beginCheckout(input({ apply_wallet_ils: 5 }))
+
+    expect(result).toMatchObject({ ok: false, code: 'VALIDATION' })
+    expect(result.ok === false && result.error).toContain('₪10')
+    expect(calls.some((c) => c.table === 'wallet_accounts')).toBe(false)
+    expect(wrote('orders')).toBe(false)
+  })
+
+  it('refuses ₪10 when the balance is ₪5, in Hebrew, without an order', async () => {
+    queueThroughReservation()
+    walletWithBalanceIls(5)
+
+    const result = await beginCheckout(input({ apply_wallet_ils: 10 }))
+
+    expect(result).toMatchObject({ ok: false, code: 'INSUFFICIENT_WALLET' })
+    expect(result.ok === false && result.error).toBe('יתרת הארנק אינה מספיקה')
+    expect(wrote('orders')).toBe(false)
+  })
+
+  it('refuses more than the on-site charge as a Hebrew sentence, not the engine RangeError', async () => {
+    // The cart is ₪120; a ₪500 balance offers ₪130 and the old path threw
+    // "wallet applied must not exceed the on-site charge" from the engine.
+    queueThroughReservation()
+    walletWithBalanceIls(500)
+
+    const result = await beginCheckout(input({ apply_wallet_ils: 130 }))
+
+    expect(result).toMatchObject({ ok: false, code: 'INSUFFICIENT_WALLET' })
+    expect(result.ok === false && result.error).toBe('סכום הארנק גבוה מהסכום לתשלום באתר')
+    expect(wrote('orders')).toBe(false)
+  })
+
+  it('lets exactly ₪10 through to the order when the balance covers it', async () => {
+    queueThroughReservation()
+    walletWithBalanceIls(500)
+
+    await beginCheckout(input({ apply_wallet_ils: 10 }))
+
+    expect(wrote('orders')).toBe(true)
+  })
+})
+
 describe('beginCheckout: the saved-card charge and its 3DS fallback', () => {
   const TOKEN_ID = '77777777-7777-4777-8777-777777777777'
 

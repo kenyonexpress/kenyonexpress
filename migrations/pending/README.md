@@ -1,5 +1,28 @@
 # `migrations/pending/`
 
+## 2026-10-01: 249 PENDING (cashback events view, STEP 13)
+
+`249_cashback_events.sql` adds `cashback_events`, a `security_invoker` VIEW
+over `cashback_ledger` (177, live on production) in the vocabulary STEP 13
+asks for: `order_id`, `agorot` (the ledger's `amount_agorot`, bigint,
+integer agorot), `reason` (the ledger's `entry_type`: `order_item`,
+`first_purchase_bonus`, `fifth_purchase_bonus`, `admin_adjustment`), `note`
+(the free text an adjustment carries), `percent_bp`, `basis_agorot`,
+`created_at`. Not a second table: two ledgers drift, and 177 already records
+every event append-only with the 10% first-purchase and 5% every-fifth rules
+decided in `fn_cashback_order_bonus`. 177's owner and admin policies decide
+the rows; anon holds nothing; nothing grants INSERT and the base table's
+append-only trigger refuses UPDATE and DELETE for every role. Read by
+`getCashbackEvents` (`src/server/queries/cashback.ts`) for the account data
+export. The ₪10 redemption floor is application-side
+(`src/lib/cashback/redemption.ts`, the zod schema, `beginCheckout`), not a
+CHECK, because the hosted lineage stores the applied wallet in
+`cashback_applied_ils` and refunds legitimately move smaller amounts.
+Additive, idempotent (`CREATE OR REPLACE VIEW`); rollback is one DROP VIEW.
+Not applied; the export reports the section empty on PGRST205 until it is.
+Not yet dry-run on production (Supabase MCP unauthenticated in the session
+that filed it).
+
 ## 2026-10-01: 248 PENDING (wishlist share link)
 
 `248_wishlist_shares.sql` adds `wishlist_shares`: one row per user holding an

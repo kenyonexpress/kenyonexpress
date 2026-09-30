@@ -4888,6 +4888,35 @@ export type Database = {
       }
     }
     Views: {
+      cashback_events: {
+        Row: {
+          agorot: number | null
+          basis_agorot: number | null
+          created_at: string | null
+          id: string | null
+          note: string | null
+          order_id: string | null
+          percent_bp: number | null
+          reason: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'cashback_ledger_order_id_fkey'
+            columns: ['order_id']
+            isOneToOne: false
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'cashback_ledger_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       v_abandoned_cart_recovery: {
         Row: {
           nudges_sent: number | null
