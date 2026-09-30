@@ -62,9 +62,7 @@ function fakeClient(name: string) {
 const getUser = vi.fn()
 const signOut = vi.fn()
 const requestClient = { ...fakeClient('request'), auth: { getUser, signOut } }
-const rpc = vi.fn()
-const deleteUser = vi.fn()
-const adminClient = { ...fakeClient('admin'), rpc, auth: { admin: { deleteUser } } }
+const adminClient = fakeClient('admin')
 
 const revalidatePath = vi.fn()
 const logWarn = vi.fn()
@@ -117,7 +115,6 @@ const {
   setDefaultAddress,
   deletePaymentToken,
   setDefaultPaymentToken,
-  deleteAccount,
 } = await import('./account')
 
 const find = (table: string, op: string) => calls.filter((c) => c.table === table && c.op === op)
@@ -132,10 +129,6 @@ beforeEach(() => {
   getUser.mockResolvedValue({ data: { user: { id: USER } } })
   signOut.mockReset()
   signOut.mockResolvedValue({ error: null })
-  rpc.mockReset()
-  rpc.mockResolvedValue({ data: null, error: null })
-  deleteUser.mockReset()
-  deleteUser.mockResolvedValue({ data: null, error: null })
 })
 
 describe('updateProfileDetails', () => {
@@ -338,133 +331,5 @@ describe('setDefaultPaymentToken', () => {
     expect(await setDefaultPaymentToken(null, form({ id: TOKEN }))).toEqual({
       error: 'עדכון ברירת המחדל נכשל',
     })
-  })
-})
-
-describe('deleteAccount', () => {
-  const CONFIRM = { confirm: 'מחק את החשבון שלי' }
-  const SATELLITES = [
-    'admin:user_recent_searches',
-    'admin:push_tokens',
-    'admin:user_addresses',
-    'admin:payment_tokens',
-    'admin:carts',
-  ]
-
-  it('anonymises through the RPC, soft-deletes the login, signs out and redirects', async () => {
-    queue('admin:profiles.select', { data: { email: 'u@example.com' }, error: null })
-    await expect(deleteAccount(null, form(CONFIRM))).rejects.toThrow(
-      'NEXT_REDIRECT:/?account=deleted',
-    )
-    expect(rpc).toHaveBeenCalledWith('fn_anonymize_user', { p_user_id: USER })
-    // The atomic path ran, so no fallback statement was issued.
-    expect(calls.filter((c) => c.op === 'delete')).toEqual([])
-    expect(find('admin:profiles', 'update')).toEqual([])
-    expect(deleteUser).toHaveBeenCalledWith(USER, true)
-    expect(signOut).toHaveBeenCalledTimes(1)
-    expect(logWarn).not.toHaveBeenCalled()
-  })
-
-  it('refuses without the typed phrase or a session, before touching anything', async () => {
-    expect(await deleteAccount(null, form({ confirm: 'כן' }))).toEqual({
-      error: 'יש להקליד "מחק את החשבון שלי" בדיוק כדי לאשר',
-    })
-    getUser.mockResolvedValueOnce({ data: { user: null } })
-    expect(await deleteAccount(null, form(CONFIRM))).toEqual({ error: 'יש להתחבר' })
-    expect(rpc).not.toHaveBeenCalled()
-    expect(deleteUser).not.toHaveBeenCalled()
-    expect(calls).toEqual([])
-  })
-
-  it('runs the ordered service-role fallback when the RPC does not exist yet', async () => {
-    rpc.mockResolvedValue({
-      data: null,
-      error: { code: 'PGRST202', message: 'Could not find the function fn_anonymize_user' },
-    })
-    queue('admin:profiles.select', { data: null, error: { message: 'column email missing' } })
-
-    await expect(deleteAccount(null, form(CONFIRM))).rejects.toThrow('NEXT_REDIRECT')
-
-    expect(logWarn).toHaveBeenCalledWith('account.delete_email_read_failed', {
-      reason: 'column email missing',
-    })
-    expect(logWarn).toHaveBeenCalledWith('account.delete_fallback_no_rpc', { userId: USER })
-
-    const deletes = calls.filter((c) => c.op === 'delete')
-    expect(deletes.map((c) => c.table)).toEqual(SATELLITES)
-    expect(deletes[3]?.chain).toEqual([['eq', ['profile_id', USER]]])
-    expect(deletes[0]?.chain).toEqual([['eq', ['user_id', USER]]])
-
-    const [profile] = find('admin:profiles', 'update')
-    // md5 of the id, first 16 hex chars: byte-identical to fn_anonymize_user.
-    expect(profile?.payload).toEqual({
-      email: expect.stringMatching(/^deleted\+[0-9a-f]{16}@anonymized\.invalid$/),
-      full_name: 'משתמש שנמחק',
-      phone: null,
-    })
-    expect(profile?.chain).toEqual([['eq', ['id', USER]]])
-    expect(deleteUser).toHaveBeenCalledWith(USER, true)
-  })
-
-  it('derives the same anonymised address on every run (idempotent fallback)', async () => {
-    rpc.mockResolvedValue({ data: null, error: { message: 'fn_anonymize_user does not exist' } })
-    await expect(deleteAccount(null, form(CONFIRM))).rejects.toThrow('NEXT_REDIRECT')
-    const first = (find('admin:profiles', 'update')[0]?.payload as { email: string }).email
-    calls.length = 0
-    await expect(deleteAccount(null, form(CONFIRM))).rejects.toThrow('NEXT_REDIRECT')
-    const second = (find('admin:profiles', 'update')[0]?.payload as { email: string }).email
-    expect(second).toBe(first)
-  })
-
-  it('stops on a real RPC failure without touching the login', async () => {
-    rpc.mockResolvedValue({ data: null, error: { code: '57014', message: 'statement timeout' } })
-    expect(await deleteAccount(null, form(CONFIRM))).toEqual({
-      error: 'מחיקת החשבון נכשלה. פנו לתמיכה.',
-    })
-    expect(logError).toHaveBeenCalledWith('account.delete_failed', {
-      userId: USER,
-      reason: 'statement timeout',
-    })
-    expect(calls.filter((c) => c.op === 'delete')).toEqual([])
-    expect(deleteUser).not.toHaveBeenCalled()
-  })
-
-  it('stops the fallback at the first satellite that fails, keeping the login alive', async () => {
-    rpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'missing' } })
-    queue('admin:push_tokens.delete', { data: null, error: { message: 'locked' } })
-    expect(await deleteAccount(null, form(CONFIRM))).toEqual({
-      error: 'מחיקת החשבון נכשלה באמצע. פנו לתמיכה.',
-    })
-    expect(logError).toHaveBeenCalledWith('account.delete_satellite_failed', {
-      table: 'push_tokens',
-      reason: 'locked',
-    })
-    expect(calls.filter((c) => c.op === 'delete').map((c) => c.table)).toEqual(
-      SATELLITES.slice(0, 2),
-    )
-    expect(find('admin:profiles', 'update')).toEqual([])
-    expect(deleteUser).not.toHaveBeenCalled()
-  })
-
-  it('stops the fallback when the profile rewrite fails', async () => {
-    rpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'missing' } })
-    queue('admin:profiles.update', { data: null, error: { message: 'rls' } })
-    expect(await deleteAccount(null, form(CONFIRM))).toEqual({
-      error: 'מחיקת החשבון נכשלה באמצע. פנו לתמיכה.',
-    })
-    expect(logError).toHaveBeenCalledWith('account.delete_profile_failed', { reason: 'rls' })
-    expect(deleteUser).not.toHaveBeenCalled()
-  })
-
-  it('says so when the data is gone but the login could not be disabled', async () => {
-    deleteUser.mockResolvedValue({ data: null, error: { message: 'gotrue down' } })
-    expect(await deleteAccount(null, form(CONFIRM))).toEqual({
-      error: 'הנתונים נמחקו אך ההתנתקות נכשלה. פנו לתמיכה.',
-    })
-    expect(logError).toHaveBeenCalledWith('account.delete_auth_failed', {
-      userId: USER,
-      reason: 'gotrue down',
-    })
-    expect(signOut).not.toHaveBeenCalled()
   })
 })

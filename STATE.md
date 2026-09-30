@@ -1,5 +1,7 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-01 00:50 (STEP 11 האזור האישי: לוח סקירה עם כתובות, כרטיסים ממוסכים, מונה התראות ופרטיות; מטריצת ההתראות קיבלה צרכן; מסלול מחיקה אחד; commit הנושא את הרשומה)
+
 Updated: 2026-09-30 23:50 (STEP 09 עגלה: שער ‏8 ספרות לקופון, תצוגת קאשבק, זמן משלוח לפי עיר, שמירה לאחר כך; commit ‏a88cfe06e)
 
 Updated: 2026-09-30 21:40 (STEP 06 דף קטגוריה חלק ב': ‏ItemList JSON-LD, מצב ריק עם יציאה, שער ‏e2e ל-SEO ו-RTL; commit ‏ff9955a35)
@@ -130,6 +132,53 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
+
+### ‏01.10 ‏00:50: ‏STEP 11 האזור האישי (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, הקומיט הנושא את הרשומה הזו)
+
+**המשך מ: ה-goal הבא בתור ‏/goal (‏STEP 12).** עדיין פתוח מלפני: ‏STEP 05 חלק ב' סעיף (1),
+‏`docs/LIGHTHOUSE-HOME-STEP05.md` ורישומו ב-`docs/INDEX.md`.
+
+**מה נמצא לפני שנכתב.** ‏15 דפים תחת ‏`/account` כבר קיימים (הזמנות, קופונים, ארנק, קאשבק, כתובות,
+אמצעי תשלום, התראות, אבטחה, פרטיות ועוד). שלושה פערים מול ה-goal, כולם מהצורה "פיצ'ר גמור בלי צרכן":
+‏(א) לוח הסקירה קישר ל-4 מתוך 8 המדורים: לא היה אריח כתובות, לא כרטיסים, לא התראות ולא פרטיות/מחיקה.
+‏(ב) ‏`PreferenceSwitches` (מטריצת סוג-התראה × ערוץ, עם שמירה פר מתג) נכתב עם הפעמון ולא רונדר בשום דף;
+נמדד מול פרודקשן דרך ‏management API: הטבלה ‏`notification_preferences` קיימת עם שלוש מדיניות ‏RLS
+‏"own", והשולחים כבר מתייעצים בה. ‏(ג) **שני טפסי מחיקת חשבון**: ‏`details/DeleteAccountSection` עם
+‏`deleteAccount` (ביטוי אישור ארוך, ‏RPC ‏`fn_anonymize_user` + ‏fallback, ‏`deleteUser(id, true)`)
+ו-`privacy/DeleteAccountForm` עם ‏`deleteMyAccount` (מילה אחת, ‏`runAnonymizationCascade`: ‏13 טבלאות
+נמחקות, כתובות/פניות/מנויים מגורדים במקום, ‏ban, שורת ‏audit). שני המסלולים לא הסכימו מה נמחק.
+
+**מה נוסף.** ‏`lib/account/overview.ts` (טהור, ‏12 טסטים): ‏`addressLine`, ‏`summarizeAddresses`,
+‏`cardLabel` (מותג + ‏4 ספרות, חותך ל-4 גם אם העמודה רחבה יותר), ‏`isCardExpired`/`expiryLabel`
+(הכלל היחיד, ‏`TokenManager` עבר לייבא אותו במקום עותק מקומי), ‏`summarizePaymentMethods`,
+‏`summarizePreferences` (סופר דרך ‏`mayNotify`, אותו ‏resolver של השולחים). לוח הסקירה: רשת שנייה
+"הגדרות החשבון" עם ארבעה אריחים (כתובת ברירת מחדל + מונה, כרטיס ברירת מחדל ממוסך + פג תוקף, כמה
+התראות כבויות, פרטיות/ייצוא/מחיקה) וקישור לתנועות הארנק. דף ההתראות קורא ‏`loadPreferences()` תחת
+‏RLS ומרנדר את ‏`PreferenceSwitches` בכרטיס משלו, בין ‏PushOptIn לכרטיס רשימת המשאלות.
+‏`overview.test.ts` (מקור, כמו ‏`coupons/reachable.test.ts`): הסקירה מקשרת לשמונת המדורים, האריח
+לא מזכיר שדה טוקן, המטריצה מרונדרת, טופס מחיקה אחד בלבד ורק ב-privacy.
+
+**מה הוסר.** ‏`deleteAccount` + ‏`runDeleteAccount` + ‏`anonymizedEmail` מ-`actions/account.ts`
+(‏5 ייבואים מיותרים ירדו איתם), ה-describe שלהם ב-`account-actions.test.ts`, ‏`DeleteAccountSection.tsx`,
+‏`lib/account/delete-account.ts` והטסט שלו. דף הפרטים מקשר עכשיו ל-`/account/privacy`.
+‏`cashback-ledger-cascade.test.ts` שמר את ‏`deleteUser(plan.userId, true)` בשם קובץ; הוסב למסלול ששרד:
+‏`ban_duration`, בלי ‏`deleteUser(`, ‏UPDATE ולא ‏DELETE על ‏profiles, ו-`cashback_ledger` ברשימת
+‏RETAINED_FOR_LAW.
+
+**שערים.** ‏type-check נקי, ‏lint נקי (‏biome + שלושת השערים), ‏`pnpm test` ‏575 קבצים ‏6879 ירוקים ‏12 מדולגים,
+‏`pnpm build` ‏exit 0. אין מיגרציה: הטבלה, המדיניות והפונקציה קיימות בפרודקשן (נמדד). שער הפיקסלים
+לא הורץ: כל השינוי בדפי החשבון.
+
+**החלטות שהתקבלו לבד.**
+1. **המסלול ששרד למחיקה הוא ה-cascade של ‏privacy, לא ה-RPC.** ‏`fn_anonymize_user` בפרודקשן עושה
+   ‏`DELETE FROM user_addresses`, בעוד ‏`orders.address_id` מצביע על השורות האלה; ה-cascade מגרד במקום
+   למחוק, מכסה ‏13 טבלאות במקום ‏5, כותב שורת ‏audit וחוסם בלי ‏`deleteUser`. הפונקציה נשארת ב-DB, לא נקראת.
+2. **מחיקת שלושה קבצי מקור ב-`git rm`** למרות כלל "מחיקת קבצים": הם מתועדים ב-git, אין להם צרכן,
+   ו"פיצ'ר גמור בלי צרכן" הוא צורת הפגם השלטת כאן. הפיך ב-checkout אחד.
+3. ‏Supabase MCP ו-GitHub MCP לא מאומתים בסשן; פרודקשן נקרא לקריאה בלבד דרך טוקן ה-CLI. אין ‏PR;
+   הענף נדחף ישירות כמו קודמיו.
+4. מילת האישור נשארה ‏"מחיקה" (של ‏privacy) ולא הביטוי הארוך: הטופס, הפעולה והטסטים שלו כבר מסכימים
+   עליה, והשרת מאמת אותה שוב עם ‏rate limit ‏3/שעה.
 
 ### ‏01.10 ‏00:45: ‏STEP 10 קופה, הזמנה חוזרת בלחיצה אחת (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, commit ‏8af68bc85 לעבודה שנמצאה ב-stage, והקומיט הנושא את הרשומה הזו לפיצ'ר)
 

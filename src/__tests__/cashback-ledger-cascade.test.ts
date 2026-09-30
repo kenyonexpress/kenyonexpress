@@ -25,12 +25,16 @@ import { describe, expect, it } from 'vitest'
  * names neither the order nor the reason.
  *
  * WHY IT IS A GUN ON THE WALL AND NOT A FIRE, TODAY. Nothing hard-deletes a
- * profile. Account deletion anonymizes: `fn_anonymize_user` (150) DELETEs five
- * satellite tables and UPDATEs `profiles`, and `account.ts` then calls
- * `deleteUser(id, true)` -- the `true` is Supabase's shouldSoftDelete, and the
- * comment beside it says the soft delete is load-bearing because auth.users
- * cascades to profiles and a hard delete would orphan every order. So the
- * cascade path is unreachable while that stays true.
+ * profile. Account deletion anonymizes: `runAnonymizationCascade` in
+ * lib/account/deletion.ts purges preference rows, scrubs `profiles` in place
+ * with an UPDATE, lists `cashback_ledger` under RETAINED_FOR_LAW, and ends
+ * the login with `updateUserById(..., { ban_duration })` rather than any
+ * `deleteUser` -- its header says why: auth.users cascades to profiles and a
+ * hard delete would either fail on the RESTRICT constraints or take the money
+ * ledger with it. (A second path in account.ts used `deleteUser(id, true)`,
+ * Supabase's soft delete, until STEP 11 removed it as a duplicate; this test
+ * followed the surviving path.) So the cascade is unreachable while that
+ * stays true.
  *
  * `audit_log` already carries the identical contradiction (`actor_id ->
  * auth.users ON DELETE SET NULL` under `tg_audit_log_append_only`, whose only
@@ -46,7 +50,7 @@ import { describe, expect, it } from 'vitest'
  */
 
 const LEDGER_SQL = 'migrations/applied/177_cashback_ledger.sql'
-const ACCOUNT_ACTIONS = 'src/server/actions/account.ts'
+const DELETION = 'src/lib/account/deletion.ts'
 
 function read(path: string): string {
   return readFileSync(resolve(process.cwd(), path), 'utf8')
@@ -73,15 +77,25 @@ describe('cashback_ledger: cascade meets append-only', () => {
   })
 
   it('is unreachable only because account deletion never hard-deletes a profile', () => {
-    const account = read(ACCOUNT_ACTIONS)
+    // Comments stripped: the header mentions `deleteUser` by name to explain
+    // why it is not called, and only code should satisfy or fail this.
+    const code = read(DELETION)
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '')
 
-    // `true` is shouldSoftDelete. Flip it to a hard delete and the cascade in
-    // the test above becomes the error a deleting customer sees.
-    expect(account).toContain('deleteUser(plan.userId, true)')
+    // The login ends by ban, not by deleting the auth user. Switch this to
+    // `auth.admin.deleteUser` and the cascade in the test above becomes the
+    // error a deleting customer sees.
+    expect(code).toContain('ban_duration: DELETION_BAN_DURATION')
+    expect(code).not.toContain('deleteUser(')
 
     // The erasure is an UPDATE on profiles, not a DELETE. If a
     // `.from('profiles').delete()` ever appears on this path, the guard is
     // live and this expectation is the warning.
-    expect(account).not.toMatch(/from\('profiles'\)[\s\S]{0,80}\.delete\(\)/)
+    expect(code).toMatch(/from\('profiles'\)[\s\S]{0,40}\.update\(/)
+    expect(code).not.toMatch(/from\('profiles'\)[\s\S]{0,80}\.delete\(\)/)
+
+    // And the ledger itself is on the list the cascade refuses to touch.
+    expect(code).toMatch(/RETAINED_FOR_LAW[\s\S]*'cashback_ledger'/)
   })
 })
