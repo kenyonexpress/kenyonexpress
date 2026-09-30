@@ -1,34 +1,37 @@
-RESUME FROM: M07-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c61)
+RESUME FROM: M08-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c61)
 
 ## המשך מ:
 
-**M06-c61 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
-90+, אפס תיקון נדרש, אפס דריפט מ-M06-c60.** אותו מתכון שאומת מ-M06-c1
-ועד M06-c60: `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3496 pnpm build` → `exit 0`
-(`.next/BUILD_ID` נוצר, אין `Failed to compile`); `pnpm start -p 3496`
-מאותה בנייה (פורט 3496 אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`
-ועל `/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני
-ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
-
-| דף | ביצועים | נגישות | BP | SEO |
-|---|---|---|---|---|
-| בית `/` | 99 | 100 | 100 | 100 |
-| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
-
-כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c60 (99/100/100/100 בשני
-הדפים). `git diff --stat 06e3b86e2..HEAD -- src/app src/components
-src/lib package.json pnpm-lock.yaml next.config.ts next.config.mjs
-vercel.json` מחזיר רק שני קבצי טסט (`bought-this-week.test.ts`,
+**M07-c61 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל
+אמיתי, אפס דריפט מ-M07-c60.** אותו מתכון שאומת מ-M07-c1 ועד M07-c60:
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3472
+pnpm build` → `exit 0`; `pnpm start -p 3472` מאותה בנייה (פורט 3472
+אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`. שישה chunks של
+chromium (`--grep` לפי `anon /` / `GET /|supplier|anon dynamic` /
+`customer` / שלושה פילוחי `admin`, worker יחיד), כולם נכתבו לאותו
+`ROUTE_AUDIT_REPORT` משותף: 59 + 83 + 25 + 23 + 20 + 16 טסטים, כולם
+עברו (playwright מדווח `passed`). נותח בקוד: **241 שורות ייחודיות
+(role+path)**, 239 PASS + 2 NO DATA (זהה לכל מדידה קודמת מ-M07-c1:
+`customer /account/tickets/[id]`, `admin /admin/discounts/[id]`, שני
+פערי seed ידועים), **אפס FAIL, אפס consoleErrors, אפס
+hydrationWarnings, אפס rtl:false** בכל 241 השורות. `git diff --stat
+8402645de..HEAD -- src/app src/components src/lib e2e package.json
+pnpm-lock.yaml` מחזיר רק שני קבצי טסט (`bought-this-week.test.ts`,
 `stock-live.test.ts`) ובאמפ patch של `fast-xml-parser` — אפס שינוי
-קוד תצוגה מאז המדידה הקודמת, כך שהזהות אינה רעש. השרת נעצר, פורט 3496
-אומת פנוי מחדש, קבצי הפלט הזמניים (`/tmp/ke-lh-m06c61/*.json`)
-נמחקו. שערים: `type-check` נקי; `lint` נקי (2025 קבצים, כל שערי
-התוכן ירוקים, i18n 627/627, locale 116/64, docs-index 282,
-docs-path-audit 152); `test` 610/610 קבצים, 7296/7308 (12 skipped,
-56.52s); `build` `exit 0` (חלק מהמדידה עצמה). אין שינוי קוד, אין שער
-חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`.**
+קוד/מסלול, ולכן 241/239/2 (זהה ל-M07-c60) אינו רעש. השרת נעצר, פורט
+3472 אומת פנוי מחדש, קובץ ה-JSONL הזמני (`/tmp/route-audit-m07c61.jsonl`)
+נמחק. שערים: `type-check` נקי; `lint` נקי (2025 קבצים, כל שערי התוכן
+ירוקים, i18n 627/627, locale 116/64, docs-index 282, docs-path-audit
+152); `test` 610/610 קבצים, 7296/7308 (12 skipped, 58.02s); `build`
+`exit 0` (חלק מהמדידה עצמה, בנייה שנייה ללא env דמה). אין שינוי קוד,
+אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`**
+(פלוס `docs/STATE-ARCHIVE.md`, M06-c61 הועבר לתקרת 300 שורות).
+
+## M06-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M06-c61: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (99/100/100/100
+בשני הדפים), אפס דריפט מ-M06-c60.
 
 ## M05-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
