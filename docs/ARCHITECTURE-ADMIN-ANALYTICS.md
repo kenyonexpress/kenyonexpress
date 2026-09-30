@@ -2001,3 +2001,48 @@ describe('couponKpis', () => {
 | Date | Change |
 |---|---|
 | 2026-07-30 | Initial binding Admin analytics expansion on `arch/admin-analytics` |
+| 2026-10-01 | STEP 19 as built: four non-sales panels on `/admin/analytics` (section 17) |
+
+---
+
+## 17. As built, STEP 19 (2026-10-01): the four non-sales panels
+
+`/admin/analytics` already carried revenue, orders, AOV, the sales series, top
+products, top suppliers and the take-rate table from `loadSalesLines`. STEP 19
+added the panels the goal named and that were missing, without recharts and
+without a migration:
+
+| Panel | Pure aggregation (`src/lib/analytics/dashboard-kpis.ts`) | Loader (`src/server/analytics/dashboard.ts`) | Source rows |
+|---|---|---|---|
+| Coupon redemption rate | `couponRedemption` | `loadCouponCodes(days)` | `coupon_codes` in the window |
+| Cashback outstanding | `cashbackOutstanding` | `loadCashbackWallets()` | `wallet_balances`, live, not windowed |
+| User growth | `bucketSignups`, `growthTotals` | `loadSignups(days)` | `profiles.created_at`, plus a head count of profiles before the window |
+| Order drop-off | `orderDropoff` | `loadOrderStats(days)` | `orders` created in the window |
+| Behavioural funnel fallback | `behaviouralFunnel` | `loadFunnelEvents(days)` | `analytics_events`, only when `v_funnel_daily` is missing |
+
+Decisions that are not obvious from the code:
+
+- **Redemption rate is used over decided codes** (used + expired). An open code
+  has not had its chance and would drag the rate down; a refunded code was never
+  the customer's to redeem. `usedOfIssuedPct` is also reported for the naive
+  reading. A row still `issued` past `expires_at` counts as expired, so the
+  panel does not depend on the sweeper having run.
+- **Cashback outstanding sums positive balances only.** Negative wallets are
+  counted and shown in red as a ledger fault, not added up. The agorot column is
+  preferred; the legacy `numeric(12,2)` mirror is converted once at the loader
+  with `ilsToAgorot`, and a value that cannot convert fails the whole panel with
+  the reason rather than being rounded.
+- **"Paid" in the drop-off is `paid_at`, not status**, so a refunded or
+  fulfilled order stays in the paid step it passed through. Losses are expired
+  unpaid (pending with `expires_at` behind now), cancelled, refunded; pending
+  with a live clock is "still open".
+- **The funnel has two sources.** `v_funnel_daily` when it exists; otherwise the
+  same six distinct-session counts from the raw events, with purchases always
+  from `orders`. The caption says which one rendered. Only when both fail does
+  the panel show a failure.
+- **A failed read is a red notice with the database's words, never zeros.**
+  Every loader returns `{ ok: false, reason }`; the page renders `ReadFailed`.
+  Row caps (20k, 50k for events) are reported as a partial-data note.
+
+Tests: `dashboard-kpis.test.ts` (20 cases on fixtures) and `dashboard.test.ts`
+(11 cases, proxy-mocked admin client, both directions per table).

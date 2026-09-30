@@ -11,7 +11,15 @@ function formatInt(value: number): string {
   return value.toLocaleString('he-IL')
 }
 
-export default function FunnelBars({ steps }: { steps: FunnelStep[] }) {
+/**
+ * What a bar needs: the behavioural funnel keys its steps by FunnelRow field,
+ * the order drop-off by status name. Both satisfy this.
+ */
+export type FunnelBarStep = Pick<FunnelStep, 'label' | 'value' | 'fromPreviousPct'> & {
+  key: string
+}
+
+export default function FunnelBars({ steps }: { steps: FunnelBarStep[] }) {
   const top = steps[0]?.value ?? 0
 
   return (
