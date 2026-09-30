@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c62 (הועבר מ-STATE.md ב-M03-c63, לשמירה על תקרת 300 שורות)
+
+**M18-c62 - DONE (30.09): שער חוסר-פעילות, ואז תיקון המרה אמיתי אחד
+בדף המוצר ובדף הבית, שער חזותי PASS בשלושת הרוחבים.** משימת התור: אם כל
+סעיפי המחזור לא הפיקו שינוי קוד, לרשום MAINTENANCE IDLE, ואז לחפש שיפור
+המרה אמיתי אחד בדף הבית או בדף המוצר שתואם ל-Electro v7 וליישם אותו.
+
+**בדיקת חוסר-הפעילות:** שבעה-עשר הסעיפים הקודמים במחזור (M01-c62..
+M17-c62) לא הפיקו שינוי בקוד פונה-ללקוח. הקוד היחיד שהשתנה בכל המחזור
+עד כה היה `scripts/bundle-report.mjs` (M14-c62), כלי מדידה פנימי ולא דף
+בית או מוצר. **MAINTENANCE IDLE, 30.09.2026.**
+
+**החיפוש אחרי שיפור המרה:** נבדקו לעומק דף הבית (`HomepageSections`,
+`DealsOfTheDay`, `CountdownBanner`, `ProductRail`) ודף המוצר
+(`ProductInfo`, `RelatedProducts`, `RecentlyViewedRail`, `StockScarcity`,
+`BoughtThisWeek`). כמעט כל מכניקת ההמרה של Electro כבר בנויה: לב
+מועדפים, "הוסף לסל" בגריד, תג הנחה, מצב "אזל המלאי", מחסור מלאי, הוכחה
+חברתית, מוצרים קשורים, נצפו לאחרונה, כוכבי דירוג, שיתוף, ורשימת המתנה.
+
+**נשקל ונדחה: "השווה" (Compare).** קיים בגריד המוצר של Electro (נבדק
+בצילום `refs/electro_product_380.png`: לב מועדפים + "השווה" באותה שורה
+מתחת לכפתור "הוסף לסל"), אבל **לא קיים בתבנית המוצר החיה שנמדדה**:
+התיעוד של `WishlistHeart` עצמו (`variant="link"`) מציין שהמיקום נמדד
+מול האתר החי, ומזכיר רק את לב המועדפים, לא "השווה". בניית מכניקה
+שלא נמדדה היא בדיוק ה"דמיון" ש-CLAUDE.md אוסר, ולכן לא נבנתה.
+
+**נשקל ונדחה: הפעלת ה-CountdownBanner.** קיים, בנוי ועובד, אבל דורש
+סעיף CMS מאויש בידי מפעיל (`homepage_sections`), לא תיקון קוד; שתי
+הטבלאות ריקות בפרודקשן, וזו החלטה תוכנית ולא פער הנדסי.
+
+**נמצא ותוקן: פער אמיתי בין שני וריאנטים של `ProductCard`.**
+`DealsProductCard` (המוצג בגריד הדילים של דף הבית) כבר נושא
+`<WishlistHeart variant="card">` בתור overlay שלא תופס מקום בפריסה.
+`DefaultProductCard`, **הוריאנט היחיד שמוצג ב-`RelatedProducts` וב-
+`RecentlyViewedRail` על דף המוצר עצמו, ובסקשן `ProductRail` של דף הבית
+(CMS `product_rail`)**, לא נשא אותו כלל: אפשר היה לשמור מוצר למועדפים
+מגריד הדילים בדף הבית, אבל לא מ"מוצרים קשורים" או "נצפו לאחרונה" באותו
+עמוד בדיוק שבו הכי נדרש. ב-`src/components/ProductCard.tsx`: ה-`relative`
+עבר מה-`<Link>` לעטיפה חדשה, ו-`WishlistHeart` נוסף כ-sibling של
+ה-`<Link>` (לא ילד שלו, כדי שלחיצה על הלב לא תנווט את העמוד — בדיוק
+הכשל ש-`DealsProductCard` כבר תיעד ונמנע ממנו).
+
+**שערים:** `type-check` נקי, `lint` נקי (12 שערים, `i18n` נשאר 627/627,
+אפס מחרוזת חדשה), `test` 610/610 קבצים 7296/7308 ירוק, `build` עבר.
+**שער חזותי הורץ בפורגראונד** מול `refs/electro_product_{width}.png`
+על `barbecue-2` (התבנית הקבועה מ-Q05b): **380 5.61% PASS, 768 4.92%
+PASS, 1440 2.99% PASS** — זהה ב-100% למדידה הקודמת (S03), כלומר
+ה-overlay לא הזיז פיקסל אחד.
+
+**לא בהיקף הפריט:** אותו פער בדיוק קיים גם ב-`CategoryProductCard.tsx`
+(דף קטגוריה), אבל משימת התור הגבילה לדף הבית/דף המוצר בלבד; נשאר מועמד
+לסעיף עתידי.
+
+קבצים ששונו: `src/components/ProductCard.tsx`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M01-c63 (הועבר מ-STATE.md ב-M02-c63, לשמירה על תקרת 300 שורות)
 
 **M01-c63: BLOCKED (30.09), נבדק מחדש, build/deploy חדש לא הופעל.**
