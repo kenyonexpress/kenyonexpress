@@ -1,5 +1,25 @@
 # `migrations/pending/`
 
+## 2026-09-30: 243 PENDING (CMS hero seed, inserted inactive)
+
+`243_homepage_hero_seed.sql` inserts five rows into 127's `banners`, one per
+authored hero slide position, with fixed ids and `is_active = false`. The
+build that reads them (`src/lib/homepage/cms.ts`, 2026-09-30) lets a row
+inherit the composition of the authored slide at its position and takes only
+the title, tagline, photograph and link from the row; the build production
+runs today forces every row to the plain product composition. Activating the
+rows before that build is deployed would repaint the LCP element of the live
+home page for every visitor, so the file leaves them invisible to
+`v_banners_live` and readable in the admin preview only. Idempotent: a re-run
+refreshes content without touching `is_active`. Photographs are this
+catalogue's own product images (docs/SOURCING-RULES.md rule 2) and links are
+internal, as `banners_link_internal_check` requires. Rollback is the DELETE
+on the five ids in the file header. Activation is one UPDATE, listed at the
+bottom of the file, to run only AFTER the deploy. Swept in by the autosave
+commit 3369ce826 with no row here; row added 2026-09-30 when
+`pending-migrations-inventory.test.ts` caught it. Not yet dry-run on
+production.
+
 ## 2026-09-17: 242 PENDING (job queue dead letters)
 
 `242_job_dlq.sql` adds `job_dlq`, the dead-letter table for the general job

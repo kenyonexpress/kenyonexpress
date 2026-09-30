@@ -388,6 +388,13 @@ describe('the pending migration inventory', () => {
       // search_index_dlq; the closing block refuses any client-role grant or
       // policy. Not yet dry-run on production.
       '242_job_dlq.sql',
+      // Five CMS hero slides for 127's `banners`, INSERTED INACTIVE: the
+      // production build still forces every row to the product composition,
+      // so activating them before the 2026-09-30 build is deployed would
+      // repaint the live LCP element. Swept into the repo by the autosave
+      // commit 3369ce826 without a README row; this entry and the row were
+      // added when the inventory test caught it. Not yet dry-run on production.
+      '243_homepage_hero_seed.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
