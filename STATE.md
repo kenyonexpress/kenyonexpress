@@ -1,39 +1,39 @@
-RESUME FROM: M09-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c61)
+RESUME FROM: M10-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c61)
 
 ## המשך מ:
 
-**M08-c61 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם חמש-עשרה,
-אפס פריט שלב 1 בידי הסוכן.** משימת התור: "Backlog: take the single
-highest-impact open phase 1 item from `docs/BACKLOG.md`, skipping
-deferred and phase 2 items." `docs/BACKLOG.md` עדיין מעודכן לאחרונה
-ב-M15-c60 (`466ebc6fa`), עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
-סעיף חדש (`git diff --stat 466ebc6fa..HEAD -- docs/BACKLOG.md
-migrations/pending supabase/catalogue-known-issues.json src/
-next.config.ts next.config.mjs package.json pnpm-lock.yaml
-vercel.json supabase/` מחזיר רק `package.json`+`pnpm-lock.yaml`,
-באמפ `fast-xml-parser` מ-M04-c61 בלבד). כל ה-15 עדיין פעולות
-שהמסמך עצמו מציין במפורש ש"אין דבר כאן שסוכן רשאי לבצע לבד" (DNS
-ברשם, Vercel env/סודות, אישור פריסת פרודקשן, אישור מיגרציה על
-פרודקשן, אישורי Cardcom אמיתיים, הכרעת קטלוג עסקית, מחיקת נתונים,
-ערך שרק אופיר מחזיק). בדיקת דריפט: שלושת המונים שהרשימה תלויה בהם
-נבדקו ישירות, `migrations/pending/*.sql` עדיין **59** קבצים (ללא
-תוספת), `git rev-list --count a388118f1..HEAD` עלה ל-**218**
-(git-only, פער-ספירה גרידא), `git stash list` עדיין **32**,
-`supabase/catalogue-known-issues.json` עדיין **26** ממצאים.
-`docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md` נבדקו
-שוב, אינם תורים פעילים (מחוץ להיקף המשימה — אלה בדיוק ה-"deferred"
-וה-"phase 2" שהתור מבקש לדלג עליהם). אין פריט בר-ביצוע לסוכן. שערים
-הורצו במלואם: `type-check` נקי, `lint` נקי (biome 2025 קבצים, כל
-שערי התוכן ירוקים, i18n 627/627, locale 116/64, docs-index 282,
-docs-path-audit 152), `test` 610/610 קבצים 7296/7308 (12 skipped,
-70.00s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3491 pnpm build`) — ריצה
-ראשונה נכשלה על `/coupons/[id]` עם `supabase.rls_denied`/`reviews`
-(401, מיגרציה 247 הממתינה, רעש prerender ידוע גם ב-M04-c61), ריצה
-שנייה מאותו env `exit 0` נקי. אין שינוי קוד, אין שער חזותי נדרש
-(אין שינוי UI). **קובץ יחיד שונה: `STATE.md`** (פלוס
-`docs/STATE-ARCHIVE.md`, M07-c61 הועבר לתקרת 300 שורות).
+**M09-c61 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup:
+take the single highest-impact open item listed in STATE.md that a
+code agent can complete without Ofir. Implement it fully with tests.
+If none is left write STATE CLEAN in STATE.md and end this item."
+נבדקו שוב, בקריאה בלבד, שני המקורות: 13 הסעיפים ב-"חוסמים פתוחים" למטה
+וכל 15 הסעיפים ב-`docs/BACKLOG.md`. כל אחד מהם דורש פעולה שרק אופיר
+מחזיק: DNS ברשם (פתור בפועל, לא פעולה), משתני סביבה/סודות ב-Vercel,
+אישור והחלת מיגרציה על פרודקשן, הכרעה עסקית על שורות קטלוג כפולות,
+אישורי Cardcom אמיתיים, הפעלת R2 בדשבורד Cloudflare, `CRON_SECRET`
+ב-GitHub Secrets, `RESEND_API_KEY`, מספר ח.פ, ומחיקת stash (מחיקת
+נתונים דורשת אישור מפורש לפי חוק הפרויקט). שלושת המונים שהרשימה תלויה
+בהם נבדקו ישירות ואינם השתנו מ-M08-c61: `migrations/pending/*.sql`
+עדיין **59** קבצים, `supabase/catalogue-known-issues.json` עדיין
+**26** ממצאים, `git stash list` עדיין **32**. `git rev-list --count
+a388118f1..HEAD` עלה מ-218 ל-**219** (הקומיט של M08-c61 עצמו, git-only,
+אינו חוסם חדש). `git status --short` נקי, `HEAD` זהה לקומיט שהמדידה
+הקודמת בדקה. **אין פריט אחד בין 28 הסעיפים ששום כלל בפרויקט לא אוסר על
+סוכן קוד לבצע לבד** — זו הסיבה שהמחזור הקודם (M08-c61) ואחת-עשרה
+המחזורים שקדמו לו כולם הגיעו לאותה מסקנה תחת שם אחר ("BACKLOG EMPTY").
+אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). ארבעת השערים הורצו
+במלואם: `type-check` נקי, `lint` נקי (biome 2025 קבצים, כל שערי התוכן
+ירוקים, i18n 627/627, locale 116/64, docs-index 282, docs-path-audit
+152), `test` 610/610 קבצים 7296/7308 (12 דולגו, 59.69s), `build` (`rm
+-rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3491
+pnpm build`) `exit 0` נקי. **קובץ יחיד שונה: `STATE.md`** (קיפול
+M10-c60 לשורה המכווצת שמתחתיו, לשמירה על תקרת 300 שורות).
+
+## M08-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M08-c61: BACKLOG EMPTY, נמדד מחדש בפעם חמש-עשרה, אפס פריט שלב 1
+בידי הסוכן, אפס דריפט מ-M15-c60 (15 סעיפים זהים).
 
 ## M07-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -128,16 +128,9 @@ M11-c60: נגישות, axe אומתה מחדש בפעם שישית, 0 הפרות
 57/57 דולג — כשל התחברות פרודקשן קיים מראש). `target-size` (WCAG 2.2,
 מחוץ ליעד) נשאר כהחלטה פתוחה. אפס שינוי קוד, build טרי `exit 0`.
 
-## M10-c60 (הועבר מ-STATE.md ב-M11-c60, לשמירה על תקרת 300 שורות)
-
-M10-c60: כיסוי טסטים — `recordRefusedScan` ב-`src/server/domain/vouchers/scan-context.ts`
-מ-50% פונקציות (55.55% שורות/הצהרות) ל-100% בכל המדדים, היחיד מתחת
-ל-90% בין שש הקטגוריות של משימת התור. קובץ ששונה: `scan-context.test.ts`
-בלבד. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
-
-**M09-c60..M02-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M16-c60 לשמירה על תקרת 300 שורות):** כיסוי טסטים (שני קבצים
-0%→100%), BACKLOG EMPTY (פעם ארבע-עשרה), route audit (241 שורות, אפס
+**M10-c60..M02-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
+הזו ב-M09-c61 לשמירה על תקרת 300 שורות):** כיסוי טסטים (`recordRefusedScan`
+50%→100%, ושני קבצים נוספים 0%→100%), BACKLOG EMPTY (פעם ארבע-עשרה), route audit (241 שורות, אפס
 כשל), Lighthouse mobile (כל שמונת הציונים 90+), advisors (44 WARN
 זהים), תברואת תלויות, בדיקה ירוקה, ושער חזותי (אפס רגרסיה) — כולם אפס
 דריפט מהמקבילים ב-c59, ארבעת השערים ירוקים בכולם.
