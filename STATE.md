@@ -1,5 +1,15 @@
 # KenyonExpress — Project State
 
+Updated: 2026-10-01 04:57 (STEP 18 אימות: ‏"זכור את המכשיר" ‏30 יום על אתגר ה-TOTP בעוגייה חתומה ‏HMAC וקשורה ל-user id, עוקפת את חצי האתגר בשער ‏super_admin ולא את הרישום; אימות מחדש כפוי לשינוי אמצעי תשלום לפי חותמות ‏amr של הסשן, חלון ‏10 דקות, כל גורם נחשב, מחיקה וברירת מחדל של כרטיס מסרבות עם קישור להתחברות מחדש; ‏Passkeys ו-magic-link דרך ‏Resend כבר היו חיים ב-/login; commit ‏5ef4caa2b)
+
+**החלטות שהתקבלו לבד (STEP 18, 04:57):** בעץ העבודה ממתינים ‏47 קבצים ב-staging
+מהריצה הקודמת (אימות טלפון בהרשמה, ‏WhatsApp, פעמון, ‏SentryUserSync). לא נכללו
+ב-commit הזה. ‏7 טסטי ‏ratchet אדומים שייכים להם ולא ל-STEP 18: ‏first-load-client-graph
+(‏SentryUserSync בלי ‏dynamic import), ‏discarded-read-inventory, ‏outbox-kinds,
+‏rate-limit/policies (‏4 prefixes חדשים לא בטבלה), ‏legacy-redirects (‏/signup/verify-phone
+לא ברשימה), ‏auth-coverage (‏2 actions). ‏type-check ו-lint נקיים על כל העץ. ‏pnpm build
+הופעל ברקע לסוף הסשן (‏gtimeout 1200 מגביל את הסשן ל-20 דקות).
+
 Updated: 2026-10-01 02:20 (STEP 13 חלק ב' ארנק קאשבק: ראוט ‏`/wallet` על ‏`WalletView` משותף עם ‏`/account/wallet`, מדיניות פקיעה ‏12 חודשים ותאריך תוקף לכל זיכוי בטבלת התנועות, מיגרציה ‏250 מפעילה ‏חבר-מביא-חבר ב-₪20, ‏`referral_bonus` נכנס למראה הפקיעה; commit הנושא את הרשומה)
 
 Updated: 2026-10-01 02:05 (STEP 13 ארנק קאשבק: ‏view ‏`cashback_events` על יומן 177 במיגרציה ‏249, רצפת מימוש ‏₪10 בקופה בשלוש שכבות, ‏4 טסטים אדומים שירשתי מ-STEP 12 תוקנו, מפת ההפניות נמדדה מחדש ו-/wishlist הוצא מ-410; commit הנושא את הרשומה)
