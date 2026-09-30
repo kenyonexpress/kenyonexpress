@@ -1,7 +1,21 @@
-RESUME FROM: M03-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c62)
+RESUME FROM: M04-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c62)
 
 ## המשך מ:
+
+**M03-c62 - DONE (30.09): שער ירוק הורץ מחדש במלואו על עץ עבודה נקי,
+זהה ל-HEAD (`fa375af11`).** `type-check` נקי (0 שגיאות), `lint` נקי
+(biome 2028 קבצים + 12 שערי לינט מותאמים, כולל i18n 627/627 ו-locale-format
+116/116 בתקרה), `test` **610/610 קבצים, 7296/7308 בדיקות ירוקות (12
+דולגים), 59.70s**, `build` הצליח (`✓ Compiled successfully`, exit 0),
+כולל `TypeScript` ו-`runAfterProductionCompile`. אפס שגיאת build, אפס
+אזהרת biome/tsc. שתי קטגוריות רעש ב-log זמן ה-build (לא אזהרת toolchain):
+`supabase.rls_denied`/`reviews_read_failed` (401/42501, מיגרציה 247
+הממתינה) ו-`db.optional_column_missing` (מיגרציה 242 הממתינה) — שתיהן
+כבר רשומות ב"חוסמים פתוחים" סעיף 3 למטה, לא תיקון קוד. אין קובץ קוד
+לתקן: אפס warning fixable בלי migration. עץ עבודה נשאר נקי מלבד
+`STATE.md`/`docs/STATE-ARCHIVE.md` (תיעוד הפריט). קובץ ששונה: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (M01-c62 כווץ לפריט הזה).
 
 **M02-c62 - DONE (30.09): שער פריטיות (`scripts/compare.mjs`) הורץ מחדש
 בחזית, שרת זמני על פורט 3919 (`.next` אומת source-identical ל-HEAD דרך
@@ -23,51 +37,12 @@ middleware.ts vercel.json src/ package.json pnpm-lock.yaml`, ריק).** דף
 קוד). קובץ ששונה מלבד `STATE.md`: `docs/UI-PARITY-REPORT.md` (נכתב
 אוטומטית על ידי השער).
 
-**M01-c62 - BLOCKED (30.09): בדיקת פרודקשן בפעם התשיעית — DNS/HTTP
-תקינים, פריסת HEAD עדיין חסומה, אין שינוי מהמצב שתועד ב-M01-c61.**
-משימת התור: להריץ build+deploy של פרודקשן ב-Vercel, ואז `dig`+`curl`
-על שני הדומיינים ולצפות ל-200 עם האתר החדש; אם ה-DNS נכשל — לתעד תחת
-DNS BLOCKER ולסיים.
-
-**DNS/HTTP לא נכשלו, נמדד עכשיו:** `dig +short A kenyonexpress.co.il`
-→ `216.198.79.1`/`64.29.17.65`; `dig +short A www.kenyonexpress.co.il`
-→ `64.29.17.65`/`216.198.79.1`; `dig +short NS kenyonexpress.co.il`
-→ `ns1.vercel-dns.com`/`ns2.vercel-dns.com` (זהה ל-M01-c52..M01-c61).
-`curl` ל-`kenyonexpress.co.il` מחזיר `308` ל-`https://www.kenyonexpress.co.il/`;
-`curl` ל-`www.kenyonexpress.co.il` מחזיר `200`, גוף אמיתי (`lang="he"
-dir="rtl"`). **אין תנאי DNS BLOCKER.**
-
-**הפריסה עצמה נבדקה מראש, בקריאה בלבד, ולא נוסתה בפעם שמינית — אותה
-סיבה בדיוק:** `filter_project_envs` על הפרויקט `kenyonexpress`
-(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אושר שוב: אין
-`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
-ב-Production (קיימים רק `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY`/
-`WEBHOOK_SECRET`/`USE_MOCK` שהקוד לא קורא באותם שמות), ו-
-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר. `list_deployments` (target=production,
-5 אחרונות) מראה **בדיוק את אותן חמש פריסות `ERROR`** שנמדדו ב-M01-c61
-(`dpl_FJYf483tkqSNf5pkG9MenghGQF46` ומטה, האחרונה מ-29.09 17:08 — לפני
-M01-c61, כלומר גם דחיפות התיעוד האחרונות S02/S03/M18-c61 לא הפעילו
-build אוטומטי חדש). תנאי העצירה `deploy-preflight` לא השתנה: הרצת
-`create_deployment` נוספת תיצור פריסת `ERROR` שישית-ומעלה מאותה שרשרת
-ללא מידע חדש. לפי כלל "goal שנתקע פעמיים — לדלג" (מוחל מ-M01-c55):
-**דילוג על ניסיון פריסה נוסף, בפעם השמינית**, ותיעוד ההחלטה כאן. חוסם 2
-עדיין פתוח, לאופיר בלבד (הוספת שלושת משתני Cardcom החסרים ל-Production
-והסרת `ALLOW_INCOMPLETE_ENV`).
-
-פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY).
-HEAD (`bf9780976`) עכשיו **231 קומיטים** אחרי `a388118f1`
-(`git rev-list --count a388118f1..HEAD`, עלה מ-211 ב-M01-c61). עץ עבודה
-נקי. **שערים הורצו במלואם:** `type-check` נקי, `lint` נקי (12 שערים,
-i18n 627/627 ללא שינוי), `test` 610/610 קבצים 7296/7308 (12 דולגים,
-56.84s) ירוק. `build` לא הורץ מחדש: `git diff --stat fd820969f..HEAD --
-next.config.ts next.config.js middleware.ts vercel.json src/ package.json
-pnpm-lock.yaml` ריק — אפס קובץ קוד נגע מאז ה-build האחרון, `.next/BUILD_ID`
-(`eFCMHZ6OS1MHw3jQ6GSzL`) נשאר תואם-מקור.
-
-**SHOWABLE: yes.** דף הבית ודף המוצר עוברים את שער הפריטיות בשלושת הרוחבים
-על HEAD (`ebb6af19b`, פלוס commit התיעוד של הפריט הזה). בית (S02): 8.51% /
-9.02% / 3.95%. מוצר (S03): 5.61% / 4.92% / 2.99%. שני הדפים מתחת לסף 11%,
-השורות ב-`docs/UI-PARITY-REPORT.md`.
+**M01-c62 - BLOCKED (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
+הזו ב-M03-c62 לשמירה על תקרת 300 שורות).** בדיקת פרודקשן בפעם התשיעית:
+DNS/HTTP תקינים (`www.kenyonexpress.co.il` 200, `NS` `vercel-dns.com`),
+פריסת HEAD עדיין חסומה באותה סיבה (Cardcom env חסר + `ALLOW_INCOMPLETE_ENV`
+ב-Production, ראה "חוסמים פתוחים" סעיף 2), דילוג על ניסיון נוסף לפי כלל
+"goal שנתקע פעמיים". SHOWABLE: yes (בית/מוצר, שני הדפים מתחת ל-11%).
 
 **S03 - DONE (30.09), פריט חד-פעמי חיצוני לתור ה-M, לא מקדם `RESUME FROM:`.**
 המשימה שהתקבלה ביקשה ללכוד reference חדש ל-Electro v7 single product page
