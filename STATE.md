@@ -1,47 +1,45 @@
-RESUME FROM: M02-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c61)
+RESUME FROM: M03-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c61)
 
 ## המשך מ:
 
-**M01-c61 - BLOCKED (30.09): בדיקת פרודקשן בפעם השמינית — DNS/HTTP
-תקינים, פריסת HEAD עדיין חסומה, אין שינוי מהמצב שתועד ב-M01-c60.**
-משימת התור: להריץ build+deploy של פרודקשן ב-Vercel, ואז `dig`+`curl`
-על שני הדומיינים ולצפות ל-200 עם האתר החדש; אם ה-DNS נכשל — לתעד תחת
-DNS BLOCKER ולסיים.
+**M02-c61 - DONE (30.09): שער חזותי — בית ומוצר בשלושת הרוחבים, אפס
+רגרסיה, אפס שינוי קוד.** משימת התור: להריץ `scripts/compare.mjs` על הבית
+ועל דף המוצר ב-380/768/1440 מול reference של Electro v7, לתקן כל חריגה
+עד שכולן מתחת ל-11%, ולתעד ב-STATE.md. **נמדד עכשיו, קדמי, מול שרת
+`pnpm start` על פורט 3311 שהיה כבר בנוי מ-HEAD (`e6f3aae4c`):**
 
-**DNS/HTTP לא נכשלו, נמדד עכשיו:** `dig +short A kenyonexpress.co.il`
-→ `216.198.79.1`/`64.29.17.65`; `dig +short A www.kenyonexpress.co.il`
-→ `216.198.79.1`/`216.198.79.65`; `dig +short NS kenyonexpress.co.il`
-→ `ns1.vercel-dns.com`/`ns2.vercel-dns.com` (זהה ל-M01-c52..M01-c60).
-`curl` ל-`kenyonexpress.co.il` מחזיר `308` ל-`https://www.kenyonexpress.co.il/`;
-`curl` ל-`www.kenyonexpress.co.il` מחזיר `200`, גוף אמיתי (`lang="he"
-dir="rtl"`, לוגו קניון EXPRESS). **אין תנאי DNS BLOCKER.**
+| דף | רוחב | % | תוצאה |
+|---|---|---|---|
+| home | 380 | 8.51% | PASS |
+| home | 768 | 9.02% | PASS |
+| home | 1440 | 3.95% | PASS |
+| product | 380 | 4.96% | PASS |
+| product | 768 | 4.56% | PASS |
+| product | 1440 | 3.25% | PASS |
 
-**הפריסה עצמה נבדקה מראש, בקריאה בלבד, ולא נוסתה בפעם שישית — אותה
-סיבה בדיוק:** `filter_project_envs` על הפרויקט `kenyonexpress`
-(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אושר שוב: אין
-`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
-ב-Production (קיימים רק `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/
-`CARDCOM_API_KEY`/`CARDCOM_WEBHOOK_SECRET`/`CARDCOM_USE_MOCK` שהקוד
-לא קורא באותם שמות), ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר. `list_deployments`
-(target=production, 5 אחרונות) מראה **חמש פריסות `ERROR` רצופות**
-מקומיטים `1083b8d8d`(M18-c51) → `99b2079cb`(M18-c52) → `0bcbdac18`(M18-c53)
-→ `291bc2d88`(M18-c54, פעמיים — `dpl_46ohZTeWTNay3kfkDKQPDcTjPRcE` ו-
-`dpl_FJYf483tkqSNf5pkG9MenghGQF46` שכבר תועד ב-M01-c55) — **כלומר
-Vercel מפעיל build אוטומטי על כל push ל-`audit/final-audit` דרך
-GitHub, ולא רק בניסיונות ידניים**, וכולם נכשלים באותה סיבה. תנאי
-העצירה `deploy-preflight` לא השתנה: הרצת `create_deployment` נוספת
-תיצור פריסת `ERROR` שביעית-ומעלה ללא מידע חדש. לפי כלל "goal שנתקע
-פעמיים — לדלג" (מוחל לראשונה ב-M01-c55, נשמר עד M01-c60): **דילוג על
-ניסיון פריסה נוסף, בפעם השישית**, ותיעוד ההחלטה כאן. **חוסם 2 עדיין
-פתוח, לאופיר בלבד** (הוספת שלושת משתני Cardcom החסרים ל-Production
-והסרת `ALLOW_INCOMPLETE_ENV`).
+כל השורות נכתבו על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md` (04:32-04:41,
+`e6f3aae4c-dirty`). **אין רגרסיה לתיקון**: כל שש המדידות מתחת לתקרה בלי
+נגיעה בקוד. שני ריצות `home/768` קודמות מאותו מחזור (04:10, 04:15, לפני
+תחילת הפריטה הזו) קראו `13.44%`/`13.75%` **FAIL** מול אותו build ואותו
+commit — לא נמדד שום שינוי קוד ביניהן לבין ה-PASS שאחריהן (9.02% פעמיים),
+כלומר זו רעידה חולפת בטעינת תמונות עצלה (`scripts/compare.mjs` עצמו
+מתעד תופעה כזו, ר' ההערות סביב שורה 742), לא רגרסיה אמיתית — נפתרה
+מעצמה בריצות חוזרות ואושרה שוב בריצת האימות הסופית של הפריטה הזו.
+דף המוצר לא זז מהמדידה הקודמת (M02-c60/c59, אפס דריפט).
+ארבעת השערים: `pnpm type-check`/`lint`/`test` (610 קבצים, 7296 עברו,
+12 דולגו) ו-`pnpm build` (`Compiled successfully`, אפס שגיאת build —
+שורות `rls_denied`/`reviews_read_failed` הן רעש prerender ידוע, לא כשל)
+— כולם ירוקים. קובץ ששונה: `docs/UI-PARITY-REPORT.md` בלבד (השורות
+שהשער כתב).
 
-פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY).
-HEAD (`adbbae4c9`) עכשיו **211 קומיטים** אחרי `a388118f1`
-(`git rev-list --count a388118f1..HEAD`, עלה מ-194 ב-M01-c60). עץ עבודה
-נקי. שערים לא הורצו מחדש (בדיקה, לא שינוי קוד — אפס קובץ קוד השתנה,
-רק `STATE.md`/`docs/STATE-ARCHIVE.md`).
+## M01-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M01-c61: בדיקת פרודקשן בפעם השמינית, DNS/HTTP תקינים (`www.kenyonexpress.co.il`
+200, NS עדיין `ns1/ns2.vercel-dns.com`), פריסת HEAD עדיין חסומה על אותו
+חוסם Cardcom/`ALLOW_INCOMPLETE_ENV` (חמש פריסות `ERROR` רצופות, אוטומטיות
+מ-GitHub). דילוג על ניסיון פריסה נוסף לפי כלל "נתקע פעמיים", פעם שביעית.
+HEAD עלה ל-211 קומיטים אחרי `a388118f1` החי. אפס שינוי קוד.
 
 ## M18-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c61 (הועבר מ-STATE.md ב-M02-c61, לשמירה על תקרת 300 שורות)
+
+**M01-c61 - BLOCKED (30.09): בדיקת פרודקשן בפעם השמינית — DNS/HTTP
+תקינים, פריסת HEAD עדיין חסומה, אין שינוי מהמצב שתועד ב-M01-c60.**
+משימת התור: להריץ build+deploy של פרודקשן ב-Vercel, ואז `dig`+`curl`
+על שני הדומיינים ולצפות ל-200 עם האתר החדש; אם ה-DNS נכשל — לתעד תחת
+DNS BLOCKER ולסיים.
+
+**DNS/HTTP לא נכשלו, נמדד עכשיו:** `dig +short A kenyonexpress.co.il`
+→ `216.198.79.1`/`64.29.17.65`; `dig +short A www.kenyonexpress.co.il`
+→ `216.198.79.1`/`216.198.79.65`; `dig +short NS kenyonexpress.co.il`
+→ `ns1.vercel-dns.com`/`ns2.vercel-dns.com` (זהה ל-M01-c52..M01-c60).
+`curl` ל-`kenyonexpress.co.il` מחזיר `308` ל-`https://www.kenyonexpress.co.il/`;
+`curl` ל-`www.kenyonexpress.co.il` מחזיר `200`, גוף אמיתי (`lang="he"
+dir="rtl"`, לוגו קניון EXPRESS). **אין תנאי DNS BLOCKER.**
+
+**הפריסה עצמה נבדקה מראש, בקריאה בלבד, ולא נוסתה בפעם שישית — אותה
+סיבה בדיוק:** `filter_project_envs` על הפרויקט `kenyonexpress`
+(`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) אושר שוב: אין
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`
+ב-Production (קיימים רק `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/
+`CARDCOM_API_KEY`/`CARDCOM_WEBHOOK_SECRET`/`CARDCOM_USE_MOCK` שהקוד
+לא קורא באותם שמות), ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר. `list_deployments`
+(target=production, 5 אחרונות) מראה **חמש פריסות `ERROR` רצופות**
+מקומיטים `1083b8d8d`(M18-c51) → `99b2079cb`(M18-c52) → `0bcbdac18`(M18-c53)
+→ `291bc2d88`(M18-c54, פעמיים — `dpl_46ohZTeWTNay3kfkDKQPDcTjPRcE` ו-
+`dpl_FJYf483tkqSNf5pkG9MenghGQF46` שכבר תועד ב-M01-c55) — **כלומר
+Vercel מפעיל build אוטומטי על כל push ל-`audit/final-audit` דרך
+GitHub, ולא רק בניסיונות ידניים**, וכולם נכשלים באותה סיבה. תנאי
+העצירה `deploy-preflight` לא השתנה: הרצת `create_deployment` נוספת
+תיצור פריסת `ERROR` שביעית-ומעלה ללא מידע חדש. לפי כלל "goal שנתקע
+פעמיים — לדלג" (מוחל לראשונה ב-M01-c55, נשמר עד M01-c60): **דילוג על
+ניסיון פריסה נוסף, בפעם השישית**, ותיעוד ההחלטה כאן. **חוסם 2 עדיין
+פתוח, לאופיר בלבד** (הוספת שלושת משתני Cardcom החסרים ל-Production
+והסרת `ALLOW_INCOMPLETE_ENV`).
+
+פרודקשן נשאר על `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY).
+HEAD (`adbbae4c9`) עכשיו **211 קומיטים** אחרי `a388118f1`
+(`git rev-list --count a388118f1..HEAD`, עלה מ-194 ב-M01-c60). עץ עבודה
+נקי. שערים לא הורצו מחדש (בדיקה, לא שינוי קוד — אפס קובץ קוד השתנה,
+רק `STATE.md`/`docs/STATE-ARCHIVE.md`).
+
 ## M18-c60 (הועבר מ-STATE.md ב-M01-c61, לשמירה על תקרת 300 שורות)
 
 **M18-c60 - DONE (30.09): בדיקת אפס-פעילות בפעם השביעית, המחזור *לא*
