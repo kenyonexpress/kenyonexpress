@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c63 (הועבר מ-STATE.md ב-M02-c63, לשמירה על תקרת 300 שורות)
+
+**M01-c63: BLOCKED (30.09), נבדק מחדש, build/deploy חדש לא הופעל.**
+משימת התור: build+deploy פרודקשן חדש דרך Vercel, ואז dig+curl על שני
+הדומיינים, תיעוד DNS BLOCKER אם ה-DNS נכשל.
+
+**DNS ו-HTTP נבדקו בפועל, שניהם תקינים, אין DNS BLOCKER.**
+`dig +short A kenyonexpress.co.il` ו-`dig +short A www.kenyonexpress.co.il`
+מחזירים `64.29.17.1`/`64.29.17.65` (Vercel anycast), `dig +short NS
+kenyonexpress.co.il` מחזיר `ns1.vercel-dns.com`/`ns2.vercel-dns.com`.
+`curl` ל-apex מחזיר `308` אל `www`, `curl` ל-`www.kenyonexpress.co.il`
+מחזיר `200` עם תוכן חי (`lang="he" dir="rtl"`, "קניון EXPRESS").
+
+**Build+deploy חדש לא הופעל, בכוונה.** כלל "goal שנתקע פעמיים, לדלג"
+כבר הופעל שמונה פעמים ברציפות (M01-c56..M01-c62) על אותו חוסם בדיוק.
+לפני שדילגתי בפעם התשיעית וידאתי מחדש, בקריאה בלבד, שהתנאי לא השתנה:
+קריאת Vercel REST API (טוקן CLI רוענן דרך `npx vercel whoami`, שהטוקן
+הישן פג) הראתה שסביבת Production עדיין חסרה את שלושת השמות ש-
+`scripts/deploy-preflight.mjs` דורש (`CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`, נבדקו שמות בלבד, בלי ערכים)
+ועדיין מחזיקה `ALLOW_INCOMPLETE_ENV` שהסקריפט עצמו פוסל על פלטפורמת
+פריסה. `list_deployments` (target=production, 5 אחרונות) מראה בדיוק את
+אותן חמש `dpl_` שנמדדו מ-M01-c61 ואילך, שום build אוטומטי חדש לא רץ
+מאז. HEAD עכשיו 249 קומיטים אחרי `a388118f1` (עלה מ-231 ב-M01-c62).
+התיקון האמיתי (שינוי env ב-Vercel) אסור לסוכן לפי כללי הפריט הזה, אז
+ניסיון פריסה נוסף היה רק מייצר `ERROR` שישי בלי מידע חדש.
+
+**מסקנה: BLOCKED, לא DNS, חוסם ה-env הידוע.** DNS ו-HTTP תקינים; החוסם
+הבלעדי הוא שלושת משתני Cardcom החסרים ועוד `ALLOW_INCOMPLETE_ENV` ב-
+Production, פעולה של אופיר בלבד. אפס שינוי קוד בפריט הזה, לכן לא רצו
+`pnpm test`/`lint`/`type-check`/`build`.
+
+קבצים ששונו: `STATE.md`.
+
 ## M17-c62 (הועבר מ-STATE.md ב-M18-c62, לשמירה על תקרת 300 שורות)
 
 **M17-c62 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם העשירית, דריפט
