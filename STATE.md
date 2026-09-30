@@ -1,63 +1,55 @@
-RESUME FROM: M14-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c61)
+RESUME FROM: M15-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c61)
 
 ## המשך מ:
 
-**M13-c61 - DONE (30.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy
-ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
-מ-M13-c60.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
-Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים עם
-טסטים. בדיקת דריפט קודם: `git log 94d861375..HEAD` (מאז המדידה
-הקודמת, M13-c60) מחזיר 17 קומיטים (M14-c60..M12-c61), כולם תיעוד/
-מדידה/תלות/טסטים. `git diff --stat 94d861375..HEAD -- middleware.ts
-'src/**/rate-limit*' 'src/**/ratelimit*' 'src/lib/security*'
-'src/lib/headers*' next.config.* vercel.json 'src/server/actions/auth*'
-'src/server/actions/checkout*' 'src/server/actions/*voucher*'
-'src/server/actions/*redeem*' 'src/app/api/supplier/vouchers/redeem*'
-'src/app/redeem/**'` חוזר ריק — **אפס קומיט נגע בכותרות אבטחה או
-ב-rate limiting**. `git diff --stat 94d861375..HEAD` המלא מראה רק
-שמונה קבצים, כולם תיעוד/נעילת תלויות (`STATE.md`,
-`docs/BACKLOG.md`, `docs/DB-SECURITY-MODEL.md`,
-`docs/LAUNCH-READINESS.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md`, `package.json`, `pnpm-lock.yaml`);
-`fast-xml-parser` 5.11.1→5.11.2 הוא `devDependency` שנקרא רק בטסטי
-feeds (`src/lib/feeds/*.test.ts`), לא במשטח האבטחה.
+**M14-c61 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
+cache אומתו מחדש, אפס דריפט מ-M14-c60.** משימת התור: לבדוק bundle
+sizes, image pipeline output, תגיות ISR וכותרות cache, ולתקן את
+הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log cd7750310..HEAD`
+(מאז המדידה הקודמת, M14-c60) מחזיר 18 קומיטים (M13-c60..M13-c61),
+כולם תיעוד/מדידה/תלות/טסטים. `git diff --stat cd7750310..HEAD --
+next.config.ts next.config.js middleware.ts vercel.json src/ package.json`
+חוזר ריק — **אפס קומיט נגע בקוד ייצור על משטח הביצועים**; ה-diff המלא
+מראה רק תיעוד ו-`package.json` (`fast-xml-parser` 5.11.1→5.11.2,
+`devDependency` בלבד).
 
-נמדד בכל זאת מחדש חי: הועלה `PORT=3815 pnpm start` ייעודי מול קוד ה-
-Production הקיים (`.next/BUILD_ID` `JvTmoHwdiXPpaSeOjzjaw`, נבנה
-תחת M12-c61/HEAD `8fd11aae4`, אפס דריפט מקור כמוצג למעלה; לא נבנה
-מחדש כי הזיכרון הפנוי בשעת המדידה היה כ-62MB עם 25 תהליכי
-`next-server` מקבילים — ראה [[concurrent-worktree-builds-oom]]), נסגר
-בסוף המדידה:
-- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
-  זהות בארבעתן ל-M13-c60: CSP (`default-src 'self'`, `frame-ancestors
-  'none'`, `frame-src`/`form-action` ל-`secure.cardcom.solutions`
-  ו-`'self'` בלבד, `object-src 'none'`), `Strict-Transport-Security:
-  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
-  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
-  strict-origin-when-cross-origin`.
-- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c60: `login`
-  (`src/server/actions/auth.ts:141`, `checkRateLimit(\`login:${ip}\`)`),
-  `begin_checkout` (`src/server/actions/payments/checkout.ts:351`,
-  `checkRateLimit(\`begin_checkout:user:${user.id}\`, 10, 60)`),
-  `redeem` (`src/app/redeem/[token]/page.tsx:109`,
-  `checkRateLimit(\`redeem:${scanContext.ip}\`, 60, 3600)`),
-  `voucher-redeem` (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
-  `rateLimit('voucher-redeem', user.id)`, 429). המימוש דרך
-  `src/lib/rate-limit/limiter.ts` (Upstash כברירת מחדל, נפילה
-  ל-postgres, נכשל פתוח בשגיאה) לא השתנה.
-- `upgrade-insecure-requests` נעדר שוב מה-CSP המקומי (זהה ל-M13-c60):
-  ה-build המקומי נאפה עם `NEXT_PUBLIC_APP_URL` שמתחיל ב-`http://`,
-  לכן `src/lib/security/frame-policy.ts` משמיט את הדירקטיבה בכוונה —
-  תוצר build מקומי, לא דריפט קוד, [[site-url-baked-at-build-time]].
+נמדד בכל זאת מחדש חי: `.next` הקיים תואם קוד ל-HEAD (אפס דריפט מקור
+כמוצג למעלה, נבנה תחת M12-c61/HEAD `8fd11aae4`), `PORT=3917 pnpm
+start` הורם ייעודית למדידה ונסגר בסופה (לא נבנה מחדש כדי לא להתחרות
+במשאבים מול 46 `next-server`/`pnpm start` מקבילים תחת כ-102MB זיכרון
+פנוי — ראה [[concurrent-worktree-builds-oom]]):
+- **Bundle**: `scripts/bundle-gate.mjs` על `.next/build-manifest.json`
+  הקיים — shared first-load **223.8 KB gz על 8 chunks** (budget 260KB,
+  ok). `scripts/bundle-report.mjs` מול הפורט הייעודי: heaviest route
+  `/checkout` **324.1 kB gz**, **27 chunks נבדלים, 345.1 kB gz בסך
+  הכל** — זהה ל-100% ל-M14-c60.
+- **צנרת תמונות**: אפס שינוי ב-`src/**/*.tsx` מאז M14-c60 (מאומת
+  ב-git diff למעלה). אומת חי: `curl -I` על
+  `/_next/image?url=%2Fimages%2Flogo.webp&w=384&q=75` מחזיר 200,
+  `Cache-Control: public, max-age=86400, must-revalidate`.
+- **ISR/תגיות**: `/products` מחזיר `x-nextjs-stale-time: 300`,
+  `x-nextjs-prerender: 1`, `x-nextjs-postponed: 1` — זהה ל-M14-c60.
+  `pnpm lint` כולל `cache-invalidation-gate.mjs` נקי (כל כתיבה לטבלה
+  במטמון מבטלת אותה, כל scope במטמון נושא תג).
+- **כותרות cache** (מול הפורט הייעודי): `/_next/static/chunks/*`
+  `public, max-age=31536000, immutable`; `/` (HTML דינמי) `private,
+  no-cache, no-store, max-age=0, must-revalidate`; `/_next/image?...`
+  `public, max-age=86400, must-revalidate`. שלושתן זהות ל-M14-c60.
 
-**אפס שינוי קוד נדרש.** שערים: `type-check` נקי, `lint` נקי (2025
-קבצים + שנים-עשר השערים המשניים, `i18n` 627/627), `test` המלא 610/610
-קבצים 7296/7308 (12 דולגים, 58.15s). `build` לא הורץ מחדש: אפס שינוי
-קוד ייצור מ-M12-c61, אומת חי מול curl ומשרת כותרות אבטחה תקינות
-(לא נבנה מחדש כדי לא להתחרות במשאבים מול 25 `next-server` מקבילים
-תחת ~62MB זיכרון פנוי). קובץ קוד שונה: אין. תיעוד: `STATE.md` +
-`docs/STATE-ARCHIVE.md`.
+**אפס רגרסיה נמצאה, אפס תיקון נדרש — לפני/אחרי זהים: 223.8/223.8 KB
+shared, 324.1/324.1 kB heaviest route (`/checkout`), 345.1/345.1 kB
+סה"כ.** שערים: `type-check` נקי, `lint` נקי (2025 קבצים + שנים-עשר
+השערים המשניים, `i18n` 627/627), `test` המלא 610/610 קבצים 7296/7308
+(12 דולגים, 55.97s). `build` לא הורץ מחדש: אפס שינוי קוד ייצור
+מ-M14-c60, אומת חי מול `pnpm start` על ה-`.next` הקיים (לא נבנה מחדש
+כדי לא להתחרות במשאבים מול 46 סשנים מקבילים). קובץ קוד שונה: אין.
+תיעוד: `STATE.md` + `docs/STATE-ARCHIVE.md`.
+
+## M13-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M13-c61: אבטחה, CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב
+Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט קוד מ-M13-c60.
 
 ## M12-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
