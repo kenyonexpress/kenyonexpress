@@ -1,28 +1,40 @@
-RESUME FROM: M04-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c60)
+RESUME FROM: M05-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c60)
 
 ## המשך מ:
 
-**M03-c60 - DONE (30.09): בדיקה ירוקה, type-check/lint/test/build
-נקיים, אפס דריפט.** משימת התור: להריץ `pnpm type-check`, `lint`,
-`test` ו-`build`, לתקן כל שגיאה ואזהרה ניתנת לתיקון בלי לשנות התנהגות
-מוצר.
+**M04-c60 - DONE (30.09): תברואת תלויות, `pnpm audit` נקי, אפס עדכון
+זכאי (כל 14 השורות של `pnpm outdated` הן major, אפס שינוי אפילו
+ל-`pnpm-lock.yaml`).** משימת התור: להריץ `pnpm audit` ו-`pnpm
+outdated`, להחיל שדרוגי patch/minor שנשארים ירוקים בארבעת השערים,
+לעולם לא major.
 
-- `pnpm type-check` -> נקי (`tsc --noEmit`, אפס פלט).
-- `pnpm lint` -> נקי: biome 2023 קבצים אפס תיקונים, ושנים עשר שערי
-  משנה (`tokens`, `copy`, `asset`, `raw-html`, `postgrest-or`,
-  `cache-invalidation`, `rtl-logical`, `i18n` 627/627, `locale-format`
-  116/64, `input-dir` 24/24, `docs-index` 282 מסמכים, `docs-path-audit`)
-  כולם נקיים.
-- `pnpm test` -> `vitest run`: 608/608 קבצים, 7274/7286 בדיקות עברו
-  (12 דולגו), 58.74s — זהה ל-M02-c60/M03-c59.
-- `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-  localhost:3311 pnpm build` -> `exit 0`, `✓ Compiled successfully in
-  18.6s`, אפס אזהרת קומפיילר. שורות `rls_denied`/
-  `db.optional_column_missing` בלוג המבני של האפליקציה בזמן ה-SSG הן
-  צפויות (מיגרציה 242 ממתינה, ראו חוסם 3 למטה) ולא אזהרות build —
-  קיימות בכל בנייה מקומית ואינן חדשות.
-- אפס תיקון נדרש בארבעת השערים, אפס שינוי קוד יישומי (רק `STATE.md`).
+- `pnpm audit`: **אפס חולשות ידועות**.
+- `pnpm outdated --format=json`: 14 שורות, ובכל אחת `wanted` == `current`
+  (`@biomejs/biome` 1.9.4→2.5.14, `@hookform/resolvers` 3.10.0→5.9.1,
+  `@sentry/nextjs`+`@sentry/node` 10.75.3→11.1.0,
+  `@testing-library/jest-dom` 6.10.0→7.0.1, `@types/node` 20.19.43→26.6.3,
+  `@vitejs/plugin-react` 4.7.0→6.1.1, `@vitest/coverage-v8` 4.1.11→5.0.2,
+  `jsdom` 25.0.1→30.1.1, `lint-staged` 15.5.2→17.6.0, `tailwind-merge`
+  2.6.1→3.7.0, `typescript` 5.9.3→7.0.2, `vitest` 4.1.11→5.0.2, `zod`
+  3.25.76→4.6.5) — כולן major, כולן מחוץ לתחום המותר.
+- `pnpm update --no-save` (מכבד את הטווחים ב-`package.json`): `Already
+  up to date` — אין אפילו עדכון טרנזיטיבי הפעם (בשונה מ-M04-c59, ששם
+  `caniuse-lite` התעדכן). `git status --short` ריק אחרי ההרצה.
+- שערים הורצו במלואם בכל זאת: `type-check` נקי; `lint` נקי (2023
+  קבצים, שנים עשר שערי משנה, i18n 627/627, locale 116/64); `test`
+  608/608 קבצים, 7274 עברו + 12 דולגו (7286), 56.34s; `build` (`rm -rf
+  .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+  localhost:3311 pnpm build`) `exit 0`, `✓ Compiled successfully in
+  16.9s`, אפס אזהרת קומפיילר (שורות `rls_denied`/
+  `db.optional_column_missing` צפויות, מיגרציה 242 ממתינה, ראו חוסם 3).
+- אפס שינוי ל-`package.json`, אפס שינוי ל-`pnpm-lock.yaml`, אפס שינוי
+  קוד יישומי (רק `STATE.md`).
+
+## M03-c60 (הועבר מ-STATE.md ב-M04-c60, לשמירה על תקרת 300 שורות)
+
+M03-c60: בדיקה ירוקה, `type-check`/`lint`/`test` (608/608, 7274/7286)/
+`build` כולם נקיים, אפס תיקון נדרש.
 
 ## M02-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
