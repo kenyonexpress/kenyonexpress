@@ -1,48 +1,49 @@
-RESUME FROM: M17-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c62)
+RESUME FROM: M18-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c62)
 
 ## המשך מ:
 
-**M16-c62 - DONE (30.09): תברואת ריפו בפעם השתים-עשרה, אפס דריפט
-מ-M16-c61.** משימת התור: לוודא `git status` נקי, שכל ענף מקומי דחוף,
-ולרשום PR פתוחים וענפים ישנים ב-STATE.md, בלי למזג או למחוק דבר.
+**M17-c62 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם העשירית, דריפט
+אחד נמצא ונבדק ידנית — תקין.** משימת התור: לקרוא כל מחרוזת UI בעברית
+וכל עמוד משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט
+ללקוח וקישורים שבורים, ולתקן.
 
-**נמדד:** `git status` נקי, `audit/final-audit` תואם בדיוק ל-`origin/
-audit/final-audit` (`568ccc16b`, אפס עבודה לא-committed, אפס commit
-לא-דחוף). **43 ענפים מקומיים, זהה בדיוק ל-M16-c61** (אפס ענף חדש, אפס
-ענף שנעלם). כל 43 נבדקו ב-SHA ישיר מול `origin/<שם>`: 37 זהים ל-`origin/
-<שם>` שלהם (כולל ענפי `arch/*` שעוקבים בטעות אחרי `origin/main` אך
-ה-SHA זהה למקביל ב-remote), ו-6 ענפים (`pr36`, `release/v1.1`,
-`wip/refund-record-rebase-head`, `chore/vitest-4`,
-`docs/nightly-health-green`, `fix/main-nightly-red`) אין להם ענף remote
-באותו שם כלל, אך ראש הענף שלהם מוכל ב-`origin/main` וב-`origin/audit/
-final-audit` (אומת עם `git merge-base --is-ancestor`) — **אפס קומיט
-ייחודי לא-דחוף בשום ענף מקומי, זהה בדיוק ל-M16-c61.** `main` המקומי
-נשאר בסטייה הידועה (`ahead=193 behind=109` מול `origin/main`, ללא
-אב-משותף אמיתי — חוסם 13, ללא שינוי; מוגן ב-GitHub, אין לדחוף ישירות).
+**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `eb1768c50` (M17-c61,
+שאימת אפס דריפט מאז `c6066ae85`/M17-c60). `git log eb1768c50..HEAD --
+messages/he.json "src/app/(legal)" src/content/legal
+src/components/layout/SiteFooter.tsx` מחזיר **קומיט אחד**: `fd820969f`
+(M18-c61, "Recently Viewed Products rail") — הראשון מאז M17-c51 שנוגע
+ב-`messages/he.json`. **נבדק ידנית**: מפתח יחיד נוסף, `pdp.recentlyViewed`
+= `"נצפו לאחרונה"` — עברית תקינה, אין דליפת LTR, אין מילה לועזית, תואם
+למקור האנגלי `"Recently viewed"`. הרכיב החדש `RecentlyViewedRail.tsx`
+קורא את המחרוזת דרך `t()` בלבד, ללא טקסט קשיח ברינדור וללא קישורים.
+`git diff --stat eb1768c50..HEAD` (כל הריפו) מראה רק תיעוד וקובצי
+הפיצ'ר עצמו (`page.tsx`, `RecentlyViewedRail.tsx`, `guest-storage.ts`,
+`recently-viewed.ts`, `bundle-report.mjs`, `auth-coverage.test.ts`) —
+אפס נגיעה נוספת בעמוד משפטי או בפוטר.
 
-**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c61, אותם
-מספרים 2-47, הישן ביותר #2 מ-02.08, החדש ביותר #47 מ-28.09). **116
-ענפי remote** (`git branch -r` אחרי `git fetch --prune`, זהה ל-M16-c61).
-**12 מ-43 הענפים המקומיים כבר ממוזגים לתוך HEAD** (זהה
-רשימה בדיוק ל-M16-c61 — פירוט שמות ב-`docs/STATE-ARCHIVE.md` תחת
-M16-c61 — מועמדים לניקוי, לא נמחקו, הכלל אוסר מחיקת ענפים). **28
-ענפים ישנים** (קומיט אחרון לפני 16.09, מ-`save/ke-visual-work` ב-28.07
-עד `worktree-order-state-machine` ב-09.09, רשימת שמות מלאה זהה בדיוק
-ל-M16-c61). **3 ענפים לא ממוזגים אך לא נטושים**: `autopilot` (17.09),
-`docs/ui-design-system` (23.09), `phase5/homepage-closeout` (24.09).
-**אפס מיזוג, אפס מחיקה, אפס push** (שום ענף לא נזקק לו — הכל כבר על origin בשם זהה או מוכל בו).
+עמודי המשפטי עצמם (`src/app/(legal)/legal/{accessibility,privacy,
+returns,terms}/page.tsx`, `src/content/legal/*`, `SiteFooter.tsx`) —
+**אפס קומיט** מאז `c6066ae85` (M17-c60), זהה בדיוק ל-9 המחזורים
+הקודמים. התיקון האמיתי האחרון נשאר `46b3b93ea` (M17-c51: דליפת LTR +
+placeholder אנגלי + שני redirect ישנים ל-`/legal`).
 
-**שערים**: `type-check` נקי, `lint` נקי (biome 2028 קבצים, 12 שערים,
-i18n 627/627, `docs-index` 282 מסמכים, `docs-path-audit` 154), `test`
-המלא 610/610 קבצים 7296/7308 (12 דולגים, 56.11s) — זהה ב-100% ל-M15-c62.
-`build` לא הורץ מחדש: `.next` הקיים (`BUILD_ID` `VMhGIoPRaTGiEQMEutFaQ`)
-אומת כתואם מקור ל-HEAD (`git log -1 -- next.config.ts next.config.mjs
-middleware.ts vercel.json src/ package.json pnpm-lock.yaml` מצביע על
-`fd820969f`, מוקדם מזמן ה-build; אפס שינוי קוד בפריט הזה ממילא — docs
-בלבד). אין שינוי UI, אין שער חזותי נדרש.
+**שערים הורצו במלואם:** `type-check` נקי, `lint` נקי (biome 2028
+קבצים, 12 שערים: `copy-gate` נקי — אין משפט שיווקי לטיני ברכיב מרונדר,
+`rtl-logical` נקי, i18n 627/627, `locale-format` 116/116, `docs-index`
+282, `docs-path-audit` 154), `test` המלא 610/610 קבצים 7296/7308 (12
+דולגים, 55.79s) — זהה ב-100% ל-M16-c62. **אין שער חזותי נדרש** — הרכיב
+היחיד שהשתנה (`RecentlyViewedRail`) כבר עבר `compare.mjs --page=product`
+בתוך ה-commit שלו עצמו (`fd820969f`, M18-c61: 4.96%/4.56%/3.25%, כולם
+PASS), ואין קוד ייצור נוסף שהשתנה בפריט הזה.
 
-קובץ ששונה: `STATE.md`.
+קובץ ששונה: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M16-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M17-c62 לשמירה על תקרת 300 שורות).** תברואת ריפו בפעם השתים-עשרה,
+אפס דריפט מ-M16-c61: `git status` נקי, 43 ענפים מקומיים זהים (אפס
+חדש/נעלם), 24 PR פתוחים, 116 ענפי remote, אפס מיזוג/מחיקה/push. ארבעת
+השערים ירוקים.
 
 **M15-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M16-c62 לשמירה על תקרת 300 שורות).** סנכרון תיעוד — STATE.md,

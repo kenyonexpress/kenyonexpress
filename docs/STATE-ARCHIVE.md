@@ -2,6 +2,49 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c62 (הועבר מ-STATE.md ב-M17-c62, לשמירה על תקרת 300 שורות)
+
+**M16-c62 - DONE (30.09): תברואת ריפו בפעם השתים-עשרה, אפס דריפט
+מ-M16-c61.** משימת התור: לוודא `git status` נקי, שכל ענף מקומי דחוף,
+ולרשום PR פתוחים וענפים ישנים ב-STATE.md, בלי למזג או למחוק דבר.
+
+**נמדד:** `git status` נקי, `audit/final-audit` תואם בדיוק ל-`origin/
+audit/final-audit` (`568ccc16b`, אפס עבודה לא-committed, אפס commit
+לא-דחוף). **43 ענפים מקומיים, זהה בדיוק ל-M16-c61** (אפס ענף חדש, אפס
+ענף שנעלם). כל 43 נבדקו ב-SHA ישיר מול `origin/<שם>`: 37 זהים ל-`origin/
+<שם>` שלהם (כולל ענפי `arch/*` שעוקבים בטעות אחרי `origin/main` אך
+ה-SHA זהה למקביל ב-remote), ו-6 ענפים (`pr36`, `release/v1.1`,
+`wip/refund-record-rebase-head`, `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`) אין להם ענף remote
+באותו שם כלל, אך ראש הענף שלהם מוכל ב-`origin/main` וב-`origin/audit/
+final-audit` (אומת עם `git merge-base --is-ancestor`) — **אפס קומיט
+ייחודי לא-דחוף בשום ענף מקומי, זהה בדיוק ל-M16-c61.** `main` המקומי
+נשאר בסטייה הידועה (`ahead=193 behind=109` מול `origin/main`, ללא
+אב-משותף אמיתי — חוסם 13, ללא שינוי; מוגן ב-GitHub, אין לדחוף ישירות).
+
+**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c61, אותם
+מספרים 2-47, הישן ביותר #2 מ-02.08, החדש ביותר #47 מ-28.09). **116
+ענפי remote** (`git branch -r` אחרי `git fetch --prune`, זהה ל-M16-c61).
+**12 מ-43 הענפים המקומיים כבר ממוזגים לתוך HEAD** (זהה
+רשימה בדיוק ל-M16-c61 — פירוט שמות ב-`docs/STATE-ARCHIVE.md` תחת
+M16-c61 — מועמדים לניקוי, לא נמחקו, הכלל אוסר מחיקת ענפים). **28
+ענפים ישנים** (קומיט אחרון לפני 16.09, מ-`save/ke-visual-work` ב-28.07
+עד `worktree-order-state-machine` ב-09.09, רשימת שמות מלאה זהה בדיוק
+ל-M16-c61). **3 ענפים לא ממוזגים אך לא נטושים**: `autopilot` (17.09),
+`docs/ui-design-system` (23.09), `phase5/homepage-closeout` (24.09).
+**אפס מיזוג, אפס מחיקה, אפס push** (שום ענף לא נזקק לו — הכל כבר על origin בשם זהה או מוכל בו).
+
+**שערים**: `type-check` נקי, `lint` נקי (biome 2028 קבצים, 12 שערים,
+i18n 627/627, `docs-index` 282 מסמכים, `docs-path-audit` 154), `test`
+המלא 610/610 קבצים 7296/7308 (12 דולגים, 56.11s) — זהה ב-100% ל-M15-c62.
+`build` לא הורץ מחדש: `.next` הקיים (`BUILD_ID` `VMhGIoPRaTGiEQMEutFaQ`)
+אומת כתואם מקור ל-HEAD (`git log -1 -- next.config.ts next.config.mjs
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml` מצביע על
+`fd820969f`, מוקדם מזמן ה-build; אפס שינוי קוד בפריט הזה ממילא — docs
+בלבד). אין שינוי UI, אין שער חזותי נדרש.
+
+קובץ ששונה: `STATE.md`.
+
 ## M15-c62 (הועבר מ-STATE.md ב-M16-c62, לשמירה על תקרת 300 שורות)
 
 **M15-c62 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
