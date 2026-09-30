@@ -137,6 +137,7 @@
   "docs/STATE-ARCHIVE.md :: refs/ke_live_singlefile.html",
   "docs/STATE-ARCHIVE.md :: refs/ke_live_supplier.html",
   "docs/STATE-ARCHIVE.md :: scripts/_gal3-tmp.mjs",
+  "docs/STATE-ARCHIVE.md :: scripts/_probe.mjs",
   "docs/STATE-ARCHIVE.md :: src/app/sitemap.ts",
   "docs/STATE-ARCHIVE.md :: src/components/home/Footer.tsx",
   "docs/STATE-ARCHIVE.md :: src/components/search/HeaderSearch.tsx",

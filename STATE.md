@@ -1,44 +1,59 @@
 RESUME FROM: M01-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט S02 חד-פעמי)
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריטים חד-פעמיים S02 ו-S03)
 
 ## המשך מ:
 
-**S02 - DONE (30.09), פריט חד-פעמי חיצוני לתור ה-M, לא מקדם `RESUME FROM:`.**
-המשימה שהתקבלה ביקשה ללכוד reference חדש ל-Electro v7 homepage
-ל-`refs/electro-home-{380,768,1440}.json` עם `scripts/_probe.mjs`, ואז
-`SHOWABLE-HOME: yes`. **שני השמות האלה לא קיימים בריפו הזה ומעולם לא
-היו** (`scripts/_probe.mjs`: לא קיים; `refs/electro-home-*.json`: לא
-קיים; `git log --all --grep=S02`, `grep -rn S02 **/*.md`: אפס תוצאות).
-מה שקיים ועושה בדיוק את אותה עבודה: `scripts/compare.mjs --page=home`
-מול הצילום הקפוא `refs/ke_live_{width}.png` (הרפרנס לפי `CLAUDE.md`:
-"כל UI לפי `refs/ke_live_singlefile.html`"), עם `--baseline` כי ברירת
-המחדל (הדומיין החי) מסורבת — הוא הבנייה שלנו עצמה עכשיו.
+**SHOWABLE: yes.** דף הבית ודף המוצר עוברים את שער הפריטיות בשלושת הרוחבים
+על HEAD (`ebb6af19b`, פלוס commit התיעוד של הפריט הזה). בית (S02): 8.51% /
+9.02% / 3.95%. מוצר (S03): 5.61% / 4.92% / 2.99%. שני הדפים מתחת לסף 11%,
+השורות ב-`docs/UI-PARITY-REPORT.md`.
 
-**נמדד עכשיו, בחזית, שרת טרי על פורט 3315 (`pnpm start`, `.next`
-`BUILD_ID` `fd820969f...` תואם ל-HEAD):**
+**S03 - DONE (30.09), פריט חד-פעמי חיצוני לתור ה-M, לא מקדם `RESUME FROM:`.**
+המשימה שהתקבלה ביקשה ללכוד reference חדש ל-Electro v7 single product page
+ל-`refs/electro-product-{380,768,1440}.json`, ולבחור מוצר זרוע מ-S01. אף אחד
+מהשמות האלה לא קיים בריפו הזה ומעולם לא היה (`git log --all --grep=S01`,
+`--grep=S03`, `grep -rn "S01\|S03" STATE.md docs/*.md`: אפס תוצאות), אותו
+תבנית בדיוק כמו `scripts/_probe.mjs` ו-`refs/electro-home-*.json` של S02
+(שורה למעלה). מה שקיים ועושה בדיוק את אותה עבודה: `refs/electro_product_
+{380,768,1440}.png` (PNG, קו תחתון, לא JSON ולא מקף), נלכד ב-25.09 (Q05b,
+`docs/MISSING-ASSETS.md` סעיף 1) ומגודר על ידי `scripts/compare.mjs
+--page=product --baseline='refs/electro_product_{width}.png'` מאז.
 
-| רוחב | תוצאה | סף |
+מוצר יעד: `barbecue-2` (ארוחה בשרית, id נקי, לא ב-`supabase/
+catalogue-known-issues.json`, אותו slug שהמתכון המתועד ב-`docs/
+MISSING-ASSETS.md` משתמש בו). הרצה בחזית על שרת טרי (פורט 3316, `.next`
+אומת source-identical ל-HEAD דרך `git diff --stat fd820969f..HEAD --
+next.config.ts next.config.js middleware.ts vercel.json src/ package.json`,
+ריק):
+
+| רוחב | both-painted | סף |
 |---|---|---|
-| 380 | **8.51%** | PASS (< 11%) |
-| 768 | **9.02%** | PASS (< 11%) |
-| 1440 | **3.95%** | PASS (< 11%) |
+| 380 | **5.61%** | PASS (< 11%) |
+| 768 | **4.92%** | PASS (< 11%) |
+| 1440 | **2.99%** | PASS (< 11%) |
 
-שלושתם זהים לספרות שכבר נרשמו ב-M02-c61/M15-c61 — אפס דריפט. השורות
-נכתבו אוטומטית על ידי `compare.mjs` עצמו ל-`docs/UI-PARITY-REPORT.md`
-(השעות 07:18-07:29). **`SHOWABLE-HOME: yes`** — הבית עומד בשער בשלושת
-הרוחבים על HEAD הנוכחי.
+זהה לארבע השורות האחרונות שנרשמו מ-29.09 (`7274ff68f` ועד היום), אפס
+דריפט. השורות נכתבו אוטומטית על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md`
+(07:41-07:46). המספרים הכוללים גבוהים בהרבה (20-35%) כי הרפרנס של Electro
+הוא מוצר אחר וארוך יותר (ביקורות, טאבים, קרוסלת מוצרים קשורים, 11181px/
+8408px/7653px גובה) ו-`diff-bands.mjs` מסמן את זה כאזהרת יחס-גובה בכוונה,
+לא ככשל: המדד המגודר הוא סטיית "both painted" בלבד, בדיוק כפי שמתועד
+ב-`docs/MISSING-ASSETS.md` סעיף 1.
 
 שערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 610/610 קבצים
-7296/7308 ירוק. `build` לא הורץ מחדש: `.next/BUILD_ID` כבר תואם מקור
-ל-HEAD (`fd820969f`) ו-כ-48 תהליכי `next-server`/`pnpm start` מקבילים
-מסשנים אחרים השאירו כ-61MB זיכרון פנוי (`vm_stat`) — אותה החלטה
-שהתקבלה ב-M15-c61. השרת שהורם לבדיקה הזו (3315) נהרג בסיום, לא נותר
-תהליך יתום.
+7296/7308 ירוק. `build` לא הורץ מחדש: `.next` כבר אומת source-identical
+ל-HEAD (למעלה). השרת הזמני על פורט 3316 נהרג בסיום, לא נותר תהליך יתום.
 
-**לא מקדם את `RESUME FROM:`** — S02 אינו חלק מתור ה-M הפנימי (ראה
+**לא מקדם את `RESUME FROM:`** - S03 אינו חלק מתור ה-M הפנימי (ראה
 "טבלת מצב לתור" למטה); M01-c62 נשאר היעד הבא של הלולאה האוטונומית.
 קובץ ששונה: `STATE.md`, `docs/UI-PARITY-REPORT.md` (נכתב אוטומטית
 על ידי השער).
+
+**S02 - DONE (30.09), פריט חד-פעמי דומה, פירוט מלא ב-`docs/STATE-ARCHIVE.md`
+(כווץ לשורה הזו ב-S03 לשמירה על תקרת 300 שורות).** בקצרה: אותה בעיית שמות
+לא-קיימים (`refs/electro-home-*.json`, `scripts/_probe.mjs`), אותו פתרון
+(`compare.mjs --page=home` מול `refs/ke_live_{width}.png`), אותה תוצאה:
+380 8.51% / 768 9.02% / 1440 3.95%, כולם PASS, אפס דריפט מ-M02-c61/M15-c61.
 
 **M18-c61 - DONE (30.09): בדיקת idle — כל 17 הפריטים הקודמים במחזור לא
 שינו קוד, MAINTENANCE IDLE נרשם, ונוסף שיפור המרה אמיתי אחד: "נצפו
