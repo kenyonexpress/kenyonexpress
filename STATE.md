@@ -1,63 +1,44 @@
-RESUME FROM: M06-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c60)
+RESUME FROM: M07-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c60)
 
 ## המשך מ:
 
-**M05-c60 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם העשירית דרך
-ה-management API (Supabase MCP דורש OAuth, לא זמין בסשן לא-אינטראקטיבי),
-זהה ב-100% ל-M05-c59.** משימת התור: `get_advisors` (security+performance)
-read-only, קובץ מיגרציה ל-`migrations/pending/` לכל WARN, עדכון
-`docs/DB-SECURITY-MODEL.md` אם המספרים השתנו.
+**M06-c60 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** אותו מתכון שאומת מ-M06-c1 ועד M06-c59:
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3494 pnpm build` → `exit 0` (בלי
+`Failed to compile`, טבלת המסלולים המלאה נדפסה); `pnpm start -p 3494`
+מאותה בנייה (פורט 3494 אומת פנוי לפני ואחרי, `ps -o lstart` אישר שרת
+מאוחר מ-`.next`). `curl` אישר `200` על `/` ועל `/product/barbecue-2`.
+`node_modules/.bin/lighthouse` על שני ה-URL,
+`--throttling-method=devtools --emulated-form-factor=mobile`:
 
-- טוקן ה-CLI מה-keychain (`security find-generic-password -s "Supabase CLI"
-  -w`, עטיפת `go-keyring-base64:` + פענוח base64), שני `GET
-  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
-  {security,performance}`, `200`/`200`. טוקן לא נדפס ולא נשמר לקובץ.
-- אבטחה: 28 ממצאים (4 `rls_enabled_no_policy` INFO, 2
-  `anon_security_definer_function_executable` WARN, 21
-  `authenticated_security_definer_function_executable` WARN, 1
-  `function_search_path_mutable` WARN) — שמות הפונקציות זהים ל-M05-c59.
-- ביצועים: 196 ממצאים (14 `multiple_permissive_policies` WARN, 6
-  `auth_rls_initplan` WARN, 166 `unused_index` INFO, 9
-  `unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute` INFO) —
-  אותן טבלאות בדיוק.
-- **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.** כל ה-WARN מכוסים
-  בארבעת הקבצים הממתינים הקיימים (`209`, `220`, `245`, `246`), נבדקו
-  שעדיין קיימים ולא נערכו. **אין WARN חדש, אין קובץ מיגרציה חדש נדרש.**
-- `docs/DB-SECURITY-MODEL.md` עודכן: סעיף חדש 0י (זהה ב-100% ל-0ט) +
-  שורת הכותרת. `pnpm test src/lib/catalogue` לא נוגע לפריט הזה; ארבעת
-  השערים (type-check/lint/test/build) לא הורצו כי אפס שינוי קוד יישומי —
-  רק תיעוד. קבצי הפלט הזמניים נמחקו.
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
 
-## M04-c60
+כל שמונת הציונים מעל 90. `git log 1ca3034b2..HEAD -- src/app
+src/components src/lib` מחזיר קומיט יחיד (`58b5301af`, טסט
+`payment-money-columns.test.ts` בלבד, אפס שינוי קוד תצוגה), ולכן
+99/99 (זהה ל-M06-c59) הוא לא רעש ולא שיפור — אין דריפט. השרת נעצר
+(`kill`, פורט 3494 אומת פנוי מחדש), קבצי ה-JSON הזמניים
+(`/tmp/ke-lh-m06c60/`) נמחקו. שערים: `type-check` נקי, `lint` נקי
+(biome 2023 קבצים, כל שערי התוכן ירוקים, i18n 627/627, locale
+116/116, docs-index 282, docs-path-audit 152), `test` 608/608 קבצים,
+7274/7286 (12 skipped, 58.06s), `build` `exit 0` (חלק מהמדידה עצמה).
+אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה:
+`STATE.md`.**
 
-**M04-c60 - DONE (30.09): תברואת תלויות, `pnpm audit` נקי, אפס עדכון
-זכאי (כל 14 השורות של `pnpm outdated` הן major, אפס שינוי אפילו
-ל-`pnpm-lock.yaml`).** משימת התור: להריץ `pnpm audit` ו-`pnpm
-outdated`, להחיל שדרוגי patch/minor שנשארים ירוקים בארבעת השערים,
-לעולם לא major.
+## M05-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-- `pnpm audit`: **אפס חולשות ידועות**.
-- `pnpm outdated --format=json`: 14 שורות, ובכל אחת `wanted` == `current`
-  (`@biomejs/biome` 1.9.4→2.5.14, `@hookform/resolvers` 3.10.0→5.9.1,
-  `@sentry/nextjs`+`@sentry/node` 10.75.3→11.1.0,
-  `@testing-library/jest-dom` 6.10.0→7.0.1, `@types/node` 20.19.43→26.6.3,
-  `@vitejs/plugin-react` 4.7.0→6.1.1, `@vitest/coverage-v8` 4.1.11→5.0.2,
-  `jsdom` 25.0.1→30.1.1, `lint-staged` 15.5.2→17.6.0, `tailwind-merge`
-  2.6.1→3.7.0, `typescript` 5.9.3→7.0.2, `vitest` 4.1.11→5.0.2, `zod`
-  3.25.76→4.6.5) — כולן major, כולן מחוץ לתחום המותר.
-- `pnpm update --no-save` (מכבד את הטווחים ב-`package.json`): `Already
-  up to date` — אין אפילו עדכון טרנזיטיבי הפעם (בשונה מ-M04-c59, ששם
-  `caniuse-lite` התעדכן). `git status --short` ריק אחרי ההרצה.
-- שערים הורצו במלואם בכל זאת: `type-check` נקי; `lint` נקי (2023
-  קבצים, שנים עשר שערי משנה, i18n 627/627, locale 116/64); `test`
-  608/608 קבצים, 7274 עברו + 12 דולגו (7286), 56.34s; `build` (`rm -rf
-  .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-  localhost:3311 pnpm build`) `exit 0`, `✓ Compiled successfully in
-  16.9s`, אפס אזהרת קומפיילר (שורות `rls_denied`/
-  `db.optional_column_missing` צפויות, מיגרציה 242 ממתינה, ראו חוסם 3).
-- אפס שינוי ל-`package.json`, אפס שינוי ל-`pnpm-lock.yaml`, אפס שינוי
-  קוד יישומי (רק `STATE.md`).
+M05-c60: ביקורת DB, advisors נמדדו בפעם העשירית דרך ה-management API,
+44 WARN זהים ב-100% ל-M05-c59, אפס מיגרציה חדשה נדרשת.
+
+## M04-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M04-c60: תברואת תלויות, `pnpm audit` נקי, אפס עדכון זכאי (כל 14
+השורות של `pnpm outdated` הן major). ארבעת השערים ירוקים.
 
 ## M03-c60 (הועבר מ-STATE.md ב-M04-c60, לשמירה על תקרת 300 שורות)
 

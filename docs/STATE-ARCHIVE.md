@@ -2,6 +2,64 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c60 (הועבר מ-STATE.md ב-M06-c60, לשמירה על תקרת 300 שורות)
+
+**M04-c60 - DONE (30.09): תברואת תלויות, `pnpm audit` נקי, אפס עדכון
+זכאי (כל 14 השורות של `pnpm outdated` הן major, אפס שינוי אפילו
+ל-`pnpm-lock.yaml`).** משימת התור: להריץ `pnpm audit` ו-`pnpm
+outdated`, להחיל שדרוגי patch/minor שנשארים ירוקים בארבעת השערים,
+לעולם לא major.
+
+- `pnpm audit`: **אפס חולשות ידועות**.
+- `pnpm outdated --format=json`: 14 שורות, ובכל אחת `wanted` == `current`
+  (`@biomejs/biome` 1.9.4→2.5.14, `@hookform/resolvers` 3.10.0→5.9.1,
+  `@sentry/nextjs`+`@sentry/node` 10.75.3→11.1.0,
+  `@testing-library/jest-dom` 6.10.0→7.0.1, `@types/node` 20.19.43→26.6.3,
+  `@vitejs/plugin-react` 4.7.0→6.1.1, `@vitest/coverage-v8` 4.1.11→5.0.2,
+  `jsdom` 25.0.1→30.1.1, `lint-staged` 15.5.2→17.6.0, `tailwind-merge`
+  2.6.1→3.7.0, `typescript` 5.9.3→7.0.2, `vitest` 4.1.11→5.0.2, `zod`
+  3.25.76→4.6.5) — כולן major, כולן מחוץ לתחום המותר.
+- `pnpm update --no-save` (מכבד את הטווחים ב-`package.json`): `Already
+  up to date` — אין אפילו עדכון טרנזיטיבי הפעם (בשונה מ-M04-c59, ששם
+  `caniuse-lite` התעדכן). `git status --short` ריק אחרי ההרצה.
+- שערים הורצו במלואם בכל זאת: `type-check` נקי; `lint` נקי (2023
+  קבצים, שנים עשר שערי משנה, i18n 627/627, locale 116/64); `test`
+  608/608 קבצים, 7274 עברו + 12 דולגו (7286), 56.34s; `build` (`rm -rf
+  .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+  localhost:3311 pnpm build`) `exit 0`, `✓ Compiled successfully in
+  16.9s`, אפס אזהרת קומפיילר (שורות `rls_denied`/
+  `db.optional_column_missing` צפויות, מיגרציה 242 ממתינה, ראו חוסם 3).
+- אפס שינוי ל-`package.json`, אפס שינוי ל-`pnpm-lock.yaml`, אפס שינוי
+  קוד יישומי (רק `STATE.md`).
+
+## M05-c60 (הועבר מ-STATE.md ב-M06-c60, לשמירה על תקרת 300 שורות)
+
+**M05-c60 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם העשירית דרך
+ה-management API (Supabase MCP דורש OAuth, לא זמין בסשן לא-אינטראקטיבי),
+זהה ב-100% ל-M05-c59.** משימת התור: `get_advisors` (security+performance)
+read-only, קובץ מיגרציה ל-`migrations/pending/` לכל WARN, עדכון
+`docs/DB-SECURITY-MODEL.md` אם המספרים השתנו.
+
+- טוקן ה-CLI מה-keychain (`security find-generic-password -s "Supabase CLI"
+  -w`, עטיפת `go-keyring-base64:` + פענוח base64), שני `GET
+  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+  {security,performance}`, `200`/`200`. טוקן לא נדפס ולא נשמר לקובץ.
+- אבטחה: 28 ממצאים (4 `rls_enabled_no_policy` INFO, 2
+  `anon_security_definer_function_executable` WARN, 21
+  `authenticated_security_definer_function_executable` WARN, 1
+  `function_search_path_mutable` WARN) — שמות הפונקציות זהים ל-M05-c59.
+- ביצועים: 196 ממצאים (14 `multiple_permissive_policies` WARN, 6
+  `auth_rls_initplan` WARN, 166 `unused_index` INFO, 9
+  `unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute` INFO) —
+  אותן טבלאות בדיוק.
+- **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.** כל ה-WARN מכוסים
+  בארבעת הקבצים הממתינים הקיימים (`209`, `220`, `245`, `246`), נבדקו
+  שעדיין קיימים ולא נערכו. **אין WARN חדש, אין קובץ מיגרציה חדש נדרש.**
+- `docs/DB-SECURITY-MODEL.md` עודכן: סעיף חדש 0י (זהה ב-100% ל-0ט) +
+  שורת הכותרת. `pnpm test src/lib/catalogue` לא נוגע לפריט הזה; ארבעת
+  השערים (type-check/lint/test/build) לא הורצו כי אפס שינוי קוד יישומי —
+  רק תיעוד. קבצי הפלט הזמניים נמחקו.
+
 ## M02-c60 (הועבר מ-STATE.md ב-M03-c60, לשמירה על תקרת 300 שורות)
 
 **M02-c60 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים, אפס
