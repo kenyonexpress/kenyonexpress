@@ -267,58 +267,75 @@ function DefaultProductCard({ product }: { product: Product }) {
           {product.name_he}
         </Link>
 
-        <Link
-          href={`/product/${product.slug}`}
-          className="relative flex aspect-square items-center justify-center overflow-hidden bg-gray-50"
-        >
-          {/* next/image here and not on the deals card: this wrapper reserves
-              the box itself with aspect-square, so `fill` cannot shift the
-              layout. `sizes` is what stops the browser fetching a full-width
-              image for a card that is at most a third of the row. */}
-          {thumb ? (
-            <Image
-              src={thumb}
-              alt={product.name_he}
-              fill
-              /**
-               * MEASURED, not declared. The only live consumer of this variant
-               * is `RelatedProducts` on the product page, whose grid is
-               * `.pdp-related__grid`: 2 columns below 640, 3 below 1024, then 5
-               * fixed 230px cards. The painted image width was read at 14
-               * viewport widths and each branch is an exact linear fit on 5 or
-               * more of them, residual 0:
-               *
-               *   360 -> 133   390 -> 148   412 -> 159   480 -> 193   600 -> 253
-               *   640 -> 169.33   768 -> 212   900 -> 256   1023 -> 297
-               *   1024 and up -> 204, fixed
-               *
-               * The old value claimed 50vw / 33vw / 25vw, which is the GRID
-               * COLUMN and not the image: it ignored the page gutter, the 12px
-               * grid gap and the card's own 12px padding. At 412/dpr1.75 that
-               * asked for 384 where 288 covers the 278 device pixels the box
-               * actually has (11028 bytes against 7530 on a 600x600 source),
-               * and at 1440 it asked for 384 to paint 204.
-               *
-               * `calc()` is deliberate, and it also widens the srcset: next only
-               * matches a bare `NNvw` token when it follows whitespace or the
-               * start of the string (get-img-props.js:54), so `calc(50vw - 47px)`
-               * matches nothing and the whole size ramp stays available instead
-               * of being floored at 640 * smallest-ratio.
-               */
-              sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
-              className="object-cover"
-            />
-          ) : (
-            <span className="text-5xl">📦</span>
-          )}
-          {outOfStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-              <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-gray-500">
-                אזל המלאי
-              </span>
-            </div>
-          )}
-        </Link>
+        {/* `relative` moved to this wrapper and off the Link: the heart below
+            has to sit OUTSIDE the anchor's hit area, the same reason
+            `DealsProductCard` keeps it a sibling of its image Link rather than
+            a child. A button nested inside an `<a>` still navigates on click
+            (the anchor is the ancestor default action), which is exactly the
+            bug that component's own comment documents avoiding. */}
+        <div className="relative">
+          <Link
+            href={`/product/${product.slug}`}
+            className="flex aspect-square items-center justify-center overflow-hidden bg-gray-50"
+          >
+            {/* next/image here and not on the deals card: this wrapper reserves
+                the box itself with aspect-square, so `fill` cannot shift the
+                layout. `sizes` is what stops the browser fetching a full-width
+                image for a card that is at most a third of the row. */}
+            {thumb ? (
+              <Image
+                src={thumb}
+                alt={product.name_he}
+                fill
+                /**
+                 * MEASURED, not declared. The only live consumer of this variant
+                 * is `RelatedProducts` on the product page, whose grid is
+                 * `.pdp-related__grid`: 2 columns below 640, 3 below 1024, then 5
+                 * fixed 230px cards. The painted image width was read at 14
+                 * viewport widths and each branch is an exact linear fit on 5 or
+                 * more of them, residual 0:
+                 *
+                 *   360 -> 133   390 -> 148   412 -> 159   480 -> 193   600 -> 253
+                 *   640 -> 169.33   768 -> 212   900 -> 256   1023 -> 297
+                 *   1024 and up -> 204, fixed
+                 *
+                 * The old value claimed 50vw / 33vw / 25vw, which is the GRID
+                 * COLUMN and not the image: it ignored the page gutter, the 12px
+                 * grid gap and the card's own 12px padding. At 412/dpr1.75 that
+                 * asked for 384 where 288 covers the 278 device pixels the box
+                 * actually has (11028 bytes against 7530 on a 600x600 source),
+                 * and at 1440 it asked for 384 to paint 204.
+                 *
+                 * `calc()` is deliberate, and it also widens the srcset: next only
+                 * matches a bare `NNvw` token when it follows whitespace or the
+                 * start of the string (get-img-props.js:54), so `calc(50vw - 47px)`
+                 * matches nothing and the whole size ramp stays available instead
+                 * of being floored at 640 * smallest-ratio.
+                 */
+                sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
+                className="object-cover"
+              />
+            ) : (
+              <span className="text-5xl">📦</span>
+            )}
+            {outOfStock && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                <span className="rounded-full border bg-white px-2 py-1 text-xs font-semibold text-gray-500">
+                  אזל המלאי
+                </span>
+              </div>
+            )}
+          </Link>
+
+          {/* Same overlay as `DealsProductCard`: an absolutely positioned
+              control takes no layout space, so it is safe to add to a card
+              whose geometry is measured against the live site without a gate
+              to re-check it. Closes the gap where `RelatedProducts` and
+              `RecentlyViewedRail` on the product page, and the homepage's
+              CMS product rails, were the only card grids with no way to save
+              an item without opening it first. */}
+          <WishlistHeart productId={product.id} productName={product.name_he} variant="card" />
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-baseline gap-2">

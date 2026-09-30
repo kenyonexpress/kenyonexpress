@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c62 (הועבר מ-STATE.md ב-M18-c62, לשמירה על תקרת 300 שורות)
+
+**M17-c62 - DONE (30.09): קופי ומשפטי אומתו מחדש בפעם העשירית, דריפט
+אחד נמצא ונבדק ידנית — תקין.** משימת התור: לקרוא כל מחרוזת UI בעברית
+וכל עמוד משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט
+ללקוח וקישורים שבורים, ולתקן.
+
+**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `eb1768c50` (M17-c61,
+שאימת אפס דריפט מאז `c6066ae85`/M17-c60). `git log eb1768c50..HEAD --
+messages/he.json "src/app/(legal)" src/content/legal
+src/components/layout/SiteFooter.tsx` מחזיר **קומיט אחד**: `fd820969f`
+(M18-c61, "Recently Viewed Products rail") — הראשון מאז M17-c51 שנוגע
+ב-`messages/he.json`. **נבדק ידנית**: מפתח יחיד נוסף, `pdp.recentlyViewed`
+= `"נצפו לאחרונה"` — עברית תקינה, אין דליפת LTR, אין מילה לועזית, תואם
+למקור האנגלי `"Recently viewed"`. הרכיב החדש `RecentlyViewedRail.tsx`
+קורא את המחרוזת דרך `t()` בלבד, ללא טקסט קשיח ברינדור וללא קישורים.
+`git diff --stat eb1768c50..HEAD` (כל הריפו) מראה רק תיעוד וקובצי
+הפיצ'ר עצמו (`page.tsx`, `RecentlyViewedRail.tsx`, `guest-storage.ts`,
+`recently-viewed.ts`, `bundle-report.mjs`, `auth-coverage.test.ts`) —
+אפס נגיעה נוספת בעמוד משפטי או בפוטר.
+
+עמודי המשפטי עצמם (`src/app/(legal)/legal/{accessibility,privacy,
+returns,terms}/page.tsx`, `src/content/legal/*`, `SiteFooter.tsx`) —
+**אפס קומיט** מאז `c6066ae85` (M17-c60), זהה בדיוק ל-9 המחזורים
+הקודמים. התיקון האמיתי האחרון נשאר `46b3b93ea` (M17-c51: דליפת LTR +
+placeholder אנגלי + שני redirect ישנים ל-`/legal`).
+
+**שערים הורצו במלואם:** `type-check` נקי, `lint` נקי (biome 2028
+קבצים, 12 שערים: `copy-gate` נקי — אין משפט שיווקי לטיני ברכיב מרונדר,
+`rtl-logical` נקי, i18n 627/627, `locale-format` 116/116, `docs-index`
+282, `docs-path-audit` 154), `test` המלא 610/610 קבצים 7296/7308 (12
+דולגים, 55.79s) — זהה ב-100% ל-M16-c62. **אין שער חזותי נדרש** — הרכיב
+היחיד שהשתנה (`RecentlyViewedRail`) כבר עבר `compare.mjs --page=product`
+בתוך ה-commit שלו עצמו (`fd820969f`, M18-c61: 4.96%/4.56%/3.25%, כולם
+PASS), ואין קוד ייצור נוסף שהשתנה בפריט הזה.
+
+קובץ ששונה: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M16-c62 (הועבר מ-STATE.md ב-M17-c62, לשמירה על תקרת 300 שורות)
 
 **M16-c62 - DONE (30.09): תברואת ריפו בפעם השתים-עשרה, אפס דריפט
