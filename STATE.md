@@ -1,7 +1,39 @@
-RESUME FROM: M01-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c62)
+RESUME FROM: M02-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c63)
 
 ## המשך מ:
+
+**M01-c63: BLOCKED (30.09), נבדק מחדש, build/deploy חדש לא הופעל.**
+משימת התור: build+deploy פרודקשן חדש דרך Vercel, ואז dig+curl על שני
+הדומיינים, תיעוד DNS BLOCKER אם ה-DNS נכשל.
+
+**DNS ו-HTTP נבדקו בפועל, שניהם תקינים, אין DNS BLOCKER.**
+`dig +short A kenyonexpress.co.il` ו-`dig +short A www.kenyonexpress.co.il`
+מחזירים `64.29.17.1`/`64.29.17.65` (Vercel anycast), `dig +short NS
+kenyonexpress.co.il` מחזיר `ns1.vercel-dns.com`/`ns2.vercel-dns.com`.
+`curl` ל-apex מחזיר `308` אל `www`, `curl` ל-`www.kenyonexpress.co.il`
+מחזיר `200` עם תוכן חי (`lang="he" dir="rtl"`, "קניון EXPRESS").
+
+**Build+deploy חדש לא הופעל, בכוונה.** כלל "goal שנתקע פעמיים, לדלג"
+כבר הופעל שמונה פעמים ברציפות (M01-c56..M01-c62) על אותו חוסם בדיוק.
+לפני שדילגתי בפעם התשיעית וידאתי מחדש, בקריאה בלבד, שהתנאי לא השתנה:
+קריאת Vercel REST API (טוקן CLI רוענן דרך `npx vercel whoami`, שהטוקן
+הישן פג) הראתה שסביבת Production עדיין חסרה את שלושת השמות ש-
+`scripts/deploy-preflight.mjs` דורש (`CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`, נבדקו שמות בלבד, בלי ערכים)
+ועדיין מחזיקה `ALLOW_INCOMPLETE_ENV` שהסקריפט עצמו פוסל על פלטפורמת
+פריסה. `list_deployments` (target=production, 5 אחרונות) מראה בדיוק את
+אותן חמש `dpl_` שנמדדו מ-M01-c61 ואילך, שום build אוטומטי חדש לא רץ
+מאז. HEAD עכשיו 249 קומיטים אחרי `a388118f1` (עלה מ-231 ב-M01-c62).
+התיקון האמיתי (שינוי env ב-Vercel) אסור לסוכן לפי כללי הפריט הזה, אז
+ניסיון פריסה נוסף היה רק מייצר `ERROR` שישי בלי מידע חדש.
+
+**מסקנה: BLOCKED, לא DNS, חוסם ה-env הידוע.** DNS ו-HTTP תקינים; החוסם
+הבלעדי הוא שלושת משתני Cardcom החסרים ועוד `ALLOW_INCOMPLETE_ENV` ב-
+Production, פעולה של אופיר בלבד. אפס שינוי קוד בפריט הזה, לכן לא רצו
+`pnpm test`/`lint`/`type-check`/`build`.
+
+קבצים ששונו: `STATE.md`.
 
 **M18-c62 - DONE (30.09): שער חוסר-פעילות, ואז תיקון המרה אמיתי אחד
 בדף המוצר ובדף הבית, שער חזותי PASS בשלושת הרוחבים.** משימת התור: אם כל
@@ -168,29 +200,29 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (231 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, עודכן ב-M01-c62 מ-211 שנמדד ב-M01-c61; ניסיון הפריסה הידני האחרון
+2. **פריסת פרודקשן של HEAD (249 קומיטים אחרי `a388118f1` החי, ספירת git
+   בלבד, עודכן ב-M01-c63 מ-231 שנמדד ב-M01-c62; ניסיון הפריסה הידני האחרון
    היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   **מ-M01-c56 ועד M01-c62 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
-   פעמיים — לדלג", מוחל מ-M01-c55, פעם שמינית ב-M01-c62 — כולל דחיית משימת
-   התור שביקשה בפירוש build+deploy חדש, ראו M01-c62 למעלה), אך התנאי נבדק
+   **מ-M01-c56 ועד M01-c63 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
+   פעמיים, לדלג", מוחל מ-M01-c55, פעם תשיעית ב-M01-c63, כולל דחיית משימת
+   התור שביקשה בפירוש build+deploy חדש, ראו M01-c63 למעלה), אך התנאי נבדק
    שוב בקריאה בלבד בכל פעם ואושר ללא שינוי: `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
    (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא
-   קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (`filter_project_envs`,
-   קריאה בלבד, M01-c62). **`list_deployments` (target=production, 5
-   אחרונות) מראה בדיוק את אותן חמש פריסות `ERROR` שנמדדו ב-M01-c61** —
-   שום push מאז (כולל S02/S03/M18-c61 התיעודיים) לא הפעיל build אוטומטי
-   חדש (`1083b8d8d`, `99b2079cb`, `0bcbdac18`, `291bc2d88` פעמיים), כולן
-   `ERROR` באותה סיבה, נמדד שוב M01-c62.
+   קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (Vercel REST API,
+   קריאה בלבד, טוקן CLI רוענן דרך `npx vercel whoami`, M01-c63).
+   **`list_deployments` (target=production, 5 אחרונות) מראה בדיוק את
+   אותן חמש פריסות `ERROR` שנמדדו ב-M01-c61 וב-M01-c62**, שום push מאז
+   לא הפעיל build אוטומטי חדש (`1083b8d8d`, `99b2079cb`, `0bcbdac18`,
+   `291bc2d88` פעמיים), כולן `ERROR` באותה סיבה, נמדד שוב M01-c63.
    עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על
    `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, מאושר שוב
-   ב-M01-c62 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
-   אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c62, `www.kenyonexpress.co.il`
+   ב-M01-c63 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
+   אינו קשור לחוסם הזה**, נמדד שוב ב-M01-c63: `www.kenyonexpress.co.il`
    מחזיר 200 עם התוכן החי, `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS
    עדיין `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
