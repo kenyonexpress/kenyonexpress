@@ -1,54 +1,63 @@
-RESUME FROM: M01-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c59)
+RESUME FROM: M02-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c60)
 
 ## המשך מ:
 
-**M18-c59 - DONE (30.09): בדיקת אפס-פעילות בפעם השישית, המחזור *לא*
-היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c59..M17-c59)
-לא הפיקו שינוי קוד השבוע, לכתוב `MAINTENANCE IDLE` עם התאריך ב-STATE.md,
-ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף המוצר שתואם
-Electro v7 וליישם אותו.
+**M01-c60 - DONE (30.09): בדיקת פרודקשן בפעם השביעית, DNS/HTTP תקינים,
+פריסת HEAD עדיין חסומה באותה סיבה.** משימת התור: להריץ build+deploy
+לפרודקשן ב-Vercel, ואז `dig`+`curl` לשני הדומיינים; אם ה-DNS עדיין
+נכשל, לתעד תחת "DNS BLOCKER" ולסיים. **ה-DNS לא נכשל** (נמדד ישירות,
+לא הונח — ראו למטה), כך שאין "DNS BLOCKER" לכתוב; החסם בפועל הוא env
+חסר בפרויקט Vercel, לא DNS, וממשיך תחת חוסם 2 למטה.
 
-**נמדד ישירות מ-git, לא הונח:** `git diff --stat 725c64ba4^..HEAD --
-. ':!STATE.md' ':!docs/'` על כל שבעה-עשר הקומיטים של המחזור
-(M01-c59..M17-c59) מחזיר בדיוק שני קבצים — `pnpm-lock.yaml` (M04-c59,
-רענון `caniuse-lite` בלבד, אפס שינוי ב-`package.json`) ו-
-`src/lib/payments/payment-money-columns.test.ts` (M10-c59, טסט כיסוי
-ענפים בלבד). אותו דפוס בדיוק כמו M18-c55, M18-c56, M18-c57 ו-M18-c58
-(כל אחד מארבעתם מצא שני קומיטי שינוי-קוד אמיתיים באותו מחזור — לא נצפה
-עדיין מחזור אפס-פעילות אמיתי). `MAINTENANCE IDLE` לא נכתב, שלב חיפוש
-שיפור ההמרה לא הופעל.
+**הוחלט לא לנסות deploy חדש**, לפי כלל "goal שנתקע פעמיים — לדלג, לא
+לנסות שלישית": הפריסה נכשלה **בדיוק באותה סיבה** חמש פעמים ברציפות
+(M01-c1, M01-c52..M01-c55), ונבדק כאן **ישירות מול Vercel** שהתנאי לא
+השתנה מאז — ניסיון שישי היה חוזר על אותה שגיאה ובזבוז ריק. אסור לי
+בכל מקרה לשנות env של Vercel (חוק קבוע), אז אין דרך לתקן את הסיבה
+בעצמי:
+- `filter_project_envs` על `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`
+  (הפרויקט הנכון, לא `kenyonexpress-prod`): Production מחזיק
+  `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY` ו-
+  `ALLOW_INCOMPLETE_ENV`, **אך לא** `CARDCOM_TERMINAL_NUMBER`/
+  `CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`.
+- `grep` ב-`scripts/deploy-preflight.mjs` (שורות 26-28, 60) מאשר שהקוד
+  **עדיין** דורש בדיוק את שלוש השורות החסרות, ושדגל `ALLOW_INCOMPLETE_ENV`
+  עדיין מטופל כ-waiver ל-`next start` מקומי בלבד, לא לפריסה.
+- `list_deployments` (target=production, הפרויקט הנכון): חמש הפריסות
+  האחרונות **כולן `ERROR`**, והפריסה העליונה היא בדיוק
+  `dpl_FJYf483tkqSNf5pkG9MenghGQF46` על `291bc2d88` — אותה פריסה
+  שכבר תועדה ב-M01-c55, לא פריסה חדשה. מאשר: אף ניסיון נוסף לא נעשה
+  בין M01-c56 ל-M01-c59, בדיוק כפי שנרשם.
 
-שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
-627/627, locale 116/116, docs-index 282, docs-path-audit 152), `test`
-608/608 קבצים 7274/7286 (12 skipped, 59.47s), `build` `exit 0`. אין שער חזותי
-נדרש (אפס שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md` בלבד).
+**dig+curl (נמדד עכשיו, לא מה-cache של מחזורים קודמים):**
+```
+dig +short kenyonexpress.co.il A       -> 216.198.79.65 / 64.29.17.1
+dig +short www.kenyonexpress.co.il A   -> 64.29.17.1 / 64.29.17.65
+dig +short kenyonexpress.co.il NS      -> ns1.vercel-dns.com. / ns2.vercel-dns.com.
+curl -o /dev/null -w '%{http_code}' https://kenyonexpress.co.il      -> 308 -> https://www.kenyonexpress.co.il/
+curl -o /dev/null -w '%{http_code}' https://www.kenyonexpress.co.il  -> 200
+```
+גוף התגובה של `www` הוא האתר החי (`lang="he" dir="rtl"`, לוגו קניון
+EXPRESS, נכסי `_next/static` טריים) — לא עמוד שגיאה ולא דמה. פרודקשן
+עדיין מוגש מ-`a388118f1` (חוסם 2 למטה), 194 קומיטים מאחורי HEAD כרגע
+(`git rev-list --count a388118f1..HEAD`).
 
-## M17-c59
+שערים הורצו במלואם על שינוי תיעוד בלבד: `type-check` נקי, `lint` נקי,
+`test` נקי, `build` `exit 0`. אין שער חזותי נדרש (אפס שינוי UI/קוד).
 
-**M17-c59 - DONE (30.09): מעבר קופי ומשפטי בפעם השביעית, אפס דריפט
-מ-M17-c58.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי
-בחיפוש טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט פונה-ללקוח,
-וקישורים שבורים, ולתקן.
+## M18-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-**נמדד ישירות מ-git, לא הונח:** `git log -1 -- messages/he.json`
-מצביע על `99b2079c`, ו-`git log -1 -- 'src/app/(legal)'` על
-`46b3b93e` — שניהם מוקדמים מ-M17-c58 (`e844e5a2b`, בדיקת ה-baseline
-המלאה האחרונה). `git diff --stat e844e5a2b..HEAD -- messages/
-'src/app/(legal)' src/components src/app` (שבעת הקומיטים
-M18-c58..M16-c59) מחזיר ריק. ה-`diff` הכולל מול `e844e5a2b` (למעט
-`STATE.md`/`docs/STATE-ARCHIVE.md`) נוגע רק ב-`docs/BACKLOG.md`,
-`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
-`docs/UI-PARITY-REPORT.md`, `pnpm-lock.yaml` ו-
-`src/lib/payments/payment-money-columns.test.ts` — אף לא אחד מהם
-קופי פונה-ללקוח או עמוד משפטי. **אפס מחרוזת חדשה, אפס עמוד משפטי
-חדש, אפס קישור חדש מאז הקריאה המלאה ב-M17-c53.**
+M18-c59: בדיקת אפס-פעילות בפעם השישית, המחזור *לא* היה אפס-פעילות —
+שני קומיטי שינוי אמיתיים (`pnpm-lock.yaml`, טסט כיסוי ענפים), אותו
+דפוס כמו ארבעה מחזורים קודמים. `MAINTENANCE IDLE` לא נכתב. ארבעת
+השערים ירוקים.
 
-שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
-627/627, `copy-gate` נקי מבלי משפט שיווקי לטיני, `rtl-logical-gate`
-נקי), `test` 608/608 קבצים 7274/7286 (12 skipped, 56.78s), `build`
-`exit 0`. אין שער חזותי נדרש (אפס שינוי UI, `STATE.md`/
-`docs/STATE-ARCHIVE.md` בלבד).
+## M17-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M17-c59: מעבר קופי ומשפטי בפעם השביעית, אפס דריפט מ-M17-c58 (אפס
+מחרוזת חדשה, אפס עמוד משפטי חדש, אפס קישור חדש מאז M17-c53). ארבעת
+השערים ירוקים.
 
 ## M16-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -57,46 +66,12 @@ M16-c59: תברואת ריפו בפעם התשיעית, אפס דריפט בענ
 המחזורים). 24 PR פתוחים, זהה. אפס מיזוג, אפס מחיקה. ארבעת השערים
 ירוקים.
 
-## M15-c59
+## M15-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-M15-c59 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
-docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md רועננה מול git log וראיית קוד,
-אפס דריפט מ-M15-c58. משימת התור: לרענן את טבלת המצב בשלושת הקבצים
-מ-git log וראיית קוד, לשמור פריט אחד לכל סעיף ידני לאופיר לפי סדר
-קריטיות, בלי כפילות. בדיקת דריפט: `git log 456becb9c..HEAD` (מאז
-המדידה הקודמת, M15-c58) מחזיר 17 קומיטים (M16-c58..M18-c58,
-M01-c59..M14-c59), כולם תיעוד/מדידה/תלות/טסטים (ביצועים, אבטחה, SEO,
-נגישות, כיסוי טסטים, STATE CLEAN, backlog, route audit, Lighthouse, DB
-advisors, תברואת תלויות). `git diff --stat 456becb9c..HEAD -- src/
-supabase/ migrations/ package.json pnpm-lock.yaml next.config.mjs
-vercel.json scripts/cron-jobs.json .github/workflows/` מחזיר רק שני
-קבצים: `pnpm-lock.yaml` (עדכון `caniuse-lite`, M04-c59) ו-
-`src/lib/payments/payment-money-columns.test.ts` (טסט בלבד, M10-c59) —
-**אפס קומיט נגע בשורת חסימה**.
-
-נמדד בכל זאת מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, 12 שערים,
-docs-index 282 מסמכים ללא שינוי, docs-path-audit 152 ידועים ללא שינוי,
-i18n 627/627, locale-format 116/116), `test` 608/608 קבצים, 7274/7286
-(12 skipped) — זהה ל-100% למה שנמדד ב-M14-c59, `build` נבנה מחדש
-בהצלחה. מספרים שהשתנו (git בלבד, לא פרודקשן):
-- **קומיטים מאחורי `a388118f1` (החי בפרודקשן)**: `git rev-list --count
-  a388118f1..HEAD` = **189** (היה 175 ב-M01-c59, 171 ב-M15-c58) — חוסם 2
-  למטה ו-`docs/BACKLOG.md` סעיף 4 עודכנו.
-- **מרחק מ-`origin/main`**: `git rev-list --count origin/main..HEAD` =
-  **563** (היה 545 ב-M15-c58); `origin/main..HEAD` (autopilot) נשאר
-  **109**, ללא שינוי — `docs/LAUNCH-READINESS.md` עודכן.
-- **פנקס הקטלוג** (`supabase/catalogue-known-issues.json`): **26**
-  ממצאים, ללא שינוי. **מיגרציות ממתינות**: כל 18 הקבצים בסדר ההחלה
-  (204, 209, 218, 220, 223, 224, 234-236, 239-247) עדיין קיימים
-  ב-`migrations/pending/`, אפס קובץ חדש. **stash**: `git stash list`
-  מחזיר **32**, ללא שינוי. **`dns-watch.sh`**: עדיין רץ תחת `caffeinate`
-  (pid 957/999), ללא שינוי.
-
-`docs/BACKLOG.md` נבדק מול הרשימה הקיימת: עדיין 15 סעיפים, אותו סדר,
-אפס כפילות, אפס פריט חדש — נוסף פסקת "נבדק מחדש (M15-c59)" ועודכן סעיף
-4 (189). **קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (M14-c59
-הועבר לתקרת 300 שורות), `docs/BACKLOG.md`, `docs/LAUNCH-READINESS.md`**
-— אפס שינוי קוד ייצור.
+M15-c59: סנכרון תיעוד — טבלת המצב ב-STATE.md, docs/LAUNCH-READINESS.md
+ו-docs/BACKLOG.md רועננה מול git log, אפס דריפט מ-M15-c58 (17 קומיטים
+כולם תיעוד/מדידה, אפס קומיט נגע בשורת חסימה). קומיטים מאחורי
+`a388118f1`: 189 (עודכן שוב ב-M01-c60 ל-194).
 
 ## M14-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -211,25 +186,26 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (189 קומיטים אחרי `a388118f1` החי — ספירת git
-   בלבד, עודכן ב-M15-c59 מ-175 שנמדד ב-M01-c59; ניסיון הפריסה עצמו האחרון
+2. **פריסת פרודקשן של HEAD (194 קומיטים אחרי `a388118f1` החי — ספירת git
+   בלבד, עודכן ב-M01-c60 מ-189 שנמדד ב-M15-c59; ניסיון הפריסה עצמו האחרון
    היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   **מ-M01-c56 ועד M01-c59 לא נוסה ניסיון פריסה נוסף** (כלל "goal שנתקע
-   פעמיים — לדלג", מוחל מ-M01-c55, פעם חמישית ב-M01-c59), אך התנאי נבדק
+   **מ-M01-c56 ועד M01-c60 לא נוסה ניסיון פריסה נוסף** (כלל "goal שנתקע
+   פעמיים — לדלג", מוחל מ-M01-c55, פעם שישית ב-M01-c60 — כולל דחיית משימת
+   התור שביקשה בפירוש build+deploy חדש, ראו M01-c60 למעלה), אך התנאי נבדק
    שוב בקריאה בלבד בכל פעם ואושר ללא שינוי: `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
    (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא
    קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (`filter_project_envs`,
-   קריאה בלבד, M01-c59). `list_deployments` (target=production) מאשר
-   שלוש הפריסות האחרונות (כולן מניסיונות קודמים, לא חדש) עדיין `ERROR`.
+   קריאה בלבד, M01-c60). `list_deployments` (target=production) מאשר חמש
+   הפריסות האחרונות (כולן מניסיונות קודמים, לא חדש) עדיין `ERROR`.
    עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על
    `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, מאושר שוב
-   ב-M01-c59 דרך `get_deployment` על `www.kenyonexpress.co.il`). **DNS
-   אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c59, `www.kenyonexpress.co.il`
+   ב-M01-c60 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
+   אינו קשור לחוסם הזה** — נמדד שוב ב-M01-c60, `www.kenyonexpress.co.il`
    מחזיר 200 עם התוכן החי, `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS
    עדיין `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל

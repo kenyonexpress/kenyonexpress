@@ -2,6 +2,96 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c59 (הועבר מ-STATE.md ב-M01-c60, לשמירה על תקרת 300 שורות)
+
+M15-c59 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
+docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md רועננה מול git log וראיית קוד,
+אפס דריפט מ-M15-c58. משימת התור: לרענן את טבלת המצב בשלושת הקבצים
+מ-git log וראיית קוד, לשמור פריט אחד לכל סעיף ידני לאופיר לפי סדר
+קריטיות, בלי כפילות. בדיקת דריפט: `git log 456becb9c..HEAD` (מאז
+המדידה הקודמת, M15-c58) מחזיר 17 קומיטים (M16-c58..M18-c58,
+M01-c59..M14-c59), כולם תיעוד/מדידה/תלות/טסטים (ביצועים, אבטחה, SEO,
+נגישות, כיסוי טסטים, STATE CLEAN, backlog, route audit, Lighthouse, DB
+advisors, תברואת תלויות). `git diff --stat 456becb9c..HEAD -- src/
+supabase/ migrations/ package.json pnpm-lock.yaml next.config.mjs
+vercel.json scripts/cron-jobs.json .github/workflows/` מחזיר רק שני
+קבצים: `pnpm-lock.yaml` (עדכון `caniuse-lite`, M04-c59) ו-
+`src/lib/payments/payment-money-columns.test.ts` (טסט בלבד, M10-c59) —
+**אפס קומיט נגע בשורת חסימה**.
+
+נמדד בכל זאת מחדש: `type-check` נקי, `lint` נקי (2023 קבצים, 12 שערים,
+docs-index 282 מסמכים ללא שינוי, docs-path-audit 152 ידועים ללא שינוי,
+i18n 627/627, locale-format 116/116), `test` 608/608 קבצים, 7274/7286
+(12 skipped) — זהה ל-100% למה שנמדד ב-M14-c59, `build` נבנה מחדש
+בהצלחה. מספרים שהשתנו (git בלבד, לא פרודקשן):
+- **קומיטים מאחורי `a388118f1` (החי בפרודקשן)**: `git rev-list --count
+  a388118f1..HEAD` = **189** (היה 175 ב-M01-c59, 171 ב-M15-c58) — חוסם 2
+  למטה ו-`docs/BACKLOG.md` סעיף 4 עודכנו.
+- **מרחק מ-`origin/main`**: `git rev-list --count origin/main..HEAD` =
+  **563** (היה 545 ב-M15-c58); `origin/main..HEAD` (autopilot) נשאר
+  **109**, ללא שינוי — `docs/LAUNCH-READINESS.md` עודכן.
+- **פנקס הקטלוג** (`supabase/catalogue-known-issues.json`): **26**
+  ממצאים, ללא שינוי. **מיגרציות ממתינות**: כל 18 הקבצים בסדר ההחלה
+  (204, 209, 218, 220, 223, 224, 234-236, 239-247) עדיין קיימים
+  ב-`migrations/pending/`, אפס קובץ חדש. **stash**: `git stash list`
+  מחזיר **32**, ללא שינוי. **`dns-watch.sh`**: עדיין רץ תחת `caffeinate`
+  (pid 957/999), ללא שינוי.
+
+`docs/BACKLOG.md` נבדק מול הרשימה הקיימת: עדיין 15 סעיפים, אותו סדר,
+אפס כפילות, אפס פריט חדש — נוסף פסקת "נבדק מחדש (M15-c59)" ועודכן סעיף
+4 (189). **קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (M14-c59
+הועבר לתקרת 300 שורות), `docs/BACKLOG.md`, `docs/LAUNCH-READINESS.md`**
+— אפס שינוי קוד ייצור.
+
+## M18-c59 (הועבר מ-STATE.md ב-M01-c60, לשמירה על תקרת 300 שורות)
+
+**M18-c59 - DONE (30.09): בדיקת אפס-פעילות בפעם השישית, המחזור *לא*
+היה אפס-פעילות.** משימת התור: אם כל פריטי התור מעלה (M01-c59..M17-c59)
+לא הפיקו שינוי קוד השבוע, לכתוב `MAINTENANCE IDLE` עם התאריך ב-STATE.md,
+ואז לחפש שיפור אמיתי אחד בהמרת לקוחות בדף הבית או דף המוצר שתואם
+Electro v7 וליישם אותו.
+
+**נמדד ישירות מ-git, לא הונח:** `git diff --stat 725c64ba4^..HEAD --
+. ':!STATE.md' ':!docs/'` על כל שבעה-עשר הקומיטים של המחזור
+(M01-c59..M17-c59) מחזיר בדיוק שני קבצים — `pnpm-lock.yaml` (M04-c59,
+רענון `caniuse-lite` בלבד, אפס שינוי ב-`package.json`) ו-
+`src/lib/payments/payment-money-columns.test.ts` (M10-c59, טסט כיסוי
+ענפים בלבד). אותו דפוס בדיוק כמו M18-c55, M18-c56, M18-c57 ו-M18-c58
+(כל אחד מארבעתם מצא שני קומיטי שינוי-קוד אמיתיים באותו מחזור — לא נצפה
+עדיין מחזור אפס-פעילות אמיתי). `MAINTENANCE IDLE` לא נכתב, שלב חיפוש
+שיפור ההמרה לא הופעל.
+
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
+627/627, locale 116/116, docs-index 282, docs-path-audit 152), `test`
+608/608 קבצים 7274/7286 (12 skipped, 59.47s), `build` `exit 0`. אין שער חזותי
+נדרש (אפס שינוי UI/קוד, `STATE.md`/`docs/STATE-ARCHIVE.md` בלבד).
+
+## M17-c59 (הועבר מ-STATE.md ב-M01-c60, לשמירה על תקרת 300 שורות)
+
+**M17-c59 - DONE (30.09): מעבר קופי ומשפטי בפעם השביעית, אפס דריפט
+מ-M17-c58.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל עמוד משפטי
+בחיפוש טעויות כתיב, דליפות LTR, מילים באנגלית בטקסט פונה-ללקוח,
+וקישורים שבורים, ולתקן.
+
+**נמדד ישירות מ-git, לא הונח:** `git log -1 -- messages/he.json`
+מצביע על `99b2079c`, ו-`git log -1 -- 'src/app/(legal)'` על
+`46b3b93e` — שניהם מוקדמים מ-M17-c58 (`e844e5a2b`, בדיקת ה-baseline
+המלאה האחרונה). `git diff --stat e844e5a2b..HEAD -- messages/
+'src/app/(legal)' src/components src/app` (שבעת הקומיטים
+M18-c58..M16-c59) מחזיר ריק. ה-`diff` הכולל מול `e844e5a2b` (למעט
+`STATE.md`/`docs/STATE-ARCHIVE.md`) נוגע רק ב-`docs/BACKLOG.md`,
+`docs/DB-SECURITY-MODEL.md`, `docs/LAUNCH-READINESS.md`,
+`docs/UI-PARITY-REPORT.md`, `pnpm-lock.yaml` ו-
+`src/lib/payments/payment-money-columns.test.ts` — אף לא אחד מהם
+קופי פונה-ללקוח או עמוד משפטי. **אפס מחרוזת חדשה, אפס עמוד משפטי
+חדש, אפס קישור חדש מאז הקריאה המלאה ב-M17-c53.**
+
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, i18n
+627/627, `copy-gate` נקי מבלי משפט שיווקי לטיני, `rtl-logical-gate`
+נקי), `test` 608/608 קבצים 7274/7286 (12 skipped, 56.78s), `build`
+`exit 0`. אין שער חזותי נדרש (אפס שינוי UI, `STATE.md`/
+`docs/STATE-ARCHIVE.md` בלבד).
+
 ## M16-c59 (הועבר מ-STATE.md ב-M17-c59, לשמירה על תקרת 300 שורות)
 
 **M16-c59 - DONE (30.09): תברואת ריפו בפעם התשיעית, אפס דריפט בענפים
