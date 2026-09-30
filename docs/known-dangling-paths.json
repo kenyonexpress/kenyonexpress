@@ -147,6 +147,7 @@
   "docs/STATE-ARCHIVE.md :: src/server/domain/orders/escrow.ts",
   "docs/STATE-ARCHIVE.md :: src/server/domain/vouchers/escrow.ts",
   "docs/STATE-ARCHIVE.md :: supabase/migrations/142_money_integer_fix_in_place.sql",
+  "docs/STATE-ARCHIVE.md :: supabase/rls-report-fetch.ts",
   "docs/TESTING.md :: refs/ke_live_singlefile.html",
   "docs/VOUCHER-LIFECYCLE.md :: src/server/domain/orders/redemption.ts",
   "docs/adr/0011-refs-based-visual-parity.md :: refs/ke_live_singlefile.html",

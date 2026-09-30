@@ -2,6 +2,71 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c62 (הועבר מ-STATE.md ב-M11-c62, לשמירה על תקרת 300 שורות)
+
+**M10-c62 - DONE (30.09): כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
+עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש.** משימת התור: "find the
+critical module with the lowest coverage among packages/money, payment
+split, voucher state machine, order state machine, refunds and RLS
+helpers. Add unit tests until branches are covered." זהה למילה למשימת
+M10-c61 (`e54734eee`); נבדק תחילה `git diff --stat e54734eee..HEAD --
+src/ vitest.config.ts package.json pnpm-lock.yaml` — חמישה קבצים שונו
+ושייכים כולם לתכונת `RecentlyViewedRail` (M18-c61: PDP, קומפוננטה,
+אחסון אורח, action), אף אחד לא נוגע באחת משש הקטגוריות. הורצה מדידה
+ישירה בכל זאת (לא הוסתמך על "אפס דריפט" בלבד): `vitest run --coverage`
+עם `--coverage.include` נפרד לכל אחד מ-14 הקבצים של שש הקטגוריות.
+תוצאה: **338/338 ענפים** במעבר ראשון (`money.ts` 21, `commerce/money.ts`
+20, `checkout/split.ts` 4, `commerce/commission.ts` 42,
+`vouchers/state-machine.ts` 22, `orders/state-machine.ts` 19, ושישה
+מתוך שבעת קובצי refund: `orders/refund.ts` 55, `refund-request.ts` 16,
+`actions/payments/refund.ts` 76, `payments/refund-record.ts` 14,
+`payments/refund-destination.ts` 4, `vouchers/expiry-refund.ts` 8,
+`supabase/rls-report-fetch.ts` 37). קובץ השביעי, `refund-wallet.ts`,
+נכלל בנתיב שגוי (`lib/payments/` במקום `server/payments/`) ולכן חסר
+במעבר הראשון; נבדק בנפרד ונמצא גם הוא **16/16 ענפים, 100%**. סה"כ
+**354/354 ענפים ב-100% על פני כל שש הקטגוריות**, זהה למדידת M10-c61.
+**אפס קוד שונה.** ארבעת השערים: `type-check` נקי, `lint` נקי (biome
+2028 קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index
+282), `test` הורץ פעמיים כחלק ממדידת הכיסוי, 610/610 קבצים, 7296/7308
+שתי הפעמים (12 דולגים). `build` לא הורץ מחדש: `.next/BUILD_ID` קיים
+(16:16, מ-M09-c62) ו-`git status --short` נקי לאורך כל הפריט — אין
+דריפט קוד שמצדיק build חוזר תחת זיכרון פנוי נמוך (~170MB, `vm_stat`).
+קובץ יחיד שונה: `STATE.md`.
+
+## M09-c62 (הועבר מ-STATE.md ב-M11-c62, לשמירה על תקרת 300 שורות)
+
+**M09-c62 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup:
+take the single highest-impact open item listed in STATE.md that a
+code agent can complete without Ofir. Implement it fully with tests.
+If none is left write STATE CLEAN in STATE.md and end this item."
+נבדקו שוב, בקריאה בלבד, שני המקורות: 13 הסעיפים ב-"חוסמים פתוחים" למטה
+וכל 15 הסעיפים ב-`docs/BACKLOG.md`. `git log 947553fa0..HEAD` (קצה
+M08-c62) ריק — אפס קומיט חדש מאז המדידה הקודמת, ולכן `git diff --stat`
+על אותם נתיבים (`docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/`) ריק גם הוא. שלושת
+המונים שהרשימה תלויה בהם נבדקו ישירות ואינם השתנו: `migrations/pending/*.sql`
+עדיין **59** קבצים, `git stash list` עדיין **32**,
+`supabase/catalogue-known-issues.json`'s `known` object עדיין **26**
+ממצאים. כל אחד מ-28 הסעיפים (13+15) דורש פעולה שרק אופיר מחזיק: DNS
+ברשם (פתור בפועל, לא פעולה פתוחה), משתני סביבה/סודות ב-Vercel, אישור
+והחלת מיגרציה על פרודקשן, הכרעה עסקית על שורות קטלוג כפולות, אישורי
+Cardcom אמיתיים, הפעלת R2 בדשבורד Cloudflare, `CRON_SECRET` ב-GitHub
+Secrets, `RESEND_API_KEY`, מספר ח.פ, ומחיקת stash (מחיקת נתונים דורשת
+אישור מפורש לפי חוק הפרויקט). **אין פריט אחד ששום כלל בפרויקט לא אוסר
+על סוכן קוד לבצע לבד** — זו הסיבה שהמחזור הקודם (M08-c62) ושנים-עשר
+המחזורים שקדמו לו הגיעו לאותה מסקנה תחת השם "BACKLOG EMPTY". אין שינוי
+קוד, אין שער חזותי נדרש (אין שינוי UI). ארבעת השערים הורצו במלואם:
+`type-check` נקי (`tsc --noEmit`, exit 0), `lint` נקי (biome 2028
+קבצים, 12 שערים כולם ירוקים, i18n 627/627, locale 116/64, docs-index
+282 מסמכים), `test` 610/610 קבצים, 7296/7308 (12 דולגים, 55.43s).
+`build` לא הורץ מחדש: `.next/BUILD_ID` קיים ומאומת source-identical
+ל-HEAD (`git diff --stat 8fd11aae4..HEAD -- next.config.ts
+next.config.js middleware.ts vercel.json src/ package.json` ריק — אותו
+build שהצליח ב-M07-c62), וזיכרון פנוי נמוך (~432MB, `vm_stat`) הפך
+build חוזר בלי שינוי קוד לסיכון מיותר. קובץ יחיד שונה מלבד `STATE.md`:
+`docs/STATE-ARCHIVE.md` (כיווץ M07-c62).
+
 ## M08-c62 (הועבר מ-STATE.md ב-M10-c62, לשמירה על תקרת 300 שורות)
 
 **M08-c62 - BACKLOG EMPTY (30.09): docs/BACKLOG.md נבדק מחדש מול
