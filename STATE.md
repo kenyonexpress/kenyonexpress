@@ -1,62 +1,51 @@
-RESUME FROM: M09-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c64)
+RESUME FROM: M10-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c64)
 
 ## המשך מ:
 
-**M08-c64 - BACKLOG EMPTY (30.09): `docs/BACKLOG.md` נבדק מחדש מול
-`git log 947553fa0..HEAD` (35 קומיטים), עדיין 15 פריטים, אותו סדר,
-אפס כפילות, אפס פריט Phase 1 חדש לתור.** משימת התור: לקחת את הפריט
-הכי-משפיע מ-Phase 1 הפתוח ב-`BACKLOG.md`, לדלג Phase 2/נדחה, לממש
-עם טסטים; אין פריט זמין — BACKLOG EMPTY.
+**M09-c64 - STATE CLEAN (30.09): אפס פריט שסוכן קוד יכול לסגור לבד
+נשאר ב-STATE.md.** משימת התור: לקחת את הפריט הכי-משפיע הפתוח
+ב-STATE.md שסוכן קוד יכול להשלים בלי אופיר, לממש עם טסטים; אם אין —
+STATE CLEAN.
 
-`git diff --stat` על הנתיבים הרלוונטיים (`BACKLOG.md`,
-`migrations/pending`, פנקס הקטלוג, `src/`, קונפיג, `package.json`,
-`pnpm-lock.yaml`) הראה רק שלושה דברים: הערות ה-re-check של קובץ זה,
-bump patch תלויות (M04-c63), ושורת דירוג הכוכבים (M18-c63, פיצ'ר תור
-קודם שכבר נשלח). ספירות ישירות זהות: מיגרציות ממתינות 59, stash 32,
-פנקס קטלוג 26, `dns-watch.sh` עדיין pid 957. מונה הקומיטים מאחורי
-`a388118f1` עודכן 263→274 (git בלבד). כל 15 הפריטים נשארים פעולות
-שההקדמה של `BACKLOG.md` שוללת מסוכן. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
+**בדיקה עצמאית, לא רק הפניה ל-M08-c64:** סעיף "חוסמים פתוחים" (13
+פריטים) ו-`docs/BACKLOG.md` "ידני לאופיר" (15 פריטים) הם אותה רשימה
+ממוזגת (M15-c51) — שניהם נבדקו ישירות. `git diff --stat
+947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+(מנקודת הבדיקה של M08-c64) מראה רק `docs/BACKLOG.md` עצמו (הערות
+re-check), `package.json`/`pnpm-lock.yaml` (bump תלויות ישן, M04-c63)
+ו-`src/components/ProductCard.tsx`/`src/lib/related-products.ts`
+(שורת דירוג הכוכבים, M18-c63 — פיצ'ר תור קודם שכבר נשלח) — אפס שורה
+חדשה בפנקס, אפס מיגרציה חדשה, אפס פריט Phase 1 חדש. ספירות נבדקו
+ישירות: `migrations/pending/*.sql` 59, `git stash list` 32, `known`
+בפנקס הקטלוג 26, `dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid
+999 — כולן זהות ל-M08-c64. מונה הקומיטים מאחורי `a388118f1` עודכן
+274→275 (git בלבד, לא נוסתה פריסה חוזרת). **כל 13 החוסמים וכל 15
+הפריטים ב-BACKLOG.md דורשים אופיר** (DNS/סודות/Vercel env, אישור
+פריסה/מיגרציה לפרודקשן, הכרעה עסקית על הקטלוג, מחיקת נתונים) — אף
+אחד אינו לביצוע אוטומטי. **STATE CLEAN.**
 
-קבצים ששונו: `docs/BACKLOG.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
-
-**M07-c64 - DONE (30.09): route audit נבדק מחדש, אפס כשל אמיתי — אבל
-ה-`.next` שהורש מ-M06-c64 היה תקול, תוקן ב-build מחדש, לא בקוד.**
-משימת התור: כל route, 200/הפניה מכוונת, אפס שגיאת קונסול, אפס אזהרת
-הידרציה, RTL נכון; לתקן מה שנכשל.
-
-**שימוש חוזר ב-`.next` הקיים (BUILD_ID `RYVbo7GPJh`, source-identical
-ל-HEAD) נכשל פעם אחת:** `anon /product/צימר-מאסטר` הדפיס
-`net::ERR_SSL_PROTOCOL_ERROR` על `https://localhost:3498/login?next=%2Faccount%2Fwishlist`
-(prefetch יחסי של `WishlistNavLink`, Chrome שידרג לסכמה https בגלל
-`upgrade-insecure-requests` שהיה נוכח ב-CSP). **זה הבאג שתוקן ב-M06-c1**
-(`upgradesInsecureRequests()`, `frame-policy.ts:168`, משמיט את הדירקטיבה
-כש-`NEXT_PUBLIC_APP_URL` מתחיל ב-`http://`; 3 הטסטים הייעודיים ירוקים,
-הפונקציה נכונה) — אבל `routes-manifest.json` הקיים כלל אותה בכל זאת,
-למרות ש-M06-c64 תיעד build מפורש עם `http://localhost:3498`. הפעלה
-מחדש של השרת עם אותו env מיוצא במפורש לא שינתה דבר (הכותרת נאפית
-ב-`next build`, לא נקראת מחדש ב-`next start`) — ה-build המקורי עצמו
-החזיק ערך שגוי, כנראה `.next/cache` (437MB) שלא הותאם נכון בין builds.
-
-**אימות: `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3498
-pnpm build` מחדש (BUILD_ID `HnUe0DU6CMCfEnQnItbYO`) משמיט את הדירקטיבה
-כצפוי** — מאשר קוד תקין, build קודם תקול. אירוע לוואי: בזמן ה-build
-פורט 3498 נתפס ע"י סשן מקביל אחר ([[parallel-claude-sessions]]); לא
-נעצר דבר בכוונה, curl אחרי אישר 200 בשני נתיבים. עברתי לפורט 3511.
-
-**route audit מלא מחדש, פורט 3511, ששת הפרקים: 242 שורות, 240 PASS +
-2 NO DATA, אפס `consoleErrors`, אפס `hydrationWarnings`, 168 דפי HTML
-כולם RTL `true`.** אין תיקון קוד — הכשל היה תוצר build מיושן, לא באג
-ייצור (בפרודקשן `NEXT_PUBLIC_APP_URL` הוא https תמיד). זיכרון חדש:
-build מקומי חוזר-שימוש אינו ראיה כש-CSP/סכימה תלויים ב-env; רק
-`rm -rf .next` מלא לפני build מאמת.
-
-**שערים, כולם בפורגראונד, על HEAD (אין שינוי קוד ייצור):** `type-check`
-נקי. `lint` נקי (12 שערים, זהה ל-M06-c64). `test` 610/610 קבצים,
-7296/7308 ירוקים (12 דולגים). `build` רץ בפועל (למעלה), exit נקי.
-`git status` נקי חוץ מ-`STATE.md`/`docs/STATE-ARCHIVE.md`.
+**שערים:** `type-check` נקי. `lint` נקי (12 שערים: biome 2028 קבצים,
+tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical
+נקיים, i18n 627/627, locale-format 116/116, input-dir 24/24, docs-index
+282 מסמכים, docs-path-audit 154 זהה). `test` 610/610 קבצים, 7296/7308
+ירוקים (12 דולגים) — זהה ל-M08-c64/M07-c64. `build` לא רץ מחדש: אפס
+שינוי ב-`src/` בפריט הזה (תיעוד בלבד), 10 תהליכי `next-server`/`pnpm
+start` מקבילים רצים כרגע עם כ-64MB RAM פנויים
+([[concurrent-worktree-builds-oom]]), ואין נתיב רלוונטי ל-build שהשתנה
+מאז האימות האחרון (M07-c64, על אותו HEAD).
 
 קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M08-c64..M07-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c64 לשמירה על תקרת 300 שורות).** M08-c64 — BACKLOG EMPTY,
+`docs/BACKLOG.md` נבדק מול `git log`, עדיין 15 פריטים, אפס חדש. M07-c64
+— route audit נבדק מחדש, אפס כשל אמיתי; ה-`.next` שהורש מ-M06-c64
+היה תקול (CSP `upgrade-insecure-requests` נאפה בטעות), תוקן ב-build
+מחדש עם `rm -rf .next`, לא בקוד — 242 שורות, 240 PASS + 2 NO DATA,
+אפס `consoleErrors`/`hydrationWarnings`. ארבעת השערים ירוקים בשניהם.
 
 **M06-c64..M01-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M08-c64 לשמירה על תקרת 300 שורות).** Lighthouse mobile (99/100/

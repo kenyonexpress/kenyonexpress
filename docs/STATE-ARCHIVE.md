@@ -2,6 +2,46 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c64 (פירוט מלא, כווץ ב-STATE.md ל-M09-c64 לשמירה על תקרת 300 שורות)
+
+**M07-c64 - DONE (30.09): route audit נבדק מחדש, אפס כשל אמיתי — אבל
+ה-`.next` שהורש מ-M06-c64 היה תקול, תוקן ב-build מחדש, לא בקוד.**
+משימת התור: כל route, 200/הפניה מכוונת, אפס שגיאת קונסול, אפס אזהרת
+הידרציה, RTL נכון; לתקן מה שנכשל.
+
+**שימוש חוזר ב-`.next` הקיים (BUILD_ID `RYVbo7GPJh`, source-identical
+ל-HEAD) נכשל פעם אחת:** `anon /product/צימר-מאסטר` הדפיס
+`net::ERR_SSL_PROTOCOL_ERROR` על `https://localhost:3498/login?next=%2Faccount%2Fwishlist`
+(prefetch יחסי של `WishlistNavLink`, Chrome שידרג לסכמה https בגלל
+`upgrade-insecure-requests` שהיה נוכח ב-CSP). **זה הבאג שתוקן ב-M06-c1**
+(`upgradesInsecureRequests()`, `frame-policy.ts:168`, משמיט את הדירקטיבה
+כש-`NEXT_PUBLIC_APP_URL` מתחיל ב-`http://`; 3 הטסטים הייעודיים ירוקים,
+הפונקציה נכונה) — אבל `routes-manifest.json` הקיים כלל אותה בכל זאת,
+למרות ש-M06-c64 תיעד build מפורש עם `http://localhost:3498`. הפעלה
+מחדש של השרת עם אותו env מיוצא במפורש לא שינתה דבר (הכותרת נאפית
+ב-`next build`, לא נקראת מחדש ב-`next start`) — ה-build המקורי עצמו
+החזיק ערך שגוי, כנראה `.next/cache` (437MB) שלא הותאם נכון בין builds.
+
+**אימות: `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3498
+pnpm build` מחדש (BUILD_ID `HnUe0DU6CMCfEnQnItbYO`) משמיט את הדירקטיבה
+כצפוי** — מאשר קוד תקין, build קודם תקול. אירוע לוואי: בזמן ה-build
+פורט 3498 נתפס ע"י סשן מקביל אחר ([[parallel-claude-sessions]]); לא
+נעצר דבר בכוונה, curl אחרי אישר 200 בשני נתיבים. עברתי לפורט 3511.
+
+**route audit מלא מחדש, פורט 3511, ששת הפרקים: 242 שורות, 240 PASS +
+2 NO DATA, אפס `consoleErrors`, אפס `hydrationWarnings`, 168 דפי HTML
+כולם RTL `true`.** אין תיקון קוד — הכשל היה תוצר build מיושן, לא באג
+ייצור (בפרודקשן `NEXT_PUBLIC_APP_URL` הוא https תמיד). זיכרון חדש:
+build מקומי חוזר-שימוש אינו ראיה כש-CSP/סכימה תלויים ב-env; רק
+`rm -rf .next` מלא לפני build מאמת.
+
+**שערים, כולם בפורגראונד, על HEAD (אין שינוי קוד ייצור):** `type-check`
+נקי. `lint` נקי (12 שערים, זהה ל-M06-c64). `test` 610/610 קבצים,
+7296/7308 ירוקים (12 דולגים). `build` רץ בפועל (למעלה), exit נקי.
+`git status` נקי חוץ מ-`STATE.md`/`docs/STATE-ARCHIVE.md`.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M08-c64 (פירוט מלא, כווץ ב-STATE.md ל-M09-c64 לשמירה על תקרת 300 שורות)
 
 **M08-c64 - BACKLOG EMPTY (30.09): re-checked `docs/BACKLOG.md` against
