@@ -1,50 +1,29 @@
-RESUME FROM: M02-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c60)
+RESUME FROM: M03-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c60)
 
 ## המשך מ:
 
-**M01-c60 - DONE (30.09): בדיקת פרודקשן בפעם השביעית, DNS/HTTP תקינים,
-פריסת HEAD עדיין חסומה באותה סיבה.** משימת התור: להריץ build+deploy
-לפרודקשן ב-Vercel, ואז `dig`+`curl` לשני הדומיינים; אם ה-DNS עדיין
-נכשל, לתעד תחת "DNS BLOCKER" ולסיים. **ה-DNS לא נכשל** (נמדד ישירות,
-לא הונח — ראו למטה), כך שאין "DNS BLOCKER" לכתוב; החסם בפועל הוא env
-חסר בפרויקט Vercel, לא DNS, וממשיך תחת חוסם 2 למטה.
+**M02-c60 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים, אפס
+רגרסיה, כל שש המדידות PASS מתחת ל-11%.** משימת התור: להריץ
+`scripts/compare.mjs` בפורגראונד ולחכות למספרים באותה הרצה, לתקן כל
+רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
 
-**הוחלט לא לנסות deploy חדש**, לפי כלל "goal שנתקע פעמיים — לדלג, לא
-לנסות שלישית": הפריסה נכשלה **בדיוק באותה סיבה** חמש פעמים ברציפות
-(M01-c1, M01-c52..M01-c55), ונבדק כאן **ישירות מול Vercel** שהתנאי לא
-השתנה מאז — ניסיון שישי היה חוזר על אותה שגיאה ובזבוז ריק. אסור לי
-בכל מקרה לשנות env של Vercel (חוק קבוע), אז אין דרך לתקן את הסיבה
-בעצמי:
-- `filter_project_envs` על `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`
-  (הפרויקט הנכון, לא `kenyonexpress-prod`): Production מחזיק
-  `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY` ו-
-  `ALLOW_INCOMPLETE_ENV`, **אך לא** `CARDCOM_TERMINAL_NUMBER`/
-  `CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`.
-- `grep` ב-`scripts/deploy-preflight.mjs` (שורות 26-28, 60) מאשר שהקוד
-  **עדיין** דורש בדיוק את שלוש השורות החסרות, ושדגל `ALLOW_INCOMPLETE_ENV`
-  עדיין מטופל כ-waiver ל-`next start` מקומי בלבד, לא לפריסה.
-- `list_deployments` (target=production, הפרויקט הנכון): חמש הפריסות
-  האחרונות **כולן `ERROR`**, והפריסה העליונה היא בדיוק
-  `dpl_FJYf483tkqSNf5pkG9MenghGQF46` על `291bc2d88` — אותה פריסה
-  שכבר תועדה ב-M01-c55, לא פריסה חדשה. מאשר: אף ניסיון נוסף לא נעשה
-  בין M01-c56 ל-M01-c59, בדיוק כפי שנרשם.
-
-**dig+curl (נמדד עכשיו, לא מה-cache של מחזורים קודמים):**
-```
-dig +short kenyonexpress.co.il A       -> 216.198.79.65 / 64.29.17.1
-dig +short www.kenyonexpress.co.il A   -> 64.29.17.1 / 64.29.17.65
-dig +short kenyonexpress.co.il NS      -> ns1.vercel-dns.com. / ns2.vercel-dns.com.
-curl -o /dev/null -w '%{http_code}' https://kenyonexpress.co.il      -> 308 -> https://www.kenyonexpress.co.il/
-curl -o /dev/null -w '%{http_code}' https://www.kenyonexpress.co.il  -> 200
-```
-גוף התגובה של `www` הוא האתר החי (`lang="he" dir="rtl"`, לוגו קניון
-EXPRESS, נכסי `_next/static` טריים) — לא עמוד שגיאה ולא דמה. פרודקשן
-עדיין מוגש מ-`a388118f1` (חוסם 2 למטה), 194 קומיטים מאחורי HEAD כרגע
-(`git rev-list --count a388118f1..HEAD`).
-
-שערים הורצו במלואם על שינוי תיעוד בלבד: `type-check` נקי, `lint` נקי,
-`test` נקי, `build` `exit 0`. אין שער חזותי נדרש (אפס שינוי UI/קוד).
+- `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+  localhost:3311 pnpm build` -> `exit 0`, בנייה טרייה על HEAD
+  `7a0133d3e`. `PORT=3311 pnpm start` מול הבנייה הזו (לא שרת ישן).
+- **בית** (`--widths=380,768,1440`, `--baseline='refs/ke_live_{width}.png'`,
+  בפורגראונד, חיכה למספרים באותה הרצה): **380 8.51% PASS, 768 9.02%
+  PASS, 1440 3.95% PASS** — זהה בדיוק ל-M02-c59.
+- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`, `--widths=380,768,1440`,
+  `--baseline='refs/electro_product_{width}.png'`, בפורגראונד): **380
+  5.65% PASS, 768 4.95% PASS, 1440 2.92% PASS** — זהה בדיוק ל-M02-c59.
+  אפס תיקון נדרש בשתי הבדיקות.
+- כל שש השורות נכתבות אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי
+  השער עצמו (`live side: frozen capture`, HEAD `7a0133d3e-dirty`).
+- שערים נוספים הורצו במלואם אחרי המדידה: `type-check` נקי, `lint` נקי
+  (2023 קבצים, i18n 627/627), `test` 608/608 קבצים 7274/7286 (12
+  skipped, 57.99s), `build` `exit 0` (מהריצה הטרייה למעלה). אפס שינוי
+  קוד יישומי (רק `STATE.md`/`docs/UI-PARITY-REPORT.md`).
 
 ## M18-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

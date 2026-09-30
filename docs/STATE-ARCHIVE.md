@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c60 (הועבר מ-STATE.md ב-M02-c60, לשמירה על תקרת 300 שורות)
+
+**M01-c60 - DONE (30.09): בדיקת פרודקשן בפעם השביעית, DNS/HTTP תקינים,
+פריסת HEAD עדיין חסומה באותה סיבה.** משימת התור: להריץ build+deploy
+לפרודקשן ב-Vercel, ואז `dig`+`curl` לשני הדומיינים; אם ה-DNS עדיין
+נכשל, לתעד תחת "DNS BLOCKER" ולסיים. **ה-DNS לא נכשל** (נמדד ישירות,
+לא הונח — ראו למטה), כך שאין "DNS BLOCKER" לכתוב; החסם בפועל הוא env
+חסר בפרויקט Vercel, לא DNS, וממשיך תחת חוסם 2 למטה.
+
+**הוחלט לא לנסות deploy חדש**, לפי כלל "goal שנתקע פעמיים — לדלג, לא
+לנסות שלישית": הפריסה נכשלה **בדיוק באותה סיבה** חמש פעמים ברציפות
+(M01-c1, M01-c52..M01-c55), ונבדק כאן **ישירות מול Vercel** שהתנאי לא
+השתנה מאז — ניסיון שישי היה חוזר על אותה שגיאה ובזבוז ריק. אסור לי
+בכל מקרה לשנות env של Vercel (חוק קבוע), אז אין דרך לתקן את הסיבה
+בעצמי:
+- `filter_project_envs` על `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`
+  (הפרויקט הנכון, לא `kenyonexpress-prod`): Production מחזיק
+  `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY` ו-
+  `ALLOW_INCOMPLETE_ENV`, **אך לא** `CARDCOM_TERMINAL_NUMBER`/
+  `CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`.
+- `grep` ב-`scripts/deploy-preflight.mjs` (שורות 26-28, 60) מאשר שהקוד
+  **עדיין** דורש בדיוק את שלוש השורות החסרות, ושדגל `ALLOW_INCOMPLETE_ENV`
+  עדיין מטופל כ-waiver ל-`next start` מקומי בלבד, לא לפריסה.
+- `list_deployments` (target=production, הפרויקט הנכון): חמש הפריסות
+  האחרונות **כולן `ERROR`**, והפריסה העליונה היא בדיוק
+  `dpl_FJYf483tkqSNf5pkG9MenghGQF46` על `291bc2d88` — אותה פריסה
+  שכבר תועדה ב-M01-c55, לא פריסה חדשה. מאשר: אף ניסיון נוסף לא נעשה
+  בין M01-c56 ל-M01-c59, בדיוק כפי שנרשם.
+
+**dig+curl (נמדד עכשיו, לא מה-cache של מחזורים קודמים):**
+```
+dig +short kenyonexpress.co.il A       -> 216.198.79.65 / 64.29.17.1
+dig +short www.kenyonexpress.co.il A   -> 64.29.17.1 / 64.29.17.65
+dig +short kenyonexpress.co.il NS      -> ns1.vercel-dns.com. / ns2.vercel-dns.com.
+curl -o /dev/null -w '%{http_code}' https://kenyonexpress.co.il      -> 308 -> https://www.kenyonexpress.co.il/
+curl -o /dev/null -w '%{http_code}' https://www.kenyonexpress.co.il  -> 200
+```
+גוף התגובה של `www` הוא האתר החי (`lang="he" dir="rtl"`, לוגו קניון
+EXPRESS, נכסי `_next/static` טריים) — לא עמוד שגיאה ולא דמה. פרודקשן
+עדיין מוגש מ-`a388118f1` (חוסם 2 למטה), 194 קומיטים מאחורי HEAD כרגע
+(`git rev-list --count a388118f1..HEAD`).
+
+שערים הורצו במלואם על שינוי תיעוד בלבד: `type-check` נקי, `lint` נקי,
+`test` נקי, `build` `exit 0`. אין שער חזותי נדרש (אפס שינוי UI/קוד).
+
 ## M15-c59 (הועבר מ-STATE.md ב-M01-c60, לשמירה על תקרת 300 שורות)
 
 M15-c59 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
