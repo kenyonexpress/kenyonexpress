@@ -2,6 +2,7 @@ import { superAdminMfaGate } from '@/lib/admin/mfa-gate'
 import { type AdminSection, canReadSection, canWriteSection } from '@/lib/admin/permissions'
 import { type UserRole, isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
 import { createClient } from '@/lib/supabase/server'
+import { isTrustedDevice } from '@/server/auth/trusted-device'
 import { redirect } from 'next/navigation'
 
 export { ROLE_LABELS, ROLE_ORDER, isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
@@ -42,6 +43,10 @@ async function enforceSuperAdminMfa(session: AdminSessionInfo): Promise<void> {
     level(data?.currentLevel),
     level(data?.nextLevel),
   )
+  // A device remembered at a previous verify (STEP 18, 30 days, bound to
+  // this user id) stands in for the challenge. It never stands in for
+  // enrolment: with no factor there was never a verify to remember.
+  if (decision === 'challenge' && (await isTrustedDevice(session.userId))) return
   if (decision !== 'ok') {
     redirect(`/admin-mfa?mode=${decision}`)
   }

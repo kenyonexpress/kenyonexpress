@@ -25,7 +25,7 @@ export const DEFAULT_CONTACT_EMAIL = 'info@kenyonexpress.co.il'
  * Takes `env` so it is testable without mutating `process.env`, matching the
  * shape `adminAlertRecipient` already used.
  */
-export function contactEmail(env: NodeJS.ProcessEnv = process.env): string {
+export function contactEmail(env: Partial<NodeJS.ProcessEnv> = process.env): string {
   const configured = env.CONTACT_TO?.trim()
   return configured && configured.length > 0 ? configured : DEFAULT_CONTACT_EMAIL
 }

@@ -43,6 +43,10 @@ class RedirectSignal extends Error {
 }
 
 vi.mock('@/lib/supabase/server', () => ({ createClient: async () => requestClient }))
+const isTrustedDevice = vi.fn(async (_userId: string) => false)
+vi.mock('@/server/auth/trusted-device', () => ({
+  isTrustedDevice: (userId: string) => isTrustedDevice(userId),
+}))
 vi.mock('next/navigation', () => ({
   redirect: (to: string) => {
     throw new RedirectSignal(to)
@@ -124,6 +128,17 @@ describe('requireAdminSession', () => {
 
     state.aal = { currentLevel: 'aal1', nextLevel: 'aal2' }
     expect(await redirectOf(requireAdminSession)).toBe('/admin-mfa?mode=challenge')
+
+    // A remembered device (STEP 18) stands in for the challenge only, and is
+    // asked about with this user's id.
+    isTrustedDevice.mockResolvedValueOnce(true)
+    state.aal = { currentLevel: 'aal1', nextLevel: 'aal2' }
+    expect(await requireAdminSession()).toEqual({ userId: USER, role: 'super_admin' })
+    expect(isTrustedDevice).toHaveBeenCalledWith(USER)
+    isTrustedDevice.mockResolvedValue(true)
+    state.aal = { currentLevel: 'aal1', nextLevel: 'aal1' }
+    expect(await redirectOf(requireAdminSession)).toBe('/admin-mfa?mode=enrol')
+    isTrustedDevice.mockResolvedValue(false)
 
     // An unrecognised level reads as no level: closed, not open.
     state.aal = { currentLevel: 'aal9', nextLevel: 'aal9' }

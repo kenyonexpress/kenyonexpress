@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'כניסה — KenyonExpress' }
  * carries the shell.
  */
 export default function LoginPage(props: {
-  searchParams: Promise<{ next?: string; error?: string; magic?: string }>
+  searchParams: Promise<{ next?: string; error?: string; magic?: string; reauth?: string }>
 }) {
   return (
     <Suspense fallback={null}>
@@ -25,13 +25,19 @@ export default function LoginPage(props: {
 async function LoginPageBody({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string; magic?: string }>
+  searchParams: Promise<{ next?: string; error?: string; magic?: string; reauth?: string }>
 }) {
-  const { next, error, magic } = await searchParams
+  const { next, error, magic, reauth } = await searchParams
   // Read on the server so the switch is one variable, not two that can
   // disagree: a NEXT_PUBLIC copy would be inlined at build time and would keep
   // showing the option after the provider was turned off.
   return (
-    <LoginForm next={next} callbackError={error} magic={magic} phoneEnabled={phoneAuthEnabled()} />
+    <LoginForm
+      next={next}
+      callbackError={error}
+      magic={magic}
+      reauth={reauth === '1'}
+      phoneEnabled={phoneAuthEnabled()}
+    />
   )
 }

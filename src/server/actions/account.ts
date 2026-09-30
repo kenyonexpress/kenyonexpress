@@ -1,5 +1,6 @@
 'use server'
 
+import { REAUTH_REQUIRED_MESSAGE } from '@/lib/auth/recent-auth'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import {
@@ -8,6 +9,7 @@ import {
   idSchema,
   profileDetailsSchema,
 } from '@/lib/validations/account'
+import { hasRecentAuth } from '@/server/auth/recent-auth'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -184,8 +186,12 @@ async function runDeletePaymentToken(
   const parsed = idSchema.safeParse({ id: formData.get('id') })
   if (!parsed.success) return { error: 'מזהה כרטיס לא תקין' }
 
-  // Enabled by the payment_tokens_owner_delete policy added in 052.
+  // Forced re-auth (STEP 18): a saved-card change needs a proof of presence
+  // inside the last ten minutes (lib/auth/recent-auth.ts), whatever the factor.
   const supabase = await createClient()
+  if (!(await hasRecentAuth(supabase))) return { error: REAUTH_REQUIRED_MESSAGE }
+
+  // Enabled by the payment_tokens_owner_delete policy added in 052.
   const { error } = await supabase.from('payment_tokens').delete().eq('id', parsed.data.id)
 
   if (error) return { error: 'מחיקת הכרטיס נכשלה' }
@@ -204,7 +210,11 @@ async function runSetDefaultPaymentToken(
   const parsed = idSchema.safeParse({ id: formData.get('id') })
   if (!parsed.success) return { error: 'מזהה כרטיס לא תקין' }
 
+  // Forced re-auth (STEP 18): a saved-card change needs a proof of presence
+  // inside the last ten minutes (lib/auth/recent-auth.ts), whatever the factor.
   const supabase = await createClient()
+  if (!(await hasRecentAuth(supabase))) return { error: REAUTH_REQUIRED_MESSAGE }
+
   await supabase.from('payment_tokens').update({ is_default: false }).eq('profile_id', userId)
 
   const { error } = await supabase

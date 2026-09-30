@@ -61,7 +61,11 @@ function fakeClient(name: string) {
 
 const getUser = vi.fn()
 const signOut = vi.fn()
-const requestClient = { ...fakeClient('request'), auth: { getUser, signOut } }
+const getAssurance = vi.fn()
+const requestClient = {
+  ...fakeClient('request'),
+  auth: { getUser, signOut, mfa: { getAuthenticatorAssuranceLevel: () => getAssurance() } },
+}
 const adminClient = fakeClient('admin')
 
 const revalidatePath = vi.fn()
@@ -127,6 +131,16 @@ beforeEach(() => {
   logError.mockReset()
   getUser.mockReset()
   getUser.mockResolvedValue({ data: { user: { id: USER } } })
+  getAssurance.mockResolvedValue({
+    data: {
+      currentLevel: 'aal1',
+      nextLevel: 'aal1',
+      currentAuthenticationMethods: [
+        { method: 'password', timestamp: Math.floor(Date.now() / 1000) - 60 },
+      ],
+    },
+    error: null,
+  })
   signOut.mockReset()
   signOut.mockResolvedValue({ error: null })
 })
@@ -301,6 +315,38 @@ describe('deletePaymentToken', () => {
     expect(await deletePaymentToken(null, form({ id: TOKEN }))).toEqual({
       error: 'מחיקת הכרטיס נכשלה',
     })
+  })
+})
+
+describe('forced re-auth for payment-method changes (STEP 18)', () => {
+  it('refuses both changes when the newest auth proof is older than ten minutes', async () => {
+    const stale = {
+      data: {
+        currentLevel: 'aal1',
+        nextLevel: 'aal1',
+        currentAuthenticationMethods: [
+          { method: 'password', timestamp: Math.floor(Date.now() / 1000) - 3600 },
+        ],
+      },
+      error: null,
+    }
+    getAssurance.mockResolvedValue(stale)
+    expect(await deletePaymentToken(null, form({ id: TOKEN }))).toEqual({
+      error: 'לאבטחתך, יש להתחבר מחדש לפני שינוי אמצעי תשלום',
+    })
+    expect(await setDefaultPaymentToken(null, form({ id: TOKEN }))).toEqual({
+      error: 'לאבטחתך, יש להתחבר מחדש לפני שינוי אמצעי תשלום',
+    })
+    expect(find('request:payment_tokens', 'delete')).toEqual([])
+    expect(find('request:payment_tokens', 'update')).toEqual([])
+  })
+
+  it('fails closed when the assurance read itself fails', async () => {
+    getAssurance.mockResolvedValue({ data: null, error: { message: 'boom' } })
+    expect(await deletePaymentToken(null, form({ id: TOKEN }))).toMatchObject({
+      error: expect.any(String),
+    })
+    expect(find('request:payment_tokens', 'delete')).toEqual([])
   })
 })
 

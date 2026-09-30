@@ -66,6 +66,11 @@ function tableStub(table: string) {
   return chain
 }
 
+const forwardMock = vi.hoisted(() => vi.fn())
+vi.mock('@/server/whatsapp/forward-to-owner', () => ({
+  forwardInboundToOwner: (...args: unknown[]) => forwardMock(...args),
+}))
+
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
     from: (table: string) => tableStub(table),
@@ -120,6 +125,7 @@ describe('whatsapp webhook', () => {
     rpcResult = { data: [], error: null }
     rpcCalls = []
     intentCheckRejectsNewValues = false
+    forwardMock.mockReset().mockResolvedValue({ whatsapp: 'sent', email: 'sent' })
     vi.stubEnv('TWILIO_ACCOUNT_SID', 'ACtest')
     vi.stubEnv('TWILIO_AUTH_TOKEN', AUTH_TOKEN)
     vi.stubEnv('TWILIO_WHATSAPP_FROM', '+14155238886')
@@ -297,5 +303,53 @@ describe('whatsapp webhook', () => {
     const response = await POST(twilioRequest(params))
     expect(response.status).toBe(200)
     expect(calls.whatsapp_inbound_messages).toBeUndefined()
+  })
+
+  describe('routing to the owner (STEP 17)', () => {
+    it('forwards a free-text message once the ticket is filed, with the phone, ticket and body', async () => {
+      const response = await POST(twilioRequest(INBOUND))
+      expect(response.status).toBe(200)
+      expect(forwardMock).toHaveBeenCalledTimes(1)
+      expect(forwardMock).toHaveBeenCalledWith({
+        phone: '972501234567',
+        ticketId: 'ticket-1111-2222',
+        body: INBOUND.Body,
+        intent: 'message',
+      })
+    })
+
+    it('forwards a refund request under its intent', async () => {
+      await POST(twilioRequest({ ...INBOUND, Body: 'זיכוי' }))
+      expect(forwardMock).toHaveBeenCalledWith(
+        expect.objectContaining({ intent: 'refund_request' }),
+      )
+    })
+
+    it('forwards a status question only when it had to become a ticket', async () => {
+      rpcResult = { data: [], error: null }
+      await POST(twilioRequest({ ...INBOUND, Body: 'סטטוס' }))
+      expect(forwardMock).not.toHaveBeenCalled()
+
+      rpcResult = { data: null, error: { message: 'function does not exist' } }
+      await POST(twilioRequest({ ...INBOUND, MessageSid: 'SM124', Body: 'סטטוס' }))
+      expect(forwardMock).toHaveBeenCalledWith(expect.objectContaining({ intent: 'order_status' }))
+    })
+
+    it('does not forward consent keywords, replays, or unsigned requests', async () => {
+      await POST(twilioRequest({ ...INBOUND, Body: 'הסר' }))
+      await POST(twilioRequest({ ...INBOUND, Body: 'הצטרפות' }))
+      seenRow = { message_sid: 'SM123' }
+      await POST(twilioRequest(INBOUND))
+      seenRow = null
+      await POST(twilioRequest(INBOUND, { signature: 'bad' }))
+      expect(forwardMock).not.toHaveBeenCalled()
+    })
+
+    it('a forwarding outcome of failed still answers the customer 200 with the ticket ack', async () => {
+      forwardMock.mockResolvedValue({ whatsapp: 'failed', email: 'failed' })
+      const response = await POST(twilioRequest(INBOUND))
+      expect(response.status).toBe(200)
+      expect(await response.text()).toContain(`${'TICKET-1'.slice(0, 0)}מספר פנייה`)
+    })
   })
 })

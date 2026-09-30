@@ -1,6 +1,7 @@
 'use client'
 
 import { cardLabel, expiryLabel, isCardExpired } from '@/lib/account/overview'
+import { REAUTH_REQUIRED_MESSAGE, reauthLoginHref } from '@/lib/auth/recent-auth'
 import type { AccountActionState } from '@/lib/validations/account'
 import { deletePaymentToken, setDefaultPaymentToken } from '@/server/actions/account'
 import type { AccountPaymentToken } from '@/server/queries/account'
@@ -14,6 +15,14 @@ function Feedback({ state }: { state: AccountActionState }) {
     return (
       <p className="account-alert account-alert--error" role="alert">
         {state.error}
+        {state.error === REAUTH_REQUIRED_MESSAGE && (
+          <>
+            {' '}
+            <a className="underline" href={reauthLoginHref('/account/tokens')}>
+              התחברות מחדש
+            </a>
+          </>
+        )}
       </p>
     )
   return <output className="account-alert account-alert--success">{state.success}</output>

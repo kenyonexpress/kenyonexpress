@@ -4,6 +4,7 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
+import { rememberDevice } from '@/server/auth/trusted-device'
 import { redirect } from 'next/navigation'
 
 /**
@@ -76,12 +77,10 @@ export async function startTotpEnrolment(): Promise<MfaEnrolState> {
  * Verifies a 6-digit code against a factor: the enrolment finish (factor was
  * unverified) and the login challenge (factor verified, session still aal1)
  * are the same ceremony to GoTrue. Success upgrades the session cookie to
- * aal2 and lands back in the panel.
+ * aal2. Null is success; the two callers decide what happens next (the panel
+ * gate redirects, the account page stays put).
  */
-async function runVerifyTotpCode(
-  _prev: MfaVerifyState,
-  formData: FormData,
-): Promise<MfaVerifyState> {
+async function challengeAndVerify(formData: FormData): Promise<MfaVerifyState> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -120,7 +119,103 @@ async function runVerifyTotpCode(
     return { error: BAD_CODE }
   }
 
+  // "Remember this device" (STEP 18): only after a verify that succeeded, and
+  // bound to this user id, for 30 days. Unticked leaves nothing behind.
+  if (formData.get('remember_device') === 'on') {
+    await rememberDevice(user.id)
+  }
+
+  return null
+}
+
+async function runVerifyTotpCode(
+  _prev: MfaVerifyState,
+  formData: FormData,
+): Promise<MfaVerifyState> {
+  const failed = await challengeAndVerify(formData)
+  if (failed) return failed
   redirect('/admin')
+}
+
+// ──────────────────────────────────────────────
+// Account page management (STEP 18): the three calls the security page used
+// to make from the browser client. With the session cookie HttpOnly
+// (lib/auth/session-cookie.ts) the browser client has no session to make
+// them with, so they are Server Actions on the request-scoped client.
+// ──────────────────────────────────────────────
+
+export type TotpFactor = {
+  id: string
+  status: 'verified' | 'unverified'
+  friendlyName: string | null
+}
+
+export type MfaManageState = { ok: true } | { error: string } | null
+
+async function runListTotpFactors(): Promise<TotpFactor[]> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase.auth.mfa.listFactors()
+  if (error || !data) {
+    log.warn('mfa.list_failed', { reason: error?.message ?? 'no data' })
+    return []
+  }
+  return (data.totp ?? []).map((factor) => ({
+    id: factor.id,
+    status: factor.status === 'verified' ? 'verified' : 'unverified',
+    friendlyName: factor.friendly_name ?? null,
+  }))
+}
+
+async function runFinishTotpEnrolment(
+  _prev: MfaManageState,
+  formData: FormData,
+): Promise<MfaManageState> {
+  const failed = await challengeAndVerify(formData)
+  return failed ?? { ok: true }
+}
+
+const UNENROL_FAILED = 'ההסרה נכשלה. ייתכן שנדרש אימות דו-שלבי בסשן הנוכחי (התחברו מחדש עם קוד).'
+
+async function runUnenrolTotpFactor(factorId: string): Promise<MfaManageState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: NOT_SIGNED_IN }
+
+  const allowed = await checkRateLimit(`mfa-unenrol:${user.id}`, 10, 3600)
+  if (!allowed) return { error: RATE_LIMITED }
+
+  // GoTrue only ever removes the caller's own factor, so the id is checked for
+  // shape, not ownership; a foreign id is a 404 from the provider, not a leak.
+  if (!/^[0-9a-f-]{36}$/i.test(factorId)) return { error: UNENROL_FAILED }
+
+  const { error } = await supabase.auth.mfa.unenroll({ factorId })
+  if (error) {
+    log.warn('mfa.unenrol_failed', { reason: error.message })
+    return { error: UNENROL_FAILED }
+  }
+  return { ok: true }
+}
+
+export async function listTotpFactors(): Promise<TotpFactor[]> {
+  return withActionContext('mfa.list_factors', () => runListTotpFactors())
+}
+
+export async function finishTotpEnrolment(
+  prev: MfaManageState,
+  formData: FormData,
+): Promise<MfaManageState> {
+  return withActionContext('mfa.enrol_finish', () => runFinishTotpEnrolment(prev, formData))
+}
+
+export async function unenrolTotpFactor(factorId: string): Promise<MfaManageState> {
+  return withActionContext('mfa.unenrol', () => runUnenrolTotpFactor(factorId))
 }
 
 export async function verifyTotpCode(

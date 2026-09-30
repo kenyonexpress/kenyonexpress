@@ -25,6 +25,8 @@ interface Props {
   next?: string
   callbackError?: string
   magic?: string
+  /** Forced re-auth (STEP 18): a saved-card change asked for a fresh proof. */
+  reauth?: boolean
   /**
    * Whether an SMS provider is actually wired into the Supabase project. False
    * hides the option entirely rather than showing a button that always fails:
@@ -33,7 +35,13 @@ interface Props {
   phoneEnabled?: boolean
 }
 
-export default function LoginForm({ next, callbackError, magic, phoneEnabled = false }: Props) {
+export default function LoginForm({
+  next,
+  callbackError,
+  magic,
+  reauth = false,
+  phoneEnabled = false,
+}: Props) {
   const [showMagic, setShowMagic] = useState(false)
   const [showPhone, setShowPhone] = useState(false)
 
@@ -66,6 +74,11 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       <h2 className="text-xl font-semibold mb-6">כניסה לחשבון</h2>
 
+      {reauth && (
+        <output className="mb-4 block text-sm text-amber-800 bg-amber-50 rounded-lg px-3 py-2">
+          לאבטחתך, שינוי אמצעי תשלום דורש התחברות מחדש. Face ID, טביעת אצבע או קישור למייל מספיקים.
+        </output>
+      )}
       {magic && !getSuccess(magicState) && (
         <div className="mb-4 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">
           בדקו את תיבת הדואר — שלחנו קישור כניסה
