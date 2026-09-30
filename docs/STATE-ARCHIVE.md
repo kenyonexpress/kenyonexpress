@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c64 (פירוט מלא, כווץ ב-STATE.md ל-M10-c64 לשמירה על תקרת 300 שורות)
+
+**M09-c64 - STATE CLEAN (30.09): אפס פריט שסוכן קוד יכול לסגור לבד
+נשאר ב-STATE.md.** משימת התור: לקחת את הפריט הכי-משפיע הפתוח
+ב-STATE.md שסוכן קוד יכול להשלים בלי אופיר, לממש עם טסטים; אם אין —
+STATE CLEAN.
+
+**בדיקה עצמאית, לא רק הפניה ל-M08-c64:** סעיף "חוסמים פתוחים" (13
+פריטים) ו-`docs/BACKLOG.md` "ידני לאופיר" (15 פריטים) הם אותה רשימה
+ממוזגת (M15-c51) — שניהם נבדקו ישירות. `git diff --stat
+947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+(מנקודת הבדיקה של M08-c64) מראה רק `docs/BACKLOG.md` עצמו (הערות
+re-check), `package.json`/`pnpm-lock.yaml` (bump תלויות ישן, M04-c63)
+ו-`src/components/ProductCard.tsx`/`src/lib/related-products.ts`
+(שורת דירוג הכוכבים, M18-c63 — פיצ'ר תור קודם שכבר נשלח) — אפס שורה
+חדשה בפנקס, אפס מיגרציה חדשה, אפס פריט Phase 1 חדש. ספירות נבדקו
+ישירות: `migrations/pending/*.sql` 59, `git stash list` 32, `known`
+בפנקס הקטלוג 26, `dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid
+999 — כולן זהות ל-M08-c64. מונה הקומיטים מאחורי `a388118f1` עודכן
+274→275 (git בלבד, לא נוסתה פריסה חוזרת). **כל 13 החוסמים וכל 15
+הפריטים ב-BACKLOG.md דורשים אופיר** (DNS/סודות/Vercel env, אישור
+פריסה/מיגרציה לפרודקשן, הכרעה עסקית על הקטלוג, מחיקת נתונים) — אף
+אחד אינו לביצוע אוטומטי. **STATE CLEAN.**
+
+**שערים:** `type-check` נקי. `lint` נקי (12 שערים: biome 2028 קבצים,
+tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical
+נקיים, i18n 627/627, locale-format 116/116, input-dir 24/24, docs-index
+282 מסמכים, docs-path-audit 154 זהה). `test` 610/610 קבצים, 7296/7308
+ירוקים (12 דולגים) — זהה ל-M08-c64/M07-c64. `build` לא רץ מחדש: אפס
+שינוי ב-`src/` בפריט הזה (תיעוד בלבד), 10 תהליכי `next-server`/`pnpm
+start` מקבילים רצים כרגע עם כ-64MB RAM פנויים
+([[concurrent-worktree-builds-oom]]), ואין נתיב רלוונטי ל-build שהשתנה
+מאז האימות האחרון (M07-c64, על אותו HEAD).
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M07-c64 (פירוט מלא, כווץ ב-STATE.md ל-M09-c64 לשמירה על תקרת 300 שורות)
 
 **M07-c64 - DONE (30.09): route audit נבדק מחדש, אפס כשל אמיתי — אבל

@@ -1,43 +1,53 @@
-RESUME FROM: M10-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c64)
+RESUME FROM: M11-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c64)
 
 ## המשך מ:
 
-**M09-c64 - STATE CLEAN (30.09): אפס פריט שסוכן קוד יכול לסגור לבד
-נשאר ב-STATE.md.** משימת התור: לקחת את הפריט הכי-משפיע הפתוח
-ב-STATE.md שסוכן קוד יכול להשלים בלי אופיר, לממש עם טסטים; אם אין —
-STATE CLEAN.
+**M10-c64 - DONE (30.09): כיסוי טסטים נבדק מחדש בפעם רביעית, שש
+הקטגוריות הקריטיות עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש.**
+משימת התור: "find the critical module with the lowest coverage among
+packages/money, payment split, voucher state machine, order state
+machine, refunds and RLS helpers. Add unit tests until branches are
+covered." זהה למילה למשימת M10-c61/M10-c62/M10-c63.
 
-**בדיקה עצמאית, לא רק הפניה ל-M08-c64:** סעיף "חוסמים פתוחים" (13
-פריטים) ו-`docs/BACKLOG.md` "ידני לאופיר" (15 פריטים) הם אותה רשימה
-ממוזגת (M15-c51) — שניהם נבדקו ישירות. `git diff --stat
-947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
-supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
-package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
-(מנקודת הבדיקה של M08-c64) מראה רק `docs/BACKLOG.md` עצמו (הערות
-re-check), `package.json`/`pnpm-lock.yaml` (bump תלויות ישן, M04-c63)
-ו-`src/components/ProductCard.tsx`/`src/lib/related-products.ts`
-(שורת דירוג הכוכבים, M18-c63 — פיצ'ר תור קודם שכבר נשלח) — אפס שורה
-חדשה בפנקס, אפס מיגרציה חדשה, אפס פריט Phase 1 חדש. ספירות נבדקו
-ישירות: `migrations/pending/*.sql` 59, `git stash list` 32, `known`
-בפנקס הקטלוג 26, `dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid
-999 — כולן זהות ל-M08-c64. מונה הקומיטים מאחורי `a388118f1` עודכן
-274→275 (git בלבד, לא נוסתה פריסה חוזרת). **כל 13 החוסמים וכל 15
-הפריטים ב-BACKLOG.md דורשים אופיר** (DNS/סודות/Vercel env, אישור
-פריסה/מיגרציה לפרודקשן, הכרעה עסקית על הקטלוג, מחיקת נתונים) — אף
-אחד אינו לביצוע אוטומטי. **STATE CLEAN.**
+**בדיקת דריפט קודם מדידה מחדש:** `git log c64f243d7..HEAD` (קצה
+M10-c63) ו-`git diff --stat` על `src/ vitest.config.ts package.json
+pnpm-lock.yaml` הראו רק `src/components/ProductCard.tsx` ו-
+`src/lib/related-products.ts` (שורת דירוג הכוכבים, M18-c63 — פיצ'ר
+תור קודם שכבר נשלח) — אף אחד מהם לא נוגע באחת משש הקטגוריות. אין
+`packages/` בריפו הזה (נבדק שוב); שם הקבוצה במשימה מתייחס למודול
+`money` עצמו, לא לתיקיית חבילה.
 
-**שערים:** `type-check` נקי. `lint` נקי (12 שערים: biome 2028 קבצים,
-tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical
-נקיים, i18n 627/627, locale-format 116/116, input-dir 24/24, docs-index
-282 מסמכים, docs-path-audit 154 זהה). `test` 610/610 קבצים, 7296/7308
-ירוקים (12 דולגים) — זהה ל-M08-c64/M07-c64. `build` לא רץ מחדש: אפס
-שינוי ב-`src/` בפריט הזה (תיעוד בלבד), 10 תהליכי `next-server`/`pnpm
-start` מקבילים רצים כרגע עם כ-64MB RAM פנויים
-([[concurrent-worktree-builds-oom]]), ואין נתיב רלוונטי ל-build שהשתנה
-מאז האימות האחרון (M07-c64, על אותו HEAD).
+הורצה מדידה ישירה בכל זאת (לא הוסתמך על "אפס דריפט" בלבד): נתיבי
+14 קבצי היעד אומתו אחד-אחד עם `test -f` (לא רק זכרון) — שני נתיבים
+מהמדידות הקודמות לא קיימים בפועל ותוקנו כאן: `refund-destination.ts`
+ו-`expiry-refund.ts` יושבים תחת `src/lib/payments/` ו-`src/lib/vouchers/`
+(לא `src/server/...` כפי שנרשם ב-M10-c62/M10-c63 — השם המקוצר הטעה,
+הקוד עצמו לא זז). `vitest run --coverage` עם `--coverage.include`
+נפרד לכל אחד מ-14 הקבצים המאומתים (`money.ts`, `commerce/money.ts`,
+`checkout/split.ts`, `commerce/commission.ts`,
+`vouchers/state-machine.ts`, `orders/state-machine.ts`,
+`orders/refund.ts`, `orders/refund-request.ts`,
+`actions/payments/refund.ts`, `payments/refund-record.ts`,
+`lib/payments/refund-destination.ts`, `lib/vouchers/expiry-refund.ts`,
+`supabase/rls-report-fetch.ts`, `payments/refund-wallet.ts`): **354/354
+ענפים, 470/470 statements, 98/98 functions, 406/406 lines — 100% על
+פני כל שש הקטגוריות**, זהה בדיוק ל-M10-c61/M10-c62/M10-c63. **אפס קוד
+שונה, אפס טסט חדש נדרש.**
+
+**שערים:** `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282,
+docs-path-audit 154). `test` רץ כחלק ממדידת הכיסוי, 610/610 קבצים,
+7296/7308 ירוקים (12 דולגים). `build` לא הורץ מחדש: אפס שינוי ב-`src/`
+בפריט הזה (תיעוד בלבד), ואין נתיב רלוונטי ל-build שהשתנה מאז האימות
+האחרון (M07-c64, על אותו HEAD).
 
 קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M09-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M10-c64 לשמירה על תקרת 300 שורות).** STATE CLEAN: 13 החוסמים הפתוחים
+ו-15 הפריטים ב-`docs/BACKLOG.md` נבדקו ישירות, אפס שורה חדשה, אפס
+פריט Phase 1 חדש — כולם דורשים אופיר. ארבעת השערים ירוקים.
 
 **M08-c64..M07-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M09-c64 לשמירה על תקרת 300 שורות).** M08-c64 — BACKLOG EMPTY,
