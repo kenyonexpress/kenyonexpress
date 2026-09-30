@@ -1,46 +1,50 @@
-RESUME FROM: M10-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c63)
+RESUME FROM: M11-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c63)
 
 ## המשך מ:
 
-**M09-c63 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup: take
-the single highest-impact open item listed in STATE.md that a code agent
-can complete without Ofir. Implement it fully with tests. If none is left
-write STATE CLEAN in STATE.md and end this item."
+**M10-c63 - DONE (30.09): כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
+עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש.** משימת התור: "find the
+critical module with the lowest coverage among packages/money, payment
+split, voucher state machine, order state machine, refunds and RLS
+helpers. Add unit tests until branches are covered." זהה למילה
+למשימת M10-c62/M10-c61. נבדק תחילה `git log 092fa0b9c..HEAD` (קצה
+M10-c62) על 14 קבצי היעד ועל `vitest.config.ts`/`package.json`/
+`pnpm-lock.yaml`: ריק. `git diff --stat` על `src/ vitest.config.ts
+package.json pnpm-lock.yaml` הראה רק שלושה קבצים — `package.json`,
+`pnpm-lock.yaml` (עדכון patch, M04-c63) ו-`src/components/ProductCard.tsx`
+(M18-c62, לב מועדפים) — אף אחד לא נוגע באחת משש הקטגוריות.
 
-נבדקו שוב, בקריאה בלבד, שני המקורות: 13 הסעיפים ב-"חוסמים פתוחים" למטה
-וכל 15 הסעיפים ב-`docs/BACKLOG.md`. `git log 947553fa0..HEAD` (קצה
-M08-c62, נקודת הבדיקה המלאה האחרונה של הרשימה) מראה רק תשעה-עשר קומיטים,
-כולם תיעוד/גייטים/עדכון patch/פיצ'ר לב-מועדפים שכבר נבדק כפריט תור קודם
-(M18-c62) — נבדק ישירות ב-M08-c63 עם `git diff --stat` על הנתיבים
-הרלוונטיים ולא נמצא בהם שום נגיעה בשורה חוסמת, במיגרציה ממתינה או בפנקס
-הקטלוג. מאז M08-c63 (הקומיט הקודם, `1f5d6c798`) ועד HEAD — אפס קומיט חדש.
+הורצה מדידה ישירה בכל זאת (לא הוסתמך על "אפס דריפט" בלבד), עם תיקון
+נתיב אחד בדרך: השמות המקוצרים בהיסטוריה (`orders/state-machine.ts`,
+`vouchers/state-machine.ts`) מצביעים בפועל על `src/server/domain/
+orders/state-machine.ts` ו-`src/server/domain/vouchers/state-machine.ts`
+(לא `src/lib/...` — נבדק ב-`find`, שני הנתיבים תחת `src/lib/` לא קיימים
+בכלל). `vitest run --coverage --coverage.include` על 14 קבצי היעד
+המדויקים (`money.ts`, `commerce/money.ts`, `checkout/split.ts`,
+`commerce/commission.ts`, `domain/vouchers/state-machine.ts`,
+`domain/orders/state-machine.ts`, `domain/orders/refund.ts`,
+`domain/orders/refund-request.ts`, `actions/payments/refund.ts`,
+`payments/refund-record.ts`, `lib/payments/refund-destination.ts`,
+`vouchers/expiry-refund.ts`, `supabase/rls-report-fetch.ts`,
+`payments/refund-wallet.ts`) נתן **354/354 ענפים, 100%** (וגם 100%
+statements/functions/lines, 470/470/98/98/406/406), זהה בדיוק ל-M10-c62
+ול-M10-c61. **אפס קוד שונה, אפס טסט חדש נדרש.**
 
-**שלושת המונים שהרשימה תלויה בהם נבדקו ישירות ואינם השתנו:**
-`migrations/pending/*.sql` עדיין **59** קבצים, `git stash list` עדיין
-**32**, `supabase/catalogue-known-issues.json`'s `known` object עדיין
-**26** ממצאים, `scripts/dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid
-999. כל אחד מ-28 הסעיפים (13+15) דורש פעולה שרק אופיר מחזיק: DNS ברשם
-(פתור בפועל, לא פעולה פתוחה), משתני סביבה/סודות ב-Vercel, אישור והחלת
-מיגרציה על פרודקשן, הכרעה עסקית על שורות קטלוג כפולות, אישורי Cardcom
-אמיתיים, הפעלת R2 בדשבורד Cloudflare, `CRON_SECRET` ב-GitHub Secrets,
-`RESEND_API_KEY`, מספר ח.פ, ומחיקת stash (מחיקת נתונים דורשת אישור
-מפורש לפי חוק הפרויקט). **אין פריט אחד ששום כלל בפרויקט לא אוסר על סוכן
-קוד לבצע לבד** — אותה מסקנה כמו M09-c62 ושנים-עשר המחזורים שקדמו לו.
-
-**אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).** ארבעת השערים
-הורצו במלואם בפורגראונד: `type-check` נקי (`tsc --noEmit`, exit 0).
-`lint` נקי (biome 2028 קבצים, 12 שערים כולם ירוקים, i18n 627/627,
-locale-format 116/64, docs-index 282, docs-path-audit 154). `test`
-610/610 קבצים, 7296/7308 ירוקים (12 דולגים), 63.45s. `build` לא הורץ
-מחדש: `.next/BUILD_ID` (`XdsrbdWehIKbus5S3FyAN`, נכתב 19:32, שלוש דקות
-לפני הבדיקה) מאומת source-identical ל-HEAD (`git diff --stat
-0428b4726..HEAD -- next.config.ts next.config.mjs next.config.js
-middleware.ts vercel.json src/ package.json pnpm-lock.yaml` ריק), וזיכרון
-פנוי נמוך (~68MB, `vm_stat`, סשן autopilot מקביל רץ על אותו ריפו) הפך
-build חוזר בלי שינוי קוד לסיכון מיותר.
+ארבעת השערים: `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282).
+`test` הורץ פעמיים כחלק ממדידת הכיסוי, 610/610 קבצים, 7296/7308 (12
+דולגים) שתי הפעמים. `build` לא הורץ מחדש: `.next/BUILD_ID`
+(`439952918`, נכתב 19:32) מאומת source-identical ל-HEAD (`git status
+--short` ריק לאורך כל הפריט, HEAD לא זז), וזיכרון פנוי נמוך (~65MB,
+`vm_stat`) הפך build חוזר בלי שינוי קוד לסיכון מיותר.
 
 קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M09-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M10-c63
+לשמירה על תקרת 300 שורות).** STATE CLEAN, שני המקורות (חוסמים פתוחים +
+BACKLOG.md) נבדקו מחדש, אפס פריט חדש שסוכן קוד יכול לבצע לבד. ארבעת
+השערים ירוקים, אפס שינוי קוד.
 
 **M08-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c63
 לשמירה על תקרת 300 שורות).** backlog נבדק מחדש מול `git log
