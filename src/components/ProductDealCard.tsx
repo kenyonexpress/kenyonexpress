@@ -85,7 +85,26 @@ function categoryHref(slug: string): string {
   return slug === LIVE_CATCH_ALL_CATEGORY ? '/products' : `/category/${slug}`
 }
 
-export default function ProductDealCard({ product }: { product: Product }) {
+/**
+ * `priority` marks the ONE card whose image is the phone's Largest Contentful
+ * Paint. The homepage hero carries no photograph at phone widths (the slide's
+ * mobile box paints the brand placeholder), so the first deal-card image is the
+ * largest raster in the 412x823 viewport. Measured 30.09.2026 on this build,
+ * Lighthouse mobile with devtools throttling (slow 4G, 4x CPU): that image
+ * was `loading="lazy"` with no fetch priority, so Chrome could not request it
+ * until layout, 1783ms of "resource load delay" after a 29ms TTFB, and LCP
+ * landed at 3.2s. `priority` turns it into an eager, `fetchpriority="high"`
+ * request with a head preload, discoverable before the stylesheet arrives.
+ * Every other card stays lazy: they are below the fold at every width and an
+ * eager offscreen raster only competes with the one that matters.
+ */
+export default function ProductDealCard({
+  product,
+  priority = false,
+}: {
+  product: Product
+  priority?: boolean
+}) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -154,6 +173,12 @@ export default function ProductDealCard({ product }: { product: Product }) {
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              // `priority` alone gives eager loading and a head preload; Next
+              // 16 does not add the fetch priority itself (get-img-props passes
+              // it through), and without it Chrome queues the request behind
+              // the script pile. Lighthouse's LCP checklist names both.
+              priority={priority}
+              fetchPriority={priority ? 'high' : undefined}
               // `.p_con__image` pins the height to 245px and leaves the width
               // auto, which is live's aspect. No inline style: see the note in
               // ProductCard.tsx - an inline `height:auto` beats the class and

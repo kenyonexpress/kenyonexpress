@@ -83,7 +83,14 @@ export default function SiteHeader() {
               // Two measured sizes, not one scaled guess: 100x26 in the
               // handheld header (x205 y141 at 380, x578 y66 at 768) and
               // 300x79 in the 1440 masthead (x1005 y53).
-              className="h-handheld-logo-h w-auto object-contain xl:h-logo-h"
+              // `aspect-[19/5]` is logo.webp's own 380x100. With the width
+              // left `auto`, Chrome sizes the box from the width/height
+              // attributes (300/79) until the bytes arrive and then from the
+              // file, and Lighthouse attributed the homepage's one layout
+              // shift to that re-measure ("media element lacking an explicit
+              // size"). A CSS aspect ratio wins over the intrinsic one, so
+              // the box is final before the first byte.
+              className="aspect-[19/5] h-handheld-logo-h w-auto object-contain xl:h-logo-h"
               fallbackClassName="h-handheld-logo-h w-handheld-logo-w rounded-md xl:h-logo-h xl:w-logo-w"
               priority
             />

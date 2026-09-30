@@ -30,9 +30,11 @@ export default async function DealsOfTheDay() {
       className="mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-deals-footer-gap md:px-deals-pad-md xl:px-0"
     >
       <div className="jet-listing-grid-deals bg-white">
-        {products.map((product) => (
+        {products.map((product, index) => (
           <div key={product.id} className="jet-listing-grid-deals__item">
-            <ProductDealCard product={product} />
+            {/* The first card's image is the phone LCP element; see the
+                `priority` note on ProductDealCard for the measurement. */}
+            <ProductDealCard product={product} priority={index === 0} />
           </div>
         ))}
       </div>
