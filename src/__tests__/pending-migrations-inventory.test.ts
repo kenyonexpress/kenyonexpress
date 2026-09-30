@@ -437,6 +437,12 @@ describe('the pending migration inventory', () => {
       // unauthenticated in the session that filed it).
       '250_referral_program_seed.sql',
       '251_voucher_fallback_code.sql',
+      // 252 is PENDING (2026-10-01, STEP 15 fulfilment board): widens 173's
+      // whatsapp_outbox kind CHECK with `order_shipped`, the message the
+      // board enqueues at ship time (no order status for "shipped" exists to
+      // trigger it). README carries the row; not yet dry-run on production
+      // (Supabase MCP unauthenticated in the session that filed it).
+      '252_whatsapp_outbox_order_shipped.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

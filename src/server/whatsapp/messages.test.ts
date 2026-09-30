@@ -28,9 +28,37 @@ describe('buildWhatsAppText', () => {
   })
 
   it('every notification carries the opt-out line', () => {
-    for (const kind of ['order_paid', 'order_fulfilled', 'order_cancelled', 'order_refunded']) {
+    for (const kind of [
+      'order_paid',
+      'order_fulfilled',
+      'order_cancelled',
+      'order_refunded',
+      'order_shipped',
+    ]) {
       expect(buildWhatsAppText(kind, PAYLOAD)).toContain('הסר')
     }
+  })
+
+  it('order_shipped names the carrier and tracking number of every line that has one', () => {
+    const text = buildWhatsAppText('order_shipped', {
+      ...PAYLOAD,
+      shipments: [
+        { carrier: 'חבילה פלוס', tracking_number: 'IL123456' },
+        { carrier: null, tracking_number: 'RR987' },
+        { carrier: 'דואר ישראל', tracking_number: null },
+      ],
+    })
+    expect(text).toContain('הזמנה ABCDEF12 יצאה לדרך.')
+    expect(text).toContain('חבילה פלוס: IL123456')
+    expect(text).toContain('מספר מעקב: RR987')
+    // A carrier with nothing to look up is not a line.
+    expect(text).not.toContain('דואר ישראל')
+  })
+
+  it('order_shipped without tracking is still a message', () => {
+    const text = buildWhatsAppText('order_shipped', PAYLOAD)
+    expect(text).toContain('יצאה לדרך')
+    expect(text).not.toContain('מספר מעקב')
   })
 
   it('order_refunded promises no date', () => {
@@ -54,7 +82,7 @@ describe('buildWhatsAppText', () => {
   })
 
   it('returns null for a kind it cannot render, so the drain can park the row', () => {
-    expect(buildWhatsAppText('order_shipped', PAYLOAD)).toBeNull()
+    expect(buildWhatsAppText('voucher_expiring', PAYLOAD)).toBeNull()
     expect(buildWhatsAppText('', PAYLOAD)).toBeNull()
   })
 

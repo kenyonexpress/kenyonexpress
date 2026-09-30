@@ -8,6 +8,7 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { canAdminOverride, effectsFor } from '@/server/domain/orders/order-transitions'
+import { cancelPendingOrderCore } from '@/server/orders/cancel-pending-order'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -26,7 +27,9 @@ const cancelSchema = z.object({
 // finalize, redemption). Manual moves go through the override policy in
 // order-transitions.ts; this dedicated cancel action predates it and keeps
 // the one-click pending -> cancelled path, with a mandatory reason and an
-// audit row. Refunds of paid orders belong to the refund console.
+// audit row. Refunds of paid orders belong to the refund console. The move
+// itself lives in server/orders/cancel-pending-order.ts, shared with the
+// fulfilment board's bulk cancel so the two cannot drift.
 async function runCancelPendingOrder(
   _: OrderActionState,
   formData: FormData,
@@ -47,73 +50,13 @@ async function runCancelPendingOrder(
   }
 
   const supabase = await createClient()
-  const { data: order } = await supabase
-    .from('orders')
-    .select('id, status, notes')
-    .eq('id', parsed.data.id)
-    .single()
-
-  if (!order) return { error: 'הזמנה לא נמצאה' }
-  if (order.status !== 'pending') {
-    return {
-      error:
-        order.status === 'paid'
-          ? 'הזמנה ששולמה אינה מבוטלת ידנית; החזר כספי מתבצע דרך מסלול ההחזרים'
-          : 'רק הזמנה בסטטוס ממתין ניתנת לביטול ידני',
-    }
-  }
-
-  const cancelNote = `ביטול אדמין: ${parsed.data.reason}`
-  const { error } = await supabase
-    .from('orders')
-    .update({
-      status: 'cancelled',
-      notes: order.notes ? `${order.notes}\n${cancelNote}` : cancelNote,
-    })
-    .eq('id', parsed.data.id)
-    .eq('status', 'pending')
-
-  if (error) return { error: error.message }
-
-  // Hand the stock back immediately rather than waiting for the hold to lapse.
-  // An expired reservation stops counting against availability on its own -
-  // `available_stock` filters on `expires_at` - but "on its own" can be up to
-  // fifteen minutes away, and a cancelled order is stock that is known free
-  // now. Best effort: a failure here costs a quarter of an hour of shelf space,
-  // not a cancellation.
-  const { error: releaseError } = await supabase.rpc('release_order_stock', {
-    p_order_id: parsed.data.id,
+  const result = await cancelPendingOrderCore({
+    supabase,
+    session,
+    orderId: parsed.data.id,
+    reason: parsed.data.reason,
   })
-  if (releaseError) {
-    log.warn('admin.order_cancel_stock_release_failed', {
-      orderId: parsed.data.id,
-      reason: releaseError.message,
-    })
-  }
-
-  // The discount claim goes back with the stock, for the same reason and with
-  // the same best-effort stance: the sweep frees it at expires_at anyway, this
-  // just does it now. release_order_discount hands the use back on both
-  // counters (discount_campaigns and coupons) via released_at.
-  const { error: discountReleaseError } = await supabase.rpc('release_order_discount', {
-    p_order_id: parsed.data.id,
-  })
-  if (discountReleaseError) {
-    log.warn('admin.order_cancel_discount_release_failed', {
-      orderId: parsed.data.id,
-      reason: discountReleaseError.message,
-    })
-  }
-
-  await writeAuditLog({
-    actorId: session.userId,
-    actorRole: session.role,
-    action: 'status_change',
-    entityType: 'orders',
-    entityId: parsed.data.id,
-    changes: { status: { from: 'pending', to: 'cancelled' } },
-    metadata: { reason: parsed.data.reason },
-  })
+  if (!result.ok) return { error: result.error }
 
   revalidatePath('/admin/orders')
   revalidatePath(`/admin/orders/${parsed.data.id}`)

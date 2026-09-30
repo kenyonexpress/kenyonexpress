@@ -2,12 +2,14 @@ import FilterBar from '@/components/admin/FilterBar'
 import ServerDataTable, { type ServerColumn } from '@/components/admin/ServerDataTable'
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import TablePagination from '@/components/admin/TablePagination'
+import OrdersBoard from '@/components/admin/orders/OrdersBoard'
 import { ORDER_STATUS_LABELS } from '@/lib/admin/labels'
 import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
 import { requireSection } from '@/lib/admin/rbac'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
+import { BOARD_LIMIT, loadBoardOrders } from '@/server/queries/fulfillment-board'
 import type { OrderStatus } from '@/types/database'
 import Link from 'next/link'
 import { z } from 'zod'
@@ -17,6 +19,8 @@ export const metadata = { title: 'הזמנות' }
 const ORDER_STATUSES = Object.keys(ORDER_STATUS_LABELS) as OrderStatus[]
 
 const paramsSchema = baseListParamsSchema.extend({
+  // The board is the default (STEP 15); `view=table` keeps the paginated list.
+  view: z.enum(['board', 'table']).catch('board'),
   status: z.enum(ORDER_STATUSES as [OrderStatus, ...OrderStatus[]]).optional(),
   from: z
     .string()
@@ -61,6 +65,12 @@ export default async function AdminOrdersPage(props: {
   const { from: rangeFrom, to: rangeTo } = listRange(params)
 
   const supabase = await createClient()
+
+  if (params.view === 'board') {
+    return (
+      <BoardView supabase={supabase} params={{ q: params.q, from: params.from, to: params.to }} />
+    )
+  }
 
   // Free-text search covers invoice number directly; customer name/email
   // resolves through profiles first (orders.user_id -> auth.users, so no
@@ -121,6 +131,7 @@ export default async function AdminOrdersPage(props: {
   })
 
   const urlParams = {
+    view: 'table',
     q: params.q,
     status: params.status,
     from: params.from,
@@ -174,13 +185,13 @@ export default async function AdminOrdersPage(props: {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">הזמנות</h1>
+      <Heading view="table" />
 
       <div className="flex flex-wrap items-center gap-2">
         {[undefined, ...ORDER_STATUSES].map((status) => (
           <Link
             key={status ?? 'all'}
-            href={status ? `/admin/orders?status=${status}` : '/admin/orders'}
+            href={status ? `/admin/orders?view=table&status=${status}` : '/admin/orders?view=table'}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               params.status === status || (!params.status && !status)
                 ? 'bg-brand text-brand-dark'
@@ -196,7 +207,7 @@ export default async function AdminOrdersPage(props: {
         basePath="/admin/orders"
         searchPlaceholder="חיפוש לפי מס׳ הזמנה, שם או אימייל..."
         defaultQuery={params.q}
-        preserve={{ status: params.status, per: params.per }}
+        preserve={{ view: 'table', status: params.status, per: params.per }}
       >
         <input
           name="from"
@@ -235,6 +246,106 @@ export default async function AdminOrdersPage(props: {
             perPage={params.per}
             total={count ?? 0}
           />
+        </>
+      )}
+    </div>
+  )
+}
+
+/**
+ * The title and the two-way switch between the board and the list. Both
+ * views share the page so `/admin/orders` stays the one address the sidebar
+ * and every "back to orders" link know.
+ */
+function Heading({ view }: { view: 'board' | 'table' }) {
+  const tab = (active: boolean) =>
+    `rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+      active
+        ? 'bg-brand text-brand-dark'
+        : 'border border-gray-200 bg-white text-gray-600 hover:border-brand hover:text-brand'
+    }`
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <h1 className="text-xl font-bold text-gray-900">הזמנות</h1>
+      <nav aria-label="תצוגה" className="flex items-center gap-2">
+        <Link
+          href="/admin/orders"
+          className={tab(view === 'board')}
+          aria-current={view === 'board' ? 'page' : undefined}
+        >
+          לוח אספקה
+        </Link>
+        <Link
+          href="/admin/orders?view=table"
+          className={tab(view === 'table')}
+          aria-current={view === 'table' ? 'page' : undefined}
+        >
+          רשימה
+        </Link>
+      </nav>
+    </div>
+  )
+}
+
+/**
+ * The fulfilment board (STEP 15). The newest BOARD_LIMIT orders that match
+ * the search and the date range, laned by `laneFor`; the lane filter is a
+ * client concern (the columns ARE the filter), so it is not a URL param here.
+ * The CSV link carries the same three filters so the file is the board.
+ */
+async function BoardView({
+  supabase,
+  params,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  params: { q?: string; from?: string; to?: string }
+}) {
+  const result = await loadBoardOrders(supabase, params)
+
+  const exportQuery = new URLSearchParams()
+  if (params.q) exportQuery.set('q', params.q)
+  if (params.from) exportQuery.set('from', params.from)
+  if (params.to) exportQuery.set('to', params.to)
+  const exportHref = `/api/admin/orders/export${exportQuery.size > 0 ? `?${exportQuery}` : ''}`
+
+  return (
+    <div className="space-y-4">
+      <Heading view="board" />
+
+      <FilterBar
+        basePath="/admin/orders"
+        searchPlaceholder="חיפוש לפי מס׳ הזמנה, שם או אימייל..."
+        defaultQuery={params.q}
+      >
+        <input
+          name="from"
+          type="date"
+          defaultValue={params.from ?? ''}
+          className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
+          aria-label="מתאריך"
+        />
+        <input
+          name="to"
+          type="date"
+          defaultValue={params.to ?? ''}
+          className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
+          aria-label="עד תאריך"
+        />
+      </FilterBar>
+
+      {result.error ? (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          שגיאה בטעינת הזמנות: {result.error}
+        </p>
+      ) : (
+        <>
+          {result.orders.length >= BOARD_LIMIT ? (
+            <p className="text-xs text-black/50">
+              הלוח מציג את {BOARD_LIMIT} ההזמנות האחרונות. לצמצום: חיפוש או טווח תאריכים; הרשימה
+              מדפדפת על הכול.
+            </p>
+          ) : null}
+          <OrdersBoard orders={result.orders} exportHref={exportHref} />
         </>
       )}
     </div>

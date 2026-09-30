@@ -1,5 +1,22 @@
 # `migrations/pending/`
 
+## 2026-10-01: 252 PENDING (WhatsApp `order_shipped` kind, STEP 15)
+
+`252_whatsapp_outbox_order_shipped.sql` widens `whatsapp_outbox_kind_check`
+(173's inline CHECK on `kind`) with `order_shipped`. Nothing else: no trigger,
+no grant, no policy. The writer is the fulfilment board
+(`src/server/actions/admin/fulfillment.ts`): on this schema "shipped" is a
+line fact (`order_items.item_status`), not an order status, so no trigger can
+fire it, and the board enqueues the message at ship time through the consent
+gate `fn_enqueue_whatsapp` with dedupe `wa:order_shipped:<order_id>` and a
+`shipments` payload (carrier + tracking per line, the 196 email shape). Until
+applied the INSERT inside the function raises 23514; the action catches it,
+logs `fulfillment.whatsapp_kind_not_accepted`, and the email still goes. The
+renderer (`buildWhatsAppText`) already knows the kind. Idempotent (DROP IF
+EXISTS + ADD); existing rows all carry an old kind, so no NOT VALID step.
+Rollback in the file header. Not yet dry-run on production (Supabase MCP
+unauthenticated in the session that filed it).
+
 ## 2026-10-01: 251 PENDING (8-digit voucher fallback code, STEP 14)
 
 `251_voucher_fallback_code.sql` adds `vouchers.fallback_code`: one nullable

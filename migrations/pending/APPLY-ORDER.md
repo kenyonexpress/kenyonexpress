@@ -1,5 +1,15 @@
 # Apply order
 
+## 2026-10-01 (STEP 15): 252 WRITTEN, NOT DRY-RUN, NOT APPLIED
+
+`252_whatsapp_outbox_order_shipped.sql` is one CHECK widened on
+`whatsapp_outbox.kind` (adds `order_shipped`). Applies in any order after 173
+(applied); no other precondition. Zero-risk to existing rows: every row carries
+one of the four old kinds. Not dry-run: the Supabase MCP was unauthenticated in
+the session that filed it. Until applied the board's WhatsApp leg logs
+`fulfillment.whatsapp_kind_not_accepted` per shipped order and the email leg is
+unaffected.
+
 ## 2026-09-17 (PERFORMANCE goal): 240 AND 241 WRITTEN, BOTH DRY-RUN ON PRODUCTION, NEITHER APPLIED
 
 Both files ran in full inside a `DO` block that ends in `RAISE EXCEPTION`,
