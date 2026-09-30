@@ -1,7 +1,36 @@
-RESUME FROM: M10-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c62)
+RESUME FROM: M11-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c62)
 
 ## המשך מ:
+
+**M10-c62 - DONE (30.09): כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
+עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש.** משימת התור: "find the
+critical module with the lowest coverage among packages/money, payment
+split, voucher state machine, order state machine, refunds and RLS
+helpers. Add unit tests until branches are covered." זהה למילה למשימת
+M10-c61 (`e54734eee`); נבדק תחילה `git diff --stat e54734eee..HEAD --
+src/ vitest.config.ts package.json pnpm-lock.yaml` — חמישה קבצים שונו
+ושייכים כולם לתכונת `RecentlyViewedRail` (M18-c61: PDP, קומפוננטה,
+אחסון אורח, action), אף אחד לא נוגע באחת משש הקטגוריות. הורצה מדידה
+ישירה בכל זאת (לא הוסתמך על "אפס דריפט" בלבד): `vitest run --coverage`
+עם `--coverage.include` נפרד לכל אחד מ-14 הקבצים של שש הקטגוריות.
+תוצאה: **338/338 ענפים** במעבר ראשון (`money.ts` 21, `commerce/money.ts`
+20, `checkout/split.ts` 4, `commerce/commission.ts` 42,
+`vouchers/state-machine.ts` 22, `orders/state-machine.ts` 19, ושישה
+מתוך שבעת קובצי refund: `orders/refund.ts` 55, `refund-request.ts` 16,
+`actions/payments/refund.ts` 76, `payments/refund-record.ts` 14,
+`payments/refund-destination.ts` 4, `vouchers/expiry-refund.ts` 8,
+`supabase/rls-report-fetch.ts` 37). קובץ השביעי, `refund-wallet.ts`,
+נכלל בנתיב שגוי (`lib/payments/` במקום `server/payments/`) ולכן חסר
+במעבר הראשון; נבדק בנפרד ונמצא גם הוא **16/16 ענפים, 100%**. סה"כ
+**354/354 ענפים ב-100% על פני כל שש הקטגוריות**, זהה למדידת M10-c61.
+**אפס קוד שונה.** ארבעת השערים: `type-check` נקי, `lint` נקי (biome
+2028 קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index
+282), `test` הורץ פעמיים כחלק ממדידת הכיסוי, 610/610 קבצים, 7296/7308
+שתי הפעמים (12 דולגים). `build` לא הורץ מחדש: `.next/BUILD_ID` קיים
+(16:16, מ-M09-c62) ו-`git status --short` נקי לאורך כל הפריט — אין
+דריפט קוד שמצדיק build חוזר תחת זיכרון פנוי נמוך (~170MB, `vm_stat`).
+קובץ יחיד שונה: `STATE.md`.
 
 **M09-c62 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup:
 take the single highest-impact open item listed in STATE.md that a
@@ -35,28 +64,9 @@ build שהצליח ב-M07-c62), וזיכרון פנוי נמוך (~432MB, `vm_st
 build חוזר בלי שינוי קוד לסיכון מיותר. קובץ יחיד שונה מלבד `STATE.md`:
 `docs/STATE-ARCHIVE.md` (כיווץ M07-c62).
 
-**M08-c62 - BACKLOG EMPTY (30.09): docs/BACKLOG.md נבדק מחדש מול
-`git log 2bb473ad4..HEAD`, עדיין 15 פריטים, אותו סדר, אפס כפילות, אפס
-פריט חדש.** תשעה-עשר קומיטים נחתו מאז נקודת הבדיקה של M08-c61
-(M09-c61..M18-c61, M01-c62..M07-c62); `git diff --stat` על הנתיבים
-הרלוונטיים (`docs/BACKLOG.md migrations/pending
-supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
-package.json pnpm-lock.yaml vercel.json supabase/`) הראה רק שני דברים:
-הערות הבדיקה החוזרת של הקובץ עצמו (M15-c61), ותכונת `RecentlyViewedRail`
-(M18-c61, PDP בלבד) — פריט phase 1 ממחזור קודם בתור, כבר הושלם, ואינו
-שורה ב-`BACKLOG.md`. ספירות נבדקו ישירות: `migrations/pending/*.sql` 59,
-`git stash list` 32, `known` ב-`catalogue-known-issues.json` 26,
-`dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid 999 — הכל זהה ל-M08-c61.
-כל 15 הפריטים נשארים פעולות שהקובץ עצמו אוסר על סוכן לבצע לבד (DNS, סודות/
-env של Vercel, אישור פריסה/מיגרציה לפרודקשן, החלטה עסקית על הקטלוג,
-מחיקת דאטה). **אין פריט phase 1 זמין למשימת התור הזו.** קובץ יחיד שונה
-מלבד `STATE.md`: `docs/BACKLOG.md` (הערת הבדיקה החוזרת בלבד),
-`docs/STATE-ARCHIVE.md` (כיווץ M03-c62/M02-c62). `type-check` נקי,
-`lint` נקי (12 שערים, i18n 627/627, locale 116/64, `docs-index-gate`
-282 מסמכים כולם רשומים), `test` 610/610 קבצים, 7296/7308 (56.54s).
-`build` לא הורץ מחדש — אפס שינוי ל-`src/`/`package.json`/config, וזיכרון
-פנוי נמוך (~115MB, `vm_stat`) הפך הרצת build מיותרת לסיכון OOM על עבודת
-תהליכים מקבילים.
+**M08-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M10-c62 לשמירה על תקרת 300 שורות).** docs/BACKLOG.md נבדק מחדש, עדיין
+15 פריטים, אפס פריט חדש, אין phase 1 זמין למשימת התור.
 
 **M07-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c62
 לשמירה על תקרת 300 שורות).** route audit הורץ מחדש במלואו, 241 שורות,

@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c62 (הועבר מ-STATE.md ב-M10-c62, לשמירה על תקרת 300 שורות)
+
+**M08-c62 - BACKLOG EMPTY (30.09): docs/BACKLOG.md נבדק מחדש מול
+`git log 2bb473ad4..HEAD`, עדיין 15 פריטים, אותו סדר, אפס כפילות, אפס
+פריט חדש.** תשעה-עשר קומיטים נחתו מאז נקודת הבדיקה של M08-c61
+(M09-c61..M18-c61, M01-c62..M07-c62); `git diff --stat` על הנתיבים
+הרלוונטיים (`docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/`) הראה רק שני דברים:
+הערות הבדיקה החוזרת של הקובץ עצמו (M15-c61), ותכונת `RecentlyViewedRail`
+(M18-c61, PDP בלבד) — פריט phase 1 ממחזור קודם בתור, כבר הושלם, ואינו
+שורה ב-`BACKLOG.md`. ספירות נבדקו ישירות: `migrations/pending/*.sql` 59,
+`git stash list` 32, `known` ב-`catalogue-known-issues.json` 26,
+`dns-watch.sh` עדיין pid 957 תחת `caffeinate` pid 999 — הכל זהה ל-M08-c61.
+כל 15 הפריטים נשארים פעולות שהקובץ עצמו אוסר על סוכן לבצע לבד (DNS, סודות/
+env של Vercel, אישור פריסה/מיגרציה לפרודקשן, החלטה עסקית על הקטלוג,
+מחיקת דאטה). **אין פריט phase 1 זמין למשימת התור הזו.** קובץ יחיד שונה
+מלבד `STATE.md`: `docs/BACKLOG.md` (הערת הבדיקה החוזרת בלבד),
+`docs/STATE-ARCHIVE.md` (כיווץ M03-c62/M02-c62). `type-check` נקי,
+`lint` נקי (12 שערים, i18n 627/627, locale 116/64, `docs-index-gate`
+282 מסמכים כולם רשומים), `test` 610/610 קבצים, 7296/7308 (56.54s).
+`build` לא הורץ מחדש — אפס שינוי ל-`src/`/`package.json`/config, וזיכרון
+פנוי נמוך (~115MB, `vm_stat`) הפך הרצת build מיותרת לסיכון OOM על עבודת
+תהליכים מקבילים.
+
 ## M07-c62 (הועבר מ-STATE.md ב-M09-c62, לשמירה על תקרת 300 שורות)
 
 **M07-c62 - DONE (30.09): route audit הורץ מחדש במלואו, 241 שורות, אפס
