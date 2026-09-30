@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c64 (הועבר מ-STATE.md ב-M01-c65, לשמירה על תקרת 300 שורות)
+
+**M18-c64 - DONE (01.10): אפס-פעילות אומת ישירות מ-git על כל המחזור**
+(`git diff --stat 00587d376..HEAD -- src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ migrations/` על 17
+קומיטי M01-c64..M17-c64 מחזיר ריק) - **נרשם MAINTENANCE IDLE**, ואז
+שופר המרה אמיתי אחד.
+
+**השיפור: שורת דירוג הכוכבים של M18-c63 (רצועת "מומלצים" בדף המוצר)
+מורחבת לרצועות ה-CMS של דף הבית** (`product_rail`/`category_spotlight`/
+`supplier_spotlight`, `lib/homepage/rails.ts` דרך `ProductRail.tsx`) -
+אותו `.product-rating` שכבר תועד מול `refs/ke_live_product.html`.
+**לא נגעתי ב-`DealsOfTheDay`** (ברירת המחדל, בייט-לבייט מול live,
+בלי שורת דירוג שם). כמו ברצועת המוצר, לא תרונדר עד שמיגרציה 247
+תאושר (`anon` בלי SELECT על `reviews`, חוסם #11, לא פעולת הסוכן).
+
+**מוצתה לוגיקה משותפת** מ-`lib/related-products.ts` למודול חדש
+`lib/reviews/rating-summaries.ts` (שלישית שהייתה מוכפלת, אחרי
+`product-detail.ts`); שני הקוראים מייבאים ממנו. `RailProduct` קיבל
+`ratingSummary` אופציונלי; ארבע פונקציות הרצועה עוברות `withRatings`
+על השורות הסופיות בלבד, לא על מאגר ה-300 - כמו ב-`related-products.ts`.
+קבצים: `lib/reviews/rating-summaries.ts` (חדש), `related-products.ts`,
+`homepage/rails.ts`, `home/ProductRail.tsx` (+ טסט), `ProductCard.tsx`
+(תיעוד), `STATE.md`.
+
+**השערים, כולל build מלא כנדרש בפריט הזה**: `type-check`/`lint` נקיים
+(12 שערים). `test` 610/610 קבצים, 7298/7310 (+2 מעל בסיס M17-c64).
+`pnpm build` אחרי `rm -rf .next`, ללא שגיאה. **שער חזותי בחזית, שני
+הדפים, שלושת הרוחבים, נמדד בתוך הריצה הזו** על שרת חדש על port 39411
+(3311/3312 תפוסים ע"י תהליכים אחרים שהבעלים שלהם לא אומת): בית
+`8.51/9.02/3.95%` PASS זהה לבסיס (צפוי - CMS ריק בפרודקשן). מוצר מול
+`refs/ke_live_product_{380,768,1440}.png`: `2.69/1.29/0.14%` PASS
+זהה ל-`ef8641f05` (דף המוצר לא נגע כלל).
+
 ## M17-c64 (הועבר מ-STATE.md ב-M18-c64, לשמירה על תקרת 300 שורות)
 
 **M17-c64 - DONE (01.10): קופי ומשפטי אומתו מחדש בפעם השתים-עשרה,

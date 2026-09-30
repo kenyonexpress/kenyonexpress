@@ -1,39 +1,49 @@
-RESUME FROM: M01-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c64)
+RESUME FROM: M02-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c65)
 
 ## המשך מ:
 
-**M18-c64 - DONE (01.10): אפס-פעילות אומת ישירות מ-git על כל המחזור**
-(`git diff --stat 00587d376..HEAD -- src/ next.config.ts next.config.mjs
-package.json pnpm-lock.yaml vercel.json supabase/ migrations/` על 17
-קומיטי M01-c64..M17-c64 מחזיר ריק) - **נרשם MAINTENANCE IDLE**, ואז
-שופר המרה אמיתי אחד.
+**M01-c65: BLOCKED (01.10), נבדק מחדש, build/deploy חדש לא הופעל
+(פעם אחת-עשרה).** משימת התור: build+deploy פרודקשן חדש דרך Vercel,
+ואז dig+curl על שני הדומיינים, תיעוד DNS BLOCKER אם ה-DNS נכשל.
 
-**השיפור: שורת דירוג הכוכבים של M18-c63 (רצועת "מומלצים" בדף המוצר)
-מורחבת לרצועות ה-CMS של דף הבית** (`product_rail`/`category_spotlight`/
-`supplier_spotlight`, `lib/homepage/rails.ts` דרך `ProductRail.tsx`) -
-אותו `.product-rating` שכבר תועד מול `refs/ke_live_product.html`.
-**לא נגעתי ב-`DealsOfTheDay`** (ברירת המחדל, בייט-לבייט מול live,
-בלי שורת דירוג שם). כמו ברצועת המוצר, לא תרונדר עד שמיגרציה 247
-תאושר (`anon` בלי SELECT על `reviews`, חוסם #11, לא פעולת הסוכן).
+**DNS ו-HTTP נבדקו בפועל, שניהם תקינים, אין DNS BLOCKER.**
+`dig +short A kenyonexpress.co.il` מחזיר `216.198.79.65`/`64.29.17.65`,
+`dig +short A www.kenyonexpress.co.il` מחזיר `64.29.17.65`/
+`216.198.79.65`, `dig +short NS kenyonexpress.co.il` מחזיר
+`ns1.vercel-dns.com`/`ns2.vercel-dns.com`. `curl` לאפקס מחזיר `308`
+אל `www`, `curl` ל-`www.kenyonexpress.co.il` מחזיר `200` עם תוכן חי
+(`lang="he" dir="rtl"`, "קניון EXPRESS").
 
-**מוצתה לוגיקה משותפת** מ-`lib/related-products.ts` למודול חדש
-`lib/reviews/rating-summaries.ts` (שלישית שהייתה מוכפלת, אחרי
-`product-detail.ts`); שני הקוראים מייבאים ממנו. `RailProduct` קיבל
-`ratingSummary` אופציונלי; ארבע פונקציות הרצועה עוברות `withRatings`
-על השורות הסופיות בלבד, לא על מאגר ה-300 - כמו ב-`related-products.ts`.
-קבצים: `lib/reviews/rating-summaries.ts` (חדש), `related-products.ts`,
-`homepage/rails.ts`, `home/ProductRail.tsx` (+ טסט), `ProductCard.tsx`
-(תיעוד), `STATE.md`.
+**Build+deploy חדש לא הופעל, בכוונה, פעם אחת-עשרה.** כלל "goal שנתקע
+פעמיים, לדלג" כבר הופעל עשר פעמים ברציפות (M01-c56..M01-c64) על אותו
+חוסם בדיוק. לפני שדילגתי בפעם האחת-עשרה וידאתי מחדש, בקריאה בלבד, שהתנאי
+לא השתנה: `filter_project_envs` (Vercel MCP, פרויקט `kenyonexpress`)
+מראה סביבת Production **עדיין ללא** שלושת השמות ש-
+`scripts/deploy-preflight.mjs` דורש (`CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`; מה שקיים במקומם הוא
+`CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY`, שהקוד לא
+קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. `list_deployments`
+(target=production, 5 אחרונות) מראה בדיוק את אותן חמש `dpl_` שנמדדו
+מ-M01-c61 ואילך, שום build אוטומטי חדש לא רץ מאז. HEAD עכשיו 285
+קומיטים אחרי `a388118f1` (עלה מ-267 ב-M01-c64). התיקון האמיתי (שינוי
+env ב-Vercel) אסור לסוכן לפי כללי הפריט הזה, אז ניסיון פריסה נוסף היה
+רק מייצר `ERROR` שישי בלי מידע חדש.
 
-**השערים, כולל build מלא כנדרש בפריט הזה**: `type-check`/`lint` נקיים
-(12 שערים). `test` 610/610 קבצים, 7298/7310 (+2 מעל בסיס M17-c64).
-`pnpm build` אחרי `rm -rf .next`, ללא שגיאה. **שער חזותי בחזית, שני
-הדפים, שלושת הרוחבים, נמדד בתוך הריצה הזו** על שרת חדש על port 39411
-(3311/3312 תפוסים ע"י תהליכים אחרים שהבעלים שלהם לא אומת): בית
-`8.51/9.02/3.95%` PASS זהה לבסיס (צפוי - CMS ריק בפרודקשן). מוצר מול
-`refs/ke_live_product_{380,768,1440}.png`: `2.69/1.29/0.14%` PASS
-זהה ל-`ef8641f05` (דף המוצר לא נגע כלל).
+**מסקנה: BLOCKED, לא DNS, חוסם ה-env הידוע.** DNS ו-HTTP תקינים; החוסם
+הבלעדי הוא שלושת משתני Cardcom החסרים ועוד `ALLOW_INCOMPLETE_ENV` ב-
+Production, פעולה של אופיר בלבד. אפס שינוי קוד בפריט הזה, לכן לא רצו
+`pnpm test`/`lint`/`type-check`/`build`.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M18-c64).
+
+**M18-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M01-c65 לשמירה על תקרת 300 שורות).** אפס-פעילות אומת מ-git על כל
+המחזור, MAINTENANCE IDLE נרשם, ואז שופר המרה אמיתי אחד: שורת דירוג
+הכוכבים של M18-c63 הורחבה מדף המוצר לרצועות ה-CMS של דף הבית
+(`ProductRail.tsx`), לב לוגיקה משותפת מוצה ל-`lib/reviews/
+rating-summaries.ts`. ארבעת השערים ירוקים כולל `build` מלא, שער
+חזותי PASS בשני הדפים שלושת הרוחבים, אפס רגרסיה.
 
 **M17-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M18-c64 לשמירה על תקרת 300 שורות).** קופי ומשפטי אומתו מחדש בפעם
@@ -48,23 +58,11 @@ package.json pnpm-lock.yaml vercel.json supabase/ migrations/` על 17
 אפס דריפט מ-M16-c63. ארבעת השערים ירוקים (`build` אומת כמאוחר
 מהקומיט האחרון הרלוונטי, לא רץ מחדש).
 
-**M15-c64..M14-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M16-c64 לשמירה על תקרת 300 שורות).** M15-c64 — טבלת הסטטוס
-ב-STATE.md, LAUNCH-READINESS.md ו-BACKLOG.md סונכרנה מחדש מול git log
-וראיות קוד, אפס דריפט (מונה קומיטים עודכן: 274→281 מאחורי פרודקשן,
-637→655 מאחורי origin/main). M14-c64 — bundle sizes, image pipeline,
-תגיות ISR וכותרות cache נבדקו מחדש מול build טרי (נבנה בפועל פעמיים
-כדי לפסול ממצא מטעה מ-build מקביל של autopilot שני על אותו checkout),
-אפס רגרסיה אמיתית: `bundle-gate.mjs` 223.8 KB gz על 8 chunks זהה
-בייט לבייט לבייסליין, כל ה-routes בטווח רעש 0.1-0.5kB, cache headers
-ותגיות ISR זהים מילה במילה. ארבעת השערים ירוקים בשניהם.
-
-**M13-c64 ו-M12-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M14-c64 לשמירה על תקרת 300 שורות).** M13-c64 — CSP/HSTS/
-X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash נבדקו מחדש, אפס
-דריפט בקוד (150/150 טסטים ייעודיים). M12-c64 — meta/canonical/og/
-JSON-LD Product+Offer/sitemap/robots נבדקו מחדש, אפס דריפט (202/202
-טסטים ייעודיים). ארבעת השערים ירוקים בשניהם.
+**M15-c64..M12-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M01-c65 לשמירה על תקרת 300 שורות).** סנכרון תיעוד (אפס דריפט),
+ביצועים (bundle/image pipeline/ISR/cache headers מול build טרי, אפס
+רגרסיה), אבטחה (CSP/HSTS/rate limits, אפס דריפט) ו-SEO (meta/canonical/
+og/JSON-LD/sitemap/robots, אפס דריפט) — ארבעת השערים ירוקים בכולם.
 
 **M11-c64..M10-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M13-c64 לשמירה על תקרת 300 שורות).** M11-c64 — axe הורץ מחדש על
@@ -207,29 +205,29 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (267 קומיטים אחרי `a388118f1` החי, ספירת git
-   בלבד, עודכן ב-M01-c64 מ-249 שנמדד ב-M01-c63; ניסיון הפריסה הידני האחרון
+2. **פריסת פרודקשן של HEAD (285 קומיטים אחרי `a388118f1` החי, ספירת git
+   בלבד, עודכן ב-M01-c65 מ-267 שנמדד ב-M01-c64; ניסיון הפריסה הידני האחרון
    היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   **מ-M01-c56 ועד M01-c64 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
-   פעמיים, לדלג", מוחל מ-M01-c55, פעם עשירית ב-M01-c64, כולל דחיית משימת
-   התור שביקשה בפירוש build+deploy חדש, ראו M01-c64 למעלה), אך התנאי נבדק
+   **מ-M01-c56 ועד M01-c65 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
+   פעמיים, לדלג", מוחל מ-M01-c55, פעם אחת-עשרה ב-M01-c65, כולל דחיית משימת
+   התור שביקשה בפירוש build+deploy חדש, ראו M01-c65 למעלה), אך התנאי נבדק
    שוב בקריאה בלבד בכל פעם ואושר ללא שינוי: `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
    (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY`
    שהקוד לא קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (Vercel MCP,
-   `filter_project_envs`, קריאה בלבד, M01-c64).
+   `filter_project_envs`, קריאה בלבד, M01-c65).
    **`list_deployments` (target=production, 5 אחרונות) מראה בדיוק את
-   אותן חמש פריסות `ERROR` שנמדדו ב-M01-c61 עד M01-c63**, שום push מאז
+   אותן חמש פריסות `ERROR` שנמדדו ב-M01-c61 עד M01-c64**, שום push מאז
    לא הפעיל build אוטומטי חדש (`1083b8d8d`, `99b2079cb`, `0bcbdac18`,
-   `291bc2d88` פעמיים), כולן `ERROR` באותה סיבה, נמדד שוב M01-c64.
+   `291bc2d88` פעמיים), כולן `ERROR` באותה סיבה, נמדד שוב M01-c65.
    עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על
    `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, מאושר שוב
-   ב-M01-c64 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
-   אינו קשור לחוסם הזה**, נמדד שוב ב-M01-c64: `www.kenyonexpress.co.il`
+   ב-M01-c65 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
+   אינו קשור לחוסם הזה**, נמדד שוב ב-M01-c65: `www.kenyonexpress.co.il`
    מחזיר 200 עם התוכן החי, `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS
    עדיין `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
