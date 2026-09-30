@@ -175,6 +175,10 @@ export async function proxy(request: NextRequest) {
   const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
   const needsAuth =
     pathname.startsWith('/account') ||
+    // The wallet's short door (STEP 13): the same screen as /account/wallet,
+    // every read on it is the customer's own money.
+    pathname === '/wallet' ||
+    pathname.startsWith('/wallet/') ||
     // The voucher half of /coupon/ only; the coupon variant of a product page
     // shares the prefix and is public. See lib/vouchers/coupon-path.ts.
     couponPathNeedsSession(pathname) ||

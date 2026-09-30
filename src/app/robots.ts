@@ -28,6 +28,7 @@ export default function robots(): MetadataRoute.Robots {
           '/redeem/', // signed voucher tokens
           '/coupon/', // a customer's own voucher, code and QR on screen
           '/account/',
+          '/wallet', // the account wallet's short door (STEP 13)
           '/supplier/',
           '/scan',
           '/admin/',

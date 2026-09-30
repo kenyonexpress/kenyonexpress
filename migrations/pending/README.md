@@ -1,5 +1,26 @@
 # `migrations/pending/`
 
+## 2026-10-01: 250 PENDING (referral programme on at ₪20, STEP 13)
+
+`250_referral_program_seed.sql` inserts the one row `referral_program_settings`
+(098, live on production, measured EMPTY on 2026-08-31) has been waiting for:
+`referrer_bonus_agorot = 2000` (₪20 per completed referral, integer agorot),
+`referred_bonus_agorot = 0` (the step names one reward), `min_order_agorot =
+5000` (NOT NULL with no default, so chosen: the friend's first order must
+bring in more cash than the bonus costs), `is_active = true`, and 098's
+defaults for the window (14 days), the per-referrer caps (5 / 30) and manual
+approval (off; the fraud guard still parks matches as `flagged`). `ON CONFLICT
+(id) DO NOTHING`, so terms a person already entered are not overwritten; the
+self-check raises unless exactly one active row with a positive referrer bonus
+exists, and NOTICEs the live terms. Data only, no DDL, no grant, no policy.
+The bonus is paid by `fn_complete_referral` from `platform:cashback_reserve`
+under `referral_bonus`, which is why `fn_cashback_expire` (215) already lapses
+it after twelve months; `src/lib/referrals/terms.test.ts` pins the seed, 098
+and 215 to each other and to the wallet page. Until applied, `/account/referrals`
+keeps saying the programme is not active and `/wallet` says "soon". Rollback:
+`update ... set is_active = false`. Not yet dry-run on production (Supabase MCP
+unauthenticated in the session that filed it).
+
 ## 2026-10-01: 249 PENDING (cashback events view, STEP 13)
 
 `249_cashback_events.sql` adds `cashback_events`, a `security_invoker` VIEW

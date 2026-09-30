@@ -72,13 +72,17 @@ export interface AccountPaymentToken {
  *
  * These MUST match the strings the writers pass as `p_reason`: finalize.ts
  * (`order_cashback`, `order_spend`), `fn_cashback_order_bonus` from migration
- * 177 (`cashback_bonus`) and `fn_cashback_expire` from 215 (`cashback_expiry`).
+ * 177 (`cashback_bonus`), `fn_cashback_admin_adjust` from 177
+ * (`cashback_adjustment`, either direction), `fn_cashback_expire` from 215
+ * (`cashback_expiry`) and `fn_complete_referral` from 098 (`referral_bonus`).
  * An unknown code falls through to itself rather than to a wrong label.
  */
 export const WALLET_REASON_LABELS: Record<string, string> = {
   order_cashback: 'קאשבק על רכישה',
   cashback_bonus: 'בונוס קאשבק',
+  cashback_adjustment: 'התאמת קאשבק',
   cashback_expiry: 'פקיעת קאשבק',
+  referral_bonus: 'קאשבק חבר מביא חבר',
   order_spend: 'שימוש בארנק',
   order_refund: 'החזר על ביטול',
   admin_credit: 'זיכוי ידני',

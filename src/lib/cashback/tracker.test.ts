@@ -2,10 +2,12 @@ import { agorot } from '@/lib/money'
 import { describe, expect, it } from 'vitest'
 import { EVERY_FIFTH_PURCHASE_CASHBACK_BP, FIRST_PURCHASE_CASHBACK_BP } from './engine'
 import {
+  CASHBACK_CREDIT_REASONS,
   CASHBACK_ENTRY_LABELS,
   type LedgerRowLike,
   cashbackEntryLabel,
   cashbackOverview,
+  ledgerRowExpiresAt,
   liveCashbackCredits,
   nextBonus,
 } from './tracker'
@@ -18,6 +20,57 @@ function credit(amount: number, createdAt: string, reason = 'order_cashback'): L
 function debit(amount: number, createdAt: string, reason = 'order_spend'): LedgerRowLike {
   return { direction: 'debit', amountAgorot: agorot(amount), reason, createdAt }
 }
+
+describe('the reasons that expire', () => {
+  it('are every credit paid from the cashback reserve, the referral reward included', () => {
+    // 215 keys the sweep on the reserve account, not the reason, so every
+    // writer that pays from the reserve has to be here or the page calls a
+    // credit permanent that the sweep will take.
+    for (const reason of [
+      'order_cashback',
+      'cashback_bonus',
+      'cashback_adjustment',
+      'referral_bonus',
+    ]) {
+      expect(CASHBACK_CREDIT_REASONS.has(reason), reason).toBe(true)
+    }
+    // Refunds and gift-card loads come from other accounts and never lapse.
+    expect(CASHBACK_CREDIT_REASONS.has('order_refund')).toBe(false)
+    expect(CASHBACK_CREDIT_REASONS.has('gift_card_redeemed')).toBe(false)
+  })
+
+  it('gives a referral bonus the same twelve-month life as order cashback', () => {
+    const rows = [credit(2000, '2026-09-01T10:00:00Z', 'referral_bonus')]
+    const live = liveCashbackCredits(rows, NOW)
+    expect(live).toHaveLength(1)
+    expect(live[0]?.remainingAgorot).toBe(2000)
+    expect(live[0]?.expiresAt.toISOString()).toBe('2027-09-01T10:00:00.000Z')
+  })
+
+  it('dates a row for the history column only when it is an expiring credit', () => {
+    expect(
+      ledgerRowExpiresAt({
+        direction: 'credit',
+        reason: 'referral_bonus',
+        createdAt: '2026-09-01T10:00:00Z',
+      })?.toISOString(),
+    ).toBe('2027-09-01T10:00:00.000Z')
+    expect(
+      ledgerRowExpiresAt({
+        direction: 'credit',
+        reason: 'order_refund',
+        createdAt: '2026-09-01T10:00:00Z',
+      }),
+    ).toBeNull()
+    expect(
+      ledgerRowExpiresAt({
+        direction: 'debit',
+        reason: 'order_spend',
+        createdAt: '2026-09-01T10:00:00Z',
+      }),
+    ).toBeNull()
+  })
+})
 
 describe('nextBonus', () => {
   it('names the first purchase at 10% for a customer with no paid orders', () => {

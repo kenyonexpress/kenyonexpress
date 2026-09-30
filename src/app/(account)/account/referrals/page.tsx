@@ -1,5 +1,6 @@
 import ReferralShareCard from '@/components/account/ReferralShareCard'
 import { formatDate, formatIls } from '@/lib/account/format'
+import { CASHBACK_LIFETIME_MONTHS } from '@/lib/cashback/expiry'
 import { REFERRAL_QUERY_PARAM } from '@/lib/referrals/code'
 import { siteUrl } from '@/lib/site-url'
 import type { ReferralRow, ReferralStatus } from '@/server/queries/referrals'
@@ -111,11 +112,17 @@ export default async function ReferralsPage() {
                 {program.qualifyWindowDays} ימים.
               </li>
               <li>
-                אתם מקבלים {referrerBonus} לארנק, והחבר מקבל {referredBonus}.
+                {/* The friend's clause only when the friend gets something.
+                    250 seeds the referred side at zero, and "your friend gets
+                    ₪0.00" is not a sentence to put in front of anyone. */}
+                {program.referredBonus > 0
+                  ? `אתם מקבלים ${referrerBonus} קאשבק לארנק, והחבר מקבל ${referredBonus}.`
+                  : `אתם מקבלים ${referrerBonus} קאשבק לארנק.`}
               </li>
             </ol>
             <p className="referral-terms">
-              הבונוס הוא קרדיט לשימוש באתר בלבד, ללא משיכה למזומן.
+              הבונוס הוא קאשבק לשימוש באתר בלבד, ללא משיכה למזומן, ותקף ל-
+              {CASHBACK_LIFETIME_MONTHS} חודשים מיום הזיכוי כמו כל קאשבק.
               {program.requiresManualApproval && ' כל הפניה עוברת אישור לפני הזיכוי.'}
             </p>
           </section>

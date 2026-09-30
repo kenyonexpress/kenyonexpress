@@ -26,10 +26,44 @@ import { CASHBACK_LIFETIME_MONTHS, cashbackExpiresAt } from './expiry'
  * Every amount is integer agorot through `money.ts`; no float touches a value.
  */
 
-/** The ledger reasons that are cashback credits. `order_cashback` is the
- *  per-item cashback finalize.ts posts; `cashback_bonus` is the order-count
- *  bonus 177 posts. Both lapse under 215's twelve-month rule. */
-export const CASHBACK_CREDIT_REASONS = new Set(['order_cashback', 'cashback_bonus'])
+/**
+ * The ledger reasons that are cashback credits, which is to say every credit
+ * whose debit side is `platform:cashback_reserve`. That is the set 215's sweep
+ * reads: it joins on the reserve account and never looks at the reason, so
+ * anything paid out of the reserve lapses after twelve months whether or not
+ * this list knows it. The list therefore has to name every writer that pays
+ * from the reserve, or the wallet page will call a credit permanent that the
+ * sweep is going to take:
+ *
+ *   order_cashback        the per-item cashback finalize.ts and settlement.ts post
+ *   cashback_bonus        the first / every-fifth order bonus 177 posts
+ *   cashback_adjustment   a positive admin adjustment (177 fn_cashback_admin_adjust;
+ *                         the clawback direction is a debit and is consumed as one)
+ *   referral_bonus        the ₪20 referral reward 098 pays (migration 250 turns it on)
+ *
+ * `order_refund`, gift-card loads and coupon credits come from other accounts
+ * and do not expire, so they are deliberately not here.
+ */
+export const CASHBACK_CREDIT_REASONS: ReadonlySet<string> = new Set([
+  'order_cashback',
+  'cashback_bonus',
+  'cashback_adjustment',
+  'referral_bonus',
+])
+
+/**
+ * The day a single ledger row's credit lapses, or null for a row that does
+ * not expire (a debit, or a credit from somewhere other than the reserve).
+ * For the wallet's history column: the date is exact even though FIFO
+ * consumption makes "how much of this row is left" a question only
+ * `liveCashbackCredits` can answer.
+ */
+export function ledgerRowExpiresAt(
+  row: Pick<LedgerRowLike, 'direction' | 'reason' | 'createdAt'>,
+): Date | null {
+  if (row.direction !== 'credit' || !CASHBACK_CREDIT_REASONS.has(row.reason)) return null
+  return cashbackExpiresAt(new Date(row.createdAt))
+}
 
 /** The bonus window: every fifth paid order. */
 export const BONUS_EVERY_N_PURCHASES = 5

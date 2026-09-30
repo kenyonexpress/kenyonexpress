@@ -428,6 +428,14 @@ describe('the pending migration inventory', () => {
       // account export. Not yet dry-run on production (Supabase MCP
       // unauthenticated in the session that filed it).
       '249_cashback_events.sql',
+      // 250 is PENDING (2026-10-01, STEP 13 cashback wallet): the one row of
+      // `referral_program_settings` (098) that turns the referral programme
+      // on at ₪20 (2000 agorot) to the referrer per completed referral,
+      // referred side 0, minimum first order ₪50, 098's defaults for the
+      // rest; ON CONFLICT DO NOTHING so a human-entered row stands. Data
+      // only, no DDL. Not yet dry-run on production (Supabase MCP
+      // unauthenticated in the session that filed it).
+      '250_referral_program_seed.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
