@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c65 (הועבר מ-STATE.md ב-M03-c65, לשמירה על תקרת 300 שורות)
+
+**M02-c65 - DONE (01.10): שער חזותי הורץ בפורגראונד, בית ומוצר, שלושת
+הרוחבים, אפס רגרסיה.** משימת התור: להריץ `scripts/compare.mjs` לדף הבית
+ולדף המוצר ב-380/768/1440 מול reference Electro v7, לתקן כל רגרסיה עד
+שכולן מתחת ל-11%, ולרשום ב-STATE.md.
+
+**התהליך:** `rm -rf .next && pnpm build` נקי, שרת `PORT=3317 pnpm start`
+הורם (שבעה פורטים אחרים תפוסים ע"י סשנים מקבילים, לא נגעתי בהם), אומת
+שהשרת על 3317 מגיש את הבילד הזה (`dir="rtl"`, "קניון EXPRESS" בתוכן
+החי). ברירת המחדל של `compare.mjs` (live=`kenyonexpress.co.il`) **מסרבת כעת**: הדומיין מגיש
+את הבילד שלנו עצמו (ה-DNS תוקן, ראו M01-c65), לכן שש הריצות בוצעו עם
+`--live-png` מול ה-captures הקפואים — דף הבית מול `refs/ke_live_
+{width}.png`, דף המוצר עם `COMPARE_PRODUCT_SLUG=barbecue-2` מול
+`refs/electro_product_{width}.png` (אותו דפוס בדיוק כמו M02-c64) —
+כל ריצה חוכתה למספרים שלה בתוך אותו הרצף, בפורגראונד, לפני שנרשמה.
+
+**תוצאות, כולן PASS, אפס דריפט מ-M02-c64:**
+
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית | 8.51% | 9.02% | 3.95% |
+| מוצר | 5.61% | 4.92% | 2.99% |
+
+השער עצמו רשם את שש השורות ל-`docs/UI-PARITY-REPORT.md` (חותמת
+`d5175ee32-dirty`). שני ריצות `REFUSED` (home 380, home 1440) קדמו
+לכך ללא `--live-png`, כמצופה, ותועדו בדוח — לא PASS מזויף.
+
+**אין קוד לתקן.** ששת המספרים כולם מתחת לתקרת 11% ללא שינוי, ולכן אין
+שינוי קוד פונה-ללקוח בפריט הזה.
+
+**שערים:** `pnpm build` עבר (הרצה מלאה, לפני השרת), `type-check` נקי,
+`lint` נקי (12 שערים, i18n 627/627), `test` 610/610 קבצים 7298/7310
+ירוק (12 דולגים). שרת ה-3317 הופסק בסוף הפריט.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M01-c65),
+`docs/UI-PARITY-REPORT.md` (נכתב על ידי הסקריפט עצמו).
+
 ## M01-c65 (הועבר מ-STATE.md ב-M02-c65, לשמירה על תקרת 300 שורות)
 
 **M01-c65: BLOCKED (01.10), נבדק מחדש, build/deploy חדש לא הופעל
