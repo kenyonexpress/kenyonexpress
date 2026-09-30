@@ -1,27 +1,54 @@
-RESUME FROM: M05-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c62)
+RESUME FROM: M06-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c62)
 
 ## המשך מ:
 
-**M04-c62 - DONE (30.09): תברואת תלויות, `pnpm audit` ו-`pnpm outdated`
-הורצו מחדש.** `pnpm audit --json`: **אפס חולשות** (552 dependencies, 328
-devDependencies, 178 optionalDependencies, 986 סה"כ). `pnpm outdated
---format=json`: 14 חבילות מיושנות, **וב-14 מתוך 14 `wanted` == `current`**
-(`@biomejs/biome`, `@hookform/resolvers`, `@sentry/nextjs`, `@sentry/node`,
-`@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
-`@vitest/coverage-v8`, `jsdom`, `lint-staged`, `tailwind-merge`,
-`typescript`, `vitest`, `zod`) — כל אחת כבר בגרסה הגבוהה ביותר בתוך טווח
-ה-`^` שלה ב-`package.json`, וה-`latest` שנשאר גבוה יותר בכולן הוא bump
-מייג'ור (biome 1→2, hookform/resolvers 3→5, sentry 10→11, jest-dom 6→7,
-types/node 20→26, vitejs/plugin-react 4→6, vitest+coverage-v8 4→5, jsdom
-25→30, lint-staged 15→17, tailwind-merge 2→3, typescript 5→7, zod 3→4).
-**אין patch/minor אחד לשדרג** — הכלל "לעולם לא מייג'ור" חוסם את כל 14,
-אז אפס שינוי ל-`package.json`/`pnpm-lock.yaml`. `git diff --stat` על שניהם
-ריק. שערים הורצו לוודא שהעץ עדיין ירוק (`abdf1241d`, זהה ל-M03-c62):
-`type-check` נקי, `lint` נקי (12 שערים, זהה), `test` **610/610 קבצים,
-7296/7308 ירוק, 55.89s**, `build` לא הורץ מחדש (אפס שינוי קוד/תלות על
-אותו commit ש-M03-c62 כבר אימת ✓ Compiled successfully). קובץ ששונה:
-`STATE.md` בלבד.
+**M05-c62 - DONE (30.09): advisors נמדדו שוב דרך ה-management API (MCP
+של Supabase עדיין "דורש הרשאה", אין OAuth בסשן לא-אינטראקטיבי — אותו
+מסלול חלופי כמו M05-c52..c61: טוקן ה-CLI מה-keychain
+(`security find-generic-password -s "Supabase CLI" -w`, עטיפת
+`go-keyring-base64:` ואז פענוח base64 נותן `sbp_...`), שני `GET
+https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+{security,performance}`, 200/200, קריאה בלבד, אין SQL שנשלח).**
+
+**אבטחה: 28 ממצאים, זהה ב-100% ל-M05-c61** — 4 `rls_enabled_no_policy`
+(INFO, deny-all מכוון), 2 `anon_security_definer_function_executable`
+(WARN: `is_admin`, `is_supplier_member`), 21
+`authenticated_security_definer_function_executable` (WARN, אותן 21
+פונקציות), 1 `function_search_path_mutable` (WARN:
+`fn_wallet_entries_block_mutation`, ממתין ב-`220`).
+
+**ביצועים: 196 ממצאים, זהה ל-M05-c61 בדיוק (לא ירידה נוספת).**
+`multiple_permissive_policies` עדיין 14 על אותן 11 טבלאות (`banners`,
+`cashback_ledger`, `homepage_sections`, `payment_events`,
+`payout_statement_lines`, `payout_statements`, `refunds`,
+`supplier_branches` ארבע פעולות, `support_ticket_messages`,
+`support_tickets`, `whatsapp_contacts`) — כולן ב-`245`. `auth_rls_initplan`
+עדיין 6 על אותן טבלאות (`cashback_ledger`, `profiles`
+`profiles_super_admin_mfa`, `push_subscriptions` ×2,
+`webauthn_credentials` ×2) — חמש ב-`209` §2, השישית ב-`246`. `unused_index`
+עדיין 166 (INFO, לא WARN). `unindexed_foreign_keys` (9) ו-
+`auth_db_connections_absolute` (1) ללא שינוי.
+
+**סך הכול: 44 WARN, זהה בדיוק לאחת-עשרה המדידות הקודמות (M05-c1
+ועד M05-c61). אפס WARN חדש, אפס WARN שהפסיק לירות.** ארבעת הקבצים
+הממתינים נבדקו שעדיין קיימים ולא נערכו מאז המדידה הקודמת:
+`migrations/pending/209_advisor_warnings.sql`,
+`220_wallet_entries_search_path.sql`,
+`245_single_permissive_policy_per_action.sql` (עדיין 53 שורות
+`CREATE POLICY`/`DROP POLICY`, מכסה את כל 14), `246_profiles_mfa_
+initplan.sql` — תוכנם עדיין תואם למדידה. **אין קובץ מיגרציה חדש
+נדרש, אין WARN לא-מכוסה, אף קובץ לא הוחל.** קבצי הפלט הזמניים
+(`/tmp/ke-advisors/*.json`) והטוקן הזמני נמחקו בסוף הפריט. שער נוסף
+ל-`docs/DB-SECURITY-MODEL.md` (סעיף 0יב). קובץ ששונה מלבד `STATE.md`:
+`docs/DB-SECURITY-MODEL.md`, `docs/STATE-ARCHIVE.md` (S03 כווץ לפריט
+הזה).
+
+**M04-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c62
+לשמירה על תקרת 300 שורות).** תברואת תלויות: `pnpm audit` אפס חולשות,
+`pnpm outdated` 14 מיושנות ו-14 מתוך 14 `wanted`==`current` (כל שאר
+ה-bump הוא מייג'ור, חסום). אפס שינוי ל-`package.json`/`pnpm-lock.yaml`.
+שערים ירוקים.
 
 **M03-c62 - DONE (30.09): שער ירוק הורץ מחדש במלואו על עץ עבודה נקי,
 זהה ל-HEAD (`fa375af11`).** `type-check` נקי (0 שגיאות), `lint` נקי
@@ -64,46 +91,12 @@ DNS/HTTP תקינים (`www.kenyonexpress.co.il` 200, `NS` `vercel-dns.com`),
 ב-Production, ראה "חוסמים פתוחים" סעיף 2), דילוג על ניסיון נוסף לפי כלל
 "goal שנתקע פעמיים". SHOWABLE: yes (בית/מוצר, שני הדפים מתחת ל-11%).
 
-**S03 - DONE (30.09), פריט חד-פעמי חיצוני לתור ה-M, לא מקדם `RESUME FROM:`.**
-המשימה שהתקבלה ביקשה ללכוד reference חדש ל-Electro v7 single product page
-ל-`refs/electro-product-{380,768,1440}.json`, ולבחור מוצר זרוע מ-S01. אף אחד
-מהשמות האלה לא קיים בריפו הזה ומעולם לא היה (`git log --all --grep=S01`,
-`--grep=S03`, `grep -rn "S01\|S03" STATE.md docs/*.md`: אפס תוצאות), אותו
-תבנית בדיוק כמו `scripts/_probe.mjs` ו-`refs/electro-home-*.json` של S02
-(שורה למעלה). מה שקיים ועושה בדיוק את אותה עבודה: `refs/electro_product_
-{380,768,1440}.png` (PNG, קו תחתון, לא JSON ולא מקף), נלכד ב-25.09 (Q05b,
-`docs/MISSING-ASSETS.md` סעיף 1) ומגודר על ידי `scripts/compare.mjs
---page=product --baseline='refs/electro_product_{width}.png'` מאז.
-
-מוצר יעד: `barbecue-2` (ארוחה בשרית, id נקי, לא ב-`supabase/
-catalogue-known-issues.json`, אותו slug שהמתכון המתועד ב-`docs/
-MISSING-ASSETS.md` משתמש בו). הרצה בחזית על שרת טרי (פורט 3316, `.next`
-אומת source-identical ל-HEAD דרך `git diff --stat fd820969f..HEAD --
-next.config.ts next.config.js middleware.ts vercel.json src/ package.json`,
-ריק):
-
-| רוחב | both-painted | סף |
-|---|---|---|
-| 380 | **5.61%** | PASS (< 11%) |
-| 768 | **4.92%** | PASS (< 11%) |
-| 1440 | **2.99%** | PASS (< 11%) |
-
-זהה לארבע השורות האחרונות שנרשמו מ-29.09 (`7274ff68f` ועד היום), אפס
-דריפט. השורות נכתבו אוטומטית על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md`
-(07:41-07:46). המספרים הכוללים גבוהים בהרבה (20-35%) כי הרפרנס של Electro
-הוא מוצר אחר וארוך יותר (ביקורות, טאבים, קרוסלת מוצרים קשורים, 11181px/
-8408px/7653px גובה) ו-`diff-bands.mjs` מסמן את זה כאזהרת יחס-גובה בכוונה,
-לא ככשל: המדד המגודר הוא סטיית "both painted" בלבד, בדיוק כפי שמתועד
-ב-`docs/MISSING-ASSETS.md` סעיף 1.
-
-שערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 610/610 קבצים
-7296/7308 ירוק. `build` לא הורץ מחדש: `.next` כבר אומת source-identical
-ל-HEAD (למעלה). השרת הזמני על פורט 3316 נהרג בסיום, לא נותר תהליך יתום.
-
-**לא מקדם את `RESUME FROM:`** - S03 אינו חלק מתור ה-M הפנימי (ראה
-"טבלת מצב לתור" למטה); M01-c62 נשאר היעד הבא של הלולאה האוטונומית.
-קובץ ששונה: `STATE.md`, `docs/UI-PARITY-REPORT.md` (נכתב אוטומטית
-על ידי השער).
+**S03 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c62
+לשמירה על תקרת 300 שורות).** בקצרה: reference חדש למוצר יחיד של Electro
+v7 התבקש בשמות שלא קיימים בריפו; מה שכבר קיים (`refs/electro_product_
+{380,768,1440}.png`, מ-Q05b) עושה בדיוק את אותה עבודה. הופעל מול
+`barbecue-2`: 380 5.61% / 768 4.92% / 1440 2.99%, כולם PASS, אפס דריפט.
+לא מקדם את `RESUME FROM:`.
 
 **S02 - DONE (30.09), פריט חד-פעמי דומה, פירוט מלא ב-`docs/STATE-ARCHIVE.md`
 (כווץ לשורה הזו ב-S03 לשמירה על תקרת 300 שורות).** בקצרה: אותה בעיית שמות

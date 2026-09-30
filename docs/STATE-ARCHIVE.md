@@ -2,6 +2,71 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c62 (הועבר מ-STATE.md ב-M05-c62, לשמירה על תקרת 300 שורות)
+
+**M04-c62 - DONE (30.09): תברואת תלויות, `pnpm audit` ו-`pnpm outdated`
+הורצו מחדש.** `pnpm audit --json`: **אפס חולשות** (552 dependencies, 328
+devDependencies, 178 optionalDependencies, 986 סה"כ). `pnpm outdated
+--format=json`: 14 חבילות מיושנות, **וב-14 מתוך 14 `wanted` == `current`**
+(`@biomejs/biome`, `@hookform/resolvers`, `@sentry/nextjs`, `@sentry/node`,
+`@testing-library/jest-dom`, `@types/node`, `@vitejs/plugin-react`,
+`@vitest/coverage-v8`, `jsdom`, `lint-staged`, `tailwind-merge`,
+`typescript`, `vitest`, `zod`) — כל אחת כבר בגרסה הגבוהה ביותר בתוך טווח
+ה-`^` שלה ב-`package.json`, וה-`latest` שנשאר גבוה יותר בכולן הוא bump
+מייג'ור (biome 1→2, hookform/resolvers 3→5, sentry 10→11, jest-dom 6→7,
+types/node 20→26, vitejs/plugin-react 4→6, vitest+coverage-v8 4→5, jsdom
+25→30, lint-staged 15→17, tailwind-merge 2→3, typescript 5→7, zod 3→4).
+**אין patch/minor אחד לשדרג** — הכלל "לעולם לא מייג'ור" חוסם את כל 14,
+אז אפס שינוי ל-`package.json`/`pnpm-lock.yaml`. `git diff --stat` על שניהם
+ריק. שערים הורצו לוודא שהעץ עדיין ירוק (`abdf1241d`, זהה ל-M03-c62):
+`type-check` נקי, `lint` נקי (12 שערים, זהה), `test` **610/610 קבצים,
+7296/7308 ירוק, 55.89s**, `build` לא הורץ מחדש (אפס שינוי קוד/תלות על
+אותו commit ש-M03-c62 כבר אימת ✓ Compiled successfully). קובץ ששונה:
+`STATE.md` בלבד.
+
+## S03 (הועבר מ-STATE.md ב-M05-c62, לשמירה על תקרת 300 שורות)
+
+**S03 - DONE (30.09), פריט חד-פעמי חיצוני לתור ה-M, לא מקדם `RESUME FROM:`.**
+המשימה שהתקבלה ביקשה ללכוד reference חדש ל-Electro v7 single product page
+ל-`refs/electro-product-{380,768,1440}.json`, ולבחור מוצר זרוע מ-S01. אף אחד
+מהשמות האלה לא קיים בריפו הזה ומעולם לא היה (`git log --all --grep=S01`,
+`--grep=S03`, `grep -rn "S01\|S03" STATE.md docs/*.md`: אפס תוצאות), אותו
+תבנית בדיוק כמו `scripts/_probe.mjs` ו-`refs/electro-home-*.json` של S02
+(שורה למעלה). מה שקיים ועושה בדיוק את אותה עבודה: `refs/electro_product_
+{380,768,1440}.png` (PNG, קו תחתון, לא JSON ולא מקף), נלכד ב-25.09 (Q05b,
+`docs/MISSING-ASSETS.md` סעיף 1) ומגודר על ידי `scripts/compare.mjs
+--page=product --baseline='refs/electro_product_{width}.png'` מאז.
+
+מוצר יעד: `barbecue-2` (ארוחה בשרית, id נקי, לא ב-`supabase/
+catalogue-known-issues.json`, אותו slug שהמתכון המתועד ב-`docs/
+MISSING-ASSETS.md` משתמש בו). הרצה בחזית על שרת טרי (פורט 3316, `.next`
+אומת source-identical ל-HEAD דרך `git diff --stat fd820969f..HEAD --
+next.config.ts next.config.js middleware.ts vercel.json src/ package.json`,
+ריק):
+
+| רוחב | both-painted | סף |
+|---|---|---|
+| 380 | **5.61%** | PASS (< 11%) |
+| 768 | **4.92%** | PASS (< 11%) |
+| 1440 | **2.99%** | PASS (< 11%) |
+
+זהה לארבע השורות האחרונות שנרשמו מ-29.09 (`7274ff68f` ועד היום), אפס
+דריפט. השורות נכתבו אוטומטית על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md`
+(07:41-07:46). המספרים הכוללים גבוהים בהרבה (20-35%) כי הרפרנס של Electro
+הוא מוצר אחר וארוך יותר (ביקורות, טאבים, קרוסלת מוצרים קשורים, 11181px/
+8408px/7653px גובה) ו-`diff-bands.mjs` מסמן את זה כאזהרת יחס-גובה בכוונה,
+לא ככשל: המדד המגודר הוא סטיית "both painted" בלבד, בדיוק כפי שמתועד
+ב-`docs/MISSING-ASSETS.md` סעיף 1.
+
+שערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 610/610 קבצים
+7296/7308 ירוק. `build` לא הורץ מחדש: `.next` כבר אומת source-identical
+ל-HEAD (למעלה). השרת הזמני על פורט 3316 נהרג בסיום, לא נותר תהליך יתום.
+
+**לא מקדם את `RESUME FROM:`** - S03 אינו חלק מתור ה-M הפנימי (ראה
+"טבלת מצב לתור" למטה); M01-c62 נשאר היעד הבא של הלולאה האוטונומית.
+קובץ ששונה: `STATE.md`, `docs/UI-PARITY-REPORT.md` (נכתב אוטומטית
+על ידי השער).
+
 ## M01-c62 (הועבר מ-STATE.md ב-M03-c62, לשמירה על תקרת 300 שורות)
 
 **M01-c62 - BLOCKED (30.09): בדיקת פרודקשן בפעם התשיעית — DNS/HTTP
