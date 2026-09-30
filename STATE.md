@@ -1,39 +1,45 @@
-RESUME FROM: M18-c64
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c64)
+RESUME FROM: M01-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c64)
 
 ## המשך מ:
 
-**M17-c64 - DONE (01.10): קופי ומשפטי אומתו מחדש בפעם השתים-עשרה,
-אפס דריפט מ-M17-c63.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל
-עמוד משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח
-וקישורים שבורים, ולתקן.
+**M18-c64 - DONE (01.10): אפס-פעילות אומת ישירות מ-git על כל המחזור**
+(`git diff --stat 00587d376..HEAD -- src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ migrations/` על 17
+קומיטי M01-c64..M17-c64 מחזיר ריק) - **נרשם MAINTENANCE IDLE**, ואז
+שופר המרה אמיתי אחד.
 
-**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `ef8641f05`
-(M17-c63). `git log ef8641f05..HEAD -- messages/he.json
-"src/app/(legal)" src/content/legal src/components/layout/
-SiteFooter.tsx` **מחזיר אפס קומיטים** — אף קומיט מאז לא נגע במחרוזות
-UI, בעמוד משפטי או בפוטר. `git diff --stat` המלא (8 קבצים) מראה רק
-תיעוד ושני קבצי קוד (`ProductCard.tsx`, `related-products.ts`,
-M18-c63). **נבדק ידנית**: התוספת היחידה היא חיבור רכיב `RatingStars`
-הקיים (נוצר ב-M18-c52, קודם לבסיס המדידה) לדף "מומלצים"; אפס מחרוזת
-עברית/אנגלית חדשה פונה-ללקוח, כל הטקסט החדש בשני הקבצים הוא הערות
-קוד באנגלית (מותר, קוד אינו UI) — `copy-gate` (biome, למטה) מאשר
-זאת. פוטר האתר וארבעת עמודי המשפטי (`src/app/(legal)/legal/
-{accessibility,privacy,returns,terms}/page.tsx`, `src/content/
-legal/*`) — **אפס קומיט** מאז `c6066ae85` (M17-c60), זהה בדיוק
-ל-11 המחזורים הקודמים.
+**השיפור: שורת דירוג הכוכבים של M18-c63 (רצועת "מומלצים" בדף המוצר)
+מורחבת לרצועות ה-CMS של דף הבית** (`product_rail`/`category_spotlight`/
+`supplier_spotlight`, `lib/homepage/rails.ts` דרך `ProductRail.tsx`) -
+אותו `.product-rating` שכבר תועד מול `refs/ke_live_product.html`.
+**לא נגעתי ב-`DealsOfTheDay`** (ברירת המחדל, בייט-לבייט מול live,
+בלי שורת דירוג שם). כמו ברצועת המוצר, לא תרונדר עד שמיגרציה 247
+תאושר (`anon` בלי SELECT על `reviews`, חוסם #11, לא פעולת הסוכן).
 
-**שערים הורצו במלואם, כולל build (נדרש מפורש בפריט הזה):**
-`type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים: `copy-gate`
-נקי, `rtl-logical` נקי, i18n 627/627, `locale-format` 116/116,
-`docs-index` 282, `docs-path-audit` 154). `test` 610/610 קבצים,
-7296/7308 (12 דולגים, 54.30s) — זהה בייט למדידה הקודמת. `pnpm build`
-הורץ מחדש במלואו ועבר ללא שגיאה, כולל שני עמודי המשפטי הסטטיים
-(`/terms-and-conditions`, `/refund_returns`, `○` בפלט ה-build).
-**אין שער חזותי נדרש**: אפס שינוי JSX/CSS פונה-ללקוח בפריט הזה עצמו
-(רק תיעוד).
+**מוצתה לוגיקה משותפת** מ-`lib/related-products.ts` למודול חדש
+`lib/reviews/rating-summaries.ts` (שלישית שהייתה מוכפלת, אחרי
+`product-detail.ts`); שני הקוראים מייבאים ממנו. `RailProduct` קיבל
+`ratingSummary` אופציונלי; ארבע פונקציות הרצועה עוברות `withRatings`
+על השורות הסופיות בלבד, לא על מאגר ה-300 - כמו ב-`related-products.ts`.
+קבצים: `lib/reviews/rating-summaries.ts` (חדש), `related-products.ts`,
+`homepage/rails.ts`, `home/ProductRail.tsx` (+ טסט), `ProductCard.tsx`
+(תיעוד), `STATE.md`.
 
-קובץ ששונה: `STATE.md`.
+**השערים, כולל build מלא כנדרש בפריט הזה**: `type-check`/`lint` נקיים
+(12 שערים). `test` 610/610 קבצים, 7298/7310 (+2 מעל בסיס M17-c64).
+`pnpm build` אחרי `rm -rf .next`, ללא שגיאה. **שער חזותי בחזית, שני
+הדפים, שלושת הרוחבים, נמדד בתוך הריצה הזו** על שרת חדש על port 39411
+(3311/3312 תפוסים ע"י תהליכים אחרים שהבעלים שלהם לא אומת): בית
+`8.51/9.02/3.95%` PASS זהה לבסיס (צפוי - CMS ריק בפרודקשן). מוצר מול
+`refs/ke_live_product_{380,768,1440}.png`: `2.69/1.29/0.14%` PASS
+זהה ל-`ef8641f05` (דף המוצר לא נגע כלל).
+
+**M17-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M18-c64 לשמירה על תקרת 300 שורות).** קופי ומשפטי אומתו מחדש בפעם
+השתים-עשרה, אפס דריפט מ-M17-c63 (`git log ef8641f05..HEAD` על
+מחרוזות UI ועמודים משפטיים מחזיר אפס קומיטים). ארבעת השערים ירוקים,
+כולל `build` מלא.
 
 **M16-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M17-c64 לשמירה על תקרת 300 שורות).** תברואת ריפו נבדקה מחדש,

@@ -19,10 +19,12 @@ export type Product = {
   category?: { name_he: string; slug: string } | null
   /**
    * Null, or absent, renders no stars: `RatingStars` already refuses a
-   * zero-count summary rather than fabricate a score. Populated today only by
+   * zero-count summary rather than fabricate a score. Populated by
    * `loadRelatedProducts` (see lib/related-products.ts) for the product
-   * page's "מומלצים" strip, matching live's own related-product cards, which
-   * carry a `.product-rating` row under the title (`refs/ke_live_product.html`).
+   * page's "מומלצים" strip and by `lib/homepage/rails.ts` for the home
+   * page's configured rails, matching live's own related-product cards,
+   * which carry a `.product-rating` row under the title
+   * (`refs/ke_live_product.html`).
    */
   ratingSummary?: { count: number; averageTenths: number } | null
 }

@@ -1,6 +1,7 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import type { RailSource } from '@/lib/homepage/sections'
+import { loadRatingSummaries } from '@/lib/reviews/rating-summaries'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -35,6 +36,14 @@ export type RailProduct = {
   offer_valid_until: string | null
   supplier_id: string | null
   category_id: string | null
+  /**
+   * Null, or absent, renders no stars. Not read from `readPool`: the pool is
+   * every active product and most rails never show more than a handful of
+   * them, so the rating query runs only over the cards a rail actually
+   * returns - same shape as `lib/related-products.ts`'s own strip, which
+   * `ProductCard`'s `ratingSummary` doc already describes.
+   */
+  ratingSummary?: { count: number; averageTenths: number } | null
 }
 
 /**
@@ -137,6 +146,22 @@ export function rankByRule(
 }
 
 /**
+ * Attaches the star row to a rail's final cards, same contract as
+ * `lib/related-products.ts`'s own strip: one extra query over the cards a
+ * rail actually returns, not the up-to-300-row pool every rule ranks, and a
+ * read failure yields "no rating shown" rather than failing the rail.
+ */
+async function withRatings(products: RailProduct[]): Promise<RailProduct[]> {
+  if (products.length === 0) return products
+  const ratings = await loadRatingSummaries(
+    createPublicClient(),
+    products.map((p) => p.id),
+    'homepage.rail_reviews_read_failed',
+  )
+  return products.map((p) => ({ ...p, ratingSummary: ratings.get(p.id) ?? null }))
+}
+
+/**
  * The products for a rule-driven rail.
  *
  * `now` is passed in rather than read here, because this runs inside a
@@ -149,7 +174,7 @@ export async function railByRule(
   limit: number,
   now: Date,
 ): Promise<RailProduct[]> {
-  return rankByRule(await readPool(), source, now).slice(0, limit)
+  return withRatings(rankByRule(await readPool(), source, now).slice(0, limit))
 }
 
 /**
@@ -166,7 +191,9 @@ export async function railByIds(ids: readonly string[]): Promise<RailProduct[]> 
   if (ids.length === 0) return []
   const pool = await readPool()
   const byId = new Map(pool.map((product) => [product.id, product]))
-  return ids.map((id) => byId.get(id)).filter((product): product is RailProduct => !!product)
+  return withRatings(
+    ids.map((id) => byId.get(id)).filter((product): product is RailProduct => !!product),
+  )
 }
 
 /**
@@ -180,13 +207,13 @@ export async function railByIds(ids: readonly string[]): Promise<RailProduct[]> 
  */
 export async function railByCategory(categoryId: string, limit: number): Promise<RailProduct[]> {
   const pool = await readPool()
-  return pool.filter((product) => product.category_id === categoryId).slice(0, limit)
+  return withRatings(pool.filter((product) => product.category_id === categoryId).slice(0, limit))
 }
 
 /** Products of one business, newest first. */
 export async function railBySupplier(supplierId: string, limit: number): Promise<RailProduct[]> {
   const pool = await readPool()
-  return pool.filter((product) => product.supplier_id === supplierId).slice(0, limit)
+  return withRatings(pool.filter((product) => product.supplier_id === supplierId).slice(0, limit))
 }
 
 /**

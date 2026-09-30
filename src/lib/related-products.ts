@@ -1,10 +1,8 @@
 import type { Product } from '@/components/ProductCard'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
-import { log } from '@/lib/observability/log'
-import { aggregateRatings } from '@/lib/reviews/eligibility'
+import { loadRatingSummaries } from '@/lib/reviews/rating-summaries'
 import { createPublicClient } from '@/lib/supabase/anon'
-import { TABLE_MISSING } from '@/lib/supabase/error-codes'
 import { cacheLife, cacheTag } from 'next/cache'
 
 /**
@@ -115,46 +113,7 @@ export async function loadRelatedProducts(
   const ratings = await loadRatingSummaries(
     supabase,
     products.map((p) => p.id),
+    'related_products.reviews_read_failed',
   )
   return products.map((p) => ({ ...p, ratingSummary: ratings.get(p.id) ?? null }))
-}
-
-/**
- * Same degrade-not-throw contract as `product-detail.ts`'s own rating read: a
- * missing `reviews` table (`TABLE_MISSING`) or any other read failure yields
- * "no rating shown" on every card in the strip rather than failing the whole
- * `use cache` entry the strip lives in. A star row is an enhancement to a
- * page that renders correctly without it; the products it sits under are not.
- */
-async function loadRatingSummaries(
-  supabase: ReturnType<typeof createPublicClient>,
-  productIds: string[],
-): Promise<Map<string, { count: number; averageTenths: number }>> {
-  const { data, error } = await supabase
-    .from('reviews')
-    .select('product_id, rating')
-    .in('product_id', productIds)
-    .eq('status', 'approved')
-    .is('deleted_at', null)
-
-  if (error) {
-    if (error.code !== TABLE_MISSING) {
-      log.warn('related_products.reviews_read_failed', { code: error.code ?? null })
-    }
-    return new Map()
-  }
-
-  const byProduct = new Map<string, number[]>()
-  for (const row of (data ?? []) as { product_id: string; rating: number }[]) {
-    const list = byProduct.get(row.product_id) ?? []
-    list.push(row.rating)
-    byProduct.set(row.product_id, list)
-  }
-
-  const summaries = new Map<string, { count: number; averageTenths: number }>()
-  for (const [productId, ratings] of byProduct) {
-    const summary = aggregateRatings(ratings)
-    if (summary) summaries.set(productId, summary)
-  }
-  return summaries
 }

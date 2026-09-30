@@ -64,6 +64,7 @@ export default function ProductRail({
               full_price: product.full_price,
               images: product.images,
               stock_quantity: product.stock_quantity,
+              ratingSummary: product.ratingSummary ?? null,
             }}
           />
         ))}

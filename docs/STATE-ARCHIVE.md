@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c64 (הועבר מ-STATE.md ב-M18-c64, לשמירה על תקרת 300 שורות)
+
+**M17-c64 - DONE (01.10): קופי ומשפטי אומתו מחדש בפעם השתים-עשרה,
+אפס דריפט מ-M17-c63.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל
+עמוד משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח
+וקישורים שבורים, ולתקן.
+
+**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `ef8641f05`
+(M17-c63). `git log ef8641f05..HEAD -- messages/he.json
+"src/app/(legal)" src/content/legal src/components/layout/
+SiteFooter.tsx` **מחזיר אפס קומיטים** - אף קומיט מאז לא נגע במחרוזות
+UI, בעמוד משפטי או בפוטר. `git diff --stat` המלא (8 קבצים) מראה רק
+תיעוד ושני קבצי קוד (`ProductCard.tsx`, `related-products.ts`,
+M18-c63). **נבדק ידנית**: התוספת היחידה היא חיבור רכיב `RatingStars`
+הקיים (נוצר ב-M18-c52, קודם לבסיס המדידה) לדף "מומלצים"; אפס מחרוזת
+עברית/אנגלית חדשה פונה-ללקוח, כל הטקסט החדש בשני הקבצים הוא הערות
+קוד באנגלית (מותר, קוד אינו UI) - `copy-gate` (biome, למטה) מאשר
+זאת. פוטר האתר וארבעת עמודי המשפטי (`src/app/(legal)/legal/
+{accessibility,privacy,returns,terms}/page.tsx`, `src/content/
+legal/*`) - **אפס קומיט** מאז `c6066ae85` (M17-c60), זהה בדיוק
+ל-11 המחזורים הקודמים.
+
+**שערים הורצו במלואם, כולל build (נדרש מפורש בפריט הזה):**
+`type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים: `copy-gate`
+נקי, `rtl-logical` נקי, i18n 627/627, `locale-format` 116/116,
+`docs-index` 282, `docs-path-audit` 154). `test` 610/610 קבצים,
+7296/7308 (12 דולגים, 54.30s) - זהה בייט למדידה הקודמת. `pnpm build`
+הורץ מחדש במלואו ועבר ללא שגיאה, כולל שני עמודי המשפטי הסטטיים
+(`/terms-and-conditions`, `/refund_returns`, `○` בפלט ה-build).
+**אין שער חזותי נדרש**: אפס שינוי JSX/CSS פונה-ללקוח בפריט הזה עצמו
+(רק תיעוד).
+
+קובץ ששונה: `STATE.md`.
+
 ## M16-c64 (הועבר מ-STATE.md ב-M17-c64, לשמירה על תקרת 300 שורות)
 
 **M16-c64 - DONE (01.10): תברואת ריפו נבדקה מחדש, `git status` נקי,

@@ -56,4 +56,19 @@ describe('ProductRail', () => {
       render(<ProductRail title="דילים" products={[product]} moreHref="/products" />),
     ).toContain('לכל המוצרים')
   })
+
+  it('carries a rail product rating summary through to its card', () => {
+    // Same star row as the PDP "מומלצים" strip (`lib/related-products.ts`),
+    // now fed by `lib/homepage/rails.ts`'s own `withRatings`. No summary on
+    // the fixture above renders no stars; this asserts the row appears once
+    // a rail product carries one.
+    const rated: RailProduct = { ...product, ratingSummary: { count: 3, averageTenths: 45 } }
+    const out = render(<ProductRail title="דילים" products={[rated]} />)
+    expect(out).toContain('/product/deal/reviews')
+  })
+
+  it('renders no stars when a rail product carries no rating summary', () => {
+    const out = render(<ProductRail title="דילים" products={[product]} />)
+    expect(out).not.toContain('/product/deal/reviews')
+  })
 })
