@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c63 (פירוט מלא, כווץ ב-STATE.md ל-M01-c64 לשמירה על תקרת 300 שורות)
+
+**M18-c63 - DONE (30.09): בדיקת אפס-פעילות + שיפור המרה אמיתי אחד.**
+משימת התור: אם כל 17 הפריטים הקודמים במחזור (M01-c63..M17-c63) לא
+הפיקו שינוי קוד, לרשום MAINTENANCE IDLE ואז לחפש שיפור המרה אמיתי
+אחד בדף הבית או בדף המוצר שתואם Electro v7. **נמדד**: `git diff
+--stat 947553fa0..HEAD -- src/` לפני הפריט הזה מראה רק `ProductCard.tsx`
+(M18-c62, לב מועדפים) ואפס שינוי אחר — MAINTENANCE IDLE 30.09.2026
+נרשם עבור מחזור c63, ועברתי לחלק השני.
+
+**הממצא:** `src/lib/related-products.ts` כבר החזיק הערה לא-ממומשת
+("The star row on each card. One extra query...") על שורת דירוג כוכבים
+תחת כותרת כרטיס שמעולם לא נכתבה. Electro v7 מרנדר `.product-rating`/
+`.star-rating` על כל כרטיס רשימה (`refs/electro_shop.html` 43 מופעים,
+`refs/electro_home.html` 56 — **אפס** ב-`refs/electro_home` בגרסת
+הבית שלנו כי הבית לא מציג רשת כרטיסים כזו). קריטי יותר: **האתר החי
+עצמו** (`refs/ke_live_product.html`) מציג בדיוק את אותה שורה על כרטיס
+"מומלצים" בתחתית דף המוצר (2 מופעים — אחד בכותרת המוצר, כבר ממומש
+דרך `RatingStars`/`ProductInfo`; אחד על כרטיס מומלץ, לא ממומש). זו
+תכונה שקיימת גם בצורה של Electro וגם בתוכן של החי, לא המצאה.
+`refs/ke_live_home.html` **אפס** מופעים — ולכן ההיקף הוגבל לדף המוצר
+בלבד, לא לדף הבית.
+
+**המימוש:** `DefaultProductCard` (הצרכן היחיד: `RelatedProducts` בדף
+המוצר) מקבל `product.ratingSummary` ומרנדר את `RatingStars` הקיים
+(זהה לזה שכבר ב-`ProductInfo`; `count===0` לא מרנדר דבר, אף פעם לא
+ציון מומצא). `loadRelatedProducts` שולף שאילתת `reviews` נוספת אחת
+(`in('product_id', ids)`, `approved`, לא-מחוק) לכל חמשת המוצרים
+המומלצים ביחד, מחשב `aggregateRatings` פר מוצר (אותה פונקציה כמו
+`product-detail.ts`), עם אותו דפוס "מתדרדר ולא זורק" (`TABLE_MISSING`
+שקט, שגיאה אחרת רק `log.warn`) — לא מפיל את כל ה-`use cache` strip.
+
+**שערים:** `type-check` נקי. `lint` נקי (12 שערים). `test` 610/610
+קבצים, 7296/7308 — זהה למחזור הקודם (`cached-reads-fail-loudly.test.ts`
+עדיין עובר: שאילתת הדירוגים רצה רק אחרי `byId.size>0`, שלא מתקיים
+בתרחישי השגיאה/ריק המשותפים לאותו mock). `pnpm build` עבר נקי.
+
+**שער חזותי בפורגראונד, מלא (שתי הרצות, שתיהן נרשמו ב-`UI-PARITY-
+REPORT.md` בעצמו):**
+- דף הבית (`refs/ke_live_{width}.png`, `DealsProductCard` לא שונה):
+  380 8.51% PASS, 768 9.07% PASS, 1440 3.95% PASS — זהה ל-M13-c63,
+  אפס רגרסיה, כצפוי (הקומפוננטה החדשה לא בצרכני דף הבית).
+- דף המוצר: **הריצה הראשונה מול `refs/ke_live_product_{width}.png`
+  (2.69%/1.29%/0.14% PASS) לא תקפה** — אותם refs חתוכים ל-1000px
+  בלבד (לא עמוד מלא) וה-gate עצמו הזהיר `HEIGHT RATIO 2.6-2.9x ...
+  NOT a pixel gate ... structurally different pages`. הפקודה התקפה,
+  מתועדת ב-`docs/MISSING-ASSETS.md`, היא מול `refs/electro_product_
+  {width}.png` עם `COMPARE_PRODUCT_SLUG=barbecue-2`: 380 5.65% PASS,
+  768 4.95% PASS, 1440 2.92% PASS — כמעט זהה למדידת S03 (5.61/4.92/
+  2.99), הפרש בתוך רעש המדידה, אפס רגרסיה.
+
+קבצים ששונו: `src/components/ProductCard.tsx` (טיפוס
+`Product.ratingSummary` + שורת `RatingStars` ב-`DefaultProductCard`),
+`src/lib/related-products.ts` (שאילתת `reviews` + `aggregateRatings`),
+`docs/UI-PARITY-REPORT.md` (השער כותב את עצמו), `STATE.md`.
+
 ## M16-c63 (פירוט מלא, נוצר ישירות כאן ב-M16-c63, שלא נכנס ל-STATE.md מלכתחילה)
 
 **24 PR פתוחים, מסודרים לפי תאריך פתיחה** (`gh pr list --state open

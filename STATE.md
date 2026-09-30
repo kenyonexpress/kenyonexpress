@@ -1,61 +1,49 @@
-RESUME FROM: M01-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c63)
+RESUME FROM: M02-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c64)
 
 ## המשך מ:
 
-**M18-c63 - DONE (30.09): בדיקת אפס-פעילות + שיפור המרה אמיתי אחד.**
-משימת התור: אם כל 17 הפריטים הקודמים במחזור (M01-c63..M17-c63) לא
-הפיקו שינוי קוד, לרשום MAINTENANCE IDLE ואז לחפש שיפור המרה אמיתי
-אחד בדף הבית או בדף המוצר שתואם Electro v7. **נמדד**: `git diff
---stat 947553fa0..HEAD -- src/` לפני הפריט הזה מראה רק `ProductCard.tsx`
-(M18-c62, לב מועדפים) ואפס שינוי אחר — MAINTENANCE IDLE 30.09.2026
-נרשם עבור מחזור c63, ועברתי לחלק השני.
+**M01-c64: BLOCKED (30.09), נבדק מחדש, build/deploy חדש לא הופעל
+(פעם עשירית).** משימת התור: build+deploy פרודקשן חדש דרך Vercel, ואז
+dig+curl על שני הדומיינים, תיעוד DNS BLOCKER אם ה-DNS נכשל.
 
-**הממצא:** `src/lib/related-products.ts` כבר החזיק הערה לא-ממומשת
-("The star row on each card. One extra query...") על שורת דירוג כוכבים
-תחת כותרת כרטיס שמעולם לא נכתבה. Electro v7 מרנדר `.product-rating`/
-`.star-rating` על כל כרטיס רשימה (`refs/electro_shop.html` 43 מופעים,
-`refs/electro_home.html` 56 — **אפס** ב-`refs/electro_home` בגרסת
-הבית שלנו כי הבית לא מציג רשת כרטיסים כזו). קריטי יותר: **האתר החי
-עצמו** (`refs/ke_live_product.html`) מציג בדיוק את אותה שורה על כרטיס
-"מומלצים" בתחתית דף המוצר (2 מופעים — אחד בכותרת המוצר, כבר ממומש
-דרך `RatingStars`/`ProductInfo`; אחד על כרטיס מומלץ, לא ממומש). זו
-תכונה שקיימת גם בצורה של Electro וגם בתוכן של החי, לא המצאה.
-`refs/ke_live_home.html` **אפס** מופעים — ולכן ההיקף הוגבל לדף המוצר
-בלבד, לא לדף הבית.
+**DNS ו-HTTP נבדקו בפועל, שניהם תקינים, אין DNS BLOCKER.**
+`dig +short A kenyonexpress.co.il` מחזיר `64.29.17.1`/`216.198.79.1`,
+`dig +short A www.kenyonexpress.co.il` מחזיר `216.198.79.1`/
+`216.198.79.65`, `dig +short NS kenyonexpress.co.il` מחזיר
+`ns1.vercel-dns.com`/`ns2.vercel-dns.com`. `curl` לאפקס מחזיר `308`
+אל `www`, `curl` ל-`www.kenyonexpress.co.il` מחזיר `200` עם תוכן חי
+(`lang="he" dir="rtl"`, "קניון EXPRESS").
 
-**המימוש:** `DefaultProductCard` (הצרכן היחיד: `RelatedProducts` בדף
-המוצר) מקבל `product.ratingSummary` ומרנדר את `RatingStars` הקיים
-(זהה לזה שכבר ב-`ProductInfo`; `count===0` לא מרנדר דבר, אף פעם לא
-ציון מומצא). `loadRelatedProducts` שולף שאילתת `reviews` נוספת אחת
-(`in('product_id', ids)`, `approved`, לא-מחוק) לכל חמשת המוצרים
-המומלצים ביחד, מחשב `aggregateRatings` פר מוצר (אותה פונקציה כמו
-`product-detail.ts`), עם אותו דפוס "מתדרדר ולא זורק" (`TABLE_MISSING`
-שקט, שגיאה אחרת רק `log.warn`) — לא מפיל את כל ה-`use cache` strip.
+**Build+deploy חדש לא הופעל, בכוונה, פעם עשירית.** כלל "goal שנתקע
+פעמיים, לדלג" כבר הופעל תשע פעמים ברציפות (M01-c56..M01-c63) על אותו
+חוסם בדיוק. לפני שדילגתי בפעם העשירית וידאתי מחדש, בקריאה בלבד, שהתנאי
+לא השתנה: `filter_project_envs` (Vercel MCP, פרויקט `kenyonexpress`)
+מראה סביבת Production **עדיין ללא** שלושת השמות ש-
+`scripts/deploy-preflight.mjs` דורש (`CARDCOM_TERMINAL_NUMBER`,
+`CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`; מה שקיים במקומם הוא
+`CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY`, שהקוד לא
+קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם. `list_deployments`
+(target=production, 5 אחרונות) מראה בדיוק את אותן חמש `dpl_` שנמדדו
+מ-M01-c61 ואילך, שום build אוטומטי חדש לא רץ מאז. HEAD עכשיו 267
+קומיטים אחרי `a388118f1` (עלה מ-249 ב-M01-c63). התיקון האמיתי (שינוי
+env ב-Vercel) אסור לסוכן לפי כללי הפריט הזה, אז ניסיון פריסה נוסף היה
+רק מייצר `ERROR` שישי בלי מידע חדש.
 
-**שערים:** `type-check` נקי. `lint` נקי (12 שערים). `test` 610/610
-קבצים, 7296/7308 — זהה למחזור הקודם (`cached-reads-fail-loudly.test.ts`
-עדיין עובר: שאילתת הדירוגים רצה רק אחרי `byId.size>0`, שלא מתקיים
-בתרחישי השגיאה/ריק המשותפים לאותו mock). `pnpm build` עבר נקי.
+**מסקנה: BLOCKED, לא DNS, חוסם ה-env הידוע.** DNS ו-HTTP תקינים; החוסם
+הבלעדי הוא שלושת משתני Cardcom החסרים ועוד `ALLOW_INCOMPLETE_ENV` ב-
+Production, פעולה של אופיר בלבד. אפס שינוי קוד בפריט הזה, לכן לא רצו
+`pnpm test`/`lint`/`type-check`/`build`.
 
-**שער חזותי בפורגראונד, מלא (שתי הרצות, שתיהן נרשמו ב-`UI-PARITY-
-REPORT.md` בעצמו):**
-- דף הבית (`refs/ke_live_{width}.png`, `DealsProductCard` לא שונה):
-  380 8.51% PASS, 768 9.07% PASS, 1440 3.95% PASS — זהה ל-M13-c63,
-  אפס רגרסיה, כצפוי (הקומפוננטה החדשה לא בצרכני דף הבית).
-- דף המוצר: **הריצה הראשונה מול `refs/ke_live_product_{width}.png`
-  (2.69%/1.29%/0.14% PASS) לא תקפה** — אותם refs חתוכים ל-1000px
-  בלבד (לא עמוד מלא) וה-gate עצמו הזהיר `HEIGHT RATIO 2.6-2.9x ...
-  NOT a pixel gate ... structurally different pages`. הפקודה התקפה,
-  מתועדת ב-`docs/MISSING-ASSETS.md`, היא מול `refs/electro_product_
-  {width}.png` עם `COMPARE_PRODUCT_SLUG=barbecue-2`: 380 5.65% PASS,
-  768 4.95% PASS, 1440 2.92% PASS — כמעט זהה למדידת S03 (5.61/4.92/
-  2.99), הפרש בתוך רעש המדידה, אפס רגרסיה.
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` (העברת פירוט M18-c63).
 
-קבצים ששונו: `src/components/ProductCard.tsx` (טיפוס
-`Product.ratingSummary` + שורת `RatingStars` ב-`DefaultProductCard`),
-`src/lib/related-products.ts` (שאילתת `reviews` + `aggregateRatings`),
-`docs/UI-PARITY-REPORT.md` (השער כותב את עצמו), `STATE.md`.
+**M18-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M01-c64 לשמירה על תקרת 300 שורות).** בדיקת אפס-פעילות במחזור c63
+(אפס שינוי, MAINTENANCE IDLE נרשם) ואז שיפור המרה אמיתי אחד: שורת
+דירוג כוכבים על כרטיס "מומלצים" בדף המוצר (`DefaultProductCard`/
+`RelatedProducts`), תואמת גם ל-Electro v7 וגם לאתר החי עצמו. ארבעת
+השערים ירוקים, שער חזותי PASS בשלושת הרוחבים בדף הבית ובדף המוצר
+(מול `electro_product_*`, כמעט זהה ל-S03, אפס רגרסיה).
 
 **M16-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M17-c63 לשמירה על תקרת 300 שורות).** תברואת ריפו, אפס דריפט
@@ -192,29 +180,29 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (249 קומיטים אחרי `a388118f1` החי, ספירת git
-   בלבד, עודכן ב-M01-c63 מ-231 שנמדד ב-M01-c62; ניסיון הפריסה הידני האחרון
+2. **פריסת פרודקשן של HEAD (267 קומיטים אחרי `a388118f1` החי, ספירת git
+   בלבד, עודכן ב-M01-c64 מ-249 שנמדד ב-M01-c63; ניסיון הפריסה הידני האחרון
    היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
    github, `audit/final-audit`@`291bc2d88`) **וסורבה ב-`deploy-preflight`**
    באותה סיבה בדיוק, פעם חמישית ברציפות (M01-c1, M01-c52, M01-c53, M01-c54,
    M01-c55): `dpl_FJYf483tkqSNf5pkG9MenghGQF46`, `BUILD_UTILS_SPAWN_1`.
-   **מ-M01-c56 ועד M01-c63 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
-   פעמיים, לדלג", מוחל מ-M01-c55, פעם תשיעית ב-M01-c63, כולל דחיית משימת
-   התור שביקשה בפירוש build+deploy חדש, ראו M01-c63 למעלה), אך התנאי נבדק
+   **מ-M01-c56 ועד M01-c64 לא נוסה ניסיון פריסה ידני נוסף** (כלל "goal שנתקע
+   פעמיים, לדלג", מוחל מ-M01-c55, פעם עשירית ב-M01-c64, כולל דחיית משימת
+   התור שביקשה בפירוש build+deploy חדש, ראו M01-c64 למעלה), אך התנאי נבדק
    שוב בקריאה בלבד בכל פעם ואושר ללא שינוי: `CARDCOM_TERMINAL_NUMBER`,
    `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` עדיין חסרים ב-Production
-   (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CLIENT_ID`/`API_KEY` שהקוד לא
-   קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (Vercel REST API,
-   קריאה בלבד, טוקן CLI רוענן דרך `npx vercel whoami`, M01-c63).
+   (קיימים במקומם `CARDCOM_MERCHANT_ID`/`CARDCOM_CLIENT_ID`/`CARDCOM_API_KEY`
+   שהקוד לא קורא) ו-`ALLOW_INCOMPLETE_ENV` עדיין מוגדר שם (Vercel MCP,
+   `filter_project_envs`, קריאה בלבד, M01-c64).
    **`list_deployments` (target=production, 5 אחרונות) מראה בדיוק את
-   אותן חמש פריסות `ERROR` שנמדדו ב-M01-c61 וב-M01-c62**, שום push מאז
+   אותן חמש פריסות `ERROR` שנמדדו ב-M01-c61 עד M01-c63**, שום push מאז
    לא הפעיל build אוטומטי חדש (`1083b8d8d`, `99b2079cb`, `0bcbdac18`,
-   `291bc2d88` פעמיים), כולן `ERROR` באותה סיבה, נמדד שוב M01-c63.
+   `291bc2d88` פעמיים), כולן `ERROR` באותה סיבה, נמדד שוב M01-c64.
    עד שאופיר יתקן את הסביבה אין פריסה אפשרית מהענף הזה; פרודקשן נשאר על
    `a388118f1` (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, מאושר שוב
-   ב-M01-c63 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
-   אינו קשור לחוסם הזה**, נמדד שוב ב-M01-c63: `www.kenyonexpress.co.il`
+   ב-M01-c64 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
+   אינו קשור לחוסם הזה**, נמדד שוב ב-M01-c64: `www.kenyonexpress.co.il`
    מחזיר 200 עם התוכן החי, `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS
    עדיין `ns1/ns2.vercel-dns.com`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
