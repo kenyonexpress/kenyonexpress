@@ -1,31 +1,40 @@
-RESUME FROM: M08-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c60)
+RESUME FROM: M09-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c60)
 
 ## המשך מ:
 
-**M07-c60 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל
-אמיתי.** אותו מתכון שאומת מ-M07-c1 ועד M07-c59: `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm
-build` → `exit 0`; `pnpm start -p 3512` מאותה בנייה (פורט 3512 אומת
-פנוי לפני ואחרי, `ps -o lstart` אישר שרת מאוחר מ-`.next`). `curl`
-אישר `200` על `/`. ארבעה chunks של chromium לפי תפקיד (`--grep
-anon/customer/admin/supplier`, worker יחיד), כולם נכתבו לאותו
-`ROUTE_AUDIT_REPORT` משותף: 132 + 25 + 68 + 32 טסטים, כולם עברו
-(playwright מדווח `passed`). נותח בקוד: **241 שורות ייחודיות
-(role+path)**, 239 PASS + 2 NO DATA (זהה לכל מדידה קודמת מ-M07-c1:
-`customer /account/tickets/[id]`, `admin /admin/discounts/[id]`, שני
-פערי seed ידועים), **אפס FAIL, אפס consoleErrors, אפס
-hydrationWarnings, אפס rtl:false** בכל 241 השורות. `git log
-19b363961..HEAD -- src/app src/components src/lib e2e` מחזיר קומיט
-יחיד (`58b5301af`, טסט `payment-money-columns.test.ts` בלבד, אפס
-שינוי קוד/מסלול), ולכן 241/239/2 (זהה ל-M07-c59) הוא לא רעש — אין
-דריפט. השרת נעצר (`kill`, פורט 3512 אומת פנוי מחדש), קובץ ה-JSONL
-הזמני (`/tmp/ke-route-audit-m07c60.jsonl`) נמחק. שערים: `type-check`
-נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n
-627/627, locale 116/64, docs-index 282, docs-path-audit 152), `test`
-608/608 קבצים, 7274/7286 (12 skipped, 56.16s), `build` `exit 0` (חלק
-מהמדידה עצמה). אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
-**קובץ יחיד שונה: `STATE.md`.**
+**M08-c60 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם ארבע-עשרה,
+אפס פריט שלב 1 בידי הסוכן.** משימת התור: "Backlog: take the single
+highest-impact open phase 1 item from `docs/BACKLOG.md`, skipping
+deferred and phase 2 items." `docs/BACKLOG.md` עדיין מעודכן לאחרונה
+ב-M15-c59 (`a353fa3db`), עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס
+סעיף חדש (`git diff --stat a353fa3db..HEAD -- docs/BACKLOG.md
+migrations/pending supabase/catalogue-known-issues.json` ריק). כל
+ה-15 עדיין פעולות שהמסמך עצמו מציין במפורש ש"אין דבר כאן שסוכן רשאי
+לבצע לבד" (DNS ברשם, Vercel env/סודות, אישור פריסת פרודקשן, אישור
+מיגרציה על פרודקשן, אישורי Cardcom אמיתיים, הכרעת קטלוג עסקית, מחיקת
+נתונים, ערך שרק אופיר מחזיק). בדיקת דריפט מ-M08-c59 (`9342b1bba`):
+שלושת המונים שהרשימה תלויה בהם נבדקו ישירות, `migrations/pending/*.sql`
+עדיין **59** קבצים (ללא תוספת), `git rev-list --count a388118f1..HEAD`
+עלה ל-**200** (git-only, פער-ספירה גרידא), `git stash list` עדיין
+**32**, `supabase/catalogue-known-issues.json` עדיין **26** ממצאים.
+`docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md` נבדקו שוב,
+אינם תורים פעילים (הראשון מוחלף רשמית, השני "everything deliberately
+deferred", מחוץ להיקף המשימה — אלה בדיוק ה"deferred" וה"phase 2" שהתור
+מבקש לדלג עליהם). אין פריט בר-ביצוע לסוכן. שערים הורצו במלואם:
+`type-check` נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים,
+i18n 627/627, locale 116/64, docs-index 282, docs-path-audit 152),
+`test` 608/608 קבצים 7274/7286 (12 skipped, 58.25s), `build` (`rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512
+pnpm build`) `exit 0`. אין שינוי קוד, אין שער חזותי נדרש (אין שינוי
+UI). **קובץ יחיד שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`,
+M07-c60 הועבר לתקרת 300 שורות).
+
+## M07-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M07-c60: route audit נמדד שוב, 241 שורות, אפס כשל אמיתי, אפס דלתא קוד
+שנוגעת במסלול (239 PASS, 2 NO DATA זהה לכל מדידה קודמת מ-M07-c1), אפס
+דריפט מ-M07-c59.
 
 ## M06-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 

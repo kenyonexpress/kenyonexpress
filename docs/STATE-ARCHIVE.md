@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c60 (הועבר מ-STATE.md ב-M08-c60, לשמירה על תקרת 300 שורות)
+
+**M07-c60 - DONE (30.09): route audit נמדד שוב, 241 שורות, אפס כשל
+אמיתי.** אותו מתכון שאומת מ-M07-c1 ועד M07-c59: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm
+build` → `exit 0`; `pnpm start -p 3512` מאותה בנייה (פורט 3512 אומת
+פנוי לפני ואחרי, `ps -o lstart` אישר שרת מאוחר מ-`.next`). `curl`
+אישר `200` על `/`. ארבעה chunks של chromium לפי תפקיד (`--grep
+anon/customer/admin/supplier`, worker יחיד), כולם נכתבו לאותו
+`ROUTE_AUDIT_REPORT` משותף: 132 + 25 + 68 + 32 טסטים, כולם עברו
+(playwright מדווח `passed`). נותח בקוד: **241 שורות ייחודיות
+(role+path)**, 239 PASS + 2 NO DATA (זהה לכל מדידה קודמת מ-M07-c1:
+`customer /account/tickets/[id]`, `admin /admin/discounts/[id]`, שני
+פערי seed ידועים), **אפס FAIL, אפס consoleErrors, אפס
+hydrationWarnings, אפס rtl:false** בכל 241 השורות. `git log
+19b363961..HEAD -- src/app src/components src/lib e2e` מחזיר קומיט
+יחיד (`58b5301af`, טסט `payment-money-columns.test.ts` בלבד, אפס
+שינוי קוד/מסלול), ולכן 241/239/2 (זהה ל-M07-c59) הוא לא רעש — אין
+דריפט. השרת נעצר (`kill`, פורט 3512 אומת פנוי מחדש), קובץ ה-JSONL
+הזמני (`/tmp/ke-route-audit-m07c60.jsonl`) נמחק. שערים: `type-check`
+נקי, `lint` נקי (biome 2023 קבצים, כל שערי התוכן ירוקים, i18n
+627/627, locale 116/64, docs-index 282, docs-path-audit 152), `test`
+608/608 קבצים, 7274/7286 (12 skipped, 56.16s), `build` `exit 0` (חלק
+מהמדידה עצמה). אין שינוי קוד, אין שער חזותי נדרש (אין שינוי UI).
+**קובץ יחיד שונה: `STATE.md`.**
+
 ## M06-c60 (הועבר מ-STATE.md ב-M07-c60, לשמירה על תקרת 300 שורות)
 
 **M06-c60 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
