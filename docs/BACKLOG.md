@@ -230,6 +230,27 @@ next.config.ts next.config.mjs middleware.ts vercel.json src/
 package.json pnpm-lock.yaml` points at `fd820969f`, earlier than the
 build).
 
+**Re-checked 2026-09-30 (M08-c63) against `git log 947553fa0..HEAD`:**
+still 15 items, same order, no duplicate, no new item. `git diff --stat
+947553fa0..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+shows only four paths: this file's own re-check notes (M08-c62, M15-c62),
+the `next`/`@next/mdx`/`next-intl`/`posthog-js` patch bump (M04-c63,
+`package.json`+`pnpm-lock.yaml`), and the `RecentlyViewedRail`/wishlist
+heart feature (M18-c62, `src/components/ProductCard.tsx`) — a prior
+cycle's queue item, not a `BACKLOG.md` entry. None touched a blocking
+line, a pending migration, or the catalogue ledger. Counts re-checked
+directly: `migrations/pending/*.sql` 59, `git stash list` 32,
+`supabase/catalogue-known-issues.json`'s `known` object 26, `dns-watch.sh`
+still pid 957 under `caffeinate` pid 999 — all unchanged from M15-c62.
+Item 4's commit count changed again (245 -> 256, `git rev-list --count
+a388118f1..HEAD`, git-only, production not re-probed this item). All 15
+items remain actions this file's own preamble excludes an agent from
+taking alone (DNS, Vercel env/secrets, production deploy/migration
+approval, catalogue business decision, data deletion). No phase 1 item
+available for the queue task this cycle (M08-c63 result: BACKLOG EMPTY).
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**

@@ -1,55 +1,48 @@
-RESUME FROM: M08-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c63)
+RESUME FROM: M09-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c63)
 
 ## המשך מ:
 
-**M07-c63 - DONE (30.09): route audit הורץ מחדש במלואו, 241 שורות, אפס
-כשל אמיתי, זהה ל-M07-c62.** משימת התור: לבקש כל נתיב באפליקציה, לצפות
-ל-200 או redirect מכוון, אפס שגיאות console, אפס אזהרות hydration, RTL
-נכון בכל עמוד, ולתקן מה שנכשל.
+**M08-c63 - DONE (30.09): backlog נבדק מחדש, אפס פריט phase 1 לסוכן,
+BACKLOG EMPTY.** משימת התור: לקחת את פריט phase 1 בעל ההשפעה הגבוהה
+ביותר מ-`docs/BACKLOG.md`, לדלג על נדחה/phase 2, ליישם במלואו עם טסטים;
+אם אין פריט — לכתוב BACKLOG EMPTY ב-STATE.md.
 
-**שינוי קוד אמיתי מאז המדידה הקודמת (M07-c62, `e97ce264f`):** `git diff
---stat e97ce264f..HEAD -- src/app src/components src/lib e2e/route-lists.ts
-e2e/route-audit.spec.ts package.json` הראה רק `src/components/ProductCard.tsx`
-(לב מועדפים על `RelatedProducts`/`RecentlyViewedRail`, M18-c62, כבר נבדק
-ל-Lighthouse ב-M06-c63) ואת עדכון ה-patch ל-`next`/`@next/mdx`/`next-intl`/
-`posthog-js` (M04-c63) — כך שהריצה הזו בדקה במפורש שאף אחד מהם לא מכניס
-שגיאת console/hydration, ולא הונחה "אפס דריפט".
+**`docs/BACKLOG.md` עדיין מכיל 15 פריטים, כולם מחוץ לתחום הסוכן לפי
+ההקדמה של הקובץ עצמו** (DNS, Vercel env, רוטציית סוד, החלטה עסקית על
+הקטלוג, אישור פריסה/מיגרציה על פרודקשן, מחיקת נתונים — כל אלה ברשימת
+"ארבעת המצבים" ב-`CLAUDE.md` או הכרעות מפעיל מפורשות). אין אף אחד מהם
+שניתן ליישום קוד עצמאי. נבדק מחדש מול `git log 947553fa0..HEAD` (נקודת
+הבדיקה המלאה הקודמת, M15-c62): `git diff --stat 947553fa0..HEAD --
+docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
+src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
+vercel.json supabase/ scripts/cron-jobs.json` מראה רק ארבעה קבצים:
+`docs/BACKLOG.md` (הערות re-check של M08-c62/M15-c62 עצמן),
+`package.json`+`pnpm-lock.yaml` (עדכון ה-patch ל-`next`/`@next/mdx`/
+`next-intl`/`posthog-js`, M04-c63), ו-`src/components/ProductCard.tsx`
+(לב מועדפים, M18-c62, כבר פריט תור קודם ולא שורת `BACKLOG.md`) — אף
+אחד לא נוגע בשורה חוסמת, במיגרציה ממתינה או בפנקס הקטלוג.
 
-המתכון מ-`e2e/route-audit.spec.ts` (תיעוד בקובץ עצמו): פורט 3471 היה
-תפוס (שרת `next-server` של סשן מקביל אחר, PID 84878), נבחר פורט 3462
-החלופי הזהה לזה של M07-c62. `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3462 pnpm build` → exit 0
-(`.next/BUILD_ID` נוצר); `pnpm start -p 3462` מאותה בנייה; `curl` אישר
-`200` על `/` ועל `/product/barbecue-2`. שש נתחי `playwright test
-e2e/route-audit.spec.ts --project=chromium --workers=1` עם
-`E2E_BASE_URL=http://localhost:3462`, `E2E_FORWARDED_FOR` שונה בכל נתח
-(מגבלת הקצב 10/שעה), `E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il`,
-`ROUTE_AUDIT_REPORT=/tmp/route-audit-m07c63.jsonl` משותף לכולם:
+**הספירות נבדקו ישירות, לא רק ב-diff:** `migrations/pending/*.sql` 59
+קבצים (זהה), `supabase/catalogue-known-issues.json` שדה `known` 26
+רשומות (זהה), `git stash list` 32 (זהה), `scripts/dns-watch.sh` עדיין
+pid 957 תחת `caffeinate` pid 999 (זהה). מספר הקומיטים מאחורי פרודקשן
+(`git rev-list --count a388118f1..HEAD`) עלה מ-245 ל-**256**, ספירת git
+בלבד, פרודקשן לא נבדק מחדש בפריט הזה (חוסם 2, לא נגזר מ-`BACKLOG.md`).
 
-| נתח | grep | תוצאה |
-|---|---|---|
-| אנונימי (עמודים) | `anon /` | 59/59 |
-| אנונימי (API+ספק+דינמי) | `GET /\|route audit: supplier\|anon dynamic` | 83/83 |
-| לקוח | `route audit: customer` | 25/25 |
-| אדמין a-d | `admin /admin$\|admin /admin/(a\|b\|c\|d)` | 23/23 |
-| אדמין f-r | `admin /admin/(f\|g\|h\|i\|o\|p\|q\|r)` | 20/20 |
-| אדמין s-w+detail | `admin /admin/(s\|u\|v\|w)\|admin detail pages` | 16/16 |
-
-`226` בדיקות playwright, כולן ירוקות. ה-jsonl (242 שורות גולמיות, 241
-אחרי dedupe על `(role, path)` — זהה בדיוק למספר ב-M07-c62) נותח בפייתון:
-**239 PASS + 2 NO DATA (`customer /account/tickets/[id]`,
-`admin /admin/discounts/[id]` — שני עמודי רשימה בלי שורה לקשר אליה,
-צפוי), אפס `consoleErrors`, אפס `hydrationWarnings`, אפס `rtl: false`
-בכל 241 השורות.** אין תיקון קוד נדרש. השרת נעצר, פורט 3462 אומת פנוי
-מחדש.
+**אין פריט חדש, אין כפילות, אין שינוי סדר.** הערת re-check נוספה
+ל-`docs/BACKLOG.md` עצמו (M08-c63) לפי אותה תבנית כמו M08-c61/M08-c62.
 
 **שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
-זהה ל-M06-c63). `test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) —
-זהה. `build` "Compiled successfully", exit 0 — חלק מהמתכון עצמו. אין
-שינוי UI, `scripts/compare.mjs` לא רץ (לא פריט חזותי).
+זהה ל-M07-c63). `test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) —
+זהה. `build` "Compiled successfully", exit 0. אין שינוי UI,
+`scripts/compare.mjs` לא רץ (לא פריט חזותי).
 
-קובץ יחיד שונה מלבד `STATE.md`: `docs/STATE-ARCHIVE.md`.
+קבצים ששונו: `docs/BACKLOG.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M07-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c63
+לשמירה על תקרת 300 שורות).** route audit הורץ מחדש במלואו, 241 שורות,
+אפס כשל אמיתי, זהה ל-M07-c62. ארבעת השערים ירוקים, אפס שינוי קוד נדרש.
 
 **M06-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M07-c63
 לשמירה על תקרת 300 שורות).** Lighthouse mobile נמדד שוב, כל שמונת
