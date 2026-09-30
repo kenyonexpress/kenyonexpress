@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c60 (הועבר מ-STATE.md ב-M10-c60, לשמירה על תקרת 300 שורות)
+
+**M09-c60 - DONE (30.09): שני קבצי כיסוי חסרים לגמרי נמצאו וטופלו,
+`bought-this-week.ts` ו-`stock-live.ts` מ-0% ל-100% (שורות/הצהרות/
+פונקציות/ענפים).** משימת התור: "State cleanup: take the single
+highest-impact open item listed in STATE.md that a code agent can
+complete without Ofir." קריאת `docs/BACKLOG.md` וחוסמי STATE.md אישרה
+מחדש שכל 15+13 הסעיפים שם דורשים אופיר (DNS/Vercel/סוד/פרודקשן/מיגרציה/
+הכרעת קטלוג/מחיקת נתונים) — אין ביניהם goal לסוכן, כמו ב-M09-c59. אבל
+"פריט פתוח" לא הוגבל לשני המסמכים האלה, אז הורצה `pnpm test:coverage`
+(בלי `CARDCOM_USE_MOCK`; אותו דגל דרך prefix גרם לכישלון בודד ב-`invoices.test.ts`
+— זיהום סביבה מהרצה קודמת בתוך הפריט הזה, לא תקלת קוד, ראו למטה) וזיהתה
+ששני קבצי `src/lib/commerce/**` (בטווח ה-include של הכיסוי הממוגן, אך לא
+ברשימת הרצפה של שישה הקבצים) עמדו על **0%** בכל המדדים: `bought-this-week.ts`
+(מזין את "נקנה השבוע" בעמוד המוצר) ו-`stock-live.ts` (מזין את תג המלאי
+החי וזמינות הרכישה) — שניהם עם צרכן אמיתי (`BoughtThisWeek.tsx`,
+`StockScarcity.tsx`), אף לא קובץ טסט אחד לאף אחד, אפס בדיקה על ההתנהגות
+בפועל (רק פונקציות עזר טהורות נבדקו דרך `social-proof.test.ts`). נכתבו
+`bought-this-week.test.ts` (11 מקרים) ו-`stock-live.test.ts` (7 מקרים),
+ממוקדים ב-`createAdminClient` לפי הדפוס הקיים ב-`route.test.ts` (בונה
+שרשרת PostgREST thenable), מכסים: הנתיב המאושר, כשל בקריאה ראשונה/שנייה,
+תוצאה ריקה בלי קריאה שנייה, דה-דופ הזמנות, `admin` שזורק (`Error` ולא-`Error`),
+שגיאת `available_stock` (כולל prerender-abort, בלי לוג), שורת מוצר חסרה,
+ותוצאת RPC לא-מספרית. `pnpm test:coverage` אחרי: 610/610 קבצים,
+7292/7304 (12 מדולגים), שני הקבצים 100%/100%/100%/100% (היו 0/0/0/0);
+סך-הכל הכיסוי הממוגן עלה 88.92%→93.33% הצהרות, 88.32%→92.85% ענפים —
+תוצר לוואי בלבד, השער עצמו לא היה גייט על שני אלה. `type-check` נקי,
+`lint` נקי (כל שערי התוכן ירוקים, i18n 627/627), `build` (`rm -rf .next
+&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm
+build`) `exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קבצים ששונו: שני
+טסטים חדשים בלבד** (פלוס `STATE.md`).
+
 ## M08-c60 (הועבר מ-STATE.md ב-M09-c60, לשמירה על תקרת 300 שורות)
 
 **M08-c60 - DONE (30.09): BACKLOG EMPTY, נמדד מחדש בפעם ארבע-עשרה,

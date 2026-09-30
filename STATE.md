@@ -1,37 +1,47 @@
-RESUME FROM: M10-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c60)
+RESUME FROM: M11-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c60)
 
 ## המשך מ:
 
-**M09-c60 - DONE (30.09): שני קבצי כיסוי חסרים לגמרי נמצאו וטופלו,
-`bought-this-week.ts` ו-`stock-live.ts` מ-0% ל-100% (שורות/הצהרות/
-פונקציות/ענפים).** משימת התור: "State cleanup: take the single
-highest-impact open item listed in STATE.md that a code agent can
-complete without Ofir." קריאת `docs/BACKLOG.md` וחוסמי STATE.md אישרה
-מחדש שכל 15+13 הסעיפים שם דורשים אופיר (DNS/Vercel/סוד/פרודקשן/מיגרציה/
-הכרעת קטלוג/מחיקת נתונים) — אין ביניהם goal לסוכן, כמו ב-M09-c59. אבל
-"פריט פתוח" לא הוגבל לשני המסמכים האלה, אז הורצה `pnpm test:coverage`
-(בלי `CARDCOM_USE_MOCK`; אותו דגל דרך prefix גרם לכישלון בודד ב-`invoices.test.ts`
-— זיהום סביבה מהרצה קודמת בתוך הפריט הזה, לא תקלת קוד, ראו למטה) וזיהתה
-ששני קבצי `src/lib/commerce/**` (בטווח ה-include של הכיסוי הממוגן, אך לא
-ברשימת הרצפה של שישה הקבצים) עמדו על **0%** בכל המדדים: `bought-this-week.ts`
-(מזין את "נקנה השבוע" בעמוד המוצר) ו-`stock-live.ts` (מזין את תג המלאי
-החי וזמינות הרכישה) — שניהם עם צרכן אמיתי (`BoughtThisWeek.tsx`,
-`StockScarcity.tsx`), אף לא קובץ טסט אחד לאף אחד, אפס בדיקה על ההתנהגות
-בפועל (רק פונקציות עזר טהורות נבדקו דרך `social-proof.test.ts`). נכתבו
-`bought-this-week.test.ts` (11 מקרים) ו-`stock-live.test.ts` (7 מקרים),
-ממוקדים ב-`createAdminClient` לפי הדפוס הקיים ב-`route.test.ts` (בונה
-שרשרת PostgREST thenable), מכסים: הנתיב המאושר, כשל בקריאה ראשונה/שנייה,
-תוצאה ריקה בלי קריאה שנייה, דה-דופ הזמנות, `admin` שזורק (`Error` ולא-`Error`),
-שגיאת `available_stock` (כולל prerender-abort, בלי לוג), שורת מוצר חסרה,
-ותוצאת RPC לא-מספרית. `pnpm test:coverage` אחרי: 610/610 קבצים,
-7292/7304 (12 מדולגים), שני הקבצים 100%/100%/100%/100% (היו 0/0/0/0);
-סך-הכל הכיסוי הממוגן עלה 88.92%→93.33% הצהרות, 88.32%→92.85% ענפים —
-תוצר לוואי בלבד, השער עצמו לא היה גייט על שני אלה. `type-check` נקי,
-`lint` נקי (כל שערי התוכן ירוקים, i18n 627/627), `build` (`rm -rf .next
-&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm
-build`) `exit 0`. אין שינוי UI, אין שער חזותי נדרש. **קבצים ששונו: שני
-טסטים חדשים בלבד** (פלוס `STATE.md`).
+**M10-c60 - DONE (30.09): כיסוי טסטים — `recordRefusedScan` ב-
+`src/server/domain/vouchers/scan-context.ts` היה הפונקציה הלא-נבדקת
+היחידה בין שש הקטגוריות של משימת התור (money, payment split, voucher
+state machine, order state machine, refunds, RLS helpers), מ-50%
+פונקציות (55.55% שורות/הצהרות) ל-100% בכל המדדים.** נמדד: `pnpm
+vitest run` עם `--coverage.include` מורחב זמנית לכל שש הקטגוריות
+(money.ts, split.ts, כל `orders/**`, כל `vouchers/**`, refund-record/
+refund-wallet/refund-destination/refund-requests/refund action,
+rls-report-fetch.ts) — כי `vitest.config.ts` מגדר כיסוי רק למסלול
+הכסף (`money.ts`, `commerce/**`, `split.ts`, `orders/**`), לא לוברים/
+refunds/RLS. כל הקבצים במסלול הכסף וב-refunds עמדו על 100% או קרוב
+(settlement.ts 95.65% ענפים, ללא שינוי — לא הנמוך ביותר). "RLS helpers"
+בפועל הם שלושה טסטים סטטיים מול JSON נמדד (`rls-manifest.test.ts`,
+`rls-write-policies.test.ts`, `rls-role-matrix.test.ts`) בלי קובץ מקור
+תואם, ו-`rls-report-fetch.ts` עמד על 100% — אין שם ענף חסר. הממצא:
+`scan-context.ts` (voucher domain) היה היחיד מתחת ל-90%, ובפער גדול —
+`readScanContext` (פענוח `x-forwarded-for`/`x-real-ip`) נבדק לגמרי
+ב-9 מקרים קיימים, אבל `recordRefusedScan` (רישום ניסיון סריקה שנדחה
+לפני `redeem_voucher()` — חתימת HMAC לא תקינה, קוד מעוות, טוקן ספק
+אחר; `ARCHITECTURE-VOUCHER-REDEMPTION.md` §7.1) לא נבדק כלל. נוספו
+6 מקרים ב-`scan-context.test.ts`: לקוח מהמתקשר מול נפילה ל-`createAdminClient()`,
+קיצוץ `codeEntered` ל-32 תווים, ובלימת דחיית ה-RPC בלי לזרוק (ה-catch
+תופס רק דחיית promise, לא `{error}` בתשובת Supabase — נבדק בכוונה מול
+`.rpc()` שנדחה, לא מול שדה `error` בתשובה מוצלחת, כי כך הקוד בפועל
+מתנהג). `createAdminClient()` עצמו קורא **מחוץ** ל-try/catch, כך שכשל
+שלו לא נבלם — נשאר מחוץ להיקף התור הזה (לא תוקן, לא נמדד ענף שממנו).
+`pnpm vitest run scan-context.test.ts --coverage` אחרי: 13/13 עברו,
+`scan-context.ts` 100%/100%/100%/100% (היו 55.55/86.66/50/55.55).
+`type-check` נקי, `lint` נקי (biome 2025 קבצים, כל שערי התוכן ירוקים,
+i18n 627/627), `test` המלא 610/610 קבצים 7296/7308 (12 מדולגים,
+70.55s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm build`) `exit 0`. אין
+שינוי UI, אין שער חזותי נדרש. **קובץ ששונה: `scan-context.test.ts`
+בלבד** (פלוס `STATE.md`, `docs/STATE-ARCHIVE.md`).
+
+## M09-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M09-c60: שני קבצי כיסוי חסרים לגמרי נמצאו וטופלו, `bought-this-week.ts`
+ו-`stock-live.ts` מ-0% ל-100% (שורות/הצהרות/פונקציות/ענפים).
 
 ## M08-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -71,32 +81,11 @@ M02-c60: שער חזותי (בית ומוצר) נמדד מחדש בשלושה ר
 מ-M02-c59 (זהה בדיוק: 8.51/9.02/3.95 בית, 5.65/4.95/2.92 מוצר). ארבעת
 השערים ירוקים.
 
-## M18-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M18-c59: בדיקת אפס-פעילות בפעם השישית, המחזור *לא* היה אפס-פעילות —
-שני קומיטי שינוי אמיתיים (`pnpm-lock.yaml`, טסט כיסוי ענפים), אותו
-דפוס כמו ארבעה מחזורים קודמים. `MAINTENANCE IDLE` לא נכתב. ארבעת
-השערים ירוקים.
-
-## M17-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M17-c59: מעבר קופי ומשפטי בפעם השביעית, אפס דריפט מ-M17-c58 (אפס
-מחרוזת חדשה, אפס עמוד משפטי חדש, אפס קישור חדש מאז M17-c53). ארבעת
-השערים ירוקים.
-
-## M16-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M16-c59: תברואת ריפו בפעם התשיעית, אפס דריפט בענפים מקומיים (43,
-זהה ל-M16-c58), 1 ענף remote פחות (116, ללא PR פתוח שנסגר בין
-המחזורים). 24 PR פתוחים, זהה. אפס מיזוג, אפס מחיקה. ארבעת השערים
-ירוקים.
-
-## M15-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M15-c59: סנכרון תיעוד — טבלת המצב ב-STATE.md, docs/LAUNCH-READINESS.md
-ו-docs/BACKLOG.md רועננה מול git log, אפס דריפט מ-M15-c58 (17 קומיטים
-כולם תיעוד/מדידה, אפס קומיט נגע בשורת חסימה). קומיטים מאחורי
-`a388118f1`: 189 (עודכן שוב ב-M01-c60 ל-194).
+**M18-c59..M15-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
+הזו ב-M10-c60 לשמירה על תקרת 300 שורות):** אפס-פעילות (בפועל שני
+קומיטים אמיתיים), קופי/משפטי (אפס דריפט), תברואת ריפו (אפס דריפט),
+וסנכרון תיעוד (STATE.md/LAUNCH-READINESS.md/BACKLOG.md מול git log,
+אפס דריפט) — ארבעת השערים ירוקים בכולם.
 
 ## M14-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
