@@ -2,6 +2,63 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c59 (הועבר מ-STATE.md ב-M17-c59, לשמירה על תקרת 300 שורות)
+
+**M16-c59 - DONE (30.09): תברואת ריפו בפעם התשיעית, אפס דריפט בענפים
+מקומיים, ‏1 ענף remote פחות.** משימת התור: לוודא `git status` נקי, שכל
+ענף מקומי דחוף, ולרשום PR פתוחים וענפים ישנים ב-STATE.md, בלי למזג או
+למחוק דבר.
+
+**נמדד:** `git status` נקי, `audit/final-audit` תואם ל-
+`origin/audit/final-audit` (אפס עבודה לא-committed, אפס commit לא-דחוף).
+**43 ענפים מקומיים, זהה בדיוק ל-M16-c58** (אפס ענף חדש, אפס ענף שנעלם).
+כל הענפים נבדקו לפי SHA: 32 עוקבים אחרי מקבילם ב-remote עם 0 קומיטים
+קדימה/אחורה; 4 ענפי `arch/*` (`account-area`, `checkout-cardcom-verification`,
+`notifications-v2`, `wp-migration`) עוקבים בטעות אחרי `origin/main` אך
+ה-SHA שלהם זהה ל-`origin/arch/*` המתאים; 7 ענפים חסרי הגדרת upstream
+מקומית (`arch/seed-data`, `feat/auth-hardening`, `feat/monitoring-sentry`,
+`feat/notifications-full`, `feat/performance-seo`,
+`feat/search-meilisearch`, `release/v1.0`) אך ה-SHA שלהם זהה בדיוק לענף
+remote באותו שם; 6 ענפים (`pr36`, `release/v1.1`,
+`wip/refund-record-rebase-head`, `chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`) אין להם ענף remote
+באותו שם כלל, אך ראש הענף שלהם מוכל בעשרות ענפי remote אחרים
+(`git branch -r --contains`, בפועל `origin/main` בכולם). **אפס קומיט
+ייחודי לא-דחוף נמצא בשום ענף מקומי — כל 43 הענפים כבר קיימים ב-origin
+תחת שם זהה או אחר.** `main` המקומי נשאר על `3f6ca53c3`, אותה סטייה
+ידועה (חוסם 13 למטה, ללא שינוי).
+
+**24 PR פתוחים** (`gh pr list --state open`, זהה בדיוק ל-M16-c58, מספרים
+2-47). **116 ענפי remote** (`git branch -r` אחרי `git fetch --prune`,
+ירד ב-1 מ-117 ב-M16-c58 — ענף ללא PR פתוח נסגר/נמזג בין המחזורים; אין
+דרך לזהות איזה מ-`git log` בלבד, ואין בכך פעולה נדרשת). **12 מ-43
+הענפים המקומיים כבר ממוזגים לתוך HEAD** (`git merge-base --is-ancestor`,
+זהה ל-M16-c58: `audit/final-audit` עצמו, `chore/vitest-4`,
+`docs/nightly-health-green`, `docs/v1-final`, `fix/main-nightly-red`,
+`main`, `pr36`, `release/v1.0`, `release/v1.1`, `release/v1.2`,
+`wip/refund-record-rebase-head`, `work/goal-queue-0923`), מועמדים
+לניקוי, לא נמחקו (הכלל אוסר מחיקת ענפים). **28 ענפים ישנים** (קומיט
+אחרון לפני 16.09, 14+ יום, לא ממוזגים ל-HEAD, רשימה זהה ל-M16-c58):
+`save/ke-visual-work`, `arch/account-area`,
+`arch/checkout-cardcom-verification`, `arch/notifications-v2`,
+`arch/seed-data`, `arch/wp-migration`, `docs/final-pack`,
+`arch/docs-batch-2`, `arch/docs-queue`, `feat/e2e-quality`,
+`feat/auth-model`, `feat/db-hardening-v2`, `feat/product-type`,
+`merge/supplier-and-arch-night`, `feat/auth-hardening`,
+`feat/checkout-e2e`, `feat/monitoring-sentry`, `feat/notifications-full`,
+`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`,
+`feat/rate-limit-layer`, `docs/final-pass`, `worktree-ke-fetch-timeout`,
+`worktree-mega-63-72`, `closeout/v1-final`, `feat/coupon-qr`,
+`worktree-order-state-machine`. **3 ענפים לא ממוזגים אך לא נטושים**
+(קומיט תוך 14 יום): `autopilot` (17.09), `docs/ui-design-system`
+(23.09), `phase5/homepage-closeout` (24.09). אפס מיזוג, אפס מחיקה.
+
+שערים הורצו במלואם: `type-check` נקי, `lint` נקי (2023 קבצים, 12 שערים,
+i18n 627/627, locale-format 116/116, docs-index 282, docs-path-audit
+152), `test` 608/608 קבצים 7274/7286 (12 skipped, 57.31s), `build`
+`exit 0` — זהה ל-100% למה שנמדד ב-M15-c59. אין שער חזותי נדרש (אפס
+שינוי UI, `STATE.md` בלבד).
+
 ## M14-c59 (הועבר מ-STATE.md ב-M15-c59, לשמירה על תקרת 300 שורות)
 
 **M14-c59 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
