@@ -1,45 +1,54 @@
-RESUME FROM: M11-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c63)
+RESUME FROM: M12-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c63)
 
 ## המשך מ:
 
-**M10-c63 - DONE (30.09): כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
-עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש.** משימת התור: "find the
-critical module with the lowest coverage among packages/money, payment
-split, voucher state machine, order state machine, refunds and RLS
-helpers. Add unit tests until branches are covered." זהה למילה
-למשימת M10-c62/M10-c61. נבדק תחילה `git log 092fa0b9c..HEAD` (קצה
-M10-c62) על 14 קבצי היעד ועל `vitest.config.ts`/`package.json`/
-`pnpm-lock.yaml`: ריק. `git diff --stat` על `src/ vitest.config.ts
-package.json pnpm-lock.yaml` הראה רק שלושה קבצים — `package.json`,
-`pnpm-lock.yaml` (עדכון patch, M04-c63) ו-`src/components/ProductCard.tsx`
-(M18-c62, לב מועדפים) — אף אחד לא נוגע באחת משש הקטגוריות.
+**M11-c63 - DONE (30.09): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
+בכל חומרה, אפס תיקון קוד נדרש.** משימת התור: "Accessibility: run axe on
+every page. Fix every serious and critical violation. Keep WCAG 2.1 AA.
+Record the remaining count in STATE.md." זוהה קוד אמיתי שהשתנה מאז
+המדידה הקודמת (M11-c62, `5e994b7c1`): `git log 5e994b7c1..HEAD -- src/
+e2e/ messages/ packages/` הראה קומיט יחיד, `d2f4cba1e` (M18-c62) — לב
+מועדפים (`WishlistHeart`) נוסף ל-`DefaultProductCard`, שמרונדר ב-
+`RelatedProducts`/`RecentlyViewedRail` בדף המוצר. סימון חדש בדיוק בסקופ
+שהשערים האלה סורקים (שני טסטי דף-מוצר וטסט המקלדת של דף מוצר), אז לא
+הוסתמך על "אפס דריפט" — הורצה סריקה אמיתית.
 
-הורצה מדידה ישירה בכל זאת (לא הוסתמך על "אפס דריפט" בלבד), עם תיקון
-נתיב אחד בדרך: השמות המקוצרים בהיסטוריה (`orders/state-machine.ts`,
-`vouchers/state-machine.ts`) מצביעים בפועל על `src/server/domain/
-orders/state-machine.ts` ו-`src/server/domain/vouchers/state-machine.ts`
-(לא `src/lib/...` — נבדק ב-`find`, שני הנתיבים תחת `src/lib/` לא קיימים
-בכלל). `vitest run --coverage --coverage.include` על 14 קבצי היעד
-המדויקים (`money.ts`, `commerce/money.ts`, `checkout/split.ts`,
-`commerce/commission.ts`, `domain/vouchers/state-machine.ts`,
-`domain/orders/state-machine.ts`, `domain/orders/refund.ts`,
-`domain/orders/refund-request.ts`, `actions/payments/refund.ts`,
-`payments/refund-record.ts`, `lib/payments/refund-destination.ts`,
-`vouchers/expiry-refund.ts`, `supabase/rls-report-fetch.ts`,
-`payments/refund-wallet.ts`) נתן **354/354 ענפים, 100%** (וגם 100%
-statements/functions/lines, 470/470/98/98/406/406), זהה בדיוק ל-M10-c62
-ול-M10-c61. **אפס קוד שונה, אפס טסט חדש נדרש.**
+נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD, הורם `pnpm start -p
+3617`, והורצו `e2e/a11y.spec.ts` ו-`e2e/a11y-authenticated.spec.ts` (שלוש
+תפקידים דרך `route-lists.ts`: לקוח/מנהל/ספק, בנוסף לסריקה הציבורית) עם
+`--workers=1` בפורגראונד. ריצה ראשונה עם ברירות המחדל של `auth-session.ts`
+דילגה על 57 מ-121 (כל נתיבי המנהל): `admin sign-in failed:
+page.waitForURL: Timeout 20000ms exceeded` — כתובת ברירת המחדל
+(`e2e-admin@test.kenyonexpress.local`) אינה קיימת מול הבסיס הזה. תוקן עם
+`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il` (התיעוד הנכון, ראה
+memory `e2e-money-path-needs-mock-build-and-one-login-per-role`), הורץ
+שוב מהתחלה: **120/121 עברו, 1 דולג בכוונה (`the search combobox says
+which suggestion is selected`, שדה החיפוש הוסר בפרויקט ב-D3, מתועד
+בקובץ עצמו), אפס נכשל.** השער עצמו נכשל על **כל** הפרה, לא רק
+`serious`/`critical` (הערת `a11y-authenticated.spec.ts` על שתי סיבות
+היסטוריות שדורגו `moderate` והיו הפרה אמיתית), אז 0 עובר כאן = 0 מכל
+דרגת חומרה, כולל `serious`/`critical`. **המספר הנותר: 0.**
 
-ארבעת השערים: `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
-קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282).
-`test` הורץ פעמיים כחלק ממדידת הכיסוי, 610/610 קבצים, 7296/7308 (12
-דולגים) שתי הפעמים. `build` לא הורץ מחדש: `.next/BUILD_ID`
-(`439952918`, נכתב 19:32) מאומת source-identical ל-HEAD (`git status
---short` ריק לאורך כל הפריט, HEAD לא זז), וזיכרון פנוי נמוך (~65MB,
-`vm_stat`) הפך build חוזר בלי שינוי קוד לסיכון מיותר.
+הסקופ: כל 18 הנתיבים הציבוריים הקבועים (בית, קטלוג, עגלה, צור קשר,
+כניסה/הרשמה/איפוס סיסמה, חיפוש עם שאילתה, ארכיון קטגוריה, שש עמודי
+משפט), הצהרת `lang="he" dir="rtl"`, מקלדת על תשע נתיבים ציבוריים ועל
+דף מוצר ועל קופה זרועה, באנר ההסכמה בשלושה רוחבים, שני סוגי דף מוצר
+(רגיל וקופון), עגלה+קופה זרועות, שלושת/ארבעת שלבי אשף הקופה כולל מצב
+שגיאת ולידציה, פאנל העגלה הקופצת, באנר ההתקנה, ו-`route-lists.ts`'s
+`CUSTOMER_PAGES`/`ADMIN_PAGES`/`SUPPLIER_PAGES` המלאים (כל מה שמסוג
+`'page'`) מאחורי סשן אמיתי לכל אחד משלושת התפקידים.
+
+ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים, i18n 627/627, locale 116/64, docs-index 282). `test` 610/610
+קבצים, 7296/7308 (12 דולגים). `build` הורץ טרי כחלק מהמדידה עצמה
+(`CARDCOM_USE_MOCK=true pnpm build`, exit 0). אפס שינוי קוד ייצור.
 
 קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M10-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M11-c63
+לשמירה על תקרת 300 שורות).** כיסוי טסטים נבדק מחדש, שש הקטגוריות
+הקריטיות עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש, זהה ל-M10-c62.
 
 **M09-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M10-c63
 לשמירה על תקרת 300 שורות).** STATE CLEAN, שני המקורות (חוסמים פתוחים +

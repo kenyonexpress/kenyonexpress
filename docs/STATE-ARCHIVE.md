@@ -2,6 +2,46 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c63 (הועבר מ-STATE.md ב-M11-c63, לשמירה על תקרת 300 שורות)
+
+**M10-c63 - DONE (30.09): כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
+עדיין ב-100% ענפים כל אחת, אפס טסט חדש נדרש.** משימת התור: "find the
+critical module with the lowest coverage among packages/money, payment
+split, voucher state machine, order state machine, refunds and RLS
+helpers. Add unit tests until branches are covered." זהה למילה
+למשימת M10-c62/M10-c61. נבדק תחילה `git log 092fa0b9c..HEAD` (קצה
+M10-c62) על 14 קבצי היעד ועל `vitest.config.ts`/`package.json`/
+`pnpm-lock.yaml`: ריק. `git diff --stat` על `src/ vitest.config.ts
+package.json pnpm-lock.yaml` הראה רק שלושה קבצים — `package.json`,
+`pnpm-lock.yaml` (עדכון patch, M04-c63) ו-`src/components/ProductCard.tsx`
+(M18-c62, לב מועדפים) — אף אחד לא נוגע באחת משש הקטגוריות.
+
+הורצה מדידה ישירה בכל זאת (לא הוסתמך על "אפס דריפט" בלבד), עם תיקון
+נתיב אחד בדרך: השמות המקוצרים בהיסטוריה (`orders/state-machine.ts`,
+`vouchers/state-machine.ts`) מצביעים בפועל על `src/server/domain/
+orders/state-machine.ts` ו-`src/server/domain/vouchers/state-machine.ts`
+(לא `src/lib/...` — נבדק ב-`find`, שני הנתיבים תחת `src/lib/` לא קיימים
+בכלל). `vitest run --coverage --coverage.include` על 14 קבצי היעד
+המדויקים (`money.ts`, `commerce/money.ts`, `checkout/split.ts`,
+`commerce/commission.ts`, `domain/vouchers/state-machine.ts`,
+`domain/orders/state-machine.ts`, `domain/orders/refund.ts`,
+`domain/orders/refund-request.ts`, `actions/payments/refund.ts`,
+`payments/refund-record.ts`, `lib/payments/refund-destination.ts`,
+`vouchers/expiry-refund.ts`, `supabase/rls-report-fetch.ts`,
+`payments/refund-wallet.ts`) נתן **354/354 ענפים, 100%** (וגם 100%
+statements/functions/lines, 470/470/98/98/406/406), זהה בדיוק ל-M10-c62
+ול-M10-c61. **אפס קוד שונה, אפס טסט חדש נדרש.**
+
+ארבעת השערים: `type-check` נקי (`tsc --noEmit`). `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים, i18n 627/627, locale 116/64, docs-index 282).
+`test` הורץ פעמיים כחלק ממדידת הכיסוי, 610/610 קבצים, 7296/7308 (12
+דולגים) שתי הפעמים. `build` לא הורץ מחדש: `.next/BUILD_ID`
+(`439952918`, נכתב 19:32) מאומת source-identical ל-HEAD (`git status
+--short` ריק לאורך כל הפריט, HEAD לא זז), וזיכרון פנוי נמוך (~65MB,
+`vm_stat`) הפך build חוזר בלי שינוי קוד לסיכון מיותר.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M09-c63 (הועבר מ-STATE.md ב-M10-c63, לשמירה על תקרת 300 שורות)
 
 **M09-c63 - DONE (30.09): STATE CLEAN.** משימת התור: "State cleanup: take
