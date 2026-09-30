@@ -2,6 +2,70 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c60 (הועבר מ-STATE.md ב-M14-c60, לשמירה על תקרת 300 שורות)
+
+**M13-c60 - DONE (30.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
+מ-M13-c59.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
+Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים
+עם טסטים. בדיקת דריפט קודם: `git log 0d5f34abb..HEAD` (מאז המדידה
+הקודמת, M13-c59) מחזיר 17 קומיטים (M14-c59..M12-c60), כולם תיעוד/
+מדידה/תלות/טסטים (ביצועים, תברואת ריפו/סנכרון תיעוד/קופי-משפטי/
+אפס-פעילות, בדיקת פרודקשן, שער חזותי, בדיקה ירוקה, תברואת תלויות, DB
+advisors, Lighthouse, route audit, backlog, כיסוי טסטים פעמיים,
+נגישות, SEO): `git diff --stat 0d5f34abb..HEAD -- middleware.ts
+'src/**/rate-limit*' 'src/**/ratelimit*' 'src/lib/security*'
+'src/lib/headers*' next.config.* vercel.json 'src/server/actions/auth*'
+'src/server/actions/checkout*' 'src/server/actions/*voucher*'
+'src/server/actions/*redeem*' 'src/app/api/supplier/vouchers/redeem*'
+'src/app/redeem/**'` חוזר ריק — **אפס קומיט נגע בכותרות אבטחה או
+ב-rate limiting**.
+
+נמדד בכל זאת מחדש חי: `.next` הקיים תואם ל-HEAD (`BUILD_ID` נושא את
+ה-hash `44243439e` עצמו), `PORT=3712 pnpm start` הורם ייעודית למדידה
+(לא נבנה מחדש כדי לא להתחרות במשאבים מול כ-20 `pnpm start` מקבילים),
+נסגר בסוף המדידה:
+- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
+  זהות בארבעתן: CSP (`frame-ancestors 'none'`, `frame-src`/
+  `form-action` ל-`secure.cardcom.solutions` בלבד, `object-src
+  'none'`), `Strict-Transport-Security: max-age=63072000;
+  includeSubDomains; preload`, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`.
+- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c59: `login`
+  (`src/server/actions/auth.ts:141`, `checkRateLimit(\`login:${ip}\`)`),
+  `begin_checkout` (`src/server/actions/payments/checkout.ts:351`,
+  `checkRateLimit(\`begin_checkout:user:${user.id}\`, 10, 60)`),
+  `redeem` (`src/app/redeem/[token]/page.tsx:109`,
+  `checkRateLimit(\`redeem:${scanContext.ip}\`, 60, 3600)`),
+  `voucher-redeem` (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
+  `rateLimit('voucher-redeem', user.id)`, 429). הגב מיושם דרך
+  `src/lib/rate-limit/limiter.ts` (Upstash כברירת מחדל, נפילה ל-postgres,
+  נכשל פתוח בשגיאה — קוד לא השתנה).
+- **ממצא מדידה, לא דריפט קוד:** ה-CSP המקומי חסר `upgrade-insecure-requests`
+  (נוכח ב-M13-c59, נעדר עכשיו). `src/lib/security/frame-policy.ts:168`
+  מוסיף את הדירקטיבה רק כש-`NEXT_PUBLIC_APP_URL` לא מתחיל ב-`http://`,
+  ו-`next.config.ts` מריץ את `headers()` בזמן build — כלומר הערך נאפה
+  לתוך ה-`.next` לפי איזה `NEXT_PUBLIC_APP_URL` היה מוגדר **בזמן ה-build**,
+  לא בזמן ה-`start`. ה-build הנוכחי (נבנה תחת M11-c60 עם
+  `NEXT_PUBLIC_APP_URL=http://localhost:3512` מפורש) אפה `http://`, לכן
+  הדירקטיבה נעדרת מקומית — [[site-url-baked-at-build-time]]. **נבדק מול
+  Vercel (`filter_project_envs`, קריאה בלבד, ללא פענוח ערך): הפרויקט
+  `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק `NEXT_PUBLIC_APP_URL`
+  מוגדר ב-target `production`** (מוצפן, לא נקרא) — דומיין הפרודקשן
+  הוא `https://www.kenyonexpress.co.il`, אז ה-build האמיתי של Vercel
+  כן מוסיף את הדירקטיבה. **לא תיקון קוד**: זה תוצר build מקומי, לא
+  התנהגות שגויה של הקוד.
+
+**אפס שינוי קוד** (אין דריפט לתקן, הממצא למעלה הוא תוצר build מקומי):
+`type-check` נקי, `lint` נקי (2025 קבצים, כל שנים-עשר השערים המשניים
+כולל `i18n` 627/627 ו-`locale-format` 116/116), `test` המלא 610/610
+קבצים 7296/7308 (12 דולגים, 61.87s), `build`: נעשה שימוש ב-`.next`
+הקיים התואם בדיוק ל-HEAD, לא נבנה מחדש כדי לא להתחרות במשאבים עם
+כ-20 סשנים מקבילים. אין שינוי UI, אין שער חזותי נדרש. **קובץ יחיד
+שונה: `STATE.md`** (פלוס `docs/STATE-ARCHIVE.md`, M12-c60 הועבר
+לתקרת 300 שורות).
+
 ## M12-c60 (הועבר מ-STATE.md ב-M13-c60, לשמירה על תקרת 300 שורות)
 
 **M12-c60 - DONE (30.09): SEO — meta/canonical/og/JSON-LD
