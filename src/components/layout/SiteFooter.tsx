@@ -1,3 +1,4 @@
+import FooterNewsletterForm from '@/components/layout/FooterNewsletterForm'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
 import { storeWhatsAppLink } from '@/lib/whatsapp'
@@ -168,31 +169,7 @@ export default function SiteFooter() {
           {/* left side: white rounded email field + dark הירשם button */}
           {/* live: one 470x41 pill, rounded at both ends, input on the
               inline-start (right) and the submit button on the left */}
-          <form
-            method="post"
-            action="/api/newsletter"
-            className="flex h-newsletter-field w-full items-stretch overflow-hidden rounded-full bg-white lg:w-newsletter-min"
-          >
-            <input
-              type="email"
-              name="email"
-              required
-              // The site has TWO newsletter fields. `NewsletterSignup` is LTR
-              // and explains why in a comment; this one, the footer's own copy
-              // of the same form, was not - the same address flush left on one
-              // and flush right on the other.
-              dir="ltr"
-              placeholder="הזן כתובת Email"
-              aria-label="כתובת אימייל לניוזלטר"
-              className="min-w-0 flex-1 border-0 bg-white px-5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
-            />
-            <button
-              type="submit"
-              className="shrink-0 bg-footer-bg px-7 text-sm font-normal text-white transition-colors hover:bg-black"
-            >
-              הירשם
-            </button>
-          </form>
+          <FooterNewsletterForm />
         </div>
       </div>
 

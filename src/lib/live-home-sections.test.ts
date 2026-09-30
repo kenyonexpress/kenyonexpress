@@ -71,6 +71,30 @@ describe('the homepage sections live actually has', () => {
     expect(src.match(/id: 'das-\d'/g) ?? []).toHaveLength(3)
   })
 
+  it('mounts the STEP 05 sections after the deals grid, below the 2600px the gate scores', () => {
+    // 2026-09-30. The deal-of-the-day countdown, the eight-tile category grid,
+    // the hot coupons row and the handheld newsletter are appended AFTER
+    // `DealsOfTheDay`, whose 32 cards end past 2600px at every width, so none
+    // of them can move a scored pixel. Mounting any of them above the grid
+    // would repeat the city-row failure recorded in page.tsx.
+    const home = read('src/app/(store)/page.tsx')
+    const marks = [
+      '<CmsHero',
+      '<BenefitBar',
+      '<DealsOfTheDay',
+      '<DealOfTheDay',
+      '<CategoryGrid',
+      '<HotCoupons',
+      '<HomeNewsletter',
+    ]
+    const at = marks.map((m) => home.indexOf(m))
+    for (const [i, m] of marks.entries())
+      expect(at[i], `${m} is not on the home page`).toBeGreaterThanOrEqual(0)
+    expect(at, 'the below-fold sections must follow the deals grid in this order').toEqual(
+      [...at].sort((a, b) => a - b),
+    )
+  })
+
   it('ships no brand strip, because live has none', () => {
     // `brands-carousel` is zero on live and renders nowhere at either width.
     const home = read('src/app/(store)/page.tsx')

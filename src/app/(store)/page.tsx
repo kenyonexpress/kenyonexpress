@@ -1,7 +1,11 @@
 import BenefitBar from '@/components/home/BenefitBar'
+import CategoryGrid from '@/components/home/CategoryGrid'
 import CmsHero from '@/components/home/CmsHero'
+import DealOfTheDay from '@/components/home/DealOfTheDay'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
+import HomeNewsletter from '@/components/home/HomeNewsletter'
+import HotCoupons from '@/components/home/HotCoupons'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
@@ -114,6 +118,20 @@ export default function HomePage() {
       */}
       <BenefitBar />
       <DealsOfTheDay />
+      {/*
+        EVERYTHING FROM HERE DOWN IS BELOW THE GATE'S WINDOW, AND THAT IS WHY
+        IT IS HERE AND NOT HIGHER. `diff-bands.mjs` scores the first 2600px;
+        the 32-card grid above ends past that line at every width (31 rows at
+        380, 16 at 768, 8 at 1440). The city row (see above) was refused
+        because under the hero it moved every scored band; these four sections
+        move none. Their reads are `'use cache'` on the catalogue client, so
+        the page stays static and nothing streams in under the visitor.
+        `live-home-sections.test.ts` pins this order.
+      */}
+      <DealOfTheDay />
+      <CategoryGrid />
+      <HotCoupons />
+      <HomeNewsletter />
     </>
   )
 }

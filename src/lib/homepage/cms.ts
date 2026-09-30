@@ -145,25 +145,55 @@ type SectionRow = {
 }
 
 /**
- * A database hero row, wearing the layout of the authored slide it replaces.
+ * A database hero row, wearing the COMPOSITION of the authored slide it
+ * replaces: its variant, its measured layout, and the composed copy that
+ * variant paints around the row's own content.
  *
- * `variant` is fixed to 'product' for database slides: the 'welcome' and 'app'
- * variants paint their own composed typography (`promo_small`, `promo_large`,
- * indent flags) that only makes sense with the authored copy behind it.
+ * `variant` used to be fixed to 'product' for every database row, because the
+ * 'welcome' and 'app' variants paint typography (`title_secondary`,
+ * `promo_small`, `promo_large`, indent flags) that only reads correctly with
+ * the authored copy behind it - and a row typed into a form has none of it.
+ * That rule made the first configured slide repaint the LCP element as a plain
+ * product slide, which is the one thing the gate measures most.
+ *
+ * So the row now inherits the whole authored slide at its position and
+ * overrides only what a row carries: `title_he` is the headline, `subtitle_he`
+ * the tagline, `image_url` the photograph, `link_url` the target. The
+ * composed lines stay authored, which is the same trade the layout already
+ * makes: an editor changes the CONTENT of a slide and never its composition.
+ * With rows whose copy mirrors the authored slides (migration 243), the
+ * rendered hero is byte-for-byte the authored one plus a photograph.
+ *
+ * A row BEYOND the authored ones has no composition to inherit and renders as
+ * a plain product slide with the last authored layout, as before.
  */
 function toHeroSlide(row: BannerRow, index: number): HeroSlide {
-  const authored =
-    HERO_SINGLEFILE_SLIDES[index] ?? HERO_SINGLEFILE_SLIDES[HERO_SINGLEFILE_SLIDES.length - 1]
+  const authored = HERO_SINGLEFILE_SLIDES[index]
+  const id = `cms-${row.id}`
+
+  if (!authored) {
+    const last = HERO_SINGLEFILE_SLIDES[HERO_SINGLEFILE_SLIDES.length - 1]
+    return {
+      id,
+      variant: 'product',
+      title: row.title_he,
+      tagline: row.subtitle_he,
+      image_url: row.image_url || null,
+      link_url: row.link_url,
+      // Geometry is inherited, never authored in the admin. See the file header.
+      imageLayout: last?.imageLayout,
+    }
+  }
 
   return {
-    id: `cms-${row.id}`,
-    variant: 'product',
-    title: row.title_he,
-    tagline: row.subtitle_he,
-    image_url: row.image_url,
-    link_url: row.link_url,
-    // Geometry is inherited, never authored in the admin. See the file header.
-    imageLayout: authored?.imageLayout,
+    ...authored,
+    id,
+    title: row.title_he ?? authored.title,
+    tagline: row.subtitle_he ?? authored.tagline ?? null,
+    // An empty string is "no photograph": the authored slot (the placeholder
+    // today) stays rather than a broken image.
+    image_url: row.image_url || authored.image_url,
+    link_url: row.link_url ?? authored.link_url,
   }
 }
 

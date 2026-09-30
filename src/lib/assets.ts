@@ -39,6 +39,23 @@ export const HERO_CATEGORY_BANNERS = {
 /** @deprecated use HERO_CATEGORY_BANNERS */
 export const CATEGORIES = HERO_CATEGORY_BANNERS
 
+/**
+ * The home page's category tiles, keyed by the category SLUG in the database
+ * (`categories.slug`), so `CategoryGrid` can photograph a row it read rather
+ * than a constant. The same eight ingested files as HERO_CATEGORY_BANNERS; a
+ * row's own `image_url` (an uploaded image) wins over this map when set.
+ */
+export const CATEGORY_TILE_IMAGES: Readonly<Record<string, string>> = {
+  'baby-kids': HERO_CATEGORY_BANNERS.kids,
+  courses: HERO_CATEGORY_BANNERS.courses,
+  vacation: HERO_CATEGORY_BANNERS.hotels,
+  pets: HERO_CATEGORY_BANNERS.pets,
+  'under-99': HERO_CATEGORY_BANNERS.under99,
+  'restaurants-cafes': HERO_CATEGORY_BANNERS.restaurants,
+  'beauty-health': HERO_CATEGORY_BANNERS.beauty,
+  'phones-computers': HERO_CATEGORY_BANNERS.phones,
+}
+
 export const HERO_ICONS = {
   logo: '/images/hero/icons/Kenyonexpress-190x50-1.png',
   payment: '/images/hero/icons/patment-icon.webp',

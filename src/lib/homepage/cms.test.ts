@@ -136,13 +136,62 @@ describe('a configured hero', () => {
     expect(slide?.link_url).toBe('/products')
   })
 
-  it('never renders as the composed welcome or app variant', async () => {
-    // Those two paint their own typography - promo_small, promo_large, indent
-    // flags - which only reads correctly with the authored copy behind it.
+  it('inherits the composition of the slide it replaces, so the welcome slide stays welcome', async () => {
+    // The composed lines (title_secondary, promo_small, promo_large, the
+    // indent flags) paint around the row's content. A row used to be forced to
+    // the plain product composition, which repainted the LCP element the
+    // moment an editor configured anything.
     withAdmin(
       mockAdmin({ banners: { data: [heroRow], error: null }, sections: { data: [], error: null } }),
     )
-    expect((await readHomepageContent()).heroSlides[0]?.variant).toBe('product')
+    const authored = HERO_SINGLEFILE_SLIDES[0]
+    const slide = (await readHomepageContent()).heroSlides[0]
+    expect(slide?.variant).toBe(authored?.variant)
+    expect(slide?.title_secondary).toBe(authored?.title_secondary)
+    expect(slide?.promo_small).toBe(authored?.promo_small)
+    expect(slide?.promo_large).toBe(authored?.promo_large)
+    expect(slide?.id).toBe(`cms-${heroRow.id}`)
+  })
+
+  it('keeps the authored slot when the row has no photograph', async () => {
+    withAdmin(
+      mockAdmin({
+        banners: { data: [{ ...heroRow, image_url: '' }], error: null },
+        sections: { data: [], error: null },
+      }),
+    )
+    expect((await readHomepageContent()).heroSlides[0]?.image_url).toBe(
+      HERO_SINGLEFILE_SLIDES[0]?.image_url ?? null,
+    )
+  })
+
+  it('renders a row mirroring the authored copy as the authored slide plus a photograph', async () => {
+    // What migration 243 seeds: the authored headline and tagline, a real
+    // photograph, an internal link. The gate-measured composition is intact.
+    const authored = HERO_SINGLEFILE_SLIDES[0]
+    withAdmin(
+      mockAdmin({
+        banners: {
+          data: [
+            {
+              ...heroRow,
+              title_he: authored?.title ?? null,
+              subtitle_he: authored?.tagline ?? null,
+              image_url: '/images/products/rm5-600x600.webp',
+              link_url: authored?.link_url ?? null,
+            },
+          ],
+          error: null,
+        },
+        sections: { data: [], error: null },
+      }),
+    )
+    const slide = (await readHomepageContent()).heroSlides[0]
+    expect(slide).toEqual({
+      ...authored,
+      id: `cms-${heroRow.id}`,
+      image_url: '/images/products/rm5-600x600.webp',
+    })
   })
 
   it('gives a slide beyond the authored ones the last authored layout', async () => {

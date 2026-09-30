@@ -35,6 +35,7 @@ import '@/styles/mini-cart.css'
  */
 import '@/styles/cart-page.css'
 import '@/styles/home-handheld.css'
+import '@/styles/newsletter.css'
 import '@/styles/product-card-deals.css'
 
 const heebo = Heebo({
