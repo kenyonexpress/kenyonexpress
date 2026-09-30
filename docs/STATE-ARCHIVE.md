@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c62 (הועבר מ-STATE.md ב-M08-c62, לשמירה על תקרת 300 שורות)
+
+**M03-c62 - DONE (30.09): שער ירוק הורץ מחדש במלואו על עץ עבודה נקי,
+זהה ל-HEAD (`fa375af11`).** `type-check` נקי (0 שגיאות), `lint` נקי
+(biome 2028 קבצים + 12 שערי לינט מותאמים, כולל i18n 627/627 ו-locale-format
+116/116 בתקרה), `test` **610/610 קבצים, 7296/7308 בדיקות ירוקות (12
+דולגים), 59.70s**, `build` הצליח (`✓ Compiled successfully`, exit 0),
+כולל `TypeScript` ו-`runAfterProductionCompile`. אפס שגיאת build, אפס
+אזהרת biome/tsc. שתי קטגוריות רעש ב-log זמן ה-build (לא אזהרת toolchain):
+`supabase.rls_denied`/`reviews_read_failed` (401/42501, מיגרציה 247
+הממתינה) ו-`db.optional_column_missing` (מיגרציה 242 הממתינה) — שתיהן
+כבר רשומות ב"חוסמים פתוחים" סעיף 3, לא תיקון קוד. אין קובץ קוד
+לתקן: אפס warning fixable בלי migration. עץ עבודה נשאר נקי מלבד
+`STATE.md`/`docs/STATE-ARCHIVE.md` (תיעוד הפריט). קובץ ששונה: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (M01-c62 כווץ לפריט הזה).
+
+## M02-c62 (הועבר מ-STATE.md ב-M08-c62, לשמירה על תקרת 300 שורות)
+
+**M02-c62 - DONE (30.09): שער פריטיות (`scripts/compare.mjs`) הורץ מחדש
+בחזית, שרת זמני על פורט 3919 (`.next` אומת source-identical ל-HEAD דרך
+`git diff --stat fd820969f..HEAD -- next.config.ts next.config.js
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml`, ריק).** דף
+הבית מול `refs/ke_live_{width}.png`, דף המוצר מול
+`refs/electro_product_{width}.png` (ברירת המחדל `מוצר-לדוגמא`, אותה שורה
+שהשער השתמש בה ב-`eb1768c50`/`fd820969f`):
+
+| דף | 380 | 768 | 1440 |
+|---|---|---|---|
+| בית | 8.51% PASS | 9.02% PASS | 3.95% PASS |
+| מוצר | 4.96% PASS | 4.56% PASS | 3.25% PASS |
+
+כל שש המדידות מתחת לסף 11%, אפס רגרסיה, אפס תיקון קוד נדרש. השורות נכתבו
+אוטומטית על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md` (08:01-08:13,
+תג `2342c2680-dirty`). השרת הזמני נהרג בסיום, לא נותר תהליך יתום. שערים:
+`type-check` נקי, `lint` נקי, `test` ירוק, `build` לא נדרש מחדש (אפס שינוי
+קוד). קובץ ששונה מלבד `STATE.md`: `docs/UI-PARITY-REPORT.md` (נכתב
+אוטומטית על ידי השער).
+
 ## M06-c62 (הועבר מ-STATE.md ב-M07-c62, לשמירה על תקרת 300 שורות)
 
 **M06-c62 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
