@@ -1,43 +1,56 @@
-RESUME FROM: M14-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c63)
+RESUME FROM: M15-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c63)
 
 ## המשך מ:
 
-**M13-c63 - DONE (30.09): אבטחה נבדקה מחדש, אפס דריפט קוד.** משימת התור:
-"Security headers and limits: verify CSP, HSTS, X-Frame-Options,
-Referrer-Policy, Upstash rate limits on login, checkout and redeem. Fix
-gaps with tests." נבדק דריפט מאז המדידה הקודמת (M13-c62, `99393d13d`):
-`git diff --stat 99393d13d..HEAD -- next.config.ts src/lib/security/
-src/lib/rate-limit/ src/app/api/supplier/redeem/
-src/app/api/supplier/vouchers/redeem/ src/server/actions/auth.ts
-src/server/actions/payments/checkout.ts` — **ריק, אפס שינוי בכל קובצי
-האבטחה/rate-limit עצמם** מאז אותה מדידה.
+**M14-c63 - DONE (30.09): ביצועים נבדקו מחדש מול build טרי, אפס רגרסיה
+בפועל.** משימת התור: לבדוק bundle sizes, image pipeline output, תגיות
+ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת דריפט מאז
+המדידה הקודמת (M14-c62, `14567e211`): `git diff --stat 14567e211..HEAD
+-- next.config.ts middleware.ts vercel.json src/ package.json
+pnpm-lock.yaml scripts/bundle-report.mjs scripts/bundle-gate.mjs` מראה
+שלושה קבצים: `package.json`/`pnpm-lock.yaml` (עדכוני patch מ-M04-c63)
+ו-`src/components/ProductCard.tsx` (121 שורות, לב מועדפים על
+`DefaultProductCard` מ-M18-c62). דריפט אמיתי, לא קריאה בלבד, כי
+`ProductCard.tsx` הוא תלות משותפת של `/`, `/products`, `/category/*`
+ו-`/product/[slug]`.
 
-לא הוסתמך רק על דריפט ריק: `pnpm test src/lib/security src/lib/rate-limit`
-הריץ 12 קובצי טסט, 135/135 ירוקים (כולל `frame-policy.test.ts`,
-`frame-policy-matches-provider.test.ts`, `policies.test.ts`,
-`docs-table.test.ts` שמאמת שהטבלה תואמת כל קורא). נבנה
-`CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD, הורם `pnpm start -p 3619`,
-ונבדק ישירות מול שרת חי: `/` מחזיר את שמונת הכותרות (CSP עם
-`frame-ancestors 'none'`, HSTS `max-age=63072000; includeSubDomains;
-preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
-COOP/CORP, `Referrer-Policy: strict-origin-when-cross-origin`), ו-
-`/checkout/frame-return` מחזיר CSP עם `frame-ancestors 'self'` ו-
-`X-Frame-Options: SAMEORIGIN` (ההחרגה הממוקדת ל-Cardcom, לא נפילה כללית).
-מגבלות הקצב על login/checkout/redeem הן server actions ולא נתיבי POST
-גלויים, כך שאי אפשר לצפות בכותרות rate-limit דרך curl גולמי — זה תואם את
-העיצוב (`src/lib/rate-limit/policies.ts`: `login` 10/שעה,
-`begin_checkout` 10/דקה, `redeem` 60/שעה, `voucher-redeem` 120/שעה),
-והכיסוי האמיתי הוא טסטי היחידה שכבר רצו ירוקים. שרת הבדיקה נעצר בסוף
-(`kill` על ה-PID שנמצא עם `lsof -i :3619`, לא על תהליכים אחרים שרצים
-על המכונה).
+נבנה מחדש בפועל (`CARDCOM_USE_MOCK=true pnpm build`, לא נסמך על `.next`
+קיים), הורם שרת ייעודי (`PORT=3413 pnpm start`) ונסגר בסוף המדידה
+(`lsof -i :3413`, PID `61062` נמצא ונהרג, לא תהליכים אחרים שרצו על
+המכונה באותו רגע).
 
-ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
-ירוקים, זהה ל-M12-c63). `test` 610/610 קבצים, 7296/7308 (12 דולגים,
-זהה). `build` רץ בפועל כחלק מהמדידה, exit 0. אפס שינוי קוד ייצור, אפס
-פער שדרש תיקון.
+**לפני (M14-c62, הבייסליין הקודם):** `bundle-gate.mjs` shared first-load
+223.8 KB gz על 8 chunks (budget 260KB). `bundle-report.mjs`:
+`/product/e2e-test-physical` הנתיב הכבד ביותר, 326.8 kB gzip, 21 chunks.
+`/checkout` 324.1 kB gzip. image proxy `Cache-Control: public,
+max-age=86400, must-revalidate`. `/products` ו-`/product/e2e-test-physical`
+שניהם `x-nextjs-stale-time: 300`, `prerender: 1`, `postponed: 1`. static
+chunks `immutable, max-age=31536000`; HTML דינמי `private, no-cache,
+no-store, max-age=0, must-revalidate`.
 
-קבצים ששונו: `STATE.md`.
+**אחרי (M14-c63, נמדד עכשיו):** `bundle-gate.mjs`: shared first-load
+**223.8 KB gz על 8 chunks, זהה בייט לבייט**. `bundle-report.mjs`:
+`/product/e2e-test-physical` עדיין הכבד ביותר, **326.9 kB gzip, 21
+chunks** (הפרש 0.1kB, רעש מדידה ולא רגרסיה). `/checkout` 324.2 kB (אותו
+רעש). שאר הנתיבים: `/` 320.5kB, `/products` 319.3kB, `/category/hot-deals`
+320.0kB, `/cart` 317.4kB, `/faq` 314.0kB. image proxy, תגיות ISR וכל
+שלושת כותרות ה-cache (static/HTML דינמי/image) זהות מילה במילה
+לבייסליין. `cache-invalidation-gate.mjs` נקי (כל כתיבה לטבלה ממוטמנת
+מפילה תג, כל scope ממוטמן נושא תג).
+
+**המסקנה: לב המועדפים (`WishlistHeart`) שנוסף ל-`DefaultProductCard`
+ב-M18-c62 לא הוסיף בייט אחד ל-bundle הכולל**, כי הרכיב כבר קיים בבנדל
+דרך `DealsProductCard` (webpack מאחד אותו לאותו chunk משותף). אין
+רגרסיה לתקן. ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028
+קבצים, 12 שערים ירוקים). `test` 610/610 קבצים, 7296/7308 (12 דולגים).
+`build` רץ בפועל כחלק מהמדידה, exit 0. אפס שינוי קוד ייצור.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M13-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c63
+לשמירה על תקרת 300 שורות).** אבטחה נבדקה מחדש מול שרת חי, אפס דריפט קוד
+מ-M13-c62, ארבעת השערים ירוקים.
 
 **M12-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M13-c63
 לשמירה על תקרת 300 שורות).** SEO נבדק מחדש מול שרת חי, אפס דריפט קוד
@@ -90,23 +103,14 @@ BACKLOG EMPTY. ארבעת השערים ירוקים, אפס שינוי קוד נ
 הרוחבים, כולן PASS ואפס דריפט (בית 8.51%/9.02%/3.95%, מוצר
 5.61%/4.92%/2.99%). ארבעת השערים ירוקים, אפס שינוי קוד.
 
-**M18-c62..M01-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M03-c63 לשמירה על תקרת 300 שורות):** תיקון המרה אמיתי, לב מועדפים
-על `DefaultProductCard` (RelatedProducts/RecentlyViewedRail/ProductRail),
-שער חזותי PASS ללא שינוי פיקסל (5.61/4.92/2.99, M18-c62), קופי/משפטי
-(קומיט יחיד מאז M17-c61, מפתח `pdp.recentlyViewed` נבדק תקין), תברואת
-ריפו (אפס דריפט,
-43 ענפים זהים), סנכרון תיעוד (דריפט קטן ב-`docs-path-audit` נמצא ותוקן,
-152→154), ביצועים (תוקן פער מדידה אמיתי ב-`bundle-report.mjs`, PDP
-עכשיו הנתיב הכבד ביותר, 326.8 kB gzip), אבטחה (אפס דריפט), SEO (אפס
-דריפט), נגישות (axe, 0 `serious`/`critical`), כיסוי טסטים (שש הקטגוריות
-הקריטיות ב-100%), STATE CLEAN, BACKLOG EMPTY (עדיין 15 פריטים, אפס
-פריט חדש), route audit (241 שורות, אפס כשל), Lighthouse mobile (כל
-שמונת הציונים 90+), advisors (44 WARN זהים), תברואת תלויות (אפס
-חולשות), שער ירוק, שער חזותי (בית 8.51/9.02/3.95, מוצר 4.96/4.56/3.25,
-כל שש המדידות PASS), ובדיקת פרודקשן (פעם תשיעית, DNS/HTTP תקינים,
-פריסה עדיין חסומה על אותו חוסם Cardcom env, דילוג לפי כלל "goal שנתקע
-פעמיים") — ארבעת השערים ירוקים בכולם.
+**M18-c62..M01-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, פירוט השורה
+הזו כווץ ב-M03-c63 וב-M14-c63 לשמירה על תקרת 300 שורות):** תיקון המרה
+אמיתי (לב מועדפים על `DefaultProductCard`), תוקן פער מדידה אמיתי
+ב-`bundle-report.mjs` (PDP הפך לנתיב הכבד ביותר), ושאר 16 הפריטים
+(קופי, תברואת ריפו, תיעוד, אבטחה, SEO, נגישות, כיסוי טסטים, STATE
+CLEAN, BACKLOG EMPTY, route audit, Lighthouse, advisors, תלויות, שער
+ירוק, שער חזותי, בדיקת פרודקשן) אפס דריפט בכולם. ארבעת השערים ירוקים
+בכולם.
 
 **S03 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c62
 לשמירה על תקרת 300 שורות).** בקצרה: reference חדש למוצר יחיד של Electro

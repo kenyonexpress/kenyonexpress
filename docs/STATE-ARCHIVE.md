@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c63 (הועבר מ-STATE.md ב-M14-c63, לשמירה על תקרת 300 שורות)
+
+**M13-c63 - DONE (30.09): אבטחה נבדקה מחדש, אפס דריפט קוד.** משימת התור:
+"Security headers and limits: verify CSP, HSTS, X-Frame-Options,
+Referrer-Policy, Upstash rate limits on login, checkout and redeem. Fix
+gaps with tests." נבדק דריפט מאז המדידה הקודמת (M13-c62, `99393d13d`):
+`git diff --stat 99393d13d..HEAD -- next.config.ts src/lib/security/
+src/lib/rate-limit/ src/app/api/supplier/redeem/
+src/app/api/supplier/vouchers/redeem/ src/server/actions/auth.ts
+src/server/actions/payments/checkout.ts` — **ריק, אפס שינוי בכל קובצי
+האבטחה/rate-limit עצמם** מאז אותה מדידה.
+
+לא הוסתמך רק על דריפט ריק: `pnpm test src/lib/security src/lib/rate-limit`
+הריץ 12 קובצי טסט, 135/135 ירוקים (כולל `frame-policy.test.ts`,
+`frame-policy-matches-provider.test.ts`, `policies.test.ts`,
+`docs-table.test.ts` שמאמת שהטבלה תואמת כל קורא). נבנה
+`CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD, הורם `pnpm start -p 3619`,
+ונבדק ישירות מול שרת חי: `/` מחזיר את שמונת הכותרות (CSP עם
+`frame-ancestors 'none'`, HSTS `max-age=63072000; includeSubDomains;
+preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+COOP/CORP, `Referrer-Policy: strict-origin-when-cross-origin`), ו-
+`/checkout/frame-return` מחזיר CSP עם `frame-ancestors 'self'` ו-
+`X-Frame-Options: SAMEORIGIN` (ההחרגה הממוקדת ל-Cardcom, לא נפילה כללית).
+מגבלות הקצב על login/checkout/redeem הן server actions ולא נתיבי POST
+גלויים, כך שאי אפשר לצפות בכותרות rate-limit דרך curl גולמי — זה תואם את
+העיצוב (`src/lib/rate-limit/policies.ts`: `login` 10/שעה,
+`begin_checkout` 10/דקה, `redeem` 60/שעה, `voucher-redeem` 120/שעה),
+והכיסוי האמיתי הוא טסטי היחידה שכבר רצו ירוקים. שרת הבדיקה נעצר בסוף
+(`kill` על ה-PID שנמצא עם `lsof -i :3619`, לא על תהליכים אחרים שרצים
+על המכונה).
+
+ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים, זהה ל-M12-c63). `test` 610/610 קבצים, 7296/7308 (12 דולגים,
+זהה). `build` רץ בפועל כחלק מהמדידה, exit 0. אפס שינוי קוד ייצור, אפס
+פער שדרש תיקון.
+
+קבצים ששונו: `STATE.md`.
+
 ## M12-c63 (הועבר מ-STATE.md ב-M13-c63, לשמירה על תקרת 300 שורות)
 
 **M12-c63 - DONE (30.09): SEO נבדק מחדש, אפס דריפט קוד.** משימת התור:
