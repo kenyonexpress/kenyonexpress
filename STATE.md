@@ -1,42 +1,57 @@
-RESUME FROM: M11-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c60)
+RESUME FROM: M12-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c60)
 
 ## המשך מ:
 
-**M10-c60 - DONE (30.09): כיסוי טסטים — `recordRefusedScan` ב-
-`src/server/domain/vouchers/scan-context.ts` היה הפונקציה הלא-נבדקת
-היחידה בין שש הקטגוריות של משימת התור (money, payment split, voucher
-state machine, order state machine, refunds, RLS helpers), מ-50%
-פונקציות (55.55% שורות/הצהרות) ל-100% בכל המדדים.** נמדד: `pnpm
-vitest run` עם `--coverage.include` מורחב זמנית לכל שש הקטגוריות
-(money.ts, split.ts, כל `orders/**`, כל `vouchers/**`, refund-record/
-refund-wallet/refund-destination/refund-requests/refund action,
-rls-report-fetch.ts) — כי `vitest.config.ts` מגדר כיסוי רק למסלול
-הכסף (`money.ts`, `commerce/**`, `split.ts`, `orders/**`), לא לוברים/
-refunds/RLS. כל הקבצים במסלול הכסף וב-refunds עמדו על 100% או קרוב
-(settlement.ts 95.65% ענפים, ללא שינוי — לא הנמוך ביותר). "RLS helpers"
-בפועל הם שלושה טסטים סטטיים מול JSON נמדד (`rls-manifest.test.ts`,
-`rls-write-policies.test.ts`, `rls-role-matrix.test.ts`) בלי קובץ מקור
-תואם, ו-`rls-report-fetch.ts` עמד על 100% — אין שם ענף חסר. הממצא:
-`scan-context.ts` (voucher domain) היה היחיד מתחת ל-90%, ובפער גדול —
-`readScanContext` (פענוח `x-forwarded-for`/`x-real-ip`) נבדק לגמרי
-ב-9 מקרים קיימים, אבל `recordRefusedScan` (רישום ניסיון סריקה שנדחה
-לפני `redeem_voucher()` — חתימת HMAC לא תקינה, קוד מעוות, טוקן ספק
-אחר; `ARCHITECTURE-VOUCHER-REDEMPTION.md` §7.1) לא נבדק כלל. נוספו
-6 מקרים ב-`scan-context.test.ts`: לקוח מהמתקשר מול נפילה ל-`createAdminClient()`,
-קיצוץ `codeEntered` ל-32 תווים, ובלימת דחיית ה-RPC בלי לזרוק (ה-catch
-תופס רק דחיית promise, לא `{error}` בתשובת Supabase — נבדק בכוונה מול
-`.rpc()` שנדחה, לא מול שדה `error` בתשובה מוצלחת, כי כך הקוד בפועל
-מתנהג). `createAdminClient()` עצמו קורא **מחוץ** ל-try/catch, כך שכשל
-שלו לא נבלם — נשאר מחוץ להיקף התור הזה (לא תוקן, לא נמדד ענף שממנו).
-`pnpm vitest run scan-context.test.ts --coverage` אחרי: 13/13 עברו,
-`scan-context.ts` 100%/100%/100%/100% (היו 55.55/86.66/50/55.55).
-`type-check` נקי, `lint` נקי (biome 2025 קבצים, כל שערי התוכן ירוקים,
-i18n 627/627), `test` המלא 610/610 קבצים 7296/7308 (12 מדולגים,
-70.55s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm build`) `exit 0`. אין
-שינוי UI, אין שער חזותי נדרש. **קובץ ששונה: `scan-context.test.ts`
-בלבד** (פלוס `STATE.md`, `docs/STATE-ARCHIVE.md`).
+**M11-c60 - DONE (30.09): נגישות — axe על כל דף, אימות מחדש בפעם שישית,
+0 הפרות `serious`/`critical`.** משימת התור: להריץ axe על כל דף, לתקן כל
+הפרה `serious`/`critical`, לשמור WCAG 2.1 AA, ולרשום את המונה שנשאר.
+בדיקת דריפט קודם: `git diff --stat 58b5301af..HEAD -- src/app
+src/components src/styles 'e2e/*a11y*' middleware.ts
+src/server/actions/auth` (מאז המדידה הקודמת, M11-c59, כולל שני קומיטי
+טסטים שאינם נוגעים בנתיב הזה) — **ריק, אפס קומיט נגע בשטח הנגישות**.
+
+נמדד בכל זאת מחדש מול build אמיתי טרי על HEAD (`e1f99e3e7`, `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3512
+pnpm build`, `pnpm start` על פורט 3318 שלא היה בשימוש):
+- השער הציבורי (`e2e/a11y.spec.ts`, `chromium`+`mobile-chrome`,
+  `--grep-invert=@writes`, `E2E_BASE_URL=http://localhost:3318`):
+  **72/74 עברו, 2 דולגו** (אותם דילוגים מכוונים כמו בכל מדידה קודמת) —
+  **0 הפרות**.
+- השער המאומת (`e2e/a11y-authenticated.spec.ts`, `chromium`): תפקיד
+  **לקוח 16/16 עברו**, תפקיד **ספק 7/7 עברו**, שניהם **0 הפרות**. תפקיד
+  **אדמין: 57/57 דולגו** — אותה סיבה שתועדה ב-M11-c56..M11-c59: כשל
+  התחברות פרודקשן קיים מראש (`signInWithEmail` נכשל ב-`beforeAll`, לא
+  תקלת נגישות ולא רגרסיית קוד).
+- שני השערים נכשלים על **כל** הפרה, לא רק `serious`/`critical`, אז 0
+  כשל הוא גם 0 `serious`/`critical` וגם 0 `moderate`/`minor` בכל מה
+  שנסרק.
+
+**תקרית תפעולית באמצע המדידה, לא הפרת נגישות ולא נשארה השלכה:**
+ניסיון ראשון להריץ את השער הציבורי בלי `E2E_BASE_URL` גרם ל-
+`playwright.config.ts` לנסות להרים שרת עצמו עם `E2E_WEB_COMMAND`
+המחדל (`pnpm dev` על פורט 3000) — `next dev` מוחק את `.next` של
+`pnpm start` שרץ ([[dev-and-start-share-dot-next]] בזיכרון). נעצר תוך
+שניות (`TaskStop`) לפני שתהליך `next dev` בכלל עלה; `.next` ושלושת
+שרתי ה-`pnpm start` הרצים (3312/3313 של סשנים מקבילים, 3318 שלי) אומתו
+תקינים מיד אחרי (`curl` 200 לשלושתם). הריצה החוזרת עם
+`E2E_BASE_URL=http://localhost:3318` הניבה את התוצאה למעלה.
+
+**המונה שנשאר: 0 `serious`/`critical`.** ממצא `target-size` (דרישת
+WCAG **2.2** ולא 2.1, מחוץ ליעד המוצהר של הפרויקט) נשאר כהחלטה פתוחה
+ללא שינוי — אין הפרת 2.1 AA לתקן. **אפס שינוי קוד.** שערים: `type-check`
+נקי, `lint` נקי (biome 2025 קבצים + כל שנים-עשר השערים המשניים, כולל
+`i18n` 627/627), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים,
+60.28s), `build` (`rm -rf .next` + build טרי) `exit 0` פעמיים (ריצה
+ראשונה לשער הנגישות, ריצה שנייה לאימות `exit=0` מפורש). אין שינוי UI,
+אין שער חזותי נדרש. **קובץ יחיד שונה: `STATE.md`.**
+
+## M10-c60 (הועבר מ-STATE.md ב-M11-c60, לשמירה על תקרת 300 שורות)
+
+M10-c60: כיסוי טסטים — `recordRefusedScan` ב-`src/server/domain/vouchers/scan-context.ts`
+מ-50% פונקציות (55.55% שורות/הצהרות) ל-100% בכל המדדים, היחיד מתחת
+ל-90% בין שש הקטגוריות של משימת התור. קובץ ששונה: `scan-context.test.ts`
+בלבד. פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
 
 ## M09-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
@@ -102,73 +117,15 @@ Upstash על login/checkout/redeem אומתו מחדש מול build אמיתי (
 `/checkout`, `/login`, `/redeem/test-token`), ארבע מגבלות הקצב באותן
 שורות קוד בדיוק. אפס שינוי קוד.
 
-## M12-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M12-c59: SEO, meta/canonical/og/JSON-LD Product+Offer/sitemap/robots
-אומתו מחדש, אפס דריפט מ-M12-c58 (`sitemap/products.xml` 46 כתובות,
-`noindex` למוצר לא פעיל קיים ולא שונה). אפס שינוי קוד.
-
-## M11-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M11-c59: נגישות, axe אומתה מחדש בפעם חמישית, 0 הפרות `serious`/
-`critical` (ציבורי 72/74 + 2 דולג, מאומת לקוח 16/16 + ספק 7/7, אדמין
-57/57 דולג — כשל התחברות פרודקשן קיים מראש). `target-size` (WCAG 2.2,
-מחוץ ליעד) נשאר כהחלטה פתוחה. אפס שינוי קוד.
-
-## M10-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M10-c59: כיסוי טסטים, `payment-money-columns.ts` 95.23%→100% ענפים
-(הענף החסר היה הגנת race על `warned` בקריאות מקבילות ל-`resolvePaymentMoneySchema`).
-טסט יחיד נוסף, אפס שינוי קוד ייצור. ארבעת השערים ירוקים.
-
-## M09-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M09-c59: STATE CLEAN, אפס פריט בר-ביצוע לסוכן קוד, אפס דריפט מ-M08-c59
-(מונים זהים: pending 59, git-gap 183, stash 32). כל ארבעת השערים
-ירוקים.
-
-## M08-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M08-c59: BACKLOG EMPTY, נמדד מחדש בפעם השלוש-עשרה, אפס פריט שלב 1
-בידי הסוכן, `docs/BACKLOG.md` עדיין 15 סעיפים אותו סדר, אפס דריפט
-מ-M08-c58.
-
-## M07-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M07-c59: route audit נמדד שוב, 241 שורות, אפס כשל אמיתי, אפס דלתא קוד
-שנוגעת במסלול (239 PASS, 2 NO DATA זהה לכל מדידה קודמת מ-M07-c1),
-אפס דריפט מ-M07-c58.
-
-## M06-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M06-c59: Lighthouse mobile נמדד שוב, כל שמונת הציונים 90+ (בית
-99/100/100/100, מוצר 99/100/100/100), אפס תיקון נדרש, אפס דריפט מ-M06-c58.
-
-## M05-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M05-c59: advisors נמדדו בפעם התשיעית, 44 WARN זהים ב-100% ל-M05-c58,
-אפס מיגרציה חדשה נדרשת, אפס שינוי סכימה.
-
-## M04-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M04-c59: תברואת תלויות, `pnpm audit` נקי, אפס עדכון זכאי (14 שורות
-`pnpm outdated`, כולן major). שינוי יחיד: `caniuse-lite` ב-`pnpm-lock.yaml`.
-ארבעת השערים ירוקים.
-
-## M03-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M03-c59: שער ירוק, `type-check`/`lint`/`test` (608/608, 7273/7285)/`build`
-כולם נקיים, אפס תיקון נדרש.
-
-## M02-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
-
-M02-c59: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה, כל שש המדידות
-PASS מתחת ל-11% (בית 8.51/9.02/3.95, מוצר 5.65/4.95/2.92). ארבעת השערים
-ירוקים.
-
-M01-c59: בדיקת פרודקשן בפעם השישית, DNS ו-HTTP תקינים, פריסת HEAD עדיין
-חסומה באותה סיבה (env חסר + `ALLOW_INCOMPLETE_ENV`); לא נוסה deploy
-חדש לפי כלל "נתקע פעמיים — לדלג". פירוט מלא ב-`docs/STATE-ARCHIVE.md`.
+**M12-c59..M01-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
+הזו ב-M11-c60 לשמירה על תקרת 300 שורות):** SEO (אפס דריפט), נגישות
+(axe בפעם חמישית, 0 `serious`/`critical`), כיסוי טסטים
+(`payment-money-columns.ts` 95.23%→100%), STATE CLEAN, BACKLOG EMPTY
+(פעם שלוש-עשרה), route audit (241 שורות, אפס כשל), Lighthouse mobile
+(כל שמונת הציונים 90+), advisors (44 WARN זהים), תברואת תלויות, שער
+ירוק, שער חזותי (אפס רגרסיה), ובדיקת פרודקשן (פעם שישית, DNS/HTTP
+תקינים, פריסה עדיין חסומה) — שום שורה לא נמחקה מהארכיון עצמו, רק
+הוסרה כאן הכפילות.
 
 **כל סעיף מ-M18-c58 ועד M08-c57 (כולל M17-c58..M01-c58, M18-c57..M08-c57)**
 היה מסומן כאן "ארכיון מלא ב-`docs/STATE-ARCHIVE.md`" וכווץ לשורה הזו

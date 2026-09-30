@@ -2,6 +2,43 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c60 (הועבר מ-STATE.md ב-M11-c60, לשמירה על תקרת 300 שורות)
+
+**M10-c60 - DONE (30.09): כיסוי טסטים — `recordRefusedScan` ב-
+`src/server/domain/vouchers/scan-context.ts` היה הפונקציה הלא-נבדקת
+היחידה בין שש הקטגוריות של משימת התור (money, payment split, voucher
+state machine, order state machine, refunds, RLS helpers), מ-50%
+פונקציות (55.55% שורות/הצהרות) ל-100% בכל המדדים.** נמדד: `pnpm
+vitest run` עם `--coverage.include` מורחב זמנית לכל שש הקטגוריות
+(money.ts, split.ts, כל `orders/**`, כל `vouchers/**`, refund-record/
+refund-wallet/refund-destination/refund-requests/refund action,
+rls-report-fetch.ts) — כי `vitest.config.ts` מגדר כיסוי רק למסלול
+הכסף (`money.ts`, `commerce/**`, `split.ts`, `orders/**`), לא לוברים/
+refunds/RLS. כל הקבצים במסלול הכסף וב-refunds עמדו על 100% או קרוב
+(settlement.ts 95.65% ענפים, ללא שינוי — לא הנמוך ביותר). "RLS helpers"
+בפועל הם שלושה טסטים סטטיים מול JSON נמדד (`rls-manifest.test.ts`,
+`rls-write-policies.test.ts`, `rls-role-matrix.test.ts`) בלי קובץ מקור
+תואם, ו-`rls-report-fetch.ts` עמד על 100% — אין שם ענף חסר. הממצא:
+`scan-context.ts` (voucher domain) היה היחיד מתחת ל-90%, ובפער גדול —
+`readScanContext` (פענוח `x-forwarded-for`/`x-real-ip`) נבדק לגמרי
+ב-9 מקרים קיימים, אבל `recordRefusedScan` (רישום ניסיון סריקה שנדחה
+לפני `redeem_voucher()` — חתימת HMAC לא תקינה, קוד מעוות, טוקן ספק
+אחר; `ARCHITECTURE-VOUCHER-REDEMPTION.md` §7.1) לא נבדק כלל. נוספו
+6 מקרים ב-`scan-context.test.ts`: לקוח מהמתקשר מול נפילה ל-`createAdminClient()`,
+קיצוץ `codeEntered` ל-32 תווים, ובלימת דחיית ה-RPC בלי לזרוק (ה-catch
+תופס רק דחיית promise, לא `{error}` בתשובת Supabase — נבדק בכוונה מול
+`.rpc()` שנדחה, לא מול שדה `error` בתשובה מוצלחת, כי כך הקוד בפועל
+מתנהג). `createAdminClient()` עצמו קורא **מחוץ** ל-try/catch, כך שכשל
+שלו לא נבלם — נשאר מחוץ להיקף התור הזה (לא תוקן, לא נמדד ענף שממנו).
+`pnpm vitest run scan-context.test.ts --coverage` אחרי: 13/13 עברו,
+`scan-context.ts` 100%/100%/100%/100% (היו 55.55/86.66/50/55.55).
+`type-check` נקי, `lint` נקי (biome 2025 קבצים, כל שערי התוכן ירוקים,
+i18n 627/627), `test` המלא 610/610 קבצים 7296/7308 (12 מדולגים,
+70.55s), `build` (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3512 pnpm build`) `exit 0`. אין
+שינוי UI, אין שער חזותי נדרש. **קובץ ששונה: `scan-context.test.ts`
+בלבד** (פלוס `STATE.md`, `docs/STATE-ARCHIVE.md`).
+
 ## M09-c60 (הועבר מ-STATE.md ב-M10-c60, לשמירה על תקרת 300 שורות)
 
 **M09-c60 - DONE (30.09): שני קבצי כיסוי חסרים לגמרי נמצאו וטופלו,
