@@ -18,6 +18,7 @@ import 'server-only'
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
@@ -123,6 +124,42 @@ export async function uploadToR2(
     key,
     publicUrl: isPublicR2Bucket(purpose) ? r2ObjectPublicUrl(purpose, key) : null,
   }
+}
+
+/** How many keys one listing will page through before giving up; a catalogue's worth. */
+export const R2_LIST_CAP = 5000
+
+/**
+ * Every object key under `prefix`, paged through ListObjectsV2 up to
+ * `R2_LIST_CAP`. `truncated` says the cap was hit, so the caller can tell
+ * the admin that a narrower prefix is needed rather than silently matching
+ * against half the bucket. Keys come back as stored; nothing is filtered
+ * here (the SKU matcher decides what is an image).
+ */
+export async function listR2Objects(
+  purpose: R2BucketPurpose,
+  prefix = '',
+  cap = R2_LIST_CAP,
+): Promise<{ keys: string[]; truncated: boolean }> {
+  const client = getR2Client()
+  const bucket = r2BucketName(purpose)
+  const keys: string[] = []
+  let token: string | undefined
+  do {
+    const page = await client.send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix || undefined,
+        ContinuationToken: token,
+        MaxKeys: Math.min(1000, cap - keys.length),
+      }),
+    )
+    for (const item of page.Contents ?? []) {
+      if (item.Key) keys.push(item.Key)
+    }
+    token = page.IsTruncated ? page.NextContinuationToken : undefined
+  } while (token && keys.length < cap)
+  return { keys, truncated: Boolean(token) }
 }
 
 export async function deleteFromR2(purpose: R2BucketPurpose, key: string): Promise<void> {

@@ -118,7 +118,7 @@ export default async function ProductImportHistoryPage() {
             <thead>
               <tr className="border-b border-black/10 text-gray-500">
                 <th className="px-4 py-2 text-start font-medium">מועד</th>
-                <th className="px-4 py-2 text-start font-medium">קובץ</th>
+                <th className="px-4 py-2 text-start font-medium">קובץ / פעולה</th>
                 <th className="px-4 py-2 text-start font-medium">מי</th>
                 <th className="px-4 py-2 text-start font-medium">מצב</th>
                 <th className="px-4 py-2 text-start font-medium">בדיקה</th>
@@ -144,7 +144,11 @@ export default async function ProductImportHistoryPage() {
                       {(run.actorId && actorById.get(run.actorId)) || 'מערכת'}
                     </td>
                     <td className="px-4 py-2 text-gray-600">
-                      {run.mode === 'upsert' ? 'הוספה ועדכון' : 'הוספה בלבד'}
+                      {run.kind === 'bulk'
+                        ? 'עריכה קבוצתית'
+                        : run.mode === 'upsert'
+                          ? 'הוספה ועדכון'
+                          : 'הוספה בלבד'}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-600">
                       {run.totalRows} שורות · {run.validRows} תקינות · {run.invalidRows} שגויות

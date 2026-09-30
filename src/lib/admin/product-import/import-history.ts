@@ -62,6 +62,13 @@ export interface ImportRunSummary {
   lastEventAt: string
   finishedAt: string | null
   actorId: string | null
+  /**
+   * `import`: a CSV/xlsx file. `bulk`: a scoped edit from
+   * `/admin/products/bulk`, which journals its batches the same way so this
+   * history and its rollback cover both. `fileName` then holds the
+   * operation's label and the scope, not a file.
+   */
+  kind: 'import' | 'bulk'
   fileName: string
   mode: ImportMode
   /** Dry-run counts, as the admin saw them before pressing import. */
@@ -147,6 +154,7 @@ export function summariseImportRun(events: ImportRunEvent[]): ImportRunSummary |
     lastEventAt: start.created_at,
     finishedAt: null,
     actorId: start.actor_id,
+    kind: startChanges.kind === 'bulk' ? 'bulk' : 'import',
     fileName: str(startChanges.file_name) ?? '',
     mode: startChanges.mode === 'upsert' ? 'upsert' : 'insert',
     totalRows: num(startChanges.total),

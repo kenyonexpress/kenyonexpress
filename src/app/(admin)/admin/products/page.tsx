@@ -4,7 +4,7 @@ import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { likeContains } from '@/lib/utils/search-escape'
-import { FileUp, Plus } from 'lucide-react'
+import { FileUp, Layers, Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'מוצרים' }
@@ -93,6 +93,10 @@ export default async function AdminProductsPage({ searchParams }: Props) {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink">מוצרים</h1>
         <div className="flex items-center gap-2">
+          <Link href="/admin/products/bulk" className={adminBtnGhost}>
+            <Layers size={15} />
+            עריכה קבוצתית
+          </Link>
           <Link href="/admin/products/import" className={adminBtnGhost}>
             <FileUp size={15} />
             ייבוא מקובץ
