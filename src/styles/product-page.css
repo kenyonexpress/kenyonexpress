@@ -309,6 +309,22 @@
   border-radius: 4px;
 }
 
+.pdp-summary__cashback {
+  margin: 8px 0 0;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+.pdp-summary__cashback-rate {
+  font-weight: 700;
+  color: var(--pdp-action);
+}
+
+.pdp-summary__cashback-note {
+  color: var(--pdp-muted);
+}
+
 .pdp-summary__variants {
   margin-top: 16px;
 }

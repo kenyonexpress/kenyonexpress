@@ -42,6 +42,13 @@ export interface ProductJsonLdInput {
   siteUrl: string
   /** The business selling it, when it is known. */
   supplierName: string | null
+  /**
+   * `products.brand`, the maker's name an admin typed, when there is one.
+   * Wins over the supplier for the Brand node: a shop that sells Samsung is
+   * the seller, not the brand. Null on the whole live catalogue today, which
+   * is why the supplier fallback below still carries every page.
+   */
+  brandName?: string | null
   categoryName: string | null
   /** Physical products only: what the site charges, in shekels. */
   priceIls: number | null
@@ -94,10 +101,12 @@ export function buildProductJsonLd(input: ProductJsonLdInput): JsonLdNode {
   const images = input.images.filter((src) => typeof src === 'string' && src.trim() !== '')
   if (images.length > 0) node.image = images.map((src) => absolute(site, src))
 
-  // The business is the brand a customer recognises. Falling back to the
-  // platform name would tell search engines every product is our own.
-  if (input.supplierName) {
-    node.brand = { '@type': 'Brand', name: input.supplierName }
+  // The maker when it is named, else the business selling it: that is the
+  // brand a customer recognises. Falling back to the platform name would tell
+  // search engines every product is our own.
+  const brandName = input.brandName?.trim() || input.supplierName
+  if (brandName) {
+    node.brand = { '@type': 'Brand', name: brandName }
   }
 
   const offer = buildOfferNode(input, url)

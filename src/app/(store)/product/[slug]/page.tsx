@@ -134,6 +134,7 @@ export default async function ProductPage({ params }: Props) {
     couponOffer,
     recurringOffer,
     rating,
+    cashbackPercent,
   } = detail
 
   const category = Array.isArray(product.categories)
@@ -180,6 +181,7 @@ export default async function ProductPage({ params }: Props) {
     images: Array.isArray(product.images) ? (product.images as string[]) : [],
     siteUrl,
     supplierName: supplier?.name ?? null,
+    brandName: product.brand ?? null,
     categoryName: category?.name_he ?? null,
     priceIls: isCoupon ? null : basePrice,
     fullPriceIls: isCoupon ? null : oldPrice,
@@ -293,6 +295,7 @@ export default async function ProductPage({ params }: Props) {
             couponOffer={couponOffer}
             recurringOffer={recurringOffer}
             rating={rating}
+            cashbackPercent={cashbackPercent}
           />
         </div>
 

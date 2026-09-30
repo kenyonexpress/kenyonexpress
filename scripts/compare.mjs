@@ -1,10 +1,10 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 import { REFERENCE, classifyReference, refusalMessage } from './live-reference.mjs'
-import { appendParityRefusal } from './parity-log.mjs'
+import { GATE_CEILING, appendParityRefusal } from './parity-log.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
 //                                 [--live=<url>] [--mine=<url>]
@@ -16,9 +16,20 @@ import { appendParityRefusal } from './parity-log.mjs'
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
 // page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
 
+// `--name=value` AND `--name value`, because the second form used to be found
+// by nothing and fall silently to its default. That is not a cosmetic parser
+// gap: `--live-png refs/ke_live_1440.png` did not substitute the capture, it
+// left LIVE_PNG null, navigated to the live host instead, and refused with exit
+// 5 -- a refusal blaming the reference for a space in the calling shell.
 const argOf = (name, dflt) => {
-  const hit = process.argv.find((a) => a.startsWith(`--${name}=`))
-  return hit ? hit.slice(name.length + 3) : dflt
+  const eq = process.argv.find((a) => a.startsWith(`--${name}=`))
+  if (eq) return eq.slice(name.length + 3)
+  const flag = process.argv.indexOf(`--${name}`)
+  if (flag !== -1) {
+    const next = process.argv[flag + 1]
+    if (next && !next.startsWith('--')) return next
+  }
+  return dflt
 }
 const page = argOf('page', 'home')
 // Width is an argument because the gate is quoted at three widths (380, 768,
@@ -26,6 +37,136 @@ const page = argOf('page', 'home')
 // been measured. Height stays 2600: the diff is banded down the page and the
 // bands must line up run to run for the numbers to be comparable.
 const VIEW = { width: Number(argOf('width', '1440')), height: 2600 }
+// THE GATE IS QUOTED AT THREE WIDTHS, SO IT IS ONE COMMAND.
+//
+// `--widths=380,768,1440` re-runs this script once per width and prints the
+// three numbers together. Every other flag is passed through untouched, so the
+// only difference between the children is `--width`.
+//
+// SEQUENTIAL, NOT PARALLEL. Each child launches its own Chromium and takes a
+// full-page capture of a page that is 17791px tall at 380; two of those at once
+// on this laptop is the same memory ceiling that already kills concurrent
+// builds here, and a run that gets OOM-killed halfway reports a partial gate.
+//
+// The driver exits on the FIRST non-zero child code. A width that refuses (5)
+// or fails a guard (3, 4) produced no number, and a summary that showed two
+// percentages and a blank third while exiting 0 would read as a pass.
+//
+// AND IT EXITS 6 WHEN A WIDTH IS SIMPLY OVER THE CEILING, WHICH NOTHING HERE
+// USED TO DO. diff-bands.mjs prints the percentage, writes PASS or FAIL into
+// docs/UI-PARITY-REPORT.md, and exits 0 either way; so did this driver. On
+// 2026-09-18 a run reported three FAILs at 27.32%, 25.85% and 11.37% and
+// exited 0. Anything gating on the exit status -- CI, a hook, a loop -- read
+// that as a green visual gate.
+//
+// Single-width runs keep the old behaviour, because that is what every
+// existing caller and every note in STATE.md was written against. Only this
+// multi-width driver, which is new, enforces the ceiling it prints.
+const WIDTHS = String(argOf('widths', ''))
+  .split(',')
+  .map((w) => w.trim())
+  .filter(Boolean)
+if (WIDTHS.length > 1) {
+  const passthrough = process.argv
+    .slice(2)
+    .filter(
+      (a, i, all) =>
+        a !== '--widths' &&
+        !a.startsWith('--widths=') &&
+        all[i - 1] !== '--widths' &&
+        a !== `--width=${VIEW.width}`,
+    )
+  /** @type {{width: string, pct: number | null, code: number}[]} */
+  const runs = []
+  let worst = 0
+  for (const w of WIDTHS) {
+    console.log(`\n=== width ${w} ===`)
+    const code = await new Promise((res) => {
+      const child = spawn(process.execPath, [process.argv[1], ...passthrough, `--width=${w}`], {
+        stdio: ['inherit', 'pipe', 'inherit'],
+        cwd: process.cwd(),
+        env: process.env,
+      })
+      let out = ''
+      child.stdout.on('data', (chunk) => {
+        out += chunk
+        process.stdout.write(chunk)
+      })
+      // The child already appended its own row to docs/UI-PARITY-REPORT.md; this
+      // only reads the number back so the three can be printed side by side.
+      //
+      // Reads "both painted", not "OVERALL", since 22.09.2026 -- see the
+      // comment above appendParityRow() in diff-bands.mjs. The row this driver
+      // prints has to agree with the row already written to
+      // docs/UI-PARITY-REPORT.md, and that row is graded on the actionable
+      // component now, not on raw pixel mismatch that includes an unloaded
+      // reference image or a catalogue that moved on.
+      child.on('exit', (c) => {
+        const hit = out.match(/both painted ([\d.]+)%/)
+        runs.push({ width: w, pct: hit ? Number(hit[1]) : null, code: c ?? 1 })
+        res(c ?? 1)
+      })
+    })
+    if (code !== 0) {
+      worst = code
+      break
+    }
+  }
+  console.log(`\n=== ${page} parity, gate ${GATE_CEILING}% ===`)
+  let over = 0
+  for (const r of runs) {
+    const pct = r.pct === null ? '    n/a' : `${r.pct.toFixed(2)}%`.padStart(7)
+    const verdict =
+      r.pct === null ? `no number (exit ${r.code})` : r.pct <= GATE_CEILING ? 'PASS' : 'FAIL'
+    if (r.pct !== null && r.pct > GATE_CEILING) over++
+    console.log(`  ${String(r.width).padStart(4)}  ${pct}  ${verdict}`)
+  }
+  if (!worst && over) {
+    console.error(
+      `\n${over} of ${runs.length} widths are over the ${GATE_CEILING}% gate. Exiting 6.`,
+    )
+    process.exit(6)
+  }
+  process.exit(worst)
+}
+// THE REFERENCE CAN BE A FROZEN CAPTURE, BECAUSE THE LIVE ONE IS GONE.
+//
+// Every LIVE_* constant below names kenyonexpress.co.il, and that host stopped
+// being the WooCommerce site: DNS was cut over, and as of 2026-09-18 the domain
+// does not resolve at all (no NS, no A, no SOA; `co.il` itself answers). So
+// enforceReference() refuses every run with exit 5, which is correct and also
+// means the gate CLAUDE.md makes mandatory cannot produce a number.
+//
+// docs/PARITY-REFERENCE.md worked that problem on 2026-09-09 and concluded only
+// three routes existed, all dead ends: re-capture (the tool cannot regenerate
+// its own input), the Wayback Machine (measured, 31 of 54 images unrecoverable),
+// or redefining the gate as drift-from-ourselves. It considered HTML archives
+// and missed what was sitting in the same directory.
+//
+//   refs/ke_live_380.png    380 x 17791
+//   refs/ke_live_768.png    768 x  8797
+//   refs/ke_live_1440.png  1440 x  4968
+//
+// Captured 2026-08-12, four weeks BEFORE the cutover, at exactly the three
+// widths the gate is quoted at. They are fully rendered: product photos, the
+// yellow header, the category rail, the hero. They are the reference, already
+// developed. The HTML archives fail because a browser has to re-fetch 143
+// subresources from a host that is gone; a PNG has nothing left to fetch.
+//
+// `--live-png=<path>` substitutes one for the live browser side. What it gives
+// up is real and is recorded in the report's notes column: the capture is
+// frozen at its date, so it cannot reflect a change live made afterwards -- but
+// live made no changes afterwards, it was replaced. Everything the gate
+// actually scores (layout, colour, type, spacing at three widths) is in the
+// pixels.
+// `--baseline=` is the same flag under the name the gate is quoted in, and
+// `{width}` inside it expands to this run's viewport. That placeholder is what
+// makes `--widths` usable: the width guard further down refuses a capture whose
+// width is not the run's, so one hardcoded path across three widths means two
+// of the three children refuse and only the matching one produces a number.
+const LIVE_PNG =
+  (argOf('live-png', null) ?? argOf('baseline', null))?.replaceAll('{width}', String(VIEW.width)) ??
+  null
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
 const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'
@@ -83,10 +224,36 @@ const ctx = await b.newContext({
   deviceScaleFactor: 1,
   ...(STORAGE_STATE && existsSync(STORAGE_STATE) ? { storageState: STORAGE_STATE } : {}),
 })
-// Our consent banner is a fixed overlay and this viewport is 2600px tall, so
-// it would sit inside the measured bands (see scripts/shoot-mine.mjs for the
-// numbers). Scoped to the local origin: the reference host never sees it.
-await ctx.addCookies([{ name: 'ke_consent', value: 'denied.2', url: LOCAL }])
+
+// A FIRST VISIT'S CONSENT BANNER IS NOT A DESIGN DIFFERENCE.
+//
+// Measured 22.09.2026: an unhandled first visit to `mine` renders the
+// analytics consent prompt (`src/components/analytics/ConsentBanner.tsx`)
+// over the top of whatever card sits in its way -- at 380px it landed
+// squarely on a deals-grid price and cart button. The frozen reference has
+// no equivalent element in the same crop, so every run before this one
+// scored that overlap as a real layout defect. It is a real element, just
+// not the one this gate exists to catch: a returning visitor, or the
+// reference captured past its own equivalent prompt, would not show it
+// either. `e2e/home.spec.ts` and `scripts/_lcp-probe.mjs` already carry a
+// consented cookie for the same reason; this brings compare.mjs in line
+// with both rather than inventing a third way to do it.
+//
+// The value is hardcoded, not imported from `src/lib/analytics/consent.ts`:
+// this script runs as plain Node ESM with no path aliasing and no TS loader,
+// and every other script here that needs this cookie (`_lcp-probe.mjs`)
+// already hardcodes it rather than add one. KEEP THE VERSION NUMBER IN SYNC
+// WITH `CONSENT_WORDING_VERSION` THERE -- a stale version here silently
+// starts failing this exact check again, the same way an unbumped version
+// there re-asks every real visitor.
+await ctx.addCookies([
+  {
+    name: 'ke_consent',
+    value: encodeURIComponent('granted.2'),
+    domain: new URL(LOCAL).hostname,
+    path: '/',
+  },
+])
 
 let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)
@@ -396,7 +563,40 @@ const shoot = async (url, out) => {
   // local screenshot that has no counterpart on live and does not exist in a
   // production build. It is dev tooling, not the page under comparison.
   if (!external) {
-    await p.addStyleTag({ content: 'nextjs-portal { display: none !important; }' })
+    // THE LOCAL-ENVIRONMENT RIBBON IS NOT PART OF THE PAGE UNDER COMPARISON.
+    //
+    // Same rule as <nextjs-portal> above, and it cost far more. `next start` on
+    // a laptop is NODE_ENV=production with no VERCEL_ENV, so
+    // EnvironmentBanner renders its 36px amber ribbon on the very server this
+    // gate measures. It is correct there -- it exists to stop a real card being
+    // typed into a sandbox -- and it renders nothing in production, so the
+    // reference has no counterpart to it and never will.
+    //
+    // What it does to the number is not 36px worth. It sits ABOVE everything in
+    // flow, so it shifts the entire page down relative to the capture, and a
+    // band diff compares row y against row y: every band below the header is
+    // then scoring our content against live's content one ribbon-height out of
+    // register. Measured 2026-09-18, --page=home --width=1440, one build and
+    // one server, hiding this element the only change: 21.31% -> see
+    // docs/UI-PARITY-REPORT.md for the row.
+    //
+    // ALSO HIDDEN, SAME REASON, SINCE 22.09.2026: `[data-bottom-tab-bar]`
+    // (`BottomTabBarView`) and `[data-testid="whatsapp-float"]`
+    // (`WhatsAppFloatSheet`). Both are `position: fixed`, and a full-page
+    // screenshot cannot represent a fixed element honestly at all -- it
+    // belongs at every scroll position, and a single flattened capture can
+    // only paint it at one, which lands wherever the first viewport height
+    // happens to end. Measured: with the element visible, it painted directly
+    // on top of a deals-grid card's price and cart button at 380px, and
+    // scored as a content mismatch against whatever the reference happens to
+    // show in that same band. Neither element is dev tooling and both are
+    // real, correct UI for an actual visitor scrolling the real page; the
+    // artifact is specific to flattening a fixed element into one static
+    // image, the same category of problem the ribbon above already is.
+    await p.addStyleTag({
+      content:
+        'nextjs-portal, [data-environment-banner], [data-bottom-tab-bar], [data-testid="whatsapp-float"] { display: none !important; }',
+    })
     await p.waitForTimeout(200)
     // Refuse to score an error page. Twice now a percentage has been recorded
     // in STATE against a page that never rendered -- once a blank product page,
@@ -894,7 +1094,13 @@ const pendingImages = { live: 0, mine: 0 }
 // add-to-cart GET at the real site and paid for two cart seedings first. This
 // probe answers identity only -- the archive-renders-unstyled half needs a
 // settled page, and it gets one in shoot().
-if ((page === 'checkout' || page === 'cart') && isExternal(liveUrl)) {
+// A FROZEN CAPTURE MEANS NO LIVE NAVIGATION, HERE TOO. `--baseline` was wired
+// into the frozen block below, which the home page reaches first; cart and
+// checkout reached this probe and `seedCart('live')` before it, and with the
+// domain unresolvable (registrar NS, 25.09) both died on the goto and the gate
+// never got to the capture it was handed. The capture IS the live side, so the
+// identity probe has nothing to classify and the live seed has nothing to seed.
+if ((page === 'checkout' || page === 'cart') && isExternal(liveUrl) && !LIVE_PNG) {
   const probe = await ctx.newPage()
   await probe.goto(liveUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
   const markers = await probe.evaluate(READ_REFERENCE_MARKERS)
@@ -907,7 +1113,7 @@ if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // waiting out its full timeout on a page that answers in under a second
   // cold, and the order costs nothing to get right.
   await seedCart('mine')
-  await seedCart('live')
+  if (!LIVE_PNG) await seedCart('live')
 }
 
 // TWO AGENTS RUNNING THIS SCRIPT IN ONE WORKING DIRECTORY OVERWRITE EACH
@@ -929,15 +1135,94 @@ if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
 // The shots are per-process from here, so a concurrent run cannot reach them.
 // The stable names are still written afterwards, because every other tool and
 // every note in STATE.md refers to them.
+/**
+ * Width and height of a PNG, read through the browser that is already open.
+ *
+ * No image library is added for this. diff-bands.mjs decodes its two PNGs the
+ * same way -- a data: URL into an <img> in headless chromium -- so the size
+ * this reports is by construction the size that will be scored, rather than a
+ * second decoder's opinion of the same file.
+ *
+ * @param {string} file
+ * @returns {Promise<{width: number, height: number}>}
+ */
+const probeCaptureWidth = async (file) => {
+  const dataUrl = `data:image/png;base64,${readFileSync(resolve(file)).toString('base64')}`
+  const p = await ctx.newPage()
+  try {
+    await p.goto('about:blank')
+    return await p.evaluate(
+      (src) =>
+        new Promise((res, rej) => {
+          const img = new Image()
+          img.onload = () => res({ width: img.naturalWidth, height: img.naturalHeight })
+          img.onerror = () => rej(new Error('not a decodable image'))
+          img.src = src
+        }),
+      dataUrl,
+    )
+  } finally {
+    await p.close()
+  }
+}
+
 const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
 
-await shoot(liveUrl, runShot('live'))
+if (LIVE_PNG) {
+  // The capture is the reference, so the identity guard has nothing to classify
+  // and no navigation happens on the live side at all. Two things are checked
+  // instead, and both refuse rather than warn.
+  if (!existsSync(LIVE_PNG)) {
+    console.error(`REFUSING to measure: --live-png=${LIVE_PNG} does not exist.`)
+    appendParityRefusal({ page, width: VIEW.width, reason: 'frozen capture not found' })
+    await b.close()
+    process.exit(5)
+  }
+  // WIDTH IS NOT COSMETIC HERE. diff-bands compares `Math.min(live.width,
+  // mine.width)` columns, so handing it a 380px capture on a 1440px run would
+  // silently score the leftmost 380px of our page against the whole of live's
+  // and report the result as a full-width gate number -- a pass built out of
+  // one narrow strip. Refuse on the mismatch instead of trusting the caller to
+  // pair the file with the flag.
+  const capture = await probeCaptureWidth(LIVE_PNG)
+  if (capture.width !== VIEW.width) {
+    console.error(
+      `REFUSING to measure: ${LIVE_PNG} is ${capture.width}px wide and this run is at ${VIEW.width}px.`,
+    )
+    console.error(
+      'diff-bands scores the narrower of the two images, so a mismatch here reports a strip as if it were the page. Pass the capture that matches --width.',
+    )
+    appendParityRefusal({
+      page,
+      width: VIEW.width,
+      reason: `capture is ${capture.width}px, run is ${VIEW.width}px`,
+    })
+    await b.close()
+    process.exit(5)
+  }
+  copyFileSync(LIVE_PNG, runShot('live'))
+  console.log(
+    `  reference: frozen capture ${LIVE_PNG} (${capture.width}x${capture.height}), no live navigation`,
+  )
+} else {
+  await shoot(liveUrl, runShot('live'))
+}
 await shoot(mineUrl, runShot('mine'))
 
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
 // percentage nobody can act on.
-if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
+// With a frozen capture nothing reads the live cart, so `cartEmptiness.live`
+// stays undefined and `undefined !== false` refused every frozen cart run with
+// a message calling the unread side "filled". The state of a capture cannot be
+// checked here; it is named in the notes column instead, and the reader pairs
+// the file with the seed on purpose.
+if (page === 'cart' && LIVE_PNG) {
+  console.log(
+    `cart: frozen capture, live cart state not checked; local cart is ${cartEmptiness.mine ? 'EMPTY' : 'filled'}.`,
+  )
+}
+if (page === 'cart' && !LIVE_PNG && cartEmptiness.live !== cartEmptiness.mine) {
   const describe = (v) => (v ? 'empty' : 'filled')
   console.error(
     `REFUSING to measure: live cart is ${describe(cartEmptiness.live)} and the local cart is ${describe(cartEmptiness.mine)}.`,
@@ -973,8 +1258,20 @@ if (
   process.exit(3)
 }
 
+// With a frozen capture nothing reads the live grid, so `gridCounts.live`
+// stays null and `null !== 4` refused every frozen product run as "live shows
+// null product cards" -- the same defect the cart guard above already names,
+// and this one wrote no ledger row on the way out. A capture's grid cannot be
+// counted here; the notes column names the file, and the reader pairs it with
+// the slug on purpose.
+if (COUNTED_GRIDS.has(page) && LIVE_PNG) {
+  console.log(
+    `${page}: frozen capture, live grid not counted; the local page shows ${gridCounts.mine} product card(s).`,
+  )
+}
 if (
   COUNTED_GRIDS.has(page) &&
+  !LIVE_PNG &&
   gridCounts.live !== gridCounts.mine &&
   process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
 ) {
@@ -1101,6 +1398,11 @@ await new Promise((resolvePromise, reject) => {
       // narrower of the two images, which is not the same thing when the live
       // page and ours differ in width.
       COMPARE_WIDTH: String(VIEW.width),
+      // A number measured against a frozen capture must say so in the report.
+      // Read a month from now, a bare percentage in UI-PARITY-REPORT.md is
+      // indistinguishable from one taken against the real site, and the two
+      // mean different things.
+      ...(LIVE_PNG ? { COMPARE_NOTES: `live side: frozen capture \`${LIVE_PNG}\`` } : {}),
       // Read the per-process shots, not the shared names. Without this the
       // isolation above buys nothing: the diff would still be taken across
       // whatever refs/live.png happens to hold by the time the child starts.

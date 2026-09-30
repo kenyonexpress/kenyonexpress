@@ -55,6 +55,15 @@ describe('buildProductJsonLd, physical', () => {
   it('names the business as the brand, not the platform', () => {
     const node = buildProductJsonLd(physical)
     expect(node.brand).toEqual({ '@type': 'Brand', name: 'אלקטרו פלוס' })
+    // A named maker wins over the seller; blank text does not.
+    expect(buildProductJsonLd({ ...physical, brandName: 'Samsung' }).brand).toEqual({
+      '@type': 'Brand',
+      name: 'Samsung',
+    })
+    expect(buildProductJsonLd({ ...physical, brandName: '  ' }).brand).toEqual({
+      '@type': 'Brand',
+      name: 'אלקטרו פלוס',
+    })
     expect(JSON.stringify(node.brand)).not.toContain('KenyonExpress')
   })
 

@@ -227,3 +227,71 @@ describe('the three slots beside the price', () => {
     }
   })
 })
+
+describe('the cashback line under the price', () => {
+  beforeEach(() => {
+    mock.handlers.length = 0
+    mock.saved = false
+  })
+
+  const line = () => screen.queryByTestId('pdp-cashback')
+
+  it('names the rate and what one unit earns on the price paid now', () => {
+    render(<ProductInfo {...BASE} cashbackPercent={5} />)
+    expect(line()).toHaveTextContent('5% קאשבק')
+    // 5% of ₪150 is ₪7.50, integer agorot through lib/money.
+    expect(line()?.textContent?.replace(/[\u2066\u2069\u00a0]/g, ' ')).toContain('7.50')
+  })
+
+  it('is absent at zero, when the column is missing, and on an implausible price', () => {
+    const { unmount } = render(<ProductInfo {...BASE} cashbackPercent={0} />)
+    expect(line()).toBeNull()
+    unmount()
+
+    const second = render(<ProductInfo {...BASE} />)
+    expect(line()).toBeNull()
+    second.unmount()
+
+    // ₪1 against a ₪200 compare-at: the buy button refuses it, so no reward.
+    render(<ProductInfo {...BASE} basePrice={1} cashbackPercent={5} />)
+    expect(line()).toBeNull()
+  })
+
+  it('a coupon earns on the online charge, not on the sticker price', () => {
+    render(
+      <ProductInfo
+        {...BASE}
+        basePrice={200}
+        oldPrice={null}
+        isCoupon
+        cashbackPercent={5}
+        couponOffer={{
+          sellable: true,
+          fullPriceIls: 200,
+          paidOnlineIls: 80,
+          balanceAtBusinessIls: 120,
+          discountPercent: 60,
+          validUntil: null,
+          expiryDays: null,
+        }}
+      />,
+    )
+    const text = line()?.textContent?.replace(/[\u2066\u2069\u00a0]/g, ' ') ?? ''
+    expect(text).toContain('5% קאשבק')
+    expect(text).toContain('4.00')
+    expect(text).not.toContain('10.00')
+  })
+
+  it('a live price change moves the reward with it', () => {
+    render(<ProductInfo {...BASE} cashbackPercent={10} />)
+    expect(line()?.textContent?.replace(/[\u2066\u2069\u00a0]/g, ' ')).toContain('15.00')
+    deliver({ ...EVENT, kenyon_price: 120, full_price: 240 })
+    expect(line()?.textContent?.replace(/[\u2066\u2069\u00a0]/g, ' ')).toContain('12.00')
+  })
+
+  it('a withdrawn product promises no reward', () => {
+    render(<ProductInfo {...BASE} cashbackPercent={10} />)
+    deliver({ ...EVENT, status: 'draft' })
+    expect(line()).toBeNull()
+  })
+})

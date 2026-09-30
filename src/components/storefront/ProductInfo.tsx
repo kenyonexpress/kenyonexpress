@@ -9,11 +9,12 @@ import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import RatingStars, { type RatingSummary } from '@/components/storefront/RatingStars'
 import { productQuantityCeiling } from '@/lib/cart/format'
+import { cashbackPreview } from '@/lib/cashback/preview'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
-import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
+import { shekelsFromIls as sharedShekelsFromIls, shekels } from '@/lib/money-format'
 import { useProductLive } from '@/lib/product-live/use-product-live'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
@@ -77,6 +78,12 @@ interface Props {
    * first review is approved; the slot then carries the identifiers instead.
    */
   rating?: RatingSummary | null
+  /**
+   * `products.cashback_percent` (or `cashback_bp` / 100 after 059), as a
+   * percent. Read inside the product cache from whichever column exists, the
+   * way the cart reads it. Zero or absent means the line is not rendered.
+   */
+  cashbackPercent?: number | null
 }
 
 /**
@@ -115,6 +122,7 @@ export default function ProductInfo({
   couponOffer,
   recurringOffer = null,
   rating = null,
+  cashbackPercent = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
 
@@ -214,6 +222,21 @@ export default function ProductInfo({
     if (!(await addToCart(productId, selected, qty, name))) return
     router.push('/checkout')
   }
+
+  // Cashback is earned on what is PAID NOW, which is what commission.ts
+  // snapshots: the coupon's online charge, or the unit price of everything
+  // else. A subscription is charged per cycle by the renewal worker, and this
+  // page does not quote a cycle's reward for the same reason it does not quote
+  // a one-off price for it. A line the button refuses to sell earns nothing.
+  const cashbackBasisIls = recurringOffer
+    ? null
+    : couponOffer
+      ? couponOffer.sellable
+        ? couponOffer.paidOnlineIls
+        : null
+      : price
+  const cashback =
+    withdrawn || priceImplausible ? null : cashbackPreview(cashbackPercent, cashbackBasisIls)
 
   const buyLabel = outOfStock
     ? 'אזל מהמלאי'
@@ -331,6 +354,19 @@ export default function ProductInfo({
             )}
           </p>
         </>
+      )}
+
+      {/* The perk, under whichever price block rendered above. The percent is
+          the product's own rate and the amount is what this one unit earns
+          on what is paid now; see lib/cashback/preview.ts for why those are
+          the two numbers and not the sticker price. Hidden entirely at 0. */}
+      {cashback && (
+        <p className="pdp-summary__cashback" data-testid="pdp-cashback" dir="rtl">
+          <span className="pdp-summary__cashback-rate">{cashback.percent}% קאשבק</span>{' '}
+          <span className="pdp-summary__cashback-note">
+            {shekels(cashback.unitAgorot)} חוזרים לארנק שלכם אחרי הקנייה
+          </span>
+        </p>
       )}
 
       {variants.length > 0 && (

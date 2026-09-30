@@ -182,4 +182,60 @@ test.describe('product page', () => {
       ).toBeLessThanOrEqual(allowed)
     }
   })
+
+  /**
+   * STEP 07: the Product schema as a gate, the way category-seo.spec.ts gates
+   * the archive. The claim a crawler reads must be the one the visitor sees:
+   * the node's name is the h1, its offer's price is the number painted in the
+   * price row, and the currency is shekels. A sellable product must also say
+   * so, since `availability` is what a shopping result is filtered on.
+   */
+  test('the Product JSON-LD names the page and quotes the painted price', async ({ page }) => {
+    await openFirstProduct(page)
+
+    const scripts = await page.locator('script[type="application/ld+json"]').allTextContents()
+    const nodes = scripts.flatMap((text) => {
+      const parsed = JSON.parse(text) as Record<string, unknown> | Record<string, unknown>[]
+      return Array.isArray(parsed) ? parsed : [parsed]
+    })
+    const product = nodes.find((n) => n['@type'] === 'Product')
+    expect(product, 'one Product node').toBeDefined()
+
+    const heading = (await page.getByRole('heading', { level: 1 }).textContent())?.trim()
+    expect(product?.name).toBe(heading)
+    expect(String(product?.url)).toContain('/product/')
+
+    const offer = product?.offers as Record<string, unknown> | undefined
+    expect(offer, 'the Product carries an Offer').toBeDefined()
+    expect(offer?.priceCurrency).toBe('ILS')
+    expect(String(offer?.availability)).toMatch(/schema\.org\/(InStock|OutOfStock)$/)
+
+    // A priced offer must match the first number of the price row to the
+    // shekel. The row prints "₪399" or "₪399.90" inside bidi isolates.
+    if (offer?.price !== undefined) {
+      const painted = (await page.locator('.pdp-summary__price').first().textContent()) ?? ''
+      const first = painted.replace(/[\u2066\u2069\u00a0,]/g, '').match(/\d+(?:\.\d+)?/)
+      expect(first, 'the price row paints a number').not.toBeNull()
+      expect(Number(offer.price)).toBeCloseTo(Number(first?.[0]), 2)
+    }
+  })
+
+  /**
+   * The cashback line is optional per product (most rows carry 0%). When it
+   * renders it must name a positive whole-or-decimal percent and a shekel
+   * amount, and it must sit inside the summary column under the price, not
+   * float elsewhere.
+   */
+  test('the cashback line, when present, names a rate and a shekel amount', async ({ page }) => {
+    await openFirstProduct(page)
+    const line = page.getByTestId('pdp-cashback')
+    test.skip((await line.count()) === 0, 'this product earns no cashback')
+
+    await expect(line).toBeVisible()
+    const text = ((await line.textContent()) ?? '').replace(/[\u2066\u2069\u00a0]/g, ' ')
+    expect(text).toMatch(/(\d+(?:\.\d+)?)% קאשבק/)
+    expect(text).toContain('₪')
+    expect(Number(text.match(/(\d+(?:\.\d+)?)% קאשבק/)?.[1])).toBeGreaterThan(0)
+    await expect(page.locator('.pdp-summary [data-testid="pdp-cashback"]')).toHaveCount(1)
+  })
 })

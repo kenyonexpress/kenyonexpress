@@ -7,8 +7,10 @@ import { buildRecurringOffer } from '@/lib/commerce/recurring'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
+  CASHBACK_PERCENT_CANDIDATES,
   COUPON_054_COLUMNS,
   type Coupon054Row,
+  readFirstAvailableColumn,
   readOptionalColumns,
   readStickerPriceIls,
 } from '@/lib/supabase/optional-columns'
@@ -62,7 +64,7 @@ export async function loadProductBySlug(slug: string) {
        kenyon_price, full_price, is_coupon_enabled,
        coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
        requires_shipping, weight_grams, warranty_months,
-       type, sku, images, stock_quantity, category_id, supplier_id,
+       type, sku, images, stock_quantity, category_id, supplier_id, brand,
        recurring_amount_agorot, billing_interval, billing_interval_count,
        categories!products_category_id_fkey(id, name_he, slug)`,
       )
@@ -93,8 +95,14 @@ export async function loadProductBySlug(slug: string) {
 
   // Three independent reads, so they go together rather than in sequence. On
   // a cache miss this is the difference between one round trip and three.
-  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls, rating] = await Promise.all(
-    [
+  // The cashback rate joins the same probe for the same reason as the coupon
+  // columns: the hosted project carries `cashback_percent`, 059 renames it to
+  // `cashback_bp`, and naming the one this database lacks fails the whole
+  // select. `lib/cart/load-products.ts` reads it exactly this way. It is read
+  // HERE so the page quotes the rate `checkout.ts` will snapshot on the line,
+  // not a rate of its own.
+  const [supplier, variants, galleryAssets, coupon054, stickerPriceIls, rating, cashback] =
+    await Promise.all([
       loadSupplierPublicContact(product.supplier_id),
       supabase
         .from('product_variants')
@@ -115,10 +123,19 @@ export async function loadProductBySlug(slug: string) {
         : Promise.resolve(undefined),
       isCoupon ? readStickerPriceIls(probe, product.id, 'product page') : Promise.resolve(null),
       loadRatingSummary(product.id),
-    ],
-  )
+      readFirstAvailableColumn<number>(
+        probe,
+        CASHBACK_PERCENT_CANDIDATES,
+        [product.id],
+        'product page cashback',
+      ),
+    ])
 
   const basePrice = Number(product.kenyon_price ?? 0)
+
+  // Percent, as `lib/cart/pricing.ts` speaks it. Absent means zero: cashback
+  // is an opt-in perk, and a product without the column earns none.
+  const cashbackPercent = cashback.get(product.id) ?? 0
 
   // Built HERE and not on the page, because `buildCouponOffer` reads the
   // current time to decide whether the offer has lapsed, and a Server
@@ -155,6 +172,7 @@ export async function loadProductBySlug(slug: string) {
     couponOffer,
     recurringOffer,
     rating,
+    cashbackPercent,
   }
 }
 
