@@ -2,6 +2,75 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c61 (הועבר מ-STATE.md ב-M05-c61, לשמירה על תקרת 300 שורות)
+
+**M04-c61 - DONE (30.09): תברואת תלויות — `pnpm audit` אפס חולשות
+(זהה למדידות קודמות), `pnpm outdated` הראה 16 חבילות, 15 מהן קפיצת
+major (אסור לפי הכלל) ורק אחת same-major: `fast-xml-parser` 5.11.1→5.11.2
+(dev, dep. של `fast-xml-parser`/`@nodable/entities` 3.0.0→3.1.0). הוחל
+עם `pnpm add -D fast-xml-parser@5.11.2`. תופעת לוואי: הפקודה עצמה שינתה
+פורמט של `onlyBuiltDependencies` ב-`package.json` למבנה מרובה-שורות
+שנכשל בבודק הפורמט של biome — תוקן בחזרה לשורה אחת (ללא שינוי תוכן,
+רק פורמט). ארבעת השערים ירוקים אחרי התיקון: `type-check` (`tsc --noEmit`
+exit 0), `lint` (biome + 12 שערים מותאמים, כולם clean), `test` (610
+קבצים, 7296 עברו, 12 דולגו), `build` (`Compiled successfully`, אפס
+שגיאת build אמיתית — `rls_denied`/`reviews` הוא רעש prerender ידוע).
+קבצים ששונו: `package.json`, `pnpm-lock.yaml`, `STATE.md`. אין שער
+חזותי נדרש (אין שינוי UI).
+
+## M03-c61 (הועבר מ-STATE.md ב-M05-c61, לשמירה על תקרת 300 שורות)
+
+**M03-c61 - DONE (30.09): בדיקה ירוקה מחדש — אפס שגיאה, אפס אזהרה
+לתיקון, אפס שינוי קוד.** משימת התור: להריץ `pnpm type-check`, `pnpm
+lint`, `pnpm test` ו-`pnpm build`, ולתקן כל שגיאה/אזהרה ניתנת לתיקון
+בלי לשנות התנהגות מוצר. **נמדד עכשיו, קדמי:**
+
+| שער | תוצאה |
+|---|---|
+| `type-check` | `tsc --noEmit`, exit 0, אפס שגיאה |
+| `lint` | biome (2025 קבצים) + 12 שערים מותאמים, כולם `clean`, exit 0 |
+| `test` | 610 קבצי טסט, 7296 עברו, 12 דולגו (ידוע), exit 0 |
+| `build` | `Compiled successfully in 3.8s`, exit 0 |
+
+אין שגיאה או אזהרת build אמיתית. שורות `db.optional_column_missing`
+(מיגרציה 242 ממתינה) ו-`db.query_slow` על `suppliers` בלוג ה-build הן
+רעש prerender מוכר של סביבת הארגז-חול (טעינת DB מרוחקת/מוגבלת), לא כשל
+build — כפי שתועד כבר ב-M03-c60 לגבי `rls_denied`/`reviews_read_failed`.
+אין מה לתקן: אין קוד לשנות בלי לגעת בהתנהגות מוצר. קובץ ששונה: `STATE.md`
+בלבד.
+
+## M02-c61 (הועבר מ-STATE.md ב-M05-c61, לשמירה על תקרת 300 שורות)
+
+**M02-c61 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים, אפס
+רגרסיה.** משימת התור: להריץ `scripts/compare.mjs` על הבית ועל דף
+המוצר ב-380/768/1440 מול reference של Electro v7, לתקן כל חריגה עד
+שכולן מתחת ל-11%, ולתעד ב-STATE.md. **נמדד עכשיו, קדמי, מול שרת
+`pnpm start` על פורט 3311 שהיה כבר בנוי מ-HEAD (`e6f3aae4c`):**
+
+| דף | רוחב | % | תוצאה |
+|---|---|---|---|
+| home | 380 | 8.51% | PASS |
+| home | 768 | 9.02% | PASS |
+| home | 1440 | 3.95% | PASS |
+| product | 380 | 4.96% | PASS |
+| product | 768 | 4.56% | PASS |
+| product | 1440 | 3.25% | PASS |
+
+כל השורות נכתבו על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md` (04:32-04:41,
+`e6f3aae4c-dirty`). **אין רגרסיה לתיקון**: כל שש המדידות מתחת לתקרה בלי
+נגיעה בקוד. שני ריצות `home/768` קודמות מאותו מחזור (04:10, 04:15, לפני
+תחילת הפריטה הזו) קראו `13.44%`/`13.75%` **FAIL** מול אותו build ואותו
+commit — לא נמדד שום שינוי קוד ביניהן לבין ה-PASS שאחריהן (9.02% פעמיים),
+כלומר זו רעידה חולפת בטעינת תמונות עצלה (`scripts/compare.mjs` עצמו
+מתעד תופעה כזו, ר' ההערות סביב שורה 742), לא רגרסיה אמיתית — נפתרה
+מעצמה בריצות חוזרות ואושרה שוב בריצת האימות הסופית של הפריטה הזו.
+דף המוצר לא זז מהמדידה הקודמת (M02-c60/c59, אפס דריפט).
+ארבעת השערים: `pnpm type-check`/`lint`/`test` (610 קבצים, 7296 עברו,
+12 דולגו) ו-`pnpm build` (`Compiled successfully`, אפס שגיאת build —
+שורות `rls_denied`/`reviews_read_failed` הן רעש prerender ידוע, לא כשל)
+— כולם ירוקים. קובץ ששונה: `docs/UI-PARITY-REPORT.md` בלבד (השורות
+שהשער כתב).
+
 ## M01-c61 (הועבר מ-STATE.md ב-M02-c61, לשמירה על תקרת 300 שורות)
 
 **M01-c61 - BLOCKED (30.09): בדיקת פרודקשן בפעם השמינית — DNS/HTTP

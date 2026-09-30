@@ -1,65 +1,52 @@
-RESUME FROM: M05-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c61)
+RESUME FROM: M06-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c61)
 
 ## המשך מ:
 
-**M04-c61 - DONE (30.09): תברואת תלויות — `pnpm audit` אפס חולשות
-(זהה למדידות קודמות), `pnpm outdated` הראה 16 חבילות, 15 מהן קפיצת
-major (אסור לפי הכלל) ורק אחת same-major: `fast-xml-parser` 5.11.1→5.11.2
-(dev, dep. של `fast-xml-parser`/`@nodable/entities` 3.0.0→3.1.0). הוחל
-עם `pnpm add -D fast-xml-parser@5.11.2`. תופעת לוואי: הפקודה עצמה שינתה
-פורמט של `onlyBuiltDependencies` ב-`package.json` למבנה מרובה-שורות
-שנכשל בבודק הפורמט של biome — תוקן בחזרה לשורה אחת (ללא שינוי תוכן,
-רק פורמט). ארבעת השערים ירוקים אחרי התיקון: `type-check` (`tsc --noEmit`
-exit 0), `lint` (biome + 12 שערים מותאמים, כולם clean), `test` (610
-קבצים, 7296 עברו, 12 דולגו), `build` (`Compiled successfully`, אפס
-שגיאת build אמיתית — `rls_denied`/`reviews` הוא רעש prerender ידוע).
-קבצים ששונו: `package.json`, `pnpm-lock.yaml`, `STATE.md`. אין שער
-חזותי נדרש (אין שינוי UI).
-אפס שגיאה, אפס אזהרה לתיקון, אפס שינוי קוד.** משימת התור: להריץ
-`pnpm type-check`, `pnpm lint`, `pnpm test` ו-`pnpm build`, ולתקן כל
-שגיאה/אזהרה ניתנת לתיקון בלי לשנות התנהגות מוצר. **נמדד עכשיו, קדמי:**
+**M05-c61 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם האחת-עשרה
+דרך ה-management API (Supabase MCP דורש OAuth, לא זמין בסשן
+לא-אינטראקטיבי — כמו בכל פריט קודם), זהה ב-100% ל-M05-c60.** משימת
+התור: `get_advisors` (security+performance) read-only, קובץ מיגרציה
+ל-`migrations/pending/` לכל WARN, עדכון `docs/DB-SECURITY-MODEL.md` אם
+המספרים השתנו.
 
-| שער | תוצאה |
-|---|---|
-| `type-check` | `tsc --noEmit`, exit 0, אפס שגיאה |
-| `lint` | biome (2025 קבצים) + 12 שערים מותאמים, כולם `clean`, exit 0 |
-| `test` | 610 קבצי טסט, 7296 עברו, 12 דולגו (ידוע), exit 0 |
-| `build` | `Compiled successfully in 3.8s`, exit 0 |
+- טוקן ה-CLI מה-keychain (`security find-generic-password -s "Supabase
+  CLI" -w`, עטיפת `go-keyring-base64:` + פענוח base64), שני `GET
+  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
+  {security,performance}`, `200`/`200`. טוקן לא נדפס ולא נשמר לקובץ.
+- אבטחה: 28 ממצאים (4 `rls_enabled_no_policy` INFO, 2
+  `anon_security_definer_function_executable` WARN, 21
+  `authenticated_security_definer_function_executable` WARN, 1
+  `function_search_path_mutable` WARN) — שמות הפונקציות נבדקו שם-שם
+  מול M05-c60, זהים.
+- ביצועים: 196 ממצאים (14 `multiple_permissive_policies` WARN, 6
+  `auth_rls_initplan` WARN, 166 `unused_index` INFO, 9
+  `unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute`
+  INFO) — אותן טבלאות בדיוק, נבדק שם-שם.
+- **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.** כל ה-WARN מכוסים
+  בארבעת הקבצים הממתינים הקיימים (`209`, `220`, `245`, `246`), נבדקו
+  שעדיין קיימים ולא נערכו. **אין WARN חדש, אין קובץ מיגרציה חדש נדרש.**
+- `docs/DB-SECURITY-MODEL.md` עודכן: סעיף חדש 0יא (זהה ב-100% ל-0י) +
+  שורת הכותרת. ארבעת השערים (`type-check`/`lint`/`test`/`build`)
+  הורצו לפי כלל התור למרות שאין שינוי קוד יישומי — כולם ירוקים. אין
+  שער חזותי נדרש (אין שינוי UI). קבצי הפלט הזמניים
+  (`/tmp/ke-advisors/*.json`) נמחקו.
 
-אין שגיאה או אזהרת build אמיתית. שורות `db.optional_column_missing`
-(מיגרציה 242 ממתינה) ו-`db.query_slow` על `suppliers` בלוג ה-build הן
-רעש prerender מוכר של סביבת הארגז-חול (טעינת DB מרוחקת/מוגבלת), לא כשל
-build — כפי שתועד כבר ב-M03-c60 לגבי `rls_denied`/`reviews_read_failed`.
-אין מה לתקן: אין קוד לשנות בלי לגעת בהתנהגות מוצר. קובץ ששונה: `STATE.md`
-בלבד. משימת התור: להריץ `scripts/compare.mjs` על הבית
-ועל דף המוצר ב-380/768/1440 מול reference של Electro v7, לתקן כל חריגה
-עד שכולן מתחת ל-11%, ולתעד ב-STATE.md. **נמדד עכשיו, קדמי, מול שרת
-`pnpm start` על פורט 3311 שהיה כבר בנוי מ-HEAD (`e6f3aae4c`):**
+## M04-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
-| דף | רוחב | % | תוצאה |
-|---|---|---|---|
-| home | 380 | 8.51% | PASS |
-| home | 768 | 9.02% | PASS |
-| home | 1440 | 3.95% | PASS |
-| product | 380 | 4.96% | PASS |
-| product | 768 | 4.56% | PASS |
-| product | 1440 | 3.25% | PASS |
+M04-c61: תברואת תלויות — `pnpm audit` אפס חולשות, `fast-xml-parser`
+5.11.1→5.11.2 הוחל (dev, same-major, היחיד מתוך 16 חבילות שלא היה
+קפיצת major). ארבעת השערים ירוקים.
 
-כל השורות נכתבו על ידי השער עצמו ל-`docs/UI-PARITY-REPORT.md` (04:32-04:41,
-`e6f3aae4c-dirty`). **אין רגרסיה לתיקון**: כל שש המדידות מתחת לתקרה בלי
-נגיעה בקוד. שני ריצות `home/768` קודמות מאותו מחזור (04:10, 04:15, לפני
-תחילת הפריטה הזו) קראו `13.44%`/`13.75%` **FAIL** מול אותו build ואותו
-commit — לא נמדד שום שינוי קוד ביניהן לבין ה-PASS שאחריהן (9.02% פעמיים),
-כלומר זו רעידה חולפת בטעינת תמונות עצלה (`scripts/compare.mjs` עצמו
-מתעד תופעה כזו, ר' ההערות סביב שורה 742), לא רגרסיה אמיתית — נפתרה
-מעצמה בריצות חוזרות ואושרה שוב בריצת האימות הסופית של הפריטה הזו.
-דף המוצר לא זז מהמדידה הקודמת (M02-c60/c59, אפס דריפט).
-ארבעת השערים: `pnpm type-check`/`lint`/`test` (610 קבצים, 7296 עברו,
-12 דולגו) ו-`pnpm build` (`Compiled successfully`, אפס שגיאת build —
-שורות `rls_denied`/`reviews_read_failed` הן רעש prerender ידוע, לא כשל)
-— כולם ירוקים. קובץ ששונה: `docs/UI-PARITY-REPORT.md` בלבד (השורות
-שהשער כתב).
+## M03-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M03-c61: בדיקה ירוקה מחדש, אפס שגיאה/אזהרה לתיקון, אפס שינוי קוד.
+ארבעת השערים ירוקים (610 קבצים, 7296 עברו, 12 דולגו; build נקי).
+
+## M02-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M02-c61: שער חזותי, בית ומוצר, שלושה רוחבים, אפס רגרסיה — כל שש
+המדידות PASS מתחת ל-11% (8.51/9.02/3.95 בית, 4.96/4.56/3.25 מוצר).
 
 ## M01-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
