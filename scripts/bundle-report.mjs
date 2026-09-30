@@ -49,6 +49,12 @@ const ROUTES = [
   ['/', 'home'],
   ['/products', 'catalogue'],
   ['/category/hot-deals', 'category'],
+  // `e2e-test-physical`: the seeded fixture from `scripts/seed-test-data.mjs`,
+  // present in every environment this script runs against. The product page
+  // was missing from this list even though it is the one a customer actually
+  // stops on longest - added after it turned out to be the heaviest route
+  // measured (M14-c62).
+  ['/product/e2e-test-physical', 'product'],
   ['/cart', 'cart'],
   ['/checkout', 'checkout'],
   ['/account', 'account'],

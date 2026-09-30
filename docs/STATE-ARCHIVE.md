@@ -2,6 +2,57 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c62 (הועבר מ-STATE.md ב-M14-c62, לשמירה על תקרת 300 שורות)
+
+**M13-c62 - DONE (30.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy
+ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
+מ-M13-c61.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
+Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים עם
+טסטים. בדיקת דריפט קודם: `git diff --stat 743084d38..HEAD --
+middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*' 'src/lib/security*'
+'src/lib/headers*' next.config.* vercel.json 'src/server/actions/auth*'
+'src/server/actions/checkout*' 'src/server/actions/*voucher*'
+'src/server/actions/*redeem*' 'src/app/api/supplier/vouchers/redeem*'
+'src/app/redeem/**'` מחזיר קובץ אחד בלבד: `auth-coverage.test.ts` (+7
+שורות, רישום `recently-viewed.ts:getRecentlyViewedProducts` כפעולה
+ציבורית ללא session — קריאה בלבד מ-`localStorage` של הדפדפן, לא נוגע
+בכותרות או ב-rate limiting). `git diff --stat` המלא מ-`743084d38`
+מראה 14 קבצים, כולם תיעוד/PDP (`RecentlyViewedRail`, M18-c61) — אפס
+קומיט נגע במשטח האבטחה.
+
+נמדד בכל זאת חי מול שרת `next start` קיים שכבר רץ על HEAD הנוכחי
+(פורט 3471, `.next/BUILD_ID` `Qiw0jzh8aP48yZxykGhsO`, אומת מול
+`pnpm build` שהורץ מחדש בפועל בפריט הזה — ראה שערים למטה):
+- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
+  זהות בארבעתן ל-M13-c61: CSP (`default-src 'self'`, `frame-ancestors
+  'none'`, `frame-src`/`form-action` ל-`secure.cardcom.solutions`
+  ו-`'self'` בלבד, `object-src 'none'`), `Strict-Transport-Security:
+  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
+  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`.
+- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c61: `login`
+  (`src/server/actions/auth.ts:141`), `begin_checkout`
+  (`src/server/actions/payments/checkout.ts:351`, 10 ל-60 שניות),
+  `redeem` (`src/app/redeem/[token]/page.tsx:109`, 60 ל-3600 שניות),
+  `voucher-redeem` (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
+  `rateLimit('voucher-redeem', user.id)`, 429). `src/lib/rate-limit/limiter.ts`
+  (Upstash כברירת מחדל, נפילה ל-postgres, נכשל פתוח בשגיאה) לא השתנה.
+  טסטים קיימים על שני הצדדים: `src/lib/security/frame-policy.test.ts`
+  לכותרות, ו-20 קבצי טסט (`limiter.test.ts`, `policies.test.ts`,
+  `auth.test.ts`, `checkout.test.ts`, `redeem/route.test.ts` ועוד) על
+  ה-rate limiting.
+- `upgrade-insecure-requests` נעדר שוב מה-CSP המקומי (זהה ל-M13-c61):
+  build מקומי עם `NEXT_PUBLIC_APP_URL` שמתחיל ב-`http://`, לכן
+  `src/lib/security/frame-policy.ts` משמיט את הדירקטיבה בכוונה —
+  תוצר build מקומי, לא דריפט קוד, [[site-url-baked-at-build-time]].
+
+**אפס פער נמצא, אפס תיקון קוד או טסט נדרש.** שערים: `type-check` נקי,
+`lint` נקי (biome 2028 קבצים, 12 שערים ירוקים), `test` המלא 610/610
+קבצים 7296/7308 (12 דולגים, 56.09s), `build` רץ בפועל עד סוף (לא רק
+נבדק חי) — כל הנתיבים כולל `/`, `/checkout`, `/login`,
+`/redeem/[token]` נבנו. קובץ קוד שונה: אין. תיעוד: `STATE.md` +
+`docs/STATE-ARCHIVE.md`.
+
 ## M12-c62 (הועבר מ-STATE.md ב-M13-c62, לשמירה על תקרת 300 שורות)
 
 **M12-c62 - DONE (30.09): SEO נבדק מחדש, אפס דריפט קוד.** משימת התור:

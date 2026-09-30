@@ -1,75 +1,71 @@
-RESUME FROM: M14-c62
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c62)
+RESUME FROM: M15-c62
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c62)
 
 ## המשך מ:
 
-**M13-c62 - DONE (30.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy
-ומגבלות קצב Upstash על login/checkout/redeem, אימות מחדש, אפס דריפט
-מ-M13-c61.** משימת התור: לוודא CSP, HSTS, X-Frame-Options,
-Referrer-Policy ומגבלות קצב על login/checkout/redeem, ולתקן פערים עם
-טסטים. בדיקת דריפט קודם: `git diff --stat 743084d38..HEAD --
-middleware.ts 'src/**/rate-limit*' 'src/**/ratelimit*' 'src/lib/security*'
-'src/lib/headers*' next.config.* vercel.json 'src/server/actions/auth*'
-'src/server/actions/checkout*' 'src/server/actions/*voucher*'
-'src/server/actions/*redeem*' 'src/app/api/supplier/vouchers/redeem*'
-'src/app/redeem/**'` מחזיר קובץ אחד בלבד: `auth-coverage.test.ts` (+7
-שורות, רישום `recently-viewed.ts:getRecentlyViewedProducts` כפעולה
-ציבורית ללא session — קריאה בלבד מ-`localStorage` של הדפדפן, לא נוגע
-בכותרות או ב-rate limiting). `git diff --stat` המלא מ-`743084d38`
-מראה 14 קבצים, כולם תיעוד/PDP (`RecentlyViewedRail`, M18-c61) — אפס
-קומיט נגע במשטח האבטחה.
+**M14-c62 - DONE (30.09): ביצועים — bundle sizes/צנרת תמונות/תגיות
+ISR/כותרות cache, ותיקון פער מדידה: `/product/[slug]` נוסף לרשימת
+הנתיבים הנמדדים.** משימת התור: לבדוק bundle sizes, image pipeline
+output, תגיות ISR וכותרות cache, ולתקן את הרגרסיה הגדולה ביותר. בדיקת
+דריפט קודם (M14-c61, `85c8a5268`): `git diff --stat 85c8a5268..HEAD --
+next.config.ts next.config.mjs middleware.ts vercel.json src/
+package.json pnpm-lock.yaml` מראה חמישה קבצים — `RecentlyViewedRail`
+(M18-c61, כבר קדם ל-M14-c61 עצמו, אך מעולם לא נמדד על משטח הביצועים כי
+`scripts/bundle-report.mjs` לא כלל את `/product/[slug]` ברשימת
+הנתיבים הנמדדים שלו מלכתחילה (רק `/`, `/products`, `/category/hot-deals`,
+`/cart`, `/checkout`, `/account`, `/faq`, `/admin/products`) — הפער היה
+במדידה עצמה, לא רק בקוד.
 
-נמדד בכל זאת חי מול שרת `next start` קיים שכבר רץ על HEAD הנוכחי
-(פורט 3471, `.next/BUILD_ID` `Qiw0jzh8aP48yZxykGhsO`, אומת מול
-`pnpm build` שהורץ מחדש בפועל בפריט הזה — ראה שערים למטה):
-- כותרות תגובה על `/`, `/checkout`, `/login`, `/redeem/test-token`
-  זהות בארבעתן ל-M13-c61: CSP (`default-src 'self'`, `frame-ancestors
-  'none'`, `frame-src`/`form-action` ל-`secure.cardcom.solutions`
-  ו-`'self'` בלבד, `object-src 'none'`), `Strict-Transport-Security:
-  max-age=63072000; includeSubDomains; preload`, `X-Frame-Options:
-  DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
-  strict-origin-when-cross-origin`.
-- מגבלות קצב נמדדו בקוד, אותן שורות בדיוק כמו M13-c61: `login`
-  (`src/server/actions/auth.ts:141`), `begin_checkout`
-  (`src/server/actions/payments/checkout.ts:351`, 10 ל-60 שניות),
-  `redeem` (`src/app/redeem/[token]/page.tsx:109`, 60 ל-3600 שניות),
-  `voucher-redeem` (`src/app/api/supplier/vouchers/redeem/route.ts:223`,
-  `rateLimit('voucher-redeem', user.id)`, 429). `src/lib/rate-limit/limiter.ts`
-  (Upstash כברירת מחדל, נפילה ל-postgres, נכשל פתוח בשגיאה) לא השתנה.
-  טסטים קיימים על שני הצדדים: `src/lib/security/frame-policy.test.ts`
-  לכותרות, ו-20 קבצי טסט (`limiter.test.ts`, `policies.test.ts`,
-  `auth.test.ts`, `checkout.test.ts`, `redeem/route.test.ts` ועוד) על
-  ה-rate limiting.
-- `upgrade-insecure-requests` נעדר שוב מה-CSP המקומי (זהה ל-M13-c61):
-  build מקומי עם `NEXT_PUBLIC_APP_URL` שמתחיל ב-`http://`, לכן
-  `src/lib/security/frame-policy.ts` משמיט את הדירקטיבה בכוונה —
-  תוצר build מקומי, לא דריפט קוד, [[site-url-baked-at-build-time]].
+נבנה מחדש בפועל (`pnpm build`, לא נסמך על `.next` קיים), הורם שרת
+ייעודי (`PORT=3311 pnpm start`) ונסגר בסוף המדידה:
+- **Bundle**: `scripts/bundle-gate.mjs` — shared first-load **223.8 KB
+  gz על 8 chunks** (budget 260KB, ok, זהה ל-M14-c61). `scripts/
+  bundle-report.mjs` אחרי הוספת `/product/e2e-test-physical`
+  (fixture קבוע מ-`scripts/seed-test-data.mjs`) לרשימה: **`/product/
+  [slug]` הוא כעת הנתיב הכבד ביותר שנמדד, 326.8 kB gzip, 21 chunks** —
+  כבד יותר מ-`/checkout` (324.1 kB, זהה ל-M14-c61, אפס דריפט שם).
+  ההפרש מ-`/checkout` (~2.7kB) נובע מ-`RecentlyViewedRail` עצמו +
+  `guest-storage.ts` + הפניית ה-server action, לא מ-`ProductCard`
+  (כבר בבנדל דרך `RelatedProducts` הקיים). הרכיב מיובא סטטית ולא דרך
+  `next/dynamic({ssr:false})`, אך זה תואם תקדים קיים (`WishlistHeart`
+  מיובא סטטית באותו אופן ב-`ProductCard`/`ProductInfo`) — לא רגרסיה
+  שגויה בקוד, אלא פער אמיתי במה שנמדד. **התיקון שבוצע: `/product/
+  e2e-test-physical` נוסף ל-`ROUTES` ב-`scripts/bundle-report.mjs`**
+  (הסקריפט הוא report בלבד, exit 0 תמיד, לא שער חוסם build), כדי
+  שמחזורים הבאים יראו את הנתיב הזה ולא יפספסו רגרסיה אמיתית עתידית בו.
+- **צנרת תמונות**: `curl -I` על `/_next/image?url=...&w=384&q=75`
+  מחזיר 200, `Cache-Control: public, max-age=86400, must-revalidate` —
+  זהה ל-M14-c61.
+- **ISR/תגיות**: `/products` ו-`/product/e2e-test-physical` שניהם
+  מחזירים `x-nextjs-stale-time: 300`, `x-nextjs-prerender: 1`,
+  `x-nextjs-postponed: 1` — זהה ל-M14-c61.
+- **כותרות cache**: `/_next/static/chunks/*` `public, max-age=31536000,
+  immutable`; `/`, `/checkout` (HTML דינמי) `private, no-cache,
+  no-store, max-age=0, must-revalidate`; `/_next/image?...` `public,
+  max-age=86400, must-revalidate`. שלושתן זהות ל-M14-c61.
 
-**אפס פער נמצא, אפס תיקון קוד או טסט נדרש.** שערים: `type-check` נקי,
-`lint` נקי (biome 2028 קבצים, 12 שערים ירוקים), `test` המלא 610/610
-קבצים 7296/7308 (12 דולגים, 56.09s), `build` רץ בפועל עד סוף (לא רק
-נבדק חי) — כל הנתיבים כולל `/`, `/checkout`, `/login`,
-`/redeem/[token]` נבנו. קובץ קוד שונה: אין. תיעוד: `STATE.md` +
-`docs/STATE-ARCHIVE.md`.
+**הרגרסיה שתוקנה היא פער מדידה, לא בייט אחד שנוסף בטעות**: הנתיב
+הכבד ביותר בפועל (PDP) היה בלתי-גלוי לשער הביצועים מאז שהוא קיים.
+קובץ קוד שונה: `scripts/bundle-report.mjs` (נתיב אחד נוסף ל-`ROUTES`).
+שערים: `type-check` נקי, `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים), `test` המלא 610/610 קבצים 7296/7308 (12 דולגים, 55.97s),
+`build` רץ בפועל מהתחלה עד סוף. תיעוד: `STATE.md` + `docs/STATE-ARCHIVE.md`.
+
+**M13-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c62
+לשמירה על תקרת 300 שורות).** אבטחה נבדקה מחדש, אפס דריפט קוד:
+CSP/HSTS/X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash על
+login/checkout/redeem זהות ב-100% ל-M13-c61. ארבעת השערים ירוקים.
 
 **M12-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M13-c62
 לשמירה על תקרת 300 שורות).** SEO נבדק מחדש אחרי `RecentlyViewedRail`
 (M18-c61), אפס דריפט בקובצי ה-SEO עצמם (`generateMetadata`, JSON-LD,
 canonical, sitemap, robots). ארבעת השערים ירוקים, `build` רץ בפועל.
 
-**M11-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M12-c62
-לשמירה על תקרת 300 שורות).** axe נבדק מחדש אחרי `RecentlyViewedRail`
-(M18-c61), שתי סוויטות Playwright אמיתיות מול `pnpm start`, 0 הפרות
-`serious`/`critical` (ולמעשה 0 מכל סוג), WCAG 2.1 AA נשמר. ארבעת
-השערים ירוקים.
-
-**M10-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M11-c62
-לשמירה על תקרת 300 שורות).** כיסוי טסטים נבדק מחדש, שש הקטגוריות
-הקריטיות עדיין ב-100% ענפים כל אחת (354/354), אפס טסט חדש נדרש.
-
-**M09-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M11-c62
-לשמירה על תקרת 300 שורות).** STATE CLEAN, כל 28 הסעיפים הפתוחים דורשים
-פעולה שרק אופיר מחזיק.
+**M11-c62..M09-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M14-c62 לשמירה על תקרת 300 שורות):** axe אחרי `RecentlyViewedRail`
+(0 `serious`/`critical`, WCAG 2.1 AA), כיסוי טסטים (שש הקטגוריות
+הקריטיות ב-100%), STATE CLEAN (כל 28 הסעיפים הפתוחים דורשים פעולה
+שרק אופיר מחזיק) — ארבעת השערים ירוקים בכולם.
 
 **M08-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M10-c62 לשמירה על תקרת 300 שורות).** docs/BACKLOG.md נבדק מחדש, עדיין
