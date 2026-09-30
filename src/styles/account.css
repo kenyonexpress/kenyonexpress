@@ -850,3 +850,33 @@
   background: var(--account-yellow);
   border-radius: 4px;
 }
+
+/* One-click reorder (STEP 10): the button, its promise line, and the outcome
+   line. Inherits .account-btn; the block only owns the stacking. */
+.account-reorder {
+  display: grid;
+  gap: 8px;
+}
+
+.account-reorder[data-variant="compact"] {
+  display: inline-grid;
+}
+
+.account-reorder__note {
+  margin: 0;
+}
+
+.account-reorder__notice {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.account-reorder__notice--error {
+  color: var(--account-red);
+}
+
+.account-reorder__link {
+  font-weight: 700;
+  text-decoration: underline;
+}

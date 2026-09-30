@@ -131,6 +131,54 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
 
+### ‏01.10 ‏00:45: ‏STEP 10 קופה, הזמנה חוזרת בלחיצה אחת (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, commit ‏8af68bc85 לעבודה שנמצאה ב-stage, והקומיט הנושא את הרשומה הזו לפיצ'ר)
+
+**המשך מ: ה-goal הבא בתור ‏/goal (‏STEP 11).** עדיין פתוח מלפני: ‏STEP 05 חלק ב' סעיף (1),
+‏`docs/LIGHTHOUSE-HOME-STEP05.md` ורישומו ב-`docs/INDEX.md`.
+
+**מה נמצא בעץ לפני שנכתב.** ‏23 קבצים ב-stage, כולם עם ‏mtime ‏00:12, בלי commit ובלי סשן חי:
+קופה בעמוד אחד, בורר מועד מסירה (‏`DeliverySlotPicker` + מיגרציה ‏246 ב-`pending`), השלמת עיר
+(‏`CityAutocomplete` + ‏`geo/israeli-cities`), ושער ספק התשלום (‏`payments/provider-gate`). זו עבודת
+‏STEP 10 של סשן קודם שנקטע לפני הטקס. היא לא נזרקה: תוקנה עד שערים ירוקים ונחתמה ב-commit
+משלה (‏8af68bc85) לפני הפיצ'ר. מה שהיה שבור בה: ‏(א) ‏fixture ב-`single-page-checkout.test.tsx` בלי
+שלושת שדות ‏`CartViewItem` החדשים (‏type-check אדום); ‏(ב) שתי אסרציות ‏`fireEvent.submit(form) === true`
+שלא יכולות להתקיים, כי הטופס נושא ‏action של ‏React 19 ו-React מבטל את ה-submit הטבעי בעצמו (נמדד:
+‏`action="javascript:throw new Error('A React form was unexpectedly submitted...')"`), הוחלפו
+ב"אפס שדות ‏aria-invalid ואפס שורות שגיאה"; ‏(ג) ‏7 שגיאות ‏a11y ב-biome: ‏`ul/li` עם ‏role ‏listbox/option
+הוחלפו ב-`div` עם ‏tabIndex=-1 לפי התבנית של ‏`CategoryAutocomplete`, ו-`div role="status"` הוחלף
+ב-`<output>` (‏+‏`display:block`); ‏(ד) ‏16 קבצים לא מפורמטים.
+
+**מה נמצא במסלול הכסף.** המסלול הטוקני כבר היה שלם ב-`beginCheckout`: ‏`chargeSavedToken` מחייב
+‏server-to-server, ‏`isThreeDSChallengeRequired` מזהה דחיית "חזרו עם אתגר", והפולבק מנפיק ‏Low Profile
+תחת מפתח ‏`lp3ds:` ומטביע טוקן מחדש. **מה שלא היה: שום נקודת כניסה של "הזמן שוב".** ‏`grep` על ‏reorder
+ו"הזמן שוב" מצא רק ‏CSS ותגובות.
+
+**מה נוסף.** ‏`lib/checkout/reorder.ts` (טהור): ‏`pickReorderCard` (ברירת מחדל בתוקף, אחרת החדש
+ביותר בתוקף, אחרת ‏null), ‏`planReorderLines` (מיזוג לפי מוצר+וריאנט, ‏clamp ל-99, שורה בלי מוצר
+נספרת ונשמטת), וניסוחי הכפתור. ‏`server/actions/payments/reorder.ts`: שער ספק, אימות, ‏rate limit
+‏5/דקה, קריאת ההזמנה (בעלות + ‏paid בלבד), ‏`clearCart` ואז ‏`addToCart` פר שורה (כל שורה עוברת
+מלאי/זמינות/כמות כמו מדף מוצר; שורה שנדחתה נשמטת בשמה), בחירת כרטיס, כתובת ההזמנה המקורית או
+ברירת המחדל, ואז ‏`beginCheckout` עם ‏`token_id`, ‏`accept_terms:true`, ‏`apply_wallet_ils:0`,
+‏`save_card:false`. ארבע תוצאות: ‏`paid` (עמוד האישור), ‏`challenge` (‏3DS: ניווט ‏top-level לדף
+המאוחסן, שחוזר דרך ‏`frame-return` ו-`reconcileOrderReturn`), ‏`checkout` (אין כרטיס/כתובת: העגלה
+בנויה, לקופה), ושגיאה עם ‏`cartRebuilt` כדי להציע "המשך לקופה". ‏`client_ref` נטבע פעם אחת ב-mount
+של הכפתור ומשומש בניסיון חוזר, ולכן לחיצה כפולה מקבלת ‏replay ולא חיוב שני. ‏`ReorderButton` בדף
+ההזמנה (מלא: כרטיס, מה יוחלף בעגלה, אישור תקנון) וברשימה (‏compact), רק להזמנות ששולמו.
+‏`queries/reorder.ts` קורא את הכרטיס דרך ‏RLS פעם אחת לעמוד.
+
+**שערים.** ‏type-check נקי, ‏lint נקי (כולל שלושת שערי ‏tokens/copy/asset), ‏`pnpm test` ‏574 קבצים ‏6866 ירוקים ‏12 מדולגים,
+‏`pnpm build` ‏exit 0 (‏277 דפים; שגיאות ‏db.query_failed בפרירנדר של ‏/ ו-/account/referrals הן רעש קיים מלפני, לא של השלב). שער הפיקסלים לא הורץ: הכפתור יושב בדפי החשבון, לא באחד משלושת דפי השער.
+
+**החלטות שהתקבלו לבד.**
+1. העגלה מוחלפת ולא ממוזגת: "הזמן שוב" הוא הבטחה על סכום ההזמנה ההיא; מיזוג היה מחייב גם את מה
+   שכבר בעגלה. הכפתור אומר כמה פריטים יוחלפו, ו-`clearCart` רץ לפני כל ניסיון חיוב ולעולם לא במסלול
+   כישלון (‏`cart-survives-failure.test.ts` עודכן להתיר את הקובץ בנימוק).
+2. אין ‏migration: ‏`payment_tokens`, ‏`orders.address_id` ו-`order_items` מספיקים. ‏Supabase MCP
+   ו-GitHub MCP לא מאומתים בסשן, אז לא נבדק כלום מול פרודקשן ואין ‏PR; הענף נדחף ישירות כמו קודמיו.
+3. הארנק לא מוחל אוטומטית (כלל ה-skill: "מוחל כהנחה בקופה, לא אוטומטית"). מי שרוצה ארנק עובר בקופה.
+4. ‏3DS בניווט ‏top-level ולא ב-iframe: לדפי החשבון אין מסגרת תשלום, ו-`FrameReturnBreakout` ממילא
+   מעביר ל-`top`. אותה אימות שרת-לשרת, נחיתה אחרת.
+
 ### ‏30.09 ‏23:50: ‏STEP 09 עגלה (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, commit ‏a88cfe06e)
 
 **המשך מ: ה-goal הבא בתור ‏/goal (‏STEP 10).** עדיין פתוח מלפני: ‏STEP 05 חלק ב' סעיף (1),

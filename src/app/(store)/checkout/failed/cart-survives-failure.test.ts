@@ -26,13 +26,21 @@ import { describe, expect, it } from 'vitest'
 const SRC = join(process.cwd(), 'src')
 
 /**
- * The two modules allowed to empty a cart, and why.
+ * The three modules allowed to empty a cart, and why.
  *
  * `finalize.ts` runs after the money is taken and the order is `paid`.
  * `actions/cart.ts` holds `clearCart`, which exists for the shopper's own
  * "empty the cart" and is reached only through the cart store.
+ * `payments/reorder.ts` is the shopper's own "order this again" button: it
+ * replaces the cart with a past order's lines BEFORE any charge is attempted,
+ * says so on the button, and touches no cart on any failure path after that
+ * (a decline leaves the rebuilt cart in place so they can pay another way).
  */
-const ALLOWED = ['src/server/payments/finalize.ts', 'src/server/actions/cart.ts']
+const ALLOWED = [
+  'src/server/payments/finalize.ts',
+  'src/server/actions/cart.ts',
+  'src/server/actions/payments/reorder.ts',
+]
 
 function walk(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

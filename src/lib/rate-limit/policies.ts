@@ -124,6 +124,10 @@ export const RATE_LIMIT_POLICIES = {
     reason: 'gift card redemption attempts, per user',
   },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
+  // One-click reorder: each attempt is a cart rebuild plus a token charge,
+  // and a shopper never needs five of those a minute. Tighter than
+  // begin_checkout, which it then also spends one of.
+  reorder: { limit: 5, windowSeconds: 60, reason: 'one-click reorder, per user' },
   // One lookup per address field blur, against a third party that has no
   // interest in being our proxy. A shopper correcting a street twice spends
   // two; a scraper walking a city's streets through us spends the window.

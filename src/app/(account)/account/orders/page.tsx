@@ -1,11 +1,18 @@
+import ReorderButton from '@/components/account/ReorderButton'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { readPaymentProviderGate } from '@/lib/payments/provider-gate'
 import { getMyOrders } from '@/server/queries/orders'
+import { getReorderOffer } from '@/server/queries/reorder'
 import Link from 'next/link'
 
 export const metadata = { title: 'ההזמנות שלי' }
 
 export default async function OrdersPage() {
   const orders = await getMyOrders()
+  // One read per page, not per row: the card and the cart are the customer's,
+  // not the order's. Skipped entirely when there is no paid order to repeat.
+  const reorder = orders.some((order) => order.paidAt) ? await getReorderOffer() : null
+  const paymentGate = readPaymentProviderGate()
 
   return (
     <>
@@ -33,6 +40,15 @@ export default async function OrdersPage() {
                 </p>
               </div>
               <div className="account-row__actions">
+                {reorder && order.paidAt && (
+                  <ReorderButton
+                    orderId={order.id}
+                    card={reorder.card}
+                    cartItemCount={reorder.cartItemCount}
+                    paymentGateOpen={paymentGate.live}
+                    variant="compact"
+                  />
+                )}
                 <Link className="account-btn" href={`/account/orders/${order.id}`}>
                   פרטים
                 </Link>

@@ -1,7 +1,10 @@
+import ReorderButton from '@/components/account/ReorderButton'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { readPaymentProviderGate } from '@/lib/payments/provider-gate'
 import { resolveCarrier } from '@/lib/shipping/carriers'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { getOrderDetail } from '@/server/queries/orders'
+import { getReorderOffer } from '@/server/queries/reorder'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -15,6 +18,10 @@ export default async function OrderDetailPage({ params }: Props) {
   // never a leak.
   const order = await getOrderDetail(id)
   if (!order) notFound()
+  // Only a paid order is offered again; the offer itself (which card, what the
+  // click replaces) is read once here and re-checked by the action on click.
+  const reorder = order.paidAt ? await getReorderOffer() : null
+  const paymentGate = readPaymentProviderGate()
 
   return (
     <>
@@ -195,6 +202,18 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
         ))}
       </section>
+
+      {reorder && (
+        <section className="account-card">
+          <h2 className="account-card__title">להזמין שוב</h2>
+          <ReorderButton
+            orderId={order.id}
+            card={reorder.card}
+            cartItemCount={reorder.cartItemCount}
+            paymentGateOpen={paymentGate.live}
+          />
+        </section>
+      )}
 
       <p>
         <Link className="account-btn" href="/account/orders">
