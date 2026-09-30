@@ -2,6 +2,7 @@ import HeaderCart from '@/components/cart/HeaderCart'
 import MastheadNav from '@/components/layout/MastheadNav'
 import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
+import HandheldSearch from '@/components/search/HandheldSearch'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO } from '@/lib/assets'
 import { Heart } from 'lucide-react'
@@ -43,11 +44,14 @@ import Link from 'next/link'
  * header inherits the offset, the whole page shifts and every band in the
  * comparison below the fold is measured against the wrong rows of live.
  *
- * NO SEARCH UI, deliberately and against live. Live puts a search icon in the
- * handheld header, a full search form under it at 768, and a 534px search
- * field in the 1440 masthead. The standing project rule is that there is no
- * search UI anywhere. The pixel cost is real and is recorded in STATE.md
- * rather than quietly absorbed.
+ * SEARCH UI, since STEP 08 (30.09). Live puts a search icon in the handheld
+ * header, a full search form under it at 768, and a 534px search field in the
+ * 1440 masthead. From 04.09 the project rule was no search UI anywhere; STEP 08
+ * reversed it. The masthead pill is in MastheadNav; below xl the icon cluster
+ * carries `<HandheldSearch/>`, an icon that opens the same combobox in a row
+ * under the header (overlaid, so the closed state measures as before). Live's
+ * always-open form at 768 is not reproduced: one control, one behaviour, at
+ * every handheld width. The delta is recorded in STATE.md.
  */
 
 export default function SiteHeader() {
@@ -112,6 +116,11 @@ export default function SiteHeader() {
               first, cart second puts the cart back on the left and gives the
               heart live's x=57 slot. */}
           <div className="flex items-center gap-2 xl:hidden">
+            {/* Live's handheld header has a search icon; this one opens the
+                combobox in a row under the header (HandheldSearch.tsx). First
+                in the cluster, so RTL paints it rightmost of the three and the
+                heart-then-cart order the icon gate pins is unchanged. */}
+            <HandheldSearch />
             <Link
               href="/account/wishlist"
               aria-label="המועדפים שלי"

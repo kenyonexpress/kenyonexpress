@@ -41,10 +41,13 @@ audit confirms that from the rendered page rather than from class-name counts.
 
 None at section level.
 
-Live has one thing we deliberately do not: **a search field** in the masthead
-(its DOM carries `Search for:`). That is the standing product rule, gated by
-`src/components/layout/no-search-ui.test.ts` and `e2e/home.spec.ts`, and it is
-not a delta to close.
+Live's masthead **search field** (its DOM carries `Search for:`) was the one
+thing we deliberately did not build, from 04.09 to 30.09. STEP 08 (30.09)
+closed it: `src/components/search/SiteSearch.tsx` sits in the measured
+534x41 slot, gated by `src/components/layout/search-ui.test.ts` and
+`e2e/home.spec.ts`. Below xl live shows a form under the header at 768 and an
+icon at 380; we show the icon at every handheld width and open the same field
+under the header. That residual is recorded in STATE.md.
 
 ## The three real deltas, and what they are worth
 

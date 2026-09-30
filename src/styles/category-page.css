@@ -1133,3 +1133,64 @@
   color: var(--cat-muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Search results: the empty state's three ways out (components/search/SearchEmptyState.tsx) */
+.search-empty__relaxed {
+  margin: 16px 0 0;
+  color: var(--cat-ink);
+}
+
+.search-empty__link {
+  color: var(--cat-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.search-empty__section {
+  margin: 28px auto 0;
+  max-width: 720px;
+}
+
+.search-empty__title {
+  margin: 0 0 10px;
+  color: var(--cat-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.search-empty__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-empty__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--cat-line);
+  border-radius: 22px;
+  background: var(--cat-surface);
+  color: var(--cat-ink);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.search-empty__chip:hover,
+.search-empty__chip:focus-visible {
+  border-color: var(--cat-brand);
+  background: var(--cat-brand);
+}
+
+/* The results page's own search field sits under the heading, full width, and
+   caps at the masthead pill's width so a 1440 page does not stretch a 41px
+   field across 1170px. */
+.search-page__field {
+  margin: 12px 0 4px;
+  max-width: var(--spacing-search-pill);
+}

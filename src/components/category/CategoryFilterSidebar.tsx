@@ -113,9 +113,9 @@ export default function CategoryFilterSidebar({
       <details className="category-sidebar__disclosure">
         <summary className="category-sidebar__summary">סינון מוצרים</summary>
         <div className="category-sidebar__widgets">
-          {/* The site's one typing field, scoped to this archive. See the
-              note at the top of CategoryAutocomplete.tsx and the exemption in
-              layout/no-search-ui.test.ts. Absent on /products, which has no
+          {/* The archive-scoped field, distinct from the site search in the
+              header. See the note at the top of CategoryAutocomplete.tsx and
+              layout/search-ui.test.ts. Absent on /products, which has no
               category to scope to. */}
           {current ? (
             <div className="category-sidebar__widget">

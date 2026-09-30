@@ -1,5 +1,6 @@
 import HeaderCart from '@/components/cart/HeaderCart'
 import RegionMenu from '@/components/layout/RegionMenu'
+import SiteSearch from '@/components/search/SiteSearch'
 import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
@@ -29,17 +30,20 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  * a control labelled "choose a region" whose target has no regions on it. The
  * seventeen regions it now opens are live's own, read off the rendered page.
  *
- * NO SEARCH FIELD. Live's masthead carries a 534px search form at x456..x990
- * and this component used to render <DeferredHeaderSearch/> in that slot. The
- * standing project rule is that there is no search UI anywhere, so the slot is
- * gone rather than hidden: a CSS-hidden field is still in the DOM, still in the
- * tab order, and still ships its client chunk. `justify-end` closes the gap it
- * left, which is the one place this component knowingly departs from the
- * measured layout. The pixel cost is recorded in STATE.md.
+ * THE SEARCH FIELD IS BACK IN ITS MEASURED SLOT. Live's masthead carries a
+ * 534x41 search pill at x456..x990, right after the logo in reading order. From
+ * 04.09 to 30.09 the slot was gone under the no-search-UI rule and
+ * `justify-end` closed the gap; STEP 08 (30.09) restored it with
+ * `<SiteSearch id="masthead-search">`, the instant-results combobox
+ * (components/search/SiteSearch.tsx), first in the DOM so RTL paints it
+ * rightmost, next to the logo, with the region selector and the icon cluster
+ * following as live has them. `layout/search-ui.test.ts` pins the mount.
  */
 export default function MastheadNav() {
   return (
-    <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
+    <div className="flex min-w-0 flex-1 items-center gap-6 ps-4">
+      <SiteSearch id="masthead-search" variant="masthead" />
+
       <RegionMenu />
 
       <nav

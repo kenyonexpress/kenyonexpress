@@ -24,10 +24,11 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
  * The eleven rows are exactly `KE_LIVE_CATEGORIES`, which is the same list the
  * desktop hero sidebar paints, so the drawer and the sidebar cannot drift.
  *
- * NO SEARCH FIELD, deliberately. Live puts a search icon in the handheld
- * header and a full search form under it at 768. The standing project rule is
- * that there is no search UI anywhere, so neither is reproduced here; the
- * pixel cost of that decision is recorded in STATE.md rather than hidden.
+ * NO SEARCH FIELD IN THE DRAWER. Live puts a search icon in the handheld
+ * header, not in the off-canvas panel, and since STEP 08 (30.09) so do we:
+ * the icon is in the header's icon cluster (search/HandheldSearch.tsx) and
+ * opens the site combobox in a row under the header. The drawer is categories
+ * only, as live's is.
  *
  * CLOSING ON NAVIGATION IS DONE ON THE LINK, NOT FROM `usePathname()`.
  * Watching the pathname in an effect is the obvious way to write this and it

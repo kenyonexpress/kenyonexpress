@@ -3,8 +3,8 @@ import type { FacetDistribution, FacetedSearchParams } from '@/lib/search/facete
 /**
  * Facet navigation as links, and nothing but links.
  *
- * The site ships no search input (layout/no-search-ui.test.ts), and faceted
- * navigation does not need one: every facet value is a URL, the current
+ * Faceted navigation needs no input of its own (the site search is the
+ * header's combobox, layout/search-ui.test.ts): every facet value is a URL, the current
  * selection is the URL the page was rendered from, and choosing or clearing
  * a value is a navigation. That makes the whole thing crawlable, shareable,
  * back-button-safe and free of client state -- the results page stays a

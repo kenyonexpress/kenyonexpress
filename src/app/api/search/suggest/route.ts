@@ -6,8 +6,10 @@ import { getClientIp } from '@/lib/utils/rate-limit'
 import { NextResponse } from 'next/server'
 
 /**
- * Type-ahead suggestions for the listing page's category-scoped autocomplete
- * (components/category/CategoryAutocomplete.tsx). The shell has no search box.
+ * Type-ahead suggestions for the site search in the header and on the results
+ * page (components/search/SiteSearch.tsx, STEP 08) and for the listing page's
+ * category-scoped autocomplete (components/category/CategoryAutocomplete.tsx),
+ * which passes `category`.
  *
  * This exists because the browser cannot ask Meilisearch directly. The engine is
  * reached with `MEILISEARCH_API_KEY`, a server secret, so a client-side fetch to

@@ -9,7 +9,10 @@ import { describe, expect, it } from 'vitest'
  * broken at once when the component queue reached 02:
  *
  *   1. The icon cluster is the wishlist heart, then the cart. At every
- *      breakpoint. No account icon, no compare icon, no search icon.
+ *      breakpoint. No account icon, no compare icon. Since STEP 08 (30.09) the
+ *      handheld cluster also carries the search icon live has there
+ *      (search/HandheldSearch.tsx); it is a button, not a third link, and the
+ *      heart-then-cart order below is unchanged.
  *   2. The account entry point lives in the shell's top-left and exists in
  *      exactly one place -- TopBar's התחברות.
  *
@@ -19,7 +22,7 @@ import { describe, expect, it } from 'vitest'
  * the wishlist had no affordance. Counting TopBar, that is three account entry
  * points where the rule allows one, and three places to keep in sync.
  *
- * WHY A TEST AND NOT A CONVENTION, the same argument `no-search-ui.test.ts`
+ * WHY A TEST AND NOT A CONVENTION, the same argument `search-ui.test.ts`
  * makes: the rule was already written in prose at the top of both files while
  * both files were breaking it. Prose does not fail a build.
  *

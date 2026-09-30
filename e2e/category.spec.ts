@@ -416,19 +416,21 @@ test.describe('category listing: page size and autocomplete', () => {
     expect(new URL(seen.url()).searchParams.get('q')).toBe('אב')
   })
 
-  test('the shell still carries no search field', async ({ page }) => {
+  test('the shell carries the site search and no other typed field', async ({ page }) => {
     const slug = await firstCategorySlug(page)
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}`)
     // Hidden inputs are excluded: the footer newsletter form is a server
     // action and React serialises its reference as `$ACTION_*` hidden fields,
-    // which are not fields a shopper can type into.
+    // which are not fields a shopper can type into. The header's one typed
+    // field is the site search (STEP 08); the listing autocomplete lives in
+    // the sidebar, outside header/nav/footer.
     await expect(
       page.locator(
-        'header input:not([type="hidden"]), nav input:not([type="hidden"]), footer input:not([type="email"]):not([type="hidden"])',
+        'header input:not([type="hidden"]):not([type="search"]), nav input:not([type="hidden"]), footer input:not([type="email"]):not([type="hidden"])',
       ),
     ).toHaveCount(0)
-    await expect(page.locator('input[type="search"], [role="search"]')).toHaveCount(0)
+    await expect(page.locator('header input[type="search"]')).toHaveCount(1)
   })
 })

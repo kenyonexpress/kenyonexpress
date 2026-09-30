@@ -177,9 +177,10 @@ often broken mid-component:
 1. **Two icons in the header cluster, at every breakpoint:** wishlist heart,
    then cart. No account icon in the cluster — the account entry point lives in
    the shell's top-left corner and must exist in exactly one place. No compare
-   icon. No search icon.
-2. **No search field anywhere.** Already enforced by
-   `src/components/layout/no-search-ui.test.ts` and `e2e/home.spec.ts`.
+   icon. The handheld cluster carries live's search icon since STEP 08.
+2. **One search field, `search/SiteSearch.tsx`, three mounts** (rule reversed
+   by STEP 08 on 30.09). Enforced by
+   `src/components/layout/search-ui.test.ts` and `e2e/home.spec.ts`.
 3. **No express payment buttons anywhere** — Apple Pay, Google Pay, Bit, Stripe
    Link, any provider wallet. *Apple/Google **Wallet passes** for issued vouchers
    are a different feature and stay.*

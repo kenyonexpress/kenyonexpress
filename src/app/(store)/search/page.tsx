@@ -4,7 +4,9 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
+import SearchEmptyState from '@/components/search/SearchEmptyState'
 import SearchFacetNav from '@/components/search/SearchFacetNav'
+import SiteSearch from '@/components/search/SiteSearch'
 import { getAllCategories, parseProductType } from '@/lib/category-page'
 import { hasActiveFacets, toFacetSearchParams } from '@/lib/search/facet-links'
 import { parseFacetedParams } from '@/lib/search/faceted'
@@ -20,17 +22,19 @@ type Props = {
 }
 
 /**
- * THIS PAGE HAS NO SEARCH FIELD, AND THAT IS THE PRODUCT RULE, NOT AN OMISSION.
+ * THE RESULTS PAGE, WITH THE FIELD BACK ON IT.
  *
- * KenyonExpress ships no search input anywhere: not in the masthead, not in the
- * handheld header, not in the off-canvas drawer, and not here. The Meilisearch
- * backend is untouched and this route still answers `?q=`, so a link from a
- * campaign, a sitemap or an internal redirect resolves to real results -- what
- * is gone is the box a visitor could type into.
+ * From 04.09 to 30.09 this page answered `?q=` and carried no input, by the
+ * rule that put no search UI anywhere. STEP 08 (30.09) brought the field back:
+ * the same `SiteSearch` combobox the masthead mounts, seeded with the query,
+ * so a shopper can refine without scrolling up to the header. The engine did
+ * not change: `facetedSearchCached` is Meilisearch first (typo budget 4/7,
+ * Hebrew tokenizer, prefix synonyms), then Postgres, and the facet navigation
+ * below the grid is links only, so every narrowed view is a URL.
  *
- * `src/components/layout/__tests__/no-search-ui.test.ts` fails the suite if a
- * text/search input, a search role or a search-shaped component comes back
- * anywhere in the shell.
+ * `src/components/layout/search-ui.test.ts` pins the field's shape (one
+ * component, three mounts, fixed ids, combobox wiring) and that this page keeps
+ * answering through `facetedSearchCached`.
  */
 const MIN_QUERY = 2
 
@@ -105,7 +109,13 @@ function toCard(hit: FacetHit): CategoryProduct {
   }
 }
 
-async function ResultGrid({ params }: { params: URLSearchParams }) {
+async function ResultGrid({
+  params,
+  categories,
+}: {
+  params: URLSearchParams
+  categories: { slug: string; name_he: string }[]
+}) {
   const outcome = await facetedSearchCached(params)
   const q = params.get('q') ?? ''
   const results = 'error' in outcome ? [] : outcome.results
@@ -113,11 +123,15 @@ async function ResultGrid({ params }: { params: URLSearchParams }) {
   const narrowed = parsed.ok && hasActiveFacets(parsed.params)
 
   if (results.length === 0) {
+    // Not a dead end: a relaxed query, the promoted terms and the categories,
+    // decided in lib/search/empty-state.ts.
     return (
-      <div className="category-page__empty">
-        <p>לא נמצאו מוצרים עבור "{q}".</p>
-        <p>{narrowed ? 'נסו להסיר סינון או מילת חיפוש אחרת.' : 'נסו מילת חיפוש אחרת.'}</p>
-      </div>
+      <SearchEmptyState
+        query={q}
+        narrowed={narrowed}
+        minQuery={MIN_QUERY}
+        categories={categories}
+      />
     )
   }
 
@@ -252,6 +266,11 @@ async function SearchPageBody({ searchParams }: Props) {
           <h1 className="category-page__title">
             {q ? `תוצאות חיפוש עבור "${q}"` : 'חיפוש מוצרים'}
           </h1>
+          {/* The page's own field, seeded with the query. Same component as
+              the masthead, so the dropdown here and there cannot disagree. */}
+          <div className="search-page__field">
+            <SiteSearch id="page-search" variant="page" initialQuery={q} />
+          </div>
           {/* The fallback is not `null`. A null fallback means the count's line
               box does not exist until it streams in, and inserting it into the
               header then pushes the entire page down - measured on
@@ -271,12 +290,18 @@ async function SearchPageBody({ searchParams }: Props) {
         <div className="category-page__body">
           <div className="category-page__main category-page__main--search">
             {!canSearch ? (
-              <div className="category-page__empty">
-                <p>הקלידו לפחות {MIN_QUERY} תווים כדי לחפש.</p>
-              </div>
+              <Suspense fallback={<CategoryGridSkeleton count={SEARCH_SKELETON_CARDS} />}>
+                <SearchEmptyState
+                  query={q}
+                  narrowed={false}
+                  tooShort
+                  minQuery={MIN_QUERY}
+                  categories={allCategories}
+                />
+              </Suspense>
             ) : (
               <Suspense fallback={<CategoryGridSkeleton count={SEARCH_SKELETON_CARDS} />}>
-                <ResultGrid params={params} />
+                <ResultGrid params={params} categories={allCategories} />
               </Suspense>
             )}
           </div>

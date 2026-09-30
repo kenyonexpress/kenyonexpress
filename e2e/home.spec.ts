@@ -23,30 +23,65 @@ test.describe('homepage', () => {
   })
 
   /**
-   * THE SITE HAS NO SEARCH FIELD, asserted against the rendered DOM.
+   * THE SITE HAS ONE SEARCH FIELD, asserted against the rendered DOM.
    *
-   * `src/components/layout/no-search-ui.test.ts` reads the source; this reads
-   * the page. Both are needed: source can be clean while a third-party widget
-   * or a dynamic import puts an input on screen, and a rendered check alone
-   * cannot see a component sitting in the tree waiting to be imported again.
+   * `src/components/layout/search-ui.test.ts` reads the source; this reads the
+   * page. Both are needed: source can be right while a dynamic import fails to
+   * mount, and a rendered check alone cannot see a second copy sitting in the
+   * tree waiting to be imported.
    *
-   * The newsletter's address field is the one input the shell carries. It
-   * subscribes and never queries the catalogue, so it is matched by name here
-   * rather than exempted by a blanket count.
+   * At xl and up the masthead pill is visible. Below xl the field is behind the
+   * search icon in the header's icon cluster, and opening it must focus the
+   * field. The newsletter's address field is the only other typed input the
+   * shell carries.
    */
-  test('renders no search field anywhere in the shell', async ({ page }) => {
+  test('renders the header search combobox', async ({ page, viewport }) => {
     await page.goto('/')
 
-    await expect(page.locator('input[type="search"]')).toHaveCount(0)
-    await expect(page.locator('[role="search"], [role="searchbox"]')).toHaveCount(0)
+    const desktop = (viewport?.width ?? 0) >= 1280
+    if (desktop) {
+      const input = page.locator('#masthead-search')
+      await expect(input).toBeVisible()
+      await expect(input).toHaveAttribute('role', 'combobox')
+      await expect(input).toHaveAttribute('type', 'search')
+    } else {
+      await expect(page.locator('#masthead-search')).toBeHidden()
+      await page.getByRole('button', { name: 'חיפוש מוצרים' }).click()
+      const input = page.locator('#handheld-search')
+      await expect(input).toBeVisible()
+      await expect(input).toBeFocused()
+      await expect(input).toHaveAttribute('role', 'combobox')
+    }
 
     const typed = page.locator('input:not([type="hidden"])')
     for (const input of await typed.all()) {
       const type = await input.getAttribute('type')
-      expect(type, 'the newsletter address field is the only input the shell may carry').toBe(
-        'email',
-      )
+      expect(['email', 'search'], 'only the newsletter and the search field').toContain(type)
     }
+  })
+
+  test('the header search suggests products and Enter opens the highlighted one', async ({
+    page,
+    viewport,
+  }) => {
+    await page.goto('/')
+    const desktop = (viewport?.width ?? 0) >= 1280
+    if (!desktop) await page.getByRole('button', { name: 'חיפוש מוצרים' }).click()
+    const id = desktop ? 'masthead-search' : 'handheld-search'
+    const input = page.locator(`#${id}`)
+    await input.fill('צימר')
+
+    const list = page.locator(`#${id}-suggestions`)
+    await expect(list).toBeVisible()
+    const products = list.locator('[role="option"][data-kind="product"]')
+    await expect(products.first()).toBeVisible()
+    // The last row is always the way to the full results page.
+    await expect(list.locator('[role="option"][data-kind="link"]')).toHaveText(/כל התוצאות/)
+
+    await page.keyboard.press('ArrowDown')
+    await expect(input).toHaveAttribute('aria-activedescendant', `${id}-option-0`)
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/\/product\//)
   })
 
   test('renders product links with add-to-cart buttons', async ({ page }) => {

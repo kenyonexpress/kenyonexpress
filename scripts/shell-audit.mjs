@@ -4,11 +4,17 @@ import { resolve } from 'node:path'
 /**
  * AUDITS A RUNNING SITE FOR THE TWO STANDING SHELL RULES.
  *
- * The repo has source-level gates for both -- `no-search-ui.test.ts` and
+ * The repo has source-level gates for both -- `search-ui.test.ts` and
  * `template-asset-scan.mjs` -- and they answer "is the code clean". They cannot
  * answer "is the thing I am looking at clean", and on 2026-09-06 that was the
  * whole question: both gates were green while the site being looked at showed a
- * search box and an iPhone.
+ * stale search box and an iPhone.
+ *
+ * SINCE STEP 08 (30.09) THE SEARCH RULE IS A SHAPE, NOT AN ABSENCE: the shell
+ * carries exactly one `input[type=search]` per rendered header variant (the
+ * masthead pill from xl up; the handheld row is mounted only when opened), it
+ * is a combobox, and no other search-shaped input exists. Zero fields is the
+ * 04.09-30.09 build; two or more is a duplicate.
  *
  * Point it at a URL and it tells you which build you are on.
  *
@@ -46,6 +52,7 @@ const found = await page.evaluate(() => {
   }))
   return {
     searchTyped: document.querySelectorAll('input[type="search"]').length,
+    searchCombobox: document.querySelectorAll('input[type="search"][role="combobox"]').length,
     searchRole: document.querySelectorAll('[role="search"], [role="searchbox"]').length,
     inputs,
     images: [...document.images].map((i) => i.currentSrc || i.src).filter(Boolean),
@@ -54,10 +61,16 @@ const found = await page.evaluate(() => {
 await browser.close()
 
 const problems = []
-if (found.searchTyped) problems.push(`${found.searchTyped} input[type=search]`)
+if (found.searchTyped !== 1) {
+  problems.push(`${found.searchTyped} input[type=search] (expected exactly 1: the site search)`)
+}
+if (found.searchCombobox !== found.searchTyped) {
+  problems.push(`${found.searchCombobox} of ${found.searchTyped} search field(s) are comboboxes`)
+}
 if (found.searchRole) problems.push(`${found.searchRole} element(s) with a search role`)
 for (const input of found.inputs) {
-  if (input.type !== 'email' && /search|חיפוש|\bq\b/i.test(`${input.name} ${input.placeholder}`)) {
+  if (input.type === 'email' || input.type === 'search') continue
+  if (/search|חיפוש|\bq\b/i.test(`${input.name} ${input.placeholder}`)) {
     problems.push(`search-shaped input: name=${input.name} placeholder=${input.placeholder}`)
   }
 }
@@ -67,7 +80,7 @@ for (const src of vendorImages) problems.push(`vendor image: ${src.slice(0, 110)
 console.log(`shell audit: ${url}`)
 console.log(`  images: ${found.images.length}  inputs: ${found.inputs.length}`)
 if (problems.length === 0) {
-  console.log('  CLEAN: no search control, no vendor product imagery')
+  console.log('  CLEAN: one site search combobox, no vendor product imagery')
   process.exit(0)
 }
 console.log(`  ${problems.length} problem(s):`)

@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useId, useRef, useState } from 'react'
 
 /**
- * THE ONE PLACE ON THE SITE A VISITOR CAN TYPE A PRODUCT NAME.
+ * THE LISTING PAGE'S CATEGORY-SCOPED FIELD.
  *
  * It lives inside the listing page's filter sidebar and nowhere else: not the
- * masthead, not the drawer, not the results page. `no-search-ui.test.ts` names
- * this file as the single exemption to the no-search-field rule and pins the
- * shell to zero inputs, so the exemption cannot spread by accident.
+ * masthead, not the drawer, not the results page. The SITE search is
+ * `search/SiteSearch.tsx` (STEP 08, 30.09); this one is a filter on a single
+ * archive, and `layout/search-ui.test.ts` pins it to the sidebar so the two
+ * cannot be confused or duplicated by accident.
  *
  * WHAT IT DOES. Suggestions come from `/api/search/suggest`, which proxies
  * Meilisearch (or the Postgres FTS / ILIKE fallbacks, ARCHITECTURE-SEARCH-
@@ -31,8 +32,8 @@ import { useEffect, useId, useRef, useState } from 'react'
  * `role="combobox"` on the input, `aria-controls` to a `role="listbox"`,
  * `aria-activedescendant` for the highlighted option, ArrowUp/ArrowDown to
  * move, Enter to choose, Escape to close. The input is `type="text"`, not
- * `type="search"`: the rule test forbids the latter, and this field is a
- * filter on one archive, not a site search.
+ * `type="search"`: the gate reserves the latter for the site search, and this
+ * field is a filter on one archive, not a site search.
  */
 
 export type Suggestion = {

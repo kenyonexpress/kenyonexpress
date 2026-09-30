@@ -90,3 +90,5 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-24 00:18 | home | 768 | 20.63% | **FAIL** | `69bcbd5c7-dirty` | experiment: shoot-mine with 8s paint wait after the sweep; tests whether the blank card photos at 768 are decode timing |
 | 2026-09-30 14:10 | category | 1440 | n/a | REFUSED | `a24235235-dirty` | live side is our-build |
 | 2026-09-30 14:54 | product | 380 | 4.17% | PASS | `0572faa3a-dirty` | live side: frozen capture `refs/electro_product_380.png`; overall 27.31% (reference blank 15.38%, ours blank 7.76%) |
+| 2026-09-30 15:38 | home | 380 | 6.21% | PASS | `1147deac0-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 9.26% (reference blank 1.61%, ours blank 1.45%) |
+| 2026-09-30 15:40 | home | 768 | 4.18% | PASS | `1147deac0-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 9.03% (reference blank 3.39%, ours blank 1.46%) |

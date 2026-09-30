@@ -59,10 +59,12 @@ Electro's to license onward in the first place.
 
 ## 4. Standing product rules
 
-- **No search field anywhere** — not in the masthead, the handheld header, the
-  drawer, the footer or the results page. The Meilisearch backend stays and
-  `/search?q=` still answers. Gated by `src/components/layout/no-search-ui.test.ts`
-  and `e2e/home.spec.ts`.
+- **One search field, and it is live's** (rule reversed by STEP 08 on 30.09;
+  from 04.09 to 30.09 there was none). `src/components/search/SiteSearch.tsx`
+  is the only implementation: the masthead pill from xl up, an icon-opened row
+  under the handheld header, and the results page. Meilisearch first, through
+  our own routes. Gated by `src/components/layout/search-ui.test.ts` and
+  `e2e/home.spec.ts`.
 - **No express payment buttons anywhere** — no Apple Pay, Google Pay, Bit, Stripe
   Link or provider wallet, on any page. *Apple Wallet and Google Wallet passes
   for issued vouchers are a different feature and are not covered by this rule:*
