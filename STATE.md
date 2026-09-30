@@ -1,7 +1,44 @@
-RESUME FROM: M04-c63
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c63)
+RESUME FROM: M05-c63
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c63)
 
 ## המשך מ:
+
+**M04-c63 - DONE (30.09): תברואת תלויות, ארבע עדכוני patch/minor הוחלו.**
+משימת התור: להריץ `pnpm audit` ו-`pnpm outdated`, להחיל עדכוני patch/minor
+ששומרים type-check/test/build ירוקים, לעולם לא major, ולתעד ב-STATE.md.
+
+**‏`pnpm audit`: אפס חולשות.** `pnpm outdated` הראה 20 חבילות מיושנות;
+**16 מהן major** (‏`@biomejs/biome` 1→2, `@hookform/resolvers` 3→5,
+`@sentry/nextjs`/`@sentry/node` 10→11, `@testing-library/jest-dom` 6→7,
+`@types/node` 20→26, `@vitejs/plugin-react` 4→6, `@vitest/coverage-v8`/
+`vitest` 4→5, `jsdom` 25→30, `lint-staged` 15→17, `tailwind-merge` 2→3,
+`typescript` 5→7, `zod` 3→4) — **דולגו, לפי הכלל "לעולם לא major".**
+
+**ארבע עדכוני patch הוחלו** (`pnpm add next@16.3.7 @next/mdx@16.3.7
+next-intl@4.14.8 posthog-js@1.434.18`): `next` 16.3.6→16.3.7, `@next/mdx`
+16.3.6→16.3.7, `next-intl` 4.14.7→4.14.8, `posthog-js` 1.434.17→1.434.18
+(1.435.0 זמין, minor, לא הוחל בפריט הזה — נשאר ל-M04-c64 אם ירצו לדחוף
+עוד, השארתי כ-note ולא כחוסם). כל הארבע patch בלבד באותה major.minor,
+אפס שינוי API צפוי.
+
+**ניסיון ראשון נכשל ברשת** (`TimeoutError`, `[23] The operation was
+aborted due to timeout` על `@next/swc-darwin-arm64`, רץ ברקע ~13 דקות
+ואז timeout), **והשאיר את `node_modules/next` שבור** (סימלינק חסר,
+`package.json`/`pnpm-lock.yaml` נשארו נקיים כי הכתיבה מעולם לא הגיעה).
+תוקן ב-`rm -rf node_modules && pnpm install` (משחזר 16.3.6 מה-store
+המקומי, 7.1s), ואז ניסיון שני **בפורגראונד** עם timeout 590s — הצליח
+תוך 44.3s. `pnpm add` כתב מחדש את מערך `pnpm.onlyBuiltDependencies` ב-
+`package.json` בפורמט רב-שורתי שסתר את `biome`; תוקן ב-`biome check
+--write package.json` לפני commit.
+
+**שערים, כולם בפורגראונד אחרי העדכון:** `type-check` נקי. `lint` נקי
+(12 שערים, `i18n` 627/627, `docs-path-audit` 154 — זהה ל-M03-c63).
+`test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) — זהה ל-M03-c63.
+`build` "Compiled successfully", 337/337 עמודים סטטיים, exit 0 — זהה
+ל-M03-c63. אפס רגרסיה מהעדכון.
+
+קבצים ששונו: `package.json`, `pnpm-lock.yaml`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **M03-c63 - DONE (30.09): שער ירוק אומת מחדש, אפס דריפט מ-M03-c62.**
 משימת התור: להריץ `pnpm type-check`, `lint`, `test` ו-`build`, ולתקן כל
