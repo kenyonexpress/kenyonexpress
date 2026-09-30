@@ -69,6 +69,9 @@ Judgements are based on the actual file contents (with `file:line` references wh
 | CartCheckoutButton | src/components/cart/CartCheckoutButton.tsx | `{ isAuthenticated, disabled? }` | CartPageView | YES | YES |
 | CartDrawer (+DrawerLineItem) | src/components/cart/CartDrawer.tsx | (no props; reads `useCart`) | app/(main)/layout, app/(store)/layout | NO (`border-[#ccc]` :133) | YES |
 | CartLineItem (+CartEmptyState) | src/components/cart/CartLineItem.tsx | `{ item: CartViewItem }` | CartPageView | YES | YES |
+| CartDeliveryEstimate | src/components/cart/CartDeliveryEstimate.tsx | `{ shipping: CartShipping }` | CartTotalsSidebar | YES | YES |
+| SavedForLaterProvider (+useSavedForLater) | src/components/cart/SavedForLaterProvider.tsx | `{ children }` | CartPageView | YES | YES |
+| SavedForLaterList | src/components/cart/SavedForLaterList.tsx | (no props; reads `useSavedForLater`, `useCart`) | CartPageView | YES | YES |
 | CartNavLink | src/components/cart/CartNavLink.tsx | (no props) | layout/MastheadNav | NO (`text-[#515151]` :6, `text-[10px]` :30) | YES |
 | CartPageView | src/components/cart/CartPageView.tsx | `{ initialCart, isAuthenticated }` | app/(store)/cart/page | YES | YES |
 | CartProvider (+useCart/useCartStoreApi) | src/components/cart/CartProvider.tsx | `{ children, initialCart }` | layouts, ProductInfo, CartPageView (+4) | N/A (context provider, no visual markup) | N/A |
