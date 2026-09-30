@@ -2,6 +2,56 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c60 (הועבר מ-STATE.md ב-M15-c60, לשמירה על תקרת 300 שורות)
+
+**M14-c60 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
+cache אומתו מחדש, אפס דריפט מ-M14-c59.** משימת התור: לבדוק bundle
+sizes, image pipeline output, תגיות ISR וכותרות cache, ולתקן את
+הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log 8012b4c39..HEAD`
+(מאז המדידה הקודמת, M14-c59) מחזיר 17 קומיטים (M13-c59..M13-c60),
+כולם תיעוד/מדידה/תלות/טסטים (אבטחה, SEO, נגישות, סנכרון תיעוד,
+תברואת ריפו/קופי-משפטי/אפס-פעילות, בדיקת פרודקשן, שער חזותי, בדיקה
+ירוקה, תברואת תלויות, DB advisors, Lighthouse, route audit, backlog,
+כיסוי טסטים פעמיים, נגישות, SEO, אבטחה שוב): `git diff --stat
+8012b4c39..HEAD -- src/ next.config.ts next.config.mjs package.json
+pnpm-lock.yaml vercel.json` מחזיר רק שלושה קבצים, כולם טסט
+(`src/lib/commerce/bought-this-week.test.ts`,
+`src/lib/commerce/stock-live.test.ts`,
+`src/server/domain/vouchers/scan-context.test.ts`) — **אפס קומיט נגע
+בקוד ייצור על משטח הביצועים**.
+
+נמדד בכל זאת מחדש חי: `.next` הקיים תואם קוד ל-HEAD (אפס דריפט מקור
+מאז שנבנה), `PORT=3713 pnpm start` הורם ייעודית למדידה (לא נבנה מחדש
+כדי לא להתחרות במשאבים מול 21 `next-server`/`pnpm start` מקבילים
+שרצים מאותה תיקייה), נסגר בסוף המדידה:
+- **Bundle**: `scripts/bundle-gate.mjs` על `.next/build-manifest.json`
+  — shared first-load **223.8 KB gz על 8 chunks** (budget 260KB, ok).
+  `scripts/bundle-report.mjs` מול הפורט הייעודי: heaviest route
+  `/checkout` **324.1 kB** gzipped, **27 chunks נבדלים, 345.1 kB gz
+  בסך הכל** — זהה ל-100% ל-M14-c59.
+- **צנרת תמונות**: אפס שינוי ב-`src/**/*.tsx` מאז M14-c59 (מאומת
+  ב-git diff למעלה) — שש שימושי `fill`+`sizes` עם `vw` וה-`HeroSlider`
+  ה-`px` הקבוע במתכוון נשארים כפי שנמדדו. אומת חי: `curl` על
+  `/_next/image?url=%2Fimages%2Flogo.webp&w=384&q=75` מחזיר 200.
+- **ISR/תגיות**: `/products` מחזיר `x-nextjs-stale-time: 300`,
+  `x-nextjs-prerender: 1`, `x-nextjs-postponed: 1` — מבנה זהה לקודם;
+  `pnpm lint` כולל `cache-invalidation-gate.mjs` בנפרד — נקי (כל כתיבה
+  לטבלה במטמון מבטלת אותה, כל scope במטמון נושא תג).
+- **כותרות cache** (מול הפורט הייעודי): `/_next/static/chunks/*`
+  `public, max-age=31536000, immutable`; `/` (HTML דינמי) `private,
+  no-cache, no-store, max-age=0, must-revalidate`; `/_next/image?...`
+  `public, max-age=86400, must-revalidate`. שלושתן זהות ל-M14-c59.
+
+**אפס רגרסיה נמצאה, אפס תיקון נדרש — לפני/אחרי זהים: 223.8/223.8 KB
+shared, 324.1/324.1 kB heaviest route (`/checkout`), 345.1/345.1 kB
+סה"כ.** `type-check` נקי, `lint` נקי (2025 קבצים, כל שנים-עשר השערים
+המשניים כולל `i18n` 627/627 ו-`locale-format` 116/116), `test` המלא
+610/610 קבצים 7296/7308 (12 דולגים, 61.5s), `build`: נעשה שימוש
+ב-`.next` הקיים, נבדק תואם קוד ל-HEAD (אפס דריפט מקור), לא נבנה מחדש
+כדי לא להתחרות במשאבים עם 21 סשנים מקבילים. אין שינוי UI, אין שער
+חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
+`docs/STATE-ARCHIVE.md`, M13-c60 הועבר לתקרת 300 שורות).
+
 ## M13-c60 (הועבר מ-STATE.md ב-M14-c60, לשמירה על תקרת 300 שורות)
 
 **M13-c60 - DONE (30.09): אבטחה — CSP/HSTS/X-Frame-Options/Referrer-Policy

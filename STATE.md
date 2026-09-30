@@ -1,55 +1,61 @@
-RESUME FROM: M15-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c60)
+RESUME FROM: M16-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c60)
 
 ## המשך מ:
 
-**M14-c60 - DONE (30.09): ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות
-cache אומתו מחדש, אפס דריפט מ-M14-c59.** משימת התור: לבדוק bundle
-sizes, image pipeline output, תגיות ISR וכותרות cache, ולתקן את
-הרגרסיה הגדולה ביותר. בדיקת דריפט קודם: `git log 8012b4c39..HEAD`
-(מאז המדידה הקודמת, M14-c59) מחזיר 17 קומיטים (M13-c59..M13-c60),
-כולם תיעוד/מדידה/תלות/טסטים (אבטחה, SEO, נגישות, סנכרון תיעוד,
-תברואת ריפו/קופי-משפטי/אפס-פעילות, בדיקת פרודקשן, שער חזותי, בדיקה
-ירוקה, תברואת תלויות, DB advisors, Lighthouse, route audit, backlog,
-כיסוי טסטים פעמיים, נגישות, SEO, אבטחה שוב): `git diff --stat
-8012b4c39..HEAD -- src/ next.config.ts next.config.mjs package.json
-pnpm-lock.yaml vercel.json` מחזיר רק שלושה קבצים, כולם טסט
-(`src/lib/commerce/bought-this-week.test.ts`,
-`src/lib/commerce/stock-live.test.ts`,
-`src/server/domain/vouchers/scan-context.test.ts`) — **אפס קומיט נגע
-בקוד ייצור על משטח הביצועים**.
+**M15-c60 - DONE (30.09): סנכרון תיעוד — טבלת המצב ב-STATE.md,
+`docs/LAUNCH-READINESS.md` ו-`docs/BACKLOG.md` רועננה מול git log
+וראיות קוד, אפס דריפט מ-M15-c59.** משימת התור: לרענן את טבלת המצב
+בשלושת הקבצים מ-git log וראיות קוד, לשמור על פריטי אופיר בסדר קריטיות
+ברשימה אחת בלי כפילות. בדיקת דריפט קודם: `git log a353fa3db..HEAD`
+(מאז המדידה הקודמת, M15-c59) מחזיר 17 קומיטים (M16-c59..M18-c59,
+M01-c60..M14-c60), כולם תיעוד/מדידה/תלות/טסטים (תברואת ריפו, קופי/
+משפטי, אפס-פעילות, בדיקת פרודקשן, שער חזותי, בדיקה ירוקה, תברואת
+תלויות, DB advisors, Lighthouse, route audit, backlog, כיסוי טסטים
+פעמיים, נגישות, SEO, אבטחה, ביצועים): `git diff --stat
+a353fa3db..HEAD -- src/ next.config.ts next.config.mjs package.json
+pnpm-lock.yaml vercel.json supabase/ migrations/` מחזיר רק שלושה
+קבצים, כולם טסט (`bought-this-week.test.ts`, `stock-live.test.ts`,
+`scan-context.test.ts`) — **אפס קומיט נגע בשורה חוסמת, במיגרציה או
+בסכימה**.
 
-נמדד בכל זאת מחדש חי: `.next` הקיים תואם קוד ל-HEAD (אפס דריפט מקור
-מאז שנבנה), `PORT=3713 pnpm start` הורם ייעודית למדידה (לא נבנה מחדש
-כדי לא להתחרות במשאבים מול 21 `next-server`/`pnpm start` מקבילים
-שרצים מאותה תיקייה), נסגר בסוף המדידה:
-- **Bundle**: `scripts/bundle-gate.mjs` על `.next/build-manifest.json`
-  — shared first-load **223.8 KB gz על 8 chunks** (budget 260KB, ok).
-  `scripts/bundle-report.mjs` מול הפורט הייעודי: heaviest route
-  `/checkout` **324.1 kB** gzipped, **27 chunks נבדלים, 345.1 kB gz
-  בסך הכל** — זהה ל-100% ל-M14-c59.
-- **צנרת תמונות**: אפס שינוי ב-`src/**/*.tsx` מאז M14-c59 (מאומת
-  ב-git diff למעלה) — שש שימושי `fill`+`sizes` עם `vw` וה-`HeroSlider`
-  ה-`px` הקבוע במתכוון נשארים כפי שנמדדו. אומת חי: `curl` על
-  `/_next/image?url=%2Fimages%2Flogo.webp&w=384&q=75` מחזיר 200.
-- **ISR/תגיות**: `/products` מחזיר `x-nextjs-stale-time: 300`,
-  `x-nextjs-prerender: 1`, `x-nextjs-postponed: 1` — מבנה זהה לקודם;
-  `pnpm lint` כולל `cache-invalidation-gate.mjs` בנפרד — נקי (כל כתיבה
-  לטבלה במטמון מבטלת אותה, כל scope במטמון נושא תג).
-- **כותרות cache** (מול הפורט הייעודי): `/_next/static/chunks/*`
-  `public, max-age=31536000, immutable`; `/` (HTML דינמי) `private,
-  no-cache, no-store, max-age=0, must-revalidate`; `/_next/image?...`
-  `public, max-age=86400, must-revalidate`. שלושתן זהות ל-M14-c59.
+נבדקו שלושת המסמכים מול המצב החי:
+- **`docs/BACKLOG.md`**: עדיין 15 פריטים, אותו סדר, אפס כפילות, אפס
+  פריט חדש. פריט 4 (פריסת פרודקשן): `git rev-list --count
+  a388118f1..HEAD` עלה מ-189 (M15-c59) ל-**207** (git בלבד, הכתובת
+  החיה לא נבדקה שוב בפריט הזה — סנכרון תיעוד, לא בדיקת פרודקשן).
+  פריט 5 (18 קבצי מיגרציה) נבדק ישירות מול `migrations/pending/` —
+  כל 18 הקבצים (204, 209, 218, 220, 223, 224, 234-236, 239-247) עדיין
+  שם, אפס קובץ חדש. פריט 7 (26 ממצאי קטלוג) נבדק ישירות מול
+  `supabase/catalogue-known-issues.json`, ללא שינוי. פריט 12
+  (`dns-watch.sh`) נבדק עם `pgrep -fl`, עדיין pid 957 תחת `caffeinate`
+  pid 999, ללא שינוי. פריט 15 (32 stash) נבדק עם `git stash list`,
+  ללא שינוי.
+- **`docs/LAUNCH-READINESS.md`**: שורה חוסמת 4 עודכנה ל-207 קומיטים
+  (אותו מקור, git בלבד). שורת `pnpm test` בטבלת "Green, with evidence"
+  עודכנה ל-610 קבצים / 7,296 עברו (מ-608/7,274 ב-M15-c59). שאר השורות
+  (lint 282 מסמכים / 152 ידועים, build BUILD_ID) ללא שינוי.
+- **`STATE.md`**: טבלת "חוסמים פתוחים" ו"ידני לאופיר" כבר מצביעות
+  ל-`docs/BACKLOG.md` כעותק היחיד (מאז M15-c51) — אין עותק כפול לתקן
+  כאן.
 
-**אפס רגרסיה נמצאה, אפס תיקון נדרש — לפני/אחרי זהים: 223.8/223.8 KB
-shared, 324.1/324.1 kB heaviest route (`/checkout`), 345.1/345.1 kB
-סה"כ.** `type-check` נקי, `lint` נקי (2025 קבצים, כל שנים-עשר השערים
-המשניים כולל `i18n` 627/627 ו-`locale-format` 116/116), `test` המלא
-610/610 קבצים 7296/7308 (12 דולגים, 61.5s), `build`: נעשה שימוש
-ב-`.next` הקיים, נבדק תואם קוד ל-HEAD (אפס דריפט מקור), לא נבנה מחדש
-כדי לא להתחרות במשאבים עם 21 סשנים מקבילים. אין שינוי UI, אין שער
-חזותי נדרש. **קובץ יחיד שונה: `STATE.md`** (פלוס
-`docs/STATE-ARCHIVE.md`, M13-c60 הועבר לתקרת 300 שורות).
+`type-check` נקי, `lint` נקי (2025 קבצים, שנים-עשר השערים כולל `i18n`
+627/627 ו-`locale-format` 116/116, `docs-index` 282 מסמכים,
+`docs-path-audit` 152 ידועים), `test` המלא 610/610 קבצים 7296/7308
+(12 דולגים, 60.2s) — זהה ל-100% ל-M14-c60. `build`: `.next` הקיים
+(`BUILD_ID` `_q_e1hFe7GBgP05yPvgZC`) נבדק תואם קוד ל-HEAD (אחרון שנגע
+בנתיבי build הוא `e1f99e3e7`, קובץ טסט בלבד), לא נבנה מחדש כדי לא
+להתחרות במשאבים עם ~42 `next-server`/`pnpm start` מקבילים שרצים כרגע
+על המכונה (כ-57MB RAM פנויים מתוך 8GB, `vm_stat`). אין שינוי UI, אין
+שער חזותי נדרש. **קבצים ששונו: `STATE.md`, `docs/BACKLOG.md`,
+`docs/LAUNCH-READINESS.md`** (פלוס `docs/STATE-ARCHIVE.md`, M14-c60
+הועבר לתקרת 300 שורות).
+
+## M14-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M14-c60: ביצועים — bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו
+מחדש, אפס דריפט מ-M14-c59 (223.8 KB gz shared first-load זהה,
+`/checkout` 324.1 kB gz הכבד ביותר זהה). אפס שינוי קוד ייצור.
 
 ## M13-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
