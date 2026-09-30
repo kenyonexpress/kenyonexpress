@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c64 (פירוט מלא, כווץ ב-STATE.md ל-M07-c64 לשמירה על תקרת 300 שורות)
+
+**M06-c64 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** משימת התור: Lighthouse mobile על דף הבית ודף
+מוצר, לתקן ביצועים/נגישות/best practices/SEO עד שכל ציון 90+, לרשום
+ב-STATE.md.
+
+**שינוי קוד אמיתי מאז המדידה הקודמת (M06-c63, `a799eeed6`):** `git diff
+--stat a799eeed6..HEAD -- src/app src/components src/lib package.json`
+הראה `src/components/ProductCard.tsx` ו-`src/lib/related-products.ts`
+(שורת דירוג כוכבים על כרטיס "מומלצים", M18-c63) — כך שהמדידה הורצה
+במלואה מחדש ולא הונחה "אפס דריפט".
+
+אותו מתכון כמו M06-c1..M06-c63: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3498 pnpm build` → exit 0
+(`.next/BUILD_ID` נוצר, פורט 3498 אומת פנוי לפני עם `/usr/sbin/lsof`);
+`pnpm start -p 3498` מאותה בנייה. `curl` אישר `200` על `/` ועל
+`/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני ה-URL,
+`--throttling-method=devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c63 למרות שורת הדירוג
+החדשה (אינה מרונדרת בשרת בצורה שחוסמת LCP). **אין תיקון קוד נדרש.**
+השרת נעצר, פורט 3498 אומת פנוי מחדש, קובץ הפלט הזמני
+(`/tmp/ke-lh-m06c64/*`) נמחק.
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
+זהה ל-M05-c64). `test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) —
+זהה. `build` "Compiled successfully", exit 0 — זהה. אין שינוי UI,
+`scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריטי M06 הקודמים).
+
+**חשוב בדיעבד (נמצא ב-M07-c64): ה-`.next` הזה, למרות ה-build המפורש
+עם `NEXT_PUBLIC_APP_URL=http://localhost:3498`, אפה את `upgrade-insecure-requests`
+לתוך `routes-manifest.json` בכל זאת** — ראה `M07-c64` למטה לפרטים
+המלאים ולתיקון (build מחדש עם `rm -rf .next` בפועל, לא שימוש חוזר).
+לא משפיע על תוקף מדידת ה-Lighthouse כאן: Lighthouse לא הפעיל את ה-prefetch
+שחשף את זה, וה-BP 100/100 שנמדד כאן נשאר נכון לפורמט הבדיקה של Lighthouse
+עצמו.
+
+קבצים ששונו: `STATE.md`.
+
 ## M05-c64 (פירוט מלא, כווץ ב-STATE.md ל-M06-c64 לשמירה על תקרת 300 שורות)
 
 **M05-c64 - DONE (30.09): advisors אומתו בפעם הארבע-עשרה ברציפות (management

@@ -1,56 +1,62 @@
-RESUME FROM: M07-c64
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c64)
+RESUME FROM: M08-c64
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c64)
 
 ## המשך מ:
 
-**M06-c64 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
-90+, אפס תיקון נדרש.** משימת התור: Lighthouse mobile על דף הבית ודף
-מוצר, לתקן ביצועים/נגישות/best practices/SEO עד שכל ציון 90+, לרשום
-ב-STATE.md.
+**M07-c64 - DONE (30.09): route audit נבדק מחדש, אפס כשל אמיתי — אבל
+ה-`.next` שהורש מ-M06-c64 היה תקול, תוקן ב-build מחדש, לא בקוד.**
+משימת התור: כל route, 200/הפניה מכוונת, אפס שגיאת קונסול, אפס אזהרת
+הידרציה, RTL נכון; לתקן מה שנכשל.
 
-**שינוי קוד אמיתי מאז המדידה הקודמת (M06-c63, `a799eeed6`):** `git diff
---stat a799eeed6..HEAD -- src/app src/components src/lib package.json`
-הראה `src/components/ProductCard.tsx` ו-`src/lib/related-products.ts`
-(שורת דירוג כוכבים על כרטיס "מומלצים", M18-c63) — כך שהמדידה הורצה
-במלואה מחדש ולא הונחה "אפס דריפט".
+**שימוש חוזר ב-`.next` הקיים (BUILD_ID `RYVbo7GPJh`, source-identical
+ל-HEAD) נכשל פעם אחת:** `anon /product/צימר-מאסטר` הדפיס
+`net::ERR_SSL_PROTOCOL_ERROR` על `https://localhost:3498/login?next=%2Faccount%2Fwishlist`
+(prefetch יחסי של `WishlistNavLink`, Chrome שידרג לסכמה https בגלל
+`upgrade-insecure-requests` שהיה נוכח ב-CSP). **זה הבאג שתוקן ב-M06-c1**
+(`upgradesInsecureRequests()`, `frame-policy.ts:168`, משמיט את הדירקטיבה
+כש-`NEXT_PUBLIC_APP_URL` מתחיל ב-`http://`; 3 הטסטים הייעודיים ירוקים,
+הפונקציה נכונה) — אבל `routes-manifest.json` הקיים כלל אותה בכל זאת,
+למרות ש-M06-c64 תיעד build מפורש עם `http://localhost:3498`. הפעלה
+מחדש של השרת עם אותו env מיוצא במפורש לא שינתה דבר (הכותרת נאפית
+ב-`next build`, לא נקראת מחדש ב-`next start`) — ה-build המקורי עצמו
+החזיק ערך שגוי, כנראה `.next/cache` (437MB) שלא הותאם נכון בין builds.
 
-אותו מתכון כמו M06-c1..M06-c63: `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3498 pnpm build` → exit 0
-(`.next/BUILD_ID` נוצר, פורט 3498 אומת פנוי לפני עם `/usr/sbin/lsof`);
-`pnpm start -p 3498` מאותה בנייה. `curl` אישר `200` על `/` ועל
-`/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני ה-URL,
-`--throttling-method=devtools --emulated-form-factor=mobile`:
+**אימות: `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3498
+pnpm build` מחדש (BUILD_ID `HnUe0DU6CMCfEnQnItbYO`) משמיט את הדירקטיבה
+כצפוי** — מאשר קוד תקין, build קודם תקול. אירוע לוואי: בזמן ה-build
+פורט 3498 נתפס ע"י סשן מקביל אחר ([[parallel-claude-sessions]]); לא
+נעצר דבר בכוונה, curl אחרי אישר 200 בשני נתיבים. עברתי לפורט 3511.
 
-| דף | ביצועים | נגישות | BP | SEO |
-|---|---|---|---|---|
-| בית `/` | 99 | 100 | 100 | 100 |
-| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+**route audit מלא מחדש, פורט 3511, ששת הפרקים: 242 שורות, 240 PASS +
+2 NO DATA, אפס `consoleErrors`, אפס `hydrationWarnings`, 168 דפי HTML
+כולם RTL `true`.** אין תיקון קוד — הכשל היה תוצר build מיושן, לא באג
+ייצור (בפרודקשן `NEXT_PUBLIC_APP_URL` הוא https תמיד). זיכרון חדש:
+build מקומי חוזר-שימוש אינו ראיה כש-CSP/סכימה תלויים ב-env; רק
+`rm -rf .next` מלא לפני build מאמת.
 
-כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c63 למרות שורת הדירוג
-החדשה (אינה מרונדרת בשרת בצורה שחוסמת LCP). **אין תיקון קוד נדרש.**
-השרת נעצר, פורט 3498 אומת פנוי מחדש, קובץ הפלט הזמני
-(`/tmp/ke-lh-m06c64/*`) נמחק.
+**שערים, כולם בפורגראונד, על HEAD (אין שינוי קוד ייצור):** `type-check`
+נקי. `lint` נקי (12 שערים, זהה ל-M06-c64). `test` 610/610 קבצים,
+7296/7308 ירוקים (12 דולגים). `build` רץ בפועל (למעלה), exit נקי.
+`git status` נקי חוץ מ-`STATE.md`/`docs/STATE-ARCHIVE.md`.
 
-**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
-זהה ל-M05-c64). `test` 610/610 קבצים, 7296/7308 ירוקים (12 דולגים) —
-זהה. `build` "Compiled successfully", exit 0 — זהה. אין שינוי UI,
-`scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריטי M06 הקודמים).
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-קבצים ששונו: `STATE.md`.
+**M06-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M07-c64 לשמירה על תקרת 300 שורות).** Lighthouse mobile נמדד שוב,
+שני הדפים 99/100/100/100, אפס תיקון נדרש. ארבעת השערים ירוקים.
+**(בדיעבד: ה-`.next` ששימש כאן היה אותו build תקול שתואר ב-M07-c64,
+לא משפיע על תוקף המדידה, ראו שם.)**
 
 **M05-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M06-c64 לשמירה על תקרת 300 שורות).** advisors אומתו בפעם
 הארבע-עשרה ברציפות, 44 WARN זהה ל-M05-c63, אפס מיגרציה חדשה נדרשת.
 ארבעת השערים ירוקים.
 
-**M04-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c64
-לשמירה על תקרת 300 שורות).** תברואת תלויות, `pnpm audit` אפס חולשות,
-`pnpm outdated` אפס עדכון patch/minor זמין (14 חבילות, כולן קפיצת major
-בלבד). ארבעת השערים ירוקים, אפס שינוי תלויות.
-
-**M03-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M04-c64 לשמירה על תקרת 300 שורות).** שער ירוק, ארבעת השערים הורצו
-מחדש, אפס תיקון נדרש, אפס שינוי מ-M02-c64.
+**M04-c64 ו-M03-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M05-c64/M06-c64 לשמירה על תקרת 300 שורות).** M04-c64 — תברואת
+תלויות, `pnpm audit` אפס חולשות, `pnpm outdated` אפס עדכון patch/minor
+(14 חבילות, כולן major). M03-c64 — שער ירוק, אפס תיקון נדרש. ארבעת
+השערים ירוקים בשניהם.
 
 **M02-c64 ו-M01-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M03-c64 לשמירה על תקרת 300 שורות).** M02-c64 — שער חזותי בפורגראונד,
