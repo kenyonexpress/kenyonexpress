@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-09-17 05:35 (goal שהוזרק ב-/goal, ריצה שנייה: ‏PWA מלא - ‏Service Worker ‏cache-first לא מקוון, ‏manifest, ‏prompt התקנה ל-iOS ו-Android, דף offline, טסטים). נמדד לפני כתיבה: ה-goal כבר הושלם בריצה הקודמת ב-commits ‏1fe144570 ו-4c388ab72 (רשומה 05:20 מטה), ולא נותר בו קוד לכתוב. מה שנותר היה השערים, שבריצה הקודמת היו אדומים על קבצים לא-מקומטים של סשן ה-scalability. עכשיו: ‏type-check נקי, ‏lint נקי, ‏79 טסטי ‏PWA ירוקים בשישה קבצים, ‏pnpm build עובר ומפיק ‏/offline ו-manifest.webmanifest, ארבעת האייקונים ו-sw.js תחת ‏public. בזמן הריצה לולאת ה-autosave סחפה את כל עץ העבודה של סשן ה-scalability ל-commit ‏36e917dc8 (‏autopilot residual, ‏57 קבצים: ‏read-replica, ‏jobs/DLQ, ‏graduated rate-limit, ‏edge-shield, ‏242_job_dlq.sql ממתינה). הריצה המלאה הראתה ‏2 אדומים בלבד ושניהם על ה-commit הזה: ‏sitemap.test ו-catalogue-cache.test בדקו מילולית ‏createPublicClient בעוד ‏sitemap.ts, ‏category-page.ts ו-product-seo.ts עברו ל-createCatalogueReadClient (אותו לקוח ‏anon ללא cookies, כרוך ל-replica כשמוגדר). **החלטה שהתקבלה לבד:** נמדד שאין סשן חי על הקבצים (‏mtime ‏05:24, ‏ps מראה רק את הסשן הזה ומחולל goals לקריאה בלבד), ולכן תוקנו שני הטסטים ב-commit ‏0f0663235 כך שיקבלו כל אחד משני בוני ה-anon ושומרים את שתי השלילות (לא ‏createAdminClient, לא ‏await createClient()). אחרי התיקון: ‏5837 טסטים ירוקים ב-500 קבצים, ‏12 מדולגים. ‏push ל-origin/autopilot. גיבוי יומי כבר קיים מ-05:18 (שלושה בדסקטופ, אין מה למחוק); ‏caffeinate חי ו-sleep מנוע.)
+Updated: 2026-09-30 21:15 (STEP 06 דף קטגוריה: מסנני מותג והנחה, ‏sort=relevance, ‏24 בעמוד, ‏cache ‏300s; commit ‏5092a8b79)
 
 Updated: 2026-09-17 05:20 (goal שהוזרק ב-/goal: ‏PWA מלא - ‏Service Worker עם cache-first לא מקוון, ‏manifest, ‏prompt התקנה ל-iOS ו-Android, דף offline, טסטים). נמדד לפני כתיבה: ‏manifest.ts, ‏sw.js (ke-v2, network-first לדפים, cache-first ל-/_next/static ו-/icons), דף ‏/offline, ‏ServiceWorkerRegistrar ובאנר ההתקנה של ‏Chrome כבר היו קיימים ומכוסים. מה שחסר ונבנה, commit ‏1fe144570 על ‏autopilot: (1) **‏iOS לא קיבל שום הצעת התקנה** - ‏Safari וכל דפדפן אחר ב-iOS (כולם WebKit) לא יורים ‏beforeinstallprompt, כך שהבאנר רונדר לאף אחד באייפון בעוד ‏apple-touch-icon ב-layout תיאר התקנה שאיש לא הודרך לבצע. ‏src/lib/pwa/install-surface.ts מכריע ‏installed/ios/prompt מ-navigator בלבד (אייפד במצב דסקטופ נתפס לפי ‏MacIntel + נקודות מגע), ו-InstallPrompt מציג ב-iOS הוראות שיתוף ← הוסף למסך הבית עם כפתור ‏הבנתי אחד, אותו שער אינטראקציה, אותה שמירת מקום ‏data-pwa-prompt ואותו מפתח ‏dismiss. (2) **תמונות לא נשמרו מעולם**, כך שדף קטלוג לא מקוון היה רשת של ‏alt. ‏sw.js ‏ke-v3 מוסיף ‏cache חסום-גודל (80) ‏cache-first ל-/_next/image, ‏/images והלוגו, עם אותה הדחה של הישן-ראשון דרך ‏putBounded משותף לדפים. ‏network-first לדפים נשמר בכוונה, ‏cache-first למסמכים היה מגיש build שבור לאורך זמן. (3) **הטסטים של ה-worker רק קראו את המקור.** ‏sw-runtime.test.ts מריץ את ‏public/sw.js בתוך ‏ServiceWorkerGlobalScope מזויף עם ‏CacheStorage בזיכרון ורשת מתוסרטת: ‏28 מקרים - התקנה עם ‏precache חסר, ניקוי גרסאות, כל ה-bypass, ‏cache-first לנכסים ותמונות כולל הדחה, ‏network-first עם שלוש הנפילות, וריסון יעד ה-push. (4) ‏/offline עכשיו ‏noindex ועם טסט משלו (סטטי, בלי hooks, הניסיון-מחדש הוא קישור); ‏e2e/pwa.spec.ts שואל את השרת על כל URL שמתקין צריך. בנוסף תוקנו שני טסטים שהיו אדומים ב-HEAD ולא על הקוד שלהם: ‏postal-code ציפה ל-'no-store' מילולי שה-route החליף ב-CacheControl.private; ‏SentryUserSync בדק סינכרונית מנוי שמגיע אחרי ‏import דינמי נדחה. **שערים:** ‏5768 טסטים ירוקים חוץ מ-6 בשלושה קבצים של סשן מקביל (‏sitemap.test, ‏catalogue-cache.test, ‏rate-limit/graduated.test) שכולם על קבצים לא-מקומטים שלו (‏read-replica*, ‏graduated.ts, ‏supplier-storefront.ts ועוד, נגעו בהם ב-05:11-05:13); ‏lint נקי על כל הקבצים שלי ושני קבצי ‏format אדומים שלו; ‏build קומפל בהצלחה ונכשל רק בשלב ‏TypeScript על שתי השגיאות שלו (‏read-replica.test.ts:8, ‏supplier-storefront.ts:108). **החלטה שהתקבלה לבד:** לא לתקן קבצים של סשן חי ולא להמתין לו; ‏commit בנתיבים מפורשים בלבד. ‏e2e/pwa.spec.ts רץ מול ‏dev על פורט 3377: ‏4/4 ירוקים אחרי תיקון אחד - ‏Next 16 מרנדר את ‏appleWebApp.capable כ-mobile-web-app-capable ולא עם קידומת ‏apple (נמדד, לא הונח). גיבוי יומי ל-Desktop נוצר (‏2026-09-17-0518, 736MB) והישן מ-10.09 נמחק כדי להשאיר שלושה; ‏caffeinate חי ו-sleep מנוע.
 
@@ -126,6 +126,41 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: איחוד ‏`phase5/homepage-closeout` עם ‏`audit/final-audit` (רק כשאין סוכן חי על הריפו)
+
+### ‏30.09 ‏21:15: ‏STEP 06 דף קטגוריה (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`, commit ‏5092a8b79)
+
+**המשך מ: ה-goal הבא בתור ‏/goal (‏STEP 07).** מה שנותר פתוח מלפני: ‏STEP 05 חלק ב' סעיף (1),
+לכתוב ‏`docs/LIGHTHOUSE-HOME-STEP05.md` ולרשום ב-`docs/INDEX.md`.
+
+**מה נמדד לפני שנכתב.** ‏`/category/[slug]` כבר היה בנוי: מסנני מחיר, סוג ועיר, מיון, עימוד,
+שלד רשת בתוך ‏shell מוקדם. בפרודקשן (‏SQL לקריאה בלבד דרך ה-management API): ‏46 מוצרים
+פעילים, ‏`brand` ריק בכולם, ‏`discount_percent` מלא באחד בלבד, ו-16 מציגים חיסכון בכרטיס
+(‏`full_price > kenyon_price`).
+
+**מה נוסף.** מסנן מותג (מוצג רק כשיש מותג אחד לפחות, ‏eq על העמודה), מסנן הנחה מינימלית
+(‏10/20/30/50, מחושב מהמחירים דרך ‏`lib/discount-percent.ts` שגם תג הכרטיס קורא ממנו),
+‏`sort=relevance` כשם נוסף לסדר ברירת המחדל, ‏24 כרטיסים בעמוד (היה ‏8), ופרופיל ‏cache של
+‏300 שניות על כל קריאות הקטגוריה (‏`CATEGORY_CACHE_LIFE`). קישורי העימוד נושאים גם עיר, מותג
+והנחה. ‏`membershipFilter()` הוא הכלל היחיד ל"שייך לקטגוריה" בשלוש הקריאות.
+
+**שערים.** ‏type-check נקי, ‏lint נקי, ‏`pnpm test` ‏548 קבצים ‏6569 ירוקים, ‏`pnpm build` ‏exit 0
+(הטבלה מציגה ‏`/category/*` ב-5m / 1d), ‏e2e קטגוריה ‏18/18 מול ‏`pnpm start` על ‏3312.
+שער ההשוואה סירב למדוד ורשם שורה: הדומיין החי מגיש את הבנייה שלנו, ואין ‏baseline
+קפוא לקטגוריה ב-`refs/`.
+
+**החלטות שהתקבלו לבד.**
+1. מסנן ההנחה מחושב מ-`kenyon_price`/`full_price` ולא מעמודת ‏`discount_percent`: העמודה
+   ריקה ב-45 מ-46 שורות בעוד הכרטיס מציג ‏16 תגים, ומסנן על העמודה היה מחזיר מוצר אחד.
+   המימוש: קריאה של שתי עמודות המחיר לכל החברות, חישוב כאן, ו-`in('id', ...)` בשאילתת
+   העמוד, כך שהספירה והעימוד מדויקים (בניגוד למסנן העיר שרץ בזיכרון).
+2. ‏`cacheLife` בפרופיל ‏inline ולא בשם ב-`next.config`: שם מותאם מקבל טיפוס רק אחרי
+   ש-`next build` מייצר את ‏`.next/types/cache-life.d.ts`, ו-`tsc` על checkout נקי היה נכשל.
+3. שני טסטי ‏e2e שנכשלו לפני השינוי תוקנו באותו קובץ: ה-`select` של המיון נושא גם הוא
+   ‏role=combobox (התנגשות ‏strict mode), וטופס הניוזלטר בפוטר מסדר שדות ‏hidden של
+   ‏`$ACTION_` שהטסט "אין שדה חיפוש" ספר. שניהם הגיעו ב-16.09 ב-commit ‏"autopilot residual".
+4. אין מיגרציה: ‏`brand` ו-`discount_percent` קיימות בסכימה. לא נדרש ‏Supabase MCP (לא
+   מאומת בסשן הזה) ולא ‏GitHub MCP (הענף נדחף ישירות, כמו כל ‏STEP קודם).
+
 
 ### ‏30.09 ‏20:52: ‏STEP 05 דף הבית, ביקורת ‏RTL (‏Fable 5.1, ‏worktree ‏`kenyonexpress-autopilot`)
 
