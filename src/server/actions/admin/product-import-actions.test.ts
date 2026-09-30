@@ -110,7 +110,14 @@ function ops(table: string, op: string): Call[] {
   return calls.filter((c) => c.table === `request:${table}` && c.op === op)
 }
 
-const { previewProductImport, importProductsBatch } = await import('./product-import')
+const {
+  previewProductImport,
+  importProductsBatch,
+  startProductImportRun,
+  finishProductImportRun,
+  rollbackProductImportRun,
+} = await import('./product-import')
+const { listProductImportRuns } = await import('@/server/queries/product-import-history')
 
 beforeEach(() => {
   calls.length = 0
@@ -499,5 +506,295 @@ describe('importProductsBatch', () => {
       'anything' as never,
     )
     expect(result.results?.[0]?.errors).toEqual(['קישור (slug) כבר קיים במערכת'])
+  })
+})
+
+const RUN = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+const AUDIT_SELECT = 'request:audit_log.select'
+
+function auditCalls(entityType: string) {
+  return writeAuditLog.mock.calls
+    .map((c) => c[0] as Record<string, unknown>)
+    .filter((e) => e.entityType === entityType)
+}
+
+describe('import runs (history log)', () => {
+  it('startProductImportRun mints a run id and writes the created row, sanitised', async () => {
+    const res = await startProductImportRun({
+      fileName: 'x'.repeat(300),
+      mode: 'upsert',
+      summary: { total: 10, valid: 8, invalid: 2, inserts: 5, updates: 3 },
+      columns: ['slug', 'name_he', 7 as unknown as string],
+    })
+    expect(res.runId).toMatch(/^[0-9a-f-]{36}$/)
+    const [created] = auditCalls('product_import_run')
+    expect(created).toMatchObject({
+      actorId: ADMIN,
+      action: 'created',
+      entityId: res.runId,
+      changes: {
+        file_name: 'x'.repeat(200),
+        mode: 'upsert',
+        total: 10,
+        valid: 8,
+        invalid: 2,
+        inserts: 5,
+        updates: 3,
+        columns: ['slug', 'name_he'],
+      },
+    })
+
+    requireAdminSession.mockRejectedValue(new Error('no'))
+    expect(
+      await startProductImportRun({
+        fileName: 'a',
+        mode: 'insert',
+        summary: { total: 0, valid: 0, invalid: 0, inserts: 0, updates: 0 },
+        columns: [],
+      }),
+    ).toEqual({ error: 'אין הרשאה' })
+  })
+
+  it('a batch inside a run journals itself on the run row and tags the product rows', async () => {
+    override(SELECT, { data: [], error: null })
+    queue(INSERT, { data: { id: P1 }, error: null })
+    const res = await importProductsBatch([row(2, { ...physical, slug: 'one' })], 'insert', {
+      id: RUN,
+      batch: 3,
+    })
+    expect(res.inserted).toBe(1)
+
+    const [products] = auditCalls('products')
+    expect(products?.changes).toMatchObject({ source: 'file_import', run_id: RUN })
+    const [runRow] = auditCalls('product_import_run')
+    expect(runRow).toMatchObject({
+      action: 'updated',
+      entityId: RUN,
+      changes: { batch: 3, inserted: 1, updated: 0, slugs_inserted: ['one'] },
+      before: { inserts: [P1], updates: [] },
+    })
+  })
+
+  it('an upsert batch journals the prior columns; a malformed run ref is ignored', async () => {
+    const prior = { name_he: 'ישן', kenyon_price: 80 }
+    queue(SELECT, { data: [existingPhysical], error: null }, { data: prior, error: null })
+    await importProductsBatch(
+      [row(2, { ...physical, slug: 'exists', type: 'physical', name_he: 'חדש' })],
+      'upsert',
+      { id: RUN, batch: 1 },
+    )
+    const [runRow] = auditCalls('product_import_run')
+    expect(runRow?.before).toEqual({ inserts: [], updates: [{ id: EXISTING, prior }] })
+
+    writeAuditLog.mockReset()
+    queues.clear()
+    override(SELECT, { data: [], error: null })
+    queue(INSERT, { data: { id: P2 }, error: null })
+    await importProductsBatch([row(2, { ...physical, slug: 'two' })], 'insert', {
+      id: 'not-a-uuid',
+      batch: 1,
+    } as never)
+    expect(auditCalls('product_import_run')).toHaveLength(0)
+    expect(auditCalls('products')[0]?.changes).toMatchObject({ run_id: null })
+  })
+
+  it('finishProductImportRun writes the status row and caps the row errors', async () => {
+    const rowErrors = Array.from({ length: 250 }, (_, i) => ({
+      line: i + 2,
+      slug: `s${i}`,
+      name: null,
+      errors: ['bad'],
+    }))
+    expect(
+      await finishProductImportRun(RUN, {
+        status: 'partial',
+        inserted: 4,
+        updated: 1,
+        failed: 250,
+        error: 'שורה 9: boom',
+        rowErrors,
+      }),
+    ).toEqual({})
+    const [finished] = auditCalls('product_import_run')
+    expect(finished).toMatchObject({
+      action: 'status_change',
+      entityId: RUN,
+      changes: { status: 'partial', inserted: 4, updated: 1, failed: 250, error: 'שורה 9: boom' },
+    })
+    expect((finished?.changes as { row_errors: unknown[] }).row_errors).toHaveLength(200)
+
+    expect(
+      await finishProductImportRun('nope', {
+        status: 'done',
+        inserted: 0,
+        updated: 0,
+        failed: 0,
+        error: null,
+        rowErrors: [],
+      }),
+    ).toEqual({ error: 'מזהה ריצה לא תקין' })
+  })
+
+  it('listProductImportRuns folds the audit rows into runs, newest first', async () => {
+    override(AUDIT_SELECT, {
+      data: [
+        {
+          id: 'e3',
+          entity_id: RUN,
+          action: 'status_change',
+          created_at: '2026-10-01T10:00:10Z',
+          actor_id: ADMIN,
+          changes: { status: 'done', inserted: 1, updated: 0, failed: 0 },
+          before: null,
+        },
+        {
+          id: 'e1',
+          entity_id: RUN,
+          action: 'created',
+          created_at: '2026-10-01T10:00:00Z',
+          actor_id: ADMIN,
+          changes: { file_name: 'a.csv', mode: 'insert', total: 1, valid: 1, invalid: 0 },
+          before: null,
+        },
+      ],
+      error: null,
+    })
+    const res = await listProductImportRuns(requestClient as never)
+    expect(res.error).toBeUndefined()
+    expect(res.truncated).toBe(false)
+    expect(res.runs?.map((r) => [r.id, r.status, r.fileName, r.inserted])).toEqual([
+      [RUN, 'done', 'a.csv', 1],
+    ])
+    const [select] = calls.filter((c) => c.table === 'request:audit_log')
+    expect(select?.chain).toContainEqual(['eq', ['entity_type', 'product_import_run']])
+
+    override(AUDIT_SELECT, { data: null, error: { message: 'denied' } })
+    expect(await listProductImportRuns(requestClient as never)).toEqual({ error: 'denied' })
+  })
+})
+
+describe('rollbackProductImportRun', () => {
+  const U_EDITED = '66666666-6666-4666-8666-666666666666'
+  const events = [
+    {
+      id: 'e1',
+      entity_id: RUN,
+      action: 'created',
+      created_at: '2026-10-01T10:00:00.000Z',
+      actor_id: ADMIN,
+      changes: { file_name: 'a.csv', mode: 'upsert', total: 4, valid: 4, invalid: 0 },
+      before: null,
+    },
+    {
+      id: 'e2',
+      entity_id: RUN,
+      action: 'updated',
+      created_at: '2026-10-01T10:00:05.000Z',
+      actor_id: ADMIN,
+      changes: { batch: 1, inserted: 2, updated: 2 },
+      before: {
+        inserts: [P1, P2],
+        updates: [
+          { id: EXISTING, prior: { name_he: 'ישן', kenyon_price: 80 } },
+          { id: U_EDITED, prior: { name_he: 'לפני' } },
+        ],
+      },
+    },
+    {
+      id: 'e3',
+      entity_id: RUN,
+      action: 'status_change',
+      created_at: '2026-10-01T10:00:10.000Z',
+      actor_id: ADMIN,
+      changes: { status: 'done', inserted: 2, updated: 2, failed: 0 },
+      before: null,
+    },
+  ]
+
+  it('refuses without a session, on a bad id, on an unknown run, and on a run already undone', async () => {
+    requireAdminSession.mockRejectedValue(new Error('no'))
+    expect(await rollbackProductImportRun(RUN)).toEqual({ error: 'אין הרשאה' })
+    requireAdminSession.mockResolvedValue({ userId: ADMIN, role: 'admin' })
+    expect(await rollbackProductImportRun('nope')).toEqual({ error: 'מזהה ריצה לא תקין' })
+
+    override(AUDIT_SELECT, { data: [], error: null })
+    expect(await rollbackProductImportRun(RUN)).toEqual({ error: 'ריצת הייבוא לא נמצאה' })
+
+    override(AUDIT_SELECT, {
+      data: [
+        ...events,
+        {
+          id: 'e4',
+          entity_id: RUN,
+          action: 'restored',
+          created_at: '2026-10-01T11:00:00.000Z',
+          actor_id: ADMIN,
+          changes: {},
+          before: null,
+        },
+      ],
+      error: null,
+    })
+    expect(await rollbackProductImportRun(RUN)).toEqual({ error: 'הריצה הזו כבר בוטלה' })
+    expect(ops('products', 'delete')).toHaveLength(0)
+    expect(ops('products', 'update')).toHaveLength(0)
+  })
+
+  it('replays the merged journal backwards, skipping products edited since the run', async () => {
+    override(AUDIT_SELECT, { data: events, error: null })
+    // P2 is already gone; U_EDITED was touched after the run's last event.
+    override(SELECT, {
+      data: [
+        { id: P1, updated_at: '2026-10-01T10:00:04.000Z' },
+        { id: EXISTING, updated_at: '2026-10-01T10:00:04.500Z' },
+        { id: U_EDITED, updated_at: '2026-10-01T12:00:00.000Z' },
+      ],
+      error: null,
+    })
+    const res = await rollbackProductImportRun(RUN)
+    expect(res).toEqual({ revertedInserts: 2, revertedUpdates: 1, skipped: 1, failures: 0 })
+
+    const [read] = ops('products', 'select')
+    expect(read?.chain).toContainEqual(['in', ['id', [P1, P2, EXISTING, U_EDITED]]])
+    const [update] = ops('products', 'update')
+    expect(update?.payload).toEqual({ name_he: 'ישן', kenyon_price: 80 })
+    expect(update?.chain).toContainEqual(['eq', ['id', EXISTING]])
+    expect(ops('products', 'update')).toHaveLength(1)
+    const [del] = ops('products', 'delete')
+    expect(del?.chain).toContainEqual(['eq', ['id', P1]])
+    expect(ops('products', 'delete')).toHaveLength(1)
+
+    const [restored] = auditCalls('product_import_run')
+    expect(restored).toMatchObject({
+      action: 'restored',
+      entityId: RUN,
+      changes: { reverted_inserts: 2, reverted_updates: 1, skipped: 1, failures: 0 },
+    })
+    expect(revalidatePath).toHaveBeenCalledWith('/admin/products')
+    expect(revalidatePath).toHaveBeenCalledWith('/admin/products/import/history')
+    expect(updateTag).toHaveBeenCalledWith('catalogue')
+  })
+
+  it('counts a failed delete or restore instead of aborting the rest', async () => {
+    override(AUDIT_SELECT, { data: events, error: null })
+    override(SELECT, {
+      data: [
+        { id: P1, updated_at: '2026-10-01T10:00:04.000Z' },
+        { id: P2, updated_at: '2026-10-01T10:00:04.000Z' },
+        { id: EXISTING, updated_at: '2026-10-01T10:00:04.000Z' },
+        { id: U_EDITED, updated_at: '2026-10-01T10:00:04.000Z' },
+      ],
+      error: null,
+    })
+    queue(UPDATE, { data: null, error: { message: 'locked' } }, { data: null, error: null })
+    queue(
+      'request:products.delete',
+      { data: null, error: null },
+      { data: null, error: { message: 'fk' } },
+    )
+    const res = await rollbackProductImportRun(RUN)
+    expect(res).toEqual({ revertedInserts: 1, revertedUpdates: 1, skipped: 0, failures: 2 })
+    // Updates newest-first: U_EDITED (second in the journal) is restored first.
+    expect(ops('products', 'update')[0]?.chain).toContainEqual(['eq', ['id', U_EDITED]])
   })
 })

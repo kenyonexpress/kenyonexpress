@@ -2,6 +2,17 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import {
+  IMPORT_RUN_ENTITY,
+  type ImportRunJournal,
+  type ImportRunRowError,
+  type ImportRunStatus,
+  ROLLBACK_REFUSAL_MESSAGE,
+  ROW_ERROR_CAP,
+  mergeRunJournal,
+  rollbackRefusal,
+  summariseImportRun,
+} from '@/lib/admin/product-import/import-history'
+import {
   type ImportMode,
   type RawImportRow,
   type ValidatedImportRow,
@@ -14,7 +25,8 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { excludeDeleted } from '@/lib/soft-delete'
 import { createClient } from '@/lib/supabase/server'
-import type { TablesUpdate } from '@/types/database'
+import { loadImportRunEvents } from '@/server/queries/product-import-history'
+import type { Json, TablesUpdate } from '@/types/database'
 import { revalidatePath, updateTag } from 'next/cache'
 
 /**
@@ -46,6 +58,23 @@ import { revalidatePath, updateTag } from 'next/cache'
  * always rewritten as a unit, never status/images/supplier/type). Inserted
  * rows always land as `draft`; publishing stays behind the per-product
  * publish gate, which needs a supplier the file cannot carry.
+ *
+ * The run. Three more actions bracket the batches into one import run that
+ * the history page (`/admin/products/import/history`) can list and undo:
+ *
+ *   startProductImportRun - mints the run id and writes its `created` row.
+ *   importProductsBatch(…, run) - each applied batch writes an `updated` row
+ *     whose `before` column carries that batch's journal, the same journal the
+ *     in-batch rollback replays.
+ *   finishProductImportRun - the `status_change` row with the client's totals.
+ *   rollbackProductImportRun - merges every batch journal of a finished run
+ *     and replays it backwards: inserted products are deleted, updated ones
+ *     get their prior columns back. A product edited AFTER the run (its
+ *     `updated_at` is newer than the run's last event) is skipped and counted,
+ *     because clobbering a later edit is worse than leaving one imported row.
+ *
+ * All of it lives in `audit_log` (see `lib/admin/product-import/import-history`
+ * for why), so it works on production today without a pending migration.
  */
 
 const MAX_PREVIEW_ROWS = 5000
@@ -253,7 +282,30 @@ async function rollback(supabase: Supabase, journal: JournalEntry[]): Promise<nu
   return failures
 }
 
-async function runImportBatch(raw: RawImportRow[], mode: ImportMode): Promise<ImportBatchResult> {
+export interface ImportRunRef {
+  id: string
+  /** 1-based batch number within the run, for the history's ordering. */
+  batch: number
+}
+
+/** Server-action args come off the wire; keep only a well-formed run ref. */
+function coerceRun(run: unknown): ImportRunRef | null {
+  if (typeof run !== 'object' || run === null) return null
+  const { id, batch } = run as Record<string, unknown>
+  if (typeof id !== 'string' || !UUID.test(id)) return null
+  return {
+    id,
+    batch: typeof batch === 'number' && Number.isInteger(batch) && batch > 0 ? batch : 1,
+  }
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+async function runImportBatch(
+  raw: RawImportRow[],
+  mode: ImportMode,
+  run: ImportRunRef | null,
+): Promise<ImportBatchResult> {
   let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
     session = await requireAdminSession()
@@ -371,7 +423,12 @@ async function runImportBatch(raw: RawImportRow[], mode: ImportMode): Promise<Im
         actorRole: session.role,
         action: 'created',
         entityType: 'products',
-        changes: { source: 'file_import', inserted: insertedSlugs.length, slugs: insertedSlugs },
+        changes: {
+          source: 'file_import',
+          run_id: run?.id ?? null,
+          inserted: insertedSlugs.length,
+          slugs: insertedSlugs,
+        },
       })
     }
     if (updatedSlugs.length > 0) {
@@ -380,7 +437,38 @@ async function runImportBatch(raw: RawImportRow[], mode: ImportMode): Promise<Im
         actorRole: session.role,
         action: 'updated',
         entityType: 'products',
-        changes: { source: 'file_import', updated: updatedSlugs.length, slugs: updatedSlugs },
+        changes: {
+          source: 'file_import',
+          run_id: run?.id ?? null,
+          updated: updatedSlugs.length,
+          slugs: updatedSlugs,
+        },
+      })
+    }
+    if (run) {
+      // The batch's journal, kept for the whole-run rollback. `prior` holds
+      // only the columns the update touched, so a later rollback restores
+      // exactly those and nothing an admin changed elsewhere since.
+      const runJournal: ImportRunJournal = {
+        inserts: journal.flatMap((e) => (e.kind === 'insert' ? [e.id] : [])),
+        updates: journal.flatMap((e) =>
+          e.kind === 'update' ? [{ id: e.id, prior: e.prior }] : [],
+        ),
+      }
+      await writeAuditLog({
+        actorId: session.userId,
+        actorRole: session.role,
+        action: 'updated',
+        entityType: IMPORT_RUN_ENTITY,
+        entityId: run.id,
+        changes: {
+          batch: run.batch,
+          inserted: insertedSlugs.length,
+          updated: updatedSlugs.length,
+          slugs_inserted: insertedSlugs,
+          slugs_updated: updatedSlugs,
+        },
+        before: runJournal as unknown as Json,
       })
     }
     revalidatePath('/admin/products')
@@ -388,6 +476,210 @@ async function runImportBatch(raw: RawImportRow[], mode: ImportMode): Promise<Im
   }
 
   return { results, inserted: insertedSlugs.length, updated: updatedSlugs.length }
+}
+
+// ---------------------------------------------------------------------------
+// The run: start, finish, history, rollback.
+// ---------------------------------------------------------------------------
+
+export interface ImportRunStartInput {
+  fileName: string
+  mode: ImportMode
+  summary: { total: number; valid: number; invalid: number; inserts: number; updates: number }
+  /** The canonical column keys the admin mapped, for the history's record. */
+  columns: string[]
+}
+
+export interface ImportRunStartResult {
+  error?: string
+  runId?: string
+}
+
+function clampInt(value: unknown, max = 1_000_000): number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0
+    ? Math.min(value, max)
+    : 0
+}
+
+async function runStart(input: ImportRunStartInput): Promise<ImportRunStartResult> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  const runId = crypto.randomUUID()
+  const summary = typeof input?.summary === 'object' && input.summary !== null ? input.summary : {}
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'created',
+    entityType: IMPORT_RUN_ENTITY,
+    entityId: runId,
+    changes: {
+      file_name: typeof input?.fileName === 'string' ? input.fileName.slice(0, 200) : '',
+      mode: coerceMode(input?.mode),
+      total: clampInt((summary as Record<string, unknown>).total),
+      valid: clampInt((summary as Record<string, unknown>).valid),
+      invalid: clampInt((summary as Record<string, unknown>).invalid),
+      inserts: clampInt((summary as Record<string, unknown>).inserts),
+      updates: clampInt((summary as Record<string, unknown>).updates),
+      columns: Array.isArray(input?.columns)
+        ? input.columns.filter((c): c is string => typeof c === 'string').slice(0, 50)
+        : [],
+    },
+  })
+  return { runId }
+}
+
+export interface ImportRunFinishInput {
+  status: Exclude<ImportRunStatus, 'running' | 'rolled_back'>
+  inserted: number
+  updated: number
+  failed: number
+  error: string | null
+  rowErrors: ImportRunRowError[]
+}
+
+async function runFinish(runId: string, input: ImportRunFinishInput): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  if (typeof runId !== 'string' || !UUID.test(runId)) return { error: 'מזהה ריצה לא תקין' }
+  const status: ImportRunFinishInput['status'] =
+    input?.status === 'partial' || input?.status === 'failed' ? input.status : 'done'
+  const rowErrors = Array.isArray(input?.rowErrors)
+    ? input.rowErrors.slice(0, ROW_ERROR_CAP).map((r) => ({
+        line: clampInt(r?.line),
+        slug: typeof r?.slug === 'string' ? r.slug.slice(0, 200) : null,
+        name: typeof r?.name === 'string' ? r.name.slice(0, 200) : null,
+        errors: Array.isArray(r?.errors)
+          ? r.errors.filter((e): e is string => typeof e === 'string').map((e) => e.slice(0, 500))
+          : [],
+      }))
+    : []
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: IMPORT_RUN_ENTITY,
+    entityId: runId,
+    changes: {
+      status,
+      inserted: clampInt(input?.inserted),
+      updated: clampInt(input?.updated),
+      failed: clampInt(input?.failed),
+      error: typeof input?.error === 'string' ? input.error.slice(0, 1000) : null,
+      row_errors: rowErrors as unknown as Json,
+    },
+  })
+  return {}
+}
+
+export interface ImportRollbackResult {
+  error?: string
+  revertedInserts?: number
+  revertedUpdates?: number
+  skipped?: number
+  failures?: number
+}
+
+async function runRollback(runId: string): Promise<ImportRollbackResult> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  if (typeof runId !== 'string' || !UUID.test(runId)) return { error: 'מזהה ריצה לא תקין' }
+
+  const supabase = await createClient()
+  const { events, error } = await loadImportRunEvents(supabase, runId)
+  if (error) return { error }
+  const run = summariseImportRun(events)
+  if (!run) return { error: 'ריצת הייבוא לא נמצאה' }
+  const refusal = rollbackRefusal(run, Date.now())
+  if (refusal) return { error: ROLLBACK_REFUSAL_MESSAGE[refusal] }
+
+  const journal = mergeRunJournal(events)
+  const ids = [...new Set([...journal.inserts, ...journal.updates.map((u) => u.id)])]
+
+  // What each product looks like now: gone already, or edited since the run.
+  const current = new Map<string, string>()
+  for (const idChunk of chunk(ids, IN_CHUNK)) {
+    const { data, error: readError } = await supabase
+      .from('products')
+      .select('id, updated_at')
+      .in('id', idChunk)
+    if (readError) return { error: readError.message }
+    for (const p of data ?? []) current.set(p.id, p.updated_at)
+  }
+  const cutoff = Date.parse(run.lastEventAt)
+  const editedSince = (id: string): boolean => {
+    const at = current.get(id)
+    return at !== undefined && Date.parse(at) > cutoff
+  }
+
+  let revertedInserts = 0
+  let revertedUpdates = 0
+  let skipped = 0
+  let failures = 0
+
+  // Updates first, newest batch first, so a product updated twice in one run
+  // ends on its pre-run values.
+  for (const entry of [...journal.updates].reverse()) {
+    if (!current.has(entry.id)) {
+      skipped++
+      continue
+    }
+    if (editedSince(entry.id)) {
+      skipped++
+      continue
+    }
+    const { error: updateError } = await supabase
+      .from('products')
+      .update(entry.prior as TablesUpdate<'products'>)
+      .eq('id', entry.id)
+    if (updateError) failures++
+    else revertedUpdates++
+  }
+  for (const id of journal.inserts) {
+    if (!current.has(id)) {
+      // Already deleted by hand: the outcome the rollback wants.
+      revertedInserts++
+      continue
+    }
+    if (editedSince(id)) {
+      skipped++
+      continue
+    }
+    const { error: deleteError } = await supabase.from('products').delete().eq('id', id)
+    if (deleteError) failures++
+    else revertedInserts++
+  }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'restored',
+    entityType: IMPORT_RUN_ENTITY,
+    entityId: runId,
+    changes: {
+      reverted_inserts: revertedInserts,
+      reverted_updates: revertedUpdates,
+      skipped,
+      failures,
+    },
+  })
+  if (revertedInserts > 0 || revertedUpdates > 0) {
+    revalidatePath('/admin/products')
+    updateTag(CATALOGUE_TAG)
+  }
+  revalidatePath('/admin/products/import/history')
+  return { revertedInserts, revertedUpdates, skipped, failures }
 }
 
 /** Server-action args come off the wire; anything but 'upsert' means insert. */
@@ -405,8 +697,26 @@ export async function previewProductImport(
 export async function importProductsBatch(
   raw: RawImportRow[],
   mode: ImportMode = 'insert',
+  run?: ImportRunRef,
 ): Promise<ImportBatchResult> {
   return withActionContext('admin.product.import_batch', () =>
-    runImportBatch(raw, coerceMode(mode)),
+    runImportBatch(raw, coerceMode(mode), coerceRun(run)),
   )
+}
+
+export async function startProductImportRun(
+  input: ImportRunStartInput,
+): Promise<ImportRunStartResult> {
+  return withActionContext('admin.product.import_run_start', () => runStart(input))
+}
+
+export async function finishProductImportRun(
+  runId: string,
+  input: ImportRunFinishInput,
+): Promise<{ error?: string }> {
+  return withActionContext('admin.product.import_run_finish', () => runFinish(runId, input))
+}
+
+export async function rollbackProductImportRun(runId: string): Promise<ImportRollbackResult> {
+  return withActionContext('admin.product.import_run_rollback', () => runRollback(runId))
 }

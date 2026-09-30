@@ -14,8 +14,14 @@ import {
 import { CsvStreamParser } from '@/lib/admin/product-import/parse-csv'
 import { XlsxFormatError, parseXlsx } from '@/lib/admin/product-import/parse-xlsx'
 import type { ImportRowResult } from '@/server/actions/admin/product-import'
-import { importProductsBatch, previewProductImport } from '@/server/actions/admin/product-import'
-import { ArrowRight, Download, FileUp, Upload } from 'lucide-react'
+import {
+  finishProductImportRun,
+  importProductsBatch,
+  previewProductImport,
+  rollbackProductImportRun,
+  startProductImportRun,
+} from '@/server/actions/admin/product-import'
+import { ArrowRight, Download, FileUp, History, Undo2, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 
@@ -28,6 +34,14 @@ import { useRef, useState } from 'react'
  * counts. Between parse and dry run sits the mapping stage: every file column
  * gets a select, prefilled by the header aliases, so a spreadsheet with
  * unrecognized headers is mapped by hand instead of rejected.
+ *
+ * The batches are bracketed into one run (`startProductImportRun` before the
+ * first, `finishProductImportRun` after the last) so the history page can
+ * list the import and undo it. A batch that fails rolls itself back on the
+ * server and STOPS the run: the rows of the batches not yet sent are reported
+ * as "not attempted" rather than pushed into a database that just refused a
+ * write, and the batches already applied stay applied until the admin
+ * presses undo, which reverts the whole run through its journal.
  */
 
 const BATCH_SIZE = 50
@@ -54,6 +68,15 @@ function downloadCsv(fileName: string, content: string) {
 
 const COLUMN_LABEL = new Map(IMPORT_COLUMNS.map((c) => [c.key, c.label]))
 
+function notAttempted(row: RawImportRow, reason: string): ImportRowResult {
+  return {
+    line: row.line,
+    slug: row.record.slug ?? null,
+    name: row.record.name_he ?? null,
+    errors: [`לא נוסה - הייבוא נעצר אחרי כשל בקבוצה קודמת (${reason})`],
+  }
+}
+
 export default function ProductImportClient() {
   const inputRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<Stage>('idle')
@@ -77,6 +100,14 @@ export default function ProductImportClient() {
   const [importResults, setImportResults] = useState<ImportRowResult[]>([])
   const [applied, setApplied] = useState({ inserted: 0, updated: 0 })
   const [errorsOnly, setErrorsOnly] = useState(false)
+  const [runId, setRunId] = useState<string | null>(null)
+  const [runError, setRunError] = useState<string | null>(null)
+  const [undo, setUndo] = useState<
+    | { state: 'idle' }
+    | { state: 'working' }
+    | { state: 'done'; message: string }
+    | { state: 'failed'; message: string }
+  >({ state: 'idle' })
 
   async function handleFile(file: File) {
     setStage('checking')
@@ -86,6 +117,9 @@ export default function ProductImportClient() {
     setSummary(null)
     setImportResults([])
     setApplied({ inserted: 0, updated: 0 })
+    setRunId(null)
+    setRunError(null)
+    setUndo({ state: 'idle' })
     setFileName(file.name)
 
     let parsed: { rows: string[][]; errors: { line: number; message: string }[] }
@@ -167,27 +201,53 @@ export default function ProductImportClient() {
   async function runImport() {
     const validLines = new Set(previewRows.filter((r) => r.errors.length === 0).map((r) => r.line))
     const toImport = rawRows.filter((r) => validLines.has(r.line))
-    if (toImport.length === 0) return
+    if (toImport.length === 0 || !summary) return
 
     setStage('importing')
     setProgress({ done: 0, total: toImport.length })
+    setRunError(null)
+    setUndo({ state: 'idle' })
+
+    const started = await startProductImportRun({
+      fileName,
+      mode,
+      summary,
+      columns: selections.filter((k): k is ImportColumnKey => k !== null),
+    })
+    if (started.error || !started.runId) {
+      setFatal(started.error ?? 'פתיחת ריצת הייבוא נכשלה')
+      setStage('ready')
+      return
+    }
+    const run = started.runId
+    setRunId(run)
 
     const results: ImportRowResult[] = []
     let insertedCount = 0
     let updatedCount = 0
+    let stoppedBy: string | null = null
+    let batchNumber = 0
     for (let i = 0; i < toImport.length; i += BATCH_SIZE) {
       const batch = toImport.slice(i, i + BATCH_SIZE)
-      const res = await importProductsBatch(batch, mode)
+      if (stoppedBy !== null) {
+        const reason = stoppedBy
+        results.push(...batch.map((b) => notAttempted(b, reason)))
+        continue
+      }
+      batchNumber += 1
+      const res = await importProductsBatch(batch, mode, { id: run, batch: batchNumber })
       if (res.error || !res.results) {
-        // A failed batch rolled itself back on the server: none of its rows
-        // were kept, and each is reported with the batch's error. Batches
-        // already applied stay applied.
+        // The failed batch rolled itself back on the server: none of its
+        // rows were kept, and each is reported with the batch's error. The
+        // batches after it are not sent at all.
+        const reason = res.error ?? 'הייבוא נכשל'
+        stoppedBy = reason
         results.push(
           ...batch.map((b) => ({
             line: b.line,
             slug: b.record.slug ?? null,
             name: b.record.name_he ?? null,
-            errors: [res.error ?? 'הייבוא נכשל'],
+            errors: [reason],
           })),
         )
       } else {
@@ -198,9 +258,41 @@ export default function ProductImportClient() {
       setProgress({ done: Math.min(i + BATCH_SIZE, toImport.length), total: toImport.length })
     }
 
+    const failed = results.filter((r) => r.errors.length > 0)
+    const status = stoppedBy ? (insertedCount + updatedCount > 0 ? 'partial' : 'failed') : 'done'
+    const finished = await finishProductImportRun(run, {
+      status,
+      inserted: insertedCount,
+      updated: updatedCount,
+      failed: failed.length,
+      error: stoppedBy,
+      rowErrors: failed.map((r) => ({
+        line: r.line,
+        slug: r.slug,
+        name: r.name,
+        errors: r.errors,
+      })),
+    })
+    if (finished.error) setRunError(finished.error)
+
     setImportResults(results)
     setApplied({ inserted: insertedCount, updated: updatedCount })
     setStage('done')
+  }
+
+  async function undoRun() {
+    if (!runId) return
+    setUndo({ state: 'working' })
+    const res = await rollbackProductImportRun(runId)
+    if (res.error) {
+      setUndo({ state: 'failed', message: res.error })
+      return
+    }
+    const parts = [`נמחקו ${res.revertedInserts ?? 0} מוצרים שנוספו`]
+    parts.push(`שוחזרו ${res.revertedUpdates ?? 0} מוצרים שעודכנו`)
+    if (res.skipped) parts.push(`${res.skipped} דולגו כי נערכו אחרי הייבוא`)
+    if (res.failures) parts.push(`${res.failures} נכשלו - יש לבדוק ידנית`)
+    setUndo({ state: 'done', message: parts.join(' · ') })
   }
 
   function downloadErrorReport() {
@@ -284,6 +376,10 @@ export default function ProductImportClient() {
             <Download className="h-4 w-4" aria-hidden />
             הורדת תבנית
           </button>
+          <Link href="/admin/products/import/history" className={btnGhost}>
+            <History className="h-4 w-4" aria-hidden />
+            היסטוריית ייבוא
+          </Link>
           {fileName ? <span className="text-sm text-gray-600">{fileName}</span> : null}
         </div>
         <input
@@ -424,6 +520,30 @@ export default function ProductImportClient() {
 
           {stage === 'ready' ? modePicker : null}
 
+          {stage === 'done' &&
+          importResults.some((r) => r.errors.length > 0) &&
+          applied.inserted + applied.updated > 0 ? (
+            <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              הייבוא נעצר באמצע: הקבוצות שכבר נשמרו נשארו במערכת, וכל קבוצה שנכשלה בוטלה במלואה.
+              אפשר לבטל את כל מה שנקלט בריצה הזו בכפתור השחזור.
+            </p>
+          ) : null}
+          {runError ? (
+            <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              הייבוא הושלם, אך רישום הריצה בהיסטוריה נכשל: {runError}
+            </p>
+          ) : null}
+          {undo.state === 'done' ? (
+            <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              הייבוא בוטל: {undo.message}
+            </p>
+          ) : null}
+          {undo.state === 'failed' ? (
+            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+              ביטול הייבוא נכשל: {undo.message}
+            </p>
+          ) : null}
+
           <div className="flex flex-wrap items-center gap-3">
             {stage === 'ready' && summary.valid > 0 ? (
               <button type="button" className={btn} onClick={() => void runImport()}>
@@ -448,6 +568,17 @@ export default function ProductImportClient() {
               <Link href="/admin/products" className={btnGhost}>
                 לרשימת המוצרים
               </Link>
+            ) : null}
+            {stage === 'done' && runId && applied.inserted + applied.updated > 0 ? (
+              <button
+                type="button"
+                className={btnGhost}
+                disabled={undo.state === 'working' || undo.state === 'done'}
+                onClick={() => void undoRun()}
+              >
+                <Undo2 className="h-4 w-4" aria-hidden />
+                {undo.state === 'working' ? 'מבטל...' : 'ביטול הייבוא הזה (שחזור)'}
+              </button>
             ) : null}
             <label className="flex items-center gap-2 text-sm text-gray-600">
               <input

@@ -40,6 +40,7 @@ const ACTION_COLORS: Partial<Record<AuditAction, string>> = {
 const ENTITY_LABELS: Record<string, string> = {
   products: 'מוצרים',
   product: 'מוצר',
+  product_import_run: 'ייבוא מוצרים מקובץ',
   categories: 'קטגוריות',
   category: 'קטגוריה',
   vendors: 'ספקים',

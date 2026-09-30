@@ -40,6 +40,11 @@ function auditInserts(source: string): string[] {
   return blocks
 }
 
+/**
+ * Files that INSERT into audit_log directly. A file that only reads the table
+ * (the import history folds its runs out of audit rows) is not a writer and
+ * has no actor to name, so the detector is the insert marker, not the table.
+ */
 function filesTouchingAuditLog(): string[] {
   const found: string[] = []
   const cwd = process.cwd()
@@ -48,7 +53,7 @@ function filesTouchingAuditLog(): string[] {
       const full = join(dir, entry)
       if (statSync(full).isDirectory()) walk(full)
       else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts') && !entry.endsWith('.d.ts')) {
-        if (readFileSync(full, 'utf8').includes("from('audit_log')")) {
+        if (/from\('audit_log'\)\s*\.insert\(/.test(readFileSync(full, 'utf8'))) {
           found.push(relative(cwd, full).split('\\').join('/'))
         }
       }

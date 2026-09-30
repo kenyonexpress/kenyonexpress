@@ -49,6 +49,13 @@ export async function writeAuditLog(entry: {
   entityId?: string | null
   changes?: Json
   metadata?: Json
+  /**
+   * The row's prior / resulting state, when the caller has it. Only the
+   * product import writes these today: each applied batch keeps its rollback
+   * journal in `before`, so a whole run can be replayed backwards later.
+   */
+  before?: Json
+  after?: Json
 }): Promise<void> {
   try {
     const admin = createAdminClient()
@@ -61,6 +68,8 @@ export async function writeAuditLog(entry: {
       entity_id: entry.entityId ?? null,
       changes: entry.changes ?? null,
       metadata: entry.metadata ?? null,
+      before: entry.before ?? null,
+      after: entry.after ?? null,
       // `inet` rejects a malformed value, which would fail the insert and lose
       // the audit row entirely. Anything that is not plainly an address is
       // dropped to null instead: a row without an IP still records who and what.
