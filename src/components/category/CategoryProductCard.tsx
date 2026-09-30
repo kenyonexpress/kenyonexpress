@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { discountPercent } from '@/lib/discount-percent'
 import { cityByName } from '@/lib/geo/cities'
 import { formatDistance } from '@/lib/geo/distance'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
@@ -53,10 +54,6 @@ export type CategoryProduct = {
 
 function formatPrice(value: number): string {
   return shekelsFromIlsRounded(value)
-}
-
-function discountPercent(price: number, old: number): number {
-  return Math.round((1 - price / old) * 100)
 }
 
 function CartPlusIcon() {

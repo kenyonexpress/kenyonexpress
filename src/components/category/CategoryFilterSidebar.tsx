@@ -1,6 +1,7 @@
 'use client'
 
 import CategoryAutocomplete from '@/components/category/CategoryAutocomplete'
+import { DISCOUNT_STEPS } from '@/lib/discount-percent'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -13,6 +14,16 @@ type Props = {
   priceMin?: number
   priceMax?: number
   productType?: 'coupon' | 'physical'
+  /**
+   * The distinct brands in this archive. The widget renders only when there
+   * is at least one: a "brand" heading over an empty list is a promise the
+   * catalogue cannot keep, and on production today every brand is null.
+   */
+  brands?: string[]
+  /** The selected brand, from `parseBrand`. */
+  brand?: string
+  /** The selected minimum saving, from `parseMinDiscount`. */
+  minDiscount?: number
 }
 
 const TYPE_OPTIONS = [
@@ -21,12 +32,23 @@ const TYPE_OPTIONS = [
   { value: 'physical' as const, label: 'מוצרים פיזיים' },
 ]
 
+/**
+ * The percent, isolated so it reads left-to-right inside a Hebrew label. The
+ * result-count line does the same for its digits.
+ */
+function discountLabel(step: number): string {
+  return `לפחות \u2066${step}%\u2069 הנחה`
+}
+
 export default function CategoryFilterSidebar({
   categories,
   currentSlug,
   priceMin,
   priceMax,
   productType,
+  brands = [],
+  brand,
+  minDiscount,
 }: Props) {
   const router = useRouter()
   const pathname = usePathname()
@@ -63,6 +85,24 @@ export default function CategoryFilterSidebar({
       else params.delete('type')
     })
   }
+
+  function applyBrand(value: string | undefined) {
+    pushWith((params) => {
+      if (value) params.set('brand', value)
+      else params.delete('brand')
+    })
+  }
+
+  function applyDiscount(value: number | undefined) {
+    pushWith((params) => {
+      if (value) params.set('discount', String(value))
+      else params.delete('discount')
+    })
+  }
+
+  // A brand chosen by URL that the facet no longer lists (the product moved
+  // or was retired) still shows as selected, so the shopper can clear it.
+  const brandOptions = brand && !brands.includes(brand) ? [brand, ...brands] : brands
 
   return (
     <aside id="category-filters" className="category-sidebar" aria-label="סינון מוצרים">
@@ -114,6 +154,72 @@ export default function CategoryFilterSidebar({
                     aria-pressed={productType === option.value}
                   >
                     {option.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {brandOptions.length > 0 ? (
+            <div className="category-sidebar__widget" data-facet="brand">
+              <h3 className="category-sidebar__title">מותג</h3>
+              <ul className="category-sidebar__list">
+                <li>
+                  <button
+                    type="button"
+                    className={`category-sidebar__filter-btn${brand ? '' : ' is-current'}`}
+                    onClick={() => applyBrand(undefined)}
+                    disabled={isPending}
+                    aria-pressed={!brand}
+                  >
+                    הכל
+                  </button>
+                </li>
+                {brandOptions.map((option) => (
+                  <li key={option}>
+                    <button
+                      type="button"
+                      className={`category-sidebar__filter-btn${
+                        brand === option ? ' is-current' : ''
+                      }`}
+                      onClick={() => applyBrand(option)}
+                      disabled={isPending}
+                      aria-pressed={brand === option}
+                    >
+                      {option}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <div className="category-sidebar__widget" data-facet="discount">
+            <h3 className="category-sidebar__title">הנחה</h3>
+            <ul className="category-sidebar__list">
+              <li>
+                <button
+                  type="button"
+                  className={`category-sidebar__filter-btn${minDiscount ? '' : ' is-current'}`}
+                  onClick={() => applyDiscount(undefined)}
+                  disabled={isPending}
+                  aria-pressed={!minDiscount}
+                >
+                  הכל
+                </button>
+              </li>
+              {DISCOUNT_STEPS.map((step) => (
+                <li key={step}>
+                  <button
+                    type="button"
+                    className={`category-sidebar__filter-btn${
+                      minDiscount === step ? ' is-current' : ''
+                    }`}
+                    onClick={() => applyDiscount(step)}
+                    disabled={isPending}
+                    aria-pressed={minDiscount === step}
+                  >
+                    {discountLabel(step)}
                   </button>
                 </li>
               ))}

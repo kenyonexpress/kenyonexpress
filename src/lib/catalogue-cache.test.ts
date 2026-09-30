@@ -80,7 +80,10 @@ describe('catalogue cache invalidation', () => {
       const src = code(file)
       const cachedScopes = src.match(/'use cache'/g) ?? []
       const tagged = src.match(/cacheTag\(CATALOGUE_TAG\)/g) ?? []
-      const lifed = src.match(/cacheLife\('hours'\)/g) ?? []
+      // Either the built-in hours profile or the archive's inline 300s
+      // profile (CATEGORY_CACHE_LIFE in category-page.ts). What is checked is
+      // that every cached scope names one.
+      const lifed = src.match(/cacheLife\('hours'\)|cacheLife\(CATEGORY_CACHE_LIFE\)/g) ?? []
 
       expect(cachedScopes.length, `${file}: no cached reads`).toBeGreaterThan(0)
       expect(tagged.length, `${file}: a use cache read carries no cacheTag`).toBe(

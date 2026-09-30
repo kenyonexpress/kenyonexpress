@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BRAND_MAX_LENGTH,
+  CATEGORY_CACHE_LIFE,
   CATEGORY_PAGE_SIZE,
   categoryMetaDescription,
   collectionFilter,
   collectionRule,
+  membershipFilter,
   orderedByMenu,
+  parseBrand,
   parseProductType,
   productTypeFilter,
 } from './category-page'
+import { isDefaultSort, parseSort } from './category-tokens'
 
 /**
  * The archive facet has to agree with the rest of the system about what a
@@ -197,12 +202,80 @@ describe('categoryMetaDescription', () => {
 })
 
 /**
- * Eight cards a page is the listing contract (goal of 2026-09-16). The grid,
- * the skeleton, the result-count wording and the last-page arithmetic all
- * read this constant, so the number is pinned here rather than in four places.
+ * 24 cards a page is the listing contract (STEP 06, 30.09.2026; eight from
+ * 16.09 before that). The grid, the skeleton, the result-count wording and
+ * the last-page arithmetic all read this constant, so the number is pinned
+ * here rather than in four places.
  */
 describe('CATEGORY_PAGE_SIZE', () => {
-  it('is eight', () => {
-    expect(CATEGORY_PAGE_SIZE).toBe(8)
+  it('is 24', () => {
+    expect(CATEGORY_PAGE_SIZE).toBe(24)
+  })
+})
+
+/**
+ * The ISR window the archive promises: re-fetched at most every 300s, and
+ * never served past a day if the database is unreachable.
+ */
+describe('CATEGORY_CACHE_LIFE', () => {
+  it('revalidates every 300 seconds and expires after a day', () => {
+    expect(CATEGORY_CACHE_LIFE).toEqual({ stale: 300, revalidate: 300, expire: 86400 })
+  })
+})
+
+describe('parseBrand', () => {
+  it('passes a trimmed brand through', () => {
+    expect(parseBrand('  Samsung ')).toBe('Samsung')
+    expect(parseBrand(['סמסונג', 'x'])).toBe('סמסונג')
+  })
+
+  it('rejects empty, oversized and control-character values', () => {
+    expect(parseBrand('')).toBeUndefined()
+    expect(parseBrand('   ')).toBeUndefined()
+    expect(parseBrand(undefined)).toBeUndefined()
+    expect(parseBrand('a'.repeat(BRAND_MAX_LENGTH + 1))).toBeUndefined()
+    expect(parseBrand('a'.repeat(BRAND_MAX_LENGTH))).toHaveLength(BRAND_MAX_LENGTH)
+    expect(parseBrand('bad\u0000brand')).toBeUndefined()
+    expect(parseBrand('line\nbreak')).toBeUndefined()
+  })
+})
+
+/**
+ * The one rule for "is this product in this category", shared by the page,
+ * the brand facet and the discount facet.
+ */
+describe('membershipFilter', () => {
+  const ID = '9f1b1a2e-1111-4bbb-8ccc-000000000001'
+
+  it('is an equality on category_id for a taxonomy', () => {
+    expect(membershipFilter(ID, undefined)).toEqual({ eq: ID })
+  })
+
+  it('is the collection group, with the newest ids, for a collection', () => {
+    expect(membershipFilter(ID, { kind: 'featured' })).toEqual({
+      or: `category_id.eq.${ID},is_featured.is.true`,
+    })
+    expect(membershipFilter(ID, { kind: 'newest', limit: 24 }, ['a', 'b'])).toEqual({
+      or: `category_id.eq.${ID},id.in.(a,b)`,
+    })
+  })
+})
+
+/**
+ * `relevance` is the goal's name for the default order. It has to be accepted
+ * from the URL, sort like the default, and leave the URL bare in page links.
+ */
+describe('relevance sort', () => {
+  it('parses and reads as the default order', () => {
+    expect(parseSort('relevance')).toBe('relevance')
+    expect(isDefaultSort('relevance')).toBe(true)
+    expect(isDefaultSort('menu_order')).toBe(true)
+    expect(isDefaultSort('price_asc')).toBe(false)
+    expect(isDefaultSort('newest')).toBe(false)
+  })
+
+  it('still falls back to menu_order for an unknown key', () => {
+    expect(parseSort('not-a-sort')).toBe('menu_order')
+    expect(parseSort(undefined)).toBe('menu_order')
   })
 })

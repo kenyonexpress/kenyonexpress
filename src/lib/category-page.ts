@@ -1,6 +1,7 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
+import { meetsMinDiscount } from '@/lib/discount-percent'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { repairPriceOrder } from '@/lib/money-format'
@@ -24,9 +25,16 @@ import { cache } from 'react'
  * optional: a write that does not call `updateTag(CATALOGUE_TAG)` is invisible
  * on the storefront for an hour, silently.
  *
- * `cacheLife('hours')` - 1 hour revalidate, 1 day expire. The expire is the
- * part worth having: if Supabase is unreachable, the last good catalogue keeps
- * being served instead of an empty grid.
+ * `cacheLife(CATEGORY_CACHE_LIFE)` on the category reads: 300s stale, 300s
+ * revalidate, 1 day expire, which is the archive's ISR window - the
+ * prerendered shell and every cached read under it are re-fetched at most
+ * every five minutes. An inline profile and not a named one in next.config:
+ * a custom name is only typed once `next build` has regenerated
+ * `.next/types/cache-life.d.ts`, so `pnpm type-check` on a fresh checkout
+ * would reject the name that the build accepts. `cacheLife('hours')` stays on
+ * the /products reads, which have no such contract. The expire is the part
+ * worth having on both: if Supabase is unreachable, the last good catalogue
+ * keeps being served instead of an empty grid.
  *
  * The two calls are repeated in each function rather than factored into a
  * helper. `cacheLife` and `cacheTag` are directives about the scope they are
@@ -35,11 +43,19 @@ import { cache } from 'react'
  */
 
 /**
- * Eight cards a page. Two rows of four at 1440, four rows of two at 380; the
- * grid, the skeleton, the result-count wording and the page-window arithmetic
- * all read this one constant, and `category-page.test.ts` pins the number.
+ * 24 cards a page (STEP 06, 30.09.2026; it was 8 from 16.09). Six rows of four
+ * at 1440, twelve rows of two at 380, and the same number as /products and as
+ * live's WooCommerce archive. The grid, the skeleton, the result-count wording
+ * and the page-window arithmetic all read this one constant, and
+ * `category-page.test.ts` pins the number.
  */
-export const CATEGORY_PAGE_SIZE = 8
+export const CATEGORY_PAGE_SIZE = 24
+
+/**
+ * The category archive's cache profile, in seconds. See the header note.
+ * `category-page.test.ts` pins the 300s window the goal asked for.
+ */
+export const CATEGORY_CACHE_LIFE = { stale: 300, revalidate: 300, expire: 86400 } as const
 
 /**
  * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.
@@ -124,7 +140,7 @@ export function categoryMetaDescription(nameHe: string): string {
 
 export async function getCategoryBySlug(slug: string): Promise<CategoryRow | null> {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CATEGORY_CACHE_LIFE)
   cacheTag(CATALOGUE_TAG)
   const supabase = createCatalogueReadClient()
   const data = orFail(
@@ -142,7 +158,7 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
 
 export async function getAllCategorySlugs(): Promise<string[]> {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CATEGORY_CACHE_LIFE)
   cacheTag(CATALOGUE_TAG)
   const supabase = createCatalogueReadClient()
   const data = orFail(
@@ -156,7 +172,7 @@ export async function getCategoryParent(
   parentId: string,
 ): Promise<{ slug: string; name_he: string } | null> {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CATEGORY_CACHE_LIFE)
   cacheTag(CATALOGUE_TAG)
   const supabase = createCatalogueReadClient()
   const data = orFail(
@@ -171,7 +187,7 @@ export async function getCategoryChildren(
   categoryId: string,
 ): Promise<{ id: string; slug: string; name_he: string }[]> {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CATEGORY_CACHE_LIFE)
   cacheTag(CATALOGUE_TAG)
   const supabase = createCatalogueReadClient()
   const data = orFail(
@@ -245,6 +261,29 @@ export function parseProductType(
   raw: string | string[] | undefined,
 ): ProductTypeFilter | undefined {
   return raw === 'coupon' || raw === 'physical' ? raw : undefined
+}
+
+/** Longest brand the facet accepts from the URL. `products.brand` is free text. */
+export const BRAND_MAX_LENGTH = 80
+
+/**
+ * The `brand` query value, or undefined.
+ *
+ * `products.brand` is text an admin typed, so there is no table to validate
+ * against the way `parseCity` has one. What is rejected instead is shape: an
+ * empty or whitespace-only value, control characters, and anything longer
+ * than a brand name. The value only ever reaches PostgREST as an `eq`
+ * parameter, where it is a value and not syntax, and an unknown brand is an
+ * empty page and not an error.
+ */
+export function parseBrand(raw: string | string[] | undefined): string | undefined {
+  const value = Array.isArray(raw) ? raw[0] : raw
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  if (trimmed.length === 0 || trimmed.length > BRAND_MAX_LENGTH) return undefined
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting control characters is the point
+  if (/[\u0000-\u001f\u007f]/.test(trimmed)) return undefined
+  return trimmed
 }
 
 /**
@@ -350,6 +389,112 @@ async function newestProductIds(
   return (data ?? []).map((row) => row.id)
 }
 
+/**
+ * `category_id = X`, or the collection's `or` group, as data.
+ *
+ * One place for the three reads that ask "is this product in this category":
+ * the page, the brand facet and the discount facet. Before this helper the
+ * rule lived inline in `getCategoryProducts`, and a facet that repeated it by
+ * hand would have been the first thing to drift from it. Returned as data and
+ * applied at each call site rather than as a generic over the query builder:
+ * the builder's type is deep enough that a generic over it fails to compile
+ * (TS2589).
+ */
+export function membershipFilter(
+  categoryId: string,
+  collection: CollectionRule | undefined,
+  newestIds: string[] = [],
+): { or: string } | { eq: string } {
+  return collection
+    ? { or: collectionFilter(categoryId, collection, newestIds) }
+    : { eq: categoryId }
+}
+
+/** The newest-collection ids, or nothing for every other membership. */
+async function newestIdsFor(
+  supabase: ReturnType<typeof createCatalogueReadClient>,
+  collection: CollectionRule | undefined,
+): Promise<string[]> {
+  return collection?.kind === 'newest' ? newestProductIds(supabase, collection.limit) : []
+}
+
+/**
+ * The ids of the category's products whose saving is at least `minDiscount`.
+ *
+ * A second round trip, for the same reason `newestProductIds` is one: the
+ * saving is `1 - kenyon_price / full_price`, which is a comparison between two
+ * columns, and PostgREST filters compare a column to a value. The stored
+ * `discount_percent` column is NOT the answer either - see the header of
+ * lib/discount-percent.ts for the measurement. So the read is the two price
+ * columns for the whole membership (46 active products on the whole site,
+ * 30.09.2026), the arithmetic runs here through the card's own helper, and
+ * the page query takes the ids with `in`. The count and the page window stay
+ * exact, which the in-memory city filter below cannot say.
+ *
+ * Runs inside the caller's `use cache` scope, so it costs once per cache
+ * entry and not once per request.
+ */
+async function discountedProductIds(
+  supabase: ReturnType<typeof createCatalogueReadClient>,
+  categoryId: string,
+  collection: CollectionRule | undefined,
+  newestIds: string[],
+  minDiscount: number,
+): Promise<string[]> {
+  const membership = membershipFilter(categoryId, collection, newestIds)
+  let query = supabase
+    .from('products')
+    .select('id, kenyon_price, full_price')
+    .eq('status', 'active')
+    .is('deleted_at', null)
+  query = 'or' in membership ? query.or(membership.or) : query.eq('category_id', membership.eq)
+  const rows = orFail(await query, 'catalogue.discounted_product_ids_failed', {
+    category_id: categoryId,
+    min_discount: minDiscount,
+  })
+  return (rows ?? []).filter((row) => meetsMinDiscount(row, minDiscount)).map((row) => row.id)
+}
+
+/**
+ * The distinct brands in a category, for the sidebar facet.
+ *
+ * Deduplicated and sorted here rather than with `DISTINCT`, which PostgREST
+ * does not expose; the membership is at most the catalogue. The facet renders
+ * only when this is non-empty, and on production today (30.09.2026) it is
+ * empty for every category: `products.brand` is null on all 46 active rows.
+ * The column, the filter and the widget are all in place for the first brand
+ * an admin types.
+ */
+export async function getCategoryBrands(opts: {
+  categoryId: string
+  collection?: CollectionRule
+}): Promise<string[]> {
+  'use cache'
+  cacheLife(CATEGORY_CACHE_LIFE)
+  cacheTag(CATALOGUE_TAG)
+  const { categoryId, collection } = opts
+  const supabase = createCatalogueReadClient()
+  const membership = membershipFilter(
+    categoryId,
+    collection,
+    await newestIdsFor(supabase, collection),
+  )
+  let query = supabase
+    .from('products')
+    .select('brand')
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .not('brand', 'is', null)
+  query = 'or' in membership ? query.or(membership.or) : query.eq('category_id', membership.eq)
+  const rows = orFail(await query, 'catalogue.category_brands_failed', { category_id: categoryId })
+  const brands = new Set<string>()
+  for (const row of rows ?? []) {
+    const brand = typeof row.brand === 'string' ? row.brand.trim() : ''
+    if (brand) brands.add(brand)
+  }
+  return [...brands].sort((a, b) => a.localeCompare(b, 'he'))
+}
+
 export async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
@@ -360,14 +505,29 @@ export async function getCategoryProducts(opts: {
   productType?: ProductTypeFilter
   /** City slug. Part of the cache key, so two cities never share a page. */
   city?: string
+  /** Exact `products.brand`, from `parseBrand`. */
+  brand?: string
+  /** Minimum saving in whole percent, from `parseMinDiscount`. */
+  minDiscount?: number
   /** Set for the three collection slugs. See `collectionRule`. */
   collection?: CollectionRule
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CATEGORY_CACHE_LIFE)
   cacheTag(CATALOGUE_TAG)
-  const { categoryId, category, sort, page, priceMin, priceMax, productType, city, collection } =
-    opts
+  const {
+    categoryId,
+    category,
+    sort,
+    page,
+    priceMin,
+    priceMax,
+    productType,
+    city,
+    brand,
+    minDiscount,
+    collection,
+  } = opts
   const supabase = createCatalogueReadClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
@@ -386,23 +546,23 @@ export async function getCategoryProducts(opts: {
     .eq('status', 'active')
     .is('deleted_at', null)
 
-  if (collection) {
-    query = query.or(
-      collectionFilter(
-        categoryId,
-        collection,
-        collection.kind === 'newest' ? await newestProductIds(supabase, collection.limit) : [],
-      ),
-    )
-  } else {
-    query = query.eq('category_id', categoryId)
-  }
+  const newestIds = await newestIdsFor(supabase, collection)
+  const membership = membershipFilter(categoryId, collection, newestIds)
+  query = 'or' in membership ? query.or(membership.or) : query.eq('category_id', membership.eq)
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
   if (productType) {
     const facet = productTypeFilter(productType)
     query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
+  }
+  if (brand) query = query.eq('brand', brand)
+  if (minDiscount != null) {
+    const ids = await discountedProductIds(supabase, categoryId, collection, newestIds, minDiscount)
+    // An empty `in.()` is a PostgREST syntax error, and there is nothing to
+    // read anyway: no product in this category saves that much.
+    if (ids.length === 0) return { items: [], total: 0 }
+    query = query.in('id', ids)
   }
 
   switch (sort) {
@@ -420,7 +580,7 @@ export async function getCategoryProducts(opts: {
       break
     default:
       /*
-       * menu_order / popularity / rating.
+       * menu_order / relevance / popularity / rating.
        *
        * Live's archive order is Hebrew-alphabetical by name, WITH FEATURED
        * PRODUCTS PINNED ABOVE IT. Verified 2026-09-03 against
@@ -472,7 +632,7 @@ export async function getCategoryProducts(opts: {
 
 export async function getAllCategories(): Promise<{ slug: string; name_he: string }[]> {
   'use cache'
-  cacheLife('hours')
+  cacheLife(CATEGORY_CACHE_LIFE)
   cacheTag(CATALOGUE_TAG)
   const supabase = createCatalogueReadClient()
   const data = orFail(

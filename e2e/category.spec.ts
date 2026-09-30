@@ -178,6 +178,60 @@ test.describe('category archive', () => {
     await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
   })
 
+  /**
+   * The STEP 06 facets at the URL. `discount` is computed from the two prices
+   * the card shows, so every card left on the page must carry a badge of at
+   * least that saving; `brand` matches nothing on production today (every
+   * brand is null) and has to say so with the empty state, not a blank grid.
+   */
+  test('a discount filter leaves only cards whose badge meets it', async ({ page }) => {
+    const slug = await firstCategorySlug(page)
+    test.skip(!slug, 'catalog exposes no category links')
+
+    const response = await page.goto(`/category/${slug}?discount=20`)
+    expect(response?.status()).toBe(200)
+
+    const grid = page.locator('a[href^="/product/"]').first()
+    const empty = page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')
+    await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 })
+
+    const badges = await page
+      .locator('.category-card')
+      .evaluateAll((cards) =>
+        cards.map((card) => card.querySelector('.category-card__badge')?.textContent ?? ''),
+      )
+    for (const badge of badges) {
+      const pct = Number(/(\d+)/.exec(badge)?.[1] ?? '0')
+      expect(pct, `a card with badge "${badge}" survived ?discount=20`).toBeGreaterThanOrEqual(20)
+    }
+
+    // The sidebar reflects the URL, and the page links keep the facet.
+    await page.locator('.category-sidebar__summary').click()
+    await expect(page.locator('[data-facet="discount"] button[aria-pressed="true"]')).toHaveText(
+      /20%/,
+    )
+  })
+
+  test('an unknown brand narrows to the empty state, not a blank page', async ({ page }) => {
+    const slug = await firstCategorySlug(page)
+    test.skip(!slug, 'catalog exposes no category links')
+
+    const response = await page.goto(`/category/${slug}?brand=no-such-brand-12345`)
+    expect(response?.status()).toBe(200)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toBeVisible({
+      timeout: 15_000,
+    })
+  })
+
+  test('?sort=relevance is accepted and reads as the default order', async ({ page }) => {
+    const slug = await firstCategorySlug(page)
+    test.skip(!slug, 'catalog exposes no category links')
+
+    await page.goto(`/category/${slug}?sort=relevance`)
+    await expect(page.getByLabel('מיון מוצרים')).toHaveValue('menu_order')
+  })
+
   test('a price filter narrows the archive without breaking it', async ({ page }) => {
     const slug = await firstCategorySlug(page)
     test.skip(!slug, 'catalog exposes no category links')
@@ -310,11 +364,12 @@ test.describe('catalogue on a phone', () => {
 })
 
 /**
- * The listing contract of 2026-09-16: eight cards a page, and the one typing
- * field on the site, scoped to the archive it sits on.
+ * The listing contract of STEP 06 (30.09.2026): 24 cards a page (eight from
+ * 16.09 before that), and the one typing field on the site, scoped to the
+ * archive it sits on.
  */
 test.describe('category listing: page size and autocomplete', () => {
-  test('never renders more than eight cards on a page, and page 2 links when there are more', async ({
+  test('never renders more than 24 cards on a page, and page 2 links when there are more', async ({
     page,
   }) => {
     const slug = await firstCategorySlug(page)
@@ -325,12 +380,12 @@ test.describe('category listing: page size and autocomplete', () => {
 
     const cards = page.locator('.category-products__item')
     const count = await cards.count()
-    expect(count).toBeLessThanOrEqual(8)
+    expect(count).toBeLessThanOrEqual(24)
 
     const countText = (await page.locator(SETTLED_COUNT).first().textContent()) ?? ''
     const total = Number(/מתוך\s+(\d+)/.exec(countText)?.[1] ?? '0')
-    if (total > 8) {
-      expect(count).toBe(8)
+    if (total > 24) {
+      expect(count).toBe(24)
       await expect(page.getByRole('link', { name: 'העמוד הבא' })).toHaveAttribute(
         'href',
         new RegExp(`/category/${slug}\\?page=2$`),
@@ -347,7 +402,9 @@ test.describe('category listing: page size and autocomplete', () => {
     await page.goto(`/category/${slug}`)
     await page.locator('.category-sidebar__summary').click()
 
-    const box = page.getByRole('combobox')
+    // Scoped to the sidebar: the control bar's sort <select> also carries the
+    // combobox role, and an unscoped query is a strict-mode collision.
+    const box = page.locator('.category-sidebar').getByRole('combobox')
     await expect(box).toBeVisible()
     await expect(box).toHaveAttribute('type', 'text')
 
@@ -364,8 +421,13 @@ test.describe('category listing: page size and autocomplete', () => {
     test.skip(!slug, 'catalog exposes no category links')
 
     await page.goto(`/category/${slug}`)
+    // Hidden inputs are excluded: the footer newsletter form is a server
+    // action and React serialises its reference as `$ACTION_*` hidden fields,
+    // which are not fields a shopper can type into.
     await expect(
-      page.locator('header input, nav input, footer input:not([type="email"])'),
+      page.locator(
+        'header input:not([type="hidden"]), nav input:not([type="hidden"]), footer input:not([type="email"]):not([type="hidden"])',
+      ),
     ).toHaveCount(0)
     await expect(page.locator('input[type="search"], [role="search"]')).toHaveCount(0)
   })

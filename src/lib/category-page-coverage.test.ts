@@ -52,6 +52,7 @@ const {
   SHOP_PAGE_SIZE,
   getAllCategories,
   getAllCategorySlugs,
+  getCategoryBrands,
   getCategoryBySlug,
   getCategoryChildren,
   getCategoryParent,
@@ -189,7 +190,104 @@ describe('getCategoryProducts', () => {
   it('pages by CATEGORY_PAGE_SIZE and reads a null count as zero', async () => {
     results.push({ data: null, count: null, error: null })
     expect(await getCategoryProducts({ ...base, page: 3 })).toEqual({ items: [], total: 0 })
-    expect(calls(chains[0] as Chain, 'range')).toEqual([[16, 23]])
+    expect(calls(chains[0] as Chain, 'range')).toEqual([
+      [2 * CATEGORY_PAGE_SIZE, 3 * CATEGORY_PAGE_SIZE - 1],
+    ])
+    expect(calls(chains[0] as Chain, 'range')).toEqual([[48, 71]])
+  })
+
+  it('sorts relevance exactly like the default order', async () => {
+    results.push({ data: [], count: 0, error: null })
+    await getCategoryProducts({ ...base, sort: 'relevance' })
+    expect(orders(chains[0] as Chain)).toEqual([
+      ['is_featured', { ascending: false, nullsFirst: false }],
+      ['name_he', { ascending: true }],
+    ])
+  })
+
+  it('filters an exact brand as a PostgREST value, never as syntax', async () => {
+    results.push({ data: [], count: 0, error: null })
+    await getCategoryProducts({ ...base, brand: 'Samsung,or(x)' })
+    const chain = chains[0] as Chain
+    expect(calls(chain, 'eq')).toEqual([
+      ['status', 'active'],
+      ['category_id', CATEGORY_ID],
+      ['brand', 'Samsung,or(x)'],
+    ])
+    expect(calls(chain, 'or')).toEqual([])
+  })
+
+  /**
+   * The discount facet is two reads: the two price columns for the whole
+   * membership, the arithmetic here, and the page query taking the ids. It is
+   * NOT a filter on `discount_percent`, which is null on 45 of 46 production
+   * rows while the card shows 16 badges (lib/discount-percent.ts).
+   */
+  it('resolves a minimum discount to ids from the two prices the card reads', async () => {
+    // ids read resolves first (the page query is built first but awaits it)
+    results.push({
+      data: [
+        { id: 'half', kenyon_price: '250.00', full_price: '500.00' },
+        { id: 'fifth', kenyon_price: '800.00', full_price: '1000.00' },
+        { id: 'none', kenyon_price: '99.00', full_price: null },
+        { id: 'stored-only', kenyon_price: '99.00', full_price: '99.00', discount_percent: 40 },
+      ],
+      count: null,
+      error: null,
+    })
+    results.push({ data: [product('half')], count: 1, error: null })
+    const { items, total } = await getCategoryProducts({ ...base, minDiscount: 30 })
+
+    expect(total).toBe(1)
+    expect(items.map((i) => i.id)).toEqual(['half'])
+    const [page, ids] = chains as [Chain, Chain]
+    expect(ids[0]).toEqual(['from', ['products']])
+    expect((ids[1] as [string, unknown[]])[1][0]).toBe('id, kenyon_price, full_price')
+    expect(calls(ids, 'eq')).toEqual([
+      ['status', 'active'],
+      ['category_id', CATEGORY_ID],
+    ])
+    expect(calls(ids, 'is')).toEqual([['deleted_at', null]])
+    expect(calls(ids, 'gte')).toEqual([])
+    expect(calls(page, 'in')).toEqual([['id', ['half']]])
+    expect(calls(page, 'range')).toEqual([[0, CATEGORY_PAGE_SIZE - 1]])
+  })
+
+  it('answers an empty page without a second query when nothing saves that much', async () => {
+    results.push({
+      data: [{ id: 'a', kenyon_price: '90.00', full_price: '100.00' }],
+      count: null,
+      error: null,
+    })
+    expect(await getCategoryProducts({ ...base, minDiscount: 50 })).toEqual({
+      items: [],
+      total: 0,
+    })
+    // The page chain was built (the builder is created before the id read),
+    // but it never reached `range`, which is the call that sends it.
+    expect(chains).toHaveLength(2)
+    expect(calls(chains[0] as Chain, 'range')).toEqual([])
+    expect(calls(chains[0] as Chain, 'in')).toEqual([])
+  })
+
+  it('scopes the discount ids to the collection group, not only category_id', async () => {
+    results.push({ data: [{ id: 'n1' }], count: null, error: null })
+    results.push({
+      data: [{ id: 'n1', kenyon_price: '50', full_price: '100' }],
+      count: null,
+      error: null,
+    })
+    results.push({ data: [], count: 0, error: null })
+    await getCategoryProducts({
+      ...base,
+      minDiscount: 10,
+      collection: { kind: 'newest', limit: 24 },
+    })
+    const [page, newest, ids] = chains as [Chain, Chain, Chain]
+    expect(calls(newest, 'limit')).toEqual([[24]])
+    expect(calls(ids, 'or')).toEqual([[`category_id.eq.${CATEGORY_ID},id.in.(n1)`]])
+    expect(calls(page, 'or')).toEqual([[`category_id.eq.${CATEGORY_ID},id.in.(n1)`]])
+    expect(calls(page, 'in')).toEqual([['id', ['n1']]])
   })
 
   it('orders each explicit sort on the column the card shows', async () => {
@@ -394,5 +492,49 @@ describe('request-scoped wrappers', () => {
       }),
     ).toEqual({ items: [], total: 0 })
     expect(await getShopProductsCached({ sort: 'name', page: 1 })).toEqual({ items: [], total: 0 })
+  })
+})
+
+describe('getCategoryBrands', () => {
+  it('reads the non-null brands of the category, deduplicated, trimmed and sorted', async () => {
+    results.push({
+      data: [{ brand: 'סמסונג' }, { brand: ' Apple ' }, { brand: 'Apple' }, { brand: '  ' }],
+      count: null,
+      error: null,
+    })
+    const brands = await getCategoryBrands({ categoryId: CATEGORY_ID })
+    // Hebrew collation puts the Hebrew name first, which is right for this site.
+    expect(brands).toEqual(['סמסונג', 'Apple'])
+    const chain = chains[0] as Chain
+    expect(chain[0]).toEqual(['from', ['products']])
+    expect((chain[1] as [string, unknown[]])[1][0]).toBe('brand')
+    expect(calls(chain, 'eq')).toEqual([
+      ['status', 'active'],
+      ['category_id', CATEGORY_ID],
+    ])
+    expect(calls(chain, 'is')).toEqual([['deleted_at', null]])
+    expect(calls(chain, 'not')).toEqual([['brand', 'is', null]])
+  })
+
+  it('is empty for a null payload, which is production today', async () => {
+    results.push({ data: null, count: null, error: null })
+    expect(await getCategoryBrands({ categoryId: CATEGORY_ID })).toEqual([])
+  })
+
+  it('widens to the collection group for a collection slug', async () => {
+    results.push({ data: [], count: null, error: null })
+    await getCategoryBrands({ categoryId: CATEGORY_ID, collection: { kind: 'featured' } })
+    expect(calls(chains[0] as Chain, 'or')).toEqual([
+      [`category_id.eq.${CATEGORY_ID},is_featured.is.true`],
+    ])
+  })
+})
+
+describe('getShopProducts (unchanged by the category facets)', () => {
+  it('still pages 24 with no brand or discount step', async () => {
+    results.push({ data: [], count: 0, error: null })
+    await getShopProducts({ sort: 'menu_order', page: 1 })
+    expect(chains).toHaveLength(1)
+    expect(calls(chains[0] as Chain, 'in')).toEqual([])
   })
 })

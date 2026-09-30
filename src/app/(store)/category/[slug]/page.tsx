@@ -16,13 +16,16 @@ import {
   collectionRule,
   getAllCategories,
   getAllCategorySlugs,
+  getCategoryBrands,
   getCategoryBySlug,
   getCategoryParent,
   getCategoryProductsCached,
+  parseBrand,
   parseCity,
   parseProductType,
 } from '@/lib/category-page'
-import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { type SortValue, isDefaultSort, parseSort } from '@/lib/category-tokens'
+import { parseMinDiscount } from '@/lib/discount-percent'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { notFound } from 'next/navigation'
@@ -124,6 +127,8 @@ type QueryArgs = {
   priceMax?: number
   productType?: ProductTypeFilter
   city?: string
+  brand?: string
+  minDiscount?: number
   /**
    * Nearest-first origin. NOT part of the cached query key: the cache is keyed
    * by everything else and the distance sort is applied to the result, so two
@@ -325,13 +330,18 @@ async function CategoryPageBody({
   const priceMax = parsePrice(sp.max)
   const productType = parseProductType(sp.type)
   const city = parseCity(sp.city)
+  const brand = parseBrand(sp.brand)
+  const minDiscount = parseMinDiscount(sp.discount)
   const near = parseNear(sp.near)
+  const collection = collectionRule(category.slug)
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
-  const [parent, allCategories] = await Promise.all([
+  // The brand list is one cached column read on the same 300s profile.
+  const [parent, allCategories, brands] = await Promise.all([
     category.parent_id ? getCategoryParent(category.parent_id) : Promise.resolve(null),
     getAllCategories(),
+    getCategoryBrands({ categoryId: category.id, collection }),
   ])
 
   const args: QueryArgs = {
@@ -343,19 +353,26 @@ async function CategoryPageBody({
     priceMax,
     productType,
     city,
+    brand,
+    minDiscount,
     near,
     // hot-deals / under-99 / new are collections, and nothing falls into a
     // collection on its own. Undefined for the nine taxonomies, which keep
     // matching on category_id alone.
-    collection: collectionRule(category.slug),
+    collection,
   }
 
   const pathname = `/category/${category.slug}`
+  // Every filter the page honours, so a page link never drops one. A facet
+  // missing here is a pagination link that silently widens the result set.
   const linkParams = {
-    sort: sort === 'menu_order' ? undefined : sort,
+    sort: isDefaultSort(sort) ? undefined : sort,
     min: priceMin != null ? String(priceMin) : undefined,
     max: priceMax != null ? String(priceMax) : undefined,
     type: productType,
+    city,
+    brand,
+    discount: minDiscount != null ? String(minDiscount) : undefined,
   }
 
   const crumbs = [
@@ -430,6 +447,9 @@ async function CategoryPageBody({
             priceMin={priceMin}
             priceMax={priceMax}
             productType={productType}
+            brands={brands}
+            brand={brand}
+            minDiscount={minDiscount}
           />
         </div>
       </div>

@@ -59,6 +59,7 @@ export const CATEGORY_TOKENS = {
 /** Map live WooCommerce orderby values to our searchParams sort keys. */
 export const SORT_TO_ORDERBY: Record<string, string> = {
   newest: 'date',
+  relevance: 'menu_order',
   price_asc: 'price',
   price_desc: 'price-desc',
   name: 'menu_order',
@@ -76,12 +77,19 @@ export const ORDERBY_TO_SORT: Record<string, string> = {
   rating: 'rating',
 }
 
+/**
+ * `relevance` is an accepted URL value and an alias of the default order:
+ * featured pinned first, then Hebrew-alphabetical, which is what live's
+ * "סידור ברירת מחדל" is. It reads as `menu_order` in the select, so a link
+ * that says `?sort=relevance` lands on the same page as no sort at all.
+ */
 export type SortValue =
   | 'newest'
   | 'price_asc'
   | 'price_desc'
   | 'name'
   | 'menu_order'
+  | 'relevance'
   | 'popularity'
   | 'rating'
 
@@ -91,9 +99,15 @@ const VALID_SORTS = new Set<string>([
   'price_desc',
   'name',
   'menu_order',
+  'relevance',
   'popularity',
   'rating',
 ])
+
+/** The sorts that mean "the default order" and therefore leave the URL bare. */
+export function isDefaultSort(sort: SortValue): boolean {
+  return sort === 'menu_order' || sort === 'relevance'
+}
 
 export function parseSort(raw: string | string[] | undefined): SortValue {
   if (typeof raw === 'string' && VALID_SORTS.has(raw)) return raw as SortValue

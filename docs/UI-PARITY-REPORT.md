@@ -88,3 +88,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-24 00:08 | home | 1440 | 11.12% | **FAIL** | `69bcbd5c7-dirty` | homepage-closeout baseline at 69bcbd5c7; mine vs 08-12 archived ke_live_1440.png |
 | 2026-09-24 00:12 | home | 768 | 20.63% | **FAIL** | `69bcbd5c7-dirty` | homepage-closeout baseline rerun, optimizer warm; mine vs 08-12 archived ke_live_768.png |
 | 2026-09-24 00:18 | home | 768 | 20.63% | **FAIL** | `69bcbd5c7-dirty` | experiment: shoot-mine with 8s paint wait after the sweep; tests whether the blank card photos at 768 are decode timing |
+| 2026-09-30 14:10 | category | 1440 | n/a | REFUSED | `a24235235-dirty` | live side is our-build |
