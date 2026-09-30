@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c63 (הועבר מ-STATE.md ב-M13-c63, לשמירה על תקרת 300 שורות)
+
+**M12-c63 - DONE (30.09): SEO נבדק מחדש, אפס דריפט קוד.** משימת התור:
+"SEO: verify metadata, canonical, og tags, schema.org Product and Offer
+on product pages, sitemap freshness and robots. Fix drift." נבדק דריפט
+מאז המדידה הקודמת (M12-c62, `3ffd5a589`): `git diff --stat
+3ffd5a589..HEAD -- src/app/robots.ts src/app/sitemap 'src/app/sitemap.xml'
+src/lib/seo/ 'src/app/(store)/product/[slug]/page.tsx' src/lib/product-seo.ts`
+— **ריק, אפס שינוי בכל קובצי ה-SEO עצמם.** הקומיט היחיד שנוסף מאז
+`3ffd5a589` הוא `d2f4cba1e` (M18-c62, לב מועדפים), שנגע רק ב-
+`src/components/ProductCard.tsx`, לא בקובץ SEO כלשהו.
+
+לא הוסתמך רק על דריפט ריק: נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי
+מ-HEAD (`sitemap.xml`, חמשת קבצי `sitemap/*.xml`, `robots.txt` ו-
+`/product/[slug]/opengraph-image` כולם נבנו), הורם `pnpm start -p 3618`,
+ונבדק ישירות מול שרת חי: `robots.txt` (`Allow: /`, 11 `Disallow`
+נכונים, `Host`+`Sitemap` מצביעים ל-`kenyonexpress.co.il`), `sitemap.xml`
+(אינדקס עם חמשת תת-המפות), ודף מוצר אמיתי (`/product/barbecue`, נשלף
+מ-`sitemap/products.xml` עצמו — לא URL קבוע) עם `<link rel="canonical">`
+נכון, שמונה תגיות `og:*` תקינות (`title`/`description`/`url`/`locale`/
+`image`+מידות+`alt`/`type`), ו-JSON-LD עם `"@type":"Product"` וגם
+`"@type":"Offer"` נוכחים ב-HTML. שרת הבדיקה נעצר בסוף.
+
+ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2028 קבצים, 12 שערים
+ירוקים, זהה ל-M11-c63). `test` 610/610 קבצים, 7296/7308 (12 דולגים,
+זהה). `build` רץ בפועל כחלק מהמדידה, exit 0. אפס שינוי קוד ייצור.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M11-c63 (הועבר מ-STATE.md ב-M12-c63, לשמירה על תקרת 300 שורות)
 
 **M11-c63 - DONE (30.09): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
