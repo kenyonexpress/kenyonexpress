@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c62 (הועבר מ-STATE.md ב-M12-c62, לשמירה על תקרת 300 שורות)
+
+**M11-c62 - DONE (30.09): axe נבדק מחדש, 0 serious/critical.** משימת
+התור: "Accessibility: run axe on every page. Fix every serious and
+critical violation. Keep WCAG 2.1 AA. Record the remaining count in
+STATE.md." בניגוד ל-M09/M10-c62 (אפס דריפט קוד), יש דריפט אמיתי מאז
+המדידה הקודמת (M11-c61, `afa8f0e77`): `git diff --stat afa8f0e77..HEAD
+-- src/ e2e/a11y.spec.ts e2e/a11y-authenticated.spec.ts messages/`
+מראה את `RecentlyViewedRail` (M18-c61) — `section`/`h2`/גריד כרטיסי
+מוצר חדשים בדף המוצר עצמו, שאף מדידת axe קודמת לא ראתה. לכן לא הוסתמך
+על "אפס דריפט", והורץ `pnpm exec playwright test` אמיתי מול `pnpm
+start` (לא `pnpm dev`, ר' `e2e-must-run-against-pnpm-start`), חד-עובד,
+שתי הסוויטות: **`e2e/a11y.spec.ts`: 80/82 עברו** (2 דילוגים מכוונים —
+"אין UI חיפוש בכלל", `chromium`+`mobile-chrome`), כולל שתי בדיקות
+`product pages have no WCAG A/AA violations` שסורקות את הדף עם
+`RecentlyViewedRail` בפועל (מוצר ראשון + מוצר קופון, בשני הדפדפנים) —
+**עברו, אפס הפרה**. **`e2e/a11y-authenticated.spec.ts`: 46/160 עברו**,
+**114 דולגים** (57 עמודי `/admin/*` בכל דפדפן, על כשל login של אדמין
+בפרודקשן שנמדד ונרשם קודם — לא קשור לנגישות), **אפס כשל** — זהה ביחס
+ל-23/80 שנמדד ב-M11-c61 (חד-דפדפן), מוכפל כאן לשני פרויקטי Playwright.
+**סה"כ 0 הפרות `serious`/`critical` (ולמעשה 0 הפרות מכל סוג, כי שתי
+הסוויטות נכשלות על כל הפרה ולא רק `serious`/`critical`), WCAG 2.1 AA
+נשמר.** ארבעת השערים: `type-check` נקי, `lint` נקי (biome 2028 קבצים,
+12 שערים ירוקים), `test` 610/610 קבצים, 7296/7308 (12 דולגים). `build`
+לא הורץ מחדש: `.next/BUILD_ID` קיים ומכיל כבר את `RecentlyViewedRail`
+(מ-M09-c62, אחרי M18-c61) ו-`git status --short` נקי לאורך כל הפריט.
+קובץ יחיד שונה מלבד `STATE.md`: `docs/STATE-ARCHIVE.md` (כיווץ M09-c62
+ו-M10-c62, לשמירה על תקרת 300 שורות).
+
 ## M10-c62 (הועבר מ-STATE.md ב-M11-c62, לשמירה על תקרת 300 שורות)
 
 **M10-c62 - DONE (30.09): כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
