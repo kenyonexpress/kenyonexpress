@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c60 (הועבר מ-STATE.md ב-M03-c60, לשמירה על תקרת 300 שורות)
+
+**M02-c60 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים, אפס
+רגרסיה, כל שש המדידות PASS מתחת ל-11%.** משימת התור: להריץ
+`scripts/compare.mjs` בפורגראונד ולחכות למספרים באותה הרצה, לתקן כל
+רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
+
+- `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+  localhost:3311 pnpm build` -> `exit 0`, בנייה טרייה על HEAD
+  `7a0133d3e`. `PORT=3311 pnpm start` מול הבנייה הזו (לא שרת ישן).
+- **בית** (`--widths=380,768,1440`, `--baseline='refs/ke_live_{width}.png'`,
+  בפורגראונד, חיכה למספרים באותה הרצה): **380 8.51% PASS, 768 9.02%
+  PASS, 1440 3.95% PASS** — זהה בדיוק ל-M02-c59.
+- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`, `--widths=380,768,1440`,
+  `--baseline='refs/electro_product_{width}.png'`, בפורגראונד): **380
+  5.65% PASS, 768 4.95% PASS, 1440 2.92% PASS** — זהה בדיוק ל-M02-c59.
+  אפס תיקון נדרש בשתי הבדיקות.
+- כל שש השורות נכתבות אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי
+  השער עצמו (`live side: frozen capture`, HEAD `7a0133d3e-dirty`).
+- שערים נוספים הורצו במלואם אחרי המדידה: `type-check` נקי, `lint` נקי
+  (2023 קבצים, i18n 627/627), `test` 608/608 קבצים 7274/7286 (12
+  skipped, 57.99s), `build` `exit 0` (מהריצה הטרייה למעלה). אפס שינוי
+  קוד יישומי (רק `STATE.md`/`docs/UI-PARITY-REPORT.md`).
+
 ## M01-c60 (הועבר מ-STATE.md ב-M02-c60, לשמירה על תקרת 300 שורות)
 
 **M01-c60 - DONE (30.09): בדיקת פרודקשן בפעם השביעית, DNS/HTTP תקינים,

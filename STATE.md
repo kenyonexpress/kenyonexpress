@@ -1,29 +1,34 @@
-RESUME FROM: M03-c60
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c60)
+RESUME FROM: M04-c60
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c60)
 
 ## המשך מ:
 
-**M02-c60 - DONE (30.09): שער חזותי, בית ומוצר, שלושה רוחבים, אפס
-רגרסיה, כל שש המדידות PASS מתחת ל-11%.** משימת התור: להריץ
-`scripts/compare.mjs` בפורגראונד ולחכות למספרים באותה הרצה, לתקן כל
-רגרסיה עד שכל השלוש מתחת ל-11%, לרשום ב-STATE.md.
+**M03-c60 - DONE (30.09): בדיקה ירוקה, type-check/lint/test/build
+נקיים, אפס דריפט.** משימת התור: להריץ `pnpm type-check`, `lint`,
+`test` ו-`build`, לתקן כל שגיאה ואזהרה ניתנת לתיקון בלי לשנות התנהגות
+מוצר.
 
+- `pnpm type-check` -> נקי (`tsc --noEmit`, אפס פלט).
+- `pnpm lint` -> נקי: biome 2023 קבצים אפס תיקונים, ושנים עשר שערי
+  משנה (`tokens`, `copy`, `asset`, `raw-html`, `postgrest-or`,
+  `cache-invalidation`, `rtl-logical`, `i18n` 627/627, `locale-format`
+  116/64, `input-dir` 24/24, `docs-index` 282 מסמכים, `docs-path-audit`)
+  כולם נקיים.
+- `pnpm test` -> `vitest run`: 608/608 קבצים, 7274/7286 בדיקות עברו
+  (12 דולגו), 58.74s — זהה ל-M02-c60/M03-c59.
 - `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-  localhost:3311 pnpm build` -> `exit 0`, בנייה טרייה על HEAD
-  `7a0133d3e`. `PORT=3311 pnpm start` מול הבנייה הזו (לא שרת ישן).
-- **בית** (`--widths=380,768,1440`, `--baseline='refs/ke_live_{width}.png'`,
-  בפורגראונד, חיכה למספרים באותה הרצה): **380 8.51% PASS, 768 9.02%
-  PASS, 1440 3.95% PASS** — זהה בדיוק ל-M02-c59.
-- **מוצר** (`COMPARE_PRODUCT_SLUG=barbecue-2`, `--widths=380,768,1440`,
-  `--baseline='refs/electro_product_{width}.png'`, בפורגראונד): **380
-  5.65% PASS, 768 4.95% PASS, 1440 2.92% PASS** — זהה בדיוק ל-M02-c59.
-  אפס תיקון נדרש בשתי הבדיקות.
-- כל שש השורות נכתבות אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי
-  השער עצמו (`live side: frozen capture`, HEAD `7a0133d3e-dirty`).
-- שערים נוספים הורצו במלואם אחרי המדידה: `type-check` נקי, `lint` נקי
-  (2023 קבצים, i18n 627/627), `test` 608/608 קבצים 7274/7286 (12
-  skipped, 57.99s), `build` `exit 0` (מהריצה הטרייה למעלה). אפס שינוי
-  קוד יישומי (רק `STATE.md`/`docs/UI-PARITY-REPORT.md`).
+  localhost:3311 pnpm build` -> `exit 0`, `✓ Compiled successfully in
+  18.6s`, אפס אזהרת קומפיילר. שורות `rls_denied`/
+  `db.optional_column_missing` בלוג המבני של האפליקציה בזמן ה-SSG הן
+  צפויות (מיגרציה 242 ממתינה, ראו חוסם 3 למטה) ולא אזהרות build —
+  קיימות בכל בנייה מקומית ואינן חדשות.
+- אפס תיקון נדרש בארבעת השערים, אפס שינוי קוד יישומי (רק `STATE.md`).
+
+## M02-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M02-c60: שער חזותי (בית ומוצר) נמדד מחדש בשלושה רוחבים, אפס רגרסיה
+מ-M02-c59 (זהה בדיוק: 8.51/9.02/3.95 בית, 5.65/4.95/2.92 מוצר). ארבעת
+השערים ירוקים.
 
 ## M18-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
