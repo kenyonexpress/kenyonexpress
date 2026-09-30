@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c65 (הועבר מ-STATE.md ב-M06-c65, לשמירה על תקרת 300 שורות)
+
+**M05-c65 - DONE (01.10): advisors נבדקו מחדש בפעם החמש-עשרה ברציפות,
+44 WARN זהים ב-100% ל-M05-c64, אפס מיגרציה חדשה נדרשת.** Supabase MCP
+עדיין "דורש הרשאה" (אין OAuth לא-אינטראקטיבי, כמו M05-c1..M05-c64);
+אותו מסלול חלופי, טוקן CLI מה-keychain, `GET .../advisors/{security,
+performance}`, 200/200, קריאה בלבד, קבצי פלט זמניים נמחקו.
+
+**נבדק שם-שם דרך `jq` מול 0יד ב-`DB-SECURITY-MODEL.md`:** אבטחה 24 WARN
+(21 `authenticated_security_definer`, 2 `anon_security_definer`, 1
+`function_search_path_mutable` — אותם שמות בדיוק). ביצועים 20 WARN (14
+`multiple_permissive_policies` על אותן 11 טבלאות, 6 `auth_rls_initplan`
+על אותן 4 טבלאות). **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.**
+
+**אפס מיגרציה חדשה** — ארבעת הקבצים הקיימים (`209`, `220`, `245`, `246`)
+עדיין מכסים את כל ה-WARN הניתנים לתיקון; השאר (23/44) by design.
+`docs/DB-SECURITY-MODEL.md` עודכן בסעיף 0טו.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/DB-SECURITY-MODEL.md`.
+
 ## M04-c65 (הועבר מ-STATE.md ב-M05-c65, לשמירה על תקרת 300 שורות)
 
 **M04-c65 - DONE (01.10): תברואת תלויות נבדקה מחדש, אפס עדכון patch/minor
