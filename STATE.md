@@ -1,36 +1,39 @@
-RESUME FROM: M06-c61
-Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c61)
+RESUME FROM: M07-c61
+Updated: 2026-09-30 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c61)
 
 ## המשך מ:
 
-**M05-c61 - DONE (30.09): ביקורת DB, advisors נמדדו בפעם האחת-עשרה
-דרך ה-management API (Supabase MCP דורש OAuth, לא זמין בסשן
-לא-אינטראקטיבי — כמו בכל פריט קודם), זהה ב-100% ל-M05-c60.** משימת
-התור: `get_advisors` (security+performance) read-only, קובץ מיגרציה
-ל-`migrations/pending/` לכל WARN, עדכון `docs/DB-SECURITY-MODEL.md` אם
-המספרים השתנו.
+**M06-c61 - DONE (30.09): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש, אפס דריפט מ-M06-c60.** אותו מתכון שאומת מ-M06-c1
+ועד M06-c60: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3496 pnpm build` → `exit 0`
+(`.next/BUILD_ID` נוצר, אין `Failed to compile`); `pnpm start -p 3496`
+מאותה בנייה (פורט 3496 אומת פנוי לפני ואחרי). `curl` אישר `200` על `/`
+ועל `/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני
+ה-URL, `--throttling-method=devtools --emulated-form-factor=mobile`:
 
-- טוקן ה-CLI מה-keychain (`security find-generic-password -s "Supabase
-  CLI" -w`, עטיפת `go-keyring-base64:` + פענוח base64), שני `GET
-  https://api.supabase.com/v1/projects/ixvwfbuvfxxsjiywhbbb/advisors/
-  {security,performance}`, `200`/`200`. טוקן לא נדפס ולא נשמר לקובץ.
-- אבטחה: 28 ממצאים (4 `rls_enabled_no_policy` INFO, 2
-  `anon_security_definer_function_executable` WARN, 21
-  `authenticated_security_definer_function_executable` WARN, 1
-  `function_search_path_mutable` WARN) — שמות הפונקציות נבדקו שם-שם
-  מול M05-c60, זהים.
-- ביצועים: 196 ממצאים (14 `multiple_permissive_policies` WARN, 6
-  `auth_rls_initplan` WARN, 166 `unused_index` INFO, 9
-  `unindexed_foreign_keys` INFO, 1 `auth_db_connections_absolute`
-  INFO) — אותן טבלאות בדיוק, נבדק שם-שם.
-- **44 WARN בסך הכול, אפס חדש, אפס שהפסיק לירות.** כל ה-WARN מכוסים
-  בארבעת הקבצים הממתינים הקיימים (`209`, `220`, `245`, `246`), נבדקו
-  שעדיין קיימים ולא נערכו. **אין WARN חדש, אין קובץ מיגרציה חדש נדרש.**
-- `docs/DB-SECURITY-MODEL.md` עודכן: סעיף חדש 0יא (זהה ב-100% ל-0י) +
-  שורת הכותרת. ארבעת השערים (`type-check`/`lint`/`test`/`build`)
-  הורצו לפי כלל התור למרות שאין שינוי קוד יישומי — כולם ירוקים. אין
-  שער חזותי נדרש (אין שינוי UI). קבצי הפלט הזמניים
-  (`/tmp/ke-advisors/*.json`) נמחקו.
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c60 (99/100/100/100 בשני
+הדפים). `git diff --stat 06e3b86e2..HEAD -- src/app src/components
+src/lib package.json pnpm-lock.yaml next.config.ts next.config.mjs
+vercel.json` מחזיר רק שני קבצי טסט (`bought-this-week.test.ts`,
+`stock-live.test.ts`) ובאמפ patch של `fast-xml-parser` — אפס שינוי
+קוד תצוגה מאז המדידה הקודמת, כך שהזהות אינה רעש. השרת נעצר, פורט 3496
+אומת פנוי מחדש, קבצי הפלט הזמניים (`/tmp/ke-lh-m06c61/*.json`)
+נמחקו. שערים: `type-check` נקי; `lint` נקי (2025 קבצים, כל שערי
+התוכן ירוקים, i18n 627/627, locale 116/64, docs-index 282,
+docs-path-audit 152); `test` 610/610 קבצים, 7296/7308 (12 skipped,
+56.52s); `build` `exit 0` (חלק מהמדידה עצמה). אין שינוי קוד, אין שער
+חזותי נדרש (אין שינוי UI). **קובץ יחיד שונה: `STATE.md`.**
+
+## M05-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
+
+M05-c61: ביקורת DB, advisors נמדדו בפעם האחת-עשרה, 44 WARN זהים
+ב-100% ל-M05-c60, אפס מיגרציה חדשה נדרשת.
 
 ## M04-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`)
 
