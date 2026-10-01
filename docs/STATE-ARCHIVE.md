@@ -2,6 +2,50 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q55 (הועבר מ-STATE.md ב-M01-c66, לשמירה על תקרת 300 שורות)
+
+**Q55 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"LAUNCH-READINESS.md READY or NOT READY per-item evidence then tag v1.0.0."
+`docs/LAUNCH-READINESS.md` כבר קיים ומתוחזק ברציפות (עודכן לאחרונה ב-Q54/
+M15-c65, 43 קומיטים לפני HEAD). **נבדקו הקומיטים שנחתו מאז בין`cad66a650`
+ל-HEAD**: ארבעה נגעו בנתיב רלוונטי לשורת חסימה — `.github/workflows/ci.yml`
+(Q54, לא שורת חסימה), `next.config.ts` (Q48, כבר נספר), מיגרציה חדשה
+**248** (Q32, grant בלבד, **לא הוחלה**, נוספה לרשימת שורת חסימה 5) וה-README
+שלה. שום דבר לא נגע ב-DNS, ב-Cardcom, ב-`SUPABASE_SECRET_KEY`, ב-R2 או
+בפנקס הקטלוג (26, אפס שינוי). **אף שורת חסימה לא התהפכה.**
+
+**ארבעת השערים, הורצו מחדש בפריט הזה (לא רק צוטטו):** `pnpm type-check`
+נקי. `pnpm lint` נקי, 12 שערים (`docs-path-audit`: 153, ללא שינוי).
+`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה ל-Q54,
+אפס דריפט. `pnpm build` **לא הורץ מחדש**: 14 תהליכי `next-server`/`pnpm`
+רצו במקביל (‏~1.0GB פנויים, `vm_stat`), וה-`.next` הקיים (`BUILD_ID`
+`8sM3K74xhwN4B4Fph3T3zOct`) אומת זהה-מקור ל-HEAD (`git diff --stat HEAD --
+next.config.ts next.config.mjs middleware.ts vercel.json src/ package.json
+pnpm-lock.yaml` ריק).
+
+**שער חזותי, foreground, שרת `pnpm start` טרי בפורט 3413 (cwd אומת, לא
+שרת שארי מסשן אחר — ראה זיכרון `gate-measured-foreign-server-on-3311`):**
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
+**380 8.58% / 768 9.01% / 1440 4.16%, כולם PASS**, זהה ל-Q54 בדיוק, אפס
+דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`d952f236e`).
+
+**ההכרעה: NOT READY, ללא שינוי.** שמונה שורות החסימה המתועדות
+ב-`docs/LAUNCH-READINESS.md` כולן עדיין פתוחות, כולן פעולה של אופיר או
+החלטת מפעיל שהסוכן אינו מוסמך לקבל לבד (DNS כבר נפתר; חיוב Cardcom
+אמיתי; סוד ה-cron; רוטציית `SUPABASE_SECRET_KEY`; הפעלת R2; החלטה אילו
+מ-26 שורות הקטלוג אמיתיות; אישור והחלת המיגרציות הממתינות; פריסת HEAD
+לפרודקשן - עכשיו 336 קומיטים מאחורי).
+
+**`v1.0.0` לא תויג, ובכוונה — אותה סיבה שהמסמך עצמו נתן פעמיים בעבר
+(סעיפי 09.09 ו-06.09 למטה באותו קובץ).** תג `v1.0.0` **כבר קיים**
+(`14954dfb1`, 2026-08-10, מצב עבר אמיתי); הזזתו הייתה כותבת מחדש ref
+שעותקים אחרים כבר מחזיקים, ומצביעה גרסה על קוד שהמסמך הזה עצמו קורא לו
+NOT READY. **תויג `v1.0.0-rc7-final-audit`** ב-HEAD במקום — השם הבא ברצף
+שהענף הזה כבר משתמש בו (`rc2` עד `rc6` קיימים, `rc6-final-audit` מ-10.09).
+
+קבצים ששונו: `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
+`docs/STATE-ARCHIVE.md`, `STATE.md`.
+
 ## Q54 (הועבר מ-STATE.md ב-Q55, לשמירה על תקרת 300 שורות)
 
 **Q54 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**

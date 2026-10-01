@@ -1,49 +1,51 @@
-RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q55 - DONE, NOT READY מאומת מחדש, `v1.0.0-rc7-final-audit` תויג)
+RESUME FROM: M02-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c66 - DONE, שער חזותי בית נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**Q55 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"LAUNCH-READINESS.md READY or NOT READY per-item evidence then tag v1.0.0."
-`docs/LAUNCH-READINESS.md` כבר קיים ומתוחזק ברציפות (עודכן לאחרונה ב-Q54/
-M15-c65, 43 קומיטים לפני HEAD). **נבדקו הקומיטים שנחתו מאז בין`cad66a650`
-ל-HEAD**: ארבעה נגעו בנתיב רלוונטי לשורת חסימה — `.github/workflows/ci.yml`
-(Q54, לא שורת חסימה), `next.config.ts` (Q48, כבר נספר), מיגרציה חדשה
-**248** (Q32, grant בלבד, **לא הוחלה**, נוספה לרשימת שורת חסימה 5) וה-README
-שלה. שום דבר לא נגע ב-DNS, ב-Cardcom, ב-`SUPABASE_SECRET_KEY`, ב-R2 או
-בפנקס הקטלוג (26, אפס שינוי). **אף שורת חסימה לא התהפכה.**
+**M01-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on `/` and record diffs in STATE.md". **לא היה כבר עשוי בפריט
+הזה** (Q55 הריץ אותו מדד שלשום-אותו-יום אבל זה היה חלק מפריט אחר,
+לא-מקדם-תור; זה הפריט הראשון שמקדם `RESUME FROM:` אחרי סגירת מחזור c65).
 
-**ארבעת השערים, הורצו מחדש בפריט הזה (לא רק צוטטו):** `pnpm type-check`
-נקי. `pnpm lint` נקי, 12 שערים (`docs-path-audit`: 153, ללא שינוי).
-`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה ל-Q54,
-אפס דריפט. `pnpm build` **לא הורץ מחדש**: 14 תהליכי `next-server`/`pnpm`
-רצו במקביל (‏~1.0GB פנויים, `vm_stat`), וה-`.next` הקיים (`BUILD_ID`
-`8sM3K74xhwN4B4Fph3T3zOct`) אומת זהה-מקור ל-HEAD (`git diff --stat HEAD --
-next.config.ts next.config.mjs middleware.ts vercel.json src/ package.json
-pnpm-lock.yaml` ריק).
+**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3711 (cwd
+אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק, לא שרת שארי
+מסשן מקביל — שמונה `next-server`/`pnpm start` נוספים רצו בו-זמנית על
+פורטים אחרים, ראו זיכרון `gate-measured-foreign-server-on-3311`):**
+`LOCAL_BASE=http://localhost:3711 node scripts/compare.mjs --page=home
+--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`. הדף החי
+עצמו מסורב כ-reference (DNS כבר מצביע לבנייה שלנו, חוסם #14 למטה), אז
+המדד מול צילום קפוא כבר מתועד כנכון.
 
-**שער חזותי, foreground, שרת `pnpm start` טרי בפורט 3413 (cwd אומת, לא
-שרת שארי מסשן אחר — ראה זיכרון `gate-measured-foreign-server-on-3311`):**
-`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
-**380 8.58% / 768 9.01% / 1440 4.16%, כולם PASS**, זהה ל-Q54 בדיוק, אפס
-דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`d952f236e`).
+**תוצאות, כולן PASS, אפס דריפט מ-Q55/M02-c65:**
 
-**ההכרעה: NOT READY, ללא שינוי.** שמונה שורות החסימה המתועדות
-ב-`docs/LAUNCH-READINESS.md` כולן עדיין פתוחות, כולן פעולה של אופיר או
-החלטת מפעיל שהסוכן אינו מוסמך לקבל לבד (DNS כבר נפתר; חיוב Cardcom
-אמיתי; סוד ה-cron; רוטציית `SUPABASE_SECRET_KEY`; הפעלת R2; החלטה אילו
-מ-26 שורות הקטלוג אמיתיות; אישור והחלת המיגרציות הממתינות; פריסת HEAD
-לפרודקשן - עכשיו 336 קומיטים מאחורי).
+| רוחב | אחוז | סף | מצב |
+|------|------|-----|------|
+| 380  | 8.58% | 11% | PASS |
+| 768  | 9.01% | 11% | PASS |
+| 1440 | 4.16% | 11% | PASS |
 
-**`v1.0.0` לא תויג, ובכוונה — אותה סיבה שהמסמך עצמו נתן פעמיים בעבר
-(סעיפי 09.09 ו-06.09 למטה באותו קובץ).** תג `v1.0.0` **כבר קיים**
-(`14954dfb1`, 2026-08-10, מצב עבר אמיתי); הזזתו הייתה כותבת מחדש ref
-שעותקים אחרים כבר מחזיקים, ומצביעה גרסה על קוד שהמסמך הזה עצמו קורא לו
-NOT READY. **תויג `v1.0.0-rc7-final-audit`** ב-HEAD במקום — השם הבא ברצף
-שהענף הזה כבר משתמש בו (`rc2` עד `rc6` קיימים, `rc6-final-audit` מ-10.09).
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו, שלוש שורות חדשות
+(`e51b95b38`/`e51b95b38-dirty`, 13:15-13:19).
 
-קבצים ששונו: `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
-`docs/STATE-ARCHIVE.md`, `STATE.md`.
+**ארבעת השערים:** `pnpm type-check` נקי. `pnpm lint` נקי, 12 שערים.
+`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה ל-Q55,
+אפס דריפט. `pnpm build` **לא הורץ מחדש**: שמונה `next-server` רצו
+במקביל, ‏<0.8GB פנויים (`vm_stat`) — סיכון OOM לסשנים מקבילים (זיכרון
+`concurrent-worktree-builds-oom`). ה-`.next` הקיים (`BUILD_ID`
+`8sM3K74xhwN4B4Fph3T3z`, נבנה היום) אומת זהה-מקור ל-HEAD (`git diff
+--stat HEAD -- next.config.ts next.config.mjs middleware.ts vercel.json
+src/ package.json pnpm-lock.yaml` ריק).
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`
+(העברת פירוט Q55), `STATE.md`.
+
+**Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M01-c66
+לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: `LAUNCH-
+READINESS.md` נבדק מחדש מול כל קומיט שנחת מאז Q54, NOT READY ללא שינוי
+(שמונה שורות חסימה עדיין פתוחות), `v1.0.0-rc7-final-audit` תויג (לא
+`v1.0.0`, שכבר קיים על מצב ישן אמיתי). ארבעת השערים ירוקים, שער חזותי
+PASS בכל מה שנמדד.
 
 **Q54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q55 לשמירה
 על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: שלוש jobs חדשות ב-CI
