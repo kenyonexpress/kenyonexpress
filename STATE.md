@@ -1,72 +1,64 @@
-RESUME FROM: M16-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c66 - DONE, אפס שגיאות console ב-`/` וב-`/product` נמדד ואומת על build נקי)
+RESUME FROM: M17-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c66 - DONE, JSON-LD Product+BreadcrumbList אומת על כל דף מוצר, קיים ונכון כבר)
 
 ## המשך מ:
 
-**M15-c66 - DONE (01.10.2026).** משימת התור: "Verify no console errors on
-`/` and `/product` sample". נמדד בפועל בדפדפן (`e2e/route-audit.spec.ts`,
-רק שני הטסטים הרלוונטיים — `--grep "anon /$|anon dynamic catalogue
-routes"`, לא הסריקה המלאה בת 25 דקות — זה מחוץ לתחום הפריט), שרת `pnpm
-start` עצמאי על פורט 3316 (שישה סשנים מקבילים כבר רצים על 3311-3315/3618
-מאותה תיקייה בדיוק, `[[parallel-claude-sessions]]`; לא נגעתי בהם).
+**M16-c66 - DONE (01.10.2026).** משימת התור: "Verify all product pages have
+JSON-LD Product and BreadcrumbList". **כבר בנוי ותקין, לא נדרש שינוי קוד.**
 
-**ריצה ראשונה, על ה-`.next` הקיים (ללא build מחדש): נכשלה, ממצא ידוע
-ולא חדש.** שני הדפים הדפיסו אותו `console error`: `net::ERR_SSL_PROTOCOL_ERROR`
-על `.../login?next=%2Faccount%2Fwishlist` — prefetch שמשודרג ל-`https`
-בגלל `upgrade-insecure-requests` שה-build הזה אפה (לא נבנה עם
-`NEXT_PUBLIC_APP_URL=http://...`). **תבנית שתועדה ותוקנה כבר ב-M06-c1**
-(`upgradesInsecureRequests()`, `frame-policy.ts:168`) **ואומתה כתקלת
-build-ישן-מחדש-שימוש ב-M07-c64**, לא רגרסיה — הקובץ לא השתנה מאז 25.09.
+**מקור האמת: `product/[slug]/page.tsx` בונה את שני הצמתים ללא תנאי** לכל
+סלאג (שורות 225-266, `buildProductJsonLd`/`buildBreadcrumbJsonLd` מ-
+`src/lib/seo/json-ld.ts`), ללא הסתעפות לפי סוג מוצר (פיזי/קופון) או מצב
+מלאי — שני `<script type="application/ld+json">` תמיד ברינדור, לא מאחורי
+דגל. 25 הטסטים ב-`json-ld.test.ts` מכסים את `buildProductJsonLd` ישירות
+(מלאי/אזל, מחיר שסותר, קופון מוכר/לא-מוכר, rating נוכח/נעדר, תמונות
+יחסיות/מוחלטות/ריקות) ו-`buildBreadcrumbJsonLd` (מספור מ-1, URL מוחלט).
 
-**לכן build נקי מחדש:** `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3316 pnpm build` (exit 0), `curl -I`
-אישר שה-CSP איבד את הדירקטיבה. **הריצה החוזרת: 2/2 עברו, אפס
-`consoleErrors`/`hydrationWarnings`, `rtl=true`**, וכך גם שאר המסלולים
-שאותו טסט מגלה (`/product/צימר-מאסטר`+`/reviews`, `/category/hot-deals`,
-`/city/תל-אביב`, `/coupons/...`, `/page/how-it-works`, `/s/...`). מוצר
-הדוגמה `צימר-מאסטר` (פעיל, זהה ל-M08-c66). `curl -I` על
-`https://www.kenyonexpress.co.il/` (קריאה-בלבד) מראה שאותה דירקטיבה שם
-תמיד no-op, כי שם זה תמיד https — לא תקלת פרודקשן.
+**אומת גם ברמת הדף עצמו, לא רק הבונה.** `e2e/seo-markup.spec.ts` כבר קיים
+מראש בדיוק עבור הפער "בונה תקין בלי צרכן" (התקדים התועד בהערת הקובץ
+עצמה: קרה שלוש פעמים בתת-מערכות אחרות). הרצתי אותו בפועל: `pnpm start`
+עצמאי על פורט 3317 (על ה-`.next` הנקי שנבנה ב-M15-c66, שישה סשנים
+מקבילים על 3311-3316/3618 לא נגעו בו), ואז
+`E2E_BASE_URL=http://localhost:3317 npx playwright test
+e2e/seo-markup.spec.ts --grep "Product JSON-LD and a breadcrumb"` —
+**2/2 עברו** (chromium+mobile-chrome): `@type` כולל גם `Product` וגם
+`BreadcrumbList`, ול-`Product` יש `name` לא-ריק.
 
-**החלטה שהתקבלה לבד:** `rm -rf .next` מלא על התיקייה המשותפת (לא
-worktree), בהתאם לתקדים הנהוג כאן בכל פריט (`M06-c1`, `M07-c64`, והשער
-הסוגר של M14-c66 עצמו רגע לפני); שישה הסשנים המקבילים לא הופרעו.
+**נבדק גם ישירות מול פרודקשן החי** (`curl` על `/product/צימר-מאסטר`,
+קריאה-בלבד): שני ה-script מופיעים, `Product`+`Brand`+`Offer`+
+`Organization` ו-`BreadcrumbList`+שלושה `ListItem`. **ממצא לוואי, לא
+חדש וכבר ידוע**: ה-`Offer` החי נושא `highPrice` ולא `priceSpecification`
+מסוג `StrikethroughPrice` — בדיוק התבנית שהערת `json-ld.ts` מתעדת כבאג
+שתוקן (25.09), וההסבר הוא חוסם 2 הקיים (פרודקשן על `a388118f1`, 285
+קומיטים מאחורי HEAD) ולא רגרסיה בקוד הנוכחי; לא פעולה חדשה.
 
 **אין commit קוד, רק תיעוד.** לא פריט חזותי, `scripts/compare.mjs` לא
-הורץ (תקדים M04-c66..M14-c66). ארבעת השערים: `type-check` נקי, `lint`
-נקי (12 שערים), `test` 614/614, 7336/7348 עברו (זהה ל-M14-c66), `build`
-(למעלה) exit 0 נקי.
+הורץ (תקדים M04-c66..M15-c66). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614, 7336/7348 עברו (זהה ל-M15-c66), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3316 pnpm
+build`, על .next הקיים מ-M15-c66, `BUILD_ID` חדש) exit 0 נקי.
 
-**M14-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c66
-לשמירה על תקרת 300 שורות).** פריט תור, DONE: Sentry release נבדק מול
-HEAD ומול פרודקשן בפועל; הקוד תקין (release קשור ל-`SENTRY_RELEASE`/
-`VERCEL_GIT_COMMIT_SHA` כראוי), אך שני ממצאים שליליים: (1) הפריסה החיה
-היא `a388118f1`, לא HEAD (חוסם 2 הקיים), (2) אין `SENTRY_DSN`/
-`NEXT_PUBLIC_SENTRY_DSN` בכלל ב-Production, כך שה-SDK מאותחל עם `dsn:
-undefined` ולא שולח דבר (תואם `sentry-is-live-and-unread`). נוסף
-ל-BACKLOG סעיף 17. ארבעת השערים ירוקים.
+**M15-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: אפס שגיאות console ב-`/`
+וב-`/product` נמדד בדפדפן אמיתי על build נקי, ריצה ראשונה על `.next` ישן
+נכשלה בממצא ידוע (`upgrade-insecure-requests` מ-build שלא קיבל
+`NEXT_PUBLIC_APP_URL`), build מחדש פתר. ארבעת השערים ירוקים.
 
-**M13-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c66
-לשמירה על תקרת 300 שורות).** פריט תור, DONE: `/api/health`/`/api/ready`
-אומתו מול פרודקשן בפועל; `health` תקין, `ready` מחזיר `503` בגלל
-Meilisearch `down` (לא `not_configured`), ממצא חדש נוסף ל-BACKLOG סעיף
-16. ארבעת השערים ירוקים.
-
-**M12-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M13-c66
-לשמירה על תקרת 300 שורות).** פריט תור, DONE: robots.txt אומת מול
-פרודקשן בפועל, זהה לקוד; נמצא פער אמיתי (`/debug/` חסר מ-`Disallow` בעוד
-הדפים המוגנים נגישים `200` בפועל) ותוקן. ארבעת השערים ירוקים.
-
-**M01-c66..M11-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M14-c66 לשמירה על תקרת 300 שורות).** אחת-עשרה פריטי תור, DONE בכולם:
-שער חזותי בית/מוצר/קטגוריה נמדד מחדש (M01-M03, אפס דריפט), `type-check`
-(M04), `test` (M05), `pnpm build` בפועל exit 0 (M06), סריקת `TODO`/
-`FIXME` רוחב-ריפו עם תיקון אחד ב-`scripts/screenshot-all.mjs` (M07),
-Lighthouse mobile `/`+`/product` 100/100/100 (M08), חמש חבילות מתות
-הוסרו ושישה קבועים פנימיים הופשטו מ-`export` (M09), 19 מיגרציות ממתינות
-אומתו מחדש מול פרודקשן בפועל דרך טוקן ה-CLI ב-keychain, כולן עדיין לא
-הוחלו (M10), sitemap.xml אומת טרי ונגיש מול פרודקשן בפועל, אינדקס עם חמש
-תת-מפות, 200 בכולן (M11). אפס דריפט קוד בכולם, ארבעת השערים ירוקים.
+**M01-c66..M14-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+בשלבים, M14-c66..M16-c66, לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטי
+תור, DONE בכולם: שער חזותי בית/מוצר/קטגוריה נמדד מחדש (M01-M03, אפס
+דריפט), `type-check` (M04), `test` (M05), `pnpm build` בפועל exit 0
+(M06), סריקת `TODO`/`FIXME` רוחב-ריפו עם תיקון אחד
+ב-`scripts/screenshot-all.mjs` (M07), Lighthouse mobile `/`+`/product`
+100/100/100 (M08), חמש חבילות מתות הוסרו ושישה קבועים פנימיים הופשטו
+מ-`export` (M09), 19 מיגרציות ממתינות אומתו מחדש מול פרודקשן בפועל
+(M10), sitemap.xml אומת טרי מול פרודקשן, חמש תת-מפות, 200 בכולן (M11),
+robots.txt אומת מול פרודקשן ותוקן (`/debug/` חסר מ-`Disallow`, M12),
+`/api/health`/`/api/ready` אומתו מול פרודקשן, `ready` מחזיר `503` בגלל
+Meilisearch `down` (M13), Sentry release נבדק מול HEAD ומול פרודקשן —
+הקוד תקין, שני ממצאים שליליים (פריסה על `a388118f1` לא HEAD, ואין
+`SENTRY_DSN` כלל ב-Production, שניהם נוספו ל-BACKLOG, M14). אפס דריפט
+קוד בכולם, ארבעת השערים ירוקים.
 
 **Q51..Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M14-c66 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים:
