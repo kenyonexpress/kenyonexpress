@@ -11,6 +11,7 @@ import { trackServerEvent } from '@/server/analytics/track'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
+import { recordRedemptionSignals } from '@/server/fraud/redemption-signals'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -286,6 +287,18 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const outcome = asOutcome(result.outcome)
   const status = HTTP_STATUS[outcome]
   const replayed = result.replayed === true
+
+  // Monitoring, not a gate: logs when this scan's surrounding traffic crosses
+  // a velocity ceiling, never changes `outcome` or `status`. Skipped on a
+  // replay, which wrote no new row for this call to be counted against.
+  // src/lib/fraud/redemption-velocity.ts.
+  if (!replayed) {
+    await recordRedemptionSignals(createAdminClient(), {
+      userId: user.id,
+      ip: scanContext.ip,
+      now: new Date(),
+    })
+  }
 
   if (outcome === 'success') {
     // The voucher is already burned in the database. Awaited rather than fired

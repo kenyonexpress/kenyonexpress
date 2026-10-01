@@ -22,6 +22,7 @@ const rateLimit = vi.fn()
 const expireWalletPasses = vi.fn()
 const sendGaEvent = vi.fn()
 const recordRefusedScan = vi.fn()
+const recordRedemptionSignals = vi.fn()
 const adminUpdate = vi.fn()
 const staffRow = vi.fn()
 const membershipRow = vi.fn()
@@ -55,6 +56,13 @@ vi.mock('@/lib/analytics/server-events', () => ({
 vi.mock('@/server/domain/vouchers/scan-context', () => ({
   readScanContext: () => ({ ip: '203.0.113.9', userAgent: 'till/1.0' }),
   recordRefusedScan: (args: unknown) => recordRefusedScan(args),
+}))
+// Monitoring-only (src/lib/fraud/redemption-velocity.ts); covered by its own
+// unit tests, stubbed here so this file stays about the adapter around the
+// RPC, not about a query chain this module does not touch.
+vi.mock('@/server/fraud/redemption-signals', () => ({
+  recordRedemptionSignals: (client: unknown, args: unknown) =>
+    recordRedemptionSignals(client, args),
 }))
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
@@ -122,6 +130,7 @@ describe('supplier scan endpoint', () => {
     expireWalletPasses.mockReset().mockResolvedValue(undefined)
     sendGaEvent.mockReset().mockResolvedValue(undefined)
     recordRefusedScan.mockReset().mockResolvedValue(undefined)
+    recordRedemptionSignals.mockReset().mockResolvedValue(undefined)
     adminUpdate.mockReset().mockResolvedValue({ error: null })
     staffRow.mockReset().mockReturnValue({ id: 'staff-1', supplier_id: 'sup-1' })
     membershipRow.mockReset().mockReturnValue({ supplier_id: 'sup-1' })
@@ -358,6 +367,30 @@ describe('supplier scan endpoint', () => {
       )
       expect(response.status).toBe(200)
       expect((await response.json()).outcome).toBe('success')
+    })
+  })
+
+  describe('redemption velocity signals, which monitor and never decide', () => {
+    it('checks signals for the scanning account and address on a fresh scan', async () => {
+      await POST(request({ code: 'ABCD123456' }))
+      expect(recordRedemptionSignals).toHaveBeenCalledTimes(1)
+      const [, args] = recordRedemptionSignals.mock.calls[0] as [
+        unknown,
+        { userId: string; ip: string | null },
+      ]
+      expect(args).toMatchObject({ userId: 'user-1', ip: '203.0.113.9' })
+    })
+
+    it('skips the check on a replayed scan, which wrote no new row to count', async () => {
+      rpc.mockResolvedValue({ data: { ...SUCCESS, replayed: true }, error: null })
+      await POST(request({ code: 'ABCD123456' }))
+      expect(recordRedemptionSignals).not.toHaveBeenCalled()
+    })
+
+    it('still checks signals on a refusal, not only on success', async () => {
+      rpc.mockResolvedValue({ data: { outcome: 'already_redeemed' }, error: null })
+      await POST(request({ code: 'ABCD123456' }))
+      expect(recordRedemptionSignals).toHaveBeenCalledTimes(1)
     })
   })
 })

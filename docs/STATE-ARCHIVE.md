@@ -2,6 +2,87 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q42, Q41 (הועברו מ-STATE.md ב-Q43, לשמירה על תקרת 300 שורות)
+
+**Q42 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"דרגות מועדון לפי הוצאה ב-12 חודשים, דף תג והטבות". **אינו בתור האמיתי**
+(המספור ב-`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין Q40/Q41/Q42), אותו
+דפוס כמו Q25-Q41.
+
+**חישוב הדרגה והכרטיס בחשבון קיימים במלואם, אפס שינוי קוד.** `lib/club/tiers.ts`
+(טהור, חלון 365 יום לפי `paid_at`, ספים: חבר מועדון ₪0, כסף ₪1,000, זהב
+₪3,000, פלטינה ₪10,000), `server/queries/club.ts` (`getClubStanding`, session
++ admin client מוצמד ל-`user_id`) ו-`components/account/ClubTierCard.tsx`
+(כרטיס בסקירת החשבון: שם דרגה, הוצאה, פס התקדמות, מרחק לדרגה הבאה) נבנו
+ונבדקו ב-Q15 (25.09), +17 טסטים. זה חלק אמיתי מהמשימה וסגור.
+
+**דף תג והטבות (badge/benefits page): לא קיים, ונבנה בכוונה בלי להיבנות.**
+`ClubTier` מחזיק רק `id` ו-`minAgorot`, אין שדה הטבה בשום מקום בקוד, grep
+על `benefit|הטבת.*דרגה|badge` מול `src/lib/club` ו-`src/components/account`
+ריק. **זו החלטה מתועדת, לא השמטה**: רשומת Q15 בארכיון אומרת במפורש
+"הטבות לדרגה אינן בפריט" (`docs/STATE-ARCHIVE.md` שורה 11623), והחוסם
+שקדם לה היה "הסף לכל רמה וההטבות הן החלטת מוצר של אופיר" (שם, שורה 12645).
+הסף הוכרע ב-Q15; ההטבות לא, ונשארו פתוחות בכוונה.
+
+**אין גם מקור עיצוב לדף כזה.** `refs/ke_live_singlefile.html` (הרפרנס
+החזותי היחיד המותר) ו-`electro_madrasthemes_com-DESIGN.md` (טוקני העיצוב)
+לא מזכירים club, loyalty, tier, דרגה, מועדון או badge באף מופע (grep ריק
+בשניהם). בניית דף חדש כאן תהיה המצאה חזותית, בניגוד לכלל "אף פעם לא
+דמיון".
+
+**ההחלטה: BLOCKED, לא DONE ולא לבנייה בלי אישור.** הגדרת הטבה אמיתית
+לכל דרגה (הנחה, משלוח חינם, עדיפות, מתנת יום הולדת, או שום דבר מעבר
+למעמד) היא בדיוק החלטת המוצר שתועדה כלא-מוכרעת ב-Q15, והמצאה עצמאית שלה
+עכשיו חוזרת על אותה טעות שתועדה ונסוגה ב-Q39 (תפוגת קאשבק). בלי הטבות
+מוגדרות, גם "תג" (badge) ויזואלי חדש הוא עיצוב ללא מקור. אפס שינוי קוד
+ייצור.
+
+**בדיקה בפועל, אפס שינוי קוד.** `pnpm type-check` נקי, `pnpm lint` נקי (12
+שערים), `pnpm test` מלא 611/611 קבצים 7313/7325 (12 מדולגים, זהה ל-Q41),
+`rm -rf .next && pnpm build` נקי (שרת זמני בפורט 3311, cwd מאומת). שער
+חזותי PASS בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.51%/9.02%/3.95%** (380/768/1440), זהה בדיוק
+למדידת Q39/Q41, אפס דריפט (אין נגיעה בדף הבית).
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
+**Q41 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"ניהול תוכנית שותפים, עמלה לפי קמפיין, זיכוי לארנק." **אינו בתור האמיתי**
+(המספור ב-`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין Q40/Q41), אותו דפוס
+כמו Q25-Q40.
+
+**נמדד בנוי במלואו, אפס שינוי קוד.** עמלה-לפי-קמפיין: `affiliate_campaigns`
+(244, ממתינה) עם `commission_bp` פר-קמפיין, `src/lib/affiliates/commission.ts`
+בוחר את הקמפיין הצר ביותר (מוצר > קטגוריה > כל האתר) ומחשב `applyBp` על
+הבסיס ששולם באתר, עם תקרת קומיסיה, סף הזמנה מינימלי ותקציב קמפיין.
+זיכוי לארנק: `src/server/affiliates/pay.ts`
+(`payAffiliateConversion`) מעביר כסף דרך `fn_wallet_transfer` מ-
+`platform:cashback_reserve` לחשבון הארנק של השותף, עם מפתח אידמפוטנטי
+`affiliate:<conversion id>`, ונתיב אחד משותף לשני הקוראים: `finalize`
+(אוטומטי, החלטה נקייה) ותור האדמין (`ConversionActionsClient.tsx` →
+`decideAffiliateConversion` → אותו `payAffiliateConversion`, אישור ידני על
+שורה שסומנה). ניהול קמפיינים ב-UI: `CampaignForm.tsx` + `/admin/affiliates`
+טאב "קמפיינים ועמלות" (CRUD מלא, אחוז קומיסיה/סף/תקרה/תקציב/תאריכים/
+היקף מוצר-קטגוריה). כל ההחלטה חסרת-IO ונבדקת לבד
+(`commission.test.ts`, 217 שורות), והחיווט בין ארבעת נקודות הקריאה מוצמד
+ב-`src/server/affiliates/wired.test.ts` (לא טקסט חוק — קוד אמיתי, לפי
+אותו דפוס כמו `referrals/wired.test.ts`).
+
+**מה שחסר הוא בלעדי לחוסם #3 הקיים, לא לפריט הזה.** `affiliate_campaigns`
+עדיין `migrations/pending/244_affiliate_campaigns.sql`, לא הוחלה; `convert.ts`
+קורא 42P01 כאזהרה (`affiliates.campaigns_table_missing`) ולא כקריסה, בדיוק
+כמו שמתועד ב-STATE.md חוסם #3 כבר. אין פעולת סוכן נדרשת כאן: המיגרציה
+ממתינה לאישור אופיר כמו שהייתה, לא נכתבה מיגרציה חדשה כי 244 כבר מכילה
+את מה שהתכונה דורשת.
+
+**בדיקה בפועל, אפס שינוי קוד.** `pnpm type-check` נקי, `pnpm lint` נקי (12
+שערים כולל `docs-path-audit`), `pnpm test` מלא 611/611 קבצים 7313/7325 (12
+מדולגים, זהה ל-Q40), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט 3311,
+cwd מאומת, `/r/[code]` ושאר הנתיבים כרגיל). שער חזותי PASS בשלושת הרוחבים,
+foreground, `--baseline=refs/ke_live_{width}.png`: **8.51%/9.02%/3.95%**
+(380/768/1440) — זהה בדיוק למדידת Q40/Q31, אפס דריפט (אין נגיעה בדף
+הבית).
+
 ## Q39, Q38 (הועברו מ-STATE.md ב-Q40, לשמירה על תקרת 300 שורות)
 
 **Q39 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**

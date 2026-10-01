@@ -2,11 +2,13 @@ import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { isSameOriginRequest } from '@/lib/security/same-origin'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { settledKeys } from '@/lib/vouchers/offline-scan'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext } from '@/server/domain/vouchers/scan-context'
+import { recordRedemptionSignals } from '@/server/fraud/redemption-signals'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -191,6 +193,14 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       message: MESSAGES[outcome] ?? null,
     })
   }
+
+  // Monitoring, not a gate: one check for the whole drain rather than one per
+  // item, same address and account for all of them. Never changes `results`.
+  await recordRedemptionSignals(createAdminClient(), {
+    userId: identity.user.id,
+    ip: scanContext.ip,
+    now: new Date(),
+  })
 
   return NextResponse.json({
     ok: true,

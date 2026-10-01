@@ -8,12 +8,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * per-item ceiling is checked before anything burns, and order is preserved.
  */
 
-const { identityScopedClient, rateLimit, verifyVoucherQrPayload, rpc } = vi.hoisted(() => ({
-  identityScopedClient: vi.fn(),
-  rateLimit: vi.fn(),
-  verifyVoucherQrPayload: vi.fn(),
-  rpc: vi.fn(),
-}))
+const { identityScopedClient, rateLimit, verifyVoucherQrPayload, rpc, recordRedemptionSignals } =
+  vi.hoisted(() => ({
+    identityScopedClient: vi.fn(),
+    rateLimit: vi.fn(),
+    verifyVoucherQrPayload: vi.fn(),
+    rpc: vi.fn(),
+    recordRedemptionSignals: vi.fn(),
+  }))
 
 /** `rateLimitHeaders` stays real, so a mocked 429 cannot fake its headers. */
 vi.mock('@/lib/supabase/bearer', () => ({ identityScopedClient }))
@@ -21,6 +23,11 @@ vi.mock('@/lib/rate-limit', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/rate-limit')>()),
   rateLimit,
 }))
+vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: () => ({}) }))
+// Monitoring-only (src/lib/fraud/redemption-velocity.ts); covered by its own
+// unit tests, stubbed here so this file stays about the drain's own
+// settle/retry contract.
+vi.mock('@/server/fraud/redemption-signals', () => ({ recordRedemptionSignals }))
 
 function decision(allowed: boolean) {
   return {
@@ -57,6 +64,7 @@ describe('redeem-batch route', () => {
     rateLimit.mockReset()
     verifyVoucherQrPayload.mockReset()
     rpc.mockReset()
+    recordRedemptionSignals.mockReset().mockResolvedValue(undefined)
     identityScopedClient.mockResolvedValue({
       client: { rpc },
       identity: { user: { id: 'member-1' } },
@@ -206,6 +214,15 @@ describe('redeem-batch route', () => {
       expect(body.results.map((r: { outcome: string }) => r.outcome)).toEqual(['error', 'success'])
       // The failed item stays queued; the good one is cleared.
       expect(body.settled).toEqual(['key-0002'])
+    })
+  })
+
+  describe('redemption velocity signals, which monitor and never decide', () => {
+    it('checks signals once for the whole drain, not once per item', async () => {
+      await POST(request({ items: [item('key-0001'), item('key-0002', CODE_B)] }))
+      expect(recordRedemptionSignals).toHaveBeenCalledTimes(1)
+      const [, args] = recordRedemptionSignals.mock.calls[0] as [unknown, { userId: string }]
+      expect(args).toMatchObject({ userId: 'member-1' })
     })
   })
 })
