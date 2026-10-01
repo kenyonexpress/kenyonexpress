@@ -2,6 +2,49 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c66 (הועבר מ-STATE.md ב-M18-c66, לשמירה על תקרת 300 שורות)
+
+**M17-c66 - DONE (01.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks". **לא היה תקין — נמצא leak אמיתי, בניגוד ל-M16-c66.**
+
+**`git log -- HeroSlider.tsx` חשף commit `a2423523`** על
+`phase5/homepage-closeout` (30.09.2026): "drop dir=ltr from the hero promo
+lines" — חמש פסקאות עברית (`standard_line`, `promo_small`, `promo_large`
+בשני הווריאנטים) נשאו `dir="ltr"` שרוד מה-export של Electro, למרות שהטקסט
+עברית. `git merge-base --is-ancestor` אישר: ה-commit **אינו** אב-קדמון
+של `audit/final-audit` — התיקון מעולם לא עבר לענף הזה, אושר ב-`curl`.
+
+**תוקן זהה לתיקון שכבר אומת על הענף האחר**: הוסר `dir="ltr"`, `text-start`
+→`text-end`, `ps-[11px]`/`ps-[10px]` (welcome) →`pe-[11px]`/`pe-[10px]` —
+אותה גאומטריה פיזית, מבוטאת נכון תחת `dir="rtl"`. `e2e/home-rtl.spec.ts`
+(מיובא מהענף האחר) הותאם: שלושה אנקורים לא קיימים בדף הזה (אין סעיפי
+קטגוריות/קופונים נפרדים כאן, `HomepageSections.tsx`) ו-2 שמות מחלקה לא
+תואמים — הותאמו ל-17 אנקורים אמיתיים. **6/6 עברו**: 17 אנקורים `rtl`,
+חמש פסקאות הפרומו `rtl` בלי `dir="ltr"`, אפס `ltr` מחוץ להיתר.
+
+**דף מוצר אמיתי** (`/product/צימר-מאסטר`, סריקת DOM מלאה אחרי hydration):
+2 צמתים `ltr` בלבד — `.pdp-summary__meta` (שם אנגלי כשאין SKU) ו-input
+email — שניהם לגיטימיים, לא leak. 53 טסטי RTL קיימים
+(`rtl-three-widths.spec.ts`+`rtl-mobile.spec.ts`, `/`, `/products`,
+`/cart`, דף מוצר ב-320px) **53/53 עברו** ללא שינוי.
+
+**שער חזותי, חובה כי שינוי UI בדף הבית — נמדד בפועל, במעגל חוזר.** הריצה
+הראשונה אחרי `pnpm start` טרייה נתנה קריאה חריגה (380px 17.06%/768px
+12.73%,15.48% מול בסיס 8.58%/9.01%). נבדק ישירות שזה לא רגרסיה: שלושה
+צילומי מסך עוקבים על אותו build יצאו זהים פיקסל-לפיקסל עם/בלי התיקון
+(הטקסט עברית טהורה, בלי bidi מעורב שיכול להסביר הבדל). אחרי "חימום" שרת
+(כמה טעינות) **כל קריאה חוזרת — 5+ ברצף — יצאה זהה לבסיס**; הקריאה
+החריגה היא רעש קור-הפעלה, לא רגרסיה. **הריצה הסופית שנרשמה
+ב-`docs/UI-PARITY-REPORT.md`**: 380px 8.58%, 768px 9.01%, 1440px 4.16%,
+כולן PASS וזהות לבסיס. דף מוצר (לא שונה קוד שם, בדיקת-על): 380px 2.68%
+PASS.
+
+**`docs/rtl-violations.md` רוענן** (`rtl-lint.mjs`): 93 ממצאים, זהה למצב
+לפני השינוי (הערה חדשה שתאמה בטעות "left-to-right" תוקנה).
+
+**ארבעת השערים**: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614,
+7336/7348 עברו (זהה ל-M16-c66), `build` exit 0 נקי.
+
 ## M16-c66 (הועבר מ-STATE.md ב-M17-c66, לשמירה על תקרת 300 שורות)
 
 **M16-c66 - DONE (01.10.2026).** משימת התור: "Verify all product pages have
