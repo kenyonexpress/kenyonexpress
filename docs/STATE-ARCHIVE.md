@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c67 (הועבר מ-STATE.md ב-M18-c67, לשמירה על תקרת 300 שורות)
+
+**M17-c67 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks" — זהה למילה למשימת M17-c66 (01.10.2026),
+שהיא זו שמצאה ותיקנה leak אמיתי (`HeroSlider.tsx`, חמש פסקאות פרומו
+עם `dir="ltr"` שרוד מ-Electro). **נבדק מחדש כאן, אפס דריפט.**
+`git log 9078252c8..HEAD` (commit התיקון) על שני קבצי `HeroSlider.tsx`,
+`HomepageSections.tsx`, `e2e/home-rtl.spec.ts`, `e2e/rtl-three-widths.spec.ts`,
+`e2e/rtl-mobile.spec.ts`, `src/app/(store)/product`, `src/app/(store)/page.tsx`
+מראה קומיט אחד בלבד (`7006b3da7`, M09-c67, un-export שתי קבועים
+פנימיים) — לא נוגע ל-RTL. שתי ההתייחסויות ל-`dir="ltr"` שנמצאו ב-grep
+על `HeroSlider.tsx` הן בתוך הערת קוד שמסבירה את התיקון ההיסטורי, לא
+תכונת JSX בפועל (`text-end` נשאר במקום). **אומת מחדש ברמת הדף:**
+`pnpm start -p 4523` עצמאי על `.next` קיים, `E2E_BASE_URL=http://localhost:4523`:
+`e2e/home-rtl.spec.ts`+`e2e/rtl-three-widths.spec.ts`+`e2e/rtl-mobile.spec.ts`
+**112/112 עברו** (chromium+mobile-chrome), כולל "every ltr node on the
+page is on the allow-list". סריקת DOM ישירה על `/product/צימר-מאסטר`
+אחרי hydration: **2 צמתים `direction:ltr` בלבד**, זהה ל-M17-c66
+(`.pdp-summary__meta` ללא SKU, ואינפוט email) — שניהם לגיטימיים, לא
+leak. **לא נדרש תיקון קוד.** ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים, כולל `rtl-logical-gate`), `test` 614/614 קבצים,
+7337/7349 עברו (12 מדולגים, זהה), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523 pnpm
+build`) exit 0 נקי. לא פריט חזותי חדש (אין שינוי UI בפריט הזה עצמו),
+`compare.mjs` לא נדרש (תקדים M04-c66..M16-c67; השער החזותי על התיקון
+עצמו כבר נמדד PASS ב-M17-c66). קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M16-c67 (הועבר מ-STATE.md ב-M17-c67, לשמירה על תקרת 300 שורות)
+
+**M16-c67 - DONE (02.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למילה למשימת M16-c66
+(01.10.2026). **נבדק מחדש, אפס דריפט.** `git log 56d5a2909..HEAD` על
+`src/app/(store)/product`, `src/lib/seo` ריק — אין קומיט שנגע בקבצים
+הרלוונטיים מאז M16-c66. **מקור האמת זהה**: `product/[slug]/page.tsx`
+בונה את שני הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/
+`buildBreadcrumbJsonLd` מ-`src/lib/seo/json-ld.ts`, שני
+`<script type="application/ld+json">` תמיד ברינדור, לא מאחורי דגל, לא
+מסתעף לפי סוג מוצר/מלאי). **אומת גם ברמת הדף**: `pnpm start -p 4522`
+עצמאי על `.next` קיים, `E2E_BASE_URL=http://localhost:4522 npx
+playwright test e2e/seo-markup.spec.ts --grep "Product JSON-LD and a
+breadcrumb"` — **2/2 עברו** (chromium+mobile-chrome): `@type` כולל
+`Product`+`BreadcrumbList`, ול-`Product` יש `name` לא-ריק. **לא נדרש
+תיקון קוד.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים),
+`test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4522 pnpm
+build`) exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M15-c67). קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M15-c67 (הועבר מ-STATE.md ב-M16-c67, לשמירה על תקרת 300 שורות)
 
 **M15-c67 - DONE (02.10.2026).** משימת התור: "Verify no console errors on
