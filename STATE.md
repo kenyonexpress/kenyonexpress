@@ -1,32 +1,31 @@
-RESUME FROM: M15-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c67 - DONE, Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c66)
+RESUME FROM: M16-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c67 - DONE, אפס console error על `/` ו-`/product` על build נקי)
 
 ## המשך מ:
 
-**M14-c67 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit" — זהה למילה למשימת M14-c66 (01.10.2026). **נבדק
-מחדש משתי הזוויות, שתיהן אפס דריפט.** שלושת קובצי האתחול
-(`sentry.server.config.ts`, `sentry.edge.config.ts`,
-`instrumentation-client.ts`) זהים — `git log db5999d33..HEAD` עליהם ריק,
-אין קומיט שנגע בהם מאז M14-c66. `filter_project_envs` (קריאה-בלבד) על
-`kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` עדיין **לא** מחזיר
-`SENTRY_DSN` או `NEXT_PUBLIC_SENTRY_DSN` ב-Production — קיים שם רק
-`SENTRY_AUTH_TOKEN` (source maps בזמן build בלבד), בדיוק כמו ב-M14-c66.
-`get_deployment` (קריאה-בלבד, `withGitRepoInfo=true`) על הפריסה החיה
-(`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, `www.kenyonexpress.co.il`) מראה
-שהיא עדיין בנויה מ-`a388118f1`, לא מ-HEAD. **הפער גדל, לא נסגר**:
-`git rev-list --count a388118f1..HEAD` מחזיר **370** (היה 285 ב-M14-c66
-על HEAD אז, `1563d46b9`; HEAD עכשיו `6bd25c638`). **מסקנה זהה ל-M14-c66**:
-אי אפשר לאמת "ה-release תואם ל-HEAD" כאמת, כי אין בכלל release שמגיע
-מפרודקשן (אין DSN), וגם אם היה — הוא היה מצביע על קומיט ישן ב-370
-קומיטים. **לא ממצא חדש**: נוסף רק משפט "נמדד שוב" ל-`BACKLOG.md` סעיף
-17 עם התאריך והמספרים המעודכנים. **לא לתיקון אוטומטי**: הוספת
-`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא שינוי env,
-אסור לסוכן. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים),
-`test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `rm -rf .next &&
-pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
-M04-c66..M14-c66, M13-c67). קבצים: `docs/BACKLOG.md`, `STATE.md`,
+**M15-c67 - DONE (02.10.2026).** משימת התור: "Verify no console errors on
+`/` and `/product` sample" — זהה למילה למשימת M15-c66 (01.10.2026). **נבדק
+מחדש בדפדפן אמיתי, אפס דריפט.** שישה-שמונה סשנים מקבילים כבר רצו
+`pnpm start` על אותה תיקייה (פורטים 3311-3316/3618/3911/4211) על `.next`
+בן אותו יום (01:23) — `curl -I` על אחד מהם הראה את אותה תקלת-build-ישן
+שתועדה ב-M15-c66: `upgrade-insecure-requests` עדיין אפוי ב-CSP (כלומר ה-
+`.next` המשותף נבנה בלי `NEXT_PUBLIC_APP_URL=http://...` גם הפעם, לא
+רגרסיה בקוד). **אותה החלטה כמו ב-M15-c66**: `rm -rf .next` מלא על
+התיקייה המשותפת (לא worktree) ובנייה מחדש עם
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3317 pnpm
+build` (exit 0), `curl -I` אישר שה-CSP איבד את הדירקטיבה. שרת `pnpm
+start -p 3317` עצמאי, `e2e/route-audit.spec.ts --grep "anon /$|anon
+dynamic catalogue routes"` — **4/4 עברו** (chromium+mobile-chrome),
+אפס `consoleErrors`/`hydrationWarnings` על `/` ועל מסלולי הקטלוג הדינמיים
+(כולל `/product/[slug]`). **לא נדרש תיקון קוד.** ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים, זהה), `build` (למעלה) exit 0 נקי. לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M04-c66..M15-c66, M14-c67). קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
+
+**M14-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c67).**
+Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c66; הפער בין פרודקשן
+(`a388118f1`) ל-HEAD גדל ל-370 קומיטים, אין `SENTRY_DSN` ב-Production.
 
 **M13-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c67).**
 `/api/health`/`/api/ready` אומתו מול פרודקשן, אפס דריפט מ-M13-c66.
