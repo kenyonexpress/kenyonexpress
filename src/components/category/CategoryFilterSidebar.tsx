@@ -64,11 +64,10 @@ export default function CategoryFilterSidebar({
 
   return (
     <aside id="category-filters" className="category-sidebar" aria-label="סינון מוצרים">
-      {/* Collapsed by default. The live archive has no filter UI at all, so an
-          always-open panel would push our footer far below live's (y871) and
-          cost more in the comparison than the column ever did. Closed, it is a
-          single row; open, it is the full filter set. */}
-      <details className="category-sidebar__disclosure">
+      {/* Open by default: Electro v7's shop sidebar (the current reference,
+          refs/electro_shop_{width}.png) renders its filter widgets expanded,
+          not behind an accordion. Still a <details> so mobile can collapse it. */}
+      <details className="category-sidebar__disclosure" open>
         <summary className="category-sidebar__summary">סינון מוצרים</summary>
         <div className="category-sidebar__widgets">
           <div className="category-sidebar__widget">

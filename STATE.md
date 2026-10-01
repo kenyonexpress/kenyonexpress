@@ -1,73 +1,68 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q26)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q27)
 
 ## המשך מ:
 
-**Q26 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"פריטיות מלאה לדף המוצר — קופון ווריאנטים פיזיים — מול Electro v7 מתחת
-ל-11%". **אינו קיים בתור האמיתי** (`final-queue.txt` נסגר ב-B10,
-`BACKLOG.md`/`QUESTIONS-FOR-OFIR.md` אינם מכירים "Q26" במובן הזה) — אותו
-דפוס כמו Q25/S02/S03, נבדק לפי הדרישה בפועל ולא נדחה.
+**Q27 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"מתגי סינון וסוננים בדף הקטגוריה, בלי שדה חיפוש, מותאמים לפריסת
+Electro v7". **אינו קיים בתור האמיתי** (`BACKLOG.md` לא מכיר "Q27" במובן
+הזה; `Q27` ב-`QUESTIONS-FOR-OFIR.md` הוא פריט לא-קשור — 11 ספקים בלי
+כתובת) — אותו דפוס כמו Q25/Q26/S02/S03, נבדק לפי הדרישה בפועל ולא נדחה.
 
-**נבדק (סוכן מחקר, read-only):** פריטיות קופון מול פיזי קיימת ומלאה,
-עם spec מחייב (`docs/COUPON-STOREFRONT-SPEC.md`), מקור אמת יחיד
-(`src/lib/commerce/product-type.ts`), נסגרה mega-block 11 (02.09). בורר
-וריאנטים פיזיים (`product_variants`, `ProductInfo.tsx`, מפתח עגלה
-`product::variant`, CRUD אדמין, טסטים) קיים אבל שטוח — לא מקובץ מידה/
-צבע, `attributes`/`image_url` לא נקראים ע"י `loadProductBySlug`. **אפס
-מוצרים פעילים מה-44 מכילים שורת `product_variants`**, ואין spec מבוסס-
-Electro לעיצוב הבורר (בניגוד לקופון) ואין שורה ב-BACKLOG שמתעדת זאת.
+**נבדק:** שדה חיפוש — **אפס**, מאומת ב-`src/components/layout/
+no-search-ui.test.ts` (סוויטה ייעודית) וב-`docs/AUTOPILOT-DIFF.md`
+שדוחה "faceted search UI" כהפרת הכלל "אין חיפוש, רק צ'יפים". `CategoryFilterSidebar.tsx`
+כבר מכיל שלושה ווידג'טים (קטגוריות, סוג מוצר, טווח מחיר) התואמים ל-
+`widget_product_categories`/`widget_price_filter` ב-`refs/electro_shop.html`
+(מקור האמת לדף הקטגוריה; Electro מחזיק גם Brands/Color layered-nav, אין
+להם מקביל כי אין נתוני מותג/צבע ל-44 המוצרים הפעילים — **לא נבנה פיצ'ר
+ספקולטיבי בלי נתון אמיתי**, ראו זיכרון "Finished features with no consumer").
 
-**החלטה אוטומטית:** לא לבנות עיצוב וריאנטים ספקולטיבי — אין מוצר חי
-להפעיל את הענף (השער החזותי לא יכול למדוד אותו), ואין spec שמגדיר
-"פריטיות ל-Electro" בשבילו, כך ש-11% אינו ניתן לאימות. ראו זיכרון
-"Finished features with no consumer". דף הקופון כבר מלא ל-Electro.
+**שני תיקוני קוד, שניהם נדרשים כדי למדוד את הפריט הזה בכלל:**
 
-**אימות מלא בריצה הזו**: `type-check`/`lint` נקיים (12 שערים), `test`
-610/610 (7300/7312, 12 דולגים בכוונה), `rm -rf .next && pnpm build`
-ללא שגיאה. שער חזותי בחזית, דף המוצר, שלושת הרוחבים, מול `refs/
-electro_product_{width}.png`: 380 `4.96%` PASS, 768 `4.57%` PASS,
-1440 `3.25%` PASS, נכתב ל-`docs/UI-PARITY-REPORT.md` (`17ce87bcd`,
-03:04-03:06 UTC). אפס שינוי קוד ייצור נדרש.
+1. **`src/components/category/CategoryFilterSidebar.tsx`**: ה-`<details>`
+   היה סגור כברירת מחדל (הערה ישנה: "live has no filter UI"). ה-baseline
+   של דף הקטגוריה עבר מאז ל-`refs/electro_shop_{width}.png` (Electro,
+   שכן מציג סיידבר פתוח תמיד) — ההערה הייתה מיושנת. עכשיו `open` כברירת
+   מחדל, עדיין `<details>` לקיפול ידני.
+2. **`src/styles/category-page.css`** (`.category-card__thumb img`):
+   **באג אמיתי שנמצא תוך כדי מדידה** — ב-380px, כש-`width`/`height`
+   שניהם `auto` ולאלמנט יש רק יחס-גובה-רוחב (לא טעון עדיין), הדפדפן
+   פתר את הגודל ל-0x0 (נמדד ב-Playwright, לא רק בשער). אלמנט 0x0 לא
+   נחשב "קרוב למסך" ע"י `loading="lazy"`, כך שתמונות המוצר בגריד הקטגוריה
+   (וגם `/products`+`/search`, אותו קומפוננטה) **אף פעם לא נטענו במובייל
+   בדפדפן אמיתי**, לא רק בשער האוטומטי. תוקן: `height: 100%` (יחסית
+   לעטיפה שכבר עם גובה קבוע) + `object-fit: contain` במקום `height: auto`
+   הכפול. אומת ב-380/768/1440 שהתמונה כעת טוענת בגודל נכון בשלושת הרוחבים.
 
-**M18-c65 - DONE (01.10): אפס-פעילות אומת ישירות מ-git על כל המחזור**
-(`git diff --stat 857a0deea..HEAD -- src/ next.config.ts next.config.mjs
-package.json pnpm-lock.yaml vercel.json supabase/ migrations/` על 17
-קומיטי M01-c65..M17-c65 מחזיר ריק, כולם קומיטי תיעוד). **נרשם
-MAINTENANCE IDLE (01.10.2026)**, ואז שופר המרה אמיתי אחד.
+**השערים**: `type-check`/`lint` נקיים (12 שערים). `test` 610/610 קבצים,
+7300/7312 (זהה לבסיס, אין טסט ייעודי ל-CSS הזה). `rm -rf .next && pnpm build`
+פעמיים (אחרי כל תיקון), ללא שגיאה. **שער חזותי בחזית, דף הקטגוריה,
+שלושת הרוחבים, נמדד בתוך הריצה הזו** מול `refs/electro_shop_{width}.png`
+(`--baseline`): 380 `3.53%` PASS, 768 `2.52%` PASS, 1440 `1.69%` PASS,
+נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md` (04:07-04:11 UTC). קטגוריית
+המדידה: `hot-deals` (ברירת המחדל של הסקריפט, 2 מוצרים פעילים). נבדק גם
+מול `beauty-health` (12 מוצרים, `COMPARE_CATEGORY_SLUG`) ב-380: `5.34%`
+PASS — אותה מסקנה, לא נרשם כשורת שער רשמית כי אינה ברירת המחדל.
+**הערת "HEIGHT RATIO" של הסקריפט (~0.5x-0.6x) אינה חוסמת ציון** — היא
+אזהרה בלבד; `diff-bands.mjs` עדיין מחשב וכותב ציון. הפער בגובה האמיתי
+מול Electro (שמציג גריד מלא + "Latest Products" + באנר בסיידבר) הוא
+תוכן קטלוגי, לא פריסה, ותואם את `docs/SOURCING-RULES.md`.
 
-**השיפור: פילוח דירוגים (היסטוגרמה) בדף הביקורות של המוצר**, תואם
-ל-`.rating-histogram`/`.rating-percentage-bar` שב-home-v7 של Electro.
-הצילום הישן (`refs/electro-product.html`) היה עמוד חסימת Cloudflare
-ריק; `scripts/capture-electro.mjs` נורה מחדש בפריט הזה נגד
-`https://electro.madrasthemes.com/product/...` וגם נגד `/home-v7/`
-ועבר את האתגר, כרגיל (ראו הערת הכותרת של הסקריפט). עמוד
-`/product/[slug]/reviews` הציג עד כה רק ממוצע ומונה כולל; עכשיו
-מוסיף חמש שורות (5 עד 1 כוכבים), כל אחת עם פס אחוז וספירה, בונה אמון
-קנייה: רואים *למה* הממוצע 4.2, לא רק את המספר.
+קבצים ששונו: `src/components/category/CategoryFilterSidebar.tsx`,
+`src/styles/category-page.css`, `docs/UI-PARITY-REPORT.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-פונקציה טהורה חדשה `ratingHistogram` ב-`lib/reviews/eligibility.ts`
-(אפס DB, אפס שעון), נקראת רק מהעמוד הזה. שני הקוראים הקיימים של
-`aggregateRatings` (`product-detail.ts`, `reviews/rating-summaries.ts`)
-לא נגעו. דף המוצר הראשי, `ProductInfo` ו-`RatingStars` לא השתנו כלל,
-כך ששער החזות של `product` לא היה אמור לזוז, רק הבדיקה עצמה.
+**Q26 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q27 לשמירה
+על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי. פריטיות
+קופון/פיזי לדף המוצר קיימת ומלאה; בורר וריאנטים פיזיים קיים אך שטוח,
+אפס מוצרים פעילים עם `product_variants` ואין spec — לא נבנה עיצוב
+ספקולטיבי. שער חזותי PASS בשלושת הרוחבים, אפס שינוי קוד.
 
-**השערים, כולל build מלא כנדרש בפריט הזה**: `type-check`/`lint` נקיים
-(12 שערים, i18n עדיין 627/627: אין מחרוזת עברית inline חדשה, רק שני
-מפתחות `t()` חדשים ב-`messages/he.json`+`en.json`). `test` 610/610
-קבצים, 7300/7312 (+2 מעל בסיס M17-c65, שני הטסטים של `ratingHistogram`).
-`pnpm build` אחרי `rm -rf .next`, ללא שגיאה (כולל `/product/[slug]/
-reviews` ב-`◐`). **שער חזותי בחזית, שני הדפים, שלושת הרוחבים, נמדד
-בתוך הריצה הזו** (שרת `pnpm start` על port 3311): בית `8.51/9.02/3.95%`
-PASS, זהה בייט לבייסליין (home לא נגע). מוצר `2.69/1.29/0.14%` PASS,
-זהה בייט ל-M18-c64 (העמוד עצמו לא נגע, רק ה-`/reviews` תחתיו). שורות
-נכתבו ל-`docs/UI-PARITY-REPORT.md` אוטומטית על ידי השער, כולל ריצה
-ראשונה שסורבה (`REFUSED`, `home` ישיר נגד `kenyonexpress.co.il`, לפני
-שהוספתי `--baseline`). קבצים ששונו: `lib/reviews/eligibility.ts`(+test),
-`app/(store)/product/[slug]/reviews/page.tsx`, `messages/he.json`,
-`messages/en.json`, `docs/UI-PARITY-REPORT.md`, `STATE.md`,
-`docs/STATE-ARCHIVE.md`. `refs/electro-home-v7.html`/
-`electro-product-fresh.*` (לא ב-git, `refs/` ignored).
+**M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q27
+לשמירה על תקרת 300 שורות).** אפס-פעילות אומת מ-git על 17 קומיטים
+(M01-c65..M17-c65, כולם תיעוד), ואז שיפור המרה אמיתי: היסטוגרמת דירוגים
+בדף הביקורות. ארבעת השערים ירוקים, שער חזותי PASS בשני הדפים.
 
 **M17-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M18-c65 לשמירה על תקרת 300 שורות).** קופי ומשפטי אומתו מחדש בפעם

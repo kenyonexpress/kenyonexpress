@@ -710,3 +710,14 @@ to an already large session.
 | 2026-10-01 03:04 | product | 380 | 4.96% | PASS | `17ce87bcd` | live side: frozen capture `refs/electro_product_380.png`; overall 31.75% (reference blank 19.62%, ours blank 7.16%) |
 | 2026-10-01 03:06 | product | 768 | 4.57% | PASS | `17ce87bcd-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 32.33% (reference blank 21.24%, ours blank 6.51%) |
 | 2026-10-01 03:06 | product | 1440 | 3.25% | PASS | `17ce87bcd-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 19.68% (reference blank 10.74%, ours blank 5.69%) |
+| 2026-10-01 03:12 | home | 1440 | n/a | REFUSED | `f43e00ecc` | live side is our-build |
+| 2026-10-01 03:22 | category | 380 | 2.43% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 26.28% (reference blank 6.9%, ours blank 16.95%) |
+| 2026-10-01 03:44 | category | 380 | 3.03% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 28.52% (reference blank 9%, ours blank 16.5%) |
+| 2026-10-01 03:46 | category | 380 | 3.03% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 28.52% (reference blank 9%, ours blank 16.5%) |
+| 2026-10-01 03:48 | category | 380 | 3.03% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 28.52% (reference blank 9%, ours blank 16.5%) |
+| 2026-10-01 03:50 | category | 380 | 3.03% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 28.52% (reference blank 9%, ours blank 16.5%) |
+| 2026-10-01 03:54 | category | 380 | 5.34% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 33.57% (reference blank 13.9%, ours blank 14.34%) |
+| 2026-10-01 03:56 | category | 380 | 5.34% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 33.57% (reference blank 13.9%, ours blank 14.34%) |
+| 2026-10-01 04:07 | category | 768 | 2.52% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_768.png`; overall 31.47% (reference blank 9.4%, ours blank 19.54%) |
+| 2026-10-01 04:09 | category | 1440 | 1.69% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_1440.png`; overall 18.02% (reference blank 5.05%, ours blank 11.27%) |
+| 2026-10-01 04:11 | category | 380 | 3.53% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 29.59% (reference blank 9.63%, ours blank 16.43%) |

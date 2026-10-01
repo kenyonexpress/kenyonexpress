@@ -2,6 +2,76 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q26 (הועבר מ-STATE.md ב-Q27, לשמירה על תקרת 300 שורות)
+
+**Q26 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"פריטיות מלאה לדף המוצר — קופון ווריאנטים פיזיים — מול Electro v7 מתחת
+ל-11%". **אינו קיים בתור האמיתי** (`final-queue.txt` נסגר ב-B10,
+`BACKLOG.md`/`QUESTIONS-FOR-OFIR.md` אינם מכירים "Q26" במובן הזה) — אותו
+דפוס כמו Q25/S02/S03, נבדק לפי הדרישה בפועל ולא נדחה.
+
+**נבדק (סוכן מחקר, read-only):** פריטיות קופון מול פיזי קיימת ומלאה,
+עם spec מחייב (`docs/COUPON-STOREFRONT-SPEC.md`), מקור אמת יחיד
+(`src/lib/commerce/product-type.ts`), נסגרה mega-block 11 (02.09). בורר
+וריאנטים פיזיים (`product_variants`, `ProductInfo.tsx`, מפתח עגלה
+`product::variant`, CRUD אדמין, טסטים) קיים אבל שטוח — לא מקובץ מידה/
+צבע, `attributes`/`image_url` לא נקראים ע"י `loadProductBySlug`. **אפס
+מוצרים פעילים מה-44 מכילים שורת `product_variants`**, ואין spec מבוסס-
+Electro לעיצוב הבורר (בניגוד לקופון) ואין שורה ב-BACKLOG שמתעדת זאת.
+
+**החלטה אוטומטית:** לא לבנות עיצוב וריאנטים ספקולטיבי — אין מוצר חי
+להפעיל את הענף (השער החזותי לא יכול למדוד אותו), ואין spec שמגדיר
+"פריטיות ל-Electro" בשבילו, כך ש-11% אינו ניתן לאימות. ראו זיכרון
+"Finished features with no consumer". דף הקופון כבר מלא ל-Electro.
+
+**אימות מלא בריצה הזו**: `type-check`/`lint` נקיים (12 שערים), `test`
+610/610 (7300/7312, 12 דולגים בכוונה), `rm -rf .next && pnpm build`
+ללא שגיאה. שער חזותי בחזית, דף המוצר, שלושת הרוחבים, מול `refs/
+electro_product_{width}.png`: 380 `4.96%` PASS, 768 `4.57%` PASS,
+1440 `3.25%` PASS, נכתב ל-`docs/UI-PARITY-REPORT.md` (`17ce87bcd`,
+03:04-03:06 UTC). אפס שינוי קוד ייצור נדרש.
+
+## M18-c65 (הועבר מ-STATE.md ב-Q27, לשמירה על תקרת 300 שורות)
+
+**M18-c65 - DONE (01.10): אפס-פעילות אומת ישירות מ-git על כל המחזור**
+(`git diff --stat 857a0deea..HEAD -- src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ migrations/` על 17
+קומיטי M01-c65..M17-c65 מחזיר ריק, כולם קומיטי תיעוד). **נרשם
+MAINTENANCE IDLE (01.10.2026)**, ואז שופר המרה אמיתי אחד.
+
+**השיפור: פילוח דירוגים (היסטוגרמה) בדף הביקורות של המוצר**, תואם
+ל-`.rating-histogram`/`.rating-percentage-bar` שב-home-v7 של Electro.
+הצילום הישן (`refs/electro-product.html`) היה עמוד חסימת Cloudflare
+ריק; `scripts/capture-electro.mjs` נורה מחדש בפריט הזה נגד
+`https://electro.madrasthemes.com/product/...` וגם נגד `/home-v7/`
+ועבר את האתגר, כרגיל (ראו הערת הכותרת של הסקריפט). עמוד
+`/product/[slug]/reviews` הציג עד כה רק ממוצע ומונה כולל; עכשיו
+מוסיף חמש שורות (5 עד 1 כוכבים), כל אחת עם פס אחוז וספירה, בונה אמון
+קנייה: רואים *למה* הממוצע 4.2, לא רק את המספר.
+
+פונקציה טהורה חדשה `ratingHistogram` ב-`lib/reviews/eligibility.ts`
+(אפס DB, אפס שעון), נקראת רק מהעמוד הזה. שני הקוראים הקיימים של
+`aggregateRatings` (`product-detail.ts`, `reviews/rating-summaries.ts`)
+לא נגעו. דף המוצר הראשי, `ProductInfo` ו-`RatingStars` לא השתנו כלל,
+כך ששער החזות של `product` לא היה אמור לזוז, רק הבדיקה עצמה.
+
+**השערים, כולל build מלא כנדרש בפריט הזה**: `type-check`/`lint` נקיים
+(12 שערים, i18n עדיין 627/627: אין מחרוזת עברית inline חדשה, רק שני
+מפתחות `t()` חדשים ב-`messages/he.json`+`en.json`). `test` 610/610
+קבצים, 7300/7312 (+2 מעל בסיס M17-c65, שני הטסטים של `ratingHistogram`).
+`pnpm build` אחרי `rm -rf .next`, ללא שגיאה (כולל `/product/[slug]/
+reviews` ב-`◐`). **שער חזותי בחזית, שני הדפים, שלושת הרוחבים, נמדד
+בתוך הריצה הזו** (שרת `pnpm start` על port 3311): בית `8.51/9.02/3.95%`
+PASS, זהה בייט לבייסליין (home לא נגע). מוצר `2.69/1.29/0.14%` PASS,
+זהה בייט ל-M18-c64 (העמוד עצמו לא נגע, רק ה-`/reviews` תחתיו). שורות
+נכתבו ל-`docs/UI-PARITY-REPORT.md` אוטומטית על ידי השער, כולל ריצה
+ראשונה שסורבה (`REFUSED`, `home` ישיר נגד `kenyonexpress.co.il`, לפני
+שהוספתי `--baseline`). קבצים ששונו: `lib/reviews/eligibility.ts`(+test),
+`app/(store)/product/[slug]/reviews/page.tsx`, `messages/he.json`,
+`messages/en.json`, `docs/UI-PARITY-REPORT.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`. `refs/electro-home-v7.html`/
+`electro-product-fresh.*` (לא ב-git, `refs/` ignored).
+
 ## Q25 (הועבר מ-STATE.md ב-Q26, לשמירה על תקרת 300 שורות)
 
 **Q25 - DONE (01.10.2026, אומת פעם שנייה אותו יום), פריט חיצוני חד-פעמי,

@@ -500,12 +500,24 @@
  *
  * The height stays a flat `--cat-thumb-max` on the wrapper: that is the CLS
  * reservation from [18] and it does not depend on how wide the image ends up.
+ *
+ * `height: 100%` and not `auto`. With both axes `auto`, a replaced element
+ * that only has an intrinsic ratio (the pre-load placeholder, sized off the
+ * `width`/`height` HTML attributes) resolves to 0x0 the moment its
+ * containing block is narrower than `--cat-thumb-max` -- measured on 380px:
+ * the thumb column is ~127px there, `width`/`height` both compute `0px`,
+ * `loading="lazy"` never considers a zero-area box near the viewport, and
+ * the image never fetches at all. The wrapper above already has a definite
+ * height, so resolving the image's height against it (not `auto`) removes
+ * the ambiguity; `object-fit: contain` keeps the no-crop behaviour the dual
+ * `max-*` pair was providing once the real (non-square) image lands.
  */
 .category-card__thumb img {
   width: auto;
   max-width: min(var(--cat-thumb-max), 100%);
+  height: 100%;
   max-height: var(--cat-thumb-max);
-  height: auto;
+  object-fit: contain;
   display: inline-block;
   vertical-align: middle;
 }
