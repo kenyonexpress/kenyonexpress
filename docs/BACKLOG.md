@@ -455,7 +455,13 @@ change — this item was verification only.
    `MERCHANT_ID` הקיימים בשם ב-Vercel, לקבוע `CARDCOM_USE_MOCK=false` ו-
    `CHECKOUT_ENABLED=true`, לפרוס מחדש (ה-CSP נאפה בזמן build, לא בזמן
    ריצה), ולבצע חיוב אמיתי אחד קטן וזיכוי דרכו. מקור: STATE.md חוסם 8,
-   LAUNCH-READINESS.md שורה חוסמת 2.
+   LAUNCH-READINESS.md שורה חוסמת 2. **חוסם גם את שני ה-`TODO(cardcom)`
+   היחידים ב-`src/` (`src/lib/payments/cardcom.ts:254`, זיכוי לגאסי,
+   ומ-`:319`, מסמכים) — אימות שם/שדה מדויק מול טרמינל חי, מתועד כבר
+   ב-`docs/KNOWN-ISSUES.md` סעיף 2 ובקוד עצמו (`Tracked in #41`/`#42`),
+   נבדק M07-c67: אין TODO/FIXME אחר ב-`src/` ישן משבעה ימים (שניהם
+   מ-24.07/07.08.2026); `src/lib/whatsapp.test.ts:91` אינו סמן עבודה
+   אלא מחרוזת ליטרלית `'TODO'` שבודקת דחיית מספר לא מוגדר.
 7. **הכרעה על 26 שורות הקטלוג** ב-`supabase/catalogue-known-issues.json`
    (26, לא 25 — שורה `no-image` נוספה ל-`מזקקת וויסקי` ב-00375d705,
    09.09.2026, יחד עם ה-25 האחרות, ומספר הממצאים לא תוקן בשום מסמך מאז;
