@@ -190,6 +190,20 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    /**
+     * This Next build's own default is `['image/webp']`
+     * (node_modules/next/dist/server/image-optimizer.js:546-548) - AVIF was
+     * never a fallback, it was simply never offered. Measured 2026-10-01
+     * (Q48): every `/_next/image` request, including one whose Accept header
+     * preferred AVIF, answered `image/webp`. Sharp already has AVIF encoding
+     * wired (the `transformer.avif()` branch a few lines below that default
+     * in the same file), so this is one config line, not new code.
+     * AVIF sources still bypass the optimizer entirely regardless of this
+     * list - see the BYPASS_TYPES note on `next-image-optimizer-swallows-
+     * sharp-errors` and the WebP conversion in 29b0a60b5 - this only changes
+     * what non-AVIF sources (jpg/png/webp) are re-encoded to.
+     */
+    formats: ['image/avif', 'image/webp'],
     // 50/60 for below-fold deal thumbs ([33]); Lighthouse image-delivery wanted
     // denser compression on 157px paints that were still shipping q=75.
     qualities: [50, 60, 75, 90, 95],

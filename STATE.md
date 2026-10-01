@@ -1,58 +1,81 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q47)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q48)
 
 ## המשך מ:
 
-**Q47 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
-אפס שינוי קוד ייצור.** "Accessibility pass: aria-labels, keyboard nav,
-focus ring, contrast 4.5+, IS 5568 statement." **אינו בתור האמיתי**
-(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q46. **כל
-חמשת הרכיבים כבר בנויים, מחווטים ונבדקים אוטומטית, נבדק מחדש שורה-שורה:**
+**Q48 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+שינוי קוד אמיתי.** "Perf pass: LCP under 2.0s 4G, CLS under 0.05, JS
+under 180KB gz per route, AVIF/WebP variants." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q47. בניגוד
+לרוב קודמיו, לא הכול כבר היה בנוי — נמצא ותוקן באג LCP אמיתי, ונמצא
+פער AVIF אמיתי.
 
-- **aria-label על כל רכיב אינטראקטיבי**: כפתורי אייקון בלבד ב-
-  `src/components/layout/{Header,MastheadNav,SiteFooter,RegionMenu,
-  BottomTabBar,MobileDrawer}.tsx` וב-`src/components/cart/{AddToCartButton,
-  CartDrawer,MiniCartDropdown,CartLineItem,CartNavLink,CartTotalsSidebar,
-  CartPageView}.tsx` נושאים `aria-label`. פאנל העגלה עצמו `role="dialog"`
-  עם שם נגיש "עגלת קניות" (נאכף ב-`e2e/a11y.spec.ts:533`).
-- **ניווט מקלדת**: `MobileDrawer.tsx` (Escape סוגר, focus נכנס וחוזר
-  לכפתור המפעיל, יד-כתוב כי `<dialog>` מקורי לא נתן את זה). `Dialog` של
-  Radix (`src/components/ui/dialog.tsx`) נותן focus trap/Escape מובנה
-  לשימושים שלו. `e2e/a11y.spec.ts:173-257` אוכף שכל רכיב אינטראקטיבי
-  בכל עמוד ציבורי, בדף המוצר ובקופה המלאה (ארבעת השלבים) נגיש במקלדת.
-- **טבעת focus נראית**: `focus-visible:` ב-`src/components/ui/{button,
-  input,textarea}.tsx`, `src/app/globals.css`, `src/styles/account.css`.
-  כ-70 מופעי `outline-none`/`focus:outline-none`, כל מדגם שנבדק מזווג
-  עם טבעת חלופית (`focus:ring-2`/`focus-visible:ring-2`) — אין מופע
-  שמסיר outline בלי תחליף.
-- **ניגודיות 4.5:1+ (WCAG AA / תקן 5568)**: `e2e/a11y.spec.ts` מריץ
-  `@axe-core/playwright` עם `WCAG_AA = ['wcag2a','wcag2aa','wcag21a',
-  'wcag21aa']` על כל עמוד ציבורי, דף המוצר, הקופה המלאה (כולל מצבי שגיאת
-  ולידציה) ופאנל העגלה; `e2e/a11y-authenticated.spec.ts` מרחיב לכל עמודי
-  הלקוח/אדמין/ספק (`route-lists.ts`). נכשל על **כל** הפרה, לא רק
-  serious/critical. היסטוריית הקובץ מתעדת תיקוני ניגודיות אמיתיים
-  (צהוב מותג 1.41:1, `text-gray-400` 2.60:1, דיו קופה 4.01:1/3.38:1).
-- **הצהרת נגישות (תקן 5568)**: `src/app/(store)/accessibility/page.tsx`
-  מגיש את הנוסח המשפטי המלא (תקן 5568, תיקון 13) ב-`/accessibility`;
-  `/legal/accessibility` מפנה 308 לשם. מקושר מהפוטר (`SiteFooter.tsx`).
-  תוכן ב-`src/app/(legal)/_content/accessibility.ts`.
-  `docs/ACCESSIBILITY-STATEMENT.md` ו-`docs/A11Y-SWEEP-REPORT.md` קיימים.
+**נמדד מאפס מול build אמיתי** (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build`, שרת ייעודי בפורט
+3422, Lighthouse `--throttling-method=devtools` — ה-honest number
+המתועד ב-memory, לא ה-simulate שמייצר רעש של 8 נקודות): **LCP בית
+נמדד 2.0-2.1s, גבולי/מעל היעד** (שלוש ריצות: 2090/2010/2004ms), CLS
+0.002. product/category/cart כולם תחת 1.7s LCP ו-0.015 CLS, בלי שינוי.
 
-**בדיקה בפועל.** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים),
-`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים, זהה בדיוק ל-Q46),
-`rm -rf .next && pnpm build` נקי. שער חזותי PASS בשלושת הרוחבים,
-foreground, `--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`
-(שרת זמני בפורט 3316, cwd מאומת): **8.51%/9.02%/3.95%** (380/768/1440),
-זהה כמעט בדיוק למדידת Q46 (768 נע 9.07%→9.02%, בתוך רעש המדידה). אין
-קובץ קוד ייצור ששונה; `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+**הבאג: ה-Suspense fallback של רשת הדילים (`DealsOfTheDayFallback`,
+`src/components/home/DealsOfTheDay.tsx`) לא נשא `priority` על אף כרטיס
+אחד, בזמן שבפועל **הוא** מה שמצייר ראשון בתנאי רשת מואטים — לא הרשת
+האמיתית שמחליפה אותו.** `lcp-breakdown-insight` של Lighthouse הצביע על
+האלמנט הזוכה: תמונת הכרטיס הראשון, `loading="lazy"`, ‏1061ms
+`resourceLoadDelay`. השוואת ה-HTML הגולמי אישרה: אותו מוצר מופיע
+פעמיים בעמוד — פעם ב-fallback (`priority: false`, תמונת ה-fixture
+`ke-live-deal-0.webp`) ופעם ברשת האמיתית (`priority: true`, תמונת
+הקטלוג האמיתית) — וה-fallback הוא מה שבפועל נצבע קודם תחת throttling.
+ההנחה הישנה בקוד ("הפולבאק מוחלף לפני שמשהו מצייר") לא החזיקה תחת
+מדידה. **התיקון**: `eagerCount={HOME_DEALS_EAGER}` גם ב-fallback
+(היה `eagerCount=0` כברירת מחדל), כך ששני המועמדים האפשריים ל-LCP
+נושאים את אותו רמז, אף פעם לא יותר מתמונה אחת בו-זמנית. **נמדד אחרי:
+LCP בית 1.49-1.57s יציב על פני שש ריצות (שתי סדרות של שלוש), ירידה של
+כ-30-35%, `resourceLoadDelay` 589ms.** CLS ללא שינוי. טסט רגרסיה חדש,
+`src/components/home/DealsOfTheDay.test.tsx` (2 טסטים), אוכף שהכרטיס
+הראשון של ה-fallback לא `loading="lazy"`.
 
-**Q25..Q46 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q47
-לשמירה על תקרת 300 שורות).** עשרים פריטים חיצוניים חד-פעמיים, אף אחד
-לא בתור האמיתי. שישה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי במקרה
-של Q45), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים BLOCKED
-(מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32) שעות
-פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים ירוקים
-בכל העשרים.
+**פער AVIF אמיתי: ה-`formats` ברירת המחדל של ה-build הזה הוא
+`['image/webp']` בלבד** (`node_modules/next/dist/server/image-
+optimizer.js:546-548`), לא `['image/avif','image/webp']` כפי שתועד
+במקומות אחרים — נמדד ב-curl עם `Accept: image/avif` שחוזר `image/webp`
+על כל בקשה. sharp כבר נושא קידוד AVIF מחווט (`transformer.avif()`
+באותו קובץ), אז זה שינוי קונפיג שורה אחת, לא קוד חדש. **נוסף
+`images.formats: ['image/avif', 'image/webp']` ל-`next.config.ts`,
+נמדד אחרי: אותה תמונה (`ke-live-deal-0.webp`, w=384 q=50) — `3417`
+בייט AVIF מול `6228` בייט WebP, ‏45% קטן יותר, אפס רגרסיית LCP (עדיין
+1.49-1.57s).** מקורות AVIF עדיין עוקפים את האופטימייזר (BYPASS_TYPES,
+ללא שינוי), השינוי משפיע רק על מקורות jpg/png/webp.
+
+**`JS under 180KB gz per route`: לא הושג, ותועד כפער ידוע ולא נוגע
+מחדש.** נמדד: ‏`bundle-gate.mjs` shared first-load **223.8 KB gz**
+(ירד מ-255.6KB המתועד ב-`docs/KNOWN-ISSUES.md` #9, התיעוד שם מיושן),
+אבל זה לבדו כבר מעל סף 180KB לכל נתיב — שום נתיב לא יכול להגיע ל-180KB
+בלי לצמצם את ה-shared chunks עצמם. ה-chunk הגדול ביותר (113.6KB gz)
+כולל `react-dom` — runtime ליבה, לא ספרייה הניתנת להחלפה. **זהו בדיוק
+הפער ש-`docs/KNOWN-ISSUES.md` #9 כבר קורא לו "פרויקט פרופיילינג", ו-15
+סשנים רצופים (M14-c51 עד M14-c65) כבר בדקו ולא תקפו מעבר לratchet** —
+"goal שנתקע פעמיים: לדלג" חל כאן על הניסיון לצמצם shared JS בתוך פריט
+בודד; זו החלטה שהתקבלה לבד, לא דילוג על המדידה (שלושת היעדים האחרים כן
+נמדדו ותוקנו).
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
+`pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12 מדולגים, עלה
+מ-613/7333 ב-Q47 בגלל שני הטסטים החדשים). `rm -rf .next && pnpm build`
+נקי. שער חזותי PASS בשלושת הרוחבים, foreground,
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440` (שרת
+בפורט 3422, cwd מאומת): **8.58%/9.01%/4.16%** (380/768/1440), בתוך
+רעש המדידה מול Q47 (8.51/9.02/3.95). `docs/UI-PARITY-REPORT.md` עודכן
+על ידי השער עצמו.
+
+**Q25..Q47 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q48
+לשמירה על תקרת 300 שורות).** עשרים ואחד פריטים חיצוניים חד-פעמיים, אף
+אחד לא בתור האמיתי. שבעה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי
+במקרה של Q45, בחלקו במקרה של Q48 - LCP+AVIF תוקנו, JS-per-route תועד
+כפער ידוע), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים
+BLOCKED (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32)
+שעות פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים
+ירוקים בכל העשרים ואחד.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,

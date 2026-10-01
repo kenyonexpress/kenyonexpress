@@ -110,7 +110,9 @@ function categoryHref(slug: string): string {
 }
 
 /**
- * `priority` is the LCP hint for the first cards of the REAL grid only.
+ * `priority` is the LCP hint for the first cards of both the real grid and
+ * the Suspense fallback - see `DealsOfTheDayFallback` in `DealsOfTheDay.tsx`
+ * for why the fallback stopped being the exception on 2026-10-01.
  *
  * Measured with Lighthouse mobile on 2026-09-25 against the production build:
  * the LCP element on the home page is the first deal card's photo, and it is
@@ -121,9 +123,12 @@ function categoryHref(slug: string): string {
  * the boundary swapped and layout ran. `priority` on next/image emits
  * fetchpriority="high", drops loading="lazy" and preloads from the stream.
  *
- * The fallback grid stays lazy on purpose. Its cards are replaced the moment
- * the catalogue segment lands, so preloading its photos would spend the
- * phone's first round trips on pictures the visitor never keeps.
+ * Re-measured 2026-10-01 (Q48): the catalogue read is not always fast enough
+ * to beat the fallback's own paint under throttled conditions, so the
+ * fallback's first card had become the actual winning LCP candidate, still
+ * lazy, charging 1061ms of resource load delay. Whichever grid actually
+ * paints first should carry the hint; `eagerCount` stays at one card so only
+ * one image is ever preloaded at a time.
  */
 export default function ProductDealCard({
   product,

@@ -31,7 +31,9 @@ import { FIXTURE_DEALS, type HomeDeal, homeDeals } from '@/lib/homepage/deals'
  * same four fetch 640-wide files of 14-65KB, and three of them would be
  * preloaded at high priority for a place 550px below the fold, ahead of the
  * scripts the page hydrates with. See `priority` on ProductDealCard for the
- * discovery measurement; the fallback passes 0 because its cards are replaced.
+ * discovery measurement. The fallback passes the same `HOME_DEALS_EAGER` -
+ * see the note on `DealsOfTheDayFallback` for why "its cards are replaced"
+ * was not a safe reason to leave it at 0.
  */
 function DealsGrid({
   products,
@@ -82,7 +84,19 @@ const HOME_DEALS_EAGER = 1
  * suspending the parent - the root - and the static shell would wait on the
  * read it exists to not wait on. So the fallback is the capture, unread and
  * unawaited, and the catalogue replaces it when it lands.
+ *
+ * `eagerCount={HOME_DEALS_EAGER}` HERE TOO, since 2026-10-01. This is the
+ * markup that actually paints first - the real grid only replaces it once
+ * `homeDeals()` resolves. Lighthouse mobile (devtools throttling) measured
+ * the home LCP at 2.0-2.1s with this fallback at its old `eagerCount={0}`
+ * default: the winning LCP candidate was the fallback's own first-card photo,
+ * `loading="lazy"` with no `fetchpriority`, carrying 1061ms of resource load
+ * delay before the request even left - the catalogue read had not resolved
+ * yet, so the "replaced the moment it lands" assumption this function used to
+ * rely on did not hold under throttling. Matching the real grid's eager
+ * treatment here fixed it without changing what ships once the catalogue
+ * answers: the swap still happens, only now neither candidate image is lazy.
  */
 export function DealsOfTheDayFallback() {
-  return <DealsGrid products={FIXTURE_DEALS} />
+  return <DealsGrid products={FIXTURE_DEALS} eagerCount={HOME_DEALS_EAGER} />
 }

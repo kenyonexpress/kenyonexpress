@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q47 (הועבר מ-STATE.md ב-Q48, לשמירה על תקרת 300 שורות)
+
+**Q47 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Accessibility pass: aria-labels, keyboard nav,
+focus ring, contrast 4.5+, IS 5568 statement." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q46. **כל
+חמשת הרכיבים כבר בנויים, מחווטים ונבדקים אוטומטית, נבדק מחדש שורה-שורה:**
+
+- **aria-label על כל רכיב אינטראקטיבי**: כפתורי אייקון בלבד ב-
+  `src/components/layout/{Header,MastheadNav,SiteFooter,RegionMenu,
+  BottomTabBar,MobileDrawer}.tsx` וב-`src/components/cart/{AddToCartButton,
+  CartDrawer,MiniCartDropdown,CartLineItem,CartNavLink,CartTotalsSidebar,
+  CartPageView}.tsx` נושאים `aria-label`. פאנל העגלה עצמו `role="dialog"`
+  עם שם נגיש "עגלת קניות" (נאכף ב-`e2e/a11y.spec.ts:533`).
+- **ניווט מקלדת**: `MobileDrawer.tsx` (Escape סוגר, focus נכנס וחוזר
+  לכפתור המפעיל, יד-כתוב כי `<dialog>` מקורי לא נתן את זה). `Dialog` של
+  Radix (`src/components/ui/dialog.tsx`) נותן focus trap/Escape מובנה
+  לשימושים שלו. `e2e/a11y.spec.ts:173-257` אוכף שכל רכיב אינטראקטיבי
+  בכל עמוד ציבורי, בדף המוצר ובקופה המלאה (ארבעת השלבים) נגיש במקלדת.
+- **טבעת focus נראית**: `focus-visible:` ב-`src/components/ui/{button,
+  input,textarea}.tsx`, `src/app/globals.css`, `src/styles/account.css`.
+  כ-70 מופעי `outline-none`/`focus:outline-none`, כל מדגם שנבדק מזווג
+  עם טבעת חלופית (`focus:ring-2`/`focus-visible:ring-2`) — אין מופע
+  שמסיר outline בלי תחליף.
+- **ניגודיות 4.5:1+ (WCAG AA / תקן 5568)**: `e2e/a11y.spec.ts` מריץ
+  `@axe-core/playwright` עם `WCAG_AA = ['wcag2a','wcag2aa','wcag21a',
+  'wcag21aa']` על כל עמוד ציבורי, דף המוצר, הקופה המלאה (כולל מצבי שגיאת
+  ולידציה) ופאנל העגלה; `e2e/a11y-authenticated.spec.ts` מרחיב לכל עמודי
+  הלקוח/אדמין/ספק (`route-lists.ts`). נכשל על **כל** הפרה, לא רק
+  serious/critical. היסטוריית הקובץ מתעדת תיקוני ניגודיות אמיתיים
+  (צהוב מותג 1.41:1, `text-gray-400` 2.60:1, דיו קופה 4.01:1/3.38:1).
+- **הצהרת נגישות (תקן 5568)**: `src/app/(store)/accessibility/page.tsx`
+  מגיש את הנוסח המשפטי המלא (תקן 5568, תיקון 13) ב-`/accessibility`;
+  `/legal/accessibility` מפנה 308 לשם. מקושר מהפוטר (`SiteFooter.tsx`).
+  תוכן ב-`src/app/(legal)/_content/accessibility.ts`.
+  `docs/ACCESSIBILITY-STATEMENT.md` ו-`docs/A11Y-SWEEP-REPORT.md` קיימים.
+
+**בדיקה בפועל.** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים),
+`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים, זהה בדיוק ל-Q46),
+`rm -rf .next && pnpm build` נקי. שער חזותי PASS בשלושת הרוחבים,
+foreground, `--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`
+(שרת זמני בפורט 3316, cwd מאומת): **8.51%/9.02%/3.95%** (380/768/1440),
+זהה כמעט בדיוק למדידת Q46 (768 נע 9.07%→9.02%, בתוך רעש המדידה). אין
+קובץ קוד ייצור ששונה; `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+
 ## Q46 (הועבר מ-STATE.md ב-Q47, לשמירה על תקרת 300 שורות)
 
 **Q46 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
