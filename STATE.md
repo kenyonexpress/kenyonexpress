@@ -1,23 +1,38 @@
-RESUME FROM: M09-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c69 - DONE, Lighthouse mobile על `/` ו-`/product` אומת מחדש, אפס דריפט)
+RESUME FROM: M10-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c69 - DONE, deps/exports מתים אומתו מחדש עם knip, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c69 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
-`type-check`, `lint` (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337+12), `build` (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3319`). שרת `pnpm start` עצמאי על פורט 3319, כבה אחרי המדידה.
-מוצר לדוגמה: `צימר-מאסטר` (כמו ב-M08-c66..M08-c68, 10 במלאי).
-`scripts/lighthouse-smoke.mjs --throttling-method=provided` (המתכון
-התקף, `docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**,
-`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c68. `simulate`
-(רועש, ללוג בלבד, ברירת המחדל של הסקריפט): `/` = 86/100/100,
-`/product/...` = 86/100/100. אפס שינוי קוד/סכימה/כסף/לסף 90 בסקריפט.
+**M09-c69 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat c96296cb2..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts` (בסיס: HEAD של M09-c68) ריק — אפס דריפט קוד
+מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints` הורץ מחדש: 271
+"unused exports" ו-197 "unused exported types", אותם מספרים בדיוק
+כמו M09-c68 — אין מועמד חדש. חמש ה-deps שסומנו (`@radix-ui/react-dropdown-menu`,
+`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
+אומתו מחדש כ-false-positive, `grep` ישיר מצא צרכן אמיתי לכל אחת
+(`src/components/ui/{dropdown-menu,select,form}.tsx`, `src/db/schema/*`,
+`src/server/actions/cart.ts`). ארבעת ה-"duplicate exports" (`BottomTabBarView`/
+`default`, `HERO_CATEGORY_BANNERS`/`CATEGORIES`, `beginCheckoutInputSchema`/
+`createOrderInputSchema`, `MAX_DLQ_ATTEMPTS`/`MAX_REPLAY_ATTEMPTS`) נבדקו
+פרטנית — כולם aliases מכוונים (קבוע/טיפוס אחד מיוצא תחת שני שמות לצרכנים
+שונים), לא קוד מת. "Unused files (201)" ו-`Unlisted binaries (1)` הם
+רעש ידוע של knip ללא `knip.json`: סקריפטים שמופעלים ישירות (`scripts/*.mjs`,
+`load/*.js`), `apps/mobile` (אפליקציית Expo נפרדת), ו-`supabase` כ-CLI
+binary — לא ייבוא סטטי ש-knip עוקב אחריו. אין `knip.json` בריפו (ריצה
+אפמרית בלבד, כמו בכל סבב קודם), ולא נוצר אחד — שינוי קונפיגורציה כזה חורג
+מהיקף הבדיקה החוזרת הזו. אפס הסרה, כי אין מועמד חדש להסיר מעבר למה
+שכבר הוסר ב-M09-c66/M09-c67 (`HERO_ANIMATION_MEDIA`, `dotButtonWidth`).
+
+אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337+12 מדולגים), `build`
+exit 0 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3319`).
 קובץ יחיד: `STATE.md`.
 
-**M07-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M08-c69 לשמירה על תקרת 300 שורות).** M07-c69: סריקת TODO/FIXME
+**M08-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c69 לשמירה על תקרת 300 שורות).** M08-c69: Lighthouse mobile על
+`/` ו-`/product` אומת מחדש (`throttling-method=provided`, המתכון התקף),
+100/100/100 בשניהם, אפס דריפט מ-M08-c68. M07-c69: סריקת TODO/FIXME
 אומתה מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c69: `pnpm build`
 אומת מחדש, אפס דריפט. M05-c69: `pnpm test` נמדד
 מחדש, אפס דריפט. M04-c69: `pnpm type-check`
@@ -29,15 +44,11 @@ localhost:3319`). שרת `pnpm start` עצמאי על פורט 3319, כבה אח
 {width}.png`, אפס דריפט מ-M01-c68 (8.58%/9.01%/4.16%). ארבעת השערים
 ירוקים בשלושתם.
 
-**M18-c68..M17-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M01-c69 לשמירה על תקרת 300 שורות).** M18-c68: STATE.md אומת מתחת
-לתקרת 300 שורות (299), לא נדרש כיווץ נוסף. M17-c68: RTL על `/`
-ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c67. ארבעת השערים ירוקים
-בשניהם.
-
-**M16-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M17-c68 ו-M01-c69 לשמירה על תקרת 300 שורות).** חמישה-עשר פריטי
-אימות-בלבד, אפס דריפט בכולם: JSON-LD Product+BreadcrumbList (M16); אפס
+**M18-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M01-c69, M17-c68 ו-M09-c69 לשמירה על תקרת 300 שורות).** M18-c68:
+STATE.md אומת מתחת לתקרת 300 שורות (299), לא נדרש כיווץ נוסף. M17-c68:
+RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c67. שבעה-עשר פריטי
+אימות-בלבד נוספים, אפס דריפט בכולם: JSON-LD Product+BreadcrumbList (M16); אפס
 console error/hydration (M15); Sentry release מול HEAD, הפער גדל ל-388
 קומיטים, אין `SENTRY_DSN` ב-Production (M14); `/api/health`/`/api/ready`
 מול פרודקשן (M13); robots.txt קוד HEAD תקין, פרודקשן קפואה (חוסם 2, M12);
@@ -47,24 +58,17 @@ sitemap.xml טרי, חמש תת-מפות 200 (M11); 19 מיגרציות אומת
 (M05); `type-check` נקי (M04); שער חזותי קטגוריה (3.53/2.52/1.69, M03);
 שער חזותי מוצר (4.96/4.58/3.25, M02). ארבעת השערים ירוקים בכולם.
 
-**M18-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-בשלבים עד M01-c68, לשמירה על תקרת 300 שורות).** שבעה-עשר פריטי
-אימות-בלבד/תחזוקה, אפס דריפט בכולם: שערים חזותיים בית/מוצר/קטגוריה
-(M01-M03 בכל סבב); type-check/test/build; TODO/FIXME; Lighthouse
-100/100/100; חבילות מתות הוסרו; מיגרציות אומתו; sitemap.xml; robots.txt
-תוקן; `/api/health`/`/api/ready`; Sentry מול HEAD (פער 370 קומיטים); אפס
-console error; JSON-LD; RTL (leak אמיתי נמצא ותוקן ב-M17-c66); STATE.md
-אומת מתחת לתקרה. ארבעת השערים ירוקים בכולם.
-
-**M01-c66..M17-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-בשלבים, M14-c66..M16-c66, M03-c67, לשמירה על תקרת 300 שורות).** שבעה-עשר
-פריטי תור, DONE בכולם, אפס דריפט קוד, ארבעת השערים ירוקים: שערים חזותיים
-בית/מוצר/קטגוריה (M01-M03); type-check/test/build (M04-M06); TODO/FIXME
-עם תיקון אחד (M07); Lighthouse 100/100/100 (M08); חבילות מתות הוסרו (M09);
-19 מיגרציות אומתו (M10); sitemap.xml (M11); robots.txt תוקן (M12);
-`/api/health`/`/api/ready`, `503` בגלל Meilisearch (M13); Sentry מול HEAD
-— פריסה על `a388118f1` ואין `SENTRY_DSN` ב-Production (M14); אפס console
-error (M15); JSON-LD (M16); RTL — leak ב-`HeroSlider.tsx` נמצא ותוקן (M17).
+**M01-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+בשלבים, M14-c66..M16-c66, M03-c67, עד M01-c68, לשמירה על תקרת 300
+שורות).** שלושים וארבעה פריטי תור/אימות-בלבד/תחזוקה על פני שני סבבים
+(c66, c67+M18-c67..M01-c68), DONE בכולם, אפס דריפט קוד, ארבעת השערים
+ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה (M01-M03 בכל סבב);
+type-check/test/build (M04-M06); TODO/FIXME (תיקון אחד ב-c66's M07);
+Lighthouse 100/100/100 (M08); חבילות מתות הוסרו (M09); מיגרציות אומתו
+(M10); sitemap.xml (M11); robots.txt תוקן (M12); `/api/health`/`/api/ready`
+(M13); Sentry מול HEAD, הפער גדל בכל סבב (M14); אפס console error (M15);
+JSON-LD (M16); RTL — leak אמיתי נמצא ותוקן ב-c66's M17 (`HeroSlider.tsx`),
+אפס דריפט חוזר ב-c67/c68 (M17); STATE.md אומת מתחת לתקרה (M18).
 
 **Q51..Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M14-c66 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים:
