@@ -1,30 +1,22 @@
-RESUME FROM: M18-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c69 - DONE, RTL על / ו-/product נבדק שוב, אפס leak)
+RESUME FROM: M19-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c69 - DONE, STATE.md אומת מתחת לתקרת 300 שורות)
 
 ## המשך מ:
 
-**M17-c69 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c68, ש-M17-c66 מצאה
-ותיקנה בו leak אמיתי (`HeroSlider.tsx`). **נבדק מחדש כאן, אפס דריפט בקוד.**
-`git log 8b549ac8e..HEAD -- src/ e2e/` ריק — אין קומיט שנגע בשום קובץ תחת
-`src/` או `e2e/` מאז קומיט M17-c68 (`8b549ac8e`), ו-`grep -n 'dir="ltr"'
-src/components/{home,store}/HeroSlider.tsx` מחזיר רק שלוש הערות קוד שמסבירות
-את התיקון ההיסטורי, לא תכונת JSX בפועל. **אומת גם ברמת הדף, שני מסלולים
-עצמאיים**: (1) `rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4537 pnpm build` exit 0 נקי, `pnpm
-start -p 4537` עצמאי, `lsof`+`cwd` מאשרים שה-listener הוא התהליך הזה;
-`E2E_BASE_URL=http://localhost:4537 npx playwright test e2e/home-rtl.spec.ts
-e2e/rtl-three-widths.spec.ts e2e/rtl-mobile.spec.ts --workers=1` —
-**112/112 עברו** (chromium+mobile-chrome, כולל "every ltr node on the page
-is on the allow-list" בשתי המכונות; לא חזרה הבעיה התשתיתית של
-`networkidle` שנרשמה ב-M17-c68). (2) סריקת DOM ישירה (סקריפט Playwright
-חד-פעמי, לא נשמר) על `/product/צימר-מאסטר` אחרי hydration: **2 צמתים
-`direction:ltr` בלבד**, זהה ל-M17-c66..M17-c68 (`.pdp-summary__meta` ללא
-SKU, ואינפוט email) — שניהם לגיטימיים, לא leak. **לא נדרש תיקון קוד.**
-ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, כולל `rtl-logical-gate`),
-`test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build` exit 0
-נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M17-c68). קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M16-c69).
+**M18-c69 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines
+archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c68. **נמדד:
+`wc -l STATE.md` היה 297 לפני העריכה הזו**, כבר מתחת לתקרה, אך הועבר בכל
+זאת הסעיף המלא של M17-c69 ל-`docs/STATE-ARCHIVE.md` (שורה חדשה שם, "הועבר
+מ-STATE.md ב-M18-c69") וכווץ כאן לשורה אחת, כדי לפנות מקום להערת האימות
+הזו ולשמור על אותו קצב כיווץ כמו בכל פריט M18 קודם. **לא נדרש תיקון קוד
+או מבנה נוסף** — אין פיצול/מיזוג סעיפים אחר מעבר לכיווץ הרגיל. ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים,
+7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש (אין שינוי UI, תקדים M18-c68). קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
+**M17-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M18-c69).**
+RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c68.
 
 **M16-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M17-c69).**
 JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר, אפס דריפט מ-M16-c68.
