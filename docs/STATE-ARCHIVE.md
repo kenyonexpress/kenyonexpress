@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c65 (הועבר מ-STATE.md ב-M17-c65, לשמירה על תקרת 300 שורות)
+
+**M16-c65 - DONE (01.10): תברואת ריפו נבדקה מחדש, `git status` נקי,
+אפס ענף מקומי לא-דחוף מ-43, 24 PR פתוחים ו-22 ענפים ישנים נרשמו, אפס
+דריפט מ-M16-c64.** משימת התור: "Repo hygiene: ensure git status is
+clean, every local branch is pushed, list open PRs and stale branches
+in STATE.md. Do not merge or delete anything."
+
+**`git status`: נקי** (עץ עבודה נקי, ענף `audit/final-audit`, מעודכן
+מול `origin/audit/final-audit`).
+
+**43 ענפים מקומיים, אפס תוכן לא-דחוף.** `comm` בין `git branch` ל-`git
+branch -r` איתר שישה ענפים בלי remote ref באותו שם (`chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`,
+`release/v1.1`, `wip/refund-record-rebase-head`) — אותה רשימה בדיוק
+כמו ב-M16-c64. `git branch -r --contains <sha>` על כל אחד מהשישה אישר:
+כל ה-SHA-ים מוכלים במלואם ב-`origin/main` וב-`origin/audit/final-audit`
+(חלקם גם ב-`origin/release/v1.0`/`v1.2` ואחרים), אפס תוכן אבוד. לא
+נמחק ולא נדחף שום ענף.
+
+**24 PR פתוחים** (`gh pr list --state open --json
+number,title,headRefName,createdAt`, 01.10.2026): #2, #3, #4, #5, #9,
+#12, #13, #14, #16, #17, #18, #19, #20, #21, #22, #23, #25, #28, #30,
+#31, #32, #33, #46, #47 — אותם מספרים וכותרות כמו ב-M16-c64, אפס PR
+חדש, אפס PR נסגר.
+
+**22 ענפים מקומיים ישנים** (בלי commit מעל 30 יום, `committerdate:unix`
+מול השעון הנוכחי, 01.10.2026): `feat/auth-hardening`, `feat/checkout-e2e`,
+`feat/monitoring-sentry`, `feat/notifications-full`,
+`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`
+(41 יום), `feat/rate-limit-layer` (41 יום), `feat/auth-model`,
+`merge/supplier-and-arch-night` (42 יום), `feat/db-hardening-v2`,
+`feat/product-type` (43 יום), `arch/docs-queue` (49 יום),
+`arch/docs-batch-2`, `feat/e2e-quality` (50 יום), `docs/final-pack`
+(59 יום), `arch/account-area`, `arch/checkout-cardcom-verification`,
+`arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration` (60 יום),
+`save/ke-visual-work` (64 יום) — אותה רשימה בדיוק כמו ב-M16-c64, אפס
+שינוי. `docs/final-pass` (30 יום בדיוק) ו-`docs/v1-final` (29 יום)
+נשארים מתחת לסף "מעל 30", עדיין מחוץ לרשימה.
+
+**ארבעת השערים:** `type-check` נקי. `lint` נקי (biome 2029 קבצים, 12
+שערים ירוקים, זהה ל-M15-c65). `test` 610/610 קבצים, 7298/7310 עברו (12
+דולגים בכוונה), זהה ל-M15-c65. `build` לא רץ מחדש: `.next` הקיים
+(`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`, mtime 01.10 08:36) נבנה אחרי
+הקומיט האחרון שנוגע בנתיב רלוונטי לבנייה (`857a0deea`, M18-c64, 01.10
+01:11), אומת ב-`git log -1`. אפס שינוי קוד ייצור; קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M15-c65 (הועבר מ-STATE.md ב-M16-c65, לשמירה על תקרת 300 שורות)
 
 **M15-c65 - DONE (01.10): תיעוד סונכרן מחדש — STATE.md, docs/
