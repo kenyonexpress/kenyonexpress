@@ -1,96 +1,100 @@
-RESUME FROM: M17-c68
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c68 - DONE, JSON-LD Product+BreadcrumbList נבדק מחדש בכל דף מוצר, אפס דריפט מ-M16-c67)
+RESUME FROM: M18-c68
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c68 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט מ-M17-c67, פלוק תשתית אחד בודד ולא קשור)
 
 ## המשך מ:
 
-**M16-c68 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
-JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66/M16-c67.
-**נבדק מחדש, אפס דריפט.** `git log e2b25a955..HEAD -- "src/app/(store)/product"
-src/lib/seo` ריק — אין קומיט שנגע בקבצים הרלוונטיים מאז M16-c67. **מקור
-האמת זהה**: `product/[slug]/page.tsx` בונה את שני הצמתים ללא תנאי לכל סלאג
-(`buildProductJsonLd`/`buildBreadcrumbJsonLd` מ-`src/lib/seo/json-ld.ts`,
-שני `<script type="application/ld+json">` תמיד ברינדור, לא מאחורי דגל, לא
-מסתעף לפי סוג מוצר/מלאי/קופון). **אומת גם ברמת הדף**: `.next` חדש לגמרי
-(`rm -rf .next`) עם `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3321
-pnpm build` exit 0 נקי, `pnpm start -p 3321` עצמאי, אימות שה-listener על
-הפורט הוא התהליך הזה (`lsof`, מונע את הלכידה הידועה "gate measured a
-foreign server on 3311"), `E2E_BASE_URL=http://localhost:3321 npx playwright
-test e2e/seo-markup.spec.ts --grep "Product JSON-LD and a breadcrumb"` —
-**2/2 עברו** (chromium+mobile-chrome): `@type` כולל `Product`+
-`BreadcrumbList`, ול-`Product` יש `name` לא-ריק. **לא נדרש תיקון קוד.**
-ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614
-קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי. לא פריט
-חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c67). קבצים: `STATE.md`,
+**M17-c68 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66/M17-c67, ש-M17-c66 מצאה
+ותיקנה בו leak אמיתי (`HeroSlider.tsx`). **נבדק מחדש כאן, אפס דריפט בקוד.**
+`git log 58d75006a..HEAD -- src/ e2e/` ריק — אין קומיט שנגע בשום קובץ
+תחת `src/` או `e2e/` מאז קומיט M17-c67 (`58d75006a`), ו-`grep -n 'dir="ltr"'
+src/components/{home,store}/HeroSlider.tsx` מחזיר רק שתי הערות קוד שמסבירות
+את התיקון ההיסטורי, לא תכונת JSX בפועל. **אומת גם ברמת הדף, שני מסלולים
+עצמאיים**: (1) `rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4531 pnpm build` exit 0 נקי, `pnpm
+start -p 4531` עצמאי, `lsof` מאשר שה-listener הוא התהליך הזה; `E2E_BASE_URL=
+http://localhost:4531 npx playwright test e2e/home-rtl.spec.ts
+e2e/rtl-three-widths.spec.ts e2e/rtl-mobile.spec.ts` — **111/112 עברו**,
+כולל "every ltr node on the page is on the allow-list" ב-chromium.
+**הכשל היחיד (mobile-chrome, אותו טסט) הוא תשתיתי ולא RTL**: `page.
+waitForLoadState('networkidle')` לא מתכנס אפילו ב-60 שניות ובריצה מבודדת
+(`--workers=1`), בעוד sniff נפרד (script גולמי וגם spec זמני, עם המכשיר
+Pixel 5) מראה שתעבורת הרשת האמיתית נגמרת תוך כ-1.2 שניות — כלומר ה-timeout
+אינו תעבורה אמיתית שלא נגמרת, הוא מגבלה ידועה של `networkidle` מול
+Next.js (prefetch/postponed streams), לא רגרסיית RTL. **אומת ישירות עם
+ה-DOM-scan המדויק של הטסט עצמו, רק עם `load`+השהייה קבועה במקום
+`networkidle`**: spec זמני (`e2e/tmp-rtl-verify.spec.ts`, נמחק לפני commit)
+עם אותו allow-list ואותה לוגיקת `offenders` בדיוק — **עבר על `chromium`
+וגם על `mobile-chrome`**, אפס offenders בשתיהן. (2) סריקת DOM ישירה על
+`/product/צימר-מאסטר` אחרי hydration: **2 צמתים `direction:ltr` בלבד**,
+זהה ל-M17-c66/M17-c67 (`.pdp-summary__meta` ללא SKU, ואינפוט email) —
+שניהם לגיטימיים, לא leak. **לא נדרש תיקון קוד.** ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, כולל `rtl-logical-gate`), `test` 614/614 קבצים,
+7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M17-c67). קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
-**M15-c68 ו-M14-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M16-c68).** M15-c68: אפס console error/hydration ב-`/` ובדף מוצר, אפס
-דריפט מ-M15-c67. M14-c68: Sentry release מול HEAD נבדק שוב מול Vercel MCP,
-אפס דריפט מ-M14-c67, הפער גדל ל-388 קומיטים (`a388118f1..HEAD`), אין
-`SENTRY_DSN` ב-Production.
+**M16-c68..M14-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M17-c68).** M16-c68: JSON-LD Product+BreadcrumbList נבדק מחדש בכל דף
+מוצר, אפס דריפט מ-M16-c67. M15-c68: אפס console error/hydration ב-`/`
+ובדף מוצר, אפס דריפט מ-M15-c67. M14-c68: Sentry release מול HEAD נבדק שוב
+מול Vercel MCP, אפס דריפט מ-M14-c67, הפער גדל ל-388 קומיטים
+(`a388118f1..HEAD`), אין `SENTRY_DSN` ב-Production.
 
-**M13-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c68).**
-`/api/health`/`/api/ready` אומתו מול פרודקשן, אפס דריפט מ-M13-c67.
-
-**M12-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M13-c68 לשמירה על תקרת 300 שורות).** אחד-עשר פריטי אימות-בלבד, אפס דריפט
-בכולם: robots.txt קוד HEAD תקין, פרודקשן קפואה (חוסם 2, M12); sitemap.xml
-טרי, חמש תת-מפות 200 (M11); 19 מיגרציות אומתו מחדש פרטנית (M10);
-deps/exports מתים עם `knip` (M09); Lighthouse mobile 100/100/100 (M08);
-TODO/FIXME (M07); `build` exit 0 (M06); `test` 614/614, 7337+12 (M05);
-`type-check` נקי (M04); שער חזותי קטגוריה (3.53/2.52/1.69, M03); שער חזותי
-מוצר (4.96/4.58/3.25, M02). ארבעת השערים ירוקים בכולם.
+**M13-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M17-c68 לשמירה על תקרת 300 שורות).** שנים-עשר פריטי אימות-בלבד, אפס
+דריפט בכולם: `/api/health`/`/api/ready` מול פרודקשן (M13); robots.txt קוד
+HEAD תקין, פרודקשן קפואה (חוסם 2, M12); sitemap.xml טרי, חמש תת-מפות 200
+(M11); 19 מיגרציות אומתו מחדש פרטנית (M10); deps/exports מתים עם `knip`
+(M09); Lighthouse mobile 100/100/100 (M08); TODO/FIXME (M07); `build` exit 0
+(M06); `test` 614/614, 7337+12 (M05); `type-check` נקי (M04); שער חזותי
+קטגוריה (3.53/2.52/1.69, M03); שער חזותי מוצר (4.96/4.58/3.25, M02). ארבעת
+השערים ירוקים בכולם.
 
 **M18-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 בשלבים עד M01-c68, לשמירה על תקרת 300 שורות).** שבעה-עשר פריטי
 אימות-בלבד/תחזוקה, אפס דריפט בכולם: שערים חזותיים בית/מוצר/קטגוריה
-נמדדו מחדש מספר פעמים (M01-M03 בכל סבב); type-check/test/build;
-TODO/FIXME; Lighthouse 100/100/100; חבילות מתות הוסרו; מיגרציות אומתו;
-sitemap.xml; robots.txt תוקן; `/api/health`/`/api/ready`; Sentry מול
-HEAD (פער 370 קומיטים); אפס console error; JSON-LD; RTL (leak אמיתי
-נמצא ותוקן ב-M17-c66); STATE.md אומת מתחת לתקרה. ארבעת השערים ירוקים
-בכולם.
+(M01-M03 בכל סבב); type-check/test/build; TODO/FIXME; Lighthouse
+100/100/100; חבילות מתות הוסרו; מיגרציות אומתו; sitemap.xml; robots.txt
+תוקן; `/api/health`/`/api/ready`; Sentry מול HEAD (פער 370 קומיטים); אפס
+console error; JSON-LD; RTL (leak אמיתי נמצא ותוקן ב-M17-c66); STATE.md
+אומת מתחת לתקרה. ארבעת השערים ירוקים בכולם.
 
 **M01-c66..M17-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 בשלבים, M14-c66..M16-c66, M03-c67, לשמירה על תקרת 300 שורות).** שבעה-עשר
 פריטי תור, DONE בכולם, אפס דריפט קוד, ארבעת השערים ירוקים: שערים חזותיים
 בית/מוצר/קטגוריה (M01-M03); type-check/test/build (M04-M06); TODO/FIXME
-עם תיקון אחד (M07); Lighthouse 100/100/100 (M08); חבילות מתות הוסרו
-(M09); 19 מיגרציות אומתו (M10); sitemap.xml (M11); robots.txt תוקן
-(M12); `/api/health`/`/api/ready`, `ready` `503` בגלל Meilisearch (M13);
-Sentry מול HEAD — פריסה על `a388118f1` לא HEAD ואין `SENTRY_DSN`
-ב-Production (M14); אפס console error (M15); JSON-LD (M16); RTL —
-leak אמיתי נמצא ב-`HeroSlider.tsx` ותוקן (M17).
+עם תיקון אחד (M07); Lighthouse 100/100/100 (M08); חבילות מתות הוסרו (M09);
+19 מיגרציות אומתו (M10); sitemap.xml (M11); robots.txt תוקן (M12);
+`/api/health`/`/api/ready`, `503` בגלל Meilisearch (M13); Sentry מול HEAD
+— פריסה על `a388118f1` ואין `SENTRY_DSN` ב-Production (M14); אפס console
+error (M15); JSON-LD (M16); RTL — leak ב-`HeroSlider.tsx` נמצא ותוקן (M17).
 
 **Q51..Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M14-c66 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים:
-Crisp chat נדחה, מתנגש בהחלטת בעלים (WhatsApp+email בלבד, בלי Crisp,
-23.09, Q51 BLOCKED); Meilisearch Hebrew synonyms/facets/no-search-UI
-כבר קיימים (Q52 VERIFIED); Cardcom sandbox-to-production toggle כבר בנוי
-(Q53 VERIFIED); שלוש jobs חדשות ב-CI (`migration-dry-run`, `bundle-gate`,
-`lighthouse --throttling-method=provided`), `migration-lint` חשף תקלה
-קיימת-מראש לא תוקנה בפריט (Q54 DONE); `LAUNCH-READINESS.md` נבדק מחדש,
-NOT READY ללא שינוי, `v1.0.0-rc7-final-audit` תויג (Q55 DONE). אפס שינוי
-קוד ייצור בכולם חוץ מ-Q54, ארבעת השערים ירוקים בכולם, שער חזותי PASS בכל
-מה שנמדד.
+Crisp chat נדחה (WhatsApp+email בלבד, Q51 BLOCKED); Meilisearch Hebrew
+synonyms/facets/no-search-UI כבר קיימים (Q52 VERIFIED); Cardcom
+sandbox-to-production toggle כבר בנוי (Q53 VERIFIED); שלוש jobs חדשות
+ב-CI, `migration-lint` חשף תקלה קיימת-מראש לא תוקנה (Q54 DONE);
+`LAUNCH-READINESS.md` נבדק מחדש, NOT READY, `v1.0.0-rc7-final-audit`
+תויג (Q55 DONE). אפס שינוי קוד ייצור חוץ מ-Q54, ארבעת השערים ירוקים
+בכולם, שער חזותי PASS בכל מה שנמדד.
 
 **Q25..Q50 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q51
 לשמירה על תקרת 300 שורות).** עשרים וארבעה פריטים חיצוניים חד-פעמיים, אף
-אחד לא בתור האמיתי. עשרים ואחד נמצאו DONE ובנויים במלואם (כמעט לגמרי
-במקרה של Q45, בחלקו במקרה של Q48 - LCP+AVIF תוקנו, JS-per-route תועד
-כפער ידוע), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים
-BLOCKED (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32)
-שעות פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים
-ירוקים בכל עשרים וארבעה.
+אחד לא בתור האמיתי. עשרים ואחד DONE ובנויים במלואם (כמעט לגמרי Q45, בחלקו
+Q48 - LCP+AVIF תוקנו, JS-per-route תועד כפער ידוע), אחד (Q43) נבנה חדש,
+שניים BLOCKED (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד
+(Q32) שעות פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת
+השערים ירוקים בכל עשרים וארבעה.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,
-לא קיים בתור האמיתי; קופון/פיזי לדף המוצר מלאה, בורר וריאנטים שטוח ואין
-spec — לא נבנה עיצוב ספקולטיבי. שלוש-עשרה בדיקות שוטפות של c65 (היסטוגרמת
-דירוגים בדף הביקורות, קופי, תברואת ריפו, סנכרון תיעוד, ביצועים, אבטחה,
-SEO, axe, כיסוי טסטים, STATE CLEAN, BACKLOG EMPTY, route audit,
-Lighthouse mobile 99/100/100/100) — אפס דריפט בכולן, ארבעת השערים
-ירוקים, שער חזותי PASS בכל מה שנמדד.
+לא קיים בתור האמיתי; קופון/פיזי לדף המוצר מלאה — לא נבנה עיצוב ספקולטיבי.
+שלוש-עשרה בדיקות שוטפות של c65 (היסטוגרמת דירוגים, קופי, תברואת ריפו,
+סנכרון תיעוד, ביצועים, אבטחה, SEO, axe, כיסוי טסטים, STATE CLEAN,
+BACKLOG EMPTY, route audit, Lighthouse mobile 99/100/100/100) — אפס
+דריפט בכולן, ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
 
 **M01-c62..M01-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-Q39 לשמירה על תקרת 300 שורות).** חמישים ואחד פריטי בדיקה חוזרת
