@@ -1,52 +1,54 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q37)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q38)
 
 ## המשך מ:
 
-**Q37 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"מתנה של קופון: שליחת מייל, מועד שליחה מתוזמן, ברכה אישית". **אינו קיים
-בתור האמיתי** (אין `Q37` ב-`docs/QUESTIONS-FOR-OFIR.md` בכלל), אותו דפוס
-כמו Q25-Q36.
+**Q38 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"תזכורות תפוגה, פוש ומייל, T-7 ו-T-1, לפי `docs/VOUCHER-LIFECYCLE.md`".
+**אינו קיים בתור האמיתי** (`Q38` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא "Host
+קנוני: apex מול www", לא קשור), אותו דפוס כמו Q25-Q37.
 
-**שלושת הסעיפים קיימים במלואם, אפס שינוי קוד.** שליחת קופון כמתנה בנויה
-בשתי נקודות זהות בצורתן (`src/server/payments/gift-vouchers.ts` ברגע
-התשלום, `src/server/actions/gifts.ts#transferVoucher` מאוחר יותר מהחשבון):
-שם ומייל מקבל, ברכה אישית (`gift_message`, עד 500 תווים, שדה ב-
-`CheckoutForm.tsx`/`GiftClaimForm` ובדף `/account/coupons/[id]/gift`), טוקן
-תביעה מגובב (`createGiftClaimToken`/`hashGiftClaimToken`), ושורת
-`notification_outbox` יחידה מסוג `voucher_gifted` לכל מתנה (מפתח
-`gift:<voucher_id>` בקנייה, `gift:<voucher_id>:<hash prefix>` בהעברה
-מהחשבון, כך שתי הדרכים לא מתנגשות). **מועד שליחה מתוזמן** קיים בצ'ק-אאוט
-(`gift_deliver_at` בטופס, `resolveGiftDeliverAt` ב-`src/lib/gifts/wrap.ts`),
-ומתורגם ל-`notification_outbox.next_attempt_at` — השורה פשוט בלתי נראית
-לניקוז עד התאריך המבוקש, בלי טבלה נוספת ובלי job שני. תאריך מתוזמן אחרי
-תפוגת השובר שלו נדרס לשליחה מיידית (`scheduleFor` ב-`gift-vouchers.ts`),
-לכל שובר בנפרד כי הזמנה יכולה לערבב מוצרים עם תפוגות שונות.
+**הסעיף קיים במלואו, אפס שינוי קוד, ומתועד כבר ב-§5 של
+`VOUCHER-LIFECYCLE.md` עצמו.** `enqueue_expiring_voucher_notices(p_buckets
+integer[] default array[7,1])` (מיגרציה 114, **מוחלת בפרודקשן**, לא
+ב-pending) רצה בתוך `/api/cron/expire-vouchers` אחרי הסוויפ, ומכניסה
+ל-`notification_outbox` שורת `voucher_expiring` אחת לכל שובר `issued`
+שה-`expires_at` שלו (באזור זמן ישראל) חל בדיוק T-7 או T-1 מהיום.
+אידמפוטנטי במפתח `voucher_expiring:<voucher_id>:<bucket>`, `UNIQUE` +
+`ON CONFLICT DO NOTHING`, כך שריצה חוזרת לא כופלת.
 
-**תלות ב-108/226 ממוגנת**: `readGiftIntent`/`sendOrderGifts` תופסים קוד
-`42703` (עמודה לא קיימת) ומתנהגים כאילו אין תזמון כלל כש-226 לא הוחל
-(`gift_deliver_at` הוא העמודה שלה) — "מתנה שנשלחת מיד" היא ברירת המחדל
-הבטוחה, לא כשל. 226 עדיין ב-`migrations/pending/`, לא הוחלה.
+**חמשת הערוצים מחווטים לסוג `voucher_expiring`**: מייל
+(`lib/email/notifications.ts`, בתוך `EMAIL_POLICY_EXEMPT_KINDS` — מדיניות
+25.09 לא חוסמת אותו), פוש (`lib/push/templates.ts`), פנים-אפליקציה
+(`lib/notifications/in-app.ts`), SMS (`lib/sms/templates.ts`) ו-WhatsApp
+(`lib/whatsapp/outbox.ts`). `OPTIONAL_KINDS` מאפשר ללקוח לכבות אותו בכל
+ערוץ חוץ ממייל (`CUSTOMER_TOGGLE_CHANNELS` משמיט `email` בכוונה,
+`preferences.ts`).
 
-**בדיקה בפועל:** `pnpm test src/server/payments/gift-vouchers
-src/lib/validations/gift-extras src/server/actions/gifts` — 32/32 ירוק.
+**הפער היחיד הידוע כבר מתועד כ-pending, ולא חוסם את הפיצ'ר:**
+`227_voucher_expiry_engine.sql` מחליף את ההתאמה מיום קלנדרי מדויק לחלון
+פר-bucket (כדי שריצת cron שנפלה לא תאבד תזכורת T-1 לתמיד) — לא הוחל, כצפוי.
+**חוסם #10 הקיים כבר ב-STATE.md** (ה-scheduler לא רץ, `CRON_SECRET` שונה בין
+GitHub ל-Vercel) הוא הסיבה שהתזכורות לא נשלחות בפועל היום, לא קוד חסר.
+
+**בדיקה בפועל:** `pnpm test src/lib/email/notifications src/lib/push/
+templates src/lib/sms/templates src/lib/notifications` — 134/134 ירוק.
 ארבעת השערים: type-check נקי, lint נקי (12 שערים), test מלא 610/610 קבצים
-7303/7315 (זהה ל-Q36), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט
-3311, cwd מאומת). שער חזותי PASS בשלושת הרוחבים (`8.51%`/`9.07%`/`3.95%`,
-`--baseline=refs/ke_live_{width}.png`, נמדד בפועל ב-foreground דרך
-`--widths=380,768,1440`, קומיט `4280b31b5`), **אפס דריפט** מ-Q36 — סשן
-מקביל נצפה מריץ `compare.mjs --width=1440` באותו זמן על אותו שרת
-(`localhost:3311`), לא התערב בתוצאה.
+7303/7315 (זהה ל-Q37), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט
+3311, cwd מאומת). שער חזותי PASS בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`,
+`--baseline=refs/ke_live_{width}.png`, foreground, קומיט `d617535ce`),
+דומה ל-Q37 בתוך רעש המדידה (768px: `9.02%` מול `9.07%`).
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**Q28..Q36 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו).** תשעה
-פריטים חיצוניים חד-פעמיים, אף אחד לא בתור האמיתי. Q36 — ארבעת דפי המשפט
-(ToS/פרטיות/החזרות/נגישות, עוגיות כסעיף בפרטיות) כבר בנויים במלואם, שער
-חזותי PASS (8.51/9.07/3.95%). Q35 — תפריט יצירת קשר בחמישה ערוצים ודף
-הצטרפות ספקים עם הסכם click-wrap כבר בנויים במלואם. Q34 — קונסולת
-מעלה-תוכן בלי שדות תמחור (RBAC + אכיפת שרת ב-`uploader-policy.ts`) ולוח
-ספק לקריאה בלבד (`/supplier/page.tsx`, אפס מוטציה) כבר בנויים במלואם.
+**Q28..Q37 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו).** עשרה
+פריטים חיצוניים חד-פעמיים, אף אחד לא בתור האמיתי. Q37 — שליחת קופון כמתנה
+(מייל, מועד שליחה מתוזמן, ברכה אישית) כבר בנויה במלואה בשתי נקודות. Q36 —
+ארבעת דפי המשפט (ToS/פרטיות/החזרות/נגישות, עוגיות כסעיף בפרטיות) כבר
+בנויים במלואם, שער חזותי PASS (8.51/9.07/3.95%). Q35 — תפריט יצירת קשר בחמישה
+ערוצים ודף הצטרפות ספקים עם הסכם click-wrap כבר בנויים במלואם. Q34 —
+קונסולת מעלה-תוכן בלי שדות תמחור (RBAC + אכיפת שרת ב-`uploader-policy.ts`)
+ולוח ספק לקריאה בלבד (`/supplier/page.tsx`, אפס מוטציה) כבר בנויים במלואם.
 Q33 — כל תשעת סעיפי ניהול המוצרים/קטגוריות/ספקים/הזמנות/זיכויים/שוברים
 כבר בנויים במלואם, שער חזותי PASS (8.51/9.02/3.95%). Q32 — דף ספק
 (`/s/[id]`): שעות פתיחה וקישור ביקורות גוגל היו היחידים שחסרו בפועל (שאר
@@ -56,10 +58,11 @@ Q33 — כל תשעת סעיפי ניהול המוצרים/קטגוריות/ספ
 `/account/notifications`. Q30 — כפתור הורדת חשבונית וקישור wa.me בעמוד
 התודה. Q29 — guest checkout עם Google sign-in ושמירת כרטיס מטוקניז.
 Q28 — עריכת שורה וקוד קופון בסל, מתג ארנק נכון שלא קיים בסל (שייך לקופה
-בכוונה). שער חזותי: Q31/Q32/Q36 PASS בשלושת הרוחבים (8.51/9.02-9.07/3.95%,
-`kenyonexpress.co.il` נסרב כ-reference לראשונה ב-Q31); Q28-Q30 PASS
-ב-1440 בלבד (0.95-1.47%), 380/768 REFUSED; Q33/Q34/Q35 נמדדו PASS
-בשלושת הרוחבים (8.51/9.02/3.95%). ארבעת השערים ירוקים בכל התשעה.
+בכוונה). שער חזותי: Q31/Q32/Q36/Q37 PASS בשלושת הרוחבים
+(8.51/9.02-9.07/3.95%, `kenyonexpress.co.il` נסרב כ-reference לראשונה
+ב-Q31); Q28-Q30 PASS ב-1440 בלבד (0.95-1.47%), 380/768 REFUSED; Q33/Q34/Q35
+נמדדו PASS בשלושת הרוחבים (8.51/9.02/3.95%). ארבעת השערים ירוקים בכל
+העשרה.
 
 **Q27 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q29
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;

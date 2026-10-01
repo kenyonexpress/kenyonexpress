@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q37 (הועבר מ-STATE.md ב-Q38, לשמירה על תקרת 300 שורות)
+
+**Q37 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"מתנה של קופון: שליחת מייל, מועד שליחה מתוזמן, ברכה אישית". **אינו קיים
+בתור האמיתי** (אין `Q37` ב-`docs/QUESTIONS-FOR-OFIR.md` בכלל), אותו דפוס
+כמו Q25-Q36.
+
+**שלושת הסעיפים קיימים במלואם, אפס שינוי קוד.** שליחת קופון כמתנה בנויה
+בשתי נקודות זהות בצורתן (`src/server/payments/gift-vouchers.ts` ברגע
+התשלום, `src/server/actions/gifts.ts#transferVoucher` מאוחר יותר מהחשבון):
+שם ומייל מקבל, ברכה אישית (`gift_message`, עד 500 תווים, שדה ב-
+`CheckoutForm.tsx`/`GiftClaimForm` ובדף `/account/coupons/[id]/gift`), טוקן
+תביעה מגובב (`createGiftClaimToken`/`hashGiftClaimToken`), ושורת
+`notification_outbox` יחידה מסוג `voucher_gifted` לכל מתנה (מפתח
+`gift:<voucher_id>` בקנייה, `gift:<voucher_id>:<hash prefix>` בהעברה
+מהחשבון, כך שתי הדרכים לא מתנגשות). **מועד שליחה מתוזמן** קיים בצ'ק-אאוט
+(`gift_deliver_at` בטופס, `resolveGiftDeliverAt` ב-`src/lib/gifts/wrap.ts`),
+ומתורגם ל-`notification_outbox.next_attempt_at` — השורה פשוט בלתי נראית
+לניקוז עד התאריך המבוקש, בלי טבלה נוספת ובלי job שני. תאריך מתוזמן אחרי
+תפוגת השובר שלו נדרס לשליחה מיידית (`scheduleFor` ב-`gift-vouchers.ts`),
+לכל שובר בנפרד כי הזמנה יכולה לערבב מוצרים עם תפוגות שונות.
+
+**תלות ב-108/226 ממוגנת**: `readGiftIntent`/`sendOrderGifts` תופסים קוד
+`42703` (עמודה לא קיימת) ומתנהגים כאילו אין תזמון כלל כש-226 לא הוחל
+(`gift_deliver_at` הוא העמודה שלה) — "מתנה שנשלחת מיד" היא ברירת המחדל
+הבטוחה, לא כשל. 226 עדיין ב-`migrations/pending/`, לא הוחלה.
+
+**בדיקה בפועל:** `pnpm test src/server/payments/gift-vouchers
+src/lib/validations/gift-extras src/server/actions/gifts` — 32/32 ירוק.
+ארבעת השערים: type-check נקי, lint נקי (12 שערים), test מלא 610/610 קבצים
+7303/7315 (זהה ל-Q36), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט
+3311, cwd מאומת). שער חזותי PASS בשלושת הרוחבים (`8.51%`/`9.07%`/`3.95%`,
+`--baseline=refs/ke_live_{width}.png`, נמדד בפועל ב-foreground דרך
+`--widths=380,768,1440`, קומיט `4280b31b5`), **אפס דריפט** מ-Q36 — סשן
+מקביל נצפה מריץ `compare.mjs --width=1440` באותו זמן על אותו שרת
+(`localhost:3311`), לא התערב בתוצאה.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## Q36 (הועבר מ-STATE.md ב-Q37, לשמירה על תקרת 300 שורות)
 
 **Q36 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
