@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c68 (פירוט פרטני מלא, הועבר מ-STATE.md ב-M13-c68, לשמירה על תקרת 300 שורות)
+
+**M12-c68 - DONE (02.10.2026).** משימת התור: "Verify robots.txt production-safe".
+`git log 4d3702025..HEAD -- src/app/robots.ts` ריק — אפס דריפט קוד. תיקון
+M12-c67 (`/gift/`, `/order/`, `/wishlist/s/`, `/debug/`) עדיין ב-`Disallow`.
+סריקת `src/app/**/[*]` חדשה מול הרשימה (`/c/[code]`, `/r/[code]`, `/s/[id]`,
+`/coupons/[id]`, `/dev/emails/[id]`) לא הוסיפה כתובת-אסימון: שלוש
+הראשונות הן redirect ציבורי מכוון ל-`/`, `/coupons/[id]` (רבים) הוא דף
+מבצעים ציבורי עם canonical מפורש (שונה מ-`/coupon/[id]` היחיד, כבר
+מכוסה), ו-`/dev/emails/` מחזיר `404` בפרודקשן. **קוד HEAD תקין.**
+
+**נמדד מול פרודקשן בפועל**: `curl -i .../robots.txt` מחזיר גרסה ישנה מלפני
+M12-c67, זהה מילה-במילה ל-`a388118f1:src/app/robots.ts` — תוצאה של חוסם 2
+(פרודקשן קפוא), לא ממצא עצמאי. פרטים וראיה חיה (`200` בלי `Disallow`
+לשלוש כתובות-האסימון) תועדו תחת חוסם 2 ב-STATE.md, לא חוסם נפרד.
+
+ארבעת השערים ירוקים: `type-check`/`lint` נקיים, `test` 614/614, 7337/7349
+עברו, `build` exit 0 (`/robots.txt` כ-`○ Static`). אפס שינוי קוד.
+
 ## M11-c68 (פירוט פרטני מלא, הועבר מ-STATE.md ב-M12-c68, לשמירה על תקרת 300 שורות)
 
 **M11-c68 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
