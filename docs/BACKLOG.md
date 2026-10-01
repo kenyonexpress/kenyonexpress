@@ -340,6 +340,36 @@ items remain actions this file's own preamble excludes an agent from
 taking alone. No phase 1 item available for the queue task this cycle
 (M08-c65 result: BACKLOG EMPTY).
 
+**Re-checked 2026-10-01 (M15-c65) against `git log 97cd36b06..HEAD`:**
+still 15 items, same order, no duplicate, no new item. Seventeen commits
+landed since M08-c65's own checkpoint (M09-c65..M14-c65, M01-c65..M07-c65
+already covered there — the new ones are M09-c65..M14-c65); `git diff
+--stat 97cd36b06..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+shows only `STATE.md`/`docs/BACKLOG.md` (re-check notes) and the
+star-rating-row feature (M18-c64, `ProductCard.tsx`, `ProductRail.tsx`,
+`lib/homepage/rails.ts`, `lib/reviews/rating-summaries.ts`,
+`lib/related-products.ts`) — a prior cycle's queue item, not a
+`BACKLOG.md` entry. None touched a blocking line, a pending migration,
+or the catalogue ledger. Counts re-checked directly: `migrations/pending/
+*.sql` 59, `git stash list` 32, `supabase/catalogue-known-issues.json`'s
+`known` object 26 — all unchanged from M08-c65. `dns-watch.sh` still
+running, now pid 976 (confirmed again, was 976 already at M08-c65,
+957 before that) under `caffeinate` pid 5220/5222 (PIDs rotate across
+sessions, process is alive both times). Item 4's commit count changed
+again (292 -> 299, `git rev-list --count a388118f1..HEAD`, git-only,
+production not re-probed this item). `origin/main` is 673 behind HEAD
+and 109 ahead (`git rev-list --count origin/main..HEAD` /
+`HEAD..origin/main`, up from 655/109 at M15-c64). `type-check`, `lint`
+(12 gates, docs-path-audit 154, docs-index 282, i18n 627) and `test`
+(610/610 files, 7298/7310) all re-run clean this item; `build` not
+re-run — the existing `.next` (`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`,
+mtime 01.10 08:36) was confirmed built after the last build-relevant
+commit (`857a0deea`, M18-c64, 01.10 01:11) by file mtime. All 15 items
+remain actions this file's own preamble excludes an agent from taking
+alone.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -363,9 +393,9 @@ taking alone. No phase 1 item available for the queue task this cycle
    המוקדם (M15-c51), 66 ב-M15-c52, 83 ב-M15-c53, 101 ב-M15-c54, 118
    ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57, 171 ב-M15-c58,
    189 ב-M15-c59, 207 ב-M15-c60, 225 ב-M15-c61, 245 ב-M15-c62, 256
-   ב-M08-c63, 263 ב-M15-c63, 274 ב-M08-c64, 281 ב-M15-c64, וכעת (01.10,
-   M08-c65, `git rev-list --count a388118f1..HEAD`, git-only — לא נוסתה
-   פריסה חוזרת בפריט הזה) **292** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
+   ב-M08-c63, 263 ב-M15-c63, 274 ב-M08-c64, 281 ב-M15-c64, 292 ב-M08-c65,
+   וכעת (01.10, M15-c65, `git rev-list --count a388118f1..HEAD`, git-only
+   — לא נוסתה פריסה חוזרת בפריט הזה) **299** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
    ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן נשאר על
    `a388118f1`).
    `POST /v13/deployments` עם `gitSource.sha`,
@@ -413,8 +443,8 @@ taking alone. No phase 1 item available for the queue task this cycle
     `expire-coupons`); כל אחד עונה 404 גם אחרי שסעיף 2 נסגר. נפתר מעצמו
     כשהענף הזה יתמזג ל-`main` (PR, ארבע בדיקות). **לא היה ברשימת
     STATE.md;** מקור: LAUNCH-READINESS.md ידני 9.
-12. **`scripts/dns-watch.sh` (pid 957 בזמן המדידה)** עדיין רץ תחת
-    `caffeinate` ומשגר סשן פריסה כשיופיעו NS של Cloudflare; המעבר
+12. **`scripts/dns-watch.sh` (pid 976 נכון ל-01.10, M15-c65; היה 957
+    עד M08-c65)** עדיין רץ תחת `caffeinate` ומשגר סשן פריסה כשיופיעו NS של Cloudflare; המעבר
     ל-vercel-dns (סעיף 1) לא אמור להפעיל אותו, אבל לבדוק לפני שמפעילים
     משהו אחר. מקור: STATE.md ידני 8, LAUNCH-READINESS.md ידני 10.
 13. **מספר עוסק/ח.פ לשורת המוכר** באישור הרכישה: עריכה אחת ב-

@@ -1,52 +1,51 @@
-RESUME FROM: M15-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c65)
+RESUME FROM: M16-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c65)
 
 ## המשך מ:
 
-**M14-c65 - DONE (01.10): bundle sizes, image pipeline, תגיות ISR
-וכותרות cache נבדקו מחדש מול build טרי, אפס רגרסיה אמיתית.** משימת
-התור: "Performance: check bundle sizes, image pipeline output, ISR
-tags and cache headers. Fix the largest regression."
+**M15-c65 - DONE (01.10): תיעוד סונכרן מחדש — STATE.md, docs/
+LAUNCH-READINESS.md ו-docs/BACKLOG.md מול `git log 97cd36b06..HEAD`
+(הנקודה שנבדקה ב-M15-c64), אפס דריפט.** משימת התור: "Docs sync: refresh
+the status table in STATE.md, docs/LAUNCH-READINESS.md and
+docs/BACKLOG.md from git log and code evidence. Keep manual items for
+Ofir in order of criticality, one list, no duplicates."
 
-**בדיקת דריפט מול המדידה הקודמת (M14-c64, `57608db7a`):** `git log
-57608db7a..HEAD -- next.config.ts middleware.ts vercel.json src/
-package.json pnpm-lock.yaml scripts/bundle-report.mjs
-scripts/bundle-gate.mjs scripts/cache-invalidation-gate.mjs` הראה קומיט
-יחיד, `857a0deea` (M18-c64, שורת דירוג כוכבים ברצועות ה-CMS של דף
-הבית), שנוגע ב-`ProductCard.tsx`, `ProductRail.tsx` ו-`lib/homepage/
-rails.ts` — תלות משותפת של `/` ושל רצועות ה-CMS, אז דריפט אפשרי לא
-נפסל מראש כקריאה בלבד.
+**שבעה-עשר קומיטים מאז M15-c64** (M16-c64..M18-c64, M01-c65..M14-c65):
+`git diff --stat 97cd36b06..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+מראה רק את הקבצים הבאים: `STATE.md`/`docs/BACKLOG.md` (רשומות הבדיקה
+החוזרת של עצמם) ושורת דירוג הכוכבים (M18-c64, `ProductCard.tsx`,
+`ProductRail.tsx`, `lib/homepage/rails.ts`,
+`lib/reviews/rating-summaries.ts`, `lib/related-products.ts`) — פריט
+תור שכבר נסגר במחזור קודם, לא שורה ב-`docs/BACKLOG.md`. אף אחד מהם לא
+נגע בשורת חסימה, במיגרציה ממתינה או בפנקס הקטלוג.
 
-**נבנה מחדש בפועל** (`rm -rf .next && CARDCOM_USE_MOCK=true pnpm
-build`), אפס build מקביל רץ באותו רגע (`ps aux` נבדק לפני). שרת ייעודי
-(`PORT=3419`, cwd אומת ב-`lsof -p`).
+**`docs/BACKLOG.md`: עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס פריט
+חדש.** עודכנו רק מונים: סעיף 4 (קומיטים מאחורי `a388118f1`) 292→299;
+`dns-watch.sh` עדיין רץ, pid 976 (היה 957 עד M08-c65, אין שינוי מצב —
+רק מספר ה-pid התחלף בין סשנים); `git stash list` 32, `migrations/
+pending/*.sql` 59, `supabase/catalogue-known-issues.json` 26 — ללא
+שינוי. `origin/main` 673 מאחורי HEAD (היה 655), 109 לפנים — ללא שינוי.
 
-**לפני (M14-c64):** `bundle-gate.mjs` shared first-load 223.8 KB gz על
-8 chunks. `/product/e2e-test-physical` 327.0 kB gzip (21 chunks),
-`/checkout` 324.2 kB, `/` 321.0kB, `/products` 319.3kB,
-`/category/hot-deals` 320.0kB, `/cart` 317.4kB, `/faq` 314.1kB. image
-proxy `Cache-Control: public, max-age=86400, must-revalidate`. static
-chunks `immutable, max-age=31536000`. HTML דינמי `private, no-cache,
-no-store, max-age=0, must-revalidate`. `/`, `/products`
-ו-`/product/e2e-test-physical` כולם `x-nextjs-stale-time: 300`,
-`prerender: 1`, `postponed: 1`.
+**`docs/LAUNCH-READINESS.md`: אותה טבלת חסימה, אותם 7 סעיפים ב"What
+flips the verdict", אפס שורה חדשה.** עודכנו רק מספרי הקומיטים (שורה 4:
+299), ספירת הענפים (655→673) וטבלת ה-`pnpm test` (610/610, 7298/7310 —
+תוצאה זהה ל-M14-c65). פסקת ה"ידני לאופיר" ממשיכה להצביע על
+`docs/BACKLOG.md` כעותק היחיד.
 
-**אחרי (M14-c65, בנייה נקייה, נמדד עכשיו): זהה בייט לבייט לבייסליין
-בכל שורה.** `bundle-gate.mjs` 223.8 KB gz על 8 chunks. `/product/
-e2e-test-physical` 327.0 kB, `/checkout` 324.2 kB, `/` 321.0kB,
-`/products` 319.3kB, `/category/hot-deals` 320.0kB, `/cart` 317.4kB,
-`/faq` 314.0kB (0.1kB רעש). כותרות cache, ISR headers ו-`cache-
-invalidation-gate.mjs` זהים מילה במילה לבייסליין. למרות שהקומיט שינה
-את `ProductCard.tsx`/`rails.ts`, השינוי הוא שאילתת נתונים בצד שרת
-(`lib/reviews/rating-summaries.ts`), לא JS חדש בצד לקוח — אפס תוספת
-bundle.
+**ארבעת השערים נבדקו בפועל, לא צוטטו:** `type-check` נקי. `lint` נקי
+(biome 2029 קבצים, 12 שערים: docs-index 282, docs-path-audit 154, i18n
+627/627, locale-format 116/64 בתקרה). `test` 610/610 קבצים, 7298/7310
+עברו (12 דולגים בכוונה) — זהה ל-M14-c65. `build` לא הורץ מחדש: `.next`
+הקיים (`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`, mtime 01.10 08:36) נבנה
+אחרי הקומיט האחרון שנוגע ב-build (`857a0deea`, M18-c64, 01.10 01:11),
+אומת ב-`git log -1` על הנתיבים הרלוונטיים. אפס שינוי קוד ייצור.
 
-**המסקנה: אפס רגרסיה לתקן.** שרת ה-`pnpm start` (3419) נסגר בסוף
-המדידה. ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2029 קבצים,
-12 שערים ירוקים). `test` מלא (ללא `CARDCOM_USE_MOCK` בסביבת ה-vitest
-— הרצה ראשונה עם המשתנה דלפה מה-build וגרמה לכשל שווא יחיד ב-
-`invoices.test.ts`, לא רגרסיה) 610/610 קבצים, 7298/7310 עברו (12
-דולגים בכוונה). `build` רץ בפועל, exit 0. אפס שינוי קוד ייצור.
+**M14-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M15-c65 לשמירה על תקרת 300 שורות).** ביצועים נבדקו מחדש מול build
+טרי: bundle sizes, image pipeline, תגיות ISR וכותרות cache זהים בייט
+לבייט לבייסליין (M14-c64), אפס רגרסיה. ארבעת השערים ירוקים.
 
 **M13-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M14-c65 לשמירה על תקרת 300 שורות).** אבטחה נבדקה מחדש מאפס, אפס

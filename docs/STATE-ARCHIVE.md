@@ -2,6 +2,53 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c65 (הועבר מ-STATE.md ב-M15-c65, לשמירה על תקרת 300 שורות)
+
+**M14-c65 - DONE (01.10): bundle sizes, image pipeline, תגיות ISR
+וכותרות cache נבדקו מחדש מול build טרי, אפס רגרסיה אמיתית.** משימת
+התור: "Performance: check bundle sizes, image pipeline output, ISR
+tags and cache headers. Fix the largest regression."
+
+**בדיקת דריפט מול המדידה הקודמת (M14-c64, `57608db7a`):** `git log
+57608db7a..HEAD -- next.config.ts middleware.ts vercel.json src/
+package.json pnpm-lock.yaml scripts/bundle-report.mjs
+scripts/bundle-gate.mjs scripts/cache-invalidation-gate.mjs` הראה קומיט
+יחיד, `857a0deea` (M18-c64, שורת דירוג כוכבים ברצועות ה-CMS של דף
+הבית), שנוגע ב-`ProductCard.tsx`, `ProductRail.tsx` ו-`lib/homepage/
+rails.ts` — תלות משותפת של `/` ושל רצועות ה-CMS, אז דריפט אפשרי לא
+נפסל מראש כקריאה בלבד.
+
+**נבנה מחדש בפועל** (`rm -rf .next && CARDCOM_USE_MOCK=true pnpm
+build`), אפס build מקביל רץ באותו רגע (`ps aux` נבדק לפני). שרת ייעודי
+(`PORT=3419`, cwd אומת ב-`lsof -p`).
+
+**לפני (M14-c64):** `bundle-gate.mjs` shared first-load 223.8 KB gz על
+8 chunks. `/product/e2e-test-physical` 327.0 kB gzip (21 chunks),
+`/checkout` 324.2 kB, `/` 321.0kB, `/products` 319.3kB,
+`/category/hot-deals` 320.0kB, `/cart` 317.4kB, `/faq` 314.1kB. image
+proxy `Cache-Control: public, max-age=86400, must-revalidate`. static
+chunks `immutable, max-age=31536000`. HTML דינמי `private, no-cache,
+no-store, max-age=0, must-revalidate`. `/`, `/products`
+ו-`/product/e2e-test-physical` כולם `x-nextjs-stale-time: 300`,
+`prerender: 1`, `postponed: 1`.
+
+**אחרי (M14-c65, בנייה נקייה, נמדד עכשיו): זהה בייט לבייט לבייסליין
+בכל שורה.** `bundle-gate.mjs` 223.8 KB gz על 8 chunks. `/product/
+e2e-test-physical` 327.0 kB, `/checkout` 324.2 kB, `/` 321.0kB,
+`/products` 319.3kB, `/category/hot-deals` 320.0kB, `/cart` 317.4kB,
+`/faq` 314.0kB (0.1kB רעש). כותרות cache, ISR headers ו-`cache-
+invalidation-gate.mjs` זהים מילה במילה לבייסליין. למרות שהקומיט שינה
+את `ProductCard.tsx`/`rails.ts`, השינוי הוא שאילתת נתונים בצד שרת
+(`lib/reviews/rating-summaries.ts`), לא JS חדש בצד לקוח — אפס תוספת
+bundle.
+
+**המסקנה: אפס רגרסיה לתקן.** שרת ה-`pnpm start` (3419) נסגר בסוף
+המדידה. ארבעת השערים: `type-check` נקי. `lint` נקי (biome 2029 קבצים,
+12 שערים ירוקים). `test` מלא (ללא `CARDCOM_USE_MOCK` בסביבת ה-vitest
+— הרצה ראשונה עם המשתנה דלפה מה-build וגרמה לכשל שווא יחיד ב-
+`invoices.test.ts`, לא רגרסיה) 610/610 קבצים, 7298/7310 עברו (12
+דולגים בכוונה). `build` רץ בפועל, exit 0. אפס שינוי קוד ייצור.
+
 ## M13-c65 (הועבר מ-STATE.md ב-M14-c65, לשמירה על תקרת 300 שורות)
 
 **M13-c65 - DONE (01.10): אבטחה נבדקה מחדש מאפס (לא הוסתמכה על טענת
