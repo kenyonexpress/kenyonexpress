@@ -1,45 +1,50 @@
-RESUME FROM: M07-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c65)
+RESUME FROM: M08-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c65)
 
 ## המשך מ:
 
-**M06-c65 - DONE (01.10): Lighthouse mobile נמדד שוב, כל שמונת הציונים
-90+, אפס תיקון נדרש.** משימת התור: Lighthouse mobile על דף הבית ודף
-מוצר, לתקן ביצועים/נגישות/best practices/SEO עד שכל ציון 90+, לרשום
-ב-STATE.md.
+**M07-c65 - DONE (01.10): route audit נמדד שוב במלואו מול בנייה טריה,
+אפס כשל אמיתי.** משימת התור: לבקש כל route באפליקציה, לצפות ל-200 או
+redirect מכוון, אפס שגיאת קונסול, אפס אזהרת hydration, RTL נכון בכל דף,
+לתקן מה שנכשל.
 
-**שינוי קוד אמיתי מאז המדידה הקודמת (M06-c64, `87e2d2b0e`):** `git diff
---stat 87e2d2b0e..HEAD -- src/app src/components src/lib package.json`
-הראה `ProductCard.tsx`, `ProductRail.tsx`/`.test.tsx`,
-`lib/homepage/rails.ts`, `lib/related-products.ts` ו-`lib/reviews/
-rating-summaries.ts` (M18-c64, הרחבת שורת דירוג הכוכבים לרצועות ה-CMS
-של דף הבית) — המדידה הורצה במלואה מחדש, לא הונח "אפס דריפט".
+**שינוי קוד אמיתי מאז המדידה הקודמת (M07-c64, `809e1940f`):** `git diff
+--stat 809e1940f..HEAD -- src/app src/components src/lib` הראה בדיוק את
+אותו דריפט שתואר ב-M06-c65 (M18-c64, שורת דירוג כוכבים על רצועות ה-CMS
+של דף הבית) — נבדק ידנית: `ProductCard.tsx` הוא `'use client'` אבל לא
+מכיל `toLocale`/`Intl`/עיצוב תלוי-אזור, ו-`rails.ts` משתמש ב-`new Date()`
+רק למיון בצד שרת, לא לרינדור טקסט — אפס סיכון hydration מהסוג שנמצא
+ב-M07-c1 (אזורי זמן). המדידה הורצה במלואה מחדש בכל זאת, לא הונח "אפס
+דריפט".
 
-אותו מתכון כמו M06-c1..M06-c64: `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3522 pnpm build` → exit 0 (פורט
-3498 הרגיל היה תפוס ע"י סשן מקביל, `/usr/sbin/lsof` אישר 3522 פנוי
-לפני); `pnpm start -p 3522` מאותה בנייה, `curl` אישר `200` על `/` ועל
-`/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני ה-URL,
-`--throttling-method=devtools --emulated-form-factor=mobile`:
-
-| דף | ביצועים | נגישות | BP | SEO |
-|---|---|---|---|---|
-| בית `/` | 99 | 100 | 100 | 100 |
-| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
-
-כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c64 למרות ההרחבה לרצועות
-הבית. **אין תיקון קוד נדרש.** השרת נעצר (כולל ניקוי תהליך שנתקע על
-הפורט אחרי kill ראשון), הפורט אומת פנוי מחדש, קבצי הפלט הזמניים
-(`/tmp/ke-lh-m06c65/*`) נמחקו.
+אותו מתכון כמו M07-c1..M07-c64: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3533 pnpm build` → exit 0; `pnpm
+start -p 3533`, `curl` אישר `200` על `/` ועל `/product/barbecue-2`.
+`e2e/route-audit.spec.ts` רץ בשישה חלקים בפורגראונד (כל חלק עד שהתהליך
+נגמר, לא ברקע): `anon /` (59 עברו), `GET /|supplier|anon dynamic` (83
+עברו), `customer` (25 עברו), `admin /admin$|admin/(a|b|c|d)` (23 עברו),
+`admin/(f|g|h|i|o|p|q|r)` (20 עברו), `admin/(s|u|v|w)|admin detail
+pages` (16 עברו) — סה"כ 226 טסטים, כולם ירוקים. `ROUTE_AUDIT_REPORT`
+אוחד לקובץ אחד: **242 שורות (241 ייחודיות אחרי dedupe), 239 PASS + 2 NO
+DATA, 0 FAIL, 0 SKIPPED, אפס `consoleErrors`, אפס `hydrationWarnings`,
+אפס `rtl:false`.** שתי שורות ה-NO DATA זהות ל-M07-c64: `customer
+/account/tickets/[id]` ו-`admin /admin/discounts/[id]` (עמוד הרשימה לא
+מקשר לאף שורה). **אין תיקון קוד נדרש.** השרת נעצר, הפורט אומת פנוי מחדש,
+קבצי הפלט הזמניים נמחקו.
 
 **שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
-זהה ל-M05-c65). `test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים) —
-זהה בפועל (ספירת "עוברים" משתנה ± תלוי ריצה, קבצים זהים). `build`
-שרץ בפועל לעיל עבור המדידה עצמה, "Compiled successfully", exit 0. אין
-שינוי UI, `scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריטי M06
-הקודמים).
+זהה ל-M06-c65). `test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים),
+זהה ל-M06-c65. `build` רץ בפועל לעיל עבור המדידה עצמה, "Compiled
+successfully", exit 0. אין שינוי UI, `scripts/compare.mjs` לא רץ (אין
+עריכת קוד; תואם לתקדים בכל פריטי route audit הקודמים).
 
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+קבצים ששונו: `STATE.md`.
+
+**M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M07-c65
+לשמירה על תקרת 300 שורות).** Lighthouse mobile נמדד שוב מול בנייה טריה
+אחרי הרחבת דירוג הכוכבים לרצועות ה-CMS (M18-c64): 99/100/100/100 בית,
+99/100/100/100 מוצר, זהה ב-100% ל-M06-c64, אפס תיקון נדרש. ארבעת השערים
+ירוקים.
 
 **M05-c65..M01-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M06-c65 לשמירה על תקרת 300 שורות).** M05-c65 — advisors, 44 WARN

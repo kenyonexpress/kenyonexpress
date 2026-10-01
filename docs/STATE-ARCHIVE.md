@@ -2,6 +2,46 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c65 (הועבר מ-STATE.md ב-M07-c65, לשמירה על תקרת 300 שורות)
+
+**M06-c65 - DONE (01.10): Lighthouse mobile נמדד שוב, כל שמונת הציונים
+90+, אפס תיקון נדרש.** משימת התור: Lighthouse mobile על דף הבית ודף
+מוצר, לתקן ביצועים/נגישות/best practices/SEO עד שכל ציון 90+, לרשום
+ב-STATE.md.
+
+**שינוי קוד אמיתי מאז המדידה הקודמת (M06-c64, `87e2d2b0e`):** `git diff
+--stat 87e2d2b0e..HEAD -- src/app src/components src/lib package.json`
+הראה `ProductCard.tsx`, `ProductRail.tsx`/`.test.tsx`,
+`lib/homepage/rails.ts`, `lib/related-products.ts` ו-`lib/reviews/
+rating-summaries.ts` (M18-c64, הרחבת שורת דירוג הכוכבים לרצועות ה-CMS
+של דף הבית) — המדידה הורצה במלואה מחדש, לא הונח "אפס דריפט".
+
+אותו מתכון כמו M06-c1..M06-c64: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3522 pnpm build` → exit 0 (פורט
+3498 הרגיל היה תפוס ע"י סשן מקביל, `/usr/sbin/lsof` אישר 3522 פנוי
+לפני); `pnpm start -p 3522` מאותה בנייה, `curl` אישר `200` על `/` ועל
+`/product/barbecue-2`. `node_modules/.bin/lighthouse` על שני ה-URL,
+`--throttling-method=devtools --emulated-form-factor=mobile`:
+
+| דף | ביצועים | נגישות | BP | SEO |
+|---|---|---|---|---|
+| בית `/` | 99 | 100 | 100 | 100 |
+| מוצר `/product/barbecue-2` | 99 | 100 | 100 | 100 |
+
+כל שמונת הציונים מעל 90, זהה ב-100% ל-M06-c64 למרות ההרחבה לרצועות
+הבית. **אין תיקון קוד נדרש.** השרת נעצר (כולל ניקוי תהליך שנתקע על
+הפורט אחרי kill ראשון), הפורט אומת פנוי מחדש, קבצי הפלט הזמניים
+(`/tmp/ke-lh-m06c65/*`) נמחקו.
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
+זהה ל-M05-c65). `test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים) —
+זהה בפועל (ספירת "עוברים" משתנה ± תלוי ריצה, קבצים זהים). `build`
+שרץ בפועל לעיל עבור המדידה עצמה, "Compiled successfully", exit 0. אין
+שינוי UI, `scripts/compare.mjs` לא רץ (תואם לתקדים בכל פריטי M06
+הקודמים).
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M05-c65 (הועבר מ-STATE.md ב-M06-c65, לשמירה על תקרת 300 שורות)
 
 **M05-c65 - DONE (01.10): advisors נבדקו מחדש בפעם החמש-עשרה ברציפות,
