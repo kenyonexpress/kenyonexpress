@@ -1,45 +1,44 @@
-RESUME FROM: M17-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c69 - DONE, JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר)
+RESUME FROM: M18-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c69 - DONE, RTL על / ו-/product נבדק שוב, אפס leak)
 
 ## המשך מ:
 
-**M16-c69 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
-JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c68.
-**נבדק מחדש, אפס דריפט.** `git log 0a924162d..HEAD -- "src/app/(store)/product"
-src/lib/seo e2e/seo-markup.spec.ts` ריק — אין קומיט שנגע בקבצים הרלוונטיים
-מאז M16-c68. **מקור האמת זהה**: `product/[slug]/page.tsx` בונה את שני
-הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/`buildBreadcrumbJsonLd`
-מ-`src/lib/seo/json-ld.ts`, שני `<script type="application/ld+json">`
-תמיד ברינדור, לא מאחורי דגל). **אומת גם ברמת הדף:** `.next` חדש לגמרי
-(`rm -rf .next`) עם `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3322
-pnpm build` exit 0 נקי, `pnpm start -p 3322` עצמאי, אימות שה-listener על
-הפורט הוא התהליך הזה (`lsof`, cwd אומת). `E2E_BASE_URL=http://localhost:3322
-npx playwright test e2e/seo-markup.spec.ts --grep "Product JSON-LD and a
-breadcrumb"` — **2/2 עברו** (chromium+mobile-chrome). **אין ממצא קוד
-לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test`
-614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי. לא
-פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c68). קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M15-c69).
+**M17-c69 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c68, ש-M17-c66 מצאה
+ותיקנה בו leak אמיתי (`HeroSlider.tsx`). **נבדק מחדש כאן, אפס דריפט בקוד.**
+`git log 8b549ac8e..HEAD -- src/ e2e/` ריק — אין קומיט שנגע בשום קובץ תחת
+`src/` או `e2e/` מאז קומיט M17-c68 (`8b549ac8e`), ו-`grep -n 'dir="ltr"'
+src/components/{home,store}/HeroSlider.tsx` מחזיר רק שלוש הערות קוד שמסבירות
+את התיקון ההיסטורי, לא תכונת JSX בפועל. **אומת גם ברמת הדף, שני מסלולים
+עצמאיים**: (1) `rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4537 pnpm build` exit 0 נקי, `pnpm
+start -p 4537` עצמאי, `lsof`+`cwd` מאשרים שה-listener הוא התהליך הזה;
+`E2E_BASE_URL=http://localhost:4537 npx playwright test e2e/home-rtl.spec.ts
+e2e/rtl-three-widths.spec.ts e2e/rtl-mobile.spec.ts --workers=1` —
+**112/112 עברו** (chromium+mobile-chrome, כולל "every ltr node on the page
+is on the allow-list" בשתי המכונות; לא חזרה הבעיה התשתיתית של
+`networkidle` שנרשמה ב-M17-c68). (2) סריקת DOM ישירה (סקריפט Playwright
+חד-פעמי, לא נשמר) על `/product/צימר-מאסטר` אחרי hydration: **2 צמתים
+`direction:ltr` בלבד**, זהה ל-M17-c66..M17-c68 (`.pdp-summary__meta` ללא
+SKU, ואינפוט email) — שניהם לגיטימיים, לא leak. **לא נדרש תיקון קוד.**
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, כולל `rtl-logical-gate`),
+`test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build` exit 0
+נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M17-c68). קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M16-c69).
 
-**M15-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c69).**
-אפס console error/hydration נבדק שוב על `/` ו-`/product`, אפס דריפט
-מ-M15-c68, רביעית ברצף.
+**M16-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M17-c69).**
+JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר, אפס דריפט מ-M16-c68.
 
-**M14-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c69).**
-Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c68, הפער גדל ל-406
-קומיטים.
-
-**M13-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c69).**
-/api/health ו-/api/ready אומתו מחדש מול פרודקשן, אפס דריפט מ-M13-c68.
-
-**M12-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c69 וב-M14-c69 לשמירה על תקרת 300 שורות).** שנים-עשר פריטי
-אימות-בלבד, אפס דריפט בכולם: robots.txt (חוסם 2, M12); sitemap.xml חי
-`200` חמש תת-מפות (M11); 19 מיגרציות ממתינות (M10); deps/exports מתים
-עם `knip`, 271/197 (M09); Lighthouse mobile 100/100/100 (M08);
-TODO/FIXME (M07); `build`/`test`/`type-check` (M04-M06); שערים חזותיים
-קטגוריה (3.53/2.52/1.69, M03), מוצר (4.96/4.58/3.25, M02), בית
-(8.58/9.01/4.16, M01). ארבעת השערים ירוקים בעשרתם.
+**M15-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c69, M14-c69 וב-M17-c69 לשמירה על תקרת 300 שורות).** חמישה-עשר
+פריטי אימות-בלבד, אפס דריפט בכולם: אפס console error/hydration רביעית
+ברצף (M15); Sentry release מול HEAD, הפער גדל ל-406 קומיטים (M14);
+/api/health ו-/api/ready מול פרודקשן (M13); robots.txt (חוסם 2, M12);
+sitemap.xml חי `200` חמש תת-מפות (M11); 19 מיגרציות ממתינות (M10);
+deps/exports מתים עם `knip`, 271/197 (M09); Lighthouse mobile 100/100/100
+(M08); TODO/FIXME (M07); `build`/`test`/`type-check` (M04-M06); שערים
+חזותיים קטגוריה (3.53/2.52/1.69, M03), מוצר (4.96/4.58/3.25, M02), בית
+(8.58/9.01/4.16, M01). ארבעת השערים ירוקים בכל חמישה-עשר.
 
 **M18-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M01-c69, M17-c68 ו-M09-c69 לשמירה על תקרת 300 שורות).** M18-c68:
