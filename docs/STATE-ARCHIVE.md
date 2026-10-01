@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c67 (הועבר מ-STATE.md ב-M10-c67, לשמירה על תקרת 300 שורות)
+
+**M09-c67 - DONE (02.10.2026).** משימת התור: הסרת deps לא בשימוש וexports
+מתים. `pnpm dlx knip --no-config-hints` הורץ מחדש; `package.json`/
+`pnpm-lock.yaml` ללא שינוי מ-M09-c66 (`git diff f141fd9af..HEAD`), כך
+ש-5 ה-deps שסומנו (`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) אומתו מחדש כאותם false-positive
+שתועדו ב-M09-c66 (`grep` ישיר מצא import אמיתי לכל אחד — `drizzle.config.ts`,
+`src/db/schema/*`, `scripts/dr/*`, `src/components/ui/{select,form}.tsx`
+וכו').
+
+מבין 273+197 מועמדי "unused export" של knip (רעש ידוע, ר' M09-c66), רק שני
+הקבצים שהשתנו מאז M09-c66 (`HeroSlider.tsx`, `robots.ts`) נבדקו כמועמדים
+חדשים: `HERO_ANIMATION_MEDIA` ו-`dotButtonWidth` ב-`src/components/home/
+HeroSlider.tsx` מיוצאים אך נצרכים רק בתוך אותו קובץ עצמו (`grep` רחב-ריפו
+אחרי `import.*HeroSlider` לא מצא צרכן חיצוני לשניהם, וגם לא בקבצי הטסט של
+הקומפוננטה) — הוסר מהם `export`, אותו תבנית תיקון כמו ב-M09-c66. אפס שינוי
+ל-JSX/להתנהגות, לכן אין פריט חזותי ואין צורך ב-`compare.mjs`.
+
+אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים), `test` 614/614 קבצים, 7336/7348 עברו (12 מדולגים, בסיס ללא דריפט),
+`build` exit 0 (`BUILD_ID` `5rqW2MivCCU-64H6HjJL6`). קבצים ששונו:
+`src/components/home/HeroSlider.tsx`, `STATE.md`.
+
 ## M08-c67 (הועבר מ-STATE.md ב-M09-c67, לשמירה על תקרת 300 שורות)
 
 **M08-c67 - DONE (02.10.2026).** משימת התור: Lighthouse mobile על `/`

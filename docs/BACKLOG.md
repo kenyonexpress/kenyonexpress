@@ -410,6 +410,19 @@ from the 25.09 object-level scan. `migrations/pending/*.sql` count
 re-checked at 60, unchanged from Q55. No migration applied, no code
 change — this item was verification only.
 
+**Re-checked 2026-10-02 (M10-c67), item 5 only, against git (not
+production directly — already probed live one day prior in M10-c66):**
+queue item "Verify migrations/pending/ applied or file blocker" recurred.
+`git diff --stat 7f23dd82e..HEAD -- migrations/pending docs/BACKLOG.md
+supabase/migrations src/ next.config.ts package.json pnpm-lock.yaml`
+since M10-c66's direct probe shows only this file's own log entry plus
+two unrelated files from M09-c67 (`HeroSlider.tsx`, `robots.ts`, no
+schema/infra touch). `migrations/pending/*.sql` re-checked at 60,
+unchanged; `git log -1 -- migrations/pending/` still points at
+`48c8792dd` (248, Q32), older than M10-c66. Zero drift since the direct
+production probe; the 19-file blocker stands unchanged. No migration
+applied, no code change.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**

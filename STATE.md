@@ -1,29 +1,29 @@
-RESUME FROM: M10-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c67 - DONE, 2 exports הוסרו, אפס deps)
+RESUME FROM: M11-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c67 - DONE, מיגרציות ממתינות אומתו מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c67 - DONE (02.10.2026).** משימת התור: הסרת deps לא בשימוש וexports
-מתים. `pnpm dlx knip --no-config-hints` הורץ מחדש; `package.json`/
-`pnpm-lock.yaml` ללא שינוי מ-M09-c66 (`git diff f141fd9af..HEAD`), כך
-ש-5 ה-deps שסומנו (`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
-`drizzle-orm`, `postgres`, `react-hook-form`) אומתו מחדש כאותם false-positive
-שתועדו ב-M09-c66 (`grep` ישיר מצא import אמיתי לכל אחד — `drizzle.config.ts`,
-`src/db/schema/*`, `scripts/dr/*`, `src/components/ui/{select,form}.tsx`
-וכו').
+**M10-c67 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". החוסם כבר מתועד (BACKLOG.md סעיף 5, חוסם 3
+למטה: 19 קבצים — 204, 209, 218, 220, 223, 224, 234-236, 239-248), ונבדק
+**מול פרודקשן בפועל** יום קודם (M10-c66, 01.10, טוקן CLI ב-keychain,
+קריאה-בלבד). פריט זה אימת **אפס סחיפה** מאז בלי לחזור על ה-query נגד
+production: `git diff --stat 7f23dd82e..HEAD -- migrations/pending
+docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
+pnpm-lock.yaml` מראה רק `docs/BACKLOG.md` (יומן) ושני קבצים לא-קשורים
+מ-M09-c67, ללא נגיעה בסכימה. `migrations/pending/*.sql` נספר מחדש:
+**60**, זהה ל-M10-c66, אין קובץ חדש. 19 הקבצים עדיין "לא הוחל", ללא
+שינוי, אין migration שהוחל, אין קוד שהשתנה.
 
-מבין 273+197 מועמדי "unused export" של knip (רעש ידוע, ר' M09-c66), רק שני
-הקבצים שהשתנו מאז M09-c66 (`HeroSlider.tsx`, `robots.ts`) נבדקו כמועמדים
-חדשים: `HERO_ANIMATION_MEDIA` ו-`dotButtonWidth` ב-`src/components/home/
-HeroSlider.tsx` מיוצאים אך נצרכים רק בתוך אותו קובץ עצמו (`grep` רחב-ריפו
-אחרי `import.*HeroSlider` לא מצא צרכן חיצוני לשניהם, וגם לא בקבצי הטסט של
-הקומפוננטה) — הוסר מהם `export`, אותו תבנית תיקון כמו ב-M09-c66. אפס שינוי
-ל-JSX/להתנהגות, לכן אין פריט חזותי ואין צורך ב-`compare.mjs`.
+לא פריט חזותי. ארבעת השערים ירוקים: `type-check`/`lint` (12 שערים) נקיים,
+`test` 614/614 קבצים, 7336/7348 עברו (אפס דריפט), `build` לא הורץ
+מחדש — `.next/BUILD_ID` source-identical ל-HEAD (14 `pnpm start`
+מקביליים, זיכרון נמוך). קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
-שערים), `test` 614/614 קבצים, 7336/7348 עברו (12 מדולגים, בסיס ללא דריפט),
-`build` exit 0 (`BUILD_ID` `5rqW2MivCCU-64H6HjJL6`). קבצים ששונו:
-`src/components/home/HeroSlider.tsx`, `STATE.md`.
+**M09-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M10-c67
+לשמירה על תקרת 300 שורות).** הסרת deps מתות ו-exports מתים: 5
+false-positive של `knip` אומתו כבשימוש אמיתי, שני קבועים פנימיים-בלבד
+ב-`HeroSlider.tsx` הופשטו מ-`export`. ארבעת השערים ירוקים.
 
 **M08-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c67
 לשמירה על תקרת 300 שורות).** Lighthouse mobile על `/` ו-`/product`,
