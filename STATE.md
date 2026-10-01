@@ -1,72 +1,72 @@
-RESUME FROM: M13-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c65)
+RESUME FROM: M14-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c65)
 
 ## המשך מ:
 
-**M12-c65 - DONE (01.10): SEO נבדק מחדש מאפס (לא הוסתמך על טענת
-M12-c64), אפס דריפט, אפס תיקון קוד נדרש.** משימת התור: "SEO: verify
-metadata, canonical, og tags, schema.org Product and Offer on product
-pages, sitemap freshness and robots. Fix drift."
+**M13-c65 - DONE (01.10): אבטחה נבדקה מחדש מאפס (לא הוסתמכה על טענת
+M13-c64), אפס דריפט, אפס תיקון קוד נדרש.** משימת התור: "Security
+headers and limits: verify CSP, HSTS, X-Frame-Options, Referrer-Policy,
+Upstash rate limits on login, checkout and redeem. Fix gaps with tests."
 
-**בדיקת דריפט מול המדידה הקודמת (M12-c64, `dcde57eeb`):** `git log
-dcde57eeb..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
-`857a0deea` (M18-c64, שורת דירוג כוכבים ברצועות ה-CMS של דף הבית) —
-נבדק בפירוט ואינו נוגע למטא-דאטה/JSON-LD/sitemap/robots כלל (קבצים
-ששונו: `ProductCard.tsx`, `homepage/rails.ts`, `related-products.ts`,
-`reviews/rating-summaries.ts`, `ProductRail.tsx`). אפס דריפט אפשרי
-מהקומיט הזה בסקופ השער הזה.
+**בדיקת דריפט מול המדידה הקודמת (M13-c64, `53958e3bf`):** `git log
+53958e3bf..HEAD -- src/ e2e/ messages/ packages/ next.config.ts
+middleware.ts` הראה קומיט יחיד, `857a0deea` (M18-c64, שורת דירוג כוכבים
+ברצועות ה-CMS של דף הבית) — נבדק בפירוט ואינו נוגע לכותרות אבטחה או
+למגבלות קצב כלל. אפס דריפט אפשרי מהקומיט הזה בסקופ השער הזה.
 
-**חמשת התחומים נבדקו ישירות מהקוד (לא מהתיעוד), כל אחד PASS:**
-1. **מטא-דאטה דף מוצר** — `src/app/(store)/product/[slug]/page.tsx:34-90`
-   `generateMetadata`: `title`, `description` (עם שרשרת ברירת מחדל),
-   `alternates.canonical`, `openGraph.{title,description,url,type,locale}`.
-   `og:image` דרך מוסכמת הקובץ `opengraph-image.tsx` (1200×630, מנתוני
-   מוצר אמיתיים, לא סטטי). הערה קטנה שאינה דריפט: `openGraph.type` הוא
-   `'website'` לא `'product'` — תקין, פחות עשיר.
-2. **JSON-LD Product+Offer, נבדק גם נגד באג אגורות** — נבנה ב-
-   `src/lib/seo/json-ld.ts:101-198` (`buildProductJsonLd`/`buildOfferNode`),
-   נפלט ב-`page.tsx:272-284`. `price`/`priceCurrency: 'ILS'`/`availability`/
-   `seller` קיימים. מקור המחיר `kenyon_price` הוא `numeric(10,2)` בשקלים
-   כבר (`supabase/migrations/016_products_code_sync.sql:31`), ו-`price()`
-   עושה `.toFixed(2)` ישיר בלי חלוקה ב-100 — נכון, כי המקור כבר שקלים
-   ולא אגורות. אין המרת אגורות שגויה בנתיב ה-JSON-LD.
-3. **Sitemap** — `src/app/sitemap.xml/route.ts` sitemapindex על חמישה
-   חלקים, `src/lib/seo/sitemap-data.ts:50-69` שואל Supabase חי
-   (`status='active'`, `deleted_at is null`), `lastModified` מ-`updated_at`
-   בפועל, לא הארדקוד.
-4. **robots.txt** — `src/app/robots.ts:19-55`: `allow: '/'`, חוסם
-   `/admin/`, `/checkout`, `/cart`, `/api/`, `/account/`, `/supplier/`,
-   `/auth/`, `/redeem/`, `/coupon/`, `/scan`; `sitemap`/`host` מצביעים
-   ל-`/sitemap.xml` האמיתי.
-5. **עקביות canonical** — `src/lib/site-url.ts:11-14` ו-`layout.tsx:45,48`
-   משתמשים באותו ברירת מחדל (`https://kenyonexpress.co.il`); הערה קטנה
-   שאינה דריפט: `page.tsx:224` משכפל את אותו literal במקום לייבא
-   `siteUrl()`.
+**ארבע הכותרות נבדקו ישירות ב-`next.config.ts:43-160` + `src/lib/
+security/frame-policy.ts`, כל אחת PASS:** `Content-Security-Policy`
+(דינמי לפי נתיב, שני מקורות שאינם חופפים כדי שלא יתווספו שתי כותרות
+CSP על אותו נתיב — frame-ancestors מחמיר ל-Cardcom frame-return/scan
+בלבד). `Strict-Transport-Security: max-age=63072000; includeSubDomains;
+preload`. `X-Frame-Options` (`DENY` כברירת מחדל, `SAMEORIGIN` רק על שני
+נתיבי ה-Cardcom frame). `Referrer-Policy: strict-origin-when-cross-origin`.
+בנוסף (לא נדרש אך קיים): `X-Content-Type-Options: nosniff`,
+`Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`,
+`Permissions-Policy` דינמי.
 
-**אפס שינוי קוד — שתי ההערות הנ"ל אינן דריפט (לא שגיאה, לא סטייה מהתנהגות
-קודמת), ולכן אין מה "לתקן" לפי כלל הפרויקט שתיקון הוא החלטת תוכן/קוד
-רק כשיש פגם אמיתי.**
+**מגבלות הקצב של Upstash נבדקו בקוד עצמו, לא בתיעוד, שלושתן PASS:**
+טבלת המדיניות ב-`src/lib/rate-limit/policies.ts` מחזיקה שורה לכל אחד
+(`login`/`login-account`, `begin_checkout`, `redeem`), ונבדק שגם נקודת
+הקריאה בפועל תואמת למספרים בטבלה:
+1. **login** — `src/server/actions/auth.ts:141` `checkRateLimit('login:${ip}')`
+   (ברירת המחדל של הפונקציה תואמת ל-10/3600 בטבלה) + `login-account`
+   בשורה 157 לפי אימייל, 20/3600 — הגנה כפולה IP+חשבון.
+2. **begin_checkout** — `src/server/actions/payments/checkout.ts:351`
+   `checkRateLimit('begin_checkout:user:${user.id}', 10, 60)`, תואם
+   בדיוק לטבלה (10 יצירות Cardcom low-profile בדקה, לפי משתמש).
+3. **redeem** — `src/app/redeem/[token]/page.tsx:109`
+   `checkRateLimit('redeem:${scanContext.ip}', 60, 3600)`, תואם בדיוק
+   לטבלה (דף מימוש פונה-לקוח, לפי IP). (השובר של הדוכן הספק,
+   `voucher-redeem`, מגבלה נפרדת ב-120/3600 לפי משתמש ספק — לא אותו
+   נתיב, נבדק גם הוא תואם.)
 
-**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
-`test` 610/610 קבצים, 7298 עברו + 12 דולגו בכוונה, אפס נכשל. `build`
-(`rm -rf .next` קודם, `CARDCOM_USE_MOCK=true pnpm build`) exit 0 —
-שגיאות `supabase.rls_denied` על `reviews` בלוג הן החוסם הידוע #11/247
-(אין הרשאת `SELECT` ל-`anon`), לא כשל build. אין שינוי UI,
-`scripts/compare.mjs` לא רץ (לא פריט חזותי).
+**אפס פער נמצא, ולכן אפס טסט נוסף נכתב** — שלושים קבצי טסט קיימים כבר
+מכסים את השכבה הזו (`frame-policy.test.ts`,
+`frame-policy-matches-provider.test.ts`, `csp-turnstile.test.ts`,
+`limiter.test.ts`, `utils/rate-limit.test.ts`, `auth.test.ts`,
+`checkout.test.ts`, ועוד), כולל טסט מלאי שמוודא שכל קריאה בקוד תואמת
+לטבלת המדיניות (ראו ההערה ב-`policies.ts` על `legacyRedisKey`).
 
-**M11-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M12-c65
-לשמירה על תקרת 300 שורות).** axe הורץ מחדש על כל דף מול build+e2e אמיתי,
-240/242 עברו, 2 דולגו בכוונה, אפס הפרת WCAG A/AA בכל חומרה. ארבעת השערים
-ירוקים.
+**שערים, כולם בפורגראונד:** `type-check`/`lint` נקיים. טסטים ממוקדים
+(אבטחה+rate-limit, 19 קבצים) 228/228. `test` מלא 610/610 קבצים, 7298
+עברו + 12 דולגו בכוונה. `build` (`rm -rf .next` קודם) exit 0. אין שינוי
+UI, `scripts/compare.mjs` לא רץ (לא פריט חזותי).
 
-**M10-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M09-c65/M10-c65/M11-c65/M12-c65 לשמירה על תקרת 300 שורות).** M10-c65 —
-כיסוי טסטים, שש הקטגוריות הקריטיות ב-100% ענפים, אפס דריפט רביעית
-ברציפות. M09-c65 — STATE CLEAN, אותם 13/15 חוסמים, קומיטים מאחורי
-פרודקשן 293. M08-c65 — BACKLOG EMPTY. M07-c65 — route audit, 226 טסטי
-Playwright ירוקים, 239 PASS + 2 NO DATA, 0 FAIL. M06-c65 — Lighthouse
-mobile, 99/100/100/100 בית, 99/100/100/100 מוצר, זהה ל-M06-c64. ארבעת
-השערים ירוקים בכולם.
+**M12-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M13-c65
+לשמירה על תקרת 300 שורות).** SEO נבדק מחדש מאפס, אפס דריפט: מטא-דאטה,
+JSON-LD Product+Offer (כולל בדיקת באג אגורות), sitemap, robots וקונסיסטנטיות
+canonical — חמשת התחומים PASS. ארבעת השערים ירוקים.
+
+**M11-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M09-c65/M10-c65/M11-c65/M12-c65/M13-c65 לשמירה על תקרת 300 שורות).**
+M11-c65 — axe מחדש על כל דף, 240/242 עברו, 2 דולגו בכוונה, אפס הפרת
+WCAG A/AA. M10-c65 — כיסוי טסטים, שש הקטגוריות הקריטיות ב-100% ענפים.
+M09-c65 — STATE CLEAN, אותם 13/15 חוסמים, קומיטים מאחורי פרודקשן 293.
+M08-c65 — BACKLOG EMPTY. M07-c65 — route audit, 226 טסטי Playwright
+ירוקים, 239 PASS + 2 NO DATA, 0 FAIL. M06-c65 — Lighthouse mobile,
+99/100/100/100 בית, 99/100/100/100 מוצר, זהה ל-M06-c64. ארבעת השערים
+ירוקים בכולם.
 
 **M05-c65..M16-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M06-c65/M12-c65 לשמירה על תקרת 300 שורות).** M05-c65..M01-c65 —

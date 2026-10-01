@@ -2,6 +2,59 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c65 (הועבר מ-STATE.md ב-M13-c65, לשמירה על תקרת 300 שורות)
+
+**M12-c65 - DONE (01.10): SEO נבדק מחדש מאפס (לא הוסתמך על טענת
+M12-c64), אפס דריפט, אפס תיקון קוד נדרש.** משימת התור: "SEO: verify
+metadata, canonical, og tags, schema.org Product and Offer on product
+pages, sitemap freshness and robots. Fix drift."
+
+**בדיקת דריפט מול המדידה הקודמת (M12-c64, `dcde57eeb`):** `git log
+dcde57eeb..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
+`857a0deea` (M18-c64, שורת דירוג כוכבים ברצועות ה-CMS של דף הבית) —
+נבדק בפירוט ואינו נוגע למטא-דאטה/JSON-LD/sitemap/robots כלל (קבצים
+ששונו: `ProductCard.tsx`, `homepage/rails.ts`, `related-products.ts`,
+`reviews/rating-summaries.ts`, `ProductRail.tsx`). אפס דריפט אפשרי
+מהקומיט הזה בסקופ השער הזה.
+
+**חמשת התחומים נבדקו ישירות מהקוד (לא מהתיעוד), כל אחד PASS:**
+1. **מטא-דאטה דף מוצר** — `src/app/(store)/product/[slug]/page.tsx:34-90`
+   `generateMetadata`: `title`, `description` (עם שרשרת ברירת מחדל),
+   `alternates.canonical`, `openGraph.{title,description,url,type,locale}`.
+   `og:image` דרך מוסכמת הקובץ `opengraph-image.tsx` (1200×630, מנתוני
+   מוצר אמיתיים, לא סטטי). הערה קטנה שאינה דריפט: `openGraph.type` הוא
+   `'website'` לא `'product'` — תקין, פחות עשיר.
+2. **JSON-LD Product+Offer, נבדק גם נגד באג אגורות** — נבנה ב-
+   `src/lib/seo/json-ld.ts:101-198` (`buildProductJsonLd`/`buildOfferNode`),
+   נפלט ב-`page.tsx:272-284`. `price`/`priceCurrency: 'ILS'`/`availability`/
+   `seller` קיימים. מקור המחיר `kenyon_price` הוא `numeric(10,2)` בשקלים
+   כבר (`supabase/migrations/016_products_code_sync.sql:31`), ו-`price()`
+   עושה `.toFixed(2)` ישיר בלי חלוקה ב-100 — נכון, כי המקור כבר שקלים
+   ולא אגורות. אין המרת אגורות שגויה בנתיב ה-JSON-LD.
+3. **Sitemap** — `src/app/sitemap.xml/route.ts` sitemapindex על חמישה
+   חלקים, `src/lib/seo/sitemap-data.ts:50-69` שואל Supabase חי
+   (`status='active'`, `deleted_at is null`), `lastModified` מ-`updated_at`
+   בפועל, לא הארדקוד.
+4. **robots.txt** — `src/app/robots.ts:19-55`: `allow: '/'`, חוסם
+   `/admin/`, `/checkout`, `/cart`, `/api/`, `/account/`, `/supplier/`,
+   `/auth/`, `/redeem/`, `/coupon/`, `/scan`; `sitemap`/`host` מצביעים
+   ל-`/sitemap.xml` האמיתי.
+5. **עקביות canonical** — `src/lib/site-url.ts:11-14` ו-`layout.tsx:45,48`
+   משתמשים באותו ברירת מחדל (`https://kenyonexpress.co.il`); הערה קטנה
+   שאינה דריפט: `page.tsx:224` משכפל את אותו literal במקום לייבא
+   `siteUrl()`.
+
+**אפס שינוי קוד — שתי ההערות הנ"ל אינן דריפט (לא שגיאה, לא סטייה מהתנהגות
+קודמת), ולכן אין מה "לתקן" לפי כלל הפרויקט שתיקון הוא החלטת תוכן/קוד
+רק כשיש פגם אמיתי.**
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
+`test` 610/610 קבצים, 7298 עברו + 12 דולגו בכוונה, אפס נכשל. `build`
+(`rm -rf .next` קודם, `CARDCOM_USE_MOCK=true pnpm build`) exit 0 —
+שגיאות `supabase.rls_denied` על `reviews` בלוג הן החוסם הידוע #11/247
+(אין הרשאת `SELECT` ל-`anon`), לא כשל build. אין שינוי UI,
+`scripts/compare.mjs` לא רץ (לא פריט חזותי).
+
 ## M11-c65 (הועבר מ-STATE.md ב-M12-c65, לשמירה על תקרת 300 שורות)
 
 **M11-c65 - DONE (01.10): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
