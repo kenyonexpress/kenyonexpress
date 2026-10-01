@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c67 (הועבר מ-STATE.md ב-M04-c67, לשמירה על תקרת 300 שורות)
+
+**M03-c67 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". `COMPARE_CATEGORY_SLUG` בררת המחדל (`hot-deals`, 2
+מוצרים פעילים), אותה קטגוריה מאז Q27. אומת לפני המדידה: אפס dirt ב-src/
+ייצור מול HEAD (`git diff --stat HEAD`), `type-check`/`lint`/`test`
+רצו נקיים קודם (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה ל-M02-c67),
+ואז `pnpm build` רץ מחדש (exit 0, `BUILD_ID` חדש, עדיין מקור-זהה ל-HEAD).
+**שרת ייעודי טרי הוקם** על פורט פנוי (3920, לא אחד משבעת השרתים
+המקבילים הפעילים מסשנים אחרים על 3311-3316/3618/3911/4211) כדי להימנע
+מהסיכון שבשימוש בשרת קיים ש-`.next` שלו עשוי להיכתב-מחדש באמצע מדידה
+על ידי סשן אחר (`BUILD_ID` של 3311 נמצא מאוחר מעליית השרת שם — ראה זיכרון
+`gate-measured-foreign-server-on-3311`); `cwd` של השרת החדש אומת
+(`lsof -p -a -d cwd`) ושתי בדיקות `curl` (`/` ו-`/category/hot-deals`,
+שתיהן `200`) לפני המדידה. **מדידה בפורגראונד, שלוש רוחבים, מול
+`refs/electro_shop_{width}.png` (`--baseline`, Electro `/shop/` הוא
+ה-reference הקבוע לדף הקטגוריה מ-Q27):**
+
+| רוחב | ציון (both-painted) | סטטוס | overall | קודם (M03-c66) |
+|---|---|---|---|---|
+| 380 | 3.53% | PASS | 29.59% | 3.53% |
+| 768 | 2.52% | PASS | 31.47% | 2.52% |
+| 1440 | 1.69% | PASS | 18.02% | 1.69% |
+
+שלושתן PASS, מתחת לתקרת 11%, **אפס דריפט מ-M03-c66** (01.10.2026),
+commit `3e1a10792`/`3e1a10792-dirty` (העץ המלוכלך הוא `docs/UI-PARITY-REPORT.md`
+עצמו, שהשער כותב בכל ריצה). **אזהרות `HEIGHT RATIO`** הופיעו שוב ב-380
+(0.53x) וב-768 (0.59x), זהות בטבען לאלה שתועדו ב-Q27/M03-c66: ה-reference
+הקפוא של Electro `/shop/` ארוך יותר מהדף שלנו (2 מוצרים פעילים בלבד
+ב-`hot-deals`), רובו `reference blank` לא `both painted` — לא ממצא
+חדש, לא חוסם. git diff נבדק מחדש `820d7076b..HEAD` על כל קבצי הקטגוריה
+(`src/app/(store)/category`, `src/components/category/*`,
+`src/components/store/Category*`, `src/styles/category-page.css`,
+`src/lib/category-*.ts`) וגם על גלובלים (`globals.css`, `app.css`,
+`layout.tsx`, `next.config.*`, `middleware.ts`, `vercel.json`) — ריק
+בכולם, מסביר את זהות המספרים המלאה. ארבעת השערים
+(`type-check`/`lint`/`test`/`build`) נקיים. אפס שינוי קוד ייצור בפריט
+הזה מלבד השורות שהשער עצמו הוסיף ל-`docs/UI-PARITY-REPORT.md`.
+
 ## M02-c67 (הועבר מ-STATE.md ב-M03-c67, לשמירה על תקרת 300 שורות)
 
 **M02-c67 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
