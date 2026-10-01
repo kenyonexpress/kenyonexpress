@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c69 ו-M01-c69 (הועברו מ-STATE.md ב-M03-c69, לשמירה על תקרת 300 שורות)
+
+**M02-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` על 3311 (PID 84228, אותו שרת ששימש
+את M01-c69) אומת לפני המדידה: `.next/BUILD_ID` מ-04:06 מאוחר מהקומיט
+האחרון שנגע ב-`src`/`public` (`4d3702025`, לפני HEAD הנוכחי `5a9c711a6`
+שהוא docs-only), `curl` החזיר `200` גם ל-`/` וגם ל-`/product/מוצר-לדוגמא`.
+**מדידה אמיתית, בפורגראונד, שלושה רוחבים, מול `refs/electro_product_
+{width}.png` (slug קבוע `מוצר-לדוגמא`, reference קבוע מ-Q05b):**
+
+| רוחב | ציון (both-painted) | סטטוס | overall | הערות |
+|---|---|---|---|---|
+| 380 | 4.96% | PASS | 31.74% | ref blank 19.62%, ours blank 7.16% |
+| 768 | 4.58% | PASS | 32.33% | ref blank 21.24%, ours blank 6.51% |
+| 1440 | 3.25% | PASS | 19.68% | ref blank 10.74%, ours blank 5.69% |
+
+שלושתם זהים ל-100% לציוני M02-c68 — **אפס דריפט**; אין קומיט שנגע
+ב-`src`/`public` בין `d97c21212` (בסיס M02-c68) ל-`5a9c711a6` (HEAD
+הנוכחי). אזהרת `HEIGHT RATIO` חזרה (0.26x/0.31x/0.34x) — נפתרה כבר
+ב-M02-c67 (עמוד המוצר הנדגם קצר באופן לגיטימי מרפרנס Electro, אושר
+ויזואלית אז). לא נדרש `type-check`/`lint`/`test`/`build` נוסף —
+M01-c69 כבר אישר ארבעתם ירוקים על אותו HEAD ואין שינוי קוד בפריט הזה.
+השורות נוספו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו.
+קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md` (נכתב על ידי השער).
+
+**M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M02-c69
+לשמירה על תקרת 300 שורות).** שער חזותי בית נמדד מחדש מול `refs/ke_live_
+{width}.png`, אפס דריפט מ-M01-c68 (8.58%/9.01%/4.16%). ארבעת השערים
+הורצו מחדש וירוקים: `type-check`, `lint` (12 שערים), `test` 614/614
+קבצים ו-7337/7349 עברו (12 מדולגים), `build` exit 0.
+
 ## M17-c68 (הועבר מ-STATE.md ב-M18-c68, לשמירה על תקרת 300 שורות)
 
 **M17-c68 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
