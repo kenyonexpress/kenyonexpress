@@ -5,6 +5,7 @@ import {
   phoneAuthEnabled,
   phoneAuthErrorHebrew,
   toE164Israeli,
+  whatsappOtpEnabled,
 } from './phone-otp'
 
 const env = (value: Record<string, string>) => value as unknown as NodeJS.ProcessEnv
@@ -25,6 +26,15 @@ describe('phoneAuthEnabled', () => {
     // ENV-REFERENCE listed -- got a login page with no phone tab and no reason
     // given.
     expect(phoneAuthEnabled(env({ NEXT_PUBLIC_PHONE_AUTH_ENABLED: 'true' }))).toBe(false)
+  })
+})
+
+describe('whatsappOtpEnabled', () => {
+  it('is off unless explicitly on, same default-off shape as phoneAuthEnabled', () => {
+    expect(whatsappOtpEnabled(env({}))).toBe(false)
+    expect(whatsappOtpEnabled(env({ WHATSAPP_OTP_ENABLED: 'false' }))).toBe(false)
+    expect(whatsappOtpEnabled(env({ WHATSAPP_OTP_ENABLED: 'true' }))).toBe(true)
+    expect(whatsappOtpEnabled(env({ WHATSAPP_OTP_ENABLED: '1' }))).toBe(true)
   })
 })
 

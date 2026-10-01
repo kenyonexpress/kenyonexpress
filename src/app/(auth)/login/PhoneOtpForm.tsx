@@ -25,6 +25,10 @@ function getSuccess(state: AuthState): string | null {
   return state && 'success' in state ? state.success : null
 }
 
+function getChannel(state: AuthState): 'sms' | 'whatsapp' {
+  return state && 'success' in state && state.channel === 'whatsapp' ? 'whatsapp' : 'sms'
+}
+
 export default function PhoneOtpForm({ next }: { next?: string }) {
   const [sendState, sendAction, sendPending] = useActionState<AuthState, FormData>(
     sendPhoneOtp,
@@ -40,10 +44,15 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
   // the verify step must send back. Reading it from the action's result rather
   // than re-normalising in the browser keeps one normaliser in the system.
   const sentTo = getSuccess(sendState)
+  const sentChannel = getChannel(sendState)
   const [confirmed, setConfirmed] = useState<string | null>(null)
+  const [channel, setChannel] = useState<'sms' | 'whatsapp'>('sms')
   useEffect(() => {
-    if (sentTo) setConfirmed(sentTo)
-  }, [sentTo])
+    if (sentTo) {
+      setConfirmed(sentTo)
+      setChannel(sentChannel)
+    }
+  }, [sentTo, sentChannel])
 
   if (!confirmed) {
     return (
@@ -74,7 +83,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
           disabled={sendPending}
           className="w-full border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
         >
-          {sendPending ? 'שולחים קוד...' : 'שליחת קוד ב-SMS'}
+          {sendPending ? 'שולחים קוד...' : 'שליחת קוד'}
         </button>
       </form>
     )
@@ -85,10 +94,14 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
       <input type="hidden" name="phone" value={confirmed} />
       {next && <input type="hidden" name="next" value={next} />}
 
-      <p className="text-sm text-gray-600">{`שלחנו קוד ל-${confirmed}`}</p>
+      <p className="text-sm text-gray-600">
+        {channel === 'whatsapp'
+          ? `שלחנו קוד ב-WhatsApp ל-${confirmed}`
+          : `שלחנו קוד ב-SMS ל-${confirmed}`}
+      </p>
 
       <label htmlFor="otp-token" className="block text-sm font-medium text-gray-700">
-        הקוד מה-SMS
+        {channel === 'whatsapp' ? 'הקוד מ-WhatsApp' : 'הקוד מה-SMS'}
       </label>
       <input
         id="otp-token"

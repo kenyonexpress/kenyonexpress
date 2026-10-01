@@ -16,6 +16,21 @@ export function phoneAuthEnabled(env: NodeJS.ProcessEnv = process.env): boolean 
 }
 
 /**
+ * WHATSAPP IS AN ADD-ON TO PHONE SIGN-IN, NOT A SEPARATE FEATURE, so this is
+ * only ever consulted after `phoneAuthEnabled()` already said yes. Same
+ * reasoning as that flag: Supabase only accepts `channel: 'whatsapp'` on
+ * `signInWithOtp` when the project's SMS provider (Twilio) has a WhatsApp
+ * sender configured and Meta-approved, which is a dashboard/Twilio-console
+ * action nobody here can take from code or verify against production. Off by
+ * default means today's SMS-only behaviour is unchanged until an operator
+ * turns this on, at which point `runSendPhoneOtp` tries WhatsApp first and
+ * falls back to SMS in the same request if that attempt errors.
+ */
+export function whatsappOtpEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.WHATSAPP_OTP_ENABLED === 'true' || env.WHATSAPP_OTP_ENABLED === '1'
+}
+
+/**
  * THERE IS NO CLIENT-SIDE FLAG, AND THE ABSENCE IS THE DESIGN.
  *
  * There used to be a `phoneAuthEnabledPublic` reading

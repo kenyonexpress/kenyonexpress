@@ -10,6 +10,7 @@ import {
   phoneAuthEnabled,
   phoneAuthErrorHebrew,
   toE164Israeli,
+  whatsappOtpEnabled,
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
@@ -36,7 +37,7 @@ import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-export type AuthState = { error: string } | { success: string } | null
+export type AuthState = { error: string } | { success: string; channel?: 'sms' | 'whatsapp' } | null
 
 const ERROR_MAP: Record<string, string> = {
   'Invalid login credentials': 'כתובת אימייל או סיסמה שגויים',
@@ -366,13 +367,29 @@ async function runSendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthSt
   await attachPhoneToExistingAccount(e164)
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithOtp({ phone: e164 })
+
+  // WHATSAPP FIRST, SMS AS THE FALLBACK IN THE SAME REQUEST -- not a second
+  // customer action. Same shape as the branded-email-then-Supabase-SMTP
+  // fallback above `runSendPasswordReset`: a failure on the first channel is
+  // "could not", never "must not", and the customer should not have to notice
+  // or choose. Gated by `whatsappOtpEnabled()` so this is a no-op (today's
+  // SMS-only path) until an operator turns it on; see that function's comment.
+  if (whatsappOtpEnabled()) {
+    const { error: whatsappError } = await supabase.auth.signInWithOtp({
+      phone: e164,
+      options: { channel: 'whatsapp' },
+    })
+    if (!whatsappError) return { success: e164, channel: 'whatsapp' }
+    log.warn('auth.phone_otp_whatsapp_failed', { reason: whatsappError.message })
+  }
+
+  const { error } = await supabase.auth.signInWithOtp({ phone: e164, options: { channel: 'sms' } })
   if (error) {
     log.error('auth.phone_otp_send_failed', { reason: error.message })
     return { error: phoneAuthErrorHebrew(error.message) }
   }
 
-  return { success: e164 }
+  return { success: e164, channel: 'sms' }
 }
 
 async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {

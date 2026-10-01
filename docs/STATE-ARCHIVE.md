@@ -2,6 +2,53 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q44 (הועבר מ-STATE.md ב-Q45, לשמירה על תקרת 300 שורות)
+
+**Q44 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד.** "PWA: manifest, service worker, install prompt אחרי
+רכישה ראשונה, offline shell, בקשת הרשאת push אחרי רכישה." **אינו בתור
+האמיתי** (`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו
+Q25-Q43. **כל חמשת הרכיבים כבר בנויים ומחווטים, נבדק מחדש שורה-שורה:**
+
+- **manifest**: `src/app/manifest.ts`, מטא-דאטה טיפוסית (לא קובץ סטטי)
+  כדי שלא תסטה מהאייקונים ש-`scripts/generate-pwa-icons.mjs` בפועל
+  מייצר; `standalone`, עברית/RTL, שלושה קיצורי-דרך לנתיבים אמיתיים.
+- **service worker**: `public/sw.js` — נכסים immutable cache-first,
+  תמונות stale-while-revalidate, מסמכים network-first עם שני fallback
+  (עמוד דפדפתי אחרון → `/offline`), `/api`/`/checkout`/`/cart`/`/account`/
+  `/admin` מוחרגים לגמרי, `push`/`notificationclick` מחווטים עם ולידציה
+  ו-same-origin בלבד.
+- **install prompt**: `src/components/pwa/InstallPrompt.tsx`, מחווט
+  גלובלית ב-`layout.tsx`. **לא "אחרי רכישה ראשונה" כפרומפט דפדפן כפוי** —
+  זו החלטה תיעודית קודמת (`docs/MEGA-BLOCK-AUDIT.md` STEP 43, 02.09):
+  פרומפט מאולץ הוא anti-pattern מתועד, ו-Chrome שומר event יחיד
+  (`beforeinstallprompt`) שניתן להציג רק פעם. המימוש בפועל גולמי יותר
+  ונכון יותר: נדלק אחרי אינטראקציה אמיתית (לא מיד בטעינה), מוסתר בנתיבי
+  כסף, נשמר once-ever בלי "לנדנד". **הצעת push אחרי רכישה כן קיימת
+  וממוקדת ברכישה**, ראו הבא.
+- **offline shell**: `src/app/offline/page.tsx`, עברית, ה-fallback
+  שה-SW מגיש כשאין גם עמוד שמור וגם אין רשת.
+- **בקשת הרשאת push אחרי רכישה**: שני רכיבים על `/checkout/return`
+  (`src/app/(store)/checkout/return/page.tsx:226-230`) — ברכישה ראשונה
+  `FirstPurchaseBanner` (passkey + "הכל באפליקציה"), בכל רכישה אחרת
+  `PostPurchasePushPrompt`. **אף אחד לא קורא ל-`Notification.
+  requestPermission()` ישירות** — שניהם מקשרים ל-`/account/notifications`
+  שם `PushOptIn` מבקש מכפתור מפורש, כי דיאלוג דפדפן לא-מבוקש בדיוק אחרי
+  תשלום הוא התבנית שמייצרת "Block" קבוע. Snooze של 30 יום
+  (`lib/pwa/snooze`), לא "לעולם לא" — בניגוד ל-`InstallPrompt` שהוא
+  once-ever, כי הרשאת push לא "נגמרת" אחרי שנדחתה כמו ה-event של Chrome.
+
+**בדיקה בפועל, בלי לשנות קוד.** `pnpm type-check` נקי, `pnpm lint` נקי
+(12 שערים), `pnpm test` מלא 613/613 קבצים 7328/7340 (12 מדולגים, זהה
+בדיוק ל-Q43 — אפס דריפט), `rm -rf .next && pnpm build` נקי (שרת זמני
+בפורט 3314, cwd מאומת — 3311/3312/3313 היו תפוסים על ידי סשנים מקבילים
+אחרים על אותו ריפו). שער חזותי PASS בשלושת הרוחבים, foreground,
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
+**8.51%/9.02%/3.95%** (380/768/1440), זהה בדיוק למדידת Q41/Q42/Q43,
+אפס דריפט (אין נגיעה ב-UI).
+
+קבצים ששונו: `STATE.md` בלבד.
+
 ## Q43, Q25..Q42 (הועברו מ-STATE.md ב-Q44, לשמירה על תקרת 300 שורות)
 
 **Q43 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
