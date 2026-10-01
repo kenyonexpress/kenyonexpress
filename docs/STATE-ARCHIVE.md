@@ -2,6 +2,16 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c69 (הועבר מ-STATE.md ב-M07-c69, לשמירה על תקרת 300 שורות)
+
+**M06-c69 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".
+`pnpm build` רץ נקי: exit 0, כל הנתיבים נבנו (כולל sitemaps/robots/
+opengraph/manifest) — זהה ל-M06-c68, אין דריפט לתקן. הורצו גם שלושת השערים
+הנוספים לוודא שאין רגרסיה חבויה: `type-check` נקי (`tsc --noEmit`, exit 0),
+`lint` ירוק (12 שערים, `biome check` על 2037 קבצים, אפס תיקונים), `test`
+614/614 קבצים, 7337/7349 עברו (12 מדולגים) — זהה ל-M05-c69. פריט
+אימות-בלבד, אפס שינוי קוד; קובץ שהשתנה: `STATE.md`.
+
 ## M02-c69 ו-M01-c69 (הועברו מ-STATE.md ב-M03-c69, לשמירה על תקרת 300 שורות)
 
 **M02-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on

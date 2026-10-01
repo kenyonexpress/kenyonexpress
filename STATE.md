@@ -1,18 +1,25 @@
-RESUME FROM: M07-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c69 - DONE, pnpm build אומת מחדש, אפס דריפט)
+RESUME FROM: M08-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c69 - DONE, סריקת TODO/FIXME אומתה מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c69 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".
-`pnpm build` רץ נקי: exit 0, כל הנתיבים נבנו (כולל sitemaps/robots/
-opengraph/manifest) — זהה ל-M06-c68, אין דריפט לתקן. הורצו גם שלושת השערים
-הנוספים לוודא שאין רגרסיה חבויה: `type-check` נקי (`tsc --noEmit`, exit 0),
-`lint` ירוק (12 שערים, `biome check` על 2037 קבצים, אפס תיקונים), `test`
-614/614 קבצים, 7337/7349 עברו (12 מדולגים) — זהה ל-M05-c69. פריט
-אימות-בלבד, אפס שינוי קוד; קובץ שהשתנה: `STATE.md`.
+**M07-c69 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
+days resolve or file in docs/BACKLOG.md". סריקה רוחבת-ריפו (`src/`,
+`scripts/`, `supabase/`) מוצאת בדיוק את אותם שני סמנים אמיתיים כמו
+ב-M07-c68: `src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame`
+24.07.2026) ו-`:319` (מסמכים, `git blame` 07.08.2026), שניהם ישנים משבעה
+ימים ושניהם עם `Tracked in #41`/`#42` בחלון ההערה עצמו. `scripts/
+final-audit.mjs` מדווח `untrackedMarkers=0` (מתוך 2). כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6 וב-`docs/KNOWN-ISSUES.md` סעיף 2 — אין עדכון
+BACKLOG נדרש, אפס דריפט מ-M07-c68. ה-hit הנוסף, `whatsapp.test.ts:91`,
+הוא מחרוזת ליטרלית `'TODO'`, לא סמן עבודה (ignored by `scanMarkers`).
+ארבעת השערים הורצו בפועל: `type-check` נקי, `lint` ירוק (12 שערים,
+2037 קבצים), `test` 614/614 קבצים (7337 עברו + 12 מדולגים), `build`
+exit 0. אפס שינוי קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M05-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M06-c69 לשמירה על תקרת 300 שורות).** M05-c69: `pnpm test` נמדד
+**M06-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M07-c69 לשמירה על תקרת 300 שורות).** M06-c69: `pnpm build`
+אומת מחדש, אפס דריפט. M05-c69: `pnpm test` נמדד
 מחדש, אפס דריפט. M04-c69: `pnpm type-check`
 נמדד מחדש, אפס דריפט. M03-c69: שער חזותי קטגוריה
 נמדד מחדש מול `refs/electro_shop_{width}.png`, אפס דריפט מ-M03-c68
