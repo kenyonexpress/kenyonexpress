@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c65 (הועבר מ-STATE.md ב-M11-c65, לשמירה על תקרת 300 שורות)
+
+**M10-c65 - DONE (01.10).** משימת התור: למצוא את המודול הקריטי בעל כיסוי
+הטסטים הנמוך ביותר בין `packages/money`, פיצול תשלום, מכונת מצבים של
+שובר, מכונת מצבים של הזמנה, החזרים ועוזרי RLS, ולהוסיף טסטים עד כיסוי
+ענפים מלא. נמדד ישירות עם `vitest run --coverage` (לא הונח מה-STATE
+הקודם): שש הקטגוריות, קובץ-קובץ —
+`src/lib/money.ts` 21/21 (100%), `src/lib/commerce/money.ts` 20/20
+(100%), `src/lib/checkout/split.ts` 4/4 (100%), `src/server/domain/
+vouchers/state-machine.ts` 22/22 (100%), `src/server/domain/orders/
+state-machine.ts` 19/19 (100%) ו-`order-transitions.ts` 6/6 (100%),
+`src/server/domain/orders/refund.ts` 55/55 (100%), `refund-request.ts`
+6/6 (100%), `src/server/payments/refund-wallet.ts` 16/16 (100%),
+`refund-record.ts` 14/14 (100%), `src/lib/supabase/rls-report-fetch.ts`
+37/37 (100%) — אפס ענף חסר בכל אחד מהשישה. זהה ל-M10-c61/c62/c63/c64,
+אפס דריפט רביעית ברציפות. **אין מודול קריטי מתחת ל-100%, אין טסט חדש
+נדרש.** (לידיעה בלבד, לא חלק מהבקשה: `src/lib/commerce/phases.ts`
+עומד על 44.11% ענפים ו-`order-money-columns.ts` על 82.22% — שניהם מחוץ
+לשש הקטגוריות שהוגדרו ולרשימת ה-`MONEY_MODULE_FLOOR` ב-`vitest.config.ts`,
+לא חוסם לפריט הזה.)
+
+קבצים ששונו: `STATE.md` בלבד, אפס קוד.
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
+`test` 610/610 קבצים, 7298/7310 ירוקים (עם `--coverage`). `build` רץ
+בפועל (`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3533 pnpm build`) — "Compiled successfully", exit 0.
+אין שינוי UI, `scripts/compare.mjs` לא רץ (לא פריט חזותי).
+
 ## M09-c65 (הועבר מ-STATE.md ב-M10-c65, לשמירה על תקרת 300 שורות)
 
 **M09-c65 - STATE CLEAN (01.10).** משימת התור: לקחת את פריט ה-STATE.md
