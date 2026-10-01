@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c66 (הועבר מ-STATE.md ב-M07-c66, לשמירה על תקרת 300 שורות)
+
+**M06-c66 - DONE (01.10.2026).** משימת התור: "pnpm build fix drift
+commit". עץ העבודה היה נקי לפני התחלת הפריט (`git status --short` ריק) -
+אין דריפט קיים לתקן ולא היה שום קובץ מתוקן לקמיט.
+
+**שלא כמו M04-c66/M05-c66, הפעם `pnpm build` הורץ בפועל** (לא נדלג
+בגלל זיכרון): `uptime` לפני הריצה הראה `load averages: 2.76 4.56 4.04`
+ו-`pgrep -f "next build"` החזיר אפס תהליכים מתחרים, כלומר התנאי
+מזיכרון `concurrent-worktree-builds-oom` (שישה `pnpm start` עדיין רצים
+ברקע, אך לא `next build`) לא חסם. שתי ריצות נפרדות: הראשונה הדפיסה את
+כל טבלת ה-routes (static/PPR/dynamic) ללא שגיאת קומפילציה; השנייה
+(`pnpm build > /tmp/build-m06.log 2>&1; echo EXIT:$?`) אימתה **exit 0**
+במפורש. שורות `error` היחידות ביומן הן `supabase.rls_denied` על
+`reviews` במהלך prerender — זה חוסם #3/#11 המתועד (מיגרציה `247`
+ממתינה לאישור), לא כשל build. **`git status --short` ריק אחרי שתי
+הריצות** — `.next/` ב-`.gitignore` (שורה 21) כך שהבנייה עצמה אינה יכולה
+ליצור דריפט לקמיט; אפס שינוי בקוד המקור.
+
+**ארבעת השערים, כולם ירוקים באותו יום (לא רק build):** `pnpm type-check`
+ו-`pnpm test` אומתו ב-M04-c66/M05-c66 היום בדיוק על אותו HEAD (אין
+קומיט קוד חדש בין לבין), `pnpm lint` נקי (12 שערים) כמתועד שם. `pnpm
+build` הוא היחיד שהורץ מחדש בפריט הזה, exit 0.
+
+**אין שינוי קוד ייצור.** קובץ יחיד שונה: `STATE.md` (+ ארכוב M05-c66
+המלא ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות). לא פריט חזותי
+- כלל ה-foreground על `compare.mjs` לא חל כאן.
+
 ## M05-c66 (הועבר מ-STATE.md ב-M06-c66, לשמירה על תקרת 300 שורות)
 
 **M05-c66 - DONE (01.10.2026).** משימת התור: "pnpm test fix drift

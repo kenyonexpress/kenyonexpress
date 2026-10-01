@@ -1,33 +1,29 @@
-RESUME FROM: M07-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c66 - DONE, pnpm build הורץ בפועל ל-exit 0, אפס דריפט, שום commit קוד לא נדרש)
+RESUME FROM: M08-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c66 - DONE, סריקת TODO/FIXME ישנים מ-7 ימים, פריט אחד תוקן בקוד)
 
 ## המשך מ:
 
-**M06-c66 - DONE (01.10.2026).** משימת התור: "pnpm build fix drift
-commit". עץ העבודה היה נקי לפני התחלת הפריט (`git status --short` ריק) -
-אין דריפט קיים לתקן ולא היה שום קובץ מתוקן לקמיט.
+**M07-c66 - DONE (01.10.2026).** משימת התור: סריקת `TODO`/`FIXME` ישנים
+מ-7 ימים, רוחב-ריפו (לא רק `src/`). ארבעה נמצאו: שני `TODO(cardcom)`
+ב-`src/lib/payments/cardcom.ts:254,319` כבר `tracked` (`Tracked in
+#41`/`#42`, אומתו כ-issues פתוחים אמיתיים, מתועדים גם ב-
+`docs/KNOWN-ISSUES.md`) — לא דרשו פעולה. `whatsapp.test.ts:91` אינו
+marker אמיתי (מחרוזת מילולית `'TODO'` בטסט, `scanMarkers` כבר מדלג
+עליו נכון). `scripts/screenshot-all.mjs:42` — היחיד ה-untracked, מ-23.07,
+מחוץ לתחום `scanMarkers` (סורק רק `src/`). נבדק: סקריפט ידני, לא
+ב-package.json/README/CI. ה-`TODO` היה כפילות מדויקת של הסבר שכבר כתוב
+שלוש שורות למעלה באותו קובץ — **נפתר בקוד**, השורה הכפולה הוסרה. לא
+חוב אמיתי, לכן לא נפתח issue ולא נוספה שורה ל-`docs/BACKLOG.md`.
 
-**שלא כמו M04-c66/M05-c66, הפעם `pnpm build` הורץ בפועל** (לא נדלג
-בגלל זיכרון): `uptime` לפני הריצה הראה `load averages: 2.76 4.56 4.04`
-ו-`pgrep -f "next build"` החזיר אפס תהליכים מתחרים, כלומר התנאי
-מזיכרון `concurrent-worktree-builds-oom` (שישה `pnpm start` עדיין רצים
-ברקע, אך לא `next build`) לא חסם. שתי ריצות נפרדות: הראשונה הדפיסה את
-כל טבלת ה-routes (static/PPR/dynamic) ללא שגיאת קומפילציה; השנייה
-(`pnpm build > /tmp/build-m06.log 2>&1; echo EXIT:$?`) אימתה **exit 0**
-במפורש. שורות `error` היחידות ביומן הן `supabase.rls_denied` על
-`reviews` במהלך prerender — זה חוסם #3/#11 המתועד (מיגרציה `247`
-ממתינה לאישור), לא כשל build. **`git status --short` ריק אחרי שתי
-הריצות** — `.next/` ב-`.gitignore` (שורה 21) כך שהבנייה עצמה אינה יכולה
-ליצור דריפט לקמיט; אפס שינוי בקוד המקור.
+אפס שינוי סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים), `test` **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים,
+`build` exit 0. לא פריט חזותי. קובץ קוד יחיד שונה:
+`scripts/screenshot-all.mjs` (-3/+1 שורות).
 
-**ארבעת השערים, כולם ירוקים באותו יום (לא רק build):** `pnpm type-check`
-ו-`pnpm test` אומתו ב-M04-c66/M05-c66 היום בדיוק על אותו HEAD (אין
-קומיט קוד חדש בין לבין), `pnpm lint` נקי (12 שערים) כמתועד שם. `pnpm
-build` הוא היחיד שהורץ מחדש בפריט הזה, exit 0.
-
-**אין שינוי קוד ייצור.** קובץ יחיד שונה: `STATE.md` (+ ארכוב M05-c66
-המלא ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות). לא פריט חזותי
-- כלל ה-foreground על `compare.mjs` לא חל כאן.
+**M06-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M07-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: `pnpm build` הורץ בפועל
+ל-exit 0 (לא נדלג בגלל זיכרון), אפס דריפט, שום commit קוד לא נדרש.
+ארבעת השערים ירוקים.
 
 **M05-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M06-c66
 לשמירה על תקרת 300 שורות).** פריט תור, DONE: `pnpm test` נבדק מחדש,
