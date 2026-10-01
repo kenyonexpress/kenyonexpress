@@ -1,61 +1,65 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q50 - verified, already closed)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q51 - BLOCKED, מתנגש בהחלטת בעלים מתועדת)
 
 ## המשך מ:
 
-**Q50 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
-אפס שינוי קוד ייצור.** "E2E Playwright guest coupon purchase, physical
-purchase, supplier redemption, admin refund, RTL." **אינו בתור האמיתי**
-(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, ואין "Q50" בשום קובץ markdown
-בריפו), אותו דפוס כמו Q25-Q49. **כל חמשת הנתיבים כבר קיימים ב-`e2e/`,
-נבדק קובץ-קובץ:**
+**Q51 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"Crisp inbox stub, email/wa.me site chat, feature flag off until after
+launch." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39,
+אין "Q51" בשום קובץ markdown בריפו), אותו דפוס כמו Q25-Q50.
 
-- **Guest coupon purchase + supplier redemption**:
-  `e2e/full-purchase-redeem.spec.ts` — עגלת אורח, auth gate ב-Google
-  (אימייל/סיסמה ב-CI), תשלום מדומה דרך Cardcom mock, שובר עם קוד ו-QR
-  ב-`/checkout/return` וב-`/account/coupons`, ואז ספק מתחבר ומממש
-  ב-`/supplier/scan` עם הקלדה ידנית של הקוד.
-- **Physical purchase**: `e2e/physical-purchase.spec.ts` — לקוח מחובר
-  קונה מוצר פיזי, אותו מסלול תשלום, ומאמת שאין שובר/QR (0 `coupon-code`,
-  0 `coupon-qr`) וההזמנה מופיעה ב-`/account/orders` עם הפריט הנכון.
-- **Admin refund**: `e2e/admin-refund.spec.ts` — לקוח קונה קופון,
-  מנהל (role `admin`, לא `super_admin` — התפקיד החלש ביותר שמותר לו
-  להחזיר) פותח את ההזמנה, ממלא סיבת ביטול, מיוזם החזר, ומוודא שהשובר
-  הופך ל"הוחזר".
-- **RTL**: `expectHebrewRtl` רץ בתוך שלושת הקבצים האלה בכל שלב קריטי
-  (מוצר, checkout, return, account, supplier/scan, admin/orders), ובנוסף
-  `e2e/rtl-mobile.spec.ts` מריץ `lang=he dir=rtl` על עשרה נתיבים ציבוריים
-  ובדיקת "אין גלילה אופקית ב-320px" על עשרים ושתיים נתיבים, כולל checkout
-  מלא (`#co-*` ממולא בעברית), פאנל עגלה פתוח, ו-install banner.
-  אין `toHaveScreenshot`/`toMatchSnapshot` תחת `e2e/` — "RTL snapshot"
-  כאן הוא אימות lang/dir/widת פונקציונלי, לא pixel diff; זה התבנית
-  הקיימת בכל הריפו (`platform_percent` "מצולם" ל-`order_items` באותו
-  מובן של state-at-a-point, לא screenshot).
+**מתנגש ישירות בהחלטת בעלים מתועדת וכבר-מיושמת.** `docs/STATE-ARCHIVE.md`
+(רשומת 2026-09-23 00:26, OWNER DECISIONS v2, סעיף Customer service) אומרת
+במפורש: **"WhatsApp + email בלבד, בלי Crisp, בלי טלפון, support@ במקום
+info@" — נבדק ויושם.** באותה רשומה `grep -rli crisp src package.json`
+חזר ריק, ונבדק שוב עכשיו: עדיין ריק. אין רכיב Crisp, אין משתנה סביבה
+`CRISP_*`, ואין צ'אט חי בשום דף.
 
-**הרצה בפועל של המסלול הכספי המלא** (Cardcom mock + seed) לא בוצעה
-בסשן הזה: `pnpm seed:test` דורש `SUPABASE_SECRET_KEY` תקף מול הפרויקט
-הנכון, וה-`.env.local` המקומי ידוע כ-stale (memory
-`local-env-service-key-stale`). זהה לאופן שבו Q25-Q49 אימתו קוד קיים —
-`pnpm test` (vitest), לא `pnpm test:e2e` נגד DB אמיתי.
+**אין גם מערכת feature-flag מתאימה לבנות עליה "כבוי עד אחרי ההשקה".**
+`src/lib/admin/feature-flags.ts` ו-`src/lib/resilience/feature-flags.ts`
+הם kill-switches לתת-מערכות קיימות (`cache`, `search`, `recs`,
+`notifications`) שמשרתות דה-גרדציה בטוחה, לא צ'אט ספק-שלישי; אין בריפו
+שום מנגנון flag כללי למוצר חדש. בניית אחד כזה רק כדי להחזיק דגל כבוי
+היא בדיוק התבנית שתועדה חזור ונשנה בריפו הזה: "תכונה מוגמרת בלי צרכן"
+(memory `finished-features-with-no-consumer`), ו-CLAUDE.md אוסר במפורש
+"no half-finished implementations" ותכנון ל"hypothetical future
+requirements".
 
-**שערים, כולם בפורגראונד, מאפס מול build אמיתי:** `type-check` נקי.
-`lint` נקי (12 שערים). `pnpm test` מלא **614/614 קבצים, 7335/7347
-עברו** (12 מדולגים, זהה ל-Q49). `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build` נקי. שרת בפורט
-3422, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער חזותי PASS
+**אין גם מקור עיצוב.** `grep -ni "chat\|crisp"` על `refs/ke_live_singlefile.html`
+ועל `refs/electro.madrasthemes.com-DESIGN.md` (שני מקורות העיצוב
+המותרים) ריק בשניהם — אין widget צ'אט בשום מופע Electro v7 שהועתק.
+
+**ההחלטה: BLOCKED, לא DONE ולא לבנייה בלי אישור.** הוספת Crisp (אפילו
+"סטאב" כבוי) דורשת מאופיר לבטל במפורש את ההחלטה שהוא עצמו קיבל ותועדה
+ב-23.09 — זו לא פעולה שסוכן יכול לקבל "לבד" לפי כלל ההתלבטות, כי יש כאן
+החלטת בעלים קיימת שסותרת ישירות את הבקשה, לא היעדר החלטה. ה"stub" + flag
+"off until after launch" לא משנה את ההתנהגות הנראית (אין צ'אט היום, לא
+יהיה גם אחרי ה-stub), ולכן גם לא תורם כלום מעבר לקוד מת שמחכה להתעורר —
+בדיוק הדפוס שנמחק ב-Footer.tsx ב-23.09 מהסיבה הזו. ערוצי השירות הקיימים
+(וואטסאפ + אימייל, `src/lib/contact/channels.ts`, חמישה נושאים) כבר
+מספקים את מה שהמשימה מתארת כ"email wa.me site chat" ללא Crisp. אפס שינוי
+קוד ייצור.
+
+**בדיקה בפועל, אפס שינוי קוד.** `pnpm type-check` נקי. `pnpm lint` נקי
+(12 שערים). `pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12
+מדולגים, זהה ל-Q50). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3423 pnpm build` נקי. שרת בפורט
+3423, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער חזותי PASS
 בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
 --widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
-ל-Q49 — אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
-לא נדרש שינוי קוד ייצור; רק דיווח STATE.
+ל-Q50 — אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
 
-**Q25..Q49 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q50
-לשמירה על תקרת 300 שורות).** עשרים ושלושה פריטים חיצוניים חד-פעמיים, אף
-אחד לא בתור האמיתי. תשעה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`,
+`STATE.md`.
+
+**Q25..Q50 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q51
+לשמירה על תקרת 300 שורות).** עשרים וארבעה פריטים חיצוניים חד-פעמיים, אף
+אחד לא בתור האמיתי. עשרים ואחד נמצאו DONE ובנויים במלואם (כמעט לגמרי
 במקרה של Q45, בחלקו במקרה של Q48 - LCP+AVIF תוקנו, JS-per-route תועד
 כפער ידוע), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים
 BLOCKED (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32)
 שעות פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים
-ירוקים בכל עשרים ושלושה.
+ירוקים בכל עשרים וארבעה.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,

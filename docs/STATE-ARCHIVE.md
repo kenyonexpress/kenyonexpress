@@ -2,6 +2,53 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q50 (הועבר מ-STATE.md ב-Q51, לשמירה על תקרת 300 שורות)
+
+**Q50 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "E2E Playwright guest coupon purchase, physical
+purchase, supplier redemption, admin refund, RTL." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, ואין "Q50" בשום קובץ markdown
+בריפו), אותו דפוס כמו Q25-Q49. **כל חמשת הנתיבים כבר קיימים ב-`e2e/`,
+נבדק קובץ-קובץ:**
+
+- **Guest coupon purchase + supplier redemption**:
+  `e2e/full-purchase-redeem.spec.ts` — עגלת אורח, auth gate ב-Google
+  (אימייל/סיסמה ב-CI), תשלום מדומה דרך Cardcom mock, שובר עם קוד ו-QR
+  ב-`/checkout/return` וב-`/account/coupons`, ואז ספק מתחבר ומממש
+  ב-`/supplier/scan` עם הקלדה ידנית של הקוד.
+- **Physical purchase**: `e2e/physical-purchase.spec.ts` — לקוח מחובר
+  קונה מוצר פיזי, אותו מסלול תשלום, ומאמת שאין שובר/QR (0 `coupon-code`,
+  0 `coupon-qr`) וההזמנה מופיעה ב-`/account/orders` עם הפריט הנכון.
+- **Admin refund**: `e2e/admin-refund.spec.ts` — לקוח קונה קופון,
+  מנהל (role `admin`, לא `super_admin` — התפקיד החלש ביותר שמותר לו
+  להחזיר) פותח את ההזמנה, ממלא סיבת ביטול, מיוזם החזר, ומוודא שהשובר
+  הופך ל"הוחזר".
+- **RTL**: `expectHebrewRtl` רץ בתוך שלושת הקבצים האלה בכל שלב קריטי
+  (מוצר, checkout, return, account, supplier/scan, admin/orders), ובנוסף
+  `e2e/rtl-mobile.spec.ts` מריץ `lang=he dir=rtl` על עשרה נתיבים ציבוריים
+  ובדיקת "אין גלילה אופקית ב-320px" על עשרים ושתיים נתיבים, כולל checkout
+  מלא (`#co-*` ממולא בעברית), פאנל עגלה פתוח, ו-install banner.
+  אין `toHaveScreenshot`/`toMatchSnapshot` תחת `e2e/` — "RTL snapshot"
+  כאן הוא אימות lang/dir/widת פונקציונלי, לא pixel diff; זה התבנית
+  הקיימת בכל הריפו (`platform_percent` "מצולם" ל-`order_items` באותו
+  מובן של state-at-a-point, לא screenshot).
+
+**הרצה בפועל של המסלול הכספי המלא** (Cardcom mock + seed) לא בוצעה
+בסשן הזה: `pnpm seed:test` דורש `SUPABASE_SECRET_KEY` תקף מול הפרויקט
+הנכון, וה-`.env.local` המקומי ידוע כ-stale (memory
+`local-env-service-key-stale`). זהה לאופן שבו Q25-Q49 אימתו קוד קיים —
+`pnpm test` (vitest), לא `pnpm test:e2e` נגד DB אמיתי.
+
+**שערים, כולם בפורגראונד, מאפס מול build אמיתי:** `type-check` נקי.
+`lint` נקי (12 שערים). `pnpm test` מלא **614/614 קבצים, 7335/7347
+עברו** (12 מדולגים, זהה ל-Q49). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build` נקי. שרת בפורט
+3422, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער חזותי PASS
+בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
+ל-Q49 — אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+לא נדרש שינוי קוד ייצור; רק דיווח STATE.
+
 ## Q49 (הועבר מ-STATE.md ב-Q50, לשמירה על תקרת 300 שורות)
 
 **Q49 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
