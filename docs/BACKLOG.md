@@ -532,7 +532,11 @@ applied, no code change.
     ואין לו גישה לדשבורד השירות החיצוני. אופיר: לבדוק שהאינסטנס של
     Meilisearch חי ושה-`MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` ב-Vercel
     תואמים לו, אחרת `/api/ready` ימשיך לדווח `503` לכל מוניטור שמסתכל עליו.
-    מקור: M13-c66 (אין רשומה קודמת בשום קובץ).
+    מקור: M13-c66 (אין רשומה קודמת בשום קובץ). **נמדד שוב ב-02.10.2026,
+    M13-c67, אפס דריפט**: `/api/health` `200` (`database:"ok"`), `/api/ready`
+    עדיין `503` עם `meilisearch:"down"` זהה, `redis:"ok"`,
+    `r2`/`cardcom` עדיין `not_configured` (תואם חוסמים 4 ו-8 למעלה, לא ממצא
+    חדש).
 17. **`SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN` חסרים ב-Production של
     הפרויקט שמגיש את הדומיין** (נמדד 01.10.2026, M14-c66, `filter_project_envs`
     קריאה-בלבד על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`). קיים

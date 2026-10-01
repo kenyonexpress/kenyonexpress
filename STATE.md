@@ -1,39 +1,34 @@
-RESUME FROM: M13-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c67 - DONE, robots.txt אומת מול פרודקשן ותוקן: שלוש כתובות-אסימון חסרות מ-Disallow)
+RESUME FROM: M14-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c67 - DONE, /api/health ו-/api/ready אומתו מול פרודקשן בפועל, אפס דריפט מ-M13-c66)
 
 ## המשך מ:
 
-**M12-c67 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". קוד `src/app/robots.ts` על הענף הזה (לא `origin/main`,
-שאין בו עדיין את תיקון `/debug/` מ-M12-c66, `8fce77c76`, לא ancestor של
-`origin/main` — `git merge-base --is-ancestor` מאשר) הושווה לרשימת כל
-תיקיות `src/app`, כולל קבוצות-ראוט. נמצאו שלוש כתובות שה-URL שלהן עצמו
-הוא אסימון חתום (`/gift/[token]`, `/order/[id]/tracking`,
-`/wishlist/s/[token]`) — כל שלוש עם הערה מפורשת בקוד "the URL IS the
-credential", אותה הנמקה בדיוק ש-`/redeem/` ו-`/coupon/` כבר חסומים
-בגללה — אך אף אחת משלוש לא הופיעה ב-`Disallow`. **אומת מול פרודקשן
-בפועל**: `https://www.kenyonexpress.co.il/gift/test`,
-`/order/test/tracking` ו-`/wishlist/s/test123` כולן מחזירות `200` חי,
-וה-`robots.txt` החי (מוגש מ-`main`, לא מהענף הזה) לא חוסם אף אחת מהן –
-כלומר הפער קיים בפרודקשן ממש, לא רק בקוד. נבדקו גם ונמצאו **לא**
-חוסרים: `/dev/*` (תמיד `404` בפרודקשן בגלל בדיקת `NODE_ENV`, לא תלוי
-ב-robots.txt), `/debug/sentry` (מחזיר `200` בפרודקשן אבל זה quirk של
-streaming SSR — התוכן בפנים כבר `NEXT_HTTP_ERROR_FALLBACK`/`notFound()`
-כי השער `SENTRY_DEBUG_ROUTES` כבוי; לא דלף אמיתי, ותוקן כבר ב-M12-c66
-על הענף הזה), `/login`/`/signup`/`/mfa`/`/admin-mfa` (כל (`auth`) group
-page נושא `robots: {index:false, follow:true}` מכוון, לא דורש
-`Disallow`), `/s/[id]` ו-`/c/[code]`/`/r/[code]` (לא אסימון-כתובת,
-redirect ציבורי/דף ספק ציבורי). **תוקן**: `src/app/robots.ts` — שלוש
-שורות `Disallow` חדשות (`/gift/`, `/order/`, `/wishlist/s/`) עם הערה
-לכל אחת; `src/app/robots.test.ts` — טסט חדש `disallows every page whose
-URL is itself the credential` על שלושתן. ארבעת השערים: `type-check` נקי,
-`lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים,
-זהה), `build` הורץ בפועל, 39.78 שניות, exit 0, כולל `/robots.txt`
-ברשימת הנתיבים. לא פריט חזותי, `scripts/compare.mjs` לא נדרש (אין
-שינוי UI). קבצים ששונו: `src/app/robots.ts`, `src/app/robots.test.ts`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M13-c67 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". הקוד (`src/app/api/health/route.ts`,
+`src/app/api/ready/route.ts`, `src/lib/health/checks.ts`,
+`src/lib/health/ready.ts`) זהה לחלוטין לזה שנבדק ב-M13-c66 (01.10.2026) —
+אין קומיט שנגע בארבעת הקבצים מאז. **אומת שוב מול פרודקשן בפועל, לא נלקח
+כמובן מאליו**: `curl https://www.kenyonexpress.co.il/api/health` מחזיר
+`200`, `{"ok":true,"database":"ok","latency_ms":274}`.
+`curl .../api/ready` מחזיר **`503`**, לא `200`:
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`
+— זהה בדיוק ל-M13-c66 (`meilisearch:"down"`), כלומר אפס דריפט ביום
+שעבר. `r2`/`cardcom` כ-`not_configured` תואמים חוסמים קיימים (4 ו-8
+למטה), לא ממצא חדש. המשימה מנוסחת כאילו שני הנתיבים צריכים `200`, אבל
+`/api/ready` **אמור** להחזיר `503` כשתלות חיה חסומה — זו ההתנהגות
+הנכונה של שער readiness, לא תקלה בקוד; התקלה האמיתית (Meilisearch
+חוץ-פרודקשן לא נגיש) היא חוסמת-אופיר בלבד, מתועדת כבר ב-BACKLOG.md
+סעיף 16 (נוצר ב-M13-c66). **לא נדרש תיקון קוד** — נוסף רק משפט "נמדד
+שוב" לסעיף 16 עם התאריך והערכים הזהים. ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים, זהה), `build` הורץ בפועל מ-`.next` נקי, 50.03 שניות, exit 0.
+לא פריט חזותי, `scripts/compare.mjs` לא נדרש (אין שינוי UI). קבצים
+ששונו: `docs/BACKLOG.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M04-c67..M11-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M12-c67 לשמירה על תקרת 300 שורות).** שמונה פריטי אימות-בלבד/תחזוקה:
+**M04-c67..M12-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M13-c67 לשמירה על תקרת 300 שורות).** תשעה פריטי אימות-בלבד/תחזוקה:
+robots.txt אומת מול פרודקשן ותוקן — שלוש כתובות-אסימון (`/gift/`,
+`/order/.../tracking`, `/wishlist/s/`) חסרות מ-`Disallow` (M12);
 `type-check` (M04), `test` (M05), `pnpm build` בפועל (M06) — אפס דריפט
 בשלושתם; סריקת `TODO`/`FIXME` רוחב-ריפו עם צימוד מפורש ב-`BACKLOG.md`
 סעיף 6 (M07); Lighthouse mobile `/`+`/product` 100/100/100 (M08); חמש

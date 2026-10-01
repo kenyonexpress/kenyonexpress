@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c67 (הועבר מ-STATE.md ב-M13-c67, לשמירה על תקרת 300 שורות)
+
+**M12-c67 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". קוד `src/app/robots.ts` על הענף הזה (לא `origin/main`,
+שאין בו עדיין את תיקון `/debug/` מ-M12-c66, `8fce77c76`, לא ancestor של
+`origin/main` — `git merge-base --is-ancestor` מאשר) הושווה לרשימת כל
+תיקיות `src/app`, כולל קבוצות-ראוט. נמצאו שלוש כתובות שה-URL שלהן עצמו
+הוא אסימון חתום (`/gift/[token]`, `/order/[id]/tracking`,
+`/wishlist/s/[token]`) — כל שלוש עם הערה מפורשת בקוד "the URL IS the
+credential", אותה הנמקה בדיוק ש-`/redeem/` ו-`/coupon/` כבר חסומים
+בגללה — אך אף אחת משלוש לא הופיעה ב-`Disallow`. **אומת מול פרודקשן
+בפועל**: `https://www.kenyonexpress.co.il/gift/test`,
+`/order/test/tracking` ו-`/wishlist/s/test123` כולן מחזירות `200` חי,
+וה-`robots.txt` החי (מוגש מ-`main`, לא מהענף הזה) לא חוסם אף אחת מהן –
+כלומר הפער קיים בפרודקשן ממש, לא רק בקוד. נבדקו גם ונמצאו **לא**
+חוסרים: `/dev/*` (תמיד `404` בפרודקשן בגלל בדיקת `NODE_ENV`, לא תלוי
+ב-robots.txt), `/debug/sentry` (מחזיר `200` בפרודקשן אבל זה quirk של
+streaming SSR — התוכן בפנים כבר `NEXT_HTTP_ERROR_FALLBACK`/`notFound()`
+כי השער `SENTRY_DEBUG_ROUTES` כבוי; לא דלף אמיתי, ותוקן כבר ב-M12-c66
+על הענף הזה), `/login`/`/signup`/`/mfa`/`/admin-mfa` (כל (`auth`) group
+page נושא `robots: {index:false, follow:true}` מכוון, לא דורש
+`Disallow`), `/s/[id]` ו-`/c/[code]`/`/r/[code]` (לא אסימון-כתובת,
+redirect ציבורי/דף ספק ציבורי). **תוקן**: `src/app/robots.ts` — שלוש
+שורות `Disallow` חדשות (`/gift/`, `/order/`, `/wishlist/s/`) עם הערה
+לכל אחת; `src/app/robots.test.ts` — טסט חדש `disallows every page whose
+URL is itself the credential` על שלושתן. ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים,
+זהה), `build` הורץ בפועל, 39.78 שניות, exit 0, כולל `/robots.txt`
+ברשימת הנתיבים. לא פריט חזותי, `scripts/compare.mjs` לא נדרש (אין
+שינוי UI). קבצים ששונו: `src/app/robots.ts`, `src/app/robots.test.ts`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M10-c67 (הועבר מ-STATE.md ב-M11-c67, לשמירה על תקרת 300 שורות)
 
 **M10-c67 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
