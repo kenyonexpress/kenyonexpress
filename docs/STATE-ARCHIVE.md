@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c70 (הועבר מ-STATE.md ב-M02-c70, לשמירה על תקרת 300 שורות)
+
+**M01-c70 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md" — זהה למילה למשימת M01-c69,
+פריט ראשון במחזור `c70` אחרי שהתור חזר על עצמו (M18-c69 היה האחרון
+ב-`c69`). שרת `next-server` כבר חי על פורט 3311 (PID 84228, `cwd` זהה
+לריפו, `BUILD_ID` מ-`Oct 2 05:53` תואם ל-`HEAD` `ab81316c9`/`05:54:32`)
+— לא נבנה build חדש. **מדידה אמיתית, בפורגראונד, שלושה רוחבים, מול
+`refs/ke_live_{width}.png` (לא מול הדומיין החי — חוסם #14, הניווט החי
+מחזיר את הבנייה שלנו):**
+
+| רוחב | ציון | סטטוס | overall | הערות |
+|---|---|---|---|---|
+| 380 | 8.58% | PASS | 14.11% | ref blank 2.79%, ours blank 2.75% |
+| 768 | 9.01% | PASS | 16.03% | ref blank 4.31%, ours blank 2.72% |
+| 1440 | 4.16% | PASS | 15.45% | ref blank 9.88%, ours blank 1.41% |
+
+שלושתם זהים ל-100% לציוני M01-c69 — **אפס דריפט**, מאושר גם ב-`git diff
+ab81316c9..HEAD -- src public` (ריק, אין קומיט קוד מאז). ארבעת השערים:
+`type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349
+עברו (12 מדולגים, זהה). `build` לא הורץ מחדש — סוכן מקביל מחזיק שרת חי
+על אותו `.next` תואם ל-`HEAD` בדיוק (סיכון OOM, ראו הערת זיכרון), ואין
+שינוי קוד מאז הבנייה האחרונה. השורות נוספו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי השער עצמו. קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md` (נכתב
+על ידי השער).
+
 ## M18-c69 (הועבר מ-STATE.md ב-M01-c70, לשמירה על תקרת 300 שורות)
 
 **M18-c69 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines
