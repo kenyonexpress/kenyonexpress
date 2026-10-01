@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c67 (הועבר מ-STATE.md ב-M11-c67, לשמירה על תקרת 300 שורות)
+
+**M10-c67 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". החוסם כבר מתועד (BACKLOG.md סעיף 5, חוסם 3
+למטה: 19 קבצים — 204, 209, 218, 220, 223, 224, 234-236, 239-248), ונבדק
+**מול פרודקשן בפועל** יום קודם (M10-c66, 01.10, טוקן CLI ב-keychain,
+קריאה-בלבד). פריט זה אימת **אפס סחיפה** מאז בלי לחזור על ה-query נגד
+production: `git diff --stat 7f23dd82e..HEAD -- migrations/pending
+docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
+pnpm-lock.yaml` מראה רק `docs/BACKLOG.md` (יומן) ושני קבצים לא-קשורים
+מ-M09-c67, ללא נגיעה בסכימה. `migrations/pending/*.sql` נספר מחדש:
+**60**, זהה ל-M10-c66, אין קובץ חדש. 19 הקבצים עדיין "לא הוחל", ללא
+שינוי, אין migration שהוחל, אין קוד שהשתנה.
+
+לא פריט חזותי. ארבעת השערים ירוקים: `type-check`/`lint` (12 שערים) נקיים,
+`test` 614/614 קבצים, 7336/7348 עברו (אפס דריפט), `build` לא הורץ
+מחדש — `.next/BUILD_ID` source-identical ל-HEAD (14 `pnpm start`
+מקביליים, זיכרון נמוך). קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M09-c67 (הועבר מ-STATE.md ב-M10-c67, לשמירה על תקרת 300 שורות)
 
 **M09-c67 - DONE (02.10.2026).** משימת התור: הסרת deps לא בשימוש וexports

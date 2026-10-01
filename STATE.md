@@ -1,45 +1,36 @@
-RESUME FROM: M11-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c67 - DONE, מיגרציות ממתינות אומתו מחדש, אפס דריפט)
+RESUME FROM: M12-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c67 - DONE, sitemap.xml אומת טרי ונגיש מול פרודקשן בפועל)
 
 ## המשך מ:
 
-**M10-c67 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". החוסם כבר מתועד (BACKLOG.md סעיף 5, חוסם 3
-למטה: 19 קבצים — 204, 209, 218, 220, 223, 224, 234-236, 239-248), ונבדק
-**מול פרודקשן בפועל** יום קודם (M10-c66, 01.10, טוקן CLI ב-keychain,
-קריאה-בלבד). פריט זה אימת **אפס סחיפה** מאז בלי לחזור על ה-query נגד
-production: `git diff --stat 7f23dd82e..HEAD -- migrations/pending
-docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
-pnpm-lock.yaml` מראה רק `docs/BACKLOG.md` (יומן) ושני קבצים לא-קשורים
-מ-M09-c67, ללא נגיעה בסכימה. `migrations/pending/*.sql` נספר מחדש:
-**60**, זהה ל-M10-c66, אין קובץ חדש. 19 הקבצים עדיין "לא הוחל", ללא
-שינוי, אין migration שהוחל, אין קוד שהשתנה.
+**M11-c67 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". נבדק מול פרודקשן בפועל (`https://www.kenyonexpress.co.il`, לא
+רק קוד, פעם שנייה אחרי M11-c66 ב-01.10): `/sitemap.xml` מחזיר `200`
+ומגיש `<sitemapindex>` עם חמש תת-מפות (זהה ל-M11-c66). כל חמש
+(`content`/`categories`/`products`/`regions`/`suppliers`) מחזירות `200`
+(דרך `308` מהדומיין החשוף ל-`www`, אותה התנהגות כמו M11-c66), `products.xml`
+עדיין מחזיק 46 כתובות עם `lastmod` מקסימלי `2026-09-25T02:29:00.830Z` —
+אותו ערך בדיוק כמו אתמול, אין תוכן חדש. `robots.txt` עדיין מצביע ל-`/sitemap.xml`
+הנכון. `git diff --stat 3d53d98e8..HEAD -- src/app/sitemap.xml src/app/sitemap
+src/app/robots.ts src/lib/seo` מראה שינוי יחיד, לא-קשור: שורת `Disallow: /debug/`
+שנוספה ב-M12-c66 (8fce77c76) לפני ש-M11-c66 נמדד בכלל. אפס דריפט בפועל
+מאז אתמול.
 
-לא פריט חזותי. ארבעת השערים ירוקים: `type-check`/`lint` (12 שערים) נקיים,
-`test` 614/614 קבצים, 7336/7348 עברו (אפס דריפט), `build` לא הורץ
-מחדש — `.next/BUILD_ID` source-identical ל-HEAD (14 `pnpm start`
-מקביליים, זיכרון נמוך). קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+לא פריט חזותי, `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M10-c67).
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614
+קבצים, 7336/7348 עברו (12 מדולגים, זהה ל-M10-c67), `build` לא הורץ מחדש
+(`.next/BUILD_ID` קיים וקרוב ל-HEAD, תשעה `pnpm start` מקביליים כרגע
+וזיכרון נמוך, אפס שינוי קוד ייצור בפריט הזה ממילא). קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**M09-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M10-c67
-לשמירה על תקרת 300 שורות).** הסרת deps מתות ו-exports מתים: 5
-false-positive של `knip` אומתו כבשימוש אמיתי, שני קבועים פנימיים-בלבד
-ב-`HeroSlider.tsx` הופשטו מ-`export`. ארבעת השערים ירוקים.
-
-**M08-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c67
-לשמירה על תקרת 300 שורות).** Lighthouse mobile על `/` ו-`/product`,
-`provided` 100/100/100 בשניהם, אפס דריפט מ-M08-c66. ארבעת השערים ירוקים.
-
-**M07-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c67
-לשמירה על תקרת 300 שורות).** סריקת `TODO`/`FIXME` רוחב-ריפו ישנים
-מ-7 ימים: זוג `TODO(cardcom)` יחיד, שניהם כבר מתויקים (`#41`/`#42`,
-`KNOWN-ISSUES.md`), צימוד מפורש נוסף ב-`docs/BACKLOG.md` סעיף 6. שינוי
-תיעוד בלבד, ארבעת השערים ירוקים.
-
-**M04-c67..M06-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M07-c67 לשמירה על תקרת 300 שורות).** שלושה פריטי אימות-בלבד: build
-(M06, `BUILD_ID` חדש `XAWs4J_bGq5w_Ne3YTPRE`), test (M05, `v24LrJDj4IFl59MtcQ4iG`),
-type-check (M04, `PZGh-20wHPjcAxFf7r8Jn`) — בכולם אין דריפט לתקן, אפס
-שינוי קוד ייצור. ארבעת השערים ירוקים בכולם.
+**M04-c67..M10-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M11-c67 לשמירה על תקרת 300 שורות).** שבעה פריטי אימות-בלבד/תחזוקה:
+`type-check` (M04), `test` (M05), `pnpm build` בפועל (M06) — אפס דריפט
+בשלושתם; סריקת `TODO`/`FIXME` רוחב-ריפו עם צימוד מפורש ב-`BACKLOG.md`
+סעיף 6 (M07); Lighthouse mobile `/`+`/product` 100/100/100 (M08); חמש
+חבילות מתות הוסרו ושני קבועים פנימיים-בלבד הופשטו מ-`export` (M09); 19
+מיגרציות ממתינות אומתו מחדש מול הקוד (אין סחיפה מ-M10-c66, שאימת מול
+פרודקשן בפועל, M10). ארבעת השערים ירוקים בכל השבעה.
 
 **M18-c66..M03-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M04-c67 לשמירה על תקרת 300 שורות).** M03-c67: שער חזותי קטגוריה
