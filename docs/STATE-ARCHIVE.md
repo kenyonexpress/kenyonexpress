@@ -2,6 +2,55 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q53 (הועבר מ-STATE.md ב-Q54, לשמירה על תקרת 300 שורות)
+
+**Q53 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Cardcom sandbox end-to-end swap-to-production toggle
+documented in STATE.md." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md`
+עוצר ב-Q39, אין "Q53" בשום קובץ markdown בריפו), אותו דפוס כמו Q25-Q52.
+**המתג כבר בנוי, נבדק ומתועד, קובץ-קובץ:**
+
+- **קוד**: `src/lib/payments/env.ts` (`loadCardcomEnv` - `CARDCOM_USE_MOCK`
+  נופל לברירת מחדל אמיתית רק כש-`CARDCOM_TERMINAL_NUMBER` חסר ומחוץ
+  ל-production; `mockOnCustomerFacingDeploy` מסרב checkout כש-mock רץ על
+  `VERCEL_ENV=production`, במקום לתת תשלום שקט בלי חיוב) ו-
+  `src/lib/payments/accounts.ts` (`isSandbox` מזהה מסוף 1000 בלי קשר לדגל,
+  `SANDBOX_IN_PRODUCTION` זורק שגיאת boot אם אישורי sandbox מגיעים
+  ל-production, `CARDCOM_ALLOW_SANDBOX=true` הוא פתח המילוט המוצהר
+  למדייה דמוית-production בלבד).
+- **תיעוד**: `docs/CARDCOM-ACTIVATION.md` - רשימת הבדיקה המלאה של אופיר,
+  שישה שלבים ממוספרים: שלושת משתני הסביבה (`CARDCOM_TERMINAL_NUMBER`/
+  `API_NAME`/`API_PASSWORD`), הווידוא המפורש ש-`CARDCOM_USE_MOCK` איננו
+  `true`, redeploy (משתנה סביבה ב-Vercel לא נכנס לתוקף בלי אחד), בדיקת
+  `/api/health` (מדווח "מסוף סנדבוקס/חי מוגדר"), ריצת מפרטי ה-E2E של
+  המסלול הכספי מול build mock לפני המעבר, ולבסוף תשלום אמיתי אחד קטן
+  וידני עם וידוא חיוב בפועל בדף הבנק.
+- **בדיקה**: `src/lib/payments/accounts.test.ts` ("מסרב להתחיל ב-production
+  עם אישורי sandbox", מכסה גם את `CARDCOM_ALLOW_SANDBOX`) ו-
+  `src/lib/payments/env.test.ts` (`refusedReason`,
+  `mockOnCustomerFacingDeploy`) מכסים את שני הכיוונים. `checkCardcom` ב-
+  `src/lib/health/checks.ts` מבחין בפועל בין מסוף 1000 (סנדבוקס) למסוף חי
+  בתשובת `/api/health`.
+
+**מה עדיין לא אפשר לאמת מהמכונה הזו.** תשלום אמיתי אחד מול מסוף Cardcom
+production (שלב 6 ב-`CARDCOM-ACTIVATION.md`) דורש אישורי production
+אמיתיים, שלא קיימים בשום סביבה שהריפו הזה מגיע אליה (חוסם #8 למעלה). זו
+פעולה ידנית של אופיר, לא תיקון קוד או תיעוד.
+
+**בדיקה בפועל.** `pnpm vitest run src/lib/payments`: **160/160 ירוק.**
+`pnpm type-check` נקי. `pnpm lint` נקי (12 שערים). `pnpm test` מלא
+**614/614 קבצים, 7335/7347 עברו** (12 מדולגים, זהה ל-Q50-Q52). `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3425
+pnpm build` נקי. שרת בפורט 3425, cwd מאומת (`/usr/sbin/lsof -p <pid> |
+grep cwd`). שער חזותי PASS בשלושת הרוחבים, foreground,
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
+**8.58%/10.38%/4.16%** (380/768/1440) - 380 ו-1440 זהים ל-Q50-Q52, 768 נדד
+מ-9.01% ל-10.38% (רעש מדידה, עדיין PASS מתחת לשער 11%).
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`,
+`STATE.md`.
+
 ## Q52 (הועבר מ-STATE.md ב-Q53, לשמירה על תקרת 300 שורות)
 
 **Q52 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,

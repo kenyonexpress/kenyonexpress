@@ -188,6 +188,24 @@ jobs:
           fi
       - run: pnpm typecheck:changed
 
+  # The migration safety rule in CLAUDE.md is "SQL only as new files in
+  # migrations/pending/, never applied" -- so the dry-run that belongs in CI is
+  # a static one, not a real apply against a throwaway database. migration-lint
+  # already defines what an unapplied migration in this repo must have
+  # (idempotent DDL, a ROLLBACK note, the NOT APPLIED footer) and has been run
+  # by hand before every tag; this job is that same check, now on every push.
+  # Zero dependencies (fs/path only), so no install step.
+  migration-dry-run:
+    name: Migration dry-run (lint migrations/pending)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Lint every pending migration for idempotency and a rollback note
+        run: node scripts/migration-lint.mjs
+
   test:
     name: Unit tests + money coverage floors
     runs-on: ubuntu-latest
@@ -343,6 +361,27 @@ jobs:
           path: .next/
           retention-days: 3
 
+  # Fails when the shared first-load client JS exceeds budget. Zero
+  # dependencies (fs/zlib only), so no install step -- it only needs the
+  # manifest the `build` job already produced. Run by hand before every tag
+  # (docs/LAUNCH-READINESS.md: 255.6KB against the 260KB ratchet); this job is
+  # that same measurement, now on every push instead of only at a release.
+  bundle-gate:
+    name: Bundle size gate (first-load JS)
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+      - name: Check gzipped shared first-load JS against the 260KB ratchet
+        run: node scripts/bundle-gate.mjs
+
   # THE ACCESSIBILITY SWEEP, AND THE ONLY JOB IN THIS FILE THAT RUNS A BROWSER
   # WITHOUT A SECRET.
   #
@@ -414,6 +453,84 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          retention-days: 7
+
+  # LIGHTHOUSE CI, THE THIRD PERFORMANCE OWNER NAMED IN
+  # docs/PERFORMANCE-BUDGET.md AND .github/workflows/README.md ("load.yml with
+  # k6, and Lighthouse CI"), WIRED IN FOR THE FIRST TIME.
+  #
+  # --throttling-method=provided, NOT THE SCRIPT'S DEFAULT. This runner is
+  # serving and auditing the same build at once -- the identical shared-machine
+  # problem docs/PERFORMANCE-BUDGET.md measured on a laptop, where the default
+  # `simulate` throttling swung 70 and 75 on two consecutive runs of an
+  # unchanged tree. A gate built on that noise would be red or green by luck,
+  # not by anything the commit did. `provided` reports what the build actually
+  # did: on that same measurement, 100/100/100 with FCP 0.1s and LCP 0.2s.
+  #
+  # Read-only, like `a11y` above: it loads `/` once and reads the response. No
+  # Supabase write secret, no seeding, no guard needed -- it runs unconditionally.
+  #
+  # NOT A REQUIRED CHECK, on purpose, same reasoning as `a11y`: it has no run
+  # history in this repository yet, and promoting a never-run gate straight
+  # into the required set is how a repository ends up unable to merge anything
+  # at 03:00. Add it under Settings > Branches once it has been green for a
+  # while.
+  lighthouse:
+    name: Lighthouse CI (performance/accessibility/SEO, provided throttling)
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
+      ALLOW_INCOMPLETE_ENV: 'true'
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      CARDCOM_USE_MOCK: 'true'
+      CARDCOM_WEBHOOK_SECRET: mock-webhook-secret
+      CHECKOUT_ENABLED: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+
+      # No playwright webServer here to wait for readiness, so this job does
+      # its own poll. ubuntu-latest ships google-chrome-stable preinstalled,
+      # which chrome-launcher (inside the `lighthouse` package) finds on its
+      # own -- no separate browser install step, unlike the Playwright jobs.
+      - name: Start the production build and wait for it to answer
+        run: |
+          pnpm start &
+          echo $! > /tmp/next-start.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/ -o /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::pnpm start did not answer on :3000 within 120s"
+          exit 1
+
+      - name: Lighthouse, real timing not simulated (docs/PERFORMANCE-BUDGET.md)
+        run: node scripts/lighthouse-smoke.mjs --throttling-method=provided
+
+      - name: Stop the server
+        if: always()
+        run: kill "$(cat /tmp/next-start.pid)" 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report
+          path: refs/lighthouse-smoke.json
           retention-days: 7
 
   # E2E drives a real browser against a real database, so it needs a Supabase

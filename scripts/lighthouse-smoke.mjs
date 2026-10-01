@@ -7,6 +7,7 @@
  *   pnpm build && pnpm start
  *   node scripts/lighthouse-smoke.mjs
  *   node scripts/lighthouse-smoke.mjs --url=/product/demo
+ *   node scripts/lighthouse-smoke.mjs --throttling-method=provided   # what CI runs
  *
  * READ docs/PERFORMANCE-BUDGET.md BEFORE ACTING ON A RED FROM THIS SCRIPT.
  *
@@ -28,6 +29,14 @@
  *
  * The threshold below is NOT the thing that is wrong. Point this at a real
  * deployment before changing it.
+ *
+ * THIS IS WHY CI PASSES --throttling-method=provided EXPLICITLY (see
+ * .github/workflows/ci.yml, job `lighthouse`): a GitHub-hosted runner that is
+ * both serving and auditing the same build is the identical shared-machine
+ * problem as localhost above, so gating on `simulate` there would be exactly
+ * as unreliable. Bare `pnpm lighthouse:smoke` (no flag) is unchanged and still
+ * defaults to `simulate`, for whoever runs this by hand against a real
+ * deployment per the note above.
  */
 
 import { spawnSync } from 'node:child_process'
@@ -42,6 +51,13 @@ const target = argUrl
     : `${LOCAL}${argUrl.startsWith('/') ? '' : '/'}${argUrl}`
   : `${LOCAL}/`
 
+// Passthrough, not a default change. Bare `pnpm lighthouse:smoke` keeps
+// Lighthouse's own default (`simulate`) for local use. CI passes
+// `--throttling-method=provided` explicitly -- see docs/PERFORMANCE-BUDGET.md
+// for why `simulate` is not trustworthy as a pass/fail signal on a shared
+// runner that is also building and serving the page under test.
+const throttlingArg = process.argv.find((a) => a.startsWith('--throttling-method='))
+
 const out = resolve('refs/lighthouse-smoke.json')
 const result = spawnSync(
   'pnpm',
@@ -54,6 +70,7 @@ const result = spawnSync(
     '--output=json',
     `--output-path=${out}`,
     '--quiet',
+    ...(throttlingArg ? [throttlingArg] : []),
   ],
   { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
 )

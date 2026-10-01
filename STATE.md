@@ -1,54 +1,66 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q53 - VERIFIED, קיים ונבדק במלואו)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q54 - DONE, שלוש jobs חדשות ב-CI)
 
 ## המשך מ:
 
-**Q53 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
-אפס שינוי קוד ייצור.** "Cardcom sandbox end-to-end swap-to-production toggle
-documented in STATE.md." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md`
-עוצר ב-Q39, אין "Q53" בשום קובץ markdown בריפו), אותו דפוס כמו Q25-Q52.
-**המתג כבר בנוי, נבדק ומתועד, קובץ-קובץ:**
+**Q54 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"CI type-check unit E2E build migration dry-run Lighthouse-CI bundle-gate on
+every push." `.github/workflows/ci.yml` כבר הריץ type-check/lint/test/build/
+a11y/e2e/e2e-preview על כל push+pull_request בלי סינון ענפים (לא דרש שינוי).
+**שלושה שערים היו קיימים כסקריפט אבל רצו רק ידנית לפני תגים
+(`docs/LAUNCH-READINESS.md`), אף פעם לא ב-CI - עכשיו שלוש jobs חדשות:**
 
-- **קוד**: `src/lib/payments/env.ts` (`loadCardcomEnv` - `CARDCOM_USE_MOCK`
-  נופל לברירת מחדל אמיתית רק כש-`CARDCOM_TERMINAL_NUMBER` חסר ומחוץ
-  ל-production; `mockOnCustomerFacingDeploy` מסרב checkout כש-mock רץ על
-  `VERCEL_ENV=production`, במקום לתת תשלום שקט בלי חיוב) ו-
-  `src/lib/payments/accounts.ts` (`isSandbox` מזהה מסוף 1000 בלי קשר לדגל,
-  `SANDBOX_IN_PRODUCTION` זורק שגיאת boot אם אישורי sandbox מגיעים
-  ל-production, `CARDCOM_ALLOW_SANDBOX=true` הוא פתח המילוט המוצהר
-  למדייה דמוית-production בלבד).
-- **תיעוד**: `docs/CARDCOM-ACTIVATION.md` - רשימת הבדיקה המלאה של אופיר,
-  שישה שלבים ממוספרים: שלושת משתני הסביבה (`CARDCOM_TERMINAL_NUMBER`/
-  `API_NAME`/`API_PASSWORD`), הווידוא המפורש ש-`CARDCOM_USE_MOCK` איננו
-  `true`, redeploy (משתנה סביבה ב-Vercel לא נכנס לתוקף בלי אחד), בדיקת
-  `/api/health` (מדווח "מסוף סנדבוקס/חי מוגדר"), ריצת מפרטי ה-E2E של
-  המסלול הכספי מול build mock לפני המעבר, ולבסוף תשלום אמיתי אחד קטן
-  וידני עם וידוא חיוב בפועל בדף הבנק.
-- **בדיקה**: `src/lib/payments/accounts.test.ts` ("מסרב להתחיל ב-production
-  עם אישורי sandbox", מכסה גם את `CARDCOM_ALLOW_SANDBOX`) ו-
-  `src/lib/payments/env.test.ts` (`refusedReason`,
-  `mockOnCustomerFacingDeploy`) מכסים את שני הכיוונים. `checkCardcom` ב-
-  `src/lib/health/checks.ts` מבחין בפועל בין מסוף 1000 (סנדבוקס) למסוף חי
-  בתשובת `/api/health`.
+- `migration-dry-run` - מריץ `node scripts/migration-lint.mjs` כמו שהוא
+  (fs/path בלבד, בלי `pnpm install`). זה ה-dry-run הנכון לכלל "SQL רק
+  ב-migrations/pending, לעולם לא מוחל" - בדיקה סטטית, לא apply מול DB אמיתי.
+- `bundle-gate` - `needs: [build]`, מוריד את ה-artifact `next-build`, מריץ
+  `node scripts/bundle-gate.mjs` (תקציב 260KB gz, זהה ל-ratchet המתועד).
+- `lighthouse` - `needs: [build]`, מריץ `pnpm start`, ממתין ל-200 ב-curl
+  loop (ubuntu-latest מגיע עם Chrome מותקן, אין צעד התקנה), ואז
+  `node scripts/lighthouse-smoke.mjs --throttling-method=provided`.
 
-**מה עדיין לא אפשר לאמת מהמכונה הזו.** תשלום אמיתי אחד מול מסוף Cardcom
-production (שלב 6 ב-`CARDCOM-ACTIVATION.md`) דורש אישורי production
-אמיתיים, שלא קיימים בשום סביבה שהריפו הזה מגיע אליה (חוסם #8 למעלה). זו
-פעולה ידנית של אופיר, לא תיקון קוד או תיעוד.
+**`--throttling-method=provided` הוא לא קוסמטי, הוא תיקון למלכודת מתועדת.**
+`docs/PERFORMANCE-BUDGET.md`: ברירת המחדל (`simulate`) נדדה 70-75 בשתי
+ריצות רצופות על אותו build במחשב מקומי משותף, 100 עם `provided`. runner של
+GitHub גם מגיש וגם בודק על אותה מכונה - אותה בעיה בדיוק. שינוי יחיד
+ב-`scripts/lighthouse-smoke.mjs`: הדגל עובר רק כשהועבר במפורש; `pnpm
+lighthouse:smoke` חשוף לא השתנה.
 
-**בדיקה בפועל.** `pnpm vitest run src/lib/payments`: **160/160 ירוק.**
-`pnpm type-check` נקי. `pnpm lint` נקי (12 שערים). `pnpm test` מלא
-**614/614 קבצים, 7335/7347 עברו** (12 מדולגים, זהה ל-Q50-Q52). `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3425
-pnpm build` נקי. שרת בפורט 3425, cwd מאומת (`/usr/sbin/lsof -p <pid> |
-grep cwd`). שער חזותי PASS בשלושת הרוחבים, foreground,
+**נבדק ידנית מקומית לפני commit, שרת אמיתי בפורט 3412 (cwd מאומת,
+`/usr/sbin/lsof -p <pid> | grep cwd`), לא ב-background:**
+- `node scripts/bundle-gate.mjs` אחרי build נקי: **223.8KB gz מול תקציב
+  260KB - ok**.
+- `node scripts/lighthouse-smoke.mjs --throttling-method=provided`:
+  **100/100/100**, זהה למדידה המתועדת.
+- `node scripts/migration-lint.mjs`: **חשף תקלה אמיתית וקיימת מראש, לא
+  נגרמה כאן: 60 קבצים, 5 hard, 93 soft** (184/189/207 - CREATE
+  TABLE/INDEX בלי IF NOT EXISTS; 245 - CREATE POLICY רב יותר מ-DROP
+  POLICY IF EXISTS). **לא תוקן כאן** - 245 הוא DROP+CREATE על RLS
+  policies, וזיכרון סשן קודם מזהיר במפורש ש-DROP+CREATE על אובייקט DB
+  מאפס grants בשקט; לתקן חמישה קבצי מיגרציה בלי בדיקה לעומק זה מעבר
+  להיקף הפריט הזה. ה-job נוסף **לא כ-required check**, אותו היגיון כמו
+  `a11y` הקיים: אין לו run history, הפיכת שער שלא רץ אף פעם לחובה זה
+  איך ריפו נתקע ב-03:00. המשמעות: ה-CI החדש לא חוסם merge, אבל **יראה
+  אדום היום על `migration-dry-run`** - זה אמיתי, לא רעש. פריט תור עתידי:
+  לתקן את חמשת קובצי המיגרציה כדי ש-`migration-lint` יהיה ירוק.
+
+**ארבעת השערים.** `pnpm type-check` נקי. `pnpm lint` נקי (12 שערים).
+`pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12 מדולגים, זהה
+ל-Q53). `rm -rf .next && CARDCOM_USE_MOCK=true pnpm build` נקי.
+
+**שער חזותי PASS בשלושת הרוחבים, foreground, אפס שינוי UI בפריט הזה
+(workflow CI וסקריפט שרת-בלבד), נמדד בכל זאת לשמירת הרצף:**
 `--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
-**8.58%/10.38%/4.16%** (380/768/1440) - 380 ו-1440 זהים ל-Q50-Q52, 768 נדד
-מ-9.01% ל-10.38% (רעש מדידה, עדיין PASS מתחת לשער 11%).
+**8.58%/9.02%/4.16%** (380/768/1440) - זהה ל-Q53 בדיוק, אפס דריפט.
 `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
 
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`,
-`STATE.md`.
+קבצים ששונו: `.github/workflows/ci.yml`, `scripts/lighthouse-smoke.mjs`,
+`docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`, `STATE.md`.
+
+**Q53 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q54 לשמירה
+על תקרת 300 שורות).** פריט חיצוני חד-פעמי, VERIFIED: Cardcom
+sandbox-to-production toggle כבר בנוי, נבדק ומתועד במלואו, אפס שינוי קוד
+ייצור. ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
 
 **Q52 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q53 לשמירה
 על תקרת 300 שורות).** פריט חיצוני חד-פעמי, VERIFIED: Meilisearch Hebrew
