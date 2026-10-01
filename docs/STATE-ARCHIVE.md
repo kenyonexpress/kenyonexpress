@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c67 (הועבר מ-STATE.md ב-M08-c67, לשמירה על תקרת 300 שורות)
+
+**M07-c67 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md". סריקה רוחב-ריפו (`grep -rn`,
+ללא `node_modules`/`.next`/`.git`/`.claude/worktrees` — האחרונים שייכים
+לסשנים מקבילים אחרים, לא לעץ העבודה הזה) מצאה סמן עבודה אמיתי יחיד זוג:
+שני `TODO(cardcom)` ב-`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי,
+`git blame` מ-24.07.2026) ו-`:319` (מסמכים, מ-07.08.2026) — שניהם ישנים
+בהרבה מ-7 ימים. **שניהם כבר מתויקים**: עוקבים אחרי `Tracked in #41`/`#42`
+בקוד עצמו (GitHub issues), ומתועדים ב-`docs/KNOWN-ISSUES.md` סעיף 2
+וב-`docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`. לא לתיקון אוטומטי: אימות
+שם/שדה מדויק מול טרמינל Cardcom חי, בלעדיו אין בדיקה אמיתית אפשרית
+(ראו חוסם #8 ברשימת החוסמים למטה, `skills/cardcom-payments`). נוסף
+צימוד מפורש ב-`docs/BACKLOG.md` סעיף 6 (אותו חוסם שורש — טרמינל Cardcom
+אמיתי) כך שהבקשה "file in docs/BACKLOG.md" מתקיימת ישירות, לא רק
+בעקיפין דרך `KNOWN-ISSUES.md`. `src/lib/whatsapp.test.ts:91` **אינו**
+סמן עבודה — מחרוזת ליטרלית `'TODO'` שמוצבת למשתנה סביבה כדי לבדוק דחיית
+מספר טלפון לא מוגדר (ראו `scripts/final-audit-lib.mjs` שמתעד את ההבחנה
+הזו באופן כללי). אין סמן נוסף בשום קובץ קוד/תסריט מחוץ לארכיונים.
+ארבעת השערים רצו ברצף על השינוי (תיעוד בלבד, `docs/BACKLOG.md`), כולם
+exit 0: `pnpm type-check`, `pnpm lint` (`biome` על 2037 קבצים + 11 שערי
+lint פנימיים, כולל `docs-index-gate`/`docs-path-audit` — שניהם OK בלי
+שינוי ספירה), `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה
+ל-M02-c67 עד M06-c67), `pnpm build` (exit 0). שינוי תיעוד בלבד, אין קוד
+ייצור שהשתנה; שער חזותי לא רלוונטי (אין שינוי UI).
+
 ## M04-c67..M06-c67 (הועבר מ-STATE.md ב-M07-c67, לשמירה על תקרת 300 שורות)
 
 **M06-c67 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".

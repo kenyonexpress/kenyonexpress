@@ -1,31 +1,37 @@
-RESUME FROM: M08-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c67 - DONE, סריקת TODO/FIXME רוחב-ריפו, אפס תיקון קוד)
+RESUME FROM: M09-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c67 - DONE, Lighthouse mobile על / ו-/product, ציונים נרשמו)
 
 ## המשך מ:
 
-**M07-c67 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
-7 days resolve or file in docs/BACKLOG.md". סריקה רוחב-ריפו (`grep -rn`,
-ללא `node_modules`/`.next`/`.git`/`.claude/worktrees` — האחרונים שייכים
-לסשנים מקבילים אחרים, לא לעץ העבודה הזה) מצאה סמן עבודה אמיתי יחיד זוג:
-שני `TODO(cardcom)` ב-`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי,
-`git blame` מ-24.07.2026) ו-`:319` (מסמכים, מ-07.08.2026) — שניהם ישנים
-בהרבה מ-7 ימים. **שניהם כבר מתויקים**: עוקבים אחרי `Tracked in #41`/`#42`
-בקוד עצמו (GitHub issues), ומתועדים ב-`docs/KNOWN-ISSUES.md` סעיף 2
-וב-`docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`. לא לתיקון אוטומטי: אימות
-שם/שדה מדויק מול טרמינל Cardcom חי, בלעדיו אין בדיקה אמיתית אפשרית
-(ראו חוסם #8 ברשימת החוסמים למטה, `skills/cardcom-payments`). נוסף
-צימוד מפורש ב-`docs/BACKLOG.md` סעיף 6 (אותו חוסם שורש — טרמינל Cardcom
-אמיתי) כך שהבקשה "file in docs/BACKLOG.md" מתקיימת ישירות, לא רק
-בעקיפין דרך `KNOWN-ISSUES.md`. `src/lib/whatsapp.test.ts:91` **אינו**
-סמן עבודה — מחרוזת ליטרלית `'TODO'` שמוצבת למשתנה סביבה כדי לבדוק דחיית
-מספר טלפון לא מוגדר (ראו `scripts/final-audit-lib.mjs` שמתעד את ההבחנה
-הזו באופן כללי). אין סמן נוסף בשום קובץ קוד/תסריט מחוץ לארכיונים.
-ארבעת השערים רצו ברצף על השינוי (תיעוד בלבד, `docs/BACKLOG.md`), כולם
-exit 0: `pnpm type-check`, `pnpm lint` (`biome` על 2037 קבצים + 11 שערי
-lint פנימיים, כולל `docs-index-gate`/`docs-path-audit` — שניהם OK בלי
-שינוי ספירה), `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה
-ל-M02-c67 עד M06-c67), `pnpm build` (exit 0). שינוי תיעוד בלבד, אין קוד
-ייצור שהשתנה; שער חזותי לא רלוונטי (אין שינוי UI).
+**M08-c67 - DONE (02.10.2026).** משימת התור: Lighthouse mobile על `/`
+ו-`/product` (דוגמה), רישום ציונים בלבד, לא פריט חזותי. שרת `pnpm start`
+עצמאי על פורט 3317 (3311-3316 תפוסים ע"י סשנים מקבילים, לא נגעתי
+בהם), מול build טרי (`BUILD_ID` `oF4vmDNvWAUz_bTBJfh5E`, זהה ל-HEAD
+`80d1101b2`, אין `src/` שהשתנה מאז M07-c67 אך הורץ `pnpm build` מחדש
+כשער). מוצר לדוגמה: `צימר-מאסטר` (אותו מוצר שנבדק ב-M08-c66, פעיל, 10
+במלאי, `supabase/catalogue-snapshot.json`).
+
+**מה שנמדד, `--throttling-method=provided` (המתכון התקף, ר'
+`docs/PERFORMANCE-BUDGET.md`):** `/` performance/accessibility/seo =
+**100/100/100**. `/product/צימר-מאסטר` = **100/100/100**. אפס דריפט
+מ-M08-c66.
+
+**לשם השוואה, `simulate` (ברירת המחדל, ידוע כרועש על localhost — ר'
+אותו מסמך):** `/` = **97/100/100**, `/product/...` = **94/100/100**.
+שני המספרים נרשמים כאן למטרת לוג בלבד; ה-`provided` הוא המספר שסומך
+עליו, לא ה-`simulate`. אין שינוי ל-`scripts/lighthouse-smoke.mjs` ואין
+שינוי לסף 90 בו.
+
+אפס שינוי קוד/סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` **614/614 קבצים, 7336/7348 עברו**, 12 מדולגים,
+`build` exit 0 (`BUILD_ID` חדש, אפס תוכן שהשתנה). קובץ יחיד שונה:
+`STATE.md` (+ ארכוב M07-c67 ל-`docs/STATE-ARCHIVE.md`).
+
+**M07-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c67
+לשמירה על תקרת 300 שורות).** סריקת `TODO`/`FIXME` רוחב-ריפו ישנים
+מ-7 ימים: זוג `TODO(cardcom)` יחיד, שניהם כבר מתויקים (`#41`/`#42`,
+`KNOWN-ISSUES.md`), צימוד מפורש נוסף ב-`docs/BACKLOG.md` סעיף 6. שינוי
+תיעוד בלבד, ארבעת השערים ירוקים.
 
 **M04-c67..M06-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M07-c67 לשמירה על תקרת 300 שורות).** שלושה פריטי אימות-בלבד: build
