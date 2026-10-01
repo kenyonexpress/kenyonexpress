@@ -1,29 +1,28 @@
-RESUME FROM: M11-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c69 - DONE, מיגרציות ממתינות אומתו מחדש מול git, אפס דריפט מ-M10-c68)
+RESUME FROM: M12-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c69 - DONE, sitemap.xml אומת מחדש מול פרודקשן בפועל, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c69 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `git diff --stat 6a1f9caee..HEAD --
-migrations/pending/` (בסיס: קומיט M10-c68, הבדיקה הישירה-מול-פרודקשן
-האחרונה, אותו יום) ריק — אפס קובץ השתנה, אפס נוסף, אפס הוסר.
-`migrations/pending/*.sql` נספר מחדש: 60, זהה. `git log -1 --
-migrations/pending/` עדיין מצביע על `48c8792dd` (248, מ-01.10), מוקדם
-מ-M10-c68. מאחר שה-19 הקבצים נבדקו פרטנית, אובייקט-אובייקט, ישירות מול
-פרודקשן ב-M10-c68 **באותו יום** (לא יום קודם כמו ב-M10-c67 אחרי M10-c66)
-ואין שום שינוי בקוד או במיגרציות מאז, לא נדרשה בדיקה ישירה חדשה מול
-פרודקשן בפריט הזה — התבנית שנקבעה ב-M10-c67 (git-diff-only אחרי בדיקה
-ישירה) חלה כאן בפעם השנייה. ה-19 קבצים (204, 209, 218, 220, 223, 224,
-234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248) נותרים
-לא-מוחלים, אפס דריפט מ-M10-c66/M10-c67/M10-c68. אפס שינוי כסף/סכימה —
-שום מיגרציה לא הוחלה, רק אימות. ארבעת השערים ירוקים: `type-check` נקי,
-`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337+12
-מדולגים), `build` exit 0 (`CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3321`). קבצים: `STATE.md`,
-`docs/BACKLOG.md`.
+**M11-c69 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". בדיקת דריפט קוד קודם: `git log 11b1e462f..HEAD -- src/app/sitemap
+src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
+src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` (בסיס:
+קומיט M11-c68) — ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל
+(`https://www.kenyonexpress.co.il`)**: `/sitemap.xml` מחזיר `200` עם
+`<sitemapindex>` וחמש תת-מפות (`content`/`categories`/`products`/`regions`/
+`suppliers`), כולן `200` (אחרי מעקב 308 מה-apex ל-`www`), עם אותה ספירת
+כתובות כמו M11-c68/M11-c67 (14/13/46/17/7). `lastmod` ב-`products.xml` טרי
+ומשתנה (עד `2026-09-25`). `robots.txt` מצביע ל-`https://kenyonexpress.co.il/
+sitemap.xml` הנכון. **אפס דריפט מ-M11-c68/M11-c67.** ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337+12 מדולגים), `build` exit 0 (`CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3321`, חמשת נתיבי ה-sitemap מופיעים
+כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
 
-**M09-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M10-c69 לשמירה על תקרת 300 שורות).** M09-c69: deps/exports מתים
+**M10-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M11-c69 לשמירה על תקרת 300 שורות).** M10-c69: מיגרציות ממתינות
+אומתו מחדש (`git diff --stat` מול M10-c68, אותו יום), ריק, 60 קבצים
+זהים, ה-19 חוסמים ללא שינוי, אפס דריפט. M09-c69: deps/exports מתים
 אומתו מחדש עם `knip`, אותם מספרים בדיוק (271 unused exports, 197 unused
 exported types), אפס דריפט מ-M09-c68, אפס הסרה. M08-c69: Lighthouse
 mobile על `/` ו-`/product` אומת מחדש (`throttling-method=provided`,
@@ -37,7 +36,7 @@ TODO/FIXME אומתה מחדש, שני הסמנים כבר מתועדים, אפ�
 `refs/electro_product_{width}.png`, אפס דריפט מ-M02-c68
 (4.96%/4.58%/3.25%). M01-c69: שער חזותי בית נמדד מחדש מול `refs/ke_live_
 {width}.png`, אפס דריפט מ-M01-c68 (8.58%/9.01%/4.16%). ארבעת השערים
-ירוקים בשלושתם.
+ירוקים בעשרתם.
 
 **M18-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M01-c69, M17-c68 ו-M09-c69 לשמירה על תקרת 300 שורות).** M18-c68:
