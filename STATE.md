@@ -1,4 +1,4 @@
-RESUME FROM: M19-c69
+RESUME FROM: M01-c70
 Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c69 - DONE, STATE.md אומת מתחת לתקרת 300 שורות)
 
 ## המשך מ:
