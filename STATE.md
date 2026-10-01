@@ -1,59 +1,60 @@
-RESUME FROM: M02-c67 DONE
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c67 - DONE, שער חזותי מוצר נמדד מחדש)
+RESUME FROM: M04-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c67 - DONE, שער חזותי קטגוריה נמדד מחדש)
 
 ## המשך מ:
 
-**M02-c67 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/product sample". שרת `pnpm start` על 3311 (PID 84228, עלה 23:48:30)
-אומת לפני המדידה: `cwd` נכון, `.next/BUILD_ID` מ-23:48:11 (לפני עליית
-השרת, לא אחריה — לא חוזר על תקלת M01-c67), HEAD תואם `ab7ea046f`. שתי
-שורות (380, 768) כבר נמדדו ולא קומיטו בתחילת הפריט (ב-`docs/UI-PARITY-REPORT.md`,
-לא נרשם ב-STATE); הושלמה הרוחב השלישי ונרשמו שלושתן יחד. **מדידה
-בפורגראונד, שלוש רוחבים, מול `refs/electro_product_{width}.png`
-(`--baseline`, Electro `/product/` הוא ה-reference הקבוע לדף המוצר מ-Q05b,
-לא `ke_live_product_*` הישן):**
+**M03-c67 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". `COMPARE_CATEGORY_SLUG` בררת המחדל (`hot-deals`, 2
+מוצרים פעילים), אותה קטגוריה מאז Q27. אומת לפני המדידה: אפס dirt ב-src/
+ייצור מול HEAD (`git diff --stat HEAD`), `type-check`/`lint`/`test`
+רצו נקיים קודם (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה ל-M02-c67),
+ואז `pnpm build` רץ מחדש (exit 0, `BUILD_ID` חדש, עדיין מקור-זהה ל-HEAD).
+**שרת ייעודי טרי הוקם** על פורט פנוי (3920, לא אחד משבעת השרתים
+המקבילים הפעילים מסשנים אחרים על 3311-3316/3618/3911/4211) כדי להימנע
+מהסיכון שבשימוש בשרת קיים ש-`.next` שלו עשוי להיכתב-מחדש באמצע מדידה
+על ידי סשן אחר (`BUILD_ID` של 3311 נמצא מאוחר מעליית השרת שם — ראה זיכרון
+`gate-measured-foreign-server-on-3311`); `cwd` של השרת החדש אומת
+(`lsof -p -a -d cwd`) ושתי בדיקות `curl` (`/` ו-`/category/hot-deals`,
+שתיהן `200`) לפני המדידה. **מדידה בפורגראונד, שלוש רוחבים, מול
+`refs/electro_shop_{width}.png` (`--baseline`, Electro `/shop/` הוא
+ה-reference הקבוע לדף הקטגוריה מ-Q27):**
 
-| רוחב | ציון (both-painted) | סטטוס | overall | הערות |
+| רוחב | ציון (both-painted) | סטטוס | overall | קודם (M03-c66) |
 |---|---|---|---|---|
-| 380 | 4.96% | PASS | 31.74% | ref blank 19.62%, ours blank 7.16% |
-| 768 | 4.58% | PASS | 32.33% | ref blank 21.24%, ours blank 6.51% |
-| 1440 | 3.25% | PASS | 19.68% | ref blank 10.74%, ours blank 5.69% |
+| 380 | 3.53% | PASS | 29.59% | 3.53% |
+| 768 | 2.52% | PASS | 31.47% | 2.52% |
+| 1440 | 1.69% | PASS | 18.02% | 1.69% |
 
-שלושתן PASS, מתחת לתקרת 11%, commit `ab7ea046f-dirty` (העץ המלוכלך הוא
-`docs/UI-PARITY-REPORT.md` עצמו, שהשער כותב בכל ריצה). **ממצא נלווה, לא
-חוסם**: ב-1440 הגיע אזהרת `HEIGHT RATIO 0.34x` מ-`diff-bands.mjs`
-(`live: 1440x7653 mine: 1440x2600`) — המוצר שנדגם (`מוצר-לדוגמא`, שם
-slug סותר את התוכן בפועל: דף תיק עור JEEP מלא, ראו CLAUDE.md "קטלוג חי"
-וחוסם 11) קצר באופן לגיטימי מרפרנס ה-Electro, לא דף שבור. אומת ויזואלית
-(`refs/mine-product.png`): עמוד מוצר שלם, רציף, כולל פוטר ו"מומלצים" —
-לא fallback ולא חיתוך. מרבית הפער הוא `reference blank` (קטע שה-Electro
-reference מצייר ואנחנו לא, כצפוי מעמוד ארוך יותר), לא `both painted`,
-ולכן ציון השער עצמו תקף ולא false-pass מסוג M01-c67. ארבעת השערים
-(`type-check`/`lint`/`test`/`build`) רצו באופן מלא ויצאו נקיים: 614 קבצי
-טסט, 7336 עברו, 12 דולגו; `biome` + 11 שערי lint נוספים נקיים; `pnpm build`
-exit 0. אפס שינוי קוד ייצור בפריט הזה מלבד השורות שהשער עצמו הוסיף
-ל-`docs/UI-PARITY-REPORT.md`.
+שלושתן PASS, מתחת לתקרת 11%, **אפס דריפט מ-M03-c66** (01.10.2026),
+commit `3e1a10792`/`3e1a10792-dirty` (העץ המלוכלך הוא `docs/UI-PARITY-REPORT.md`
+עצמו, שהשער כותב בכל ריצה). **אזהרות `HEIGHT RATIO`** הופיעו שוב ב-380
+(0.53x) וב-768 (0.59x), זהות בטבען לאלה שתועדו ב-Q27/M03-c66: ה-reference
+הקפוא של Electro `/shop/` ארוך יותר מהדף שלנו (2 מוצרים פעילים בלבד
+ב-`hot-deals`), רובו `reference blank` לא `both painted` — לא ממצא
+חדש, לא חוסם. git diff נבדק מחדש `820d7076b..HEAD` על כל קבצי הקטגוריה
+(`src/app/(store)/category`, `src/components/category/*`,
+`src/components/store/Category*`, `src/styles/category-page.css`,
+`src/lib/category-*.ts`) וגם על גלובלים (`globals.css`, `app.css`,
+`layout.tsx`, `next.config.*`, `middleware.ts`, `vercel.json`) — ריק
+בכולם, מסביר את זהות המספרים המלאה. ארבעת השערים
+(`type-check`/`lint`/`test`/`build`) נקיים. אפס שינוי קוד ייצור בפריט
+הזה מלבד השורות שהשער עצמו הוסיף ל-`docs/UI-PARITY-REPORT.md`.
 
-**M18-c66..M01-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M02-c67 לשמירה על תקרת 300 שורות).** M01-c67: שער חזותי בית נמדד
-מחדש, אפס דריפט, ממצא שרת-ישן מתועד ב-BACKLOG סעיף 18. M18-c66: STATE.md
-כבר מתחת לתקרת 300 שורות, אומת בלבד, אפס שינוי קוד. ארבעת השערים ירוקים
-בשניהם.
+**M18-c66..M02-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c67 לשמירה על תקרת 300 שורות).** M02-c67: שער חזותי מוצר נמדד
+מחדש, אפס דריפט (עם ממצא נלווה לא-חוסם על אורך רפרנס Electro). M01-c67:
+שער חזותי בית נמדד מחדש, אפס דריפט, ממצא שרת-ישן מתועד ב-BACKLOG סעיף
+18. M18-c66: STATE.md כבר מתחת לתקרת 300 שורות, אומת בלבד, אפס שינוי
+קוד. ארבעת השערים ירוקים בכולם.
 
-**M16-c66 ו-M17-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M02-c67 לשמירה על תקרת 300 שורות).** M17-c66: RTL על `/` ו-`/product`
-— leak אמיתי נמצא (חמש פסקאות פרומו ב-`HeroSlider.tsx` עם `dir="ltr"`
-שרוד), תוקן, שער חזותי PASS. M16-c66: JSON-LD Product+BreadcrumbList אומת
-כבנוי ונכון, אפס שינוי קוד. ארבעת השערים ירוקים בשניהם.
-
-**M15-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c66
-לשמירה על תקרת 300 שורות).** פריט תור, DONE: אפס שגיאות console ב-`/`
-וב-`/product` נמדד בדפדפן אמיתי על build נקי, ריצה ראשונה על `.next` ישן
-נכשלה בממצא ידוע (`upgrade-insecure-requests` מ-build שלא קיבל
-`NEXT_PUBLIC_APP_URL`), build מחדש פתר. ארבעת השערים ירוקים.
-
-**M01-c66..M14-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-בשלבים, M14-c66..M16-c66, לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטי
+**M01-c66..M17-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+בשלבים, M14-c66..M16-c66, M03-c67, לשמירה על תקרת 300 שורות).** M17-c66:
+RTL על `/` ו-`/product` — leak אמיתי נמצא (חמש פסקאות פרומו ב-`HeroSlider.tsx`
+עם `dir="ltr"` שרוד), תוקן, שער חזותי PASS. M16-c66: JSON-LD
+Product+BreadcrumbList אומת כבנוי ונכון. M15-c66: אפס שגיאות console
+ב-`/` וב-`/product` נמדד בדפדפן אמיתי על build נקי, ריצה ראשונה על
+`.next` ישן נכשלה בממצא ידוע (`upgrade-insecure-requests`), build מחדש
+פתר. ארבעת השערים ירוקים בכל השלושה, אפס דריפט נוסף. חוץ מאלה, ארבעה-עשר פריטי
 תור, DONE בכולם: שער חזותי בית/מוצר/קטגוריה נמדד מחדש (M01-M03, אפס
 דריפט), `type-check` (M04), `test` (M05), `pnpm build` בפועל exit 0
 (M06), סריקת `TODO`/`FIXME` רוחב-ריפו עם תיקון אחד

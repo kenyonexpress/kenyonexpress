@@ -2,6 +2,39 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c67 (הועבר מ-STATE.md ב-M03-c67, לשמירה על תקרת 300 שורות)
+
+**M02-c67 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` על 3311 (PID 84228, עלה 23:48:30)
+אומת לפני המדידה: `cwd` נכון, `.next/BUILD_ID` מ-23:48:11 (לפני עליית
+השרת, לא אחריה — לא חוזר על תקלת M01-c67), HEAD תואם `ab7ea046f`. שתי
+שורות (380, 768) כבר נמדדו ולא קומיטו בתחילת הפריט (ב-`docs/UI-PARITY-REPORT.md`,
+לא נרשם ב-STATE); הושלמה הרוחב השלישי ונרשמו שלושתן יחד. **מדידה
+בפורגראונד, שלוש רוחבים, מול `refs/electro_product_{width}.png`
+(`--baseline`, Electro `/product/` הוא ה-reference הקבוע לדף המוצר מ-Q05b,
+לא `ke_live_product_*` הישן):**
+
+| רוחב | ציון (both-painted) | סטטוס | overall | הערות |
+|---|---|---|---|---|
+| 380 | 4.96% | PASS | 31.74% | ref blank 19.62%, ours blank 7.16% |
+| 768 | 4.58% | PASS | 32.33% | ref blank 21.24%, ours blank 6.51% |
+| 1440 | 3.25% | PASS | 19.68% | ref blank 10.74%, ours blank 5.69% |
+
+שלושתן PASS, מתחת לתקרת 11%, commit `ab7ea046f-dirty` (העץ המלוכלך הוא
+`docs/UI-PARITY-REPORT.md` עצמו, שהשער כותב בכל ריצה). **ממצא נלווה, לא
+חוסם**: ב-1440 הגיע אזהרת `HEIGHT RATIO 0.34x` מ-`diff-bands.mjs`
+(`live: 1440x7653 mine: 1440x2600`) — המוצר שנדגם (`מוצר-לדוגמא`, שם
+slug סותר את התוכן בפועל: דף תיק עור JEEP מלא, ראו CLAUDE.md "קטלוג חי"
+וחוסם 11) קצר באופן לגיטימי מרפרנס ה-Electro, לא דף שבור. אומת ויזואלית
+(`refs/mine-product.png`): עמוד מוצר שלם, רציף, כולל פוטר ו"מומלצים" —
+לא fallback ולא חיתוך. מרבית הפער הוא `reference blank` (קטע שה-Electro
+reference מצייר ואנחנו לא, כצפוי מעמוד ארוך יותר), לא `both painted`,
+ולכן ציון השער עצמו תקף ולא false-pass מסוג M01-c67. ארבעת השערים
+(`type-check`/`lint`/`test`/`build`) רצו באופן מלא ויצאו נקיים: 614 קבצי
+טסט, 7336 עברו, 12 דולגו; `biome` + 11 שערי lint נוספים נקיים; `pnpm build`
+exit 0. אפס שינוי קוד ייצור בפריט הזה מלבד השורות שהשער עצמו הוסיף
+ל-`docs/UI-PARITY-REPORT.md`.
+
 ## M01-c67 (הועבר מ-STATE.md ב-M02-c67, לשמירה על תקרת 300 שורות)
 
 **M01-c67 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs 380 768
