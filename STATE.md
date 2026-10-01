@@ -1,57 +1,33 @@
-RESUME FROM: M04-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c66 - DONE, שער חזותי קטגוריה נמדד מחדש, אפס דריפט)
+RESUME FROM: M05-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c66 - DONE, type-check אפס דריפט, שום commit קוד לא נדרש)
 
 ## המשך מ:
 
-**M03-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs on
-`/category` sample". `COMPARE_CATEGORY_SLUG` בררת המחדל (`hot-deals`, 2
-מוצרים פעילים) — לא שונתה, אותה קטגוריה שהשער בודק מאז Q27 (העבודה
-שסגרה את השער הזה: `CategoryFilterSidebar.tsx` פתוח כברירת מחדל +
-תיקון thumb 0x0 ב-380px, קומיט `60bcbab56`).
+**M04-c66 - DONE (01.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". עץ העבודה היה נקי לפני התחלת הפריט (`git status --short` ריק) -
+אין דריפט קיים לתקן ולא היה שום קובץ מתוקן לקמיט.
 
-**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3916 (cwd
-אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק; 5-6
-`next-server`/`pnpm start` נוספים רצו בו-זמנית על פורטים אחרים, ראו
-זיכרון `gate-measured-foreign-server-on-3311`):** `LOCAL_BASE=
-http://localhost:3916 node scripts/compare.mjs --page=category
---widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'`
-(reference מקור Electro `/shop/`, לא live — דף הקטגוריה כבר סגור לאותה
-בסיס מ-Q27). הרצה הראשונית חרגה מ-180 שניות ועברה לרקע אוטומטית; חוכתה
-עד לסיום בפועל (Monitor + בדיקת תהליכים), המספרים למטה הם מאותה ריצה
-יחידה, לא ריצה חדשה.
-
-**תוצאות, כולן PASS, אפס דריפט מ-Q27 (04:07-04:11, אותו מחזור):**
-
-| רוחב | אחוז | סף | מצב | קודם (Q27) |
-|------|------|-----|------|------|
-| 380  | 3.53% | 11% | PASS | 3.53% |
-| 768  | 2.52% | 11% | PASS | 2.52% |
-| 1440 | 1.69% | 11% | PASS | 1.69% |
-
-`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`820d7076b-dirty`,
-13:41-13:45).
-
-**ארבעת השערים:** `pnpm type-check` נקי. `pnpm lint` נקי, 12 שערים.
+**ארבעת השערים, כולם נבדקו מחדש (לא רק type-check):** `pnpm type-check`
+**נקי, exit 0** (`tsc --noEmit` ללא שגיאה אחת). `pnpm lint` נקי, 12
+שערים (biome + tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/
+rtl-logical/i18n/locale-format/input-dir/docs-index/docs-path-audit).
 `pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה
-ל-M02-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: 12
-`next-server`/`pnpm start` רצו במקביל, ~1.1GB פנויים (`vm_stat`) —
-סיכון OOM לסשנים מקבילים (זיכרון `concurrent-worktree-builds-oom`).
-ה-`.next` הקיים (`BUILD_ID 8sM3K74xhwN4B4Fph3T3z`, זהה ל-M02-c66) אומת
-זהה-מקור ל-HEAD (`git diff --stat HEAD -- next.config.ts
-next.config.mjs middleware.ts vercel.json src/ package.json
-pnpm-lock.yaml` ריק).
+ל-M03-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: שישה
+`next-server`/`pnpm start` רצו במקביל, ~1.1GB פנויים (`vm_stat`) — סיכון
+OOM לסשנים מקבילים (זיכרון `concurrent-worktree-builds-oom`). ה-`.next`
+הקיים (`BUILD_ID 8sM3K74xhwN4B4Fph3T3z`, זהה ל-M03-c66) אומת זהה-מקור
+ל-HEAD (`git diff --stat HEAD -- next.config.ts next.config.mjs
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml` ריק).
 
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+**אין שינוי קוד ייצור.** קובץ יחיד שונה: `STATE.md` (+ ארכוב M03-c66
+המלא ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות). לא פריט חזותי
+- כלל ה-foreground על `compare.mjs` לא חל כאן.
 
-**חוסם 14 עודכן:** `category` **כן** יש לו reference תלת-רוחבי תקין
-(`refs/electro_shop_{width}.png`, נסגר כבר ב-Q27) — הטקסט הקודם
-("לא נבדק... category") היה מיושן. `products`/`search` עדיין לא נבדקו.
-
-**M01-c66 ו-M02-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c66 לשמירה על תקרת 300 שורות).** שני פריטי תור, DONE: שער
+**M01-c66..M03-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M04-c66 לשמירה על תקרת 300 שורות).** שלושה פריטי תור, DONE: שער
 חזותי בית נמדד מחדש (8.58%/9.01%/4.16%, אפס דריפט מ-Q55), שער חזותי
-מוצר נמדד מחדש (4.96%/4.58%/3.25%, אפס דריפט). ארבעת השערים ירוקים
-בשניהם.
+מוצר נמדד מחדש (4.96%/4.58%/3.25%, אפס דריפט), שער חזותי קטגוריה נמדד
+מחדש (3.53%/2.52%/1.69%, אפס דריפט מ-Q27). ארבעת השערים ירוקים בשלושתם.
 
 **Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M01-c66
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: `LAUNCH-
