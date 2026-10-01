@@ -841,3 +841,8 @@ to an already large session.
 | 2026-10-01 12:17 | home | 380 | 8.58% | PASS | `d6ce47262` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
 | 2026-10-01 12:19 | home | 768 | 9.01% | PASS | `d6ce47262-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
 | 2026-10-01 12:21 | home | 1440 | 4.16% | PASS | `d6ce47262-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 15.45% (reference blank 9.88%, ours blank 1.41%) |
+| 2026-10-01 12:30 | home | 380 | 8.58% | PASS | `a43da2927` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 12:32 | home | 768 | 9.01% | PASS | `a43da2927-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 12:37 | home | 380 | 8.58% | PASS | `a43da2927-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 12:39 | home | 768 | 10.38% | PASS | `a43da2927-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 17.6% (reference blank 4.49%, ours blank 2.73%) |
+| 2026-10-01 12:41 | home | 1440 | 4.16% | PASS | `a43da2927-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 15.45% (reference blank 9.88%, ours blank 1.41%) |

@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q52 (הועבר מ-STATE.md ב-Q53, לשמירה על תקרת 300 שורות)
+
+**Q52 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Meilisearch Hebrew synonyms, index facets used by
+category filters only, no search UI." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין "Q52" בשום קובץ markdown
+בריפו), אותו דפוס כמו Q25-Q51. **שלושת הרכיבים כבר קיימים ונבדקו,
+קובץ-קובץ:**
+
+- **מילים נרדפות בעברית**: `src/lib/search/hebrew-synonyms.ts` (קבוצות
+  נרדפות דו-כיווניות + גזירת תחיליות ה/ו/ב/ל/מ/ש/כ ב-`withHebrewPrefixes`,
+  `buildSynonyms` בונה זוג מלא לכל קבוצה), מחובר בפועל ל-
+  `INDEX_SETTINGS.synonyms` ב-`src/lib/search/meili-settings.ts`
+  (`buildSynonyms()` נקרא שם ישירות, לא מועתק).
+- **facets**: `FACET_ATTRIBUTES` ב-`src/lib/search/faceted.ts` (type,
+  category_slug, city, brand, tags, in_stock) מוגשים דרך
+  `/api/search/facets` עם שני מנועים בחוזה אחד (Meilisearch כש-
+  `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` מוגדרים, נסיגת Postgres אחרת),
+  וולידציית whitelist לפני בניית ה-filter כך שפרמטר לא יכול להפוך לביטוי
+  סינון.
+- **אין UI חיפוש**: נאכף כשער ב-`src/components/layout/no-search-ui.test.ts`
+  (אין `type="search"`/`role="search(box)?"` בשום קובץ מקור; אין רכיב
+  בשם `*Search(Box|Bar|Field|Input)?.tsx`; ה-shell כולו - Header, TopBar,
+  MastheadNav, MobileDrawer, SiteFooter, RegionMenu - לא נושא קלט מלבד שדה
+  האימייל בניוזלטר). `MastheadNav.tsx` נושא הערה מפורשת בקוד: "the standing
+  project rule is that there is no search UI anywhere". `HeaderSearch.tsx`,
+  `DeferredHeaderSearch.tsx` ו-`SearchBox.tsx` נמחקו ב-04.09.2026.
+
+**סתירת תיעוד שנמדדה, לא בתחום הפריט הזה.** `docs/adr/0010-no-search-ui-then-header.md`
+(סטטוס "עודכן 02.09") טוען ששדה החיפוש חזר ל-masthead. זה קודם למחיקה
+ב-04.09 ולא עודכן אחריה; הקוד והשער החי (שניהם ירוקים כרגע) סותרים אותו
+ישירות. לא נערך - תיקון ה-ADR הוא עריכת תיעוד שאינה קשורה לפריט הזה.
+
+**"facets used by category filters" במובן המדויק: לא, ובכוונה.**
+`/category/[slug]` (`src/lib/category-page.ts`) מסנן ישירות דרך
+Postgres/PostgREST (מחיר, סוג, עיר, מותג, הנחה - commit `5092a8b79`), בלי
+לקרוא ל-Meilisearch בכלל. ה-facets של Meilisearch מזינים את `/api/search/facets`,
+שמשרת את `/search` (route בלי UI, ראו למעלה) - לא את עמוד הקטגוריה. שני
+המנגנונים תקינים, בנויים ונבדקים בנפרד; חיבור חדש שינתב את דף הקטגוריה
+דרך Meilisearch, עבור קטלוג של 44-46 מוצרים פעילים, הוא תכנון ל-
+"hypothetical future requirement" שה-CLAUDE.md אוסר במפורש, לא תיקון
+לפגם קיים.
+
+**בדיקה בפועל.** `pnpm vitest run src/lib/search src/app/api/search
+src/components/layout/no-search-ui.test.ts`: **125/125 ירוק.** `pnpm
+type-check` נקי. `pnpm lint` נקי (12 שערים). `pnpm test` מלא **614/614
+קבצים, 7335/7347 עברו** (12 מדולגים, זהה ל-Q50/Q51). `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424 pnpm build`
+נקי. שרת בפורט 3424, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער
+חזותי PASS בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
+ל-Q50/Q51 - אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`,
+`STATE.md`.
+
 ## Q51 (הועבר מ-STATE.md ב-Q52, לשמירה על תקרת 300 שורות)
 
 **Q51 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**

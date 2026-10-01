@@ -1,61 +1,59 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q52 - VERIFIED, קיים ונבדק במלואו)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q53 - VERIFIED, קיים ונבדק במלואו)
 
 ## המשך מ:
 
-**Q52 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
-אפס שינוי קוד ייצור.** "Meilisearch Hebrew synonyms, index facets used by
-category filters only, no search UI." **אינו בתור האמיתי**
-(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין "Q52" בשום קובץ markdown
-בריפו), אותו דפוס כמו Q25-Q51. **שלושת הרכיבים כבר קיימים ונבדקו,
-קובץ-קובץ:**
+**Q53 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Cardcom sandbox end-to-end swap-to-production toggle
+documented in STATE.md." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md`
+עוצר ב-Q39, אין "Q53" בשום קובץ markdown בריפו), אותו דפוס כמו Q25-Q52.
+**המתג כבר בנוי, נבדק ומתועד, קובץ-קובץ:**
 
-- **מילים נרדפות בעברית**: `src/lib/search/hebrew-synonyms.ts` (קבוצות
-  נרדפות דו-כיווניות + גזירת תחיליות ה/ו/ב/ל/מ/ש/כ ב-`withHebrewPrefixes`,
-  `buildSynonyms` בונה זוג מלא לכל קבוצה), מחובר בפועל ל-
-  `INDEX_SETTINGS.synonyms` ב-`src/lib/search/meili-settings.ts`
-  (`buildSynonyms()` נקרא שם ישירות, לא מועתק).
-- **facets**: `FACET_ATTRIBUTES` ב-`src/lib/search/faceted.ts` (type,
-  category_slug, city, brand, tags, in_stock) מוגשים דרך
-  `/api/search/facets` עם שני מנועים בחוזה אחד (Meilisearch כש-
-  `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` מוגדרים, נסיגת Postgres אחרת),
-  וולידציית whitelist לפני בניית ה-filter כך שפרמטר לא יכול להפוך לביטוי
-  סינון.
-- **אין UI חיפוש**: נאכף כשער ב-`src/components/layout/no-search-ui.test.ts`
-  (אין `type="search"`/`role="search(box)?"` בשום קובץ מקור; אין רכיב
-  בשם `*Search(Box|Bar|Field|Input)?.tsx`; ה-shell כולו - Header, TopBar,
-  MastheadNav, MobileDrawer, SiteFooter, RegionMenu - לא נושא קלט מלבד שדה
-  האימייל בניוזלטר). `MastheadNav.tsx` נושא הערה מפורשת בקוד: "the standing
-  project rule is that there is no search UI anywhere". `HeaderSearch.tsx`,
-  `DeferredHeaderSearch.tsx` ו-`SearchBox.tsx` נמחקו ב-04.09.2026.
+- **קוד**: `src/lib/payments/env.ts` (`loadCardcomEnv` - `CARDCOM_USE_MOCK`
+  נופל לברירת מחדל אמיתית רק כש-`CARDCOM_TERMINAL_NUMBER` חסר ומחוץ
+  ל-production; `mockOnCustomerFacingDeploy` מסרב checkout כש-mock רץ על
+  `VERCEL_ENV=production`, במקום לתת תשלום שקט בלי חיוב) ו-
+  `src/lib/payments/accounts.ts` (`isSandbox` מזהה מסוף 1000 בלי קשר לדגל,
+  `SANDBOX_IN_PRODUCTION` זורק שגיאת boot אם אישורי sandbox מגיעים
+  ל-production, `CARDCOM_ALLOW_SANDBOX=true` הוא פתח המילוט המוצהר
+  למדייה דמוית-production בלבד).
+- **תיעוד**: `docs/CARDCOM-ACTIVATION.md` - רשימת הבדיקה המלאה של אופיר,
+  שישה שלבים ממוספרים: שלושת משתני הסביבה (`CARDCOM_TERMINAL_NUMBER`/
+  `API_NAME`/`API_PASSWORD`), הווידוא המפורש ש-`CARDCOM_USE_MOCK` איננו
+  `true`, redeploy (משתנה סביבה ב-Vercel לא נכנס לתוקף בלי אחד), בדיקת
+  `/api/health` (מדווח "מסוף סנדבוקס/חי מוגדר"), ריצת מפרטי ה-E2E של
+  המסלול הכספי מול build mock לפני המעבר, ולבסוף תשלום אמיתי אחד קטן
+  וידני עם וידוא חיוב בפועל בדף הבנק.
+- **בדיקה**: `src/lib/payments/accounts.test.ts` ("מסרב להתחיל ב-production
+  עם אישורי sandbox", מכסה גם את `CARDCOM_ALLOW_SANDBOX`) ו-
+  `src/lib/payments/env.test.ts` (`refusedReason`,
+  `mockOnCustomerFacingDeploy`) מכסים את שני הכיוונים. `checkCardcom` ב-
+  `src/lib/health/checks.ts` מבחין בפועל בין מסוף 1000 (סנדבוקס) למסוף חי
+  בתשובת `/api/health`.
 
-**סתירת תיעוד שנמדדה, לא בתחום הפריט הזה.** `docs/adr/0010-no-search-ui-then-header.md`
-(סטטוס "עודכן 02.09") טוען ששדה החיפוש חזר ל-masthead. זה קודם למחיקה
-ב-04.09 ולא עודכן אחריה; הקוד והשער החי (שניהם ירוקים כרגע) סותרים אותו
-ישירות. לא נערך - תיקון ה-ADR הוא עריכת תיעוד שאינה קשורה לפריט הזה.
+**מה עדיין לא אפשר לאמת מהמכונה הזו.** תשלום אמיתי אחד מול מסוף Cardcom
+production (שלב 6 ב-`CARDCOM-ACTIVATION.md`) דורש אישורי production
+אמיתיים, שלא קיימים בשום סביבה שהריפו הזה מגיע אליה (חוסם #8 למעלה). זו
+פעולה ידנית של אופיר, לא תיקון קוד או תיעוד.
 
-**"facets used by category filters" במובן המדויק: לא, ובכוונה.**
-`/category/[slug]` (`src/lib/category-page.ts`) מסנן ישירות דרך
-Postgres/PostgREST (מחיר, סוג, עיר, מותג, הנחה - commit `5092a8b79`), בלי
-לקרוא ל-Meilisearch בכלל. ה-facets של Meilisearch מזינים את `/api/search/facets`,
-שמשרת את `/search` (route בלי UI, ראו למעלה) - לא את עמוד הקטגוריה. שני
-המנגנונים תקינים, בנויים ונבדקים בנפרד; חיבור חדש שינתב את דף הקטגוריה
-דרך Meilisearch, עבור קטלוג של 44-46 מוצרים פעילים, הוא תכנון ל-
-"hypothetical future requirement" שה-CLAUDE.md אוסר במפורש, לא תיקון
-לפגם קיים.
-
-**בדיקה בפועל.** `pnpm vitest run src/lib/search src/app/api/search
-src/components/layout/no-search-ui.test.ts`: **125/125 ירוק.** `pnpm
-type-check` נקי. `pnpm lint` נקי (12 שערים). `pnpm test` מלא **614/614
-קבצים, 7335/7347 עברו** (12 מדולגים, זהה ל-Q50/Q51). `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424 pnpm build`
-נקי. שרת בפורט 3424, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער
-חזותי PASS בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
---widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
-ל-Q50/Q51 - אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+**בדיקה בפועל.** `pnpm vitest run src/lib/payments`: **160/160 ירוק.**
+`pnpm type-check` נקי. `pnpm lint` נקי (12 שערים). `pnpm test` מלא
+**614/614 קבצים, 7335/7347 עברו** (12 מדולגים, זהה ל-Q50-Q52). `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3425
+pnpm build` נקי. שרת בפורט 3425, cwd מאומת (`/usr/sbin/lsof -p <pid> |
+grep cwd`). שער חזותי PASS בשלושת הרוחבים, foreground,
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
+**8.58%/10.38%/4.16%** (380/768/1440) - 380 ו-1440 זהים ל-Q50-Q52, 768 נדד
+מ-9.01% ל-10.38% (רעש מדידה, עדיין PASS מתחת לשער 11%).
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`,
 `STATE.md`.
+
+**Q52 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q53 לשמירה
+על תקרת 300 שורות).** פריט חיצוני חד-פעמי, VERIFIED: Meilisearch Hebrew
+synonyms, facets ו-no-search-UI כבר קיימים ונבדקו במלואם, אפס שינוי קוד.
+ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
 
 **Q51 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q52 לשמירה
 על תקרת 300 שורות).** פריט חיצוני חד-פעמי, BLOCKED: Crisp chat מתנגש
