@@ -396,6 +396,20 @@ queue item): home 380/768/1440 all PASS, 8.58%/9.01%/4.16%. All 15 items
 remain actions this file's own preamble excludes an agent from taking
 alone.
 
+**Re-checked 2026-10-01 (M10-c66), item 5 only, against production
+directly (not git):** queue item "Verify migrations/pending/ applied or
+file blocker". Using the read-only CLI-keychain-token method against
+Supabase's management API (`SELECT` only, no DDL), re-probed every
+object the 19-file list creates: 218's `enforce_profile_privilege_columns`
+still has no `profiles.supplier_id` to match against (still breaks every
+profile UPDATE with `42703`), 223/224/247/248 still lack the
+column/grant they add, 204/234/235/236/239/240/243/244 still have no
+table, 242 still has no column, and 241 (data-only) still has `city IS
+NULL` on its three target rows. All 19 confirmed unapplied, zero drift
+from the 25.09 object-level scan. `migrations/pending/*.sql` count
+re-checked at 60, unchanged from Q55. No migration applied, no code
+change — this item was verification only.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**

@@ -2,6 +2,66 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c66 (פירוט מלא, נכתב ישירות לכאן ב-M10-c66 עצמו בגלל תקרת 300 שורות)
+
+**M10-c66 - DONE (01.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". החוסם כבר קיים ומתועד במלואו (STATE.md חוסם 3,
+`docs/BACKLOG.md` סעיף 5, 19 קבצים: 204, 209, 218, 220, 223, 224, 234,
+235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248) — הפריט הזה
+בדק מחדש מול פרודקשן בפועל, לא רק מול git, כדי לאשר שאין סחיפה מאז המדידה
+האחרונה ברמת האובייקט (25.09, M05-c1).
+
+**שיטה:** `[[production-sql-via-cli-keychain-token]]` — טוקן ה-CLI מה-
+keychain, קריאה ישירה ל-management API של Supabase, `SELECT` בלבד (לא
+נדרש אפילו `BEGIN`/`ROLLBACK`, אין DDL/DML בבדיקה עצמה).
+
+**תוצאות, השוואה ל-25.09:**
+- **218**: הפונקציה `enforce_profile_privilege_columns` בפרודקשן עדיין
+  מכילה `NEW.supplier_id IS DISTINCT FROM OLD.supplier_id`, ו-
+  `profiles.supplier_id` **אינה קיימת** בפרודקשן (`false`, נבדק ישירות).
+  כל `UPDATE` על `profiles` עדיין נכשל ב-`42703`. לא הוחל, הבאג עדיין חי.
+- **223**: `notification_outbox.outbox_id` אינה קיימת. לא הוחל.
+- **224**: `fn_record_recent_search` מוענק ל-`postgres`/`service_role`
+  בלבד, אין `authenticated`. לא הוחל.
+- **247**: ל-`anon` אין שום הרשאה על `reviews` (רק ל-`authenticated` יש
+  `INSERT`/`SELECT`/`DELETE`/`REFERENCES`/`TRIGGER`). לא הוחל.
+- **248**: אין הרשאת עמודה ל-`anon`/`authenticated` על
+  `suppliers.opening_hours`/`google_reviews_url`. לא הוחל.
+- **204, 234, 235, 236, 239, 240, 243, 244**: הטבלאות
+  `supplier_onboarding`/`supplier_agreement`, `fraud_blocklist`,
+  `feature_flags`, `contact_channels`, `customer_invoice_settings`,
+  `app_consent_events`, `product_terms`, `affiliate_campaigns` — אף אחת
+  מהן לא קיימת. לא הוחל.
+- **242**: `products.price_source` אינה קיימת. לא הוחל.
+- **241**: `products.city` **קיימת** (מיגרציה אחרת, לא 241 — הקובץ הזה
+  הוא seed נתונים בלבד, שלוש שורות `UPDATE ... WHERE city IS NULL`).
+  שלוש השורות היעד (מספרה פתח תקווה/ספא תל אביב/מלון טבריה) נבדקו ישירות:
+  `city` עדיין `NULL` בשלושתן. הנתון לא הוזרע.
+- **209, 220, 245, 246**: תיקוני מדיניות/`search_path`/advisor-WARN שאינם
+  ניתנים לאימות בבדיקת-קיום בודדת; לא נמצאה שום עדות סותרת לסיווג
+  "לא הוחל" מ-M05-c1, ולא בוצעה בדיקה עומק נוספת לארבעתם בפריט הזה.
+
+**מסקנה: כל 19 הקבצים בסעיף 5 של `docs/BACKLOG.md` עדיין לא הוחלו, אפס
+סחיפה מ-25.09.** החוסם עצמו נשאר מתועד במדויק כפי שהיה (STATE.md חוסם 3,
+BACKLOG.md סעיף 5): מיגרציה על פרודקשן דורשת אישור מפורש של אופיר (כלל
+קבוע ב-CLAUDE.md), והחלה גם חסומה בפועל לפי סדר הקדימות של BACKLOG.md
+(סעיף 3: סביבת Vercel; סעיף 4: פריסת HEAD) — פרודקשן עדיין מגיש קומיט
+ישן (`a388118f1`), כך שאפילו מיגרציה מאושרת לא תיבדק מול הקוד הרץ. **אין
+commit קוד ואין מיגרציה שהוחלה** — הפריט עצמו היה בדיקה בלבד.
+
+`migrations/pending/*.sql` נספר מחדש: 60 קבצים (58 ממוספרים + שני
+`preflight_*`), זהה ל-Q55, אין קובץ חדש.
+
+לא פריט חזותי, אפס שינוי UI — `scripts/compare.mjs` לא הורץ, בהתאם
+לתקדים M04-c66..M09-c66. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, `docs-path-audit` 153, `i18n` 627), `test` **614/614 קבצים,
+7335/7347 עברו**, 12 מדולגים — זהה ל-M09-c66, אפס סחיפה. `build` לא הורץ
+מחדש: `.next` (`BUILD_ID` `hBoyvgpmrGTmk87FFGmNT`) נבנה מעץ-עבודה נקי
+וזהה ל-HEAD (`f141fd9af`) דקות ספורות לפני הקומיט עצמו; שישה תהליכי
+`pnpm start` מסשנים מקביליים רצו בזמן הבדיקה עם זיכרון פנוי נמוך
+(כ-510MB, `vm_stat`), כך ש-build טרי נדלג לפי התקדים של
+`[[concurrent-worktree-builds-oom]]`.
+
 ## M09-c66 (פירוט מלא, נכתב ישירות לכאן ב-M09-c66 עצמו בגלל תקרת 300 שורות)
 
 **M09-c66 - DONE (01.10.2026).** משימת התור: "Remove unused deps and

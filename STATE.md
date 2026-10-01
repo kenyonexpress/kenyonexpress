@@ -1,29 +1,28 @@
-RESUME FROM: M10-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c66 - DONE, תלויות מתות ו-exports מתים הוסרו)
+RESUME FROM: M11-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c66 - DONE, מיגרציות ממתינות אומתו מחדש מול פרודקשן בפועל)
 
 ## המשך מ:
 
-**M09-c66 - DONE (01.10.2026, פירוט מלא ב-`docs/STATE-ARCHIVE.md`).**
-משימת התור: "Remove unused deps and dead exports". `grep` + `pnpm dlx
-knip` (ephemeral) איתרו **חמש חבילות מתות אמיתיות** (`@dnd-kit/core`,
-`@dnd-kit/sortable`, `@dnd-kit/utilities`, `@hookform/resolvers`,
-`@radix-ui/react-toast`) — הוסרו, `pnpm install` עדכן `pnpm-lock.yaml`.
-חמש חבילות נוספות ש-`knip` סימן (`drizzle-orm`/`postgres`/
-`react-hook-form`/`@radix-ui/react-select`/`@radix-ui/react-dropdown-menu`)
-**נבדקו ונמצאו בשימוש אמיתי** (סכמת drizzle, סקריפטי `dr/`, primitives
-`ui/`) — לא הוסרו. מתוך 279+197 "exports מתים" של `knip`, הוכח
-false-positive (`HEX_RE` וכו' כן מיובאים בטסט) — **מחיקה גורפת נפסלה
-כמסוכנת**; הוסרו בפועל (`export` בלבד, לא ההכרזה) רק שישה קבועים
-שאומתו ידנית כאפס-שימוש-חיצוני: `DEFAULT_RETENTION_DAYS`/
-`DEFAULT_MIN_KEEP`/`PITR_VARIANT_RE`/`DAILY_BACKUP_RPO_HOURS`/
-`ENV_CARRIERS`/`COMMIT_TYPES` ב-`scripts/dr/*`/`final-audit-lib.mjs`.
+**M10-c66 - DONE (01.10.2026, פירוט מלא ב-`docs/STATE-ARCHIVE.md`).**
+משימת התור: "Verify migrations/pending/ applied or file blocker". החוסם
+כבר מתועד (חוסם 3 למטה, BACKLOG.md סעיף 5, 19 קבצים: 204, 209, 218, 220,
+223, 224, 234-236, 239-248) — נבדק מחדש **מול פרודקשן בפועל** (לא רק
+git), בקריאה-בלבד דרך טוקן ה-CLI ב-keychain. כל 19 הקבצים אושרו שוב
+**לא הוחלו**: ל-218 אין `profiles.supplier_id` בפרודקשן (עדיין `42703`
+על כל עדכון פרופיל), ל-223/224/247/248 אין העמודה/ההרשאה שהם מוסיפים,
+ל-204/234/235/236/239/240/243/244 אין הטבלה שהם יוצרים, ל-242 אין
+העמודה, ול-241 (seed בלבד) שלוש השורות היעד עדיין `city IS NULL`. אפס
+סחיפה מ-25.09 (M05-c1). `migrations/pending/*.sql` נספר מחדש: 60, זהה
+ל-Q55, אין קובץ חדש. אין commit קוד ואין מיגרציה שהוחלה.
 
-לא פריט חזותי — `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M08-c66).
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים), `test`
-**614/614 קבצים, 7335/7347 עברו**, 12 מדולגים, `build` exit 0. קבצים
-שונו: `package.json`, `pnpm-lock.yaml`, `scripts/dr/backup-lib.mjs`,
-`scripts/dr/pitr-lib.mjs`, `scripts/final-audit-lib.mjs` (+ ארכוב
-M08-c66 ל-`docs/STATE-ARCHIVE.md`).
+לא פריט חזותי — `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M09-c66).
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614
+קבצים, 7335/7347 עברו, 12 מדולגים (זהה ל-M09-c66), `build` לא הורץ
+מחדש (`.next` זהה-מקור ל-HEAD, שישה `pnpm start` מקביליים וזיכרון נמוך).
+
+**M09-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M10-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: חמש חבילות מתות הוסרו,
+שישה קבועים פנימיים-בלבד הופשטו מ-`export`. ארבעת השערים ירוקים.
 
 **M08-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c66
 לשמירה על תקרת 300 שורות).** פריט תור, DONE: Lighthouse mobile `/`
@@ -225,7 +224,8 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    והמרות של תוכנית השותפים; בלעדיה התוכנית "עדיין לא פתוחה"), 247 (`anon`
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
-   ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר.
+   ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר
+   (אושר מחדש מול פרודקשן בפועל ב-M10-c66, 01.10, אפס סחיפה מ-25.09).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
 5. **צילומי reference ב-380 וב-768 לסל ולקופה**: קיימים רק ב-1440
