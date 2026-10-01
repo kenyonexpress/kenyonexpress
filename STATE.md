@@ -1,58 +1,56 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q35)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q36)
 
 ## המשך מ:
 
-**Q35 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"תפריט יצירת קשר בחמישה ערוצים, ודף הצטרפות ספקים עם הסכם click-wrap
-(גרסה, hash, IP, timestamp)". **אינו קיים בתור האמיתי** (`Q35` ב-`docs/
-QUESTIONS-FOR-OFIR.md` הוא פריט לא קשור: ריבוי ספקים למשתמש ב-UI), אותו
-דפוס כמו Q25-Q34, נבדק לפי שני הסעיפים בפועל מול הקוד.
+**Q36 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"דפי משפט: תנאי שימוש, פרטיות, החזרות, נגישות, עוגיות, בסגנון הפסקאות
+של Electro, לפי הדין הישראלי". **אינו קיים בתור האמיתי** (השורה היחידה
+בשם `Q36` ב-`docs/QUESTIONS-FOR-OFIR.md` היא "Sentry ו-Ntfy", לא קשור),
+אותו דפוס כמו Q25-Q35.
 
-**שני הסעיפים קיימים במלואם, אפס שינוי קוד.** תפריט יצירת קשר:
-`DEFAULT_CONTACT_CHANNELS` ב-`src/lib/contact/channels.ts` מחזיק בדיוק
-חמישה ערוצים (`customer_service`, `suggestions`, `business_partnerships`,
-`site_problem`, `supplier_join`), מרונדר בפוטר הגלובלי
-(`FooterContactChannels.tsx`, דרך `SiteFooter` ב-`(store)/layout.tsx`)
-ובבורר הנושאים בעמוד `/contact` (`ContactTopicPicker.tsx`). קריאה דרך
-`listActiveContactChannels`/`listPageContactConfigs` מהטבלאות
-`contact_channels`/`page_contact_config` כשקיימות, ומ-defaults זהים
-לזריעה **כש-מיגרציה 236 עדיין pending** או כשהקריאה נכשלת, אין נפילה שקטה.
+**ארבעת המסמכים קיימים במלואם, בבסיס קוד אחד, אפס שינוי קוד.** ‏ToS
+(`/terms-and-conditions`), פרטיות (`/privacy-policy`), החזרות
+(`/refund_returns`) ונגישות (`/accessibility`) כולם ב-`(store)/`, כל אחד
+עמוד דק ש-`getLegalDoc()` מזין ל-`<LegalArticle>` משותף
+(`(legal)/_components/LegalArticle.tsx`), עם התוכן עצמו ב-
+`(legal)/_content/{terms,privacy,returns,accessibility}.ts`. **עוגיות
+אינה עמוד נפרד**: סעיף `id: 'cookies'` בתוך `privacy.ts`, מקושר מהפוטר
+כ-`/privacy-policy#cookies` ("העוגיות הן חלק מהפרטיות, לא עותק שני
+שלה" — הערה בקוד ב-`SiteFooter.tsx`). קבוצת הנתיב `(legal)/legal/*`
+(ארבעה נתיבים ישנים, לא מקושרים) כבר `permanentRedirect` ל-ארבעת הנתיבים
+האלה — דה-דופליקציה בוצעה בסשן קודם, מתועדת בהערות בקוד עצמו ונאכפת
+ב-`legal-routes.test.ts`/`legal-duplication.test.ts`
+(לא לאפשר שני סטים אינדקסביליים לאותו מסמך).
 
-הצטרפות ספקים (click-wrap): `/suppliers/apply` (`SupplierApplyWizard`),
-טקסט/גרסה/hash קבועים בשרת ב-`src/lib/suppliers/contract.ts`
-(`CONTRACT_VERSION`, `contractHash()` SHA-256, מחושב מהקבוע ולעולם לא
-מהטופס). השרת (`src/server/actions/supplier-onboarding.ts`) רושם
-`contract_version`, `contract_sha256`, `client_ip` (`getClientIp()`)
-ו-`accepted_at DEFAULT now()` ב-`supplier_contract_acceptances`, טבלת
-append-only (אין UPDATE/DELETE policy לאף אחד) שמגיעה מ-**מיגרציה 204,
-עדיין pending** (חוסם פתוח #3, ללא שינוי). שני הסעיפים גם מחוברים
-בפועל: `/suppliers/apply` תחת `(store)`, אותו layout שמרנדר את
-`SiteFooter`, כך שחמשת הערוצים מופיעים באותו עמוד שבו רץ ה-click-wrap.
+**סגנון הפסקאות**: `LegalArticle` הוא renderer יחיד לכל המסמכים —
+מספור נגזר (לא CSS counter, כדי שתמיכה שמצטטת "סעיף 7.2" תוכל לסמן
+ולהעתיק), פסקה רגילה כ-`<p>` ב-`text-base leading-relaxed`, מידות קריאה
+`max-w-3xl` בתוך מסגרת `max-w-page`, זהה ל-`/faq`/`/about`. `tokens.ts`
+מחזיק את הטיפוגרפיה שחולצה מ-Electro (Open Sans, גוף 20px/28px), אין
+טוקן נפרד "לדפי משפט" כי הם לא מרונדרים בסגנון שונה משאר האתר.
 
-**ממצא לוואי, לא חוסם:** `resolvePageConfig` וה-mapping `/suppliers/apply`
-← `supplier_join` ב-`DEFAULT_PAGE_CONTACT_CONFIGS` מוגדרים ומכוסים בטסט
-אך **אין קורא בפועל** (תבנית "פיצ'ר גמור בלי צרכן" חוזרת), לא נדרש
-לסגירת הפריט כי חמשת הערוצים כן מרונדרים בפוטר בלי תלות בכך.
-
-ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
-קבצים 7303/7315 (זהה ל-Q34), `rm -rf .next && pnpm build` נקי (שרת זמני
-על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS בשלושת
-הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_{width}.png`),
-זהה בייט לבייט לבסיס Q31-Q34, נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+**בדיקה בפועל, לא רק קריאת קוד:** `pnpm test "src/app/(legal)"` — 44/44
+ירוק; `pnpm test src/content/legal` (שלושה קבצים: content/routes/
+duplication) — 30/30 ירוק. ארבעת השערים: type-check נקי, lint נקי (12
+שערים), test מלא 610/610 קבצים 7303/7315 (זהה ל-Q35), `rm -rf .next &&
+pnpm build` נקי (שרת זמני בפורט 3311, cwd מאומת, אין build מקביל). שער
+חזותי PASS בשלושת הרוחבים (`8.51%`/`9.07%`/`3.95%`,
+`--baseline=refs/ke_live_{width}.png`, נמדד בפועל ב-foreground דרך
+`--widths=380,768,1440`), כמעט זהה לבסיס Q31-Q35 (768 זז מ-9.02%
+ל-9.07%, עדיין PASS הרחק מתחת ל-11%), נכתב אוטומטית ל-
+`docs/UI-PARITY-REPORT.md`.
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**Q34 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו).** פריט
-חיצוני חד-פעמי, לא קיים בתור האמיתי; קונסולת מעלה-תוכן בלי שדות תמחור
-(RBAC + אכיפת שרת ב-`uploader-policy.ts`) ולוח ספק לקריאה בלבד
-(`/supplier/page.tsx`, אפס מוטציה) כבר בנויים במלואם. שער חזותי PASS
-(8.51/9.02/3.95%). ארבעת השערים ירוקים.
-
-**Q28..Q33 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו).**
-שישה פריטים חיצוניים חד-פעמיים, אף אחד לא בתור האמיתי. Q33 — כל תשעת
-סעיפי ניהול המוצרים/קטגוריות/ספקים/הזמנות/זיכויים/שוברים כבר בנויים
-במלואם, שער חזותי PASS (8.51/9.02/3.95%). Q32 — דף ספק (`/s/[id]`):
+**Q28..Q35 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו).**
+שמונה פריטים חיצוניים חד-פעמיים, אף אחד לא בתור האמיתי. Q35 — תפריט
+יצירת קשר בחמישה ערוצים ודף הצטרפות ספקים עם הסכם click-wrap כבר בנויים
+במלואם. Q34 — קונסולת מעלה-תוכן בלי שדות תמחור (RBAC + אכיפת שרת
+ב-`uploader-policy.ts`) ולוח ספק לקריאה בלבד (`/supplier/page.tsx`, אפס
+מוטציה) כבר בנויים במלואם. Q33 — כל תשעת סעיפי ניהול המוצרים/קטגוריות/
+ספקים/הזמנות/זיכויים/שוברים כבר בנויים במלואם, שער חזותי PASS
+(8.51/9.02/3.95%). Q32 — דף ספק (`/s/[id]`):
 שעות פתיחה וקישור ביקורות גוגל היו היחידים שחסרו בפועל (שאר ארבעת הסעיפים כבר היו בנויים), שני שדות
 אופציונליים חדשים + מיגרציה שלישית `248_supplier_storefront_public_
 columns_grant.sql` (GRANT בלבד, לא נוגעת ב-232/242 עצמם). Q31 — מתג
@@ -61,8 +59,9 @@ columns_grant.sql` (GRANT בלבד, לא נוגעת ב-232/242 עצמם). Q31 �
 כרטיס מטוקניז. Q28 — עריכת שורה וקוד קופון בסל, מתג ארנק נכון שלא קיים
 בסל (שייך לקופה בכוונה). שער חזותי: Q31/Q32 PASS בשלושת הרוחבים
 (8.51/9.02/3.95%, `kenyonexpress.co.il` נסרב כ-reference לראשונה ב-Q31);
-Q28-Q30 PASS ב-1440 בלבד (0.95-1.47%), 380/768 REFUSED. ארבעת השערים
-ירוקים בכל הששה.
+Q28-Q30 PASS ב-1440 בלבד (0.95-1.47%), 380/768 REFUSED; Q33/Q34/Q35
+נמדדו PASS בשלושת הרוחבים (8.51/9.02/3.95%). ארבעת השערים ירוקים
+בכל השמונה.
 
 **Q27 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q29
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;

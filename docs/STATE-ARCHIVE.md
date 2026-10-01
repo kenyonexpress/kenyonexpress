@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q35 (הועבר מ-STATE.md ב-Q36, לשמירה על תקרת 300 שורות)
+
+**Q35 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"תפריט יצירת קשר בחמישה ערוצים, ודף הצטרפות ספקים עם הסכם click-wrap
+(גרסה, hash, IP, timestamp)". **אינו קיים בתור האמיתי** (`Q35` ב-`docs/
+QUESTIONS-FOR-OFIR.md` הוא פריט לא קשור: ריבוי ספקים למשתמש ב-UI), אותו
+דפוס כמו Q25-Q34, נבדק לפי שני הסעיפים בפועל מול הקוד.
+
+**שני הסעיפים קיימים במלואם, אפס שינוי קוד.** תפריט יצירת קשר:
+`DEFAULT_CONTACT_CHANNELS` ב-`src/lib/contact/channels.ts` מחזיק בדיוק
+חמישה ערוצים (`customer_service`, `suggestions`, `business_partnerships`,
+`site_problem`, `supplier_join`), מרונדר בפוטר הגלובלי
+(`FooterContactChannels.tsx`, דרך `SiteFooter` ב-`(store)/layout.tsx`)
+ובבורר הנושאים בעמוד `/contact` (`ContactTopicPicker.tsx`). קריאה דרך
+`listActiveContactChannels`/`listPageContactConfigs` מהטבלאות
+`contact_channels`/`page_contact_config` כשקיימות, ומ-defaults זהים
+לזריעה **כש-מיגרציה 236 עדיין pending** או כשהקריאה נכשלת, אין נפילה שקטה.
+
+הצטרפות ספקים (click-wrap): `/suppliers/apply` (`SupplierApplyWizard`),
+טקסט/גרסה/hash קבועים בשרת ב-`src/lib/suppliers/contract.ts`
+(`CONTRACT_VERSION`, `contractHash()` SHA-256, מחושב מהקבוע ולעולם לא
+מהטופס). השרת (`src/server/actions/supplier-onboarding.ts`) רושם
+`contract_version`, `contract_sha256`, `client_ip` (`getClientIp()`)
+ו-`accepted_at DEFAULT now()` ב-`supplier_contract_acceptances`, טבלת
+append-only (אין UPDATE/DELETE policy לאף אחד) שמגיעה מ-**מיגרציה 204,
+עדיין pending** (חוסם פתוח #3, ללא שינוי). שני הסעיפים גם מחוברים
+בפועל: `/suppliers/apply` תחת `(store)`, אותו layout שמרנדר את
+`SiteFooter`, כך שחמשת הערוצים מופיעים באותו עמוד שבו רץ ה-click-wrap.
+
+**ממצא לוואי, לא חוסם:** `resolvePageConfig` וה-mapping `/suppliers/apply`
+← `supplier_join` ב-`DEFAULT_PAGE_CONTACT_CONFIGS` מוגדרים ומכוסים בטסט
+אך **אין קורא בפועל** (תבנית "פיצ'ר גמור בלי צרכן" חוזרת), לא נדרש
+לסגירת הפריט כי חמשת הערוצים כן מרונדרים בפוטר בלי תלות בכך.
+
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים 7303/7315 (זהה ל-Q34), `rm -rf .next && pnpm build` נקי (שרת זמני
+על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS בשלושת
+הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_{width}.png`),
+זהה בייט לבייט לבסיס Q31-Q34, נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## Q34 (הועבר מ-STATE.md ב-Q35, לשמירה על תקרת 300 שורות)
 
 **Q34 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
