@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c68 (הועבר מ-STATE.md ב-M08-c68, לשמירה על תקרת 300 שורות)
+
+**M07-c68 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
+days resolve or file in docs/BACKLOG.md". HEAD `3bdfdc331`. סריקה רוחבת-ריפו
+(`src/`, `scripts/`, `supabase/`, לא `node_modules`) מוצאת בדיוק את אותם
+שני סמנים אמיתיים כמו ב-M07-c67: `src/lib/payments/cardcom.ts:254`
+(זיכוי לגאסי, `git blame` 24.07.2026) ו-`:319` (מסמכים, 07.08.2026),
+שניהם ישנים משבעה ימים ושניהם עם `Tracked in #41`/`#42` באותו חלון הערה —
+`scanMarkers`/`hasIssueRef` (`scripts/final-audit-lib.mjs`) מסמנים אותם
+`tracked`, `untrackedMarkers=0`. כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6
+(שורות 471-477, M07-c67) וב-`docs/KNOWN-ISSUES.md` סעיף 2 — אין עדכון
+BACKLOG נדרש, אפס דריפט. ה-hit הנוסף, `whatsapp.test.ts:91`, הוא מחרוזת
+ליטרלית `'TODO'` לא בתוך הערה, לא סמן עבודה. ארבעת השערים הורצו בפועל:
+`lint` נקי, `test` 614/614 (7337+12), `type-check` נקי, `build` exit 0.
+אפס שינוי קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M06-c68 (הועבר מ-STATE.md ב-M07-c68, לשמירה על תקרת 300 שורות)
 
 **M06-c68 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
