@@ -1,26 +1,29 @@
-RESUME FROM: M12-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c69 - DONE, sitemap.xml אומת מחדש מול פרודקשן בפועל, אפס דריפט)
+RESUME FROM: M13-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c69 - DONE, robots.txt אומת מחדש כבטוח-לפרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c69 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
-reachable". בדיקת דריפט קוד קודם: `git log 11b1e462f..HEAD -- src/app/sitemap
-src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
-src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` (בסיס:
-קומיט M11-c68) — ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל
-(`https://www.kenyonexpress.co.il`)**: `/sitemap.xml` מחזיר `200` עם
-`<sitemapindex>` וחמש תת-מפות (`content`/`categories`/`products`/`regions`/
-`suppliers`), כולן `200` (אחרי מעקב 308 מה-apex ל-`www`), עם אותה ספירת
-כתובות כמו M11-c68/M11-c67 (14/13/46/17/7). `lastmod` ב-`products.xml` טרי
-ומשתנה (עד `2026-09-25`). `robots.txt` מצביע ל-`https://kenyonexpress.co.il/
-sitemap.xml` הנכון. **אפס דריפט מ-M11-c68/M11-c67.** ארבעת השערים ירוקים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337+12 מדולגים), `build` exit 0 (`CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3321`, חמשת נתיבי ה-sitemap מופיעים
-כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+**M12-c69 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד קודם: `git log aba63e9cb..HEAD --
+src/app/robots.ts` וגם `git log aba63e9cb..HEAD --stat -- src/app` (בסיס:
+קומיט M12-c68) — שניהם ריקים, אפס קומיט נוגע וגם אפס נתיב דינמי חדש
+תחת `src/app`. **קוד HEAD תקין**: רשימת `Disallow` כוללת את `/redeem/`,
+`/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`, `/account/`, `/supplier/`,
+`/scan`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`,
+`/reset-password`, `/forgot-password`, `/debug/`. **נמדד מול פרודקשן
+בפועל (`https://www.kenyonexpress.co.il/robots.txt`)**: `200`, עדיין
+הגרסה הישנה (`last-modified: Wed, 30 Sep 2026`, זהה מילה-במילה ל-`a388118f1`),
+בלי `/gift/`, `/order/`, `/wishlist/s/`, `/debug/` — **אותה תוצאה בדיוק
+כמו M12-c68**, תולדה של חוסם 2 (פריסה קפואה), לא ממצא עצמאי חדש. **אפס
+דריפט מ-M12-c68.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337 עברו, 12 מדולגים), `build`
+exit 0 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3321`,
+`/robots.txt` מופיע כ-`○ Static`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
 
-**M10-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M11-c69 לשמירה על תקרת 300 שורות).** M10-c69: מיגרציות ממתינות
+**M11-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M12-c69 לשמירה על תקרת 300 שורות).** M11-c69: sitemap.xml אומת
+מחדש מול פרודקשן בפועל, `200` עם חמש תת-מפות (14/13/46/17/7), אפס דריפט
+מ-M11-c68. M10-c69: מיגרציות ממתינות
 אומתו מחדש (`git diff --stat` מול M10-c68, אותו יום), ריק, 60 קבצים
 זהים, ה-19 חוסמים ללא שינוי, אפס דריפט. M09-c69: deps/exports מתים
 אומתו מחדש עם `knip`, אותם מספרים בדיוק (271 unused exports, 197 unused
