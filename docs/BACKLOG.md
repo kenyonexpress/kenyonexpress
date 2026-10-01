@@ -597,7 +597,12 @@ stands unchanged. No migration applied, no code change.
     `a388118f1`), `filter_project_envs` על אותו פרויקט עדיין לא מחזיר
     `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`, שלושת קובצי האתחול זהים
     (`git log db5999d33..HEAD` עליהם ריק). הפער גדל שוב: **388** קומיטים
-    מאחורי HEAD (`c258defa0`).
+    מאחורי HEAD (`c258defa0`). **נמדד שוב ב-02.10.2026, M14-c69, אפס
+    דריפט**: אותה פריסה חיה בדיוק (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`,
+    עדיין `a388118f1`), `filter_project_envs` על אותו פרויקט (רשימה מלאה,
+    לא רק סינון) עדיין לא מחזיר `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`, רק
+    `SENTRY_AUTH_TOKEN`; שלושת קובצי האתחול זהים (`git log db5999d33..HEAD`
+    עליהם ריק). הפער גדל שוב: **406** קומיטים מאחורי HEAD (`75271d80d`).
 18. **`scripts/compare.mjs` נותן PASS נמוך-כוזב כש"שלנו" ריק, לא FAIL גבוה.**
     נמדד 01.10.2026, M01-c67: שרת `pnpm start` ישן על פורט 3311 המשיך
     לרוץ אחרי ש-`.next` נבנה מחדש על ידו (או סשן מקביל), כך שה-HTML שהוא

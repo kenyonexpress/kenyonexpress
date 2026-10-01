@@ -1,43 +1,44 @@
-RESUME FROM: M14-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c69 - DONE, /api/health ו-/api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M15-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c69 - DONE, Sentry release מול HEAD נבדק שוב, אפס דריפט, הפער גדל ל-406)
 
 ## המשך מ:
 
-**M13-c69 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". דריפט קוד: `git log c258defa0..HEAD
---stat -- src/app/api/health src/app/api/ready` (בסיס M13-c68) — ריק.
-**נמדד שוב מול פרודקשן**: `/api/health` → `200`
-(`database:"ok"`), `/api/ready` → `503` (`meilisearch:"down"`,
-`redis:"ok"`, `r2`/`cardcom` `not_configured`) — **זהה ל-M13-c67/M13-c68**
-(חוסם 16: Meilisearch לא נגיש מפרודקשן), לא ממצא חדש. `/api/health`
-מחזיר `200` כנדרש; `/api/ready` `503` הוא תלות חיצונית, לא פגם בקוד.
-**אפס דריפט מ-M13-c68.** ארבעת השערים ירוקים: `type-check` נקי, `lint`
-נקי (12 שערים), `test` 614/614 (7337+12), `build` exit 0
-(`/api/health`/`/api/ready` כ-`ƒ Dynamic`). אפס שינוי קוד. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M12-c69).
+**M14-c69 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit" — זהה למילה למשימות M14-c66..M14-c68. **נבדק מחדש משתי
+הזוויות, שתיהן אפס דריפט.** שלושת קובצי האתחול (`sentry.server.config.ts`,
+`sentry.edge.config.ts`, `instrumentation-client.ts`) זהים — `git log
+db5999d33..HEAD` עליהם ריק, אין קומיט שנגע בהם מאז M14-c66.
+`filter_project_envs` (קריאה-בלבד) על `kenyonexpress`/
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` עדיין **לא** מחזיר `SENTRY_DSN` או
+`NEXT_PUBLIC_SENTRY_DSN` ב-Production — קיים שם רק `SENTRY_AUTH_TOKEN`
+(source maps בזמן build בלבד), בדיוק כמו ב-M14-c66..M14-c68. `get_deployment`
+(קריאה-בלבד, `withGitRepoInfo=true`) על הפריסה החיה
+(`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, `www.kenyonexpress.co.il`) מראה שהיא
+עדיין בנויה מ-`a388118f1`, לא מ-HEAD. **הפער ממשיך לגדול**: `git rev-list
+--count a388118f1..HEAD` מחזיר **406** (היה 388 ב-M14-c68 על HEAD אז
+`c258defa0`; HEAD עכשיו `75271d80d`). **מסקנה זהה ל-M14-c66..M14-c68**:
+אי אפשר לאמת "ה-release תואם ל-HEAD" כאמת — אין בכלל release שמגיע
+מפרודקשן (אין DSN), וגם אם היה, הוא היה מצביע על קומיט ישן ב-406 קומיטים.
+**לא ממצא חדש**: נוסף רק משפט "נמדד שוב" ל-`BACKLOG.md` סעיף 17 עם התאריך
+והמספרים המעודכנים. **לא לתיקון אוטומטי**: הוספת
+`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא שינוי env,
+אסור לסוכן. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test`
+614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `rm -rf .next && pnpm
+build` exit 0 נקי (`✓ Compiled successfully`). לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M14-c68). קבצים: `docs/BACKLOG.md`,
+`STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M13-c69).
+
+**M13-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c69).**
+/api/health ו-/api/ready אומתו מחדש מול פרודקשן, אפס דריפט מ-M13-c68.
 
 **M12-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c69 לשמירה על תקרת 300 שורות).** M12-c69: robots.txt אומת
-מחדש כבטוח-לפרודקשן בקוד, פרודקשן עדיין בגרסה הישנה (חוסם 2), אפס דריפט
-מ-M12-c68. M11-c69: sitemap.xml אומת
-מחדש מול פרודקשן בפועל, `200` עם חמש תת-מפות (14/13/46/17/7), אפס דריפט
-מ-M11-c68. M10-c69: מיגרציות ממתינות
-אומתו מחדש (`git diff --stat` מול M10-c68, אותו יום), ריק, 60 קבצים
-זהים, ה-19 חוסמים ללא שינוי, אפס דריפט. M09-c69: deps/exports מתים
-אומתו מחדש עם `knip`, אותם מספרים בדיוק (271 unused exports, 197 unused
-exported types), אפס דריפט מ-M09-c68, אפס הסרה. M08-c69: Lighthouse
-mobile על `/` ו-`/product` אומת מחדש (`throttling-method=provided`,
-המתכון התקף), 100/100/100 בשניהם, אפס דריפט מ-M08-c68. M07-c69: סריקת
-TODO/FIXME אומתה מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c69:
-`pnpm build` אומת מחדש, אפס דריפט. M05-c69: `pnpm test` נמדד
-מחדש, אפס דריפט. M04-c69: `pnpm type-check`
-נמדד מחדש, אפס דריפט. M03-c69: שער חזותי קטגוריה
-נמדד מחדש מול `refs/electro_shop_{width}.png`, אפס דריפט מ-M03-c68
-(3.53%/2.52%/1.69%). M02-c69: שער חזותי מוצר נמדד מחדש מול
-`refs/electro_product_{width}.png`, אפס דריפט מ-M02-c68
-(4.96%/4.58%/3.25%). M01-c69: שער חזותי בית נמדד מחדש מול `refs/ke_live_
-{width}.png`, אפס דריפט מ-M01-c68 (8.58%/9.01%/4.16%). ארבעת השערים
-ירוקים בעשרתם.
+הזו ב-M13-c69 וב-M14-c69 לשמירה על תקרת 300 שורות).** שנים-עשר פריטי
+אימות-בלבד, אפס דריפט בכולם: robots.txt (חוסם 2, M12); sitemap.xml חי
+`200` חמש תת-מפות (M11); 19 מיגרציות ממתינות (M10); deps/exports מתים
+עם `knip`, 271/197 (M09); Lighthouse mobile 100/100/100 (M08);
+TODO/FIXME (M07); `build`/`test`/`type-check` (M04-M06); שערים חזותיים
+קטגוריה (3.53/2.52/1.69, M03), מוצר (4.96/4.58/3.25, M02), בית
+(8.58/9.01/4.16, M01). ארבעת השערים ירוקים בעשרתם.
 
 **M18-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M01-c69, M17-c68 ו-M09-c69 לשמירה על תקרת 300 שורות).** M18-c68:

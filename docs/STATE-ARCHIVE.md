@@ -2,6 +2,21 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c69 (הועבר מ-STATE.md ב-M14-c69, לשמירה על תקרת 300 שורות)
+
+**M13-c69 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". דריפט קוד: `git log c258defa0..HEAD
+--stat -- src/app/api/health src/app/api/ready` (בסיס M13-c68) — ריק.
+**נמדד שוב מול פרודקשן**: `/api/health` → `200`
+(`database:"ok"`), `/api/ready` → `503` (`meilisearch:"down"`,
+`redis:"ok"`, `r2`/`cardcom` `not_configured`) — **זהה ל-M13-c67/M13-c68**
+(חוסם 16: Meilisearch לא נגיש מפרודקשן), לא ממצא חדש. `/api/health`
+מחזיר `200` כנדרש; `/api/ready` `503` הוא תלות חיצונית, לא פגם בקוד.
+**אפס דריפט מ-M13-c68.** ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614 (7337+12), `build` exit 0
+(`/api/health`/`/api/ready` כ-`ƒ Dynamic`). אפס שינוי קוד. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M12-c69).
+
 ## M12-c69 (הועבר מ-STATE.md ב-M13-c69, לשמירה על תקרת 300 שורות)
 
 **M12-c69 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
