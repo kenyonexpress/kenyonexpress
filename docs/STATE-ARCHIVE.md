@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c66 (הועבר מ-STATE.md ב-M14-c66, לשמירה על תקרת 300 שורות)
+
+**M13-c66 - DONE (01.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". נבדק מול פרודקשן בפועל
+(`https://www.kenyonexpress.co.il`), לא רק מול הקוד. Q49 (בארכיון) אימת
+את שישת הרכיבים קובץ-קובץ ומול build מקומי בלבד, לא מול ה-endpoint החי.
+
+**`/api/health`: PASS.** `curl` ישיר מחזיר `200`,
+`{"ok":true,"database":"ok","latency_ms":...}`, שתי בדיקות נפרדות.
+
+**`/api/ready`: `503`, לא `200`, ממצא אמיתי, לא תקלת קוד.** ארבע בדיקות
+רצופות, יציב: `{"ok":false,"checks":{"database":"ok","redis":"ok",
+"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`.
+`r2`/`cardcom` הם `not_configured` כצפוי (חוסמים פתוחים 4/8 ב-STATE.md).
+**`meilisearch` הוא `down`, לא `not_configured`**, ונבדק למה:
+`filter_project_envs` (קריאה-בלבד, אין ערך שנפתח) מראה ש-
+`MEILISEARCH_HOST` ו-`MEILISEARCH_API_KEY` **קיימים** ב-Production של
+Vercel, כלומר `checkSearch` ב-`src/lib/health/checks.ts` מנסה בפועל
+להגיע לשירות ונכשל, וזה מה שמייצר `down` ולא `not_configured` לפי
+ההבחנה המכוונת בקוד (ראו ה-doc comment שם). **לא חוסם לקוח**: `curl
+"https://www.kenyonexpress.co.il/api/search?q=test"` מחזיר `200` באותו
+רגע, כלומר הנפילה ל-Postgres ILIKE (המתועדת כ-fallback) עובדת בפועל.
+**לא לתיקון אוטומטי**: לאמת מארח/מפתח Meilisearch אמיתי דורש לפענח סוד
+או גישה לדשבורד שירות חיצוני, שני דברים שהסוכן לא עושה. **נוסף
+ל-`docs/BACKLOG.md` כסעיף 16** (לא היה רשום באף קובץ קודם).
+
+הקוד עצמו תקין ולא שונה: `503` רק כש-dependency אמיתי `down`, אף פעם לא
+cached. **אין commit קוד.** לא פריט חזותי, `scripts/compare.mjs` לא הורץ
+(תקדים M04-c66..M12-c66). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים), `test` 614/614 קבצים, 7336/7348 עברו, 12 מדולגים (זהה ל-M12-c66),
+`rm -rf .next && pnpm build` exit 0 נקי.
+
 ## M12-c66 (הועבר מ-STATE.md ב-M13-c66, לשמירה על תקרת 300 שורות)
 
 **M12-c66 - DONE (01.10.2026).** משימת התור: "Verify robots.txt production-

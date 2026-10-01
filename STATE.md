@@ -1,87 +1,81 @@
-RESUME FROM: M14-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c66 - DONE, /api/health ו-/api/ready אומתו מול פרודקשן בפועל, ממצא חדש על Meilisearch)
+RESUME FROM: M15-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c66 - DONE, Sentry release אומת מול HEAD ומול Production בפועל, שני ממצאים שליליים)
 
 ## המשך מ:
 
-**M13-c66 - DONE (01.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". נבדק מול פרודקשן בפועל
-(`https://www.kenyonexpress.co.il`), לא רק מול הקוד — Q49 (בארכיון) אימת
-את שישת הרכיבים קובץ-קובץ ומול build מקומי בלבד, לא מול ה-endpoint החי.
+**M14-c66 - DONE (01.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit". שתי בדיקות נפרדות, שתיהן שליליות, לא תקלת מדידה.
 
-**`/api/health`: PASS.** `curl` ישיר מחזיר `200`,
-`{"ok":true,"database":"ok","latency_ms":...}`, שתי בדיקות נפרדות.
+**הקוד תקין.** שלושת קובצי האתחול (`sentry.server.config.ts`,
+`sentry.edge.config.ts`, `instrumentation-client.ts`) קושרים `release`
+ל-`SENTRY_RELEASE`/`NEXT_PUBLIC_SENTRY_RELEASE` עם נפילה ל-
+`VERCEL_GIT_COMMIT_SHA`/`NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, בדיוק המנגנון
+הנכון כדי שה-release יתאים לקומיט שנפרס בפועל.
 
-**`/api/ready`: `503`, לא `200` — ממצא אמיתי, לא תקלת קוד.** ארבע בדיקות
-רצופות, יציב: `{"ok":false,"checks":{"database":"ok","redis":"ok",
-"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`.
-`r2`/`cardcom` הם `not_configured` כצפוי (חוסמים פתוחים 4/8 ב-STATE.md).
-**`meilisearch` הוא `down`, לא `not_configured`** — ונבדק למה:
-`filter_project_envs` (קריאה-בלבד, אין ערך שנפתח) מראה ש-
-`MEILISEARCH_HOST` ו-`MEILISEARCH_API_KEY` **קיימים** ב-Production של
-Vercel, כלומר `checkSearch` ב-`src/lib/health/checks.ts` מנסה בפועל
-להגיע לשירות ונכשל — זה מה שמייצר `down` ולא `not_configured` לפי
-ההבחנה המכוונת בקוד (ראו ה-doc comment שם). **לא חוסם לקוח**: `curl
-"https://www.kenyonexpress.co.il/api/search?q=test"` מחזיר `200` באותו
-רגע, כלומר הנפילה ל-Postgres ILIKE (המתועדת כ-fallback) עובדת בפועל.
-**לא לתיקון אוטומטי**: לאמת מארח/מפתח Meilisearch אמיתי דורש לפענח סוד
-או גישה לדשבורד שירות חיצוני, שני דברים שהסוכן לא עושה. **נוסף
-ל-`docs/BACKLOG.md` כסעיף 16** (לא היה רשום באף קובץ קודם).
+**ממצא 1 (ידוע, אומת מחדש מזווית אחרת): ה-release לא יכול לתאום ל-HEAD.**
+`get_deployment` (Vercel MCP, קריאה-בלבד, `withGitRepoInfo=true`) על
+הפריסה החיה (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, `www.kenyonexpress.co.il`)
+מראה שהיא בנויה מקומיט `a388118f1`, לא מ-HEAD הנוכחי (`1563d46b9`). זה
+חוסם 2 הקיים (פרודקשן 285 קומיטים מאחור), נמדד כאן דרך commit sha ממשי
+במקום ספירת קומיטים בלבד.
 
-הקוד עצמו תקין ולא שונה: `503` רק כש-dependency אמיתי `down`, אף פעם לא
-cached. **אין commit קוד.** לא פריט חזותי, `scripts/compare.mjs` לא הורץ
-(תקדים M04-c66..M12-c66). ארבעת השערים: `type-check` נקי, `lint` נקי (12
-שערים), `test` 614/614 קבצים, 7336/7348 עברו, 12 מדולגים (זהה ל-M12-c66),
+**ממצא 2, חדש וחמור יותר: אין בכלל release מדווח מפרודקשן.**
+`filter_project_envs` (קריאה-בלבד) על הפרויקט שמגיש את הדומיין
+(`kenyonexpress`, `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מראה **אין
+`SENTRY_DSN` ואין `NEXT_PUBLIC_SENTRY_DSN` ב-Production בכלל** (קיים שם
+רק `SENTRY_AUTH_TOKEN`, ששירת את העלאת source maps בזמן build, לא דיווח
+בזמן ריצה). שלושת קובצי האתחול קוראים ל-`Sentry.init({ dsn:
+process.env.SENTRY_DSN, ... })` ישירות בלי שומר קודם, כך שבלי הערך ה-SDK
+מאותחל עם `dsn: undefined` ואינו שולח דבר. **לא תקלת קוד חדשה**: תואם
+זיכרון קיים (`sentry-is-live-and-unread`, נמדד 10.09): 203 מתוך 206
+אירועים ב-30 יום מתויגים `development`, אפס `production`. **אומת שוב
+היום, 01.10, ועדיין נכון.**
+
+**מסקנה**: אי אפשר לאמת "ה-release תואם ל-HEAD" כאמת, כי אין release
+שמגיע מפרודקשן בכלל (ממצא 2), וגם אם היה, הוא היה הקומיט הישן (ממצא 1).
+**נוסף ל-`docs/BACKLOG.md` כסעיף 17** (לא היה רשום כפעולה באף קובץ קודם,
+רק ב-reference memory חיצוני). **לא לתיקון אוטומטי**: הוספת
+`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא שינוי env
+ב-Vercel, אסור לסוכן לפי כללי המשימה.
+
+**אין commit קוד, רק תיעוד.** לא פריט חזותי, `scripts/compare.mjs` לא
+הורץ (תקדים M04-c66..M13-c66). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614 קבצים, 7336/7348 עברו (זהה ל-M13-c66),
 `rm -rf .next && pnpm build` exit 0 נקי.
+
+**M13-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: `/api/health`/`/api/ready`
+אומתו מול פרודקשן בפועל; `health` תקין, `ready` מחזיר `503` בגלל
+Meilisearch `down` (לא `not_configured`), ממצא חדש נוסף ל-BACKLOG סעיף
+16. ארבעת השערים ירוקים.
 
 **M12-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M13-c66
 לשמירה על תקרת 300 שורות).** פריט תור, DONE: robots.txt אומת מול
 פרודקשן בפועל, זהה לקוד; נמצא פער אמיתי (`/debug/` חסר מ-`Disallow` בעוד
 הדפים המוגנים נגישים `200` בפועל) ותוקן. ארבעת השערים ירוקים.
 
-**M10-c66 ו-M11-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c66 לשמירה על תקרת 300 שורות).** שני פריטי תור, DONE בשניהם:
-19 מיגרציות ממתינות (חוסם 3 למטה) אומתו מחדש מול פרודקשן בפועל דרך
-טוקן ה-CLI ב-keychain, כולן עדיין לא הוחלו (M10); sitemap.xml אומת טרי
-ונגיש מול פרודקשן בפועל, אינדקס עם חמש תת-מפות, 200 בכולן (M11). אפס
-דריפט קוד בשניהם, ארבעת השערים ירוקים.
-
-**M01-c66..M09-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M11-c66 לשמירה על תקרת 300 שורות).** תשעה פריטי תור, DONE בכולם: שער
-חזותי בית/מוצר/קטגוריה נמדד מחדש (M01-M03, אפס דריפט), `type-check`
+**M01-c66..M11-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M14-c66 לשמירה על תקרת 300 שורות).** אחת-עשרה פריטי תור, DONE בכולם:
+שער חזותי בית/מוצר/קטגוריה נמדד מחדש (M01-M03, אפס דריפט), `type-check`
 (M04), `test` (M05), `pnpm build` בפועל exit 0 (M06), סריקת `TODO`/
 `FIXME` רוחב-ריפו עם תיקון אחד ב-`scripts/screenshot-all.mjs` (M07),
 Lighthouse mobile `/`+`/product` 100/100/100 (M08), חמש חבילות מתות
-הוסרו ושישה קבועים פנימיים הופשטו מ-`export` (M09). ארבעת השערים ירוקים
-בכולם.
+הוסרו ושישה קבועים פנימיים הופשטו מ-`export` (M09), 19 מיגרציות ממתינות
+אומתו מחדש מול פרודקשן בפועל דרך טוקן ה-CLI ב-keychain, כולן עדיין לא
+הוחלו (M10), sitemap.xml אומת טרי ונגיש מול פרודקשן בפועל, אינדקס עם חמש
+תת-מפות, 200 בכולן (M11). אפס דריפט קוד בכולם, ארבעת השערים ירוקים.
 
-**Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M01-c66
-לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: `LAUNCH-
-READINESS.md` נבדק מחדש מול כל קומיט שנחת מאז Q54, NOT READY ללא שינוי
-(שמונה שורות חסימה עדיין פתוחות), `v1.0.0-rc7-final-audit` תויג (לא
-`v1.0.0`, שכבר קיים על מצב ישן אמיתי). ארבעת השערים ירוקים, שער חזותי
-PASS בכל מה שנמדד.
-
-**Q54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q55 לשמירה
-על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: שלוש jobs חדשות ב-CI
-(`migration-dry-run`, `bundle-gate`, `lighthouse --throttling-method=
-provided`), `docs/PERFORMANCE-BUDGET.md`'s simulate-vs-provided מלכודת
-נמנעה. `migration-lint` חשף תקלה קיימת-מראש (60 קבצים, 5 hard, 93 soft),
-לא תוקנה בפריט הזה. ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
-
-**Q53 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q54 לשמירה
-על תקרת 300 שורות).** פריט חיצוני חד-פעמי, VERIFIED: Cardcom
-sandbox-to-production toggle כבר בנוי, נבדק ומתועד במלואו, אפס שינוי קוד
-ייצור. ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
-
-**Q52 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q53 לשמירה
-על תקרת 300 שורות).** פריט חיצוני חד-פעמי, VERIFIED: Meilisearch Hebrew
-synonyms, facets ו-no-search-UI כבר קיימים ונבדקו במלואם, אפס שינוי קוד.
-ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
-
-**Q51 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q52 לשמירה
-על תקרת 300 שורות).** פריט חיצוני חד-פעמי, BLOCKED: Crisp chat מתנגש
-בהחלטת בעלים מתועדת (WhatsApp+email בלבד, בלי Crisp, 23.09). אפס שינוי
-קוד, ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
+**Q51..Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M14-c66 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים:
+Crisp chat נדחה, מתנגש בהחלטת בעלים (WhatsApp+email בלבד, בלי Crisp,
+23.09, Q51 BLOCKED); Meilisearch Hebrew synonyms/facets/no-search-UI
+כבר קיימים (Q52 VERIFIED); Cardcom sandbox-to-production toggle כבר בנוי
+(Q53 VERIFIED); שלוש jobs חדשות ב-CI (`migration-dry-run`, `bundle-gate`,
+`lighthouse --throttling-method=provided`), `migration-lint` חשף תקלה
+קיימת-מראש לא תוקנה בפריט (Q54 DONE); `LAUNCH-READINESS.md` נבדק מחדש,
+NOT READY ללא שינוי, `v1.0.0-rc7-final-audit` תויג (Q55 DONE). אפס שינוי
+קוד ייצור בכולם חוץ מ-Q54, ארבעת השערים ירוקים בכולם, שער חזותי PASS בכל
+מה שנמדד.
 
 **Q25..Q50 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q51
 לשמירה על תקרת 300 שורות).** עשרים וארבעה פריטים חיצוניים חד-פעמיים, אף

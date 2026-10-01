@@ -514,6 +514,23 @@ change — this item was verification only.
     Meilisearch חי ושה-`MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` ב-Vercel
     תואמים לו, אחרת `/api/ready` ימשיך לדווח `503` לכל מוניטור שמסתכל עליו.
     מקור: M13-c66 (אין רשומה קודמת בשום קובץ).
+17. **`SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN` חסרים ב-Production של
+    הפרויקט שמגיש את הדומיין** (נמדד 01.10.2026, M14-c66, `filter_project_envs`
+    קריאה-בלבד על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`). קיים
+    שם רק `SENTRY_AUTH_TOKEN` (משרת העלאת source maps בזמן build בלבד).
+    שלושת קובצי האתחול (`sentry.server.config.ts`, `sentry.edge.config.ts`,
+    `instrumentation-client.ts`) קוראים `Sentry.init({ dsn:
+    process.env.SENTRY_DSN, ... })` ישירות בלי שומר, כך שבלי הערך ה-SDK
+    מאותחל עם `dsn: undefined` ואינו שולח שום אירוע. **לא ממצא חדש
+    לגמרי**: תואם לזיכרון `sentry-is-live-and-unread` (נמדד 10.09: 203
+    מתוך 206 אירועים ב-30 יום מתויגים `development`, אפס `production`),
+    אבל לא היה רשום כפעולה בשום קובץ בריפו עד כה. כתוצאה מכך גם אי אפשר
+    לדעת מה קורה בפועל בייצור בזמן אמת (שגיאה בצ'קאאוט, קריסת hydration),
+    וגם `release` (מקושר ל-`VERCEL_GIT_COMMIT_SHA`) לעולם לא מגיע מפרודקשן,
+    גם כשסעיף 4 (פריסת HEAD) ייסגר. להוסיף את שני המשתנים ב-Vercel
+    Production (הערכים כבר ב-Sentry project `kenyonexpress-web`,
+    `https://de.sentry.io`), ואז לפרוס מחדש (הערך נאפה בזמן build, לא
+    runtime). מקור: M14-c66 (אין רשומה קודמת כפעולה בשום קובץ).
 
 ## מה לא ברשימה, ולמה
 
