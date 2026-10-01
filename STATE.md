@@ -1,18 +1,19 @@
-RESUME FROM: M05-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c69 - DONE, pnpm type-check אומת מחדש, אפס דריפט)
+RESUME FROM: M06-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c69 - DONE, pnpm test אומת מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M04-c69 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
-commit". `pnpm type-check` (`tsc --noEmit`) רץ נקי, exit 0, אפס שגיאות —
-אין דריפט לתקן. הורצו גם שלושת השערים הנוספים לוודא שאין רגרסיה חבויה:
-`lint` ירוק (12 שערים, `biome check` על 2037 קבצים, אפס תיקונים), `test`
-614/614 קבצים ו-7337/7349 עברו (12 מדולגים, זהה ל-M01-c69/M05-c68),
-`build` exit 0 (כל הנתיבים נבנו, כולל sitemaps/robots/opengraph). פריט
-אימות-בלבד, אפס שינוי קוד; קובץ שהשתנה: `STATE.md`.
+**M05-c69 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
+`pnpm test` (`vitest run`) רץ נקי: 614/614 קבצים, 7337/7349 עברו (12
+מדולגים) — זהה ל-M05-c68 ול-M01-c69, אין דריפט לתקן. הורצו גם שלושת השערים
+הנוספים לוודא שאין רגרסיה חבויה: `type-check` נקי (`tsc --noEmit`, exit 0),
+`lint` ירוק (12 שערים, `biome check` על 2037 קבצים, אפס תיקונים), `build`
+exit 0 (כל הנתיבים נבנו, כולל sitemaps/robots/opengraph). פריט אימות-בלבד,
+אפס שינוי קוד; קובץ שהשתנה: `STATE.md`.
 
-**M03-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M04-c69 לשמירה על תקרת 300 שורות).** M03-c69: שער חזותי קטגוריה
+**M04-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M05-c69 לשמירה על תקרת 300 שורות).** M04-c69: `pnpm type-check`
+נמדד מחדש, אפס דריפט. M03-c69: שער חזותי קטגוריה
 נמדד מחדש מול `refs/electro_shop_{width}.png`, אפס דריפט מ-M03-c68
 (3.53%/2.52%/1.69%). M02-c69: שער חזותי מוצר נמדד מחדש מול
 `refs/electro_product_{width}.png`, אפס דריפט מ-M02-c68
