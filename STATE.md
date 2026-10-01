@@ -1,66 +1,58 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q46)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q47)
 
 ## המשך מ:
 
-**Q46 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
-אפס שינוי קוד.** "Sitemap, robots, OG tags, JSON-LD Product, BreadcrumbList,
-Organization, Offer." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md`
-עוצר ב-Q39), אותו דפוס כמו Q25-Q45. **כל ששת הרכיבים כבר בנויים
-ומחווטים, נבדק מחדש שורה-שורה:**
+**Q47 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Accessibility pass: aria-labels, keyboard nav,
+focus ring, contrast 4.5+, IS 5568 statement." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q46. **כל
+חמשת הרכיבים כבר בנויים, מחווטים ונבדקים אוטומטית, נבדק מחדש שורה-שורה:**
 
-- **Sitemap**: אינדקס + חמישה סקשנים (`src/app/sitemap.xml/route.ts`,
-  `src/app/sitemap/{categories,products,suppliers,regions,content}.xml/route.ts`),
-  בנויים מ-`src/lib/seo/sitemap-data.ts`/`sitemap-sections.ts`/
-  `sitemap-response.ts`. מכוסה ב-`sitemap.test.ts`,
-  `sitemap-canonicals.test.ts`, `sitemap-robots-agree.test.ts`,
-  `sitemap-sections.test.ts`.
-- **robots**: `src/app/robots.ts`, מצביע לאינדקס הסיטמאפ בלבד (לא לכל
-  קובץ), חוסם `/redeem/`, `/coupon/`, `/account/`, `/supplier/`, `/scan`,
-  `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`, איפוס/שחזור סיסמה.
-  מכוסה ב-`robots.test.ts`.
-- **OG tags**: `openGraph`/`twitter` ב-`src/app/layout.tsx` (ברירת מחדל
-  לכל האתר), ו-`metadata.openGraph` פר-עמוד ב-product/category/supplier/
-  page([slug]). תמונות OG מיוצרות דינמית: `src/app/opengraph-image.tsx`
-  (בית), `product/[slug]/opengraph-image.tsx`, `category/[slug]/
-  opengraph-image.tsx` — כל אחת עם bidi נכון לעברית (`src/lib/og/bidi.ts`,
-  ראו `Satori has no bidi pass` ב-memory). מכוסה ב-`og-fonts.test.ts`.
-- **JSON-LD Product/Offer**: `buildProductJsonLd`/`buildOfferNode`
-  (`src/lib/seo/json-ld.ts`), מחווט ב-`product/[slug]/page.tsx`. המחיר
-  נגזר מאותו מודל שהעמוד מציג (`CouponOffer`/`priceIls`), לא מחושב פעם
-  שנייה — ראו הערת ה-WHY בראש הקובץ על הפער ההיסטורי `price * 0.1`.
-  `priceSpecification` עם `StrikethroughPrice` למחיר המחוק, לא `highPrice`
-  (שאינה תכונת schema.org תקנית על `Offer` בודד). `availability`
-  IN_STOCK/OUT_OF_STOCK לפי מלאי אמיתי; שובר שאינו ניתן למכירה מקבל
-  `Offer` בלי מחיר, לא מחיר אפס.
-- **JSON-LD BreadcrumbList**: `buildBreadcrumbJsonLd`, מחווט ב-product/
-  category/city/page([slug]).
-- **JSON-LD Organization**: `buildSiteJsonLd` (גם `Organization` וגם
-  `WebSite`+`SearchAction`), מחווט בדף הבית בלבד (`src/app/(store)/
-  page.tsx`). `LocalBusiness`+`AggregateRating` נפרד לעמוד ספק
-  (`buildSupplierJsonLd`, `s/[id]/page.tsx`).
-
-כל ה-JSON-LD עובר דרך `jsonLdScript()` שבורחת `<` כדי שטקסט קטלוג לא
-יסגור את התג, ונאכף ב-`raw-html gate` (ראה פלט `pnpm lint` למטה: "every
-dangerouslySetInnerHTML is jsonLdScript or allowlisted"). מכוסה
-ב-`src/lib/seo/json-ld.test.ts`.
+- **aria-label על כל רכיב אינטראקטיבי**: כפתורי אייקון בלבד ב-
+  `src/components/layout/{Header,MastheadNav,SiteFooter,RegionMenu,
+  BottomTabBar,MobileDrawer}.tsx` וב-`src/components/cart/{AddToCartButton,
+  CartDrawer,MiniCartDropdown,CartLineItem,CartNavLink,CartTotalsSidebar,
+  CartPageView}.tsx` נושאים `aria-label`. פאנל העגלה עצמו `role="dialog"`
+  עם שם נגיש "עגלת קניות" (נאכף ב-`e2e/a11y.spec.ts:533`).
+- **ניווט מקלדת**: `MobileDrawer.tsx` (Escape סוגר, focus נכנס וחוזר
+  לכפתור המפעיל, יד-כתוב כי `<dialog>` מקורי לא נתן את זה). `Dialog` של
+  Radix (`src/components/ui/dialog.tsx`) נותן focus trap/Escape מובנה
+  לשימושים שלו. `e2e/a11y.spec.ts:173-257` אוכף שכל רכיב אינטראקטיבי
+  בכל עמוד ציבורי, בדף המוצר ובקופה המלאה (ארבעת השלבים) נגיש במקלדת.
+- **טבעת focus נראית**: `focus-visible:` ב-`src/components/ui/{button,
+  input,textarea}.tsx`, `src/app/globals.css`, `src/styles/account.css`.
+  כ-70 מופעי `outline-none`/`focus:outline-none`, כל מדגם שנבדק מזווג
+  עם טבעת חלופית (`focus:ring-2`/`focus-visible:ring-2`) — אין מופע
+  שמסיר outline בלי תחליף.
+- **ניגודיות 4.5:1+ (WCAG AA / תקן 5568)**: `e2e/a11y.spec.ts` מריץ
+  `@axe-core/playwright` עם `WCAG_AA = ['wcag2a','wcag2aa','wcag21a',
+  'wcag21aa']` על כל עמוד ציבורי, דף המוצר, הקופה המלאה (כולל מצבי שגיאת
+  ולידציה) ופאנל העגלה; `e2e/a11y-authenticated.spec.ts` מרחיב לכל עמודי
+  הלקוח/אדמין/ספק (`route-lists.ts`). נכשל על **כל** הפרה, לא רק
+  serious/critical. היסטוריית הקובץ מתעדת תיקוני ניגודיות אמיתיים
+  (צהוב מותג 1.41:1, `text-gray-400` 2.60:1, דיו קופה 4.01:1/3.38:1).
+- **הצהרת נגישות (תקן 5568)**: `src/app/(store)/accessibility/page.tsx`
+  מגיש את הנוסח המשפטי המלא (תקן 5568, תיקון 13) ב-`/accessibility`;
+  `/legal/accessibility` מפנה 308 לשם. מקושר מהפוטר (`SiteFooter.tsx`).
+  תוכן ב-`src/app/(legal)/_content/accessibility.ts`.
+  `docs/ACCESSIBILITY-STATEMENT.md` ו-`docs/A11Y-SWEEP-REPORT.md` קיימים.
 
 **בדיקה בפועל.** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים),
-`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים, זהה בדיוק ל-Q45),
+`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים, זהה בדיוק ל-Q46),
 `rm -rf .next && pnpm build` נקי. שער חזותי PASS בשלושת הרוחבים,
 foreground, `--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`
-(שרת זמני בפורט 3316, cwd מאומת; 3311-3315 תפוסים על ידי סשנים מקבילים
-אחרים על אותו ריפו): **8.51%/9.07%/3.95%** (380/768/1440), זהה כמעט
-בדיוק למדידת Q41-Q45 (768 נע 9.02%→9.07%, בתוך רעש המדידה). אין קובץ
-קוד ייצור ששונה; `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+(שרת זמני בפורט 3316, cwd מאומת): **8.51%/9.02%/3.95%** (380/768/1440),
+זהה כמעט בדיוק למדידת Q46 (768 נע 9.07%→9.02%, בתוך רעש המדידה). אין
+קובץ קוד ייצור ששונה; `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
 
-**Q25..Q45 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q46
-לשמירה על תקרת 300 שורות).** תשעה-עשר פריטים חיצוניים חד-פעמיים, אף אחד
-לא בתור האמיתי. חמישה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי במקרה
+**Q25..Q46 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q47
+לשמירה על תקרת 300 שורות).** עשרים פריטים חיצוניים חד-פעמיים, אף אחד
+לא בתור האמיתי. שישה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי במקרה
 של Q45), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים BLOCKED
 (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32) שעות
 פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים ירוקים
-בכל התשעה-עשר.
+בכל העשרים.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,

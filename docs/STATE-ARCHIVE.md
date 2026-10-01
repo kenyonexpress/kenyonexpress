@@ -2,6 +2,59 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q46 (הועבר מ-STATE.md ב-Q47, לשמירה על תקרת 300 שורות)
+
+**Q46 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד.** "Sitemap, robots, OG tags, JSON-LD Product,
+BreadcrumbList, Organization, Offer." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q45. **כל
+ששת הרכיבים כבר בנויים ומחווטים, נבדק מחדש שורה-שורה:**
+
+- **Sitemap**: אינדקס + חמישה סקשנים (`src/app/sitemap.xml/route.ts`,
+  `src/app/sitemap/{categories,products,suppliers,regions,content}.xml/route.ts`),
+  בנויים מ-`src/lib/seo/sitemap-data.ts`/`sitemap-sections.ts`/
+  `sitemap-response.ts`. מכוסה ב-`sitemap.test.ts`,
+  `sitemap-canonicals.test.ts`, `sitemap-robots-agree.test.ts`,
+  `sitemap-sections.test.ts`.
+- **robots**: `src/app/robots.ts`, מצביע לאינדקס הסיטמאפ בלבד (לא לכל
+  קובץ), חוסם `/redeem/`, `/coupon/`, `/account/`, `/supplier/`, `/scan`,
+  `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`, איפוס/שחזור סיסמה.
+  מכוסה ב-`robots.test.ts`.
+- **OG tags**: `openGraph`/`twitter` ב-`src/app/layout.tsx` (ברירת מחדל
+  לכל האתר), ו-`metadata.openGraph` פר-עמוד ב-product/category/supplier/
+  page([slug]). תמונות OG מיוצרות דינמית: `src/app/opengraph-image.tsx`
+  (בית), `product/[slug]/opengraph-image.tsx`, `category/[slug]/
+  opengraph-image.tsx` — כל אחת עם bidi נכון לעברית (`src/lib/og/bidi.ts`,
+  ראו `Satori has no bidi pass` ב-memory). מכוסה ב-`og-fonts.test.ts`.
+- **JSON-LD Product/Offer**: `buildProductJsonLd`/`buildOfferNode`
+  (`src/lib/seo/json-ld.ts`), מחווט ב-`product/[slug]/page.tsx`. המחיר
+  נגזר מאותו מודל שהעמוד מציג (`CouponOffer`/`priceIls`), לא מחושב פעם
+  שנייה — ראו הערת ה-WHY בראש הקובץ על הפער ההיסטורי `price * 0.1`.
+  `priceSpecification` עם `StrikethroughPrice` למחיר המחוק, לא `highPrice`
+  (שאינה תכונת schema.org תקנית על `Offer` בודד). `availability`
+  IN_STOCK/OUT_OF_STOCK לפי מלאי אמיתי; שובר שאינו ניתן למכירה מקבל
+  `Offer` בלי מחיר, לא מחיר אפס.
+- **JSON-LD BreadcrumbList**: `buildBreadcrumbJsonLd`, מחווט ב-product/
+  category/city/page([slug]).
+- **JSON-LD Organization**: `buildSiteJsonLd` (גם `Organization` וגם
+  `WebSite`+`SearchAction`), מחווט בדף הבית בלבד (`src/app/(store)/
+  page.tsx`). `LocalBusiness`+`AggregateRating` נפרד לעמוד ספק
+  (`buildSupplierJsonLd`, `s/[id]/page.tsx`).
+
+כל ה-JSON-LD עובר דרך `jsonLdScript()` שבורחת `<` כדי שטקסט קטלוג לא
+יסגור את התג, ונאכף ב-`raw-html gate` (ראה פלט `pnpm lint` למטה: "every
+dangerouslySetInnerHTML is jsonLdScript or allowlisted"). מכוסה
+ב-`src/lib/seo/json-ld.test.ts`.
+
+**בדיקה בפועל.** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים),
+`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים, זהה בדיוק ל-Q45),
+`rm -rf .next && pnpm build` נקי. שער חזותי PASS בשלושת הרוחבים,
+foreground, `--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`
+(שרת זמני בפורט 3316, cwd מאומת; 3311-3315 תפוסים על ידי סשנים מקבילים
+אחרים על אותו ריפו): **8.51%/9.07%/3.95%** (380/768/1440), זהה כמעט
+בדיוק למדידת Q41-Q45 (768 נע 9.02%→9.07%, בתוך רעש המדידה). אין קובץ
+קוד ייצור ששונה; `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+
 ## Q45 (הועבר מ-STATE.md ב-Q46, לשמירה על תקרת 300 שורות)
 
 **Q45 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
