@@ -2,6 +2,47 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c65 (הועבר מ-STATE.md ב-M16-c65, לשמירה על תקרת 300 שורות)
+
+**M15-c65 - DONE (01.10): תיעוד סונכרן מחדש — STATE.md, docs/
+LAUNCH-READINESS.md ו-docs/BACKLOG.md מול `git log 97cd36b06..HEAD`
+(הנקודה שנבדקה ב-M15-c64), אפס דריפט.** משימת התור: "Docs sync: refresh
+the status table in STATE.md, docs/LAUNCH-READINESS.md and
+docs/BACKLOG.md from git log and code evidence. Keep manual items for
+Ofir in order of criticality, one list, no duplicates."
+
+**שבעה-עשר קומיטים מאז M15-c64** (M16-c64..M18-c64, M01-c65..M14-c65):
+`git diff --stat 97cd36b06..HEAD -- docs/BACKLOG.md migrations/pending
+supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
+מראה רק את הקבצים הבאים: `STATE.md`/`docs/BACKLOG.md` (רשומות הבדיקה
+החוזרת של עצמם) ושורת דירוג הכוכבים (M18-c64, `ProductCard.tsx`,
+`ProductRail.tsx`, `lib/homepage/rails.ts`,
+`lib/reviews/rating-summaries.ts`, `lib/related-products.ts`) — פריט
+תור שכבר נסגר במחזור קודם, לא שורה ב-`docs/BACKLOG.md`. אף אחד מהם לא
+נגע בשורת חסימה, במיגרציה ממתינה או בפנקס הקטלוג.
+
+**`docs/BACKLOG.md`: עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס פריט
+חדש.** עודכנו רק מונים: סעיף 4 (קומיטים מאחורי `a388118f1`) 292→299;
+`dns-watch.sh` עדיין רץ, pid 976 (היה 957 עד M08-c65, אין שינוי מצב —
+רק מספר ה-pid התחלף בין סשנים); `git stash list` 32, `migrations/
+pending/*.sql` 59, `supabase/catalogue-known-issues.json` 26 — ללא
+שינוי. `origin/main` 673 מאחורי HEAD (היה 655), 109 לפנים — ללא שינוי.
+
+**`docs/LAUNCH-READINESS.md`: אותה טבלת חסימה, אותם 7 סעיפים ב"What
+flips the verdict", אפס שורה חדשה.** עודכנו רק מספרי הקומיטים (שורה 4:
+299), ספירת הענפים (655→673) וטבלת ה-`pnpm test` (610/610, 7298/7310 —
+תוצאה זהה ל-M14-c65). פסקת ה"ידני לאופיר" ממשיכה להצביע על
+`docs/BACKLOG.md` כעותק היחיד.
+
+**ארבעת השערים נבדקו בפועל, לא צוטטו:** `type-check` נקי. `lint` נקי
+(biome 2029 קבצים, 12 שערים: docs-index 282, docs-path-audit 154, i18n
+627/627, locale-format 116/64 בתקרה). `test` 610/610 קבצים, 7298/7310
+עברו (12 דולגים בכוונה) — זהה ל-M14-c65. `build` לא הורץ מחדש: `.next`
+הקיים (`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`, mtime 01.10 08:36) נבנה
+אחרי הקומיט האחרון שנוגע ב-build (`857a0deea`, M18-c64, 01.10 01:11),
+אומת ב-`git log -1` על הנתיבים הרלוונטיים. אפס שינוי קוד ייצור.
+
 ## M14-c65 (הועבר מ-STATE.md ב-M15-c65, לשמירה על תקרת 300 שורות)
 
 **M14-c65 - DONE (01.10): bundle sizes, image pipeline, תגיות ISR

@@ -1,64 +1,65 @@
-RESUME FROM: M16-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c65)
+RESUME FROM: M17-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c65)
 
 ## המשך מ:
 
-**M15-c65 - DONE (01.10): תיעוד סונכרן מחדש — STATE.md, docs/
-LAUNCH-READINESS.md ו-docs/BACKLOG.md מול `git log 97cd36b06..HEAD`
-(הנקודה שנבדקה ב-M15-c64), אפס דריפט.** משימת התור: "Docs sync: refresh
-the status table in STATE.md, docs/LAUNCH-READINESS.md and
-docs/BACKLOG.md from git log and code evidence. Keep manual items for
-Ofir in order of criticality, one list, no duplicates."
+**M16-c65 - DONE (01.10): תברואת ריפו נבדקה מחדש, `git status` נקי,
+אפס ענף מקומי לא-דחוף מ-43, 24 PR פתוחים ו-22 ענפים ישנים נרשמו, אפס
+דריפט מ-M16-c64.** משימת התור: "Repo hygiene: ensure git status is
+clean, every local branch is pushed, list open PRs and stale branches
+in STATE.md. Do not merge or delete anything."
 
-**שבעה-עשר קומיטים מאז M15-c64** (M16-c64..M18-c64, M01-c65..M14-c65):
-`git diff --stat 97cd36b06..HEAD -- docs/BACKLOG.md migrations/pending
-supabase/catalogue-known-issues.json src/ next.config.ts next.config.mjs
-package.json pnpm-lock.yaml vercel.json supabase/ scripts/cron-jobs.json`
-מראה רק את הקבצים הבאים: `STATE.md`/`docs/BACKLOG.md` (רשומות הבדיקה
-החוזרת של עצמם) ושורת דירוג הכוכבים (M18-c64, `ProductCard.tsx`,
-`ProductRail.tsx`, `lib/homepage/rails.ts`,
-`lib/reviews/rating-summaries.ts`, `lib/related-products.ts`) — פריט
-תור שכבר נסגר במחזור קודם, לא שורה ב-`docs/BACKLOG.md`. אף אחד מהם לא
-נגע בשורת חסימה, במיגרציה ממתינה או בפנקס הקטלוג.
+**`git status`: נקי** (עץ עבודה נקי, ענף `audit/final-audit`, מעודכן
+מול `origin/audit/final-audit`).
 
-**`docs/BACKLOG.md`: עדיין 15 סעיפים, אותו סדר, אפס כפילות, אפס פריט
-חדש.** עודכנו רק מונים: סעיף 4 (קומיטים מאחורי `a388118f1`) 292→299;
-`dns-watch.sh` עדיין רץ, pid 976 (היה 957 עד M08-c65, אין שינוי מצב —
-רק מספר ה-pid התחלף בין סשנים); `git stash list` 32, `migrations/
-pending/*.sql` 59, `supabase/catalogue-known-issues.json` 26 — ללא
-שינוי. `origin/main` 673 מאחורי HEAD (היה 655), 109 לפנים — ללא שינוי.
+**43 ענפים מקומיים, אפס תוכן לא-דחוף.** `comm` בין `git branch` ל-`git
+branch -r` איתר שישה ענפים בלי remote ref באותו שם (`chore/vitest-4`,
+`docs/nightly-health-green`, `fix/main-nightly-red`, `pr36`,
+`release/v1.1`, `wip/refund-record-rebase-head`) — אותה רשימה בדיוק
+כמו ב-M16-c64. `git branch -r --contains <sha>` על כל אחד מהשישה אישר:
+כל ה-SHA-ים מוכלים במלואם ב-`origin/main` וב-`origin/audit/final-audit`
+(חלקם גם ב-`origin/release/v1.0`/`v1.2` ואחרים), אפס תוכן אבוד. לא
+נמחק ולא נדחף שום ענף.
 
-**`docs/LAUNCH-READINESS.md`: אותה טבלת חסימה, אותם 7 סעיפים ב"What
-flips the verdict", אפס שורה חדשה.** עודכנו רק מספרי הקומיטים (שורה 4:
-299), ספירת הענפים (655→673) וטבלת ה-`pnpm test` (610/610, 7298/7310 —
-תוצאה זהה ל-M14-c65). פסקת ה"ידני לאופיר" ממשיכה להצביע על
-`docs/BACKLOG.md` כעותק היחיד.
+**24 PR פתוחים** (`gh pr list --state open --json
+number,title,headRefName,createdAt`, 01.10.2026): #2, #3, #4, #5, #9,
+#12, #13, #14, #16, #17, #18, #19, #20, #21, #22, #23, #25, #28, #30,
+#31, #32, #33, #46, #47 — אותם מספרים וכותרות כמו ב-M16-c64, אפס PR
+חדש, אפס PR נסגר.
 
-**ארבעת השערים נבדקו בפועל, לא צוטטו:** `type-check` נקי. `lint` נקי
-(biome 2029 קבצים, 12 שערים: docs-index 282, docs-path-audit 154, i18n
-627/627, locale-format 116/64 בתקרה). `test` 610/610 קבצים, 7298/7310
-עברו (12 דולגים בכוונה) — זהה ל-M14-c65. `build` לא הורץ מחדש: `.next`
-הקיים (`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`, mtime 01.10 08:36) נבנה
-אחרי הקומיט האחרון שנוגע ב-build (`857a0deea`, M18-c64, 01.10 01:11),
-אומת ב-`git log -1` על הנתיבים הרלוונטיים. אפס שינוי קוד ייצור.
+**22 ענפים מקומיים ישנים** (בלי commit מעל 30 יום, `committerdate:unix`
+מול השעון הנוכחי, 01.10.2026): `feat/auth-hardening`, `feat/checkout-e2e`,
+`feat/monitoring-sentry`, `feat/notifications-full`,
+`feat/performance-seo`, `feat/search-meilisearch`, `feat/ux-wave-final`
+(41 יום), `feat/rate-limit-layer` (41 יום), `feat/auth-model`,
+`merge/supplier-and-arch-night` (42 יום), `feat/db-hardening-v2`,
+`feat/product-type` (43 יום), `arch/docs-queue` (49 יום),
+`arch/docs-batch-2`, `feat/e2e-quality` (50 יום), `docs/final-pack`
+(59 יום), `arch/account-area`, `arch/checkout-cardcom-verification`,
+`arch/notifications-v2`, `arch/seed-data`, `arch/wp-migration` (60 יום),
+`save/ke-visual-work` (64 יום) — אותה רשימה בדיוק כמו ב-M16-c64, אפס
+שינוי. `docs/final-pass` (30 יום בדיוק) ו-`docs/v1-final` (29 יום)
+נשארים מתחת לסף "מעל 30", עדיין מחוץ לרשימה.
 
-**M14-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M15-c65 לשמירה על תקרת 300 שורות).** ביצועים נבדקו מחדש מול build
-טרי: bundle sizes, image pipeline, תגיות ISR וכותרות cache זהים בייט
-לבייט לבייסליין (M14-c64), אפס רגרסיה. ארבעת השערים ירוקים.
+**ארבעת השערים:** `type-check` נקי. `lint` נקי (biome 2029 קבצים, 12
+שערים ירוקים, זהה ל-M15-c65). `test` 610/610 קבצים, 7298/7310 עברו (12
+דולגים בכוונה), זהה ל-M15-c65. `build` לא רץ מחדש: `.next` הקיים
+(`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`, mtime 01.10 08:36) נבנה אחרי
+הקומיט האחרון שנוגע בנתיב רלוונטי לבנייה (`857a0deea`, M18-c64, 01.10
+01:11), אומת ב-`git log -1`. אפס שינוי קוד ייצור; קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**M13-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M14-c65 לשמירה על תקרת 300 שורות).** אבטחה נבדקה מחדש מאפס, אפס
-דריפט: ארבע כותרות האבטחה ושלוש מגבלות הקצב של Upstash (login,
-begin_checkout, redeem) נבדקו בקוד עצמו מול `policies.ts`, כולן PASS.
-ארבעת השערים ירוקים.
+**M15-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M16-c65 לשמירה על תקרת 300 שורות).** תיעוד סונכרן מחדש — STATE.md,
+docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md מול `git log
+97cd36b06..HEAD`, אפס דריפט: עדיין 15 סעיפים ב-BACKLOG, אותה טבלת
+חסימה ב-LAUNCH-READINESS, רק מונים עודכנו. ארבעת השערים ירוקים.
 
-**M12-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M13-c65
-לשמירה על תקרת 300 שורות).** SEO נבדק מחדש מאפס, אפס דריפט: מטא-דאטה,
-JSON-LD Product+Offer, sitemap, robots וקונסיסטנטיות canonical — PASS.
-
-**M11-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M09-c65/M10-c65/M11-c65/M12-c65/M13-c65 לשמירה על תקרת 300 שורות).**
+**M14-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c65..M13-c65/M16-c65 לשמירה על תקרת 300 שורות).** M14-c65 —
+ביצועים, bundle/image pipeline/ISR/cache headers זהים בייט לבייט
+לבייסליין. M13-c65 — אבטחה, ארבע כותרות ושלוש מגבלות קצב Upstash, כולן
+PASS. M12-c65 — SEO, מטא-דאטה/JSON-LD/sitemap/robots/canonical, PASS.
 M11-c65 — axe מחדש על כל דף, 240/242 עברו, 2 דולגו בכוונה, אפס הפרת
 WCAG A/AA. M10-c65 — כיסוי טסטים, שש הקטגוריות הקריטיות ב-100% ענפים.
 M09-c65 — STATE CLEAN, אותם 13/15 חוסמים, קומיטים מאחורי פרודקשן 293.
