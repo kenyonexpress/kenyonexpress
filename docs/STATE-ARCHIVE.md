@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q33 (הועבר מ-STATE.md ב-Q34, לשמירה על תקרת 300 שורות)
+
+**Q33 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"ניהול מוצרים, platform_percent/supplier_split דינמיים פר-מוצר, הנחות,
+עץ קטגוריות, ניהול ספקים, חיפוש הזמנות, זיכוי ידני, חיפוש שוברים".
+**אינו קיים בתור האמיתי** (`Q33` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
+לא-קשור — `auth_leaked_password_protection` כבוי ב-Supabase) — אותו דפוס
+כמו Q25-Q32, נבדק לפי תשעת הסעיפים בפועל מול פאנל הניהול.
+
+**כל תשעת הסעיפים קיימים במלואם, אפס שינוי קוד.** פאנל ניהול מלא תחת
+`src/app/(admin)/admin/**` (45+ ראוטים). CRUD מוצרים: רשימה/יצירה/עריכה
+ב-`.../products/{page,new/page,[id]/edit/page}.tsx`, פעולות
+`src/server/actions/admin/products.ts` (`upsertProduct`, `deleteProduct`,
+`bulkSoftDeleteProducts`). `platform_percent` ו-`supplier_split_percent`
+הם עמודות פר-מוצר אמיתיות (`supabase/migrations/070_product_dynamic_
+split.sql:52-53`, לא גלובליות), עם אילוץ DB שסכומן 100
+(`products_split_pair_sums_to_100`), עריכה בטופס `ProductForm.tsx:658-686`,
+מצולמות ל-`order_items` בהזמנה ומוצגות read-only ב-`.../orders/[id]/
+page.tsx`. הנחות: שדה `discount_percent` פר-מוצר בטופס, ועוד מערכת
+קמפיינים נפרדת (`.../discounts/**`, `src/server/actions/admin/
+discounts.ts`). עץ קטגוריות אמיתי עם `parent_id`+`sort_order`
+(`.../categories/**`, `src/lib/category-tree.ts` מונע מעגלים,
+`updateCategorySortOrder`). CRUD ספקים: `.../suppliers/**`,
+`src/server/actions/admin/suppliers.ts` (`upsertSupplier`,
+`setSupplierStatus`, `softDeleteSupplier`). חיפוש הזמנות: `.../orders/
+{page,[id]/page}.tsx`. זיכוי ידני אמיתי מהממשק (לא רק בקשת לקוח): כפתור
+ב-`OrderAdminActions.tsx` עם שדה סיבה, קורא ל-`refundOrder`
+(`src/server/actions/payments/refund.ts:529`), חסום לפי
+`describeRefundBlockers`. חיפוש שוברים: `.../coupons/lookup/page.tsx` +
+`VoucherLookupForm.tsx`, פעולות `src/server/actions/admin/vouchers.ts`
+(`lookupAdminVoucher`, `redeemAdminVoucher`), מאחורי הרשאת
+`requireSection('catalog','read')`.
+
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים 7303/7315 (זהה ל-Q32, אפס שינוי), `rm -rf .next && pnpm build` נקי
+(שרת זמני על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS
+בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
+{width}.png`), זהה בייט-לבייט לבסיס Q31/Q32, נכתב אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` — צפוי, כי לא נגעו בדף הבית.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
 ## Q32 (הועבר מ-STATE.md ב-Q33, לשמירה על תקרת 300 שורות)
 
 **Q32 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**

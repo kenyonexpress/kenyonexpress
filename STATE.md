@@ -1,47 +1,52 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q33)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q34)
 
 ## המשך מ:
 
-**Q33 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"ניהול מוצרים, platform_percent/supplier_split דינמיים פר-מוצר, הנחות,
-עץ קטגוריות, ניהול ספקים, חיפוש הזמנות, זיכוי ידני, חיפוש שוברים".
-**אינו קיים בתור האמיתי** (`Q33` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
-לא-קשור — `auth_leaked_password_protection` כבוי ב-Supabase) — אותו דפוס
-כמו Q25-Q32, נבדק לפי תשעת הסעיפים בפועל מול פאנל הניהול.
+**Q34 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"קונסולת מעלה-תוכן (Content-Uploader) בלי שדות תמחור, ולוח ספק
+(Supplier-View) לקריאה בלבד". **אינו קיים בתור האמיתי** (`Q34` ב-`docs/
+QUESTIONS-FOR-OFIR.md` הוא פריט לא קשור: הצפנת פרטי בנק של ספק), אותו
+דפוס כמו Q25-Q33, נבדק לפי שני הסעיפים בפועל מול הקוד.
 
-**כל תשעת הסעיפים קיימים במלואם, אפס שינוי קוד.** פאנל ניהול מלא תחת
-`src/app/(admin)/admin/**` (45+ ראוטים). CRUD מוצרים: רשימה/יצירה/עריכה
-ב-`.../products/{page,new/page,[id]/edit/page}.tsx`, פעולות
-`src/server/actions/admin/products.ts` (`upsertProduct`, `deleteProduct`,
-`bulkSoftDeleteProducts`). `platform_percent` ו-`supplier_split_percent`
-הם עמודות פר-מוצר אמיתיות (`supabase/migrations/070_product_dynamic_
-split.sql:52-53`, לא גלובליות), עם אילוץ DB שסכומן 100
-(`products_split_pair_sums_to_100`), עריכה בטופס `ProductForm.tsx:658-686`,
-מצולמות ל-`order_items` בהזמנה ומוצגות read-only ב-`.../orders/[id]/
-page.tsx`. הנחות: שדה `discount_percent` פר-מוצר בטופס, ועוד מערכת
-קמפיינים נפרדת (`.../discounts/**`, `src/server/actions/admin/
-discounts.ts`). עץ קטגוריות אמיתי עם `parent_id`+`sort_order`
-(`.../categories/**`, `src/lib/category-tree.ts` מונע מעגלים,
-`updateCategorySortOrder`). CRUD ספקים: `.../suppliers/**`,
-`src/server/actions/admin/suppliers.ts` (`upsertSupplier`,
-`setSupplierStatus`, `softDeleteSupplier`). חיפוש הזמנות: `.../orders/
-{page,[id]/page}.tsx`. זיכוי ידני אמיתי מהממשק (לא רק בקשת לקוח): כפתור
-ב-`OrderAdminActions.tsx` עם שדה סיבה, קורא ל-`refundOrder`
-(`src/server/actions/payments/refund.ts:529`), חסום לפי
-`describeRefundBlockers`. חיפוש שוברים: `.../coupons/lookup/page.tsx` +
-`VoucherLookupForm.tsx`, פעולות `src/server/actions/admin/vouchers.ts`
-(`lookupAdminVoucher`, `redeemAdminVoucher`), מאחורי הרשאת
-`requireSection('catalog','read')`.
+**שני הסעיפים קיימים במלואם, אפס שינוי קוד.** Content-Uploader: תפקיד
+`content_uploader` (`src/lib/admin/roles.ts:4,16,26,47`,
+`src/types/database.ts:5616,5881`). RBAC: `CONTENT_UPLOADER_ACCESS`
+(`src/lib/admin/permissions.ts:28-47`) נועל את כל הסעיפים חוץ מקטלוג
+ל-`'none'`, `canSeeMoney(role)` (שורה 90) מחזיר `false` לתפקיד הזה. UI:
+`ProductForm.tsx` עם prop `hidePricing` (שורה 80,103, שימוש בשורות
+408,502,1390), מוזן מ-`canSeeMoney(session.role)` בשלושת דפי המוצר
+(`products/page.tsx:175`, `new/page.tsx:36`, `[id]/edit/page.tsx:68`).
+אכיפה גם בצד שרת, לא רק UI: `applyUploaderPolicy`
+(`src/lib/admin/uploader-policy.ts`) מוחק `platform_percent`/
+`supplier_split_percent` מכל קלט שהתפקיד הזה שולח וכופה
+`approval_status='pending'`, מכוסה בטסטים (`uploader-prohibitions.
+test.ts`, `permissions.test.ts`).
+
+Supplier-View לקריאה בלבד: `src/app/(supplier)/supplier/page.tsx`
+(240 שורות) הוא לוח סטטיסטיקות בלבד, אפס `<form>`, אפס קריאה ל-server
+action, אפס כפתור מוטציה (נבדק בקריאת הקובץ ישירות). תואם למושג
+המתועד כבר ב-`docs/CARDCOM-ARCHITECTURE.md:464` ("ספק (Supplier-View)
+רואה SELECT בלבד על השורות שלו"). שאר תיקיית `/supplier` (orders,
+products, payouts, scan, settings) כן מכילה פעולות כתיבה
+(`markSupplierItemShipped`, סריקת שוברים, הגשת תמונות/הצעות מחיר), אבל
+אלה פעולות תפעוליות נפרדות מדף הלוח עצמו, לא נוגעות בתמחור, ולא התבקש
+לוח שמבטל גם אותן.
 
 ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
-קבצים 7303/7315 (זהה ל-Q32, אפס שינוי), `rm -rf .next && pnpm build` נקי
+קבצים 7303/7315 (זהה ל-Q33, אפס שינוי), `rm -rf .next && pnpm build` נקי
 (שרת זמני על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS
 בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
-{width}.png`), זהה בייט-לבייט לבסיס Q31/Q32, נכתב אוטומטית
-ל-`docs/UI-PARITY-REPORT.md` — צפוי, כי לא נגעו בדף הבית.
+{width}.png`), זהה בייט לבייט לבסיס Q31-Q33, נכתב אוטומטית
+ל-`docs/UI-PARITY-REPORT.md`, צפוי כי לא נגעו בדף הבית.
 
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**Q33 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q34
+לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
+כל תשעת סעיפי ניהול המוצרים/קטגוריות/ספקים/הזמנות/זיכויים/שוברים כבר
+בנויים במלואם. שער חזותי PASS בשלושת הרוחבים (8.51/9.02/3.95%). ארבעת
+השערים ירוקים.
 
 **Q28..Q32 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q33
 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים, אף אחד לא
