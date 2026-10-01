@@ -1,81 +1,60 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q43)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q44)
 
 ## המשך מ:
 
-**Q43 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"מניעת הונאה: נוגד כפילות מימוש שוברים, הגבלת קצב לפי IP, בדיקות מהירות
-(velocity), לוג אירועים append-only." **אינו בתור האמיתי** (המספור
-ב-`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q42. התיאור
-מזכיר טבלה בשם `coupon_events` — **לא קיימת בריפו** (grep ריק); הממשק
-האמיתי לאותו תפקיד הוא `voucher_redemptions`, append-only באמת (RLS לא
-מעניקה ל-`anon`/`authenticated` אף מדיניות INSERT/UPDATE/DELETE, כל שורה
-מגיעה מ-`redeem_voucher`/`log_voucher_scan`, שני `SECURITY DEFINER`),
-ונושאת `ip_address` כבר מ-085, בפרודקשן.
+**Q44 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד.** "PWA: manifest, service worker, install prompt אחרי
+רכישה ראשונה, offline shell, בקשת הרשאת push אחרי רכישה." **אינו בתור
+האמיתי** (`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו
+Q25-Q43. **כל חמשת הרכיבים כבר בנויים ומחווטים, נבדק מחדש שורה-שורה:**
 
-**נוגד הכפילות וההגבלה לפי חשבון כבר קיימים ונבדקו, ולא נבנו מחדש.**
-`redeem_voucher` (085) עצמה היא ה-UPDATE האטומי שמונע מימוש כפול, ו-
-`check_user_rate_limit` כבר חוסם חשבון יחיד ב-30 סריקות/דקה — שני אלה
-קדמו לפריט הזה ונמדדו בעבר. מה שחסר היה הסתכלות על **צורה** בין סריקות:
-כתובת אחת מפעילה כמה חשבונות ספק, או חשבון שצובר סירובים הרבה יותר מהר
-משאחוז המימוש התקין.
+- **manifest**: `src/app/manifest.ts`, מטא-דאטה טיפוסית (לא קובץ סטטי)
+  כדי שלא תסטה מהאייקונים ש-`scripts/generate-pwa-icons.mjs` בפועל
+  מייצר; `standalone`, עברית/RTL, שלושה קיצורי-דרך לנתיבים אמיתיים.
+- **service worker**: `public/sw.js` — נכסים immutable cache-first,
+  תמונות stale-while-revalidate, מסמכים network-first עם שני fallback
+  (עמוד דפדפתי אחרון → `/offline`), `/api`/`/checkout`/`/cart`/`/account`/
+  `/admin` מוחרגים לגמרי, `push`/`notificationclick` מחווטים עם ולידציה
+  ו-same-origin בלבד.
+- **install prompt**: `src/components/pwa/InstallPrompt.tsx`, מחווט
+  גלובלית ב-`layout.tsx`. **לא "אחרי רכישה ראשונה" כפרומפט דפדפן כפוי** —
+  זו החלטה תיעודית קודמת (`docs/MEGA-BLOCK-AUDIT.md` STEP 43, 02.09):
+  פרומפט מאולץ הוא anti-pattern מתועד, ו-Chrome שומר event יחיד
+  (`beforeinstallprompt`) שניתן להציג רק פעם. המימוש בפועל גולמי יותר
+  ונכון יותר: נדלק אחרי אינטראקציה אמיתית (לא מיד בטעינה), מוסתר בנתיבי
+  כסף, נשמר once-ever בלי "לנדנד". **הצעת push אחרי רכישה כן קיימת
+  וממוקדת ברכישה**, ראו הבא.
+- **offline shell**: `src/app/offline/page.tsx`, עברית, ה-fallback
+  שה-SW מגיש כשאין גם עמוד שמור וגם אין רשת.
+- **בקשת הרשאת push אחרי רכישה**: שני רכיבים על `/checkout/return`
+  (`src/app/(store)/checkout/return/page.tsx:226-230`) — ברכישה ראשונה
+  `FirstPurchaseBanner` (passkey + "הכל באפליקציה"), בכל רכישה אחרת
+  `PostPurchasePushPrompt`. **אף אחד לא קורא ל-`Notification.
+  requestPermission()` ישירות** — שניהם מקשרים ל-`/account/notifications`
+  שם `PushOptIn` מבקש מכפתור מפורש, כי דיאלוג דפדפן לא-מבוקש בדיוק אחרי
+  תשלום הוא התבנית שמייצרת "Block" קבוע. Snooze של 30 יום
+  (`lib/pwa/snooze`), לא "לעולם לא" — בניגוד ל-`InstallPrompt` שהוא
+  once-ever, כי הרשאת push לא "נגמרת" אחרי שנדחתה כמו ה-event של Chrome.
 
-**מה שנבנה: `src/lib/fraud/redemption-velocity.ts` + `src/server/fraud/
-redemption-signals.ts`, מחווט בשתי נקודות הקצה.** `checkRedemptionVelocity`
-(טהור) בודק שלושה דגלים מול `voucher_redemptions`: שלושה חשבונות ספק+
-מכתובת אחת בשעה (`ip_shared_across_accounts`), 60 ניסיונות מכתובת אחת
-בשעה (`ip_burst`), 20 תוצאות לא-מוצלחות מחשבון אחד בשעה
-(`account_high_failure_rate`) — כל סף נבחר מעל מה שמשמרת אמיתית עם כמה
-קופות עושה. `recordRedemptionSignals` קורא את שני המונים מ-
-`voucher_redemptions` ורושם אזהרה ל-Sentry דרך `log.warn` כשדגל נדלק;
-**לעולם לא זורק ולעולם לא משנה את התשובה ללקוח** — לא ב-read שנכשל (מדווח
-אפס, לא קורס) ולא כשה-client עצמו זורק. מחווט ב-`redeem/route.ts` (אחרי
-ההחלטה, מדולג על replay כי אין שורה חדשה לספור) וב-`redeem-batch/route.ts`
-(פעם אחת לכל הדראם, לא פעם לפריט).
+**בדיקה בפועל, בלי לשנות קוד.** `pnpm type-check` נקי, `pnpm lint` נקי
+(12 שערים), `pnpm test` מלא 613/613 קבצים 7328/7340 (12 מדולגים, זהה
+בדיוק ל-Q43 — אפס דריפט), `rm -rf .next && pnpm build` נקי (שרת זמני
+בפורט 3314, cwd מאומת — 3311/3312/3313 היו תפוסים על ידי סשנים מקבילים
+אחרים על אותו ריפו). שער חזותי PASS בשלושת הרוחבים, foreground,
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
+**8.51%/9.02%/3.95%** (380/768/1440), זהה בדיוק למדידת Q41/Q42/Q43,
+אפס דריפט (אין נגיעה ב-UI).
 
-**למה בלי חסימה אוטומטית, במתכוון.** כתובת ה-IP מגיעה מ-`X-Forwarded-For`,
-כותרת שלקוח יכול לזייף, ואם Vercel דורסת אותה בפני האפליקציה הזו — שאלה
-פתוחה ולא מאומתת (`docs/QUESTIONS-FOR-OFIR.md` #14). חסימת מימוש שה-RPC
-כבר אישר, על סמך אות לא מאומת כזה, עלולה לעלות לקופון אמיתי כדי למנוע
-הונאה שלא נמדדה מעולם בחנות הזו — אותו trade-off ש-`risk-score.ts` כבר
-מסרב לעשות בקופה. זה הופך את המודול לחלק הניטור-בלבד של שכבת ההונאה
-(כמו `risk-score.ts`), לא לחלק המחסום (`velocity.ts`) — מנתב תשומת לב,
-לא מחליט.
+קבצים ששונו: `STATE.md` בלבד.
 
-**בדיקה בפועל.** ארבעה קבצים חדשים (`redemption-velocity.ts`+`.test.ts`,
-`redemption-signals.ts`+`.test.ts`, 12 טסטים חדשים) ושינוי בשתי נקודות
-קצה + שני טסטי האינטגרציה שלהן (3 טסטים נוספים מאמתים חיווט: קריאה אחת
-לדראם שלם לא לכל פריט, מדלג על replay, רץ גם על סירוב לא רק על הצלחה).
-`pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test` מלא
-613/613 קבצים 7328/7340 (12 מדולגים, +2 קבצים +15 טסטים מ-Q42),
-`rm -rf .next && pnpm build` נקי (שרת זמני בפורט 3312, cwd מאומת —
-3311 היה תפוס על ידי סשן מקביל אחר על אותו ריפו). שער חזותי PASS
-בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
---widths=380,768,1440`: **8.51%/9.02%/3.95%** (380/768/1440), זהה
-בדיוק למדידת Q41/Q42, אפס דריפט (אין נגיעה ב-UI).
-
-קבצים ששונו: `src/lib/fraud/redemption-velocity.ts`,
-`src/lib/fraud/redemption-velocity.test.ts`,
-`src/server/fraud/redemption-signals.ts`,
-`src/server/fraud/redemption-signals.test.ts`,
-`src/app/api/supplier/vouchers/redeem/route.ts`,
-`src/app/api/supplier/vouchers/redeem/route.test.ts`,
-`src/app/api/supplier/vouchers/redeem-batch/route.ts`,
-`src/app/api/supplier/vouchers/redeem-batch/route.test.ts`,
-`docs/UI-PARITY-REPORT.md`, `STATE.md`.
-
-**Q25..Q42 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q43
-לשמירה על תקרת 300 שורות).** שישה-עשר פריטים חיצוניים חד-פעמיים, אף אחד
-לא בתור האמיתי. שלושה-עשר נמצאו DONE ובנויים במלואם ללא דריפט (מתנת
-קופון, עמודי משפט, יצירת קשר/הצטרפות ספקים, קונסולת מעלה-תוכן ולוח ספק
-לקריאה, ניהול מוצרים/ספקים/הזמנות, דף ספק, התראות, חשבונית/wa.me בתודה,
-guest checkout, עריכת סל, תפוגת שובר T-7/T-1, שיתוף הפניות עם מעקב,
-ניהול תוכנית שותפים). Q27: שני תיקוני קוד אמיתיים (סיידבר `open` כברירת
-מחדל, באג 0x0 ב-`lazy` על גריד הקטגוריה ב-380px). Q32: שעות פתיחה וקישור
-ביקורות גוגל בדף ספק. Q39, Q42: BLOCKED, תפוגת קאשבק/הפניה בארנק ודף
-תג/הטבות מועדון דורשים החלטת מדיניות/מוצר של אופיר, אפס שינוי קוד בכל
-אחד. שער חזותי PASS בכל מה שנמדד (3.53-9.07% בשלושת הרוחבים); ארבעת
-השערים ירוקים בכל השישה-עשר.
+**Q25..Q43 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q44
+לשמירה על תקרת 300 שורות).** שבעה-עשר פריטים חיצוניים חד-פעמיים, אף אחד
+לא בתור האמיתי. שלושה-עשר נמצאו DONE ובנויים במלואם ללא דריפט, אחד
+(Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים BLOCKED
+(מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32) שעות
+פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים ירוקים
+בכל השבעה-עשר.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,

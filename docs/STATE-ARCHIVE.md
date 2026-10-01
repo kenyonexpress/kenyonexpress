@@ -2,6 +2,82 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q43, Q25..Q42 (הועברו מ-STATE.md ב-Q44, לשמירה על תקרת 300 שורות)
+
+**Q43 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"מניעת הונאה: נוגד כפילות מימוש שוברים, הגבלת קצב לפי IP, בדיקות מהירות
+(velocity), לוג אירועים append-only." **אינו בתור האמיתי** (המספור
+ב-`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q42. התיאור
+מזכיר טבלה בשם `coupon_events` — **לא קיימת בריפו** (grep ריק); הממשק
+האמיתי לאותו תפקיד הוא `voucher_redemptions`, append-only באמת (RLS לא
+מעניקה ל-`anon`/`authenticated` אף מדיניות INSERT/UPDATE/DELETE, כל שורה
+מגיעה מ-`redeem_voucher`/`log_voucher_scan`, שני `SECURITY DEFINER`),
+ונושאת `ip_address` כבר מ-085, בפרודקשן.
+
+**נוגד הכפילות וההגבלה לפי חשבון כבר קיימים ונבדקו, ולא נבנו מחדש.**
+`redeem_voucher` (085) עצמה היא ה-UPDATE האטומי שמונע מימוש כפול, ו-
+`check_user_rate_limit` כבר חוסם חשבון יחיד ב-30 סריקות/דקה — שני אלה
+קדמו לפריט הזה ונמדדו בעבר. מה שחסר היה הסתכלות על **צורה** בין סריקות:
+כתובת אחת מפעילה כמה חשבונות ספק, או חשבון שצובר סירובים הרבה יותר מהר
+משאחוז המימוש התקין.
+
+**מה שנבנה: `src/lib/fraud/redemption-velocity.ts` + `src/server/fraud/
+redemption-signals.ts`, מחווט בשתי נקודות הקצה.** `checkRedemptionVelocity`
+(טהור) בודק שלושה דגלים מול `voucher_redemptions`: שלושה חשבונות ספק+
+מכתובת אחת בשעה (`ip_shared_across_accounts`), 60 ניסיונות מכתובת אחת
+בשעה (`ip_burst`), 20 תוצאות לא-מוצלחות מחשבון אחד בשעה
+(`account_high_failure_rate`) — כל סף נבחר מעל מה שמשמרת אמיתית עם כמה
+קופות עושה. `recordRedemptionSignals` קורא את שני המונים מ-
+`voucher_redemptions` ורושם אזהרה ל-Sentry דרך `log.warn` כשדגל נדלק;
+**לעולם לא זורק ולעולם לא משנה את התשובה ללקוח** — לא ב-read שנכשל (מדווח
+אפס, לא קורס) ולא כשה-client עצמו זורק. מחווט ב-`redeem/route.ts` (אחרי
+ההחלטה, מדולג על replay כי אין שורה חדשה לספור) וב-`redeem-batch/route.ts`
+(פעם אחת לכל הדראם, לא פעם לפריט).
+
+**למה בלי חסימה אוטומטית, במתכוון.** כתובת ה-IP מגיעה מ-`X-Forwarded-For`,
+כותרת שלקוח יכול לזייף, ואם Vercel דורסת אותה בפני האפליקציה הזו — שאלה
+פתוחה ולא מאומתת (`docs/QUESTIONS-FOR-OFIR.md` #14). חסימת מימוש שה-RPC
+כבר אישר, על סמך אות לא מאומת כזה, עלולה לעלות לקופון אמיתי כדי למנוע
+הונאה שלא נמדדה מעולם בחנות הזו — אותו trade-off ש-`risk-score.ts` כבר
+מסרב לעשות בקופה. זה הופך את המודול לחלק הניטור-בלבד של שכבת ההונאה
+(כמו `risk-score.ts`), לא לחלק המחסום (`velocity.ts`) — מנתב תשומת לב,
+לא מחליט.
+
+**בדיקה בפועל.** ארבעה קבצים חדשים (`redemption-velocity.ts`+`.test.ts`,
+`redemption-signals.ts`+`.test.ts`, 12 טסטים חדשים) ושינוי בשתי נקודות
+קצה + שני טסטי האינטגרציה שלהן (3 טסטים נוספים מאמתים חיווט: קריאה אחת
+לדראם שלם לא לכל פריט, מדלג על replay, רץ גם על סירוב לא רק על הצלחה).
+`pnpm type-check` נקי, `pnpm lint` נקי (12 שערים), `pnpm test` מלא
+613/613 קבצים 7328/7340 (12 מדולגים, +2 קבצים +15 טסטים מ-Q42),
+`rm -rf .next && pnpm build` נקי (שרת זמני בפורט 3312, cwd מאומת —
+3311 היה תפוס על ידי סשן מקביל אחר על אותו ריפו). שער חזותי PASS
+בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.51%/9.02%/3.95%** (380/768/1440), זהה
+בדיוק למדידת Q41/Q42, אפס דריפט (אין נגיעה ב-UI).
+
+קבצים ששונו: `src/lib/fraud/redemption-velocity.ts`,
+`src/lib/fraud/redemption-velocity.test.ts`,
+`src/server/fraud/redemption-signals.ts`,
+`src/server/fraud/redemption-signals.test.ts`,
+`src/app/api/supplier/vouchers/redeem/route.ts`,
+`src/app/api/supplier/vouchers/redeem/route.test.ts`,
+`src/app/api/supplier/vouchers/redeem-batch/route.ts`,
+`src/app/api/supplier/vouchers/redeem-batch/route.test.ts`,
+`docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
+**Q25..Q42 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q43
+לשמירה על תקרת 300 שורות).** שישה-עשר פריטים חיצוניים חד-פעמיים, אף אחד
+לא בתור האמיתי. שלושה-עשר נמצאו DONE ובנויים במלואם ללא דריפט (מתנת
+קופון, עמודי משפט, יצירת קשר/הצטרפות ספקים, קונסולת מעלה-תוכן ולוח ספק
+לקריאה, ניהול מוצרים/ספקים/הזמנות, דף ספק, התראות, חשבונית/wa.me בתודה,
+guest checkout, עריכת סל, תפוגת שובר T-7/T-1, שיתוף הפניות עם מעקב,
+ניהול תוכנית שותפים). Q27: שני תיקוני קוד אמיתיים (סיידבר `open` כברירת
+מחדל, באג 0x0 ב-`lazy` על גריד הקטגוריה ב-380px). Q32: שעות פתיחה וקישור
+ביקורות גוגל בדף ספק. Q39, Q42: BLOCKED, תפוגת קאשבק/הפניה בארנק ודף
+תג/הטבות מועדון דורשים החלטת מדיניות/מוצר של אופיר, אפס שינוי קוד בכל
+אחד. שער חזותי PASS בכל מה שנמדד (3.53-9.07% בשלושת הרוחבים); ארבעת
+השערים ירוקים בכל השישה-עשר.
+
 ## Q42, Q41 (הועברו מ-STATE.md ב-Q43, לשמירה על תקרת 300 שורות)
 
 **Q42 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
