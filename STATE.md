@@ -1,85 +1,56 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q40)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q41)
 
 ## המשך מ:
 
-**Q40 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"תוכנית ההפניות, כפתורי שיתוף ציבוריים ב-`/r/[code]`, עם מעקב". **אינו
-בתור האמיתי** (המספור ב-`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין
-Q40), אותו דפוס כמו Q25-Q39.
+**Q41 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"ניהול תוכנית שותפים, עמלה לפי קמפיין, זיכוי לארנק." **אינו בתור האמיתי**
+(המספור ב-`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין Q40/Q41), אותו דפוס
+כמו Q25-Q40.
 
-**מה היה חסר, נמדד לא הונח.** `ReferralShareCard` (משותף ל-`/account/
-referrals` ול-`/account/affiliate`, אותו `profiles.referral_code`) הציג
-קוד וקישור להעתקה בלבד: אפס כפתורי ערוץ (וואטסאפ/שיתוף פלטפורמה/פייסבוק/
-טלגרם, שכבר קיימים בדף המוצר ב-`ProductShareRow`), ואפס מעקב אנליטיקס
-על שיתוף הפניה. `referralShareUrl()` (`lib/referrals/code.ts`) היה קיים,
-בדוק ומעולם לא נקרא משום מקום: פונקציה גמורה בלי צרכן. נתיב `/r/[code]`
-לא היה קיים בכלל.
+**נמדד בנוי במלואו, אפס שינוי קוד.** עמלה-לפי-קמפיין: `affiliate_campaigns`
+(244, ממתינה) עם `commission_bp` פר-קמפיין, `src/lib/affiliates/commission.ts`
+בוחר את הקמפיין הצר ביותר (מוצר > קטגוריה > כל האתר) ומחשב `applyBp` על
+הבסיס ששולם באתר, עם תקרת קומיסיה, סף הזמנה מינימלי ותקציב קמפיין.
+זיכוי לארנק: `src/server/affiliates/pay.ts`
+(`payAffiliateConversion`) מעביר כסף דרך `fn_wallet_transfer` מ-
+`platform:cashback_reserve` לחשבון הארנק של השותף, עם מפתח אידמפוטנטי
+`affiliate:<conversion id>`, ונתיב אחד משותף לשני הקוראים: `finalize`
+(אוטומטי, החלטה נקייה) ותור האדמין (`ConversionActionsClient.tsx` →
+`decideAffiliateConversion` → אותו `payAffiliateConversion`, אישור ידני על
+שורה שסומנה). ניהול קמפיינים ב-UI: `CampaignForm.tsx` + `/admin/affiliates`
+טאב "קמפיינים ועמלות" (CRUD מלא, אחוז קומיסיה/סף/תקרה/תקציב/תאריכים/
+היקף מוצר-קטגוריה). כל ההחלטה חסרת-IO ונבדקת לבד
+(`commission.test.ts`, 217 שורות), והחיווט בין ארבעת נקודות הקריאה מוצמד
+ב-`src/server/affiliates/wired.test.ts` (לא טקסט חוק — קוד אמיתי, לפי
+אותו דפוס כמו `referrals/wired.test.ts`).
 
-**מה נבנה.** כפתורי שיתוף (וואטסאפ מסומן, שיתוף פלטפורמה דרך
-`navigator.share`, פייסבוק/טלגרם בנפילה) נוספו ל-`ReferralShareCard`,
-חוזרים על אותם רכיבים משותפים שדף המוצר כבר משתמש בהם. טקסט חדש,
-`buildReferralShareMessage` ב-`lib/share/message.ts`, נוסף לרשימת
-"בוני הטקסט המאושרים" בשער `share-buttons.test.tsx`, בכוונה בלי לנקוב
-סכום: אותו רכיב מרנדר על שני עמודים שמשלמים בונוס שונה. כפתור הוואטסאפ
-מקבל `source` אופציונלי חדש (`'referral'`/`'affiliate'`) שמתווסף ל-`props`
-של אירוע `whatsapp_click` הקיים כבר ברשימה הלבנה
-(`fn_ingest_analytics_events`, `required_props` ריק עבורו), כך שאין צורך
-במיגרציה: הפרופס הוא `jsonb` חופשי, רק שמות השדות החובה נבדקים.
+**מה שחסר הוא בלעדי לחוסם #3 הקיים, לא לפריט הזה.** `affiliate_campaigns`
+עדיין `migrations/pending/244_affiliate_campaigns.sql`, לא הוחלה; `convert.ts`
+קורא 42P01 כאזהרה (`affiliates.campaigns_table_missing`) ולא כקריסה, בדיוק
+כמו שמתועד ב-STATE.md חוסם #3 כבר. אין פעולת סוכן נדרשת כאן: המיגרציה
+ממתינה לאישור אופיר כמו שהייתה, לא נכתבה מיגרציה חדשה כי 244 כבר מכילה
+את מה שהתכונה דורשת.
 
-**`/r/[code]` נבנה כנתיב ציבורי חדש**, `src/app/r/[code]/route.ts`, מפנה
-(308) ל-`/?ref=<code>` בדיוק כמו כל קישור שיתוף אחר באתר: לא כותב עוגייה
-בעצמו (ה-capture היחיד נשאר `src/proxy.ts`, לפי ה"ONE PARAMETER" שכבר
-מתועד ב-`share-url.ts` ונבדק ב-`wired.test.ts`). קוד שגוי מפנה הביתה
-בלי `ref`, כמו `/c/[code]`. מוגבל קצב חדש, `referral_link_visit`,
-60/שעה לפי IP (`lib/rate-limit/policies.ts` + `docs/RATE-LIMITS.md`, עובר
-את שער המלאי הסטטי). משמש כברירת מחדל רק בדף ה-referrals עצמו
-(`buildShareUrl` חדש, אופציונלי, ב-`ReferralShareCard`); `/account/affiliate`
-ממשיך עם `/?ref=` הרגיל בלי שינוי, כדי לא לתייג שיתוף שותפים כ-`referral_program`.
+**בדיקה בפועל, אפס שינוי קוד.** `pnpm type-check` נקי, `pnpm lint` נקי (12
+שערים כולל `docs-path-audit`), `pnpm test` מלא 611/611 קבצים 7313/7325 (12
+מדולגים, זהה ל-Q40), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט 3311,
+cwd מאומת, `/r/[code]` ושאר הנתיבים כרגיל). שער חזותי PASS בשלושת הרוחבים,
+foreground, `--baseline=refs/ke_live_{width}.png`: **8.51%/9.02%/3.95%**
+(380/768/1440) — זהה בדיוק למדידת Q40/Q31, אפס דריפט (אין נגיעה בדף
+הבית).
 
-**קונפליקט נמצא ותועד, לא "תוקן" בלי החלטה.** `docs/ARCHITECTURE-API-CONTRACTS.md`
-סעיף B4 כבר תיאר `/r/[code]` כקישור שיתוף מכירות גנרי (מפנה למוצר/קופון
-ספציפי, קוד בפורמט שונה לגמרי, אירוע `page_view`+`share_code`, RL3
-120/דקה), מסמך שהנתיב בו לא היה קיים בריפו (נמצא דרך
-`docs/known-dangling-paths.json`). **המסמך הזה מסומן מיושן בעצמו מ-01.09.2026**
-("המסמך המחייב הוא הקוד עצמו"), ושום דבר בקוד/בטסטים לא מממש את ה-B4
-המתואר (אין טבלת מיפוי קוד-יעד, אין `share_code`). ה-B4 נשאר כפי שהוא
-(לא נערך, המסמך כבר לא מחייב), ושורת ה-ledger ש"תלתה" (`src/app/r/[code]/route.ts`
-לא קיים) הוסרה דרך `node scripts/docs-path-audit.mjs --write` כי הנתיב
-קיים עכשיו, כפי שהשער עצמו מבקש.
-
-**בדיקה בפועל.** טסטים חדשים: `message.test.ts` (`buildReferralShareMessage`),
-`share-buttons.test.tsx` (השער המעודכן), `src/app/r/[code]/route.test.ts`
-(שמונה מקרים: קוד תקין, נירמול, אין UTM, קוד פגום, אין בזבוז תקציב קצב
-על קוד פגום, סירוב על תקציב מוצה, מפתח לפי IP, אפס `set-cookie`). ארבעת
-השערים: type-check נקי, lint נקי כולל `docs-path-audit` אחרי העדכון, test
-מלא 611/611 קבצים 7313/7325 (12 מדולגים, זהה למצב קודם פלוס הטסטים
-החדשים), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט 3311, cwd
-מאומת, `/r/[code]` מופיע ברשימת הנתיבים כ-`ƒ` דינמי). שער חזותי PASS
-בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_{width}.png`,
-foreground, קומיט נוכחי), אפס דריפט מ-Q39 (אין נגיעה בדף הבית).
-
-קבצים ששונו: `src/components/account/ReferralShareCard.tsx`,
-`src/components/shared/WhatsAppShareButton.tsx`,
-`src/components/shared/share-buttons.test.tsx`, `src/lib/share/message.ts`,
-`src/lib/share/message.test.ts`, `src/lib/rate-limit/policies.ts`,
-`docs/RATE-LIMITS.md`, `docs/known-dangling-paths.json`,
-`src/app/r/[code]/route.ts` (חדש), `src/app/r/[code]/route.test.ts` (חדש),
-`src/app/(account)/account/referrals/page.tsx`,
-`src/app/(account)/account/affiliate/page.tsx`, `docs/UI-PARITY-REPORT.md`,
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
-
-**Q27..Q39 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-Q40 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטים חיצוניים חד-פעמיים,
-אף אחד לא בתור האמיתי. אחד-עשר נמצאו DONE ובנויים במלואם ללא דריפט
-(מתנת קופון, עמודי משפט, יצירת קשר/הצטרפות ספקים, קונסולת מעלה-תוכן
-ולוח ספק לקריאה, ניהול מוצרים/ספקים/הזמנות, דף ספק, התראות, חשבונית/
-wa.me בתודה, guest checkout, עריכת סל, תפוגת שובר T-7/T-1). Q27: שני
-תיקוני קוד אמיתיים (סיידבר `open` כברירת מחדל, באג 0x0 ב-`lazy` על
-גריד הקטגוריה ב-380px). Q39: BLOCKED, תפוגת קאשבק/הפניה בארנק דורשת
-החלטת מדיניות של אופיר (משך, היקף), אפס שינוי קוד. שער חזותי PASS בכל
-מה שנמדד (3.53-9.07% בשלושת הרוחבים, חלק ב-1440 בלבד לפי מגבלת
-reference); ארבעת השערים ירוקים בכל השלושה-עשר.
+**Q25..Q40 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q41
+לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטים חיצוניים חד-פעמיים, אף אחד
+לא בתור האמיתי. שנים-עשר נמצאו DONE ובנויים במלואם ללא דריפט (מתנת קופון,
+עמודי משפט, יצירת קשר/הצטרפות ספקים, קונסולת מעלה-תוכן ולוח ספק לקריאה,
+ניהול מוצרים/ספקים/הזמנות, דף ספק, התראות, חשבונית/wa.me בתודה, guest
+checkout, עריכת סל, תפוגת שובר T-7/T-1, שיתוף הפניות עם מעקב). Q27: שני
+תיקוני קוד אמיתיים (סיידבר `open` כברירת מחדל, באג 0x0 ב-`lazy` על גריד
+הקטגוריה ב-380px). Q32: שעות פתיחה וקישור ביקורות גוגל בדף ספק. Q39:
+BLOCKED, תפוגת קאשבק/הפניה בארנק דורשת החלטת מדיניות של אופיר, אפס שינוי
+קוד. שער חזותי PASS בכל מה שנמדד (3.53-9.07% בשלושת הרוחבים); ארבעת
+השערים ירוקים בכל הארבעה-עשר.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,
