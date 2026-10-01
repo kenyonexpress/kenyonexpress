@@ -1,32 +1,29 @@
-RESUME FROM: M18-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c67 - DONE, RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט)
+RESUME FROM: M01-c68
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c67 - DONE, STATE.md תחת תקרה, כפילות ארכיון תוקנה)
 
 ## המשך מ:
 
-**M17-c67 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks" — זהה למילה למשימת M17-c66 (01.10.2026),
-שהיא זו שמצאה ותיקנה leak אמיתי (`HeroSlider.tsx`, חמש פסקאות פרומו
-עם `dir="ltr"` שרוד מ-Electro). **נבדק מחדש כאן, אפס דריפט.**
-`git log 9078252c8..HEAD` (commit התיקון) על שני קבצי `HeroSlider.tsx`,
-`HomepageSections.tsx`, `e2e/home-rtl.spec.ts`, `e2e/rtl-three-widths.spec.ts`,
-`e2e/rtl-mobile.spec.ts`, `src/app/(store)/product`, `src/app/(store)/page.tsx`
-מראה קומיט אחד בלבד (`7006b3da7`, M09-c67, un-export שתי קבועים
-פנימיים) — לא נוגע ל-RTL. שתי ההתייחסויות ל-`dir="ltr"` שנמצאו ב-grep
-על `HeroSlider.tsx` הן בתוך הערת קוד שמסבירה את התיקון ההיסטורי, לא
-תכונת JSX בפועל (`text-end` נשאר במקום). **אומת מחדש ברמת הדף:**
-`pnpm start -p 4523` עצמאי על `.next` קיים, `E2E_BASE_URL=http://localhost:4523`:
-`e2e/home-rtl.spec.ts`+`e2e/rtl-three-widths.spec.ts`+`e2e/rtl-mobile.spec.ts`
-**112/112 עברו** (chromium+mobile-chrome), כולל "every ltr node on the
-page is on the allow-list". סריקת DOM ישירה על `/product/צימר-מאסטר`
-אחרי hydration: **2 צמתים `direction:ltr` בלבד**, זהה ל-M17-c66
-(`.pdp-summary__meta` ללא SKU, ואינפוט email) — שניהם לגיטימיים, לא
-leak. **לא נדרש תיקון קוד.** ארבעת השערים: `type-check` נקי, `lint`
-נקי (12 שערים, כולל `rtl-logical-gate`), `test` 614/614 קבצים,
-7337/7349 עברו (12 מדולגים, זהה), `build`
+**M18-c67 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md". **`wc -l STATE.md` לפני
+השינוי הזה החזיר 295, מתחת לתקרת 300 — אין חריגה לתקן.** נמצאה כפילות:
+קומיט M17-c67 (`58d75006a`) כתב את הבלוק המלא של M17-c67 עצמו
+ל-`docs/STATE-ARCHIVE.md` (בטעות, לפני זמנו — הכיווץ של פריט שייך
+לפריט הבא בתור, לא לעצמו) מבלי לכווץ אותו ב-`STATE.md`, כך שהטקסט
+המלא התקיים פעמיים. `diff` בין `docs/STATE-ARCHIVE.md` (שורות 5-29)
+ל-`STATE.md` (שורות שהוסרו כאן) אישר זהות מלאה — **הועבר כבר, לא
+הועתק שוב**: הבלוק המלא ב-`STATE.md` כווץ לשורה אחת כאן, בלי להוסיף
+עוד עותק לארכיון. אפס שינוי קוד. ארבעת השערים הורצו ישירות על הענף:
+`type-check` נקי, `lint` נקי (12 שערים, זהה ל-M17-c67), `test` 614/614
+קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build`
 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523 pnpm
-build`) exit 0 נקי. לא פריט חזותי חדש (אין שינוי UI בפריט הזה עצמו),
-`compare.mjs` לא נדרש (תקדים M04-c66..M16-c67; השער החזותי על התיקון
-עצמו כבר נמדד PASS ב-M17-c66). קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+build`) exit 0 נקי. לא פריט חזותי — אין שינוי UI, `compare.mjs` לא
+נדרש. קבצים: `STATE.md` בלבד (הארכיון כבר החזיק את התוכן).
+
+**M17-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M18-c67 לשמירה על תקרת 300 שורות).** RTL על `/` ו-`/product` נבדק
+מחדש, אפס דריפט מ-M17-c66 (שם נמצא ותוקן leak אמיתי ב-`HeroSlider.tsx`).
+112/112 טסטי RTL עברו על build טרי, סריקת DOM על דף מוצר הראתה 2
+צמתים `ltr` לגיטימיים בלבד. ארבעת השערים ירוקים.
 
 **M04-c67..M16-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M17-c67 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי אימות-בלבד/תחזוקה,
