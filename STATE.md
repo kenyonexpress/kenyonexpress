@@ -273,6 +273,19 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
     ה-ref המקומי המבולבל (`git branch -f main origin/main`, לא מיזוג
     ולא מחיקה) — החלטה של אופיר.
 
+14. **`kenyonexpress.co.il` עצמו נסרב כ-live reference ב-`scripts/compare.mjs`
+    (נמדד לראשונה ב-Q31, 01.10.2026, `--page=home`)**: ה-DNS כבר מצביע
+    לפריסת Vercel שלנו (חוסם #2 למעלה), כך שניווט חי לדף הבית מחזיר את
+    הבנייה שלנו ("live side is our-build", REFUSED, לא PASS שקרי). מאותו
+    רגע **כל מדידה על `home` חייבת `--baseline='refs/ke_live_{width}.png'`**
+    (קיים בשלושת הרוחבים, נבדק PASS ב-Q31: `8.51%`/`9.02%`/`3.95%`). לדף
+    המוצר יש כבר באותו תבנית (`refs/ke_live_product_{width}.png`, Q05b).
+    **לא נבדק**: אם `category`/`products`/`search` נתקלים באותו סירוב —
+    יש להם רק צילום בודד לא-ממותג-רוחב (`refs/live-{category,products,
+    search}.png`), לא `{width}` לכל רוחב, כך שהם עלולים להיתקע ללא reference
+    תקין בכלל. בדיקה והקפאת reference תלת-רוחבי לשלושתם, אם יידרש מדד
+    חזותי עליהם, היא עבודה של פריט עתידי.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 הרשימה המלאה, ממוזגת עם `docs/LAUNCH-READINESS.md` וללא כפילויות, עברה
