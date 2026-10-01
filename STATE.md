@@ -1,47 +1,25 @@
-RESUME FROM: M05-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c70 - DONE, pnpm type-check נבדק מחדש, אפס דריפט)
+RESUME FROM: M06-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c70 - DONE, pnpm test נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M04-c70 - DONE (02.10.2026).** "pnpm type-check fix drift commit" —
-זהה במהות ל-M04-c69. `git diff 638464016..HEAD -- src public
-package.json pnpm-lock.yaml scripts next.config.ts tsconfig.json` ריק
-(אפס שינוי קוד מאז M03-c70), עץ עבודה נקי. `tsc --noEmit` יצא קוד 0,
-אפס שגיאות. `lint` ירוק (12 שערים, 2037 קבצים). `test` 614/614 קבצים,
-7337/7349 (12 מדולגים) — זהה ל-M03-c70/M01-c70, אפס דריפט. `build` לא
-הורץ מחדש: `pnpm start` חי על PID 84228 עם `.next/BUILD_ID` שאומת ירוק
-ב-M01-c70 (סיכון OOM, ראו `concurrent-worktree-builds-oom`). שום שינוי
-קוד לא נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M05-c70 - DONE (02.10.2026).** "pnpm test fix drift commit" — זהה
+במהות ל-M05-c69. `git status` נקי, `git diff 0f6709c9f..HEAD -- src
+public package.json pnpm-lock.yaml scripts next.config.ts
+tsconfig.json` ריק (אפס שינוי קוד מאז M04-c70). `test` 614/614 קבצים,
+7337/7349 עברו (12 מדולגים) — זהה ל-M04-c70/M03-c70/M01-c70, אפס
+דריפט. `type-check` יצא קוד 0, `lint` ירוק (12 שערים, 2037 קבצים, אפס
+תיקונים). `build` לא הורץ מחדש: `pnpm start` חי על אותו PID 84228 עם
+`.next/BUILD_ID` `7usgLVQXhLG29nYBQp1nK` (אותו build שאומת ב-M01-c70,
+סיכון OOM, ראו `concurrent-worktree-builds-oom`), `curl` ל-`/` החזיר
+`200`. שום שינוי קוד לא נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M03-c70 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/category sample" — זהה למילה למשימת M03-c69. שרת `pnpm start` על 3311
-(PID 84228, אותו שרת ששימש את M01-c70/M02-c70) אומת לפני המדידה:
-`.next/BUILD_ID` `7usgLVQXhLG29nYBQp1nK`, `git diff ab81316c9..HEAD --
-src public package.json pnpm-lock.yaml scripts next.config.ts
-tsconfig.json` ריק (אפס שינוי קוד מאז אישור ארבעת השערים ב-M01-c70).
-`curl` ל-`/category/hot-deals` החזיר `200`. **מדידה אמיתית, בפורגראונד,
-שלושה רוחבים, מול `refs/electro_shop_{width}.png` (Electro `/shop/`,
-slug מקומי קבוע `hot-deals`):**
-
-| רוחב | ציון (both-painted) | סטטוס | overall | הערות |
-|---|---|---|---|---|
-| 380 | 3.53% | PASS | 29.59% | ref blank 9.63%, ours blank 16.43% |
-| 768 | 2.52% | PASS | 31.47% | ref blank 9.4%, ours blank 19.54% |
-| 1440 | 1.69% | PASS | 18.02% | ref blank 5.05%, ours blank 11.27% |
-
-שלושתם זהים ל-100% לציוני M03-c69/M03-c68/M03-c66/M03-c67 — **אפס
-דריפט**. אזהרת `HEIGHT RATIO` הופיעה (0.53x ב-380, 2 כרטיסי מוצר
-בצדנו) — לגיטימית, זהה לריצות PASS קודמות. `type-check` נקי (exit 0),
-`lint` ירוק (12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614
-קבצים, 7337/7349 עברו (12 מדולגים) — זהה ל-M01-c70/M05-c69, אפס
-דריפט. `build` לא הורץ מחדש: שרת `pnpm start` חי על אותו `.next`
-(סיכון OOM, סוכנים מקבילים), ואין שינוי קוד מאז הבנייה האחרונה
-(M01-c70 אישר אותה ירוקה). קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md` (נכתב ע"י השער).
-
-**M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
-כווצו לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70 וב-M03-c70
-לשמירה על תקרת 300 שורות).** M02-c70: שער חזותי מוצר נמדד מחדש, אפס
+**M04-c70, M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא
+ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69, M14-c69, M17-c69,
+M01-c70, M02-c70, M03-c70 וב-M05-c70 לשמירה על תקרת 300 שורות).**
+M04-c70: `pnpm type-check` נבדק מחדש, אפס דריפט. M03-c70: שער חזותי
+קטגוריה נמדד מחדש, אפס דריפט (3.53/2.52/1.69). M02-c70: שער חזותי
+מוצר נמדד מחדש, אפס
 דריפט (4.96/4.58/3.25). M01-c70: שער חזותי בית נמדד מחדש, אפס דריפט
 (8.58/9.01/4.16), ארבעת השערים ירוקים, אפס שינוי קוד.
 שמונה-עשר פריטי אימות-בלבד, אפס דריפט בכולם: STATE.md מתחת לתקרה (M18);
