@@ -1,47 +1,50 @@
-RESUME FROM: M15-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c66 - DONE, Sentry release אומת מול HEAD ומול Production בפועל, שני ממצאים שליליים)
+RESUME FROM: M16-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c66 - DONE, אפס שגיאות console ב-`/` וב-`/product` נמדד ואומת על build נקי)
 
 ## המשך מ:
 
-**M14-c66 - DONE (01.10.2026).** משימת התור: "Verify Sentry release matches
-HEAD commit". שתי בדיקות נפרדות, שתיהן שליליות, לא תקלת מדידה.
+**M15-c66 - DONE (01.10.2026).** משימת התור: "Verify no console errors on
+`/` and `/product` sample". נמדד בפועל בדפדפן (`e2e/route-audit.spec.ts`,
+רק שני הטסטים הרלוונטיים — `--grep "anon /$|anon dynamic catalogue
+routes"`, לא הסריקה המלאה בת 25 דקות — זה מחוץ לתחום הפריט), שרת `pnpm
+start` עצמאי על פורט 3316 (שישה סשנים מקבילים כבר רצים על 3311-3315/3618
+מאותה תיקייה בדיוק, `[[parallel-claude-sessions]]`; לא נגעתי בהם).
 
-**הקוד תקין.** שלושת קובצי האתחול (`sentry.server.config.ts`,
-`sentry.edge.config.ts`, `instrumentation-client.ts`) קושרים `release`
-ל-`SENTRY_RELEASE`/`NEXT_PUBLIC_SENTRY_RELEASE` עם נפילה ל-
-`VERCEL_GIT_COMMIT_SHA`/`NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, בדיוק המנגנון
-הנכון כדי שה-release יתאים לקומיט שנפרס בפועל.
+**ריצה ראשונה, על ה-`.next` הקיים (ללא build מחדש): נכשלה, ממצא ידוע
+ולא חדש.** שני הדפים הדפיסו אותו `console error`: `net::ERR_SSL_PROTOCOL_ERROR`
+על `.../login?next=%2Faccount%2Fwishlist` — prefetch שמשודרג ל-`https`
+בגלל `upgrade-insecure-requests` שה-build הזה אפה (לא נבנה עם
+`NEXT_PUBLIC_APP_URL=http://...`). **תבנית שתועדה ותוקנה כבר ב-M06-c1**
+(`upgradesInsecureRequests()`, `frame-policy.ts:168`) **ואומתה כתקלת
+build-ישן-מחדש-שימוש ב-M07-c64**, לא רגרסיה — הקובץ לא השתנה מאז 25.09.
 
-**ממצא 1 (ידוע, אומת מחדש מזווית אחרת): ה-release לא יכול לתאום ל-HEAD.**
-`get_deployment` (Vercel MCP, קריאה-בלבד, `withGitRepoInfo=true`) על
-הפריסה החיה (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, `www.kenyonexpress.co.il`)
-מראה שהיא בנויה מקומיט `a388118f1`, לא מ-HEAD הנוכחי (`1563d46b9`). זה
-חוסם 2 הקיים (פרודקשן 285 קומיטים מאחור), נמדד כאן דרך commit sha ממשי
-במקום ספירת קומיטים בלבד.
+**לכן build נקי מחדש:** `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3316 pnpm build` (exit 0), `curl -I`
+אישר שה-CSP איבד את הדירקטיבה. **הריצה החוזרת: 2/2 עברו, אפס
+`consoleErrors`/`hydrationWarnings`, `rtl=true`**, וכך גם שאר המסלולים
+שאותו טסט מגלה (`/product/צימר-מאסטר`+`/reviews`, `/category/hot-deals`,
+`/city/תל-אביב`, `/coupons/...`, `/page/how-it-works`, `/s/...`). מוצר
+הדוגמה `צימר-מאסטר` (פעיל, זהה ל-M08-c66). `curl -I` על
+`https://www.kenyonexpress.co.il/` (קריאה-בלבד) מראה שאותה דירקטיבה שם
+תמיד no-op, כי שם זה תמיד https — לא תקלת פרודקשן.
 
-**ממצא 2, חדש וחמור יותר: אין בכלל release מדווח מפרודקשן.**
-`filter_project_envs` (קריאה-בלבד) על הפרויקט שמגיש את הדומיין
-(`kenyonexpress`, `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מראה **אין
-`SENTRY_DSN` ואין `NEXT_PUBLIC_SENTRY_DSN` ב-Production בכלל** (קיים שם
-רק `SENTRY_AUTH_TOKEN`, ששירת את העלאת source maps בזמן build, לא דיווח
-בזמן ריצה). שלושת קובצי האתחול קוראים ל-`Sentry.init({ dsn:
-process.env.SENTRY_DSN, ... })` ישירות בלי שומר קודם, כך שבלי הערך ה-SDK
-מאותחל עם `dsn: undefined` ואינו שולח דבר. **לא תקלת קוד חדשה**: תואם
-זיכרון קיים (`sentry-is-live-and-unread`, נמדד 10.09): 203 מתוך 206
-אירועים ב-30 יום מתויגים `development`, אפס `production`. **אומת שוב
-היום, 01.10, ועדיין נכון.**
-
-**מסקנה**: אי אפשר לאמת "ה-release תואם ל-HEAD" כאמת, כי אין release
-שמגיע מפרודקשן בכלל (ממצא 2), וגם אם היה, הוא היה הקומיט הישן (ממצא 1).
-**נוסף ל-`docs/BACKLOG.md` כסעיף 17** (לא היה רשום כפעולה באף קובץ קודם,
-רק ב-reference memory חיצוני). **לא לתיקון אוטומטי**: הוספת
-`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא שינוי env
-ב-Vercel, אסור לסוכן לפי כללי המשימה.
+**החלטה שהתקבלה לבד:** `rm -rf .next` מלא על התיקייה המשותפת (לא
+worktree), בהתאם לתקדים הנהוג כאן בכל פריט (`M06-c1`, `M07-c64`, והשער
+הסוגר של M14-c66 עצמו רגע לפני); שישה הסשנים המקבילים לא הופרעו.
 
 **אין commit קוד, רק תיעוד.** לא פריט חזותי, `scripts/compare.mjs` לא
-הורץ (תקדים M04-c66..M13-c66). ארבעת השערים: `type-check` נקי, `lint`
-נקי (12 שערים), `test` 614/614 קבצים, 7336/7348 עברו (זהה ל-M13-c66),
-`rm -rf .next && pnpm build` exit 0 נקי.
+הורץ (תקדים M04-c66..M14-c66). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614, 7336/7348 עברו (זהה ל-M14-c66), `build`
+(למעלה) exit 0 נקי.
+
+**M14-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: Sentry release נבדק מול
+HEAD ומול פרודקשן בפועל; הקוד תקין (release קשור ל-`SENTRY_RELEASE`/
+`VERCEL_GIT_COMMIT_SHA` כראוי), אך שני ממצאים שליליים: (1) הפריסה החיה
+היא `a388118f1`, לא HEAD (חוסם 2 הקיים), (2) אין `SENTRY_DSN`/
+`NEXT_PUBLIC_SENTRY_DSN` בכלל ב-Production, כך שה-SDK מאותחל עם `dsn:
+undefined` ולא שולח דבר (תואם `sentry-is-live-and-unread`). נוסף
+ל-BACKLOG סעיף 17. ארבעת השערים ירוקים.
 
 **M13-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c66
 לשמירה על תקרת 300 שורות).** פריט תור, DONE: `/api/health`/`/api/ready`

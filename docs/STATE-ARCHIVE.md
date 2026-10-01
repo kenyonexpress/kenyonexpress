@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c66 (הועבר מ-STATE.md ב-M15-c66, לשמירה על תקרת 300 שורות)
+
+**M14-c66 - DONE (01.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit". שתי בדיקות נפרדות, שתיהן שליליות, לא תקלת מדידה.
+
+**הקוד תקין.** שלושת קובצי האתחול (`sentry.server.config.ts`,
+`sentry.edge.config.ts`, `instrumentation-client.ts`) קושרים `release`
+ל-`SENTRY_RELEASE`/`NEXT_PUBLIC_SENTRY_RELEASE` עם נפילה ל-
+`VERCEL_GIT_COMMIT_SHA`/`NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, בדיוק המנגנון
+הנכון כדי שה-release יתאים לקומיט שנפרס בפועל.
+
+**ממצא 1 (ידוע, אומת מחדש מזווית אחרת): ה-release לא יכול לתאום ל-HEAD.**
+`get_deployment` (Vercel MCP, קריאה-בלבד, `withGitRepoInfo=true`) על
+הפריסה החיה (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, `www.kenyonexpress.co.il`)
+מראה שהיא בנויה מקומיט `a388118f1`, לא מ-HEAD הנוכחי (`1563d46b9`). זה
+חוסם 2 הקיים (פרודקשן 285 קומיטים מאחור), נמדד כאן דרך commit sha ממשי
+במקום ספירת קומיטים בלבד.
+
+**ממצא 2, חדש וחמור יותר: אין בכלל release מדווח מפרודקשן.**
+`filter_project_envs` (קריאה-בלבד) על הפרויקט שמגיש את הדומיין
+(`kenyonexpress`, `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מראה **אין
+`SENTRY_DSN` ואין `NEXT_PUBLIC_SENTRY_DSN` ב-Production בכלל** (קיים שם
+רק `SENTRY_AUTH_TOKEN`, ששירת את העלאת source maps בזמן build, לא דיווח
+בזמן ריצה). שלושת קובצי האתחול קוראים ל-`Sentry.init({ dsn:
+process.env.SENTRY_DSN, ... })` ישירות בלי שומר קודם, כך שבלי הערך ה-SDK
+מאותחל עם `dsn: undefined` ואינו שולח דבר. **לא תקלת קוד חדשה**: תואם
+זיכרון קיים (`sentry-is-live-and-unread`, נמדד 10.09): 203 מתוך 206
+אירועים ב-30 יום מתויגים `development`, אפס `production`. **אומת שוב
+היום, 01.10, ועדיין נכון.**
+
+**מסקנה**: אי אפשר לאמת "ה-release תואם ל-HEAD" כאמת, כי אין release
+שמגיע מפרודקשן בכלל (ממצא 2), וגם אם היה, הוא היה הקומיט הישן (ממצא 1).
+**נוסף ל-`docs/BACKLOG.md` כסעיף 17** (לא היה רשום כפעולה באף קובץ קודם,
+רק ב-reference memory חיצוני). **לא לתיקון אוטומטי**: הוספת
+`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא שינוי env
+ב-Vercel, אסור לסוכן לפי כללי המשימה.
+
+**אין commit קוד, רק תיעוד.** לא פריט חזותי, `scripts/compare.mjs` לא
+הורץ (תקדים M04-c66..M13-c66). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614 קבצים, 7336/7348 עברו (זהה ל-M13-c66),
+`rm -rf .next && pnpm build` exit 0 נקי.
+
 ## M13-c66 (הועבר מ-STATE.md ב-M14-c66, לשמירה על תקרת 300 שורות)
 
 **M13-c66 - DONE (01.10.2026).** משימת התור: "Verify /api/health and
