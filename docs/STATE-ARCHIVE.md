@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c68 (הועבר מ-STATE.md ב-M15-c68, לשמירה על תקרת 300 שורות)
+
+**M14-c68 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit" — זהה למילה למשימות M14-c66/M14-c67. **נבדק מחדש משתי הזוויות,
+שתיהן אפס דריפט.** שלושת קובצי האתחול (`sentry.server.config.ts`,
+`sentry.edge.config.ts`, `instrumentation-client.ts`) זהים — `git log
+db5999d33..HEAD` עליהם ריק, אין קומיט שנגע בהם מאז M14-c66. `filter_project_envs`
+(קריאה-בלבד) על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` עדיין
+**לא** מחזיר `SENTRY_DSN` או `NEXT_PUBLIC_SENTRY_DSN` ב-Production — קיים
+שם רק `SENTRY_AUTH_TOKEN` (source maps בזמן build בלבד), בדיוק כמו
+ב-M14-c66/M14-c67. `get_deployment` (קריאה-בלבד, `withGitRepoInfo=true`)
+על הפריסה החיה (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, `www.kenyonexpress.co.il`)
+מראה שהיא עדיין בנויה מ-`a388118f1`, לא מ-HEAD. **הפער ממשיך לגדול**:
+`git rev-list --count a388118f1..HEAD` מחזיר **388** (היה 370 ב-M14-c67 על
+HEAD אז `6bd25c638`; HEAD עכשיו `c258defa0`). **מסקנה זהה ל-M14-c66/M14-c67**:
+אי אפשר לאמת "ה-release תואם ל-HEAD" כאמת — אין בכלל release שמגיע
+מפרודקשן (אין DSN), וגם אם היה, הוא היה מצביע על קומיט ישן ב-388 קומיטים.
+**לא ממצא חדש**: נוסף רק משפט "נמדד שוב" ל-`BACKLOG.md` סעיף 17 עם התאריך
+והמספרים המעודכנים. **לא לתיקון אוטומטי**: הוספת
+`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא שינוי env,
+אסור לסוכן. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test`
+614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `rm -rf .next && pnpm
+build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M14-c67). קבצים: `docs/BACKLOG.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M13-c68 (הועבר מ-STATE.md ב-M14-c68, לשמירה על תקרת 300 שורות)
 
 **M13-c68 - DONE (02.10.2026).** משימת התור: "Verify /api/health and /api/ready
