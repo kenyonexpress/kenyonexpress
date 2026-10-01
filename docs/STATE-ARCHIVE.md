@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c70 (הועבר מ-STATE.md ב-M07-c70, לשמירה על תקרת 300 שורות)
+
+**M06-c70 - DONE (02.10.2026).** "pnpm build fix drift commit" — זהה
+במהות ל-M06-c69. `git status` נקי, `git diff 755f7a34c..HEAD -- src
+public package.json pnpm-lock.yaml scripts next.config.ts
+tsconfig.json` ריק (אפס שינוי קוד מאז M06-c69, שם נבדק `build` בפעם
+האחרונה בפועל). לפני ההרצה: `uptime` load average 2.70 ו-`pgrep -f
+"next build"` ריק (אין בנייה מקבילה פעילה כרגע, ראו
+`concurrent-worktree-builds-oom`), כך שההרצה בוצעה. `pnpm build` רץ
+בפועל, יצא קוד `0`, 44 שניות, `.next/BUILD_ID` חדש
+`WYfyZvxyocdLXKDemfvDh` (היה `7usgLVQXhLG29nYBQp1nK`, build חדש כי
+תהליך `pnpm start` הקודם דרס את ה-`.next` בהרצה, ראו `dev-and-start-
+share-dot-next`). `type-check` יצא קוד 0, `lint` ירוק (12 שערים, 2037
+קבצים, אפס תיקונים), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים) — זהה ל-M05-c70/M04-c70/M03-c70/M01-c70, אפס דריפט. שום שינוי
+קוד לא נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M04-c70 ו-M03-c70 (הועברו מ-STATE.md ב-M05-c70, לשמירה על תקרת 300 שורות)
 
 **M04-c70 - DONE (02.10.2026).** "pnpm type-check fix drift commit" —

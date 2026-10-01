@@ -1,27 +1,29 @@
-RESUME FROM: M07-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c70 - DONE, pnpm build נבדק מחדש בפועל, אפס דריפט)
+RESUME FROM: M08-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c70 - DONE, TODO/FIXME נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c70 - DONE (02.10.2026).** "pnpm build fix drift commit" — זהה
-במהות ל-M06-c69. `git status` נקי, `git diff 755f7a34c..HEAD -- src
-public package.json pnpm-lock.yaml scripts next.config.ts
-tsconfig.json` ריק (אפס שינוי קוד מאז M06-c69, שם נבדק `build` בפעם
-האחרונה בפועל). לפני ההרצה: `uptime` load average 2.70 ו-`pgrep -f
-"next build"` ריק (אין בנייה מקבילה פעילה כרגע, ראו
-`concurrent-worktree-builds-oom`), כך שההרצה בוצעה. `pnpm build` רץ
-בפועל, יצא קוד `0`, 44 שניות, `.next/BUILD_ID` חדש
-`WYfyZvxyocdLXKDemfvDh` (היה `7usgLVQXhLG29nYBQp1nK`, build חדש כי
-תהליך `pnpm start` הקודם דרס את ה-`.next` בהרצה, ראו `dev-and-start-
-share-dot-next`). `type-check` יצא קוד 0, `lint` ירוק (12 שערים, 2037
-קבצים, אפס תיקונים), `test` 614/614 קבצים, 7337/7349 עברו (12
-מדולגים) — זהה ל-M05-c70/M04-c70/M03-c70/M01-c70, אפס דריפט. שום שינוי
-קוד לא נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M07-c70 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
+days resolve or file in docs/BACKLOG.md". סריקה רוחבת-ריפו (`src/`,
+`scripts/`, `supabase/`) מוצאת בדיוק את אותם שני סמנים אמיתיים כמו
+ב-M07-c69: `src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame`
+24.07.2026) ו-`:319` (מסמכים, `git blame` 07.08.2026), שניהם ישנים משבעה
+ימים ושניהם עם `Tracked in #41`/`#42` בחלון ההערה עצמו. `node
+scripts/final-audit.mjs` מדווח `ok 0 work markers (TODO/FIXME/HACK/XXX)
+(of 2)`. כבר מתועדים ב-`docs/BACKLOG.md` שורה 505-507 וב-`docs/
+KNOWN-ISSUES.md` שורה 10 (`Tracked in #41`/`#42`) — אין עדכון BACKLOG
+נדרש, אפס דריפט מ-M07-c69. ה-hit הנוסף, `whatsapp.test.ts:91`, הוא
+מחרוזת ליטרלית `'TODO'`, לא סמן עבודה (ignored by `scanMarkers`).
+ארבעת השערים הורצו בפועל: `type-check` יצא קוד 0, `lint` ירוק (12
+שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים, 7337/7349 עברו
+(12 מדולגים), `build` רץ עד הסוף בלי שגיאה (route manifest מלא). אפס
+שינוי קוד נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M05-c70, M04-c70, M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון
-מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69, M14-c69,
-M17-c69, M01-c70, M02-c70, M03-c70, M05-c70 וב-M06-c70 לשמירה על תקרת
-300 שורות).** M05-c70: `pnpm test` נבדק מחדש, 614/614 קבצים, 7337/7349
+**M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69
+(ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69,
+M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70, M06-c70 וב-M07-c70
+לשמירה על תקרת 300 שורות).** M06-c70: `pnpm build` נבדק מחדש בפועל,
+exit 0, אפס דריפט מ-M06-c69. M05-c70: `pnpm test` נבדק מחדש, 614/614 קבצים, 7337/7349
 עברו (12 מדולגים), אפס דריפט. M04-c70: `pnpm type-check` נבדק מחדש, אפס דריפט. M03-c70: שער חזותי
 קטגוריה נמדד מחדש, אפס דריפט (3.53/2.52/1.69). M02-c70: שער חזותי
 מוצר נמדד מחדש, אפס
