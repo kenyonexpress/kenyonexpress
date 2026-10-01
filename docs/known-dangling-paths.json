@@ -114,6 +114,7 @@
   "docs/STATE-ARCHIVE.md :: docs/PAYOUT-ARCHITECTURE.md",
   "docs/STATE-ARCHIVE.md :: e2e/_focus-probe.spec.ts",
   "docs/STATE-ARCHIVE.md :: e2e/_hero-probe.spec.ts",
+  "docs/STATE-ARCHIVE.md :: e2e/tmp-rtl-verify.spec.ts",
   "docs/STATE-ARCHIVE.md :: migrations/pending/122_deny_all_on_server_only_tables.sql",
   "docs/STATE-ARCHIVE.md :: migrations/pending/124_categories_sort_order.sql",
   "docs/STATE-ARCHIVE.md :: migrations/pending/130_payment_events.sql",

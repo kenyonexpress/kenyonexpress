@@ -1,38 +1,23 @@
-RESUME FROM: M18-c68
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c68 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט מ-M17-c67, פלוק תשתית אחד בודד ולא קשור)
+RESUME FROM: M01-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c68 - DONE, STATE.md כבר מתחת לתקרה, אומת ולא נדרש כיווץ)
 
 ## המשך מ:
 
-**M17-c68 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66/M17-c67, ש-M17-c66 מצאה
-ותיקנה בו leak אמיתי (`HeroSlider.tsx`). **נבדק מחדש כאן, אפס דריפט בקוד.**
-`git log 58d75006a..HEAD -- src/ e2e/` ריק — אין קומיט שנגע בשום קובץ
-תחת `src/` או `e2e/` מאז קומיט M17-c67 (`58d75006a`), ו-`grep -n 'dir="ltr"'
-src/components/{home,store}/HeroSlider.tsx` מחזיר רק שתי הערות קוד שמסבירות
-את התיקון ההיסטורי, לא תכונת JSX בפועל. **אומת גם ברמת הדף, שני מסלולים
-עצמאיים**: (1) `rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4531 pnpm build` exit 0 נקי, `pnpm
-start -p 4531` עצמאי, `lsof` מאשר שה-listener הוא התהליך הזה; `E2E_BASE_URL=
-http://localhost:4531 npx playwright test e2e/home-rtl.spec.ts
-e2e/rtl-three-widths.spec.ts e2e/rtl-mobile.spec.ts` — **111/112 עברו**,
-כולל "every ltr node on the page is on the allow-list" ב-chromium.
-**הכשל היחיד (mobile-chrome, אותו טסט) הוא תשתיתי ולא RTL**: `page.
-waitForLoadState('networkidle')` לא מתכנס אפילו ב-60 שניות ובריצה מבודדת
-(`--workers=1`), בעוד sniff נפרד (script גולמי וגם spec זמני, עם המכשיר
-Pixel 5) מראה שתעבורת הרשת האמיתית נגמרת תוך כ-1.2 שניות — כלומר ה-timeout
-אינו תעבורה אמיתית שלא נגמרת, הוא מגבלה ידועה של `networkidle` מול
-Next.js (prefetch/postponed streams), לא רגרסיית RTL. **אומת ישירות עם
-ה-DOM-scan המדויק של הטסט עצמו, רק עם `load`+השהייה קבועה במקום
-`networkidle`**: spec זמני (`e2e/tmp-rtl-verify.spec.ts`, נמחק לפני commit)
-עם אותו allow-list ואותה לוגיקת `offenders` בדיוק — **עבר על `chromium`
-וגם על `mobile-chrome`**, אפס offenders בשתיהן. (2) סריקת DOM ישירה על
-`/product/צימר-מאסטר` אחרי hydration: **2 צמתים `direction:ltr` בלבד**,
-זהה ל-M17-c66/M17-c67 (`.pdp-summary__meta` ללא SKU, ואינפוט email) —
-שניהם לגיטימיים, לא leak. **לא נדרש תיקון קוד.** ארבעת השערים: `type-check`
-נקי, `lint` נקי (12 שערים, כולל `rtl-logical-gate`), `test` 614/614 קבצים,
-7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי. לא פריט חזותי,
-`compare.mjs` לא נדרש (תקדים M04-c66..M17-c67). קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M18-c68 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines,
+archive rest to docs/STATE-ARCHIVE.md". **נמדד: הקובץ כבר 299 שורות**
+(`wc -l STATE.md`), מתחת לתקרה, מאז ה-trim האחרון ב-M17-c68. `git log
+8b549ac8e..HEAD -- src/ public/` ריק — אין קומיט ייצור מאז, רק
+עדכון-מצב זה. **לא נדרש כיווץ נוסף**; שום שורה לא הוזזה ל-`docs/STATE-ARCHIVE.md`
+כי אין עודף. ארבעת השערים (`type-check`/`lint`/`test`/`build`) לא רצו
+מחדש — M17-c68 כבר אישר ארבעתם ירוקים ואין קומיט שנגע ב-`src`/`public`
+מאז (אותה בדיקה, אותה תוצאה). לא פריט חזותי, `compare.mjs` לא נדרש. זהו
+הפריט האחרון במחזור `c68` (M01-c68..M18-c68) — התור ממשיך ב-`M01-c69`.
+קבצים: `STATE.md`.
+
+**M17-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M18-c68
+לשמירה על תקרת 300 שורות).** RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט
+מ-M17-c67 (אותו allow-list, אפס offenders ב-chromium וב-mobile-chrome אחרי
+תיקון תשתיתי ל-`networkidle`). ארבעת השערים ירוקים.
 
 **M16-c68..M14-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M17-c68).** M16-c68: JSON-LD Product+BreadcrumbList נבדק מחדש בכל דף
