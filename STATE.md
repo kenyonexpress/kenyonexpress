@@ -1,56 +1,66 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q51 - BLOCKED, מתנגש בהחלטת בעלים מתועדת)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q52 - VERIFIED, קיים ונבדק במלואו)
 
 ## המשך מ:
 
-**Q51 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"Crisp inbox stub, email/wa.me site chat, feature flag off until after
-launch." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39,
-אין "Q51" בשום קובץ markdown בריפו), אותו דפוס כמו Q25-Q50.
+**Q52 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Meilisearch Hebrew synonyms, index facets used by
+category filters only, no search UI." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין "Q52" בשום קובץ markdown
+בריפו), אותו דפוס כמו Q25-Q51. **שלושת הרכיבים כבר קיימים ונבדקו,
+קובץ-קובץ:**
 
-**מתנגש ישירות בהחלטת בעלים מתועדת וכבר-מיושמת.** `docs/STATE-ARCHIVE.md`
-(רשומת 2026-09-23 00:26, OWNER DECISIONS v2, סעיף Customer service) אומרת
-במפורש: **"WhatsApp + email בלבד, בלי Crisp, בלי טלפון, support@ במקום
-info@" — נבדק ויושם.** באותה רשומה `grep -rli crisp src package.json`
-חזר ריק, ונבדק שוב עכשיו: עדיין ריק. אין רכיב Crisp, אין משתנה סביבה
-`CRISP_*`, ואין צ'אט חי בשום דף.
+- **מילים נרדפות בעברית**: `src/lib/search/hebrew-synonyms.ts` (קבוצות
+  נרדפות דו-כיווניות + גזירת תחיליות ה/ו/ב/ל/מ/ש/כ ב-`withHebrewPrefixes`,
+  `buildSynonyms` בונה זוג מלא לכל קבוצה), מחובר בפועל ל-
+  `INDEX_SETTINGS.synonyms` ב-`src/lib/search/meili-settings.ts`
+  (`buildSynonyms()` נקרא שם ישירות, לא מועתק).
+- **facets**: `FACET_ATTRIBUTES` ב-`src/lib/search/faceted.ts` (type,
+  category_slug, city, brand, tags, in_stock) מוגשים דרך
+  `/api/search/facets` עם שני מנועים בחוזה אחד (Meilisearch כש-
+  `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` מוגדרים, נסיגת Postgres אחרת),
+  וולידציית whitelist לפני בניית ה-filter כך שפרמטר לא יכול להפוך לביטוי
+  סינון.
+- **אין UI חיפוש**: נאכף כשער ב-`src/components/layout/no-search-ui.test.ts`
+  (אין `type="search"`/`role="search(box)?"` בשום קובץ מקור; אין רכיב
+  בשם `*Search(Box|Bar|Field|Input)?.tsx`; ה-shell כולו - Header, TopBar,
+  MastheadNav, MobileDrawer, SiteFooter, RegionMenu - לא נושא קלט מלבד שדה
+  האימייל בניוזלטר). `MastheadNav.tsx` נושא הערה מפורשת בקוד: "the standing
+  project rule is that there is no search UI anywhere". `HeaderSearch.tsx`,
+  `DeferredHeaderSearch.tsx` ו-`SearchBox.tsx` נמחקו ב-04.09.2026.
 
-**אין גם מערכת feature-flag מתאימה לבנות עליה "כבוי עד אחרי ההשקה".**
-`src/lib/admin/feature-flags.ts` ו-`src/lib/resilience/feature-flags.ts`
-הם kill-switches לתת-מערכות קיימות (`cache`, `search`, `recs`,
-`notifications`) שמשרתות דה-גרדציה בטוחה, לא צ'אט ספק-שלישי; אין בריפו
-שום מנגנון flag כללי למוצר חדש. בניית אחד כזה רק כדי להחזיק דגל כבוי
-היא בדיוק התבנית שתועדה חזור ונשנה בריפו הזה: "תכונה מוגמרת בלי צרכן"
-(memory `finished-features-with-no-consumer`), ו-CLAUDE.md אוסר במפורש
-"no half-finished implementations" ותכנון ל"hypothetical future
-requirements".
+**סתירת תיעוד שנמדדה, לא בתחום הפריט הזה.** `docs/adr/0010-no-search-ui-then-header.md`
+(סטטוס "עודכן 02.09") טוען ששדה החיפוש חזר ל-masthead. זה קודם למחיקה
+ב-04.09 ולא עודכן אחריה; הקוד והשער החי (שניהם ירוקים כרגע) סותרים אותו
+ישירות. לא נערך - תיקון ה-ADR הוא עריכת תיעוד שאינה קשורה לפריט הזה.
 
-**אין גם מקור עיצוב.** `grep -ni "chat\|crisp"` על `refs/ke_live_singlefile.html`
-ועל `refs/electro.madrasthemes.com-DESIGN.md` (שני מקורות העיצוב
-המותרים) ריק בשניהם — אין widget צ'אט בשום מופע Electro v7 שהועתק.
+**"facets used by category filters" במובן המדויק: לא, ובכוונה.**
+`/category/[slug]` (`src/lib/category-page.ts`) מסנן ישירות דרך
+Postgres/PostgREST (מחיר, סוג, עיר, מותג, הנחה - commit `5092a8b79`), בלי
+לקרוא ל-Meilisearch בכלל. ה-facets של Meilisearch מזינים את `/api/search/facets`,
+שמשרת את `/search` (route בלי UI, ראו למעלה) - לא את עמוד הקטגוריה. שני
+המנגנונים תקינים, בנויים ונבדקים בנפרד; חיבור חדש שינתב את דף הקטגוריה
+דרך Meilisearch, עבור קטלוג של 44-46 מוצרים פעילים, הוא תכנון ל-
+"hypothetical future requirement" שה-CLAUDE.md אוסר במפורש, לא תיקון
+לפגם קיים.
 
-**ההחלטה: BLOCKED, לא DONE ולא לבנייה בלי אישור.** הוספת Crisp (אפילו
-"סטאב" כבוי) דורשת מאופיר לבטל במפורש את ההחלטה שהוא עצמו קיבל ותועדה
-ב-23.09 — זו לא פעולה שסוכן יכול לקבל "לבד" לפי כלל ההתלבטות, כי יש כאן
-החלטת בעלים קיימת שסותרת ישירות את הבקשה, לא היעדר החלטה. ה"stub" + flag
-"off until after launch" לא משנה את ההתנהגות הנראית (אין צ'אט היום, לא
-יהיה גם אחרי ה-stub), ולכן גם לא תורם כלום מעבר לקוד מת שמחכה להתעורר —
-בדיוק הדפוס שנמחק ב-Footer.tsx ב-23.09 מהסיבה הזו. ערוצי השירות הקיימים
-(וואטסאפ + אימייל, `src/lib/contact/channels.ts`, חמישה נושאים) כבר
-מספקים את מה שהמשימה מתארת כ"email wa.me site chat" ללא Crisp. אפס שינוי
-קוד ייצור.
-
-**בדיקה בפועל, אפס שינוי קוד.** `pnpm type-check` נקי. `pnpm lint` נקי
-(12 שערים). `pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12
-מדולגים, זהה ל-Q50). `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3423 pnpm build` נקי. שרת בפורט
-3423, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער חזותי PASS
-בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+**בדיקה בפועל.** `pnpm vitest run src/lib/search src/app/api/search
+src/components/layout/no-search-ui.test.ts`: **125/125 ירוק.** `pnpm
+type-check` נקי. `pnpm lint` נקי (12 שערים). `pnpm test` מלא **614/614
+קבצים, 7335/7347 עברו** (12 מדולגים, זהה ל-Q50/Q51). `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424 pnpm build`
+נקי. שרת בפורט 3424, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער
+חזותי PASS בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
 --widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
-ל-Q50 — אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+ל-Q50/Q51 - אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`,
 `STATE.md`.
+
+**Q51 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q52 לשמירה
+על תקרת 300 שורות).** פריט חיצוני חד-פעמי, BLOCKED: Crisp chat מתנגש
+בהחלטת בעלים מתועדת (WhatsApp+email בלבד, בלי Crisp, 23.09). אפס שינוי
+קוד, ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
 
 **Q25..Q50 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q51
 לשמירה על תקרת 300 שורות).** עשרים וארבעה פריטים חיצוניים חד-פעמיים, אף

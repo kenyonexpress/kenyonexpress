@@ -2,6 +2,57 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q51 (הועבר מ-STATE.md ב-Q52, לשמירה על תקרת 300 שורות)
+
+**Q51 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"Crisp inbox stub, email/wa.me site chat, feature flag off until after
+launch." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39,
+אין "Q51" בשום קובץ markdown בריפו), אותו דפוס כמו Q25-Q50.
+
+**מתנגש ישירות בהחלטת בעלים מתועדת וכבר-מיושמת.** `docs/STATE-ARCHIVE.md`
+(רשומת 2026-09-23 00:26, OWNER DECISIONS v2, סעיף Customer service) אומרת
+במפורש: **"WhatsApp + email בלבד, בלי Crisp, בלי טלפון, support@ במקום
+info@" — נבדק ויושם.** באותה רשומה `grep -rli crisp src package.json`
+חזר ריק, ונבדק שוב עכשיו: עדיין ריק. אין רכיב Crisp, אין משתנה סביבה
+`CRISP_*`, ואין צ'אט חי בשום דף.
+
+**אין גם מערכת feature-flag מתאימה לבנות עליה "כבוי עד אחרי ההשקה".**
+`src/lib/admin/feature-flags.ts` ו-`src/lib/resilience/feature-flags.ts`
+הם kill-switches לתת-מערכות קיימות (`cache`, `search`, `recs`,
+`notifications`) שמשרתות דה-גרדציה בטוחה, לא צ'אט ספק-שלישי; אין בריפו
+שום מנגנון flag כללי למוצר חדש. בניית אחד כזה רק כדי להחזיק דגל כבוי
+היא בדיוק התבנית שתועדה חזור ונשנה בריפו הזה: "תכונה מוגמרת בלי צרכן"
+(memory `finished-features-with-no-consumer`), ו-CLAUDE.md אוסר במפורש
+"no half-finished implementations" ותכנון ל"hypothetical future
+requirements".
+
+**אין גם מקור עיצוב.** `grep -ni "chat\|crisp"` על `refs/ke_live_singlefile.html`
+ועל `refs/electro.madrasthemes.com-DESIGN.md` (שני מקורות העיצוב
+המותרים) ריק בשניהם — אין widget צ'אט בשום מופע Electro v7 שהועתק.
+
+**ההחלטה: BLOCKED, לא DONE ולא לבנייה בלי אישור.** הוספת Crisp (אפילו
+"סטאב" כבוי) דורשת מאופיר לבטל במפורש את ההחלטה שהוא עצמו קיבל ותועדה
+ב-23.09 — זו לא פעולה שסוכן יכול לקבל "לבד" לפי כלל ההתלבטות, כי יש כאן
+החלטת בעלים קיימת שסותרת ישירות את הבקשה, לא היעדר החלטה. ה"stub" + flag
+"off until after launch" לא משנה את ההתנהגות הנראית (אין צ'אט היום, לא
+יהיה גם אחרי ה-stub), ולכן גם לא תורם כלום מעבר לקוד מת שמחכה להתעורר —
+בדיוק הדפוס שנמחק ב-Footer.tsx ב-23.09 מהסיבה הזו. ערוצי השירות הקיימים
+(וואטסאפ + אימייל, `src/lib/contact/channels.ts`, חמישה נושאים) כבר
+מספקים את מה שהמשימה מתארת כ"email wa.me site chat" ללא Crisp. אפס שינוי
+קוד ייצור.
+
+**בדיקה בפועל, אפס שינוי קוד.** `pnpm type-check` נקי. `pnpm lint` נקי
+(12 שערים). `pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12
+מדולגים, זהה ל-Q50). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3423 pnpm build` נקי. שרת בפורט
+3423, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער חזותי PASS
+בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
+ל-Q50 — אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`,
+`STATE.md`.
+
 ## Q50 (הועבר מ-STATE.md ב-Q51, לשמירה על תקרת 300 שורות)
 
 **Q50 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
