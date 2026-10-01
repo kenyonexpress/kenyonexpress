@@ -1,26 +1,33 @@
-RESUME FROM: M09-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c70 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
+RESUME FROM: M10-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c70 - DONE, deps/exports מתים אומתו מחדש עם knip, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c70 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
-`type-check` (`tsc --noEmit` נקי), `lint` (12 שערים, 2037 קבצים, אפס
-תיקונים), `test` (614/614 קבצים, 7337/7349 עברו, 12 מדולגים), `build`
+**M09-c70 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat 2a6996e6a..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts` (בסיס: HEAD של M09-c69) ריק — אפס דריפט קוד
+מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints` הורץ מחדש: 271
+"unused exports", 197 "unused exported types", 5 "unused dependencies",
+4 "duplicate exports", 201 "unused files", 1 "unlisted binary" — אותם
+מספרים בדיוק כמו M09-c69, אפס מועמד חדש. חמש ה-deps שסומנו
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`, `drizzle-orm`,
+`postgres`, `react-hook-form`) אומתו מחדש כ-false-positive, צרכן אמיתי
+לכל אחת (`src/components/ui/{dropdown-menu,select,form}.tsx`,
+`src/db/schema/*`, `src/server/actions/cart.ts`). אפס הסרה, כי אין
+מועמד חדש מעבר למה שהוסר כבר ב-M09-c66/M09-c67.
+
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 קבצים (7337+12 מדולגים), `build` exit 0
 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3319 pnpm build`, route manifest מלא). שרת `pnpm start`
-עצמאי על פורט 3319 (`PORT=3319`, אותם משתני build), `cwd` אומת
-(`/usr/sbin/lsof -p <pid> -a -d cwd`) שזה הריפו הזה ולא שרת זר, כבה
-אחרי המדידה. מוצר לדוגמה: `צימר-מאסטר` (כמו ב-M08-c66..M08-c69, 10
-במלאי). `scripts/lighthouse-smoke.mjs --throttling-method=provided`
-(המתכון התקף, `docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**,
-`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c69. אפס שינוי
+localhost:3319 pnpm build`, route manifest מלא). אפס שינוי
 קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
 
-**M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70
+**M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70
 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
-M06-c70, M07-c70 וב-M08-c70 לשמירה על תקרת 300 שורות).** M07-c70:
+M06-c70, M07-c70, M08-c70 וב-M09-c70 לשמירה על תקרת 300 שורות).**
+M08-c70: Lighthouse mobile על `/` ו-`/product` אומת מחדש,
+100/100/100 בשניהם, אפס דריפט מ-M08-c69. M07-c70:
 TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c69.
 M06-c70: `pnpm build` נבדק מחדש בפועל,
 exit 0, אפס דריפט מ-M06-c69. M05-c70: `pnpm test` נבדק מחדש, 614/614 קבצים, 7337/7349
