@@ -1,24 +1,24 @@
-RESUME FROM: M08-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c69 - DONE, סריקת TODO/FIXME אומתה מחדש, אפס דריפט)
+RESUME FROM: M09-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c69 - DONE, Lighthouse mobile על `/` ו-`/product` אומת מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c69 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
-days resolve or file in docs/BACKLOG.md". סריקה רוחבת-ריפו (`src/`,
-`scripts/`, `supabase/`) מוצאת בדיוק את אותם שני סמנים אמיתיים כמו
-ב-M07-c68: `src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame`
-24.07.2026) ו-`:319` (מסמכים, `git blame` 07.08.2026), שניהם ישנים משבעה
-ימים ושניהם עם `Tracked in #41`/`#42` בחלון ההערה עצמו. `scripts/
-final-audit.mjs` מדווח `untrackedMarkers=0` (מתוך 2). כבר מתועדים
-ב-`docs/BACKLOG.md` סעיף 6 וב-`docs/KNOWN-ISSUES.md` סעיף 2 — אין עדכון
-BACKLOG נדרש, אפס דריפט מ-M07-c68. ה-hit הנוסף, `whatsapp.test.ts:91`,
-הוא מחרוזת ליטרלית `'TODO'`, לא סמן עבודה (ignored by `scanMarkers`).
-ארבעת השערים הורצו בפועל: `type-check` נקי, `lint` ירוק (12 שערים,
-2037 קבצים), `test` 614/614 קבצים (7337 עברו + 12 מדולגים), `build`
-exit 0. אפס שינוי קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M08-c69 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
+`type-check`, `lint` (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337+12), `build` (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3319`). שרת `pnpm start` עצמאי על פורט 3319, כבה אחרי המדידה.
+מוצר לדוגמה: `צימר-מאסטר` (כמו ב-M08-c66..M08-c68, 10 במלאי).
+`scripts/lighthouse-smoke.mjs --throttling-method=provided` (המתכון
+התקף, `docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c68. `simulate`
+(רועש, ללוג בלבד, ברירת המחדל של הסקריפט): `/` = 86/100/100,
+`/product/...` = 86/100/100. אפס שינוי קוד/סכימה/כסף/לסף 90 בסקריפט.
+קובץ יחיד: `STATE.md`.
 
-**M06-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M07-c69 לשמירה על תקרת 300 שורות).** M06-c69: `pnpm build`
+**M07-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M08-c69 לשמירה על תקרת 300 שורות).** M07-c69: סריקת TODO/FIXME
+אומתה מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c69: `pnpm build`
 אומת מחדש, אפס דריפט. M05-c69: `pnpm test` נמדד
 מחדש, אפס דריפט. M04-c69: `pnpm type-check`
 נמדד מחדש, אפס דריפט. M03-c69: שער חזותי קטגוריה

@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c69 (הועבר מ-STATE.md ב-M08-c69, לשמירה על תקרת 300 שורות)
+
+**M07-c69 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
+days resolve or file in docs/BACKLOG.md". סריקה רוחבת-ריפו (`src/`,
+`scripts/`, `supabase/`) מוצאת בדיוק את אותם שני סמנים אמיתיים כמו
+ב-M07-c68: `src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame`
+24.07.2026) ו-`:319` (מסמכים, `git blame` 07.08.2026), שניהם ישנים משבעה
+ימים ושניהם עם `Tracked in #41`/`#42` בחלון ההערה עצמו. `scripts/
+final-audit.mjs` מדווח `untrackedMarkers=0` (מתוך 2). כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6 וב-`docs/KNOWN-ISSUES.md` סעיף 2 — אין עדכון
+BACKLOG נדרש, אפס דריפט מ-M07-c68. ה-hit הנוסף, `whatsapp.test.ts:91`,
+הוא מחרוזת ליטרלית `'TODO'`, לא סמן עבודה (ignored by `scanMarkers`).
+ארבעת השערים הורצו בפועל: `type-check` נקי, `lint` ירוק (12 שערים,
+2037 קבצים), `test` 614/614 קבצים (7337 עברו + 12 מדולגים), `build`
+exit 0. אפס שינוי קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M06-c69 (הועבר מ-STATE.md ב-M07-c69, לשמירה על תקרת 300 שורות)
 
 **M06-c69 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".
