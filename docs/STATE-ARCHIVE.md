@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c67 (הועבר מ-STATE.md ב-M02-c67, לשמירה על תקרת 300 שורות)
+
+**M01-c67 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs 380 768
+1440 on / and record diffs in STATE.md". שתי מדידות ראשונות באותה ריצה חזרו
+שגויות: שרת `pnpm start` על פורט 3311 (PID 16320, עלה ב-15:57) המשיך לרוץ
+אחרי ש-`.next` נדרס מחדש על ידו (ca. 23:22, קרוב לוודאי מרחק בין ריצות
+מקבילות על אותו ריפו) — ה-HTML הגיש הפניה ל-chunk CSS
+(`0oqc5n8s89_s4.css`) שלא קיים יותר בדיסק (`404`/`500`), הדף נשלף בלי
+עיצוב (`mine: 408px` רוחב בפועל במקום `380px`, overflow אופקי). התוצאה
+הראשונה: **לא FAIL גבוה אלא `0.77%` PASS כוזב** (`OVERALL 30.13%`, `ours
+blank 25.24%`) — נרשם ב-BACKLOG סעיף 18 כממצא על השער עצמו. תוקן עם
+`rm -rf .next && pnpm build` (exit 0) ושרת טרי על 3311; אומת ששני ה-CSS
+chunks עונים `200` לפני המדידה האמיתית. **מדידה אמיתית, בפורגראונד, שלוש
+רוחבים, מול `refs/ke_live_{width}.png` (`--baseline`):**
+
+| רוחב | ציון | סטטוס | overall | הערות |
+|---|---|---|---|---|
+| 380 | 8.58% | PASS | 14.11% | ref blank 2.79%, ours blank 2.75% |
+| 768 | 9.01% | PASS | 16.03% | ref blank 4.31%, ours blank 2.72% |
+| 1440 | 4.16% | PASS | 15.45% | ref blank 9.88%, ours blank 1.41% |
+
+שלושתם זהים ל-100% לציוני M17-c66 (אותו HEAD, `2aab1511f`, אפס שינוי
+קוד מאז) — **אפס דריפט**, מאושר. שלוש השורות נוספו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו (אין קומיט לקובץ הזה כאן,
+רק תיעוד התוצאה הזו ב-STATE). לא נדרש `type-check`/`lint`/`test`/`build`
+נוסף מעבר ל-`pnpm build` שכבר רץ לתיקון השרת — אין שינוי קוד בפריט הזה
+עצמו מלבד רשומת BACKLOG. **אין פריט c67 הבא ידוע בריפו** (`NEXT-GOALS.md`
+ו-`~/ke-goals` לא מגדירים רצף "cNN"; `~/ke-goals/STATE.md` מיושן, Sep 11,
+לא נוגע). לא הורחב תור חדש כאן, לפי היקף הפריט המפורש ("this one item
+only").
+
 ## M17-c66 (הועבר מ-STATE.md ב-M18-c66, לשמירה על תקרת 300 שורות)
 
 **M17-c66 - DONE (01.10.2026).** משימת התור: "Verify RTL on / and /product
