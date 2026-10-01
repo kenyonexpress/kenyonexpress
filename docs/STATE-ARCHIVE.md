@@ -2,6 +2,58 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q49 (הועבר מ-STATE.md ב-Q50, לשמירה על תקרת 300 שורות)
+
+**Q49 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Sentry web workers edge with releases source
+maps /api/health /api/ready." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, ואין "Q49" בשום קובץ markdown
+בריפו), אותו דפוס כמו Q25-Q48. **כל ששת הרכיבים כבר בנויים, מחווטים
+ונבדקים, נבדק מחדש קובץ-קובץ:**
+
+- **Web (browser)**: `instrumentation-client.ts` מאתחל `Sentry.init`
+  לפני hydration, `dsn: NEXT_PUBLIC_SENTRY_DSN`, release ו-environment
+  דרך `NEXT_PUBLIC_*`, `tunnelRoute: '/monitoring'` (ה-CSP אין בה origin
+  של Sentry, בלי tunnel הדפדפן חוסם כל דיווח).
+- **Workers (Node, Route Handlers/Server Components/Server Functions)**:
+  `sentry.server.config.ts` נטען דרך `src/instrumentation.ts`
+  (`register()`), מייצא `onRequestError` שמכסה את שלושת סוגי ה-routeType.
+  `redact`/`beforeSend` מנקים headers/cookies/טוקן שובר מה-path.
+- **Edge**: `sentry.edge.config.ts` — `src/proxy.ts` (הפרוקסי, ששער
+  ההרשאות וה-redirect עוברים דרכו) רץ ב-edge runtime, מכוסה בנפרד כי
+  אין שם Node APIs.
+- **Releases**: שלושת הקבצים נופלים ל-`SENTRY_RELEASE`/
+  `NEXT_PUBLIC_SENTRY_RELEASE` ואז ל-`VERCEL_GIT_COMMIT_SHA`/
+  `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` — כל deploy על Vercel מתויג
+  בלי משתנה ידני.
+- **Source maps**: `next.config.ts:328` עוטף עם `withSentryConfig(...,
+  { sourcemaps: { deleteSourcemapsAfterUpload:
+  process.env.SENTRY_KEEP_SOURCEMAPS !== '1' } })` — מעלה ומוחק מה-
+  output הציבורי. `.github/workflows/ci.yml` מזין `SENTRY_ORG`/
+  `SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN`/`SENTRY_RELEASE`/
+  `NEXT_PUBLIC_SENTRY_RELEASE` מ-`github.sha`. נמדד ותועד כבר ב-
+  `docs/SENTRY-SETUP.md` (`SENTRY_KEEP_SOURCEMAPS=1 pnpm build` → 75
+  מפות, הגדולה 3.2MB — יש קלט אמיתי להעלאה, לא רק קונפיג ריק).
+- **`/api/health`**: `src/app/api/health/route.ts` — liveness + בדיקת
+  `categories` אמיתית דרך admin client, `no-store`, 503 כשהDB למטה,
+  בלי גרסה/commit/שמות env בתשובה (מפורש ב-doc comment: נקודת קצה
+  ציבורית בלי אימות היא מלאי חינם לתוקף אם היא מדברת יותר מדי).
+- **`/api/ready`**: `src/app/api/ready/route.ts` — חמש תלויות דרך
+  `runReadyChecks()`, `no-store`, 503 רק כשמשהו `down`. שתיהן עטופות
+  ב-`withRequestLog`.
+
+**שערים, כולם בפורגראונד, מאפס מול build אמיתי:** `type-check` נקי.
+`lint` נקי (12 שערים). `pnpm test` מלא **614/614 קבצים, 7335/7347
+עברו** (12 מדולגים, זהה ל-Q48). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build` נקי. שרת בפורט
+3422, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער חזותי PASS
+בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
+ל-Q48 — אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+לא נדרש שינוי קוד ייצור; רק דיווח STATE.
+
+---
+
 ## Q48 (הועבר מ-STATE.md ב-Q49, לשמירה על תקרת 300 שורות)
 
 **Q48 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
