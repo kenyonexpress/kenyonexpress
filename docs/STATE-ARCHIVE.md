@@ -2,6 +2,52 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c68 (פירוט פרטני מלא, הועבר מ-STATE.md ב-M10-c68 עצמו, לשמירה על תקרת 300 שורות)
+
+**M10-c68 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". החוסם כבר מתועד (חוסם 3 ב-STATE.md, `docs/BACKLOG.md`
+סעיף 5, 19 קבצים: 204, 209, 218, 220, 223, 224, 234-236, 239-248) — נבדק
+מחדש **מול פרודקשן בפועל** (לא רק git), בקריאה-בלבד דרך טוקן ה-CLI
+ב-keychain (`security find-generic-password -s "Supabase CLI" -w`, פענוח
+`go-keyring-base64:`, `POST .../database/query`), הפעם עם שאילתה פרטנית
+לכל אחד מה-19 (לא רק דגימה מייצגת כמו ב-M10-c66):
+204/234/235/236/239/240/243/244 — הטבלה שהם יוצרים עדיין לא קיימת;
+218/223/242 — העמודה שהם מוסיפים עדיין לא קיימת; 224/247/248 — ההרשאה
+שהם מעניקים עדיין לא קיימת (248: 0/2 מ-2 העמודות); 220 — `proconfig` של
+`fn_wallet_entries_block_mutation` עדיין `NULL`; 245 — אף אחת משלוש
+המדיניות שהוא יוצר ל-`banners` לא קיימת; 241 — עדיין 46 מוצרים פעילים עם
+`city IS NULL`; 209/246 — נבדק ברמת המדיניות עצמה, לא רק הפונקציה: המדיניות
+`push_subscriptions_select_own`/`cashback_ledger_owner_select` עדיין
+`auth.uid() = user_id` לא עטופה (209 §2 לא הוחל), והמדיניות
+`profiles_super_admin_mfa` נושאת צורה שלישית שאינה תואמת לא את 209 ולא
+את 246 (`(current_user_role())::text` לא עטוף ב-`select`, ו-`auth.jwt()`
+לא בצורת 246 `( SELECT auth.jwt() AS jwt) ->> 'aal'`) — כלומר זו עדיין
+המדיניות המקורית, שני הקבצים לא הוחלו. **כל 19 מאושרים לא-הוחלו, אפס
+סחיפה** מ-M10-c66/M10-c67. `migrations/pending/*.sql` נספר מחדש: 60,
+זהה ל-M10-c67, אין קובץ חדש. אין מיגרציה שהוחלה, אין commit קוד.
+
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים), `test`
+614/614 קבצים, 7337/7349 עברו (12 מדולגים), `build` exit 0 (הורץ בפועל,
+לא רק הושווה ל-`.next`). קובץ יחיד: `STATE.md` (+`docs/BACKLOG.md`).
+
+## M09-c68 (הועבר מ-STATE.md ב-M10-c68, לשמירה על תקרת 300 שורות)
+
+**M09-c68 - DONE (02.10.2026).** משימת התור: הסרת deps לא בשימוש וexports
+מתים. `pnpm dlx knip --no-config-hints` הורץ מחדש מול HEAD `c96296cb2`.
+`git diff 7006b3da7..HEAD -- package.json pnpm-lock.yaml` ריק — אין שינוי
+תלויות מאז M09-c67, כך שחמש ה-deps שסומנו (`@radix-ui/react-dropdown-menu`,
+`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
+הן אותן false-positive מאומתות (`drizzle.config.ts`, `src/db/schema/*`,
+`scripts/dr/*`, `src/components/ui/{select,form}.tsx`). רשימת "unused
+exports" ירדה מ-273 ל-271 (בדיוק שני השדות שהוסרו ב-M09-c67,
+`HERO_ANIMATION_MEDIA`/`dotButtonWidth`), ו-"unused exported types" נשארה
+197 — אפס מועמד חדש. הקובץ היחיד ששונה מאז M09-c67 חוץ מתיעוד הוא
+`src/app/robots.ts` (M12-c67, +3 שורות `Disallow`), לא מוסיף/מסיר export.
+שני קבצי `HeroSlider.tsx` (`home`, `store`) לא השתנו מאז M09-c67 — מועמדים
+ישנים, לא דריפט חדש. אפס שינוי קוד. ארבעת השערים ירוקים: `type-check`
+נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים (7337+12), `build`
+exit 0. קובץ יחיד: `STATE.md`.
+
 ## M08-c68 (הועבר מ-STATE.md ב-M09-c68, לשמירה על תקרת 300 שורות)
 
 **M08-c68 - DONE (02.10.2026).** משימת התור: Lighthouse mobile על `/`

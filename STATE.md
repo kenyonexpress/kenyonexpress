@@ -1,26 +1,24 @@
-RESUME FROM: M10-c68
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c68 - DONE, deps/exports מתים נבדקו מחדש עם knip, אפס דריפט)
+RESUME FROM: M11-c68
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c68 - DONE, מיגרציות ממתינות אומתו מחדש מול פרודקשן בפועל, כל 19 הקבצים בדיקה פרטנית)
 
 ## המשך מ:
 
-**M09-c68 - DONE (02.10.2026).** משימת התור: הסרת deps לא בשימוש וexports
-מתים. `pnpm dlx knip --no-config-hints` הורץ מחדש מול HEAD `c96296cb2`.
-`git diff 7006b3da7..HEAD -- package.json pnpm-lock.yaml` ריק — אין שינוי
-תלויות מאז M09-c67, כך שחמש ה-deps שסומנו (`@radix-ui/react-dropdown-menu`,
-`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
-הן אותן false-positive מאומתות (`drizzle.config.ts`, `src/db/schema/*`,
-`scripts/dr/*`, `src/components/ui/{select,form}.tsx`). רשימת "unused
-exports" ירדה מ-273 ל-271 (בדיוק שני השדות שהוסרו ב-M09-c67,
-`HERO_ANIMATION_MEDIA`/`dotButtonWidth`), ו-"unused exported types" נשארה
-197 — אפס מועמד חדש. הקובץ היחיד ששונה מאז M09-c67 חוץ מתיעוד הוא
-`src/app/robots.ts` (M12-c67, +3 שורות `Disallow`), לא מוסיף/מסיר export.
-שני קבצי `HeroSlider.tsx` (`home`, `store`) לא השתנו מאז M09-c67 — מועמדים
-ישנים, לא דריפט חדש. אפס שינוי קוד. ארבעת השערים ירוקים: `type-check`
-נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים (7337+12), `build`
-exit 0. קובץ יחיד: `STATE.md`.
+**M10-c68 - DONE (02.10.2026, פירוט פרטני מלא ב-`docs/STATE-ARCHIVE.md`).**
+משימת התור: "Verify migrations/pending/ applied or file blocker". החוסם
+כבר מתועד (חוסם 3 למטה, `docs/BACKLOG.md` סעיף 5, 19 קבצים) — נבדק מחדש
+**מול פרודקשן בפועל**, בקריאה-בלבד דרך טוקן ה-CLI ב-keychain, הפעם
+בשאילתה פרטנית לכל אחד מה-19 בנפרד (לא דגימה כמו ב-M10-c66): כל טבלה/
+עמודה/הרשאה/`proconfig`/מדיניות שכל קובץ היה אמור ליצור — עדיין חסרה,
+כולל 209/246 שנבדקו ברמת תוכן המדיניות עצמו (לא רק קיומה) ואושרו כצורה
+שלישית, לא-209 ולא-246. **כל 19 מאושרים לא-הוחלו, אפס סחיפה**
+מ-M10-c66/M10-c67. `migrations/pending/*.sql`: 60, זהה ל-M10-c67, אין
+קובץ חדש. אין מיגרציה שהוחלה, אין commit קוד. ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349
+עברו, `build` exit 0 (הורץ בפועל). קובץ יחיד: `STATE.md`+`docs/BACKLOG.md`.
 
-**M08-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M09-c68 לשמירה על תקרת 300 שורות).** שבעה פריטי אימות-בלבד: Lighthouse
+**M09-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M10-c68 לשמירה על תקרת 300 שורות).** שמונה פריטי אימות-בלבד: deps/exports
+מתים נבדקו מחדש עם `knip`, אפס דריפט (M09); Lighthouse
 mobile `/`+`/product` 100/100/100 provided, אפס דריפט (M08); TODO/FIXME
 רוחבת-ריפו (M07); `build` exit 0 (M06); `test` 614/614, 7337+12 (M05);
 `type-check` נקי (M04); שער חזותי קטגוריה אפס דריפט (3.53/2.52/1.69,
@@ -224,7 +222,8 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר
-   (אושר מחדש מול פרודקשן בפועל ב-M10-c66, 01.10, אפס סחיפה מ-25.09).
+   (אושר מחדש מול פרודקשן בפועל ב-M10-c68, 02.10, בדיקה פרטנית לכל 19
+   הקבצים, אפס סחיפה מ-M10-c66/25.09).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
 5. **צילומי reference ב-380 וב-768 לסל ולקופה**: קיימים רק ב-1440

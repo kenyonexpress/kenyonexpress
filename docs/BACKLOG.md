@@ -423,6 +423,25 @@ unchanged; `git log -1 -- migrations/pending/` still points at
 production probe; the 19-file blocker stands unchanged. No migration
 applied, no code change.
 
+**Re-checked 2026-10-02 (M10-c68), item 5 only, against production
+directly again (full per-file, not a sample this time):** queue item
+"Verify migrations/pending/ applied or file blocker" recurred a second
+time. Same read-only CLI-keychain-token method, but this run queried
+every one of the 19 files' own target object individually instead of a
+representative subset: 204/234/235/236/239/240/243/244 still have no
+table; 218/223/242 still have no column; 224/247/248 still have no
+grant (248: 0 of 2 column grants); 220's `fn_wallet_entries_block_mutation`
+still has no `proconfig`; 245's three named `banners` policies still
+don't exist; 241's three target rows (plus 43 more active products)
+still have `city IS NULL`; 209 and 246 were checked at the policy-text
+level, not just existence — `push_subscriptions_select_own` and
+`cashback_ledger_owner_select` still read `auth.uid() = user_id`
+unwrapped (209 §2 not applied), and `profiles_super_admin_mfa`'s qual
+matches neither 209's nor 246's proposed rewrite (still the original
+policy). All 19 confirmed unapplied, zero drift from M10-c66/M10-c67.
+`migrations/pending/*.sql` count re-checked at 60, unchanged. No
+migration applied, no code change.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
