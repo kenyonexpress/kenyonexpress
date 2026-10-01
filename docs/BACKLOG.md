@@ -553,7 +553,13 @@ applied, no code change.
     גם כשסעיף 4 (פריסת HEAD) ייסגר. להוסיף את שני המשתנים ב-Vercel
     Production (הערכים כבר ב-Sentry project `kenyonexpress-web`,
     `https://de.sentry.io`), ואז לפרוס מחדש (הערך נאפה בזמן build, לא
-    runtime). מקור: M14-c66 (אין רשומה קודמת כפעולה בשום קובץ).
+    runtime). מקור: M14-c66 (אין רשומה קודמת כפעולה בשום קובץ). **נמדד
+    שוב ב-02.10.2026, M14-c67, אפס דריפט**: `filter_project_envs` על אותו
+    פרויקט עדיין לא מחזיר `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`, רק
+    `SENTRY_AUTH_TOKEN`; שלושת קובצי האתחול זהים (אין קומיט שנגע בהם
+    מאז `db5999d33`); הפריסה החיה (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`)
+    עדיין בנויה מ-`a388118f1`, עכשיו **370** קומיטים מאחורי HEAD
+    (`6bd25c638`), לא 285.
 18. **`scripts/compare.mjs` נותן PASS נמוך-כוזב כש"שלנו" ריק, לא FAIL גבוה.**
     נמדד 01.10.2026, M01-c67: שרת `pnpm start` ישן על פורט 3311 המשיך
     לרוץ אחרי ש-`.next` נבנה מחדש על ידו (או סשן מקביל), כך שה-HTML שהוא

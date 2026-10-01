@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c67 (הועבר מ-STATE.md ב-M14-c67, לשמירה על תקרת 300 שורות)
+
+**M13-c67 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". הקוד (`src/app/api/health/route.ts`,
+`src/app/api/ready/route.ts`, `src/lib/health/checks.ts`,
+`src/lib/health/ready.ts`) זהה לחלוטין לזה שנבדק ב-M13-c66 (01.10.2026) —
+אין קומיט שנגע בארבעת הקבצים מאז. **אומת שוב מול פרודקשן בפועל, לא נלקח
+כמובן מאליו**: `curl https://www.kenyonexpress.co.il/api/health` מחזיר
+`200`, `{"ok":true,"database":"ok","latency_ms":274}`.
+`curl .../api/ready` מחזיר **`503`**, לא `200`:
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`
+— זהה בדיוק ל-M13-c66 (`meilisearch:"down"`), כלומר אפס דריפט ביום
+שעבר. `r2`/`cardcom` כ-`not_configured` תואמים חוסמים קיימים (4 ו-8
+למטה), לא ממצא חדש. המשימה מנוסחת כאילו שני הנתיבים צריכים `200`, אבל
+`/api/ready` **אמור** להחזיר `503` כשתלות חיה חסומה — זו ההתנהגות
+הנכונה של שער readiness, לא תקלה בקוד; התקלה האמיתית (Meilisearch
+חוץ-פרודקשן לא נגיש) היא חוסמת-אופיר בלבד, מתועדת כבר ב-BACKLOG.md
+סעיף 16 (נוצר ב-M13-c66). **לא נדרש תיקון קוד** — נוסף רק משפט "נמדד
+שוב" לסעיף 16 עם התאריך והערכים הזהים. ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים, זהה), `build` הורץ בפועל מ-`.next` נקי, 50.03 שניות, exit 0.
+לא פריט חזותי, `scripts/compare.mjs` לא נדרש (אין שינוי UI). קבצים
+ששונו: `docs/BACKLOG.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M12-c67 (הועבר מ-STATE.md ב-M13-c67, לשמירה על תקרת 300 שורות)
 
 **M12-c67 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
