@@ -1,44 +1,43 @@
-RESUME FROM: M12-c68
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c68 - DONE, sitemap.xml אומת מחדש מול פרודקשן בפועל, אפס דריפט)
+RESUME FROM: M13-c68
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c68 - DONE, robots.txt אומת מול קוד (תקין) ומול פרודקשן בפועל (לא עדכני, חוסם 2 קיים))
 
 ## המשך מ:
 
-**M11-c68 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
-reachable". בדיקת דריפט קוד קודם: `git log a0ede26c4..HEAD -- src/app/sitemap
-src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
-src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` — קומיט יחיד
-(`4d3702025`, M12-c67, תיקון `robots.txt` שלא נוגע ל-sitemap). **נמדד מול
-פרודקשן בפועל (`https://www.kenyonexpress.co.il`)**: `/sitemap.xml` מחזיר
-`200` עם `<sitemapindex>` וחמש תת-מפות (`content`/`categories`/`products`/
-`regions`/`suppliers`), כולן `200`, עם אותה ספירת כתובות כמו M11-c67
-(14/13/46/17/7). `lastmod` ב-`products.xml` טרי ומשתנה (עד `2026-09-25`).
-`robots.txt` מצביע ל-`https://kenyonexpress.co.il/sitemap.xml` הנכון. **אפס
-דריפט מ-M11-c67/M11-c66.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
-(12 שערים), `test` 614/614 קבצים, 7337/7349 עברו, `build` exit 0 (הורץ
-בפועל, חמשת נתיבי ה-sitemap מופיעים כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד:
-`STATE.md`.
+**M12-c68 - DONE (02.10.2026).** משימת התור: "Verify robots.txt production-safe".
+`git log 4d3702025..HEAD -- src/app/robots.ts` ריק — אפס דריפט קוד. תיקון
+M12-c67 (`/gift/`, `/order/`, `/wishlist/s/`, `/debug/`) עדיין ב-`Disallow`.
+סריקת `src/app/**/[*]` חדשה מול הרשימה (`/c/[code]`, `/r/[code]`, `/s/[id]`,
+`/coupons/[id]`, `/dev/emails/[id]`) לא הוסיפה כתובת-אסימון: שלוש
+הראשונות הן redirect ציבורי מכוון ל-`/`, `/coupons/[id]` (רבים) הוא דף
+מבצעים ציבורי עם canonical מפורש (שונה מ-`/coupon/[id]` היחיד, כבר
+מכוסה), ו-`/dev/emails/` מחזיר `404` בפרודקשן. **קוד HEAD תקין.**
 
-**M10-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M11-c68 לשמירה על תקרת 300 שורות).** תשעה פריטי אימות-בלבד: 19 מיגרציות
-ממתינות אומתו מחדש מול פרודקשן בפועל, בדיקה פרטנית לכל קובץ, אפס סחיפה
-(M10); deps/exports מתים נבדקו מחדש עם `knip`, אפס דריפט (M09); Lighthouse
-mobile `/`+`/product` 100/100/100 provided, אפס דריפט (M08); TODO/FIXME
-רוחבת-ריפו (M07); `build` exit 0 (M06); `test` 614/614, 7337+12 (M05);
-`type-check` נקי (M04); שער חזותי קטגוריה אפס דריפט (3.53/2.52/1.69,
-M03); שער חזותי מוצר אפס דריפט (4.96/4.58/3.25, M02). אפס שינוי קוד,
-ארבעת השערים ירוקים בכולם.
+**נמדד מול פרודקשן בפועל**: `curl -i .../robots.txt` מחזיר גרסה ישנה מלפני
+M12-c67, זהה מילה-במילה ל-`a388118f1:src/app/robots.ts` — תוצאה של חוסם 2
+(פרודקשן קפוא), לא ממצא עצמאי. פרטים וראיה חיה (`200` בלי `Disallow`
+לשלוש כתובות-האסימון) תועדו תחת חוסם 2 למטה, לא חוסם נפרד.
+
+ארבעת השערים ירוקים: `type-check`/`lint` נקיים, `test` 614/614, 7337/7349
+עברו, `build` exit 0 (`/robots.txt` כ-`○ Static`). אפס שינוי קוד.
+
+**M11-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M12-c68 לשמירה על תקרת 300 שורות).** עשרה פריטי אימות-בלבד, אפס דריפט
+בכולם: sitemap.xml טרי, חמש תת-מפות 200 (M11); 19 מיגרציות אומתו מחדש
+פרטנית (M10); deps/exports מתים עם `knip` (M09); Lighthouse mobile
+100/100/100 (M08); TODO/FIXME (M07); `build` exit 0 (M06); `test`
+614/614, 7337+12 (M05); `type-check` נקי (M04); שער חזותי קטגוריה
+(3.53/2.52/1.69, M03); שער חזותי מוצר (4.96/4.58/3.25, M02). ארבעת
+השערים ירוקים בכולם.
 
 **M04-c67..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M18-c67 ו-M01-c68 לשמירה על תקרת 300 שורות).** ארבעה-עשר
-פריטי אימות-בלבד/תחזוקה (M04-M17), אפס דריפט בכולם: type-check/test/build
-(M04-M06); TODO/FIXME עם צימוד ב-BACKLOG (M07); Lighthouse 100/100/100
-(M08); חמש חבילות מתות הוסרו (M09); 19 מיגרציות אומתו (M10); sitemap.xml
-(M11); robots.txt תוקן (שלוש כתובות-אסימון חסרות מ-`Disallow`, M12);
-`/api/health`/`/api/ready` מול פרודקשן (M13); Sentry release מול HEAD,
-הפער ל-370 קומיטים (M14); אפס console error ב-`/`+`/product` (M15);
-JSON-LD Product+BreadcrumbList בכל דפי המוצר (M16); RTL על `/` ו-`/product`
-נבדק מחדש, אפס דריפט מ-M17-c66 (M17). **M18-c67:** STATE.md היה כבר מתחת לתקרת 300 שורות (295), כפילות ארכיון מ-M17-c67 תוקנה.
-**M01-c68:** שער חזותי בית נמדד מחדש, אפס דריפט מ-M01-c67 (8.58%/9.01%/4.16%). ארבעת השערים ירוקים בכל השש-עשרה.
+ב-M18-c67 ו-M01-c68 לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטי
+אימות-בלבד/תחזוקה (M04-M17), אפס דריפט בכולם: type-check/test/build
+(M04-M06); TODO/FIXME (M07); Lighthouse 100/100/100 (M08); חמש חבילות
+מתות הוסרו (M09); 19 מיגרציות אומתו (M10); sitemap.xml (M11); robots.txt
+תוקן (M12); `/api/health`/`/api/ready` (M13); Sentry מול HEAD, פער 370
+קומיטים (M14); אפס console error (M15); JSON-LD (M16); RTL (M17).
+**M18-c67:** STATE.md כבר מתחת לתקרה, כפילות ארכיון תוקנה. **M01-c68:**
+שער חזותי בית אפס דריפט (8.58/9.01/4.16). ארבעת השערים ירוקים בכל השש-עשרה.
 
 **M18-c66..M03-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M04-c67 לשמירה על תקרת 300 שורות).** שלושה שערים חזותיים נמדדו
@@ -213,7 +212,10 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    ב-M01-c65 דרך `curl` ישיר על `www.kenyonexpress.co.il`). **DNS
    אינו קשור לחוסם הזה**, נמדד שוב ב-M01-c65: `www.kenyonexpress.co.il`
    מחזיר 200 עם התוכן החי, `kenyonexpress.co.il` מפנה 308 ל-`www`, ה-NS
-   עדיין `ns1/ns2.vercel-dns.com`.
+   עדיין `ns1/ns2.vercel-dns.com`. **תוצאה קונקרטית נוספת, M12-c68**:
+   `robots.txt` החי עדיין בגרסת `a388118f1`, בלי שלוש כתובות-האסימון
+   (`/gift/`,`/order/`,`/wishlist/s/`) ו-`/debug/` שתוקנו ב-M12-c67 — ונבדק
+   חי ששלושתן מחזירות `200` בפרודקשן כרגע, בלי כיסוי `Disallow`.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
    "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס

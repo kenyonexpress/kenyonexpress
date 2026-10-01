@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c68 (פירוט פרטני מלא, הועבר מ-STATE.md ב-M12-c68, לשמירה על תקרת 300 שורות)
+
+**M11-c68 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". בדיקת דריפט קוד קודם: `git log a0ede26c4..HEAD -- src/app/sitemap
+src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
+src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` — קומיט יחיד
+(`4d3702025`, M12-c67, תיקון `robots.txt` שלא נוגע ל-sitemap). **נמדד מול
+פרודקשן בפועל (`https://www.kenyonexpress.co.il`)**: `/sitemap.xml` מחזיר
+`200` עם `<sitemapindex>` וחמש תת-מפות (`content`/`categories`/`products`/
+`regions`/`suppliers`), כולן `200`, עם אותה ספירת כתובות כמו M11-c67
+(14/13/46/17/7). `lastmod` ב-`products.xml` טרי ומשתנה (עד `2026-09-25`).
+`robots.txt` מצביע ל-`https://kenyonexpress.co.il/sitemap.xml` הנכון. **אפס
+דריפט מ-M11-c67/M11-c66.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים), `test` 614/614 קבצים, 7337/7349 עברו, `build` exit 0 (הורץ
+בפועל, חמשת נתיבי ה-sitemap מופיעים כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד:
+`STATE.md`.
+
 ## M10-c68 (פירוט פרטני מלא, הועבר מ-STATE.md ב-M10-c68 עצמו, לשמירה על תקרת 300 שורות)
 
 **M10-c68 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
