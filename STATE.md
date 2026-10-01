@@ -1,29 +1,36 @@
-RESUME FROM: M02-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c69 - DONE, שער חזותי בית נמדד מחדש, אפס דריפט)
+RESUME FROM: M03-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c69 - DONE, שער חזותי מוצר נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
-768 1440 on / and record diffs in STATE.md". שרת `next-server` כבר היה
-חי על פורט 3311 (PID 84228, `cwd` זהה לריפו, עץ עבודה נקי, `curl /` →
-`200`) — לא נבנה build חדש. **מדידה אמיתית, בפורגראונד, שלושה רוחבים,
-מול `refs/ke_live_{width}.png` (לא מול הדומיין החי — חוסם #14 למעלה,
-הניווט החי מחזיר את הבנייה שלנו):**
+**M02-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` על 3311 (PID 84228, אותו שרת ששימש
+את M01-c69) אומת לפני המדידה: `.next/BUILD_ID` מ-04:06 מאוחר מהקומיט
+האחרון שנגע ב-`src`/`public` (`4d3702025`, לפני HEAD הנוכחי `5a9c711a6`
+שהוא docs-only), `curl` החזיר `200` גם ל-`/` וגם ל-`/product/מוצר-לדוגמא`.
+**מדידה אמיתית, בפורגראונד, שלושה רוחבים, מול `refs/electro_product_
+{width}.png` (slug קבוע `מוצר-לדוגמא`, reference קבוע מ-Q05b):**
 
-| רוחב | ציון | סטטוס | overall | הערות |
+| רוחב | ציון (both-painted) | סטטוס | overall | הערות |
 |---|---|---|---|---|
-| 380 | 8.58% | PASS | 14.11% | ref blank 2.79%, ours blank 2.75% |
-| 768 | 9.01% | PASS | 16.03% | ref blank 4.31%, ours blank 2.72% |
-| 1440 | 4.16% | PASS | 15.45% | ref blank 9.88%, ours blank 1.41% |
+| 380 | 4.96% | PASS | 31.74% | ref blank 19.62%, ours blank 7.16% |
+| 768 | 4.58% | PASS | 32.33% | ref blank 21.24%, ours blank 6.51% |
+| 1440 | 3.25% | PASS | 19.68% | ref blank 10.74%, ours blank 5.69% |
 
-שלושתם זהים ל-100% לציוני M01-c68 (`d97c21212`→`eff602538`) — **אפס
-דריפט**, מאושר ב-`git diff d97c21212..HEAD -- src public` (ריק). ארבעת
-השערים הורצו מחדש על הענף: `type-check` נקי, `lint` נקי (12 שערים),
-`test` 614/614 קבצים ו-7337/7349 עברו (12 מדולגים), `build`
-(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523 pnpm
-build`) exit 0 — זהה לתוצאות M18-c68. השורות נוספו אוטומטית
-ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו. קבצים: `STATE.md`,
-`docs/UI-PARITY-REPORT.md` (נכתב על ידי השער).
+שלושתם זהים ל-100% לציוני M02-c68 — **אפס דריפט**; אין קומיט שנגע
+ב-`src`/`public` בין `d97c21212` (בסיס M02-c68) ל-`5a9c711a6` (HEAD
+הנוכחי). אזהרת `HEIGHT RATIO` חזרה (0.26x/0.31x/0.34x) — נפתרה כבר
+ב-M02-c67 (עמוד המוצר הנדגם קצר באופן לגיטימי מרפרנס Electro, אושר
+ויזואלית אז). לא נדרש `type-check`/`lint`/`test`/`build` נוסף —
+M01-c69 כבר אישר ארבעתם ירוקים על אותו HEAD ואין שינוי קוד בפריט הזה.
+השורות נוספו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו.
+קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md` (נכתב על ידי השער).
+
+**M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M02-c69
+לשמירה על תקרת 300 שורות).** שער חזותי בית נמדד מחדש מול `refs/ke_live_
+{width}.png`, אפס דריפט מ-M01-c68 (8.58%/9.01%/4.16%). ארבעת השערים
+הורצו מחדש וירוקים: `type-check`, `lint` (12 שערים), `test` 614/614
+קבצים ו-7337/7349 עברו (12 מדולגים), `build` exit 0.
 
 **M18-c68..M17-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M01-c69 לשמירה על תקרת 300 שורות).** M18-c68: STATE.md אומת מתחת
