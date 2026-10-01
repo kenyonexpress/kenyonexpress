@@ -1,23 +1,28 @@
-RESUME FROM: M06-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c70 - DONE, pnpm test נבדק מחדש, אפס דריפט)
+RESUME FROM: M07-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c70 - DONE, pnpm build נבדק מחדש בפועל, אפס דריפט)
 
 ## המשך מ:
 
-**M05-c70 - DONE (02.10.2026).** "pnpm test fix drift commit" — זהה
-במהות ל-M05-c69. `git status` נקי, `git diff 0f6709c9f..HEAD -- src
+**M06-c70 - DONE (02.10.2026).** "pnpm build fix drift commit" — זהה
+במהות ל-M06-c69. `git status` נקי, `git diff 755f7a34c..HEAD -- src
 public package.json pnpm-lock.yaml scripts next.config.ts
-tsconfig.json` ריק (אפס שינוי קוד מאז M04-c70). `test` 614/614 קבצים,
-7337/7349 עברו (12 מדולגים) — זהה ל-M04-c70/M03-c70/M01-c70, אפס
-דריפט. `type-check` יצא קוד 0, `lint` ירוק (12 שערים, 2037 קבצים, אפס
-תיקונים). `build` לא הורץ מחדש: `pnpm start` חי על אותו PID 84228 עם
-`.next/BUILD_ID` `7usgLVQXhLG29nYBQp1nK` (אותו build שאומת ב-M01-c70,
-סיכון OOM, ראו `concurrent-worktree-builds-oom`), `curl` ל-`/` החזיר
-`200`. שום שינוי קוד לא נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+tsconfig.json` ריק (אפס שינוי קוד מאז M06-c69, שם נבדק `build` בפעם
+האחרונה בפועל). לפני ההרצה: `uptime` load average 2.70 ו-`pgrep -f
+"next build"` ריק (אין בנייה מקבילה פעילה כרגע, ראו
+`concurrent-worktree-builds-oom`), כך שההרצה בוצעה. `pnpm build` רץ
+בפועל, יצא קוד `0`, 44 שניות, `.next/BUILD_ID` חדש
+`WYfyZvxyocdLXKDemfvDh` (היה `7usgLVQXhLG29nYBQp1nK`, build חדש כי
+תהליך `pnpm start` הקודם דרס את ה-`.next` בהרצה, ראו `dev-and-start-
+share-dot-next`). `type-check` יצא קוד 0, `lint` ירוק (12 שערים, 2037
+קבצים, אפס תיקונים), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים) — זהה ל-M05-c70/M04-c70/M03-c70/M01-c70, אפס דריפט. שום שינוי
+קוד לא נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M04-c70, M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא
-ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69, M14-c69, M17-c69,
-M01-c70, M02-c70, M03-c70 וב-M05-c70 לשמירה על תקרת 300 שורות).**
-M04-c70: `pnpm type-check` נבדק מחדש, אפס דריפט. M03-c70: שער חזותי
+**M05-c70, M04-c70, M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון
+מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69, M14-c69,
+M17-c69, M01-c70, M02-c70, M03-c70, M05-c70 וב-M06-c70 לשמירה על תקרת
+300 שורות).** M05-c70: `pnpm test` נבדק מחדש, 614/614 קבצים, 7337/7349
+עברו (12 מדולגים), אפס דריפט. M04-c70: `pnpm type-check` נבדק מחדש, אפס דריפט. M03-c70: שער חזותי
 קטגוריה נמדד מחדש, אפס דריפט (3.53/2.52/1.69). M02-c70: שער חזותי
 מוצר נמדד מחדש, אפס
 דריפט (4.96/4.58/3.25). M01-c70: שער חזותי בית נמדד מחדש, אפס דריפט
