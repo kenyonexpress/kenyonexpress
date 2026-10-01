@@ -2,6 +2,29 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c66 (הועבר מ-STATE.md ב-M13-c66, לשמירה על תקרת 300 שורות)
+
+**M12-c66 - DONE (01.10.2026).** משימת התור: "Verify robots.txt production-
+safe". `curl https://www.kenyonexpress.co.il/robots.txt` הושווה שורה-שורה
+מול `src/app/robots.ts` — זהה לחלוטין (אותם 12 `Disallow`, `Allow: /`,
+`Host`, `Sitemap`), כלומר ה-build החי (`a388118f1`) מגיש את הגרסה הנוכחית
+של הקוד. **נמצא פער אמיתי במדידה, לא בקוד שלא נבדק**: `src/app/debug/
+sentry` ו-`src/app/debug/sentry/render` (בדיקת חיווט Sentry, מגינות
+ב-`debugErrorRoutesEnabled()` / `SENTRY_DEBUG_ROUTES`) נמדדו `200` בפרודקשן
+עכשיו — כלומר הדגל דלוק כרגע בפועל, לא רק בתיאוריה — והנתיב `/debug/` לא
+היה ברשימת ה-`Disallow` (רק `/api/debug/sentry` מכוסה דרך `/api/`, והוא
+עצמו `404` ל-GET). שתי הדפים נגישים לזחילה/אינדוקס ציבורי כרגע ללא
+`noindex` ברמת העמוד. **תוקן**: שורת `/debug/` נוספה ל-`Disallow` ב-
+`src/app/robots.ts` (הערה שמסבירה את `SENTRY_DEBUG_ROUTES`), וטסט חדש
+`disallows the gated Sentry debug pages` נוסף ל-`robots.test.ts`. `/dev/`
+(emails/components) נבדק בנפרד — `404` בפרודקשן (שומר על `NODE_ENV`,
+לא דלוק), לא נגיש, לא נוסף לרשימה כדי לא לייצר שורה שלא מגינה על כלום.
+לא פריט חזותי (קובץ טקסט, לא HTML מרונדר), `scripts/compare.mjs` לא
+הורץ (תקדים M04-c66..M11-c66). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` מלא 614/614 קבצים, 7336/7348 עברו (עלה ב-1 מהטסט
+החדש), 12 מדולגים (זהה), `build` exit 0 נקי, `robots.txt` מופיע ב-build
+output כ-`○` (static).
+
 ## M11-c66 (פירוט מלא, נכתב ישירות לכאן ב-M11-c66 עצמו בגלל תקרת 300 שורות)
 
 **M11-c66 - DONE (01.10.2026).** משימת התור: "Verify sitemap.xml fresh

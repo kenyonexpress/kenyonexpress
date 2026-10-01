@@ -1,39 +1,49 @@
-RESUME FROM: M13-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c66 - DONE, robots.txt אומת מול פרודקשן בפועל, פער אחד נמצא ותוקן)
+RESUME FROM: M14-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c66 - DONE, /api/health ו-/api/ready אומתו מול פרודקשן בפועל, ממצא חדש על Meilisearch)
 
 ## המשך מ:
 
-**M12-c66 - DONE (01.10.2026).** משימת התור: "Verify robots.txt production-
-safe". `curl https://www.kenyonexpress.co.il/robots.txt` הושווה שורה-שורה
-מול `src/app/robots.ts` — זהה לחלוטין (אותם 12 `Disallow`, `Allow: /`,
-`Host`, `Sitemap`), כלומר ה-build החי (`a388118f1`) מגיש את הגרסה הנוכחית
-של הקוד. **נמצא פער אמיתי במדידה, לא בקוד שלא נבדק**: `src/app/debug/
-sentry` ו-`src/app/debug/sentry/render` (בדיקת חיווט Sentry, מגינות
-ב-`debugErrorRoutesEnabled()` / `SENTRY_DEBUG_ROUTES`) נמדדו `200` בפרודקשן
-עכשיו — כלומר הדגל דלוק כרגע בפועל, לא רק בתיאוריה — והנתיב `/debug/` לא
-היה ברשימת ה-`Disallow` (רק `/api/debug/sentry` מכוסה דרך `/api/`, והוא
-עצמו `404` ל-GET). שתי הדפים נגישים לזחילה/אינדוקס ציבורי כרגע ללא
-`noindex` ברמת העמוד. **תוקן**: שורת `/debug/` נוספה ל-`Disallow` ב-
-`src/app/robots.ts` (הערה שמסבירה את `SENTRY_DEBUG_ROUTES`), וטסט חדש
-`disallows the gated Sentry debug pages` נוסף ל-`robots.test.ts`. `/dev/`
-(emails/components) נבדק בנפרד — `404` בפרודקשן (שומר על `NODE_ENV`,
-לא דלוק), לא נגיש, לא נוסף לרשימה כדי לא לייצר שורה שלא מגינה על כלום.
-לא פריט חזותי (קובץ טקסט, לא HTML מרונדר), `scripts/compare.mjs` לא
-הורץ (תקדים M04-c66..M11-c66). ארבעת השערים: `type-check` נקי, `lint`
-נקי (12 שערים), `test` מלא 614/614 קבצים, 7336/7348 עברו (עלה ב-1 מהטסט
-החדש), 12 מדולגים (זהה), `build` exit 0 נקי, `robots.txt` מופיע ב-build
-output כ-`○` (static).
+**M13-c66 - DONE (01.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". נבדק מול פרודקשן בפועל
+(`https://www.kenyonexpress.co.il`), לא רק מול הקוד — Q49 (בארכיון) אימת
+את שישת הרכיבים קובץ-קובץ ומול build מקומי בלבד, לא מול ה-endpoint החי.
 
-**M11-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M12-c66
-לשמירה על תקרת 300 שורות).** פריט תור, DONE: sitemap.xml אומת טרי ונגיש
-מול פרודקשן בפועל (אינדקס עם חמש תת-מפות, 200 בכולן, אפס דריפט קוד).
-ארבעת השערים ירוקים, אין commit קוד.
+**`/api/health`: PASS.** `curl` ישיר מחזיר `200`,
+`{"ok":true,"database":"ok","latency_ms":...}`, שתי בדיקות נפרדות.
 
-**M10-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M11-c66
-לשמירה על תקרת 300 שורות).** פריט תור, DONE: 19 מיגרציות ממתינות
-(חוסם 3 למטה) אומתו מחדש מול פרודקשן בפועל, לא רק git, בקריאה-בלבד
-דרך טוקן ה-CLI ב-keychain. כולן עדיין לא הוחלו, אפס סחיפה מ-25.09.
-ארבעת השערים ירוקים.
+**`/api/ready`: `503`, לא `200` — ממצא אמיתי, לא תקלת קוד.** ארבע בדיקות
+רצופות, יציב: `{"ok":false,"checks":{"database":"ok","redis":"ok",
+"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`.
+`r2`/`cardcom` הם `not_configured` כצפוי (חוסמים פתוחים 4/8 ב-STATE.md).
+**`meilisearch` הוא `down`, לא `not_configured`** — ונבדק למה:
+`filter_project_envs` (קריאה-בלבד, אין ערך שנפתח) מראה ש-
+`MEILISEARCH_HOST` ו-`MEILISEARCH_API_KEY` **קיימים** ב-Production של
+Vercel, כלומר `checkSearch` ב-`src/lib/health/checks.ts` מנסה בפועל
+להגיע לשירות ונכשל — זה מה שמייצר `down` ולא `not_configured` לפי
+ההבחנה המכוונת בקוד (ראו ה-doc comment שם). **לא חוסם לקוח**: `curl
+"https://www.kenyonexpress.co.il/api/search?q=test"` מחזיר `200` באותו
+רגע, כלומר הנפילה ל-Postgres ILIKE (המתועדת כ-fallback) עובדת בפועל.
+**לא לתיקון אוטומטי**: לאמת מארח/מפתח Meilisearch אמיתי דורש לפענח סוד
+או גישה לדשבורד שירות חיצוני, שני דברים שהסוכן לא עושה. **נוסף
+ל-`docs/BACKLOG.md` כסעיף 16** (לא היה רשום באף קובץ קודם).
+
+הקוד עצמו תקין ולא שונה: `503` רק כש-dependency אמיתי `down`, אף פעם לא
+cached. **אין commit קוד.** לא פריט חזותי, `scripts/compare.mjs` לא הורץ
+(תקדים M04-c66..M12-c66). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים), `test` 614/614 קבצים, 7336/7348 עברו, 12 מדולגים (זהה ל-M12-c66),
+`rm -rf .next && pnpm build` exit 0 נקי.
+
+**M12-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M13-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: robots.txt אומת מול
+פרודקשן בפועל, זהה לקוד; נמצא פער אמיתי (`/debug/` חסר מ-`Disallow` בעוד
+הדפים המוגנים נגישים `200` בפועל) ותוקן. ארבעת השערים ירוקים.
+
+**M10-c66 ו-M11-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c66 לשמירה על תקרת 300 שורות).** שני פריטי תור, DONE בשניהם:
+19 מיגרציות ממתינות (חוסם 3 למטה) אומתו מחדש מול פרודקשן בפועל דרך
+טוקן ה-CLI ב-keychain, כולן עדיין לא הוחלו (M10); sitemap.xml אומת טרי
+ונגיש מול פרודקשן בפועל, אינדקס עם חמש תת-מפות, 200 בכולן (M11). אפס
+דריפט קוד בשניהם, ארבעת השערים ירוקים.
 
 **M01-c66..M09-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M11-c66 לשמירה על תקרת 300 שורות).** תשעה פריטי תור, DONE בכולם: שער

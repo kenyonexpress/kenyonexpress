@@ -501,6 +501,19 @@ change — this item was verification only.
     כרגע). כלל הפרויקט אוסר מחיקת נתונים בלי אישור מפורש, כך שההכרעה עצמה
     היא של אופיר, לא רק הביצוע. מקור: STATE.md ידני 9, LAUNCH-READINESS.md
     ידני 13.
+16. **Meilisearch לא נגיש מפרודקשן, לא רק לא מוגדר** (נמדד 01.10.2026,
+    M13-c66, ישירות מול `https://www.kenyonexpress.co.il/api/ready`, ארבע
+    פעמים ברצף, יציב). `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` **קיימים**
+    ב-Vercel Production (נבדק בקריאה-בלבד, `filter_project_envs`, אין ערך
+    שנפתח) — ולכן `checkSearch` ב-`src/lib/health/checks.ts` מדווח `down`
+    ולא `not_configured`, וה-API מחזיר `503` על `/api/ready` ("ok":false).
+    **לא חוסם לקוח כרגע**: `/api/search?q=test` עונה `200` בפרודקשן ברגע
+    המדידה, כלומר הנפילה ל-Postgres ILIKE עובדת כמתועד. **לא לתיקון
+    אוטומטי**: הסוכן לא יכול לבדוק את מארח/מפתח Meilisearch בלי לפענח סוד,
+    ואין לו גישה לדשבורד השירות החיצוני. אופיר: לבדוק שהאינסטנס של
+    Meilisearch חי ושה-`MEILISEARCH_HOST`/`MEILISEARCH_API_KEY` ב-Vercel
+    תואמים לו, אחרת `/api/ready` ימשיך לדווח `503` לכל מוניטור שמסתכל עליו.
+    מקור: M13-c66 (אין רשומה קודמת בשום קובץ).
 
 ## מה לא ברשימה, ולמה
 
