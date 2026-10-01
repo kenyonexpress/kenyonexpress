@@ -2,6 +2,20 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c69 (הועבר מ-STATE.md ב-M01-c70, לשמירה על תקרת 300 שורות)
+
+**M18-c69 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines
+archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c68. **נמדד:
+`wc -l STATE.md` היה 297 לפני העריכה הזו**, כבר מתחת לתקרה, אך הועבר בכל
+זאת הסעיף המלא של M17-c69 ל-`docs/STATE-ARCHIVE.md` (שורה חדשה שם, "הועבר
+מ-STATE.md ב-M18-c69") וכווץ כאן לשורה אחת, כדי לפנות מקום להערת האימות
+הזו ולשמור על אותו קצב כיווץ כמו בכל פריט M18 קודם. **לא נדרש תיקון קוד
+או מבנה נוסף** — אין פיצול/מיזוג סעיפים אחר מעבר לכיווץ הרגיל. ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים,
+7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש (אין שינוי UI, תקדים M18-c68). קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M17-c69 (הועבר מ-STATE.md ב-M18-c69, לשמירה על תקרת 300 שורות)
 
 **M17-c69 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
