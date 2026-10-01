@@ -44,6 +44,12 @@ describe('robots', () => {
     }
   })
 
+  it('disallows the gated Sentry debug pages', () => {
+    // /debug/sentry and /debug/sentry/render sit outside /api/, and
+    // debugErrorRoutesEnabled() can make them answer 200 in production.
+    expect(disallowList()).toContain('/debug/')
+  })
+
   it('still allows the storefront to be crawled', () => {
     const rules = robots().rules
     const first = Array.isArray(rules) ? rules[0] : rules

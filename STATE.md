@@ -1,27 +1,33 @@
-RESUME FROM: M12-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c66 - DONE, sitemap.xml אומת טרי ונגיש מול פרודקשן בפועל)
+RESUME FROM: M13-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c66 - DONE, robots.txt אומת מול פרודקשן בפועל, פער אחד נמצא ותוקן)
 
 ## המשך מ:
 
-**M11-c66 - DONE (01.10.2026, פירוט מלא בקומיט הזה).** משימת התור:
-"Verify sitemap.xml fresh and reachable". נבדק מול פרודקשן בפועל
-(`https://www.kenyonexpress.co.il`, לא רק קוד): `/sitemap.xml` מחזיר
-`200` ומגיש `<sitemapindex>` עם חמש תת-מפות, לא ה-`<urlset>` הישן
-שתועד ב-`docs/LAUNCH-READINESS.md` שורה 270 (מדידה מ-09.09, לפני שהקומיט
-`b209770c4` שהוסיף את האינדקס נדחף). אותו קומיט כן נכלל ב-`a388118f1`,
-הקומיט שרץ היום בפרודקשן, אושר ישירות עם `git merge-base
---is-ancestor`. כל חמש תת-המפות (`content`/`categories`/`products`/
-`regions`/`suppliers`) מחזירות `200`, `products.xml` מחזיק 46 כתובות
-עם `lastmod` עד `2026-09-25T02:29:00.830Z` (לא תאריך קפוא). `robots.txt`
-מצביע ל-`/sitemap.xml` הנכון. אפס קומיטים נגעו בנתיבי ה-sitemap מאז
-`b209770c4` (09.09), אפס דריפט קוד. אין commit קוד.
+**M12-c66 - DONE (01.10.2026).** משימת התור: "Verify robots.txt production-
+safe". `curl https://www.kenyonexpress.co.il/robots.txt` הושווה שורה-שורה
+מול `src/app/robots.ts` — זהה לחלוטין (אותם 12 `Disallow`, `Allow: /`,
+`Host`, `Sitemap`), כלומר ה-build החי (`a388118f1`) מגיש את הגרסה הנוכחית
+של הקוד. **נמצא פער אמיתי במדידה, לא בקוד שלא נבדק**: `src/app/debug/
+sentry` ו-`src/app/debug/sentry/render` (בדיקת חיווט Sentry, מגינות
+ב-`debugErrorRoutesEnabled()` / `SENTRY_DEBUG_ROUTES`) נמדדו `200` בפרודקשן
+עכשיו — כלומר הדגל דלוק כרגע בפועל, לא רק בתיאוריה — והנתיב `/debug/` לא
+היה ברשימת ה-`Disallow` (רק `/api/debug/sentry` מכוסה דרך `/api/`, והוא
+עצמו `404` ל-GET). שתי הדפים נגישים לזחילה/אינדוקס ציבורי כרגע ללא
+`noindex` ברמת העמוד. **תוקן**: שורת `/debug/` נוספה ל-`Disallow` ב-
+`src/app/robots.ts` (הערה שמסבירה את `SENTRY_DEBUG_ROUTES`), וטסט חדש
+`disallows the gated Sentry debug pages` נוסף ל-`robots.test.ts`. `/dev/`
+(emails/components) נבדק בנפרד — `404` בפרודקשן (שומר על `NODE_ENV`,
+לא דלוק), לא נגיש, לא נוסף לרשימה כדי לא לייצר שורה שלא מגינה על כלום.
+לא פריט חזותי (קובץ טקסט, לא HTML מרונדר), `scripts/compare.mjs` לא
+הורץ (תקדים M04-c66..M11-c66). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` מלא 614/614 קבצים, 7336/7348 עברו (עלה ב-1 מהטסט
+החדש), 12 מדולגים (זהה), `build` exit 0 נקי, `robots.txt` מופיע ב-build
+output כ-`○` (static).
 
-לא פריט חזותי, `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M10-c66).
-ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), 122 טסטי
-sitemap/robots ממוקדים ירוקים, `test` מלא 614/614 קבצים, 7335/7347
-עברו, 12 מדולגים (זהה ל-M10-c66). `build` לא הורץ מחדש (`.next` מ-21:20,
-HEAD מ-21:32 הוא commit תיעוד בלבד, זהה-מקור, שישה `pnpm start` מקביליים
-וזיכרון נמוך).
+**M11-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M12-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: sitemap.xml אומת טרי ונגיש
+מול פרודקשן בפועל (אינדקס עם חמש תת-מפות, 200 בכולן, אפס דריפט קוד).
+ארבעת השערים ירוקים, אין commit קוד.
 
 **M10-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M11-c66
 לשמירה על תקרת 300 שורות).** פריט תור, DONE: 19 מיגרציות ממתינות

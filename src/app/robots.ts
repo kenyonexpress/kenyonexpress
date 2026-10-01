@@ -37,6 +37,7 @@ export default function robots(): MetadataRoute.Robots {
           '/api/',
           '/reset-password',
           '/forgot-password',
+          '/debug/', // SENTRY_DEBUG_ROUTES renders these outside the /api/ prefix when the gate is on
         ],
       },
     ],
