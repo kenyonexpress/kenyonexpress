@@ -2,6 +2,43 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c66 (הועבר מ-STATE.md ב-M17-c66, לשמירה על תקרת 300 שורות)
+
+**M16-c66 - DONE (01.10.2026).** משימת התור: "Verify all product pages have
+JSON-LD Product and BreadcrumbList". **כבר בנוי ותקין, לא נדרש שינוי קוד.**
+
+**מקור האמת: `product/[slug]/page.tsx` בונה את שני הצמתים ללא תנאי** לכל
+סלאג (שורות 225-266, `buildProductJsonLd`/`buildBreadcrumbJsonLd` מ-
+`src/lib/seo/json-ld.ts`), ללא הסתעפות לפי סוג מוצר (פיזי/קופון) או מצב
+מלאי — שני `<script type="application/ld+json">` תמיד ברינדור, לא מאחורי
+דגל. 25 הטסטים ב-`json-ld.test.ts` מכסים את `buildProductJsonLd` ישירות
+(מלאי/אזל, מחיר שסותר, קופון מוכר/לא-מוכר, rating נוכח/נעדר, תמונות
+יחסיות/מוחלטות/ריקות) ו-`buildBreadcrumbJsonLd` (מספור מ-1, URL מוחלט).
+
+**אומת גם ברמת הדף עצמו, לא רק הבונה.** `e2e/seo-markup.spec.ts` כבר קיים
+מראש בדיוק עבור הפער "בונה תקין בלי צרכן" (התקדים התועד בהערת הקובץ
+עצמה: קרה שלוש פעמים בתת-מערכות אחרות). הרצתי אותו בפועל: `pnpm start`
+עצמאי על פורט 3317 (על ה-`.next` הנקי שנבנה ב-M15-c66, שישה סשנים
+מקבילים על 3311-3316/3618 לא נגעו בו), ואז
+`E2E_BASE_URL=http://localhost:3317 npx playwright test
+e2e/seo-markup.spec.ts --grep "Product JSON-LD and a breadcrumb"` —
+**2/2 עברו** (chromium+mobile-chrome): `@type` כולל גם `Product` וגם
+`BreadcrumbList`, ול-`Product` יש `name` לא-ריק.
+
+**נבדק גם ישירות מול פרודקשן החי** (`curl` על `/product/צימר-מאסטר`,
+קריאה-בלבד): שני ה-script מופיעים, `Product`+`Brand`+`Offer`+
+`Organization` ו-`BreadcrumbList`+שלושה `ListItem`. **ממצא לוואי, לא
+חדש וכבר ידוע**: ה-`Offer` החי נושא `highPrice` ולא `priceSpecification`
+מסוג `StrikethroughPrice` — בדיוק התבנית שהערת `json-ld.ts` מתעדת כבאג
+שתוקן (25.09), וההסבר הוא חוסם 2 הקיים (פרודקשן על `a388118f1`, 285
+קומיטים מאחורי HEAD) ולא רגרסיה בקוד הנוכחי; לא פעולה חדשה.
+
+**אין commit קוד, רק תיעוד.** לא פריט חזותי, `scripts/compare.mjs` לא
+הורץ (תקדים M04-c66..M15-c66). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614, 7336/7348 עברו (זהה ל-M15-c66), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3316 pnpm
+build`, על .next הקיים מ-M15-c66, `BUILD_ID` חדש) exit 0 נקי.
+
 ## M15-c66 (הועבר מ-STATE.md ב-M16-c66, לשמירה על תקרת 300 שורות)
 
 **M15-c66 - DONE (01.10.2026).** משימת התור: "Verify no console errors on

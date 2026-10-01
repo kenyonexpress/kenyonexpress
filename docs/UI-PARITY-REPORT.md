@@ -866,3 +866,23 @@ to an already large session.
 | 2026-10-01 13:41 | category | 380 | 3.53% | PASS | `820d7076b-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 29.59% (reference blank 9.63%, ours blank 16.43%) |
 | 2026-10-01 13:43 | category | 768 | 2.52% | PASS | `820d7076b-dirty` | live side: frozen capture `refs/electro_shop_768.png`; overall 31.47% (reference blank 9.4%, ours blank 19.54%) |
 | 2026-10-01 13:45 | category | 1440 | 1.69% | PASS | `820d7076b-dirty` | live side: frozen capture `refs/electro_shop_1440.png`; overall 18.02% (reference blank 5.05%, ours blank 11.27%) |
+| 2026-10-01 15:24 | home | 1440 | n/a | REFUSED | `56d5a2909-dirty` | live side is our-build |
+| 2026-10-01 15:32 | home | 380 | 8.58% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 15:33 | home | 380 | 17.06% | **FAIL** | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 23.02% (reference blank 3.18%, ours blank 2.78%) |
+| 2026-10-01 15:37 | home | 380 | 8.58% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 15:42 | home | 380 | 8.58% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 15:44 | home | 380 | 8.58% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 15:46 | home | 768 | 12.73% | **FAIL** | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 20.11% (reference blank 4.62%, ours blank 2.77%) |
+| 2026-10-01 15:47 | home | 768 | 15.48% | **FAIL** | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 23.12% (reference blank 4.86%, ours blank 2.78%) |
+| 2026-10-01 15:51 | home | 768 | 9.01% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 15:52 | home | 768 | 9.01% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 15:54 | home | 768 | 9.01% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 15:59 | home | 768 | 9.01% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 16:00 | home | 768 | 9.01% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 16:01 | home | 380 | 8.58% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 16:03 | home | 380 | 8.58% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 16:05 | home | 1440 | 4.16% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 15.45% (reference blank 9.88%, ours blank 1.41%) |
+| 2026-10-01 16:07 | home | 380 | 8.58% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.11% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 16:08 | home | 768 | 9.01% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.03% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 16:10 | home | 1440 | 4.16% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 15.45% (reference blank 9.88%, ours blank 1.41%) |
+| 2026-10-01 16:11 | product | 380 | 2.68% | PASS | `56d5a2909-dirty` | live side: frozen capture `refs/ke_live_product_380.png`; overall 41.67% (reference blank 35.78%, ours blank 3.22%) |
