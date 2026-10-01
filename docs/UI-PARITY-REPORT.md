@@ -734,3 +734,9 @@ to an already large session.
 | 2026-10-01 04:47 | checkout | 1440 | 0.95% | PASS | `13986251c` | live side: frozen capture `refs/live-checkout.png`; overall 10.52% (reference blank 4.07%, ours blank 5.5%) |
 | 2026-10-01 04:49 | checkout | 380 | n/a | REFUSED | `13986251c-dirty` | capture is 1440px, run is 380px |
 | 2026-10-01 04:49 | checkout | 768 | n/a | REFUSED | `13986251c-dirty` | capture is 1440px, run is 768px |
+| 2026-10-01 04:55 | home | 1440 | n/a | REFUSED | `821f66ca1` | live side is our-build |
+| 2026-10-01 04:56 | checkout | 380 | n/a | REFUSED | `821f66ca1-dirty` | live side is our-build |
+| 2026-10-01 04:56 | checkout | 380 | n/a | REFUSED | `821f66ca1-dirty` | capture is 1440px, run is 380px |
+| 2026-10-01 04:56 | checkout | 768 | n/a | REFUSED | `821f66ca1-dirty` | capture is 1440px, run is 768px |
+| 2026-10-01 04:56 | checkout | 1440 | 0.95% | PASS | `821f66ca1-dirty` | live side: frozen capture `refs/live-checkout.png`; overall 10.52% (reference blank 4.07%, ours blank 5.5%) |
+| 2026-10-01 04:58 | checkout | 1440 | 0.95% | PASS | `821f66ca1-dirty` | live side: frozen capture `refs/live-checkout.png`; overall 10.52% (reference blank 4.07%, ours blank 5.5%) |

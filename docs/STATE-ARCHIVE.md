@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q28 (הועבר מ-STATE.md ב-Q30, לשמירה על תקרת 300 שורות)
+
+**Q28 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"עריכת שורות בדף הסל, מתג ארנק, הזנת קוד קופון". **אינו קיים בתור האמיתי**
+(`Q28` ב-`QUESTIONS-FOR-OFIR.md` הוא פריט לא-קשור — 8 כרטיסי דיל בדף הבית
+שמצביעים ל-404) — אותו דפוס כמו Q25/Q26/Q27, נבדק לפי הדרישה בפועל.
+
+**שלושת הרכיבים כבר קיימים ונכונים, אפס שינוי קוד:**
+1. **עריכת שורה** (`CartLineItem.tsx`): כפתורי +/- לכמות, מוגבלים ל-1..תקרת
+   מלאי אמיתית (`lineQuantityCeiling`), והסרה — כולם server actions דרך
+   `useCart`.
+2. **מתג ארנק**: **לא קיים בדף הסל, ובכוונה.** יתרת ארנק מוחלת כנגד הסכום
+   לתשלום בפועל ולכן שייכת לדף התשלום (`apply_wallet_ils`,
+   `CheckoutForm.tsx`, מתועד ב-`ARCHITECTURE-COMMERCE.md`), לא לדף הסל שאין
+   בו צ'ק-אאוט. מתג ספקולטיבי כאן היה כפל של פיצ'ר קיים ומתוכנן נכון (ראו
+   זיכרון "Finished features with no consumer").
+3. **קוד קופון** (`CartCouponForm.tsx`): שדה + כפתור "החל" עם server action
+   אמיתי (`applyCouponCode`), שגיאות מהשרת verbatim (לא "לא תקין" גנרי),
+   `<details>` מתקפל מתחת ל-768 (ל-live אין קופון בסל בכלל).
+
+**שער חזותי בחזית, דף הסל, נמדד בתוך הריצה הזו** מול `refs/live-cart.png`
+(ה-reference היחיד הקיים, 1440 בלבד — ראו "חוסמים פתוחים" #5 למטה): 1440
+`1.47%` PASS (עגלה מלאה, זרועה אוטומטית דרך `/products`→ATC, זהה
+ל-09.09/24.09/25.09, אפס דריפט), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+380 ו-768 REFUSED (`refs/live-cart.png` הוא 1440px בלבד, אין capture ברוחבים
+אחרים) — התנהגות ידועה ומתועדת, לא כשל חדש.
+
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים, 7300/7312 (זהה לבסיס), `pnpm build` נקי.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
 ## Q27 (הועבר מ-STATE.md ב-Q29, לשמירה על תקרת 300 שורות)
 
 **Q27 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**

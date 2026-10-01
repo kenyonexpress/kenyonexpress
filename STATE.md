@@ -1,74 +1,54 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q29)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q30)
 
 ## המשך מ:
 
-**Q29 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"Checkout guest flow Google sign-in at end tokenized card save". **אינו
-קיים בתור האמיתי** (`docs/BACKLOG.md` לא מכיר "Q29"; `QUESTIONS-FOR-OFIR.md`
-לא קיים עוד בריפו) — אותו דפוס כמו Q25/Q26/Q27/Q28, נבדק לפי הדרישה
-בפועל.
+**Q30 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"עמוד תודה (thank-you): כפתור הורדת חשבונית, קישור wa.me לשיתוף/פנייה על
+ההזמנה". **אינו קיים בתור האמיתי** (`Q30` ב-`docs/QUESTIONS-FOR-OFIR.md`
+הוא פריט לא-קשור — מפת URL/GSC) — אותו דפוס כמו Q25/Q26/Q27/Q28/Q29, נבדק
+לפי הדרישה בפועל.
 
-**הפיצ'ר כבר קיים במלואו, אפס שינוי קוד:**
-1. **Guest checkout, Google sign-in בסוף הזרימה (בלחיצת "לתשלום", לא
-   בכניסה):** מתועד ב-`docs/ARCHITECTURE-COMMERCE.md` שורה 56-58 — "Auth:
-   guest cart is open. Google Login is required only at pay click. After
-   login: merge guest cart, save details + Cardcom token." מומש ב-
-   `CheckoutForm.tsx` (`handleSubmit`): אורח ממלא את כל הטופס, ורק לחיצת
-   "לתשלום" שולחת ל-`signInWithGoogle` (טופס נסתר, `next=/checkout?resume=1`);
-   הערכים שהוקלדו נשמרים ב-`sessionStorage` (`RESUME_FIELDS`) ומתמלאים
-   מחדש אחרי החזרה מ-Google. `auth/callback/route.ts` קורא ל-`mergeGuestCart`
-   אחרי ההתחברות.
-2. **שמירת כרטיס מטוקניז:** תיבת סימון `save_card` (מסומנת כברירת מחדל,
-   "שמירת כרטיס לתשלום מהיר בפעם הבאה") מחוברת ל-`saveToken` ב-
-   `beginCheckout` (`src/server/actions/payments/checkout.ts`), נשמר
-   ב-`payment_tokens` דרך `ChargeAndCreateToken`. מכוסה ב-
-   `checkout-form-contract.test.tsx` ו-`checkout.test.ts` (אסרציות על
-   `save_card`/`saveToken`).
+**שני הרכיבים כבר קיימים ונכונים בעמוד התודה, אפס שינוי קוד:**
+1. **כפתור הורדת חשבונית** (`src/components/checkout/InvoiceDownloadLink.tsx`,
+   מורכב ב-`src/app/(store)/checkout/return/page.tsx:224`): קישור לנתיב
+   הורדה חתום ומוגבל-זמן (`signInvoiceLink`/`invoiceDownloadPath`), לא
+   נשלח במייל או בהודעה — נבנה ב-`8853cfa9d feat(invoice)`. אם החשבונית
+   עדיין לא מוכנה מוצג `invoice.pending` במקום קישור שבור.
+2. **קישור wa.me על ההזמנה**: `waChatLink(storeWhatsAppNumber(),
+   buildOrderInquiryText(...))` ב-`return/page.tsx:324-361` — "לעדכונים על
+   ההזמנה דברו איתנו בוואטסאפ", עם שמות הפריטים והסכום ששולם כבר ממולאים
+   בהודעה (`src/lib/whatsapp.ts`). נבנה ב-`4751618f0 feat(checkout,orders):
+   ...wa.me with order details...` (Q08 המקורי). בנוסף, לכל קופון שהוזמן
+   יש קישור שיתוף נפרד (`waShareLink`+`buildCouponShareText`) לשליחה
+   לכל נמען — לא אותו קישור, מכוון: שיתוף קופון לעומת פנייה לחנות על
+   ההזמנה עצמה הם שני צרכים שונים, ושניהם קיימים.
 
-**השערים**: `type-check` נקי, `lint` נקי (12 שערים), `test` 610/610
-קבצים, 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת
-זמני על פורט 3312, כדי לא למדוד שרת זר על 3311 — ראו זיכרון "Gate
-measured a foreign server on 3311").
+**שער חזותי בחזית, דף התשלום (אין reference ייעודי ל-`/checkout/return`
+ב-`scripts/compare.mjs` — רק `home/product/category/products/search/
+cart/checkout`; `--page=checkout` הוא הקרוב ביותר וכבר שימש ב-Q29 לאותו
+עמוד), נמדד בתוך הריצה הזו** מול `refs/live-checkout.png` (1440 בלבד): 1440
+`0.95%`/`10.52%` overall PASS, זהה בייט-לבייט לתוצאת Q29 — אפס דריפט. 380
+ו-768 REFUSED (capture 1440px בלבד), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
 
-**שער חזותי בחזית, דף התשלום, נמדד בתוך הריצה הזו** מול
-`refs/live-checkout.png` (ה-reference היחיד הקיים, 1440 בלבד — ראו
-"חוסמים פתוחים" #5 למטה): 1440 `0.95%`/`10.52%` overall PASS (עגלה
-מלאה, זרועה אוטומטית ע"י הסקריפט), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
-380 ו-768 REFUSED (`refs/live-checkout.png` הוא 1440px בלבד) — אותה
-התנהגות מתועדת כמו בדף הסל, לא כשל חדש.
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים, 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת זמני
+על פורט 3312).
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**Q28 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"עריכת שורות בדף הסל, מתג ארנק, הזנת קוד קופון". **אינו קיים בתור האמיתי**
-(`Q28` ב-`QUESTIONS-FOR-OFIR.md` הוא פריט לא-קשור — 8 כרטיסי דיל בדף הבית
-שמצביעים ל-404) — אותו דפוס כמו Q25/Q26/Q27, נבדק לפי הדרישה בפועל.
+**Q29 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q30
+לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
+guest checkout עם Google sign-in בלחיצת "לתשלום" ושמירת כרטיס מטוקניז
+(`save_card`) כבר קיימים במלואם, אפס שינוי קוד. שער חזותי PASS ב-1440
+(`0.95%`/`10.52%`), 380/768 REFUSED (reference 1440 בלבד). ארבעת השערים
+ירוקים.
 
-**שלושת הרכיבים כבר קיימים ונכונים, אפס שינוי קוד:**
-1. **עריכת שורה** (`CartLineItem.tsx`): כפתורי +/- לכמות, מוגבלים ל-1..תקרת
-   מלאי אמיתית (`lineQuantityCeiling`), והסרה — כולם server actions דרך
-   `useCart`.
-2. **מתג ארנק**: **לא קיים בדף הסל, ובכוונה.** יתרת ארנק מוחלת כנגד הסכום
-   לתשלום בפועל ולכן שייכת לדף התשלום (`apply_wallet_ils`,
-   `CheckoutForm.tsx`, מתועד ב-`ARCHITECTURE-COMMERCE.md`), לא לדף הסל שאין
-   בו צ'ק-אאוט. מתג ספקולטיבי כאן היה כפל של פיצ'ר קיים ומתוכנן נכון (ראו
-   זיכרון "Finished features with no consumer").
-3. **קוד קופון** (`CartCouponForm.tsx`): שדה + כפתור "החל" עם server action
-   אמיתי (`applyCouponCode`), שגיאות מהשרת verbatim (לא "לא תקין" גנרי),
-   `<details>` מתקפל מתחת ל-768 (ל-live אין קופון בסל בכלל).
-
-**שער חזותי בחזית, דף הסל, נמדד בתוך הריצה הזו** מול `refs/live-cart.png`
-(ה-reference היחיד הקיים, 1440 בלבד — ראו "חוסמים פתוחים" #5 למטה): 1440
-`1.47%` PASS (עגלה מלאה, זרועה אוטומטית דרך `/products`→ATC, זהה
-ל-09.09/24.09/25.09, אפס דריפט), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
-380 ו-768 REFUSED (`refs/live-cart.png` הוא 1440px בלבד, אין capture ברוחבים
-אחרים) — התנהגות ידועה ומתועדת, לא כשל חדש.
-
-ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
-קבצים, 7300/7312 (זהה לבסיס), `pnpm build` נקי.
-
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+**Q28 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q30
+לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
+עריכת שורה, קוד קופון בסל כבר קיימים, מתג ארנק נכון שלא קיים בסל (שייך
+לקופה בכוונה). שער חזותי PASS ב-1440 (`1.47%`), 380/768 REFUSED
+(reference 1440 בלבד). ארבעת השערים ירוקים.
 
 **Q27 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q29
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
