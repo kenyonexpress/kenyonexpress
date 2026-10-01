@@ -2,6 +2,20 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c68 (הועבר מ-STATE.md ב-M09-c68, לשמירה על תקרת 300 שורות)
+
+**M08-c68 - DONE (02.10.2026).** משימת התור: Lighthouse mobile על `/`
+ו-`/product` (דוגמה), רישום ציונים בלבד. ארבעת השערים רצו כקדם-תנאי,
+כולם exit 0: `type-check`, `lint` (12 שערים), `test` 614/614 קבצים
+(7337+12), `build` (`BUILD_ID` חדש `fWmOPdJwMWElep5XX312w`, HEAD
+`91e6d19bb`). שרת `pnpm start` עצמאי על פורט 3317, כבה אחרי המדידה.
+מוצר לדוגמה: `צימר-מאסטר` (כמו ב-M08-c66/M08-c67, 10 במלאי).
+**`--throttling-method=provided`** (המתכון התקף, `docs/PERFORMANCE-BUDGET.md`):
+`/` = **100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס
+דריפט מ-M08-c67. **`simulate` (רועש, ללוג בלבד):** `/` = 96/100/100,
+`/product/...` = 86/100/100 (ריצה ראשונה `NO_NAVSTART`, שנייה הצליחה).
+אפס שינוי קוד/סכימה/כסף/לסף 90 בסקריפט. קובץ יחיד: `STATE.md`.
+
 ## M07-c68 (הועבר מ-STATE.md ב-M08-c68, לשמירה על תקרת 300 שורות)
 
 **M07-c68 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
