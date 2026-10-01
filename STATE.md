@@ -1,25 +1,26 @@
-RESUME FROM: M05-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c66 - DONE, type-check אפס דריפט, שום commit קוד לא נדרש)
+RESUME FROM: M06-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c66 - DONE, pnpm test אפס דריפט, שום commit קוד לא נדרש)
 
 ## המשך מ:
 
-**M04-c66 - DONE (01.10.2026).** משימת התור: "pnpm type-check fix drift
+**M05-c66 - DONE (01.10.2026).** משימת התור: "pnpm test fix drift
 commit". עץ העבודה היה נקי לפני התחלת הפריט (`git status --short` ריק) -
 אין דריפט קיים לתקן ולא היה שום קובץ מתוקן לקמיט.
 
-**ארבעת השערים, כולם נבדקו מחדש (לא רק type-check):** `pnpm type-check`
-**נקי, exit 0** (`tsc --noEmit` ללא שגיאה אחת). `pnpm lint` נקי, 12
-שערים (biome + tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/
-rtl-logical/i18n/locale-format/input-dir/docs-index/docs-path-audit).
-`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה
-ל-M03-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: שישה
-`next-server`/`pnpm start` רצו במקביל, ~1.1GB פנויים (`vm_stat`) — סיכון
-OOM לסשנים מקבילים (זיכרון `concurrent-worktree-builds-oom`). ה-`.next`
-הקיים (`BUILD_ID 8sM3K74xhwN4B4Fph3T3z`, זהה ל-M03-c66) אומת זהה-מקור
-ל-HEAD (`git diff --stat HEAD -- next.config.ts next.config.mjs
-middleware.ts vercel.json src/ package.json pnpm-lock.yaml` ריק).
+**ארבעת השערים, כולם נבדקו מחדש (לא רק test):** `pnpm test`
+**614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה ל-M04-c66, אפס
+דריפט (`git status --short` ריק אחרי הריצה). `pnpm type-check` נקי,
+exit 0. `pnpm lint` נקי, 12 שערים (biome + tokens/copy/asset/raw-html/
+postgrest-or/cache-invalidation/rtl-logical/i18n/locale-format/
+input-dir/docs-index/docs-path-audit). `pnpm build` **לא הורץ מחדש**:
+שישה `next-server`/`pnpm start` רצו במקביל, ~1.07GB פנויים (`vm_stat`)
+- סיכון OOM לסשנים מקבילים (זיכרון `concurrent-worktree-builds-oom`).
+ה-`.next` הקיים (`BUILD_ID 8sM3K74xhwN4B4Fph3T3z`, זהה ל-M04-c66) אומת
+זהה-מקור ל-HEAD (`git diff --stat HEAD -- next.config.ts
+next.config.mjs middleware.ts vercel.json src/ package.json
+pnpm-lock.yaml` ריק).
 
-**אין שינוי קוד ייצור.** קובץ יחיד שונה: `STATE.md` (+ ארכוב M03-c66
+**אין שינוי קוד ייצור.** קובץ יחיד שונה: `STATE.md` (+ ארכוב M04-c66
 המלא ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות). לא פריט חזותי
 - כלל ה-foreground על `compare.mjs` לא חל כאן.
 
@@ -28,6 +29,10 @@ middleware.ts vercel.json src/ package.json pnpm-lock.yaml` ריק).
 חזותי בית נמדד מחדש (8.58%/9.01%/4.16%, אפס דריפט מ-Q55), שער חזותי
 מוצר נמדד מחדש (4.96%/4.58%/3.25%, אפס דריפט), שער חזותי קטגוריה נמדד
 מחדש (3.53%/2.52%/1.69%, אפס דריפט מ-Q27). ארבעת השערים ירוקים בשלושתם.
+
+**M04-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: `pnpm type-check` נבדק
+מחדש, אפס דריפט, שום commit קוד לא נדרש. ארבעת השערים ירוקים.
 
 **Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M01-c66
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: `LAUNCH-

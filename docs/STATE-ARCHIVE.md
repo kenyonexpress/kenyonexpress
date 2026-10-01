@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c66 (הועבר מ-STATE.md ב-M05-c66, לשמירה על תקרת 300 שורות)
+
+**M04-c66 - DONE (01.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". עץ העבודה היה נקי לפני התחלת הפריט (`git status --short` ריק) -
+אין דריפט קיים לתקן ולא היה שום קובץ מתוקן לקמיט.
+
+**ארבעת השערים, כולם נבדקו מחדש (לא רק type-check):** `pnpm type-check`
+**נקי, exit 0** (`tsc --noEmit` ללא שגיאה אחת). `pnpm lint` נקי, 12
+שערים (biome + tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/
+rtl-logical/i18n/locale-format/input-dir/docs-index/docs-path-audit).
+`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה
+ל-M03-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: שישה
+`next-server`/`pnpm start` רצו במקביל, ~1.1GB פנויים (`vm_stat`) — סיכון
+OOM לסשנים מקבילים (זיכרון `concurrent-worktree-builds-oom`). ה-`.next`
+הקיים (`BUILD_ID 8sM3K74xhwN4B4Fph3T3z`, זהה ל-M03-c66) אומת זהה-מקור
+ל-HEAD (`git diff --stat HEAD -- next.config.ts next.config.mjs
+middleware.ts vercel.json src/ package.json pnpm-lock.yaml` ריק).
+
+**אין שינוי קוד ייצור.** קובץ יחיד שונה: `STATE.md` (+ ארכוב M03-c66
+המלא ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות). לא פריט חזותי
+- כלל ה-foreground על `compare.mjs` לא חל כאן.
+
 ## M03-c66 (הועבר מ-STATE.md ב-M04-c66, לשמירה על תקרת 300 שורות)
 
 **M03-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs on
