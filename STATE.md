@@ -1,34 +1,38 @@
-RESUME FROM: M03-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c70 - DONE, שער חזותי מוצר נמדד מחדש, אפס דריפט)
+RESUME FROM: M04-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c70 - DONE, שער חזותי קטגוריה נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M02-c70 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/product sample" — זהה למילה למשימת M02-c69. שרת `pnpm start` על 3311
-(PID 84228, אותו שרת ששימש את M01-c70) אומת לפני המדידה: `.next/BUILD_ID`
-`7usgLVQXhLG29nYBQp1nK` מאוחר מ-HEAD `3af6c5870` (אין קומיט שנגע
-ב-`src`/`public` מאז), `curl` החזיר `200` גם ל-`/` וגם ל-`/product/מוצר-לדוגמא`.
-**מדידה אמיתית, בפורגראונד, שלושה רוחבים, מול `refs/electro_product_
-{width}.png` (slug קבוע `מוצר-לדוגמא`, reference קבוע מ-Q05b):**
+**M03-c70 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample" — זהה למילה למשימת M03-c69. שרת `pnpm start` על 3311
+(PID 84228, אותו שרת ששימש את M01-c70/M02-c70) אומת לפני המדידה:
+`.next/BUILD_ID` `7usgLVQXhLG29nYBQp1nK`, `git diff ab81316c9..HEAD --
+src public package.json pnpm-lock.yaml scripts next.config.ts
+tsconfig.json` ריק (אפס שינוי קוד מאז אישור ארבעת השערים ב-M01-c70).
+`curl` ל-`/category/hot-deals` החזיר `200`. **מדידה אמיתית, בפורגראונד,
+שלושה רוחבים, מול `refs/electro_shop_{width}.png` (Electro `/shop/`,
+slug מקומי קבוע `hot-deals`):**
 
 | רוחב | ציון (both-painted) | סטטוס | overall | הערות |
 |---|---|---|---|---|
-| 380 | 4.96% | PASS | 31.74% | ref blank 19.62%, ours blank 7.16% |
-| 768 | 4.58% | PASS | 32.33% | ref blank 21.24%, ours blank 6.51% |
-| 1440 | 3.25% | PASS | 19.68% | ref blank 10.74%, ours blank 5.69% |
+| 380 | 3.53% | PASS | 29.59% | ref blank 9.63%, ours blank 16.43% |
+| 768 | 2.52% | PASS | 31.47% | ref blank 9.4%, ours blank 19.54% |
+| 1440 | 1.69% | PASS | 18.02% | ref blank 5.05%, ours blank 11.27% |
 
-שלושתם זהים ל-100% לציוני M02-c69 — **אפס דריפט**; אין קומיט שנגע
-ב-`src`/`public` בין `3af6c5870` ל-HEAD (אותו קומיט, לא השתנה). אזהרת
-`HEIGHT RATIO` חזרה (0.26x/0.31x/0.34x) — נפתרה כבר ב-M02-c67 (עמוד
-המוצר הנדגם קצר באופן לגיטימי מרפרנס Electro, אושר ויזואלית אז). לא
-נדרש `type-check`/`lint`/`test`/`build` נוסף — M01-c70 כבר אישר ארבעתם
-ירוקים על אותו HEAD ואין שינוי קוד בפריט הזה. השורות נוספו אוטומטית
-ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו. קבצים: `STATE.md`,
-`docs/UI-PARITY-REPORT.md` (נכתב על ידי השער).
+שלושתם זהים ל-100% לציוני M03-c69/M03-c68/M03-c66/M03-c67 — **אפס
+דריפט**. אזהרת `HEIGHT RATIO` הופיעה (0.53x ב-380, 2 כרטיסי מוצר
+בצדנו) — לגיטימית, זהה לריצות PASS קודמות. `type-check` נקי (exit 0),
+`lint` ירוק (12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614
+קבצים, 7337/7349 עברו (12 מדולגים) — זהה ל-M01-c70/M05-c69, אפס
+דריפט. `build` לא הורץ מחדש: שרת `pnpm start` חי על אותו `.next`
+(סיכון OOM, סוכנים מקבילים), ואין שינוי קוד מאז הבנייה האחרונה
+(M01-c70 אישר אותה ירוקה). קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md` (נכתב ע"י השער).
 
-**M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70 וב-M02-c70 לשמירה על
-תקרת 300 שורות).** M01-c70: שער חזותי בית נמדד מחדש, אפס דריפט
+**M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
+כווצו לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70 וב-M03-c70
+לשמירה על תקרת 300 שורות).** M02-c70: שער חזותי מוצר נמדד מחדש, אפס
+דריפט (4.96/4.58/3.25). M01-c70: שער חזותי בית נמדד מחדש, אפס דריפט
 (8.58/9.01/4.16), ארבעת השערים ירוקים, אפס שינוי קוד.
 שמונה-עשר פריטי אימות-בלבד, אפס דריפט בכולם: STATE.md מתחת לתקרה (M18);
 RTL על `/` ו-`/product` (M17); JSON-LD Product+BreadcrumbList בכל דף
@@ -42,18 +46,13 @@ release מול HEAD, הפער גדל ל-406 קומיטים (M14); /api/health ו
 (8.58/9.01/4.16, M01). ארבעת השערים ירוקים בכל שמונה-עשר.
 
 **M18-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M01-c69, M17-c68 ו-M09-c69 לשמירה על תקרת 300 שורות).** M18-c68:
-STATE.md אומת מתחת לתקרת 300 שורות (299), לא נדרש כיווץ נוסף. M17-c68:
-RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c67. שבעה-עשר פריטי
-אימות-בלבד נוספים, אפס דריפט בכולם: JSON-LD Product+BreadcrumbList (M16); אפס
-console error/hydration (M15); Sentry release מול HEAD, הפער גדל ל-388
-קומיטים, אין `SENTRY_DSN` ב-Production (M14); `/api/health`/`/api/ready`
-מול פרודקשן (M13); robots.txt קוד HEAD תקין, פרודקשן קפואה (חוסם 2, M12);
-sitemap.xml טרי, חמש תת-מפות 200 (M11); 19 מיגרציות אומתו מחדש פרטנית
-(M10); deps/exports מתים עם `knip` (M09); Lighthouse mobile 100/100/100
-(M08); TODO/FIXME (M07); `build` exit 0 (M06); `test` 614/614, 7337+12
-(M05); `type-check` נקי (M04); שער חזותי קטגוריה (3.53/2.52/1.69, M03);
-שער חזותי מוצר (4.96/4.58/3.25, M02). ארבעת השערים ירוקים בכולם.
+ב-M01-c69, M17-c68, M09-c69 וב-M03-c70 לשמירה על תקרת 300 שורות).**
+שמונה-עשר פריטי אימות-בלבד/תחזוקה, אפס דריפט בכולם: STATE.md מתחת
+לתקרה, RTL, JSON-LD, console error/hydration, Sentry (פער 388 קומיטים),
+`/api/health`/`/api/ready`, robots.txt (חוסם 2), sitemap.xml, 19
+מיגרציות, `knip`, Lighthouse mobile 100/100/100, TODO/FIXME,
+`build`/`test`/`type-check`, שערים חזותיים קטגוריה (3.53/2.52/1.69)
+ומוצר (4.96/4.58/3.25). ארבעת השערים ירוקים בכולם.
 
 **M01-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 בשלבים, M14-c66..M16-c66, M03-c67, עד M01-c68, לשמירה על תקרת 300

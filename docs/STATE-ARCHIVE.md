@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c70 (הועבר מ-STATE.md ב-M03-c70, לשמירה על תקרת 300 שורות)
+
+**M02-c70 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample" — זהה למילה למשימת M02-c69. שרת `pnpm start` על 3311
+(PID 84228, אותו שרת ששימש את M01-c70) אומת לפני המדידה: `.next/BUILD_ID`
+`7usgLVQXhLG29nYBQp1nK` מאוחר מ-HEAD `3af6c5870` (אין קומיט שנגע
+ב-`src`/`public` מאז), `curl` החזיר `200` גם ל-`/` וגם ל-`/product/מוצר-לדוגמא`.
+**מדידה אמיתית, בפורגראונד, שלושה רוחבים, מול `refs/electro_product_
+{width}.png` (slug קבוע `מוצר-לדוגמא`, reference קבוע מ-Q05b):**
+
+| רוחב | ציון (both-painted) | סטטוס | overall | הערות |
+|---|---|---|---|---|
+| 380 | 4.96% | PASS | 31.74% | ref blank 19.62%, ours blank 7.16% |
+| 768 | 4.58% | PASS | 32.33% | ref blank 21.24%, ours blank 6.51% |
+| 1440 | 3.25% | PASS | 19.68% | ref blank 10.74%, ours blank 5.69% |
+
+שלושתם זהים ל-100% לציוני M02-c69 — **אפס דריפט**; אין קומיט שנגע
+ב-`src`/`public` בין `3af6c5870` ל-HEAD (אותו קומיט, לא השתנה). אזהרת
+`HEIGHT RATIO` חזרה (0.26x/0.31x/0.34x) — נפתרה כבר ב-M02-c67 (עמוד
+המוצר הנדגם קצר באופן לגיטימי מרפרנס Electro, אושר ויזואלית אז). לא
+נדרש `type-check`/`lint`/`test`/`build` נוסף — M01-c70 כבר אישר ארבעתם
+ירוקים על אותו HEAD ואין שינוי קוד בפריט הזה. השורות נוספו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md` (נכתב על ידי השער).
+
 ## M01-c70 (הועבר מ-STATE.md ב-M02-c70, לשמירה על תקרת 300 שורות)
 
 **M01-c70 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
