@@ -1,7 +1,17 @@
-RESUME FROM: M04-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c70 - DONE, שער חזותי קטגוריה נמדד מחדש, אפס דריפט)
+RESUME FROM: M05-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c70 - DONE, pnpm type-check נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
+
+**M04-c70 - DONE (02.10.2026).** "pnpm type-check fix drift commit" —
+זהה במהות ל-M04-c69. `git diff 638464016..HEAD -- src public
+package.json pnpm-lock.yaml scripts next.config.ts tsconfig.json` ריק
+(אפס שינוי קוד מאז M03-c70), עץ עבודה נקי. `tsc --noEmit` יצא קוד 0,
+אפס שגיאות. `lint` ירוק (12 שערים, 2037 קבצים). `test` 614/614 קבצים,
+7337/7349 (12 מדולגים) — זהה ל-M03-c70/M01-c70, אפס דריפט. `build` לא
+הורץ מחדש: `pnpm start` חי על PID 84228 עם `.next/BUILD_ID` שאומת ירוק
+ב-M01-c70 (סיכון OOM, ראו `concurrent-worktree-builds-oom`). שום שינוי
+קוד לא נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M03-c70 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
 /category sample" — זהה למילה למשימת M03-c69. שרת `pnpm start` על 3311
@@ -45,26 +55,18 @@ release מול HEAD, הפער גדל ל-406 קומיטים (M14); /api/health ו
 (3.53/2.52/1.69, M03), מוצר (4.96/4.58/3.25, M02), בית
 (8.58/9.01/4.16, M01). ארבעת השערים ירוקים בכל שמונה-עשר.
 
-**M18-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M01-c69, M17-c68, M09-c69 וב-M03-c70 לשמירה על תקרת 300 שורות).**
-שמונה-עשר פריטי אימות-בלבד/תחזוקה, אפס דריפט בכולם: STATE.md מתחת
-לתקרה, RTL, JSON-LD, console error/hydration, Sentry (פער 388 קומיטים),
-`/api/health`/`/api/ready`, robots.txt (חוסם 2), sitemap.xml, 19
-מיגרציות, `knip`, Lighthouse mobile 100/100/100, TODO/FIXME,
-`build`/`test`/`type-check`, שערים חזותיים קטגוריה (3.53/2.52/1.69)
-ומוצר (4.96/4.58/3.25). ארבעת השערים ירוקים בכולם.
-
-**M01-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-בשלבים, M14-c66..M16-c66, M03-c67, עד M01-c68, לשמירה על תקרת 300
-שורות).** שלושים וארבעה פריטי תור/אימות-בלבד/תחזוקה על פני שני סבבים
-(c66, c67+M18-c67..M01-c68), DONE בכולם, אפס דריפט קוד, ארבעת השערים
-ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה (M01-M03 בכל סבב);
-type-check/test/build (M04-M06); TODO/FIXME (תיקון אחד ב-c66's M07);
-Lighthouse 100/100/100 (M08); חבילות מתות הוסרו (M09); מיגרציות אומתו
-(M10); sitemap.xml (M11); robots.txt תוקן (M12); `/api/health`/`/api/ready`
-(M13); Sentry מול HEAD, הפער גדל בכל סבב (M14); אפס console error (M15);
-JSON-LD (M16); RTL — leak אמיתי נמצא ותוקן ב-c66's M17 (`HeroSlider.tsx`),
-אפס דריפט חוזר ב-c67/c68 (M17); STATE.md אומת מתחת לתקרה (M18).
+**M18-c68..M02-c68 ו-M01-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
+כווצו לשורה הזו ב-M01-c69/M17-c68/M09-c69/M03-c70 (c68) ובשלבים
+M14-c66..M16-c66/M03-c67 (c66-c68) ולבסוף כאן ב-M04-c70, לשמירה על תקרת
+300 שורות).** חמישים ושניים פריטי תור/אימות-בלבד/תחזוקה על פני שלושה
+סבבים (c66, c67, c68+M18-c67..M01-c68), DONE/אפס-דריפט בכולם, ארבעת
+השערים ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה בכל סבב;
+type-check/test/build; TODO/FIXME (תיקון אחד ב-c66's M07); Lighthouse
+100/100/100; חבילות מתות עם `knip`; מיגרציות ממתינות אומתו; sitemap.xml;
+robots.txt (חוסם 2); `/api/health`/`/api/ready`; Sentry מול HEAD (הפער
+גדל כל סבב, עד 388 קומיטים); אפס console error/hydration; JSON-LD
+Product+BreadcrumbList; RTL — leak אמיתי נמצא ותוקן ב-c66's M17
+(`HeroSlider.tsx`), אפס דריפט חוזר ב-c67/c68; STATE.md מתחת לתקרה.
 
 **Q51..Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M14-c66 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים:
