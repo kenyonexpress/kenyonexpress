@@ -1,28 +1,28 @@
-RESUME FROM: M08-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c70 - DONE, TODO/FIXME נסרק מחדש, אפס דריפט)
+RESUME FROM: M09-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c70 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c70 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
-days resolve or file in docs/BACKLOG.md". סריקה רוחבת-ריפו (`src/`,
-`scripts/`, `supabase/`) מוצאת בדיוק את אותם שני סמנים אמיתיים כמו
-ב-M07-c69: `src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame`
-24.07.2026) ו-`:319` (מסמכים, `git blame` 07.08.2026), שניהם ישנים משבעה
-ימים ושניהם עם `Tracked in #41`/`#42` בחלון ההערה עצמו. `node
-scripts/final-audit.mjs` מדווח `ok 0 work markers (TODO/FIXME/HACK/XXX)
-(of 2)`. כבר מתועדים ב-`docs/BACKLOG.md` שורה 505-507 וב-`docs/
-KNOWN-ISSUES.md` שורה 10 (`Tracked in #41`/`#42`) — אין עדכון BACKLOG
-נדרש, אפס דריפט מ-M07-c69. ה-hit הנוסף, `whatsapp.test.ts:91`, הוא
-מחרוזת ליטרלית `'TODO'`, לא סמן עבודה (ignored by `scanMarkers`).
-ארבעת השערים הורצו בפועל: `type-check` יצא קוד 0, `lint` ירוק (12
-שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים, 7337/7349 עברו
-(12 מדולגים), `build` רץ עד הסוף בלי שגיאה (route manifest מלא). אפס
-שינוי קוד נדרש. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M08-c70 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
+`type-check` (`tsc --noEmit` נקי), `lint` (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` (614/614 קבצים, 7337/7349 עברו, 12 מדולגים), `build`
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3319 pnpm build`, route manifest מלא). שרת `pnpm start`
+עצמאי על פורט 3319 (`PORT=3319`, אותם משתני build), `cwd` אומת
+(`/usr/sbin/lsof -p <pid> -a -d cwd`) שזה הריפו הזה ולא שרת זר, כבה
+אחרי המדידה. מוצר לדוגמה: `צימר-מאסטר` (כמו ב-M08-c66..M08-c69, 10
+במלאי). `scripts/lighthouse-smoke.mjs --throttling-method=provided`
+(המתכון התקף, `docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c69. אפס שינוי
+קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
 
-**M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69
-(ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69,
-M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70, M06-c70 וב-M07-c70
-לשמירה על תקרת 300 שורות).** M06-c70: `pnpm build` נבדק מחדש בפועל,
+**M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70
+ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
+M06-c70, M07-c70 וב-M08-c70 לשמירה על תקרת 300 שורות).** M07-c70:
+TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c69.
+M06-c70: `pnpm build` נבדק מחדש בפועל,
 exit 0, אפס דריפט מ-M06-c69. M05-c70: `pnpm test` נבדק מחדש, 614/614 קבצים, 7337/7349
 עברו (12 מדולגים), אפס דריפט. M04-c70: `pnpm type-check` נבדק מחדש, אפס דריפט. M03-c70: שער חזותי
 קטגוריה נמדד מחדש, אפס דריפט (3.53/2.52/1.69). M02-c70: שער חזותי
