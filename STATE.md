@@ -1,7 +1,20 @@
-RESUME FROM: M05-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c67 - DONE, type-check אומת ללא דריפט)
+RESUME FROM: M06-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c67 - DONE, test אומת ללא דריפט)
 
 ## המשך מ:
+
+**M05-c67 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
+אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat HEAD` ריק —
+עץ עבודה נקי לחלוטין, אין דריפט מ-`de5221d35`. ארבעת השערים רצו ברצף, כולם
+exit 0: `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה ל-M02-c67
+עד M04-c67), `pnpm type-check` (`tsc --noEmit`, אפס שגיאות), `pnpm lint`
+(`biome` על 2037 קבצים + 11 שערי lint פנימיים, כולם clean), `pnpm build`
+(exit 0, `BUILD_ID` חדש `v24LrJDj4IFl59MtcQ4iG`; שורות `rls_denied`/
+`reviews_read_failed` ב-stdout הן תבנית build-time ידועה — קריאת ביקורות
+ללא session בזמן prerender, לא כשל build). **אין דריפט לתקן**: `test` כבר
+היה ירוק לפני ההרצה, כך שאין קוד ייצור לשנות ואין "fix" אמיתי לבצע — פריט
+אימות בלבד, כמו M04-c67 ו-M05-c66. אפס שינוי קוד ייצור בפריט הזה מלבד עדכון
+`STATE.md` עצמו.
 
 **M04-c67 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
 commit". אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat
