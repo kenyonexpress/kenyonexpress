@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c65 (הועבר מ-STATE.md ב-M12-c65, לשמירה על תקרת 300 שורות)
+
+**M11-c65 - DONE (01.10): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
+בכל חומרה, אפס תיקון קוד נדרש.** משימת התור: "Accessibility: run axe on
+every page. Fix every serious and critical violation. Keep WCAG 2.1 AA.
+Record the remaining count in STATE.md."
+
+**בדיקת דריפט מול המדידה הקודמת (M11-c64, `f199fbfef`):** `git log
+f199fbfef..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
+`857a0deea` (M18-c64) — שורת דירוג הכוכבים הורחבה מ-`DefaultProductCard`
+לרצועות ה-CMS של דף הבית (`ProductRail.tsx`), בדיוק בסקופ שהשער הזה
+סורק (`home` נמצא ב-`PAGES`). לא הוסתמך על "אפס דריפט" — הורצה סריקה
+אמיתית.
+
+נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD (`rm -rf .next`
+קודם), הורם `pnpm start -p 3719`, והורצו `e2e/a11y.spec.ts` ו-
+`e2e/a11y-authenticated.spec.ts` (18 הנתיבים הציבוריים הקבועים, שלוש
+תפקידים מאומתים דרך `route-lists.ts`, עגלה/קופה כולל כל שלבי האשף ומצב
+שגיאת האימות, פאנל העגלה, באנר ההתקנה) עם `--workers=1` ו-
+`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il` בפורגראונד:
+**240/242 עברו, 2 דולגו בכוונה (אותו טסט `the search combobox says
+which suggestion is selected` על שני viewport — שדה החיפוש הוסר ב-D3),
+אפס נכשל.** שלושת התפקידים (לקוח/מנהל/ספק) התחברו בהצלחה בריצה הזו
+(אפס כשל login). השער נכשל על **כל** הפרה, לא רק `serious`/`critical`,
+אז 0 עובר = 0 בכל דרגת חומרה כולל `serious`/`critical`. **המספר הנותר: 0.**
+
+שורת הכוכבים המורחבת ברצועות ה-CMS נסרקה בפועל בטסט `home has no WCAG
+A/AA violations` — עברה, אפס הפרה.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` בלבד, אפס קוד.
+
 ## M10-c65 (הועבר מ-STATE.md ב-M11-c65, לשמירה על תקרת 300 שורות)
 
 **M10-c65 - DONE (01.10).** משימת התור: למצוא את המודול הקריטי בעל כיסוי

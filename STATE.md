@@ -1,120 +1,120 @@
-RESUME FROM: M12-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c65)
+RESUME FROM: M13-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c65)
 
 ## המשך מ:
 
-**M11-c65 - DONE (01.10): axe הורץ מחדש על כל דף, אפס הפרת WCAG A/AA
-בכל חומרה, אפס תיקון קוד נדרש.** משימת התור: "Accessibility: run axe on
-every page. Fix every serious and critical violation. Keep WCAG 2.1 AA.
-Record the remaining count in STATE.md."
+**M12-c65 - DONE (01.10): SEO נבדק מחדש מאפס (לא הוסתמך על טענת
+M12-c64), אפס דריפט, אפס תיקון קוד נדרש.** משימת התור: "SEO: verify
+metadata, canonical, og tags, schema.org Product and Offer on product
+pages, sitemap freshness and robots. Fix drift."
 
-**בדיקת דריפט מול המדידה הקודמת (M11-c64, `f199fbfef`):** `git log
-f199fbfef..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
-`857a0deea` (M18-c64) — שורת דירוג הכוכבים הורחבה מ-`DefaultProductCard`
-לרצועות ה-CMS של דף הבית (`ProductRail.tsx`), בדיוק בסקופ שהשער הזה
-סורק (`home` נמצא ב-`PAGES`). לא הוסתמך על "אפס דריפט" — הורצה סריקה
-אמיתית.
+**בדיקת דריפט מול המדידה הקודמת (M12-c64, `dcde57eeb`):** `git log
+dcde57eeb..HEAD -- src/ e2e/ messages/ packages/` הראה קומיט יחיד,
+`857a0deea` (M18-c64, שורת דירוג כוכבים ברצועות ה-CMS של דף הבית) —
+נבדק בפירוט ואינו נוגע למטא-דאטה/JSON-LD/sitemap/robots כלל (קבצים
+ששונו: `ProductCard.tsx`, `homepage/rails.ts`, `related-products.ts`,
+`reviews/rating-summaries.ts`, `ProductRail.tsx`). אפס דריפט אפשרי
+מהקומיט הזה בסקופ השער הזה.
 
-נבנה `CARDCOM_USE_MOCK=true pnpm build` טרי מ-HEAD (`rm -rf .next`
-קודם), הורם `pnpm start -p 3719`, והורצו `e2e/a11y.spec.ts` ו-
-`e2e/a11y-authenticated.spec.ts` (18 הנתיבים הציבוריים הקבועים, שלוש
-תפקידים מאומתים דרך `route-lists.ts`, עגלה/קופה כולל כל שלבי האשף ומצב
-שגיאת האימות, פאנל העגלה, באנר ההתקנה) עם `--workers=1` ו-
-`E2E_ADMIN_EMAIL=e2e-admin@kenyonexpress.co.il` בפורגראונד:
-**240/242 עברו, 2 דולגו בכוונה (אותו טסט `the search combobox says
-which suggestion is selected` על שני viewport — שדה החיפוש הוסר ב-D3),
-אפס נכשל.** שלושת התפקידים (לקוח/מנהל/ספק) התחברו בהצלחה בריצה הזו
-(אפס כשל login). השער נכשל על **כל** הפרה, לא רק `serious`/`critical`,
-אז 0 עובר = 0 בכל דרגת חומרה כולל `serious`/`critical`. **המספר הנותר: 0.**
+**חמשת התחומים נבדקו ישירות מהקוד (לא מהתיעוד), כל אחד PASS:**
+1. **מטא-דאטה דף מוצר** — `src/app/(store)/product/[slug]/page.tsx:34-90`
+   `generateMetadata`: `title`, `description` (עם שרשרת ברירת מחדל),
+   `alternates.canonical`, `openGraph.{title,description,url,type,locale}`.
+   `og:image` דרך מוסכמת הקובץ `opengraph-image.tsx` (1200×630, מנתוני
+   מוצר אמיתיים, לא סטטי). הערה קטנה שאינה דריפט: `openGraph.type` הוא
+   `'website'` לא `'product'` — תקין, פחות עשיר.
+2. **JSON-LD Product+Offer, נבדק גם נגד באג אגורות** — נבנה ב-
+   `src/lib/seo/json-ld.ts:101-198` (`buildProductJsonLd`/`buildOfferNode`),
+   נפלט ב-`page.tsx:272-284`. `price`/`priceCurrency: 'ILS'`/`availability`/
+   `seller` קיימים. מקור המחיר `kenyon_price` הוא `numeric(10,2)` בשקלים
+   כבר (`supabase/migrations/016_products_code_sync.sql:31`), ו-`price()`
+   עושה `.toFixed(2)` ישיר בלי חלוקה ב-100 — נכון, כי המקור כבר שקלים
+   ולא אגורות. אין המרת אגורות שגויה בנתיב ה-JSON-LD.
+3. **Sitemap** — `src/app/sitemap.xml/route.ts` sitemapindex על חמישה
+   חלקים, `src/lib/seo/sitemap-data.ts:50-69` שואל Supabase חי
+   (`status='active'`, `deleted_at is null`), `lastModified` מ-`updated_at`
+   בפועל, לא הארדקוד.
+4. **robots.txt** — `src/app/robots.ts:19-55`: `allow: '/'`, חוסם
+   `/admin/`, `/checkout`, `/cart`, `/api/`, `/account/`, `/supplier/`,
+   `/auth/`, `/redeem/`, `/coupon/`, `/scan`; `sitemap`/`host` מצביעים
+   ל-`/sitemap.xml` האמיתי.
+5. **עקביות canonical** — `src/lib/site-url.ts:11-14` ו-`layout.tsx:45,48`
+   משתמשים באותו ברירת מחדל (`https://kenyonexpress.co.il`); הערה קטנה
+   שאינה דריפט: `page.tsx:224` משכפל את אותו literal במקום לייבא
+   `siteUrl()`.
 
-שורת הכוכבים המורחבת ברצועות ה-CMS נסרקה בפועל בטסט `home has no WCAG
-A/AA violations` — עברה, אפס הפרה.
-
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md` בלבד, אפס קוד.
+**אפס שינוי קוד — שתי ההערות הנ"ל אינן דריפט (לא שגיאה, לא סטייה מהתנהגות
+קודמת), ולכן אין מה "לתקן" לפי כלל הפרויקט שתיקון הוא החלטת תוכן/קוד
+רק כשיש פגם אמיתי.**
 
 **שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
-`test` 610/610 קבצים, 7298/7310 ירוקים. `build` רץ בפועל כחלק מהמדידה
-(לעיל), exit 0. אין שינוי UI, `scripts/compare.mjs` לא רץ (לא פריט חזותי).
+`test` 610/610 קבצים, 7298 עברו + 12 דולגו בכוונה, אפס נכשל. `build`
+(`rm -rf .next` קודם, `CARDCOM_USE_MOCK=true pnpm build`) exit 0 —
+שגיאות `supabase.rls_denied` על `reviews` בלוג הן החוסם הידוע #11/247
+(אין הרשאת `SELECT` ל-`anon`), לא כשל build. אין שינוי UI,
+`scripts/compare.mjs` לא רץ (לא פריט חזותי).
 
-**M10-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M11-c65
-לשמירה על תקרת 300 שורות).** כיסוי טסטים נבדק מחדש, שש הקטגוריות הקריטיות
-עדיין ב-100% ענפים כל אחת, אפס דריפט רביעית ברציפות. ארבעת השערים ירוקים.
+**M11-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M12-c65
+לשמירה על תקרת 300 שורות).** axe הורץ מחדש על כל דף מול build+e2e אמיתי,
+240/242 עברו, 2 דולגו בכוונה, אפס הפרת WCAG A/AA בכל חומרה. ארבעת השערים
+ירוקים.
 
-**M09-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M10-c65
-לשמירה על תקרת 300 שורות).** STATE CLEAN — אותם 13/15 חוסמים, אפס פעולה
-חדשה לסוכן, קומיטים מאחורי פרודקשן 293. ארבעת השערים ירוקים.
+**M10-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M09-c65/M10-c65/M11-c65/M12-c65 לשמירה על תקרת 300 שורות).** M10-c65 —
+כיסוי טסטים, שש הקטגוריות הקריטיות ב-100% ענפים, אפס דריפט רביעית
+ברציפות. M09-c65 — STATE CLEAN, אותם 13/15 חוסמים, קומיטים מאחורי
+פרודקשן 293. M08-c65 — BACKLOG EMPTY. M07-c65 — route audit, 226 טסטי
+Playwright ירוקים, 239 PASS + 2 NO DATA, 0 FAIL. M06-c65 — Lighthouse
+mobile, 99/100/100/100 בית, 99/100/100/100 מוצר, זהה ל-M06-c64. ארבעת
+השערים ירוקים בכולם.
 
-**M08-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c65/M10-c65/M11-c65 לשמירה על תקרת 300 שורות).** M08-c65 —
-BACKLOG EMPTY, אותה מסקנה, פחות מעמיק. M07-c65 — route audit נמדד שוב
-במלואו מול בנייה טריה, 226 טסטי Playwright ירוקים, 239 PASS + 2 NO
-DATA, 0 FAIL. M06-c65 — Lighthouse mobile נמדד שוב מול בנייה טריה אחרי
-הרחבת דירוג הכוכבים לרצועות ה-CMS (M18-c64): 99/100/100/100 בית,
-99/100/100/100 מוצר, זהה ב-100% ל-M06-c64. ארבעת השערים ירוקים בשלושתם.
+**M05-c65..M16-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M06-c65/M12-c65 לשמירה על תקרת 300 שורות).** M05-c65..M01-c65 —
+advisors (44 WARN זהים), תברואת תלויות (אפס עדכון/חולשה), שער ירוק, שער
+חזותי (אפס רגרסיה, 8.51/9.02/3.95 בית, 5.61/4.92/2.99 מוצר), ובדיקת
+פרודקשן (BLOCKED, DNS/HTTP תקינים, חוסם Cardcom/`ALLOW_INCOMPLETE_ENV`
+נשאר). M18-c64 — שופר המרה אמיתי: שורת דירוג הכוכבים הורחבה מדף המוצר
+לרצועות ה-CMS של דף הבית, לב לוגיקה מוצה ל-`lib/reviews/rating-
+summaries.ts`, שער חזותי PASS. M17-c64 — קופי ומשפטי, אפס דריפט. M16-c64
+— תברואת ריפו, `git status` נקי, 43 ענפים/24 PR/22 ענפים ישנים נרשמו.
+אפס שינוי קוד בכולם, ארבעת השערים ירוקים בכולם.
 
-**M05-c65..M01-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M06-c65 לשמירה על תקרת 300 שורות).** advisors (44 WARN זהים),
-תברואת תלויות (אפס עדכון/חולשה), שער ירוק, שער חזותי (אפס רגרסיה,
-8.51/9.02/3.95 בית, 5.61/4.92/2.99 מוצר), ובדיקת פרודקשן (BLOCKED,
-DNS/HTTP תקינים, חוסם Cardcom/`ALLOW_INCOMPLETE_ENV` נשאר). אפס שינוי
-קוד בכולם, ארבעת השערים ירוקים בכולם.
-
-**M18-c64..M16-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M06-c65 לשמירה על תקרת 300 שורות).** M18-c64 — שופר המרה אמיתי:
-שורת דירוג הכוכבים של M18-c63 הורחבה מדף המוצר לרצועות ה-CMS של דף
-הבית (`ProductRail.tsx`), לב לוגיקה משותפת מוצה ל-`lib/reviews/
-rating-summaries.ts`, שער חזותי PASS בשני הדפים שלושת הרוחבים. M17-c64
-— קופי ומשפטי, אפס דריפט מ-M17-c63. M16-c64 — תברואת ריפו, `git status`
-נקי, אפס ענף מקומי
-לא-דחוף מ-43, 24 PR פתוחים ו-22 ענפים ישנים נרשמו, אפס דריפט
-מ-M16-c63. ארבעת השערים ירוקים בכולם.
-
-**M15-c64..M12-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c65 לשמירה על תקרת 300 שורות).** סנכרון תיעוד (אפס דריפט),
-ביצועים (bundle/image pipeline/ISR/cache headers מול build טרי, אפס
-רגרסיה), אבטחה (CSP/HSTS/rate limits, אפס דריפט) ו-SEO (meta/canonical/
-og/JSON-LD/sitemap/robots, אפס דריפט) — ארבעת השערים ירוקים בכולם.
-
-**M11-c64..M10-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c64 לשמירה על תקרת 300 שורות).** M11-c64 — axe, אפס הפרת
-WCAG A/AA בכל חומרה (240/242 עברו, 2 דולגים בכוונה). M10-c64 — כיסוי
-טסטים, שש הקטגוריות הקריטיות ב-100% ענפים כל אחת. ארבעת השערים ירוקים
-בשניהם.
+**M15-c64..M10-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M01-c65/M13-c64/M12-c65 לשמירה על תקרת 300 שורות).** סנכרון תיעוד
+(אפס דריפט), ביצועים (bundle/image pipeline/ISR/cache headers מול build
+טרי, אפס רגרסיה), אבטחה (CSP/HSTS/rate limits, אפס דריפט), SEO (meta/
+canonical/og/JSON-LD/sitemap/robots, אפס דריפט), axe (0 WCAG A/AA,
+240/242 עברו, 2 דולגים בכוונה), וכיסוי טסטים (שש הקטגוריות הקריטיות
+ב-100% ענפים) — ארבעת השערים ירוקים בכולם.
 
 **M09-c64..M07-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M13-c64 לשמירה על תקרת 300 שורות).** M09-c64 — STATE CLEAN: 13
 החוסמים הפתוחים ו-15 הפריטים ב-`docs/BACKLOG.md` נבדקו ישירות, אפס
-שורה חדשה — כולם דורשים אופיר. M08-c64 — BACKLOG EMPTY, עדיין 15 פריטים,
-אפס חדש. M07-c64 — route audit נבדק מחדש, אפס כשל אמיתי; ה-`.next`
-שהורש מ-M06-c64 היה תקול (CSP `upgrade-insecure-requests` נאפה
-בטעות), תוקן ב-build מחדש, לא בקוד — 242 שורות, 240 PASS + 2 NO DATA.
-ארבעת השערים ירוקים בשלושתם.
+שורה חדשה. M08-c64 — BACKLOG EMPTY, אפס חדש. M07-c64 — route audit
+נבדק מחדש, אפס כשל אמיתי; ה-`.next` שהורש מ-M06-c64 היה תקול (CSP
+`upgrade-insecure-requests`), תוקן ב-build מחדש — 242 שורות, 240 PASS
++ 2 NO DATA. ארבעת השערים ירוקים בשלושתם.
 
 **M06-c64..M01-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M08-c64 לשמירה על תקרת 300 שורות).** Lighthouse mobile (99/100/
-100/100, אפס תיקון; בדיעבד ה-`.next` היה אותו build תקול שתואר
-ב-M07-c64, לא משפיע על תוקף המדידה), advisors (44 WARN זהה ל-M05-c63),
-תברואת תלויות (`pnpm audit` אפס חולשות, אפס עדכון patch/minor זמין),
-שער ירוק (אפס תיקון נדרש), שער חזותי (8.51/9.02/3.95 בית, 5.61/4.92/
-2.99 מוצר, אפס דריפט), ובדיקת פרודקשן (BLOCKED פעם עשירית, DNS/HTTP
-תקינים, חוסם env Cardcom עדיין קיים) — ארבעת השערים ירוקים בכולם.
+100/100), advisors (44 WARN זהה ל-M05-c63), תברואת תלויות (אפס חולשות),
+שער ירוק, שער חזותי (8.51/9.02/3.95 בית, 5.61/4.92/2.99 מוצר, אפס
+דריפט), ובדיקת פרודקשן (BLOCKED, DNS/HTTP תקינים) — ארבעת השערים ירוקים
+בכולם.
 
 **M18-c63..M14-c63 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M08-c64/M01-c64 לשמירה על תקרת 300 שורות).** שיפור המרה אמיתי:
-שורת דירוג כוכבים על כרטיס "מומלצים" בדף המוצר (`DefaultProductCard`/
-`RelatedProducts`), שער חזותי PASS בשלושת הרוחבים. תברואת ריפו (43
-ענפים מקומיים זהים, 24 PR פתוחים, `main` המקומי סוטה — חוסם 13),
-סנכרון תיעוד (אפס דריפט), וביצועים (אפס רגרסיה, לב המועדפים לא הוסיף
-בייט ל-bundle) — ארבעת השערים ירוקים בכולם.
+שורת דירוג כוכבים על כרטיס "מומלצים" בדף המוצר, שער חזותי PASS בשלושת
+הרוחבים. תברואת ריפו (43 ענפים, 24 PR פתוחים, `main` המקומי סוטה —
+חוסם 13), סנכרון תיעוד (אפס דריפט), וביצועים (אפס רגרסיה) — ארבעת
+השערים ירוקים בכולם.
 
 **M13-c63..M01-c62 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, פירוט כל
 פריט כווץ לשורה הזו ב-M16-c63/M14-c63 לשמירה על תקרת 300 שורות):**
-עשרים ותשעה פריטי בדיקה חוזרת ושני תיקוני המרה אמיתיים (לב מועדפים על
-`DefaultProductCard`, פער מדידה אמיתי ב-`bundle-report.mjs` שהפך את
-ה-PDP לנתיב הכבד ביותר) — אבטחה, SEO, axe (0 WCAG A/AA), כיסוי טסטים
-(שש קטגוריות ב-100%), STATE CLEAN, BACKLOG EMPTY, route audit, Lighthouse
-mobile (90+), advisors, תברואת תלויות, שער ירוק, שער חזותי ובדיקת
-פרודקשן. אפס דריפט בכולם, ארבעת השערים ירוקים בכולם.
+עשרים ותשעה פריטי בדיקה חוזרת ושני תיקוני המרה אמיתיים (לב מועדפים,
+פער מדידה ב-`bundle-report.mjs`) — אבטחה, SEO, axe, כיסוי טסטים, STATE
+CLEAN, BACKLOG EMPTY, route audit, Lighthouse, advisors, תברואת
+תלויות, שער ירוק/חזותי ובדיקת פרודקשן. אפס דריפט, ארבעת השערים ירוקים.
 
 **S03 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M05-c62
 לשמירה על תקרת 300 שורות).** בקצרה: reference חדש למוצר יחיד של Electro
