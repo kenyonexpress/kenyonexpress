@@ -1,44 +1,50 @@
-RESUME FROM: M02-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c66 - DONE, שער חזותי בית נמדד מחדש, אפס דריפט)
+RESUME FROM: M03-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c66 - DONE, שער חזותי מוצר נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs 380
-768 1440 on `/` and record diffs in STATE.md". **לא היה כבר עשוי בפריט
-הזה** (Q55 הריץ אותו מדד שלשום-אותו-יום אבל זה היה חלק מפריט אחר,
-לא-מקדם-תור; זה הפריט הראשון שמקדם `RESUME FROM:` אחרי סגירת מחזור c65).
+**M02-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs on
+`/product` sample". `COMPARE_PRODUCT_SLUG` בררת המחדל (`מוצר-לדוגמא`,
+literally "product sample") היא גם שורת ה-`-copy`/`-לדוגמא` הידועה
+בפנקס `catalogue-known-issues.json` — לא שונתה, זה המוצר שהשער בודק מאז
+ומתמיד.
 
-**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3711 (cwd
-אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק, לא שרת שארי
-מסשן מקביל — שמונה `next-server`/`pnpm start` נוספים רצו בו-זמנית על
-פורטים אחרים, ראו זיכרון `gate-measured-foreign-server-on-3311`):**
-`LOCAL_BASE=http://localhost:3711 node scripts/compare.mjs --page=home
---baseline='refs/ke_live_{width}.png' --widths=380,768,1440`. הדף החי
-עצמו מסורב כ-reference (DNS כבר מצביע לבנייה שלנו, חוסם #14 למטה), אז
-המדד מול צילום קפוא כבר מתועד כנכון.
+**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3911 (cwd
+אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק; 14
+`next-server`/`pnpm start` נוספים רצו בו-זמנית על פורטים אחרים, ראו
+זיכרון `gate-measured-foreign-server-on-3311`):** `LOCAL_BASE=
+http://localhost:3911 node scripts/compare.mjs --page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
+(reference מקור Electro, לא live — דף המוצר כבר סגור לאותה בסיס מ-Q05b,
+ראו חוסם 14 למטה).
 
-**תוצאות, כולן PASS, אפס דריפט מ-Q55/M02-c65:**
+**תוצאות, כולן PASS, דריפט כמעט אפס מ-17ce87bcd (03:04-03:06, אותו
+מחזור):**
 
-| רוחב | אחוז | סף | מצב |
-|------|------|-----|------|
-| 380  | 8.58% | 11% | PASS |
-| 768  | 9.01% | 11% | PASS |
-| 1440 | 4.16% | 11% | PASS |
+| רוחב | אחוז | סף | מצב | קודם |
+|------|------|-----|------|------|
+| 380  | 4.96% | 11% | PASS | 4.96% |
+| 768  | 4.58% | 11% | PASS | 4.57% |
+| 1440 | 3.25% | 11% | PASS | 3.25% |
 
-`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו, שלוש שורות חדשות
-(`e51b95b38`/`e51b95b38-dirty`, 13:15-13:19).
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`308cfe7cf-dirty`,
+13:27-13:34; שורה REFUSED נוספת ב-13:25 ל-`home`/1440 אינה של הפריט הזה
+— נכתבה על ידי סשן מקביל אחר שכותב לאותו קובץ).
 
 **ארבעת השערים:** `pnpm type-check` נקי. `pnpm lint` נקי, 12 שערים.
-`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה ל-Q55,
-אפס דריפט. `pnpm build` **לא הורץ מחדש**: שמונה `next-server` רצו
-במקביל, ‏<0.8GB פנויים (`vm_stat`) — סיכון OOM לסשנים מקבילים (זיכרון
+`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה
+ל-M01-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: 14 `next-server`
+רצו במקביל, ~0.8GB פנויים (`vm_stat`) — סיכון OOM לסשנים מקבילים (זיכרון
 `concurrent-worktree-builds-oom`). ה-`.next` הקיים (`BUILD_ID`
-`8sM3K74xhwN4B4Fph3T3z`, נבנה היום) אומת זהה-מקור ל-HEAD (`git diff
---stat HEAD -- next.config.ts next.config.mjs middleware.ts vercel.json
-src/ package.json pnpm-lock.yaml` ריק).
+`8sM3K74xhwN4B4Fph3T3z`) אומת זהה-מקור ל-HEAD (`git diff --stat HEAD --
+next.config.ts next.config.mjs middleware.ts vercel.json src/
+package.json pnpm-lock.yaml` ריק).
 
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`
-(העברת פירוט Q55), `STATE.md`.
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
+**M01-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M02-c66 לשמירה על תקרת 300 שורות).** פריט תור, DONE: שער חזותי בית
+נמדד מחדש, 8.58%/9.01%/4.16%, אפס דריפט מ-Q55. ארבעת השערים ירוקים.
 
 **Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M01-c66
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: `LAUNCH-

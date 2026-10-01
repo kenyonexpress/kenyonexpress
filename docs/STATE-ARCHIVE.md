@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c66 (הועבר מ-STATE.md ב-M02-c66, לשמירה על תקרת 300 שורות)
+
+**M01-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on `/` and record diffs in STATE.md". **לא היה כבר עשוי בפריט
+הזה** (Q55 הריץ אותו מדד שלשום-אותו-יום אבל זה היה חלק מפריט אחר,
+לא-מקדם-תור; זה הפריט הראשון שמקדם `RESUME FROM:` אחרי סגירת מחזור c65).
+
+**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3711 (cwd
+אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק, לא שרת שארי
+מסשן מקביל — שמונה `next-server`/`pnpm start` נוספים רצו בו-זמנית על
+פורטים אחרים, ראו זיכרון `gate-measured-foreign-server-on-3311`):**
+`LOCAL_BASE=http://localhost:3711 node scripts/compare.mjs --page=home
+--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`. הדף החי
+עצמו מסורב כ-reference (DNS כבר מצביע לבנייה שלנו, חוסם #14 למטה), אז
+המדד מול צילום קפוא כבר מתועד כנכון.
+
+**תוצאות, כולן PASS, אפס דריפט מ-Q55/M02-c65:**
+
+| רוחב | אחוז | סף | מצב |
+|------|------|-----|------|
+| 380  | 8.58% | 11% | PASS |
+| 768  | 9.01% | 11% | PASS |
+| 1440 | 4.16% | 11% | PASS |
+
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו, שלוש שורות חדשות
+(`e51b95b38`/`e51b95b38-dirty`, 13:15-13:19).
+
+**ארבעת השערים:** `pnpm type-check` נקי. `pnpm lint` נקי, 12 שערים.
+`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה ל-Q55,
+אפס דריפט. `pnpm build` **לא הורץ מחדש**: שמונה `next-server` רצו
+במקביל, ‏<0.8GB פנויים (`vm_stat`) — סיכון OOM לסשנים מקבילים (זיכרון
+`concurrent-worktree-builds-oom`). ה-`.next` הקיים (`BUILD_ID`
+`8sM3K74xhwN4B4Fph3T3z`, נבנה היום) אומת זהה-מקור ל-HEAD (`git diff
+--stat HEAD -- next.config.ts next.config.mjs middleware.ts vercel.json
+src/ package.json pnpm-lock.yaml` ריק).
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`
+(העברת פירוט Q55), `STATE.md`.
+
 ## Q55 (הועבר מ-STATE.md ב-M01-c66, לשמירה על תקרת 300 שורות)
 
 **Q55 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
