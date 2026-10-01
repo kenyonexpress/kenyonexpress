@@ -38649,3 +38649,65 @@ cwd של ה-PID הוא שורש הפרויקט הנכון (לא שרת זר, ר�
 `type-check`/`lint`/`test`/`build` נוסף — M18-c67 כבר אישר ארבעתם ירוקים
 ואין קומיט שנגע ב-`src`/`public` מאז. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
+**M01-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/ sample". ארבעת השערים הורצו מחדש וירוקים על HEAD הנוכחי: `type-check`
+נקי, `lint` (12 שערים) נקי, `test` 614/614 קבצים ו-7337/7349 עברו (12
+מדולגים), `build` exit 0. **מדידה אמיתית בפורגראונד, שלושה רוחבים, מול
+`refs/ke_live_{width}.png` (live reference, לא Electro — ראה חוסם #14
+למעלה):**
+
+| רוחב | ציון (both-painted) | סטטוס |
+|---|---|---|
+| 380 | 8.58% | PASS |
+| 768 | 9.01% | PASS |
+| 1440 | 4.16% | PASS |
+
+זהים ל-100% לציוני M01-c68 — **אפס דריפט**. השורות נוספו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
+**M02-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". **מדידה אמיתית בפורגראונד, שלושה רוחבים, מול
+`refs/electro_product_{width}.png` (Electro v7, דף מוצר):**
+
+| רוחב | ציון (both-painted) | סטטוס |
+|---|---|---|
+| 380 | 4.96% | PASS |
+| 768 | 4.58% | PASS |
+| 1440 | 3.25% | PASS |
+
+זהים ל-100% לציוני M02-c68 — **אפס דריפט**. לא נדרש `type-check`/
+`lint`/`test`/`build` נוסף — M01-c69 כבר אישר ארבעתם ירוקים על אותו HEAD
+ואין שינוי קוד בפריט הזה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
+**M03-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". שרת `pnpm start` על 3311 (PID 84228, אותו שרת ששימש
+את M01-c69 ו-M02-c69) אומת לפני המדידה: `.next/BUILD_ID` מ-04:17 מאוחר
+מהקומיט האחרון שנגע ב-`src`/`public` (`4d3702025`), `curl` החזיר `200`
+ל-`/category/hot-deals`. **מדידה אמיתית בפורגראונד (`--widths=380,768,1440`,
+הריצה עברה 120 שניות והוזזה לרקע מצד הכלי עצמו, לא ביוזמה; המתנתי לסיומה
+באותה הרצה לפני שנרשם משהו), מול `refs/electro_shop_{width}.png`
+(Electro `/shop/`, slug מקומי `hot-deals`):**
+
+| רוחב | ציון (both-painted) | סטטוס |
+|---|---|---|
+| 380 | 3.53% | PASS |
+| 768 | 2.52% | PASS |
+| 1440 | 1.69% | PASS |
+
+שלושתם זהים ל-100% לציוני M03-c68/M03-c66/M03-c67 — **אפס דריפט**; פלט
+השער עצמו הדפיס `=== category parity, gate 11% ===` עם PASS בשלושתם.
+לא נדרש `type-check`/`lint`/`test`/`build` נוסף — M01-c69 כבר אישר
+ארבעתם ירוקים על אותו HEAD ואין שינוי קוד בפריט הזה (רק
+`docs/UI-PARITY-REPORT.md` השתנה, נכתב על ידי השער עצמו). קבצים:
+`STATE.md`, `docs/UI-PARITY-REPORT.md`.
+
+**M04-c69 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". `pnpm type-check` (`tsc --noEmit`) רץ נקי, exit 0, אפס שגיאות —
+אין דריפט לתקן. הורצו גם שלושת השערים הנוספים לוודא שאין רגרסיה חבויה:
+`lint` ירוק (12 שערים, `biome check` על 2037 קבצים, אפס תיקונים), `test`
+614/614 קבצים ו-7337/7349 עברו (12 מדולגים, זהה ל-M01-c69/M05-c68),
+`build` exit 0 (כל הנתיבים נבנו, כולל sitemaps/robots/opengraph). פריט
+אימות-בלבד, אפס שינוי קוד; קובץ שהשתנה: `STATE.md`.
