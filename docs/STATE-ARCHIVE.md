@@ -2,6 +2,73 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q45 (הועבר מ-STATE.md ב-Q46, לשמירה על תקרת 300 שורות)
+
+**Q45 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"Passkey WebAuthn enrolment banner, WhatsApp SMS OTP fallback,
+phone-verified profile field." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q44.
+
+- **Passkey enrolment banner**: כבר בנוי במלואו, נבדק מחדש.
+  `FirstPurchaseBanner` (`src/components/checkout/FirstPurchaseBanner.tsx`,
+  מחווט ב-`/checkout/return` ובסקירת החשבון) מציע קישור ל-`/account/security`
+  כש-`hasPasskeys=false`, ונעלם לאחר הרשמה. `PasskeyRegisterPrompt`
+  (`src/components/account/PasskeyRegisterPrompt.tsx`) מציג דיאלוג נפרד אחרי
+  ביקור ראשון באזור החשבון, snooze של 30 יום ולא לצמיתות (Q17). שרשרת
+  ה-WebAuthn המלאה קיימת ומחווטת: `beginPasskeyRegistration`/
+  `finishPasskeyRegistration` (`src/server/actions/passkeys.ts`),
+  `@simplewebauthn/browser`, `PasskeyManager`, `PasskeyLoginButton`.
+- **phone-verified profile field**: כבר בנוי, לא קוד חדש. מיגרציה
+  `217_profiles_phone_verified.sql` ב-`migrations/pending` (ממתינה, לא
+  הוחלה) מוסיפה `phone_verified_at`/`phone_verified_e164` לטבלת `profiles`,
+  עם CHECK ש"שניהם או אף אחד", ומסרבת לעצמה להיכתב לפני ש-218 מצמצם את
+  הרשאת ה-UPDATE הגורפת (אחרת הלקוח עצמו יכול לזייף "אימות"). הקוד ב-
+  `runVerifyPhoneOtp` (`src/server/actions/auth.ts`) כבר כותב לשתי העמודות
+  אחרי `verifyOtp` מצליח, וסובל 42703/PGRST204 (העמודה עוד לא קיימת
+  בפרודקשן) בלי להכשיל התחברות. מכוסה ב-`src/__tests__/
+  pending-migrations-inventory.test.ts`.
+- **WhatsApp SMS OTP fallback**: הקוד היחיד שהיה חסר בפועל, ונמצא כבר כתוב
+  אך לא מחויב בעץ העבודה בתחילת הפריט הזה (ראו "החלטות שהתקבלו אוטומטית"
+  למטה). נבדק שורה-שורה, הושלם ואומת: `whatsappOtpEnabled()`
+  (`src/lib/auth/phone-otp.ts`, דגל כבוי כברירת מחדל, אותה צורה כמו
+  `phoneAuthEnabled`), ו-`runSendPhoneOtp` (`auth.ts`) מנסה WhatsApp קודם
+  ונופל ל-SMS באותה בקשה כשהניסיון הראשון נכשל, לא פעולה שנייה מהלקוח.
+  `PhoneOtpForm.tsx` מציג "שלחנו קוד ב-WhatsApp/SMS" לפי הערוץ שהצליח
+  בפועל. מה שהושלם על ידי הפריט הזה: תיעוד `WHATSAPP_OTP_ENABLED` שהיה
+  חסר לגמרי מ-`.env.example` ומ-`docs/ENV-REFERENCE.md` (אותה תבנית כמו
+  `PHONE_AUTH_ENABLED`, מפנה ל-`docs/WHATSAPP-SETUP.md` לצד Twilio/Meta
+  שכבר קיים לערוץ ה-WhatsApp היוצא).
+
+**החלטות שהתקבלו אוטומטית.** בתחילת הפריט נמצא תהליך `claude -p` פעיל יחיד
+(PID 51212, `ps aux`) עם אותו פרומפט המדויק של Q45, וב-`git status` עץ
+עבודה לא מחויב בדיוק באותם חמשת קבצי קוד שה-WhatsApp fallback נוגע בהם,
+עם חותמות זמן (16:52-16:58) שקדמו לתחילת התהליך שנמצא (17:01). כלומר לא
+שני סוכנים חיים במקביל ברגע הבדיקה (תהליך `claude -p` יחיד תואם), אלא
+שארית עבודה לא מחויבת מניסיון קודם לאותו פריט (סביר: מכסה שהתחדשה או
+restart של הלולאה). ההחלטה: לא להשליך. הקוד תאם בדיוק לסגנון הריפו (הערות
+WHY, לא WHAT), כיסה בדיוק את מה שהפריט מבקש, ובדיקות כבר נכתבו עבורו;
+מחיקתו ובנייתו מחדש הייתה מבזבזת עבודה תקינה בלי סיבה. נבדק שורה-שורה,
+הושלם (תיעוד env חסר) ואומת מההתחלה (type-check/lint/test/build/gate), לא
+הונח כנכון בלי ריצה.
+
+**בדיקה בפועל.** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים),
+`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים: חמש בדיקות חדשות
+בדיוק על fallback ה-WhatsApp, מעל ל-7328/7340 של Q44), `rm -rf .next &&
+pnpm build` נקי (שרת זמני בפורט 3315, cwd מאומת; 3311/3312/3313/3314 היו
+תפוסים על ידי סשנים מקבילים אחרים על אותו ריפו). שער חזותי PASS בשלושת
+הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.51%/9.02%/3.95%** (380/768/1440), זהה בדיוק
+למדידת Q41-Q44, אפס דריפט. **השינוי מוגבל ל-`/login`**, ש-`scripts/
+compare.mjs` לא מכיר כסוג עמוד (`--page=home/product/category/products/
+search/checkout/cart` בלבד, אין `login`, אין reference), לכן נמדד `home`
+כבדיקת רגרסיה כללית, כמו ב-Q43/Q44.
+
+קבצים ששונו: `.env.example`, `docs/ENV-REFERENCE.md`,
+`src/app/(auth)/login/PhoneOtpForm.tsx`, `src/lib/auth/phone-otp.ts`,
+`src/lib/auth/phone-otp.test.ts`, `src/server/actions/auth.ts`,
+`src/server/actions/auth.test.ts`, `docs/UI-PARITY-REPORT.md` (כתוב על
+ידי השער עצמו), `STATE.md`.
+
 ## Q44 (הועבר מ-STATE.md ב-Q45, לשמירה על תקרת 300 שורות)
 
 **Q44 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,

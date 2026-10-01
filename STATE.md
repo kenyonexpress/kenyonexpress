@@ -1,80 +1,66 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q45)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q46)
 
 ## המשך מ:
 
-**Q45 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"Passkey WebAuthn enrolment banner, WhatsApp SMS OTP fallback,
-phone-verified profile field." **אינו בתור האמיתי**
-(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q44.
+**Q46 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד.** "Sitemap, robots, OG tags, JSON-LD Product, BreadcrumbList,
+Organization, Offer." **אינו בתור האמיתי** (`docs/QUESTIONS-FOR-OFIR.md`
+עוצר ב-Q39), אותו דפוס כמו Q25-Q45. **כל ששת הרכיבים כבר בנויים
+ומחווטים, נבדק מחדש שורה-שורה:**
 
-- **Passkey enrolment banner**: כבר בנוי במלואו, נבדק מחדש.
-  `FirstPurchaseBanner` (`src/components/checkout/FirstPurchaseBanner.tsx`,
-  מחווט ב-`/checkout/return` ובסקירת החשבון) מציע קישור ל-`/account/security`
-  כש-`hasPasskeys=false`, ונעלם לאחר הרשמה. `PasskeyRegisterPrompt`
-  (`src/components/account/PasskeyRegisterPrompt.tsx`) מציג דיאלוג נפרד אחרי
-  ביקור ראשון באזור החשבון, snooze של 30 יום ולא לצמיתות (Q17). שרשרת
-  ה-WebAuthn המלאה קיימת ומחווטת: `beginPasskeyRegistration`/
-  `finishPasskeyRegistration` (`src/server/actions/passkeys.ts`),
-  `@simplewebauthn/browser`, `PasskeyManager`, `PasskeyLoginButton`.
-- **phone-verified profile field**: כבר בנוי, לא קוד חדש. מיגרציה
-  `217_profiles_phone_verified.sql` ב-`migrations/pending` (ממתינה, לא
-  הוחלה) מוסיפה `phone_verified_at`/`phone_verified_e164` לטבלת `profiles`,
-  עם CHECK ש"שניהם או אף אחד", ומסרבת לעצמה להיכתב לפני ש-218 מצמצם את
-  הרשאת ה-UPDATE הגורפת (אחרת הלקוח עצמו יכול לזייף "אימות"). הקוד ב-
-  `runVerifyPhoneOtp` (`src/server/actions/auth.ts`) כבר כותב לשתי העמודות
-  אחרי `verifyOtp` מצליח, וסובל 42703/PGRST204 (העמודה עוד לא קיימת
-  בפרודקשן) בלי להכשיל התחברות. מכוסה ב-`src/__tests__/
-  pending-migrations-inventory.test.ts`.
-- **WhatsApp SMS OTP fallback**: הקוד היחיד שהיה חסר בפועל, ונמצא כבר כתוב
-  אך לא מחויב בעץ העבודה בתחילת הפריט הזה (ראו "החלטות שהתקבלו אוטומטית"
-  למטה). נבדק שורה-שורה, הושלם ואומת: `whatsappOtpEnabled()`
-  (`src/lib/auth/phone-otp.ts`, דגל כבוי כברירת מחדל, אותה צורה כמו
-  `phoneAuthEnabled`), ו-`runSendPhoneOtp` (`auth.ts`) מנסה WhatsApp קודם
-  ונופל ל-SMS באותה בקשה כשהניסיון הראשון נכשל, לא פעולה שנייה מהלקוח.
-  `PhoneOtpForm.tsx` מציג "שלחנו קוד ב-WhatsApp/SMS" לפי הערוץ שהצליח
-  בפועל. מה שהושלם על ידי הפריט הזה: תיעוד `WHATSAPP_OTP_ENABLED` שהיה
-  חסר לגמרי מ-`.env.example` ומ-`docs/ENV-REFERENCE.md` (אותה תבנית כמו
-  `PHONE_AUTH_ENABLED`, מפנה ל-`docs/WHATSAPP-SETUP.md` לצד Twilio/Meta
-  שכבר קיים לערוץ ה-WhatsApp היוצא).
+- **Sitemap**: אינדקס + חמישה סקשנים (`src/app/sitemap.xml/route.ts`,
+  `src/app/sitemap/{categories,products,suppliers,regions,content}.xml/route.ts`),
+  בנויים מ-`src/lib/seo/sitemap-data.ts`/`sitemap-sections.ts`/
+  `sitemap-response.ts`. מכוסה ב-`sitemap.test.ts`,
+  `sitemap-canonicals.test.ts`, `sitemap-robots-agree.test.ts`,
+  `sitemap-sections.test.ts`.
+- **robots**: `src/app/robots.ts`, מצביע לאינדקס הסיטמאפ בלבד (לא לכל
+  קובץ), חוסם `/redeem/`, `/coupon/`, `/account/`, `/supplier/`, `/scan`,
+  `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`, איפוס/שחזור סיסמה.
+  מכוסה ב-`robots.test.ts`.
+- **OG tags**: `openGraph`/`twitter` ב-`src/app/layout.tsx` (ברירת מחדל
+  לכל האתר), ו-`metadata.openGraph` פר-עמוד ב-product/category/supplier/
+  page([slug]). תמונות OG מיוצרות דינמית: `src/app/opengraph-image.tsx`
+  (בית), `product/[slug]/opengraph-image.tsx`, `category/[slug]/
+  opengraph-image.tsx` — כל אחת עם bidi נכון לעברית (`src/lib/og/bidi.ts`,
+  ראו `Satori has no bidi pass` ב-memory). מכוסה ב-`og-fonts.test.ts`.
+- **JSON-LD Product/Offer**: `buildProductJsonLd`/`buildOfferNode`
+  (`src/lib/seo/json-ld.ts`), מחווט ב-`product/[slug]/page.tsx`. המחיר
+  נגזר מאותו מודל שהעמוד מציג (`CouponOffer`/`priceIls`), לא מחושב פעם
+  שנייה — ראו הערת ה-WHY בראש הקובץ על הפער ההיסטורי `price * 0.1`.
+  `priceSpecification` עם `StrikethroughPrice` למחיר המחוק, לא `highPrice`
+  (שאינה תכונת schema.org תקנית על `Offer` בודד). `availability`
+  IN_STOCK/OUT_OF_STOCK לפי מלאי אמיתי; שובר שאינו ניתן למכירה מקבל
+  `Offer` בלי מחיר, לא מחיר אפס.
+- **JSON-LD BreadcrumbList**: `buildBreadcrumbJsonLd`, מחווט ב-product/
+  category/city/page([slug]).
+- **JSON-LD Organization**: `buildSiteJsonLd` (גם `Organization` וגם
+  `WebSite`+`SearchAction`), מחווט בדף הבית בלבד (`src/app/(store)/
+  page.tsx`). `LocalBusiness`+`AggregateRating` נפרד לעמוד ספק
+  (`buildSupplierJsonLd`, `s/[id]/page.tsx`).
 
-**החלטות שהתקבלו אוטומטית.** בתחילת הפריט נמצא תהליך `claude -p` פעיל יחיד
-(PID 51212, `ps aux`) עם אותו פרומפט המדויק של Q45, וב-`git status` עץ
-עבודה לא מחויב בדיוק באותם חמשת קבצי קוד שה-WhatsApp fallback נוגע בהם,
-עם חותמות זמן (16:52-16:58) שקדמו לתחילת התהליך שנמצא (17:01). כלומר לא
-שני סוכנים חיים במקביל ברגע הבדיקה (תהליך `claude -p` יחיד תואם), אלא
-שארית עבודה לא מחויבת מניסיון קודם לאותו פריט (סביר: מכסה שהתחדשה או
-restart של הלולאה). ההחלטה: לא להשליך. הקוד תאם בדיוק לסגנון הריפו (הערות
-WHY, לא WHAT), כיסה בדיוק את מה שהפריט מבקש, ובדיקות כבר נכתבו עבורו;
-מחיקתו ובנייתו מחדש הייתה מבזבזת עבודה תקינה בלי סיבה. נבדק שורה-שורה,
-הושלם (תיעוד env חסר) ואומת מההתחלה (type-check/lint/test/build/gate), לא
-הונח כנכון בלי ריצה.
+כל ה-JSON-LD עובר דרך `jsonLdScript()` שבורחת `<` כדי שטקסט קטלוג לא
+יסגור את התג, ונאכף ב-`raw-html gate` (ראה פלט `pnpm lint` למטה: "every
+dangerouslySetInnerHTML is jsonLdScript or allowlisted"). מכוסה
+ב-`src/lib/seo/json-ld.test.ts`.
 
 **בדיקה בפועל.** `pnpm type-check` נקי, `pnpm lint` נקי (12 שערים),
-`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים: חמש בדיקות חדשות
-בדיוק על fallback ה-WhatsApp, מעל ל-7328/7340 של Q44), `rm -rf .next &&
-pnpm build` נקי (שרת זמני בפורט 3315, cwd מאומת; 3311/3312/3313/3314 היו
-תפוסים על ידי סשנים מקבילים אחרים על אותו ריפו). שער חזותי PASS בשלושת
-הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
---widths=380,768,1440`: **8.51%/9.02%/3.95%** (380/768/1440), זהה בדיוק
-למדידת Q41-Q44, אפס דריפט. **השינוי מוגבל ל-`/login`**, ש-`scripts/
-compare.mjs` לא מכיר כסוג עמוד (`--page=home/product/category/products/
-search/checkout/cart` בלבד, אין `login`, אין reference), לכן נמדד `home`
-כבדיקת רגרסיה כללית, כמו ב-Q43/Q44.
+`pnpm test` מלא 613/613 קבצים 7333/7345 (12 מדולגים, זהה בדיוק ל-Q45),
+`rm -rf .next && pnpm build` נקי. שער חזותי PASS בשלושת הרוחבים,
+foreground, `--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`
+(שרת זמני בפורט 3316, cwd מאומת; 3311-3315 תפוסים על ידי סשנים מקבילים
+אחרים על אותו ריפו): **8.51%/9.07%/3.95%** (380/768/1440), זהה כמעט
+בדיוק למדידת Q41-Q45 (768 נע 9.02%→9.07%, בתוך רעש המדידה). אין קובץ
+קוד ייצור ששונה; `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
 
-קבצים ששונו: `.env.example`, `docs/ENV-REFERENCE.md`,
-`src/app/(auth)/login/PhoneOtpForm.tsx`, `src/lib/auth/phone-otp.ts`,
-`src/lib/auth/phone-otp.test.ts`, `src/server/actions/auth.ts`,
-`src/server/actions/auth.test.ts`, `docs/UI-PARITY-REPORT.md` (כתוב על
-ידי השער עצמו), `STATE.md`.
-
-**Q25..Q44 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q45
-לשמירה על תקרת 300 שורות).** שמונה-עשר פריטים חיצוניים חד-פעמיים, אף אחד
-לא בתור האמיתי. ארבעה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי במקרה
-של Q45, ראו למעלה), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים),
-שניים BLOCKED (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד
-(Q32) שעות פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת
-השערים ירוקים בכל השמונה-עשר.
+**Q25..Q45 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q46
+לשמירה על תקרת 300 שורות).** תשעה-עשר פריטים חיצוניים חד-פעמיים, אף אחד
+לא בתור האמיתי. חמישה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי במקרה
+של Q45), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים BLOCKED
+(מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32) שעות
+פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים ירוקים
+בכל התשעה-עשר.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,
