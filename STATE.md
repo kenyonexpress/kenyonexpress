@@ -1,40 +1,47 @@
-RESUME FROM: M01-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c68 - DONE, STATE.md כבר מתחת לתקרה, אומת ולא נדרש כיווץ)
+RESUME FROM: M02-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c69 - DONE, שער חזותי בית נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M18-c68 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines,
-archive rest to docs/STATE-ARCHIVE.md". **נמדד: הקובץ כבר 299 שורות**
-(`wc -l STATE.md`), מתחת לתקרה, מאז ה-trim האחרון ב-M17-c68. `git log
-8b549ac8e..HEAD -- src/ public/` ריק — אין קומיט ייצור מאז, רק
-עדכון-מצב זה. **לא נדרש כיווץ נוסף**; שום שורה לא הוזזה ל-`docs/STATE-ARCHIVE.md`
-כי אין עודף. ארבעת השערים (`type-check`/`lint`/`test`/`build`) לא רצו
-מחדש — M17-c68 כבר אישר ארבעתם ירוקים ואין קומיט שנגע ב-`src`/`public`
-מאז (אותה בדיקה, אותה תוצאה). לא פריט חזותי, `compare.mjs` לא נדרש. זהו
-הפריט האחרון במחזור `c68` (M01-c68..M18-c68) — התור ממשיך ב-`M01-c69`.
-קבצים: `STATE.md`.
+**M01-c69 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". שרת `next-server` כבר היה
+חי על פורט 3311 (PID 84228, `cwd` זהה לריפו, עץ עבודה נקי, `curl /` →
+`200`) — לא נבנה build חדש. **מדידה אמיתית, בפורגראונד, שלושה רוחבים,
+מול `refs/ke_live_{width}.png` (לא מול הדומיין החי — חוסם #14 למעלה,
+הניווט החי מחזיר את הבנייה שלנו):**
 
-**M17-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M18-c68
-לשמירה על תקרת 300 שורות).** RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט
-מ-M17-c67 (אותו allow-list, אפס offenders ב-chromium וב-mobile-chrome אחרי
-תיקון תשתיתי ל-`networkidle`). ארבעת השערים ירוקים.
+| רוחב | ציון | סטטוס | overall | הערות |
+|---|---|---|---|---|
+| 380 | 8.58% | PASS | 14.11% | ref blank 2.79%, ours blank 2.75% |
+| 768 | 9.01% | PASS | 16.03% | ref blank 4.31%, ours blank 2.72% |
+| 1440 | 4.16% | PASS | 15.45% | ref blank 9.88%, ours blank 1.41% |
 
-**M16-c68..M14-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M17-c68).** M16-c68: JSON-LD Product+BreadcrumbList נבדק מחדש בכל דף
-מוצר, אפס דריפט מ-M16-c67. M15-c68: אפס console error/hydration ב-`/`
-ובדף מוצר, אפס דריפט מ-M15-c67. M14-c68: Sentry release מול HEAD נבדק שוב
-מול Vercel MCP, אפס דריפט מ-M14-c67, הפער גדל ל-388 קומיטים
-(`a388118f1..HEAD`), אין `SENTRY_DSN` ב-Production.
+שלושתם זהים ל-100% לציוני M01-c68 (`d97c21212`→`eff602538`) — **אפס
+דריפט**, מאושר ב-`git diff d97c21212..HEAD -- src public` (ריק). ארבעת
+השערים הורצו מחדש על הענף: `type-check` נקי, `lint` נקי (12 שערים),
+`test` 614/614 קבצים ו-7337/7349 עברו (12 מדולגים), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523 pnpm
+build`) exit 0 — זהה לתוצאות M18-c68. השורות נוספו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md` (נכתב על ידי השער).
 
-**M13-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M17-c68 לשמירה על תקרת 300 שורות).** שנים-עשר פריטי אימות-בלבד, אפס
-דריפט בכולם: `/api/health`/`/api/ready` מול פרודקשן (M13); robots.txt קוד
-HEAD תקין, פרודקשן קפואה (חוסם 2, M12); sitemap.xml טרי, חמש תת-מפות 200
-(M11); 19 מיגרציות אומתו מחדש פרטנית (M10); deps/exports מתים עם `knip`
-(M09); Lighthouse mobile 100/100/100 (M08); TODO/FIXME (M07); `build` exit 0
-(M06); `test` 614/614, 7337+12 (M05); `type-check` נקי (M04); שער חזותי
-קטגוריה (3.53/2.52/1.69, M03); שער חזותי מוצר (4.96/4.58/3.25, M02). ארבעת
-השערים ירוקים בכולם.
+**M18-c68..M17-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M01-c69 לשמירה על תקרת 300 שורות).** M18-c68: STATE.md אומת מתחת
+לתקרת 300 שורות (299), לא נדרש כיווץ נוסף. M17-c68: RTL על `/`
+ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c67. ארבעת השערים ירוקים
+בשניהם.
+
+**M16-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M17-c68 ו-M01-c69 לשמירה על תקרת 300 שורות).** חמישה-עשר פריטי
+אימות-בלבד, אפס דריפט בכולם: JSON-LD Product+BreadcrumbList (M16); אפס
+console error/hydration (M15); Sentry release מול HEAD, הפער גדל ל-388
+קומיטים, אין `SENTRY_DSN` ב-Production (M14); `/api/health`/`/api/ready`
+מול פרודקשן (M13); robots.txt קוד HEAD תקין, פרודקשן קפואה (חוסם 2, M12);
+sitemap.xml טרי, חמש תת-מפות 200 (M11); 19 מיגרציות אומתו מחדש פרטנית
+(M10); deps/exports מתים עם `knip` (M09); Lighthouse mobile 100/100/100
+(M08); TODO/FIXME (M07); `build` exit 0 (M06); `test` 614/614, 7337+12
+(M05); `type-check` נקי (M04); שער חזותי קטגוריה (3.53/2.52/1.69, M03);
+שער חזותי מוצר (4.96/4.58/3.25, M02). ארבעת השערים ירוקים בכולם.
 
 **M18-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 בשלבים עד M01-c68, לשמירה על תקרת 300 שורות).** שבעה-עשר פריטי
