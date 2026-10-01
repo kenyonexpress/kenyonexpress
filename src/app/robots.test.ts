@@ -37,6 +37,18 @@ describe('robots', () => {
     expect(disallowList()).toContain('/coupon/')
   })
 
+  it('disallows every page whose URL is itself the credential', () => {
+    // /gift/[token], /order/[id]/tracking and /wishlist/s/[token] each carry
+    // a signed token in the path and say so in their own page comments ("the
+    // URL IS the credential"), the same rationale /redeem/ and /coupon/ are
+    // disallowed for. A crawler that indexes one of these publishes someone
+    // else's gift, order, or saved wishlist.
+    const disallow = disallowList()
+    for (const path of ['/gift/', '/order/', '/wishlist/s/']) {
+      expect(disallow).toContain(path)
+    }
+  })
+
   it('disallows every authenticated area', () => {
     const disallow = disallowList()
     for (const path of ['/account/', '/supplier/', '/admin/', '/scan', '/checkout', '/cart']) {

@@ -27,6 +27,9 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/redeem/', // signed voucher tokens
           '/coupon/', // a customer's own voucher, code and QR on screen
+          '/gift/', // signed gift-claim token, same "URL is the credential" page
+          '/order/', // signed order-tracking token, same "URL is the credential" page
+          '/wishlist/s/', // signed shared-wishlist token, same "URL is the credential" page
           '/account/',
           '/supplier/',
           '/scan',
