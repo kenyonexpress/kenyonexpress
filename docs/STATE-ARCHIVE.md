@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c67 (הועבר מ-STATE.md ב-M01-c68, לשמירה על תקרת 300 שורות)
+
+**M18-c67 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md". **`wc -l STATE.md` לפני
+השינוי הזה החזיר 295, מתחת לתקרת 300 — אין חריגה לתקן.** נמצאה כפילות:
+קומיט M17-c67 (`58d75006a`) כתב את הבלוק המלא של M17-c67 עצמו
+ל-`docs/STATE-ARCHIVE.md` (בטעות, לפני זמנו — הכיווץ של פריט שייך
+לפריט הבא בתור, לא לעצמו) מבלי לכווץ אותו ב-`STATE.md`, כך שהטקסט
+המלא התקיים פעמיים. `diff` בין `docs/STATE-ARCHIVE.md` (שורות 5-29)
+ל-`STATE.md` (שורות שהוסרו כאן) אישר זהות מלאה — **הועבר כבר, לא
+הועתק שוב**: הבלוק המלא ב-`STATE.md` כווץ לשורה אחת כאן, בלי להוסיף
+עוד עותק לארכיון. אפס שינוי קוד. ארבעת השערים הורצו ישירות על הענף:
+`type-check` נקי, `lint` נקי (12 שערים, זהה ל-M17-c67), `test` 614/614
+קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523 pnpm
+build`) exit 0 נקי. לא פריט חזותי — אין שינוי UI, `compare.mjs` לא
+נדרש. קבצים: `STATE.md` בלבד (הארכיון כבר החזיק את התוכן).
+
 ## M17-c67 (הועבר מ-STATE.md ב-M18-c67, לשמירה על תקרת 300 שורות)
 
 **M17-c67 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and
