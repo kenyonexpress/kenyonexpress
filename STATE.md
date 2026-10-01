@@ -1,24 +1,34 @@
-RESUME FROM: M08-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c66 - DONE, סריקת TODO/FIXME ישנים מ-7 ימים, פריט אחד תוקן בקוד)
+RESUME FROM: M09-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c66 - DONE, Lighthouse mobile על / ו-/product, ציונים נרשמו)
 
 ## המשך מ:
 
-**M07-c66 - DONE (01.10.2026).** משימת התור: סריקת `TODO`/`FIXME` ישנים
-מ-7 ימים, רוחב-ריפו (לא רק `src/`). ארבעה נמצאו: שני `TODO(cardcom)`
-ב-`src/lib/payments/cardcom.ts:254,319` כבר `tracked` (`Tracked in
-#41`/`#42`, אומתו כ-issues פתוחים אמיתיים, מתועדים גם ב-
-`docs/KNOWN-ISSUES.md`) — לא דרשו פעולה. `whatsapp.test.ts:91` אינו
-marker אמיתי (מחרוזת מילולית `'TODO'` בטסט, `scanMarkers` כבר מדלג
-עליו נכון). `scripts/screenshot-all.mjs:42` — היחיד ה-untracked, מ-23.07,
-מחוץ לתחום `scanMarkers` (סורק רק `src/`). נבדק: סקריפט ידני, לא
-ב-package.json/README/CI. ה-`TODO` היה כפילות מדויקת של הסבר שכבר כתוב
-שלוש שורות למעלה באותו קובץ — **נפתר בקוד**, השורה הכפולה הוסרה. לא
-חוב אמיתי, לכן לא נפתח issue ולא נוספה שורה ל-`docs/BACKLOG.md`.
+**M08-c66 - DONE (01.10.2026).** משימת התור: Lighthouse mobile על `/`
+ו-`/product` (דוגמה), רישום ציונים בלבד, לא פריט חזותי. שרת `pnpm start`
+עצמאי על פורט 3316 (פורטים 3311-3315 תפוסים ע"י סשנים מקבילים, לא
+נגעתי בהם), מול `.next` קיים (BUILD_ID `dCVxTmYnOC-brgvTFvyyc`, זהה
+ל-HEAD `bccd8914b`, בלי `src/` שהשתנה מאז, בלי build מחדש). מוצר לדוגמה:
+`צימר-מאסטר` (פעיל, 10 במלאי, מ-`supabase/catalogue-snapshot.json`).
 
-אפס שינוי סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
-(12 שערים), `test` **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים,
-`build` exit 0. לא פריט חזותי. קובץ קוד יחיד שונה:
-`scripts/screenshot-all.mjs` (-3/+1 שורות).
+**מה שנמדד, `--throttling-method=provided` (המתכון התקף, ר'
+`docs/PERFORMANCE-BUDGET.md`):** `/` performance/accessibility/seo =
+**100/100/100**. `/product/צימר-מאסטר` = **100/100/100**.
+
+**לשם השוואה, `simulate` (ברירת המחדל, ידוע כרועש על localhost — ר'
+אותו מסמך):** `/` = **87/100/100**, `/product/...` = **91/100/100**
+(שניהם accessibility/seo 100). שני המספרים נרשמים כאן למטרת לוג בלבד;
+ה-`provided` הוא המספר שסומך עליו, לא ה-`simulate`. אין שינוי ל-
+`scripts/lighthouse-smoke.mjs` ואין שינוי לסף 90 בו.
+
+אפס שינוי קוד/סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים,
+`build` exit 0. קובץ יחיד שונה: `STATE.md` (+ ארכוב M07-c66 ל-
+`docs/STATE-ARCHIVE.md`).
+
+**M07-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: סריקת `TODO`/`FIXME`
+רוחב-ריפו, ארבעה נמצאו, אחד תוקן בקוד (`scripts/screenshot-all.mjs`,
+שורה כפולה). ארבעת השערים ירוקים.
 
 **M06-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M07-c66
 לשמירה על תקרת 300 שורות).** פריט תור, DONE: `pnpm build` הורץ בפועל

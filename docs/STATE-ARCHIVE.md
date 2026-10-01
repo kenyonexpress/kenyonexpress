@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c66 (הועבר מ-STATE.md ב-M08-c66, לשמירה על תקרת 300 שורות)
+
+**M07-c66 - DONE (01.10.2026).** משימת התור: סריקת `TODO`/`FIXME` ישנים
+מ-7 ימים, רוחב-ריפו (לא רק `src/`). ארבעה נמצאו: שני `TODO(cardcom)`
+ב-`src/lib/payments/cardcom.ts:254,319` כבר `tracked` (`Tracked in
+#41`/`#42`, אומתו כ-issues פתוחים אמיתיים, מתועדים גם ב-
+`docs/KNOWN-ISSUES.md`) — לא דרשו פעולה. `whatsapp.test.ts:91` אינו
+marker אמיתי (מחרוזת מילולית `'TODO'` בטסט, `scanMarkers` כבר מדלג
+עליו נכון). `scripts/screenshot-all.mjs:42` — היחיד ה-untracked, מ-23.07,
+מחוץ לתחום `scanMarkers` (סורק רק `src/`). נבדק: סקריפט ידני, לא
+ב-package.json/README/CI. ה-`TODO` היה כפילות מדויקת של הסבר שכבר כתוב
+שלוש שורות למעלה באותו קובץ — **נפתר בקוד**, השורה הכפולה הוסרה. לא
+חוב אמיתי, לכן לא נפתח issue ולא נוספה שורה ל-`docs/BACKLOG.md`.
+
+אפס שינוי סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים), `test` **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים,
+`build` exit 0. לא פריט חזותי. קובץ קוד יחיד שונה:
+`scripts/screenshot-all.mjs` (-3/+1 שורות).
+
 ## M06-c66 (הועבר מ-STATE.md ב-M07-c66, לשמירה על תקרת 300 שורות)
 
 **M06-c66 - DONE (01.10.2026).** משימת התור: "pnpm build fix drift
