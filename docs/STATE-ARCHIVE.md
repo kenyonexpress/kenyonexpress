@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q36 (הועבר מ-STATE.md ב-Q37, לשמירה על תקרת 300 שורות)
+
+**Q36 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"דפי משפט: תנאי שימוש, פרטיות, החזרות, נגישות, עוגיות, בסגנון הפסקאות
+של Electro, לפי הדין הישראלי". **אינו קיים בתור האמיתי** (השורה היחידה
+בשם `Q36` ב-`docs/QUESTIONS-FOR-OFIR.md` היא "Sentry ו-Ntfy", לא קשור),
+אותו דפוס כמו Q25-Q35.
+
+**ארבעת המסמכים קיימים במלואם, בבסיס קוד אחד, אפס שינוי קוד.** ‏ToS
+(`/terms-and-conditions`), פרטיות (`/privacy-policy`), החזרות
+(`/refund_returns`) ונגישות (`/accessibility`) כולם ב-`(store)/`, כל אחד
+עמוד דק ש-`getLegalDoc()` מזין ל-`<LegalArticle>` משותף
+(`(legal)/_components/LegalArticle.tsx`), עם התוכן עצמו ב-
+`(legal)/_content/{terms,privacy,returns,accessibility}.ts`. **עוגיות
+אינה עמוד נפרד**: סעיף `id: 'cookies'` בתוך `privacy.ts`, מקושר מהפוטר
+כ-`/privacy-policy#cookies` ("העוגיות הן חלק מהפרטיות, לא עותק שני
+שלה" — הערה בקוד ב-`SiteFooter.tsx`). קבוצת הנתיב `(legal)/legal/*`
+(ארבעה נתיבים ישנים, לא מקושרים) כבר `permanentRedirect` ל-ארבעת הנתיבים
+האלה — דה-דופליקציה בוצעה בסשן קודם, מתועדת בהערות בקוד עצמו ונאכפת
+ב-`legal-routes.test.ts`/`legal-duplication.test.ts`
+(לא לאפשר שני סטים אינדקסביליים לאותו מסמך).
+
+**סגנון הפסקאות**: `LegalArticle` הוא renderer יחיד לכל המסמכים —
+מספור נגזר (לא CSS counter, כדי שתמיכה שמצטטת "סעיף 7.2" תוכל לסמן
+ולהעתיק), פסקה רגילה כ-`<p>` ב-`text-base leading-relaxed`, מידות קריאה
+`max-w-3xl` בתוך מסגרת `max-w-page`, זהה ל-`/faq`/`/about`. `tokens.ts`
+מחזיק את הטיפוגרפיה שחולצה מ-Electro (Open Sans, גוף 20px/28px), אין
+טוקן נפרד "לדפי משפט" כי הם לא מרונדרים בסגנון שונה משאר האתר.
+
+**בדיקה בפועל, לא רק קריאת קוד:** `pnpm test "src/app/(legal)"` — 44/44
+ירוק; `pnpm test src/content/legal` (שלושה קבצים: content/routes/
+duplication) — 30/30 ירוק. ארבעת השערים: type-check נקי, lint נקי (12
+שערים), test מלא 610/610 קבצים 7303/7315 (זהה ל-Q35), `rm -rf .next &&
+pnpm build` נקי (שרת זמני בפורט 3311, cwd מאומת, אין build מקביל). שער
+חזותי PASS בשלושת הרוחבים (`8.51%`/`9.07%`/`3.95%`,
+`--baseline=refs/ke_live_{width}.png`, נמדד בפועל ב-foreground דרך
+`--widths=380,768,1440`), כמעט זהה לבסיס Q31-Q35 (768 זז מ-9.02%
+ל-9.07%, עדיין PASS הרחק מתחת ל-11%), נכתב אוטומטית ל-
+`docs/UI-PARITY-REPORT.md`.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## Q35 (הועבר מ-STATE.md ב-Q36, לשמירה על תקרת 300 שורות)
 
 **Q35 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
