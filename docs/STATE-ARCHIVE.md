@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c68 (הועבר מ-STATE.md ב-M02-c68, לשמירה על תקרת 300 שורות)
+
+**M01-c68 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". שרת `next-server` כבר היה
+חי על פורט 3311 (PID 84228, `cwd` זהה לריפו, `BUILD_ID` בן 3 דקות, עץ
+עבודה נקי) — אומת `200` על `/` ועל שני chunk-ה-CSS שהדף מפנה אליהם
+לפני המדידה, לא נבנה build חדש. **מדידה אמיתית, בפורגראונד, שלושה
+רוחבים, מול `refs/ke_live_{width}.png` (לא מול הדומיין החי —
+`kenyonexpress.co.il` נענה `REFUSED`, ה-DNS מצביע לפריסה שלנו):**
+
+| רוחב | ציון | סטטוס | overall | הערות |
+|---|---|---|---|---|
+| 380 | 8.58% | PASS | 14.11% | ref blank 2.79%, ours blank 2.75% |
+| 768 | 9.01% | PASS | 16.03% | ref blank 4.31%, ours blank 2.72% |
+| 1440 | 4.16% | PASS | 15.45% | ref blank 9.88%, ours blank 1.41% |
+
+שלושתם זהים ל-100% לציוני M01-c67 (`2aab1511f`→`1b9a79d3e`) — **אפס
+דריפט**, מאושר. `git diff 2aab1511f..HEAD -- src public` מראה שני
+קבצים בלבד: `src/app/robots.ts` (M12-c67, לא חזותי) ו-`HeroSlider.tsx`
+(M09-c67, un-export פנימי, אפס דריפט תלות כבר באותו קומיט) — תואם את
+אפס הדריפט שנמדד. השורות נוספו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי השער עצמו. לא נדרש `type-check`/`lint`/`test`/`build` נוסף —
+M18-c67 כבר אישר ארבעתם ירוקים על אותו HEAD, ואין שינוי קוד בפריט הזה.
+קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md` (נכתב על ידי השער).
+
 ## M18-c67 (הועבר מ-STATE.md ב-M01-c68, לשמירה על תקרת 300 שורות)
 
 **M18-c67 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
