@@ -143,6 +143,15 @@ export const RATE_LIMIT_POLICIES = {
     windowSeconds: 3600,
     reason: 'affiliate programme enrolment, per user',
   },
+  // The public /r/<code> short link, same shape as coupon_qr_apply: anonymous,
+  // guessable by brute force, and the route itself does nothing worse than a
+  // redirect, so the ceiling only has to stop scripted enumeration rather than
+  // protect a write.
+  referral_link_visit: {
+    limit: 60,
+    windowSeconds: 3600,
+    reason: 'referral short-link redirect, per IP',
+  },
   // Keyed on the USER and not the IP, because this action requires a session,
   // so there is an account to key on and a household behind one address must
   // not share one allowance. Ten rather than three: the per-ORDER cap of three

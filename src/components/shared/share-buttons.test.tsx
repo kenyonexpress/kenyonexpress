@@ -158,7 +158,11 @@ describe('no share surface may quote a coupon by its sticker price', () => {
    * the business, and the page beside the button quotes something smaller. A
    * surface that formats a price itself has no way to know that.
    */
-  const SHARE_TEXT_BUILDERS = ['buildShareMessage', 'buildCouponShareText']
+  const SHARE_TEXT_BUILDERS = [
+    'buildShareMessage',
+    'buildCouponShareText',
+    'buildReferralShareMessage',
+  ]
 
   function componentsUsing(needle: string): string[] {
     const found: string[] = []

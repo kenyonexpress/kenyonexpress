@@ -1,99 +1,85 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q39)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q40)
 
 ## המשך מ:
 
-**Q39 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"מסך `/wallet`, יומן קאשבק, תפוגה של ‏12 חודשים, קרדיטי הפניה ‏₪20 במראה
-אותה תפוגה". **אינו בתור האמיתי** (`Q39` ב-`QUESTIONS-FOR-OFIR.md` הוא
-"אפליקציות חנות Apple/Play", לא קשור), אותו דפוס כמו Q25-Q38.
+**Q40 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"תוכנית ההפניות, כפתורי שיתוף ציבוריים ב-`/r/[code]`, עם מעקב". **אינו
+בתור האמיתי** (המספור ב-`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, אין
+Q40), אותו דפוס כמו Q25-Q39.
 
-**המסך עצמו קיים במלואו, אפס שינוי קוד.** `/account/wallet` (`WalletPage`,
-`getWalletSummary`/`getWalletLedger`, `v_wallet_ledger`) מציג יתרה ויומן
-תנועות מלא כולל `order_cashback`/`referral_bonus`/`affiliate_commission`
-עם תוויות עבריות (`WALLET_REASON_LABELS`, `account.ts`). זה חלק אמיתי
-מהמשימה וסגור.
+**מה היה חסר, נמדד לא הונח.** `ReferralShareCard` (משותף ל-`/account/
+referrals` ול-`/account/affiliate`, אותו `profiles.referral_code`) הציג
+קוד וקישור להעתקה בלבד: אפס כפתורי ערוץ (וואטסאפ/שיתוף פלטפורמה/פייסבוק/
+טלגרם, שכבר קיימים בדף המוצר ב-`ProductShareRow`), ואפס מעקב אנליטיקס
+על שיתוף הפניה. `referralShareUrl()` (`lib/referrals/code.ts`) היה קיים,
+בדוק ומעולם לא נקרא משום מקום: פונקציה גמורה בלי צרכן. נתיב `/r/[code]`
+לא היה קיים בכלל.
 
-**תפוגה — לא קיימת בשום מקום, ונבנתה בכוונה בלי להיבנות.**
-`fn_cashback_expire(p_limit)` קיימת בפרודקשן עם חלון קשיח של **מעל ‏12
-חודשים**, ואפס קוראים לה ב-`src/`/`scripts/`/`migrations/`/`supabase/`
-(`docs/ARCHITECTURE-ACCOUNT-WALLET.md` §9.1). **זו החלטה מתועדת, לא
-השמטה**: עמוד הארנק לא מזכיר תפוגה כלל; חוק הגנת הצרכן מחייב את העסק
-באמירה שבעמוד, כך שפקיעה שקטה בלי גילוי היא חשיפה, **והוספת משפט גילוי
-חד-צדדית היא בעצמה המצאת מדיניות** בלי החלטת אופיר. אין עמודת
-`expires_at` על אף טבלת ארנק/קאשבק.
+**מה נבנה.** כפתורי שיתוף (וואטסאפ מסומן, שיתוף פלטפורמה דרך
+`navigator.share`, פייסבוק/טלגרם בנפילה) נוספו ל-`ReferralShareCard`,
+חוזרים על אותם רכיבים משותפים שדף המוצר כבר משתמש בהם. טקסט חדש,
+`buildReferralShareMessage` ב-`lib/share/message.ts`, נוסף לרשימת
+"בוני הטקסט המאושרים" בשער `share-buttons.test.tsx`, בכוונה בלי לנקוב
+סכום: אותו רכיב מרנדר על שני עמודים שמשלמים בונוס שונה. כפתור הוואטסאפ
+מקבל `source` אופציונלי חדש (`'referral'`/`'affiliate'`) שמתווסף ל-`props`
+של אירוע `whatsapp_click` הקיים כבר ברשימה הלבנה
+(`fn_ingest_analytics_events`, `required_props` ריק עבורו), כך שאין צורך
+במיגרציה: הפרופס הוא `jsonb` חופשי, רק שמות השדות החובה נבדקים.
 
-**שני מסמכי ארכיטקטורה סותרים זה את זה על המספר, מה שמוכיח שאין מדיניות
-סגורה להציג.** `docs/MASTER-ARCHITECTURE.md` LEG-11 אומר "הוכרע: קאשבק/
-הפניה ‏24 חודשים, פר-צבירה דרך `wallet_transactions.expires_at` (037)" —
-אבל מיגרציה `037` וטבלת `wallet_transactions` **לא קיימות בריפו בכלל**
-(`find`/`grep` ריקים): תוכנית שלא יושמה מעולם, ואינה מסכימה עם ה-12-חודש
-הקשיח שבקוד האמיתי. **"קרדיטי הפניה ‏₪20" גם לא תואם את הסכימה**:
-`referrer_bonus_agorot`/`referred_bonus_agorot` מוגדרים דרך
-`/admin/settings` (`ReferralSettingsForm.tsx`), לא קבועים ב-₪20.
+**`/r/[code]` נבנה כנתיב ציבורי חדש**, `src/app/r/[code]/route.ts`, מפנה
+(308) ל-`/?ref=<code>` בדיוק כמו כל קישור שיתוף אחר באתר: לא כותב עוגייה
+בעצמו (ה-capture היחיד נשאר `src/proxy.ts`, לפי ה"ONE PARAMETER" שכבר
+מתועד ב-`share-url.ts` ונבדק ב-`wired.test.ts`). קוד שגוי מפנה הביתה
+בלי `ref`, כמו `/c/[code]`. מוגבל קצב חדש, `referral_link_visit`,
+60/שעה לפי IP (`lib/rate-limit/policies.ts` + `docs/RATE-LIMITS.md`, עובר
+את שער המלאי הסטטי). משמש כברירת מחדל רק בדף ה-referrals עצמו
+(`buildShareUrl` חדש, אופציונלי, ב-`ReferralShareCard`); `/account/affiliate`
+ממשיך עם `/?ref=` הרגיל בלי שינוי, כדי לא לתייג שיתוף שותפים כ-`referral_program`.
 
-**ההחלטה:** BLOCKED, לא DONE ולא לבנייה בלי אישור. הצגה או הפעלה של
-תפוגת קאשבק ‏12 חודשים, ובוודאי מראה שלה על קרדיטי הפניה, מחייבת שאופיר
-יבחר ויגלה מדיניות תפוגה אמיתית (משך, היקף, זכויות ישנות) לפני כל שורת
-UI או cron — בנייה עצמאית חוזרת בדיוק על הטעות שה-9.1 תיעד ונסוג ממנה.
-אפס שינוי קוד ייצור.
+**קונפליקט נמצא ותועד, לא "תוקן" בלי החלטה.** `docs/ARCHITECTURE-API-CONTRACTS.md`
+סעיף B4 כבר תיאר `/r/[code]` כקישור שיתוף מכירות גנרי (מפנה למוצר/קופון
+ספציפי, קוד בפורמט שונה לגמרי, אירוע `page_view`+`share_code`, RL3
+120/דקה), מסמך שהנתיב בו לא היה קיים בריפו (נמצא דרך
+`docs/known-dangling-paths.json`). **המסמך הזה מסומן מיושן בעצמו מ-01.09.2026**
+("המסמך המחייב הוא הקוד עצמו"), ושום דבר בקוד/בטסטים לא מממש את ה-B4
+המתואר (אין טבלת מיפוי קוד-יעד, אין `share_code`). ה-B4 נשאר כפי שהוא
+(לא נערך, המסמך כבר לא מחייב), ושורת ה-ledger ש"תלתה" (`src/app/r/[code]/route.ts`
+לא קיים) הוסרה דרך `node scripts/docs-path-audit.mjs --write` כי הנתיב
+קיים עכשיו, כפי שהשער עצמו מבקש.
 
-**בדיקה בפועל:** ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים),
-test מלא 610/610 קבצים 7303/7315 (זהה ל-Q38), `rm -rf .next && pnpm build`
-נקי (שרת זמני בפורט 3311, cwd מאומת). שער חזותי PASS בשלושת הרוחבים
-(`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_{width}.png`,
-foreground, קומיט נוכחי), אפס דריפט מ-Q38.
+**בדיקה בפועל.** טסטים חדשים: `message.test.ts` (`buildReferralShareMessage`),
+`share-buttons.test.tsx` (השער המעודכן), `src/app/r/[code]/route.test.ts`
+(שמונה מקרים: קוד תקין, נירמול, אין UTM, קוד פגום, אין בזבוז תקציב קצב
+על קוד פגום, סירוב על תקציב מוצה, מפתח לפי IP, אפס `set-cookie`). ארבעת
+השערים: type-check נקי, lint נקי כולל `docs-path-audit` אחרי העדכון, test
+מלא 611/611 קבצים 7313/7325 (12 מדולגים, זהה למצב קודם פלוס הטסטים
+החדשים), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט 3311, cwd
+מאומת, `/r/[code]` מופיע ברשימת הנתיבים כ-`ƒ` דינמי). שער חזותי PASS
+בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_{width}.png`,
+foreground, קומיט נוכחי), אפס דריפט מ-Q39 (אין נגיעה בדף הבית).
 
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+קבצים ששונו: `src/components/account/ReferralShareCard.tsx`,
+`src/components/shared/WhatsAppShareButton.tsx`,
+`src/components/shared/share-buttons.test.tsx`, `src/lib/share/message.ts`,
+`src/lib/share/message.test.ts`, `src/lib/rate-limit/policies.ts`,
+`docs/RATE-LIMITS.md`, `docs/known-dangling-paths.json`,
+`src/app/r/[code]/route.ts` (חדש), `src/app/r/[code]/route.test.ts` (חדש),
+`src/app/(account)/account/referrals/page.tsx`,
+`src/app/(account)/account/affiliate/page.tsx`, `docs/UI-PARITY-REPORT.md`,
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**Q38 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"תזכורות תפוגה, פוש ומייל, T-7 ו-T-1, לפי `docs/VOUCHER-LIFECYCLE.md`".
-**אינו קיים בתור האמיתי** (`Q38` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא "Host
-קנוני: apex מול www", לא קשור), אותו דפוס כמו Q25-Q37.
-
-**הסעיף קיים במלואו, אפס שינוי קוד, ומתועד כבר ב-§5 של
-`VOUCHER-LIFECYCLE.md` עצמו.** `enqueue_expiring_voucher_notices(p_buckets
-integer[] default array[7,1])` (מיגרציה 114, **מוחלת בפרודקשן**, לא
-ב-pending) רצה בתוך `/api/cron/expire-vouchers` אחרי הסוויפ, ומכניסה
-ל-`notification_outbox` שורת `voucher_expiring` אחת לכל שובר `issued`
-שה-`expires_at` שלו (באזור זמן ישראל) חל בדיוק T-7 או T-1 מהיום.
-אידמפוטנטי במפתח `voucher_expiring:<voucher_id>:<bucket>`, `UNIQUE` +
-`ON CONFLICT DO NOTHING`, כך שריצה חוזרת לא כופלת.
-
-**חמשת הערוצים מחווטים לסוג `voucher_expiring`**: מייל
-(`lib/email/notifications.ts`, בתוך `EMAIL_POLICY_EXEMPT_KINDS` — מדיניות
-25.09 לא חוסמת אותו), פוש (`lib/push/templates.ts`), פנים-אפליקציה
-(`lib/notifications/in-app.ts`), SMS (`lib/sms/templates.ts`) ו-WhatsApp
-(`lib/whatsapp/outbox.ts`). `OPTIONAL_KINDS` מאפשר ללקוח לכבות אותו בכל
-ערוץ חוץ ממייל (`CUSTOMER_TOGGLE_CHANNELS` משמיט `email` בכוונה,
-`preferences.ts`).
-
-**הפער היחיד הידוע כבר מתועד כ-pending, ולא חוסם את הפיצ'ר:**
-`227_voucher_expiry_engine.sql` מחליף את ההתאמה מיום קלנדרי מדויק לחלון
-פר-bucket (כדי שריצת cron שנפלה לא תאבד תזכורת T-1 לתמיד) — לא הוחל, כצפוי.
-**חוסם #10 הקיים כבר ב-STATE.md** (ה-scheduler לא רץ, `CRON_SECRET` שונה בין
-GitHub ל-Vercel) הוא הסיבה שהתזכורות לא נשלחות בפועל היום, לא קוד חסר.
-
-**בדיקה בפועל:** `pnpm test src/lib/email/notifications src/lib/push/
-templates src/lib/sms/templates src/lib/notifications` — 134/134 ירוק.
-ארבעת השערים: type-check נקי, lint נקי (12 שערים), test מלא 610/610 קבצים
-7303/7315 (זהה ל-Q37), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט
-3311, cwd מאומת). שער חזותי PASS בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`,
-`--baseline=refs/ke_live_{width}.png`, foreground, קומיט `d617535ce`),
-דומה ל-Q37 בתוך רעש המדידה (768px: `9.02%` מול `9.07%`).
-
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
-
-**Q27..Q38 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-Q39 לשמירה על תקרת 300 שורות).** שנים-עשר פריטים חיצוניים חד-פעמיים,
+**Q27..Q39 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-Q40 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטים חיצוניים חד-פעמיים,
 אף אחד לא בתור האמיתי. אחד-עשר נמצאו DONE ובנויים במלואם ללא דריפט
 (מתנת קופון, עמודי משפט, יצירת קשר/הצטרפות ספקים, קונסולת מעלה-תוכן
 ולוח ספק לקריאה, ניהול מוצרים/ספקים/הזמנות, דף ספק, התראות, חשבונית/
-wa.me בתודה, guest checkout, עריכת סל, תפוגת שובר T-7/T-1). Q27 — שני
+wa.me בתודה, guest checkout, עריכת סל, תפוגת שובר T-7/T-1). Q27: שני
 תיקוני קוד אמיתיים (סיידבר `open` כברירת מחדל, באג 0x0 ב-`lazy` על
-גריד הקטגוריה ב-380px). שער חזותי PASS בכל מה שנמדד (3.53-9.07% בשלושת
-הרוחבים, חלק ב-1440 בלבד לפי מגבלת reference); ארבעת השערים ירוקים
-בכל השנים-עשר.
+גריד הקטגוריה ב-380px). Q39: BLOCKED, תפוגת קאשבק/הפניה בארנק דורשת
+החלטת מדיניות של אופיר (משך, היקף), אפס שינוי קוד. שער חזותי PASS בכל
+מה שנמדד (3.53-9.07% בשלושת הרוחבים, חלק ב-1440 בלבד לפי מגבלת
+reference); ארבעת השערים ירוקים בכל השלושה-עשר.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,

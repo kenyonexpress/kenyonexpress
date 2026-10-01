@@ -1,6 +1,6 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { describe, expect, it } from 'vitest'
-import { buildShareMessage } from './message'
+import { buildReferralShareMessage, buildShareMessage } from './message'
 
 const SELLABLE: CouponOffer = {
   sellable: true,
@@ -68,5 +68,16 @@ describe('buildShareMessage', () => {
     // WhatsApp adds it on a new line and Facebook takes it as `u`. One baked in
     // here would be sent twice.
     expect(buildShareMessage({ name: 'x', priceIls: 10, offer: null })).not.toContain('http')
+  })
+})
+
+describe('buildReferralShareMessage', () => {
+  it('names no bonus, since the same row pays a different one on /account/affiliate', () => {
+    const message = buildReferralShareMessage()
+    expect(message).not.toContain('₪')
+  })
+
+  it('carries no URL: the channel appends its own', () => {
+    expect(buildReferralShareMessage()).not.toContain('http')
   })
 })

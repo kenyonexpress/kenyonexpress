@@ -164,6 +164,7 @@ export default async function AffiliatePage() {
                 initialCode={enrolment.code}
                 shareOrigin={siteUrl()}
                 shareParam={REFERRAL_QUERY_PARAM}
+                shareSource="affiliate"
               />
             </section>
           )}

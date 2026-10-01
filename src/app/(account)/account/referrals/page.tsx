@@ -132,6 +132,8 @@ export default async function ReferralsPage() {
               initialCode={summary.code}
               shareOrigin={siteUrl()}
               shareParam={REFERRAL_QUERY_PARAM}
+              buildShareUrl={(code) => `${siteUrl()}/r/${code}`}
+              shareSource="referral"
             />
           </section>
         </>

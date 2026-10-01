@@ -2,6 +2,89 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q39, Q38 (הועברו מ-STATE.md ב-Q40, לשמירה על תקרת 300 שורות)
+
+**Q39 - BLOCKED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"מסך `/wallet`, יומן קאשבק, תפוגה של ‏12 חודשים, קרדיטי הפניה ‏₪20 במראה
+אותה תפוגה". **אינו בתור האמיתי** (`Q39` ב-`QUESTIONS-FOR-OFIR.md` הוא
+"אפליקציות חנות Apple/Play", לא קשור), אותו דפוס כמו Q25-Q38.
+
+**המסך עצמו קיים במלואו, אפס שינוי קוד.** `/account/wallet` (`WalletPage`,
+`getWalletSummary`/`getWalletLedger`, `v_wallet_ledger`) מציג יתרה ויומן
+תנועות מלא כולל `order_cashback`/`referral_bonus`/`affiliate_commission`
+עם תוויות עבריות (`WALLET_REASON_LABELS`, `account.ts`). זה חלק אמיתי
+מהמשימה וסגור.
+
+**תפוגה - לא קיימת בשום מקום, ונבנתה בכוונה בלי להיבנות.**
+`fn_cashback_expire(p_limit)` קיימת בפרודקשן עם חלון קשיח של **מעל ‏12
+חודשים**, ואפס קוראים לה ב-`src/`/`scripts/`/`migrations/`/`supabase/`
+(`docs/ARCHITECTURE-ACCOUNT-WALLET.md` §9.1). **זו החלטה מתועדת, לא
+השמטה**: עמוד הארנק לא מזכיר תפוגה כלל; חוק הגנת הצרכן מחייב את העסק
+באמירה שבעמוד, כך שפקיעה שקטה בלי גילוי היא חשיפה, **והוספת משפט גילוי
+חד-צדדית היא בעצמה המצאת מדיניות** בלי החלטת אופיר. אין עמודת
+`expires_at` על אף טבלת ארנק/קאשבק.
+
+**שני מסמכי ארכיטקטורה סותרים זה את זה על המספר, מה שמוכיח שאין מדיניות
+סגורה להציג.** `docs/MASTER-ARCHITECTURE.md` LEG-11 אומר "הוכרע: קאשבק/
+הפניה ‏24 חודשים, פר-צבירה דרך `wallet_transactions.expires_at` (037)" -
+אבל מיגרציה `037` וטבלת `wallet_transactions` **לא קיימות בריפו בכלל**
+(`find`/`grep` ריקים): תוכנית שלא יושמה מעולם, ואינה מסכימה עם ה-12-חודש
+הקשיח שבקוד האמיתי. **"קרדיטי הפניה ‏₪20" גם לא תואם את הסכימה**:
+`referrer_bonus_agorot`/`referred_bonus_agorot` מוגדרים דרך
+`/admin/settings` (`ReferralSettingsForm.tsx`), לא קבועים ב-₪20.
+
+**ההחלטה:** BLOCKED, לא DONE ולא לבנייה בלי אישור. הצגה או הפעלה של
+תפוגת קאשבק ‏12 חודשים, ובוודאי מראה שלה על קרדיטי הפניה, מחייבת שאופיר
+יבחר ויגלה מדיניות תפוגה אמיתית (משך, היקף, זכויות ישנות) לפני כל שורת
+UI או cron - בנייה עצמאית חוזרת בדיוק על הטעות שה-9.1 תיעד ונסוג ממנה.
+אפס שינוי קוד ייצור.
+
+**בדיקה בפועל:** ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים),
+test מלא 610/610 קבצים 7303/7315 (זהה ל-Q38), `rm -rf .next && pnpm build`
+נקי (שרת זמני בפורט 3311, cwd מאומת). שער חזותי PASS בשלושת הרוחבים
+(`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_{width}.png`,
+foreground, קומיט נוכחי), אפס דריפט מ-Q38.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**Q38 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"תזכורות תפוגה, פוש ומייל, T-7 ו-T-1, לפי `docs/VOUCHER-LIFECYCLE.md`".
+**אינו קיים בתור האמיתי** (`Q38` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא "Host
+קנוני: apex מול www", לא קשור), אותו דפוס כמו Q25-Q37.
+
+**הסעיף קיים במלואו, אפס שינוי קוד, ומתועד כבר ב-§5 של
+`VOUCHER-LIFECYCLE.md` עצמו.** `enqueue_expiring_voucher_notices(p_buckets
+integer[] default array[7,1])` (מיגרציה 114, **מוחלת בפרודקשן**, לא
+ב-pending) רצה בתוך `/api/cron/expire-vouchers` אחרי הסוויפ, ומכניסה
+ל-`notification_outbox` שורת `voucher_expiring` אחת לכל שובר `issued`
+שה-`expires_at` שלו (באזור זמן ישראל) חל בדיוק T-7 או T-1 מהיום.
+אידמפוטנטי במפתח `voucher_expiring:<voucher_id>:<bucket>`, `UNIQUE` +
+`ON CONFLICT DO NOTHING`, כך שריצה חוזרת לא כופלת.
+
+**חמשת הערוצים מחווטים לסוג `voucher_expiring`**: מייל
+(`lib/email/notifications.ts`, בתוך `EMAIL_POLICY_EXEMPT_KINDS` - מדיניות
+25.09 לא חוסמת אותו), פוש (`lib/push/templates.ts`), פנים-אפליקציה
+(`lib/notifications/in-app.ts`), SMS (`lib/sms/templates.ts`) ו-WhatsApp
+(`lib/whatsapp/outbox.ts`). `OPTIONAL_KINDS` מאפשר ללקוח לכבות אותו בכל
+ערוץ חוץ ממייל (`CUSTOMER_TOGGLE_CHANNELS` משמיט `email` בכוונה,
+`preferences.ts`).
+
+**הפער היחיד הידוע כבר מתועד כ-pending, ולא חוסם את הפיצ'ר:**
+`227_voucher_expiry_engine.sql` מחליף את ההתאמה מיום קלנדרי מדויק לחלון
+פר-bucket (כדי שריצת cron שנפלה לא תאבד תזכורת T-1 לתמיד) - לא הוחל, כצפוי.
+**חוסם #10 הקיים כבר ב-STATE.md** (ה-scheduler לא רץ, `CRON_SECRET` שונה בין
+GitHub ל-Vercel) הוא הסיבה שהתזכורות לא נשלחות בפועל היום, לא קוד חסר.
+
+**בדיקה בפועל:** `pnpm test src/lib/email/notifications src/lib/push/
+templates src/lib/sms/templates src/lib/notifications` - 134/134 ירוק.
+ארבעת השערים: type-check נקי, lint נקי (12 שערים), test מלא 610/610 קבצים
+7303/7315 (זהה ל-Q37), `rm -rf .next && pnpm build` נקי (שרת זמני בפורט
+3311, cwd מאומת). שער חזותי PASS בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`,
+`--baseline=refs/ke_live_{width}.png`, foreground, קומיט `d617535ce`),
+דומה ל-Q37 בתוך רעש המדידה (768px: `9.02%` מול `9.07%`).
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## Q28..Q38, Q27, Q26/M18-c65/M17-c65, M16-c65..M06-c65, M05-c65..M01-c64, M18-c63..M14-c63, M13-c63..M01-c62, S02/S03 (הועברו מ-STATE.md ב-Q39, לשמירה על תקרת 300 שורות)
 
 **Q28..Q37.** עשרה

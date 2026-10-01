@@ -62,3 +62,15 @@ export function buildShareMessage(subject: ShareSubject): string {
   if (subject.priceIls === null) return lead
   return `${lead} — ${shekelsFromIls(subject.priceIls)}`
 }
+
+/**
+ * The text a referral or affiliate code is shared with. No price, no code and
+ * no URL: the channel appends the link (useShareAttribution puts the code on
+ * it already), and the same share row renders on both /account/referrals and
+ * /account/affiliate (ReferralShareCard), which pay different, admin-set
+ * amounts. Naming a bonus here would be right on one page and wrong on the
+ * other, so this line names neither.
+ */
+export function buildReferralShareMessage(): string {
+  return 'מצטרפים ל-KenyonExpress דרך הקישור שלי'
+}

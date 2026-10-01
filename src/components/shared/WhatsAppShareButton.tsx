@@ -13,6 +13,13 @@ type Props = {
   /** Names the product in the whatsapp_click event when the share is a PDP's. */
   productId?: string
   /**
+   * Names the surface in the whatsapp_click event when it is not a product
+   * share, e.g. `'referral'` on /account/referrals vs `'affiliate'` on
+   * /account/affiliate: the two ReferralShareCard callers, which pay
+   * different bonuses off the same code and must not be counted as one.
+   */
+  source?: string
+  /**
    * The URL to append instead of the bare page URL, read at click time. The
    * product share row passes the page URL with the sharer's code on it
    * (useShareAttribution); everything else leaves it unset.
@@ -27,12 +34,16 @@ export default function WhatsAppShareButton({
   label = 'שתפו בוואטסאפ',
   className,
   productId,
+  source,
   url,
 }: Props) {
   const handleClick = () => {
     // Before the window opens: an exit to a chat is precisely the moment the
     // page loses the shopper, so the event must not wait for a return.
-    track('whatsapp_click', productId ? { product_id: productId } : {})
+    const props: Record<string, unknown> = {}
+    if (productId) props.product_id = productId
+    if (source) props.source = source
+    track('whatsapp_click', props)
     const href = url ? url() : window.location.href
     const text = appendCurrentUrl ? `${message}\n${href}` : message
     window.open(waShareLink(text), '_blank', 'noopener,noreferrer')

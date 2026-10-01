@@ -9,7 +9,6 @@
   "docs/ARCHITECTURE-API-CONTRACTS.md :: src/app/api/catalog/autocomplete/route.ts",
   "docs/ARCHITECTURE-API-CONTRACTS.md :: src/app/api/notifications/delivery/route.ts",
   "docs/ARCHITECTURE-API-CONTRACTS.md :: src/app/api/unsubscribe/route.ts",
-  "docs/ARCHITECTURE-API-CONTRACTS.md :: src/app/r/[code]/route.ts",
   "docs/ARCHITECTURE-API-CONTRACTS.md :: src/contracts/",
   "docs/ARCHITECTURE-API-CONTRACTS.md :: src/contracts/enums.ts",
   "docs/ARCHITECTURE-API-CONTRACTS.md :: src/contracts/food.ts",
