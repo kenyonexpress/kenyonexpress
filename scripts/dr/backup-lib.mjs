@@ -13,14 +13,14 @@
 export const BACKUP_PREFIX = 'postgres/'
 
 /** 30-day retention is the goal's contract; minKeep is the mass-deletion fuse. */
-export const DEFAULT_RETENTION_DAYS = 30
+const DEFAULT_RETENTION_DAYS = 30
 
 /**
  * Never prune below this many backups no matter how old they are. A wrong
  * clock (or a retention env var fat-fingered to 0) must degrade to "kept too
  * much", never to "deleted everything".
  */
-export const DEFAULT_MIN_KEEP = 7
+const DEFAULT_MIN_KEEP = 7
 
 const KEY_RE = /(?:^|\/)kenyonexpress-(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})Z\.dump(\.sha256)?$/
 

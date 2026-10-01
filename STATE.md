@@ -1,29 +1,33 @@
-RESUME FROM: M09-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c66 - DONE, Lighthouse mobile על / ו-/product, ציונים נרשמו)
+RESUME FROM: M10-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c66 - DONE, תלויות מתות ו-exports מתים הוסרו)
 
 ## המשך מ:
 
-**M08-c66 - DONE (01.10.2026).** משימת התור: Lighthouse mobile על `/`
-ו-`/product` (דוגמה), רישום ציונים בלבד, לא פריט חזותי. שרת `pnpm start`
-עצמאי על פורט 3316 (פורטים 3311-3315 תפוסים ע"י סשנים מקבילים, לא
-נגעתי בהם), מול `.next` קיים (BUILD_ID `dCVxTmYnOC-brgvTFvyyc`, זהה
-ל-HEAD `bccd8914b`, בלי `src/` שהשתנה מאז, בלי build מחדש). מוצר לדוגמה:
-`צימר-מאסטר` (פעיל, 10 במלאי, מ-`supabase/catalogue-snapshot.json`).
+**M09-c66 - DONE (01.10.2026, פירוט מלא ב-`docs/STATE-ARCHIVE.md`).**
+משימת התור: "Remove unused deps and dead exports". `grep` + `pnpm dlx
+knip` (ephemeral) איתרו **חמש חבילות מתות אמיתיות** (`@dnd-kit/core`,
+`@dnd-kit/sortable`, `@dnd-kit/utilities`, `@hookform/resolvers`,
+`@radix-ui/react-toast`) — הוסרו, `pnpm install` עדכן `pnpm-lock.yaml`.
+חמש חבילות נוספות ש-`knip` סימן (`drizzle-orm`/`postgres`/
+`react-hook-form`/`@radix-ui/react-select`/`@radix-ui/react-dropdown-menu`)
+**נבדקו ונמצאו בשימוש אמיתי** (סכמת drizzle, סקריפטי `dr/`, primitives
+`ui/`) — לא הוסרו. מתוך 279+197 "exports מתים" של `knip`, הוכח
+false-positive (`HEX_RE` וכו' כן מיובאים בטסט) — **מחיקה גורפת נפסלה
+כמסוכנת**; הוסרו בפועל (`export` בלבד, לא ההכרזה) רק שישה קבועים
+שאומתו ידנית כאפס-שימוש-חיצוני: `DEFAULT_RETENTION_DAYS`/
+`DEFAULT_MIN_KEEP`/`PITR_VARIANT_RE`/`DAILY_BACKUP_RPO_HOURS`/
+`ENV_CARRIERS`/`COMMIT_TYPES` ב-`scripts/dr/*`/`final-audit-lib.mjs`.
 
-**מה שנמדד, `--throttling-method=provided` (המתכון התקף, ר'
-`docs/PERFORMANCE-BUDGET.md`):** `/` performance/accessibility/seo =
-**100/100/100**. `/product/צימר-מאסטר` = **100/100/100**.
+לא פריט חזותי — `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M08-c66).
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים), `test`
+**614/614 קבצים, 7335/7347 עברו**, 12 מדולגים, `build` exit 0. קבצים
+שונו: `package.json`, `pnpm-lock.yaml`, `scripts/dr/backup-lib.mjs`,
+`scripts/dr/pitr-lib.mjs`, `scripts/final-audit-lib.mjs` (+ ארכוב
+M08-c66 ל-`docs/STATE-ARCHIVE.md`).
 
-**לשם השוואה, `simulate` (ברירת המחדל, ידוע כרועש על localhost — ר'
-אותו מסמך):** `/` = **87/100/100**, `/product/...` = **91/100/100**
-(שניהם accessibility/seo 100). שני המספרים נרשמים כאן למטרת לוג בלבד;
-ה-`provided` הוא המספר שסומך עליו, לא ה-`simulate`. אין שינוי ל-
-`scripts/lighthouse-smoke.mjs` ואין שינוי לסף 90 בו.
-
-אפס שינוי קוד/סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint`
-נקי (12 שערים), `test` **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים,
-`build` exit 0. קובץ יחיד שונה: `STATE.md` (+ ארכוב M07-c66 ל-
-`docs/STATE-ARCHIVE.md`).
+**M08-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c66
+לשמירה על תקרת 300 שורות).** פריט תור, DONE: Lighthouse mobile `/`
+ו-`/product`, `provided` = 100/100/100 בשניהם. ארבעת השערים ירוקים.
 
 **M07-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c66
 לשמירה על תקרת 300 שורות).** פריט תור, DONE: סריקת `TODO`/`FIXME`

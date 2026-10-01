@@ -20,10 +20,10 @@
  */
 
 /** Every add-on variant id Supabase issues for PITR, newest list 2026-09-10. */
-export const PITR_VARIANT_RE = /^pitr_(\d+)$/
+const PITR_VARIANT_RE = /^pitr_(\d+)$/
 
 /** RPO when there is no PITR: the Pro plan's automatic backup runs daily. */
-export const DAILY_BACKUP_RPO_HOURS = 24
+const DAILY_BACKUP_RPO_HOURS = 24
 
 /**
  * The add-on `type` and `variant` fields are documented as objects carrying an

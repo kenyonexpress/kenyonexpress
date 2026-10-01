@@ -144,7 +144,7 @@ export function scanConsole(content) {
  * the loose version reports `Number.MAX_SAFE_INTEGER` and `PostgrestError
  * .PERMISSION_DENIED` as environment variables.
  */
-export const ENV_CARRIERS = ['env', 'source', 'ENV', 'processEnv']
+const ENV_CARRIERS = ['env', 'source', 'ENV', 'processEnv']
 
 const ENV_PATTERNS = [
   /process\.env\.([A-Z][A-Z0-9_]*)/g,
@@ -299,7 +299,7 @@ export const PLATFORM_ENV = new Set([
  * 946 characters, which is the thing that actually makes `git log --oneline`
  * unreadable.
  */
-export const COMMIT_TYPES = new Set([
+const COMMIT_TYPES = new Set([
   'build',
   'chore',
   'ci',

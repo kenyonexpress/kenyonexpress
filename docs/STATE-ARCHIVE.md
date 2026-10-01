@@ -2,6 +2,70 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c66 (פירוט מלא, נכתב ישירות לכאן ב-M09-c66 עצמו בגלל תקרת 300 שורות)
+
+**M09-c66 - DONE (01.10.2026).** משימת התור: "Remove unused deps and
+dead exports". `grep` ידני על כל 41 ה-`dependencies` ואימות צולב עם
+`pnpm dlx knip` (ephemeral, לא נוסף ל-`package.json`) איתרו **חמישה
+חבילות ללא שום אזכור** ברוחב הריפו (`src/`, `scripts/`, `supabase/`,
+`apps/`): `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`,
+`@hookform/resolvers`, `@radix-ui/react-toast` — אין קובץ `ui/` עוטף,
+אין שימוש בכלי build/dev, אין טסט. הוסרו מ-`package.json`, `pnpm
+install` עדכן את `pnpm-lock.yaml` (`Packages: -6`).
+
+**`knip` דיווח גם על `drizzle-orm`/`postgres`/`react-hook-form`/
+`@radix-ui/react-select`/`@radix-ui/react-dropdown-menu` כ"לא בשימוש"
+— נבדק ונמצא שגוי.** שלושת הראשונים משרתים `drizzle.config.ts`/
+`src/db/schema/*`/סקריפטי `scripts/dr/*`, שני האחרונים הם `ui/select.tsx`
+ו-`ui/dropdown-menu.tsx` (primitives מוכנים ללא צרכן עדיין, לא קובץ מת —
+נשארים). **לא הוסרו.**
+
+**279 "unused exports" + 197 "unused exported types" מ-`knip` נסקרו
+חלקית ונמצא false-positive מוכח** (`HEX_RE`/`PX_RE`/`isTrivialComment`/
+`collectMatches` ב-`scripts/hardcoded-gate-lib.mjs` מדווחים כ"לא
+בשימוש" בעוד שהם כן מיובאים בטסט) — רוב הרשימה היא server actions
+(כמו `deleteCategory`, `setSupplierStatus`) וטיפוסי Zod שייתכן ונצרכים
+דרך `action={}` או הסקת טיפוס בלי import בשם, ש-`knip` לא עוקב אחריהם
+נכון ב-Next.js הזה. **מחיקה גורפת נפסלה כמסוכנת מדי לפריט בודד ללא
+אימות ידני לכל סמל.** הוסרו בפועל, לאחר אימות `grep` אפס-תוצאות מחוץ
+לקובץ עצמו וללא טסט תואם, רק שישה קבועים פנימיים-בלבד (ה-`export`
+הוסר, לא ההכרזה): `DEFAULT_RETENTION_DAYS`/`DEFAULT_MIN_KEEP`
+(`scripts/dr/backup-lib.mjs`), `PITR_VARIANT_RE`/`DAILY_BACKUP_RPO_HOURS`
+(`scripts/dr/pitr-lib.mjs`), `ENV_CARRIERS`/`COMMIT_TYPES`
+(`scripts/final-audit-lib.mjs`). **הרשימה המלאה לא נשמרה כקובץ —
+לביקורת ייעודית עתידית, לא לפריט הזה.**
+
+לא פריט חזותי, אפס שינוי UI — `scripts/compare.mjs` לא הורץ, בהתאם
+לתקדים M04-c66..M08-c66 (פריטי לא-חזותיים לא מריצים את שער החזות).
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים), `test`
+**614/614 קבצים, 7335/7347 עברו**, 12 מדולגים, `build` exit 0. קבצים
+שונו: `package.json`, `pnpm-lock.yaml`, `scripts/dr/backup-lib.mjs`,
+`scripts/dr/pitr-lib.mjs`, `scripts/final-audit-lib.mjs`.
+
+## M08-c66 (הועבר מ-STATE.md ב-M09-c66, לשמירה על תקרת 300 שורות)
+
+**M08-c66 - DONE (01.10.2026).** משימת התור: Lighthouse mobile על `/`
+ו-`/product` (דוגמה), רישום ציונים בלבד, לא פריט חזותי. שרת `pnpm start`
+עצמאי על פורט 3316 (פורטים 3311-3315 תפוסים ע"י סשנים מקבילים, לא
+נגעתי בהם), מול `.next` קיים (BUILD_ID `dCVxTmYnOC-brgvTFvyyc`, זהה
+ל-HEAD `bccd8914b`, בלי `src/` שהשתנה מאז, בלי build מחדש). מוצר לדוגמה:
+`צימר-מאסטר` (פעיל, 10 במלאי, מ-`supabase/catalogue-snapshot.json`).
+
+**מה שנמדד, `--throttling-method=provided` (המתכון התקף, ר'
+`docs/PERFORMANCE-BUDGET.md`):** `/` performance/accessibility/seo =
+**100/100/100**. `/product/צימר-מאסטר` = **100/100/100**.
+
+**לשם השוואה, `simulate` (ברירת המחדל, ידוע כרועש על localhost — ר'
+אותו מסמך):** `/` = **87/100/100**, `/product/...` = **91/100/100**
+(שניהם accessibility/seo 100). שני המספרים נרשמים כאן למטרת לוג בלבד;
+ה-`provided` הוא המספר שסומך עליו, לא ה-`simulate`. אין שינוי ל-
+`scripts/lighthouse-smoke.mjs` ואין שינוי לסף 90 בו.
+
+אפס שינוי קוד/סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים,
+`build` exit 0. קובץ יחיד שונה: `STATE.md` (+ ארכוב M07-c66 ל-
+`docs/STATE-ARCHIVE.md`).
+
 ## M07-c66 (הועבר מ-STATE.md ב-M08-c66, לשמירה על תקרת 300 שורות)
 
 **M07-c66 - DONE (01.10.2026).** משימת התור: סריקת `TODO`/`FIXME` ישנים
