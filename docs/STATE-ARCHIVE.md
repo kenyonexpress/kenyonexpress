@@ -2,6 +2,84 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q48 (הועבר מ-STATE.md ב-Q49, לשמירה על תקרת 300 שורות)
+
+**Q48 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+שינוי קוד אמיתי.** "Perf pass: LCP under 2.0s 4G, CLS under 0.05, JS
+under 180KB gz per route, AVIF/WebP variants." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q47. בניגוד
+לרוב קודמיו, לא הכול כבר היה בנוי — נמצא ותוקן באג LCP אמיתי, ונמצא
+פער AVIF אמיתי.
+
+**נמדד מאפס מול build אמיתי** (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build`, שרת ייעודי בפורט
+3422, Lighthouse `--throttling-method=devtools` — ה-honest number
+המתועד ב-memory, לא ה-simulate שמייצר רעש של 8 נקודות): **LCP בית
+נמדד 2.0-2.1s, גבולי/מעל היעד** (שלוש ריצות: 2090/2010/2004ms), CLS
+0.002. product/category/cart כולם תחת 1.7s LCP ו-0.015 CLS, בלי שינוי.
+
+**הבאג: ה-Suspense fallback של רשת הדילים (`DealsOfTheDayFallback`,
+`src/components/home/DealsOfTheDay.tsx`) לא נשא `priority` על אף כרטיס
+אחד, בזמן שבפועל **הוא** מה שמצייר ראשון בתנאי רשת מואטים — לא הרשת
+האמיתית שמחליפה אותו.** `lcp-breakdown-insight` של Lighthouse הצביע על
+האלמנט הזוכה: תמונת הכרטיס הראשון, `loading="lazy"`, ‏1061ms
+`resourceLoadDelay`. השוואת ה-HTML הגולמי אישרה: אותו מוצר מופיע
+פעמיים בעמוד — פעם ב-fallback (`priority: false`, תמונת ה-fixture
+`ke-live-deal-0.webp`) ופעם ברשת האמיתית (`priority: true`, תמונת
+הקטלוג האמיתית) — וה-fallback הוא מה שבפועל נצבע קודם תחת throttling.
+ההנחה הישנה בקוד ("הפולבאק מוחלף לפני שמשהו מצייר") לא החזיקה תחת
+מדידה. **התיקון**: `eagerCount={HOME_DEALS_EAGER}` גם ב-fallback
+(היה `eagerCount=0` כברירת מחדל), כך ששני המועמדים האפשריים ל-LCP
+נושאים את אותו רמז, אף פעם לא יותר מתמונה אחת בו-זמנית. **נמדד אחרי:
+LCP בית 1.49-1.57s יציב על פני שש ריצות (שתי סדרות של שלוש), ירידה של
+כ-30-35%, `resourceLoadDelay` 589ms.** CLS ללא שינוי. טסט רגרסיה חדש,
+`src/components/home/DealsOfTheDay.test.tsx` (2 טסטים), אוכף שהכרטיס
+הראשון של ה-fallback לא `loading="lazy"`.
+
+**פער AVIF אמיתי: ה-`formats` ברירת המחדל של ה-build הזה הוא
+`['image/webp']` בלבד** (`node_modules/next/dist/server/image-
+optimizer.js:546-548`), לא `['image/avif','image/webp']` כפי שתועד
+במקומות אחרים — נמדד ב-curl עם `Accept: image/avif` שחוזר `image/webp`
+על כל בקשה. sharp כבר נושא קידוד AVIF מחווט (`transformer.avif()`
+באותו קובץ), אז זה שינוי קונפיג שורה אחת, לא קוד חדש. **נוסף
+`images.formats: ['image/avif', 'image/webp']` ל-`next.config.ts`,
+נמדד אחרי: אותה תמונה (`ke-live-deal-0.webp`, w=384 q=50) — `3417`
+בייט AVIF מול `6228` בייט WebP, ‏45% קטן יותר, אפס רגרסיית LCP (עדיין
+1.49-1.57s).** מקורות AVIF עדיין עוקפים את האופטימייזר (BYPASS_TYPES,
+ללא שינוי), השינוי משפיע רק על מקורות jpg/png/webp.
+
+**`JS under 180KB gz per route`: לא הושג, ותועד כפער ידוע ולא נוגע
+מחדש.** נמדד: ‏`bundle-gate.mjs` shared first-load **223.8 KB gz**
+(ירד מ-255.6KB המתועד ב-`docs/KNOWN-ISSUES.md` #9, התיעוד שם מיושן),
+אבל זה לבדו כבר מעל סף 180KB לכל נתיב — שום נתיב לא יכול להגיע ל-180KB
+בלי לצמצם את ה-shared chunks עצמם. ה-chunk הגדול ביותר (113.6KB gz)
+כולל `react-dom` — runtime ליבה, לא ספרייה הניתנת להחלפה. **זהו בדיוק
+הפער ש-`docs/KNOWN-ISSUES.md` #9 כבר קורא לו "פרויקט פרופיילינג", ו-15
+סשנים רצופים (M14-c51 עד M14-c65) כבר בדקו ולא תקפו מעבר לratchet** —
+"goal שנתקע פעמיים: לדלג" חל כאן על הניסיון לצמצם shared JS בתוך פריט
+בודד; זו החלטה שהתקבלה לבד, לא דילוג על המדידה (שלושת היעדים האחרים כן
+נמדדו ותוקנו).
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
+`pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12 מדולגים, עלה
+מ-613/7333 ב-Q47 בגלל שני הטסטים החדשים). `rm -rf .next && pnpm build`
+נקי. שער חזותי PASS בשלושת הרוחבים, foreground,
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440` (שרת
+בפורט 3422, cwd מאומת): **8.58%/9.01%/4.16%** (380/768/1440), בתוך
+רעש המדידה מול Q47 (8.51/9.02/3.95). `docs/UI-PARITY-REPORT.md` עודכן
+על ידי השער עצמו.
+
+**Q48 — נשלח שוב, פריט כפול, אפס דריפט (01.10.2026, אותו יום).** HEAD
+על `audit/final-audit` כבר היה `b10c3531f` (קומיט Q48 עצמו), עץ עבודה
+נקי. אומת מחדש: AVIF ב-`next.config.ts` ו-`eagerCount={HOME_DEALS_EAGER}`
+על ה-fallback קיימים בקוד. שערים רצו שוב מאפס מול build אמיתי:
+`type-check` נקי, `lint` נקי, `pnpm test` **614/614, 7335/7347** (זהה).
+`rm -rf .next && build` נקי. שער חזותי PASS בשלושת הרוחבים, foreground,
+שרת בפורט 3422: **8.58%/9.01%/4.16%**, זהה לספרות שתועדו למעלה —
+אפס דריפט. `docs/UI-PARITY-REPORT.md` קיבל שלוש שורות חדשות מהשער עצמו
+(`b10c3531f`/`b10c3531f-dirty`). לא נדרש שינוי קוד נוסף; הממצא
+"JS under 180KB gz per route לא הושג" נשאר תקף כפי שתועד למעלה.
+
 ## Q47 (הועבר מ-STATE.md ב-Q48, לשמירה על תקרת 300 שורות)
 
 **Q47 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,

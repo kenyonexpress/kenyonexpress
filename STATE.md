@@ -1,92 +1,64 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q48 - re-verified, אפס דריפט)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q49 - verified, already closed)
 
 ## המשך מ:
 
-**Q48 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
-שינוי קוד אמיתי.** "Perf pass: LCP under 2.0s 4G, CLS under 0.05, JS
-under 180KB gz per route, AVIF/WebP variants." **אינו בתור האמיתי**
-(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39), אותו דפוס כמו Q25-Q47. בניגוד
-לרוב קודמיו, לא הכול כבר היה בנוי — נמצא ותוקן באג LCP אמיתי, ונמצא
-פער AVIF אמיתי.
+**Q49 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,
+אפס שינוי קוד ייצור.** "Sentry web workers edge with releases source
+maps /api/health /api/ready." **אינו בתור האמיתי**
+(`docs/QUESTIONS-FOR-OFIR.md` עוצר ב-Q39, ואין "Q49" בשום קובץ markdown
+בריפו), אותו דפוס כמו Q25-Q48. **כל ששת הרכיבים כבר בנויים, מחווטים
+ונבדקים, נבדק מחדש קובץ-קובץ:**
 
-**נמדד מאפס מול build אמיתי** (`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build`, שרת ייעודי בפורט
-3422, Lighthouse `--throttling-method=devtools` — ה-honest number
-המתועד ב-memory, לא ה-simulate שמייצר רעש של 8 נקודות): **LCP בית
-נמדד 2.0-2.1s, גבולי/מעל היעד** (שלוש ריצות: 2090/2010/2004ms), CLS
-0.002. product/category/cart כולם תחת 1.7s LCP ו-0.015 CLS, בלי שינוי.
+- **Web (browser)**: `instrumentation-client.ts` מאתחל `Sentry.init`
+  לפני hydration, `dsn: NEXT_PUBLIC_SENTRY_DSN`, release ו-environment
+  דרך `NEXT_PUBLIC_*`, `tunnelRoute: '/monitoring'` (ה-CSP אין בה origin
+  של Sentry, בלי tunnel הדפדפן חוסם כל דיווח).
+- **Workers (Node, Route Handlers/Server Components/Server Functions)**:
+  `sentry.server.config.ts` נטען דרך `src/instrumentation.ts`
+  (`register()`), מייצא `onRequestError` שמכסה את שלושת סוגי ה-routeType.
+  `redact`/`beforeSend` מנקים headers/cookies/טוקן שובר מה-path.
+- **Edge**: `sentry.edge.config.ts` — `src/proxy.ts` (הפרוקסי, ששער
+  ההרשאות וה-redirect עוברים דרכו) רץ ב-edge runtime, מכוסה בנפרד כי
+  אין שם Node APIs.
+- **Releases**: שלושת הקבצים נופלים ל-`SENTRY_RELEASE`/
+  `NEXT_PUBLIC_SENTRY_RELEASE` ואז ל-`VERCEL_GIT_COMMIT_SHA`/
+  `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` — כל deploy על Vercel מתויג
+  בלי משתנה ידני.
+- **Source maps**: `next.config.ts:328` עוטף עם `withSentryConfig(...,
+  { sourcemaps: { deleteSourcemapsAfterUpload:
+  process.env.SENTRY_KEEP_SOURCEMAPS !== '1' } })` — מעלה ומוחק מה-
+  output הציבורי. `.github/workflows/ci.yml` מזין `SENTRY_ORG`/
+  `SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN`/`SENTRY_RELEASE`/
+  `NEXT_PUBLIC_SENTRY_RELEASE` מ-`github.sha`. נמדד ותועד כבר ב-
+  `docs/SENTRY-SETUP.md` (`SENTRY_KEEP_SOURCEMAPS=1 pnpm build` → 75
+  מפות, הגדולה 3.2MB — יש קלט אמיתי להעלאה, לא רק קונפיג ריק).
+- **`/api/health`**: `src/app/api/health/route.ts` — liveness + בדיקת
+  `categories` אמיתית דרך admin client, `no-store`, 503 כשהDB למטה,
+  בלי גרסה/commit/שמות env בתשובה (מפורש ב-doc comment: נקודת קצה
+  ציבורית בלי אימות היא מלאי חינם לתוקף אם היא מדברת יותר מדי).
+- **`/api/ready`**: `src/app/api/ready/route.ts` — חמש תלויות דרך
+  `runReadyChecks()`, `no-store`, 503 רק כשמשהו `down`. שתיהן עטופות
+  ב-`withRequestLog`.
 
-**הבאג: ה-Suspense fallback של רשת הדילים (`DealsOfTheDayFallback`,
-`src/components/home/DealsOfTheDay.tsx`) לא נשא `priority` על אף כרטיס
-אחד, בזמן שבפועל **הוא** מה שמצייר ראשון בתנאי רשת מואטים — לא הרשת
-האמיתית שמחליפה אותו.** `lcp-breakdown-insight` של Lighthouse הצביע על
-האלמנט הזוכה: תמונת הכרטיס הראשון, `loading="lazy"`, ‏1061ms
-`resourceLoadDelay`. השוואת ה-HTML הגולמי אישרה: אותו מוצר מופיע
-פעמיים בעמוד — פעם ב-fallback (`priority: false`, תמונת ה-fixture
-`ke-live-deal-0.webp`) ופעם ברשת האמיתית (`priority: true`, תמונת
-הקטלוג האמיתית) — וה-fallback הוא מה שבפועל נצבע קודם תחת throttling.
-ההנחה הישנה בקוד ("הפולבאק מוחלף לפני שמשהו מצייר") לא החזיקה תחת
-מדידה. **התיקון**: `eagerCount={HOME_DEALS_EAGER}` גם ב-fallback
-(היה `eagerCount=0` כברירת מחדל), כך ששני המועמדים האפשריים ל-LCP
-נושאים את אותו רמז, אף פעם לא יותר מתמונה אחת בו-זמנית. **נמדד אחרי:
-LCP בית 1.49-1.57s יציב על פני שש ריצות (שתי סדרות של שלוש), ירידה של
-כ-30-35%, `resourceLoadDelay` 589ms.** CLS ללא שינוי. טסט רגרסיה חדש,
-`src/components/home/DealsOfTheDay.test.tsx` (2 טסטים), אוכף שהכרטיס
-הראשון של ה-fallback לא `loading="lazy"`.
+**שערים, כולם בפורגראונד, מאפס מול build אמיתי:** `type-check` נקי.
+`lint` נקי (12 שערים). `pnpm test` מלא **614/614 קבצים, 7335/7347
+עברו** (12 מדולגים, זהה ל-Q48). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build` נקי. שרת בפורט
+3422, cwd מאומת (`/usr/sbin/lsof -p <pid> | grep cwd`). שער חזותי PASS
+בשלושת הרוחבים, foreground, `--baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`: **8.58%/9.01%/4.16%** (380/768/1440), זהה
+ל-Q48 — אפס דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+לא נדרש שינוי קוד ייצור; רק דיווח STATE.
 
-**פער AVIF אמיתי: ה-`formats` ברירת המחדל של ה-build הזה הוא
-`['image/webp']` בלבד** (`node_modules/next/dist/server/image-
-optimizer.js:546-548`), לא `['image/avif','image/webp']` כפי שתועד
-במקומות אחרים — נמדד ב-curl עם `Accept: image/avif` שחוזר `image/webp`
-על כל בקשה. sharp כבר נושא קידוד AVIF מחווט (`transformer.avif()`
-באותו קובץ), אז זה שינוי קונפיג שורה אחת, לא קוד חדש. **נוסף
-`images.formats: ['image/avif', 'image/webp']` ל-`next.config.ts`,
-נמדד אחרי: אותה תמונה (`ke-live-deal-0.webp`, w=384 q=50) — `3417`
-בייט AVIF מול `6228` בייט WebP, ‏45% קטן יותר, אפס רגרסיית LCP (עדיין
-1.49-1.57s).** מקורות AVIF עדיין עוקפים את האופטימייזר (BYPASS_TYPES,
-ללא שינוי), השינוי משפיע רק על מקורות jpg/png/webp.
-
-**`JS under 180KB gz per route`: לא הושג, ותועד כפער ידוע ולא נוגע
-מחדש.** נמדד: ‏`bundle-gate.mjs` shared first-load **223.8 KB gz**
-(ירד מ-255.6KB המתועד ב-`docs/KNOWN-ISSUES.md` #9, התיעוד שם מיושן),
-אבל זה לבדו כבר מעל סף 180KB לכל נתיב — שום נתיב לא יכול להגיע ל-180KB
-בלי לצמצם את ה-shared chunks עצמם. ה-chunk הגדול ביותר (113.6KB gz)
-כולל `react-dom` — runtime ליבה, לא ספרייה הניתנת להחלפה. **זהו בדיוק
-הפער ש-`docs/KNOWN-ISSUES.md` #9 כבר קורא לו "פרויקט פרופיילינג", ו-15
-סשנים רצופים (M14-c51 עד M14-c65) כבר בדקו ולא תקפו מעבר לratchet** —
-"goal שנתקע פעמיים: לדלג" חל כאן על הניסיון לצמצם shared JS בתוך פריט
-בודד; זו החלטה שהתקבלה לבד, לא דילוג על המדידה (שלושת היעדים האחרים כן
-נמדדו ותוקנו).
-
-**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
-`pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12 מדולגים, עלה
-מ-613/7333 ב-Q47 בגלל שני הטסטים החדשים). `rm -rf .next && pnpm build`
-נקי. שער חזותי PASS בשלושת הרוחבים, foreground,
-`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440` (שרת
-בפורט 3422, cwd מאומת): **8.58%/9.01%/4.16%** (380/768/1440), בתוך
-רעש המדידה מול Q47 (8.51/9.02/3.95). `docs/UI-PARITY-REPORT.md` עודכן
-על ידי השער עצמו.
-
-**Q48 — נשלח שוב, פריט כפול, אפס דריפט (01.10.2026, אותו יום).** HEAD
-על `audit/final-audit` כבר היה `b10c3531f` (קומיט Q48 עצמו), עץ עבודה
-נקי. אומת מחדש: AVIF ב-`next.config.ts` ו-`eagerCount={HOME_DEALS_EAGER}`
-על ה-fallback קיימים בקוד. שערים רצו שוב מאפס מול build אמיתי:
-`type-check` נקי, `lint` נקי, `pnpm test` **614/614, 7335/7347** (זהה).
-`rm -rf .next && build` נקי. שער חזותי PASS בשלושת הרוחבים, foreground,
-שרת בפורט 3422: **8.58%/9.01%/4.16%**, זהה לספרות שתועדו למעלה —
-אפס דריפט. `docs/UI-PARITY-REPORT.md` קיבל שלוש שורות חדשות מהשער עצמו
-(`b10c3531f`/`b10c3531f-dirty`). לא נדרש שינוי קוד נוסף; הממצא
-"JS under 180KB gz per route לא הושג" נשאר תקף כפי שתועד למעלה.
-
-**Q25..Q47 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q48
-לשמירה על תקרת 300 שורות).** עשרים ואחד פריטים חיצוניים חד-פעמיים, אף
-אחד לא בתור האמיתי. שבעה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי
+**Q25..Q48 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q49
+לשמירה על תקרת 300 שורות).** עשרים ושניים פריטים חיצוניים חד-פעמיים, אף
+אחד לא בתור האמיתי. שמונה-עשר נמצאו DONE ובנויים במלואם (כמעט לגמרי
 במקרה של Q45, בחלקו במקרה של Q48 - LCP+AVIF תוקנו, JS-per-route תועד
 כפער ידוע), אחד (Q43) נבנה חדש (אותות מהירות למימוש שוברים), שניים
 BLOCKED (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד (Q32)
 שעות פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת השערים
-ירוקים בכל העשרים ואחד.
+ירוקים בכל עשרים ושניים.
 
 **Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,
