@@ -1,7 +1,44 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q28)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q29)
 
 ## המשך מ:
+
+**Q29 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"Checkout guest flow Google sign-in at end tokenized card save". **אינו
+קיים בתור האמיתי** (`docs/BACKLOG.md` לא מכיר "Q29"; `QUESTIONS-FOR-OFIR.md`
+לא קיים עוד בריפו) — אותו דפוס כמו Q25/Q26/Q27/Q28, נבדק לפי הדרישה
+בפועל.
+
+**הפיצ'ר כבר קיים במלואו, אפס שינוי קוד:**
+1. **Guest checkout, Google sign-in בסוף הזרימה (בלחיצת "לתשלום", לא
+   בכניסה):** מתועד ב-`docs/ARCHITECTURE-COMMERCE.md` שורה 56-58 — "Auth:
+   guest cart is open. Google Login is required only at pay click. After
+   login: merge guest cart, save details + Cardcom token." מומש ב-
+   `CheckoutForm.tsx` (`handleSubmit`): אורח ממלא את כל הטופס, ורק לחיצת
+   "לתשלום" שולחת ל-`signInWithGoogle` (טופס נסתר, `next=/checkout?resume=1`);
+   הערכים שהוקלדו נשמרים ב-`sessionStorage` (`RESUME_FIELDS`) ומתמלאים
+   מחדש אחרי החזרה מ-Google. `auth/callback/route.ts` קורא ל-`mergeGuestCart`
+   אחרי ההתחברות.
+2. **שמירת כרטיס מטוקניז:** תיבת סימון `save_card` (מסומנת כברירת מחדל,
+   "שמירת כרטיס לתשלום מהיר בפעם הבאה") מחוברת ל-`saveToken` ב-
+   `beginCheckout` (`src/server/actions/payments/checkout.ts`), נשמר
+   ב-`payment_tokens` דרך `ChargeAndCreateToken`. מכוסה ב-
+   `checkout-form-contract.test.tsx` ו-`checkout.test.ts` (אסרציות על
+   `save_card`/`saveToken`).
+
+**השערים**: `type-check` נקי, `lint` נקי (12 שערים), `test` 610/610
+קבצים, 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת
+זמני על פורט 3312, כדי לא למדוד שרת זר על 3311 — ראו זיכרון "Gate
+measured a foreign server on 3311").
+
+**שער חזותי בחזית, דף התשלום, נמדד בתוך הריצה הזו** מול
+`refs/live-checkout.png` (ה-reference היחיד הקיים, 1440 בלבד — ראו
+"חוסמים פתוחים" #5 למטה): 1440 `0.95%`/`10.52%` overall PASS (עגלה
+מלאה, זרועה אוטומטית ע"י הסקריפט), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+380 ו-768 REFUSED (`refs/live-checkout.png` הוא 1440px בלבד) — אותה
+התנהגות מתועדת כמו בדף הסל, לא כשל חדש.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **Q28 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
 "עריכת שורות בדף הסל, מתג ארנק, הזנת קוד קופון". **אינו קיים בתור האמיתי**
@@ -33,55 +70,12 @@ Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q28)
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
 
-**Q27 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"מתגי סינון וסוננים בדף הקטגוריה, בלי שדה חיפוש, מותאמים לפריסת
-Electro v7". **אינו קיים בתור האמיתי** (`BACKLOG.md` לא מכיר "Q27" במובן
-הזה; `Q27` ב-`QUESTIONS-FOR-OFIR.md` הוא פריט לא-קשור — 11 ספקים בלי
-כתובת) — אותו דפוס כמו Q25/Q26/S02/S03, נבדק לפי הדרישה בפועל ולא נדחה.
-
-**נבדק:** שדה חיפוש — **אפס**, מאומת ב-`src/components/layout/
-no-search-ui.test.ts` (סוויטה ייעודית) וב-`docs/AUTOPILOT-DIFF.md`
-שדוחה "faceted search UI" כהפרת הכלל "אין חיפוש, רק צ'יפים". `CategoryFilterSidebar.tsx`
-כבר מכיל שלושה ווידג'טים (קטגוריות, סוג מוצר, טווח מחיר) התואמים ל-
-`widget_product_categories`/`widget_price_filter` ב-`refs/electro_shop.html`
-(מקור האמת לדף הקטגוריה; Electro מחזיק גם Brands/Color layered-nav, אין
-להם מקביל כי אין נתוני מותג/צבע ל-44 המוצרים הפעילים — **לא נבנה פיצ'ר
-ספקולטיבי בלי נתון אמיתי**, ראו זיכרון "Finished features with no consumer").
-
-**שני תיקוני קוד, שניהם נדרשים כדי למדוד את הפריט הזה בכלל:**
-
-1. **`src/components/category/CategoryFilterSidebar.tsx`**: ה-`<details>`
-   היה סגור כברירת מחדל (הערה ישנה: "live has no filter UI"). ה-baseline
-   של דף הקטגוריה עבר מאז ל-`refs/electro_shop_{width}.png` (Electro,
-   שכן מציג סיידבר פתוח תמיד) — ההערה הייתה מיושנת. עכשיו `open` כברירת
-   מחדל, עדיין `<details>` לקיפול ידני.
-2. **`src/styles/category-page.css`** (`.category-card__thumb img`):
-   **באג אמיתי שנמצא תוך כדי מדידה** — ב-380px, כש-`width`/`height`
-   שניהם `auto` ולאלמנט יש רק יחס-גובה-רוחב (לא טעון עדיין), הדפדפן
-   פתר את הגודל ל-0x0 (נמדד ב-Playwright, לא רק בשער). אלמנט 0x0 לא
-   נחשב "קרוב למסך" ע"י `loading="lazy"`, כך שתמונות המוצר בגריד הקטגוריה
-   (וגם `/products`+`/search`, אותו קומפוננטה) **אף פעם לא נטענו במובייל
-   בדפדפן אמיתי**, לא רק בשער האוטומטי. תוקן: `height: 100%` (יחסית
-   לעטיפה שכבר עם גובה קבוע) + `object-fit: contain` במקום `height: auto`
-   הכפול. אומת ב-380/768/1440 שהתמונה כעת טוענת בגודל נכון בשלושת הרוחבים.
-
-**השערים**: `type-check`/`lint` נקיים (12 שערים). `test` 610/610 קבצים,
-7300/7312 (זהה לבסיס, אין טסט ייעודי ל-CSS הזה). `rm -rf .next && pnpm build`
-פעמיים (אחרי כל תיקון), ללא שגיאה. **שער חזותי בחזית, דף הקטגוריה,
-שלושת הרוחבים, נמדד בתוך הריצה הזו** מול `refs/electro_shop_{width}.png`
-(`--baseline`): 380 `3.53%` PASS, 768 `2.52%` PASS, 1440 `1.69%` PASS,
-נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md` (04:07-04:11 UTC). קטגוריית
-המדידה: `hot-deals` (ברירת המחדל של הסקריפט, 2 מוצרים פעילים). נבדק גם
-מול `beauty-health` (12 מוצרים, `COMPARE_CATEGORY_SLUG`) ב-380: `5.34%`
-PASS — אותה מסקנה, לא נרשם כשורת שער רשמית כי אינה ברירת המחדל.
-**הערת "HEIGHT RATIO" של הסקריפט (~0.5x-0.6x) אינה חוסמת ציון** — היא
-אזהרה בלבד; `diff-bands.mjs` עדיין מחשב וכותב ציון. הפער בגובה האמיתי
-מול Electro (שמציג גריד מלא + "Latest Products" + באנר בסיידבר) הוא
-תוכן קטלוגי, לא פריסה, ותואם את `docs/SOURCING-RULES.md`.
-
-קבצים ששונו: `src/components/category/CategoryFilterSidebar.tsx`,
-`src/styles/category-page.css`, `docs/UI-PARITY-REPORT.md`, `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**Q27 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q29
+לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
+מתגי סינון בדף הקטגוריה כבר קיימים (ללא שדה חיפוש), שני תיקוני קוד
+אמיתיים נמצאו תוך כדי מדידה (סיידבר `open` כברירת מחדל, ובאג 0x0 ב-
+`lazy` על תמונות הגריד ב-380px). שער חזותי PASS בשלושת הרוחבים
+(3.53%/2.52%/1.69%). ארבעת השערים ירוקים.
 
 **Q26, M18-c65 ו-M17-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q28 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי, לא

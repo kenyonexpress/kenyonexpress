@@ -731,3 +731,6 @@ to an already large session.
 | 2026-10-01 04:32 | cart | 1440 | 1.47% | PASS | `60bcbab56-dirty` | live side: frozen capture `refs/live-cart.png`; overall 16.06% (reference blank 3.02%, ours blank 11.58%) |
 | 2026-10-01 04:34 | cart | 1440 | 0.49% | PASS | `60bcbab56-dirty` | live side: frozen capture `refs/live-cart.png`; overall 21.12% (reference blank 8.26%, ours blank 12.38%) |
 | 2026-10-01 04:36 | cart | 1440 | 1.47% | PASS | `60bcbab56-dirty` | live side: frozen capture `refs/live-cart.png`; overall 16.06% (reference blank 3.02%, ours blank 11.58%) |
+| 2026-10-01 04:47 | checkout | 1440 | 0.95% | PASS | `13986251c` | live side: frozen capture `refs/live-checkout.png`; overall 10.52% (reference blank 4.07%, ours blank 5.5%) |
+| 2026-10-01 04:49 | checkout | 380 | n/a | REFUSED | `13986251c-dirty` | capture is 1440px, run is 380px |
+| 2026-10-01 04:49 | checkout | 768 | n/a | REFUSED | `13986251c-dirty` | capture is 1440px, run is 768px |
