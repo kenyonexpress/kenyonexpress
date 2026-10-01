@@ -1,40 +1,44 @@
-RESUME FROM: M10-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c65)
+RESUME FROM: M11-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c65)
 
 ## המשך מ:
 
-**M09-c65 - STATE CLEAN (01.10).** משימת התור: לקחת את פריט ה-STATE.md
-הפתוח בעל ההשפעה הגבוהה ביותר שסוכן יכול לסיים בלי אופיר; אם אין כזה,
-STATE CLEAN. שלושה-עשר ה"חוסמים הפתוחים" למטה ו-15 פריטי `docs/BACKLOG.md`
-נבדקו שורה-שורה: כל אחד הוא DNS, סוד/env ב-Vercel, אישור פריסה/מיגרציה,
-רוטציית מפתח, הכרעה עסקית על הקטלוג, מחיקת נתונים (32 stash), או
-אינטגרציית ספק תשלום/SMS אמיתית — כולם אסורים על סוכן לפי `CLAUDE.md`
-ולפי כללי התור הזה במפורש. אפס פריט חדש, אפס כפילות. ספירות נבדקו ישירות:
-`migrations/pending/*.sql` 59, `git stash list` 32, `known` object 26,
-`dns-watch.sh` עדיין רץ (pid 976). `git diff --stat 8d3abea1e..HEAD`
-(טווח זהה ל-M08-c65, אפס קומיט נחת מאז) מראה רק שינוי קוד שכבר תועד
-ואומת (M18-c64, דירוג כוכבים) — אפס שינוי לשורת חסימה/מיגרציה/קטלוג.
-קומיטים מאחורי פרודקשן: 293 (`git rev-list --count a388118f1..HEAD`).
-**אין פעולה חדשה לסוכן; התור נשאר חסום באותם 13/15 הפריטים.**
+**M10-c65 - DONE (01.10).** משימת התור: למצוא את המודול הקריטי בעל כיסוי
+הטסטים הנמוך ביותר בין `packages/money`, פיצול תשלום, מכונת מצבים של
+שובר, מכונת מצבים של הזמנה, החזרים ועוזרי RLS, ולהוסיף טסטים עד כיסוי
+ענפים מלא. נמדד ישירות עם `vitest run --coverage` (לא הונח מה-STATE
+הקודם): שש הקטגוריות, קובץ-קובץ —
+`src/lib/money.ts` 21/21 (100%), `src/lib/commerce/money.ts` 20/20
+(100%), `src/lib/checkout/split.ts` 4/4 (100%), `src/server/domain/
+vouchers/state-machine.ts` 22/22 (100%), `src/server/domain/orders/
+state-machine.ts` 19/19 (100%) ו-`order-transitions.ts` 6/6 (100%),
+`src/server/domain/orders/refund.ts` 55/55 (100%), `refund-request.ts`
+6/6 (100%), `src/server/payments/refund-wallet.ts` 16/16 (100%),
+`refund-record.ts` 14/14 (100%), `src/lib/supabase/rls-report-fetch.ts`
+37/37 (100%) — אפס ענף חסר בכל אחד מהשישה. זהה ל-M10-c61/c62/c63/c64,
+אפס דריפט רביעית ברציפות. **אין מודול קריטי מתחת ל-100%, אין טסט חדש
+נדרש.** (לידיעה בלבד, לא חלק מהבקשה: `src/lib/commerce/phases.ts`
+עומד על 44.11% ענפים ו-`order-money-columns.ts` על 82.22% — שניהם מחוץ
+לשש הקטגוריות שהוגדרו ולרשימת ה-`MONEY_MODULE_FLOOR` ב-`vitest.config.ts`,
+לא חוסם לפריט הזה.)
 
-**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים, זהים
-ל-M08-c65). `test` 610/610 קבצים, 7298/7310 ירוקים. `build` רץ בפועל
-פעמיים (`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:3533 pnpm build`) — "Compiled successfully", exit 0
-מאומת ישירות. אין שינוי UI, `scripts/compare.mjs` לא רץ.
+קבצים ששונו: `STATE.md` בלבד, אפס קוד.
 
-קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים).
+`test` 610/610 קבצים, 7298/7310 ירוקים (עם `--coverage`). `build` רץ
+בפועל (`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3533 pnpm build`) — "Compiled successfully", exit 0.
+אין שינוי UI, `scripts/compare.mjs` לא רץ (לא פריט חזותי).
 
-**M08-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c65
-לשמירה על תקרת 300 שורות).** BACKLOG EMPTY — אותה מסקנה, פחות מעמיק.
-ארבעת השערים ירוקים.
+**M09-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M10-c65
+לשמירה על תקרת 300 שורות).** STATE CLEAN — אותם 13/15 חוסמים, אפס פעולה
+חדשה לסוכן, קומיטים מאחורי פרודקשן 293. ארבעת השערים ירוקים.
 
-**M07-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c65
-לשמירה על תקרת 300 שורות).** route audit נמדד שוב במלואו מול בנייה טריה
-(`rm -rf .next` + build + `pnpm start`): 226 טסטי Playwright בשישה חלקים
-בפורגראונד, כולם ירוקים; `ROUTE_AUDIT_REPORT` מאוחד — 242 שורות, 239 PASS
-+ 2 NO DATA (זהות ל-M07-c64), 0 FAIL, אפס `consoleErrors`/
-`hydrationWarnings`/`rtl:false`. אין תיקון קוד נדרש. ארבעת השערים ירוקים.
+**M08-c65 ו-M07-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c65/M10-c65 לשמירה על תקרת 300 שורות).** M08-c65 — BACKLOG
+EMPTY, אותה מסקנה, פחות מעמיק. M07-c65 — route audit נמדד שוב במלואו
+מול בנייה טריה, 226 טסטי Playwright ירוקים, 239 PASS + 2 NO DATA, 0
+FAIL. ארבעת השערים ירוקים בשניהם.
 
 **M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M07-c65
 לשמירה על תקרת 300 שורות).** Lighthouse mobile נמדד שוב מול בנייה טריה

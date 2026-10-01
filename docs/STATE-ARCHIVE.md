@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c65 (הועבר מ-STATE.md ב-M10-c65, לשמירה על תקרת 300 שורות)
+
+**M09-c65 - STATE CLEAN (01.10).** משימת התור: לקחת את פריט ה-STATE.md
+הפתוח בעל ההשפעה הגבוהה ביותר שסוכן יכול לסיים בלי אופיר; אם אין כזה,
+STATE CLEAN. שלושה-עשר ה"חוסמים הפתוחים" למטה ו-15 פריטי `docs/BACKLOG.md`
+נבדקו שורה-שורה: כל אחד הוא DNS, סוד/env ב-Vercel, אישור פריסה/מיגרציה,
+רוטציית מפתח, הכרעה עסקית על הקטלוג, מחיקת נתונים (32 stash), או
+אינטגרציית ספק תשלום/SMS אמיתית — כולם אסורים על סוכן לפי `CLAUDE.md`
+ולפי כללי התור הזה במפורש. אפס פריט חדש, אפס כפילות. ספירות נבדקו ישירות:
+`migrations/pending/*.sql` 59, `git stash list` 32, `known` object 26,
+`dns-watch.sh` עדיין רץ (pid 976). `git diff --stat 8d3abea1e..HEAD`
+(טווח זהה ל-M08-c65, אפס קומיט נחת מאז) מראה רק שינוי קוד שכבר תועד
+ואומת (M18-c64, דירוג כוכבים) — אפס שינוי לשורת חסימה/מיגרציה/קטלוג.
+קומיטים מאחורי פרודקשן: 293 (`git rev-list --count a388118f1..HEAD`).
+**אין פעולה חדשה לסוכן; התור נשאר חסום באותם 13/15 הפריטים.**
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים, זהים
+ל-M08-c65). `test` 610/610 קבצים, 7298/7310 ירוקים. `build` רץ בפועל
+פעמיים (`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3533 pnpm build`) — "Compiled successfully", exit 0
+מאומת ישירות. אין שינוי UI, `scripts/compare.mjs` לא רץ.
+
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M08-c65 (הועבר מ-STATE.md ב-M09-c65, לשמירה על תקרת 300 שורות)
 
 **M08-c65 - BACKLOG EMPTY (01.10).** משימת התור: לקחת מ-`docs/BACKLOG.md`
