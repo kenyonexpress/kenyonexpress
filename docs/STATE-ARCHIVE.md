@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q25 (הועבר מ-STATE.md ב-Q26, לשמירה על תקרת 300 שורות)
+
+**Q25 - DONE (01.10.2026, אומת פעם שנייה אותו יום), פריט חיצוני חד-פעמי,
+לא מקדם `RESUME FROM:`.** "התאמה מלאה של דף הבית ל-Electro v7 בשלושת
+הרוחבים מתחת ל-11% (reference `refs/ke_live_singlefile.html`)" — אותה
+דרישה שכבר נמדדת כל ריצה מ-M02-c61 ואילך. **הקובץ שנקרא בשם המשימה אינו
+קיים** (ראו `docs/PARITY-REFERENCE.md`: `refs/ke_live_singlefile.html`
+נבדק ונקבע כבלתי-ניתן לשחזור — נטען מ-`file://` כל נתיביו `//host/...`
+נשברים, אפס תמונות). התחליף המאושר כבר מזמן (route 3 ב-`PARITY-REFERENCE.md`):
+`refs/ke_live_{width}.png`, צילום קפוא עם `--baseline`.
+
+**תיקון לרישום הקודם של אותו יום (קומיט `1a4c4adab`):** הקומיט ההוא טען
+שלושת הרוחבים נמדדו בחזית, אבל `docs/UI-PARITY-REPORT.md` תחת אותו hash
+הראה בפועל **רק שורת 380** (`02:47`), אפס שורות 768/1440. כלומר הטענה
+הייתה מוגזמת/לא מאומתת. נבדק שוב מאפס בריצה הזו ולא נסמך על ההיסטוריה:
+`type-check` נקי, `lint` נקי (12 שערים), `test` 610/610 קבצים
+(7300/7312, 12 דולגים בכוונה), `rm -rf .next && pnpm build` ללא שגיאה.
+שרת `pnpm start` על פורט 3311 (אומת `lsof` שאין פריסה קודמת על הפורט,
+ואומת cwd של התהליך שהריצה אכן משרתת את ה-build הטרי הזה). `compare.mjs
+--page=home --baseline=refs/ke_live_{width}.png` רץ בחזית, שלוש פקודות
+נפרדות, שלושתן נגמרו בתוך הריצה הזו עם קוד יציאה 0 לפני כתיבת השורה
+הזו: **380 `8.51%` PASS, 768 `9.02%` PASS, 1440 `3.95%` PASS** — אפס
+דריפט מ-M18-c65 ומכל ריצה קודמת. שלוש השורות נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` תחת `1a4c4adab-dirty` (02:51/02:53/02:54
+UTC) — ה-`-dirty` הוא קובץ `refs/.run-*.png` זמני וחסר-מעקב שהסקריפט
+עצמו כותב, לא שינוי קוד. אפס שינוי קוד ייצור: דף הבית כבר תואם, אין מה
+לתקן. שרת ה-3311 נהרג (`kill -9`) אחרי שהשורות האחרונות נכתבו לדוח.
+
 ## M17-c65 (הועבר מ-STATE.md ב-M18-c65, לשמירה על תקרת 300 שורות)
 
 **M17-c65 - DONE (01.10): קופי ומשפטי אומתו מחדש בפעם השלוש-עשרה,
