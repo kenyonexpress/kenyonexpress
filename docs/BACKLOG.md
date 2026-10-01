@@ -442,6 +442,20 @@ policy). All 19 confirmed unapplied, zero drift from M10-c66/M10-c67.
 `migrations/pending/*.sql` count re-checked at 60, unchanged. No
 migration applied, no code change.
 
+**Re-checked 2026-10-02 (M10-c69), item 5 only, against git again (not
+production directly — already probed live same day in M10-c68):** queue
+item "Verify migrations/pending/ applied or file blocker" recurred a
+third time. `git diff --stat 6a1f9caee..HEAD -- migrations/pending/`
+since M10-c68's own direct per-file probe returns empty — zero files
+changed, added, or removed. `migrations/pending/*.sql` re-checked at 60,
+unchanged; `git log -1 -- migrations/pending/` still points at
+`48c8792dd` (248, Q32), older than M10-c68. Because M10-c68's probe was
+same-day (not one day prior, as M10-c67's base was), the git-diff-only
+pattern from M10-c67 applies here a second time rather than re-running a
+fresh production probe. The 19-file blocker (204, 209, 218, 220, 223,
+224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248)
+stands unchanged. No migration applied, no code change.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**

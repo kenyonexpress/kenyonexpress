@@ -38761,3 +38761,29 @@ exit 0), `lint` ירוק (12 שערים, `biome check` על 2037 קבצים, א�
 תיקונים), `build` exit 0 (כל הנתיבים נבנו, כולל
 sitemaps/robots/opengraph). פריט אימות-בלבד, אפס שינוי קוד; קובץ שהשתנה:
 `STATE.md`.
+
+**M09-c69 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat c96296cb2..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts` (בסיס: HEAD של M09-c68) ריק — אפס דריפט קוד
+מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints` הורץ מחדש: 271
+"unused exports" ו-197 "unused exported types", אותם מספרים בדיוק
+כמו M09-c68 — אין מועמד חדש. חמש ה-deps שסומנו (`@radix-ui/react-dropdown-menu`,
+`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
+אומתו מחדש כ-false-positive, `grep` ישיר מצא צרכן אמיתי לכל אחת
+(`src/components/ui/{dropdown-menu,select,form}.tsx`, `src/db/schema/*`,
+`src/server/actions/cart.ts`). ארבעת ה-"duplicate exports" (`BottomTabBarView`/
+`default`, `HERO_CATEGORY_BANNERS`/`CATEGORIES`, `beginCheckoutInputSchema`/
+`createOrderInputSchema`, `MAX_DLQ_ATTEMPTS`/`MAX_REPLAY_ATTEMPTS`) נבדקו
+פרטנית — כולם aliases מכוונים (קבוע/טיפוס אחד מיוצא תחת שני שמות לצרכנים
+שונים), לא קוד מת. "Unused files (201)" ו-`Unlisted binaries (1)` הם
+רעש ידוע של knip ללא `knip.json`: סקריפטים שמופעלים ישירות (`scripts/*.mjs`,
+`load/*.js`), `apps/mobile` (אפליקציית Expo נפרדת), ו-`supabase` כ-CLI
+binary — לא ייבוא סטטי ש-knip עוקב אחריו. אין `knip.json` בריפו (ריצה
+אפמרית בלבד, כמו בכל סבב קודם), ולא נוצר אחד — שינוי קונפיגורציה כזה חורג
+מהיקף הבדיקה החוזרת הזו. אפס הסרה, כי אין מועמד חדש להסיר מעבר למה
+שכבר הוסר ב-M09-c66/M09-c67 (`HERO_ANIMATION_MEDIA`, `dotButtonWidth`).
+
+אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337+12 מדולגים), `build`
+exit 0 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3319`).
+קובץ יחיד: `STATE.md`.

@@ -1,40 +1,35 @@
-RESUME FROM: M10-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c69 - DONE, deps/exports מתים אומתו מחדש עם knip, אפס דריפט)
+RESUME FROM: M11-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c69 - DONE, מיגרציות ממתינות אומתו מחדש מול git, אפס דריפט מ-M10-c68)
 
 ## המשך מ:
 
-**M09-c69 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
-exports". `git diff --stat c96296cb2..HEAD -- package.json pnpm-lock.yaml
-src/ scripts/ next.config.ts` (בסיס: HEAD של M09-c68) ריק — אפס דריפט קוד
-מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints` הורץ מחדש: 271
-"unused exports" ו-197 "unused exported types", אותם מספרים בדיוק
-כמו M09-c68 — אין מועמד חדש. חמש ה-deps שסומנו (`@radix-ui/react-dropdown-menu`,
-`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
-אומתו מחדש כ-false-positive, `grep` ישיר מצא צרכן אמיתי לכל אחת
-(`src/components/ui/{dropdown-menu,select,form}.tsx`, `src/db/schema/*`,
-`src/server/actions/cart.ts`). ארבעת ה-"duplicate exports" (`BottomTabBarView`/
-`default`, `HERO_CATEGORY_BANNERS`/`CATEGORIES`, `beginCheckoutInputSchema`/
-`createOrderInputSchema`, `MAX_DLQ_ATTEMPTS`/`MAX_REPLAY_ATTEMPTS`) נבדקו
-פרטנית — כולם aliases מכוונים (קבוע/טיפוס אחד מיוצא תחת שני שמות לצרכנים
-שונים), לא קוד מת. "Unused files (201)" ו-`Unlisted binaries (1)` הם
-רעש ידוע של knip ללא `knip.json`: סקריפטים שמופעלים ישירות (`scripts/*.mjs`,
-`load/*.js`), `apps/mobile` (אפליקציית Expo נפרדת), ו-`supabase` כ-CLI
-binary — לא ייבוא סטטי ש-knip עוקב אחריו. אין `knip.json` בריפו (ריצה
-אפמרית בלבד, כמו בכל סבב קודם), ולא נוצר אחד — שינוי קונפיגורציה כזה חורג
-מהיקף הבדיקה החוזרת הזו. אפס הסרה, כי אין מועמד חדש להסיר מעבר למה
-שכבר הוסר ב-M09-c66/M09-c67 (`HERO_ANIMATION_MEDIA`, `dotButtonWidth`).
+**M10-c69 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff --stat 6a1f9caee..HEAD --
+migrations/pending/` (בסיס: קומיט M10-c68, הבדיקה הישירה-מול-פרודקשן
+האחרונה, אותו יום) ריק — אפס קובץ השתנה, אפס נוסף, אפס הוסר.
+`migrations/pending/*.sql` נספר מחדש: 60, זהה. `git log -1 --
+migrations/pending/` עדיין מצביע על `48c8792dd` (248, מ-01.10), מוקדם
+מ-M10-c68. מאחר שה-19 הקבצים נבדקו פרטנית, אובייקט-אובייקט, ישירות מול
+פרודקשן ב-M10-c68 **באותו יום** (לא יום קודם כמו ב-M10-c67 אחרי M10-c66)
+ואין שום שינוי בקוד או במיגרציות מאז, לא נדרשה בדיקה ישירה חדשה מול
+פרודקשן בפריט הזה — התבנית שנקבעה ב-M10-c67 (git-diff-only אחרי בדיקה
+ישירה) חלה כאן בפעם השנייה. ה-19 קבצים (204, 209, 218, 220, 223, 224,
+234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248) נותרים
+לא-מוחלים, אפס דריפט מ-M10-c66/M10-c67/M10-c68. אפס שינוי כסף/סכימה —
+שום מיגרציה לא הוחלה, רק אימות. ארבעת השערים ירוקים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337+12
+מדולגים), `build` exit 0 (`CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3321`). קבצים: `STATE.md`,
+`docs/BACKLOG.md`.
 
-אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
-(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337+12 מדולגים), `build`
-exit 0 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3319`).
-קובץ יחיד: `STATE.md`.
-
-**M08-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c69 לשמירה על תקרת 300 שורות).** M08-c69: Lighthouse mobile על
-`/` ו-`/product` אומת מחדש (`throttling-method=provided`, המתכון התקף),
-100/100/100 בשניהם, אפס דריפט מ-M08-c68. M07-c69: סריקת TODO/FIXME
-אומתה מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c69: `pnpm build`
-אומת מחדש, אפס דריפט. M05-c69: `pnpm test` נמדד
+**M09-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M10-c69 לשמירה על תקרת 300 שורות).** M09-c69: deps/exports מתים
+אומתו מחדש עם `knip`, אותם מספרים בדיוק (271 unused exports, 197 unused
+exported types), אפס דריפט מ-M09-c68, אפס הסרה. M08-c69: Lighthouse
+mobile על `/` ו-`/product` אומת מחדש (`throttling-method=provided`,
+המתכון התקף), 100/100/100 בשניהם, אפס דריפט מ-M08-c68. M07-c69: סריקת
+TODO/FIXME אומתה מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c69:
+`pnpm build` אומת מחדש, אפס דריפט. M05-c69: `pnpm test` נמדד
 מחדש, אפס דריפט. M04-c69: `pnpm type-check`
 נמדד מחדש, אפס דריפט. M03-c69: שער חזותי קטגוריה
 נמדד מחדש מול `refs/electro_shop_{width}.png`, אפס דריפט מ-M03-c68
@@ -223,9 +218,11 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    והמרות של תוכנית השותפים; בלעדיה התוכנית "עדיין לא פתוחה"), 247 (`anon`
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
-   ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. לא הוחל דבר
-   (אושר מחדש מול פרודקשן בפועל ב-M10-c68, 02.10, בדיקה פרטנית לכל 19
-   הקבצים, אפס סחיפה מ-M10-c66/25.09).
+   ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
+   M10-c69 (02.10, git-diff-only מול M10-c68, אותו יום): אפס דריפט, 60
+   קבצים, 19 מתוכם חוסמים, שום דבר לא הוחל.** אושר מחדש מול פרודקשן
+   בפועל ב-M10-c68, 02.10, בדיקה פרטנית לכל 19 הקבצים, אפס סחיפה
+   מ-M10-c66/25.09.
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
 5. **צילומי reference ב-380 וב-768 לסל ולקופה**: קיימים רק ב-1440
