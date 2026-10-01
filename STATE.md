@@ -1,41 +1,48 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q30)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q31)
 
 ## המשך מ:
 
-**Q30 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"עמוד תודה (thank-you): כפתור הורדת חשבונית, קישור wa.me לשיתוף/פנייה על
-ההזמנה". **אינו קיים בתור האמיתי** (`Q30` ב-`docs/QUESTIONS-FOR-OFIR.md`
-הוא פריט לא-קשור — מפת URL/GSC) — אותו דפוס כמו Q25/Q26/Q27/Q28/Q29, נבדק
-לפי הדרישה בפועל.
+**Q31 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"אזור חשבון: הזמנות, השוברים שלי, ארנק, כתובות, הגדרות — מתג app-only".
+**אינו קיים בתור האמיתי** (`Q31` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
+לא-קשור — תמונות picsum/R2/alt) — אותו דפוס כמו Q25-Q30, נבדק לפי הדרישה
+בפועל.
 
-**שני הרכיבים כבר קיימים ונכונים בעמוד התודה, אפס שינוי קוד:**
-1. **כפתור הורדת חשבונית** (`src/components/checkout/InvoiceDownloadLink.tsx`,
-   מורכב ב-`src/app/(store)/checkout/return/page.tsx:224`): קישור לנתיב
-   הורדה חתום ומוגבל-זמן (`signInvoiceLink`/`invoiceDownloadPath`), לא
-   נשלח במייל או בהודעה — נבנה ב-`8853cfa9d feat(invoice)`. אם החשבונית
-   עדיין לא מוכנה מוצג `invoice.pending` במקום קישור שבור.
-2. **קישור wa.me על ההזמנה**: `waChatLink(storeWhatsAppNumber(),
-   buildOrderInquiryText(...))` ב-`return/page.tsx:324-361` — "לעדכונים על
-   ההזמנה דברו איתנו בוואטסאפ", עם שמות הפריטים והסכום ששולם כבר ממולאים
-   בהודעה (`src/lib/whatsapp.ts`). נבנה ב-`4751618f0 feat(checkout,orders):
-   ...wa.me with order details...` (Q08 המקורי). בנוסף, לכל קופון שהוזמן
-   יש קישור שיתוף נפרד (`waShareLink`+`buildCouponShareText`) לשליחה
-   לכל נמען — לא אותו קישור, מכוון: שיתוף קופון לעומת פנייה לחנות על
-   ההזמנה עצמה הם שני צרכים שונים, ושניהם קיימים.
+**המתג "הכל באפליקציה" (app-only) כבר קיים, במקום הנכון בדיוק ולא בשום
+מקום אחר.** `EverythingInAppToggle` (`src/components/notifications/
+EverythingInAppToggle.tsx`) מרונדר רק ב-`/account/notifications`
+(`page.tsx:91`) — עמוד שמשמש גם כ"הגדרות" (מתגי העדפות התראה,
+app-consent, מכשירי פוש), נבנה ב-Q17 (`719fc6dff`). **נבדק בחיפוש ישיר:
+המתג, `app_consent` ו"אפליקציה" נעדרים לחלוטין** מ-`/account/orders`,
+`/account/my-vouchers`, `/account/wallet` ו-`/account/addresses` — אין
+דליפה, כל אחד מהם עוסק בתחום שלו בלבד ואין לו עניין במתג הזה. התלות
+במיגרציה 240 (`app_consent_events`, pending) מטופלת בחן: `loadAppConsent`
+(`src/server/queries/app-consent.ts`) תופס `42P01`/`PGRST205` ומחזיר
+`available:false`, והרכיב מציג "ההגדרה עדיין לא זמינה" במקום שגיאה. **אפס
+שינוי קוד.**
 
-**שער חזותי בחזית, דף התשלום (אין reference ייעודי ל-`/checkout/return`
-ב-`scripts/compare.mjs` — רק `home/product/category/products/search/
-cart/checkout`; `--page=checkout` הוא הקרוב ביותר וכבר שימש ב-Q29 לאותו
-עמוד), נמדד בתוך הריצה הזו** מול `refs/live-checkout.png` (1440 בלבד): 1440
-`0.95%`/`10.52%` overall PASS, זהה בייט-לבייט לתוצאת Q29 — אפס דריפט. 380
-ו-768 REFUSED (capture 1440px בלבד), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+**שער חזותי: אין reference ייעודי לאזור החשבון כלל** ב-`scripts/compare.mjs`
+(רק home/product/category/products/search/cart/checkout), ואין בו שינוי
+UI למדוד ממילא. הופעל לכן על `--page=home` כבדיקת רגרסיה כללית, **ובפעם
+הראשונה `kenyonexpress.co.il` עצמו סורב כ-reference** ("live side is our-build"
+— ה-DNS כבר מצביע לפריסת Vercel שלנו, כך שמדידה מולו משווה בנייה שלנו
+בנייה שלנו, REFUSED אוטומטי, לא PASS שקרי). נמדד מחדש מול ה-reference
+הקפוא `refs/ke_live_{width}.png` (`--baseline`): **380 `8.51%`, 768
+`9.02%`, 1440 `3.95%` — שלושתם PASS, זהה בייט-לבייט לבסיס הידוע (Q25/M05-c65
+ומטה)**, נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
 
 ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
-קבצים, 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת זמני
-על פורט 3312).
+קבצים 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת זמני
+על פורט 3311, cwd מאומת).
 
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
+**Q30 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q31
+לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
+כפתור הורדת חשבונית וקישור wa.me בעמוד התודה כבר קיימים במלואם, אפס שינוי
+קוד. שער חזותי PASS ב-1440 (`0.95%`/`10.52%`), 380/768 REFUSED (reference
+1440 בלבד). ארבעת השערים ירוקים.
 
 **Q29 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q30
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;

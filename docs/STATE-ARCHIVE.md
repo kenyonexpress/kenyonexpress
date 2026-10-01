@@ -2,6 +2,42 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q30 (הועבר מ-STATE.md ב-Q31, לשמירה על תקרת 300 שורות)
+
+**Q30 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"עמוד תודה (thank-you): כפתור הורדת חשבונית, קישור wa.me לשיתוף/פנייה על
+ההזמנה". **אינו קיים בתור האמיתי** (`Q30` ב-`docs/QUESTIONS-FOR-OFIR.md`
+הוא פריט לא-קשור — מפת URL/GSC) — אותו דפוס כמו Q25/Q26/Q27/Q28/Q29, נבדק
+לפי הדרישה בפועל.
+
+**שני הרכיבים כבר קיימים ונכונים בעמוד התודה, אפס שינוי קוד:**
+1. **כפתור הורדת חשבונית** (`src/components/checkout/InvoiceDownloadLink.tsx`,
+   מורכב ב-`src/app/(store)/checkout/return/page.tsx:224`): קישור לנתיב
+   הורדה חתום ומוגבל-זמן (`signInvoiceLink`/`invoiceDownloadPath`), לא
+   נשלח במייל או בהודעה — נבנה ב-`8853cfa9d feat(invoice)`. אם החשבונית
+   עדיין לא מוכנה מוצג `invoice.pending` במקום קישור שבור.
+2. **קישור wa.me על ההזמנה**: `waChatLink(storeWhatsAppNumber(),
+   buildOrderInquiryText(...))` ב-`return/page.tsx:324-361` — "לעדכונים על
+   ההזמנה דברו איתנו בוואטסאפ", עם שמות הפריטים והסכום ששולם כבר ממולאים
+   בהודעה (`src/lib/whatsapp.ts`). נבנה ב-`4751618f0 feat(checkout,orders):
+   ...wa.me with order details...` (Q08 המקורי). בנוסף, לכל קופון שהוזמן
+   יש קישור שיתוף נפרד (`waShareLink`+`buildCouponShareText`) לשליחה
+   לכל נמען — לא אותו קישור, מכוון: שיתוף קופון לעומת פנייה לחנות על
+   ההזמנה עצמה הם שני צרכים שונים, ושניהם קיימים.
+
+**שער חזותי בחזית, דף התשלום (אין reference ייעודי ל-`/checkout/return`
+ב-`scripts/compare.mjs` — רק `home/product/category/products/search/
+cart/checkout`; `--page=checkout` הוא הקרוב ביותר וכבר שימש ב-Q29 לאותו
+עמוד), נמדד בתוך הריצה הזו** מול `refs/live-checkout.png` (1440 בלבד): 1440
+`0.95%`/`10.52%` overall PASS, זהה בייט-לבייט לתוצאת Q29 — אפס דריפט. 380
+ו-768 REFUSED (capture 1440px בלבד), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים, 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת זמני
+על פורט 3312).
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## Q28 (הועבר מ-STATE.md ב-Q30, לשמירה על תקרת 300 שורות)
 
 **Q28 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
