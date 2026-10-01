@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c65 (הועבר מ-STATE.md ב-M08-c65, לשמירה על תקרת 300 שורות)
+
+**M07-c65 - DONE (01.10): route audit נמדד שוב במלואו מול בנייה טריה,
+אפס כשל אמיתי.** משימת התור: לבקש כל route באפליקציה, לצפות ל-200 או
+redirect מכוון, אפס שגיאת קונסול, אפס אזהרת hydration, RTL נכון בכל דף,
+לתקן מה שנכשל.
+
+**שינוי קוד אמיתי מאז המדידה הקודמת (M07-c64, `809e1940f`):** `git diff
+--stat 809e1940f..HEAD -- src/app src/components src/lib` הראה בדיוק את
+אותו דריפט שתואר ב-M06-c65 (M18-c64, שורת דירוג כוכבים על רצועות ה-CMS
+של דף הבית) — נבדק ידנית: `ProductCard.tsx` הוא `'use client'` אבל לא
+מכיל `toLocale`/`Intl`/עיצוב תלוי-אזור, ו-`rails.ts` משתמש ב-`new Date()`
+רק למיון בצד שרת, לא לרינדור טקסט — אפס סיכון hydration מהסוג שנמצא
+ב-M07-c1 (אזורי זמן). המדידה הורצה במלואה מחדש בכל זאת, לא הונח "אפס
+דריפט".
+
+אותו מתכון כמו M07-c1..M07-c64: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3533 pnpm build` → exit 0; `pnpm
+start -p 3533`, `curl` אישר `200` על `/` ועל `/product/barbecue-2`.
+`e2e/route-audit.spec.ts` רץ בשישה חלקים בפורגראונד (כל חלק עד שהתהליך
+נגמר, לא ברקע): `anon /` (59 עברו), `GET /|supplier|anon dynamic` (83
+עברו), `customer` (25 עברו), `admin /admin$|admin/(a|b|c|d)` (23 עברו),
+`admin/(f|g|h|i|o|p|q|r)` (20 עברו), `admin/(s|u|v|w)|admin detail
+pages` (16 עברו) — סה"כ 226 טסטים, כולם ירוקים. `ROUTE_AUDIT_REPORT`
+אוחד לקובץ אחד: **242 שורות (241 ייחודיות אחרי dedupe), 239 PASS + 2 NO
+DATA, 0 FAIL, 0 SKIPPED, אפס `consoleErrors`, אפס `hydrationWarnings`,
+אפס `rtl:false`.** שתי שורות ה-NO DATA זהות ל-M07-c64: `customer
+/account/tickets/[id]` ו-`admin /admin/discounts/[id]` (עמוד הרשימה לא
+מקשר לאף שורה). **אין תיקון קוד נדרש.** השרת נעצר, הפורט אומת פנוי מחדש,
+קבצי הפלט הזמניים נמחקו.
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
+זהה ל-M06-c65). `test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים),
+זהה ל-M06-c65. `build` רץ בפועל לעיל עבור המדידה עצמה, "Compiled
+successfully", exit 0. אין שינוי UI, `scripts/compare.mjs` לא רץ (אין
+עריכת קוד; תואם לתקדים בכל פריטי route audit הקודמים).
+
+קבצים ששונו: `STATE.md`.
+
 ## M06-c65 (הועבר מ-STATE.md ב-M07-c65, לשמירה על תקרת 300 שורות)
 
 **M06-c65 - DONE (01.10): Lighthouse mobile נמדד שוב, כל שמונת הציונים

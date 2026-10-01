@@ -1,44 +1,44 @@
-RESUME FROM: M08-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c65)
+RESUME FROM: M09-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c65)
 
 ## המשך מ:
 
-**M07-c65 - DONE (01.10): route audit נמדד שוב במלואו מול בנייה טריה,
-אפס כשל אמיתי.** משימת התור: לבקש כל route באפליקציה, לצפות ל-200 או
-redirect מכוון, אפס שגיאת קונסול, אפס אזהרת hydration, RTL נכון בכל דף,
-לתקן מה שנכשל.
+**M08-c65 - BACKLOG EMPTY (01.10).** משימת התור: לקחת מ-`docs/BACKLOG.md`
+את פריט ה-Phase 1 הפתוח בעל ההשפעה הגבוהה ביותר, לדלג על נדחים ו-Phase 2,
+ולממש אותו במלואו עם טסטים.
 
-**שינוי קוד אמיתי מאז המדידה הקודמת (M07-c64, `809e1940f`):** `git diff
---stat 809e1940f..HEAD -- src/app src/components src/lib` הראה בדיוק את
-אותו דריפט שתואר ב-M06-c65 (M18-c64, שורת דירוג כוכבים על רצועות ה-CMS
-של דף הבית) — נבדק ידנית: `ProductCard.tsx` הוא `'use client'` אבל לא
-מכיל `toLocale`/`Intl`/עיצוב תלוי-אזור, ו-`rails.ts` משתמש ב-`new Date()`
-רק למיון בצד שרת, לא לרינדור טקסט — אפס סיכון hydration מהסוג שנמצא
-ב-M07-c1 (אזורי זמן). המדידה הורצה במלואה מחדש בכל זאת, לא הונח "אפס
-דריפט".
-
-אותו מתכון כמו M07-c1..M07-c64: `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3533 pnpm build` → exit 0; `pnpm
-start -p 3533`, `curl` אישר `200` על `/` ועל `/product/barbecue-2`.
-`e2e/route-audit.spec.ts` רץ בשישה חלקים בפורגראונד (כל חלק עד שהתהליך
-נגמר, לא ברקע): `anon /` (59 עברו), `GET /|supplier|anon dynamic` (83
-עברו), `customer` (25 עברו), `admin /admin$|admin/(a|b|c|d)` (23 עברו),
-`admin/(f|g|h|i|o|p|q|r)` (20 עברו), `admin/(s|u|v|w)|admin detail
-pages` (16 עברו) — סה"כ 226 טסטים, כולם ירוקים. `ROUTE_AUDIT_REPORT`
-אוחד לקובץ אחד: **242 שורות (241 ייחודיות אחרי dedupe), 239 PASS + 2 NO
-DATA, 0 FAIL, 0 SKIPPED, אפס `consoleErrors`, אפס `hydrationWarnings`,
-אפס `rtl:false`.** שתי שורות ה-NO DATA זהות ל-M07-c64: `customer
-/account/tickets/[id]` ו-`admin /admin/discounts/[id]` (עמוד הרשימה לא
-מקשר לאף שורה). **אין תיקון קוד נדרש.** השרת נעצר, הפורט אומת פנוי מחדש,
-קבצי הפלט הזמניים נמחקו.
+`docs/BACKLOG.md` נבדק מול `git log 8d3abea1e..HEAD`: עדיין 15 פריטים,
+אותו סדר, אפס כפילות, אפס פריט חדש. `git diff --stat 8d3abea1e..HEAD --
+docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
+src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
+vercel.json supabase/ scripts/cron-jobs.json` הראה רק את רשומת ה-re-check
+של M15-c64 עצמה (`docs/BACKLOG.md`) ואת שבעת קומיטי האימות-מחדש
+(M09-c64..M07-c65) — אפס שינוי בשורת חסימה, במיגרציה ממתינה, או בפנקס
+הקטלוג. **כל חמשה-עשר הפריטים נשארים פעולות שההקדמה של הקובץ עצמו שוללת
+מסוכן לבצע לבד** (DNS, סודות/env ב-Vercel, אישור פריסה/מיגרציה לפרודקשן,
+הכרעה עסקית על הקטלוג, מחיקת נתונים — ראו `CLAUDE.md` ותנאי העצירה).
+ספירות נבדקו ישירות: `migrations/pending/*.sql` 59, `git stash list` 32,
+`supabase/catalogue-known-issues.json`'s `known` object 26 — זהים
+ל-M15-c64. ספירת הקומיטים מאחורי פרודקשן עלתה שוב (281 → 292, `git
+rev-list --count a388118f1..HEAD`, git בלבד, פרודקשן לא נבדק מחדש בפריט
+הזה). `scripts/dns-watch.sh` רץ עדיין (pid 976 הפעם, היה 957 — כנראה
+אותחל מחדש בין הפריטים, לא נמדד מתי; עדיין תחת `caffeinate`).
 
 **שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
-זהה ל-M06-c65). `test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים),
-זהה ל-M06-c65. `build` רץ בפועל לעיל עבור המדידה עצמה, "Compiled
-successfully", exit 0. אין שינוי UI, `scripts/compare.mjs` לא רץ (אין
-עריכת קוד; תואם לתקדים בכל פריטי route audit הקודמים).
+`docs-path-audit` 154, `docs-index` 282, `i18n` 627 — זהים ל-M15-c64).
+`test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים). `build` רץ בפועל
+(`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3533 pnpm build`) — "Compiled successfully", exit 0. אין שינוי
+קוד, `scripts/compare.mjs` לא רץ (אין עריכת UI).
 
-קבצים ששונו: `STATE.md`.
+קבצים ששונו: `STATE.md`, `docs/BACKLOG.md`.
+
+**M07-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c65
+לשמירה על תקרת 300 שורות).** route audit נמדד שוב במלואו מול בנייה טריה
+(`rm -rf .next` + build + `pnpm start`): 226 טסטי Playwright בשישה חלקים
+בפורגראונד, כולם ירוקים; `ROUTE_AUDIT_REPORT` מאוחד — 242 שורות, 239 PASS
++ 2 NO DATA (זהות ל-M07-c64), 0 FAIL, אפס `consoleErrors`/
+`hydrationWarnings`/`rtl:false`. אין תיקון קוד נדרש. ארבעת השערים ירוקים.
 
 **M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M07-c65
 לשמירה על תקרת 300 שורות).** Lighthouse mobile נמדד שוב מול בנייה טריה
