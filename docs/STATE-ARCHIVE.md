@@ -2,6 +2,58 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c65 (הועבר מ-STATE.md ב-M14-c65, לשמירה על תקרת 300 שורות)
+
+**M13-c65 - DONE (01.10): אבטחה נבדקה מחדש מאפס (לא הוסתמכה על טענת
+M13-c64), אפס דריפט, אפס תיקון קוד נדרש.** משימת התור: "Security
+headers and limits: verify CSP, HSTS, X-Frame-Options, Referrer-Policy,
+Upstash rate limits on login, checkout and redeem. Fix gaps with tests."
+
+**בדיקת דריפט מול המדידה הקודמת (M13-c64, `53958e3bf`):** `git log
+53958e3bf..HEAD -- src/ e2e/ messages/ packages/ next.config.ts
+middleware.ts` הראה קומיט יחיד, `857a0deea` (M18-c64, שורת דירוג כוכבים
+ברצועות ה-CMS של דף הבית) — נבדק בפירוט ואינו נוגע לכותרות אבטחה או
+למגבלות קצב כלל. אפס דריפט אפשרי מהקומיט הזה בסקופ השער הזה.
+
+**ארבע הכותרות נבדקו ישירות ב-`next.config.ts:43-160` + `src/lib/
+security/frame-policy.ts`, כל אחת PASS:** `Content-Security-Policy`
+(דינמי לפי נתיב, שני מקורות שאינם חופפים כדי שלא יתווספו שתי כותרות
+CSP על אותו נתיב — frame-ancestors מחמיר ל-Cardcom frame-return/scan
+בלבד). `Strict-Transport-Security: max-age=63072000; includeSubDomains;
+preload`. `X-Frame-Options` (`DENY` כברירת מחדל, `SAMEORIGIN` רק על שני
+נתיבי ה-Cardcom frame). `Referrer-Policy: strict-origin-when-cross-origin`.
+בנוסף (לא נדרש אך קיים): `X-Content-Type-Options: nosniff`,
+`Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`,
+`Permissions-Policy` דינמי.
+
+**מגבלות הקצב של Upstash נבדקו בקוד עצמו, לא בתיעוד, שלושתן PASS:**
+טבלת המדיניות ב-`src/lib/rate-limit/policies.ts` מחזיקה שורה לכל אחד
+(`login`/`login-account`, `begin_checkout`, `redeem`), ונבדק שגם נקודת
+הקריאה בפועל תואמת למספרים בטבלה:
+1. **login** — `src/server/actions/auth.ts:141` `checkRateLimit('login:${ip}')`
+   (ברירת המחדל של הפונקציה תואמת ל-10/3600 בטבלה) + `login-account`
+   בשורה 157 לפי אימייל, 20/3600 — הגנה כפולה IP+חשבון.
+2. **begin_checkout** — `src/server/actions/payments/checkout.ts:351`
+   `checkRateLimit('begin_checkout:user:${user.id}', 10, 60)`, תואם
+   בדיוק לטבלה (10 יצירות Cardcom low-profile בדקה, לפי משתמש).
+3. **redeem** — `src/app/redeem/[token]/page.tsx:109`
+   `checkRateLimit('redeem:${scanContext.ip}', 60, 3600)`, תואם בדיוק
+   לטבלה (דף מימוש פונה-לקוח, לפי IP). (השובר של הדוכן הספק,
+   `voucher-redeem`, מגבלה נפרדת ב-120/3600 לפי משתמש ספק — לא אותו
+   נתיב, נבדק גם הוא תואם.)
+
+**אפס פער נמצא, ולכן אפס טסט נוסף נכתב** — שלושים קבצי טסט קיימים כבר
+מכסים את השכבה הזו (`frame-policy.test.ts`,
+`frame-policy-matches-provider.test.ts`, `csp-turnstile.test.ts`,
+`limiter.test.ts`, `utils/rate-limit.test.ts`, `auth.test.ts`,
+`checkout.test.ts`, ועוד), כולל טסט מלאי שמוודא שכל קריאה בקוד תואמת
+לטבלת המדיניות (ראו ההערה ב-`policies.ts` על `legacyRedisKey`).
+
+**שערים, כולם בפורגראונד:** `type-check`/`lint` נקיים. טסטים ממוקדים
+(אבטחה+rate-limit, 19 קבצים) 228/228. `test` מלא 610/610 קבצים, 7298
+עברו + 12 דולגו בכוונה. `build` (`rm -rf .next` קודם) exit 0. אין שינוי
+UI, `scripts/compare.mjs` לא רץ (לא פריט חזותי).
+
 ## M12-c65 (הועבר מ-STATE.md ב-M13-c65, לשמירה על תקרת 300 שורות)
 
 **M12-c65 - DONE (01.10): SEO נבדק מחדש מאפס (לא הוסתמך על טענת
