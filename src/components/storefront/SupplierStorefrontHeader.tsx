@@ -1,5 +1,7 @@
 import VerifiedSupplierBadge from '@/components/storefront/VerifiedSupplierBadge'
+import { t } from '@/lib/i18n/messages'
 import { isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { googleReviewsHref } from '@/lib/pricing/original-price-source'
 import { buildSupplierContact } from '@/lib/supplier-contact'
 import type { SupplierStorefront } from '@/lib/supplier-storefront'
 import Image from 'next/image'
@@ -42,6 +44,9 @@ export default function SupplierStorefrontHeader({ supplier }: { supplier: Suppl
     supplier ? { ...supplier, contact_phone: supplier.contactPhone } : null,
   )
   const logo = supplier.logoUrl && isAllowedImageUrl(supplier.logoUrl) ? supplier.logoUrl : null
+  // Refuses every host that is not Google's, same validator the product page
+  // runs `suppliers.google_reviews_url` through.
+  const reviewsHref = googleReviewsHref(supplier.googleReviewsUrl)
 
   return (
     <header className="mb-6 flex items-start gap-4">
@@ -93,6 +98,25 @@ export default function SupplierStorefrontHeader({ supplier }: { supplier: Suppl
                 וואטסאפ
               </a>
             ) : null}
+          </p>
+        ) : null}
+        {supplier.openingHours ? (
+          <p className="text-sm text-black/60">
+            <span className="font-medium text-heading">{t('pdp.openingHours')}: </span>
+            {supplier.openingHours}
+          </p>
+        ) : null}
+        {reviewsHref ? (
+          <p className="text-sm">
+            <a
+              href={reviewsHref}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              data-testid="supplier-google-reviews"
+              className="text-brand-dark underline"
+            >
+              {t('pdp.googleReviews')}
+            </a>
           </p>
         ) : null}
       </div>

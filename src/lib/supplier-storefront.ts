@@ -1,6 +1,15 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { createPublicClient } from '@/lib/supabase/anon'
+import {
+  SUPPLIER_GOOGLE_REVIEWS_COLUMNS,
+  SUPPLIER_OPENING_HOURS_COLUMNS,
+  SUPPLIER_STOREFRONT_HOURS_HINT,
+  SUPPLIER_STOREFRONT_REVIEWS_HINT,
+  type SupplierGoogleReviewsRow,
+  type SupplierOpeningHoursRow,
+  readOptionalColumns,
+} from '@/lib/supabase/optional-columns'
 import { readSupplierVerification } from '@/lib/suppliers/verification-read'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -50,6 +59,18 @@ export type SupplierStorefront = {
    * than a wrong one.
    */
   verified?: boolean
+  /**
+   * Free-text Hebrew opening hours. Column pending 232; probed via
+   * `readOptionalColumns`, so null means either "not filled in" or "232 not
+   * applied yet" -- both render as nothing, which is correct either way.
+   */
+  openingHours: string | null
+  /**
+   * The supplier's Google reviews page, raw. Column pending 242. Run through
+   * `googleReviewsHref` (lib/pricing/original-price-source.ts) before it
+   * becomes a link, which refuses every host that is not Google's.
+   */
+  googleReviewsUrl: string | null
 }
 
 export type SupplierStorefrontProduct = {
@@ -81,11 +102,23 @@ export async function loadSupplierStorefront(id: string): Promise<SupplierStoref
     { id },
   )
   if (!row || row.status !== 'active' || row.deleted_at) return null
-  const verification = await readSupplierVerification({
-    id: row.id,
-    status: row.status,
-    deleted_at: row.deleted_at,
-  })
+  const [verification, hours, reviews] = await Promise.all([
+    readSupplierVerification({ id: row.id, status: row.status, deleted_at: row.deleted_at }),
+    readOptionalColumns<SupplierOpeningHoursRow>(
+      (select, ids) => supabase.from('suppliers').select(select).in('id', ids) as never,
+      SUPPLIER_OPENING_HOURS_COLUMNS,
+      [row.id],
+      'supplier storefront (opening hours)',
+      SUPPLIER_STOREFRONT_HOURS_HINT,
+    ),
+    readOptionalColumns<SupplierGoogleReviewsRow>(
+      (select, ids) => supabase.from('suppliers').select(select).in('id', ids) as never,
+      SUPPLIER_GOOGLE_REVIEWS_COLUMNS,
+      [row.id],
+      'supplier storefront (google reviews)',
+      SUPPLIER_STOREFRONT_REVIEWS_HINT,
+    ),
+  ])
   return {
     id: row.id,
     name: row.name,
@@ -95,6 +128,8 @@ export async function loadSupplierStorefront(id: string): Promise<SupplierStoref
     contactPhone: row.contact_phone,
     whatsapp: row.whatsapp,
     verified: verification.verified,
+    openingHours: hours.get(row.id)?.opening_hours ?? null,
+    googleReviewsUrl: reviews.get(row.id)?.google_reviews_url ?? null,
   }
 }
 

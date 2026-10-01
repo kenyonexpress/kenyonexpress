@@ -25,6 +25,8 @@ const BASE: SupplierStorefront = {
   address: null,
   contactPhone: null,
   whatsapp: null,
+  openingHours: null,
+  googleReviewsUrl: null,
 }
 
 function render(overrides: Partial<SupplierStorefront> = {}): string {
@@ -87,5 +89,26 @@ describe('SupplierStorefrontHeader', () => {
     const html = render({ verified: true })
     expect(html).toContain('data-testid="supplier-verified"')
     expect(html).toContain('ספק מאומת')
+  })
+
+  it('renders opening hours when the loader has them, and nothing when it does not', () => {
+    expect(render()).not.toContain('שעות פתיחה')
+    const html = render({ openingHours: 'א-ה 09:00-18:00' })
+    expect(html).toContain('שעות פתיחה')
+    expect(html).toContain('א-ה 09:00-18:00')
+  })
+
+  it('links Google reviews only for a URL on a Google host', () => {
+    expect(render()).not.toContain('supplier-google-reviews')
+    const html = render({ googleReviewsUrl: 'https://g.page/r/example/review' })
+    expect(html).toContain('data-testid="supplier-google-reviews"')
+    expect(html).toContain('ביקורות בגוגל')
+    expect(html).toContain('https://g.page/r/example/review')
+  })
+
+  it('refuses a reviews URL on a host that is not Google, same as the product page', () => {
+    const html = render({ googleReviewsUrl: 'https://not-google.example/reviews' })
+    expect(html).not.toContain('supplier-google-reviews')
+    expect(html).not.toContain('not-google.example')
   })
 })

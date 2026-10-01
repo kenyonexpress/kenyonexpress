@@ -1,61 +1,65 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q31)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q32)
 
 ## המשך מ:
 
-**Q31 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"אזור חשבון: הזמנות, השוברים שלי, ארנק, כתובות, הגדרות — מתג app-only".
-**אינו קיים בתור האמיתי** (`Q31` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
-לא-קשור — תמונות picsum/R2/alt) — אותו דפוס כמו Q25-Q30, נבדק לפי הדרישה
-בפועל.
+**Q32 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"דף ספק: פרטים, שעות, מפה, רשימת דילים, קישור ביקורות גוגל, כפתורי wa.me".
+**אינו קיים בתור האמיתי** (`Q32` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
+לא-קשור — seed מול קטלוג חי) — אותו דפוס כמו Q25-Q31, נבדק לפי ששת
+הסעיפים בפועל מול `/s/[id]`.
 
-**המתג "הכל באפליקציה" (app-only) כבר קיים, במקום הנכון בדיוק ולא בשום
-מקום אחר.** `EverythingInAppToggle` (`src/components/notifications/
-EverythingInAppToggle.tsx`) מרונדר רק ב-`/account/notifications`
-(`page.tsx:91`) — עמוד שמשמש גם כ"הגדרות" (מתגי העדפות התראה,
-app-consent, מכשירי פוש), נבנה ב-Q17 (`719fc6dff`). **נבדק בחיפוש ישיר:
-המתג, `app_consent` ו"אפליקציה" נעדרים לחלוטין** מ-`/account/orders`,
-`/account/my-vouchers`, `/account/wallet` ו-`/account/addresses` — אין
-דליפה, כל אחד מהם עוסק בתחום שלו בלבד ואין לו עניין במתג הזה. התלות
-במיגרציה 240 (`app_consent_events`, pending) מטופלת בחן: `loadAppConsent`
-(`src/server/queries/app-consent.ts`) תופס `42P01`/`PGRST205` ומחזיר
-`available:false`, והרכיב מציג "ההגדרה עדיין לא זמינה" במקום שגיאה. **אפס
-שינוי קוד.**
+**שלושה מתוך שישה היו קיימים במלואם, אפס שינוי:** פרטי ספק (שם, לוגו,
+תג מאומת), רשימת דילים/מוצרים (`SupplierProductGrid`, מדף 24), וכפתורי
+‏wa.me (`SupplierStorefrontHeader`, `buildSupplierContact`). **"מפה" ממומשת
+כקישור Waze** (`contact.wazeHref`), לא כ-iframe משובץ — אותה מוסכמה
+בדיוק שדף המוצר ועמוד השובר כבר משתמשים בה (`docs/BUSINESS-MODEL.md` §2,
+"כתובת + Waze"), ולא נבנה embed ספקולטיבי בלי spec.
 
-**שער חזותי: אין reference ייעודי לאזור החשבון כלל** ב-`scripts/compare.mjs`
-(רק home/product/category/products/search/cart/checkout), ואין בו שינוי
-UI למדוד ממילא. הופעל לכן על `--page=home` כבדיקת רגרסיה כללית, **ובפעם
-הראשונה `kenyonexpress.co.il` עצמו סורב כ-reference** ("live side is our-build"
-— ה-DNS כבר מצביע לפריסת Vercel שלנו, כך שמדידה מולו משווה בנייה שלנו
-בנייה שלנו, REFUSED אוטומטי, לא PASS שקרי). נמדד מחדש מול ה-reference
-הקפוא `refs/ke_live_{width}.png` (`--baseline`): **380 `8.51%`, 768
-`9.02%`, 1440 `3.95%` — שלושתם PASS, זהה בייט-לבייט לבסיס הידוע (Q25/M05-c65
-ומטה)**, נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+**שני סעיפים חסרו בפועל ונבנו: שעות פתיחה וקישור ביקורות גוגל.** שתי
+העמודות כבר קיימות כ-`ADD COLUMN` בקבצים ממתינים (`opening_hours` ב-232,
+`google_reviews_url` ב-242), אבל אף אחת מהן לא הייתה קריאה דרך הדף הציבורי
+הזה — ‏242 אפילו כתב במפורש שלא הוסיף grant ל-anon כי קורא אותה אז היה דף
+המוצר (service client). `/s/[id]` קורא עם `createPublicClient()` (מפתח
+anon), אז `GRANT` על עמודת service-client לא מספיק. **נכתב קובץ מיגרציה
+שלישי, `248_supplier_storefront_public_columns_grant.sql`**: שתי שורות
+`GRANT SELECT (col) ... TO anon, authenticated`, בלי לגעת ב-232/242 עצמם
+(סשנים מקבילים), עם "סדר: אחרי 232 ואחרי 242" מתועד. הקריאה עצמה עוברת
+דרך `readOptionalColumns` הקיים (`SUPPLIER_OPENING_HOURS_COLUMNS`,
+`SUPPLIER_GOOGLE_REVIEWS_COLUMNS`, שתיהן ב-`optional-columns.ts`), אז
+`42703` (232/242 לא הוחלו) נרשם פעם אחת ונקרא כ-NULL — הדף מציג היום בלי
+שעות ובלי קישור, בדיוק מה שנמדד בבנייה המקומית (אזהרת `db.optional_
+column_missing` פעמיים, אפס שגיאה). קישור הביקורות עובר דרך `googleReviewsHref`
+הקיים (מסרב כל host שאינו גוגל), אותו ולידטור שדף המוצר כבר משתמש בו.
+טקסט חדש דרך `messages/he.json`/`en.json` (`pdp.openingHours`), לא הארדקוד —
+שער ה-i18n נשאר על התקרה (627).
 
-ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
-קבצים 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת זמני
-על פורט 3311, cwd מאומת).
+שלושת השערים שחסרו עדכון: `pending-migrations-inventory.test.ts` (שורה
+לכל רשימה ל-248), `migrations/pending/README.md` (רשומה חדשה). ארבעת
+השערים ירוקים: type-check נקי, lint נקי, test 610/610 קבצים 7303/7315
+(610 ↑0, 7303 ↑2), `rm -rf .next && pnpm build` נקי (אפס שגיאה, רק אזהרות
+`optional_column_missing` הצפויות). שער חזותי PASS בשלושת הרוחבים, זהה
+בייט-לבייט לבסיס Q31 (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
+{width}.png`), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md` — צפוי, כי
+השינוי נוגע רק ב-`/s/[id]`, לא בדף הבית.
 
-קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+קבצים ששונו: `src/lib/supplier-storefront.ts`, `src/components/storefront/
+SupplierStorefrontHeader.tsx` (+test), `src/lib/supabase/optional-columns.ts`,
+`messages/he.json`, `messages/en.json`, `migrations/pending/
+248_supplier_storefront_public_columns_grant.sql` (חדש),
+`migrations/pending/README.md`, `src/__tests__/pending-migrations-
+inventory.test.ts`, `docs/UI-PARITY-REPORT.md`, `STATE.md`.
 
-**Q30 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q31
-לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
-כפתור הורדת חשבונית וקישור wa.me בעמוד התודה כבר קיימים במלואם, אפס שינוי
-קוד. שער חזותי PASS ב-1440 (`0.95%`/`10.52%`), 380/768 REFUSED (reference
-1440 בלבד). ארבעת השערים ירוקים.
-
-**Q29 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q30
-לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
-guest checkout עם Google sign-in בלחיצת "לתשלום" ושמירת כרטיס מטוקניז
-(`save_card`) כבר קיימים במלואם, אפס שינוי קוד. שער חזותי PASS ב-1440
-(`0.95%`/`10.52%`), 380/768 REFUSED (reference 1440 בלבד). ארבעת השערים
-ירוקים.
-
-**Q28 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q30
-לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
-עריכת שורה, קוד קופון בסל כבר קיימים, מתג ארנק נכון שלא קיים בסל (שייך
-לקופה בכוונה). שער חזותי PASS ב-1440 (`1.47%`), 380/768 REFUSED
-(reference 1440 בלבד). ארבעת השערים ירוקים.
+**Q28..Q31 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q32
+לשמירה על תקרת 300 שורות).** ארבעה פריטים חיצוניים חד-פעמיים, אף אחד לא
+בתור האמיתי, כולם "כבר בנוי, אפס שינוי קוד": Q31 — מתג "הכל באפליקציה"
+ב-`/account/notifications`, שער חזותי PASS בשלושת הרוחבים (8.51/9.02/3.95%,
+`kenyonexpress.co.il` נסרב כ-reference בפעם הראשונה, נמדד מול `refs/ke_live_
+{width}.png`). Q30 — כפתור הורדת חשבונית וקישור wa.me בעמוד התודה. Q29 —
+guest checkout עם Google sign-in ושמירת כרטיס מטוקניז. Q28 — עריכת שורה
+וקוד קופון בסל, מתג ארנק נכון שלא קיים בסל (שייך לקופה בכוונה). Q28-Q30:
+שער חזותי PASS ב-1440 בלבד (0.95-1.47%), 380/768 REFUSED (reference 1440
+בלבד). ארבעת השערים ירוקים בכל הארבעה.
 
 **Q27 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q29
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;

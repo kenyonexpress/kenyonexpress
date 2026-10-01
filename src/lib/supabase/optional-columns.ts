@@ -246,6 +246,31 @@ export type SupplierGoogleReviewsRow = {
 export const MIGRATION_242_HINT =
   'apply migrations/pending/242_product_price_source_google_reviews.sql. The page shows no price source and no Google reviews link until then.'
 
+/**
+ * The one column 232 adds to `suppliers`: free-text Hebrew opening hours,
+ * capped at 300 characters by its own CHECK.
+ */
+export const SUPPLIER_OPENING_HOURS_COLUMNS = ['opening_hours'] as const
+
+export type SupplierOpeningHoursRow = {
+  id: string
+  opening_hours: string | null
+}
+
+/**
+ * The supplier storefront (`/s/[id]`) reads both this column and
+ * `google_reviews_url` through the ANON client, unlike the product page,
+ * which reads `suppliers` through the service client and so never needed a
+ * grant. Probed, not named in the main select, for the same reason as every
+ * other pair here: naming an absent column 42703s the whole row and the page
+ * would 404 for every supplier until 232 is applied.
+ */
+export const SUPPLIER_STOREFRONT_HOURS_HINT =
+  'apply migrations/pending/232_supplier_self_service.sql then migrations/pending/248_supplier_storefront_public_columns_grant.sql. The supplier page shows no opening hours until both land.'
+
+export const SUPPLIER_STOREFRONT_REVIEWS_HINT =
+  'apply migrations/pending/242_product_price_source_google_reviews.sql then migrations/pending/248_supplier_storefront_public_columns_grant.sql. The supplier page shows no Google reviews link until both land.'
+
 /** The two columns migration 054 adds to `products`. */
 export const COUPON_054_COLUMNS = ['coupon_price_ils', 'offer_valid_until'] as const
 

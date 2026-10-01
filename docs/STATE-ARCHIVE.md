@@ -2,6 +2,43 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q31 (הועבר מ-STATE.md ב-Q32, לשמירה על תקרת 300 שורות)
+
+**Q31 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"אזור חשבון: הזמנות, השוברים שלי, ארנק, כתובות, הגדרות — מתג app-only".
+**אינו קיים בתור האמיתי** (`Q31` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
+לא-קשור — תמונות picsum/R2/alt) — אותו דפוס כמו Q25-Q30, נבדק לפי הדרישה
+בפועל.
+
+**המתג "הכל באפליקציה" (app-only) כבר קיים, במקום הנכון בדיוק ולא בשום
+מקום אחר.** `EverythingInAppToggle` (`src/components/notifications/
+EverythingInAppToggle.tsx`) מרונדר רק ב-`/account/notifications`
+(`page.tsx:91`) — עמוד שמשמש גם כ"הגדרות" (מתגי העדפות התראה,
+app-consent, מכשירי פוש), נבנה ב-Q17 (`719fc6dff`). **נבדק בחיפוש ישיר:
+המתג, `app_consent` ו"אפליקציה" נעדרים לחלוטין** מ-`/account/orders`,
+`/account/my-vouchers`, `/account/wallet` ו-`/account/addresses` — אין
+דליפה, כל אחד מהם עוסק בתחום שלו בלבד ואין לו עניין במתג הזה. התלות
+במיגרציה 240 (`app_consent_events`, pending) מטופלת בחן: `loadAppConsent`
+(`src/server/queries/app-consent.ts`) תופס `42P01`/`PGRST205` ומחזיר
+`available:false`, והרכיב מציג "ההגדרה עדיין לא זמינה" במקום שגיאה. **אפס
+שינוי קוד.**
+
+**שער חזותי: אין reference ייעודי לאזור החשבון כלל** ב-`scripts/compare.mjs`
+(רק home/product/category/products/search/cart/checkout), ואין בו שינוי
+UI למדוד ממילא. הופעל לכן על `--page=home` כבדיקת רגרסיה כללית, **ובפעם
+הראשונה `kenyonexpress.co.il` עצמו סורב כ-reference** ("live side is our-build"
+— ה-DNS כבר מצביע לפריסת Vercel שלנו, כך שמדידה מולו משווה בנייה שלנו
+בנייה שלנו, REFUSED אוטומטי, לא PASS שקרי). נמדד מחדש מול ה-reference
+הקפוא `refs/ke_live_{width}.png` (`--baseline`): **380 `8.51%`, 768
+`9.02%`, 1440 `3.95%` — שלושתם PASS, זהה בייט-לבייט לבסיס הידוע (Q25/M05-c65
+ומטה)**, נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
+
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים 7300/7312 (זהה לבסיס), `rm -rf .next && pnpm build` נקי (שרת זמני
+על פורט 3311, cwd מאומת).
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
 ## Q30 (הועבר מ-STATE.md ב-Q31, לשמירה על תקרת 300 שורות)
 
 **Q30 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**

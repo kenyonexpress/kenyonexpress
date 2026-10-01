@@ -1,5 +1,26 @@
 # `migrations/pending/`
 
+## 2026-10-01: 248 WRITTEN, not applied - גרנט אחד, הדף הציבורי `/s/[id]` קורא שעות פתיחה וביקורות גוגל במפתח ה-anon
+
+‏`248_supplier_storefront_public_columns_grant.sql`. ‏Q32. דף הספק הציבורי
+(`src/lib/supplier-storefront.ts`, `/s/[id]`) נקרא בתוספת שתי עמודות:
+‏`suppliers.opening_hours` (232, ממתינה) ו-`suppliers.google_reviews_url`
+(242, ממתינה). שתיהן כבר ‏`ADD COLUMN` בקבצים שלהן, אבל אף אחת מהן לא
+קיבלה הרשאת ‏anon: ‏242 כתב במפורש ש-`suppliers` נקראת שם דרך ה-service
+client (דף המוצר), ולכן לא נוסף grant. הדף הזה שונה — `loadSupplierStorefront`
+קורא עם `createPublicClient()` (מפתח ה-anon), כי העמוד `'use cache'` ומתויג
+כמו ארכיון הקטגוריה. עמודה שקיימת בלי grant ל-anon נכשלת ב-`42501`
+(permission denied), וזה **לא** הקוד ש-`readOptionalColumns` מתרגם ל"חסר";
+הוא תופס רק `42703`. **הקובץ הזה הוא חצי ה-grant בלבד**, שתי שורות
+‏`GRANT SELECT (col) ON public.suppliers TO anon, authenticated;`, לא נוגע
+בקובץ ‏232 או ‏242 עצמם (סשנים מקבילים עובדים על הריפו, עריכת קובץ ממתין
+קיים מסוכנת יותר מקובץ חדש). **סדר: אחרי 232 ואחרי 242** — grant על עמודה
+שלא קיימת הוא שגיאה קשה ב-Postgres, לא no-op. **הקוד רץ בלעדיה**: שתי
+הקריאות עוברות דרך `readOptionalColumns` (`SUPPLIER_OPENING_HOURS_COLUMNS`,
+`SUPPLIER_GOOGLE_REVIEWS_COLUMNS`), אז ‏42703 (232/242 לא הוחלו) נרשם פעם
+אחת ונקרא כ-NULL — הדף מציג בלי שעות ובלי קישור ביקורות עד שהשתיים יוחלו
+**וגם** הקובץ הזה. לא הורצה BEGIN/ROLLBACK מול פרודקשן בסשן הזה.
+
 ## 2026-09-29: 247 WRITTEN, not applied - `anon` בלי אף הרשאה על `reviews`, כל קריאה ציבורית 401
 
 ‏`247_reviews_grant_anon_select.sql`. ‏M18-c52. נמדד מול פרודקשן, קריאה

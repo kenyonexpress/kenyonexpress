@@ -1025,6 +1025,12 @@ describe('the pending migration inventory', () => {
       // never runs and every public review read fails 42501. One GRANT, no
       // policy change, no dependency on any other pending file.
       '247_reviews_grant_anon_select.sql',
+      // Q32 (01.10): the public supplier page (`/s/[id]`) reads
+      // `opening_hours` (232) and `google_reviews_url` (242) through the anon
+      // client, which neither file granted -- 242 says explicitly it did not
+      // because its own reader was the service client. Two column-level
+      // GRANTs, no policy change. After 232 and after 242.
+      '248_supplier_storefront_public_columns_grant.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])
