@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { type ReviewDraft, aggregateRatings, formatAverageHe, refuseReview } from './eligibility'
+import {
+  type ReviewDraft,
+  aggregateRatings,
+  formatAverageHe,
+  ratingHistogram,
+  refuseReview,
+} from './eligibility'
 
 const BASE: ReviewDraft = {
   userId: 'u1',
@@ -53,5 +59,27 @@ describe('aggregateRatings', () => {
     const agg = aggregateRatings([5, 4, 4])
     expect(agg).toEqual({ count: 3, averageTenths: 43 })
     expect(formatAverageHe(43)).toBe('4.3')
+  })
+})
+
+describe('ratingHistogram', () => {
+  it('returns all five rows at zero when there are no ratings', () => {
+    expect(ratingHistogram([])).toEqual([
+      { stars: 5, count: 0, percent: 0 },
+      { stars: 4, count: 0, percent: 0 },
+      { stars: 3, count: 0, percent: 0 },
+      { stars: 2, count: 0, percent: 0 },
+      { stars: 1, count: 0, percent: 0 },
+    ])
+  })
+
+  it('counts and rounds percentages per star, ignoring invalid ratings', () => {
+    expect(ratingHistogram([5, 5, 5, 4, 1, 0, 6])).toEqual([
+      { stars: 5, count: 3, percent: 60 },
+      { stars: 4, count: 1, percent: 20 },
+      { stars: 3, count: 0, percent: 0 },
+      { stars: 2, count: 0, percent: 0 },
+      { stars: 1, count: 1, percent: 20 },
+    ])
   })
 })

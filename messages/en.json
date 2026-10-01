@@ -211,7 +211,9 @@
     "average": "Average {avg} out of 5, from {count} reviews.",
     "none": "There are no approved reviews for this product yet.",
     "outOf": "{value} out of 5",
-    "summaryLink": "{avg} out of 5 · {count} reviews"
+    "summaryLink": "{avg} out of 5 · {count} reviews",
+    "histogramLabel": "Rating breakdown by star count",
+    "histogramStars": "{stars} stars"
   },
   "reviewForm": {
     "sent": "Your review was sent and is waiting for approval.",

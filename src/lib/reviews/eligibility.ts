@@ -102,3 +102,26 @@ export function aggregateRatings(ratings: readonly number[]): {
 export function formatAverageHe(averageTenths: number): string {
   return `${Math.floor(averageTenths / 10)}.${averageTenths % 10}`
 }
+
+export type RatingHistogramRow = { stars: 1 | 2 | 3 | 4 | 5; count: number; percent: number }
+
+/**
+ * Per-star breakdown, 5 down to 1, for the distribution bars on the reviews
+ * page. Electro v7's product page shows this next to the average (trust
+ * signal: a shopper can see *why* the average is 4.2, not just the number).
+ *
+ * Percent is rounded per row, so the five can sum to 99 or 101. That is the
+ * same rounding every star-rating widget on the web lives with; forcing an
+ * exact 100 would misstate at least one row's own percentage to fix a total
+ * nobody reads as a total.
+ */
+export function ratingHistogram(ratings: readonly number[]): RatingHistogramRow[] {
+  const valid = ratings.filter((n) => Number.isInteger(n) && n >= 1 && n <= 5)
+  const total = valid.length
+  const stars = [5, 4, 3, 2, 1] as const
+  return stars.map((value) => {
+    const count = valid.filter((n) => n === value).length
+    const percent = total === 0 ? 0 : Math.round((count * 100) / total)
+    return { stars: value, count, percent }
+  })
+}

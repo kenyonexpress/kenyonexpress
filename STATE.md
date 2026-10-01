@@ -1,63 +1,71 @@
-RESUME FROM: M18-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c65)
+RESUME FROM: M01-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c65)
 
 ## המשך מ:
 
-**M17-c65 - DONE (01.10): קופי ומשפטי אומתו מחדש בפעם השלוש-עשרה,
-אפס דריפט מ-M17-c64.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל
-עמוד משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח
-וקישורים שבורים, ולתקן.
+**M18-c65 - DONE (01.10): אפס-פעילות אומת ישירות מ-git על כל המחזור**
+(`git diff --stat 857a0deea..HEAD -- src/ next.config.ts next.config.mjs
+package.json pnpm-lock.yaml vercel.json supabase/ migrations/` על 17
+קומיטי M01-c65..M17-c65 מחזיר ריק, כולם קומיטי תיעוד). **נרשם
+MAINTENANCE IDLE (01.10.2026)**, ואז שופר המרה אמיתי אחד.
 
-**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `4c1afd34a`
-(M17-c64). `git log 4c1afd34a..HEAD -- messages/he.json
-"src/app/(legal)" src/content/legal src/components/layout/
-SiteFooter.tsx` **מחזיר אפס קומיטים** — אף מחרוזת UI, עמוד משפטי או
-קישור פוטר לא זז מאז. `git diff --stat` המלא של אותו טווח (15 קומיטים)
-מראה קומיט קוד ייצור אחד בלבד שאינו תיעוד: `857a0deea` (M18-c64,
-`ProductCard.tsx`/`ProductRail.tsx`/`ProductRail.test.tsx`). **נבדק
-ידנית בעיון מלא (`git show`)**: התוספת היחידה היא חיבור ה-prop
-`ratingSummary` הקיים לרצועות ה-CMS של דף הבית וקיצור הערת קוד —
-אפס מחרוזת עברית/אנגלית חדשה פונה-ללקוח; הטקסט החדש היחיד הוא הערת
-קוד באנגלית (מותר, קוד אינו UI). פוטר האתר וארבעת עמודי המשפטי
-(`src/app/(legal)/legal/{accessibility,privacy,returns,terms}/page.tsx`,
-`src/content/legal/*`) — אפס קומיט מאז `c6066ae85` (M17-c60), זהה
-בדיוק ל-12 המחזורים הקודמים.
+**השיפור: פילוח דירוגים (היסטוגרמה) בדף הביקורות של המוצר**, תואם
+ל-`.rating-histogram`/`.rating-percentage-bar` שב-home-v7 של Electro.
+הצילום הישן (`refs/electro-product.html`) היה עמוד חסימת Cloudflare
+ריק; `scripts/capture-electro.mjs` נורה מחדש בפריט הזה נגד
+`https://electro.madrasthemes.com/product/...` וגם נגד `/home-v7/`
+ועבר את האתגר, כרגיל (ראו הערת הכותרת של הסקריפט). עמוד
+`/product/[slug]/reviews` הציג עד כה רק ממוצע ומונה כולל; עכשיו
+מוסיף חמש שורות (5 עד 1 כוכבים), כל אחת עם פס אחוז וספירה, בונה אמון
+קנייה: רואים *למה* הממוצע 4.2, לא רק את המספר.
 
-**שערים הורצו במלואם:** `type-check` נקי. `lint` נקי (biome 2029
-קבצים, 12 שערים ירוקים: `copy-gate` נקי, `rtl-logical` נקי, i18n
-627/627, `locale-format` 116/116, `docs-index` 282, `docs-path-audit`
-154 — זהה ל-M16-c65). `test` 610/610 קבצים, 7298/7310 עברו (12
-דולגים בכוונה), זהה ל-M16-c65. `build` לא רץ מחדש: `.next` הקיים
-(`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`, mtime 01.10 08:36) נבנה אחרי
-הקומיט האחרון שנוגע בנתיב רלוונטי לבנייה (`857a0deea`, M18-c64, 01.10
-01:11), אומת ב-`git log -1`. **אין שער חזותי נדרש**: אפס שינוי
-JSX/CSS פונה-ללקוח בפריט הזה עצמו (רק תיעוד), עקבי עם M17-c64/M17-c60
-וכל מחזור קופי/משפטי קודם שלא מצא דריפט. קבצים ששונו: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+פונקציה טהורה חדשה `ratingHistogram` ב-`lib/reviews/eligibility.ts`
+(אפס DB, אפס שעון), נקראת רק מהעמוד הזה. שני הקוראים הקיימים של
+`aggregateRatings` (`product-detail.ts`, `reviews/rating-summaries.ts`)
+לא נגעו. דף המוצר הראשי, `ProductInfo` ו-`RatingStars` לא השתנו כלל,
+כך ששער החזות של `product` לא היה אמור לזוז, רק הבדיקה עצמה.
+
+**השערים, כולל build מלא כנדרש בפריט הזה**: `type-check`/`lint` נקיים
+(12 שערים, i18n עדיין 627/627: אין מחרוזת עברית inline חדשה, רק שני
+מפתחות `t()` חדשים ב-`messages/he.json`+`en.json`). `test` 610/610
+קבצים, 7300/7312 (+2 מעל בסיס M17-c65, שני הטסטים של `ratingHistogram`).
+`pnpm build` אחרי `rm -rf .next`, ללא שגיאה (כולל `/product/[slug]/
+reviews` ב-`◐`). **שער חזותי בחזית, שני הדפים, שלושת הרוחבים, נמדד
+בתוך הריצה הזו** (שרת `pnpm start` על port 3311): בית `8.51/9.02/3.95%`
+PASS, זהה בייט לבייסליין (home לא נגע). מוצר `2.69/1.29/0.14%` PASS,
+זהה בייט ל-M18-c64 (העמוד עצמו לא נגע, רק ה-`/reviews` תחתיו). שורות
+נכתבו ל-`docs/UI-PARITY-REPORT.md` אוטומטית על ידי השער, כולל ריצה
+ראשונה שסורבה (`REFUSED`, `home` ישיר נגד `kenyonexpress.co.il`, לפני
+שהוספתי `--baseline`). קבצים ששונו: `lib/reviews/eligibility.ts`(+test),
+`app/(store)/product/[slug]/reviews/page.tsx`, `messages/he.json`,
+`messages/en.json`, `docs/UI-PARITY-REPORT.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`. `refs/electro-home-v7.html`/
+`electro-product-fresh.*` (לא ב-git, `refs/` ignored).
+
+**M17-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M18-c65 לשמירה על תקרת 300 שורות).** קופי ומשפטי אומתו מחדש בפעם
+השלוש-עשרה, אפס דריפט מ-M17-c64: אפס קומיט מאז `4c1afd34a` נגע
+במחרוזות UI, עמוד משפטי או פוטר; קומיט הקוד היחיד בטווח (`857a0deea`,
+M18-c64) נבדק ונמצא ללא מחרוזת פונה-ללקוח חדשה. ארבעת השערים ירוקים
+(build לא רץ מחדש, `.next` קיים אומת מאוחר לקומיט האחרון הרלוונטי).
 
 **M16-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M17-c65 לשמירה על תקרת 300 שורות).** תברואת ריפו נבדקה מחדש, `git
 status` נקי, אפס ענף מקומי לא-דחוף מ-43, 24 PR פתוחים ו-22 ענפים
 ישנים נרשמו, אפס דריפט מ-M16-c64. ארבעת השערים ירוקים.
 
-**M15-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M16-c65 לשמירה על תקרת 300 שורות).** תיעוד סונכרן מחדש — STATE.md,
-docs/LAUNCH-READINESS.md ו-docs/BACKLOG.md מול `git log
-97cd36b06..HEAD`, אפס דריפט: עדיין 15 סעיפים ב-BACKLOG, אותה טבלת
-חסימה ב-LAUNCH-READINESS, רק מונים עודכנו. ארבעת השערים ירוקים.
-
-**M14-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c65..M13-c65/M16-c65 לשמירה על תקרת 300 שורות).** M14-c65 —
-ביצועים, bundle/image pipeline/ISR/cache headers זהים בייט לבייט
-לבייסליין. M13-c65 — אבטחה, ארבע כותרות ושלוש מגבלות קצב Upstash, כולן
-PASS. M12-c65 — SEO, מטא-דאטה/JSON-LD/sitemap/robots/canonical, PASS.
-M11-c65 — axe מחדש על כל דף, 240/242 עברו, 2 דולגו בכוונה, אפס הפרת
-WCAG A/AA. M10-c65 — כיסוי טסטים, שש הקטגוריות הקריטיות ב-100% ענפים.
-M09-c65 — STATE CLEAN, אותם 13/15 חוסמים, קומיטים מאחורי פרודקשן 293.
-M08-c65 — BACKLOG EMPTY. M07-c65 — route audit, 226 טסטי Playwright
-ירוקים, 239 PASS + 2 NO DATA, 0 FAIL. M06-c65 — Lighthouse mobile,
-99/100/100/100 בית, 99/100/100/100 מוצר, זהה ל-M06-c64. ארבעת השערים
-ירוקים בכולם.
+**M15-c65..M06-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c65..M13-c65/M16-c65/M18-c65 לשמירה על תקרת 300 שורות).**
+M15-c65: תיעוד סונכרן מחדש, אפס דריפט. M14-c65: ביצועים, bundle/
+image pipeline/ISR/cache headers זהים בייט לבייט לבייסליין. M13-c65:
+אבטחה, ארבע כותרות ושלוש מגבלות קצב Upstash, כולן PASS. M12-c65: SEO,
+מטא-דאטה/JSON-LD/sitemap/robots/canonical, PASS. M11-c65: axe מחדש
+על כל דף, 240/242 עברו, 2 דולגו בכוונה, אפס הפרת WCAG A/AA. M10-c65:
+כיסוי טסטים, שש הקטגוריות הקריטיות ב-100% ענפים. M09-c65: STATE
+CLEAN, אותם 13/15 חוסמים. M08-c65: BACKLOG EMPTY. M07-c65: route
+audit, 226 טסטי Playwright ירוקים, 239 PASS + 2 NO DATA, 0 FAIL.
+M06-c65: Lighthouse mobile, 99/100/100/100 בית, 99/100/100/100 מוצר,
+זהה ל-M06-c64. ארבעת השערים ירוקים בכולם.
 
 **M05-c65..M16-c64 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M06-c65/M12-c65 לשמירה על תקרת 300 שורות).** M05-c65..M01-c65 —

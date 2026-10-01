@@ -211,7 +211,9 @@
     "average": "ממוצע {avg} מתוך 5, מתוך {count} ביקורות.",
     "none": "עדיין אין ביקורות מאושרות למוצר הזה.",
     "outOf": "{value} מתוך 5",
-    "summaryLink": "{avg} מתוך 5 · {count} ביקורות"
+    "summaryLink": "{avg} מתוך 5 · {count} ביקורות",
+    "histogramLabel": "פילוח הדירוגים לפי מספר כוכבים",
+    "histogramStars": "{stars} כוכבים"
   },
   "reviewForm": {
     "sent": "הביקורת נשלחה וממתינה לאישור.",

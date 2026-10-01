@@ -1,7 +1,7 @@
 import { formatDate } from '@/lib/i18n/format'
 import { t } from '@/lib/i18n/messages'
 import { loadProductBySlug } from '@/lib/product-detail'
-import { aggregateRatings, formatAverageHe } from '@/lib/reviews/eligibility'
+import { aggregateRatings, formatAverageHe, ratingHistogram } from '@/lib/reviews/eligibility'
 import { listApprovedReviews } from '@/server/queries/reviews'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -38,6 +38,7 @@ async function ProductReviewsBody({ params }: Props) {
 
   const reviews = await listApprovedReviews(product.product.id)
   const aggregate = aggregateRatings(reviews.map((row) => row.rating))
+  const histogram = aggregate ? ratingHistogram(reviews.map((row) => row.rating)) : []
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -53,11 +54,29 @@ async function ProductReviewsBody({ params }: Props) {
         {t('reviewsPage.titleFor').replace('{name}', product.product.name_he ?? '')}
       </h1>
       {aggregate ? (
-        <p className="mt-2 text-sm text-muted">
-          {t('reviewsPage.average')
-            .replace('{avg}', formatAverageHe(aggregate.averageTenths))
-            .replace('{count}', String(aggregate.count))}
-        </p>
+        <>
+          <p className="mt-2 text-sm text-muted">
+            {t('reviewsPage.average')
+              .replace('{avg}', formatAverageHe(aggregate.averageTenths))
+              .replace('{count}', String(aggregate.count))}
+          </p>
+          <ul className="mt-4 max-w-sm space-y-1.5" aria-label={t('reviewsPage.histogramLabel')}>
+            {histogram.map((row) => (
+              <li key={row.stars} className="flex items-center gap-2 text-xs text-muted">
+                <span className="w-14 shrink-0 text-end">
+                  {t('reviewsPage.histogramStars').replace('{stars}', String(row.stars))}
+                </span>
+                <span className="h-2 flex-1 overflow-hidden rounded-full bg-border-alt">
+                  <span
+                    className="block h-full rounded-full bg-price"
+                    style={{ width: `${row.percent}%` }}
+                  />
+                </span>
+                <span className="w-8 shrink-0 text-start tabular-nums">{row.count}</span>
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
         <p className="mt-2 text-sm text-muted">{t('reviewsPage.none')}</p>
       )}

@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c65 (הועבר מ-STATE.md ב-M18-c65, לשמירה על תקרת 300 שורות)
+
+**M17-c65 - DONE (01.10): קופי ומשפטי אומתו מחדש בפעם השלוש-עשרה,
+אפס דריפט מ-M17-c64.** משימת התור: לקרוא כל מחרוזת UI בעברית וכל
+עמוד משפטי, לאתר שגיאות כתיב, דליפות LTR, מילים באנגלית בטקסט ללקוח
+וקישורים שבורים, ולתקן.
+
+**נמדד ישירות מ-git, לא הונח:** בסיס המדידה הקודם `4c1afd34a`
+(M17-c64). `git log 4c1afd34a..HEAD -- messages/he.json
+"src/app/(legal)" src/content/legal src/components/layout/
+SiteFooter.tsx` **מחזיר אפס קומיטים** — אף מחרוזת UI, עמוד משפטי או
+קישור פוטר לא זז מאז. `git diff --stat` המלא של אותו טווח (15 קומיטים)
+מראה קומיט קוד ייצור אחד בלבד שאינו תיעוד: `857a0deea` (M18-c64,
+`ProductCard.tsx`/`ProductRail.tsx`/`ProductRail.test.tsx`). **נבדק
+ידנית בעיון מלא (`git show`)**: התוספת היחידה היא חיבור ה-prop
+`ratingSummary` הקיים לרצועות ה-CMS של דף הבית וקיצור הערת קוד —
+אפס מחרוזת עברית/אנגלית חדשה פונה-ללקוח; הטקסט החדש היחיד הוא הערת
+קוד באנגלית (מותר, קוד אינו UI). פוטר האתר וארבעת עמודי המשפטי
+(`src/app/(legal)/legal/{accessibility,privacy,returns,terms}/page.tsx`,
+`src/content/legal/*`) — אפס קומיט מאז `c6066ae85` (M17-c60), זהה
+בדיוק ל-12 המחזורים הקודמים.
+
+**שערים הורצו במלואם:** `type-check` נקי. `lint` נקי (biome 2029
+קבצים, 12 שערים ירוקים: `copy-gate` נקי, `rtl-logical` נקי, i18n
+627/627, `locale-format` 116/116, `docs-index` 282, `docs-path-audit`
+154 — זהה ל-M16-c65). `test` 610/610 קבצים, 7298/7310 עברו (12
+דולגים בכוונה), זהה ל-M16-c65. `build` לא רץ מחדש: `.next` הקיים
+(`BUILD_ID` `aXUCoo7ksZar07MnhBJ43`, mtime 01.10 08:36) נבנה אחרי
+הקומיט האחרון שנוגע בנתיב רלוונטי לבנייה (`857a0deea`, M18-c64, 01.10
+01:11), אומת ב-`git log -1`. **אין שער חזותי נדרש**: אפס שינוי
+JSX/CSS פונה-ללקוח בפריט הזה עצמו (רק תיעוד), עקבי עם M17-c64/M17-c60
+וכל מחזור קופי/משפטי קודם שלא מצא דריפט. קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M16-c65 (הועבר מ-STATE.md ב-M17-c65, לשמירה על תקרת 300 שורות)
 
 **M16-c65 - DONE (01.10): תברואת ריפו נבדקה מחדש, `git status` נקי,
