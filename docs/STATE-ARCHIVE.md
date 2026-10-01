@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c68 (הועבר מ-STATE.md ב-M16-c68, לשמירה על תקרת 300 שורות)
+
+**M15-c68 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66/M15-c67. **נבדק מחדש, אפס
+דריפט.** `git log e3445c24a..HEAD -- e2e/route-audit.spec.ts` ריק — אין קומיט
+שנגע בבדיקה עצמה מ-M15-c67. נבנה `.next` חדש לגמרי (`rm -rf .next`) עם
+`NEXT_PUBLIC_APP_URL=http://localhost:3317` כדי להימנע מה-CSP-ישן-כוזב
+הידוע (ראו `docs/STATE-ARCHIVE.md`, "reused-local-build-bakes-stale-csp"),
+הורם `pnpm start` על פורט 3317, והורצו הבדיקות `anon /` ו-`anon dynamic
+catalogue routes` מתוך `e2e/route-audit.spec.ts` (chromium + mobile-chrome)
+עם `E2E_BASE_URL=http://localhost:3317` כדי שה-config יצביע לשרת שכבר
+רץ במקום להרים `next dev` משלו (ניסיון ראשון עם `BASE_URL`/`PLAYWRIGHT_BASE_URL`
+במקום `E2E_BASE_URL` אכן הרים `next dev` בטעות — 4 כשלים, `eval()`/CSP ו-RLS
+401 על `reviews`, תואם לתיעוד הידוע "E2E must run against pnpm start").
+**אחרי התיקון: 4/4 עברו, אפס `consoleErrors`/`hydrationWarnings`** על `/`
+ועל `/product/[slug]` בדגימה החיה. **אין ממצא קוד לתקן**; זו אימות-בלבד,
+שלישית ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים), `test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build`
+exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M15-c67).
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M14-c68 (הועבר מ-STATE.md ב-M15-c68, לשמירה על תקרת 300 שורות)
 
 **M14-c68 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
