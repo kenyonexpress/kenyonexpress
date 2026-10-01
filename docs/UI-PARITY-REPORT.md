@@ -721,3 +721,13 @@ to an already large session.
 | 2026-10-01 04:07 | category | 768 | 2.52% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_768.png`; overall 31.47% (reference blank 9.4%, ours blank 19.54%) |
 | 2026-10-01 04:09 | category | 1440 | 1.69% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_1440.png`; overall 18.02% (reference blank 5.05%, ours blank 11.27%) |
 | 2026-10-01 04:11 | category | 380 | 3.53% | PASS | `f43e00ecc-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 29.59% (reference blank 9.63%, ours blank 16.43%) |
+| 2026-10-01 04:20 | home | 1440 | n/a | REFUSED | `60bcbab56` | live side is our-build |
+| 2026-10-01 04:23 | cart | 380 | n/a | REFUSED | `60bcbab56-dirty` | capture is 1440px, run is 380px |
+| 2026-10-01 04:24 | cart | 380 | n/a | REFUSED | `60bcbab56-dirty` | capture is 1440px, run is 380px |
+| 2026-10-01 04:24 | cart | 768 | n/a | REFUSED | `60bcbab56-dirty` | capture is 1440px, run is 768px |
+| 2026-10-01 04:24 | cart | 1440 | 1.47% | PASS | `60bcbab56-dirty` | live side: frozen capture `refs/live-cart.png`; overall 16.06% (reference blank 3.02%, ours blank 11.58%) |
+| 2026-10-01 04:31 | cart | 380 | n/a | REFUSED | `60bcbab56-dirty` | capture is 1440px, run is 380px |
+| 2026-10-01 04:31 | cart | 768 | n/a | REFUSED | `60bcbab56-dirty` | capture is 1440px, run is 768px |
+| 2026-10-01 04:32 | cart | 1440 | 1.47% | PASS | `60bcbab56-dirty` | live side: frozen capture `refs/live-cart.png`; overall 16.06% (reference blank 3.02%, ours blank 11.58%) |
+| 2026-10-01 04:34 | cart | 1440 | 0.49% | PASS | `60bcbab56-dirty` | live side: frozen capture `refs/live-cart.png`; overall 21.12% (reference blank 8.26%, ours blank 12.38%) |
+| 2026-10-01 04:36 | cart | 1440 | 1.47% | PASS | `60bcbab56-dirty` | live side: frozen capture `refs/live-cart.png`; overall 16.06% (reference blank 3.02%, ours blank 11.58%) |
