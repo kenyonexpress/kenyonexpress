@@ -38335,3 +38335,26 @@ src/app/robots.ts src/lib/seo` מראה שינוי יחיד, לא-קשור: שו
 השורות נוספו אוטומטית ל-`docs/UI-PARITY-REPORT.md` (commit `d97c21212`,
 עץ `src`/`public` נקי). לא נדרש `type-check`/`lint`/`test`/`build` נוסף
 — M18-c67 כבר אישר ארבעתם ירוקים ואין קומיט שנגע ב-`src`/`public` מאז.
+
+**M03-c68 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". שרת `pnpm start` על 3311 (PID 84228, אותו שרת ששימש
+את M01-c68 ו-M02-c68) אומת לפני המדידה: `/category/hot-deals` עונה `200`,
+cwd של ה-PID הוא שורש הפרויקט הנכון (לא שרת זר, ראה תקדים קודם). HEAD
+בזמן המדידה `c2512a665` (docs-only, ללא שינוי ב-`src`/`public` מאז
+`4d3702025`). **מדידה אמיתית בפורגראונד, שלושה רוחבים, מול
+`refs/electro_shop_{width}.png` (Electro `/shop/`, slug מקומי
+`hot-deals`, אותו תבנית כמו M03-c66/M03-c67):**
+
+| רוחב | ציון (both-painted) | סטטוס | overall |
+|---|---|---|---|
+| 380 | 3.53% | PASS | 29.59% |
+| 768 | 2.52% | PASS | 31.47% |
+| 1440 | 1.69% | PASS | 18.02% |
+
+זהים ל-100% לציוני M03-c66/M03-c67 — **אפס דריפט**, מאושר; פלט השער עצמו
+הדפיס `=== category parity, gate 11% === PASS` בשלושתם. השורות נוספו
+אוטומטית ל-`docs/UI-PARITY-REPORT.md` (עץ `src`/`public` נקי, רק
+`docs/UI-PARITY-REPORT.md` השתנה מהמדידה עצמה). לא נדרש
+`type-check`/`lint`/`test`/`build` נוסף — M18-c67 כבר אישר ארבעתם ירוקים
+ואין קומיט שנגע ב-`src`/`public` מאז. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
