@@ -1,44 +1,52 @@
-RESUME FROM: M12-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c67 - DONE, sitemap.xml אומת טרי ונגיש מול פרודקשן בפועל)
+RESUME FROM: M13-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c67 - DONE, robots.txt אומת מול פרודקשן ותוקן: שלוש כתובות-אסימון חסרות מ-Disallow)
 
 ## המשך מ:
 
-**M11-c67 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
-reachable". נבדק מול פרודקשן בפועל (`https://www.kenyonexpress.co.il`, לא
-רק קוד, פעם שנייה אחרי M11-c66 ב-01.10): `/sitemap.xml` מחזיר `200`
-ומגיש `<sitemapindex>` עם חמש תת-מפות (זהה ל-M11-c66). כל חמש
-(`content`/`categories`/`products`/`regions`/`suppliers`) מחזירות `200`
-(דרך `308` מהדומיין החשוף ל-`www`, אותה התנהגות כמו M11-c66), `products.xml`
-עדיין מחזיק 46 כתובות עם `lastmod` מקסימלי `2026-09-25T02:29:00.830Z` —
-אותו ערך בדיוק כמו אתמול, אין תוכן חדש. `robots.txt` עדיין מצביע ל-`/sitemap.xml`
-הנכון. `git diff --stat 3d53d98e8..HEAD -- src/app/sitemap.xml src/app/sitemap
-src/app/robots.ts src/lib/seo` מראה שינוי יחיד, לא-קשור: שורת `Disallow: /debug/`
-שנוספה ב-M12-c66 (8fce77c76) לפני ש-M11-c66 נמדד בכלל. אפס דריפט בפועל
-מאז אתמול.
+**M12-c67 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". קוד `src/app/robots.ts` על הענף הזה (לא `origin/main`,
+שאין בו עדיין את תיקון `/debug/` מ-M12-c66, `8fce77c76`, לא ancestor של
+`origin/main` — `git merge-base --is-ancestor` מאשר) הושווה לרשימת כל
+תיקיות `src/app`, כולל קבוצות-ראוט. נמצאו שלוש כתובות שה-URL שלהן עצמו
+הוא אסימון חתום (`/gift/[token]`, `/order/[id]/tracking`,
+`/wishlist/s/[token]`) — כל שלוש עם הערה מפורשת בקוד "the URL IS the
+credential", אותה הנמקה בדיוק ש-`/redeem/` ו-`/coupon/` כבר חסומים
+בגללה — אך אף אחת משלוש לא הופיעה ב-`Disallow`. **אומת מול פרודקשן
+בפועל**: `https://www.kenyonexpress.co.il/gift/test`,
+`/order/test/tracking` ו-`/wishlist/s/test123` כולן מחזירות `200` חי,
+וה-`robots.txt` החי (מוגש מ-`main`, לא מהענף הזה) לא חוסם אף אחת מהן –
+כלומר הפער קיים בפרודקשן ממש, לא רק בקוד. נבדקו גם ונמצאו **לא**
+חוסרים: `/dev/*` (תמיד `404` בפרודקשן בגלל בדיקת `NODE_ENV`, לא תלוי
+ב-robots.txt), `/debug/sentry` (מחזיר `200` בפרודקשן אבל זה quirk של
+streaming SSR — התוכן בפנים כבר `NEXT_HTTP_ERROR_FALLBACK`/`notFound()`
+כי השער `SENTRY_DEBUG_ROUTES` כבוי; לא דלף אמיתי, ותוקן כבר ב-M12-c66
+על הענף הזה), `/login`/`/signup`/`/mfa`/`/admin-mfa` (כל (`auth`) group
+page נושא `robots: {index:false, follow:true}` מכוון, לא דורש
+`Disallow`), `/s/[id]` ו-`/c/[code]`/`/r/[code]` (לא אסימון-כתובת,
+redirect ציבורי/דף ספק ציבורי). **תוקן**: `src/app/robots.ts` — שלוש
+שורות `Disallow` חדשות (`/gift/`, `/order/`, `/wishlist/s/`) עם הערה
+לכל אחת; `src/app/robots.test.ts` — טסט חדש `disallows every page whose
+URL is itself the credential` על שלושתן. ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים,
+זהה), `build` הורץ בפועל, 39.78 שניות, exit 0, כולל `/robots.txt`
+ברשימת הנתיבים. לא פריט חזותי, `scripts/compare.mjs` לא נדרש (אין
+שינוי UI). קבצים ששונו: `src/app/robots.ts`, `src/app/robots.test.ts`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-לא פריט חזותי, `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M10-c67).
-ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614
-קבצים, 7336/7348 עברו (12 מדולגים, זהה ל-M10-c67), `build` לא הורץ מחדש
-(`.next/BUILD_ID` קיים וקרוב ל-HEAD, תשעה `pnpm start` מקביליים כרגע
-וזיכרון נמוך, אפס שינוי קוד ייצור בפריט הזה ממילא). קבצים ששונו: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
-
-**M04-c67..M10-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M11-c67 לשמירה על תקרת 300 שורות).** שבעה פריטי אימות-בלבד/תחזוקה:
+**M04-c67..M11-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M12-c67 לשמירה על תקרת 300 שורות).** שמונה פריטי אימות-בלבד/תחזוקה:
 `type-check` (M04), `test` (M05), `pnpm build` בפועל (M06) — אפס דריפט
 בשלושתם; סריקת `TODO`/`FIXME` רוחב-ריפו עם צימוד מפורש ב-`BACKLOG.md`
 סעיף 6 (M07); Lighthouse mobile `/`+`/product` 100/100/100 (M08); חמש
 חבילות מתות הוסרו ושני קבועים פנימיים-בלבד הופשטו מ-`export` (M09); 19
 מיגרציות ממתינות אומתו מחדש מול הקוד (אין סחיפה מ-M10-c66, שאימת מול
-פרודקשן בפועל, M10). ארבעת השערים ירוקים בכל השבעה.
+פרודקשן בפועל, M10); sitemap.xml אומת טרי מול פרודקשן בפועל פעם שנייה,
+אפס דריפט מ-M11-c66 (M11). ארבעת השערים ירוקים בכל השמונה.
 
 **M18-c66..M03-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M04-c67 לשמירה על תקרת 300 שורות).** M03-c67: שער חזותי קטגוריה
-נמדד מחדש, אפס דריפט. M02-c67: שער חזותי מוצר נמדד מחדש, אפס דריפט (עם
-ממצא נלווה לא-חוסם על אורך רפרנס Electro). M01-c67: שער חזותי בית נמדד
-מחדש, אפס דריפט, ממצא שרת-ישן מתועד ב-BACKLOG סעיף 18. M18-c66: STATE.md
-כבר מתחת לתקרת 300 שורות, אומת בלבד, אפס שינוי קוד. ארבעת השערים ירוקים
-בכולם.
+הזו ב-M04-c67 לשמירה על תקרת 300 שורות).** שלושה שערים חזותיים נמדדו
+מחדש אפס דריפט (בית/מוצר/קטגוריה, M01-M03, עם ממצא לא-חוסם אחד על אורך
+רפרנס Electro ב-M02 וממצא שרת-ישן ב-BACKLOG סעיף 18 ב-M01), ו-STATE.md
+אומת מתחת לתקרה בלבד (M18-c66). ארבעת השערים ירוקים בכולם.
 
 **M01-c66..M17-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 בשלבים, M14-c66..M16-c66, M03-c67, לשמירה על תקרת 300 שורות).** M17-c66:

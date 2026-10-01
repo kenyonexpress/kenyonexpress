@@ -38094,3 +38094,25 @@ archive rest to docs/STATE-ARCHIVE.md". **נמצא כבר מבוצע**: `wc -l S
 השערים הורצו ישירות על הענף: `type-check` נקי, `lint` נקי (12 שערים, זהה
 ל-M17-c66), `test` 614/614 קבצים, 7336/7348 עברו (12 מדולגים, זהה), `build`
 exit 0 נקי. לא פריט חזותי — אין שינוי UI, `compare.mjs` לא נדרש.
+
+## M11-c67 (ארכיון מלא, כווץ מ-STATE.md ב-M12-c67)
+
+**M11-c67 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". נבדק מול פרודקשן בפועל (`https://www.kenyonexpress.co.il`, לא
+רק קוד, פעם שנייה אחרי M11-c66 ב-01.10): `/sitemap.xml` מחזיר `200`
+ומגיש `<sitemapindex>` עם חמש תת-מפות (זהה ל-M11-c66). כל חמש
+(`content`/`categories`/`products`/`regions`/`suppliers`) מחזירות `200`
+(דרך `308` מהדומיין החשוף ל-`www`, אותה התנהגות כמו M11-c66), `products.xml`
+עדיין מחזיק 46 כתובות עם `lastmod` מקסימלי `2026-09-25T02:29:00.830Z` —
+אותו ערך בדיוק כמו אתמול, אין תוכן חדש. `robots.txt` עדיין מצביע ל-`/sitemap.xml`
+הנכון. `git diff --stat 3d53d98e8..HEAD -- src/app/sitemap.xml src/app/sitemap
+src/app/robots.ts src/lib/seo` מראה שינוי יחיד, לא-קשור: שורת `Disallow: /debug/`
+שנוספה ב-M12-c66 (8fce77c76) לפני ש-M11-c66 נמדד בכלל. אפס דריפט בפועל
+מאז אתמול.
+
+לא פריט חזותי, `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M10-c67).
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614
+קבצים, 7336/7348 עברו (12 מדולגים, זהה ל-M10-c67), `build` לא הורץ מחדש
+(`.next/BUILD_ID` קיים וקרוב ל-HEAD, תשעה `pnpm start` מקביליים כרגע
+וזיכרון נמוך, אפס שינוי קוד ייצור בפריט הזה ממילא). קבצים ששונו: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
