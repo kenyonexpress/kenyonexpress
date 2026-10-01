@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q54 (הועבר מ-STATE.md ב-Q55, לשמירה על תקרת 300 שורות)
+
+**Q54 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"CI type-check unit E2E build migration dry-run Lighthouse-CI bundle-gate on
+every push." `.github/workflows/ci.yml` כבר הריץ type-check/lint/test/build/
+a11y/e2e/e2e-preview על כל push+pull_request בלי סינון ענפים (לא דרש שינוי).
+**שלושה שערים היו קיימים כסקריפט אבל רצו רק ידנית לפני תגים
+(`docs/LAUNCH-READINESS.md`), אף פעם לא ב-CI - עכשיו שלוש jobs חדשות:**
+
+- `migration-dry-run` - מריץ `node scripts/migration-lint.mjs` כמו שהוא
+  (fs/path בלבד, בלי `pnpm install`). זה ה-dry-run הנכון לכלל "SQL רק
+  ב-migrations/pending, לעולם לא מוחל" - בדיקה סטטית, לא apply מול DB אמיתי.
+- `bundle-gate` - `needs: [build]`, מוריד את ה-artifact `next-build`, מריץ
+  `node scripts/bundle-gate.mjs` (תקציב 260KB gz, זהה ל-ratchet המתועד).
+- `lighthouse` - `needs: [build]`, מריץ `pnpm start`, ממתין ל-200 ב-curl
+  loop (ubuntu-latest מגיע עם Chrome מותקן, אין צעד התקנה), ואז
+  `node scripts/lighthouse-smoke.mjs --throttling-method=provided`.
+
+**`--throttling-method=provided` הוא לא קוסמטי, הוא תיקון למלכודת מתועדת.**
+`docs/PERFORMANCE-BUDGET.md`: ברירת המחדל (`simulate`) נדדה 70-75 בשתי
+ריצות רצופות על אותו build במחשב מקומי משותף, 100 עם `provided`. runner של
+GitHub גם מגיש וגם בודק על אותה מכונה - אותה בעיה בדיוק. שינוי יחיד
+ב-`scripts/lighthouse-smoke.mjs`: הדגל עובר רק כשהועבר במפורש; `pnpm
+lighthouse:smoke` חשוף לא השתנה.
+
+**נבדק ידנית מקומית לפני commit, שרת אמיתי בפורט 3412 (cwd מאומת,
+`/usr/sbin/lsof -p <pid> | grep cwd`), לא ב-background:**
+- `node scripts/bundle-gate.mjs` אחרי build נקי: **223.8KB gz מול תקציב
+  260KB - ok**.
+- `node scripts/lighthouse-smoke.mjs --throttling-method=provided`:
+  **100/100/100**, זהה למדידה המתועדת.
+- `node scripts/migration-lint.mjs`: **חשף תקלה אמיתית וקיימת מראש, לא
+  נגרמה כאן: 60 קבצים, 5 hard, 93 soft** (184/189/207 - CREATE
+  TABLE/INDEX בלי IF NOT EXISTS; 245 - CREATE POLICY רב יותר מ-DROP
+  POLICY IF EXISTS). **לא תוקן כאן** - 245 הוא DROP+CREATE על RLS
+  policies, וזיכרון סשן קודם מזהיר במפורש ש-DROP+CREATE על אובייקט DB
+  מאפס grants בשקט; לתקן חמישה קבצי מיגרציה בלי בדיקה לעומק זה מעבר
+  להיקף הפריט הזה. ה-job נוסף **לא כ-required check**, אותו היגיון כמו
+  `a11y` הקיים: אין לו run history, הפיכת שער שלא רץ אף פעם לחובה זה
+  איך ריפו נתקע ב-03:00. המשמעות: ה-CI החדש לא חוסם merge, אבל **יראה
+  אדום היום על `migration-dry-run`** - זה אמיתי, לא רעש. פריט תור עתידי:
+  לתקן את חמשת קובצי המיגרציה כדי ש-`migration-lint` יהיה ירוק.
+
+**ארבעת השערים.** `pnpm type-check` נקי. `pnpm lint` נקי (12 שערים).
+`pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12 מדולגים, זהה
+ל-Q53). `rm -rf .next && CARDCOM_USE_MOCK=true pnpm build` נקי.
+
+**שער חזותי PASS בשלושת הרוחבים, foreground, אפס שינוי UI בפריט הזה
+(workflow CI וסקריפט שרת-בלבד), נמדד בכל זאת לשמירת הרצף:**
+`--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
+**8.58%/9.02%/4.16%** (380/768/1440) - זהה ל-Q53 בדיוק, אפס דריפט.
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+
+קבצים ששונו: `.github/workflows/ci.yml`, `scripts/lighthouse-smoke.mjs`,
+`docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`, `STATE.md`.
+
 ## Q53 (הועבר מ-STATE.md ב-Q54, לשמירה על תקרת 300 שורות)
 
 **Q53 - VERIFIED (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`,

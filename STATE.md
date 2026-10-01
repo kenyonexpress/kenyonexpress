@@ -1,61 +1,56 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q54 - DONE, שלוש jobs חדשות ב-CI)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q55 - DONE, NOT READY מאומת מחדש, `v1.0.0-rc7-final-audit` תויג)
 
 ## המשך מ:
 
-**Q54 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"CI type-check unit E2E build migration dry-run Lighthouse-CI bundle-gate on
-every push." `.github/workflows/ci.yml` כבר הריץ type-check/lint/test/build/
-a11y/e2e/e2e-preview על כל push+pull_request בלי סינון ענפים (לא דרש שינוי).
-**שלושה שערים היו קיימים כסקריפט אבל רצו רק ידנית לפני תגים
-(`docs/LAUNCH-READINESS.md`), אף פעם לא ב-CI - עכשיו שלוש jobs חדשות:**
+**Q55 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"LAUNCH-READINESS.md READY or NOT READY per-item evidence then tag v1.0.0."
+`docs/LAUNCH-READINESS.md` כבר קיים ומתוחזק ברציפות (עודכן לאחרונה ב-Q54/
+M15-c65, 43 קומיטים לפני HEAD). **נבדקו הקומיטים שנחתו מאז בין`cad66a650`
+ל-HEAD**: ארבעה נגעו בנתיב רלוונטי לשורת חסימה — `.github/workflows/ci.yml`
+(Q54, לא שורת חסימה), `next.config.ts` (Q48, כבר נספר), מיגרציה חדשה
+**248** (Q32, grant בלבד, **לא הוחלה**, נוספה לרשימת שורת חסימה 5) וה-README
+שלה. שום דבר לא נגע ב-DNS, ב-Cardcom, ב-`SUPABASE_SECRET_KEY`, ב-R2 או
+בפנקס הקטלוג (26, אפס שינוי). **אף שורת חסימה לא התהפכה.**
 
-- `migration-dry-run` - מריץ `node scripts/migration-lint.mjs` כמו שהוא
-  (fs/path בלבד, בלי `pnpm install`). זה ה-dry-run הנכון לכלל "SQL רק
-  ב-migrations/pending, לעולם לא מוחל" - בדיקה סטטית, לא apply מול DB אמיתי.
-- `bundle-gate` - `needs: [build]`, מוריד את ה-artifact `next-build`, מריץ
-  `node scripts/bundle-gate.mjs` (תקציב 260KB gz, זהה ל-ratchet המתועד).
-- `lighthouse` - `needs: [build]`, מריץ `pnpm start`, ממתין ל-200 ב-curl
-  loop (ubuntu-latest מגיע עם Chrome מותקן, אין צעד התקנה), ואז
-  `node scripts/lighthouse-smoke.mjs --throttling-method=provided`.
+**ארבעת השערים, הורצו מחדש בפריט הזה (לא רק צוטטו):** `pnpm type-check`
+נקי. `pnpm lint` נקי, 12 שערים (`docs-path-audit`: 153, ללא שינוי).
+`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה ל-Q54,
+אפס דריפט. `pnpm build` **לא הורץ מחדש**: 14 תהליכי `next-server`/`pnpm`
+רצו במקביל (‏~1.0GB פנויים, `vm_stat`), וה-`.next` הקיים (`BUILD_ID`
+`8sM3K74xhwN4B4Fph3T3zOct`) אומת זהה-מקור ל-HEAD (`git diff --stat HEAD --
+next.config.ts next.config.mjs middleware.ts vercel.json src/ package.json
+pnpm-lock.yaml` ריק).
 
-**`--throttling-method=provided` הוא לא קוסמטי, הוא תיקון למלכודת מתועדת.**
-`docs/PERFORMANCE-BUDGET.md`: ברירת המחדל (`simulate`) נדדה 70-75 בשתי
-ריצות רצופות על אותו build במחשב מקומי משותף, 100 עם `provided`. runner של
-GitHub גם מגיש וגם בודק על אותה מכונה - אותה בעיה בדיוק. שינוי יחיד
-ב-`scripts/lighthouse-smoke.mjs`: הדגל עובר רק כשהועבר במפורש; `pnpm
-lighthouse:smoke` חשוף לא השתנה.
-
-**נבדק ידנית מקומית לפני commit, שרת אמיתי בפורט 3412 (cwd מאומת,
-`/usr/sbin/lsof -p <pid> | grep cwd`), לא ב-background:**
-- `node scripts/bundle-gate.mjs` אחרי build נקי: **223.8KB gz מול תקציב
-  260KB - ok**.
-- `node scripts/lighthouse-smoke.mjs --throttling-method=provided`:
-  **100/100/100**, זהה למדידה המתועדת.
-- `node scripts/migration-lint.mjs`: **חשף תקלה אמיתית וקיימת מראש, לא
-  נגרמה כאן: 60 קבצים, 5 hard, 93 soft** (184/189/207 - CREATE
-  TABLE/INDEX בלי IF NOT EXISTS; 245 - CREATE POLICY רב יותר מ-DROP
-  POLICY IF EXISTS). **לא תוקן כאן** - 245 הוא DROP+CREATE על RLS
-  policies, וזיכרון סשן קודם מזהיר במפורש ש-DROP+CREATE על אובייקט DB
-  מאפס grants בשקט; לתקן חמישה קבצי מיגרציה בלי בדיקה לעומק זה מעבר
-  להיקף הפריט הזה. ה-job נוסף **לא כ-required check**, אותו היגיון כמו
-  `a11y` הקיים: אין לו run history, הפיכת שער שלא רץ אף פעם לחובה זה
-  איך ריפו נתקע ב-03:00. המשמעות: ה-CI החדש לא חוסם merge, אבל **יראה
-  אדום היום על `migration-dry-run`** - זה אמיתי, לא רעש. פריט תור עתידי:
-  לתקן את חמשת קובצי המיגרציה כדי ש-`migration-lint` יהיה ירוק.
-
-**ארבעת השערים.** `pnpm type-check` נקי. `pnpm lint` נקי (12 שערים).
-`pnpm test` מלא **614/614 קבצים, 7335/7347 עברו** (12 מדולגים, זהה
-ל-Q53). `rm -rf .next && CARDCOM_USE_MOCK=true pnpm build` נקי.
-
-**שער חזותי PASS בשלושת הרוחבים, foreground, אפס שינוי UI בפריט הזה
-(workflow CI וסקריפט שרת-בלבד), נמדד בכל זאת לשמירת הרצף:**
+**שער חזותי, foreground, שרת `pnpm start` טרי בפורט 3413 (cwd אומת, לא
+שרת שארי מסשן אחר — ראה זיכרון `gate-measured-foreign-server-on-3311`):**
 `--baseline='refs/ke_live_{width}.png' --widths=380,768,1440`:
-**8.58%/9.02%/4.16%** (380/768/1440) - זהה ל-Q53 בדיוק, אפס דריפט.
-`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו.
+**380 8.58% / 768 9.01% / 1440 4.16%, כולם PASS**, זהה ל-Q54 בדיוק, אפס
+דריפט. `docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`d952f236e`).
 
-קבצים ששונו: `.github/workflows/ci.yml`, `scripts/lighthouse-smoke.mjs`,
-`docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`, `STATE.md`.
+**ההכרעה: NOT READY, ללא שינוי.** שמונה שורות החסימה המתועדות
+ב-`docs/LAUNCH-READINESS.md` כולן עדיין פתוחות, כולן פעולה של אופיר או
+החלטת מפעיל שהסוכן אינו מוסמך לקבל לבד (DNS כבר נפתר; חיוב Cardcom
+אמיתי; סוד ה-cron; רוטציית `SUPABASE_SECRET_KEY`; הפעלת R2; החלטה אילו
+מ-26 שורות הקטלוג אמיתיות; אישור והחלת המיגרציות הממתינות; פריסת HEAD
+לפרודקשן - עכשיו 336 קומיטים מאחורי).
+
+**`v1.0.0` לא תויג, ובכוונה — אותה סיבה שהמסמך עצמו נתן פעמיים בעבר
+(סעיפי 09.09 ו-06.09 למטה באותו קובץ).** תג `v1.0.0` **כבר קיים**
+(`14954dfb1`, 2026-08-10, מצב עבר אמיתי); הזזתו הייתה כותבת מחדש ref
+שעותקים אחרים כבר מחזיקים, ומצביעה גרסה על קוד שהמסמך הזה עצמו קורא לו
+NOT READY. **תויג `v1.0.0-rc7-final-audit`** ב-HEAD במקום — השם הבא ברצף
+שהענף הזה כבר משתמש בו (`rc2` עד `rc6` קיימים, `rc6-final-audit` מ-10.09).
+
+קבצים ששונו: `docs/LAUNCH-READINESS.md`, `docs/BACKLOG.md`,
+`docs/STATE-ARCHIVE.md`, `STATE.md`.
+
+**Q54 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q55 לשמירה
+על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: שלוש jobs חדשות ב-CI
+(`migration-dry-run`, `bundle-gate`, `lighthouse --throttling-method=
+provided`), `docs/PERFORMANCE-BUDGET.md`'s simulate-vs-provided מלכודת
+נמנעה. `migration-lint` חשף תקלה קיימת-מראש (60 קבצים, 5 hard, 93 soft),
+לא תוקנה בפריט הזה. ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
 
 **Q53 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q54 לשמירה
 על תקרת 300 שורות).** פריט חיצוני חד-פעמי, VERIFIED: Cardcom

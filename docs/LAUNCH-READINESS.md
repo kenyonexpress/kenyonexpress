@@ -68,7 +68,52 @@ concurrently (~63MB RAM free, `vm_stat`) and the existing `.next`
 (`BUILD_ID` `JvTmoHwdiXPpaSeOjzjaw`) was confirmed source-identical to HEAD
 (`git diff --stat 8fd11aae4..HEAD -- next.config.ts next.config.js
 middleware.ts vercel.json src/ package.json` returns empty). Between
-M15-c61 and M15-c62, `git log 947553fa0..HEAD` shows six commits
+**Re-checked 2026-10-01 (Q55) against `git diff --stat cad66a650..HEAD`:**
+43 commits landed since the M15-c65 docs sync (`cad66a650`), of which four
+touched a blocking-line-relevant path: `.github/workflows/ci.yml` (Q54, the
+migration-dry-run/bundle-gate/Lighthouse CI jobs — a measurement surface, not
+a blocking line itself), `next.config.ts` (Q48's AVIF `formats` line, already
+counted), `migrations/pending/248_supplier_storefront_public_columns_grant.sql`
+(Q32, new, **not applied** — a pure grant, adds to blocking line 5's list, not
+yet probed against production this item) and `migrations/pending/README.md`
+(248's own note). Nothing else in the 43 commits touched DNS, Cardcom,
+`SUPABASE_SECRET_KEY`, R2 or the catalogue ledger (`supabase/catalogue-known-
+issues.json`, re-checked directly, still 26). None of the eight blocking
+lines below flips: production still has not been re-deployed (blocking line
+4's commits-behind count moves to **336**, `git rev-list --count
+a388118f1..HEAD`, git-only — the live alias was not re-probed this item,
+same reasoning as every prior docs-sync entry: a production probe is not what
+this item is). `type-check` clean; `lint` clean, 12 gates (`docs-path-audit`:
+153 known dangling references, unchanged); `test`: **614 files, 7,335
+passed, 12 skipped**, re-run clean this item, unchanged from M15-c65/Q54.
+`build` was not re-run: 14 concurrent `next-server`/`pnpm` processes were
+running on the machine (~1.0GB free, `vm_stat`) and the existing `.next`
+(`BUILD_ID` `8sM3K74xhwN4B4Fph3T3zOct`) was confirmed source-identical to
+HEAD (`git diff --stat HEAD -- next.config.ts next.config.mjs middleware.ts
+vercel.json src/ package.json pnpm-lock.yaml` returns empty — the only
+build-relevant file to change since the last build, `next.config.ts`, is
+unchanged at HEAD). **Parity gate re-run in the foreground this item**, a
+fresh `pnpm start` on an unused port (3413, cwd verified against the repo
+root, not a reused server — see the `gate-measured-foreign-server-on-3311`
+session memory this item deliberately avoided repeating):
+`--baseline='refs/ke_live_{width}.png'`: **380 8.58% / 768 9.01% / 1440
+4.16%, all PASS**, rows written by the gate itself to
+`docs/UI-PARITY-REPORT.md` at `d952f236e`/`d952f236e-dirty` — effectively
+identical to Q54's 8.58/9.02/4.16, zero drift. **Verdict unchanged: NOT
+READY.** All eight blocking lines below are still open and every one is
+either an Ofir-only action (DNS already done; Cardcom production keys; cron
+secret; `SUPABASE_SECRET_KEY` rotation; R2 activation) or an operator
+decision this agent cannot make unilaterally (which catalogue duplicate is
+real; which pending migrations to approve for a production apply window).
+**`v1.0.0` is not tagged this item, for the same reason the 09.09 and 06.09
+sections below gave and it is still correct: a bare `v1.0.0` tag already
+exists** (`14954dfb1`, 2026-08-10, a real past state) **and moving it would
+rewrite a ref other clones already hold, pointed at code this document calls
+NOT READY.** This audit pass is tagged `v1.0.0-rc7-final-audit` instead — the
+next name in the sequence this branch already uses (`rc2` through `rc6`
+exist, `rc6-final-audit` was 2026-09-10) — at `HEAD` once this commit lands.
+
+Between M15-c61 and M15-c62, `git log 947553fa0..HEAD` shows six commits
 (M09-c62..M14-c62), of which one touched code on a path a blocking line
 depends on (`scripts/bundle-report.mjs`, M14-c62, a measurement-surface
 fix, not a blocking line itself) — `git diff --stat 947553fa0..HEAD --
@@ -141,8 +186,8 @@ listed with its exact step in the last section.
 | 1 | ~~The domain does not resolve~~ — **RESOLVED, M01-c52, re-measured M01-c53** | The registrar's NS now reads `ns1.vercel-dns.com`/`ns2.vercel-dns.com` (not `ns1/ns2.vercel.com` as measured every prior run through M18-c51); `dig +short A` returns `216.198.79.1`/`216.198.79.65`, `curl https://www.kenyonexpress.co.il/` returns 200 with live content (`lang="he" dir="rtl"`). Who changed it and when was not measured, only the result. Row kept for its history rather than deleted. |
 | 2 | Production charges no card | `/checkout` on the live alias serves `frame-src https://secure.cardcom.solutions 'self'`; the `'self'` grant is appended only when `usesMockPaymentProvider()` is true (`src/lib/security/frame-policy.ts`). In the last 30 days `payments` holds 24 rows with a `mock-` transaction id and 15 with none, zero real Cardcom ids. 19 `paid` orders in 7 days, all of them E2E runs against the mock. |
 | 3 | No notification has left production in 15 days | `notification_outbox`: 72 rows `pending`, `sent_at` null, oldest `2026-09-10 09:57 UTC`. The drain (`/api/cron/notifications`, every 5 minutes) is called by `.github/workflows/cron.yml`, which fires from `main` and has **failed 40 of its last 40 runs**: every route in HEAD answers **401** to the `CRON_SECRET` GitHub holds, so the GitHub secret and the Vercel one differ. The same failure silences `expire-vouchers`, `invoices`, `stranded-payments`, `webhook-dlq`, `abandoned-cart` and the rest of the 21 jobs. `main`'s `scripts/cron-jobs.json` also names seven routes HEAD does not ship (`search-reindex`, `job-dlq`, `search-outbox`, `cashback-settlement`, `email-retry`, `expire-cashback`, `expire-coupons`), each a 404. |
-| 4 | The live build is 22 commits behind HEAD (25.09; 299 now, git-only) | Production deployment `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, built from `a388118f1` (24.09 17:42 UTC), unchanged since M01-c53's refused redeploy attempt (M01-c54 and M01-c55 both tried again and were refused the same way, still `a388118f1`). `git rev-list --count a388118f1..HEAD` = 22 on 25.09, from Q03 through Q23; 47 on 29.09 (M15-c51); 66 on 29.09 (M15-c52); 83 on 29.09 (M15-c53); 101 on 29.09 (M15-c54); 118 on 29.09 (M15-c55); 136 on 29.09 (M15-c56); 153 on 30.09 (M15-c57); 171 on 30.09 (M15-c58); 189 on 30.09 (M15-c59); 207 on 30.09 (M15-c60); 225 on 30.09 (M15-c61); 245 on 30.09 (M15-c62); 263 on 30.09 (M15-c63); 274 on 30.09 (M08-c64); 281 on 01.10 (M15-c64); 292 on 01.10 (M08-c65); **299 on 01.10** (M15-c65, same command, local git only — the live alias was not re-probed this run, this task is a docs sync; M01-c55's own deploy attempt measured 105 at that point in the same day, M01-c56 measured 122 the same way). Markers on the alias, 25.09: `p_con__city` 0, `pdp-small-print` 0, `StrikethroughPrice` 0, `account-side` 0, frozen `ke-live-deal-N` images 31. The Q22 account-grid fix is not live. |
-| 5 | Migrations the shipped code needs are not applied | Production migration head `20260910085722`. `to_regclass` says MISSING for `supplier_applications` (204), `app_consent_events` (240), `affiliate_campaigns` (244), `contact_channels` (236), `feature_flags` (235), `fraud_blocklist` (234), `customer_invoice_settings` (239); `products.original_price_source` (242) and `products.cancellation_window_days` (243) have 0 columns; `notifications.outbox_id` (223) 0. **The full list is 17 files, not 9**: `STATE.md`'s blocker-3 list (218, 245, 246, 209, 220 — the advisor/RLS findings from M05-c1) and this row's own to_regclass scan only partially overlapped; merged without duplicates in `docs/BACKLOG.md` item 5 (M15-c51). Order and preconditions in `migrations/pending/APPLY-ORDER.md`, not file-number order — nine files (188-191, 194, 196, 197, 201, 218 per the 21.09 dry run; **218's trigger was re-measured broken on 25.09 by M05-c1**, see `docs/BACKLOG.md`) are already live, so "apply the folder in order" is wrong; apply by the object scan in `docs/GO-LIVE-DRY-RUN.md`. |
+| 4 | The live build is 22 commits behind HEAD (25.09; 299 now, git-only) | Production deployment `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, READY, built from `a388118f1` (24.09 17:42 UTC), unchanged since M01-c53's refused redeploy attempt (M01-c54 and M01-c55 both tried again and were refused the same way, still `a388118f1`). `git rev-list --count a388118f1..HEAD` = 22 on 25.09, from Q03 through Q23; 47 on 29.09 (M15-c51); 66 on 29.09 (M15-c52); 83 on 29.09 (M15-c53); 101 on 29.09 (M15-c54); 118 on 29.09 (M15-c55); 136 on 29.09 (M15-c56); 153 on 30.09 (M15-c57); 171 on 30.09 (M15-c58); 189 on 30.09 (M15-c59); 207 on 30.09 (M15-c60); 225 on 30.09 (M15-c61); 245 on 30.09 (M15-c62); 263 on 30.09 (M15-c63); 274 on 30.09 (M08-c64); 281 on 01.10 (M15-c64); 292 on 01.10 (M08-c65); 299 on 01.10 (M15-c65); **336 on 01.10** (Q55, same command, local git only — the live alias was not re-probed this run, this task is a docs sync; M01-c55's own deploy attempt measured 105 at that point in the same day, M01-c56 measured 122 the same way). Markers on the alias, 25.09: `p_con__city` 0, `pdp-small-print` 0, `StrikethroughPrice` 0, `account-side` 0, frozen `ke-live-deal-N` images 31. The Q22 account-grid fix is not live. |
+| 5 | Migrations the shipped code needs are not applied | Production migration head `20260910085722`. `to_regclass` says MISSING for `supplier_applications` (204), `app_consent_events` (240), `affiliate_campaigns` (244), `contact_channels` (236), `feature_flags` (235), `fraud_blocklist` (234), `customer_invoice_settings` (239); `products.original_price_source` (242) and `products.cancellation_window_days` (243) have 0 columns; `notifications.outbox_id` (223) 0. **The full list is 17 files, not 9**: `STATE.md`'s blocker-3 list (218, 245, 246, 209, 220 — the advisor/RLS findings from M05-c1) and this row's own to_regclass scan only partially overlapped; merged without duplicates in `docs/BACKLOG.md` item 5 (M15-c51). Order and preconditions in `migrations/pending/APPLY-ORDER.md`, not file-number order — nine files (188-191, 194, 196, 197, 201, 218 per the 21.09 dry run; **218's trigger was re-measured broken on 25.09 by M05-c1**, see `docs/BACKLOG.md`) are already live, so "apply the folder in order" is wrong; apply by the object scan in `docs/GO-LIVE-DRY-RUN.md`. **`248` was added 2026-10-01 (Q32/Q55)**: a one-table grant (`suppliers.opening_hours`/`google_reviews_url` to `anon`), order after 232 and 242 per its own note in `migrations/pending/README.md`; not probed against production this item, folded into the same "Ofir approves, then applies" step as the other 17, not given its own blocking line. |
 | 6 | The live catalogue still holds template rows | 46 active products (the 09.09 snapshot said 44). Active slugs matching `-copy`, `העתק` or `לדוגמא`: 5. Active names containing `מאסטר`: 3. Active products with a city: 0 of 46 (241 unapplied). `platform_percent` missing: 0. The ledger (`supabase/catalogue-known-issues.json`) holds **26** findings, not 25 — a `no-image` entry (`מזקקת וויסקי`, empty images array) was added 2026-09-10 alongside the 25 and never renamed in any doc since; the gate `pnpm test src/lib/catalogue` reads the ledger directly, so it was green throughout regardless of the doc drift. The ledger is an operator decision, not a fix. |
 | 7 | `SUPABASE_SECRET_KEY` rotation is still open | The key is flagged by hash in `scripts/compromised-keys.mjs` and `scripts/deploy-preflight.mjs` refuses it. Measured 25.09: neither `pnpm build` nor `vercel.json` ran the preflight, so Vercel built with whatever was set. **Fixed the same day (B01):** `vercel.json` `buildCommand` is now `node scripts/deploy-preflight.mjs && pnpm build`, pinned by `scripts/deploy-preflight.test.mjs`. The rotation itself is still Ofir's. The value in Vercel was not read. Both `SUPABASE_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` exist in the production target. |
 | 8 | R2 is not enabled on the Cloudflare account | Measured 10.09 (403, code 10042), not re-measured today; the four `R2_*` variables exist in Vercel. Product images fall back to Supabase Storage and the external DB backup writes nothing. |
@@ -191,9 +236,11 @@ All of these, measured, not recorded:
 בלי לעבור לרשימת פעולה (`RESEND_API_KEY`, שורת ח.פ). לא נשמר עותק כאן.
 **נבדק מחדש ב-M15-c52, ב-M15-c53, ב-M15-c54, ב-M15-c55, ב-M15-c56,
 ב-M15-c57, ב-M15-c58, ב-M15-c59, ב-M15-c61, ב-M15-c62, ב-M15-c63,
-ב-M15-c64 וב-M15-c65 מול `git log`: עדיין 15 סעיפים, אותו סדר, אפס
+ב-M15-c64, ב-M15-c65 וב-Q55 מול `git log`: עדיין 15 סעיפים, אותו סדר, אפס
 כפילות, אפס פריט חדש** — סעיף 1 (DNS) עודכן ל-RESOLVED ומספר הקומיטים
-בסעיף 4 עודכן (299, 01.10, ראו שורת חסימה 4 למעלה).
+בסעיף 4 עודכן (336, 01.10, ראו שורת חסימה 4 למעלה). **Q55**: שער חזותי
+PASS (8.58%/9.01%/4.16%), ארבעת השערים ירוקים, הכרעה ללא שינוי — NOT
+READY, ולכן `v1.0.0` לא תויג; `v1.0.0-rc7-final-audit` תויג במקומו.
 
 ---
 

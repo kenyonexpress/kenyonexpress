@@ -370,6 +370,32 @@ commit (`857a0deea`, M18-c64, 01.10 01:11) by file mtime. All 15 items
 remain actions this file's own preamble excludes an agent from taking
 alone.
 
+**Re-checked 2026-10-01 (Q55) against `git diff --stat cad66a650..HEAD`:**
+still 15 items, same order, no duplicate — **one new file, not a new
+item**: `migrations/pending/248_supplier_storefront_public_columns_grant.sql`
+(Q32, a grant only) folded into item 5's existing file list above (now 19
+files, was 18). 43 commits landed since the M15-c65 checkpoint
+(`cad66a650`); `git diff --stat cad66a650..HEAD -- docs/BACKLOG.md
+migrations/pending supabase/catalogue-known-issues.json src/
+next.config.ts next.config.mjs package.json pnpm-lock.yaml vercel.json
+supabase/ scripts/cron-jobs.json` shows only this file's and `STATE.md`'s
+own re-check notes, `.github/workflows/ci.yml` (Q54, CI wiring, not a
+`BACKLOG.md` item), `248` and its README note. None touched a blocking
+line or the catalogue ledger (re-checked directly, `known` object still
+26). `migrations/pending/*.sql` count is 60 (was 59), the delta is 248.
+Item 4's commit count changed again (299 -> 336, `git rev-list --count
+a388118f1..HEAD`, git-only, production not re-probed this item). `origin/
+main` is 710 behind HEAD and 109 ahead (up from 673/109 at M15-c65).
+`type-check`, `lint` (12 gates, docs-path-audit 153) and `test` (614/614
+files, 7335/7347) all re-run clean this item; `build` not re-run — 14
+concurrent `next-server`/`pnpm` processes were running (~1.0GB free,
+`vm_stat`) and the existing `.next` was confirmed source-identical to
+HEAD by `git diff --stat` on every build-relevant path, empty. The parity
+gate was also re-run this item (Q55 is `docs/LAUNCH-READINESS.md`'s own
+queue item): home 380/768/1440 all PASS, 8.58%/9.01%/4.16%. All 15 items
+remain actions this file's own preamble excludes an agent from taking
+alone.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
@@ -394,8 +420,8 @@ alone.
    ב-M15-c55, 122 ב-M01-c56, 136 ב-M15-c56, 153 ב-M15-c57, 171 ב-M15-c58,
    189 ב-M15-c59, 207 ב-M15-c60, 225 ב-M15-c61, 245 ב-M15-c62, 256
    ב-M08-c63, 263 ב-M15-c63, 274 ב-M08-c64, 281 ב-M15-c64, 292 ב-M08-c65,
-   וכעת (01.10, M15-c65, `git rev-list --count a388118f1..HEAD`, git-only
-   — לא נוסתה פריסה חוזרת בפריט הזה) **299** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
+299 ב-M15-c65, וכעת (01.10, Q55, `git rev-list --count a388118f1..HEAD`, git-only
+   — לא נוסתה פריסה חוזרת בפריט הזה) **336** קומיטים מאחורי HEAD (וניסיונות פריסה חוזרים
    ב-M01-c54 וב-M01-c55 סורבו באותה סיבה בדיוק, פרודקשן נשאר על
    `a388118f1`).
    `POST /v13/deployments` עם `gitSource.sha`,
@@ -407,8 +433,10 @@ alone.
    שהיו כתובות בנפרד (STATE.md חוסם 3: 218, 245, 246, 204, 240-244;
    LAUNCH-READINESS.md שורה 5: 204, 223, 224, 234-236, 239-244), פלוס 209
    ו-220 שנזכרים כתלות של 245/246 באותה רשומה: **204, 209, 218, 220, 223,
-   224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247** (18
-   קבצים, ‏247 בלי תלות בשום קובץ אחר). אחרי ההחלה: `pnpm db:types` ו-commit.
+   224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248**
+   (19 קבצים, ‏247 בלי תלות בשום קובץ אחר; **248 נוסף 01.10, Q55/Q32** —
+   גרנט `anon`/`authenticated` על `suppliers.opening_hours` ו-
+   `google_reviews_url`, אחרי 232 ואחרי 242). אחרי ההחלה: `pnpm db:types` ו-commit.
 6. **Cardcom אמיתי.** לבדוק את הערכים של `CARDCOM_API_KEY`/`CLIENT_ID`/
    `MERCHANT_ID` הקיימים בשם ב-Vercel, לקבוע `CARDCOM_USE_MOCK=false` ו-
    `CHECKOUT_ENABLED=true`, לפרוס מחדש (ה-CSP נאפה בזמן build, לא בזמן
