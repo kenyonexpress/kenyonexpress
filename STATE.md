@@ -1,67 +1,68 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q34)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q35)
 
 ## המשך מ:
 
-**Q34 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"קונסולת מעלה-תוכן (Content-Uploader) בלי שדות תמחור, ולוח ספק
-(Supplier-View) לקריאה בלבד". **אינו קיים בתור האמיתי** (`Q34` ב-`docs/
-QUESTIONS-FOR-OFIR.md` הוא פריט לא קשור: הצפנת פרטי בנק של ספק), אותו
-דפוס כמו Q25-Q33, נבדק לפי שני הסעיפים בפועל מול הקוד.
+**Q35 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"תפריט יצירת קשר בחמישה ערוצים, ודף הצטרפות ספקים עם הסכם click-wrap
+(גרסה, hash, IP, timestamp)". **אינו קיים בתור האמיתי** (`Q35` ב-`docs/
+QUESTIONS-FOR-OFIR.md` הוא פריט לא קשור: ריבוי ספקים למשתמש ב-UI), אותו
+דפוס כמו Q25-Q34, נבדק לפי שני הסעיפים בפועל מול הקוד.
 
-**שני הסעיפים קיימים במלואם, אפס שינוי קוד.** Content-Uploader: תפקיד
-`content_uploader` (`src/lib/admin/roles.ts:4,16,26,47`,
-`src/types/database.ts:5616,5881`). RBAC: `CONTENT_UPLOADER_ACCESS`
-(`src/lib/admin/permissions.ts:28-47`) נועל את כל הסעיפים חוץ מקטלוג
-ל-`'none'`, `canSeeMoney(role)` (שורה 90) מחזיר `false` לתפקיד הזה. UI:
-`ProductForm.tsx` עם prop `hidePricing` (שורה 80,103, שימוש בשורות
-408,502,1390), מוזן מ-`canSeeMoney(session.role)` בשלושת דפי המוצר
-(`products/page.tsx:175`, `new/page.tsx:36`, `[id]/edit/page.tsx:68`).
-אכיפה גם בצד שרת, לא רק UI: `applyUploaderPolicy`
-(`src/lib/admin/uploader-policy.ts`) מוחק `platform_percent`/
-`supplier_split_percent` מכל קלט שהתפקיד הזה שולח וכופה
-`approval_status='pending'`, מכוסה בטסטים (`uploader-prohibitions.
-test.ts`, `permissions.test.ts`).
+**שני הסעיפים קיימים במלואם, אפס שינוי קוד.** תפריט יצירת קשר:
+`DEFAULT_CONTACT_CHANNELS` ב-`src/lib/contact/channels.ts` מחזיק בדיוק
+חמישה ערוצים (`customer_service`, `suggestions`, `business_partnerships`,
+`site_problem`, `supplier_join`), מרונדר בפוטר הגלובלי
+(`FooterContactChannels.tsx`, דרך `SiteFooter` ב-`(store)/layout.tsx`)
+ובבורר הנושאים בעמוד `/contact` (`ContactTopicPicker.tsx`). קריאה דרך
+`listActiveContactChannels`/`listPageContactConfigs` מהטבלאות
+`contact_channels`/`page_contact_config` כשקיימות, ומ-defaults זהים
+לזריעה **כש-מיגרציה 236 עדיין pending** או כשהקריאה נכשלת, אין נפילה שקטה.
 
-Supplier-View לקריאה בלבד: `src/app/(supplier)/supplier/page.tsx`
-(240 שורות) הוא לוח סטטיסטיקות בלבד, אפס `<form>`, אפס קריאה ל-server
-action, אפס כפתור מוטציה (נבדק בקריאת הקובץ ישירות). תואם למושג
-המתועד כבר ב-`docs/CARDCOM-ARCHITECTURE.md:464` ("ספק (Supplier-View)
-רואה SELECT בלבד על השורות שלו"). שאר תיקיית `/supplier` (orders,
-products, payouts, scan, settings) כן מכילה פעולות כתיבה
-(`markSupplierItemShipped`, סריקת שוברים, הגשת תמונות/הצעות מחיר), אבל
-אלה פעולות תפעוליות נפרדות מדף הלוח עצמו, לא נוגעות בתמחור, ולא התבקש
-לוח שמבטל גם אותן.
+הצטרפות ספקים (click-wrap): `/suppliers/apply` (`SupplierApplyWizard`),
+טקסט/גרסה/hash קבועים בשרת ב-`src/lib/suppliers/contract.ts`
+(`CONTRACT_VERSION`, `contractHash()` SHA-256, מחושב מהקבוע ולעולם לא
+מהטופס). השרת (`src/server/actions/supplier-onboarding.ts`) רושם
+`contract_version`, `contract_sha256`, `client_ip` (`getClientIp()`)
+ו-`accepted_at DEFAULT now()` ב-`supplier_contract_acceptances`, טבלת
+append-only (אין UPDATE/DELETE policy לאף אחד) שמגיעה מ-**מיגרציה 204,
+עדיין pending** (חוסם פתוח #3, ללא שינוי). שני הסעיפים גם מחוברים
+בפועל: `/suppliers/apply` תחת `(store)`, אותו layout שמרנדר את
+`SiteFooter`, כך שחמשת הערוצים מופיעים באותו עמוד שבו רץ ה-click-wrap.
+
+**ממצא לוואי, לא חוסם:** `resolvePageConfig` וה-mapping `/suppliers/apply`
+← `supplier_join` ב-`DEFAULT_PAGE_CONTACT_CONFIGS` מוגדרים ומכוסים בטסט
+אך **אין קורא בפועל** (תבנית "פיצ'ר גמור בלי צרכן" חוזרת), לא נדרש
+לסגירת הפריט כי חמשת הערוצים כן מרונדרים בפוטר בלי תלות בכך.
 
 ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
-קבצים 7303/7315 (זהה ל-Q33, אפס שינוי), `rm -rf .next && pnpm build` נקי
-(שרת זמני על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS
-בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
-{width}.png`), זהה בייט לבייט לבסיס Q31-Q33, נכתב אוטומטית
-ל-`docs/UI-PARITY-REPORT.md`, צפוי כי לא נגעו בדף הבית.
+קבצים 7303/7315 (זהה ל-Q34), `rm -rf .next && pnpm build` נקי (שרת זמני
+על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS בשלושת
+הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_{width}.png`),
+זהה בייט לבייט לבסיס Q31-Q34, נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md`.
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**Q33 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q34
-לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;
-כל תשעת סעיפי ניהול המוצרים/קטגוריות/ספקים/הזמנות/זיכויים/שוברים כבר
-בנויים במלואם. שער חזותי PASS בשלושת הרוחבים (8.51/9.02/3.95%). ארבעת
-השערים ירוקים.
+**Q34 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו).** פריט
+חיצוני חד-פעמי, לא קיים בתור האמיתי; קונסולת מעלה-תוכן בלי שדות תמחור
+(RBAC + אכיפת שרת ב-`uploader-policy.ts`) ולוח ספק לקריאה בלבד
+(`/supplier/page.tsx`, אפס מוטציה) כבר בנויים במלואם. שער חזותי PASS
+(8.51/9.02/3.95%). ארבעת השערים ירוקים.
 
-**Q28..Q32 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q33
-לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים, אף אחד לא
-בתור האמיתי. Q32 — דף ספק (`/s/[id]`): שעות פתיחה וקישור ביקורות גוגל
-היו היחידים שחסרו בפועל (שאר ארבעת הסעיפים כבר היו בנויים), שני שדות
+**Q28..Q33 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו).**
+שישה פריטים חיצוניים חד-פעמיים, אף אחד לא בתור האמיתי. Q33 — כל תשעת
+סעיפי ניהול המוצרים/קטגוריות/ספקים/הזמנות/זיכויים/שוברים כבר בנויים
+במלואם, שער חזותי PASS (8.51/9.02/3.95%). Q32 — דף ספק (`/s/[id]`):
+שעות פתיחה וקישור ביקורות גוגל היו היחידים שחסרו בפועל (שאר ארבעת הסעיפים כבר היו בנויים), שני שדות
 אופציונליים חדשים + מיגרציה שלישית `248_supplier_storefront_public_
 columns_grant.sql` (GRANT בלבד, לא נוגעת ב-232/242 עצמם). Q31 — מתג
 "הכל באפליקציה" ב-`/account/notifications`. Q30 — כפתור הורדת חשבונית
 וקישור wa.me בעמוד התודה. Q29 — guest checkout עם Google sign-in ושמירת
 כרטיס מטוקניז. Q28 — עריכת שורה וקוד קופון בסל, מתג ארנק נכון שלא קיים
 בסל (שייך לקופה בכוונה). שער חזותי: Q31/Q32 PASS בשלושת הרוחבים
-(8.51/9.02/3.95%, `kenyonexpress.co.il` נסרב כ-reference לראשונה ב-Q31,
-נמדד מול `refs/ke_live_{width}.png`); Q28-Q30 PASS ב-1440 בלבד
-(0.95-1.47%), 380/768 REFUSED (reference 1440 בלבד אז). ארבעת השערים
-ירוקים בכל החמישה.
+(8.51/9.02/3.95%, `kenyonexpress.co.il` נסרב כ-reference לראשונה ב-Q31);
+Q28-Q30 PASS ב-1440 בלבד (0.95-1.47%), 380/768 REFUSED. ארבעת השערים
+ירוקים בכל הששה.
 
 **Q27 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q29
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;

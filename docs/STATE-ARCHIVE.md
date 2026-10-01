@@ -2,6 +2,47 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q34 (הועבר מ-STATE.md ב-Q35, לשמירה על תקרת 300 שורות)
+
+**Q34 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"קונסולת מעלה-תוכן (Content-Uploader) בלי שדות תמחור, ולוח ספק
+(Supplier-View) לקריאה בלבד". **אינו קיים בתור האמיתי** (`Q34` ב-`docs/
+QUESTIONS-FOR-OFIR.md` הוא פריט לא קשור: הצפנת פרטי בנק של ספק), אותו
+דפוס כמו Q25-Q33, נבדק לפי שני הסעיפים בפועל מול הקוד.
+
+**שני הסעיפים קיימים במלואם, אפס שינוי קוד.** Content-Uploader: תפקיד
+`content_uploader` (`src/lib/admin/roles.ts:4,16,26,47`,
+`src/types/database.ts:5616,5881`). RBAC: `CONTENT_UPLOADER_ACCESS`
+(`src/lib/admin/permissions.ts:28-47`) נועל את כל הסעיפים חוץ מקטלוג
+ל-`'none'`, `canSeeMoney(role)` (שורה 90) מחזיר `false` לתפקיד הזה. UI:
+`ProductForm.tsx` עם prop `hidePricing` (שורה 80,103, שימוש בשורות
+408,502,1390), מוזן מ-`canSeeMoney(session.role)` בשלושת דפי המוצר
+(`products/page.tsx:175`, `new/page.tsx:36`, `[id]/edit/page.tsx:68`).
+אכיפה גם בצד שרת, לא רק UI: `applyUploaderPolicy`
+(`src/lib/admin/uploader-policy.ts`) מוחק `platform_percent`/
+`supplier_split_percent` מכל קלט שהתפקיד הזה שולח וכופה
+`approval_status='pending'`, מכוסה בטסטים (`uploader-prohibitions.
+test.ts`, `permissions.test.ts`).
+
+Supplier-View לקריאה בלבד: `src/app/(supplier)/supplier/page.tsx`
+(240 שורות) הוא לוח סטטיסטיקות בלבד, אפס `<form>`, אפס קריאה ל-server
+action, אפס כפתור מוטציה (נבדק בקריאת הקובץ ישירות). תואם למושג
+המתועד כבר ב-`docs/CARDCOM-ARCHITECTURE.md:464` ("ספק (Supplier-View)
+רואה SELECT בלבד על השורות שלו"). שאר תיקיית `/supplier` (orders,
+products, payouts, scan, settings) כן מכילה פעולות כתיבה
+(`markSupplierItemShipped`, סריקת שוברים, הגשת תמונות/הצעות מחיר), אבל
+אלה פעולות תפעוליות נפרדות מדף הלוח עצמו, לא נוגעות בתמחור, ולא התבקש
+לוח שמבטל גם אותן.
+
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים 7303/7315 (זהה ל-Q33, אפס שינוי), `rm -rf .next && pnpm build` נקי
+(שרת זמני על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS
+בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
+{width}.png`), זהה בייט לבייט לבסיס Q31-Q33, נכתב אוטומטית
+ל-`docs/UI-PARITY-REPORT.md`, צפוי כי לא נגעו בדף הבית.
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## Q33 (הועבר מ-STATE.md ב-Q34, לשמירה על תקרת 300 שורות)
 
 **Q33 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
