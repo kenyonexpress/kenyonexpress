@@ -1,50 +1,57 @@
-RESUME FROM: M03-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c66 - DONE, שער חזותי מוצר נמדד מחדש, אפס דריפט)
+RESUME FROM: M04-c66
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c66 - DONE, שער חזותי קטגוריה נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M02-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs on
-`/product` sample". `COMPARE_PRODUCT_SLUG` בררת המחדל (`מוצר-לדוגמא`,
-literally "product sample") היא גם שורת ה-`-copy`/`-לדוגמא` הידועה
-בפנקס `catalogue-known-issues.json` — לא שונתה, זה המוצר שהשער בודק מאז
-ומתמיד.
+**M03-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs on
+`/category` sample". `COMPARE_CATEGORY_SLUG` בררת המחדל (`hot-deals`, 2
+מוצרים פעילים) — לא שונתה, אותה קטגוריה שהשער בודק מאז Q27 (העבודה
+שסגרה את השער הזה: `CategoryFilterSidebar.tsx` פתוח כברירת מחדל +
+תיקון thumb 0x0 ב-380px, קומיט `60bcbab56`).
 
-**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3911 (cwd
-אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק; 14
+**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3916 (cwd
+אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק; 5-6
 `next-server`/`pnpm start` נוספים רצו בו-זמנית על פורטים אחרים, ראו
 זיכרון `gate-measured-foreign-server-on-3311`):** `LOCAL_BASE=
-http://localhost:3911 node scripts/compare.mjs --page=product
---widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
-(reference מקור Electro, לא live — דף המוצר כבר סגור לאותה בסיס מ-Q05b,
-ראו חוסם 14 למטה).
+http://localhost:3916 node scripts/compare.mjs --page=category
+--widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'`
+(reference מקור Electro `/shop/`, לא live — דף הקטגוריה כבר סגור לאותה
+בסיס מ-Q27). הרצה הראשונית חרגה מ-180 שניות ועברה לרקע אוטומטית; חוכתה
+עד לסיום בפועל (Monitor + בדיקת תהליכים), המספרים למטה הם מאותה ריצה
+יחידה, לא ריצה חדשה.
 
-**תוצאות, כולן PASS, דריפט כמעט אפס מ-17ce87bcd (03:04-03:06, אותו
-מחזור):**
+**תוצאות, כולן PASS, אפס דריפט מ-Q27 (04:07-04:11, אותו מחזור):**
 
-| רוחב | אחוז | סף | מצב | קודם |
+| רוחב | אחוז | סף | מצב | קודם (Q27) |
 |------|------|-----|------|------|
-| 380  | 4.96% | 11% | PASS | 4.96% |
-| 768  | 4.58% | 11% | PASS | 4.57% |
-| 1440 | 3.25% | 11% | PASS | 3.25% |
+| 380  | 3.53% | 11% | PASS | 3.53% |
+| 768  | 2.52% | 11% | PASS | 2.52% |
+| 1440 | 1.69% | 11% | PASS | 1.69% |
 
-`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`308cfe7cf-dirty`,
-13:27-13:34; שורה REFUSED נוספת ב-13:25 ל-`home`/1440 אינה של הפריט הזה
-— נכתבה על ידי סשן מקביל אחר שכותב לאותו קובץ).
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`820d7076b-dirty`,
+13:41-13:45).
 
 **ארבעת השערים:** `pnpm type-check` נקי. `pnpm lint` נקי, 12 שערים.
 `pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה
-ל-M01-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: 14 `next-server`
-רצו במקביל, ~0.8GB פנויים (`vm_stat`) — סיכון OOM לסשנים מקבילים (זיכרון
-`concurrent-worktree-builds-oom`). ה-`.next` הקיים (`BUILD_ID`
-`8sM3K74xhwN4B4Fph3T3z`) אומת זהה-מקור ל-HEAD (`git diff --stat HEAD --
-next.config.ts next.config.mjs middleware.ts vercel.json src/
-package.json pnpm-lock.yaml` ריק).
+ל-M02-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: 12
+`next-server`/`pnpm start` רצו במקביל, ~1.1GB פנויים (`vm_stat`) —
+סיכון OOM לסשנים מקבילים (זיכרון `concurrent-worktree-builds-oom`).
+ה-`.next` הקיים (`BUILD_ID 8sM3K74xhwN4B4Fph3T3z`, זהה ל-M02-c66) אומת
+זהה-מקור ל-HEAD (`git diff --stat HEAD -- next.config.ts
+next.config.mjs middleware.ts vercel.json src/ package.json
+pnpm-lock.yaml` ריק).
 
 קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
 
-**M01-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M02-c66 לשמירה על תקרת 300 שורות).** פריט תור, DONE: שער חזותי בית
-נמדד מחדש, 8.58%/9.01%/4.16%, אפס דריפט מ-Q55. ארבעת השערים ירוקים.
+**חוסם 14 עודכן:** `category` **כן** יש לו reference תלת-רוחבי תקין
+(`refs/electro_shop_{width}.png`, נסגר כבר ב-Q27) — הטקסט הקודם
+("לא נבדק... category") היה מיושן. `products`/`search` עדיין לא נבדקו.
+
+**M01-c66 ו-M02-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c66 לשמירה על תקרת 300 שורות).** שני פריטי תור, DONE: שער
+חזותי בית נמדד מחדש (8.58%/9.01%/4.16%, אפס דריפט מ-Q55), שער חזותי
+מוצר נמדד מחדש (4.96%/4.58%/3.25%, אפס דריפט). ארבעת השערים ירוקים
+בשניהם.
 
 **Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M01-c66
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, DONE: `LAUNCH-
@@ -276,11 +283,14 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
     רגע **כל מדידה על `home` חייבת `--baseline='refs/ke_live_{width}.png'`**
     (קיים בשלושת הרוחבים, נבדק PASS ב-Q31: `8.51%`/`9.02%`/`3.95%`). לדף
     המוצר יש כבר באותו תבנית (`refs/ke_live_product_{width}.png`, Q05b).
-    **לא נבדק**: אם `category`/`products`/`search` נתקלים באותו סירוב —
-    יש להם רק צילום בודד לא-ממותג-רוחב (`refs/live-{category,products,
-    search}.png`), לא `{width}` לכל רוחב, כך שהם עלולים להיתקע ללא reference
-    תקין בכלל. בדיקה והקפאת reference תלת-רוחבי לשלושתם, אם יידרש מדד
-    חזותי עליהם, היא עבודה של פריט עתידי.
+    **`category` נסגר כבר ב-Q27**: `refs/electro_shop_{width}.png`
+    (Electro `/shop/`) קיים בשלושת הרוחבים, נבדק PASS שוב ב-M03-c66
+    (01.10.2026, אפס דריפט: 3.53%/2.52%/1.69%). **לא נבדק**: אם
+    `products`/`search` נתקלים באותו סירוב — יש להם רק צילום בודד
+    לא-ממותג-רוחב (`refs/live-{products,search}.png`), לא `{width}` לכל
+    רוחב, כך שהם עלולים להיתקע ללא reference תקין בכלל. בדיקה והקפאת
+    reference תלת-רוחבי לשניהם, אם יידרש מדד חזותי עליהם, היא עבודה של
+    פריט עתידי.
 
 ## ידני לאופיר, לפי סדר קריטיות
 

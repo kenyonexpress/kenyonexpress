@@ -862,3 +862,7 @@ to an already large session.
 | 2026-10-01 13:31 | product | 1440 | 3.25% | PASS | `308cfe7cf-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 19.68% (reference blank 10.74%, ours blank 5.69%) |
 | 2026-10-01 13:32 | product | 768 | 4.58% | PASS | `308cfe7cf-dirty` | live side: frozen capture `refs/electro_product_768.png`; overall 32.33% (reference blank 21.24%, ours blank 6.51%) |
 | 2026-10-01 13:34 | product | 1440 | 3.25% | PASS | `308cfe7cf-dirty` | live side: frozen capture `refs/electro_product_1440.png`; overall 19.68% (reference blank 10.74%, ours blank 5.69%) |
+| 2026-10-01 13:39 | home | 1440 | n/a | REFUSED | `820d7076b` | live side is our-build |
+| 2026-10-01 13:41 | category | 380 | 3.53% | PASS | `820d7076b-dirty` | live side: frozen capture `refs/electro_shop_380.png`; overall 29.59% (reference blank 9.63%, ours blank 16.43%) |
+| 2026-10-01 13:43 | category | 768 | 2.52% | PASS | `820d7076b-dirty` | live side: frozen capture `refs/electro_shop_768.png`; overall 31.47% (reference blank 9.4%, ours blank 19.54%) |
+| 2026-10-01 13:45 | category | 1440 | 1.69% | PASS | `820d7076b-dirty` | live side: frozen capture `refs/electro_shop_1440.png`; overall 18.02% (reference blank 5.05%, ours blank 11.27%) |

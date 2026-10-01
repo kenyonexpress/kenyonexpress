@@ -2,6 +2,47 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c66 (הועבר מ-STATE.md ב-M03-c66, לשמירה על תקרת 300 שורות)
+
+**M02-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs on
+`/product` sample". `COMPARE_PRODUCT_SLUG` בררת המחדל (`מוצר-לדוגמא`,
+literally "product sample") היא גם שורת ה-`-copy`/`-לדוגמא` הידועה
+בפנקס `catalogue-known-issues.json` — לא שונתה, זה המוצר שהשער בודק מאז
+ומתמיד.
+
+**השער רץ ב-foreground במלואו, שרת `pnpm start` טרי בפורט 3911 (cwd
+אומת: `lsof -p <pid> -a -d cwd` החזיר את הספרייה הזו בדיוק; 14
+`next-server`/`pnpm start` נוספים רצו בו-זמנית על פורטים אחרים, ראו
+זיכרון `gate-measured-foreign-server-on-3311`):** `LOCAL_BASE=
+http://localhost:3911 node scripts/compare.mjs --page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
+(reference מקור Electro, לא live — דף המוצר כבר סגור לאותה בסיס מ-Q05b,
+ראו חוסם 14 למטה).
+
+**תוצאות, כולן PASS, דריפט כמעט אפס מ-17ce87bcd (03:04-03:06, אותו
+מחזור):**
+
+| רוחב | אחוז | סף | מצב | קודם |
+|------|------|-----|------|------|
+| 380  | 4.96% | 11% | PASS | 4.96% |
+| 768  | 4.58% | 11% | PASS | 4.57% |
+| 1440 | 3.25% | 11% | PASS | 3.25% |
+
+`docs/UI-PARITY-REPORT.md` עודכן על ידי השער עצמו (`308cfe7cf-dirty`,
+13:27-13:34; שורה REFUSED נוספת ב-13:25 ל-`home`/1440 אינה של הפריט הזה
+— נכתבה על ידי סשן מקביל אחר שכותב לאותו קובץ).
+
+**ארבעת השערים:** `pnpm type-check` נקי. `pnpm lint` נקי, 12 שערים.
+`pnpm test`: **614/614 קבצים, 7335/7347 עברו**, 12 מדולגים — זהה
+ל-M01-c66, אפס דריפט. `pnpm build` **לא הורץ מחדש**: 14 `next-server`
+רצו במקביל, ~0.8GB פנויים (`vm_stat`) — סיכון OOM לסשנים מקבילים (זיכרון
+`concurrent-worktree-builds-oom`). ה-`.next` הקיים (`BUILD_ID`
+`8sM3K74xhwN4B4Fph3T3z`) אומת זהה-מקור ל-HEAD (`git diff --stat HEAD --
+next.config.ts next.config.mjs middleware.ts vercel.json src/
+package.json pnpm-lock.yaml` ריק).
+
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
 ## M01-c66 (הועבר מ-STATE.md ב-M02-c66, לשמירה על תקרת 300 שורות)
 
 **M01-c66 - DONE (01.10.2026).** משימת התור: "Re-measure compare.mjs 380
