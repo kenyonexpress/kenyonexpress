@@ -1,27 +1,30 @@
-RESUME FROM: M16-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c67 - DONE, אפס console error על `/` ו-`/product` על build נקי)
+RESUME FROM: M17-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c67 - DONE, JSON-LD Product+BreadcrumbList נבדק מחדש בכל דפי המוצר, אפס דריפט)
 
 ## המשך מ:
 
-**M15-c67 - DONE (02.10.2026).** משימת התור: "Verify no console errors on
-`/` and `/product` sample" — זהה למילה למשימת M15-c66 (01.10.2026). **נבדק
-מחדש בדפדפן אמיתי, אפס דריפט.** שישה-שמונה סשנים מקבילים כבר רצו
-`pnpm start` על אותה תיקייה (פורטים 3311-3316/3618/3911/4211) על `.next`
-בן אותו יום (01:23) — `curl -I` על אחד מהם הראה את אותה תקלת-build-ישן
-שתועדה ב-M15-c66: `upgrade-insecure-requests` עדיין אפוי ב-CSP (כלומר ה-
-`.next` המשותף נבנה בלי `NEXT_PUBLIC_APP_URL=http://...` גם הפעם, לא
-רגרסיה בקוד). **אותה החלטה כמו ב-M15-c66**: `rm -rf .next` מלא על
-התיקייה המשותפת (לא worktree) ובנייה מחדש עם
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3317 pnpm
-build` (exit 0), `curl -I` אישר שה-CSP איבד את הדירקטיבה. שרת `pnpm
-start -p 3317` עצמאי, `e2e/route-audit.spec.ts --grep "anon /$|anon
-dynamic catalogue routes"` — **4/4 עברו** (chromium+mobile-chrome),
-אפס `consoleErrors`/`hydrationWarnings` על `/` ועל מסלולי הקטלוג הדינמיים
-(כולל `/product/[slug]`). **לא נדרש תיקון קוד.** ארבעת השערים: `type-check`
-נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12
-מדולגים, זהה), `build` (למעלה) exit 0 נקי. לא פריט חזותי, `compare.mjs`
-לא נדרש (תקדים M04-c66..M15-c66, M14-c67). קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M16-c67 - DONE (02.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למילה למשימת M16-c66
+(01.10.2026). **נבדק מחדש, אפס דריפט.** `git log 56d5a2909..HEAD` על
+`src/app/(store)/product`, `src/lib/seo` ריק — אין קומיט שנגע בקבצים
+הרלוונטיים מאז M16-c66. **מקור האמת זהה**: `product/[slug]/page.tsx`
+בונה את שני הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/
+`buildBreadcrumbJsonLd` מ-`src/lib/seo/json-ld.ts`, שני
+`<script type="application/ld+json">` תמיד ברינדור, לא מאחורי דגל, לא
+מסתעף לפי סוג מוצר/מלאי). **אומת גם ברמת הדף**: `pnpm start -p 4522`
+עצמאי על `.next` קיים, `E2E_BASE_URL=http://localhost:4522 npx
+playwright test e2e/seo-markup.spec.ts --grep "Product JSON-LD and a
+breadcrumb"` — **2/2 עברו** (chromium+mobile-chrome): `@type` כולל
+`Product`+`BreadcrumbList`, ול-`Product` יש `name` לא-ריק. **לא נדרש
+תיקון קוד.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים),
+`test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4522 pnpm
+build`) exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M15-c67). קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M15-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c67).**
+אפס console error נבדק מחדש בדפדפן אמיתי על `/` ו-`/product`, אפס דריפט
+מ-M15-c66; build משותף נבנה מחדש אחרי תקלת CSP ישנה (`upgrade-insecure-requests`).
 
 **M14-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c67).**
 Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c66; הפער בין פרודקשן
@@ -32,15 +35,11 @@ Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c66; הפע
 
 **M04-c67..M12-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M13-c67 לשמירה על תקרת 300 שורות).** תשעה פריטי אימות-בלבד/תחזוקה:
-robots.txt אומת מול פרודקשן ותוקן — שלוש כתובות-אסימון (`/gift/`,
-`/order/.../tracking`, `/wishlist/s/`) חסרות מ-`Disallow` (M12);
-`type-check` (M04), `test` (M05), `pnpm build` בפועל (M06) — אפס דריפט
-בשלושתם; סריקת `TODO`/`FIXME` רוחב-ריפו עם צימוד מפורש ב-`BACKLOG.md`
-סעיף 6 (M07); Lighthouse mobile `/`+`/product` 100/100/100 (M08); חמש
-חבילות מתות הוסרו ושני קבועים פנימיים-בלבד הופשטו מ-`export` (M09); 19
-מיגרציות ממתינות אומתו מחדש מול הקוד (אין סחיפה מ-M10-c66, שאימת מול
-פרודקשן בפועל, M10); sitemap.xml אומת טרי מול פרודקשן בפועל פעם שנייה,
-אפס דריפט מ-M11-c66 (M11). ארבעת השערים ירוקים בכל השמונה.
+robots.txt תוקן (שלוש כתובות-אסימון חסרות מ-`Disallow`, M12);
+type-check/test/build אפס דריפט (M04-M06); TODO/FIXME עם צימוד
+ב-BACKLOG (M07); Lighthouse 100/100/100 (M08); חמש חבילות מתות הוסרו
+(M09); 19 מיגרציות אומתו (M10); sitemap.xml אפס דריפט (M11). ארבעת
+השערים ירוקים בכל השמונה.
 
 **M18-c66..M03-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M04-c67 לשמירה על תקרת 300 שורות).** שלושה שערים חזותיים נמדדו

@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c67 (הועבר מ-STATE.md ב-M16-c67, לשמירה על תקרת 300 שורות)
+
+**M15-c67 - DONE (02.10.2026).** משימת התור: "Verify no console errors on
+`/` and `/product` sample" — זהה למילה למשימת M15-c66 (01.10.2026). **נבדק
+מחדש בדפדפן אמיתי, אפס דריפט.** שישה-שמונה סשנים מקבילים כבר רצו
+`pnpm start` על אותה תיקייה (פורטים 3311-3316/3618/3911/4211) על `.next`
+בן אותו יום (01:23) — `curl -I` על אחד מהם הראה את אותה תקלת-build-ישן
+שתועדה ב-M15-c66: `upgrade-insecure-requests` עדיין אפוי ב-CSP (כלומר ה-
+`.next` המשותף נבנה בלי `NEXT_PUBLIC_APP_URL=http://...` גם הפעם, לא
+רגרסיה בקוד). **אותה החלטה כמו ב-M15-c66**: `rm -rf .next` מלא על
+התיקייה המשותפת (לא worktree) ובנייה מחדש עם
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3317 pnpm
+build` (exit 0), `curl -I` אישר שה-CSP איבד את הדירקטיבה. שרת `pnpm
+start -p 3317` עצמאי, `e2e/route-audit.spec.ts --grep "anon /$|anon
+dynamic catalogue routes"` — **4/4 עברו** (chromium+mobile-chrome),
+אפס `consoleErrors`/`hydrationWarnings` על `/` ועל מסלולי הקטלוג הדינמיים
+(כולל `/product/[slug]`). **לא נדרש תיקון קוד.** ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים, זהה), `build` (למעלה) exit 0 נקי. לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M04-c66..M15-c66, M14-c67). קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M14-c67 (הועבר מ-STATE.md ב-M15-c67, לשמירה על תקרת 300 שורות)
 
 **M14-c67 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
