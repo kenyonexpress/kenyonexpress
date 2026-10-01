@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c66 (פירוט מלא, נכתב ישירות לכאן ב-M11-c66 עצמו בגלל תקרת 300 שורות)
+
+**M11-c66 - DONE (01.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable". נבדק מול פרודקשן בפועל (`https://www.kenyonexpress.co.il`),
+לא רק מול הקוד.
+
+**תוצאה:** `/sitemap.xml` מחזיר `200` ומגיש `<sitemapindex>` עם חמש
+תת-מפות, לא ה-`<urlset>` הישן שתועד ב-`docs/LAUNCH-READINESS.md` שורה
+270 (מדידה מ-09.09, שתי שעות לפני שהקומיט `b209770c4` שהוסיף את האינדקס
+נדחף). אותו קומיט כן נכלל בקומיט שרץ היום בפועל בפרודקשן, `a388118f1`,
+אושר ישירות עם `git merge-base --is-ancestor b209770c4 a388118f1`.
+
+כל חמש תת-המפות נבדקו ישירות ב-curl:
+- `sitemap/content.xml`: `200`, 14 כתובות.
+- `sitemap/categories.xml`: `200`, 13 כתובות.
+- `sitemap/products.xml`: `200`, 46 כתובות, `lastmod` נע בין
+  `2026-08-10T14:10:29.446Z` ל-`2026-09-25T02:29:00.830Z` (לא תאריך קפוא
+  אחד, מעודכן לפי המוצר).
+- `sitemap/regions.xml`: `200`, 17 כתובות.
+- `sitemap/suppliers.xml`: `200`, 7 כתובות.
+
+`robots.txt` מצביע ל-`https://kenyonexpress.co.il/sitemap.xml` הנכון.
+`git log` על נתיבי ה-sitemap (`src/app/sitemap`, `src/app/sitemap.xml`,
+`src/lib/seo/sitemap-{data,sections,response}.ts`) מראה שהקומיט האחרון
+שנגע בהם הוא `b209770c4` (09.09), אפס קומיטים אחריו, אפס דריפט קוד.
+אין commit קוד.
+
+**ארבעת השערים:** `type-check` נקי, `lint` נקי (12 שערים כולל
+`docs-index-gate`/`docs-path-audit`). 122 טסטי sitemap/robots ממוקדים
+(`sitemap.test.ts`, `sitemap-robots-agree.test.ts`,
+`sitemap-canonicals.test.ts`, `sitemap-sections.test.ts`,
+`robots.test.ts`) ירוקים. `test` מלא: 614/614 קבצים, 7335/7347 עברו, 12
+מדולגים (זהה למספרי M10-c66). `build` לא הורץ מחדש: `.next/BUILD_ID`
+מ-21:20, HEAD (`7f23dd82e`) מ-21:32 הוא commit תיעוד בלבד (`STATE.md`),
+זהה-מקור, ושישה תהליכי `pnpm start` מקביליים רצים (סיכון OOM מתועד,
+`[[concurrent-worktree-builds-oom]]`).
+
+לא פריט חזותי, `scripts/compare.mjs` לא הורץ (תקדים M04-c66..M10-c66).
+
 ## M10-c66 (פירוט מלא, נכתב ישירות לכאן ב-M10-c66 עצמו בגלל תקרת 300 שורות)
 
 **M10-c66 - DONE (01.10.2026).** משימת התור: "Verify migrations/pending/
