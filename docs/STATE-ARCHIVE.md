@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c67 (הועבר מ-STATE.md ב-M09-c67, לשמירה על תקרת 300 שורות)
+
+**M08-c67 - DONE (02.10.2026).** משימת התור: Lighthouse mobile על `/`
+ו-`/product` (דוגמה), רישום ציונים בלבד, לא פריט חזותי. שרת `pnpm start`
+עצמאי על פורט 3317 (3311-3316 תפוסים ע"י סשנים מקבילים, לא נגעתי
+בהם), מול build טרי (`BUILD_ID` `oF4vmDNvWAUz_bTBJfh5E`, זהה ל-HEAD
+`80d1101b2`, אין `src/` שהשתנה מאז M07-c67 אך הורץ `pnpm build` מחדש
+כשער). מוצר לדוגמה: `צימר-מאסטר` (אותו מוצר שנבדק ב-M08-c66, פעיל, 10
+במלאי, `supabase/catalogue-snapshot.json`).
+
+**מה שנמדד, `--throttling-method=provided` (המתכון התקף, ר'
+`docs/PERFORMANCE-BUDGET.md`):** `/` performance/accessibility/seo =
+**100/100/100**. `/product/צימר-מאסטר` = **100/100/100**. אפס דריפט
+מ-M08-c66.
+
+**לשם השוואה, `simulate` (ברירת המחדל, ידוע כרועש על localhost — ר'
+אותו מסמך):** `/` = **97/100/100**, `/product/...` = **94/100/100**.
+שני המספרים נרשמים כאן למטרת לוג בלבד; ה-`provided` הוא המספר שסומך
+עליו, לא ה-`simulate`. אין שינוי ל-`scripts/lighthouse-smoke.mjs` ואין
+שינוי לסף 90 בו.
+
+אפס שינוי קוד/סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` **614/614 קבצים, 7336/7348 עברו**, 12 מדולגים,
+`build` exit 0 (`BUILD_ID` חדש, אפס תוכן שהשתנה). קובץ יחיד שונה:
+`STATE.md` (+ ארכוב M07-c67 ל-`docs/STATE-ARCHIVE.md`).
+
 ## M07-c67 (הועבר מ-STATE.md ב-M08-c67, לשמירה על תקרת 300 שורות)
 
 **M07-c67 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than

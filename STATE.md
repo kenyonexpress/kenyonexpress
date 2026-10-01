@@ -1,31 +1,33 @@
-RESUME FROM: M09-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c67 - DONE, Lighthouse mobile על / ו-/product, ציונים נרשמו)
+RESUME FROM: M10-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c67 - DONE, 2 exports הוסרו, אפס deps)
 
 ## המשך מ:
 
-**M08-c67 - DONE (02.10.2026).** משימת התור: Lighthouse mobile על `/`
-ו-`/product` (דוגמה), רישום ציונים בלבד, לא פריט חזותי. שרת `pnpm start`
-עצמאי על פורט 3317 (3311-3316 תפוסים ע"י סשנים מקבילים, לא נגעתי
-בהם), מול build טרי (`BUILD_ID` `oF4vmDNvWAUz_bTBJfh5E`, זהה ל-HEAD
-`80d1101b2`, אין `src/` שהשתנה מאז M07-c67 אך הורץ `pnpm build` מחדש
-כשער). מוצר לדוגמה: `צימר-מאסטר` (אותו מוצר שנבדק ב-M08-c66, פעיל, 10
-במלאי, `supabase/catalogue-snapshot.json`).
+**M09-c67 - DONE (02.10.2026).** משימת התור: הסרת deps לא בשימוש וexports
+מתים. `pnpm dlx knip --no-config-hints` הורץ מחדש; `package.json`/
+`pnpm-lock.yaml` ללא שינוי מ-M09-c66 (`git diff f141fd9af..HEAD`), כך
+ש-5 ה-deps שסומנו (`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) אומתו מחדש כאותם false-positive
+שתועדו ב-M09-c66 (`grep` ישיר מצא import אמיתי לכל אחד — `drizzle.config.ts`,
+`src/db/schema/*`, `scripts/dr/*`, `src/components/ui/{select,form}.tsx`
+וכו').
 
-**מה שנמדד, `--throttling-method=provided` (המתכון התקף, ר'
-`docs/PERFORMANCE-BUDGET.md`):** `/` performance/accessibility/seo =
-**100/100/100**. `/product/צימר-מאסטר` = **100/100/100**. אפס דריפט
-מ-M08-c66.
+מבין 273+197 מועמדי "unused export" של knip (רעש ידוע, ר' M09-c66), רק שני
+הקבצים שהשתנו מאז M09-c66 (`HeroSlider.tsx`, `robots.ts`) נבדקו כמועמדים
+חדשים: `HERO_ANIMATION_MEDIA` ו-`dotButtonWidth` ב-`src/components/home/
+HeroSlider.tsx` מיוצאים אך נצרכים רק בתוך אותו קובץ עצמו (`grep` רחב-ריפו
+אחרי `import.*HeroSlider` לא מצא צרכן חיצוני לשניהם, וגם לא בקבצי הטסט של
+הקומפוננטה) — הוסר מהם `export`, אותו תבנית תיקון כמו ב-M09-c66. אפס שינוי
+ל-JSX/להתנהגות, לכן אין פריט חזותי ואין צורך ב-`compare.mjs`.
 
-**לשם השוואה, `simulate` (ברירת המחדל, ידוע כרועש על localhost — ר'
-אותו מסמך):** `/` = **97/100/100**, `/product/...` = **94/100/100**.
-שני המספרים נרשמים כאן למטרת לוג בלבד; ה-`provided` הוא המספר שסומך
-עליו, לא ה-`simulate`. אין שינוי ל-`scripts/lighthouse-smoke.mjs` ואין
-שינוי לסף 90 בו.
+אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים), `test` 614/614 קבצים, 7336/7348 עברו (12 מדולגים, בסיס ללא דריפט),
+`build` exit 0 (`BUILD_ID` `5rqW2MivCCU-64H6HjJL6`). קבצים ששונו:
+`src/components/home/HeroSlider.tsx`, `STATE.md`.
 
-אפס שינוי קוד/סכימה/כסף. ארבעת השערים ירוקים: `type-check` נקי, `lint`
-נקי (12 שערים), `test` **614/614 קבצים, 7336/7348 עברו**, 12 מדולגים,
-`build` exit 0 (`BUILD_ID` חדש, אפס תוכן שהשתנה). קובץ יחיד שונה:
-`STATE.md` (+ ארכוב M07-c67 ל-`docs/STATE-ARCHIVE.md`).
+**M08-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c67
+לשמירה על תקרת 300 שורות).** Lighthouse mobile על `/` ו-`/product`,
+`provided` 100/100/100 בשניהם, אפס דריפט מ-M08-c66. ארבעת השערים ירוקים.
 
 **M07-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c67
 לשמירה על תקרת 300 שורות).** סריקת `TODO`/`FIXME` רוחב-ריפו ישנים

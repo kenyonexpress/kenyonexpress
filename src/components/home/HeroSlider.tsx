@@ -96,7 +96,7 @@ export const HERO_STILL_FRAMES: Record<string, string> = {
  * same 1024px boundary the slide markup already switches its image box at, so
  * the desktop layout that was measured against the live site does not move.
  */
-export const HERO_ANIMATION_MEDIA = '(min-width: 1024px)'
+const HERO_ANIMATION_MEDIA = '(min-width: 1024px)'
 
 /** WCAG 2.2 / Lighthouse minimum tap target. */
 const TAP_MIN = 24
@@ -135,7 +135,7 @@ const dotInset = (visible: number) => (dotButtonSize(visible) - visible) / 2
  * stands.
  */
 const dotInsetInline = (visible: number) => Math.min(dotInset(visible), DOT_GAP / 2)
-export const dotButtonWidth = (visible: number) => visible + 2 * dotInsetInline(visible)
+const dotButtonWidth = (visible: number) => visible + 2 * dotInsetInline(visible)
 export const dotHitBox = (visible: number) => ({
   width: dotButtonWidth(visible),
   height: dotButtonSize(DOT_HEIGHT),
