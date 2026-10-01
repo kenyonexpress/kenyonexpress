@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c69 (הועבר מ-STATE.md ב-M13-c69, לשמירה על תקרת 300 שורות)
+
+**M12-c69 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד קודם: `git log aba63e9cb..HEAD --
+src/app/robots.ts` וגם `git log aba63e9cb..HEAD --stat -- src/app` (בסיס:
+קומיט M12-c68) — שניהם ריקים, אפס קומיט נוגע וגם אפס נתיב דינמי חדש
+תחת `src/app`. **קוד HEAD תקין**: רשימת `Disallow` כוללת את `/redeem/`,
+`/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`, `/account/`, `/supplier/`,
+`/scan`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`,
+`/reset-password`, `/forgot-password`, `/debug/`. **נמדד מול פרודקשן
+בפועל (`https://www.kenyonexpress.co.il/robots.txt`)**: `200`, עדיין
+הגרסה הישנה (`last-modified: Wed, 30 Sep 2026`, זהה מילה-במילה ל-`a388118f1`),
+בלי `/gift/`, `/order/`, `/wishlist/s/`, `/debug/` — **אותה תוצאה בדיוק
+כמו M12-c68**, תולדה של חוסם 2 (פריסה קפואה), לא ממצא עצמאי חדש. **אפס
+דריפט מ-M12-c68.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337 עברו, 12 מדולגים), `build`
+exit 0 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3321`,
+`/robots.txt` מופיע כ-`○ Static`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+
 ## M08-c69 (הועבר מ-STATE.md ב-M09-c69, לשמירה על תקרת 300 שורות)
 
 **M08-c69 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and

@@ -1,27 +1,25 @@
-RESUME FROM: M13-c69
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c69 - DONE, robots.txt אומת מחדש כבטוח-לפרודקשן, אפס דריפט)
+RESUME FROM: M14-c69
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c69 - DONE, /api/health ו-/api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c69 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". בדיקת דריפט קוד קודם: `git log aba63e9cb..HEAD --
-src/app/robots.ts` וגם `git log aba63e9cb..HEAD --stat -- src/app` (בסיס:
-קומיט M12-c68) — שניהם ריקים, אפס קומיט נוגע וגם אפס נתיב דינמי חדש
-תחת `src/app`. **קוד HEAD תקין**: רשימת `Disallow` כוללת את `/redeem/`,
-`/coupon/`, `/gift/`, `/order/`, `/wishlist/s/`, `/account/`, `/supplier/`,
-`/scan`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`,
-`/reset-password`, `/forgot-password`, `/debug/`. **נמדד מול פרודקשן
-בפועל (`https://www.kenyonexpress.co.il/robots.txt`)**: `200`, עדיין
-הגרסה הישנה (`last-modified: Wed, 30 Sep 2026`, זהה מילה-במילה ל-`a388118f1`),
-בלי `/gift/`, `/order/`, `/wishlist/s/`, `/debug/` — **אותה תוצאה בדיוק
-כמו M12-c68**, תולדה של חוסם 2 (פריסה קפואה), לא ממצא עצמאי חדש. **אפס
-דריפט מ-M12-c68.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337 עברו, 12 מדולגים), `build`
-exit 0 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3321`,
-`/robots.txt` מופיע כ-`○ Static`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+**M13-c69 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". דריפט קוד: `git log c258defa0..HEAD
+--stat -- src/app/api/health src/app/api/ready` (בסיס M13-c68) — ריק.
+**נמדד שוב מול פרודקשן**: `/api/health` → `200`
+(`database:"ok"`), `/api/ready` → `503` (`meilisearch:"down"`,
+`redis:"ok"`, `r2`/`cardcom` `not_configured`) — **זהה ל-M13-c67/M13-c68**
+(חוסם 16: Meilisearch לא נגיש מפרודקשן), לא ממצא חדש. `/api/health`
+מחזיר `200` כנדרש; `/api/ready` `503` הוא תלות חיצונית, לא פגם בקוד.
+**אפס דריפט מ-M13-c68.** ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614 (7337+12), `build` exit 0
+(`/api/health`/`/api/ready` כ-`ƒ Dynamic`). אפס שינוי קוד. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M12-c69).
 
-**M11-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M12-c69 לשמירה על תקרת 300 שורות).** M11-c69: sitemap.xml אומת
+**M12-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c69 לשמירה על תקרת 300 שורות).** M12-c69: robots.txt אומת
+מחדש כבטוח-לפרודקשן בקוד, פרודקשן עדיין בגרסה הישנה (חוסם 2), אפס דריפט
+מ-M12-c68. M11-c69: sitemap.xml אומת
 מחדש מול פרודקשן בפועל, `200` עם חמש תת-מפות (14/13/46/17/7), אפס דריפט
 מ-M11-c68. M10-c69: מיגרציות ממתינות
 אומתו מחדש (`git diff --stat` מול M10-c68, אותו יום), ריק, 60 קבצים
