@@ -1,7 +1,15 @@
-RESUME FROM: M05-c68
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c68 - DONE, pnpm type-check אומת נקי, אפס דריפט)
+RESUME FROM: M06-c68
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c68 - DONE, pnpm test אומת נקי, אפס דריפט)
 
 ## המשך מ:
+
+**M05-c68 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
+commit". HEAD `6e657501a`. הרצת `pnpm test` (`vitest run`) בפועל — נקי,
+614/614 קבצים, 7337 עברו + 12 מדולגים (7349 סה"כ), אין דריפט לתקן. אומתו
+גם `pnpm type-check` (`tsc --noEmit`, נקי) ו-`pnpm lint` (biome + 12
+השערים, נקי) ו-`pnpm build` (exit 0, כל הנתיבים נבנו). אפס שינוי קוד —
+פריט אימות-בלבד, ללא commit על `src`/`public`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **M04-c68 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
 commit". HEAD `8a7cb2475`. הרצת `pnpm type-check` (`tsc --noEmit`) בפועל
