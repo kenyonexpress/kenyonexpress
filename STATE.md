@@ -1,44 +1,37 @@
-RESUME FROM: M07-c67
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c67 - DONE, build אומת ללא דריפט)
+RESUME FROM: M08-c67
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c67 - DONE, סריקת TODO/FIXME רוחב-ריפו, אפס תיקון קוד)
 
 ## המשך מ:
 
-**M06-c67 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".
-אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat HEAD` ריק —
-עץ עבודה נקי לחלוטין, אין דריפט מ-`45235f06c`. ארבעת השערים רצו ברצף, כולם
-exit 0: `pnpm type-check` (`tsc --noEmit`, אפס שגיאות), `pnpm lint`
-(`biome` על 2037 קבצים + 11 שערי lint פנימיים, כולם clean), `pnpm test`
-(614 קבצי טסט, 7336 עברו, 12 דולגו — זהה ל-M02-c67 עד M05-c67), `pnpm build`
-(exit 0, `BUILD_ID` חדש `XAWs4J_bGq5w_Ne3YTPRE`; 184 שורות `rls_denied`/
-`reviews_read_failed` ב-stdout הן תבנית build-time ידועה — קריאת ביקורות
-ללא session בזמן prerender, לא כשל build). **אין דריפט לתקן**: `build` כבר
-היה ירוק לפני ההרצה, כך שאין קוד ייצור לשנות ואין "fix" אמיתי לבצע — פריט
-אימות בלבד, כמו M04-c67..M05-c67. אפס שינוי קוד ייצור בפריט הזה מלבד עדכון
-`STATE.md` עצמו.
+**M07-c67 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md". סריקה רוחב-ריפו (`grep -rn`,
+ללא `node_modules`/`.next`/`.git`/`.claude/worktrees` — האחרונים שייכים
+לסשנים מקבילים אחרים, לא לעץ העבודה הזה) מצאה סמן עבודה אמיתי יחיד זוג:
+שני `TODO(cardcom)` ב-`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי,
+`git blame` מ-24.07.2026) ו-`:319` (מסמכים, מ-07.08.2026) — שניהם ישנים
+בהרבה מ-7 ימים. **שניהם כבר מתויקים**: עוקבים אחרי `Tracked in #41`/`#42`
+בקוד עצמו (GitHub issues), ומתועדים ב-`docs/KNOWN-ISSUES.md` סעיף 2
+וב-`docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`. לא לתיקון אוטומטי: אימות
+שם/שדה מדויק מול טרמינל Cardcom חי, בלעדיו אין בדיקה אמיתית אפשרית
+(ראו חוסם #8 ברשימת החוסמים למטה, `skills/cardcom-payments`). נוסף
+צימוד מפורש ב-`docs/BACKLOG.md` סעיף 6 (אותו חוסם שורש — טרמינל Cardcom
+אמיתי) כך שהבקשה "file in docs/BACKLOG.md" מתקיימת ישירות, לא רק
+בעקיפין דרך `KNOWN-ISSUES.md`. `src/lib/whatsapp.test.ts:91` **אינו**
+סמן עבודה — מחרוזת ליטרלית `'TODO'` שמוצבת למשתנה סביבה כדי לבדוק דחיית
+מספר טלפון לא מוגדר (ראו `scripts/final-audit-lib.mjs` שמתעד את ההבחנה
+הזו באופן כללי). אין סמן נוסף בשום קובץ קוד/תסריט מחוץ לארכיונים.
+ארבעת השערים רצו ברצף על השינוי (תיעוד בלבד, `docs/BACKLOG.md`), כולם
+exit 0: `pnpm type-check`, `pnpm lint` (`biome` על 2037 קבצים + 11 שערי
+lint פנימיים, כולל `docs-index-gate`/`docs-path-audit` — שניהם OK בלי
+שינוי ספירה), `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה
+ל-M02-c67 עד M06-c67), `pnpm build` (exit 0). שינוי תיעוד בלבד, אין קוד
+ייצור שהשתנה; שער חזותי לא רלוונטי (אין שינוי UI).
 
-**M05-c67 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
-אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat HEAD` ריק —
-עץ עבודה נקי לחלוטין, אין דריפט מ-`de5221d35`. ארבעת השערים רצו ברצף, כולם
-exit 0: `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה ל-M02-c67
-עד M04-c67), `pnpm type-check` (`tsc --noEmit`, אפס שגיאות), `pnpm lint`
-(`biome` על 2037 קבצים + 11 שערי lint פנימיים, כולם clean), `pnpm build`
-(exit 0, `BUILD_ID` חדש `v24LrJDj4IFl59MtcQ4iG`; שורות `rls_denied`/
-`reviews_read_failed` ב-stdout הן תבנית build-time ידועה — קריאת ביקורות
-ללא session בזמן prerender, לא כשל build). **אין דריפט לתקן**: `test` כבר
-היה ירוק לפני ההרצה, כך שאין קוד ייצור לשנות ואין "fix" אמיתי לבצע — פריט
-אימות בלבד, כמו M04-c67 ו-M05-c66. אפס שינוי קוד ייצור בפריט הזה מלבד עדכון
-`STATE.md` עצמו.
-
-**M04-c67 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
-commit". אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat
-HEAD` ריק — עץ עבודה נקי לחלוטין, אין דריפט מ-HEAD (`4d5d1f946`).
-ארבעת השערים רצו ברצף, כולם exit 0: `pnpm type-check` (`tsc --noEmit`,
-אפס שגיאות), `pnpm lint` (`biome` על 2037 קבצים + 11 שערי lint פנימיים,
-כולם clean), `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה
-ל-M02-c67/M03-c67), `pnpm build` (exit 0, `BUILD_ID` חדש `PZGh-20wHPjcAxFf7r8Jn`).
-**אין דריפט לתקן**: `type-check` כבר היה נקי לפני הריצה, כך שאין קוד
-ייצור לשנות ואין "fix" אמיתי לבצע — פריט אימות בלבד, כמו M04-c66
-(`dffd7e447`). אפס שינוי קוד ייצור בפריט הזה מלבד עדכון `STATE.md` עצמו.
+**M04-c67..M06-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M07-c67 לשמירה על תקרת 300 שורות).** שלושה פריטי אימות-בלבד: build
+(M06, `BUILD_ID` חדש `XAWs4J_bGq5w_Ne3YTPRE`), test (M05, `v24LrJDj4IFl59MtcQ4iG`),
+type-check (M04, `PZGh-20wHPjcAxFf7r8Jn`) — בכולם אין דריפט לתקן, אפס
+שינוי קוד ייצור. ארבעת השערים ירוקים בכולם.
 
 **M18-c66..M03-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M04-c67 לשמירה על תקרת 300 שורות).** M03-c67: שער חזותי קטגוריה

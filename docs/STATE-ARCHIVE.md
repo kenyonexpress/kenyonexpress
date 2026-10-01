@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c67..M06-c67 (הועבר מ-STATE.md ב-M07-c67, לשמירה על תקרת 300 שורות)
+
+**M06-c67 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".
+אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat HEAD` ריק —
+עץ עבודה נקי לחלוטין, אין דריפט מ-`45235f06c`. ארבעת השערים רצו ברצף, כולם
+exit 0: `pnpm type-check` (`tsc --noEmit`, אפס שגיאות), `pnpm lint`
+(`biome` על 2037 קבצים + 11 שערי lint פנימיים, כולם clean), `pnpm test`
+(614 קבצי טסט, 7336 עברו, 12 דולגו — זהה ל-M02-c67 עד M05-c67), `pnpm build`
+(exit 0, `BUILD_ID` חדש `XAWs4J_bGq5w_Ne3YTPRE`; 184 שורות `rls_denied`/
+`reviews_read_failed` ב-stdout הן תבנית build-time ידועה — קריאת ביקורות
+ללא session בזמן prerender, לא כשל build). **אין דריפט לתקן**: `build` כבר
+היה ירוק לפני ההרצה, כך שאין קוד ייצור לשנות ואין "fix" אמיתי לבצע — פריט
+אימות בלבד, כמו M04-c67..M05-c67. אפס שינוי קוד ייצור בפריט הזה מלבד עדכון
+`STATE.md` עצמו.
+
+**M05-c67 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
+אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat HEAD` ריק —
+עץ עבודה נקי לחלוטין, אין דריפט מ-`de5221d35`. ארבעת השערים רצו ברצף, כולם
+exit 0: `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה ל-M02-c67
+עד M04-c67), `pnpm type-check` (`tsc --noEmit`, אפס שגיאות), `pnpm lint`
+(`biome` על 2037 קבצים + 11 שערי lint פנימיים, כולם clean), `pnpm build`
+(exit 0, `BUILD_ID` חדש `v24LrJDj4IFl59MtcQ4iG`; שורות `rls_denied`/
+`reviews_read_failed` ב-stdout הן תבנית build-time ידועה — קריאת ביקורות
+ללא session בזמן prerender, לא כשל build). **אין דריפט לתקן**: `test` כבר
+היה ירוק לפני ההרצה, כך שאין קוד ייצור לשנות ואין "fix" אמיתי לבצע — פריט
+אימות בלבד, כמו M04-c67 ו-M05-c66. אפס שינוי קוד ייצור בפריט הזה מלבד עדכון
+`STATE.md` עצמו.
+
+**M04-c67 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". אומת לפני ההרצה: `git status --porcelain` ריק, `git diff --stat
+HEAD` ריק — עץ עבודה נקי לחלוטין, אין דריפט מ-HEAD (`4d5d1f946`).
+ארבעת השערים רצו ברצף, כולם exit 0: `pnpm type-check` (`tsc --noEmit`,
+אפס שגיאות), `pnpm lint` (`biome` על 2037 קבצים + 11 שערי lint פנימיים,
+כולם clean), `pnpm test` (614 קבצי טסט, 7336 עברו, 12 דולגו — זהה
+ל-M02-c67/M03-c67), `pnpm build` (exit 0, `BUILD_ID` חדש `PZGh-20wHPjcAxFf7r8Jn`).
+**אין דריפט לתקן**: `type-check` כבר היה נקי לפני הריצה, כך שאין קוד
+ייצור לשנות ואין "fix" אמיתי לבצע — פריט אימות בלבד, כמו M04-c66
+(`dffd7e447`). אפס שינוי קוד ייצור בפריט הזה מלבד עדכון `STATE.md` עצמו.
+
 ## M03-c67 (הועבר מ-STATE.md ב-M04-c67, לשמירה על תקרת 300 שורות)
 
 **M03-c67 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
