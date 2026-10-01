@@ -1,20 +1,14 @@
-RESUME FROM: M10-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c70 - DONE, deps/exports מתים אומתו מחדש עם knip, אפס דריפט)
+RESUME FROM: M11-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c70 - DONE, מיגרציות ממתינות אומתו מחדש מול git diff, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c70 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
-exports". `git diff --stat 2a6996e6a..HEAD -- package.json pnpm-lock.yaml
-src/ scripts/ next.config.ts` (בסיס: HEAD של M09-c69) ריק — אפס דריפט קוד
-מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints` הורץ מחדש: 271
-"unused exports", 197 "unused exported types", 5 "unused dependencies",
-4 "duplicate exports", 201 "unused files", 1 "unlisted binary" — אותם
-מספרים בדיוק כמו M09-c69, אפס מועמד חדש. חמש ה-deps שסומנו
-(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`, `drizzle-orm`,
-`postgres`, `react-hook-form`) אומתו מחדש כ-false-positive, צרכן אמיתי
-לכל אחת (`src/components/ui/{dropdown-menu,select,form}.tsx`,
-`src/db/schema/*`, `src/server/actions/cart.ts`). אפס הסרה, כי אין
-מועמד חדש מעבר למה שהוסר כבר ב-M09-c66/M09-c67.
+**M10-c70 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff --stat ef9573c2c..HEAD --
+migrations/pending/` (בסיס: HEAD של M10-c69) ריק — אפס דריפט, עדיין 60
+קבצים, שום דבר לא הוחל ושום קובץ לא נוסף/הוסר מאז M10-c69. חוסם #3
+ב-"חוסמים פתוחים" למטה (19 מהם חוסמים) נבדק מחדש מול הרשימה הזו ונשאר
+נכון כפי שהוא. `pnpm audit` לא הורץ בפריט הזה (לא חלק מהבדיקה).
 
 ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
 קבצים), `test` 614/614 קבצים (7337+12 מדולגים), `build` exit 0
@@ -22,10 +16,12 @@ src/ scripts/ next.config.ts` (בסיס: HEAD של M09-c69) ריק — אפס ד
 localhost:3319 pnpm build`, route manifest מלא). אפס שינוי
 קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
 
-**M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70
-ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
-M06-c70, M07-c70, M08-c70 וב-M09-c70 לשמירה על תקרת 300 שורות).**
+**M09-c70, M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70,
+M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
+M06-c70, M07-c70, M08-c70, M09-c70 וב-M10-c70 לשמירה על תקרת 300
+שורות).** M09-c70: deps/exports מתים עם `knip` אומתו מחדש, 271/197/5/4/201/1,
+אפס מועמד חדש מ-M09-c69.
 M08-c70: Lighthouse mobile על `/` ו-`/product` אומת מחדש,
 100/100/100 בשניהם, אפס דריפט מ-M08-c69. M07-c70:
 TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c69.
