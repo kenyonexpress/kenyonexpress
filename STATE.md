@@ -1,21 +1,34 @@
-RESUME FROM: M14-c68
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c68 - DONE, /api/health ו-/api/ready אומתו מול פרודקשן בפועל, אפס דריפט מ-M13-c67)
+RESUME FROM: M15-c68
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c68 - DONE, Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c67, הפער גדל ל-388)
 
 ## המשך מ:
 
-**M13-c68 - DONE (02.10.2026).** משימת התור: "Verify /api/health and /api/ready
-return 200 with real deps". `git log 6bd25c638..HEAD -- src/app/api/health
-src/app/api/ready src/lib/health` ריק — אפס דריפט קוד מ-M13-c67. נמדד שוב מול
-`https://www.kenyonexpress.co.il` בפועל: `/api/health` → `200`
-(`{"ok":true,"database":"ok"}`), `/api/ready` → `503` יציב (שלוש בדיקות
-חזרות ברצף, כולן `503`) עם `{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}`
-— זהה בדיוק ל-M13-c67 ול-M13-c66. **לא "200 עם תלויות אמיתיות" כרגישת
-משימת התור**: `ready` לא יכול להחזיר `200` כל עוד Meilisearch לא נגיש
-מפרודקשן (חוסם חיצוני, BACKLOG סעיף 16, לא לתיקון אוטומטי — הסוכן אין לו
-גישה לדשבורד/מפתח של Meilisearch). `health` כבר `200` ומודד תלות אמיתית
-אחת (DB). אין פה ממצא קוד לתקן; זו אימות-בלבד, שלישית ברצף עם אותה
-תוצאה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערי משנה),
-`test` 614/614, 7337/7349 עברו (12 מדלגים), `build` exit 0. אפס שינוי קוד.
+**M14-c68 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit" — זהה למילה למשימות M14-c66/M14-c67. **נבדק מחדש משתי הזוויות,
+שתיהן אפס דריפט.** שלושת קובצי האתחול (`sentry.server.config.ts`,
+`sentry.edge.config.ts`, `instrumentation-client.ts`) זהים — `git log
+db5999d33..HEAD` עליהם ריק, אין קומיט שנגע בהם מאז M14-c66. `filter_project_envs`
+(קריאה-בלבד) על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` עדיין
+**לא** מחזיר `SENTRY_DSN` או `NEXT_PUBLIC_SENTRY_DSN` ב-Production — קיים
+שם רק `SENTRY_AUTH_TOKEN` (source maps בזמן build בלבד), בדיוק כמו
+ב-M14-c66/M14-c67. `get_deployment` (קריאה-בלבד, `withGitRepoInfo=true`)
+על הפריסה החיה (`dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, `www.kenyonexpress.co.il`)
+מראה שהיא עדיין בנויה מ-`a388118f1`, לא מ-HEAD. **הפער ממשיך לגדול**:
+`git rev-list --count a388118f1..HEAD` מחזיר **388** (היה 370 ב-M14-c67 על
+HEAD אז `6bd25c638`; HEAD עכשיו `c258defa0`). **מסקנה זהה ל-M14-c66/M14-c67**:
+אי אפשר לאמת "ה-release תואם ל-HEAD" כאמת — אין בכלל release שמגיע
+מפרודקשן (אין DSN), וגם אם היה, הוא היה מצביע על קומיט ישן ב-388 קומיטים.
+**לא ממצא חדש**: נוסף רק משפט "נמדד שוב" ל-`BACKLOG.md` סעיף 17 עם התאריך
+והמספרים המעודכנים. **לא לתיקון אוטומטי**: הוספת
+`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא שינוי env,
+אסור לסוכן. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים), `test`
+614/614 קבצים, 7337/7349 עברו (12 מדולגים, זהה), `rm -rf .next && pnpm
+build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M14-c67). קבצים: `docs/BACKLOG.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
+**M13-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M14-c68).**
+`/api/health`/`/api/ready` אומתו מול פרודקשן, אפס דריפט מ-M13-c67.
 
 **M12-c68..M02-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M13-c68 לשמירה על תקרת 300 שורות).** אחד-עשר פריטי אימות-בלבד, אפס דריפט
@@ -26,43 +39,26 @@ TODO/FIXME (M07); `build` exit 0 (M06); `test` 614/614, 7337+12 (M05);
 `type-check` נקי (M04); שער חזותי קטגוריה (3.53/2.52/1.69, M03); שער חזותי
 מוצר (4.96/4.58/3.25, M02). ארבעת השערים ירוקים בכולם.
 
-**M04-c67..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M18-c67 ו-M01-c68 לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטי
-אימות-בלבד/תחזוקה (M04-M17), אפס דריפט בכולם: type-check/test/build
-(M04-M06); TODO/FIXME (M07); Lighthouse 100/100/100 (M08); חמש חבילות
-מתות הוסרו (M09); 19 מיגרציות אומתו (M10); sitemap.xml (M11); robots.txt
-תוקן (M12); `/api/health`/`/api/ready` (M13); Sentry מול HEAD, פער 370
-קומיטים (M14); אפס console error (M15); JSON-LD (M16); RTL (M17).
-**M18-c67:** STATE.md כבר מתחת לתקרה, כפילות ארכיון תוקנה. **M01-c68:**
-שער חזותי בית אפס דריפט (8.58/9.01/4.16). ארבעת השערים ירוקים בכל השש-עשרה.
-
-**M18-c66..M03-c67 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M04-c67 לשמירה על תקרת 300 שורות).** שלושה שערים חזותיים נמדדו
-מחדש אפס דריפט (בית/מוצר/קטגוריה, M01-M03, עם ממצא לא-חוסם אחד על אורך
-רפרנס Electro ב-M02 וממצא שרת-ישן ב-BACKLOG סעיף 18 ב-M01), ו-STATE.md
-אומת מתחת לתקרה בלבד (M18-c66). ארבעת השערים ירוקים בכולם.
+**M18-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+בשלבים עד M01-c68, לשמירה על תקרת 300 שורות).** שבעה-עשר פריטי
+אימות-בלבד/תחזוקה, אפס דריפט בכולם: שערים חזותיים בית/מוצר/קטגוריה
+נמדדו מחדש מספר פעמים (M01-M03 בכל סבב); type-check/test/build;
+TODO/FIXME; Lighthouse 100/100/100; חבילות מתות הוסרו; מיגרציות אומתו;
+sitemap.xml; robots.txt תוקן; `/api/health`/`/api/ready`; Sentry מול
+HEAD (פער 370 קומיטים); אפס console error; JSON-LD; RTL (leak אמיתי
+נמצא ותוקן ב-M17-c66); STATE.md אומת מתחת לתקרה. ארבעת השערים ירוקים
+בכולם.
 
 **M01-c66..M17-c66 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-בשלבים, M14-c66..M16-c66, M03-c67, לשמירה על תקרת 300 שורות).** M17-c66:
-RTL על `/` ו-`/product` — leak אמיתי נמצא (חמש פסקאות פרומו ב-`HeroSlider.tsx`
-עם `dir="ltr"` שרוד), תוקן, שער חזותי PASS. M16-c66: JSON-LD
-Product+BreadcrumbList אומת כבנוי ונכון. M15-c66: אפס שגיאות console
-ב-`/` וב-`/product` נמדד בדפדפן אמיתי על build נקי, ריצה ראשונה על
-`.next` ישן נכשלה בממצא ידוע (`upgrade-insecure-requests`), build מחדש
-פתר. ארבעת השערים ירוקים בכל השלושה, אפס דריפט נוסף. חוץ מאלה, ארבעה-עשר פריטי
-תור, DONE בכולם: שער חזותי בית/מוצר/קטגוריה נמדד מחדש (M01-M03, אפס
-דריפט), `type-check` (M04), `test` (M05), `pnpm build` בפועל exit 0
-(M06), סריקת `TODO`/`FIXME` רוחב-ריפו עם תיקון אחד
-ב-`scripts/screenshot-all.mjs` (M07), Lighthouse mobile `/`+`/product`
-100/100/100 (M08), חמש חבילות מתות הוסרו ושישה קבועים פנימיים הופשטו
-מ-`export` (M09), 19 מיגרציות ממתינות אומתו מחדש מול פרודקשן בפועל
-(M10), sitemap.xml אומת טרי מול פרודקשן, חמש תת-מפות, 200 בכולן (M11),
-robots.txt אומת מול פרודקשן ותוקן (`/debug/` חסר מ-`Disallow`, M12),
-`/api/health`/`/api/ready` אומתו מול פרודקשן, `ready` מחזיר `503` בגלל
-Meilisearch `down` (M13), Sentry release נבדק מול HEAD ומול פרודקשן —
-הקוד תקין, שני ממצאים שליליים (פריסה על `a388118f1` לא HEAD, ואין
-`SENTRY_DSN` כלל ב-Production, שניהם נוספו ל-BACKLOG, M14). אפס דריפט
-קוד בכולם, ארבעת השערים ירוקים.
+בשלבים, M14-c66..M16-c66, M03-c67, לשמירה על תקרת 300 שורות).** שבעה-עשר
+פריטי תור, DONE בכולם, אפס דריפט קוד, ארבעת השערים ירוקים: שערים חזותיים
+בית/מוצר/קטגוריה (M01-M03); type-check/test/build (M04-M06); TODO/FIXME
+עם תיקון אחד (M07); Lighthouse 100/100/100 (M08); חבילות מתות הוסרו
+(M09); 19 מיגרציות אומתו (M10); sitemap.xml (M11); robots.txt תוקן
+(M12); `/api/health`/`/api/ready`, `ready` `503` בגלל Meilisearch (M13);
+Sentry מול HEAD — פריסה על `a388118f1` לא HEAD ואין `SENTRY_DSN`
+ב-Production (M14); אפס console error (M15); JSON-LD (M16); RTL —
+leak אמיתי נמצא ב-`HeroSlider.tsx` ותוקן (M17).
 
 **Q51..Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M14-c66 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים:

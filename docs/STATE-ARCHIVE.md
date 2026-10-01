@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c68 (הועבר מ-STATE.md ב-M14-c68, לשמירה על תקרת 300 שורות)
+
+**M13-c68 - DONE (02.10.2026).** משימת התור: "Verify /api/health and /api/ready
+return 200 with real deps". `git log 6bd25c638..HEAD -- src/app/api/health
+src/app/api/ready src/lib/health` ריק — אפס דריפט קוד מ-M13-c67. נמדד שוב מול
+`https://www.kenyonexpress.co.il` בפועל: `/api/health` → `200`
+(`{"ok":true,"database":"ok"}`), `/api/ready` → `503` יציב (שלוש בדיקות
+חזרות ברצף, כולן `503`) עם `{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}`
+— זהה בדיוק ל-M13-c67 ול-M13-c66. **לא "200 עם תלויות אמיתיות" כרגישת
+משימת התור**: `ready` לא יכול להחזיר `200` כל עוד Meilisearch לא נגיש
+מפרודקשן (חוסם חיצוני, BACKLOG סעיף 16, לא לתיקון אוטומטי — הסוכן אין לו
+גישה לדשבורד/מפתח של Meilisearch). `health` כבר `200` ומודד תלות אמיתית
+אחת (DB). אין פה ממצא קוד לתקן; זו אימות-בלבד, שלישית ברצף עם אותה
+תוצאה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערי משנה),
+`test` 614/614, 7337/7349 עברו (12 מדלגים), `build` exit 0. אפס שינוי קוד.
+
 ## M12-c68 (פירוט פרטני מלא, הועבר מ-STATE.md ב-M13-c68, לשמירה על תקרת 300 שורות)
 
 **M12-c68 - DONE (02.10.2026).** משימת התור: "Verify robots.txt production-safe".
