@@ -1,37 +1,33 @@
-RESUME FROM: M09-c65
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c65)
+RESUME FROM: M10-c65
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c65)
 
 ## המשך מ:
 
-**M08-c65 - BACKLOG EMPTY (01.10).** משימת התור: לקחת מ-`docs/BACKLOG.md`
-את פריט ה-Phase 1 הפתוח בעל ההשפעה הגבוהה ביותר, לדלג על נדחים ו-Phase 2,
-ולממש אותו במלואו עם טסטים.
+**M09-c65 - STATE CLEAN (01.10).** משימת התור: לקחת את פריט ה-STATE.md
+הפתוח בעל ההשפעה הגבוהה ביותר שסוכן יכול לסיים בלי אופיר; אם אין כזה,
+STATE CLEAN. שלושה-עשר ה"חוסמים הפתוחים" למטה ו-15 פריטי `docs/BACKLOG.md`
+נבדקו שורה-שורה: כל אחד הוא DNS, סוד/env ב-Vercel, אישור פריסה/מיגרציה,
+רוטציית מפתח, הכרעה עסקית על הקטלוג, מחיקת נתונים (32 stash), או
+אינטגרציית ספק תשלום/SMS אמיתית — כולם אסורים על סוכן לפי `CLAUDE.md`
+ולפי כללי התור הזה במפורש. אפס פריט חדש, אפס כפילות. ספירות נבדקו ישירות:
+`migrations/pending/*.sql` 59, `git stash list` 32, `known` object 26,
+`dns-watch.sh` עדיין רץ (pid 976). `git diff --stat 8d3abea1e..HEAD`
+(טווח זהה ל-M08-c65, אפס קומיט נחת מאז) מראה רק שינוי קוד שכבר תועד
+ואומת (M18-c64, דירוג כוכבים) — אפס שינוי לשורת חסימה/מיגרציה/קטלוג.
+קומיטים מאחורי פרודקשן: 293 (`git rev-list --count a388118f1..HEAD`).
+**אין פעולה חדשה לסוכן; התור נשאר חסום באותם 13/15 הפריטים.**
 
-`docs/BACKLOG.md` נבדק מול `git log 8d3abea1e..HEAD`: עדיין 15 פריטים,
-אותו סדר, אפס כפילות, אפס פריט חדש. `git diff --stat 8d3abea1e..HEAD --
-docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
-src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
-vercel.json supabase/ scripts/cron-jobs.json` הראה רק את רשומת ה-re-check
-של M15-c64 עצמה (`docs/BACKLOG.md`) ואת שבעת קומיטי האימות-מחדש
-(M09-c64..M07-c65) — אפס שינוי בשורת חסימה, במיגרציה ממתינה, או בפנקס
-הקטלוג. **כל חמשה-עשר הפריטים נשארים פעולות שההקדמה של הקובץ עצמו שוללת
-מסוכן לבצע לבד** (DNS, סודות/env ב-Vercel, אישור פריסה/מיגרציה לפרודקשן,
-הכרעה עסקית על הקטלוג, מחיקת נתונים — ראו `CLAUDE.md` ותנאי העצירה).
-ספירות נבדקו ישירות: `migrations/pending/*.sql` 59, `git stash list` 32,
-`supabase/catalogue-known-issues.json`'s `known` object 26 — זהים
-ל-M15-c64. ספירת הקומיטים מאחורי פרודקשן עלתה שוב (281 → 292, `git
-rev-list --count a388118f1..HEAD`, git בלבד, פרודקשן לא נבדק מחדש בפריט
-הזה). `scripts/dns-watch.sh` רץ עדיין (pid 976 הפעם, היה 957 — כנראה
-אותחל מחדש בין הפריטים, לא נמדד מתי; עדיין תחת `caffeinate`).
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים, זהים
+ל-M08-c65). `test` 610/610 קבצים, 7298/7310 ירוקים. `build` רץ בפועל
+פעמיים (`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3533 pnpm build`) — "Compiled successfully", exit 0
+מאומת ישירות. אין שינוי UI, `scripts/compare.mjs` לא רץ.
 
-**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
-`docs-path-audit` 154, `docs-index` 282, `i18n` 627 — זהים ל-M15-c64).
-`test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים). `build` רץ בפועל
-(`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3533 pnpm build`) — "Compiled successfully", exit 0. אין שינוי
-קוד, `scripts/compare.mjs` לא רץ (אין עריכת UI).
+קבצים ששונו: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-קבצים ששונו: `STATE.md`, `docs/BACKLOG.md`.
+**M08-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M09-c65
+לשמירה על תקרת 300 שורות).** BACKLOG EMPTY — אותה מסקנה, פחות מעמיק.
+ארבעת השערים ירוקים.
 
 **M07-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M08-c65
 לשמירה על תקרת 300 שורות).** route audit נמדד שוב במלואו מול בנייה טריה

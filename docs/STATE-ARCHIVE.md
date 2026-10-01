@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c65 (הועבר מ-STATE.md ב-M09-c65, לשמירה על תקרת 300 שורות)
+
+**M08-c65 - BACKLOG EMPTY (01.10).** משימת התור: לקחת מ-`docs/BACKLOG.md`
+את פריט ה-Phase 1 הפתוח בעל ההשפעה הגבוהה ביותר, לדלג על נדחים ו-Phase 2,
+ולממש אותו במלואו עם טסטים.
+
+`docs/BACKLOG.md` נבדק מול `git log 8d3abea1e..HEAD`: עדיין 15 פריטים,
+אותו סדר, אפס כפילות, אפס פריט חדש. `git diff --stat 8d3abea1e..HEAD --
+docs/BACKLOG.md migrations/pending supabase/catalogue-known-issues.json
+src/ next.config.ts next.config.mjs package.json pnpm-lock.yaml
+vercel.json supabase/ scripts/cron-jobs.json` הראה רק את רשומת ה-re-check
+של M15-c64 עצמה (`docs/BACKLOG.md`) ואת שבעת קומיטי האימות-מחדש
+(M09-c64..M07-c65) — אפס שינוי בשורת חסימה, במיגרציה ממתינה, או בפנקס
+הקטלוג. **כל חמשה-עשר הפריטים נשארים פעולות שההקדמה של הקובץ עצמו שוללת
+מסוכן לבצע לבד** (DNS, סודות/env ב-Vercel, אישור פריסה/מיגרציה לפרודקשן,
+הכרעה עסקית על הקטלוג, מחיקת נתונים — ראו `CLAUDE.md` ותנאי העצירה).
+ספירות נבדקו ישירות: `migrations/pending/*.sql` 59, `git stash list` 32,
+`supabase/catalogue-known-issues.json`'s `known` object 26 — זהים
+ל-M15-c64. ספירת הקומיטים מאחורי פרודקשן עלתה שוב (281 → 292, `git
+rev-list --count a388118f1..HEAD`, git בלבד, פרודקשן לא נבדק מחדש בפריט
+הזה). `scripts/dns-watch.sh` רץ עדיין (pid 976 הפעם, היה 957 — כנראה
+אותחל מחדש בין הפריטים, לא נמדד מתי; עדיין תחת `caffeinate`).
+
+**שערים, כולם בפורגראונד:** `type-check` נקי. `lint` נקי (12 שערים,
+`docs-path-audit` 154, `docs-index` 282, `i18n` 627 — זהים ל-M15-c64).
+`test` 610/610 קבצים, 7298/7310 ירוקים (12 דולגים). `build` רץ בפועל
+(`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3533 pnpm build`) — "Compiled successfully", exit 0. אין שינוי
+קוד, `scripts/compare.mjs` לא רץ (אין עריכת UI).
+
+קבצים ששונו: `STATE.md`, `docs/BACKLOG.md`.
+
 ## M07-c65 (הועבר מ-STATE.md ב-M08-c65, לשמירה על תקרת 300 שורות)
 
 **M07-c65 - DONE (01.10): route audit נמדד שוב במלואו מול בנייה טריה,
