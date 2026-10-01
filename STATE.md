@@ -1,65 +1,62 @@
 RESUME FROM: M01-c66
-Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q32)
+Updated: 2026-10-01 (סשן `audit/final-audit`, Sonnet 5, פריט Q33)
 
 ## המשך מ:
 
-**Q32 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
-"דף ספק: פרטים, שעות, מפה, רשימת דילים, קישור ביקורות גוגל, כפתורי wa.me".
-**אינו קיים בתור האמיתי** (`Q32` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
-לא-קשור — seed מול קטלוג חי) — אותו דפוס כמו Q25-Q31, נבדק לפי ששת
-הסעיפים בפועל מול `/s/[id]`.
+**Q33 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"ניהול מוצרים, platform_percent/supplier_split דינמיים פר-מוצר, הנחות,
+עץ קטגוריות, ניהול ספקים, חיפוש הזמנות, זיכוי ידני, חיפוש שוברים".
+**אינו קיים בתור האמיתי** (`Q33` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
+לא-קשור — `auth_leaked_password_protection` כבוי ב-Supabase) — אותו דפוס
+כמו Q25-Q32, נבדק לפי תשעת הסעיפים בפועל מול פאנל הניהול.
 
-**שלושה מתוך שישה היו קיימים במלואם, אפס שינוי:** פרטי ספק (שם, לוגו,
-תג מאומת), רשימת דילים/מוצרים (`SupplierProductGrid`, מדף 24), וכפתורי
-‏wa.me (`SupplierStorefrontHeader`, `buildSupplierContact`). **"מפה" ממומשת
-כקישור Waze** (`contact.wazeHref`), לא כ-iframe משובץ — אותה מוסכמה
-בדיוק שדף המוצר ועמוד השובר כבר משתמשים בה (`docs/BUSINESS-MODEL.md` §2,
-"כתובת + Waze"), ולא נבנה embed ספקולטיבי בלי spec.
+**כל תשעת הסעיפים קיימים במלואם, אפס שינוי קוד.** פאנל ניהול מלא תחת
+`src/app/(admin)/admin/**` (45+ ראוטים). CRUD מוצרים: רשימה/יצירה/עריכה
+ב-`.../products/{page,new/page,[id]/edit/page}.tsx`, פעולות
+`src/server/actions/admin/products.ts` (`upsertProduct`, `deleteProduct`,
+`bulkSoftDeleteProducts`). `platform_percent` ו-`supplier_split_percent`
+הם עמודות פר-מוצר אמיתיות (`supabase/migrations/070_product_dynamic_
+split.sql:52-53`, לא גלובליות), עם אילוץ DB שסכומן 100
+(`products_split_pair_sums_to_100`), עריכה בטופס `ProductForm.tsx:658-686`,
+מצולמות ל-`order_items` בהזמנה ומוצגות read-only ב-`.../orders/[id]/
+page.tsx`. הנחות: שדה `discount_percent` פר-מוצר בטופס, ועוד מערכת
+קמפיינים נפרדת (`.../discounts/**`, `src/server/actions/admin/
+discounts.ts`). עץ קטגוריות אמיתי עם `parent_id`+`sort_order`
+(`.../categories/**`, `src/lib/category-tree.ts` מונע מעגלים,
+`updateCategorySortOrder`). CRUD ספקים: `.../suppliers/**`,
+`src/server/actions/admin/suppliers.ts` (`upsertSupplier`,
+`setSupplierStatus`, `softDeleteSupplier`). חיפוש הזמנות: `.../orders/
+{page,[id]/page}.tsx`. זיכוי ידני אמיתי מהממשק (לא רק בקשת לקוח): כפתור
+ב-`OrderAdminActions.tsx` עם שדה סיבה, קורא ל-`refundOrder`
+(`src/server/actions/payments/refund.ts:529`), חסום לפי
+`describeRefundBlockers`. חיפוש שוברים: `.../coupons/lookup/page.tsx` +
+`VoucherLookupForm.tsx`, פעולות `src/server/actions/admin/vouchers.ts`
+(`lookupAdminVoucher`, `redeemAdminVoucher`), מאחורי הרשאת
+`requireSection('catalog','read')`.
 
-**שני סעיפים חסרו בפועל ונבנו: שעות פתיחה וקישור ביקורות גוגל.** שתי
-העמודות כבר קיימות כ-`ADD COLUMN` בקבצים ממתינים (`opening_hours` ב-232,
-`google_reviews_url` ב-242), אבל אף אחת מהן לא הייתה קריאה דרך הדף הציבורי
-הזה — ‏242 אפילו כתב במפורש שלא הוסיף grant ל-anon כי קורא אותה אז היה דף
-המוצר (service client). `/s/[id]` קורא עם `createPublicClient()` (מפתח
-anon), אז `GRANT` על עמודת service-client לא מספיק. **נכתב קובץ מיגרציה
-שלישי, `248_supplier_storefront_public_columns_grant.sql`**: שתי שורות
-`GRANT SELECT (col) ... TO anon, authenticated`, בלי לגעת ב-232/242 עצמם
-(סשנים מקבילים), עם "סדר: אחרי 232 ואחרי 242" מתועד. הקריאה עצמה עוברת
-דרך `readOptionalColumns` הקיים (`SUPPLIER_OPENING_HOURS_COLUMNS`,
-`SUPPLIER_GOOGLE_REVIEWS_COLUMNS`, שתיהן ב-`optional-columns.ts`), אז
-`42703` (232/242 לא הוחלו) נרשם פעם אחת ונקרא כ-NULL — הדף מציג היום בלי
-שעות ובלי קישור, בדיוק מה שנמדד בבנייה המקומית (אזהרת `db.optional_
-column_missing` פעמיים, אפס שגיאה). קישור הביקורות עובר דרך `googleReviewsHref`
-הקיים (מסרב כל host שאינו גוגל), אותו ולידטור שדף המוצר כבר משתמש בו.
-טקסט חדש דרך `messages/he.json`/`en.json` (`pdp.openingHours`), לא הארדקוד —
-שער ה-i18n נשאר על התקרה (627).
+ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים), test 610/610
+קבצים 7303/7315 (זהה ל-Q32, אפס שינוי), `rm -rf .next && pnpm build` נקי
+(שרת זמני על פורט 3311, cwd מאומת, אין build מקביל). שער חזותי PASS
+בשלושת הרוחבים (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
+{width}.png`), זהה בייט-לבייט לבסיס Q31/Q32, נכתב אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` — צפוי, כי לא נגעו בדף הבית.
 
-שלושת השערים שחסרו עדכון: `pending-migrations-inventory.test.ts` (שורה
-לכל רשימה ל-248), `migrations/pending/README.md` (רשומה חדשה). ארבעת
-השערים ירוקים: type-check נקי, lint נקי, test 610/610 קבצים 7303/7315
-(610 ↑0, 7303 ↑2), `rm -rf .next && pnpm build` נקי (אפס שגיאה, רק אזהרות
-`optional_column_missing` הצפויות). שער חזותי PASS בשלושת הרוחבים, זהה
-בייט-לבייט לבסיס Q31 (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
-{width}.png`), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md` — צפוי, כי
-השינוי נוגע רק ב-`/s/[id]`, לא בדף הבית.
+קבצים ששונו: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
 
-קבצים ששונו: `src/lib/supplier-storefront.ts`, `src/components/storefront/
-SupplierStorefrontHeader.tsx` (+test), `src/lib/supabase/optional-columns.ts`,
-`messages/he.json`, `messages/en.json`, `migrations/pending/
-248_supplier_storefront_public_columns_grant.sql` (חדש),
-`migrations/pending/README.md`, `src/__tests__/pending-migrations-
-inventory.test.ts`, `docs/UI-PARITY-REPORT.md`, `STATE.md`.
-
-**Q28..Q31 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q32
-לשמירה על תקרת 300 שורות).** ארבעה פריטים חיצוניים חד-פעמיים, אף אחד לא
-בתור האמיתי, כולם "כבר בנוי, אפס שינוי קוד": Q31 — מתג "הכל באפליקציה"
-ב-`/account/notifications`, שער חזותי PASS בשלושת הרוחבים (8.51/9.02/3.95%,
-`kenyonexpress.co.il` נסרב כ-reference בפעם הראשונה, נמדד מול `refs/ke_live_
-{width}.png`). Q30 — כפתור הורדת חשבונית וקישור wa.me בעמוד התודה. Q29 —
-guest checkout עם Google sign-in ושמירת כרטיס מטוקניז. Q28 — עריכת שורה
-וקוד קופון בסל, מתג ארנק נכון שלא קיים בסל (שייך לקופה בכוונה). Q28-Q30:
-שער חזותי PASS ב-1440 בלבד (0.95-1.47%), 380/768 REFUSED (reference 1440
-בלבד). ארבעת השערים ירוקים בכל הארבעה.
+**Q28..Q32 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q33
+לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים, אף אחד לא
+בתור האמיתי. Q32 — דף ספק (`/s/[id]`): שעות פתיחה וקישור ביקורות גוגל
+היו היחידים שחסרו בפועל (שאר ארבעת הסעיפים כבר היו בנויים), שני שדות
+אופציונליים חדשים + מיגרציה שלישית `248_supplier_storefront_public_
+columns_grant.sql` (GRANT בלבד, לא נוגעת ב-232/242 עצמם). Q31 — מתג
+"הכל באפליקציה" ב-`/account/notifications`. Q30 — כפתור הורדת חשבונית
+וקישור wa.me בעמוד התודה. Q29 — guest checkout עם Google sign-in ושמירת
+כרטיס מטוקניז. Q28 — עריכת שורה וקוד קופון בסל, מתג ארנק נכון שלא קיים
+בסל (שייך לקופה בכוונה). שער חזותי: Q31/Q32 PASS בשלושת הרוחבים
+(8.51/9.02/3.95%, `kenyonexpress.co.il` נסרב כ-reference לראשונה ב-Q31,
+נמדד מול `refs/ke_live_{width}.png`); Q28-Q30 PASS ב-1440 בלבד
+(0.95-1.47%), 380/768 REFUSED (reference 1440 בלבד אז). ארבעת השערים
+ירוקים בכל החמישה.
 
 **Q27 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-Q29
 לשמירה על תקרת 300 שורות).** פריט חיצוני חד-פעמי, לא קיים בתור האמיתי;

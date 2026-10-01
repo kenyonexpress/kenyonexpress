@@ -2,6 +2,55 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## Q32 (הועבר מ-STATE.md ב-Q33, לשמירה על תקרת 300 שורות)
+
+**Q32 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**
+"דף ספק: פרטים, שעות, מפה, רשימת דילים, קישור ביקורות גוגל, כפתורי wa.me".
+**אינו קיים בתור האמיתי** (`Q32` ב-`docs/QUESTIONS-FOR-OFIR.md` הוא פריט
+לא-קשור — seed מול קטלוג חי) — אותו דפוס כמו Q25-Q31, נבדק לפי ששת
+הסעיפים בפועל מול `/s/[id]`.
+
+**שלושה מתוך שישה היו קיימים במלואם, אפס שינוי:** פרטי ספק (שם, לוגו,
+תג מאומת), רשימת דילים/מוצרים (`SupplierProductGrid`, מדף 24), וכפתורי
+‏wa.me (`SupplierStorefrontHeader`, `buildSupplierContact`). **"מפה" ממומשת
+כקישור Waze** (`contact.wazeHref`), לא כ-iframe משובץ — אותה מוסכמה
+בדיוק שדף המוצר ועמוד השובר כבר משתמשים בה (`docs/BUSINESS-MODEL.md` §2,
+"כתובת + Waze"), ולא נבנה embed ספקולטיבי בלי spec.
+
+**שני סעיפים חסרו בפועל ונבנו: שעות פתיחה וקישור ביקורות גוגל.** שתי
+העמודות כבר קיימות כ-`ADD COLUMN` בקבצים ממתינים (`opening_hours` ב-232,
+`google_reviews_url` ב-242), אבל אף אחת מהן לא הייתה קריאה דרך הדף הציבורי
+הזה — ‏242 אפילו כתב במפורש שלא הוסיף grant ל-anon כי קורא אותה אז היה דף
+המוצר (service client). `/s/[id]` קורא עם `createPublicClient()` (מפתח
+anon), אז `GRANT` על עמודת service-client לא מספיק. **נכתב קובץ מיגרציה
+שלישי, `248_supplier_storefront_public_columns_grant.sql`**: שתי שורות
+`GRANT SELECT (col) ... TO anon, authenticated`, בלי לגעת ב-232/242 עצמם
+(סשנים מקבילים), עם "סדר: אחרי 232 ואחרי 242" מתועד. הקריאה עצמה עוברת
+דרך `readOptionalColumns` הקיים (`SUPPLIER_OPENING_HOURS_COLUMNS`,
+`SUPPLIER_GOOGLE_REVIEWS_COLUMNS`, שתיהן ב-`optional-columns.ts`), אז
+`42703` (232/242 לא הוחלו) נרשם פעם אחת ונקרא כ-NULL — הדף מציג היום בלי
+שעות ובלי קישור, בדיוק מה שנמדד בבנייה המקומית (אזהרת `db.optional_
+column_missing` פעמיים, אפס שגיאה). קישור הביקורות עובר דרך `googleReviewsHref`
+הקיים (מסרב כל host שאינו גוגל), אותו ולידטור שדף המוצר כבר משתמש בו.
+טקסט חדש דרך `messages/he.json`/`en.json` (`pdp.openingHours`), לא הארדקוד —
+שער ה-i18n נשאר על התקרה (627).
+
+שלושת השערים שחסרו עדכון: `pending-migrations-inventory.test.ts` (שורה
+לכל רשימה ל-248), `migrations/pending/README.md` (רשומה חדשה). ארבעת
+השערים ירוקים: type-check נקי, lint נקי, test 610/610 קבצים 7303/7315
+(610 ↑0, 7303 ↑2), `rm -rf .next && pnpm build` נקי (אפס שגיאה, רק אזהרות
+`optional_column_missing` הצפויות). שער חזותי PASS בשלושת הרוחבים, זהה
+בייט-לבייט לבסיס Q31 (`8.51%`/`9.02%`/`3.95%`, `--baseline=refs/ke_live_
+{width}.png`), נכתב אוטומטית ל-`docs/UI-PARITY-REPORT.md` — צפוי, כי
+השינוי נוגע רק ב-`/s/[id]`, לא בדף הבית.
+
+קבצים ששונו: `src/lib/supplier-storefront.ts`, `src/components/storefront/
+SupplierStorefrontHeader.tsx` (+test), `src/lib/supabase/optional-columns.ts`,
+`messages/he.json`, `messages/en.json`, `migrations/pending/
+248_supplier_storefront_public_columns_grant.sql` (חדש),
+`migrations/pending/README.md`, `src/__tests__/pending-migrations-
+inventory.test.ts`, `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
 ## Q31 (הועבר מ-STATE.md ב-Q32, לשמירה על תקרת 300 שורות)
 
 **Q31 - DONE (01.10.2026), פריט חיצוני חד-פעמי, לא מקדם `RESUME FROM:`.**

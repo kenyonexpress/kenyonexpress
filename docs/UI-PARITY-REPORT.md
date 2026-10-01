@@ -748,3 +748,8 @@ to an already large session.
 | 2026-10-01 05:31 | home | 380 | 8.51% | PASS | `20a8c7acc-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.05% (reference blank 2.79%, ours blank 2.75%) |
 | 2026-10-01 05:32 | home | 768 | 9.02% | PASS | `20a8c7acc-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.05% (reference blank 4.31%, ours blank 2.72%) |
 | 2026-10-01 05:34 | home | 1440 | 3.95% | PASS | `20a8c7acc-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 15.3% (reference blank 9.94%, ours blank 1.41%) |
+| 2026-10-01 05:44 | home | 1440 | n/a | REFUSED | `48c8792dd` | capture is 380px, run is 1440px |
+| 2026-10-01 05:44 | home | 1440 | n/a | REFUSED | `48c8792dd-dirty` | live side is our-build |
+| 2026-10-01 05:45 | home | 380 | 8.51% | PASS | `48c8792dd-dirty` | live side: frozen capture `refs/ke_live_380.png`; overall 14.05% (reference blank 2.79%, ours blank 2.75%) |
+| 2026-10-01 05:47 | home | 768 | 9.02% | PASS | `48c8792dd-dirty` | live side: frozen capture `refs/ke_live_768.png`; overall 16.05% (reference blank 4.31%, ours blank 2.72%) |
+| 2026-10-01 05:48 | home | 1440 | 3.95% | PASS | `48c8792dd-dirty` | live side: frozen capture `refs/ke_live_1440.png`; overall 15.3% (reference blank 9.94%, ours blank 1.41%) |
