@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c75 (הועבר מ-STATE.md ב-M14-c75, לשמירה על תקרת 300 שורות)
+
+**M13-c75 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
+91aa29df5..HEAD -- src/app/api/health src/app/api/ready` (בסיס:
+M13-c74) ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":165}`); `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+**זהה בדיוק ל-M13-c67..M13-c74**: `meilisearch:"down"` נשאר חוסם ידוע
+(`docs/BACKLOG.md`), אין פריסת HEAD. משימת התור מנוסחת "return 200"
+לשני הנתיבים, אבל `/api/ready` מחזיר `503` בכוונה כל עוד meilisearch
+למטה — זו ההתנהגות התקינה של שער המוכן-לעבודה, לא תקלה; `/api/health`
+(liveness) כן `200`. **אפס דריפט מ-M13-c74.** ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next`
+ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3425
+pnpm build`, שני הנתיבים מופיעים ב-manifest). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
+
 ## M12-c75 (הועבר מ-STATE.md ב-M13-c75, לשמירה על תקרת 300 שורות)
 
 **M12-c75 - DONE (02.10.2026).** משימת התור: "Verify robots.txt

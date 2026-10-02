@@ -1,25 +1,37 @@
-RESUME FROM: M14-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c75 - DONE, /api/health ו-/api/ready נבדקו ישירות מול פרודקשן, אפס דריפט קוד מ-M13-c74)
+RESUME FROM: M15-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c75 - DONE, Sentry release מול HEAD נבדק מחדש מול Vercel, אפס דריפט מ-M14-c74)
 
 ## המשך מ:
 
-**M13-c75 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
-91aa29df5..HEAD -- src/app/api/health src/app/api/ready` (בסיס:
-M13-c74) ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל**
-(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
-(`{"ok":true,"database":"ok","latency_ms":165}`); `/api/ready` → `503`
-(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
-**זהה בדיוק ל-M13-c67..M13-c74**: `meilisearch:"down"` נשאר חוסם ידוע
-(`docs/BACKLOG.md`), אין פריסת HEAD. משימת התור מנוסחת "return 200"
-לשני הנתיבים, אבל `/api/ready` מחזיר `503` בכוונה כל עוד meilisearch
-למטה — זו ההתנהגות התקינה של שער המוכן-לעבודה, לא תקלה; `/api/health`
-(liveness) כן `200`. **אפס דריפט מ-M13-c74.** ארבעת השערים ירוקים:
+**M14-c75 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit" — זהה למילה למשימות M14-c66..M14-c74. HEAD כרגע
+`c8dca6bde` על `audit/final-audit`. **נבדק מחדש מול Vercel (MCP,
+read-only בלבד)**: `list_deployments` (`target=production`) מראה את
+אותה פריסה חיה בדיוק שנמצאה מ-M14-c73 ואילך —
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `created=1790919737039` (אותה
+שנייה בדיוק), `githubCommitRef=main`, `githubCommitSha=18ed044b2`
+("Wave 6: build success"). `git merge-base --is-ancestor 18ed044b2
+HEAD` עדיין נכשל — הענפים מפוצלים (`main` מכיל 109 קומיטים ש-HEAD לא
+מכיל, HEAD מכיל 891 קומיטים ש-`main` לא מכיל, גדל מ-873 ב-M14-c74 מתוך
+גידול טבעי של התור). `filter_project_envs` על אותו פרויקט (רשימה
+מלאה) מראה `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` עדיין קיימים, **אותו
+`createdAt=1790918429743` בדיוק** כמו ב-M14-c74 — לא נוספו ולא הוסרו
+מאז. **תשובה לשאלת התור, כמו ב-M14-c73/c74: לא, ה-release אינו תואם
+ל-HEAD** — פרודקשן עדיין מריץ `main`@`18ed044b2`, לא את העבודה
+המתועדת בענף הזה. **אפס דריפט מ-M14-c74**: שום פריסה חדשה לא נוצרה,
+שום env לא השתנה, המקור עדיין לא ידוע ועדיין לא לפעולת הסוכן (רישום
+מלא כבר ב-`docs/BACKLOG.md` סעיף 17 ובחוסם #2 למעלה). לא בוצעה פריסה,
+rollback או שינוי env על ידי הסוכן הזה — קריאות read-only בלבד
+(`list_deployments`, `filter_project_envs`). ארבעת השערים ירוקים:
 `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next`
-ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3425
-pnpm build`, שני הנתיבים מופיעים ב-manifest). פריט אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3426 pnpm
+build`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
+**M13-c75 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר לשם ב-M14-c75
+לשמירה על תקרת 300 שורות).** `/api/health`/`/api/ready` מול פרודקשן
+בפועל: `200`/`503` (meilisearch למטה, חוסם ידוע), אפס דריפט מ-M13-c74.
 
 **M12-c75..M01-c75, M18-c74..M01-c74 (שלושים פריטי אימות-בלבד/תחזוקה,
 ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים — M06-c75,
@@ -41,27 +53,20 @@ console/hydration, Sentry vs HEAD, health/ready, robots.txt,
 sitemap.xml, מיגרציות ממתינות (19 חוסמים), knip, TODO/FIXME, תחזוקת
 תיעוד.
 
-**M18-c73..M15-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M10-c74 לשמירה על תקרת 300 שורות).** ארבעה פריטי אימות-בלבד, אפס דריפט
-בכולם: M18-c73 תחזוקת תיעוד (STATE.md מתחת לתקרה), M17-c73 RTL (leak
-כבר תוקן ב-c66's M17), M16-c73 JSON-LD Product+BreadcrumbList (10/10),
-M15-c73 אפס console error/hydration (264/264) — כולם אפס דריפט מ-c72.
+**M18-c73..M15-c73, M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
+כווצו לשורה הזו ב-M10-c74/M14-c73 לשמירה על תקרת 300 שורות).** שלושה-עשר
+פריטי תור/אימות-בלבד, אפס דריפט בכולם: RTL, JSON-LD Product+BreadcrumbList,
+console/hydration, `/api/health`/`/api/ready`, robots.txt, sitemap.xml,
+מיגרציות ממתינות, `knip`, Lighthouse mobile (100/100/100), TODO/FIXME,
+build/test/type-check, ושערי קטגוריה/מוצר/בית (`PASS` בכולם). ארבעת
+השערים ירוקים בכל השלושה-עשר.
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר
-(ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
-ב-M15-c73 לשמירה על תקרת 300 שורות; נמצא ראשון שם production הוחלף
-חי מחוץ לתור, `main`@`18ed044b2`, עם `SENTRY_DSN` חדש; מקור הפעולה
-לא ידוע, לא תוקן ולא הוחזר, פורט מלא ב-`docs/BACKLOG.md` סעיף 17).**
-**נבדק מחדש ב-M14-c74 (למעלה): אפס דריפט** — אותה פריסה בדיוק, אותו
-`SENTRY_DSN`, עדיין ממתין להחלטת אופיר.
-
-**M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
-ב-M14-c73 לשמירה על תקרת 300 שורות).** תשעה פריטי תור: `/api/health`/
-`/api/ready` (200/503 מול פרודקשן, אפס דריפט), robots.txt (חוסם 2, אפס
-דריפט), sitemap.xml (תיקן רישום שגוי של סבבים קודמים), מיגרציות ממתינות
-(62 קבצים, עשרה חוסמים), `knip` (אפס מועמד חדש), Lighthouse mobile
-(100/100/100), TODO/FIXME, build/test/type-check, ושערי קטגוריה/מוצר/
-בית (`PASS` בכולם). אפס דריפט בכולם, ארבעת השערים ירוקים בכל התשעה.
+(ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`; נמצא ראשון
+שם production הוחלף חי מחוץ לתור, `main`@`18ed044b2`, עם `SENTRY_DSN`
+חדש; מקור הפעולה לא ידוע, לא תוקן ולא הוחזר, פורט מלא ב-`docs/BACKLOG.md`
+סעיף 17).** **נבדק מחדש ב-M14-c74 וב-M14-c75 (למעלה): אפס דריפט** —
+אותה פריסה בדיוק, אותו `SENTRY_DSN`, עדיין ממתין להחלטת אופיר.
 
 **M18-c68..M01-c72 (שבעה סבבים שלמים: c68, c69, c70, c71, c72, ארכיון
 מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים — M04-c70, M17-c72
