@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c80 (הועבר מ-STATE.md ב-M03-c80, לשמירה על תקרת 300 שורות)
+
+**M02-c80 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample" — זהה למשימות "product parity re-measured"
+הקודמות (M02-c79 ולפניו). `pwd` אומת, שרת ישן על פורט 3311 מה-goal
+הקודם (M01-c80, build טרי מ-05:09) נמצא עדיין חי ועם `cwd` נכון
+(`/usr/sbin/lsof -p -a -d cwd`), ו-`git diff --stat c11fa965c..HEAD
+-- src supabase packages public next.config.ts package.json` ריק
+(אפס שינוי קוד ייצור מאז המדידה הקודמת) — אין צורך ב-build חדש, אותו
+שרת שימש. **הרצה בחזית**: `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'` — חרגה מ-timeout כלי
+ה-Bash (300 שניות) והועברה אוטומטית לרקע על ידי הכלי עצמו, לא
+ביוזמת הסוכן; הומתן לסיומה המלאה (exit code 0, אומת גם דרך Monitor
+על ה-PID) לפני כל רישום. **תוצאה: `380`=4.96% PASS, `768`=4.58%
+PASS, `1440`=3.25% PASS** (שער 11%), **זהה בדיוק ל-M02-c79/M02-c78/
+M02-c77/M02-c75 — אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס הקפוא ארוך
+בהרבה מהעמוד שלנו) ידועה ולא רלוונטית לשער. השער עצמו כתב שלוש שורות
+ל-`docs/UI-PARITY-REPORT.md`, מתויגות `f6b4f6703`/`f6b4f6703-dirty`.
+שרת 3311 הופסק בסוף. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים),
+`build` exit 0. אפס שינוי קוד ייצור. שני קבצים: `STATE.md`
+ו-`docs/UI-PARITY-REPORT.md` (כתיבה עצמית של השער).
+
 ## M18-c79 (הועבר מ-STATE.md ב-M01-c80, לשמירה על תקרת 300 שורות)
 
 **M18-c79 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300

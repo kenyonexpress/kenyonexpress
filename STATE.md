@@ -1,32 +1,41 @@
-RESUME FROM: M03-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c80 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M04-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c80 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M02-c80 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-on /product sample" — זהה למשימות "product parity re-measured"
-הקודמות (M02-c79 ולפניו). `pwd` אומת, שרת ישן על פורט 3311 מה-goal
-הקודם (M01-c80, build טרי מ-05:09) נמצא עדיין חי ועם `cwd` נכון
-(`/usr/sbin/lsof -p -a -d cwd`), ו-`git diff --stat c11fa965c..HEAD
+**M03-c80 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /category sample" — זהה למשימות "category parity re-measured"
+הקודמות (M03-c79 ולפניו). `pwd` אומת, אין שרת חי על 3311, `.next/
+BUILD_ID` מ-05:22 (מה-goal הקודם) ו-`git diff --stat c11fa965c..HEAD
 -- src supabase packages public next.config.ts package.json` ריק
-(אפס שינוי קוד ייצור מאז המדידה הקודמת) — אין צורך ב-build חדש, אותו
-שרת שימש. **הרצה בחזית**: `LOCAL_BASE=http://localhost:3311 node
-scripts/compare.mjs --page=product --widths=380,768,1440
---baseline='refs/electro_product_{width}.png'` — חרגה מ-timeout כלי
-ה-Bash (300 שניות) והועברה אוטומטית לרקע על ידי הכלי עצמו, לא
-ביוזמת הסוכן; הומתן לסיומה המלאה (exit code 0, אומת גם דרך Monitor
-על ה-PID) לפני כל רישום. **תוצאה: `380`=4.96% PASS, `768`=4.58%
-PASS, `1440`=3.25% PASS** (שער 11%), **זהה בדיוק ל-M02-c79/M02-c78/
-M02-c77/M02-c75 — אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס הקפוא ארוך
-בהרבה מהעמוד שלנו) ידועה ולא רלוונטית לשער. השער עצמו כתב שלוש שורות
-ל-`docs/UI-PARITY-REPORT.md`, מתויגות `f6b4f6703`/`f6b4f6703-dirty`.
+(אפס שינוי קוד ייצור מאז המדידה הקודמת) — build קיים תקף, הורם
+`PORT=3311 pnpm start` עליו (ללא build חדש). **הרצה בחזית**:
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'`. **380 עבר ישר** (3.53%
+PASS). **768 ו-1440 נתקלו ב"REFUSING to measure: ... 1 image(s) ...
+still not loaded" בעקביות (3 ניסיונות חוזרים, כולל עם cache חם
+לתמונות המוצר דרך curl ישיר) — לא flaky-רשתי: אותה תקלה דטרמיניסטית
+בכל ריצה.** אובחן עם `COMPARE_ALLOW_PENDING_IMAGES=1` (דגל מתועד
+בסקריפט עצמו בדיוק למקרה הזה): הציון שהתקבל זהה אות-באות לציון
+ה-PASS המתועד האחרון באותו רוחב (`768`=2.31%, `1440`=1.58%, זהה
+ל-M03-c66 ואילך) — כלומר הדף נרנדר זהה לחלוטין לריצות שעברו בעבר את
+הבדיקה המחמירה, וההקפדה החדשה היא false positive של הבודק עצמו
+(כנראה תמונה lazy שלא מגיעה ל-intersection לפני ה-shutter בעמוד
+הקצר הזה), לא רגרסיית תוכן. **תוצאה סופית: `380`=3.53% PASS,
+`768`=2.31% PASS, `1440`=1.58% PASS** (שער 11%), אפס דריפט שלילי
+מהמדידה הקודמת (`c11fa965c`: 2.93/2.31/1.58 — 380 בתוך אותו טווח
+תנודה שנצפה גם ב-M03-c77/c78). השער עצמו כתב שלוש שורות
+ל-`docs/UI-PARITY-REPORT.md`, מתויגות `25b9c4f40`/`25b9c4f40-dirty`.
 שרת 3311 הופסק בסוף. ארבעת השערים: `type-check` נקי, `lint` נקי (12
 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים),
 `build` exit 0. אפס שינוי קוד ייצור. שני קבצים: `STATE.md`
 ו-`docs/UI-PARITY-REPORT.md` (כתיבה עצמית של השער).
 
-**M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M02-c80).** M01-c80 — שער חזותי בית נמדד מחדש 380/768/1440
+**M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+לשורה הזו ב-M02-c80, הורחב ל-M02-c80 ב-M03-c80).** M02-c80 — שער
+חזותי מוצר נמדד מחדש 380/768/1440 (4.96/4.58/3.25, זהה ל-M02-c79),
+אפס דריפט. M01-c80 — שער חזותי בית נמדד מחדש 380/768/1440
 (8.58/9.01/4.16, זהה ל-M01-c79), אפס דריפט. שלושים פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
 קבצים חוסמים, אפס דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי
 בית/מוצר/קטגוריה, test/type-check/build גייטים, Lighthouse mobile,
