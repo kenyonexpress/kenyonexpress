@@ -1,26 +1,35 @@
-RESUME FROM: M11-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c73 - DONE, מיגרציות ממתינות אומתו מחדש, אפס דריפט)
+RESUME FROM: M12-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c73 - DONE, sitemap.xml חי נבדק ישירות מול פרודקשן, תוקן רישום שגוי מ-M11-c70..M11-c72)
 
 ## המשך מ:
 
-**M10-c73 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `git ls-tree -r HEAD --name-only --
-migrations/pending/` מחזיר 62 קבצים, ו-`git diff 0db9d62a3..HEAD --
-migrations/pending/` (בסיס: HEAD של M10-c72) ריק — אפס דריפט מאז הבדיקה
-המלאה-מול-פרודקשן האחרונה (M10-c68, 02.10, בדיקה פרטנית לכל 19 הקבצים
-החוסמים). עשרת הקבצים החוסמים שרשומים ב"חוסמים פתוחים" סעיף 3 (`218`,
-`245`, `246`, `204`, `240`, `241`, `242`, `243`, `244`, `247`) כולם
-עדיין קיימים ב-`migrations/pending/` תחת אותם שמות, אף אחד לא הוחל ולא
-נמחק. אין migration שהוחל על פרודקשן, אין `supabase db push` שהורץ.
-אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
-(12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349
-עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
-build`, route manifest מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs`
-לא נדרש. קובץ יחיד: `STATE.md`.
+**M11-c73 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". בדיקת דריפט קוד: `git log 9585afcab..HEAD -- src/app/sitemap
+src/app/sitemap.xml src/lib/seo/sitemap-sections.ts` ריק, אפס קומיט נוגע
+מאז M10-c73. **נמדד ישירות מול פרודקשן בפועל, `curl` חי, לא מהזיכרון**:
+`https://kenyonexpress.co.il/sitemap.xml` מחזיר `308` ל-`www.` (ידוע), ושם
+`200` — אבל **`<urlset>` שטוח עם 79 כתובות, לא `<sitemapindex>`**, ושלושת
+עד חמשת תתי-המפות שהקוד הנוכחי מגיש
+(`/sitemap/{content,categories,products,regions,suppliers}.xml`) **מחזירות
+`404` כולן**. זה בדיוק חוסם #2 למטה: פרודקשן עדיין על `a388118f1`, מלפני
+שסעיף 79 (09.09) החליף את ה-`urlset` ב-`sitemapindex` — נמדד כבר
+ב-`docs/LAUNCH-READINESS.md` (01.10) ובחוסם #2's M12-c68 (robots.txt חי
+ישן). **זה מתקן רישום שגוי**: הקומיטים `3f0a1ddd4`/`4bbfcaf45`/`bfe682bc2`
+(M11-c72/c71/c70) טענו "`sitemapindex` עם חמש תתי-מפות, 200 בכולן" — טענה
+שסותרת את המדידה הישירה הזו ואת חוסם #2 מאותו יום בדיוק, ונראית כלא-נבדקת
+בפועל. אין פעולה בתוך הפריט הזה: פריסת פרודקשן חסומה בידי אופיר בלבד
+(חוסם #2, תנאי עצירה #1). קוד מקומי תקין: `build` מקומי (ראו למטה) מציג את
+חמשת נתיבי ה-`sitemap/*.xml` כ-`ƒ Dynamic`. ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm
+build`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md`.
 
-**M09-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M10-c73 לשמירה על תקרת 300 שורות).** M09-c73: `knip` נבדק מחדש, אותם
+**M10-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M11-c73 לשמירה על תקרת 300 שורות).** M10-c73: מיגרציות ממתינות אומתו
+מחדש (`git ls-tree`+`git diff` מול M10-c72), 62 קבצים, אפס דריפט, עשרת
+החוסמים (`218`,`245`,`246`,`204`,`240`-`244`,`247`) ללא שינוי. M09-c73: `knip` נבדק מחדש, אותם
 מספרים בדיוק כמו M09-c72 (201 unused files, 5 unused deps, 271 unused
 exports, 4 duplicate exports), אפס מועמד חדש. M08-c73: Lighthouse mobile על `/`
 ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c72. M07-c73:
@@ -200,7 +209,10 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    עדיין `ns1/ns2.vercel-dns.com`. **תוצאה קונקרטית נוספת, M12-c68**:
    `robots.txt` החי עדיין בגרסת `a388118f1`, בלי שלוש כתובות-האסימון
    (`/gift/`,`/order/`,`/wishlist/s/`) ו-`/debug/` שתוקנו ב-M12-c67 — ונבדק
-   חי ששלושתן מחזירות `200` בפרודקשן כרגע, בלי כיסוי `Disallow`.
+   חי ששלושתן מחזירות `200` בפרודקשן כרגע, בלי כיסוי `Disallow`. **עוד
+   תוצאה קונקרטית, M11-c73**: `sitemap.xml` החי גם הוא עדיין בגרסת
+   `a388118f1` — `urlset` שטוח, לא `sitemapindex` (סעיף 79, 09.09), וחמשת
+   נתיבי תתי-המפות של הקוד הנוכחי מחזירים `404` בפרודקשן.
 3. **מיגרציות ממתינות**: **218 (טריגר `enforce_profile_privilege_columns` מפיל כל
    עדכון פרופיל של לקוח ב-42703; נמדד 25.09 ב-M05-c1, 5 מ-5 לקוחות, בניגוד לרישום
    "הוחלה" מ-21.09)**, 245 ו-246 (advisors, M05-c1; 245 אחרי 209 ואחרי 203), 204 (הצטרפות ספקים והסכם click-wrap; בלעדיה הטופס
