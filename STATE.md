@@ -1,50 +1,47 @@
-RESUME FROM: M17-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c72 - DONE, JSON-LD Product+BreadcrumbList נבדק מחדש בכל דף מוצר)
+RESUME FROM: M18-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c72 - DONE, RTL על `/` ו-`/product` נבדק מחדש)
 
 ## המשך מ:
 
-**M16-c72 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
-JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c71.
-**נבדק מחדש, אפס דריפט.** `git log 11b849067..HEAD -- "src/app/(store)/product"
-src/lib/seo e2e/seo-markup.spec.ts` (בסיס: checkpoint M16-c71) ריק — 17
-קומיטים מאז, כולם תיעוד-בלבד. **מקור האמת זהה**: `product/[slug]/page.tsx`
-בונה את שני הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/
-`buildBreadcrumbJsonLd` מ-`src/lib/seo/json-ld.ts`, שני
-`<script type="application/ld+json">` תמיד ברינדור, לא מאחורי דגל).
-**אומת גם ברמת הדף:** `.next` חדש לגמרי (`rm -rf .next`) עם
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3317 pnpm build`
-exit 0 נקי, `pnpm start -p 3317` עצמאי (פורט פנוי, 3311-3316/3618/3911/4211
-תפוסים בידי סשנים מקבילים אחרים), אימות שה-listener על הפורט הוא התהליך
-הזה (`lsof`, cwd אומת), ו-`curl` 200. `E2E_BASE_URL=http://localhost:3317
-npx playwright test e2e/seo-markup.spec.ts --grep "Product JSON-LD and a
-breadcrumb"` — **2/2 עברו** (chromium+mobile-chrome). **אין ממצא קוד
-לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0
-נקי (`.next/BUILD_ID` נוצר). לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
-M04-c66..M16-c71). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+**M17-c72 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c71. **נבדק מחדש,
+אפס דריפט.** `git log 2207d2276..HEAD --oneline -- src/ e2e/` (בסיס:
+checkpoint M17-c71) ריק — 17 קומיטים מאז, כולם תיעוד-בלבד. `grep` על
+`dir="ltr"` ב-`HeroSlider.tsx` מחזיר רק הערות הסבר (התיקון מ-M17-c66
+עדיין במקום). **ברמת הדף, build אמיתי**: `.next` חדש לגמרי (`rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3327
+pnpm build`), exit 0 נקי, `pnpm start -p 3327`, listener אומת (`lsof`,
+cwd). `E2E_BASE_URL=http://localhost:3327 npx playwright test
+e2e/home-rtl.spec.ts e2e/rtl-three-widths.spec.ts e2e/rtl-mobile.spec.ts`
+— **110/112 עברו**; שני הכשלים (שני הפרויקטים, "every ltr node on the
+page is on the allow-list") היו timeout על `waitForLoadState('networkidle')`,
+לא leak. **אובחן עד הסיבה:** תשעה `pnpm start` מקבילים של סשנים אחרים
+רצים במקביל (load average 5-6 על 8 ליבות) האיטו את ה-sharp transcode של
+`/_next/image` בפעם הראשונה שתמונת מוצר מתבקשת, מעבר ל-30 ושוב מעבר
+ל-90 שניות — אומת בסקריפט נפרד שעוקב אחרי `request`/`requestfinished`
+ומראה בקשת `_next/image` בודדת תלויה. **אומת ישירות בלי ה-wait האיטי:**
+אותה לוגיקת האיתור (DOM walk על `getComputedStyle(el).direction`, מול
+רשימת ההיתר `.discount_per`/`output`/`input[type="email"]`) על `/`
+בדסקטופ ומובייל — **אפס עברייני** בשני הרזולוציות. על `/product/<סלאג
+אמיתי>` (נבדק: `צימר-מאסטר`) — `html[dir="rtl"]` ושני `dir="ltr"`
+בלבד: שדה האימייל בניוזלטר (ברשימת ההיתר) ו-`p.pdp-summary__meta` שחוזר
+ל-`nameEn` (שם אנגלי) כש-SKU חסר — טקסט לטיני לגיטימי, לא leak (ראה
+`ProductInfo.tsx:252`). **אין ממצא קוד לתקן.** ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים, כולל `rtl-logical-gate.mjs` נקי),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא
+פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M17-c71). אפס שינוי קוד
+ייצור. קובץ יחיד: `STATE.md`.
 
-**M15-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M16-c72 לשמירה על תקרת 300 שורות).** M15-c72: אפס console
-error/hydration על `/` ו-`/product` נבדק מחדש, אפס דריפט. M14-c72: Sentry release מול
-HEAD נבדק מחדש משלוש הזוויות, אפס דריפט, הפער גדל ל-461 קומיטים (אין
-DSN בפרודקשן, לא לתיקון אוטומטי). M13-c72: `/api/health` ו-`/api/ready`
-אומתו מחדש מול פרודקשן בפועל (`200`/`503`), אפס דריפט. M12-c72..M01-c72:
-שנים-עשר פריטי אימות-בלבד/שער חזותי (robots.txt, sitemap.xml, מיגרציות
-ממתינות, deps/exports מתים, Lighthouse, TODO/FIXME, build, test,
-type-check, שערי קטגוריה/מוצר/בית), אפס דריפט בכולם. ארבעת השערים
-ירוקים בכולם, אפס שינוי קוד ייצור.
-
-**M18-c71..M01-c71 ו-M18-c70..M01-c70, M18-c69..M01-c69 (ארכיון מלא
-ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c72 לשמירה על תקרת 300
-שורות).** שמונה-עשר פריטי אימות-בלבד בכל סבב (c69, c70, c71), אפס
-דריפט בכולם: STATE.md מתחת לתקרה; RTL על `/` ו-`/product`; JSON-LD
-Product+BreadcrumbList; אפס console error/hydration; Sentry מול HEAD
-(הפער גדל כל סבב, עד 443 קומיטים, אין DSN בפרודקשן); `/api/health`/
-`/api/ready` (`200`/`503`); robots.txt (חוסם 2); sitemap.xml; מיגרציות
-ממתינות; deps/exports מתים עם `knip`; Lighthouse mobile (100/100/100);
-TODO/FIXME; `pnpm build`; `pnpm test` (614/614); `pnpm type-check`; שער
-קטגוריה; שער מוצר; שער בית. ארבעת השערים ירוקים בכולם, אפס שינוי קוד
-ייצור.
+**M16-c72..M01-c72 ו-M18-c71..M01-c71, M18-c70..M01-c70, M18-c69..M01-c69
+(ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M17-c72 לשמירה
+על תקרת 300 שורות).** ארבעה סבבים שלמים של פריטי אימות-בלבד/שער חזותי
+(JSON-LD Product+BreadcrumbList; אפס console error/hydration; Sentry
+מול HEAD, הפער גדל כל סבב עד 461 קומיטים, אין DSN בפרודקשן; `/api/health`/
+`/api/ready` 200/503; robots.txt חוסם 2; sitemap.xml; מיגרציות ממתינות;
+deps/exports מתים עם `knip`; Lighthouse mobile 100/100/100; TODO/FIXME;
+build/test/type-check; שערי קטגוריה/מוצר/בית; RTL על `/` ו-`/product`;
+STATE.md מתחת לתקרה), אפס דריפט בכולם, ארבעת השערים ירוקים בכולם, אפס
+שינוי קוד ייצור.
 
 **M18-c68..M02-c68 ו-M01-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
 כווצו לשורה הזו ב-M01-c69/M17-c68/M09-c69/M03-c70 (c68) ובשלבים
