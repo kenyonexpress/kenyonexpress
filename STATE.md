@@ -1,26 +1,32 @@
-RESUME FROM: M07-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c79 DONE: pnpm build gate re-verified clean, zero drift)
+RESUME FROM: M08-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c79 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c79 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
-commit" — זהה ל-M06-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
-build` רץ בחזית: **exit 0, בנייה נקייה**, כל הנתיבים render כרגיל
-(static/PPR/dynamic), אפס שגיאת build. אין דריפט לתקן, אז אין שינוי
-קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות: `build` ירוק כאמור,
-`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים, biome +
-tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical/
-i18n/locale-format/input-dir/docs-index/docs-path-audit), `test`
-614/614 קבצים (7337/7349 טסטים, 12 מדולגים, זהה ל-M03-c79/M04-c79/
-M05-c79). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+**M07-c79 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
+(M07-c78/c77/c76/c75/c74/c67). נסרק מחדש `src/`
+(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
+ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
+(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
+ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
+המסוף של Cardcom) — אין marker חדש, אין marker שנפתר. (`'TODO'`
+ב-`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית בבדיקה, לא
+marker.) ארבעת השערים ירוקים: `type-check` נקי (exit 0), `lint` נקי
+(12 שערים, 2037 קבצים, זהה), `pnpm test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים — זהה ל-M06-c79), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M06-c79 ואילך). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
 
-**M04-c79..M05-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M06-c79).** M05-c79 — pnpm test: 614/614 קבצים, 7337/7349 טסטים
-(12 מדולגים). M04-c79 — pnpm type-check: exit 0, אפס שגיאה. אפס דריפט
-בשני הפריטים, ארבעת השערים ירוקים בשניהם.
+**M06-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M07-c79).** pnpm build gate re-verified clean, אפס דריפט קוד. ארבעת
+השערים ירוקים, אפס שינוי קוד ייצור.
 
 **M02-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79).** M02-c79 — שער חזותי מוצר נמדד מחדש 380/768/1440
+הזו ב-M03-c79/M06-c79).** M05-c79 — pnpm test: 614/614 קבצים, 7337/7349
+טסטים (12 מדולגים). M04-c79 — pnpm type-check: exit 0, אפס שגיאה. M02-c79 — שער חזותי מוצר נמדד מחדש 380/768/1440
 (4.96/4.58/3.25, זהה ל-M02-c78/M02-c77/M02-c75), אפס דריפט. M01-c79 —
 שער חזותי בית נמדד מחדש 380/768/1440
 (8.58/9.01/4.16, זהה ל-M01-c78), אפס דריפט. שבעה-עשר פריטי תור/אימות-בלבד: Sentry release vs
