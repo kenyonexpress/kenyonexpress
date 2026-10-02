@@ -1,32 +1,38 @@
-RESUME FROM: M09-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c71 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
+RESUME FROM: M10-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c71 - DONE, knip נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c71 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
-`type-check` (`tsc --noEmit` נקי), `lint` (12 שערים, 2037 קבצים, אפס
-תיקונים), `test` (614/614 קבצים, 7337/7349 עברו, 12 מדולגים), `build`
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3319 pnpm build`, route manifest מלא). שרת `pnpm start`
-עצמאי על פורט 3319 (אותם משתני build), `cwd` אומת (`/usr/sbin/lsof -p
-<pid> -a -d cwd`) שזה הריפו הזה ולא שרת זר, כבה אחרי המדידה. מוצר
-לדוגמה: `צימר-מאסטר` (כמו ב-M08-c66..M08-c70). `scripts/
-lighthouse-smoke.mjs --throttling-method=provided` (המתכון התקף,
-`docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**, `/product/
-צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c70. אפס שינוי
-קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
+**M09-c71 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat 2367a8453..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c70) ריק
+— אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c70, אפס מועמד חדש. חמש ה-deps
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) ו-`supabase` כ-unlisted
+binary זוהו שוב כאותם false-positive מתועדים (M09-c66/c69/c70) —
+צרכן אמיתי לכל אחת, לא נבדקו פרטנית מחדש השבוע מעבר לאימות שהרשימה לא
+השתנתה. ארבעת ה-duplicate exports זהים ל-M09-c69/c70 (aliases מכוונים).
+אפס הסרה, אין מועמד חדש מעבר למה שכבר הוסר ב-M09-c66/M09-c67. אפס שינוי
+כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו,
+12 מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3319 pnpm build`, route manifest
+מלא). קובץ יחיד: `STATE.md`.
 
-**M07-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M08-c71 לשמירה על תקרת 300 שורות).** M07-c71: TODO/FIXME נסרק
-מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c70. M06-c71: `pnpm build` נבדק
-מחדש, exit 0, אפס דריפט מ-M06-c70. M05-c71: `pnpm test` נבדק
-מחדש, 614/614 קבצים, 7337/7349 עברו (12 מדולגים), אפס דריפט מ-M05-c70.
-M04-c71: `pnpm type-check` נבדק מחדש, אפס דריפט. M03-c71: שער קטגוריה
-נמדד מחדש, 3.53%/2.52%/1.69%, אפס דריפט מ-M03-c70/M03-c66. M02-c71:
-שער מוצר נמדד מחדש, 4.96%/4.58%/3.25%, אפס דריפט מ-M02-c70. M01-c71:
-שער בית נמדד מחדש, 8.58%/9.01%/4.16%, אפס דריפט מ-M01-c70. ארבעת
-השערים ירוקים בכולם.
+**M08-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c71 לשמירה על תקרת 300 שורות).** M08-c71: Lighthouse mobile
+על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c70.
+M07-c71: TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט
+מ-M07-c70. M06-c71: `pnpm build` נבדק מחדש, exit 0, אפס דריפט מ-M06-c70.
+M05-c71: `pnpm test` נבדק מחדש, 614/614 קבצים, 7337/7349 עברו (12
+מדולגים), אפס דריפט מ-M05-c70. M04-c71: `pnpm type-check` נבדק מחדש,
+אפס דריפט. M03-c71: שער קטגוריה נמדד מחדש, 3.53%/2.52%/1.69%, אפס
+דריפט מ-M03-c70/M03-c66. M02-c71: שער מוצר נמדד מחדש, 4.96%/4.58%/3.25%,
+אפס דריפט מ-M02-c70. M01-c71: שער בית נמדד מחדש, 8.58%/9.01%/4.16%,
+אפס דריפט מ-M01-c70. ארבעת השערים ירוקים בכולם.
 
 **M18-c70..M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70, M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70, M12-c70, M13-c70, M14-c70, M15-c70, M16-c70, M01-c71 וב-M03-c71 לשמירה על תקרת 300 שורות).** M18-c70: STATE.md אומת מתחת לתקרה. M17-c70: RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c69. M16-c70: JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר, אפס דריפט מ-M16-c69.
 M15-c70: אפס console error/hydration נבדק שוב על `/` ו-`/product`, אפס דריפט מ-M15-c69. M14-c70: Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c69, הפער גדל ל-425 קומיטים. M13-c70: `/api/health` ו-`/api/ready` אומתו מחדש מול פרודקשן בפועל (`200`/`503`, זהה ל-M13-c67..M13-c69), אפס דריפט. M12-c70: robots.txt אומת מחדש מול פרודקשן בפועל, עדיין גרסת `a388118f1` הקפואה (חוסם 2), אפס דריפט מ-M12-c69.
