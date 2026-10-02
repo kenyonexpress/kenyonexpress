@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c73 (הועבר מ-STATE.md ב-M03-c73, לשמירה על תקרת 300 שורות)
+
+**M01-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". הורץ `scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline=refs/ke_live_{width}.png`
+בחזית, מול שרת `pnpm start` קיים על פורט 3311 (נבדק לפני ההרצה: `cwd`
+שלו הוא שורש הריפו הזה, `BUILD_ID` שלו (`HxROgHgeOE1nOzsKM3dTU`) תאם
+ל-HEAD `f31bc9ef8`). **תוצאה: `380`=8.58%, `768`=9.01%, `1440`=4.16%,
+שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M01-c72 (אותם מספרים בדיוק).**
+השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו.
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf .next && pnpm build`
+exit 0 נקי. אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
+
+## M02-c73 (הועבר מ-STATE.md ב-M03-c73, לשמירה על תקרת 300 שורות)
+
+**M02-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". הורץ `scripts/compare.mjs --page=product
+--widths=380,768,1440 --baseline=refs/electro_product_{width}.png` בחזית
+(הפקודה חרגה מ-180 שניות והועברה לרקע אוטומטית על ידי הכלי, אך נמתן
+במוניטור עד לשורת הסיכום הסופית באותה הרצה עצמה, בלי לסגור את הפריט
+לפני שהמספרים נכתבו), מול שרת `pnpm start` קיים על פורט 3311 (נבדק לפני
+ההרצה: `cwd` שלו הוא שורש הריפו הזה, PID זהה לזה ש-M01-c73 מדד נגדו דקות
+קודם לכן, `/api/health` ok). **תוצאה: `380`=4.96%, `768`=4.58%,
+`1440`=3.25%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M02-c72 (אותם
+מספרים בדיוק).** השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על
+ידי הסקריפט עצמו (`exit code 0`). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `rm -rf .next && pnpm build` רץ **אחרי** מדידת השער החזותי (כדי
+לא לשבור את השרת שהשער קרא ממנו באמצע הריצה), הושלם נקי עם `BUILD_ID`
+חדש (`KJvUUIh2bkLmVDX9Kgl6E`). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
+## M02-c73 כפילות (הועבר מ-STATE.md ב-M03-c73, לשמירה על תקרת 300 שורות)
+
+**M02-c73 - כפילות משימה, אומת מחדש בלי הרצה נוספת (02.10.2026, 12:4X).**
+התור הנוכחי כבר הציב `RESUME FROM: M03-c73`, כלומר הפריט הזה כבר `DONE`.
+התקבלה הקצאה חוזרת לאותה משימה בדיוק ("Re-measure compare.mjs on /product
+sample"). לפי הכלל "אם הפריט כבר בוצע — לאמת, לתעד ב-STATE.md ולסיים":
+אומתו קומיט `089d59510` (משנה רק `STATE.md`+`docs/UI-PARITY-REPORT.md`,
+אפס קוד ייצור) ושלוש השורות ב-`docs/UI-PARITY-REPORT.md` בחותמת
+`2026-10-02 05:38..05:41`, `380`=4.96%, `768`=4.58%, `1440`=3.25%, שלושתן
+`PASS`, זהות לרשומה מ-03:06..03:10. לא הורצה מדידה חדשה (אין שינוי קוד
+מאז, אין טעם במדידה שלישית זהה). `RESUME FROM` נשאר `M03-c73`.
+
 ## M18-c72 (הועבר מ-STATE.md ב-M01-c73, לשמירה על תקרת 300 שורות)
 
 **M18-c72 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines,
