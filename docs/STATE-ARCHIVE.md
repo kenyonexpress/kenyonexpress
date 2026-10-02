@@ -39357,3 +39357,22 @@ binary — לא ייבוא סטטי ש-knip עוקב אחריו. אין `knip.js
 (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337+12 מדולגים), `build`
 exit 0 (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3319`).
 קובץ יחיד: `STATE.md`.
+
+**M12-c71 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד: `git log 79e31742c..HEAD -- src/app/robots.ts
+src/app` (בסיס: קומיט M12-c70) — ריק, אפס קומיט נוגע. קובץ הקוד
+(`src/app/robots.ts`) נקרא במלואו: כל שמונה-עשרה נתיבי ה-`disallow`
+הצפויים נוכחים, כולל `/redeem/`, `/coupon/`, `/gift/`, `/order/`,
+`/wishlist/s/` ו-`/debug/`. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il/robots.txt`): עדיין גרסת `a388118f1`
+הקפואה, בלי `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/` ברשימת
+ה-`Disallow` (אותו גאפ שנמדד ב-M12-c67..M12-c70) — תוצאה ישירה של חוסם #2
+(אין פריסת HEAD), לא ממצא חדש. נבדקו גם ארבעת הנתיבים חיים: `/gift/x`
+ו-`/wishlist/s/x` מחזירים `200` (חשופים, כפי שנמדד קודם); `/order/x`
+מחזיר `404`; `/debug/` מחזיר `308`→`/debug`→`404` (וריאציית ניתוב בלבד,
+לא שינוי התנהגות — M12-c70 מדד `404` ישיר על אותו נתיב). אפס דריפט
+מהותי מ-M12-c70. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3324 pnpm build`, `/robots.txt`
+מופיע כ-`○ Static`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.

@@ -1,26 +1,32 @@
-RESUME FROM: M13-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c71 - DONE, robots.txt חי נבדק מחדש, אפס דריפט)
+RESUME FROM: M14-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c71 - DONE, /api/health ו-/api/ready נבדקו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c71 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". בדיקת דריפט קוד: `git log 79e31742c..HEAD -- src/app/robots.ts
-src/app` (בסיס: קומיט M12-c70) — ריק, אפס קומיט נוגע. קובץ הקוד
-(`src/app/robots.ts`) נקרא במלואו: כל שמונה-עשרה נתיבי ה-`disallow`
-הצפויים נוכחים, כולל `/redeem/`, `/coupon/`, `/gift/`, `/order/`,
-`/wishlist/s/` ו-`/debug/`. **נמדד מול פרודקשן בפועל**
-(`https://www.kenyonexpress.co.il/robots.txt`): עדיין גרסת `a388118f1`
-הקפואה, בלי `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/` ברשימת
-ה-`Disallow` (אותו גאפ שנמדד ב-M12-c67..M12-c70) — תוצאה ישירה של חוסם #2
-(אין פריסת HEAD), לא ממצא חדש. נבדקו גם ארבעת הנתיבים חיים: `/gift/x`
-ו-`/wishlist/s/x` מחזירים `200` (חשופים, כפי שנמדד קודם); `/order/x`
-מחזיר `404`; `/debug/` מחזיר `308`→`/debug`→`404` (וריאציית ניתוב בלבד,
-לא שינוי התנהגות — M12-c70 מדד `404` ישיר על אותו נתיב). **אפס דריפט
-מהותי מ-M12-c70.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
-`build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3324 pnpm build`, `/robots.txt`
-מופיע כ-`○ Static`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+**M13-c71 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
+61e7acb8e..HEAD -- src/app/api/health src/app/api/ready` (בסיס: קומיט
+M13-c70) — ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם:
+`src/app/api/health/route.ts` עושה HEAD-count על `categories` דרך
+ה-admin client ומחזיר `200`/`database:"ok"` כש-DB מגיב, `503` אחרת;
+`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמישה תלויות
+ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":91}`); `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+**זהה בדיוק ל-M13-c67..M13-c70**: `meilisearch:"down"` הוא חוסם ידוע
+(לא ממצא חדש — ראו `docs/BACKLOG.md` שורה 557-561, אין פריסת HEAD כך
+שהסביבה החיה לא מכירה את `checkSearch` העדכני). `/api/ready` ממשיך
+לדווח `503` כצפוי, לא `200` עם כל חמש התלויות. **אפס דריפט מ-M13-c70.**
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit
+0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3325 pnpm build`, שני הנתיבים
+מופיעים ב-manifest). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+
+**M12-c71 - DONE (02.10.2026).** robots.txt נבדק מחדש, אפס דריפט
+מ-M12-c70 (פירוט מלא ב-`docs/STATE-ARCHIVE.md`). ארבעת השערים ירוקים,
+אפס שינוי קוד.
 
 **M11-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M12-c71 לשמירה על תקרת 300 שורות).** אחד-עשר פריטי אימות-בלבד, אפס
