@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c78 (הועבר מ-STATE.md ב-M11-c78, לשמירה על תקרת 300 שורות)
+
+**M10-c78 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff 98fa72131..HEAD --stat --
+migrations/pending/ supabase/migrations/ docs/BACKLOG.md` (בסיס:
+M10-c77) ריק, אפס שינוי. `migrations/pending/*.sql` נספר שוב: 60
+קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק git), דרך
+CLI-keychain-token, קריאה בלבד: כל 19 הקבצים החוסמים נבדקו אחד-אחד מול
+היעד שלהם. 204/234/235/236/239/240/244: `to_regclass` עדיין `null`,
+אין טבלה. 218/223/242/243/248: אין העמודה שהם מוסיפים. 224/247: אין
+ההרשאה (`has_function_privilege`/`has_table_privilege` מחזירים
+`false`). 220: `pg_proc.proconfig` של `fn_wallet_entries_block_mutation`
+עדיין `null`, אין `search_path` מוגדר. 209: המדיניות
+`push_subscriptions_select_own` עדיין `auth.uid() = user_id` לא עטוף.
+246: המדיניות `profiles_super_admin_mfa` עדיין הניסוח המקורי, לא 209
+ולא 246. 245: אפס מתוך חמש המדיניות המוצעות על `banners` קיימת. 241:
+46 מוצרים פעילים עם `city IS NULL` (זהה ל-43+3 שנמדד ב-M10-c68). כל 19
+אושרו שוב כלא מוחלים, אפס דריפט מהבדיקה הישירה הקודמת (M10-c74,
+02.10). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה ל-M09-c78). `build` ראשון נכשל ב-`coupon_deal.active_ids_failed`
+(timeout רשת זמני מול Supabase בזמן collect page data), ריצה חוזרת
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`) הצליחה, `BUILD_ID`
+חדש: `bAk3iv6_1bPeT53utC4RD`, route manifest מלא. פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ
+`supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
 ## M09-c78 (הועבר מ-STATE.md ב-M10-c78, לשמירה על תקרת 300 שורות)
 
 **M09-c78 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
