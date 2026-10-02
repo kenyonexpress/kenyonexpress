@@ -1,31 +1,31 @@
-RESUME FROM: M12-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c79 DONE: sitemap.xml אומת מחדש כחי, אפס דריפט)
+RESUME FROM: M13-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c79 DONE: robots.txt אומת מחדש כבטוח לפרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c79 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
-מחזיר `200`, `<urlset>` שטוח (לא `sitemapindex`), 79 כתובות, עדיין
-גרסת `a388118f1` (אפס דריפט מ-M11-c78; `etag`/`last-modified` זהים
-ל-02.10, `age: 51238`, `x-vercel-cache: HIT`). חמשת תתי-המפות של הקוד
-הנוכחי — `/sitemap/{products,categories,regions,suppliers,content}.xml`
-— כולן `404` בפרודקשן, נמדד שוב. בקוד: `git diff 326a17668..HEAD
---stat -- src/app/sitemap.xml src/app/sitemap src/lib/seo
-docs/BACKLOG.md` (בסיס: commit M11-c78 עצמו) ריק, אפס שינוי. חוסם #2
-למעלה ללא שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M10-c79),
-build טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4717 pnpm build`, exit 0,
-`BUILD_ID` חדש `WERjZxni0I1JRWMcpI8He`, route manifest מלא כולל
-`/sitemap.xml` וחמשת תתי-המפות). פריט אימות-בלבד, לא חזותי:
-`compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase
-db push`, לא הוחלה אף מיגרציה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M12-c79 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
+production-safe". קוד ללא שינוי מאז M12-c78 (`e491ed047`): `git diff
+e491ed047..HEAD --stat -- src/app/robots.ts docs/BACKLOG.md` ריק.
+רשימת ה-17 נתיבי `disallow` ב-`src/app/robots.ts` עדיין כוללת
+`/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`. פרודקשן עדיין מגיש את
+robots.txt הקפוא של `a388118f1` (13 שורות `Disallow`, בלי ארבעתן) —
+תוצאה ישירה של חוסם #2 (אין פריסת HEAD), לא ממצא חדש. נמדד שוב חי:
+`/gift/x` עדיין `200` (חשוף בלי כיסוי `Disallow`), `/order/x` ו-
+`/wishlist/s/x` עדיין `404`, `/debug/` עדיין `308`, `etag`/
+`last-modified` זהים ל-M12-c78 (`48ebf65980bf0c79f17903e62a66be57`,
+02.10 06:15:15). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה ל-M11-c79), build טרי (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4717 pnpm
+build`, exit 0, `BUILD_ID` חדש `q9Bge2Bh1bvbFq1uplT4e`, `/robots.txt`
+בתור `○` סטטי במניפסט). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא
+נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא
+הוחלה אף מיגרציה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M10-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79).** עשרים ושניים פריטי
-תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19 קבצים חוסמים, אפס
-דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי בית/מוצר/קטגוריה,
+**M11-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79).** עשרים ושלושה
+פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19 קבצים חוסמים,
+אפס דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי בית/מוצר/קטגוריה,
 test/type-check/build גייטים, Lighthouse mobile, TODO/FIXME, unused
 deps/dead exports (`knip`), sitemap.xml/robots.txt (עדיין `a388118f1`),
 `/api/health`/`/api/ready`, אפס console error/hydration, ו-JSON-LD —
