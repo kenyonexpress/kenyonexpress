@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c76 (הועבר מ-STATE.md ב-M15-c76, לשמירה על תקרת 300 שורות)
+
+**M14-c76 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit". נבדק מול Vercel (MCP, read-only, פרויקט `kenyonexpress`/
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`): `list_deployments` (target=production)
+מראה את אותה פריסה חיה בדיוק שנמצאה ב-M14-c73..M14-c75 —
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `githubCommitRef=main`,
+`githubCommitSha=18ed044b2` ("Wave 6: build success"). `filter_project_envs`
+עדיין מראה `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` מוגדרים (נוספו ב-M14-c73,
+הערה "Set 2026-10-02 via MCP"), אותם ערכים, לצד `SENTRY_AUTH_TOKEN`.
+**תשובה לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
+`git merge-base --is-ancestor 18ed044b2 HEAD` נכשל (הענפים מפוצלים),
+`git log 18ed044b2..HEAD` מחזיר **909** קומיטים (היה 855 ב-M14-c73),
+`git log HEAD..18ed044b2` מחזיר **109** ללא שינוי. HEAD כרגע
+`4821382255`. **אפס דריפט מ-M14-c75** — אותו חוסם בדיוק, פורט מלא
+ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם 2 למטה).
+הסוכן לא נגע ב-Vercel מעבר לקריאות read-only (`list_deployments`,
+`filter_project_envs`) ולא ביצע/ביטל שום פריסה או שינוי env. ארבעת
+השערים ירוקים: `type-check`/`lint` נקי, `test` ירוק, `build` exit 0.
+אפס שינוי כסף/סכימה. קבצים: `STATE.md`.
+
 ## M12-c76 (הועבר מ-STATE.md ב-M13-c76, לשמירה על תקרת 300 שורות)
 
 **M12-c76 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
