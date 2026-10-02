@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c70 (הועבר מ-STATE.md ב-M18-c70, לשמירה על תקרת 300 שורות)
+
+**M17-c70 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c69. **נבדק מחדש,
+אפס דריפט.** `git log 434100366..HEAD -- src/ e2e/` ריק, `grep` על
+`dir="ltr"` בשני קבצי `HeroSlider.tsx` מחזיר רק הערות הסבר. **ברמת הדף,
+build אמיתי** (`.next` חדש, ניסיון ראשון נכשל על שגיאת רשת חולפת
+ב-Google Fonts, שני נקי): `pnpm build`+`pnpm start -p 3324`, listener
+אומת (`lsof`, cwd). `playwright test home-rtl/rtl-three-widths/rtl-mobile`
+— **111/112 עברו, כשל אחד** (`home-rtl.spec.ts` "every ltr node... on
+allow-list", chromium) על timeout של `waitForLoadState('networkidle')`,
+נשנה 3 מ-3 על אותו timeout (לא flake חד-פעמי, סביר autoplay ה-hero כל 5
+שניות). **נבדק ישירות בסקריפט Playwright זמני (נמחק)** שמדלג על
+networkidle וסורק DOM כמו הטסט: דף הבית **אפס offenders**; דף מוצר
+אמיתי (`/product/צימר-מאסטר`) **offender יחיד ולגיטימי** —
+`.pdp-summary__meta` ללא SKU (`ProductInfo.tsx:252`), זהה לממצא ב-M17-c69.
+**התזמון הוא כשל הטסט, לא leak LTR אמיתי.** אין ממצא קוד לתקן. ארבעת
+השערים: `type-check` נקי, `lint` נקי, `test` 614/614 קבצים (7337/7349,
+12 מדולגים), `build` exit 0 נקי (ניסיון שני). לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M04-c66..M17-c69). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (כיווץ M16-c70).
+
 ## M16-c70 (הועבר מ-STATE.md ב-M17-c70, לשמירה על תקרת 300 שורות)
 
 **M16-c70 - DONE (02.10.2026).** משימת התור: "Verify all product pages have

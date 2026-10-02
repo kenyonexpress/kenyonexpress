@@ -1,27 +1,23 @@
-RESUME FROM: M18-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c70 - DONE, RTL על / ו-/product נבדק שוב, אפס leak)
+RESUME FROM: M01-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c70 - DONE, STATE.md אומת מתחת לתקרת 300 שורות, סבב c70 הושלם, סבב c71 נפתח)
 
 ## המשך מ:
 
-**M17-c70 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c69. **נבדק מחדש,
-אפס דריפט.** `git log 434100366..HEAD -- src/ e2e/` ריק, `grep` על
-`dir="ltr"` בשני קבצי `HeroSlider.tsx` מחזיר רק הערות הסבר. **ברמת הדף,
-build אמיתי** (`.next` חדש, ניסיון ראשון נכשל על שגיאת רשת חולפת
-ב-Google Fonts, שני נקי): `pnpm build`+`pnpm start -p 3324`, listener
-אומת (`lsof`, cwd). `playwright test home-rtl/rtl-three-widths/rtl-mobile`
-— **111/112 עברו, כשל אחד** (`home-rtl.spec.ts` "every ltr node... on
-allow-list", chromium) על timeout של `waitForLoadState('networkidle')`,
-נשנה 3 מ-3 על אותו timeout (לא flake חד-פעמי, סביר autoplay ה-hero כל 5
-שניות). **נבדק ישירות בסקריפט Playwright זמני (נמחק)** שמדלג על
-networkidle וסורק DOM כמו הטסט: דף הבית **אפס offenders**; דף מוצר
-אמיתי (`/product/צימר-מאסטר`) **offender יחיד ולגיטימי** —
-`.pdp-summary__meta` ללא SKU (`ProductInfo.tsx:252`), זהה לממצא ב-M17-c69.
-**התזמון הוא כשל הטסט, לא leak LTR אמיתי.** אין ממצא קוד לתקן. ארבעת
-השערים: `type-check` נקי, `lint` נקי, `test` 614/614 קבצים (7337/7349,
-12 מדולגים), `build` exit 0 נקי (ניסיון שני). לא פריט חזותי, `compare.mjs`
-לא נדרש (תקדים M04-c66..M17-c69). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md` (כיווץ M16-c70).
+**M18-c70 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines
+archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c69. **נמדד:
+`wc -l STATE.md` היה 297 לפני העריכה הזו**, כבר מתחת לתקרה, אך הועבר בכל
+זאת הסעיף המלא של M17-c70 ל-`docs/STATE-ARCHIVE.md` (שורה חדשה שם, "הועבר
+מ-STATE.md ב-M18-c70") וכווץ כאן לשורה אחת, כדי לפנות מקום להערת האימות
+הזו ולשמור על אותו קצב כיווץ כמו בכל פריט M18 קודם. **M18 הוא הפריט
+האחרון בתור בן שמונה-עשר הפריטים; מצביע ה-`RESUME FROM:` קודם ישירות
+ל-`M01-c71`, בלי לעבור דרך `M19-c70` שגוי כמו שקרה ב-M18-c69.** לא נדרש
+תיקון קוד או מבנה נוסף מעבר לכיווץ הרגיל. ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים), `test` 614/614 קבצים, 7337/7349 עברו (12 מדולגים,
+זהה), `build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (אין שינוי
+UI, תקדים M18-c69). קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M17-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M18-c70).**
+RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c69.
 
 **M16-c70, M15-c70, M14-c70, M13-c70, M12-c70, M11-c70, M10-c70, M09-c70,
 M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70
