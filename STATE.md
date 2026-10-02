@@ -3,6 +3,16 @@ Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c73 - DO
 
 ## המשך מ:
 
+**M02-c73 - כפילות משימה, אומת מחדש בלי הרצה נוספת (02.10.2026, 12:4X).**
+התור הנוכחי כבר הציב `RESUME FROM: M03-c73`, כלומר הפריט הזה כבר `DONE`.
+התקבלה הקצאה חוזרת לאותה משימה בדיוק ("Re-measure compare.mjs on /product
+sample"). לפי הכלל "אם הפריט כבר בוצע — לאמת, לתעד ב-STATE.md ולסיים":
+אומתו קומיט `089d59510` (משנה רק `STATE.md`+`docs/UI-PARITY-REPORT.md`,
+אפס קוד ייצור) ושלוש השורות ב-`docs/UI-PARITY-REPORT.md` בחותמת
+`2026-10-02 05:38..05:41`, `380`=4.96%, `768`=4.58%, `1440`=3.25%, שלושתן
+`PASS`, זהות לרשומה מ-03:06..03:10. לא הורצה מדידה חדשה (אין שינוי קוד
+מאז, אין טעם במדידה שלישית זהה). `RESUME FROM` נשאר `M03-c73`.
+
 **M02-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
 /product sample". הורץ `scripts/compare.mjs --page=product
 --widths=380,768,1440 --baseline=refs/electro_product_{width}.png` בחזית
