@@ -1,19 +1,23 @@
-RESUME FROM: M05-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c78 DONE: type-check גייט אומת נקי, אפס דריפט קוד)
+RESUME FROM: M06-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c78 DONE: test גייט אומת נקי, אפס דריפט קוד)
 
 ## המשך מ:
 
-**M04-c78 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix
-drift commit" — זהה לתבנית "fix drift commit" החוזרת (M06-c76, M04-c77
-ולפניו). `pwd` אומת, עץ עבודה נקי (`git status --short` ריק). אומת
-שאין שינוי קוד ייצור מאז `e298135d9` (M03-c78): `git log --oneline
-e298135d9..HEAD -- src/ packages/ supabase/` ריק. אין דריפט לתקן.
+**M05-c78 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
+commit" — זהה לתבנית "fix drift commit" החוזרת (M05-c77 ולפניו). `pwd`
+אומת, עץ עבודה נקי (`git status --short` ריק), `HEAD` עדיין
+`d9ea23217` (M04-c78). אומת שאין שינוי קוד ייצור מאז: `git log --oneline
+d9ea23217..HEAD -- src/ packages/ supabase/` ריק. אין דריפט לתקן.
 ארבעת השערים: `type-check` נקי (אפס שגיאות `tsc --noEmit`), `lint` נקי
 (12 שערים, 2037 קבצים, זהה), `test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+מדולגים — זהה ל-M04-c78/M05-c77 בדיוק), `rm -rf .next && CARDCOM_USE_MOCK=true
 NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 נקי
 (`BUILD_ID` נכתב). לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
 M04-c77 ואילך). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+
+**M04-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M05-c78).** type-check גייט אומת נקי, אפס דריפט קוד מאז M03-c78.
+ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
 
 **M03-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M04-c78).** שער חזותי קטגוריה נמדד מחדש 380/768/1440 (3.53/1.94/1.53
