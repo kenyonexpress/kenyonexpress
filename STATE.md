@@ -1,32 +1,45 @@
-RESUME FROM: M10-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c80 DONE: unused deps/dead exports נבדקו מחדש עם knip, אפס דריפט)
+RESUME FROM: M11-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c80 DONE: מיגרציות ממתינות נבדקו ישירות מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c80 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
-dead exports" — זהה לתבנית החוזרת (M09-c79 ולפניו). `git diff --stat
-7001ecb53..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/
-STATE-ARCHIVE.md/BACKLOG.md/UI-PARITY-REPORT.md) החזיר ריק — אפס שינוי
-קוד, כולל `package.json`/`pnpm-lock.yaml`. `pnpm dlx knip
---no-config-hints` (ephemeral, אין `knip.json` בריפו) הורץ בכל זאת
-לאימות ולא להנחה: **201 unused files / 5 unused dependencies / 1
-unlisted binary / 271 unused exports / 197 unused exported types / 4
-duplicate exports** — אותם מספרים בדיוק כמו M09-c79, אפס מועמד חדש.
-אף תיקון אוטומטי לא בוצע — הכרעת הסרה היא הכרעת מפעיל (ר' ארכיון
-M09-c66..c79 לפירוט הרעש הידוע: drizzle/postgres/supabase CLI, scripts
-שרצים ישירות, `database.ts` הנוצר אוטומטית). ארבעת השערים ירוקים:
-`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm
-test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c80), build
-טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`, exit 0). אפס
-שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+**M10-c80 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff --stat e76cc0701..HEAD --
+migrations/pending/ supabase/migrations/ docs/BACKLOG.md` (בסיס:
+M10-c79) ריק, אפס שינוי. `migrations/pending/*.sql` נספר שוב: 60
+קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק git), דרך
+CLI-keychain-token, קריאה בלבד (`SELECT` בלבד, לא `BEGIN`/`ROLLBACK` —
+אין כתיבה כלל): אותם 19 הקבצים החוסמים, כל אחד נבדק סימן-היכר ישירות
+— שבעה שמות טבלה (204/234/235/236/239/240/244) `to_regclass` עדיין
+`null` (`supplier_applications`/`fraud_blocklist`/`feature_flags`/
+`contact_channels`/`customer_invoice_settings`/`app_consent_events`/
+`affiliate_campaigns`); ארבע עמודות (223/242/243/232) עדיין חסרות
+(`notifications_outbox.outbox_id`, `products.original_price_source`,
+`products.shipping_price_agorot`, `suppliers.opening_hours`/
+`google_reviews_url`); 218: `has_column_privilege(authenticated,
+profiles, wallet_balance, UPDATE)` עדיין `true`; 224/247:
+`has_function_privilege`/`has_table_privilege` עדיין `false`; 220:
+`pg_proc.proconfig` של `fn_wallet_entries_block_mutation` עדיין
+`null`; 209: המדיניות `push_subscriptions_select_own` עדיין
+`(auth.uid() = user_id)` לא עטוף; 246: המדיניות
+`profiles_super_admin_mfa` עדיין בניסוח המקורי (תואם 209, לא 246); 245:
+`banners` עדיין שתי המדיניות המקוריות בלבד (`banners: public read`/
+`banners: staff write`, נבדק בשם ישירות), לא חמש המוצעות; 241: 46
+מוצרים פעילים עם `city IS NULL`, זהה. כל 19 אושרו שוב כלא מוחלים, אפס
+דריפט מהבדיקה הישירה הקודמת (M10-c79, 03.10). ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `pnpm test`
+614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), build טרי (`rm -rf
+.next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4719
+pnpm build`, exit 0, manifest מלא). פריט אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase
+db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
 
 **M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M08-c80, הורחבה ב-M09-c80).** אחד-עשר פריטי תור/אימות-בלבד
-(type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs
-HEAD, test/build גייטים, TODO/FIXME, Lighthouse mobile) ושלושים
-פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים
-ירוקים בכולם, אפס שינוי קוד ייצור.
+לשורה הזו ב-M08-c80, הורחבה ב-M09-c80 וב-M10-c80).** שנים-עשר פריטי
+תור/אימות-בלבד (type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות
+ממתינות, Sentry vs HEAD, test/build גייטים, TODO/FIXME, Lighthouse
+mobile, unused deps/dead exports) ושלושים פריטים נוספים מארכיון קודם —
+אפס דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:
@@ -205,8 +218,8 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
-   M10-c74 (02.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
-   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c68.**
+   M10-c80 (03.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
+   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c79.**
    60 קבצים ב-`migrations/pending/`, `git log -1` עדיין `48c8792dd` (248).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.

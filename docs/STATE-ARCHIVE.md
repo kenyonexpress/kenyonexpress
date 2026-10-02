@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c80 (הועבר מ-STATE.md ב-M10-c80, לשמירה על תקרת 300 שורות)
+
+**M09-c80 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
+dead exports" — זהה לתבנית החוזרת (M09-c79 ולפניו). `git diff --stat
+7001ecb53..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/
+STATE-ARCHIVE.md/BACKLOG.md/UI-PARITY-REPORT.md) החזיר ריק — אפס שינוי
+קוד, כולל `package.json`/`pnpm-lock.yaml`. `pnpm dlx knip
+--no-config-hints` (ephemeral, אין `knip.json` בריפו) הורץ בכל זאת
+לאימות ולא להנחה: **201 unused files / 5 unused dependencies / 1
+unlisted binary / 271 unused exports / 197 unused exported types / 4
+duplicate exports** — אותם מספרים בדיוק כמו M09-c79, אפס מועמד חדש.
+אף תיקון אוטומטי לא בוצע — הכרעת הסרה היא הכרעת מפעיל (ר' ארכיון
+M09-c66..c79 לפירוט הרעש הידוע: drizzle/postgres/supabase CLI, scripts
+שרצים ישירות, `database.ts` הנוצר אוטומטית). ארבעת השערים ירוקים:
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm
+test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c80), build
+טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`, exit 0). אפס
+שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
 ## M07-c80 (הועבר מ-STATE.md ב-M08-c80, לשמירה על תקרת 300 שורות)
 
 **M07-c80 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
