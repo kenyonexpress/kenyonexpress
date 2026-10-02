@@ -1,25 +1,31 @@
-RESUME FROM: M01-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c79 DONE: STATE.md כבר מתחת לתקרת 300 שורות, M17-c79 אוכסן)
+RESUME FROM: M02-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c80 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M18-c79 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
-lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למשימות
-M18-c60..M18-c78 (קיצוץ מחזורי). **נמדד לפני כל שינוי**: `wc -l
-STATE.md` החזיר **292**, כבר **מתחת לתקרת 300** בלי שום פעולה. הפריט
-הקודם בתור (M17-c79) כיווץ את עצמו אל שורה אחת כחלק מה-pattern הרגיל
-וזה החזיק את הקובץ מתחת לתקרה מבלי להזדקק לקיצוץ נפרד כאן. **הפעולה
-שבוצעה בכל זאת**: פסקת M17-c79 המלאה הועברה ל-`docs/STATE-ARCHIVE.md`
-(סעיף חדש בראש הקובץ, הישן ביותר-ראשון נשאר שלם) וכווצה כאן לשורה
-אחת בתוך האוסף "M15-c79..M18-c78", שהורחב ל-"M15-c79..M18-c79" — כך
-שהתור הבא (M01-c80 ואילך) מתחיל מתוך מרווח נוסף, לא רק מתחת לתקרה
-בדיוק. ארבעת השערים הורצו כחלק מטקס הסיום הרגיל: `type-check` נקי,
-`lint` נקי, `test` ירוק, `build` exit 0. אפס שינוי קוד ייצור. שני
-קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
+**M01-c80 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
+M01-c61..M01-c79 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
+-sTCP:LISTEN` לא החזיר כלום לפני המדידה (אין שרת ישן תקוע). `pnpm
+build` רענן הורץ קודם (exit 0), ואז `PORT=3311 pnpm start` עלה
+ו-`curl -s -o /dev/null -w "%{http_code}"` על `/` החזיר `200`. הורץ
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`
+בחזית (per blocker #14, `kenyonexpress.co.il` עצמו עונה "our-build"
+ולא live, ולכן השוואה חייבת reference קפוא). הריצה עברה את timeout
+180s של הכלי ועברה אוטומטית לרקע (task `bla3k409n`); חוכה לסיומה
+בפועל (exit 0) לפני שנרשמו התוצאות, ולא הוסתה ביוזמת הסוכן.
+**תוצאות ("both painted", המדד המשמש PASS/FAIL מול הסף 11%): 380
+8.58% PASS, 768 9.01% PASS, 1440 4.16% PASS — זהה ל-M01-c79, אפס
+דריפט.** השער כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` בעצמו
+(commit `ba43645cb`/`-dirty`). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים), `build` exit 0. אפס שינוי קוד ייצור. קובץ יחיד שונה חוץ
+מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
 
-**M15-c79..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79/M13-c79/M14-c79/M15-c79/M16-c79/M17-c79/M18-c79).**
-עשרים ושמונה פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
+**M15-c79..M01-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79/M13-c79/M14-c79/M15-c79/M16-c79/M17-c79/M18-c79/M01-c80).**
+שלושים פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
 קבצים חוסמים, אפס דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי
 בית/מוצר/קטגוריה, test/type-check/build גייטים, Lighthouse mobile,
 TODO/FIXME, unused deps/dead exports (`knip`), sitemap.xml/robots.txt
