@@ -1,7 +1,15 @@
-RESUME FROM: M05-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c72 - DONE, pnpm type-check נבדק מחדש)
+RESUME FROM: M06-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c72 - DONE, pnpm test נבדק מחדש)
 
 ## המשך מ:
+
+**M05-c72 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
+commit". הורץ `pnpm test` (vitest) בחזית מול HEAD הנוכחי: 614/614 קבצים,
+7337/7349 (12 מדולגים) - זהה ל-M05-c71 ולכל בדיקת test קודמת בתור. אין
+דריפט לתקן. שאר שלושת השערים הורצו גם הם לפני ה-commit: `type-check`
+exit 0 נקי, `lint` נקי (12 שערים, 2037 קבצים), `build` exit 0 נקי (אזהרות
+`rls_denied`/`reviews_read_failed` בזמן build הן רעש ידוע מקריאות anon
+ל-reviews, לא שגיאת build). אפס שינוי קוד ייצור. קובץ: `STATE.md`.
 
 **M04-c72 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
 commit". הורץ `pnpm type-check` (`tsc --noEmit`) בחזית מול HEAD הנוכחי:
