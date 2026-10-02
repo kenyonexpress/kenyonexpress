@@ -1,7 +1,17 @@
-RESUME FROM: M05-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c79 DONE: pnpm type-check gate re-verified clean, zero drift)
+RESUME FROM: M06-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c79 DONE: pnpm test gate re-verified clean, zero drift)
 
 ## המשך מ:
+
+**M05-c79 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
+commit" — זהה ל-M05-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
+test` (`vitest run`) רץ בחזית: **614/614 קבצים ירוקים, 7337/7349 טסטים
+עברו (12 מדולגים)**, זהה ל-M03-c79/M04-c79. אין דריפט לתקן, אז אין שינוי
+קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות: `test` ירוק כאמור,
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים, biome +
+tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical/
+i18n/locale-format/input-dir/docs-index/docs-path-audit), `build` exit 0
+נקי. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
 
 **M04-c79 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
 commit" — זהה ל-M04-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
