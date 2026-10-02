@@ -1,16 +1,21 @@
-RESUME FROM: M06-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c75 - DONE, pnpm test נמדד מחדש)
+RESUME FROM: M07-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c75 - DONE, pnpm build נמדד מחדש)
 
 ## המשך מ:
 
-**M05-c75 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
-commit". אפס שינוי בקבצי `src/` מאז M05-c74 (`2ce9eb34c`, `git log
---oneline 2ce9eb34c..HEAD -- src/` ריק). `pnpm test` נקי: 614/614 קבצים,
-7337/7349 (12 דילוגים, זהה למדידה הקודמת), אפס דריפט. שלושת השערים
-הנוספים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `build`
-exit 0 נקי. אפס שינוי קוד ייצור. קובץ: `STATE.md` בלבד.
+**M06-c75 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
+commit". אפס שינוי בקבצי `src/`/`package.json`/`pnpm-lock.yaml`/קבצי
+config מאז M06-c74 (`3b541a331`, `git log --oneline 3b541a331..HEAD --
+src/ package.json pnpm-lock.yaml next.config.ts tsconfig.json` ריק).
+`rm -rf .next && pnpm build` נקי: `Compiled successfully`, exit 0, כל
+הנתיבים נבנו (לוגי `supabase.rls_denied`/`reviews_read_failed` בזמן
+prerender הם החוסם הידוע #3 — מיגרציה 247 לא הוחלה — לא כשל build).
+שלושת השערים הנוספים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, אותם מספרים כמו M05-c75), `test` נקי: 614/614 קבצים, 7337/7349
+(12 דילוגים, זהה). אפס דריפט, אפס שינוי קוד ייצור. קובץ: `STATE.md`
+בלבד.
 
-**M04-c75..M01-c75, M18-c74..M01-c74 (עשרים ושניים פריטי אימות-בלבד/תחזוקה,
+**M05-c75..M01-c75, M18-c74..M01-c74 (עשרים ושלושה פריטי אימות-בלבד/תחזוקה,
 ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M06-c75
 לשמירה על תקרת 300 שורות).** אפס דריפט בכולם, ארבעת השערים ירוקים
 בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב (כולם PASS),
