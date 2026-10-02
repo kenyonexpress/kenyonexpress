@@ -1,31 +1,32 @@
-RESUME FROM: M09-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c80 DONE: Lighthouse mobile נבדק מחדש, אפס דריפט)
+RESUME FROM: M10-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c80 DONE: unused deps/dead exports נבדקו מחדש עם knip, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c80 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
-and /product sample log scores" — זהה לתבנית החוזרת (M08-c79
-ולפניו). ארבעת השערים ירוקים: `type-check` נקי (exit 0), `lint` נקי
-(12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים, זהה ל-M07-c80), build טרי (`rm -rf .next`,
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
-build`, exit 0). `pnpm start` עצמאי על פורט 4517 (3311/3316/3618/
-3911/4211 תפוסים ע"י סוכנים מקבילים, 4517 פנוי), `cwd` אומת מול הריפו
-הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-מאסטר` (נמדד מול
-`supabase/catalogue-snapshot.json`) אומתו `200` לפני המדידה.
-`LOCAL_BASE=http://localhost:4517 node scripts/lighthouse-smoke.mjs
---throttling-method=provided` (פעם ללא `--url`, פעם עם
-`--url=/product/צימר-מאסטר`): `/` = **100/100/100**,
-`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c79. שרת
-נסגר אחרי המדידה, פורט אומת פנוי. אימות-בלבד, לא חזותי: `compare.mjs`
-לא נדרש (תקדים M08-c78 ואילך). אפס שינוי קוד ייצור. קובץ אחד:
-`STATE.md`.
+**M09-c80 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
+dead exports" — זהה לתבנית החוזרת (M09-c79 ולפניו). `git diff --stat
+7001ecb53..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/
+STATE-ARCHIVE.md/BACKLOG.md/UI-PARITY-REPORT.md) החזיר ריק — אפס שינוי
+קוד, כולל `package.json`/`pnpm-lock.yaml`. `pnpm dlx knip
+--no-config-hints` (ephemeral, אין `knip.json` בריפו) הורץ בכל זאת
+לאימות ולא להנחה: **201 unused files / 5 unused dependencies / 1
+unlisted binary / 271 unused exports / 197 unused exported types / 4
+duplicate exports** — אותם מספרים בדיוק כמו M09-c79, אפס מועמד חדש.
+אף תיקון אוטומטי לא בוצע — הכרעת הסרה היא הכרעת מפעיל (ר' ארכיון
+M09-c66..c79 לפירוט הרעש הידוע: drizzle/postgres/supabase CLI, scripts
+שרצים ישירות, `database.ts` הנוצר אוטומטית). ארבעת השערים ירוקים:
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm
+test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c80), build
+טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`, exit 0). אפס
+שינוי קוד ייצור. קובץ אחד: `STATE.md`.
 
 **M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M08-c80).** עשרה פריטי תור/אימות-בלבד (type-check, שערי
-חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build
-גייטים, TODO/FIXME) ושלושים פריטים נוספים מארכיון קודם — אפס
-דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+לשורה הזו ב-M08-c80, הורחבה ב-M09-c80).** אחד-עשר פריטי תור/אימות-בלבד
+(type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs
+HEAD, test/build גייטים, TODO/FIXME, Lighthouse mobile) ושלושים
+פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים
+ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:
