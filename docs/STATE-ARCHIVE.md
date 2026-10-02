@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c79 (הועבר מ-STATE.md ב-M16-c79, לשמירה על תקרת 300 שורות)
+
+**M15-c79 - DONE (03.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה למשימות M15-c66..M15-c78. בדיקת דריפט
+קוד: `git log 1002b93fb..HEAD --stat -- src/app src/components
+e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c78) ריק: אפס קומיטים
+בנתיבים הרלוונטיים. נבנה `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm
+build`, exit 0), הורם `pnpm start -p 4821` (אומת `curl` 200 ו-`lsof -p
+-d cwd` על ה-pid: זהה לנתיב הפרויקט הנוכחי, לא checkout זר), והורצו
+`anon /` ו-`anon dynamic catalogue routes` מתוך `e2e/route-audit.spec.ts`
+עם `E2E_BASE_URL=http://localhost:4821`, chromium בלבד, `--workers=1`,
+**2/2 עברו** (43.4 שניות). אומת ישירות מתוך
+`/tmp/route-audit-m15c79.jsonl` (8 שורות): אפס `consoleErrors`/
+`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל השורות, כולל `/`,
+`/product/צימר-מאסטר` (פעיל, זהה לסבבים קודמים) ו-
+`/product/צימר-מאסטר/reviews`. **אין ממצא קוד לתקן**: אימות-בלבד, זהה
+לתוצאה שנמדדה בשלושה-עשר הסבבים הקודמים (M15-c66..M15-c78). ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `pnpm test`
+614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next && pnpm
+build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M15-c78). אפס שינוי קוד ייצור. קבצים: `STATE.md`
+(וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M14-c79 (הועבר מ-STATE.md ב-M15-c79, לשמירה על תקרת 300 שורות)
 
 **M14-c79 - DONE (03.10.2026).** משימת התור: "Verify Sentry release
