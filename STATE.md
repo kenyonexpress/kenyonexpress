@@ -1,27 +1,23 @@
-RESUME FROM: M06-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c79 DONE: pnpm test gate re-verified clean, zero drift)
+RESUME FROM: M07-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c79 DONE: pnpm build gate re-verified clean, zero drift)
 
 ## המשך מ:
 
-**M05-c79 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
-commit" — זהה ל-M05-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
-test` (`vitest run`) רץ בחזית: **614/614 קבצים ירוקים, 7337/7349 טסטים
-עברו (12 מדולגים)**, זהה ל-M03-c79/M04-c79. אין דריפט לתקן, אז אין שינוי
-קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות: `test` ירוק כאמור,
-`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים, biome +
-tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical/
-i18n/locale-format/input-dir/docs-index/docs-path-audit), `build` exit 0
-נקי. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
-
-**M04-c79 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
-commit" — זהה ל-M04-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
-type-check` (`tsc --noEmit`) רץ בחזית: **exit 0, אפס שגיאה**. אין דריפט
-לתקן, אז אין שינוי קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות:
+**M06-c79 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
+commit" — זהה ל-M06-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
+build` רץ בחזית: **exit 0, בנייה נקייה**, כל הנתיבים render כרגיל
+(static/PPR/dynamic), אפס שגיאת build. אין דריפט לתקן, אז אין שינוי
+קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות: `build` ירוק כאמור,
 `type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים, biome +
 tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical/
 i18n/locale-format/input-dir/docs-index/docs-path-audit), `test`
-614/614 קבצים (7337/7349, 12 מדולגים, זהה ל-M03-c79), `build` exit 0
-נקי. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+614/614 קבצים (7337/7349 טסטים, 12 מדולגים, זהה ל-M03-c79/M04-c79/
+M05-c79). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
+**M04-c79..M05-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M06-c79).** M05-c79 — pnpm test: 614/614 קבצים, 7337/7349 טסטים
+(12 מדולגים). M04-c79 — pnpm type-check: exit 0, אפס שגיאה. אפס דריפט
+בשני הפריטים, ארבעת השערים ירוקים בשניהם.
 
 **M02-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M03-c79).** M02-c79 — שער חזותי מוצר נמדד מחדש 380/768/1440

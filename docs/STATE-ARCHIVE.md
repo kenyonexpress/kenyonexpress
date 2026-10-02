@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c79 (הועבר מ-STATE.md ב-M06-c79, לשמירה על תקרת 300 שורות)
+
+**M05-c79 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
+commit" — זהה ל-M05-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
+test` (`vitest run`) רץ בחזית: **614/614 קבצים ירוקים, 7337/7349 טסטים
+עברו (12 מדולגים)**, זהה ל-M03-c79/M04-c79. אין דריפט לתקן, אז אין שינוי
+קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות: `test` ירוק כאמור,
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים, biome +
+tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical/
+i18n/locale-format/input-dir/docs-index/docs-path-audit), `build` exit 0
+נקי. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
+## M04-c79 (הועבר מ-STATE.md ב-M06-c79, לשמירה על תקרת 300 שורות)
+
+**M04-c79 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
+commit" — זהה ל-M04-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
+type-check` (`tsc --noEmit`) רץ בחזית: **exit 0, אפס שגיאה**. אין דריפט
+לתקן, אז אין שינוי קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות:
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים, biome +
+tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical/
+i18n/locale-format/input-dir/docs-index/docs-path-audit), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה ל-M03-c79), `build` exit 0
+נקי. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
 ## M02-c79 (הועבר מ-STATE.md ב-M03-c79, לשמירה על תקרת 300 שורות)
 
 **M02-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
