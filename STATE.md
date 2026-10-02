@@ -1,22 +1,27 @@
-RESUME FROM: M09-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c77 - DONE, Lighthouse mobile נמדד מחדש על / ו-/product, אפס דריפט)
+RESUME FROM: M10-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c77 - DONE, knip נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c77 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". ארבעת השערים ירוקים: `type-check` נקי,
-`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
-עברו, 12 מדולגים), `build` טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, exit 0, `BUILD_ID`
-`Idzb7jJuaUN9UUsBnk-7`). `pnpm start` עצמאי על פורט 4417 (3312-3316/3618/
-3911/4211 תפוסים ע"י סוכנים מקבילים, 4417 פנוי), `cwd` אומת מול הריפו
-הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-מאסטר` (נמדד מול
-`supabase/catalogue-snapshot.json`, 44 מוצרים פעילים, `! צימר מאסטר`
-פעיל עם מלאי 10) אומתו `200` לפני המדידה.
-`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
-**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס דריפט
-מ-M08-c76. שרת נסגר אחרי המדידה, פורט אומת פנוי. אימות-בלבד, לא חזותי:
-`compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`. התור הבא: `M09-c77`.
+**M09-c77 - DONE (02.10.2026).** משימת התור: "Remove unused deps and
+dead exports". `git diff --stat 7a6a069c6..HEAD -- package.json
+pnpm-lock.yaml src/ scripts/ next.config.ts apps/ supabase/` (בסיס:
+HEAD של M09-c76) ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip
+--no-config-hints` הורץ מחדש: **201 unused files / 5 unused
+dependencies / 1 unlisted binary / 271 unused exports / 197 unused
+exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו M09-c76,
+אפס מועמד חדש. אפס הסרה (כל הפריטים כבר נבדקו בסבבים קודמים ואינם
+מועמדים אוטומטיים — החלטת מפעיל, כמתועד ב-M09-c74/c75/c76). ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` טרי
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, `BUILD_ID`
+`Dm78oQxABrUodyVELTQBX`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
+
+**M08-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
+Lighthouse mobile על / ו-`/product/צימר-מאסטר` נמדד מחדש, 100/100/100
+בשניהם, אפס דריפט מ-M08-c76. ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
 
 **M01-c77..M07-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M08-c77 לשמירה על תקרת 300 שורות).** שבעה פריטי אימות-בלבד: שער חזותי
