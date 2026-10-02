@@ -1,19 +1,29 @@
-RESUME FROM: M07-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c74 - DONE, build אומת נקי, אפס דריפט)
+RESUME FROM: M08-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c74 - DONE, TODO/FIXME scan אפס דריפט)
 
 ## המשך מ:
 
-**M06-c74 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
-commit". `rm -rf .next && pnpm build` רץ נקי, exit 0, manifest מלא
-(BUILD_ID חדש `iOV0dJFAKTe1crl-cPgxM`) — אין דריפט לתקן. הורצו גם
-שלושת השערים הנוספים לוודא שאין רגרסיה חבויה: `type-check`
-(`tsc --noEmit`) exit 0 נקי, `lint` ירוק (12 שערים, `biome check` על
-2037 קבצים, אפס תיקונים), `test` 614/614 קבצים ו-7337/7349 עברו (12
-מדולגים, זהה ל-M05-c74). פריט אימות-בלבד, אפס שינוי קוד ייצור. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M07-c74 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
+--include="*.ts" --include="*.tsx" -l` מחזיר אותם שני קבצים כמו בכל סבב
+קודם (לאחרונה M07-c73, `c820f710f`): `src/lib/payments/cardcom.ts` (שתי
+שורות, 254 ו-319, שתיהן `TODO(cardcom)` אמיתיות, בלי שינוי מאז
+09.09/25.09) ו-`src/lib/whatsapp.test.ts:91` (מחרוזת ליטרלית `'TODO'`
+בבדיקה, לא סמן עבודה). `git log c820f710f..HEAD -- src/lib/payments/cardcom.ts
+src/lib/whatsapp.test.ts docs/BACKLOG.md` ריק — אפס דריפט מאז הסריקה
+הקודמת. שתי ה-`TODO` האמיתיות כבר מתועדות ב-`docs/BACKLOG.md` סעיף 6
+(חוסם `Cardcom אמיתי`, `Tracked in #41`/`#42`), לא נדרש עדכון לקובץ.
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים).
+`build` לא הורץ מחדש: HEAD זהה ל-M06-c74 (`3b541a331`, שם נבדק `rm -rf
+.next && pnpm build` טרי, exit 0), `.next/BUILD_ID` עדיין
+`iOV0dJFAKTe1crl-cPgxM` — אפס דריפט קוד מאז. פריט אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
 
-**M05-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M06-c74 לשמירה על תקרת 300 שורות).** M05-c74 — `pnpm test` נמדד
+**M06-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M07-c74 לשמירה על תקרת 300 שורות).** M06-c74 — `pnpm build` נבדק
+מחדש מראש (`rm -rf .next`), exit 0, `BUILD_ID` חדש
+`iOV0dJFAKTe1crl-cPgxM`, אפס דריפט. M05-c74 — `pnpm test` נמדד
 מחדש, 614/614 קבצים, 7337/7349 עברו, אפס דריפט. M04-c74 — `pnpm
 type-check` נמדד מחדש, exit 0, אפס דריפט. M03-c74 — שער חזותי קטגוריה
 נמדד מחדש, אפס דריפט מ-M03-c73/M03-c66 (2.93%/2.31%/1.58%, שלושתם

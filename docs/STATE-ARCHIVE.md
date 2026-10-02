@@ -2,6 +2,17 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c74 (הועבר מ-STATE.md ב-M07-c74, לשמירה על תקרת 300 שורות)
+
+**M06-c74 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
+commit". `rm -rf .next && pnpm build` רץ נקי, exit 0, manifest מלא
+(BUILD_ID חדש `iOV0dJFAKTe1crl-cPgxM`) — אין דריפט לתקן. הורצו גם
+שלושת השערים הנוספים לוודא שאין רגרסיה חבויה: `type-check`
+(`tsc --noEmit`) exit 0 נקי, `lint` ירוק (12 שערים, `biome check` על
+2037 קבצים, אפס תיקונים), `test` 614/614 קבצים ו-7337/7349 עברו (12
+מדולגים, זהה ל-M05-c74). פריט אימות-בלבד, אפס שינוי קוד ייצור. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M05-c74 (הועבר מ-STATE.md ב-M06-c74, לשמירה על תקרת 300 שורות)
 
 **M05-c74 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
