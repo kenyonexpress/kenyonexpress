@@ -1,24 +1,28 @@
-RESUME FROM: M11-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c77 - DONE, מיגרציות ממתינות אומתו מחדש מול git, אפס דריפט)
+RESUME FROM: M12-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c77 - DONE, sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c77 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `git diff 078bdce89..HEAD --stat -- migrations/pending/
-supabase/migrations/ docs/BACKLOG.md` (בסיס: M10-c76) **ריק** — אפס
-שינוי. `migrations/pending/*.sql` נספר שוב: **60 קבצים**, ללא שינוי.
-`git log 078bdce89..HEAD -- supabase/migrations/` ריק — שום מיגרציה לא
-הוחלה. חוסם פתוח #3 (19 קבצים: 204, 209, 218, 220, 223, 224, 234, 235,
-236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248; פירוט
-ב-`docs/RUNBOOK.md`/`docs/MIGRATION-REVIEW.md`) עומד ללא שינוי — בדיקה
-ישירה מול פרודקשן האחרונה הייתה ב-M10-c74 (02.10, CLI-keychain-token),
-וזו מעקב מול git בלבד, כמו M10-c75/c76, כי אין דריפט קוד שמצדיק בדיקה
-ישירה חוזרת באותו יום. ארבעת השערים ירוקים: `type-check` נקי, `lint`
-נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, route manifest
-מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
-כסף/סכימה, אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+**M11-c77 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
+מחזיר `200`, `<urlset>` שטוח (לא `sitemapindex`), 79 כתובות, עדיין
+גרסת `a388118f1` (אפס דריפט מ-M11-c76). חמשת תתי-המפות של הקוד
+הנוכחי — `/sitemap/{content,suppliers,regions,categories,products}.xml`
+— כולן `404` בפרודקשן, נמדד שוב. בקוד: `git log -1` על תשעת קבצי
+ה-sitemap (`src/app/sitemap*`, `src/app/sitemap/`, `src/lib/seo/sitemap-*`)
+מחזיר `b209770c4` (09.09), אפס שינוי מ-M11-c76. חוסם #2 למעלה ללא
+שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm
+build`, manifest מאשר חמשת הנתיבים + `/sitemap.xml`). פריט אימות-בלבד,
+לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה, אסור `supabase
+db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+
+**M10-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
+מיגרציות ממתינות נבדקו מחדש מול git (בסיס M10-c76), 60 קבצים ללא
+שינוי, אפס מיגרציה הוחלה, חוסם #3 (19 קבצים) ללא שינוי. ארבעת השערים
+ירוקים, אפס שינוי קוד ייצור.
 
 **M09-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
 Unused deps/dead exports נסרקו מחדש עם `knip`, אותם מספרים בדיוק

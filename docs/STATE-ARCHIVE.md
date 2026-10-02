@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c77 (הועבר מ-STATE.md ב-M11-c77, לשמירה על תקרת 300 שורות)
+
+**M10-c77 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff 078bdce89..HEAD --stat -- migrations/pending/
+supabase/migrations/ docs/BACKLOG.md` (בסיס: M10-c76) **ריק** — אפס
+שינוי. `migrations/pending/*.sql` נספר שוב: **60 קבצים**, ללא שינוי.
+`git log 078bdce89..HEAD -- supabase/migrations/` ריק — שום מיגרציה לא
+הוחלה. חוסם פתוח #3 (19 קבצים: 204, 209, 218, 220, 223, 224, 234, 235,
+236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248; פירוט
+ב-`docs/RUNBOOK.md`/`docs/MIGRATION-REVIEW.md`) עומד ללא שינוי — בדיקה
+ישירה מול פרודקשן האחרונה הייתה ב-M10-c74 (02.10, CLI-keychain-token),
+וזו מעקב מול git בלבד, כמו M10-c75/c76, כי אין דריפט קוד שמצדיק בדיקה
+ישירה חוזרת באותו יום. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, route manifest
+מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
+כסף/סכימה, אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+
 ## M09-c77 (הועבר מ-STATE.md ב-M10-c77, לשמירה על תקרת 300 שורות)
 
 **M09-c77 - DONE (02.10.2026).** משימת התור: "Remove unused deps and
