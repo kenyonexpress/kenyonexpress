@@ -41485,3 +41485,17 @@ M07-c67. ארבעת השערים: `type-check` נקי (אפס שגיאות), `li
 http://localhost:3331 pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs`
 לא נדרש (תקדים M07-c75 ואילך). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
+
+## M05-c78 (הועבר מ-STATE.md ב-M06-c78, לשמירה על תקרת 300 שורות)
+
+**M05-c78 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
+commit" — זהה לתבנית "fix drift commit" החוזרת (M05-c77 ולפניו). `pwd`
+אומת, עץ עבודה נקי (`git status --short` ריק), `HEAD` עדיין
+`d9ea23217` (M04-c78). אומת שאין שינוי קוד ייצור מאז: `git log --oneline
+d9ea23217..HEAD -- src/ packages/ supabase/` ריק. אין דריפט לתקן.
+ארבעת השערים: `type-check` נקי (אפס שגיאות `tsc --noEmit`), `lint` נקי
+(12 שערים, 2037 קבצים, זהה), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים — זהה ל-M04-c78/M05-c77 בדיוק), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 נקי
+(`BUILD_ID` נכתב). לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c77 ואילך). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
