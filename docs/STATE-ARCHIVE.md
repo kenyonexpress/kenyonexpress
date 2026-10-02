@@ -2,6 +2,20 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c75 (הועבר מ-STATE.md ב-M01-c76, לשמירה על תקרת 300 שורות)
+
+**M18-c75 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c74
+(`97de64449`). **נמדד 299 שורות בתחילת הפריט, כבר מתחת לתקרת 300 — לא
+נדרש ארכוב כדי לרדת מתחתיה.** הועבר בלוק M17-c75 המלא ל-
+`docs/STATE-ARCHIVE.md` (אותו דפוס בדיוק כמו M18-c74 עם M17-c74) כדי
+להשאיר מרווח לרשומה של הפריט הזה עצמו, וכווץ לשורת סיכום ב-STATE.md.
+שום שורה לא נמחקה מהארכיון עצמו. ארבעת השערים: `type-check` נקי, `lint`
+נקי, `test` ירוק, `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3335 pnpm build` exit 0 (פורטים
+3333/3334 תפוסים מפריטים קודמים באותו סשן). אפס שינוי קוד ייצור. שני
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M17-c75 (הועבר מ-STATE.md ב-M18-c75, לשמירה על תקרת 300 שורות)
 
 **M17-c75 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product

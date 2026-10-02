@@ -1,24 +1,33 @@
-RESUME FROM: M01-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c75 - DONE, STATE.md תחת תקרת 300 שורות, M17-c75 אורכב)
+RESUME FROM: M02-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c76 - DONE, שער חזותי בית נמדד מחדש)
 
 ## המשך מ:
 
-**M18-c75 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
-lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c74
-(`97de64449`). **נמדד 299 שורות בתחילת הפריט, כבר מתחת לתקרת 300 — לא
-נדרש ארכוב כדי לרדת מתחתיה.** הועבר בלוק M17-c75 המלא ל-
-`docs/STATE-ARCHIVE.md` (אותו דפוס בדיוק כמו M18-c74 עם M17-c74) כדי
-להשאיר מרווח לרשומה של הפריט הזה עצמו, וכווץ לשורת סיכום ב-STATE.md.
-שום שורה לא נמחקה מהארכיון עצמו. ארבעת השערים: `type-check` נקי, `lint`
-נקי, `test` ירוק, `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3335 pnpm build` exit 0 (פורטים
-3333/3334 תפוסים מפריטים קודמים באותו סשן). אפס שינוי קוד ייצור. שני
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M01-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md" — זהה למילה למשימת M01-c75
+(`e5e18f475`). שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת כשורש הריפו הזה) נבדק מול HEAD לפני ההרצה: `git status --short`
+ריק ו-`.next/BUILD_ID` נכתב `2026-10-02 20:03`, תואם ל-commit time של
+HEAD (`72ac12a9d`, אותה שנייה) — הבנייה הקיימת תואמת. הורץ `LOCAL_BASE=
+http://localhost:3311 node scripts/compare.mjs --page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` בחזית,
+הומתן לסיומו המלא לפני כל רישום (home מסורב כ-live reference מ-Q31,
+ה-DNS מצביע לפריסה שלנו — חוסם #14 למטה). **תוצאה: `380`=8.58%,
+`768`=9.01%, `1440`=4.16%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט
+מ-M01-c75 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית ל-
+`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `72ac12a9d`
+(HEAD בתחילת הפריט). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3331 pnpm build` exit 0 נקי (שרת 3311 נשאר חי ועונה
+`200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
-**M17-c75..M01-c75, M18-c74..M01-c74 (שלושים וחמישה פריטי אימות-בלבד/
-תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים —
-M06-c75, M09-c75, M10-c75, M11-c75, M12-c75, M13-c75, M15-c75 — לשמירה
-על תקרת 300 שורות).** M15-c75 — אפס console error/hydration על `/`
+**M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
+תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c76
+לשמירה על תקרת 300 שורות).** M18-c75 — תחזוקת תיעוד, STATE.md נבדק
+מחדש מתחת לתקרת 300 שורות (299), ארכב את M17-c75 כדי לשמור מרווח.
+M15-c75 — אפס console error/hydration על `/`
 ו-`/product/צימר-מאסטר` (route-audit, 2/2), אפס דריפט מ-M15-c74.
 M14-c75 — Sentry release vs HEAD נבדק מחדש מול
 Vercel MCP (read-only): אותה פריסה בדיוק שנמצאה ב-M14-c74
