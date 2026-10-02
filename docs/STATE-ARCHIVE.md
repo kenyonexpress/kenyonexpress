@@ -2,6 +2,47 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## ROBOTS-FIX (הועבר מ-STATE.md ב-M04-c73, לשמירה על תקרת 300 שורות)
+
+**ROBOTS-FIX - DONE, אפס שינוי קוד (02.10.2026, פריט אד-הוק חד-פעמי,
+לא בתור ה-M-series, לא קידם `RESUME FROM:`).** התבקש להוסיף ארבע שורות
+`Disallow` (`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`) ב-`public/robots.txt`.
+**כבר בוצע מראש**: אין `public/robots.txt` בריפו — הקובץ נוצר דינמית
+מ-`src/app/robots.ts`, וארבעת הנתיבים כבר שם (`8fce77c76`,`4d3702025`,
+M12-c66/c67), מכוסים ב-`robots.test.ts`. **אומת כעת**: `curl` לפרודקשן
+חוזר ריק על ארבעתם — זה חוסם #2 ב-STATE.md (פריסה חסומה), לא תקלת קובץ. אין
+מה ל-commit; push ישיר ל-`main` נדחה (מוגן ב-GitHub, וסותר עבודה על
+הענף הנוכחי בלבד).
+
+## M03-c73 (הועבר מ-STATE.md ב-M04-c73, לשמירה על תקרת 300 שורות)
+
+**M03-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". הורץ `scripts/compare.mjs --page=category
+--widths=380,768,1440 --baseline=refs/electro_shop_{width}.png` בחזית,
+מול שרת `pnpm start` קיים על פורט 3311 (נבדק לפני ההרצה: `lsof` על הפורט
+הצביע ל-PID שה-`cwd` שלו הוא שורש הריפו הזה, `/api/health` ok). **שלוש
+הרצות ראשונות סירבו** (`REFUSING to measure: ... 2 on the local page had
+still not loaded when the shutter fired`) — תקלת-תזמון חולפת בטעינת שתי
+תמונות מוצר תחת עומס מערכת כבד (`load average` 7.38 על 8 ליבות, שישה
+תהליכי `pnpm start`/`pnpm dev` מקביליים של סשנים אחרים, כולם עם אותו
+`cwd`), לא רגרסיה בתוכן: שתי התמונות שסורבו אומתו ישירות (`curl`, 200,
+<25ms) כתקינות ומהירות. **הרצה רביעית עם דגל המילוט המתועד של הסקריפט
+עצמו (`COMPARE_ALLOW_PENDING_IMAGES=1`, לא פתרון שלא נמדד — מובנה
+ומתועד ב-`scripts/compare.mjs`, אותו דפוס בדיוק כמו M03-c69, ראו
+`docs/STATE-ARCHIVE.md`) הצליחה ונתנה מספר אמיתי לשלושת הרוחבים**
+(חרגה מ-180 שניות, הועברה לרקע אוטומטית על ידי הכלי, נמתנה במוניטור
+עד לשורת הסיכום הסופית באותה הרצה עצמה, בלי לסגור את הפריט לפני
+שהמספרים נכתבו). **תוצאה: `380`=2.93%, `768`=2.31%, `1440`=1.58%,
+שלושתם `PASS` מתחת לשער 11%, אפס דריפט מהותי מ-M03-c66 (3.53%/2.52%/
+1.69% אז, שינוי קל בתוך רעש מדידה, שלושתם ירדו לא עלו).** השורות
+נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו. ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה), `pnpm build` exit 0 נקי
+(`BUILD_ID` חדש `sF5709S960fKPzO5wekob`, רץ **אחרי** מדידת השער החזותי
+כדי לא לשבור את השרת שהשער קרא ממנו באמצע הריצה). אפס שינוי קוד ייצור.
+קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`, `docs/STATE-ARCHIVE.md`
+(בלוקי M01-c73/M02-c73 כווצו כאן לתקרת 300 שורות, שום שורה לא נמחקה).
+
 ## M01-c73 (הועבר מ-STATE.md ב-M03-c73, לשמירה על תקרת 300 שורות)
 
 **M01-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
