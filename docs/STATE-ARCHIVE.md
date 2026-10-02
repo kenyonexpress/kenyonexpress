@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c74 (הועבר מ-STATE.md ב-M03-c74, לשמירה על תקרת 300 שורות)
+
+**M02-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת כשורש הריפו הזה, `/api/health` 200) נבדק מול HEAD לפני ההרצה:
+אפס שינוי קוד ייצור מאז M01-c74 (רק תיעוד). הורץ `LOCAL_BASE=
+http://localhost:3311 scripts/compare.mjs --page=product --widths=
+380,768,1440 --baseline=refs/electro_product_{width}.png` בחזית (חרג
+מ-timeout 120 שניות של כלי ה-Bash והמשיך ברקע עד סיום, לא הופעל ברקע
+ביוזמת הסוכן; הומתן לסיומו המלא דרך Monitor לפני כל רישום). **תוצאה:
+`380`=4.96%, `768`=4.58%, `1440`=3.25%, שלושתם `PASS` מתחת לשער 11%,
+אפס דריפט מ-M02-c73 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `6dfc79156`.
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next
+&& pnpm build` exit 0 נקי (BUILD_ID חדש `M9NKaN5t_M25ik9i3TJai`). אפס
+שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
 ## M01-c74 (הועבר מ-STATE.md ב-M02-c74, לשמירה על תקרת 300 שורות)
 
 **M01-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
