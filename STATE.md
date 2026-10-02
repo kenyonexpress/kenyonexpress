@@ -1,33 +1,32 @@
-RESUME FROM: M12-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c73 - DONE, sitemap.xml חי נבדק ישירות מול פרודקשן, תוקן רישום שגוי מ-M11-c70..M11-c72)
+RESUME FROM: M13-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c73 - DONE, robots.txt חי נבדק ישירות מול פרודקשן, אפס דריפט קוד מ-M12-c72)
 
 ## המשך מ:
 
-**M11-c73 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
-reachable". בדיקת דריפט קוד: `git log 9585afcab..HEAD -- src/app/sitemap
-src/app/sitemap.xml src/lib/seo/sitemap-sections.ts` ריק, אפס קומיט נוגע
-מאז M10-c73. **נמדד ישירות מול פרודקשן בפועל, `curl` חי, לא מהזיכרון**:
-`https://kenyonexpress.co.il/sitemap.xml` מחזיר `308` ל-`www.` (ידוע), ושם
-`200` — אבל **`<urlset>` שטוח עם 79 כתובות, לא `<sitemapindex>`**, ושלושת
-עד חמשת תתי-המפות שהקוד הנוכחי מגיש
-(`/sitemap/{content,categories,products,regions,suppliers}.xml`) **מחזירות
-`404` כולן**. זה בדיוק חוסם #2 למטה: פרודקשן עדיין על `a388118f1`, מלפני
-שסעיף 79 (09.09) החליף את ה-`urlset` ב-`sitemapindex` — נמדד כבר
-ב-`docs/LAUNCH-READINESS.md` (01.10) ובחוסם #2's M12-c68 (robots.txt חי
-ישן). **זה מתקן רישום שגוי**: הקומיטים `3f0a1ddd4`/`4bbfcaf45`/`bfe682bc2`
-(M11-c72/c71/c70) טענו "`sitemapindex` עם חמש תתי-מפות, 200 בכולן" — טענה
-שסותרת את המדידה הישירה הזו ואת חוסם #2 מאותו יום בדיוק, ונראית כלא-נבדקת
-בפועל. אין פעולה בתוך הפריט הזה: פריסת פרודקשן חסומה בידי אופיר בלבד
-(חוסם #2, תנאי עצירה #1). קוד מקומי תקין: `build` מקומי (ראו למטה) מציג את
-חמשת נתיבי ה-`sitemap/*.xml` כ-`ƒ Dynamic`. ארבעת השערים ירוקים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+**M12-c73 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד: `git log faac77d13..HEAD -- src/app/robots.ts
+src/app/robots.test.ts src/app/sitemap-robots-agree.test.ts src/lib/site-url.ts`
+ריק, אפס קומיט נוגע מאז M12-c72. `src/app/robots.ts` עדיין מכיל את כל 15
+שורות ה-`Disallow` (כולל `/redeem/`, `/coupon/`, `/gift/`, `/order/`,
+`/wishlist/s/`, `/debug/`) ואת `sitemap`/`host` הנגזרים מ-`siteUrl()`.
+**נמדד ישירות מול פרודקשן בפועל, `curl` חי, לא מהזיכרון**:
+`https://www.kenyonexpress.co.il/robots.txt` מחזיר `200` עם **רק 11 שורות
+`Disallow`** — חסרות בדיוק `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`.
+זה אינו ממצא חדש: זו בדיוק המדידה שנרשמה כבר בחוסם #2 (M12-c68, ואוזכרה
+שוב ב-M12-c72) — פרודקשן עדיין על `a388118f1`, מלפני שארבעת הנתיבים האלה
+נוספו ב-M12-c66/M12-c67. אין פעולה בתוך הפריט הזה: פריסת פרודקשן חסומה
+בידי אופיר בלבד (חוסם #2, תנאי עצירה #1). ארבעת השערים ירוקים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
 `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm
-build`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
-`STATE.md`.
+build`, `/robots.txt` מופיע כ-`○ Static`). פריט אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
 
-**M10-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M11-c73 לשמירה על תקרת 300 שורות).** M10-c73: מיגרציות ממתינות אומתו
+**M11-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M12-c73 לשמירה על תקרת 300 שורות).** M11-c73: `sitemap.xml` חי נבדק
+ישירות מול פרודקשן, `urlset` שטוח ישן (לא `sitemapindex`) וחמשת תתי-המפות
+מחזירות `404` — תיקן רישום שגוי של M11-c70..M11-c72 שטענו בטעות `200`
+בכולן. M10-c73: מיגרציות ממתינות אומתו
 מחדש (`git ls-tree`+`git diff` מול M10-c72), 62 קבצים, אפס דריפט, עשרת
 החוסמים (`218`,`245`,`246`,`204`,`240`-`244`,`247`) ללא שינוי. M09-c73: `knip` נבדק מחדש, אותם
 מספרים בדיוק כמו M09-c72 (201 unused files, 5 unused deps, 271 unused
