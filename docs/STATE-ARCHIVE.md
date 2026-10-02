@@ -40871,3 +40871,22 @@ commit". אפס שינוי בקבצי `src/` מאז M06-c75 (`e38246134`, `git l
 CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
 build` exit 0 נקי, זהה בתוצאתו ל-M06-c75. אפס שינוי קוד ייצור. קבצים:
 `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M07-c76 (הועבר מ-STATE.md ב-M08-c76, לשמירה על תקרת 300 שורות)
+
+**M07-c76 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME"
+--include="*.ts" --include="*.tsx" src/` החזיר שלוש תוצאות: שני
+`TODO(cardcom)` אמיתיים (`src/lib/payments/cardcom.ts:254,319`, שניהם
+מ-24.07.2026 לפי `git log -1 -L`, הרבה מעל שבעה ימים) ו-`src/lib/
+whatsapp.test.ts:91` שאינו סמן עבודה אלא מחרוזת ליטרלית `'TODO'` בבדיקת
+דחיית מספר לא מוגדר. שני הסמנים האמיתיים כבר מתועדים ב-`docs/BACKLOG.md`
+שורות 504-507 (סעיף 6, "Cardcom אמיתי"): חסומים על אימות שם/שדה מדויק
+מול טרמינל Cardcom חי, שמחייב החלטת אופיר (סעיף 3 ב-CLAUDE.md, "ארבעת
+המצבים"). אפס ממצא חדש, אפס סמן שהפסיק לירות, זהה ל-M07-c75/M07-c74/
+M07-c67. ארבעת השערים: `type-check` נקי (אפס שגיאות), `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3331 pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M07-c75 ואילך). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.

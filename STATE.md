@@ -1,24 +1,27 @@
-RESUME FROM: M08-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c76 - DONE, TODO/FIXME נסרק מחדש, אפס דריפט)
+RESUME FROM: M09-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c76 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c76 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME"
---include="*.ts" --include="*.tsx" src/` החזיר שלוש תוצאות: שני
-`TODO(cardcom)` אמיתיים (`src/lib/payments/cardcom.ts:254,319`, שניהם
-מ-24.07.2026 לפי `git log -1 -L`, הרבה מעל שבעה ימים) ו-`src/lib/
-whatsapp.test.ts:91` שאינו סמן עבודה אלא מחרוזת ליטרלית `'TODO'` בבדיקת
-דחיית מספר לא מוגדר. שני הסמנים האמיתיים כבר מתועדים ב-`docs/BACKLOG.md`
-שורות 504-507 (סעיף 6, "Cardcom אמיתי"): חסומים על אימות שם/שדה מדויק
-מול טרמינל Cardcom חי, שמחייב החלטת אופיר (סעיף 3 ב-CLAUDE.md, "ארבעת
-המצבים"). אפס ממצא חדש, אפס סמן שהפסיק לירות, זהה ל-M07-c75/M07-c74/
-M07-c67. ארבעת השערים: `type-check` נקי (אפס שגיאות), `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
-זהה), `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:3331 pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs`
-לא נדרש (תקדים M07-c75 ואילך). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M08-c76 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores". אפס דריפט מ-M08-c75 (`600dd0a4f`).
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, `docs-path-audit` 155), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים), `build` טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, exit 0,
+`BUILD_ID` `0Iiiqjdidm9qNSBD8pKk9`). `pnpm start` עצמאי על פורט 4417,
+`cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`), `/` ו-`/product/
+צימר-מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`, slug פעיל,
+מלאי 10) אומתו `200` לפני המדידה. `scripts/lighthouse-smoke.mjs
+--throttling-method=provided`: `/` = **100/100/100**, `/product/
+צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c75. שרת נסגר אחרי
+המדידה. אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md`.
+
+**M07-c76 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
+TODO/FIXME נסרק מחדש: שני `TODO(cardcom)` אמיתיים
+(`src/lib/payments/cardcom.ts:254,319`) כבר מתועדים ב-`docs/BACKLOG.md`
+סעיף 6, חסומים על החלטת אופיר. אפס ממצא חדש, ארבעת השערים ירוקים.
 
 **M05-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M07-c76 לשמירה על תקרת 300 שורות).** ארבעה פריטי תחזוקה/אימות-בלבד:
