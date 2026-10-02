@@ -1,24 +1,25 @@
-RESUME FROM: M09-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c74 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
+RESUME FROM: M10-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c74 - DONE, knip נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c74 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". אפס דריפט רלוונטי מ-M08-c73 (`6166ce74e`,
-17 קומיטים מאז, כולם `docs/`+`STATE.md`). ארבעת השערים ירוקים:
-`type-check`, `lint` (12 שערים), `test` (614/614, 7337/7349, 12
-מדולגים), `build` טרי (`rm -rf .next`,
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
-build`, exit 0, `BUILD_ID` `UuHdW4JvcFVdHOioqUEZv`). `pnpm start` עצמאי
-על פורט 3417 (3311-3316/3618/3911/4211 תפוסים ע"י סוכנים מקבילים), `cwd`
-אומת מול הריפו הזה, `/` ו-`/product/צימר-מאסטר` אומתו `200` לפני המדידה.
-`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
-**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס דריפט
-מ-M08-c73 (ריצה ראשונה על `/` נכשלה ב-`NO_NAVSTART` חולף, לא ממצא קוד;
-השנייה הצליחה). אימות-בלבד, לא חזותי. אפס שינוי קוד/סכימה/כסף.
+**M09-c74 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat e94008804..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c73)
+ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c73, אפס מועמד חדש. אפס הסרה.
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit
+0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3417 pnpm build`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
 
-**M07-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M08-c74 לשמירה על תקרת 300 שורות).** M07-c74 — TODO/FIXME נסרק
+**M08-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c74 לשמירה על תקרת 300 שורות).** M08-c74 — Lighthouse mobile
+על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c73.
+M07-c74 — TODO/FIXME נסרק
 מחדש, שני הסמנים (`cardcom.ts:254,319`) כבר מתועדים ב-`docs/BACKLOG.md`
 סעיף 6, אפס דריפט מ-M07-c73. M06-c74 — `pnpm build` נבדק
 מחדש מראש (`rm -rf .next`), exit 0, `BUILD_ID` חדש
