@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c75 (הועבר מ-STATE.md ב-M17-c75, לשמירה על תקרת 300 שורות)
+
+**M16-c75 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
+JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c74
+(d6bd8f5e8). **נבדק מחדש, אפס דריפט.** `git log d6bd8f5e8..HEAD -- src/app
+src/lib/seo` (בסיס: checkpoint M16-c74) **ריק** — אפס קומיטים נוגעים מאז,
+רק `STATE.md`/`docs/STATE-ARCHIVE.md` זזו. `src/lib/seo/json-ld.ts` נקרא
+במלואו: `buildProductJsonLd` בונה `@type: Product` עם `offers`/`brand`/
+`aggregateRating` נגזרים מאותם ערכים שהעמוד מרנדר (לא חישוב כפול - ההערה
+בקוד מתעדת תקרית עבר של דריפט מחיר). ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3333 pnpm build` exit 0. הורם `pnpm
+start -p 3333` (פורט פנוי, `lsof -p -a -d cwd` אימת שה-cwd של ה-pid זהה
+לנתיב הפרויקט הנוכחי, לא checkout זר), `curl` 200 על `/`. **נבדק ישירות
+ברינדור בפועל, לא רק בקוד:** ארבעה דפי מוצר שונים - `/product/צימר-מאסטר`
+(הפעיל שחוזר בכל סבב) ושלושה סלאגים נוספים שנדגמו אקראית מ-44 המוצרים
+הפעילים ב-`supabase/catalogue-snapshot.json` - כל ארבעתם `200`, כל אחד
+מכיל בדיוק `"@type":"Product"` ו-`"@type":"BreadcrumbList"` אחד בתוך שני
+תגי `application/ld+json`. שרת הופסק בסוף. **אין ממצא קוד לתקן**;
+אימות-בלבד. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M16-c66..M16-c74,
+בדיקת תוכן JSON-LD לא פריסת פיקסלים). אפס שינוי קוד ייצור. קובץ יחיד:
+`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M14-c75 (הועבר מ-STATE.md ב-M15-c75, לשמירה על תקרת 300 שורות)
 
 **M14-c75 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
