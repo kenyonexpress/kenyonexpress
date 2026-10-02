@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c77 (הועבר מ-STATE.md ב-M17-c77, לשמירה על תקרת 300 שורות)
+
+**M16-c77 - DONE (03.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למשימות M16-c66..M16-c76.
+**נבדק מחדש, אפס דריפט.** `git log 03fbcc975..HEAD -- src/app
+src/components src/lib` (בסיס: checkpoint M16-c76) ריק: אפס קומיטים
+בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
+מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-`buildBreadcrumbJsonLd`
+(`@type: 'BreadcrumbList'`), ו-`src/app/(store)/product/[slug]/page.tsx`
+מזריק את שניהם דרך `jsonLdScript` (שתי קריאות `dangerouslySetInnerHTML`
+מאושרות ב-`raw-html` lint gate). **מעבר לקריאת קוד, נבדק בזמן ריצה
+בפועל**: נבנה `.next` חדש לגמרי (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3353 pnpm build`, exit 0), הורם
+`pnpm start -p 3353` (פורט פנוי, אומת `curl` 200 ו-`lsof -p -d cwd` על
+ה-pid: זהה לנתיב הפרויקט הנוכחי), ונשלף `supabase/catalogue-snapshot.json`
+(44 מוצרים). **תשעה סלאגים נבדקו ב-curl**, כולל שלוש השורות הפגומות
+מחוסם #11 (`עיסוי-מאסטר` כפילות, `מוצר-לדוגמא` עותק, `bar-drink` slug
+לטיני) ושני ה-`מאסטר` הפעילים — **כל התשעה `200`, בדיוק בלוק
+`"@type":"Product"` אחד ובלוק `"@type":"BreadcrumbList"` אחד**. **אין
+ממצא לתקן**: זהה לעשרת הסבבים הקודמים (M16-c66..M16-c76), ראשון שנבדק
+גם בזמן ריצה. ארבעת השערים: `type-check`/`lint` (12 שערים) נקיים,
+`test` 614/614 קבצים (7337/7349, 12 מדולגים), `build` exit 0. לא
+חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c76). אפס שינוי קוד
+ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M15-c77 (הועבר מ-STATE.md ב-M16-c77, לשמירה על תקרת 300 שורות)
 
 **M15-c77 - DONE (03.10.2026).** משימת התור: "Verify no console errors

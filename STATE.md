@@ -1,38 +1,45 @@
-RESUME FROM: M17-c77
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c77 - DONE, JSON-LD Product+BreadcrumbList נבדק מחדש בזמן ריצה על תשעה מוצרים, אפס דריפט מ-M16-c76)
+RESUME FROM: M18-c77
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c77 - DONE, RTL על / ועל /product נבדק מחדש בזמן ריצה, אפס דריפט מ-M17-c76)
 
 ## המשך מ:
 
-**M16-c77 - DONE (03.10.2026).** משימת התור: "Verify all product pages
-have JSON-LD Product and BreadcrumbList" — זהה למשימות M16-c66..M16-c76.
-**נבדק מחדש, אפס דריפט.** `git log 03fbcc975..HEAD -- src/app
-src/components src/lib` (בסיס: checkpoint M16-c76) ריק: אפס קומיטים
-בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
-מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-`buildBreadcrumbJsonLd`
-(`@type: 'BreadcrumbList'`), ו-`src/app/(store)/product/[slug]/page.tsx`
-מזריק את שניהם דרך `jsonLdScript` (שתי קריאות `dangerouslySetInnerHTML`
-מאושרות ב-`raw-html` lint gate). **מעבר לקריאת קוד, נבדק בזמן ריצה
-בפועל**: נבנה `.next` חדש לגמרי (`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3353 pnpm build`, exit 0), הורם
-`pnpm start -p 3353` (פורט פנוי, אומת `curl` 200 ו-`lsof -p -d cwd` על
-ה-pid: זהה לנתיב הפרויקט הנוכחי), ונשלף `supabase/catalogue-snapshot.json`
-(44 מוצרים). **תשעה סלאגים נבדקו ב-curl**, כולל שלוש השורות הפגומות
-מחוסם #11 (`עיסוי-מאסטר` כפילות, `מוצר-לדוגמא` עותק, `bar-drink` slug
-לטיני) ושני ה-`מאסטר` הפעילים — **כל התשעה `200`, בדיוק בלוק
-`"@type":"Product"` אחד ובלוק `"@type":"BreadcrumbList"` אחד**. **אין
-ממצא לתקן**: זהה לעשרת הסבבים הקודמים (M16-c66..M16-c76), ראשון שנבדק
-גם בזמן ריצה. ארבעת השערים: `type-check`/`lint` (12 שערים) נקיים,
-`test` 614/614 קבצים (7337/7349, 12 מדולגים), `build` exit 0. לא
-חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c76). אפס שינוי קוד
-ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M17-c77 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c76
+(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
+דריפט.** `git log 48a37fcf0..HEAD -- src/app src/components
+src/lib/i18n` (בסיס: checkpoint M17-c76) **ריק** — אפס קומיטים נוגעים
+מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, כולל `rtl-logical-gate.mjs`: "no physical direction utility
+outside an LTR island"), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3357 pnpm build` exit 0. הורם
+`pnpm start -p 3357` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
+לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
+המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
+`/product/עיסוי-משולב-מפנק-לגבר-רק-108`. **נבדק ישירות ברינדור
+בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי. גריפ על
+`dir="ltr"` בתוצאה החיה: `/` — מופע יחיד, שדה האימייל בניוזלטר
+(מכוון, `input-dir-gate` מאשר). דף המוצר — שלושה מופעים: אותו שדה
+אימייל בפוטר, `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU
+עברי (`ProductInfo.tsx`, מכוון, אותו דפוס שנמדד בכל סבב קודם), ומופע
+שלא נדגם בסבבים קודמים — קישור `tel:` של ספק ב-`SupplierInfo.tsx:165`,
+`dir="ltr"` מכוון ומתועד בהערת קוד ("WRITTEN ltr: a Hebrew paragraph
+would otherwise flip 03-1234567"), כבר מאושר ב-`input-dir-gate`
+וב-`rtl-logical-gate`. גריפ נוסף על `direction: ltr`/`float-left/
+right`/`text-left/right`/`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של
+שני הדפים — אפס התאמות. שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא
+פריט `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
+M17-c67..M17-c76). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
+ל-`docs/STATE-ARCHIVE.md`).
 
-**M01-c77..M15-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M16-c77 לשמירה על תקרת 300 שורות).** חמישה-עשר פריטי אימות-בלבד:
-Sentry release vs HEAD (927/109 קומיטים, עדיין מפוצל, ממתין להחלטת
-אופיר), שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה
-(3.53/2.52/1.69, דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`),
-type-check, test, build, TODO/FIXME (שני ה-marker הידועים
-ב-`cardcom.ts`, חסומים על החלטת מפעיל), Lighthouse mobile
+**M01-c77..M16-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M17-c77 לשמירה על תקרת 300 שורות).** שישה-עשר פריטי אימות-בלבד:
+JSON-LD Product+BreadcrumbList (תשעה סלאגים נבדקו ב-curl, כל התשעה
+200), Sentry release vs HEAD (927/109 קומיטים, עדיין מפוצל, ממתין
+להחלטת אופיר), שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25)
+וקטגוריה (3.53/2.52/1.69, דריפט קל 0.16-0.6 נ"א מייחוס
+`loading="lazy"`), type-check, test, build, TODO/FIXME (שני ה-marker
+הידועים ב-`cardcom.ts`, חסומים על החלטת מפעיל), Lighthouse mobile
 (100/100/100 ב-/ וב-`/product/צימר-מאסטר`), knip (אפס מועמד חדש),
 מיגרציות ממתינות (60 קבצים ללא שינוי, חוסם #3 19 קבצים ללא שינוי),
 sitemap.xml (79 כתובות, `urlset` שטוח, אפס דריפט), robots.txt (12
@@ -41,29 +48,22 @@ sitemap.xml (79 כתובות, `urlset` שטוח, אפס דריפט), robots.txt 
 לתיקון בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c77, נדחסו שוב ב-M02-c77 לתקרת 300 שורות).** שמונה-עשר פריטי
-תור/תחזוקה/אימות-בלבד: Sentry vs HEAD (חוסם 2 למטה), robots.txt/
-sitemap.xml (חוסם ידוע), מיגרציות ממתינות, knip, Lighthouse 100/100/100,
-TODO/FIXME, JSON-LD, console/hydration, שערי קטגוריה (2.93/1.94/1.53)
-ומוצר (4.50/4.07/3.25) — אפס דריפט בכולם, ארבעת השערים ירוקים בכולם.
+הזו ב-M01-c77).** שמונה-עשר פריטי תור/תחזוקה/אימות-בלבד: Sentry vs
+HEAD, robots.txt/sitemap.xml (חוסם ידוע), מיגרציות ממתינות, knip,
+Lighthouse 100/100/100, TODO/FIXME, JSON-LD, console/hydration, שערי
+קטגוריה (2.93/1.94/1.53) ומוצר (4.50/4.07/3.25) — אפס דריפט בכולם.
 
 **M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
-תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c76,
-נדחס שוב ב-M14-c76 לשמירה על תקרת 300 שורות).** M18-c75 — STATE.md
-מתחת לתקרה. M15-c75 — אפס console/hydration. M14-c75 — Sentry vs HEAD,
-אפס דריפט (ראו M14-c73 למעלה). M13-c75 — health/ready `200`/`503`.
-M12-c75/M11-c75 — robots.txt/sitemap.xml ללא שינוי. M10-c75 — מיגרציות
-ממתינות, 19 חוסמים. M09-c75 — knip אפס מועמד חדש. M08-c75 — Lighthouse
-100/100/100. M07-c75 — TODO/FIXME מתועד. אפס דריפט בכולם, ארבעת השערים
-ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה, type-check/test/build,
-Lighthouse, RTL, JSON-LD, console/hydration, Sentry, health/ready,
-robots/sitemap, מיגרציות, knip, TODO/FIXME, תיעוד.
+תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).** STATE.md מתחת לתקרה;
+אפס console/hydration; Sentry vs HEAD אפס דריפט; health/ready
+`200`/`503`; robots.txt/sitemap.xml ללא שינוי; מיגרציות ממתינות 19
+חוסמים; knip אפס מועמד חדש; Lighthouse 100/100/100; TODO/FIXME מתועד.
+אפס דריפט בכולם, ארבעת השערים ירוקים בכולם.
 
-**M18-c73..M15-c73, M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
-כווצו ל-M02-c76 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי תור/
-אימות-בלבד, אפס דריפט בכולם (RTL, JSON-LD, console/hydration,
-health/ready, robots/sitemap, מיגרציות, knip, Lighthouse, TODO,
-build/test/type-check, שערי קטגוריה/מוצר/בית), ארבעת השערים ירוקים בכולם.
+**M18-c73..M15-c73, M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
+שלושה-עשר פריטי תור/אימות-בלבד, אפס דריפט בכולם (RTL, JSON-LD,
+console/hydration, health/ready, robots/sitemap, מיגרציות, knip,
+Lighthouse, TODO, build/test/type-check, שערי קטגוריה/מוצר/בית).
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר
 (ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`; נמצא ראשון
