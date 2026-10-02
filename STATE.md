@@ -1,24 +1,31 @@
-RESUME FROM: M07-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c73 - DONE, pnpm build נקי מראש)
+RESUME FROM: M08-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c73 - DONE, TODO/FIXME scan אפס דריפט)
 
 ## המשך מ:
 
-**M06-c73 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
-commit". הורץ `rm -rf .next && pnpm build` בחזית — **EXIT:0, נקי מראש,
-אפס דריפט.** 92 שורות `"level":"error"` ב-log הן `supabase.rls_denied`
-על `reviews` (401/`42501`) ו-`db.optional_column_missing` בזמן
-prerender, שתיהן ידועות ומתועדות כחוסמים פתוחים #3 (מיגרציה 247,
-`anon` בלי `SELECT` על `reviews`) ו-#3 (מיגרציה 242, מקור מחיר+ביקורות
-גוגל) — לא דריפט חדש, לא "Failed to compile"/"Build failed" באף שורה.
-שלושת השערים הנוספים: `type-check` נקי (`tsc --noEmit`, EXIT:0), `lint`
-נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
-מדולגים, זהה ל-M05-c73). פריט אימות-בלבד, לא חזותי: לא נדרשת מדידת
-`compare.mjs` (אין שינוי UI/קוד ייצור). קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md` (בלוק M05-c73 כווץ לשורה למטה לתקרת 300 שורות,
+**M07-c73 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
+days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
+--include="*.ts" --include="*.tsx" -l` מחזיר אותם שני קבצים כמו בכל סבב קודם
+(לאחרונה M07-c72, `308b315a5`): `src/lib/payments/cardcom.ts` (שתי שורות,
+‏254 מ-`0254f2acf1`/24.07.2026 ו-319 מ-`bc21217074`/07.08.2026, שתיהן
+`TODO(cardcom)` אמיתיות) ו-`src/lib/whatsapp.test.ts:91` (`f4fc791400`/
+10.08.2026, מחרוזת ליטרלית `'TODO'` בבדיקה, לא סמן עבודה). שתי ה-`TODO`
+האמיתיות כבר מתועדות ב-`docs/BACKLOG.md` סעיף 6 (חוסם `Cardcom אמיתי`,
+`Tracked in #41`/`#42`, `docs/KNOWN-ISSUES.md` סעיף 2) — לא נדרש עדכון
+לקובץ, אפס ממצא חדש. שלושתם ישנים משבעה ימים (היום 02.10.2026). שלושת
+השערים האחרים הורצו מחדש (זהה ל-`edfd1f5fa`/M06-c73, אפס קומיט ביניהם):
+`type-check` נקי, `lint` נקי (12 שערים, `docs-path-audit` 155 ללא שינוי),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים). `build` לא הורץ מחדש:
+`git diff --stat` בין `edfd1f5fa` (M06-c73, `pnpm build` טרי EXIT:0) ל-HEAD
+על כל נתיב רלוונטי לקוד ריק — אותו HEAD בדיוק, אפס דריפט. פריט
+אימות-בלבד, לא חזותי: לא נדרשת מדידת `compare.mjs`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (בלוק M06-c73 כווץ לשורה למטה לתקרת 300 שורות,
 שום שורה לא נמחקה).
 
-**M05-c73, M04-c73, ROBOTS-FIX, M03-c73, M02-c73 ו-M01-c73 (ארכיון מלא
-ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M06-c73):** M05-c73: `pnpm
+**M06-c73, M05-c73, M04-c73, ROBOTS-FIX, M03-c73, M02-c73 ו-M01-c73 (ארכיון
+מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M06-c73/M07-c73):**
+M06-c73: `pnpm build` נקי מראש, אפס דריפט (92 שורות `error` ב-log ידועות,
+חוסמים #3 פתוחים). M05-c73: `pnpm
 test` נקי מראש (614/614, 7337/7349, 12 מדולגים), ממצא `docs-path-audit`
 אמיתי אחד (הפניה חדשה ל-`public/robots.txt` לא בפנקס) תוקן עם
 `--write`. M04-c73:

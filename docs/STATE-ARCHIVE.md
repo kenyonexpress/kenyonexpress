@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c73 (הועבר מ-STATE.md ב-M07-c73, לשמירה על תקרת 300 שורות)
+
+**M06-c73 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
+commit". הורץ `rm -rf .next && pnpm build` בחזית — **EXIT:0, נקי מראש,
+אפס דריפט.** 92 שורות `"level":"error"` ב-log הן `supabase.rls_denied`
+על `reviews` (401/`42501`) ו-`db.optional_column_missing` בזמן
+prerender, שתיהן ידועות ומתועדות כחוסמים פתוחים #3 (מיגרציה 247,
+`anon` בלי `SELECT` על `reviews`) ו-#3 (מיגרציה 242, מקור מחיר+ביקורות
+גוגל) — לא דריפט חדש, לא "Failed to compile"/"Build failed" באף שורה.
+שלושת השערים הנוספים: `type-check` נקי (`tsc --noEmit`, EXIT:0), `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה ל-M05-c73). פריט אימות-בלבד, לא חזותי: לא נדרשת מדידת
+`compare.mjs` (אין שינוי UI/קוד ייצור). קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (בלוק M05-c73 כווץ לשורה למטה לתקרת 300 שורות,
+שום שורה לא נמחקה).
+
 ## M05-c73 (הועבר מ-STATE.md ב-M06-c73, לשמירה על תקרת 300 שורות)
 
 **M05-c73 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
