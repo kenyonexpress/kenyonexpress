@@ -1,5 +1,5 @@
 RESUME FROM: M04-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c78 - DONE, שער חזותי קטגוריה נמדד מחדש 380/768/1440, דריפט קל ב-768/1440, עדיין PASS)
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c78 - נשלח שנית לתור, אומת כבר DONE: `2ef6376cc` ב-origin, עץ נקי, אין עבודה חדשה)
 
 ## המשך מ:
 
