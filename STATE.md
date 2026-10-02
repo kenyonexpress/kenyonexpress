@@ -1,46 +1,17 @@
-RESUME FROM: M05-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c75 - DONE, pnpm type-check נמדד מחדש)
+RESUME FROM: M06-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c75 - DONE, pnpm test נמדד מחדש)
 
 ## המשך מ:
 
-**M04-c75 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
-commit". אפס שינוי בקבצי `src/` מאז M04-c74 (`2dfb9ba45`, `git log
---oneline 2dfb9ba45..HEAD -- src/` ריק). `pnpm type-check` נקי, אפס
-שגיאות, אפס דריפט. שלושת השערים הנוספים: `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי. אפס שינוי
-קוד ייצור. קובץ: `STATE.md` בלבד.
+**M05-c75 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
+commit". אפס שינוי בקבצי `src/` מאז M05-c74 (`2ce9eb34c`, `git log
+--oneline 2ce9eb34c..HEAD -- src/` ריק). `pnpm test` נקי: 614/614 קבצים,
+7337/7349 (12 דילוגים, זהה למדידה הקודמת), אפס דריפט. שלושת השערים
+הנוספים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `build`
+exit 0 נקי. אפס שינוי קוד ייצור. קובץ: `STATE.md` בלבד.
 
-**M03-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/category sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
-אומת), אפס שינוי קוד ייצור מאז M03-c74 (9d76292da, רק תיעוד). **שתי
-ריצות ראשונות עם `--baseline='refs/electro_shop_{width}.png'` סורבו
-ב-380 (exit 3): "2 image(s) on the local page had still not loaded".**
-נבדק ישירות עם Playwright (לא חלק מהשער עצמו): שתי תמונות המוצר
-הראשונות בקטגוריית `hot-deals` ("תיק עור JEEP יוקרתי" 99₪, "תספורת
-לגבר..." 20₪) נמצאות במלואן בתצוגה (`getBoundingClientRect` תקין, שום
-אב `display:none`), אך ה-`loading="lazy"` שלהן **לא יורה שום בקשת רשת
-באוטומציה headless** (נבדק עם מעקב `page.on('response'/'requestfailed')`
-— אפס אירועים) — לא תקלת רשת/CSP/קובץ פגום: אותם URL-ים בדיוק (כולל אותו
-`w=` bucket) נטענים מ-`curl` תוך 10-30ms. **ממצא חדש, לא תועד קודם**;
-כנראה ייחודי לגלילה הפרוגרמטית של הכלי (גולש אמיתי גולל בפועל ומפעיל
-את ה-IntersectionObserver הטבעי כרגיל) ולא באג ייצור. תועד להמשך בדיקה
-עתידית, לא תוקן — מחוץ להיקף הפריט (רה-מדידה בלבד). הורץ עם
-`COMPARE_ALLOW_PENDING_IMAGES=1` (המסלול הרשמי שהסקריפט עצמו מציע
-בהודעת הסירוב), `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
---page=category --widths=380,768,1440
---baseline='refs/electro_shop_{width}.png'` בחזית (חרגה מ-timeout
-כלי ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן לסיומה המלא דרך
-Monitor). **תוצאה: `380`=2.93%, `768`=1.94%, `1440`=1.53%, שלושתם
-`PASS`, אפס דריפט שלילי מ-M03-c74 (2.93/2.31/1.58 — 768 ו-1440 השתפרו
-קלות, כנראה רעש קטלוג/רינדור ולא שינוי קוד).** שלוש השורות נכתבו
-אוטומטית ל-`UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות
-`b998b1fa1`. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי. אפס שינוי
-קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md`.
-
-**M02-c75, M01-c75, M18-c74..M01-c74 (עשרים פריטי אימות-בלבד/תחזוקה,
-ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M05-c75
+**M04-c75..M01-c75, M18-c74..M01-c74 (עשרים ושניים פריטי אימות-בלבד/תחזוקה,
+ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M06-c75
 לשמירה על תקרת 300 שורות).** אפס דריפט בכולם, ארבעת השערים ירוקים
 בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב (כולם PASS),
 type-check/test/build, Lighthouse 100/100/100, RTL, JSON-LD,
