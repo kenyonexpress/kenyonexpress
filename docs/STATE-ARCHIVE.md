@@ -40765,3 +40765,25 @@ checkout זר), והורצו `anon /` ו-`anon dynamic catalogue routes` מתו�
 build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
 M04-c66..M15-c74). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
 ל-`docs/STATE-ARCHIVE.md`).
+
+## M01-c76 (הועבר מ-STATE.md ב-M02-c76, לשמירה על תקרת 300 שורות)
+
+**M01-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md" — זהה למילה למשימת M01-c75
+(`e5e18f475`). שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת כשורש הריפו הזה) נבדק מול HEAD לפני ההרצה: `git status --short`
+ריק ו-`.next/BUILD_ID` נכתב `2026-10-02 20:03`, תואם ל-commit time של
+HEAD (`72ac12a9d`, אותה שנייה) — הבנייה הקיימת תואמת. הורץ `LOCAL_BASE=
+http://localhost:3311 node scripts/compare.mjs --page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` בחזית,
+הומתן לסיומו המלא לפני כל רישום (home מסורב כ-live reference מ-Q31,
+ה-DNS מצביע לפריסה שלנו — חוסם #14 למטה). **תוצאה: `380`=8.58%,
+`768`=9.01%, `1440`=4.16%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט
+מ-M01-c75 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית ל-
+`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `72ac12a9d`
+(HEAD בתחילת הפריט). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3331 pnpm build` exit 0 נקי (שרת 3311 נשאר חי ועונה
+`200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md`.

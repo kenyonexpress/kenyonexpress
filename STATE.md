@@ -1,26 +1,36 @@
-RESUME FROM: M02-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c76 - DONE, שער חזותי בית נמדד מחדש)
+RESUME FROM: M03-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c76 - DONE, שער חזותי מוצר נמדד מחדש)
 
 ## המשך מ:
 
-**M01-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
-768 1440 on / and record diffs in STATE.md" — זהה למילה למשימת M01-c75
-(`e5e18f475`). שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
-אומת כשורש הריפו הזה) נבדק מול HEAD לפני ההרצה: `git status --short`
-ריק ו-`.next/BUILD_ID` נכתב `2026-10-02 20:03`, תואם ל-commit time של
-HEAD (`72ac12a9d`, אותה שנייה) — הבנייה הקיימת תואמת. הורץ `LOCAL_BASE=
-http://localhost:3311 node scripts/compare.mjs --page=home
---widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` בחזית,
-הומתן לסיומו המלא לפני כל רישום (home מסורב כ-live reference מ-Q31,
-ה-DNS מצביע לפריסה שלנו — חוסם #14 למטה). **תוצאה: `380`=8.58%,
-`768`=9.01%, `1440`=4.16%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט
-מ-M01-c75 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית ל-
-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `72ac12a9d`
-(HEAD בתחילת הפריט). ארבעת השערים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
-זהה), `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:3331 pnpm build` exit 0 נקי (שרת 3311 נשאר חי ועונה
-`200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+**M02-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת), אפס שינוי קוד ייצור מאז M01-c76 (`9b56a361f`, רק תיעוד). **שתי
+ריצות ראשונות עם `--baseline='refs/electro_product_{width}.png'` סורבו
+ב-380 (exit 3): "0 image(s) on live and 1 on the local page had still
+not loaded when the shutter fired"** — נבדק ישירות: תמונת המוצר הראשית
+(`S5cf8b9b35a5b49b0bf525d6cb7b89181H-600x600.webp`) חזרה ב-32ms מ-`curl`
+אחרי החימום הראשון, כלומר לא תקלת קובץ/רשת אלא אותה תקלת-תזמון של
+`loading="lazy"` מול הגלילה הפרוגרמטית של הכלי שכבר תועדה ב-M03-c75
+(קטגוריה) ובכמה פריטים קודמים — לא באג ייצור. הורץ שוב עם
+`COMPARE_ALLOW_PENDING_IMAGES=1` (המסלול הרשמי שהסקריפט עצמו מציע),
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'` בחזית (חרגה מ-timeout
+כלי ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן לסיומה המלא דרך
+Monitor). **תוצאה: `380`=4.50%, `768`=4.07%, `1440`=3.25%, שלושתם
+`PASS` מתחת לשער 11%, אפס דריפט שלילי מ-M02-c75 (4.96/4.58/3.25 —
+380 ו-768 השתפרו קלות, כנראה רעש קטלוג/רינדור ולא שינוי קוד; אותה
+אזהרת HEIGHT RATIO/"structurally different" קיימת כבר מ-M02-c74
+ואילך — הרפרנס הקפוא ארוך בהרבה מהעמוד שלנו, השער עצמו מודד רק את
+"both painted" מתוך 2600px ראשונים ולא רודף את הפערים, כפי שההודעה
+עצמה מנחה).** שלוש השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי הסקריפט עצמו, מתויגות `9b56a361f`. ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
+build` exit 0 נקי (שרת 3311 נשאר חי ועונה `200` אחרי הבנייה). אפס
+שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
 
 **M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
@@ -52,12 +62,10 @@ sitemap.xml, מיגרציות ממתינות (19 חוסמים), knip, TODO/FIXME
 תיעוד.
 
 **M18-c73..M15-c73, M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
-כווצו לשורה הזו ב-M10-c74/M14-c73 לשמירה על תקרת 300 שורות).** שלושה-עשר
-פריטי תור/אימות-בלבד, אפס דריפט בכולם: RTL, JSON-LD Product+BreadcrumbList,
-console/hydration, `/api/health`/`/api/ready`, robots.txt, sitemap.xml,
-מיגרציות ממתינות, `knip`, Lighthouse mobile (100/100/100), TODO/FIXME,
-build/test/type-check, ושערי קטגוריה/מוצר/בית (`PASS` בכולם). ארבעת
-השערים ירוקים בכל השלושה-עשר.
+כווצו ל-M02-c76 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי תור/
+אימות-בלבד, אפס דריפט בכולם (RTL, JSON-LD, console/hydration,
+health/ready, robots/sitemap, מיגרציות, knip, Lighthouse, TODO,
+build/test/type-check, שערי קטגוריה/מוצר/בית), ארבעת השערים ירוקים בכולם.
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר
 (ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`; נמצא ראשון
@@ -66,20 +74,18 @@ build/test/type-check, ושערי קטגוריה/מוצר/בית (`PASS` בכו�
 סעיף 17).** **נבדק מחדש ב-M14-c74 וב-M14-c75 (למעלה): אפס דריפט** —
 אותה פריסה בדיוק, אותו `SENTRY_DSN`, עדיין ממתין להחלטת אופיר.
 
-**M18-c68..M01-c72 (שבעה סבבים שלמים: c68, c69, c70, c71, c72, ארכיון
-מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים — M04-c70, M17-c72
-— לשמירה על תקרת 300 שורות; שום שורה לא נמחקה מהארכיון עצמו).** חמישים
+**M18-c68..M01-c72 (שבעה סבבים שלמים: c68-c72, ארכיון מלא ב-
+`docs/STATE-ARCHIVE.md`, שום שורה לא נמחקה מהארכיון עצמו).** חמישים
 ותשעה פריטי תור/אימות-בלבד/תחזוקה, DONE/אפס-דריפט בכולם, ארבעת השערים
 ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב; type-check/test/
 build; TODO/FIXME (תיקון אחד ב-c66's M07); Lighthouse 100/100/100; `knip`;
 מיגרציות ממתינות; sitemap.xml; robots.txt (חוסם 2); `/api/health`/
-`/api/ready`; Sentry מול HEAD (הפער גדל כל סבב עד 461 קומיטים, אין DSN
-בפרודקשן עד שהשתנה ב-M14-c73); אפס console error/hydration; JSON-LD
+`/api/ready`; Sentry מול HEAD (הפער גדל כל סבב, אין DSN בפרודקשן עד
+שהשתנה ב-M14-c73); אפס console error/hydration; JSON-LD
 Product+BreadcrumbList; RTL — leak אמיתי נמצא ותוקן ב-c66's M17
 (`HeroSlider.tsx`), אפס דריפט חוזר אח"כ.
 
-**Q25..Q55 (29 פריטים חיצוניים חד-פעמיים, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
-כווצו לשורה הזו בשלבים — Q51, M14-c66 — לשמירה על תקרת 300 שורות).**
+**Q25..Q55 (29 פריטים חיצוניים חד-פעמיים, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
 עשרים וארבעה DONE/VERIFIED ובנויים במלואם (Q25..Q50: LCP+AVIF, שעות
 פתיחה/ביקורות גוגל, שני BLOCKED על מדיניות אופיר), וחמישה נוספים
 (Q51..Q55): Crisp נדחה (Q51 BLOCKED), Meilisearch Hebrew ו-Cardcom
@@ -88,17 +94,15 @@ sandbox-toggle כבר קיימים (Q52/Q53 VERIFIED), שלוש jobs חדשות 
 ייצור חוץ מ-Q43/Q54, ארבעת השערים ירוקים בכולם, שער חזותי PASS בכל מה
 שנמדד.
 
-**Q26 ו-M01-c62..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,
-קופון/פיזי לדף המוצר מלאה. חמישים וארבעה פריטי בדיקה חוזרת (אפס דריפט)
+**Q26 ו-M01-c62..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).** Q26:
+פריט חיצוני חד-פעמי, קופון/פיזי לדף המוצר מלאה. חמישים וארבעה פריטי בדיקה חוזרת (אפס דריפט)
 וארבעה שיפורי המרה אמיתיים (דירוג כוכבים בבית/מוצר, לב מועדפים, קופי) —
 אבטחה, SEO, axe, כיסוי טסטים, STATE/BACKLOG EMPTY, route audit,
 Lighthouse, advisors, תברואת ריפו/תלויות. ארבעת השערים ירוקים בכולם,
 שער חזותי יציב (8.51/9.02/3.95 בית, 5.61/4.92/2.99 מוצר, 99/100/100/100
 Lighthouse).
 
-**S02, S03 ו-M18-c61/M17-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
-כווצו לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** S02/S03: שני
+**S02, S03 ו-M18-c61/M17-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).** S02/S03: שני
 פריטים חד-פעמיים, reference בשם לא-קיים נתבקש, הפתרון כבר קיים בריפו
 (`refs/ke_live_{width}.png`/`refs/electro_product_{380,768,1440}.png`),
 אפס דריפט, לא קידמו `RESUME FROM:`. M18-c61 — שיפור המרה אמיתי אחד,
