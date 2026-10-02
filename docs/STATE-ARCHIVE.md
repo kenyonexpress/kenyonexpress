@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c74 (הועבר מ-STATE.md ב-M06-c74, לשמירה על תקרת 300 שורות)
+
+**M05-c74 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
+commit". `pnpm test` רץ נקי: 614/614 קבצים, 7337/7349 עברו (12 מדולגים)
+— זהה ל-M04-c74 ול-M03-c74, אין דריפט לתקן. הורצו גם שלושת השערים
+הנוספים לוודא שאין רגרסיה חבויה: `type-check` (`tsc --noEmit`) exit 0
+נקי, `lint` ירוק (12 שערים, `biome check` על 2037 קבצים, אפס תיקונים),
+`rm -rf .next && pnpm build` exit 0 נקי (manifest מלא, אפס שגיאה).
+פריט אימות-בלבד, אפס שינוי קוד ייצור. קבצים: `STATE.md`.
+
+## M04-c74 (הועבר מ-STATE.md ב-M06-c74, לשמירה על תקרת 300 שורות)
+
+**M04-c74 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". `pnpm type-check` (`tsc --noEmit`) רץ נקי, exit 0, אפס שגיאות —
+אין דריפט לתקן. הורצו גם שלושת השערים הנוספים לוודא שאין רגרסיה חבויה:
+`lint` ירוק (12 שערים, `biome check` על 2037 קבצים, אפס תיקונים), `test`
+614/614 קבצים ו-7337/7349 עברו (12 מדולגים, זהה ל-M03-c74), `rm -rf
+.next && pnpm build` exit 0 נקי (BUILD_ID חדש `VSsZ2JFhMUrj9gc7ghazI`).
+פריט אימות-בלבד, אפס שינוי קוד ייצור.
+
 ## M03-c74 (הועבר מ-STATE.md ב-M04-c74, לשמירה על תקרת 300 שורות)
 
 **M03-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
