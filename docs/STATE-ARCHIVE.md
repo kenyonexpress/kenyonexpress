@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c80 (הועבר מ-STATE.md ב-M14-c80, לשמירה על תקרת 300 שורות)
+
+**M13-c80 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". נמדד ישירות מול
+`https://www.kenyonexpress.co.il`: `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":178}`). `/api/ready` →
+עדיין `503` (`{"ok":false,"checks":{"database":"ok","redis":"ok",
+"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+זהה ל-M13-c66..M13-c79: `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY`
+קיימים ב-Vercel Production אבל השירות החי לא נגיש (לא `not_configured`,
+חוסם חיצוני, לא ממצא חדש, פרטים במחסום #16 ב-`docs/BACKLOG.md`).
+`redis`/`r2`/`cardcom` תואמים לחוסמים הקיימים (אין Redis בפועל, R2 לא
+מופעל בחשבון, Cardcom ב-mock). ארבעת השערים ירוקים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה ל-M12-c80), build טרי (`rm -rf .next`
+ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4823
+pnpm build`, exit 0, `BUILD_ID` חדש `IfKfzrQcX71UOlEbu-WZ8`,
+`/api/health` ו-`/api/ready` שניהם `ƒ` דינמיים במניפסט). פריט
+אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד
+ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד:
+`STATE.md`.
+
 ## M12-c80 (הועבר מ-STATE.md ב-M13-c80, לשמירה על תקרת 300 שורות)
 
 **M12-c80 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
