@@ -2,6 +2,16 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c71 (הועבר מ-STATE.md ב-M06-c71, לשמירה על תקרת 300 שורות)
+
+**M05-c71 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
+`pnpm test` (`vitest run`) הורץ בפועל: 614/614 קבצים, 7337/7349 עברו (12
+מדולגים) — זהה ל-M05-c70, אין דריפט לתקן. ארבעת השערים הורצו במלואם
+לאימות: `test` נקי (כנ"ל), `type-check` נקי (`tsc --noEmit`, exit 0),
+`lint` נקי (12 שערים, 2037 קבצים, אפס תיקונים), `build` exit 0 נקי
+(prerender/PPR על כל הנתיבים, כולל sitemaps/robots/opengraph, ללא שגיאה).
+אין קבצי קוד שהשתנו — commit זה תיעודי בלבד (`STATE.md`/`docs/STATE-ARCHIVE.md`).
+
 ## M04-c71 (הועבר מ-STATE.md ב-M05-c71, לשמירה על תקרת 300 שורות)
 
 **M04-c71 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
