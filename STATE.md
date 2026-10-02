@@ -1,37 +1,33 @@
-RESUME FROM: M10-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c72 - DONE, knip נבדק מחדש, אפס דריפט)
+RESUME FROM: M11-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c72 - DONE, מיגרציות ממתינות נבדקו מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c72 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
-exports". `git diff --stat 38e570855..HEAD -- package.json pnpm-lock.yaml
-src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c71) ריק
-— אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
-הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
-binary / 271 unused exports / 197 unused exported types / 4 duplicate
-exports** — אותם מספרים בדיוק כמו M09-c71, אפס מועמד חדש. חמש ה-deps
-(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
-`drizzle-orm`, `postgres`, `react-hook-form`) ו-`supabase` כ-unlisted
-binary זוהו שוב כאותם false-positive מתועדים (M09-c66/c69/c70/c71) —
-צרכן אמיתי לכל אחת, לא נבדקו פרטנית מחדש השבוע מעבר לאימות שהרשימה לא
-השתנתה. ארבעת ה-duplicate exports זהים ל-M09-c69/c70/c71 (aliases
-מכוונים). אפס הסרה, אין מועמד חדש מעבר למה שכבר הוסר ב-M09-c66/M09-c67.
-אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
-(12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349
-עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
-build`, route manifest מלא). קובץ יחיד: `STATE.md`.
+**M10-c72 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `diff <(git ls-tree -r HEAD --name-only --
+migrations/pending/) <(git ls-tree -r 6ec1248b7 --name-only --
+migrations/pending/)` (בסיס: קומיט M10-c71 עצמו) — **ריק, זהה לגמרי, 62
+קבצים בשני הצדדים.** אפס קובץ הוחל, אפס קובץ הוסר, אפס קובץ חדש. 19
+החוסמים שבחוסם #3 למעלה (218, 245, 246, 204, 240-244, 247 וכו') נשארים
+חוסמים, לא הוחלו. אין פקודת `supabase db push` הורצה, אין שינוי סכימה
+בפרודקשן. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים), `build` הצליח (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3418 pnpm build`, route manifest
+מלא). קובץ יחיד: `STATE.md`.
 
-**M08-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c72 לשמירה על תקרת 300 שורות).** M08-c72: Lighthouse mobile
-על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c71.
-M07-c72: TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט
-מ-M07-c71. M06-c72: `pnpm build` נבדק מחדש, `EXIT:0`, אפס דריפט מ-M06-c71.
-M05-c72: `pnpm test` נבדק מחדש, 614/614 קבצים (7337/7349, 12 מדולגים),
-אפס דריפט מ-M05-c71. M04-c72: type-check, `EXIT:0`, אפס דריפט. שלושה
-פריטי שער חזותי - M03-c72 (קטגוריה, 3.53/2.31/1.58%, אפס דריפט), M02-c72
-(מוצר, 4.96/4.58/3.25%, אפס דריפט) ו-M01-c72 (בית, 8.58/9.01/4.16%, אפס
-דריפט). ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+**M09-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M10-c72 לשמירה על תקרת 300 שורות).** M09-c72: deps/exports מתים
+עם `knip` נבדקו מחדש, אפס דריפט (201/5/1/271/197/4). M08-c72: Lighthouse
+mobile על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט
+מ-M08-c71. M07-c72: TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס
+דריפט מ-M07-c71. M06-c72: `pnpm build` נבדק מחדש, `EXIT:0`, אפס דריפט
+מ-M06-c71. M05-c72: `pnpm test` נבדק מחדש, 614/614 קבצים (7337/7349, 12
+מדולגים), אפס דריפט מ-M05-c71. M04-c72: type-check, `EXIT:0`, אפס
+דריפט. שלושה פריטי שער חזותי - M03-c72 (קטגוריה, 3.53/2.31/1.58%, אפס
+דריפט), M02-c72 (מוצר, 4.96/4.58/3.25%, אפס דריפט) ו-M01-c72 (בית,
+8.58/9.01/4.16%, אפס דריפט). ארבעת השערים ירוקים בכולם, אפס שינוי קוד
+ייצור.
 
 **M18-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c72 לשמירה על תקרת 300 שורות).** שמונה-עשר פריטי אימות-בלבד,
