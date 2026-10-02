@@ -41645,3 +41645,28 @@ NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`) הצליחה, `BUILD_ID`
 וחמשת תתי-המפות. פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
 שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף
 מיגרציה. קובץ יחיד: `STATE.md`.
+
+## M13-c78 (הועבר מ-STATE.md ב-M14-c78, לשמירה על תקרת 300 שורות)
+
+**M13-c78 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git diff
+90aebfae3..HEAD --stat -- src/app/api/health src/app/api/ready
+src/lib/health/ready.ts docs/BACKLOG.md` (בסיס: M13-c77) ריק, אפס
+שינוי. קוד זהה למדידה הקודמת: `src/app/api/health/route.ts` עושה
+HEAD-count על `categories` דרך admin client (אפס `float`/כסף במסלול),
+`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמש תלויות
+(`database`, `redis`, `meilisearch`, `r2`, `cardcom`). **נמדד ישירות
+מול פרודקשן**: `curl https://www.kenyonexpress.co.il/api/health` →
+`200 {"ok":true,"database":"ok","latency_ms":116}`; `curl
+.../api/ready` → `503 {"ok":false,"checks":{"database":"ok",
+"redis":"ok","meilisearch":"down","r2":"not_configured",
+"cardcom":"not_configured"}}`. **זהה בדיוק ל-M13-c67..M13-c77**:
+`meilisearch:"down"` נשאר חוסם ידוע (`docs/BACKLOG.md`, אין פריסת
+HEAD, חוסם #2 למעלה), liveness (`/api/health`) כן `200`. **אפס דריפט
+מ-M13-c77.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה ל-M12-c78), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4418 pnpm
+build`, `/api/health` ו-`/api/ready` מופיעים ב-`app-paths-manifest.json`).
+פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/
+קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
