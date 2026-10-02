@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c77 (הועבר מ-STATE.md ב-M08-c77, לשמירה על תקרת 300 שורות)
+
+**M07-c77 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md". נסרק מחדש `src/` (כולל
+`.ts`/`.tsx`/`.js`/`.mjs`): שני ה-marker האמיתיים היחידים,
+`src/lib/payments/cardcom.ts:254` ו-`:319`, שניהם מ-`TODO(cardcom)`,
+נבדק מועד ההוספה דרך `git log -S` — 24.07.2026 ו-07.08.2026 בהתאמה, שניהם
+מעל שבעה ימים. שניהם כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6, חסומים על
+החלטת מפעיל (אימות live מול המסוף של Cardcom), זהה בדיוק ל-M07-c76/
+M07-c75/M07-c74/M07-c67 — אין marker חדש, אין marker שנפתר, אין פעולה
+לתיקון. (ה-`'TODO'` ב-`whatsapp.test.ts:91` הוא מחרוזת ליטרלית בבדיקה,
+לא marker.) ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (2037
+קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה
+ל-M06-c77), `rm -rf .next && pnpm build` exit 0 נקי. שער חזותי בית נמדד
+בפועל בשלושת הרוחבים מול `refs/ke_live_{width}.png`: `8.58%`/`9.01%`/
+`4.16%`, שלושתם PASS, אפס דריפט מ-M01-c77. אפס שינוי קוד ייצור, אין
+commit של קוד — רק עדכון `STATE.md`. התור הבא: `M08-c77`.
+
 ## M06-c77 (הועבר מ-STATE.md ב-M07-c77, לשמירה על תקרת 300 שורות)
 
 **M06-c77 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift

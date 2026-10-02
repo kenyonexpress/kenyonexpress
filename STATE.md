@@ -1,30 +1,30 @@
-RESUME FROM: M08-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c77 - DONE, TODO/FIXME נסרק מחדש, אפס דריפט, שני ה-marker הקיימים עדיין מתועדים)
+RESUME FROM: M09-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c77 - DONE, Lighthouse mobile נמדד מחדש על / ו-/product, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c77 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
-7 days resolve or file in docs/BACKLOG.md". נסרק מחדש `src/` (כולל
-`.ts`/`.tsx`/`.js`/`.mjs`): שני ה-marker האמיתיים היחידים,
-`src/lib/payments/cardcom.ts:254` ו-`:319`, שניהם מ-`TODO(cardcom)`,
-נבדק מועד ההוספה דרך `git log -S` — 24.07.2026 ו-07.08.2026 בהתאמה, שניהם
-מעל שבעה ימים. שניהם כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6, חסומים על
-החלטת מפעיל (אימות live מול המסוף של Cardcom), זהה בדיוק ל-M07-c76/
-M07-c75/M07-c74/M07-c67 — אין marker חדש, אין marker שנפתר, אין פעולה
-לתיקון. (ה-`'TODO'` ב-`whatsapp.test.ts:91` הוא מחרוזת ליטרלית בבדיקה,
-לא marker.) ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (2037
-קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה
-ל-M06-c77), `rm -rf .next && pnpm build` exit 0 נקי. שער חזותי בית נמדד
-בפועל בשלושת הרוחבים מול `refs/ke_live_{width}.png`: `8.58%`/`9.01%`/
-`4.16%`, שלושתם PASS, אפס דריפט מ-M01-c77. אפס שינוי קוד ייצור, אין
-commit של קוד — רק עדכון `STATE.md`. התור הבא: `M08-c77`.
+**M08-c77 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". ארבעת השערים ירוקים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים), `build` טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, exit 0, `BUILD_ID`
+`Idzb7jJuaUN9UUsBnk-7`). `pnpm start` עצמאי על פורט 4417 (3312-3316/3618/
+3911/4211 תפוסים ע"י סוכנים מקבילים, 4417 פנוי), `cwd` אומת מול הריפו
+הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-מאסטר` (נמדד מול
+`supabase/catalogue-snapshot.json`, 44 מוצרים פעילים, `! צימר מאסטר`
+פעיל עם מלאי 10) אומתו `200` לפני המדידה.
+`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
+**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס דריפט
+מ-M08-c76. שרת נסגר אחרי המדידה, פורט אומת פנוי. אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`. התור הבא: `M09-c77`.
 
-**M01-c77..M06-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M07-c77 לשמירה על תקרת 300 שורות).** שישה פריטי אימות-בלבד: שער חזותי
+**M01-c77..M07-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M08-c77 לשמירה על תקרת 300 שורות).** שבעה פריטי אימות-בלבד: שער חזותי
 בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה (3.53/2.52/1.69,
-דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`), type-check, test ו-build
-— אפס דריפט/שבור לתיקון בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד
-ייצור.
+דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`), type-check, test, build
+ו-TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`, חסומים על החלטת
+מפעיל) — אפס דריפט/שבור לתיקון בכולם, ארבעת השערים ירוקים בכולם, אפס
+שינוי קוד ייצור.
 
 **M18-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M01-c77, נדחסו שוב ב-M02-c77 לשמירה על תקרת 300 שורות).** שמונה-עשר
