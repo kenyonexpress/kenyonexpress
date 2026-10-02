@@ -1,39 +1,26 @@
-RESUME FROM: M18-c77
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c77 - DONE, RTL על / ועל /product נבדק מחדש בזמן ריצה, אפס דריפט מ-M17-c76)
+RESUME FROM: M01-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c77 - DONE, STATE.md נבדק כבר מתחת לתקרת 300 שורות, אין צורך בקיצוץ)
 
 ## המשך מ:
 
-**M17-c77 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c76
-(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
-דריפט.** `git log 48a37fcf0..HEAD -- src/app src/components
-src/lib/i18n` (בסיס: checkpoint M17-c76) **ריק** — אפס קומיטים נוגעים
-מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, כולל `rtl-logical-gate.mjs`: "no physical direction utility
-outside an LTR island"), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
-זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3357 pnpm build` exit 0. הורם
-`pnpm start -p 3357` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
-לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
-המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
-`/product/עיסוי-משולב-מפנק-לגבר-רק-108`. **נבדק ישירות ברינדור
-בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי. גריפ על
-`dir="ltr"` בתוצאה החיה: `/` — מופע יחיד, שדה האימייל בניוזלטר
-(מכוון, `input-dir-gate` מאשר). דף המוצר — שלושה מופעים: אותו שדה
-אימייל בפוטר, `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU
-עברי (`ProductInfo.tsx`, מכוון, אותו דפוס שנמדד בכל סבב קודם), ומופע
-שלא נדגם בסבבים קודמים — קישור `tel:` של ספק ב-`SupplierInfo.tsx:165`,
-`dir="ltr"` מכוון ומתועד בהערת קוד ("WRITTEN ltr: a Hebrew paragraph
-would otherwise flip 03-1234567"), כבר מאושר ב-`input-dir-gate`
-וב-`rtl-logical-gate`. גריפ נוסף על `direction: ltr`/`float-left/
-right`/`text-left/right`/`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של
-שני הדפים — אפס התאמות. שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא
-פריט `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
-M17-c67..M17-c76). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
-ל-`docs/STATE-ARCHIVE.md`).
+**M18-c77 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למשימות
+M18-c60..M18-c76 (קיצוץ מחזורי). **נמדד לפני כל שינוי**: `wc -l
+STATE.md` החזיר **298** (הקובץ לא מסתיים ב-newline, כך שהתוכן בפועל
+299 שורות לפי מספור `Read`), כבר **מתחת לתקרת 300** בלי שום פעולה.
+הפריט הקודם בתור (M17-c77, למעלה) כיווץ את עצמו אל שורה אחת כחלק מה
+pattern הרגיל וזה החזיק את הקובץ מתחת לתקרה מבלי להזדקק לקיצוץ נפרד
+כאן. **הפעולה שבוצעה בכל זאת**: פסקת M17-c77 המלאה (28 שורות) הועברה
+ל-`docs/STATE-ARCHIVE.md` (סעיף חדש בראש הקובץ, הישן ביותר-ראשון
+נשאר שלם) וכווצה כאן לשורה אחת בתוך האוסף "M01-c77..M16-c77", שהורחב
+ל-"M01-c77..M17-c77" — כך שהתור הנוכחי (M01-c78 ואילך) מתחיל מתוך
+מרווח נוסף, לא רק מתחת לתקרה בדיוק. ארבעת השערים לא נדרשו להרצה מחדש
+(אין שינוי קוד, קובץ `.md` בלבד), אך הורצו כחלק מטקס הסיום הרגיל:
+`type-check`/`lint`/`test`/`build`. אפס שינוי קוד ייצור. שני קבצים:
+`STATE.md` ו-`docs/STATE-ARCHIVE.md`.
 
-**M01-c77..M16-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M17-c77 לשמירה על תקרת 300 שורות).** שישה-עשר פריטי אימות-בלבד:
+**M01-c77..M17-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M18-c77 לשמירה על תקרת 300 שורות).** שבעה-עשר פריטי אימות-בלבד:
 JSON-LD Product+BreadcrumbList (תשעה סלאגים נבדקו ב-curl, כל התשעה
 200), Sentry release vs HEAD (927/109 קומיטים, עדיין מפוצל, ממתין
 להחלטת אופיר), שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25)
