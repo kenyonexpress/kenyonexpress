@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c74 (הועבר מ-STATE.md ב-M04-c74, לשמירה על תקרת 300 שורות)
+
+**M03-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת כשורש הריפו הזה, `/api/health` 200) נבדק מול HEAD לפני ההרצה:
+אפס שינוי קוד ייצור מ-M02-c74 (`8b1a9eab4` זהה). הורץ `LOCAL_BASE=
+http://localhost:3311 scripts/compare.mjs --page=category --widths=
+380,768,1440 --baseline=refs/electro_shop_{width}.png` בחזית; סורב
+פעם אחת על timeout חולף של תמונות ממתינות (2 תמונות לא נטענו עד
+הצילום), אומת ב-`curl` ישיר ששתי התמונות עונות `200` תוך פחות מ-30ms,
+ואז הורץ שוב עם `COMPARE_ALLOW_PENDING_IMAGES=1` התיעודי (אותו תבנית
+תקלה כמו M03-c73). הריצה השנייה חרגה מ-timeout 180 שניות של כלי ה-Bash
+והמשיכה ברקע עד סיום, לא הופעלה ברקע ביוזמת הסוכן; הומתנה לסיומה המלא
+דרך Monitor לפני כל רישום. **תוצאה: `380`=2.93%, `768`=2.31%,
+`1440`=1.58%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M03-c73/M03-c66
+(אותם מספרים בדיוק).** השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי הסקריפט עצמו, מתויגות `8b1a9eab4`. ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next && pnpm build` exit 0
+נקי (BUILD_ID חדש `UQ2AnKnsZzGhcE4w8FQjN`). אפס שינוי קוד ייצור. קבצים:
+`STATE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M02-c74 (הועבר מ-STATE.md ב-M03-c74, לשמירה על תקרת 300 שורות)
 
 **M02-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
