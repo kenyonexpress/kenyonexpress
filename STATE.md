@@ -1,25 +1,32 @@
-RESUME FROM: M12-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c75 - DONE, sitemap.xml נבדק ישירות מול פרודקשן, אפס דריפט)
+RESUME FROM: M13-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c75 - DONE, robots.txt נבדק ישירות מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c75 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
-reachable". `curl -D -` ישיר על `https://www.kenyonexpress.co.il/sitemap.xml`:
-200, `content-type: application/xml`, גוף הוא `<urlset>` שטוח (לא
-`<sitemapindex>`) עם רשימת דפים סטטיים — זהה מבנית ל-M11-c74, **עדיין לא**
-ה-`sitemapindex` בן חמש השורות שהקוד הנוכחי (`src/app/sitemap.xml/`)
-כותב. חמשת נתיבי תתי-המפות (`/sitemap/{content,suppliers,products,
-regions,categories}.xml`) **כולם עדיין 404** בפרודקשן. `robots.txt` החי
-עדיין מצביע על `/sitemap.xml` (כתובת נכונה, תוכן ישן). `git diff --stat
-07b7d8ad8..HEAD -- src/app/sitemap.xml src/app/sitemap next.config.ts`
-(בסיס: M11-c74) **ריק, אפס דריפט קוד**. תואם חוסם 2 (פרודקשן תקוע על
-`a388118f1`, בניות חדשות `ERROR` בגלל משתני Cardcom חסרים ב-Vercel).
+**M12-c75 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". `curl -D -` ישיר על
+`https://www.kenyonexpress.co.il/robots.txt`: `200`,
+`content-type: text/plain; charset=utf-8`. הגוף החי מכיל רק שתים-עשרה
+שורות `Disallow` (`/redeem/`, `/coupon/`, `/account/`, `/supplier/`,
+`/scan`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`,
+`/reset-password`, `/forgot-password`) — **עדיין חסרות** ארבע השורות
+שהקוד הנוכחי (`src/app/robots.ts`) כותב: `/gift/`, `/order/`,
+`/wishlist/s/` (m12-c67, קומיט `4d3702025`) ו-`/debug/` (m12-c66, קומיט
+`8fce77c76`). תואם בדיוק את הרישום הקודם (M12-c74 וחוסם 2): פרודקשן
+עדיין תקוע על `a388118f1`, לפני שני התיקונים האלה. `git diff --stat
+800004270..HEAD -- src/app/robots.ts src/app/robots.test.ts
+src/lib/site-url.ts` (בסיס: M12-c74) **ריק, אפס דריפט קוד**. ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 תתי-שערים, כולל
+i18n/locale-format בתקרה בדיוק), `pnpm test` 614/614 קבצים ו-7337 טסטים
+עברו (12 skipped), `pnpm build` עבר (`/robots.txt` מופיע כ-`○` סטטי).
 אימות-בלבד, לא חזותי, אין צורך ב-`compare.mjs`. אפס שינוי כסף/סכימה/קוד.
 קובץ יחיד: `STATE.md`.
 
-**M10-c75..M01-c75, M18-c74..M01-c74 (עשרים ושמונה פריטי אימות-בלבד/תחזוקה,
+**M11-c75..M01-c75, M18-c74..M01-c74 (עשרים ותשעה פריטי אימות-בלבד/תחזוקה,
 ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים — M06-c75,
-M09-c75, M10-c75, M11-c75 — לשמירה על תקרת 300 שורות).** M10-c75 —
+M09-c75, M10-c75, M11-c75, M12-c75 — לשמירה על תקרת 300 שורות).** M11-c75 —
+sitemap.xml: גוף חי עדיין `<urlset>` שטוח (לא `sitemapindex`), חמשת נתיבי
+תתי-המפות עדיין 404, אפס דריפט קוד מ-M11-c74. M10-c75 —
 מיגרציות ממתינות נבדקו מחדש מול git בלבד (הבדיקה הישירה מול פרודקשן כבר
 רצה באותו יום ב-M10-c74), 60 קבצים, 19 חוסמים ללא שינוי, אפס דריפט.
 M09-c75 — knip נסרק מחדש (201/5/1/271/197/4, אפס מועמד חדש מ-M09-c74).
