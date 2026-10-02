@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c76 (הועבר מ-STATE.md ב-M06-c76, לשמירה על תקרת 300 שורות)
+
+**M05-c76 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
+commit". אפס שינוי בקבצי `src/` מאז M05-c75 (`bb524ffb5`, `git log
+--oneline bb524ffb5..HEAD -- src/` ריק). `pnpm test` (`vitest run`) נקי:
+614/614 קבצים, 7337/7349 עברו (12 מדולגים), זהה ל-M05-c75. שלושת
+השערים הנוספים: `type-check` נקי (אפס שגיאות), `lint` נקי (12 שערים,
+2037 קבצים), `build` exit 0 נקי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
+build`). אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M04-c76 (הועבר מ-STATE.md ב-M05-c76, לשמירה על תקרת 300 שורות)
+
+**M04-c76 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". אפס שינוי בקבצי `src/` מאז M04-c75, `pnpm type-check` נקי, אפס
+דריפט. ארבעת השערים ירוקים.
+
 ## M03-c76 (הועבר מ-STATE.md ב-M04-c76, לשמירה על תקרת 300 שורות)
 
 **M03-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on

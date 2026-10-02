@@ -1,16 +1,21 @@
-RESUME FROM: M06-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c76 - DONE, test נבדק מחדש, אפס דריפט)
+RESUME FROM: M07-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c76 - DONE, build נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M05-c76 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
-commit". אפס שינוי בקבצי `src/` מאז M05-c75 (`bb524ffb5`, `git log
---oneline bb524ffb5..HEAD -- src/` ריק). `pnpm test` (`vitest run`) נקי:
-614/614 קבצים, 7337/7349 עברו (12 מדולגים), זהה ל-M05-c75. שלושת
-השערים הנוספים: `type-check` נקי (אפס שגיאות), `lint` נקי (12 שערים,
-2037 קבצים), `build` exit 0 נקי (`rm -rf .next &&
+**M06-c76 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
+commit". אפס שינוי בקבצי `src/` מאז M06-c75 (`e38246134`, `git log
+--oneline e38246134..HEAD -- src/` ריק). שלושת השערים הראשונים: `type-check`
+נקי (אפס שגיאות), `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M05-c76). `rm -rf .next &&
 CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
-build`). אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+build` exit 0 נקי, זהה בתוצאתו ל-M06-c75. אפס שינוי קוד ייצור. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M05-c76 (הועבר במלואו ל-`docs/STATE-ARCHIVE.md` ב-M06-c76 לשמירה על
+תקרת 300 שורות).** משימת התור: "pnpm test fix drift commit". אפס שינוי
+בקבצי `src/` מאז M05-c75, `pnpm test` נקי (614/614, 7337/7349), אפס
+דריפט. ארבעת השערים ירוקים.
 
 **M04-c76 (הועבר במלואו ל-`docs/STATE-ARCHIVE.md` ב-M05-c76 לשמירה על
 תקרת 300 שורות).** משימת התור: "pnpm type-check fix drift commit". אפס
