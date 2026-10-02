@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c78 (הועבר מ-STATE.md ב-M04-c78, לשמירה על תקרת 300 שורות)
+
+**M03-c78 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /category sample" — זהה למשימות "category parity re-measured"
+הקודמות (M03-c77 ולפניו). `pwd` אומת, עץ נקי מלבד שלוש שורות `category`/
+`380` לא-commit-ות ב-`docs/UI-PARITY-REPORT.md` (18:04-18:07) — שרידי
+הרצת 380-בלבד שלא הושלמה בסשן קודם; הושארו כפי שהן, השער עצמו כותב
+שורות, לא נמחקות. אומת שאין שינוי קוד ייצור מאז `494f4b89e` (`git diff
+--stat` ריק על `src/`, `supabase/`, `packages/`, `public/`,
+`next.config.ts`, `package.json`). שרת `pnpm start` כבר היה חי על
+פורט 3311 (PID 5130), `lsof -p -a -d cwd` אימת cwd = שורש הריפו,
+`curl` החזיר `200`. **הרצה בחזית**: `COMPARE_ALLOW_PENDING_IMAGES=1
+LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=category --widths=380,768,1440 --baseline=
+'refs/electro_shop_{width}.png'` — חרגה מ-timeout כלי ה-Bash, הועברה
+אוטומטית לרקע על ידי הכלי עצמו לא ביוזמת הסוכן; הומתן לסיומה המלאה
+דרך Monitor על קובץ הפלט לפני כל רישום (אומת גם `ps aux` באמצע שה-
+תהליך עדיין פעיל על `--width=768`). **תוצאה: `380`=3.53% PASS,
+`768`=1.94% PASS, `1440`=1.53% PASS** (שער 11%). **זו לא "אפס דריפט":**
+380 זהה בדיוק ל-M03-c77/M03-c66 (3.53%), אך 768 ו-1440 נמוכים
+מ-M03-c77 (2.52%/1.69%) ב-0.58/0.16 נ"א וזהים בדיוק ל-M03-c76
+(1.94%/1.53%) — אותו רעש תזמון `loading="lazy"` שתועד לראשונה ב-M03-c75,
+לא שינוי קוד (האימות למעלה מאשר זאת) ולא שינוי קטלוג שנמדד. עדיין הרבה
+מתחת לשער 11%, לא חוסם. השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי הסקריפט עצמו, מתויגות `494f4b89e-dirty`. ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים), `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3311 pnpm build` exit 0 נקי (שרת 3311 נשאר חי ועונה
+`200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
 ## M02-c78 (הועבר מ-STATE.md ב-M03-c78, לשמירה על תקרת 300 שורות)
 
 **M02-c78 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
