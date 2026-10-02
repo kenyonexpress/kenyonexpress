@@ -2,6 +2,17 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c74 (הועבר מ-STATE.md ב-M01-c75, לשמירה על תקרת 300 שורות)
+
+**M18-c74 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md" — זהה בתבנית למשימת
+M18-c73. **נמדד: 299 שורות בתחילת הפריט, כבר מתחת לתקרה.** בכל זאת,
+בהתאם לתקדים M18-c73 (289 שורות, גם אז תחת התקרה, ובכל זאת אוכב כדי
+להשאיר מרווח), הועבר הבלוק המלא של M17-c74 ל-`docs/STATE-ARCHIVE.md`
+וכווץ לשורה אחת כאן. ארבעת השערים: `type-check` נקי, `lint` נקי, `test`
+614/614 קבצים, `build` exit 0 נקי. אפס שינוי קוד ייצור. קובץ יחיד:
+`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`). התור הבא: `M01-c75`.
+
 ## M17-c74 (הועבר מ-STATE.md ב-M18-c74, לשמירה על תקרת 300 שורות)
 
 **M17-c74 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product

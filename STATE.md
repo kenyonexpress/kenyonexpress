@@ -1,19 +1,31 @@
-RESUME FROM: M01-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c74 - DONE, STATE.md תחת תקרת 300 שורות, M17-c74 אוכב)
+RESUME FROM: M02-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c75 - DONE, שער חזותי בית נמדד מחדש)
 
 ## המשך מ:
 
-**M18-c74 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md" — זהה בתבנית למשימת
-M18-c73. **נמדד: 299 שורות בתחילת הפריט, כבר מתחת לתקרה.** בכל זאת,
-בהתאם לתקדים M18-c73 (289 שורות, גם אז תחת התקרה, ובכל זאת אוכב כדי
-להשאיר מרווח), הועבר הבלוק המלא של M17-c74 ל-`docs/STATE-ARCHIVE.md`
-וכווץ לשורה אחת כאן. ארבעת השערים: `type-check` נקי, `lint` נקי, `test`
-614/614 קבצים, `build` exit 0 נקי. אפס שינוי קוד ייצור. קובץ יחיד:
-`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`). התור הבא: `M01-c75`.
+**M01-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". שרת `pnpm start` קיים על
+פורט 3311 (PID 56364, `cwd` אומת כשורש הריפו הזה) נבדק מול HEAD לפני
+ההרצה: `git diff --stat 290834f18..HEAD -- . ':!docs' ':!STATE.md'`
+(קומיט בניית השער האחרון, M01-c74) — ריק, כל ההפרש תיעוד-בלבד, כך
+שהבנייה הקיימת תואמת. הורץ `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=home --widths=380,768,1440
+--baseline=refs/ke_live_{width}.png` בחזית, הומתן לסיומו המלא לפני כל
+רישום (home מסורב כ-live reference מ-Q31, ה-DNS מצביע לפריסה שלנו —
+חוסם #14 למטה). **תוצאה: `380`=8.58%, `768`=9.01%, `1440`=4.16%,
+שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M01-c74 (אותם מספרים בדיוק).**
+השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו,
+מתויגות `97de64449` (HEAD בתחילת הפריט). ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0 נקי. אפס
+שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
-**M17-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M18-c74 לשמירה על תקרת 300 שורות).** M17-c74 — RTL על / ו-/product
+**M18-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M01-c75 לשמירה על תקרת 300 שורות).** M18-c74 — תחזוקת תיעוד,
+STATE.md נבדק מחדש מתחת לתקרת 300 שורות (299), ארכב את M17-c74 כדי
+לשמור מרווח. M17-c74 — RTL על / ו-/product
 נבדק מחדש, אפס leak חדש, אפס דריפט מ-M17-c73. M16-c74 — JSON-LD
 Product+BreadcrumbList נבדק מחדש בכל דפי המוצר (10/10
 `e2e/seo-markup.spec.ts`), אפס דריפט מ-M16-c73. M15-c74 — אפס console
