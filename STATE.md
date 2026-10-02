@@ -1,33 +1,32 @@
-RESUME FROM: M11-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c76 - DONE, מיגרציות ממתינות נבדקו מחדש מול git, אפס דריפט)
+RESUME FROM: M12-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c76 - DONE, sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c76 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `git diff db6ecbc87..HEAD --stat -- migrations/pending/`
-(בסיס: M10-c75) **ריק** — אפס שינוי. `migrations/pending/*.sql` נספר
-שוב: **60 קבצים**, ללא שינוי. `git log db6ecbc87..HEAD --
-supabase/migrations/` ריק — שום מיגרציה לא הוחלה. חוסם פתוח #3 למעלה
-(19 קבצים חוסמים: 218, 245, 246, 204, 240-244, 247 ועוד, פירוט
-ב-`docs/RUNBOOK.md`/`docs/MIGRATION-REVIEW.md`) עומד ללא שינוי — בדיקה
-ישירה מול פרודקשן האחרונה הייתה ב-M10-c74 (02.10, CLI-keychain-token),
-וזו מעקב מול git בלבד, כמו M10-c75, כי אין דריפט קוד שמצדיק בדיקה
-ישירה חוזרת באותו יום. ארבעת השערים ירוקים: `type-check` נקי, `lint`
-נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, route manifest
-מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
-כסף/סכימה. קובץ יחיד: `STATE.md`.
+**M11-c76 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
+מחזיר `<urlset>` שטוח (לא `sitemapindex`), עדיין גרסת `a388118f1`
+(אפס דריפט מ-M11-c75). חמשת תתי-המפות של הקוד הנוכחי —
+`/sitemap/{content,suppliers,regions,categories,products}.xml` — כולן
+`404` בפרודקשן. בקוד: `git log -1` על חמשת קבצי ה-sitemap מחזיר
+`b209770c4` (09.09), אפס שינוי מ-M11-c75 (`63c16cf77`); `pnpm build`
+מאשר חמשת הנתיבים + `/sitemap.xml` ב-manifest. חוסם #2 למעלה ללא
+שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת השערים ירוקים:
+`type-check`/`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים), `build` exit 0. אפס שינוי כסף/סכימה.
+קובץ יחיד: `STATE.md`.
 
-**M09-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M10-c76 לשמירה על תקרת 300 שורות).** שישה פריטי תחזוקה/אימות-בלבד:
-M08-c76 — Lighthouse mobile `/` ו-`/product/צימר-מאסטר`, 100/100/100
-בשניהם, אפס דריפט מ-M08-c75. M07-c76 — TODO/FIXME נסרק מחדש, שני
-`TODO(cardcom)` כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6. M05-c76 —
-"pnpm test fix drift commit", אפס שינוי מ-M05-c75. M04-c76 — "pnpm
-type-check fix drift commit", אפס שינוי מ-M04-c75. M03-c76 — שער חזותי
-קטגוריה (`380`=2.93%/`768`=1.94%/`1440`=1.53%, PASS), אפס דריפט
-מ-M03-c75. M02-c76 — שער חזותי מוצר (`380`=4.50%/`768`=4.07%/
+**M10-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M11-c76 לשמירה על תקרת 300 שורות).** שבעה פריטי תחזוקה/אימות-בלבד:
+M10-c76 — מיגרציות ממתינות נבדקו מחדש מול git (בסיס M10-c75), 60
+קבצים ללא שינוי, אפס מיגרציה הוחלה. M09-c76 — knip נבדק מחדש, אפס
+מועמד חדש. M08-c76 — Lighthouse mobile `/` ו-`/product/צימר-מאסטר`,
+100/100/100 בשניהם, אפס דריפט מ-M08-c75. M07-c76 — TODO/FIXME נסרק
+מחדש, שני `TODO(cardcom)` כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6.
+M05-c76 — "pnpm test fix drift commit", אפס שינוי מ-M05-c75. M04-c76
+— "pnpm type-check fix drift commit", אפס שינוי מ-M04-c75. M03-c76 —
+שער חזותי קטגוריה (`380`=2.93%/`768`=1.94%/`1440`=1.53%, PASS), אפס
+דריפט מ-M03-c75. M02-c76 — שער חזותי מוצר (`380`=4.50%/`768`=4.07%/
 `1440`=3.25%, PASS), אפס דריפט שלילי מ-M02-c75. ארבעת השערים ירוקים
 בכולם, אפס שינוי קוד ייצור.
 
