@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c77 (הועבר מ-STATE.md ב-M12-c77, לשמירה על תקרת 300 שורות)
+
+**M11-c77 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
+מחזיר `200`, `<urlset>` שטוח (לא `sitemapindex`), 79 כתובות, עדיין
+גרסת `a388118f1` (אפס דריפט מ-M11-c76). חמשת תתי-המפות של הקוד
+הנוכחי — `/sitemap/{content,suppliers,regions,categories,products}.xml`
+— כולן `404` בפרודקשן, נמדד שוב. בקוד: `git log -1` על תשעת קבצי
+ה-sitemap (`src/app/sitemap*`, `src/app/sitemap/`, `src/lib/seo/sitemap-*`)
+מחזיר `b209770c4` (09.09), אפס שינוי מ-M11-c76. חוסם #2 למעלה ללא
+שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm
+build`, manifest מאשר חמשת הנתיבים + `/sitemap.xml`). פריט אימות-בלבד,
+לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה, אסור `supabase
+db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+
 ## M10-c77 (הועבר מ-STATE.md ב-M11-c77, לשמירה על תקרת 300 שורות)
 
 **M10-c77 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/

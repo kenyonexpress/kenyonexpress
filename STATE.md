@@ -1,45 +1,45 @@
-RESUME FROM: M12-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c77 - DONE, sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M13-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c77 - DONE, robots.txt נבדק מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c77 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
-מחזיר `200`, `<urlset>` שטוח (לא `sitemapindex`), 79 כתובות, עדיין
-גרסת `a388118f1` (אפס דריפט מ-M11-c76). חמשת תתי-המפות של הקוד
-הנוכחי — `/sitemap/{content,suppliers,regions,categories,products}.xml`
-— כולן `404` בפרודקשן, נמדד שוב. בקוד: `git log -1` על תשעת קבצי
-ה-sitemap (`src/app/sitemap*`, `src/app/sitemap/`, `src/lib/seo/sitemap-*`)
-מחזיר `b209770c4` (09.09), אפס שינוי מ-M11-c76. חוסם #2 למעלה ללא
-שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת השערים ירוקים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm
-build`, manifest מאשר חמשת הנתיבים + `/sitemap.xml`). פריט אימות-בלבד,
-לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה, אסור `supabase
-db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+**M12-c77 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". `curl https://www.kenyonexpress.co.il/robots.txt`
+מחזיר 12 שורות `Disallow` (`redeem`,`coupon`,`account`,`supplier`,
+`scan`,`admin`,`checkout`,`cart`,`auth`,`api`,`reset-password`,
+`forgot-password`) — עדיין חסרות `/gift/`,`/order/`,`/wishlist/s/`
+ו-`/debug/`, זהה בדיוק למדידת M12-c76. בקוד: `src/app/robots.ts` כבר
+כולל את כל 15 השורות (`4d370202528` תוקן ב-M12-c67, `git log -1` על
+הקובץ מראה אפס שינוי נוסף מאז). ארבעת הנתיבים נבדקו ישירות בפרודקשן:
+כולם `308` (trailing-slash redirect) ואז `404` במילוי — אין נתיב חי
+תחתיהם בפריסה הנוכחית (`a388118f1`), כך שהחסר ב-robots.txt אינו חושף
+תוכן בפועל כרגע, רק דריפט תיעוד/קוד מול deployment תקוע. חוסם #2
+למעלה ללא שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:4417 pnpm build`, manifest מאשר `/robots.txt`). פריט
+אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה,
+אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+
+**M11-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
+sitemap.xml נבדק מחדש מול פרודקשן, אותם 79 כתובות, `urlset` שטוח,
+`a388118f1`, אפס דריפט מ-M11-c76. ארבעת השערים ירוקים, אפס שינוי קוד
+ייצור.
 
 **M10-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
 מיגרציות ממתינות נבדקו מחדש מול git (בסיס M10-c76), 60 קבצים ללא
 שינוי, אפס מיגרציה הוחלה, חוסם #3 (19 קבצים) ללא שינוי. ארבעת השערים
 ירוקים, אפס שינוי קוד ייצור.
 
-**M09-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
-Unused deps/dead exports נסרקו מחדש עם `knip`, אותם מספרים בדיוק
-כמו M09-c76 (201/5/1/271/197/4), אפס מועמד חדש, אפס הסרה. ארבעת השערים
-ירוקים, אפס שינוי קוד ייצור.
-
-**M08-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
-Lighthouse mobile על / ו-`/product/צימר-מאסטר` נמדד מחדש, 100/100/100
-בשניהם, אפס דריפט מ-M08-c76. ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
-
-**M01-c77..M07-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M08-c77 לשמירה על תקרת 300 שורות).** שבעה פריטי אימות-בלבד: שער חזותי
+**M01-c77..M09-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M12-c77 לשמירה על תקרת 300 שורות).** תשעה פריטי אימות-בלבד: שער חזותי
 בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה (3.53/2.52/1.69,
-דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`), type-check, test, build
-ו-TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`, חסומים על החלטת
-מפעיל) — אפס דריפט/שבור לתיקון בכולם, ארבעת השערים ירוקים בכולם, אפס
-שינוי קוד ייצור.
+דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`), type-check, test, build,
+TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`, חסומים על החלטת מפעיל),
+Lighthouse mobile (100/100/100 ב-/ וב-`/product/צימר-מאסטר`), ו-knip
+(201/5/1/271/197/4, אפס מועמד חדש) — אפס דריפט/שבור לתיקון בכולם, ארבעת
+השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M01-c77, נדחסו שוב ב-M02-c77 לשמירה על תקרת 300 שורות).** שמונה-עשר
