@@ -248,6 +248,34 @@ build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (ת�
 M04-c66..M15-c77). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
 ל-`docs/STATE-ARCHIVE.md`).
 
+## M13-c79 (הועבר מ-STATE.md ב-M14-c79, לשמירה על תקרת 300 שורות)
+
+**M13-c79 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git diff
+64728ff8d..HEAD --stat -- src/app/api/health src/app/api/ready
+src/lib/health/ready.ts src/lib/health/checks.ts docs/BACKLOG.md` ריק,
+אפס שינוי (אותו קומיט בסיס כבר מכיל `/api/health`/`/api/ready`/
+`runReadyChecks`). קוד זהה למדידה הקודמת: `src/app/api/health/route.ts`
+עושה HEAD-count על `categories` דרך admin client (אפס `float`/כסף
+במסלול), `src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמש
+תלויות (`database`, `redis`, `meilisearch`, `r2`, `cardcom`). **נמדד
+ישירות מול פרודקשן**: `curl https://www.kenyonexpress.co.il/api/health`
+→ `200 {"ok":true,"database":"ok","latency_ms":110}`; `curl
+.../api/ready` → `503 {"ok":false,"checks":{"database":"ok",
+"redis":"ok","meilisearch":"down","r2":"not_configured",
+"cardcom":"not_configured"}}`. **זהה בדיוק ל-M13-c67..M13-c78**:
+`meilisearch:"down"` נשאר חוסם ידוע (`docs/BACKLOG.md` סעיף 16, אין
+פריסת HEAD, חוסם #2 למעלה), liveness (`/api/health`) כן `200`. **אפס
+דריפט מ-M13-c78.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה ל-M12-c79), build טרי (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4719 pnpm
+build`, exit 0, `BUILD_ID` חדש `Qs7rIfZOqG2SAg2CVK2OF`, `/api/health`
+ו-`/api/ready` ב-`app-path-routes-manifest.json`). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ
+`supabase db push`, לא הוחלה אף מיגרציה. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M14-c78 (הועבר מ-STATE.md ב-M15-c78, לשמירה על תקרת 300 שורות)
 
 **M14-c78 - DONE (03.10.2026).** משימת התור: "Verify Sentry release
