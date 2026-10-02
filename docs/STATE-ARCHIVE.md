@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c74 (הועבר מ-STATE.md ב-M18-c74, לשמירה על תקרת 300 שורות)
+
+**M17-c74 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c73 (leak אמיתי
+תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
+`git log 6cc881ca2..HEAD -- src/ -- ':!src/app/latin-field-direction.test.ts'`
+(בסיס M17-c73) — אפס קומיטים נגד `src/`, 17 תיעוד-בלבד. **נבדק גם ברמת קוד/רינדור בפועל:** `<html
+lang="he" dir="rtl">` ב-`layout.tsx:116`, ללא תנאי. גריפ מלא על `dir="ltr"`,
+`direction: ltr`, `float-left/right`, `text-left/right`, ו-`ml-/mr-/pl-/pr-`
+קשיחים ב-`src/app/(store)/page.tsx` וב-`src/app/(store)/product/` — אפס
+התאמות. `pnpm lint` מריץ שער ייעודי `rtl-logical-gate.mjs`: **נקי, "no
+physical direction utility outside an LTR island".** `.next` חדש לגמרי
+(`rm -rf .next`), `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3333 pnpm build` exit 0, `pnpm start -p 3333` עצמאי
+(אומת `lsof`+`ps`+cwd), `curl` 200 על `/` ו-`/product/barbecue`. **רינדור
+בפועל:** `/` — `dir="rtl"` ב-`<html>`, יחיד `dir="ltr"` הוא שדה האימייל
+בניוזלטר (מכוון, שער `input-dir-gate` מאשר). `/product/barbecue` — שני
+`dir="ltr"`: אותו שדה אימייל בפוטר, פלוס `pdp-summary__meta` שמחליף
+`dir` דינמית לפי קיום SKU עברי (`ProductInfo.tsx`, מכוון ומתועד בקוד).
+שרת הופסק בסוף. **אין ממצא קוד לתקן.** ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים, כולל `rtl-logical-gate`), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא פריט
+`compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
+M17-c67..M17-c73). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
+ל-`docs/STATE-ARCHIVE.md`).
+
 ## M16-c74 (הועבר מ-STATE.md ב-M17-c74, לשמירה על תקרת 300 שורות)
 
 **M16-c74 - DONE (02.10.2026).** משימת התור: "Verify all product pages have

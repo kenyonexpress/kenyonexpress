@@ -1,34 +1,20 @@
-RESUME FROM: M18-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c74 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט מ-M17-c73)
+RESUME FROM: M01-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c74 - DONE, STATE.md תחת תקרת 300 שורות, M17-c74 אוכב)
 
 ## המשך מ:
 
-**M17-c74 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c73 (leak אמיתי
-תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
-`git log 6cc881ca2..HEAD -- src/ -- ':!src/app/latin-field-direction.test.ts'`
-(בסיס M17-c73) — אפס קומיטים נגד `src/`, 17 תיעוד-בלבד. **נבדק גם ברמת קוד/רינדור בפועל:** `<html
-lang="he" dir="rtl">` ב-`layout.tsx:116`, ללא תנאי. גריפ מלא על `dir="ltr"`,
-`direction: ltr`, `float-left/right`, `text-left/right`, ו-`ml-/mr-/pl-/pr-`
-קשיחים ב-`src/app/(store)/page.tsx` וב-`src/app/(store)/product/` — אפס
-התאמות. `pnpm lint` מריץ שער ייעודי `rtl-logical-gate.mjs`: **נקי, "no
-physical direction utility outside an LTR island".** `.next` חדש לגמרי
-(`rm -rf .next`), `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:3333 pnpm build` exit 0, `pnpm start -p 3333` עצמאי
-(אומת `lsof`+`ps`+cwd), `curl` 200 על `/` ו-`/product/barbecue`. **רינדור
-בפועל:** `/` — `dir="rtl"` ב-`<html>`, יחיד `dir="ltr"` הוא שדה האימייל
-בניוזלטר (מכוון, שער `input-dir-gate` מאשר). `/product/barbecue` — שני
-`dir="ltr"`: אותו שדה אימייל בפוטר, פלוס `pdp-summary__meta` שמחליף
-`dir` דינמית לפי קיום SKU עברי (`ProductInfo.tsx`, מכוון ומתועד בקוד).
-שרת הופסק בסוף. **אין ממצא קוד לתקן.** ארבעת השערים: `type-check` נקי,
-`lint` נקי (12 שערים, 2037 קבצים, כולל `rtl-logical-gate`), `test`
-614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא פריט
-`compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
-M17-c67..M17-c73). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
-ל-`docs/STATE-ARCHIVE.md`).
+**M18-c74 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md" — זהה בתבנית למשימת
+M18-c73. **נמדד: 299 שורות בתחילת הפריט, כבר מתחת לתקרה.** בכל זאת,
+בהתאם לתקדים M18-c73 (289 שורות, גם אז תחת התקרה, ובכל זאת אוכב כדי
+להשאיר מרווח), הועבר הבלוק המלא של M17-c74 ל-`docs/STATE-ARCHIVE.md`
+וכווץ לשורה אחת כאן. ארבעת השערים: `type-check` נקי, `lint` נקי, `test`
+614/614 קבצים, `build` exit 0 נקי. אפס שינוי קוד ייצור. קובץ יחיד:
+`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`). התור הבא: `M01-c75`.
 
-**M16-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M17-c74 לשמירה על תקרת 300 שורות).** M16-c74 — JSON-LD
+**M17-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M18-c74 לשמירה על תקרת 300 שורות).** M17-c74 — RTL על / ו-/product
+נבדק מחדש, אפס leak חדש, אפס דריפט מ-M17-c73. M16-c74 — JSON-LD
 Product+BreadcrumbList נבדק מחדש בכל דפי המוצר (10/10
 `e2e/seo-markup.spec.ts`), אפס דריפט מ-M16-c73. M15-c74 — אפס console
 error/hydration על / ו-/product sample (2/2 `e2e/route-audit.spec.ts`),
