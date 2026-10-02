@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c73 (הועבר מ-STATE.md ב-M10-c73, לשמירה על תקרת 300 שורות)
+
+**M09-c73 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat ee91c89a4..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c72) ריק
+— אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c72, אפס מועמד חדש. חמש ה-deps
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) ו-`supabase` כ-unlisted
+binary זוהו שוב כאותם false-positive מתועדים (M09-c66..c72) — צרכן
+אמיתי לכל אחת. ארבעת ה-duplicate exports זהים ל-M09-c69..c72 (aliases
+מכוונים). אפס הסרה, אין מועמד חדש מעבר למה שכבר הוסר ב-M09-c66/M09-c67.
+אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
+build`, route manifest מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs`
+לא נדרש. קובץ יחיד: `STATE.md`.
+
 ## M08-c73 (הועבר מ-STATE.md ב-M09-c73, לשמירה על תקרת 300 שורות)
 
 **M08-c73 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and

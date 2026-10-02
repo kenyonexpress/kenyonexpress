@@ -1,20 +1,17 @@
-RESUME FROM: M10-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c73 - DONE, knip נבדק מחדש, אפס דריפט)
+RESUME FROM: M11-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c73 - DONE, מיגרציות ממתינות אומתו מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c73 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
-exports". `git diff --stat ee91c89a4..HEAD -- package.json pnpm-lock.yaml
-src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c72) ריק
-— אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
-הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
-binary / 271 unused exports / 197 unused exported types / 4 duplicate
-exports** — אותם מספרים בדיוק כמו M09-c72, אפס מועמד חדש. חמש ה-deps
-(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
-`drizzle-orm`, `postgres`, `react-hook-form`) ו-`supabase` כ-unlisted
-binary זוהו שוב כאותם false-positive מתועדים (M09-c66..c72) — צרכן
-אמיתי לכל אחת. ארבעת ה-duplicate exports זהים ל-M09-c69..c72 (aliases
-מכוונים). אפס הסרה, אין מועמד חדש מעבר למה שכבר הוסר ב-M09-c66/M09-c67.
+**M10-c73 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git ls-tree -r HEAD --name-only --
+migrations/pending/` מחזיר 62 קבצים, ו-`git diff 0db9d62a3..HEAD --
+migrations/pending/` (בסיס: HEAD של M10-c72) ריק — אפס דריפט מאז הבדיקה
+המלאה-מול-פרודקשן האחרונה (M10-c68, 02.10, בדיקה פרטנית לכל 19 הקבצים
+החוסמים). עשרת הקבצים החוסמים שרשומים ב"חוסמים פתוחים" סעיף 3 (`218`,
+`245`, `246`, `204`, `240`, `241`, `242`, `243`, `244`, `247`) כולם
+עדיין קיימים ב-`migrations/pending/` תחת אותם שמות, אף אחד לא הוחל ולא
+נמחק. אין migration שהוחל על פרודקשן, אין `supabase db push` שהורץ.
 אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
 (12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349
 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
@@ -22,8 +19,10 @@ binary זוהו שוב כאותם false-positive מתועדים (M09-c66..c72) �
 build`, route manifest מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs`
 לא נדרש. קובץ יחיד: `STATE.md`.
 
-**M08-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M09-c73 לשמירה על תקרת 300 שורות).** M08-c73: Lighthouse mobile על `/`
+**M09-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M10-c73 לשמירה על תקרת 300 שורות).** M09-c73: `knip` נבדק מחדש, אותם
+מספרים בדיוק כמו M09-c72 (201 unused files, 5 unused deps, 271 unused
+exports, 4 duplicate exports), אפס מועמד חדש. M08-c73: Lighthouse mobile על `/`
 ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c72. M07-c73:
 TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c73: `pnpm
 build` נקי מראש, אפס דריפט. M05-c73: `pnpm test` נקי מראש (614/614,
@@ -211,10 +210,10 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
-   M10-c69 (02.10, git-diff-only מול M10-c68, אותו יום): אפס דריפט, 60
-   קבצים, 19 מתוכם חוסמים, שום דבר לא הוחל.** אושר מחדש מול פרודקשן
-   בפועל ב-M10-c68, 02.10, בדיקה פרטנית לכל 19 הקבצים, אפס סחיפה
-   מ-M10-c66/25.09.
+   M10-c73 (02.10, `git ls-tree`+`git diff` מול M10-c72, אותו יום): אפס
+   דריפט, 62 קבצים, 10 מתוכם חוסמים (רשומים למעלה), שום דבר לא הוחל.**
+   אושר מחדש מול פרודקשן בפועל ב-M10-c68, 02.10, בדיקה פרטנית לכל 19
+   הקבצים, אפס סחיפה מ-M10-c66/25.09.
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
 5. **צילומי reference ב-380 וב-768 לסל ולקופה**: קיימים רק ב-1440
