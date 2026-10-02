@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c72 (הועבר מ-STATE.md ב-M03-c72, לשמירה על תקרת 300 שורות)
+
+**M02-c72 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". הורץ `scripts/compare.mjs --page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
+בחזית, מול אותו שרת `pnpm start` על פורט 3311 שאומת ב-M01-c72 (`cwd`
+שורש הריפו, `BUILD_ID` תואם ל-HEAD). **תוצאה: `380`=4.96%, `768`=4.58%,
+`1440`=3.25%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M02-c71/M02-c70**
+(אותו סלאג מקומי `מוצר-לדוגמא`, 4 כרטיסי מוצר, אותה אזהרת יחס-גובה
+מבנית כנגד הצילום הקפוא, לא שער פיקסלים אמיתי — זהה למדידות קודמות).
+השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו.
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי
+(`BUILD_ID` התרענן ל-`UKjMB8tISs4v8CURqbCTy`, עץ העמודים המלא הודפס ללא
+שגיאה). אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
+
+## M01-c72 (הועבר מ-STATE.md ב-M03-c72, לשמירה על תקרת 300 שורות)
+
+**M01-c72 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". הורץ `scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline=refs/ke_live_{width}.png`
+בחזית, מול שרת `pnpm start` קיים על פורט 3311 (נבדק: `cwd` שלו הוא שורש
+הריפו הזה, `BUILD_ID` שלו תואם ל-HEAD `77e2a8bfc`, עץ העבודה נקי חוץ
+מ-`docs/UI-PARITY-REPORT.md`). **תוצאה: `380`=8.58%, `768`=9.01%,
+`1440`=4.16%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M18-c71/M01-c71.**
+השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו
+(שש שורות הצטברו מהרצות ילד מרובות של אותה הרצת `--widths`, הקומיט האחרון
+לכל רוחב הוא הרשומה התקפה). ארבעת השערים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `build` exit 0 נקי (`BUILD_ID` התרענן, עץ העמודים המלא הודפס ללא
+שגיאה). אפס שינוי קוד ייצור.
+
 ## M18-c71 (הועבר מ-STATE.md ב-M01-c72, לשמירה על תקרת 300 שורות)
 
 **M18-c71 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
