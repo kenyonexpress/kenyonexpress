@@ -1,26 +1,28 @@
-RESUME FROM: M09-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c78 DONE: Lighthouse mobile נמדד מחדש על / ו-/product, אפס דריפט)
+RESUME FROM: M10-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c78 DONE: unused deps/dead exports נבדקו מחדש עם knip, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c78 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
-and /product sample log scores". ארבעת השערים ירוקים: `type-check`
-נקי, `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים, זהה ל-M07-c78), `build` טרי (`rm -rf
-.next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417
-pnpm build`, exit 0, `BUILD_ID` חדש: `sPI9hMFzbuqX1a2TFqOKf`). `pnpm
-start` עצמאי על פורט 4417 (3311-3316/3618/3911/4211 תפוסים ע"י סוכנים
-מקבילים, 4417 פנוי), `cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`). `/`
-ו-`/product/צימר-מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`,
-44 מוצרים פעילים, `! צימר מאסטר` עדיין פעיל עם מלאי 10) אומתו `200`
-לפני המדידה. `scripts/lighthouse-smoke.mjs --throttling-method=provided`:
-`/` = **100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס
-דריפט מ-M08-c77. שרת נסגר אחרי המדידה, פורט אומת פנוי. אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש (תקדים M08-c77 ואילך). אפס שינוי קוד
-ייצור. קבצים: `STATE.md`.
+**M09-c78 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
+dead exports". `git diff --stat 7a2891291..HEAD -- package.json
+pnpm-lock.yaml src/ scripts/ next.config.ts apps/ supabase/` (בסיס:
+HEAD של M09-c77) ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip
+--no-config-hints` הורץ מחדש: **201 unused files / 5 unused
+dependencies / 1 unlisted binary / 271 unused exports / 197 unused
+exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו M09-c77,
+אפס מועמד חדש. אפס הסרה (כל הפריטים כבר נבדקו בסבבים קודמים ואינם
+מועמדים אוטומטיים — החלטת מפעיל, כמתועד ב-M09-c74/c75/c76/c77). ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c78),
+`build` טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, exit 0, `BUILD_ID`
+חדש: `BRsXiqS9lZByuUGkfo9Zw`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש (כל knip/deps הם אימות-בלבד, לא UI). אפס
+שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
 
-**M02-c78..M07-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M08-c78).** שישה פריטי תור/אימות-בלבד: שער חזותי מוצר
+**M02-c78..M08-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c78).** שבעה פריטי תור/אימות-בלבד: Lighthouse mobile (100/100/100
+על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי מוצר
 (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53, דריפט
 רעש `loading="lazy"` זהה ל-M03-c76 בלבד), test/build גייטים (אפס דריפט
 קוד מאז M04-c78), TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`,
