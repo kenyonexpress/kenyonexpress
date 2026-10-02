@@ -621,6 +621,38 @@ stands unchanged. No migration applied, no code change.
     `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`, רק `SENTRY_AUTH_TOKEN`; שלושת
     קובצי האתחול זהים (`git log ac81a815f..HEAD` עליהם ריק, בסיס M14-c71).
     הפער גדל שוב: **461** קומיטים מאחורי HEAD (`d83788ee7`).
+    **M14-c73, 02.10.2026 — השתנה מהותית, לא עוד "אפס דריפט":** בין M14-c72
+    לכאן, **מחוץ ללולאת התור הזה**, `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`
+    נוספו בפועל ל-Production (הערת היצירה של שני הערכים: "Set 2026-10-02
+    via MCP", `createdAt`≈05:20 UTC היום), והפריסה החיה השתנתה ל-
+    `dpl_2zzvvFGMoS5icgrgL94er8USKwsj` (נוצרה 05:42 UTC), **בנויה
+    מ-`githubCommitRef=main`, `githubCommitSha=18ed044b2` ("Wave 6: build
+    success") — לא מ-`audit/final-audit` ולא מ-`a388118f1`**.
+    `git merge-base --is-ancestor 18ed044b2 HEAD` נכשל: הענפים מפוצלים
+    (109 קומיטים ב-`main` שאינם ב-HEAD, 855 ב-HEAD שאינם ב-`main`, תואם
+    זיכרון `main-is-stale-phase5-is-mainline`). **אומת חי**: `curl -D-
+    https://www.kenyonexpress.co.il/` מחזיר `200` עם כותרת
+    `content-security-policy`/`reporting-endpoints` שמצביעה על
+    `https://o4511944582496256.ingest.de.sentry.io/...` עם `sentry_key`
+    אמיתי — Sentry רץ בפועל בפרודקשן כרגע, לא רק מוגדר. **`get_project`
+    מראה ניסיון פריסה נוסף מיד אחרי זה שנכשל** (`dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`,
+    `readyState=ERROR`, ~05:52 UTC). **חמש הפריסות מ-`audit/final-audit`
+    (`291bc2d88` וכו') נשארות `ERROR`** — חוסם ה-deploy-preflight על הענף
+    הזה לא נפתר; הפריסה שהצליחה הגיעה מענף אחר לגמרי. **נבדק ונשלל
+    כמקור**: `scripts/dns-watch.sh` (רץ, launchd) לא זיהה cutover ל-Cloudflare
+    בשום שורה ב-`logs/dns-watch.log` עד ועם 07:21 UTC (אחרי זמן הפריסה) —
+    זו לא ההדק מזיכרון `dns-cutover-loop-paused-pending-review`. מקור
+    הפעולה לא ידוע לסוכן הזה; בוצעה דרך אותו MCP connector של Vercel
+    שזמין גם לסשן הזה, קרוב לוודאי מחוץ ללולאת ה-terminal. **הסוכן לא
+    נגע ב-Vercel מעבר לקריאות read-only** (`filter_project_envs`,
+    `get_deployment`, `get_project`, `list_deployments`) ולא ביצע/ביטל
+    שום פריסה או שינוי env. **תשובה לשאלת התור: לא, ה-release אינו תואם
+    ל-HEAD** — יש release אמיתי עם Sentry חי, אבל בנוי מענף ישן ומפוצל.
+    **פעולה של אופיר, דחוף**: לבדוק מי/מה יצר את הפריסה הזו ואת שינוי
+    ה-env, ולהחליט אם לבצע rollback ל-`audit/final-audit` (חסום כרגע
+    ב-preflight) או לתקן את ה-preflight כדי שפריסה מהענף הנכון תצליח —
+    production כרגע מריץ קוד ישן בלי 855 הקומיטים של העבודה המתועדת
+    בתור הזה.
 18. **`scripts/compare.mjs` נותן PASS נמוך-כוזב כש"שלנו" ריק, לא FAIL גבוה.**
     נמדד 01.10.2026, M01-c67: שרת `pnpm start` ישן על פורט 3311 המשיך
     לרוץ אחרי ש-`.next` נבנה מחדש על ידו (או סשן מקביל), כך שה-HTML שהוא

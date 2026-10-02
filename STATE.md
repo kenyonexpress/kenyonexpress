@@ -1,96 +1,102 @@
-RESUME FROM: M14-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c73 - DONE, /api/health ו-/api/ready נבדקו ישירות מול פרודקשן, אפס דריפט קוד מ-M13-c72)
+RESUME FROM: M15-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c73 - BLOCKED, קריטי: production עבר פריסה+שינוי env מחוץ לתור הזה, לא מ-HEAD)
 
 ## המשך מ:
 
-**M13-c73 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
-d83788ee7..HEAD -- src/app/api/health src/app/api/ready` (בסיס: קומיט
-M13-c72) — ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם, זהים
-ל-M13-c72: `src/app/api/health/route.ts` עושה HEAD-count על `categories`
-דרך ה-admin client, `200`/`database:"ok"` כש-DB מגיב, `503` אחרת;
-`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמש תלויות
-ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
-(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
-(`{"ok":true,"database":"ok","latency_ms":382}`); `/api/ready` → `503`
-(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
-**זהה בדיוק ל-M13-c67..M13-c72**: `meilisearch:"down"` נשאר חוסם ידוע
-(`docs/BACKLOG.md`, אין פריסת HEAD). משימת התור מנוסחת "return 200" לשני
-הנתיבים, אבל `/api/ready` מחזיר `503` בכוונה כל עוד meilisearch למטה —
-זו ההתנהגות התקינה של שער המוכן-לעבודה, לא תקלה; `/api/health` (liveness)
-כן `200`. **אפס דריפט מ-M13-c72.** ארבעת השערים ירוקים: `type-check`
-נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
-עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3423 pnpm
-build`, שני הנתיבים מופיעים ב-manifest). פריט אימות-בלבד, לא חזותי:
-`compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
+**M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר.**
+משימת התור: "Verify Sentry release matches HEAD commit" — זהה למילה
+למשימות M14-c66..M14-c72, אבל **הממצא הפעם שבר את הדפוס של שמונה סבבים
+רצופים**: production השתנה בפועל בין M14-c72 לכאן, **מחוץ ללולאת התור
+הזה**, בלי ששום פריט בתור ביצע זאת. כל הבדיקות למטה קריאה-בלבד; הסוכן
+לא כתב שום דבר ל-Vercel.
 
-**M12-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
-ב-M13-c73 לשמירה על תקרת 300 שורות).** שמונה פריטי תור: robots.txt
+1. `filter_project_envs` (MCP Vercel, רשימה מלאה) על
+   `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` **כן מחזיר עכשיו**
+   `SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN` ב-Production (נעדרו בכל סבב
+   M14-c66..M14-c72). הערת היצירה של שתיהן: "Set 2026-10-02 via MCP",
+   `createdAt`≈05:20 UTC היום — כשעתיים לפני תחילת הסשן הזה.
+2. `get_deployment('www.kenyonexpress.co.il', withGitRepoInfo=true)`:
+   הפריסה החיה היא **`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`** (`READY`, נוצרה
+   05:42 UTC), בנויה מ-`githubCommitRef=main`, `githubCommitSha=18ed044b2`
+   ("Wave 6: build success") — **לא** `audit/final-audit`, **לא**
+   `a388118f1` שהיה חי בכל סבב קודם.
+3. `git merge-base --is-ancestor 18ed044b2 HEAD` נכשל — `main` ו-
+   `audit/final-audit` מפוצלים (109 קומיטים ב-`main` שאינם ב-HEAD, 855
+   ב-HEAD שאינם ב-`main`; תואם זיכרון `main-is-stale-phase5-is-mainline`,
+   לא טעות מדידה).
+4. **אומת חי, לא רק ב-API**: `curl -D- https://www.kenyonexpress.co.il/`
+   מחזיר `200`, וכותרת `content-security-policy`/`reporting-endpoints`
+   מצביעה על `https://o4511944582496256.ingest.de.sentry.io/...` עם
+   `sentry_key` אמיתי — Sentry רץ בפועל בפרודקשן כרגע.
+5. `get_project` מראה ניסיון פריסה נוסף **מיד אחרי זה שנכשל**
+   (`dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, `readyState=ERROR`, ~05:52 UTC,
+   `target=null`) — לא נחקר מעבר לזה.
+6. `list_deployments(target=production)` מראה שחמש הפריסות הידועות
+   מ-`audit/final-audit` (`291bc2d88`, `0bcbdac18`, `99b2079cb`,
+   `1083b8d8d`...) **עדיין כולן `ERROR`** — חוסם ה-deploy-preflight על
+   הענף הזה (חוסם #2 למטה) לא נפתר; הפריסה שהצליחה הגיעה מענף אחר לגמרי.
+7. **נבדק ונשלל כמקור**: `scripts/dns-watch.sh` (PID 976, רץ, launchd
+   `com.kenyonexpress.dnswatch`) — `logs/dns-watch.log` מראה `ns1/ns2.
+   vercel-dns.com` (לא Cloudflare) בכל שורה עד ועם 07:21 UTC (אחרי זמן
+   הפריסה). זו **לא** ההדק מזיכרון `dns-cutover-loop-paused-pending-review`.
+   מקור הפעולה לא ידוע לסוכן הזה; בוצעה דרך אותו MCP connector של Vercel
+   שזמין גם לסשן הזה, קרוב לוודאי מחוץ ללולאת ה-terminal.
+
+**תשובה לשאלת התור: לא, ה-release אינו תואם ל-HEAD.** יש עכשיו release
+אמיתי עם Sentry חי לראשונה אי-פעם, אבל בנוי מ-`18ed044b2` (`main`, ענף
+מפוצל וישן), לא מ-HEAD (`73e549698`) ולא מ-`a388118f1`. **חוסם #2 למטה
+("פריסת HEAD חסומה, production נשאר על a388118f1") כבר לא מדויק** — יש
+פריסה חדשה, אבל מענף שגוי. **לא תוקן ולא הוחזר על ידי הסוכן**: פעולה
+נוספת היתה מפרה את שני הכללים המפורשים של המשימה ("never change DNS or
+Vercel env vars", ותנאי העצירה "push לפרודקשן ב-Vercel"). **פעולה של
+אופיר, דחוף**: לבדוק מי/מה יצר את הפריסה הזו ואת שינוי ה-env, ולהחליט
+rollback ל-audit/final-audit מול תיקון ה-preflight — production כרגע
+מריץ קוד ישן בלי 855 הקומיטים של העבודה המתועדת בתור הזה. פורט מלא
+ב-`docs/BACKLOG.md` סעיף 17. ארבעת השערים (על קוד הסוכן עצמו, לא נוגעים
+לממצא) ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3433 pnpm build`). קבצים: `STATE.md`, `docs/BACKLOG.md`.
+
+**M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
+ב-M14-c73 לשמירה על תקרת 300 שורות).** תשעה פריטי תור: `/api/health`/
+`/api/ready` (200/503 מול פרודקשן בפועל, אפס דריפט), robots.txt
 (חוסם 2, אפס דריפט), sitemap.xml (תיקן רישום שגוי של סבבים קודמים),
 מיגרציות ממתינות (62 קבצים, עשרה חוסמים), `knip` (אפס מועמד חדש),
 Lighthouse mobile (100/100/100), TODO/FIXME, build/test/type-check,
 ושערי קטגוריה/מוצר/בית (`PASS` בכולם). אפס דריפט בכולם, ארבעת השערים
-ירוקים בכל השמונה.
+ירוקים בכל התשעה.
 
-**M18-c72..M01-c72 ו-M18-c71..M01-c71, M18-c70..M01-c70, M18-c69..M01-c69
-(ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M17-c72 לשמירה
-על תקרת 300 שורות).** ארבעה סבבים שלמים של פריטי אימות-בלבד/שער חזותי
-(JSON-LD Product+BreadcrumbList; אפס console error/hydration; Sentry
-מול HEAD, הפער גדל כל סבב עד 461 קומיטים, אין DSN בפרודקשן; `/api/health`/
-`/api/ready` 200/503; robots.txt חוסם 2; sitemap.xml; מיגרציות ממתינות;
-deps/exports מתים עם `knip`; Lighthouse mobile 100/100/100; TODO/FIXME;
-build/test/type-check; שערי קטגוריה/מוצר/בית; RTL על `/` ו-`/product`;
-STATE.md מתחת לתקרה), אפס דריפט בכולם, ארבעת השערים ירוקים בכולם, אפס
-שינוי קוד ייצור.
+**M18-c68..M01-c72 (שבעה סבבים שלמים: c68, c69, c70, c71, c72, ארכיון
+מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים — M04-c70, M17-c72
+— לשמירה על תקרת 300 שורות; שום שורה לא נמחקה מהארכיון עצמו).** חמישים
+ותשעה פריטי תור/אימות-בלבד/תחזוקה, DONE/אפס-דריפט בכולם, ארבעת השערים
+ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב; type-check/test/
+build; TODO/FIXME (תיקון אחד ב-c66's M07); Lighthouse 100/100/100;
+`knip`; מיגרציות ממתינות; sitemap.xml; robots.txt (חוסם 2);
+`/api/health`/`/api/ready`; Sentry מול HEAD (הפער גדל כל סבב עד 461
+קומיטים, אין DSN בפרודקשן עד שהשתנה ב-M14-c73 — ראו למעלה); אפס console
+error/hydration; JSON-LD Product+BreadcrumbList; RTL — leak אמיתי נמצא
+ותוקן ב-c66's M17 (`HeroSlider.tsx`), אפס דריפט חוזר אח"כ.
 
-**M18-c68..M02-c68 ו-M01-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
-כווצו לשורה הזו ב-M01-c69/M17-c68/M09-c69/M03-c70 (c68) ובשלבים
-M14-c66..M16-c66/M03-c67 (c66-c68) ולבסוף כאן ב-M04-c70, לשמירה על תקרת
-300 שורות).** חמישים ושניים פריטי תור/אימות-בלבד/תחזוקה על פני שלושה
-סבבים (c66, c67, c68+M18-c67..M01-c68), DONE/אפס-דריפט בכולם, ארבעת
-השערים ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה בכל סבב;
-type-check/test/build; TODO/FIXME (תיקון אחד ב-c66's M07); Lighthouse
-100/100/100; חבילות מתות עם `knip`; מיגרציות ממתינות אומתו; sitemap.xml;
-robots.txt (חוסם 2); `/api/health`/`/api/ready`; Sentry מול HEAD (הפער
-גדל כל סבב, עד 388 קומיטים); אפס console error/hydration; JSON-LD
-Product+BreadcrumbList; RTL — leak אמיתי נמצא ותוקן ב-c66's M17
-(`HeroSlider.tsx`), אפס דריפט חוזר ב-c67/c68; STATE.md מתחת לתקרה.
+**Q25..Q55 (29 פריטים חיצוניים חד-פעמיים, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
+כווצו לשורה הזו בשלבים — Q51, M14-c66 — לשמירה על תקרת 300 שורות).**
+עשרים וארבעה DONE/VERIFIED ובנויים במלואם (Q25..Q50: LCP+AVIF, שעות
+פתיחה/ביקורות גוגל, שני BLOCKED על מדיניות אופיר), וחמישה נוספים
+(Q51..Q55): Crisp נדחה (Q51 BLOCKED), Meilisearch Hebrew ו-Cardcom
+sandbox-toggle כבר קיימים (Q52/Q53 VERIFIED), שלוש jobs חדשות ב-CI
+(Q54 DONE), `v1.0.0-rc7-final-audit` תויג (Q55 DONE). אפס שינוי קוד
+ייצור חוץ מ-Q43/Q54, ארבעת השערים ירוקים בכולם, שער חזותי PASS בכל
+מה שנמדד.
 
-**Q51..Q55 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M14-c66 לשמירה על תקרת 300 שורות).** חמישה פריטים חיצוניים חד-פעמיים:
-Crisp chat נדחה (WhatsApp+email בלבד, Q51 BLOCKED); Meilisearch Hebrew
-synonyms/facets/no-search-UI כבר קיימים (Q52 VERIFIED); Cardcom
-sandbox-to-production toggle כבר בנוי (Q53 VERIFIED); שלוש jobs חדשות
-ב-CI, `migration-lint` חשף תקלה קיימת-מראש לא תוקנה (Q54 DONE);
-`LAUNCH-READINESS.md` נבדק מחדש, NOT READY, `v1.0.0-rc7-final-audit`
-תויג (Q55 DONE). אפס שינוי קוד ייצור חוץ מ-Q54, ארבעת השערים ירוקים
-בכולם, שער חזותי PASS בכל מה שנמדד.
-
-**Q25..Q50 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-Q51
-לשמירה על תקרת 300 שורות).** עשרים וארבעה פריטים חיצוניים חד-פעמיים, אף
-אחד לא בתור האמיתי. עשרים ואחד DONE ובנויים במלואם (כמעט לגמרי Q45, בחלקו
-Q48 - LCP+AVIF תוקנו, JS-per-route תועד כפער ידוע), אחד (Q43) נבנה חדש,
-שניים BLOCKED (מדיניות/מוצר של אופיר), אחד (Q27) שני תיקוני קוד, אחד
-(Q32) שעות פתיחה/ביקורות גוגל. שער חזותי PASS בכל מה שנמדד; ארבעת
-השערים ירוקים בכל עשרים וארבעה.
-
-**Q26 ו-M06-c65..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**Q26 ו-M01-c62..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** Q26: פריט חיצוני חד-פעמי,
-לא קיים בתור האמיתי; קופון/פיזי לדף המוצר מלאה — לא נבנה עיצוב ספקולטיבי.
-שלוש-עשרה בדיקות שוטפות של c65 (היסטוגרמת דירוגים, קופי, תברואת ריפו,
-סנכרון תיעוד, ביצועים, אבטחה, SEO, axe, כיסוי טסטים, STATE CLEAN,
-BACKLOG EMPTY, route audit, Lighthouse mobile 99/100/100/100) — אפס
-דריפט בכולן, ארבעת השערים ירוקים, שער חזותי PASS בכל מה שנמדד.
-
-**M01-c62..M01-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-Q39 לשמירה על תקרת 300 שורות).** חמישים ואחד פריטי בדיקה חוזרת
-(אפס דריפט בכולם) וארבעה שיפורי המרה אמיתיים (דירוג כוכבים לרצועות CMS
-של דף הבית ולכרטיס "מומלצים" בדף המוצר, לב מועדפים, קופי/משפטי) —
-אבטחה, SEO, axe, כיסוי טסטים, STATE CLEAN, BACKLOG EMPTY, route audit,
-Lighthouse, advisors, תברואת ריפו/תלויות, שער ירוק/חזותי ובדיקת
-פרודקשן. ארבעת השערים ירוקים בכולם, שער חזותי יציב (8.51/9.02/3.95
-בית, 5.61/4.92/2.99 מוצר).
+קופון/פיזי לדף המוצר מלאה. חמישים וארבעה פריטי בדיקה חוזרת (אפס דריפט)
+וארבעה שיפורי המרה אמיתיים (דירוג כוכבים בבית/מוצר, לב מועדפים, קופי) —
+אבטחה, SEO, axe, כיסוי טסטים, STATE/BACKLOG EMPTY, route audit,
+Lighthouse, advisors, תברואת ריפו/תלויות. ארבעת השערים ירוקים בכולם,
+שער חזותי יציב (8.51/9.02/3.95 בית, 5.61/4.92/2.99 מוצר, 99/100/100/100
+Lighthouse).
 
 **S02, S03 ו-M18-c61/M17-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
 כווצו לשורה הזו ב-Q39 לשמירה על תקרת 300 שורות).** S02/S03: שני
