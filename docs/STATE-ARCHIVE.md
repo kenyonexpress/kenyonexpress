@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c74 (הועבר מ-STATE.md ב-M13-c74, לשמירה על תקרת 300 שורות)
+
+**M12-c74 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד: `git log 15eacafbf..HEAD -- src/app/robots.ts
+src/app/robots.test.ts src/app/sitemap-robots-agree.test.ts src/lib/site-url.ts`
+ריק, אפס קומיט נוגע מאז M12-c73. `src/app/robots.ts` עדיין מכיל 16 שורות
+`Disallow` (כולל `/gift/`, `/order/`, `/wishlist/s/`, `/debug/`) ו-`sitemap`/
+`host` מ-`siteUrl()`. **נמדד ישירות מול פרודקשן, `curl` חי**:
+`https://www.kenyonexpress.co.il/robots.txt` מחזיר `200` עם **רק 12 שורות
+`Disallow`** — חסרות בדיוק `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`,
+זהה ל-M12-c73 (קוד 16 שורות, לא 15 כפי שנרשם שם, 12+4=16 מסתכם נכון, אפס
+שינוי בפועל). זה אינו ממצא חדש: זו בדיוק המדידה שנרשמה כבר בחוסם #2
+(M12-c68, ואוזכרה שוב ב-M12-c72/M12-c73) — פרודקשן עדיין מריץ קוד מלפני
+שארבעת הנתיבים האלה נוספו (`8fce77c76`/`4d3702025` אינם ancestor של אף
+מועמד פריסה, `a388118f1` או `18ed044b2`). אין פעולה כאן: פריסת פרודקשן
+חסומה בידי אופיר בלבד (חוסם #2, תנאי עצירה #1). ארבעת השערים ירוקים:
+`type-check`/`lint` נקיים, `test` 7337/7349 (614/614 קבצים), `build`
+exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build`, `/robots.txt`
+כ-`○ Static`). אימות-בלבד, לא חזותי: אין צורך ב-`compare.mjs`. קובץ יחיד:
+`STATE.md`.
+
+## M11-c74 (הועבר מ-STATE.md ב-M12-c74, לשמירה על תקרת 300 שורות)
+
+**M11-c74 - DONE (02.10.2026).** `sitemap.xml` חי נבדק ישירות מול
+פרודקשן, `urlset` שטוח (לא `sitemapindex`) וחמשת תתי-המפות `404`, זהה
+ל-M11-c73, אפס דריפט.
+
 ## M10-c74 (הועבר מ-STATE.md ב-M11-c74, לשמירה על תקרת 300 שורות)
 
 **M10-c74 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/

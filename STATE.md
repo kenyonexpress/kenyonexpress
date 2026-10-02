@@ -1,46 +1,42 @@
-RESUME FROM: M13-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c74 - DONE, robots.txt חי נבדק ישירות מול פרודקשן, אפס דריפט קוד מ-M12-c73)
+RESUME FROM: M14-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c74 - DONE, /api/health ו-/api/ready נבדקו ישירות מול פרודקשן, אפס דריפט קוד מ-M13-c73)
 
 ## המשך מ:
 
-**M12-c74 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". בדיקת דריפט קוד: `git log 15eacafbf..HEAD -- src/app/robots.ts
-src/app/robots.test.ts src/app/sitemap-robots-agree.test.ts src/lib/site-url.ts`
-ריק, אפס קומיט נוגע מאז M12-c73. `src/app/robots.ts` עדיין מכיל 16 שורות
-`Disallow` (כולל `/gift/`, `/order/`, `/wishlist/s/`, `/debug/`) ו-`sitemap`/
-`host` מ-`siteUrl()`. **נמדד ישירות מול פרודקשן, `curl` חי**:
-`https://www.kenyonexpress.co.il/robots.txt` מחזיר `200` עם **רק 12 שורות
-`Disallow`** — חסרות בדיוק `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`,
-זהה ל-M12-c73 (קוד 16 שורות, לא 15 כפי שנרשם שם, 12+4=16 מסתכם נכון, אפס
-שינוי בפועל). זה אינו ממצא חדש: זו בדיוק המדידה שנרשמה כבר בחוסם #2
-(M12-c68, ואוזכרה שוב ב-M12-c72/M12-c73) — פרודקשן עדיין מריץ קוד מלפני
-שארבעת הנתיבים האלה נוספו (`8fce77c76`/`4d3702025` אינם ancestor של אף
-מועמד פריסה, `a388118f1` או `18ed044b2`). אין פעולה כאן: פריסת פרודקשן
-חסומה בידי אופיר בלבד (חוסם #2, תנאי עצירה #1). ארבעת השערים ירוקים:
-`type-check`/`lint` נקיים, `test` 7337/7349 (614/614 קבצים), `build`
-exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm build`, `/robots.txt`
-כ-`○ Static`). אימות-בלבד, לא חזותי: אין צורך ב-`compare.mjs`. קובץ יחיד:
-`STATE.md`.
+**M13-c74 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
+73e549698..HEAD -- src/app/api/health src/app/api/ready` (בסיס:
+M13-c73) ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם, זהים
+ל-M13-c73: `src/app/api/health/route.ts` עושה HEAD-count על
+`categories` דרך ה-admin client, `200`/`database:"ok"` כש-DB מגיב,
+`503` אחרת; `src/app/api/ready/route.ts` מריץ `runReadyChecks()` על
+חמש תלויות ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":188}`); `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+**זהה בדיוק ל-M13-c67..M13-c73**: `meilisearch:"down"` נשאר חוסם ידוע
+(`docs/BACKLOG.md`), אין פריסת HEAD. משימת התור מנוסחת "return 200"
+לשני הנתיבים, אבל `/api/ready` מחזיר `503` בכוונה כל עוד meilisearch
+למטה — זו ההתנהגות התקינה של שער המוכן-לעבודה, לא תקלה; `/api/health`
+(liveness) כן `200`. **אפס דריפט מ-M13-c73.** ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next`
+ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424
+pnpm build`, שני הנתיבים מופיעים ב-manifest). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
 
-**M11-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M12-c74 לשמירה על תקרת 300 שורות).** M11-c74 — `sitemap.xml` חי
-נבדק ישירות מול פרודקשן, `urlset` שטוח (לא `sitemapindex`) וחמשת
-תתי-המפות `404`, זהה ל-M11-c73, אפס דריפט. M10-c74 — מיגרציות ממתינות
-נבדקו ישירות מול פרודקשן (לא רק git), כל 19 אובייקטי רשימת החוסמים עדיין
-חסרים, אפס דריפט מ-M10-c68. M09-c74 — `knip` נבדק מחדש (201/5/1/271/197/4,
-אותם מספרים כמו M09-c73), אפס מועמד חדש, אפס הסרה. M08-c74 — Lighthouse
-mobile על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c73.
-M07-c74 — TODO/FIXME נסרק מחדש, שני הסמנים (`cardcom.ts:254,319`) כבר
-מתועדים ב-`docs/BACKLOG.md` סעיף 6, אפס דריפט מ-M07-c73. M06-c74 —
-`pnpm build` נבדק מחדש מראש (`rm -rf .next`), exit 0, `BUILD_ID` חדש
-`iOV0dJFAKTe1crl-cPgxM`, אפס דריפט. M05-c74 — `pnpm test` נמדד מחדש,
-614/614 קבצים, 7337/7349 עברו, אפס דריפט. M04-c74 — `pnpm type-check`
-נמדד מחדש, exit 0, אפס דריפט. M03-c74 — שער חזותי קטגוריה נמדד מחדש, אפס
-דריפט מ-M03-c73/M03-c66 (2.93%/2.31%/1.58%, שלושתם PASS). M02-c74 — שער
-חזותי מוצר נמדד מחדש, אפס דריפט מ-M02-c73 (4.96%/4.58%/3.25%, שלושתם
-PASS). M01-c74 — שער חזותי בית נמדד מחדש, אפס דריפט מ-M01-c73
-(8.58%/9.01%/4.16%, שלושתם PASS).
+**M12-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c74 לשמירה על תקרת 300 שורות).** M12-c74 — robots.txt חי
+נבדק ישירות מול פרודקשן, 12 שורות `Disallow` (חסרות `/gift/`,`/order/`,
+`/wishlist/s/`,`/debug/`), זהה ל-M12-c73, אפס דריפט. M11-c74 —
+sitemap.xml חי נבדק ישירות מול פרודקשן, `urlset` שטוח וחמשת תתי-המפות
+`404`, זהה ל-M11-c73. M10-c74 — מיגרציות ממתינות נבדקו ישירות מול
+פרודקשן, 19 חוסמים עדיין חסרים, אפס דריפט מ-M10-c68. M09-c74 — `knip`
+נבדק מחדש, אפס מועמד חדש. M08-c74 — Lighthouse mobile 100/100/100
+בשניהם. M07-c74 — TODO/FIXME כבר מתועדים. M06-c74 — `build` נבדק
+מחדש, exit 0. M05-c74 — `test` נמדד מחדש, 614/614. M04-c74 —
+`type-check` נקי. M03-c74..M01-c74 — שערים חזותיים קטגוריה/מוצר/בית,
+אפס דריפט, כולם `PASS`.
 
 **M18-c73..M15-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M10-c74 לשמירה על תקרת 300 שורות).** ארבעה פריטי אימות-בלבד, אפס דריפט
