@@ -1,40 +1,33 @@
-RESUME FROM: M10-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c75 - DONE, knip נבדק מחדש, אפס דריפט)
+RESUME FROM: M11-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c75 - DONE, מיגרציות ממתינות נבדקו מחדש מול git, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c75 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
-exports". `git diff --stat d71ec77da..HEAD -- package.json pnpm-lock.yaml
-src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c74)
-ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
-הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
-binary / 271 unused exports / 197 unused exported types / 4 duplicate
-exports** — אותם מספרים בדיוק כמו M09-c74, אפס מועמד חדש. אפס הסרה.
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
-`build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, `BUILD_ID`
-`fiI0p2vyBYnTyPnXLNzX-`, route manifest מלא). פריט אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
+**M10-c75 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff --stat 23ba83ef1..HEAD -- migrations/pending
+docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
+pnpm-lock.yaml` (בסיס: M10-c74, שבו רצה הבדיקה הישירה האחרונה מול
+פרודקשן) — **ריק, אפס שינוי בכל נתיב רלוונטי**. `migrations/pending/*.sql`
+נספר שוב: **60 קבצים**, ללא שינוי; `git log -1 -- migrations/pending/`
+עדיין `48c8792dd` (248, Q32). מאחר שהבדיקה הישירה מול פרודקשן (CLI-
+keychain-token) כבר רצה **באותו יום** ב-M10-c74 ואישרה את כל 19 אובייקטי
+רשימת החוסמים (204, 209, 218, 220, 223, 224, 234-236, 239-248) כלא-
+מוחלים, הסבב הזה הסתפק ב-git בלבד — אותו דפוס מ-M10-c67/M10-c69 אחרי
+בדיקה ישירה קודמת. **19 הקבצים החוסמים עומדים ללא שינוי, אפס חוסם חדש,
+אפס דריפט.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים).
+`build` לא הורץ: `git diff --stat e38246134..HEAD` (בסיס: M06-c75, בדיקת
+build אחרונה) על כל נתיבי ה-build ריק, אפס דריפט קוד; 7 שרתי `pnpm start`
+מקבילים היו פעילים (סוכנים אחרים), אין צורך ב-build טרי לפריט אימות-
+בלבד. אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה.
+קובץ יחיד: `STATE.md`.
 
-**M08-c75 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". אפס דריפט מ-M08-c74 (`b5ed57db4`). ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, אפס
-תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` טרי
-(`rm -rf .next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417
-pnpm build`, exit 0, `BUILD_ID` `mZB7yxzMcrLqJN9Xt-gkg`). `pnpm start`
-עצמאי על פורט 4417 (3311-3316/3618/3911/4211 תפוסים ע"י סוכנים
-מקבילים), `cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`), `/` ו-`/product/
-צימר-מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`, 44 מוצרים
-פעילים, slug פעיל) אומתו `200` לפני המדידה. `scripts/lighthouse-smoke.mjs
---throttling-method=provided`: `/` = **100/100/100**,
-`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c74. שרת נסגר
-אחרי המדידה. אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
-`STATE.md`.
-
-**M07-c75, M06-c75, M05-c75..M01-c75, M18-c74..M01-c74 (עשרים וחמישה פריטי אימות-בלבד/תחזוקה,
+**M09-c75, M08-c75, M07-c75, M06-c75, M05-c75..M01-c75, M18-c74..M01-c74 (עשרים ושבעה פריטי אימות-בלבד/תחזוקה,
 ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים — M06-c75,
-M09-c75 — לשמירה על תקרת 300 שורות).** M07-c75 — TODO/FIXME נסרק מחדש,
+M09-c75, M10-c75 — לשמירה על תקרת 300 שורות).** M09-c75 — knip נסרק
+מחדש (201/5/1/271/197/4, אפס מועמד חדש מ-M09-c74). M08-c75 — Lighthouse
+mobile על `/` ו-`/product/צימר-מאסטר`, 100/100/100 בשניהם, אפס דריפט
+מ-M08-c74. M07-c75 — TODO/FIXME נסרק מחדש,
 שני הסמנים (`cardcom.ts:254,319`) כבר מתועדים ב-`docs/BACKLOG.md` סעיף
 6, אפס דריפט מ-M07-c74. אפס דריפט בכולם, ארבעת השערים ירוקים
 בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב (כולם PASS),

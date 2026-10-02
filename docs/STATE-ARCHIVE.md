@@ -2,6 +2,37 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c75, M08-c75 (הועבר מ-STATE.md ב-M10-c75, לשמירה על תקרת 300 שורות)
+
+**M09-c75 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat d71ec77da..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c74)
+ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c74, אפס מועמד חדש. אפס הסרה.
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, `BUILD_ID`
+`fiI0p2vyBYnTyPnXLNzX-`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
+
+**M08-c75 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". אפס דריפט מ-M08-c74 (`b5ed57db4`). ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` טרי
+(`rm -rf .next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417
+pnpm build`, exit 0, `BUILD_ID` `mZB7yxzMcrLqJN9Xt-gkg`). `pnpm start`
+עצמאי על פורט 4417 (3311-3316/3618/3911/4211 תפוסים ע"י סוכנים
+מקבילים), `cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`), `/` ו-`/product/
+צימר-מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`, 44 מוצרים
+פעילים, slug פעיל) אומתו `200` לפני המדידה. `scripts/lighthouse-smoke.mjs
+--throttling-method=provided`: `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c74. שרת נסגר
+אחרי המדידה. אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md`.
+
 ## M07-c75 (הועבר מ-STATE.md ב-M09-c75, לשמירה על תקרת 300 שורות)
 
 **M07-c75 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
