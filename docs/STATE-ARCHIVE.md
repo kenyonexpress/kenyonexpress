@@ -2,6 +2,16 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c71 (הועבר מ-STATE.md ב-M05-c71, לשמירה על תקרת 300 שורות)
+
+**M04-c71 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". `pnpm type-check` הורץ בפועל: נקי, `tsc --noEmit` ללא שגיאות, אין
+דריפט לתקן. ארבעת השערים הורצו במלואם לאימות: `type-check` נקי, `lint`
+נקי (12 שערים, זהה ל-M04-c70), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים, זהה), `build` exit 0 נקי (prerender/PPR על כל הנתיבים, ללא
+שגיאה). אין קבצי קוד שהשתנו — commit זה תיעודי בלבד
+(`STATE.md`/`docs/STATE-ARCHIVE.md`).
+
 ## M03-c71 (הועבר מ-STATE.md ב-M04-c71, לשמירה על תקרת 300 שורות)
 
 **M03-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on

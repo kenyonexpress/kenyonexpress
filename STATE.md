@@ -1,18 +1,19 @@
-RESUME FROM: M05-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c71 - DONE, type-check נבדק מחדש, אפס דריפט)
+RESUME FROM: M06-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c71 - DONE, test נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M04-c71 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
-commit". `pnpm type-check` הורץ בפועל: נקי, `tsc --noEmit` ללא שגיאות, אין
-דריפט לתקן. ארבעת השערים הורצו במלואם לאימות: `type-check` נקי, `lint`
-נקי (12 שערים, זהה ל-M04-c70), `test` 614/614 קבצים, 7337/7349 עברו (12
-מדולגים, זהה), `build` exit 0 נקי (prerender/PPR על כל הנתיבים, ללא
-שגיאה). אין קבצי קוד שהשתנו — commit זה תיעודי בלבד
-(`STATE.md`/`docs/STATE-ARCHIVE.md`).
+**M05-c71 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
+`pnpm test` (`vitest run`) הורץ בפועל: 614/614 קבצים, 7337/7349 עברו (12
+מדולגים) — זהה ל-M05-c70, אין דריפט לתקן. ארבעת השערים הורצו במלואם
+לאימות: `test` נקי (כנ"ל), `type-check` נקי (`tsc --noEmit`, exit 0),
+`lint` נקי (12 שערים, 2037 קבצים, אפס תיקונים), `build` exit 0 נקי
+(prerender/PPR על כל הנתיבים, כולל sitemaps/robots/opengraph, ללא שגיאה).
+אין קבצי קוד שהשתנו — commit זה תיעודי בלבד (`STATE.md`/`docs/STATE-ARCHIVE.md`).
 
-**M03-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M04-c71 לשמירה על תקרת 300 שורות).** M03-c71: שער קטגוריה נמדד
+**M04-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M05-c71 לשמירה על תקרת 300 שורות).** M04-c71: `pnpm type-check`
+נבדק מחדש, אפס דריפט. M03-c71: שער קטגוריה נמדד
 מחדש, 3.53%/2.52%/1.69%, אפס דריפט מ-M03-c70/M03-c66.
 
 **M02-c71 ו-M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
