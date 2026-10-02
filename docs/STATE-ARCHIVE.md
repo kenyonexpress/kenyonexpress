@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c70 (הועבר מ-STATE.md ב-M15-c70, לשמירה על תקרת 300 שורות)
+
+**M14-c70 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit" — זהה למילה למשימות M14-c66..M14-c69. **נבדק מחדש משתי
+הזוויות, שתיהן אפס דריפט.** שלושת קובצי האתחול (`sentry.server.config.ts`,
+`sentry.edge.config.ts`, `instrumentation-client.ts`) זהים — `git log
+ac81a815f..HEAD` עליהם ריק (בסיס: M14-c69). `filter_project_envs`
+(קריאה-בלבד, רשימה מלאה) על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`
+עדיין **לא** מחזיר `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ב-Production —
+קיים שם רק `SENTRY_AUTH_TOKEN` (source maps בזמן build בלבד). `get_deployment`
+(קריאה-בלבד, `withGitRepoInfo=true`) על `www.kenyonexpress.co.il` מראה
+שהיא עדיין `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, בנויה מ-`a388118f1`, לא
+מ-HEAD. **הפער ממשיך לגדול**: `git rev-list --count a388118f1..HEAD`
+מחזיר **425** (היה 406 ב-M14-c69 על HEAD אז `75271d80d`; HEAD עכשיו
+`61e7acb8e`). **מסקנה זהה ל-M14-c66..M14-c69**: אי אפשר לאמת "ה-release
+תואם ל-HEAD" כאמת — אין בכלל release שמגיע מפרודקשן (אין DSN), וגם אם
+היה, הוא היה מצביע על קומיט ישן ב-425 קומיטים. **לא ממצא חדש**: נוסף רק
+משפט "נמדד שוב" ל-`docs/BACKLOG.md` סעיף 17. **לא לתיקון אוטומטי**:
+הוספת `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא
+שינוי env, אסור לסוכן. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
+`rm -rf .next && pnpm build` exit 0 (`✓ Compiled successfully`). לא
+פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M14-c69). אפס שינוי
+קוד ייצור. קבצים: `docs/BACKLOG.md`, `STATE.md`.
+
 ## M13-c70 (הועבר מ-STATE.md ב-M14-c70, לשמירה על תקרת 300 שורות)
 
 **M13-c70 - DONE (02.10.2026).** משימת התור: "Verify /api/health and

@@ -1,30 +1,29 @@
-RESUME FROM: M15-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c70 - DONE, Sentry release מול HEAD אומת מחדש, הפער גדל ל-425 קומיטים)
+RESUME FROM: M16-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c70 - DONE, אפס console error/hydration על `/` ו-`/product` נבדק שוב)
 
 ## המשך מ:
 
-**M14-c70 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
-HEAD commit" — זהה למילה למשימות M14-c66..M14-c69. **נבדק מחדש משתי
-הזוויות, שתיהן אפס דריפט.** שלושת קובצי האתחול (`sentry.server.config.ts`,
-`sentry.edge.config.ts`, `instrumentation-client.ts`) זהים — `git log
-ac81a815f..HEAD` עליהם ריק (בסיס: M14-c69). `filter_project_envs`
-(קריאה-בלבד, רשימה מלאה) על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`
-עדיין **לא** מחזיר `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ב-Production —
-קיים שם רק `SENTRY_AUTH_TOKEN` (source maps בזמן build בלבד). `get_deployment`
-(קריאה-בלבד, `withGitRepoInfo=true`) על `www.kenyonexpress.co.il` מראה
-שהיא עדיין `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, בנויה מ-`a388118f1`, לא
-מ-HEAD. **הפער ממשיך לגדול**: `git rev-list --count a388118f1..HEAD`
-מחזיר **425** (היה 406 ב-M14-c69 על HEAD אז `75271d80d`; HEAD עכשיו
-`61e7acb8e`). **מסקנה זהה ל-M14-c66..M14-c69**: אי אפשר לאמת "ה-release
-תואם ל-HEAD" כאמת — אין בכלל release שמגיע מפרודקשן (אין DSN), וגם אם
-היה, הוא היה מצביע על קומיט ישן ב-425 קומיטים. **לא ממצא חדש**: נוסף רק
-משפט "נמדד שוב" ל-`docs/BACKLOG.md` סעיף 17. **לא לתיקון אוטומטי**:
-הוספת `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא
-שינוי env, אסור לסוכן. ארבעת השערים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
-`rm -rf .next && pnpm build` exit 0 (`✓ Compiled successfully`). לא
-פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M14-c69). אפס שינוי
-קוד ייצור. קבצים: `docs/BACKLOG.md`, `STATE.md`.
+**M15-c70 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66..M15-c69. **נבדק מחדש,
+אפס דריפט.** נבנה `.next` חדש לגמרי (`rm -rf .next && NEXT_PUBLIC_APP_URL=
+http://localhost:3319 pnpm build`) כדי להימנע מה-CSP-ישן-כוזב הידוע
+(`docs/STATE-ARCHIVE.md`, "reused-local-build-bakes-stale-csp"), הורם
+`pnpm start -p 3319` (פורט פנוי, 3311-3316/3618/3911/4211 כבר תפוסים
+בידי סשנים מקבילים אחרים על אותו ריפו), ואומת `curl` 200 לפני ההרצה.
+הורצו `anon /` ו-`anon dynamic catalogue routes` מתוך
+`e2e/route-audit.spec.ts` (chromium + mobile-chrome) עם
+`E2E_BASE_URL=http://localhost:3319`. **4/4 עברו, אפס
+`consoleErrors`/`hydrationWarnings`** על `/` ועל `/product/[slug]`
+בדגימה החיה (המוצר שהתגלה דינמית). **אין ממצא קוד לתקן**; אימות-בלבד,
+חמישית ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M15-c69). אפס שינוי קוד ייצור.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M14-c70).
+
+**M14-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c70).**
+Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c69, הפער גדל ל-425
+קומיטים.
 
 **M13-c70, M12-c70, M11-c70, M10-c70, M09-c70, M08-c70, M07-c70, M06-c70, M05-c70, M04-c70,
 M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
