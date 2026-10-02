@@ -1,21 +1,25 @@
-RESUME FROM: M07-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c75 - DONE, pnpm build נמדד מחדש)
+RESUME FROM: M08-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c75 - DONE, TODO/FIXME scan אפס דריפט)
 
 ## המשך מ:
 
-**M06-c75 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
-commit". אפס שינוי בקבצי `src/`/`package.json`/`pnpm-lock.yaml`/קבצי
-config מאז M06-c74 (`3b541a331`, `git log --oneline 3b541a331..HEAD --
-src/ package.json pnpm-lock.yaml next.config.ts tsconfig.json` ריק).
-`rm -rf .next && pnpm build` נקי: `Compiled successfully`, exit 0, כל
-הנתיבים נבנו (לוגי `supabase.rls_denied`/`reviews_read_failed` בזמן
-prerender הם החוסם הידוע #3 — מיגרציה 247 לא הוחלה — לא כשל build).
-שלושת השערים הנוספים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, אותם מספרים כמו M05-c75), `test` נקי: 614/614 קבצים, 7337/7349
-(12 דילוגים, זהה). אפס דריפט, אפס שינוי קוד ייצור. קובץ: `STATE.md`
-בלבד.
+**M07-c75 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
+--include="*.ts" --include="*.tsx" -l` מחזיר אותם שני קבצים כמו בכל סבב
+קודם (לאחרונה M07-c74, `339e59e40`): `src/lib/payments/cardcom.ts` (שתי
+שורות, 254 ו-319, שתיהן `TODO(cardcom)` אמיתיות) ו-`src/lib/whatsapp.test.ts:91`
+(מחרוזת ליטרלית `'TODO'` בבדיקה, לא סמן עבודה). `git log 339e59e40..HEAD --
+src/lib/payments/cardcom.ts src/lib/whatsapp.test.ts docs/BACKLOG.md` ריק
+— אפס דריפט. שתי ה-`TODO` האמיתיות עדיין מתועדות ב-`docs/BACKLOG.md`
+סעיף 6 (`Tracked in #41`/`#42`), לא נדרש עדכון לקובץ. ארבעת השערים
+ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` נקי 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`rm -rf .next && pnpm build` נקי (`Compiled successfully`, לוגי
+`supabase.rls_denied`/`reviews_read_failed` הם החוסם הידוע #3, לא כשל
+build). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md`.
 
-**M05-c75..M01-c75, M18-c74..M01-c74 (עשרים ושלושה פריטי אימות-בלבד/תחזוקה,
+**M06-c75, M05-c75..M01-c75, M18-c74..M01-c74 (עשרים וארבעה פריטי אימות-בלבד/תחזוקה,
 ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M06-c75
 לשמירה על תקרת 300 שורות).** אפס דריפט בכולם, ארבעת השערים ירוקים
 בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב (כולם PASS),
