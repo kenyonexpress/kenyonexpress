@@ -1,45 +1,43 @@
-RESUME FROM: M15-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c77 - DONE, Sentry release vs HEAD נבדק מחדש, עדיין לא תואם, אפס דריפט)
+RESUME FROM: M16-c77
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c77 - DONE, אפס console error/hydration על / ו-/product נבדק מחדש, אפס דריפט מ-M15-c76)
 
 ## המשך מ:
 
-**M14-c77 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit" — זהה למילה למשימות M14-c66..M14-c76. נבדק מול
-Vercel (MCP, read-only, פרויקט `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`):
-`list_deployments` (target=production) מראה את אותה פריסה חיה בדיוק
-שנמצאה מ-M14-c73 ואילך — `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
-`githubCommitRef=main`, `githubCommitSha=18ed044b2` ("Wave 6: build
-success"). `filter_project_envs` מראה `SENTRY_DSN`/
-`NEXT_PUBLIC_SENTRY_DSN` עדיין מוגדרים, **אותו `createdAt`
-`1790918429743`** כמו בכל בדיקה קודמת — לא נוספו ולא הוסרו. **תשובה
-לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
-`git merge-base --is-ancestor 18ed044b2 HEAD` נכשל (הענפים מפוצלים),
-`git log 18ed044b2..HEAD` מחזיר **927** קומיטים (היה 909 ב-M14-c76),
-`git log HEAD..18ed044b2` מחזיר **109** ללא שינוי. HEAD כרגע
-`90aebfae3`. **אפס דריפט מ-M14-c76** — אותו חוסם בדיוק, פורט מלא
-ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם 2 למטה). הסוכן
-לא נגע ב-Vercel מעבר לקריאות read-only (`list_deployments`,
-`filter_project_envs`) ולא ביצע/ביטל שום פריסה או שינוי env. ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`). פריט
-אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה,
-אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+**M15-c77 - DONE (03.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה למשימות M15-c66..M15-c76. **נבדק מחדש,
+אפס דריפט.** `git log f6814ab20..HEAD -- src/app src/components
+e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c76) ריק: אפס קומיטים
+בנתיבים הרלוונטיים. נבנה `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3352 pnpm
+build`, exit 0), הורם `pnpm start -p 3352` (פורט פנוי, אומת `curl` 200
+ו-`lsof -p -d cwd` על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא
+checkout זר), והורצו `anon /` ו-`anon dynamic catalogue routes` מתוך
+`e2e/route-audit.spec.ts` עם `E2E_BASE_URL=http://localhost:3352`,
+chromium בלבד, `--workers=1`, **2/2 עברו** (44.2 שניות). אומת ישירות
+מתוך `/tmp/route-audit-m15c77.jsonl` (8 שורות): אפס
+`consoleErrors`/`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל
+השורות, כולל `/`, `/product/צימר-מאסטר` (פעיל, זהה לסבבים קודמים)
+ו-`/product/צימר-מאסטר/reviews`. **אין ממצא קוד לתקן**: אימות-בלבד,
+זהה לתוצאה שנמדדה באחד-עשר הסבבים הקודמים (M15-c66..M15-c76). ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next && pnpm
+build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M15-c76). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
+ל-`docs/STATE-ARCHIVE.md`).
 
-**M01-c77..M13-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M14-c77 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי אימות-בלבד:
-שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה
+**M01-c77..M14-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M15-c77 לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטי אימות-בלבד:
+Sentry release vs HEAD (927/109 קומיטים, עדיין מפוצל, ממתין להחלטת
+אופיר), שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה
 (3.53/2.52/1.69, דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`),
 type-check, test, build, TODO/FIXME (שני ה-marker הידועים
 ב-`cardcom.ts`, חסומים על החלטת מפעיל), Lighthouse mobile
-(100/100/100 ב-/ וב-`/product/צימר-מאסטר`), knip (201/5/1/271/197/4,
-אפס מועמד חדש), knip מחדש (אפס מועמד חדש), מיגרציות ממתינות (60 קבצים
-ללא שינוי, חוסם #3 19 קבצים ללא שינוי), sitemap.xml (79 כתובות,
-`urlset` שטוח, אפס דריפט), robots.txt (12 שורות `Disallow`, עדיין
-חסרות ארבע, חוסם #2 ללא שינוי), ו-`/api/health`/`/api/ready` (200/503
-זהה, `meilisearch:"down"`) — אפס דריפט/שבור לתיקון בכולם, ארבעת
-השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+(100/100/100 ב-/ וב-`/product/צימר-מאסטר`), knip (אפס מועמד חדש),
+מיגרציות ממתינות (60 קבצים ללא שינוי, חוסם #3 19 קבצים ללא שינוי),
+sitemap.xml (79 כתובות, `urlset` שטוח, אפס דריפט), robots.txt (12
+שורות `Disallow`, עדיין חסרות ארבע, חוסם #2 ללא שינוי), ו-`/api/health`/
+`/api/ready` (200/503 זהה, `meilisearch:"down"`) — אפס דריפט/שבור
+לתיקון בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M01-c77, נדחסו שוב ב-M02-c77 לתקרת 300 שורות).** שמונה-עשר פריטי
