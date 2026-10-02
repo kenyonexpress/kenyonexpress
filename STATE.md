@@ -1,21 +1,26 @@
-RESUME FROM: M01-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c76 - DONE, STATE.md תחת תקרת 300 שורות, M17-c76 אורכב)
+RESUME FROM: M02-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c77 - DONE, שער חזותי בית נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M18-c76 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md" — זהה בתבנית למשימת M18-c75.
-**נמדד: 295 שורות בתחילת הפריט, כבר מתחת לתקרה.** בהתאם לתקדים
-M18-c74/M18-c75 (גם אז תחת התקרה, ובכל זאת אורכב כדי להשאיר מרווח),
-הועבר הבלוק המלא של M17-c76 ל-`docs/STATE-ARCHIVE.md` וכווץ לשורה אחת
-כאן. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349, 12 מדולגים), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3336 pnpm
-build` exit 0. אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
-ל-`docs/STATE-ARCHIVE.md`). התור הבא: `M01-c77`.
+**M01-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0, `pnpm start` על פורט 3311 מאומת (`lsof` מראה את ה-PID
+שלנו, לא תהליך זר — ראו gate-measured-foreign-server-on-3311 בזיכרון).
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` הורץ
+בחזית וחיכה למספרים באותה הרצה (לא ברקע, לא הוכרז DONE לפני שהמספרים
+נרשמו). **תוצאה: 8.58% / 9.01% / 4.16%, שלושתם PASS מתחת לשער 11%,
+זהה בדיוק ל-M01-c76 (8.58/9.01/4.16) ול-M01-c75 — אפס דריפט.** ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים), `build` כנ"ל. אפס שינוי קוד
+ייצור. קובץ יחיד: `STATE.md`. התור הבא: `M02-c77`.
 
-**M17-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M18-c76 לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטי תחזוקה/אימות-בלבד:
+**M18-c76 ו-M17-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+לשורה הזו ב-M01-c77 לשמירה על תקרת 300 שורות).** M18-c76 — STATE.md
+תחת תקרת 300 שורות (נמדד 295 בתחילת הפריט), ארבעת השערים ירוקים, אפס
+שינוי קוד. חמישה-עשר פריטי תחזוקה/אימות-בלבד נוספים:
 M16-c76 — JSON-LD נבדק מחדש (4 דפי מוצר), אפס דריפט. M15-c76 — אפס
 console/hydration (60/60 route-audit). M14-c76 — Sentry vs HEAD נבדק
 מחדש מול Vercel MCP: אותה פריסה חיה בדיוק שנמצאה ב-M14-c73..M14-c75
