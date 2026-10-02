@@ -1,25 +1,30 @@
-RESUME FROM: M07-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c72 - DONE, pnpm build נבדק מחדש)
+RESUME FROM: M08-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c72 - DONE, TODO/FIXME נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c72 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
-commit". הורץ `pnpm build` בחזית מול HEAD הנוכחי: `EXIT:0`, עץ העמודים
-המלא הודפס ללא שגיאה. אין דריפט לתקן - זהה ל-M06-c71 ולכל בדיקת build
-קודמת בתור. אזהרות `db.optional_column_missing` (מיגרציות 242/232/248
-הממתינות) ו-`db.query_slow` על `suppliers` בלוג ה-build הן רעש ידוע
-(SSG מול Supabase האמיתי בזמן build), לא שגיאת build. שאר שלושת השערים
-הורצו גם הם לפני ה-commit: `type-check` exit 0 נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה).
-אפס שינוי קוד ייצור. קובץ: `STATE.md`.
+**M07-c72 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
+days resolve or file in docs/BACKLOG.md". סריקה מלאה חוזרת (`grep -rn -E
+'TODO|FIXME'` על `src`, `scripts`, `packages`) ואימות דרך
+`node scripts/final-audit.mjs` (שורת `work markers (TODO/FIXME/HACK/XXX)`:
+`ok 0 (of 2)` - אפס סמנים לא מתועדים מתוך שניים). אותם שני סמנים בלבד,
+שניהם כבר מתועדים: `src/lib/payments/cardcom.ts:254` (זיכוי לגאסי,
+מ-24.07.2026) ו-`:319` (מסמכים, מ-07.08.2026), שניהם `TODO(cardcom)`
+עם scope, ממתינים לאותו חוסם (Cardcom אמיתי, `docs/BACKLOG.md` סעיף 6,
+מתועד גם ב-`Tracked in #41`/`#42` בקוד עצמו). `src/lib/whatsapp.test.ts:91`
+אומת שוב כמחרוזת ליטרלית `'TODO'` ולא סמן עבודה - לא נספר על ידי הסקריפט.
+אפס דריפט מ-M07-c71/c70/c69/c68/c67: אין סמן חדש, אין סמן שהפסיק לירות,
+אין צורך בעריכת `docs/BACKLOG.md`. ארבעת השערים הורצו במלואם: `type-check`
+נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `test` נקי (614/614
+קבצים, 7337/7349 עברו, 12 מדולגים), `build` נקי (`.next` נמחק תחילה,
+exit 0). אין קבצי קוד שהשתנו - commit זה תיעודי בלבד (`STATE.md`/
+`docs/STATE-ARCHIVE.md`).
 
-**M05-c72 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
-commit". הורץ `pnpm test` (vitest) בחזית מול HEAD הנוכחי: 614/614 קבצים,
-7337/7349 (12 מדולגים) - זהה ל-M05-c71 ולכל בדיקת test קודמת בתור. אין
-דריפט לתקן. שאר שלושת השערים הורצו גם הם לפני ה-commit: `type-check`
-exit 0 נקי, `lint` נקי (12 שערים, 2037 קבצים), `build` exit 0 נקי (אזהרות
-`rls_denied`/`reviews_read_failed` בזמן build הן רעש ידוע מקריאות anon
-ל-reviews, לא שגיאת build). אפס שינוי קוד ייצור. קובץ: `STATE.md`.
+**M06-c72, M05-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M07-c72 לשמירה על תקרת 300 שורות).** M06-c72: `pnpm build` נבדק
+מחדש, `EXIT:0`, אפס דריפט מ-M06-c71. M05-c72: `pnpm test` נבדק מחדש,
+614/614 קבצים (7337/7349, 12 מדולגים), אפס דריפט מ-M05-c71. ארבעת
+השערים ירוקים בשניהם, אפס שינוי קוד ייצור.
 
 **M04-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M06-c72 לשמירה על תקרת 300 שורות).** ארבעה פריטים: M04-c72

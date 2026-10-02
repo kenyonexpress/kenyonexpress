@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c72, M05-c72 (הועבר מ-STATE.md ב-M07-c72, לשמירה על תקרת 300 שורות)
+
+**M06-c72 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
+commit". הורץ `pnpm build` בחזית מול HEAD הנוכחי: `EXIT:0`, עץ העמודים
+המלא הודפס ללא שגיאה. אין דריפט לתקן - זהה ל-M06-c71 ולכל בדיקת build
+קודמת בתור. אזהרות `db.optional_column_missing` (מיגרציות 242/232/248
+הממתינות) ו-`db.query_slow` על `suppliers` בלוג ה-build הן רעש ידוע
+(SSG מול Supabase האמיתי בזמן build), לא שגיאת build. שאר שלושת השערים
+הורצו גם הם לפני ה-commit: `type-check` exit 0 נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה).
+אפס שינוי קוד ייצור. קובץ: `STATE.md`.
+
+**M05-c72 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
+commit". הורץ `pnpm test` (vitest) בחזית מול HEAD הנוכחי: 614/614 קבצים,
+7337/7349 (12 מדולגים) - זהה ל-M05-c71 ולכל בדיקת test קודמת בתור. אין
+דריפט לתקן. שאר שלושת השערים הורצו גם הם לפני ה-commit: `type-check`
+exit 0 נקי, `lint` נקי (12 שערים, 2037 קבצים), `build` exit 0 נקי (אזהרות
+`rls_denied`/`reviews_read_failed` בזמן build הן רעש ידוע מקריאות anon
+ל-reviews, לא שגיאת build). אפס שינוי קוד ייצור. קובץ: `STATE.md`.
+
 ## M03-c72 (הועבר מ-STATE.md ב-M04-c72, לשמירה על תקרת 300 שורות)
 
 **M03-c72 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
