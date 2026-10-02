@@ -41599,3 +41599,24 @@ d9ea23217..HEAD -- src/ packages/ supabase/` ריק. אין דריפט לתקן.
 NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 נקי
 (`BUILD_ID` נכתב). לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
 M04-c77 ואילך). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+
+## M11-c78 (הועבר מ-STATE.md ב-M12-c78, לשמירה על תקרת 300 שורות)
+
+**M11-c78 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
+מחזיר `200`, `<urlset>` שטוח (לא `sitemapindex`), 79 כתובות, עדיין
+גרסת `a388118f1` (אפס דריפט מ-M11-c77). חמשת תתי-המפות של הקוד
+הנוכחי — `/sitemap/{content,suppliers,regions,categories,products}.xml`
+— כולן `404` בפרודקשן, נמדד שוב. בקוד: `git diff 0f41fed14..HEAD --stat
+-- src/app/sitemap.ts src/app/sitemap src/lib/seo docs/BACKLOG.md`
+(בסיס: M11-c77) ריק, אפס שינוי. חוסם #2 למעלה ללא שינוי: הסיבה היא
+פריסת Production תקועה, לא קוד. ארבעת השערים ירוקים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה ל-M10-c78). `build` ראשון נכשל
+ב-`coupon_deal.active_ids_failed` (timeout רשת זמני מול Supabase בזמן
+collect page data), ריצה חוזרת (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`) הצליחה, `BUILD_ID`
+חדש: `uJn5FietWCCC_H2YS4PcN`, route manifest מלא כולל `/sitemap.xml`
+וחמשת תתי-המפות. פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
+שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף
+מיגרציה. קובץ יחיד: `STATE.md`.
