@@ -1,34 +1,37 @@
-RESUME FROM: M09-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c73 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
+RESUME FROM: M10-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c73 - DONE, knip נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c73 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". אפס דריפט בקוד הרלוונטי מאז M08-c72
-(`07704553f`): `git log 07704553f..HEAD` על `scripts/lighthouse-smoke.mjs`,
-`src/lib/security/frame-policy.ts`, `src/app/layout.tsx`, `next.config.*`
-ריק. ארבעת השערים רצו כקדם-תנאי, כולם exit 0: `type-check` נקי, `lint`
-נקי (12 שערים), `test` 614/614 קבצים (7337/7349, 12 מדולגים), `build`
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3417 pnpm build`, exit 0). שרת `pnpm start` עצמאי על פורט 3417
-(אותם משתני build; 3311-3316/3618/3911/4211 תפוסים על ידי סוכנים
-מקבילים, 3417 נבחר כפנוי), `cwd` אומת (`/usr/sbin/lsof -p <pid> -a -d
-cwd`) שזה הריפו הזה, `/` ו-`/product/צימר-מאסטר` אומתו `200` לפני המדידה,
-נסגר אחריה. `scripts/lighthouse-smoke.mjs --throttling-method=provided`
-(המתכון התקף): `/` = **100/100/100**, `/product/צימר-מאסטר` = **100/100/100**,
-אפס דריפט מ-M08-c72. פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש.
-אפס שינוי קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
+**M09-c73 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat ee91c89a4..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c72) ריק
+— אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c72, אפס מועמד חדש. חמש ה-deps
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) ו-`supabase` כ-unlisted
+binary זוהו שוב כאותם false-positive מתועדים (M09-c66..c72) — צרכן
+אמיתי לכל אחת. ארבעת ה-duplicate exports זהים ל-M09-c69..c72 (aliases
+מכוונים). אפס הסרה, אין מועמד חדש מעבר למה שכבר הוסר ב-M09-c66/M09-c67.
+אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
+build`, route manifest מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs`
+לא נדרש. קובץ יחיד: `STATE.md`.
 
-**M07-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M08-c73):** M07-c73: TODO/FIXME נסרק מחדש, שני הסמנים (`cardcom.ts:254,
-319`) כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6, אפס דריפט. M06-c73: `pnpm
-build` נקי מראש, אפס דריפט (92 שורות `error` ב-log ידועות, חוסמים #3
-פתוחים). M05-c73: `pnpm test` נקי מראש (614/614, 7337/7349, 12 מדולגים),
-ממצא `docs-path-audit` אמיתי אחד תוקן עם `--write`. M04-c73: `type-check`
-נבדק מחדש, נקי מראש. ROBOTS-FIX אומת כבר-קיים (אפס שינוי קוד). M03-c73:
-שער חזותי קטגוריה `2.93%`/`2.31%`/`1.58%`, `PASS`. M02-c73/M01-c73: שערים
-חזותיים מוצר/בית (מוצר `4.96`/`4.58`/`3.25`, בית `8.58`/`9.01`/`4.16`),
-`PASS`. ארבעת השערים ירוקים בכל השבעה.
+**M08-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M09-c73 לשמירה על תקרת 300 שורות).** M08-c73: Lighthouse mobile על `/`
+ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c72. M07-c73:
+TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c73: `pnpm
+build` נקי מראש, אפס דריפט. M05-c73: `pnpm test` נקי מראש (614/614,
+7337/7349, 12 מדולגים), ממצא `docs-path-audit` אמיתי אחד תוקן עם
+`--write`. M04-c73: `type-check` נבדק מחדש, נקי מראש. ROBOTS-FIX אומת
+כבר-קיים. M03-c73: שער חזותי קטגוריה `2.93%`/`2.31%`/`1.58%`, `PASS`.
+M02-c73/M01-c73: שערים חזותיים מוצר/בית (מוצר `4.96`/`4.58`/`3.25`, בית
+`8.58`/`9.01`/`4.16`), `PASS`. ארבעת השערים ירוקים בכל השמונה.
 
 **M18-c72..M01-c72 ו-M18-c71..M01-c71, M18-c70..M01-c70, M18-c69..M01-c69
 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M17-c72 לשמירה
