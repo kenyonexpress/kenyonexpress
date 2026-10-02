@@ -2,6 +2,21 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c77 (הועבר מ-STATE.md ב-M05-c77, לשמירה על תקרת 300 שורות)
+
+**M04-c77 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". לפני ההרצה: `git status` נקי, `git diff --stat` ריק (אפס שינוי
+לא-מחויב), ו-`git diff --stat 0d6edcbc6 HEAD -- src/ supabase/ packages/
+public/ next.config.ts package.json` ריק — אין שום שינוי קוד ייצור מאז
+M04-c76 (הבדיקה הקודמת של type-check). `pnpm type-check` (`tsc --noEmit`)
+רץ נקי, **אין שגיאת type-check לתיקון** — "fix drift" בשם המשימה לא חל
+כי אין דריפט. שלושת השערים הנוספים גם ירוקים: `lint` (biome + 12 שערים,
+2037 קבצים, זהה ל-M03-c77), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה), `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3311 pnpm build` exit 0 נקי (שרת 3311 PID 20676 נשאר חי,
+`curl` החזיר `200` אחרי הבנייה). אפס שינוי קוד ייצור, אין commit של קוד —
+רק עדכון `STATE.md`. התור הבא: `M05-c77`.
+
 ## M03-c77 (הועבר מ-STATE.md ב-M04-c77, לשמירה על תקרת 300 שורות)
 
 **M03-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
