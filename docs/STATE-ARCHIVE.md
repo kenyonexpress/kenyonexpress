@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c73 (הועבר מ-STATE.md ב-M01-c74, לשמירה על תקרת 300 שורות)
+
+**M18-c73 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md". **נמדד בתחילת הפריט:**
+`wc -l STATE.md` החזיר 289, כבר מתחת לתקרת 300 השורות; אין צורך בארכוב
+כדי לרדת מתחתיה. כדי לפנות מקום לפריט הזה עצמו ולהישאר מתחת לתקרה גם
+אחריו, בלוק `M17-c73` המלא (RTL, DONE) **הועבר במלואו ל-`docs/STATE-ARCHIVE.md`**
+וכווץ כאן לשורת סיכום; שום שורה לא נמחקה מהארכיון עצמו, רק הוזזה. שורת
+`RESUME FROM:` עודכנה ל-`M01-c74` (c73 סגור, כל שמונה-עשרה פריטיו
+DONE/BLOCKED מתועדים). ארבעת השערים נבדקו גם כאן (אפס שינוי קוד ייצור,
+קובץ יחיד: `STATE.md` ו-`docs/STATE-ARCHIVE.md`): `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים, זהה ל-c73), `build` exit 0 (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build`).
+לא פריט שער חזותי, `compare.mjs` לא רלוונטי למשימת תחזוקת תיעוד.
+
 ## M16-c73 (הועבר מ-STATE.md ב-M17-c73, לשמירה על תקרת 300 שורות)
 
 **M16-c73 - DONE (02.10.2026).** משימת התור: "Verify all product pages have

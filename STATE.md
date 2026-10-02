@@ -1,24 +1,30 @@
-RESUME FROM: M01-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c73 - DONE, STATE.md תחת תקרת 300 שורות אומת ונשמר)
+RESUME FROM: M02-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c74 - DONE, שער חזותי בית נמדד מחדש)
 
 ## המשך מ:
 
-**M18-c73 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
-lines, archive rest to docs/STATE-ARCHIVE.md". **נמדד בתחילת הפריט:**
-`wc -l STATE.md` החזיר 289, כבר מתחת לתקרת 300 השורות; אין צורך בארכוב
-כדי לרדת מתחתיה. כדי לפנות מקום לפריט הזה עצמו ולהישאר מתחת לתקרה גם
-אחריו, בלוק `M17-c73` המלא (RTL, DONE) **הועבר במלואו ל-`docs/STATE-ARCHIVE.md`**
-וכווץ כאן לשורת סיכום; שום שורה לא נמחקה מהארכיון עצמו, רק הוזזה. שורת
-`RESUME FROM:` עודכנה ל-`M01-c74` (c73 סגור, כל שמונה-עשרה פריטיו
-DONE/BLOCKED מתועדים). ארבעת השערים נבדקו גם כאן (אפס שינוי קוד ייצור,
-קובץ יחיד: `STATE.md` ו-`docs/STATE-ARCHIVE.md`): `type-check` נקי,
-`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
-עברו, 12 מדולגים, זהה ל-c73), `build` exit 0 (`rm -rf .next`,
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build`).
-לא פריט שער חזותי, `compare.mjs` לא רלוונטי למשימת תחזוקת תיעוד.
+**M01-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". שרת `pnpm start` קיים על
+פורט 3311 (PID 56364, `cwd` אומת כשורש הריפו הזה) נבדק מול HEAD
+לפני ההרצה: `git diff --stat edfd1f5fa..HEAD` (קומיט בניית השער
+האחרון, M06-c73) על כל נתיב מלבד תיעוד — ריק, שנים-עשר הקומיטים מאז
+תיעוד-בלבד, כך שהבנייה הקיימת תואמת. הורץ `scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline=refs/ke_live_{width}.png`
+בחזית (חרג מ-timeout 120 שניות של כלי ה-Bash והמשיך ברקע עד סיום, לא
+הופעל ברקע ביוזמת הסוכן; הומתן לסיומו המלא לפני כל רישום). **תוצאה:
+`380`=8.58%, `768`=9.01%, `1440`=4.16%, שלושתם `PASS` מתחת לשער 11%,
+אפס דריפט מ-M01-c73 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `290834f18`
+(HEAD בתחילת הפריט). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `rm -rf .next && pnpm build` exit 0 נקי (BUILD_ID חדש
+`IiZ5xpth5phcarPHo4r08`). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
-**M17-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
-לשם ב-M18-c73 לשמירה על תקרת 300 שורות).** RTL על `/` ו-`/product` נבדק
+**M18-c73 ו-M17-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M01-c74 לשמירה על תקרת 300 שורות).** M18-c73 — תחזוקת תיעוד,
+STATE.md נבדק מחדש מתחת לתקרת 300 שורות (289), בלי צורך בארכוב, ארכב
+את M17-c73 כדי לשמור מרווח. M17-c73 — RTL על `/` ו-`/product` נבדק
 מחדש, אפס דריפט מ-M17-c72 (ה-leak האמיתי היחיד תוקן ב-c66's M17).
 
 **M16-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
