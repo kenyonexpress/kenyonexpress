@@ -1,7 +1,24 @@
-RESUME FROM: M02-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c73 - DONE, שער חזותי בית נמדד מחדש)
+RESUME FROM: M03-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c73 - DONE, שער חזותי מוצר נמדד מחדש)
 
 ## המשך מ:
+
+**M02-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". הורץ `scripts/compare.mjs --page=product
+--widths=380,768,1440 --baseline=refs/electro_product_{width}.png` בחזית
+(הפקודה חרגה מ-180 שניות והועברה לרקע אוטומטית על ידי הכלי, אך נמתן
+במוניטור עד לשורת הסיכום הסופית באותה הרצה עצמה, בלי לסגור את הפריט
+לפני שהמספרים נכתבו), מול שרת `pnpm start` קיים על פורט 3311 (נבדק לפני
+ההרצה: `cwd` שלו הוא שורש הריפו הזה, PID זהה לזה ש-M01-c73 מדד נגדו דקות
+קודם לכן, `/api/health` ok). **תוצאה: `380`=4.96%, `768`=4.58%,
+`1440`=3.25%, שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M02-c72 (אותם
+מספרים בדיוק).** השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על
+ידי הסקריפט עצמו (`exit code 0`). ארבעת השערים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `rm -rf .next && pnpm build` רץ **אחרי** מדידת השער החזותי (כדי
+לא לשבור את השרת שהשער קרא ממנו באמצע הריצה), הושלם נקי עם `BUILD_ID`
+חדש (`KJvUUIh2bkLmVDX9Kgl6E`). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
 **M01-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
 768 1440 on / and record diffs in STATE.md". הורץ `scripts/compare.mjs
