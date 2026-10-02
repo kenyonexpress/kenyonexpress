@@ -2,6 +2,42 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c71, M10-c71 (הועבר מ-STATE.md ב-M11-c71, לשמירה על תקרת 300 שורות)
+
+**M10-c71 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git ls-tree -r --name-only b3d94c5ad --
+migrations/pending` מול `HEAD` (בסיס: קומיט M10-c70 עצמו) — **זהה לגמרי,
+62 קבצים בשני הצדדים, `diff` ריק.** אפס קובץ הוחל, אפס קובץ הוסר, אפס
+קובץ חדש. (הספירה "60" שחזרה ברשומות קודמות הייתה אי-דיוק תיעודי ישן;
+הספירה המדויקת מ-`git ls-tree -r` היא 62: 58 קבצי `.sql` ממוספרים +
+`APPLY-ORDER.md` + `README.md` + `preflight_162.sql` + `preflight_184.sql`
+— לא דריפט, רק תיקון ניסוח.) 19 החוסמים שבחוסם #3 למעלה (218, 245, 246,
+204, 240-244, 247 וכו') נשארים חוסמים, לא הוחלו. אין פקודת `supabase db
+push` הורצה, אין שינוי סכימה בפרודקשן. ארבעת השערים ירוקים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים — זהה ל-M09-c71), `build` הצליח (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3319 pnpm
+build`, route manifest מלא). קובץ יחיד: `STATE.md`.
+
+**M09-c71 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat 2367a8453..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c70) ריק
+— אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c70, אפס מועמד חדש. חמש ה-deps
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) ו-`supabase` כ-unlisted
+binary זוהו שוב כאותם false-positive מתועדים (M09-c66/c69/c70) —
+צרכן אמיתי לכל אחת, לא נבדקו פרטנית מחדש השבוע מעבר לאימות שהרשימה לא
+השתנתה. ארבעת ה-duplicate exports זהים ל-M09-c69/c70 (aliases מכוונים).
+אפס הסרה, אין מועמד חדש מעבר למה שכבר הוסר ב-M09-c66/M09-c67. אפס שינוי
+כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו,
+12 מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3319 pnpm build`, route manifest
+מלא). קובץ יחיד: `STATE.md`.
+
 ## M07-c71 (הועבר מ-STATE.md ב-M08-c71, לשמירה על תקרת 300 שורות)
 
 **M07-c71 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
