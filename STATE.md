@@ -1,20 +1,28 @@
-RESUME FROM: M07-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c80 DONE: build נבדק מחדש, אפס דריפט)
+RESUME FROM: M08-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c80 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c80 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
-commit" — זהה למשימות "build gate re-verified clean" הקודמות
-(M06-c79 ולפניו). `pwd` אומת, עץ עבודה נקי. `pnpm build` רץ exit 0,
-כל הנתיבים נבנו (כולל sitemap/robots/opengraph); שורות
-`supabase.rls_denied`/`reviews_read_failed` ב-log הן רעש ידוע
-מ-prerender אנונימי מול `reviews` (אין "Failed to compile"/"Type
-error"). הורצו גם שלושת השערים הנוספים לטקס הסיום: `pnpm type-check`
-(`tsc --noEmit`) נקי, `pnpm lint` נקי (12 שערים, 2037 קבצים), `pnpm
-test` נקי (614/614 קבצים, 7337/7349 טסטים, 12 מדולגים — זהה
-ל-M05-c80). `git status --short` ריק וללא diff בנתיבי ייצור מאז
-M06-c79 (`a28508752`) — אפס שינוי קוד ייצור, אותה תוצאה בדיוק. שני
-קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
+**M07-c80 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
+(M07-c79 ולפניו). נסרק מחדש `src/`
+(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
+ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
+(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
+ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
+המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
+(`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית `'TODO'`
+בבדיקה, לא marker.) ארבעת השערים ירוקים: `type-check` נקי (exit 0),
+`lint` נקי (12 שערים, 2037 קבצים, זהה), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים — זהה ל-M06-c80), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0 נקי, כל הנתיבים נבנו. לא פריט חזותי, `compare.mjs` לא
+נדרש (תקדים M06-c79 ואילך). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
+**M06-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M07-c80).** pnpm build gate re-verified clean, אפס דריפט קוד מאז
+M06-c79 (`a28508752`). ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
 
 **M05-c80 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
 commit" — זהה למשימות "test gate re-verified clean" הקודמות (M05-c79
@@ -28,20 +36,10 @@ package.json` ריק — אפס שינוי קוד ייצור מאז המדידה
 אותה תוצאה בדיוק. שני קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
 
 **M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M02-c80, הורחב ל-M03-c80 ב-M04-c80, הורחב ל-M04-c80
-ב-M05-c80).** M04-c80 — type-check גייט נבדק מחדש (`tsc --noEmit`
-נקי), אפס דריפט. M03-c80 — שער
-חזותי קטגוריה נמדד מחדש 380/768/1440 (3.53/2.31/1.58, זהה
-ל-M03-c79), אפס דריפט. M02-c80 — שער
-חזותי מוצר נמדד מחדש 380/768/1440 (4.96/4.58/3.25, זהה ל-M02-c79),
-אפס דריפט. M01-c80 — שער חזותי בית נמדד מחדש 380/768/1440
-(8.58/9.01/4.16, זהה ל-M01-c79), אפס דריפט. שלושים פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
-קבצים חוסמים, אפס דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי
-בית/מוצר/קטגוריה, test/type-check/build גייטים, Lighthouse mobile,
-TODO/FIXME, unused deps/dead exports (`knip`), sitemap.xml/robots.txt
-(עדיין `a388118f1`), `/api/health`/`/api/ready`, אפס console
-error/hydration, JSON-LD, ו-RTL — אפס דריפט/שבור בכולם, ארבעת השערים
-ירוקים בכולם, אפס שינוי קוד ייצור.
+לשורה הזו ב-M08-c80).** שבעה פריטי תור/אימות-בלבד (type-check, שערי
+חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, build/test
+גייטים) ושלושים פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם,
+ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:
