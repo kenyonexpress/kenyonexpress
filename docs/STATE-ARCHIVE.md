@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c80 (הועבר מ-STATE.md ב-M13-c80, לשמירה על תקרת 300 שורות)
+
+**M12-c80 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
+production-safe". קוד ללא שינוי מאז M12-c79 (`87fa55fed`): `git diff
+87fa55fed..HEAD --stat -- src/app/robots.ts docs/BACKLOG.md` ריק.
+רשימת ה-17 נתיבי `disallow` ב-`src/app/robots.ts` עדיין כוללת
+`/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`. פרודקשן עדיין מגיש את
+robots.txt הקפוא של `a388118f1` (13 שורות `Disallow`, בלי ארבעתן) —
+תוצאה ישירה של חוסם #2 (אין פריסת HEAD), לא ממצא חדש. נמדד שוב חי:
+`/gift/x` עדיין `200` (חשוף בלי כיסוי `Disallow`), `/order/x` ו-
+`/wishlist/s/x` עדיין `404`, `/debug/` עדיין `308`, `etag`/
+`last-modified` זהים ל-M12-c79 (`48ebf65980bf0c79f17903e62a66be57`,
+02.10 06:15:15). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה ל-M11-c80), build טרי (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4823 pnpm
+build`, exit 0, `BUILD_ID` חדש `xkbm3kMwZP4BBXCE2rXJT`, `/robots.txt`
+בתור `○` סטטי במניפסט). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא
+נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא
+הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
 ## M09-c80 (הועבר מ-STATE.md ב-M10-c80, לשמירה על תקרת 300 שורות)
 
 **M09-c80 - DONE (03.10.2026).** משימת התור: "Remove unused deps and

@@ -1,26 +1,30 @@
-RESUME FROM: M13-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c80 DONE: robots.txt אומת מחדש כבטוח לפרודקשן, אפס דריפט)
+RESUME FROM: M14-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c80 DONE: api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c80 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
-production-safe". קוד ללא שינוי מאז M12-c79 (`87fa55fed`): `git diff
-87fa55fed..HEAD --stat -- src/app/robots.ts docs/BACKLOG.md` ריק.
-רשימת ה-17 נתיבי `disallow` ב-`src/app/robots.ts` עדיין כוללת
-`/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`. פרודקשן עדיין מגיש את
-robots.txt הקפוא של `a388118f1` (13 שורות `Disallow`, בלי ארבעתן) —
-תוצאה ישירה של חוסם #2 (אין פריסת HEAD), לא ממצא חדש. נמדד שוב חי:
-`/gift/x` עדיין `200` (חשוף בלי כיסוי `Disallow`), `/order/x` ו-
-`/wishlist/s/x` עדיין `404`, `/debug/` עדיין `308`, `etag`/
-`last-modified` זהים ל-M12-c79 (`48ebf65980bf0c79f17903e62a66be57`,
-02.10 06:15:15). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים, זהה ל-M11-c80), build טרי (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4823 pnpm
-build`, exit 0, `BUILD_ID` חדש `xkbm3kMwZP4BBXCE2rXJT`, `/robots.txt`
-בתור `○` סטטי במניפסט). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא
-נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא
-הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+**M13-c80 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". נמדד ישירות מול
+`https://www.kenyonexpress.co.il`: `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":178}`). `/api/ready` →
+עדיין `503` (`{"ok":false,"checks":{"database":"ok","redis":"ok",
+"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+זהה ל-M13-c66..M13-c79: `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY`
+קיימים ב-Vercel Production אבל השירות החי לא נגיש (לא `not_configured`,
+חוסם חיצוני, לא ממצא חדש, פרטים במחסום #16 ב-`docs/BACKLOG.md`).
+`redis`/`r2`/`cardcom` תואמים לחוסמים הקיימים (אין Redis בפועל, R2 לא
+מופעל בחשבון, Cardcom ב-mock). ארבעת השערים ירוקים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה ל-M12-c80), build טרי (`rm -rf .next`
+ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4823
+pnpm build`, exit 0, `BUILD_ID` חדש `IfKfzrQcX71UOlEbu-WZ8`,
+`/api/health` ו-`/api/ready` שניהם `ƒ` דינמיים במניפסט). פריט
+אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד
+ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד:
+`STATE.md`.
+
+**M12-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M13-c80).** robots.txt אומת מחדש כבטוח לפרודקשן, אפס דריפט מ-M12-c79.
 
 **M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80 וב-M11-c80).** שלושה-עשר
