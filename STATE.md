@@ -1,30 +1,31 @@
-RESUME FROM: M13-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c75 - DONE, robots.txt נבדק ישירות מול פרודקשן, אפס דריפט)
+RESUME FROM: M14-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c75 - DONE, /api/health ו-/api/ready נבדקו ישירות מול פרודקשן, אפס דריפט קוד מ-M13-c74)
 
 ## המשך מ:
 
-**M12-c75 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". `curl -D -` ישיר על
-`https://www.kenyonexpress.co.il/robots.txt`: `200`,
-`content-type: text/plain; charset=utf-8`. הגוף החי מכיל רק שתים-עשרה
-שורות `Disallow` (`/redeem/`, `/coupon/`, `/account/`, `/supplier/`,
-`/scan`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`,
-`/reset-password`, `/forgot-password`) — **עדיין חסרות** ארבע השורות
-שהקוד הנוכחי (`src/app/robots.ts`) כותב: `/gift/`, `/order/`,
-`/wishlist/s/` (m12-c67, קומיט `4d3702025`) ו-`/debug/` (m12-c66, קומיט
-`8fce77c76`). תואם בדיוק את הרישום הקודם (M12-c74 וחוסם 2): פרודקשן
-עדיין תקוע על `a388118f1`, לפני שני התיקונים האלה. `git diff --stat
-800004270..HEAD -- src/app/robots.ts src/app/robots.test.ts
-src/lib/site-url.ts` (בסיס: M12-c74) **ריק, אפס דריפט קוד**. ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 תתי-שערים, כולל
-i18n/locale-format בתקרה בדיוק), `pnpm test` 614/614 קבצים ו-7337 טסטים
-עברו (12 skipped), `pnpm build` עבר (`/robots.txt` מופיע כ-`○` סטטי).
-אימות-בלבד, לא חזותי, אין צורך ב-`compare.mjs`. אפס שינוי כסף/סכימה/קוד.
-קובץ יחיד: `STATE.md`.
+**M13-c75 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
+91aa29df5..HEAD -- src/app/api/health src/app/api/ready` (בסיס:
+M13-c74) ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":165}`); `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+**זהה בדיוק ל-M13-c67..M13-c74**: `meilisearch:"down"` נשאר חוסם ידוע
+(`docs/BACKLOG.md`), אין פריסת HEAD. משימת התור מנוסחת "return 200"
+לשני הנתיבים, אבל `/api/ready` מחזיר `503` בכוונה כל עוד meilisearch
+למטה — זו ההתנהגות התקינה של שער המוכן-לעבודה, לא תקלה; `/api/health`
+(liveness) כן `200`. **אפס דריפט מ-M13-c74.** ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next`
+ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3425
+pnpm build`, שני הנתיבים מופיעים ב-manifest). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
 
-**M11-c75..M01-c75, M18-c74..M01-c74 (עשרים ותשעה פריטי אימות-בלבד/תחזוקה,
+**M12-c75..M01-c75, M18-c74..M01-c74 (שלושים פריטי אימות-בלבד/תחזוקה,
 ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים — M06-c75,
-M09-c75, M10-c75, M11-c75, M12-c75 — לשמירה על תקרת 300 שורות).** M11-c75 —
+M09-c75, M10-c75, M11-c75, M12-c75, M13-c75 — לשמירה על תקרת 300 שורות).**
+M12-c75 — robots.txt חי עדיין 12 שורות `Disallow` (חסרות `/gift/`,
+`/order/`, `/wishlist/s/`, `/debug/`), אפס דריפט קוד מ-M12-c74. M11-c75 —
 sitemap.xml: גוף חי עדיין `<urlset>` שטוח (לא `sitemapindex`), חמשת נתיבי
 תתי-המפות עדיין 404, אפס דריפט קוד מ-M11-c74. M10-c75 —
 מיגרציות ממתינות נבדקו מחדש מול git בלבד (הבדיקה הישירה מול פרודקשן כבר

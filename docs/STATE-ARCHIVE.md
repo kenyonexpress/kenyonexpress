@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c75 (הועבר מ-STATE.md ב-M13-c75, לשמירה על תקרת 300 שורות)
+
+**M12-c75 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". `curl -D -` ישיר על
+`https://www.kenyonexpress.co.il/robots.txt`: `200`,
+`content-type: text/plain; charset=utf-8`. הגוף החי מכיל רק שתים-עשרה
+שורות `Disallow` (`/redeem/`, `/coupon/`, `/account/`, `/supplier/`,
+`/scan`, `/admin/`, `/checkout`, `/cart`, `/auth/`, `/api/`,
+`/reset-password`, `/forgot-password`) — **עדיין חסרות** ארבע השורות
+שהקוד הנוכחי (`src/app/robots.ts`) כותב: `/gift/`, `/order/`,
+`/wishlist/s/` (m12-c67, קומיט `4d3702025`) ו-`/debug/` (m12-c66, קומיט
+`8fce77c76`). תואם בדיוק את הרישום הקודם (M12-c74 וחוסם 2): פרודקשן
+עדיין תקוע על `a388118f1`, לפני שני התיקונים האלה. `git diff --stat
+800004270..HEAD -- src/app/robots.ts src/app/robots.test.ts
+src/lib/site-url.ts` (בסיס: M12-c74) **ריק, אפס דריפט קוד**. ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 תתי-שערים, כולל
+i18n/locale-format בתקרה בדיוק), `pnpm test` 614/614 קבצים ו-7337 טסטים
+עברו (12 skipped), `pnpm build` עבר (`/robots.txt` מופיע כ-`○` סטטי).
+אימות-בלבד, לא חזותי, אין צורך ב-`compare.mjs`. אפס שינוי כסף/סכימה/קוד.
+קובץ יחיד: `STATE.md`.
+
 ## M09-c75, M08-c75 (הועבר מ-STATE.md ב-M10-c75, לשמירה על תקרת 300 שורות)
 
 **M09-c75 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
