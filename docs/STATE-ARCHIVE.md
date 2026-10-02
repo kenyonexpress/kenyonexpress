@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c76 (הועבר מ-STATE.md ב-M18-c76, לשמירה על תקרת 300 שורות)
+
+**M17-c76 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c75 (leak אמיתי
+תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
+`git log 50ad28be5..HEAD -- src/app src/components src/lib/i18n` (בסיס:
+checkpoint M17-c75) **ריק** - אפס קומיטים נוגעים מאז. ארבעת השערים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, כולל
+`rtl-logical-gate.mjs`: "no physical direction utility outside an LTR
+island"), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3335
+pnpm build` exit 0. הורם `pnpm start -p 3335` (`lsof -p -a -d cwd` אימת
+cwd זהה לנתיב הפרויקט, לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר
+שנדגם אקראית מ-44 המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
+`/product/samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`. **נבדק
+ישירות ברינדור בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי.
+גריפ על `dir="ltr"` בתוצאה החיה: `/` - מופע יחיד, שדה האימייל בניוזלטר
+(מכוון, `input-dir-gate` מאשר). דף המוצר - שני מופעים: אותו שדה אימייל
+בפוטר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU עברי
+(`ProductInfo.tsx`, מכוון ומתועד בקוד, אותו דפוס שנמדד בכל סבב קודם).
+גריפ נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/
+`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של שני הדפים - אפס התאמות.
+שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא פריט `compare.mjs` (בדיקת
+לוגיקת כיוון, לא פריסת פיקסלים - תקדים M17-c67..M17-c75). אפס שינוי
+קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M16-c76 (הועבר מ-STATE.md ב-M17-c76, לשמירה על תקרת 300 שורות)
 
 **M16-c76 - DONE (02.10.2026).** משימת התור: "Verify all product pages have

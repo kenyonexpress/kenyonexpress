@@ -1,34 +1,21 @@
-RESUME FROM: M18-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c76 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט מ-M17-c75)
+RESUME FROM: M01-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c76 - DONE, STATE.md תחת תקרת 300 שורות, M17-c76 אורכב)
 
 ## המשך מ:
 
-**M17-c76 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c75 (leak אמיתי
-תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
-`git log 50ad28be5..HEAD -- src/app src/components src/lib/i18n` (בסיס:
-checkpoint M17-c75) **ריק** - אפס קומיטים נוגעים מאז. ארבעת השערים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, כולל
-`rtl-logical-gate.mjs`: "no physical direction utility outside an LTR
-island"), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3335
-pnpm build` exit 0. הורם `pnpm start -p 3335` (`lsof -p -a -d cwd` אימת
-cwd זהה לנתיב הפרויקט, לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר
-שנדגם אקראית מ-44 המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
-`/product/samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`. **נבדק
-ישירות ברינדור בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי.
-גריפ על `dir="ltr"` בתוצאה החיה: `/` - מופע יחיד, שדה האימייל בניוזלטר
-(מכוון, `input-dir-gate` מאשר). דף המוצר - שני מופעים: אותו שדה אימייל
-בפוטר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU עברי
-(`ProductInfo.tsx`, מכוון ומתועד בקוד, אותו דפוס שנמדד בכל סבב קודם).
-גריפ נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/
-`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של שני הדפים - אפס התאמות.
-שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא פריט `compare.mjs` (בדיקת
-לוגיקת כיוון, לא פריסת פיקסלים - תקדים M17-c67..M17-c75). אפס שינוי
-קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M18-c76 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md" — זהה בתבנית למשימת M18-c75.
+**נמדד: 295 שורות בתחילת הפריט, כבר מתחת לתקרה.** בהתאם לתקדים
+M18-c74/M18-c75 (גם אז תחת התקרה, ובכל זאת אורכב כדי להשאיר מרווח),
+הועבר הבלוק המלא של M17-c76 ל-`docs/STATE-ARCHIVE.md` וכווץ לשורה אחת
+כאן. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3336 pnpm
+build` exit 0. אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
+ל-`docs/STATE-ARCHIVE.md`). התור הבא: `M01-c77`.
 
-**M16-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M17-c76 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי תחזוקה/אימות-בלבד:
+**M17-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M18-c76 לשמירה על תקרת 300 שורות).** ארבעה-עשר פריטי תחזוקה/אימות-בלבד:
 M16-c76 — JSON-LD נבדק מחדש (4 דפי מוצר), אפס דריפט. M15-c76 — אפס
 console/hydration (60/60 route-audit). M14-c76 — Sentry vs HEAD נבדק
 מחדש מול Vercel MCP: אותה פריסה חיה בדיוק שנמצאה ב-M14-c73..M14-c75
