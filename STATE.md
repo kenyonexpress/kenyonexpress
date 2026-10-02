@@ -1,46 +1,44 @@
-RESUME FROM: M15-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c78 DONE: Sentry release vs HEAD נבדק מחדש, עדיין לא תואם, אפס דריפט)
+RESUME FROM: M16-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c78 DONE: אפס console error/hydration על / ו-/product נבדק מחדש, אפס דריפט מ-M15-c77)
 
 ## המשך מ:
 
-**M14-c78 - DONE (03.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit" — זהה למילה למשימות M14-c66..M14-c77. נבדק מול
-Vercel (MCP, read-only, פרויקט `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`):
-`list_deployments` (target=production) מראה את אותה פריסה חיה בדיוק
-שנמצאה מ-M14-c73 ואילך — `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
-`githubCommitRef=main`, `githubCommitSha=18ed044b2` ("Wave 6: build
-success"). `filter_project_envs` מראה `SENTRY_DSN`/
-`NEXT_PUBLIC_SENTRY_DSN` עדיין מוגדרים, **אותו `createdAt`
-`1790918429743`** כמו בכל בדיקה קודמת — לא נוספו ולא הוסרו. **תשובה
-לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
-`git merge-base --is-ancestor 18ed044b2 HEAD` נכשל (הענפים מפוצלים),
-`git log 18ed044b2..HEAD` מחזיר **946** קומיטים (היה 927 ב-M14-c77),
-`git log HEAD..18ed044b2` מחזיר **109** ללא שינוי. HEAD כרגע
-`c4b7365ff`. **אפס דריפט מ-M14-c77** — אותו חוסם בדיוק, פורט מלא
-ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם 2 למטה). הסוכן
-לא נגע ב-Vercel מעבר לקריאות read-only (`list_deployments`,
-`filter_project_envs`) ולא ביצע/ביטל שום פריסה או שינוי env. ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `build` exit 0
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4419 pnpm build`). פריט
-אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד
-ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M15-c78 - DONE (03.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה למשימות M15-c66..M15-c77. **נבדק מחדש,
+אפס דריפט.** `git log dea2003e8..HEAD -- src/app src/components
+e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c77) ריק: אפס קומיטים
+בנתיבים הרלוונטיים. נבנה `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3361 pnpm
+build`, exit 0), הורם `pnpm start -p 3361` (פורט פנוי, אומת `curl` 200
+ו-`lsof -p -d cwd` על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא
+checkout זר), והורצו `anon /` ו-`anon dynamic catalogue routes` מתוך
+`e2e/route-audit.spec.ts` עם `E2E_BASE_URL=http://localhost:3361`,
+chromium בלבד, `--workers=1`, **2/2 עברו** (52.1 שניות). אומת ישירות
+מתוך `/tmp/route-audit-m15c78.jsonl` (8 שורות): אפס
+`consoleErrors`/`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל
+השורות, כולל `/`, `/product/צימר-מאסטר` (פעיל, זהה לסבבים קודמים)
+ו-`/product/צימר-מאסטר/reviews`. **אין ממצא קוד לתקן**: אימות-בלבד,
+זהה לתוצאה שנמדדה בשנים-עשר הסבבים הקודמים (M15-c66..M15-c77). ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next && pnpm
+build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M15-c77). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
+ל-`docs/STATE-ARCHIVE.md`).
 
-**M02-c78..M13-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M14-c78).** שנים-עשר פריטי תור/אימות-בלבד: Lighthouse mobile (100/100/100
-על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי מוצר
-(4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53, דריפט
-רעש `loading="lazy"` זהה ל-M03-c76 בלבד), test/build גייטים (אפס דריפט
-קוד מאז M04-c78), TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`,
-חסומים על החלטת מפעיל), unused deps/dead exports (`knip`, 201/5/1/271/
-197/4, אותם מספרים כמו M09-c77, אפס מועמד חדש), מיגרציות ממתינות (60/19
-ללא שינוי, אומת ישירות מול פרודקשן ב-M10-c78), sitemap.xml (79 כתובות,
-עדיין `a388118f1`, חמשת תתי-המפות `404`), robots.txt (עדיין `a388118f1`,
-חוסם #2), ו-`/api/health`/`/api/ready` (200/503 זהה,
-`meilisearch:"down"`). אפס דריפט/שבור לתיקון בכולם, ארבעת השערים
-ירוקים בכולם, אפס שינוי קוד ייצור.
+**M02-c78..M14-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M15-c78).** שלושה-עשר פריטי תור/אימות-בלבד: Sentry release vs
+HEAD (946/109 קומיטים, עדיין מפוצל, ממתין להחלטת אופיר), Lighthouse
+mobile (100/100/100 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי
+מוצר (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53,
+דריפט רעש `loading="lazy"` זהה ל-M03-c76 בלבד), test/build גייטים (אפס
+דריפט קוד מאז M04-c78), TODO/FIXME (שני ה-marker הידועים
+ב-`cardcom.ts`, חסומים על החלטת מפעיל), unused deps/dead exports
+(`knip`, 201/5/1/271/197/4, אותם מספרים כמו M09-c77, אפס מועמד חדש),
+מיגרציות ממתינות (60/19 ללא שינוי, אומת ישירות מול פרודקשן ב-M10-c78),
+sitemap.xml (79 כתובות, עדיין `a388118f1`, חמשת תתי-המפות `404`),
+robots.txt (עדיין `a388118f1`, חוסם #2), ו-`/api/health`/`/api/ready`
+(200/503 זהה, `meilisearch:"down"`). אפס דריפט/שבור לתיקון בכולם,
+ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78).** שמונה-עשר פריטי תור/אימות-בלבד: JSON-LD (תשעה סלאגים,
