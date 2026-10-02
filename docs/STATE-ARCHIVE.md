@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c78 (הועבר מ-STATE.md ב-M13-c78, לשמירה על תקרת 300 שורות)
+
+**M12-c78 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד: `git diff aa86ea216..HEAD --stat --
+src/app/robots.ts src/app/robots.test.ts src/lib/site-url.ts
+docs/BACKLOG.md` (בסיס: M12-c77) ריק, אפס שינוי. קובץ הקוד
+(`src/app/robots.ts`) נקרא במלואו: כל שבעה-עשר נתיבי ה-`disallow`
+הצפויים נוכחים, כולל `/redeem/`, `/coupon/`, `/gift/`, `/order/`,
+`/wishlist/s/` ו-`/debug/`. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il/robots.txt`): `200`, עדיין גרסת
+`a388118f1` הקפואה עם רק 13 שורות `Disallow`, בלי `/gift/`, `/order/`,
+`/wishlist/s/` ו-`/debug/` — אותו גאפ שנמדד ברצף מ-M12-c67, ישירות
+מחוסם #2 למעלה (אין פריסת HEAD), לא ממצא חדש. `Sitemap:`/`Host:`
+תקינים. נבדקו גם ארבעת הנתיבים חיים: `/gift/x` מחזיר `200` (חשוף
+לסריקה בלי כיסוי `Disallow` בפרודקשן, תועד לראשונה ב-M12-c70, אפס
+דריפט); `/order/x` ו-`/wishlist/s/x` מחזירים `404`; `/debug/` מחזיר
+`308` (וריאציית ניתוב, לא שינוי התנהגות). ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M11-c78), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3511 pnpm build`, `/robots.txt` מופיע כ-`○ Static`).
+פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/
+סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M10-c78 (הועבר מ-STATE.md ב-M11-c78, לשמירה על תקרת 300 שורות)
 
 **M10-c78 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/

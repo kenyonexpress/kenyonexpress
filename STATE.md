@@ -1,33 +1,33 @@
-RESUME FROM: M13-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c78 DONE: robots.txt נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M14-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c78 DONE: /api/health ו-/api/ready נבדקו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c78 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
-production-safe". בדיקת דריפט קוד: `git diff aa86ea216..HEAD --stat --
-src/app/robots.ts src/app/robots.test.ts src/lib/site-url.ts
-docs/BACKLOG.md` (בסיס: M12-c77) ריק, אפס שינוי. קובץ הקוד
-(`src/app/robots.ts`) נקרא במלואו: כל שבעה-עשר נתיבי ה-`disallow`
-הצפויים נוכחים, כולל `/redeem/`, `/coupon/`, `/gift/`, `/order/`,
-`/wishlist/s/` ו-`/debug/`. **נמדד מול פרודקשן בפועל**
-(`https://www.kenyonexpress.co.il/robots.txt`): `200`, עדיין גרסת
-`a388118f1` הקפואה עם רק 13 שורות `Disallow`, בלי `/gift/`, `/order/`,
-`/wishlist/s/` ו-`/debug/` — אותו גאפ שנמדד ברצף מ-M12-c67, ישירות
-מחוסם #2 למעלה (אין פריסת HEAD), לא ממצא חדש. `Sitemap:`/`Host:`
-תקינים. נבדקו גם ארבעת הנתיבים חיים: `/gift/x` מחזיר `200` (חשוף
-לסריקה בלי כיסוי `Disallow` בפרודקשן, תועד לראשונה ב-M12-c70, אפס
-דריפט); `/order/x` ו-`/wishlist/s/x` מחזירים `404`; `/debug/` מחזיר
-`308` (וריאציית ניתוב, לא שינוי התנהגות). ארבעת השערים ירוקים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M11-c78), `build` exit 0
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:3511 pnpm build`, `/robots.txt` מופיע כ-`○ Static`).
-פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/
-סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M13-c78 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git diff
+90aebfae3..HEAD --stat -- src/app/api/health src/app/api/ready
+src/lib/health/ready.ts docs/BACKLOG.md` (בסיס: M13-c77) ריק, אפס
+שינוי. קוד זהה למדידה הקודמת: `src/app/api/health/route.ts` עושה
+HEAD-count על `categories` דרך admin client (אפס `float`/כסף במסלול),
+`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמש תלויות
+(`database`, `redis`, `meilisearch`, `r2`, `cardcom`). **נמדד ישירות
+מול פרודקשן**: `curl https://www.kenyonexpress.co.il/api/health` →
+`200 {"ok":true,"database":"ok","latency_ms":116}`; `curl
+.../api/ready` → `503 {"ok":false,"checks":{"database":"ok",
+"redis":"ok","meilisearch":"down","r2":"not_configured",
+"cardcom":"not_configured"}}`. **זהה בדיוק ל-M13-c67..M13-c77**:
+`meilisearch:"down"` נשאר חוסם ידוע (`docs/BACKLOG.md`, אין פריסת
+HEAD, חוסם #2 למעלה), liveness (`/api/health`) כן `200`. **אפס דריפט
+מ-M13-c77.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה ל-M12-c78), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4418 pnpm
+build`, `/api/health` ו-`/api/ready` מופיעים ב-`app-paths-manifest.json`).
+פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/
+קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M02-c78..M11-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M12-c78).** עשרה פריטי תור/אימות-בלבד: Lighthouse mobile (100/100/100
+**M02-c78..M12-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c78).** אחד-עשר פריטי תור/אימות-בלבד: Lighthouse mobile (100/100/100
 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי מוצר
 (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53, דריפט
 רעש `loading="lazy"` זהה ל-M03-c76 בלבד), test/build גייטים (אפס דריפט
@@ -35,8 +35,9 @@ http://localhost:3511 pnpm build`, `/robots.txt` מופיע כ-`○ Static`).
 חסומים על החלטת מפעיל), unused deps/dead exports (`knip`, 201/5/1/271/
 197/4, אותם מספרים כמו M09-c77, אפס מועמד חדש), מיגרציות ממתינות (60/19
 ללא שינוי, אומת ישירות מול פרודקשן ב-M10-c78), sitemap.xml (79 כתובות,
-עדיין `a388118f1`, חמשת תתי-המפות `404`). אפס דריפט/שבור לתיקון
-בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+עדיין `a388118f1`, חמשת תתי-המפות `404`), robots.txt (עדיין `a388118f1`,
+חוסם #2). אפס דריפט/שבור לתיקון בכולם, ארבעת השערים ירוקים בכולם, אפס
+שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78).** שמונה-עשר פריטי תור/אימות-בלבד: JSON-LD (תשעה סלאגים,
