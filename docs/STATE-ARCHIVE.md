@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c71 (הועבר מ-STATE.md ב-M08-c71, לשמירה על תקרת 300 שורות)
+
+**M07-c71 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
+days resolve or file in docs/BACKLOG.md". סריקה מלאה חוזרת
+(`grep -rn -E 'TODO|FIXME'` על `src`, `scripts`, `supabase`, `migrations`):
+אותם שני סמנים בלבד, שניהם כבר מתועדים — `src/lib/payments/cardcom.ts:254`
+(זיכוי לגאסי, מ-24.07.2026) ו-`:319` (מסמכים, מ-07.08.2026), שניהם
+`TODO(cardcom)` עם scope וממתינים לאותו חוסם (Cardcom אמיתי, `docs/BACKLOG.md`
+סעיף 6, מתועד גם ב-`docs/KNOWN-ISSUES.md` סעיף 2 וב-`Tracked in #41`/`#42`
+בקוד עצמו). `src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית
+`'TODO'` ולא סמן עבודה. אפס דריפט מ-M07-c70/M07-c69/M07-c68/M07-c67 — אין
+סמן חדש, אין סמן שהפסיק לירות, אין צורך בעריכת `docs/BACKLOG.md`. ארבעת
+השערים הורצו במלואם: `type-check` נקי (`tsc --noEmit`, exit 0), `lint`
+נקי (12 שערים, 2037 קבצים, אפס תיקונים), `test` נקי (614/614 קבצים,
+7337/7349 עברו, 12 מדולגים, זהה ל-M06-c71), `build` נקי (`.next` נמחק
+תחילה, exit 0, "Compiled successfully", אותו רעש ידוע-מראש RLS 401 על
+`reviews`/מיגרציה 242 בלבד). אין קבצי קוד שהשתנו — commit זה תיעודי בלבד
+(`STATE.md`/`docs/STATE-ARCHIVE.md`).
+
 ## M06-c71 (הועבר מ-STATE.md ב-M07-c71, לשמירה על תקרת 300 שורות)
 
 **M06-c71 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".
