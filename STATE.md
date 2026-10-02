@@ -1,40 +1,34 @@
-RESUME FROM: M08-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c73 - DONE, TODO/FIXME scan אפס דריפט)
+RESUME FROM: M09-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c73 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c73 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
-days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
---include="*.ts" --include="*.tsx" -l` מחזיר אותם שני קבצים כמו בכל סבב קודם
-(לאחרונה M07-c72, `308b315a5`): `src/lib/payments/cardcom.ts` (שתי שורות,
-‏254 מ-`0254f2acf1`/24.07.2026 ו-319 מ-`bc21217074`/07.08.2026, שתיהן
-`TODO(cardcom)` אמיתיות) ו-`src/lib/whatsapp.test.ts:91` (`f4fc791400`/
-10.08.2026, מחרוזת ליטרלית `'TODO'` בבדיקה, לא סמן עבודה). שתי ה-`TODO`
-האמיתיות כבר מתועדות ב-`docs/BACKLOG.md` סעיף 6 (חוסם `Cardcom אמיתי`,
-`Tracked in #41`/`#42`, `docs/KNOWN-ISSUES.md` סעיף 2) — לא נדרש עדכון
-לקובץ, אפס ממצא חדש. שלושתם ישנים משבעה ימים (היום 02.10.2026). שלושת
-השערים האחרים הורצו מחדש (זהה ל-`edfd1f5fa`/M06-c73, אפס קומיט ביניהם):
-`type-check` נקי, `lint` נקי (12 שערים, `docs-path-audit` 155 ללא שינוי),
-`test` 614/614 קבצים (7337/7349, 12 מדולגים). `build` לא הורץ מחדש:
-`git diff --stat` בין `edfd1f5fa` (M06-c73, `pnpm build` טרי EXIT:0) ל-HEAD
-על כל נתיב רלוונטי לקוד ריק — אותו HEAD בדיוק, אפס דריפט. פריט
-אימות-בלבד, לא חזותי: לא נדרשת מדידת `compare.mjs`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md` (בלוק M06-c73 כווץ לשורה למטה לתקרת 300 שורות,
-שום שורה לא נמחקה).
+**M08-c73 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". אפס דריפט בקוד הרלוונטי מאז M08-c72
+(`07704553f`): `git log 07704553f..HEAD` על `scripts/lighthouse-smoke.mjs`,
+`src/lib/security/frame-policy.ts`, `src/app/layout.tsx`, `next.config.*`
+ריק. ארבעת השערים רצו כקדם-תנאי, כולם exit 0: `type-check` נקי, `lint`
+נקי (12 שערים), `test` 614/614 קבצים (7337/7349, 12 מדולגים), `build`
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3417 pnpm build`, exit 0). שרת `pnpm start` עצמאי על פורט 3417
+(אותם משתני build; 3311-3316/3618/3911/4211 תפוסים על ידי סוכנים
+מקבילים, 3417 נבחר כפנוי), `cwd` אומת (`/usr/sbin/lsof -p <pid> -a -d
+cwd`) שזה הריפו הזה, `/` ו-`/product/צימר-מאסטר` אומתו `200` לפני המדידה,
+נסגר אחריה. `scripts/lighthouse-smoke.mjs --throttling-method=provided`
+(המתכון התקף): `/` = **100/100/100**, `/product/צימר-מאסטר` = **100/100/100**,
+אפס דריפט מ-M08-c72. פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש.
+אפס שינוי קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
 
-**M06-c73, M05-c73, M04-c73, ROBOTS-FIX, M03-c73, M02-c73 ו-M01-c73 (ארכיון
-מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M06-c73/M07-c73):**
-M06-c73: `pnpm build` נקי מראש, אפס דריפט (92 שורות `error` ב-log ידועות,
-חוסמים #3 פתוחים). M05-c73: `pnpm
-test` נקי מראש (614/614, 7337/7349, 12 מדולגים), ממצא `docs-path-audit`
-אמיתי אחד (הפניה חדשה ל-`public/robots.txt` לא בפנקס) תוקן עם
-`--write`. M04-c73:
-`type-check` נבדק מחדש, נקי מראש, אפס דריפט. ROBOTS-FIX אומת כבר-קיים
-(אפס שינוי קוד, אד-הוק). M03-c73: שער חזותי קטגוריה נמדד מחדש,
-`2.93%`/`2.31%`/`1.58%`, `PASS`, אפס דריפט. M02-c73/M01-c73: שערים
-חזותיים מוצר/בית נמדדו מחדש (מוצר `4.96`/`4.58`/`3.25`, בית
-`8.58`/`9.01`/`4.16`), שניהם `PASS`, אפס דריפט. ארבעת השערים ירוקים
-בכל חמישתם.
+**M07-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M08-c73):** M07-c73: TODO/FIXME נסרק מחדש, שני הסמנים (`cardcom.ts:254,
+319`) כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6, אפס דריפט. M06-c73: `pnpm
+build` נקי מראש, אפס דריפט (92 שורות `error` ב-log ידועות, חוסמים #3
+פתוחים). M05-c73: `pnpm test` נקי מראש (614/614, 7337/7349, 12 מדולגים),
+ממצא `docs-path-audit` אמיתי אחד תוקן עם `--write`. M04-c73: `type-check`
+נבדק מחדש, נקי מראש. ROBOTS-FIX אומת כבר-קיים (אפס שינוי קוד). M03-c73:
+שער חזותי קטגוריה `2.93%`/`2.31%`/`1.58%`, `PASS`. M02-c73/M01-c73: שערים
+חזותיים מוצר/בית (מוצר `4.96`/`4.58`/`3.25`, בית `8.58`/`9.01`/`4.16`),
+`PASS`. ארבעת השערים ירוקים בכל השבעה.
 
 **M18-c72..M01-c72 ו-M18-c71..M01-c71, M18-c70..M01-c70, M18-c69..M01-c69
 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M17-c72 לשמירה
