@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c77 (הועבר מ-STATE.md ב-M01-c78, לשמירה על תקרת 300 שורות)
+
+**M18-c77 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למשימות
+M18-c60..M18-c76 (קיצוץ מחזורי). **נמדד לפני כל שינוי**: `wc -l
+STATE.md` החזיר **298** (הקובץ לא מסתיים ב-newline, כך שהתוכן בפועל
+299 שורות לפי מספור `Read`), כבר **מתחת לתקרת 300** בלי שום פעולה.
+הפריט הקודם בתור (M17-c77) כיווץ את עצמו אל שורה אחת כחלק מה-pattern
+הרגיל וזה החזיק את הקובץ מתחת לתקרה מבלי להזדקק לקיצוץ נפרד כאן.
+**הפעולה שבוצעה בכל זאת**: פסקת M17-c77 המלאה (28 שורות) הועברה
+ל-`docs/STATE-ARCHIVE.md` (סעיף חדש בראש הקובץ, הישן ביותר-ראשון
+נשאר שלם) וכווצה כאן לשורה אחת בתוך האוסף "M01-c77..M16-c77", שהורחב
+ל-"M01-c77..M17-c77" — כך שהתור הנוכחי (M01-c78 ואילך) מתחיל מתוך
+מרווח נוסף, לא רק מתחת לתקרה בדיוק. ארבעת השערים לא נדרשו להרצה מחדש
+(אין שינוי קוד, קובץ `.md` בלבד), אך הורצו כחלק מטקס הסיום הרגיל:
+`type-check`/`lint`/`test`/`build`. אפס שינוי קוד ייצור. שני קבצים:
+`STATE.md` ו-`docs/STATE-ARCHIVE.md`.
+
 ## M17-c77 (הועבר מ-STATE.md ב-M18-c77, לשמירה על תקרת 300 שורות)
 
 **M17-c77 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
