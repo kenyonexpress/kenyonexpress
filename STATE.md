@@ -1,35 +1,26 @@
-RESUME FROM: M04-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c77 - DONE, שער חזותי קטגוריה נמדד מחדש, דריפט קל נמדד ותועד, עדיין PASS)
+RESUME FROM: M05-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c77 - DONE, pnpm type-check נבדק מחדש, אפס דריפט, אין קוד לתיקון)
 
 ## המשך מ:
 
-**M03-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/category sample". שרת `pnpm start` נמצא חי על פורט 3311 (PID 20676,
-`cwd` מאומת = שורש הריפו, `curl` החזיר `200`). נבדק לפני ההרצה שאין
-שינוי קוד ייצור מאז `121742b29` (M03-c76; `git diff --stat` ריק על
-`src/`, `supabase/`, `packages/`, `public/`, `next.config.ts`,
-`package.json`). הורץ `COMPARE_ALLOW_PENDING_IMAGES=1 LOCAL_BASE=
-http://localhost:3311 node scripts/compare.mjs --page=category
---widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'`
-בחזית (חרגה מ-timeout כלי ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן
-לסיומה המלאה דרך Monitor לפני כל רישום). **תוצאה: `380`=3.53%,
-`768`=2.52%, `1440`=1.69%, שלושתם `PASS` מתחת לשער 11%.** **זו לא
-"אפס דריפט": המספרים זהים בדיוק ל-M03-c66 (3.53/2.52/1.69) אך גבוהים
-מ-M03-c75/M03-c76 (2.93/1.94/1.53) ב-0.16-0.6 נקודת אחוז.** שני
-הרוחבים 380 ו-768 חזרו גם להציג את אזהרת HEIGHT RATIO (0.53x/0.59x)
-שלא הופיעה ברישום M03-c76 — כנראה אותו רעש תזמון `loading="lazy"`
-בגלילה הפרוגרמטית שתועד לראשונה ב-M03-c75 (שם שתי תמונות המוצר
-הראשונות בקטגוריה לא נטענות באוטומציה headless אף שה-URL תקין), לא
-שינוי קוד (האימות למעלה מאשר זאת) ולא שינוי קטלוג שנמדד. עדיין הרבה
-מתחת לשער 11%, לא חוסם. השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
-על ידי הסקריפט עצמו, מתויגות `e125ecec8` (HEAD בתחילת הפריט); שורת
-`home`/`1440`/`REFUSED` שקדמה להן באותו קובץ היא תוצר של סשן מקביל אחר
-(ראו parallel-claude-sessions בזיכרון), לא של הפריט הזה. ארבעת השערים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים, זהה), `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 נקי (שרת
-3311 נשאר חי ועונה `200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים:
-`STATE.md`, `docs/UI-PARITY-REPORT.md`. התור הבא: `M04-c77`.
+**M04-c77 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". לפני ההרצה: `git status` נקי, `git diff --stat` ריק (אפס שינוי
+לא-מחויב), ו-`git diff --stat 0d6edcbc6 HEAD -- src/ supabase/ packages/
+public/ next.config.ts package.json` ריק — אין שום שינוי קוד ייצור מאז
+M04-c76 (הבדיקה הקודמת של type-check). `pnpm type-check` (`tsc --noEmit`)
+רץ נקי, **אין שגיאת type-check לתיקון** — "fix drift" בשם המשימה לא חל
+כי אין דריפט. שלושת השערים הנוספים גם ירוקים: `lint` (biome + 12 שערים,
+2037 קבצים, זהה ל-M03-c77), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה), `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3311 pnpm build` exit 0 נקי (שרת 3311 PID 20676 נשאר חי,
+`curl` החזיר `200` אחרי הבנייה). אפס שינוי קוד ייצור, אין commit של קוד —
+רק עדכון `STATE.md`. התור הבא: `M05-c77`.
+
+**M03-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M04-c77
+לשמירה על תקרת 300 שורות).** שער חזותי קטגוריה נמדד מחדש: 3.53%/2.52%/1.69%,
+שלושתם PASS, דריפט קל (0.16-0.6 נ"א) מ-M03-c75/c76 אך זהה ל-M03-c66,
+ייחוס רעש `loading="lazy"` לא שינוי קוד/קטלוג. ארבעת השערים ירוקים, אפס
+שינוי קוד ייצור.
 
 **M02-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M03-c77
 לשמירה על תקרת 300 שורות).** שער חזותי מוצר נמדד מחדש: 4.96%/4.58%/3.25%,

@@ -2,6 +2,36 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c77 (הועבר מ-STATE.md ב-M04-c77, לשמירה על תקרת 300 שורות)
+
+**M03-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". שרת `pnpm start` נמצא חי על פורט 3311 (PID 20676,
+`cwd` מאומת = שורש הריפו, `curl` החזיר `200`). נבדק לפני ההרצה שאין
+שינוי קוד ייצור מאז `121742b29` (M03-c76; `git diff --stat` ריק על
+`src/`, `supabase/`, `packages/`, `public/`, `next.config.ts`,
+`package.json`). הורץ `COMPARE_ALLOW_PENDING_IMAGES=1 LOCAL_BASE=
+http://localhost:3311 node scripts/compare.mjs --page=category
+--widths=380,768,1440 --baseline='refs/electro_shop_{width}.png'`
+בחזית (חרגה מ-timeout כלי ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן
+לסיומה המלאה דרך Monitor לפני כל רישום). **תוצאה: `380`=3.53%,
+`768`=2.52%, `1440`=1.69%, שלושתם `PASS` מתחת לשער 11%.** **זו לא
+"אפס דריפט": המספרים זהים בדיוק ל-M03-c66 (3.53/2.52/1.69) אך גבוהים
+מ-M03-c75/M03-c76 (2.93/1.94/1.53) ב-0.16-0.6 נקודת אחוז.** שני
+הרוחבים 380 ו-768 חזרו גם להציג את אזהרת HEIGHT RATIO (0.53x/0.59x)
+שלא הופיעה ברישום M03-c76 — כנראה אותו רעש תזמון `loading="lazy"`
+בגלילה הפרוגרמטית שתועד לראשונה ב-M03-c75 (שם שתי תמונות המוצר
+הראשונות בקטגוריה לא נטענות באוטומציה headless אף שה-URL תקין), לא
+שינוי קוד (האימות למעלה מאשר זאת) ולא שינוי קטלוג שנמדד. עדיין הרבה
+מתחת לשער 11%, לא חוסם. השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי הסקריפט עצמו, מתויגות `e125ecec8` (HEAD בתחילת הפריט); שורת
+`home`/`1440`/`REFUSED` שקדמה להן באותו קובץ היא תוצר של סשן מקביל אחר
+(ראו parallel-claude-sessions בזיכרון), לא של הפריט הזה. ארבעת השערים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים, זהה), `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 נקי (שרת
+3311 נשאר חי ועונה `200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים:
+`STATE.md`, `docs/UI-PARITY-REPORT.md`. התור הבא: `M04-c77`.
+
 ## M02-c77 (הועבר מ-STATE.md ב-M03-c77, לשמירה על תקרת 300 שורות)
 
 **M02-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
