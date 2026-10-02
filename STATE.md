@@ -1,40 +1,43 @@
-RESUME FROM: M16-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c74 - DONE, אפס console error/hydration על / ו-/product נבדק מחדש, אפס דריפט מ-M15-c73)
+RESUME FROM: M17-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c74 - DONE, JSON-LD Product+BreadcrumbList נבדק מחדש על כל דף מוצר, אפס דריפט מ-M16-c73)
 
 ## המשך מ:
 
-**M15-c74 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
-and /product sample" — זהה למילה למשימות M15-c66..M15-c73. **נבדק מחדש,
-אפס דריפט.** `git log fd59a0a87..HEAD -- src/app src/components
-e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c73) ריק — 17 קומיטים
-מאז, כולם תיעוד-בלבד (`STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md`). נבנה `.next` חדש לגמרי (`rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
-build`, exit 0), הורם `pnpm start -p 3331` (פורט פנוי, אומת `curl` 200
-ו-`lsof` על ה-pid/cwd לפני ההרצה), והורצו `anon ${path}` ו-`anon dynamic
-catalogue routes` מתוך `e2e/route-audit.spec.ts` (chromium בלבד, התאמה
-למילה "sample" במשימת התור, `--workers=1`), **2/2 עברו** (46 שניות).
-אומת ישירות מתוך `/tmp/route-audit-m15c74.jsonl` (8 שורות): אפס
-`consoleErrors`/`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל
-השורות, כולל `/`, `/product/צימר-מאסטר` (פעיל, זהה ל-M15-c66..M15-c73)
-ו-`/product/.../reviews`. **אין ממצא קוד לתקן**; אימות-בלבד, תשיעית
-ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
-`rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs`
-לא נדרש (תקדים M04-c66..M15-c73). אפס שינוי קוד ייצור. קובץ יחיד:
-`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M16-c74 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
+JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c73.
+**נבדק מחדש, אפס דריפט.** `git log 366c46558..HEAD -- "src/app/(store)/product"
+src/lib/seo e2e/seo-markup.spec.ts` (בסיס: checkpoint M16-c73) ריק — 17
+קומיטים מאז, כולם תיעוד-בלבד (`STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`). **מקור האמת זהה**: `product/[slug]/page.tsx`
+בונה את שני הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/
+`buildBreadcrumbJsonLd` מ-`src/lib/seo/json-ld.ts`, שני
+`<script type="application/ld+json">` תמיד ברינדור, לא מאחורי דגל,
+אומת בקריאת הקובץ). **אומת גם ברמת הדף:** `.next` חדש לגמרי (`rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3332
+pnpm build`, exit 0), `pnpm start -p 3332` עצמאי (פורט פנוי, אומת
+`lsof`/`ps` על ה-pid/cwd לפני ההרצה, ו-`curl` 200). `E2E_BASE_URL=
+http://localhost:3332 npx playwright test e2e/seo-markup.spec.ts
+--workers=1` (כל הקובץ) — **10/10 עברו** (chromium+mobile-chrome, 24
+שניות), כולל שני הטסטים הממוקדים "Product JSON-LD and a breadcrumb".
+שרת הופסק בסוף הריצה. **אין ממצא קוד לתקן.** ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M16-c73). אפס שינוי קוד ייצור.
+קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
 
-**M14-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c74
-לשמירה על תקרת 300 שורות).** Sentry release vs HEAD נבדק מחדש מול Vercel
-MCP (read-only): אותה פריסה בדיוק שנמצאה ב-M14-c73 (`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
-`main`@`18ed044b2`), אפס דריפט ב-env. ארבעת השערים ירוקים.
+**M15-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c74
+לשמירה על תקרת 300 שורות).** אפס console error/hydration על / ו-/product
+sample נבדק מחדש (2/2 `e2e/route-audit.spec.ts`), אפס דריפט מ-M15-c73.
+ארבעת השערים ירוקים.
 
-**M13-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M14-c74 לשמירה על תקרת 300 שורות).** M13-c74 — `/api/health`/
-`/api/ready` נבדקו ישירות מול פרודקשן (`200`/`503` בהתאמה), אפס דריפט
-מ-M13-c73. M12-c74 — robots.txt חי
-נבדק ישירות מול פרודקשן, 12 שורות `Disallow` (חסרות `/gift/`,`/order/`,
-`/wishlist/s/`,`/debug/`), זהה ל-M12-c73, אפס דריפט. M11-c74 —
+**M14-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M16-c74 לשמירה על תקרת 300 שורות).** M14-c74 — Sentry release vs
+HEAD נבדק מחדש מול Vercel MCP (read-only): אותה פריסה בדיוק שנמצאה
+ב-M14-c73 (`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main`@`18ed044b2`), אפס
+דריפט ב-env. M13-c74 — `/api/health`/`/api/ready` נבדקו ישירות מול
+פרודקשן (`200`/`503` בהתאמה), אפס דריפט מ-M13-c73. M12-c74 — robots.txt
+חי נבדק ישירות מול פרודקשן, 12 שורות `Disallow` (חסרות `/gift/`,
+`/order/`,`/wishlist/s/`,`/debug/`), זהה ל-M12-c73, אפס דריפט. M11-c74 —
 sitemap.xml חי נבדק ישירות מול פרודקשן, `urlset` שטוח וחמשת תתי-המפות
 `404`, זהה ל-M11-c73. M10-c74 — מיגרציות ממתינות נבדקו ישירות מול
 פרודקשן, 19 חוסמים עדיין חסרים, אפס דריפט מ-M10-c68. M09-c74 — `knip`
