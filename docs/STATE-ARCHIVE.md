@@ -39654,3 +39654,39 @@ M12-c71 עצמו) — ריק, אפס קומיט נוגע. המקומי חוסם 
 exit 0 (`rm -rf .next`, `CARDCOM_USE_MOCK=true
 NEXT_PUBLIC_APP_URL=http://localhost:3421 pnpm build`). אפס שינוי קוד.
 קובץ יחיד: `STATE.md`.
+
+**M13-c72 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
+c614b252b..HEAD -- src/app/api/health src/app/api/ready` (בסיס: קומיט
+M13-c71) — ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם, זהים
+ל-M13-c71: `src/app/api/health/route.ts` עושה HEAD-count על `categories`
+דרך ה-admin client, `200`/`database:"ok"` כש-DB מגיב, `503` אחרת;
+`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמש תלויות
+ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":113}`); `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+**זהה בדיוק ל-M13-c67..M13-c71**: `meilisearch:"down"` נשאר חוסם ידוע
+(`docs/BACKLOG.md`, אין פריסת HEAD). **אפס דריפט מ-M13-c71.** ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3326 pnpm build`, שני הנתיבים
+מופיעים ב-manifest). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+
+**M12-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c72 לשמירה על תקרת 300 שורות).** M12-c72: robots.txt חי אומת
+מחדש, עדיין `a388118f1` הקפואה (חוסם 2), אפס דריפט מ-M12-c71. M11-c72: sitemap.xml חי אומת
+מחדש, אפס דריפט מ-M11-c71. M10-c72: מיגרציות ממתינות
+נבדקו מחדש דרך `git ls-tree`, אפס דריפט (62 קבצים, 19 חוסמים ללא
+שינוי). M09-c72: deps/exports מתים
+עם `knip` נבדקו מחדש, אפס דריפט (201/5/1/271/197/4). M08-c72: Lighthouse
+mobile על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט
+מ-M08-c71. M07-c72: TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס
+דריפט מ-M07-c71. M06-c72: `pnpm build` נבדק מחדש, `EXIT:0`, אפס דריפט
+מ-M06-c71. M05-c72: `pnpm test` נבדק מחדש, 614/614 קבצים (7337/7349, 12
+מדולגים), אפס דריפט מ-M05-c71. M04-c72: type-check, `EXIT:0`, אפס
+דריפט. שלושה פריטי שער חזותי - M03-c72 (קטגוריה, 3.53/2.31/1.58%, אפס
+דריפט), M02-c72 (מוצר, 4.96/4.58/3.25%, אפס דריפט) ו-M01-c72 (בית,
+8.58/9.01/4.16%, אפס דריפט). ארבעת השערים ירוקים בכולם, אפס שינוי קוד
+ייצור.
