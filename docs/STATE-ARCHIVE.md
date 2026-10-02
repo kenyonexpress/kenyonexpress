@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c71 (הועבר מ-STATE.md ב-M02-c71, לשמירה על תקרת 300 שורות)
+
+**M01-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". שרת ישן שכבר האזין על 3311
+מהלילה הקודם (`pnpm start`, עלה 23:48) נהרג תחילה: `.next` שלו נבנה מחדש
+ב-07:51, שעות אחרי שהתהליך כבר רץ, ולכן לא נאמן (ראה
+[[gate-measured-foreign-server-on-3311]]). `pnpm build` טרי הורץ (תואם
+`33f50eab8`), `pnpm start` על 3311 מחדש, ואז
+`node scripts/compare.mjs --page=home --widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'` בפועל עד סוף הריצה (לקח כ-8 דקות,
+בלי דריפט בביצועים — כל רוחב ~דקה, חוץ מ-1440 שנתקע-כביכול כ-5 דקות על
+לחץ זיכרון גבוה במחשב, `vm.swapusage` ~4.1GB מתוך 5GB, ואז המשיך לבד).
+**תוצאה: 8.58% / 9.01% / 4.16% בשלושת הרוחבים, כולם PASS, אפס דריפט
+מ-M01-c70** (זהה בדיוק). השורה נכתבה אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי השער עצמו (שלוש שורות חדשות, commit `33f50eab8`/`-dirty`). ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים,
+7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי (הורץ לפני המדידה).
+קבצים: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+
 ## M17-c70 (הועבר מ-STATE.md ב-M18-c70, לשמירה על תקרת 300 שורות)
 
 **M17-c70 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product

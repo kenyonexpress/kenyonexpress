@@ -1,24 +1,25 @@
-RESUME FROM: M02-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c71 - DONE, שער בית נמדד מחדש, אפס דריפט, סבב c71 נפתח)
+RESUME FROM: M03-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c71 - DONE, שער מוצר נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
-768 1440 on / and record diffs in STATE.md". שרת ישן שכבר האזין על 3311
-מהלילה הקודם (`pnpm start`, עלה 23:48) נהרג תחילה: `.next` שלו נבנה מחדש
-ב-07:51, שעות אחרי שהתהליך כבר רץ, ולכן לא נאמן (ראה
-[[gate-measured-foreign-server-on-3311]]). `pnpm build` טרי הורץ (תואם
-`33f50eab8`), `pnpm start` על 3311 מחדש, ואז
-`node scripts/compare.mjs --page=home --widths=380,768,1440
---baseline='refs/ke_live_{width}.png'` בפועל עד סוף הריצה (לקח כ-8 דקות,
-בלי דריפט בביצועים — כל רוחב ~דקה, חוץ מ-1440 שנתקע-כביכול כ-5 דקות על
-לחץ זיכרון גבוה במחשב, `vm.swapusage` ~4.1GB מתוך 5GB, ואז המשיך לבד).
-**תוצאה: 8.58% / 9.01% / 4.16% בשלושת הרוחבים, כולם PASS, אפס דריפט
-מ-M01-c70** (זהה בדיוק). השורה נכתבה אוטומטית ל-`docs/UI-PARITY-REPORT.md`
-על ידי השער עצמו (שלוש שורות חדשות, commit `33f50eab8`/`-dirty`). ארבעת
+**M02-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". ה-`.next` הקיים (נבנה ב-M01-c71 אחרי `33f50eab8`, לפני
+ה-commit התיעודי `0bf666585`) אומת כזהה-מקור ל-HEAD (`git show --stat
+0bf666585` — שני קבצי docs בלבד) ולכן לא נדרש build מחדש; פורט 3311 היה
+פנוי (אין listener), `pnpm start` עלה עליו ישירות. ואז
+`node scripts/compare.mjs --page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'` בפועל עד סוף הריצה.
+**תוצאה: 4.96% / 4.58% / 3.25% בשלושת הרוחבים, כולם PASS, אפס דריפט
+מ-M02-c70** (זהה בדיוק). השורה נכתבה אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי השער עצמו (שלוש שורות חדשות, commit `0bf666585`/`-dirty`). ארבעת
 השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים,
-7337/7349 עברו (12 מדולגים, זהה), `build` exit 0 נקי (הורץ לפני המדידה).
-קבצים: `docs/UI-PARITY-REPORT.md`, `STATE.md`.
+7337/7349 עברו (12 מדולגים, זהה), `build` (ה-`.next` הקיים אומת מקור-זהה
+ל-HEAD לפני המדידה עצמה, לא build חדש). קבצים: `docs/UI-PARITY-REPORT.md`,
+`STATE.md`.
+
+**M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M02-c71).** שער בית נמדד מחדש, 8.58%/9.01%/4.16%, אפס דריפט מ-M01-c70.
 
 **M18-c70 ו-M17-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M01-c71).** M18-c70: STATE.md אומת מתחת לתקרת 300 שורות, M17-c70
