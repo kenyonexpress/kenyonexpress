@@ -1,30 +1,38 @@
-RESUME FROM: M09-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c79 DONE: Lighthouse mobile נמדד מחדש על / ו-/product, אפס דריפט)
+RESUME FROM: M10-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c79 DONE: unused deps/dead exports נבדקו מחדש עם knip, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c79 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
-and /product sample log scores" — זהה לתבנית החוזרת (M08-c78/c77).
-ארבעת השערים ירוקים: `type-check` נקי (exit 0), `lint` נקי (12 שערים,
-2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
-זהה ל-M07-c79), build טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`, exit 0,
-`BUILD_ID` חדש: `iH66iILHb8_1CjwZ6Uhzg`). `pnpm start` עצמאי על פורט
-4517 (3316/3618/3911/4211 תפוסים ע"י סוכנים מקבילים, 4517 פנוי), `cwd`
-אומת מול הריפו הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-מאסטר`
-(נמדד מול `supabase/catalogue-snapshot.json`, 44 מוצרים, `! צימר
-מאסטר` עדיין ראשון ברשימה עם מלאי 10) אומתו `200` לפני המדידה.
-`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
-**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס דריפט
-מ-M08-c78. שרת נסגר אחרי המדידה, פורט אומת פנוי. אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש (תקדים M08-c78 ואילך). אפס שינוי קוד
-ייצור. קובץ אחד: `STATE.md`.
+**M09-c79 - DONE (03.10.2026).** משימת התור: "Remove unused deps and dead
+exports" — זהה לתבנית החוזרת (M09-c78 ואילך). `git diff --stat
+4fd5059a0..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/STATE-ARCHIVE.md/
+BACKLOG.md) החזיר קובץ אחד בלבד, `docs/UI-PARITY-REPORT.md` (תוספת
+שורות המדידה של M01-c79..M03-c79) — אפס שינוי בקוד. `pnpm dlx knip
+--no-config-hints` (ephemeral, לא נוסף ל-`package.json`, אין
+`knip.json` בריפו) הורץ בכל זאת כדי לאמת ולא להניח: **201 unused files
+/ 5 unused dependencies / 1 unlisted binary / 271 unused exports / 197
+unused exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו
+M09-c78, אפס מועמד חדש. חמשת ה-deps (`@radix-ui/react-dropdown-menu`,
+`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
+ו-`supabase` כ-unlisted binary הם רעש ידוע (ר' ארכיון M09-c66..c77):
+drizzle/postgres משמשים רק דרך `drizzle.config.ts`/סקריפטי מיגרציה
+ש-knip לא עוקב אחריהם כ-import סטטי, ו-`supabase` הוא ה-CLI שרץ מ-
+`package.json` scripts לא מ-import. "Unused exports"/"unused exported
+types" ברובם סקריפטים שרצים ישירות (`scripts/*.mjs`) או type helpers
+(`database.ts` הנוצר אוטומטית) ש-knip לא עוקב אחרי שימוש דרך
+`action={}`/הסקת טיפוס. אף תיקון אוטומטי לא התבצע — הכרעת הסרה היא
+הכרעת מפעיל, לא תקלה שנמדדת. ארבעת השערים ירוקים: `type-check` נקי
+(exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה ל-M08-c79), build טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build`, exit 0). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
 
-**M07-c79 ו-M06-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M08-c79).** M07-c79 — TODO/FIXME נסרק מחדש, שני ה-marker
-הידועים ב-`cardcom.ts`, חסומים על החלטת מפעיל. M06-c79 — pnpm build
-gate re-verified clean, אפס דריפט קוד. ארבעת השערים ירוקים בשניהם,
-אפס שינוי קוד ייצור.
+**M08-c79..M06-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c79).** M08-c79 — Lighthouse mobile על / ו-/product, שניהם
+100/100/100, אפס דריפט מ-M08-c78. M07-c79 — TODO/FIXME נסרק מחדש, שני
+ה-marker הידועים ב-`cardcom.ts`, חסומים על החלטת מפעיל. M06-c79 — pnpm
+build gate re-verified clean, אפס דריפט קוד. ארבעת השערים ירוקים
+בכולם, אפס שינוי קוד ייצור.
 
 **M02-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M03-c79/M06-c79/M08-c79).** שבעה-עשר פריטי תור/אימות-בלבד: Sentry
