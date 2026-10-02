@@ -1,50 +1,48 @@
-RESUME FROM: M17-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c76 - DONE, JSON-LD Product+BreadcrumbList נבדק מחדש בכל דפי המוצר, אפס דריפט מ-M16-c75)
+RESUME FROM: M18-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c76 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט מ-M17-c75)
 
 ## המשך מ:
 
-**M16-c76 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
-JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c75
-(f1f269c1a). **נבדק מחדש, אפס דריפט.** `git log f1f269c1a..HEAD -- src/app
-src/lib/seo` (בסיס: checkpoint M16-c75) **ריק**. `src/lib/seo/json-ld.ts`
-נקרא במלואו: `buildProductJsonLd`/`buildBreadcrumbJsonLd` זהים לסבב הקודם.
-ארבעת השערים: `type-check` נקי, `lint` נקי (2037 קבצים), `test` 614/614
-קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3321 pnpm build` exit 0. הורם `pnpm
-start -p 3321` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט, לא checkout
-זר), `curl` 200 על `/`. **נבדק ישירות ברינדור בפועל:** ארבעה דפי מוצר —
-`/product/צימר-מאסטר` ושלושה סלאגים שנדגמו אקראית (`עיסוי-מאסטר`,
-`אבחון-ואבחוןטיפול-רפסולוגי`, `ארוחה-בשרית-זוגית`) — כל ארבעתם `200`, כל
-אחד מכיל בדיוק תג `<script type="application/ld+json">` אחד עם
-`"@type":"Product"` ותג נוסף אחד עם `"@type":"BreadcrumbList"` (אומת
-בפענוח JSON אמיתי של כל תג; ספירת מחרוזת גולמית מראה 4 כי
-`application/ld+json` מופיע גם במטען ה-RSC/flight הסטרימינג, לא רק בשני
-תגי ה-`<script>` בפועל). שרת הופסק בסוף. **אין ממצא קוד לתקן**;
-אימות-בלבד. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M16-c66..M16-c75).
-אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M17-c76 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c75 (leak אמיתי
+תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
+`git log 50ad28be5..HEAD -- src/app src/components src/lib/i18n` (בסיס:
+checkpoint M17-c75) **ריק** - אפס קומיטים נוגעים מאז. ארבעת השערים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, כולל
+`rtl-logical-gate.mjs`: "no physical direction utility outside an LTR
+island"), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3335
+pnpm build` exit 0. הורם `pnpm start -p 3335` (`lsof -p -a -d cwd` אימת
+cwd זהה לנתיב הפרויקט, לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר
+שנדגם אקראית מ-44 המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
+`/product/samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`. **נבדק
+ישירות ברינדור בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי.
+גריפ על `dir="ltr"` בתוצאה החיה: `/` - מופע יחיד, שדה האימייל בניוזלטר
+(מכוון, `input-dir-gate` מאשר). דף המוצר - שני מופעים: אותו שדה אימייל
+בפוטר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU עברי
+(`ProductInfo.tsx`, מכוון ומתועד בקוד, אותו דפוס שנמדד בכל סבב קודם).
+גריפ נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/
+`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של שני הדפים - אפס התאמות.
+שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא פריט `compare.mjs` (בדיקת
+לוגיקת כיוון, לא פריסת פיקסלים - תקדים M17-c67..M17-c75). אפס שינוי
+קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
 
-**M15-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M16-c76 לשמירה על תקרת 300 שורות).** שנים-עשר פריטי תחזוקה/אימות-בלבד:
-M15-c76 — אפס console error/hydration (60/60 route-audit), אפס דריפט.
-M14-c76 — Sentry release vs HEAD נבדק מחדש מול Vercel MCP (read-only):
-אותה פריסה חיה בדיוק שנמצאה ב-M14-c73..M14-c75
+**M16-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M17-c76 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי תחזוקה/אימות-בלבד:
+M16-c76 — JSON-LD נבדק מחדש (4 דפי מוצר), אפס דריפט. M15-c76 — אפס
+console/hydration (60/60 route-audit). M14-c76 — Sentry vs HEAD נבדק
+מחדש מול Vercel MCP: אותה פריסה חיה בדיוק שנמצאה ב-M14-c73..M14-c75
 (`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main`@`18ed044b2`), הענפים מפוצלים
-יותר (909/109, היה 855/109 ב-M14-c73), אפס דריפט ב-env, ממתין להחלטת
-אופיר (חוסם 2 למטה). M13-c76 — `/api/health`/`/api/ready` מול פרודקשן בפועל, `200`/`503`
-(meilisearch למטה, חוסם ידוע), אפס דריפט מ-M13-c75. M12-c76 — robots.txt נבדק מחדש מול פרודקשן, עדיין 12 שורות `Disallow`
-(חסרות `/gift/`,`/order/`,`/wishlist/s/`,`/debug/`), אפס דריפט מ-M12-c75.
-M11-c76 — sitemap.xml נבדק מחדש, עדיין `urlset` שטוח, חמשת תתי-המפות
-`404`, אפס דריפט מ-M11-c75. M10-c76 — מיגרציות ממתינות נבדקו מחדש מול
-git (בסיס M10-c75), 60 קבצים ללא שינוי, אפס מיגרציה הוחלה. M09-c76 —
-knip נבדק מחדש, אפס מועמד חדש. M08-c76 — Lighthouse mobile `/`
-ו-`/product/צימר-מאסטר`, 100/100/100 בשניהם, אפס דריפט מ-M08-c75.
-M07-c76 — TODO/FIXME נסרק מחדש, שני `TODO(cardcom)` כבר מתועדים
-ב-`docs/BACKLOG.md` סעיף 6. M05-c76 — "pnpm test fix drift commit",
-אפס שינוי מ-M05-c75. M04-c76 — "pnpm type-check fix drift commit",
-אפס שינוי מ-M04-c75. M03-c76 — שער חזותי קטגוריה (`380`=2.93%/
-`768`=1.94%/`1440`=1.53%, PASS), אפס דריפט מ-M03-c75. M02-c76 — שער
-חזותי מוצר (`380`=4.50%/`768`=4.07%/`1440`=3.25%, PASS), אפס דריפט
-שלילי מ-M02-c75. ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+יותר (909/109, היה 855/109 ב-M14-c73), ממתין להחלטת אופיר (חוסם 2 למטה).
+M13-c76 — health/ready `200`/`503` (meilisearch למטה, חוסם ידוע).
+M12-c76 — robots.txt עדיין 12 שורות `Disallow` (חסרות
+`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`). M11-c76 — sitemap.xml
+עדיין `urlset` שטוח, חמשת תתי-המפות `404`. M10-c76 — מיגרציות ממתינות,
+60 קבצים ללא שינוי. M09-c76 — knip אפס מועמד חדש. M08-c76 — Lighthouse
+mobile 100/100/100. M07-c76 — TODO/FIXME מתועד ב-`docs/BACKLOG.md`
+סעיף 6. M05-c76/M04-c76 — test/type-check fix drift, אפס שינוי. M03-c76
+— שער חזותי קטגוריה (2.93%/1.94%/1.53%, PASS). M02-c76 — שער חזותי מוצר
+(4.50%/4.07%/3.25%, PASS). אפס דריפט בכולם, ארבעת השערים ירוקים בכולם.
 
 **M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
 תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c76,

@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c76 (הועבר מ-STATE.md ב-M17-c76, לשמירה על תקרת 300 שורות)
+
+**M16-c76 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
+JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c75
+(f1f269c1a). **נבדק מחדש, אפס דריפט.** `git log f1f269c1a..HEAD -- src/app
+src/lib/seo` (בסיס: checkpoint M16-c75) **ריק**. `src/lib/seo/json-ld.ts`
+נקרא במלואו: `buildProductJsonLd`/`buildBreadcrumbJsonLd` זהים לסבב הקודם.
+ארבעת השערים: `type-check` נקי, `lint` נקי (2037 קבצים), `test` 614/614
+קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3321 pnpm build` exit 0. הורם `pnpm
+start -p 3321` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט, לא checkout
+זר), `curl` 200 על `/`. **נבדק ישירות ברינדור בפועל:** ארבעה דפי מוצר —
+`/product/צימר-מאסטר` ושלושה סלאגים שנדגמו אקראית (`עיסוי-מאסטר`,
+`אבחון-ואבחוןטיפול-רפסולוגי`, `ארוחה-בשרית-זוגית`) — כל ארבעתם `200`, כל
+אחד מכיל בדיוק תג `<script type="application/ld+json">` אחד עם
+`"@type":"Product"` ותג נוסף אחד עם `"@type":"BreadcrumbList"` (אומת
+בפענוח JSON אמיתי של כל תג; ספירת מחרוזת גולמית מראה 4 כי
+`application/ld+json` מופיע גם במטען ה-RSC/flight הסטרימינג, לא רק בשני
+תגי ה-`<script>` בפועל). שרת הופסק בסוף. **אין ממצא קוד לתקן**;
+אימות-בלבד. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M16-c66..M16-c75).
+אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M15-c76 (הועבר מ-STATE.md ב-M16-c76, לשמירה על תקרת 300 שורות)
 
 **M15-c76 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
