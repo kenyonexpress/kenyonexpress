@@ -1,34 +1,21 @@
-RESUME FROM: M18-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c75 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט מ-M17-c74)
+RESUME FROM: M01-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c75 - DONE, STATE.md תחת תקרת 300 שורות, M17-c75 אורכב)
 
 ## המשך מ:
 
-**M17-c75 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c74 (leak אמיתי
-תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
-`git log 9197841f6..HEAD -- src/app src/components src/lib/i18n` (בסיס:
-checkpoint M17-c74) **ריק** - אפס קומיטים נוגעים מאז, רק
-`STATE.md`/`docs/STATE-ARCHIVE.md` זזו. ארבעת השערים: `type-check` נקי,
-`lint` נקי (12 שערים, 2037 קבצים, כולל `rtl-logical-gate.mjs`: "no
-physical direction utility outside an LTR island"), `test` 614/614 קבצים
-(7337/7349, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3334 pnpm build` exit 0. הורם `pnpm
-start -p 3334` (פורט פנוי, `lsof -p -a -d cwd` אימת שה-cwd של ה-pid זהה
-לנתיב הפרויקט הנוכחי, לא checkout זר), `curl` 200 על `/` ו-על סלאג מוצר
-שנדגם אקראית מ-44 המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
-`/product/טיול-מאורגן-לדובאי`. **נבדק ישירות ברינדור בפועל:** שני
-הדפים `<html lang="he" dir="rtl">` ללא תנאי. גריפ על `dir="ltr"`
-בתוצאה החיה: `/` - מופע יחיד, שדה האימייל בניוזלטר (מכוון, `input-dir-gate`
-מאשר). `/product/טיול-מאורגן-לדובאי` - שני מופעים: אותו שדה אימייל
-בפוטר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU עברי
-(`ProductInfo.tsx:252`, מכוון ומתועד בקוד, אותו דפוס שנמדד ב-M17-c74).
-גריפ נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/
-`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של שני הדפים - אפס התאמות.
-שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא פריט `compare.mjs` (בדיקת
-לוגיקת כיוון, לא פריסת פיקסלים - תקדים M17-c67..M17-c74). אפס שינוי קוד
-ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M18-c75 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c74
+(`97de64449`). **נמדד 299 שורות בתחילת הפריט, כבר מתחת לתקרת 300 — לא
+נדרש ארכוב כדי לרדת מתחתיה.** הועבר בלוק M17-c75 המלא ל-
+`docs/STATE-ARCHIVE.md` (אותו דפוס בדיוק כמו M18-c74 עם M17-c74) כדי
+להשאיר מרווח לרשומה של הפריט הזה עצמו, וכווץ לשורת סיכום ב-STATE.md.
+שום שורה לא נמחקה מהארכיון עצמו. ארבעת השערים: `type-check` נקי, `lint`
+נקי, `test` ירוק, `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3335 pnpm build` exit 0 (פורטים
+3333/3334 תפוסים מפריטים קודמים באותו סשן). אפס שינוי קוד ייצור. שני
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M16-c75..M01-c75, M18-c74..M01-c74 (שלושים וארבעה פריטי אימות-בלבד/
+**M17-c75..M01-c75, M18-c74..M01-c74 (שלושים וחמישה פריטי אימות-בלבד/
 תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו בשלבים —
 M06-c75, M09-c75, M10-c75, M11-c75, M12-c75, M13-c75, M15-c75 — לשמירה
 על תקרת 300 שורות).** M15-c75 — אפס console error/hydration על `/`

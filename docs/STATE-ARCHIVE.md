@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c75 (הועבר מ-STATE.md ב-M18-c75, לשמירה על תקרת 300 שורות)
+
+**M17-c75 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c74 (leak אמיתי
+תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
+`git log 9197841f6..HEAD -- src/app src/components src/lib/i18n` (בסיס:
+checkpoint M17-c74) **ריק** - אפס קומיטים נוגעים מאז, רק
+`STATE.md`/`docs/STATE-ARCHIVE.md` זזו. ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים, כולל `rtl-logical-gate.mjs`: "no
+physical direction utility outside an LTR island"), `test` 614/614 קבצים
+(7337/7349, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3334 pnpm build` exit 0. הורם `pnpm
+start -p 3334` (פורט פנוי, `lsof -p -a -d cwd` אימת שה-cwd של ה-pid זהה
+לנתיב הפרויקט הנוכחי, לא checkout זר), `curl` 200 על `/` ו-על סלאג מוצר
+שנדגם אקראית מ-44 המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
+`/product/טיול-מאורגן-לדובאי`. **נבדק ישירות ברינדור בפועל:** שני
+הדפים `<html lang="he" dir="rtl">` ללא תנאי. גריפ על `dir="ltr"`
+בתוצאה החיה: `/` - מופע יחיד, שדה האימייל בניוזלטר (מכוון, `input-dir-gate`
+מאשר). `/product/טיול-מאורגן-לדובאי` - שני מופעים: אותו שדה אימייל
+בפוטר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU עברי
+(`ProductInfo.tsx:252`, מכוון ומתועד בקוד, אותו דפוס שנמדד ב-M17-c74).
+גריפ נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/
+`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של שני הדפים - אפס התאמות.
+שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא פריט `compare.mjs` (בדיקת
+לוגיקת כיוון, לא פריסת פיקסלים - תקדים M17-c67..M17-c74). אפס שינוי קוד
+ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M16-c75 (הועבר מ-STATE.md ב-M17-c75, לשמירה על תקרת 300 שורות)
 
 **M16-c75 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
