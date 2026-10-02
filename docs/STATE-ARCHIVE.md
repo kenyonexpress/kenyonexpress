@@ -40860,3 +40860,14 @@ http://localhost:3311 node scripts/compare.mjs --page=home
 http://localhost:3331 pnpm build` exit 0 נקי (שרת 3311 נשאר חי ועונה
 `200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
 `docs/UI-PARITY-REPORT.md`.
+
+## M06-c76 (הועבר מ-STATE.md ב-M07-c76, לשמירה על תקרת 300 שורות)
+
+**M06-c76 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
+commit". אפס שינוי בקבצי `src/` מאז M06-c75 (`e38246134`, `git log
+--oneline e38246134..HEAD -- src/` ריק). שלושת השערים הראשונים: `type-check`
+נקי (אפס שגיאות), `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M05-c76). `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
+build` exit 0 נקי, זהה בתוצאתו ל-M06-c75. אפס שינוי קוד ייצור. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
