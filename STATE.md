@@ -1,22 +1,19 @@
-RESUME FROM: M04-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c71 - DONE, שער קטגוריה נמדד מחדש, אפס דריפט)
+RESUME FROM: M05-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c71 - DONE, type-check נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M03-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/category sample". ה-`.next` הקיים (נבנה ב-M01-c71 אחרי `33f50eab8`) אומת
-כזהה-מקור ל-HEAD (`git diff --stat 33f50eab8..39dbf20a6` מחוץ ל-`STATE.md`/
-`docs/` — ריק) ולכן לא נדרש build מחדש; פורט 3311 פנוי, `pnpm start` עלה
-עליו ישירות (listener אומת מול cwd הנכון דרך `lsof`). ואז
-`node scripts/compare.mjs --page=category --widths=380,768,1440
---baseline='refs/electro_shop_{width}.png'` בפועל עד סוף הריצה.
-**תוצאה: 3.53% / 2.52% / 1.69% בשלושת הרוחבים, כולם PASS, אפס דריפט
-מ-M03-c70/M03-c66** (זהה בדיוק). השורה נכתבה אוטומטית ל-`docs/UI-PARITY-REPORT.md`
-על ידי השער עצמו (שלוש שורות חדשות, commit `39dbf20a6`/`-dirty`). ארבעת
-השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים,
-7337/7349 עברו (12 מדולגים, זהה), `build` (ה-`.next` הקיים אומת מקור-זהה
-ל-HEAD לפני המדידה עצמה, לא build חדש). קבצים: `docs/UI-PARITY-REPORT.md`,
-`STATE.md`.
+**M04-c71 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". `pnpm type-check` הורץ בפועל: נקי, `tsc --noEmit` ללא שגיאות, אין
+דריפט לתקן. ארבעת השערים הורצו במלואם לאימות: `type-check` נקי, `lint`
+נקי (12 שערים, זהה ל-M04-c70), `test` 614/614 קבצים, 7337/7349 עברו (12
+מדולגים, זהה), `build` exit 0 נקי (prerender/PPR על כל הנתיבים, ללא
+שגיאה). אין קבצי קוד שהשתנו — commit זה תיעודי בלבד
+(`STATE.md`/`docs/STATE-ARCHIVE.md`).
+
+**M03-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M04-c71 לשמירה על תקרת 300 שורות).** M03-c71: שער קטגוריה נמדד
+מחדש, 3.53%/2.52%/1.69%, אפס דריפט מ-M03-c70/M03-c66.
 
 **M02-c71 ו-M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M03-c71).** M02-c71: שער מוצר נמדד מחדש, 4.96%/4.58%/3.25%, אפס

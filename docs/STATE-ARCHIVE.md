@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c71 (הועבר מ-STATE.md ב-M04-c71, לשמירה על תקרת 300 שורות)
+
+**M03-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". ה-`.next` הקיים (נבנה ב-M01-c71 אחרי `33f50eab8`) אומת
+כזהה-מקור ל-HEAD (`git diff --stat 33f50eab8..39dbf20a6` מחוץ ל-`STATE.md`/
+`docs/` — ריק) ולכן לא נדרש build מחדש; פורט 3311 פנוי, `pnpm start` עלה
+עליו ישירות (listener אומת מול cwd הנכון דרך `lsof`). ואז
+`node scripts/compare.mjs --page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` בפועל עד סוף הריצה.
+**תוצאה: 3.53% / 2.52% / 1.69% בשלושת הרוחבים, כולם PASS, אפס דריפט
+מ-M03-c70/M03-c66** (זהה בדיוק). השורה נכתבה אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי השער עצמו (שלוש שורות חדשות, commit `39dbf20a6`/`-dirty`). ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים,
+7337/7349 עברו (12 מדולגים, זהה), `build` (ה-`.next` הקיים אומת מקור-זהה
+ל-HEAD לפני המדידה עצמה, לא build חדש). קבצים: `docs/UI-PARITY-REPORT.md`,
+`STATE.md`.
+
 ## M02-c71 (הועבר מ-STATE.md ב-M03-c71, לשמירה על תקרת 300 שורות)
 
 **M02-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
