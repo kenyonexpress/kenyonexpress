@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c78 (הועבר מ-STATE.md ב-M08-c78, לשמירה על תקרת 300 שורות)
+
+**M07-c78 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
+(M07-c77/c76/c75/c74/c67). נסרק מחדש `src/` (`.ts`/`.tsx`/`.js`/`.mjs`,
+`grep -rnE "TODO|FIXME"`, קבצי `.test.*` הוחרגו): שני ה-marker האמיתיים
+היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319` (שניהם
+`TODO(cardcom)`), תאריך הוספה אומת שוב דרך `git log -S`/`git log
+--diff-filter=A` — 24.07.2026 ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים.
+שניהם כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל
+(אימות live מול המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
+(`'TODO'` ב-`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית
+בבדיקה, לא marker.) ארבעת השערים ירוקים: `type-check` נקי (`tsc
+--noEmit`), `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים — זהה ל-M06-c78), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0 נקי (`BUILD_ID` חדש: `b6jEAprIpVeVdHCEsnymG`). לא פריט
+חזותי, `compare.mjs` לא נדרש (תקדים M06-c78/M04-c77 ואילך). אפס שינוי
+קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M06-c78 (הועבר מ-STATE.md ב-M07-c78, לשמירה על תקרת 300 שורות)
 
 **M06-c78 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift

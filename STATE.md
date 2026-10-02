@@ -1,43 +1,31 @@
-RESUME FROM: M08-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c78 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
+RESUME FROM: M09-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c78 DONE: Lighthouse mobile נמדד מחדש על / ו-/product, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c78 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
-(M07-c77/c76/c75/c74/c67). נסרק מחדש `src/` (`.ts`/`.tsx`/`.js`/`.mjs`,
-`grep -rnE "TODO|FIXME"`, קבצי `.test.*` הוחרגו): שני ה-marker האמיתיים
-היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319` (שניהם
-`TODO(cardcom)`), תאריך הוספה אומת שוב דרך `git log -S`/`git log
---diff-filter=A` — 24.07.2026 ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים.
-שניהם כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל
-(אימות live מול המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
-(`'TODO'` ב-`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית
-בבדיקה, לא marker.) ארבעת השערים ירוקים: `type-check` נקי (`tsc
---noEmit`), `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים — זהה ל-M06-c78), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
-build` exit 0 נקי (`BUILD_ID` חדש: `b6jEAprIpVeVdHCEsnymG`). לא פריט
-חזותי, `compare.mjs` לא נדרש (תקדים M06-c78/M04-c77 ואילך). אפס שינוי
-קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M08-c78 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores". ארבעת השערים ירוקים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה ל-M07-c78), `build` טרי (`rm -rf
+.next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417
+pnpm build`, exit 0, `BUILD_ID` חדש: `sPI9hMFzbuqX1a2TFqOKf`). `pnpm
+start` עצמאי על פורט 4417 (3311-3316/3618/3911/4211 תפוסים ע"י סוכנים
+מקבילים, 4417 פנוי), `cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`). `/`
+ו-`/product/צימר-מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`,
+44 מוצרים פעילים, `! צימר מאסטר` עדיין פעיל עם מלאי 10) אומתו `200`
+לפני המדידה. `scripts/lighthouse-smoke.mjs --throttling-method=provided`:
+`/` = **100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס
+דריפט מ-M08-c77. שרת נסגר אחרי המדידה, פורט אומת פנוי. אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש (תקדים M08-c77 ואילך). אפס שינוי קוד
+ייצור. קבצים: `STATE.md`.
 
-**M06-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M07-c78).** build גייט אומת נקי, אפס דריפט קוד מאז M04-c78. ארבעת
-השערים ירוקים, אפס שינוי קוד ייצור.
-
-**M05-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M06-c78).** test גייט אומת נקי, אפס דריפט קוד מאז M04-c78.
-ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
-
-**M03-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M04-c78).** שער חזותי קטגוריה נמדד מחדש 380/768/1440 (3.53/1.94/1.53
-PASS), דריפט רעש `loading="lazy"` זהה ל-M03-c76 בלבד ב-768/1440, לא
-שינוי קוד. ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
-
-**M02-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M03-c78).** שער חזותי מוצר נמדד מחדש 380/768/1440 (4.96/4.58/3.25,
-זהה ל-M02-c77/M02-c75), אפס דריפט. ארבעת השערים ירוקים, אפס שינוי
-קוד ייצור.
+**M02-c78..M07-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M08-c78).** שישה פריטי תור/אימות-בלבד: שער חזותי מוצר
+(4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53, דריפט
+רעש `loading="lazy"` זהה ל-M03-c76 בלבד), test/build גייטים (אפס דריפט
+קוד מאז M04-c78), TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`,
+חסומים על החלטת מפעיל) — אפס דריפט/שבור לתיקון בכולם, ארבעת השערים
+ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78).** שמונה-עשר פריטי תור/אימות-בלבד: JSON-LD (תשעה סלאגים,
