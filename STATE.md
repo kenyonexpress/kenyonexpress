@@ -1,36 +1,34 @@
-RESUME FROM: M03-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c71 - DONE, שער מוצר נמדד מחדש, אפס דריפט)
+RESUME FROM: M04-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c71 - DONE, שער קטגוריה נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M02-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/product sample". ה-`.next` הקיים (נבנה ב-M01-c71 אחרי `33f50eab8`, לפני
-ה-commit התיעודי `0bf666585`) אומת כזהה-מקור ל-HEAD (`git show --stat
-0bf666585` — שני קבצי docs בלבד) ולכן לא נדרש build מחדש; פורט 3311 היה
-פנוי (אין listener), `pnpm start` עלה עליו ישירות. ואז
-`node scripts/compare.mjs --page=product --widths=380,768,1440
---baseline='refs/electro_product_{width}.png'` בפועל עד סוף הריצה.
-**תוצאה: 4.96% / 4.58% / 3.25% בשלושת הרוחבים, כולם PASS, אפס דריפט
-מ-M02-c70** (זהה בדיוק). השורה נכתבה אוטומטית ל-`docs/UI-PARITY-REPORT.md`
-על ידי השער עצמו (שלוש שורות חדשות, commit `0bf666585`/`-dirty`). ארבעת
+**M03-c71 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". ה-`.next` הקיים (נבנה ב-M01-c71 אחרי `33f50eab8`) אומת
+כזהה-מקור ל-HEAD (`git diff --stat 33f50eab8..39dbf20a6` מחוץ ל-`STATE.md`/
+`docs/` — ריק) ולכן לא נדרש build מחדש; פורט 3311 פנוי, `pnpm start` עלה
+עליו ישירות (listener אומת מול cwd הנכון דרך `lsof`). ואז
+`node scripts/compare.mjs --page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` בפועל עד סוף הריצה.
+**תוצאה: 3.53% / 2.52% / 1.69% בשלושת הרוחבים, כולם PASS, אפס דריפט
+מ-M03-c70/M03-c66** (זהה בדיוק). השורה נכתבה אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי השער עצמו (שלוש שורות חדשות, commit `39dbf20a6`/`-dirty`). ארבעת
 השערים: `type-check` נקי, `lint` נקי (12 שערים), `test` 614/614 קבצים,
 7337/7349 עברו (12 מדולגים, זהה), `build` (ה-`.next` הקיים אומת מקור-זהה
 ל-HEAD לפני המדידה עצמה, לא build חדש). קבצים: `docs/UI-PARITY-REPORT.md`,
 `STATE.md`.
 
-**M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M02-c71).** שער בית נמדד מחדש, 8.58%/9.01%/4.16%, אפס דריפט מ-M01-c70.
+**M02-c71 ו-M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c71).** M02-c71: שער מוצר נמדד מחדש, 4.96%/4.58%/3.25%, אפס
+דריפט מ-M02-c70. M01-c71: שער בית נמדד מחדש, 8.58%/9.01%/4.16%, אפס
+דריפט מ-M01-c70.
 
-**M18-c70 ו-M17-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c71).** M18-c70: STATE.md אומת מתחת לתקרת 300 שורות, M17-c70
-כווץ. M17-c70: RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c69.
-
-**M16-c70, M15-c70, M14-c70, M13-c70, M12-c70, M11-c70, M10-c70, M09-c70,
-M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70
-ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
-M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70, M12-c70, M13-c70,
-M14-c70, M15-c70 וב-M16-c70 לשמירה על תקרת 300 שורות).** M16-c70:
+**M18-c70..M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
+כווצו לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70,
+M05-c70, M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70, M12-c70,
+M13-c70, M14-c70, M15-c70, M16-c70, M01-c71 וב-M03-c71 לשמירה על תקרת 300
+שורות).** M18-c70: STATE.md אומת מתחת לתקרה. M17-c70: RTL על `/`
+ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c69. M16-c70:
 JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר, אפס דריפט מ-M16-c69.
 M15-c70: אפס console error/hydration נבדק שוב על `/` ו-`/product`, אפס
 דריפט מ-M15-c69. M14-c70: Sentry release מול HEAD נבדק שוב, אפס דריפט
