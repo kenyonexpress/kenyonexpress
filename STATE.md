@@ -1,26 +1,32 @@
-RESUME FROM: M11-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c70 - DONE, מיגרציות ממתינות אומתו מחדש מול git diff, אפס דריפט)
+RESUME FROM: M12-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c70 - DONE, sitemap.xml אומת מחדש מול פרודקשן בפועל, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c70 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `git diff --stat ef9573c2c..HEAD --
-migrations/pending/` (בסיס: HEAD של M10-c69) ריק — אפס דריפט, עדיין 60
-קבצים, שום דבר לא הוחל ושום קובץ לא נוסף/הוסר מאז M10-c69. חוסם #3
-ב-"חוסמים פתוחים" למטה (19 מהם חוסמים) נבדק מחדש מול הרשימה הזו ונשאר
-נכון כפי שהוא. `pnpm audit` לא הורץ בפריט הזה (לא חלק מהבדיקה).
+**M11-c70 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". בדיקת דריפט קוד קודם: `git log 70a1b1087..HEAD -- src/app/sitemap
+src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
+src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` (בסיס:
+קומיט M11-c69) — ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל
+(`https://kenyonexpress.co.il`)**: `/sitemap.xml` מחזיר `200` (אחרי מעקב
+308 ל-`www`) עם `<sitemapindex>` וחמש תת-מפות
+(`content`/`categories`/`products`/`regions`/`suppliers`), כולן `200`, עם
+אותה ספירת כתובות כמו M11-c69 (14/13/46/17/7). `lastmod` ב-`products.xml`
+טרי (עד `2026-09-25`). `robots.txt` מצביע ל-`https://kenyonexpress.co.il/
+sitemap.xml` הנכון. **אפס דריפט מ-M11-c69.** ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337+12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3322 pnpm
+build`, חמשת נתיבי ה-sitemap מופיעים כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ
+יחיד: `STATE.md`.
 
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337+12 מדולגים), `build` exit 0
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3319 pnpm build`, route manifest מלא). אפס שינוי
-קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
-
-**M09-c70, M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70,
-M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M10-c70, M09-c70, M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70,
+M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
-M06-c70, M07-c70, M08-c70, M09-c70 וב-M10-c70 לשמירה על תקרת 300
-שורות).** M09-c70: deps/exports מתים עם `knip` אומתו מחדש, 271/197/5/4/201/1,
+M06-c70, M07-c70, M08-c70, M09-c70, M10-c70 וב-M11-c70 לשמירה על תקרת 300
+שורות).** M10-c70: מיגרציות ממתינות אומתו מחדש (`git diff --stat` מול
+M10-c69, אותו בסיס), ריק, 60 קבצים זהים, 19 חוסמים ללא שינוי, אפס דריפט.
+M09-c70: deps/exports מתים עם `knip` אומתו מחדש, 271/197/5/4/201/1,
 אפס מועמד חדש מ-M09-c69.
 M08-c70: Lighthouse mobile על `/` ו-`/product` אומת מחדש,
 100/100/100 בשניהם, אפס דריפט מ-M08-c69. M07-c70:
