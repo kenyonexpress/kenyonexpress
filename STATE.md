@@ -1,37 +1,25 @@
-RESUME FROM: M18-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c79 DONE: RTL על / ו-/product נבדק מחדש בזמן ריצה, אפס דריפט מ-M17-c78)
+RESUME FROM: M01-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c79 DONE: STATE.md כבר מתחת לתקרת 300 שורות, M17-c79 אוכסן)
 
 ## המשך מ:
 
-**M17-c79 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c78
-(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
-דריפט.** `git log 201f7ac51..HEAD --stat -- src/app src/components
-src/lib/i18n` (בסיס: checkpoint M17-c78) **ריק** — אפס קומיטים נוגעים
-מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, כולל `rtl-logical-gate.mjs`), `test` 614/614 קבצים (7337/7349,
-12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build` exit 0 נקי. הורם
-`pnpm start -p 4931` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
-לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
-המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
-`/product/pampers-premium-care-diaper-pants-medium`. **נבדק ישירות
-ברינדור בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי.
-גריפ על `dir="ltr"` בתוצאה החיה: `/` — מופע יחיד, שדה האימייל
-בניוזלטר (מכוון, `input-dir-gate` מאשר). דף המוצר — שני מופעים: אותו
-שדה אימייל בפוטר, ו-`pdp-summary__meta` (ריק עבור המוצר הזה, אין SKU
-עברי) — אין קישור `tel:` של ספק על המוצר הספציפי הזה (שונה ממוצר שנדגם
-בסבב קודם; תלוי אם לספק יש טלפון מוצג), אותו דפוס שנמדד בכל סבב קודם.
-גריפ נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/
-`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של `page.tsx` (בית) ותיקיית
-`product` — אפס התאמות. שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא
-פריט `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
-M17-c67..M17-c78). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`
-(וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M18-c79 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למשימות
+M18-c60..M18-c78 (קיצוץ מחזורי). **נמדד לפני כל שינוי**: `wc -l
+STATE.md` החזיר **292**, כבר **מתחת לתקרת 300** בלי שום פעולה. הפריט
+הקודם בתור (M17-c79) כיווץ את עצמו אל שורה אחת כחלק מה-pattern הרגיל
+וזה החזיק את הקובץ מתחת לתקרה מבלי להזדקק לקיצוץ נפרד כאן. **הפעולה
+שבוצעה בכל זאת**: פסקת M17-c79 המלאה הועברה ל-`docs/STATE-ARCHIVE.md`
+(סעיף חדש בראש הקובץ, הישן ביותר-ראשון נשאר שלם) וכווצה כאן לשורה
+אחת בתוך האוסף "M15-c79..M18-c78", שהורחב ל-"M15-c79..M18-c79" — כך
+שהתור הבא (M01-c80 ואילך) מתחיל מתוך מרווח נוסף, לא רק מתחת לתקרה
+בדיוק. ארבעת השערים הורצו כחלק מטקס הסיום הרגיל: `type-check` נקי,
+`lint` נקי, `test` ירוק, `build` exit 0. אפס שינוי קוד ייצור. שני
+קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
 
-**M15-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79/M13-c79/M14-c79/M15-c79/M16-c79/M17-c79).**
-עשרים ושבעה פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
+**M15-c79..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79/M13-c79/M14-c79/M15-c79/M16-c79/M17-c79/M18-c79).**
+עשרים ושמונה פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
 קבצים חוסמים, אפס דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי
 בית/מוצר/קטגוריה, test/type-check/build גייטים, Lighthouse mobile,
 TODO/FIXME, unused deps/dead exports (`knip`), sitemap.xml/robots.txt
