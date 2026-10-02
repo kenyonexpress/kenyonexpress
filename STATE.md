@@ -1,32 +1,25 @@
-RESUME FROM: M18-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c73 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט)
+RESUME FROM: M01-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c73 - DONE, STATE.md תחת תקרת 300 שורות אומת ונשמר)
 
 ## המשך מ:
 
-**M17-c73 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c72 (ה-leak האמיתי
-היחיד נמצא ותוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
-`git log 3619748be..HEAD -- src/ -- ':!src/app/latin-field-direction.test.ts'`
-(בסיס: checkpoint M17-c72) — **אפס קומיטים נגד `src/`**, רק `docs/`
-השתנו מאז. **נבדק גם ברמת קוד/רינדור בפועל, לא רק דיף:** `<html lang="he"
-dir="rtl">` ב-`layout.tsx:116`, ללא תנאי. גריפ מלא על `dir="ltr"`,
-`direction: ltr`, `float: left/right`, `text-left/right`, ו-`ml-/mr-/pl-/pr-`
-קשיחים ב-`src/app/(store)/page.tsx` וב-`src/app/(store)/product/` — אפס
-התאמות (רק isolate spans ידועים במקומות אחרים: מיילים, חשבון, ספק —
-לא בדפי הבית/מוצר). `pnpm lint` מריץ שער ייעודי `rtl-logical-gate.mjs`:
-**נקי, "no physical direction utility outside an LTR island".** `.next`
-חדש לגמרי (`rm -rf .next`), `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0, `pnpm start
--p 3331` עצמאי (אומת `lsof`+`ps`+cwd), `curl` 200 על `/` ו-`/product/barbecue`.
-**רינדור בפועל:** `/` — `dir="rtl"` ב-`<html>`, יחיד `dir="ltr"` הוא שדה
-האימייל בניוזלטר (מכוון, שער `input-dir-gate` מאשר). `/product/barbecue`
-— אותו דבר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU
-עברי (`ProductInfo.tsx:252`, מכוון ומתועד בקוד). שרת הופסק בסוף. **אין
-ממצא קוד לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים,
-2037 קבצים, כולל `rtl-logical-gate`), `test` 614/614 קבצים (7337/7349,
-12 מדולגים, זהה), `build` exit 0 נקי. לא פריט `compare.mjs` (בדיקת
-לוגיקת כיוון, לא פריסת פיקסלים — תקדים M17-c67..M17-c72). אפס שינוי קוד
-ייצור. קובץ יחיד: `STATE.md`.
+**M18-c73 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md". **נמדד בתחילת הפריט:**
+`wc -l STATE.md` החזיר 289, כבר מתחת לתקרת 300 השורות; אין צורך בארכוב
+כדי לרדת מתחתיה. כדי לפנות מקום לפריט הזה עצמו ולהישאר מתחת לתקרה גם
+אחריו, בלוק `M17-c73` המלא (RTL, DONE) **הועבר במלואו ל-`docs/STATE-ARCHIVE.md`**
+וכווץ כאן לשורת סיכום; שום שורה לא נמחקה מהארכיון עצמו, רק הוזזה. שורת
+`RESUME FROM:` עודכנה ל-`M01-c74` (c73 סגור, כל שמונה-עשרה פריטיו
+DONE/BLOCKED מתועדים). ארבעת השערים נבדקו גם כאן (אפס שינוי קוד ייצור,
+קובץ יחיד: `STATE.md` ו-`docs/STATE-ARCHIVE.md`): `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים, זהה ל-c73), `build` exit 0 (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build`).
+לא פריט שער חזותי, `compare.mjs` לא רלוונטי למשימת תחזוקת תיעוד.
+
+**M17-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
+לשם ב-M18-c73 לשמירה על תקרת 300 שורות).** RTL על `/` ו-`/product` נבדק
+מחדש, אפס דריפט מ-M17-c72 (ה-leak האמיתי היחיד תוקן ב-c66's M17).
 
 **M16-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
 לשם ב-M17-c73 לשמירה על תקרת 300 שורות).** JSON-LD Product+BreadcrumbList

@@ -40125,3 +40125,28 @@ mobile על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפ�
 דריפט), M02-c72 (מוצר, 4.96/4.58/3.25%, אפס דריפט) ו-M01-c72 (בית,
 8.58/9.01/4.16%, אפס דריפט). ארבעת השערים ירוקים בכולם, אפס שינוי קוד
 ייצור.
+
+**M17-c73 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c72 (ה-leak האמיתי
+היחיד נמצא ותוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
+`git log 3619748be..HEAD -- src/ -- ':!src/app/latin-field-direction.test.ts'`
+(בסיס: checkpoint M17-c72) — **אפס קומיטים נגד `src/`**, רק `docs/`
+השתנו מאז. **נבדק גם ברמת קוד/רינדור בפועל, לא רק דיף:** `<html lang="he"
+dir="rtl">` ב-`layout.tsx:116`, ללא תנאי. גריפ מלא על `dir="ltr"`,
+`direction: ltr`, `float: left/right`, `text-left/right`, ו-`ml-/mr-/pl-/pr-`
+קשיחים ב-`src/app/(store)/page.tsx` וב-`src/app/(store)/product/` — אפס
+התאמות (רק isolate spans ידועים במקומות אחרים: מיילים, חשבון, ספק —
+לא בדפי הבית/מוצר). `pnpm lint` מריץ שער ייעודי `rtl-logical-gate.mjs`:
+**נקי, "no physical direction utility outside an LTR island".** `.next`
+חדש לגמרי (`rm -rf .next`), `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0, `pnpm start
+-p 3331` עצמאי (אומת `lsof`+`ps`+cwd), `curl` 200 על `/` ו-`/product/barbecue`.
+**רינדור בפועל:** `/` — `dir="rtl"` ב-`<html>`, יחיד `dir="ltr"` הוא שדה
+האימייל בניוזלטר (מכוון, שער `input-dir-gate` מאשר). `/product/barbecue`
+— אותו דבר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU
+עברי (`ProductInfo.tsx:252`, מכוון ומתועד בקוד). שרת הופסק בסוף. **אין
+ממצא קוד לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים, כולל `rtl-logical-gate`), `test` 614/614 קבצים (7337/7349,
+12 מדולגים, זהה), `build` exit 0 נקי. לא פריט `compare.mjs` (בדיקת
+לוגיקת כיוון, לא פריסת פיקסלים — תקדים M17-c67..M17-c72). אפס שינוי קוד
+ייצור. קובץ יחיד: `STATE.md`.
