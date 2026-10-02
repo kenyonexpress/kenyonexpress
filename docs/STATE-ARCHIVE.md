@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c78 (הועבר מ-STATE.md ב-M10-c78, לשמירה על תקרת 300 שורות)
+
+**M09-c78 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
+dead exports". `git diff --stat 7a2891291..HEAD -- package.json
+pnpm-lock.yaml src/ scripts/ next.config.ts apps/ supabase/` (בסיס:
+HEAD של M09-c77) ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip
+--no-config-hints` הורץ מחדש: **201 unused files / 5 unused
+dependencies / 1 unlisted binary / 271 unused exports / 197 unused
+exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו M09-c77,
+אפס מועמד חדש. אפס הסרה (כל הפריטים כבר נבדקו בסבבים קודמים ואינם
+מועמדים אוטומטיים — החלטת מפעיל, כמתועד ב-M09-c74/c75/c76/c77). ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c78),
+`build` טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, exit 0, `BUILD_ID`
+חדש: `BRsXiqS9lZByuUGkfo9Zw`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש (כל knip/deps הם אימות-בלבד, לא UI). אפס
+שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+
 ## M08-c78 (הועבר מ-STATE.md ב-M09-c78, לשמירה על תקרת 300 שורות)
 
 **M08-c78 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /

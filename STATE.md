@@ -1,33 +1,43 @@
-RESUME FROM: M10-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c78 DONE: unused deps/dead exports נבדקו מחדש עם knip, אפס דריפט)
+RESUME FROM: M11-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c78 DONE: מיגרציות ממתינות אומתו מחדש מול פרודקשן בפועל, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c78 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
-dead exports". `git diff --stat 7a2891291..HEAD -- package.json
-pnpm-lock.yaml src/ scripts/ next.config.ts apps/ supabase/` (בסיס:
-HEAD של M09-c77) ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip
---no-config-hints` הורץ מחדש: **201 unused files / 5 unused
-dependencies / 1 unlisted binary / 271 unused exports / 197 unused
-exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו M09-c77,
-אפס מועמד חדש. אפס הסרה (כל הפריטים כבר נבדקו בסבבים קודמים ואינם
-מועמדים אוטומטיים — החלטת מפעיל, כמתועד ב-M09-c74/c75/c76/c77). ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c78),
-`build` טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, exit 0, `BUILD_ID`
-חדש: `BRsXiqS9lZByuUGkfo9Zw`, route manifest מלא). פריט אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש (כל knip/deps הם אימות-בלבד, לא UI). אפס
-שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+**M10-c78 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff 98fa72131..HEAD --stat --
+migrations/pending/ supabase/migrations/ docs/BACKLOG.md` (בסיס:
+M10-c77) ריק, אפס שינוי. `migrations/pending/*.sql` נספר שוב: 60
+קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק git), דרך
+CLI-keychain-token, קריאה בלבד: כל 19 הקבצים החוסמים נבדקו אחד-אחד מול
+היעד שלהם. 204/234/235/236/239/240/244: `to_regclass` עדיין `null`,
+אין טבלה. 218/223/242/243/248: אין העמודה שהם מוסיפים. 224/247: אין
+ההרשאה (`has_function_privilege`/`has_table_privilege` מחזירים
+`false`). 220: `pg_proc.proconfig` של `fn_wallet_entries_block_mutation`
+עדיין `null`, אין `search_path` מוגדר. 209: המדיניות
+`push_subscriptions_select_own` עדיין `auth.uid() = user_id` לא עטוף.
+246: המדיניות `profiles_super_admin_mfa` עדיין הניסוח המקורי, לא 209
+ולא 246. 245: אפס מתוך חמש המדיניות המוצעות על `banners` קיימת. 241:
+46 מוצרים פעילים עם `city IS NULL` (זהה ל-43+3 שנמדד ב-M10-c68). כל 19
+אושרו שוב כלא מוחלים, אפס דריפט מהבדיקה הישירה הקודמת (M10-c74,
+02.10). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה ל-M09-c78). `build` ראשון נכשל ב-`coupon_deal.active_ids_failed`
+(timeout רשת זמני מול Supabase בזמן collect page data), ריצה חוזרת
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`) הצליחה, `BUILD_ID`
+חדש: `bAk3iv6_1bPeT53utC4RD`, route manifest מלא. פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ
+`supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
 
-**M02-c78..M08-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c78).** שבעה פריטי תור/אימות-בלבד: Lighthouse mobile (100/100/100
+**M02-c78..M09-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M10-c78).** שמונה פריטי תור/אימות-בלבד: Lighthouse mobile (100/100/100
 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי מוצר
 (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53, דריפט
 רעש `loading="lazy"` זהה ל-M03-c76 בלבד), test/build גייטים (אפס דריפט
 קוד מאז M04-c78), TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`,
-חסומים על החלטת מפעיל) — אפס דריפט/שבור לתיקון בכולם, ארבעת השערים
-ירוקים בכולם, אפס שינוי קוד ייצור.
+חסומים על החלטת מפעיל), unused deps/dead exports (`knip`, 201/5/1/271/
+197/4, אותם מספרים כמו M09-c77, אפס מועמד חדש). אפס דריפט/שבור לתיקון
+בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78).** שמונה-עשר פריטי תור/אימות-בלבד: JSON-LD (תשעה סלאגים,
