@@ -1,27 +1,26 @@
-RESUME FROM: M08-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c74 - DONE, TODO/FIXME scan אפס דריפט)
+RESUME FROM: M09-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c74 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c74 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
-7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
---include="*.ts" --include="*.tsx" -l` מחזיר אותם שני קבצים כמו בכל סבב
-קודם (לאחרונה M07-c73, `c820f710f`): `src/lib/payments/cardcom.ts` (שתי
-שורות, 254 ו-319, שתיהן `TODO(cardcom)` אמיתיות, בלי שינוי מאז
-09.09/25.09) ו-`src/lib/whatsapp.test.ts:91` (מחרוזת ליטרלית `'TODO'`
-בבדיקה, לא סמן עבודה). `git log c820f710f..HEAD -- src/lib/payments/cardcom.ts
-src/lib/whatsapp.test.ts docs/BACKLOG.md` ריק — אפס דריפט מאז הסריקה
-הקודמת. שתי ה-`TODO` האמיתיות כבר מתועדות ב-`docs/BACKLOG.md` סעיף 6
-(חוסם `Cardcom אמיתי`, `Tracked in #41`/`#42`), לא נדרש עדכון לקובץ.
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים).
-`build` לא הורץ מחדש: HEAD זהה ל-M06-c74 (`3b541a331`, שם נבדק `rm -rf
-.next && pnpm build` טרי, exit 0), `.next/BUILD_ID` עדיין
-`iOV0dJFAKTe1crl-cPgxM` — אפס דריפט קוד מאז. פריט אימות-בלבד, לא חזותי:
-`compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
+**M08-c74 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". אפס דריפט רלוונטי מ-M08-c73 (`6166ce74e`,
+17 קומיטים מאז, כולם `docs/`+`STATE.md`). ארבעת השערים ירוקים:
+`type-check`, `lint` (12 שערים), `test` (614/614, 7337/7349, 12
+מדולגים), `build` טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
+build`, exit 0, `BUILD_ID` `UuHdW4JvcFVdHOioqUEZv`). `pnpm start` עצמאי
+על פורט 3417 (3311-3316/3618/3911/4211 תפוסים ע"י סוכנים מקבילים), `cwd`
+אומת מול הריפו הזה, `/` ו-`/product/צימר-מאסטר` אומתו `200` לפני המדידה.
+`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
+**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס דריפט
+מ-M08-c73 (ריצה ראשונה על `/` נכשלה ב-`NO_NAVSTART` חולף, לא ממצא קוד;
+השנייה הצליחה). אימות-בלבד, לא חזותי. אפס שינוי קוד/סכימה/כסף.
 
-**M06-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M07-c74 לשמירה על תקרת 300 שורות).** M06-c74 — `pnpm build` נבדק
+**M07-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M08-c74 לשמירה על תקרת 300 שורות).** M07-c74 — TODO/FIXME נסרק
+מחדש, שני הסמנים (`cardcom.ts:254,319`) כבר מתועדים ב-`docs/BACKLOG.md`
+סעיף 6, אפס דריפט מ-M07-c73. M06-c74 — `pnpm build` נבדק
 מחדש מראש (`rm -rf .next`), exit 0, `BUILD_ID` חדש
 `iOV0dJFAKTe1crl-cPgxM`, אפס דריפט. M05-c74 — `pnpm test` נמדד
 מחדש, 614/614 קבצים, 7337/7349 עברו, אפס דריפט. M04-c74 — `pnpm

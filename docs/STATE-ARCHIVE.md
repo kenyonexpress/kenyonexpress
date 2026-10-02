@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c74 (הועבר מ-STATE.md ב-M08-c74, לשמירה על תקרת 300 שורות)
+
+**M07-c74 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
+--include="*.ts" --include="*.tsx" -l` מחזיר אותם שני קבצים כמו בכל סבב
+קודם (לאחרונה M07-c73, `c820f710f`): `src/lib/payments/cardcom.ts` (שתי
+שורות, 254 ו-319, שתיהן `TODO(cardcom)` אמיתיות, בלי שינוי מאז
+09.09/25.09) ו-`src/lib/whatsapp.test.ts:91` (מחרוזת ליטרלית `'TODO'`
+בבדיקה, לא סמן עבודה). `git log c820f710f..HEAD -- src/lib/payments/cardcom.ts
+src/lib/whatsapp.test.ts docs/BACKLOG.md` ריק — אפס דריפט מאז הסריקה
+הקודמת. שתי ה-`TODO` האמיתיות כבר מתועדות ב-`docs/BACKLOG.md` סעיף 6
+(חוסם `Cardcom אמיתי`, `Tracked in #41`/`#42`), לא נדרש עדכון לקובץ.
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים).
+`build` לא הורץ מחדש: HEAD זהה ל-M06-c74 (`3b541a331`, שם נבדק `rm -rf
+.next && pnpm build` טרי, exit 0), `.next/BUILD_ID` עדיין
+`iOV0dJFAKTe1crl-cPgxM` — אפס דריפט קוד מאז. פריט אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
+
 ## M06-c74 (הועבר מ-STATE.md ב-M07-c74, לשמירה על תקרת 300 שורות)
 
 **M06-c74 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
