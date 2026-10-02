@@ -1,29 +1,25 @@
-RESUME FROM: M11-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c74 - DONE, מיגרציות ממתינות נבדקו ישירות מול פרודקשן, אפס דריפט)
+RESUME FROM: M12-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c74 - DONE, sitemap.xml נבדק ישירות מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c74 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `git diff --stat 9585afcab..HEAD -- migrations/pending
-docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
-pnpm-lock.yaml` (בסיס: M10-c73): רק `docs/BACKLOG.md` עצמו, אפס שינוי
-בתיקיית המיגרציות. 60 קבצי `.sql`, `git log -1` עדיין `48c8792dd` (248,
-Q32). **מאחר שחמישה סבבים (c69..c73) הסתפקו ב-git בלבד מאז הבדיקה
-הישירה האחרונה (M10-c68), הורצה בדיקה ישירה חדשה** מול פרודקשן (CLI-
-keychain-token, `api.supabase.com/.../database/query`, `SELECT` בלבד):
-כל 19 אובייקטי רשימת החוסמים (204, 209, 218, 220, 223, 224, 234-236,
-239-248) עדיין חסרים — טבלאות/עמודות/הרשאות לא קיימות,
-`fn_wallet_entries_block_mutation` בלי `proconfig`, `banners`
-single-permissive לא קיימת, `city IS NULL` עדיין קיים, `push_subscriptions`/
-`cashback_ledger` עדיין לא עטופות ב-`(select auth.uid())`. אפס דריפט
-מ-M10-c68, אין חוסם חדש. ארבעת השערים: `type-check`/`lint` נקיים, `test`
-614/614 (7337/7349 עברו). `build` לא הורץ: `git diff --stat 3b541a331..HEAD`
-על נתיבי build ריק (אפס דריפט מ-M06-c74), ו-14 `next-server`/`pnpm start`
-מקבילים היו פעילים. אימות-בלבד, לא חזותי. אפס שינוי כסף/סכימה/קוד. קובץ
-יחיד: `STATE.md`.
+**M11-c74 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". `curl -D -` ישיר על `https://www.kenyonexpress.co.il/sitemap.xml`:
+200, `content-type: application/xml`, גוף הוא `<urlset>` שטוח (לא
+`<sitemapindex>`) עם רשימת דפים סטטיים (`/`, `/products`, `/coupons`,
+`/contact`, וכו'). זהה מבנית לממצא ב-M11-c73 — **עדיין לא ה-`sitemapindex`
+בן חמש השורות שהקוד הנוכחי (`src/app/sitemap.xml/route.ts`) כותב.** נבדקו
+גם חמשת נתיבי תתי-המפות של הקוד הנוכחי: `/sitemap/{content,suppliers,
+products,regions,categories}.xml` — **כולם 404 בפרודקשן**, תואם את חוסם 2
+(פרודקשן תקוע על `a388118f1`, בניות חדשות `ERROR` בגלל משתני Cardcom
+חסרים ב-Vercel). `robots.txt` החי מצביע על `/sitemap.xml` (כתובת נכונה,
+תוכן ישן). אפס דריפט מ-M11-c73. אימות-בלבד, לא חזותי, אין צורך
+ב-`compare.mjs`. אפס שינוי כסף/סכימה/קוד. קובץ יחיד: `STATE.md`.
 
-**M09-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M10-c74 לשמירה על תקרת 300 שורות).** M09-c74 — `knip` נבדק מחדש
+**M10-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M11-c74 לשמירה על תקרת 300 שורות).** M10-c74 — מיגרציות ממתינות
+נבדקו ישירות מול פרודקשן (לא רק git), כל 19 אובייקטי רשימת החוסמים עדיין
+חסרים, אפס דריפט מ-M10-c68. M09-c74 — `knip` נבדק מחדש
 (201/5/1/271/197/4, אותם מספרים כמו M09-c73), אפס מועמד חדש, אפס הסרה.
 M08-c74 — Lighthouse mobile על `/` ו-`/product` אומת מחדש, 100/100/100
 בשניהם, אפס דריפט מ-M08-c73.

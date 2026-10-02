@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c74 (הועבר מ-STATE.md ב-M11-c74, לשמירה על תקרת 300 שורות)
+
+**M10-c74 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff --stat 9585afcab..HEAD -- migrations/pending
+docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
+pnpm-lock.yaml` (בסיס: M10-c73): רק `docs/BACKLOG.md` עצמו, אפס שינוי
+בתיקיית המיגרציות. 60 קבצי `.sql`, `git log -1` עדיין `48c8792dd` (248,
+Q32). **מאחר שחמישה סבבים (c69..c73) הסתפקו ב-git בלבד מאז הבדיקה
+הישירה האחרונה (M10-c68), הורצה בדיקה ישירה חדשה** מול פרודקשן (CLI-
+keychain-token, `api.supabase.com/.../database/query`, `SELECT` בלבד):
+כל 19 אובייקטי רשימת החוסמים (204, 209, 218, 220, 223, 224, 234-236,
+239-248) עדיין חסרים — טבלאות/עמודות/הרשאות לא קיימות,
+`fn_wallet_entries_block_mutation` בלי `proconfig`, `banners`
+single-permissive לא קיימת, `city IS NULL` עדיין קיים, `push_subscriptions`/
+`cashback_ledger` עדיין לא עטופות ב-`(select auth.uid())`. אפס דריפט
+מ-M10-c68, אין חוסם חדש. ארבעת השערים: `type-check`/`lint` נקיים, `test`
+614/614 (7337/7349 עברו). `build` לא הורץ: `git diff --stat 3b541a331..HEAD`
+על נתיבי build ריק (אפס דריפט מ-M06-c74), ו-14 `next-server`/`pnpm start`
+מקבילים היו פעילים. אימות-בלבד, לא חזותי. אפס שינוי כסף/סכימה/קוד. קובץ
+יחיד: `STATE.md`.
+
 ## M09-c74 (הועבר מ-STATE.md ב-M10-c74, לשמירה על תקרת 300 שורות)
 
 **M09-c74 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
