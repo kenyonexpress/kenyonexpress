@@ -131,6 +131,7 @@
   "docs/STATE-ARCHIVE.md :: migrations/pending/180_analytics_server_event_names.sql",
   "docs/STATE-ARCHIVE.md :: migrations/pending/241..243",
   "docs/STATE-ARCHIVE.md :: public/manifest.json",
+  "docs/STATE-ARCHIVE.md :: public/robots.txt",
   "docs/STATE-ARCHIVE.md :: refs/cart-measurements.md",
   "docs/STATE-ARCHIVE.md :: refs/checkout-measured.json",
   "docs/STATE-ARCHIVE.md :: refs/ke_live_computed.json",

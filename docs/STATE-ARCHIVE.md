@@ -2,6 +2,17 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c73 (הועבר מ-STATE.md ב-M05-c73, לשמירה על תקרת 300 שורות)
+
+**M04-c73 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". הורץ `pnpm type-check` (`tsc --noEmit`) — **נקי מראש, EXIT:0,
+אפס שגיאות, אין דריפט לתיקון.** פריט אימות-בלבד, לא חזותי: לא נדרשת
+מדידת `compare.mjs` (אין שינוי UI). שלושת השערים הנוספים נבדקו גם: `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `pnpm build` exit 0 נקי. אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (בלוקי ROBOTS-FIX/M03-c73 כווצו לשורה למטה
+לתקרת 300 שורות, שום שורה לא נמחקה).
+
 ## ROBOTS-FIX (הועבר מ-STATE.md ב-M04-c73, לשמירה על תקרת 300 שורות)
 
 **ROBOTS-FIX - DONE, אפס שינוי קוד (02.10.2026, פריט אד-הוק חד-פעמי,
