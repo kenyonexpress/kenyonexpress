@@ -1,25 +1,33 @@
-RESUME FROM: M02-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c79 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M03-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c79 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md". שרת ישן על פורט 3311
-(PID 5130, עלה 12:51AM) נמצא מריץ build שקדם ל-`.next/BUILD_ID` הנוכחי
-(02:58) — נהרג, ו-`pnpm build` + `PORT=3311 pnpm start` רעננים הורצו
-לפני המדידה (לקח מ"Gate measured a foreign server on 3311"). הורץ
-`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
---widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` בחזית,
-מול הצילום הקפוא (בלוק #14 למעלה — `kenyonexpress.co.il` עצמו עונה
-כעת "our-build" ולא live). **תוצאות: 380 8.58% PASS, 768 9.01% PASS,
-1440 4.16% PASS — זהה ל-M01-c78, אפס דריפט.** השער כתב שלוש שורות
-ל-`docs/UI-PARITY-REPORT.md` בעצמו (commit `2c07a9520`/`-dirty`).
-ארבעת השערים: `type-check` נקי, `lint` נקי (614 קבצי טסט, 7337 עברו,
-12 skipped), `build` exit 0, `test` ירוק. אפס שינוי קוד ייצור. קובץ
-יחיד שונה חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+**M02-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample" — זהה למשימות "product parity re-measured"
+הקודמות (M02-c78 ולפניו). `pwd` אומת, עץ נקי, `git diff --stat
+494f4b89e..HEAD -- src supabase packages public next.config.ts
+package.json` ריק (אפס שינוי קוד ייצור מאז המדידה הקודמת). **נבנה
+build טרי** (`rm -rf .next && pnpm build`, exit 0), הורם `pnpm start
+-p 3311` (לא היה חי קודם), `lsof -p -a -d cwd` אימת ש-cwd של
+ה-listener הוא שורש הפרויקט. **הרצה בחזית**: `LOCAL_BASE=
+http://localhost:3311 node scripts/compare.mjs --page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
+— חרגה מ-timeout כלי ה-Bash (300 שניות) והועברה אוטומטית לרקע על ידי
+הכלי עצמו, לא ביוזמת הסוכן; הומתן לסיומה המלאה (exit code 0) דרך
+התראת המשימה לפני כל רישום, בדיוק כמו ב-M02-c78. **תוצאה: `380`=4.96%
+PASS, `768`=4.58% PASS, `1440`=3.25% PASS** (שער 11%), **זהה בדיוק
+ל-M02-c78/M02-c77/M02-c75 — אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס
+הקפוא ארוך בהרבה מהעמוד שלנו) ידועה ולא רלוונטית לשער. השער עצמו כתב
+שלוש שורות ל-`docs/UI-PARITY-REPORT.md`, מתויגות `91c02f4f3`/
+`91c02f4f3-dirty`. שרת 3311 הופסק בסוף. ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349, 12 מדולגים), `build` exit 0. אפס שינוי קוד ייצור. שני
+קבצים: `STATE.md` ו-`docs/UI-PARITY-REPORT.md` (כתיבה עצמית של השער).
 
-**M02-c78..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c79).** שבעה-עשר פריטי תור/אימות-בלבד: Sentry release vs
+**M01-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M02-c79).** M01-c79 — שער חזותי בית נמדד מחדש 380/768/1440
+(8.58/9.01/4.16, זהה ל-M01-c78), אפס דריפט. שבעה-עשר פריטי תור/אימות-בלבד: Sentry release vs
 HEAD (946/109 קומיטים, עדיין מפוצל, ממתין להחלטת אופיר), Lighthouse
 mobile (100/100/100 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי
 מוצר (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53,

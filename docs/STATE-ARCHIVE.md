@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c79 (הועבר מ-STATE.md ב-M02-c79, לשמירה על תקרת 300 שורות)
+
+**M01-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md". שרת ישן על פורט 3311
+(PID 5130, עלה 12:51AM) נמצא מריץ build שקדם ל-`.next/BUILD_ID` הנוכחי
+(02:58) — נהרג, ו-`pnpm build` + `PORT=3311 pnpm start` רעננים הורצו
+לפני המדידה (לקח מ"Gate measured a foreign server on 3311"). הורץ
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` בחזית,
+מול הצילום הקפוא (בלוק #14 למעלה — `kenyonexpress.co.il` עצמו עונה
+כעת "our-build" ולא live). **תוצאות: 380 8.58% PASS, 768 9.01% PASS,
+1440 4.16% PASS — זהה ל-M01-c78, אפס דריפט.** השער כתב שלוש שורות
+ל-`docs/UI-PARITY-REPORT.md` בעצמו (commit `2c07a9520`/`-dirty`).
+ארבעת השערים: `type-check` נקי, `lint` נקי (614 קבצי טסט, 7337 עברו,
+12 skipped), `build` exit 0, `test` ירוק. אפס שינוי קוד ייצור. קובץ
+יחיד שונה חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+
 ## M18-c78 (הועבר מ-STATE.md ב-M01-c79, לשמירה על תקרת 300 שורות)
 
 **M18-c78 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
