@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c76 (הועבר מ-STATE.md ב-M10-c76, לשמירה על תקרת 300 שורות)
+
+**M09-c76 - DONE (02.10.2026).** משימת התור: "Remove unused deps and
+dead exports". `git diff --stat 7e801c8b4..HEAD -- package.json
+pnpm-lock.yaml src/ scripts/ next.config.ts apps/ supabase/` (בסיס:
+HEAD של M09-c75) ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip
+--no-config-hints` הורץ מחדש: **201 unused files / 5 unused
+dependencies / 1 unlisted binary / 271 unused exports / 197 unused
+exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו M09-c75,
+אפס מועמד חדש. אפס הסרה (כל הפריטים כבר נבדקו בסבבים קודמים ואינם
+מועמדים אוטומטיים — החלטת מפעיל, כמתועד ב-M09-c74/c75). ארבעת השערים
+ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build`
+exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, `BUILD_ID`
+`98l61gnd4g3K3vCBttUrv`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
+
 ## M05-c76 (הועבר מ-STATE.md ב-M06-c76, לשמירה על תקרת 300 שורות)
 
 **M05-c76 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
