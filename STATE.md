@@ -1,31 +1,33 @@
-RESUME FROM: M02-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c80 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M03-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c80 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c80 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
-M01-c61..M01-c79 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
--sTCP:LISTEN` לא החזיר כלום לפני המדידה (אין שרת ישן תקוע). `pnpm
-build` רענן הורץ קודם (exit 0), ואז `PORT=3311 pnpm start` עלה
-ו-`curl -s -o /dev/null -w "%{http_code}"` על `/` החזיר `200`. הורץ
-`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
---page=home --widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`
-בחזית (per blocker #14, `kenyonexpress.co.il` עצמו עונה "our-build"
-ולא live, ולכן השוואה חייבת reference קפוא). הריצה עברה את timeout
-180s של הכלי ועברה אוטומטית לרקע (task `bla3k409n`); חוכה לסיומה
-בפועל (exit 0) לפני שנרשמו התוצאות, ולא הוסתה ביוזמת הסוכן.
-**תוצאות ("both painted", המדד המשמש PASS/FAIL מול הסף 11%): 380
-8.58% PASS, 768 9.01% PASS, 1440 4.16% PASS — זהה ל-M01-c79, אפס
-דריפט.** השער כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` בעצמו
-(commit `ba43645cb`/`-dirty`). ארבעת השערים: `type-check` נקי, `lint`
-נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
-מדולגים), `build` exit 0. אפס שינוי קוד ייצור. קובץ יחיד שונה חוץ
-מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+**M02-c80 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample" — זהה למשימות "product parity re-measured"
+הקודמות (M02-c79 ולפניו). `pwd` אומת, שרת ישן על פורט 3311 מה-goal
+הקודם (M01-c80, build טרי מ-05:09) נמצא עדיין חי ועם `cwd` נכון
+(`/usr/sbin/lsof -p -a -d cwd`), ו-`git diff --stat c11fa965c..HEAD
+-- src supabase packages public next.config.ts package.json` ריק
+(אפס שינוי קוד ייצור מאז המדידה הקודמת) — אין צורך ב-build חדש, אותו
+שרת שימש. **הרצה בחזית**: `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'` — חרגה מ-timeout כלי
+ה-Bash (300 שניות) והועברה אוטומטית לרקע על ידי הכלי עצמו, לא
+ביוזמת הסוכן; הומתן לסיומה המלאה (exit code 0, אומת גם דרך Monitor
+על ה-PID) לפני כל רישום. **תוצאה: `380`=4.96% PASS, `768`=4.58%
+PASS, `1440`=3.25% PASS** (שער 11%), **זהה בדיוק ל-M02-c79/M02-c78/
+M02-c77/M02-c75 — אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס הקפוא ארוך
+בהרבה מהעמוד שלנו) ידועה ולא רלוונטית לשער. השער עצמו כתב שלוש שורות
+ל-`docs/UI-PARITY-REPORT.md`, מתויגות `f6b4f6703`/`f6b4f6703-dirty`.
+שרת 3311 הופסק בסוף. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים),
+`build` exit 0. אפס שינוי קוד ייצור. שני קבצים: `STATE.md`
+ו-`docs/UI-PARITY-REPORT.md` (כתיבה עצמית של השער).
 
-**M15-c79..M01-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79/M13-c79/M14-c79/M15-c79/M16-c79/M17-c79/M18-c79/M01-c80).**
-שלושים פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
+**M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M02-c80).** M01-c80 — שער חזותי בית נמדד מחדש 380/768/1440
+(8.58/9.01/4.16, זהה ל-M01-c79), אפס דריפט. שלושים פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
 קבצים חוסמים, אפס דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי
 בית/מוצר/קטגוריה, test/type-check/build גייטים, Lighthouse mobile,
 TODO/FIXME, unused deps/dead exports (`knip`), sitemap.xml/robots.txt
