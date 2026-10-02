@@ -1,33 +1,32 @@
-RESUME FROM: M09-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c76 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
+RESUME FROM: M10-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c76 - DONE, knip נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c76 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on /
-and /product sample log scores". אפס דריפט מ-M08-c75 (`600dd0a4f`).
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, `docs-path-audit` 155), `test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים), `build` טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, exit 0,
-`BUILD_ID` `0Iiiqjdidm9qNSBD8pKk9`). `pnpm start` עצמאי על פורט 4417,
-`cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`), `/` ו-`/product/
-צימר-מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`, slug פעיל,
-מלאי 10) אומתו `200` לפני המדידה. `scripts/lighthouse-smoke.mjs
---throttling-method=provided`: `/` = **100/100/100**, `/product/
-צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c75. שרת נסגר אחרי
-המדידה. אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
-`STATE.md`.
+**M09-c76 - DONE (02.10.2026).** משימת התור: "Remove unused deps and
+dead exports". `git diff --stat 7e801c8b4..HEAD -- package.json
+pnpm-lock.yaml src/ scripts/ next.config.ts apps/ supabase/` (בסיס:
+HEAD של M09-c75) ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip
+--no-config-hints` הורץ מחדש: **201 unused files / 5 unused
+dependencies / 1 unlisted binary / 271 unused exports / 197 unused
+exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו M09-c75,
+אפס מועמד חדש. אפס הסרה (כל הפריטים כבר נבדקו בסבבים קודמים ואינם
+מועמדים אוטומטיים — החלטת מפעיל, כמתועד ב-M09-c74/c75). ארבעת השערים
+ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build`
+exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, `BUILD_ID`
+`98l61gnd4g3K3vCBttUrv`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
 
-**M07-c76 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
-TODO/FIXME נסרק מחדש: שני `TODO(cardcom)` אמיתיים
-(`src/lib/payments/cardcom.ts:254,319`) כבר מתועדים ב-`docs/BACKLOG.md`
-סעיף 6, חסומים על החלטת אופיר. אפס ממצא חדש, ארבעת השערים ירוקים.
-
-**M05-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M07-c76 לשמירה על תקרת 300 שורות).** ארבעה פריטי תחזוקה/אימות-בלבד:
-M05-c76 — "pnpm test fix drift commit", אפס שינוי מ-M05-c75. M04-c76 —
-"pnpm type-check fix drift commit", אפס שינוי מ-M04-c75. M03-c76 — שער
-חזותי קטגוריה (`380`=2.93%/`768`=1.94%/`1440`=1.53%, PASS), אפס דריפט
+**M08-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c76 לשמירה על תקרת 300 שורות).** שישה פריטי תחזוקה/אימות-בלבד:
+M08-c76 — Lighthouse mobile `/` ו-`/product/צימר-מאסטר`, 100/100/100
+בשניהם, אפס דריפט מ-M08-c75. M07-c76 — TODO/FIXME נסרק מחדש, שני
+`TODO(cardcom)` כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6. M05-c76 —
+"pnpm test fix drift commit", אפס שינוי מ-M05-c75. M04-c76 — "pnpm
+type-check fix drift commit", אפס שינוי מ-M04-c75. M03-c76 — שער חזותי
+קטגוריה (`380`=2.93%/`768`=1.94%/`1440`=1.53%, PASS), אפס דריפט
 מ-M03-c75. M02-c76 — שער חזותי מוצר (`380`=4.50%/`768`=4.07%/
 `1440`=3.25%, PASS), אפס דריפט שלילי מ-M02-c75. ארבעת השערים ירוקים
 בכולם, אפס שינוי קוד ייצור.
