@@ -1,40 +1,42 @@
-RESUME FROM: M17-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c79 DONE: JSON-LD Product+BreadcrumbList נבדק מחדש בזמן ריצה על תשעה סלאגים, אפס דריפט מ-M16-c78)
+RESUME FROM: M18-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c79 DONE: RTL על / ו-/product נבדק מחדש בזמן ריצה, אפס דריפט מ-M17-c78)
 
 ## המשך מ:
 
-**M16-c79 - DONE (03.10.2026).** משימת התור: "Verify all product pages
-have JSON-LD Product and BreadcrumbList" — זהה למשימות M16-c66..M16-c78.
-**נבדק מחדש, אפס דריפט.** `git log 848f08f0d..HEAD --stat -- src/app
-src/components src/lib` (בסיס: checkpoint M16-c78) ריק: אפס קומיטים
-בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
-מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-`buildBreadcrumbJsonLd`
-(`@type: 'BreadcrumbList'`), ו-`src/app/(store)/product/[slug]/page.tsx`
-מזריק את שניהם דרך `jsonLdScript`. **נבדק גם בזמן ריצה בפועל**: נבנה
-`.next` חדש לגמרי (`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4917 pnpm build`, exit 0), הורם
-`pnpm start -p 4917` (פורט פנוי, אומת `curl` 200 ו-`lsof -p -a -d cwd`
-על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא checkout זר), ונשלף
-`supabase/catalogue-snapshot.json` (44 מוצרים). **תשעה סלאגים נבדקו
-ב-curl**, כולל שמונה מהשורות הפגומות מחוסם #11 (שתי `מאסטר`-כפילות,
-`מוצר-לדוגמא`, `bar-drink` לטיני, `טיפול-פנים-copy`, `צימר-מאסטר-copy`,
-`צימר-מאסטר-copy-copy`, `חיתולי-פמפרס-העתק`) ועוד סלאג תקין אחד
-(`אייפון-13`) — **כל התשעה `200`, בלוק `Product` אחד ובלוק
-`BreadcrumbList` אחד**, זהה ל-M16-c78. **אין ממצא לתקן**: אימות-בלבד,
-זהה לשנים-עשר הסבבים הקודמים (M16-c66..M16-c78). ארבעת השערים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא חזותי,
-`compare.mjs` לא נדרש (תקדים M04-c66..M16-c78). אפס שינוי קוד ייצור.
-קבצים: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M17-c79 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c78
+(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
+דריפט.** `git log 201f7ac51..HEAD --stat -- src/app src/components
+src/lib/i18n` (בסיס: checkpoint M17-c78) **ריק** — אפס קומיטים נוגעים
+מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, כולל `rtl-logical-gate.mjs`), `test` 614/614 קבצים (7337/7349,
+12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build` exit 0 נקי. הורם
+`pnpm start -p 4931` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
+לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
+המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
+`/product/pampers-premium-care-diaper-pants-medium`. **נבדק ישירות
+ברינדור בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי.
+גריפ על `dir="ltr"` בתוצאה החיה: `/` — מופע יחיד, שדה האימייל
+בניוזלטר (מכוון, `input-dir-gate` מאשר). דף המוצר — שני מופעים: אותו
+שדה אימייל בפוטר, ו-`pdp-summary__meta` (ריק עבור המוצר הזה, אין SKU
+עברי) — אין קישור `tel:` של ספק על המוצר הספציפי הזה (שונה ממוצר שנדגם
+בסבב קודם; תלוי אם לספק יש טלפון מוצג), אותו דפוס שנמדד בכל סבב קודם.
+גריפ נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/
+`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של `page.tsx` (בית) ותיקיית
+`product` — אפס התאמות. שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא
+פריט `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
+M17-c67..M17-c78). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`
+(וארכוב ל-`docs/STATE-ARCHIVE.md`).
 
 **M15-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79/M13-c79/M14-c79/M15-c79/M16-c79).**
-עשרים ושישה פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
+הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79/M12-c79/M13-c79/M14-c79/M15-c79/M16-c79/M17-c79).**
+עשרים ושבעה פריטי תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19
 קבצים חוסמים, אפס דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי
 בית/מוצר/קטגוריה, test/type-check/build גייטים, Lighthouse mobile,
 TODO/FIXME, unused deps/dead exports (`knip`), sitemap.xml/robots.txt
 (עדיין `a388118f1`), `/api/health`/`/api/ready`, אפס console
-error/hydration, ו-JSON-LD — אפס דריפט/שבור בכולם, ארבעת השערים
+error/hydration, JSON-LD, ו-RTL — אפס דריפט/שבור בכולם, ארבעת השערים
 ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
