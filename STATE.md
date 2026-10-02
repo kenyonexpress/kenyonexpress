@@ -1,30 +1,34 @@
-RESUME FROM: M14-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c77 - DONE, /api/health ו-/api/ready נבדקו מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M15-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c77 - DONE, Sentry release vs HEAD נבדק מחדש, עדיין לא תואם, אפס דריפט)
 
 ## המשך מ:
 
-**M13-c77 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". קוד זהה למדידה הקודמת:
-`src/app/api/health/route.ts` עושה HEAD-count על `categories` דרך
-admin client (אפס `float`/כסף במסלול), `src/app/api/ready/route.ts`
-מריץ `runReadyChecks()` על חמישה תלויות. `git log -3` על שני הקבצים
-ו-`src/lib/health/ready.ts` מראה אפס קומיט נוגע מאז M13-c76. **נמדד
-ישירות מול פרודקשן**: `curl https://www.kenyonexpress.co.il/api/health`
-→ `200 {"ok":true,"database":"ok","latency_ms":205}`;
-`curl .../api/ready` → `503 {"ok":false,"checks":{"database":"ok",
-"redis":"ok","meilisearch":"down","r2":"not_configured",
-"cardcom":"not_configured"}}`. **זהה בדיוק ל-M13-c67..M13-c76**:
-`meilisearch:"down"` נשאר חוסם ידוע (`docs/BACKLOG.md`, אין פריסת
-HEAD, חוסם #2 למעלה), liveness (`/api/health`) כן `200`. **אפס דריפט
-מ-M13-c76.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+**M14-c77 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit" — זהה למילה למשימות M14-c66..M14-c76. נבדק מול
+Vercel (MCP, read-only, פרויקט `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`):
+`list_deployments` (target=production) מראה את אותה פריסה חיה בדיוק
+שנמצאה מ-M14-c73 ואילך — `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
+`githubCommitRef=main`, `githubCommitSha=18ed044b2` ("Wave 6: build
+success"). `filter_project_envs` מראה `SENTRY_DSN`/
+`NEXT_PUBLIC_SENTRY_DSN` עדיין מוגדרים, **אותו `createdAt`
+`1790918429743`** כמו בכל בדיקה קודמת — לא נוספו ולא הוסרו. **תשובה
+לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
+`git merge-base --is-ancestor 18ed044b2 HEAD` נכשל (הענפים מפוצלים),
+`git log 18ed044b2..HEAD` מחזיר **927** קומיטים (היה 909 ב-M14-c76),
+`git log HEAD..18ed044b2` מחזיר **109** ללא שינוי. HEAD כרגע
+`90aebfae3`. **אפס דריפט מ-M14-c76** — אותו חוסם בדיוק, פורט מלא
+ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם 2 למטה). הסוכן
+לא נגע ב-Vercel מעבר לקריאות read-only (`list_deployments`,
+`filter_project_envs`) ולא ביצע/ביטל שום פריסה או שינוי env. ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
 NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`). פריט
 אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה,
 אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
 
-**M01-c77..M12-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c77 לשמירה על תקרת 300 שורות).** שנים-עשר פריטי אימות-בלבד:
+**M01-c77..M13-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M14-c77 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי אימות-בלבד:
 שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה
 (3.53/2.52/1.69, דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`),
 type-check, test, build, TODO/FIXME (שני ה-marker הידועים
@@ -32,17 +36,17 @@ type-check, test, build, TODO/FIXME (שני ה-marker הידועים
 (100/100/100 ב-/ וב-`/product/צימר-מאסטר`), knip (201/5/1/271/197/4,
 אפס מועמד חדש), knip מחדש (אפס מועמד חדש), מיגרציות ממתינות (60 קבצים
 ללא שינוי, חוסם #3 19 קבצים ללא שינוי), sitemap.xml (79 כתובות,
-`urlset` שטוח, אפס דריפט), ו-robots.txt (12 שורות `Disallow`, עדיין
-חסרות ארבע, חוסם #2 ללא שינוי) — אפס דריפט/שבור לתיקון בכולם, ארבעת
+`urlset` שטוח, אפס דריפט), robots.txt (12 שורות `Disallow`, עדיין
+חסרות ארבע, חוסם #2 ללא שינוי), ו-`/api/health`/`/api/ready` (200/503
+זהה, `meilisearch:"down"`) — אפס דריפט/שבור לתיקון בכולם, ארבעת
 השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c77, נדחסו שוב ב-M02-c77 לשמירה על תקרת 300 שורות).** שמונה-עשר
-פריטי תור/תחזוקה/אימות-בלבד: Sentry vs HEAD ממתין להחלטת אופיר (חוסם 2
-למטה, אותה פריסה בדיוק), robots.txt/sitemap.xml ללא שינוי (חוסם ידוע),
-מיגרציות ממתינות, knip, Lighthouse 100/100/100, TODO/FIXME, JSON-LD,
-console/hydration, שערים חזותיים קטגוריה (2.93/1.94/1.53) ומוצר
-(4.50/4.07/3.25) — אפס דריפט בכולם, ארבעת השערים ירוקים בכולם.
+הזו ב-M01-c77, נדחסו שוב ב-M02-c77 לתקרת 300 שורות).** שמונה-עשר פריטי
+תור/תחזוקה/אימות-בלבד: Sentry vs HEAD (חוסם 2 למטה), robots.txt/
+sitemap.xml (חוסם ידוע), מיגרציות ממתינות, knip, Lighthouse 100/100/100,
+TODO/FIXME, JSON-LD, console/hydration, שערי קטגוריה (2.93/1.94/1.53)
+ומוצר (4.50/4.07/3.25) — אפס דריפט בכולם, ארבעת השערים ירוקים בכולם.
 
 **M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
 תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c76,

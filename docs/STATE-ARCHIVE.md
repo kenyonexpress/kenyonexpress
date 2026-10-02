@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c77 (הועבר מ-STATE.md ב-M14-c77, לשמירה על תקרת 300 שורות)
+
+**M13-c77 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". קוד זהה למדידה הקודמת:
+`src/app/api/health/route.ts` עושה HEAD-count על `categories` דרך
+admin client (אפס `float`/כסף במסלול), `src/app/api/ready/route.ts`
+מריץ `runReadyChecks()` על חמישה תלויות. `git log -3` על שני הקבצים
+ו-`src/lib/health/ready.ts` מראה אפס קומיט נוגע מאז M13-c76. **נמדד
+ישירות מול פרודקשן**: `curl https://www.kenyonexpress.co.il/api/health`
+→ `200 {"ok":true,"database":"ok","latency_ms":205}`;
+`curl .../api/ready` → `503 {"ok":false,"checks":{"database":"ok",
+"redis":"ok","meilisearch":"down","r2":"not_configured",
+"cardcom":"not_configured"}}`. **זהה בדיוק ל-M13-c67..M13-c76**:
+`meilisearch:"down"` נשאר חוסם ידוע (`docs/BACKLOG.md`, אין פריסת
+HEAD, חוסם #2 למעלה), liveness (`/api/health`) כן `200`. **אפס דריפט
+מ-M13-c76.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`). פריט
+אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה,
+אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+
 ## M11-c77 (הועבר מ-STATE.md ב-M12-c77, לשמירה על תקרת 300 שורות)
 
 **M11-c77 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh
