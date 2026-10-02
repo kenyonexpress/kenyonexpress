@@ -1,23 +1,27 @@
-RESUME FROM: M12-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c76 - DONE, sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M13-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c76 - DONE, robots.txt נבדק מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c76 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
-מחזיר `<urlset>` שטוח (לא `sitemapindex`), עדיין גרסת `a388118f1`
-(אפס דריפט מ-M11-c75). חמשת תתי-המפות של הקוד הנוכחי —
-`/sitemap/{content,suppliers,regions,categories,products}.xml` — כולן
-`404` בפרודקשן. בקוד: `git log -1` על חמשת קבצי ה-sitemap מחזיר
-`b209770c4` (09.09), אפס שינוי מ-M11-c75 (`63c16cf77`); `pnpm build`
-מאשר חמשת הנתיבים + `/sitemap.xml` ב-manifest. חוסם #2 למעלה ללא
-שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת השערים ירוקים:
-`type-check`/`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים), `build` exit 0. אפס שינוי כסף/סכימה.
-קובץ יחיד: `STATE.md`.
+**M12-c76 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". `curl https://www.kenyonexpress.co.il/robots.txt`
+מחזיר 12 שורות `Disallow` (`redeem`,`coupon`,`account`,`supplier`,
+`scan`,`admin`,`checkout`,`cart`,`auth`,`api`,`reset-password`,
+`forgot-password`) — עדיין חסרות `/gift/`,`/order/`,`/wishlist/s/`
+ו-`/debug/`, זהה בדיוק למדידת M12-c75. בקוד: `src/app/robots.ts`
+כבר כולל את כל 15 השורות (`4d370202528` תוקן ב-M12-c67, `git log -1`
+על הקובץ מראה אפס שינוי נוסף מאז), ו-`pnpm build` מאשר `/robots.txt`
+ב-manifest עם הרשימה המלאה. אפס דריפט קוד; הסיבה היא חוסם #2 למעלה
+(פריסת Production תקועה על `a388118f1`), לא קוד — אותה מסקנה כמו
+M11-c76/sitemap. ארבעת השערים ירוקים: `type-check`/`lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`build` exit 0. אפס שינוי כסף/סכימה. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**M10-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M11-c76 לשמירה על תקרת 300 שורות).** שבעה פריטי תחזוקה/אימות-בלבד:
+**M11-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M12-c76 לשמירה על תקרת 300 שורות).** שמונה פריטי תחזוקה/אימות-בלבד:
+M11-c76 — sitemap.xml נבדק מחדש מול פרודקשן, עדיין `urlset` שטוח,
+חמשת תתי-המפות `404`, אפס דריפט מ-M11-c75.
 M10-c76 — מיגרציות ממתינות נבדקו מחדש מול git (בסיס M10-c75), 60
 קבצים ללא שינוי, אפס מיגרציה הוחלה. M09-c76 — knip נבדק מחדש, אפס
 מועמד חדש. M08-c76 — Lighthouse mobile `/` ו-`/product/צימר-מאסטר`,

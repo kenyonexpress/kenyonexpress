@@ -40908,6 +40908,21 @@ CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
 build` exit 0 נקי, זהה בתוצאתו ל-M06-c75. אפס שינוי קוד ייצור. קבצים:
 `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
+## M11-c76 (הועבר מ-STATE.md ב-M12-c76, לשמירה על תקרת 300 שורות)
+
+**M11-c76 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
+מחזיר `<urlset>` שטוח (לא `sitemapindex`), עדיין גרסת `a388118f1`
+(אפס דריפט מ-M11-c75). חמשת תתי-המפות של הקוד הנוכחי —
+`/sitemap/{content,suppliers,regions,categories,products}.xml` — כולן
+`404` בפרודקשן. בקוד: `git log -1` על חמשת קבצי ה-sitemap מחזיר
+`b209770c4` (09.09), אפס שינוי מ-M11-c75 (`63c16cf77`); `pnpm build`
+מאשר חמשת הנתיבים + `/sitemap.xml` ב-manifest. חוסם #2 למעלה ללא
+שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת השערים ירוקים:
+`type-check`/`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים), `build` exit 0. אפס שינוי כסף/סכימה.
+קובץ יחיד: `STATE.md`.
+
 ## M07-c76 (הועבר מ-STATE.md ב-M08-c76, לשמירה על תקרת 300 שורות)
 
 **M07-c76 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older
