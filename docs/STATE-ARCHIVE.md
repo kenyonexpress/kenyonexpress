@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c70 (הועבר מ-STATE.md ב-M14-c70, לשמירה על תקרת 300 שורות)
+
+**M13-c70 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד:
+`git log 75271d80d..HEAD -- src/app/api/health src/app/api/ready
+src/lib/health` (בסיס: M13-c69) — ריק, אפס קומיט נוגע. **נמדד מול
+פרודקשן בפועל** (`https://www.kenyonexpress.co.il`): `/api/health` →
+`200` (`{"ok":true,"database":"ok","latency_ms":201}`); `/api/ready` →
+`503` (`database:"ok"`, `redis:"ok"`, `meilisearch:"down"`,
+`r2`/`cardcom` `not_configured`) — **זהה ל-M13-c67..M13-c69** (חוסם:
+Meilisearch לא נגיש מפרודקשן), לא ממצא חדש. `/api/health` מחזיר `200`
+כנדרש במשימה; `/api/ready` `503` הוא תלות חיצונית ידועה, לא פגם בקוד.
+**אפס דריפט מ-M13-c69.** ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3322 pnpm build`,
+`/api/health`/`/api/ready` כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד:
+`STATE.md`.
+
+**שמונה-עשר פריטי אימות-בלבד של סבב c69, אפס דריפט בכולם** (הועבר מ-
+STATE.md ב-M14-c70, סיכום שחי זמנית ב-STATE.md בין M01-c70 ל-M14-c70):
+STATE.md מתחת לתקרה (M18); RTL על `/` ו-`/product` (M17); JSON-LD
+Product+BreadcrumbList בכל דף מוצר (M16); אפס console error/hydration
+רביעית ברצף (M15); Sentry release מול HEAD, הפער גדל ל-406 קומיטים
+(M14); /api/health ו-/api/ready מול פרודקשן (M13); robots.txt (חוסם 2,
+M12); sitemap.xml חי `200` חמש תת-מפות (M11); 19 מיגרציות ממתינות
+(M10); deps/exports מתים עם `knip`, 271/197 (M09); Lighthouse mobile
+100/100/100 (M08); TODO/FIXME (M07); `build`/`test`/`type-check`
+(M04-M06); שערים חזותיים קטגוריה (3.53/2.52/1.69, M03), מוצר
+(4.96/4.58/3.25, M02), בית (8.58/9.01/4.16, M01). ארבעת השערים ירוקים
+בכל שמונה-עשר.
+
 ## M12-c70 (הועבר מ-STATE.md ב-M13-c70, לשמירה על תקרת 300 שורות)
 
 **M12-c70 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
