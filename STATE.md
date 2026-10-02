@@ -1,25 +1,31 @@
-RESUME FROM: M14-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c76 - DONE, health/ready נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M15-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c76 - DONE, Sentry release vs HEAD נבדק מחדש, עדיין מפוצל, אפס דריפט)
 
 ## המשך מ:
 
-**M13-c76 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". נבדק מול פרודקשן בפועל:
-`curl https://www.kenyonexpress.co.il/api/health` → `200`
-(`{"ok":true,"database":"ok","latency_ms":126}`), `/api/ready` → `503`
-(`{"ok":false,"checks":{"database":"ok","redis":"ok",
-"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
-זהה בדיוק ל-M13-c67..M13-c75: `meilisearch:"down"` נשאר חוסם ידוע
-(חוסם #16 למעלה, לא לתיקון אוטומטי — דורש בדיקת אופיר את המארח/מפתח
-החיצוני). ה-liveness עצמו (`/api/health`) כן `200`. **אפס דריפט
-מ-M13-c75.** ארבעת השערים ירוקים: `type-check`/`lint` נקי (12 שערים,
-2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
-`build` exit 0. אפס שינוי כסף/סכימה. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M14-c76 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit". נבדק מול Vercel (MCP, read-only, פרויקט `kenyonexpress`/
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`): `list_deployments` (target=production)
+מראה את אותה פריסה חיה בדיוק שנמצאה ב-M14-c73..M14-c75 —
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `githubCommitRef=main`,
+`githubCommitSha=18ed044b2` ("Wave 6: build success"). `filter_project_envs`
+עדיין מראה `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` מוגדרים (נוספו ב-M14-c73,
+הערה "Set 2026-10-02 via MCP"), אותם ערכים, לצד `SENTRY_AUTH_TOKEN`.
+**תשובה לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
+`git merge-base --is-ancestor 18ed044b2 HEAD` נכשל (הענפים מפוצלים),
+`git log 18ed044b2..HEAD` מחזיר **909** קומיטים (היה 855 ב-M14-c73),
+`git log HEAD..18ed044b2` מחזיר **109** ללא שינוי. HEAD כרגע
+`4821382255`. **אפס דריפט מ-M14-c75** — אותו חוסם בדיוק, פורט מלא
+ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם 2 למטה).
+הסוכן לא נגע ב-Vercel מעבר לקריאות read-only (`list_deployments`,
+`filter_project_envs`) ולא ביצע/ביטל שום פריסה או שינוי env. ארבעת
+השערים ירוקים: `type-check`/`lint` נקי, `test` ירוק, `build` exit 0.
+אפס שינוי כסף/סכימה. קבצים: `STATE.md`.
 
-**M12-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M13-c76 לשמירה על תקרת 300 שורות).** תשעה פריטי תחזוקה/אימות-בלבד:
-M12-c76 — robots.txt נבדק מחדש מול פרודקשן, עדיין 12 שורות `Disallow`
+**M13-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M14-c76 לשמירה על תקרת 300 שורות).** עשרה פריטי תחזוקה/אימות-בלבד:
+M13-c76 — `/api/health`/`/api/ready` מול פרודקשן בפועל, `200`/`503`
+(meilisearch למטה, חוסם ידוע), אפס דריפט מ-M13-c75. M12-c76 — robots.txt נבדק מחדש מול פרודקשן, עדיין 12 שורות `Disallow`
 (חסרות `/gift/`,`/order/`,`/wishlist/s/`,`/debug/`), אפס דריפט מ-M12-c75.
 M11-c76 — sitemap.xml נבדק מחדש, עדיין `urlset` שטוח, חמשת תתי-המפות
 `404`, אפס דריפט מ-M11-c75. M10-c76 — מיגרציות ממתינות נבדקו מחדש מול
@@ -35,32 +41,16 @@ M07-c76 — TODO/FIXME נסרק מחדש, שני `TODO(cardcom)` כבר מתוע
 שלילי מ-M02-c75. ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
-תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c76
-לשמירה על תקרת 300 שורות).** M18-c75 — תחזוקת תיעוד, STATE.md נבדק
-מחדש מתחת לתקרת 300 שורות (299), ארכב את M17-c75 כדי לשמור מרווח.
-M15-c75 — אפס console error/hydration על `/`
-ו-`/product/צימר-מאסטר` (route-audit, 2/2), אפס דריפט מ-M15-c74.
-M14-c75 — Sentry release vs HEAD נבדק מחדש מול
-Vercel MCP (read-only): אותה פריסה בדיוק שנמצאה ב-M14-c74
-(`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main`@`18ed044b2`), אפס דריפט
-ב-env. M13-c75 — `/api/health`/`/api/ready` מול פרודקשן בפועל:
-`200`/`503` (meilisearch למטה, חוסם ידוע), אפס דריפט מ-M13-c74.
-M12-c75 — robots.txt חי עדיין 12 שורות `Disallow` (חסרות `/gift/`,
-`/order/`, `/wishlist/s/`, `/debug/`), אפס דריפט קוד מ-M12-c74. M11-c75 —
-sitemap.xml: גוף חי עדיין `<urlset>` שטוח (לא `sitemapindex`), חמשת נתיבי
-תתי-המפות עדיין 404, אפס דריפט קוד מ-M11-c74. M10-c75 —
-מיגרציות ממתינות נבדקו מחדש מול git בלבד (הבדיקה הישירה מול פרודקשן כבר
-רצה באותו יום ב-M10-c74), 60 קבצים, 19 חוסמים ללא שינוי, אפס דריפט.
-M09-c75 — knip נסרק מחדש (201/5/1/271/197/4, אפס מועמד חדש מ-M09-c74).
-M08-c75 — Lighthouse mobile על `/` ו-`/product/צימר-מאסטר`, 100/100/100
-בשניהם, אפס דריפט מ-M08-c74. M07-c75 — TODO/FIXME נסרק מחדש,
-שני הסמנים (`cardcom.ts:254,319`) כבר מתועדים ב-`docs/BACKLOG.md` סעיף
-6, אפס דריפט מ-M07-c74. אפס דריפט בכולם, ארבעת השערים ירוקים
-בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב (כולם PASS),
-type-check/test/build, Lighthouse 100/100/100, RTL, JSON-LD,
-console/hydration, Sentry vs HEAD, health/ready, robots.txt,
-sitemap.xml, מיגרציות ממתינות (19 חוסמים), knip, TODO/FIXME, תחזוקת
-תיעוד.
+תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c76,
+נדחס שוב ב-M14-c76 לשמירה על תקרת 300 שורות).** M18-c75 — STATE.md
+מתחת לתקרה. M15-c75 — אפס console/hydration. M14-c75 — Sentry vs HEAD,
+אפס דריפט (ראו M14-c73 למעלה). M13-c75 — health/ready `200`/`503`.
+M12-c75/M11-c75 — robots.txt/sitemap.xml ללא שינוי. M10-c75 — מיגרציות
+ממתינות, 19 חוסמים. M09-c75 — knip אפס מועמד חדש. M08-c75 — Lighthouse
+100/100/100. M07-c75 — TODO/FIXME מתועד. אפס דריפט בכולם, ארבעת השערים
+ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה, type-check/test/build,
+Lighthouse, RTL, JSON-LD, console/hydration, Sentry, health/ready,
+robots/sitemap, מיגרציות, knip, TODO/FIXME, תיעוד.
 
 **M18-c73..M15-c73, M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
 כווצו ל-M02-c76 לשמירה על תקרת 300 שורות).** שלושה-עשר פריטי תור/
@@ -72,8 +62,9 @@ build/test/type-check, שערי קטגוריה/מוצר/בית), ארבעת הש
 (ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`; נמצא ראשון
 שם production הוחלף חי מחוץ לתור, `main`@`18ed044b2`, עם `SENTRY_DSN`
 חדש; מקור הפעולה לא ידוע, לא תוקן ולא הוחזר, פורט מלא ב-`docs/BACKLOG.md`
-סעיף 17).** **נבדק מחדש ב-M14-c74 וב-M14-c75 (למעלה): אפס דריפט** —
-אותה פריסה בדיוק, אותו `SENTRY_DSN`, עדיין ממתין להחלטת אופיר.
+סעיף 17).** **נבדק מחדש ב-M14-c74, M14-c75 וב-M14-c76 (למעלה): אפס
+דריפט** — אותה פריסה בדיוק, אותו `SENTRY_DSN`, הענפים מפוצלים יותר
+(909/109 ב-M14-c76, היה 855/109 ב-M14-c73), עדיין ממתין להחלטת אופיר.
 
 **M18-c68..M01-c72 (שבעה סבבים שלמים: c68-c72, ארכיון מלא ב-
 `docs/STATE-ARCHIVE.md`, שום שורה לא נמחקה מהארכיון עצמו).** חמישים
