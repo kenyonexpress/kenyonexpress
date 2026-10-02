@@ -1,37 +1,37 @@
-RESUME FROM: M09-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c72 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
+RESUME FROM: M10-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c72 - DONE, knip נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M08-c72 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
-/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
-`type-check` (`tsc --noEmit` נקי), `lint` (12 שערים, 2037 קבצים, אפס
-תיקונים), `test` (614/614 קבצים, 7337/7349 עברו, 12 מדולגים), `build`
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3417 pnpm build`, exit 0). שרת `pnpm start` עצמאי על פורט 3417
-(אותם משתני build; שבעה שרתים מקבילים של סוכנים אחרים כבר תפסו
-3311-3316/3618/3911/4211, 3417 נבחר כפנוי), `cwd` אומת (`/usr/sbin/lsof -p
-<pid> -a -d cwd`) שזה הריפו הזה, כבה אחרי המדידה. מוצר לדוגמה: `צימר-מאסטר`
-(כמו ב-M08-c66..M08-c71; ה-slug האנגלי `tzimer-master` ששימש בטקסט
-ההיסטורי אינו קיים, `404` - ה-slug האמיתי הוא העברית `צימר-מאסטר`, אומת
-`200`). `scripts/lighthouse-smoke.mjs --throttling-method=provided`
-(המתכון התקף, `docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**,
-`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c71. אפס שינוי
-קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
+**M09-c72 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat 38e570855..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c71) ריק
+— אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c71, אפס מועמד חדש. חמש ה-deps
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) ו-`supabase` כ-unlisted
+binary זוהו שוב כאותם false-positive מתועדים (M09-c66/c69/c70/c71) —
+צרכן אמיתי לכל אחת, לא נבדקו פרטנית מחדש השבוע מעבר לאימות שהרשימה לא
+השתנתה. ארבעת ה-duplicate exports זהים ל-M09-c69/c70/c71 (aliases
+מכוונים). אפס הסרה, אין מועמד חדש מעבר למה שכבר הוסר ב-M09-c66/M09-c67.
+אפס שינוי כסף/סכימה. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349
+עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3417 pnpm
+build`, route manifest מלא). קובץ יחיד: `STATE.md`.
 
-**M07-c72..M05-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M08-c72 לשמירה על תקרת 300 שורות).** M07-c72: TODO/FIXME נסרק
-מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c71. M06-c72: `pnpm build`
-נבדק מחדש, `EXIT:0`, אפס דריפט מ-M06-c71. M05-c72: `pnpm test` נבדק מחדש,
-614/614 קבצים (7337/7349, 12 מדולגים), אפס דריפט מ-M05-c71. ארבעת
-השערים ירוקים בשלושתם, אפס שינוי קוד ייצור.
-
-**M04-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M06-c72 לשמירה על תקרת 300 שורות).** ארבעה פריטים: M04-c72
-(type-check, `EXIT:0`, אפס דריפט), ושלושה פריטי שער חזותי - M03-c72
-(קטגוריה, 3.53/2.31/1.58%, אפס דריפט), M02-c72 (מוצר, 4.96/4.58/3.25%,
-אפס דריפט) ו-M01-c72 (בית, 8.58/9.01/4.16%, אפס דריפט). ארבעת השערים
-ירוקים בכולם, אפס שינוי קוד ייצור.
+**M08-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M09-c72 לשמירה על תקרת 300 שורות).** M08-c72: Lighthouse mobile
+על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c71.
+M07-c72: TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט
+מ-M07-c71. M06-c72: `pnpm build` נבדק מחדש, `EXIT:0`, אפס דריפט מ-M06-c71.
+M05-c72: `pnpm test` נבדק מחדש, 614/614 קבצים (7337/7349, 12 מדולגים),
+אפס דריפט מ-M05-c71. M04-c72: type-check, `EXIT:0`, אפס דריפט. שלושה
+פריטי שער חזותי - M03-c72 (קטגוריה, 3.53/2.31/1.58%, אפס דריפט), M02-c72
+(מוצר, 4.96/4.58/3.25%, אפס דריפט) ו-M01-c72 (בית, 8.58/9.01/4.16%, אפס
+דריפט). ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c72 לשמירה על תקרת 300 שורות).** שמונה-עשר פריטי אימות-בלבד,

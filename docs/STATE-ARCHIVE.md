@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c72..M05-c72 (הועבר מ-STATE.md ב-M09-c72, לשמירה על תקרת 300 שורות)
+
+**M08-c72 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
+`type-check` (`tsc --noEmit` נקי), `lint` (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` (614/614 קבצים, 7337/7349 עברו, 12 מדולגים), `build`
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3417 pnpm build`, exit 0). שרת `pnpm start` עצמאי על פורט 3417
+(אותם משתני build; שבעה שרתים מקבילים של סוכנים אחרים כבר תפסו
+3311-3316/3618/3911/4211, 3417 נבחר כפנוי), `cwd` אומת (`/usr/sbin/lsof -p
+<pid> -a -d cwd`) שזה הריפו הזה, כבה אחרי המדידה. מוצר לדוגמה: `צימר-מאסטר`
+(כמו ב-M08-c66..M08-c71; ה-slug האנגלי `tzimer-master` ששימש בטקסט
+ההיסטורי אינו קיים, `404` - ה-slug האמיתי הוא העברית `צימר-מאסטר`, אומת
+`200`). `scripts/lighthouse-smoke.mjs --throttling-method=provided`
+(המתכון התקף, `docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c71. אפס שינוי
+קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
+
+**M07-c72..M05-c72.** M07-c72: TODO/FIXME נסרק
+מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c71. M06-c72: `pnpm build`
+נבדק מחדש, `EXIT:0`, אפס דריפט מ-M06-c71. M05-c72: `pnpm test` נבדק מחדש,
+614/614 קבצים (7337/7349, 12 מדולגים), אפס דריפט מ-M05-c71. ארבעת
+השערים ירוקים בשלושתם, אפס שינוי קוד ייצור.
+
 ## M06-c72, M05-c72 (הועבר מ-STATE.md ב-M07-c72, לשמירה על תקרת 300 שורות)
 
 **M06-c72 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
