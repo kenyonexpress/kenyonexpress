@@ -1,30 +1,30 @@
-RESUME FROM: M08-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c72 - DONE, TODO/FIXME נסרק מחדש, אפס דריפט)
+RESUME FROM: M09-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c72 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c72 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than 7
-days resolve or file in docs/BACKLOG.md". סריקה מלאה חוזרת (`grep -rn -E
-'TODO|FIXME'` על `src`, `scripts`, `packages`) ואימות דרך
-`node scripts/final-audit.mjs` (שורת `work markers (TODO/FIXME/HACK/XXX)`:
-`ok 0 (of 2)` - אפס סמנים לא מתועדים מתוך שניים). אותם שני סמנים בלבד,
-שניהם כבר מתועדים: `src/lib/payments/cardcom.ts:254` (זיכוי לגאסי,
-מ-24.07.2026) ו-`:319` (מסמכים, מ-07.08.2026), שניהם `TODO(cardcom)`
-עם scope, ממתינים לאותו חוסם (Cardcom אמיתי, `docs/BACKLOG.md` סעיף 6,
-מתועד גם ב-`Tracked in #41`/`#42` בקוד עצמו). `src/lib/whatsapp.test.ts:91`
-אומת שוב כמחרוזת ליטרלית `'TODO'` ולא סמן עבודה - לא נספר על ידי הסקריפט.
-אפס דריפט מ-M07-c71/c70/c69/c68/c67: אין סמן חדש, אין סמן שהפסיק לירות,
-אין צורך בעריכת `docs/BACKLOG.md`. ארבעת השערים הורצו במלואם: `type-check`
-נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `test` נקי (614/614
-קבצים, 7337/7349 עברו, 12 מדולגים), `build` נקי (`.next` נמחק תחילה,
-exit 0). אין קבצי קוד שהשתנו - commit זה תיעודי בלבד (`STATE.md`/
-`docs/STATE-ARCHIVE.md`).
+**M08-c72 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". ארבעת השערים רצו כקדם-תנאי, כולם exit 0:
+`type-check` (`tsc --noEmit` נקי), `lint` (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` (614/614 קבצים, 7337/7349 עברו, 12 מדולגים), `build`
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3417 pnpm build`, exit 0). שרת `pnpm start` עצמאי על פורט 3417
+(אותם משתני build; שבעה שרתים מקבילים של סוכנים אחרים כבר תפסו
+3311-3316/3618/3911/4211, 3417 נבחר כפנוי), `cwd` אומת (`/usr/sbin/lsof -p
+<pid> -a -d cwd`) שזה הריפו הזה, כבה אחרי המדידה. מוצר לדוגמה: `צימר-מאסטר`
+(כמו ב-M08-c66..M08-c71; ה-slug האנגלי `tzimer-master` ששימש בטקסט
+ההיסטורי אינו קיים, `404` - ה-slug האמיתי הוא העברית `צימר-מאסטר`, אומת
+`200`). `scripts/lighthouse-smoke.mjs --throttling-method=provided`
+(המתכון התקף, `docs/PERFORMANCE-BUDGET.md`): `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c71. אפס שינוי
+קוד/סכימה/כסף. קובץ יחיד: `STATE.md`.
 
-**M06-c72, M05-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M07-c72 לשמירה על תקרת 300 שורות).** M06-c72: `pnpm build` נבדק
-מחדש, `EXIT:0`, אפס דריפט מ-M06-c71. M05-c72: `pnpm test` נבדק מחדש,
+**M07-c72..M05-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M08-c72 לשמירה על תקרת 300 שורות).** M07-c72: TODO/FIXME נסרק
+מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c71. M06-c72: `pnpm build`
+נבדק מחדש, `EXIT:0`, אפס דריפט מ-M06-c71. M05-c72: `pnpm test` נבדק מחדש,
 614/614 קבצים (7337/7349, 12 מדולגים), אפס דריפט מ-M05-c71. ארבעת
-השערים ירוקים בשניהם, אפס שינוי קוד ייצור.
+השערים ירוקים בשלושתם, אפס שינוי קוד ייצור.
 
 **M04-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M06-c72 לשמירה על תקרת 300 שורות).** ארבעה פריטים: M04-c72
