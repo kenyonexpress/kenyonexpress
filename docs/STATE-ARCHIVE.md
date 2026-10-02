@@ -40675,3 +40675,28 @@ NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0, `pnpm start
 12 מדולגים, זהה), `build` exit 0 נקי. לא פריט `compare.mjs` (בדיקת
 לוגיקת כיוון, לא פריסת פיקסלים — תקדים M17-c67..M17-c72). אפס שינוי קוד
 ייצור. קובץ יחיד: `STATE.md`.
+
+**M15-c75 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66..M15-c74. **נבדק מחדש,
+אפס דריפט.** `git log 1656281ed..HEAD -- src/app src/components
+e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c74) ריק — 17 קומיטים
+מאז, כולם תיעוד-בלבד (`STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`). נבנה `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3332 pnpm
+build`, exit 0), הורם `pnpm start -p 3332` (פורט פנוי, אומת `curl` 200
+ו-`lsof -p -d cwd` על ה-pid לפני ההרצה — זהה לנתיב הפרויקט הנוכחי, לא
+checkout זר), והורצו `anon /` ו-`anon dynamic catalogue routes` מתוך
+`e2e/route-audit.spec.ts` עם `E2E_BASE_URL` (לא `BASE_URL` — ניסיון
+ראשון עם השם השגוי גרם ל-Playwright לחזור לברירת המחדל `pnpm dev` על
+פורט 3000 ולהריץ בפועל נגד שרת זר שכבר רץ שם מסשן מקביל אחר; תוקן
+ונמדד מחדש נגד השרת המאומת על 3332 בלבד), chromium בלבד, `--workers=1`,
+**2/2 עברו** (52 שניות). אומת ישירות מתוך
+`/tmp/route-audit-m15c75.jsonl` (8 שורות): אפס `consoleErrors`/
+`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל השורות, כולל `/`,
+`/product/צימר-מאסטר` (פעיל, זהה ל-M15-c66..M15-c74) ו-`/product/.../reviews`.
+**אין ממצא קוד לתקן**; אימות-בלבד, עשירית ברצף עם אותה תוצאה. ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf .next && pnpm
+build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+M04-c66..M15-c74). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
+ל-`docs/STATE-ARCHIVE.md`).
