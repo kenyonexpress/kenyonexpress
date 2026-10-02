@@ -1,20 +1,29 @@
-RESUME FROM: M07-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c78 DONE: build גייט אומת נקי, אפס דריפט קוד)
+RESUME FROM: M08-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c78 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c78 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
-commit" — זהה לתבנית "fix drift commit" החוזרת (M06-c77 ולפניו). `pwd`
-אומת, עץ עבודה נקי (`git status --short` ריק), `HEAD` עדיין
-`350e7a5ea` (M05-c78). אומת שאין שינוי קוד ייצור מאז: `git log --oneline
-d9ea23217..HEAD -- src/ packages/ supabase/` ריק (אפס קומיטים מ-M04-c78
-ועד כה). אין דריפט לתקן. ארבעת השערים: `type-check` נקי (אפס שגיאות
-`tsc --noEmit`), `lint` נקי (12 שערים, 2037 קבצים, זהה), `test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים — זהה ל-M05-c78 בדיוק), `rm -rf .next
-&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
-build` exit 0 נקי (`BUILD_ID` חדש נכתב: `W99DDCWzZG84e1hggAXzk`). לא
-פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c77 ואילך). אפס שינוי קוד
-ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M07-c78 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
+(M07-c77/c76/c75/c74/c67). נסרק מחדש `src/` (`.ts`/`.tsx`/`.js`/`.mjs`,
+`grep -rnE "TODO|FIXME"`, קבצי `.test.*` הוחרגו): שני ה-marker האמיתיים
+היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319` (שניהם
+`TODO(cardcom)`), תאריך הוספה אומת שוב דרך `git log -S`/`git log
+--diff-filter=A` — 24.07.2026 ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים.
+שניהם כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל
+(אימות live מול המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
+(`'TODO'` ב-`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית
+בבדיקה, לא marker.) ארבעת השערים ירוקים: `type-check` נקי (`tsc
+--noEmit`), `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים — זהה ל-M06-c78), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0 נקי (`BUILD_ID` חדש: `b6jEAprIpVeVdHCEsnymG`). לא פריט
+חזותי, `compare.mjs` לא נדרש (תקדים M06-c78/M04-c77 ואילך). אפס שינוי
+קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M06-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M07-c78).** build גייט אומת נקי, אפס דריפט קוד מאז M04-c78. ארבעת
+השערים ירוקים, אפס שינוי קוד ייצור.
 
 **M05-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M06-c78).** test גייט אומת נקי, אפס דריפט קוד מאז M04-c78.

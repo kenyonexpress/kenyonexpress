@@ -2,6 +2,21 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c78 (הועבר מ-STATE.md ב-M07-c78, לשמירה על תקרת 300 שורות)
+
+**M06-c78 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
+commit" — זהה לתבנית "fix drift commit" החוזרת (M06-c77 ולפניו). `pwd`
+אומת, עץ עבודה נקי (`git status --short` ריק), `HEAD` עדיין
+`350e7a5ea` (M05-c78). אומת שאין שינוי קוד ייצור מאז: `git log --oneline
+d9ea23217..HEAD -- src/ packages/ supabase/` ריק (אפס קומיטים מ-M04-c78
+ועד כה). אין דריפט לתקן. ארבעת השערים: `type-check` נקי (אפס שגיאות
+`tsc --noEmit`), `lint` נקי (12 שערים, 2037 קבצים, זהה), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים — זהה ל-M05-c78 בדיוק), `rm -rf .next
+&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0 נקי (`BUILD_ID` חדש נכתב: `W99DDCWzZG84e1hggAXzk`). לא
+פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c77 ואילך). אפס שינוי קוד
+ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M04-c78 (הועבר מ-STATE.md ב-M05-c78, לשמירה על תקרת 300 שורות)
 
 **M04-c78 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix
