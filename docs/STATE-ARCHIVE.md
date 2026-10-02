@@ -2,6 +2,34 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c77 (הועבר מ-STATE.md ב-M03-c77, לשמירה על תקרת 300 שורות)
+
+**M02-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start -p 3311` לא היה חי בתחילת הפריט
+(`lsof` ריק); הופעל מחדש (PID מאומת, `cwd` = שורש הריפו). נבדק לפני
+ההרצה שאין שינוי קוד ייצור מאז `b6bc3d786` (`git diff --stat` ריק על
+`src/`, `supabase/`, `packages/`, `public/`, `next.config.ts`,
+`package.json`) — ה-`.next` הקיים תקף. **שישה תהליכי `pnpm start`
+נוספים נמצאו חיים באותו רגע על פורטים אחרים (4211/3911/3316/3618
+ועוד), כולם עם אותו `cwd` — ססיות מקבילות אמיתיות (ראו
+parallel-claude-sessions בזיכרון), לא תהליך זר.** הורץ `LOCAL_BASE=
+http://localhost:3311 node scripts/compare.mjs --page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
+בחזית (חרגה מ-timeout כלי ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן
+לסיומה המלאה דרך Monitor לפני כל רישום). **תוצאה: `380`=4.96%,
+`768`=4.58%, `1440`=3.25%, שלושתם `PASS` מתחת לשער 11%, זהה בדיוק
+ל-M02-c75 (4.96/4.58/3.25) ושיפור רעש קל מ-M02-c76 (4.50/4.07/3.25) —
+אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס הקפוא ארוך בהרבה מהעמוד שלנו)
+קיימת כבר מ-M02-c74 ואילך, השער עצמו מודד רק "both painted" מתוך
+2600px ראשונים כפי שההודעה מנחה. השורות נכתבו אוטומטית ל-
+`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `9ae4e08a9`
+(HEAD בתחילת הפריט). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3311 pnpm build` exit 0 נקי (שרת 3311 נשאר חי ועונה
+`200` אחרי הבנייה). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/UI-PARITY-REPORT.md`. התור הבא: `M03-c77`.
+
 ## M01-c77 (הועבר מ-STATE.md ב-M02-c77, לשמירה על תקרת 300 שורות)
 
 **M01-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
