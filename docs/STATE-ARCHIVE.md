@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c78 (הועבר מ-STATE.md ב-M17-c78, לשמירה על תקרת 300 שורות)
+
+**M16-c78 - DONE (03.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למשימות M16-c66..M16-c77.
+**נבדק מחדש, אפס דריפט.** `git log 7137c04ec..HEAD -- src/app
+src/components src/lib` (בסיס: checkpoint M16-c77) ריק: אפס קומיטים
+בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
+מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-`buildBreadcrumbJsonLd`
+(`@type: 'BreadcrumbList'`), ו-`src/app/(store)/product/[slug]/page.tsx`
+מזריק את שניהם דרך `jsonLdScript`. **נבדק גם בזמן ריצה בפועל**: נבנה
+`.next` חדש לגמרי (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3362 pnpm build`, exit 0), הורם
+`pnpm start -p 3362` (פורט פנוי, אומת `curl` 200 ו-`lsof -p -a -d cwd`
+על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא checkout זר), ונשלף
+`supabase/catalogue-snapshot.json` (44 מוצרים). **תשעה סלאגים נבדקו
+ב-curl**, כולל שמונה מהשורות הפגומות מחוסם #11 (שתי `מאסטר`-כפילות,
+`מוצר-לדוגמא`, `bar-drink` לטיני, `טיפול-פנים-copy`, `צימר-מאסטר-copy`,
+`צימר-מאסטר-copy-copy`, `חיתולי-פמפרס-העתק`) ועוד סלאג תקין אחד — **כל
+התשעה `200`, בלוק `Product` אחד ובלוק `BreadcrumbList` אחד**, זהה
+ל-M16-c77. **אין ממצא לתקן**: אימות-בלבד, זהה לאחד-עשר הסבבים הקודמים
+(M16-c66..M16-c77). ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי.
+לא חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c77). אפס שינוי
+קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M15-c78 (הועבר מ-STATE.md ב-M16-c78, לשמירה על תקרת 300 שורות)
 
 **M15-c78 - DONE (03.10.2026).** משימת התור: "Verify no console errors
