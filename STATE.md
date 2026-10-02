@@ -1,62 +1,46 @@
-RESUME FROM: M15-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c73 - BLOCKED, קריטי: production עבר פריסה+שינוי env מחוץ לתור הזה, לא מ-HEAD)
+RESUME FROM: M16-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c73 - DONE, אפס console error/hydration על `/` ו-`/product` נבדק מחדש)
 
 ## המשך מ:
 
-**M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר.**
-משימת התור: "Verify Sentry release matches HEAD commit" — זהה למילה
-למשימות M14-c66..M14-c72, אבל **הממצא הפעם שבר את הדפוס של שמונה סבבים
-רצופים**: production השתנה בפועל בין M14-c72 לכאן, **מחוץ ללולאת התור
-הזה**, בלי ששום פריט בתור ביצע זאת. כל הבדיקות למטה קריאה-בלבד; הסוכן
-לא כתב שום דבר ל-Vercel.
+**M15-c73 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66..M15-c72. **נבדק מחדש,
+אפס דריפט.** `git log 41e37ec7b..HEAD -- src/app src/components
+e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c72) ריק — 19 קומיטים
+מאז, כולם תיעוד-בלבד. נבנה `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3330 pnpm
+build`, exit 0), הורם `pnpm start -p 3330` (פורט פנוי, אומת `curl` 200
+ו-`lsof` על ה-pid/cwd לפני ההרצה), והורצו `anon ${path}` ו-`anon dynamic
+catalogue routes` מתוך `e2e/route-audit.spec.ts` (chromium + mobile-chrome,
+`--workers=1`), **264/264 עברו** (9.5 דקות, chromium מהיר, mobile-chrome
+כלל שחזור cart polling תקין בתוך תקציב ה-240s של הטסט). אומת ישירות
+מתוך `/tmp/route-audit-m15c73.jsonl` (276 שורות, שני הדפדפנים): אפס
+`consoleErrors`/`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל
+השורות, כולל `/`, `/products`, `/product/צימר-מאסטר` (פעיל, זהה
+ל-M15-c66..M15-c72) ו-`/product/.../reviews`. **תצפית לוואי, לא ממצא
+חדש**: לוג השרת רשם `supabase.rls_denied`/`reviews.public_read_failed`
+(`42501`) בזמן טעינת דף הביקורות — תואם בדיוק לחוסם הפתוח #3 פריט 247
+(`anon` בלי `SELECT` על `reviews`, מיגרציה ממתינה), לא דלף לקונסול
+הדפדפן ולכן לא שבר את השער. **אין ממצא קוד לתקן**; אימות-בלבד, שמינית
+ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
+`rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M04-c66..M15-c72). אפס שינוי קוד ייצור. קובץ יחיד:
+`STATE.md`.
 
-1. `filter_project_envs` (MCP Vercel, רשימה מלאה) על
-   `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` **כן מחזיר עכשיו**
-   `SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN` ב-Production (נעדרו בכל סבב
-   M14-c66..M14-c72). הערת היצירה של שתיהן: "Set 2026-10-02 via MCP",
-   `createdAt`≈05:20 UTC היום — כשעתיים לפני תחילת הסשן הזה.
-2. `get_deployment('www.kenyonexpress.co.il', withGitRepoInfo=true)`:
-   הפריסה החיה היא **`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`** (`READY`, נוצרה
-   05:42 UTC), בנויה מ-`githubCommitRef=main`, `githubCommitSha=18ed044b2`
-   ("Wave 6: build success") — **לא** `audit/final-audit`, **לא**
-   `a388118f1` שהיה חי בכל סבב קודם.
-3. `git merge-base --is-ancestor 18ed044b2 HEAD` נכשל — `main` ו-
-   `audit/final-audit` מפוצלים (109 קומיטים ב-`main` שאינם ב-HEAD, 855
-   ב-HEAD שאינם ב-`main`; תואם זיכרון `main-is-stale-phase5-is-mainline`,
-   לא טעות מדידה).
-4. **אומת חי, לא רק ב-API**: `curl -D- https://www.kenyonexpress.co.il/`
-   מחזיר `200`, וכותרת `content-security-policy`/`reporting-endpoints`
-   מצביעה על `https://o4511944582496256.ingest.de.sentry.io/...` עם
-   `sentry_key` אמיתי — Sentry רץ בפועל בפרודקשן כרגע.
-5. `get_project` מראה ניסיון פריסה נוסף **מיד אחרי זה שנכשל**
-   (`dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, `readyState=ERROR`, ~05:52 UTC,
-   `target=null`) — לא נחקר מעבר לזה.
-6. `list_deployments(target=production)` מראה שחמש הפריסות הידועות
-   מ-`audit/final-audit` (`291bc2d88`, `0bcbdac18`, `99b2079cb`,
-   `1083b8d8d`...) **עדיין כולן `ERROR`** — חוסם ה-deploy-preflight על
-   הענף הזה (חוסם #2 למטה) לא נפתר; הפריסה שהצליחה הגיעה מענף אחר לגמרי.
-7. **נבדק ונשלל כמקור**: `scripts/dns-watch.sh` (PID 976, רץ, launchd
-   `com.kenyonexpress.dnswatch`) — `logs/dns-watch.log` מראה `ns1/ns2.
-   vercel-dns.com` (לא Cloudflare) בכל שורה עד ועם 07:21 UTC (אחרי זמן
-   הפריסה). זו **לא** ההדק מזיכרון `dns-cutover-loop-paused-pending-review`.
-   מקור הפעולה לא ידוע לסוכן הזה; בוצעה דרך אותו MCP connector של Vercel
-   שזמין גם לסשן הזה, קרוב לוודאי מחוץ ללולאת ה-terminal.
-
-**תשובה לשאלת התור: לא, ה-release אינו תואם ל-HEAD.** יש עכשיו release
-אמיתי עם Sentry חי לראשונה אי-פעם, אבל בנוי מ-`18ed044b2` (`main`, ענף
-מפוצל וישן), לא מ-HEAD (`73e549698`) ולא מ-`a388118f1`. **חוסם #2 למטה
-("פריסת HEAD חסומה, production נשאר על a388118f1") כבר לא מדויק** — יש
-פריסה חדשה, אבל מענף שגוי. **לא תוקן ולא הוחזר על ידי הסוכן**: פעולה
-נוספת היתה מפרה את שני הכללים המפורשים של המשימה ("never change DNS or
-Vercel env vars", ותנאי העצירה "push לפרודקשן ב-Vercel"). **פעולה של
-אופיר, דחוף**: לבדוק מי/מה יצר את הפריסה הזו ואת שינוי ה-env, ולהחליט
-rollback ל-audit/final-audit מול תיקון ה-preflight — production כרגע
-מריץ קוד ישן בלי 855 הקומיטים של העבודה המתועדת בתור הזה. פורט מלא
-ב-`docs/BACKLOG.md` סעיף 17. ארבעת השערים (על קוד הסוכן עצמו, לא נוגעים
-לממצא) ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:3433 pnpm build`). קבצים: `STATE.md`, `docs/BACKLOG.md`.
+**M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר
+(ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
+ב-M15-c73 לשמירה על תקרת 300 שורות).** production השתנה בפועל בין
+M14-c72 לכאן, **מחוץ ללולאת התור הזה**: פריסה חדשה חיה
+(`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`) בנויה מ-`main`@`18ed044b2`, לא
+מ-`audit/final-audit`/HEAD ולא מ-`a388118f1` הקודם, ועם `SENTRY_DSN`/
+`NEXT_PUBLIC_SENTRY_DSN` חדשים ב-Production (`createdAt`≈05:20 UTC,
+שעתיים לפני תחילת אותו סשן). **תשובה לשאלת התור: לא, ה-release אינו
+תואם ל-HEAD** — production מריץ קוד ישן בלי 855 הקומיטים של העבודה
+המתועדת בתור הזה. מקור הפעולה (מי/מה יצר את הפריסה ואת שינוי ה-env)
+לא נמדד ולא ידוע; `scripts/dns-watch.sh` נבדק ונשלל כמקור. **לא תוקן
+ולא הוחזר** (שתי פעולות אסורות על הסוכן). פורט מלא ב-`docs/BACKLOG.md`
+סעיף 17. ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
 
 **M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
 ב-M14-c73 לשמירה על תקרת 300 שורות).** תשעה פריטי תור: `/api/health`/

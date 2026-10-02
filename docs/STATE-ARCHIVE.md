@@ -2,6 +2,63 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c73 (הועבר מ-STATE.md ב-M15-c73, לשמירה על תקרת 300 שורות)
+
+**M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר.**
+משימת התור: "Verify Sentry release matches HEAD commit" — זהה למילה
+למשימות M14-c66..M14-c72, אבל **הממצא הפעם שבר את הדפוס של שמונה סבבים
+רצופים**: production השתנה בפועל בין M14-c72 לכאן, **מחוץ ללולאת התור
+הזה**, בלי ששום פריט בתור ביצע זאת. כל הבדיקות למטה קריאה-בלבד; הסוכן
+לא כתב שום דבר ל-Vercel.
+
+1. `filter_project_envs` (MCP Vercel, רשימה מלאה) על
+   `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` **כן מחזיר עכשיו**
+   `SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN` ב-Production (נעדרו בכל סבב
+   M14-c66..M14-c72). הערת היצירה של שתיהן: "Set 2026-10-02 via MCP",
+   `createdAt`≈05:20 UTC היום — כשעתיים לפני תחילת הסשן הזה.
+2. `get_deployment('www.kenyonexpress.co.il', withGitRepoInfo=true)`:
+   הפריסה החיה היא **`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`** (`READY`, נוצרה
+   05:42 UTC), בנויה מ-`githubCommitRef=main`, `githubCommitSha=18ed044b2`
+   ("Wave 6: build success") — **לא** `audit/final-audit`, **לא**
+   `a388118f1` שהיה חי בכל סבב קודם.
+3. `git merge-base --is-ancestor 18ed044b2 HEAD` נכשל — `main` ו-
+   `audit/final-audit` מפוצלים (109 קומיטים ב-`main` שאינם ב-HEAD, 855
+   ב-HEAD שאינם ב-`main`; תואם זיכרון `main-is-stale-phase5-is-mainline`,
+   לא טעות מדידה).
+4. **אומת חי, לא רק ב-API**: `curl -D- https://www.kenyonexpress.co.il/`
+   מחזיר `200`, וכותרת `content-security-policy`/`reporting-endpoints`
+   מצביעה על `https://o4511944582496256.ingest.de.sentry.io/...` עם
+   `sentry_key` אמיתי — Sentry רץ בפועל בפרודקשן כרגע.
+5. `get_project` מראה ניסיון פריסה נוסף **מיד אחרי זה שנכשל**
+   (`dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, `readyState=ERROR`, ~05:52 UTC,
+   `target=null`) — לא נחקר מעבר לזה.
+6. `list_deployments(target=production)` מראה שחמש הפריסות הידועות
+   מ-`audit/final-audit` (`291bc2d88`, `0bcbdac18`, `99b2079cb`,
+   `1083b8d8d`...) **עדיין כולן `ERROR`** — חוסם ה-deploy-preflight על
+   הענף הזה (חוסם #2 למטה) לא נפתר; הפריסה שהצליחה הגיעה מענף אחר לגמרי.
+7. **נבדק ונשלל כמקור**: `scripts/dns-watch.sh` (PID 976, רץ, launchd
+   `com.kenyonexpress.dnswatch`) — `logs/dns-watch.log` מראה `ns1/ns2.
+   vercel-dns.com` (לא Cloudflare) בכל שורה עד ועם 07:21 UTC (אחרי זמן
+   הפריסה). זו **לא** ההדק מזיכרון `dns-cutover-loop-paused-pending-review`.
+   מקור הפעולה לא ידוע לסוכן הזה; בוצעה דרך אותו MCP connector של Vercel
+   שזמין גם לסשן הזה, קרוב לוודאי מחוץ ללולאת ה-terminal.
+
+**תשובה לשאלת התור: לא, ה-release אינו תואם ל-HEAD.** יש עכשיו release
+אמיתי עם Sentry חי לראשונה אי-פעם, אבל בנוי מ-`18ed044b2` (`main`, ענף
+מפוצל וישן), לא מ-HEAD (`73e549698`) ולא מ-`a388118f1`. **חוסם #2 למטה
+("פריסת HEAD חסומה, production נשאר על a388118f1") כבר לא מדויק** — יש
+פריסה חדשה, אבל מענף שגוי. **לא תוקן ולא הוחזר על ידי הסוכן**: פעולה
+נוספת היתה מפרה את שני הכללים המפורשים של המשימה ("never change DNS or
+Vercel env vars", ותנאי העצירה "push לפרודקשן ב-Vercel"). **פעולה של
+אופיר, דחוף**: לבדוק מי/מה יצר את הפריסה הזו ואת שינוי ה-env, ולהחליט
+rollback ל-audit/final-audit מול תיקון ה-preflight — production כרגע
+מריץ קוד ישן בלי 855 הקומיטים של העבודה המתועדת בתור הזה. פורט מלא
+ב-`docs/BACKLOG.md` סעיף 17. ארבעת השערים (על קוד הסוכן עצמו, לא נוגעים
+לממצא) ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3433 pnpm build`). קבצים: `STATE.md`, `docs/BACKLOG.md`.
+
 ## M13-c73 (הועבר מ-STATE.md ב-M14-c73, לשמירה על תקרת 300 שורות)
 
 **M13-c73 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
