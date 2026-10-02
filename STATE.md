@@ -1,22 +1,23 @@
-RESUME FROM: M05-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c80 DONE: type-check נבדק מחדש, אפס דריפט)
+RESUME FROM: M06-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c80 DONE: test נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M04-c80 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix
-drift commit" — זהה למשימות "type-check gate re-verified clean"
-הקודמות (M04-c79 ולפניו). `pwd` אומת, עץ עבודה נקי. `pnpm type-check`
-(`tsc --noEmit`) רץ וחזר נקי בלי שום שגיאה — אין drift לתקן. הורצו
-גם שלושת השערים הנוספים לטקס הסיום: `pnpm lint` נקי (12 שערים, 2037
-קבצים), `pnpm test` 614/614 קבצים (7337/7349, 12 מדולגים), `pnpm
-build` exit 0 (כל הנתיבים נבנו, כולל sitemap/robots/opengraph).
-`git diff --stat 024a75fa0..HEAD -- src supabase packages public
-next.config.ts package.json` ריק — אפס שינוי קוד ייצור מאז המדידה
-הקודמת (M04-c79), אותה תוצאה בדיוק. שני קבצים: `STATE.md`
-ו-`docs/STATE-ARCHIVE.md`.
+**M05-c80 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
+commit" — זהה למשימות "test gate re-verified clean" הקודמות (M05-c79
+ולפניו). `pwd` אומת, עץ עבודה נקי. `pnpm test` (vitest) רץ וחזר נקי:
+614/614 קבצים, 7337/7349 טסטים (12 מדולגים) — אין drift לתקן. הורצו
+גם שלושת השערים הנוספים לטקס הסיום: `pnpm type-check` (`tsc
+--noEmit`) נקי, `pnpm lint` נקי (12 שערים, 2037 קבצים), `pnpm build`
+exit 0 (כל הנתיבים נבנו, כולל sitemap/robots/opengraph). `git diff
+--stat 024a75fa0..HEAD -- src supabase packages public next.config.ts
+package.json` ריק — אפס שינוי קוד ייצור מאז המדידה הקודמת (M04-c80),
+אותה תוצאה בדיוק. שני קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
 
 **M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M02-c80, הורחב ל-M03-c80 ב-M04-c80).** M03-c80 — שער
+לשורה הזו ב-M02-c80, הורחב ל-M03-c80 ב-M04-c80, הורחב ל-M04-c80
+ב-M05-c80).** M04-c80 — type-check גייט נבדק מחדש (`tsc --noEmit`
+נקי), אפס דריפט. M03-c80 — שער
 חזותי קטגוריה נמדד מחדש 380/768/1440 (3.53/2.31/1.58, זהה
 ל-M03-c79), אפס דריפט. M02-c80 — שער
 חזותי מוצר נמדד מחדש 380/768/1440 (4.96/4.58/3.25, זהה ל-M02-c79),
