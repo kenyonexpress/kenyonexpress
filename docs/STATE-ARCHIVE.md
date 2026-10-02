@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c77 (הועבר מ-STATE.md ב-M02-c77, לשמירה על תקרת 300 שורות)
+
+**M01-c77 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0, `pnpm start` על פורט 3311 מאומת (`lsof` מראה את ה-PID
+שלנו, לא תהליך זר — ראו gate-measured-foreign-server-on-3311 בזיכרון).
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` הורץ
+בחזית וחיכה למספרים באותה הרצה (לא ברקע, לא הוכרז DONE לפני שהמספרים
+נרשמו). **תוצאה: 8.58% / 9.01% / 4.16%, שלושתם PASS מתחת לשער 11%,
+זהה בדיוק ל-M01-c76 (8.58/9.01/4.16) ול-M01-c75 — אפס דריפט.** ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים), `build` כנ"ל. אפס שינוי קוד
+ייצור. קובץ יחיד: `STATE.md`. התור הבא: `M02-c77`.
+
 ## M17-c76 (הועבר מ-STATE.md ב-M18-c76, לשמירה על תקרת 300 שורות)
 
 **M17-c76 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
