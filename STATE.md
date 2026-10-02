@@ -1,23 +1,29 @@
-RESUME FROM: M10-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c77 - DONE, knip נסרק מחדש, אפס דריפט)
+RESUME FROM: M11-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c77 - DONE, מיגרציות ממתינות אומתו מחדש מול git, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c77 - DONE (02.10.2026).** משימת התור: "Remove unused deps and
-dead exports". `git diff --stat 7a6a069c6..HEAD -- package.json
-pnpm-lock.yaml src/ scripts/ next.config.ts apps/ supabase/` (בסיס:
-HEAD של M09-c76) ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip
---no-config-hints` הורץ מחדש: **201 unused files / 5 unused
-dependencies / 1 unlisted binary / 271 unused exports / 197 unused
-exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו M09-c76,
-אפס מועמד חדש. אפס הסרה (כל הפריטים כבר נבדקו בסבבים קודמים ואינם
-מועמדים אוטומטיים — החלטת מפעיל, כמתועד ב-M09-c74/c75/c76). ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` טרי
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, `BUILD_ID`
-`Dm78oQxABrUodyVELTQBX`, route manifest מלא). פריט אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
+**M10-c77 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff 078bdce89..HEAD --stat -- migrations/pending/
+supabase/migrations/ docs/BACKLOG.md` (בסיס: M10-c76) **ריק** — אפס
+שינוי. `migrations/pending/*.sql` נספר שוב: **60 קבצים**, ללא שינוי.
+`git log 078bdce89..HEAD -- supabase/migrations/` ריק — שום מיגרציה לא
+הוחלה. חוסם פתוח #3 (19 קבצים: 204, 209, 218, 220, 223, 224, 234, 235,
+236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248; פירוט
+ב-`docs/RUNBOOK.md`/`docs/MIGRATION-REVIEW.md`) עומד ללא שינוי — בדיקה
+ישירה מול פרודקשן האחרונה הייתה ב-M10-c74 (02.10, CLI-keychain-token),
+וזו מעקב מול git בלבד, כמו M10-c75/c76, כי אין דריפט קוד שמצדיק בדיקה
+ישירה חוזרת באותו יום. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`, route manifest
+מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
+כסף/סכימה, אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
+
+**M09-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
+Unused deps/dead exports נסרקו מחדש עם `knip`, אותם מספרים בדיוק
+כמו M09-c76 (201/5/1/271/197/4), אפס מועמד חדש, אפס הסרה. ארבעת השערים
+ירוקים, אפס שינוי קוד ייצור.
 
 **M08-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
 Lighthouse mobile על / ו-`/product/צימר-מאסטר` נמדד מחדש, 100/100/100
