@@ -1,26 +1,29 @@
-RESUME FROM: M12-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c71 - DONE, sitemap.xml חי נבדק מחדש, אפס דריפט)
+RESUME FROM: M13-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c71 - DONE, robots.txt חי נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c71 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
-reachable". בדיקת דריפט קוד קודם: `git log b3d94c5ad..HEAD -- src/app/sitemap
-src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
-src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` (בסיס:
-קומיט M10-c71) — ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל
-(`https://kenyonexpress.co.il`)**: `/sitemap.xml` מחזיר `200` עם
-`<sitemapindex>` וחמש תת-מפות (`content`/`categories`/`products`/`regions`/
-`suppliers`), כולן `200`, עם אותה ספירת כתובות כמו M11-c70 (14/13/46/17/7).
-`lastmod` הכי טרי ב-`products.xml` זהה ל-M11-c70 (`2026-09-25`). `robots.txt`
-מצביע ל-`https://kenyonexpress.co.il/sitemap.xml` הנכון. **אפס דריפט
-מ-M11-c70.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
-2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build`
-exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3323 pnpm build`, חמשת נתיבי
-ה-sitemap מופיעים כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+**M12-c71 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד: `git log 79e31742c..HEAD -- src/app/robots.ts
+src/app` (בסיס: קומיט M12-c70) — ריק, אפס קומיט נוגע. קובץ הקוד
+(`src/app/robots.ts`) נקרא במלואו: כל שמונה-עשרה נתיבי ה-`disallow`
+הצפויים נוכחים, כולל `/redeem/`, `/coupon/`, `/gift/`, `/order/`,
+`/wishlist/s/` ו-`/debug/`. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il/robots.txt`): עדיין גרסת `a388118f1`
+הקפואה, בלי `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/` ברשימת
+ה-`Disallow` (אותו גאפ שנמדד ב-M12-c67..M12-c70) — תוצאה ישירה של חוסם #2
+(אין פריסת HEAD), לא ממצא חדש. נבדקו גם ארבעת הנתיבים חיים: `/gift/x`
+ו-`/wishlist/s/x` מחזירים `200` (חשופים, כפי שנמדד קודם); `/order/x`
+מחזיר `404`; `/debug/` מחזיר `308`→`/debug`→`404` (וריאציית ניתוב בלבד,
+לא שינוי התנהגות — M12-c70 מדד `404` ישיר על אותו נתיב). **אפס דריפט
+מהותי מ-M12-c70.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3324 pnpm build`, `/robots.txt`
+מופיע כ-`○ Static`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
 
-**M09-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M11-c71 לשמירה על תקרת 300 שורות).** עשרה פריטי אימות-בלבד, אפס
+**M11-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M12-c71 לשמירה על תקרת 300 שורות).** אחד-עשר פריטי אימות-בלבד, אפס
 דריפט בכולם: deps/exports מתים עם `knip` (271/197/5/4/201/1), מיגרציות
 ממתינות (62 קבצים זהים, 19 חוסמים ללא שינוי), Lighthouse mobile
 (100/100/100), TODO/FIXME, `pnpm build`, `pnpm test` (614/614), `pnpm

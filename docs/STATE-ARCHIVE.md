@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c71 (הועבר מ-STATE.md ב-M12-c71, לשמירה על תקרת 300 שורות)
+
+**M11-c71 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". בדיקת דריפט קוד קודם: `git log b3d94c5ad..HEAD -- src/app/sitemap
+src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
+src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` (בסיס:
+קומיט M10-c71) — ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל
+(`https://kenyonexpress.co.il`)**: `/sitemap.xml` מחזיר `200` עם
+`<sitemapindex>` וחמש תת-מפות (`content`/`categories`/`products`/`regions`/
+`suppliers`), כולן `200`, עם אותה ספירת כתובות כמו M11-c70 (14/13/46/17/7).
+`lastmod` הכי טרי ב-`products.xml` זהה ל-M11-c70 (`2026-09-25`). `robots.txt`
+מצביע ל-`https://kenyonexpress.co.il/sitemap.xml` הנכון. **אפס דריפט
+מ-M11-c70.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build`
+exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3323 pnpm build`, חמשת נתיבי
+ה-sitemap מופיעים כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+
 ## M09-c71, M10-c71 (הועבר מ-STATE.md ב-M11-c71, לשמירה על תקרת 300 שורות)
 
 **M10-c71 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
