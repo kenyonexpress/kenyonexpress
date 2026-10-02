@@ -1,25 +1,30 @@
-RESUME FROM: M13-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c72 - DONE, robots.txt אומת מחדש כבטוח לפרודקשן, אפס דריפט)
+RESUME FROM: M14-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c72 - DONE, /api/health ו-/api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c72 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". `git log 47b3c8cd9..HEAD -- src/app/robots.ts` (בסיס:
-M12-c71 עצמו) — ריק, אפס קומיט נוגע. המקומי חוסם 17 נתיבים כולל
-`/gift/`,`/order/`,`/wishlist/s/`,`/debug/` (M12-c67, חוסם #2 למעלה).
-**נמדד מול פרודקשן**: `https://www.kenyonexpress.co.il/robots.txt`
-מחזיר `200` עם רק 13 `Disallow` — **עדיין `a388118f1` הקפואה**, זהה
-ל-M12-c67..M12-c71; `Sitemap:`/`Host:` תקינים. `/gift`,`/order`,
-`/wishlist/s`,`/debug` בלי טוקן בפועל: `404` (אחרי `308` trailing-slash),
-לא `200` — עולה בקנה אחד עם "טוקן בנתיב", לא סותר חוסם #2. **אפס דריפט
-מ-M12-c71**, חוסם #2 נשאר פתוח. ארבעת השערים ירוקים: `type-check` נקי,
-`lint` נקי (2037 קבצים), `test` 614/614 (7337/7349, 12 מדולגים), `build`
-exit 0 (`rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3421 pnpm build`). אפס שינוי קוד.
-קובץ יחיד: `STATE.md`.
+**M13-c72 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
+c614b252b..HEAD -- src/app/api/health src/app/api/ready` (בסיס: קומיט
+M13-c71) — ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם, זהים
+ל-M13-c71: `src/app/api/health/route.ts` עושה HEAD-count על `categories`
+דרך ה-admin client, `200`/`database:"ok"` כש-DB מגיב, `503` אחרת;
+`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמש תלויות
+ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":113}`); `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+**זהה בדיוק ל-M13-c67..M13-c71**: `meilisearch:"down"` נשאר חוסם ידוע
+(`docs/BACKLOG.md`, אין פריסת HEAD). **אפס דריפט מ-M13-c71.** ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3326 pnpm build`, שני הנתיבים
+מופיעים ב-manifest). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
 
-**M11-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M12-c72 לשמירה על תקרת 300 שורות).** M11-c72: sitemap.xml חי אומת
+**M12-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c72 לשמירה על תקרת 300 שורות).** M12-c72: robots.txt חי אומת
+מחדש, עדיין `a388118f1` הקפואה (חוסם 2), אפס דריפט מ-M12-c71. M11-c72: sitemap.xml חי אומת
 מחדש, אפס דריפט מ-M11-c71. M10-c72: מיגרציות ממתינות
 נבדקו מחדש דרך `git ls-tree`, אפס דריפט (62 קבצים, 19 חוסמים ללא
 שינוי). M09-c72: deps/exports מתים
@@ -34,24 +39,17 @@ mobile על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפ�
 8.58/9.01/4.16%, אפס דריפט). ארבעת השערים ירוקים בכולם, אפס שינוי קוד
 ייצור.
 
-**M18-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M02-c72 לשמירה על תקרת 300 שורות).** שמונה-עשר פריטי אימות-בלבד,
-אפס דריפט בכולם: STATE.md מתחת לתקרה; RTL על `/` ו-`/product` (112/112
-Playwright, אפס leak LTR); JSON-LD Product+BreadcrumbList; אפס console
-error/hydration; Sentry מול HEAD (הפער גדל ל-443 קומיטים, אין DSN
-בפרודקשן); `/api/health`/`/api/ready` (`200`/`503`); robots.txt;
-sitemap.xml; מיגרציות ממתינות (62 קבצים זהים, 19 חוסמים ללא שינוי);
-deps/exports מתים עם `knip` (271/197/5/4/201/1); Lighthouse mobile
-(100/100/100); TODO/FIXME; `pnpm build`; `pnpm test` (614/614); `pnpm
-type-check`; שער קטגוריה (3.53/2.52/1.69); שער מוצר (4.96/4.58/3.25); שער
-בית (8.58/9.01/4.16). ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
-
-**M18-c70..M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70, M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70, M12-c70, M13-c70, M14-c70, M15-c70, M16-c70, M01-c71 וב-M03-c71 לשמירה על תקרת 300 שורות).** M18-c70: STATE.md אומת מתחת לתקרה. M17-c70: RTL על `/` ו-`/product` נבדק מחדש, אפס דריפט מ-M17-c69. M16-c70: JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר, אפס דריפט מ-M16-c69.
-M15-c70: אפס console error/hydration נבדק שוב על `/` ו-`/product`, אפס דריפט מ-M15-c69. M14-c70: Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c69, הפער גדל ל-425 קומיטים. M13-c70: `/api/health` ו-`/api/ready` אומתו מחדש מול פרודקשן בפועל (`200`/`503`, זהה ל-M13-c67..M13-c69), אפס דריפט. M12-c70: robots.txt אומת מחדש מול פרודקשן בפועל, עדיין גרסת `a388118f1` הקפואה (חוסם 2), אפס דריפט מ-M12-c69.
-M11-c70: sitemap.xml חי אומת מחדש מול פרודקשן בפועל, `200` עם חמש תת-מפות, אותה ספירת כתובות כמו M11-c69, אפס דריפט. M10-c70: מיגרציות ממתינות אומתו מחדש (`git diff --stat` מול M10-c69, אותו בסיס), ריק, 60 קבצים זהים, 19 חוסמים ללא שינוי, אפס דריפט. M09-c70: deps/exports מתים עם `knip` אומתו מחדש, 271/197/5/4/201/1, אפס מועמד חדש מ-M09-c69.
-M08-c70: Lighthouse mobile על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c69. M07-c70: TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט מ-M07-c69. M06-c70: `pnpm build` נבדק מחדש בפועל, exit 0, אפס דריפט מ-M06-c69.
-M05-c70: `pnpm test` נבדק מחדש, 614/614 קבצים, 7337/7349 עברו (12 מדולגים), אפס דריפט. M04-c70: `pnpm type-check` נבדק מחדש, אפס דריפט. M03-c70: שער חזותי קטגוריה נמדד מחדש, אפס דריפט (3.53/2.52/1.69).
-M02-c70: שער חזותי מוצר נמדד מחדש, אפס דריפט (4.96/4.58/3.25). M01-c70: שער חזותי בית נמדד מחדש, אפס דריפט (8.58/9.01/4.16), ארבעת השערים ירוקים, אפס שינוי קוד. (שמונה-עשר פריטי אימות-בלבד של סבב c69 — אפס דריפט בכולם — בארכיון, ראו M13-c70 שם.)
+**M18-c71..M01-c71 ו-M18-c70..M01-c70, M18-c69..M01-c69 (ארכיון מלא
+ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M13-c72 לשמירה על תקרת 300
+שורות).** שמונה-עשר פריטי אימות-בלבד בכל סבב (c69, c70, c71), אפס
+דריפט בכולם: STATE.md מתחת לתקרה; RTL על `/` ו-`/product`; JSON-LD
+Product+BreadcrumbList; אפס console error/hydration; Sentry מול HEAD
+(הפער גדל כל סבב, עד 443 קומיטים, אין DSN בפרודקשן); `/api/health`/
+`/api/ready` (`200`/`503`); robots.txt (חוסם 2); sitemap.xml; מיגרציות
+ממתינות; deps/exports מתים עם `knip`; Lighthouse mobile (100/100/100);
+TODO/FIXME; `pnpm build`; `pnpm test` (614/614); `pnpm type-check`; שער
+קטגוריה; שער מוצר; שער בית. ארבעת השערים ירוקים בכולם, אפס שינוי קוד
+ייצור.
 
 **M18-c68..M02-c68 ו-M01-c66..M01-c68 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`,
 כווצו לשורה הזו ב-M01-c69/M17-c68/M09-c69/M03-c70 (c68) ובשלבים
