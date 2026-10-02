@@ -1,46 +1,33 @@
-RESUME FROM: M11-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c79 DONE: מיגרציות ממתינות אומתו מחדש מול פרודקשן בפועל, אפס דריפט)
+RESUME FROM: M12-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c79 DONE: sitemap.xml אומת מחדש כחי, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c79 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `git diff 98fa72131..HEAD --stat --
-migrations/pending/ supabase/migrations/ docs/BACKLOG.md` (בסיס:
-M10-c78) ריק, אפס שינוי. `migrations/pending/*.sql` נספר שוב: 60
-קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק git), דרך
-CLI-keychain-token, קריאה בלבד (`BEGIN;...ROLLBACK;`), אותם 19 הקבצים
-החוסמים: שבעה שמות טבלה (204/234/235/236/239/240/244) — `to_regclass`
-עדיין `null` לכולם (`supplier_applications`/`fraud_blocklist`/
-`feature_flags`/`contact_channels`/`customer_invoice_settings`/
-`app_consent_events`/`affiliate_campaigns`). שלוש עמודות (223/242/243)
-עדיין חסרות (`notifications_outbox.outbox_id`,
-`products.original_price_source`, `products.shipping_price_agorot`);
-248 תלוי בעמודות של 232/242 שגם הן חסרות (`suppliers.opening_hours`/
-`google_reviews_url`); 218 נבדק ישירות (לא עמודה) —
-`has_column_privilege(authenticated, profiles, wallet_balance, UPDATE)`
-עדיין `true`, כלומר הלקוח עדיין יכול לכתוב את יתרת הארנק שלו. שתי
-הרשאות (224/247) עדיין חסרות (`has_function_privilege`/
-`has_table_privilege` מחזירים `false`). 220: `pg_proc.proconfig` של
-`fn_wallet_entries_block_mutation` עדיין `null`. 209: המדיניות
-`push_subscriptions_select_own` עדיין `auth.uid() = user_id` לא עטוף.
-246: המדיניות `profiles_super_admin_mfa` עדיין בניסוח המקורי (תואם את
-טקסט 209, לא את 246). 245: אפס מתוך חמש המדיניות המוצעות על `banners`
-קיימת. 241: 46 מוצרים פעילים עם `city IS NULL`, זהה. כל 19 אושרו שוב
-כלא מוחלים, אפס דריפט מהבדיקה הישירה הקודמת (M10-c78, 03.10, ו-M10-c74,
-02.10). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
-2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
-זהה ל-M09-c79), build טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4617 pnpm build`, exit 0, route
-manifest מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
-שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף
-מיגרציה. קובץ יחיד: `STATE.md`.
+**M11-c79 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable". `curl https://www.kenyonexpress.co.il/sitemap.xml`
+מחזיר `200`, `<urlset>` שטוח (לא `sitemapindex`), 79 כתובות, עדיין
+גרסת `a388118f1` (אפס דריפט מ-M11-c78; `etag`/`last-modified` זהים
+ל-02.10, `age: 51238`, `x-vercel-cache: HIT`). חמשת תתי-המפות של הקוד
+הנוכחי — `/sitemap/{products,categories,regions,suppliers,content}.xml`
+— כולן `404` בפרודקשן, נמדד שוב. בקוד: `git diff 326a17668..HEAD
+--stat -- src/app/sitemap.xml src/app/sitemap src/lib/seo
+docs/BACKLOG.md` (בסיס: commit M11-c78 עצמו) ריק, אפס שינוי. חוסם #2
+למעלה ללא שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M10-c79),
+build טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4717 pnpm build`, exit 0,
+`BUILD_ID` חדש `WERjZxni0I1JRWMcpI8He`, route manifest מלא כולל
+`/sitemap.xml` וחמשת תתי-המפות). פריט אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase
+db push`, לא הוחלה אף מיגרציה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M09-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79/M06-c79/M08-c79/M10-c79).** עשרים ואחד פריטי תור/אימות-
-בלבד: Sentry release vs HEAD (עדיין מפוצל), שערי בית/מוצר/קטגוריה,
+**M10-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c79/M06-c79/M08-c79/M10-c79/M11-c79).** עשרים ושניים פריטי
+תור/אימות-בלבד: מיגרציות ממתינות (עדיין אותם 19 קבצים חוסמים, אפס
+דריפט), Sentry release vs HEAD (עדיין מפוצל), שערי בית/מוצר/קטגוריה,
 test/type-check/build גייטים, Lighthouse mobile, TODO/FIXME, unused
-deps/dead exports (`knip`), מיגרציות ממתינות (עדיין אותם 19 קבצים
-חוסמים, אפס דריפט), sitemap.xml/robots.txt (עדיין `a388118f1`),
+deps/dead exports (`knip`), sitemap.xml/robots.txt (עדיין `a388118f1`),
 `/api/health`/`/api/ready`, אפס console error/hydration, ו-JSON-LD —
 אפס דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 

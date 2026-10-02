@@ -41922,3 +41922,37 @@ HEAD, חוסם #2 למעלה), liveness (`/api/health`) כן `200`. **אפס ד�
 build`, `/api/health` ו-`/api/ready` מופיעים ב-`app-paths-manifest.json`).
 פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/
 קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M10-c79 (הועבר מ-STATE.md ב-M11-c79, לשמירה על תקרת 300 שורות)
+
+**M10-c79 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff 98fa72131..HEAD --stat --
+migrations/pending/ supabase/migrations/ docs/BACKLOG.md` (בסיס:
+M10-c78) ריק, אפס שינוי. `migrations/pending/*.sql` נספר שוב: 60
+קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק git), דרך
+CLI-keychain-token, קריאה בלבד (`BEGIN;...ROLLBACK;`), אותם 19 הקבצים
+החוסמים: שבעה שמות טבלה (204/234/235/236/239/240/244) — `to_regclass`
+עדיין `null` לכולם (`supplier_applications`/`fraud_blocklist`/
+`feature_flags`/`contact_channels`/`customer_invoice_settings`/
+`app_consent_events`/`affiliate_campaigns`). שלוש עמודות (223/242/243)
+עדיין חסרות (`notifications_outbox.outbox_id`,
+`products.original_price_source`, `products.shipping_price_agorot`);
+248 תלוי בעמודות של 232/242 שגם הן חסרות (`suppliers.opening_hours`/
+`google_reviews_url`); 218 נבדק ישירות (לא עמודה) —
+`has_column_privilege(authenticated, profiles, wallet_balance, UPDATE)`
+עדיין `true`, כלומר הלקוח עדיין יכול לכתוב את יתרת הארנק שלו. שתי
+הרשאות (224/247) עדיין חסרות (`has_function_privilege`/
+`has_table_privilege` מחזירים `false`). 220: `pg_proc.proconfig` של
+`fn_wallet_entries_block_mutation` עדיין `null`. 209: המדיניות
+`push_subscriptions_select_own` עדיין `auth.uid() = user_id` לא עטוף.
+246: המדיניות `profiles_super_admin_mfa` עדיין בניסוח המקורי (תואם את
+טקסט 209, לא את 246). 245: אפס מתוך חמש המדיניות המוצעות על `banners`
+קיימת. 241: 46 מוצרים פעילים עם `city IS NULL`, זהה. כל 19 אושרו שוב
+כלא מוחלים, אפס דריפט מהבדיקה הישירה הקודמת (M10-c78, 03.10, ו-M10-c74,
+02.10). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה ל-M09-c79), build טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4617 pnpm build`, exit 0, route
+manifest מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
+שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף
+מיגרציה. קובץ יחיד: `STATE.md`.
