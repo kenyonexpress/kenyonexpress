@@ -1,32 +1,35 @@
-RESUME FROM: M14-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c71 - DONE, /api/health ו-/api/ready נבדקו מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M15-c71
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c71 - DONE, Sentry release מול HEAD נבדק מחדש, הפער גדל ל-443 קומיטים)
 
 ## המשך מ:
 
-**M13-c71 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
-61e7acb8e..HEAD -- src/app/api/health src/app/api/ready` (בסיס: קומיט
-M13-c70) — ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם:
-`src/app/api/health/route.ts` עושה HEAD-count על `categories` דרך
-ה-admin client ומחזיר `200`/`database:"ok"` כש-DB מגיב, `503` אחרת;
-`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמישה תלויות
-ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
-(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
-(`{"ok":true,"database":"ok","latency_ms":91}`); `/api/ready` → `503`
-(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
-**זהה בדיוק ל-M13-c67..M13-c70**: `meilisearch:"down"` הוא חוסם ידוע
-(לא ממצא חדש — ראו `docs/BACKLOG.md` שורה 557-561, אין פריסת HEAD כך
-שהסביבה החיה לא מכירה את `checkSearch` העדכני). `/api/ready` ממשיך
-לדווח `503` כצפוי, לא `200` עם כל חמש התלויות. **אפס דריפט מ-M13-c70.**
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit
-0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3325 pnpm build`, שני הנתיבים
-מופיעים ב-manifest). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+**M14-c71 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
+HEAD commit" — זהה למילה למשימות M14-c66..M14-c70. **נבדק מחדש משלוש
+הזוויות, כולן אפס דריפט.** שלושת קובצי האתחול (`sentry.server.config.ts`,
+`sentry.edge.config.ts`, `instrumentation-client.ts`) זהים — `git log
+ac81a815f..HEAD` עליהם ריק (בסיס: M14-c70). `filter_project_envs`
+(קריאה-בלבד, רשימה מלאה) על `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`
+עדיין **לא** מחזיר `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ב-Production —
+קיים שם רק `SENTRY_AUTH_TOKEN` (source maps בזמן build בלבד). `get_deployment`
+(קריאה-בלבד, `withGitRepoInfo=true`) על `www.kenyonexpress.co.il` מראה
+שהיא עדיין `dpl_EMtv9KbPfdGq75JLSNysp1wx3DQa`, בנויה מ-`a388118f1`, לא
+מ-HEAD. **הפער ממשיך לגדול**: `git rev-list --count a388118f1..HEAD`
+מחזיר **443** (היה 425 ב-M14-c70 על HEAD אז `61e7acb8e`; HEAD עכשיו
+`c614b252b`). **מסקנה זהה ל-M14-c66..M14-c70**: אי אפשר לאמת "ה-release
+תואם ל-HEAD" כאמת — אין בכלל release שמגיע מפרודקשן (אין DSN), וגם אם
+היה, הוא היה מצביע על קומיט ישן ב-443 קומיטים. **לא ממצא חדש**, אין
+עדכון דרוש ל-`docs/BACKLOG.md` סעיף 17 מעבר למספר. **לא לתיקון אוטומטי**:
+הוספת `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ל-Vercel Production היא
+שינוי env, אסור לסוכן. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
+`rm -rf .next && pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא
+נדרש (תקדים M04-c66..M14-c70). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
 
-**M12-c71 - DONE (02.10.2026).** robots.txt נבדק מחדש, אפס דריפט
-מ-M12-c70 (פירוט מלא ב-`docs/STATE-ARCHIVE.md`). ארבעת השערים ירוקים,
-אפס שינוי קוד.
+**M13-c71 ו-M12-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M14-c71 לשמירה על תקרת 300 שורות).** M13-c71: `/api/health` ו-`/api/ready`
+אומתו מחדש מול פרודקשן בפועל (`200`/`503`, זהה ל-M13-c67..M13-c70), אפס
+דריפט. M12-c71: robots.txt נבדק מחדש, אפס דריפט מ-M12-c70. ארבעת השערים
+ירוקים בשניהם, אפס שינוי קוד.
 
 **M11-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M12-c71 לשמירה על תקרת 300 שורות).** אחד-עשר פריטי אימות-בלבד, אפס
