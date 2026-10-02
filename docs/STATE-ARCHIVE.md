@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c76 (הועבר מ-STATE.md ב-M13-c76, לשמירה על תקרת 300 שורות)
+
+**M12-c76 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". `curl https://www.kenyonexpress.co.il/robots.txt`
+מחזיר 12 שורות `Disallow` (`redeem`,`coupon`,`account`,`supplier`,
+`scan`,`admin`,`checkout`,`cart`,`auth`,`api`,`reset-password`,
+`forgot-password`) — עדיין חסרות `/gift/`,`/order/`,`/wishlist/s/`
+ו-`/debug/`, זהה בדיוק למדידת M12-c75. בקוד: `src/app/robots.ts`
+כבר כולל את כל 15 השורות (`4d370202528` תוקן ב-M12-c67, `git log -1`
+על הקובץ מראה אפס שינוי נוסף מאז), ו-`pnpm build` מאשר `/robots.txt`
+ב-manifest עם הרשימה המלאה. אפס דריפט קוד; הסיבה היא חוסם #2 למעלה
+(פריסת Production תקועה על `a388118f1`), לא קוד — אותה מסקנה כמו
+M11-c76/sitemap. ארבעת השערים ירוקים: `type-check`/`lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`build` exit 0. אפס שינוי כסף/סכימה. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M10-c76 (הועבר מ-STATE.md ב-M11-c76, לשמירה על תקרת 300 שורות)
 
 **M10-c76 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/

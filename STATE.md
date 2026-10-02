@@ -1,38 +1,38 @@
-RESUME FROM: M13-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c76 - DONE, robots.txt נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M14-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c76 - DONE, health/ready נבדק מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c76 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". `curl https://www.kenyonexpress.co.il/robots.txt`
-מחזיר 12 שורות `Disallow` (`redeem`,`coupon`,`account`,`supplier`,
-`scan`,`admin`,`checkout`,`cart`,`auth`,`api`,`reset-password`,
-`forgot-password`) — עדיין חסרות `/gift/`,`/order/`,`/wishlist/s/`
-ו-`/debug/`, זהה בדיוק למדידת M12-c75. בקוד: `src/app/robots.ts`
-כבר כולל את כל 15 השורות (`4d370202528` תוקן ב-M12-c67, `git log -1`
-על הקובץ מראה אפס שינוי נוסף מאז), ו-`pnpm build` מאשר `/robots.txt`
-ב-manifest עם הרשימה המלאה. אפס דריפט קוד; הסיבה היא חוסם #2 למעלה
-(פריסת Production תקועה על `a388118f1`), לא קוד — אותה מסקנה כמו
-M11-c76/sitemap. ארבעת השערים ירוקים: `type-check`/`lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+**M13-c76 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". נבדק מול פרודקשן בפועל:
+`curl https://www.kenyonexpress.co.il/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":126}`), `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok",
+"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+זהה בדיוק ל-M13-c67..M13-c75: `meilisearch:"down"` נשאר חוסם ידוע
+(חוסם #16 למעלה, לא לתיקון אוטומטי — דורש בדיקת אופיר את המארח/מפתח
+החיצוני). ה-liveness עצמו (`/api/health`) כן `200`. **אפס דריפט
+מ-M13-c75.** ארבעת השערים ירוקים: `type-check`/`lint` נקי (12 שערים,
+2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
 `build` exit 0. אפס שינוי כסף/סכימה. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
-**M11-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M12-c76 לשמירה על תקרת 300 שורות).** שמונה פריטי תחזוקה/אימות-בלבד:
-M11-c76 — sitemap.xml נבדק מחדש מול פרודקשן, עדיין `urlset` שטוח,
-חמשת תתי-המפות `404`, אפס דריפט מ-M11-c75.
-M10-c76 — מיגרציות ממתינות נבדקו מחדש מול git (בסיס M10-c75), 60
-קבצים ללא שינוי, אפס מיגרציה הוחלה. M09-c76 — knip נבדק מחדש, אפס
-מועמד חדש. M08-c76 — Lighthouse mobile `/` ו-`/product/צימר-מאסטר`,
-100/100/100 בשניהם, אפס דריפט מ-M08-c75. M07-c76 — TODO/FIXME נסרק
-מחדש, שני `TODO(cardcom)` כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6.
-M05-c76 — "pnpm test fix drift commit", אפס שינוי מ-M05-c75. M04-c76
-— "pnpm type-check fix drift commit", אפס שינוי מ-M04-c75. M03-c76 —
-שער חזותי קטגוריה (`380`=2.93%/`768`=1.94%/`1440`=1.53%, PASS), אפס
-דריפט מ-M03-c75. M02-c76 — שער חזותי מוצר (`380`=4.50%/`768`=4.07%/
-`1440`=3.25%, PASS), אפס דריפט שלילי מ-M02-c75. ארבעת השערים ירוקים
-בכולם, אפס שינוי קוד ייצור.
+**M12-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
+ב-M13-c76 לשמירה על תקרת 300 שורות).** תשעה פריטי תחזוקה/אימות-בלבד:
+M12-c76 — robots.txt נבדק מחדש מול פרודקשן, עדיין 12 שורות `Disallow`
+(חסרות `/gift/`,`/order/`,`/wishlist/s/`,`/debug/`), אפס דריפט מ-M12-c75.
+M11-c76 — sitemap.xml נבדק מחדש, עדיין `urlset` שטוח, חמשת תתי-המפות
+`404`, אפס דריפט מ-M11-c75. M10-c76 — מיגרציות ממתינות נבדקו מחדש מול
+git (בסיס M10-c75), 60 קבצים ללא שינוי, אפס מיגרציה הוחלה. M09-c76 —
+knip נבדק מחדש, אפס מועמד חדש. M08-c76 — Lighthouse mobile `/`
+ו-`/product/צימר-מאסטר`, 100/100/100 בשניהם, אפס דריפט מ-M08-c75.
+M07-c76 — TODO/FIXME נסרק מחדש, שני `TODO(cardcom)` כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6. M05-c76 — "pnpm test fix drift commit",
+אפס שינוי מ-M05-c75. M04-c76 — "pnpm type-check fix drift commit",
+אפס שינוי מ-M04-c75. M03-c76 — שער חזותי קטגוריה (`380`=2.93%/
+`768`=1.94%/`1440`=1.53%, PASS), אפס דריפט מ-M03-c75. M02-c76 — שער
+חזותי מוצר (`380`=4.50%/`768`=4.07%/`1440`=3.25%, PASS), אפס דריפט
+שלילי מ-M02-c75. ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
 תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c76
