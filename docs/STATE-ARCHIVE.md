@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c73 (הועבר מ-STATE.md ב-M16-c73, לשמירה על תקרת 300 שורות)
+
+**M15-c73 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66..M15-c72. **נבדק מחדש,
+אפס דריפט.** `git log 41e37ec7b..HEAD -- src/app src/components
+e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c72) ריק — 19 קומיטים
+מאז, כולם תיעוד-בלבד. נבנה `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3330 pnpm
+build`, exit 0), הורם `pnpm start -p 3330` (פורט פנוי, אומת `curl` 200
+ו-`lsof` על ה-pid/cwd לפני ההרצה), והורצו `anon ${path}` ו-`anon dynamic
+catalogue routes` מתוך `e2e/route-audit.spec.ts` (chromium + mobile-chrome,
+`--workers=1`), **264/264 עברו** (9.5 דקות, chromium מהיר, mobile-chrome
+כלל שחזור cart polling תקין בתוך תקציב ה-240s של הטסט). אומת ישירות
+מתוך `/tmp/route-audit-m15c73.jsonl` (276 שורות, שני הדפדפנים): אפס
+`consoleErrors`/`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל
+השורות, כולל `/`, `/products`, `/product/צימר-מאסטר` (פעיל, זהה
+ל-M15-c66..M15-c72) ו-`/product/.../reviews`. **תצפית לוואי, לא ממצא
+חדש**: לוג השרת רשם `supabase.rls_denied`/`reviews.public_read_failed`
+(`42501`) בזמן טעינת דף הביקורות — תואם בדיוק לחוסם הפתוח #3 פריט 247
+(`anon` בלי `SELECT` על `reviews`, מיגרציה ממתינה), לא דלף לקונסול
+הדפדפן ולכן לא שבר את השער. **אין ממצא קוד לתקן**; אימות-בלבד, שמינית
+ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
+`rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M04-c66..M15-c72). אפס שינוי קוד ייצור. קובץ יחיד:
+`STATE.md`.
+
 ## M14-c73 (הועבר מ-STATE.md ב-M15-c73, לשמירה על תקרת 300 שורות)
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר.**
