@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c78 (הועבר מ-STATE.md ב-M03-c78, לשמירה על תקרת 300 שורות)
+
+**M02-c78 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample" — זהה למשימות "product parity re-measured" הקודמות
+(M02-c77 ולפניו). `pwd` אומת, עץ נקי, `STATE.md` מתחת לתקרת 300 (291)
+כך שלא נדרש קיצוץ מראש. אומת שאין שינוי קוד ייצור מאז `73e357d6b`
+(`git diff --stat` ריק על `src/`, `supabase/`, `packages/`, `public/`,
+`next.config.ts`, `package.json`). **נבנה build טרי** (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build`, exit 0). הורם `pnpm start -p 3311` (לא היה חי קודם), `lsof -p
+-a -d cwd` אימת ש-cwd של ה-listener הוא שורש הפרויקט. **הרצה בחזית**:
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=product --widths=380,768,1440 --baseline=
+'refs/electro_product_{width}.png'` — חרגה מ-timeout כלי ה-Bash (300
+שניות) והועברה אוטומטית לרקע על ידי הכלי עצמו, לא ביוזמת הסוכן; הומתן
+לסיומה המלאה דרך Monitor על קובץ הפלט לפני כל רישום. **תוצאה: `380`=
+4.96% PASS, `768`=4.58% PASS, `1440`=3.25% PASS** (שער 11%), **זהה
+בדיוק ל-M02-c77 ול-M02-c75 — אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס
+הקפוא ארוך בהרבה מהעמוד שלנו) קיימת כבר מ-M02-c74 ואילך, ידועה ולא
+רלוונטית לשער (השער מודד "both painted" מתוך 2600px ראשונים בלבד).
+השער עצמו כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md`, מתויגות
+`73e357d6b`/`73e357d6b-dirty`. שרת 3311 הופסק בסוף, `refs/.run-*.png`
+הזמניים נוקו. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים), `build`
+exit 0. אפס שינוי קוד ייצור. שני קבצים: `STATE.md` ו-
+`docs/UI-PARITY-REPORT.md` (כתיבה עצמית של השער).
+
 ## M01-c78 (הועבר מ-STATE.md ב-M02-c78, לשמירה על תקרת 300 שורות)
 
 **M01-c78 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
