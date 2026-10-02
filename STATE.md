@@ -1,44 +1,37 @@
-RESUME FROM: M13-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c73 - DONE, robots.txt חי נבדק ישירות מול פרודקשן, אפס דריפט קוד מ-M12-c72)
+RESUME FROM: M14-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c73 - DONE, /api/health ו-/api/ready נבדקו ישירות מול פרודקשן, אפס דריפט קוד מ-M13-c72)
 
 ## המשך מ:
 
-**M12-c73 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". בדיקת דריפט קוד: `git log faac77d13..HEAD -- src/app/robots.ts
-src/app/robots.test.ts src/app/sitemap-robots-agree.test.ts src/lib/site-url.ts`
-ריק, אפס קומיט נוגע מאז M12-c72. `src/app/robots.ts` עדיין מכיל את כל 15
-שורות ה-`Disallow` (כולל `/redeem/`, `/coupon/`, `/gift/`, `/order/`,
-`/wishlist/s/`, `/debug/`) ואת `sitemap`/`host` הנגזרים מ-`siteUrl()`.
-**נמדד ישירות מול פרודקשן בפועל, `curl` חי, לא מהזיכרון**:
-`https://www.kenyonexpress.co.il/robots.txt` מחזיר `200` עם **רק 11 שורות
-`Disallow`** — חסרות בדיוק `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`.
-זה אינו ממצא חדש: זו בדיוק המדידה שנרשמה כבר בחוסם #2 (M12-c68, ואוזכרה
-שוב ב-M12-c72) — פרודקשן עדיין על `a388118f1`, מלפני שארבעת הנתיבים האלה
-נוספו ב-M12-c66/M12-c67. אין פעולה בתוך הפריט הזה: פריסת פרודקשן חסומה
-בידי אופיר בלבד (חוסם #2, תנאי עצירה #1). ארבעת השערים ירוקים: `type-check`
+**M13-c73 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
+d83788ee7..HEAD -- src/app/api/health src/app/api/ready` (בסיס: קומיט
+M13-c72) — ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם, זהים
+ל-M13-c72: `src/app/api/health/route.ts` עושה HEAD-count על `categories`
+דרך ה-admin client, `200`/`database:"ok"` כש-DB מגיב, `503` אחרת;
+`src/app/api/ready/route.ts` מריץ `runReadyChecks()` על חמש תלויות
+ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
+(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":382}`); `/api/ready` → `503`
+(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+**זהה בדיוק ל-M13-c67..M13-c72**: `meilisearch:"down"` נשאר חוסם ידוע
+(`docs/BACKLOG.md`, אין פריסת HEAD). משימת התור מנוסחת "return 200" לשני
+הנתיבים, אבל `/api/ready` מחזיר `503` בכוונה כל עוד meilisearch למטה —
+זו ההתנהגות התקינה של שער המוכן-לעבודה, לא תקלה; `/api/health` (liveness)
+כן `200`. **אפס דריפט מ-M13-c72.** ארבעת השערים ירוקים: `type-check`
 נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349
 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3422 pnpm
-build`, `/robots.txt` מופיע כ-`○ Static`). פריט אימות-בלבד, לא חזותי:
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3423 pnpm
+build`, שני הנתיבים מופיעים ב-manifest). פריט אימות-בלבד, לא חזותי:
 `compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
 
-**M11-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M12-c73 לשמירה על תקרת 300 שורות).** M11-c73: `sitemap.xml` חי נבדק
-ישירות מול פרודקשן, `urlset` שטוח ישן (לא `sitemapindex`) וחמשת תתי-המפות
-מחזירות `404` — תיקן רישום שגוי של M11-c70..M11-c72 שטענו בטעות `200`
-בכולן. M10-c73: מיגרציות ממתינות אומתו
-מחדש (`git ls-tree`+`git diff` מול M10-c72), 62 קבצים, אפס דריפט, עשרת
-החוסמים (`218`,`245`,`246`,`204`,`240`-`244`,`247`) ללא שינוי. M09-c73: `knip` נבדק מחדש, אותם
-מספרים בדיוק כמו M09-c72 (201 unused files, 5 unused deps, 271 unused
-exports, 4 duplicate exports), אפס מועמד חדש. M08-c73: Lighthouse mobile על `/`
-ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c72. M07-c73:
-TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c73: `pnpm
-build` נקי מראש, אפס דריפט. M05-c73: `pnpm test` נקי מראש (614/614,
-7337/7349, 12 מדולגים), ממצא `docs-path-audit` אמיתי אחד תוקן עם
-`--write`. M04-c73: `type-check` נבדק מחדש, נקי מראש. ROBOTS-FIX אומת
-כבר-קיים. M03-c73: שער חזותי קטגוריה `2.93%`/`2.31%`/`1.58%`, `PASS`.
-M02-c73/M01-c73: שערים חזותיים מוצר/בית (מוצר `4.96`/`4.58`/`3.25`, בית
-`8.58`/`9.01`/`4.16`), `PASS`. ארבעת השערים ירוקים בכל השמונה.
+**M12-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
+ב-M13-c73 לשמירה על תקרת 300 שורות).** שמונה פריטי תור: robots.txt
+(חוסם 2, אפס דריפט), sitemap.xml (תיקן רישום שגוי של סבבים קודמים),
+מיגרציות ממתינות (62 קבצים, עשרה חוסמים), `knip` (אפס מועמד חדש),
+Lighthouse mobile (100/100/100), TODO/FIXME, build/test/type-check,
+ושערי קטגוריה/מוצר/בית (`PASS` בכולם). אפס דריפט בכולם, ארבעת השערים
+ירוקים בכל השמונה.
 
 **M18-c72..M01-c72 ו-M18-c71..M01-c71, M18-c70..M01-c70, M18-c69..M01-c69
 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M17-c72 לשמירה

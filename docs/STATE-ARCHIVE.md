@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c73..M01-c73 (הועבר מ-STATE.md ב-M13-c73, לשמירה על תקרת 300 שורות)
+
+**M12-c73..M01-c73.** M12-c73: robots.txt חי נבדק
+ישירות מול פרודקשן, עדיין `a388118f1` (חוסם 2, רק 11 מתוך 15 שורות
+`Disallow`), אפס דריפט מ-M12-c72. M11-c73: `sitemap.xml` חי נבדק
+ישירות מול פרודקשן, `urlset` שטוח ישן (לא `sitemapindex`) וחמשת תתי-המפות
+מחזירות `404` — תיקן רישום שגוי של M11-c70..M11-c72 שטענו בטעות `200`
+בכולן. M10-c73: מיגרציות ממתינות אומתו
+מחדש (`git ls-tree`+`git diff` מול M10-c72), 62 קבצים, אפס דריפט, עשרת
+החוסמים (`218`,`245`,`246`,`204`,`240`-`244`,`247`) ללא שינוי. M09-c73: `knip` נבדק מחדש, אותם
+מספרים בדיוק כמו M09-c72 (201 unused files, 5 unused deps, 271 unused
+exports, 4 duplicate exports), אפס מועמד חדש. M08-c73: Lighthouse mobile על `/`
+ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c72. M07-c73:
+TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס דריפט. M06-c73: `pnpm
+build` נקי מראש, אפס דריפט. M05-c73: `pnpm test` נקי מראש (614/614,
+7337/7349, 12 מדולגים), ממצא `docs-path-audit` אמיתי אחד תוקן עם
+`--write`. M04-c73: `type-check` נבדק מחדש, נקי מראש. ROBOTS-FIX אומת
+כבר-קיים. M03-c73: שער חזותי קטגוריה `2.93%`/`2.31%`/`1.58%`, `PASS`.
+M02-c73/M01-c73: שערים חזותיים מוצר/בית (מוצר `4.96`/`4.58`/`3.25`, בית
+`8.58`/`9.01`/`4.16`), `PASS`. ארבעת השערים ירוקים בכל השמונה.
+
 ## M09-c73 (הועבר מ-STATE.md ב-M10-c73, לשמירה על תקרת 300 שורות)
 
 **M09-c73 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
