@@ -1,32 +1,32 @@
-RESUME FROM: M13-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c70 - DONE, robots.txt אומת מחדש מול פרודקשן בפועל, אפס דריפט)
+RESUME FROM: M14-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c70 - DONE, /api/health ו-/api/ready אומתו מחדש מול פרודקשן בפועל, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c70 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". בדיקת דריפט קוד: `git log aba63e9cb..HEAD -- src/app/robots.ts
-src/app` (בסיס: M12-c68, אותו בסיס כמו M12-c69) — ריק, אפס קומיט נוגע.
-קובץ הקוד עצמו (`src/app/robots.ts`) נקרא במלואו: רשימת ה-`disallow`
-מכילה את כל שמונה-עשרה הנתיבים הצפויים, כולל `/redeem/`, `/coupon/`,
-`/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`. **נמדד מול פרודקשן
-בפועל** (`https://www.kenyonexpress.co.il/robots.txt`): עדיין גרסת
-`a388118f1` הקפואה, בלי `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`
-ברשימת ה-`Disallow` (אותו גאפ שנמדד ב-M12-c67..M12-c69) — תוצאה ישירה
-של חוסם #2 (אין פריסת HEAD), לא ממצא חדש. נבדקו גם ארבעת הנתיבים חיים:
-`/gift/x` ו-`/wishlist/s/x` מחזירים `200` (חשופים לסריקה בלי כיסוי
-`Disallow`, כפי שנמדד קודם); `/order/x` ו-`/debug/` מחזירים `404`
-הפעם (טוקן לא תקף/נתיב לא קיים כברירת מחדל, לא סימן לחסימה בפועל).
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים), `build` exit 0
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:3322 pnpm build`, `/robots.txt` מופיע כ-`○ Static`).
-אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+**M13-c70 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". בדיקת דריפט קוד:
+`git log 75271d80d..HEAD -- src/app/api/health src/app/api/ready
+src/lib/health` (בסיס: M13-c69) — ריק, אפס קומיט נוגע. **נמדד מול
+פרודקשן בפועל** (`https://www.kenyonexpress.co.il`): `/api/health` →
+`200` (`{"ok":true,"database":"ok","latency_ms":201}`); `/api/ready` →
+`503` (`database:"ok"`, `redis:"ok"`, `meilisearch:"down"`,
+`r2`/`cardcom` `not_configured`) — **זהה ל-M13-c67..M13-c69** (חוסם:
+Meilisearch לא נגיש מפרודקשן), לא ממצא חדש. `/api/health` מחזיר `200`
+כנדרש במשימה; `/api/ready` `503` הוא תלות חיצונית ידועה, לא פגם בקוד.
+**אפס דריפט מ-M13-c69.** ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3322 pnpm build`,
+`/api/health`/`/api/ready` כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד:
+`STATE.md`.
 
-**M11-c70, M10-c70, M09-c70, M08-c70, M07-c70, M06-c70, M05-c70, M04-c70,
+**M12-c70, M11-c70, M10-c70, M09-c70, M08-c70, M07-c70, M06-c70, M05-c70, M04-c70,
 M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
-M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70 וב-M12-c70 לשמירה על
-תקרת 300 שורות).** M11-c70: sitemap.xml חי אומת מחדש מול פרודקשן בפועל,
+M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70, M12-c70 וב-M13-c70
+לשמירה על תקרת 300 שורות).** M12-c70: robots.txt אומת מחדש מול פרודקשן
+בפועל, עדיין גרסת `a388118f1` הקפואה (חוסם 2), אפס דריפט מ-M12-c69.
+M11-c70: sitemap.xml חי אומת מחדש מול פרודקשן בפועל,
 `200` עם חמש תת-מפות, אותה ספירת כתובות כמו M11-c69, אפס דריפט. M10-c70: מיגרציות ממתינות אומתו מחדש (`git diff --stat` מול
 M10-c69, אותו בסיס), ריק, 60 קבצים זהים, 19 חוסמים ללא שינוי, אפס דריפט.
 M09-c70: deps/exports מתים עם `knip` אומתו מחדש, 271/197/5/4/201/1,

@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c70 (הועבר מ-STATE.md ב-M13-c70, לשמירה על תקרת 300 שורות)
+
+**M12-c70 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
+production-safe". בדיקת דריפט קוד: `git log aba63e9cb..HEAD -- src/app/robots.ts
+src/app` (בסיס: M12-c68, אותו בסיס כמו M12-c69) — ריק, אפס קומיט נוגע.
+קובץ הקוד עצמו (`src/app/robots.ts`) נקרא במלואו: רשימת ה-`disallow`
+מכילה את כל שמונה-עשרה הנתיבים הצפויים, כולל `/redeem/`, `/coupon/`,
+`/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`. **נמדד מול פרודקשן
+בפועל** (`https://www.kenyonexpress.co.il/robots.txt`): עדיין גרסת
+`a388118f1` הקפואה, בלי `/gift/`, `/order/`, `/wishlist/s/` ו-`/debug/`
+ברשימת ה-`Disallow` (אותו גאפ שנמדד ב-M12-c67..M12-c69) — תוצאה ישירה
+של חוסם #2 (אין פריסת HEAD), לא ממצא חדש. נבדקו גם ארבעת הנתיבים חיים:
+`/gift/x` ו-`/wishlist/s/x` מחזירים `200` (חשופים לסריקה בלי כיסוי
+`Disallow`, כפי שנמדד קודם); `/order/x` ו-`/debug/` מחזירים `404`
+הפעם (טוקן לא תקף/נתיב לא קיים כברירת מחדל, לא סימן לחסימה בפועל).
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים), `build` exit 0
+(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:3322 pnpm build`, `/robots.txt` מופיע כ-`○ Static`).
+אפס שינוי קוד. קובץ יחיד: `STATE.md`.
+
 ## M11-c70 (הועבר מ-STATE.md ב-M12-c70, לשמירה על תקרת 300 שורות)
 
 **M11-c70 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
