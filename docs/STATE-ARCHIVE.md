@@ -2,6 +2,20 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c71 (הועבר מ-STATE.md ב-M07-c71, לשמירה על תקרת 300 שורות)
+
+**M06-c71 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift commit".
+`pnpm build` הורץ בפועל (`.next` נמחק תחילה): exit 0, "Compiled successfully",
+prerender/PPR על כל הנתיבים (כולל sitemaps/robots/opengraph) ללא שגיאה —
+זהה ל-M06-c70, אין דריפט לתקן. יומן ה-build מכיל רק את הרעש הידוע-מראש
+מחוסמים פתוחים קיימים (RLS 401 על `reviews` בגלל מיגרציה 247 ממתינה,
+ו-`optional_column_missing` בגלל מיגרציה 242 ממתינה) — שניהם כבר רשומים
+בחוסם 3 למעלה, לא ממצא חדש. ארבעת השערים הורצו במלואם לאימות: `build`
+נקי (כנ"ל), `type-check` נקי (`tsc --noEmit`, exit 0), `lint` נקי (12
+שערים, 2037 קבצים, אפס תיקונים), `test` נקי (M05-c71, 614/614 קבצים,
+7337/7349 עברו, 12 מדולגים, לא הורץ מחדש כי לא השתנה קוד). אין קבצי קוד
+שהשתנו — commit זה תיעודי בלבד (`STATE.md`/`docs/STATE-ARCHIVE.md`).
+
 ## M05-c71 (הועבר מ-STATE.md ב-M06-c71, לשמירה על תקרת 300 שורות)
 
 **M05-c71 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
