@@ -1,32 +1,31 @@
-RESUME FROM: M03-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c79 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M04-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c79 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, דריפט רעש בתוך הסבילות)
 
 ## המשך מ:
 
-**M02-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-on /product sample" — זהה למשימות "product parity re-measured"
-הקודמות (M02-c78 ולפניו). `pwd` אומת, עץ נקי, `git diff --stat
-494f4b89e..HEAD -- src supabase packages public next.config.ts
-package.json` ריק (אפס שינוי קוד ייצור מאז המדידה הקודמת). **נבנה
-build טרי** (`rm -rf .next && pnpm build`, exit 0), הורם `pnpm start
--p 3311` (לא היה חי קודם), `lsof -p -a -d cwd` אימת ש-cwd של
-ה-listener הוא שורש הפרויקט. **הרצה בחזית**: `LOCAL_BASE=
-http://localhost:3311 node scripts/compare.mjs --page=product
---widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
-— חרגה מ-timeout כלי ה-Bash (300 שניות) והועברה אוטומטית לרקע על ידי
-הכלי עצמו, לא ביוזמת הסוכן; הומתן לסיומה המלאה (exit code 0) דרך
-התראת המשימה לפני כל רישום, בדיוק כמו ב-M02-c78. **תוצאה: `380`=4.96%
-PASS, `768`=4.58% PASS, `1440`=3.25% PASS** (שער 11%), **זהה בדיוק
-ל-M02-c78/M02-c77/M02-c75 — אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס
-הקפוא ארוך בהרבה מהעמוד שלנו) ידועה ולא רלוונטית לשער. השער עצמו כתב
-שלוש שורות ל-`docs/UI-PARITY-REPORT.md`, מתויגות `91c02f4f3`/
-`91c02f4f3-dirty`. שרת 3311 הופסק בסוף. ארבעת השערים: `type-check`
-נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337/7349, 12 מדולגים), `build` exit 0. אפס שינוי קוד ייצור. שני
-קבצים: `STATE.md` ו-`docs/UI-PARITY-REPORT.md` (כתיבה עצמית של השער).
+**M03-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /category sample" — זהה ל-M03-c78 ולפניו. `pwd` אומת, עץ נקי, `git
+diff --stat 494f4b89e..HEAD` ריק (אפס שינוי קוד ייצור). **הרצה בחזית**:
+`COMPARE_ALLOW_PENDING_IMAGES=1 LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` — חרגה מ-timeout כלי
+ה-Bash, הועברה אוטומטית לרקע על ידי הכלי עצמו, הומתן לסיומה המלאה
+(exit 0) לפני כל רישום. **תוצאה (שורת "category parity, gate 11%" של
+הסקריפט עצמו, לא ה-OVERALL האבחוני): `380`=2.93% PASS, `768`=2.31%
+PASS, `1440`=1.58% PASS**. **לא אפס דריפט מ-M03-c78** (3.53/1.94/1.53):
+הפרש 0.05-0.60 נ"א, אותו רעש קטלוג שתועד מ-M03-c75 ואילך (`hot-deals`
+מציגה 2 מוצרים בצד שלנו מול רשת מלאה ברפרנס הקפוא, ראו
+`funnel-pages-refuse-to-measure`). אזהרת HEIGHT RATIO ידועה ולא
+רלוונטית לשער. השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`,
+מתויגות `c11fa965c`/`-dirty`. שרת 3311 הופסק בסוף. ארבעת השערים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349, 12 מדולגים), `build` exit 0 נקי. אפס שינוי קוד
+ייצור. שני קבצים: `STATE.md` ו-`docs/UI-PARITY-REPORT.md`.
 
-**M01-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M02-c79).** M01-c79 — שער חזותי בית נמדד מחדש 380/768/1440
+**M02-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c79).** M02-c79 — שער חזותי מוצר נמדד מחדש 380/768/1440
+(4.96/4.58/3.25, זהה ל-M02-c78/M02-c77/M02-c75), אפס דריפט. M01-c79 —
+שער חזותי בית נמדד מחדש 380/768/1440
 (8.58/9.01/4.16, זהה ל-M01-c78), אפס דריפט. שבעה-עשר פריטי תור/אימות-בלבד: Sentry release vs
 HEAD (946/109 קומיטים, עדיין מפוצל, ממתין להחלטת אופיר), Lighthouse
 mobile (100/100/100 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי
