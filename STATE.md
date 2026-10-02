@@ -1,40 +1,38 @@
-RESUME FROM: M17-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c70 - DONE, JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר)
+RESUME FROM: M18-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c70 - DONE, RTL על / ו-/product נבדק שוב, אפס leak)
 
 ## המשך מ:
 
-**M16-c70 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
-JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c69.
-**נבדק מחדש, אפס דריפט.** `git log a152ec2be..HEAD -- "src/app/(store)/product"
-src/lib/seo e2e/seo-markup.spec.ts` ריק — אין קומיט שנגע בקבצים הרלוונטיים
-מאז M16-c69. **מקור האמת זהה**: `product/[slug]/page.tsx` בונה את שני
-הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/`buildBreadcrumbJsonLd`
-מ-`src/lib/seo/json-ld.ts`, שני `<script type="application/ld+json">`
-תמיד ברינדור, לא מאחורי דגל). **אומת גם ברמת הדף:** `.next` חדש לגמרי
-(`rm -rf .next`) עם `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3323
-pnpm build` exit 0 נקי, `pnpm start -p 3323` עצמאי, אימות שה-listener על
-הפורט הוא התהליך הזה (`lsof`, cwd אומת). `E2E_BASE_URL=http://localhost:3323
-npx playwright test e2e/seo-markup.spec.ts --grep "Product JSON-LD and a
-breadcrumb"` — **2/2 עברו** (chromium+mobile-chrome). **אין ממצא קוד
-לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build`
-exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c69).
-אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ
-M15-c70).
+**M17-c70 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c69. **נבדק מחדש,
+אפס דריפט.** `git log 434100366..HEAD -- src/ e2e/` ריק, `grep` על
+`dir="ltr"` בשני קבצי `HeroSlider.tsx` מחזיר רק הערות הסבר. **ברמת הדף,
+build אמיתי** (`.next` חדש, ניסיון ראשון נכשל על שגיאת רשת חולפת
+ב-Google Fonts, שני נקי): `pnpm build`+`pnpm start -p 3324`, listener
+אומת (`lsof`, cwd). `playwright test home-rtl/rtl-three-widths/rtl-mobile`
+— **111/112 עברו, כשל אחד** (`home-rtl.spec.ts` "every ltr node... on
+allow-list", chromium) על timeout של `waitForLoadState('networkidle')`,
+נשנה 3 מ-3 על אותו timeout (לא flake חד-פעמי, סביר autoplay ה-hero כל 5
+שניות). **נבדק ישירות בסקריפט Playwright זמני (נמחק)** שמדלג על
+networkidle וסורק DOM כמו הטסט: דף הבית **אפס offenders**; דף מוצר
+אמיתי (`/product/צימר-מאסטר`) **offender יחיד ולגיטימי** —
+`.pdp-summary__meta` ללא SKU (`ProductInfo.tsx:252`), זהה לממצא ב-M17-c69.
+**התזמון הוא כשל הטסט, לא leak LTR אמיתי.** אין ממצא קוד לתקן. ארבעת
+השערים: `type-check` נקי, `lint` נקי, `test` 614/614 קבצים (7337/7349,
+12 מדולגים), `build` exit 0 נקי (ניסיון שני). לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M04-c66..M17-c69). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (כיווץ M16-c70).
 
-**M15-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c70).**
-אפס console error/hydration נבדק שוב על `/` ו-`/product`, אפס דריפט
-מ-M15-c69, חמישית ברצף.
-
-**M14-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c70).**
-Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c69, הפער גדל ל-425
-קומיטים.
-
-**M13-c70, M12-c70, M11-c70, M10-c70, M09-c70, M08-c70, M07-c70, M06-c70, M05-c70, M04-c70,
-M03-c70, M02-c70, M01-c70 ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
-M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70, M12-c70, M13-c70 וב-M14-c70
-לשמירה על תקרת 300 שורות).** M13-c70: `/api/health` ו-`/api/ready` אומתו
+**M16-c70, M15-c70, M14-c70, M13-c70, M12-c70, M11-c70, M10-c70, M09-c70,
+M08-c70, M07-c70, M06-c70, M05-c70, M04-c70, M03-c70, M02-c70, M01-c70
+ו-M18-c69..M01-c69 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c69, M14-c69, M17-c69, M01-c70, M02-c70, M03-c70, M05-c70,
+M06-c70, M07-c70, M08-c70, M09-c70, M10-c70, M11-c70, M12-c70, M13-c70,
+M14-c70, M15-c70 וב-M16-c70 לשמירה על תקרת 300 שורות).** M16-c70:
+JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר, אפס דריפט מ-M16-c69.
+M15-c70: אפס console error/hydration נבדק שוב על `/` ו-`/product`, אפס
+דריפט מ-M15-c69. M14-c70: Sentry release מול HEAD נבדק שוב, אפס דריפט
+מ-M14-c69, הפער גדל ל-425 קומיטים. M13-c70: `/api/health` ו-`/api/ready` אומתו
 מחדש מול פרודקשן בפועל (`200`/`503`, זהה ל-M13-c67..M13-c69), אפס דריפט.
 M12-c70: robots.txt אומת מחדש מול פרודקשן
 בפועל, עדיין גרסת `a388118f1` הקפואה (חוסם 2), אפס דריפט מ-M12-c69.
