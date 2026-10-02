@@ -1,44 +1,39 @@
-RESUME FROM: M13-c77
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c77 - DONE, robots.txt נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M14-c77
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c77 - DONE, /api/health ו-/api/ready נבדקו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c77 - DONE (02.10.2026).** משימת התור: "Verify robots.txt
-production-safe". `curl https://www.kenyonexpress.co.il/robots.txt`
-מחזיר 12 שורות `Disallow` (`redeem`,`coupon`,`account`,`supplier`,
-`scan`,`admin`,`checkout`,`cart`,`auth`,`api`,`reset-password`,
-`forgot-password`) — עדיין חסרות `/gift/`,`/order/`,`/wishlist/s/`
-ו-`/debug/`, זהה בדיוק למדידת M12-c76. בקוד: `src/app/robots.ts` כבר
-כולל את כל 15 השורות (`4d370202528` תוקן ב-M12-c67, `git log -1` על
-הקובץ מראה אפס שינוי נוסף מאז). ארבעת הנתיבים נבדקו ישירות בפרודקשן:
-כולם `308` (trailing-slash redirect) ואז `404` במילוי — אין נתיב חי
-תחתיהם בפריסה הנוכחית (`a388118f1`), כך שהחסר ב-robots.txt אינו חושף
-תוכן בפועל כרגע, רק דריפט תיעוד/קוד מול deployment תקוע. חוסם #2
-למעלה ללא שינוי: הסיבה היא פריסת Production תקועה, לא קוד. ארבעת
-השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0
-(`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:4417 pnpm build`, manifest מאשר `/robots.txt`). פריט
+**M13-c77 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps". קוד זהה למדידה הקודמת:
+`src/app/api/health/route.ts` עושה HEAD-count על `categories` דרך
+admin client (אפס `float`/כסף במסלול), `src/app/api/ready/route.ts`
+מריץ `runReadyChecks()` על חמישה תלויות. `git log -3` על שני הקבצים
+ו-`src/lib/health/ready.ts` מראה אפס קומיט נוגע מאז M13-c76. **נמדד
+ישירות מול פרודקשן**: `curl https://www.kenyonexpress.co.il/api/health`
+→ `200 {"ok":true,"database":"ok","latency_ms":205}`;
+`curl .../api/ready` → `503 {"ok":false,"checks":{"database":"ok",
+"redis":"ok","meilisearch":"down","r2":"not_configured",
+"cardcom":"not_configured"}}`. **זהה בדיוק ל-M13-c67..M13-c76**:
+`meilisearch:"down"` נשאר חוסם ידוע (`docs/BACKLOG.md`, אין פריסת
+HEAD, חוסם #2 למעלה), liveness (`/api/health`) כן `200`. **אפס דריפט
+מ-M13-c76.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4417 pnpm build`). פריט
 אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה,
 אסור `supabase db push`, לא הוחל. קובץ יחיד: `STATE.md`.
 
-**M11-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
-sitemap.xml נבדק מחדש מול פרודקשן, אותם 79 כתובות, `urlset` שטוח,
-`a388118f1`, אפס דריפט מ-M11-c76. ארבעת השערים ירוקים, אפס שינוי קוד
-ייצור.
-
-**M10-c77 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
-מיגרציות ממתינות נבדקו מחדש מול git (בסיס M10-c76), 60 קבצים ללא
-שינוי, אפס מיגרציה הוחלה, חוסם #3 (19 קבצים) ללא שינוי. ארבעת השערים
-ירוקים, אפס שינוי קוד ייצור.
-
-**M01-c77..M09-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
-ב-M12-c77 לשמירה על תקרת 300 שורות).** תשעה פריטי אימות-בלבד: שער חזותי
-בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה (3.53/2.52/1.69,
-דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`), type-check, test, build,
-TODO/FIXME (שני ה-marker הידועים ב-`cardcom.ts`, חסומים על החלטת מפעיל),
-Lighthouse mobile (100/100/100 ב-/ וב-`/product/צימר-מאסטר`), ו-knip
-(201/5/1/271/197/4, אפס מועמד חדש) — אפס דריפט/שבור לתיקון בכולם, ארבעת
+**M01-c77..M12-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c77 לשמירה על תקרת 300 שורות).** שנים-עשר פריטי אימות-בלבד:
+שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25) וקטגוריה
+(3.53/2.52/1.69, דריפט קל 0.16-0.6 נ"א מייחוס `loading="lazy"`),
+type-check, test, build, TODO/FIXME (שני ה-marker הידועים
+ב-`cardcom.ts`, חסומים על החלטת מפעיל), Lighthouse mobile
+(100/100/100 ב-/ וב-`/product/צימר-מאסטר`), knip (201/5/1/271/197/4,
+אפס מועמד חדש), knip מחדש (אפס מועמד חדש), מיגרציות ממתינות (60 קבצים
+ללא שינוי, חוסם #3 19 קבצים ללא שינוי), sitemap.xml (79 כתובות,
+`urlset` שטוח, אפס דריפט), ו-robots.txt (12 שורות `Disallow`, עדיין
+חסרות ארבע, חוסם #2 ללא שינוי) — אפס דריפט/שבור לתיקון בכולם, ארבעת
 השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M18-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
