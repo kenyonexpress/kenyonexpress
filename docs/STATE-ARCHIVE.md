@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c71 (הועבר מ-STATE.md ב-M16-c71, לשמירה על תקרת 300 שורות)
+
+**M15-c71 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66..M15-c70. **נבדק מחדש,
+אפס דריפט.** `git log 0baa29014..HEAD -- src/app e2e/route-audit.spec.ts
+src/components` (בסיס: checkpoint M15-c70) ריק — 17 קומיטים מאז, כולם
+תיעוד-בלבד. נבנה `.next` חדש לגמרי (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3319 pnpm build`, exit 0) כדי להימנע
+מה-CSP-ישן-כוזב הידוע, הורם `pnpm start -p 3319` (פורט פנוי, 3312-3316/
+3618/3911/4211 תפוסים בידי סשנים מקבילים אחרים), ואומת `curl` 200 ו-`lsof`
+על ה-pid לפני ההרצה. הורצו `anon /` ו-`anon dynamic catalogue routes`
+מתוך `e2e/route-audit.spec.ts` (chromium + mobile-chrome) עם
+`E2E_BASE_URL=http://localhost:3319`. **4/4 עברו, אפס
+`consoleErrors`/`hydrationWarnings`** על `/`, `/product/צימר-מאסטר`
+(פעיל, זהה ל-M15-c66..M15-c70) ושאר חמשת המסלולים שאותו טסט מגלה
+(`/product/.../reviews`, `/category/hot-deals`, `/city/תל-אביב`,
+`/coupons/...`, `/page/how-it-works`, `/s/...`) — אומת ישירות מתוך
+`test-results/route-audit.jsonl`. **אין ממצא קוד לתקן**; אימות-בלבד,
+שישית ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M15-c70). אפס שינוי קוד ייצור.
+קובץ יחיד: `STATE.md`.
+
 ## M14-c71 (הועבר מ-STATE.md ב-M15-c71, לשמירה על תקרת 300 שורות)
 
 **M14-c71 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
