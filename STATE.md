@@ -1,27 +1,36 @@
-RESUME FROM: M17-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c73 - DONE, JSON-LD Product+BreadcrumbList נבדק מחדש בכל דף מוצר)
+RESUME FROM: M18-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c73 - DONE, RTL על / ו-/product נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M16-c73 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
-JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c72.
-**נבדק מחדש, אפס דריפט.** `git log 50425ff8d..HEAD -- "src/app/(store)/product"
-src/lib/seo e2e/seo-markup.spec.ts` (בסיס: checkpoint M16-c72) ריק — 19
-קומיטים מאז, כולם תיעוד-בלבד. **מקור האמת זהה**: `product/[slug]/page.tsx`
-בונה את שני הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/
-`buildBreadcrumbJsonLd` מ-`src/lib/seo/json-ld.ts`, שני
-`<script type="application/ld+json">` תמיד ברינדור, לא מאחורי דגל). **אומת
-גם ברמת הדף:** `.next` חדש לגמרי (`rm -rf .next`) עם `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0 נקי, `pnpm
-start -p 3331` עצמאי, אימות שה-listener על הפורט הוא התהליך הזה (`lsof`,
-`ps`, cwd אומת), ו-`curl` 200. `E2E_BASE_URL=http://localhost:3331 npx
-playwright test e2e/seo-markup.spec.ts` (כל הקובץ, לא רק ה-grep) —
-**10/10 עברו** (chromium+mobile-chrome), כולל שני הטסטים הממוקדים
-"Product JSON-LD and a breadcrumb". שרת הופסק בסוף הריצה. **אין ממצא קוד
-לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0
-נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c72). אפס
-שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+**M17-c73 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c72 (ה-leak האמיתי
+היחיד נמצא ותוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס דריפט.**
+`git log 3619748be..HEAD -- src/ -- ':!src/app/latin-field-direction.test.ts'`
+(בסיס: checkpoint M17-c72) — **אפס קומיטים נגד `src/`**, רק `docs/`
+השתנו מאז. **נבדק גם ברמת קוד/רינדור בפועל, לא רק דיף:** `<html lang="he"
+dir="rtl">` ב-`layout.tsx:116`, ללא תנאי. גריפ מלא על `dir="ltr"`,
+`direction: ltr`, `float: left/right`, `text-left/right`, ו-`ml-/mr-/pl-/pr-`
+קשיחים ב-`src/app/(store)/page.tsx` וב-`src/app/(store)/product/` — אפס
+התאמות (רק isolate spans ידועים במקומות אחרים: מיילים, חשבון, ספק —
+לא בדפי הבית/מוצר). `pnpm lint` מריץ שער ייעודי `rtl-logical-gate.mjs`:
+**נקי, "no physical direction utility outside an LTR island".** `.next`
+חדש לגמרי (`rm -rf .next`), `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0, `pnpm start
+-p 3331` עצמאי (אומת `lsof`+`ps`+cwd), `curl` 200 על `/` ו-`/product/barbecue`.
+**רינדור בפועל:** `/` — `dir="rtl"` ב-`<html>`, יחיד `dir="ltr"` הוא שדה
+האימייל בניוזלטר (מכוון, שער `input-dir-gate` מאשר). `/product/barbecue`
+— אותו דבר, פלוס `pdp-summary__meta` שמחליף `dir` דינמית לפי קיום SKU
+עברי (`ProductInfo.tsx:252`, מכוון ומתועד בקוד). שרת הופסק בסוף. **אין
+ממצא קוד לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים, כולל `rtl-logical-gate`), `test` 614/614 קבצים (7337/7349,
+12 מדולגים, זהה), `build` exit 0 נקי. לא פריט `compare.mjs` (בדיקת
+לוגיקת כיוון, לא פריסת פיקסלים — תקדים M17-c67..M17-c72). אפס שינוי קוד
+ייצור. קובץ יחיד: `STATE.md`.
+
+**M16-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
+לשם ב-M17-c73 לשמירה על תקרת 300 שורות).** JSON-LD Product+BreadcrumbList
+בכל דף מוצר נבדק מחדש (10/10 עברו), אפס דריפט מ-M16-c72.
 
 **M15-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
 לשם ב-M16-c73 לשמירה על תקרת 300 שורות).** אפס console error/hydration

@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c73 (הועבר מ-STATE.md ב-M17-c73, לשמירה על תקרת 300 שורות)
+
+**M16-c73 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
+JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c72.
+**נבדק מחדש, אפס דריפט.** `git log 50425ff8d..HEAD -- "src/app/(store)/product"
+src/lib/seo e2e/seo-markup.spec.ts` (בסיס: checkpoint M16-c72) ריק — 19
+קומיטים מאז, כולם תיעוד-בלבד. **מקור האמת זהה**: `product/[slug]/page.tsx`
+בונה את שני הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/
+`buildBreadcrumbJsonLd` מ-`src/lib/seo/json-ld.ts`, שני
+`<script type="application/ld+json">` תמיד ברינדור, לא מאחורי דגל). **אומת
+גם ברמת הדף:** `.next` חדש לגמרי (`rm -rf .next`) עם `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0 נקי, `pnpm
+start -p 3331` עצמאי, אימות שה-listener על הפורט הוא התהליך הזה (`lsof`,
+`ps`, cwd אומת), ו-`curl` 200. `E2E_BASE_URL=http://localhost:3331 npx
+playwright test e2e/seo-markup.spec.ts` (כל הקובץ, לא רק ה-grep) —
+**10/10 עברו** (chromium+mobile-chrome), כולל שני הטסטים הממוקדים
+"Product JSON-LD and a breadcrumb". שרת הופסק בסוף הריצה. **אין ממצא קוד
+לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0
+נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c72). אפס
+שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+
 ## M15-c73 (הועבר מ-STATE.md ב-M16-c73, לשמירה על תקרת 300 שורות)
 
 **M15-c73 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
