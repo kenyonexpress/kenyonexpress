@@ -1,7 +1,22 @@
-RESUME FROM: M08-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c75 - DONE, TODO/FIXME scan אפס דריפט)
+RESUME FROM: M09-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c75 - DONE, Lighthouse mobile נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
+
+**M08-c75 - DONE (02.10.2026).** משימת התור: "Lighthouse mobile on / and
+/product sample log scores". אפס דריפט מ-M08-c74 (`b5ed57db4`). ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` טרי
+(`rm -rf .next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4417
+pnpm build`, exit 0, `BUILD_ID` `mZB7yxzMcrLqJN9Xt-gkg`). `pnpm start`
+עצמאי על פורט 4417 (3311-3316/3618/3911/4211 תפוסים ע"י סוכנים
+מקבילים), `cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`), `/` ו-`/product/
+צימר-מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`, 44 מוצרים
+פעילים, slug פעיל) אומתו `200` לפני המדידה. `scripts/lighthouse-smoke.mjs
+--throttling-method=provided`: `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c74. שרת נסגר
+אחרי המדידה. אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md`.
 
 **M07-c75 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
 7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
