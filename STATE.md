@@ -1,50 +1,47 @@
-RESUME FROM: M03-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c75 - DONE, שער חזותי מוצר נמדד מחדש)
+RESUME FROM: M04-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c75 - DONE, שער חזותי קטגוריה נמדד מחדש)
 
 ## המשך מ:
 
-**M02-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/product sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
-אומת), אפס שינוי קוד ייצור מאז M02-c74 (8b1a9eab4, רק תיעוד). **ריצה
-ראשונה עם `--baseline=refs/ke_live_{width}.png` (שגוי, הועתק מ-M01-c75)
-הפילה 768 ל-`FAIL` 12.67% על עמוד "structurally different"** — תוקן:
-עמוד המוצר משתמש ב-`refs/electro_product_{width}.png`, לא `ke_live`,
-כפי שתועד ב-M02-c74. הורצה שוב נכון, `LOCAL_BASE=http://localhost:3311
-node scripts/compare.mjs --page=product --widths=380,768,1440
---baseline=refs/electro_product_{width}.png` בחזית (חרגה פעמיים
-מ-timeout 120ש' של כלי ה-Bash והמשיכה ברקע עד סיום, לא הופעלה ברקע
-ביוזמת הסוכן; הומתן לסיומה המלא דרך Monitor). **תוצאה סופית: `380`=
-4.96%, `768`=4.58%, `1440`=3.25%, שלושתם `PASS`, אפס דריפט מ-M02-c74
-(אותם מספרים בדיוק). שתי הריצות נכתבו אוטומטית ל-`UI-PARITY-REPORT.md`
-על ידי הסקריפט עצמו, מתויגות `e5e18f475`.** ארבעת השערים: `type-check`
-נקי, `lint` נקי, `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי.
-אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+**M03-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת), אפס שינוי קוד ייצור מאז M03-c74 (9d76292da, רק תיעוד). **שתי
+ריצות ראשונות עם `--baseline='refs/electro_shop_{width}.png'` סורבו
+ב-380 (exit 3): "2 image(s) on the local page had still not loaded".**
+נבדק ישירות עם Playwright (לא חלק מהשער עצמו): שתי תמונות המוצר
+הראשונות בקטגוריית `hot-deals` ("תיק עור JEEP יוקרתי" 99₪, "תספורת
+לגבר..." 20₪) נמצאות במלואן בתצוגה (`getBoundingClientRect` תקין, שום
+אב `display:none`), אך ה-`loading="lazy"` שלהן **לא יורה שום בקשת רשת
+באוטומציה headless** (נבדק עם מעקב `page.on('response'/'requestfailed')`
+— אפס אירועים) — לא תקלת רשת/CSP/קובץ פגום: אותם URL-ים בדיוק (כולל אותו
+`w=` bucket) נטענים מ-`curl` תוך 10-30ms. **ממצא חדש, לא תועד קודם**;
+כנראה ייחודי לגלילה הפרוגרמטית של הכלי (גולש אמיתי גולל בפועל ומפעיל
+את ה-IntersectionObserver הטבעי כרגיל) ולא באג ייצור. תועד להמשך בדיקה
+עתידית, לא תוקן — מחוץ להיקף הפריט (רה-מדידה בלבד). הורץ עם
+`COMPARE_ALLOW_PENDING_IMAGES=1` (המסלול הרשמי שהסקריפט עצמו מציע
+בהודעת הסירוב), `LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` בחזית (חרגה מ-timeout
+כלי ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן לסיומה המלא דרך
+Monitor). **תוצאה: `380`=2.93%, `768`=1.94%, `1440`=1.53%, שלושתם
+`PASS`, אפס דריפט שלילי מ-M03-c74 (2.93/2.31/1.58 — 768 ו-1440 השתפרו
+קלות, כנראה רעש קטלוג/רינדור ולא שינוי קוד).** שלוש השורות נכתבו
+אוטומטית ל-`UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות
+`b998b1fa1`. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי. אפס שינוי
+קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
 
-**M01-c75, M18-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M02-c75 לשמירה על תקרת 300 שורות).** M01-c75 — שער חזותי
-בית נמדד מחדש, אפס דריפט מ-M01-c74 (8.58%/9.01%/4.16%, שלושתם PASS). M18-c74 — תחזוקת תיעוד,
-STATE.md נבדק מחדש מתחת לתקרת 300 שורות (299), ארכב את M17-c74 כדי
-לשמור מרווח. M17-c74 — RTL על / ו-/product
-נבדק מחדש, אפס leak חדש, אפס דריפט מ-M17-c73. M16-c74 — JSON-LD
-Product+BreadcrumbList נבדק מחדש בכל דפי המוצר (10/10
-`e2e/seo-markup.spec.ts`), אפס דריפט מ-M16-c73. M15-c74 — אפס console
-error/hydration על / ו-/product sample (2/2 `e2e/route-audit.spec.ts`),
-אפס דריפט מ-M15-c73. M14-c74 — Sentry release vs HEAD נבדק מחדש מול
-Vercel MCP (read-only): אותה פריסה בדיוק שנמצאה ב-M14-c73
-(`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main`@`18ed044b2`), אפס
-דריפט ב-env. M13-c74 — `/api/health`/`/api/ready` נבדקו ישירות מול
-פרודקשן (`200`/`503` בהתאמה), אפס דריפט מ-M13-c73. M12-c74 — robots.txt
-חי נבדק ישירות מול פרודקשן, 12 שורות `Disallow` (חסרות `/gift/`,
-`/order/`,`/wishlist/s/`,`/debug/`), זהה ל-M12-c73, אפס דריפט. M11-c74 —
-sitemap.xml חי נבדק ישירות מול פרודקשן, `urlset` שטוח וחמשת תתי-המפות
-`404`, זהה ל-M11-c73. M10-c74 — מיגרציות ממתינות נבדקו ישירות מול
-פרודקשן, 19 חוסמים עדיין חסרים, אפס דריפט מ-M10-c68. M09-c74 — `knip`
-נבדק מחדש, אפס מועמד חדש. M08-c74 — Lighthouse mobile 100/100/100
-בשניהם. M07-c74 — TODO/FIXME כבר מתועדים. M06-c74 — `build` נבדק
-מחדש, exit 0. M05-c74 — `test` נמדד מחדש, 614/614. M04-c74 —
-`type-check` נקי. M03-c74..M01-c74 — שערים חזותיים קטגוריה/מוצר/בית,
-אפס דריפט, כולם `PASS`.
+**M02-c75, M01-c75, M18-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+לשורה הזו ב-M03-c75 לשמירה על תקרת 300 שורות).** עשרים פריטי
+אימות-בלבד/תחזוקה, אפס דריפט בכולם: M02-c75 מוצר (4.96/4.58/3.25
+PASS), M01-c75 בית (8.58/9.01/4.16 PASS), M18-c74 תחזוקת תיעוד, M17-c74
+RTL, M16-c74 JSON-LD, M15-c74 console/hydration, M14-c74 Sentry vs HEAD,
+M13-c74 health/ready, M12-c74 robots.txt, M11-c74 sitemap.xml, M10-c74
+מיגרציות ממתינות (19 חוסמים), M09-c74 knip, M08-c74 Lighthouse
+100/100/100, M07-c74 TODO/FIXME, M06-c74 build, M05-c74 test, M04-c74
+type-check, M03-c74..M01-c74 שערים חזותיים קטגוריה/מוצר/בית (כולם
+PASS). ארבעת השערים ירוקים בכולם.
 
 **M18-c73..M15-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M10-c74 לשמירה על תקרת 300 שורות).** ארבעה פריטי אימות-בלבד, אפס דריפט

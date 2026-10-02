@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c75 (הועבר מ-STATE.md ב-M03-c75, לשמירה על תקרת 300 שורות)
+
+**M02-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת), אפס שינוי קוד ייצור מאז M02-c74 (8b1a9eab4, רק תיעוד). **ריצה
+ראשונה עם `--baseline=refs/ke_live_{width}.png` (שגוי, הועתק מ-M01-c75)
+הפילה 768 ל-`FAIL` 12.67% על עמוד "structurally different"** — תוקן:
+עמוד המוצר משתמש ב-`refs/electro_product_{width}.png`, לא `ke_live`,
+כפי שתועד ב-M02-c74. הורצה שוב נכון, `LOCAL_BASE=http://localhost:3311
+node scripts/compare.mjs --page=product --widths=380,768,1440
+--baseline=refs/electro_product_{width}.png` בחזית (חרגה פעמיים
+מ-timeout 120ש' של כלי ה-Bash והמשיכה ברקע עד סיום, לא הופעלה ברקע
+ביוזמת הסוכן; הומתן לסיומה המלא דרך Monitor). **תוצאה סופית: `380`=
+4.96%, `768`=4.58%, `1440`=3.25%, שלושתם `PASS`, אפס דריפט מ-M02-c74
+(אותם מספרים בדיוק). שתי הריצות נכתבו אוטומטית ל-`UI-PARITY-REPORT.md`
+על ידי הסקריפט עצמו, מתויגות `e5e18f475`.** ארבעת השערים: `type-check`
+נקי, `lint` נקי, `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי.
+אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
 ## M01-c75 (הועבר מ-STATE.md ב-M02-c75, לשמירה על תקרת 300 שורות)
 
 **M01-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
