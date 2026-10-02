@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c76 (הועבר מ-STATE.md ב-M03-c76, לשמירה על תקרת 300 שורות)
+
+**M02-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת), אפס שינוי קוד ייצור מאז M01-c76 (`9b56a361f`, רק תיעוד). **שתי
+ריצות ראשונות עם `--baseline='refs/electro_product_{width}.png'` סורבו
+ב-380 (exit 3): "0 image(s) on live and 1 on the local page had still
+not loaded when the shutter fired"** — נבדק ישירות: תמונת המוצר הראשית
+(`S5cf8b9b35a5b49b0bf525d6cb7b89181H-600x600.webp`) חזרה ב-32ms מ-`curl`
+אחרי החימום הראשון, כלומר לא תקלת קובץ/רשת אלא אותה תקלת-תזמון של
+`loading="lazy"` מול הגלילה הפרוגרמטית של הכלי שכבר תועדה ב-M03-c75
+(קטגוריה) ובכמה פריטים קודמים — לא באג ייצור. הורץ שוב עם
+`COMPARE_ALLOW_PENDING_IMAGES=1` (המסלול הרשמי שהסקריפט עצמו מציע),
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'` בחזית (חרגה מ-timeout
+כלי ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן לסיומה המלא דרך
+Monitor). **תוצאה: `380`=4.50%, `768`=4.07%, `1440`=3.25%, שלושתם
+`PASS` מתחת לשער 11%, אפס דריפט שלילי מ-M02-c75 (4.96/4.58/3.25 —
+380 ו-768 השתפרו קלות, כנראה רעש קטלוג/רינדור ולא שינוי קוד; אותה
+אזהרת HEIGHT RATIO/"structurally different" קיימת כבר מ-M02-c74
+ואילך — הרפרנס הקפוא ארוך בהרבה מהעמוד שלנו, השער עצמו מודד רק את
+"both painted" מתוך 2600px ראשונים ולא רודף את הפערים, כפי שההודעה
+עצמה מנחה).** שלוש השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`
+על ידי הסקריפט עצמו, מתויגות `9b56a361f`. ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
+build` exit 0 נקי (שרת 3311 נשאר חי ועונה `200` אחרי הבנייה). אפס
+שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
 ## M18-c75 (הועבר מ-STATE.md ב-M01-c76, לשמירה על תקרת 300 שורות)
 
 **M18-c75 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
