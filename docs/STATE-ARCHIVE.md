@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c75 (הועבר מ-STATE.md ב-M09-c75, לשמירה על תקרת 300 שורות)
+
+**M07-c75 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md". `grep -rn "TODO\|FIXME" src/
+--include="*.ts" --include="*.tsx" -l` מחזיר אותם שני קבצים כמו בכל סבב
+קודם (לאחרונה M07-c74, `339e59e40`): `src/lib/payments/cardcom.ts` (שתי
+שורות, 254 ו-319, שתיהן `TODO(cardcom)` אמיתיות) ו-`src/lib/whatsapp.test.ts:91`
+(מחרוזת ליטרלית `'TODO'` בבדיקה, לא סמן עבודה). `git log 339e59e40..HEAD --
+src/lib/payments/cardcom.ts src/lib/whatsapp.test.ts docs/BACKLOG.md` ריק
+— אפס דריפט. שתי ה-`TODO` האמיתיות עדיין מתועדות ב-`docs/BACKLOG.md`
+סעיף 6 (`Tracked in #41`/`#42`), לא נדרש עדכון לקובץ. ארבעת השערים
+ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים, אפס
+תיקונים), `test` נקי 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`rm -rf .next && pnpm build` נקי (`Compiled successfully`, לוגי
+`supabase.rls_denied`/`reviews_read_failed` הם החוסם הידוע #3, לא כשל
+build). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md`.
+
 ## M04-c75 (הועבר מ-STATE.md ב-M06-c75, לשמירה על תקרת 300 שורות)
 
 **M04-c75 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
