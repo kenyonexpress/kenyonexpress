@@ -1,32 +1,37 @@
-RESUME FROM: M14-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c74 - DONE, /api/health ו-/api/ready נבדקו ישירות מול פרודקשן, אפס דריפט קוד מ-M13-c73)
+RESUME FROM: M15-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c74 - DONE, Sentry release vs HEAD נבדק מחדש, אפס דריפט מ-M14-c73)
 
 ## המשך מ:
 
-**M13-c74 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps". בדיקת דריפט קוד: `git log
-73e549698..HEAD -- src/app/api/health src/app/api/ready` (בסיס:
-M13-c73) ריק, אפס קומיט נוגע. שני קבצי הקוד נקראו במלואם, זהים
-ל-M13-c73: `src/app/api/health/route.ts` עושה HEAD-count על
-`categories` דרך ה-admin client, `200`/`database:"ok"` כש-DB מגיב,
-`503` אחרת; `src/app/api/ready/route.ts` מריץ `runReadyChecks()` על
-חמש תלויות ומחזיר `200` רק כשכולן תקינות. **נמדד מול פרודקשן בפועל**
-(`https://www.kenyonexpress.co.il`): `/api/health` → `200`
-(`{"ok":true,"database":"ok","latency_ms":188}`); `/api/ready` → `503`
-(`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
-**זהה בדיוק ל-M13-c67..M13-c73**: `meilisearch:"down"` נשאר חוסם ידוע
-(`docs/BACKLOG.md`), אין פריסת HEAD. משימת התור מנוסחת "return 200"
-לשני הנתיבים, אבל `/api/ready` מחזיר `503` בכוונה כל עוד meilisearch
-למטה — זו ההתנהגות התקינה של שער המוכן-לעבודה, לא תקלה; `/api/health`
-(liveness) כן `200`. **אפס דריפט מ-M13-c73.** ארבעת השערים ירוקים:
+**M14-c74 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit". HEAD כרגע `91aa29df5` על `audit/final-audit`.
+**נבדק מחדש מול Vercel (MCP, read-only בלבד)**: `list_deployments`
+(`target=production`) מראה את אותה פריסה חיה בדיוק שנמצאה ב-M14-c73 —
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `created=1790919737039`
+(`2026-10-02T05:42:17Z`, אותה שנייה בדיוק), `githubCommitRef=main`,
+`githubCommitSha=18ed044b2` ("Wave 6: build success"). `git merge-base
+--is-ancestor 18ed044b2 HEAD` עדיין נכשל — הענפים מפוצלים (`main`
+מכיל 109 קומיטים ש-HEAD לא מכיל, HEAD מכיל 873 קומיטים ש-`main` לא
+מכיל, גדל מ-855 ב-M14-c73 מתוך גידול טבעי של התור). `filter_project_envs`
+על אותו פרויקט (רשימה מלאה) מראה `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`
+עדיין קיימים, **אותו `createdAt=1790918429743` בדיוק** כמו ב-M14-c73 —
+לא נוספו ולא הוסרו מאז. **תשובה לשאלת התור, כמו ב-M14-c73: לא, ה-release
+אינו תואם ל-HEAD** — פרודקשן עדיין מריץ `main`@`18ed044b2`, לא את העבודה
+המתועדת בענף הזה. **אפס דריפט מ-M14-c73**: שום פריסה חדשה לא נוצרה,
+שום env לא השתנה, המקור עדיין לא ידוע ועדיין לא לפעולת הסוכן (רישום
+מלא כבר ב-`docs/BACKLOG.md` סעיף 17 ובחוסם #2 למעלה). לא בוצעה פריסה,
+rollback או שינוי env על ידי הסוכן הזה — קריאות read-only בלבד
+(`list_deployments`, `filter_project_envs`). ארבעת השערים ירוקים:
 `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next`
-ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424
-pnpm build`, שני הנתיבים מופיעים ב-manifest). פריט אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש. קובץ יחיד: `STATE.md`.
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424 pnpm
+build`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
 
-**M12-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c74 לשמירה על תקרת 300 שורות).** M12-c74 — robots.txt חי
+**M13-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M14-c74 לשמירה על תקרת 300 שורות).** M13-c74 — `/api/health`/
+`/api/ready` נבדקו ישירות מול פרודקשן (`200`/`503` בהתאמה), אפס דריפט
+מ-M13-c73. M12-c74 — robots.txt חי
 נבדק ישירות מול פרודקשן, 12 שורות `Disallow` (חסרות `/gift/`,`/order/`,
 `/wishlist/s/`,`/debug/`), זהה ל-M12-c73, אפס דריפט. M11-c74 —
 sitemap.xml חי נבדק ישירות מול פרודקשן, `urlset` שטוח וחמשת תתי-המפות
@@ -46,17 +51,11 @@ M15-c73 אפס console error/hydration (264/264) — כולם אפס דריפט 
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר
 (ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
-ב-M15-c73 לשמירה על תקרת 300 שורות).** production השתנה בפועל בין
-M14-c72 לכאן, **מחוץ ללולאת התור הזה**: פריסה חדשה חיה
-(`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`) בנויה מ-`main`@`18ed044b2`, לא
-מ-`audit/final-audit`/HEAD ולא מ-`a388118f1` הקודם, ועם `SENTRY_DSN`/
-`NEXT_PUBLIC_SENTRY_DSN` חדשים ב-Production (`createdAt`≈05:20 UTC,
-שעתיים לפני תחילת אותו סשן). **תשובה לשאלת התור: לא, ה-release אינו
-תואם ל-HEAD** — production מריץ קוד ישן בלי 855 הקומיטים של העבודה
-המתועדת בתור הזה. מקור הפעולה (מי/מה יצר את הפריסה ואת שינוי ה-env)
-לא נמדד ולא ידוע; `scripts/dns-watch.sh` נבדק ונשלל כמקור. **לא תוקן
-ולא הוחזר** (שתי פעולות אסורות על הסוכן). פורט מלא ב-`docs/BACKLOG.md`
-סעיף 17. ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
+ב-M15-c73 לשמירה על תקרת 300 שורות; נמצא ראשון שם production הוחלף
+חי מחוץ לתור, `main`@`18ed044b2`, עם `SENTRY_DSN` חדש; מקור הפעולה
+לא ידוע, לא תוקן ולא הוחזר, פורט מלא ב-`docs/BACKLOG.md` סעיף 17).**
+**נבדק מחדש ב-M14-c74 (למעלה): אפס דריפט** — אותה פריסה בדיוק, אותו
+`SENTRY_DSN`, עדיין ממתין להחלטת אופיר.
 
 **M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
 ב-M14-c73 לשמירה על תקרת 300 שורות).** תשעה פריטי תור: `/api/health`/
