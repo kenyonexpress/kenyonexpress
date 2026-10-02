@@ -1,45 +1,31 @@
-RESUME FROM: M08-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c80 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
+RESUME FROM: M09-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c80 DONE: Lighthouse mobile נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c80 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
-(M07-c79 ולפניו). נסרק מחדש `src/`
-(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
-ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
-(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
-ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
-ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
-המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
-(`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית `'TODO'`
-בבדיקה, לא marker.) ארבעת השערים ירוקים: `type-check` נקי (exit 0),
-`lint` נקי (12 שערים, 2037 קבצים, זהה), `pnpm test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים — זהה ל-M06-c80), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
-build` exit 0 נקי, כל הנתיבים נבנו. לא פריט חזותי, `compare.mjs` לא
-נדרש (תקדים M06-c79 ואילך). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
-
-**M06-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M07-c80).** pnpm build gate re-verified clean, אפס דריפט קוד מאז
-M06-c79 (`a28508752`). ארבעת השערים ירוקים, אפס שינוי קוד ייצור.
-
-**M05-c80 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
-commit" — זהה למשימות "test gate re-verified clean" הקודמות (M05-c79
-ולפניו). `pwd` אומת, עץ עבודה נקי. `pnpm test` (vitest) רץ וחזר נקי:
-614/614 קבצים, 7337/7349 טסטים (12 מדולגים) — אין drift לתקן. הורצו
-גם שלושת השערים הנוספים לטקס הסיום: `pnpm type-check` (`tsc
---noEmit`) נקי, `pnpm lint` נקי (12 שערים, 2037 קבצים), `pnpm build`
-exit 0 (כל הנתיבים נבנו, כולל sitemap/robots/opengraph). `git diff
---stat 024a75fa0..HEAD -- src supabase packages public next.config.ts
-package.json` ריק — אפס שינוי קוד ייצור מאז המדידה הקודמת (M04-c80),
-אותה תוצאה בדיוק. שני קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
+**M08-c80 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores" — זהה לתבנית החוזרת (M08-c79
+ולפניו). ארבעת השערים ירוקים: `type-check` נקי (exit 0), `lint` נקי
+(12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה ל-M07-c80), build טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build`, exit 0). `pnpm start` עצמאי על פורט 4517 (3311/3316/3618/
+3911/4211 תפוסים ע"י סוכנים מקבילים, 4517 פנוי), `cwd` אומת מול הריפו
+הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-מאסטר` (נמדד מול
+`supabase/catalogue-snapshot.json`) אומתו `200` לפני המדידה.
+`LOCAL_BASE=http://localhost:4517 node scripts/lighthouse-smoke.mjs
+--throttling-method=provided` (פעם ללא `--url`, פעם עם
+`--url=/product/צימר-מאסטר`): `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100**, אפס דריפט מ-M08-c79. שרת
+נסגר אחרי המדידה, פורט אומת פנוי. אימות-בלבד, לא חזותי: `compare.mjs`
+לא נדרש (תקדים M08-c78 ואילך). אפס שינוי קוד ייצור. קובץ אחד:
+`STATE.md`.
 
 **M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M08-c80).** שבעה פריטי תור/אימות-בלבד (type-check, שערי
-חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, build/test
-גייטים) ושלושים פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם,
-ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+לשורה הזו ב-M08-c80).** עשרה פריטי תור/אימות-בלבד (type-check, שערי
+חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build
+גייטים, TODO/FIXME) ושלושים פריטים נוספים מארכיון קודם — אפס
+דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:
