@@ -2,6 +2,21 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c74 (הועבר מ-STATE.md ב-M10-c74, לשמירה על תקרת 300 שורות)
+
+**M09-c74 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
+exports". `git diff --stat e94008804..HEAD -- package.json pnpm-lock.yaml
+src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c73)
+ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
+הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
+binary / 271 unused exports / 197 unused exported types / 4 duplicate
+exports** — אותם מספרים בדיוק כמו M09-c73, אפס מועמד חדש. אפס הסרה.
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit
+0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3417 pnpm build`, route manifest מלא). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
+
 ## M07-c74 (הועבר מ-STATE.md ב-M08-c74, לשמירה על תקרת 300 שורות)
 
 **M07-c74 - DONE (02.10.2026).** משימת התור: "Scan TODO FIXME older than

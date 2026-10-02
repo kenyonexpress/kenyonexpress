@@ -1,50 +1,50 @@
-RESUME FROM: M10-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c74 - DONE, knip נבדק מחדש, אפס דריפט)
+RESUME FROM: M11-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c74 - DONE, מיגרציות ממתינות נבדקו ישירות מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c74 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead
-exports". `git diff --stat e94008804..HEAD -- package.json pnpm-lock.yaml
-src/ scripts/ next.config.ts apps/ supabase/` (בסיס: HEAD של M09-c73)
-ריק — אפס דריפט קוד מאז הבדיקה הקודמת. `pnpm dlx knip --no-config-hints`
-הורץ מחדש: **201 unused files / 5 unused dependencies / 1 unlisted
-binary / 271 unused exports / 197 unused exported types / 4 duplicate
-exports** — אותם מספרים בדיוק כמו M09-c73, אפס מועמד חדש. אפס הסרה.
-ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים), `build` exit
-0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:3417 pnpm build`, route manifest מלא). פריט אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה. קובץ יחיד: `STATE.md`.
+**M10-c74 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff --stat 9585afcab..HEAD -- migrations/pending
+docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
+pnpm-lock.yaml` (בסיס: M10-c73): רק `docs/BACKLOG.md` עצמו, אפס שינוי
+בתיקיית המיגרציות. 60 קבצי `.sql`, `git log -1` עדיין `48c8792dd` (248,
+Q32). **מאחר שחמישה סבבים (c69..c73) הסתפקו ב-git בלבד מאז הבדיקה
+הישירה האחרונה (M10-c68), הורצה בדיקה ישירה חדשה** מול פרודקשן (CLI-
+keychain-token, `api.supabase.com/.../database/query`, `SELECT` בלבד):
+כל 19 אובייקטי רשימת החוסמים (204, 209, 218, 220, 223, 224, 234-236,
+239-248) עדיין חסרים — טבלאות/עמודות/הרשאות לא קיימות,
+`fn_wallet_entries_block_mutation` בלי `proconfig`, `banners`
+single-permissive לא קיימת, `city IS NULL` עדיין קיים, `push_subscriptions`/
+`cashback_ledger` עדיין לא עטופות ב-`(select auth.uid())`. אפס דריפט
+מ-M10-c68, אין חוסם חדש. ארבעת השערים: `type-check`/`lint` נקיים, `test`
+614/614 (7337/7349 עברו). `build` לא הורץ: `git diff --stat 3b541a331..HEAD`
+על נתיבי build ריק (אפס דריפט מ-M06-c74), ו-14 `next-server`/`pnpm start`
+מקבילים היו פעילים. אימות-בלבד, לא חזותי. אפס שינוי כסף/סכימה/קוד. קובץ
+יחיד: `STATE.md`.
 
-**M08-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c74 לשמירה על תקרת 300 שורות).** M08-c74 — Lighthouse mobile
-על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט מ-M08-c73.
-M07-c74 — TODO/FIXME נסרק
-מחדש, שני הסמנים (`cardcom.ts:254,319`) כבר מתועדים ב-`docs/BACKLOG.md`
-סעיף 6, אפס דריפט מ-M07-c73. M06-c74 — `pnpm build` נבדק
-מחדש מראש (`rm -rf .next`), exit 0, `BUILD_ID` חדש
-`iOV0dJFAKTe1crl-cPgxM`, אפס דריפט. M05-c74 — `pnpm test` נמדד
-מחדש, 614/614 קבצים, 7337/7349 עברו, אפס דריפט. M04-c74 — `pnpm
-type-check` נמדד מחדש, exit 0, אפס דריפט. M03-c74 — שער חזותי קטגוריה
-נמדד מחדש, אפס דריפט מ-M03-c73/M03-c66 (2.93%/2.31%/1.58%, שלושתם
-PASS). M02-c74 — שער חזותי מוצר
-נמדד מחדש, אפס דריפט מ-M02-c73 (4.96%/4.58%/3.25%, שלושתם PASS). M01-c74
-— שער חזותי בית נמדד מחדש, אפס דריפט מ-M01-c73 (8.58%/9.01%/4.16%,
-שלושתם PASS).
+**M09-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M10-c74 לשמירה על תקרת 300 שורות).** M09-c74 — `knip` נבדק מחדש
+(201/5/1/271/197/4, אותם מספרים כמו M09-c73), אפס מועמד חדש, אפס הסרה.
+M08-c74 — Lighthouse mobile על `/` ו-`/product` אומת מחדש, 100/100/100
+בשניהם, אפס דריפט מ-M08-c73.
+M07-c74 — TODO/FIXME נסרק מחדש, שני הסמנים (`cardcom.ts:254,319`) כבר
+מתועדים ב-`docs/BACKLOG.md` סעיף 6, אפס דריפט מ-M07-c73. M06-c74 —
+`pnpm build` נבדק מחדש מראש (`rm -rf .next`), exit 0, `BUILD_ID` חדש
+`iOV0dJFAKTe1crl-cPgxM`, אפס דריפט. M05-c74 — `pnpm test` נמדד מחדש,
+614/614 קבצים, 7337/7349 עברו, אפס דריפט. M04-c74 — `pnpm type-check`
+נמדד מחדש, exit 0, אפס דריפט. M03-c74 — שער חזותי קטגוריה נמדד מחדש,
+אפס דריפט מ-M03-c73/M03-c66 (2.93%/2.31%/1.58%, שלושתם PASS). M02-c74 —
+שער חזותי מוצר נמדד מחדש, אפס דריפט מ-M02-c73 (4.96%/4.58%/3.25%,
+שלושתם PASS). M01-c74 — שער חזותי בית נמדד מחדש, אפס דריפט מ-M01-c73
+(8.58%/9.01%/4.16%, שלושתם PASS).
 
-**M18-c73 ו-M17-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c74 לשמירה על תקרת 300 שורות).** M18-c73 — תחזוקת תיעוד,
-STATE.md נבדק מחדש מתחת לתקרת 300 שורות (289), בלי צורך בארכוב, ארכב
-את M17-c73 כדי לשמור מרווח. M17-c73 — RTL על `/` ו-`/product` נבדק
-מחדש, אפס דריפט מ-M17-c72 (ה-leak האמיתי היחיד תוקן ב-c66's M17).
-
-**M16-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
-לשם ב-M17-c73 לשמירה על תקרת 300 שורות).** JSON-LD Product+BreadcrumbList
-בכל דף מוצר נבדק מחדש (10/10 עברו), אפס דריפט מ-M16-c72.
-
-**M15-c73 - DONE (02.10.2026, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, הועבר
-לשם ב-M16-c73 לשמירה על תקרת 300 שורות).** אפס console error/hydration
-על `/` ו-`/product` נבדק מחדש (264/264 עברו), אפס דריפט מ-M15-c72.
+**M18-c73..M15-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M10-c74 לשמירה על תקרת 300 שורות).** ארבעה פריטי אימות-בלבד, אפס
+דריפט בכולם: M18-c73 — תחזוקת תיעוד, STATE.md נבדק מתחת לתקרת 300
+שורות. M17-c73 — RTL על `/` ו-`/product`, אפס דריפט מ-M17-c72 (ה-leak
+האמיתי היחיד תוקן ב-c66's M17). M16-c73 — JSON-LD Product+BreadcrumbList
+בכל דף מוצר (10/10 עברו), אפס דריפט מ-M16-c72. M15-c73 — אפס console
+error/hydration על `/` ו-`/product` (264/264 עברו), אפס דריפט מ-M15-c72.
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי — דורש בדיקה דחופה של אופיר
 (ארכיון מלא, כל שבעת הממצאים, ב-`docs/STATE-ARCHIVE.md`, הועבר לשם
@@ -222,10 +222,9 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
-   M10-c73 (02.10, `git ls-tree`+`git diff` מול M10-c72, אותו יום): אפס
-   דריפט, 62 קבצים, 10 מתוכם חוסמים (רשומים למעלה), שום דבר לא הוחל.**
-   אושר מחדש מול פרודקשן בפועל ב-M10-c68, 02.10, בדיקה פרטנית לכל 19
-   הקבצים, אפס סחיפה מ-M10-c66/25.09.
+   M10-c74 (02.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
+   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c68.**
+   60 קבצים ב-`migrations/pending/`, `git log -1` עדיין `48c8792dd` (248).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
 5. **צילומי reference ב-380 וב-768 לסל ולקופה**: קיימים רק ב-1440
