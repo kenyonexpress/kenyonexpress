@@ -1,7 +1,20 @@
-RESUME FROM: M06-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c80 DONE: test נבדק מחדש, אפס דריפט)
+RESUME FROM: M07-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c80 DONE: build נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
+
+**M06-c80 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
+commit" — זהה למשימות "build gate re-verified clean" הקודמות
+(M06-c79 ולפניו). `pwd` אומת, עץ עבודה נקי. `pnpm build` רץ exit 0,
+כל הנתיבים נבנו (כולל sitemap/robots/opengraph); שורות
+`supabase.rls_denied`/`reviews_read_failed` ב-log הן רעש ידוע
+מ-prerender אנונימי מול `reviews` (אין "Failed to compile"/"Type
+error"). הורצו גם שלושת השערים הנוספים לטקס הסיום: `pnpm type-check`
+(`tsc --noEmit`) נקי, `pnpm lint` נקי (12 שערים, 2037 קבצים), `pnpm
+test` נקי (614/614 קבצים, 7337/7349 טסטים, 12 מדולגים — זהה
+ל-M05-c80). `git status --short` ריק וללא diff בנתיבי ייצור מאז
+M06-c79 (`a28508752`) — אפס שינוי קוד ייצור, אותה תוצאה בדיוק. שני
+קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
 
 **M05-c80 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
 commit" — זהה למשימות "test gate re-verified clean" הקודמות (M05-c79
