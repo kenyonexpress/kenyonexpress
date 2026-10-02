@@ -2,6 +2,21 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c77 (הועבר מ-STATE.md ב-M06-c77, לשמירה על תקרת 300 שורות)
+
+**M05-c77 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift commit".
+לפני ההרצה: `git status` נקי, `git diff --stat` ריק, ו-`git diff --stat
+fdfb3a236 HEAD -- src/ supabase/ packages/ public/ next.config.ts
+package.json` ריק — אין שום שינוי קוד ייצור מאז M05-c76 (הבדיקה הקודמת
+של test). `pnpm test` (vitest) רץ נקי: 614/614 קבצים עברו, 7337/7349
+טסטים עברו, 12 מדולגים — זהה בדיוק ל-M05-c76. **אין טסט שבור לתיקון** —
+"fix drift" בשם המשימה לא חל כי אין דריפט. שלושת השערים הנוספים גם
+ירוקים: `type-check` (`tsc --noEmit`) נקי, `lint` (biome + 12 שערים, 2037
+קבצים, זהה ל-M04-c77), `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:3311 pnpm build` exit 0 נקי (שרת 3311 PID 20676 נשאר חי, `curl`
+החזיר `200` אחרי הבנייה). אפס שינוי קוד ייצור, אין commit של קוד — רק
+עדכון `STATE.md`. התור הבא: `M06-c77`.
+
 ## M04-c77 (הועבר מ-STATE.md ב-M05-c77, לשמירה על תקרת 300 שורות)
 
 **M04-c77 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
