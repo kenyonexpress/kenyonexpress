@@ -1,32 +1,36 @@
-RESUME FROM: M02-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c78 - DONE, שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M03-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c78 - DONE, שער חזותי מוצר נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c78 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md" — זהה למשימות "home
-parity re-measured" הקודמות (M01-c77 ולפניו). `pwd` אומת
-(`/Users/ofir/kenyonexpress-web/kenyonexpress`), עץ נקי, `STATE.md`
-כבר מתחת לתקרת 300 (285) כך שלא נדרש קיצוץ. **נבנה build טרי**
-(`rm -rf .next && pnpm build`, exit 0, זהה ל-HEAD) כדי לשלול build
-מיושן (לקח קודם: build שנשאר מסשן אחר יכול לאפות CSP/תוכן ישן). הורם
-`pnpm start -p 3311`, `lsof -p -a -d cwd` אימת ש-cwd של ה-listener
-הוא נתיב הפרויקט (לא checkout זר). **הרצה בפורגראונד, חזית לחזית**:
-`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
---widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` (baseline
-נדרש כי חוסם #14 עדיין בתוקף — `kenyonexpress.co.il` עצמו מצביע כבר
-לפריסת Vercel שלנו, כך שניווט חי יחזיר את הבנייה שלנו). **תוצאה: `380
-8.58% PASS`, `768 9.01% PASS`, `1440 4.16% PASS`** (שער 11%), **זהה
-בדיוק ל-M01-c77** (אפס דריפט בשלושת הרוחבים). השער עצמו כתב שלוש שורות
-ל-`docs/UI-PARITY-REPORT.md` עם `5e20c8e12-dirty` (העץ לא היה נקי בזמן
-הריצה, לפני ה-commit הזה). שרת 3311 הופסק בסוף. ארבעת השערים: `type-check`
-נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337/7349, 12 מדולגים), `build` exit 0 (כבר הורץ לפני המדידה). אפס
-שינוי קוד ייצור. שני קבצים: `STATE.md` ו-`docs/UI-PARITY-REPORT.md`
-(כתיבה עצמית של השער).
+**M02-c78 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample" — זהה למשימות "product parity re-measured" הקודמות
+(M02-c77 ולפניו). `pwd` אומת, עץ נקי, `STATE.md` מתחת לתקרת 300 (291)
+כך שלא נדרש קיצוץ מראש. אומת שאין שינוי קוד ייצור מאז `73e357d6b`
+(`git diff --stat` ריק על `src/`, `supabase/`, `packages/`, `public/`,
+`next.config.ts`, `package.json`). **נבנה build טרי** (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build`, exit 0). הורם `pnpm start -p 3311` (לא היה חי קודם), `lsof -p
+-a -d cwd` אימת ש-cwd של ה-listener הוא שורש הפרויקט. **הרצה בחזית**:
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=product --widths=380,768,1440 --baseline=
+'refs/electro_product_{width}.png'` — חרגה מ-timeout כלי ה-Bash (300
+שניות) והועברה אוטומטית לרקע על ידי הכלי עצמו, לא ביוזמת הסוכן; הומתן
+לסיומה המלאה דרך Monitor על קובץ הפלט לפני כל רישום. **תוצאה: `380`=
+4.96% PASS, `768`=4.58% PASS, `1440`=3.25% PASS** (שער 11%), **זהה
+בדיוק ל-M02-c77 ול-M02-c75 — אפס דריפט.** אזהרת HEIGHT RATIO (הרפרנס
+הקפוא ארוך בהרבה מהעמוד שלנו) קיימת כבר מ-M02-c74 ואילך, ידועה ולא
+רלוונטית לשער (השער מודד "both painted" מתוך 2600px ראשונים בלבד).
+השער עצמו כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md`, מתויגות
+`73e357d6b`/`73e357d6b-dirty`. שרת 3311 הופסק בסוף, `refs/.run-*.png`
+הזמניים נוקו. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים), `build`
+exit 0. אפס שינוי קוד ייצור. שני קבצים: `STATE.md` ו-
+`docs/UI-PARITY-REPORT.md` (כתיבה עצמית של השער).
 
-**M01-c77..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c78 לשמירה על תקרת 300 שורות).** שמונה-עשר פריטי תור/אימות-בלבד:
+**M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M02-c78 לשמירה על תקרת 300 שורות).** M01-c78 — שער חזותי בית
+נמדד מחדש 380/768/1440 (8.58/9.01/4.16, זהה ל-M01-c77), אפס דריפט. שמונה-עשר פריטי תור/אימות-בלבד:
 JSON-LD Product+BreadcrumbList (תשעה סלאגים נבדקו ב-curl, כל התשעה
 200), Sentry release vs HEAD (927/109 קומיטים, עדיין מפוצל, ממתין
 להחלטת אופיר), שער חזותי בית (8.58/9.01/4.16), מוצר (4.96/4.58/3.25)

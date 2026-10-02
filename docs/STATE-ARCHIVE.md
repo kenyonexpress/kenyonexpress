@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c78 (הועבר מ-STATE.md ב-M02-c78, לשמירה על תקרת 300 שורות)
+
+**M01-c78 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md" — זהה למשימות "home
+parity re-measured" הקודמות (M01-c77 ולפניו). `pwd` אומת
+(`/Users/ofir/kenyonexpress-web/kenyonexpress`), עץ נקי, `STATE.md`
+כבר מתחת לתקרת 300 (285) כך שלא נדרש קיצוץ. **נבנה build טרי**
+(`rm -rf .next && pnpm build`, exit 0, זהה ל-HEAD) כדי לשלול build
+מיושן (לקח קודם: build שנשאר מסשן אחר יכול לאפות CSP/תוכן ישן). הורם
+`pnpm start -p 3311`, `lsof -p -a -d cwd` אימת ש-cwd של ה-listener
+הוא נתיב הפרויקט (לא checkout זר). **הרצה בפורגראונד, חזית לחזית**:
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` (baseline
+נדרש כי חוסם #14 עדיין בתוקף — `kenyonexpress.co.il` עצמו מצביע כבר
+לפריסת Vercel שלנו, כך שניווט חי יחזיר את הבנייה שלנו). **תוצאה: `380
+8.58% PASS`, `768 9.01% PASS`, `1440 4.16% PASS`** (שער 11%), **זהה
+בדיוק ל-M01-c77** (אפס דריפט בשלושת הרוחבים). השער עצמו כתב שלוש שורות
+ל-`docs/UI-PARITY-REPORT.md` עם `5e20c8e12-dirty` (העץ לא היה נקי בזמן
+הריצה, לפני ה-commit הזה). שרת 3311 הופסק בסוף. ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349, 12 מדולגים), `build` exit 0 (כבר הורץ לפני המדידה). אפס
+שינוי קוד ייצור. שני קבצים: `STATE.md` ו-`docs/UI-PARITY-REPORT.md`
+(כתיבה עצמית של השער).
+
 ## M18-c77 (הועבר מ-STATE.md ב-M01-c78, לשמירה על תקרת 300 שורות)
 
 **M18-c77 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
