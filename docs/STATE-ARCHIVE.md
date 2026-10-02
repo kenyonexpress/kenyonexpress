@@ -2,6 +2,29 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c79..M18-c78 (הועבר מ-STATE.md ב-M08-c79, לשמירה על תקרת 300 שורות)
+
+**M02-c79..M18-c78.** M05-c79 — pnpm test: 614/614 קבצים, 7337/7349
+טסטים (12 מדולגים). M04-c79 — pnpm type-check: exit 0, אפס שגיאה. M02-c79 — שער חזותי מוצר נמדד מחדש 380/768/1440
+(4.96/4.58/3.25, זהה ל-M02-c78/M02-c77/M02-c75), אפס דריפט. M01-c79 —
+שער חזותי בית נמדד מחדש 380/768/1440
+(8.58/9.01/4.16, זהה ל-M01-c78), אפס דריפט. שבעה-עשר פריטי תור/אימות-בלבד: Sentry release vs
+HEAD (946/109 קומיטים, עדיין מפוצל, ממתין להחלטת אופיר), Lighthouse
+mobile (100/100/100 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי
+מוצר (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53,
+דריפט רעש `loading="lazy"` זהה ל-M03-c76 בלבד), test/build גייטים (אפס
+דריפט קוד מאז M04-c78), TODO/FIXME (שני ה-marker הידועים
+ב-`cardcom.ts`, חסומים על החלטת מפעיל), unused deps/dead exports
+(`knip`, 201/5/1/271/197/4, אותם מספרים כמו M09-c77, אפס מועמד חדש),
+מיגרציות ממתינות (60/19 ללא שינוי, אומת ישירות מול פרודקשן ב-M10-c78),
+sitemap.xml (79 כתובות, עדיין `a388118f1`, חמשת תתי-המפות `404`),
+robots.txt (עדיין `a388118f1`, חוסם #2), `/api/health`/`/api/ready`
+(200/503 זהה, `meilisearch:"down"`), אפס console error/hydration על
+/ ו-/product (M15-c78, `route-audit.spec.ts` 2/2 עברו), ו-JSON-LD
+Product+BreadcrumbList (M16-c78, תשעה סלאגים ב-curl, כל התשעה 200).
+אפס דריפט/שבור לתיקון בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד
+ייצור.
+
 ## M05-c79 (הועבר מ-STATE.md ב-M06-c79, לשמירה על תקרת 300 שורות)
 
 **M05-c79 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
