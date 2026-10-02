@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c73 (הועבר מ-STATE.md ב-M06-c73, לשמירה על תקרת 300 שורות)
+
+**M05-c73 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
+commit". הורץ `pnpm test` (`vitest run`) — **נקי, 614/614 קבצים,
+7337/7349 טסטים (12 מדולגים), זהה ל-M04-c73, אפס דריפט.** שלושת השערים
+הנוספים: `type-check` נקי (`tsc --noEmit`, EXIT:0), `pnpm build` exit 0
+נקי. `lint` מצא ממצא חדש אמיתי אחד: `docs-path-audit` גילה הפניה חדשה
+ב-`docs/STATE-ARCHIVE.md` ל-`public/robots.txt` שלא הייתה בפנקס
+(`docs/known-dangling-paths.json`) — ההפניה כבר מוסברת בטקסט עצמו
+כ"נוצר דינמית" (לא רוט אמיתי, הקובץ אכן לא קיים ב-`public/`), תוקן עם
+`node scripts/docs-path-audit.mjs --write` (שורה אחת נוספה לפנקס), `lint`
+חוזר נקי (12 שערים, 2037 קבצים). פריט אימות-בלבד, לא חזותי: לא נדרשת
+מדידת `compare.mjs` (אין שינוי UI/קוד ייצור). קבצים:
+`docs/known-dangling-paths.json` (שורה אחת), `STATE.md`,
+`docs/STATE-ARCHIVE.md` (בלוק M04-c73 כווץ לשורה למטה לתקרת 300 שורות,
+שום שורה לא נמחקה).
+
 ## M04-c73 (הועבר מ-STATE.md ב-M05-c73, לשמירה על תקרת 300 שורות)
 
 **M04-c73 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift

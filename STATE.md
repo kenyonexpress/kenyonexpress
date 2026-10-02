@@ -1,25 +1,27 @@
-RESUME FROM: M06-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c73 - DONE, pnpm test נקי מראש, ממצא lint חדש תוקן)
+RESUME FROM: M07-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c73 - DONE, pnpm build נקי מראש)
 
 ## המשך מ:
 
-**M05-c73 - DONE (02.10.2026).** משימת התור: "pnpm test fix drift
-commit". הורץ `pnpm test` (`vitest run`) — **נקי, 614/614 קבצים,
-7337/7349 טסטים (12 מדולגים), זהה ל-M04-c73, אפס דריפט.** שלושת השערים
-הנוספים: `type-check` נקי (`tsc --noEmit`, EXIT:0), `pnpm build` exit 0
-נקי. `lint` מצא ממצא חדש אמיתי אחד: `docs-path-audit` גילה הפניה חדשה
-ב-`docs/STATE-ARCHIVE.md` ל-`public/robots.txt` שלא הייתה בפנקס
-(`docs/known-dangling-paths.json`) — ההפניה כבר מוסברת בטקסט עצמו
-כ"נוצר דינמית" (לא רוט אמיתי, הקובץ אכן לא קיים ב-`public/`), תוקן עם
-`node scripts/docs-path-audit.mjs --write` (שורה אחת נוספה לפנקס), `lint`
-חוזר נקי (12 שערים, 2037 קבצים). פריט אימות-בלבד, לא חזותי: לא נדרשת
-מדידת `compare.mjs` (אין שינוי UI/קוד ייצור). קבצים:
-`docs/known-dangling-paths.json` (שורה אחת), `STATE.md`,
-`docs/STATE-ARCHIVE.md` (בלוק M04-c73 כווץ לשורה למטה לתקרת 300 שורות,
+**M06-c73 - DONE (02.10.2026).** משימת התור: "pnpm build fix drift
+commit". הורץ `rm -rf .next && pnpm build` בחזית — **EXIT:0, נקי מראש,
+אפס דריפט.** 92 שורות `"level":"error"` ב-log הן `supabase.rls_denied`
+על `reviews` (401/`42501`) ו-`db.optional_column_missing` בזמן
+prerender, שתיהן ידועות ומתועדות כחוסמים פתוחים #3 (מיגרציה 247,
+`anon` בלי `SELECT` על `reviews`) ו-#3 (מיגרציה 242, מקור מחיר+ביקורות
+גוגל) — לא דריפט חדש, לא "Failed to compile"/"Build failed" באף שורה.
+שלושת השערים הנוספים: `type-check` נקי (`tsc --noEmit`, EXIT:0), `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה ל-M05-c73). פריט אימות-בלבד, לא חזותי: לא נדרשת מדידת
+`compare.mjs` (אין שינוי UI/קוד ייצור). קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md` (בלוק M05-c73 כווץ לשורה למטה לתקרת 300 שורות,
 שום שורה לא נמחקה).
 
-**M04-c73, ROBOTS-FIX, M03-c73, M02-c73 ו-M01-c73 (ארכיון מלא
-ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M05-c73):** M04-c73:
+**M05-c73, M04-c73, ROBOTS-FIX, M03-c73, M02-c73 ו-M01-c73 (ארכיון מלא
+ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M06-c73):** M05-c73: `pnpm
+test` נקי מראש (614/614, 7337/7349, 12 מדולגים), ממצא `docs-path-audit`
+אמיתי אחד (הפניה חדשה ל-`public/robots.txt` לא בפנקס) תוקן עם
+`--write`. M04-c73:
 `type-check` נבדק מחדש, נקי מראש, אפס דריפט. ROBOTS-FIX אומת כבר-קיים
 (אפס שינוי קוד, אד-הוק). M03-c73: שער חזותי קטגוריה נמדד מחדש,
 `2.93%`/`2.31%`/`1.58%`, `PASS`, אפס דריפט. M02-c73/M01-c73: שערים
