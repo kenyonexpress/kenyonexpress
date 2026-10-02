@@ -1,26 +1,17 @@
-RESUME FROM: M04-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c79 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, דריפט רעש בתוך הסבילות)
+RESUME FROM: M05-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c79 DONE: pnpm type-check gate re-verified clean, zero drift)
 
 ## המשך מ:
 
-**M03-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-on /category sample" — זהה ל-M03-c78 ולפניו. `pwd` אומת, עץ נקי, `git
-diff --stat 494f4b89e..HEAD` ריק (אפס שינוי קוד ייצור). **הרצה בחזית**:
-`COMPARE_ALLOW_PENDING_IMAGES=1 LOCAL_BASE=http://localhost:3311 node
-scripts/compare.mjs --page=category --widths=380,768,1440
---baseline='refs/electro_shop_{width}.png'` — חרגה מ-timeout כלי
-ה-Bash, הועברה אוטומטית לרקע על ידי הכלי עצמו, הומתן לסיומה המלאה
-(exit 0) לפני כל רישום. **תוצאה (שורת "category parity, gate 11%" של
-הסקריפט עצמו, לא ה-OVERALL האבחוני): `380`=2.93% PASS, `768`=2.31%
-PASS, `1440`=1.58% PASS**. **לא אפס דריפט מ-M03-c78** (3.53/1.94/1.53):
-הפרש 0.05-0.60 נ"א, אותו רעש קטלוג שתועד מ-M03-c75 ואילך (`hot-deals`
-מציגה 2 מוצרים בצד שלנו מול רשת מלאה ברפרנס הקפוא, ראו
-`funnel-pages-refuse-to-measure`). אזהרת HEIGHT RATIO ידועה ולא
-רלוונטית לשער. השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md`,
-מתויגות `c11fa965c`/`-dirty`. שרת 3311 הופסק בסוף. ארבעת השערים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349, 12 מדולגים), `build` exit 0 נקי. אפס שינוי קוד
-ייצור. שני קבצים: `STATE.md` ו-`docs/UI-PARITY-REPORT.md`.
+**M04-c79 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
+commit" — זהה ל-M04-c78 ולפניו. `pwd` אומת, עץ נקי לפני ואחרי. `pnpm
+type-check` (`tsc --noEmit`) רץ בחזית: **exit 0, אפס שגיאה**. אין דריפט
+לתקן, אז אין שינוי קוד ייצור. ארבעת השערים רצו כולם במלואם לאימות:
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים, biome +
+tokens/copy/asset/raw-html/postgrest-or/cache-invalidation/rtl-logical/
+i18n/locale-format/input-dir/docs-index/docs-path-audit), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה ל-M03-c79), `build` exit 0
+נקי. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
 
 **M02-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M03-c79).** M02-c79 — שער חזותי מוצר נמדד מחדש 380/768/1440
