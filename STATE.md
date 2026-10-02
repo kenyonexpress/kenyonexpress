@@ -1,7 +1,14 @@
-RESUME FROM: M04-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c75 - DONE, שער חזותי קטגוריה נמדד מחדש)
+RESUME FROM: M05-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c75 - DONE, pnpm type-check נמדד מחדש)
 
 ## המשך מ:
+
+**M04-c75 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". אפס שינוי בקבצי `src/` מאז M04-c74 (`2dfb9ba45`, `git log
+--oneline 2dfb9ba45..HEAD -- src/` ריק). `pnpm type-check` נקי, אפס
+שגיאות, אפס דריפט. שלושת השערים הנוספים: `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי. אפס שינוי
+קוד ייצור. קובץ: `STATE.md` בלבד.
 
 **M03-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
 /category sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
@@ -32,16 +39,14 @@ Monitor). **תוצאה: `380`=2.93%, `768`=1.94%, `1440`=1.53%, שלושתם
 קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
 
-**M02-c75, M01-c75, M18-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M03-c75 לשמירה על תקרת 300 שורות).** עשרים פריטי
-אימות-בלבד/תחזוקה, אפס דריפט בכולם: M02-c75 מוצר (4.96/4.58/3.25
-PASS), M01-c75 בית (8.58/9.01/4.16 PASS), M18-c74 תחזוקת תיעוד, M17-c74
-RTL, M16-c74 JSON-LD, M15-c74 console/hydration, M14-c74 Sentry vs HEAD,
-M13-c74 health/ready, M12-c74 robots.txt, M11-c74 sitemap.xml, M10-c74
-מיגרציות ממתינות (19 חוסמים), M09-c74 knip, M08-c74 Lighthouse
-100/100/100, M07-c74 TODO/FIXME, M06-c74 build, M05-c74 test, M04-c74
-type-check, M03-c74..M01-c74 שערים חזותיים קטגוריה/מוצר/בית (כולם
-PASS). ארבעת השערים ירוקים בכולם.
+**M02-c75, M01-c75, M18-c74..M01-c74 (עשרים פריטי אימות-בלבד/תחזוקה,
+ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M05-c75
+לשמירה על תקרת 300 שורות).** אפס דריפט בכולם, ארבעת השערים ירוקים
+בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב (כולם PASS),
+type-check/test/build, Lighthouse 100/100/100, RTL, JSON-LD,
+console/hydration, Sentry vs HEAD, health/ready, robots.txt,
+sitemap.xml, מיגרציות ממתינות (19 חוסמים), knip, TODO/FIXME, תחזוקת
+תיעוד.
 
 **M18-c73..M15-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו
 ב-M10-c74 לשמירה על תקרת 300 שורות).** ארבעה פריטי אימות-בלבד, אפס דריפט
