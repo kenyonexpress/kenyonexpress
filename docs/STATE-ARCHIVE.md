@@ -42269,3 +42269,36 @@ NEXT_PUBLIC_APP_URL=http://localhost:4717 pnpm build`, exit 0,
 `/sitemap.xml` וחמשת תתי-המפות). פריט אימות-בלבד, לא חזותי:
 `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase
 db push`, לא הוחלה אף מיגרציה. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M10-c80 (הועבר מ-STATE.md ב-M11-c80, לשמירה על תקרת 300 שורות)
+
+**M10-c80 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff --stat e76cc0701..HEAD --
+migrations/pending/ supabase/migrations/ docs/BACKLOG.md` (בסיס:
+M10-c79) ריק, אפס שינוי. `migrations/pending/*.sql` נספר שוב: 60
+קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק git), דרך
+CLI-keychain-token, קריאה בלבד (`SELECT` בלבד, לא `BEGIN`/`ROLLBACK` —
+אין כתיבה כלל): אותם 19 הקבצים החוסמים, כל אחד נבדק סימן-היכר ישירות
+— שבעה שמות טבלה (204/234/235/236/239/240/244) `to_regclass` עדיין
+`null` (`supplier_applications`/`fraud_blocklist`/`feature_flags`/
+`contact_channels`/`customer_invoice_settings`/`app_consent_events`/
+`affiliate_campaigns`); ארבע עמודות (223/242/243/232) עדיין חסרות
+(`notifications_outbox.outbox_id`, `products.original_price_source`,
+`products.shipping_price_agorot`, `suppliers.opening_hours`/
+`google_reviews_url`); 218: `has_column_privilege(authenticated,
+profiles, wallet_balance, UPDATE)` עדיין `true`; 224/247:
+`has_function_privilege`/`has_table_privilege` עדיין `false`; 220:
+`pg_proc.proconfig` של `fn_wallet_entries_block_mutation` עדיין
+`null`; 209: המדיניות `push_subscriptions_select_own` עדיין
+`(auth.uid() = user_id)` לא עטוף; 246: המדיניות
+`profiles_super_admin_mfa` עדיין בניסוח המקורי (תואם 209, לא 246); 245:
+`banners` עדיין שתי המדיניות המקוריות בלבד (`banners: public read`/
+`banners: staff write`, נבדק בשם ישירות), לא חמש המוצעות; 241: 46
+מוצרים פעילים עם `city IS NULL`, זהה. כל 19 אושרו שוב כלא מוחלים, אפס
+דריפט מהבדיקה הישירה הקודמת (M10-c79, 03.10). ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `pnpm test`
+614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), build טרי (`rm -rf
+.next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4719
+pnpm build`, exit 0, manifest מלא). פריט אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase
+db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
