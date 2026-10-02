@@ -1,41 +1,46 @@
-RESUME FROM: M16-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c80 DONE: קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט)
+RESUME FROM: M17-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c80 DONE: JSON-LD Product+BreadcrumbList נבדק מחדש בזמן ריצה על תשעה סלאגים, אפס דריפט מ-M16-c79)
 
 ## המשך מ:
 
-**M15-c80 - DONE (03.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample" — זהה למילה למשימות M15-c66..M15-c79. הורץ
-`e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic catalogue
-routes"` מול build/start טרי בפורט 4931 (אומת ש-`lsof`/`cwd` שייכים
-לצ'קאאוט הזה, לא שרת זר): שני טסטים PASS. `ROUTE_AUDIT_REPORT` מראה
-אפס `consoleErrors` ואפס `hydrationWarnings` על `/` ועל שמונה הנתיבים
-הדינמיים שהתגלו מ-`/`, כולל `/product/צימר-מאסטר` ו-
-`/product/צימר-מאסטר/reviews` (דגימת המוצר של המשימה). זהה ל-M15-c66
-עד M15-c79 (314befb8a). ארבעת השערים ירוקים: `type-check` נקי, `lint`
-נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים, זהה), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`). פריט
-אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש (אין שינוי UI). אפס שינוי
-כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה.
-קובץ יחיד: `STATE.md`.
+**M16-c80 - DONE (03.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למילה למשימות
+M16-c66..M16-c79. בדיקת דריפט קוד: `git log e0749f512..HEAD --stat --
+src/app src/components src/lib` (בסיס: checkpoint M16-c79) ריק: אפס
+קומיטים בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
+עדיין מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-
+`buildBreadcrumbJsonLd` (`@type: 'BreadcrumbList'`), ו-
+`src/app/(store)/product/[slug]/page.tsx` עדיין מזריק את שניהם דרך
+`jsonLdScript`. **נבדק גם בזמן ריצה בפועל**: נבנה `.next` חדש לגמרי
+(`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4932 pnpm build`, exit 0), הורם
+`pnpm start -p 4932` (פורט פנוי, אומת `curl` 200 ו-`lsof -p -a -d cwd`
+על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא checkout זר), ונשלף
+`supabase/catalogue-snapshot.json` (44 מוצרים) בשדות האמיתיים
+(`name_he`/`slug`, לא `name`). **תשעה סלאגים נבדקו ב-curl**: שני
+הכפילויות האמיתיות של "עיסוי מאסטר" (`עיסוי-משולב-מפנק-לגבר-רק-108`
+ו-`עיסוי-משולב-מפנק-לגבר-רק-108₪`, שני ספקים שונים), `מוצר-לדוגמא`,
+`bar-drink`, `טיפול-פנים-copy`, `צימר-מאסטר-copy`,
+`צימר-מאסטר-copy-copy`, `חיתולי-פמפרס-העתק` ועוד סלאג תקין אחד
+(`אייפון-13`) — **כל התשעה `200`, בלוק `Product` אחד ובלוק
+`BreadcrumbList` אחד**, זהה ל-M16-c79. **אין ממצא לתקן**: אימות-בלבד,
+זהה לשלושה-עשר הסבבים הקודמים (M16-c66..M16-c79). ארבעת השערים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M16-c79). אפס שינוי קוד ייצור.
+קבצים: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
 
-**M14-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M15-c80).** Sentry release vs HEAD אומת מחדש מול Vercel, אפס דריפט
-מ-M14-c79, אותו חוסם (סעיף 17 ב-`docs/BACKLOG.md`).
-
-**M13-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M14-c80).** /api/health ו-/api/ready אומתו מחדש מול פרודקשן, אפס
-דריפט מ-M13-c79.
-
-**M12-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M13-c80).** robots.txt אומת מחדש כבטוח לפרודקשן, אפס דריפט מ-M12-c79.
+**M15-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M16-c80).** קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט
+מ-M15-c79.
 
 **M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
-לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80 וב-M11-c80).** שלושה-עשר
-פריטי תור/אימות-בלבד (type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות
-ממתינות, Sentry vs HEAD, test/build גייטים, TODO/FIXME, Lighthouse
-mobile, unused deps/dead exports) ושלושים פריטים נוספים מארכיון קודם —
-אפס דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
+M14-c80 וב-M15-c80).** שישה-עשר פריטי תור/אימות-בלבד (type-check, שערי
+חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build
+גייטים, TODO/FIXME, Lighthouse mobile, unused deps/dead exports,
+robots.txt, health/ready) ושלושים פריטים נוספים מארכיון קודם — אפס
+דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:

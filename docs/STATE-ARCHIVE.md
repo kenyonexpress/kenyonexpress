@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c80 (הועבר מ-STATE.md ב-M16-c80, לשמירה על תקרת 300 שורות)
+
+**M15-c80 - DONE (03.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample" — זהה למילה למשימות M15-c66..M15-c79. הורץ
+`e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic catalogue
+routes"` מול build/start טרי בפורט 4931 (אומת ש-`lsof`/`cwd` שייכים
+לצ'קאאוט הזה, לא שרת זר): שני טסטים PASS. `ROUTE_AUDIT_REPORT` מראה
+אפס `consoleErrors` ואפס `hydrationWarnings` על `/` ועל שמונה הנתיבים
+הדינמיים שהתגלו מ-`/`, כולל `/product/צימר-מאסטר` ו-
+`/product/צימר-מאסטר/reviews` (דגימת המוצר של המשימה). זהה ל-M15-c66
+עד M15-c79 (314befb8a). ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים, זהה), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`). פריט
+אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש (אין שינוי UI). אפס שינוי
+כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה.
+קובץ יחיד: `STATE.md`.
+
 ## M14-c80 (הועבר מ-STATE.md ב-M15-c80, לשמירה על תקרת 300 שורות)
 
 **M14-c80 - DONE (03.10.2026).** משימת התור: "Verify Sentry release
