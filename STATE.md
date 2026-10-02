@@ -1,29 +1,29 @@
-RESUME FROM: M02-c75
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c75 - DONE, שער חזותי בית נמדד מחדש)
+RESUME FROM: M03-c75
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c75 - DONE, שער חזותי מוצר נמדד מחדש)
 
 ## המשך מ:
 
-**M01-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
-768 1440 on / and record diffs in STATE.md". שרת `pnpm start` קיים על
-פורט 3311 (PID 56364, `cwd` אומת כשורש הריפו הזה) נבדק מול HEAD לפני
-ההרצה: `git diff --stat 290834f18..HEAD -- . ':!docs' ':!STATE.md'`
-(קומיט בניית השער האחרון, M01-c74) — ריק, כל ההפרש תיעוד-בלבד, כך
-שהבנייה הקיימת תואמת. הורץ `LOCAL_BASE=http://localhost:3311 node
-scripts/compare.mjs --page=home --widths=380,768,1440
---baseline=refs/ke_live_{width}.png` בחזית, הומתן לסיומו המלא לפני כל
-רישום (home מסורב כ-live reference מ-Q31, ה-DNS מצביע לפריסה שלנו —
-חוסם #14 למטה). **תוצאה: `380`=8.58%, `768`=9.01%, `1440`=4.16%,
-שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M01-c74 (אותם מספרים בדיוק).**
-השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו,
-מתויגות `97de64449` (HEAD בתחילת הפריט). ארבעת השערים: `type-check`
-נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm build` exit 0 נקי. אפס
-שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+**M02-c75 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת), אפס שינוי קוד ייצור מאז M02-c74 (8b1a9eab4, רק תיעוד). **ריצה
+ראשונה עם `--baseline=refs/ke_live_{width}.png` (שגוי, הועתק מ-M01-c75)
+הפילה 768 ל-`FAIL` 12.67% על עמוד "structurally different"** — תוקן:
+עמוד המוצר משתמש ב-`refs/electro_product_{width}.png`, לא `ke_live`,
+כפי שתועד ב-M02-c74. הורצה שוב נכון, `LOCAL_BASE=http://localhost:3311
+node scripts/compare.mjs --page=product --widths=380,768,1440
+--baseline=refs/electro_product_{width}.png` בחזית (חרגה פעמיים
+מ-timeout 120ש' של כלי ה-Bash והמשיכה ברקע עד סיום, לא הופעלה ברקע
+ביוזמת הסוכן; הומתן לסיומה המלא דרך Monitor). **תוצאה סופית: `380`=
+4.96%, `768`=4.58%, `1440`=3.25%, שלושתם `PASS`, אפס דריפט מ-M02-c74
+(אותם מספרים בדיוק). שתי הריצות נכתבו אוטומטית ל-`UI-PARITY-REPORT.md`
+על ידי הסקריפט עצמו, מתויגות `e5e18f475`.** ארבעת השערים: `type-check`
+נקי, `lint` נקי, `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי.
+אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
 
-**M18-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M01-c75 לשמירה על תקרת 300 שורות).** M18-c74 — תחזוקת תיעוד,
+**M01-c75, M18-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+לשורה הזו ב-M02-c75 לשמירה על תקרת 300 שורות).** M01-c75 — שער חזותי
+בית נמדד מחדש, אפס דריפט מ-M01-c74 (8.58%/9.01%/4.16%, שלושתם PASS). M18-c74 — תחזוקת תיעוד,
 STATE.md נבדק מחדש מתחת לתקרת 300 שורות (299), ארכב את M17-c74 כדי
 לשמור מרווח. M17-c74 — RTL על / ו-/product
 נבדק מחדש, אפס leak חדש, אפס דריפט מ-M17-c73. M16-c74 — JSON-LD
