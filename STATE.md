@@ -1,32 +1,33 @@
-RESUME FROM: M15-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c74 - DONE, Sentry release vs HEAD נבדק מחדש, אפס דריפט מ-M14-c73)
+RESUME FROM: M16-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c74 - DONE, אפס console error/hydration על / ו-/product נבדק מחדש, אפס דריפט מ-M15-c73)
 
 ## המשך מ:
 
-**M14-c74 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit". HEAD כרגע `91aa29df5` על `audit/final-audit`.
-**נבדק מחדש מול Vercel (MCP, read-only בלבד)**: `list_deployments`
-(`target=production`) מראה את אותה פריסה חיה בדיוק שנמצאה ב-M14-c73 —
-`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `created=1790919737039`
-(`2026-10-02T05:42:17Z`, אותה שנייה בדיוק), `githubCommitRef=main`,
-`githubCommitSha=18ed044b2` ("Wave 6: build success"). `git merge-base
---is-ancestor 18ed044b2 HEAD` עדיין נכשל — הענפים מפוצלים (`main`
-מכיל 109 קומיטים ש-HEAD לא מכיל, HEAD מכיל 873 קומיטים ש-`main` לא
-מכיל, גדל מ-855 ב-M14-c73 מתוך גידול טבעי של התור). `filter_project_envs`
-על אותו פרויקט (רשימה מלאה) מראה `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`
-עדיין קיימים, **אותו `createdAt=1790918429743` בדיוק** כמו ב-M14-c73 —
-לא נוספו ולא הוסרו מאז. **תשובה לשאלת התור, כמו ב-M14-c73: לא, ה-release
-אינו תואם ל-HEAD** — פרודקשן עדיין מריץ `main`@`18ed044b2`, לא את העבודה
-המתועדת בענף הזה. **אפס דריפט מ-M14-c73**: שום פריסה חדשה לא נוצרה,
-שום env לא השתנה, המקור עדיין לא ידוע ועדיין לא לפעולת הסוכן (רישום
-מלא כבר ב-`docs/BACKLOG.md` סעיף 17 ובחוסם #2 למעלה). לא בוצעה פריסה,
-rollback או שינוי env על ידי הסוכן הזה — קריאות read-only בלבד
-(`list_deployments`, `filter_project_envs`). ארבעת השערים ירוקים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424 pnpm
-build`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+**M15-c74 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66..M15-c73. **נבדק מחדש,
+אפס דריפט.** `git log fd59a0a87..HEAD -- src/app src/components
+e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c73) ריק — 17 קומיטים
+מאז, כולם תיעוד-בלבד (`STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`). נבנה `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
+build`, exit 0), הורם `pnpm start -p 3331` (פורט פנוי, אומת `curl` 200
+ו-`lsof` על ה-pid/cwd לפני ההרצה), והורצו `anon ${path}` ו-`anon dynamic
+catalogue routes` מתוך `e2e/route-audit.spec.ts` (chromium בלבד, התאמה
+למילה "sample" במשימת התור, `--workers=1`), **2/2 עברו** (46 שניות).
+אומת ישירות מתוך `/tmp/route-audit-m15c74.jsonl` (8 שורות): אפס
+`consoleErrors`/`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל
+השורות, כולל `/`, `/product/צימר-מאסטר` (פעיל, זהה ל-M15-c66..M15-c73)
+ו-`/product/.../reviews`. **אין ממצא קוד לתקן**; אימות-בלבד, תשיעית
+ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
+`rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי, `compare.mjs`
+לא נדרש (תקדים M04-c66..M15-c73). אפס שינוי קוד ייצור. קובץ יחיד:
 `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
+**M14-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c74
+לשמירה על תקרת 300 שורות).** Sentry release vs HEAD נבדק מחדש מול Vercel
+MCP (read-only): אותה פריסה בדיוק שנמצאה ב-M14-c73 (`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
+`main`@`18ed044b2`), אפס דריפט ב-env. ארבעת השערים ירוקים.
 
 **M13-c74..M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M14-c74 לשמירה על תקרת 300 שורות).** M13-c74 — `/api/health`/

@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c74 (הועבר מ-STATE.md ב-M15-c74, לשמירה על תקרת 300 שורות)
+
+**M14-c74 - DONE (02.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit". HEAD כרגע `91aa29df5` על `audit/final-audit`.
+**נבדק מחדש מול Vercel (MCP, read-only בלבד)**: `list_deployments`
+(`target=production`) מראה את אותה פריסה חיה בדיוק שנמצאה ב-M14-c73 —
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `created=1790919737039`
+(`2026-10-02T05:42:17Z`, אותה שנייה בדיוק), `githubCommitRef=main`,
+`githubCommitSha=18ed044b2` ("Wave 6: build success"). `git merge-base
+--is-ancestor 18ed044b2 HEAD` עדיין נכשל — הענפים מפוצלים (`main`
+מכיל 109 קומיטים ש-HEAD לא מכיל, HEAD מכיל 873 קומיטים ש-`main` לא
+מכיל, גדל מ-855 ב-M14-c73 מתוך גידול טבעי של התור). `filter_project_envs`
+על אותו פרויקט (רשימה מלאה) מראה `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`
+עדיין קיימים, **אותו `createdAt=1790918429743` בדיוק** כמו ב-M14-c73 —
+לא נוספו ולא הוסרו מאז. **תשובה לשאלת התור, כמו ב-M14-c73: לא, ה-release
+אינו תואם ל-HEAD** — פרודקשן עדיין מריץ `main`@`18ed044b2`, לא את העבודה
+המתועדת בענף הזה. **אפס דריפט מ-M14-c73**: שום פריסה חדשה לא נוצרה,
+שום env לא השתנה, המקור עדיין לא ידוע ועדיין לא לפעולת הסוכן (רישום
+מלא כבר ב-`docs/BACKLOG.md` סעיף 17 ובחוסם #2 למעלה). לא בוצעה פריסה,
+rollback או שינוי env על ידי הסוכן הזה — קריאות read-only בלבד
+(`list_deployments`, `filter_project_envs`). ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים), `build` exit 0 (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3424 pnpm
+build`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. קובץ יחיד:
+`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M13-c74 (הועבר מ-STATE.md ב-M14-c74, לשמירה על תקרת 300 שורות)
 
 **M13-c74 - DONE (02.10.2026).** משימת התור: "Verify /api/health and
