@@ -1,32 +1,33 @@
-RESUME FROM: M16-c78
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c78 DONE: אפס console error/hydration על / ו-/product נבדק מחדש, אפס דריפט מ-M15-c77)
+RESUME FROM: M17-c78
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c78 DONE: JSON-LD Product+BreadcrumbList נבדק מחדש בזמן ריצה על תשעה סלאגים, אפס דריפט מ-M16-c77)
 
 ## המשך מ:
 
-**M15-c78 - DONE (03.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample", זהה למשימות M15-c66..M15-c77. **נבדק מחדש,
-אפס דריפט.** `git log dea2003e8..HEAD -- src/app src/components
-e2e/route-audit.spec.ts` (בסיס: checkpoint M15-c77) ריק: אפס קומיטים
-בנתיבים הרלוונטיים. נבנה `.next` חדש לגמרי (`rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3361 pnpm
-build`, exit 0), הורם `pnpm start -p 3361` (פורט פנוי, אומת `curl` 200
-ו-`lsof -p -d cwd` על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא
-checkout זר), והורצו `anon /` ו-`anon dynamic catalogue routes` מתוך
-`e2e/route-audit.spec.ts` עם `E2E_BASE_URL=http://localhost:3361`,
-chromium בלבד, `--workers=1`, **2/2 עברו** (52.1 שניות). אומת ישירות
-מתוך `/tmp/route-audit-m15c78.jsonl` (8 שורות): אפס
-`consoleErrors`/`hydrationWarnings` ואפס `outcome` שאינו `PASS` בכל
-השורות, כולל `/`, `/product/צימר-מאסטר` (פעיל, זהה לסבבים קודמים)
-ו-`/product/צימר-מאסטר/reviews`. **אין ממצא קוד לתקן**: אימות-בלבד,
-זהה לתוצאה שנמדדה בשנים-עשר הסבבים הקודמים (M15-c66..M15-c77). ארבעת
-השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
-614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next && pnpm
-build` exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
-M04-c66..M15-c77). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב
-ל-`docs/STATE-ARCHIVE.md`).
+**M16-c78 - DONE (03.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למשימות M16-c66..M16-c77.
+**נבדק מחדש, אפס דריפט.** `git log 7137c04ec..HEAD -- src/app
+src/components src/lib` (בסיס: checkpoint M16-c77) ריק: אפס קומיטים
+בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
+מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-`buildBreadcrumbJsonLd`
+(`@type: 'BreadcrumbList'`), ו-`src/app/(store)/product/[slug]/page.tsx`
+מזריק את שניהם דרך `jsonLdScript`. **נבדק גם בזמן ריצה בפועל**: נבנה
+`.next` חדש לגמרי (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3362 pnpm build`, exit 0), הורם
+`pnpm start -p 3362` (פורט פנוי, אומת `curl` 200 ו-`lsof -p -a -d cwd`
+על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא checkout זר), ונשלף
+`supabase/catalogue-snapshot.json` (44 מוצרים). **תשעה סלאגים נבדקו
+ב-curl**, כולל שמונה מהשורות הפגומות מחוסם #11 (שתי `מאסטר`-כפילות,
+`מוצר-לדוגמא`, `bar-drink` לטיני, `טיפול-פנים-copy`, `צימר-מאסטר-copy`,
+`צימר-מאסטר-copy-copy`, `חיתולי-פמפרס-העתק`) ועוד סלאג תקין אחד — **כל
+התשעה `200`, בלוק `Product` אחד ובלוק `BreadcrumbList` אחד**, זהה
+ל-M16-c77. **אין ממצא לתקן**: אימות-בלבד, זהה לאחד-עשר הסבבים הקודמים
+(M16-c66..M16-c77). ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי.
+לא חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c77). אפס שינוי
+קוד ייצור. קובץ יחיד: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
 
-**M02-c78..M14-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M15-c78).** שלושה-עשר פריטי תור/אימות-בלבד: Sentry release vs
+**M02-c78..M15-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M16-c78).** ארבעה-עשר פריטי תור/אימות-בלבד: Sentry release vs
 HEAD (946/109 קומיטים, עדיין מפוצל, ממתין להחלטת אופיר), Lighthouse
 mobile (100/100/100 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי
 מוצר (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53,
@@ -36,8 +37,9 @@ mobile (100/100/100 על / ו-/product, אפס דריפט מ-M08-c77), שער ח
 (`knip`, 201/5/1/271/197/4, אותם מספרים כמו M09-c77, אפס מועמד חדש),
 מיגרציות ממתינות (60/19 ללא שינוי, אומת ישירות מול פרודקשן ב-M10-c78),
 sitemap.xml (79 כתובות, עדיין `a388118f1`, חמשת תתי-המפות `404`),
-robots.txt (עדיין `a388118f1`, חוסם #2), ו-`/api/health`/`/api/ready`
-(200/503 זהה, `meilisearch:"down"`). אפס דריפט/שבור לתיקון בכולם,
+robots.txt (עדיין `a388118f1`, חוסם #2), `/api/health`/`/api/ready`
+(200/503 זהה, `meilisearch:"down"`), ואפס console error/hydration על
+/ ו-/product (M15-c78, `route-audit.spec.ts` 2/2 עברו). אפס דריפט/שבור לתיקון בכולם,
 ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
