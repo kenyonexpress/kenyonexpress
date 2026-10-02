@@ -1,25 +1,30 @@
-RESUME FROM: M16-c70
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c70 - DONE, אפס console error/hydration על `/` ו-`/product` נבדק שוב)
+RESUME FROM: M17-c70
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c70 - DONE, JSON-LD Product+BreadcrumbList נבדק שוב על כל דף מוצר)
 
 ## המשך מ:
 
-**M15-c70 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
-and /product sample" — זהה למילה למשימות M15-c66..M15-c69. **נבדק מחדש,
-אפס דריפט.** נבנה `.next` חדש לגמרי (`rm -rf .next && NEXT_PUBLIC_APP_URL=
-http://localhost:3319 pnpm build`) כדי להימנע מה-CSP-ישן-כוזב הידוע
-(`docs/STATE-ARCHIVE.md`, "reused-local-build-bakes-stale-csp"), הורם
-`pnpm start -p 3319` (פורט פנוי, 3311-3316/3618/3911/4211 כבר תפוסים
-בידי סשנים מקבילים אחרים על אותו ריפו), ואומת `curl` 200 לפני ההרצה.
-הורצו `anon /` ו-`anon dynamic catalogue routes` מתוך
-`e2e/route-audit.spec.ts` (chromium + mobile-chrome) עם
-`E2E_BASE_URL=http://localhost:3319`. **4/4 עברו, אפס
-`consoleErrors`/`hydrationWarnings`** על `/` ועל `/product/[slug]`
-בדגימה החיה (המוצר שהתגלה דינמית). **אין ממצא קוד לתקן**; אימות-בלבד,
-חמישית ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי
-(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
-זהה), `rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי,
-`compare.mjs` לא נדרש (תקדים M04-c66..M15-c69). אפס שינוי קוד ייצור.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M14-c70).
+**M16-c70 - DONE (02.10.2026).** משימת התור: "Verify all product pages have
+JSON-LD Product and BreadcrumbList" — זהה למילה למשימות M16-c66..M16-c69.
+**נבדק מחדש, אפס דריפט.** `git log a152ec2be..HEAD -- "src/app/(store)/product"
+src/lib/seo e2e/seo-markup.spec.ts` ריק — אין קומיט שנגע בקבצים הרלוונטיים
+מאז M16-c69. **מקור האמת זהה**: `product/[slug]/page.tsx` בונה את שני
+הצמתים ללא תנאי לכל סלאג (`buildProductJsonLd`/`buildBreadcrumbJsonLd`
+מ-`src/lib/seo/json-ld.ts`, שני `<script type="application/ld+json">`
+תמיד ברינדור, לא מאחורי דגל). **אומת גם ברמת הדף:** `.next` חדש לגמרי
+(`rm -rf .next`) עם `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3323
+pnpm build` exit 0 נקי, `pnpm start -p 3323` עצמאי, אימות שה-listener על
+הפורט הוא התהליך הזה (`lsof`, cwd אומת). `E2E_BASE_URL=http://localhost:3323
+npx playwright test e2e/seo-markup.spec.ts --grep "Product JSON-LD and a
+breadcrumb"` — **2/2 עברו** (chromium+mobile-chrome). **אין ממצא קוד
+לתקן.** ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build`
+exit 0 נקי. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M16-c69).
+אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ
+M15-c70).
+
+**M15-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M16-c70).**
+אפס console error/hydration נבדק שוב על `/` ו-`/product`, אפס דריפט
+מ-M15-c69, חמישית ברצף.
 
 **M14-c70 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M15-c70).**
 Sentry release מול HEAD נבדק שוב, אפס דריפט מ-M14-c69, הפער גדל ל-425

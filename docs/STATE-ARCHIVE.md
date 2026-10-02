@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c70 (הועבר מ-STATE.md ב-M16-c70, לשמירה על תקרת 300 שורות)
+
+**M15-c70 - DONE (02.10.2026).** משימת התור: "Verify no console errors on /
+and /product sample" — זהה למילה למשימות M15-c66..M15-c69. **נבדק מחדש,
+אפס דריפט.** נבנה `.next` חדש לגמרי (`rm -rf .next && NEXT_PUBLIC_APP_URL=
+http://localhost:3319 pnpm build`) כדי להימנע מה-CSP-ישן-כוזב הידוע
+(`docs/STATE-ARCHIVE.md`, "reused-local-build-bakes-stale-csp"), הורם
+`pnpm start -p 3319` (פורט פנוי, 3311-3316/3618/3911/4211 כבר תפוסים
+בידי סשנים מקבילים אחרים על אותו ריפו), ואומת `curl` 200 לפני ההרצה.
+הורצו `anon /` ו-`anon dynamic catalogue routes` מתוך
+`e2e/route-audit.spec.ts` (chromium + mobile-chrome) עם
+`E2E_BASE_URL=http://localhost:3319`. **4/4 עברו, אפס
+`consoleErrors`/`hydrationWarnings`** על `/` ועל `/product/[slug]`
+בדגימה החיה (המוצר שהתגלה דינמית). **אין ממצא קוד לתקן**; אימות-בלבד,
+חמישית ברצף עם אותה תוצאה. ארבעת השערים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M15-c69). אפס שינוי קוד ייצור.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M14-c70).
+
 ## M14-c70 (הועבר מ-STATE.md ב-M15-c70, לשמירה על תקרת 300 שורות)
 
 **M14-c70 - DONE (02.10.2026).** משימת התור: "Verify Sentry release matches
