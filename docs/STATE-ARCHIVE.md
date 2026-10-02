@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c74 (הועבר מ-STATE.md ב-M02-c74, לשמירה על תקרת 300 שורות)
+
+**M01-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". שרת `pnpm start` קיים על
+פורט 3311 (PID 56364, `cwd` אומת כשורש הריפו הזה) נבדק מול HEAD
+לפני ההרצה: `git diff --stat edfd1f5fa..HEAD` (קומיט בניית השער
+האחרון, M06-c73) על כל נתיב מלבד תיעוד — ריק, שנים-עשר הקומיטים מאז
+תיעוד-בלבד, כך שהבנייה הקיימת תואמת. הורץ `scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline=refs/ke_live_{width}.png`
+בחזית (חרג מ-timeout 120 שניות של כלי ה-Bash והמשיך ברקע עד סיום, לא
+הופעל ברקע ביוזמת הסוכן; הומתן לסיומו המלא לפני כל רישום). **תוצאה:
+`380`=8.58%, `768`=9.01%, `1440`=4.16%, שלושתם `PASS` מתחת לשער 11%,
+אפס דריפט מ-M01-c73 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `290834f18`
+(HEAD בתחילת הפריט). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `rm -rf .next && pnpm build` exit 0 נקי (BUILD_ID חדש
+`IiZ5xpth5phcarPHo4r08`). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M18-c73 (הועבר מ-STATE.md ב-M01-c74, לשמירה על תקרת 300 שורות)
 
 **M18-c73 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300

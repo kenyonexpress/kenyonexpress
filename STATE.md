@@ -1,25 +1,28 @@
-RESUME FROM: M02-c74
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c74 - DONE, שער חזותי בית נמדד מחדש)
+RESUME FROM: M03-c74
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c74 - DONE, שער חזותי מוצר נמדד מחדש)
 
 ## המשך מ:
 
-**M01-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
-768 1440 on / and record diffs in STATE.md". שרת `pnpm start` קיים על
-פורט 3311 (PID 56364, `cwd` אומת כשורש הריפו הזה) נבדק מול HEAD
-לפני ההרצה: `git diff --stat edfd1f5fa..HEAD` (קומיט בניית השער
-האחרון, M06-c73) על כל נתיב מלבד תיעוד — ריק, שנים-עשר הקומיטים מאז
-תיעוד-בלבד, כך שהבנייה הקיימת תואמת. הורץ `scripts/compare.mjs
---page=home --widths=380,768,1440 --baseline=refs/ke_live_{width}.png`
-בחזית (חרג מ-timeout 120 שניות של כלי ה-Bash והמשיך ברקע עד סיום, לא
-הופעל ברקע ביוזמת הסוכן; הומתן לסיומו המלא לפני כל רישום). **תוצאה:
-`380`=8.58%, `768`=9.01%, `1440`=4.16%, שלושתם `PASS` מתחת לשער 11%,
-אפס דריפט מ-M01-c73 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית
-ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `290834f18`
-(HEAD בתחילת הפריט). ארבעת השערים: `type-check` נקי, `lint` נקי (12
-שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
-זהה), `rm -rf .next && pnpm build` exit 0 נקי (BUILD_ID חדש
-`IiZ5xpth5phcarPHo4r08`). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+**M02-c74 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample". שרת `pnpm start` קיים על פורט 3311 (PID 56364, `cwd`
+אומת כשורש הריפו הזה, `/api/health` 200) נבדק מול HEAD לפני ההרצה:
+אפס שינוי קוד ייצור מאז M01-c74 (רק תיעוד). הורץ `LOCAL_BASE=
+http://localhost:3311 scripts/compare.mjs --page=product --widths=
+380,768,1440 --baseline=refs/electro_product_{width}.png` בחזית (חרג
+מ-timeout 120 שניות של כלי ה-Bash והמשיך ברקע עד סיום, לא הופעל ברקע
+ביוזמת הסוכן; הומתן לסיומו המלא דרך Monitor לפני כל רישום). **תוצאה:
+`380`=4.96%, `768`=4.58%, `1440`=3.25%, שלושתם `PASS` מתחת לשער 11%,
+אפס דריפט מ-M02-c73 (אותם מספרים בדיוק).** השורות נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `6dfc79156`.
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next
+&& pnpm build` exit 0 נקי (BUILD_ID חדש `M9NKaN5t_M25ik9i3TJai`). אפס
+שינוי קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
+**M01-c74 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו ב-M02-c74
+לשמירה על תקרת 300 שורות).** שער חזותי בית נמדד מחדש, אפס דריפט מ-M01-c73
+(8.58%/9.01%/4.16%, שלושתם PASS).
 
 **M18-c73 ו-M17-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M01-c74 לשמירה על תקרת 300 שורות).** M18-c73 — תחזוקת תיעוד,
