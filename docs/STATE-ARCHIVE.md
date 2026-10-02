@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c76 (הועבר מ-STATE.md ב-M04-c76, לשמירה על תקרת 300 שורות)
+
+**M03-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample". שרת `pnpm start` קיים על פורט 3311 (אותו תהליך, `cwd`
+אומת), אפס שינוי קוד ייצור מאז M02-c76 (`7a8affaa1`, רק תיעוד). ריצה
+ראשונה ללא override סורבה ב-380 (exit 3, "2 on the local page had still
+not loaded") — אותה תקלת-תזמון `loading="lazy"` שתועדה כבר ב-M03-c75
+ובכמה פריטים קודמים, לא באג ייצור. הורץ שוב עם
+`COMPARE_ALLOW_PENDING_IMAGES=1`,
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` בחזית (חרגה מ-timeout כלי
+ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן לסיומה המלא דרך Monitor + task
+notification). **תוצאה: `380`=2.93%, `768`=1.94%, `1440`=1.53%, שלושתם
+`PASS` מתחת לשער 11%, זהה אות-באות למדידת M03-c75 (2.93/1.94/1.53) —
+אפס דריפט בכלל, לא רק אפס דריפט שלילי.** שלוש השורות נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `7a8affaa1`.
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
+build` exit 0 נקי (שרת 3311 נשאר חי ועונה `200` אחרי הבנייה). אפס שינוי
+קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
 ## M02-c76 (הועבר מ-STATE.md ב-M03-c76, לשמירה על תקרת 300 שורות)
 
 **M02-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on

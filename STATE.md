@@ -1,29 +1,21 @@
-RESUME FROM: M04-c76
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c76 - DONE, שער חזותי קטגוריה נמדד מחדש)
+RESUME FROM: M05-c76
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c76 - DONE, type-check נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M03-c76 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs on
-/category sample". שרת `pnpm start` קיים על פורט 3311 (אותו תהליך, `cwd`
-אומת), אפס שינוי קוד ייצור מאז M02-c76 (`7a8affaa1`, רק תיעוד). ריצה
-ראשונה ללא override סורבה ב-380 (exit 3, "2 on the local page had still
-not loaded") — אותה תקלת-תזמון `loading="lazy"` שתועדה כבר ב-M03-c75
-ובכמה פריטים קודמים, לא באג ייצור. הורץ שוב עם
-`COMPARE_ALLOW_PENDING_IMAGES=1`,
-`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
---page=category --widths=380,768,1440
---baseline='refs/electro_shop_{width}.png'` בחזית (חרגה מ-timeout כלי
-ה-Bash, לא הופעלה ברקע ביוזמת הסוכן; הומתן לסיומה המלא דרך Monitor + task
-notification). **תוצאה: `380`=2.93%, `768`=1.94%, `1440`=1.53%, שלושתם
-`PASS` מתחת לשער 11%, זהה אות-באות למדידת M03-c75 (2.93/1.94/1.53) —
-אפס דריפט בכלל, לא רק אפס דריפט שלילי.** שלוש השורות נכתבו אוטומטית
-ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו, מתויגות `7a8affaa1`.
-ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331 pnpm
-build` exit 0 נקי (שרת 3311 נשאר חי ועונה `200` אחרי הבנייה). אפס שינוי
-קוד ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md`.
+**M04-c76 - DONE (02.10.2026).** משימת התור: "pnpm type-check fix drift
+commit". אפס שינוי בקבצי `src/` מאז M04-c75 (`3fd071a4f`, `git log
+--oneline 3fd071a4f..HEAD -- src/` ריק). `pnpm type-check` נקי, אפס
+שגיאות, אפס דריפט. שלושת השערים הנוספים: `lint` נקי (12 שערים, 2037
+קבצים), `test` 614/614 (7337/7349, זהה), `build` exit 0 נקי (`rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3331
+pnpm build`). אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
+**M03-c76 (הועבר במלואו ל-`docs/STATE-ARCHIVE.md` ב-M04-c76 לשמירה על
+תקרת 300 שורות).** שער חזותי קטגוריה נמדד מחדש: `380`=2.93%, `768`=1.94%,
+`1440`=1.53%, שלושתם PASS, אפס דריפט בכלל מ-M03-c75. ארבעת השערים
+ירוקים, אפס שינוי קוד ייצור.
 
 **M02-c76 (הועבר במלואו ל-`docs/STATE-ARCHIVE.md` ב-M03-c76 לשמירה על
 תקרת 300 שורות).** שער חזותי מוצר נמדד מחדש: `380`=4.50%, `768`=4.07%,
