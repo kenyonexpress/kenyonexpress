@@ -2,6 +2,21 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c72 (הועבר מ-STATE.md ב-M11-c72, לשמירה על תקרת 300 שורות)
+
+**M10-c72 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `diff <(git ls-tree -r HEAD --name-only --
+migrations/pending/) <(git ls-tree -r 6ec1248b7 --name-only --
+migrations/pending/)` (בסיס: קומיט M10-c71 עצמו) — **ריק, זהה לגמרי, 62
+קבצים בשני הצדדים.** אפס קובץ הוחל, אפס קובץ הוסר, אפס קובץ חדש. 19
+החוסמים שבחוסם #3 למעלה (218, 245, 246, 204, 240-244, 247 וכו') נשארים
+חוסמים, לא הוחלו. אין פקודת `supabase db push` הורצה, אין שינוי סכימה
+בפרודקשן. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים), `build` הצליח (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3418 pnpm build`, route manifest
+מלא). קובץ יחיד: `STATE.md`.
+
 ## M09-c72 (הועבר מ-STATE.md ב-M10-c72, לשמירה על תקרת 300 שורות)
 
 **M09-c72 - DONE (02.10.2026).** משימת התור: "Remove unused deps and dead

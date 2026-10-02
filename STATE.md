@@ -1,23 +1,29 @@
-RESUME FROM: M11-c72
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c72 - DONE, מיגרציות ממתינות נבדקו מחדש, אפס דריפט)
+RESUME FROM: M12-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c72 - DONE, sitemap.xml חי נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c72 - DONE (02.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker". `diff <(git ls-tree -r HEAD --name-only --
-migrations/pending/) <(git ls-tree -r 6ec1248b7 --name-only --
-migrations/pending/)` (בסיס: קומיט M10-c71 עצמו) — **ריק, זהה לגמרי, 62
-קבצים בשני הצדדים.** אפס קובץ הוחל, אפס קובץ הוסר, אפס קובץ חדש. 19
-החוסמים שבחוסם #3 למעלה (218, 245, 246, 204, 240-244, 247 וכו') נשארים
-חוסמים, לא הוחלו. אין פקודת `supabase db push` הורצה, אין שינוי סכימה
-בפרודקשן. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
-2037 קבצים, אפס תיקונים), `test` 614/614 קבצים (7337/7349 עברו, 12
-מדולגים), `build` הצליח (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3418 pnpm build`, route manifest
-מלא). קובץ יחיד: `STATE.md`.
+**M11-c72 - DONE (02.10.2026).** משימת התור: "Verify sitemap.xml fresh and
+reachable". בדיקת דריפט קוד קודם: `git log 4bbfcaf45..HEAD -- src/app/sitemap
+src/app/sitemap.xml src/app/robots.ts src/lib/seo/sitemap-data.ts
+src/lib/seo/sitemap-sections.ts src/lib/seo/sitemap-response.ts` (בסיס:
+קומיט M11-c71 עצמו) — ריק, אפס קומיט נוגע. **נמדד מול פרודקשן בפועל**:
+`https://kenyonexpress.co.il/sitemap.xml` מחזיר `308` ל-`www.` (ידוע,
+חוסם #14 למעלה), ושם `200` עם `<sitemapindex>` וחמש תת-מפות
+(`content`/`categories`/`products`/`regions`/`suppliers`), כולן `200`,
+עם אותה ספירת כתובות כמו M11-c71 (14/13/46/17/7). `lastmod` הכי טרי
+ב-`content.xml`/`products.xml` זהה ל-M11-c71 (`2026-09-25`). `robots.txt`
+מצביע ל-`https://kenyonexpress.co.il/sitemap.xml` הנכון. **אפס דריפט
+מ-M11-c71.** ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים),
+`build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3421 pnpm build`, חמשת נתיבי
+ה-sitemap מופיעים כ-`ƒ Dynamic`). אפס שינוי קוד. קובץ יחיד: `STATE.md`.
 
-**M09-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M10-c72 לשמירה על תקרת 300 שורות).** M09-c72: deps/exports מתים
+**M10-c72..M01-c72 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M11-c72 לשמירה על תקרת 300 שורות).** M10-c72: מיגרציות ממתינות
+נבדקו מחדש דרך `git ls-tree`, אפס דריפט (62 קבצים, 19 חוסמים ללא
+שינוי). M09-c72: deps/exports מתים
 עם `knip` נבדקו מחדש, אפס דריפט (201/5/1/271/197/4). M08-c72: Lighthouse
 mobile על `/` ו-`/product` אומת מחדש, 100/100/100 בשניהם, אפס דריפט
 מ-M08-c71. M07-c72: TODO/FIXME נסרק מחדש, שני הסמנים כבר מתועדים, אפס
