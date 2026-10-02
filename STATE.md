@@ -1,44 +1,46 @@
-RESUME FROM: M10-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c79 DONE: unused deps/dead exports נבדקו מחדש עם knip, אפס דריפט)
+RESUME FROM: M11-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c79 DONE: מיגרציות ממתינות אומתו מחדש מול פרודקשן בפועל, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c79 - DONE (03.10.2026).** משימת התור: "Remove unused deps and dead
-exports" — זהה לתבנית החוזרת (M09-c78 ואילך). `git diff --stat
-4fd5059a0..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/STATE-ARCHIVE.md/
-BACKLOG.md) החזיר קובץ אחד בלבד, `docs/UI-PARITY-REPORT.md` (תוספת
-שורות המדידה של M01-c79..M03-c79) — אפס שינוי בקוד. `pnpm dlx knip
---no-config-hints` (ephemeral, לא נוסף ל-`package.json`, אין
-`knip.json` בריפו) הורץ בכל זאת כדי לאמת ולא להניח: **201 unused files
-/ 5 unused dependencies / 1 unlisted binary / 271 unused exports / 197
-unused exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו
-M09-c78, אפס מועמד חדש. חמשת ה-deps (`@radix-ui/react-dropdown-menu`,
-`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
-ו-`supabase` כ-unlisted binary הם רעש ידוע (ר' ארכיון M09-c66..c77):
-drizzle/postgres משמשים רק דרך `drizzle.config.ts`/סקריפטי מיגרציה
-ש-knip לא עוקב אחריהם כ-import סטטי, ו-`supabase` הוא ה-CLI שרץ מ-
-`package.json` scripts לא מ-import. "Unused exports"/"unused exported
-types" ברובם סקריפטים שרצים ישירות (`scripts/*.mjs`) או type helpers
-(`database.ts` הנוצר אוטומטית) ש-knip לא עוקב אחרי שימוש דרך
-`action={}`/הסקת טיפוס. אף תיקון אוטומטי לא התבצע — הכרעת הסרה היא
-הכרעת מפעיל, לא תקלה שנמדדת. ארבעת השערים ירוקים: `type-check` נקי
-(exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים, זהה ל-M08-c79), build טרי (`rm -rf .next`,
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
-build`, exit 0). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+**M10-c79 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker". `git diff 98fa72131..HEAD --stat --
+migrations/pending/ supabase/migrations/ docs/BACKLOG.md` (בסיס:
+M10-c78) ריק, אפס שינוי. `migrations/pending/*.sql` נספר שוב: 60
+קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק git), דרך
+CLI-keychain-token, קריאה בלבד (`BEGIN;...ROLLBACK;`), אותם 19 הקבצים
+החוסמים: שבעה שמות טבלה (204/234/235/236/239/240/244) — `to_regclass`
+עדיין `null` לכולם (`supplier_applications`/`fraud_blocklist`/
+`feature_flags`/`contact_channels`/`customer_invoice_settings`/
+`app_consent_events`/`affiliate_campaigns`). שלוש עמודות (223/242/243)
+עדיין חסרות (`notifications_outbox.outbox_id`,
+`products.original_price_source`, `products.shipping_price_agorot`);
+248 תלוי בעמודות של 232/242 שגם הן חסרות (`suppliers.opening_hours`/
+`google_reviews_url`); 218 נבדק ישירות (לא עמודה) —
+`has_column_privilege(authenticated, profiles, wallet_balance, UPDATE)`
+עדיין `true`, כלומר הלקוח עדיין יכול לכתוב את יתרת הארנק שלו. שתי
+הרשאות (224/247) עדיין חסרות (`has_function_privilege`/
+`has_table_privilege` מחזירים `false`). 220: `pg_proc.proconfig` של
+`fn_wallet_entries_block_mutation` עדיין `null`. 209: המדיניות
+`push_subscriptions_select_own` עדיין `auth.uid() = user_id` לא עטוף.
+246: המדיניות `profiles_super_admin_mfa` עדיין בניסוח המקורי (תואם את
+טקסט 209, לא את 246). 245: אפס מתוך חמש המדיניות המוצעות על `banners`
+קיימת. 241: 46 מוצרים פעילים עם `city IS NULL`, זהה. כל 19 אושרו שוב
+כלא מוחלים, אפס דריפט מהבדיקה הישירה הקודמת (M10-c78, 03.10, ו-M10-c74,
+02.10). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה ל-M09-c79), build טרי (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4617 pnpm build`, exit 0, route
+manifest מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
+שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף
+מיגרציה. קובץ יחיד: `STATE.md`.
 
-**M08-c79..M06-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M09-c79).** M08-c79 — Lighthouse mobile על / ו-/product, שניהם
-100/100/100, אפס דריפט מ-M08-c78. M07-c79 — TODO/FIXME נסרק מחדש, שני
-ה-marker הידועים ב-`cardcom.ts`, חסומים על החלטת מפעיל. M06-c79 — pnpm
-build gate re-verified clean, אפס דריפט קוד. ארבעת השערים ירוקים
-בכולם, אפס שינוי קוד ייצור.
-
-**M02-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M03-c79/M06-c79/M08-c79).** שבעה-עשר פריטי תור/אימות-בלבד: Sentry
-release vs HEAD (עדיין מפוצל), שערי בית/מוצר/קטגוריה, test/type-check/
-build גייטים, Lighthouse mobile, TODO/FIXME, unused deps/dead exports
-(`knip`), מיגרציות ממתינות, sitemap.xml/robots.txt (עדיין `a388118f1`),
+**M09-c79..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M03-c79/M06-c79/M08-c79/M10-c79).** עשרים ואחד פריטי תור/אימות-
+בלבד: Sentry release vs HEAD (עדיין מפוצל), שערי בית/מוצר/קטגוריה,
+test/type-check/build גייטים, Lighthouse mobile, TODO/FIXME, unused
+deps/dead exports (`knip`), מיגרציות ממתינות (עדיין אותם 19 קבצים
+חוסמים, אפס דריפט), sitemap.xml/robots.txt (עדיין `a388118f1`),
 `/api/health`/`/api/ready`, אפס console error/hydration, ו-JSON-LD —
 אפס דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
 

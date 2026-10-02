@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c79 (הועבר מ-STATE.md ב-M10-c79, לשמירה על תקרת 300 שורות)
+
+**M09-c79 - DONE (03.10.2026).** משימת התור: "Remove unused deps and dead
+exports" — זהה לתבנית החוזרת (M09-c78 ואילך). `git diff --stat
+4fd5059a0..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/STATE-ARCHIVE.md/
+BACKLOG.md) החזיר קובץ אחד בלבד, `docs/UI-PARITY-REPORT.md` (תוספת
+שורות המדידה של M01-c79..M03-c79) — אפס שינוי בקוד. `pnpm dlx knip
+--no-config-hints` (ephemeral, לא נוסף ל-`package.json`, אין
+`knip.json` בריפו) הורץ בכל זאת כדי לאמת ולא להניח: **201 unused files
+/ 5 unused dependencies / 1 unlisted binary / 271 unused exports / 197
+unused exported types / 4 duplicate exports** — אותם מספרים בדיוק כמו
+M09-c78, אפס מועמד חדש. חמשת ה-deps (`@radix-ui/react-dropdown-menu`,
+`@radix-ui/react-select`, `drizzle-orm`, `postgres`, `react-hook-form`)
+ו-`supabase` כ-unlisted binary הם רעש ידוע (ר' ארכיון M09-c66..c77):
+drizzle/postgres משמשים רק דרך `drizzle.config.ts`/סקריפטי מיגרציה
+ש-knip לא עוקב אחריהם כ-import סטטי, ו-`supabase` הוא ה-CLI שרץ מ-
+`package.json` scripts לא מ-import. "Unused exports"/"unused exported
+types" ברובם סקריפטים שרצים ישירות (`scripts/*.mjs`) או type helpers
+(`database.ts` הנוצר אוטומטית) ש-knip לא עוקב אחרי שימוש דרך
+`action={}`/הסקת טיפוס. אף תיקון אוטומטי לא התבצע — הכרעת הסרה היא
+הכרעת מפעיל, לא תקלה שנמדדת. ארבעת השערים ירוקים: `type-check` נקי
+(exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים, זהה ל-M08-c79), build טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build`, exit 0). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
 ## M08-c79 (הועבר מ-STATE.md ב-M09-c79, לשמירה על תקרת 300 שורות)
 
 **M08-c79 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
