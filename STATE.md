@@ -1,23 +1,21 @@
-RESUME FROM: M01-c73
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c72 - DONE, STATE.md נבדק מחדש מתחת לתקרת 300 שורות)
+RESUME FROM: M02-c73
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c73 - DONE, שער חזותי בית נמדד מחדש)
 
 ## המשך מ:
 
-**M18-c72 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines,
-archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימות M18-c66..M18-c71.
-**כבר מתקיים לפני הפריט הזה:** `wc -l STATE.md` מדד **287 שורות**, מתחת
-לתקרה, לפני כל שינוי. **אומת, לא תוקן.** ארבעת השערים הורצו במלואם בכל
-זאת (כנדרש בכל פריט תור, לא רק פריטי קוד): `type-check` נקי, `lint` נקי
-(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
-זהה ל-M17-c72), `rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי,
-`compare.mjs` לא נדרש. **שינוי התיעוד היחיד בפועל:** פירוק M17-c72 מהגוף
-המלא כאן לארכיון (`docs/STATE-ARCHIVE.md`, כותרת "M17-c72 ו-M16-c72..M01-c72"),
-וקיפולו לשורת הסיכום הקיימת למטה (היה "M16-c72..M01-c72", עכשיו
-"M17-c72..M01-c72") — כדי שהקובץ יישאר מתחת לתקרה גם אחרי שתור c73
-יתחיל להצטבר. קובץ יחיד: `STATE.md` (ו-`docs/STATE-ARCHIVE.md`, רק
-הזזה, שום שורה לא נמחקה).
+**M01-c73 - DONE (02.10.2026).** משימת התור: "Re-measure compare.mjs 380
+768 1440 on / and record diffs in STATE.md". הורץ `scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline=refs/ke_live_{width}.png`
+בחזית, מול שרת `pnpm start` קיים על פורט 3311 (נבדק לפני ההרצה: `cwd`
+שלו הוא שורש הריפו הזה, `BUILD_ID` שלו (`HxROgHgeOE1nOzsKM3dTU`) תאם
+ל-HEAD `f31bc9ef8`). **תוצאה: `380`=8.58%, `768`=9.01%, `1440`=4.16%,
+שלושתם `PASS` מתחת לשער 11%, אפס דריפט מ-M01-c72 (אותם מספרים בדיוק).**
+השורות נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` על ידי הסקריפט עצמו.
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה), `rm -rf .next && pnpm build`
+exit 0 נקי. אפס שינוי קוד ייצור. קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
 
-**M17-c72..M01-c72 ו-M18-c71..M01-c71, M18-c70..M01-c70, M18-c69..M01-c69
+**M18-c72..M01-c72 ו-M18-c71..M01-c71, M18-c70..M01-c70, M18-c69..M01-c69
 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M17-c72 לשמירה
 על תקרת 300 שורות).** ארבעה סבבים שלמים של פריטי אימות-בלבד/שער חזותי
 (JSON-LD Product+BreadcrumbList; אפס console error/hydration; Sentry

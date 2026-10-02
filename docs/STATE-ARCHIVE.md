@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c72 (הועבר מ-STATE.md ב-M01-c73, לשמירה על תקרת 300 שורות)
+
+**M18-c72 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300 lines,
+archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימות M18-c66..M18-c71.
+**כבר מתקיים לפני הפריט הזה:** `wc -l STATE.md` מדד **287 שורות**, מתחת
+לתקרה, לפני כל שינוי. **אומת, לא תוקן.** ארבעת השערים הורצו במלואם בכל
+זאת (כנדרש בכל פריט תור, לא רק פריטי קוד): `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה ל-M17-c72), `rm -rf .next && pnpm build` exit 0 נקי. לא פריט חזותי,
+`compare.mjs` לא נדרש. **שינוי התיעוד היחיד בפועל:** פירוק M17-c72 מהגוף
+המלא כאן לארכיון (`docs/STATE-ARCHIVE.md`, כותרת "M17-c72 ו-M16-c72..M01-c72"),
+וקיפולו לשורת הסיכום הקיימת למטה (היה "M16-c72..M01-c72", עכשיו
+"M17-c72..M01-c72") — כדי שהקובץ יישאר מתחת לתקרה גם אחרי שתור c73
+יתחיל להצטבר. קובץ יחיד: `STATE.md` (ו-`docs/STATE-ARCHIVE.md`, רק
+הזזה, שום שורה לא נמחקה).
+
 ## M17-c72 ו-M16-c72..M01-c72 (הועבר מ-STATE.md ב-M18-c72, לשמירה על תקרת 300 שורות)
 
 **M17-c72 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
