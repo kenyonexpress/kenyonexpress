@@ -1,24 +1,25 @@
-RESUME FROM: M01-c79
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c78 DONE: STATE.md כבר מתחת לתקרת 300 שורות, M17-c78 אוכסן)
+RESUME FROM: M02-c79
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c79 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M18-c78 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
-lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למשימות
-M18-c60..M18-c77 (קיצוץ מחזורי). **נמדד לפני כל שינוי**: `wc -l
-STATE.md` החזיר **299**, כבר **מתחת לתקרת 300** בלי שום פעולה. הפריט
-הקודם בתור (M17-c78) כיווץ את עצמו אל שורה אחת כחלק מה-pattern הרגיל
-וזה החזיק את הקובץ מתחת לתקרה מבלי להזדקק לקיצוץ נפרד כאן. **הפעולה
-שבוצעה בכל זאת**: פסקת M17-c78 המלאה הועברה ל-`docs/STATE-ARCHIVE.md`
-(סעיף חדש בראש הקובץ, הישן ביותר-ראשון נשאר שלם) וכווצה כאן לשורה
-אחת בתוך האוסף "M02-c78..M16-c78", שהורחב ל-"M02-c78..M17-c78" — כך
-שהתור הבא (M01-c79 ואילך) מתחיל מתוך מרווח נוסף, לא רק מתחת לתקרה
-בדיוק. ארבעת השערים הורצו כחלק מטקס הסיום הרגיל: `type-check` נקי,
-`lint` נקי, `test` ירוק, `build` exit 0. אפס שינוי קוד ייצור. שני
-קבצים: `STATE.md` ו-`docs/STATE-ARCHIVE.md`.
+**M01-c79 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md". שרת ישן על פורט 3311
+(PID 5130, עלה 12:51AM) נמצא מריץ build שקדם ל-`.next/BUILD_ID` הנוכחי
+(02:58) — נהרג, ו-`pnpm build` + `PORT=3311 pnpm start` רעננים הורצו
+לפני המדידה (לקח מ"Gate measured a foreign server on 3311"). הורץ
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'` בחזית,
+מול הצילום הקפוא (בלוק #14 למעלה — `kenyonexpress.co.il` עצמו עונה
+כעת "our-build" ולא live). **תוצאות: 380 8.58% PASS, 768 9.01% PASS,
+1440 4.16% PASS — זהה ל-M01-c78, אפס דריפט.** השער כתב שלוש שורות
+ל-`docs/UI-PARITY-REPORT.md` בעצמו (commit `2c07a9520`/`-dirty`).
+ארבעת השערים: `type-check` נקי, `lint` נקי (614 קבצי טסט, 7337 עברו,
+12 skipped), `build` exit 0, `test` ירוק. אפס שינוי קוד ייצור. קובץ
+יחיד שונה חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
 
-**M02-c78..M17-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M18-c78).** שישה-עשר פריטי תור/אימות-בלבד: Sentry release vs
+**M02-c78..M18-c78 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M01-c79).** שבעה-עשר פריטי תור/אימות-בלבד: Sentry release vs
 HEAD (946/109 קומיטים, עדיין מפוצל, ממתין להחלטת אופיר), Lighthouse
 mobile (100/100/100 על / ו-/product, אפס דריפט מ-M08-c77), שער חזותי
 מוצר (4.96/4.58/3.25, זהה ל-M02-c77/M02-c75) וקטגוריה (3.53/1.94/1.53,
