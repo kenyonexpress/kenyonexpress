@@ -2,6 +2,21 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c71 (הועבר מ-STATE.md ב-M01-c72, לשמירה על תקרת 300 שורות)
+
+**M18-c71 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה במהות למשימות
+M18-c66..M18-c70. **נמדד: `STATE.md` עמד כבר על 291 שורות, מתחת לתקרת
+300**, כך שלא נדרש קיצוץ כדי לעמוד בתקרה. בוצעה בכל זאת פעולת התחזוקה
+הרגילה: הערך המלא של M17-c71 (17 שורות) הועבר ל-`docs/STATE-ARCHIVE.md`
+תחת כותרת חדשה, ובמקומו כאן שורת סיכום אחת שמצטרפת לטווח `M16-c71..
+M12-c71` הקיים (הורחב ל-`M17-c71..M12-c71`). שום שורה לא נמחקה מהארכיון
+עצמו, רק הוזזה. אפס שינוי קוד ייצור, אפס שינוי סכימה/כסף. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M18-c66..M18-c70). ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349,
+12 מדולגים, זהה), `build` exit 0 נקי. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M17-c71 (הועבר מ-STATE.md ב-M18-c71, לשמירה על תקרת 300 שורות)
 
 **M17-c71 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
