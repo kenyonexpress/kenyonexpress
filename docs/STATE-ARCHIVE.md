@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c71 (הועבר מ-STATE.md ב-M18-c71, לשמירה על תקרת 300 שורות)
+
+**M17-c71 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
+sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c70. **נבדק מחדש,
+אפס דריפט.** `git log 7cf544d51..HEAD -- src/ e2e/` (בסיס: checkpoint
+M17-c70) ריק — 16 קומיטים מאז, כולם תיעוד-בלבד. `grep` על `dir="ltr"` בשני
+קבצי `HeroSlider.tsx` מחזיר רק הערות הסבר (התיקון מ-M17-c66 עדיין במקום).
+**ברמת הדף, build אמיתי**: `.next` חדש לגמרי (`rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3324 pnpm
+build`), exit 0 נקי בניסיון ראשון, `pnpm start -p 3324`, listener אומת
+(`lsof`, cwd). `E2E_BASE_URL=http://localhost:3324 npx playwright test
+e2e/home-rtl.spec.ts e2e/rtl-three-widths.spec.ts e2e/rtl-mobile.spec.ts`
+— **112/112 עברו** (chromium+mobile-chrome), כולל הטסט שהיה פעם אחת
+flaky ב-M17-c70 על timeout של `networkidle` (עבר הפעם, התזמון הוא כשל
+טסט מקומי, לא leak LTR). **אין ממצא קוד לתקן.** ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים, כולל `rtl-logical-gate.mjs` נקי),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא
+פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M17-c70). אפס שינוי קוד
+ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M16-c71).
+
 ## M16-c71 (הועבר מ-STATE.md ב-M17-c71, לשמירה על תקרת 300 שורות)
 
 **M16-c71 - DONE (02.10.2026).** משימת התור: "Verify all product pages have

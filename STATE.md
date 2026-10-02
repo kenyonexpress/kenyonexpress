@@ -1,36 +1,32 @@
-RESUME FROM: M18-c71
-Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c71 - DONE, RTL על `/` ו-`/product` נבדק מחדש)
+RESUME FROM: M01-c72
+Updated: 2026-10-02 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c71 - DONE, STATE.md נבדק מחדש תחת תקרת 300 שורות)
 
 ## המשך מ:
 
-**M17-c71 - DONE (02.10.2026).** משימת התור: "Verify RTL on / and /product
-sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c70. **נבדק מחדש,
-אפס דריפט.** `git log 7cf544d51..HEAD -- src/ e2e/` (בסיס: checkpoint
-M17-c70) ריק — 16 קומיטים מאז, כולם תיעוד-בלבד. `grep` על `dir="ltr"` בשני
-קבצי `HeroSlider.tsx` מחזיר רק הערות הסבר (התיקון מ-M17-c66 עדיין במקום).
-**ברמת הדף, build אמיתי**: `.next` חדש לגמרי (`rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3324 pnpm
-build`), exit 0 נקי בניסיון ראשון, `pnpm start -p 3324`, listener אומת
-(`lsof`, cwd). `E2E_BASE_URL=http://localhost:3324 npx playwright test
-e2e/home-rtl.spec.ts e2e/rtl-three-widths.spec.ts e2e/rtl-mobile.spec.ts`
-— **112/112 עברו** (chromium+mobile-chrome), כולל הטסט שהיה פעם אחת
-flaky ב-M17-c70 על timeout של `networkidle` (עבר הפעם, התזמון הוא כשל
-טסט מקומי, לא leak LTR). **אין ממצא קוד לתקן.** ארבעת השערים: `type-check`
-נקי, `lint` נקי (12 שערים, 2037 קבצים, כולל `rtl-logical-gate.mjs` נקי),
-`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא
-פריט חזותי, `compare.mjs` לא נדרש (תקדים M04-c66..M17-c70). אפס שינוי קוד
-ייצור. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (כיווץ M16-c71).
+**M18-c71 - DONE (02.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה במהות למשימות
+M18-c66..M18-c70. **נמדד: `STATE.md` עמד כבר על 291 שורות, מתחת לתקרת
+300**, כך שלא נדרש קיצוץ כדי לעמוד בתקרה. בוצעה בכל זאת פעולת התחזוקה
+הרגילה: הערך המלא של M17-c71 (17 שורות) הועבר ל-`docs/STATE-ARCHIVE.md`
+תחת כותרת חדשה, ובמקומו כאן שורת סיכום אחת שמצטרפת לטווח `M16-c71..
+M12-c71` הקיים (הורחב ל-`M17-c71..M12-c71`). שום שורה לא נמחקה מהארכיון
+עצמו, רק הוזזה. אפס שינוי קוד ייצור, אפס שינוי סכימה/כסף. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים M18-c66..M18-c70). ארבעת השערים: `type-check`
+נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349,
+12 מדולגים, זהה), `build` exit 0 נקי. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**M16-c71..M12-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M17-c71 לשמירה על תקרת 300 שורות).** M16-c71: JSON-LD
-Product+BreadcrumbList נבדק מחדש על כל דף מוצר, אפס דריפט מ-M16-c70.
-M15-c71: אפס console
-error/hydration נבדק מחדש על `/` ו-`/product`, אפס דריפט מ-M15-c70.
-M14-c71: Sentry release מול HEAD נבדק מחדש משלוש הזוויות, אפס דריפט,
-הפער גדל ל-443 קומיטים (אין DSN בפרודקשן, לא לתיקון אוטומטי). M13-c71:
-`/api/health` ו-`/api/ready` אומתו מחדש מול פרודקשן בפועל (`200`/`503`,
-זהה ל-M13-c67..M13-c70), אפס דריפט. M12-c71: robots.txt נבדק מחדש, אפס
-דריפט מ-M12-c70. ארבעת השערים ירוקים בארבעתם, אפס שינוי קוד.
+**M17-c71..M12-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M18-c71 לשמירה על תקרת 300 שורות).** M17-c71: RTL על `/`
+ו-`/product` נבדק מחדש בבנייה אמיתית, 112/112 טסטי Playwright עברו, אפס
+leak LTR. M16-c71: JSON-LD Product+BreadcrumbList נבדק מחדש על כל דף
+מוצר, אפס דריפט מ-M16-c70. M15-c71: אפס console error/hydration נבדק
+מחדש על `/` ו-`/product`, אפס דריפט מ-M15-c70. M14-c71: Sentry release
+מול HEAD נבדק מחדש משלוש הזוויות, אפס דריפט, הפער גדל ל-443 קומיטים
+(אין DSN בפרודקשן, לא לתיקון אוטומטי). M13-c71: `/api/health`
+ו-`/api/ready` אומתו מחדש מול פרודקשן בפועל (`200`/`503`, זהה
+ל-M13-c67..M13-c70), אפס דריפט. M12-c71: robots.txt נבדק מחדש, אפס
+דריפט מ-M12-c70. ארבעת השערים ירוקים בכולם, אפס שינוי קוד.
 
 **M11-c71..M01-c71 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M12-c71 לשמירה על תקרת 300 שורות).** אחד-עשר פריטי אימות-בלבד, אפס
