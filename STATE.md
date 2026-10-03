@@ -1,31 +1,20 @@
-RESUME FROM: M18-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c80 DONE: RTL על / ו-/product נבדק מחדש ברינדור בפועל, אפס דריפט מ-M17-c79)
+RESUME FROM: M19-c80
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c80 DONE: STATE.md נבדק, היה כבר מתחת לתקרה, אין מה לארכב)
 
 ## המשך מ:
 
-**M17-c80 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c79
-(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
-דריפט.** `git log 8d2f25d49..HEAD --stat -- src/app src/components
-src/lib/i18n` (בסיס: checkpoint M17-c79) **ריק** — אפס קומיטים נוגעים
-מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, כולל `rtl-logical-gate.mjs`), `test` 614/614 קבצים (7337/7349,
-12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. הורם
-`pnpm start -p 4933` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
-לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
-המוצרים הפעילים (`supabase/catalogue-snapshot.json`): `/product/אייפון-13`.
-**נבדק ישירות ברינדור בפועל:** שני הדפים `<html lang="he" dir="rtl">`
-ללא תנאי. גריפ על `dir="ltr"` בתוצאה החיה: `/` — מופע יחיד, שדה
-האימייל בניוזלטר (מכוון, `input-dir-gate` מאשר). דף המוצר — שני
-מופעים: אותו שדה אימייל בפוטר, ו-`pdp-summary__meta` (ריק עבור המוצר
-הזה, אין SKU עברי) — אותו דפוס שנמדד בכל סבב קודם. גריפ נוסף על
-`direction: ltr`/`float-left/right`/`text-left/right`/`ml-`/`mr-`/
-`pl-`/`pr-` קשיחים בקוד המקור של `page.tsx` (בית) ותיקיית `product` —
-אפס התאמות. שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא פריט
-`compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
-M17-c67..M17-c79). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`
-(וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M18-c80 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c79.
+**נמדד: `wc -l STATE.md` היה `296` לפני ההרצה הזו, כבר מתחת לתקרת 300 —
+אין שורה לארכב.** ארבעת השערים הורצו ביציבה: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה
+ל-M17-c80), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. אפס שינוי
+קוד ייצור. קובץ יחיד: `STATE.md`.
+
+**M17-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M18-c80).** RTL על / ו-/product נבדק מחדש ברינדור בפועל, אפס דריפט
+מ-M17-c79.
 
 **M16-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M17-c80).** JSON-LD Product+BreadcrumbList נבדק מחדש בזמן ריצה על

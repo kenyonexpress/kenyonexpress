@@ -42418,3 +42418,29 @@ profiles, wallet_balance, UPDATE)` עדיין `true`; 224/247:
 pnpm build`, exit 0, manifest מלא). פריט אימות-בלבד, לא חזותי:
 `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase
 db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
+## M17-c80 (הועבר מ-STATE.md ב-M18-c80, לשמירה על תקרת 300 שורות)
+
+**M17-c80 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c79
+(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
+דריפט.** `git log 8d2f25d49..HEAD --stat -- src/app src/components
+src/lib/i18n` (בסיס: checkpoint M17-c79) **ריק** — אפס קומיטים נוגעים
+מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים, כולל `rtl-logical-gate.mjs`), `test` 614/614 קבצים (7337/7349,
+12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. הורם
+`pnpm start -p 4933` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
+לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
+המוצרים הפעילים (`supabase/catalogue-snapshot.json`): `/product/אייפון-13`.
+**נבדק ישירות ברינדור בפועל:** שני הדפים `<html lang="he" dir="rtl">`
+ללא תנאי. גריפ על `dir="ltr"` בתוצאה החיה: `/` — מופע יחיד, שדה
+האימייל בניוזלטר (מכוון, `input-dir-gate` מאשר). דף המוצר — שני
+מופעים: אותו שדה אימייל בפוטר, ו-`pdp-summary__meta` (ריק עבור המוצר
+הזה, אין SKU עברי) — אותו דפוס שנמדד בכל סבב קודם. גריפ נוסף על
+`direction: ltr`/`float-left/right`/`text-left/right`/`ml-`/`mr-`/
+`pl-`/`pr-` קשיחים בקוד המקור של `page.tsx` (בית) ותיקיית `product` —
+אפס התאמות. שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא פריט
+`compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
+M17-c67..M17-c79). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`
+(וארכוב ל-`docs/STATE-ARCHIVE.md`).
