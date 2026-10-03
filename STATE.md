@@ -1,7 +1,24 @@
-RESUME FROM: M02-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c82 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M04-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c82 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
+
+**M03-c82 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on /category sample" — זהה למשימות M03-c61..M03-c81 (שער
+חזותי קטגוריה, מחזורי). שרת `pnpm start` על פורט 3311 היה כבר רץ מסשן
+מקביל (cwd נבדק דרך `lsof`: אותו ריפו), נעשה בו שימוש חוזר בלי `build`/
+`start` נוסף. הורץ בחזית לכל רוחב בנפרד (`--width=`, לא `--widths=`, לרוחב בודד): 380
+עבר בניסיון ראשון; 768 ו-1440 נתקלו ב-`REFUSING... still not loaded`
+(תקלת-תזמון מתועדת בארכיון, לא חדשה) ותוקנו עם המילוט המובנה של
+הסקריפט עצמו, `COMPARE_ALLOW_PENDING_IMAGES=1`. שני ה-child-processes
+האלה חרגו מ-180 שנ' והועברו לרקע ע"י ה-harness; המתנה נוספת על אותם
+processes עד `[exited with code 0]` לפני שהתקדמתי — אין "סיום פריט" בלי
+המספרים. **תוצאה: `380 3.53% PASS`, `768 2.31% PASS`, `1440 1.58% PASS`,
+זהה בביט לדיוק ל-M03-c81.** ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה), `build` exit 0. אפס שינוי קוד ייצור. קובץ יחיד שונה חוץ
+מ-STATE.md: `docs/UI-PARITY-REPORT.md` (מכיל גם שורות `product` ממדידה
+מקבילה, M02-c82 כנראה, שלא נמחקו).
 
 **M01-c82 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
 380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
@@ -42,21 +59,14 @@ JSON-LD, Sentry vs HEAD (מפוצל), שערי בית/מוצר/קטגוריה, t
 test/build, TODO/FIXME, Lighthouse, knip, מיגרציות, sitemap.xml,
 robots.txt, health/ready — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים.
 
-**M18-c76..M02-c76 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה הזו ב-M01-c77).**
-שמונה-עשר פריטי תור/תחזוקה/אימות-בלבד: Sentry vs HEAD, robots.txt/sitemap.xml,
-מיגרציות, knip, Lighthouse, TODO/FIXME, JSON-LD, console/hydration, שערי קטגוריה/מוצר — אפס דריפט בכולם.
-
-**M18-c75..M01-c75, M18-c74..M01-c74 (שלושים ושישה פריטי אימות-בלבד/
-תחזוקה, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).** STATE.md מתחת לתקרה;
-אפס console/hydration; Sentry vs HEAD אפס דריפט; health/ready
-`200`/`503`; robots.txt/sitemap.xml ללא שינוי; מיגרציות ממתינות 19
-חוסמים; knip אפס מועמד חדש; Lighthouse 100/100/100; TODO/FIXME מתועד.
-אפס דריפט בכולם, ארבעת השערים ירוקים בכולם.
-
-**M18-c73..M15-c73, M13-c73..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
-שלושה-עשר פריטי תור/אימות-בלבד, אפס דריפט בכולם (RTL, JSON-LD,
-console/hydration, health/ready, robots/sitemap, מיגרציות, knip,
-Lighthouse, TODO, build/test/type-check, שערי קטגוריה/מוצר/בית).
+**M18-c76..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, שלושה בלוקים
+כווצו לשורה הזו ב-M03-c82 לשמירה על תקרת 300 שורות; שום שורה לא נמחקה
+מהארכיון עצמו).** שבעים ושבעה פריטי תור/תחזוקה/אימות-בלבד על פני שלושה
+סבבים (c76, c75-c74, c73): Sentry vs HEAD, robots.txt/sitemap.xml,
+מיגרציות, knip, Lighthouse 100/100/100, TODO/FIXME, JSON-LD,
+console/hydration, health/ready `200`/`503`, build/test/type-check,
+ושערי חזות בית/מוצר/קטגוריה כל סבב — אפס דריפט בכולם, ארבעת השערים
+ירוקים בכולם, STATE.md מתחת לתקרה בכולם.
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי** — production הוחלף חי מחוץ
 לתור (`main`@`18ed044b2`, `SENTRY_DSN` חדש), מקור לא ידוע, לא תוקן/
