@@ -1,30 +1,33 @@
-RESUME FROM: M07-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c82 DONE: build נקי, אפס דריפט)
+RESUME FROM: M08-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c82 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c82 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
-commit" — זהה למשימות "build gate re-verified clean" הקודמות (M06-c81
-ולפניו). `pwd` אומת, HEAD `6599e3091` (M05-c82), עץ עבודה נקי. **הורץ
-בחזית**: `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4518 pnpm build` — exit 0, כל
-הנתיבים נבנו, אין דריפט לתיקון. המשך בארבעת השערים: `pnpm type-check`
+**M07-c82 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
+(M07-c81 ולפניו). `pwd` אומת, HEAD `f56e3a497` (M06-c82), עץ עבודה
+נקי. נסרק מחדש `src/`
+(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
+ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
+(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
+ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
+המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
+(`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית `'TODO'`
+בבדיקה, לא marker.) ארבעת השערים ירוקים: `pnpm type-check`
 (`tsc --noEmit`) אפס שגיאות, `pnpm lint` נקי (`biome` על 2037 קבצים +
-12 שערי lint ייעודיים, כולם clean; `docs-path-audit` 155, היה 153
-ב-Q55/154 ב-M15-c65, שער עדיין `OK` ללא רשומה חדשה-לא-ידועה), `pnpm
-test` (vitest) 614/614 קובצי בדיקה, 7337/7349 עוברים (12 מדולגים), זהה
-לבייסליין M05-c82. אפס שינוי קוד ייצור — רק `STATE.md`.
+12 שערי lint ייעודיים, כולם clean), `pnpm test` (vitest) 614/614
+קובצי בדיקה, 7337/7349 עוברים (12 מדולגים, זהה לבייסליין M06-c82),
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4519 pnpm build` exit 0, כל
+הנתיבים נבנו. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד
+ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
 
-**M05-c82 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
-commit" — זהה למשימות "test gate re-verified clean" הקודמות (M05-c81
-ולפניו). `pwd` אומת, HEAD `359d6f40d` (M04-c82), עץ עבודה נקי. **הורץ
-בחזית**: `pnpm test` (vitest) — 614/614 קובצי בדיקה, 7337/7349 עוברים
-(12 מדולגים), זהה לבייסליין M04-c82. אין דריפט לתיקון. המשך בארבעת
-השערים: `pnpm type-check` (`tsc --noEmit`) אפס שגיאות, `pnpm lint` נקי
-(`biome` על 2037 קבצים + 12 שערי lint ייעודיים, כולם clean),
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
-pnpm build` exit 0 (כל הנתיבים נבנו). אפס שינוי קוד ייצור — רק
-`STATE.md`.
+**M06-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M07-c82).** שער build נמדד מחדש, אפס דריפט.
+
+**M05-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M07-c82).** שער test נמדד מחדש, אפס דריפט.
 
 **M04-c82 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
 commit" — זהה למשימות "type-check gate re-verified clean" הקודמות

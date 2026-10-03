@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c82 (הועבר מ-STATE.md ב-M07-c82, לשמירה על תקרת 300 שורות)
+
+**M05-c82 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
+commit" — זהה למשימות "test gate re-verified clean" הקודמות (M05-c81
+ולפניו). `pwd` אומת, HEAD `359d6f40d` (M04-c82), עץ עבודה נקי. **הורץ
+בחזית**: `pnpm test` (vitest) — 614/614 קובצי בדיקה, 7337/7349 עוברים
+(12 מדולגים), זהה לבייסליין M04-c82. אין דריפט לתיקון. המשך בארבעת
+השערים: `pnpm type-check` (`tsc --noEmit`) אפס שגיאות, `pnpm lint` נקי
+(`biome` על 2037 קבצים + 12 שערי lint ייעודיים, כולם clean),
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
+pnpm build` exit 0 (כל הנתיבים נבנו). אפס שינוי קוד ייצור — רק
+`STATE.md`.
+
+## M06-c82 (הועבר מ-STATE.md ב-M07-c82, לשמירה על תקרת 300 שורות)
+
+**M06-c82 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
+commit" — זהה למשימות "build gate re-verified clean" הקודמות (M06-c81
+ולפניו). `pwd` אומת, HEAD `6599e3091` (M05-c82), עץ עבודה נקי. **הורץ
+בחזית**: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4518 pnpm build` — exit 0, כל
+הנתיבים נבנו, אין דריפט לתיקון. המשך בארבעת השערים: `pnpm type-check`
+(`tsc --noEmit`) אפס שגיאות, `pnpm lint` נקי (`biome` על 2037 קבצים +
+12 שערי lint ייעודיים, כולם clean; `docs-path-audit` 155, היה 153
+ב-Q55/154 ב-M15-c65, שער עדיין `OK` ללא רשומה חדשה-לא-ידועה), `pnpm
+test` (vitest) 614/614 קובצי בדיקה, 7337/7349 עוברים (12 מדולגים), זהה
+לבייסליין M05-c82. אפס שינוי קוד ייצור — רק `STATE.md`.
+
 ## M03-c82 (הועבר מ-STATE.md ב-M04-c82, לשמירה על תקרת 300 שורות)
 
 **M03-c82 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
