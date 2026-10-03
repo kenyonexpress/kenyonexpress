@@ -1,27 +1,27 @@
-RESUME FROM: M08-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c82 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
+RESUME FROM: M09-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c82 DONE: Lighthouse mobile נמדד מחדש על / ו-/product, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c82 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
-(M07-c81 ולפניו). `pwd` אומת, HEAD `f56e3a497` (M06-c82), עץ עבודה
-נקי. נסרק מחדש `src/`
-(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
-ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
-(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
-ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
-ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
-המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
-(`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית `'TODO'`
-בבדיקה, לא marker.) ארבעת השערים ירוקים: `pnpm type-check`
-(`tsc --noEmit`) אפס שגיאות, `pnpm lint` נקי (`biome` על 2037 קבצים +
-12 שערי lint ייעודיים, כולם clean), `pnpm test` (vitest) 614/614
-קובצי בדיקה, 7337/7349 עוברים (12 מדולגים, זהה לבייסליין M06-c82),
-`rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4519 pnpm build` exit 0, כל
-הנתיבים נבנו. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד
-ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+**M08-c82 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores" — זהה לתבנית החוזרת (M08-c81 ולפניו).
+`pwd` אומת, עץ עבודה נקי, HEAD `be41eda81` (M07-c82). פורט 5117 נבדק
+פנוי מראש. **בחזית**: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:5117 pnpm build` — exit 0, כל
+הנתיבים נבנו. `pnpm start` עצמאי על פורט 5117, `cwd` אומת מול הריפו
+הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-מאסטר` (נמדד מול
+`supabase/catalogue-snapshot.json`, 44 מוצרים, אותו מוצר דוגמה כל
+הסבבים) אומתו `200` לפני המדידה. `scripts/lighthouse-smoke.mjs
+--throttling-method=provided`: `/` = **100/100/100**, `/product/צימר-
+מאסטר` = **100/100/100**, אפס דריפט מ-M08-c81. שרת נסגר אחרי המדידה,
+פורט אומת פנוי. המשך בשלושת השערים הנוספים: `pnpm type-check` נקי
+(exit 0), `pnpm lint` נקי (`biome` על 2037 קבצים + 12 שערי lint
+ייעודיים, כולם clean), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12
+מדולגים — זהה ל-M07-c82). אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש
+(תקדים M08-c80 ואילך). אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
+**M07-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M08-c82).** TODO/FIXME נסרק מחדש, אפס דריפט.
 
 **M06-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M07-c82).** שער build נמדד מחדש, אפס דריפט.

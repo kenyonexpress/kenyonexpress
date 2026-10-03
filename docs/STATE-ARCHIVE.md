@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c82 (הועבר מ-STATE.md ב-M08-c82, לשמירה על תקרת 300 שורות)
+
+**M07-c82 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
+(M07-c81 ולפניו). `pwd` אומת, HEAD `f56e3a497` (M06-c82), עץ עבודה
+נקי. נסרק מחדש `src/`
+(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
+ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
+(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
+ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
+המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
+(`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית `'TODO'`
+בבדיקה, לא marker.) ארבעת השערים ירוקים: `pnpm type-check`
+(`tsc --noEmit`) אפס שגיאות, `pnpm lint` נקי (`biome` על 2037 קבצים +
+12 שערי lint ייעודיים, כולם clean), `pnpm test` (vitest) 614/614
+קובצי בדיקה, 7337/7349 עוברים (12 מדולגים, זהה לבייסליין M06-c82),
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4519 pnpm build` exit 0, כל
+הנתיבים נבנו. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד
+ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+
 ## M05-c82 (הועבר מ-STATE.md ב-M07-c82, לשמירה על תקרת 300 שורות)
 
 **M05-c82 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
