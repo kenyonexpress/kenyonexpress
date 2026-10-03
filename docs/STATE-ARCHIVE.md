@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c80 (הועבר מ-STATE.md ב-M17-c80, לשמירה על תקרת 300 שורות)
+
+**M16-c80 - DONE (03.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למילה למשימות
+M16-c66..M16-c79. בדיקת דריפט קוד: `git log e0749f512..HEAD --stat --
+src/app src/components src/lib` (בסיס: checkpoint M16-c79) ריק: אפס
+קומיטים בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
+עדיין מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-
+`buildBreadcrumbJsonLd` (`@type: 'BreadcrumbList'`), ו-
+`src/app/(store)/product/[slug]/page.tsx` עדיין מזריק את שניהם דרך
+`jsonLdScript`. **נבדק גם בזמן ריצה בפועל**: נבנה `.next` חדש לגמרי
+(`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4932 pnpm build`, exit 0), הורם
+`pnpm start -p 4932` (פורט פנוי, אומת `curl` 200 ו-`lsof -p -a -d cwd`
+על ה-pid לפני ההרצה: זהה לנתיב הפרויקט הנוכחי, לא checkout זר), ונשלף
+`supabase/catalogue-snapshot.json` (44 מוצרים) בשדות האמיתיים
+(`name_he`/`slug`, לא `name`). **תשעה סלאגים נבדקו ב-curl**: שני
+הכפילויות האמיתיות של "עיסוי מאסטר" (`עיסוי-משולב-מפנק-לגבר-רק-108`
+ו-`עיסוי-משולב-מפנק-לגבר-רק-108₪`, שני ספקים שונים), `מוצר-לדוגמא`,
+`bar-drink`, `טיפול-פנים-copy`, `צימר-מאסטר-copy`,
+`צימר-מאסטר-copy-copy`, `חיתולי-פמפרס-העתק` ועוד סלאג תקין אחד
+(`אייפון-13`) — **כל התשעה `200`, בלוק `Product` אחד ובלוק
+`BreadcrumbList` אחד**, זהה ל-M16-c79. **אין ממצא לתקן**: אימות-בלבד,
+זהה לשלושה-עשר הסבבים הקודמים (M16-c66..M16-c79). ארבעת השערים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 נקי. לא חזותי,
+`compare.mjs` לא נדרש (תקדים M04-c66..M16-c79). אפס שינוי קוד ייצור.
+קבצים: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M15-c80 (הועבר מ-STATE.md ב-M16-c80, לשמירה על תקרת 300 שורות)
 
 **M15-c80 - DONE (03.10.2026).** משימת התור: "Verify no console errors
