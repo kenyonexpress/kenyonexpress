@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c81 (הועבר מ-STATE.md ב-M09-c81, לשמירה על תקרת 300 שורות)
+
+**M08-c81 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores" — זהה לתבנית החוזרת (M08-c80 ולפניו).
+`pwd` אומת, עץ עבודה נקי, HEAD `f1deee096` (M07-c81). פורטים 3311/4517/
+4817/4917/5017 נבדקו פנויים מראש. **בחזית**: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` — exit 0, כל הנתיבים נבנו. `pnpm start` עצמאי על פורט 4517,
+`cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-
+מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`, 44 מוצרים, אותו
+מוצר דוגמה כל הסבבים) אומתו `200` לפני המדידה. `scripts/
+lighthouse-smoke.mjs --throttling-method=provided`: `/` =
+**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס דריפט
+מ-M08-c80. שרת נסגר אחרי המדידה, פורט אומת פנוי. המשך בשלושת השערים
+הנוספים: `pnpm type-check` נקי (exit 0), `pnpm lint` נקי (`biome` על
+2037 קבצים + 12 שערי lint ייעודיים, כולם clean), `pnpm test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים — זהה ל-M07-c81). אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש (תקדים M08-c80 ואילך). אפס שינוי קוד
+ייצור. קובץ אחד: `STATE.md`.
+
 ## M07-c81 (הועבר מ-STATE.md ב-M08-c81, לשמירה על תקרת 300 שורות)
 
 **M07-c81 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
