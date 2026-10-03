@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c82 (הועבר מ-STATE.md ב-M13-c82, לשמירה על תקרת 300 שורות)
+
+**M12-c82 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
+production-safe" — זהה לתבנית החוזרת (M12-c81 ולפניו). `pwd` אומת, עץ
+עבודה נקי, HEAD `1b960f6e0` (M11-c82). קוד: `git diff --stat
+c31504c35..HEAD -- src/app/robots.ts docs/BACKLOG.md` ריק — `disallow`
+כולל את כל 14 הנתיבים כולל שלושת אסימוני-ה-URL (`/gift/`, `/order/`,
+`/wishlist/s/`) ו-`/debug/`. חי: `curl` ל-`robots.txt` מחזיר `200`,
+`etag`/`last-modified` (02.10.2026) עדיין בגרסת `a388118f1` (חוסם #2,
+פריסה תקועה, לא קוד) — 13 שורות `Disallow` בלבד, חסרות אותן ארבע
+(`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`). נבדק ישירות שוב:
+`/gift/test-token` ו-`/debug/sentry` מחזירים `200` חי בלי כיסוי
+`Disallow`; `/order/test-id/tracking` ו-`/wishlist/s/test-token`
+מחזירים `404` בפריסה הישנה (הנתיב לא קיים שם עדיין) — זהה ל-M12-c81.
+אפס דריפט מהותי. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), build טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm build`, exit 0,
+manifest מאשר `/robots.txt`). פריט אימות-בלבד, לא חזותי: `compare.mjs`
+לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+
 ## M07-c82 (הועבר מ-STATE.md ב-M08-c82, לשמירה על תקרת 300 שורות)
 
 **M07-c82 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older

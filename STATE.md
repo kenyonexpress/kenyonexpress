@@ -1,26 +1,31 @@
-RESUME FROM: M13-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c82 DONE: robots.txt אומת מחדש production-safe, אפס דריפט)
+RESUME FROM: M14-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c82 DONE: api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c82 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
-production-safe" — זהה לתבנית החוזרת (M12-c81 ולפניו). `pwd` אומת, עץ
-עבודה נקי, HEAD `1b960f6e0` (M11-c82). קוד: `git diff --stat
-c31504c35..HEAD -- src/app/robots.ts docs/BACKLOG.md` ריק — `disallow`
-כולל את כל 14 הנתיבים כולל שלושת אסימוני-ה-URL (`/gift/`, `/order/`,
-`/wishlist/s/`) ו-`/debug/`. חי: `curl` ל-`robots.txt` מחזיר `200`,
-`etag`/`last-modified` (02.10.2026) עדיין בגרסת `a388118f1` (חוסם #2,
-פריסה תקועה, לא קוד) — 13 שורות `Disallow` בלבד, חסרות אותן ארבע
-(`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`). נבדק ישירות שוב:
-`/gift/test-token` ו-`/debug/sentry` מחזירים `200` חי בלי כיסוי
-`Disallow`; `/order/test-id/tracking` ו-`/wishlist/s/test-token`
-מחזירים `404` בפריסה הישנה (הנתיב לא קיים שם עדיין) — זהה ל-M12-c81.
-אפס דריפט מהותי. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
-(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
-זהה), build טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+**M13-c82 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps" — זהה לתבנית החוזרת (M13-c81
+ולפניו). `pwd` אומת, עץ עבודה נקי, HEAD `c359db568` (M12-c82). קוד:
+`src/app/api/health/route.ts` ו-`src/app/api/ready/route.ts` ללא שינוי
+מ-M13-c81 (`git status` ריק). חי: `curl` ל-`https://www.kenyonexpress.co.il/api/health`
+מחזיר `200` עם `{"ok":true,"database":"ok","latency_ms":169}` — תלות
+אמיתית (HEAD count על `categories` דרך admin client), לא ליבנס גרידא.
+`curl` ל-`/api/ready` מחזיר `503` עם
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`
+— זהה בדיוק ל-M13-c66..M13-c81: Meilisearch מוגדר אבל לא נגיש (חוסם
+חיצוני #16 ב-`docs/BACKLOG.md`, `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY`
+קיימים ב-Production אך לא נגישים, לא תקלת קוד), `r2`/`cardcom`
+`not_configured` בכוונה (R2 לא מופעל בחשבון, Cardcom ב-mock). אפס
+ממצא חדש, אפס דריפט. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה), build טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
 NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm build`, exit 0,
-manifest מאשר `/robots.txt`). פריט אימות-בלבד, לא חזותי: `compare.mjs`
-לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+`.next/server/app/api/health` ו-`/api/ready` קיימים). פריט אימות-בלבד,
+לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ
+יחיד: `STATE.md`.
+
+**M12-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M13-c82).** robots.txt נבדק מחדש production-safe, אפס דריפט.
 
 **M11-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M12-c82).** sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט.
@@ -34,18 +39,15 @@ manifest מאשר `/robots.txt`). פריט אימות-בלבד, לא חזותי:
 **M08-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M09-c82).** Lighthouse mobile נבדק מחדש על / ו-/product, אפס דריפט.
 
-**M07-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M08-c82).** TODO/FIXME נסרק מחדש, אפס דריפט.
-
-**M01-c80..M06-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M07-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
 M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81,
 M09-c81, M10-c81, M11-c81, M12-c81, M13-c81, M14-c81, M15-c81, M16-c81,
 M17-c81, M18-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
-test), ושוב ב-M09-c82, M07-c82 (כולל M01-c82, M03-c82: שערי חזות בית/קטגוריה,
-M04-c82: type-check, M05-c82: test גייט, M06-c82: build גייט).** שלושים
-ושש פריטי תור/אימות-בלבד (type-check, שערי חזות
-בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
+test), ושוב ב-M09-c82, M08-c82 (כולל M01-c82, M03-c82: שערי חזות בית/קטגוריה,
+M04-c82: type-check, M05-c82: test גייט, M06-c82: build גייט,
+M07-c82: TODO/FIXME).** שלושים ושבע פריטי תור/אימות-בלבד (type-check,
+שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
 TODO/FIXME, Lighthouse mobile, unused deps/dead exports, robots.txt,
 sitemap.xml, health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים
 פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים
