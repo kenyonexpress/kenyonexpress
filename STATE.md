@@ -1,35 +1,41 @@
-RESUME FROM: M01-c83
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c82 DONE: STATE.md אומת מתחת לתקרת 300 שורות, M17-c82 אורכב)
+RESUME FROM: M02-c83
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c83 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M18-c82 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימות
-M18-c66..M18-c81. **נמדד בתחילת הפריט: 292 שורות, מתחת לתקרה.** בוצע
-בכל זאת ציקלוס הארכוב הרגיל: ההרחבה המלאה של M17-c82 (RTL על / ו-
-/product) הועברה ל-`docs/STATE-ARCHIVE.md` (הוספה בראש הקובץ, אחרי
-שורת הכותרת, שום שורה לא נמחקה), וכווצה כאן לשורת הארכיון המצטברת
-(הטווח "M01-c80..M16-c82" הורחב ל-"M01-c80..M17-c82"). ארבעת השערים
-הורצו מלאים לפני ה-commit: `pnpm type-check` נקי, `pnpm lint` נקי (12
-שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349, 12 מדולגים),
+**M01-c83 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
+M01-c61..M01-c82 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
+-sTCP:LISTEN` מצא `next-server` זר תפוס על הפורט (PID 18770, cwd זהה
+לריפו הזה אך `BUILD_ID` מאוחר מזמן עליית התהליך — ר' "gate measured a
+foreign server on 3311"); נהרג לפני המדידה כדי לא למדוד build זר.
 `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4971 pnpm build` exit 0 נקי (אומת
-`.next/BUILD_ID` קיים). לא פריט `compare.mjs` — אין שינוי UI/חזותי,
-עריכת תיעוד בלבד. אפס שינוי קוד ייצור. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` רענן הורץ (exit
+0, `BUILD_ID` חדש אומת), `PORT=3311 pnpm start` עלה, `curl` על `/`
+החזיר `200`. הורצה בחזית `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=home --widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'` (per blocker #14), חיכתה
+לסיום בפועל בתוך אותה הרצה. **תוצאה: `380 8.58% PASS`, `768 9.01%
+PASS`, `1440 4.16% PASS`, זהה בביט לדיוק ל-M01-c82.** שלוש השורות
+נרשמו כבר ב-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו. ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 (אותה
+בנייה ששירתה את השער). אפס שינוי קוד ייצור. קובץ יחיד שונה חוץ
+מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
 
-**M01-c80..M17-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M18-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
 M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81,
 M09-c81, M10-c81, M11-c81, M12-c81, M13-c81, M14-c81, M15-c81, M16-c81,
 M17-c81, M18-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
 test), ושוב ב-M09-c82, M08-c82, M11-c82, M12-c82, M13-c82, M14-c82,
-M16-c82, M17-c82 (כולל M01-c82, M03-c82: שערי חזות בית/קטגוריה,
+M16-c82, M17-c82, M18-c82 (כולל M01-c82, M03-c82: שערי חזות בית/קטגוריה,
 M04-c82: type-check, M05-c82: test גייט, M06-c82: build גייט,
 M07-c82: TODO/FIXME, M08-c82: Lighthouse mobile, M09-c82: unused deps/
 dead exports, M10-c82: מיגרציות ממתינות, M11-c82: sitemap.xml, M12-c82:
 robots.txt, M13-c82: health/ready, M14-c82: Sentry vs HEAD, M15-c82:
-קונסול, M16-c82: JSON-LD, M17-c82: RTL).** ארבעים ושבעה פריטי תור/אימות-בלבד (type-check,
+קונסול, M16-c82: JSON-LD, M17-c82: RTL, M18-c82: STATE.md trim).**
+ארבעים ושמונה פריטי תור/אימות-בלבד (type-check,
 שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
 TODO/FIXME, Lighthouse mobile, unused deps/dead exports, robots.txt,
 sitemap.xml, health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים

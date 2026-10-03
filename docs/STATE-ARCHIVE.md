@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c82 (הועבר מ-STATE.md ב-M01-c83, לשמירה על תקרת 300 שורות)
+
+**M18-c82 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימות
+M18-c66..M18-c81. **נמדד בתחילת הפריט: 292 שורות, מתחת לתקרה.** בוצע
+בכל זאת ציקלוס הארכוב הרגיל: ההרחבה המלאה של M17-c82 (RTL על / ו-
+/product) הועברה ל-`docs/STATE-ARCHIVE.md` (הוספה בראש הקובץ, אחרי
+שורת הכותרת, שום שורה לא נמחקה), וכווצה כאן לשורת הארכיון המצטברת
+(הטווח "M01-c80..M16-c82" הורחב ל-"M01-c80..M17-c82"). ארבעת השערים
+הורצו מלאים לפני ה-commit: `pnpm type-check` נקי, `pnpm lint` נקי (12
+שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349, 12 מדולגים),
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4971 pnpm build` exit 0 נקי (אומת
+`.next/BUILD_ID` קיים). לא פריט `compare.mjs` — אין שינוי UI/חזותי,
+עריכת תיעוד בלבד. אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M17-c82 (הועבר מ-STATE.md ב-M18-c82, לשמירה על תקרת 300 שורות)
 
 **M17-c82 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
