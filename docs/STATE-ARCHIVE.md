@@ -2,6 +2,18 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c81 (הועבר מ-STATE.md ב-M04-c81, לשמירה על תקרת 300 שורות)
+
+**M03-c81 - DONE (03.10.2026).** "Re-measure compare.mjs on /category
+sample" — זהה ל-M03-c80. `pwd`/שרת/HEAD (`3c77e76c6`) אומתו, `PORT=3311
+pnpm start` הועלה. **בחזית**: `compare.mjs --page=category
+--baseline='refs/electro_shop_{width}.png'` — חרגה ל-רקע, הומתן ל-`exit 0`
+לפני רישום. **`380`=3.53% PASS, `768`=2.52% PASS, `1440`=1.69% PASS**
+(שער 11%, לעומת M03-c80 3.53/2.31/1.58 — רעש מדידה, אפס דריפט שלילי).
+השער כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` (`3c77e76c6`/`-dirty`).
+ארבעת השערים ירוקים (`type-check`, `lint` 12 שערים, `test` 614/614,
+`build` exit 0). אפס שינוי קוד ייצור.
+
 ## M02-c81 (הועבר מ-STATE.md ב-M03-c81, לשמירה על תקרת 300 שורות)
 
 **M02-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs

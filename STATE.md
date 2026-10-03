@@ -1,17 +1,19 @@
-RESUME FROM: M04-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c81 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, אפס דריפט שלילי)
+RESUME FROM: M05-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c81 DONE: שער type-check נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M03-c81 - DONE (03.10.2026).** "Re-measure compare.mjs on /category
-sample" — זהה ל-M03-c80. `pwd`/שרת/HEAD (`3c77e76c6`) אומתו, `PORT=3311
-pnpm start` הועלה. **בחזית**: `compare.mjs --page=category
---baseline='refs/electro_shop_{width}.png'` — חרגה ל-רקע, הומתן ל-`exit 0`
-לפני רישום. **`380`=3.53% PASS, `768`=2.52% PASS, `1440`=1.69% PASS**
-(שער 11%, לעומת M03-c80 3.53/2.31/1.58 — רעש מדידה, אפס דריפט שלילי).
-השער כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` (`3c77e76c6`/`-dirty`).
-ארבעת השערים ירוקים (`type-check`, `lint` 12 שערים, `test` 614/614,
-`build` exit 0). אפס שינוי קוד ייצור.
+**M04-c81 - DONE (03.10.2026).** "pnpm type-check fix drift commit" —
+זהה למשימות "type-check gate re-verified clean" הקודמות (M04-c80
+ולפניו). `pwd` אומת, HEAD `dd65b722e` (M03-c81). **הורץ בחזית**: `pnpm
+type-check` (`tsc --noEmit`) — אפס שגיאות, אין דריפט לתיקון. המשך
+בארבעת השערים: `pnpm lint` נקי (`biome` על 2037 קבצים + 12 שערי lint
+ייעודיים, כולם clean), `pnpm test` 614/614 קובצי בדיקה (7337 עוברים,
+12 מדולגים מתוך 7349), `pnpm build` exit 0 (כל הנתיבים נבנו). אפס שינוי
+קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+
+**M03-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M04-c81).** שער חזותי קטגוריה נמדד מחדש, אפס דריפט שלילי.
 
 **M02-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M03-c81).** שער חזותי מוצר נמדד מחדש, אפס דריפט.
