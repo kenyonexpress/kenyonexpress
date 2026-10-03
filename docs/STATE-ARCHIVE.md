@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c81 (הועבר מ-STATE.md ב-M17-c81, לשמירה על תקרת 300 שורות)
+
+**M16-c81 - DONE (03.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למילה למשימות
+M16-c66..M16-c80. בדיקת דריפט קוד: `git log d7ef022af..HEAD --stat --
+src/app src/components src/lib` (בסיס: checkpoint M16-c80) ריק: אפס
+קומיטים בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
+עדיין מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-
+`buildBreadcrumbJsonLd` (`@type: 'BreadcrumbList'`), ו-
+`src/app/(store)/product/[slug]/page.tsx` עדיין מזריק את שניהם דרך
+`jsonLdScript`. **נבדק גם בזמן ריצה בפועל**: נבנה `.next` חדש לגמרי
+(`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build`, exit 0), הורם
+`pnpm start -p 4933` (פורט 4932 תפוס ע"י סשן אחר, לא נגעו בו; `lsof -p
+-a -d cwd` על ה-pid החדש אומת שהוא שייך לנתיב הזה). **אותם תשעה
+סלאגים מ-M16-c80 נבדקו שוב ב-curl** (שני כפילויות "עיסוי מאסטר",
+`מוצר-לדוגמא`, `bar-drink`, `טיפול-פנים-copy`, `צימר-מאסטר-copy`,
+`צימר-מאסטר-copy-copy`, `חיתולי-פמפרס-העתק`, `אייפון-13`) — **כל
+התשעה `200`, בלוק `Product` אחד ובלוק `BreadcrumbList` אחד**, זהה
+ל-M16-c80. **אין ממצא לתקן**, זהה לארבעה-עשר הסבבים הקודמים
+(M16-c66..M16-c80). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
+`build` exit 0 נקי. לא חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד
+ייצור. קבצים: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
 ## M15-c81 (הועבר מ-STATE.md ב-M16-c81, לשמירה על תקרת 300 שורות)
 
 **M15-c81 - DONE (03.10.2026).** משימת התור: "Verify no console errors
