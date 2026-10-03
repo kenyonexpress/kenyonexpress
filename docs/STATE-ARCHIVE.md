@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c82 (הועבר מ-STATE.md ב-M16-c82, לשמירה על תקרת 300 שורות)
+
+**M15-c82 - DONE (03.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample" — זהה למילה למשימות M15-c66..M15-c81. בנייה
+טרייה (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4951 pnpm build`, exit 0) והרצת
+`pnpm start -p 4951` בצ'קאאוט הזה (אומת `lsof`+`cwd` של התהליך שייכים
+לנתיב הזה, לא שרת זר). הורץ `e2e/route-audit.spec.ts` עם `--grep "anon
+/$|anon dynamic catalogue routes"` ו-`E2E_BASE_URL=http://localhost:4951`
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c82.jsonl`, 4/4 PASS. הדוח מראה
+אפס `consoleErrors` ואפס `hydrationWarnings` על `/` ועל שבעת הנתיבים
+הדינמיים שהתגלו, כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/
+reviews` (דגימת המוצר של המשימה). זהה ל-M15-c66 עד M15-c81. ארבעת
+השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה), `build` exit 0.
+השרת נעצר בסוף (`kill`, הפורט שוב פנוי). פריט אימות-בלבד, לא חזותי:
+`compare.mjs` לא נדרש (אין שינוי UI). אפס שינוי כסף/סכימה/קוד ייצור,
+לא הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
 ## M13-c82 (הועבר מ-STATE.md ב-M14-c82, לשמירה על תקרת 300 שורות)
 
 **M13-c82 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
