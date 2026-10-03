@@ -2,6 +2,17 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M05-c81 (הועבר מ-STATE.md ב-M06-c81, לשמירה על תקרת 300 שורות)
+
+**M05-c81 - DONE (03.10.2026).** "pnpm test fix drift commit" — זהה
+למשימות "test gate re-verified clean" הקודמות (M05-c80 ולפניו). `pwd`
+אומת, HEAD `00dc27f7a` (M04-c81). **הורץ בחזית**: `pnpm test`
+(`vitest run`) — 614/614 קובצי בדיקה, 7337 עוברים / 12 מדולגים מתוך
+7349, זהה לכל סבב קודם, אין דריפט לתיקון. המשך בארבעת השערים:
+`pnpm type-check` נקי, `pnpm lint` נקי (`biome` על 2037 קבצים + 12
+שערי lint ייעודיים, כולם clean), `pnpm build` exit 0 (כל הנתיבים
+נבנו). אפס שינוי קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+
 ## M03-c81 (הועבר מ-STATE.md ב-M04-c81, לשמירה על תקרת 300 שורות)
 
 **M03-c81 - DONE (03.10.2026).** "Re-measure compare.mjs on /category

@@ -1,28 +1,21 @@
-RESUME FROM: M06-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c81 DONE: שער test נמדד מחדש, אפס דריפט)
+RESUME FROM: M07-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c81 DONE: שער build נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M05-c81 - DONE (03.10.2026).** "pnpm test fix drift commit" — זהה
-למשימות "test gate re-verified clean" הקודמות (M05-c80 ולפניו). `pwd`
-אומת, HEAD `00dc27f7a` (M04-c81). **הורץ בחזית**: `pnpm test`
-(`vitest run`) — 614/614 קובצי בדיקה, 7337 עוברים / 12 מדולגים מתוך
-7349, זהה לכל סבב קודם, אין דריפט לתיקון. המשך בארבעת השערים:
+**M06-c81 - DONE (03.10.2026).** "pnpm build fix drift commit" — זהה
+למשימות "build gate re-verified clean" הקודמות (M06-c80 ולפניו). `pwd`
+אומת, עץ עבודה נקי, HEAD `9b0b55425` (M05-c81). **הורץ בחזית**: `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+pnpm build` — exit 0, כל הנתיבים נבנו (כולל sitemap/robots/
+opengraph-image), `.next/BUILD_ID` נוצר. המשך בשלושת השערים הנוספים:
 `pnpm type-check` נקי, `pnpm lint` נקי (`biome` על 2037 קבצים + 12
-שערי lint ייעודיים, כולם clean), `pnpm build` exit 0 (כל הנתיבים
-נבנו). אפס שינוי קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+שערי lint ייעודיים, כולם clean), `pnpm test` נקי (614/614 קבצים,
+7337/7349 עוברים, 12 מדולגים — זהה ל-M05-c81). אפס דריפט, אפס שינוי
+קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
 
-**M04-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M05-c81).** שער type-check נמדד מחדש, אפס דריפט.
-
-**M03-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M04-c81).** שער חזותי קטגוריה נמדד מחדש, אפס דריפט שלילי.
-
-**M02-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M03-c81).** שער חזותי מוצר נמדד מחדש, אפס דריפט.
-
-**M01-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M02-c81).** שער חזותי בית, אפס דריפט אחרי flake חד-פעמי ב-768.
+**M05-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M06-c81).** שער test נמדד מחדש, אפס דריפט.
 
 **M17-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M18-c80).** RTL על / ו-/product נבדק מחדש ברינדור בפועל, אפס דריפט
@@ -38,7 +31,8 @@ Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c81 DONE
 
 **M01-c80..M18-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
-M14-c80, M15-c80 וב-M01-c81).** שבעה-עשר פריטי תור/אימות-בלבד
+M14-c80, M15-c80, ושוב ב-M06-c81 (כולל M01-c81..M04-c81: שערי חזות
+בית/מוצר/קטגוריה, type-check)).** שבעה-עשר פריטי תור/אימות-בלבד
 (type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs
 HEAD, test/build גייטים, TODO/FIXME, Lighthouse mobile, unused
 deps/dead exports, robots.txt, health/ready, STATE.md trim) ושלושים
