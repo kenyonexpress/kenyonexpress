@@ -1,26 +1,35 @@
-RESUME FROM: M14-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c81 DONE: api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M15-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c81 DONE: Sentry release vs HEAD נבדק מחדש מול Vercel, אפס דריפט, עדיין מפוצל)
 
 ## המשך מ:
 
-**M13-c81 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps" — זהה לתבנית החוזרת (M13-c80
-ולפניו). קוד: `git diff --stat 26d2f1778..HEAD -- src/app/api/health
-src/app/api/ready src/lib/health` ריק. חי, נמדד ישירות מול
-`https://www.kenyonexpress.co.il`: `/api/health` → `200`
-(`{"ok":true,"database":"ok","latency_ms":163}`). `/api/ready` →
-עדיין `503` (`{"ok":false,"checks":{"database":"ok","redis":"ok",
-"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
-זהה ל-M13-c66..M13-c80: Meilisearch מוגדר אבל לא נגיש (חוסם חיצוני
-קיים, לא ממצא חדש), שאר השלושה תואמים לחוסמים הקיימים (Redis/R2/
-Cardcom). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
-2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
-זהה ל-M13-c80), build טרי (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4823
-pnpm build`, exit 0, `BUILD_ID` חדש `zBwY24WM-D3LELj21lKps`,
-`/api/health` ו-`/api/ready` שניהם נבנו כ-route דינמי). פריט אימות-בלבד,
-לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
-הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+**M14-c81 - DONE (03.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit" — זהה למילה למשימות M14-c66..M14-c80. נבדק מול
+Vercel (MCP, read-only, פרויקט `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`):
+`list_deployments` (target=production) מראה את אותה פריסה חיה בדיוק
+שנמצאה מ-M14-c73 ואילך — `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
+`githubCommitRef=main`, `githubCommitSha=18ed044b2` ("Wave 6: build
+success"). `filter_project_envs` מראה `SENTRY_DSN`/
+`NEXT_PUBLIC_SENTRY_DSN` עדיין מוגדרים, **אותו `createdAt`
+`1790918429743`** כמו בכל בדיקה קודמת — לא נוספו ולא הוסרו. **תשובה
+לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
+`git rev-list --count 18ed044b2..HEAD` מחזיר **1000** קומיטים (היה 982
+ב-M14-c80), `git rev-list --count HEAD..18ed044b2` מחזיר **109** ללא
+שינוי. HEAD כרגע `082b55829`. **אפס דריפט מ-M14-c80** — אותו חוסם
+בדיוק, פורט מלא ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם
+2 למטה). הסוכן לא נגע ב-Vercel מעבר לקריאות read-only
+(`list_deployments`, `filter_project_envs`) ולא ביצע/ביטל שום פריסה או
+שינוי env. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4915 pnpm build`, `BUILD_ID` חדש
+`4JbC1x2N3qyxZI9fYfs4x`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא
+נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא
+הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
+**M13-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M14-c81).** api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס
+דריפט.
 
 **M12-c81 ו-M11-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M13-c81).** robots.txt ו-sitemap.xml נבדקו מחדש, אפס דריפט בשניהם.

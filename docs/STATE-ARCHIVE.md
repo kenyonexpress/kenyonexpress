@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c81 (הועבר מ-STATE.md ב-M14-c81, לשמירה על תקרת 300 שורות)
+
+**M13-c81 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps" — זהה לתבנית החוזרת (M13-c80
+ולפניו). קוד: `git diff --stat 26d2f1778..HEAD -- src/app/api/health
+src/app/api/ready src/lib/health` ריק. חי, נמדד ישירות מול
+`https://www.kenyonexpress.co.il`: `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":163}`). `/api/ready` →
+עדיין `503` (`{"ok":false,"checks":{"database":"ok","redis":"ok",
+"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+זהה ל-M13-c66..M13-c80: Meilisearch מוגדר אבל לא נגיש (חוסם חיצוני
+קיים, לא ממצא חדש), שאר השלושה תואמים לחוסמים הקיימים (Redis/R2/
+Cardcom). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה ל-M13-c80), build טרי (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4823
+pnpm build`, exit 0, `BUILD_ID` חדש `zBwY24WM-D3LELj21lKps`,
+`/api/health` ו-`/api/ready` שניהם נבנו כ-route דינמי). פריט אימות-בלבד,
+לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
+הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
 ## M12-c81 (הועבר מ-STATE.md ב-M13-c81, לשמירה על תקרת 300 שורות)
 
 **M12-c81 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
