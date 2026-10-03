@@ -42653,3 +42653,16 @@ applied or file blocker" — זהה לתבנית החוזרת (M10-c80 ולפנ�
 כולל כל שאילתה וכל ערך, ב-`docs/STATE-ARCHIVE.md`). ארבעת השערים
 ירוקים (type-check/lint/test 614-614/build טרי exit 0). אימות-בלבד,
 `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד, לא הוחלה אף מיגרציה.
+
+## M11-c81 (הועבר מ-STATE.md ב-M12-c81, לשמירה על תקרת 300 שורות)
+
+**M11-c81 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable" — זהה לתבנית החוזרת (M11-c80). קוד: `git diff --stat
+5531028ae..HEAD -- src/app/sitemap.xml src/app/sitemap src/lib/seo
+docs/BACKLOG.md` ריק. חי: `curl` ל-`sitemap.xml` מחזיר `200`, `urlset`
+שטוח, 79 כתובות, `etag`/`last-modified` זהים ל-M11-c80 (עדיין גרסת
+`a388118f1`); חמשת תתי-המפות של הקוד הנוכחי עדיין `404` בפרודקשן
+(חוסם #2, פריסה תקועה, לא קוד). אפס דריפט. ארבעת השערים ירוקים
+(type-check/lint נקי, test 614/614, build טרי exit 0, manifest כולל
+`/sitemap.xml` וחמשת תתי-המפות). אימות-בלבד, `compare.mjs` לא נדרש,
+אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.

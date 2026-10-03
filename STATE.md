@@ -1,44 +1,37 @@
-RESUME FROM: M12-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c81 DONE: sitemap.xml אומת מחדש כחי, אפס דריפט)
+RESUME FROM: M13-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c81 DONE: robots.txt אומת מחדש production-safe, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c81 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable" — זהה לתבנית החוזרת (M11-c80). קוד: `git diff --stat
-5531028ae..HEAD -- src/app/sitemap.xml src/app/sitemap src/lib/seo
-docs/BACKLOG.md` ריק. חי: `curl` ל-`sitemap.xml` מחזיר `200`, `urlset`
-שטוח, 79 כתובות, `etag`/`last-modified` זהים ל-M11-c80 (עדיין גרסת
-`a388118f1`); חמשת תתי-המפות של הקוד הנוכחי עדיין `404` בפרודקשן
-(חוסם #2, פריסה תקועה, לא קוד). אפס דריפט. ארבעת השערים ירוקים
-(type-check/lint נקי, test 614/614, build טרי exit 0, manifest כולל
-`/sitemap.xml` וחמשת תתי-המפות). אימות-בלבד, `compare.mjs` לא נדרש,
-אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+**M12-c81 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
+production-safe" — זהה לתבנית החוזרת (M12-c80 ולפניו). קוד: `git diff
+--stat 18db50f63..HEAD -- src/app/robots.ts docs/BACKLOG.md` ריק —
+`disallow` כולל את כל 14 הנתיבים כולל שלושת אסימוני-ה-URL (`/gift/`,
+`/order/`, `/wishlist/s/`) ו-`/debug/`. חי: `curl` ל-`robots.txt`
+מחזיר `200`, `etag`/`last-modified` עדיין בגרסת `a388118f1` (חוסם #2,
+פריסה תקועה, לא קוד) — 13 שורות `Disallow` בלבד, חסרות אותן ארבע
+(`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`) שנמדדו לראשונה ב-M12-c67/
+c68. נבדק ישירות: `/gift/<token>` ו-`/debug/sentry`/`/debug/sentry/
+render` מחזירים `200` חי בלי כיסוי `Disallow`; `/order/<id>/tracking`
+ו-`/wishlist/s/<token>` מחזירים `404` בפריסה הישנה (הנתיב לא קיים שם
+עדיין). אפס דריפט מהותי — אותו חוסם בדיוק, אותה סיבה. ארבעת השערים
+ירוקים (type-check/lint נקי, test 614/614 קבצים, build טרי exit 0,
+manifest כולל `/robots.txt`). אימות-בלבד, `compare.mjs` לא נדרש
+(אין שינוי חזותי), אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
 
-**M10-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M11-c81).** מיגרציות ממתינות נבדקו ישירות מול פרודקשן, אפס דריפט.
+**M11-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M12-c81).** sitemap.xml נבדק מחדש כחי ונגיש, אפס דריפט.
 
-**M09-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M10-c81).** unused deps/dead exports נבדק מחדש עם knip, אפס דריפט.
-
-**M08-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M09-c81).** Lighthouse mobile נבדק מחדש על / ו-/product, אפס דריפט.
-
-**M07-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M08-c81).** TODO/FIXME נסרק מחדש, אפס דריפט.
-
-**M06-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M07-c81).** שער build נמדד מחדש, אפס דריפט.
-
-**M01-c80..M18-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M10-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
 M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81,
-M09-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
-test).** שמונה-עשרה פריטי תור/אימות-בלבד (type-check, שערי חזות בית/
-מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
-TODO/FIXME, Lighthouse mobile, unused deps/dead exports, robots.txt,
-health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים פריטים
-נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם,
-אפס שינוי קוד ייצור.
+M09-c81, M10-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה,
+type-check, test).** עשרים ושלושה פריטי תור/אימות-בלבד (type-check,
+שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/
+build גייטים, TODO/FIXME, Lighthouse mobile, unused deps/dead exports,
+robots.txt, health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים
+פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים
+בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:
