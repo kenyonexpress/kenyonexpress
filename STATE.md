@@ -1,49 +1,42 @@
-RESUME FROM: M08-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c81 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
+RESUME FROM: M09-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c81 DONE: Lighthouse mobile נמדד מחדש על / ו-/product, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c81 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
-(M07-c80 ולפניו). נסרק מחדש `src/`
-(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
-ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
-(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
-ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
-ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
-המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
-(`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית `'TODO'`
-בבדיקה, לא marker.) ארבעת השערים ירוקים: `type-check` נקי (exit 0),
-`lint` נקי (12 שערים, 2037 קבצים, זהה), `pnpm test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים — זהה ל-M06-c81), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
-build` exit 0 נקי, כל הנתיבים נבנו. לא פריט חזותי, `compare.mjs` לא
-נדרש. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+**M08-c81 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores" — זהה לתבנית החוזרת (M08-c80 ולפניו).
+`pwd` אומת, עץ עבודה נקי, HEAD `f1deee096` (M07-c81). פורטים 3311/4517/
+4817/4917/5017 נבדקו פנויים מראש. **בחזית**: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` — exit 0, כל הנתיבים נבנו. `pnpm start` עצמאי על פורט 4517,
+`cwd` אומת מול הריפו הזה (`lsof -p -a -d cwd`). `/` ו-`/product/צימר-
+מאסטר` (נמדד מול `supabase/catalogue-snapshot.json`, 44 מוצרים, אותו
+מוצר דוגמה כל הסבבים) אומתו `200` לפני המדידה. `scripts/
+lighthouse-smoke.mjs --throttling-method=provided`: `/` =
+**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**, אפס דריפט
+מ-M08-c80. שרת נסגר אחרי המדידה, פורט אומת פנוי. המשך בשלושת השערים
+הנוספים: `pnpm type-check` נקי (exit 0), `pnpm lint` נקי (`biome` על
+2037 קבצים + 12 שערי lint ייעודיים, כולם clean), `pnpm test` 614/614
+קבצים (7337/7349 עברו, 12 מדולגים — זהה ל-M07-c81). אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש (תקדים M08-c80 ואילך). אפס שינוי קוד
+ייצור. קובץ אחד: `STATE.md`.
+
+**M07-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M08-c81).** TODO/FIXME נסרק מחדש, אפס דריפט.
 
 **M06-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M07-c81).** שער build נמדד מחדש, אפס דריפט.
 
-**M17-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M18-c80).** RTL על / ו-/product נבדק מחדש ברינדור בפועל, אפס דריפט
-מ-M17-c79.
-
-**M16-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M17-c80).** JSON-LD Product+BreadcrumbList נבדק מחדש בזמן ריצה על
-תשעה סלאגים, אפס דריפט מ-M16-c79.
-
-**M15-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M16-c80).** קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט
-מ-M15-c79.
-
 **M01-c80..M18-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
-M14-c80, M15-c80, ושוב ב-M06-c81 (כולל M01-c81..M04-c81: שערי חזות
-בית/מוצר/קטגוריה, type-check)).** שבעה-עשר פריטי תור/אימות-בלבד
-(type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs
-HEAD, test/build גייטים, TODO/FIXME, Lighthouse mobile, unused
-deps/dead exports, robots.txt, health/ready, STATE.md trim) ושלושים
-פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים
-בכולם, אפס שינוי קוד ייצור.
+M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81
+(כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
+test).** שמונה-עשרה פריטי תור/אימות-בלבד (type-check, שערי חזות בית/
+מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
+TODO/FIXME, Lighthouse mobile, unused deps/dead exports, robots.txt,
+health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים פריטים
+נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם,
+אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:
