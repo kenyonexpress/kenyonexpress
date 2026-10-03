@@ -43031,3 +43031,29 @@ sitemap.xml` מחזיר `200`, `urlset` שטוח (לא `sitemapindex`), 79 כת�
 build`, exit 0, manifest מאשר `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ
 Dynamic`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
 שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+
+## M14-c82 (הועבר מ-STATE.md ב-M15-c82, לשמירה על תקרת 300 שורות)
+
+**M14-c82 - DONE (03.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit" — זהה למילה למשימות M14-c66..M14-c81. נבדק מול
+Vercel (MCP, read-only, פרויקט `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`):
+`list_deployments` (target=production) מראה את אותה פריסה חיה בדיוק
+שנמצאה מ-M14-c73 ואילך — `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
+`githubCommitRef=main`, `githubCommitSha=18ed044b2` ("Wave 6: build
+success"). `filter_project_envs` מראה `SENTRY_DSN`/
+`NEXT_PUBLIC_SENTRY_DSN` עדיין מוגדרים, **אותו `createdAt`
+`1790918429743`** כמו בכל בדיקה קודמת — לא נוספו ולא הוסרו. **תשובה
+לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
+`git rev-list --count 18ed044b2..HEAD` מחזיר **1017** קומיטים (היה 1000
+ב-M14-c81), `git rev-list --count HEAD..18ed044b2` מחזיר **109** ללא
+שינוי. HEAD כרגע `0ce1c2fc1`. **אפס דריפט מ-M14-c81** — אותו חוסם
+בדיוק, פורט מלא ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם
+2 למטה). הסוכן לא נגע ב-Vercel מעבר לקריאות read-only
+(`list_deployments`, `filter_project_envs`) ולא ביצע/ביטל שום פריסה או
+שינוי env. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`, `BUILD_ID` חדש
+`8gbHqEYFlaR86C3Yqj4LL`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא
+נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא
+הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
