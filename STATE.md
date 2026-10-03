@@ -1,21 +1,21 @@
-RESUME FROM: M11-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c81 DONE: migrations/pending/ נבדק מחדש ישירות מול פרודקשן, אפס דריפט)
+RESUME FROM: M12-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c81 DONE: sitemap.xml אומת מחדש כחי, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c81 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker" — זהה לתבנית החוזרת (M10-c80 ולפניו). `git diff
---stat 9a4a9d59d..HEAD` על `migrations/pending/`/`supabase/migrations/`/
-`docs/BACKLOG.md` ריק. 60 קבצים ב-`migrations/pending/`, ללא שינוי.
-בדיקה ישירה מול פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה
-בלבד): כל 19 הקבצים החוסמים (204/209/218/220/223/224/232/234/235/236/
-239/240/241/242/243/244/245/246/247) עדיין לא מוחלים — שבע טבלאות
-חסרות, ארבע עמודות חסרות, שלוש הרשאות עדיין חסרות, שתי מדיניות עדיין
-לא נכתבו מחדש, `proconfig` אחד עדיין `null`, `banners` עדיין שתי
-מדיניות, 46 מוצרים עם `city IS NULL`. אפס דריפט מ-M10-c80 (פירוט מלא,
-כולל כל שאילתה וכל ערך, ב-`docs/STATE-ARCHIVE.md`). ארבעת השערים
-ירוקים (type-check/lint/test 614-614/build טרי exit 0). אימות-בלבד,
-`compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד, לא הוחלה אף מיגרציה.
+**M11-c81 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable" — זהה לתבנית החוזרת (M11-c80). קוד: `git diff --stat
+5531028ae..HEAD -- src/app/sitemap.xml src/app/sitemap src/lib/seo
+docs/BACKLOG.md` ריק. חי: `curl` ל-`sitemap.xml` מחזיר `200`, `urlset`
+שטוח, 79 כתובות, `etag`/`last-modified` זהים ל-M11-c80 (עדיין גרסת
+`a388118f1`); חמשת תתי-המפות של הקוד הנוכחי עדיין `404` בפרודקשן
+(חוסם #2, פריסה תקועה, לא קוד). אפס דריפט. ארבעת השערים ירוקים
+(type-check/lint נקי, test 614/614, build טרי exit 0, manifest כולל
+`/sitemap.xml` וחמשת תתי-המפות). אימות-בלבד, `compare.mjs` לא נדרש,
+אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+
+**M10-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M11-c81).** מיגרציות ממתינות נבדקו ישירות מול פרודקשן, אפס דריפט.
 
 **M09-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M10-c81).** unused deps/dead exports נבדק מחדש עם knip, אפס דריפט.

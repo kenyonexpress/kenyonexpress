@@ -42637,3 +42637,19 @@ NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm build`, exit 0, manifest
 מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
 כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה.
 קובץ יחיד: `STATE.md`.
+
+## M10-c81 (הועבר מ-STATE.md ב-M11-c81, לשמירה על תקרת 300 שורות)
+
+**M10-c81 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker" — זהה לתבנית החוזרת (M10-c80 ולפניו). `git diff
+--stat 9a4a9d59d..HEAD` על `migrations/pending/`/`supabase/migrations/`/
+`docs/BACKLOG.md` ריק. 60 קבצים ב-`migrations/pending/`, ללא שינוי.
+בדיקה ישירה מול פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה
+בלבד): כל 19 הקבצים החוסמים (204/209/218/220/223/224/232/234/235/236/
+239/240/241/242/243/244/245/246/247) עדיין לא מוחלים — שבע טבלאות
+חסרות, ארבע עמודות חסרות, שלוש הרשאות עדיין חסרות, שתי מדיניות עדיין
+לא נכתבו מחדש, `proconfig` אחד עדיין `null`, `banners` עדיין שתי
+מדיניות, 46 מוצרים עם `city IS NULL`. אפס דריפט מ-M10-c80 (פירוט מלא,
+כולל כל שאילתה וכל ערך, ב-`docs/STATE-ARCHIVE.md`). ארבעת השערים
+ירוקים (type-check/lint/test 614-614/build טרי exit 0). אימות-בלבד,
+`compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד, לא הוחלה אף מיגרציה.
