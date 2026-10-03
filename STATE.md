@@ -1,7 +1,15 @@
-RESUME FROM: M04-c83
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c83 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M05-c83
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c83 DONE: שער type-check נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
+
+**M04-c83 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
+commit" — זהה למשימות M04-c57..M04-c82 (שער type-check, מחזורי).
+`pnpm type-check` (`tsc --noEmit`) הורץ בחזית: exit 0, אפס שגיאה,
+אפס דריפט לתקן. ארבעת השערים: `type-check` נקי (exit 0), `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `build` exit 0. אפס שינוי קוד ייצור. `STATE.md` כבר מתחת לתקרת
+300 שורות (287) לפני העדכון, אין צורך בכיווץ לארכיון הפעם.
 
 **M03-c83 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
 on /category sample" — זהה למשימות M03-c61..M03-c82 (שער חזותי קטגוריה,
