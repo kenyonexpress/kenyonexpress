@@ -1,26 +1,29 @@
-RESUME FROM: M13-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c81 DONE: robots.txt אומת מחדש production-safe, אפס דריפט)
+RESUME FROM: M14-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c81 DONE: api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c81 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
-production-safe" — זהה לתבנית החוזרת (M12-c80 ולפניו). קוד: `git diff
---stat 18db50f63..HEAD -- src/app/robots.ts docs/BACKLOG.md` ריק —
-`disallow` כולל את כל 14 הנתיבים כולל שלושת אסימוני-ה-URL (`/gift/`,
-`/order/`, `/wishlist/s/`) ו-`/debug/`. חי: `curl` ל-`robots.txt`
-מחזיר `200`, `etag`/`last-modified` עדיין בגרסת `a388118f1` (חוסם #2,
-פריסה תקועה, לא קוד) — 13 שורות `Disallow` בלבד, חסרות אותן ארבע
-(`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`) שנמדדו לראשונה ב-M12-c67/
-c68. נבדק ישירות: `/gift/<token>` ו-`/debug/sentry`/`/debug/sentry/
-render` מחזירים `200` חי בלי כיסוי `Disallow`; `/order/<id>/tracking`
-ו-`/wishlist/s/<token>` מחזירים `404` בפריסה הישנה (הנתיב לא קיים שם
-עדיין). אפס דריפט מהותי — אותו חוסם בדיוק, אותה סיבה. ארבעת השערים
-ירוקים (type-check/lint נקי, test 614/614 קבצים, build טרי exit 0,
-manifest כולל `/robots.txt`). אימות-בלבד, `compare.mjs` לא נדרש
-(אין שינוי חזותי), אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+**M13-c81 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps" — זהה לתבנית החוזרת (M13-c80
+ולפניו). קוד: `git diff --stat 26d2f1778..HEAD -- src/app/api/health
+src/app/api/ready src/lib/health` ריק. חי, נמדד ישירות מול
+`https://www.kenyonexpress.co.il`: `/api/health` → `200`
+(`{"ok":true,"database":"ok","latency_ms":163}`). `/api/ready` →
+עדיין `503` (`{"ok":false,"checks":{"database":"ok","redis":"ok",
+"meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`).
+זהה ל-M13-c66..M13-c80: Meilisearch מוגדר אבל לא נגיש (חוסם חיצוני
+קיים, לא ממצא חדש), שאר השלושה תואמים לחוסמים הקיימים (Redis/R2/
+Cardcom). ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים,
+2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים,
+זהה ל-M13-c80), build טרי (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4823
+pnpm build`, exit 0, `BUILD_ID` חדש `zBwY24WM-D3LELj21lKps`,
+`/api/health` ו-`/api/ready` שניהם נבנו כ-route דינמי). פריט אימות-בלבד,
+לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
+הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
 
-**M11-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M12-c81).** sitemap.xml נבדק מחדש כחי ונגיש, אפס דריפט.
+**M12-c81 ו-M11-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c81).** robots.txt ו-sitemap.xml נבדקו מחדש, אפס דריפט בשניהם.
 
 **M01-c80..M10-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,

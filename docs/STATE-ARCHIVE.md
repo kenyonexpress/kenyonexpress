@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c81 (הועבר מ-STATE.md ב-M13-c81, לשמירה על תקרת 300 שורות)
+
+**M12-c81 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
+production-safe" — זהה לתבנית החוזרת (M12-c80 ולפניו). קוד: `git diff
+--stat 18db50f63..HEAD -- src/app/robots.ts docs/BACKLOG.md` ריק —
+`disallow` כולל את כל 14 הנתיבים כולל שלושת אסימוני-ה-URL (`/gift/`,
+`/order/`, `/wishlist/s/`) ו-`/debug/`. חי: `curl` ל-`robots.txt`
+מחזיר `200`, `etag`/`last-modified` עדיין בגרסת `a388118f1` (חוסם #2,
+פריסה תקועה, לא קוד) — 13 שורות `Disallow` בלבד, חסרות אותן ארבע
+(`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`) שנמדדו לראשונה ב-M12-c67/
+c68. נבדק ישירות: `/gift/<token>` ו-`/debug/sentry`/`/debug/sentry/
+render` מחזירים `200` חי בלי כיסוי `Disallow`; `/order/<id>/tracking`
+ו-`/wishlist/s/<token>` מחזירים `404` בפריסה הישנה (הנתיב לא קיים שם
+עדיין). אפס דריפט מהותי — אותו חוסם בדיוק, אותה סיבה. ארבעת השערים
+ירוקים (type-check/lint נקי, test 614/614 קבצים, build טרי exit 0,
+manifest כולל `/robots.txt`). אימות-בלבד, `compare.mjs` לא נדרש
+(אין שינוי חזותי), אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+
 ## M08-c81 (הועבר מ-STATE.md ב-M09-c81, לשמירה על תקרת 300 שורות)
 
 **M08-c81 - DONE (03.10.2026).** משימת התור: "Lighthouse mobile on /
