@@ -1,52 +1,26 @@
-RESUME FROM: M04-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c82 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M05-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c82 DONE: type-check נקי, אפס דריפט)
 
 ## המשך מ:
 
-**M03-c82 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on /category sample" — זהה למשימות M03-c61..M03-c81 (שער
-חזותי קטגוריה, מחזורי). שרת `pnpm start` על פורט 3311 היה כבר רץ מסשן
-מקביל (cwd נבדק דרך `lsof`: אותו ריפו), נעשה בו שימוש חוזר בלי `build`/
-`start` נוסף. הורץ בחזית לכל רוחב בנפרד (`--width=`, לא `--widths=`, לרוחב בודד): 380
-עבר בניסיון ראשון; 768 ו-1440 נתקלו ב-`REFUSING... still not loaded`
-(תקלת-תזמון מתועדת בארכיון, לא חדשה) ותוקנו עם המילוט המובנה של
-הסקריפט עצמו, `COMPARE_ALLOW_PENDING_IMAGES=1`. שני ה-child-processes
-האלה חרגו מ-180 שנ' והועברו לרקע ע"י ה-harness; המתנה נוספת על אותם
-processes עד `[exited with code 0]` לפני שהתקדמתי — אין "סיום פריט" בלי
-המספרים. **תוצאה: `380 3.53% PASS`, `768 2.31% PASS`, `1440 1.58% PASS`,
-זהה בביט לדיוק ל-M03-c81.** ארבעת השערים: `type-check` נקי,
-`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
-מדולגים, זהה), `build` exit 0. אפס שינוי קוד ייצור. קובץ יחיד שונה חוץ
-מ-STATE.md: `docs/UI-PARITY-REPORT.md` (מכיל גם שורות `product` ממדידה
-מקבילה, M02-c82 כנראה, שלא נמחקו).
+**M04-c82 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
+commit" — זהה למשימות "type-check gate re-verified clean" הקודמות
+(M04-c81 ולפניו). `pwd` אומת, HEAD `643b1f4bf` (M03-c82). **הורץ
+בחזית**: `pnpm type-check` (`tsc --noEmit`) — אפס שגיאות, אין דריפט
+לתיקון. המשך בארבעת השערים: `pnpm lint` נקי (`biome` על 2037 קבצים +
+12 שערי lint ייעודיים, כולם clean), `pnpm test` 614/614 קובצי בדיקה
+(7337/7349 עוברים, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build` exit 0 (כל
+הנתיבים נבנו). אפס שינוי קוד ייצור — רק `STATE.md`/
+`docs/STATE-ARCHIVE.md`.
 
-**M01-c82 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
-M01-c61..M01-c81 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
--sTCP:LISTEN` לא החזיר כלום לפני המדידה. `rm -rf .next && pnpm build`
-רענן הורץ (exit 0), `PORT=3311 pnpm start` עלה, `curl` על `/` החזיר
-`200`. הורצה בחזית `LOCAL_BASE=http://localhost:3311 node
-scripts/compare.mjs --page=home --widths=380,768,1440
---baseline='refs/ke_live_{width}.png'` (per blocker #14), חיכתה
-לסיום בפועל (ה-child של 1440 לקח יותר מ-180 שנ' וה-harness העביר
-אותו לרקע; המתנה נוספת על אותו process עד `[exited with code 0]`
-לפני שהתקדמתי — אין "סיום פריט" בלי המספרים). **תוצאה: `380 8.58%
-PASS`, `768 9.01% PASS`, `1440 4.16% PASS`, זהה בביט לדיוק ל-M01-c81.**
-(ה-"OVERALL" הגולמי שהסקריפט מדפיס, 14-16%, כולל "reference blank"/
-"ours blank" ואינו המדד של השער — השער קורא "both painted" בלבד,
-ר' ההערה מ-22.09 מעל `appendParityRow()` ב-`diff-bands.mjs`; שתי
-השורות נרשמו כבר ב-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו.)
-ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0
-(אותה בנייה ששירתה את השער). אפס שינוי קוד ייצור. קובץ יחיד שונה
-חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
-
-**M01-c80..M18-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M03-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
 M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81,
 M09-c81, M10-c81, M11-c81, M12-c81, M13-c81, M14-c81, M15-c81, M16-c81,
 M17-c81, M18-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
-test).** שלושים ואחד פריטי תור/אימות-בלבד (type-check, שערי חזות
+test), ושוב ב-M04-c82 (כולל M01-c82, M03-c82: שערי חזות בית/קטגוריה).**
+שלושים ושלושה פריטי תור/אימות-בלבד (type-check, שערי חזות
 בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
 TODO/FIXME, Lighthouse mobile, unused deps/dead exports, robots.txt,
 sitemap.xml, health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים

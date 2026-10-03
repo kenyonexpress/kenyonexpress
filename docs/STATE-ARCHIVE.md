@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c82 (הועבר מ-STATE.md ב-M04-c82, לשמירה על תקרת 300 שורות)
+
+**M03-c82 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on /category sample" — זהה למשימות M03-c61..M03-c81 (שער
+חזותי קטגוריה, מחזורי). שרת `pnpm start` על פורט 3311 היה כבר רץ מסשן
+מקביל (cwd נבדק דרך `lsof`: אותו ריפו), נעשה בו שימוש חוזר בלי `build`/
+`start` נוסף. הורץ בחזית לכל רוחב בנפרד (`--width=`, לא `--widths=`, לרוחב בודד): 380
+עבר בניסיון ראשון; 768 ו-1440 נתקלו ב-`REFUSING... still not loaded`
+(תקלת-תזמון מתועדת בארכיון, לא חדשה) ותוקנו עם המילוט המובנה של
+הסקריפט עצמו, `COMPARE_ALLOW_PENDING_IMAGES=1`. שני ה-child-processes
+האלה חרגו מ-180 שנ' והועברו לרקע ע"י ה-harness; המתנה נוספת על אותם
+processes עד `[exited with code 0]` לפני שהתקדמתי — אין "סיום פריט" בלי
+המספרים. **תוצאה: `380 3.53% PASS`, `768 2.31% PASS`, `1440 1.58% PASS`,
+זהה בביט לדיוק ל-M03-c81.** ארבעת השערים: `type-check` נקי,
+`lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה), `build` exit 0. אפס שינוי קוד ייצור. קובץ יחיד שונה חוץ
+מ-STATE.md: `docs/UI-PARITY-REPORT.md` (מכיל גם שורות `product` ממדידה
+מקבילה, M02-c82 כנראה, שלא נמחקו).
+
+## M01-c82 (הועבר מ-STATE.md ב-M04-c82, לשמירה על תקרת 300 שורות)
+
+**M01-c82 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
+M01-c61..M01-c81 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
+-sTCP:LISTEN` לא החזיר כלום לפני המדידה. `rm -rf .next && pnpm build`
+רענן הורץ (exit 0), `PORT=3311 pnpm start` עלה, `curl` על `/` החזיר
+`200`. הורצה בחזית `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=home --widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'` (per blocker #14), חיכתה
+לסיום בפועל (ה-child של 1440 לקח יותר מ-180 שנ' וה-harness העביר
+אותו לרקע; המתנה נוספת על אותו process עד `[exited with code 0]`
+לפני שהתקדמתי — אין "סיום פריט" בלי המספרים). **תוצאה: `380 8.58%
+PASS`, `768 9.01% PASS`, `1440 4.16% PASS`, זהה בביט לדיוק ל-M01-c81.**
+(ה-"OVERALL" הגולמי שהסקריפט מדפיס, 14-16%, כולל "reference blank"/
+"ours blank" ואינו המדד של השער — השער קורא "both painted" בלבד,
+ר' ההערה מ-22.09 מעל `appendParityRow()` ב-`diff-bands.mjs`; שתי
+השורות נרשמו כבר ב-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו.)
+ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0
+(אותה בנייה ששירתה את השער). אפס שינוי קוד ייצור. קובץ יחיד שונה
+חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+
 ## M18-c81 (הועבר מ-STATE.md ב-M01-c82, לשמירה על תקרת 300 שורות)
 
 **M18-c81 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
