@@ -42579,3 +42579,61 @@ type-check` (`tsc --noEmit`) — אפס שגיאות, אין דריפט לתיק
 ייעודיים, כולם clean), `pnpm test` 614/614 קובצי בדיקה (7337 עוברים,
 12 מדולגים מתוך 7349), `pnpm build` exit 0 (כל הנתיבים נבנו). אפס שינוי
 קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+
+## M09-c81 (הועבר מ-STATE.md ב-M10-c81, לשמירה על תקרת 300 שורות)
+
+**M09-c81 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
+dead exports" — זהה לתבנית החוזרת (M09-c80 ולפניו). `git diff --stat
+13a1bc0bc..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/
+STATE-ARCHIVE.md/BACKLOG.md/UI-PARITY-REPORT.md) החזיר ריק — אפס שינוי
+קוד, כולל `package.json`/`pnpm-lock.yaml`. `pnpm dlx knip
+--no-config-hints` (ephemeral, אין `knip.json` בריפו) הורץ בכל זאת
+לאימות ולא להנחה: **201 unused files / 5 unused dependencies / 1
+unlisted binary / 271 unused exports / 197 unused exported types / 4
+duplicate exports** — אותם מספרים בדיוק כמו M09-c80, אפס מועמד חדש. אף
+תיקון אוטומטי לא בוצע — הכרעת הסרה היא הכרעת מפעיל (ר' ארכיון
+M09-c66..c80 לפירוט הרעש הידוע: drizzle/postgres/supabase CLI, scripts
+שרצים ישירות, `database.ts` הנוצר אוטומטית). ארבעת השערים ירוקים:
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm
+test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c81), build
+טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`, exit 0). אפס
+שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
+## M10-c81 (הועבר מ-STATE.md ב-M11-c81, לשמירה על תקרת 300 שורות)
+
+**M10-c81 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker" — זהה לתבנית החוזרת (M10-c80 ולפניו). `git diff
+--stat 9a4a9d59d..HEAD -- migrations/pending/ supabase/migrations/
+docs/BACKLOG.md` (בסיס: M10-c80) ריק, אפס שינוי. `migrations/pending/*.sql`
+נספר שוב: 60 קבצים, ללא שינוי. בדיקה ישירה מול פרודקשן בפועל (לא רק
+git), דרך CLI-keychain-token, `api.supabase.com/v1/projects/.../database/
+query`, קריאה בלבד (שאילתת `SELECT` יחידה שמחזירה `jsonb_build_object`
+לכל 19 הסימנים, אין `BEGIN`/`ROLLBACK`, אין כתיבה כלל): אותם 19 הקבצים
+החוסמים, כל אחד נבדק סימן-היכר ישירות — שבעה שמות טבלה (204/234/235/
+236/239/240/244) `to_regclass` עדיין `null` (`supplier_applications`/
+`fraud_blocklist`/`feature_flags`/`contact_channels`/
+`customer_invoice_settings`/`app_consent_events`/`affiliate_campaigns`);
+ארבע עמודות (223/242/243/232) עדיין חסרות (`notifications.outbox_id`,
+`products.original_price_source`+`suppliers.google_reviews_url` (שתיהן
+242), `products.shipping_price_agorot` (243), `suppliers.opening_hours`
+(232)); 218: `has_column_privilege(authenticated, profiles,
+wallet_balance, UPDATE)` עדיין `true`; 224:
+`has_function_privilege(authenticated, fn_record_recent_search(text),
+EXECUTE)` עדיין `false`; 247: `has_table_privilege(anon, reviews,
+SELECT)` עדיין `false`; 220: `pg_proc.proconfig` של
+`fn_wallet_entries_block_mutation` עדיין `null`; 209: המדיניות
+`push_subscriptions_select_own` עדיין `(auth.uid() = user_id)` לא
+עטוף; 246: המדיניות `profiles_super_admin_mfa` עדיין בניסוח עם
+`( SELECT (auth.jwt() ->> 'aal'::text))` (הסוגר שחוסם את ה-lint, לא
+התיקון המוצע); 245: `banners` עדיין שתי המדיניות המקוריות בלבד
+(`banners: public read`/`banners: staff write`, נבדק בשם ישירות), לא
+חמש המוצעות; 241: 46 מוצרים פעילים עם `city IS NULL`, זהה. כל 19 אושרו
+שוב כלא מוחלים, אפס דריפט מהבדיקה הישירה הקודמת (M10-c80, 03.10).
+ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי (12 שערים, 2037
+קבצים), `pnpm test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה),
+build טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm build`, exit 0, manifest
+מלא). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
+כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא הוחלה אף מיגרציה.
+קובץ יחיד: `STATE.md`.
