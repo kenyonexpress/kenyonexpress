@@ -42926,3 +42926,24 @@ commit" — זהה למשימות "type-check gate re-verified clean" הקודמ
 NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build` exit 0 (כל
 הנתיבים נבנו). אפס שינוי קוד ייצור — רק `STATE.md`/
 `docs/STATE-ARCHIVE.md`.
+
+## M09-c82 (הועבר מ-STATE.md ב-M10-c82, לשמירה על תקרת 300 שורות)
+
+**M09-c82 - DONE (03.10.2026).** משימת התור: "Remove unused deps and
+dead exports" — זהה לתבנית החוזרת (M09-c81 ולפניו). `pwd` אומת, עץ
+עבודה נקי, HEAD `052e479c5` (M08-c82). `git diff --stat
+3cf938884..HEAD` (קומיט הבדיקה הקודמת, לא כולל STATE.md/
+STATE-ARCHIVE.md/BACKLOG.md/UI-PARITY-REPORT.md) החזיר ריק — אפס שינוי
+קוד, כולל `package.json`/`pnpm-lock.yaml`. `pnpm dlx knip
+--no-config-hints` (ephemeral, אין `knip.json` בריפו) הורץ בכל זאת
+לאימות ולא להנחה: **201 unused files / 5 unused dependencies / 1
+unlisted binary / 271 unused exports / 197 unused exported types / 4
+duplicate exports** — אותם מספרים בדיוק כמו M09-c81, אפס מועמד חדש. אף
+תיקון אוטומטי לא בוצע — הכרעת הסרה היא הכרעת מפעיל (ר' ארכיון
+M09-c66..c81 לפירוט הרעש הידוע: drizzle/postgres/supabase CLI, scripts
+שרצים ישירות, `database.ts` הנוצר אוטומטית). ארבעת השערים ירוקים:
+`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `pnpm
+test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c82), build
+טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`, exit 0). אפס
+שינוי קוד ייצור. קובץ אחד: `STATE.md`.
