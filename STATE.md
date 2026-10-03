@@ -1,24 +1,27 @@
-RESUME FROM: M02-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c81 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט אחרי flake חד-פעמי ב-768)
+RESUME FROM: M03-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c81 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
-M01-c61..M01-c80 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
--sTCP:LISTEN` לא החזיר כלום לפני המדידה. `pnpm build` רענן הורץ (exit
-0), `PORT=3311 pnpm start` עלה, `curl` על `/` החזיר `200`. הורצה
-`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
---page=home --widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`
-בחזית (per blocker #14). **ריצה ראשונה: `768` חרג ל-`15.48%` FAIL
-(היסטוריה: `9.01%` PASS מ-M01-c80) בעוד `380`/`1440` זהים להיסטוריה.**
-הורצה שוב מיד, אותו שרת, בלי שינוי קוד: `380 8.58%`, `768 9.01%`,
-`1440 4.16%` — שלושתן PASS, **זהה בדיוק ל-M01-c80**. הוכרע כ-flake
-חד-פעמי בצילום הראשון (ריצה שנייה תואמת היסטוריה לביט האחוז), לא
-רגרסיה אמיתית — שתי השורות (כשל וגם PASS) נרשמו על ידי השער עצמו
-ב-`docs/UI-PARITY-REPORT.md`, שום שורה לא נמחקה. ארבעת השערים: `type-check`
-נקי, `lint` נקי, `test` ירוק, `build` exit 0. אפס שינוי קוד ייצור.
-קובץ יחיד שונה חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+**M02-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample" — זהה למשימות "product parity re-measured" הקודמות
+(M02-c80 ולפניו). `pwd` אומת, אין שרת ישן על 3311, אפס דיפף קוד ייצור
+מאז `0994644bb` (M01-c81, אותו HEAD); `.next` כבר טרי (build של
+M01-c81) — `PORT=3311 pnpm start` עלה על אותו build בלי build חדש.
+**הרצה בחזית**: `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'` — חרגה מ-timeout כלי
+ה-Bash והועברה אוטומטית לרקע; הומתן לסיומה המלאה (Monitor,
+`exit 0`) לפני רישום. **תוצאה: `380`=4.96% PASS, `768`=4.58% PASS,
+`1440`=3.25% PASS** (שער 11%), **זהה בדיוק ל-M02-c80/M02-c79/M02-c78 —
+אפס דריפט.** אזהרת HEIGHT RATIO ב-1440 ידועה, לא רלוונטית לשער. השער
+כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` (`0994644bb`/`-dirty`).
+שרת הופסק בסוף. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים), `test` 614/614 (7337/7349, 12 מדולגים), `build` exit 0. אפס
+שינוי קוד ייצור. קובץ יחיד חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+
+**M01-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M02-c81).** שער חזותי בית, אפס דריפט אחרי flake חד-פעמי ב-768.
 
 **M17-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M18-c80).** RTL על / ו-/product נבדק מחדש ברינדור בפועל, אפס דריפט

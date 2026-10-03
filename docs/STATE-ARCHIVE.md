@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c81 (הועבר מ-STATE.md ב-M02-c81, לשמירה על תקרת 300 שורות)
+
+**M01-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
+M01-c61..M01-c80 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
+-sTCP:LISTEN` לא החזיר כלום לפני המדידה. `pnpm build` רענן הורץ (exit
+0), `PORT=3311 pnpm start` עלה, `curl` על `/` החזיר `200`. הורצה
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`
+בחזית (per blocker #14). **ריצה ראשונה: `768` חרג ל-`15.48%` FAIL
+(היסטוריה: `9.01%` PASS מ-M01-c80) בעוד `380`/`1440` זהים להיסטוריה.**
+הורצה שוב מיד, אותו שרת, בלי שינוי קוד: `380 8.58%`, `768 9.01%`,
+`1440 4.16%` — שלושתן PASS, **זהה בדיוק ל-M01-c80**. הוכרע כ-flake
+חד-פעמי בצילום הראשון (ריצה שנייה תואמת היסטוריה לביט האחוז), לא
+רגרסיה אמיתית — שתי השורות (כשל וגם PASS) נרשמו על ידי השער עצמו
+ב-`docs/UI-PARITY-REPORT.md`, שום שורה לא נמחקה. ארבעת השערים: `type-check`
+נקי, `lint` נקי, `test` ירוק, `build` exit 0. אפס שינוי קוד ייצור.
+קובץ יחיד שונה חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+
 ## M18-c80 (הועבר מ-STATE.md ב-M01-c81, לשמירה על תקרת 300 שורות)
 
 **M18-c80 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
