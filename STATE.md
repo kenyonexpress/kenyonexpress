@@ -1,21 +1,27 @@
-RESUME FROM: M07-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c81 DONE: שער build נמדד מחדש, אפס דריפט)
+RESUME FROM: M08-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c81 DONE: TODO/FIXME נסרק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c81 - DONE (03.10.2026).** "pnpm build fix drift commit" — זהה
-למשימות "build gate re-verified clean" הקודמות (M06-c80 ולפניו). `pwd`
-אומת, עץ עבודה נקי, HEAD `9b0b55425` (M05-c81). **הורץ בחזית**: `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
-pnpm build` — exit 0, כל הנתיבים נבנו (כולל sitemap/robots/
-opengraph-image), `.next/BUILD_ID` נוצר. המשך בשלושת השערים הנוספים:
-`pnpm type-check` נקי, `pnpm lint` נקי (`biome` על 2037 קבצים + 12
-שערי lint ייעודיים, כולם clean), `pnpm test` נקי (614/614 קבצים,
-7337/7349 עוברים, 12 מדולגים — זהה ל-M05-c81). אפס דריפט, אפס שינוי
-קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+**M07-c81 - DONE (03.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md" — זהה לתבנית החוזרת
+(M07-c80 ולפניו). נסרק מחדש `src/`
+(`grep -rn "TODO\|FIXME" --include="*.ts" --include="*.tsx"`): שני
+ה-marker האמיתיים היחידים, `src/lib/payments/cardcom.ts:254` ו-`:319`
+(שניהם `TODO(cardcom)`), תאריך אומת שוב דרך `git blame` — 24.07.2026
+ו-07.08.2026 בהתאמה, שניהם מעל שבעה ימים. שניהם כבר מתועדים
+ב-`docs/BACKLOG.md` סעיף 6, חסומים על החלטת מפעיל (אימות live מול
+המסוף של Cardcom) — אין marker חדש, אין marker שנפתר.
+(`src/lib/whatsapp.test.ts:91` אומת שוב כמחרוזת ליטרלית `'TODO'`
+בבדיקה, לא marker.) ארבעת השערים ירוקים: `type-check` נקי (exit 0),
+`lint` נקי (12 שערים, 2037 קבצים, זהה), `pnpm test` 614/614 קבצים
+(7337/7349 עברו, 12 מדולגים — זהה ל-M06-c81), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0 נקי, כל הנתיבים נבנו. לא פריט חזותי, `compare.mjs` לא
+נדרש. אפס שינוי קוד ייצור. קובץ אחד: `STATE.md`.
 
-**M05-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M06-c81).** שער test נמדד מחדש, אפס דריפט.
+**M06-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M07-c81).** שער build נמדד מחדש, אפס דריפט.
 
 **M17-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M18-c80).** RTL על / ו-/product נבדק מחדש ברינדור בפועל, אפס דריפט

@@ -2,6 +2,19 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c81 (הועבר מ-STATE.md ב-M07-c81, לשמירה על תקרת 300 שורות)
+
+**M06-c81 - DONE (03.10.2026).** "pnpm build fix drift commit" — זהה
+למשימות "build gate re-verified clean" הקודמות (M06-c80 ולפניו). `pwd`
+אומת, עץ עבודה נקי, HEAD `9b0b55425` (M05-c81). **הורץ בחזית**: `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+pnpm build` — exit 0, כל הנתיבים נבנו (כולל sitemap/robots/
+opengraph-image), `.next/BUILD_ID` נוצר. המשך בשלושת השערים הנוספים:
+`pnpm type-check` נקי, `pnpm lint` נקי (`biome` על 2037 קבצים + 12
+שערי lint ייעודיים, כולם clean), `pnpm test` נקי (614/614 קבצים,
+7337/7349 עוברים, 12 מדולגים — זהה ל-M05-c81). אפס דריפט, אפס שינוי
+קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+
 ## M05-c81 (הועבר מ-STATE.md ב-M06-c81, לשמירה על תקרת 300 שורות)
 
 **M05-c81 - DONE (03.10.2026).** "pnpm test fix drift commit" — זהה
