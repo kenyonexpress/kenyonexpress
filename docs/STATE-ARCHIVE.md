@@ -42505,3 +42505,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. הורם
 `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
 M17-c67..M17-c79). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`
 (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
+## M04-c81 (הועבר מ-STATE.md ב-M05-c81, לשמירה על תקרת 300 שורות)
+
+**M04-c81 - DONE (03.10.2026).** "pnpm type-check fix drift commit" —
+זהה למשימות "type-check gate re-verified clean" הקודמות (M04-c80
+ולפניו). `pwd` אומת, HEAD `dd65b722e` (M03-c81). **הורץ בחזית**: `pnpm
+type-check` (`tsc --noEmit`) — אפס שגיאות, אין דריפט לתיקון. המשך
+בארבעת השערים: `pnpm lint` נקי (`biome` על 2037 קבצים + 12 שערי lint
+ייעודיים, כולם clean), `pnpm test` 614/614 קובצי בדיקה (7337 עוברים,
+12 מדולגים מתוך 7349), `pnpm build` exit 0 (כל הנתיבים נבנו). אפס שינוי
+קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.

@@ -1,16 +1,19 @@
-RESUME FROM: M05-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c81 DONE: שער type-check נמדד מחדש, אפס דריפט)
+RESUME FROM: M06-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c81 DONE: שער test נמדד מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M04-c81 - DONE (03.10.2026).** "pnpm type-check fix drift commit" —
-זהה למשימות "type-check gate re-verified clean" הקודמות (M04-c80
-ולפניו). `pwd` אומת, HEAD `dd65b722e` (M03-c81). **הורץ בחזית**: `pnpm
-type-check` (`tsc --noEmit`) — אפס שגיאות, אין דריפט לתיקון. המשך
-בארבעת השערים: `pnpm lint` נקי (`biome` על 2037 קבצים + 12 שערי lint
-ייעודיים, כולם clean), `pnpm test` 614/614 קובצי בדיקה (7337 עוברים,
-12 מדולגים מתוך 7349), `pnpm build` exit 0 (כל הנתיבים נבנו). אפס שינוי
-קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+**M05-c81 - DONE (03.10.2026).** "pnpm test fix drift commit" — זהה
+למשימות "test gate re-verified clean" הקודמות (M05-c80 ולפניו). `pwd`
+אומת, HEAD `00dc27f7a` (M04-c81). **הורץ בחזית**: `pnpm test`
+(`vitest run`) — 614/614 קובצי בדיקה, 7337 עוברים / 12 מדולגים מתוך
+7349, זהה לכל סבב קודם, אין דריפט לתיקון. המשך בארבעת השערים:
+`pnpm type-check` נקי, `pnpm lint` נקי (`biome` על 2037 קבצים + 12
+שערי lint ייעודיים, כולם clean), `pnpm build` exit 0 (כל הנתיבים
+נבנו). אפס שינוי קוד ייצור — רק `STATE.md`/`docs/STATE-ARCHIVE.md`.
+
+**M04-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M05-c81).** שער type-check נמדד מחדש, אפס דריפט.
 
 **M03-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M04-c81).** שער חזותי קטגוריה נמדד מחדש, אפס דריפט שלילי.
