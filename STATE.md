@@ -1,26 +1,29 @@
-RESUME FROM: M12-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c82 DONE: sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M13-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c82 DONE: robots.txt אומת מחדש production-safe, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c82 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable" — זהה לתבנית החוזרת (M11-c81 ולפניו). `pwd` אומת, עץ
-עבודה נקי, HEAD `277762388` (M10-c82). קוד: `git diff --stat
-1d6d770a6..HEAD -- src/app/sitemap.xml src/app/sitemap src/lib/seo
-docs/BACKLOG.md` ריק. חי: `curl -L https://www.kenyonexpress.co.il/
-sitemap.xml` מחזיר `200`, `urlset` שטוח (לא `sitemapindex`), 79 כתובות
-(`grep -c '<loc>'`), `etag`/`last-modified` (02.10.2026) זהים לסבב
-הקודם — עדיין גרסת `a388118f1`. חמשת תתי-המפות של הקוד הנוכחי
-(`/sitemap/{content,suppliers,regions,categories,products}.xml`) כולן
-`404` בפרודקשן, נמדד שוב ישירות. `robots.txt` החי מצביע נכון ל-
-`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט — חוסם #2 למעלה
-ללא שינוי (פריסת Production תקועה, לא קוד). ארבעת השערים ירוקים:
-`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
-קבצים (7337/7349, 12 מדולגים, זהה), build טרי (`rm -rf .next`,
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm
-build`, exit 0, manifest מאשר `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ
-Dynamic`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
-שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+**M12-c82 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
+production-safe" — זהה לתבנית החוזרת (M12-c81 ולפניו). `pwd` אומת, עץ
+עבודה נקי, HEAD `1b960f6e0` (M11-c82). קוד: `git diff --stat
+c31504c35..HEAD -- src/app/robots.ts docs/BACKLOG.md` ריק — `disallow`
+כולל את כל 14 הנתיבים כולל שלושת אסימוני-ה-URL (`/gift/`, `/order/`,
+`/wishlist/s/`) ו-`/debug/`. חי: `curl` ל-`robots.txt` מחזיר `200`,
+`etag`/`last-modified` (02.10.2026) עדיין בגרסת `a388118f1` (חוסם #2,
+פריסה תקועה, לא קוד) — 13 שורות `Disallow` בלבד, חסרות אותן ארבע
+(`/gift/`,`/order/`,`/wishlist/s/`,`/debug/`). נבדק ישירות שוב:
+`/gift/test-token` ו-`/debug/sentry` מחזירים `200` חי בלי כיסוי
+`Disallow`; `/order/test-id/tracking` ו-`/wishlist/s/test-token`
+מחזירים `404` בפריסה הישנה (הנתיב לא קיים שם עדיין) — זהה ל-M12-c81.
+אפס דריפט מהותי. ארבעת השערים ירוקים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), build טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm build`, exit 0,
+manifest מאשר `/robots.txt`). פריט אימות-בלבד, לא חזותי: `compare.mjs`
+לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+
+**M11-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M12-c82).** sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט.
 
 **M10-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M11-c82).** migrations/pending/ נבדק מחדש ישירות מול פרודקשן, אפס דריפט.
@@ -34,19 +37,14 @@ Dynamic`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נ�
 **M07-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M08-c82).** TODO/FIXME נסרק מחדש, אפס דריפט.
 
-**M06-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M07-c82).** שער build נמדד מחדש, אפס דריפט.
-
-**M05-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M07-c82).** שער test נמדד מחדש, אפס דריפט.
-
-**M01-c80..M04-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M06-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
 M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81,
 M09-c81, M10-c81, M11-c81, M12-c81, M13-c81, M14-c81, M15-c81, M16-c81,
 M17-c81, M18-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
-test), ושוב ב-M09-c82 (כולל M01-c82, M03-c82: שערי חזות בית/קטגוריה,
-M04-c82: type-check).** שלושים וארבעה פריטי תור/אימות-בלבד (type-check, שערי חזות
+test), ושוב ב-M09-c82, M07-c82 (כולל M01-c82, M03-c82: שערי חזות בית/קטגוריה,
+M04-c82: type-check, M05-c82: test גייט, M06-c82: build גייט).** שלושים
+ושש פריטי תור/אימות-בלבד (type-check, שערי חזות
 בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
 TODO/FIXME, Lighthouse mobile, unused deps/dead exports, robots.txt,
 sitemap.xml, health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים

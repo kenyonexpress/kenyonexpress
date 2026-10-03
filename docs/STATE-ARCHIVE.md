@@ -42966,3 +42966,24 @@ docs/BACKLOG.md` ריק; 60 קבצים ב-`migrations/pending/`, ללא שינו
 NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`, exit 0). פריט
 אימות-בלבד, `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
 הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
+## M11-c82 (הועבר מ-STATE.md ב-M12-c82, לשמירה על תקרת 300 שורות)
+
+**M11-c82 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable" — זהה לתבנית החוזרת (M11-c81 ולפניו). `pwd` אומת, עץ
+עבודה נקי, HEAD `277762388` (M10-c82). קוד: `git diff --stat
+1d6d770a6..HEAD -- src/app/sitemap.xml src/app/sitemap src/lib/seo
+docs/BACKLOG.md` ריק. חי: `curl -L https://www.kenyonexpress.co.il/
+sitemap.xml` מחזיר `200`, `urlset` שטוח (לא `sitemapindex`), 79 כתובות
+(`grep -c '<loc>'`), `etag`/`last-modified` (02.10.2026) זהים לסבב
+הקודם — עדיין גרסת `a388118f1`. חמשת תתי-המפות של הקוד הנוכחי
+(`/sitemap/{content,suppliers,regions,categories,products}.xml`) כולן
+`404` בפרודקשן, נמדד שוב ישירות. `robots.txt` החי מצביע נכון ל-
+`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט — חוסם #2 למעלה
+ללא שינוי (פריסת Production תקועה, לא קוד). ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349, 12 מדולגים, זהה), build טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm
+build`, exit 0, manifest מאשר `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ
+Dynamic`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
+שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
