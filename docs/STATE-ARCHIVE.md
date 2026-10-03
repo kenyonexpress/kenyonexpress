@@ -2,6 +2,29 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c82 (הועבר מ-STATE.md ב-M14-c82, לשמירה על תקרת 300 שורות)
+
+**M13-c82 - DONE (03.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps" — זהה לתבנית החוזרת (M13-c81
+ולפניו). `pwd` אומת, עץ עבודה נקי, HEAD `c359db568` (M12-c82). קוד:
+`src/app/api/health/route.ts` ו-`src/app/api/ready/route.ts` ללא שינוי
+מ-M13-c81 (`git status` ריק). חי: `curl` ל-`https://www.kenyonexpress.co.il/api/health`
+מחזיר `200` עם `{"ok":true,"database":"ok","latency_ms":169}` — תלות
+אמיתית (HEAD count על `categories` דרך admin client), לא ליבנס גרידא.
+`curl` ל-`/api/ready` מחזיר `503` עם
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`
+— זהה בדיוק ל-M13-c66..M13-c81: Meilisearch מוגדר אבל לא נגיש (חוסם
+חיצוני #16 ב-`docs/BACKLOG.md`, `MEILISEARCH_HOST`/`MEILISEARCH_API_KEY`
+קיימים ב-Production אך לא נגישים, לא תקלת קוד), `r2`/`cardcom`
+`not_configured` בכוונה (R2 לא מופעל בחשבון, Cardcom ב-mock). אפס
+ממצא חדש, אפס דריפט. ארבעת השערים ירוקים: `type-check` נקי, `lint`
+נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה), build טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm build`, exit 0,
+`.next/server/app/api/health` ו-`/api/ready` קיימים). פריט אימות-בלבד,
+לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ
+יחיד: `STATE.md`.
+
 ## M12-c82 (הועבר מ-STATE.md ב-M13-c82, לשמירה על תקרת 300 שורות)
 
 **M12-c82 - DONE (03.10.2026).** משימת התור: "Verify robots.txt
