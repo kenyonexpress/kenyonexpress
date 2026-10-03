@@ -42913,3 +42913,16 @@ docs/BACKLOG.md` ריק. חי: `curl` ל-`sitemap.xml` מחזיר `200`, `urlset
 (type-check/lint נקי, test 614/614, build טרי exit 0, manifest כולל
 `/sitemap.xml` וחמשת תתי-המפות). אימות-בלבד, `compare.mjs` לא נדרש,
 אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+
+## M04-c82 (הועבר מ-STATE.md ב-M09-c82, לשמירה על תקרת 300 שורות)
+
+**M04-c82 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
+commit" — זהה למשימות "type-check gate re-verified clean" הקודמות
+(M04-c81 ולפניו). `pwd` אומת, HEAD `643b1f4bf` (M03-c82). **הורץ
+בחזית**: `pnpm type-check` (`tsc --noEmit`) — אפס שגיאות, אין דריפט
+לתיקון. המשך בארבעת השערים: `pnpm lint` נקי (`biome` על 2037 קבצים +
+12 שערי lint ייעודיים, כולם clean), `pnpm test` 614/614 קובצי בדיקה
+(7337/7349 עוברים, 12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build` exit 0 (כל
+הנתיבים נבנו). אפס שינוי קוד ייצור — רק `STATE.md`/
+`docs/STATE-ARCHIVE.md`.
