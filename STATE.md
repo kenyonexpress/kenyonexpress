@@ -1,39 +1,29 @@
-RESUME FROM: M18-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c81 DONE: RTL על / ו-/product נבדק מחדש, אפס דריפט)
+RESUME FROM: M01-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c81 DONE: STATE.md אומת מתחת לתקרת 300 שורות, M17-c81 אורכב)
 
 ## המשך מ:
 
-**M17-c81 - DONE (03.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c80
-(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
-דריפט.** `git log 4b282e5a2..HEAD --stat -- src/app src/components
-src/lib/i18n` (בסיס: checkpoint M17-c80) **ריק** — אפס קומיטים נוגעים
-מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037
-קבצים, כולל `rtl-logical-gate.mjs`), `test` 614/614 קבצים (7337/7349,
-12 מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. הורם
-`pnpm start -p 4933` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
-לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
-המוצרים הפעילים (`supabase/catalogue-snapshot.json`):
-`/product/שעון-אפל-חכם-apple-watch-series-7`. **נבדק ישירות ברינדור
-בפועל:** שני הדפים `<html lang="he" dir="rtl">` ללא תנאי. גריפ על
-`dir="ltr"` בתוצאה החיה: `/` — מופע יחיד, שדה האימייל בניוזלטר (מכוון,
-`input-dir-gate` מאשר). דף המוצר — שלושה מופעים: אותו שדה אימייל
-בפוטר, `pdp-summary__meta` (ריק עבור המוצר הזה, אין SKU עברי), וקישור
-`tel:` למספר טלפון (ספרות, מכוון) — אותו דפוס שנמדד בכל סבב קודם. גריפ
-נוסף על `direction: ltr`/`float-left/right`/`text-left/right`/`ml-`/
-`mr-`/`pl-`/`pr-` קשיחים בקוד המקור של `page.tsx` (בית) ותיקיית
-`product` — אפס התאמות. שרת הופסק בסוף. **אין ממצא קוד לתקן.** לא
-פריט `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת פיקסלים — תקדים
-M17-c67..M17-c80). אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`
-(וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**M18-c81 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימות
+M18-c66..M18-c80. **נמדד בתחילת הפריט: 293 שורות, מתחת לתקרה.** בוצע
+בכל זאת ציקלוס הארכוב הרגיל: ההרחבה המלאה של M17-c81 (RTL על / ו-
+/product) הועברה ל-`docs/STATE-ARCHIVE.md` (הוספה בראש הקובץ, אחרי
+שורת הכותרת, שום שורה לא נמחקה), וכווצה כאן לשורת הארכיון המצטברת
+(הטווח "M01-c80..M16-c81" הורחב ל-"M01-c80..M17-c81"). ארבעת השערים
+הורצו מלאים לפני ה-commit: `pnpm type-check` נקי, `pnpm lint` נקי (12
+שערים, 2037 קבצים), `pnpm test` 614/614 קבצים (7337/7349, 12 מדולגים),
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4951 pnpm build` exit 0 נקי (אומת
+`.next/BUILD_ID` קיים). לא פריט `compare.mjs` — אין שינוי UI/חזותי,
+עריכת תיעוד בלבד. אפס שינוי קוד ייצור. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**M01-c80..M16-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M17-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
 M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81,
-M09-c81, M10-c81, M11-c81, M12-c81, M13-c81, M14-c81, M15-c81, M16-c81
-(כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
-test).** עשרים ותשעה פריטי תור/אימות-בלבד (type-check, שערי חזות
+M09-c81, M10-c81, M11-c81, M12-c81, M13-c81, M14-c81, M15-c81, M16-c81,
+M17-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה, type-check,
+test).** שלושים פריטי תור/אימות-בלבד (type-check, שערי חזות
 בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build גייטים,
 TODO/FIXME, Lighthouse mobile, unused deps/dead exports, robots.txt,
 sitemap.xml, health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים
