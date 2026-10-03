@@ -2,6 +2,17 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c80 (הועבר מ-STATE.md ב-M01-c81, לשמירה על תקרת 300 שורות)
+
+**M18-c80 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
+lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c79.
+**נמדד: `wc -l STATE.md` היה `296` לפני ההרצה הזו, כבר מתחת לתקרת 300 —
+אין שורה לארכב.** ארבעת השערים הורצו ביציבה: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה
+ל-M17-c80), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. אפס שינוי
+קוד ייצור. קובץ יחיד: `STATE.md`.
+
 ## M16-c80 (הועבר מ-STATE.md ב-M17-c80, לשמירה על תקרת 300 שורות)
 
 **M16-c80 - DONE (03.10.2026).** משימת התור: "Verify all product pages

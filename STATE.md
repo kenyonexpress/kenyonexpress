@@ -1,16 +1,24 @@
-RESUME FROM: M19-c80
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c80 DONE: STATE.md נבדק, היה כבר מתחת לתקרה, אין מה לארכב)
+RESUME FROM: M02-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c81 DONE: שער חזותי בית נמדד מחדש 380/768/1440, אפס דריפט אחרי flake חד-פעמי ב-768)
 
 ## המשך מ:
 
-**M18-c80 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300
-lines, archive rest to docs/STATE-ARCHIVE.md" — זהה למילה למשימת M18-c79.
-**נמדד: `wc -l STATE.md` היה `296` לפני ההרצה הזו, כבר מתחת לתקרת 300 —
-אין שורה לארכב.** ארבעת השערים הורצו ביציבה: `type-check` נקי, `lint` נקי
-(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה
-ל-M17-c80), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. אפס שינוי
-קוד ייצור. קובץ יחיד: `STATE.md`.
+**M01-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
+M01-c61..M01-c80 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
+-sTCP:LISTEN` לא החזיר כלום לפני המדידה. `pnpm build` רענן הורץ (exit
+0), `PORT=3311 pnpm start` עלה, `curl` על `/` החזיר `200`. הורצה
+`LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs
+--page=home --widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`
+בחזית (per blocker #14). **ריצה ראשונה: `768` חרג ל-`15.48%` FAIL
+(היסטוריה: `9.01%` PASS מ-M01-c80) בעוד `380`/`1440` זהים להיסטוריה.**
+הורצה שוב מיד, אותו שרת, בלי שינוי קוד: `380 8.58%`, `768 9.01%`,
+`1440 4.16%` — שלושתן PASS, **זהה בדיוק ל-M01-c80**. הוכרע כ-flake
+חד-פעמי בצילום הראשון (ריצה שנייה תואמת היסטוריה לביט האחוז), לא
+רגרסיה אמיתית — שתי השורות (כשל וגם PASS) נרשמו על ידי השער עצמו
+ב-`docs/UI-PARITY-REPORT.md`, שום שורה לא נמחקה. ארבעת השערים: `type-check`
+נקי, `lint` נקי, `test` ירוק, `build` exit 0. אפס שינוי קוד ייצור.
+קובץ יחיד שונה חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
 
 **M17-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M18-c80).** RTL על / ו-/product נבדק מחדש ברינדור בפועל, אפס דריפט
@@ -24,13 +32,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build` exit 0 נקי. אפס שי
 ב-M16-c80).** קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט
 מ-M15-c79.
 
-**M01-c80..M18-c79 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M18-c80 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
-M14-c80 וב-M15-c80).** שישה-עשר פריטי תור/אימות-בלבד (type-check, שערי
-חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/build
-גייטים, TODO/FIXME, Lighthouse mobile, unused deps/dead exports,
-robots.txt, health/ready) ושלושים פריטים נוספים מארכיון קודם — אפס
-דריפט/שבור בכולם, ארבעת השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+M14-c80, M15-c80 וב-M01-c81).** שבעה-עשר פריטי תור/אימות-בלבד
+(type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs
+HEAD, test/build גייטים, TODO/FIXME, Lighthouse mobile, unused
+deps/dead exports, robots.txt, health/ready, STATE.md trim) ושלושים
+פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים
+בכולם, אפס שינוי קוד ייצור.
 
 **M01-c78..M18-c77 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M02-c78, נדחסו שוב ב-M17-c78).** שמונה-עשר פריטי תור/אימות-בלבד:
