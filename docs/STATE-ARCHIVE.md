@@ -43145,3 +43145,25 @@ NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`, `BUILD_ID` חדש
 `8gbHqEYFlaR86C3Yqj4LL`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא
 נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase db push`, לא
 הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
+## M01-c83 (הועבר מ-STATE.md ב-M02-c83, לשמירה על תקרת 300 שורות)
+
+**M01-c83 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md" — זהה למשימות
+M01-c61..M01-c82 (שער חזותי בית, מחזורי). `/usr/sbin/lsof -i :3311
+-sTCP:LISTEN` מצא `next-server` זר תפוס על הפורט (PID 18770, cwd זהה
+לריפו הזה אך `BUILD_ID` מאוחר מזמן עליית התהליך — ר' "gate measured a
+foreign server on 3311"); נהרג לפני המדידה כדי לא למדוד build זר.
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` רענן הורץ (exit
+0, `BUILD_ID` חדש אומת), `PORT=3311 pnpm start` עלה, `curl` על `/`
+החזיר `200`. הורצה בחזית `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=home --widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'` (per blocker #14), חיכתה
+לסיום בפועל בתוך אותה הרצה. **תוצאה: `380 8.58% PASS`, `768 9.01%
+PASS`, `1440 4.16% PASS`, זהה בביט לדיוק ל-M01-c82.** שלוש השורות
+נרשמו כבר ב-`docs/UI-PARITY-REPORT.md` על ידי השער עצמו. ארבעת
+השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test`
+614/614 קבצים (7337/7349, 12 מדולגים, זהה), `build` exit 0 (אותה
+בנייה ששירתה את השער). אפס שינוי קוד ייצור. קובץ יחיד שונה חוץ
+מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
