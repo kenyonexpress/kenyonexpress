@@ -1,24 +1,29 @@
-RESUME FROM: M11-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c82 DONE: migrations/pending/ נבדק מחדש ישירות מול פרודקשן, אפס דריפט)
+RESUME FROM: M12-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c82 DONE: sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c82 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker" — זהה לתבנית החוזרת (M10-c81 ולפניו). `pwd`
-אומת, עץ עבודה נקי, HEAD `a66687c12` (M09-c82). `git diff --stat
-899f72eb2..HEAD -- migrations/pending/ supabase/migrations/
-docs/BACKLOG.md` ריק; 60 קבצים ב-`migrations/pending/`, ללא שינוי.
-בדיקה ישירה מול פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה
-בלבד): כל 19 הקבצים החוסמים (204/209/218/220/223/224/232/234/235/236/
-239/240/241/242/243/244/245/246/247) עדיין לא מוחלים, אותן תוצאות
-בדיוק כמו M10-c81 — שבע טבלאות עדיין חסרות, ארבע עמודות עדיין חסרות,
-`proconfig`/מדיניות/הרשאות זהים, 46 מוצרים עם `city IS NULL`. אפס
-דריפט. ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים, 2037
-קבצים), test 614/614 קבצים (7337/7349, 12 מדולגים, זהה), build טרי
-(`rm -rf .next`, `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`, exit 0). פריט
-אימות-בלבד, `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
-הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+**M11-c82 - DONE (03.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable" — זהה לתבנית החוזרת (M11-c81 ולפניו). `pwd` אומת, עץ
+עבודה נקי, HEAD `277762388` (M10-c82). קוד: `git diff --stat
+1d6d770a6..HEAD -- src/app/sitemap.xml src/app/sitemap src/lib/seo
+docs/BACKLOG.md` ריק. חי: `curl -L https://www.kenyonexpress.co.il/
+sitemap.xml` מחזיר `200`, `urlset` שטוח (לא `sitemapindex`), 79 כתובות
+(`grep -c '<loc>'`), `etag`/`last-modified` (02.10.2026) זהים לסבב
+הקודם — עדיין גרסת `a388118f1`. חמשת תתי-המפות של הקוד הנוכחי
+(`/sitemap/{content,suppliers,regions,categories,products}.xml`) כולן
+`404` בפרודקשן, נמדד שוב ישירות. `robots.txt` החי מצביע נכון ל-
+`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט — חוסם #2 למעלה
+ללא שינוי (פריסת Production תקועה, לא קוד). ארבעת השערים ירוקים:
+`type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614
+קבצים (7337/7349, 12 מדולגים, זהה), build טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4821 pnpm
+build`, exit 0, manifest מאשר `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ
+Dynamic`). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס
+שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+
+**M10-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M11-c82).** migrations/pending/ נבדק מחדש ישירות מול פרודקשן, אפס דריפט.
 
 **M09-c82 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M10-c82).** unused deps/dead exports נבדק מחדש עם knip, אפס דריפט.

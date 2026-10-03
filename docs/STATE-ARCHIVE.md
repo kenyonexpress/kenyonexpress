@@ -42947,3 +42947,22 @@ test` 614/614 קבצים (7337/7349 עברו, 12 מדולגים, זהה ל-M08-c
 טרי (`rm -rf .next`, `CARDCOM_USE_MOCK=true
 NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`, exit 0). אפס
 שינוי קוד ייצור. קובץ אחד: `STATE.md`.
+
+## M10-c82 (הועבר מ-STATE.md ב-M11-c82, לשמירה על תקרת 300 שורות)
+
+**M10-c82 - DONE (03.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker" — זהה לתבנית החוזרת (M10-c81 ולפניו). `pwd`
+אומת, עץ עבודה נקי, HEAD `a66687c12` (M09-c82). `git diff --stat
+899f72eb2..HEAD -- migrations/pending/ supabase/migrations/
+docs/BACKLOG.md` ריק; 60 קבצים ב-`migrations/pending/`, ללא שינוי.
+בדיקה ישירה מול פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה
+בלבד): כל 19 הקבצים החוסמים (204/209/218/220/223/224/232/234/235/236/
+239/240/241/242/243/244/245/246/247) עדיין לא מוחלים, אותן תוצאות
+בדיוק כמו M10-c81 — שבע טבלאות עדיין חסרות, ארבע עמודות עדיין חסרות,
+`proconfig`/מדיניות/הרשאות זהים, 46 מוצרים עם `city IS NULL`. אפס
+דריפט. ארבעת השערים ירוקים: type-check נקי, lint נקי (12 שערים, 2037
+קבצים), test 614/614 קבצים (7337/7349, 12 מדולגים, זהה), build טרי
+(`rm -rf .next`, `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`, exit 0). פריט
+אימות-בלבד, `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
+הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
