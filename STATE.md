@@ -1,24 +1,20 @@
-RESUME FROM: M03-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c81 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, אפס דריפט)
+RESUME FROM: M04-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c81 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, אפס דריפט שלילי)
 
 ## המשך מ:
 
-**M02-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
-on /product sample" — זהה למשימות "product parity re-measured" הקודמות
-(M02-c80 ולפניו). `pwd` אומת, אין שרת ישן על 3311, אפס דיפף קוד ייצור
-מאז `0994644bb` (M01-c81, אותו HEAD); `.next` כבר טרי (build של
-M01-c81) — `PORT=3311 pnpm start` עלה על אותו build בלי build חדש.
-**הרצה בחזית**: `LOCAL_BASE=http://localhost:3311 node
-scripts/compare.mjs --page=product --widths=380,768,1440
---baseline='refs/electro_product_{width}.png'` — חרגה מ-timeout כלי
-ה-Bash והועברה אוטומטית לרקע; הומתן לסיומה המלאה (Monitor,
-`exit 0`) לפני רישום. **תוצאה: `380`=4.96% PASS, `768`=4.58% PASS,
-`1440`=3.25% PASS** (שער 11%), **זהה בדיוק ל-M02-c80/M02-c79/M02-c78 —
-אפס דריפט.** אזהרת HEIGHT RATIO ב-1440 ידועה, לא רלוונטית לשער. השער
-כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` (`0994644bb`/`-dirty`).
-שרת הופסק בסוף. ארבעת השערים: `type-check` נקי, `lint` נקי (12
-שערים), `test` 614/614 (7337/7349, 12 מדולגים), `build` exit 0. אפס
-שינוי קוד ייצור. קובץ יחיד חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+**M03-c81 - DONE (03.10.2026).** "Re-measure compare.mjs on /category
+sample" — זהה ל-M03-c80. `pwd`/שרת/HEAD (`3c77e76c6`) אומתו, `PORT=3311
+pnpm start` הועלה. **בחזית**: `compare.mjs --page=category
+--baseline='refs/electro_shop_{width}.png'` — חרגה ל-רקע, הומתן ל-`exit 0`
+לפני רישום. **`380`=3.53% PASS, `768`=2.52% PASS, `1440`=1.69% PASS**
+(שער 11%, לעומת M03-c80 3.53/2.31/1.58 — רעש מדידה, אפס דריפט שלילי).
+השער כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` (`3c77e76c6`/`-dirty`).
+ארבעת השערים ירוקים (`type-check`, `lint` 12 שערים, `test` 614/614,
+`build` exit 0). אפס שינוי קוד ייצור.
+
+**M02-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M03-c81).** שער חזותי מוצר נמדד מחדש, אפס דריפט.
 
 **M01-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M02-c81).** שער חזותי בית, אפס דריפט אחרי flake חד-פעמי ב-768.

@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c81 (הועבר מ-STATE.md ב-M03-c81, לשמירה על תקרת 300 שורות)
+
+**M02-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample" — זהה למשימות "product parity re-measured" הקודמות
+(M02-c80 ולפניו). `pwd` אומת, אין שרת ישן על 3311, אפס דיפף קוד ייצור
+מאז `0994644bb` (M01-c81, אותו HEAD); `.next` כבר טרי (build של
+M01-c81) — `PORT=3311 pnpm start` עלה על אותו build בלי build חדש.
+**הרצה בחזית**: `LOCAL_BASE=http://localhost:3311 node
+scripts/compare.mjs --page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'` — חרגה מ-timeout כלי
+ה-Bash והועברה אוטומטית לרקע; הומתן לסיומה המלאה (Monitor,
+`exit 0`) לפני רישום. **תוצאה: `380`=4.96% PASS, `768`=4.58% PASS,
+`1440`=3.25% PASS** (שער 11%), **זהה בדיוק ל-M02-c80/M02-c79/M02-c78 —
+אפס דריפט.** אזהרת HEIGHT RATIO ב-1440 ידועה, לא רלוונטית לשער. השער
+כתב שלוש שורות ל-`docs/UI-PARITY-REPORT.md` (`0994644bb`/`-dirty`).
+שרת הופסק בסוף. ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים), `test` 614/614 (7337/7349, 12 מדולגים), `build` exit 0. אפס
+שינוי קוד ייצור. קובץ יחיד חוץ מ-STATE.md: `docs/UI-PARITY-REPORT.md`.
+
 ## M01-c81 (הועבר מ-STATE.md ב-M02-c81, לשמירה על תקרת 300 שורות)
 
 **M01-c81 - DONE (03.10.2026).** משימת התור: "Re-measure compare.mjs
