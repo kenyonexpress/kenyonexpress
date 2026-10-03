@@ -1,7 +1,19 @@
-RESUME FROM: M06-c82
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c82 DONE: test נקי, אפס דריפט)
+RESUME FROM: M07-c82
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c82 DONE: build נקי, אפס דריפט)
 
 ## המשך מ:
+
+**M06-c82 - DONE (03.10.2026).** משימת התור: "pnpm build fix drift
+commit" — זהה למשימות "build gate re-verified clean" הקודמות (M06-c81
+ולפניו). `pwd` אומת, HEAD `6599e3091` (M05-c82), עץ עבודה נקי. **הורץ
+בחזית**: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4518 pnpm build` — exit 0, כל
+הנתיבים נבנו, אין דריפט לתיקון. המשך בארבעת השערים: `pnpm type-check`
+(`tsc --noEmit`) אפס שגיאות, `pnpm lint` נקי (`biome` על 2037 קבצים +
+12 שערי lint ייעודיים, כולם clean; `docs-path-audit` 155, היה 153
+ב-Q55/154 ב-M15-c65, שער עדיין `OK` ללא רשומה חדשה-לא-ידועה), `pnpm
+test` (vitest) 614/614 קובצי בדיקה, 7337/7349 עוברים (12 מדולגים), זהה
+לבייסליין M05-c82. אפס שינוי קוד ייצור — רק `STATE.md`.
 
 **M05-c82 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
 commit" — זהה למשימות "test gate re-verified clean" הקודמות (M05-c81
