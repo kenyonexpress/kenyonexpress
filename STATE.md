@@ -1,47 +1,47 @@
-RESUME FROM: M16-c81
-Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c81 DONE: קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט)
+RESUME FROM: M17-c81
+Updated: 2026-10-03 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c81 DONE: JSON-LD Product+BreadcrumbList נבדק מחדש בזמן ריצה, אפס דריפט)
 
 ## המשך מ:
 
-**M15-c81 - DONE (03.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample" — זהה למילה למשימות M15-c66..M15-c80. בנייה
-טרייה (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4940 pnpm build`, exit 0) והרצת
-`pnpm start -p 4940` בצ'קאאוט הזה (אומת `lsof`+`cwd` של התהליך שייכים
-לנתיב הזה, לא שרת זר — יש כמה `pnpm start` ישנים של סשנים אחרים על
-פורטים אחרים, לא נגעו בהם). הורץ `e2e/route-audit.spec.ts` עם `--grep
-"anon /$|anon dynamic catalogue routes"` ו-`E2E_BASE_URL=http://localhost:4940`
-(לא `BASE_URL` — ניסיון ראשון בלי `E2E_BASE_URL` נפל חזרה ל-webServer
-של ברירת המחדל על פורט 3000 עם 4 כשלים אמיתיים; השני, עם המשתנה הנכון,
-4/4 PASS). `ROUTE_AUDIT_REPORT` מראה אפס `consoleErrors` ואפס
-`hydrationWarnings` על `/` ועל שבעת הנתיבים הדינמיים שהתגלו, כולל
-`/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר של
-המשימה). זהה ל-M15-c66 עד M15-c80. ארבעת השערים ירוקים: `type-check`
-נקי, `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337/7349 עברו, 12 מדולגים, זהה), `build` exit 0. השרת נעצר בסוף
-(`kill`, הפורט שוב פנוי). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא
-נדרש (אין שינוי UI). אפס שינוי כסף/סכימה/קוד ייצור, לא הורץ `supabase
-db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+**M16-c81 - DONE (03.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למילה למשימות
+M16-c66..M16-c80. בדיקת דריפט קוד: `git log d7ef022af..HEAD --stat --
+src/app src/components src/lib` (בסיס: checkpoint M16-c80) ריק: אפס
+קומיטים בנתיבים הרלוונטיים. קוד המקור אומת ישירות: `src/lib/seo/json-ld.ts`
+עדיין מגדיר `buildProductJsonLd` (`@type: 'Product'`) ו-
+`buildBreadcrumbJsonLd` (`@type: 'BreadcrumbList'`), ו-
+`src/app/(store)/product/[slug]/page.tsx` עדיין מזריק את שניהם דרך
+`jsonLdScript`. **נבדק גם בזמן ריצה בפועל**: נבנה `.next` חדש לגמרי
+(`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4933 pnpm build`, exit 0), הורם
+`pnpm start -p 4933` (פורט 4932 תפוס ע"י סשן אחר, לא נגעו בו; `lsof -p
+-a -d cwd` על ה-pid החדש אומת שהוא שייך לנתיב הזה). **אותם תשעה
+סלאגים מ-M16-c80 נבדקו שוב ב-curl** (שני כפילויות "עיסוי מאסטר",
+`מוצר-לדוגמא`, `bar-drink`, `טיפול-פנים-copy`, `צימר-מאסטר-copy`,
+`צימר-מאסטר-copy-copy`, `חיתולי-פמפרס-העתק`, `אייפון-13`) — **כל
+התשעה `200`, בלוק `Product` אחד ובלוק `BreadcrumbList` אחד**, זהה
+ל-M16-c80. **אין ממצא לתקן**, זהה לארבעה-עשר הסבבים הקודמים
+(M16-c66..M16-c80). ארבעת השערים: `type-check` נקי, `lint` נקי (12
+שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה),
+`build` exit 0 נקי. לא חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד
+ייצור. קבצים: `STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+
+**M15-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M16-c81).** קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט.
 
 **M14-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
 ב-M15-c81).** Sentry release vs HEAD אומת מחדש מול Vercel, אפס דריפט
 מ-M14-c80, אותו חוסם (סעיף 17 ב-`docs/BACKLOG.md`).
 
-**M13-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M14-c81).** api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס
-דריפט.
-
-**M12-c81 ו-M11-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c81).** robots.txt ו-sitemap.xml נבדקו מחדש, אפס דריפט בשניהם.
-
-**M01-c80..M10-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
+**M01-c80..M13-c81 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו
 לשורה הזו ב-M08-c80, הורחבה ב-M09-c80, M10-c80, M11-c80, M13-c80,
 M14-c80, M15-c80, M16-c80, M17-c80, ושוב ב-M06-c81, M07-c81, M08-c81,
-M09-c81, M10-c81 (כולל M01-c81..M05-c81: שערי חזות בית/מוצר/קטגוריה,
-type-check, test).** עשרים ושלושה פריטי תור/אימות-בלבד (type-check,
-שערי חזות בית/מוצר/קטגוריה, מיגרציות ממתינות, Sentry vs HEAD, test/
-build גייטים, TODO/FIXME, Lighthouse mobile, unused deps/dead exports,
-robots.txt, health/ready, STATE.md trim, RTL, JSON-LD, קונסול) ושלושים
+M09-c81, M10-c81, M11-c81, M12-c81, M13-c81 (כולל M01-c81..M05-c81: שערי
+חזות בית/מוצר/קטגוריה, type-check, test).** עשרים ושישה פריטי
+תור/אימות-בלבד (type-check, שערי חזות בית/מוצר/קטגוריה, מיגרציות
+ממתינות, Sentry vs HEAD, test/build גייטים, TODO/FIXME, Lighthouse
+mobile, unused deps/dead exports, robots.txt, sitemap.xml, health/ready,
+STATE.md trim, RTL, JSON-LD, קונסול) ושלושים
 פריטים נוספים מארכיון קודם — אפס דריפט/שבור בכולם, ארבעת השערים ירוקים
 בכולם, אפס שינוי קוד ייצור.
 
