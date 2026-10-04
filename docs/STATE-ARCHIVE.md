@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M11-c95 (הועבר מ-STATE.md ב-M12-c95, לשמירה על תקרת 300 שורות)
+
+**M11-c95 - DONE (05.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable", אותו פריט חזורי כמו M11-c93/M11-c94. `pwd` אומת, HEAD
+`f5564d638` (M10-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא
+שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M10-c95). קוד: `git log -1
+-- src/app/sitemap.xml src/app/sitemap src/app/sitemap*.ts` עדיין
+`d1adea146` (09.09), אפס שינוי מאז M11-c94. חי:
+`https://www.kenyonexpress.co.il/sitemap.xml` `200` `application/xml`,
+well-formed (`xmllint --noout`), **79** `<loc>`, כולם על
+`https://kenyonexpress.co.il/`, `lastmod` מקסימלי 25.09 02:29Z, etag
+`427ac6d9e86737e1fdbd2e4b0cfe53d6` ו-last-modified 02.10 07:02:57 GMT,
+`age` 210124 שניות: **זהים ביט ל-M11-c93 ול-M11-c94.** ה-apex עונה `308`
+ל-`www`; `robots.txt` החי מצביע ל-`https://kenyonexpress.co.il/sitemap.xml`;
+חמשת תתי-המפות (`/sitemap/{content,suppliers,regions,categories,
+products}.xml`) עדיין `404` בפרודקשן, כי הוא מגיש `urlset` שטוח מ-`main@
+18ed044b2` (חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). **חדש בסבב הזה, מעבר
+ל-manifest:** הבנייה של HEAD הורצה (`pnpm start` על 4861, סביבה
+מנוקה, `CARDCOM_USE_MOCK=true`) ו-`/sitemap.xml` המקומי מגיש `200`
+`application/xml` well-formed **`sitemapindex`** עם חמישה `<loc>`
+(content, categories, products, regions, suppliers), וכל אחת מחמש
+תתי-המפות עונה `200` מקומית; השרת הופסק אחרי המדידה (`4861 stopped`).
+כלומר הקוד ב-HEAD נכון, ורק הפריסה הישנה מסתירה אותו. **אפס דריפט
+מ-M11-c94.** שערים, כולם תחת `env -u` של 51 שמות (ערך `[SENSITIVE]` או
+קידומת `VERCEL`/`SUPABASE`/`NEXT_PUBLIC_SUPABASE`/`CARDCOM`/`RESEND`/
+`SENTRY`/`TWILIO`/`CRON_SECRET`/`VOUCHER`/`CI`; אומת `0` שורות כאלה
+בסביבת הילד): `pnpm type-check` exit 0; `pnpm lint` exit 0 (biome + 12
+שערי סקריפט); `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**,
+56.6 שניות, אפס כשלונות, זהה ביט ל-M10-c95; פורט 3311 תפוס על ידי
+`next-server` של סשן מקביל (PID 56540, cwd הריפו הזה, לא שלי, לא נגעתי),
+נבחר 4861 (אומת פנוי); `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4861 pnpm build` exit 0, אפס
+`Invalid API key`, `BUILD_ID` `YA343M9z79XXokQwzCxXq`, ה-manifest מראה
+`/sitemap.xml` וחמשת תתי-המפות כ-`ƒ`, אותן 92 שורות `supabase.rls_denied`
+על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד). לא פריט חזותי, אפס
+שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M11-c92 ואילך). אפס שינוי קוד.
+M10-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M10-c95 (הועבר מ-STATE.md ב-M11-c95, לשמירה על תקרת 300 שורות)
 
 **M10-c95 - DONE (05.10.2026).** משימת התור: "Verify migrations/pending/

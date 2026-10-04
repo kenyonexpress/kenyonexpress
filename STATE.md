@@ -1,61 +1,69 @@
-RESUME FROM: M12-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M11-c95 DONE:
-sitemap.xml נבדק שוב, חי `200` `application/xml` well-formed, 79 `<loc>`,
-etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT זהים ביט ל-M11-c93/c94,
-חמשת תתי-המפות עדיין `404` בפרודקשן (main הישן), **ובנוסף הפעם** הבנייה
-של HEAD הורצה מקומית ו-`/sitemap.xml` שלה מגיש `sitemapindex` עם חמשת
-תתי-המפות כולן `200`, ארבעת השערים ירוקים תחת `env -u` (51 שמות), M10-c95
-הועבר לארכיון, RESUME FROM מצביע ל-M12-c95)
+RESUME FROM: M13-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M12-c95 DONE:
+robots.txt נבדק שוב, חי `200` `text/plain`, etag `48ebf659...` ו-sha256
+`71b8e862...` זהים ביט ל-M12-c93/c94, 12 `Disallow` של `main` הישן,
+`/gift/foo` חי `200` בלי כיסוי (פער ידוע, נסגר עם deploy), **ובנוסף הפעם**
+הבנייה של HEAD הורצה מקומית ו-`/robots.txt` שלה מגיש 16 `Disallow`, ה-diff
+מול החי הוא בדיוק ארבע שורות M12-c67, ארבעת השערים ירוקים תחת `env -u`
+(51 שמות) אחרי שריצת test ראשונה נכשלה 14/7352 בגלל ניקוי שלא פוצל ב-zsh,
+M11-c95 הועבר לארכיון, RESUME FROM מצביע ל-M13-c95)
 
 ## המשך מ:
 
-**M11-c95 - DONE (05.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable", אותו פריט חזורי כמו M11-c93/M11-c94. `pwd` אומת, HEAD
-`f5564d638` (M10-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא
-שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M10-c95). קוד: `git log -1
--- src/app/sitemap.xml src/app/sitemap src/app/sitemap*.ts` עדיין
-`d1adea146` (09.09), אפס שינוי מאז M11-c94. חי:
-`https://www.kenyonexpress.co.il/sitemap.xml` `200` `application/xml`,
-well-formed (`xmllint --noout`), **79** `<loc>`, כולם על
-`https://kenyonexpress.co.il/`, `lastmod` מקסימלי 25.09 02:29Z, etag
-`427ac6d9e86737e1fdbd2e4b0cfe53d6` ו-last-modified 02.10 07:02:57 GMT,
-`age` 210124 שניות: **זהים ביט ל-M11-c93 ול-M11-c94.** ה-apex עונה `308`
-ל-`www`; `robots.txt` החי מצביע ל-`https://kenyonexpress.co.il/sitemap.xml`;
-חמשת תתי-המפות (`/sitemap/{content,suppliers,regions,categories,
-products}.xml`) עדיין `404` בפרודקשן, כי הוא מגיש `urlset` שטוח מ-`main@
-18ed044b2` (חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). **חדש בסבב הזה, מעבר
-ל-manifest:** הבנייה של HEAD הורצה (`pnpm start` על 4861, סביבה
-מנוקה, `CARDCOM_USE_MOCK=true`) ו-`/sitemap.xml` המקומי מגיש `200`
-`application/xml` well-formed **`sitemapindex`** עם חמישה `<loc>`
-(content, categories, products, regions, suppliers), וכל אחת מחמש
-תתי-המפות עונה `200` מקומית; השרת הופסק אחרי המדידה (`4861 stopped`).
-כלומר הקוד ב-HEAD נכון, ורק הפריסה הישנה מסתירה אותו. **אפס דריפט
-מ-M11-c94.** שערים, כולם תחת `env -u` של 51 שמות (ערך `[SENSITIVE]` או
+**M12-c95 - DONE (05.10.2026).** משימת התור: "Verify robots.txt
+production-safe", אותו פריט חזורי כמו M12-c93/M12-c94. `pwd` אומת, HEAD
+`de263538c` (M11-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא
+שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M11-c95). קוד: `git log -1
+-- src/app/robots.ts` עדיין `4d3702025` (M12-c67, 02.10), אפס שינוי מאז
+M12-c94. חי: `https://www.kenyonexpress.co.il/robots.txt` `200`
+`text/plain; charset=utf-8`, etag `48ebf65980bf0c79f17903e62a66be57`,
+sha256 `71b8e862...`, last-modified 04.10 03:03:09 GMT, `age` 52120,
+`x-vercel-cache: HIT`: **זהים ביט ל-M12-c93 ול-M12-c94.** 12 שורות
+`Disallow` (גרסת `main@18ed044b2` הישנה), `Host:`/`Sitemap:` ל-
+`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-`www`. בדיקות נתיב
+חיות: `/gift/foo` `200` **בלי** `Disallow` (הפער הידוע, נסגר רק עם פריסת
+HEAD, חוסם DEPLOY-UNBLOCK); `/order/foo`, `/wishlist/s/foo`, `/debug/foo`
+`404`; `/redeem/foo` `200` ו-`/coupon/foo` `307`, שניהם מכוסים ב-`Disallow`
+גם בגרסה החיה. **חדש בסבב הזה, מעבר ל-manifest:** הבנייה של HEAD הורצה
+(`pnpm start` על 4862, סביבה מנוקה, `CARDCOM_USE_MOCK=true`, cwd אומת
+כריפו הזה) ו-`/robots.txt` המקומי מגיש `200` `text/plain` עם **16** שורות
+`Disallow`; `diff` מול החי מראה בדיוק את ארבע השורות של M12-c67 (`/gift/`,
+`/order/`, `/wishlist/s/`, `/debug/`) ואת `Host`/`Sitemap` לכתובת המקומית
+(צפוי, `NEXT_PUBLIC_APP_URL` נאפה בבנייה). בבנייה המקומית `/gift/foo`
+ו-`/wishlist/s/foo` עונים `200` (ב-HEAD הנתיב `/wishlist/s/` קיים, בפרודקשן
+הישן הוא `404`), כלומר הפריסה תפתח נתיב-אסימון נוסף ו-`robots.txt` של HEAD
+כבר מכסה אותו. השרת הופסק אחרי המדידה (`4862 stopped`). **אפס דריפט
+מ-M12-c94.** **החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער נסגר עם
+ה-deploy, מתועד ב"חוסמים פתוחים" סעיף 2. **תקלת מדידה שתועדה, לא קוד:**
+ריצת `pnpm test` ראשונה נכשלה 14/7352 (8 קבצים, כולם "key unset": resend,
+twilio, vapid, invoices, deployed-runtime, meili) כי רשימת ה-`-u` הועברה
+דרך משתנה zsh לא מפוצל (`env $SCRUB` הוא ארגומנט יחיד), כלומר הסביבה לא
+נוקתה בפועל; אומת `0` שמות שיוריים בצורת `env $(...)`/`${=S}`, והריצה
+החוזרת ירוקה. שערים, כולם תחת `env -u` של 51 שמות (ערך `[SENSITIVE]` או
 קידומת `VERCEL`/`SUPABASE`/`NEXT_PUBLIC_SUPABASE`/`CARDCOM`/`RESEND`/
-`SENTRY`/`TWILIO`/`CRON_SECRET`/`VOUCHER`/`CI`; אומת `0` שורות כאלה
-בסביבת הילד): `pnpm type-check` exit 0; `pnpm lint` exit 0 (biome + 12
-שערי סקריפט); `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**,
-56.6 שניות, אפס כשלונות, זהה ביט ל-M10-c95; פורט 3311 תפוס על ידי
-`next-server` של סשן מקביל (PID 56540, cwd הריפו הזה, לא שלי, לא נגעתי),
-נבחר 4861 (אומת פנוי); `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4861 pnpm build` exit 0, אפס
-`Invalid API key`, `BUILD_ID` `YA343M9z79XXokQwzCxXq`, ה-manifest מראה
-`/sitemap.xml` וחמשת תתי-המפות כ-`ƒ`, אותן 92 שורות `supabase.rls_denied`
-על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד). לא פריט חזותי, אפס
-שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M11-c92 ואילך). אפס שינוי קוד.
-M10-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+`SENTRY`/`TWILIO`/`CRON_SECRET`/`VOUCHER`/`CI`): `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים,
+7340 עברו, 12 דולגו (7352)**, 57.4 שניות, אפס כשלונות, זהה ביט ל-M11-c95;
+פורט 3311 תפוס על ידי `next-server` של סשן מקביל (PID 56540, cwd הריפו
+הזה, לא שלי, לא נגעתי), נבחר 4862 (אומת פנוי); `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4862 pnpm build`
+exit 0, אפס `Invalid API key`, `BUILD_ID` `2bJFnqx7axsHwMcLgNytN`,
+ה-manifest מראה `/robots.txt` כ-`○` סטטי, אותן 92 שורות
+`supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד).
+לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M12-c92
+ואילך). אפס שינוי קוד. M11-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על
+תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M10-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M11-c95): 60 קבצים ב-`migrations/pending/`, `git log -1` עדיין
-`48c8792dd`, בדיקה ישירה מול פרודקשן אישרה ש-15 אובייקטים של 13 מ-19
-הקבצים החוסמים עדיין חסרים וטריגר 218 עדיין שבור, אפס דריפט מ-M10-c93.
+**M11-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M12-c95): sitemap.xml חי `200` well-formed, 79 `<loc>`, etag
+`427ac6d9...` זהה ביט ל-M11-c93/c94, חמשת תתי-המפות `404` בפרודקשן
+(main הישן) אך `200` כולן בבנייה מקומית של HEAD, אפס דריפט מ-M11-c94.
 
-**M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
+**M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
 M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה; כולם DONE עם אפס דריפט וארבעת השערים ירוקים. ההעברות נעשו
-שלב-שלב (האחרונה: M09-c95 ב-M10-c95) לשמירה על תקרת 300 שורות; שום
+שלב-שלב (האחרונה: M11-c95 ב-M12-c95) לשמירה על תקרת 300 שורות; שום
 שורה לא נמחקה מהארכיון, רק הוסרה כאן הכפילות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
