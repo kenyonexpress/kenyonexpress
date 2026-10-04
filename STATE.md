@@ -1,22 +1,38 @@
-RESUME FROM: M03-c91
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M02-c91 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, 4.96/4.58/3.25 PASS, אפס דריפט)
+RESUME FROM: M04-c91
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M03-c91 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, 3.53/2.52/1.69 PASS, אפס דריפט)
 
 ## המשך מ:
 
-**M02-c91 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-on /product sample", זהה ל-M02-c90. לא היה listener על 3311 (`lsof` ריק).
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
-pnpm build` exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`, ו-cwd של
-ה-listener אומת ב-`lsof` כשורש הריפו. השער רץ בחזית עם `--page=product
---widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
-**`380 4.96% PASS`, `768 4.58% PASS`, `1440 3.25% PASS`, זהה בביט
-ל-M02-c90 ול-M02-c89. אפס דריפט.** ריצה אחת הספיקה: גם הפעם דף המוצר לא
-הראה את ניפוח ה-768 בריצה קרה שהבית מראה (M01-c91), כלומר הדפוס ספציפי
-לדף הבית. השרת נעצר ב-INT אחרי המדידה, הפורט פנוי. שלוש השורות נכתבו
-ל-`docs/UI-PARITY-REPORT.md` על ידי השער. שערים: `type-check` 0, `lint` 0,
-`test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. M01-c91
-(בית 8.58/9.01/4.16) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+**M03-c91 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+on /category sample", זהה ל-M03-c90. פורט 3311 היה פנוי. `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`
+exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`, cwd של ה-listener אומת
+ב-`lsof`. השער רץ בחזית עם `--page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'`. **שתי הריצות הראשונות:
+`380 3.53% PASS`, ו-768 סירב למדוד (exit 3, "2 on the local page had still
+not loaded").** זה לא ציון; השער עצר לפני שמדד 768 ו-1440. **הסיבה נמדדה:**
+`/category/hot-deals` מכיל שני כרטיסים, שניהם בתוך ה-viewport הראשון, והדפדפן
+ביקש את התמונות שלהם ב-`w=256` ולא קיבל תשובה. `curl` עם
+`Accept: image/avif,...` על אותם שני מפתחות (`w=256`, AVIF) נתקע 15-20
+שניות עד timeout, בזמן שעל אותו שרת `w=128/288/384/640/3840` AVIF ו-`w=256`
+JPEG ענו תוך פחות מ-70ms, וה-CPU של השרת היה 19%. כלומר הקידוד של שני
+המפתחות האלה נתקע בתוך מופע השרת הראשון, וכל בקשה שאחריו המתינה על אותה
+הבטחה תקועה. **אחרי הפעלה מחדש של השרת (INT ואז `pnpm start` על אותו build),
+אותם שני מפתחות ענו קר תוך 69ms ו-15ms**, ומיד אחריהם השער, exit 0:
+**`380 3.53% PASS`, `768 2.52% PASS`, `1440 1.69% PASS`, זהה בביט ל-M03-c90
+ול-M03-c89. אפס דריפט.** **החלטות שהתקבלו לבד:** (1) לא נעשה שימוש
+ב-`COMPARE_ALLOW_PENDING_IMAGES=1`, כי ציון עם תמונות חסרות הוא ציון על דף
+מקוצר. (2) שני הווריאנטים של `w=256` נשמרו במטמון האופטימייזר לפני הריצה
+הנמדדת, בגלל ה-`curl` שהוכיח את ההשערה. זה לא משנה את הפריסה שנמדדת, רק
+את התזמון. (3) לא תוקן קוד (פריט מדידה בלבד). **השערה, לא הוכחה:** ייתכן
+שזה גם המנגנון מאחורי ניפוח ה-768 בריצה קרה של דף הבית (M01-c89..c91), כי
+גם שם רק ריצה ראשונה מול שרת טרי נפגעת. מועמד לפריט עתידי: לבדוק
+`_next/image` AVIF בריצה קרה ב-768 על `/`. השער כתב את כל הריצות,
+כולל הסירובים, ל-`docs/UI-PARITY-REPORT.md`. השרת נעצר ב-INT והפורט פנוי.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`build` 0. אפס שינוי קוד. M02-c91 (מוצר 4.96/4.58/3.25) הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
