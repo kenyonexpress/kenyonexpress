@@ -1,20 +1,21 @@
-RESUME FROM: M08-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M07-c89 DONE: שני סמני TODO(cardcom) כבר ב-BACKLOG סעיף 6, אפס סמן חדש)
+RESUME FROM: M09-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M08-c89 DONE: Lighthouse mobile / ו-/product שניהם 100/100/100, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c89 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days resolve or file in docs/BACKLOG.md", זהה ל-M07-c80. נסרקו
-`src/`, `apps/`, `packages/`, `scripts/` (`grep -rnE 'TODO|FIXME'`, ts/tsx/
-mjs/js): שני הסמנים האמיתיים היחידים נשארו `src/lib/payments/cardcom.ts:254`
-ו-`:319` (`TODO(cardcom)`, `git blame`: 24.07.2026 ו-07.08.2026, מעל שבעה
-ימים), שניהם כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6 וחסומים על אימות מול
-טרמינל Cardcom חי (אסור בכללי הפריט). אין סמן חדש ואין סמן שנפתר.
-`whatsapp.test.ts:91` ו-`scripts/final-audit*.mjs` הם מחרוזות/בדיקות של
-הסורק, לא סמני עבודה. שערים: `type-check` 0, `lint` 0, `test` 614/614
-(7337/7349, 12 דולגו), `rm -rf .next && pnpm build` exit 0, 337/337.
-לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. M06-c89 הועבר
-ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M08-c89 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores", זהה ל-M08-c81. `pwd` אומת, עץ נקי, HEAD
+`8074399d2` (M07-c89), פורט 4517 נבדק פנוי. **בחזית**: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` exit 0. `pnpm start` על 4517, `cwd` אומת מול הריפו הזה (`lsof`).
+`/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל הסבבים) החזירו `200`.
+`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
+**100/100/100**, `/product/צימר-מאסטר` = **100/100/100** (perf/a11y/seo),
+אפס דריפט מ-M08-c81. שרת נסגר ב-INT, פורט אומת פנוי. שערים: `type-check`
+0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו), build למעלה exit 0.
+לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך). אפס שינוי
+קוד. M07-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
