@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c90 (הועבר מ-STATE.md ב-M10-c90, לשמירה על תקרת 300 שורות)
+
+**M09-c90 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
+dead exports", זהה ל-M09-c89. `pwd` אומת, עץ נקי, HEAD `d770d77c5`
+(M08-c90). שינוי הקוד היחיד מאז M09-c89 הוא M17-c89
+(`ProductInfo.tsx` ובדיקתו), ואף אחד מהם לא מופיע בפלט. `pnpm dlx knip
+--no-config-hints` (ephemeral, אין `knip.json`): **201 unused files / 5
+unused dependencies / 1 unlisted binary / 271 unused exports / 197 unused
+exported types / 4 duplicate exports**, זהה בדיוק ל-M09-c89, אפס מועמד
+חדש. **החלטה שהתקבלה לבד:** לא הוסר דבר, כמו בכל הסבבים מאז M09-c66: כל
+המועמדים הם רעש ידוע (drizzle/postgres/supabase CLI, `scripts/*.mjs`
+שרצים ישירות, `database.ts` הנוצר) והכרעתם היא של המפעיל. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
+pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי
+קוד. M08-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M07-c90 (הועבר מ-STATE.md ב-M08-c90, לשמירה על תקרת 300 שורות)
 
 **M07-c90 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older

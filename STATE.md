@@ -1,23 +1,26 @@
-RESUME FROM: M10-c90
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M09-c90 DONE: knip 201/5/1/271/197/4, אפס דריפט, אפס הסרה)
+RESUME FROM: M11-c90
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M10-c90 DONE: כל המיגרציות החוסמות עדיין לא מוחלות בפרודקשן, החוסם כבר רשום, אפס דריפט)
 
 ## המשך מ:
 
-**M09-c90 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
-dead exports", זהה ל-M09-c89. `pwd` אומת, עץ נקי, HEAD `d770d77c5`
-(M08-c90). שינוי הקוד היחיד מאז M09-c89 הוא M17-c89
-(`ProductInfo.tsx` ובדיקתו), ואף אחד מהם לא מופיע בפלט. `pnpm dlx knip
---no-config-hints` (ephemeral, אין `knip.json`): **201 unused files / 5
-unused dependencies / 1 unlisted binary / 271 unused exports / 197 unused
-exported types / 4 duplicate exports**, זהה בדיוק ל-M09-c89, אפס מועמד
-חדש. **החלטה שהתקבלה לבד:** לא הוסר דבר, כמו בכל הסבבים מאז M09-c66: כל
-המועמדים הם רעש ידוע (drizzle/postgres/supabase CLI, `scripts/*.mjs`
-שרצים ישירות, `database.ts` הנוצר) והכרעתם היא של המפעיל. שערים:
-`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
-pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי
-קוד. M08-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M10-c90 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", זהה ל-M10-c89. `pwd` אומת, עץ נקי, HEAD
+`cbd20d911` (M09-c90). `git log -1 -- migrations/pending` עדיין
+`48c8792dd` (248): אפס קובץ חדש, 60 קבצי `.sql` (58 מיגרציות +
+`preflight_162/184`) + `APPLY-ORDER.md`/`README.md`. בדיקה ישירה מול
+פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה בלבד, אפס DDL): **אף
+אחת מ-13 הטבלאות** של 204/232/234/235/236/239/240/244 לא קיימת
+(`to_regclass` NULL לכולן); אף אחת מ-9 העמודות של 223/232/242/243 לא
+קיימת; `anon` בלי SELECT על `reviews` (247); 0 מדיניות `*_unified` על
+`banners` (245); 82 שורות `products` עם `city IS NULL` (241). זהה בדיוק
+ל-M10-c89. (M10-c89 כתב "14 טבלאות"; ספירת `CREATE TABLE` בקבצים נותנת
+13, וכולן נבדקו.) **החוסם כבר רשום** (חוסם 3 למטה, `docs/BACKLOG.md`
+סעיף 5, `docs/RUNBOOK.md`), אפס דריפט, לא הוחלה אף מיגרציה. **החלטה
+שהתקבלה לבד:** לא נפתח חוסם כפול. שערים: `type-check` 0, `lint` 0,
+`test` 615/615 (7340/7352, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. M09-c90 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
@@ -119,8 +122,8 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
-   M10-c89 (04.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
-   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c82.**
+   M10-c90 (04.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
+   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c89.**
    60 קבצים ב-`migrations/pending/`, `git log -1` עדיין `48c8792dd` (248).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
