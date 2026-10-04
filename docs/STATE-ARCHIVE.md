@@ -43532,3 +43532,22 @@ exported types / 4 duplicate exports**, זהה בדיוק ל-M09-c82, אפס מ�
 pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי
 קוד. M08-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
+
+## M12-c89 (הועבר מ-STATE.md ב-M13-c89, לשמירה על תקרת 300 שורות)
+
+**M12-c89 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
+production-safe", זהה ל-M12-c88. `pwd` אומת, עץ נקי, HEAD `1b7b81f97`
+(M11-c89). קוד: הקומיט האחרון על `src/app/robots.ts` ושני הטסטים שלו
+עדיין `4d3702025` (M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים
+כולל `/gift/`, `/order/`, `/wishlist/s/`, `/debug/`. חי:
+`https://www.kenyonexpress.co.il/robots.txt` `200` `text/plain`, etag
+`48ebf659...`, sha256 `71b8e862...`, 12 שורות `Disallow` של גרסת `main`
+הישנה, `Host:`/`Sitemap:` ל-`https://kenyonexpress.co.il`; ה-apex עונה
+`308` ל-www. `/gift/foo` `200` חי בלי `Disallow` (פער ידוע, נסגר רק
+בפריסת HEAD, חוסם DEPLOY-UNBLOCK); `/order/foo`, `/wishlist/s/foo`,
+`/debug/foo` `404`. אפס דריפט מ-M12-c88. שערים: `type-check` 0, `lint` 0,
+`test` 614/614 (7337/7349, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4519 pnpm build`
+exit 0, ה-manifest מראה `/robots.txt`. לא פריט חזותי, `compare.mjs` לא
+נדרש. M11-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.

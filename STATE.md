@@ -1,24 +1,24 @@
-RESUME FROM: M13-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M12-c89 DONE: robots.txt נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M14-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M13-c89 DONE: /api/health 200, /api/ready 503 על Meilisearch החיצוני, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c89 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
-production-safe", זהה ל-M12-c88. `pwd` אומת, עץ נקי, HEAD `1b7b81f97`
-(M11-c89). קוד: הקומיט האחרון על `src/app/robots.ts` ושני הטסטים שלו
-עדיין `4d3702025` (M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים
-כולל `/gift/`, `/order/`, `/wishlist/s/`, `/debug/`. חי:
-`https://www.kenyonexpress.co.il/robots.txt` `200` `text/plain`, etag
-`48ebf659...`, sha256 `71b8e862...`, 12 שורות `Disallow` של גרסת `main`
-הישנה, `Host:`/`Sitemap:` ל-`https://kenyonexpress.co.il`; ה-apex עונה
-`308` ל-www. `/gift/foo` `200` חי בלי `Disallow` (פער ידוע, נסגר רק
-בפריסת HEAD, חוסם DEPLOY-UNBLOCK); `/order/foo`, `/wishlist/s/foo`,
-`/debug/foo` `404`. אפס דריפט מ-M12-c88. שערים: `type-check` 0, `lint` 0,
-`test` 614/614 (7337/7349, 12 דולגו), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4519 pnpm build`
-exit 0, ה-manifest מראה `/robots.txt`. לא פריט חזותי, `compare.mjs` לא
-נדרש. M11-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M13-c89 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps", זהה ל-M13-c88. `pwd` אומת, עץ נקי,
+HEAD `bac040477` (M12-c89). קוד: הקומיט האחרון על `src/app/api/health`,
+`src/app/api/ready` ו-`src/lib/health` עדיין `64728ff8d` (02.09), אפס
+שינוי. חי: `https://www.kenyonexpress.co.il/api/health` `200`
+`application/json` `{"ok":true,"database":"ok","latency_ms":123}`, תלות DB
+אמיתית. `/api/ready` `503`
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
+זהה ל-M13-c88: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
+חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. כלומר "200 על
+ready" לא מתקיים, והסיבה חיצונית ומתועדת, לא באג קוד. אפס דריפט.
+שערים: `type-check` 0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו),
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4521
+pnpm build` exit 0, ה-manifest מראה `/api/health` ו-`/api/ready`. לא פריט
+חזותי, `compare.mjs` לא נדרש. M12-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
