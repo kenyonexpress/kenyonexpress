@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c91 (הועבר מ-STATE.md ב-M17-c91, לשמירה על תקרת 300 שורות)
+
+**M16-c91 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", זהה ל-M16-c90. `pwd` אומת, עץ
+נקי, HEAD `b3905ae62` (M15-c91). קוד: הקומיט האחרון על
+`src/lib/seo/json-ld.ts` ועל `src/app/(store)/product/[slug]/page.tsx` הוא
+עדיין `fd820969f` (30.09), `git diff 179d83423 HEAD -- src apps packages`
+ריק, והדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd`.
+בזמן ריצה: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4982 pnpm build` (exit 0), `pnpm
+start -p 4982` (cwd המאזין אומת ב-`lsof`). כל 44 הסלאגים הפעילים
+מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו: **44/44 מחזירים 200 עם
+בלוק `Product` אחד ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות JSON.
+אפס דריפט מ-M16-c90. השרת נעצר ב-SIGINT, הפורט פנוי. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. לא
+חזותי, `compare.mjs` לא נדרש. M15-c91 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M14-c91 (הועבר מ-STATE.md ב-M15-c91, לשמירה על תקרת 300 שורות)
 
 **M14-c91 - DONE (04.10.2026).** משימת התור: "Verify Sentry release

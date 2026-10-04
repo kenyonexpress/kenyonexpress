@@ -458,8 +458,12 @@
   cursor: not-allowed;
 }
 
+/* Wraps because a long attribute run plus the share row and the WhatsApp
+   question link overflow the 768 summary column by 19px, and in RTL that
+   pushes the link off the left edge and scrolls the whole page sideways. */
 .pdp-summary__tags {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
