@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c92 (הועבר מ-STATE.md ב-M08-c92, לשמירה על תקרת 300 שורות)
+
+**M07-c92 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md", זהה ל-M07-c91. `pwd`
+אומת, עץ נקי, HEAD `cd3c5ca4c`. `git grep -nwE "TODO|FIXME|XXX|HACK"`
+על `src packages scripts apps supabase migrations e2e` (בלי `*.md`):
+**שני סמני עבודה בלבד**, `src/lib/payments/cardcom.ts:254` (blame
+24.07.2026, זיכוי לגאסי) ו-`:319` (blame 07.08.2026, מסמכים), שניהם
+`TODO(cardcom)`, ישנים משבעה ימים, וכבר רשומים ב-`docs/BACKLOG.md` סעיף 6
+(ובקוד `Tracked in #41`/`#42`). לא ניתנים לפתרון בלי טרמינל חי, ואסור
+אינטגרציית ספק תשלום בפריט הזה. שאר הפגיעות אינן סמנים: `05X-XXX-XXXX`
+(`whatsapp.ts:85`, `sms/twilio.ts:74`, `whatsapp/twilio.ts:45`), המחרוזת
+`'TODO'` ב-`whatsapp.test.ts:91`, ו-`scripts/final-audit*` שמממש את
+הסורק עצמו. מאז M07-c91 השתנה ב-`src/` רק `src/styles/product-page.css`
+(+4, בלי סמנים). **אפס דריפט, BACKLOG לא שונה.** שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340 עברו, 12 דולגו, 7352), `rm -rf .next &&
+pnpm build` 0. אין שינוי UI, ולכן `compare.mjs` לא נדרש. M06-c92 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M04-c92 (הועבר מ-STATE.md ב-M05-c92, לשמירה על תקרת 300 שורות)
 
 **M04-c92 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
