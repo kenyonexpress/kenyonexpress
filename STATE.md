@@ -1,50 +1,50 @@
-RESUME FROM: M08-c95
-Updated: 2026-10-04 (סשן `audit/final-audit`, Fable 5.1, פריט M07-c95 DONE:
-TODO/FIXME נסרקו שוב, אותם שני סמני `cardcom.ts` כבר `tracked`
-ב-`docs/BACKLOG.md` סעיף 6, אפס סמן חדש, אפס שינוי קוד, ארבעת השערים
-ירוקים, M06-c95 הועבר לארכיון לשמירה על תקרת 300 שורות, RESUME FROM
-מצביע ל-M08-c95)
+RESUME FROM: M09-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M08-c95 DONE:
+Lighthouse mobile על `/` ו-`/product/צימר-מאסטר` נמדד שוב בחזית תחת
+`env -u` מלא, **100/100/100** בשתיהן, אפס דריפט מ-M08-c94, אפס שינוי
+קוד, ארבעת השערים ירוקים, M07-c95 הועבר לארכיון לשמירה על תקרת 300
+שורות, RESUME FROM מצביע ל-M09-c95)
 
 ## המשך מ:
 
-**M07-c95 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days resolve or file in docs/BACKLOG.md", זהה במהות ל-M07-c94.
-`pwd` אומת, HEAD `0eaffdd8d` (M06-c95). בעץ בהגעה: `.vercelignore` שונה
-ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M06-c95).
-`git diff --stat a7f73e178 HEAD -- src public packages next.config.*
-package.json docs/BACKLOG.md scripts supabase migrations apps` (מאז
-M07-c94) מחזיר רק `docs/BACKLOG.md` (+30, רשומות M10-c94 ו-M14-c94 של
-סשנים אחרים, לא סמנים): אפס שינוי קוד, אין דריפט לתקן. `git grep -n -E
-'TODO|FIXME|HACK|XXX' -- src scripts supabase migrations packages apps`
-מחזיר אותם שני סמני עבודה בדיוק: `TODO(cardcom)` ב-
-`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame` `0254f2acf`
-24.07.2026) ו-`:319` (מסמכים, `bc21217074` 07.08.2026), שניהם ישנים
-משבעה ימים ושניהם נושאים `Tracked in #41`/`#42` באותה תגובה; כל שאר
-ההתאמות הן `XXXXX-XXXXX`/`05X-XXX-XXXX` (ממלאי-מקום של טלפון וקופון,
-לא סמנים) ו-`src/lib/whatsapp.test.ts:91` שהוא המחרוזת הליטרלית
-`'TODO'` בבדיקה. סריקה נוספת ב-`.github`, `e2e`, `tests`, `messages`,
-`*.yml`, `*.json`: אפס סמנים. `node scripts/final-audit.mjs` (תחת
-`env -u`): `ok 0 work markers (TODO/FIXME/HACK/XXX) (of 2)`, שניהם
-`tracked`. שניהם כבר רשומים ב-`docs/BACKLOG.md` סעיף 6 (מ-M07-c67, ללא
-שינוי), ממתינים לאימות שם/שדה מול טרמינל Cardcom חי, חוסם #8. **אין
-פעולה נדרשת: זהה בביט ל-M07-c94, אפס סמן חדש ואפס סמן שהפסיק לירות,
-לא נפתר ולא נרשם דבר חדש כי אין מה.** ארבעת השערים רצו **בחזית** תחת
-`env -u` ל-51 משתנים שה-shell של ה-harness מזריק (`[SENSITIVE]`,
-`VERCEL*`, `NODE_ENV`, `SUPABASE_*`, `NEXT_PUBLIC_*`, `CARDCOM_*`;
-51 ולא 65 כמו ב-M06-c95 כי ה-shell הזריק פחות שמות הפעם, אותה שיטה):
-`pnpm type-check` exit 0; `pnpm lint` exit 0 (he-IL 116, input-dir 24,
-docs-index 282, docs-path-audit 155 ידועים); `pnpm test` **615/615
-קבצים, 7340 עברו, 12 דולגו (7352)**, 56.3 שניות, אפס כשלונות, זהה ביט
-ל-M06-c95; `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4830 pnpm build` exit 0, אפס
-`Invalid API key`, `.next/BUILD_ID` נוצר (`QZ-HX7dYYfO57esx7GtN292`),
-אותן 92 שורות `supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה
-247, `warn` בלבד, לא דריפט). פורט 3311 מאזין על ידי תהליך `node` של
-סשן מקביל מאותו checkout (PID 56540, לא שלי, לא נגעתי); `rm -rf .next`
-מחליף את ה-build שהוא מגיש, כמו ב-M06-c95. לא פריט חזותי, אפס שינוי
-UI, `compare.mjs` לא נדרש. אפס שינוי קוד. M06-c95 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M08-c95 - DONE (05.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores", זהה במהות ל-M08-c94. `pwd` אומת, HEAD
+`13d08fcc5` (M07-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא
+שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M07-c95). `git diff --stat
+786a42c43 HEAD -- src public next.config.* package.json packages
+scripts/lighthouse-smoke.mjs` (מאז M08-c94) ריק: אפס שינוי קוד, אין
+דריפט לתקן. פורט 3311 תפוס על ידי `node` של סשן מקביל (PID 56540, לא
+שלי, לא נגעתי); נבחר פורט 4831 (אומת פנוי מראש). **מדידה ראשונה
+נפסלה בידי עצמי**: רשימת ה-`env -u` הראשונה (31 שמות) דרשה `VERCEL=`
+מדויק ולכן השאירה `VERCEL_ENV`/`VERCEL_URL`/`NEXT_PUBLIC_SUPABASE_*`
+בסביבה; `pnpm build` יצא 0 ו-Lighthouse החזיר 100/100/100 בשתי
+הדפים, אבל `pnpm test` נפל 9/7352 (`deployed-runtime`, `resend`,
+`invoices`, כולם "key unset" שקרא מפתח אמיתי מה-harness, לא קוד).
+הרחבת הרשימה להתאמת-קידומת (59 שמות, אותה שיטה כמו M06/M07-c95)
+תיקנה את זה, **וכל המדידות למטה חזרו על עצמן תחת הרשימה המלאה**:
+`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4831 pnpm build` exit 0, אפס
+`Invalid API key`, `BUILD_ID` `SHX2L8diFdfUt1dDGsd0L`, אותן 92 שורות
+`supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד).
+`PORT=4831 pnpm start`, `cwd` של המאזין אומת מול הריפו הזה (`lsof`,
+PID 86742). `/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל הסבבים)
+החזירו `200`, שניהם חוממו פעמיים. `LOCAL_BASE=http://localhost:4831
+node scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-
+`--url=` למוצר), שתיהן **בחזית**: `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100** (perf/a11y/seo), זהה
+ל-M08-c94 ול-M08-c93, אפס דריפט. שרת נסגר ב-`INT`, פורט 4831 אומת
+פנוי. שערים, כולם תחת הרשימה המלאה: `pnpm type-check` exit 0; `pnpm
+lint` exit 0 (he-IL 116, input-dir 24, docs-index 282, docs-path-audit
+155 ידועים); `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**,
+66.0 שניות, אפס כשלונות, זהה ביט ל-M07-c95; `build` למעלה exit 0. לא
+פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M08-c80
+ואילך). אפס שינוי קוד. M07-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+**M07-c95 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M08-c95): TODO/FIXME נסרקו שוב, אותם שני סמני `cardcom.ts`
+כבר `tracked` ב-`docs/BACKLOG.md` סעיף 6, אפס סמן חדש, אפס דריפט
+מ-M07-c94, כל ארבעת השערים ירוקים.
 
 **M17-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M18-c94): RTL/LTR נבדק מחדש על `/` ושלושת סלאגי הדגימה
@@ -113,6 +113,7 @@ M03-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M04-c95.
 M04-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M05-c95.
 M05-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M06-c95.
 M06-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M07-c95.
+M07-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M08-c95.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
