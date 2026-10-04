@@ -1,7 +1,22 @@
-RESUME FROM: M05-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c94 DONE: שער type-check נבדק מחדש, נקי, אפס דריפט מ-M04-c93)
+RESUME FROM: M06-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c94 DONE: שער test נבדק מחדש, 615/615, אפס דריפט מ-M05-c93)
 
 ## המשך מ:
+
+**M05-c94 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה במהות ל-M05-c93. `pwd` אומת, עץ נקי, HEAD `b258b1a1b`
+(M04-c94). `git diff a2474954a HEAD -- src public next.config.*
+next.config.mjs next.config.ts package.json` ריק (אפס שינוי קוד מאז
+הקומיט האחרון שנגע בקוד, `a2474954a`) — אין דריפט לתקן. ארבעת השערים
+רצו: `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, זהה ביט ל-M05-c93; `pnpm type-check` נקי; `pnpm lint` (biome +
+12 שערי סקריפט) נקי; `pnpm build` (`CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4722` — פורט 3311 תפוס על ידי סשן
+מקביל אחר, `lsof` אישר שה-`cwd` של המאזין הוא הריפו הזה, לא לנגיעה,
+נבחר פורט 4722 פנוי) exit 0 (לוגי `supabase.rls_denied` על `reviews`
+ב-prerender אנונימי הם רעש צפוי מחוסם #11 בתור, לא כשל build). אפס
+שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש. `STATE.md` עדיין
+מתחת לתקרת 300 השורות, אין ארכוב נדרש בפריט הזה. קובץ: `STATE.md`.
 
 **M04-c94 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
 commit", זהה במהות ל-M04-c93. `pwd` אומת, עץ נקי, HEAD `925c5bf8d`
