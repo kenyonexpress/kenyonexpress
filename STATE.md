@@ -1,30 +1,22 @@
-RESUME FROM: M02-c90
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M01-c90 DONE: שער חזותי בית נמדד מחדש 380/768/1440, 8.58/9.02/4.16 PASS)
+RESUME FROM: M03-c90
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M02-c90 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, 4.96/4.58/3.25 PASS, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c90 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c89. על פורט
-3311 נמצא `next-server` מ-11:21 (PID 1199, cwd הריפו הזה) שהגיש build
-ישן מ-`.next` הנוכחי (12:42). נעצר ב-INT. `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`
-exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`. השער רץ בחזית עם
-`--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`.
-**ריצה ראשונה: `380 8.58% PASS`, `768 10.40% PASS`, `1440 4.16% PASS`**
-(exit 0). **ריצה שנייה: `380 8.58%`, `768 9.02%`, `1440 4.16%`, כולם PASS,
-exit 0.** הפרש מול M01-c89 (8.58/9.01/4.16): 0.00 / +0.01 / 0.00. מאז
-M01-c89 השתנה ב-`src` רק `ProductInfo.tsx` (M17-c89, דף מוצר), לא דף הבית.
-**ההחלטה שהתקבלה לבד:** הערך הנרשם הוא הריצה השנייה. **דפוס, לא רעש:**
-זה הסבב השני ברציפות שהריצה הראשונה מול שרת טרי מנפחת דווקא את 768
-(14.11 ב-c89, 10.40 עכשיו) והשנייה חוזרת ל-9.0. 10.40 כבר במרחק 0.6 מהשער,
-כך שריצה קרה אחת עלולה לאדים בלי שום שינוי קוד. לא תוקן בפריט הזה (פריט
-מדידה בלבד); מי שנוגע ב-`compare.mjs` צריך לחמם את השרת (בקשת `/` ברוחב
-768 לפני הצילום) לפני שהוא מאשים קוד. שתי הריצות נכתבו על ידי השער
-ל-`docs/UI-PARITY-REPORT.md` ושום שורה לא נמחקה. שערים: `type-check` 0,
-`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד.
-הקומיט הראשון (`9af595dc8`) נדחף כש-`lint` אדום: `docs-path-audit` תפס
-בטקסט M18-c89 שהועבר לארכיון את הנתיב השגוי המצוטט. תוקן בקומיט ההמשך,
-`lint` 0 אחריו. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+**M02-c90 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample", זהה ל-M02-c89. לא היה listener על 3311 (`lsof` ריק).
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+pnpm build` exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`, ו-cwd של
+ה-listener אומת ב-`lsof` כשורש הריפו. השער רץ בחזית עם `--page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
+**`380 4.96% PASS`, `768 4.58% PASS`, `1440 3.25% PASS`, זהה בביט
+ל-M02-c89 ול-M02-c83. אפס דריפט**, גם אחרי M17-c89 (`ProductInfo.tsx`,
+שורת המטא בדף המוצר). ריצה אחת הספיקה: בניגוד לבית (M01-c90), דף המוצר
+לא הראה ניפוח בריצה קרה. השרת נעצר ב-INT אחרי המדידה. שלוש השורות נכתבו
+ל-`docs/UI-PARITY-REPORT.md` על ידי השער. שערים: `type-check` 0, `lint` 0,
+`test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. M01-c90
+(בית 8.58/9.02/4.16) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
