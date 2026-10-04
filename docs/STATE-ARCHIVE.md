@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c94 (הועבר מ-STATE.md ב-M08-c94, לשמירה על תקרת 300 שורות)
+
+**M02-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample", זהה ל-M02-c93. `pwd` אומת, עץ נקי, HEAD `44ec205c4`
+(M01-c94). `git diff c764c40b7 HEAD -- src public next.config.*
+package.json scripts/compare.mjs` ריק (אפס שינוי קוד או בשער מאז
+M02-c93). פורט 3311 תפוס על ידי סשן מקביל אחר (אותו `cwd`, לא לנגיעה,
+סשן אחר), ולכן נבחר פורט חלופי 4721 (`lsof` אישר פנוי מראש, ואומת גם
+שה-`cwd` של המאזין על 4721 הוא הריפו הזה). `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4721 pnpm
+build` exit 0, `PORT=4721 pnpm start`, השרת אומת חי (`cwd` של המאזין
+נבדק ב-`lsof`). השער רץ בחזית פר-רוחב על `/product/מוצר-לדוגמא` עם
+`--baseline='refs/electro_product_{width}.png'` (הדגימה היחידה שעוד
+קיימת בפנקס מאז M02-c93; אחד משלד-ה-`-copy` הידועים בחוסם #11, לא
+לתיקון כאן). **380: `4.95%` PASS. 768: `4.55%` PASS. 1440: `3.25%`
+PASS**, שלושתם מסומנים `HEIGHT RATIO` (תמיד היו, לא רגרסיה: צילום קפוא
+מלא מול דף מרונדר חלקי). **זהה בדיוק למספרים שנרשמו ב-M02-c93, אפס
+דריפט.** ריצת 380 הראשונה נקטעה בטיימאוט של 120 שניות והועברה לרקע
+על ידי המערכת עצמה (לא בידי הסוכן) ונמתן לה עד סיום לפני המשך; נרשמה
+שוב בחזית לקבלת פלט מלא. ארבע הריצות (380 פעמיים, 768, 1440) נכתבו
+אוטומטית ל-`docs/UI-PARITY-REPORT.md` (13:04-13:11, commit
+`44ec205c4`/`44ec205c4-dirty`). השרת נעצר ב-`INT`, פורט 4721 אומת פנוי.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`build` exit 0 (למעלה). M14-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
 ## M18-c93 (הועבר מ-STATE.md ב-M06-c94, לשמירה על תקרת 300 שורות)
 
 **M18-c93 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
