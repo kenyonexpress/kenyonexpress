@@ -43883,3 +43883,19 @@ pnpm build` exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`, ו-cwd של
 `build` 0. אפס שינוי קוד. M02-c90 (מוצר 4.96/4.58/3.25) הועבר
 ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
+
+## M08-c90 (הועבר מ-STATE.md ב-M09-c90, לשמירה על תקרת 300 שורות)
+
+**M08-c90 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores", זהה ל-M08-c89. `pwd` אומת, עץ נקי, HEAD
+`a14cbb13b` (M07-c90), פורט 4517 נבדק פנוי. **בחזית**: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` exit 0. `pnpm start` על 4517, `cwd` אומת מול הריפו הזה (`lsof`).
+`/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל הסבבים) החזירו `200`.
+`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
+**100/100/100**, `/product/צימר-מאסטר` = **100/100/100** (perf/a11y/seo),
+אפס דריפט מ-M08-c89. שרת נסגר ב-INT, פורט אומת פנוי. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), build למעלה exit 0.
+לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך). אפס שינוי
+קוד. M07-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.

@@ -1,20 +1,22 @@
-RESUME FROM: M09-c90
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M08-c90 DONE: Lighthouse mobile / ו-/product שניהם 100/100/100, אפס דריפט)
+RESUME FROM: M10-c90
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M09-c90 DONE: knip 201/5/1/271/197/4, אפס דריפט, אפס הסרה)
 
 ## המשך מ:
 
-**M08-c90 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
-and /product sample log scores", זהה ל-M08-c89. `pwd` אומת, עץ נקי, HEAD
-`a14cbb13b` (M07-c90), פורט 4517 נבדק פנוי. **בחזית**: `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
-build` exit 0. `pnpm start` על 4517, `cwd` אומת מול הריפו הזה (`lsof`).
-`/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל הסבבים) החזירו `200`.
-`scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
-**100/100/100**, `/product/צימר-מאסטר` = **100/100/100** (perf/a11y/seo),
-אפס דריפט מ-M08-c89. שרת נסגר ב-INT, פורט אומת פנוי. שערים: `type-check`
-0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), build למעלה exit 0.
-לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M08-c80 ואילך). אפס שינוי
-קוד. M07-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+**M09-c90 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
+dead exports", זהה ל-M09-c89. `pwd` אומת, עץ נקי, HEAD `d770d77c5`
+(M08-c90). שינוי הקוד היחיד מאז M09-c89 הוא M17-c89
+(`ProductInfo.tsx` ובדיקתו), ואף אחד מהם לא מופיע בפלט. `pnpm dlx knip
+--no-config-hints` (ephemeral, אין `knip.json`): **201 unused files / 5
+unused dependencies / 1 unlisted binary / 271 unused exports / 197 unused
+exported types / 4 duplicate exports**, זהה בדיוק ל-M09-c89, אפס מועמד
+חדש. **החלטה שהתקבלה לבד:** לא הוסר דבר, כמו בכל הסבבים מאז M09-c66: כל
+המועמדים הם רעש ידוע (drizzle/postgres/supabase CLI, `scripts/*.mjs`
+שרצים ישירות, `database.ts` הנוצר) והכרעתם היא של המפעיל. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
+pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי
+קוד. M08-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
