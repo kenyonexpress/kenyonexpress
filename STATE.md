@@ -1,26 +1,33 @@
-RESUME FROM: M12-c88
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c88 DONE: sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M13-c88
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c88 DONE: robots.txt אומת מחדש production-safe, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c88 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable" — זהה לתבנית החוזרת (M11-c82 ולפניו). `pwd` אומת, עץ
-עבודה נקי, HEAD `4b7c90a6c` (M05-c83). קוד: `git log --oneline -- src/app/sitemap.xml
-src/app/sitemap src/lib/seo` מראה שהקומיט האחרון שנגע בנתיבים האלה הוא
-`99b2079cb`, הרבה לפני כל מדידה קודמת — אפס שינוי קוד. חי: `curl -L
-https://www.kenyonexpress.co.il/sitemap.xml` מחזיר `200`, `urlset` שטוח
-(לא `sitemapindex`), 79 כתובות (`grep -c '<loc>'`), `etag`/`last-modified`
-(02.10.2026) זהים לסבב הקודם — עדיין גרסת `a388118f1`. חמשת תתי-המפות
-של הקוד הנוכחי (`/sitemap/{content,suppliers,regions,categories,
-products}.xml`) כולן `404` בפרודקשן, נמדד שוב ישירות. `robots.txt`
-החי מצביע נכון ל-`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט
-— חוסם #2 למעלה ללא שינוי (פריסת Production תקועה, לא קוד). ארבעת
-השערים ירוקים: `type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037
-קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), build טרי
-(`rm -rf .next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:4988 pnpm build`, exit 0, manifest מאשר `/sitemap.xml`
-וחמשת תתי-המפות כ-`ƒ Dynamic`). פריט אימות-בלבד, לא חזותי: `compare.mjs`
-לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+**M12-c88 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
+production-safe" — זהה לתבנית החוזרת (M12-c82 ולפניו). `pwd` אומת, עץ
+עבודה נקי, HEAD `bb4d77179` (M11-c88). קוד: `git log --oneline --
+src/app/robots.ts src/app/robots.test.ts src/app/sitemap-robots-agree.test.ts`
+מראה שהקומיט האחרון שנגע בנתיבים האלה הוא `4d3702025` (M12-c67), הרבה
+לפני כל מדידה קודמת — אפס שינוי קוד. `disallow` בקוד כולל את כל 14
+הנתיבים, כולל שלושת אסימוני-ה-URL (`/gift/`, `/order/`, `/wishlist/s/`)
+ו-`/debug/`. חי: `curl -L https://www.kenyonexpress.co.il/robots.txt`
+מחזיר `200`, `etag`/`last-modified` (04.10.2026, `x-vercel-cache: HIT`)
+— עדיין גרסת `a388118f1`, 13 שורות `Disallow` בלבד, חסרות אותן ארבע.
+נבדק ישירות שוב: `/gift/foo` מחזיר `200` חי בלי כיסוי `Disallow` (זהה
+לסבבים קודמים), `/order/foo`, `/wishlist/s/foo` ו-`/debug/foo` מחזירים
+`404` (הנתיב לא קיים בפריסה הישנה) — זהה ל-M12-c82. `Sitemap:`/`Host:`
+מצביעים נכון ל-
+`kenyonexpress.co.il`. אפס דריפט מהותי — חוסם #2 למעלה ללא שינוי
+(פריסת Production תקועה, לא קוד). ארבעת השערים ירוקים: `type-check`
+נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349, 12 מדולגים, זהה), build טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4991 pnpm
+build`, exit 0, manifest מאשר `/robots.txt`). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ
+יחיד: `STATE.md`.
+
+**M11-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M12-c88).** sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט.
 
 **M05-c83 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
 commit" — זהה למשימות M05-c57..M05-c82 (שער test, מחזורי). `pnpm test`
