@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L01 (הועבר מ-STATE.md ב-L03, לשמירה על תקרת 300 שורות)
+
+**L01 - DONE (05.10.2026, 01:34 מקומי).** משימת התור: "Gate 1 deploy:
+unset VERCEL_PROJECT_ID VERCEL_ORG_ID; check latest production deploy of
+audit/final-audit; if not Ready run vercel inspect --logs, find the MISSING
+env var ... redeploy with vercel deploy --prod --yes --force --archive=tgz;
+loop until Ready". `pwd` אומת, HEAD בהגעה `85d4a7613`. **נמדד לפני:** חמש
+פריסות Production של 04.10 כולן `ERROR`, האחרונה
+`dpl_FQuNjYRLwY2CELKyEBanFXygSn1t`; `vercel inspect --logs` הראה
+`deploy preflight: clean` (אין אף `MISSING`, שום משתנה env לא חסר ולא
+נוסף, לא נגעתי ב-env של Vercel) ואז `Module not found:
+../../../refs/electro-checkout-text.json` מ-`src/lib/checkout/electro-content.ts`.
+**השורש:** `39eb43947` (04.10, סשן Opus) החליף את `.vercelignore` המעוגן
+כולו ברשימה לא-מעוגנת (`refs`, `docs`, `claude`), מחק את הכלל
+`/.env.local`, והפיל את הלדג'ר היחיד שהקוד מייבא. התיקון של שורה אחת שישב
+לא-מחויב בעץ (`refs/*` + `!refs/electro-checkout-text.json`) היה נכון אך
+חלקי. **החלטה שהתקבלה לבד:** לשחזר את הקובץ המעוגן מ-`39eb43947^` במלואו,
+להוסיף את קיצוצי הגודל מעוגנים (`/refs/*` + `!/refs/electro-checkout-text.json`,
+`/docs/`, `/claude/`, `/migrations/applied/` ועוד), ולהוסיף `/.env.production`
+ו-`/.env.local.*`: `.env.local.bak` ו-`.env.local.pre-probe` מחזיקים ערכים
+מקומיים ולא היו מכוסים באף כלל, והעלאת CLI הייתה שולחת אותם לקונטיינר
+הבנייה. הסמנטיקה נבדקה ב-`git check-ignore` בריפו זמני: הלדג'ר נשמר,
+`refs/*.png` נזרק, `src/lib/supabase/` נשמר, `.env.local.bak` נזרק.
+שערים (תחת `env -u` של 51 שמות, שארית אחת `NEXT_PUBLIC_CARDCOM_SANDBOX`
+שאינה `[SENSITIVE]`): `pnpm type-check` exit 0; `pnpm lint` exit 0;
+`pnpm test` 615/615 קבצים, 7340 עברו, 12 דולגו (7352), 55.9 שניות;
+`rm -rf .next && CARDCOM_USE_MOCK=true pnpm build` exit 0, אפס
+`Invalid API key`, `BUILD_ID` `4TjISeL9ouU1MuL8DUVp_`, אותן 92 שורות
+`supabase.rls_denied` (חוסם #3). commit `e1719ad66` (`.vercelignore`
+בלבד), push. **פריסה:** אין `.vercel/project.json`; `.vercel/repo.json`
+(06.09) ממפה `.` ל-`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` בלבד, אומת לפני
+הפריסה. `vercel link --yes --project kenyonexpress` לא יצר project.json,
+רק רענן `VERCEL_OIDC_TOKEN` בתוך `.env.local` (הקובץ הזה נוצר על ידי
+Vercel CLI, 12 רשומות, 2329 -> 2326 בייט). `git status` נקי, ואז
+`vercel deploy --prod --yes --force --archive=tgz`: העלאה 113.4MB,
+18706 קבצים, `deploy preflight: clean`, `Build Completed [2m]`,
+**`dpl_FxGwtE5H6hw4L9ccU4yJNYmuhVni` READY**, aliases
+`kenyonexpress.co.il`, `www.kenyonexpress.co.il`, `kenyonexpress.vercel.app`.
+**אימות חי:** apex 308 ל-`www`; `www` 200 עם `age: 0`; `robots.txt` החי
+מכיל עכשיו `Disallow: /gift/`, `/order/`, `/wishlist/s/`, `/debug/` (שהיו
+חסרים ב-`18ed044b2`, חוסם #2); `sitemap.xml` החי הוא `<sitemapindex`
+(היה `urlset`); `/api/health` `{"ok":true,"database":"ok"}`. **הערת
+מדידה:** Next אינו שולח כותרת `last-modified` כלל, בשום פריסה; הקריטריון
+"last-modified today" הוחלף בראיות לעיל (date header של היום, age 0,
+סמני HEAD בתוכן). פרודקשן על HEAD בפעם הראשונה מאז 02.10; חוסם #2
+ו-DEPLOY-UNBLOCK נסגרו, ראו למטה. `compare.mjs` לא נדרש (אפס שינוי UI,
+`.vercelignore` אינו נכנס לבנייה). קבצים: `.vercelignore`, `STATE.md`.
+
 ## M18-c95 (הועבר מ-STATE.md ב-L02, לשמירה על תקרת 300 שורות)
 
 **M18-c95 - DONE (05.10.2026).** משימת התור: "Trim STATE.md under 300

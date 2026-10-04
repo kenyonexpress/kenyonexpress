@@ -16,7 +16,8 @@ assumed from docs.
 **Pushing to main deploys nothing today.** To make merges deploy: Dashboard ->
 kenyonexpress -> Settings -> Git -> Connect `kenyonexpress/kenyonexpress`, then
 set **Production Branch = `main`**. Until Ofir does that, production only moves
-when someone runs `vercel deploy --prod` by hand.
+when someone runs `vercel deploy --prod --yes --force --archive=tgz` by hand
+(`--archive=tgz` is required on every CLI deploy, see `docs/DEPLOY.md`).
 
 ## Environment: what production holds now
 
@@ -74,7 +75,7 @@ path.
 | --- | --- | --- |
 | push to `main` | nothing | production deploy |
 | push to any branch | nothing | preview deploy |
-| `vercel deploy --prod` | production | production (discouraged then) |
+| `vercel deploy --prod --yes --force --archive=tgz` | production | production (discouraged then) |
 
 ## Related
 

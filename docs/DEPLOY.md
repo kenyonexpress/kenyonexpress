@@ -76,8 +76,14 @@ arrives nowhere. The preflight refuses this too.
 ## Step 4 — deploy a preview and look at it
 
 ```bash
-vercel deploy
+vercel deploy --archive=tgz
 ```
+
+`--archive=tgz` is mandatory on every CLI deploy from this repo, preview or
+production. The upload is 18,706 files (113 MB, measured 05.10.2026); sent one
+file at a time it stalls or trips the per-file request limit, as a single tgz
+it completes in seconds. The flag is a CLI option only, `vercel.json` has no
+equivalent key, so it has to be on the command line each time.
 
 Then, on the preview URL:
 
@@ -97,7 +103,7 @@ by migration 162, not by Vercel cron.
 ## Step 6 — production and DNS
 
 ```bash
-vercel deploy --prod
+vercel deploy --prod --yes --force --archive=tgz
 ```
 
 **The DNS cutover is yours and this document does not automate it.**

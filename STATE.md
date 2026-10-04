@@ -1,11 +1,39 @@
-RESUME FROM: L03
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L02 DONE:
-production branch של פרויקט `kenyonexpress` תוקן מ-`phase5/homepage`
-ל-`audit/final-audit` דרך ה-API; push ריק `9e0df9ff9` יצר אוטומטית את
-`dpl_79smj1WGM5V6wzJiuXafMVmPsFWN`, READY ומוגש בשני הדומיינים; RESUME FROM
-מצביע ל-L03)
+RESUME FROM: L04
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L03 DONE:
+`~/ke-goals/run-final.sh` אינו מכיל אף קריאת `vercel`, הדרישה מתקיימת
+באופן ריק; `.vercelignore`/`vercel.json` ללא שינוי; הדגל `--archive=tgz`
+נוסף לפקודות הפריסה ב-`docs/DEPLOY.md` ו-`docs/DEPLOYMENT.md`; RESUME FROM
+מצביע ל-L04)
 
 ## המשך מ:
+
+**L03 - DONE (05.10.2026).** משימת התור: "Gate 3: ensure
+~/ke-goals/run-final.sh uses --archive=tgz on every vercel deploy call
+permanently; commit .vercelignore and vercel.json if changed". `pwd` אומת,
+HEAD בהגעה `217ff7534`, עץ נקי. **נמדד:** `grep -n vercel
+~/ke-goals/run-final.sh` מחזיר אפס שורות. הסקריפט (1418 בייט, 04.10 23:13)
+הוא מריץ-תור בלבד: קורא `final-queue.txt`, מפעיל `claude -p` לכל פריט,
+כותב ל-`final-done.txt`. **אין בו אף קריאת `vercel`**, ולכן הדרישה
+מתקיימת באופן ריק ואין מה לשנות; הכללים גם אוסרים לגעת ב-`~/ke-goals`
+(אינו ריפו git). פריסות CLI נעשות על ידי הסוכן בתוך הפריט (L01 הריץ
+`vercel deploy --prod --yes --force --archive=tgz`, הקריאה היחידה ב-`final.log`),
+ומאז L02 כל push ל-`audit/final-audit` נפרס אוטומטית דרך git בלי CLI
+כלל. **`.vercelignore` ו-`vercel.json` לא השתנו:** `--archive=tgz` הוא דגל
+CLI, אין לו מפתח ב-`vercel.json` (נבדק מול הסכימה), ו-`.vercelignore`
+המעוגן מ-`e1719ad66` נכון. **החלטה שהתקבלה לבד:** המקום היחיד בריפו שבו
+פקודת פריסה כתובה הוא התיעוד, ושם הדגל היה חסר; `docs/DEPLOY.md` (שלב 4
+ושלב 6) ו-`docs/DEPLOYMENT.md` עודכנו לפקודה המלאה עם הסבר (18,706 קבצים,
+113MB, L01). לא נוסף סקריפט `deploy:prod` ל-`package.json`: פריסת CLI
+לפרודקשן היא אחד מארבעת מצבי העצירה, ואין להקל עליה. שערים (תחת `env -u` של 55 שמות, כולל 30 `[SENSITIVE]` ו-`VERCEL=1` של
+ה-harness; עם 32 שמות בלבד נפלו 9/7352 באותם שלושה קבצי "key unset"
+המתועדים): `pnpm type-check` exit 0; `pnpm lint` exit 0; `pnpm test`
+615/615 קבצים, 7340 עברו, 12 דולגו (7352), 57.4 שניות;
+`CARDCOM_USE_MOCK=true pnpm build` exit 0 בלי `rm -rf .next` (שרת `next start`
+של סשן אחר, PID 56540, מגיש את `.next` על 3311 כבר 8 שעות), אפס `Invalid API
+key`, `BUILD_ID` `XSkI_Hi72iKYCFhVgeJsJ`, אותן שורות `supabase.rls_denied`
+(חוסם #3). push לענף פורס פרודקשן אוטומטית מאז L02; השינוי הוא תיעוד בלבד. `compare.mjs` לא נדרש (אפס שינוי UI/קוד). L01 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `docs/DEPLOY.md`, `docs/DEPLOYMENT.md`,
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **L02 - DONE (05.10.2026, 01:49 מקומי).** משימת התור: "Gate 2 git
 integration: via vercel API confirm project kenyonexpress production branch
@@ -52,52 +80,6 @@ key`, `BUILD_ID` `JL728RxB-vGgGNmR1asQc`, 92 שורות `rls_denied`. **תקלת
 מפתחות אמיתיים של ה-harness), התקלה המתועדת בזיכרון; הסקראב הורחב ל-55
 שמות והסוויטה ירוקה. `compare.mjs` לא נדרש (אפס שינוי UI, אפס שינוי קוד).
 קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (M18-c95 הועבר).
-
-**L01 - DONE (05.10.2026, 01:34 מקומי).** משימת התור: "Gate 1 deploy:
-unset VERCEL_PROJECT_ID VERCEL_ORG_ID; check latest production deploy of
-audit/final-audit; if not Ready run vercel inspect --logs, find the MISSING
-env var ... redeploy with vercel deploy --prod --yes --force --archive=tgz;
-loop until Ready". `pwd` אומת, HEAD בהגעה `85d4a7613`. **נמדד לפני:** חמש
-פריסות Production של 04.10 כולן `ERROR`, האחרונה
-`dpl_FQuNjYRLwY2CELKyEBanFXygSn1t`; `vercel inspect --logs` הראה
-`deploy preflight: clean` (אין אף `MISSING`, שום משתנה env לא חסר ולא
-נוסף, לא נגעתי ב-env של Vercel) ואז `Module not found:
-../../../refs/electro-checkout-text.json` מ-`src/lib/checkout/electro-content.ts`.
-**השורש:** `39eb43947` (04.10, סשן Opus) החליף את `.vercelignore` המעוגן
-כולו ברשימה לא-מעוגנת (`refs`, `docs`, `claude`), מחק את הכלל
-`/.env.local`, והפיל את הלדג'ר היחיד שהקוד מייבא. התיקון של שורה אחת שישב
-לא-מחויב בעץ (`refs/*` + `!refs/electro-checkout-text.json`) היה נכון אך
-חלקי. **החלטה שהתקבלה לבד:** לשחזר את הקובץ המעוגן מ-`39eb43947^` במלואו,
-להוסיף את קיצוצי הגודל מעוגנים (`/refs/*` + `!/refs/electro-checkout-text.json`,
-`/docs/`, `/claude/`, `/migrations/applied/` ועוד), ולהוסיף `/.env.production`
-ו-`/.env.local.*`: `.env.local.bak` ו-`.env.local.pre-probe` מחזיקים ערכים
-מקומיים ולא היו מכוסים באף כלל, והעלאת CLI הייתה שולחת אותם לקונטיינר
-הבנייה. הסמנטיקה נבדקה ב-`git check-ignore` בריפו זמני: הלדג'ר נשמר,
-`refs/*.png` נזרק, `src/lib/supabase/` נשמר, `.env.local.bak` נזרק.
-שערים (תחת `env -u` של 51 שמות, שארית אחת `NEXT_PUBLIC_CARDCOM_SANDBOX`
-שאינה `[SENSITIVE]`): `pnpm type-check` exit 0; `pnpm lint` exit 0;
-`pnpm test` 615/615 קבצים, 7340 עברו, 12 דולגו (7352), 55.9 שניות;
-`rm -rf .next && CARDCOM_USE_MOCK=true pnpm build` exit 0, אפס
-`Invalid API key`, `BUILD_ID` `4TjISeL9ouU1MuL8DUVp_`, אותן 92 שורות
-`supabase.rls_denied` (חוסם #3). commit `e1719ad66` (`.vercelignore`
-בלבד), push. **פריסה:** אין `.vercel/project.json`; `.vercel/repo.json`
-(06.09) ממפה `.` ל-`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` בלבד, אומת לפני
-הפריסה. `vercel link --yes --project kenyonexpress` לא יצר project.json,
-רק רענן `VERCEL_OIDC_TOKEN` בתוך `.env.local` (הקובץ הזה נוצר על ידי
-Vercel CLI, 12 רשומות, 2329 -> 2326 בייט). `git status` נקי, ואז
-`vercel deploy --prod --yes --force --archive=tgz`: העלאה 113.4MB,
-18706 קבצים, `deploy preflight: clean`, `Build Completed [2m]`,
-**`dpl_FxGwtE5H6hw4L9ccU4yJNYmuhVni` READY**, aliases
-`kenyonexpress.co.il`, `www.kenyonexpress.co.il`, `kenyonexpress.vercel.app`.
-**אימות חי:** apex 308 ל-`www`; `www` 200 עם `age: 0`; `robots.txt` החי
-מכיל עכשיו `Disallow: /gift/`, `/order/`, `/wishlist/s/`, `/debug/` (שהיו
-חסרים ב-`18ed044b2`, חוסם #2); `sitemap.xml` החי הוא `<sitemapindex`
-(היה `urlset`); `/api/health` `{"ok":true,"database":"ok"}`. **הערת
-מדידה:** Next אינו שולח כותרת `last-modified` כלל, בשום פריסה; הקריטריון
-"last-modified today" הוחלף בראיות לעיל (date header של היום, age 0,
-סמני HEAD בתוכן). פרודקשן על HEAD בפעם הראשונה מאז 02.10; חוסם #2
-ו-DEPLOY-UNBLOCK נסגרו, ראו למטה. `compare.mjs` לא נדרש (אפס שינוי UI,
-`.vercelignore` אינו נכנס לבנייה). קבצים: `.vercelignore`, `STATE.md`.
 
 **M18-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-L02): STATE.md עמד על 216 שורות, M17-c95 הועבר לארכיון, מחזור c95
