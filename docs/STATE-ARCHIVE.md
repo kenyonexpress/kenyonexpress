@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M08-c92 (הועבר מ-STATE.md ב-M09-c92, לשמירה על תקרת 300 שורות)
+
+**M08-c92 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores", זהה ל-M08-c91. `pwd` אומת, עץ נקי, HEAD
+`1e4e1429b` (M07-c92), פורט 4517 נבדק פנוי. **בחזית**: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` exit 0 (337/337). `pnpm start` על 4517, `cwd` אומת מול הריפו הזה
+(`lsof`). `/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל הסבבים)
+החזירו `200`. `LOCAL_BASE=http://localhost:4517 node
+scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-`--url=`
+למוצר): `/` = **100/100/100**, `/product/צימר-מאסטר` = **100/100/100**
+(perf/a11y/seo), אפס דריפט מ-M08-c91. שרת נסגר ב-INT, פורט אומת פנוי.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+build למעלה exit 0. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M08-c80
+ואילך). אפס שינוי קוד. M07-c92 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M07-c92 (הועבר מ-STATE.md ב-M08-c92, לשמירה על תקרת 300 שורות)
 
 **M07-c92 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
