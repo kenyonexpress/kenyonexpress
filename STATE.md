@@ -1,7 +1,31 @@
-RESUME FROM: M14-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c93 DONE: health 200 עם DB אמיתי, ready 503 על Meilisearch החיצוני, אפס דריפט)
+RESUME FROM: M15-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c93 DONE: release בפרודקשן עדיין `18ed044b2`, לא HEAD, אפס דריפט מ-M14-c92)
 
 ## המשך מ:
+
+**M14-c93 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", זהה ל-M14-c92. `pwd` אומת, עץ נקי, HEAD `bd16cee32`
+(M13-c93). קוד: release מוגדר ב-`sentry.server.config.ts`/
+`sentry.edge.config.ts` כ-`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
+וב-`instrumentation-client.ts` כ-`NEXT_PUBLIC_SENTRY_RELEASE ??
+NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, אפס שינוי מאז `87a459403` (10.09).
+נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`, ולכן ה-release החי
+הוא `18ed044b2`, לא HEAD. `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`
+(production+preview) `createdAt` `1790918429743`, `SENTRY_AUTH_TOKEN`
+(production) `1789566136944`, שניהם ללא שינוי מ-M14-c92. **תשובה:
+ה-release שבפרודקשן אינו HEAD.** `git rev-list --count 18ed044b2..HEAD`
+= **1123** (היה 1105 ב-M14-c92), `HEAD..18ed044b2` = 109 ללא שינוי. אפס
+דריפט מהותי; אותו חוסם (DEPLOY-UNBLOCK למעלה, סעיף 17 ב-`docs/BACKLOG.md`).
+ה-MCP של Sentry לא מאומת בסשן, רשימת ה-releases בתוך Sentry לא נקראה;
+ה-release נגזר מה-commit של הפריסה. **החלטה שהתקבלה לבד:** DONE כאימות
+ולא BLOCKED, כמו M14-c89..c92; לא נפתח חוסם כפול, לא נגעו ב-deploy
+או ב-env. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
+12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4812 pnpm build` exit 0. לא פריט
+חזותי, `compare.mjs` לא נדרש. M07-c93 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M13-c93 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
 /api/ready return 200 with real deps", זהה ל-M13-c92. `pwd` אומת, עץ נקי,
@@ -81,44 +105,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 (פורט 3311
 חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
-**M09-c93 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
-dead exports", זהה במהות ל-M09-c92. `pwd` אומת, עץ נקי, HEAD `08562c9bf`.
-`git diff --stat 1230b1ebb HEAD -- src public next.config.* package.json
-packages` ריק (אפס שינוי קוד מאז M09-c92) — אין דריפט לתקן. `pnpm dlx
-knip --no-config-hints` (ephemeral, אין `knip.json`): **201 unused files
-/ 5 unused dependencies / 1 unlisted binary / 271 unused exports / 197
-unused exported types / 4 duplicate exports**, זהה בדיוק ל-M09-c92. חמש
-התלויות (`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
-`drizzle-orm`, `postgres`, `react-hook-form`) והבינארי (`supabase`) הם
-הרעש הידוע החוזר מאז M09-c66. **החלטה שהתקבלה לבד:** לא הוסר דבר, כמו
-בכל הסבבים הקודמים: אפס מועמד חדש, וכל הקיימים הם הכרעת מפעיל, לא תקלה
-שנמדדת. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12
-דולגו), `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
-pnpm build` exit 0 (פורט 3311 כבר מאזין מריצה קודמת, `cwd` אומת ב-`lsof`
-שהוא הריפו הזה). לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
-קובץ: `STATE.md`.
-
-**M07-c93 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older than
-7 days resolve or file in docs/BACKLOG.md", זהה במהות ל-M07-c92 ול-M07-c67
-המקורי. `pwd` אומת, עץ נקי, HEAD `ddab9d73b`. סריקה ישירה
-(`grep -rn "TODO\|FIXME" src/`) מצאה את אותם שני הסמנים בלבד:
-`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame` 24.07.2026)
-ו-`:319` (מסמכים, `git blame` 07.08.2026) — שניהם מעל שבעה ימים, שניהם
-כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6 (`TODO(cardcom)`, מקושרים ל-#41/#42
-ב-`docs/KNOWN-ISSUES.md`). אושר גם דרך `node scripts/final-audit.mjs
---verbose`, הממד הייעודי: **`ok 0 work markers (TODO/FIXME/HACK/XXX) (of 2)`**
-— שני הממצאים `tracked`, אפס לא-עקובים. נבדקו גם `scripts/` ו-worktrees
-מקבילים (`.claude/worktrees/*`): אותם שני סמנים חוזרים שם כעותקי עבודה
-של סוכנים אחרים, לא קובץ חדש בריפו הזה, לא לנגיעה. שאר ה-FAIL-ים שהשער
-הציג (env לא מתועד, שמות סקריפט, commit subjects ארוכים, רכיבים מתים)
-מחוץ לתחום הפריט הזה (TODO/FIXME בלבד) ולא טופלו כאן. שערים: `type-check`
-0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build`
-(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311`, פורט
-3311 אומת ב-`lsof`/cwd שהוא הריפו הזה) exit 0. אין שינוי קוד ולכן אין
-שינוי UI ו-`compare.mjs` לא נדרש. קובץ: `STATE.md`.
-
-M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md`
-(M04/M03 ב-M11-c93, M06/M05 ב-M12-c93), לשמירה על תקרת 300 שורות.
+M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md`
+(M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07 ב-M14-c93), לשמירה על
+תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
