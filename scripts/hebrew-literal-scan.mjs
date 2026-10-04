@@ -49,6 +49,12 @@ const SCANNED = ['src/components', 'src/app', 'src/lib', 'src/content']
 export const EXCLUDED_PREFIXES = [
   'src/app/(admin)/',
   'src/components/admin/',
+  // 2026-10-05, W03: the admin panel's pure half. Spreadsheet header labels for
+  // the CSV import, admin form validation messages and migration notices --
+  // read by the operator in the panel, never by a shopper. The same argument
+  // as the two prefixes above; it had simply never been written down here, so
+  // one new CSV column label ("מקור המחיר המלא") tripped a shopper-copy gate.
+  'src/lib/admin/',
   'src/app/(legal)/_content/',
   'src/app/debug/',
   'src/app/dev/',
@@ -178,5 +184,10 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * checkout consent sentence and privacy note moved to `checkout.consent.*`.
  * The new cookie page and its withdrawal form were born in the catalog.
  * 626 -> 624.
+ *
+ * 2026-10-05, W03: `src/lib/admin/` joined the admin-panel exclusion above
+ * (argued there). Its literals were operator copy that had been counted as
+ * shopper copy since the scan began; nothing moved to or from the catalog.
+ * 624 -> 606.
  */
-export const HEBREW_LITERAL_CEILING = 624
+export const HEBREW_LITERAL_CEILING = 606

@@ -1,3 +1,5 @@
+import { googleReviewsHref } from '@/lib/pricing/original-price-source'
+
 /**
  * Parsing and readiness rules for `public.suppliers`, the table that products
  * and order lines actually point at.
@@ -55,9 +57,22 @@ export interface SupplierFormFields {
   status: SupplierStatus
 }
 
+/**
+ * Columns that pending migrations add and that the action therefore writes
+ * through `writeWithOptionalColumns` rather than in `data`. Today: the Google
+ * reviews link (242). Kept off `SupplierFormFields` so a plain
+ * `update(parsed.data)` never names a column production lacks.
+ */
+export interface SupplierOptionalFields {
+  google_reviews_url: string | null
+}
+
 export type SupplierParseResult =
-  | { ok: true; id?: string; data: SupplierFormFields }
+  | { ok: true; id?: string; data: SupplierFormFields; optional: SupplierOptionalFields }
   | { ok: false; error: string }
+
+export const GOOGLE_REVIEWS_URL_ERROR =
+  'קישור ביקורות גוגל חייב להיות כתובת https של google.* / maps.app.goo.gl / g.page'
 
 function text(value: unknown): string | null {
   if (typeof value !== 'string') return null
@@ -128,6 +143,14 @@ export function parseSupplierForm(raw: Record<string, unknown>): SupplierParseRe
     return { ok: false, error: 'כתובת הלוגו אינה תקינה' }
   }
 
+  // The business's Google reviews page (242): https and a Google host, the
+  // same rule the product page applies before it renders the link
+  // (lib/pricing/original-price-source.ts), so what saves is what shows.
+  const google_reviews_url = text(raw.google_reviews_url)
+  if (google_reviews_url !== null && googleReviewsHref(google_reviews_url) === null) {
+    return { ok: false, error: GOOGLE_REVIEWS_URL_ERROR }
+  }
+
   const statusRaw = text(raw.status) ?? 'active'
   if (!(SUPPLIER_STATUSES as readonly string[]).includes(statusRaw)) {
     return { ok: false, error: 'סטטוס ספק לא תקין' }
@@ -150,7 +173,15 @@ export function parseSupplierForm(raw: Record<string, unknown>): SupplierParseRe
       notes: text(raw.notes),
       status: statusRaw as SupplierStatus,
     },
+    optional: { google_reviews_url },
   }
+}
+
+/** `suppliers.google_reviews_url` off a row whose generated type predates 242. */
+export function readSupplierGoogleReviewsUrl(row: unknown): string {
+  if (row === null || typeof row !== 'object') return ''
+  const value = (row as Record<string, unknown>).google_reviews_url
+  return typeof value === 'string' ? value : ''
 }
 
 export interface SupplierReadiness {

@@ -1,7 +1,8 @@
 import ProductChangeHistory from '@/components/admin/ProductChangeHistory'
-import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
+import ProductForm from '@/components/admin/ProductForm'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { loadSupplierOptions } from '@/lib/admin/supplier-options'
 import { excludeDeleted } from '@/lib/soft-delete'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -22,7 +23,7 @@ export default async function EditProductPage({ params }: Props) {
   const supabase = await createClient()
   const admin = createAdminClient()
 
-  const [{ data: product }, { data: categories }, { data: variants }, { data: suppliers }] =
+  const [{ data: product }, { data: categories }, { data: variants }, suppliers] =
     await Promise.all([
       // `.is('deleted_at', null)` LIKE THE TWO ROWS UNDER IT, AND IT WAS THE
       // ONLY READ HERE THAT DID NOT FILTER.
@@ -48,11 +49,7 @@ export default async function EditProductPage({ params }: Props) {
         'categories',
       ).order('name_he'),
       supabase.from('product_variants').select('*').eq('product_id', id).is('deleted_at', null),
-      admin
-        .from('suppliers')
-        .select('id, name, contact_phone, address, logo_url, status')
-        .is('deleted_at', null)
-        .order('name'),
+      loadSupplierOptions(admin),
     ])
 
   if (!product) notFound()
@@ -64,7 +61,7 @@ export default async function EditProductPage({ params }: Props) {
         product={product}
         variants={variants ?? []}
         categories={categories ?? []}
-        suppliers={(suppliers ?? []) as SupplierOption[]}
+        suppliers={suppliers}
         hidePricing={!canSeeMoney(session.role)}
       />
 

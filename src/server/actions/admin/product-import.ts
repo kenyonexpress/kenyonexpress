@@ -1,6 +1,7 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import { ORIGINAL_PRICE_SOURCE_MIGRATION_NOTICE } from '@/lib/admin/product-fields'
 import {
   type RawImportRow,
   type ValidatedImportRow,
@@ -192,16 +193,30 @@ async function runImportBatch(raw: RawImportRow[]): Promise<ImportBatchResult> {
       ...fields
     } = row.data
 
+    // 242's column is sent only when the row names a source (validation has
+    // already required one beside any full_price). On a database without 242
+    // the insert fails on that column alone, and the row's error says which
+    // migration to apply instead of echoing PGRST204.
+    const sourceWrite = row.originalPriceSource
+      ? { original_price_source: row.originalPriceSource }
+      : {}
     const { error: insertError } = await supabase.from('products').insert({
       ...fields,
       ...row.money,
+      ...sourceWrite,
       category_id: row.categoryName ? (categoryIds.get(row.categoryName) ?? null) : null,
       images: [],
       created_by: session.userId,
     })
 
     if (insertError) {
-      results.push({ ...toResult(row), errors: [insertError.message] })
+      const missingSource =
+        row.originalPriceSource &&
+        insertError.message.toLowerCase().includes('original_price_source')
+      results.push({
+        ...toResult(row),
+        errors: [missingSource ? ORIGINAL_PRICE_SOURCE_MIGRATION_NOTICE : insertError.message],
+      })
       continue
     }
     insertedSlugs.push(row.data.slug)

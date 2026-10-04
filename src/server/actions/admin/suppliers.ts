@@ -1,12 +1,21 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import {
+  type OptionalColumnGroup,
+  writeWithOptionalColumns,
+} from '@/lib/admin/optional-column-groups'
 import { requireSection } from '@/lib/admin/rbac'
 import { type SupplierFormFields, parseSupplierForm } from '@/lib/admin/supplier-form'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath, updateTag } from 'next/cache'
+
+// One template literal, never several joined with `+` (STATE, template-literal trap).
+const GOOGLE_REVIEWS_MIGRATION_FILE =
+  'migrations/pending/242_product_price_source_google_reviews.sql'
+const GOOGLE_REVIEWS_MIGRATION_NOTICE = `קישור ביקורות גוגל עדיין לא מופעל במסד הנתונים. יש להחיל את המיגרציה ${GOOGLE_REVIEWS_MIGRATION_FILE} ואז לשמור שוב. שאר פרטי הספק נשמרים כרגיל.`
 
 /**
  * CRUD for `public.suppliers`.
@@ -57,14 +66,36 @@ async function runUpsertSupplier(
     logo_url: formData.get('logo_url'),
     notes: formData.get('notes'),
     status: formData.get('status'),
+    google_reviews_url: formData.get('google_reviews_url'),
   })
   if (!parsed.ok) return { error: parsed.error }
 
   const admin = createAdminClient()
   const id = parsed.id
 
+  // The Google reviews link is pending 242. Sent as an optional group: a
+  // migrated database writes it, an un-migrated one drops a BLANK link and
+  // refuses a filled one with the migration's filename, so the admin never
+  // sees "saved" for a link that went nowhere (lib/admin/optional-column-groups.ts).
+  const optionalGroups: OptionalColumnGroup[] = [
+    {
+      key: 'google_reviews_url_242',
+      columns: ['google_reviews_url'],
+      fields: { google_reviews_url: parsed.optional.google_reviews_url },
+      atDefault: parsed.optional.google_reviews_url === null,
+      notice: GOOGLE_REVIEWS_MIGRATION_NOTICE,
+    },
+  ]
+
   if (id) {
-    const { error } = await admin.from('suppliers').update(parsed.data).eq('id', id)
+    const { error } = await writeWithOptionalColumns(optionalGroups, async (extra) =>
+      admin
+        .from('suppliers')
+        .update({ ...parsed.data, ...extra })
+        .eq('id', id)
+        .select('id')
+        .maybeSingle(),
+    )
     if (error) return { error: error.message }
     await writeAuditLog({
       actorId: session.userId,
@@ -78,8 +109,16 @@ async function runUpsertSupplier(
     // commission_percent and default_split_percent are left to their column
     // defaults on purpose. They are the retired fixed-commission knobs; the real
     // split lives per product (section 0.1).
-    const { data, error } = await admin.from('suppliers').insert(parsed.data).select('id').single()
-    if (error) return { error: error.message }
+    const { data, error } = await writeWithOptionalColumns<{ id: string }, { message: string }>(
+      optionalGroups,
+      async (extra) =>
+        admin
+          .from('suppliers')
+          .insert({ ...parsed.data, ...extra })
+          .select('id')
+          .single(),
+    )
+    if (error || !data) return { error: error?.message ?? 'שמירת הספק נכשלה' }
     await writeAuditLog({
       actorId: session.userId,
       actorRole: session.role,

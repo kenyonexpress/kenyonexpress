@@ -16,6 +16,11 @@ import {
   variantSchema,
 } from '@/lib/admin/product-form-schema'
 import {
+  PUBLISH_AT_COLUMNS,
+  PUBLISH_AT_MIGRATION_NOTICE,
+  parsePublishAtInput,
+} from '@/lib/admin/product-publish-schedule'
+import {
   PRODUCT_TERMS_COLUMNS,
   PRODUCT_TERMS_MIGRATION_NOTICE,
   isDefaultProductTerms,
@@ -149,6 +154,18 @@ async function runUpsertProduct(
   const sourceConflict = originalPriceSourceConflict(parsed.data, extras)
   if (sourceConflict) return { error: sourceConflict }
 
+  // Scheduled publish (W03, pending 249). Admin only: the uploader never sees
+  // the field and cannot schedule a publish past the approval queue. A
+  // schedule is a promise about a DRAFT; on any other status it is refused
+  // rather than silently dropped, because the admin typed a date on purpose.
+  const publishAt = hidePricing
+    ? ({ ok: true, iso: null } as const)
+    : parsePublishAtInput(formData.get('publish_at'))
+  if (!publishAt.ok) return { error: publishAt.error }
+  if (publishAt.iso != null && parsed.data.status !== 'draft') {
+    return { error: 'פרסום מתוזמן אפשרי רק למוצר בסטטוס טיוטה. לפרסום מיידי בחרו "פעיל".' }
+  }
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -281,6 +298,13 @@ async function runUpsertProduct(
             atDefault: isDefaultProductTerms(terms),
             notice: PRODUCT_TERMS_MIGRATION_NOTICE,
           },
+          {
+            key: 'publish_at_249',
+            columns: [...PUBLISH_AT_COLUMNS],
+            fields: { publish_at: publishAt.iso },
+            atDefault: publishAt.iso == null,
+            notice: PUBLISH_AT_MIGRATION_NOTICE,
+          },
         ]),
   ]
 
@@ -336,7 +360,11 @@ async function runUpsertProduct(
   const moneyWrite = policy.fields
   const isUploader = policy.forcePendingApproval
 
-  if (!hidePricing && money && money.ok && submittedStatus === 'active') {
+  // The publish gate runs for a publish NOW and for a SCHEDULED one alike: the
+  // cron job promotes the draft with no gate of its own, so a product that
+  // could not be published by hand must not be schedulable either.
+  const scheduling = publishAt.iso != null
+  if (!hidePricing && money && money.ok && (submittedStatus === 'active' || scheduling)) {
     // Publishing needs a complete supplier, so the identity is loaded rather
     // than assumed. Service role: this is a staff read of a table with no
     // permissive select policy for `authenticated`.
@@ -373,7 +401,8 @@ async function runUpsertProduct(
     // Every failing reason at once. An admin filling in a product should not
     // have to submit six times to discover six missing fields (section 3.4).
     if (!gate.ok) {
-      return { error: gate.blockers.map((b) => b.message).join(' · ') }
+      const reasons = gate.blockers.map((b) => b.message).join(' · ')
+      return { error: scheduling ? `לא ניתן לתזמן פרסום: ${reasons}` : reasons }
     }
   }
 
@@ -389,6 +418,7 @@ async function runUpsertProduct(
     kenyon_price: fields.kenyon_price,
     platform_percent: fields.platform_percent,
     city,
+    publish_at: publishAt.iso,
   }
 
   if (id) {

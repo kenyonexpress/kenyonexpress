@@ -13,7 +13,12 @@
  * create one would fail every insert on an un-migrated database.
  */
 
-import { type ProductInput, productSchema } from '@/lib/admin/product-form-schema'
+import {
+  type ProductInput,
+  originalPriceSourceConflict,
+  productExtrasSchema,
+  productSchema,
+} from '@/lib/admin/product-form-schema'
 import { type ProductMoneyWrite, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 
 export const IMPORT_COLUMNS = [
@@ -23,6 +28,7 @@ export const IMPORT_COLUMNS = [
   { key: 'type', label: 'סוג (physical/coupon)', required: false },
   { key: 'kenyon_price', label: 'מחיר בקניון', required: true },
   { key: 'full_price', label: 'מחיר מלא', required: false },
+  { key: 'original_price_source', label: 'מקור המחיר המלא', required: false },
   { key: 'platform_percent', label: 'עמלת פלטפורמה', required: true },
   { key: 'supplier_split_percent', label: 'אחוז לספק', required: false },
   { key: 'discount_percent', label: 'אחוז הנחה', required: false },
@@ -51,54 +57,49 @@ const COLUMN_LABELS: Record<string, string> = Object.fromEntries(
  * because the admin's spreadsheet is in Hebrew; the English keys exist so the
  * template round-trips and so an export from another system maps too.
  */
+// Every spreadsheet label from IMPORT_COLUMNS is an alias of its own key, so a
+// template that round-trips needs no second copy of the label here. The
+// entries below are the OTHER spellings an export from another system uses.
+const LABEL_ALIASES: Record<string, ImportColumnKey> = Object.fromEntries(
+  IMPORT_COLUMNS.map((c) => [normalizeHeader(c.label), c.key]),
+)
+
 const HEADER_ALIASES: Record<string, ImportColumnKey> = {
+  ...LABEL_ALIASES,
   slug: 'slug',
   קישור: 'slug',
   name_he: 'name_he',
   name: 'name_he',
   שם: 'name_he',
   'שם מוצר': 'name_he',
-  'שם בעברית': 'name_he',
   name_en: 'name_en',
-  'שם באנגלית': 'name_en',
   type: 'type',
   סוג: 'type',
   kenyon_price: 'kenyon_price',
   price: 'kenyon_price',
   מחיר: 'kenyon_price',
-  'מחיר בקניון': 'kenyon_price',
   full_price: 'full_price',
-  'מחיר מלא': 'full_price',
+  original_price_source: 'original_price_source',
+  'מקור המחיר לפני הנחה': 'original_price_source',
   platform_percent: 'platform_percent',
   עמלה: 'platform_percent',
-  'עמלת פלטפורמה': 'platform_percent',
   supplier_split_percent: 'supplier_split_percent',
-  'אחוז לספק': 'supplier_split_percent',
   discount_percent: 'discount_percent',
   הנחה: 'discount_percent',
-  'אחוז הנחה': 'discount_percent',
   coupon_price_ils: 'coupon_price_ils',
-  'מחיר קופון': 'coupon_price_ils',
   coupon_expiry_days: 'coupon_expiry_days',
   'תוקף קופון': 'coupon_expiry_days',
-  'תוקף קופון בימים': 'coupon_expiry_days',
   sku: 'sku',
   מקט: 'sku',
-  'מק"ט': 'sku',
   barcode: 'barcode',
-  ברקוד: 'barcode',
   stock_quantity: 'stock_quantity',
   stock: 'stock_quantity',
-  מלאי: 'stock_quantity',
   category: 'category',
   קטגוריה: 'category',
   brand: 'brand',
-  מותג: 'brand',
   description_he: 'description_he',
   description: 'description_he',
-  תיאור: 'description_he',
   short_description_he: 'short_description_he',
-  'תיאור קצר': 'short_description_he',
   tags: 'tags',
   תגיות: 'tags',
 }
@@ -181,6 +182,8 @@ export interface ValidatedImportRow {
   /** Present only when errors is empty. */
   data?: ProductInput
   money?: ProductMoneyWrite
+  /** 242's column, written by the action only when set (pending migration). */
+  originalPriceSource?: string | null
   /** Raw category name for the server to resolve to an id. */
   categoryName: string | null
 }
@@ -265,6 +268,31 @@ export function validateImportRow(row: RawImportRow): ValidatedImportRow {
     seo_keywords: null,
   }
 
+  // The before-discount price and its stated source are a pair (W03): the
+  // same rule the product form applies, so a CSV cannot import an unsourced
+  // strike-through that the form would have refused.
+  const originalPriceSource = r.original_price_source?.trim() || null
+  const fullPriceRaw = r.full_price?.trim() ?? ''
+  const sourceConflict = originalPriceSourceConflict(
+    {
+      full_price:
+        fullPriceRaw === '' || Number.isNaN(Number(fullPriceRaw)) ? null : Number(fullPriceRaw),
+    },
+    { original_price_source: originalPriceSource },
+  )
+  if (sourceConflict) errors.push(`${COLUMN_LABELS.original_price_source}: ${sourceConflict}`)
+  // Length bounds come from the form's own schema, so the CSV and the form
+  // refuse the same strings with the same words.
+  const sourceParsed = productExtrasSchema
+    .innerType()
+    .pick({ original_price_source: true })
+    .safeParse({ original_price_source: originalPriceSource })
+  if (!sourceParsed.success) {
+    for (const issue of sourceParsed.error.issues) {
+      errors.push(`${COLUMN_LABELS.original_price_source}: ${issue.message}`)
+    }
+  }
+
   const parsed = productSchema.safeParse(candidate)
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
@@ -307,6 +335,7 @@ export function validateImportRow(row: RawImportRow): ValidatedImportRow {
     name: candidate.name_he ?? null,
     errors,
     ...(parsed.success && errors.length === 0 ? { data: parsed.data, money } : {}),
+    originalPriceSource,
     categoryName: r.category?.trim() || null,
   }
 }
@@ -354,6 +383,7 @@ export function buildTemplateCsv(): string {
     'physical',
     '199.90',
     '249.90',
+    'מחירון היצרן',
     '30',
     '70',
     '10',
@@ -374,6 +404,7 @@ export function buildTemplateCsv(): string {
     '',
     'coupon',
     '100',
+    '',
     '',
     '25',
     '75',

@@ -1,4 +1,5 @@
 import {
+  ORIGINAL_PRICE_SOURCE_REQUIRED,
   type ProductInput,
   originalPriceSourceConflict,
   productExtrasSchema,
@@ -231,5 +232,14 @@ describe('originalPriceSourceConflict', () => {
     expect(
       originalPriceSourceConflict({ full_price: null }, { original_price_source: null }),
     ).toBeNull()
+  })
+
+  it('refuses a before-discount price with no stated source (W03)', () => {
+    const refusal = originalPriceSourceConflict(
+      { full_price: 249.9 },
+      { original_price_source: null },
+    )
+    expect(refusal).toBe(ORIGINAL_PRICE_SOURCE_REQUIRED)
+    expect(refusal).toContain('מקור המחיר לפני הנחה נדרש')
   })
 })

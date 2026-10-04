@@ -1,3 +1,7 @@
+import {
+  type PublishScheduleClient,
+  publishScheduledProducts,
+} from '@/lib/admin/product-publish-schedule'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { withJobRun } from '@/lib/observability/job-run'
 import { log } from '@/lib/observability/log'
@@ -176,10 +180,30 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
   // Once, after the batch, not per row: the tag is one key and expiring it a
   // hundred times costs a hundred round trips to say the same thing.
-  if (applied > 0) revalidateTag(CATALOGUE_TAG, 'hours')
+  // Scheduled publish (W03) rides the same five-minute cadence: a draft whose
+  // `publish_at` has passed goes live here. A missed run catches up, like the
+  // price changes above. 249 not applied = `skipped`, logged once per run.
+  let publish: Awaited<ReturnType<typeof publishScheduledProducts>>
+  try {
+    // `publish_at` is not in the generated types until 249 lands, so the
+    // typed client is narrowed to the small surface the job declares.
+    publish = await publishScheduledProducts(admin as unknown as PublishScheduleClient)
+  } catch (err) {
+    log.error('publish_schedule.failed', {
+      reason: err instanceof Error ? err.message : String(err),
+    })
+    publish = { due: 0, published: 0, failed: 0, skipped: 'read failed' }
+  }
+  if (publish.skipped === '249 not applied') {
+    log.warn('publish_schedule.column_absent', {
+      detail: '249 is written and not applied; no scheduled publish can run.',
+    })
+  }
 
-  log.info('price_schedule.done', { due: rows.length, applied, failed })
-  return NextResponse.json({ ok: true, due: rows.length, applied, failed })
+  if (applied > 0 || publish.published > 0) revalidateTag(CATALOGUE_TAG, 'hours')
+
+  log.info('price_schedule.done', { due: rows.length, applied, failed, publish })
+  return NextResponse.json({ ok: true, due: rows.length, applied, failed, publish })
 }
 
 export const GET = withRequestLog(

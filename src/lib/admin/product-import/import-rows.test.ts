@@ -172,6 +172,38 @@ describe('markInFileDuplicates', () => {
   })
 })
 
+describe('validateImportRow: the before-discount price needs a source (W03)', () => {
+  it('refuses a full_price with no source, names the column, and accepts the pair', () => {
+    const unsourced = validateImportRow({
+      line: 2,
+      record: { ...goodRecord, full_price: '249.90' },
+    })
+    expect(unsourced.errors.some((e) => e.startsWith('מקור המחיר המלא:'))).toBe(true)
+    expect(unsourced.data).toBeUndefined()
+
+    const sourced = validateImportRow({
+      line: 2,
+      record: { ...goodRecord, full_price: '249.90', original_price_source: 'מחירון היצרן' },
+    })
+    expect(sourced.errors).toEqual([])
+    expect(sourced.originalPriceSource).toBe('מחירון היצרן')
+  })
+
+  it('refuses a source for a row with no full_price', () => {
+    const row = validateImportRow({
+      line: 2,
+      record: { ...goodRecord, original_price_source: 'מחירון' },
+    })
+    expect(row.errors.some((e) => e.includes('דורש מחיר לפני הנחה'))).toBe(true)
+  })
+
+  it('maps the Hebrew header for the source column', () => {
+    expect(
+      mapHeaders(['slug', 'name_he', 'kenyon_price', 'platform_percent', 'מקור המחיר המלא']).keys,
+    ).toContain('original_price_source')
+  })
+})
+
 describe('buildTemplateCsv', () => {
   it('produces two example rows that validate cleanly', () => {
     const { rows, errors } = parseCsv(buildTemplateCsv())

@@ -1031,6 +1031,10 @@ describe('the pending migration inventory', () => {
       // because its own reader was the service client. Two column-level
       // GRANTs, no policy change. After 232 and after 242.
       '248_supplier_storefront_public_columns_grant.sql',
+      // W03 (05.10): scheduled publish. One nullable timestamptz on products,
+      // a partial index for the cron read and a NOT VALID CHECK that a
+      // schedule sits only on a draft. No RLS or data change; no dependency.
+      '249_product_publish_at.sql',
       'preflight_162.sql',
       'preflight_184.sql',
     ])

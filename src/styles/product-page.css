@@ -530,6 +530,42 @@
   overflow: hidden;
 }
 
+/* The description is operator markup (lib/content/markup) rendered by the
+   shared <RichText>. That component carries the CMS pages' rhythm as utility
+   classes (mt-3, text-base, text-heading/80); inside the clamped PDP box the
+   measured body size, line and colour win, so a plain paragraph renders
+   exactly as the <p> did before and only weight and list markers change.
+   Unlayered rules here beat Tailwind's @layer utilities. */
+.pdp-details__text p,
+.pdp-details__text h2,
+.pdp-details__text h3,
+.pdp-details__text ul,
+.pdp-details__text ol,
+.pdp-details__text blockquote {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.pdp-details__text h2,
+.pdp-details__text h3 {
+  font-weight: 600;
+}
+
+.pdp-details__text ul,
+.pdp-details__text ol {
+  padding-inline-start: 1.25em;
+}
+
+.pdp-details__text ul {
+  list-style: disc;
+}
+
+.pdp-details__text ol {
+  list-style: decimal;
+}
+
 /* Recommendations: 25.004px/500 heading over a full-width hairline with a
    233px brand segment on the inline-start end, measured at y937-938. */
 .pdp-related {

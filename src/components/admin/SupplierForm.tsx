@@ -4,6 +4,7 @@ import ImageUploader from '@/components/admin/ImageUploader'
 import {
   SUPPLIER_STATUSES,
   SUPPLIER_STATUS_LABELS,
+  readSupplierGoogleReviewsUrl,
   supplierReadiness,
 } from '@/lib/admin/supplier-form'
 import { type SupplierActionState, upsertSupplier } from '@/server/actions/admin/suppliers'
@@ -33,6 +34,7 @@ export default function SupplierForm({ supplier, productCount }: Props) {
   const [name, setName] = useState(supplier?.name ?? '')
   const [phone, setPhone] = useState(supplier?.contact_phone ?? '')
   const [address, setAddress] = useState(supplier?.address ?? '')
+  const [googleReviewsUrl, setGoogleReviewsUrl] = useState(readSupplierGoogleReviewsUrl(supplier))
   const [status, setStatus] = useState<string>(supplier?.status ?? 'active')
 
   const error = state && 'error' in state ? state.error : null
@@ -132,6 +134,29 @@ export default function SupplierForm({ supplier, productCount }: Props) {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="mt-1 text-xs text-gray-500">נפתח ב-Waze בעמוד המוצר</p>
+          </div>
+          {/* 242: the one trust signal that is not ours to write. Linked from
+              every product page of this supplier once set. */}
+          <div className="col-span-2">
+            <label
+              htmlFor="sup-google-reviews"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              קישור לביקורות גוגל
+            </label>
+            <input
+              id="sup-google-reviews"
+              name="google_reviews_url"
+              type="url"
+              value={googleReviewsUrl}
+              onChange={(e) => setGoogleReviewsUrl(e.target.value)}
+              dir="ltr"
+              placeholder="https://maps.app.goo.gl/..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              כתובת https בדומיין google / maps.app.goo.gl / g.page. מוצג בכל עמוד מוצר של הספק.
+            </p>
           </div>
         </div>
       </section>

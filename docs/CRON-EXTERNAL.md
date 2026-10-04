@@ -201,6 +201,11 @@ timing changes with the scheduler.
   past is still due, so a missed run catches up rather than skipping. It also
   writes the `price_history` row for the change, which is the only record a
   mid-day price movement leaves — the daily snapshot samples once at 04:00.
+  **It also runs the scheduled publish (W03):** every approved draft whose
+  `products.publish_at` has passed is set `active`, stamped `published_at` and
+  its schedule cleared (`src/lib/admin/product-publish-schedule.ts`). The column
+  is pending `249_product_publish_at.sql`; until it is applied the job answers
+  `publish.skipped = "249 not applied"` and logs `publish_schedule.column_absent`.
 - **`wishlist-alerts`** mails a saved product that got cheaper, and everyone
   waiting on one that came back into stock. **05:00, an hour AFTER
   `price-snapshot`**, and the order is the point: the price-drop comparison

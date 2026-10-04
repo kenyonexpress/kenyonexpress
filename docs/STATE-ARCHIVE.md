@@ -2,6 +2,79 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W02 (הועבר מ-STATE.md ב-W03, לשמירה על תקרת 300 שורות)
+
+**W02 - DONE (05.10.2026): LEGAL PAGES COMPLETE. חמשת המסמכים המשפטיים
+קיימים, בעברית, בפריסת עמוד התקנון של Electro, מקושרים מהפוטר ומטקסט
+ההסכמה בקופה; באנר העוגיות חוסם PostHog, Meta ו-GA4 עד "אישור" ורושם את
+ההחלטה; שער parity 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd`
+אומת, HEAD בהגעה `65d3d9c1d`, עץ נקי. W02 לא הופיע ב-STATE.md, ב-BACKLOG או
+ב-`git log -20`. **מה נמצא:** ארבעה מסמכים כבר היו (`(legal)/_content/*`,
+מוגשים ב-`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
+`/accessibility`), `/cookies` היה redirect ב-`next.config.ts` אל
+`/privacy-policy#cookies` (L05), טקסט ההסכמה בקופה היה "קראתי ואני מסכים
+לאתר תנאי שימוש" בלי שום קישור, הבאנר נקב ב-Google Analytics ו-Meta בלבד
+בעוד PostHog (אירועים והקלטת מסך) נטען מאחורי אותה עוגייה בלי להיקרא בשם,
+ו-`LegalContactBlock` הדפיס מספר וואטסאפ תחת "יצירת קשר" בניגוד למדיניות
+"בלי טלפון". **הפריסה, נמדדה:** Playwright דרך אתגר ה-Cloudflare (אותו
+מתכון של `capture-electro.mjs`) על `electro.madrasthemes.com/terms-and-conditions/`
+ב-380/768/1440, `getComputedStyle`, נכתב ל-`refs/electro-terms.json`
+(`git add -f`): מכולה 1200 עם padding 15 (1170 פנימי ב-1440, 690 ב-768, 350
+ב-380), פירורי לחם 14/23.996 pt 25.004 pb 22.4 (380: 9/9), כותרת ממורכזת
+39.998/47.9976 משקל 500 בכל רוחב, שורת "עודכן" 14 מתחתיה, header mb 39.998,
+h2 25.004/40.0064 משקל 500 mb 40.0064, p 14/23.996 mb 16, ol padding-start
+32, section mb 39.998 (380: 28), צבע rgb(51,62,72) = `--color-heading`.
+הכל ב-`src/styles/legal-page.css` (מיובא ב-`app.css`), `LegalArticle.tsx`
+נכתב מחדש עליו; נמדד חזרה על `/cookies` המקומי ב-1440: x135 w1170, 40/48,
+25/40, 14/24, זהה. **המסמך החמישי:** `_content/cookies.ts` (6 סעיפים:
+קטגוריות, הכרחיות, מדידה אחרי אישור עם טבלת PostHog/Meta Pixel/GA4/ke_attr
+ומשכי שמירה מהקוד, מנגנון ההסכמה, ביטול הסכמה, בסיס משפטי), עמוד
+`(store)/cookies/page.tsx` עם `ConsentWithdrawForm` (server action
+`withdrawConsent` שמוחק את `ke_consent` ומחזיר את הבאנר), `(legal)/legal/cookies`
+מפנה 308, ה-redirect של `/cookies` הוסר מ-`next.config.ts`,
+`CANONICAL_PATH` עבר ל-`_content/index.ts` ומשרת את הפוטר, את ה-sitemap
+(שקרא עד עכשיו את התאריכים של הסט הישן `src/content/legal`) ואת הקופה.
+**14ג ב-`returns.ts`:** היה כבר (14 יום, 2 ימי עסקים לשירות במועד, 7 להארחה,
+min(5%, ₪100), מומש = אין ביטול); נוספו במפורש: אין החזר אחרי 14 יום, קופון
+שטרם מומש ניתן להעברה, ומוצר פיזי לפי מדיניות פר-מוצר עם ברירת מחדל החזר
+מלא 100% (תואם `refund_policy` ב-`lib/admin/product-terms.ts`, ברירת מחדל
+`statutory`). **ישות:** "קניון אקספרס, עוסק מורשה" בהגדרות התקנון, בפתיח
+מדיניות העוגיות וב-`LegalContactBlock`; `support@kenyonexpress.co.il`;
+הוואטסאפ והטלפון הוסרו מהבלוק, מ-`accessibility.ts` ומ-`returns.ts`.
+**קופה:** `CheckoutConsentText.tsx` חדש מרנדר "קראתי ואני מסכים/ה לתקנון,
+למדיניות הפרטיות, למדיניות הביטולים וההחזרות, למדיניות העוגיות ולהצהרת
+הנגישות" מ-`LEGAL_DOCS` עם `_blank`+`noopener noreferrer`, ומשפט הפרטיות
+מקשר למדיניות הפרטיות (בדיקה: 4). **באנר:** נוקב ב-PostHog, Meta ו-Google
+Analytics ומקשר ל-`/cookies`; `CONSENT_WORDING_VERSION` 2 -> 3 (כולם
+נשאלים שוב, כי הסכמה שלא נקבה ב-PostHog אינה הסכמה ל-PostHog);
+`decideConsent` רושם `consent.decided` ביומן השרת עם ההחלטה והגרסה
+(הרשומה, בלי זהות); `trackEvent` ב-`posthog.ts` נחסם בעצמו בדפדפן בלי
+עוגיית הסכמה תקפה (3 בדיקות חדשות: אפס fetch, אפס `ke_ph_id`, אפס
+localStorage) כך שהחסימה מבנית ולא תלויה בשלושת הקוראים. **החלטות שהתקבלו
+לבד:** (א) `/cookies` הוא עמוד ולא עוגן, בניגוד ל-L05, כי כפתור ביטול
+ההסכמה חייב כתובת; `legal-routes.test.ts` נועל עכשיו שאין redirect עליו;
+(ב) המילה "וואטסאפ" נשארה במדיניות הפרטיות (שורת מידע שנשמר), הבדיקה
+החדשה אוסרת מספרי טלפון בלבד; (ג) `scripts/build-legacy-redirects.mjs`
+הורץ כדי ש-`legacy-redirects.test.ts` יראה את שני הנתיבים החדשים, וה-192
+הממתינה התחדשה (32 במקום 33: `/coupon-scanner` נשר כ-`source_is_live`; לא
+הוחלה, `migrations/pending` בלבד); (ד) תקרת ה-i18n 626 -> 624 (ליטרלים
+עברו לקטלוג `legal.*`, `checkout.consent.*` ב-he/en); (ה) `withdrawConsent`
+הוכרז public ב-`auth-coverage.test.ts` כמו `decideConsent`. **מלכודת סביבה
+חדשה:** ה-shell מזריק גם `CARDCOM_USE_MOCK=true` (לא `[SENSITIVE]`), וזה
+מפיל `invoices.test.ts > does not spend an attempt when there are no
+credentials`; `-u CARDCOM_USE_MOCK` ברשימת ה-UNSET פותר. **שערים:**
+`pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 624/624, tokens, rtl,
+docs-index 282); `pnpm test` 615/615 קבצים, 7372 עברו, 12 דולגו, אחרי תיקון
+שני הנפילות למעלה; build exit 0, `BUILD_ID` `XAVWy4JuBrBKuTeBKMdY9`,
+`/cookies` ○ static; שרת חדש על 3396, חמשת העמודים 200, `/legal/cookies`
+308 -> `/cookies`, sitemap `content.xml` מכיל את חמשת הנתיבים עם
+2026-10-05. **השער, בחזית, `--baseline=refs/ke_live_W.png`, שלוש שורות
+ב-`docs/UI-PARITY-REPORT.md` (`65d3d9c1d-dirty`):** 380: 7.92% PASS (overall
+14.38%); 768: 9.03% PASS (overall 16.28%); 1440: 4.16% PASS (overall
+14.89%). דלתא מול W01: -0.68 / +0.01 / 0.00; הפוטר שינה href אחד בלבד.
+השרת על 3396 נסגר. **לא נעשה:** אין מיגרציה חדשה, אין החלה, אין שינוי
+env/DNS/Vercel, אין deploy ידני (push לענף = פריסה אוטומטית לפי L02).
+
 ## W01 (הועבר מ-STATE.md ב-W02, לשמירה על תקרת 300 שורות)
 
 **W01 - DONE (05.10.2026): HEADER ICONS EXACT ELECTRO. שורת האייקונים היא

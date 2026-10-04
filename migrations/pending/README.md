@@ -1,5 +1,17 @@
 # `migrations/pending/`
 
+## 2026-10-05: 249 WRITTEN, not applied - פרסום מתוזמן למוצר, עמודה אחת על `products`
+
+‏`249_product_publish_at.sql`. ‏W03. ‏`products.publish_at timestamptz` (NULL =
+אין תזמון), אינדקס חלקי על טיוטות עם מועד, ו-CHECK ‏`NOT VALID` שמועד קיים
+רק על ‏`status = 'draft'`. טיוטה שה-`publish_at` שלה עבר מקודמת ל-`active`
+על ידי עבודת ה-cron ‏`price-schedule` (כל 5 דקות; הקוד
+ב-`src/lib/admin/product-publish-schedule.ts`), רק כשהיא ‏`approval_status =
+'approved'` ולא נמחקה. עד ההחלה: הטופס שומר את כל שאר השדות ומסרב לתזמון
+**מלא** עם שם הקובץ (‏optional-column-groups), והעבודה רושמת
+‏`publish_schedule.column_absent` ומחזירה ‏`skipped`. אין שינוי RLS, אין
+שינוי נתונים, אידמפוטנטי. אין תלות בקבצים ממתינים אחרים.
+
 ## 2026-10-01: 248 WRITTEN, not applied - גרנט אחד, הדף הציבורי `/s/[id]` קורא שעות פתיחה וביקורות גוגל במפתח ה-anon
 
 ‏`248_supplier_storefront_public_columns_grant.sql`. ‏Q32. דף הספק הציבורי

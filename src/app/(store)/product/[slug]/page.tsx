@@ -1,4 +1,5 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import RichText from '@/components/content/RichText'
 import BoughtThisWeek from '@/components/storefront/BoughtThisWeek'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
@@ -16,6 +17,7 @@ import {
   storefrontProductTypeLabel,
 } from '@/lib/commerce/product-type'
 import { askBusinessHref } from '@/lib/contact/channels'
+import { plainText } from '@/lib/content/markup'
 import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
@@ -55,7 +57,9 @@ export async function generateMetadata({ params }: Props) {
   const description =
     data.seo_description?.trim() ||
     data.short_description_he?.trim() ||
-    data.description_he?.trim() ||
+    // The body is operator markup (lib/content/markup); a snippet keeps the
+    // words and loses the markers.
+    plainText(data.description_he ?? '') ||
     `${title} בקניון אקספרס. קופונים, מבצעים ומשלוחים.`
 
   // A canonical, because the same product is reachable through more than one
@@ -224,7 +228,7 @@ export default async function ProductPage({ params }: Props) {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
   const productLd = buildProductJsonLd({
     name: product.name_he,
-    description: product.description_he ?? null,
+    description: plainText(product.description_he ?? '') || null,
     slug: product.slug,
     sku: product.sku ?? null,
     images: Array.isArray(product.images) ? (product.images as string[]) : [],
@@ -402,7 +406,7 @@ export default async function ProductPage({ params }: Props) {
           {product.description_he && (
             <section aria-label="תיאור המוצר">
               <h2 className="pdp-details__title">תיאור המוצר</h2>
-              <p className="pdp-details__text">{product.description_he}</p>
+              <RichText className="pdp-details__text" markup={product.description_he} />
             </section>
           )}
 

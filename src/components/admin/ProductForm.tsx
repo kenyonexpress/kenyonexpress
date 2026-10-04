@@ -4,6 +4,7 @@ import CouponExpirySelect, {
   COUPON_EXPIRY_DEFAULT_DAYS,
 } from '@/components/admin/CouponExpirySelect'
 import ImageUploader from '@/components/admin/ImageUploader'
+import RichTextEditor from '@/components/admin/RichTextEditor'
 import {
   readCashbackPercent,
   readCity,
@@ -12,6 +13,7 @@ import {
   readTags,
   readVatExempt,
 } from '@/lib/admin/product-fields'
+import { isoToJerusalemLocal, readPublishAt } from '@/lib/admin/product-publish-schedule'
 import {
   MAX_CANCELLATION_DAYS,
   MAX_SUPPLIER_TRANSFER_DAYS,
@@ -43,6 +45,7 @@ import {
   previewRecurringMoney,
   readRecurringProductFields,
 } from '@/lib/commerce/recurring'
+import { googleReviewsHref } from '@/lib/pricing/original-price-source'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
@@ -58,6 +61,8 @@ export interface SupplierOption {
   address: string | null
   logo_url: string | null
   status: string
+  /** Pending 242; absent from production reads as null (lib/admin/supplier-options.ts). */
+  google_reviews_url?: string | null
 }
 
 interface VariantDraft {
@@ -146,6 +151,14 @@ export default function ProductForm({
     product?.discount_percent != null ? String(product.discount_percent) : '',
   )
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
+  const [fullPrice, setFullPrice] = useState(
+    product?.full_price != null ? String(product.full_price) : '',
+  )
+  const [status, setStatus] = useState<string>(product?.status ?? 'draft')
+  // Operator markup (lib/content/markup), controlled so the toolbar can type into it.
+  const [description, setDescription] = useState(product?.description_he ?? '')
+  // Scheduled publish (pending 249): shown in Israel time, stored as an instant.
+  const [publishAt, setPublishAt] = useState(isoToJerusalemLocal(readPublishAt(product)))
   // Q05. Read defensively: 242 and 243 are not applied, so these columns are
   // absent from the row today and read as their defaults (product-terms.ts).
   const savedTerms = readProductTerms(product)
@@ -166,6 +179,7 @@ export default function ProductForm({
   const supplierGap = selectedSupplier
     ? supplierReadiness(selectedSupplier)
     : { ready: false, missing: [], missingLabels: [] }
+  const supplierReviewsHref = googleReviewsHref(selectedSupplier?.google_reviews_url)
 
   /**
    * The consequence of the four knobs, computed with the same pure functions the
@@ -346,12 +360,13 @@ export default function ProductForm({
         <label htmlFor="description_he" className="block text-xs font-medium text-gray-700 mb-1">
           תיאור
         </label>
-        <textarea
+        <RichTextEditor
           id="description_he"
           name="description_he"
-          defaultValue={product?.description_he ?? ''}
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+          value={description}
+          onChange={setDescription}
+          rows={6}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-y"
         />
       </div>
 
@@ -427,7 +442,8 @@ export default function ProductForm({
             <select
               id="prod-status"
               name="status"
-              defaultValue={product?.status ?? 'draft'}
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
               required
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
@@ -438,6 +454,31 @@ export default function ProductForm({
             </select>
           )}
         </div>
+        {/* Scheduled publish (W03, pending 249). A draft with a date goes live
+            on its own; the field exists only while the status is draft, so a
+            product published by hand never carries a stale schedule. The
+            server runs the publish gate on it, exactly as on "פעיל". */}
+        {!hidePricing && status === 'draft' && (
+          <div className="col-span-2">
+            <label htmlFor="publish_at" className="mb-1 block text-xs font-medium text-gray-700">
+              פרסום מתוזמן (שעון ישראל)
+            </label>
+            <input
+              id="publish_at"
+              name="publish_at"
+              type="datetime-local"
+              value={publishAt}
+              onChange={(e) => setPublishAt(e.target.value)}
+              dir="ltr"
+              className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              {publishAt
+                ? 'המוצר יעבור לסטטוס "פעיל" בעצמו במועד הזה (בדיקה כל 5 דקות). ריק = בלי תזמון.'
+                : 'ריק = הטיוטה נשארת טיוטה עד שתפרסמו ידנית. מילוי מועד עתידי מפרסם אוטומטית.'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Supplier */}
@@ -477,6 +518,39 @@ export default function ProductForm({
             </p>
           )}
         </div>
+        {/* What the product page prints from the supplier: the business
+            address (Waze) and the Google reviews link (242). Read-only here,
+            on purpose: both belong to the supplier and are edited once there,
+            not retyped on each of its products. */}
+        {selectedSupplier && (
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg bg-gray-50 px-3 py-2 text-xs">
+            <dt className="text-gray-500">כתובת העסק</dt>
+            <dd className="text-gray-900">
+              {selectedSupplier.address?.trim() || <span className="text-amber-700">חסרה</span>}
+            </dd>
+            <dt className="text-gray-500">ביקורות גוגל</dt>
+            <dd className="text-gray-900">
+              {supplierReviewsHref ? (
+                <a
+                  href={supplierReviewsHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                  dir="ltr"
+                >
+                  {supplierReviewsHref}
+                </a>
+              ) : (
+                <>
+                  לא הוגדר.{' '}
+                  <a href={`/admin/suppliers/${supplierId}`} className="underline">
+                    הוספה בעמוד הספק
+                  </a>
+                </>
+              )}
+            </dd>
+          </dl>
+        )}
       </div>
 
       {/* Location. What the homepage meta line prints beside the category
@@ -561,7 +635,7 @@ export default function ProductForm({
                 htmlFor="kenyon_price"
                 className="block text-xs font-medium text-gray-700 mb-1"
               >
-                מחיר רגיל (₪) *
+                מחיר רגיל (₪, כולל מע"מ) *
               </label>
               <input
                 id="kenyon_price"
@@ -575,11 +649,11 @@ export default function ProductForm({
                 dir="ltr"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
-              <p className="mt-1 text-xs text-gray-500">מחיר המחירון של בית העסק</p>
+              <p className="mt-1 text-xs text-gray-500">מחיר המחירון של בית העסק ליחידה אחת</p>
             </div>
             <div>
               <label htmlFor="full_price" className="block text-xs font-medium text-gray-700 mb-1">
-                מחיר לפני הנחה (₪)
+                מחיר לפני הנחה (₪, כולל מע"מ)
               </label>
               <input
                 id="full_price"
@@ -587,11 +661,12 @@ export default function ProductForm({
                 type="number"
                 min="0"
                 step="0.01"
-                defaultValue={product?.full_price ?? ''}
+                value={fullPrice}
+                onChange={(e) => setFullPrice(e.target.value)}
                 dir="ltr"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
-              <p className="mt-1 text-xs text-gray-500">מוצג מחוק בעמוד המוצר</p>
+              <p className="mt-1 text-xs text-gray-500">מוצג מחוק בעמוד המוצר. מחייב מקור.</p>
             </div>
             <div>
               <label
@@ -621,17 +696,20 @@ export default function ProductForm({
                 htmlFor="original_price_source"
                 className="block text-xs font-medium text-gray-700 mb-1"
               >
-                מקור המחיר לפני הנחה
+                מקור המחיר לפני הנחה{fullPrice !== '' ? ' *' : ''}
               </label>
               <input
                 id="original_price_source"
                 name="original_price_source"
                 maxLength={120}
                 defaultValue={savedSource.label}
+                required={fullPrice !== ''}
                 placeholder="מחירון היצרן, מחיר באתר הספק"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
-              <p className="mt-1 text-xs text-gray-500">מודפס מתחת למחיר המחוק בדף המוצר</p>
+              <p className="mt-1 text-xs text-gray-500">
+                חובה כשמוזן מחיר לפני הנחה. מודפס מתחת למחיר המחוק בדף המוצר.
+              </p>
             </div>
             <div>
               <label

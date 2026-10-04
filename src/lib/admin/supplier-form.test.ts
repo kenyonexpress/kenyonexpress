@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { REQUIRED_TO_PUBLISH, parseSupplierForm, supplierReadiness } from './supplier-form'
+import {
+  GOOGLE_REVIEWS_URL_ERROR,
+  REQUIRED_TO_PUBLISH,
+  parseSupplierForm,
+  supplierReadiness,
+} from './supplier-form'
 
 const VALID = {
   name: 'פלאפל הכרם',
@@ -69,6 +74,24 @@ describe('parseSupplierForm', () => {
 
   it('rejects a malformed id', () => {
     expect(parseSupplierForm({ ...VALID, id: 'not-a-uuid' }).ok).toBe(false)
+  })
+
+  it('accepts a Google reviews link only on a Google host, and keeps it off data', () => {
+    const ok = parseSupplierForm({
+      name: 'עסק',
+      google_reviews_url: 'https://maps.app.goo.gl/abc123',
+    })
+    expect(ok.ok).toBe(true)
+    if (ok.ok) {
+      expect(ok.optional.google_reviews_url).toBe('https://maps.app.goo.gl/abc123')
+      expect('google_reviews_url' in ok.data).toBe(false)
+    }
+    const blank = parseSupplierForm({ name: 'עסק', google_reviews_url: '  ' })
+    expect(blank.ok && blank.optional.google_reviews_url).toBeNull()
+    const bad = parseSupplierForm({ name: 'עסק', google_reviews_url: 'https://yelp.com/biz/x' })
+    expect(bad).toEqual({ ok: false, error: GOOGLE_REVIEWS_URL_ERROR })
+    const http = parseSupplierForm({ name: 'עסק', google_reviews_url: 'http://google.com/maps' })
+    expect(http.ok).toBe(false)
   })
 
   it('never emits the retired supplier-level commission knobs', () => {

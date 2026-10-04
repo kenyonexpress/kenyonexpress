@@ -1,82 +1,77 @@
-RESUME FROM: W03
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W02 DONE: חמשת
-העמודים המשפטיים בפריסת Electro, `/cookies` עמוד חמישי עם ביטול הסכמה,
-קישורים בפוטר ובקופה, באנר נוקב ב-PostHog, שער parity 7.92 / 9.03 / 4.16
-PASS; W01 הועבר לארכיון; RESUME FROM מצביע ל-W03, ואם אין W03 בתור,
-ההמשך הוא M02-c96)
+RESUME FROM: W04
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W03 DONE: טופס
+המוצר אומת שדה-שדה מול המפרט, ארבעה פערים נבנו (פרסום מתוזמן, מקור חובה
+למחיר לפני הנחה, קישור ביקורות גוגל בספק, תיאור בסימון עשיר), ייבוא CSV
+אומת, בדיקת Playwright נכתבה, שער parity 7.92 / 9.03 / 4.16 PASS; W02 הועבר
+לארכיון; RESUME FROM מצביע ל-W04, ואם אין W04 בתור, ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W02 - DONE (05.10.2026): LEGAL PAGES COMPLETE. חמשת המסמכים המשפטיים
-קיימים, בעברית, בפריסת עמוד התקנון של Electro, מקושרים מהפוטר ומטקסט
-ההסכמה בקופה; באנר העוגיות חוסם PostHog, Meta ו-GA4 עד "אישור" ורושם את
-ההחלטה; שער parity 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd`
-אומת, HEAD בהגעה `65d3d9c1d`, עץ נקי. W02 לא הופיע ב-STATE.md, ב-BACKLOG או
-ב-`git log -20`. **מה נמצא:** ארבעה מסמכים כבר היו (`(legal)/_content/*`,
-מוגשים ב-`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
-`/accessibility`), `/cookies` היה redirect ב-`next.config.ts` אל
-`/privacy-policy#cookies` (L05), טקסט ההסכמה בקופה היה "קראתי ואני מסכים
-לאתר תנאי שימוש" בלי שום קישור, הבאנר נקב ב-Google Analytics ו-Meta בלבד
-בעוד PostHog (אירועים והקלטת מסך) נטען מאחורי אותה עוגייה בלי להיקרא בשם,
-ו-`LegalContactBlock` הדפיס מספר וואטסאפ תחת "יצירת קשר" בניגוד למדיניות
-"בלי טלפון". **הפריסה, נמדדה:** Playwright דרך אתגר ה-Cloudflare (אותו
-מתכון של `capture-electro.mjs`) על `electro.madrasthemes.com/terms-and-conditions/`
-ב-380/768/1440, `getComputedStyle`, נכתב ל-`refs/electro-terms.json`
-(`git add -f`): מכולה 1200 עם padding 15 (1170 פנימי ב-1440, 690 ב-768, 350
-ב-380), פירורי לחם 14/23.996 pt 25.004 pb 22.4 (380: 9/9), כותרת ממורכזת
-39.998/47.9976 משקל 500 בכל רוחב, שורת "עודכן" 14 מתחתיה, header mb 39.998,
-h2 25.004/40.0064 משקל 500 mb 40.0064, p 14/23.996 mb 16, ol padding-start
-32, section mb 39.998 (380: 28), צבע rgb(51,62,72) = `--color-heading`.
-הכל ב-`src/styles/legal-page.css` (מיובא ב-`app.css`), `LegalArticle.tsx`
-נכתב מחדש עליו; נמדד חזרה על `/cookies` המקומי ב-1440: x135 w1170, 40/48,
-25/40, 14/24, זהה. **המסמך החמישי:** `_content/cookies.ts` (6 סעיפים:
-קטגוריות, הכרחיות, מדידה אחרי אישור עם טבלת PostHog/Meta Pixel/GA4/ke_attr
-ומשכי שמירה מהקוד, מנגנון ההסכמה, ביטול הסכמה, בסיס משפטי), עמוד
-`(store)/cookies/page.tsx` עם `ConsentWithdrawForm` (server action
-`withdrawConsent` שמוחק את `ke_consent` ומחזיר את הבאנר), `(legal)/legal/cookies`
-מפנה 308, ה-redirect של `/cookies` הוסר מ-`next.config.ts`,
-`CANONICAL_PATH` עבר ל-`_content/index.ts` ומשרת את הפוטר, את ה-sitemap
-(שקרא עד עכשיו את התאריכים של הסט הישן `src/content/legal`) ואת הקופה.
-**14ג ב-`returns.ts`:** היה כבר (14 יום, 2 ימי עסקים לשירות במועד, 7 להארחה,
-min(5%, ₪100), מומש = אין ביטול); נוספו במפורש: אין החזר אחרי 14 יום, קופון
-שטרם מומש ניתן להעברה, ומוצר פיזי לפי מדיניות פר-מוצר עם ברירת מחדל החזר
-מלא 100% (תואם `refund_policy` ב-`lib/admin/product-terms.ts`, ברירת מחדל
-`statutory`). **ישות:** "קניון אקספרס, עוסק מורשה" בהגדרות התקנון, בפתיח
-מדיניות העוגיות וב-`LegalContactBlock`; `support@kenyonexpress.co.il`;
-הוואטסאפ והטלפון הוסרו מהבלוק, מ-`accessibility.ts` ומ-`returns.ts`.
-**קופה:** `CheckoutConsentText.tsx` חדש מרנדר "קראתי ואני מסכים/ה לתקנון,
-למדיניות הפרטיות, למדיניות הביטולים וההחזרות, למדיניות העוגיות ולהצהרת
-הנגישות" מ-`LEGAL_DOCS` עם `_blank`+`noopener noreferrer`, ומשפט הפרטיות
-מקשר למדיניות הפרטיות (בדיקה: 4). **באנר:** נוקב ב-PostHog, Meta ו-Google
-Analytics ומקשר ל-`/cookies`; `CONSENT_WORDING_VERSION` 2 -> 3 (כולם
-נשאלים שוב, כי הסכמה שלא נקבה ב-PostHog אינה הסכמה ל-PostHog);
-`decideConsent` רושם `consent.decided` ביומן השרת עם ההחלטה והגרסה
-(הרשומה, בלי זהות); `trackEvent` ב-`posthog.ts` נחסם בעצמו בדפדפן בלי
-עוגיית הסכמה תקפה (3 בדיקות חדשות: אפס fetch, אפס `ke_ph_id`, אפס
-localStorage) כך שהחסימה מבנית ולא תלויה בשלושת הקוראים. **החלטות שהתקבלו
-לבד:** (א) `/cookies` הוא עמוד ולא עוגן, בניגוד ל-L05, כי כפתור ביטול
-ההסכמה חייב כתובת; `legal-routes.test.ts` נועל עכשיו שאין redirect עליו;
-(ב) המילה "וואטסאפ" נשארה במדיניות הפרטיות (שורת מידע שנשמר), הבדיקה
-החדשה אוסרת מספרי טלפון בלבד; (ג) `scripts/build-legacy-redirects.mjs`
-הורץ כדי ש-`legacy-redirects.test.ts` יראה את שני הנתיבים החדשים, וה-192
-הממתינה התחדשה (32 במקום 33: `/coupon-scanner` נשר כ-`source_is_live`; לא
-הוחלה, `migrations/pending` בלבד); (ד) תקרת ה-i18n 626 -> 624 (ליטרלים
-עברו לקטלוג `legal.*`, `checkout.consent.*` ב-he/en); (ה) `withdrawConsent`
-הוכרז public ב-`auth-coverage.test.ts` כמו `decideConsent`. **מלכודת סביבה
-חדשה:** ה-shell מזריק גם `CARDCOM_USE_MOCK=true` (לא `[SENSITIVE]`), וזה
-מפיל `invoices.test.ts > does not spend an attempt when there are no
-credentials`; `-u CARDCOM_USE_MOCK` ברשימת ה-UNSET פותר. **שערים:**
-`pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 624/624, tokens, rtl,
-docs-index 282); `pnpm test` 615/615 קבצים, 7372 עברו, 12 דולגו, אחרי תיקון
-שני הנפילות למעלה; build exit 0, `BUILD_ID` `XAVWy4JuBrBKuTeBKMdY9`,
-`/cookies` ○ static; שרת חדש על 3396, חמשת העמודים 200, `/legal/cookies`
-308 -> `/cookies`, sitemap `content.xml` מכיל את חמשת הנתיבים עם
-2026-10-05. **השער, בחזית, `--baseline=refs/ke_live_W.png`, שלוש שורות
-ב-`docs/UI-PARITY-REPORT.md` (`65d3d9c1d-dirty`):** 380: 7.92% PASS (overall
-14.38%); 768: 9.03% PASS (overall 16.28%); 1440: 4.16% PASS (overall
-14.89%). דלתא מול W01: -0.68 / +0.01 / 0.00; הפוטר שינה href אחד בלבד.
-השרת על 3396 נסגר. **לא נעשה:** אין מיגרציה חדשה, אין החלה, אין שינוי
-env/DNS/Vercel, אין deploy ידני (push לענף = פריסה אוטומטית לפי L02).
+**W03 - DONE (05.10.2026): ADMIN PRODUCT UPLOAD. ‏`/admin/products/new`,
+‏`/admin/products/[id]/edit` ו-`/admin/products/import` קיימים ואומתו מול
+המפרט שדה-שדה; ארבעה פערים נבנו; שער parity 7.92% / 9.03% / 4.16% PASS
+ב-380 / 768 / 1440 (זהה ל-W02, דף הבית לא נגע).** `pwd` אומת, HEAD בהגעה
+`a2c9820fd`, עץ נקי. W03 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`.
+**מה כבר היה (נמדד, לא נבנה שוב):** סוג קופון/פיזי/חוזר, שם, slug אוטומטי
+(`slugify`), קטגוריה, ספק עם שער מוכנות, תמונות (עד 8) דרך
+`processAndUploadImage` עם webp+avif ל-R2 (נפילה ל-Supabase Storage כש-R2
+לא מוגדר, חוסם 4), מחיר בש"ח -> אגורות פעם אחת ב-`ilsToAgorot`
+(`lib/commerce/money`, שמיוצא גם מ-`lib/money.ts`; אין `packages/money.ts`
+בריפו), `platform_percent` פר מוצר בלי ברירת מחדל + זוג 100%, תוקף שובר
+30/60/90 ברירת מחדל 90, הוראות מימוש, משלוח 0, ימי העברה, חלון ביטול
+(רצפה 14), תדירות תשלום, קאשבק 0, מינימום רכישה, מלאי, סטטוס; ייבוא CSV עם
+הורדת תבנית עברית, הרצת ניסיון ודוח שגיאות שורה-שורה להורדה; שער תפקיד
+`requireSection('catalog','write')` ב-3 הדפים ו-RLS ‏`products_insert/update_unified`
+(119: ‏`is_admin() or has_role('content_uploader')`), ה-uploader נחתך
+מכסף ונכפה ל-`approval_status='pending'`. **"מחיר ליחידה"** = `kenyon_price`
+(התווית אומרת עכשיו "ליחידה אחת"; אין עמודת יחידת-מידה בסכימה, לא הומצאה).
+**מה נבנה:** (1) **פרסום מתוזמן**: `migrations/pending/249_product_publish_at.sql`
+(‏`products.publish_at timestamptz`, אינדקס חלקי, CHECK ‏NOT VALID שמועד
+רק על טיוטה; **לא הוחלה**), `lib/admin/product-publish-schedule.ts`
+(‏datetime-local בשעון ישראל -> ISO דרך Intl, מועד חובה בעתיד,
+‏`publishScheduledProducts`), השדה בטופס רק כש-status=draft ולמנהל בלבד,
+שער הפרסום (`assertPublishable`) רץ גם על תזמון, קבוצת עמודה אופציונלית
+‏`publish_at_249` (DB לא ממוגרר: תזמון ריק נשמט, תזמון מלא נדחה בשם הקובץ),
+והקידום רוכב על ‏cron ‏`price-schedule` הקיים (כל 5 דקות; רק
+‏`approval_status='approved'`, ‏`status='draft'` בפילטר הכתיבה) ולא עבודה
+חדשה, כי המצאי ב-`cron-jobs.json` נועל 20 עבודות. (2) **מקור חובה למחיר
+לפני הנחה**: `originalPriceSourceConflict` דו-כיווני, התוויות "כולל מע"מ",
+‏`required` חי בטופס, ובייבוא עמודה `מקור המחיר המלא` + אותו כלל שורה-שורה;
+**תוצאה בפרודקשן עד 242**: שורה עם מחיר-לפני-הנחה אינה נשמרת מהטופס (עם
+מקור: הודעת 242 הקיימת; בלי מקור: הודעת החובה). זו ההחלטה, כי מחיר מחוק
+בלי מקור הוא טענה שהקונה לא יכול לבדוק; עריכת 44 הפעילים בלי מחיר-לפני-הנחה
+לא נפגעת. (3) **ביקורות גוגל + כתובת**: שדה `google_reviews_url` בטופס
+הספק (אימות מארח google/goo.gl/g.page, אותו `googleReviewsHref` של דף
+המוצר), נכתב דרך `writeWithOptionalColumns` (242), וטופס המוצר מציג כתובת
+העסק וקישור הביקורות של הספק הנבחר לקריאה בלבד (`lib/admin/supplier-options.ts`
+קורא את העמודה דרך `readOptionalColumns`). (4) **תיאור בסימון עשיר**: אותו
+דקדוק של `lib/content/markup` (CMS), `RichTextEditor` עם סרגל ותצוגה
+מקדימה ב-`RichText` הקיים, דף המוצר מרנדר `RichText` בתוך
+‏`.pdp-details__text` (CSS מבטל את קצב ה-CMS), meta ו-JSON-LD דרך `plainText`.
+**בלי Write על קובץ קיים שלא נקרא:** `cat >` דרס רגעית את
+`components/content/RichText.tsx` הקיים; שוחזר מ-git באותו דקה, המפענח
+הכפול שכתבתי נמחק, והדקדוק הקיים הוא היחיד. **i18n:** `src/lib/admin/`
+נוסף ל-EXCLUDED_PREFIXES (חצי-הלוגיקה של פאנל הניהול, אותו טיעון של
+‏`components/admin/`), התקרה 624 -> 606. **E2E:** `e2e/admin-product-upload.spec.ts`
+(קופון + פיזי, פתיחה מחדש, מחיקה רכה מהרשימה); מול ה-build המקומי על 3397
+הבדיקה **דילגה**: אין fixture של `e2e-admin@` במסד המחובר (פרודקשן, לא
+נזרע בכוונה; `pnpm seed:test` כותב משתמשים לפרודקשן ולא הורץ). הבדיקה
+רצה, מדלגת בניקיון, ולא אומתה ירוקה. **שערים:** `pnpm type-check` 0;
+`pnpm lint` 0; `pnpm test` 618/618 קבצים, 7410 עברו (תחת `env ${=UNSET}`
+כולל `SUPABASE*`; `env $UNSET` בלי word-split לא מסיר דבר ו-14 נפילות
+"key unset" חזרו גם ב-HEAD); build exit 0, `BUILD_ID` `TgyKBdnmSTPn8zOrA7O3T`
+(ניסיון ראשון נפל על Invalid API key מהמפתח הזר ב-shell, לא קוד). **השער,
+בחזית, `--baseline`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md`
+(`a2c9820fd-dirty`):** 380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS.
+השרת על 3397 נסגר. **ארבעה `next-server` זרים רצים מאותו cwd** (סשנים
+מקבילים); `rm -rf .next` שלי לפני ה-build הראשון אולי הפיל להם build.
+**לא נעשה:** אין החלה של 249/242, אין env/DNS/Vercel, אין seed לפרודקשן.
+
+**W02 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W03): חמשת העמודים המשפטיים בפריסת עמוד התקנון של Electro
+(`refs/electro-terms.json`, `src/styles/legal-page.css`), `/cookies` עמוד
+חמישי עם ביטול הסכמה, הבאנר נוקב ב-PostHog, קישורים בפוטר ובקופה, שער
+parity 7.92 / 9.03 / 4.16 PASS ב-380/768/1440, ארבעת השערים ירוקים.
 
 **W01 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-W02): שורת אייקוני ה-header נבנתה מחדש כ-Electro header-v8 בדיוק

@@ -318,16 +318,27 @@ export const productExtrasSchema = z
 export type ProductExtrasInput = z.infer<typeof productExtrasSchema>
 
 /**
- * A source for a price that is not there describes nothing. Cross-schema, so
- * it lives beside the two schemas rather than inside either: the action calls
- * it with both parsed results. Returns the Hebrew refusal or null.
+ * The before-discount price and its stated source come as a pair, both ways.
+ * A source for a price that is not there describes nothing; a struck-through
+ * price with no source is a claim the shopper cannot check, and since W03
+ * (2026-10-05) the form refuses it rather than printing an unsourced strike.
+ * Both prices are VAT-inclusive consumer prices, which is what the label says.
+ * Cross-schema, so it lives beside the two schemas rather than inside either:
+ * the action calls it with both parsed results. Returns the Hebrew refusal or
+ * null.
  */
+export const ORIGINAL_PRICE_SOURCE_REQUIRED =
+  'מקור המחיר לפני הנחה נדרש כשמוזן מחיר לפני הנחה (למשל: מחירון היצרן, מחיר באתר הספק)'
+
 export function originalPriceSourceConflict(
   product: Pick<ProductInput, 'full_price'>,
   extras: Pick<ProductExtrasInput, 'original_price_source'>,
 ): string | null {
   if (extras.original_price_source != null && product.full_price == null) {
     return 'מקור המחיר הרגיל דורש מחיר לפני הנחה'
+  }
+  if (product.full_price != null && extras.original_price_source == null) {
+    return ORIGINAL_PRICE_SOURCE_REQUIRED
   }
   return null
 }
