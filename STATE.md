@@ -1,7 +1,25 @@
-RESUME FROM: M08-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c93 DONE: TODO/FIXME נסרק שוב, אפס דריפט מ-M07-c92/M07-c67)
+RESUME FROM: M09-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c93 DONE: Lighthouse mobile נמדד שוב, 100/100/100 על / ועל /product, אפס דריפט מ-M08-c92)
 
 ## המשך מ:
+
+**M08-c93 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores", זהה במהות ל-M08-c92. `pwd` אומת, עץ נקי,
+HEAD `c72d6b385`. `git diff 0889c23d1 HEAD -- src public next.config.*
+package.json packages` ריק (אפס שינוי קוד מאז M08-c92) — אין דריפט לתקן.
+פורט 4517 היה תפוס על ידי שרת `next-server` מריצה מקבילה אחרת (אותו
+`cwd`, לא לנגיעה, סשן אחר), ולכן נבחר פורט חלופי 4518 (`lsof` אישר פנוי
+מראש). **בחזית**: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4518 pnpm build` exit 0 (337/337
+נתיבים). `PORT=4518 pnpm start`, `cwd` של המאזין אומת מול הריפו הזה
+(`lsof`). `/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל הסבבים) החזירו
+`200`. `LOCAL_BASE=http://localhost:4518 node scripts/lighthouse-smoke.mjs
+--throttling-method=provided` (ו-`--url=` למוצר): `/` = **100/100/100**,
+`/product/צימר-מאסטר` = **100/100/100** (perf/a11y/seo), אפס דריפט
+מ-M08-c92. שרת נסגר ב-`INT`, פורט 4518 אומת פנוי. שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), build למעלה exit 0. לא
+פריט חזותי, `compare.mjs` לא נדרש (תקדים מ-M08-c80 ואילך). אפס שינוי
+קוד. קובץ: `STATE.md`.
 
 **M07-c93 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older than
 7 days resolve or file in docs/BACKLOG.md", זהה במהות ל-M07-c92 ול-M07-c67
