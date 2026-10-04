@@ -248,15 +248,17 @@ export default function ProductInfo({
           so on `.pdp-summary__meta`. The stars share the row with the SKU
           rather than taking one of their own, so a product's first approved
           review does not push the rest of the page down a line; `RatingStars`
-          still renders nothing without one, same as before. */}
-      <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
+          still renders nothing without one, same as before. The row stays RTL
+          and only the Latin run is isolated: a whole-row `ltr` put the Hebrew
+          review link and the star fill order of an unSKU'd product left-to-right. */}
+      <p className="pdp-summary__meta" dir="rtl">
         <RatingStars summary={ratingSummary} href={reviewsHref} className="pdp-summary__rating" />
         {effectiveSku ? (
           <>
             מק"ט: <span dir="ltr">{effectiveSku}</span>
           </>
         ) : (
-          (nameEn ?? '')
+          nameEn && <span dir="ltr">{nameEn}</span>
         )}
       </p>
 

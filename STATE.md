@@ -1,21 +1,37 @@
-RESUME FROM: M17-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M16-c89 DONE: JSON-LD Product+BreadcrumbList על כל 44 המוצרים הפעילים, אפס דריפט)
+RESUME FROM: M18-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M17-c89 DONE: leak RTL בשורת המטא של דף המוצר תוקן, שער מוצר 4.96/4.58/3.25 PASS)
 
 ## המשך מ:
 
-**M16-c89 - DONE (04.10.2026).** משימת התור: "Verify all product pages
-have JSON-LD Product and BreadcrumbList", זהה ל-M16-c88. קוד: הקומיט
-האחרון על `src/lib/seo/json-ld.ts` ועל `src/app/(store)/product/[slug]/page.tsx`
-הוא עדיין `fd820969f` (30.09), והדף עדיין מזריק `buildProductJsonLd`
-ו-`buildBreadcrumbJsonLd`. **בזמן ריצה, הפעם כל המוצרים ולא דגימה:**
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4966
-pnpm build` (exit 0), `pnpm start` על 4966 (cwd המאזין אומת ב-`lsof`).
-כל 44 הסלאגים הפעילים מ-`supabase/catalogue-snapshot.json` נשלפו
-ונותחו: **44/44 מחזירים 200 עם בלוק `Product` אחד ובלוק `BreadcrumbList`
-אחד בדיוק**, אפס שגיאות JSON. אפס דריפט. השרת נעצר, הפורט פנוי. שערים:
-`type-check` 0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו), `build`
-exit 0. לא חזותי, `compare.mjs` לא נדרש. M15-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M17-c89 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks". **הפעם נמצא leak אמיתי ותוקן.** קוד ה-UI
+לא השתנה מאז M17-c88, אבל בדיקת הרינדור בפועל העלתה ש-`.pdp-summary__meta`
+ב-`src/components/storefront/ProductInfo.tsx` מקבל `dir="ltr"` על כל השורה
+כשאין למוצר מק"ט. זה נכתב ב-`7a7fd0c36` כשהשורה החזיקה רק את `nameEn`;
+`99b2079cb` (M18-c52) הכניס לאותה שורה את `RatingStars`, וכיוון השורה לא
+עודכן. התוצאה: מוצר עם ביקורת מאושרת ובלי מק"ט מציג את קישור הביקורות
+בעברית ואת מילוי הכוכבים משמאל לימין. **התיקון:** השורה תמיד `dir="rtl"`,
+ורק הרצף הלטיני (`nameEn`) מבודד ב-`<span dir="ltr">`, כמו שהמק"ט כבר
+בודד. טסט רגרסיה חדש `src/components/storefront/product-meta-direction.test.tsx`
+(3 מקרים; בלי התיקון 2 מהם נכשלים, נבדק עם stash). **מדידה בזמן ריצה:**
+`rm -rf .next && CARDCOM_USE_MOCK=true pnpm build` exit 0, `/` ו-`/product/
+מזקקת-ויסקי` (סלאג אקראי מתוך 44): שניהם `<html lang="he" dir="rtl">` 200.
+אחרי התיקון השורה היא `dir="rtl"`, וה-`dir="ltr"` הנותרים הם רק שדה האימייל
+בניוזלטר (מכוון, `input-dir-gate`) ו-`tel:` של הספק במוצר. גריפ על
+`direction: ltr`/`text-left`/`ml-`/`pr-` קשיחים ב-`src/app/page.tsx`
+ובתיקיית `product`: אפס. **שער חזותי (שינוי UI), בחזית:** `compare.mjs
+--page=product --widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
+מול `pnpm start` על 4968 (cwd ושעת ההפעלה 12:32 אומתו ב-`lsof`/`ps`):
+**`380 4.96% PASS`, `768 4.58% PASS`, `1440 3.25% PASS`, exit 0**, זהה
+ל-M02-c89. **החלטה שהתקבלה לבד:** הריצה הראשונה נעשתה על 3311, שם
+`pnpm start` נפל על EADDRINUSE והשער מדד שרת זר (PID 1199, הופעל 11:21
+לפני הבנייה). שלוש השורות שלה ב-`docs/UI-PARITY-REPORT.md` (05:27-05:30)
+נשארו כי הדוח הוא לוג, אבל **השורות התקפות הן 05:32-05:36**. השרתים
+הזרים על 3311-3316 שייכים לסשנים אחרים ולא נגעתי בהם. השרת שלי נעצר, 4968
+פנוי. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12
+דולגו), `build` exit 0. M16-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
+`ProductInfo.tsx`, הטסט החדש, `docs/UI-PARITY-REPORT.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
@@ -105,52 +121,8 @@ Lighthouse).
 בשלושת הרוחבים (4.96%/4.56%/3.25%). M17-c61 — קופי/משפטי, אפס דריפט.
 ארבעת השערים ירוקים בשניהם.
 
-**M15-c61..M01-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M16-c61 לשמירה על תקרת 300 שורות):** סנכרון תיעוד (אפס דריפט),
-ביצועים (אפס דריפט), אבטחה (אפס דריפט), SEO (אפס דריפט), נגישות (0
-`serious`/`critical`), כיסוי טסטים (שש הקטגוריות הקריטיות ב-100%),
-STATE CLEAN, BACKLOG EMPTY (פעם חמש-עשרה), route audit (241 שורות,
-אפס כשל), Lighthouse mobile (כל שמונת הציונים 90+), advisors (44 WARN
-זהים), תברואת תלויות (`fast-xml-parser` 5.11.2), בדיקה ירוקה, שער חזותי
-(אפס רגרסיה), ובדיקת פרודקשן (פעם שמינית, DNS/HTTP תקינים, פריסה עדיין
-חסומה) — שום שורה לא נמחקה מהארכיון עצמו, רק הוסרה כאן הכפילות.
-
-**M18-c60..M11-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M10-c61 לשמירה על תקרת 300 שורות):** אפס-פעילות (שני קומיטי טסט
-בלבד), קופי/משפטי (אפס דריפט), תברואת ריפו (אפס דריפט), סנכרון תיעוד
-(אפס דריפט), ביצועים (אפס דריפט), אבטחה (אפס דריפט, ממצא build מקומי
-בלבד), SEO (אפס דריפט), ונגישות (axe, 0 `serious`/`critical`) — ארבעת
-השערים ירוקים בכולם, אפס שינוי קוד ייצור בכולם.
-
-**M10-c60..M02-c60 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M09-c61 לשמירה על תקרת 300 שורות):** כיסוי טסטים (`recordRefusedScan`
-50%→100%, ושני קבצים נוספים 0%→100%), BACKLOG EMPTY (פעם ארבע-עשרה), route audit (241 שורות, אפס
-כשל), Lighthouse mobile (כל שמונת הציונים 90+), advisors (44 WARN
-זהים), תברואת תלויות, בדיקה ירוקה, ושער חזותי (אפס רגרסיה) — כולם אפס
-דריפט מהמקבילים ב-c59, ארבעת השערים ירוקים בכולם.
-
-**M18-c59..M15-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M10-c60 לשמירה על תקרת 300 שורות):** אפס-פעילות (בפועל שני
-קומיטים אמיתיים), קופי/משפטי (אפס דריפט), תברואת ריפו (אפס דריפט),
-וסנכרון תיעוד (STATE.md/LAUNCH-READINESS.md/BACKLOG.md מול git log,
-אפס דריפט) — ארבעת השערים ירוקים בכולם.
-
-**M14-c59 ו-M13-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, שני הראשים
-המקוריים כווצו לשורה הזו ב-M13-c62 לשמירה על תקרת 300 שורות).** M14-c59
-— ביצועים, bundle/צנרת תמונות/תגיות ISR/כותרות cache אומתו מחדש מול
-build אמיתי, אפס דריפט מ-M14-c58. M13-c59 — אבטחה, CSP/HSTS/
-X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash אומתו מחדש, אפס
-דריפט מ-M13-c58. ארבעת השערים ירוקים בשניהם, אפס שינוי קוד.
-
-**M12-c59..M01-c59 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה
-הזו ב-M11-c60 לשמירה על תקרת 300 שורות):** SEO (אפס דריפט), נגישות
-(axe בפעם חמישית, 0 `serious`/`critical`), כיסוי טסטים
-(`payment-money-columns.ts` 95.23%→100%), STATE CLEAN, BACKLOG EMPTY
-(פעם שלוש-עשרה), route audit (241 שורות, אפס כשל), Lighthouse mobile
-(כל שמונת הציונים 90+), advisors (44 WARN זהים), תברואת תלויות, שער
-ירוק, שער חזותי (אפס רגרסיה), ובדיקת פרודקשן (פעם שישית, DNS/HTTP
-תקינים, פריסה עדיין חסומה) — שום שורה לא נמחקה מהארכיון עצמו, רק
-הוסרה כאן הכפילות.
+**M15-c61..M01-c59 (סיכומים הועברו ל-`docs/STATE-ARCHIVE.md` ב-M17-c89).**
+הסבבים המלאים כבר היו בארכיון; כעת גם שורות הסיכום שלהם שם.
 
 **כל סעיף מ-M18-c58 ועד M01-c55** (כולל M17-c58..M01-c58, M18-c57..M08-c57,
 M06-c57..M01-c55, M18-c55..M01-c56, M16-c55..M13-c55, M07-c55, M03-c55..
