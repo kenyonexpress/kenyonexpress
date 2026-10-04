@@ -1,60 +1,57 @@
-RESUME FROM: M11-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M10-c95 DONE:
-migrations/pending נבדק שוב, 60 קבצי SQL, `git log -1` עדיין `48c8792dd`,
-אפס דריפט ב-git מאז M10-c93, **ובדיקה ישירה טרייה מול פרודקשן** אישרה
-ש-15 אובייקטים של 13 מ-19 הקבצים החוסמים עדיין חסרים וטריגר 218 עדיין
-שבור, ארבעת השערים ירוקים תחת `env -u` (55 שמות), M09-c95 הועבר לארכיון,
-RESUME FROM מצביע ל-M11-c95)
+RESUME FROM: M12-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M11-c95 DONE:
+sitemap.xml נבדק שוב, חי `200` `application/xml` well-formed, 79 `<loc>`,
+etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT זהים ביט ל-M11-c93/c94,
+חמשת תתי-המפות עדיין `404` בפרודקשן (main הישן), **ובנוסף הפעם** הבנייה
+של HEAD הורצה מקומית ו-`/sitemap.xml` שלה מגיש `sitemapindex` עם חמשת
+תתי-המפות כולן `200`, ארבעת השערים ירוקים תחת `env -u` (51 שמות), M10-c95
+הועבר לארכיון, RESUME FROM מצביע ל-M12-c95)
 
 ## המשך מ:
 
-**M10-c95 - DONE (05.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker", אותו פריט חזורי כמו M10-c93/M10-c94. `pwd`
-אומת, HEAD `681222eb4` (M09-c95). בעץ בהגעה: `.vercelignore` שונה ולא
-מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M09-c95).
-`ls migrations/pending/*.sql | wc -l` = **60** (58 ממוספרים 162..248 +
-`preflight_162.sql` + `preflight_184.sql`), זהה ל-Q55 ואילך; `git log -1
--- migrations/pending/` עדיין `48c8792dd` (248, Q32): אין קובץ חדש, אין
-קובץ שהוסר. `git diff --stat 9eb5c341e..HEAD -- migrations/pending
-docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
-pnpm-lock.yaml` (מאז הבדיקה הישירה של M10-c93) מחזיר רק `docs/BACKLOG.md`
-(+30, רשומות התיעוד של M10-c94/M14-c94): **אפס שינוי בכל נתיב שעשוי
-להשפיע על הסכמה החיה.** בניגוד ל-M10-c94 (שהסתמך על ה-diff הריק), הפעם
-רצה גם **בדיקה ישירה טרייה מול פרודקשן** (management API, טוקן CLI
-מה-keychain, קריאה בלבד, `to_regclass`/`information_schema`/
-`has_table_privilege`/`pg_get_functiondef`), 15 אובייקטים של 13 מתוך 19
-הקבצים החוסמים, שמות האובייקטים אומתו מול ה-SQL של כל קובץ לפני השאילתה:
-204 `supplier_applications` חסר; 218 הטריגר
-`enforce_profile_privilege_columns` **עדיין מכיל `supplier_id`** (הבאג
-מ-M05-c1 חי); 223 `notifications.outbox_id` חסר; 224 ל-`authenticated`
-אין EXECUTE על אף חתימה של `fn_record_recent_search`; 235
-`feature_flags`, 236 `contact_channels`, 239 `customer_invoice_settings`,
-240 `app_consent_events`, 244 `affiliate_campaigns` חסרים; 242
-`products.original_price_source` ו-243 `products.shipping_price_agorot`
-חסרים; 247 ל-`anon` אין SELECT על `reviews`; 248 `suppliers.opening_hours`
-(תלות 232) חסר. **כל 19 הקבצים החוסמים נשארים לא-מוחלים: 204, 209, 218,
-220, 223, 224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246,
-247, 248. אפס דריפט מ-M10-c93/c94.** חוסם #3 למטה נשאר כפי שהוא. לא
-הוחל דבר, לא `db push`, אפס שינוי קוד, אפס migration חדשה. שערים, כולם
-תחת `env -u` של 55 שמות (אומת `0` `SENSITIVE`, `0` `VERCEL`, `0`
-`SUPABASE` בסביבת הילד): `pnpm type-check` exit 0; `pnpm lint` exit 0
-(biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340 עברו, 12
-דולגו (7352)**, 56.2 שניות, אפס כשלונות, זהה ביט ל-M09-c95; פורט 3311
-תפוס על ידי `next-server` של סשן מקביל (PID 56540, לא שלי, לא נגעתי),
-נבחר 4851 (אומת פנוי); `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4851 pnpm build` exit 0, אפס
-`Invalid API key`, `BUILD_ID` `Me0kbtwvy0e7MWcgcTmSn`, אותן 92 שורות
-`supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד).
-לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש. M09-c95 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M11-c95 - DONE (05.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable", אותו פריט חזורי כמו M11-c93/M11-c94. `pwd` אומת, HEAD
+`f5564d638` (M10-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא
+שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M10-c95). קוד: `git log -1
+-- src/app/sitemap.xml src/app/sitemap src/app/sitemap*.ts` עדיין
+`d1adea146` (09.09), אפס שינוי מאז M11-c94. חי:
+`https://www.kenyonexpress.co.il/sitemap.xml` `200` `application/xml`,
+well-formed (`xmllint --noout`), **79** `<loc>`, כולם על
+`https://kenyonexpress.co.il/`, `lastmod` מקסימלי 25.09 02:29Z, etag
+`427ac6d9e86737e1fdbd2e4b0cfe53d6` ו-last-modified 02.10 07:02:57 GMT,
+`age` 210124 שניות: **זהים ביט ל-M11-c93 ול-M11-c94.** ה-apex עונה `308`
+ל-`www`; `robots.txt` החי מצביע ל-`https://kenyonexpress.co.il/sitemap.xml`;
+חמשת תתי-המפות (`/sitemap/{content,suppliers,regions,categories,
+products}.xml`) עדיין `404` בפרודקשן, כי הוא מגיש `urlset` שטוח מ-`main@
+18ed044b2` (חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). **חדש בסבב הזה, מעבר
+ל-manifest:** הבנייה של HEAD הורצה (`pnpm start` על 4861, סביבה
+מנוקה, `CARDCOM_USE_MOCK=true`) ו-`/sitemap.xml` המקומי מגיש `200`
+`application/xml` well-formed **`sitemapindex`** עם חמישה `<loc>`
+(content, categories, products, regions, suppliers), וכל אחת מחמש
+תתי-המפות עונה `200` מקומית; השרת הופסק אחרי המדידה (`4861 stopped`).
+כלומר הקוד ב-HEAD נכון, ורק הפריסה הישנה מסתירה אותו. **אפס דריפט
+מ-M11-c94.** שערים, כולם תחת `env -u` של 51 שמות (ערך `[SENSITIVE]` או
+קידומת `VERCEL`/`SUPABASE`/`NEXT_PUBLIC_SUPABASE`/`CARDCOM`/`RESEND`/
+`SENTRY`/`TWILIO`/`CRON_SECRET`/`VOUCHER`/`CI`; אומת `0` שורות כאלה
+בסביבת הילד): `pnpm type-check` exit 0; `pnpm lint` exit 0 (biome + 12
+שערי סקריפט); `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**,
+56.6 שניות, אפס כשלונות, זהה ביט ל-M10-c95; פורט 3311 תפוס על ידי
+`next-server` של סשן מקביל (PID 56540, cwd הריפו הזה, לא שלי, לא נגעתי),
+נבחר 4861 (אומת פנוי); `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4861 pnpm build` exit 0, אפס
+`Invalid API key`, `BUILD_ID` `YA343M9z79XXokQwzCxXq`, ה-manifest מראה
+`/sitemap.xml` וחמשת תתי-המפות כ-`ƒ`, אותן 92 שורות `supabase.rls_denied`
+על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד). לא פריט חזותי, אפס
+שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M11-c92 ואילך). אפס שינוי קוד.
+M10-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M09-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M10-c95): knip הורץ שוב, 201/5/1/271/197/4 זהה בדיוק ל-M09-c94,
-אפס הסרה (הכרעת מפעיל), אפס שינוי קוד, ארבעת השערים ירוקים תחת `env -u`
-מתוקן (55 שמות).
+**M10-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M11-c95): 60 קבצים ב-`migrations/pending/`, `git log -1` עדיין
+`48c8792dd`, בדיקה ישירה מול פרודקשן אישרה ש-15 אובייקטים של 13 מ-19
+הקבצים החוסמים עדיין חסרים וטריגר 218 עדיין שבור, אפס דריפט מ-M10-c93.
 
-**M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
+**M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
 M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה; כולם DONE עם אפס דריפט וארבעת השערים ירוקים. ההעברות נעשו
