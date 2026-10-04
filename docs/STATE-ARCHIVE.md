@@ -2,6 +2,35 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c91 (הועבר מ-STATE.md ב-M18-c91, לשמירה על תקרת 300 שורות)
+
+**M17-c91 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", זהה ל-M17-c90. `pwd` אומת, עץ נקי, HEAD
+`30fde1073`. `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4983 pnpm build` exit 0, `pnpm start -p
+4983` (cwd המאזין אומת ב-`lsof`). מדגם ראשון, `/` ושלושה סלאגים אקראיים
+(`טיפול-פנים-copy`, `אוזניות-איירפודס-3`, `חיתולי-האגיס`) ב-380/768/1440:
+`lang=he dir=rtl`, `body` מחושב `rtl`, אפס עברית ב-`direction: ltr`, **אבל
+שני מוצרים גללו הצידה ב-768 (`scrollWidth` 787/768).** הגורם, לאחר סינון
+ה-drawer הקבוע שמחוץ למסך (קיים גם בדף הנקי): קישור "שאלה על המוצר
+בוואטסאפ" ב-`.pdp-summary__tags` יושב ב-`left:-19`. השורה היא `flex` בלי
+wrap, ומחרוזת מאפיינים ארוכה + שורת השיתוף + הקישור לא נכנסים לעמודת הסיכום
+ב-768; ב-RTL העודף נשפך שמאלה מחוץ לדף. **M17-c90 פספס את זה כי המדגם שלו
+לא כלל מוצר עם מחרוזת מאפיינים ארוכה.** תיקון: `flex-wrap: wrap` על
+`.pdp-summary__tags` ב-`src/styles/product-page.css` (משנה רק כשהתוכן היה
+גולש). אחרי build מחדש (exit 0) הבדיקה הורחבה לכל 44 המוצרים הפעילים + `/`:
+**135/135 טעינות 200, אפס גלילה צידית, אפס LTR leak**. ה-`dir="ltr"`
+היחידים: שדה האימייל בניוזלטר, קישור `tel:` של הספק, וה-`span` של הרצף
+הלטיני משורת המטא (M17-c89), כולם מכוונים. `compare.mjs` רץ בחזית על 4983,
+`--page=product --widths=380,768,1440
+--baseline='refs/electro_product_{width}.png'`, exit 0: **`380 4.95% PASS`,
+`768 4.55% PASS`, `1440 3.25% PASS`** (לפני: 4.96/4.58/3.25). השורות נכתבו
+ל-`docs/UI-PARITY-REPORT.md` על ידי השער. הקובץ נטען רק בדף המוצר, ולכן
+שער הבית לא הושפע. השרת נעצר ב-INT, הפורט פנוי. שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. M16-c91
+הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `src/styles/product-page.css`,
+`docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M16-c91 (הועבר מ-STATE.md ב-M17-c91, לשמירה על תקרת 300 שורות)
 
 **M16-c91 - DONE (04.10.2026).** משימת התור: "Verify all product pages
