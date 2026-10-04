@@ -1,7 +1,23 @@
-RESUME FROM: M06-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c94 DONE: שער test נבדק מחדש, 615/615, אפס דריפט מ-M05-c93)
+RESUME FROM: M07-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c94 DONE: שער build נבדק מחדש, exit 0, אפס דריפט מ-M06-c93)
 
 ## המשך מ:
+
+**M06-c94 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה במהות ל-M06-c93. `pwd` אומת, עץ נקי, HEAD `3ddeb8914`
+(M05-c94). `git diff a2474954a HEAD -- src public next.config.*
+next.config.mjs next.config.ts package.json` ריק (אפס שינוי קוד מאז
+הקומיט האחרון שנגע בקוד) — אין דריפט לתקן. ארבעת השערים רצו: פורט
+3311 תפוס על ידי סשן מקביל אחר (`lsof` אישר שה-`cwd` של המאזין הוא
+הריפו הזה, לא לנגיעה), נבחר פורט חלופי 4723 (פנוי, לא בפועל נדרש
+להרמת שרת כאן, רק ל-build עצמו). `pnpm type-check` נקי; `pnpm lint`
+(biome + 12 שערי סקריפט) נקי; `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, אפס כשלונות, זהה ביט ל-M05-c94; `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4723
+pnpm build` exit 0 (`.next/BUILD_ID` נוצר, manifest תקין, אין שגיאת
+build). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש.
+`STATE.md` עודכן, M18-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על
+תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M05-c94 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
 commit", זהה במהות ל-M05-c93. `pwd` אומת, עץ נקי, HEAD `b258b1a1b`
@@ -91,25 +107,12 @@ compare.mjs` ו-`next.config.*` אומתו בלתי-משתנים לפני המד
 על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
 
-**M18-c93 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c92. `pwd` אומת,
-עץ נקי, HEAD `27c409a43` (M17-c93). `STATE.md` היה 283 שורות, כלומר כבר
-מתחת לתקרה. **החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c93
-לארכיון, כדפוס M18-c91/M18-c92, כך שהקובץ ממשיך להחזיק רק את הפריטים
-הפעילים האחרונים, הטבלה, החוסמים והידני, עם מרווח לפריטי התור הבאים.
-שום שורה לא נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`).
-שורה 1: `RESUME FROM: M01-c94`. אין שינוי UI, ולכן `compare.mjs` לא
-נדרש. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12
-דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4211 pnpm build` exit 0. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
-
-M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93, M10-c93,
-M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
+M18-c93, M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93,
+M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
 ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
 ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93,
-M13 ב-M01-c94, M14 ב-M02-c94, M15/M16 ב-M03-c94), לשמירה על תקרת 300
-שורות.
+M13 ב-M01-c94, M14 ב-M02-c94, M15/M16 ב-M03-c94, M18 ב-M06-c94), לשמירה
+על תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
