@@ -1,28 +1,22 @@
-RESUME FROM: M15-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M14-c92 DONE: Sentry release vs HEAD, פרודקשן עדיין main@18ed044b2, אפס דריפט)
+RESUME FROM: M16-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M15-c92 DONE: אפס שגיאות קונסול על / ועל דגימת /product, אפס דריפט)
 
 ## המשך מ:
 
-**M14-c92 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit", זהה ל-M14-c91. `pwd` אומת, עץ נקי, HEAD `d9406d12e`
-(M13-c92). ה-release בקוד: `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
-(server/edge) ו-`NEXT_PUBLIC_SENTRY_RELEASE ??
-NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` (client), אפס שינוי מאז `b10c3531f`
-(01.10). נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
-`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
-`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`, ולכן ה-release
-החי הוא `18ed044b2`. `SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN`
-(production+preview) `createdAt` `1790918429743`, `SENTRY_AUTH_TOKEN`
-(production) `1789566136944`, ללא שינוי. **תשובה: ה-release שבפרודקשן
-אינו HEAD.** `git rev-list --count 18ed044b2..HEAD` = **1105** (היה 1087
-ב-M14-c91), `HEAD..18ed044b2` = 109 ללא שינוי. אפס דריפט; אותו חוסם
-(DEPLOY-UNBLOCK למטה, סעיף 17 ב-`docs/BACKLOG.md`). ה-MCP של Sentry לא
-מאומת בסשן, רשימת ה-releases בתוך Sentry לא נקראה; ה-release נגזר
-מה-commit של הפריסה. **החלטה שהתקבלה לבד:** DONE כאימות ולא BLOCKED,
-כמו M14-c89..c91; לא נפתח חוסם כפול, לא נגעו ב-deploy או ב-env. שערים:
-`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4525
-pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. M13-c92 הועבר
+**M15-c92 - DONE (04.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה ל-M15-c91. `pwd` אומת, עץ נקי, HEAD
+`5c08e0f0e` (M14-c92). בנייה טרייה (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4976 pnpm
+build`, exit 0), `pnpm start -p 4976` (אומת ב-`lsof` שה-cwd של המאזין הוא
+הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
+catalogue routes"`, `E2E_BASE_URL=http://localhost:4976`,
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c92.jsonl`: **4/4 PASS** (chromium
++ mobile-chrome, 44.2s). הדוח, 16 שורות: אפס `consoleErrors` ואפס
+`hydrationWarnings`, כל הנתיבים 200, על `/` ועל שבעת הנתיבים הדינמיים,
+כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר).
+אפס דריפט מ-M15-c91. השרת נעצר ב-SIGINT, הפורט פנוי. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. פריט
+אימות בלבד, לא חזותי, `compare.mjs` לא נדרש. M14-c92 הועבר
 ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
