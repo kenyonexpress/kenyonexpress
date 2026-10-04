@@ -2,6 +2,55 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c94 (הועבר מ-STATE.md ב-M10-c94, לשמירה על תקרת 300 שורות)
+
+**M07-c94 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days, resolve or file in docs/BACKLOG.md", זהה במהות ל-M07-c93.
+`pwd` אומת, עץ נקי, HEAD `a7f73e178` (M06-c94). `git diff c72d6b385
+HEAD -- src public next.config.* package.json docs/BACKLOG.md
+scripts/final-audit*.mjs` ריק (אפס שינוי קוד או בשער מאז M07-c93) — אין
+דריפט לתקן. `git grep -n -E 'TODO|FIXME' -- src scripts supabase
+migrations` מחזיר אותם סמנים בדיוק: שני `TODO(cardcom)` ב-
+`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי) ו-`:319` (מסמכים),
+שניהם נושאים הפניית issue בתוך אותה רשימת תגובה (`Tracked in #41`/
+`#42`), ו-`src/lib/whatsapp.test.ts:91` שהוא מחרוזת ליטרלית `'TODO'`
+בבדיקה, לא סמן עבודה (מאומת: לא בתוך הערה, `scanMarkers` ב-
+`scripts/final-audit-lib.mjs` מתעלם ממנו). `git log -1` על
+`cardcom.ts` חוזר ל-`542c0db26` (09.09.2026), שני הסמנים עצמם מ-24.07
+ו-07.08.2026 לפי `git log -S` — שניהם ישנים משבעה ימים, התנאי של
+הפריט. `node scripts/final-audit.mjs` מדווח `ok 0 work markers
+(TODO/FIXME/HACK/XXX) (of 2)` — שני הממצאים קיימים אך `tracked` (יש
+הפניית issue), לא debt לא-ממוען. שניהם כבר מתועדים ב-`docs/BACKLOG.md`
+סעיף 6 (הועבר שם ב-M07-c67, לא השתנה): מחכים לאימות שם/שדה מול טרמינל
+Cardcom אמיתי, חוסם STATE.md חוסם #8. **אין פעולה נדרשת: זהה בביט
+ל-M07-c93, אפס סמן חדש ואפס סמן שהפסיק לירות.** ארבעת השערים רצו: `pwd`
+אומת מראש; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט)
+נקי; `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, זהה ביט ל-M06-c94; פורט 3311 תפוס על ידי סשן מקביל אחר
+(`lsof`/cwd אישר שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט
+חלופי 4724 (פנוי), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4724 pnpm build` exit 0
+(`.next/BUILD_ID` נוצר). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs`
+לא נדרש. M01-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
+שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M05-c94 (הועבר מ-STATE.md ב-M10-c94, לשמירה על תקרת 300 שורות)
+
+**M05-c94 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה במהות ל-M05-c93. `pwd` אומת, עץ נקי, HEAD `b258b1a1b`
+(M04-c94). `git diff a2474954a HEAD -- src public next.config.*
+next.config.mjs next.config.ts package.json` ריק (אפס שינוי קוד מאז
+הקומיט האחרון שנגע בקוד, `a2474954a`) — אין דריפט לתקן. ארבעת השערים
+רצו: `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, זהה ביט ל-M05-c93; `pnpm type-check` נקי; `pnpm lint` (biome +
+12 שערי סקריפט) נקי; `pnpm build` (`CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4722` — פורט 3311 תפוס על ידי סשן
+מקביל אחר, `lsof` אישר שה-`cwd` של המאזין הוא הריפו הזה, לא לנגיעה,
+נבחר פורט 4722 פנוי) exit 0 (לוגי `supabase.rls_denied` על `reviews`
+ב-prerender אנונימי הם רעש צפוי מחוסם #11 בתור, לא כשל build). אפס
+שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש. `STATE.md` עדיין
+מתחת לתקרת 300 השורות, אין ארכוב נדרש בפריט הזה. קובץ: `STATE.md`.
+
 ## M02-c94 (הועבר מ-STATE.md ב-M08-c94, לשמירה על תקרת 300 שורות)
 
 **M02-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on

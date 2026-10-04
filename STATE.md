@@ -1,5 +1,5 @@
-RESUME FROM: M10-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c94 DONE: knip 201/5/1/271/197/4, אפס דריפט מ-M09-c93, לא הוסר דבר)
+RESUME FROM: M11-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c94 DONE: 19 קבצי migrations/pending חוסמים אומתו ללא שינוי, אפס דריפט מ-M10-c93)
 
 ## המשך מ:
 
@@ -45,35 +45,10 @@ scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-`--url=`
 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
 `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M07-c94 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
-than 7 days, resolve or file in docs/BACKLOG.md", זהה במהות ל-M07-c93.
-`pwd` אומת, עץ נקי, HEAD `a7f73e178` (M06-c94). `git diff c72d6b385
-HEAD -- src public next.config.* package.json docs/BACKLOG.md
-scripts/final-audit*.mjs` ריק (אפס שינוי קוד או בשער מאז M07-c93) — אין
-דריפט לתקן. `git grep -n -E 'TODO|FIXME' -- src scripts supabase
-migrations` מחזיר אותם סמנים בדיוק: שני `TODO(cardcom)` ב-
-`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי) ו-`:319` (מסמכים),
-שניהם נושאים הפניית issue בתוך אותה רשימת תגובה (`Tracked in #41`/
-`#42`), ו-`src/lib/whatsapp.test.ts:91` שהוא מחרוזת ליטרלית `'TODO'`
-בבדיקה, לא סמן עבודה (מאומת: לא בתוך הערה, `scanMarkers` ב-
-`scripts/final-audit-lib.mjs` מתעלם ממנו). `git log -1` על
-`cardcom.ts` חוזר ל-`542c0db26` (09.09.2026), שני הסמנים עצמם מ-24.07
-ו-07.08.2026 לפי `git log -S` — שניהם ישנים משבעה ימים, התנאי של
-הפריט. `node scripts/final-audit.mjs` מדווח `ok 0 work markers
-(TODO/FIXME/HACK/XXX) (of 2)` — שני הממצאים קיימים אך `tracked` (יש
-הפניית issue), לא debt לא-ממוען. שניהם כבר מתועדים ב-`docs/BACKLOG.md`
-סעיף 6 (הועבר שם ב-M07-c67, לא השתנה): מחכים לאימות שם/שדה מול טרמינל
-Cardcom אמיתי, חוסם STATE.md חוסם #8. **אין פעולה נדרשת: זהה בביט
-ל-M07-c93, אפס סמן חדש ואפס סמן שהפסיק לירות.** ארבעת השערים רצו: `pwd`
-אומת מראש; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט)
-נקי; `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
-כשלונות, זהה ביט ל-M06-c94; פורט 3311 תפוס על ידי סשן מקביל אחר
-(`lsof`/cwd אישר שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט
-חלופי 4724 (פנוי), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4724 pnpm build` exit 0
-(`.next/BUILD_ID` נוצר). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs`
-לא נדרש. M01-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
-שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M07-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M10-c94): TODO/FIXME נסרקו שוב, אותם שני סמני `cardcom.ts`
+כבר `tracked` ב-`docs/BACKLOG.md` סעיף 6, אפס סמן חדש, כל ארבעת השערים
+ירוקים.
 
 **M06-c94 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
 commit", זהה במהות ל-M06-c93. `pwd` אומת, עץ נקי, HEAD `3ddeb8914`
@@ -91,20 +66,35 @@ build). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` �
 `STATE.md` עודכן, M18-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על
 תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M05-c94 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
-commit", זהה במהות ל-M05-c93. `pwd` אומת, עץ נקי, HEAD `b258b1a1b`
-(M04-c94). `git diff a2474954a HEAD -- src public next.config.*
-next.config.mjs next.config.ts package.json` ריק (אפס שינוי קוד מאז
-הקומיט האחרון שנגע בקוד, `a2474954a`) — אין דריפט לתקן. ארבעת השערים
-רצו: `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
-כשלונות, זהה ביט ל-M05-c93; `pnpm type-check` נקי; `pnpm lint` (biome +
-12 שערי סקריפט) נקי; `pnpm build` (`CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4722` — פורט 3311 תפוס על ידי סשן
-מקביל אחר, `lsof` אישר שה-`cwd` של המאזין הוא הריפו הזה, לא לנגיעה,
-נבחר פורט 4722 פנוי) exit 0 (לוגי `supabase.rls_denied` על `reviews`
-ב-prerender אנונימי הם רעש צפוי מחוסם #11 בתור, לא כשל build). אפס
-שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש. `STATE.md` עדיין
-מתחת לתקרת 300 השורות, אין ארכוב נדרש בפריט הזה. קובץ: `STATE.md`.
+**M05-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M10-c94): `pnpm test` fix-drift re-verified, אפס שינוי קוד
+מ-M05-c93, 615/615 (7340/7352), כל ארבעת השערים ירוקים.
+
+**M10-c94 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", אותו פריט חזורי בתור מ-Q55/M10-c66 ואילך,
+זהה במהות ל-M10-c93. `pwd` אומת, עץ נקי, HEAD `68670f8c8` (M09-c94).
+`ls migrations/pending/*.sql | wc -l` = **60** (58 קבצים ממוספרים
+162..248 + `preflight_162.sql` + `preflight_184.sql`), זהה ל-Q55 ואילך.
+`git log -1 -- migrations/pending/` עדיין `48c8792dd` (248, Q32) — אין
+קובץ חדש, אין קובץ שהוסר. `git diff --stat 9eb5c341e..HEAD --
+migrations/pending docs/BACKLOG.md supabase/migrations src/
+next.config.ts package.json pnpm-lock.yaml` מאז הבדיקה הישירה האחרונה
+מול פרודקשן (M10-c93, `9eb5c341e`) **ריק** — אפס שינוי בכל נתיב שעשוי
+להשפיע על הסכמה החיה. בהתאם לתבנית מ-M10-c67/M10-c69 (בדיקה ישירה
+תקפה נשארת תקפה כל עוד ה-git diff מאז ריק, אין צורך לחזור על שאילתת
+פרודקשן בכל סבב): **19 הקבצים החוסמים נשארים לא-מוחלים ללא בדיקה
+חדשה נדרשת** — 204, 209, 218, 220, 223, 224, 234, 235, 236, 239, 240,
+241, 242, 243, 244, 245, 246, 247, 248. אפס דריפט מ-M10-c93. אין
+פעולה נדרשת, אין migration שהוחל, אין שינוי קוד. שערים: `pwd` אומת
+מראש; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט) נקי;
+`pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, זהה ביט ל-M09-c94; פורט 3311 תפוס על ידי סשן מקביל אחר
+(`lsof`/cwd אישר שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט
+חלופי 4727 (פנוי), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4727 pnpm build` exit 0
+(`.next/BUILD_ID` נוצר). לא פריט חזותי, `compare.mjs` לא נדרש. אפס
+שינוי קוד. M05-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
+שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
 
 **M04-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M09-c94): `type-check` fix-drift re-verified, אפס שינוי קוד
@@ -122,6 +112,7 @@ M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
 M13 ב-M01-c94, M14 ב-M02-c94, M15/M16 ב-M03-c94, M18 ב-M06-c94), לשמירה
 על תקרת 300 שורות. M01-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M07-c94.
 M02-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M08-c94.
+M05-c94 ו-M07-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M10-c94.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

@@ -456,6 +456,23 @@ fresh production probe. The 19-file blocker (204, 209, 218, 220, 223,
 224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248)
 stands unchanged. No migration applied, no code change.
 
+**Re-checked 2026-10-04 (M10-c94), item 5 only, against git (not
+production directly -- last direct probe was M10-c93's, `9eb5c341e`):**
+queue item "Verify migrations/pending/ applied or file blocker"
+recurred a fourth time. `migrations/pending/*.sql` count re-checked at
+60 (58 numbered files 162..248 plus `preflight_162.sql` and
+`preflight_184.sql`), unchanged; `git log -1 -- migrations/pending/`
+still points at `48c8792dd` (248, Q32). `git diff --stat
+9eb5c341e..HEAD -- migrations/pending docs/BACKLOG.md
+supabase/migrations src/ next.config.ts package.json pnpm-lock.yaml`
+since M10-c93's direct production probe returns empty -- zero files
+changed in any path that could affect the live schema. Following the
+M10-c67/M10-c69 precedent (a direct probe stays valid while the git
+diff since it stays empty), no fresh production query was needed this
+round. The 19-file blocker (204, 209, 218, 220, 223, 224, 234, 235,
+236, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248) stands
+unchanged. No migration applied, no code change -- verification only.
+
 ## ידני לאופיר, לפי סדר קריטיות
 
 1. **DNS ברשם — RESOLVED (נמדד 29.09, M01-c52, שורת החסימה עודכנה ב-LAUNCH-READINESS.md ב-M15-c53).**
