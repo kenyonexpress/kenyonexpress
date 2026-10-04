@@ -1,8 +1,8 @@
 RESUME FROM: L02
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M18-c95 DONE:
-STATE.md עמד על 216 שורות (מתחת לתקרה), בכל זאת הועבר סעיף M17-c95
-לארכיון כדפוס M18-c91..c94, מחזור c95 נסגר, ארבעת השערים ירוקים תחת
-`env -u` של 55 שמות, RESUME FROM מצביע ל-M01-c96)
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L01 DONE:
+פרודקשן הועבר מ-`main@18ed044b2` ל-`audit/final-audit@e1719ad66`,
+`dpl_FxGwtE5H6hw4L9ccU4yJNYmuhVni` READY, שני הדומיינים מוגשים ממנו,
+ארבעת השערים ירוקים, RESUME FROM מצביע ל-L02)
 
 ## המשך מ:
 
