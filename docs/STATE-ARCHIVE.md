@@ -2,6 +2,17 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c90 (הועבר מ-STATE.md ב-M07-c90, לשמירה על תקרת 300 שורות)
+
+**M06-c90 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה ל-M06-c89. `rm -rf .next && pnpm build` exit 0: Compiled
+successfully ב-20.1s, 337/337 דפים סטטיים, **אין דריפט לתקן** ולכן אפס
+שינוי קוד. 92 שורות `supabase.rls_denied` ושורות `reviews_read_failed`
+ב-log הן הרעש הידוע מקריאות anon בזמן build, לא כשל. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו). לא פריט חזותי,
+`compare.mjs` לא נדרש. M05-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M05-c90 (הועבר מ-STATE.md ב-M06-c90, לשמירה על תקרת 300 שורות)
 
 **M05-c90 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift

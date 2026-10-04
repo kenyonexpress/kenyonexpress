@@ -1,16 +1,22 @@
-RESUME FROM: M07-c90
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M06-c90 DONE: build נקי, אפס דריפט, אין מה לתקן)
+RESUME FROM: M08-c90
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M07-c90 DONE: שני סמני TODO(cardcom) כבר ב-BACKLOG סעיף 6, אפס סמן חדש)
 
 ## המשך מ:
 
-**M06-c90 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
-commit", זהה ל-M06-c89. `rm -rf .next && pnpm build` exit 0: Compiled
-successfully ב-20.1s, 337/337 דפים סטטיים, **אין דריפט לתקן** ולכן אפס
-שינוי קוד. 92 שורות `supabase.rls_denied` ושורות `reviews_read_failed`
-ב-log הן הרעש הידוע מקריאות anon בזמן build, לא כשל. שערים: `type-check`
-0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו). לא פריט חזותי,
-`compare.mjs` לא נדרש. M05-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M07-c90 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md", זהה ל-M07-c89. נסרקו
+`src/`, `apps/`, `packages/`, `scripts/` (`grep -rnE` על TODO/FIXME/XXX/
+HACK, ts/tsx/mjs/js): שני הסמנים האמיתיים היחידים נשארו
+`src/lib/payments/cardcom.ts:254` ו-`:319` (`TODO(cardcom)`, `git blame`:
+24.07.2026 ו-07.08.2026, מעל שבעה ימים), שניהם כבר ב-`docs/BACKLOG.md`
+סעיף 6, חסומים על אימות מול טרמינל Cardcom חי (אסור בכללי הפריט). שאר
+ההתאמות הן מחרוזת `'TODO'` ב-`whatsapp.test.ts:91`, תבניות טלפון
+`05X-XXX-XXXX`, והסורק `scripts/final-audit*.mjs` עצמו, לא סמני עבודה.
+**אין סמן חדש ואין סמן שנפתר, אפס דריפט, BACKLOG לא שונה.** שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`rm -rf .next && pnpm build` exit 0 (17.3s, 337/337). לא פריט חזותי,
+`compare.mjs` לא נדרש. אפס שינוי קוד. M06-c90 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
