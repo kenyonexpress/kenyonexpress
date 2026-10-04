@@ -2,6 +2,43 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c95 (הועבר מ-STATE.md ב-M17-c95, לשמירה על תקרת 300 שורות)
+
+**M16-c95 - DONE (05.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", אותו פריט חזורי כמו M16-c93/
+M16-c94. `pwd` אומת, HEAD `9278fd3be` (M15-c95). בעץ בהגעה: `.vercelignore`
+שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M15-c95).
+קוד: `git diff --stat 79fce7af2..HEAD -- src apps packages next.config.ts
+e2e` (מאז M16-c94) **ריק**; הקומיט האחרון על `src/lib/seo/json-ld.ts`
+ועל `src/app/(store)/product/[slug]/page.tsx` עדיין `fd820969f` (30.09),
+והדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd` דרך
+`jsonLdScript` (שורות 225/259/278/283). בכל זאת רץ אימות מלא וטרי: פורט
+3311 תפוס (PID 56540, סשן מקביל, לא נגעתי), נבחר 4993 (אומת פנוי);
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:4993 pnpm build` תחת `env -u` של 55 שמות **exit 0**,
+אפס `Invalid API key`, `BUILD_ID` `rDT8dNpxIUT-6XgWOQGh6`, אותן 92 שורות
+`supabase.rls_denied` (חוסם #3); `pnpm start -p 4993` (אומת ב-`lsof`
+ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה 200). כל 44 הסלאגים
+מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו בסקריפט node
+(`/tmp/m16c95-probe.mjs`, regex על `<script type="application/ld+json">`
+ו-`JSON.parse` על כל בלוק): **44/44 מחזירים 200 עם בלוק `Product` אחד
+ובלוק `BreadcrumbList` אחד בדיוק, אפס שגיאות JSON.** אפס דריפט
+מ-M16-c94. השרת נעצר ב-`SIGINT`, הפורט אומת פנוי (0 מאזינים).
+**שלוש תקלות מדידה, שלי, לא קוד:** (1) `env $ARGS` ב-zsh לא מפצל
+מילים, כל 55 השמות הועברו כארגומנט אחד, הסקראב לא חל והבנייה הראשונה
+נפלה (6 `Invalid API key`, export error על `/product/טיול-מאורגן-לדובאי`);
+(2) לולאת `for n in $UNSET` ב-zsh הצמידה `-u` רק לשם הראשון; (3) `mapfile`
+לא קיים ב-bash 3.2 של macOS, השרת הראשון עלה בלי סקראב ו-44/44 ענו 500
+(`instrumentation hook: invalid environment`). כל השלושה נפתרו במעבר
+לסקריפטי bash עם מערך `ARGS` ולולאת `read`; אומת `0` שורות
+`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בסביבת הילד לפני הבנייה והשרת
+התקינים. שערים (תחת אותו סקראב): `pnpm type-check` exit 0; `pnpm lint`
+exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, 57.4 שניות, זהה ביט ל-M15-c95; `build` exit 0
+(למעלה). לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים
+M16-c93/M16-c94). אפס שינוי קוד. M15-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M15-c95 (הועבר מ-STATE.md ב-M16-c95, לשמירה על תקרת 300 שורות)
 
 **M15-c95 - DONE (05.10.2026).** משימת התור: "Verify no console errors

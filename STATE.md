@@ -1,51 +1,52 @@
-RESUME FROM: M17-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M16-c95 DONE:
-JSON-LD Product+BreadcrumbList אומת על 44/44 מוצרים פעילים בבנייה טרייה
-על 4993, אפס דריפט מ-M16-c94; ארבעת השערים ירוקים תחת `env -u` של 55
-שמות, M15-c95 הועבר לארכיון, RESUME FROM מצביע ל-M17-c95)
+RESUME FROM: M18-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M17-c95 DONE:
+RTL אומת על `/` ושלושת סלאגי הדגימה ב-380/768/1440, 12/12 PASS, אפס LTR
+leak, אפס דריפט מ-M17-c94; ארבעת השערים ירוקים תחת `env -u` של 55 שמות,
+M16-c95 הועבר לארכיון, RESUME FROM מצביע ל-M18-c95)
 
 ## המשך מ:
 
-**M16-c95 - DONE (05.10.2026).** משימת התור: "Verify all product pages
-have JSON-LD Product and BreadcrumbList", אותו פריט חזורי כמו M16-c93/
-M16-c94. `pwd` אומת, HEAD `9278fd3be` (M15-c95). בעץ בהגעה: `.vercelignore`
-שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M15-c95).
-קוד: `git diff --stat 79fce7af2..HEAD -- src apps packages next.config.ts
-e2e` (מאז M16-c94) **ריק**; הקומיט האחרון על `src/lib/seo/json-ld.ts`
-ועל `src/app/(store)/product/[slug]/page.tsx` עדיין `fd820969f` (30.09),
-והדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd` דרך
-`jsonLdScript` (שורות 225/259/278/283). בכל זאת רץ אימות מלא וטרי: פורט
-3311 תפוס (PID 56540, סשן מקביל, לא נגעתי), נבחר 4993 (אומת פנוי);
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
-http://localhost:4993 pnpm build` תחת `env -u` של 55 שמות **exit 0**,
-אפס `Invalid API key`, `BUILD_ID` `rDT8dNpxIUT-6XgWOQGh6`, אותן 92 שורות
+**M17-c95 - DONE (05.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", אותו פריט חזורי כמו M17-c93/M17-c94.
+`pwd` אומת, HEAD `683a74236` (M16-c95). בעץ בהגעה: `.vercelignore`
+שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M16-c95).
+קוד: `git diff --stat 089a42252..HEAD -- src apps packages next.config.ts
+e2e` (מאז M17-c94) **ריק**, אפס שינוי בכל נתיב שעשוי להשפיע על כיווניות.
+בכל זאת רץ אימות מלא וטרי: פורט 3311 תפוס (PID 56540, סשן מקביל, לא
+נגעתי), נבחר 4993 (אומת פנוי לפני ואחרי); `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm
+build` תחת `env -u` של 55 שמות (מערך bash, אומת `0` שורות
+`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בילד) **exit 0**, אפס `Invalid API
+key`, `BUILD_ID` `RS6iIqX1Rn4TxcAPoZPh4`, אותן 92 שורות
 `supabase.rls_denied` (חוסם #3); `pnpm start -p 4993` (אומת ב-`lsof`
-ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה 200). כל 44 הסלאגים
-מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו בסקריפט node
-(`/tmp/m16c95-probe.mjs`, regex על `<script type="application/ld+json">`
-ו-`JSON.parse` על כל בלוק): **44/44 מחזירים 200 עם בלוק `Product` אחד
-ובלוק `BreadcrumbList` אחד בדיוק, אפס שגיאות JSON.** אפס דריפט
-מ-M16-c94. השרת נעצר ב-`SIGINT`, הפורט אומת פנוי (0 מאזינים).
-**שלוש תקלות מדידה, שלי, לא קוד:** (1) `env $ARGS` ב-zsh לא מפצל
-מילים, כל 55 השמות הועברו כארגומנט אחד, הסקראב לא חל והבנייה הראשונה
-נפלה (6 `Invalid API key`, export error על `/product/טיול-מאורגן-לדובאי`);
-(2) לולאת `for n in $UNSET` ב-zsh הצמידה `-u` רק לשם הראשון; (3) `mapfile`
-לא קיים ב-bash 3.2 של macOS, השרת הראשון עלה בלי סקראב ו-44/44 ענו 500
-(`instrumentation hook: invalid environment`). כל השלושה נפתרו במעבר
-לסקריפטי bash עם מערך `ARGS` ולולאת `read`; אומת `0` שורות
-`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בסביבת הילד לפני הבנייה והשרת
-התקינים. שערים (תחת אותו סקראב): `pnpm type-check` exit 0; `pnpm lint`
+ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה 200). בדיקת Playwright
+(chromium מ-`@playwright/test`, סקריפט זמני בתוך הריפו שנמחק אחרי
+הריצה, לא חויב) על `/` ועל שלושת סלאגי הדגימה של M17-c93/c94
+(`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`,
+`חיתולי-האגיס`, כולם אושרו ב-`supabase/catalogue-snapshot.json` לפני
+הריצה) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he"
+dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה ל-`clientWidth`
+בכולן (380/380, 768/768, 1440/1440, אפס גלילה צידית), **אפס** אלמנט
+גלוי עם `direction: ltr` מחושב שמחזיק טקסט עברי ישיר, ו-**אפס** אלמנט
+`dir="ltr"` שמחזיק טקסט עברי ישיר. שערי `rtl-logical` ו-`input-dir`
+(24 שדות tel/email/url, כולם עם `dir`) ירוקים כחלק מ-`pnpm lint`.
+**אפס leak, אפס דריפט מ-M17-c94, אפס שינוי קוד**, ולכן `compare.mjs` לא
+נדרש (אין שינוי UI, תקדים M17-c93/M17-c94). השרת נעצר ב-`SIGINT`,
+הפורט אומת פנוי (0 מאזינים). **תקלת מדידה אחת, שלי, לא קוד:** הריצה
+הראשונה של הפרוב מ-`/tmp` נפלה ב-`ERR_MODULE_NOT_FOUND` על
+`@playwright/test` (רזולוציית ESM מחוץ לריפו); נפתר בהעתקת הסקריפט
+לשורש הריפו לזמן הריצה, השרת הורץ מחדש, התוצאות למעלה הן מהריצה
+השנייה. שערים (תחת אותו סקראב): `pnpm type-check` exit 0; `pnpm lint`
 exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
-עברו, 12 דולגו (7352)**, 57.4 שניות, זהה ביט ל-M15-c95; `build` exit 0
-(למעלה). לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים
-M16-c93/M16-c94). אפס שינוי קוד. M15-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
-לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+עברו, 12 דולגו (7352)**, 57.1 שניות, זהה ביט ל-M16-c95; `build` exit 0
+(למעלה). M16-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
+שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M15-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M16-c95): אפס console errors ואפס hydration warnings על `/` ועל
-דגימת המוצר, 4/4 PASS בבנייה טרייה על 4877; אפס שינוי קוד.
+**M16-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M17-c95): JSON-LD Product+BreadcrumbList אומת על 44/44 מוצרים
+פעילים בבנייה טרייה על 4993, אפס דריפט מ-M16-c94; אפס שינוי קוד.
 
-**M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
+**M15-c95, M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
 M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה; כולם DONE עם אפס דריפט וארבעת השערים ירוקים. ההעברות נעשו
