@@ -2,6 +2,61 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c95 (הועבר מ-STATE.md ב-M15-c95, לשמירה על תקרת 300 שורות)
+
+**M14-c95 - DONE (05.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", אותו פריט חזורי כמו M14-c93/M14-c94. `pwd` אומת,
+HEAD `ed12154a8` (M13-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב
+(לא שלי, לא נגעתי, לא נכלל ב-commit; ראו למטה, הפעם הוא העניין עצמו).
+קוד: release עדיין `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA` בשרת/edge
+ו-`NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`
+בלקוח; `git diff --stat 3937248df..HEAD` על שלושת קבצי Sentry ריק,
+הקומיט האחרון עליהם `b8804fe83` (10.09). **תשובה לשאלת התור: לא.**
+Vercel MCP (read-only): production READY עדיין
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2` ("Wave 6"),
+`git rev-list --count 18ed044b2..HEAD` = **1162** (1144 ב-M14-c94),
+`HEAD..18ed044b2` = 109 ללא שינוי. **דריפט גדול בסביבה, לטובה ולרעה:**
+(א) `filter_project_envs` (שמות בלבד): `ALLOW_INCOMPLETE_ENV` **כבר לא
+קיים** ב-Production, ושלושת משתני Cardcom + `CARDCOM_SANDBOX` נשארו
+(מ-M14-c94). חוסם ה-preflight של הסביבה סגור. (ב) **חמש פריסות
+`target=production`, `source=cli`, מ-`audit/final-audit`, כולן `ERROR`,
+04.10 14:12Z עד 15:58Z** (`f9e806b3f`, `e0f554276`, `e6b6d2073` פעמיים,
+`cac5bbbf1`), יוצר `kenyonexpress`, לא הסוכן הזה. לוגים דרך `vercel
+inspect --logs` (ה-MCP `list_deployment_events` מחזיר 404): `f9e806b3f`
+נפל ב-preflight על 2 MISSING + WAIVER; `e0f554276` (14:55Z) על WAIVER
+בלבד, כלומר משתני Cardcom כבר עבדו; **`cac5bbbf1` (15:58Z, האחרונה)
+עבר preflight ונפל ב-`pnpm build`:** `Module not found: Can't resolve
+'../../../refs/electro-checkout-text.json'` מתוך
+`src/lib/checkout/electro-content.ts`. הסיבה: `39eb43947` (04.10
+14:12Z, "chore(vercel): add .vercelignore to shrink upload size", סשן
+מקביל) הוסיף `refs` ל-`.vercelignore`, והקובץ הזה כן ב-git (`git
+ls-files refs/` מראה אותו) וכן מיובא. זה אותו באג בדיוק ש-`5d4479045`
+(22.09) תיקן בפעם הקודמת. שתי פריסות `e6b6d2073` לא נקראו לוג, אך
+שלושתן מכילות את `39eb43947` (`merge-base --is-ancestor`). ה-`.vercelignore`
+הלא-מחויב בעץ (mtime 04.10 23:12 מקומי) מחליף `refs` ב-`refs/*` +
+`!refs/electro-checkout-text.json`, כלומר סשן מקביל כבר מתקן; לא
+אימצתי אותו ל-commit שלי (זיכרון `parallel-claude-sessions`, הכלל על
+commit בנתיבים שלוקח עץ עבודה של אחר). **פער מדידה:** `pnpm build`
+מקומי לא יכול לתפוס השמטה ב-`.vercelignore` כי הקובץ קיים מקומית; שער
+שמצליב `git ls-files refs/` עם import-ים מול `.vercelignore` הוא עבודה
+לפריט עתידי (נרשם ב-`docs/BACKLOG.md` סעיף 17). **החלטות שהתקבלו לבד:**
+(1) DONE כאימות ולא BLOCKED, כמו M14-c89..c94. (2) לא נשלחה פריסה ולא
+שונה env (אסור). (3) לא חויב `.vercelignore` של סשן אחר. (4) חוסם #2
+ב"חוסמים פתוחים" ו-DEPLOY-UNBLOCK עודכנו למצב החדש במקום לפתוח חוסם
+כפול. שערים, כולם תחת `env -u` של 51 שמות (אומת `0` שמות שיוריים;
+בריצת type-check/lint/test הראשונה הרשימה הייתה 47 ו-4 שמות `R2_*`
+נשארו, הטסטים ירוקים גם כך, והבנייה רצה אחרי השלמת הרשימה): `pnpm
+type-check` exit 0; `pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm
+test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, 56.0 שניות, זהה
+ביט ל-M13-c95; פורט 3311 תפוס (PID 56540, סשן מקביל; שלושה `next-server`
+רצים מהתיקייה הזו, לא נגעתי), נבחר 4866; `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4866 pnpm
+build` exit 0, אפס `Invalid API key`, `BUILD_ID` `fYXgEH6Qeaom9ppEuoIv7`,
+אותן 92 שורות `supabase.rls_denied` (חוסם #3). לא פריט חזותי, אפס שינוי
+UI, `compare.mjs` לא נדרש (תקדים M13-c75 ואילך). אפס שינוי קוד. M13-c95
+הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+
 ## M13-c95 (הועבר מ-STATE.md ב-M14-c95, לשמירה על תקרת 300 שורות)
 
 **M13-c95 - DONE (05.10.2026).** משימת התור: "Verify /api/health and

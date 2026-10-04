@@ -1,71 +1,54 @@
-RESUME FROM: M15-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M14-c95 DONE:
-release בפרודקשן עדיין `main@18ed044b2`, לא HEAD; חוסם ה-env נסגר על ידי
-סשן מקביל, והחוסם החדש הוא `refs` ב-`.vercelignore` (`39eb43947`) שמפיל
-כל פריסת HEAD ב-`pnpm build`; ארבעת השערים ירוקים תחת `env -u` של 51
-שמות, M13-c95 הועבר לארכיון, RESUME FROM מצביע ל-M15-c95)
+RESUME FROM: M16-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M15-c95 DONE:
+אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, 4/4
+PASS בבנייה טרייה על 4877; ארבעת השערים ירוקים תחת `env -u` של 55 שמות,
+M14-c95 הועבר לארכיון, RESUME FROM מצביע ל-M16-c95)
 
 ## המשך מ:
 
-**M14-c95 - DONE (05.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit", אותו פריט חזורי כמו M14-c93/M14-c94. `pwd` אומת,
-HEAD `ed12154a8` (M13-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב
-(לא שלי, לא נגעתי, לא נכלל ב-commit; ראו למטה, הפעם הוא העניין עצמו).
-קוד: release עדיין `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA` בשרת/edge
-ו-`NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`
-בלקוח; `git diff --stat 3937248df..HEAD` על שלושת קבצי Sentry ריק,
-הקומיט האחרון עליהם `b8804fe83` (10.09). **תשובה לשאלת התור: לא.**
-Vercel MCP (read-only): production READY עדיין
-`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2` ("Wave 6"),
-`git rev-list --count 18ed044b2..HEAD` = **1162** (1144 ב-M14-c94),
-`HEAD..18ed044b2` = 109 ללא שינוי. **דריפט גדול בסביבה, לטובה ולרעה:**
-(א) `filter_project_envs` (שמות בלבד): `ALLOW_INCOMPLETE_ENV` **כבר לא
-קיים** ב-Production, ושלושת משתני Cardcom + `CARDCOM_SANDBOX` נשארו
-(מ-M14-c94). חוסם ה-preflight של הסביבה סגור. (ב) **חמש פריסות
-`target=production`, `source=cli`, מ-`audit/final-audit`, כולן `ERROR`,
-04.10 14:12Z עד 15:58Z** (`f9e806b3f`, `e0f554276`, `e6b6d2073` פעמיים,
-`cac5bbbf1`), יוצר `kenyonexpress`, לא הסוכן הזה. לוגים דרך `vercel
-inspect --logs` (ה-MCP `list_deployment_events` מחזיר 404): `f9e806b3f`
-נפל ב-preflight על 2 MISSING + WAIVER; `e0f554276` (14:55Z) על WAIVER
-בלבד, כלומר משתני Cardcom כבר עבדו; **`cac5bbbf1` (15:58Z, האחרונה)
-עבר preflight ונפל ב-`pnpm build`:** `Module not found: Can't resolve
-'../../../refs/electro-checkout-text.json'` מתוך
-`src/lib/checkout/electro-content.ts`. הסיבה: `39eb43947` (04.10
-14:12Z, "chore(vercel): add .vercelignore to shrink upload size", סשן
-מקביל) הוסיף `refs` ל-`.vercelignore`, והקובץ הזה כן ב-git (`git
-ls-files refs/` מראה אותו) וכן מיובא. זה אותו באג בדיוק ש-`5d4479045`
-(22.09) תיקן בפעם הקודמת. שתי פריסות `e6b6d2073` לא נקראו לוג, אך
-שלושתן מכילות את `39eb43947` (`merge-base --is-ancestor`). ה-`.vercelignore`
-הלא-מחויב בעץ (mtime 04.10 23:12 מקומי) מחליף `refs` ב-`refs/*` +
-`!refs/electro-checkout-text.json`, כלומר סשן מקביל כבר מתקן; לא
-אימצתי אותו ל-commit שלי (זיכרון `parallel-claude-sessions`, הכלל על
-commit בנתיבים שלוקח עץ עבודה של אחר). **פער מדידה:** `pnpm build`
-מקומי לא יכול לתפוס השמטה ב-`.vercelignore` כי הקובץ קיים מקומית; שער
-שמצליב `git ls-files refs/` עם import-ים מול `.vercelignore` הוא עבודה
-לפריט עתידי (נרשם ב-`docs/BACKLOG.md` סעיף 17). **החלטות שהתקבלו לבד:**
-(1) DONE כאימות ולא BLOCKED, כמו M14-c89..c94. (2) לא נשלחה פריסה ולא
-שונה env (אסור). (3) לא חויב `.vercelignore` של סשן אחר. (4) חוסם #2
-ב"חוסמים פתוחים" ו-DEPLOY-UNBLOCK עודכנו למצב החדש במקום לפתוח חוסם
-כפול. שערים, כולם תחת `env -u` של 51 שמות (אומת `0` שמות שיוריים;
-בריצת type-check/lint/test הראשונה הרשימה הייתה 47 ו-4 שמות `R2_*`
-נשארו, הטסטים ירוקים גם כך, והבנייה רצה אחרי השלמת הרשימה): `pnpm
-type-check` exit 0; `pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm
-test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, 56.0 שניות, זהה
-ביט ל-M13-c95; פורט 3311 תפוס (PID 56540, סשן מקביל; שלושה `next-server`
-רצים מהתיקייה הזו, לא נגעתי), נבחר 4866; `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4866 pnpm
-build` exit 0, אפס `Invalid API key`, `BUILD_ID` `fYXgEH6Qeaom9ppEuoIv7`,
-אותן 92 שורות `supabase.rls_denied` (חוסם #3). לא פריט חזותי, אפס שינוי
-UI, `compare.mjs` לא נדרש (תקדים M13-c75 ואילך). אפס שינוי קוד. M13-c95
-הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+**M15-c95 - DONE (05.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", אותו פריט חזורי כמו M15-c93/M15-c94. `pwd`
+אומת, HEAD `9a235c363` (M14-c95). בעץ בהגעה: `.vercelignore` שונה ולא
+מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M14-c95). קוד:
+`git diff --stat 7a9dd31d8..HEAD -- src apps packages
+e2e/route-audit.spec.ts next.config.ts` (מאז M15-c94) **ריק**; הקומיט
+האחרון על `e2e/route-audit.spec.ts` עדיין `b2b4b17a5` (29.09). בכל זאת
+רץ אימות מלא וטרי, כמו ב-M15-c90..c94: פורט 3311 תפוס (PID 56540, סשן
+מקביל, לא נגעתי), נבחר 4877 (אומת פנוי); `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4877 pnpm
+build` exit 0, אפס `Invalid API key`, `BUILD_ID` `ngN2Bcen5T972TOg0GDtF`,
+אותן 92 שורות `supabase.rls_denied` (חוסם #3); `pnpm start -p 4877`
+(PID 16123, אומת ב-`lsof` ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה
+200). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
+catalogue routes"`, `E2E_BASE_URL=http://localhost:4877`,
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c95.jsonl`: **4/4 PASS**
+(chromium + mobile-chrome, 43.5 שניות). הדוח, 16 שורות: **אפס
+`consoleErrors` ואפס `hydrationWarnings` בכל אחת מהן**, כל הנתיבים 200,
+על `/` ועל שבעת הנתיבים הדינמיים, כולל `/product/צימר-מאסטר`
+ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר), `/category/hot-deals`,
+`/city/תל-אביב`, `/coupons/<id>`, `/page/how-it-works`, `/s/<id>`.
+**אפס דריפט מ-M15-c94.** השרת נעצר ב-`SIGINT`, הפורט פנוי. **תקלת
+מדידה אחת, שלי, לא קוד:** רשימת ה-`env -u` הראשונה (53 שמות: 30
+`[SENSITIVE]` + `VERCEL*`/`SUPABASE_*`/`NEXT_PUBLIC_*`/`R2_*`/`NODE_ENV`)
+לא כללה `CARDCOM_USE_MOCK=true` ו-`CARDCOM_WEBHOOK_SECRET`, שה-harness
+מזריק עם ערך אמיתי ולא `[SENSITIVE]`; `pnpm test` נפל 1/7352
+(`invoices.test.ts` "does not spend an attempt when there are no
+credentials at all", כי `CARDCOM_USE_MOCK=true` הופך `unconfigured`
+ל-`mock`). הורחב ל-55 שמות (אומת `0` שורות `CARDCOM|SENSITIVE|VERCEL|
+SUPABASE` בסביבת הילד) והריצה החוזרת ירוקה. שערים: `pnpm type-check`
+exit 0; `pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm test`
+**615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, 65.7 שניות, זהה ביט
+ל-M14-c95; `build` exit 0 (למעלה). לא פריט חזותי, אפס שינוי UI,
+`compare.mjs` לא נדרש (תקדים M15-c90 ואילך). אפס שינוי קוד. M14-c95
+הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M13-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M14-c95): `/api/health` חי `200` עם DB אמיתי, `/api/ready` חי
-`503` עם אותם חמישה checks כמו M13-c93/c94 (meilisearch `down`,
-r2/cardcom `not_configured`), אפס שינוי קוד מאז `64728ff8d`, אפס דריפט.
+**M14-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M15-c95): release בפרודקשן עדיין `main@18ed044b2`, 1162 קומיטים
+מאחורי HEAD; חוסם ה-env נסגר, החוסם החדש הוא `refs` ב-`.vercelignore`
+(`39eb43947`), ראו DEPLOY-UNBLOCK למטה; אפס שינוי קוד.
 
-**M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
+**M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
 M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה; כולם DONE עם אפס דריפט וארבעת השערים ירוקים. ההעברות נעשו
