@@ -1,28 +1,21 @@
-RESUME FROM: M02-c91
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M01-c91 DONE: שער חזותי בית נמדד מחדש 380/768/1440, 8.58/9.01/4.16 PASS)
+RESUME FROM: M03-c91
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M02-c91 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, 4.96/4.58/3.25 PASS, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c91 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c90. פורט 3311
-היה פנוי. `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0, `PORT=3311
-pnpm start` (cwd אומת ב-`lsof`: הריפו הזה), `/` החזיר `200`, בקשת `curl`
-אחת לחימום. השער רץ בחזית עם `--widths=380,768,1440
---baseline='refs/ke_live_{width}.png'`. **ריצה ראשונה: `380 8.58% PASS`,
-`768 12.73% FAIL`, `1440 4.16% PASS` (exit 6).** **ריצה שנייה: `380
-8.58%`, `768 9.01%`, `1440 4.16%`, כולם PASS, exit 0.** הפרש מול M01-c90
-(8.58/9.02/4.16): 0.00 / -0.01 / 0.00. אין שינוי ב-`src` מאז M01-c90
-(רק docs). **ההחלטה שהתקבלה לבד:** הערך הנרשם הוא הריצה השנייה, כמו
-ב-c89 ו-c90. **הדפוס הוחמר:** זה הסבב השלישי ברציפות שהריצה הראשונה מול
-שרת טרי מנפחת רק את 768 (14.11 ב-c89, 10.40 ב-c90, 12.73 עכשיו), והפעם
-היא חצתה את השער (exit 6) למרות חימום ב-`curl`. כלומר חימום HTTP לא
-מספיק; צריך מעבר דפדפן ברוחב 768 לפני הצילום. שער שנכשל בריצה קרה בלי
-שינוי קוד הוא סיכון ל-CI. לא תוקן כאן (פריט מדידה בלבד); מועמד לפריט
-סוכן עתידי: "warm-up pass in compare.mjs". שתי הריצות, כולל ה-FAIL,
-נכתבו על ידי השער ל-`docs/UI-PARITY-REPORT.md` ושום שורה לא נמחקה.
-M18-c90 הועבר לארכיון. שערים: `type-check` 0, `lint` 0, `test` 615/615
-(7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. קבצים: `STATE.md`,
+**M02-c91 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample", זהה ל-M02-c90. לא היה listener על 3311 (`lsof` ריק).
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+pnpm build` exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`, ו-cwd של
+ה-listener אומת ב-`lsof` כשורש הריפו. השער רץ בחזית עם `--page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
+**`380 4.96% PASS`, `768 4.58% PASS`, `1440 3.25% PASS`, זהה בביט
+ל-M02-c90 ול-M02-c89. אפס דריפט.** ריצה אחת הספיקה: גם הפעם דף המוצר לא
+הראה את ניפוח ה-768 בריצה קרה שהבית מראה (M01-c91), כלומר הדפוס ספציפי
+לדף הבית. השרת נעצר ב-INT אחרי המדידה, הפורט פנוי. שלוש השורות נכתבו
+ל-`docs/UI-PARITY-REPORT.md` על ידי השער. שערים: `type-check` 0, `lint` 0,
+`test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. M01-c91
+(בית 8.58/9.01/4.16) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
