@@ -43292,3 +43292,28 @@ on /category sample" — זהה למשימות M03-c61..M03-c82 (שער חזות
 pnpm build`, exit 0, `.next/server/app/api/health` ו-`/api/ready`
 קיימים). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
 כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+
+
+**M17-c88 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c82
+(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
+דריפט.** `git log 422cc6eef..HEAD --stat -- src/app src/components
+src/lib/i18n` (בסיס: checkpoint M17-c82) **ריק** — אפס קומיטים נוגעים
+מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים,
+כולל `rtl-logical-gate.mjs`), `test` 614/614 קבצים (7337/7349, 12
+מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4966 pnpm build` exit 0 נקי. הורם
+`pnpm start -p 4966` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
+לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
+השורות ב-`supabase/catalogue-snapshot.json`: `/product/
+טיול-מאורגן-לדובאי`. **נבדק ישירות ברינדור בפועל:** שני הדפים `<html
+lang="he" dir="rtl">` ללא תנאי. גריפ על `dir="ltr"` בתוצאה החיה: `/` —
+מופע יחיד, שדה האימייל בניוזלטר (מכוון, `input-dir-gate` מאשר). דף
+המוצר — מופע יחיד: אותו שדה אימייל בפוטר (`pdp-summary__meta` ריק
+למוצר הזה, אפס `tel:` בעמוד — תלוי-תוכן, לא ממצא RTL). גריפ נוסף על
+`direction: ltr`/`float-left`/`float-right`/`text-left`/`text-right`/
+`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור (`src/app/(store)/page.tsx` ותיקיית
+`product`) — אפס התאמות. שרת הופסק בסוף (`kill`, הפורט שוב פנוי). **אין
+ממצא קוד לתקן.** לא פריט `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת
+פיקסלים — תקדים M17-c67..M17-c82). אפס שינוי קוד ייצור. קבצים:
+`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).

@@ -1,31 +1,35 @@
 RESUME FROM: M18-c88
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c88 DONE: RTL על / ו-/product נבדק מחדש, אפס דריפט)
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט DEPLOY-UNBLOCK BLOCKED: preflight env חסר, פרודקשן על main@18ed044b2)
 
 ## המשך מ:
 
-**M17-c88 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks" — זהה למילה למשימות M17-c66..M17-c82
-(leak אמיתי תוקן ב-c66's M17, `HeroSlider.tsx`). **נבדק מחדש, אפס
-דריפט.** `git log 422cc6eef..HEAD --stat -- src/app src/components
-src/lib/i18n` (בסיס: checkpoint M17-c82) **ריק** — אפס קומיטים נוגעים
-מאז. ארבעת השערים: `type-check` נקי, `lint` נקי (12 שערים, 2037 קבצים,
-כולל `rtl-logical-gate.mjs`), `test` 614/614 קבצים (7337/7349, 12
-מדולגים, זהה), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4966 pnpm build` exit 0 נקי. הורם
-`pnpm start -p 4966` (`lsof -p -a -d cwd` אימת cwd זהה לנתיב הפרויקט,
-לא checkout זר), `curl` 200 על `/` ועל סלאג מוצר שנדגם אקראית מ-44
-השורות ב-`supabase/catalogue-snapshot.json`: `/product/
-טיול-מאורגן-לדובאי`. **נבדק ישירות ברינדור בפועל:** שני הדפים `<html
-lang="he" dir="rtl">` ללא תנאי. גריפ על `dir="ltr"` בתוצאה החיה: `/` —
-מופע יחיד, שדה האימייל בניוזלטר (מכוון, `input-dir-gate` מאשר). דף
-המוצר — מופע יחיד: אותו שדה אימייל בפוטר (`pdp-summary__meta` ריק
-למוצר הזה, אפס `tel:` בעמוד — תלוי-תוכן, לא ממצא RTL). גריפ נוסף על
-`direction: ltr`/`float-left`/`float-right`/`text-left`/`text-right`/
-`ml-`/`mr-`/`pl-`/`pr-` קשיחים בקוד המקור (`src/app/page.tsx` ותיקיית
-`product`) — אפס התאמות. שרת הופסק בסוף (`kill`, הפורט שוב פנוי). **אין
-ממצא קוד לתקן.** לא פריט `compare.mjs` (בדיקת לוגיקת כיוון, לא פריסת
-פיקסלים — תקדים M17-c67..M17-c82). אפס שינוי קוד ייצור. קבצים:
-`STATE.md` (וארכוב ל-`docs/STATE-ARCHIVE.md`).
+**DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
+`VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
+whoami`). REST `v6/deployments` לפרויקט `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`:
+**פרודקשן READY הוא `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`**
+(`kenyonexpress-huplmarwo-kenyonexpress-projects.vercel.app`, 02.10 05:42Z),
+**נבנה מ-`main@18ed044b2` "Wave 6: build success", 1034 קומיטים מאחורי
+HEAD**, לא מ-`a388118f1`. מישהו פרס את `main` הישן לפרודקשן ב-02.10;
+`/sitemap.xml` בשני ה-hosts: etag `427ac6d9...`, last-modified 02.10
+07:02 GMT. שבע הבניות של `audit/final-audit` מאז (אחרונה
+`dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, 37f70196c) הן preview ו-ERROR כולן,
+בתוך `deploy-preflight.mjs` לפני `pnpm build`: חסרים ב-Preview
+`CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`,
+`CARDCOM_WEBHOOK_SECRET`, `VOUCHER_QR_SECRET`, `CRON_SECRET`. **אין באג
+קוד לתקן.** רשימת שמות ה-env ב-Production (שמות בלבד): עדיין חסרים שלושת
+`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`,
+ו-`ALLOW_INCOMPLETE_ENV` עדיין קיים, כלומר deploy פרודקשן של HEAD ייפול
+באותו preflight בדיוק כמו `dpl_EJvyytwYXRjGBj2HJiXavgr3GkBk` ב-25.09.
+**החלטות שהתקבלו לבד:** (1) לא נשלח deploy נוסף, כי הוא רק מוסיף ERROR
+לרשימה. (2) לא נדחף ל-`main`: הוא מוגן, ו-HEAD של `audit/final-audit`
+אינו fast-forward שלו; קומיט זה נדחף ל-`audit/final-audit`. (3) לא נגעו
+ב-env (אסור בכללי הפריט). **לאופיר:** להוסיף את שלושת שמות Cardcom
+ל-Production, להסיר `ALLOW_INCOMPLETE_ENV`, ואז deploy REST עם
+`target: production` מ-`audit/final-audit` (המתכון ב-memory). דחוף
+יותר מבעבר: פרודקשן מגיש עכשיו את `main` הישן, שלפי
+`docs/BRANCH-AUDIT.md` חסר את עבודת האבטחה.
+שערים על HEAD: `type-check` נקי, `lint` נקי, `test` 614/614 (7337/7349),
+`rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M16-c88..M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, ארבעת
 הראשים כווצו לשורה הזו ב-M17-c88).** JSON-LD Product+BreadcrumbList
