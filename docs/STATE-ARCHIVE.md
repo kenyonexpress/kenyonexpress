@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c90 (הועבר מ-STATE.md ב-M11-c90, לשמירה על תקרת 300 שורות)
+
+**M10-c90 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", זהה ל-M10-c89. `pwd` אומת, עץ נקי, HEAD
+`cbd20d911` (M09-c90). `git log -1 -- migrations/pending` עדיין
+`48c8792dd` (248): אפס קובץ חדש, 60 קבצי `.sql` (58 מיגרציות +
+`preflight_162/184`) + `APPLY-ORDER.md`/`README.md`. בדיקה ישירה מול
+פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה בלבד, אפס DDL): **אף
+אחת מ-13 הטבלאות** של 204/232/234/235/236/239/240/244 לא קיימת
+(`to_regclass` NULL לכולן); אף אחת מ-9 העמודות של 223/232/242/243 לא
+קיימת; `anon` בלי SELECT על `reviews` (247); 0 מדיניות `*_unified` על
+`banners` (245); 82 שורות `products` עם `city IS NULL` (241). זהה בדיוק
+ל-M10-c89. (M10-c89 כתב "14 טבלאות"; ספירת `CREATE TABLE` בקבצים נותנת
+13, וכולן נבדקו.) **החוסם כבר רשום** (חוסם 3 למטה, `docs/BACKLOG.md`
+סעיף 5, `docs/RUNBOOK.md`), אפס דריפט, לא הוחלה אף מיגרציה. **החלטה
+שהתקבלה לבד:** לא נפתח חוסם כפול. שערים: `type-check` 0, `lint` 0,
+`test` 615/615 (7340/7352, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. M09-c90 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M09-c90 (הועבר מ-STATE.md ב-M10-c90, לשמירה על תקרת 300 שורות)
 
 **M09-c90 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
