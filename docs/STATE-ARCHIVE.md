@@ -2,6 +2,41 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c95 (הועבר מ-STATE.md ב-M14-c95, לשמירה על תקרת 300 שורות)
+
+**M13-c95 - DONE (05.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps", אותו פריט חזורי כמו M13-c93/M13-c94.
+`pwd` אומת, HEAD `37fcf7c02` (M12-c95). בעץ בהגעה: `.vercelignore` שונה
+ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M12-c95). קוד:
+`git diff --stat e0f554276..HEAD -- src/app/api/health src/app/api/ready
+src/lib/health` ריק; הקומיט האחרון על שלושת הנתיבים עדיין `64728ff8d`
+(02.09). חי, מול `https://www.kenyonexpress.co.il`: `/api/health` `200`
+`application/json` `{"ok":true,"database":"ok","latency_ms":162}`, תלות
+DB אמיתית. `/api/ready` `503` `application/json`, `cache-control:
+no-store`, `x-vercel-cache: MISS`,
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
+זהה ביט ל-M13-c93 ול-M13-c94: Meilisearch מוגדר ולא נגיש (סעיף 16
+ב-`docs/BACKLOG.md`, חיצוני, לאופיר), R2 לא מופעל בחשבון (חוסם #4),
+Cardcom ב-mock (חוסם #8). "200 על ready" לא מתקיים, והסיבה חיצונית
+ומתועדת, לא באג קוד. **אפס דריפט מ-M13-c94.** **החלטה שהתקבלה לבד:**
+DONE כאימות, לא BLOCKED, כמו M13-c77..c94; לא נפתח חוסם כפול. לא נמדד
+`/api/health` על בנייה מקומית: עם סביבה מנוקה אין DB, ועם `.env.local`
+המפתח ישן (זיכרון "local env service key is stale"), כך שמדידה כזו לא
+תוכיח "real deps" ולא תוסיף על הבדיקה החיה. שערים, כולם תחת `env -u` של
+51 שמות (אומת `0` שמות שיוריים לפני הריצה, רשימה מפוצלת לארגומנטים
+ולא משתנה יחיד, לקח M12-c95): `pnpm type-check` exit 0; `pnpm lint`
+exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, 56.0 שניות, אפס כשלונות, זהה ביט ל-M12-c95;
+פורט 3311 תפוס על ידי `node` של סשן מקביל (PID 56540, לא שלי, לא
+נגעתי), נבחר 4866 (אומת פנוי); `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4866 pnpm build` exit 0, אפס
+`Invalid API key`, `BUILD_ID` `Ooih1KUg0MbsEEEQ8yV-6`, המניפסט מראה
+`/api/health` ו-`/api/ready` כ-`ƒ`, אותן 92 שורות `supabase.rls_denied`
+על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד). לא פריט חזותי, אפס
+שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M13-c75 ואילך). אפס שינוי קוד.
+M12-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M12-c95 (הועבר מ-STATE.md ב-M13-c95, לשמירה על תקרת 300 שורות)
 
 **M12-c95 - DONE (05.10.2026).** משימת התור: "Verify robots.txt

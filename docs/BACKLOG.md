@@ -683,6 +683,20 @@ unchanged. No migration applied, no code change -- verification only.
     קיים ב-Production. גם ה-release גם הגומה הזו ממתינים לפריסה חדשה
     מ-`audit/final-audit`; פעולה של אופיר, לא של הסוכן (push לפרודקשן
     אסור לפי כללי הפריט).
+    **נמדד שוב ב-05.10.2026, M14-c95**: production READY עדיין
+    `main@18ed044b2`, 1162 קומיטים מאחורי HEAD. חוסם הסביבה נסגר:
+    `ALLOW_INCOMPLETE_ENV` הוסר מ-Production ושלושת משתני Cardcom קיימים.
+    חמש פריסות `target=production` מ-`audit/final-audit` רצו ב-04.10
+    (`source=cli`, לא הסוכן הזה), כולן `ERROR`: הראשונות ב-preflight,
+    האחרונה (`dpl_FQuNjYRLwY2CELKyEBanFXygSn1t`, `cac5bbbf1`) **עברה
+    preflight ונפלה ב-`pnpm build`** על `Module not found:
+    '../../../refs/electro-checkout-text.json'`, כי `39eb43947` (04.10)
+    הוסיף `refs` ל-`.vercelignore` בעוד הקובץ ב-git ומיובא
+    מ-`src/lib/checkout/electro-content.ts`. אותו באג ש-`5d4479045`
+    (22.09) כבר תיקן פעם. תיקון (`refs/*` + `!refs/electro-checkout-text.json`)
+    יושב לא-מחויב בעץ של סשן מקביל. **פער שער:** `pnpm build` מקומי
+    לא תופס השמטה ב-`.vercelignore`; שער שמצליב `git ls-files refs/`
+    ו-import-ים מ-`refs/` מול `.vercelignore` הוא פריט עתידי.
 18. **`scripts/compare.mjs` נותן PASS נמוך-כוזב כש"שלנו" ריק, לא FAIL גבוה.**
     נמדד 01.10.2026, M01-c67: שרת `pnpm start` ישן על פורט 3311 המשיך
     לרוץ אחרי ש-`.next` נבנה מחדש על ידו (או סשן מקביל), כך שה-HTML שהוא

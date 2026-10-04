@@ -1,50 +1,69 @@
-RESUME FROM: M14-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M13-c95 DONE:
-`/api/health` חי `200` `{"ok":true,"database":"ok","latency_ms":162}`,
-`/api/ready` חי `503` עם אותם חמישה checks בדיוק כמו M13-c93/c94
-(meilisearch `down`, r2/cardcom `not_configured`), אפס שינוי קוד בנתיבים
-מאז `64728ff8d` (02.09), ארבעת השערים ירוקים תחת `env -u` של 51 שמות,
-M12-c95 הועבר לארכיון, RESUME FROM מצביע ל-M14-c95)
+RESUME FROM: M15-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M14-c95 DONE:
+release בפרודקשן עדיין `main@18ed044b2`, לא HEAD; חוסם ה-env נסגר על ידי
+סשן מקביל, והחוסם החדש הוא `refs` ב-`.vercelignore` (`39eb43947`) שמפיל
+כל פריסת HEAD ב-`pnpm build`; ארבעת השערים ירוקים תחת `env -u` של 51
+שמות, M13-c95 הועבר לארכיון, RESUME FROM מצביע ל-M15-c95)
 
 ## המשך מ:
 
-**M13-c95 - DONE (05.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps", אותו פריט חזורי כמו M13-c93/M13-c94.
-`pwd` אומת, HEAD `37fcf7c02` (M12-c95). בעץ בהגעה: `.vercelignore` שונה
-ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M12-c95). קוד:
-`git diff --stat e0f554276..HEAD -- src/app/api/health src/app/api/ready
-src/lib/health` ריק; הקומיט האחרון על שלושת הנתיבים עדיין `64728ff8d`
-(02.09). חי, מול `https://www.kenyonexpress.co.il`: `/api/health` `200`
-`application/json` `{"ok":true,"database":"ok","latency_ms":162}`, תלות
-DB אמיתית. `/api/ready` `503` `application/json`, `cache-control:
-no-store`, `x-vercel-cache: MISS`,
-`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
-זהה ביט ל-M13-c93 ול-M13-c94: Meilisearch מוגדר ולא נגיש (סעיף 16
-ב-`docs/BACKLOG.md`, חיצוני, לאופיר), R2 לא מופעל בחשבון (חוסם #4),
-Cardcom ב-mock (חוסם #8). "200 על ready" לא מתקיים, והסיבה חיצונית
-ומתועדת, לא באג קוד. **אפס דריפט מ-M13-c94.** **החלטה שהתקבלה לבד:**
-DONE כאימות, לא BLOCKED, כמו M13-c77..c94; לא נפתח חוסם כפול. לא נמדד
-`/api/health` על בנייה מקומית: עם סביבה מנוקה אין DB, ועם `.env.local`
-המפתח ישן (זיכרון "local env service key is stale"), כך שמדידה כזו לא
-תוכיח "real deps" ולא תוסיף על הבדיקה החיה. שערים, כולם תחת `env -u` של
-51 שמות (אומת `0` שמות שיוריים לפני הריצה, רשימה מפוצלת לארגומנטים
-ולא משתנה יחיד, לקח M12-c95): `pnpm type-check` exit 0; `pnpm lint`
-exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
-עברו, 12 דולגו (7352)**, 56.0 שניות, אפס כשלונות, זהה ביט ל-M12-c95;
-פורט 3311 תפוס על ידי `node` של סשן מקביל (PID 56540, לא שלי, לא
-נגעתי), נבחר 4866 (אומת פנוי); `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4866 pnpm build` exit 0, אפס
-`Invalid API key`, `BUILD_ID` `Ooih1KUg0MbsEEEQ8yV-6`, המניפסט מראה
-`/api/health` ו-`/api/ready` כ-`ƒ`, אותן 92 שורות `supabase.rls_denied`
-על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד). לא פריט חזותי, אפס
-שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M13-c75 ואילך). אפס שינוי קוד.
-M12-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M14-c95 - DONE (05.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", אותו פריט חזורי כמו M14-c93/M14-c94. `pwd` אומת,
+HEAD `ed12154a8` (M13-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב
+(לא שלי, לא נגעתי, לא נכלל ב-commit; ראו למטה, הפעם הוא העניין עצמו).
+קוד: release עדיין `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA` בשרת/edge
+ו-`NEXT_PUBLIC_SENTRY_RELEASE ?? NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`
+בלקוח; `git diff --stat 3937248df..HEAD` על שלושת קבצי Sentry ריק,
+הקומיט האחרון עליהם `b8804fe83` (10.09). **תשובה לשאלת התור: לא.**
+Vercel MCP (read-only): production READY עדיין
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2` ("Wave 6"),
+`git rev-list --count 18ed044b2..HEAD` = **1162** (1144 ב-M14-c94),
+`HEAD..18ed044b2` = 109 ללא שינוי. **דריפט גדול בסביבה, לטובה ולרעה:**
+(א) `filter_project_envs` (שמות בלבד): `ALLOW_INCOMPLETE_ENV` **כבר לא
+קיים** ב-Production, ושלושת משתני Cardcom + `CARDCOM_SANDBOX` נשארו
+(מ-M14-c94). חוסם ה-preflight של הסביבה סגור. (ב) **חמש פריסות
+`target=production`, `source=cli`, מ-`audit/final-audit`, כולן `ERROR`,
+04.10 14:12Z עד 15:58Z** (`f9e806b3f`, `e0f554276`, `e6b6d2073` פעמיים,
+`cac5bbbf1`), יוצר `kenyonexpress`, לא הסוכן הזה. לוגים דרך `vercel
+inspect --logs` (ה-MCP `list_deployment_events` מחזיר 404): `f9e806b3f`
+נפל ב-preflight על 2 MISSING + WAIVER; `e0f554276` (14:55Z) על WAIVER
+בלבד, כלומר משתני Cardcom כבר עבדו; **`cac5bbbf1` (15:58Z, האחרונה)
+עבר preflight ונפל ב-`pnpm build`:** `Module not found: Can't resolve
+'../../../refs/electro-checkout-text.json'` מתוך
+`src/lib/checkout/electro-content.ts`. הסיבה: `39eb43947` (04.10
+14:12Z, "chore(vercel): add .vercelignore to shrink upload size", סשן
+מקביל) הוסיף `refs` ל-`.vercelignore`, והקובץ הזה כן ב-git (`git
+ls-files refs/` מראה אותו) וכן מיובא. זה אותו באג בדיוק ש-`5d4479045`
+(22.09) תיקן בפעם הקודמת. שתי פריסות `e6b6d2073` לא נקראו לוג, אך
+שלושתן מכילות את `39eb43947` (`merge-base --is-ancestor`). ה-`.vercelignore`
+הלא-מחויב בעץ (mtime 04.10 23:12 מקומי) מחליף `refs` ב-`refs/*` +
+`!refs/electro-checkout-text.json`, כלומר סשן מקביל כבר מתקן; לא
+אימצתי אותו ל-commit שלי (זיכרון `parallel-claude-sessions`, הכלל על
+commit בנתיבים שלוקח עץ עבודה של אחר). **פער מדידה:** `pnpm build`
+מקומי לא יכול לתפוס השמטה ב-`.vercelignore` כי הקובץ קיים מקומית; שער
+שמצליב `git ls-files refs/` עם import-ים מול `.vercelignore` הוא עבודה
+לפריט עתידי (נרשם ב-`docs/BACKLOG.md` סעיף 17). **החלטות שהתקבלו לבד:**
+(1) DONE כאימות ולא BLOCKED, כמו M14-c89..c94. (2) לא נשלחה פריסה ולא
+שונה env (אסור). (3) לא חויב `.vercelignore` של סשן אחר. (4) חוסם #2
+ב"חוסמים פתוחים" ו-DEPLOY-UNBLOCK עודכנו למצב החדש במקום לפתוח חוסם
+כפול. שערים, כולם תחת `env -u` של 51 שמות (אומת `0` שמות שיוריים;
+בריצת type-check/lint/test הראשונה הרשימה הייתה 47 ו-4 שמות `R2_*`
+נשארו, הטסטים ירוקים גם כך, והבנייה רצה אחרי השלמת הרשימה): `pnpm
+type-check` exit 0; `pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm
+test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, 56.0 שניות, זהה
+ביט ל-M13-c95; פורט 3311 תפוס (PID 56540, סשן מקביל; שלושה `next-server`
+רצים מהתיקייה הזו, לא נגעתי), נבחר 4866; `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4866 pnpm
+build` exit 0, אפס `Invalid API key`, `BUILD_ID` `fYXgEH6Qeaom9ppEuoIv7`,
+אותן 92 שורות `supabase.rls_denied` (חוסם #3). לא פריט חזותי, אפס שינוי
+UI, `compare.mjs` לא נדרש (תקדים M13-c75 ואילך). אפס שינוי קוד. M13-c95
+הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
 
-**M12-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M13-c95): robots.txt חי `200` `text/plain`, etag `48ebf659...`
-זהה ביט ל-M12-c93/c94, 12 `Disallow` של `main` הישן מול 16 בבנייה
-מקומית של HEAD (diff של ארבע שורות M12-c67), אפס דריפט מ-M12-c94.
+**M13-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M14-c95): `/api/health` חי `200` עם DB אמיתי, `/api/ready` חי
+`503` עם אותם חמישה checks כמו M13-c93/c94 (meilisearch `down`,
+r2/cardcom `not_configured`), אפס שינוי קוד מאז `64728ff8d`, אפס דריפט.
 
 **M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
@@ -53,33 +72,17 @@ M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARC
 שלב-שלב (האחרונה: M11-c95 ב-M12-c95) לשמירה על תקרת 300 שורות; שום
 שורה לא נמחקה מהארכיון, רק הוסרה כאן הכפילות.
 
-**DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
-`VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
-whoami`). REST `v6/deployments` לפרויקט `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`:
-**פרודקשן READY הוא `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`**
-(`kenyonexpress-huplmarwo-kenyonexpress-projects.vercel.app`, 02.10 05:42Z),
-**נבנה מ-`main@18ed044b2` "Wave 6: build success", 1034 קומיטים מאחורי
-HEAD**, לא מ-`a388118f1`. מישהו פרס את `main` הישן לפרודקשן ב-02.10;
-`/sitemap.xml` בשני ה-hosts: etag `427ac6d9...`, last-modified 02.10
-07:02 GMT. שבע הבניות של `audit/final-audit` מאז (אחרונה
-`dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, 37f70196c) הן preview ו-ERROR כולן,
-בתוך `deploy-preflight.mjs` לפני `pnpm build`: חסרים ב-Preview
-`CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`,
-`CARDCOM_WEBHOOK_SECRET`, `VOUCHER_QR_SECRET`, `CRON_SECRET`. **אין באג
-קוד לתקן.** רשימת שמות ה-env ב-Production (שמות בלבד): עדיין חסרים שלושת
-`CARDCOM_TERMINAL_NUMBER`/`CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD`,
-ו-`ALLOW_INCOMPLETE_ENV` עדיין קיים, כלומר deploy פרודקשן של HEAD ייפול
-באותו preflight בדיוק כמו `dpl_EJvyytwYXRjGBj2HJiXavgr3GkBk` ב-25.09.
-**החלטות שהתקבלו לבד:** (1) לא נשלח deploy נוסף, כי הוא רק מוסיף ERROR
-לרשימה. (2) לא נדחף ל-`main`: הוא מוגן, ו-HEAD של `audit/final-audit`
-אינו fast-forward שלו; קומיט זה נדחף ל-`audit/final-audit`. (3) לא נגעו
-ב-env (אסור בכללי הפריט). **לאופיר:** להוסיף את שלושת שמות Cardcom
-ל-Production, להסיר `ALLOW_INCOMPLETE_ENV`, ואז deploy REST עם
-`target: production` מ-`audit/final-audit` (המתכון ב-memory). דחוף
-יותר מבעבר: פרודקשן מגיש עכשיו את `main` הישן, שלפי
-`docs/BRANCH-AUDIT.md` חסר את עבודת האבטחה.
-שערים על HEAD: `type-check` נקי, `lint` נקי, `test` 614/614 (7337/7349),
-`rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**DEPLOY-UNBLOCK - עודכן ב-M14-c95 (05.10.2026), עדיין BLOCKED.** הרשומה
+המקורית (04.10) אמרה: חסרים שלושה משתני Cardcom ב-Production ו-`ALLOW_INCOMPLETE_ENV`
+קיים. **שניהם נסגרו על ידי סשן מקביל ב-04.10** (M14-c94, M14-c95). החוסם
+הנוכחי הוא קוד: `39eb43947` הוסיף `refs` ל-`.vercelignore`, ולכן כל
+פריסת HEAD נופלת ב-`pnpm build` על `refs/electro-checkout-text.json`
+(חמש פריסות ERROR ב-04.10, לוג ב-M14-c95 למעלה). תיקון של שורה אחת
+יושב לא-מחויב בעץ של סשן מקביל. פרודקשן READY עדיין `main@18ed044b2`
+(`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, 02.10), 1162 קומיטים מאחורי HEAD.
+**לאופיר/לסשן המתקן:** לחייב את תיקון `.vercelignore`, ואז deploy
+`target: production` מ-`audit/final-audit`. ההיסטוריה המלאה של הרשומה
+ב-`docs/STATE-ARCHIVE.md` (M14-c95).
 
 **M14-c73 - BLOCKED (02.10.2026), קריטי** — production הוחלף חי מחוץ
 לתור (`main`@`18ed044b2`, `SENTRY_DSN` חדש), מקור לא ידוע, לא תוקן/
@@ -113,7 +116,9 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בשם `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיק את הדומיין
    — `kenyonexpress-prod` הוא פרויקט אחר שמחזיק רק `.vercel.app`, אל תבלבלו
    ביניהם.** פירוט מלא ברשומת M01-c52.
-2. **פריסת פרודקשן של HEAD (285 קומיטים אחרי `a388118f1` החי, ספירת git
+2. **עודכן ב-M14-c95 (05.10):** משתני ה-env שחסמו את ה-preflight נסגרו;
+   החוסם עכשיו הוא `refs` ב-`.vercelignore` (`39eb43947`), ראו DEPLOY-UNBLOCK
+   למעלה. הטקסט שמתחת הוא ההיסטוריה עד 04.10. **פריסת פרודקשן של HEAD (285 קומיטים אחרי `a388118f1` החי, ספירת git
    בלבד, עודכן ב-M01-c65 מ-267 שנמדד ב-M01-c64; ניסיון הפריסה הידני האחרון
    היה ב-M01-c55, 105 קומיטים אז)**:
    נוסתה לאחרונה ב-M01-c55 (Vercel MCP, `create_deployment`, `gitSource`
