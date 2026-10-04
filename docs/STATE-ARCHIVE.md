@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c95 (הועבר מ-STATE.md ב-M05-c95, לשמירה על תקרת 300 שורות)
+
+**M04-c95 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
+commit", זהה ל-M04-c94. `pwd` אומת, HEAD `a8774e0a7` (M03-c95). בעץ
+בהגעה: `.vercelignore` שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל
+ב-commit, כמו ב-M03-c95). `git diff --stat b258b1a1b HEAD -- src public
+packages next.config.* package.json tsconfig*.json pnpm-lock.yaml
+scripts` ריק (אפס שינוי קוד מאז M04-c94), אין דריפט לתקן. **`pnpm
+type-check` (`tsc --noEmit`) exit 0, אפס `error TS`.** `pnpm lint` exit
+0 (biome + 12 שערי סקריפט, i18n 627/627, he-IL 116, docs-index 282).
+`pnpm test` **בריצה ראשונה נכשל 1/7352**:
+`invoices.test.ts > does not spend an attempt when there are no
+credentials at all` קיבל `skipped` חסר. הסיבה נמדדה ולא נוחשה: ה-shell
+של ה-harness מייצא `CARDCOM_USE_MOCK=true` (ערך אמיתי, לא ממלא-מקום,
+ולכן לא נכלל ברשימת ה-`env -u` של M03-c95), ו-`resolveProvider` ב-
+`invoices.ts:703` מחזיר `mock` במקום `unconfigured`. שני הקבצים לא
+השתנו מ-23.09 (`4cc600d46`). **תחת `env -u` ל-51 המשתנים המוזרקים
+(ממלאי-מקום, `VERCEL*`, `NODE_ENV`, Supabase, וכל `CARDCOM_*`): 615/615
+קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט ל-M03-c95. ההחלטה: ארטיפקט
+סביבה, אין תיקון בקוד. פורטים 3311 ו-4722 תפוסים (שרתים יתומים, לא
+לנגיעה), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4830 pnpm build` תחת אותו `env -u`
+exit 0, אפס `Invalid API key`, `.next/BUILD_ID` נוצר. לא פריט חזותי,
+`compare.mjs` לא נדרש. אפס שינוי קוד. M03-c95 הועבר ל-
+`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M03-c95 (הועבר מ-STATE.md ב-M04-c95, לשמירה על תקרת 300 שורות)
 
 **M03-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
