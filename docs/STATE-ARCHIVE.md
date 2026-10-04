@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c89 (הועבר מ-STATE.md ב-M02-c89, לשמירה על תקרת 300 שורות)
+
+**M01-c89 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c83. על פורט
+3311 נמצא `next-server` שנשאר מ-03.10 (PID 5152), שהגיש build ישן מ-`.next`
+הנוכחי (שנבנה מחדש ב-04.10 10:50). נעצר ב-INT לפני המדידה. `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`
+exit 0, `PORT=3311 pnpm start`, ו-`/` החזיר `200`. השער רץ בחזית עם
+`--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`.
+**ריצה ראשונה: `380 8.58% PASS`, `768 14.11% FAIL`, `1440 4.16% PASS`**
+(exit 6, overall ב-768 21.55%). **אפס שינוי ב-`src`/`public`/`next.config`
+מאז `af40761a3`**, ולכן הקוד לא יכול להסביר את זה. ריצה חוזרת ב-768 לבד נתנה
+9.01%, וריצה מלאה שנייה של השלושה: **`380 8.58% PASS`, `768 9.01% PASS`,
+`1440 4.16% PASS`, exit 0, זהה בביט ל-M01-c83.** **ההחלטה שהתקבלה לבד:**
+ה-FAIL הוא ריצה ראשונה מול שרת קר (תמונות שעוד לא נטענו מה-optimizer), לא
+דריפט, והתוצאה שנרשמת היא הריצה המלאה השנייה. **שורת ה-FAIL נשארת
+ב-`docs/UI-PARITY-REPORT.md`** יחד עם שש השורות האחרות שהשער כתב, ושום
+שורה לא נמחקה. אם ריצה ראשונה ב-768 תיכשל שוב בסבב הבא, זה כבר דפוס ולא
+רעש, וצריך לבדוק אותו. שערים: `type-check` 0, `lint` 0, `test` 614/614
+(7337/7349), `build` 0. אפס שינוי קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M18-c88 (הועבר מ-STATE.md ב-M01-c89, לשמירה על תקרת 300 שורות)
 
 **M18-c88 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300

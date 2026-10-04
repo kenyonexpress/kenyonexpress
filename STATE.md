@@ -1,26 +1,20 @@
-RESUME FROM: M02-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M01-c89 DONE: שער חזותי בית נמדד מחדש 380/768/1440, 8.58/9.01/4.16 PASS אחרי FAIL קר אחד ב-768)
+RESUME FROM: M03-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M02-c89 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, 4.96/4.58/3.25 PASS, אפס דריפט)
 
 ## המשך מ:
 
-**M01-c89 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c83. על פורט
-3311 נמצא `next-server` שנשאר מ-03.10 (PID 5152), שהגיש build ישן מ-`.next`
-הנוכחי (שנבנה מחדש ב-04.10 10:50). נעצר ב-INT לפני המדידה. `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`
-exit 0, `PORT=3311 pnpm start`, ו-`/` החזיר `200`. השער רץ בחזית עם
-`--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`.
-**ריצה ראשונה: `380 8.58% PASS`, `768 14.11% FAIL`, `1440 4.16% PASS`**
-(exit 6, overall ב-768 21.55%). **אפס שינוי ב-`src`/`public`/`next.config`
-מאז `af40761a3`**, ולכן הקוד לא יכול להסביר את זה. ריצה חוזרת ב-768 לבד נתנה
-9.01%, וריצה מלאה שנייה של השלושה: **`380 8.58% PASS`, `768 9.01% PASS`,
-`1440 4.16% PASS`, exit 0, זהה בביט ל-M01-c83.** **ההחלטה שהתקבלה לבד:**
-ה-FAIL הוא ריצה ראשונה מול שרת קר (תמונות שעוד לא נטענו מה-optimizer), לא
-דריפט, והתוצאה שנרשמת היא הריצה המלאה השנייה. **שורת ה-FAIL נשארת
-ב-`docs/UI-PARITY-REPORT.md`** יחד עם שש השורות האחרות שהשער כתב, ושום
-שורה לא נמחקה. אם ריצה ראשונה ב-768 תיכשל שוב בסבב הבא, זה כבר דפוס ולא
-רעש, וצריך לבדוק אותו. שערים: `type-check` 0, `lint` 0, `test` 614/614
-(7337/7349), `build` 0. אפס שינוי קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+**M02-c89 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+on /product sample", זהה ל-M02-c83. לא היה listener על 3311 (`lsof` ריק).
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+pnpm build` exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`, ו-cwd של
+ה-listener אומת ב-`lsof` כשורש הריפו. השער רץ בחזית עם `--page=product
+--widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`, exit 0:
+**`380 4.96% PASS`, `768 4.58% PASS`, `1440 3.25% PASS`, זהה בביט
+ל-M02-c83. אפס דריפט.** שלוש השורות נכתבו ל-`docs/UI-PARITY-REPORT.md`
+על ידי השער. שערים: `type-check` 0, `lint` 0, `test` 614/614 (7337/7349),
+`build` 0. אפס שינוי קוד. M01-c89 (בית 8.58/9.01/4.16) הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
