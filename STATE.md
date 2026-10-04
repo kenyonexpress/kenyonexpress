@@ -1,7 +1,27 @@
-RESUME FROM: M11-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c94 DONE: 19 קבצי migrations/pending חוסמים אומתו ללא שינוי, אפס דריפט מ-M10-c93)
+RESUME FROM: M12-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c94 DONE: sitemap.xml חי אומת שוב, אפס דריפט מ-M11-c93)
 
 ## המשך מ:
+
+**M11-c94 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable", זהה במהות ל-M11-c93. `pwd` אומת, עץ נקי, HEAD `753415981`
+(M10-c94). קוד: הקומיט האחרון על `src/app/sitemap*` עדיין `d1adea146`
+(09.09), אפס שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml`
+`200` `application/xml`, well-formed (`xmllint --noout`), **79** `<loc>`,
+etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT — זהים ביט ל-M11-c93.
+ה-apex `kenyonexpress.co.il` עונה `308` ל-`www`. `robots.txt` החי מצביע
+ל-`https://kenyonexpress.co.il/sitemap.xml`. חמשת תתי-המפות
+(`/sitemap/{content,suppliers,regions,categories,products}.xml`) עדיין
+`404` בפרודקשן — כי הוא מגיש את `main@18ed044b2` הישן (חוסם
+DEPLOY-UNBLOCK למטה, ללא שינוי). **אפס דריפט מ-M11-c93.** שערים:
+`pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט) נקי; `pnpm
+test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט ל-M10-c94;
+פורט 3311 תפוס על ידי סשן מקביל אחר (`lsof`/cwd אישר שהוא הריפו הזה אך
+תהליך אחר, לא לנגיעה), נבחר פורט חלופי 4728 (פנוי). `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4728 pnpm
+build` exit 0 (`.next/BUILD_ID` נוצר), ה-manifest מראה `/sitemap.xml`
+וחמשת תתי-המפות כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
+מ-M11-c92 ואילך). אפס שינוי קוד. קובץ: `STATE.md`.
 
 **M09-c94 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
 dead exports", זהה במהות ל-M09-c93. `pwd` אומת, עץ נקי, HEAD `786a42c43`
@@ -50,21 +70,9 @@ scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-`--url=`
 כבר `tracked` ב-`docs/BACKLOG.md` סעיף 6, אפס סמן חדש, כל ארבעת השערים
 ירוקים.
 
-**M06-c94 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
-commit", זהה במהות ל-M06-c93. `pwd` אומת, עץ נקי, HEAD `3ddeb8914`
-(M05-c94). `git diff a2474954a HEAD -- src public next.config.*
-next.config.mjs next.config.ts package.json` ריק (אפס שינוי קוד מאז
-הקומיט האחרון שנגע בקוד) — אין דריפט לתקן. ארבעת השערים רצו: פורט
-3311 תפוס על ידי סשן מקביל אחר (`lsof` אישר שה-`cwd` של המאזין הוא
-הריפו הזה, לא לנגיעה), נבחר פורט חלופי 4723 (פנוי, לא בפועל נדרש
-להרמת שרת כאן, רק ל-build עצמו). `pnpm type-check` נקי; `pnpm lint`
-(biome + 12 שערי סקריפט) נקי; `pnpm test` **615/615 קבצים, 7340
-עברו, 12 דולגו (7352)**, אפס כשלונות, זהה ביט ל-M05-c94; `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4723
-pnpm build` exit 0 (`.next/BUILD_ID` נוצר, manifest תקין, אין שגיאת
-build). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש.
-`STATE.md` עודכן, M18-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על
-תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M06-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M11-c94): `pnpm build` fix-drift re-verified, אפס שינוי קוד
+מ-M06-c93, 615/615 (7340/7352), כל ארבעת השערים ירוקים.
 
 **M05-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M10-c94): `pnpm test` fix-drift re-verified, אפס שינוי קוד
@@ -113,6 +121,7 @@ M13 ב-M01-c94, M14 ב-M02-c94, M15/M16 ב-M03-c94, M18 ב-M06-c94), לשמיר�
 על תקרת 300 שורות. M01-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M07-c94.
 M02-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M08-c94.
 M05-c94 ו-M07-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M10-c94.
+M06-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M11-c94.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

@@ -45227,3 +45227,21 @@ package.json` ריק (HEAD לא זז, אפס שינוי קוד) — אין דר�
 לנגיעה), exit 0 (לוגי `supabase.rls_denied` על `reviews` ב-prerender
 אנונימי הם רעש צפוי מחוסם #11 בתור, לא כשל build). אין קוד לשנות, אין
 commit קוד — רק עדכון `STATE.md`.
+
+## M06-c94 (הועבר מ-STATE.md ב-M11-c94, לשמירה על תקרת 300 שורות)
+
+**M06-c94 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה במהות ל-M06-c93. `pwd` אומת, עץ נקי, HEAD `3ddeb8914`
+(M05-c94). `git diff a2474954a HEAD -- src public next.config.*
+next.config.mjs next.config.ts package.json` ריק (אפס שינוי קוד מאז
+הקומיט האחרון שנגע בקוד) — אין דריפט לתקן. ארבעת השערים רצו: פורט
+3311 תפוס על ידי סשן מקביל אחר (`lsof` אישר שה-`cwd` של המאזין הוא
+הריפו הזה, לא לנגיעה), נבחר פורט חלופי 4723 (פנוי, לא בפועל נדרש
+להרמת שרת כאן, רק ל-build עצמו). `pnpm type-check` נקי; `pnpm lint`
+(biome + 12 שערי סקריפט) נקי; `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, אפס כשלונות, זהה ביט ל-M05-c94; `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4723
+pnpm build` exit 0 (`.next/BUILD_ID` נוצר, manifest תקין, אין שגיאת
+build). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש.
+`STATE.md` עודכן, M18-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על
+תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
