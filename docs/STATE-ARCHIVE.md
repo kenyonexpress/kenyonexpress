@@ -2,6 +2,31 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c88 (הועבר מ-STATE.md ב-M13-c88, לשמירה על תקרת 300 שורות)
+
+**M12-c88 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
+production-safe" — זהה לתבנית החוזרת (M12-c82 ולפניו). `pwd` אומת, עץ
+עבודה נקי, HEAD `bb4d77179` (M11-c88). קוד: `git log --oneline --
+src/app/robots.ts src/app/robots.test.ts src/app/sitemap-robots-agree.test.ts`
+מראה שהקומיט האחרון שנגע בנתיבים האלה הוא `4d3702025` (M12-c67), הרבה
+לפני כל מדידה קודמת — אפס שינוי קוד. `disallow` בקוד כולל את כל 14
+הנתיבים, כולל שלושת אסימוני-ה-URL (`/gift/`, `/order/`, `/wishlist/s/`)
+ו-`/debug/`. חי: `curl -L https://www.kenyonexpress.co.il/robots.txt`
+מחזיר `200`, `etag`/`last-modified` (04.10.2026, `x-vercel-cache: HIT`)
+— עדיין גרסת `a388118f1`, 13 שורות `Disallow` בלבד, חסרות אותן ארבע.
+נבדק ישירות שוב: `/gift/foo` מחזיר `200` חי בלי כיסוי `Disallow` (זהה
+לסבבים קודמים), `/order/foo`, `/wishlist/s/foo` ו-`/debug/foo` מחזירים
+`404` (הנתיב לא קיים בפריסה הישנה) — זהה ל-M12-c82. `Sitemap:`/`Host:`
+מצביעים נכון ל-
+`kenyonexpress.co.il`. אפס דריפט מהותי — חוסם #2 למעלה ללא שינוי
+(פריסת Production תקועה, לא קוד). ארבעת השערים ירוקים: `type-check`
+נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
+(7337/7349, 12 מדולגים, זהה), build טרי (`rm -rf .next`,
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4991 pnpm
+build`, exit 0, manifest מאשר `/robots.txt`). פריט אימות-בלבד, לא
+חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ
+יחיד: `STATE.md`.
+
 ## M18-c82 (הועבר מ-STATE.md ב-M01-c83, לשמירה על תקרת 300 שורות)
 
 **M18-c82 - DONE (03.10.2026).** משימת התור: "Trim STATE.md under 300

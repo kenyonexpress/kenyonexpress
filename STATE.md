@@ -1,33 +1,30 @@
-RESUME FROM: M13-c88
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c88 DONE: robots.txt אומת מחדש production-safe, אפס דריפט)
+RESUME FROM: M14-c88
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c88 DONE: api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c88 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
-production-safe" — זהה לתבנית החוזרת (M12-c82 ולפניו). `pwd` אומת, עץ
-עבודה נקי, HEAD `bb4d77179` (M11-c88). קוד: `git log --oneline --
-src/app/robots.ts src/app/robots.test.ts src/app/sitemap-robots-agree.test.ts`
-מראה שהקומיט האחרון שנגע בנתיבים האלה הוא `4d3702025` (M12-c67), הרבה
-לפני כל מדידה קודמת — אפס שינוי קוד. `disallow` בקוד כולל את כל 14
-הנתיבים, כולל שלושת אסימוני-ה-URL (`/gift/`, `/order/`, `/wishlist/s/`)
-ו-`/debug/`. חי: `curl -L https://www.kenyonexpress.co.il/robots.txt`
-מחזיר `200`, `etag`/`last-modified` (04.10.2026, `x-vercel-cache: HIT`)
-— עדיין גרסת `a388118f1`, 13 שורות `Disallow` בלבד, חסרות אותן ארבע.
-נבדק ישירות שוב: `/gift/foo` מחזיר `200` חי בלי כיסוי `Disallow` (זהה
-לסבבים קודמים), `/order/foo`, `/wishlist/s/foo` ו-`/debug/foo` מחזירים
-`404` (הנתיב לא קיים בפריסה הישנה) — זהה ל-M12-c82. `Sitemap:`/`Host:`
-מצביעים נכון ל-
-`kenyonexpress.co.il`. אפס דריפט מהותי — חוסם #2 למעלה ללא שינוי
-(פריסת Production תקועה, לא קוד). ארבעת השערים ירוקים: `type-check`
-נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `test` 614/614 קבצים
-(7337/7349, 12 מדולגים, זהה), build טרי (`rm -rf .next`,
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4991 pnpm
-build`, exit 0, manifest מאשר `/robots.txt`). פריט אימות-בלבד, לא
-חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור. קובץ
-יחיד: `STATE.md`.
+**M13-c88 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps" — זהה לתבנית החוזרת (M13-c82
+ולפניו). `pwd` אומת, עץ עבודה נקי, HEAD `ef6e90eb4` (M12-c88). קוד:
+`git log --oneline -- src/app/api/health src/app/api/ready` מראה
+שהקומיט האחרון שנגע בנתיבים האלה הוא `64728ff8d`, הרבה לפני M13-c82 —
+אפס שינוי קוד. חי: `curl https://www.kenyonexpress.co.il/api/health`
+מחזיר `200` עם `{"ok":true,"database":"ok","latency_ms":113}` — תלות
+אמיתית (לא ליבנס גרידא). `/api/ready` מחזיר `503` עם
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`
+— זהה בדיוק ל-M13-c82: Meilisearch מוגדר אבל לא נגיש (חוסם חיצוני
+ב-`docs/BACKLOG.md`), `r2`/`cardcom` `not_configured` בכוונה (R2 לא
+מופעל בחשבון, Cardcom ב-mock). אפס ממצא חדש, אפס דריפט. ארבעת השערים
+ירוקים: `type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים),
+`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), build טרי
+(`rm -rf .next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4931
+pnpm build`, exit 0, `.next/server/app/api/health` ו-`/api/ready`
+קיימים). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
+כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
 
-**M11-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
-ב-M12-c88).** sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט.
+**M12-c88 ו-M11-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M13-c88).** M12-c88: robots.txt נבדק מחדש production-safe, אפס
+דריפט. M11-c88: sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט.
 
 **M05-c83 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
 commit" — זהה למשימות M05-c57..M05-c82 (שער test, מחזורי). `pnpm test`
