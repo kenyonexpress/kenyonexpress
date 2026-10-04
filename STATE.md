@@ -1,15 +1,29 @@
-RESUME FROM: M01-c91
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M18-c90 DONE: STATE.md קוצץ, M17-c90 הועבר לארכיון)
+RESUME FROM: M02-c91
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M01-c91 DONE: שער חזותי בית נמדד מחדש 380/768/1440, 8.58/9.01/4.16 PASS)
 
 ## המשך מ:
 
-**M18-c90 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c89. בתחילת הפריט
-`STATE.md` היה 196 שורות, כלומר כבר מתחת לתקרה. לפי דפוס M18-c89 הועבר
-ראש M17-c90 ל-`docs/STATE-ARCHIVE.md` (שום שורה לא נמחקה, רק הוזזה);
-נשארו רק שורת ה-resume, טבלת התור, חוסמים פתוחים וידני לאופיר. אין שינוי
-קוד ואין שינוי UI, ולכן `compare.mjs` לא נדרש. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0.
+**M01-c91 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c90. פורט 3311
+היה פנוי. `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0, `PORT=3311
+pnpm start` (cwd אומת ב-`lsof`: הריפו הזה), `/` החזיר `200`, בקשת `curl`
+אחת לחימום. השער רץ בחזית עם `--widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'`. **ריצה ראשונה: `380 8.58% PASS`,
+`768 12.73% FAIL`, `1440 4.16% PASS` (exit 6).** **ריצה שנייה: `380
+8.58%`, `768 9.01%`, `1440 4.16%`, כולם PASS, exit 0.** הפרש מול M01-c90
+(8.58/9.02/4.16): 0.00 / -0.01 / 0.00. אין שינוי ב-`src` מאז M01-c90
+(רק docs). **ההחלטה שהתקבלה לבד:** הערך הנרשם הוא הריצה השנייה, כמו
+ב-c89 ו-c90. **הדפוס הוחמר:** זה הסבב השלישי ברציפות שהריצה הראשונה מול
+שרת טרי מנפחת רק את 768 (14.11 ב-c89, 10.40 ב-c90, 12.73 עכשיו), והפעם
+היא חצתה את השער (exit 6) למרות חימום ב-`curl`. כלומר חימום HTTP לא
+מספיק; צריך מעבר דפדפן ברוחב 768 לפני הצילום. שער שנכשל בריצה קרה בלי
+שינוי קוד הוא סיכון ל-CI. לא תוקן כאן (פריט מדידה בלבד); מועמד לפריט
+סוכן עתידי: "warm-up pass in compare.mjs". שתי הריצות, כולל ה-FAIL,
+נכתבו על ידי השער ל-`docs/UI-PARITY-REPORT.md` ושום שורה לא נמחקה.
+M18-c90 הועבר לארכיון. שערים: `type-check` 0, `lint` 0, `test` 615/615
+(7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

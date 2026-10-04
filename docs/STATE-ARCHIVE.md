@@ -2,6 +2,16 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c90 (הועבר מ-STATE.md ב-M01-c91, לשמירה על תקרת 300 שורות)
+
+**M18-c90 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c89. בתחילת הפריט
+`STATE.md` היה 196 שורות, כלומר כבר מתחת לתקרה. לפי דפוס M18-c89 הועבר
+ראש M17-c90 ל-`docs/STATE-ARCHIVE.md` (שום שורה לא נמחקה, רק הוזזה);
+נשארו רק שורת ה-resume, טבלת התור, חוסמים פתוחים וידני לאופיר. אין שינוי
+קוד ואין שינוי UI, ולכן `compare.mjs` לא נדרש. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0.
+
 ## M10-c90 (הועבר מ-STATE.md ב-M11-c90, לשמירה על תקרת 300 שורות)
 
 **M10-c90 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
