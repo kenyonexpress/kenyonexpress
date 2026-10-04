@@ -1,27 +1,29 @@
-RESUME FROM: M14-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M13-c92 DONE: health 200 עם DB אמיתי, ready 503 על Meilisearch החיצוני, אפס דריפט)
+RESUME FROM: M15-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M14-c92 DONE: Sentry release vs HEAD, פרודקשן עדיין main@18ed044b2, אפס דריפט)
 
 ## המשך מ:
 
-**M13-c92 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps", זהה ל-M13-c91. `pwd` אומת, עץ נקי,
-HEAD `212704db0` (M12-c92). קוד: הקומיט האחרון על `src/app/api/health`
-ו-`src/app/api/ready` עדיין `64728ff8d` (02.09), אפס שינוי. חי, בשני
-ה-hosts (`www.kenyonexpress.co.il` ו-`kenyonexpress-huplmarwo-...vercel.app`):
-`/api/health` `200` `application/json`
-`{"ok":true,"database":"ok","latency_ms":239}` (ו-80), תלות DB אמיתית.
-`/api/ready` `503`
-`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
-זהה ל-M13-c91: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
-חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. `/api/search?q=test`
-`200` (נפילה ל-Postgres עובדת). "200 על ready" לא מתקיים, והסיבה חיצונית
-ומתועדת, לא באג קוד. אפס דריפט. **החלטה שהתקבלה לבד:** DONE כאימות, לא
-BLOCKED, כמו M13-c89..c91; לא נפתח חוסם כפול. שערים: `type-check` 0,
-`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4524 pnpm build`
-exit 0, ה-manifest מראה `/api/health` ו-`/api/ready`. לא פריט חזותי,
-`compare.mjs` לא נדרש. אפס שינוי קוד. M12-c92 הועבר ל-
-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M14-c92 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", זהה ל-M14-c91. `pwd` אומת, עץ נקי, HEAD `d9406d12e`
+(M13-c92). ה-release בקוד: `SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
+(server/edge) ו-`NEXT_PUBLIC_SENTRY_RELEASE ??
+NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` (client), אפס שינוי מאז `b10c3531f`
+(01.10). נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`, ולכן ה-release
+החי הוא `18ed044b2`. `SENTRY_DSN` ו-`NEXT_PUBLIC_SENTRY_DSN`
+(production+preview) `createdAt` `1790918429743`, `SENTRY_AUTH_TOKEN`
+(production) `1789566136944`, ללא שינוי. **תשובה: ה-release שבפרודקשן
+אינו HEAD.** `git rev-list --count 18ed044b2..HEAD` = **1105** (היה 1087
+ב-M14-c91), `HEAD..18ed044b2` = 109 ללא שינוי. אפס דריפט; אותו חוסם
+(DEPLOY-UNBLOCK למטה, סעיף 17 ב-`docs/BACKLOG.md`). ה-MCP של Sentry לא
+מאומת בסשן, רשימת ה-releases בתוך Sentry לא נקראה; ה-release נגזר
+מה-commit של הפריסה. **החלטה שהתקבלה לבד:** DONE כאימות ולא BLOCKED,
+כמו M14-c89..c91; לא נפתח חוסם כפול, לא נגעו ב-deploy או ב-env. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4525
+pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. M13-c92 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
