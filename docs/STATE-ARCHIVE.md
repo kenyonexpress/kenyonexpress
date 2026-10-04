@@ -43674,3 +43674,94 @@ X-Frame-Options/Referrer-Policy ומגבלות קצב Upstash אומתו מחד�
 ירוק, שער חזותי (אפס רגרסיה), ובדיקת פרודקשן (פעם שישית, DNS/HTTP
 תקינים, פריסה עדיין חסומה) — שום שורה לא נמחקה מהארכיון עצמו, רק
 הוסרה כאן הכפילות.
+
+## M17-c89 (הועבר מ-STATE.md ב-M18-c89, לשמירה על תקרת 300 שורות)
+
+**M17-c89 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks". **הפעם נמצא leak אמיתי ותוקן.** קוד ה-UI
+לא השתנה מאז M17-c88, אבל בדיקת הרינדור בפועל העלתה ש-`.pdp-summary__meta`
+ב-`src/components/storefront/ProductInfo.tsx` מקבל `dir="ltr"` על כל השורה
+כשאין למוצר מק"ט. זה נכתב ב-`7a7fd0c36` כשהשורה החזיקה רק את `nameEn`;
+`99b2079cb` (M18-c52) הכניס לאותה שורה את `RatingStars`, וכיוון השורה לא
+עודכן. התוצאה: מוצר עם ביקורת מאושרת ובלי מק"ט מציג את קישור הביקורות
+בעברית ואת מילוי הכוכבים משמאל לימין. **התיקון:** השורה תמיד `dir="rtl"`,
+ורק הרצף הלטיני (`nameEn`) מבודד ב-`<span dir="ltr">`, כמו שהמק"ט כבר
+בודד. טסט רגרסיה חדש `src/components/storefront/product-meta-direction.test.tsx`
+(3 מקרים; בלי התיקון 2 מהם נכשלים, נבדק עם stash). **מדידה בזמן ריצה:**
+`rm -rf .next && CARDCOM_USE_MOCK=true pnpm build` exit 0, `/` ו-`/product/
+מזקקת-ויסקי` (סלאג אקראי מתוך 44): שניהם `<html lang="he" dir="rtl">` 200.
+אחרי התיקון השורה היא `dir="rtl"`, וה-`dir="ltr"` הנותרים הם רק שדה האימייל
+בניוזלטר (מכוון, `input-dir-gate`) ו-`tel:` של הספק במוצר. גריפ על
+`direction: ltr`/`text-left`/`ml-`/`pr-` קשיחים ב-`src/app/(store)/page.tsx`
+ובתיקיית `product`: אפס. **שער חזותי (שינוי UI), בחזית:** `compare.mjs
+--page=product --widths=380,768,1440 --baseline='refs/electro_product_{width}.png'`
+מול `pnpm start` על 4968 (cwd ושעת ההפעלה 12:32 אומתו ב-`lsof`/`ps`):
+**`380 4.96% PASS`, `768 4.58% PASS`, `1440 3.25% PASS`, exit 0**, זהה
+ל-M02-c89. **החלטה שהתקבלה לבד:** הריצה הראשונה נעשתה על 3311, שם
+`pnpm start` נפל על EADDRINUSE והשער מדד שרת זר (PID 1199, הופעל 11:21
+לפני הבנייה). שלוש השורות שלה ב-`docs/UI-PARITY-REPORT.md` (05:27-05:30)
+נשארו כי הדוח הוא לוג, אבל **השורות התקפות הן 05:32-05:36**. השרתים
+הזרים על 3311-3316 שייכים לסשנים אחרים ולא נגעתי בהם. השרת שלי נעצר, 4968
+פנוי. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12
+דולגו), `build` exit 0. M16-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
+`ProductInfo.tsx`, הטסט החדש, `docs/UI-PARITY-REPORT.md`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
+## ראשי סיכום ישנים (הועברו מ-STATE.md ב-M18-c89, לשמירה על תקרת 300 שורות)
+
+**M18-c88..M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, ארבעת
+הראשים כווצו לשורה הזו ב-M17-c88, M17-c88 עצמו ב-M18-c88, M18-c88 ב-M01-c89).** קיצוץ STATE.md (M18-c88), RTL על / ו-/product (M17-c88), JSON-LD Product+BreadcrumbList
+(M16-c88), קונסול אפס שגיאות ב-/ וב-/product (M15-c88), Sentry release
+vs HEAD מול Vercel (M14-c88, אותו חוסם, סעיף 17 ב-`docs/BACKLOG.md`),
+ו-`/api/health`/`/api/ready` מול פרודקשן (M13-c88) — כולם נבדקו מחדש,
+אפס דריפט בארבעתם. גם M12-c88 (robots.txt) ו-M11-c88 (sitemap.xml), אפס דריפט,
+וגם M05-c83/M04-c83 (test 614/614, type-check 0, כווצו לכאן ב-M01-c89).
+
+**M01-c83..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, שני טווחים
+כווצו לשורה הזו ב-M05-c83 וב-M03-c82 לשמירה על תקרת 300 שורות; שום
+שורה לא נמחקה מהארכיון עצמו).** מאה וארבעים ושישה פריטי תור/תחזוקה/
+אימות-בלבד על פני שבעה סבבים (c83 (M01-c83..M03-c83), c82, c81, c78-c73):
+שערי חזות בית/מוצר/קטגוריה כל סבב, type-check/test/build, TODO/FIXME,
+Lighthouse mobile/100-100-100, unused deps/dead exports (knip), מיגרציות
+ממתינות, sitemap.xml, robots.txt, health/ready, Sentry vs HEAD, קונסול/
+hydration, JSON-LD, RTL, STATE.md trim — אפס דריפט/שבור בכולם, ארבעת
+השערים ירוקים בכולם, אפס שינוי קוד ייצור.
+
+**M18-c68..M01-c72 (שבעה סבבים שלמים: c68-c72, ארכיון מלא ב-
+`docs/STATE-ARCHIVE.md`, שום שורה לא נמחקה מהארכיון עצמו).** חמישים
+ותשעה פריטי תור/אימות-בלבד/תחזוקה, DONE/אפס-דריפט בכולם, ארבעת השערים
+ירוקים בכולם: שערים חזותיים בית/מוצר/קטגוריה כל סבב; type-check/test/
+build; TODO/FIXME (תיקון אחד ב-c66's M07); Lighthouse 100/100/100; `knip`;
+מיגרציות ממתינות; sitemap.xml; robots.txt (חוסם 2); `/api/health`/
+`/api/ready`; Sentry מול HEAD (הפער גדל כל סבב, אין DSN בפרודקשן עד
+שהשתנה ב-M14-c73); אפס console error/hydration; JSON-LD
+Product+BreadcrumbList; RTL — leak אמיתי נמצא ותוקן ב-c66's M17
+(`HeroSlider.tsx`), אפס דריפט חוזר אח"כ.
+
+**Q25..Q55 (29 פריטים חיצוניים חד-פעמיים, ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).**
+עשרים וארבעה DONE/VERIFIED ובנויים במלואם (Q25..Q50: LCP+AVIF, שעות
+פתיחה/ביקורות גוגל, שני BLOCKED על מדיניות אופיר), וחמישה נוספים
+(Q51..Q55): Crisp נדחה (Q51 BLOCKED), Meilisearch Hebrew ו-Cardcom
+sandbox-toggle כבר קיימים (Q52/Q53 VERIFIED), שלוש jobs חדשות ב-CI
+(Q54 DONE), `v1.0.0-rc7-final-audit` תויג (Q55 DONE). אפס שינוי קוד
+ייצור חוץ מ-Q43/Q54, ארבעת השערים ירוקים בכולם, שער חזותי PASS בכל מה
+שנמדד.
+
+**Q26 ו-M01-c62..M18-c65 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).** Q26:
+פריט חיצוני חד-פעמי, קופון/פיזי לדף המוצר מלאה. חמישים וארבעה פריטי בדיקה חוזרת (אפס דריפט)
+וארבעה שיפורי המרה אמיתיים (דירוג כוכבים בבית/מוצר, לב מועדפים, קופי) —
+אבטחה, SEO, axe, כיסוי טסטים, STATE/BACKLOG EMPTY, route audit,
+Lighthouse, advisors, תברואת ריפו/תלויות. ארבעת השערים ירוקים בכולם,
+שער חזותי יציב (8.51/9.02/3.95 בית, 5.61/4.92/2.99 מוצר, 99/100/100/100
+Lighthouse).
+
+**S02, S03 ו-M18-c61/M17-c61 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`).** S02/S03: שני
+פריטים חד-פעמיים, reference בשם לא-קיים נתבקש, הפתרון כבר קיים בריפו
+(`refs/ke_live_{width}.png`/`refs/electro_product_{380,768,1440}.png`),
+אפס דריפט, לא קידמו `RESUME FROM:`. M18-c61 — שיפור המרה אמיתי אחד,
+"נצפו לאחרונה" (Recently Viewed Products) בדף המוצר, שער חזותי PASS
+בשלושת הרוחבים (4.96%/4.56%/3.25%). M17-c61 — קופי/משפטי, אפס דריפט.
+ארבעת השערים ירוקים בשניהם.
+
+**M15-c61..M01-c59 (סיכומים הועברו ל-`docs/STATE-ARCHIVE.md` ב-M17-c89).**
+הסבבים המלאים כבר היו בארכיון; כעת גם שורות הסיכום שלהם שם.
