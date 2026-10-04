@@ -175,6 +175,8 @@ commit (`857a0deea`, M18-c64, 01.10 01:11).
 
 ## Verdict: NOT READY
 
+**2026-10-05, final-queue L12 (`audit/final-audit`): LAUNCH-READY: pending-cardcom.** Gates L01-L05, L07 and L10 are DONE; L06 (migrations need explicit approval), L08 (three Vercel env values), L09 (`CRON_SECRET` mismatch) and L11 (unverified Cardcom credentials) are BLOCKED, every one an env value or an approval only Ofir holds, none of them code. No `v1.0.0-mvp` tag was cut. Production now serves HEAD (L01), parity measured against production 7.91 / 8.98 / 4.09 PASS (L07), and the four local gates are green on `62e180e10`. Rows 2 and 4 below are therefore stale in opposite directions: the live build is HEAD, not behind, and the checkout CSP is no longer mock, yet still zero real charges. The text below is kept as written.
+
 The software is green on every gate it owns. The **operation** around it is
 not: the storefront cannot be reached on its own domain, cannot charge a real
 card, and has not delivered a single email or push notification since

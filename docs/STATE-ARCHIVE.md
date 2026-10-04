@@ -2,6 +2,60 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L11 (הועבר מ-STATE.md ב-L12, לשמירה על תקרת 300 שורות)
+
+**L11 - BLOCKED cardcom-creds (05.10.2026, 04:20 שעון המכונה): שער 11
+Cardcom. ערכי ה-`CARDCOM_*` בפרודקשן אינם ניתנים לאימות, הראיות מצביעות על
+ערכי-מילוי של סוכן, ואין במכונה אף אמצעי לבצע הזמנת סנדבוקס או הזמנת ₪1
+אמיתית; אפס שינוי קוד, אפס כתיבה לפרודקשן.** משימת התור: "Gate 11
+Cardcom: check production env for real CARDCOM_* values; if any is
+PENDING_ or placeholder write BLOCKED cardcom-creds ... Otherwise run
+checkout smoke: sandbox order then production 1 ILS order; verify
+order_items platform_percent snapshot, webhook received, invoice download
+link, QR voucher issued; refund the 1 ILS". HEAD בהגעה `3f951560e`, עץ נקי. **מה נמדד (קריאה בלבד):** (א) `vercel env ls
+production` ו-`vercel api /v10/projects/.../env`: `CARDCOM_API_PASSWORD`,
+`CARDCOM_API_NAME`, `CARDCOM_TERMINAL_NUMBER` ו-`CARDCOM_SANDBOX` כולם
+`type=sensitive`, `value=""`, `decrypted=false`, בלי `comment`; Vercel אינו
+מאפשר לאף API או CLI לקרוא ערך Sensitive, ולכן "PENDING_ או placeholder"
+אינו ניתן למדידה ישירה. (ב) זמני יצירה: ‏04.10 ‏13:53 UTC (סיסמה),
+‏14:39 UTC (שם ומסוף), ‏14:42 UTC (סנדבוקס), כלומר ‏20:53 עד ‏21:42 שעון
+המכונה, בדיוק סביב שני ה-commits הריקים `83849e5e0` ו-`8b914b3a1` של סשן
+ענן (`Claude-Session: session_012bRLbXE9Ci9EXJohxg6ULb`) שהודעתם "add all
+missing env vars from preflight"; אין רשומת סשן מקומית, ולסשן ענן אין גישה
+לאישורי סוחר שאינם בריפו. (ג) `scripts/deploy-preflight.mjs` בודק נוכחות
+בלבד (`!process.env[name]`) ו-`CARDCOM_SANDBOX !== 'true'`, ו-`/api/ready`
+(`checkCardcom`) בודק `Boolean(TERMINAL && API_NAME)`; שניהם ירוקים גם
+על מחרוזת שרירותית. (ד) במכונה: `.env.local` מחזיק `CARDCOM_TERMINAL_NUMBER=
+000000` ושם/סיסמה/סוד-webhook מסומני placeholder (סווגו לפי תבנית, לא
+הודפסו); בקבצים מעוקבים הקצאת סיסמה רק בשני קבצי test; אין בשום doc שם
+משתמש למסוף הבדיקה 1000. (ה) פרודקשן (management API, קריאה בלבד): כל
+`payments.cardcom_low_profile_id` בקידומת `mock-` או null, אפס שורות לא-mock
+מאז ומעולם, האחרונה 25.09; ‏0 ב-24 השעות. (ו) מה שכן השתנה מאז חוסם 8:
+`/checkout` החי מגיש `frame-src https://secure.cardcom.solutions` ו-`/api/ready`
+מחזיר `cardcom: ok`, כלומר ה-build החי אינו mock; ספק אמיתי, אישורים לא-מאומתים. **למה
+לא בוצע probe בזמן ריצה:** המסלול היחיד שמפעיל את האישורים בפרודקשן הוא
+`beginCheckout` ‏->‏ `createLowProfile` (`checkout.ts:1189`), שכותב שורת
+`orders` ו-`payments` לפני הקריאה ל-Cardcom ומשאיר הזמנה ממתינה ותשלום
+`failed` אם האישורים שגויים; ‏`listTransactions`/`verifyLowProfile` נגישים
+רק דרך `/api/cron/*` עם `CRON_SECRET` שאינו ידוע (L09), ו-`retryFinalizePayment`
+אינו קורא ל-Cardcom. גם הזמנת הסנדבוקס אינה אפשרית (אין אישורי סנדבוקס),
+וגם לתשלום ₪1 אמיתי אין כרטיס במכונה. לפי כלל
+"PENDING_ או placeholder = BLOCKED cardcom-creds", ובהעדר יכולת להוכיח
+ההפך, הפריט נסגר כ-BLOCKED. **שערים, 30 שמות מוזרקים `[SENSITIVE]` ו-`VERCEL*`
+הוסרו לפני כל ריצה (`SENSITIVE` נותרים 0):** `pnpm type-check` exit 0; `pnpm
+lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit 155 ללא
+שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354), 57.9 שניות;
+`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
+localhost:4993 pnpm build` exit 0, `BUILD_ID` `BtbOPVRsLXwug5vLQ6AwX`, 92
+שורות `supabase.rls_denied` על `reviews` (חוסם 3). `compare.mjs` לא נדרש,
+אפס שינוי UI או קוד. **החלטות שהתקבלו לבד:** (א) לא ליצור הזמנת probe
+בפרודקשן, כי התוצאה הצפויה היא שורות זבל ב-`orders`/`payments` שאסור למחוק
+לפי כללי הפריט; (ב) ערכים מקומיים סווגו לפי תבנית ולא הודפסו; (ג) BACKLOG
+סעיף 6 קיבל רשומת מדידה מתוארכת ולא פריט חדש.
+**לאופיר:** להזין ב-Vercel Production את שלושת ערכי Cardcom האמיתיים
+ו-`CARDCOM_SANDBOX=false`, ואז הזמנת ₪1 וזיכוי בידיו, כי רק בידיו כרטיס.
+L10 הועבר לארכיון. קבצים: `STATE.md`, `docs/BACKLOG.md`, `docs/STATE-ARCHIVE.md`.
+
 ## L10 (הועבר מ-STATE.md ב-L11, לשמירה על תקרת 300 שורות)
 
 **L10 - DONE (05.10.2026, 03:55 שעון המכונה): שער 10 מוקשי השקה. שתי

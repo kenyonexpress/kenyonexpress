@@ -1,63 +1,63 @@
-RESUME FROM: L12
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L11 BLOCKED
-cardcom-creds: שלושת ערכי Cardcom ב-Vercel Production הם Sensitive ואינם
-ניתנים לקריאה, נוצרו ב-04.10 בערב על ידי סשן סוכן בענן "כדי לעבור את
-ה-preflight", אין אף אישור Cardcom אמיתי או סנדבוקס במכונה או בריפו, ולפרודקשן
-אפס תשלומים לא-mock מאז ומעולם; אפס שינוי קוד; RESUME FROM מצביע ל-L12)
+RESUME FROM: maintenance
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L12 DONE: שער 12
+הכרעה. תור `final-queue.txt` L01..L12 נסגר. LAUNCH-READY: pending-cardcom.
+אין tag `v1.0.0-mvp` כי L06, L08, L09 ו-L11 הם BLOCKED, כולם env או אישור
+שרק אופיר מחזיק; ארבעת השערים ירוקים, אפס שינוי קוד; RESUME FROM מצביע
+ל-maintenance)
 
 ## המשך מ:
 
-**L11 - BLOCKED cardcom-creds (05.10.2026, 04:20 שעון המכונה): שער 11
-Cardcom. ערכי ה-`CARDCOM_*` בפרודקשן אינם ניתנים לאימות, הראיות מצביעות על
-ערכי-מילוי של סוכן, ואין במכונה אף אמצעי לבצע הזמנת סנדבוקס או הזמנת ₪1
-אמיתית; אפס שינוי קוד, אפס כתיבה לפרודקשן.** משימת התור: "Gate 11
-Cardcom: check production env for real CARDCOM_* values; if any is
-PENDING_ or placeholder write BLOCKED cardcom-creds ... Otherwise run
-checkout smoke: sandbox order then production 1 ILS order; verify
-order_items platform_percent snapshot, webhook received, invoice download
-link, QR voucher issued; refund the 1 ILS". HEAD בהגעה `3f951560e`, עץ נקי. **מה נמדד (קריאה בלבד):** (א) `vercel env ls
-production` ו-`vercel api /v10/projects/.../env`: `CARDCOM_API_PASSWORD`,
-`CARDCOM_API_NAME`, `CARDCOM_TERMINAL_NUMBER` ו-`CARDCOM_SANDBOX` כולם
-`type=sensitive`, `value=""`, `decrypted=false`, בלי `comment`; Vercel אינו
-מאפשר לאף API או CLI לקרוא ערך Sensitive, ולכן "PENDING_ או placeholder"
-אינו ניתן למדידה ישירה. (ב) זמני יצירה: ‏04.10 ‏13:53 UTC (סיסמה),
-‏14:39 UTC (שם ומסוף), ‏14:42 UTC (סנדבוקס), כלומר ‏20:53 עד ‏21:42 שעון
-המכונה, בדיוק סביב שני ה-commits הריקים `83849e5e0` ו-`8b914b3a1` של סשן
-ענן (`Claude-Session: session_012bRLbXE9Ci9EXJohxg6ULb`) שהודעתם "add all
-missing env vars from preflight"; אין רשומת סשן מקומית, ולסשן ענן אין גישה
-לאישורי סוחר שאינם בריפו. (ג) `scripts/deploy-preflight.mjs` בודק נוכחות
-בלבד (`!process.env[name]`) ו-`CARDCOM_SANDBOX !== 'true'`, ו-`/api/ready`
-(`checkCardcom`) בודק `Boolean(TERMINAL && API_NAME)`; שניהם ירוקים גם
-על מחרוזת שרירותית. (ד) במכונה: `.env.local` מחזיק `CARDCOM_TERMINAL_NUMBER=
-000000` ושם/סיסמה/סוד-webhook מסומני placeholder (סווגו לפי תבנית, לא
-הודפסו); בקבצים מעוקבים הקצאת סיסמה רק בשני קבצי test; אין בשום doc שם
-משתמש למסוף הבדיקה 1000. (ה) פרודקשן (management API, קריאה בלבד): כל
-`payments.cardcom_low_profile_id` בקידומת `mock-` או null, אפס שורות לא-mock
-מאז ומעולם, האחרונה 25.09; ‏0 ב-24 השעות. (ו) מה שכן השתנה מאז חוסם 8:
-`/checkout` החי מגיש `frame-src https://secure.cardcom.solutions` ו-`/api/ready`
-מחזיר `cardcom: ok`, כלומר ה-build החי אינו mock; ספק אמיתי, אישורים לא-מאומתים. **למה
-לא בוצע probe בזמן ריצה:** המסלול היחיד שמפעיל את האישורים בפרודקשן הוא
-`beginCheckout` ‏->‏ `createLowProfile` (`checkout.ts:1189`), שכותב שורת
-`orders` ו-`payments` לפני הקריאה ל-Cardcom ומשאיר הזמנה ממתינה ותשלום
-`failed` אם האישורים שגויים; ‏`listTransactions`/`verifyLowProfile` נגישים
-רק דרך `/api/cron/*` עם `CRON_SECRET` שאינו ידוע (L09), ו-`retryFinalizePayment`
-אינו קורא ל-Cardcom. גם הזמנת הסנדבוקס אינה אפשרית (אין אישורי סנדבוקס),
-וגם לתשלום ₪1 אמיתי אין כרטיס במכונה. לפי כלל
-"PENDING_ או placeholder = BLOCKED cardcom-creds", ובהעדר יכולת להוכיח
-ההפך, הפריט נסגר כ-BLOCKED. **שערים, 30 שמות מוזרקים `[SENSITIVE]` ו-`VERCEL*`
-הוסרו לפני כל ריצה (`SENSITIVE` נותרים 0):** `pnpm type-check` exit 0; `pnpm
-lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit 155 ללא
-שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354), 57.9 שניות;
-`rm -rf .next` ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://
-localhost:4993 pnpm build` exit 0, `BUILD_ID` `BtbOPVRsLXwug5vLQ6AwX`, 92
-שורות `supabase.rls_denied` על `reviews` (חוסם 3). `compare.mjs` לא נדרש,
-אפס שינוי UI או קוד. **החלטות שהתקבלו לבד:** (א) לא ליצור הזמנת probe
-בפרודקשן, כי התוצאה הצפויה היא שורות זבל ב-`orders`/`payments` שאסור למחוק
-לפי כללי הפריט; (ב) ערכים מקומיים סווגו לפי תבנית ולא הודפסו; (ג) BACKLOG
-סעיף 6 קיבל רשומת מדידה מתוארכת ולא פריט חדש.
-**לאופיר:** להזין ב-Vercel Production את שלושת ערכי Cardcom האמיתיים
-ו-`CARDCOM_SANDBOX=false`, ואז הזמנת ₪1 וזיכוי בידיו, כי רק בידיו כרטיס.
-L10 הועבר לארכיון. קבצים: `STATE.md`, `docs/BACKLOG.md`, `docs/STATE-ARCHIVE.md`.
+**L12 - DONE (05.10.2026, 04:30 שעון המכונה): שער 12 הכרעה. LAUNCH-READY:
+pending-cardcom. אין tag, אין `LAUNCH.flag`, ארבעת השערים ירוקים, אפס שינוי
+קוד.** משימת התור: "Gate 12 verdict: if L01-L11 all DONE tag v1.0.0-mvp,
+push tag, write LAUNCH-READY: yes to STATE.md, echo one line summary to
+~/ke-goals/LAUNCH.flag. If L11 BLOCKED write LAUNCH-READY: pending-cardcom
+and keep everything else green. Update STATE.md with hamshekh me:
+maintenance". `pwd` אומת, HEAD בהגעה `62e180e10`, עץ נקי. **ההכרעה, מתוך
+STATE.md ו-`git log -20` בלבד:** DONE: L01 (`4949d616b`), L02 (`217ff7534`),
+L03 (`9187af59c`), L04 (`d0e2ecc92`), L05 (`52b4e1469`), L07 (`97f54ffaa`),
+L10 (`3f951560e`). BLOCKED: L06 (`6769b256a`, החלת מיגרציות דורשת אישור
+מפורש), L08 (`331a9a980`, שלושה ערכי env ב-Vercel: Sentry token, PostHog
+key, Resend key), L09 (`a2509a71f`, ערך `CRON_SECRET` ב-Vercel אינו נקרא
+ואינו תואם ל-GitHub), L11 (`0bc5b349a`, אישורי Cardcom לא-מאומתים). כלומר
+7 DONE ו-4 BLOCKED, ולא "L01-L11 all DONE"; לפי כלל המשימה ל-L11 BLOCKED
+נרשם **LAUNCH-READY: pending-cardcom**, ונרשם כאן במפורש ששלושת החוסמים
+הנוספים (L06, L08, L09) עומדים גם הם, כולם env או אישור שרק אופיר מחזיק,
+אף אחד מהם קוד. **לא בוצע:** `git tag v1.0.0-mvp` (אומת שאינו קיים, `git tag
+--list | grep mvp` ריק, התגית הגבוהה `v5.9.9`), אין push של tag, אין כתיבה
+ל-`~/ke-goals/LAUNCH.flag` (אומת שאינו קיים; הכלל "do not modify ~/ke-goals"
+ממילא אוסר, והענף "all DONE" לא התקיים). **שערים, 55 שמות מוזרקים הוסרו
+(`SENSITIVE` נותרים 0, `CARDCOM_*`/`NEXT_PUBLIC_*`/`SUPABASE_*`/`VERCEL*`
+נותרים 0):** `pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 627/627,
+docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test` 615/615
+קבצים, 7342 עברו, 12 דולגו (7354), 57.7 שניות; `rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build`
+exit 0, `BUILD_ID` `i2ARrDJNCrYk74pP9hBuR`, 92 שורות `supabase.rls_denied`
+על `reviews` (חוסם 3, 247). `compare.mjs` לא נדרש, אפס שינוי UI; המדידה
+התקפה האחרונה היא L07 מול פרודקשן, 7.91 / 8.98 / 4.09 PASS. **מלכודת
+שנמדדה בדרך:** ריצת `pnpm test` ראשונה נכשלה 8/7354 (`resend.test.ts` 7,
+`invoices.test.ts` 1) כי רשימת ה-`env -u` נבנתה ב-zsh בלי `${=VAR}` ולכן
+עברה כמילה אחת, ואחרי התיקון עדיין נותרו מפתחות Supabase אמיתיים,
+`CARDCOM_USE_MOCK`, `CARDCOM_WEBHOOK_SECRET` ו-`NEXT_PUBLIC_*` מוזרקים בלי
+סימון `[SENSITIVE]`; עם 55 השמות (כמו ב-L10/L11) הריצה ירוקה וזהה ל-L11.
+**החלטות שהתקבלו לבד:** (א) הכלל במשימה מכסה רק "L11 BLOCKED"; שלושת
+ה-BLOCKED האחרים נרשמו לצד ההכרעה ולא הושמטו, כי "pending-cardcom" לבדו
+היה מצייר תמונה חלקית; (ב) `docs/LAUNCH-READINESS.md` קיבל שורת הכרעה
+מתוארכת תחת "Verdict: NOT READY" ולא סעיף חדש; (ג) `RESUME FROM:
+maintenance` כנדרש, התור סגור, אין פריט אחרי L12 ב-`final-queue.txt`.
+**לאופיר, בסדר שבו לקוח נתקל בהם:** (1) שלושת ערכי Cardcom האמיתיים
+ו-`CARDCOM_SANDBOX=false` ב-Vercel Production, ואז הזמנת ₪1 וזיכוי (L11);
+(2) `CRON_SECRET` זהה ב-GitHub וב-Vercel (L09); (3) `RESEND_API_KEY` תקף,
+`NEXT_PUBLIC_POSTHOG_KEY`, `SENTRY_AUTH_TOKEN` (L08); (4) אישור החלת
+המיגרציות הממתינות לפי `docs/RUNBOOK.md` (L06). הרשימה המלאה ב-`docs/BACKLOG.md`.
+L11 הועבר לארכיון. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/LAUNCH-READINESS.md`.
+
+**L11 - BLOCKED cardcom-creds (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-L12): שער 11 Cardcom; ארבעת ערכי `CARDCOM_*` ב-Vercel Production
+הם Sensitive ואינם נקראים, נוצרו ב-04.10 בערב על ידי סשן ענן "כדי לעבור את
+ה-preflight", אין אישור אמיתי או סנדבוקס במכונה, ולפרודקשן אפס תשלומים
+לא-mock מאז ומעולם; אפס שינוי קוד, אפס כתיבה לפרודקשן. אופיר בלבד.
 
 **L10 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-L11): שער 10 מוקשי השקה; שתי עמודות ה-agorot קיימות כ-GENERATED ALWAYS,
@@ -151,7 +151,8 @@ B01..B10, M01-c1..M15-c56, תור 23.09, וכל מה שקדם) נשארת שלמ
 
 התור נסגר (B10 היה האחרון). כל השורות (Q01..Q24, B01..B10, M01-c1..M09-c1,
 M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמירה על
-תקרת 300 שורות; שום שורה לא נמחקה, רק הוזזה. SHOWABLE: no, ראו "חוסמים
+תקרת 300 שורות; שום שורה לא נמחקה, רק הוזזה. **LAUNCH-READY: pending-cardcom (L12, 05.10.2026; L06/L08/L09 BLOCKED גם).**
+SHOWABLE: no, ראו "חוסמים
 פתוחים" למטה.
 
 ## חוסמים פתוחים (לא בידי הסוכן)
