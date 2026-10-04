@@ -2,6 +2,46 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c93 (הועבר מ-STATE.md ב-M03-c94, לשמירה על תקרת 300 שורות)
+
+**M16-c93 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", זהה ל-M16-c92. `pwd` אומת, עץ
+נקי, HEAD `38c97a876` (M15-c93). קוד: `git log 8e9096245..HEAD -- src
+apps packages` ריק, אפס שינוי מאז M16-c92; הקומיט האחרון על
+`src/lib/seo/json-ld.ts` עדיין `16318ef2c` (25.09) ועל
+`src/app/(store)/product/[slug]/page.tsx` עדיין `fd820969f` (30.09),
+והדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd`. בזמן
+ריצה: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4987 pnpm build` (exit 0), `pnpm
+start -p 4987` (cwd המאזין אומת ב-`lsof`, הריפו הזה). כל 44 הסלאגים
+מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו: **44/44 מחזירים 200
+עם בלוק `Product` אחד ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות
+JSON. אפס דריפט מ-M16-c92. השרת נעצר ב-SIGINT, הפורט פנוי. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build`
+exit 0. לא חזותי, `compare.mjs` לא נדרש. M11-c93 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
+## M15-c93 (הועבר מ-STATE.md ב-M03-c94, לשמירה על תקרת 300 שורות)
+
+**M15-c93 - DONE (04.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה ל-M15-c92. `pwd` אומת, עץ נקי, HEAD
+`3cd8de7c2` (M14-c93). קוד: הקומיט האחרון על `e2e/route-audit.spec.ts`
+עדיין `b2b4b17a5` (29.09), אפס שינוי. בנייה טרייה (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4976 pnpm
+build`, exit 0), `pnpm start -p 4976` (אומת ב-`lsof` שה-cwd של המאזין הוא
+הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
+catalogue routes"`, `E2E_BASE_URL=http://localhost:4976`,
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c93.jsonl`: **4/4 PASS** (chromium
++ mobile-chrome, כ-66 שניות). הדוח, 16 שורות: אפס `consoleErrors` ואפס
+`hydrationWarnings`, כל הנתיבים 200, על `/` ועל שבעת הנתיבים הדינמיים,
+כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר).
+אפס דריפט מ-M15-c92. השרת נעצר ב-SIGINT, הפורט פנוי. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. פריט
+אימות בלבד, לא חזותי, `compare.mjs` לא נדרש. M10-c93 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M14-c93 (הועבר מ-STATE.md ב-M02-c94, לשמירה על תקרת 300 שורות)
 
 **M14-c93 - DONE (04.10.2026).** משימת התור: "Verify Sentry release

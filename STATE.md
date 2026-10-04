@@ -1,7 +1,39 @@
-RESUME FROM: M03-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c94 DONE: פריטי /product נמדדו שוב ב-380/768/1440, אפס דריפט)
+RESUME FROM: M04-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c94 DONE: /category נמדד שוב ב-380/768/1440, 768/1440 אפס דריפט, 380 תנודתי בתוך השער)
 
 ## המשך מ:
+
+**M03-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample", זהה ל-M03-c93. `pwd` אומת, עץ נקי, HEAD `5a10dcce2`
+(M02-c94). `git diff ebffcd9af HEAD -- src public next.config.*
+package.json scripts/compare.mjs` ריק (אפס שינוי קוד או בשער מאז
+M03-c93). פורט 3311 תפוס על ידי סשן מקביל אחר (אותו `cwd`, לא לנגיעה),
+ולכן נבחר פורט חלופי 4722 (`lsof` אישר פנוי מראש ואומת שה-`cwd` של
+המאזין על 4722 הוא הריפו הזה). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4722 pnpm build` exit 0, `PORT=4722
+pnpm start`. השער רץ בחזית עם `--widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` (דגימת `/category/hot-deals`,
+כברירת המחדל). ריצה ראשונה סורבה ב-380 (`REFUSING to measure: ... 2 on
+the local page had still not loaded`), ריצה שנייה סורבה שוב באותה סיבה
+— תקלת-תזמון חולפת בטעינת תמונות, לא רגרסיה (קוד אומת בלתי-משתנה לפני
+שתי הריצות). נוסה עם מילוט הסקריפט עצמו, `COMPARE_ALLOW_PENDING_IMAGES=1`.
+הריצה השלישית חרגה מהטיימאוט של כלי ה-Bash (180 שניות) ועברה לרקע על
+ידי המערכת עצמה (לא בידי הסוכן); נמתן לה עד סיום (`Monitor` + המתנה
+חוסמת בחזית על ה-PID) לפני שנרשמו המספרים. **380: `2.93%` PASS. 768:
+`2.52%` PASS. 1440: `1.69%` PASS.** 768 ו-1440 זהים בביט ל-M03-c93
+(2.52%/1.69%, אפס דריפט). **380 שונה**: `3.53%` ב-M03-c93 מול `2.93%`
+כאן (הפרש 0.60 נ"פ), שניהם PASS עמוק מתחת לשער 11% — נראה כרעש תזמון
+בין ריצות (כמו התנודתיות המתועדת ב-M01-c94 לדף הבית ב-768), לא כרגרסיה:
+אפס שינוי קוד אומת לפני המדידה. **ממצא נוסף לתיעוד, לא לתיקון**: ריצת
+768 הציגה אזהרת `HEIGHT RATIO` (`scripts/diff-bands.mjs`) בפלט הגולמי —
+אזהרה מובנית כשהיחס גבוה/נמוך מהצפוי, לא exit code, ולא מנעה PASS; תואם
+את התבנית הידועה מדפי מוצר (צילום קפוא מלא מול דף מרונדר חלקי). השער
+כתב את שלוש השורות ל-`docs/UI-PARITY-REPORT.md` בעצמו (13:25-13:28,
+commit `5a10dcce2`/`5a10dcce2-dirty`). השרת נעצר ב-`INT`, פורט 4722
+אומת פנוי. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
+12 דולגו), `build` exit 0 (למעלה). M15-c93 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
 **M02-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
 /product sample", זהה ל-M02-c93. `pwd` אומת, עץ נקי, HEAD `44ec205c4`
@@ -72,47 +104,12 @@ lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c92. `pwd` אומת,
 NEXT_PUBLIC_APP_URL=http://localhost:4211 pnpm build` exit 0. קבצים:
 `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M16-c93 - DONE (04.10.2026).** משימת התור: "Verify all product pages
-have JSON-LD Product and BreadcrumbList", זהה ל-M16-c92. `pwd` אומת, עץ
-נקי, HEAD `38c97a876` (M15-c93). קוד: `git log 8e9096245..HEAD -- src
-apps packages` ריק, אפס שינוי מאז M16-c92; הקומיט האחרון על
-`src/lib/seo/json-ld.ts` עדיין `16318ef2c` (25.09) ועל
-`src/app/(store)/product/[slug]/page.tsx` עדיין `fd820969f` (30.09),
-והדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd`. בזמן
-ריצה: `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4987 pnpm build` (exit 0), `pnpm
-start -p 4987` (cwd המאזין אומת ב-`lsof`, הריפו הזה). כל 44 הסלאגים
-מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו: **44/44 מחזירים 200
-עם בלוק `Product` אחד ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות
-JSON. אפס דריפט מ-M16-c92. השרת נעצר ב-SIGINT, הפורט פנוי. שערים:
-`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build`
-exit 0. לא חזותי, `compare.mjs` לא נדרש. M11-c93 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
-
-**M15-c93 - DONE (04.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample", זהה ל-M15-c92. `pwd` אומת, עץ נקי, HEAD
-`3cd8de7c2` (M14-c93). קוד: הקומיט האחרון על `e2e/route-audit.spec.ts`
-עדיין `b2b4b17a5` (29.09), אפס שינוי. בנייה טרייה (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4976 pnpm
-build`, exit 0), `pnpm start -p 4976` (אומת ב-`lsof` שה-cwd של המאזין הוא
-הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
-catalogue routes"`, `E2E_BASE_URL=http://localhost:4976`,
-`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c93.jsonl`: **4/4 PASS** (chromium
-+ mobile-chrome, כ-66 שניות). הדוח, 16 שורות: אפס `consoleErrors` ואפס
-`hydrationWarnings`, כל הנתיבים 200, על `/` ועל שבעת הנתיבים הדינמיים,
-כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר).
-אפס דריפט מ-M15-c92. השרת נעצר ב-SIGINT, הפורט פנוי. שערים: `type-check`
-0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. פריט
-אימות בלבד, לא חזותי, `compare.mjs` לא נדרש. M10-c93 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
-
-M17-c93, M14-c93, M13-c93, M12-c93, M11-c93, M10-c93, M09-c93, M07-c93,
-M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md`
-(M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07 ב-M14-c93, M10 ב-M15-c93,
-M11 ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93, M13 ב-M01-c94, M14
-ב-M02-c94), לשמירה על תקרת 300 שורות.
+M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93, M10-c93,
+M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
+ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
+ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93,
+M13 ב-M01-c94, M14 ב-M02-c94, M15/M16 ב-M03-c94), לשמירה על תקרת 300
+שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
