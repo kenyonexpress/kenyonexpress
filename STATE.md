@@ -1,5 +1,5 @@
 RESUME FROM: M18-c88
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט DEPLOY-UNBLOCK BLOCKED: preflight env חסר, פרודקשן על main@18ed044b2)
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M17-c88 אומת מחדש: DONE כבר ב-ff7b10014, אפס דריפט)
 
 ## המשך מ:
 
@@ -31,32 +31,30 @@ HEAD**, לא מ-`a388118f1`. מישהו פרס את `main` הישן לפרודק
 שערים על HEAD: `type-check` נקי, `lint` נקי, `test` 614/614 (7337/7349),
 `rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
+**M17-c88 - אימות חוזר, DONE (04.10.2026).** הפריט סומן DONE כבר
+ב-`ff7b10014`; נבדק שוב לפי הכלל "אם הפריט כבר בוצע, לאמת". `git diff
+ff7b10014..HEAD` נוגע רק ב-`STATE.md` ו-`docs/STATE-ARCHIVE.md`, ו-`git log
+422cc6eef..HEAD -- src/app src/components src/lib/i18n` ריק. ארבעת השערים
+בחזית: `type-check` exit 0, `lint` exit 0 (`input-dir gate` נקי, 24
+שדות), `test` 614/614 (7337/7349, 12 מדולגים), `rm -rf .next && pnpm build`
+exit 0. `pnpm start -p 4966` (cwd אומת ב-`lsof`), סלאג אקראי מה-snapshot:
+`/product/חבילת-גלידה`. שני הדפים 200 ו-`<html lang="he" dir="rtl">`.
+`dir="ltr"` בפלט החי: `/` — שדה אימייל הניוזלטר בלבד (מכוון). המוצר —
+שדה האימייל, `p.pdp-summary__meta` **ריק** (אין SKU, `ProductInfo.tsx:252`),
+ו-`<a href="tel:+972524635550" dir="ltr">` — מספר טלפון, בידוד LTR נכון
+ולא דליפה (הפעם הופיע כי המוצר שנדגם נושא טלפון ספק). גריפ מחלקות כיוון
+פיזיות ב-`src/app/page.tsx` וב-`src/app/product`: 0. שרת הופסק, פורט פנוי.
+אפס שינוי קוד. לא פריט `compare.mjs` (לוגיקת כיוון, לא פיקסלים).
+
 **M16-c88..M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, ארבעת
 הראשים כווצו לשורה הזו ב-M17-c88).** JSON-LD Product+BreadcrumbList
 (M16-c88), קונסול אפס שגיאות ב-/ וב-/product (M15-c88), Sentry release
 vs HEAD מול Vercel (M14-c88, אותו חוסם, סעיף 17 ב-`docs/BACKLOG.md`),
 ו-`/api/health`/`/api/ready` מול פרודקשן (M13-c88) — כולם נבדקו מחדש,
-אפס דריפט בארבעתם.
+אפס דריפט בארבעתם. גם M12-c88 (robots.txt) ו-M11-c88 (sitemap.xml), אפס דריפט.
 
-**M12-c88 ו-M11-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M13-c88).** M12-c88: robots.txt נבדק מחדש production-safe, אפס
-דריפט. M11-c88: sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט.
-
-**M05-c83 - DONE (03.10.2026).** משימת התור: "pnpm test fix drift
-commit" — זהה למשימות M05-c57..M05-c82 (שער test, מחזורי). `pnpm test`
-(`vitest run`) הורץ בחזית: 614/614 קבצים עברו, 7337/7349 טסטים (12
-מדולגים), זהה בדיוק לבסיס M04-c83. אפס דריפט לתקן. ארבעת השערים:
-`type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים), `test`
-614/614 קבצים (7337/7349, 12 מדולגים), `build` exit 0. אפס שינוי קוד
-ייצור.
-
-**M04-c83 - DONE (03.10.2026).** משימת התור: "pnpm type-check fix drift
-commit" — זהה למשימות M04-c57..M04-c82 (שער type-check, מחזורי).
-`pnpm type-check` (`tsc --noEmit`) הורץ בחזית: exit 0, אפס שגיאה,
-אפס דריפט לתקן. ארבעת השערים: `type-check` נקי (exit 0), `lint` נקי
-(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
-זהה), `build` exit 0. אפס שינוי קוד ייצור. `STATE.md` כבר מתחת לתקרת
-300 שורות (287) לפני העדכון, אין צורך בכיווץ לארכיון הפעם.
+**M05-c83 ו-M04-c83 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
+הזו ב-M17-c88 אימות חוזר).** שער test 614/614 ושער type-check exit 0, אפס דריפט.
 
 **M01-c83..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, שני טווחים
 כווצו לשורה הזו ב-M05-c83 וב-M03-c82 לשמירה על תקרת 300 שורות; שום
