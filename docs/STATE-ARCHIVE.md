@@ -198,6 +198,24 @@ NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`). פריט אימות-בל
 לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
 הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
 
+## M11-c89 (הועבר מ-STATE.md ב-M12-c89, לשמירה על תקרת 300 שורות)
+
+**M11-c89 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable", זהה ל-M11-c88. `pwd` אומת, עץ נקי, HEAD `6efb76a33`
+(M10-c89). קוד: הקומיט האחרון על נתיבי ה-sitemap עדיין `99b2079cb`, אפס
+שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml` `200`
+`application/xml`, `urlset` שטוח, 79 `<loc>`, etag `427ac6d9...`
+ו-last-modified 02.10 07:02 GMT, זהים ל-M11-c88; ה-apex עונה `308` ל-www
+ואותו קובץ. חמשת תתי-המפות (`/sitemap/{content,suppliers,regions,
+categories,products}.xml`) `404` בפרודקשן, כי הוא מגיש את `main@18ed044b2`
+(חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). `robots.txt` החי מצביע ל-
+`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט. שערים: `type-check`
+0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`
+exit 0, ה-manifest מראה `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ`. לא פריט
+חזותי, `compare.mjs` לא נדרש. M10-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M12-c88 (הועבר מ-STATE.md ב-M13-c88, לשמירה על תקרת 300 שורות)
 
 **M12-c88 - DONE (04.10.2026).** משימת התור: "Verify robots.txt

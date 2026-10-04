@@ -1,23 +1,24 @@
-RESUME FROM: M12-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M11-c89 DONE: sitemap.xml נבדק מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M13-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M12-c89 DONE: robots.txt נבדק מחדש מול פרודקשן, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c89 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable", זהה ל-M11-c88. `pwd` אומת, עץ נקי, HEAD `6efb76a33`
-(M10-c89). קוד: הקומיט האחרון על נתיבי ה-sitemap עדיין `99b2079cb`, אפס
-שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml` `200`
-`application/xml`, `urlset` שטוח, 79 `<loc>`, etag `427ac6d9...`
-ו-last-modified 02.10 07:02 GMT, זהים ל-M11-c88; ה-apex עונה `308` ל-www
-ואותו קובץ. חמשת תתי-המפות (`/sitemap/{content,suppliers,regions,
-categories,products}.xml`) `404` בפרודקשן, כי הוא מגיש את `main@18ed044b2`
-(חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). `robots.txt` החי מצביע ל-
-`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט. שערים: `type-check`
-0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`
-exit 0, ה-manifest מראה `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ`. לא פריט
-חזותי, `compare.mjs` לא נדרש. M10-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M12-c89 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
+production-safe", זהה ל-M12-c88. `pwd` אומת, עץ נקי, HEAD `1b7b81f97`
+(M11-c89). קוד: הקומיט האחרון על `src/app/robots.ts` ושני הטסטים שלו
+עדיין `4d3702025` (M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים
+כולל `/gift/`, `/order/`, `/wishlist/s/`, `/debug/`. חי:
+`https://www.kenyonexpress.co.il/robots.txt` `200` `text/plain`, etag
+`48ebf659...`, sha256 `71b8e862...`, 12 שורות `Disallow` של גרסת `main`
+הישנה, `Host:`/`Sitemap:` ל-`https://kenyonexpress.co.il`; ה-apex עונה
+`308` ל-www. `/gift/foo` `200` חי בלי `Disallow` (פער ידוע, נסגר רק
+בפריסת HEAD, חוסם DEPLOY-UNBLOCK); `/order/foo`, `/wishlist/s/foo`,
+`/debug/foo` `404`. אפס דריפט מ-M12-c88. שערים: `type-check` 0, `lint` 0,
+`test` 614/614 (7337/7349, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4519 pnpm build`
+exit 0, ה-manifest מראה `/robots.txt`. לא פריט חזותי, `compare.mjs` לא
+נדרש. M11-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
