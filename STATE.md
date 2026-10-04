@@ -1,7 +1,19 @@
-RESUME FROM: M05-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c93 DONE: שער type-check נבדק מחדש, נקי, אפס דריפט מ-M04-c92)
+RESUME FROM: M06-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M05-c93 DONE: שער test נבדק מחדש, 615/615, אפס דריפט מ-M05-c92)
 
 ## המשך מ:
+
+**M05-c93 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה במהות ל-M05-c92. `pwd` אומת, עץ נקי, HEAD `6695cc57b`.
+`git diff 6d02d0b50 HEAD -- src public next.config.* package.json` ריק
+(אפס שינוי קוד מאז M05-c92) — אין דריפט לתקן. ארבעת השערים רצו: `pnpm
+test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס כשלונות, זהה
+ביט ל-M05-c92; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי
+סקריפט) נקי; `pnpm build` (`CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311`, פורט 3311 כבר מאזין מריצה
+קודמת, `cwd` אומת ב-`lsof` שהוא הריפו הזה) exit 0. אפס שינוי קוד, לכן
+אין שינוי UI ו-`compare.mjs` לא נדרש. `STATE.md` עדיין מתחת לתקרת 300
+השורות, אין ארכוב נדרש בפריט הזה. קובץ: `STATE.md`.
 
 **M04-c93 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
 commit", זהה במהות ל-M04-c92. `pwd` אומת, עץ נקי, HEAD `c42321210`.
