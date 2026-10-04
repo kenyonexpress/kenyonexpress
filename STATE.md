@@ -1,7 +1,20 @@
-RESUME FROM: M03-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c93 DONE: שער חזותי מוצר נמדד מחדש 380/768/1440, 4.95/4.55/3.25 PASS)
+RESUME FROM: M04-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c93 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, 3.53/2.52/1.69 PASS, אפס דריפט מ-M03-c92)
 
 ## המשך מ:
+
+**M03-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample", זהה ל-M03-c92. `pwd` אומת, עץ נקי, HEAD `ebffcd9af`,
+`git diff b4814b337 HEAD -- src public next.config.* package.json` ריק
+(אפס שינוי קוד מאז M03-c92). פורט 3311 כבר מאזין מריצה קודמת באותו סשן
+(cwd אומת ב-`lsof`: הריפו הזה). השער רץ בחזית עם `--widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` (חרג מ-timeout כלי ה-Bash,
+הומתן לסיום באותה קריאה, exit 0). **380 3.53% PASS, 768 2.52% PASS, 1440
+1.69% PASS, זהה בביט ל-M03-c92.** הפרש: 0.00/0.00/0.00. השער כתב את שלוש
+השורות ל-`docs/UI-PARITY-REPORT.md` בעצמו. שערים: `type-check` 0, `lint`
+0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0 (`rm -rf .next`
+לא בוצע הפעם, פורט 3311 כבר שירת גרסה זהה בביט; `pnpm build` נוסף רץ
+ואישר exit 0 ללא שינוי קוד). קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **M02-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
 /product sample", זהה ל-M02-c92. `pwd` אומת, HEAD `c764c40b7` (זהה
