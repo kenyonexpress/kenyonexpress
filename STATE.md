@@ -1,7 +1,25 @@
-RESUME FROM: M16-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c93 DONE: אפס שגיאות קונסול על / ועל דגימת /product, אפס דריפט)
+RESUME FROM: M17-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c93 DONE: JSON-LD Product+BreadcrumbList נבדק שוב על 44/44 מוצרים פעילים, אפס דריפט)
 
 ## המשך מ:
+
+**M16-c93 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", זהה ל-M16-c92. `pwd` אומת, עץ
+נקי, HEAD `38c97a876` (M15-c93). קוד: `git log 8e9096245..HEAD -- src
+apps packages` ריק, אפס שינוי מאז M16-c92; הקומיט האחרון על
+`src/lib/seo/json-ld.ts` עדיין `16318ef2c` (25.09) ועל
+`src/app/(store)/product/[slug]/page.tsx` עדיין `fd820969f` (30.09),
+והדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd`. בזמן
+ריצה: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4987 pnpm build` (exit 0), `pnpm
+start -p 4987` (cwd המאזין אומת ב-`lsof`, הריפו הזה). כל 44 הסלאגים
+מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו: **44/44 מחזירים 200
+עם בלוק `Product` אחד ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות
+JSON. אפס דריפט מ-M16-c92. השרת נעצר ב-SIGINT, הפורט פנוי. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build`
+exit 0. לא חזותי, `compare.mjs` לא נדרש. M11-c93 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **M15-c93 - DONE (04.10.2026).** משימת התור: "Verify no console errors
 on / and /product sample", זהה ל-M15-c92. `pwd` אומת, עץ נקי, HEAD
@@ -83,26 +101,9 @@ build` exit 0 (פורט 3311 אומת ב-`lsof`/cwd שהוא הריפו הזה),
 מראה `/robots.txt`. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
 קובץ: `STATE.md`.
 
-**M11-c93 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable", זהה ל-M11-c92. `pwd` אומת, עץ נקי, HEAD `9eb5c341e`
-(M10-c93). קוד: הקומיט האחרון על `src/app/sitemap*` עדיין `d1adea146`
-(09.09), אפס שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml`
-`200` `application/xml`, `urlset` שטוח, well-formed (`xmllint`), 79
-`<loc>`, etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT, זהים
-ל-M11-c92; ה-apex עונה `308` ל-www. חמשת תתי-המפות (`/sitemap/{content,
-suppliers,regions,categories,products}.xml`) `404` בפרודקשן, כי הוא מגיש
-את `main@18ed044b2` (חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). `robots.txt`
-החי מצביע ל-`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט.
-**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול; תתי-המפות יעלו עם ה-deploy.
-שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
-build` exit 0 (פורט 3311 אומת ב-`lsof`/cwd שהוא הריפו הזה), ה-manifest
-מראה `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ`. לא פריט חזותי, `compare.mjs`
-לא נדרש. אפס שינוי קוד. קובץ: `STATE.md`.
-
-M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
+M11-c93, M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
 ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
-ב-M14-c93, M10 ב-M15-c93), לשמירה על תקרת 300 שורות.
+ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93), לשמירה על תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
