@@ -1,7 +1,19 @@
-RESUME FROM: M18-c88
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M17-c88 אומת מחדש: DONE כבר ב-ff7b10014, אפס דריפט)
+RESUME FROM: M01-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M18-c88 DONE: STATE.md קוצץ, M17-c88 אורכב)
 
 ## המשך מ:
+
+**M18-c88 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c66..M18-c82.
+נמדד בתחילת הפריט: 297 שורות, מתחת לתקרה אבל צמוד לה. בוצע ציקלוס
+הארכוב: ההרחבה המלאה של M17-c88 (אימות RTL חוזר) הועברה לראש
+`docs/STATE-ARCHIVE.md`, ושורת הכיווץ הורחבה ל-"M17-c88..M13-c88".
+DEPLOY-UNBLOCK נשאר כאן במלואו, כי הוא חוסם פתוח. שום שורה לא נמחקה
+מהארכיון. נתיב שגוי בטקסט המאורכב (`page.tsx` בשורש `src/app`, שלא קיים)
+תוקן ל-`src/app/(store)/page.tsx` כדי ש-`docs-path-audit` יעבור. לא פריט `compare.mjs`: עריכת תיעוד בלבד, אפס שינוי UI וקוד.
+שערים בחזית: `type-check` exit 0, `lint` exit 0 (אחרי תיקון הנתיב),
+`test` 614/614 (7337/7349), `rm -rf .next && pnpm build` exit 0.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
@@ -31,23 +43,8 @@ HEAD**, לא מ-`a388118f1`. מישהו פרס את `main` הישן לפרודק
 שערים על HEAD: `type-check` נקי, `lint` נקי, `test` 614/614 (7337/7349),
 `rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M17-c88 - אימות חוזר, DONE (04.10.2026).** הפריט סומן DONE כבר
-ב-`ff7b10014`; נבדק שוב לפי הכלל "אם הפריט כבר בוצע, לאמת". `git diff
-ff7b10014..HEAD` נוגע רק ב-`STATE.md` ו-`docs/STATE-ARCHIVE.md`, ו-`git log
-422cc6eef..HEAD -- src/app src/components src/lib/i18n` ריק. ארבעת השערים
-בחזית: `type-check` exit 0, `lint` exit 0 (`input-dir gate` נקי, 24
-שדות), `test` 614/614 (7337/7349, 12 מדולגים), `rm -rf .next && pnpm build`
-exit 0. `pnpm start -p 4966` (cwd אומת ב-`lsof`), סלאג אקראי מה-snapshot:
-`/product/חבילת-גלידה`. שני הדפים 200 ו-`<html lang="he" dir="rtl">`.
-`dir="ltr"` בפלט החי: `/` — שדה אימייל הניוזלטר בלבד (מכוון). המוצר —
-שדה האימייל, `p.pdp-summary__meta` **ריק** (אין SKU, `ProductInfo.tsx:252`),
-ו-`<a href="tel:+972524635550" dir="ltr">` — מספר טלפון, בידוד LTR נכון
-ולא דליפה (הפעם הופיע כי המוצר שנדגם נושא טלפון ספק). גריפ מחלקות כיוון
-פיזיות ב-`src/app/page.tsx` וב-`src/app/product`: 0. שרת הופסק, פורט פנוי.
-אפס שינוי קוד. לא פריט `compare.mjs` (לוגיקת כיוון, לא פיקסלים).
-
-**M16-c88..M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, ארבעת
-הראשים כווצו לשורה הזו ב-M17-c88).** JSON-LD Product+BreadcrumbList
+**M17-c88..M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, ארבעת
+הראשים כווצו לשורה הזו ב-M17-c88, M17-c88 עצמו ב-M18-c88).** RTL על / ו-/product (M17-c88), JSON-LD Product+BreadcrumbList
 (M16-c88), קונסול אפס שגיאות ב-/ וב-/product (M15-c88), Sentry release
 vs HEAD מול Vercel (M14-c88, אותו חוסם, סעיף 17 ב-`docs/BACKLOG.md`),
 ו-`/api/health`/`/api/ready` מול פרודקשן (M13-c88) — כולם נבדקו מחדש,

@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c88 (הועבר מ-STATE.md ב-M18-c88, לשמירה על תקרת 300 שורות)
+
+**M17-c88 - אימות חוזר, DONE (04.10.2026).** הפריט סומן DONE כבר
+ב-`ff7b10014`; נבדק שוב לפי הכלל "אם הפריט כבר בוצע, לאמת". `git diff
+ff7b10014..HEAD` נוגע רק ב-`STATE.md` ו-`docs/STATE-ARCHIVE.md`, ו-`git log
+422cc6eef..HEAD -- src/app src/components src/lib/i18n` ריק. ארבעת השערים
+בחזית: `type-check` exit 0, `lint` exit 0 (`input-dir gate` נקי, 24
+שדות), `test` 614/614 (7337/7349, 12 מדולגים), `rm -rf .next && pnpm build`
+exit 0. `pnpm start -p 4966` (cwd אומת ב-`lsof`), סלאג אקראי מה-snapshot:
+`/product/חבילת-גלידה`. שני הדפים 200 ו-`<html lang="he" dir="rtl">`.
+`dir="ltr"` בפלט החי: `/` — שדה אימייל הניוזלטר בלבד (מכוון). המוצר —
+שדה האימייל, `p.pdp-summary__meta` **ריק** (אין SKU, `ProductInfo.tsx:252`),
+ו-`<a href="tel:+972524635550" dir="ltr">` — מספר טלפון, בידוד LTR נכון
+ולא דליפה (הפעם הופיע כי המוצר שנדגם נושא טלפון ספק). גריפ מחלקות כיוון
+פיזיות ב-`src/app/(store)/page.tsx` וב-`src/app/product`: 0. שרת הופסק, פורט פנוי.
+אפס שינוי קוד. לא פריט `compare.mjs` (לוגיקת כיוון, לא פיקסלים).
+
 ## M16-c88 (הועבר מ-STATE.md ב-M17-c88, לשמירה על תקרת 300 שורות)
 
 **M16-c88 - DONE (04.10.2026).** משימת התור: "Verify all product pages
