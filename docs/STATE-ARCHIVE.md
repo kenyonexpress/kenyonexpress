@@ -2,6 +2,38 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c95 (הועבר מ-STATE.md ב-M02-c95, לשמירה על תקרת 300 שורות)
+
+**M01-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", פריט ראשון במחזור
+c95 שנפתח ב-M18-c94. `pwd` אומת
+(`/Users/ofir/kenyonexpress-web/kenyonexpress`), עץ נקי, HEAD
+`e6b6d2073` (M18-c94, סגירת c94). קוד: המדידה הקודמת בפועל של `home`
+הייתה ב-`docs/UI-PARITY-REPORT.md` על `ceba4ede8` (10:43-10:47) ו-
+`a5ba4ff47` (09:18-09:22) — M02-c94/M03-c94 היו `product`/`category`,
+לא `home`. פורט 3311 תפוס על ידי סשן מקביל אחר באותו ריפו (`lsof` אישר
+cwd זהה אך PID/תהליך שונה, לא לנגיעה), נבחר פורט חלופי 5417. `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:5417
+pnpm build` exit 0, `pnpm start -p 5417` (cwd המאזין אומת ב-`lsof`,
+הריפו הזה). שער ההשוואה רץ בחזית בשלושת הרוחבים מול ה-baseline הקפוא
+(`refs/ke_live_{width}.png`, חוסם #14 למעלה), והשער עצמו כתב את השורות
+ל-`docs/UI-PARITY-REPORT.md` (15:31-15:34):
+
+| רוחב | diff ("both painted") | overall | סטטוס |
+|---|---|---|---|
+| 380 | 8.58% | 14.11% | PASS |
+| 768 | 9.01% | 16.03% | PASS |
+| 1440 | 4.16% | 15.45% | PASS |
+
+**אפס דריפט** — שלושת הערכים זהים ביט למדידות הקודמות על `home`
+(`ceba4ede8`, `a5ba4ff47`): 8.58%/9.01%/4.16%, כולם מתחת לתקרת 11%.
+השרת נעצר (`kill`), הפורט 5417 אומת פנוי. שערים: `type-check` נקי,
+`lint` נקי (biome + 12 שערי סקריפט), `test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה). M10-c94
+הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md` (נכתב
+אוטומטית ע"י השער).
+
 ## M16-c94 (הועבר מ-STATE.md ב-M01-c95, לשמירה על תקרת 300 שורות)
 
 **M16-c94 - DONE (04.10.2026).** משימת התור: "Verify all product pages

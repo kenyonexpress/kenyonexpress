@@ -1,40 +1,47 @@
-RESUME FROM: M02-c95
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c95 DONE: /
-נמדד שוב ב-380/768/1440 מול `refs/ke_live_{width}.png`, אפס דריפט, כל
-שלושה PASS, M10-c94 הועבר לארכיון לשמירה על תקרת 300 שורות, RESUME FROM
-מצביע ל-M02-c95)
+RESUME FROM: M03-c95
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c95 DONE:
+/product נמדד שוב ב-380/768/1440 מול `refs/electro_product_{width}.png`,
+אפס דריפט, כל שלושה PASS, M01-c95 הועבר לארכיון לשמירה על תקרת 300 שורות,
+RESUME FROM מצביע ל-M03-c95)
 
 ## המשך מ:
 
-**M01-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md", פריט ראשון במחזור
-c95 שנפתח ב-M18-c94. `pwd` אומת
-(`/Users/ofir/kenyonexpress-web/kenyonexpress`), עץ נקי, HEAD
-`e6b6d2073` (M18-c94, סגירת c94). קוד: המדידה הקודמת בפועל של `home`
-הייתה ב-`docs/UI-PARITY-REPORT.md` על `ceba4ede8` (10:43-10:47) ו-
-`a5ba4ff47` (09:18-09:22) — M02-c94/M03-c94 היו `product`/`category`,
-לא `home`. פורט 3311 תפוס על ידי סשן מקביל אחר באותו ריפו (`lsof` אישר
-cwd זהה אך PID/תהליך שונה, לא לנגיעה), נבחר פורט חלופי 5417. `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:5417
-pnpm build` exit 0, `pnpm start -p 5417` (cwd המאזין אומת ב-`lsof`,
-הריפו הזה). שער ההשוואה רץ בחזית בשלושת הרוחבים מול ה-baseline הקפוא
-(`refs/ke_live_{width}.png`, חוסם #14 למעלה), והשער עצמו כתב את השורות
-ל-`docs/UI-PARITY-REPORT.md` (15:31-15:34):
-
-| רוחב | diff ("both painted") | overall | סטטוס |
-|---|---|---|---|
-| 380 | 8.58% | 14.11% | PASS |
-| 768 | 9.01% | 16.03% | PASS |
-| 1440 | 4.16% | 15.45% | PASS |
-
-**אפס דריפט** — שלושת הערכים זהים ביט למדידות הקודמות על `home`
-(`ceba4ede8`, `a5ba4ff47`): 8.58%/9.01%/4.16%, כולם מתחת לתקרת 11%.
-השרת נעצר (`kill`), הפורט 5417 אומת פנוי. שערים: `type-check` נקי,
-`lint` נקי (biome + 12 שערי סקריפט), `test` **615/615 קבצים, 7340
-עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה). M10-c94
-הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md` (נכתב
-אוטומטית ע"י השער).
+**M02-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample", זהה ל-M02-c94. `pwd` אומת, עץ נקי, HEAD `cac5bbbf1`
+(M01-c95). `git diff 44ec205c4 cac5bbbf1 --stat -- src public
+next.config.* package.json scripts/compare.mjs pnpm-lock.yaml` ריק (אפס
+שינוי קוד או בשער מאז M02-c94). **נמצא עם הגעה לפריט**: שרידי WIP
+מסשן קודם שנקטע לפני commit — `docs/UI-PARITY-REPORT.md` כבר הכיל שורה
+לא-מחויבת של `product/380/4.95%` על בסיס `cac5bbbf1-dirty`, ושני
+תהליכי `pnpm start` ישנים (פורטים 3311 ו-4722) עדיין רצים בלי סשן
+`claude` פעיל שמחזיק אותם (`ps aux` אישר: אין תהליך `claude` שני פעיל
+מלבד הסשן הזה עצמו, אלו שרתים יתומים בלבד, לא קולו-אג'נט שני). לא
+נגעתי בהם (לא לנגיעה, לא שלי). השורה הלא-מחויבת זוהה כחלקית/לא-ודאה
+(אין 768/1440 איתה) ונמחקה ב-`git checkout --` לפני ריצה נקייה משלי, כדי
+שהמספרים בדוח יתאימו לריצה אחת שלמה. פורט 3311 ו-4722 תפוסים (אותם
+שרתים יתומים, לא לנגיעה), נבחר פורט חלופי 4819 (`lsof` אישר פנוי
+מראש, ואומת גם שה-`cwd` של המאזין על 4819 הוא הריפו הזה). `rm -rf .next
+&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4819 pnpm
+build` exit 0, `PORT=4819 pnpm start`, השרת אומת חי (`curl` 200,
+`cwd` של המאזין נבדק ב-`lsof`). השער רץ בחזית פר-רוחב על
+`/product/מוצר-לדוגמא` עם `--baseline='refs/electro_product_{width}.png'`
+(אותה דגימה כמו M02-c93/M02-c94). שלוש הריצות (380, 768, 1440) כל אחת
+חרגה מטיימאוט 120 שניות והועברה לרקע **על ידי המערכת עצמה, לא בידי
+הסוכן** (תקדים M02-c94), ונמתן לה עד סיום לפני המשך בכל פעם. **380:
+`4.95%` PASS. 768: `4.55%` PASS. 1440: `3.25%` PASS**, שלושתם מסומנים
+`HEIGHT RATIO` (תמיד היו, לא רגרסיה: צילום קפוא מלא מול דף מרונדר
+חלקי). **זהה בדיוק למספרים שנרשמו ב-M02-c93 ו-M02-c94, אפס דריפט.**
+ארבע השורות (380, 768, 1440, ועוד שורת `home/1440/REFUSED` שנכתבה
+כצד-לוואי של בדיקת `--help` לזיהוי הדגל הנכון, לפני תחילת המדידה
+עצמה — אמת, לא שגיאה: `--help` אינו דגל מוכר והריצה נפלה חזרה ל-home
+ברוחב ברירת המחדל ונתפסה ע"י שומר הרפרנס החי) נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` (15:49-16:00, commit
+`cac5bbbf1`/`cac5bbbf1-dirty`). השרת נעצר (`kill`), פורט 4819 אומת
+פנוי. שערים: `type-check` נקי, `lint` נקי (biome + 12 שערי סקריפט),
+`test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט, `build`
+exit 0 (למעלה, לפני ההפעלה). M01-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md` (נכתב אוטומטית ע"י השער).
 
 **M18-c94 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
 lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c93. `pwd`
@@ -95,16 +102,7 @@ pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 (הועבר ב-M01-c95): migrations/pending נבדק שוב, 19 הקבצים החוסמים
 ללא שינוי, אפס דריפט מ-M10-c93, כל ארבעת השערים ירוקים.
 
-**M04-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M09-c94): `type-check` fix-drift re-verified, אפס שינוי קוד
-מ-M04-c93, כל ארבעת השערים ירוקים.
-
-**M03-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M04-c94): /category נמדד שוב ב-380/768/1440, 768/1440 אפס
-דריפט מ-M03-c93 (2.52%/1.69%), 380 שונה ב-0.60 נ"פ (2.93% מול 3.53%,
-שניהם PASS, רעש תזמון לא רגרסיה).
-
-M02-c94, M01-c94, M18-c93, M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93,
+M04-c94, M03-c94, M02-c94, M01-c94, M18-c93, M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93,
 M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
 ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
 ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93,
@@ -120,6 +118,8 @@ M14-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M15-c94.
 M15-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M17-c94.
 M17-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M18-c94.
 M10-c94 ו-M16-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M01-c95.
+M03-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M02-c95.
+M04-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M02-c95.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
