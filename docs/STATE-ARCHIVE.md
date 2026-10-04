@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c91 (הועבר מ-STATE.md ב-M10-c91, לשמירה על תקרת 300 שורות)
+
+**M09-c91 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
+dead exports", זהה ל-M09-c90. `pwd` אומת, עץ נקי, HEAD `07881e511`
+(M08-c91). `git diff --stat cbd20d911 HEAD` מחוץ ל-`STATE.md`/`docs`:
+**ריק**, אפס שינוי קוד מאז M09-c90. `pnpm dlx knip --no-config-hints`
+(ephemeral, אין `knip.json`): **201 unused files / 5 unused dependencies /
+1 unlisted binary / 271 unused exports / 197 unused exported types / 4
+duplicate exports**, זהה בדיוק ל-M09-c90. חמש התלויות: `@radix-ui/react-
+dropdown-menu`, `@radix-ui/react-select`, `drizzle-orm`, `postgres`,
+`react-hook-form`; הבינארי `supabase`. **החלטה שהתקבלה לבד:** לא הוסר
+דבר, כמו בכל הסבבים מאז M09-c66: אפס מועמד חדש, וכל הקיימים הם רעש ידוע
+שהכרעתו של המפעיל. שערים: `type-check` 0, `lint` 0, `test` 615/615
+(7340/7352, 12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build` exit 0 (337/337).
+לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. M08-c91 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M08-c91 (הועבר מ-STATE.md ב-M09-c91, לשמירה על תקרת 300 שורות)
 
 **M08-c91 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
