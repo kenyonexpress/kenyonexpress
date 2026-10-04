@@ -6,7 +6,12 @@ import Link from 'next/link'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 /**
- * The masthead's "בחר אזור" menu -- live's `secondary-nav`, which D3 skipped.
+ * The "בחר אזור" menu -- live's `secondary-nav`, which D3 skipped.
+ *
+ * WHERE IT LIVES: TopBar, beside התחברות, since W01 (2026-10-05). It sat in
+ * the masthead next to the icon cluster until the cluster was held to Electro
+ * header-v8 exactly (wishlist, account, cart and nothing else). The bar's `lg`
+ * gate and 0.929em type are inherited from there; the panel is unchanged.
  *
  * WHAT LIVE ACTUALLY HAS, read off the rendered page at 1440 on 2026-09-03 and
  * not off the August snapshot: `.secondary-nav` holds exactly ONE menu item.
@@ -146,7 +151,7 @@ export default function RegionMenu() {
   return (
     <div
       ref={wrapRef}
-      className="relative me-lg ms-region-inset hidden shrink-0 lg:block"
+      className="relative shrink-0"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -158,7 +163,7 @@ export default function RegionMenu() {
         aria-controls={open ? menuId : undefined}
         onClick={() => setPinned((v) => !v)}
         onKeyDown={onTriggerKeyDown}
-        className="flex h-nav-row items-center gap-1 text-sm font-medium text-heading transition-opacity hover:opacity-70"
+        className="flex h-topbar-row items-center gap-1 text-heading transition-opacity hover:opacity-70"
       >
         {LABEL}
         <ChevronDown

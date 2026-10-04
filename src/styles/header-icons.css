@@ -1,0 +1,169 @@
+/* The masthead icon row: Electro header-v8 `.header-icons`, exactly.
+
+   Every length and colour here was read with getComputedStyle off
+   https://electro.madrasthemes.com/home-v7/ at 1440 on 2026-10-05 and is
+   recorded in refs/electro-header-icons.json. Nothing is rounded to taste:
+   the icon box is 22.7031 x 40.4531, the glyph line is 20.5622, the gap is
+   37.996, the counter is 20.9688 round at top 22.4688 / 7px in, and the
+   account menu is 220 wide on a 2px yellow top border.
+
+   RTL MIRROR. Electro is LTR and hangs the counter `left: 7px` and the menu
+   `right: -50px`. This document is RTL, so both are written as logical
+   insets and the row's DOM order (wishlist, account, cart) renders with the
+   cart on the far left, which is where Electro has it on the far right. */
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* Handheld: live kenyonexpress at 380 pitches its icons 42px apart
+     (x15 -> x57 with 22px glyphs), i.e. a 20px gap. */
+  gap: 20px;
+  font-size: 14px;
+  line-height: 23.996px;
+  color: #333e48;
+}
+
+/* xl (80rem) is where SiteHeader swaps the handheld row for the masthead,
+   and the masthead gap is Electro's margin-left: 37.996px per icon. */
+@media (min-width: 80rem) {
+  .header-icons {
+    gap: 37.996px;
+  }
+}
+
+.header-icon {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 22.7031px;
+  height: 40.4531px;
+}
+
+/* The anchor (or button) inside the box. Electro's is an inline <a> with a
+   40.4496px line-height; ours fills the box so the counter and the menu can
+   hang off the same 40.45px edge. */
+.header-icon__trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  line-height: 40.4496px;
+  transition: opacity 0.15s;
+}
+
+.header-icon__trigger:hover {
+  opacity: 0.7;
+}
+
+/* 44px of thumb without a pixel of paint: the painted box stays Electro's
+   22.7 wide, and the hit area is widened invisibly on both sides. */
+.header-icon__trigger::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline: -10.65px;
+}
+
+/* The `<i class="ec">` box: 22.7031 x 20.5622, inline-block, vertical-align
+   middle. The font pins each glyph's top within 0.7px of this box's top (the
+   em box is 22.85 tall on a 20.56 line, so the half-leading is negative), so
+   the SVG is aligned to the top and centred across. */
+.header-icon__glyph {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 22.7031px;
+  height: 20.5622px;
+  line-height: 20.5622px;
+}
+
+/* `.cart-items-count.count.header-icon-counter`, on the cart only. Shown at
+   zero, as Electro shows it. */
+.header-icon-counter {
+  position: absolute;
+  top: 22.4688px;
+  inset-inline-start: 7px;
+  width: 20.9688px;
+  height: 20.9844px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: #fed700;
+  color: #333e48;
+  font-size: 11.991px;
+  font-weight: 700;
+  line-height: 20.9843px;
+  letter-spacing: -0.14px;
+  text-align: center;
+}
+
+/* `.dropdown-menu.dropdown-menu-user-account`, measured open. */
+.header-icon__menu {
+  position: absolute;
+  top: 100%;
+  inset-inline-end: -50px;
+  z-index: 60;
+  width: 220px;
+  margin: 0;
+  padding: 8px 0;
+  background: #fff;
+  border-top: 2px solid #fed700;
+  border-radius: 0 0 7px 7px;
+  box-shadow: 0 2px 4.992px rgb(0 0 0 / 28%);
+  color: #333e48;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20.568px;
+  text-align: center;
+}
+
+/* `.register-sign-in-dropdown-inner` */
+.header-icon__menu-inner {
+  padding: 0 21px;
+}
+
+.header-icon__menu p {
+  margin: 0;
+}
+
+/* `.sign-in-action`: the 10px above and below the button are what make the
+   sign-in block 66.56 tall (20.56 + 10 + 26 + 10). */
+.header-icon__sign-in-action {
+  padding: 10px 0;
+}
+
+/* `.sign-in-button` */
+.header-icon__sign-in-button {
+  display: inline-block;
+  padding: 3px 6px;
+  border: 1px solid #fed700;
+  border-radius: 4px;
+  background: #fed700;
+  color: #333e48;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+/* `.register`: a 1px #ebebeb rule, 10px of padding each side. */
+.header-icon__register {
+  padding: 10px 0;
+  border-top: 1px solid #ebebeb;
+}
+
+.header-icon__register a {
+  color: inherit;
+}
+
+.header-icon__register a:hover,
+.header-icon__sign-in-button:hover {
+  opacity: 0.8;
+}

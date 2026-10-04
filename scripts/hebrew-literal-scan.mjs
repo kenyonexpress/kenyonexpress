@@ -172,4 +172,4 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * in the catalog (`pushDevices.*`), and the notifications page lost the
  * duplicated "התראות דחיפה" heading that `PushOptIn` already renders. 628 -> 627.
  */
-export const HEBREW_LITERAL_CEILING = 627
+export const HEBREW_LITERAL_CEILING = 626

@@ -15,7 +15,7 @@ import { Suspense } from 'react'
  */
 export default function HeaderCart() {
   return (
-    <div className="mini-cart">
+    <div className="mini-cart header-icon header-icon--cart">
       <CartNavLink />
       {/*
         The panel calls `usePathname`, and under `cacheComponents` that is

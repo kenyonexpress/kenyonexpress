@@ -1,10 +1,9 @@
-import HeaderCart from '@/components/cart/HeaderCart'
+import HeaderIcons from '@/components/layout/HeaderIcons'
 import MastheadNav from '@/components/layout/MastheadNav'
 import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
 import OfflineIndicator from '@/components/pwa/OfflineIndicator'
 import SmartImage from '@/components/ui/SmartImage'
-import WishlistNavLink from '@/components/wishlist/WishlistNavLink'
 import { LOGO } from '@/lib/assets'
 import Link from 'next/link'
 
@@ -101,28 +100,18 @@ export default function SiteHeader() {
             />
           </Link>
 
-          {/* Live's icon row sits at x15/x57 with 22px glyphs, so the icons are
-              22 and the row owns the 44px hit area. Last in the DOM puts it on
-              the inline-end, which in RTL is the left, where live has it.
+          {/* Live's icon row sits at x15/x57 with 22px glyphs. Last in the
+              DOM puts it on the inline-end, which in RTL is the left, where
+              live has it.
 
-              TWO ICONS, HEART THEN CART, THE SAME PAIR THE MASTHEAD SHOWS.
-              This cluster used to be cart + a <User> link to /login, which
-              broke the rule twice over: no wishlist affordance below xl, an
-              account icon in a cluster that may not carry one, and a second
-              account entry point competing with TopBar's התחברות.
-
-              The DOM order also fixes a mirror. In an RTL flex row the FIRST
-              child renders RIGHTMOST, so cart-first put the cart on the right
-              while live measures it at x=15, hard against the left edge. Heart
-              first, cart second puts the cart back on the left and gives the
-              heart live's x=57 slot. */}
-          <div className="flex items-center gap-2 xl:hidden">
-            <WishlistNavLink
-              size={22}
-              strokeWidth={1.8}
-              className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
-            />
-            <HeaderCart />
+              THE SAME ROW THE MASTHEAD SHOWS, from the same component, so
+              the two headers cannot drift: Electro header-v8's wishlist,
+              account, cart (W01). This cluster used to be its own heart +
+              cart pair, and before that cart + a second account link; see
+              HeaderIcons.tsx for the row and header-icons.css for the
+              handheld 20px gap versus the masthead's 38. */}
+          <div className="xl:hidden">
+            <HeaderIcons />
           </div>
 
           {/* DESKTOP (xl and up): the measured masthead nav. */}

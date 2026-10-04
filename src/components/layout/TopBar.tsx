@@ -1,3 +1,4 @@
+import RegionMenu from '@/components/layout/RegionMenu'
 import { MapPin, ShoppingBag, Truck, User } from 'lucide-react'
 import Link from 'next/link'
 
@@ -155,6 +156,16 @@ export default function TopBar() {
               <InfoItem {...item} />
             </div>
           ))}
+          {/* THE REGION PICKER, beside התחברות (W01, 2026-10-05). It was the
+              masthead's `secondary-nav` next to the icon cluster; the icon
+              row is now Electro's exactly and has no room for it, and the
+              feature is kept here. Same `lg` gate it always had, so 380 and
+              768 keep their measured wrap, and its own `|` so it reads as
+              one more item of the bar. */}
+          <div className="hidden items-center lg:flex">
+            <ItemSeparator />
+            <RegionMenu />
+          </div>
         </div>
       </div>
     </div>

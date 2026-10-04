@@ -61,7 +61,9 @@ describe('TopBar, component 01', () => {
 
   it('separates the items with live’s `|` glyph at 1em, not a hairline box', () => {
     const separators = [...html.matchAll(/mx-\[1em\][^"]*"[^>]*>\|</g)]
-    expect(separators, 'one separator between each pair of the four items').toHaveLength(3)
+    // Three between the four info items, and one more before the region menu
+    // that joined the bar in W01 (its wrapper is `lg`-gated with it).
+    expect(separators, 'one separator between each pair of the five items').toHaveLength(4)
     // The old mark. `w-px` + a `md:` gate is the shape that was measured wrong.
     expect(html).not.toMatch(/w-px/)
     expect(html).not.toMatch(/md:block/)

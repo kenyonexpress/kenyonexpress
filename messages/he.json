@@ -22,7 +22,10 @@
       "cart": "העגלה",
       "wallet": "הארנק",
       "account": "החשבון"
-    }
+    },
+    "headerActions": "פעולות חשבון ועגלה",
+    "returningCustomer": "לקוח חוזר?",
+    "noAccountYet": "עדיין אין לך חשבון?"
   },
   "auth": {
     "login": "התחברות",

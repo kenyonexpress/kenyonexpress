@@ -2,6 +2,88 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c96 (הועבר מ-STATE.md ב-W01, לשמירה על תקרת 300 שורות)
+
+**M01-c96 - DONE (05.10.2026): שער ה-parity של `/` נמדד שוב ב-380/768/1440,
+8.58% / 9.01% / 4.16% PASS, כולם מתחת ל-11%, אפס שינוי קוד.** משימת
+התור: "Re-measure compare.mjs 380 768 1440 on / and record diffs in STATE.md".
+`pwd` אומת, HEAD בהגעה `ca42cce28`, עץ נקי. **איך נמדד:** `.next` במכונה הוא
+ה-build של L12 (`BUILD_ID` `i2ARrDJNCrYk74pP9hBuR`, `CARDCOM_USE_MOCK=true`),
+ואפס קומיטי קוד מאז (רק `ca42cce28`, docs). על 3311 ישב `next-server` בן
+10.5 שעות מאותו checkout (שריד L07), ועוד שניים על 4722/4824, לכן לא
+הופעל `pnpm start` על 3311 ולא נהרג אף תהליך זר; הופעל שרת חדש על 3396
+(`env -u` ל-64 שמות מוזרקים, `PORT=3396 CARDCOM_USE_MOCK=true pnpm start`),
+חומם פעמיים (200, 0.35s/0.32s), ואז `LOCAL_BASE=http://localhost:3396 node
+scripts/compare.mjs --page=home --width=W --baseline=refs/ke_live_W.png`
+בחזית, רוחב אחר רוחב, והשרת נסגר בסוף. **התוצאות (שלוש שורות חדשות
+ב-`docs/UI-PARITY-REPORT.md`, commit `ca42cce28`/`-dirty`):**
+380: 8.58% PASS (overall 14.11%, reference blank 2.79%, ours blank 2.75%);
+768: 9.01% PASS (overall 16.03%, reference blank 4.31%, ours blank 2.72%);
+1440: 4.16% PASS (overall 15.45%, reference blank 9.88%, ours blank 1.41%).
+**דלתא מול L07 (05.10, מול פרודקשן):** 7.91 -> 8.58 (+0.67), 8.98 -> 9.01
+(+0.03), 4.09 -> 4.16 (+0.07); הצד הנמדד שונה (build מקומי ולא פרודקשן),
+ההפרש בתוך רצועת הרעש של הסקריפט, הכיוון זהה בשלושת הרוחבים, אין רוחב
+שנע לעבר 11%. **דלתא מול Q31 (01.10, אותו reference קפוא):** 8.51 / 9.02 /
+3.95, כלומר +0.07 / -0.01 / +0.21. **החלטות שהתקבלו לבד:** (א) נמדד מול
+build מקומי לפי כלל CLAUDE.md ולא מול פרודקשן כמו L07, כי שתי המדידות
+קיימות ועכשיו יש זוג להשוואה; (ב) שרת זר על 3311 לא נהרג (תהליך של סשן
+אחר, אף שהוא באותו checkout); (ג) L12 הועבר לארכיון כדי להישאר מתחת
+ל-300 שורות. **שערים (64 שמות מוזרקים הוסרו):** `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit 155
+ללא שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354), 60.3
+שניות; `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm
+build` exit 0, 337/337 עמודים, `BUILD_ID` `xzSjQlvLPXOeDdujd5jeC`, 92 שורות
+`supabase.rls_denied` על `reviews` (חוסם 3, 247, זהה ל-L12). קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
+## L02..L10 (תקצירים, הועברו מ-STATE.md ב-W01, לשמירה על תקרת 300 שורות)
+
+הרשומות המלאות של כל אחד מהם כבר כאן למטה תחת הכותרת שלו; אלה שורות התקציר כפי שעמדו ב-STATE.md.
+
+**L10 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L11): שער 10 מוקשי השקה; שתי עמודות ה-agorot קיימות כ-GENERATED ALWAYS,
+059 לא הוחלה, כל select של `finalize.ts` עבר על פרודקשן, אפס שינוי קוד.
+
+**L09 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L10): שער 9 cron נמדד מול פרודקשן; pg_cron מחזיק עבודה אחת שרצה ב-24
+השעות, 21 נתיבי `/api/cron` עונים 401 בלי bearer בשני ה-hosts, וה-200 עם סוד
+הפרודקשן אינו ניתן למדידה כי הערך ב-Vercel הוא Sensitive ולא נקרא, וגם סוד
+GitHub וגם הערך המקומי נדחים ב-401; יישור הסוד הוא env, אופיר בלבד.
+**L08 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L09): שער 8 observability נמדד מול פרודקשן; Sentry קיבל שגיאת לקוח
+ב-ingest (`c32d5f141b38426aac8c48adc20f17a8`) בלי טוקן API לאימות, PostHog
+אינרטי כי `NEXT_PUBLIC_POSTHOG_KEY` חסר ב-Production, Resend מחזיר 401
+"API key is invalid" משליחה אמיתית; שלושתם env ב-Vercel.
+
+**L07 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L08): שער 7 parity נמדד מול פרודקשן ב-380/768/1440, 7.91 / 8.98 / 4.09
+PASS; תיקון אחד ב-`scripts/compare.mjs` (הצד נגזר מהקורא, לא מה-hostname),
+אפס CSS, אפס redeploy.
+
+**L06 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L07): החלת מיגרציות על פרודקשן דורשת אישור מפורש; `schema_migrations`
+נקראה בלבד (162 שורות), 6 תואמים, 13 מספרים תפוסים בתוכן אחר, 39 ללא
+שורה; אפס החלה, אפס `db push`, אפס שינוי בפרודקשן; 165 אינה קיימת.
+
+**L05 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L06): שער 5 E2E על פרודקשן, 9 נתיבים + 10 מוצרים מהמפה + `/checkout`
++ webhook, שני 404 (`/returns`, `/cookies`) תוקנו ב-`4c87dae64` כ-redirects
+קבועים, נפרסו אוטומטית ונמדדו שוב ירוק.
+
+
+**L04 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L05): ביקורת env של Vercel Production בקריאה בלבד, 42 שמות, אפס placeholder
+בין 10 הנקראים, ארבעה מועמדים לכפילות רשומים ב-`docs/BACKLOG.md` ולא הוסרו.
+
+**L03 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L04): `run-final.sh` ללא קריאות vercel, `--archive=tgz` בכל פקודת deploy
+מתועדת.
+
+**L02 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L05): production branch של `kenyonexpress` הוסב ל-`audit/final-audit`
+(היה `phase5/homepage`, 327 push בלי פריסה), אומת ב-commit ריק `9e0df9ff9`
+שנפרס תוך 7 שניות; מרגע זה כל push לענף הוא פריסת פרודקשן אוטומטית.
+
 ## L12 (הועבר מ-STATE.md ב-M01-c96, לשמירה על תקרת 300 שורות)
 
 **L12 - DONE (05.10.2026, 04:30 שעון המכונה): שער 12 הכרעה. LAUNCH-READY:

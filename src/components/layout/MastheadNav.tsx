@@ -1,68 +1,27 @@
-import HeaderCart from '@/components/cart/HeaderCart'
-import RegionMenu from '@/components/layout/RegionMenu'
-import WishlistNavLink from '@/components/wishlist/WishlistNavLink'
-
-const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
+import HeaderIcons from '@/components/layout/HeaderIcons'
 
 /**
- * The masthead's left-hand group (RTL): the region selector and the two-icon
- * cluster -- favorites then cart, which is the whole cluster.
+ * The masthead's left-hand group (RTL): Electro header-v8's icon row, and only
+ * that. See HeaderIcons.tsx for what the row holds and what it deliberately
+ * does not.
  *
- * Geometry from refs/ke_live_computed.json at 1440, 2026-09-02, x from left:
+ * WHAT USED TO BE HERE. Until W01 (2026-10-05) this group was the region
+ * selector ("בחר אזור", live's `secondary-nav`) followed by a two-icon cluster
+ * of heart and cart with the cart's subtotal printed beside it, and the
+ * account entry point was kept OUT of the cluster by a test. The row is now
+ * Electro's exactly -- wishlist, account, cart -- and the region selector
+ * moved to TopBar beside התחברות, so the feature is kept and the cluster is
+ * not.
  *
- *   cart 135  user 223  heart 284  "בחר אזור" 360..456  search 456..990
- *
- * so RTL, reading right to left after the search: region selector, heart,
- * cart -- with 38px edge-to-edge between the icons at lg (the measured
- * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-nav-gap is that
- * measurement, not a taste.
- *
- * The heart is BACK (it was removed in [28] because there was no wishlist
- * route and a 404 icon is worse than a geometry gap). The 1:1 instruction of
- * 2026-09-02 overrides the gap half of that; the 404 half is avoided by
- * sending it to the wishlist, which exists now (154 + /account/wishlist).
- *
- * The region selector matches live's secondary-nav (96x45, 14px/500 with a
- * chevron). It is now a real dropdown -- see RegionMenu.tsx. It used to be a
- * flat link to /suppliers, which is the join-us-as-a-supplier marketing page:
- * a control labelled "choose a region" whose target has no regions on it. The
- * seventeen regions it now opens are live's own, read off the rendered page.
- *
- * NO SEARCH FIELD. Live's masthead carries a 534px search form at x456..x990
- * and this component used to render <DeferredHeaderSearch/> in that slot. The
- * standing project rule is that there is no search UI anywhere, so the slot is
- * gone rather than hidden: a CSS-hidden field is still in the DOM, still in the
- * tab order, and still ships its client chunk. `justify-end` closes the gap it
- * left, which is the one place this component knowingly departs from the
- * measured layout. The pixel cost is recorded in STATE.md.
+ * NO SEARCH FIELD. Live's masthead carries a 534px search form in this slot
+ * and the standing project rule is that there is no search UI anywhere, so the
+ * slot is gone rather than hidden. `justify-end` closes the gap it left; the
+ * pixel cost is recorded in STATE.md.
  */
 export default function MastheadNav() {
   return (
     <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
-      <RegionMenu />
-
-      <nav
-        className="flex shrink-0 items-center gap-4 lg:gap-nav-gap"
-        aria-label="פעולות חשבון ועגלה"
-      >
-        <WishlistNavLink
-          size={ICON.size}
-          strokeWidth={ICON.strokeWidth}
-          className="-m-1 inline-block p-1 transition-opacity hover:opacity-70"
-          style={{ color: ICON.color }}
-        />
-
-        {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.
-            The cluster is exactly two icons at every breakpoint -- heart then
-            cart -- and the account entry point lives in the shell's top-left,
-            in exactly one place: TopBar's התחברות. This slot used to hold a
-            third <User> link to /login, which made three icons here, two more
-            account entry points than the rule allows (this one and the
-            handheld one in Header.tsx), and three places to keep in sync.
-            Live's own x at 1440 was cart 135, user 223, heart 284; dropping
-            the middle one closes to cart 135, heart 223. */}
-        <HeaderCart />
-      </nav>
+      <HeaderIcons />
     </div>
   )
 }

@@ -1,41 +1,83 @@
-RESUME FROM: M02-c96
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M01-c96 DONE: שער
-parity של `/` נמדד שוב ב-380/768/1440, 8.58 / 9.01 / 4.16 PASS, אפס שינוי
-קוד; L12 הועבר לארכיון; RESUME FROM מצביע ל-M02-c96)
+RESUME FROM: W02
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W01 DONE: שורת
+אייקוני ה-header נבנתה מחדש כ-Electro header-v8 בדיוק, שער parity 8.60 /
+9.02 / 4.16 PASS ב-380/768/1440; M01-c96 ו-L02..L10 הועברו לארכיון; RESUME FROM
+מצביע ל-W02, ואם אין W02 בתור, ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**M01-c96 - DONE (05.10.2026): שער ה-parity של `/` נמדד שוב ב-380/768/1440,
-8.58% / 9.01% / 4.16% PASS, כולם מתחת ל-11%, אפס שינוי קוד.** משימת
-התור: "Re-measure compare.mjs 380 768 1440 on / and record diffs in STATE.md".
-`pwd` אומת, HEAD בהגעה `ca42cce28`, עץ נקי. **איך נמדד:** `.next` במכונה הוא
-ה-build של L12 (`BUILD_ID` `i2ARrDJNCrYk74pP9hBuR`, `CARDCOM_USE_MOCK=true`),
-ואפס קומיטי קוד מאז (רק `ca42cce28`, docs). על 3311 ישב `next-server` בן
-10.5 שעות מאותו checkout (שריד L07), ועוד שניים על 4722/4824, לכן לא
-הופעל `pnpm start` על 3311 ולא נהרג אף תהליך זר; הופעל שרת חדש על 3396
-(`env -u` ל-64 שמות מוזרקים, `PORT=3396 CARDCOM_USE_MOCK=true pnpm start`),
-חומם פעמיים (200, 0.35s/0.32s), ואז `LOCAL_BASE=http://localhost:3396 node
-scripts/compare.mjs --page=home --width=W --baseline=refs/ke_live_W.png`
-בחזית, רוחב אחר רוחב, והשרת נסגר בסוף. **התוצאות (שלוש שורות חדשות
-ב-`docs/UI-PARITY-REPORT.md`, commit `ca42cce28`/`-dirty`):**
-380: 8.58% PASS (overall 14.11%, reference blank 2.79%, ours blank 2.75%);
-768: 9.01% PASS (overall 16.03%, reference blank 4.31%, ours blank 2.72%);
-1440: 4.16% PASS (overall 15.45%, reference blank 9.88%, ours blank 1.41%).
-**דלתא מול L07 (05.10, מול פרודקשן):** 7.91 -> 8.58 (+0.67), 8.98 -> 9.01
-(+0.03), 4.09 -> 4.16 (+0.07); הצד הנמדד שונה (build מקומי ולא פרודקשן),
-ההפרש בתוך רצועת הרעש של הסקריפט, הכיוון זהה בשלושת הרוחבים, אין רוחב
-שנע לעבר 11%. **דלתא מול Q31 (01.10, אותו reference קפוא):** 8.51 / 9.02 /
-3.95, כלומר +0.07 / -0.01 / +0.21. **החלטות שהתקבלו לבד:** (א) נמדד מול
-build מקומי לפי כלל CLAUDE.md ולא מול פרודקשן כמו L07, כי שתי המדידות
-קיימות ועכשיו יש זוג להשוואה; (ב) שרת זר על 3311 לא נהרג (תהליך של סשן
-אחר, אף שהוא באותו checkout); (ג) L12 הועבר לארכיון כדי להישאר מתחת
-ל-300 שורות. **שערים (64 שמות מוזרקים הוסרו):** `pnpm type-check` exit 0;
-`pnpm lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit 155
-ללא שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354), 60.3
-שניות; `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm
-build` exit 0, 337/337 עמודים, `BUILD_ID` `xzSjQlvLPXOeDdujd5jeC`, 92 שורות
-`supabase.rls_denied` על `reviews` (חוסם 3, 247, זהה ל-L12). קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+**W01 - DONE (05.10.2026): HEADER ICONS EXACT ELECTRO. שורת האייקונים היא
+`div.header-icons` של Electro header-v8 בדיוק, נמדדה מהדף החי; שער parity
+8.60% / 9.02% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
+`6d93cd038`, עץ נקי. W01 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`,
+לכן בוצע במלואו. **שלב 1, נמדד:** Playwright Chromium (אותו הקשר
+אנטי-אוטומציה של `scripts/capture-electro.mjs`) על
+`https://electro.madrasthemes.com/home-v7/` ב-1440, `getComputedStyle` על
+`.header-icons`, `.header-icon`, `.header-icon i`, `.header-icon-counter`,
+`.cart-items-total-price` וה-`dropdown-menu-user-account` פתוח, נכתב
+ל-`refs/electro-header-icons.json` (14.9KB, `git add -f` כי `refs/` ב-gitignore
+כמו ששת קבצי ה-json המחויבים שם). עיקר המספרים: אייקון 22.7031x40.4531,
+גליף `font-electro` 22.8469px על שורה 20.5622, רווח 37.996px, צבע
+rgb(51,62,72); מונה 20.9688 עגול, top 22.4688 / left 7, rgb(254,215,0),
+11.991px/700; תפריט חשבון 220px, border-top 2px צהוב, radius 0 0 7px 7px,
+צל 0 2px 5px rgba(0,0,0,.28), פנים 0 21px, 12px ממורכז, כפתור כניסה צהוב
+3px 6px radius 4px 600; מחיר העגלה 15.988px/700 נמדד ומסומן
+`rendered_here: false`. **שלב 2, חילוץ הגופן הצליח, אין fallback:**
+`font-electro.ttf` (17,120 bytes) הורד מהתבנית, `pip install --user
+fonttools` (4.60.2), `SVGPathPen` דרך `TransformPen` להיפוך y, שלושת
+הגליפים n/g/r (`ec-shopping-bag`/`ec-favorites`/`ec-user`) נכתבו
+ל-`src/components/icons/electro/{ShoppingBag,Favorites,User}.tsx` עם
+viewBox של bbox הגליף ביחידות הגופן (1024/em) וגודל ברירת מחדל של אותו
+bbox ב-22.8469px. **שלב 3, הבנייה מחדש:** `HeaderIcons.tsx` חדש הוא המקום
+היחיד שמרנדר את השורה, ושני ה-headers (handheld ב-`Header.tsx`, masthead
+ב-`MastheadNav.tsx`) טוענים אותו; סדר DOM מועדפים, חשבון, עגלה, כלומר
+ב-RTL העגלה בקצה השמאלי (נמדד מקומית ב-1440: עגלה x135, חשבון x195.7,
+מועדפים x256.3, רווח 38; ב-380: x15 / 57.7 / 100.4, רווח 20 לפי 42px pitch
+של האתר החי); המונה הצהוב על העגלה בלבד, מוצג גם ב-0 כמו Electro,
+`inset-inline-start: 7px` (מראה של `left: 7px`); **מחיר העגלה הוסר לגמרי**
+מ-`CartNavLink.tsx` (אין `shekels`, אין `cart.subtotal`, אין
+`total-price`); מונה המועדפים הוסר (ב-header-v8 יש מונה רק ל-compare
+ולעגלה); `AccountMenu.tsx` חדש פותח את התפריט בסגנון Electro (hover + click
++ מקלדת, Escape, לחיצה בחוץ) עם "לקוח חוזר?" / התחברות -> `/login`
+ו-"עדיין אין לך חשבון?" / הרשמה -> `/signup`, דרך הקטלוג (`nav.returningCustomer`,
+`nav.noAccountYet`, `nav.headerActions` נוספו ל-he/en); **בחר אזור עבר
+ל-TopBar ליד התחברות** עם `|` משלו ואותו שער `lg` שהיה לו, כך ש-380/768 לא
+משנים wrap; הצבעים והאורכים המדויקים ב-`src/styles/header-icons.css` (מיובא
+ב-`app.css`), ולא ב-tsx, בגלל שער ה-tokens. **החלטות שהתקבלו לבד:** (א)
+`header-icons.test.ts` נכתב מחדש: הכלל הישן "שני אייקונים בלבד ואפס אייקון
+חשבון" סתר את המשימה ישירות, הכלל החדש הוא השורה של Electro (3 פריטים
+בסדר הזה, אין מחיר, שני ה-headers טוענים רכיב אחד, בחר אזור רק ב-TopBar,
+`/login` רק ב-TopBar ו-AccountMenu); (ב) `TopBar.test.tsx` מצפה ל-4
+מפרידים במקום 3; (ג) תקרת ה-i18n ירדה 627 -> 626 כי aria-label מילולי של
+MastheadNav עבר לקטלוג; (ד) compare אינו פריט בשורת האייקונים כי אין פיצ'ר
+השוואה, ואייקון שפותח כלום גרוע מרווח; (ה) שטח המגע 44px נשמר דרך
+`::before` בלתי נראה כדי שהקופסה המצוירת תישאר 22.7. **מלכודת סביבה
+שנמדדה:** ה-shell מזריק 30 שמות `[SENSITIVE]` ועוד ~40 ערכים אמיתיים
+(`RESEND_API_KEY`, מפתחות Supabase זרים, `VERCEL_*`); ב-zsh `env $UNSET`
+לא מפצל מילים ולכן ביטול ההזרקה לא פעל בכלל בשני ניסיונות (build נפל על
+"Invalid API key", 7 בדיקות resend נפלו); `${=UNSET}` פתר הכל. **שערים:**
+`pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 626/626, tokens, rtl,
+docs-index 282 ללא שינוי); `pnpm test` 615/615 קבצים, 7347 עברו, 12 דולגו
+(7359); build exit 0, `BUILD_ID` `NnvkKulrgOeCdWsxUvtkm`, 92 שורות
+`supabase.rls_denied` על reviews (זהה ל-M01-c96). **השער, בחזית, שרת חדש על
+3396 (`env ${=UNSET} PORT=3396 CARDCOM_USE_MOCK=true pnpm start`, חומם
+פעמיים 200), `--baseline=refs/ke_live_W.png`, שלוש שורות חדשות
+ב-`docs/UI-PARITY-REPORT.md` (`6d93cd038-dirty`):** 380: 8.60% PASS (overall
+14.1%); 768: 9.02% PASS (overall 16.03%); 1440: 4.16% PASS (overall 15.46%).
+דלתא מול M01-c96: +0.02 / +0.01 / 0.00, בתוך רעש הסקריפט; השורה החדשה
+לא הזיזה אף רוחב. השרת על 3396 נסגר בסוף; השרת הזר על 3311 לא נגע.
+**לא נעשה:** אין מיגרציה, אין שינוי env/DNS/Vercel, אין deploy ידני
+(push לענף הוא פריסה אוטומטית לפי L02, וזה הכלל הקיים). קבצים:
+`refs/electro-header-icons.json`, `src/components/icons/electro/*`,
+`src/components/layout/{HeaderIcons,AccountMenu,MastheadNav,Header,TopBar,RegionMenu}.tsx`,
+`src/components/cart/{CartNavLink,HeaderCart}.tsx`,
+`src/components/wishlist/WishlistNavLink.tsx`, `src/styles/header-icons.css`,
+`src/app/app.css`, `messages/{he,en}.json`, `scripts/hebrew-literal-scan.mjs`,
+שתי בדיקות, `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
+**M01-c96 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W01): שער parity של `/` נמדד שוב מול build מקומי על 3396, 8.58 / 9.01 /
+4.16 PASS ב-380/768/1440, אפס שינוי קוד, ארבעת השערים ירוקים.
 
 **L12 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-M01-c96): שער 12 הכרעה; 7 DONE ו-4 BLOCKED (L06/L08/L09/L11, כולם env או
@@ -47,50 +89,6 @@ build` exit 0, 337/337 עמודים, `BUILD_ID` `xzSjQlvLPXOeDdujd5jeC`, 92 שו
 הם Sensitive ואינם נקראים, נוצרו ב-04.10 בערב על ידי סשן ענן "כדי לעבור את
 ה-preflight", אין אישור אמיתי או סנדבוקס במכונה, ולפרודקשן אפס תשלומים
 לא-mock מאז ומעולם; אפס שינוי קוד, אפס כתיבה לפרודקשן. אופיר בלבד.
-
-**L10 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L11): שער 10 מוקשי השקה; שתי עמודות ה-agorot קיימות כ-GENERATED ALWAYS,
-059 לא הוחלה, כל select של `finalize.ts` עבר על פרודקשן, אפס שינוי קוד.
-
-**L09 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L10): שער 9 cron נמדד מול פרודקשן; pg_cron מחזיק עבודה אחת שרצה ב-24
-השעות, 21 נתיבי `/api/cron` עונים 401 בלי bearer בשני ה-hosts, וה-200 עם סוד
-הפרודקשן אינו ניתן למדידה כי הערך ב-Vercel הוא Sensitive ולא נקרא, וגם סוד
-GitHub וגם הערך המקומי נדחים ב-401; יישור הסוד הוא env, אופיר בלבד.
-**L08 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L09): שער 8 observability נמדד מול פרודקשן; Sentry קיבל שגיאת לקוח
-ב-ingest (`c32d5f141b38426aac8c48adc20f17a8`) בלי טוקן API לאימות, PostHog
-אינרטי כי `NEXT_PUBLIC_POSTHOG_KEY` חסר ב-Production, Resend מחזיר 401
-"API key is invalid" משליחה אמיתית; שלושתם env ב-Vercel.
-
-**L07 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L08): שער 7 parity נמדד מול פרודקשן ב-380/768/1440, 7.91 / 8.98 / 4.09
-PASS; תיקון אחד ב-`scripts/compare.mjs` (הצד נגזר מהקורא, לא מה-hostname),
-אפס CSS, אפס redeploy.
-
-**L06 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L07): החלת מיגרציות על פרודקשן דורשת אישור מפורש; `schema_migrations`
-נקראה בלבד (162 שורות), 6 תואמים, 13 מספרים תפוסים בתוכן אחר, 39 ללא
-שורה; אפס החלה, אפס `db push`, אפס שינוי בפרודקשן; 165 אינה קיימת.
-
-**L05 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L06): שער 5 E2E על פרודקשן, 9 נתיבים + 10 מוצרים מהמפה + `/checkout`
-+ webhook, שני 404 (`/returns`, `/cookies`) תוקנו ב-`4c87dae64` כ-redirects
-קבועים, נפרסו אוטומטית ונמדדו שוב ירוק.
-
-
-**L04 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L05): ביקורת env של Vercel Production בקריאה בלבד, 42 שמות, אפס placeholder
-בין 10 הנקראים, ארבעה מועמדים לכפילות רשומים ב-`docs/BACKLOG.md` ולא הוסרו.
-
-**L03 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L04): `run-final.sh` ללא קריאות vercel, `--archive=tgz` בכל פקודת deploy
-מתועדת.
-
-**L02 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-L05): production branch של `kenyonexpress` הוסב ל-`audit/final-audit`
-(היה `phase5/homepage`, 327 push בלי פריסה), אומת ב-commit ריק `9e0df9ff9`
-שנפרס תוך 7 שניות; מרגע זה כל push לענף הוא פריסת פרודקשן אוטומטית.
 
 **M18-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-L02): STATE.md עמד על 216 שורות, M17-c95 הועבר לארכיון, מחזור c95
@@ -283,6 +281,8 @@ SHOWABLE: no, ראו "חוסמים
     גוזר את הצד מהקורא ולא מה-hostname; נמדד 7.91 / 8.98 / 4.09 PASS.
     **M01-c96 (05.10):** אותו reference, build מקומי של HEAD על 3396:
     8.58 / 9.01 / 4.16 PASS.
+    **W01 (05.10):** אחרי בניית שורת האייקונים מחדש, אותו reference ואותו
+    מסלול: 8.60 / 9.02 / 4.16 PASS.
 
 ## ידני לאופיר, לפי סדר קריטיות
 

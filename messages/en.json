@@ -22,7 +22,10 @@
       "cart": "Cart",
       "wallet": "Wallet",
       "account": "Account"
-    }
+    },
+    "headerActions": "Account and cart actions",
+    "returningCustomer": "Returning customer?",
+    "noAccountYet": "Don't have an account yet?"
   },
   "auth": {
     "login": "Login",

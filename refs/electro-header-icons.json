@@ -1,0 +1,568 @@
+{
+  "source": {
+    "url": "https://electro.madrasthemes.com/home-v7/",
+    "measuredAt": "2026-10-04T21:42:10.013Z",
+    "viewport": {
+      "w": 1440,
+      "h": 1000
+    },
+    "how": "Playwright Chromium, getComputedStyle + getBoundingClientRect after the Cloudflare challenge cleared; /tmp script, same anti-automation context as scripts/capture-electro.mjs",
+    "markup": "refs/electro-home-v7.html masthead header-v8 div.header-icons"
+  },
+  "masthead": {
+    "cls": "masthead row align-items-center",
+    "rect": {
+      "x": 120,
+      "y": 38.34,
+      "w": 1200,
+      "h": 75
+    },
+    "height": "75px"
+  },
+  "headerIcons": {
+    "cls": "header-icons col-auto d-flex justify-content-end align-items-center",
+    "rect": {
+      "x": 997.09,
+      "y": 55.61,
+      "w": 322.91,
+      "h": 40.45
+    },
+    "display": "flex",
+    "alignItems": "center",
+    "justifyContent": "flex-end",
+    "padding": "0px 15px",
+    "margin": "0px",
+    "gap": "normal",
+    "fontSize": "14px",
+    "lineHeight": "23.996px",
+    "color": "rgb(51, 62, 72)",
+    "height": "40.4531px"
+  },
+  "headerIcon": {
+    "wishlist": {
+      "cls": "header-icon",
+      "rect": {
+        "x": 1110.77,
+        "y": 55.61,
+        "w": 22.7,
+        "h": 40.45
+      },
+      "display": "block",
+      "position": "static",
+      "width": "22.7031px",
+      "height": "40.4531px",
+      "margin": "0px 0px 0px 37.996px",
+      "padding": "0px",
+      "lineHeight": "23.996px",
+      "fontSize": "14px",
+      "color": "rgb(51, 62, 72)"
+    },
+    "userAccount": {
+      "cls": "header-icon header-icon__user-account dropdown animate-dropdown",
+      "rect": {
+        "x": 1171.45,
+        "y": 55.61,
+        "w": 22.7,
+        "h": 40.45
+      },
+      "display": "block",
+      "position": "relative",
+      "width": "22.7031px",
+      "height": "40.4531px",
+      "margin": "0px 0px 0px 37.996px",
+      "padding": "0px",
+      "lineHeight": "23.996px",
+      "fontSize": "14px",
+      "color": "rgb(51, 62, 72)"
+    },
+    "cart": {
+      "cls": "header-icon header-icon__cart animate-dropdown dropdown",
+      "rect": {
+        "x": 1232.14,
+        "y": 55.61,
+        "w": 72.86,
+        "h": 40.45
+      },
+      "display": "block",
+      "position": "relative",
+      "width": "72.8594px",
+      "height": "40.4531px",
+      "margin": "0px 0px 0px 37.996px",
+      "padding": "0px",
+      "lineHeight": "23.996px",
+      "fontSize": "14px",
+      "color": "rgb(51, 62, 72)"
+    },
+    "note": "every .header-icon is display:block 22.7 x 40.45 with margin-left 37.996px in LTR, i.e. a 38px gap between icons; the cart box is 72.86 wide only because it also holds .cart-items-total-price, which this project does not render"
+  },
+  "headerIconAnchor": {
+    "wishlist": {
+      "rect": {
+        "x": 1110.77,
+        "y": 65.61,
+        "w": 22.7,
+        "h": 19
+      },
+      "display": "inline",
+      "color": "rgb(51, 62, 72)",
+      "lineHeight": "40.4496px",
+      "padding": "0px"
+    },
+    "cart": {
+      "rect": {
+        "x": 1232.14,
+        "y": 55.61,
+        "w": 72.86,
+        "h": 40.45
+      },
+      "display": "block",
+      "color": "rgb(51, 62, 72)",
+      "lineHeight": "40.4496px",
+      "padding": "0px"
+    }
+  },
+  "headerIconI": {
+    "compare": {
+      "rect": {
+        "x": 1050.08,
+        "y": 65.97,
+        "w": 22.7,
+        "h": 20.56
+      },
+      "fontSize": "22.8469px",
+      "lineHeight": "20.5622px",
+      "color": "rgb(51, 62, 72)",
+      "display": "inline-block",
+      "verticalAlign": "middle",
+      "before": {
+        "content": "\"d\"",
+        "fontFamily": "font-electro",
+        "fontSize": "22.8469px"
+      }
+    },
+    "wishlist": {
+      "rect": {
+        "x": 1110.77,
+        "y": 65.97,
+        "w": 22.7,
+        "h": 20.56
+      },
+      "fontSize": "22.8469px",
+      "lineHeight": "20.5622px",
+      "color": "rgb(51, 62, 72)",
+      "display": "inline-block",
+      "verticalAlign": "middle",
+      "before": {
+        "content": "\"g\"",
+        "fontFamily": "font-electro",
+        "fontSize": "22.8469px"
+      }
+    },
+    "userAccount": {
+      "rect": {
+        "x": 1171.45,
+        "y": 65.97,
+        "w": 22.7,
+        "h": 20.56
+      },
+      "fontSize": "22.8469px",
+      "lineHeight": "20.5622px",
+      "color": "rgb(51, 62, 72)",
+      "display": "inline-block",
+      "verticalAlign": "middle",
+      "before": {
+        "content": "\"r\"",
+        "fontFamily": "font-electro",
+        "fontSize": "22.8469px"
+      }
+    },
+    "cart": {
+      "rect": {
+        "x": 1232.14,
+        "y": 65.97,
+        "w": 22.7,
+        "h": 20.56
+      },
+      "fontSize": "22.8469px",
+      "lineHeight": "20.5622px",
+      "color": "rgb(51, 62, 72)",
+      "display": "inline-block",
+      "verticalAlign": "middle",
+      "before": {
+        "content": "\"n\"",
+        "fontFamily": "font-electro",
+        "fontSize": "22.8469px"
+      }
+    }
+  },
+  "headerIconCounter": {
+    "cart": {
+      "cls": "cart-items-count count header-icon-counter",
+      "rect": {
+        "x": 1239.14,
+        "y": 78.08,
+        "w": 20.97,
+        "h": 20.98
+      },
+      "position": "absolute",
+      "width": "20.9688px",
+      "height": "20.9844px",
+      "top": "22.4688px",
+      "right": "44.8906px",
+      "left": "7px",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "color": "rgb(51, 62, 72)",
+      "fontSize": "11.991px",
+      "fontWeight": "700",
+      "lineHeight": "20.9843px",
+      "borderRadius": "50%",
+      "textAlign": "center",
+      "padding": "0px",
+      "margin": "0px",
+      "text": "0"
+    },
+    "compare": {
+      "rect": {
+        "x": 1057.08,
+        "y": 78.08,
+        "w": 20.97,
+        "h": 20.98
+      },
+      "top": "22.4688px",
+      "right": "-5.26562px",
+      "left": "7px"
+    },
+    "offsetsRelativeToHeaderIcon": {
+      "top": 22.47,
+      "left_ltr": 7.0,
+      "note": "CSS resolves to top 22.4688px and left 7px of the .header-icon box in LTR; mirrored here as inset-inline-start 7px"
+    },
+    "wishlist": null,
+    "note": "only compare and cart carry a counter in header-v8; the wishlist icon has none, and the counter shows 0 rather than hiding"
+  },
+  "cartItemsTotalPrice": {
+    "rect": {
+      "x": 1258.5,
+      "y": 65.61,
+      "w": 46.5,
+      "h": 19
+    },
+    "fontSize": "15.988px",
+    "fontWeight": "700",
+    "color": "rgb(51, 62, 72)",
+    "display": "inline",
+    "text": "$0.00",
+    "rendered_here": false,
+    "note": "measured for the record and deliberately never rendered (W01)"
+  },
+  "userAccountDropdown": {
+    "menu": {
+      "cls": "dropdown-menu dropdown-menu-user-account",
+      "text": "Returning Customer ?\n                            Sign in\n   ",
+      "rect": {
+        "x": 1024.16,
+        "y": 86.06,
+        "w": 220,
+        "h": 146.69
+      },
+      "position": "absolute",
+      "width": "220px",
+      "top": "40.4531px",
+      "left": "-147.297px",
+      "right": "-50px",
+      "padding": "8px 0px",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "borderTop": "2px solid rgb(254, 215, 0)",
+      "border": "",
+      "boxShadow": "rgba(0, 0, 0, 0.28) 0px 2px 4.992px 0px",
+      "borderRadius": "0px 0px 7px 7px",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "23.996px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "left",
+      "display": "block"
+    },
+    "inner": {
+      "cls": "register-sign-in-dropdown-inner",
+      "text": "Returning Customer ?\n                            Sign in\n   ",
+      "rect": {
+        "x": 1024.16,
+        "y": 96.06,
+        "w": 220,
+        "h": 128.69
+      },
+      "position": "static",
+      "width": "220px",
+      "top": "auto",
+      "left": "auto",
+      "right": "auto",
+      "padding": "0px 21px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px none rgb(51, 62, 72)",
+      "border": "0px none rgb(51, 62, 72)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20.568px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "center",
+      "display": "block"
+    },
+    "signIn": {
+      "cls": "sign-in",
+      "text": "Returning Customer ?\n                            Sign in",
+      "rect": {
+        "x": 1045.16,
+        "y": 96.06,
+        "w": 178,
+        "h": 66.56
+      },
+      "position": "static",
+      "width": "178px",
+      "top": "auto",
+      "left": "auto",
+      "right": "auto",
+      "padding": "0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px none rgb(51, 62, 72)",
+      "border": "0px none rgb(51, 62, 72)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20.568px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "center",
+      "display": "block"
+    },
+    "signInP": {
+      "cls": "",
+      "text": "Returning Customer ?",
+      "rect": {
+        "x": 1045.16,
+        "y": 96.06,
+        "w": 178,
+        "h": 20.56
+      },
+      "position": "static",
+      "width": "178px",
+      "top": "auto",
+      "left": "auto",
+      "right": "auto",
+      "padding": "0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px none rgb(51, 62, 72)",
+      "border": "0px none rgb(51, 62, 72)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20.568px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "center",
+      "display": "block"
+    },
+    "signInBtn": {
+      "cls": "sign-in-button",
+      "text": "Sign in",
+      "rect": {
+        "x": 1107.98,
+        "y": 126.63,
+        "w": 52.33,
+        "h": 26
+      },
+      "position": "static",
+      "width": "52.3281px",
+      "top": "auto",
+      "left": "auto",
+      "right": "auto",
+      "padding": "3px 6px",
+      "backgroundColor": "rgb(254, 215, 0)",
+      "borderTop": "1px solid rgb(254, 215, 0)",
+      "border": "1px solid rgb(254, 215, 0)",
+      "boxShadow": "none",
+      "borderRadius": "4px",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "lineHeight": "18px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "center",
+      "display": "inline-block"
+    },
+    "register": {
+      "cls": "register",
+      "text": "Don't have an account ?\n                            Register",
+      "rect": {
+        "x": 1045.16,
+        "y": 162.63,
+        "w": 178,
+        "h": 62.13
+      },
+      "position": "static",
+      "width": "178px",
+      "top": "auto",
+      "left": "auto",
+      "right": "auto",
+      "padding": "10px 0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTop": "1px solid rgb(235, 235, 235)",
+      "border": "",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20.568px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "center",
+      "display": "block"
+    },
+    "registerP": {
+      "cls": "",
+      "text": "Don't have an account ?",
+      "rect": {
+        "x": 1045.16,
+        "y": 173.63,
+        "w": 178,
+        "h": 20.56
+      },
+      "position": "static",
+      "width": "178px",
+      "top": "auto",
+      "left": "auto",
+      "right": "auto",
+      "padding": "0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px none rgb(51, 62, 72)",
+      "border": "0px none rgb(51, 62, 72)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20.568px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "center",
+      "display": "block"
+    },
+    "registerA": {
+      "cls": "",
+      "text": "Register",
+      "rect": {
+        "x": 1111.47,
+        "y": 196.19,
+        "w": 45.36,
+        "h": 15
+      },
+      "position": "static",
+      "width": "auto",
+      "top": "auto",
+      "left": "auto",
+      "right": "auto",
+      "padding": "0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTop": "0px none rgb(51, 62, 72)",
+      "border": "0px none rgb(51, 62, 72)",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "20.568px",
+      "color": "rgb(51, 62, 72)",
+      "textAlign": "center",
+      "display": "inline"
+    }
+  },
+  "iconFont": {
+    "faces": [
+      {
+        "family": "font-electro",
+        "src": "url(\"../fonts/font-electro.woff\") format(\"woff\"), url(\"../fonts/font-electro.ttf\") format(\"truetype\")",
+        "href": "https://electro.madrasthemes.com/wp-content/themes/electro/assets/css/font-electro.css?ver=3.6.4"
+      }
+    ],
+    "glyphs": {
+      "ec-shopping-bag": {
+        "content": "\"n\"",
+        "fontFamily": "font-electro"
+      },
+      "ec-favorites": {
+        "content": "\"g\"",
+        "fontFamily": "font-electro"
+      },
+      "ec-user": {
+        "content": "\"r\"",
+        "fontFamily": "font-electro"
+      },
+      "ec-compare": {
+        "content": "\"d\"",
+        "fontFamily": "font-electro"
+      }
+    },
+    "files": {
+      "woff": "https://electro.madrasthemes.com/wp-content/themes/electro/assets/fonts/font-electro.woff",
+      "ttf": "https://electro.madrasthemes.com/wp-content/themes/electro/assets/fonts/font-electro.ttf",
+      "ttfBytes": 17120
+    },
+    "unitsPerEm": 1024,
+    "ascent": 960,
+    "descent": -64,
+    "pxPerUnitAt22_8469px": 0.022311,
+    "extracted": {
+      "ShoppingBag": {
+        "char": "n",
+        "advance": 1024,
+        "bboxFontUnits": [
+          128,
+          62,
+          870,
+          942
+        ],
+        "viewBox": "128 -942 742 880",
+        "pxSize": [
+          16.56,
+          19.63
+        ]
+      },
+      "Favorites": {
+        "char": "g",
+        "advance": 1024,
+        "bboxFontUnits": [
+          68,
+          98,
+          963.52,
+          906.390243902439
+        ],
+        "viewBox": "68 -906.39 895.52 808.39",
+        "pxSize": [
+          19.98,
+          18.04
+        ]
+      },
+      "User": {
+        "char": "r",
+        "advance": 1024,
+        "bboxFontUnits": [
+          158,
+          138,
+          876,
+          922
+        ],
+        "viewBox": "158 -922 718 784",
+        "pxSize": [
+          16.02,
+          17.49
+        ]
+      }
+    },
+    "extractedWith": "python3 fontTools 4.60.2, SVGPathPen through a y-flip TransformPen; path data lives in src/components/icons/electro/*.tsx"
+  },
+  "rtlMirror": {
+    "domOrder": [
+      "wishlist",
+      "userAccount",
+      "cart"
+    ],
+    "note": "Electro LTR order compare, wishlist, user, cart with cart at the far right; in this RTL header the first DOM child renders rightmost, so wishlist, user, cart puts the cart on the far left, and left:7px / right:-50px become inset-inline-start / inset-inline-end"
+  }
+}

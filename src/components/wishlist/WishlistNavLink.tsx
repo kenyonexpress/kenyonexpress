@@ -1,55 +1,31 @@
 'use client'
 
+import Favorites from '@/components/icons/electro/Favorites'
 import { useWishlist } from '@/components/wishlist/WishlistProvider'
-import { Heart } from 'lucide-react'
+import { t } from '@/lib/i18n/messages'
 import Link from 'next/link'
-import type { CSSProperties } from 'react'
 
 /**
- * The masthead heart, with the counter live's YITH header shows beside it.
+ * The header's wishlist icon: Electro header-v8's `.header-icon` with
+ * `ec-favorites`, in the 22.7 x 40.45 box src/styles/header-icons.css draws.
  *
- * Both call sites (`MastheadNav` at xl and up, `Header` below it) pass their
- * own measured icon geometry rather than sharing a constant, because they are
- * two different measurements off the live site and collapsing them would make
- * one of them wrong.
- *
- * THE BADGE IS ABSENT AT ZERO, not rendered empty, and that is the only state a
- * first-time visitor ever sees. It is also `aria-hidden`: the count is already
- * in the link's accessible name, and a screen reader reading "מועדפים 3 3" is
- * how a decorative duplicate sounds. Same shape as `CartNavLink`.
+ * NO COUNTER. Electro's header-v8 puts a counter on compare and on the cart and
+ * not on the wishlist, and the row is held to Electro exactly (W01). The count
+ * is still announced: it is in the link's accessible name, where a screen
+ * reader gets it without a decorative duplicate.
  */
-export default function WishlistNavLink({
-  size,
-  strokeWidth,
-  className = '',
-  style,
-}: {
-  size: number
-  strokeWidth: number
-  className?: string
-  style?: CSSProperties
-}) {
+export default function WishlistNavLink() {
   const wishlist = useWishlist()
   const count = wishlist?.count ?? 0
+  const label = count > 0 ? `${t('account.wishlist')}, ${count}` : t('account.wishlist')
 
   return (
-    <Link
-      href="/account/wishlist"
-      aria-label={count > 0 ? `מועדפים, ${count} מוצרים` : 'מועדפים'}
-      className={className}
-      style={style}
-    >
-      <span className="relative">
-        <Heart size={size} strokeWidth={strokeWidth} aria-hidden="true" />
-        {count > 0 && (
-          <span
-            className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"
-            aria-hidden="true"
-          >
-            {count > 99 ? '99+' : count}
-          </span>
-        )}
-      </span>
-    </Link>
+    <div className="header-icon header-icon--wishlist">
+      <Link href="/account/wishlist" aria-label={label} className="header-icon__trigger">
+        <span className="header-icon__glyph">
+          <Favorites />
+        </span>
+      </Link>
+    </div>
   )
 }
