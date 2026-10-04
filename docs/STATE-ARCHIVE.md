@@ -2,6 +2,52 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c94 (הועבר מ-STATE.md ב-M12-c94, לשמירה על תקרת 300 שורות)
+
+**M09-c94 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
+dead exports", זהה במהות ל-M09-c93. `pwd` אומת, עץ נקי, HEAD `786a42c43`
+(M08-c94). `git diff --stat e7a3af744 HEAD -- src public next.config.*
+package.json packages` ריק (אפס שינוי קוד מאז M09-c93) — אין דריפט
+לתקן. `pnpm dlx knip --no-config-hints` (ephemeral, אין `knip.json`):
+**201 unused files / 5 unused dependencies / 1 unlisted binary / 271
+unused exports / 197 unused exported types / 4 duplicate exports**,
+זהה בדיוק ל-M09-c93. חמש התלויות
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) והבינארי (`supabase`) הם
+הרעש הידוע החוזר מאז M09-c66. **החלטה שהתקבלה לבד:** לא הוסר דבר, כמו
+בכל הסבבים הקודמים: אפס מועמד חדש, וכל הקיימים הם הכרעת מפעיל, לא תקלה
+שנמדדת. שערים: `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי
+סקריפט) נקי; `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**,
+זהה ביט ל-M09-c93; פורט 3311 תפוס על ידי סשן מקביל אחר באותו ריפו
+(`lsof`/cwd אישר, לא לנגיעה), נבחר פורט חלופי 4726 (פנוי), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4726
+pnpm build` exit 0 (`.next/BUILD_ID` נוצר). לא פריט חזותי, `compare.mjs`
+לא נדרש. אפס שינוי קוד. M04-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M08-c94 (הועבר מ-STATE.md ב-M12-c94, לשמירה על תקרת 300 שורות)
+
+**M08-c94 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores", זהה במהות ל-M08-c93. `pwd` אומת, עץ
+נקי, HEAD `f9e806b3f` (M07-c94). `git diff 08562c9bf HEAD -- src public
+next.config.* package.json packages scripts/lighthouse-smoke.mjs` ריק
+(אפס שינוי קוד מאז M08-c93) — אין דריפט לתקן. פורט 3311 תפוס על ידי
+`next-server` של סשן מקביל אחר (`lsof` אישר שה-`cwd` של המאזין הוא
+הריפו הזה, לא לנגיעה), נבחר פורט חלופי 4725 (פנוי, אומת מראש). `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4725
+pnpm build` exit 0. `PORT=4725 pnpm start`, `cwd` של המאזין אומת מול
+הריפו הזה (`lsof`). `/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל
+הסבבים) החזירו `200`. `LOCAL_BASE=http://localhost:4725 node
+scripts/lighthouse-smoke.mjs --throttling-method=provided` (ו-`--url=`
+למוצר), שתיהן בחזית: `/` = **100/100/100**, `/product/צימר-מאסטר` =
+**100/100/100** (perf/a11y/seo), אפס דריפט מ-M08-c93. שרת נסגר ב-`INT`,
+פורט 4725 אומת פנוי. שערים: `type-check` נקי; `lint` (biome + 12 שערי
+סקריפט) נקי; `test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, זהה ביט ל-M08-c93; `build` למעלה exit 0. לא פריט חזותי,
+`compare.mjs` לא נדרש (תקדים מ-M08-c80 ואילך). אפס שינוי קוד. M02-c94
+הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M07-c94 (הועבר מ-STATE.md ב-M10-c94, לשמירה על תקרת 300 שורות)
 
 **M07-c94 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
