@@ -2,6 +2,20 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c88 (הועבר מ-STATE.md ב-M01-c89, לשמירה על תקרת 300 שורות)
+
+**M18-c88 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c66..M18-c82.
+נמדד בתחילת הפריט: 297 שורות, מתחת לתקרה אבל צמוד לה. בוצע ציקלוס
+הארכוב: ההרחבה המלאה של M17-c88 (אימות RTL חוזר) הועברה לראש
+`docs/STATE-ARCHIVE.md`, ושורת הכיווץ הורחבה ל-"M17-c88..M13-c88".
+DEPLOY-UNBLOCK נשאר כאן במלואו, כי הוא חוסם פתוח. שום שורה לא נמחקה
+מהארכיון. נתיב שגוי בטקסט המאורכב (`page.tsx` בשורש `src/app`, שלא קיים)
+תוקן ל-`src/app/(store)/page.tsx` כדי ש-`docs-path-audit` יעבור. לא פריט `compare.mjs`: עריכת תיעוד בלבד, אפס שינוי UI וקוד.
+שערים בחזית: `type-check` exit 0, `lint` exit 0 (אחרי תיקון הנתיב),
+`test` 614/614 (7337/7349), `rm -rf .next && pnpm build` exit 0.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M17-c88 (הועבר מ-STATE.md ב-M18-c88, לשמירה על תקרת 300 שורות)
 
 **M17-c88 - אימות חוזר, DONE (04.10.2026).** הפריט סומן DONE כבר

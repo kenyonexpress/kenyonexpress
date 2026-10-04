@@ -1,19 +1,26 @@
-RESUME FROM: M01-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M18-c88 DONE: STATE.md קוצץ, M17-c88 אורכב)
+RESUME FROM: M02-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M01-c89 DONE: שער חזותי בית נמדד מחדש 380/768/1440, 8.58/9.01/4.16 PASS אחרי FAIL קר אחד ב-768)
 
 ## המשך מ:
 
-**M18-c88 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c66..M18-c82.
-נמדד בתחילת הפריט: 297 שורות, מתחת לתקרה אבל צמוד לה. בוצע ציקלוס
-הארכוב: ההרחבה המלאה של M17-c88 (אימות RTL חוזר) הועברה לראש
-`docs/STATE-ARCHIVE.md`, ושורת הכיווץ הורחבה ל-"M17-c88..M13-c88".
-DEPLOY-UNBLOCK נשאר כאן במלואו, כי הוא חוסם פתוח. שום שורה לא נמחקה
-מהארכיון. נתיב שגוי בטקסט המאורכב (`page.tsx` בשורש `src/app`, שלא קיים)
-תוקן ל-`src/app/(store)/page.tsx` כדי ש-`docs-path-audit` יעבור. לא פריט `compare.mjs`: עריכת תיעוד בלבד, אפס שינוי UI וקוד.
-שערים בחזית: `type-check` exit 0, `lint` exit 0 (אחרי תיקון הנתיב),
-`test` 614/614 (7337/7349), `rm -rf .next && pnpm build` exit 0.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M01-c89 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c83. על פורט
+3311 נמצא `next-server` שנשאר מ-03.10 (PID 5152), שהגיש build ישן מ-`.next`
+הנוכחי (שנבנה מחדש ב-04.10 10:50). נעצר ב-INT לפני המדידה. `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`
+exit 0, `PORT=3311 pnpm start`, ו-`/` החזיר `200`. השער רץ בחזית עם
+`--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`.
+**ריצה ראשונה: `380 8.58% PASS`, `768 14.11% FAIL`, `1440 4.16% PASS`**
+(exit 6, overall ב-768 21.55%). **אפס שינוי ב-`src`/`public`/`next.config`
+מאז `af40761a3`**, ולכן הקוד לא יכול להסביר את זה. ריצה חוזרת ב-768 לבד נתנה
+9.01%, וריצה מלאה שנייה של השלושה: **`380 8.58% PASS`, `768 9.01% PASS`,
+`1440 4.16% PASS`, exit 0, זהה בביט ל-M01-c83.** **ההחלטה שהתקבלה לבד:**
+ה-FAIL הוא ריצה ראשונה מול שרת קר (תמונות שעוד לא נטענו מה-optimizer), לא
+דריפט, והתוצאה שנרשמת היא הריצה המלאה השנייה. **שורת ה-FAIL נשארת
+ב-`docs/UI-PARITY-REPORT.md`** יחד עם שש השורות האחרות שהשער כתב, ושום
+שורה לא נמחקה. אם ריצה ראשונה ב-768 תיכשל שוב בסבב הבא, זה כבר דפוס ולא
+רעש, וצריך לבדוק אותו. שערים: `type-check` 0, `lint` 0, `test` 614/614
+(7337/7349), `build` 0. אפס שינוי קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
@@ -43,15 +50,13 @@ HEAD**, לא מ-`a388118f1`. מישהו פרס את `main` הישן לפרודק
 שערים על HEAD: `type-check` נקי, `lint` נקי, `test` 614/614 (7337/7349),
 `rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M17-c88..M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, ארבעת
-הראשים כווצו לשורה הזו ב-M17-c88, M17-c88 עצמו ב-M18-c88).** RTL על / ו-/product (M17-c88), JSON-LD Product+BreadcrumbList
+**M18-c88..M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, ארבעת
+הראשים כווצו לשורה הזו ב-M17-c88, M17-c88 עצמו ב-M18-c88, M18-c88 ב-M01-c89).** קיצוץ STATE.md (M18-c88), RTL על / ו-/product (M17-c88), JSON-LD Product+BreadcrumbList
 (M16-c88), קונסול אפס שגיאות ב-/ וב-/product (M15-c88), Sentry release
 vs HEAD מול Vercel (M14-c88, אותו חוסם, סעיף 17 ב-`docs/BACKLOG.md`),
 ו-`/api/health`/`/api/ready` מול פרודקשן (M13-c88) — כולם נבדקו מחדש,
-אפס דריפט בארבעתם. גם M12-c88 (robots.txt) ו-M11-c88 (sitemap.xml), אפס דריפט.
-
-**M05-c83 ו-M04-c83 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
-הזו ב-M17-c88 אימות חוזר).** שער test 614/614 ושער type-check exit 0, אפס דריפט.
+אפס דריפט בארבעתם. גם M12-c88 (robots.txt) ו-M11-c88 (sitemap.xml), אפס דריפט,
+וגם M05-c83/M04-c83 (test 614/614, type-check 0, כווצו לכאן ב-M01-c89).
 
 **M01-c83..M01-c73 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, שני טווחים
 כווצו לשורה הזו ב-M05-c83 וב-M03-c82 לשמירה על תקרת 300 שורות; שום
