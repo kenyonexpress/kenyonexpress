@@ -1,24 +1,15 @@
-RESUME FROM: M18-c90
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M17-c90 DONE: RTL על / ועל שלושה מוצרים ב-380/768/1440, אפס LTR leak)
+RESUME FROM: M01-c91
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M18-c90 DONE: STATE.md קוצץ, M17-c90 הועבר לארכיון)
 
 ## המשך מ:
 
-**M17-c90 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks", זהה ל-M17-c89. קוד: `git diff 58c089fa8
-HEAD -- src apps packages` ריק, כלומר תיקון ה-meta row של M17-c89 הוא
-עדיין השינוי האחרון בקוד. בזמן ריצה: `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4981 pnpm build`
-exit 0, `pnpm start` על 4981 (cwd המאזין אומת ב-`lsof`). בדיקת Playwright
-על `/` ושלושה סלאגים אקראיים מתוך 44 (`ארוחת-בוקר-זוגית-בקפה-קפה`,
-`חבילת-קוקטיילים`, `חבילת-גלידה`) ב-380/768/1440, 12 טעינות, כולן 200:
-`<html lang="he" dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה
-לרוחב בכולן (אפס גלילה צידית), ו**אפס אלמנט גלוי עם `direction: ltr`
-מחושב שמחזיק טקסט עברי ישיר**. ה-`dir="ltr"` היחידים הם שדה האימייל
-בניוזלטר (מכוון, `input-dir-gate`) וקישור `tel:` של הספק, כמו ב-M17-c89.
-**אפס leak, אפס דריפט, אפס שינוי קוד**, ולכן `compare.mjs` לא נדרש
-(אין שינוי UI). השרת נעצר (INT), הפורט פנוי. שערים: `type-check` 0,
-`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. M16-c90
-הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M18-c90 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c89. בתחילת הפריט
+`STATE.md` היה 196 שורות, כלומר כבר מתחת לתקרה. לפי דפוס M18-c89 הועבר
+ראש M17-c90 ל-`docs/STATE-ARCHIVE.md` (שום שורה לא נמחקה, רק הוזזה);
+נשארו רק שורת ה-resume, טבלת התור, חוסמים פתוחים וידני לאופיר. אין שינוי
+קוד ואין שינוי UI, ולכן `compare.mjs` לא נדרש. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

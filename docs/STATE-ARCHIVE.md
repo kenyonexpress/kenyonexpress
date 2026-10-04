@@ -44053,3 +44053,22 @@ CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4980 pnpm build`
 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. לא חזותי,
 `compare.mjs` לא נדרש. M15-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
 `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M17-c90 (הועבר מ-STATE.md ב-M18-c90, לשמירה על תקרת 300 שורות)
+
+**M17-c90 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", זהה ל-M17-c89. קוד: `git diff 58c089fa8
+HEAD -- src apps packages` ריק, כלומר תיקון ה-meta row של M17-c89 הוא
+עדיין השינוי האחרון בקוד. בזמן ריצה: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4981 pnpm build`
+exit 0, `pnpm start` על 4981 (cwd המאזין אומת ב-`lsof`). בדיקת Playwright
+על `/` ושלושה סלאגים אקראיים מתוך 44 (`ארוחת-בוקר-זוגית-בקפה-קפה`,
+`חבילת-קוקטיילים`, `חבילת-גלידה`) ב-380/768/1440, 12 טעינות, כולן 200:
+`<html lang="he" dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה
+לרוחב בכולן (אפס גלילה צידית), ו**אפס אלמנט גלוי עם `direction: ltr`
+מחושב שמחזיק טקסט עברי ישיר**. ה-`dir="ltr"` היחידים הם שדה האימייל
+בניוזלטר (מכוון, `input-dir-gate`) וקישור `tel:` של הספק, כמו ב-M17-c89.
+**אפס leak, אפס דריפט, אפס שינוי קוד**, ולכן `compare.mjs` לא נדרש
+(אין שינוי UI). השרת נעצר (INT), הפורט פנוי. שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. M16-c90
+הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
