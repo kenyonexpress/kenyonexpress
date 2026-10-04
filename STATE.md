@@ -1,7 +1,38 @@
-RESUME FROM: M01-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c93 DONE: STATE.md תוחם מחדש מתחת ל-300 שורות, M17-c93 בארכיון)
+RESUME FROM: M02-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c94 DONE: פריטי home נמדדו שוב ב-380/768/1440, אפס דריפט על הנתון היציב, תנודתיות חד-פעמית ב-768 תועדה)
 
 ## המשך מ:
+
+**M01-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c93. `pwd`
+אומת, עץ נקי, HEAD `bc7875794` (M18-c93). `git diff c764c40b7 HEAD --
+src public next.config.* package.json scripts/compare.mjs` ריק (אפס
+שינוי קוד או בשער מאז M01-c93). פורט 3311 תפוס על ידי `next-server`
+מריצה מקבילה אחרת (אותו `cwd`, לא לנגיעה, סשן אחר), ולכן נבחר פורט
+חלופי 4720 (`lsof` אישר פנוי מראש, ואומת שוב שה-`cwd` של המאזין על 4720
+הוא הריפו הזה). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4720 pnpm build` exit 0, `PORT=4720
+pnpm start`, `/` החזיר `200`. השער רץ בחזית פר-רוחב עם
+`--baseline='refs/ke_live_{width}.png'` (חוסם #14 למעלה: הדומיין החי
+מצביע כבר לפריסה שלנו, אז reference קפוא הוא חובה, לא live navigation).
+**380: `8.58%` PASS. 1440: `4.16%` PASS. 768: תנודתי בין ריצות על אותו
+build וקומיט** — ריצה ראשונה (12:50) `14.08%` **FAIL**, שלוש ריצות
+חזרה אחריה (12:53, 12:55, 12:57) כולן `9.01%` PASS. הנתון היציב (`9.01%`)
+זהה בדיוק לרשום ב-M01-c93, כלומר אפס דריפט קוד. ה-`FAIL` החד-פעמי לא
+חזר בשלוש ריצות רצופות אחריו ונראה כרעש תזמון טעינת תמונות עצלה בדף
+הבית ב-768 (מתועד כתופעה ידועה בהערת `compare.mjs` על "768: 3 such
+images" מול 380/1440 שאין בהן התנהגות הזו), לא כרגרסיה: קוד, `scripts/
+compare.mjs` ו-`next.config.*` אומתו בלתי-משתנים לפני המדידה.
+**ממצא חדש לתיעוד, לא לתיקון מצד הסוכן:** השער ב-768 על דף הבית אינו
+דטרמיניסטי לחלוטין בין ריצות עוקבות על אותו build (עד 5 נקודות אחוז
+הפרש); אם ה-`FAIL` יחזור ברצף בפעם הבאה, ראו הערה זו לפני שמניחים
+רגרסיית קוד. כל שבע הריצות (380 פעמיים, 1440 פעם, 768 ארבע פעמים)
+נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` (12:46–12:57, commit
+`bc7875794`/`bc7875794-dirty`). שרת נסגר ב-`INT`, פורט 4720 אומת פנוי.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`build` exit 0 (למעלה). M13-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
 **M18-c93 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
 lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c92. `pwd` אומת,
@@ -76,30 +107,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:4812 pnpm build` exit 0. לא פריט
 חזותי, `compare.mjs` לא נדרש. M07-c93 הועבר ל-`docs/STATE-ARCHIVE.md`
 לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M13-c93 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps", זהה ל-M13-c92. `pwd` אומת, עץ נקי,
-HEAD `0ca3d4bd5` (M12-c93). קוד: הקומיט האחרון על `src/app/api/health`
-ו-`src/app/api/ready` עדיין `64728ff8d` (02.09), אפס שינוי. חי, בשני
-ה-hosts (`www.kenyonexpress.co.il` ו-`kenyonexpress-huplmarwo-...vercel.app`):
-`/api/health` `200` `application/json`
-`{"ok":true,"database":"ok","latency_ms":128}` (ו-97), תלות DB אמיתית.
-`/api/ready` `503`
-`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
-זהה ל-M13-c92: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
-חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. "200 על ready" לא
-מתקיים, והסיבה חיצונית ומתועדת, לא באג קוד. אפס דריפט מ-M13-c92.
-**החלטה שהתקבלה לבד:** DONE כאימות, לא BLOCKED, כמו M13-c89..c92; לא
-נפתח חוסם כפול. שערים: `type-check` 0, `lint` 0, `test` 615/615
-(7340/7352, 12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4531 pnpm build` exit 0 (פורט 3311
-תפוס מריצה קודמת של הריפו הזה, לכן נבחר פורט 4531 פנוי), ה-manifest מראה
-`/api/health` ו-`/api/ready` כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש.
-אפס שינוי קוד. קובץ: `STATE.md`.
-
-M17-c93, M12-c93, M11-c93, M10-c93, M09-c93, M07-c93, M06-c93, M05-c93,
-M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93,
-M06/M05 ב-M12-c93, M09/M07 ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12
-ב-M17-c93, M17 ב-M18-c93), לשמירה על תקרת 300 שורות.
+M17-c93, M13-c93, M12-c93, M11-c93, M10-c93, M09-c93, M07-c93, M06-c93,
+M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md` (M04/M03
+ב-M11-c93, M06/M05 ב-M12-c93, M09/M07 ב-M14-c93, M10 ב-M15-c93, M11
+ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93, M13 ב-M01-c94), לשמירה על
+תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

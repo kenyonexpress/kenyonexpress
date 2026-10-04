@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c93 (הועבר מ-STATE.md ב-M01-c94, לשמירה על תקרת 300 שורות)
+
+**M13-c93 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps", זהה ל-M13-c92. `pwd` אומת, עץ נקי,
+HEAD `0ca3d4bd5` (M12-c93). קוד: הקומיט האחרון על `src/app/api/health`
+ו-`src/app/api/ready` עדיין `64728ff8d` (02.09), אפס שינוי. חי, בשני
+ה-hosts (`www.kenyonexpress.co.il` ו-`kenyonexpress-huplmarwo-...vercel.app`):
+`/api/health` `200` `application/json`
+`{"ok":true,"database":"ok","latency_ms":128}` (ו-97), תלות DB אמיתית.
+`/api/ready` `503`
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
+זהה ל-M13-c92: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
+חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. "200 על ready" לא
+מתקיים, והסיבה חיצונית ומתועדת, לא באג קוד. אפס דריפט מ-M13-c92.
+**החלטה שהתקבלה לבד:** DONE כאימות, לא BLOCKED, כמו M13-c89..c92; לא
+נפתח חוסם כפול. שערים: `type-check` 0, `lint` 0, `test` 615/615
+(7340/7352, 12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4531 pnpm build` exit 0 (פורט 3311
+תפוס מריצה קודמת של הריפו הזה, לכן נבחר פורט 4531 פנוי), ה-manifest מראה
+`/api/health` ו-`/api/ready` כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש.
+אפס שינוי קוד. קובץ: `STATE.md`.
+
 ## M17-c93 (הועבר מ-STATE.md ב-M18-c93, לשמירה על תקרת 300 שורות)
 
 **M17-c93 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
