@@ -15,8 +15,7 @@ Cardcom: check production env for real CARDCOM_* values; if any is
 PENDING_ or placeholder write BLOCKED cardcom-creds ... Otherwise run
 checkout smoke: sandbox order then production 1 ILS order; verify
 order_items platform_percent snapshot, webhook received, invoice download
-link, QR voucher issued; refund the 1 ILS". `pwd` אומת, HEAD בהגעה
-`3f951560e`, עץ נקי. **מה נמדד (קריאה בלבד):** (א) `vercel env ls
+link, QR voucher issued; refund the 1 ILS". HEAD בהגעה `3f951560e`, עץ נקי. **מה נמדד (קריאה בלבד):** (א) `vercel env ls
 production` ו-`vercel api /v10/projects/.../env`: `CARDCOM_API_PASSWORD`,
 `CARDCOM_API_NAME`, `CARDCOM_TERMINAL_NUMBER` ו-`CARDCOM_SANDBOX` כולם
 `type=sensitive`, `value=""`, `decrypted=false`, בלי `comment`; Vercel אינו
@@ -31,21 +30,19 @@ missing env vars from preflight"; אין רשומת סשן מקומית, ולס�
 (`checkCardcom`) בודק `Boolean(TERMINAL && API_NAME)`; שניהם ירוקים גם
 על מחרוזת שרירותית. (ד) במכונה: `.env.local` מחזיק `CARDCOM_TERMINAL_NUMBER=
 000000` ושם/סיסמה/סוד-webhook מסומני placeholder (סווגו לפי תבנית, לא
-הודפסו); `git grep` על קבצים מעוקבים מוצא הקצאת סיסמה רק בשני קבצי test;
-אין בשום doc שם משתמש למסוף הבדיקה 1000 (רק האזכור ב-`CARDCOM-ARCHITECTURE.md`
-שורה 805). (ה) פרודקשן (management API, קריאה בלבד): טבלת `payments` כולה
-`cardcom_low_profile_id` בקידומת `mock-` או null, אפס שורות לא-mock מאז
-ומעולם, האחרונה 25.09 02:28 UTC; ‏0 תשלומים ב-24 השעות. (ו) מה שכן השתנה
-מאז חוסם 8: `/checkout` החי מגיש `frame-src https://secure.cardcom.solutions`
-ו-`form-action` תואם, ו-`/api/ready` מחזיר `cardcom: ok`, כלומר ה-build
-הנוכחי (`e1719ad66`+) אינו mock; ספק אמיתי עם אישורים לא-מאומתים. **למה
+הודפסו); בקבצים מעוקבים הקצאת סיסמה רק בשני קבצי test; אין בשום doc שם
+משתמש למסוף הבדיקה 1000. (ה) פרודקשן (management API, קריאה בלבד): כל
+`payments.cardcom_low_profile_id` בקידומת `mock-` או null, אפס שורות לא-mock
+מאז ומעולם, האחרונה 25.09; ‏0 ב-24 השעות. (ו) מה שכן השתנה מאז חוסם 8:
+`/checkout` החי מגיש `frame-src https://secure.cardcom.solutions` ו-`/api/ready`
+מחזיר `cardcom: ok`, כלומר ה-build החי אינו mock; ספק אמיתי, אישורים לא-מאומתים. **למה
 לא בוצע probe בזמן ריצה:** המסלול היחיד שמפעיל את האישורים בפרודקשן הוא
 `beginCheckout` ‏->‏ `createLowProfile` (`checkout.ts:1189`), שכותב שורת
 `orders` ו-`payments` לפני הקריאה ל-Cardcom ומשאיר הזמנה ממתינה ותשלום
 `failed` אם האישורים שגויים; ‏`listTransactions`/`verifyLowProfile` נגישים
 רק דרך `/api/cron/*` עם `CRON_SECRET` שאינו ידוע (L09), ו-`retryFinalizePayment`
-של האדמין אינו קורא ל-Cardcom כלל. גם הזמנת הסנדבוקס שהתור דורש קודם אינה
-אפשרית (אין אישורי סנדבוקס), וגם לתשלום ₪1 אמיתי אין כרטיס במכונה. לפי כלל
+אינו קורא ל-Cardcom. גם הזמנת הסנדבוקס אינה אפשרית (אין אישורי סנדבוקס),
+וגם לתשלום ₪1 אמיתי אין כרטיס במכונה. לפי כלל
 "PENDING_ או placeholder = BLOCKED cardcom-creds", ובהעדר יכולת להוכיח
 ההפך, הפריט נסגר כ-BLOCKED. **שערים, 30 שמות מוזרקים `[SENSITIVE]` ו-`VERCEL*`
 הוסרו לפני כל ריצה (`SENSITIVE` נותרים 0):** `pnpm type-check` exit 0; `pnpm
@@ -58,11 +55,9 @@ localhost:4993 pnpm build` exit 0, `BUILD_ID` `BtbOPVRsLXwug5vLQ6AwX`, 92
 בפרודקשן, כי התוצאה הצפויה היא שורות זבל ב-`orders`/`payments` שאסור למחוק
 לפי כללי הפריט; (ב) ערכים מקומיים סווגו לפי תבנית ולא הודפסו; (ג) BACKLOG
 סעיף 6 קיבל רשומת מדידה מתוארכת ולא פריט חדש.
-**לאופיר:** להזין ב-Vercel Production את שלושת הערכים האמיתיים
-(`CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`,
-‏`CARDCOM_SANDBOX=false`), ואז הזמנת ₪1 וזיכוי בידיו, כי רק בידיו כרטיס.
-L10 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/BACKLOG.md`,
-`docs/STATE-ARCHIVE.md`.
+**לאופיר:** להזין ב-Vercel Production את שלושת ערכי Cardcom האמיתיים
+ו-`CARDCOM_SANDBOX=false`, ואז הזמנת ₪1 וזיכוי בידיו, כי רק בידיו כרטיס.
+L10 הועבר לארכיון. קבצים: `STATE.md`, `docs/BACKLOG.md`, `docs/STATE-ARCHIVE.md`.
 
 **L10 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-L11): שער 10 מוקשי השקה; שתי עמודות ה-agorot קיימות כ-GENERATED ALWAYS,
