@@ -1,14 +1,14 @@
-RESUME FROM: M05-c91
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M04-c91 DONE: type-check נקי, אפס דריפט, אפס שינוי קוד)
+RESUME FROM: M06-c91
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M05-c91 DONE: test 615/615 נקי, אפס דריפט, אפס שינוי קוד)
 
 ## המשך מ:
 
-**M04-c91 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
-commit", זהה ל-M04-c90. `pnpm type-check` (`tsc --noEmit`) exit 0, אפס
-שגיאות, ולכן אין דריפט לתקן ואין שינוי קוד. שאר השערים לפני ה-commit:
-`lint` 0, `test` 615/615 קבצים (7340/7352, 12 דולגו), `build` 0. אין שינוי
-UI, ולכן `compare.mjs` לא נדרש. M03-c91 (קטגוריה 3.53/2.52/1.69) הועבר
-ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M05-c91 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה ל-M05-c90. `pnpm test` exit 0: 615/615 קבצים, 7340 עברו,
+12 דולגו (7352), ולכן אין דריפט לתקן ואין שינוי קוד. שאר השערים לפני
+ה-commit: `type-check` 0, `lint` 0, `build` 0. אין שינוי UI, ולכן
+`compare.mjs` לא נדרש. M04-c91 (type-check נקי) הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

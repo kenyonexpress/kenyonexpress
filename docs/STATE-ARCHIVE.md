@@ -2,6 +2,15 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c91 (הועבר מ-STATE.md ב-M05-c91, לשמירה על תקרת 300 שורות)
+
+**M04-c91 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
+commit", זהה ל-M04-c90. `pnpm type-check` (`tsc --noEmit`) exit 0, אפס
+שגיאות, ולכן אין דריפט לתקן ואין שינוי קוד. שאר השערים לפני ה-commit:
+`lint` 0, `test` 615/615 קבצים (7340/7352, 12 דולגו), `build` 0. אין שינוי
+UI, ולכן `compare.mjs` לא נדרש. M03-c91 (קטגוריה 3.53/2.52/1.69) הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M03-c91 (הועבר מ-STATE.md ב-M04-c91, לשמירה על תקרת 300 שורות)
 
 **M03-c91 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
