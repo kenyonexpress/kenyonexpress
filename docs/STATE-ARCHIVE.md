@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c88 (הועבר מ-STATE.md ב-M17-c88, לשמירה על תקרת 300 שורות)
+
+**M16-c88 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList" — זהה למשימות M16-c66..M16-c82.
+קוד: `json-ld.ts` עדיין מגדיר `buildProductJsonLd`/`buildBreadcrumbJsonLd`,
+`product/[slug]/page.tsx` עדיין מזריק שניהם; הקומיט האחרון על שני
+הקבצים (`fd820969f`) קדם למדידה הקודמת. **בזמן ריצה**: `.next` נבנה
+מחדש (`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4965 pnpm build`, exit 0), הורם
+`pnpm start -p 4965` (אומת `lsof`+`cwd` שייכים לנתיב הזה). אותם שמונה
+סלאגים מ-M16-c82 נבדקו שוב ב-curl — **כל השמונה `200`, בלוק `Product`
+אחד ובלוק `BreadcrumbList` אחד**, זהה ל-M16-c82. אין ממצא לתקן, זהה
+לשישה-עשר הסבבים הקודמים. ארבעת השערים: `type-check` נקי, `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 (7337/7349, 12 מדולגים, זהה),
+`build` exit 0. השרת נעצר (`kill`), הפורט פנוי. לא חזותי, `compare.mjs`
+לא נדרש. אפס שינוי קוד ייצור. קובץ יחיד: `STATE.md`.
+
 ## M14-c88 (הועבר מ-STATE.md ב-M15-c88, לשמירה על תקרת 300 שורות)
 
 **M14-c88 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
