@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M04-c93 (הועבר מ-STATE.md ב-M11-c93, לשמירה על תקרת 300 שורות)
+
+**M04-c93 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
+commit", זהה במהות ל-M04-c92. `pwd` אומת, עץ נקי, HEAD `c42321210`.
+`git diff 6ba91163a HEAD -- src public next.config.* package.json` ריק
+(אפס שינוי קוד מאז M04-c92) — אין דריפט לתקן. ארבעת השערים רצו: `pnpm
+type-check` (`tsc --noEmit`) יצא נקי; `pnpm lint` (biome + 12 שערי
+סקריפט) נקי; `pnpm test` 615/615 קבצים, 7340/7352 (12 דולגו), זהה
+ל-M04-c92; `pnpm build` רץ מול השרת הקיים על פורט 3311 (אומת ב-`lsof`
+ש-cwd הוא הריפו הזה), exit 0. אין קוד לשנות, אין commit קוד — רק עדכון
+`STATE.md`.
+
+## M03-c93 (הועבר מ-STATE.md ב-M11-c93, לשמירה על תקרת 300 שורות)
+
+**M03-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample", זהה ל-M03-c92. `pwd` אומת, עץ נקי, HEAD `ebffcd9af`,
+`git diff b4814b337 HEAD -- src public next.config.* package.json` ריק
+(אפס שינוי קוד מאז M03-c92). פורט 3311 כבר מאזין מריצה קודמת באותו סשן
+(cwd אומת ב-`lsof`: הריפו הזה). השער רץ בחזית עם `--widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` (חרג מ-timeout כלי ה-Bash,
+הומתן לסיום באותה קריאה, exit 0). **380 3.53% PASS, 768 2.52% PASS, 1440
+1.69% PASS, זהה בביט ל-M03-c92.** הפרש: 0.00/0.00/0.00. השער כתב את שלוש
+השורות ל-`docs/UI-PARITY-REPORT.md` בעצמו. שערים: `type-check` 0, `lint`
+0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0 (`rm -rf .next`
+לא בוצע הפעם, פורט 3311 כבר שירת גרסה זהה בביט; `pnpm build` נוסף רץ
+ואישר exit 0 ללא שינוי קוד). קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M02-c93 (הועבר מ-STATE.md ב-M10-c93, לשמירה על תקרת 300 שורות)
 
 **M02-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
