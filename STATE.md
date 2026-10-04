@@ -1,7 +1,26 @@
-RESUME FROM: M07-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c93 DONE: שער build נבדק מחדש, exit 0, אפס דריפט מ-M06-c92)
+RESUME FROM: M08-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c93 DONE: TODO/FIXME נסרק שוב, אפס דריפט מ-M07-c92/M07-c67)
 
 ## המשך מ:
+
+**M07-c93 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md", זהה במהות ל-M07-c92 ול-M07-c67
+המקורי. `pwd` אומת, עץ נקי, HEAD `ddab9d73b`. סריקה ישירה
+(`grep -rn "TODO\|FIXME" src/`) מצאה את אותם שני הסמנים בלבד:
+`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי, `git blame` 24.07.2026)
+ו-`:319` (מסמכים, `git blame` 07.08.2026) — שניהם מעל שבעה ימים, שניהם
+כבר מתועדים ב-`docs/BACKLOG.md` סעיף 6 (`TODO(cardcom)`, מקושרים ל-#41/#42
+ב-`docs/KNOWN-ISSUES.md`). אושר גם דרך `node scripts/final-audit.mjs
+--verbose`, הממד הייעודי: **`ok 0 work markers (TODO/FIXME/HACK/XXX) (of 2)`**
+— שני הממצאים `tracked`, אפס לא-עקובים. נבדקו גם `scripts/` ו-worktrees
+מקבילים (`.claude/worktrees/*`): אותם שני סמנים חוזרים שם כעותקי עבודה
+של סוכנים אחרים, לא קובץ חדש בריפו הזה, לא לנגיעה. שאר ה-FAIL-ים שהשער
+הציג (env לא מתועד, שמות סקריפט, commit subjects ארוכים, רכיבים מתים)
+מחוץ לתחום הפריט הזה (TODO/FIXME בלבד) ולא טופלו כאן. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build`
+(`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311`, פורט
+3311 אומת ב-`lsof`/cwd שהוא הריפו הזה) exit 0. אין שינוי קוד ולכן אין
+שינוי UI ו-`compare.mjs` לא נדרש. קובץ: `STATE.md`.
 
 **M06-c93 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
 commit", זהה במהות ל-M06-c92. `pwd` אומת, עץ נקי, HEAD `19ade0fde`.
