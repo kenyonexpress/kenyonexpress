@@ -1,13 +1,13 @@
-RESUME FROM: M05-c90
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M04-c90 DONE: type-check נקי, אפס דריפט, אין מה לתקן)
+RESUME FROM: M06-c90
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M05-c90 DONE: test נקי, אפס דריפט, אין מה לתקן)
 
 ## המשך מ:
 
-**M04-c90 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
-commit", זהה ל-M04-c89. `pnpm type-check` (`tsc --noEmit`) exit 0, אפס
-שגיאות, **אין דריפט לתקן**. שערים: `lint` 0, `test` 615/615 (7340/7352,
-12 דולגו), `build` 0. אפס שינוי קוד. M03-c90 (קטגוריה 3.53/2.52/1.69)
-הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M05-c90 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה ל-M05-c89. `pnpm test` 615/615 קבצים (7340 עברו, 12 דולגו,
+7352), **אין דריפט לתקן**. שערים: `type-check` 0, `lint` 0, `pnpm build`
+exit 0. אפס שינוי קוד. M04-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
