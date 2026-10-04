@@ -3,9 +3,9 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * The four legal URLs the launch checklist names must all resolve.
+ * The five legal URLs the launch checklist names must all resolve.
  *
- * Three of them are aliases, not pages, and that is the point. The policies
+ * Four of them are aliases, not pages, and that is the point. The policies
  * live at the WordPress paths the footer, existing links and indexed search
  * results already point at:
  *
@@ -13,12 +13,13 @@ import { describe, expect, it } from 'vitest'
  *   /terms               -> /terms-and-conditions
  *   /privacy             -> /privacy-policy
  *   /returns             -> /refund_returns
- *   /cookies             -> /privacy-policy#cookies
  *
- * The last two were measured as 404 in production on 05.10.2026 (L05). The
- * cookie policy is a section of the privacy document, the same anchor the
- * footer link already uses, so the alias lands on that section rather than
- * on a fifth legal page.
+ * /cookies is the exception: it IS a page (`src/app/(store)/cookies`), the
+ * fifth document, born at the short path because no WordPress path ever held
+ * a cookie policy. Until W02 (05.10.2026) it was an alias onto the cookies
+ * section of the privacy document; a redirect runs before file routing, so a
+ * leftover alias would make the page unreachable. The last block below holds
+ * that it stays out of next.config.ts.
  *
  * A second PAGE for the same policy is the failure this avoids. Two routes
  * rendering one cancellation policy drift, and then the site states two
@@ -35,7 +36,6 @@ const ALIASES: ReadonlyArray<[string, string]> = [
   ['/terms', '/terms-and-conditions'],
   ['/privacy', '/privacy-policy'],
   ['/returns', '/refund_returns'],
-  ['/cookies', '/privacy-policy#cookies'],
 ]
 
 describe('legal route aliases', () => {
@@ -54,5 +54,17 @@ describe('legal route aliases', () => {
       expect(line, `${source} missing from next.config.ts`).toBeDefined()
       expect(line).toContain('permanent: true')
     }
+  })
+})
+
+describe('the cookie policy is a page, not an alias', () => {
+  it('has no redirect in next.config.ts, which would shadow the page', () => {
+    expect(config).not.toMatch(/source:\s*'\/cookies'/)
+  })
+
+  it('exists where the footer and the checkout consent sentence point', () => {
+    const page = readFileSync(resolve(process.cwd(), 'src/app/(store)/cookies/page.tsx'), 'utf8')
+    expect(page).toContain("getLegalDoc('cookies')")
+    expect(page).toContain('ConsentWithdrawForm')
   })
 })

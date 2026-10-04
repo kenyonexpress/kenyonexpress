@@ -1,5 +1,6 @@
 'use client'
 
+import CheckoutConsentText, { CheckoutPrivacyNote } from '@/components/checkout/CheckoutConsentText'
 import TurnstileWidget from '@/components/fraud/TurnstileWidget'
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
@@ -1094,10 +1095,7 @@ export default function CheckoutForm({
                   </div>
                 )}
 
-                <p className="checkout-privacy">
-                  הפרטים האישיים ישמשו לצורך ביצוע הרכישה, ולא יועברו לגורם שאינו מורשה בהתאם
-                  למדיניות הפרטיות.
-                </p>
+                <CheckoutPrivacyNote />
 
                 <label className="checkout-terms">
                   <input
@@ -1107,8 +1105,7 @@ export default function CheckoutForm({
                     aria-describedby={errorIdFor('accept_terms')}
                   />
                   <span>
-                    קראתי ואני מסכים לאתר תנאי שימוש{' '}
-                    <span className="checkout-field__required">*</span>
+                    <CheckoutConsentText /> <span className="checkout-field__required">*</span>
                   </span>
                 </label>
                 {errorFor('accept_terms') && (

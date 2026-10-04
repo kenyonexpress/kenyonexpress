@@ -3,13 +3,13 @@
   "$why": "public.seo_redirects is empty in production, so every retired URL 404s. This is the map that fills it, corrected against what production actually serves.",
   "$how": "scripts/build-legacy-redirects.mjs reads data/legacy/url-inventory.json (the frozen 2026-08-11 crawl), measures the live catalogue through the anon key, reads the static route tree off src/app, and drops every row whose source is live or whose target is not.",
   "$generated_by": "scripts/build-legacy-redirects.mjs",
-  "$measured_at": "2026-09-09T23:58:25.329Z",
+  "$measured_at": "2026-10-04T22:33:09.098Z",
   "$counts": {
     "inventory": 87,
-    "redirects": 33,
-    "redirect_301": 20,
+    "redirects": 32,
+    "redirect_301": 19,
     "redirect_410": 13,
-    "excluded": 54
+    "excluded": 55
   },
   "$targets": {
     "$predicate": {
@@ -22,6 +22,8 @@
       "bar-drink",
       "barbecue",
       "barbecue-2",
+      "e2e-test-coupon",
+      "e2e-test-physical",
       "island-of-maldives",
       "pampers-premium-care-diaper-pants-medium",
       "samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g",
@@ -75,6 +77,10 @@
       {
         "slug": "courses",
         "name_he": "קורסים Express בקרוב"
+      },
+      {
+        "slug": "e2e-test-category",
+        "name_he": "קטגוריית בדיקות"
       },
       {
         "slug": "electronics",
@@ -202,6 +208,7 @@
       "/checkout/frame-return",
       "/checkout/return",
       "/contact",
+      "/cookies",
       "/coupons",
       "/debug/sentry",
       "/debug/sentry/render",
@@ -209,6 +216,7 @@
       "/forgot-password",
       "/help",
       "/legal/accessibility",
+      "/legal/cookies",
       "/legal/privacy",
       "/legal/returns",
       "/legal/terms",
@@ -242,8 +250,8 @@
     "$what": "Every URL the retired WordPress site served, and what this site does with it.",
     "$why": "A cutover loses traffic through the one bucket that raises nothing: a URL Google has indexed, with no page behind it and no redirect row pointing anywhere.",
     "legacy_urls": 87,
-    "served_unchanged": 51,
-    "redirected_301": 20,
+    "served_unchanged": 52,
+    "redirected_301": 19,
     "gone_410": 13,
     "lost_404": 3,
     "lost": [
@@ -251,7 +259,7 @@
       "/product/restaurants-meat-3",
       "/product/קופון-טסט"
     ],
-    "new_since_migration": 118
+    "new_since_migration": 132
   },
   "redirects": [
     {
@@ -269,15 +277,6 @@
       "rule": "page_gone_410",
       "entity": "page",
       "wp_id": 2917
-    },
-    {
-      "source": "/coupon-scanner",
-      "target": "/supplier/scan",
-      "status": 301,
-      "rule": "page_redirect",
-      "entity": "page",
-      "wp_id": 8842,
-      "evidence": "static route"
     },
     {
       "source": "/dashboard",
@@ -569,6 +568,11 @@
       "source": "/contact",
       "reason": "source_is_live",
       "note": "serves 200 today (static route); a row here would take it down"
+    },
+    {
+      "source": "/coupon-scanner",
+      "reason": "target_not_live",
+      "note": "/scan is not served today"
     },
     {
       "source": "/privacy-policy",

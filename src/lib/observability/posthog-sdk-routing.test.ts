@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { CONSENT_COOKIE, CONSENT_WORDING_VERSION } from '@/lib/analytics/consent'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -32,12 +33,16 @@ async function freshModule(key: string): Promise<PostHogModule> {
 const fetchSpy = vi.fn(() => Promise.resolve(new Response(null, { status: 200 })))
 
 beforeEach(() => {
+  // trackEvent gates itself on the consent cookie in a browser (W02). These
+  // tests are about ROUTING after consent, so consent is given up front.
+  document.cookie = `${CONSENT_COOKIE}=granted.${CONSENT_WORDING_VERSION}`
   fetchSpy.mockClear()
   vi.stubGlobal('fetch', fetchSpy)
   parkedWindow.__ke_posthog = undefined
 })
 
 afterEach(() => {
+  document.cookie = `${CONSENT_COOKIE}=; Max-Age=0`
   vi.unstubAllGlobals()
   vi.unstubAllEnvs()
   parkedWindow.__ke_posthog = undefined
@@ -99,5 +104,34 @@ describe('trackEvent routing', () => {
     const first = currentDistinctId()
     expect(window.localStorage.getItem('ke_ph_distinct_id')).toBe(first)
     expect(currentDistinctId()).toBe(first)
+  })
+})
+
+describe('trackEvent before consent, in a browser', () => {
+  /**
+   * The gate every client caller used to carry is now inside trackEvent. A
+   * caller that forgets `trackingAllowed()` therefore sends nothing, mints no
+   * distinct id and writes no mirror cookie: the three things a visitor who
+   * has not clicked אישור must never get.
+   */
+  it.each([
+    ['no decision', null],
+    ['declined', `denied.${CONSENT_WORDING_VERSION}`],
+    ['granted against superseded wording', `granted.${CONSENT_WORDING_VERSION - 1}`],
+  ])('sends nothing when %s', async (_label, cookie) => {
+    document.cookie = `${CONSENT_COOKIE}=; Max-Age=0`
+    if (cookie) document.cookie = `${CONSENT_COOKIE}=${cookie}`
+    // jsdom keeps document.cookie across tests; the routing tests above mint
+    // an id legitimately, so start this one clean.
+    document.cookie = 'ke_ph_id=; Max-Age=0'
+    window.localStorage.removeItem('ke_ph_distinct_id')
+    const capture = vi.fn()
+    parkedWindow.__ke_posthog = { capture }
+    const mod = await freshModule('phc_test')
+    mod.trackEvent('view_product', { product_id: 'p1' })
+    expect(capture).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(window.localStorage.getItem('ke_ph_distinct_id')).toBeNull()
+    expect(document.cookie).not.toContain('ke_ph_id=')
   })
 })

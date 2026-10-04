@@ -1,9 +1,23 @@
+import { t } from '@/lib/i18n/messages'
 import Link from 'next/link'
 import type { LegalBlock, LegalDoc } from '../_content/types'
 import LegalFooterLinks from './LegalFooterLinks'
 
 /**
- * One renderer for every document in this route group.
+ * One renderer for every document in this route group, in the layout of
+ * Electro's terms-and-conditions page.
+ *
+ * THE SHAPE IS ELECTRO'S, MEASURED (W02, 05.10.2026, refs/electro-terms.json):
+ * a breadcrumb, a centred title block with the "last modified" line under it,
+ * then one full-width column of h2 + paragraphs/lists, 25px headings on 14px
+ * body, every element in the heading ink. Until W02 this page used the site's
+ * own reading-measure frame (`max-w-3xl`, bold 3xl title, 20px headings),
+ * which was a third rhythm nothing else on the site had. The numbers live in
+ * `src/styles/legal-page.css`, not here, because the token gate reads .tsx
+ * for raw values and because a measured length belongs next to its source.
+ *
+ * THE CONTENT IS OURS. Electro's own body text is lorem ipsum, and nothing
+ * from it ships; only the geometry does.
  *
  * The numbering is derived, not typed. A section is "3." because it is third,
  * and its clauses are "3.1", "3.2" because of their order inside it, so
@@ -12,9 +26,9 @@ import LegalFooterLinks from './LegalFooterLinks'
  * quoting "סעיף 7.2" to support must be able to select and copy it, and because
  * support links to `#coupon-terms` and the reader has to see they landed right.
  *
- * Page frame is the site's measured one (`max-w-page` = 1320px container,
- * `max-w-3xl` reading measure), the same pair `/faq`, `/about` and the older
- * legal pages use, so a legal page does not invent a third rhythm.
+ * Kept from the old frame, because they are contracts rather than styling: the
+ * review notice (gate LP3), the table of contents (the anchors support links
+ * to), and the scrolling table box with its own tab stop.
  */
 function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber: number }) {
   return (
@@ -29,10 +43,7 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
 
         if (block.type === 'note') {
           return (
-            <p
-              key={key}
-              className="rounded-lg border-s-4 border-heading/40 bg-heading/5 px-4 py-3 font-medium"
-            >
+            <p key={key} className="legal-note">
               {block.text}
             </p>
           )
@@ -54,25 +65,17 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
             // stop announces what it is.
             <section
               key={key}
-              className="overflow-x-auto"
-              aria-label={block.caption ?? 'טבלה'}
+              className="legal-table-scroller"
+              aria-label={block.caption ?? t('legal.article.table')}
               // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
               tabIndex={0}
             >
-              <table className="w-full min-w-[36rem] border-collapse text-start text-sm">
-                {block.caption && (
-                  <caption className="mb-2 text-start text-sm text-heading/75">
-                    {block.caption}
-                  </caption>
-                )}
+              <table className="legal-table">
+                {block.caption && <caption>{block.caption}</caption>}
                 <thead>
                   <tr>
                     {block.head.map((cell) => (
-                      <th
-                        key={cell}
-                        scope="col"
-                        className="border border-heading/15 bg-heading/5 px-3 py-2 text-start font-semibold text-heading"
-                      >
+                      <th key={cell} scope="col">
                         {cell}
                       </th>
                     ))}
@@ -88,9 +91,7 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
                           one column over, which in a table of cancellation
                           windows would silently state the wrong rule. */}
                       {block.head.map((column, columnIndex) => (
-                        <td key={column} className="border border-heading/15 px-3 py-2 align-top">
-                          {row[columnIndex] ?? ''}
-                        </td>
+                        <td key={column}>{row[columnIndex] ?? ''}</td>
                       ))}
                     </tr>
                   ))}
@@ -102,21 +103,19 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
 
         if (block.type === 'unordered') {
           return (
-            <ul key={key} className="list-disc space-y-2 pe-6">
+            <ul key={key}>
               {block.items.map((item) => (
-                <li key={item} className="ps-1">
-                  {item}
-                </li>
+                <li key={item}>{item}</li>
               ))}
             </ul>
           )
         }
 
         return (
-          <ol key={key} className="space-y-2">
+          <ol key={key}>
             {block.items.map((item, itemIndex) => (
-              <li key={item} className="flex gap-2">
-                <span className="shrink-0 font-semibold text-heading tabular-nums">
+              <li key={item} className="legal-clause">
+                <span className="legal-clause__number">
                   {sectionNumber}.{itemIndex + 1}
                 </span>
                 <span>{item}</span>
@@ -126,6 +125,27 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
         )
       })}
     </>
+  )
+}
+
+/** Electro's breadcrumb delimiter: a thin chevron along the reading direction. */
+function Delimiter() {
+  return (
+    <svg
+      className="legal-breadcrumb__delimiter"
+      viewBox="0 0 10 10"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M3 1l4 4-4 4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
@@ -144,68 +164,52 @@ export default function LegalArticle({
   })
 
   return (
-    <div className="mx-auto w-full max-w-page px-4 py-10">
-      <nav aria-label="נתיב ניווט" className="mb-6 text-sm text-heading/80">
-        <Link href="/" className="hover:text-heading">
-          בית
-        </Link>
-        <span aria-hidden="true" className="mx-2">
-          /
-        </span>
-        <span className="text-heading">{doc.title}</span>
+    <div className="legal-page">
+      <nav aria-label={t('legal.article.breadcrumbLabel')} className="legal-breadcrumb">
+        <Link href="/">{t('legal.article.home')}</Link>
+        <Delimiter />
+        <span>{doc.title}</span>
       </nav>
 
-      <header className="mb-8 max-w-3xl">
-        <h1 className="text-3xl font-bold text-heading">{doc.title}</h1>
-        <p className="mt-2 text-sm text-heading/75">
-          עודכן לאחרונה: <time dateTime={doc.updatedAt}>{updated}</time>
+      <header className="legal-header">
+        <h1 className="legal-header__title">{doc.title}</h1>
+        <p className="legal-header__updated">
+          {t('legal.article.updated')} <time dateTime={doc.updatedAt}>{updated}</time>
         </p>
       </header>
 
       {doc.reviewNotice && (
         // Visible, not a comment. A page that looks final is treated as final.
-        <p
-          role="note"
-          className="mb-8 max-w-3xl rounded-lg border border-heading/20 bg-heading/5 px-4 py-3 text-sm leading-relaxed text-heading/80"
-        >
+        <p role="note" className="legal-review-notice">
           {doc.reviewNotice}
         </p>
       )}
 
-      <div className="max-w-3xl space-y-4 text-base leading-relaxed text-heading/90">
+      <div className="legal-intro">
         {doc.intro.map((text) => (
           <p key={text}>{text}</p>
         ))}
       </div>
 
-      <nav
-        aria-labelledby="legal-toc"
-        className="mt-8 max-w-3xl rounded-xl border border-heading/15 p-5"
-      >
-        <h2 id="legal-toc" className="text-lg font-bold text-heading">
-          תוכן העניינים
+      <nav aria-labelledby="legal-toc" className="legal-toc">
+        <h2 id="legal-toc" className="legal-toc__title">
+          {t('legal.article.toc')}
         </h2>
-        <ol className="mt-3 space-y-1 text-base">
-          {doc.sections.map((section, index) => (
-            <li key={section.id} className="flex gap-2">
-              <span className="shrink-0 text-heading/75 tabular-nums">{index + 1}.</span>
-              <a
-                href={`#${section.id}`}
-                className="text-heading/85 underline underline-offset-4 hover:text-heading"
-              >
-                {section.title}
-              </a>
+        <ol className="legal-toc__list">
+          {doc.sections.map((section) => (
+            <li key={section.id}>
+              <a href={`#${section.id}`}>{section.title}</a>
             </li>
           ))}
         </ol>
       </nav>
 
-      <article className="mt-10 max-w-3xl space-y-10 text-base leading-relaxed text-heading/90">
+      <article className="legal-body">
         {doc.sections.map((section, index) => (
-          // scroll-mt keeps the anchored heading clear of the sticky header
-          // when support links straight into a clause.
-          <section key={section.id} id={section.id} className="scroll-mt-28 space-y-4">
-            <h2 className="text-xl font-bold text-heading">
+          // scroll-margin on the heading keeps an anchored clause clear of the
+          // sticky header when support links straight into it.
+          <section key={section.id} id={section.id} className="legal-section">
+            <h2 className="legal-section__title">
               {index + 1}. {section.title}
             </h2>
             <Blocks blocks={section.blocks} sectionNumber={index + 1} />
@@ -213,9 +217,9 @@ export default function LegalArticle({
         ))}
       </article>
 
-      <div className="max-w-3xl">{children}</div>
+      {children}
 
-      <div className="mt-10 max-w-3xl border-t border-heading/15 pt-6">
+      <div className="legal-footer">
         <LegalFooterLinks current={doc.slug} />
       </div>
     </div>

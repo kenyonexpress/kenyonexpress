@@ -1,69 +1,61 @@
 import { contactEmail } from '@/lib/contact-address'
-import { formatIsraeliPhoneDisplay, storeWhatsAppLink, storeWhatsAppNumber } from '@/lib/whatsapp'
+import { t } from '@/lib/i18n/messages'
 import Link from 'next/link'
 
 /**
- * The one place a legal page prints how to reach us.
+ * The one place a legal page prints who we are and how to reach us.
  *
- * The number is NOT written into the document text. It comes from
- * `lib/whatsapp`, which is the single source for the store's number ([68]), so
- * four legal documents cannot drift onto four different phone numbers, and a
- * page whose printed digits differ from the number its link dials is the worst
- * of the two. The email came from a second literal here until 22.09.2026; it
- * now reads `contactEmail()`, the same single source `contact-address.ts`
- * already gave the contact form and the cron digest, so the address moves in
- * one place instead of two.
+ * THE ENTITY LINE IS THE OWNER'S, VERBATIM: "קניון אקספרס, עוסק מורשה". A
+ * legal document without the operator's legal form is incomplete
+ * (docs/legal/README.md, open question 7), and it was missing from all four
+ * documents until W02 (05.10.2026). The registration number is still the
+ * owner's to supply; the line says what it can say truthfully today.
+ *
+ * NO PHONE, AND NO WhatsApp EITHER. Owner policy since 22.09.2026 (OWNER
+ * DECISIONS v2, customer service): support is written, through the email
+ * address and the contact form, and the storefront prints no number to call.
+ * Until W02 this block still printed the WhatsApp number under the heading
+ * "יצירת קשר", which is a phone number by any reading a regulator would give
+ * it, and the accessibility statement promised help "בטלפון". Both are gone.
+ *
+ * The email reads `contactEmail()`, the single source `contact-address.ts`
+ * already gives the contact form and the cron digest, so the address moves in
+ * one place instead of five.
  */
 export default function LegalContactBlock({
-  heading = 'יצירת קשר',
+  heading,
   intro,
 }: {
   heading?: string
   intro: string
 }) {
-  const waHref = storeWhatsAppLink('שלום, יש לי שאלה בנוגע למסמכים המשפטיים באתר')
-  const waDisplay = formatIsraeliPhoneDisplay(storeWhatsAppNumber())
   const email = contactEmail()
+  const title = heading ?? t('legal.contact.heading')
 
   return (
-    <section
-      aria-labelledby="legal-contact"
-      className="mt-10 rounded-xl border border-heading/15 bg-heading/5 p-5"
-    >
-      <h2 id="legal-contact" className="text-lg font-bold text-heading">
-        {heading}
+    <section aria-labelledby="legal-contact" className="legal-contact">
+      <h2 id="legal-contact" className="legal-contact__title">
+        {title}
       </h2>
-      <p className="mt-2 text-base leading-relaxed text-heading/85">{intro}</p>
-      <ul className="mt-3 space-y-2 text-base text-heading/85">
+      <p className="legal-contact__entity">
+        {t('legal.contact.operatorLabel')} <strong>{t('legal.contact.operator')}</strong>
+      </p>
+      <p className="legal-contact__intro">{intro}</p>
+      <ul className="legal-contact__channels">
         <li>
-          דואר אלקטרוני:{' '}
-          <a
-            href={`mailto:${email}`}
-            className="font-medium text-heading underline underline-offset-4"
-            dir="ltr"
-          >
+          {t('legal.contact.email')}{' '}
+          <a href={`mailto:${email}`} className="legal-contact__link" dir="ltr">
             {email}
           </a>
         </li>
-        {waHref && waDisplay && (
-          <li>
-            וואטסאפ:{' '}
-            <a
-              href={waHref}
-              className="font-medium text-heading underline underline-offset-4"
-              dir="ltr"
-            >
-              {waDisplay}
-            </a>
-          </li>
-        )}
         <li>
-          טופס מקוון:{' '}
-          <Link href="/contact" className="font-medium text-heading underline underline-offset-4">
-            עמוד צור קשר
+          {t('legal.contact.form')}{' '}
+          <Link href="/contact" className="legal-contact__link">
+            {t('legal.contact.formLink')}
           </Link>
         </li>
-        <li>כתובת האתר: www.kenyonexpress.co.il</li>
+        <li>{t('legal.contact.site')}</li>
+        <li>{t('legal.contact.writtenOnly')}</li>
       </ul>
     </section>
   )

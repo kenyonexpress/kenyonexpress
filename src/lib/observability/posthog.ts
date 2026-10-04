@@ -16,6 +16,8 @@
  * the caller has to handle, let alone one the customer sees.
  */
 
+import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
+
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 const HOST = (process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com').replace(
   /\/+$/,
@@ -180,12 +182,37 @@ export type TrackOptions = {
  * exactly when most commerce events fire. The 4s timeout mirrors alert.ts:
  * nothing on this path may hold a response open.
  */
+/**
+ * THE BROWSER HALF OF THIS MODULE IS CONSENT-GATED HERE, NOT ONLY AT ITS
+ * CALLERS. Every client caller already checks `trackingAllowed()` before
+ * calling in, and that discipline held; but a gate that lives in three callers
+ * is a gate the fourth caller forgets. In a browser, `trackEvent` reads the
+ * consent cookie itself and returns before minting a distinct id, writing the
+ * mirror cookie or opening a request. On the server there is no document and
+ * no banner, and the business events (`purchase`, refunds) that run there are
+ * part of a transaction the customer initiated, which the privacy document
+ * says out loud.
+ *
+ * `isTrackingAllowed` is imported from the consent module rather than
+ * reimplemented, so the wording-version rule has one definition.
+ */
+function browserConsentGiven(): boolean {
+  if (typeof document === 'undefined') return true
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
+    return isTrackingAllowed(match?.[1] ? decodeURIComponent(match[1]) : null)
+  } catch {
+    return false
+  }
+}
+
 export function trackEvent(
   event: string,
   properties: EventProperties = {},
   options: TrackOptions = {},
 ): void {
   if (!KEY) return
+  if (!browserConsentGiven()) return
   try {
     // When the session-replay loader has mounted posthog-js, route through it:
     // the SDK stamps $session_id, which is what makes an event click through

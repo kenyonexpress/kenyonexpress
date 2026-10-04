@@ -171,5 +171,12 @@ export function totalHebrewLiterals(files = scannedFiles()) {
  * 2026-09-25, Q18: the push device list (`PushDevices`) was built with its copy
  * in the catalog (`pushDevices.*`), and the notifications page lost the
  * duplicated "התראות דחיפה" heading that `PushOptIn` already renders. 628 -> 627.
+ *
+ * 2026-10-05, W02: `LegalContactBlock` lost its WhatsApp line and its three
+ * channel labels to `legal.contact.*`, `LegalArticle` moved its chrome
+ * ("בית", "עודכן לאחרונה", "תוכן העניינים") to `legal.article.*`, and the
+ * checkout consent sentence and privacy note moved to `checkout.consent.*`.
+ * The new cookie page and its withdrawal form were born in the catalog.
+ * 626 -> 624.
  */
-export const HEBREW_LITERAL_CEILING = 626
+export const HEBREW_LITERAL_CEILING = 624

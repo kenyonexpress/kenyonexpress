@@ -373,6 +373,17 @@
       "registrationNumber": "VAT / company registration number",
       "hint": "Nine digits. Saved for your next invoices too; you can change it in your account.",
       "required": "Enter a business name and a nine-digit registration number, or untick the box"
+    },
+    "consent": {
+      "lead": "I have read and agree to the",
+      "terms": "terms",
+      "privacy": "privacy policy",
+      "returns": "cancellation and returns policy",
+      "cookies": "cookie policy",
+      "accessibility": "and accessibility statement",
+      "privacyNoteLead": "Your personal details are used to complete the purchase and are not passed to unauthorised parties, in accordance with the",
+      "privacyNoteLink": "privacy policy",
+      "opensNewTab": "opens in a new tab"
     }
   },
   "voucherExpiry": {
@@ -594,5 +605,33 @@
     "conversionFlagged": "Under review",
     "conversionPaid": "Credited to wallet",
     "conversionRejected": "Not approved"
+  },
+  "legal": {
+    "article": {
+      "breadcrumbLabel": "Breadcrumb",
+      "home": "Home",
+      "updated": "Last updated:",
+      "toc": "Contents",
+      "table": "Table",
+      "nav": "Legal documents"
+    },
+    "contact": {
+      "heading": "Contact us",
+      "operatorLabel": "Site operator:",
+      "operator": "Kenyon Express, licensed dealer (osek murshe)",
+      "email": "Email:",
+      "form": "Online form:",
+      "formLink": "Contact page",
+      "site": "Website: www.kenyonexpress.co.il",
+      "writtenOnly": "Support is in writing only. There is no phone line."
+    },
+    "withdraw": {
+      "title": "Withdraw consent to measurement cookies",
+      "copy": "This button deletes the ke_consent cookie. On the next page load the consent banner is shown again, and no measurement tool loads until you decide again.",
+      "button": "Withdraw consent and show the banner again"
+    },
+    "cookiesPage": {
+      "contactIntro": "For questions about cookies, the measurement tools or withdrawing consent, reach us here:"
+    }
   }
 }

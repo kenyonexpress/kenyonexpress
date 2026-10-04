@@ -63,6 +63,7 @@ const PUBLIC_ACTIONS = new Map<string, string>([
   ['contact.ts:submitContactForm', 'public form, rate limited'],
   ['supplier-lead.ts:submitSupplierLead', 'public form, rate limited'],
   ['consent.ts:decideConsent', 'cookie-banner decision, records no personal data'],
+  ['consent.ts:withdrawConsent', 'clears the cookie-banner decision, records no personal data'],
   // Token-bearing links, where the unguessable token is the authorisation.
   ['newsletter.ts:confirmNewsletter', 'token in the confirmation link is the authorisation'],
   ['newsletter.ts:unsubscribeByToken', 'unsubscribe must work from an email client'],

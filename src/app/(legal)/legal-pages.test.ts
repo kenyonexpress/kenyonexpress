@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { LEGAL_DOCS } from './_content'
+import { CANONICAL_PATH, LEGAL_DOCS } from './_content'
 import type { LegalDoc } from './_content/types'
 
 /**
@@ -38,8 +38,21 @@ describe('every legal document is reachable', () => {
     expect(directories).toEqual(LEGAL_DOCS.map((d) => d.slug).sort())
   })
 
-  it('lists the four documents the launch checklist names', () => {
-    expect(LEGAL_DOCS.map((d) => d.slug)).toEqual(['terms', 'privacy', 'returns', 'accessibility'])
+  it('lists the five documents the launch checklist names', () => {
+    expect(LEGAL_DOCS.map((d) => d.slug)).toEqual([
+      'terms',
+      'privacy',
+      'returns',
+      'cookies',
+      'accessibility',
+    ])
+  })
+
+  it('gives every document one canonical path, and never a /legal/ one', () => {
+    for (const document of LEGAL_DOCS) {
+      expect(CANONICAL_PATH[document.slug]).toMatch(/^\/[a-z_-]+$/)
+      expect(CANONICAL_PATH[document.slug]).not.toContain('/legal/')
+    }
   })
 })
 
@@ -142,6 +155,18 @@ describe('the terms state the product facts the code enforces', () => {
 describe('the cancellation policy separates before redemption from after', () => {
   const returns = textOf(doc('returns'))
 
+  it('says an unredeemed coupon is transferable', () => {
+    expect(returns).toContain('ניתן להעברה לאדם אחר')
+  })
+
+  it('says a physical product defaults to a full refund', () => {
+    expect(returns).toContain('החזר מלא של מחיר המוצר, 100%')
+  })
+
+  it('says there is no refund after the window closes', () => {
+    expect(returns).toContain('אין עוד זכות ביטול לפי החוק ואין החזר')
+  })
+
   it('gives the 14 day distance-selling window', () => {
     expect(returns).toContain('14 יום')
   })
@@ -183,6 +208,50 @@ describe('the privacy policy matches the stack it describes', () => {
     expect(privacy).toContain('סעיף 13')
     expect(privacy).toContain('סעיף 14')
     expect(privacy).toContain('30 ימים')
+  })
+})
+
+describe('the cookie policy names what the code sets and loads', () => {
+  const cookies = textOf(doc('cookies'))
+
+  it('lists every first-party cookie and storage key by the name the code uses', () => {
+    for (const name of [
+      'ke_session_id',
+      'ke_consent',
+      'ke_attr',
+      'ke_cart_mirror_v1',
+      'ke_ph_distinct_id',
+      'ke_ph_id',
+    ]) {
+      expect(cookies).toContain(name)
+    }
+  })
+
+  it('names all three consent-gated tools, PostHog included', () => {
+    for (const tool of ['PostHog', 'Meta Pixel', 'Google Analytics']) {
+      expect(cookies).toContain(tool)
+    }
+  })
+
+  it('says nothing loads before the accept button, and how to withdraw', () => {
+    expect(cookies).toContain('"אישור"')
+    expect(doc('cookies').sections.map((s) => s.id)).toContain('withdraw')
+  })
+})
+
+describe('every document names the operator and keeps phone numbers out', () => {
+  it.each(LEGAL_DOCS.map((d) => [d.slug, d] as const))('%s', (_slug, document) => {
+    const text = textOf(document)
+    // Owner policy (22.09.2026): written support only. A legal page is the
+    // last place a phone number should reappear. (The WORD WhatsApp may still
+    // appear: the privacy document lists it among the channels whose content
+    // is retained, which is a fact about data, not a number to dial.)
+    expect(text).not.toMatch(/\b0[2-9]\d?-?\d{3}-?\d{4}\b/)
+    expect(text).not.toMatch(/\+972/)
+  })
+
+  it('states the legal form of the operator in the terms', () => {
+    expect(textOf(doc('terms'))).toContain('קניון אקספרס, עוסק מורשה')
   })
 })
 

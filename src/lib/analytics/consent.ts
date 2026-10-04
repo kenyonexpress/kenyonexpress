@@ -18,7 +18,13 @@ export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 // 12 months
 // so every visitor is asked again. This is the exact situation the version
 // field was added for, and skipping the bump would have been the quiet kind of
 // wrong: the same cookie value silently meaning something it never meant.
-export const CONSENT_WORDING_VERSION = 2
+//
+// 2 -> 3 (05.10, W02): the banner named Google Analytics and Meta while
+// PostHog (events AND session replay) loaded behind the same cookie unnamed.
+// A consent that does not name a recipient does not cover that recipient, so
+// the wording now names all three and links the cookie policy, and everyone
+// is asked again.
+export const CONSENT_WORDING_VERSION = 3
 
 export type ConsentDecision = 'granted' | 'denied'
 

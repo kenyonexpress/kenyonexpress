@@ -31,6 +31,7 @@ import { describe, expect, it } from 'vitest'
 
 const CANONICAL = [
   'src/app/(store)/accessibility/page.tsx',
+  'src/app/(store)/cookies/page.tsx',
   'src/app/(store)/privacy-policy/page.tsx',
   'src/app/(store)/refund_returns/page.tsx',
   'src/app/(store)/terms-and-conditions/page.tsx',
@@ -42,6 +43,7 @@ const CANONICAL = [
  */
 const UNLINKED = [
   'src/app/(legal)/legal/accessibility/page.tsx',
+  'src/app/(legal)/legal/cookies/page.tsx',
   'src/app/(legal)/legal/privacy/page.tsx',
   'src/app/(legal)/legal/returns/page.tsx',
   'src/app/(legal)/legal/terms/page.tsx',
@@ -65,7 +67,7 @@ function legalPages(): string[] {
   const cwd = process.cwd()
   return walk(resolve(cwd, 'src/app'))
     .map((file) => relative(cwd, file).split('\\').join('/'))
-    .filter((file) => /terms|privacy|accessib|refund_returns|legal\//.test(file))
+    .filter((file) => /terms|privacy|accessib|refund_returns|cookies|legal\//.test(file))
     .filter((file) => !file.includes('/checkout/'))
     .sort()
 }
@@ -82,7 +84,13 @@ describe('the legal document inventory', () => {
       resolve(process.cwd(), 'src/components/layout/SiteFooter.tsx'),
       'utf8',
     )
-    for (const href of ['/terms-and-conditions', '/privacy-policy', '/refund_returns']) {
+    for (const href of [
+      '/terms-and-conditions',
+      '/privacy-policy',
+      '/refund_returns',
+      '/cookies',
+      '/accessibility',
+    ]) {
       expect(footer, `SiteFooter no longer links ${href}`).toContain(href)
     }
     // /legal/* now redirects to these paths, so a footer link there would send
@@ -107,7 +115,7 @@ describe('the legal document inventory', () => {
    * no longer "the second set is hidden" but "there is no second set". A page
    * under `/legal/*` that goes back to rendering a document fails here.
    */
-  it.each(['terms', 'privacy', 'returns', 'accessibility'])(
+  it.each(['terms', 'privacy', 'returns', 'cookies', 'accessibility'])(
     '/legal/%s redirects to the canonical path instead of serving a second document',
     (slug) => {
       const page = readFileSync(
@@ -129,6 +137,7 @@ describe('the legal document inventory', () => {
       ['terms-and-conditions', 'terms'],
       ['privacy-policy', 'privacy'],
       ['refund_returns', 'returns'],
+      ['cookies', 'cookies'],
       ['accessibility', 'accessibility'],
     ] as const) {
       const page = readFileSync(resolve(process.cwd(), `src/app/(store)/${path}/page.tsx`), 'utf8')

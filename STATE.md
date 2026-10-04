@@ -1,79 +1,88 @@
-RESUME FROM: W02
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W01 DONE: שורת
-אייקוני ה-header נבנתה מחדש כ-Electro header-v8 בדיוק, שער parity 8.60 /
-9.02 / 4.16 PASS ב-380/768/1440; M01-c96 ו-L02..L10 הועברו לארכיון; RESUME FROM
-מצביע ל-W02, ואם אין W02 בתור, ההמשך הוא M02-c96)
+RESUME FROM: W03
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W02 DONE: חמשת
+העמודים המשפטיים בפריסת Electro, `/cookies` עמוד חמישי עם ביטול הסכמה,
+קישורים בפוטר ובקופה, באנר נוקב ב-PostHog, שער parity 7.92 / 9.03 / 4.16
+PASS; W01 הועבר לארכיון; RESUME FROM מצביע ל-W03, ואם אין W03 בתור,
+ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W01 - DONE (05.10.2026): HEADER ICONS EXACT ELECTRO. שורת האייקונים היא
-`div.header-icons` של Electro header-v8 בדיוק, נמדדה מהדף החי; שער parity
-8.60% / 9.02% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
-`6d93cd038`, עץ נקי. W01 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`,
-לכן בוצע במלואו. **שלב 1, נמדד:** Playwright Chromium (אותו הקשר
-אנטי-אוטומציה של `scripts/capture-electro.mjs`) על
-`https://electro.madrasthemes.com/home-v7/` ב-1440, `getComputedStyle` על
-`.header-icons`, `.header-icon`, `.header-icon i`, `.header-icon-counter`,
-`.cart-items-total-price` וה-`dropdown-menu-user-account` פתוח, נכתב
-ל-`refs/electro-header-icons.json` (14.9KB, `git add -f` כי `refs/` ב-gitignore
-כמו ששת קבצי ה-json המחויבים שם). עיקר המספרים: אייקון 22.7031x40.4531,
-גליף `font-electro` 22.8469px על שורה 20.5622, רווח 37.996px, צבע
-rgb(51,62,72); מונה 20.9688 עגול, top 22.4688 / left 7, rgb(254,215,0),
-11.991px/700; תפריט חשבון 220px, border-top 2px צהוב, radius 0 0 7px 7px,
-צל 0 2px 5px rgba(0,0,0,.28), פנים 0 21px, 12px ממורכז, כפתור כניסה צהוב
-3px 6px radius 4px 600; מחיר העגלה 15.988px/700 נמדד ומסומן
-`rendered_here: false`. **שלב 2, חילוץ הגופן הצליח, אין fallback:**
-`font-electro.ttf` (17,120 bytes) הורד מהתבנית, `pip install --user
-fonttools` (4.60.2), `SVGPathPen` דרך `TransformPen` להיפוך y, שלושת
-הגליפים n/g/r (`ec-shopping-bag`/`ec-favorites`/`ec-user`) נכתבו
-ל-`src/components/icons/electro/{ShoppingBag,Favorites,User}.tsx` עם
-viewBox של bbox הגליף ביחידות הגופן (1024/em) וגודל ברירת מחדל של אותו
-bbox ב-22.8469px. **שלב 3, הבנייה מחדש:** `HeaderIcons.tsx` חדש הוא המקום
-היחיד שמרנדר את השורה, ושני ה-headers (handheld ב-`Header.tsx`, masthead
-ב-`MastheadNav.tsx`) טוענים אותו; סדר DOM מועדפים, חשבון, עגלה, כלומר
-ב-RTL העגלה בקצה השמאלי (נמדד מקומית ב-1440: עגלה x135, חשבון x195.7,
-מועדפים x256.3, רווח 38; ב-380: x15 / 57.7 / 100.4, רווח 20 לפי 42px pitch
-של האתר החי); המונה הצהוב על העגלה בלבד, מוצג גם ב-0 כמו Electro,
-`inset-inline-start: 7px` (מראה של `left: 7px`); **מחיר העגלה הוסר לגמרי**
-מ-`CartNavLink.tsx` (אין `shekels`, אין `cart.subtotal`, אין
-`total-price`); מונה המועדפים הוסר (ב-header-v8 יש מונה רק ל-compare
-ולעגלה); `AccountMenu.tsx` חדש פותח את התפריט בסגנון Electro (hover + click
-+ מקלדת, Escape, לחיצה בחוץ) עם "לקוח חוזר?" / התחברות -> `/login`
-ו-"עדיין אין לך חשבון?" / הרשמה -> `/signup`, דרך הקטלוג (`nav.returningCustomer`,
-`nav.noAccountYet`, `nav.headerActions` נוספו ל-he/en); **בחר אזור עבר
-ל-TopBar ליד התחברות** עם `|` משלו ואותו שער `lg` שהיה לו, כך ש-380/768 לא
-משנים wrap; הצבעים והאורכים המדויקים ב-`src/styles/header-icons.css` (מיובא
-ב-`app.css`), ולא ב-tsx, בגלל שער ה-tokens. **החלטות שהתקבלו לבד:** (א)
-`header-icons.test.ts` נכתב מחדש: הכלל הישן "שני אייקונים בלבד ואפס אייקון
-חשבון" סתר את המשימה ישירות, הכלל החדש הוא השורה של Electro (3 פריטים
-בסדר הזה, אין מחיר, שני ה-headers טוענים רכיב אחד, בחר אזור רק ב-TopBar,
-`/login` רק ב-TopBar ו-AccountMenu); (ב) `TopBar.test.tsx` מצפה ל-4
-מפרידים במקום 3; (ג) תקרת ה-i18n ירדה 627 -> 626 כי aria-label מילולי של
-MastheadNav עבר לקטלוג; (ד) compare אינו פריט בשורת האייקונים כי אין פיצ'ר
-השוואה, ואייקון שפותח כלום גרוע מרווח; (ה) שטח המגע 44px נשמר דרך
-`::before` בלתי נראה כדי שהקופסה המצוירת תישאר 22.7. **מלכודת סביבה
-שנמדדה:** ה-shell מזריק 30 שמות `[SENSITIVE]` ועוד ~40 ערכים אמיתיים
-(`RESEND_API_KEY`, מפתחות Supabase זרים, `VERCEL_*`); ב-zsh `env $UNSET`
-לא מפצל מילים ולכן ביטול ההזרקה לא פעל בכלל בשני ניסיונות (build נפל על
-"Invalid API key", 7 בדיקות resend נפלו); `${=UNSET}` פתר הכל. **שערים:**
-`pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 626/626, tokens, rtl,
-docs-index 282 ללא שינוי); `pnpm test` 615/615 קבצים, 7347 עברו, 12 דולגו
-(7359); build exit 0, `BUILD_ID` `NnvkKulrgOeCdWsxUvtkm`, 92 שורות
-`supabase.rls_denied` על reviews (זהה ל-M01-c96). **השער, בחזית, שרת חדש על
-3396 (`env ${=UNSET} PORT=3396 CARDCOM_USE_MOCK=true pnpm start`, חומם
-פעמיים 200), `--baseline=refs/ke_live_W.png`, שלוש שורות חדשות
-ב-`docs/UI-PARITY-REPORT.md` (`6d93cd038-dirty`):** 380: 8.60% PASS (overall
-14.1%); 768: 9.02% PASS (overall 16.03%); 1440: 4.16% PASS (overall 15.46%).
-דלתא מול M01-c96: +0.02 / +0.01 / 0.00, בתוך רעש הסקריפט; השורה החדשה
-לא הזיזה אף רוחב. השרת על 3396 נסגר בסוף; השרת הזר על 3311 לא נגע.
-**לא נעשה:** אין מיגרציה, אין שינוי env/DNS/Vercel, אין deploy ידני
-(push לענף הוא פריסה אוטומטית לפי L02, וזה הכלל הקיים). קבצים:
-`refs/electro-header-icons.json`, `src/components/icons/electro/*`,
-`src/components/layout/{HeaderIcons,AccountMenu,MastheadNav,Header,TopBar,RegionMenu}.tsx`,
-`src/components/cart/{CartNavLink,HeaderCart}.tsx`,
-`src/components/wishlist/WishlistNavLink.tsx`, `src/styles/header-icons.css`,
-`src/app/app.css`, `messages/{he,en}.json`, `scripts/hebrew-literal-scan.mjs`,
-שתי בדיקות, `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+**W02 - DONE (05.10.2026): LEGAL PAGES COMPLETE. חמשת המסמכים המשפטיים
+קיימים, בעברית, בפריסת עמוד התקנון של Electro, מקושרים מהפוטר ומטקסט
+ההסכמה בקופה; באנר העוגיות חוסם PostHog, Meta ו-GA4 עד "אישור" ורושם את
+ההחלטה; שער parity 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd`
+אומת, HEAD בהגעה `65d3d9c1d`, עץ נקי. W02 לא הופיע ב-STATE.md, ב-BACKLOG או
+ב-`git log -20`. **מה נמצא:** ארבעה מסמכים כבר היו (`(legal)/_content/*`,
+מוגשים ב-`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`,
+`/accessibility`), `/cookies` היה redirect ב-`next.config.ts` אל
+`/privacy-policy#cookies` (L05), טקסט ההסכמה בקופה היה "קראתי ואני מסכים
+לאתר תנאי שימוש" בלי שום קישור, הבאנר נקב ב-Google Analytics ו-Meta בלבד
+בעוד PostHog (אירועים והקלטת מסך) נטען מאחורי אותה עוגייה בלי להיקרא בשם,
+ו-`LegalContactBlock` הדפיס מספר וואטסאפ תחת "יצירת קשר" בניגוד למדיניות
+"בלי טלפון". **הפריסה, נמדדה:** Playwright דרך אתגר ה-Cloudflare (אותו
+מתכון של `capture-electro.mjs`) על `electro.madrasthemes.com/terms-and-conditions/`
+ב-380/768/1440, `getComputedStyle`, נכתב ל-`refs/electro-terms.json`
+(`git add -f`): מכולה 1200 עם padding 15 (1170 פנימי ב-1440, 690 ב-768, 350
+ב-380), פירורי לחם 14/23.996 pt 25.004 pb 22.4 (380: 9/9), כותרת ממורכזת
+39.998/47.9976 משקל 500 בכל רוחב, שורת "עודכן" 14 מתחתיה, header mb 39.998,
+h2 25.004/40.0064 משקל 500 mb 40.0064, p 14/23.996 mb 16, ol padding-start
+32, section mb 39.998 (380: 28), צבע rgb(51,62,72) = `--color-heading`.
+הכל ב-`src/styles/legal-page.css` (מיובא ב-`app.css`), `LegalArticle.tsx`
+נכתב מחדש עליו; נמדד חזרה על `/cookies` המקומי ב-1440: x135 w1170, 40/48,
+25/40, 14/24, זהה. **המסמך החמישי:** `_content/cookies.ts` (6 סעיפים:
+קטגוריות, הכרחיות, מדידה אחרי אישור עם טבלת PostHog/Meta Pixel/GA4/ke_attr
+ומשכי שמירה מהקוד, מנגנון ההסכמה, ביטול הסכמה, בסיס משפטי), עמוד
+`(store)/cookies/page.tsx` עם `ConsentWithdrawForm` (server action
+`withdrawConsent` שמוחק את `ke_consent` ומחזיר את הבאנר), `(legal)/legal/cookies`
+מפנה 308, ה-redirect של `/cookies` הוסר מ-`next.config.ts`,
+`CANONICAL_PATH` עבר ל-`_content/index.ts` ומשרת את הפוטר, את ה-sitemap
+(שקרא עד עכשיו את התאריכים של הסט הישן `src/content/legal`) ואת הקופה.
+**14ג ב-`returns.ts`:** היה כבר (14 יום, 2 ימי עסקים לשירות במועד, 7 להארחה,
+min(5%, ₪100), מומש = אין ביטול); נוספו במפורש: אין החזר אחרי 14 יום, קופון
+שטרם מומש ניתן להעברה, ומוצר פיזי לפי מדיניות פר-מוצר עם ברירת מחדל החזר
+מלא 100% (תואם `refund_policy` ב-`lib/admin/product-terms.ts`, ברירת מחדל
+`statutory`). **ישות:** "קניון אקספרס, עוסק מורשה" בהגדרות התקנון, בפתיח
+מדיניות העוגיות וב-`LegalContactBlock`; `support@kenyonexpress.co.il`;
+הוואטסאפ והטלפון הוסרו מהבלוק, מ-`accessibility.ts` ומ-`returns.ts`.
+**קופה:** `CheckoutConsentText.tsx` חדש מרנדר "קראתי ואני מסכים/ה לתקנון,
+למדיניות הפרטיות, למדיניות הביטולים וההחזרות, למדיניות העוגיות ולהצהרת
+הנגישות" מ-`LEGAL_DOCS` עם `_blank`+`noopener noreferrer`, ומשפט הפרטיות
+מקשר למדיניות הפרטיות (בדיקה: 4). **באנר:** נוקב ב-PostHog, Meta ו-Google
+Analytics ומקשר ל-`/cookies`; `CONSENT_WORDING_VERSION` 2 -> 3 (כולם
+נשאלים שוב, כי הסכמה שלא נקבה ב-PostHog אינה הסכמה ל-PostHog);
+`decideConsent` רושם `consent.decided` ביומן השרת עם ההחלטה והגרסה
+(הרשומה, בלי זהות); `trackEvent` ב-`posthog.ts` נחסם בעצמו בדפדפן בלי
+עוגיית הסכמה תקפה (3 בדיקות חדשות: אפס fetch, אפס `ke_ph_id`, אפס
+localStorage) כך שהחסימה מבנית ולא תלויה בשלושת הקוראים. **החלטות שהתקבלו
+לבד:** (א) `/cookies` הוא עמוד ולא עוגן, בניגוד ל-L05, כי כפתור ביטול
+ההסכמה חייב כתובת; `legal-routes.test.ts` נועל עכשיו שאין redirect עליו;
+(ב) המילה "וואטסאפ" נשארה במדיניות הפרטיות (שורת מידע שנשמר), הבדיקה
+החדשה אוסרת מספרי טלפון בלבד; (ג) `scripts/build-legacy-redirects.mjs`
+הורץ כדי ש-`legacy-redirects.test.ts` יראה את שני הנתיבים החדשים, וה-192
+הממתינה התחדשה (32 במקום 33: `/coupon-scanner` נשר כ-`source_is_live`; לא
+הוחלה, `migrations/pending` בלבד); (ד) תקרת ה-i18n 626 -> 624 (ליטרלים
+עברו לקטלוג `legal.*`, `checkout.consent.*` ב-he/en); (ה) `withdrawConsent`
+הוכרז public ב-`auth-coverage.test.ts` כמו `decideConsent`. **מלכודת סביבה
+חדשה:** ה-shell מזריק גם `CARDCOM_USE_MOCK=true` (לא `[SENSITIVE]`), וזה
+מפיל `invoices.test.ts > does not spend an attempt when there are no
+credentials`; `-u CARDCOM_USE_MOCK` ברשימת ה-UNSET פותר. **שערים:**
+`pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 624/624, tokens, rtl,
+docs-index 282); `pnpm test` 615/615 קבצים, 7372 עברו, 12 דולגו, אחרי תיקון
+שני הנפילות למעלה; build exit 0, `BUILD_ID` `XAVWy4JuBrBKuTeBKMdY9`,
+`/cookies` ○ static; שרת חדש על 3396, חמשת העמודים 200, `/legal/cookies`
+308 -> `/cookies`, sitemap `content.xml` מכיל את חמשת הנתיבים עם
+2026-10-05. **השער, בחזית, `--baseline=refs/ke_live_W.png`, שלוש שורות
+ב-`docs/UI-PARITY-REPORT.md` (`65d3d9c1d-dirty`):** 380: 7.92% PASS (overall
+14.38%); 768: 9.03% PASS (overall 16.28%); 1440: 4.16% PASS (overall
+14.89%). דלתא מול W01: -0.68 / +0.01 / 0.00; הפוטר שינה href אחד בלבד.
+השרת על 3396 נסגר. **לא נעשה:** אין מיגרציה חדשה, אין החלה, אין שינוי
+env/DNS/Vercel, אין deploy ידני (push לענף = פריסה אוטומטית לפי L02).
+
+**W01 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W02): שורת אייקוני ה-header נבנתה מחדש כ-Electro header-v8 בדיוק
+(`refs/electro-header-icons.json`, שלושה גליפים מ-`font-electro.ttf`,
+`HeaderIcons.tsx`/`AccountMenu.tsx`, מחיר העגלה הוסר), שער parity
+8.60 / 9.02 / 4.16 PASS ב-380/768/1440, ארבעת השערים ירוקים.
 
 **M01-c96 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-W01): שער parity של `/` נמדד שוב מול build מקומי על 3396, 8.58 / 9.01 /

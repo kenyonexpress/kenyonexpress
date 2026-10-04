@@ -35,6 +35,15 @@ const BANNER_STYLE = {
   fontFamily: 'Arial, Helvetica, sans-serif',
 } as const
 
+// A plain <a>, not <Link>: the banner is a Server Component with no client
+// bundle on purpose, and the policy page is a full navigation anyway.
+const LINK_STYLE = {
+  color: 'var(--color-overlay-ink)',
+  textDecoration: 'underline',
+  textUnderlineOffset: '3px',
+  whiteSpace: 'nowrap',
+} as const
+
 const COPY_STYLE = {
   margin: 0,
   fontSize: '14px',
@@ -49,8 +58,11 @@ export default function ConsentBanner() {
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p style={COPY_STYLE}>
           אנחנו אוספים נתוני שימוש באתר (עמודים שנצפו, פריטים שנוספו לעגלה) כדי לשפר אותו ולמדוד
-          פרסום. חלק מהנתונים מועברים ל-Google Analytics ול-Meta, בלי שם, מייל או טלפון. בלי אישור
-          שום כלי חיצוני לא נטען כלל. הזמנות ותשלומים נשמרים בכל מקרה, כחלק מהשירות.
+          פרסום. חלק מהנתונים מועברים ל-PostHog, ל-Meta ול-Google Analytics, בלי שם, מייל או טלפון.
+          בלי אישור שום כלי חיצוני לא נטען כלל. הזמנות ותשלומים נשמרים בכל מקרה, כחלק מהשירות.{' '}
+          <a href="/cookies" style={LINK_STYLE}>
+            מדיניות העוגיות
+          </a>
         </p>
         <div className="flex shrink-0 gap-2" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
           <form action={decideConsent}>

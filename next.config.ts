@@ -174,13 +174,17 @@ const nextConfig: NextConfig = {
       // The English spellings the goal and the docs use, for the same reason.
       { source: '/terms', destination: '/terms-and-conditions', permanent: true },
       { source: '/privacy', destination: '/privacy-policy', permanent: true },
-      // L05 (05.10.2026) measured /returns and /cookies as 404 in production.
-      // Same rule as the two above: an alias onto the one page that holds the
-      // policy, never a second page. The cookie policy is a section of the
-      // privacy document (`(legal)/_content/privacy.ts`, id `cookies`), which
-      // is also where SiteFooter already sends its "מדיניות עוגיות" link.
+      // L05 (05.10.2026) measured /returns as 404 in production. Same rule as
+      // the two above: an alias onto the one page that holds the policy, never
+      // a second page.
+      //
+      // /cookies is NOT here any more. It was an alias onto the cookies section
+      // of the privacy document until W02 (05.10.2026), when the cookie policy
+      // became its own document at `src/app/(store)/cookies/page.tsx`, the one
+      // page that carries the consent-withdrawal control. A redirect here runs
+      // before file routing and would make that page unreachable, which is the
+      // trap docs/legal/README.md section 2 describes.
       { source: '/returns', destination: '/refund_returns', permanent: true },
-      { source: '/cookies', destination: '/privacy-policy#cookies', permanent: true },
     ]
   },
   turbopack: {

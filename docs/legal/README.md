@@ -14,7 +14,16 @@
 | תקנון האתר ותנאי שימוש | `_content/terms.ts` | `legal/terms/page.tsx` | `/legal/terms` |
 | מדיניות פרטיות (תיקון 13) | `_content/privacy.ts` | `legal/privacy/page.tsx` | `/legal/privacy` |
 | מדיניות ביטולים והחזרות | `_content/returns.ts` | `legal/returns/page.tsx` | `/legal/returns` |
+| מדיניות עוגיות (W02, 05.10.2026) | `_content/cookies.ts` | `(store)/cookies/page.tsx` | `/cookies` |
 | הצהרת נגישות (ת"י 5568 AA) | `_content/accessibility.ts` | `legal/accessibility/page.tsx` | `/legal/accessibility` |
+
+**עדכון 05.10.2026 (W02):** ארבעת ה-`/legal/*` מפנים (308) לכתובות
+הקנוניות שב-`CANONICAL_PATH` (`_content/index.ts`), והמסמך החמישי, מדיניות
+העוגיות, נולד ישירות ב-`/cookies` עם כפתור ביטול ההסכמה
+(`ConsentWithdrawForm`). הפריסה היא של עמוד התקנון של Electro, נמדדה
+ב-`refs/electro-terms.json` וכתובה ב-`src/styles/legal-page.css`. פרטי
+הקשר: `קניון אקספרס, עוסק מורשה`, `support@kenyonexpress.co.il`, בלי
+טלפון. חמשת המסמכים מקושרים מהפוטר ומטקסט ההסכמה בקופה.
 
 רכיבים משותפים:
 

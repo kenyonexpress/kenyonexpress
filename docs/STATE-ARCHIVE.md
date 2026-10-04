@@ -2,6 +2,77 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W01 (הועבר מ-STATE.md ב-W02, לשמירה על תקרת 300 שורות)
+
+**W01 - DONE (05.10.2026): HEADER ICONS EXACT ELECTRO. שורת האייקונים היא
+`div.header-icons` של Electro header-v8 בדיוק, נמדדה מהדף החי; שער parity
+8.60% / 9.02% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה
+`6d93cd038`, עץ נקי. W01 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`,
+לכן בוצע במלואו. **שלב 1, נמדד:** Playwright Chromium (אותו הקשר
+אנטי-אוטומציה של `scripts/capture-electro.mjs`) על
+`https://electro.madrasthemes.com/home-v7/` ב-1440, `getComputedStyle` על
+`.header-icons`, `.header-icon`, `.header-icon i`, `.header-icon-counter`,
+`.cart-items-total-price` וה-`dropdown-menu-user-account` פתוח, נכתב
+ל-`refs/electro-header-icons.json` (14.9KB, `git add -f` כי `refs/` ב-gitignore
+כמו ששת קבצי ה-json המחויבים שם). עיקר המספרים: אייקון 22.7031x40.4531,
+גליף `font-electro` 22.8469px על שורה 20.5622, רווח 37.996px, צבע
+rgb(51,62,72); מונה 20.9688 עגול, top 22.4688 / left 7, rgb(254,215,0),
+11.991px/700; תפריט חשבון 220px, border-top 2px צהוב, radius 0 0 7px 7px,
+צל 0 2px 5px rgba(0,0,0,.28), פנים 0 21px, 12px ממורכז, כפתור כניסה צהוב
+3px 6px radius 4px 600; מחיר העגלה 15.988px/700 נמדד ומסומן
+`rendered_here: false`. **שלב 2, חילוץ הגופן הצליח, אין fallback:**
+`font-electro.ttf` (17,120 bytes) הורד מהתבנית, `pip install --user
+fonttools` (4.60.2), `SVGPathPen` דרך `TransformPen` להיפוך y, שלושת
+הגליפים n/g/r (`ec-shopping-bag`/`ec-favorites`/`ec-user`) נכתבו
+ל-`src/components/icons/electro/{ShoppingBag,Favorites,User}.tsx` עם
+viewBox של bbox הגליף ביחידות הגופן (1024/em) וגודל ברירת מחדל של אותו
+bbox ב-22.8469px. **שלב 3, הבנייה מחדש:** `HeaderIcons.tsx` חדש הוא המקום
+היחיד שמרנדר את השורה, ושני ה-headers (handheld ב-`Header.tsx`, masthead
+ב-`MastheadNav.tsx`) טוענים אותו; סדר DOM מועדפים, חשבון, עגלה, כלומר
+ב-RTL העגלה בקצה השמאלי (נמדד מקומית ב-1440: עגלה x135, חשבון x195.7,
+מועדפים x256.3, רווח 38; ב-380: x15 / 57.7 / 100.4, רווח 20 לפי 42px pitch
+של האתר החי); המונה הצהוב על העגלה בלבד, מוצג גם ב-0 כמו Electro,
+`inset-inline-start: 7px` (מראה של `left: 7px`); **מחיר העגלה הוסר לגמרי**
+מ-`CartNavLink.tsx` (אין `shekels`, אין `cart.subtotal`, אין
+`total-price`); מונה המועדפים הוסר (ב-header-v8 יש מונה רק ל-compare
+ולעגלה); `AccountMenu.tsx` חדש פותח את התפריט בסגנון Electro (hover + click
++ מקלדת, Escape, לחיצה בחוץ) עם "לקוח חוזר?" / התחברות -> `/login`
+ו-"עדיין אין לך חשבון?" / הרשמה -> `/signup`, דרך הקטלוג (`nav.returningCustomer`,
+`nav.noAccountYet`, `nav.headerActions` נוספו ל-he/en); **בחר אזור עבר
+ל-TopBar ליד התחברות** עם `|` משלו ואותו שער `lg` שהיה לו, כך ש-380/768 לא
+משנים wrap; הצבעים והאורכים המדויקים ב-`src/styles/header-icons.css` (מיובא
+ב-`app.css`), ולא ב-tsx, בגלל שער ה-tokens. **החלטות שהתקבלו לבד:** (א)
+`header-icons.test.ts` נכתב מחדש: הכלל הישן "שני אייקונים בלבד ואפס אייקון
+חשבון" סתר את המשימה ישירות, הכלל החדש הוא השורה של Electro (3 פריטים
+בסדר הזה, אין מחיר, שני ה-headers טוענים רכיב אחד, בחר אזור רק ב-TopBar,
+`/login` רק ב-TopBar ו-AccountMenu); (ב) `TopBar.test.tsx` מצפה ל-4
+מפרידים במקום 3; (ג) תקרת ה-i18n ירדה 627 -> 626 כי aria-label מילולי של
+MastheadNav עבר לקטלוג; (ד) compare אינו פריט בשורת האייקונים כי אין פיצ'ר
+השוואה, ואייקון שפותח כלום גרוע מרווח; (ה) שטח המגע 44px נשמר דרך
+`::before` בלתי נראה כדי שהקופסה המצוירת תישאר 22.7. **מלכודת סביבה
+שנמדדה:** ה-shell מזריק 30 שמות `[SENSITIVE]` ועוד ~40 ערכים אמיתיים
+(`RESEND_API_KEY`, מפתחות Supabase זרים, `VERCEL_*`); ב-zsh `env $UNSET`
+לא מפצל מילים ולכן ביטול ההזרקה לא פעל בכלל בשני ניסיונות (build נפל על
+"Invalid API key", 7 בדיקות resend נפלו); `${=UNSET}` פתר הכל. **שערים:**
+`pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 626/626, tokens, rtl,
+docs-index 282 ללא שינוי); `pnpm test` 615/615 קבצים, 7347 עברו, 12 דולגו
+(7359); build exit 0, `BUILD_ID` `NnvkKulrgOeCdWsxUvtkm`, 92 שורות
+`supabase.rls_denied` על reviews (זהה ל-M01-c96). **השער, בחזית, שרת חדש על
+3396 (`env ${=UNSET} PORT=3396 CARDCOM_USE_MOCK=true pnpm start`, חומם
+פעמיים 200), `--baseline=refs/ke_live_W.png`, שלוש שורות חדשות
+ב-`docs/UI-PARITY-REPORT.md` (`6d93cd038-dirty`):** 380: 8.60% PASS (overall
+14.1%); 768: 9.02% PASS (overall 16.03%); 1440: 4.16% PASS (overall 15.46%).
+דלתא מול M01-c96: +0.02 / +0.01 / 0.00, בתוך רעש הסקריפט; השורה החדשה
+לא הזיזה אף רוחב. השרת על 3396 נסגר בסוף; השרת הזר על 3311 לא נגע.
+**לא נעשה:** אין מיגרציה, אין שינוי env/DNS/Vercel, אין deploy ידני
+(push לענף הוא פריסה אוטומטית לפי L02, וזה הכלל הקיים). קבצים:
+`refs/electro-header-icons.json`, `src/components/icons/electro/*`,
+`src/components/layout/{HeaderIcons,AccountMenu,MastheadNav,Header,TopBar,RegionMenu}.tsx`,
+`src/components/cart/{CartNavLink,HeaderCart}.tsx`,
+`src/components/wishlist/WishlistNavLink.tsx`, `src/styles/header-icons.css`,
+`src/app/app.css`, `messages/{he,en}.json`, `scripts/hebrew-literal-scan.mjs`,
+שתי בדיקות, `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M01-c96 (הועבר מ-STATE.md ב-W01, לשמירה על תקרת 300 שורות)
 
 **M01-c96 - DONE (05.10.2026): שער ה-parity של `/` נמדד שוב ב-380/768/1440,

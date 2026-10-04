@@ -384,6 +384,19 @@
   margin: 0 0 8px;
 }
 
+/* The five legal documents linked from the consent sentence (W02). Underlined
+   in the running ink, not the brand blue: a tickbox sentence with five blue
+   words reads as five buttons. */
+.checkout-terms__link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.checkout-terms__link:hover {
+  color: #333e48;
+}
+
 .checkout-error {
   background: #fef2f2;
   color: #dc3545;

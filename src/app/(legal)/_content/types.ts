@@ -29,8 +29,11 @@ export interface LegalSection {
 }
 
 export interface LegalDoc {
-  /** Path segment under `/legal`. */
-  slug: 'terms' | 'privacy' | 'returns' | 'accessibility'
+  /**
+   * Stable identity of the document. The public URL is `CANONICAL_PATH[slug]`
+   * in `./index.ts`, not `/legal/<slug>`: the `/legal/*` paths only redirect.
+   */
+  slug: 'terms' | 'privacy' | 'returns' | 'accessibility' | 'cookies'
   title: string
   /** Sentence for `<meta name="description">` and for the footer link title. */
   description: string

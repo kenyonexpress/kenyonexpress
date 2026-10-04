@@ -1,5 +1,5 @@
+import { CANONICAL_PATH, LEGAL_DOCS } from '@/app/(legal)/_content'
 import { sortedPosts } from '@/content/blog'
-import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { REGIONS, regionHref } from '@/lib/regions'
 
 /**
@@ -285,11 +285,16 @@ export function contentSitemapEntries(
     })),
     // The legal pages DO carry a date, because they have one: `updatedAt` is a
     // field of the document, so unlike `/contact` there is a real signal to
-    // publish. They are also the four addresses the old site already has
+    // publish. Four of the five are the addresses the old site already has
     // indexed, which is why they are listed rather than left to be found.
-    ...LEGAL_PAGE_SLUGS.map((slug) => ({
-      url: `${site}/${slug}`,
-      lastModified: new Date(getLegalPage(slug).updatedAt),
+    //
+    // Read from the documents the pages actually render (`(legal)/_content`),
+    // not from the retired `src/content/legal` set: until W02 this list took
+    // its dates from the older text, so the sitemap said 2026-08-07 for a page
+    // whose own header said 2026-09-24.
+    ...LEGAL_DOCS.map((doc) => ({
+      url: `${site}${CANONICAL_PATH[doc.slug]}`,
+      lastModified: new Date(doc.updatedAt),
       changeFrequency: 'yearly' as const,
       priority: 0.3,
     })),

@@ -1,17 +1,8 @@
 import Link from 'next/link'
-import { LEGAL_DOCS } from '../_content'
-import type { LegalSlug } from '../_content'
-
-/** `/legal/*` only redirects here, so link the canonical path directly and skip the hop. */
-const CANONICAL_PATH: Record<LegalSlug, string> = {
-  terms: '/terms-and-conditions',
-  privacy: '/privacy-policy',
-  returns: '/refund_returns',
-  accessibility: '/accessibility',
-}
+import { CANONICAL_PATH, LEGAL_DOCS } from '../_content'
 
 /**
- * The four legal pages, as one link list.
+ * The five legal pages, as one link list.
  *
  * One component rather than a copied `<ul>` per page, because the failure mode
  * of a copied list is a legal page that does not link to the policy it defers
@@ -34,20 +25,20 @@ export default function LegalFooterLinks({
 }) {
   return (
     <nav aria-label="מסמכים משפטיים" className={className}>
-      <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+      <ul className="legal-footer-links">
         {LEGAL_DOCS.map((doc) => {
           const isCurrent = doc.slug === current
           return (
             <li key={doc.slug}>
               {isCurrent ? (
-                <span aria-current="page" className="font-semibold text-heading">
+                <span aria-current="page" className="legal-footer-links__current">
                   {doc.title}
                 </span>
               ) : (
                 <Link
                   href={CANONICAL_PATH[doc.slug]}
                   title={doc.description}
-                  className="text-heading/80 underline underline-offset-4 hover:text-heading"
+                  className="legal-footer-links__link"
                 >
                   {doc.title}
                 </Link>
