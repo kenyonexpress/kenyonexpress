@@ -1,7 +1,37 @@
-RESUME FROM: M07-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M06-c94 DONE: שער build נבדק מחדש, exit 0, אפס דריפט מ-M06-c93)
+RESUME FROM: M08-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M07-c94 DONE: סריקת TODO/FIXME חזרה, אותם שני סמנים, שניהם מתועדים ב-BACKLOG, אפס דריפט מ-M07-c93)
 
 ## המשך מ:
+
+**M07-c94 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days, resolve or file in docs/BACKLOG.md", זהה במהות ל-M07-c93.
+`pwd` אומת, עץ נקי, HEAD `a7f73e178` (M06-c94). `git diff c72d6b385
+HEAD -- src public next.config.* package.json docs/BACKLOG.md
+scripts/final-audit*.mjs` ריק (אפס שינוי קוד או בשער מאז M07-c93) — אין
+דריפט לתקן. `git grep -n -E 'TODO|FIXME' -- src scripts supabase
+migrations` מחזיר אותם סמנים בדיוק: שני `TODO(cardcom)` ב-
+`src/lib/payments/cardcom.ts:254` (זיכוי לגאסי) ו-`:319` (מסמכים),
+שניהם נושאים הפניית issue בתוך אותה רשימת תגובה (`Tracked in #41`/
+`#42`), ו-`src/lib/whatsapp.test.ts:91` שהוא מחרוזת ליטרלית `'TODO'`
+בבדיקה, לא סמן עבודה (מאומת: לא בתוך הערה, `scanMarkers` ב-
+`scripts/final-audit-lib.mjs` מתעלם ממנו). `git log -1` על
+`cardcom.ts` חוזר ל-`542c0db26` (09.09.2026), שני הסמנים עצמם מ-24.07
+ו-07.08.2026 לפי `git log -S` — שניהם ישנים משבעה ימים, התנאי של
+הפריט. `node scripts/final-audit.mjs` מדווח `ok 0 work markers
+(TODO/FIXME/HACK/XXX) (of 2)` — שני הממצאים קיימים אך `tracked` (יש
+הפניית issue), לא debt לא-ממוען. שניהם כבר מתועדים ב-`docs/BACKLOG.md`
+סעיף 6 (הועבר שם ב-M07-c67, לא השתנה): מחכים לאימות שם/שדה מול טרמינל
+Cardcom אמיתי, חוסם STATE.md חוסם #8. **אין פעולה נדרשת: זהה בביט
+ל-M07-c93, אפס סמן חדש ואפס סמן שהפסיק לירות.** ארבעת השערים רצו: `pwd`
+אומת מראש; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט)
+נקי; `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, זהה ביט ל-M06-c94; פורט 3311 תפוס על ידי סשן מקביל אחר
+(`lsof`/cwd אישר שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט
+חלופי 4724 (פנוי), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4724 pnpm build` exit 0
+(`.next/BUILD_ID` נוצר). אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs`
+לא נדרש. M01-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
+שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M06-c94 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
 commit", זהה במהות ל-M06-c93. `pwd` אומת, עץ נקי, HEAD `3ddeb8914`
@@ -76,43 +106,12 @@ PASS**, שלושתם מסומנים `HEIGHT RATIO` (תמיד היו, לא רגר
 על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
 
-**M01-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c93. `pwd`
-אומת, עץ נקי, HEAD `bc7875794` (M18-c93). `git diff c764c40b7 HEAD --
-src public next.config.* package.json scripts/compare.mjs` ריק (אפס
-שינוי קוד או בשער מאז M01-c93). פורט 3311 תפוס על ידי `next-server`
-מריצה מקבילה אחרת (אותו `cwd`, לא לנגיעה, סשן אחר), ולכן נבחר פורט
-חלופי 4720 (`lsof` אישר פנוי מראש, ואומת שוב שה-`cwd` של המאזין על 4720
-הוא הריפו הזה). `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4720 pnpm build` exit 0, `PORT=4720
-pnpm start`, `/` החזיר `200`. השער רץ בחזית פר-רוחב עם
-`--baseline='refs/ke_live_{width}.png'` (חוסם #14 למעלה: הדומיין החי
-מצביע כבר לפריסה שלנו, אז reference קפוא הוא חובה, לא live navigation).
-**380: `8.58%` PASS. 1440: `4.16%` PASS. 768: תנודתי בין ריצות על אותו
-build וקומיט** — ריצה ראשונה (12:50) `14.08%` **FAIL**, שלוש ריצות
-חזרה אחריה (12:53, 12:55, 12:57) כולן `9.01%` PASS. הנתון היציב (`9.01%`)
-זהה בדיוק לרשום ב-M01-c93, כלומר אפס דריפט קוד. ה-`FAIL` החד-פעמי לא
-חזר בשלוש ריצות רצופות אחריו ונראה כרעש תזמון טעינת תמונות עצלה בדף
-הבית ב-768 (מתועד כתופעה ידועה בהערת `compare.mjs` על "768: 3 such
-images" מול 380/1440 שאין בהן התנהגות הזו), לא כרגרסיה: קוד, `scripts/
-compare.mjs` ו-`next.config.*` אומתו בלתי-משתנים לפני המדידה.
-**ממצא חדש לתיעוד, לא לתיקון מצד הסוכן:** השער ב-768 על דף הבית אינו
-דטרמיניסטי לחלוטין בין ריצות עוקבות על אותו build (עד 5 נקודות אחוז
-הפרש); אם ה-`FAIL` יחזור ברצף בפעם הבאה, ראו הערה זו לפני שמניחים
-רגרסיית קוד. כל שבע הריצות (380 פעמיים, 1440 פעם, 768 ארבע פעמים)
-נכתבו אוטומטית ל-`docs/UI-PARITY-REPORT.md` (12:46–12:57, commit
-`bc7875794`/`bc7875794-dirty`). שרת נסגר ב-`INT`, פורט 4720 אומת פנוי.
-שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
-`build` exit 0 (למעלה). M13-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
-על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md`.
-
-M18-c93, M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93,
+M01-c94, M18-c93, M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93,
 M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
 ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
 ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93,
 M13 ב-M01-c94, M14 ב-M02-c94, M15/M16 ב-M03-c94, M18 ב-M06-c94), לשמירה
-על תקרת 300 שורות.
+על תקרת 300 שורות. M01-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M07-c94.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
