@@ -715,6 +715,21 @@ unchanged. No migration applied, no code change -- verification only.
     ה-"both painted" מתוך גובה הדף, אחרת ריקנות אמיתית תמשיך לעבור PASS
     בלי שאיש יבדוק). מקור: M01-c67 (אין רשומה קודמת בשום קובץ).
 
+19. **ארבעה משתני env בפרודקשן של Vercel שאף קובץ בקוד אינו קורא, מועמדים
+    להסרה ידנית** (נמדד 05.10.2026, L04, קריאה בלבד; הכלל "never change
+    Vercel env vars" מנע את ההסרה): `CARDCOM_API_KEY`, `CARDCOM_CLIENT_ID`,
+    `CARDCOM_MERCHANT_ID` (מ-16.09, הוחלפו ב-`CARDCOM_TERMINAL_NUMBER`/
+    `CARDCOM_API_NAME`/`CARDCOM_API_PASSWORD` שנוספו ב-04.10, סעיף 3 למעלה
+    נסגר); `APP_BASE_URL` (אותו ערך כמו `NEXT_PUBLIC_APP_URL`);
+    `NEXT_PUBLIC_CARDCOM_SANDBOX` (הקוד קורא `CARDCOM_SANDBOX`);
+    `NEXT_PUBLIC_APP_ENV`. **לא להסיר** `SUPABASE_SERVICE_ROLE_KEY`: הוא
+    נראה ככפילות של `SUPABASE_SECRET_KEY`, אבל `src/lib/supabase/admin.ts`
+    מעדיף אותו קודם והוא המפתח שלקוח ה-admin רץ איתו עכשיו. שם שגוי, לא
+    כפילות: `R2_BUCKET_NAME` קיים אך הקוד קורא `R2_BUCKET`, ולכן `/api/ready`
+    מדווח `r2 not_configured` (לא משנה כל עוד R2 לא מופעל, סעיף 4 ב-STATE).
+    32 מתוך 42 הערכים הם מסוג `sensitive` ואינם ניתנים לקריאה חזרה על ידי
+    אף אחד, כולל דרך ה-API; רק הלוח יכול להחליפם. מקור: STATE.md L04.
+
 ## מה לא ברשימה, ולמה
 
 `docs/MIGRATION-BACKLOG.md` ו-`docs/POST-LAUNCH-BACKLOG.md` הם קבצים

@@ -2,6 +2,36 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L03 (הועבר מ-STATE.md ב-L04, לשמירה על תקרת 300 שורות)
+
+**L03 - DONE (05.10.2026).** משימת התור: "Gate 3: ensure
+~/ke-goals/run-final.sh uses --archive=tgz on every vercel deploy call
+permanently; commit .vercelignore and vercel.json if changed". `pwd` אומת,
+HEAD בהגעה `217ff7534`, עץ נקי. **נמדד:** `grep -n vercel
+~/ke-goals/run-final.sh` מחזיר אפס שורות. הסקריפט (1418 בייט, 04.10 23:13)
+הוא מריץ-תור בלבד: קורא `final-queue.txt`, מפעיל `claude -p` לכל פריט,
+כותב ל-`final-done.txt`. **אין בו אף קריאת `vercel`**, ולכן הדרישה
+מתקיימת באופן ריק ואין מה לשנות; הכללים גם אוסרים לגעת ב-`~/ke-goals`
+(אינו ריפו git). פריסות CLI נעשות על ידי הסוכן בתוך הפריט (L01 הריץ
+`vercel deploy --prod --yes --force --archive=tgz`, הקריאה היחידה ב-`final.log`),
+ומאז L02 כל push ל-`audit/final-audit` נפרס אוטומטית דרך git בלי CLI
+כלל. **`.vercelignore` ו-`vercel.json` לא השתנו:** `--archive=tgz` הוא דגל
+CLI, אין לו מפתח ב-`vercel.json` (נבדק מול הסכימה), ו-`.vercelignore`
+המעוגן מ-`e1719ad66` נכון. **החלטה שהתקבלה לבד:** המקום היחיד בריפו שבו
+פקודת פריסה כתובה הוא התיעוד, ושם הדגל היה חסר; `docs/DEPLOY.md` (שלב 4
+ושלב 6) ו-`docs/DEPLOYMENT.md` עודכנו לפקודה המלאה עם הסבר (18,706 קבצים,
+113MB, L01). לא נוסף סקריפט `deploy:prod` ל-`package.json`: פריסת CLI
+לפרודקשן היא אחד מארבעת מצבי העצירה, ואין להקל עליה. שערים (תחת `env -u` של 55 שמות, כולל 30 `[SENSITIVE]` ו-`VERCEL=1` של
+ה-harness; עם 32 שמות בלבד נפלו 9/7352 באותם שלושה קבצי "key unset"
+המתועדים): `pnpm type-check` exit 0; `pnpm lint` exit 0; `pnpm test`
+615/615 קבצים, 7340 עברו, 12 דולגו (7352), 57.4 שניות;
+`CARDCOM_USE_MOCK=true pnpm build` exit 0 בלי `rm -rf .next` (שרת `next start`
+של סשן אחר, PID 56540, מגיש את `.next` על 3311 כבר 8 שעות), אפס `Invalid API
+key`, `BUILD_ID` `XSkI_Hi72iKYCFhVgeJsJ`, אותן שורות `supabase.rls_denied`
+(חוסם #3). push לענף פורס פרודקשן אוטומטית מאז L02; השינוי הוא תיעוד בלבד. `compare.mjs` לא נדרש (אפס שינוי UI/קוד). L01 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `docs/DEPLOY.md`, `docs/DEPLOYMENT.md`,
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## L01 (הועבר מ-STATE.md ב-L03, לשמירה על תקרת 300 שורות)
 
 **L01 - DONE (05.10.2026, 01:34 מקומי).** משימת התור: "Gate 1 deploy:
