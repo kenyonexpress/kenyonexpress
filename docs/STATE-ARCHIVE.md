@@ -2,6 +2,27 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c91 (הועבר מ-STATE.md ב-M11-c91, לשמירה על תקרת 300 שורות)
+
+**M10-c91 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", זהה ל-M10-c90. `pwd` אומת, עץ נקי, HEAD
+`91b8ae70a` (M09-c91). `git log -1 -- migrations/pending` עדיין
+`48c8792dd` (248): אפס קובץ חדש, 60 קבצי `.sql` (58 מיגרציות +
+`preflight_162/184`) + `APPLY-ORDER.md`/`README.md`. בדיקה ישירה מול
+פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה בלבד, אפס DDL): **0 מ-13
+הטבלאות** של 204/232/234/235/236/239/240/244 קיימות; **0 מ-11 העמודות**
+של 223/232/242/243 קיימות (הפגיעה היחידה בשם, `pickup_points.opening_hours`,
+אינה היעד: 232 מוסיפה `suppliers.opening_hours`; M10-c90 כתב 9 עמודות,
+ספירת `ADD COLUMN` בקבצים נותנת 11 וכולן נבדקו); `anon` בלי SELECT על
+`reviews` (247); 0 מדיניות `*_unified` על `banners` (245); 82 שורות
+`products` עם `city IS NULL` (241). זהה ל-M10-c90. **החוסם כבר רשום**
+(חוסם 3 למטה, `docs/BACKLOG.md` סעיף 5, `docs/RUNBOOK.md`), לא הוחלה אף
+מיגרציה. **החלטה שהתקבלה לבד:** לא נפתח חוסם כפול. שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`
+exit 0 (337/337). לא פריט חזותי, `compare.mjs` לא נדרש. M09-c91 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M09-c91 (הועבר מ-STATE.md ב-M10-c91, לשמירה על תקרת 300 שורות)
 
 **M09-c91 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
