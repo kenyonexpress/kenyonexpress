@@ -2,6 +2,30 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c94 (הועבר מ-STATE.md ב-M17-c94, לשמירה על תקרת 300 שורות)
+
+**M15-c94 - DONE (04.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה ל-M15-c93. `pwd` אומת, עץ נקי, HEAD
+`3937248df` (M14-c94). קוד: הקומיט האחרון על `e2e/route-audit.spec.ts`
+עדיין `b2b4b17a5` (29.09), `git diff --stat 3cd8de7c2..HEAD -- src apps
+packages e2e/route-audit.spec.ts next.config.ts` (מאז M15-c93) **ריק**,
+אפס שינוי בכל נתיב שעשוי להשפיע על הידרציה או קונסולה. בכל זאת רץ אימות
+מלא וטרי, כמו ב-M15-c90..c93: בנייה טרייה (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4999 pnpm
+build`, exit 0), `pnpm start -p 4999` (אומת ב-`lsof` ש-cwd של המאזין
+הוא הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon
+dynamic catalogue routes"`, `E2E_BASE_URL=http://localhost:4999`,
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c94.jsonl`: **4/4 PASS** (chromium
++ mobile-chrome, כ-45 שניות). הדוח, 16 שורות: אפס `consoleErrors` ואפס
+`hydrationWarnings` בכל אחת מהן, כל הנתיבים 200, על `/` ועל שבעת הנתיבים
+הדינמיים, כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews`
+(דגימת המוצר). אפס דריפט מ-M15-c93. השרת נעצר ב-`SIGINT`, הפורט פנוי.
+שערים: `type-check` 0, `lint` 0 (biome + 12 שערי סקריפט), `test`
+**615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0
+(למעלה). לא פריט חזותי, `compare.mjs` לא נדרש. M14-c94 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M14-c94 (הועבר מ-STATE.md ב-M15-c94, לשמירה על תקרת 300 שורות)
 
 **M14-c94 - DONE (04.10.2026).** משימת התור: "Verify Sentry release

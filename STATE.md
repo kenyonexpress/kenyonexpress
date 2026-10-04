@@ -1,7 +1,28 @@
-RESUME FROM: M17-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c94 DONE: כל 44 מוצרים פעילים מחזירים בלוק `Product` אחד ובלוק `BreadcrumbList` אחד, אפס דריפט מ-M16-c93)
+RESUME FROM: M18-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c94 DONE: RTL/LTR נבדק מחדש על `/` ושלושת סלאגי הדגימה בשלושת הרוחבים, אפס leak, אפס דריפט מ-M17-c93)
 
 ## המשך מ:
+
+**M17-c94 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", זהה ל-M17-c93. `pwd` אומת, עץ נקי, HEAD
+`79fce7af2` (M16-c94). קוד: `git diff --stat 98debe39b..HEAD -- src apps
+packages next.config.ts` (בסיס: checkpoint M17-c93) **ריק**, אפס שינוי
+מאז M17-c93. בזמן ריצה: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4994 pnpm build` exit 0, `pnpm
+start -p 4994` (cwd המאזין אומת ב-`lsof`, הריפו הזה). בדיקת Playwright
+על `/` ושלושת סלאגי הדגימה הקודמים
+(`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`,
+`חיתולי-האגיס`, כל השלושה אושרו קיימים ב-`supabase/catalogue-snapshot.json`
+לפני הריצה) ב-380/768/1440, 12 טעינות, כולן 200: `<html lang="he"
+dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה ל-`clientWidth`
+בכולן (אפס גלילה צידית), ואפס אלמנט גלוי עם `direction: ltr` מחושב
+שמחזיק טקסט עברי ישיר. שער `rtl-logical` (חלק מ-`pnpm lint`) ירוק
+באותה ריצה. **אפס leak, אפס דריפט, אפס שינוי קוד**, ולכן `compare.mjs`
+לא נדרש (אין שינוי UI). השרת נעצר (SIGINT), הפורט אומת פנוי. שערים:
+`type-check` 0, `lint` 0 (biome + 12 שערי סקריפט), `test` **615/615
+קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה).
+M15-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M16-c94 - DONE (04.10.2026).** משימת התור: "Verify all product pages
 have JSON-LD Product and BreadcrumbList", זהה ל-M16-c93. `pwd` אומת, עץ
@@ -21,27 +42,9 @@ pnpm build` (exit 0), `pnpm start -p 4991` (אומת ב-`lsof` שה-cwd של
 עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה). לא פריט
 חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`.
 
-**M15-c94 - DONE (04.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample", זהה ל-M15-c93. `pwd` אומת, עץ נקי, HEAD
-`3937248df` (M14-c94). קוד: הקומיט האחרון על `e2e/route-audit.spec.ts`
-עדיין `b2b4b17a5` (29.09), `git diff --stat 3cd8de7c2..HEAD -- src apps
-packages e2e/route-audit.spec.ts next.config.ts` (מאז M15-c93) **ריק**,
-אפס שינוי בכל נתיב שעשוי להשפיע על הידרציה או קונסולה. בכל זאת רץ אימות
-מלא וטרי, כמו ב-M15-c90..c93: בנייה טרייה (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4999 pnpm
-build`, exit 0), `pnpm start -p 4999` (אומת ב-`lsof` ש-cwd של המאזין
-הוא הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon
-dynamic catalogue routes"`, `E2E_BASE_URL=http://localhost:4999`,
-`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c94.jsonl`: **4/4 PASS** (chromium
-+ mobile-chrome, כ-45 שניות). הדוח, 16 שורות: אפס `consoleErrors` ואפס
-`hydrationWarnings` בכל אחת מהן, כל הנתיבים 200, על `/` ועל שבעת הנתיבים
-הדינמיים, כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews`
-(דגימת המוצר). אפס דריפט מ-M15-c93. השרת נעצר ב-`SIGINT`, הפורט פנוי.
-שערים: `type-check` 0, `lint` 0 (biome + 12 שערי סקריפט), `test`
-**615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0
-(למעלה). לא פריט חזותי, `compare.mjs` לא נדרש. M14-c94 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M15-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M17-c94): console errors נבדקו שוב (4/4 PASS), אפס דריפט
+מ-M15-c93, כל ארבעת השערים ירוקים.
 
 **M12-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M13-c94): robots.txt חי אומת שוב, אפס דריפט מ-M12-c93, כל
@@ -118,6 +121,7 @@ M08-c94 ו-M09-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M12-c94.
 M11-c94 ו-M12-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M13-c94.
 M13-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M14-c94.
 M14-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M15-c94.
+M15-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M17-c94.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
