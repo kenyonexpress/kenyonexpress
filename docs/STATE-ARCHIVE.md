@@ -44174,3 +44174,13 @@ pnpm build` exit 0, `PORT=3311 pnpm start`, `/` החזיר `200`, ו-cwd של
 `test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. M01-c91
 (בית 8.58/9.01/4.16) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
+**M06-c91 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה ל-M06-c90. `rm -rf .next && pnpm build` exit 0, אין דריפט
+לתקן ואין שינוי קוד. רעש ה-log בזמן prerender זהה לסבבים קודמים:
+92 `supabase.rls_denied`, 46+46 `reviews_read_failed`, 9 `db.query_slow`,
+6 `db.optional_column_missing`, 3 `content_pages.not_applied`, 2
+`phases.not_applied` (כולם warn, אף אחד לא שובר את הבנייה). שאר השערים
+לפני ה-commit: `type-check` 0, `lint` 0, `test` 615/615 (7340 עברו, 12
+דולגו, 7352). אין שינוי UI, ולכן `compare.mjs` לא נדרש. M05-c91 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
