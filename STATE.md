@@ -1,39 +1,24 @@
-RESUME FROM: M04-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c94 DONE: /category נמדד שוב ב-380/768/1440, 768/1440 אפס דריפט, 380 תנודתי בתוך השער)
+RESUME FROM: M05-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c94 DONE: שער type-check נבדק מחדש, נקי, אפס דריפט מ-M04-c93)
 
 ## המשך מ:
 
-**M03-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
-/category sample", זהה ל-M03-c93. `pwd` אומת, עץ נקי, HEAD `5a10dcce2`
-(M02-c94). `git diff ebffcd9af HEAD -- src public next.config.*
-package.json scripts/compare.mjs` ריק (אפס שינוי קוד או בשער מאז
-M03-c93). פורט 3311 תפוס על ידי סשן מקביל אחר (אותו `cwd`, לא לנגיעה),
-ולכן נבחר פורט חלופי 4722 (`lsof` אישר פנוי מראש ואומת שה-`cwd` של
-המאזין על 4722 הוא הריפו הזה). `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4722 pnpm build` exit 0, `PORT=4722
-pnpm start`. השער רץ בחזית עם `--widths=380,768,1440
---baseline='refs/electro_shop_{width}.png'` (דגימת `/category/hot-deals`,
-כברירת המחדל). ריצה ראשונה סורבה ב-380 (`REFUSING to measure: ... 2 on
-the local page had still not loaded`), ריצה שנייה סורבה שוב באותה סיבה
-— תקלת-תזמון חולפת בטעינת תמונות, לא רגרסיה (קוד אומת בלתי-משתנה לפני
-שתי הריצות). נוסה עם מילוט הסקריפט עצמו, `COMPARE_ALLOW_PENDING_IMAGES=1`.
-הריצה השלישית חרגה מהטיימאוט של כלי ה-Bash (180 שניות) ועברה לרקע על
-ידי המערכת עצמה (לא בידי הסוכן); נמתן לה עד סיום (`Monitor` + המתנה
-חוסמת בחזית על ה-PID) לפני שנרשמו המספרים. **380: `2.93%` PASS. 768:
-`2.52%` PASS. 1440: `1.69%` PASS.** 768 ו-1440 זהים בביט ל-M03-c93
-(2.52%/1.69%, אפס דריפט). **380 שונה**: `3.53%` ב-M03-c93 מול `2.93%`
-כאן (הפרש 0.60 נ"פ), שניהם PASS עמוק מתחת לשער 11% — נראה כרעש תזמון
-בין ריצות (כמו התנודתיות המתועדת ב-M01-c94 לדף הבית ב-768), לא כרגרסיה:
-אפס שינוי קוד אומת לפני המדידה. **ממצא נוסף לתיעוד, לא לתיקון**: ריצת
-768 הציגה אזהרת `HEIGHT RATIO` (`scripts/diff-bands.mjs`) בפלט הגולמי —
-אזהרה מובנית כשהיחס גבוה/נמוך מהצפוי, לא exit code, ולא מנעה PASS; תואם
-את התבנית הידועה מדפי מוצר (צילום קפוא מלא מול דף מרונדר חלקי). השער
-כתב את שלוש השורות ל-`docs/UI-PARITY-REPORT.md` בעצמו (13:25-13:28,
-commit `5a10dcce2`/`5a10dcce2-dirty`). השרת נעצר ב-`INT`, פורט 4722
-אומת פנוי. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
-12 דולגו), `build` exit 0 (למעלה). M15-c93 הועבר ל-`docs/STATE-ARCHIVE.md`
-לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md`.
+**M04-c94 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
+commit", זהה במהות ל-M04-c93. `pwd` אומת, עץ נקי, HEAD `925c5bf8d`
+(M03-c94). `git diff 925c5bf8d HEAD -- src public next.config.*
+package.json` ריק (HEAD לא זז, אפס שינוי קוד) — אין דריפט לתקן. ארבעת
+השערים רצו: `pnpm type-check` (`tsc --noEmit`) יצא נקי; `pnpm lint`
+(biome + 12 שערי סקריפט) נקי; `pnpm test` 615/615 קבצים, 7340/7352 (12
+דולגו), זהה ל-M04-c93/M03-c94; `pnpm build` רץ מול השרת הקיים על פורט
+3311 (סשן מקביל אחר, `lsof` אישר שה-`cwd` של המאזין הוא הריפו הזה, לא
+לנגיעה), exit 0 (לוגי `supabase.rls_denied` על `reviews` ב-prerender
+אנונימי הם רעש צפוי מחוסם #11 בתור, לא כשל build). אין קוד לשנות, אין
+commit קוד — רק עדכון `STATE.md`.
+
+**M03-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M04-c94): /category נמדד שוב ב-380/768/1440, 768/1440 אפס
+דריפט מ-M03-c93 (2.52%/1.69%), 380 שונה ב-0.60 נ"פ (2.93% מול 3.53%,
+שניהם PASS, רעש תזמון לא רגרסיה).
 
 **M02-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
 /product sample", זהה ל-M02-c93. `pwd` אומת, עץ נקי, HEAD `44ec205c4`

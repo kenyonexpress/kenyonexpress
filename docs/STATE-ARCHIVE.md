@@ -2,6 +2,40 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c94 (הועבר מ-STATE.md ב-M04-c94, לשמירה על תקרת 300 שורות)
+
+**M03-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample", זהה ל-M03-c93. `pwd` אומת, עץ נקי, HEAD `5a10dcce2`
+(M02-c94). `git diff ebffcd9af HEAD -- src public next.config.*
+package.json scripts/compare.mjs` ריק (אפס שינוי קוד או בשער מאז
+M03-c93). פורט 3311 תפוס על ידי סשן מקביל אחר (אותו `cwd`, לא לנגיעה),
+ולכן נבחר פורט חלופי 4722 (`lsof` אישר פנוי מראש ואומת שה-`cwd` של
+המאזין על 4722 הוא הריפו הזה). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4722 pnpm build` exit 0, `PORT=4722
+pnpm start`. השער רץ בחזית עם `--widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'` (דגימת `/category/hot-deals`,
+כברירת המחדל). ריצה ראשונה סורבה ב-380 (`REFUSING to measure: ... 2 on
+the local page had still not loaded`), ריצה שנייה סורבה שוב באותה סיבה
+— תקלת-תזמון חולפת בטעינת תמונות, לא רגרסיה (קוד אומת בלתי-משתנה לפני
+שתי הריצות). נוסה עם מילוט הסקריפט עצמו, `COMPARE_ALLOW_PENDING_IMAGES=1`.
+הריצה השלישית חרגה מהטיימאוט של כלי ה-Bash (180 שניות) ועברה לרקע על
+ידי המערכת עצמה (לא בידי הסוכן); נמתן לה עד סיום (`Monitor` + המתנה
+חוסמת בחזית על ה-PID) לפני שנרשמו המספרים. **380: `2.93%` PASS. 768:
+`2.52%` PASS. 1440: `1.69%` PASS.** 768 ו-1440 זהים בביט ל-M03-c93
+(2.52%/1.69%, אפס דריפט). **380 שונה**: `3.53%` ב-M03-c93 מול `2.93%`
+כאן (הפרש 0.60 נ"פ), שניהם PASS עמוק מתחת לשער 11% — נראה כרעש תזמון
+בין ריצות (כמו התנודתיות המתועדת ב-M01-c94 לדף הבית ב-768), לא כרגרסיה:
+אפס שינוי קוד אומת לפני המדידה. **ממצא נוסף לתיעוד, לא לתיקון**: ריצת
+768 הציגה אזהרת `HEIGHT RATIO` (`scripts/diff-bands.mjs`) בפלט הגולמי —
+אזהרה מובנית כשהיחס גבוה/נמוך מהצפוי, לא exit code, ולא מנעה PASS; תואם
+את התבנית הידועה מדפי מוצר (צילום קפוא מלא מול דף מרונדר חלקי). השער
+כתב את שלוש השורות ל-`docs/UI-PARITY-REPORT.md` בעצמו (13:25-13:28,
+commit `5a10dcce2`/`5a10dcce2-dirty`). השרת נעצר ב-`INT`, פורט 4722
+אומת פנוי. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
+12 דולגו), `build` exit 0 (למעלה). M15-c93 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
+
 ## M16-c93 (הועבר מ-STATE.md ב-M03-c94, לשמירה על תקרת 300 שורות)
 
 **M16-c93 - DONE (04.10.2026).** משימת התור: "Verify all product pages
