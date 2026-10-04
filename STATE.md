@@ -1,21 +1,24 @@
-RESUME FROM: M17-c90
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M16-c90 DONE: JSON-LD Product+BreadcrumbList על כל 44 המוצרים הפעילים, אפס דריפט)
+RESUME FROM: M18-c90
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M17-c90 DONE: RTL על / ועל שלושה מוצרים ב-380/768/1440, אפס LTR leak)
 
 ## המשך מ:
 
-**M16-c90 - DONE (04.10.2026).** משימת התור: "Verify all product pages
-have JSON-LD Product and BreadcrumbList", זהה ל-M16-c89. קוד: הקומיט
-האחרון על `src/lib/seo/json-ld.ts` ועל `src/app/(store)/product/[slug]/page.tsx`
-הוא עדיין `fd820969f` (30.09), והדף עדיין מזריק `buildProductJsonLd`
-ו-`buildBreadcrumbJsonLd`. בזמן ריצה, כל המוצרים: `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4980 pnpm build`
-(exit 0), `pnpm start` על 4980 (cwd המאזין אומת ב-`lsof`). כל 44 הסלאגים
-מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו: **44/44 מחזירים 200 עם
-בלוק `Product` אחד ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות JSON.
-אפס דריפט מ-M16-c89. השרת נעצר, הפורט פנוי. שערים: `type-check` 0, `lint`
-0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. לא חזותי,
-`compare.mjs` לא נדרש. M15-c90 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M17-c90 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", זהה ל-M17-c89. קוד: `git diff 58c089fa8
+HEAD -- src apps packages` ריק, כלומר תיקון ה-meta row של M17-c89 הוא
+עדיין השינוי האחרון בקוד. בזמן ריצה: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4981 pnpm build`
+exit 0, `pnpm start` על 4981 (cwd המאזין אומת ב-`lsof`). בדיקת Playwright
+על `/` ושלושה סלאגים אקראיים מתוך 44 (`ארוחת-בוקר-זוגית-בקפה-קפה`,
+`חבילת-קוקטיילים`, `חבילת-גלידה`) ב-380/768/1440, 12 טעינות, כולן 200:
+`<html lang="he" dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה
+לרוחב בכולן (אפס גלילה צידית), ו**אפס אלמנט גלוי עם `direction: ltr`
+מחושב שמחזיק טקסט עברי ישיר**. ה-`dir="ltr"` היחידים הם שדה האימייל
+בניוזלטר (מכוון, `input-dir-gate`) וקישור `tel:` של הספק, כמו ב-M17-c89.
+**אפס leak, אפס דריפט, אפס שינוי קוד**, ולכן `compare.mjs` לא נדרש
+(אין שינוי UI). השרת נעצר (INT), הפורט פנוי. שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. M16-c90
+הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
