@@ -1,10 +1,57 @@
-RESUME FROM: L02
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L01 DONE:
-פרודקשן הועבר מ-`main@18ed044b2` ל-`audit/final-audit@e1719ad66`,
-`dpl_FxGwtE5H6hw4L9ccU4yJNYmuhVni` READY, שני הדומיינים מוגשים ממנו,
-ארבעת השערים ירוקים, RESUME FROM מצביע ל-L02)
+RESUME FROM: L03
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L02 DONE:
+production branch של פרויקט `kenyonexpress` תוקן מ-`phase5/homepage`
+ל-`audit/final-audit` דרך ה-API; push ריק `9e0df9ff9` יצר אוטומטית את
+`dpl_79smj1WGM5V6wzJiuXafMVmPsFWN`, READY ומוגש בשני הדומיינים; RESUME FROM
+מצביע ל-L03)
 
 ## המשך מ:
+
+**L02 - DONE (05.10.2026, 01:49 מקומי).** משימת התור: "Gate 2 git
+integration: via vercel API confirm project kenyonexpress production branch
+is audit/final-audit; push an empty commit to audit/final-audit and confirm a
+new deployment is created automatically; if not fix the setting via API".
+`pwd` אומת, HEAD בהגעה `21ba0f102`, עץ נקי. **נמדד לפני** (`vercel api
+/v9/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`; ה-MCP של Vercel מחזיר 404
+על ה-project עם `teamId` ואינו מחזיר `link` כלל, לכן ה-CLI): `link.type=github`,
+repo `kenyonexpress/kenyonexpress` (repoId 1255271784),
+**`productionBranch=phase5/homepage`** (מאז יצירת הפרויקט, 31.08),
+`previewDeploymentsDisabled=true`, `gitProviderOptions.createDeployments=enabled`,
+`commandForIgnoringBuildStep=null`. התוצאה: **327 קומיטים נדחפו
+ל-`audit/final-audit` מ-02.10 13:00 ועד L01 ואף אחד לא יצר פריסה** בפרויקט
+הזה (אפס פריסות `source=git` אחרי `dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, 02.10
+12:52, שהייתה preview ונפלה ב-preflight על 6 משתנים חסרים ב-Preview env).
+האינטגרציה עצמה חיה: הפרויקט האחי `kenyonexpress-prod`
+(`prj_keQjjnDoTb41AYmHy3ia59BKumyt`, אותו repo, `productionBranch=main`) בונה
+כל push ל-`audit/final-audit` כ-preview ונופל (20/20 ERROR מ-02.10, האחרון
+`dpl_5Na2twFW4B35879Vpom7kmBcnp6Q` על `21ba0f102`); לא נגעתי בו, מחוץ לפריט,
+רשום כאן כבזבוז בנייה לידיעת אופיר. **תיקון (API בלבד, לא env, לא DNS):**
+`PATCH /v9/projects/{id}/branch` עם `branch=audit/final-audit`, אומת ב-GET:
+`productionBranch=audit/final-audit`. **אימות:** commit ריק `9e0df9ff9` נדחף
+01:47:17; **7 שניות אחרי** נוצרה `dpl_79smj1WGM5V6wzJiuXafMVmPsFWN`,
+`source=git`, `target=production`, `gitSource.ref=audit/final-audit`; לוג:
+`Cloning ... Commit: 9e0df9f`, `Restored build cache from previous deployment
+(FxGwtE5H6hw4L9ccU4yJNYmuhVni)`, `deploy preflight: clean`, `Compiled
+successfully in 7.3s`, אותן שורות `supabase.rls_denied` (חוסם #3); **READY +
+PROMOTED ב-01:48:51**, aliases `www.kenyonexpress.co.il`, `kenyonexpress.co.il`,
+`kenyonexpress.vercel.app`. חי: `GET /v13/deployments/www.kenyonexpress.co.il`
+מחזיר את `dpl_79smj...`; `www` 200 `age: 0`; apex 308 ל-`www`; `/api/health`
+`{"ok":true,"database":"ok"}`. **מרגע זה כל push ל-`audit/final-audit` הוא
+פריסת פרודקשן אוטומטית** (לפני L02 פרודקשן התעדכן רק בפריסת CLI ידנית, L01).
+**החלטה שהתקבלה לבד:** שינוי ה-production branch הוא הגדרת פרויקט ב-Vercel
+שהפריט ביקש במפורש ("if not fix the setting via API"), והפריסה האוטומטית בנתה
+את אותו קוד שכבר חי (`e1719ad66` + שני קומיטי docs + commit ריק), ולכן לא
+נחשב "push לפרודקשן" שמחייב עצירה. שערים (סקראב `env -u` של 55 שמות,
+`RESIDUAL=0`): `pnpm type-check` exit 0; `pnpm lint` exit 0 (docs-index-gate
+282, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615 קבצים, 7340 עברו,
+12 דולגו (7352)**, 56.3 שניות; `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0, אפס `Invalid API
+key`, `BUILD_ID` `JL728RxB-vGgGNmR1asQc`, 92 שורות `rls_denied`. **תקלת
+מדידה אחת, שלי:** ריצת test ראשונה עם סקראב של 30 שמות (`[SENSITIVE]` בלבד)
+נפלה 8/7352 בשני קבצים (`resend.test.ts`, `invoices.test.ts`, "key unset" מול
+מפתחות אמיתיים של ה-harness), התקלה המתועדת בזיכרון; הסקראב הורחב ל-55
+שמות והסוויטה ירוקה. `compare.mjs` לא נדרש (אפס שינוי UI, אפס שינוי קוד).
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (M18-c95 הועבר).
 
 **L01 - DONE (05.10.2026, 01:34 מקומי).** משימת התור: "Gate 1 deploy:
 unset VERCEL_PROJECT_ID VERCEL_ORG_ID; check latest production deploy of
@@ -52,36 +99,9 @@ Vercel CLI, 12 רשומות, 2329 -> 2326 בייט). `git status` נקי, ואז
 ו-DEPLOY-UNBLOCK נסגרו, ראו למטה. `compare.mjs` לא נדרש (אפס שינוי UI,
 `.vercelignore` אינו נכנס לבנייה). קבצים: `.vercelignore`, `STATE.md`.
 
-**M18-c95 - DONE (05.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c93/M18-c94.
-`pwd` אומת, HEAD `1c7cc58ba` (M17-c95). בעץ בהגעה: `.vercelignore` שונה
-ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M17-c95; זה
-תיקון השורה האחת של DEPLOY-UNBLOCK שממתין לסשן המתקן). `STATE.md` עמד
-על **216 שורות** לפני הפריט, כבר מתחת לתקרה (`<300`), אין קיצוץ בכוח.
-**החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c95 המלא (35 שורות)
-לארכיון, כדפוס M18-c91..c94, כך שהקובץ ממשיך להחזיק רק את הפריט הפעיל
-האחרון, הטבלה, החוסמים והידני, עם מרווח למחזור c96. שום שורה לא
-נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`, לפני
-"## M16-c95"; הארכיון 46117 -> 46155 שורות). שורה 1: `RESUME FROM:
-M01-c96`, מחזור c95 (18 פריטים, M01-c95..M18-c95) נסגר. אין שינוי UI,
-ולכן `compare.mjs` לא נדרש (תקדים M18-c93/c94). אפס שינוי קוד
-(`git diff --stat 1c7cc58ba -- src apps packages next.config.ts e2e`
-ריק). **תקלת מדידה אחת, שלי, לא קוד:** סקריפט הסקראב הראשון השתמש
-ב-`mapfile`, שאינו קיים ב-bash 3.2 של macOS, ולכן `env -u` קיבל 0 שמות
-ו-`pnpm test` נפל 14/7352 (8 קבצים, כולם "key unset" של סביבת ה-harness,
-אותה תקלה המתועדת בזיכרון); הוחלף ב-`while read`, אומת `SCRUB: 55`
-ו-`RESIDUAL=0` (`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בסביבת הילד), וכל
-השערים רצו מחדש תחת הסקראב התקין. שערים: `pnpm type-check` exit 0;
-`pnpm lint` exit 0 (biome + 12 שערי סקריפט, docs-index-gate 282
-מסמכים, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615 קבצים,
-7340 עברו, 12 דולגו (7352)**, 61.4 שניות, זהה ביט ל-M17-c95; `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993
-pnpm build` exit 0, אפס `Invalid API key`, `BUILD_ID` `Mk048B5mAEd_7F8HtynTw`,
-אותן 92 שורות `supabase.rls_denied` (חוסם #3). פורט 3311 עדיין תפוס
-(PID 56540, `next-server` מ-04.10 17:52 שה-cwd שלו הוא הצ'קאאוט הזה;
-הוא קדם ל-`.next` הקודם בשבע שעות ועדיין עונה 200, כלומר שרד את כל
-הבניות מחדש של c95, לא נגעתי בו). קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M18-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-L02): STATE.md עמד על 216 שורות, M17-c95 הועבר לארכיון, מחזור c95
+(18 פריטים) נסגר, אפס שינוי קוד, ארבעת השערים ירוקים.
 
 **M17-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M18-c95): RTL/LTR אומת על `/` ושלושת סלאגי הדגימה

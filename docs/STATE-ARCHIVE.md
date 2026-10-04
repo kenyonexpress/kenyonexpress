@@ -2,6 +2,39 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c95 (הועבר מ-STATE.md ב-L02, לשמירה על תקרת 300 שורות)
+
+**M18-c95 - DONE (05.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c93/M18-c94.
+`pwd` אומת, HEAD `1c7cc58ba` (M17-c95). בעץ בהגעה: `.vercelignore` שונה
+ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M17-c95; זה
+תיקון השורה האחת של DEPLOY-UNBLOCK שממתין לסשן המתקן). `STATE.md` עמד
+על **216 שורות** לפני הפריט, כבר מתחת לתקרה (`<300`), אין קיצוץ בכוח.
+**החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c95 המלא (35 שורות)
+לארכיון, כדפוס M18-c91..c94, כך שהקובץ ממשיך להחזיק רק את הפריט הפעיל
+האחרון, הטבלה, החוסמים והידני, עם מרווח למחזור c96. שום שורה לא
+נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`, לפני
+"## M16-c95"; הארכיון 46117 -> 46155 שורות). שורה 1: `RESUME FROM:
+M01-c96`, מחזור c95 (18 פריטים, M01-c95..M18-c95) נסגר. אין שינוי UI,
+ולכן `compare.mjs` לא נדרש (תקדים M18-c93/c94). אפס שינוי קוד
+(`git diff --stat 1c7cc58ba -- src apps packages next.config.ts e2e`
+ריק). **תקלת מדידה אחת, שלי, לא קוד:** סקריפט הסקראב הראשון השתמש
+ב-`mapfile`, שאינו קיים ב-bash 3.2 של macOS, ולכן `env -u` קיבל 0 שמות
+ו-`pnpm test` נפל 14/7352 (8 קבצים, כולם "key unset" של סביבת ה-harness,
+אותה תקלה המתועדת בזיכרון); הוחלף ב-`while read`, אומת `SCRUB: 55`
+ו-`RESIDUAL=0` (`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בסביבת הילד), וכל
+השערים רצו מחדש תחת הסקראב התקין. שערים: `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (biome + 12 שערי סקריפט, docs-index-gate 282
+מסמכים, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615 קבצים,
+7340 עברו, 12 דולגו (7352)**, 61.4 שניות, זהה ביט ל-M17-c95; `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993
+pnpm build` exit 0, אפס `Invalid API key`, `BUILD_ID` `Mk048B5mAEd_7F8HtynTw`,
+אותן 92 שורות `supabase.rls_denied` (חוסם #3). פורט 3311 עדיין תפוס
+(PID 56540, `next-server` מ-04.10 17:52 שה-cwd שלו הוא הצ'קאאוט הזה;
+הוא קדם ל-`.next` הקודם בשבע שעות ועדיין עונה 200, כלומר שרד את כל
+הבניות מחדש של c95, לא נגעתי בו). קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M17-c95 (הועבר מ-STATE.md ב-M18-c95, לשמירה על תקרת 300 שורות)
 
 **M17-c95 - DONE (05.10.2026).** משימת התור: "Verify RTL on / and
