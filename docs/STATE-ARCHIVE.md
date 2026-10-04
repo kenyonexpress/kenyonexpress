@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M01-c92 (הועבר מ-STATE.md ב-M02-c92, לשמירה על תקרת 300 שורות)
+
+**M01-c92 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c91. `pwd`
+אומת, עץ נקי, HEAD `a5ba4ff47`, פורט 3311 פנוי. `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`
+exit 0 (נדרש: M17-c91 שינה `src`), `PORT=3311 pnpm start` (cwd המאזין
+אומת ב-`lsof`: הריפו הזה), `/` החזיר `200`. השער רץ בחזית עם
+`--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`. **ריצה אחת:
+`380 8.58%`, `768 9.01%`, `1440 4.16%`, כולם PASS, exit 0.** הפרש מול
+M01-c91 (8.58/9.01/4.16): 0.00 / 0.00 / 0.00. תיקון ה-wrap של M17-c91 נוגע
+רק בדף המוצר ולא הזיז את דף הבית. **הדפוס של 768 קר לא חזר הפעם:** הריצה
+הראשונה מול שרת טרי עברה, אחרי שלושה סבבים (c89..c91) שבהם ניפחה את 768.
+כלומר התנודה אינה דטרמיניסטית; מועמד ה-"warm-up pass in compare.mjs"
+נשאר פתוח ולא תוקן כאן (פריט מדידה בלבד). השער כתב את שלוש השורות
+ל-`docs/UI-PARITY-REPORT.md`. M18-c91 הועבר לארכיון. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי
+קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M18-c91 (הועבר מ-STATE.md ב-M01-c92, לשמירה על תקרת 300 שורות)
 
 **M18-c91 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
