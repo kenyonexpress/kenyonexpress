@@ -1,26 +1,34 @@
-RESUME FROM: M14-c88
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c88 DONE: api/health ו-api/ready אומתו מחדש מול פרודקשן, אפס דריפט)
+RESUME FROM: M15-c88
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c88 DONE: Sentry release vs HEAD נבדק מחדש מול Vercel, אפס דריפט)
 
 ## המשך מ:
 
-**M13-c88 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps" — זהה לתבנית החוזרת (M13-c82
-ולפניו). `pwd` אומת, עץ עבודה נקי, HEAD `ef6e90eb4` (M12-c88). קוד:
-`git log --oneline -- src/app/api/health src/app/api/ready` מראה
-שהקומיט האחרון שנגע בנתיבים האלה הוא `64728ff8d`, הרבה לפני M13-c82 —
-אפס שינוי קוד. חי: `curl https://www.kenyonexpress.co.il/api/health`
-מחזיר `200` עם `{"ok":true,"database":"ok","latency_ms":113}` — תלות
-אמיתית (לא ליבנס גרידא). `/api/ready` מחזיר `503` עם
-`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`
-— זהה בדיוק ל-M13-c82: Meilisearch מוגדר אבל לא נגיש (חוסם חיצוני
-ב-`docs/BACKLOG.md`), `r2`/`cardcom` `not_configured` בכוונה (R2 לא
-מופעל בחשבון, Cardcom ב-mock). אפס ממצא חדש, אפס דריפט. ארבעת השערים
-ירוקים: `type-check` נקי (exit 0), `lint` נקי (12 שערים, 2037 קבצים),
-`test` 614/614 קבצים (7337/7349, 12 מדולגים, זהה), build טרי
-(`rm -rf .next`, `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4931
-pnpm build`, exit 0, `.next/server/app/api/health` ו-`/api/ready`
-קיימים). פריט אימות-בלבד, לא חזותי: `compare.mjs` לא נדרש. אפס שינוי
-כסף/סכימה/קוד ייצור. קובץ יחיד: `STATE.md`.
+**M14-c88 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit" — זהה למילה למשימות M14-c66..M14-c82. נבדק מול
+Vercel (MCP, read-only, פרויקט `kenyonexpress`/`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`):
+`list_deployments` (target=production) מראה את אותה פריסה חיה בדיוק
+שנמצאה מ-M14-c73 ואילך — `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`,
+`githubCommitRef=main`, `githubCommitSha=18ed044b2` ("Wave 6: build
+success"). `filter_project_envs` מראה `SENTRY_DSN`/
+`NEXT_PUBLIC_SENTRY_DSN` עדיין מוגדרים, **אותו `createdAt`
+`1790918429743`** כמו בכל בדיקה קודמת — לא נוספו ולא הוסרו. **תשובה
+לשאלת התור: לא, ה-release עדיין אינו תואם ל-HEAD הנוכחי** —
+`git rev-list --count 18ed044b2..HEAD` מחזיר **1030** קומיטים (היה 1017
+ב-M14-c82), `git rev-list --count HEAD..18ed044b2` מחזיר **109** ללא
+שינוי. HEAD כרגע `cf86b42ca`. **אפס דריפט מ-M14-c82** — אותו חוסם
+בדיוק, פורט מלא ב-`docs/BACKLOG.md` סעיף 17, ממתין להחלטת אופיר (חוסם
+2 למטה). הסוכן לא נגע ב-Vercel מעבר לקריאות read-only
+(`list_deployments`, `filter_project_envs`) ולא ביצע/ביטל שום פריסה או
+שינוי env. ארבעת השערים ירוקים: `type-check` נקי (exit 0), `lint` נקי
+(12 שערים, 2037 קבצים), `test` 614/614 קבצים (7337/7349, 12 מדולגים,
+זהה), `build` exit 0 (`rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4931 pnpm build`). פריט אימות-בלבד,
+לא חזותי: `compare.mjs` לא נדרש. אפס שינוי כסף/סכימה/קוד ייצור, לא
+הורץ `supabase db push`, לא הוחלה אף מיגרציה. קובץ יחיד: `STATE.md`.
+
+**M13-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווץ לשורה הזו
+ב-M14-c88).** `/api/health`/`/api/ready` נבדקו מחדש מול פרודקשן, אפס
+דריפט.
 
 **M12-c88 ו-M11-c88 (ארכיון מלא ב-`docs/STATE-ARCHIVE.md`, כווצו לשורה
 הזו ב-M13-c88).** M12-c88: robots.txt נבדק מחדש production-safe, אפס
