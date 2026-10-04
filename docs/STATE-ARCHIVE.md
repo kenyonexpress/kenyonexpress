@@ -2,6 +2,56 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L10 (הועבר מ-STATE.md ב-L11, לשמירה על תקרת 300 שורות)
+
+**L10 - DONE (05.10.2026, 03:55 שעון המכונה): שער 10 מוקשי השקה. שתי
+העמודות קיימות בפרודקשן, `finalize.ts` בוחר רק עמודות קיימות, ארבעת השערים
+ירוקים, אפס שינוי קוד.** משימת התור: "Gate 10 launch landmines: verify
+orders.cashback_applied_agorot and order_items.unit_price_agorot exist in
+production schema; verify finalize.ts selects only existing columns; run full
+pnpm typecheck lint build test; all green". `pwd` אומת, HEAD בהגעה
+`a2509a71f`, עץ נקי. **הסכימה (קריאה בלבד דרך management API עם טוקן ה-CLI
+מה-keychain, כי Supabase MCP דורש הזדהות שאינה זמינה; `information_schema.
+columns` ואז select ממשי `limit 0`):** `orders.cashback_applied_agorot`
+קיימת, `bigint`, **GENERATED ALWAYS** מ-`round(cashback_applied_ils*100)`;
+`order_items.unit_price_agorot` קיימת, `bigint`, GENERATED ALWAYS
+מ-`round(unit_price_ils*100)`. כלומר שתיהן כינויים מחושבים של עמודות ה-ils,
+לא עמודות 059. 059 לא הוחלה, נמדד: `orders.total_agorot`,
+`order_items.platform_bp` ו-`payments.amount_agorot` מחזירות 42703, ואלה
+בדיוק שלושת ה-sentinels של `resolveOrderGeneration` /
+`resolveOrderItemGeneration` / `resolvePaymentMoneySchema`, ולכן בפרודקשן
+הדור הוא `ils`. לעמודה מחושבת אסור לכתוב (428C9), והקוד לא כותב:
+`buildOrderMoneyRow`/`buildOrderItemMoneyRow` כותבים את סט ה-ils, וכל 4+17
+העמודות שלו קיימות (הושוו לרשימה המלאה). **`finalize.ts`, הבחירות כפי שהן
+רצות בפועל בדור `ils`, הורצו כ-SQL `limit 0` על פרודקשן ועברו:** `orders`
+`id, user_id, status, paid_at, affiliate_code, cashback_applied_ils`;
+`order_items` 18 עמודות עם `unit_price_ils_agorot as unit_price_agorot,
+total_price_ils_agorot as total_price_agorot`; `payments` `id, status,
+wallet_applied_ils, cardcom_account_id`. הקריאה הרחבה של המתנה
+(`gift_deliver_at`, 226 ממתינה) מחזירה 42703 ונופלת בכוונה לקריאה הצרה
+(3 עמודות, קיימות), כפי שהקוד מתעד. כל שאר העמודות שהקובץ נוקב (`vouchers`,
+`split_executions`, `products`, `profiles`, `wallet_accounts`,
+`payment_tokens`, `audit_log`, `carts`, והעדכונים ל-`order_items`/`orders`/
+`payments`) הושוו לרשימת העמודות המלאה של 11 הטבלאות: אפס חסרות. שלוש
+ה-RPC (`fn_wallet_transfer`, `fn_enqueue_notification`,
+`consume_order_stock`) קיימות באותן חתימות ארגומנטים. **מוקש אחד שנרשם
+ולא נדרש תיקון:** הבחירה של דור `agorot`, `unit_price_agorot,
+total_price_agorot`, נופלת בפרודקשן על `total_price_agorot` 42703; היא
+נמנעת בזכות ה-probe בלבד, לא בזכות הטיפוסים (`src/types/database.ts`
+מצהיר על `cashback_applied_agorot: number` כעמודה רגילה). **שערים, 54 שמות
+מוזרקים הוסרו (`SENSITIVE` נותרים 0):** `pnpm type-check` exit 0; `pnpm
+lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit 155 ללא
+שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354), 73.5
+שניות; `rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0, `BUILD_ID`
+`M_ybxzG9OnGQVxmFhK1Z8`, אותן שורות `supabase.rls_denied` על `reviews`
+(חוסם 3). `compare.mjs` לא נדרש, אפס שינוי UI או קוד. **החלטות שהתקבלו
+לבד:** (א) management API במקום Supabase MCP, קריאה בלבד, אפס DDL, אפס
+rollback נדרש כי רק select; (ב) "קיימת" נמדדה גם ב-`information_schema`
+וגם ב-select ממשי; (ג) ה-GENERATED ALWAYS נרשם כעובדה ולא נפתח כפריט, כי
+אף מסלול כתיבה בדור `ils` אינו נוגע בו. L09 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## L09 (הועבר מ-STATE.md ב-L10, לשמירה על תקרת 300 שורות)
 
 **L09 - BLOCKED (05.10.2026, 03:46 מקומי): שער 9 cron. pg_cron ונתיבי ה-cron

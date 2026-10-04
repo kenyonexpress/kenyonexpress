@@ -532,6 +532,17 @@ unchanged. No migration applied, no code change -- verification only.
    נבדק M07-c67: אין TODO/FIXME אחר ב-`src/` ישן משבעה ימים (שניהם
    מ-24.07/07.08.2026); `src/lib/whatsapp.test.ts:91` אינו סמן עבודה
    אלא מחרוזת ליטרלית `'TODO'` שבודקת דחיית מספר לא מוגדר.
+   **נמדד שוב ב-05.10.2026, L11, קריאה בלבד:** `CARDCOM_TERMINAL_NUMBER`,
+   `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD` ו-`CARDCOM_SANDBOX` קיימים
+   ב-Production כ-`sensitive` (אינם ניתנים לקריאה בשום API/CLI), נוצרו
+   ב-04.10 13:53 עד 14:42 UTC על ידי סשן סוכן בענן (commits `83849e5e0`,
+   `8b914b3a1`, "add all missing env vars from preflight"); ה-preflight
+   ו-`/api/ready` בודקים נוכחות בלבד. `/checkout` החי כבר מגיש
+   `frame-src https://secure.cardcom.solutions` (לא mock), אך לטבלת
+   `payments` בפרודקשן אפס שורות לא-`mock-` מאז ומעולם. אין אישור Cardcom
+   אמיתי או סנדבוקס במכונה (`.env.local`: מסוף `000000`, שאר הערכים
+   placeholder), ולכן הזמנת הסנדבוקס, הזמנת ה-₪1 והזיכוי נשארים כולם
+   לאופיר. L11 נסגר `BLOCKED cardcom-creds`.
 7. **הכרעה על 26 שורות הקטלוג** ב-`supabase/catalogue-known-issues.json`
    (26, לא 25 — שורה `no-image` נוספה ל-`מזקקת וויסקי` ב-00375d705,
    09.09.2026, יחד עם ה-25 האחרות, ומספר הממצאים לא תוקן בשום מסמך מאז;
