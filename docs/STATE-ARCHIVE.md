@@ -2,6 +2,47 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c94 (הועבר מ-STATE.md ב-M15-c94, לשמירה על תקרת 300 שורות)
+
+**M14-c94 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", זהה ל-M14-c93. `pwd` אומת, עץ נקי, HEAD
+`e0f554276`. קוד: release מוגדר ב-`sentry.server.config.ts`/
+`sentry.edge.config.ts` כ-`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
+וב-`instrumentation-client.ts` כ-`NEXT_PUBLIC_SENTRY_RELEASE ??
+NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, אפס שינוי מאז `87a459403` (10.09).
+**לא אפס דריפט בסביבה, בניגוד ל-M14-c89..c93:** בין M13-c94 לכאן רץ
+סשן מקביל (commits ריקים `8b914b3a1`/`83849e5e0`, "Claude Haiku"/
+"Claude Opus 4.7", session אחר) שהוסיף בפועל ב-Production את שלושת
+משתני Cardcom שהיו חסרים — `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+`CARDCOM_API_PASSWORD` — ועוד `CARDCOM_SANDBOX` (ערכים לא פוענחו, לפי
+הכלל). Vercel MCP (זמין בסשן הזה, read-only): פריסת production READY
+עדיין `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2` ("Wave 6:
+build success"), ללא שינוי. ניסיון פריסה חדש אחד נכשל בינתיים —
+`dpl_5XpwmnFmmqFYbMnVcjwuCyRSuWz8`, `audit/final-audit@f9e806b3f`
+(M07-c94), `ERROR`, `errorStep=buildStep`, `errorCode=ENOENT`, אותה
+סיבת preflight בדיוק — אך הפריסה הזו קדמה בזמן להוספת המשתנים (לפי
+`createdAt`). **לא רץ ניסיון פריסה חדש אחרי ההוספה**:
+`list_deployments(since=<זמן יצירת CARDCOM_SANDBOX>)` מחזיר 0 תוצאות.
+`ALLOW_INCOMPLETE_ENV` עדיין קיים ב-Production (ערך לא נקרא).
+`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ללא שינוי מ-M14-c66. **תשובה
+לשאלת התור: לא, ה-release שבפרודקשן אינו HEAD** — עדיין `18ed044b2`.
+`git rev-list --count 18ed044b2..HEAD` = **1144** (היה 1123 ב-M14-c93),
+`HEAD..18ed044b2` = 109 ללא שינוי. אותו חוסם (DEPLOY-UNBLOCK למעלה,
+סעיף 17 ב-`docs/BACKLOG.md`), אך עם מידע חדש: אם תופעל פריסה נוספת
+מ-`audit/final-audit` כרגע, שלושת משתני Cardcom שהיו חוסמים את
+ה-preflight לא יחסמו יותר (בהנחה ש-`CARDCOM_SANDBOX` אינו `"true"`);
+לא נבדק בפועל, ולא בוצעה שום פריסה או שינוי env על ידי הסוכן הזה
+(אסור לפי כללי הפריט). **החלטות שהתקבלו לבד:** (א) DONE כאימות ולא
+BLOCKED, כמו M14-c89..c93; לא נפתח חוסם כפול. (ב) סשן מקביל שני על
+הריפו הזה תועד כעובדה ולא כעצירה (תואם זיכרון `parallel-claude-sessions`;
+פעולותיו היו רק על Vercel דרך MCP, לא על קבצי הריפו, ושתי ה-commits
+שלו ריקות). שערים: `type-check` 0; `lint` 0 (biome + 12 שערי סקריפט);
+`test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט; `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4951
+pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. M13-c94 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+
 ## M13-c94 (הועבר מ-STATE.md ב-M14-c94, לשמירה על תקרת 300 שורות)
 
 **M13-c94 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
