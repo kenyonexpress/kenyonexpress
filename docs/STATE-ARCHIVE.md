@@ -2,6 +2,24 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c91 (הועבר מ-STATE.md ב-M08-c91, לשמירה על תקרת 300 שורות)
+
+**M07-c91 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older than
+7 days resolve or file in docs/BACKLOG.md", זהה ל-M07-c90. `git grep -w`
+על `TODO|FIXME|XXX|HACK` ב-`src`, `packages`, `scripts`, `apps`,
+`migrations/pending`, `supabase`, `e2e`, `tests`: **שני סמנים אמיתיים בלבד**,
+`src/lib/payments/cardcom.ts:254` (blame 24.07.2026, זיכוי לגאסי, #41)
+ו-`:319` (blame 07.08.2026, מסמכים, #42). שניהם ישנים משבעה ימים ושניהם
+כבר רשומים ב-`docs/BACKLOG.md` סעיף 6 (Cardcom אמיתי), חסומים על מפתחות
+טרמינל חי, ולכן לא ניתנים לפתרון כאן. כל שאר ההתאמות אינן סמני עבודה:
+`05X-XXX-XXXX` (placeholder טלפון ב-`whatsapp.ts`, `sms/twilio.ts`,
+`whatsapp/twilio.ts`), המחרוזת `'TODO'` ב-`whatsapp.test.ts:91`, והסורק
+עצמו ב-`scripts/final-audit*`. **אפס דריפט, אין מה להוסיף ל-BACKLOG ואפס
+שינוי קוד.** שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
+12 דולגו), `rm -rf .next && pnpm build` 0. אין שינוי UI, `compare.mjs` לא
+נדרש. M06-c91 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M05-c91 (הועבר מ-STATE.md ב-M06-c91, לשמירה על תקרת 300 שורות)
 
 **M05-c91 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift

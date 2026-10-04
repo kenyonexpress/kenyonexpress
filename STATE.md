@@ -1,23 +1,23 @@
-RESUME FROM: M08-c91
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M07-c91 DONE: TODO/FIXME נסרקו, שני סמני cardcom כבר ב-BACKLOG, אפס דריפט)
+RESUME FROM: M09-c91
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M08-c91 DONE: Lighthouse mobile על / ו-/product 100/100/100, אפס דריפט)
 
 ## המשך מ:
 
-**M07-c91 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older than
-7 days resolve or file in docs/BACKLOG.md", זהה ל-M07-c90. `git grep -w`
-על `TODO|FIXME|XXX|HACK` ב-`src`, `packages`, `scripts`, `apps`,
-`migrations/pending`, `supabase`, `e2e`, `tests`: **שני סמנים אמיתיים בלבד**,
-`src/lib/payments/cardcom.ts:254` (blame 24.07.2026, זיכוי לגאסי, #41)
-ו-`:319` (blame 07.08.2026, מסמכים, #42). שניהם ישנים משבעה ימים ושניהם
-כבר רשומים ב-`docs/BACKLOG.md` סעיף 6 (Cardcom אמיתי), חסומים על מפתחות
-טרמינל חי, ולכן לא ניתנים לפתרון כאן. כל שאר ההתאמות אינן סמני עבודה:
-`05X-XXX-XXXX` (placeholder טלפון ב-`whatsapp.ts`, `sms/twilio.ts`,
-`whatsapp/twilio.ts`), המחרוזת `'TODO'` ב-`whatsapp.test.ts:91`, והסורק
-עצמו ב-`scripts/final-audit*`. **אפס דריפט, אין מה להוסיף ל-BACKLOG ואפס
-שינוי קוד.** שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
-12 דולגו), `rm -rf .next && pnpm build` 0. אין שינוי UI, `compare.mjs` לא
-נדרש. M06-c91 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M08-c91 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
+and /product sample log scores", זהה ל-M08-c90. `pwd` אומת, עץ נקי, HEAD
+`43319ab44` (M07-c91), פורט 4517 נבדק פנוי. **בחזית**: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm
+build` exit 0 (337/337). `pnpm start` על 4517, `cwd` אומת מול הריפו הזה
+(`lsof`). `/` ו-`/product/צימר-מאסטר` (אותו מוצר דוגמה כל הסבבים)
+החזירו `200`. `LOCAL_BASE=http://localhost:4517 node
+scripts/lighthouse-smoke.mjs --throttling-method=provided`: `/` =
+**100/100/100**, `/product/צימר-מאסטר` = **100/100/100**
+(perf/a11y/seo), אפס דריפט מ-M08-c90. (ריצה ראשונה עם שם משתנה שגוי נפלה
+על פורט 3000 עם interstitial ולא נספרה.) שרת נסגר ב-INT, פורט אומת פנוי.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+build למעלה exit 0. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים M08-c80
+ואילך). אפס שינוי קוד. M07-c91 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
