@@ -1,13 +1,13 @@
-RESUME FROM: M05-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M04-c89 DONE: type-check נקי, אפס דריפט, אפס שינוי קוד)
+RESUME FROM: M06-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M05-c89 DONE: test 614/614, אפס דריפט, אפס שינוי קוד)
 
 ## המשך מ:
 
-**M04-c89 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
-commit", זהה ל-M04-c83. `pnpm type-check` (`tsc --noEmit`) exit 0, אפס
-שגיאות, אין דריפט לתקן ולכן אפס שינוי קוד. שערים: `lint` 0, `test`
-614/614 (7337/7349), `pnpm build` exit 0. M03-c89 (קטגוריה
-3.53/2.52/1.69 PASS) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+**M05-c89 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה ל-M05-c83. `pnpm test` exit 0: 614/614 קבצים, 7337 עברו
+ו-12 דולגו מתוך 7349, אפס כשלונות, אין דריפט לתקן ולכן אפס שינוי קוד.
+שערים: `type-check` 0, `lint` 0, `pnpm build` exit 0. M04-c89
+(type-check נקי) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
