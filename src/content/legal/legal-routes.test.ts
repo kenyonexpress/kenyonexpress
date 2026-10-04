@@ -12,6 +12,13 @@ import { describe, expect, it } from 'vitest'
  *   /cancellation-policy -> /refund_returns
  *   /terms               -> /terms-and-conditions
  *   /privacy             -> /privacy-policy
+ *   /returns             -> /refund_returns
+ *   /cookies             -> /privacy-policy#cookies
+ *
+ * The last two were measured as 404 in production on 05.10.2026 (L05). The
+ * cookie policy is a section of the privacy document, the same anchor the
+ * footer link already uses, so the alias lands on that section rather than
+ * on a fifth legal page.
  *
  * A second PAGE for the same policy is the failure this avoids. Two routes
  * rendering one cancellation policy drift, and then the site states two
@@ -27,6 +34,8 @@ const ALIASES: ReadonlyArray<[string, string]> = [
   ['/cancellation-policy', '/refund_returns'],
   ['/terms', '/terms-and-conditions'],
   ['/privacy', '/privacy-policy'],
+  ['/returns', '/refund_returns'],
+  ['/cookies', '/privacy-policy#cookies'],
 ]
 
 describe('legal route aliases', () => {

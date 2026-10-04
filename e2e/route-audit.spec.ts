@@ -135,6 +135,8 @@ const PUBLIC_PAGES: RouteSpec[] = [
   redirect('/terms', '/terms-and-conditions'),
   redirect('/privacy', '/privacy-policy'),
   redirect('/cancellation-policy', '/refund_returns'),
+  redirect('/returns', '/refund_returns'),
+  redirect('/cookies', '/privacy-policy', 'lands on the #cookies section of the privacy document'),
   redirect('/scan', '/login', 'alias of /supplier/scan, which needs a session'),
   // Gated routes, signed out: the proxy sends them to /login?next=...
   redirect('/account', '/login'),

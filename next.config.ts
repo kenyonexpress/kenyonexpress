@@ -174,6 +174,13 @@ const nextConfig: NextConfig = {
       // The English spellings the goal and the docs use, for the same reason.
       { source: '/terms', destination: '/terms-and-conditions', permanent: true },
       { source: '/privacy', destination: '/privacy-policy', permanent: true },
+      // L05 (05.10.2026) measured /returns and /cookies as 404 in production.
+      // Same rule as the two above: an alias onto the one page that holds the
+      // policy, never a second page. The cookie policy is a section of the
+      // privacy document (`(legal)/_content/privacy.ts`, id `cookies`), which
+      // is also where SiteFooter already sends its "מדיניות עוגיות" link.
+      { source: '/returns', destination: '/refund_returns', permanent: true },
+      { source: '/cookies', destination: '/privacy-policy#cookies', permanent: true },
     ]
   },
   turbopack: {
