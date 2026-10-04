@@ -44882,3 +44882,28 @@ unused exported types / 4 duplicate exports**, זהה בדיוק ל-M09-c92. ח�
 pnpm build` exit 0 (פורט 3311 כבר מאזין מריצה קודמת, `cwd` אומת ב-`lsof`
 שהוא הריפו הזה). לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
 קובץ: `STATE.md`.
+
+## M10-c93 (הועבר מ-STATE.md ב-M15-c93, לשמירה על תקרת 300 שורות)
+
+**M10-c93 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", זהה ל-M10-c92. `pwd` אומת, עץ נקי, HEAD
+`e7a3af744` (M09-c93). `git diff --stat cb8baacf6 HEAD -- migrations/pending`
+ריק — אפס קובץ חדש מאז M10-c92, עדיין 60 קבצי `.sql`, `git log -1 --
+migrations/pending` עדיין `48c8792dd` (248). בדיקה ישירה מול פרודקשן
+(CLI-keychain-token, `SELECT` יחיד לכל בדיקה, קריאה בלבד, אפס DDL):
+**0 מ-7 הטבלאות** של 204/234/235/236/239/244/232 (`supplier_onboarding_requests`,
+`fraud_blocklist`, `feature_flags`, `contact_channels`, `deals`,
+`affiliate_campaigns`, `app_consent_events`); **0 מ-5 העמודות/גרנטים** של
+223/232/242/243/248 (`notification_outbox.link`, `suppliers.opening_hours`,
+`suppliers.google_reviews_url`, `products.price_source`, `products.terms_text`,
+גרנט `anon` על שתי עמודות `suppliers`); `anon` עדיין בלי `SELECT` על
+`reviews` (247); 0 מדיניות `*_unified` על `banners` (245); **82 שורות
+`products` עם `city IS NULL`** (241) — זהה ביט ל-M10-c92. **החוסם כבר
+רשום** (חוסם 3 למעלה, `docs/BACKLOG.md`, `docs/RUNBOOK.md`), לא נפתח חוסם
+כפול. `STATE.md` היה 314 שורות אחרי כתיבת הסעיף הזה; M01-c93 ו-M02-c93
+הועברו ל-`docs/STATE-ARCHIVE.md` (283 שורות אחרי). שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 (פורט 3311
+כבר מאזין מריצה קודמת, `cwd` אומת ב-`lsof` שהוא הריפו הזה). לא פריט
+חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.

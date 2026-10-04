@@ -1,7 +1,25 @@
-RESUME FROM: M15-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c93 DONE: release בפרודקשן עדיין `18ed044b2`, לא HEAD, אפס דריפט מ-M14-c92)
+RESUME FROM: M16-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c93 DONE: אפס שגיאות קונסול על / ועל דגימת /product, אפס דריפט)
 
 ## המשך מ:
+
+**M15-c93 - DONE (04.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה ל-M15-c92. `pwd` אומת, עץ נקי, HEAD
+`3cd8de7c2` (M14-c93). קוד: הקומיט האחרון על `e2e/route-audit.spec.ts`
+עדיין `b2b4b17a5` (29.09), אפס שינוי. בנייה טרייה (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4976 pnpm
+build`, exit 0), `pnpm start -p 4976` (אומת ב-`lsof` שה-cwd של המאזין הוא
+הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
+catalogue routes"`, `E2E_BASE_URL=http://localhost:4976`,
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c93.jsonl`: **4/4 PASS** (chromium
++ mobile-chrome, כ-66 שניות). הדוח, 16 שורות: אפס `consoleErrors` ואפס
+`hydrationWarnings`, כל הנתיבים 200, על `/` ועל שבעת הנתיבים הדינמיים,
+כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר).
+אפס דריפט מ-M15-c92. השרת נעצר ב-SIGINT, הפורט פנוי. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. פריט
+אימות בלבד, לא חזותי, `compare.mjs` לא נדרש. M10-c93 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **M14-c93 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
 matches HEAD commit", זהה ל-M14-c92. `pwd` אומת, עץ נקי, HEAD `bd16cee32`
@@ -82,32 +100,9 @@ build` exit 0 (פורט 3311 אומת ב-`lsof`/cwd שהוא הריפו הזה),
 מראה `/sitemap.xml` וחמשת תתי-המפות כ-`ƒ`. לא פריט חזותי, `compare.mjs`
 לא נדרש. אפס שינוי קוד. קובץ: `STATE.md`.
 
-**M10-c93 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker", זהה ל-M10-c92. `pwd` אומת, עץ נקי, HEAD
-`e7a3af744` (M09-c93). `git diff --stat cb8baacf6 HEAD -- migrations/pending`
-ריק — אפס קובץ חדש מאז M10-c92, עדיין 60 קבצי `.sql`, `git log -1 --
-migrations/pending` עדיין `48c8792dd` (248). בדיקה ישירה מול פרודקשן
-(CLI-keychain-token, `SELECT` יחיד לכל בדיקה, קריאה בלבד, אפס DDL):
-**0 מ-7 הטבלאות** של 204/234/235/236/239/244/232 (`supplier_onboarding_requests`,
-`fraud_blocklist`, `feature_flags`, `contact_channels`, `deals`,
-`affiliate_campaigns`, `app_consent_events`); **0 מ-5 העמודות/גרנטים** של
-223/232/242/243/248 (`notification_outbox.link`, `suppliers.opening_hours`,
-`suppliers.google_reviews_url`, `products.price_source`, `products.terms_text`,
-גרנט `anon` על שתי עמודות `suppliers`); `anon` עדיין בלי `SELECT` על
-`reviews` (247); 0 מדיניות `*_unified` על `banners` (245); **82 שורות
-`products` עם `city IS NULL`** (241) — זהה ביט ל-M10-c92. **החוסם כבר
-רשום** (חוסם 3 למטה, `docs/BACKLOG.md`, `docs/RUNBOOK.md`), לא נפתח חוסם
-כפול. `STATE.md` היה 314 שורות אחרי כתיבת הסעיף הזה; M01-c93 ו-M02-c93
-הועברו ל-`docs/STATE-ARCHIVE.md` (283 שורות אחרי). שערים: `type-check` 0,
-`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 (פורט 3311
-כבר מאזין מריצה קודמת, `cwd` אומת ב-`lsof` שהוא הריפו הזה). לא פריט
-חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
-
-M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md`
-(M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07 ב-M14-c93), לשמירה על
-תקרת 300 שורות.
+M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
+ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
+ב-M14-c93, M10 ב-M15-c93), לשמירה על תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
