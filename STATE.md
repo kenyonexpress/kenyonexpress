@@ -1,7 +1,17 @@
-RESUME FROM: M04-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M03-c93 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, 3.53/2.52/1.69 PASS, אפס דריפט מ-M03-c92)
+RESUME FROM: M05-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M04-c93 DONE: שער type-check נבדק מחדש, נקי, אפס דריפט מ-M04-c92)
 
 ## המשך מ:
+
+**M04-c93 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
+commit", זהה במהות ל-M04-c92. `pwd` אומת, עץ נקי, HEAD `c42321210`.
+`git diff 6ba91163a HEAD -- src public next.config.* package.json` ריק
+(אפס שינוי קוד מאז M04-c92) — אין דריפט לתקן. ארבעת השערים רצו: `pnpm
+type-check` (`tsc --noEmit`) יצא נקי; `pnpm lint` (biome + 12 שערי
+סקריפט) נקי; `pnpm test` 615/615 קבצים, 7340/7352 (12 דולגו), זהה
+ל-M04-c92; `pnpm build` רץ מול השרת הקיים על פורט 3311 (אומת ב-`lsof`
+ש-cwd הוא הריפו הזה), exit 0. אין קוד לשנות, אין commit קוד — רק עדכון
+`STATE.md`.
 
 **M03-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
 /category sample", זהה ל-M03-c92. `pwd` אומת, עץ נקי, HEAD `ebffcd9af`,
