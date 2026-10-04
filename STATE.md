@@ -1,58 +1,55 @@
-RESUME FROM: M16-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M15-c95 DONE:
-אפס console errors ואפס hydration warnings על `/` ועל דגימת המוצר, 4/4
-PASS בבנייה טרייה על 4877; ארבעת השערים ירוקים תחת `env -u` של 55 שמות,
-M14-c95 הועבר לארכיון, RESUME FROM מצביע ל-M16-c95)
+RESUME FROM: M17-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M16-c95 DONE:
+JSON-LD Product+BreadcrumbList אומת על 44/44 מוצרים פעילים בבנייה טרייה
+על 4993, אפס דריפט מ-M16-c94; ארבעת השערים ירוקים תחת `env -u` של 55
+שמות, M15-c95 הועבר לארכיון, RESUME FROM מצביע ל-M17-c95)
 
 ## המשך מ:
 
-**M15-c95 - DONE (05.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample", אותו פריט חזורי כמו M15-c93/M15-c94. `pwd`
-אומת, HEAD `9a235c363` (M14-c95). בעץ בהגעה: `.vercelignore` שונה ולא
-מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M14-c95). קוד:
-`git diff --stat 7a9dd31d8..HEAD -- src apps packages
-e2e/route-audit.spec.ts next.config.ts` (מאז M15-c94) **ריק**; הקומיט
-האחרון על `e2e/route-audit.spec.ts` עדיין `b2b4b17a5` (29.09). בכל זאת
-רץ אימות מלא וטרי, כמו ב-M15-c90..c94: פורט 3311 תפוס (PID 56540, סשן
-מקביל, לא נגעתי), נבחר 4877 (אומת פנוי); `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4877 pnpm
-build` exit 0, אפס `Invalid API key`, `BUILD_ID` `ngN2Bcen5T972TOg0GDtF`,
-אותן 92 שורות `supabase.rls_denied` (חוסם #3); `pnpm start -p 4877`
-(PID 16123, אומת ב-`lsof` ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה
-200). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
-catalogue routes"`, `E2E_BASE_URL=http://localhost:4877`,
-`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c95.jsonl`: **4/4 PASS**
-(chromium + mobile-chrome, 43.5 שניות). הדוח, 16 שורות: **אפס
-`consoleErrors` ואפס `hydrationWarnings` בכל אחת מהן**, כל הנתיבים 200,
-על `/` ועל שבעת הנתיבים הדינמיים, כולל `/product/צימר-מאסטר`
-ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר), `/category/hot-deals`,
-`/city/תל-אביב`, `/coupons/<id>`, `/page/how-it-works`, `/s/<id>`.
-**אפס דריפט מ-M15-c94.** השרת נעצר ב-`SIGINT`, הפורט פנוי. **תקלת
-מדידה אחת, שלי, לא קוד:** רשימת ה-`env -u` הראשונה (53 שמות: 30
-`[SENSITIVE]` + `VERCEL*`/`SUPABASE_*`/`NEXT_PUBLIC_*`/`R2_*`/`NODE_ENV`)
-לא כללה `CARDCOM_USE_MOCK=true` ו-`CARDCOM_WEBHOOK_SECRET`, שה-harness
-מזריק עם ערך אמיתי ולא `[SENSITIVE]`; `pnpm test` נפל 1/7352
-(`invoices.test.ts` "does not spend an attempt when there are no
-credentials at all", כי `CARDCOM_USE_MOCK=true` הופך `unconfigured`
-ל-`mock`). הורחב ל-55 שמות (אומת `0` שורות `CARDCOM|SENSITIVE|VERCEL|
-SUPABASE` בסביבת הילד) והריצה החוזרת ירוקה. שערים: `pnpm type-check`
-exit 0; `pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm test`
-**615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, 65.7 שניות, זהה ביט
-ל-M14-c95; `build` exit 0 (למעלה). לא פריט חזותי, אפס שינוי UI,
-`compare.mjs` לא נדרש (תקדים M15-c90 ואילך). אפס שינוי קוד. M14-c95
-הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M16-c95 - DONE (05.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", אותו פריט חזורי כמו M16-c93/
+M16-c94. `pwd` אומת, HEAD `9278fd3be` (M15-c95). בעץ בהגעה: `.vercelignore`
+שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M15-c95).
+קוד: `git diff --stat 79fce7af2..HEAD -- src apps packages next.config.ts
+e2e` (מאז M16-c94) **ריק**; הקומיט האחרון על `src/lib/seo/json-ld.ts`
+ועל `src/app/(store)/product/[slug]/page.tsx` עדיין `fd820969f` (30.09),
+והדף עדיין מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd` דרך
+`jsonLdScript` (שורות 225/259/278/283). בכל זאת רץ אימות מלא וטרי: פורט
+3311 תפוס (PID 56540, סשן מקביל, לא נגעתי), נבחר 4993 (אומת פנוי);
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=
+http://localhost:4993 pnpm build` תחת `env -u` של 55 שמות **exit 0**,
+אפס `Invalid API key`, `BUILD_ID` `rDT8dNpxIUT-6XgWOQGh6`, אותן 92 שורות
+`supabase.rls_denied` (חוסם #3); `pnpm start -p 4993` (אומת ב-`lsof`
+ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה 200). כל 44 הסלאגים
+מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו בסקריפט node
+(`/tmp/m16c95-probe.mjs`, regex על `<script type="application/ld+json">`
+ו-`JSON.parse` על כל בלוק): **44/44 מחזירים 200 עם בלוק `Product` אחד
+ובלוק `BreadcrumbList` אחד בדיוק, אפס שגיאות JSON.** אפס דריפט
+מ-M16-c94. השרת נעצר ב-`SIGINT`, הפורט אומת פנוי (0 מאזינים).
+**שלוש תקלות מדידה, שלי, לא קוד:** (1) `env $ARGS` ב-zsh לא מפצל
+מילים, כל 55 השמות הועברו כארגומנט אחד, הסקראב לא חל והבנייה הראשונה
+נפלה (6 `Invalid API key`, export error על `/product/טיול-מאורגן-לדובאי`);
+(2) לולאת `for n in $UNSET` ב-zsh הצמידה `-u` רק לשם הראשון; (3) `mapfile`
+לא קיים ב-bash 3.2 של macOS, השרת הראשון עלה בלי סקראב ו-44/44 ענו 500
+(`instrumentation hook: invalid environment`). כל השלושה נפתרו במעבר
+לסקריפטי bash עם מערך `ARGS` ולולאת `read`; אומת `0` שורות
+`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בסביבת הילד לפני הבנייה והשרת
+התקינים. שערים (תחת אותו סקראב): `pnpm type-check` exit 0; `pnpm lint`
+exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, 57.4 שניות, זהה ביט ל-M15-c95; `build` exit 0
+(למעלה). לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים
+M16-c93/M16-c94). אפס שינוי קוד. M15-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M14-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M15-c95): release בפרודקשן עדיין `main@18ed044b2`, 1162 קומיטים
-מאחורי HEAD; חוסם ה-env נסגר, החוסם החדש הוא `refs` ב-`.vercelignore`
-(`39eb43947`), ראו DEPLOY-UNBLOCK למטה; אפס שינוי קוד.
+**M15-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M16-c95): אפס console errors ואפס hydration warnings על `/` ועל
+דגימת המוצר, 4/4 PASS בבנייה טרייה על 4877; אפס שינוי קוד.
 
-**M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
+**M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
 M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה; כולם DONE עם אפס דריפט וארבעת השערים ירוקים. ההעברות נעשו
-שלב-שלב (האחרונה: M11-c95 ב-M12-c95) לשמירה על תקרת 300 שורות; שום
+שלב-שלב (האחרונה: M14-c95 ב-M15-c95) לשמירה על תקרת 300 שורות; שום
 שורה לא נמחקה מהארכיון, רק הוסרה כאן הכפילות.
 
 **DEPLOY-UNBLOCK - עודכן ב-M14-c95 (05.10.2026), עדיין BLOCKED.** הרשומה

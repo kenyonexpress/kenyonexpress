@@ -2,6 +2,45 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M15-c95 (הועבר מ-STATE.md ב-M16-c95, לשמירה על תקרת 300 שורות)
+
+**M15-c95 - DONE (05.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", אותו פריט חזורי כמו M15-c93/M15-c94. `pwd`
+אומת, HEAD `9a235c363` (M14-c95). בעץ בהגעה: `.vercelignore` שונה ולא
+מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M14-c95). קוד:
+`git diff --stat 7a9dd31d8..HEAD -- src apps packages
+e2e/route-audit.spec.ts next.config.ts` (מאז M15-c94) **ריק**; הקומיט
+האחרון על `e2e/route-audit.spec.ts` עדיין `b2b4b17a5` (29.09). בכל זאת
+רץ אימות מלא וטרי, כמו ב-M15-c90..c94: פורט 3311 תפוס (PID 56540, סשן
+מקביל, לא נגעתי), נבחר 4877 (אומת פנוי); `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4877 pnpm
+build` exit 0, אפס `Invalid API key`, `BUILD_ID` `ngN2Bcen5T972TOg0GDtF`,
+אותן 92 שורות `supabase.rls_denied` (חוסם #3); `pnpm start -p 4877`
+(PID 16123, אומת ב-`lsof` ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה
+200). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
+catalogue routes"`, `E2E_BASE_URL=http://localhost:4877`,
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c95.jsonl`: **4/4 PASS**
+(chromium + mobile-chrome, 43.5 שניות). הדוח, 16 שורות: **אפס
+`consoleErrors` ואפס `hydrationWarnings` בכל אחת מהן**, כל הנתיבים 200,
+על `/` ועל שבעת הנתיבים הדינמיים, כולל `/product/צימר-מאסטר`
+ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר), `/category/hot-deals`,
+`/city/תל-אביב`, `/coupons/<id>`, `/page/how-it-works`, `/s/<id>`.
+**אפס דריפט מ-M15-c94.** השרת נעצר ב-`SIGINT`, הפורט פנוי. **תקלת
+מדידה אחת, שלי, לא קוד:** רשימת ה-`env -u` הראשונה (53 שמות: 30
+`[SENSITIVE]` + `VERCEL*`/`SUPABASE_*`/`NEXT_PUBLIC_*`/`R2_*`/`NODE_ENV`)
+לא כללה `CARDCOM_USE_MOCK=true` ו-`CARDCOM_WEBHOOK_SECRET`, שה-harness
+מזריק עם ערך אמיתי ולא `[SENSITIVE]`; `pnpm test` נפל 1/7352
+(`invoices.test.ts` "does not spend an attempt when there are no
+credentials at all", כי `CARDCOM_USE_MOCK=true` הופך `unconfigured`
+ל-`mock`). הורחב ל-55 שמות (אומת `0` שורות `CARDCOM|SENSITIVE|VERCEL|
+SUPABASE` בסביבת הילד) והריצה החוזרת ירוקה. שערים: `pnpm type-check`
+exit 0; `pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm test`
+**615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, 65.7 שניות, זהה ביט
+ל-M14-c95; `build` exit 0 (למעלה). לא פריט חזותי, אפס שינוי UI,
+`compare.mjs` לא נדרש (תקדים M15-c90 ואילך). אפס שינוי קוד. M14-c95
+הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M14-c95 (הועבר מ-STATE.md ב-M15-c95, לשמירה על תקרת 300 שורות)
 
 **M14-c95 - DONE (05.10.2026).** משימת התור: "Verify Sentry release
