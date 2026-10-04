@@ -1,18 +1,24 @@
-RESUME FROM: M07-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M06-c92 DONE: build exit 0, אפס דריפט)
+RESUME FROM: M08-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M07-c92 DONE: שני סמני TODO(cardcom) בלבד, כבר ב-BACKLOG, אפס דריפט)
 
 ## המשך מ:
 
-**M06-c92 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
-commit", זהה ל-M06-c91. `pwd` אומת, עץ נקי, HEAD `6d02d0b50`.
-`rm -rf .next && pnpm build` exit 0, **אין דריפט לתקן ואין שינוי קוד**.
-רעש ה-log בזמן prerender זהה ל-M06-c91: 92 `supabase.rls_denied`, 46+46
-`reviews_read_failed`, 6 `db.optional_column_missing`, 3
-`content_pages.not_applied`, 2 `phases.not_applied`, ו-4 `db.query_slow`
-(9 ב-c91, תלוי תזמון). כולם warn, אף אחד לא שובר את הבנייה. שאר השערים:
-`type-check` 0, `lint` 0, `test` 615/615 (7340 עברו, 12 דולגו, 7352).
-אין שינוי UI, ולכן `compare.mjs` לא נדרש. M05-c92 הועבר ל-
-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M07-c92 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md", זהה ל-M07-c91. `pwd`
+אומת, עץ נקי, HEAD `cd3c5ca4c`. `git grep -nwE "TODO|FIXME|XXX|HACK"`
+על `src packages scripts apps supabase migrations e2e` (בלי `*.md`):
+**שני סמני עבודה בלבד**, `src/lib/payments/cardcom.ts:254` (blame
+24.07.2026, זיכוי לגאסי) ו-`:319` (blame 07.08.2026, מסמכים), שניהם
+`TODO(cardcom)`, ישנים משבעה ימים, וכבר רשומים ב-`docs/BACKLOG.md` סעיף 6
+(ובקוד `Tracked in #41`/`#42`). לא ניתנים לפתרון בלי טרמינל חי, ואסור
+אינטגרציית ספק תשלום בפריט הזה. שאר הפגיעות אינן סמנים: `05X-XXX-XXXX`
+(`whatsapp.ts:85`, `sms/twilio.ts:74`, `whatsapp/twilio.ts:45`), המחרוזת
+`'TODO'` ב-`whatsapp.test.ts:91`, ו-`scripts/final-audit*` שמממש את
+הסורק עצמו. מאז M07-c91 השתנה ב-`src/` רק `src/styles/product-page.css`
+(+4, בלי סמנים). **אפס דריפט, BACKLOG לא שונה.** שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340 עברו, 12 דולגו, 7352), `rm -rf .next &&
+pnpm build` 0. אין שינוי UI, ולכן `compare.mjs` לא נדרש. M06-c92 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

@@ -44492,3 +44492,16 @@ commit", זהה ל-M05-c91. `pwd` אומת, עץ נקי, HEAD `6ba91163a`.
 `rm -rf .next && pnpm build` exit 0. אפס שינוי קוד, לכן אין שינוי UI
 ו-`compare.mjs` לא נדרש. M04-c92 (type-check נקי) הועבר ל-
 `docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M06-c92 (הועבר מ-STATE.md ב-M07-c92, לשמירה על תקרת 300 שורות)
+
+**M06-c92 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה ל-M06-c91. `pwd` אומת, עץ נקי, HEAD `6d02d0b50`.
+`rm -rf .next && pnpm build` exit 0, **אין דריפט לתקן ואין שינוי קוד**.
+רעש ה-log בזמן prerender זהה ל-M06-c91: 92 `supabase.rls_denied`, 46+46
+`reviews_read_failed`, 6 `db.optional_column_missing`, 3
+`content_pages.not_applied`, 2 `phases.not_applied`, ו-4 `db.query_slow`
+(9 ב-c91, תלוי תזמון). כולם warn, אף אחד לא שובר את הבנייה. שאר השערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340 עברו, 12 דולגו, 7352).
+אין שינוי UI, ולכן `compare.mjs` לא נדרש. M05-c92 הועבר ל-
+`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
