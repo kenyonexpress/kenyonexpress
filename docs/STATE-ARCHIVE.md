@@ -2,6 +2,22 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c89 (הועבר מ-STATE.md ב-M01-c90, לשמירה על תקרת 300 שורות)
+
+**M18-c89 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md". STATE.md היה כבר 266 שורות
+(מתחת לתקרה) בתחילת הפריט, ובכל זאת קוצץ לפי הכלל "רק שורת המשך, טבלת
+התור, חוסמים פתוחים וידני לאופיר": ראש M17-c89 ושבעת ראשי הסיכום של
+סבבים ישנים (M18-c88..M13-c88, M01-c83..M01-c73, M18-c68..M01-c72,
+Q25..Q55, Q26/M01-c62..M18-c65, S02/S03/M18-c61, M15-c61..M01-c59) הועברו
+מילה במילה ל-`docs/STATE-ARCHIVE.md`. **החלטה שהתקבלה לבד:** M14-c73
+(פריסה חיה מחוץ לתור) ו-DEPLOY-UNBLOCK נשארו כאן כי הם חוסמים פתוחים.
+פריט תיעוד בלבד, אפס שינוי UI ולכן אין שער חזותי. STATE.md: 266 → 190
+שורות. `docs-path-audit` תפס בטקסט המועבר את הנתיב השגוי `src/app/page.tsx`;
+תוקן בארכיון לנתיב האמיתי. שערים: `type-check` 0, `lint` 0, `test` 615/615
+(7340/7352, 12 דולגו), `rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M10-c89 (הועבר מ-STATE.md ב-M11-c89, לשמירה על תקרת 300 שורות)
 
 **M10-c89 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
