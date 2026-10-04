@@ -44482,3 +44482,13 @@ catalogue routes"`, `E2E_BASE_URL=http://localhost:4975`,
 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. פריט
 אימות בלבד, לא חזותי, `compare.mjs` לא נדרש. M14-c91 הועבר
 ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M05-c92 (הועבר מ-STATE.md ב-M06-c92, לשמירה על תקרת 300 שורות)
+
+**M05-c92 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה ל-M05-c91. `pwd` אומת, עץ נקי, HEAD `6ba91163a`.
+`pnpm test` exit 0: **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, **אין דריפט לתקן**. שערים נוספים: `type-check` 0, `lint` 0,
+`rm -rf .next && pnpm build` exit 0. אפס שינוי קוד, לכן אין שינוי UI
+ו-`compare.mjs` לא נדרש. M04-c92 (type-check נקי) הועבר ל-
+`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
