@@ -2,6 +2,48 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c95 (הועבר מ-STATE.md ב-M04-c95, לשמירה על תקרת 300 שורות)
+
+**M03-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample", זהה ל-M03-c94. `pwd` אומת, HEAD `0d2173157` (M02-c95).
+`git diff 5a10dcce2 HEAD --stat -- src public next.config.* package.json
+scripts/compare.mjs scripts/diff-bands.mjs pnpm-lock.yaml` ריק (אפס
+שינוי קוד או בשער מאז M03-c94). בעץ בהגעה: `.vercelignore` שונה ולא
+מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit). פורטים 3311 ו-4722 תפוסים
+על ידי שרתי `next-server` יתומים מסשנים קודמים (אותו `cwd`, לא לנגיעה),
+נבחר 4830 (`lsof` אישר פנוי, ואומת שה-`cwd` של המאזין הוא הריפו הזה).
+**ממצא סביבה, לתיעוד:** ה-shell של הסשן הזה מייצא כ-30 משתני סביבה עם
+ערך-ממלא-מקום (`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`,
+`NODE_ENV` ועוד) וגם `VERCEL=1`/`VERCEL_ENV=production`, ואלו דורסים את
+`.env.local`. ה-build הראשון נפל ב-`Invalid API key` על 84/337 עמודי
+מוצר (`createAdminClient` מעדיף `SUPABASE_SERVICE_ROLE_KEY` על
+`SUPABASE_SECRET_KEY`), אף שכל שלושת המפתחות ב-`.env.local` נבדקו מול
+REST והחזירו 200 ו-`.env.local` לא השתנה מ-18.09. לא שונה שום קובץ ולא
+שום סוד: הריצות הוזנו דרך `env -u` לכל משתנה ממלא-מקום. `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4830 pnpm
+build` exit 0 (אפס `Invalid API key`), `PORT=4830 pnpm start`, `/` ו-
+`/category/hot-deals` 200. **ריצה ראשונה בטעות עם `--widths=380`** (ערך
+יחיד): הסקריפט נופל ל-`--width` ברירת-מחדל 1440, ולכן נכתבה שורת
+`category/1440/1.69% PASS` (16:17) לפני המדידה המכוונת, אמת ולא שגיאה;
+לריצה ברוחב יחיד הדגל הוא `--width=`. ואז השער רץ **בחזית**, פר-רוחב,
+על `/category/hot-deals` עם `--baseline='refs/electro_shop_{width}.png'`:
+**380: `3.53%` PASS. 768: `2.52%` PASS. 1440: `1.69%` PASS** (16:20,
+16:22, 16:24, `0d2173157-dirty`). 768 ו-1440 זהים בביט ל-M03-c92/c93/c94;
+380 זהה בביט ל-M03-c92/c93 (`3.53%`) ושונה מ-M03-c94 (`2.93%`) באותו
+רעש-תזמון שתועד שם, אפס דריפט בקוד. 380 ו-768 הציגו `HEIGHT RATIO`
+(0.53x/0.59x), אזהרה ידועה ולא exit code. השרת נעצר ב-`INT`, 4830 פנוי.
+שערים: `type-check` 0, `lint` 0 (biome + 12 שערי סקריפט), `test` תחת
+ה-shell הגולמי **נכשל 14/7352 ב-8 קבצים** (כולם טסטים של "המפתח לא
+מוגדר" ב-resend/VAPID/Meilisearch/Twilio/deployed-runtime/invoices,
+וגם `isSuppressed` שפנה ל-Supabase אמיתי כי ה-URL והמפתח מיוצאים
+ב-shell), ו**תחת `env -u` לכל 40 המשתנים המוזרקים: 615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, זהה ביט ל-M02-c95. ההחלטה: הכשלים הם ארטיפקט
+של סביבת ה-harness ולא של הקוד (אפס שינוי קוד, אותו מספר תחת shell
+נקי), אין תיקון בקוד. `build` exit 0 (למעלה). M02-c95 ו-M18-c94 הועברו
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md` (4 שורות, נכתבו
+אוטומטית ע"י השער).
+
 ## M18-c94 (הועבר מ-STATE.md ב-M03-c95, לשמירה על תקרת 300 שורות)
 
 **M18-c94 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
