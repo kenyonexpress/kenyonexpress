@@ -2,6 +2,33 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M06-c95 (הועבר מ-STATE.md ב-M07-c95, לשמירה על תקרת 300 שורות)
+
+**M06-c95 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה ל-M06-c94. `pwd` אומת, HEAD `c83271bcc` (M05-c95). בעץ
+בהגעה: `.vercelignore` שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל
+ב-commit, כמו ב-M03..M05-c95). `git diff --stat a2474954a HEAD -- src
+public packages next.config.* package.json tsconfig*.json pnpm-lock.yaml
+scripts vitest*` ריק: הקומיט האחרון שנגע בקוד הוא עדיין `a2474954a`
+(M17-c91), אפס שינוי קוד מאז M06-c93/c94, אין דריפט לתקן. כל ארבעת
+השערים רצו **בחזית** תחת `env -u` ל-65 משתנים שה-shell של ה-harness
+מזריק (ממלאי-מקום `[SENSITIVE]`, `VERCEL*`, `NODE_ENV`, `SUPABASE_*`,
+`NEXT_PUBLIC_*`, `CARDCOM_*`; הספירה גדלה מ-55 ב-M05-c95 כי ה-shell
+הזריק יותר שמות, אותה סיבה, אפס שינוי בקוד): `pnpm type-check` exit 0.
+`pnpm lint` exit 0 (i18n 627/627, he-IL 116, input-dir 24, docs-index
+282, docs-path-audit 155 ידועים). `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, 57.0 שניות, אפס כשלונות, זהה ביט ל-M05-c95.
+**`rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4830 pnpm build` תחת אותו `env -u`
+exit 0, אפס `Invalid API key`, `.next/BUILD_ID` נוצר
+(`JVdTbp3YtYeKNl6jzN5Au`)**. בלוג הבנייה 92 שורות
+`supabase.rls_denied` על `reviews` (42501) בזמן prerender של דפי מוצר:
+זו תוצאת חוסם #3 (מיגרציה 247, `anon` בלי SELECT על `reviews`), נתפסת
+כ-`warn` ב-`product_detail.reviews_read_failed` ואינה מפילה את הבנייה;
+לא דריפט ולא לתיקון בקוד. לא פריט חזותי, אפס שינוי UI, `compare.mjs`
+לא נדרש. אפס שינוי קוד. M05-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M05-c95 (הועבר מ-STATE.md ב-M06-c95, לשמירה על תקרת 300 שורות)
 
 **M05-c95 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
