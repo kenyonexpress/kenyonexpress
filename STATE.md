@@ -1,73 +1,84 @@
-RESUME FROM: L09
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L08 BLOCKED: שער 8
-observability נמדד מול פרודקשן; Sentry קיבל שגיאת לקוח ב-ingest אך אין
-טוקן API לאימות, PostHog אינרטי כי `NEXT_PUBLIC_POSTHOG_KEY` חסר
-ב-Production, ו-Resend מחזיר 401 "API key is invalid" לשליחה אמיתית מהשרת
-החי; שלושת התיקונים הם env ב-Vercel, אסור לפריט; RESUME FROM מצביע ל-L09)
+RESUME FROM: L10
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L09 BLOCKED: שער 9
+cron נמדד מול פרודקשן; pg_cron מחזיק עבודה אחת שרצה ב-24 השעות האחרונות,
+כל 21 נתיבי `/api/cron` עונים 401 בלי bearer בשני ה-hosts, אך ה-200 עם
+`CRON_SECRET` של פרודקשן אינו ניתן למדידה: הערך ב-Vercel הוא Sensitive ולא
+נקרא, וגם סוד GitHub וגם הערך המקומי נדחים ב-401; יישור הסוד הוא env,
+אסור לפריט; RESUME FROM מצביע ל-L10)
 
 ## המשך מ:
 
-**L08 - BLOCKED (05.10.2026, 23:25 מקומי): שער 8 observability. שלושת
-הרגליים נמדדו מול פרודקשן; אף אחת לא ניתנת לסגירה בלי שינוי env ב-Vercel,
-שאסור לפריט הזה.** משימת התור: "Gate 8 observability: trigger a test error
-on production and confirm it appears in Sentry via API; send a test PostHog
-event from production and confirm via API; send a Resend test email to
-support@kenyonexpress.co.il and confirm delivered status via API". `pwd`
-אומת, HEAD בהגעה `97f54ffaa`, עץ נקי. **Sentry, נשלח אך לא אומת ב-API:**
-ה-Production של `kenyonexpress` מחזיק `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`
-ו-`SENTRY_AUTH_TOKEN` (sensitive, לא נקראים) אבל **לא** את
-`SENTRY_DEBUG_ROUTES`, ולכן זורק השרת `/api/debug/sentry` עונה `404` חי
-(נמדד) והוא סגור בכוונה; פתיחתו היא שינוי env, אסור. ה-bundle המוגש מכיל
-את ה-DSN (org `o4511944582496256`, project `4511946778607696`, אזור `de`),
-ומנהרת `/monitoring` חיה (POST בלי כותרת auth מחזיר את ה-`401 bad envelope
-authentication header` של Sentry עצמו, כלומר הועבר). **נזרקה שגיאת לקוח
-בפועל** מ-Chromium headless על `https://www.kenyonexpress.co.il/` עם המחרוזת
-`Sentry client check: L08-sentry-muu9fhwm`; ה-SDK של הבנייה החיה שלח דרך
-המנהרה ו-ingest ענה `200 {"id":"c32d5f141b38426aac8c48adc20f17a8"}`. זו
-קבלה ב-ingest, לא אישור ב-API: אין `SENTRY_AUTH_TOKEN` קריא בשום מקום
-(ב-Vercel הוא sensitive, אין קובץ מקומי, אין תבנית `sntrys_` בדיסק), ו-MCP
-של Sentry דורש הזדהות שאינה זמינה בסשן הזה. אופיר יכול לאמת לפי מזהה
-האירוע. **PostHog, אין מה לשלוח:** הקוד (`src/lib/observability/posthog.ts`)
-קורא רק `NEXT_PUBLIC_POSTHOG_KEY`, והוא **אינו קיים** ב-Production; קיים שם
-`POSTHOG_API_KEY` שאף קובץ אינו קורא. ב-bundle החי אין מפתח `phc_`, כלומר
-PostHog אינרטי בפרודקשן לפי תכנון, ואין מפתח אישי לשאילתת ה-API ממילא.
-**Resend, נמדד שבור בפרודקשן:** שליחה אמיתית דרך טופס `/contact` החי
-(server action `contact.submit`, אל `support@kenyonexpress.co.il`, מזהה
-`L08-contact-muu9q6qw`) החזירה למשתמש "השליחה נכשלה", ולוג הפרודקשן
-(`vercel logs`, 20:23:25 UTC, `request_id
-95f87a6c-f8a2-436d-8baf-0c37055a771f`) אומר `email.refused` עם
-`status 401 {"message":"API key is invalid"}` מ-Resend. כלומר
-`RESEND_API_KEY` בפרודקשן אינו תקף, ושום מייל (צור קשר, קופון, magic link,
-איפוס סיסמה, outbox) אינו יוצא; מתואם עם 72 שורות `dead` ב-
-`notification_outbox` (נמדד בקריאה בלבד). המפתח המקומי
-(`.env.local.bak`/`.env.local.pre-probe`, זהה) גם הוא `API key is invalid`
-מול `/domains`, ולכן גם אישור `delivered` ב-API של Resend אינו אפשרי.
-עוד נמדד: אין משתמש auth בכתובת `support@` (0 שורות), ולכן גם מסלולי
-magic link ואיפוס סיסמה לא היו שולחים אליה. **תקלת מדידה שתועדה:** ארבע
-הגשות ראשונות לחצו על `button[type=submit]` הראשון בדף, שהוא טופס באנר
-ההסכמה, ולכן ארבעת ה-POST הקודמים ל-`/contact` היו פעולת ההסכמה ולא
-הטופס; שום מייל לא נשלח בהם. תחימה ל-`form:has(textarea[name="message"])`
-תיקנה זאת. Gmail MCP, Sentry MCP ו-Supabase MCP דורשים הזדהות בסשן הזה.
-**החלטות שהתקבלו לבד:** (א) שגיאת לקוח במקום שגיאת שרת, כי שער
-`SENTRY_DEBUG_ROUTES` הוא env; (ב) לא נוצר משתמש `support@` ולא הופעל
-איפוס סיסמה או magic link בפרודקשן; (ג) אפס שינוי env, אפס deploy, אפס
-מחיקה; (ד) מייל בדיקה אחד נוסה בפועל ונכשל אצל Resend, לא אצלנו.
-**לאופיר:** מפתח Resend חדש ב-Vercel Production (ובמקומי); להוסיף
-`NEXT_PUBLIC_POSTHOG_KEY` (ו-`NEXT_PUBLIC_POSTHOG_HOST` אם האזור אינו US)
-ולפרוס מחדש; לפתיחה זמנית של זורקי השרת `SENTRY_DEBUG_ROUTES`; טוקן
-Sentry לקריאה בלבד או הזדהות מחדש ל-MCP. הכל רשום ב-`docs/BACKLOG.md`
-סעיף 9 וסעיפים 20 ו-21. שערים, כולם תחת
-`env -u` ל-56 השמות המוזרקים מה-harness (אומת `0` נותרים; עם 31 שמות בלבד
-נפלו 9 טסטים של `growth/resend` ו-`deployed-runtime` והבנייה על `Invalid
-API key`, שניהם זיהום env ולא קוד): `pnpm type-check` exit 0; `pnpm lint`
-exit 0 פעמיים, השנייה אחרי עריכת המסמכים (docs-index-gate 282,
-docs-path-audit 155 ללא שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12
-דולגו (7354), 80 שניות; `CARDCOM_USE_MOCK=true
+**L09 - BLOCKED (05.10.2026, 03:46 מקומי): שער 9 cron. pg_cron ונתיבי ה-cron
+נמדדו מול פרודקשן; הצד של "200 עם `CRON_SECRET`" אינו ניתן למדידה מהסשן
+הזה, כי אף ערך זמין אינו הערך של פרודקשן, ויישורו הוא env ב-Vercel/GitHub,
+אסור לפריט.** משימת התור: "Gate 9 cron: confirm pg_cron jobs exist and ran
+in last 24h via Supabase MCP; confirm every /api/cron route returns 200 with
+CRON_SECRET and 401 without; vouchers expire, reminders T-7 T-1 fire".
+`pwd` אומת, HEAD בהגעה `331a9a980`, עץ נקי. **pg_cron (קריאה בלבד דרך
+management API עם טוקן ה-CLI מה-keychain, כי Supabase MCP דורש הזדהות
+שאינה זמינה בסשן):** `pg_cron 1.6.4` ו-`pg_net 0.20.0` מותקנים; `cron.job`
+מחזיק **עבודה אחת בלבד**, `report_tables_nightly` (`30 1 * * *`,
+`select public.refresh_report_tables()`, active), ו-`cron.job_run_details`
+מראה `succeeded` ב-04.10 01:30 UTC (בתוך 24 השעות), וכן 03.10 ו-02.10. אין
+אף עבודת `ke-*`: מיגרציה 162 (12 עבודות pg_cron+pg_net עם vault) לא הוחלה
+(חוסם 5 ב-CLAUDE.md, ממתינה ל-URL ב-vault). עבודות האפליקציה רצות מ-GitHub
+Actions (`cron.yml` על `main`), לא מ-pg_cron. **נתיבי `/api/cron`, 21 בעץ:**
+כל ה-21 מחזירים `401` בלי bearer גם על `kenyonexpress.vercel.app` וגם על
+`www.kenyonexpress.co.il` (curl ישיר, וגם `scripts/deployed-cron-probe.mjs`
+על שני ה-hosts: "all 21 scheduled routes are present and protected", exit 0).
+כל 21 הקבצים מפנים ל-`bearerMatches`/`withJobRun` (0 נתיבים בלי שומר).
+**200 עם הסוד, פרודקשן: לא נמדד, בלתי אפשרי מהסשן.** `CRON_SECRET` ב-Vercel
+Production הוא `Secret`/Hidden ואינו נקרא; הערך המקומי ב-`.env.local` נדחה
+ב-401 על כל 21 הנתיבים בשני ה-hosts; סוד GitHub נדחה גם הוא: הריצה
+המתוזמנת האחרונה (`37227331974`, 04.10 19:11 UTC, schedule `0 * * * *`)
+מראה `abandoned-cart -> 401` ו-`search-reindex -> 404` (זה הנתיב של `main`
+שאינו ב-HEAD, חוסם 12), 8/8 הריצות האחרונות failure. `CRON_SCHEDULER_ENABLED
+= true`, `CRON_BASE_URL` לא מוגדר ולכן ה-default `kenyonexpress.vercel.app`,
+שמגיש HEAD. רוטציה אסורה. **200 עם הסוד, בנייה מקומית של HEAD (אותו קוד
+שפרודקשן מגיש):** `pnpm start` על 4993 עם `CRON_SECRET` אקראי חד-פעמי:
+`health`, `expire-vouchers`, `notifications` עונים `401` בלי bearer, `401`
+עם bearer שגוי, ו-`200` עם הנכון. **שוברים ותזכורות T-7/T-1:** בפרודקשן
+קיימות `expire_vouchers()`, `credit_expired_vouchers()` ו-
+`enqueue_expiring_voucher_notices(p_buckets int[] default {7,1})`; הנתיב
+קורא לשלושתן בסדר הזה עם `[7, 1]` (ו-`route.test.ts` מצמיד זאת). מצב
+השוברים החי: 14 `issued`, 4 `redeemed`, 2 `refunded`, **0 מעבר לתפוגה ו-0
+שפוקעים ב-7 הימים הקרובים** (תפוגה מינימלית 09.12.2026), ולכן גם ריצה
+מושלמת הייתה no-op היום. ב-`notification_outbox` אין אף שורת
+`voucher_expiring` מעולם (72 שורות, כולן `dead`, 6 סוגים אחרים, 0 שורות
+ב-24 השעות האחרונות). **תקלה שתועדה בכנות:** הפרוב המקומי ל-`expire-vouchers`
+ו-`notifications` רץ עם ה-admin client המקומי מול DB הפרודקשן והחזיר
+`{"ok":true,"expired":0,"credited":0,"reminders":0}` ו-`considered 0`;
+כלומר שתי RPC-ים הופעלו על פרודקשן, אך לפי התנאים שנמדדו לפני כן (0 מעבר
+לתפוגה, 0 ב-7 ימים, 0 pending) אף שורה לא השתנתה. לא נדרשה ולא נעשתה
+מחיקה. **הבחנה בתכנון, לא תוקנה (דורשת מיגרציה):** ההתאמה בפונקציה היא
+תאריך-מדויק (`expires_at::date = today + bucket` ב-Asia/Jerusalem), והלוח
+`15 23 * * *` UTC הוא 01:15/02:15 למחרת בישראל; GitHub cron מפיל ריצות
+(8 ריצות בלבד ב-04.10 על 13 לוחות), וריצה יומית שנפלה משמיטה את הדלי של
+אותו יום לצמיתות. נרשם ב-`docs/BACKLOG.md` סעיף 2. **Vercel runtime logs**
+דרך MCP החזירו 403 (`project does not exist or no access`) על
+`prj_v49dZb...` תחת `team_TUMTPVDP...`, לא נמדד. **החלטות שהתקבלו לבד:**
+(א) management API במקום Supabase MCP, קריאה בלבד; (ב) אפס רוטציה, אפס
+שינוי env, אפס deploy; (ג) ה-200 הוכח על בנייה מקומית של אותו HEAD ולא על
+פרודקשן, ונרשם ככזה; (ד) הבחנת הדלי המדויק נרשמה ולא תוקנה. **לאופיר:**
+לקרוא את `CRON_SECRET` ב-Vercel > kenyonexpress > Production ולהדביק אותו
+ב-GitHub Secrets > `CRON_SECRET`; הריצה הבאה צריכה להראות `-> 200`.
+שערים, כולם תחת `env -u` ל-54 השמות המוזרקים מה-harness (אומת `0` נותרים;
+עם 51 שמות נפל `invoices.test.ts` אחד כי `CARDCOM_USE_MOCK` המוזרק הפך את
+`documentIssuingMode` ל-`mock`, זיהום env ולא קוד): `pnpm type-check` exit
+0; `pnpm lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit
+155 ללא שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354),
+60.4 שניות; `rm -rf .next` ואז `CARDCOM_USE_MOCK=true
 NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0, `BUILD_ID`
-`8s1_bbxwaYQZLjkoHxQEf`, אותן שורות `supabase.rls_denied` על `reviews`
-(חוסם 3). `compare.mjs` לא נדרש, אפס שינוי UI או קוד.
-L07 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+`KRn9FuYm7qMUDVU23x3bz`, אותן שורות `supabase.rls_denied` על `reviews`
+(חוסם 3). `compare.mjs` לא נדרש, אפס שינוי UI או קוד. L08 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/BACKLOG.md`.
+
+**L08 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L09): שער 8 observability נמדד מול פרודקשן; Sentry קיבל שגיאת לקוח
+ב-ingest (`c32d5f141b38426aac8c48adc20f17a8`) בלי טוקן API לאימות, PostHog
+אינרטי כי `NEXT_PUBLIC_POSTHOG_KEY` חסר ב-Production, Resend מחזיר 401
+"API key is invalid" משליחה אמיתית; שלושתם env ב-Vercel.
 
 **L07 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-L08): שער 7 parity נמדד מול פרודקשן ב-380/768/1440, 7.91 / 8.98 / 4.09
@@ -234,10 +245,12 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    קיימים בפרויקט (ערכים לא נקראו).
 9. **מספר עוסק/ח.פ לשורת המוכר** באישור הרכישה (Q09): אינו קיים בריפו.
    עריכה אחת ב-`messages/he.json`, `purchaseConfirmation.sellerName`.
-10. **המתזמן מתוזמן ונדחה** (Q24): `cron.yml` על `main` נכשל 40/40, כל נתיב
-    עונה 401 ל-`CRON_SECRET` של GitHub (סוד שונה מזה ב-Vercel). 72 הודעות
-    `pending` ב-`notification_outbox` מאז 10.09; `expire-vouchers` ושאר 21
-    העבודות לא רצות. תיקון: אותו ערך בשני המקומות. פעולה של אופיר בלבד.
+10. **המתזמן מתוזמן ונדחה** (Q24, נמדד שוב L09 05.10): `cron.yml` על `main`
+    נכשל בכל ריצה, האחרונה 04.10 19:11 UTC (`abandoned-cart -> 401`), כל 21
+    הנתיבים עונים 401 גם לסוד המקומי; סוד Vercel הוא Sensitive ולא נקרא.
+    72 הודעות `dead` ב-`notification_outbox`, 0 חדשות ב-24 שעות;
+    `expire-vouchers` ושאר 20 העבודות לא רצות. pg_cron מחזיק רק
+    `report_tables_nightly` (רץ). תיקון: אותו ערך בשני המקומות. אופיר בלבד.
 11. **הקטלוג החי מכיל שורות תבנית וכפילויות** (`supabase/catalogue-known-issues.json`,
     **26** ממצאים על 44-46 מוצרים פעילים לפי המדידה — לא 25; ראו M15-c53
     למעלה): שלוש שורות `מאסטר`, חמש `-copy`/`-העתק`/`-לדוגמא`, שמות שסותרים

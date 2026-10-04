@@ -485,6 +485,13 @@ unchanged. No migration applied, no code change -- verification only.
    Production) ולהדביק אותו ב-GitHub Settings > Secrets > Actions >
    `CRON_SECRET`. הריצה הבאה צריכה להראות `notifications -> 200`.
    מקור: STATE.md חוסם 10, LAUNCH-READINESS.md שורה חוסמת 3.
+   **L09 (05.10):** נמדד שוב, אפס שינוי: 21/21 נתיבים 401 בשני ה-hosts, סוד
+   GitHub וסוד מקומי שניהם נדחים, סוד Vercel Sensitive ולא נקרא. pg_cron
+   מחזיק רק `report_tables_nightly`. הבחנה נוספת, דורשת מיגרציה ולא תוקנה:
+   `enqueue_expiring_voucher_notices` מתאימה תאריך-מדויק (today+7, today+1
+   ב-Asia/Jerusalem) בעוד GitHub cron מפיל ריצות (8 ב-04.10 על 13 לוחות);
+   יום שנפל משמיט את דלי התזכורת שלו לצמיתות. חלון של ימים (`between`) עם
+   `dedupe_key` הקיים היה סוגר זאת.
 3. **סביבת Production ב-Vercel לפני כל פריסה.** להוסיף
    `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`
    (השמות שהקוד קורא בפועל; `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID`
