@@ -1,26 +1,18 @@
-RESUME FROM: M18-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M17-c92 DONE: RTL על / ושלושה מוצרים ב-380/768/1440, אפס LTR leaks)
+RESUME FROM: M01-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M18-c92 DONE: STATE.md כווץ, M17-c92 הועבר לארכיון)
 
 ## המשך מ:
 
-**M17-c92 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks", זהה ל-M17-c91. `pwd` אומת, עץ נקי, HEAD
-`8e9096245`. קוד: `git diff a2474954a HEAD -- src apps packages` ריק,
-כלומר תיקון שורת התגיות של M17-c91 הוא עדיין השינוי האחרון בקוד. בזמן
-ריצה: `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4984 pnpm build` exit 0, `pnpm start
--p 4984` (cwd המאזין אומת ב-`lsof`: הריפו הזה). בדיקת Playwright על `/`
-ושלושה סלאגים אקראיים מתוך 44 (`samsung-galaxy-s22-128gb-...-5g`,
-`חבילת-גלידה`, `חיתולי-האגיס`) ב-380/768/1440, 12 טעינות, כולן 200:
-`<html lang="he" dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה
-לרוחב בכולן (אפס גלילה צידית), ו**אפס אלמנט גלוי עם `direction: ltr`
-מחושב שמחזיק טקסט עברי ישיר**. ה-`dir="ltr"` היחידים: שדה האימייל
-בניוזלטר (1440 בלבד, מכוון, `input-dir-gate`) וקישור `tel:` של הספק
-ב-`חבילת-גלידה`, כמו ב-M17-c90. **אפס leak, אפס דריפט, אפס שינוי קוד**,
-ולכן `compare.mjs` לא נדרש (אין שינוי UI). השרת נעצר (INT), הפורט פנוי.
-שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
-`build` exit 0. M16-c92 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M18-c92 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c91. `pwd` אומת,
+עץ נקי, HEAD `55d7a4ddd`. STATE.md היה 198 שורות, כלומר כבר מתחת לתקרה;
+**החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c92 לארכיון, כדפוס
+M18-c91, כך שהקובץ מחזיק רק את שורת ההמשך, הטבלה, החוסמים והידני. שום
+שורה לא נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`). שורה 1:
+`RESUME FROM: M01-c93`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
