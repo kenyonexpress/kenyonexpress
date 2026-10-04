@@ -43570,3 +43570,22 @@ ready" לא מתקיים, והסיבה חיצונית ומתועדת, לא בא�
 pnpm build` exit 0, ה-manifest מראה `/api/health` ו-`/api/ready`. לא פריט
 חזותי, `compare.mjs` לא נדרש. M12-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
 קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M14-c89 (הועבר מ-STATE.md ב-M15-c89, לשמירה על תקרת 300 שורות)
+
+**M14-c89 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", זהה ל-M14-c88. `pwd` אומת, עץ נקי, HEAD `8d6b50fc2`
+(M13-c89). נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`. `SENTRY_DSN`
+ו-`NEXT_PUBLIC_SENTRY_DSN` (production+preview) עדיין עם `createdAt`
+`1790918429743`, `SENTRY_AUTH_TOKEN` (production) `1789566136944`, ללא
+שינוי. **תשובה: ה-release שבפרודקשן אינו HEAD.** `git rev-list --count
+18ed044b2..HEAD` = **1050** (היה 1030 ב-M14-c88), `HEAD..18ed044b2` = 109
+ללא שינוי. אפס דריפט מ-M14-c88; זה אותו חוסם (DEPLOY-UNBLOCK למטה,
+סעיף 17 ב-`docs/BACKLOG.md`), והוא ממתין לתיקון ה-env של אופיר. לא נגעו
+ב-deploy או ב-env. שערים: `type-check` 0, `lint` 0, `test` 614/614
+(7337/7349, 12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4521 pnpm build` exit 0. לא פריט
+חזותי, `compare.mjs` לא נדרש. M13-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.

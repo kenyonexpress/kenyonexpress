@@ -1,24 +1,23 @@
-RESUME FROM: M15-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M14-c89 DONE: Sentry release vs HEAD, פרודקשן עדיין main@18ed044b2, אפס דריפט)
+RESUME FROM: M16-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M15-c89 DONE: קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט)
 
 ## המשך מ:
 
-**M14-c89 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit", זהה ל-M14-c88. `pwd` אומת, עץ נקי, HEAD `8d6b50fc2`
-(M13-c89). נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
-`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
-`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`. `SENTRY_DSN`
-ו-`NEXT_PUBLIC_SENTRY_DSN` (production+preview) עדיין עם `createdAt`
-`1790918429743`, `SENTRY_AUTH_TOKEN` (production) `1789566136944`, ללא
-שינוי. **תשובה: ה-release שבפרודקשן אינו HEAD.** `git rev-list --count
-18ed044b2..HEAD` = **1050** (היה 1030 ב-M14-c88), `HEAD..18ed044b2` = 109
-ללא שינוי. אפס דריפט מ-M14-c88; זה אותו חוסם (DEPLOY-UNBLOCK למטה,
-סעיף 17 ב-`docs/BACKLOG.md`), והוא ממתין לתיקון ה-env של אופיר. לא נגעו
-ב-deploy או ב-env. שערים: `type-check` 0, `lint` 0, `test` 614/614
-(7337/7349, 12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4521 pnpm build` exit 0. לא פריט
-חזותי, `compare.mjs` לא נדרש. M13-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M15-c89 - DONE (04.10.2026).** משימת התור: "Verify no console errors
+on / and /product sample", זהה ל-M15-c88. `pwd` אומת, עץ נקי, HEAD
+`959b29bc0` (M14-c89). בנייה טרייה (`rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4954 pnpm
+build`, exit 0), `pnpm start -p 4954` (אומת ב-`lsof` שה-cwd של המאזין הוא
+הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
+catalogue routes"`, `E2E_BASE_URL=http://localhost:4954`,
+`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c89.jsonl`: **4/4 PASS** (chromium
++ mobile-chrome). הדוח: אפס `consoleErrors` ואפס `hydrationWarnings`, כל
+הנתיבים 200, על `/` ועל שמונת הנתיבים הדינמיים, כולל `/product/צימר-מאסטר`
+ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר). אפס דריפט מ-M15-c88. השרת
+נעצר, הפורט פנוי. שערים: `type-check` 0, `lint` 0, `test` 614/614
+(7337/7349, 12 דולגו), `build` exit 0. פריט אימות בלבד, לא חזותי,
+`compare.mjs` לא נדרש. M14-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
