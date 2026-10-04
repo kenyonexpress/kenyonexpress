@@ -1,16 +1,24 @@
-RESUME FROM: M01-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M18-c91 DONE: STATE.md קוצר, M17-c91 הועבר לארכיון)
+RESUME FROM: M02-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M01-c92 DONE: שער חזותי בית נמדד מחדש 380/768/1440, 8.58/9.01/4.16 PASS)
 
 ## המשך מ:
 
-**M18-c91 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c90. `pwd` אומת,
-עץ נקי, HEAD `a2474954a` (M17-c91). לפני: STATE.md ‏206 שורות, כבר מתחת
-לתקרה. לפי הדפוס של M18-c90, סעיף M17-c91 הועבר כלשונו לראש
-`docs/STATE-ARCHIVE.md`; נשארו רק שורת ההמשך, טבלת התור, החוסמים הפתוחים
-והפריטים הידניים לאופיר. אחרי: 188 שורות. שום שורה לא נמחקה
-מהארכיון. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. לא חזותי, `compare.mjs` לא נדרש. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M01-c92 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c91. `pwd`
+אומת, עץ נקי, HEAD `a5ba4ff47`, פורט 3311 פנוי. `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build`
+exit 0 (נדרש: M17-c91 שינה `src`), `PORT=3311 pnpm start` (cwd המאזין
+אומת ב-`lsof`: הריפו הזה), `/` החזיר `200`. השער רץ בחזית עם
+`--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`. **ריצה אחת:
+`380 8.58%`, `768 9.01%`, `1440 4.16%`, כולם PASS, exit 0.** הפרש מול
+M01-c91 (8.58/9.01/4.16): 0.00 / 0.00 / 0.00. תיקון ה-wrap של M17-c91 נוגע
+רק בדף המוצר ולא הזיז את דף הבית. **הדפוס של 768 קר לא חזר הפעם:** הריצה
+הראשונה מול שרת טרי עברה, אחרי שלושה סבבים (c89..c91) שבהם ניפחה את 768.
+כלומר התנודה אינה דטרמיניסטית; מועמד ה-"warm-up pass in compare.mjs"
+נשאר פתוח ולא תוקן כאן (פריט מדידה בלבד). השער כתב את שלוש השורות
+ל-`docs/UI-PARITY-REPORT.md`. M18-c91 הועבר לארכיון. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי
+קוד. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
