@@ -401,6 +401,19 @@ const seedCart = async (target) => {
 
 /** A `file:` archive or the old host: the two shapes the reference has ever had. */
 const isExternal = (url) => url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+// WHICH SIDE A PAGE IS ON IS DECIDED BY THE CALLER, NOT BY ITS HOSTNAME.
+//
+// shoot() used to derive the side from isExternal(url), which worked only while
+// the right-hand side was always localhost. Measured 05.10.2026 (L07): running
+// the gate with the right-hand side on https://www.kenyonexpress.co.il/ -- the
+// deployed build, against the frozen August capture -- classified OUR side as
+// the reference by hostname, ran enforceReference() on it and refused with exit
+// 5 ("is not the reference"). It is not the reference; it was never meant to be.
+// It is the page under test, and the hostname says nothing about that. The
+// reference guard, the shorter settle, and every per-side bookkeeping slot
+// (cartEmptiness, heroImages, pendingImages, heroStability, gridCounts) now key
+// off the side the caller names, and isExternal() is left for the one question
+// it answers well: does this URL point at the old host or an archive.
 
 /**
  * Read in the page. Kept as one function so the pre-seeding probe and the shot
@@ -475,7 +488,7 @@ const enforceReference = async (url, markers) => {
   console.log(`  reference ok: ${verdict.why}`)
 }
 
-const shoot = async (url, out) => {
+const shoot = async (url, out, side = isExternal(url) ? 'live' : 'mine') => {
   const p = await ctx.newPage()
   // The live host intermittently drops a navigation into chrome-error, which
   // used to abort the whole run after the seeding had already been paid for.
@@ -543,7 +556,7 @@ const shoot = async (url, out) => {
     })
   await p.evaluate(() => document.fonts?.ready).catch(() => {})
 
-  const external = isExternal(url)
+  const external = side === 'live'
 
   // IS THE LEFT-HAND SIDE STILL THE REFERENCE? See enforceReference above. The
   // page is already loaded here, so the check costs no extra navigation.
@@ -1205,9 +1218,9 @@ if (LIVE_PNG) {
     `  reference: frozen capture ${LIVE_PNG} (${capture.width}x${capture.height}), no live navigation`,
   )
 } else {
-  await shoot(liveUrl, runShot('live'))
+  await shoot(liveUrl, runShot('live'), 'live')
 }
-await shoot(mineUrl, runShot('mine'))
+await shoot(mineUrl, runShot('mine'), 'mine')
 
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a

@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L06 (הועבר מ-STATE.md ב-L07, לשמירה על תקרת 300 שורות)
+
+**L06 - BLOCKED (05.10.2026, 02:51 מקומי): החלת מיגרציות על פרודקשן דורשת
+אישור מפורש; ההשוואה נמדדה, לא הוחל דבר.** משימת התור: "Gate 6 migrations:
+list migrations/pending/; compare to supabase_migrations.schema_migrations via
+Supabase MCP execute_sql; apply each missing one via apply_migration one at a
+time in order; never db push; never migration 165". `pwd` אומת, HEAD בהגעה
+`52b4e1469`, עץ נקי. **נמדד:** `migrations/pending/` מחזיק 62 קבצים (58
+ממוספרים 162..248, `APPLY-ORDER.md`, `README.md`, `preflight_162.sql`,
+`preflight_184.sql`), `git log -1 -- migrations/pending/` עדיין `48c8792dd`.
+**ה-MCP של Supabase (`execute_sql`/`apply_migration`) אינו מאומת בסשן הזה**;
+הטבלה נקראה דרך ה-management API עם טוקן ה-CLI מה-keychain, קריאה בלבד,
+HTTP 201: **162 שורות ב-`schema_migrations`**. השוואה לפי מספר: **6** קבצים
+ממתינים תואמים שורה מוחלת באותו שם (188, 192, 194, 196, 197, 201, כולם
+ידועים כחיים מ-21.09); **13 מספרים ממתינים תפוסים בפרודקשן בתוכן אחר**
+(210 `media_ingest_queue`, 212 `rbac_truncate_and_search_path`, 215
+`cashback_expiry`, 217 `coupon_qr_redemption`, 223 `restock_on_refund`, 224
+`post059_price_cashback_twins`, 226 `fraud_controls`, 227
+`discount_claim_wiring`, 228 `invoice_sequences`, 231 `bell_fanout`, 232
+`reviews_admin_moderation_only`, 233 `wishlist_alerts`, 234 `gift_cards`),
+כלומר השוואת-מספרים אינה פנקס: היא מסמנת "הוחל" על 13 קבצים שלא הוחלו;
+**39** קבצים ממוספרים ללא שורה כלל (162, 184, 189, 190, 191, 202..209, 211,
+213, 214, 216, 218..222, 225, 229, 230, 235..248), ומתוכם 189/190/191 חיים
+לפי סריקת אובייקטים (21.09) בלי שורה. **אפס החלה, אפס `db push`, אפס שינוי
+בפרודקשן.** **החלטות שהתקבלו לבד:** (א) סעיף ההחלה נדחה: `CLAUDE.md` מונה
+"הרצת migration על פרודקשן" כאחד מארבעת מצבי העצירה ודורש אישור מפורש,
+וחוקי הפריט עצמו אומרים פעמיים "Migrations go to migrations/pending only,
+never applied"; הקריאה השמרנית גוברת על משפט ההחלה שסותר אותה. (ב) גם עם
+אישור, "one at a time in order" כפי שנכתב אינו בטוח לפי המדידה: 190 נופל
+בהחלה חוזרת (`fn_due_abandoned_carts` תלת-ארגומנטים כבר קיים), 162 חסומה
+עד URL פרוס (CLAUDE.md סעיף 5), 184 היא חלוקה למחיצות עם preflight משלה,
+245/246 אחרי 209 ו-203, 248 אחרי 232 ו-242 (`APPLY-ORDER.md`), ו-13
+מספרים מתנגשים. (ג) 165 אינה קיימת ב-`pending/` (בוטלה, ראו הערת 245
+ב-README), אין מה לדלג עליה. חוסם #3 למטה ללא שינוי: 19 הקבצים החוסמים
+עדיין לא הוחלו (סריקת אובייקטים M10-c95, 05.10). שערים, כולם תחת `env -u`
+(ריצה ראשונה עם 49 שמות: `invoices.test.ts` נפל 1/7354 כי
+`CARDCOM_USE_MOCK` ו-`CARDCOM_WEBHOOK_SECRET` מוזרקים מה-harness בלי ערך
+placeholder ולכן לא נוקו; הורחב ל-51 שמות, אומת `0` `CARDCOM` בסביבת
+הילד, וכל השערים למטה רצו תחת הרשימה המתוקנת): `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (biome, docs-index-gate 282, docs-path-audit 155 ללא
+שינוי); `pnpm test` **615/615 קבצים, 7342 עברו, 12 דולגו (7354)**, 57.7
+שניות; `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4851 pnpm
+build` exit 0 (3311 תפוס על ידי `next-server` של סשן אחר, PID 56540, לא
+נגעתי), אפס `Invalid API key`, `BUILD_ID` `7H3ugF-oWOVfTgLsTygII`, 92 שורות
+`rls_denied` (חוסם 3). `compare.mjs` לא נדרש: אפס שינוי UI, אפס שינוי קוד.
+L05 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## L05 (הועבר מ-STATE.md ב-L06, לשמירה על תקרת 300 שורות)
 
 **L05 - DONE (05.10.2026, 02:42 מקומי).** משימת התור: "Gate 5 E2E prod: curl
