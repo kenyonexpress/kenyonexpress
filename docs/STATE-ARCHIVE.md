@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M07-c90 (הועבר מ-STATE.md ב-M08-c90, לשמירה על תקרת 300 שורות)
+
+**M07-c90 - DONE (04.10.2026).** משימת התור: "Scan TODO FIXME older
+than 7 days resolve or file in docs/BACKLOG.md", זהה ל-M07-c89. נסרקו
+`src/`, `apps/`, `packages/`, `scripts/` (`grep -rnE` על TODO/FIXME/XXX/
+HACK, ts/tsx/mjs/js): שני הסמנים האמיתיים היחידים נשארו
+`src/lib/payments/cardcom.ts:254` ו-`:319` (`TODO(cardcom)`, `git blame`:
+24.07.2026 ו-07.08.2026, מעל שבעה ימים), שניהם כבר ב-`docs/BACKLOG.md`
+סעיף 6, חסומים על אימות מול טרמינל Cardcom חי (אסור בכללי הפריט). שאר
+ההתאמות הן מחרוזת `'TODO'` ב-`whatsapp.test.ts:91`, תבניות טלפון
+`05X-XXX-XXXX`, והסורק `scripts/final-audit*.mjs` עצמו, לא סמני עבודה.
+**אין סמן חדש ואין סמן שנפתר, אפס דריפט, BACKLOG לא שונה.** שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`rm -rf .next && pnpm build` exit 0 (17.3s, 337/337). לא פריט חזותי,
+`compare.mjs` לא נדרש. אפס שינוי קוד. M06-c90 הועבר
+ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M06-c90 (הועבר מ-STATE.md ב-M07-c90, לשמירה על תקרת 300 שורות)
 
 **M06-c90 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
