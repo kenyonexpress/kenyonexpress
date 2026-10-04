@@ -1,24 +1,26 @@
-RESUME FROM: M13-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M12-c92 DONE: robots.txt חי זהה ל-M12-c91, 16 Disallow בקוד, 12 חי עד ה-deploy, אפס דריפט)
+RESUME FROM: M14-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M13-c92 DONE: health 200 עם DB אמיתי, ready 503 על Meilisearch החיצוני, אפס דריפט)
 
 ## המשך מ:
 
-**M12-c92 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
-production-safe", זהה ל-M12-c91. `pwd` אומת, עץ נקי, HEAD `718eed840`
-(M11-c92). קוד: הקומיט האחרון על `src/app/robots.ts` עדיין `4d3702025`
-(M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים כולל `/gift/`,
-`/order/`, `/wishlist/s/`, `/debug/`, וה-build הטרי מגיש 16 שורות
-`Disallow`. חי: `https://www.kenyonexpress.co.il/robots.txt` `200`
-`text/plain`, etag `48ebf659...`, sha256 `71b8e862...`, 12 שורות
-`Disallow` של גרסת `main` הישנה, `Host:`/`Sitemap:` ל-
-`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-www. `/gift/foo` `200`
-חי בלי `Disallow` (פער ידוע, נסגר רק בפריסת HEAD, חוסם DEPLOY-UNBLOCK);
-`/order/foo`, `/wishlist/s/foo`, `/debug/foo` `404`. אפס דריפט מ-M12-c91.
-**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער נסגר עם ה-deploy. שערים:
-`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
-.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523
-pnpm build` exit 0, ה-manifest מראה `/robots.txt`. לא פריט חזותי,
-`compare.mjs` לא נדרש. אפס שינוי קוד. M11-c92 הועבר ל-
+**M13-c92 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps", זהה ל-M13-c91. `pwd` אומת, עץ נקי,
+HEAD `212704db0` (M12-c92). קוד: הקומיט האחרון על `src/app/api/health`
+ו-`src/app/api/ready` עדיין `64728ff8d` (02.09), אפס שינוי. חי, בשני
+ה-hosts (`www.kenyonexpress.co.il` ו-`kenyonexpress-huplmarwo-...vercel.app`):
+`/api/health` `200` `application/json`
+`{"ok":true,"database":"ok","latency_ms":239}` (ו-80), תלות DB אמיתית.
+`/api/ready` `503`
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
+זהה ל-M13-c91: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
+חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. `/api/search?q=test`
+`200` (נפילה ל-Postgres עובדת). "200 על ready" לא מתקיים, והסיבה חיצונית
+ומתועדת, לא באג קוד. אפס דריפט. **החלטה שהתקבלה לבד:** DONE כאימות, לא
+BLOCKED, כמו M13-c89..c91; לא נפתח חוסם כפול. שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4524 pnpm build`
+exit 0, ה-manifest מראה `/api/health` ו-`/api/ready`. לא פריט חזותי,
+`compare.mjs` לא נדרש. אפס שינוי קוד. M12-c92 הועבר ל-
 `docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.

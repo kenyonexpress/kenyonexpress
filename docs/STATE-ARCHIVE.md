@@ -2,6 +2,26 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c92 (הועבר מ-STATE.md ב-M13-c92, לשמירה על תקרת 300 שורות)
+
+**M12-c92 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
+production-safe", זהה ל-M12-c91. `pwd` אומת, עץ נקי, HEAD `718eed840`
+(M11-c92). קוד: הקומיט האחרון על `src/app/robots.ts` עדיין `4d3702025`
+(M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים כולל `/gift/`,
+`/order/`, `/wishlist/s/`, `/debug/`, וה-build הטרי מגיש 16 שורות
+`Disallow`. חי: `https://www.kenyonexpress.co.il/robots.txt` `200`
+`text/plain`, etag `48ebf659...`, sha256 `71b8e862...`, 12 שורות
+`Disallow` של גרסת `main` הישנה, `Host:`/`Sitemap:` ל-
+`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-www. `/gift/foo` `200`
+חי בלי `Disallow` (פער ידוע, נסגר רק בפריסת HEAD, חוסם DEPLOY-UNBLOCK);
+`/order/foo`, `/wishlist/s/foo`, `/debug/foo` `404`. אפס דריפט מ-M12-c91.
+**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער נסגר עם ה-deploy. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523
+pnpm build` exit 0, ה-manifest מראה `/robots.txt`. לא פריט חזותי,
+`compare.mjs` לא נדרש. אפס שינוי קוד. M11-c92 הועבר ל-
+`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M10-c92 (הועבר מ-STATE.md ב-M11-c92, לשמירה על תקרת 300 שורות)
 
 **M10-c92 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
