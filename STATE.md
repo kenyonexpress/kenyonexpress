@@ -1,22 +1,15 @@
-RESUME FROM: M04-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M03-c92 DONE: שער חזותי קטגוריה נמדד מחדש 380/768/1440, 3.53/2.52/1.69 PASS)
+RESUME FROM: M05-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M04-c92 DONE: type-check נקי, אפס דריפט)
 
 ## המשך מ:
 
-**M03-c92 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-on /category sample", זהה ל-M03-c91. `pwd` אומת, עץ נקי, HEAD `b4814b337`,
-אין listener על 3311 (`lsof` ריק). `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0, `PORT=3311
-pnpm start`, `/` החזיר `200`, cwd של ה-listener אומת ב-`lsof` כשורש הריפו.
-השער רץ בחזית עם `--page=category --widths=380,768,1440
---baseline='refs/electro_shop_{width}.png'`, exit 0, בריצה הראשונה: **`380
-3.53% PASS`, `768 2.52% PASS`, `1440 1.69% PASS`**, זהה בביט ל-M03-c91.
-הפעם 768 לא נתקע על תמונות ה-AVIF של `w=256` (הבעיה של M03-c91 לא חזרה).
-אין רגרסיה. השרת נעצר ב-INT, הפורט פנוי. השער כתב את שלוש השורות
-ל-`docs/UI-PARITY-REPORT.md`. שערים: `type-check` 0, `lint` 0, `test`
-615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. M02-c92 (מוצר
-4.95/4.55/3.25) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+**M04-c92 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
+commit", זהה ל-M04-c91. `pwd` אומת, עץ נקי, HEAD `b0632eabb`.
+`pnpm type-check` (`tsc --noEmit`) exit 0, אפס שגיאות, **אין דריפט לתקן**.
+שערים נוספים: `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
+.next && pnpm build` exit 0. אפס שינוי קוד, לכן אין שינוי UI ו-`compare.mjs`
+לא נדרש. M03-c92 (קטגוריה 3.53/2.52/1.69) הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

@@ -2,6 +2,23 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M03-c92 (הועבר מ-STATE.md ב-M04-c92, לשמירה על תקרת 300 שורות)
+
+**M03-c92 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+on /category sample", זהה ל-M03-c91. `pwd` אומת, עץ נקי, HEAD `b4814b337`,
+אין listener על 3311 (`lsof` ריק). `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0, `PORT=3311
+pnpm start`, `/` החזיר `200`, cwd של ה-listener אומת ב-`lsof` כשורש הריפו.
+השער רץ בחזית עם `--page=category --widths=380,768,1440
+--baseline='refs/electro_shop_{width}.png'`, exit 0, בריצה הראשונה: **`380
+3.53% PASS`, `768 2.52% PASS`, `1440 1.69% PASS`**, זהה בביט ל-M03-c91.
+הפעם 768 לא נתקע על תמונות ה-AVIF של `w=256` (הבעיה של M03-c91 לא חזרה).
+אין רגרסיה. השרת נעצר ב-INT, הפורט פנוי. השער כתב את שלוש השורות
+ל-`docs/UI-PARITY-REPORT.md`. שערים: `type-check` 0, `lint` 0, `test`
+615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד. M02-c92 (מוצר
+4.95/4.55/3.25) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M02-c92 (הועבר מ-STATE.md ב-M03-c92, לשמירה על תקרת 300 שורות)
 
 **M02-c92 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
