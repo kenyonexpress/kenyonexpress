@@ -22,7 +22,9 @@ M01-c89 השתנה ב-`src` רק `ProductInfo.tsx` (M17-c89, דף מוצר), ל�
 768 לפני הצילום) לפני שהוא מאשים קוד. שתי הריצות נכתבו על ידי השער
 ל-`docs/UI-PARITY-REPORT.md` ושום שורה לא נמחקה. שערים: `type-check` 0,
 `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` 0. אפס שינוי קוד.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+הקומיט הראשון (`9af595dc8`) נדחף כש-`lint` אדום: `docs-path-audit` תפס
+בטקסט M18-c89 שהועבר לארכיון את הנתיב השגוי המצוטט. תוקן בקומיט ההמשך,
+`lint` 0 אחריו. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

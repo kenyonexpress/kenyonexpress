@@ -13,7 +13,7 @@ Q25..Q55, Q26/M01-c62..M18-c65, S02/S03/M18-c61, M15-c61..M01-c59) הועברו
 מילה במילה ל-`docs/STATE-ARCHIVE.md`. **החלטה שהתקבלה לבד:** M14-c73
 (פריסה חיה מחוץ לתור) ו-DEPLOY-UNBLOCK נשארו כאן כי הם חוסמים פתוחים.
 פריט תיעוד בלבד, אפס שינוי UI ולכן אין שער חזותי. STATE.md: 266 → 190
-שורות. `docs-path-audit` תפס בטקסט המועבר את הנתיב השגוי `src/app/page.tsx`;
+שורות. `docs-path-audit` תפס בטקסט המועבר את הנתיב השגוי (`page.tsx` בשורש `src/app`, שלא קיים);
 תוקן בארכיון לנתיב האמיתי. שערים: `type-check` 0, `lint` 0, `test` 615/615
 (7340/7352, 12 דולגו), `rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
