@@ -2,6 +2,113 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L04 (הועבר מ-STATE.md ב-L05, לשמירה על תקרת 300 שורות)
+
+**L04 - DONE (05.10.2026).** משימת התור: "Gate 4 env hygiene: vercel env ls
+production; identify every var whose value is a PENDING_ or placeholder; if
+a real value exists for it keep, otherwise leave; remove only vars that are
+superseded duplicates; print final list". `pwd` אומת, HEAD בהגעה `9187af59c`,
+עץ נקי. **נמדד, קריאה בלבד, אפס שינוי ב-Vercel:** `vercel env ls production`
+על `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיר **42 שורות
+בפרודקשן** (45 רשומות בפרויקט: עוד `SUPABASE_SERVICE_ROLE_KEY` ל-preview
+ול-development ו-`NEXT_PUBLIC_SUPABASE_URL` ל-preview). **10 רשומות מסוג
+`encrypted`** נקראו דרך `vercel env pull --environment=production` לקובץ
+זמני שאופס מיד, בלי להדפיס ערכים: **אף אחת אינה `PENDING_`, placeholder
+או ריקה.** הלא-סודיות: `APP_BASE_URL` ו-`NEXT_PUBLIC_APP_URL` שתיהן
+`https://kenyonexpress.co.il`, `NEXT_PUBLIC_APP_ENV`=`production`,
+`CARDCOM_USE_MOCK`=`true` (חוסם 8, ידוע), `NEXT_PUBLIC_CARDCOM_SANDBOX`=
+`false`, `NEXT_PUBLIC_SUPABASE_URL` = הפרויקט המאוחסן. הסודיות בצורת מפתח
+אמיתי לפי אורך: `CARDCOM_WEBHOOK_SECRET` 64, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+46, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` 87, `SUPABASE_SECRET_KEY` 41. **32 רשומות
+מסוג `sensitive` אינן ניתנות לקריאה על ידי אף אחד** (API עם `decrypt=true`
+מחזיר מעטפת מוצפנת, `env pull` כותב `[SENSITIVE]`), ולכן placeholder מול
+אמיתי לא נמדד מהערך אלא בעקיפין: (א) `deploy preflight: clean` בלוג הבנייה
+של הפריסה החיה `dpl_FD8ZDCouDeFH4zjxAB5JQbSfUdoc` (`9187af59c`, 04.10
+19:06 UTC): שמונת `REQUIRED_RUNTIME` לא ריקים (כולל
+`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD`, `VOUCHER_QR_SECRET`,
+`CRON_SECRET`), `CARDCOM_SANDBOX` אינו `true`, אף מפתח admin אינו המפתח
+החשוף; (ב) `src/lib/env.ts` זורק בעליית השרת על סכימה לא תקינה והפריסה
+READY ומגישה, ולכן `SUPABASE_SERVICE_ROLE_KEY` באורך 40 ומעלה, `SENTRY_DSN`
+URL תקין, `AXIOM_TOKEN` 10 ומעלה או ריק; (ג) `/api/ready` חי:
+`database ok, redis ok, cardcom ok, meilisearch down, r2 not_configured`.
+**לא ניתן לאמת** (ערך חסוי ואין אות חי): `AXIOM_DATASET`, `CHECKOUT_ENABLED`,
+`MEILISEARCH_HOST`/`API_KEY` (down), `NODE_ENV`, `OPENAI_API_KEY`,
+`POSTHOG_API_KEY`, `R2_*`, `REDIS_URL`, `RESEND_API_KEY` (חוסם 6),
+`SENTRY_AUTH_TOKEN`, `TWILIO_*`, `VAPID_PRIVATE_KEY`, `VERCEL_ORG_ID`/
+`PROJECT_ID`, `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID`.
+**מועמדים לכפילות שהוחלפה, לא נקראים באף קובץ לא-טסט ב-`src/`, `scripts/`,
+`apps/`, `packages/`, `vercel.json`, `next.config.ts`, `.github/`, ולא
+הוסרו:** `CARDCOM_API_KEY`, `CARDCOM_CLIENT_ID`, `CARDCOM_MERCHANT_ID`
+(16.09, הוחלפו ב-`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD`
+מ-04.10); `APP_BASE_URL` (כפול ל-`NEXT_PUBLIC_APP_URL`, אותו ערך);
+`NEXT_PUBLIC_CARDCOM_SANDBOX` (הקוד קורא `CARDCOM_SANDBOX`);
+`NEXT_PUBLIC_APP_ENV`. **יתומים או שם שגוי, לא כפילות, להשאיר:**
+`R2_BUCKET_NAME` (הקוד קורא `R2_BUCKET`, מכאן `r2 not_configured`; R2 ממילא
+לא מופעל, חוסם 4), `REDIS_URL` (הקוד קורא `UPSTASH_REDIS_REST_*`),
+`OPENAI_API_KEY`, `POSTHOG_API_KEY`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
+`NODE_ENV`. **לא כפילות כלל:** `SUPABASE_SERVICE_ROLE_KEY` לצד
+`SUPABASE_SECRET_KEY`, כי `src/lib/supabase/admin.ts:19` מעדיף את
+`SERVICE_ROLE_KEY` קודם והוא המפתח שלקוח ה-admin רץ איתו בפרודקשן; הסרתו
+הייתה מחליפה מפתח חי. `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` שניהם נקראים
+בכוונה. **החלטה שהתקבלה לבד:** כללי הפריט אומרים "never change DNS or
+Vercel env vars" והם גוברים על "remove only vars that are superseded
+duplicates"; לכן אפס מחיקות ואפס עריכות ב-Vercel, הפריט הוא ביקורת
+קריאה-בלבד וארבעת המועמדים להסרה רשומים כאן ובסעיף הידני ב-`docs/BACKLOG.md`
+לאופיר. **הרשימה הסופית זהה לרשימת ההגעה: 42 שמות בפרודקשן, ללא שינוי.**
+שערים (תחת `env -u` של 56 שמות, `RESIDUAL=0`): `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (biome 2038 קבצים + 12 שערי סקריפט, docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test` 615/615 קבצים, 7340 עברו, 12 דולגו
+(7352), 55.5 שניות; `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0 בלי `rm -rf .next` (שרת `next start` של סשן אחר, PID 56540, עדיין מגיש על 3311), אפס `Invalid API key`, `BUILD_ID` `AgIbzuJf7lYgospnFijCk`, אותן 92 שורות `supabase.rls_denied` (חוסם 3).
+`compare.mjs` לא נדרש (אפס שינוי UI/קוד). L03 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+
+## L02 (הועבר מ-STATE.md ב-L05, לשמירה על תקרת 300 שורות)
+
+**L02 - DONE (05.10.2026, 01:49 מקומי).** משימת התור: "Gate 2 git
+integration: via vercel API confirm project kenyonexpress production branch
+is audit/final-audit; push an empty commit to audit/final-audit and confirm a
+new deployment is created automatically; if not fix the setting via API".
+`pwd` אומת, HEAD בהגעה `21ba0f102`, עץ נקי. **נמדד לפני** (`vercel api
+/v9/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`; ה-MCP של Vercel מחזיר 404
+על ה-project עם `teamId` ואינו מחזיר `link` כלל, לכן ה-CLI): `link.type=github`,
+repo `kenyonexpress/kenyonexpress` (repoId 1255271784),
+**`productionBranch=phase5/homepage`** (מאז יצירת הפרויקט, 31.08),
+`previewDeploymentsDisabled=true`, `gitProviderOptions.createDeployments=enabled`,
+`commandForIgnoringBuildStep=null`. התוצאה: **327 קומיטים נדחפו
+ל-`audit/final-audit` מ-02.10 13:00 ועד L01 ואף אחד לא יצר פריסה** בפרויקט
+הזה (אפס פריסות `source=git` אחרי `dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, 02.10
+12:52, שהייתה preview ונפלה ב-preflight על 6 משתנים חסרים ב-Preview env).
+האינטגרציה עצמה חיה: הפרויקט האחי `kenyonexpress-prod`
+(`prj_keQjjnDoTb41AYmHy3ia59BKumyt`, אותו repo, `productionBranch=main`) בונה
+כל push ל-`audit/final-audit` כ-preview ונופל (20/20 ERROR מ-02.10, האחרון
+`dpl_5Na2twFW4B35879Vpom7kmBcnp6Q` על `21ba0f102`); לא נגעתי בו, מחוץ לפריט,
+רשום כאן כבזבוז בנייה לידיעת אופיר. **תיקון (API בלבד, לא env, לא DNS):**
+`PATCH /v9/projects/{id}/branch` עם `branch=audit/final-audit`, אומת ב-GET:
+`productionBranch=audit/final-audit`. **אימות:** commit ריק `9e0df9ff9` נדחף
+01:47:17; **7 שניות אחרי** נוצרה `dpl_79smj1WGM5V6wzJiuXafMVmPsFWN`,
+`source=git`, `target=production`, `gitSource.ref=audit/final-audit`; לוג:
+`Cloning ... Commit: 9e0df9f`, `Restored build cache from previous deployment
+(FxGwtE5H6hw4L9ccU4yJNYmuhVni)`, `deploy preflight: clean`, `Compiled
+successfully in 7.3s`, אותן שורות `supabase.rls_denied` (חוסם #3); **READY +
+PROMOTED ב-01:48:51**, aliases `www.kenyonexpress.co.il`, `kenyonexpress.co.il`,
+`kenyonexpress.vercel.app`. חי: `GET /v13/deployments/www.kenyonexpress.co.il`
+מחזיר את `dpl_79smj...`; `www` 200 `age: 0`; apex 308 ל-`www`; `/api/health`
+`{"ok":true,"database":"ok"}`. **מרגע זה כל push ל-`audit/final-audit` הוא
+פריסת פרודקשן אוטומטית** (לפני L02 פרודקשן התעדכן רק בפריסת CLI ידנית, L01).
+**החלטה שהתקבלה לבד:** שינוי ה-production branch הוא הגדרת פרויקט ב-Vercel
+שהפריט ביקש במפורש ("if not fix the setting via API"), והפריסה האוטומטית בנתה
+את אותו קוד שכבר חי (`e1719ad66` + שני קומיטי docs + commit ריק), ולכן לא
+נחשב "push לפרודקשן" שמחייב עצירה. שערים (סקראב `env -u` של 55 שמות,
+`RESIDUAL=0`): `pnpm type-check` exit 0; `pnpm lint` exit 0 (docs-index-gate
+282, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615 קבצים, 7340 עברו,
+12 דולגו (7352)**, 56.3 שניות; `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0, אפס `Invalid API
+key`, `BUILD_ID` `JL728RxB-vGgGNmR1asQc`, 92 שורות `rls_denied`. **תקלת
+מדידה אחת, שלי:** ריצת test ראשונה עם סקראב של 30 שמות (`[SENSITIVE]` בלבד)
+נפלה 8/7352 בשני קבצים (`resend.test.ts`, `invoices.test.ts`, "key unset" מול
+מפתחות אמיתיים של ה-harness), התקלה המתועדת בזיכרון; הסקראב הורחב ל-55
+שמות והסוויטה ירוקה. `compare.mjs` לא נדרש (אפס שינוי UI, אפס שינוי קוד).
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (M18-c95 הועבר).
+
 ## L03 (הועבר מ-STATE.md ב-L04, לשמירה על תקרת 300 שורות)
 
 **L03 - DONE (05.10.2026).** משימת התור: "Gate 3: ensure

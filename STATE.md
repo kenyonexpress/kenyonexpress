@@ -1,113 +1,78 @@
-RESUME FROM: L05
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L04 DONE: ביקורת
-env של Vercel Production בקריאה בלבד, 42 שמות, אפס placeholder בין 10 הנקראים,
-32 חסויים אומתו בעקיפין דרך preflight/boot/ready, ארבעה מועמדים לכפילות
-רשומים ולא הוסרו (כלל "never change Vercel env vars"); RESUME FROM מצביע ל-L05)
+RESUME FROM: L06
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L05 DONE: שער 5
+E2E על פרודקשן, 9 נתיבים + 10 מוצרים מהמפה + רינדור `/checkout` + POST ל-webhook,
+שני 404 (`/returns`, `/cookies`) תוקנו בקוד ב-`4c87dae64`, נפרס אוטומטית
+ונמדד שוב ירוק; RESUME FROM מצביע ל-L06)
 
 ## המשך מ:
 
-**L04 - DONE (05.10.2026).** משימת התור: "Gate 4 env hygiene: vercel env ls
-production; identify every var whose value is a PENDING_ or placeholder; if
-a real value exists for it keep, otherwise leave; remove only vars that are
-superseded duplicates; print final list". `pwd` אומת, HEAD בהגעה `9187af59c`,
-עץ נקי. **נמדד, קריאה בלבד, אפס שינוי ב-Vercel:** `vercel env ls production`
-על `kenyonexpress` (`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`) מחזיר **42 שורות
-בפרודקשן** (45 רשומות בפרויקט: עוד `SUPABASE_SERVICE_ROLE_KEY` ל-preview
-ול-development ו-`NEXT_PUBLIC_SUPABASE_URL` ל-preview). **10 רשומות מסוג
-`encrypted`** נקראו דרך `vercel env pull --environment=production` לקובץ
-זמני שאופס מיד, בלי להדפיס ערכים: **אף אחת אינה `PENDING_`, placeholder
-או ריקה.** הלא-סודיות: `APP_BASE_URL` ו-`NEXT_PUBLIC_APP_URL` שתיהן
-`https://kenyonexpress.co.il`, `NEXT_PUBLIC_APP_ENV`=`production`,
-`CARDCOM_USE_MOCK`=`true` (חוסם 8, ידוע), `NEXT_PUBLIC_CARDCOM_SANDBOX`=
-`false`, `NEXT_PUBLIC_SUPABASE_URL` = הפרויקט המאוחסן. הסודיות בצורת מפתח
-אמיתי לפי אורך: `CARDCOM_WEBHOOK_SECRET` 64, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-46, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` 87, `SUPABASE_SECRET_KEY` 41. **32 רשומות
-מסוג `sensitive` אינן ניתנות לקריאה על ידי אף אחד** (API עם `decrypt=true`
-מחזיר מעטפת מוצפנת, `env pull` כותב `[SENSITIVE]`), ולכן placeholder מול
-אמיתי לא נמדד מהערך אלא בעקיפין: (א) `deploy preflight: clean` בלוג הבנייה
-של הפריסה החיה `dpl_FD8ZDCouDeFH4zjxAB5JQbSfUdoc` (`9187af59c`, 04.10
-19:06 UTC): שמונת `REQUIRED_RUNTIME` לא ריקים (כולל
-`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD`, `VOUCHER_QR_SECRET`,
-`CRON_SECRET`), `CARDCOM_SANDBOX` אינו `true`, אף מפתח admin אינו המפתח
-החשוף; (ב) `src/lib/env.ts` זורק בעליית השרת על סכימה לא תקינה והפריסה
-READY ומגישה, ולכן `SUPABASE_SERVICE_ROLE_KEY` באורך 40 ומעלה, `SENTRY_DSN`
-URL תקין, `AXIOM_TOKEN` 10 ומעלה או ריק; (ג) `/api/ready` חי:
-`database ok, redis ok, cardcom ok, meilisearch down, r2 not_configured`.
-**לא ניתן לאמת** (ערך חסוי ואין אות חי): `AXIOM_DATASET`, `CHECKOUT_ENABLED`,
-`MEILISEARCH_HOST`/`API_KEY` (down), `NODE_ENV`, `OPENAI_API_KEY`,
-`POSTHOG_API_KEY`, `R2_*`, `REDIS_URL`, `RESEND_API_KEY` (חוסם 6),
-`SENTRY_AUTH_TOKEN`, `TWILIO_*`, `VAPID_PRIVATE_KEY`, `VERCEL_ORG_ID`/
-`PROJECT_ID`, `CARDCOM_API_KEY`/`CLIENT_ID`/`MERCHANT_ID`.
-**מועמדים לכפילות שהוחלפה, לא נקראים באף קובץ לא-טסט ב-`src/`, `scripts/`,
-`apps/`, `packages/`, `vercel.json`, `next.config.ts`, `.github/`, ולא
-הוסרו:** `CARDCOM_API_KEY`, `CARDCOM_CLIENT_ID`, `CARDCOM_MERCHANT_ID`
-(16.09, הוחלפו ב-`CARDCOM_TERMINAL_NUMBER`/`API_NAME`/`API_PASSWORD`
-מ-04.10); `APP_BASE_URL` (כפול ל-`NEXT_PUBLIC_APP_URL`, אותו ערך);
-`NEXT_PUBLIC_CARDCOM_SANDBOX` (הקוד קורא `CARDCOM_SANDBOX`);
-`NEXT_PUBLIC_APP_ENV`. **יתומים או שם שגוי, לא כפילות, להשאיר:**
-`R2_BUCKET_NAME` (הקוד קורא `R2_BUCKET`, מכאן `r2 not_configured`; R2 ממילא
-לא מופעל, חוסם 4), `REDIS_URL` (הקוד קורא `UPSTASH_REDIS_REST_*`),
-`OPENAI_API_KEY`, `POSTHOG_API_KEY`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
-`NODE_ENV`. **לא כפילות כלל:** `SUPABASE_SERVICE_ROLE_KEY` לצד
-`SUPABASE_SECRET_KEY`, כי `src/lib/supabase/admin.ts:19` מעדיף את
-`SERVICE_ROLE_KEY` קודם והוא המפתח שלקוח ה-admin רץ איתו בפרודקשן; הסרתו
-הייתה מחליפה מפתח חי. `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` שניהם נקראים
-בכוונה. **החלטה שהתקבלה לבד:** כללי הפריט אומרים "never change DNS or
-Vercel env vars" והם גוברים על "remove only vars that are superseded
-duplicates"; לכן אפס מחיקות ואפס עריכות ב-Vercel, הפריט הוא ביקורת
-קריאה-בלבד וארבעת המועמדים להסרה רשומים כאן ובסעיף הידני ב-`docs/BACKLOG.md`
-לאופיר. **הרשימה הסופית זהה לרשימת ההגעה: 42 שמות בפרודקשן, ללא שינוי.**
-שערים (תחת `env -u` של 56 שמות, `RESIDUAL=0`): `pnpm type-check` exit 0;
-`pnpm lint` exit 0 (biome 2038 קבצים + 12 שערי סקריפט, docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test` 615/615 קבצים, 7340 עברו, 12 דולגו
-(7352), 55.5 שניות; `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0 בלי `rm -rf .next` (שרת `next start` של סשן אחר, PID 56540, עדיין מגיש על 3311), אפס `Invalid API key`, `BUILD_ID` `AgIbzuJf7lYgospnFijCk`, אותן 92 שורות `supabase.rls_denied` (חוסם 3).
-`compare.mjs` לא נדרש (אפס שינוי UI/קוד). L03 הועבר ל-`docs/STATE-ARCHIVE.md`.
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+**L05 - DONE (05.10.2026, 02:42 מקומי).** משימת התור: "Gate 5 E2E prod: curl
+status for / /products /api/health /terms /privacy /returns /accessibility
+/cookies and 10 product URLs taken from sitemap.xml; all must be 200;
+/checkout must render; POST to /api/webhooks/cardcom must not 500. Fix any
+failure in code, commit, push, wait for deploy, retest". `pwd` אומת, HEAD
+בהגעה `d0e2ecc92`, עץ נקי. **מדידה ראשונה (פריסה `dpl_EW8qnoh6qzU7yzqVDg1v22zHvj9w`
+= `d0e2ecc92`), `curl` על `www.kenyonexpress.co.il` עם UA של דפדפן:**
+`/`, `/products`, `/api/health`, `/accessibility`, `/checkout` = 200;
+`/terms` 308 ל-`/terms-and-conditions` (200), `/privacy` 308 ל-`/privacy-policy`
+(200), שני אלה הם ה-aliases המכוונים של `next.config.ts` ו-`legal-routes.test.ts`;
+**`/returns` = 404 ו-`/cookies` = 404, שני כשלים.** `sitemap.xml` הוא
+`sitemapindex` עם 5 תתי-מפות; `sitemap/products.xml` מחזיק 46 `<loc>`, עשרת
+הראשונים (`barbecue`, `אוזניות-איירפודס-3`, `אייפון-13`, `חיתולי-האגיס`,
+`טיול-מאורגן-לדובאי`, `טיפול-פנים-copy`, `מוצר-לדוגמא`, `עיסוי-מאסטר`,
+`bar-drink`, `island-of-maldives`) כולם 308 (apex ל-`www`, כי `NEXT_PUBLIC_APP_URL`
+הוא apex) ואז **200, 10/10**. `/checkout` מרונדר: `<title>תשלום | קניון אקספרס`,
+`<h1 class="checkout-page__title">קופה</h1>`, `dir="rtl"`. **POST ל-webhook:**
+`/api/webhooks/cardcom` מחזיר **404** (לא 500), ו-**הנתיב שהקוד באמת מוסר
+ל-Cardcom הוא `/api/payments/cardcom/webhook`**
+(`src/server/actions/payments/checkout.ts:1217`), שמחזיר **200 `{"ok":true}`**
+על גוף טופס מזויף וגם על גוף ריק. **תיקון (`4c87dae64`, 3 קבצים, +18 שורות):**
+שני redirects קבועים ב-`next.config.ts` לפי אותו כלל של `/terms` ו-`/privacy`
+(alias על הדף היחיד שמחזיק את המדיניות, לא דף שני): `/returns` ל-`/refund_returns`,
+`/cookies` ל-`/privacy-policy#cookies` (סעיף `id: 'cookies'` ב-`(legal)/_content/privacy.ts`,
+העוגן שאליו `SiteFooter.tsx:67` כבר מקשר); `legal-routes.test.ts` מאמת את
+שניהם מול `next.config.ts` (+2 טסטים); `e2e/route-audit.spec.ts` מצפה לשניהם.
+push ב-02:29:50 מקומי, Vercel יצר `dpl_Hwy5BSKekrVEuS55FNi4LrRDEpMg` (`source=git`,
+`target=production`, `4c87dae64`) ב-19:29:55Z, READY+PROMOTED ב-19:31:17Z
+(82 שניות). **מדידה שנייה, על הפריסה החדשה (`data-dpl-id` בגוף `/` =
+`dpl_Hwy5BSK...`):** `/returns` 308 ל-`/refund_returns` 200; `/cookies` 308
+ל-`/privacy-policy#cookies` 200 (ה-hash נשמר ב-`Location`); כל שאר 7 הנתיבים
+ללא שינוי (5 ישירים 200, 2 aliases 308 ואז 200); 10/10 מוצרים 200; `/checkout`
+מרונדר; webhook 200/200, הנתיב מהמשימה 404; `/api/health`
+`{"ok":true,"database":"ok","latency_ms":156}`. **החלטות שהתקבלו לבד:** (א)
+308 שמסתיים ב-200 נחשב עובר, כי זה בדיוק מה ש-`legal-routes.test.ts` ו-`route-audit`
+דורשים, ואלטרנטיבה (דף שני לאותה מדיניות) היא הכשל שהטסט נכתב למנוע; (ב) לא
+נוסף alias ב-`/api/webhooks/cardcom`: הקריטריון הוא "must not 500" ו-404 עומד
+בו, הקוד מוסר ל-Cardcom נתיב אחר, ו-endpoint כפול ל-webhook תשלום הוא נתיב
+סחיפה ("no payment provider integration"); (ג) הפריסה האוטומטית היא תוצאה
+ישירה של "commit, push, wait for deploy" שהמשימה מבקשת (L02 חיבר אותה), ולכן
+אינה "push לפרודקשן" שמחייב עצירה. **הערה, מחוץ לפריט:** המפה מפרסמת apex
+(`https://kenyonexpress.co.il/...`) בעוד apex מפנה 308 ל-`www`, כלומר כל URL
+במפה הוא קפיצה אחת; נרשם, לא שונה. שערים (תחת `env -u` של 55 שמות ב-bash,
+`RESIDUAL=1`; ריצת ה-type-check הראשונה רצה ללא סקראב בפועל כי zsh אינו
+מפצל `$U`, תוקן ל-`bash -c`): `pnpm type-check` exit 0; `pnpm lint` exit 0
+(biome 2038, docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test`
+**615/615 קבצים, 7342 עברו, 12 דולגו (7354)**, 55.8 שניות; `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0 בלי `rm -rf .next`
+(`next start` של סשן אחר, PID 56540, עדיין על 3311), אפס `Invalid API key`,
+`BUILD_ID` `WwbDah3WhW4WsqWVa3IcD`, 92 שורות `rls_denied` (חוסם 3).
+`compare.mjs` לא נדרש: אפס שינוי UI, שני redirects בקונפיג בלבד. L04 ו-L02
+הועברו ל-`docs/STATE-ARCHIVE.md`. קבצים: `next.config.ts`,
+`src/content/legal/legal-routes.test.ts`, `e2e/route-audit.spec.ts`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**L02 - DONE (05.10.2026, 01:49 מקומי).** משימת התור: "Gate 2 git
-integration: via vercel API confirm project kenyonexpress production branch
-is audit/final-audit; push an empty commit to audit/final-audit and confirm a
-new deployment is created automatically; if not fix the setting via API".
-`pwd` אומת, HEAD בהגעה `21ba0f102`, עץ נקי. **נמדד לפני** (`vercel api
-/v9/projects/prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`; ה-MCP של Vercel מחזיר 404
-על ה-project עם `teamId` ואינו מחזיר `link` כלל, לכן ה-CLI): `link.type=github`,
-repo `kenyonexpress/kenyonexpress` (repoId 1255271784),
-**`productionBranch=phase5/homepage`** (מאז יצירת הפרויקט, 31.08),
-`previewDeploymentsDisabled=true`, `gitProviderOptions.createDeployments=enabled`,
-`commandForIgnoringBuildStep=null`. התוצאה: **327 קומיטים נדחפו
-ל-`audit/final-audit` מ-02.10 13:00 ועד L01 ואף אחד לא יצר פריסה** בפרויקט
-הזה (אפס פריסות `source=git` אחרי `dpl_D2B3jyG3m1YKGYHymAf3ajg5ds5x`, 02.10
-12:52, שהייתה preview ונפלה ב-preflight על 6 משתנים חסרים ב-Preview env).
-האינטגרציה עצמה חיה: הפרויקט האחי `kenyonexpress-prod`
-(`prj_keQjjnDoTb41AYmHy3ia59BKumyt`, אותו repo, `productionBranch=main`) בונה
-כל push ל-`audit/final-audit` כ-preview ונופל (20/20 ERROR מ-02.10, האחרון
-`dpl_5Na2twFW4B35879Vpom7kmBcnp6Q` על `21ba0f102`); לא נגעתי בו, מחוץ לפריט,
-רשום כאן כבזבוז בנייה לידיעת אופיר. **תיקון (API בלבד, לא env, לא DNS):**
-`PATCH /v9/projects/{id}/branch` עם `branch=audit/final-audit`, אומת ב-GET:
-`productionBranch=audit/final-audit`. **אימות:** commit ריק `9e0df9ff9` נדחף
-01:47:17; **7 שניות אחרי** נוצרה `dpl_79smj1WGM5V6wzJiuXafMVmPsFWN`,
-`source=git`, `target=production`, `gitSource.ref=audit/final-audit`; לוג:
-`Cloning ... Commit: 9e0df9f`, `Restored build cache from previous deployment
-(FxGwtE5H6hw4L9ccU4yJNYmuhVni)`, `deploy preflight: clean`, `Compiled
-successfully in 7.3s`, אותן שורות `supabase.rls_denied` (חוסם #3); **READY +
-PROMOTED ב-01:48:51**, aliases `www.kenyonexpress.co.il`, `kenyonexpress.co.il`,
-`kenyonexpress.vercel.app`. חי: `GET /v13/deployments/www.kenyonexpress.co.il`
-מחזיר את `dpl_79smj...`; `www` 200 `age: 0`; apex 308 ל-`www`; `/api/health`
-`{"ok":true,"database":"ok"}`. **מרגע זה כל push ל-`audit/final-audit` הוא
-פריסת פרודקשן אוטומטית** (לפני L02 פרודקשן התעדכן רק בפריסת CLI ידנית, L01).
-**החלטה שהתקבלה לבד:** שינוי ה-production branch הוא הגדרת פרויקט ב-Vercel
-שהפריט ביקש במפורש ("if not fix the setting via API"), והפריסה האוטומטית בנתה
-את אותו קוד שכבר חי (`e1719ad66` + שני קומיטי docs + commit ריק), ולכן לא
-נחשב "push לפרודקשן" שמחייב עצירה. שערים (סקראב `env -u` של 55 שמות,
-`RESIDUAL=0`): `pnpm type-check` exit 0; `pnpm lint` exit 0 (docs-index-gate
-282, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615 קבצים, 7340 עברו,
-12 דולגו (7352)**, 56.3 שניות; `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0, אפס `Invalid API
-key`, `BUILD_ID` `JL728RxB-vGgGNmR1asQc`, 92 שורות `rls_denied`. **תקלת
-מדידה אחת, שלי:** ריצת test ראשונה עם סקראב של 30 שמות (`[SENSITIVE]` בלבד)
-נפלה 8/7352 בשני קבצים (`resend.test.ts`, `invoices.test.ts`, "key unset" מול
-מפתחות אמיתיים של ה-harness), התקלה המתועדת בזיכרון; הסקראב הורחב ל-55
-שמות והסוויטה ירוקה. `compare.mjs` לא נדרש (אפס שינוי UI, אפס שינוי קוד).
-קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md` (M18-c95 הועבר).
+**L04 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L05): ביקורת env של Vercel Production בקריאה בלבד, 42 שמות, אפס placeholder
+בין 10 הנקראים, ארבעה מועמדים לכפילות רשומים ב-`docs/BACKLOG.md` ולא הוסרו.
+
+**L03 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L04): `run-final.sh` ללא קריאות vercel, `--archive=tgz` בכל פקודת deploy
+מתועדת.
+
+**L02 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L05): production branch של `kenyonexpress` הוסב ל-`audit/final-audit`
+(היה `phase5/homepage`, 327 push בלי פריסה), אומת ב-commit ריק `9e0df9ff9`
+שנפרס תוך 7 שניות; מרגע זה כל push לענף הוא פריסת פרודקשן אוטומטית.
 
 **M18-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-L02): STATE.md עמד על 216 שורות, M17-c95 הועבר לארכיון, מחזור c95
