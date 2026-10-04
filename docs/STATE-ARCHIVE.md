@@ -45164,3 +45164,17 @@ compare.mjs` ו-`next.config.*` אומתו בלתי-משתנים לפני המד
 `build` exit 0 (למעלה). M13-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
 על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
 `docs/UI-PARITY-REPORT.md`.
+
+## M04-c94 (הועבר מ-STATE.md ב-M09-c94, לשמירה על תקרת 300 שורות)
+
+**M04-c94 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
+commit", זהה במהות ל-M04-c93. `pwd` אומת, עץ נקי, HEAD `925c5bf8d`
+(M03-c94). `git diff 925c5bf8d HEAD -- src public next.config.*
+package.json` ריק (HEAD לא זז, אפס שינוי קוד) — אין דריפט לתקן. ארבעת
+השערים רצו: `pnpm type-check` (`tsc --noEmit`) יצא נקי; `pnpm lint`
+(biome + 12 שערי סקריפט) נקי; `pnpm test` 615/615 קבצים, 7340/7352 (12
+דולגו), זהה ל-M04-c93/M03-c94; `pnpm build` רץ מול השרת הקיים על פורט
+3311 (סשן מקביל אחר, `lsof` אישר שה-`cwd` של המאזין הוא הריפו הזה, לא
+לנגיעה), exit 0 (לוגי `supabase.rls_denied` על `reviews` ב-prerender
+אנונימי הם רעש צפוי מחוסם #11 בתור, לא כשל build). אין קוד לשנות, אין
+commit קוד — רק עדכון `STATE.md`.

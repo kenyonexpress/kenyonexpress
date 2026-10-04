@@ -1,7 +1,28 @@
-RESUME FROM: M09-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M08-c94 DONE: Lighthouse mobile נמדד שוב, 100/100/100 על / ועל /product, אפס דריפט מ-M08-c93)
+RESUME FROM: M10-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c94 DONE: knip 201/5/1/271/197/4, אפס דריפט מ-M09-c93, לא הוסר דבר)
 
 ## המשך מ:
+
+**M09-c94 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
+dead exports", זהה במהות ל-M09-c93. `pwd` אומת, עץ נקי, HEAD `786a42c43`
+(M08-c94). `git diff --stat e7a3af744 HEAD -- src public next.config.*
+package.json packages` ריק (אפס שינוי קוד מאז M09-c93) — אין דריפט
+לתקן. `pnpm dlx knip --no-config-hints` (ephemeral, אין `knip.json`):
+**201 unused files / 5 unused dependencies / 1 unlisted binary / 271
+unused exports / 197 unused exported types / 4 duplicate exports**,
+זהה בדיוק ל-M09-c93. חמש התלויות
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) והבינארי (`supabase`) הם
+הרעש הידוע החוזר מאז M09-c66. **החלטה שהתקבלה לבד:** לא הוסר דבר, כמו
+בכל הסבבים הקודמים: אפס מועמד חדש, וכל הקיימים הם הכרעת מפעיל, לא תקלה
+שנמדדת. שערים: `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי
+סקריפט) נקי; `pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**,
+זהה ביט ל-M09-c93; פורט 3311 תפוס על ידי סשן מקביל אחר באותו ריפו
+(`lsof`/cwd אישר, לא לנגיעה), נבחר פורט חלופי 4726 (פנוי), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4726
+pnpm build` exit 0 (`.next/BUILD_ID` נוצר). לא פריט חזותי, `compare.mjs`
+לא נדרש. אפס שינוי קוד. M04-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M08-c94 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /
 and /product sample log scores", זהה במהות ל-M08-c93. `pwd` אומת, עץ
@@ -85,17 +106,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:4722` — פורט 3311 תפוס על יד�
 שינוי קוד, לכן אין שינוי UI ו-`compare.mjs` לא נדרש. `STATE.md` עדיין
 מתחת לתקרת 300 השורות, אין ארכוב נדרש בפריט הזה. קובץ: `STATE.md`.
 
-**M04-c94 - DONE (04.10.2026).** משימת התור: "pnpm type-check fix drift
-commit", זהה במהות ל-M04-c93. `pwd` אומת, עץ נקי, HEAD `925c5bf8d`
-(M03-c94). `git diff 925c5bf8d HEAD -- src public next.config.*
-package.json` ריק (HEAD לא זז, אפס שינוי קוד) — אין דריפט לתקן. ארבעת
-השערים רצו: `pnpm type-check` (`tsc --noEmit`) יצא נקי; `pnpm lint`
-(biome + 12 שערי סקריפט) נקי; `pnpm test` 615/615 קבצים, 7340/7352 (12
-דולגו), זהה ל-M04-c93/M03-c94; `pnpm build` רץ מול השרת הקיים על פורט
-3311 (סשן מקביל אחר, `lsof` אישר שה-`cwd` של המאזין הוא הריפו הזה, לא
-לנגיעה), exit 0 (לוגי `supabase.rls_denied` על `reviews` ב-prerender
-אנונימי הם רעש צפוי מחוסם #11 בתור, לא כשל build). אין קוד לשנות, אין
-commit קוד — רק עדכון `STATE.md`.
+**M04-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M09-c94): `type-check` fix-drift re-verified, אפס שינוי קוד
+מ-M04-c93, כל ארבעת השערים ירוקים.
 
 **M03-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M04-c94): /category נמדד שוב ב-380/768/1440, 768/1440 אפס
