@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L12 (הועבר מ-STATE.md ב-M01-c96, לשמירה על תקרת 300 שורות)
+
+**L12 - DONE (05.10.2026, 04:30 שעון המכונה): שער 12 הכרעה. LAUNCH-READY:
+pending-cardcom. אין tag, אין `LAUNCH.flag`, ארבעת השערים ירוקים, אפס שינוי
+קוד.** משימת התור: "Gate 12 verdict: if L01-L11 all DONE tag v1.0.0-mvp,
+push tag, write LAUNCH-READY: yes to STATE.md, echo one line summary to
+~/ke-goals/LAUNCH.flag. If L11 BLOCKED write LAUNCH-READY: pending-cardcom
+and keep everything else green. Update STATE.md with hamshekh me:
+maintenance". `pwd` אומת, HEAD בהגעה `62e180e10`, עץ נקי. **ההכרעה, מתוך
+STATE.md ו-`git log -20` בלבד:** DONE: L01 (`4949d616b`), L02 (`217ff7534`),
+L03 (`9187af59c`), L04 (`d0e2ecc92`), L05 (`52b4e1469`), L07 (`97f54ffaa`),
+L10 (`3f951560e`). BLOCKED: L06 (`6769b256a`, החלת מיגרציות דורשת אישור
+מפורש), L08 (`331a9a980`, שלושה ערכי env ב-Vercel: Sentry token, PostHog
+key, Resend key), L09 (`a2509a71f`, ערך `CRON_SECRET` ב-Vercel אינו נקרא
+ואינו תואם ל-GitHub), L11 (`0bc5b349a`, אישורי Cardcom לא-מאומתים). כלומר
+7 DONE ו-4 BLOCKED, ולא "L01-L11 all DONE"; לפי כלל המשימה ל-L11 BLOCKED
+נרשם **LAUNCH-READY: pending-cardcom**, ונרשם כאן במפורש ששלושת החוסמים
+הנוספים (L06, L08, L09) עומדים גם הם, כולם env או אישור שרק אופיר מחזיק,
+אף אחד מהם קוד. **לא בוצע:** `git tag v1.0.0-mvp` (אומת שאינו קיים, `git tag
+--list | grep mvp` ריק, התגית הגבוהה `v5.9.9`), אין push של tag, אין כתיבה
+ל-`~/ke-goals/LAUNCH.flag` (אומת שאינו קיים; הכלל "do not modify ~/ke-goals"
+ממילא אוסר, והענף "all DONE" לא התקיים). **שערים, 55 שמות מוזרקים הוסרו
+(`SENSITIVE` נותרים 0, `CARDCOM_*`/`NEXT_PUBLIC_*`/`SUPABASE_*`/`VERCEL*`
+נותרים 0):** `pnpm type-check` exit 0; `pnpm lint` exit 0 (i18n 627/627,
+docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test` 615/615
+קבצים, 7342 עברו, 12 דולגו (7354), 57.7 שניות; `rm -rf .next` ואז
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build`
+exit 0, `BUILD_ID` `i2ARrDJNCrYk74pP9hBuR`, 92 שורות `supabase.rls_denied`
+על `reviews` (חוסם 3, 247). `compare.mjs` לא נדרש, אפס שינוי UI; המדידה
+התקפה האחרונה היא L07 מול פרודקשן, 7.91 / 8.98 / 4.09 PASS. **מלכודת
+שנמדדה בדרך:** ריצת `pnpm test` ראשונה נכשלה 8/7354 (`resend.test.ts` 7,
+`invoices.test.ts` 1) כי רשימת ה-`env -u` נבנתה ב-zsh בלי `${=VAR}` ולכן
+עברה כמילה אחת, ואחרי התיקון עדיין נותרו מפתחות Supabase אמיתיים,
+`CARDCOM_USE_MOCK`, `CARDCOM_WEBHOOK_SECRET` ו-`NEXT_PUBLIC_*` מוזרקים בלי
+סימון `[SENSITIVE]`; עם 55 השמות (כמו ב-L10/L11) הריצה ירוקה וזהה ל-L11.
+**החלטות שהתקבלו לבד:** (א) הכלל במשימה מכסה רק "L11 BLOCKED"; שלושת
+ה-BLOCKED האחרים נרשמו לצד ההכרעה ולא הושמטו, כי "pending-cardcom" לבדו
+היה מצייר תמונה חלקית; (ב) `docs/LAUNCH-READINESS.md` קיבל שורת הכרעה
+מתוארכת תחת "Verdict: NOT READY" ולא סעיף חדש; (ג) `RESUME FROM:
+maintenance` כנדרש, התור סגור, אין פריט אחרי L12 ב-`final-queue.txt`.
+**לאופיר, בסדר שבו לקוח נתקל בהם:** (1) שלושת ערכי Cardcom האמיתיים
+ו-`CARDCOM_SANDBOX=false` ב-Vercel Production, ואז הזמנת ₪1 וזיכוי (L11);
+(2) `CRON_SECRET` זהה ב-GitHub וב-Vercel (L09); (3) `RESEND_API_KEY` תקף,
+`NEXT_PUBLIC_POSTHOG_KEY`, `SENTRY_AUTH_TOKEN` (L08); (4) אישור החלת
+המיגרציות הממתינות לפי `docs/RUNBOOK.md` (L06). הרשימה המלאה ב-`docs/BACKLOG.md`.
+L11 הועבר לארכיון. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/LAUNCH-READINESS.md`.
+
 ## L11 (הועבר מ-STATE.md ב-L12, לשמירה על תקרת 300 שורות)
 
 **L11 - BLOCKED cardcom-creds (05.10.2026, 04:20 שעון המכונה): שער 11
