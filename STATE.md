@@ -1,56 +1,51 @@
-RESUME FROM: M18-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M17-c95 DONE:
-RTL אומת על `/` ושלושת סלאגי הדגימה ב-380/768/1440, 12/12 PASS, אפס LTR
-leak, אפס דריפט מ-M17-c94; ארבעת השערים ירוקים תחת `env -u` של 55 שמות,
-M16-c95 הועבר לארכיון, RESUME FROM מצביע ל-M18-c95)
+RESUME FROM: M01-c96
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M18-c95 DONE:
+STATE.md עמד על 216 שורות (מתחת לתקרה), בכל זאת הועבר סעיף M17-c95
+לארכיון כדפוס M18-c91..c94, מחזור c95 נסגר, ארבעת השערים ירוקים תחת
+`env -u` של 55 שמות, RESUME FROM מצביע ל-M01-c96)
 
 ## המשך מ:
 
-**M17-c95 - DONE (05.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks", אותו פריט חזורי כמו M17-c93/M17-c94.
-`pwd` אומת, HEAD `683a74236` (M16-c95). בעץ בהגעה: `.vercelignore`
-שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M16-c95).
-קוד: `git diff --stat 089a42252..HEAD -- src apps packages next.config.ts
-e2e` (מאז M17-c94) **ריק**, אפס שינוי בכל נתיב שעשוי להשפיע על כיווניות.
-בכל זאת רץ אימות מלא וטרי: פורט 3311 תפוס (PID 56540, סשן מקביל, לא
-נגעתי), נבחר 4993 (אומת פנוי לפני ואחרי); `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm
-build` תחת `env -u` של 55 שמות (מערך bash, אומת `0` שורות
-`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בילד) **exit 0**, אפס `Invalid API
-key`, `BUILD_ID` `RS6iIqX1Rn4TxcAPoZPh4`, אותן 92 שורות
-`supabase.rls_denied` (חוסם #3); `pnpm start -p 4993` (אומת ב-`lsof`
-ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה 200). בדיקת Playwright
-(chromium מ-`@playwright/test`, סקריפט זמני בתוך הריפו שנמחק אחרי
-הריצה, לא חויב) על `/` ועל שלושת סלאגי הדגימה של M17-c93/c94
-(`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`,
-`חיתולי-האגיס`, כולם אושרו ב-`supabase/catalogue-snapshot.json` לפני
-הריצה) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he"
-dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה ל-`clientWidth`
-בכולן (380/380, 768/768, 1440/1440, אפס גלילה צידית), **אפס** אלמנט
-גלוי עם `direction: ltr` מחושב שמחזיק טקסט עברי ישיר, ו-**אפס** אלמנט
-`dir="ltr"` שמחזיק טקסט עברי ישיר. שערי `rtl-logical` ו-`input-dir`
-(24 שדות tel/email/url, כולם עם `dir`) ירוקים כחלק מ-`pnpm lint`.
-**אפס leak, אפס דריפט מ-M17-c94, אפס שינוי קוד**, ולכן `compare.mjs` לא
-נדרש (אין שינוי UI, תקדים M17-c93/M17-c94). השרת נעצר ב-`SIGINT`,
-הפורט אומת פנוי (0 מאזינים). **תקלת מדידה אחת, שלי, לא קוד:** הריצה
-הראשונה של הפרוב מ-`/tmp` נפלה ב-`ERR_MODULE_NOT_FOUND` על
-`@playwright/test` (רזולוציית ESM מחוץ לריפו); נפתר בהעתקת הסקריפט
-לשורש הריפו לזמן הריצה, השרת הורץ מחדש, התוצאות למעלה הן מהריצה
-השנייה. שערים (תחת אותו סקראב): `pnpm type-check` exit 0; `pnpm lint`
-exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
-עברו, 12 דולגו (7352)**, 57.1 שניות, זהה ביט ל-M16-c95; `build` exit 0
-(למעלה). M16-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
-שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M18-c95 - DONE (05.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c93/M18-c94.
+`pwd` אומת, HEAD `1c7cc58ba` (M17-c95). בעץ בהגעה: `.vercelignore` שונה
+ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M17-c95; זה
+תיקון השורה האחת של DEPLOY-UNBLOCK שממתין לסשן המתקן). `STATE.md` עמד
+על **216 שורות** לפני הפריט, כבר מתחת לתקרה (`<300`), אין קיצוץ בכוח.
+**החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c95 המלא (35 שורות)
+לארכיון, כדפוס M18-c91..c94, כך שהקובץ ממשיך להחזיק רק את הפריט הפעיל
+האחרון, הטבלה, החוסמים והידני, עם מרווח למחזור c96. שום שורה לא
+נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`, לפני
+"## M16-c95"; הארכיון 46117 -> 46155 שורות). שורה 1: `RESUME FROM:
+M01-c96`, מחזור c95 (18 פריטים, M01-c95..M18-c95) נסגר. אין שינוי UI,
+ולכן `compare.mjs` לא נדרש (תקדים M18-c93/c94). אפס שינוי קוד
+(`git diff --stat 1c7cc58ba -- src apps packages next.config.ts e2e`
+ריק). **תקלת מדידה אחת, שלי, לא קוד:** סקריפט הסקראב הראשון השתמש
+ב-`mapfile`, שאינו קיים ב-bash 3.2 של macOS, ולכן `env -u` קיבל 0 שמות
+ו-`pnpm test` נפל 14/7352 (8 קבצים, כולם "key unset" של סביבת ה-harness,
+אותה תקלה המתועדת בזיכרון); הוחלף ב-`while read`, אומת `SCRUB: 55`
+ו-`RESIDUAL=0` (`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בסביבת הילד), וכל
+השערים רצו מחדש תחת הסקראב התקין. שערים: `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (biome + 12 שערי סקריפט, docs-index-gate 282
+מסמכים, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615 קבצים,
+7340 עברו, 12 דולגו (7352)**, 61.4 שניות, זהה ביט ל-M17-c95; `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993
+pnpm build` exit 0, אפס `Invalid API key`, `BUILD_ID` `Mk048B5mAEd_7F8HtynTw`,
+אותן 92 שורות `supabase.rls_denied` (חוסם #3). פורט 3311 עדיין תפוס
+(PID 56540, `next-server` מ-04.10 17:52 שה-cwd שלו הוא הצ'קאאוט הזה;
+הוא קדם ל-`.next` הקודם בשבע שעות ועדיין עונה 200, כלומר שרד את כל
+הבניות מחדש של c95, לא נגעתי בו). קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**M16-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M17-c95): JSON-LD Product+BreadcrumbList אומת על 44/44 מוצרים
-פעילים בבנייה טרייה על 4993, אפס דריפט מ-M16-c94; אפס שינוי קוד.
+**M17-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M18-c95): RTL/LTR אומת על `/` ושלושת סלאגי הדגימה
+ב-380/768/1440, 12/12 PASS, אפס leak, אפס דריפט מ-M17-c94, אפס שינוי קוד.
 
-**M15-c95, M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
+**M16-c95, M15-c95, M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
 M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARCHIVE.md`,
 החדש למעלה; כולם DONE עם אפס דריפט וארבעת השערים ירוקים. ההעברות נעשו
-שלב-שלב (האחרונה: M14-c95 ב-M15-c95) לשמירה על תקרת 300 שורות; שום
+שלב-שלב (האחרונה: M17-c95 ב-M18-c95) לשמירה על תקרת 300 שורות; שום
 שורה לא נמחקה מהארכיון, רק הוסרה כאן הכפילות.
 
 **DEPLOY-UNBLOCK - עודכן ב-M14-c95 (05.10.2026), עדיין BLOCKED.** הרשומה

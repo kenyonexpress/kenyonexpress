@@ -2,6 +2,44 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c95 (הועבר מ-STATE.md ב-M18-c95, לשמירה על תקרת 300 שורות)
+
+**M17-c95 - DONE (05.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", אותו פריט חזורי כמו M17-c93/M17-c94.
+`pwd` אומת, HEAD `683a74236` (M16-c95). בעץ בהגעה: `.vercelignore`
+שונה ולא מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M16-c95).
+קוד: `git diff --stat 089a42252..HEAD -- src apps packages next.config.ts
+e2e` (מאז M17-c94) **ריק**, אפס שינוי בכל נתיב שעשוי להשפיע על כיווניות.
+בכל זאת רץ אימות מלא וטרי: פורט 3311 תפוס (PID 56540, סשן מקביל, לא
+נגעתי), נבחר 4993 (אומת פנוי לפני ואחרי); `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm
+build` תחת `env -u` של 55 שמות (מערך bash, אומת `0` שורות
+`CARDCOM|SENSITIVE|VERCEL|SUPABASE` בילד) **exit 0**, אפס `Invalid API
+key`, `BUILD_ID` `RS6iIqX1Rn4TxcAPoZPh4`, אותן 92 שורות
+`supabase.rls_denied` (חוסם #3); `pnpm start -p 4993` (אומת ב-`lsof`
+ש-cwd של המאזין הוא הצ'קאאוט הזה, `/` עונה 200). בדיקת Playwright
+(chromium מ-`@playwright/test`, סקריפט זמני בתוך הריפו שנמחק אחרי
+הריצה, לא חויב) על `/` ועל שלושת סלאגי הדגימה של M17-c93/c94
+(`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`,
+`חיתולי-האגיס`, כולם אושרו ב-`supabase/catalogue-snapshot.json` לפני
+הריצה) ב-380/768/1440: **12 טעינות, 12 PASS, כולן 200**: `<html lang="he"
+dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה ל-`clientWidth`
+בכולן (380/380, 768/768, 1440/1440, אפס גלילה צידית), **אפס** אלמנט
+גלוי עם `direction: ltr` מחושב שמחזיק טקסט עברי ישיר, ו-**אפס** אלמנט
+`dir="ltr"` שמחזיק טקסט עברי ישיר. שערי `rtl-logical` ו-`input-dir`
+(24 שדות tel/email/url, כולם עם `dir`) ירוקים כחלק מ-`pnpm lint`.
+**אפס leak, אפס דריפט מ-M17-c94, אפס שינוי קוד**, ולכן `compare.mjs` לא
+נדרש (אין שינוי UI, תקדים M17-c93/M17-c94). השרת נעצר ב-`SIGINT`,
+הפורט אומת פנוי (0 מאזינים). **תקלת מדידה אחת, שלי, לא קוד:** הריצה
+הראשונה של הפרוב מ-`/tmp` נפלה ב-`ERR_MODULE_NOT_FOUND` על
+`@playwright/test` (רזולוציית ESM מחוץ לריפו); נפתר בהעתקת הסקריפט
+לשורש הריפו לזמן הריצה, השרת הורץ מחדש, התוצאות למעלה הן מהריצה
+השנייה. שערים (תחת אותו סקראב): `pnpm type-check` exit 0; `pnpm lint`
+exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, 57.1 שניות, זהה ביט ל-M16-c95; `build` exit 0
+(למעלה). M16-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
+שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M16-c95 (הועבר מ-STATE.md ב-M17-c95, לשמירה על תקרת 300 שורות)
 
 **M16-c95 - DONE (05.10.2026).** משימת התור: "Verify all product pages
