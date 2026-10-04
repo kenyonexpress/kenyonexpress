@@ -2,6 +2,52 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M12-c95 (הועבר מ-STATE.md ב-M13-c95, לשמירה על תקרת 300 שורות)
+
+**M12-c95 - DONE (05.10.2026).** משימת התור: "Verify robots.txt
+production-safe", אותו פריט חזורי כמו M12-c93/M12-c94. `pwd` אומת, HEAD
+`de263538c` (M11-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא
+שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M11-c95). קוד: `git log -1
+-- src/app/robots.ts` עדיין `4d3702025` (M12-c67, 02.10), אפס שינוי מאז
+M12-c94. חי: `https://www.kenyonexpress.co.il/robots.txt` `200`
+`text/plain; charset=utf-8`, etag `48ebf65980bf0c79f17903e62a66be57`,
+sha256 `71b8e862...`, last-modified 04.10 03:03:09 GMT, `age` 52120,
+`x-vercel-cache: HIT`: **זהים ביט ל-M12-c93 ול-M12-c94.** 12 שורות
+`Disallow` (גרסת `main@18ed044b2` הישנה), `Host:`/`Sitemap:` ל-
+`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-`www`. בדיקות נתיב
+חיות: `/gift/foo` `200` **בלי** `Disallow` (הפער הידוע, נסגר רק עם פריסת
+HEAD, חוסם DEPLOY-UNBLOCK); `/order/foo`, `/wishlist/s/foo`, `/debug/foo`
+`404`; `/redeem/foo` `200` ו-`/coupon/foo` `307`, שניהם מכוסים ב-`Disallow`
+גם בגרסה החיה. **חדש בסבב הזה, מעבר ל-manifest:** הבנייה של HEAD הורצה
+(`pnpm start` על 4862, סביבה מנוקה, `CARDCOM_USE_MOCK=true`, cwd אומת
+כריפו הזה) ו-`/robots.txt` המקומי מגיש `200` `text/plain` עם **16** שורות
+`Disallow`; `diff` מול החי מראה בדיוק את ארבע השורות של M12-c67 (`/gift/`,
+`/order/`, `/wishlist/s/`, `/debug/`) ואת `Host`/`Sitemap` לכתובת המקומית
+(צפוי, `NEXT_PUBLIC_APP_URL` נאפה בבנייה). בבנייה המקומית `/gift/foo`
+ו-`/wishlist/s/foo` עונים `200` (ב-HEAD הנתיב `/wishlist/s/` קיים, בפרודקשן
+הישן הוא `404`), כלומר הפריסה תפתח נתיב-אסימון נוסף ו-`robots.txt` של HEAD
+כבר מכסה אותו. השרת הופסק אחרי המדידה (`4862 stopped`). **אפס דריפט
+מ-M12-c94.** **החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער נסגר עם
+ה-deploy, מתועד ב"חוסמים פתוחים" סעיף 2. **תקלת מדידה שתועדה, לא קוד:**
+ריצת `pnpm test` ראשונה נכשלה 14/7352 (8 קבצים, כולם "key unset": resend,
+twilio, vapid, invoices, deployed-runtime, meili) כי רשימת ה-`-u` הועברה
+דרך משתנה zsh לא מפוצל (`env $SCRUB` הוא ארגומנט יחיד), כלומר הסביבה לא
+נוקתה בפועל; אומת `0` שמות שיוריים בצורת `env $(...)`/`${=S}`, והריצה
+החוזרת ירוקה. שערים, כולם תחת `env -u` של 51 שמות (ערך `[SENSITIVE]` או
+קידומת `VERCEL`/`SUPABASE`/`NEXT_PUBLIC_SUPABASE`/`CARDCOM`/`RESEND`/
+`SENTRY`/`TWILIO`/`CRON_SECRET`/`VOUCHER`/`CI`): `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים,
+7340 עברו, 12 דולגו (7352)**, 57.4 שניות, אפס כשלונות, זהה ביט ל-M11-c95;
+פורט 3311 תפוס על ידי `next-server` של סשן מקביל (PID 56540, cwd הריפו
+הזה, לא שלי, לא נגעתי), נבחר 4862 (אומת פנוי); `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4862 pnpm build`
+exit 0, אפס `Invalid API key`, `BUILD_ID` `2bJFnqx7axsHwMcLgNytN`,
+ה-manifest מראה `/robots.txt` כ-`○` סטטי, אותן 92 שורות
+`supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד).
+לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש (תקדים מ-M12-c92
+ואילך). אפס שינוי קוד. M11-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על
+תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M11-c95 (הועבר מ-STATE.md ב-M12-c95, לשמירה על תקרת 300 שורות)
 
 **M11-c95 - DONE (05.10.2026).** משימת התור: "Verify sitemap.xml fresh
