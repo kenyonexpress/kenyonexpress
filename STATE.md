@@ -1,26 +1,20 @@
-RESUME FROM: M18-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c93 DONE: RTL על / ועל שלושה דפי מוצר נבדק שוב, אפס leak)
+RESUME FROM: M01-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c93 DONE: STATE.md תוחם מחדש מתחת ל-300 שורות, M17-c93 בארכיון)
 
 ## המשך מ:
 
-**M17-c93 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
-/product sample no LTR leaks", זהה ל-M17-c92. `pwd` אומת, עץ נקי, HEAD
-`98debe39b` (M16-c93). קוד: `git diff 55d7a4ddd HEAD -- src apps
-packages` ריק, אפס שינוי מאז M17-c92. בזמן ריצה: `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm
-build` exit 0, `pnpm start -p 4993` (cwd המאזין אומת ב-`lsof`, הריפו
-הזה). בדיקת Playwright על `/` ושלושת סלאגי הדגימה הקודמים
-(`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`,
-`חיתולי-האגיס`, כל השלושה אושרו קיימים ב-`supabase/catalogue-snapshot.json`
-לפני הריצה) ב-380/768/1440, 12 טעינות, כולן 200: `<html lang="he"
-dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה לרוחב בכולן (אפס
-גלילה צידית), ו**אפס אלמנט גלוי עם `direction: ltr` מחושב שמחזיק טקסט
-עברי ישיר**. שער `rtl-logical` (חלק מ-`pnpm lint`) ירוק באותה ריצה.
-**אפס leak, אפס דריפט, אפס שינוי קוד**, ולכן `compare.mjs` לא נדרש (אין
-שינוי UI). השרת נעצר (SIGINT), הפורט פנוי. שערים: `type-check` 0, `lint`
-0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. M12-c93 הועבר
-ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M18-c93 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c92. `pwd` אומת,
+עץ נקי, HEAD `27c409a43` (M17-c93). `STATE.md` היה 283 שורות, כלומר כבר
+מתחת לתקרה. **החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c93
+לארכיון, כדפוס M18-c91/M18-c92, כך שהקובץ ממשיך להחזיק רק את הפריטים
+הפעילים האחרונים, הטבלה, החוסמים והידני, עם מרווח לפריטי התור הבאים.
+שום שורה לא נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`).
+שורה 1: `RESUME FROM: M01-c94`. אין שינוי UI, ולכן `compare.mjs` לא
+נדרש. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12
+דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4211 pnpm build` exit 0. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **M16-c93 - DONE (04.10.2026).** משימת התור: "Verify all product pages
 have JSON-LD Product and BreadcrumbList", זהה ל-M16-c92. `pwd` אומת, עץ
@@ -102,10 +96,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:4531 pnpm build` exit 0 (פורט 3311
 `/api/health` ו-`/api/ready` כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש.
 אפס שינוי קוד. קובץ: `STATE.md`.
 
-M12-c93, M11-c93, M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93
-הועברו ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
-ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12 ב-M17-c93), לשמירה על תקרת
-300 שורות.
+M17-c93, M12-c93, M11-c93, M10-c93, M09-c93, M07-c93, M06-c93, M05-c93,
+M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93,
+M06/M05 ב-M12-c93, M09/M07 ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12
+ב-M17-c93, M17 ב-M18-c93), לשמירה על תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
