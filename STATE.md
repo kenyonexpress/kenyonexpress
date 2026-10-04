@@ -1,7 +1,32 @@
-RESUME FROM: M02-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c94 DONE: פריטי home נמדדו שוב ב-380/768/1440, אפס דריפט על הנתון היציב, תנודתיות חד-פעמית ב-768 תועדה)
+RESUME FROM: M03-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c94 DONE: פריטי /product נמדדו שוב ב-380/768/1440, אפס דריפט)
 
 ## המשך מ:
+
+**M02-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample", זהה ל-M02-c93. `pwd` אומת, עץ נקי, HEAD `44ec205c4`
+(M01-c94). `git diff c764c40b7 HEAD -- src public next.config.*
+package.json scripts/compare.mjs` ריק (אפס שינוי קוד או בשער מאז
+M02-c93). פורט 3311 תפוס על ידי סשן מקביל אחר (אותו `cwd`, לא לנגיעה,
+סשן אחר), ולכן נבחר פורט חלופי 4721 (`lsof` אישר פנוי מראש, ואומת גם
+שה-`cwd` של המאזין על 4721 הוא הריפו הזה). `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4721 pnpm
+build` exit 0, `PORT=4721 pnpm start`, השרת אומת חי (`cwd` של המאזין
+נבדק ב-`lsof`). השער רץ בחזית פר-רוחב על `/product/מוצר-לדוגמא` עם
+`--baseline='refs/electro_product_{width}.png'` (הדגימה היחידה שעוד
+קיימת בפנקס מאז M02-c93; אחד משלד-ה-`-copy` הידועים בחוסם #11, לא
+לתיקון כאן). **380: `4.95%` PASS. 768: `4.55%` PASS. 1440: `3.25%`
+PASS**, שלושתם מסומנים `HEIGHT RATIO` (תמיד היו, לא רגרסיה: צילום קפוא
+מלא מול דף מרונדר חלקי). **זהה בדיוק למספרים שנרשמו ב-M02-c93, אפס
+דריפט.** ריצת 380 הראשונה נקטעה בטיימאוט של 120 שניות והועברה לרקע
+על ידי המערכת עצמה (לא בידי הסוכן) ונמתן לה עד סיום לפני המשך; נרשמה
+שוב בחזית לקבלת פלט מלא. ארבע הריצות (380 פעמיים, 768, 1440) נכתבו
+אוטומטית ל-`docs/UI-PARITY-REPORT.md` (13:04-13:11, commit
+`44ec205c4`/`44ec205c4-dirty`). השרת נעצר ב-`INT`, פורט 4721 אומת פנוי.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`build` exit 0 (למעלה). M14-c93 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md`.
 
 **M01-c94 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
 380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c93. `pwd`
@@ -83,35 +108,11 @@ catalogue routes"`, `E2E_BASE_URL=http://localhost:4976`,
 ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
-**M14-c93 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
-matches HEAD commit", זהה ל-M14-c92. `pwd` אומת, עץ נקי, HEAD `bd16cee32`
-(M13-c93). קוד: release מוגדר ב-`sentry.server.config.ts`/
-`sentry.edge.config.ts` כ-`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
-וב-`instrumentation-client.ts` כ-`NEXT_PUBLIC_SENTRY_RELEASE ??
-NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, אפס שינוי מאז `87a459403` (10.09).
-נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
-`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
-`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`, ולכן ה-release החי
-הוא `18ed044b2`, לא HEAD. `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`
-(production+preview) `createdAt` `1790918429743`, `SENTRY_AUTH_TOKEN`
-(production) `1789566136944`, שניהם ללא שינוי מ-M14-c92. **תשובה:
-ה-release שבפרודקשן אינו HEAD.** `git rev-list --count 18ed044b2..HEAD`
-= **1123** (היה 1105 ב-M14-c92), `HEAD..18ed044b2` = 109 ללא שינוי. אפס
-דריפט מהותי; אותו חוסם (DEPLOY-UNBLOCK למעלה, סעיף 17 ב-`docs/BACKLOG.md`).
-ה-MCP של Sentry לא מאומת בסשן, רשימת ה-releases בתוך Sentry לא נקראה;
-ה-release נגזר מה-commit של הפריסה. **החלטה שהתקבלה לבד:** DONE כאימות
-ולא BLOCKED, כמו M14-c89..c92; לא נפתח חוסם כפול, לא נגעו ב-deploy
-או ב-env. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
-12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4812 pnpm build` exit 0. לא פריט
-חזותי, `compare.mjs` לא נדרש. M07-c93 הועבר ל-`docs/STATE-ARCHIVE.md`
-לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
-
-M17-c93, M13-c93, M12-c93, M11-c93, M10-c93, M09-c93, M07-c93, M06-c93,
-M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md` (M04/M03
-ב-M11-c93, M06/M05 ב-M12-c93, M09/M07 ב-M14-c93, M10 ב-M15-c93, M11
-ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93, M13 ב-M01-c94), לשמירה על
-תקרת 300 שורות.
+M17-c93, M14-c93, M13-c93, M12-c93, M11-c93, M10-c93, M09-c93, M07-c93,
+M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md`
+(M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07 ב-M14-c93, M10 ב-M15-c93,
+M11 ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93, M13 ב-M01-c94, M14
+ב-M02-c94), לשמירה על תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

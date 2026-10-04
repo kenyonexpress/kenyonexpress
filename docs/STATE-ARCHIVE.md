@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c93 (הועבר מ-STATE.md ב-M02-c94, לשמירה על תקרת 300 שורות)
+
+**M14-c93 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", זהה ל-M14-c92. `pwd` אומת, עץ נקי, HEAD `bd16cee32`
+(M13-c93). קוד: release מוגדר ב-`sentry.server.config.ts`/
+`sentry.edge.config.ts` כ-`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
+וב-`instrumentation-client.ts` כ-`NEXT_PUBLIC_SENTRY_RELEASE ??
+NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, אפס שינוי מאז `87a459403` (10.09).
+נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`, ולכן ה-release החי
+הוא `18ed044b2`, לא HEAD. `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`
+(production+preview) `createdAt` `1790918429743`, `SENTRY_AUTH_TOKEN`
+(production) `1789566136944`, שניהם ללא שינוי מ-M14-c92. **תשובה:
+ה-release שבפרודקשן אינו HEAD.** `git rev-list --count 18ed044b2..HEAD`
+= **1123** (היה 1105 ב-M14-c92), `HEAD..18ed044b2` = 109 ללא שינוי. אפס
+דריפט מהותי; אותו חוסם (DEPLOY-UNBLOCK למעלה, סעיף 17 ב-`docs/BACKLOG.md`).
+ה-MCP של Sentry לא מאומת בסשן, רשימת ה-releases בתוך Sentry לא נקראה;
+ה-release נגזר מה-commit של הפריסה. **החלטה שהתקבלה לבד:** DONE כאימות
+ולא BLOCKED, כמו M14-c89..c92; לא נפתח חוסם כפול, לא נגעו ב-deploy
+או ב-env. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352,
+12 דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4812 pnpm build` exit 0. לא פריט
+חזותי, `compare.mjs` לא נדרש. M07-c93 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M13-c93 (הועבר מ-STATE.md ב-M01-c94, לשמירה על תקרת 300 שורות)
 
 **M13-c93 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
