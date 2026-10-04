@@ -1,13 +1,15 @@
-RESUME FROM: M06-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M05-c89 DONE: test 614/614, אפס דריפט, אפס שינוי קוד)
+RESUME FROM: M07-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M06-c89 DONE: build exit 0, אפס דריפט, אפס שינוי קוד)
 
 ## המשך מ:
 
-**M05-c89 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
-commit", זהה ל-M05-c83. `pnpm test` exit 0: 614/614 קבצים, 7337 עברו
-ו-12 דולגו מתוך 7349, אפס כשלונות, אין דריפט לתקן ולכן אפס שינוי קוד.
-שערים: `type-check` 0, `lint` 0, `pnpm build` exit 0. M04-c89
-(type-check נקי) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+**M06-c89 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה ל-M06-c83. `rm -rf .next && pnpm build` exit 0: Compiled
+successfully ב-16.7s, 337/337 דפים סטטיים, אין דריפט לתקן ולכן אפס שינוי
+קוד. שורות `supabase.rls_denied`/`reviews_read_failed` ב-log הן הרעש
+הידוע מקריאות anon בזמן build (מתועד בארכיון), לא כשל. שערים:
+`type-check` 0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו). M05-c89
+(test נקי) הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
