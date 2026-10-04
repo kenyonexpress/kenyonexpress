@@ -1,7 +1,40 @@
-RESUME FROM: M01-c95
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M18-c94 DONE: STATE.md עמד על 299 שורות (מתחת לתקרה), בכל זאת הועבר סעיף M17-c94 לארכיון כדפוס קודם, מחזור c94 נסגר, RESUME FROM מצביע ל-M01-c95)
+RESUME FROM: M02-c95
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M01-c95 DONE: /
+נמדד שוב ב-380/768/1440 מול `refs/ke_live_{width}.png`, אפס דריפט, כל
+שלושה PASS, M10-c94 הועבר לארכיון לשמירה על תקרת 300 שורות, RESUME FROM
+מצביע ל-M02-c95)
 
 ## המשך מ:
+
+**M01-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", פריט ראשון במחזור
+c95 שנפתח ב-M18-c94. `pwd` אומת
+(`/Users/ofir/kenyonexpress-web/kenyonexpress`), עץ נקי, HEAD
+`e6b6d2073` (M18-c94, סגירת c94). קוד: המדידה הקודמת בפועל של `home`
+הייתה ב-`docs/UI-PARITY-REPORT.md` על `ceba4ede8` (10:43-10:47) ו-
+`a5ba4ff47` (09:18-09:22) — M02-c94/M03-c94 היו `product`/`category`,
+לא `home`. פורט 3311 תפוס על ידי סשן מקביל אחר באותו ריפו (`lsof` אישר
+cwd זהה אך PID/תהליך שונה, לא לנגיעה), נבחר פורט חלופי 5417. `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:5417
+pnpm build` exit 0, `pnpm start -p 5417` (cwd המאזין אומת ב-`lsof`,
+הריפו הזה). שער ההשוואה רץ בחזית בשלושת הרוחבים מול ה-baseline הקפוא
+(`refs/ke_live_{width}.png`, חוסם #14 למעלה), והשער עצמו כתב את השורות
+ל-`docs/UI-PARITY-REPORT.md` (15:31-15:34):
+
+| רוחב | diff ("both painted") | overall | סטטוס |
+|---|---|---|---|
+| 380 | 8.58% | 14.11% | PASS |
+| 768 | 9.01% | 16.03% | PASS |
+| 1440 | 4.16% | 15.45% | PASS |
+
+**אפס דריפט** — שלושת הערכים זהים ביט למדידות הקודמות על `home`
+(`ceba4ede8`, `a5ba4ff47`): 8.58%/9.01%/4.16%, כולם מתחת לתקרת 11%.
+השרת נעצר (`kill`), הפורט 5417 אומת פנוי. שערים: `type-check` נקי,
+`lint` נקי (biome + 12 שערי סקריפט), `test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה). M10-c94
+הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md` (נכתב
+אוטומטית ע"י השער).
 
 **M18-c94 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
 lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c93. `pwd`
@@ -22,23 +55,10 @@ pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 (הועבר ב-M18-c94): RTL/LTR נבדק מחדש על `/` ושלושת סלאגי הדגימה
 בשלושת הרוחבים, אפס leak, אפס דריפט מ-M17-c93, כל ארבעת השערים ירוקים.
 
-**M16-c94 - DONE (04.10.2026).** משימת התור: "Verify all product pages
-have JSON-LD Product and BreadcrumbList", זהה ל-M16-c93. `pwd` אומת, עץ
-נקי, HEAD `7a9dd31d8` (M15-c94). קוד: `git diff --stat 98debe39b..HEAD
--- src apps packages next.config.ts` (בסיס: checkpoint M16-c93) **ריק**,
-אפס שינוי. הקומיט האחרון על `src/lib/seo/json-ld.ts` עדיין `16318ef2c`
-(25.09) ועל `src/app/(store)/product/[slug]/page.tsx` עדיין
-`fd820969f` (30.09), והדף עדיין מזריק `buildProductJsonLd` ו-
-`buildBreadcrumbJsonLd` דרך `jsonLdScript`. בזמן ריצה: `rm -rf .next`
-ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4991
-pnpm build` (exit 0), `pnpm start -p 4991` (אומת ב-`lsof` שה-cwd של
-המאזין הוא הצ'קאאוט הזה). כל 44 הסלאגים מ-`supabase/catalogue-snapshot.json`
-נשלפו ונותחו בסקריפט node: **44/44 מחזירים 200 עם בלוק `Product` אחד
-ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות JSON. אפס דריפט
-מ-M16-c93. השרת נעצר ב-`SIGINT`, הפורט אומת פנוי. שערים: `type-check`
-0, `lint` 0 (biome + 12 שערי סקריפט), `test` **615/615 קבצים, 7340
-עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה). לא פריט
-חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`.
+**M16-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M01-c95): JSON-LD Product+BreadcrumbList נבדק שוב על כל 44
+המוצרים הפעילים, אפס שגיאות JSON, אפס דריפט מ-M16-c93, כל ארבעת
+השערים ירוקים.
 
 **M15-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M17-c94): console errors נבדקו שוב (4/4 PASS), אפס דריפט
@@ -71,31 +91,9 @@ pnpm build` (exit 0), `pnpm start -p 4991` (אומת ב-`lsof` שה-cwd של
 (הועבר ב-M10-c94): `pnpm test` fix-drift re-verified, אפס שינוי קוד
 מ-M05-c93, 615/615 (7340/7352), כל ארבעת השערים ירוקים.
 
-**M10-c94 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker", אותו פריט חזורי בתור מ-Q55/M10-c66 ואילך,
-זהה במהות ל-M10-c93. `pwd` אומת, עץ נקי, HEAD `68670f8c8` (M09-c94).
-`ls migrations/pending/*.sql | wc -l` = **60** (58 קבצים ממוספרים
-162..248 + `preflight_162.sql` + `preflight_184.sql`), זהה ל-Q55 ואילך.
-`git log -1 -- migrations/pending/` עדיין `48c8792dd` (248, Q32) — אין
-קובץ חדש, אין קובץ שהוסר. `git diff --stat 9eb5c341e..HEAD --
-migrations/pending docs/BACKLOG.md supabase/migrations src/
-next.config.ts package.json pnpm-lock.yaml` מאז הבדיקה הישירה האחרונה
-מול פרודקשן (M10-c93, `9eb5c341e`) **ריק** — אפס שינוי בכל נתיב שעשוי
-להשפיע על הסכמה החיה. בהתאם לתבנית מ-M10-c67/M10-c69 (בדיקה ישירה
-תקפה נשארת תקפה כל עוד ה-git diff מאז ריק, אין צורך לחזור על שאילתת
-פרודקשן בכל סבב): **19 הקבצים החוסמים נשארים לא-מוחלים ללא בדיקה
-חדשה נדרשת** — 204, 209, 218, 220, 223, 224, 234, 235, 236, 239, 240,
-241, 242, 243, 244, 245, 246, 247, 248. אפס דריפט מ-M10-c93. אין
-פעולה נדרשת, אין migration שהוחל, אין שינוי קוד. שערים: `pwd` אומת
-מראש; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט) נקי;
-`pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
-כשלונות, זהה ביט ל-M09-c94; פורט 3311 תפוס על ידי סשן מקביל אחר
-(`lsof`/cwd אישר שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט
-חלופי 4727 (פנוי), `rm -rf .next && CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4727 pnpm build` exit 0
-(`.next/BUILD_ID` נוצר). לא פריט חזותי, `compare.mjs` לא נדרש. אפס
-שינוי קוד. M05-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
-שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+**M10-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M01-c95): migrations/pending נבדק שוב, 19 הקבצים החוסמים
+ללא שינוי, אפס דריפט מ-M10-c93, כל ארבעת השערים ירוקים.
 
 **M04-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M09-c94): `type-check` fix-drift re-verified, אפס שינוי קוד
@@ -121,6 +119,7 @@ M13-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M14-c94.
 M14-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M15-c94.
 M15-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M17-c94.
 M17-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M18-c94.
+M10-c94 ו-M16-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M01-c95.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

@@ -2,6 +2,54 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M16-c94 (הועבר מ-STATE.md ב-M01-c95, לשמירה על תקרת 300 שורות)
+
+**M16-c94 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", זהה ל-M16-c93. `pwd` אומת, עץ
+נקי, HEAD `7a9dd31d8` (M15-c94). קוד: `git diff --stat 98debe39b..HEAD
+-- src apps packages next.config.ts` (בסיס: checkpoint M16-c93) **ריק**,
+אפס שינוי. הקומיט האחרון על `src/lib/seo/json-ld.ts` עדיין `16318ef2c`
+(25.09) ועל `src/app/(store)/product/[slug]/page.tsx` עדיין
+`fd820969f` (30.09), והדף עדיין מזריק `buildProductJsonLd` ו-
+`buildBreadcrumbJsonLd` דרך `jsonLdScript`. בזמן ריצה: `rm -rf .next`
+ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4991
+pnpm build` (exit 0), `pnpm start -p 4991` (אומת ב-`lsof` שה-cwd של
+המאזין הוא הצ'קאאוט הזה). כל 44 הסלאגים מ-`supabase/catalogue-snapshot.json`
+נשלפו ונותחו בסקריפט node: **44/44 מחזירים 200 עם בלוק `Product` אחד
+ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות JSON. אפס דריפט
+מ-M16-c93. השרת נעצר ב-`SIGINT`, הפורט אומת פנוי. שערים: `type-check`
+0, `lint` 0 (biome + 12 שערי סקריפט), `test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה). לא פריט
+חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`.
+
+## M10-c94 (הועבר מ-STATE.md ב-M01-c95, לשמירה על תקרת 300 שורות)
+
+**M10-c94 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", אותו פריט חזורי בתור מ-Q55/M10-c66 ואילך,
+זהה במהות ל-M10-c93. `pwd` אומת, עץ נקי, HEAD `68670f8c8` (M09-c94).
+`ls migrations/pending/*.sql | wc -l` = **60** (58 קבצים ממוספרים
+162..248 + `preflight_162.sql` + `preflight_184.sql`), זהה ל-Q55 ואילך.
+`git log -1 -- migrations/pending/` עדיין `48c8792dd` (248, Q32) — אין
+קובץ חדש, אין קובץ שהוסר. `git diff --stat 9eb5c341e..HEAD --
+migrations/pending docs/BACKLOG.md supabase/migrations src/
+next.config.ts package.json pnpm-lock.yaml` מאז הבדיקה הישירה האחרונה
+מול פרודקשן (M10-c93, `9eb5c341e`) **ריק** — אפס שינוי בכל נתיב שעשוי
+להשפיע על הסכמה החיה. בהתאם לתבנית מ-M10-c67/M10-c69 (בדיקה ישירה
+תקפה נשארת תקפה כל עוד ה-git diff מאז ריק, אין צורך לחזור על שאילתת
+פרודקשן בכל סבב): **19 הקבצים החוסמים נשארים לא-מוחלים ללא בדיקה
+חדשה נדרשת** — 204, 209, 218, 220, 223, 224, 234, 235, 236, 239, 240,
+241, 242, 243, 244, 245, 246, 247, 248. אפס דריפט מ-M10-c93. אין
+פעולה נדרשת, אין migration שהוחל, אין שינוי קוד. שערים: `pwd` אומת
+מראש; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט) נקי;
+`pnpm test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס
+כשלונות, זהה ביט ל-M09-c94; פורט 3311 תפוס על ידי סשן מקביל אחר
+(`lsof`/cwd אישר שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט
+חלופי 4727 (פנוי), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4727 pnpm build` exit 0
+(`.next/BUILD_ID` נוצר). לא פריט חזותי, `compare.mjs` לא נדרש. אפס
+שינוי קוד. M05-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
+שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+
 ## M17-c94 (הועבר מ-STATE.md ב-M18-c94, לשמירה על תקרת 300 שורות)
 
 **M17-c94 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
