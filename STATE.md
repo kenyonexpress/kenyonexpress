@@ -1,7 +1,25 @@
-RESUME FROM: M16-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M15-c94 DONE: אפס console error ואפס hydration warning ב-16/16 בדיקות route-audit, כולל `/` ודגימת מוצר)
+RESUME FROM: M17-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c94 DONE: כל 44 מוצרים פעילים מחזירים בלוק `Product` אחד ובלוק `BreadcrumbList` אחד, אפס דריפט מ-M16-c93)
 
 ## המשך מ:
+
+**M16-c94 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", זהה ל-M16-c93. `pwd` אומת, עץ
+נקי, HEAD `7a9dd31d8` (M15-c94). קוד: `git diff --stat 98debe39b..HEAD
+-- src apps packages next.config.ts` (בסיס: checkpoint M16-c93) **ריק**,
+אפס שינוי. הקומיט האחרון על `src/lib/seo/json-ld.ts` עדיין `16318ef2c`
+(25.09) ועל `src/app/(store)/product/[slug]/page.tsx` עדיין
+`fd820969f` (30.09), והדף עדיין מזריק `buildProductJsonLd` ו-
+`buildBreadcrumbJsonLd` דרך `jsonLdScript`. בזמן ריצה: `rm -rf .next`
+ואז `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4991
+pnpm build` (exit 0), `pnpm start -p 4991` (אומת ב-`lsof` שה-cwd של
+המאזין הוא הצ'קאאוט הזה). כל 44 הסלאגים מ-`supabase/catalogue-snapshot.json`
+נשלפו ונותחו בסקריפט node: **44/44 מחזירים 200 עם בלוק `Product` אחד
+ובלוק `BreadcrumbList` אחד בדיוק**, אפס שגיאות JSON. אפס דריפט
+מ-M16-c93. השרת נעצר ב-`SIGINT`, הפורט אומת פנוי. שערים: `type-check`
+0, `lint` 0 (biome + 12 שערי סקריפט), `test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה). לא פריט
+חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`.
 
 **M15-c94 - DONE (04.10.2026).** משימת התור: "Verify no console errors
 on / and /product sample", זהה ל-M15-c93. `pwd` אומת, עץ נקי, HEAD
