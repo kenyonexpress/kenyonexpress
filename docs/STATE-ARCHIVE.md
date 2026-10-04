@@ -44578,3 +44578,23 @@ commit", זהה ל-M06-c91. `pwd` אומת, עץ נקי, HEAD `6d02d0b50`.
 `type-check` 0, `lint` 0, `test` 615/615 (7340 עברו, 12 דולגו, 7352).
 אין שינוי UI, ולכן `compare.mjs` לא נדרש. M05-c92 הועבר ל-
 `docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M11-c92 (הועבר מ-STATE.md ב-M12-c92, לשמירה על תקרת 300 שורות)
+
+**M11-c92 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable", זהה ל-M11-c91. `pwd` אומת, עץ נקי, HEAD `cb8baacf6`
+(M10-c92). קוד: הקומיט האחרון על `src/app/sitemap*` עדיין `d1adea146`
+(09.09), אפס שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml`
+`200` `application/xml`, `urlset` שטוח, well-formed (`xmllint`), 79
+`<loc>`, etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT, זהים
+ל-M11-c91; ה-apex עונה `308` ל-www. חמשת תתי-המפות (`/sitemap/{content,
+suppliers,regions,categories,products}.xml`) `404` בפרודקשן, כי הוא מגיש
+את `main@18ed044b2` (חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). `robots.txt`
+החי מצביע ל-`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט.
+**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול; תתי-המפות יעלו עם ה-deploy.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
+pnpm build` exit 0 (337/337), ה-manifest מראה `/sitemap.xml` וחמשת
+תתי-המפות כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
+M10-c92 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.

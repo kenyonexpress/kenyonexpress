@@ -1,25 +1,25 @@
-RESUME FROM: M12-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M11-c92 DONE: sitemap.xml חי 200 עם 79 `<loc>`, תתי-המפות 404 עד ה-deploy, אפס דריפט)
+RESUME FROM: M13-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M12-c92 DONE: robots.txt חי זהה ל-M12-c91, 16 Disallow בקוד, 12 חי עד ה-deploy, אפס דריפט)
 
 ## המשך מ:
 
-**M11-c92 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable", זהה ל-M11-c91. `pwd` אומת, עץ נקי, HEAD `cb8baacf6`
-(M10-c92). קוד: הקומיט האחרון על `src/app/sitemap*` עדיין `d1adea146`
-(09.09), אפס שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml`
-`200` `application/xml`, `urlset` שטוח, well-formed (`xmllint`), 79
-`<loc>`, etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT, זהים
-ל-M11-c91; ה-apex עונה `308` ל-www. חמשת תתי-המפות (`/sitemap/{content,
-suppliers,regions,categories,products}.xml`) `404` בפרודקשן, כי הוא מגיש
-את `main@18ed044b2` (חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). `robots.txt`
-החי מצביע ל-`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט.
-**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול; תתי-המפות יעלו עם ה-deploy.
-שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
-pnpm build` exit 0 (337/337), ה-manifest מראה `/sitemap.xml` וחמשת
-תתי-המפות כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
-M10-c92 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M12-c92 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
+production-safe", זהה ל-M12-c91. `pwd` אומת, עץ נקי, HEAD `718eed840`
+(M11-c92). קוד: הקומיט האחרון על `src/app/robots.ts` עדיין `4d3702025`
+(M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים כולל `/gift/`,
+`/order/`, `/wishlist/s/`, `/debug/`, וה-build הטרי מגיש 16 שורות
+`Disallow`. חי: `https://www.kenyonexpress.co.il/robots.txt` `200`
+`text/plain`, etag `48ebf659...`, sha256 `71b8e862...`, 12 שורות
+`Disallow` של גרסת `main` הישנה, `Host:`/`Sitemap:` ל-
+`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-www. `/gift/foo` `200`
+חי בלי `Disallow` (פער ידוע, נסגר רק בפריסת HEAD, חוסם DEPLOY-UNBLOCK);
+`/order/foo`, `/wishlist/s/foo`, `/debug/foo` `404`. אפס דריפט מ-M12-c91.
+**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער נסגר עם ה-deploy. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4523
+pnpm build` exit 0, ה-manifest מראה `/robots.txt`. לא פריט חזותי,
+`compare.mjs` לא נדרש. אפס שינוי קוד. M11-c92 הועבר ל-
+`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
