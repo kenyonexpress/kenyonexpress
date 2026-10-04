@@ -1,23 +1,21 @@
-RESUME FROM: M16-c89
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M15-c89 DONE: קונסול אפס שגיאות ב-/ וב-/product נבדק מחדש, אפס דריפט)
+RESUME FROM: M17-c89
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M16-c89 DONE: JSON-LD Product+BreadcrumbList על כל 44 המוצרים הפעילים, אפס דריפט)
 
 ## המשך מ:
 
-**M15-c89 - DONE (04.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample", זהה ל-M15-c88. `pwd` אומת, עץ נקי, HEAD
-`959b29bc0` (M14-c89). בנייה טרייה (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4954 pnpm
-build`, exit 0), `pnpm start -p 4954` (אומת ב-`lsof` שה-cwd של המאזין הוא
-הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
-catalogue routes"`, `E2E_BASE_URL=http://localhost:4954`,
-`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c89.jsonl`: **4/4 PASS** (chromium
-+ mobile-chrome). הדוח: אפס `consoleErrors` ואפס `hydrationWarnings`, כל
-הנתיבים 200, על `/` ועל שמונת הנתיבים הדינמיים, כולל `/product/צימר-מאסטר`
-ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר). אפס דריפט מ-M15-c88. השרת
-נעצר, הפורט פנוי. שערים: `type-check` 0, `lint` 0, `test` 614/614
-(7337/7349, 12 דולגו), `build` exit 0. פריט אימות בלבד, לא חזותי,
-`compare.mjs` לא נדרש. M14-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M16-c89 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", זהה ל-M16-c88. קוד: הקומיט
+האחרון על `src/lib/seo/json-ld.ts` ועל `src/app/(store)/product/[slug]/page.tsx`
+הוא עדיין `fd820969f` (30.09), והדף עדיין מזריק `buildProductJsonLd`
+ו-`buildBreadcrumbJsonLd`. **בזמן ריצה, הפעם כל המוצרים ולא דגימה:**
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4966
+pnpm build` (exit 0), `pnpm start` על 4966 (cwd המאזין אומת ב-`lsof`).
+כל 44 הסלאגים הפעילים מ-`supabase/catalogue-snapshot.json` נשלפו
+ונותחו: **44/44 מחזירים 200 עם בלוק `Product` אחד ובלוק `BreadcrumbList`
+אחד בדיוק**, אפס שגיאות JSON. אפס דריפט. השרת נעצר, הפורט פנוי. שערים:
+`type-check` 0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו), `build`
+exit 0. לא חזותי, `compare.mjs` לא נדרש. M15-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
