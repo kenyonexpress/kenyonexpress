@@ -1,18 +1,21 @@
-RESUME FROM: M01-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M18-c92 DONE: STATE.md כווץ, M17-c92 הועבר לארכיון)
+RESUME FROM: M02-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M01-c93 DONE: שער חזותי בית נמדד מחדש 380/768/1440, 8.58/9.01/4.16 PASS)
 
 ## המשך מ:
 
-**M18-c92 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c91. `pwd` אומת,
-עץ נקי, HEAD `55d7a4ddd`. STATE.md היה 198 שורות, כלומר כבר מתחת לתקרה;
-**החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c92 לארכיון, כדפוס
-M18-c91, כך שהקובץ מחזיק רק את שורת ההמשך, הטבלה, החוסמים והידני. שום
-שורה לא נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`). שורה 1:
-`RESUME FROM: M01-c93`. אין שינוי UI, ולכן `compare.mjs` לא נדרש. שערים:
-`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
-`rm -rf .next && pnpm build` exit 0. קבצים: `STATE.md`,
-`docs/STATE-ARCHIVE.md`.
+**M01-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c92. `pwd`
+אומת, עץ נקי, HEAD `ceba4ede8`, פורט 3311 פנוי. `git diff 1314d2972 HEAD
+-- src public next.config.* package.json` ריק (אפס שינוי קוד מאז M01-c92).
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+pnpm build` exit 0, `PORT=3311 pnpm start` (cwd המאזין אומת ב-`lsof`: הריפו
+הזה), `/` החזיר `200`. השער רץ בחזית עם `--widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'`. **ריצה אחת: `380 8.58%`, `768
+9.01%`, `1440 4.16%`, כולם PASS.** הפרש מול M01-c92 (8.58/9.01/4.16): 0.00
+/ 0.00 / 0.00. גם הפעם 768 קר לא התנפח. השער כתב את שלוש השורות
+ל-`docs/UI-PARITY-REPORT.md`. M18-c92 הועבר לארכיון. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` 0. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
