@@ -1,79 +1,65 @@
-RESUME FROM: L10
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L09 BLOCKED: שער 9
-cron נמדד מול פרודקשן; pg_cron מחזיק עבודה אחת שרצה ב-24 השעות האחרונות,
-כל 21 נתיבי `/api/cron` עונים 401 בלי bearer בשני ה-hosts, אך ה-200 עם
-`CRON_SECRET` של פרודקשן אינו ניתן למדידה: הערך ב-Vercel הוא Sensitive ולא
-נקרא, וגם סוד GitHub וגם הערך המקומי נדחים ב-401; יישור הסוד הוא env,
-אסור לפריט; RESUME FROM מצביע ל-L10)
+RESUME FROM: L11
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L10 DONE: שער 10
+מוקשי השקה; `orders.cashback_applied_agorot` ו-`order_items.unit_price_agorot`
+קיימות בפרודקשן כעמודות GENERATED ALWAYS מעל עמודות ה-ils, 059 לא הוחלה
+וה-probes מזהים זאת, כל select של `finalize.ts` הורץ כ-SQL על פרודקשן ועבר,
+ארבעת השערים ירוקים, אפס שינוי קוד; RESUME FROM מצביע ל-L11)
 
 ## המשך מ:
 
-**L09 - BLOCKED (05.10.2026, 03:46 מקומי): שער 9 cron. pg_cron ונתיבי ה-cron
-נמדדו מול פרודקשן; הצד של "200 עם `CRON_SECRET`" אינו ניתן למדידה מהסשן
-הזה, כי אף ערך זמין אינו הערך של פרודקשן, ויישורו הוא env ב-Vercel/GitHub,
-אסור לפריט.** משימת התור: "Gate 9 cron: confirm pg_cron jobs exist and ran
-in last 24h via Supabase MCP; confirm every /api/cron route returns 200 with
-CRON_SECRET and 401 without; vouchers expire, reminders T-7 T-1 fire".
-`pwd` אומת, HEAD בהגעה `331a9a980`, עץ נקי. **pg_cron (קריאה בלבד דרך
-management API עם טוקן ה-CLI מה-keychain, כי Supabase MCP דורש הזדהות
-שאינה זמינה בסשן):** `pg_cron 1.6.4` ו-`pg_net 0.20.0` מותקנים; `cron.job`
-מחזיק **עבודה אחת בלבד**, `report_tables_nightly` (`30 1 * * *`,
-`select public.refresh_report_tables()`, active), ו-`cron.job_run_details`
-מראה `succeeded` ב-04.10 01:30 UTC (בתוך 24 השעות), וכן 03.10 ו-02.10. אין
-אף עבודת `ke-*`: מיגרציה 162 (12 עבודות pg_cron+pg_net עם vault) לא הוחלה
-(חוסם 5 ב-CLAUDE.md, ממתינה ל-URL ב-vault). עבודות האפליקציה רצות מ-GitHub
-Actions (`cron.yml` על `main`), לא מ-pg_cron. **נתיבי `/api/cron`, 21 בעץ:**
-כל ה-21 מחזירים `401` בלי bearer גם על `kenyonexpress.vercel.app` וגם על
-`www.kenyonexpress.co.il` (curl ישיר, וגם `scripts/deployed-cron-probe.mjs`
-על שני ה-hosts: "all 21 scheduled routes are present and protected", exit 0).
-כל 21 הקבצים מפנים ל-`bearerMatches`/`withJobRun` (0 נתיבים בלי שומר).
-**200 עם הסוד, פרודקשן: לא נמדד, בלתי אפשרי מהסשן.** `CRON_SECRET` ב-Vercel
-Production הוא `Secret`/Hidden ואינו נקרא; הערך המקומי ב-`.env.local` נדחה
-ב-401 על כל 21 הנתיבים בשני ה-hosts; סוד GitHub נדחה גם הוא: הריצה
-המתוזמנת האחרונה (`37227331974`, 04.10 19:11 UTC, schedule `0 * * * *`)
-מראה `abandoned-cart -> 401` ו-`search-reindex -> 404` (זה הנתיב של `main`
-שאינו ב-HEAD, חוסם 12), 8/8 הריצות האחרונות failure. `CRON_SCHEDULER_ENABLED
-= true`, `CRON_BASE_URL` לא מוגדר ולכן ה-default `kenyonexpress.vercel.app`,
-שמגיש HEAD. רוטציה אסורה. **200 עם הסוד, בנייה מקומית של HEAD (אותו קוד
-שפרודקשן מגיש):** `pnpm start` על 4993 עם `CRON_SECRET` אקראי חד-פעמי:
-`health`, `expire-vouchers`, `notifications` עונים `401` בלי bearer, `401`
-עם bearer שגוי, ו-`200` עם הנכון. **שוברים ותזכורות T-7/T-1:** בפרודקשן
-קיימות `expire_vouchers()`, `credit_expired_vouchers()` ו-
-`enqueue_expiring_voucher_notices(p_buckets int[] default {7,1})`; הנתיב
-קורא לשלושתן בסדר הזה עם `[7, 1]` (ו-`route.test.ts` מצמיד זאת). מצב
-השוברים החי: 14 `issued`, 4 `redeemed`, 2 `refunded`, **0 מעבר לתפוגה ו-0
-שפוקעים ב-7 הימים הקרובים** (תפוגה מינימלית 09.12.2026), ולכן גם ריצה
-מושלמת הייתה no-op היום. ב-`notification_outbox` אין אף שורת
-`voucher_expiring` מעולם (72 שורות, כולן `dead`, 6 סוגים אחרים, 0 שורות
-ב-24 השעות האחרונות). **תקלה שתועדה בכנות:** הפרוב המקומי ל-`expire-vouchers`
-ו-`notifications` רץ עם ה-admin client המקומי מול DB הפרודקשן והחזיר
-`{"ok":true,"expired":0,"credited":0,"reminders":0}` ו-`considered 0`;
-כלומר שתי RPC-ים הופעלו על פרודקשן, אך לפי התנאים שנמדדו לפני כן (0 מעבר
-לתפוגה, 0 ב-7 ימים, 0 pending) אף שורה לא השתנתה. לא נדרשה ולא נעשתה
-מחיקה. **הבחנה בתכנון, לא תוקנה (דורשת מיגרציה):** ההתאמה בפונקציה היא
-תאריך-מדויק (`expires_at::date = today + bucket` ב-Asia/Jerusalem), והלוח
-`15 23 * * *` UTC הוא 01:15/02:15 למחרת בישראל; GitHub cron מפיל ריצות
-(8 ריצות בלבד ב-04.10 על 13 לוחות), וריצה יומית שנפלה משמיטה את הדלי של
-אותו יום לצמיתות. נרשם ב-`docs/BACKLOG.md` סעיף 2. **Vercel runtime logs**
-דרך MCP החזירו 403 (`project does not exist or no access`) על
-`prj_v49dZb...` תחת `team_TUMTPVDP...`, לא נמדד. **החלטות שהתקבלו לבד:**
-(א) management API במקום Supabase MCP, קריאה בלבד; (ב) אפס רוטציה, אפס
-שינוי env, אפס deploy; (ג) ה-200 הוכח על בנייה מקומית של אותו HEAD ולא על
-פרודקשן, ונרשם ככזה; (ד) הבחנת הדלי המדויק נרשמה ולא תוקנה. **לאופיר:**
-לקרוא את `CRON_SECRET` ב-Vercel > kenyonexpress > Production ולהדביק אותו
-ב-GitHub Secrets > `CRON_SECRET`; הריצה הבאה צריכה להראות `-> 200`.
-שערים, כולם תחת `env -u` ל-54 השמות המוזרקים מה-harness (אומת `0` נותרים;
-עם 51 שמות נפל `invoices.test.ts` אחד כי `CARDCOM_USE_MOCK` המוזרק הפך את
-`documentIssuingMode` ל-`mock`, זיהום env ולא קוד): `pnpm type-check` exit
-0; `pnpm lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit
-155 ללא שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354),
-60.4 שניות; `rm -rf .next` ואז `CARDCOM_USE_MOCK=true
+**L10 - DONE (05.10.2026, 03:55 שעון המכונה): שער 10 מוקשי השקה. שתי
+העמודות קיימות בפרודקשן, `finalize.ts` בוחר רק עמודות קיימות, ארבעת השערים
+ירוקים, אפס שינוי קוד.** משימת התור: "Gate 10 launch landmines: verify
+orders.cashback_applied_agorot and order_items.unit_price_agorot exist in
+production schema; verify finalize.ts selects only existing columns; run full
+pnpm typecheck lint build test; all green". `pwd` אומת, HEAD בהגעה
+`a2509a71f`, עץ נקי. **הסכימה (קריאה בלבד דרך management API עם טוקן ה-CLI
+מה-keychain, כי Supabase MCP דורש הזדהות שאינה זמינה; `information_schema.
+columns` ואז select ממשי `limit 0`):** `orders.cashback_applied_agorot`
+קיימת, `bigint`, **GENERATED ALWAYS** מ-`round(cashback_applied_ils*100)`;
+`order_items.unit_price_agorot` קיימת, `bigint`, GENERATED ALWAYS
+מ-`round(unit_price_ils*100)`. כלומר שתיהן כינויים מחושבים של עמודות ה-ils,
+לא עמודות 059. 059 לא הוחלה, נמדד: `orders.total_agorot`,
+`order_items.platform_bp` ו-`payments.amount_agorot` מחזירות 42703, ואלה
+בדיוק שלושת ה-sentinels של `resolveOrderGeneration` /
+`resolveOrderItemGeneration` / `resolvePaymentMoneySchema`, ולכן בפרודקשן
+הדור הוא `ils`. לעמודה מחושבת אסור לכתוב (428C9), והקוד לא כותב:
+`buildOrderMoneyRow`/`buildOrderItemMoneyRow` כותבים את סט ה-ils, וכל 4+17
+העמודות שלו קיימות (הושוו לרשימה המלאה). **`finalize.ts`, הבחירות כפי שהן
+רצות בפועל בדור `ils`, הורצו כ-SQL `limit 0` על פרודקשן ועברו:** `orders`
+`id, user_id, status, paid_at, affiliate_code, cashback_applied_ils`;
+`order_items` 18 עמודות עם `unit_price_ils_agorot as unit_price_agorot,
+total_price_ils_agorot as total_price_agorot`; `payments` `id, status,
+wallet_applied_ils, cardcom_account_id`. הקריאה הרחבה של המתנה
+(`gift_deliver_at`, 226 ממתינה) מחזירה 42703 ונופלת בכוונה לקריאה הצרה
+(3 עמודות, קיימות), כפי שהקוד מתעד. כל שאר העמודות שהקובץ נוקב (`vouchers`,
+`split_executions`, `products`, `profiles`, `wallet_accounts`,
+`payment_tokens`, `audit_log`, `carts`, והעדכונים ל-`order_items`/`orders`/
+`payments`) הושוו לרשימת העמודות המלאה של 11 הטבלאות: אפס חסרות. שלוש
+ה-RPC (`fn_wallet_transfer`, `fn_enqueue_notification`,
+`consume_order_stock`) קיימות באותן חתימות ארגומנטים. **מוקש אחד שנרשם
+ולא נדרש תיקון:** הבחירה של דור `agorot`, `unit_price_agorot,
+total_price_agorot`, נופלת בפרודקשן על `total_price_agorot` 42703; היא
+נמנעת בזכות ה-probe בלבד, לא בזכות הטיפוסים (`src/types/database.ts`
+מצהיר על `cashback_applied_agorot: number` כעמודה רגילה). **שערים, 54 שמות
+מוזרקים הוסרו (`SENSITIVE` נותרים 0):** `pnpm type-check` exit 0; `pnpm
+lint` exit 0 (i18n 627/627, docs-index-gate 282, docs-path-audit 155 ללא
+שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12 דולגו (7354), 73.5
+שניות; `rm -rf .next` ואז `CARDCOM_USE_MOCK=true
 NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0, `BUILD_ID`
-`KRn9FuYm7qMUDVU23x3bz`, אותן שורות `supabase.rls_denied` על `reviews`
-(חוסם 3). `compare.mjs` לא נדרש, אפס שינוי UI או קוד. L08 הועבר
-ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/BACKLOG.md`.
+`M_ybxzG9OnGQVxmFhK1Z8`, אותן שורות `supabase.rls_denied` על `reviews`
+(חוסם 3). `compare.mjs` לא נדרש, אפס שינוי UI או קוד. **החלטות שהתקבלו
+לבד:** (א) management API במקום Supabase MCP, קריאה בלבד, אפס DDL, אפס
+rollback נדרש כי רק select; (ב) "קיימת" נמדדה גם ב-`information_schema`
+וגם ב-select ממשי; (ג) ה-GENERATED ALWAYS נרשם כעובדה ולא נפתח כפריט, כי
+אף מסלול כתיבה בדור `ils` אינו נוגע בו. L09 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
+**L09 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L10): שער 9 cron נמדד מול פרודקשן; pg_cron מחזיק עבודה אחת שרצה ב-24
+השעות, 21 נתיבי `/api/cron` עונים 401 בלי bearer בשני ה-hosts, וה-200 עם סוד
+הפרודקשן אינו ניתן למדידה כי הערך ב-Vercel הוא Sensitive ולא נקרא, וגם סוד
+GitHub וגם הערך המקומי נדחים ב-401; יישור הסוד הוא env, אופיר בלבד.
 **L08 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-L09): שער 8 observability נמדד מול פרודקשן; Sentry קיבל שגיאת לקוח
 ב-ingest (`c32d5f141b38426aac8c48adc20f17a8`) בלי טוקן API לאימות, PostHog
