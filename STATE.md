@@ -1,65 +1,62 @@
-RESUME FROM: L06
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L05 DONE: שער 5
-E2E על פרודקשן, 9 נתיבים + 10 מוצרים מהמפה + רינדור `/checkout` + POST ל-webhook,
-שני 404 (`/returns`, `/cookies`) תוקנו בקוד ב-`4c87dae64`, נפרס אוטומטית
-ונמדד שוב ירוק; RESUME FROM מצביע ל-L06)
+RESUME FROM: L07
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L06 BLOCKED: שער 6
+מיגרציות, ההשוואה מול `supabase_migrations.schema_migrations` נמדדה בקריאה
+בלבד, סעיף ההחלה נדחה לפי CLAUDE.md ולפי חוקי הפריט עצמו, אפס שינוי
+בפרודקשן; RESUME FROM מצביע ל-L07)
 
 ## המשך מ:
 
-**L05 - DONE (05.10.2026, 02:42 מקומי).** משימת התור: "Gate 5 E2E prod: curl
-status for / /products /api/health /terms /privacy /returns /accessibility
-/cookies and 10 product URLs taken from sitemap.xml; all must be 200;
-/checkout must render; POST to /api/webhooks/cardcom must not 500. Fix any
-failure in code, commit, push, wait for deploy, retest". `pwd` אומת, HEAD
-בהגעה `d0e2ecc92`, עץ נקי. **מדידה ראשונה (פריסה `dpl_EW8qnoh6qzU7yzqVDg1v22zHvj9w`
-= `d0e2ecc92`), `curl` על `www.kenyonexpress.co.il` עם UA של דפדפן:**
-`/`, `/products`, `/api/health`, `/accessibility`, `/checkout` = 200;
-`/terms` 308 ל-`/terms-and-conditions` (200), `/privacy` 308 ל-`/privacy-policy`
-(200), שני אלה הם ה-aliases המכוונים של `next.config.ts` ו-`legal-routes.test.ts`;
-**`/returns` = 404 ו-`/cookies` = 404, שני כשלים.** `sitemap.xml` הוא
-`sitemapindex` עם 5 תתי-מפות; `sitemap/products.xml` מחזיק 46 `<loc>`, עשרת
-הראשונים (`barbecue`, `אוזניות-איירפודס-3`, `אייפון-13`, `חיתולי-האגיס`,
-`טיול-מאורגן-לדובאי`, `טיפול-פנים-copy`, `מוצר-לדוגמא`, `עיסוי-מאסטר`,
-`bar-drink`, `island-of-maldives`) כולם 308 (apex ל-`www`, כי `NEXT_PUBLIC_APP_URL`
-הוא apex) ואז **200, 10/10**. `/checkout` מרונדר: `<title>תשלום | קניון אקספרס`,
-`<h1 class="checkout-page__title">קופה</h1>`, `dir="rtl"`. **POST ל-webhook:**
-`/api/webhooks/cardcom` מחזיר **404** (לא 500), ו-**הנתיב שהקוד באמת מוסר
-ל-Cardcom הוא `/api/payments/cardcom/webhook`**
-(`src/server/actions/payments/checkout.ts:1217`), שמחזיר **200 `{"ok":true}`**
-על גוף טופס מזויף וגם על גוף ריק. **תיקון (`4c87dae64`, 3 קבצים, +18 שורות):**
-שני redirects קבועים ב-`next.config.ts` לפי אותו כלל של `/terms` ו-`/privacy`
-(alias על הדף היחיד שמחזיק את המדיניות, לא דף שני): `/returns` ל-`/refund_returns`,
-`/cookies` ל-`/privacy-policy#cookies` (סעיף `id: 'cookies'` ב-`(legal)/_content/privacy.ts`,
-העוגן שאליו `SiteFooter.tsx:67` כבר מקשר); `legal-routes.test.ts` מאמת את
-שניהם מול `next.config.ts` (+2 טסטים); `e2e/route-audit.spec.ts` מצפה לשניהם.
-push ב-02:29:50 מקומי, Vercel יצר `dpl_Hwy5BSKekrVEuS55FNi4LrRDEpMg` (`source=git`,
-`target=production`, `4c87dae64`) ב-19:29:55Z, READY+PROMOTED ב-19:31:17Z
-(82 שניות). **מדידה שנייה, על הפריסה החדשה (`data-dpl-id` בגוף `/` =
-`dpl_Hwy5BSK...`):** `/returns` 308 ל-`/refund_returns` 200; `/cookies` 308
-ל-`/privacy-policy#cookies` 200 (ה-hash נשמר ב-`Location`); כל שאר 7 הנתיבים
-ללא שינוי (5 ישירים 200, 2 aliases 308 ואז 200); 10/10 מוצרים 200; `/checkout`
-מרונדר; webhook 200/200, הנתיב מהמשימה 404; `/api/health`
-`{"ok":true,"database":"ok","latency_ms":156}`. **החלטות שהתקבלו לבד:** (א)
-308 שמסתיים ב-200 נחשב עובר, כי זה בדיוק מה ש-`legal-routes.test.ts` ו-`route-audit`
-דורשים, ואלטרנטיבה (דף שני לאותה מדיניות) היא הכשל שהטסט נכתב למנוע; (ב) לא
-נוסף alias ב-`/api/webhooks/cardcom`: הקריטריון הוא "must not 500" ו-404 עומד
-בו, הקוד מוסר ל-Cardcom נתיב אחר, ו-endpoint כפול ל-webhook תשלום הוא נתיב
-סחיפה ("no payment provider integration"); (ג) הפריסה האוטומטית היא תוצאה
-ישירה של "commit, push, wait for deploy" שהמשימה מבקשת (L02 חיבר אותה), ולכן
-אינה "push לפרודקשן" שמחייב עצירה. **הערה, מחוץ לפריט:** המפה מפרסמת apex
-(`https://kenyonexpress.co.il/...`) בעוד apex מפנה 308 ל-`www`, כלומר כל URL
-במפה הוא קפיצה אחת; נרשם, לא שונה. שערים (תחת `env -u` של 55 שמות ב-bash,
-`RESIDUAL=1`; ריצת ה-type-check הראשונה רצה ללא סקראב בפועל כי zsh אינו
-מפצל `$U`, תוקן ל-`bash -c`): `pnpm type-check` exit 0; `pnpm lint` exit 0
-(biome 2038, docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test`
-**615/615 קבצים, 7342 עברו, 12 דולגו (7354)**, 55.8 שניות; `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0 בלי `rm -rf .next`
-(`next start` של סשן אחר, PID 56540, עדיין על 3311), אפס `Invalid API key`,
-`BUILD_ID` `WwbDah3WhW4WsqWVa3IcD`, 92 שורות `rls_denied` (חוסם 3).
-`compare.mjs` לא נדרש: אפס שינוי UI, שני redirects בקונפיג בלבד. L04 ו-L02
-הועברו ל-`docs/STATE-ARCHIVE.md`. קבצים: `next.config.ts`,
-`src/content/legal/legal-routes.test.ts`, `e2e/route-audit.spec.ts`, `STATE.md`,
+**L06 - BLOCKED (05.10.2026, 02:51 מקומי): החלת מיגרציות על פרודקשן דורשת
+אישור מפורש; ההשוואה נמדדה, לא הוחל דבר.** משימת התור: "Gate 6 migrations:
+list migrations/pending/; compare to supabase_migrations.schema_migrations via
+Supabase MCP execute_sql; apply each missing one via apply_migration one at a
+time in order; never db push; never migration 165". `pwd` אומת, HEAD בהגעה
+`52b4e1469`, עץ נקי. **נמדד:** `migrations/pending/` מחזיק 62 קבצים (58
+ממוספרים 162..248, `APPLY-ORDER.md`, `README.md`, `preflight_162.sql`,
+`preflight_184.sql`), `git log -1 -- migrations/pending/` עדיין `48c8792dd`.
+**ה-MCP של Supabase (`execute_sql`/`apply_migration`) אינו מאומת בסשן הזה**;
+הטבלה נקראה דרך ה-management API עם טוקן ה-CLI מה-keychain, קריאה בלבד,
+HTTP 201: **162 שורות ב-`schema_migrations`**. השוואה לפי מספר: **6** קבצים
+ממתינים תואמים שורה מוחלת באותו שם (188, 192, 194, 196, 197, 201, כולם
+ידועים כחיים מ-21.09); **13 מספרים ממתינים תפוסים בפרודקשן בתוכן אחר**
+(210 `media_ingest_queue`, 212 `rbac_truncate_and_search_path`, 215
+`cashback_expiry`, 217 `coupon_qr_redemption`, 223 `restock_on_refund`, 224
+`post059_price_cashback_twins`, 226 `fraud_controls`, 227
+`discount_claim_wiring`, 228 `invoice_sequences`, 231 `bell_fanout`, 232
+`reviews_admin_moderation_only`, 233 `wishlist_alerts`, 234 `gift_cards`),
+כלומר השוואת-מספרים אינה פנקס: היא מסמנת "הוחל" על 13 קבצים שלא הוחלו;
+**39** קבצים ממוספרים ללא שורה כלל (162, 184, 189, 190, 191, 202..209, 211,
+213, 214, 216, 218..222, 225, 229, 230, 235..248), ומתוכם 189/190/191 חיים
+לפי סריקת אובייקטים (21.09) בלי שורה. **אפס החלה, אפס `db push`, אפס שינוי
+בפרודקשן.** **החלטות שהתקבלו לבד:** (א) סעיף ההחלה נדחה: `CLAUDE.md` מונה
+"הרצת migration על פרודקשן" כאחד מארבעת מצבי העצירה ודורש אישור מפורש,
+וחוקי הפריט עצמו אומרים פעמיים "Migrations go to migrations/pending only,
+never applied"; הקריאה השמרנית גוברת על משפט ההחלה שסותר אותה. (ב) גם עם
+אישור, "one at a time in order" כפי שנכתב אינו בטוח לפי המדידה: 190 נופל
+בהחלה חוזרת (`fn_due_abandoned_carts` תלת-ארגומנטים כבר קיים), 162 חסומה
+עד URL פרוס (CLAUDE.md סעיף 5), 184 היא חלוקה למחיצות עם preflight משלה,
+245/246 אחרי 209 ו-203, 248 אחרי 232 ו-242 (`APPLY-ORDER.md`), ו-13
+מספרים מתנגשים. (ג) 165 אינה קיימת ב-`pending/` (בוטלה, ראו הערת 245
+ב-README), אין מה לדלג עליה. חוסם #3 למטה ללא שינוי: 19 הקבצים החוסמים
+עדיין לא הוחלו (סריקת אובייקטים M10-c95, 05.10). שערים, כולם תחת `env -u`
+(ריצה ראשונה עם 49 שמות: `invoices.test.ts` נפל 1/7354 כי
+`CARDCOM_USE_MOCK` ו-`CARDCOM_WEBHOOK_SECRET` מוזרקים מה-harness בלי ערך
+placeholder ולכן לא נוקו; הורחב ל-51 שמות, אומת `0` `CARDCOM` בסביבת
+הילד, וכל השערים למטה רצו תחת הרשימה המתוקנת): `pnpm type-check` exit 0;
+`pnpm lint` exit 0 (biome, docs-index-gate 282, docs-path-audit 155 ללא
+שינוי); `pnpm test` **615/615 קבצים, 7342 עברו, 12 דולגו (7354)**, 57.7
+שניות; `CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4851 pnpm
+build` exit 0 (3311 תפוס על ידי `next-server` של סשן אחר, PID 56540, לא
+נגעתי), אפס `Invalid API key`, `BUILD_ID` `7H3ugF-oWOVfTgLsTygII`, 92 שורות
+`rls_denied` (חוסם 3). `compare.mjs` לא נדרש: אפס שינוי UI, אפס שינוי קוד.
+L05 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
+
+**L05 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L06): שער 5 E2E על פרודקשן, 9 נתיבים + 10 מוצרים מהמפה + `/checkout`
++ webhook, שני 404 (`/returns`, `/cookies`) תוקנו ב-`4c87dae64` כ-redirects
+קבועים, נפרסו אוטומטית ונמדדו שוב ירוק.
+
 
 **L04 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-L05): ביקורת env של Vercel Production בקריאה בלבד, 42 שמות, אפס placeholder

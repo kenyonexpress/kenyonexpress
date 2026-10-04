@@ -2,6 +2,63 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L05 (הועבר מ-STATE.md ב-L06, לשמירה על תקרת 300 שורות)
+
+**L05 - DONE (05.10.2026, 02:42 מקומי).** משימת התור: "Gate 5 E2E prod: curl
+status for / /products /api/health /terms /privacy /returns /accessibility
+/cookies and 10 product URLs taken from sitemap.xml; all must be 200;
+/checkout must render; POST to /api/webhooks/cardcom must not 500. Fix any
+failure in code, commit, push, wait for deploy, retest". `pwd` אומת, HEAD
+בהגעה `d0e2ecc92`, עץ נקי. **מדידה ראשונה (פריסה `dpl_EW8qnoh6qzU7yzqVDg1v22zHvj9w`
+= `d0e2ecc92`), `curl` על `www.kenyonexpress.co.il` עם UA של דפדפן:**
+`/`, `/products`, `/api/health`, `/accessibility`, `/checkout` = 200;
+`/terms` 308 ל-`/terms-and-conditions` (200), `/privacy` 308 ל-`/privacy-policy`
+(200), שני אלה הם ה-aliases המכוונים של `next.config.ts` ו-`legal-routes.test.ts`;
+**`/returns` = 404 ו-`/cookies` = 404, שני כשלים.** `sitemap.xml` הוא
+`sitemapindex` עם 5 תתי-מפות; `sitemap/products.xml` מחזיק 46 `<loc>`, עשרת
+הראשונים (`barbecue`, `אוזניות-איירפודס-3`, `אייפון-13`, `חיתולי-האגיס`,
+`טיול-מאורגן-לדובאי`, `טיפול-פנים-copy`, `מוצר-לדוגמא`, `עיסוי-מאסטר`,
+`bar-drink`, `island-of-maldives`) כולם 308 (apex ל-`www`, כי `NEXT_PUBLIC_APP_URL`
+הוא apex) ואז **200, 10/10**. `/checkout` מרונדר: `<title>תשלום | קניון אקספרס`,
+`<h1 class="checkout-page__title">קופה</h1>`, `dir="rtl"`. **POST ל-webhook:**
+`/api/webhooks/cardcom` מחזיר **404** (לא 500), ו-**הנתיב שהקוד באמת מוסר
+ל-Cardcom הוא `/api/payments/cardcom/webhook`**
+(`src/server/actions/payments/checkout.ts:1217`), שמחזיר **200 `{"ok":true}`**
+על גוף טופס מזויף וגם על גוף ריק. **תיקון (`4c87dae64`, 3 קבצים, +18 שורות):**
+שני redirects קבועים ב-`next.config.ts` לפי אותו כלל של `/terms` ו-`/privacy`
+(alias על הדף היחיד שמחזיק את המדיניות, לא דף שני): `/returns` ל-`/refund_returns`,
+`/cookies` ל-`/privacy-policy#cookies` (סעיף `id: 'cookies'` ב-`(legal)/_content/privacy.ts`,
+העוגן שאליו `SiteFooter.tsx:67` כבר מקשר); `legal-routes.test.ts` מאמת את
+שניהם מול `next.config.ts` (+2 טסטים); `e2e/route-audit.spec.ts` מצפה לשניהם.
+push ב-02:29:50 מקומי, Vercel יצר `dpl_Hwy5BSKekrVEuS55FNi4LrRDEpMg` (`source=git`,
+`target=production`, `4c87dae64`) ב-19:29:55Z, READY+PROMOTED ב-19:31:17Z
+(82 שניות). **מדידה שנייה, על הפריסה החדשה (`data-dpl-id` בגוף `/` =
+`dpl_Hwy5BSK...`):** `/returns` 308 ל-`/refund_returns` 200; `/cookies` 308
+ל-`/privacy-policy#cookies` 200 (ה-hash נשמר ב-`Location`); כל שאר 7 הנתיבים
+ללא שינוי (5 ישירים 200, 2 aliases 308 ואז 200); 10/10 מוצרים 200; `/checkout`
+מרונדר; webhook 200/200, הנתיב מהמשימה 404; `/api/health`
+`{"ok":true,"database":"ok","latency_ms":156}`. **החלטות שהתקבלו לבד:** (א)
+308 שמסתיים ב-200 נחשב עובר, כי זה בדיוק מה ש-`legal-routes.test.ts` ו-`route-audit`
+דורשים, ואלטרנטיבה (דף שני לאותה מדיניות) היא הכשל שהטסט נכתב למנוע; (ב) לא
+נוסף alias ב-`/api/webhooks/cardcom`: הקריטריון הוא "must not 500" ו-404 עומד
+בו, הקוד מוסר ל-Cardcom נתיב אחר, ו-endpoint כפול ל-webhook תשלום הוא נתיב
+סחיפה ("no payment provider integration"); (ג) הפריסה האוטומטית היא תוצאה
+ישירה של "commit, push, wait for deploy" שהמשימה מבקשת (L02 חיבר אותה), ולכן
+אינה "push לפרודקשן" שמחייב עצירה. **הערה, מחוץ לפריט:** המפה מפרסמת apex
+(`https://kenyonexpress.co.il/...`) בעוד apex מפנה 308 ל-`www`, כלומר כל URL
+במפה הוא קפיצה אחת; נרשם, לא שונה. שערים (תחת `env -u` של 55 שמות ב-bash,
+`RESIDUAL=1`; ריצת ה-type-check הראשונה רצה ללא סקראב בפועל כי zsh אינו
+מפצל `$U`, תוקן ל-`bash -c`): `pnpm type-check` exit 0; `pnpm lint` exit 0
+(biome 2038, docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test`
+**615/615 קבצים, 7342 עברו, 12 דולגו (7354)**, 55.8 שניות; `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0 בלי `rm -rf .next`
+(`next start` של סשן אחר, PID 56540, עדיין על 3311), אפס `Invalid API key`,
+`BUILD_ID` `WwbDah3WhW4WsqWVa3IcD`, 92 שורות `rls_denied` (חוסם 3).
+`compare.mjs` לא נדרש: אפס שינוי UI, שני redirects בקונפיג בלבד. L04 ו-L02
+הועברו ל-`docs/STATE-ARCHIVE.md`. קבצים: `next.config.ts`,
+`src/content/legal/legal-routes.test.ts`, `e2e/route-audit.spec.ts`, `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## L04 (הועבר מ-STATE.md ב-L05, לשמירה על תקרת 300 שורות)
 
 **L04 - DONE (05.10.2026).** משימת התור: "Gate 4 env hygiene: vercel env ls
