@@ -1,124 +1,65 @@
-RESUME FROM: M10-c95
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M09-c95 DONE:
-knip הורץ שוב, 201/5/1/271/197/4 זהה בדיוק ל-M09-c94, אפס הסרה (הכרעת
-מפעיל), אפס שינוי קוד, ארבעת השערים ירוקים תחת `env -u` מתוקן (55
-שמות), M08-c95 הועבר לארכיון לשמירה על תקרת 300 שורות, RESUME FROM
-מצביע ל-M10-c95)
+RESUME FROM: M11-c95
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט M10-c95 DONE:
+migrations/pending נבדק שוב, 60 קבצי SQL, `git log -1` עדיין `48c8792dd`,
+אפס דריפט ב-git מאז M10-c93, **ובדיקה ישירה טרייה מול פרודקשן** אישרה
+ש-15 אובייקטים של 13 מ-19 הקבצים החוסמים עדיין חסרים וטריגר 218 עדיין
+שבור, ארבעת השערים ירוקים תחת `env -u` (55 שמות), M09-c95 הועבר לארכיון,
+RESUME FROM מצביע ל-M11-c95)
 
 ## המשך מ:
 
-**M09-c95 - DONE (05.10.2026).** משימת התור: "Remove unused deps and
-dead exports", זהה במהות ל-M09-c94. `pwd` אומת, HEAD `53a09bc1c`
-(M08-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא שלי, לא
-נגעתי, לא נכלל ב-commit, כמו ב-M03..M08-c95). `git diff --stat
-68670f8c8 HEAD -- src public next.config.* package.json packages
-pnpm-lock.yaml scripts` (מאז M09-c94) ריק: אפס שינוי קוד, אין דריפט
-לתקן. `pnpm dlx knip --no-config-hints` (ephemeral, אין `knip.json`):
-**201 unused files / 5 unused dependencies / 1 unlisted binary / 271
-unused exports / 197 unused exported types / 4 duplicate exports**,
-זהה בדיוק ל-M09-c94 ול-M09-c93. חמש התלויות
-(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
-`drizzle-orm`, `postgres`, `react-hook-form`) והבינארי (`supabase`) הם
-אותו רעש ידוע וחוזר מאז M09-c66. **החלטה שהתקבלה לבד:** לא הוסר דבר,
-כמו בכל הסבבים הקודמים: אפס מועמד חדש, וכל הקיימים הם הכרעת מפעיל.
-**מדידת שערים ראשונה נפסלה בידי עצמי**: רשימת ה-`env -u` נבנתה למחרוזת
-אחת ו-zsh לא מפצל `$SCRUB` לא-מצוטט, ולכן `env` קיבל ארגומנט `-u` יחיד
-ושום משתנה לא נוקה; `pnpm test` נפל 14/7352 (`deployed-runtime`,
-`resend`, `web-leg`, `search-server`, `sms`, `google-wallet`, `invoices`,
-`twilio`, כולם "key unset" שקראו ערך `[SENSITIVE]` או מפתח אמיתי
-מה-harness, לא קוד). תוקן ל-`${=SCRUB}` (55 שמות, התאמת-קידומת), אומת
-`0` שורות `SENSITIVE` ו-`0` שורות `VERCEL` בסביבת הילד, **וכל השערים
-למטה רצו תחת הרשימה המתוקנת**: `pnpm type-check` exit 0; `pnpm lint`
-exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
-עברו, 12 דולגו (7352)**, 58.8 שניות, אפס כשלונות, זהה ביט ל-M08-c95;
-פורט 3311 תפוס על ידי `next-server` של סשן מקביל (PID 56540, `cwd`
-הריפו הזה, לא שלי, לא נגעתי), נבחר 4832 (אומת פנוי); `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4832 pnpm
-build` exit 0, אפס `Invalid API key`, `BUILD_ID` `gBl96aFYfHQZDKXuGaRqj`,
-אותן 92 שורות `supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה 247,
-`warn` בלבד). לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש. אפס
-שינוי קוד. M08-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
-שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M10-c95 - DONE (05.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", אותו פריט חזורי כמו M10-c93/M10-c94. `pwd`
+אומת, HEAD `681222eb4` (M09-c95). בעץ בהגעה: `.vercelignore` שונה ולא
+מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit, כמו ב-M03..M09-c95).
+`ls migrations/pending/*.sql | wc -l` = **60** (58 ממוספרים 162..248 +
+`preflight_162.sql` + `preflight_184.sql`), זהה ל-Q55 ואילך; `git log -1
+-- migrations/pending/` עדיין `48c8792dd` (248, Q32): אין קובץ חדש, אין
+קובץ שהוסר. `git diff --stat 9eb5c341e..HEAD -- migrations/pending
+docs/BACKLOG.md supabase/migrations src/ next.config.ts package.json
+pnpm-lock.yaml` (מאז הבדיקה הישירה של M10-c93) מחזיר רק `docs/BACKLOG.md`
+(+30, רשומות התיעוד של M10-c94/M14-c94): **אפס שינוי בכל נתיב שעשוי
+להשפיע על הסכמה החיה.** בניגוד ל-M10-c94 (שהסתמך על ה-diff הריק), הפעם
+רצה גם **בדיקה ישירה טרייה מול פרודקשן** (management API, טוקן CLI
+מה-keychain, קריאה בלבד, `to_regclass`/`information_schema`/
+`has_table_privilege`/`pg_get_functiondef`), 15 אובייקטים של 13 מתוך 19
+הקבצים החוסמים, שמות האובייקטים אומתו מול ה-SQL של כל קובץ לפני השאילתה:
+204 `supplier_applications` חסר; 218 הטריגר
+`enforce_profile_privilege_columns` **עדיין מכיל `supplier_id`** (הבאג
+מ-M05-c1 חי); 223 `notifications.outbox_id` חסר; 224 ל-`authenticated`
+אין EXECUTE על אף חתימה של `fn_record_recent_search`; 235
+`feature_flags`, 236 `contact_channels`, 239 `customer_invoice_settings`,
+240 `app_consent_events`, 244 `affiliate_campaigns` חסרים; 242
+`products.original_price_source` ו-243 `products.shipping_price_agorot`
+חסרים; 247 ל-`anon` אין SELECT על `reviews`; 248 `suppliers.opening_hours`
+(תלות 232) חסר. **כל 19 הקבצים החוסמים נשארים לא-מוחלים: 204, 209, 218,
+220, 223, 224, 234, 235, 236, 239, 240, 241, 242, 243, 244, 245, 246,
+247, 248. אפס דריפט מ-M10-c93/c94.** חוסם #3 למטה נשאר כפי שהוא. לא
+הוחל דבר, לא `db push`, אפס שינוי קוד, אפס migration חדשה. שערים, כולם
+תחת `env -u` של 55 שמות (אומת `0` `SENSITIVE`, `0` `VERCEL`, `0`
+`SUPABASE` בסביבת הילד): `pnpm type-check` exit 0; `pnpm lint` exit 0
+(biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340 עברו, 12
+דולגו (7352)**, 56.2 שניות, אפס כשלונות, זהה ביט ל-M09-c95; פורט 3311
+תפוס על ידי `next-server` של סשן מקביל (PID 56540, לא שלי, לא נגעתי),
+נבחר 4851 (אומת פנוי); `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4851 pnpm build` exit 0, אפס
+`Invalid API key`, `BUILD_ID` `Me0kbtwvy0e7MWcgcTmSn`, אותן 92 שורות
+`supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה 247, `warn` בלבד).
+לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש. M09-c95 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
-**M08-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M09-c95): Lighthouse mobile על `/` ו-`/product/צימר-מאסטר`
-נמדד שוב בחזית תחת `env -u` מלא, **100/100/100** בשתיהן, אפס דריפט
-מ-M08-c94, כל ארבעת השערים ירוקים.
+**M09-c95 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M10-c95): knip הורץ שוב, 201/5/1/271/197/4 זהה בדיוק ל-M09-c94,
+אפס הסרה (הכרעת מפעיל), אפס שינוי קוד, ארבעת השערים ירוקים תחת `env -u`
+מתוקן (55 שמות).
 
-**M07-c95 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M08-c95): TODO/FIXME נסרקו שוב, אותם שני סמני `cardcom.ts`
-כבר `tracked` ב-`docs/BACKLOG.md` סעיף 6, אפס סמן חדש, אפס דריפט
-מ-M07-c94, כל ארבעת השערים ירוקים.
-
-**M17-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M18-c94): RTL/LTR נבדק מחדש על `/` ושלושת סלאגי הדגימה
-בשלושת הרוחבים, אפס leak, אפס דריפט מ-M17-c93, כל ארבעת השערים ירוקים.
-
-**M16-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M01-c95): JSON-LD Product+BreadcrumbList נבדק שוב על כל 44
-המוצרים הפעילים, אפס שגיאות JSON, אפס דריפט מ-M16-c93, כל ארבעת
-השערים ירוקים.
-
-**M15-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M17-c94): console errors נבדקו שוב (4/4 PASS), אפס דריפט
-מ-M15-c93, כל ארבעת השערים ירוקים.
-
-**M12-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M13-c94): robots.txt חי אומת שוב, אפס דריפט מ-M12-c93, כל
-ארבעת השערים ירוקים.
-
-**M09-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M12-c94): unused deps/dead exports נבדקו שוב עם knip, זהה
-בדיוק ל-M09-c93 (201/5/1/271/197/4), אפס הסרה (הכרעת מפעיל), כל ארבעת
-השערים ירוקים.
-
-**M08-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M12-c94): Lighthouse mobile על `/` ו-`/product/צימר-מאסטר`
-נמדד שוב בחזית, **100/100/100** בשתיהן, אפס דריפט מ-M08-c93, כל ארבעת
-השערים ירוקים.
-
-**M07-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M10-c94): TODO/FIXME נסרקו שוב, אותם שני סמני `cardcom.ts`
-כבר `tracked` ב-`docs/BACKLOG.md` סעיף 6, אפס סמן חדש, כל ארבעת השערים
-ירוקים.
-
-**M06-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M11-c94): `pnpm build` fix-drift re-verified, אפס שינוי קוד
-מ-M06-c93, 615/615 (7340/7352), כל ארבעת השערים ירוקים.
-
-**M05-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M10-c94): `pnpm test` fix-drift re-verified, אפס שינוי קוד
-מ-M05-c93, 615/615 (7340/7352), כל ארבעת השערים ירוקים.
-
-**M10-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
-(הועבר ב-M01-c95): migrations/pending נבדק שוב, 19 הקבצים החוסמים
-ללא שינוי, אפס דריפט מ-M10-c93, כל ארבעת השערים ירוקים.
-
-M04-c94, M03-c94, M02-c94, M01-c94, M18-c93, M17-c93, M16-c93, M15-c93, M14-c93, M13-c93, M12-c93, M11-c93,
-M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
-ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
-ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12 ב-M17-c93, M17 ב-M18-c93,
-M13 ב-M01-c94, M14 ב-M02-c94, M15/M16 ב-M03-c94, M18 ב-M06-c94), לשמירה
-על תקרת 300 שורות. M01-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M07-c94.
-M02-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M08-c94.
-M05-c94 ו-M07-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M10-c94.
-M06-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M11-c94.
-M08-c94 ו-M09-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M12-c94.
-M11-c94 ו-M12-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M13-c94.
-M13-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M14-c94.
-M14-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M15-c94.
-M15-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M17-c94.
-M17-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M18-c94.
-M10-c94 ו-M16-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M01-c95.
-M03-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M02-c95.
-M04-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M02-c95.
-M02-c95 ו-M18-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M03-c95.
-M03-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M04-c95.
-M04-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M05-c95.
-M05-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M06-c95.
-M06-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M07-c95.
-M07-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M08-c95.
-M08-c95 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M09-c95.
+**M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
+M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,
+M18-c93..M03-c93, ועד M01-c55) מתועדים במלואם ב-`docs/STATE-ARCHIVE.md`,
+החדש למעלה; כולם DONE עם אפס דריפט וארבעת השערים ירוקים. ההעברות נעשו
+שלב-שלב (האחרונה: M09-c95 ב-M10-c95) לשמירה על תקרת 300 שורות; שום
+שורה לא נמחקה מהארכיון, רק הוסרה כאן הכפילות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
@@ -220,8 +161,9 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
-   M10-c93 (04.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
-   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c92.**
+   M10-c95 (05.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
+   לא רק git, 15 אובייקטים של 13 קבצים): כל 19 הקבצים החוסמים עדיין לא
+   הוחלו, אפס סחיפה מ-M10-c93.**
    60 קבצים ב-`migrations/pending/`, `git log -1` עדיין `48c8792dd` (248).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.

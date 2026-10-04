@@ -2,6 +2,41 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M09-c95 (הועבר מ-STATE.md ב-M10-c95, לשמירה על תקרת 300 שורות)
+
+**M09-c95 - DONE (05.10.2026).** משימת התור: "Remove unused deps and
+dead exports", זהה במהות ל-M09-c94. `pwd` אומת, HEAD `53a09bc1c`
+(M08-c95). בעץ בהגעה: `.vercelignore` שונה ולא מחויב (לא שלי, לא
+נגעתי, לא נכלל ב-commit, כמו ב-M03..M08-c95). `git diff --stat
+68670f8c8 HEAD -- src public next.config.* package.json packages
+pnpm-lock.yaml scripts` (מאז M09-c94) ריק: אפס שינוי קוד, אין דריפט
+לתקן. `pnpm dlx knip --no-config-hints` (ephemeral, אין `knip.json`):
+**201 unused files / 5 unused dependencies / 1 unlisted binary / 271
+unused exports / 197 unused exported types / 4 duplicate exports**,
+זהה בדיוק ל-M09-c94 ול-M09-c93. חמש התלויות
+(`@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`,
+`drizzle-orm`, `postgres`, `react-hook-form`) והבינארי (`supabase`) הם
+אותו רעש ידוע וחוזר מאז M09-c66. **החלטה שהתקבלה לבד:** לא הוסר דבר,
+כמו בכל הסבבים הקודמים: אפס מועמד חדש, וכל הקיימים הם הכרעת מפעיל.
+**מדידת שערים ראשונה נפסלה בידי עצמי**: רשימת ה-`env -u` נבנתה למחרוזת
+אחת ו-zsh לא מפצל `$SCRUB` לא-מצוטט, ולכן `env` קיבל ארגומנט `-u` יחיד
+ושום משתנה לא נוקה; `pnpm test` נפל 14/7352 (`deployed-runtime`,
+`resend`, `web-leg`, `search-server`, `sms`, `google-wallet`, `invoices`,
+`twilio`, כולם "key unset" שקראו ערך `[SENSITIVE]` או מפתח אמיתי
+מה-harness, לא קוד). תוקן ל-`${=SCRUB}` (55 שמות, התאמת-קידומת), אומת
+`0` שורות `SENSITIVE` ו-`0` שורות `VERCEL` בסביבת הילד, **וכל השערים
+למטה רצו תחת הרשימה המתוקנת**: `pnpm type-check` exit 0; `pnpm lint`
+exit 0 (biome + 12 שערי סקריפט); `pnpm test` **615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, 58.8 שניות, אפס כשלונות, זהה ביט ל-M08-c95;
+פורט 3311 תפוס על ידי `next-server` של סשן מקביל (PID 56540, `cwd`
+הריפו הזה, לא שלי, לא נגעתי), נבחר 4832 (אומת פנוי); `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4832 pnpm
+build` exit 0, אפס `Invalid API key`, `BUILD_ID` `gBl96aFYfHQZDKXuGaRqj`,
+אותן 92 שורות `supabase.rls_denied` על `reviews` (חוסם #3, מיגרציה 247,
+`warn` בלבד). לא פריט חזותי, אפס שינוי UI, `compare.mjs` לא נדרש. אפס
+שינוי קוד. M08-c95 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300
+שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M08-c95 (הועבר מ-STATE.md ב-M09-c95, לשמירה על תקרת 300 שורות)
 
 **M08-c95 - DONE (05.10.2026).** משימת התור: "Lighthouse mobile on /
