@@ -2,6 +2,41 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M02-c93 (הועבר מ-STATE.md ב-M10-c93, לשמירה על תקרת 300 שורות)
+
+**M02-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample", זהה ל-M02-c92. `pwd` אומת, HEAD `c764c40b7` (זהה
+ל-M01-c93, אפס שינוי קוד: `git diff --stat HEAD -- src public
+next.config.* package.json` ריק). פורט 3311 כבר מאזין מריצה קודמת באותו
+סשן (cwd אומת ב-`lsof`: הריפו הזה, `/` לא נבדק כי `/product` אינו עמוד
+עצמאי). השער רץ בחזית עם `--baseline='refs/electro_product_{width}.png'`
+לכל שלושת הרוחבים (הדגימה `/product/מוצר-לדוגמא`, אחד משלד-ה-`-copy`
+הידועים בחוסם #11, לא לתיקון כאן). **380 4.95%, 768 4.55%, 1440
+3.25%, כולם PASS** (כולם מסומנים `HEIGHT RATIO` — תמיד היו, לא רגרסיה:
+צילום קפוא מלא מול דף מרונדר חלקי, המספר שנמדד הוא "both painted" ולא
+"overall"). הפרש מול M02-c92 (4.95/4.55/3.25): 0.00/0.00/0.00. **נמצאה
+שורה כפולה בדיוק באותו ערך 1440 (`10:58` ו-`11:00`) שנכתבה במקביל
+לסשן הזה** (שינוי לא-מקומי ל-`docs/UI-PARITY-REPORT.md` בין קריאה
+לכתיבה) — נשמרה השורה הראשונה (`10:58`), הכפילה הוסרה, שום מידע לא
+אבד כי שתיהן זהות. שערים: `type-check` 0, `lint` 0, `test` 615/615
+(7340/7352, 12 דולגו), `build` 0. קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
+
+## M01-c93 (הועבר מ-STATE.md ב-M10-c93, לשמירה על תקרת 300 שורות)
+
+**M01-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
+380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c92. `pwd`
+אומת, עץ נקי, HEAD `ceba4ede8`, פורט 3311 פנוי. `git diff 1314d2972 HEAD
+-- src public next.config.* package.json` ריק (אפס שינוי קוד מאז M01-c92).
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
+pnpm build` exit 0, `PORT=3311 pnpm start` (cwd המאזין אומת ב-`lsof`: הריפו
+הזה), `/` החזיר `200`. השער רץ בחזית עם `--widths=380,768,1440
+--baseline='refs/ke_live_{width}.png'`. **ריצה אחת: `380 8.58%`, `768
+9.01%`, `1440 4.16%`, כולם PASS.** הפרש מול M01-c92 (8.58/9.01/4.16): 0.00
+/ 0.00 / 0.00. גם הפעם 768 קר לא התנפח. השער כתב את שלוש השורות
+ל-`docs/UI-PARITY-REPORT.md`. M18-c92 הועבר לארכיון. שערים: `type-check`
+0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` 0. קבצים:
+`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
+
 ## M08-c93 (הועבר מ-STATE.md ב-M09-c93, לשמירה על תקרת 300 שורות)
 
 **M08-c93 - DONE (04.10.2026).** משימת התור: "Lighthouse mobile on /

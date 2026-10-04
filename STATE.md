@@ -1,7 +1,30 @@
-RESUME FROM: M10-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M09-c93 DONE: knip 201/5/1/271/197/4, אפס דריפט מ-M09-c92, לא הוסר דבר)
+RESUME FROM: M11-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M10-c93 DONE: 60 קבצי pending, כל ה-19 החוסמים עדיין לא הוחלו בפרודקשן, אפס דריפט)
 
 ## המשך מ:
+
+**M10-c93 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", זהה ל-M10-c92. `pwd` אומת, עץ נקי, HEAD
+`e7a3af744` (M09-c93). `git diff --stat cb8baacf6 HEAD -- migrations/pending`
+ריק — אפס קובץ חדש מאז M10-c92, עדיין 60 קבצי `.sql`, `git log -1 --
+migrations/pending` עדיין `48c8792dd` (248). בדיקה ישירה מול פרודקשן
+(CLI-keychain-token, `SELECT` יחיד לכל בדיקה, קריאה בלבד, אפס DDL):
+**0 מ-7 הטבלאות** של 204/234/235/236/239/244/232 (`supplier_onboarding_requests`,
+`fraud_blocklist`, `feature_flags`, `contact_channels`, `deals`,
+`affiliate_campaigns`, `app_consent_events`); **0 מ-5 העמודות/גרנטים** של
+223/232/242/243/248 (`notification_outbox.link`, `suppliers.opening_hours`,
+`suppliers.google_reviews_url`, `products.price_source`, `products.terms_text`,
+גרנט `anon` על שתי עמודות `suppliers`); `anon` עדיין בלי `SELECT` על
+`reviews` (247); 0 מדיניות `*_unified` על `banners` (245); **82 שורות
+`products` עם `city IS NULL`** (241) — זהה ביט ל-M10-c92. **החוסם כבר
+רשום** (חוסם 3 למטה, `docs/BACKLOG.md`, `docs/RUNBOOK.md`), לא נפתח חוסם
+כפול. `STATE.md` היה 314 שורות אחרי כתיבת הסעיף הזה; M01-c93 ו-M02-c93
+הועברו ל-`docs/STATE-ARCHIVE.md` (283 שורות אחרי). שערים: `type-check` 0,
+`lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm build` exit 0 (פורט 3311
+כבר מאזין מריצה קודמת, `cwd` אומת ב-`lsof` שהוא הריפו הזה). לא פריט
+חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **M09-c93 - DONE (04.10.2026).** משימת התור: "Remove unused deps and
 dead exports", זהה במהות ל-M09-c92. `pwd` אומת, עץ נקי, HEAD `08562c9bf`.
@@ -85,37 +108,6 @@ type-check` (`tsc --noEmit`) יצא נקי; `pnpm lint` (biome + 12 שערי
 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0 (`rm -rf .next`
 לא בוצע הפעם, פורט 3311 כבר שירת גרסה זהה בביט; `pnpm build` נוסף רץ
 ואישר exit 0 ללא שינוי קוד). קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
-
-**M02-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
-/product sample", זהה ל-M02-c92. `pwd` אומת, HEAD `c764c40b7` (זהה
-ל-M01-c93, אפס שינוי קוד: `git diff --stat HEAD -- src public
-next.config.* package.json` ריק). פורט 3311 כבר מאזין מריצה קודמת באותו
-סשן (cwd אומת ב-`lsof`: הריפו הזה, `/` לא נבדק כי `/product` אינו עמוד
-עצמאי). השער רץ בחזית עם `--baseline='refs/electro_product_{width}.png'`
-לכל שלושת הרוחבים (הדגימה `/product/מוצר-לדוגמא`, אחד משלד-ה-`-copy`
-הידועים בחוסם #11, לא לתיקון כאן). **380 4.95%, 768 4.55%, 1440
-3.25%, כולם PASS** (כולם מסומנים `HEIGHT RATIO` — תמיד היו, לא רגרסיה:
-צילום קפוא מלא מול דף מרונדר חלקי, המספר שנמדד הוא "both painted" ולא
-"overall"). הפרש מול M02-c92 (4.95/4.55/3.25): 0.00/0.00/0.00. **נמצאה
-שורה כפולה בדיוק באותו ערך 1440 (`10:58` ו-`11:00`) שנכתבה במקביל
-לסשן הזה** (שינוי לא-מקומי ל-`docs/UI-PARITY-REPORT.md` בין קריאה
-לכתיבה) — נשמרה השורה הראשונה (`10:58`), הכפילה הוסרה, שום מידע לא
-אבד כי שתיהן זהות. שערים: `type-check` 0, `lint` 0, `test` 615/615
-(7340/7352, 12 דולגו), `build` 0. קבצים: `STATE.md`, `docs/UI-PARITY-REPORT.md`.
-
-**M01-c93 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
-380 768 1440 on / and record diffs in STATE.md", זהה ל-M01-c92. `pwd`
-אומת, עץ נקי, HEAD `ceba4ede8`, פורט 3311 פנוי. `git diff 1314d2972 HEAD
--- src public next.config.* package.json` ריק (אפס שינוי קוד מאז M01-c92).
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311
-pnpm build` exit 0, `PORT=3311 pnpm start` (cwd המאזין אומת ב-`lsof`: הריפו
-הזה), `/` החזיר `200`. השער רץ בחזית עם `--widths=380,768,1440
---baseline='refs/ke_live_{width}.png'`. **ריצה אחת: `380 8.58%`, `768
-9.01%`, `1440 4.16%`, כולם PASS.** הפרש מול M01-c92 (8.58/9.01/4.16): 0.00
-/ 0.00 / 0.00. גם הפעם 768 קר לא התנפח. השער כתב את שלוש השורות
-ל-`docs/UI-PARITY-REPORT.md`. M18-c92 הועבר לארכיון. שערים: `type-check`
-0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` 0. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
@@ -217,8 +209,8 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    בלי הרשאת SELECT על `reviews`, נמדד M18-c52; בלעדיה דף הביקורות הציבורי
    נכשל תמיד, ללא תלות בשום קובץ אחר). סדר והתנאים
    ב-`docs/RUNBOOK.md`, סקירה ב-`docs/MIGRATION-REVIEW.md`. **אומת שוב
-   M10-c92 (04.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
-   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c91.**
+   M10-c93 (04.10, בדיקה ישירה מול פרודקשן בפועל דרך CLI-keychain-token,
+   לא רק git): כל 19 הקבצים החוסמים עדיין לא הוחלו, אפס סחיפה מ-M10-c92.**
    60 קבצים ב-`migrations/pending/`, `git log -1` עדיין `48c8792dd` (248).
 4. **R2 לא מופעל בחשבון Cloudflare** (10.09): תמונות המוצר נופלות ל-Supabase
    Storage, וגיבויי ה-DB החיצוניים אינם נכתבים כלל.
