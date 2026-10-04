@@ -1,7 +1,26 @@
-RESUME FROM: M17-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M16-c93 DONE: JSON-LD Product+BreadcrumbList נבדק שוב על 44/44 מוצרים פעילים, אפס דריפט)
+RESUME FROM: M18-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M17-c93 DONE: RTL על / ועל שלושה דפי מוצר נבדק שוב, אפס leak)
 
 ## המשך מ:
+
+**M17-c93 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", זהה ל-M17-c92. `pwd` אומת, עץ נקי, HEAD
+`98debe39b` (M16-c93). קוד: `git diff 55d7a4ddd HEAD -- src apps
+packages` ריק, אפס שינוי מאז M17-c92. בזמן ריצה: `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm
+build` exit 0, `pnpm start -p 4993` (cwd המאזין אומת ב-`lsof`, הריפו
+הזה). בדיקת Playwright על `/` ושלושת סלאגי הדגימה הקודמים
+(`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`,
+`חיתולי-האגיס`, כל השלושה אושרו קיימים ב-`supabase/catalogue-snapshot.json`
+לפני הריצה) ב-380/768/1440, 12 טעינות, כולן 200: `<html lang="he"
+dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה לרוחב בכולן (אפס
+גלילה צידית), ו**אפס אלמנט גלוי עם `direction: ltr` מחושב שמחזיק טקסט
+עברי ישיר**. שער `rtl-logical` (חלק מ-`pnpm lint`) ירוק באותה ריצה.
+**אפס leak, אפס דריפט, אפס שינוי קוד**, ולכן `compare.mjs` לא נדרש (אין
+שינוי UI). השרת נעצר (SIGINT), הפורט פנוי. שערים: `type-check` 0, `lint`
+0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. M12-c93 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
 
 **M16-c93 - DONE (04.10.2026).** משימת התור: "Verify all product pages
 have JSON-LD Product and BreadcrumbList", זהה ל-M16-c92. `pwd` אומת, עץ
@@ -83,27 +102,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:4531 pnpm build` exit 0 (פורט 3311
 `/api/health` ו-`/api/ready` כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש.
 אפס שינוי קוד. קובץ: `STATE.md`.
 
-**M12-c93 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
-production-safe", זהה ל-M12-c92. `pwd` אומת, עץ נקי, HEAD `b4681f0cd`
-(M11-c93). קוד: הקומיט האחרון על `src/app/robots.ts` עדיין `4d3702025`
-(M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים כולל `/gift/`,
-`/order/`, `/wishlist/s/`, `/debug/`, וה-build הטרי מגיש 16 שורות
-`Disallow`. חי: `https://www.kenyonexpress.co.il/robots.txt` `200`
-`text/plain`, etag `48ebf659...`, sha256 `71b8e862...`, זהים ל-M12-c92,
-12 שורות `Disallow` של גרסת `main` הישנה, `Host:`/`Sitemap:` ל-
-`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-www. `/gift/foo` `200`
-חי בלי `Disallow` (פער ידוע, נסגר רק בפריסת HEAD, חוסם DEPLOY-UNBLOCK);
-`/order/foo`, `/wishlist/s/foo`, `/debug/foo` `404`. אפס דריפט מ-M12-c92.
-**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער נסגר עם ה-deploy. שערים:
-`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
-build` exit 0 (פורט 3311 אומת ב-`lsof`/cwd שהוא הריפו הזה), ה-manifest
-מראה `/robots.txt`. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
-קובץ: `STATE.md`.
-
-M11-c93, M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו
-ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
-ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93), לשמירה על תקרת 300 שורות.
+M12-c93, M11-c93, M10-c93, M09-c93, M07-c93, M06-c93, M05-c93, M04-c93 ו-M03-c93
+הועברו ל-`docs/STATE-ARCHIVE.md` (M04/M03 ב-M11-c93, M06/M05 ב-M12-c93, M09/M07
+ב-M14-c93, M10 ב-M15-c93, M11 ב-M16-c93, M12 ב-M17-c93), לשמירה על תקרת
+300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
