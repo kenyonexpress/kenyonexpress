@@ -1,51 +1,78 @@
-RESUME FROM: L08
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L07 DONE: שער 7
-parity נמדד מול פרודקשן `https://www.kenyonexpress.co.il/` ב-380/768/1440,
-7.91% / 8.98% / 4.09%, שלושתם PASS מתחת ל-11%; תיקון אחד ב-`scripts/compare.mjs`
-כדי שהצד הנמדד לא ייחשב reference לפי hostname; RESUME FROM מצביע ל-L08)
+RESUME FROM: L09
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט L08 BLOCKED: שער 8
+observability נמדד מול פרודקשן; Sentry קיבל שגיאת לקוח ב-ingest אך אין
+טוקן API לאימות, PostHog אינרטי כי `NEXT_PUBLIC_POSTHOG_KEY` חסר
+ב-Production, ו-Resend מחזיר 401 "API key is invalid" לשליחה אמיתית מהשרת
+החי; שלושת התיקונים הם env ב-Vercel, אסור לפריט; RESUME FROM מצביע ל-L09)
 
 ## המשך מ:
 
-**L07 - DONE (05.10.2026, 03:03 מקומי): שער 7 parity מול פרודקשן, שלושת
-הרוחבים PASS.** משימת התור: "Gate 7 parity: run node scripts/compare.mjs
-against https://kenyonexpress.co.il at 380 768 1440; all three must be under
-11 percent; if not fix CSS only against refs/ke_live_singlefile.html and
-Electro v7, redeploy, rerun". `pwd` אומת, HEAD בהגעה `6769b256a`, עץ נקי.
-**נמדד לפני הריצה:** `https://kenyonexpress.co.il/` עונה 308 אל
-`https://www.kenyonexpress.co.il/`, שעונה 200 עם `lang="he" dir="rtl"`.
-**ריצה ראשונה (`LOCAL_BASE=https://www.kenyonexpress.co.il`, `--page=home
---widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`) סורבה ב-380
-עם exit 5** ושורת `REFUSED` בפנקס: `shoot()` גזר את הצד (live/mine) מתוך
-`isExternal(url)`, כלומר לפי hostname, ולכן הצד הנמדד שלנו, שיושב עכשיו על
-`kenyonexpress.co.il`, סווג כ-reference, עבר דרך `enforceReference()` ונדחה
-כ-"our-build". זו מגבלת סקריפט שנכתב כשהצד הימני היה תמיד localhost, לא
-ממצא על האתר. **תיקון (`scripts/compare.mjs`, קוד בלבד, אפס CSS):**
-`shoot(url, out, side)` מקבל את הצד מהקורא (`'live'`/`'mine'`), ושני אתרי
-הקריאה מעבירים אותו במפורש; `isExternal()` נשאר ברירת-מחדל ולשאלה האחת
-שהוא עונה עליה (host ישן או ארכיון). שומר ה-reference, זמן ההתייצבות וכל
-משבצת per-side (`cartEmptiness`, `heroImages`, `pendingImages`,
-`heroStability`, `gridCounts`) נגזרים מהצד ולא מה-hostname. **ריצה שנייה,
-foreground, אותה פקודה: 380 `7.91%` PASS, 768 `8.98%` PASS, 1440 `4.09%`
-PASS, שער 11%**, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`6769b256a-dirty`,
-"live side: frozen capture `refs/ke_live_{width}.png`"; overall 18.26% /
-16% / 15.38%, מהם reference blank 2.77% / 4.31% / 9.88% ו-ours blank 7.58% /
-2.72% / 1.41%). לשם השוואה, המדידה המקומית האחרונה על `e6b6d2073` (04.10)
-הייתה 8.58 / 9.01 / 4.16, כלומר פרודקשן קרוב לבנייה המקומית בתוך פחות
-מנקודה. **אפס שינוי CSS, אפס redeploy נדרש**, הסעיף "if not fix CSS" לא
-הופעל. הערה: `refs/ke_live_singlefile.html` שהמשימה מזכירה אינו קיים בעץ
-(`ls` נכשל), כפי שכבר תועד בהערת `compare.mjs` וב-`docs/PARITY-REFERENCE.md`;
-ה-reference בפועל הוא `refs/ke_live_{380,768,1440}.png` (12.08). שערים,
-כולם תחת `env -u` ל-55 השמות המוזרקים מה-harness (אומת `0` נותרים בסביבת
-הילד): `pnpm type-check` exit 0; `pnpm lint` exit 0 (biome, i18n 627/627,
-docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615
-קבצים, 7342 עברו, 12 דולגו (7354)**, 54.8 שניות; `CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:4851 pnpm build` exit 0, 337 דפים
-סטטיים, `BUILD_ID` `axBWZKHs1b9_ayi4ynprl`. **החלטות שהתקבלו לבד:** (א)
-`LOCAL_BASE` הוצב על `www` ולא על הדומיין החשוף, כי החשוף עונה 308 ו-cookie
-ההסכמה נקבע לפי hostname של `LOCAL`; (ב) התיקון בסקריפט הוא תיקון סיווג
-צד ולא עקיפה של השומר: ריצה עם `--live=` על הדומיין עדיין נדחית כ-our-build.
-L06 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `scripts/compare.mjs`,
-`docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**L08 - BLOCKED (05.10.2026, 23:25 מקומי): שער 8 observability. שלושת
+הרגליים נמדדו מול פרודקשן; אף אחת לא ניתנת לסגירה בלי שינוי env ב-Vercel,
+שאסור לפריט הזה.** משימת התור: "Gate 8 observability: trigger a test error
+on production and confirm it appears in Sentry via API; send a test PostHog
+event from production and confirm via API; send a Resend test email to
+support@kenyonexpress.co.il and confirm delivered status via API". `pwd`
+אומת, HEAD בהגעה `97f54ffaa`, עץ נקי. **Sentry, נשלח אך לא אומת ב-API:**
+ה-Production של `kenyonexpress` מחזיק `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`
+ו-`SENTRY_AUTH_TOKEN` (sensitive, לא נקראים) אבל **לא** את
+`SENTRY_DEBUG_ROUTES`, ולכן זורק השרת `/api/debug/sentry` עונה `404` חי
+(נמדד) והוא סגור בכוונה; פתיחתו היא שינוי env, אסור. ה-bundle המוגש מכיל
+את ה-DSN (org `o4511944582496256`, project `4511946778607696`, אזור `de`),
+ומנהרת `/monitoring` חיה (POST בלי כותרת auth מחזיר את ה-`401 bad envelope
+authentication header` של Sentry עצמו, כלומר הועבר). **נזרקה שגיאת לקוח
+בפועל** מ-Chromium headless על `https://www.kenyonexpress.co.il/` עם המחרוזת
+`Sentry client check: L08-sentry-muu9fhwm`; ה-SDK של הבנייה החיה שלח דרך
+המנהרה ו-ingest ענה `200 {"id":"c32d5f141b38426aac8c48adc20f17a8"}`. זו
+קבלה ב-ingest, לא אישור ב-API: אין `SENTRY_AUTH_TOKEN` קריא בשום מקום
+(ב-Vercel הוא sensitive, אין קובץ מקומי, אין תבנית `sntrys_` בדיסק), ו-MCP
+של Sentry דורש הזדהות שאינה זמינה בסשן הזה. אופיר יכול לאמת לפי מזהה
+האירוע. **PostHog, אין מה לשלוח:** הקוד (`src/lib/observability/posthog.ts`)
+קורא רק `NEXT_PUBLIC_POSTHOG_KEY`, והוא **אינו קיים** ב-Production; קיים שם
+`POSTHOG_API_KEY` שאף קובץ אינו קורא. ב-bundle החי אין מפתח `phc_`, כלומר
+PostHog אינרטי בפרודקשן לפי תכנון, ואין מפתח אישי לשאילתת ה-API ממילא.
+**Resend, נמדד שבור בפרודקשן:** שליחה אמיתית דרך טופס `/contact` החי
+(server action `contact.submit`, אל `support@kenyonexpress.co.il`, מזהה
+`L08-contact-muu9q6qw`) החזירה למשתמש "השליחה נכשלה", ולוג הפרודקשן
+(`vercel logs`, 20:23:25 UTC, `request_id
+95f87a6c-f8a2-436d-8baf-0c37055a771f`) אומר `email.refused` עם
+`status 401 {"message":"API key is invalid"}` מ-Resend. כלומר
+`RESEND_API_KEY` בפרודקשן אינו תקף, ושום מייל (צור קשר, קופון, magic link,
+איפוס סיסמה, outbox) אינו יוצא; מתואם עם 72 שורות `dead` ב-
+`notification_outbox` (נמדד בקריאה בלבד). המפתח המקומי
+(`.env.local.bak`/`.env.local.pre-probe`, זהה) גם הוא `API key is invalid`
+מול `/domains`, ולכן גם אישור `delivered` ב-API של Resend אינו אפשרי.
+עוד נמדד: אין משתמש auth בכתובת `support@` (0 שורות), ולכן גם מסלולי
+magic link ואיפוס סיסמה לא היו שולחים אליה. **תקלת מדידה שתועדה:** ארבע
+הגשות ראשונות לחצו על `button[type=submit]` הראשון בדף, שהוא טופס באנר
+ההסכמה, ולכן ארבעת ה-POST הקודמים ל-`/contact` היו פעולת ההסכמה ולא
+הטופס; שום מייל לא נשלח בהם. תחימה ל-`form:has(textarea[name="message"])`
+תיקנה זאת. Gmail MCP, Sentry MCP ו-Supabase MCP דורשים הזדהות בסשן הזה.
+**החלטות שהתקבלו לבד:** (א) שגיאת לקוח במקום שגיאת שרת, כי שער
+`SENTRY_DEBUG_ROUTES` הוא env; (ב) לא נוצר משתמש `support@` ולא הופעל
+איפוס סיסמה או magic link בפרודקשן; (ג) אפס שינוי env, אפס deploy, אפס
+מחיקה; (ד) מייל בדיקה אחד נוסה בפועל ונכשל אצל Resend, לא אצלנו.
+**לאופיר:** מפתח Resend חדש ב-Vercel Production (ובמקומי); להוסיף
+`NEXT_PUBLIC_POSTHOG_KEY` (ו-`NEXT_PUBLIC_POSTHOG_HOST` אם האזור אינו US)
+ולפרוס מחדש; לפתיחה זמנית של זורקי השרת `SENTRY_DEBUG_ROUTES`; טוקן
+Sentry לקריאה בלבד או הזדהות מחדש ל-MCP. הכל רשום ב-`docs/BACKLOG.md`
+סעיף 9 וסעיפים 20 ו-21. שערים, כולם תחת
+`env -u` ל-56 השמות המוזרקים מה-harness (אומת `0` נותרים; עם 31 שמות בלבד
+נפלו 9 טסטים של `growth/resend` ו-`deployed-runtime` והבנייה על `Invalid
+API key`, שניהם זיהום env ולא קוד): `pnpm type-check` exit 0; `pnpm lint`
+exit 0 פעמיים, השנייה אחרי עריכת המסמכים (docs-index-gate 282,
+docs-path-audit 155 ללא שינוי); `pnpm test` 615/615 קבצים, 7342 עברו, 12
+דולגו (7354), 80 שניות; `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4993 pnpm build` exit 0, `BUILD_ID`
+`8s1_bbxwaYQZLjkoHxQEf`, אותן שורות `supabase.rls_denied` על `reviews`
+(חוסם 3). `compare.mjs` לא נדרש, אפס שינוי UI או קוד.
+L07 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
+
+**L07 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-L08): שער 7 parity נמדד מול פרודקשן ב-380/768/1440, 7.91 / 8.98 / 4.09
+PASS; תיקון אחד ב-`scripts/compare.mjs` (הצד נגזר מהקורא, לא מה-hostname),
+אפס CSS, אפס redeploy.
 
 **L06 - BLOCKED (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
 ב-L07): החלת מיגרציות על פרודקשן דורשת אישור מפורש; `schema_migrations`
@@ -191,9 +218,11 @@ M11-c51..M15-c52) הועברו ל-`docs/STATE-ARCHIVE.md` ב-M14-c53 לשמיר�
    ב-M09-c1 (25.09): הדמו עונה `403 - Forbidden` על `/cart/` ועל `/checkout/`, עם
    seed ובלי, בעוד המוצר נפתח.** הסקריפט כבר יודע לזרוע (`--add-to-cart=2439`)
    והשער כבר מחווט; הפקודות ליום שהדמו יענה ב-`MISSING-ASSETS.md` סעיף 1b.
-6. **`RESEND_API_KEY` בפרודקשן**: השם קיים ב-target Production של הפרויקט
-   (נמדד 25.09, Q24; הערך לא נקרא). בלי ערך תקף כל חמשת המיילים נופלים
-   בשקט ל-`skipped`, ואיפוס סיסמה חוזר ל-SMTP של Supabase.
+6. **`RESEND_API_KEY` בפרודקשן אינו תקף, נמדד.** L08 (05.10): שליחה אמיתית
+   מ-server action חי החזירה מ-Resend `401 API key is invalid`
+   (`email.refused` בלוג הפרודקשן). עד מפתח חדש ב-Vercel Production שום
+   מייל אינו יוצא: צור קשר, קופון, magic link, איפוס סיסמה ו-outbox (72
+   שורות `dead`). ההיסטוריה: השם קיים מ-25.09 (Q24), הערך לא נקרא.
 7. **`SUPABASE_SECRET_KEY` חשוף ודורש רוטציה** (CLAUDE.md, `RUNBOOK`);
    `deploy-preflight` מסרב לבנות איתו, ומ-B01 (25.09) הוא רץ בפועל לפני
    `pnpm build` ב-`vercel.json`. **נמדד ב-M01-c1: הסריקה על סביבת Production

@@ -541,10 +541,19 @@ unchanged. No migration applied, no code change -- verification only.
    `readable-secret` (נמדד M09-c55, `filter_project_envs` בקריאה בלבד).
    נוהל ב-`docs/RUNBOOK.md`. מקור: STATE.md חוסם 7, LAUNCH-READINESS.md
    שורה חוסמת 7.
-9. **`RESEND_API_KEY` בפרודקשן.** השם קיים ב-target Production אך הערך לא
-   נקרא; בלעדיו כל חמשת סוגי המייל נופלים בשקט ל-`skipped` ואיפוס סיסמה
-   חוזר ל-SMTP של Supabase. **לא היה ברשימת הפעולות של STATE.md** (רק
-   ברשימת החוסמים שלו); מקור: STATE.md חוסם 6.
+9. **`RESEND_API_KEY` בפרודקשן אינו תקף, נמדד ב-L08 (05.10.2026).** שליחה
+   אמיתית מטופס `/contact` החי (server action `contact.submit`, אל
+   `support@kenyonexpress.co.il`) הוחזרה מ-Resend עם `401 {"message":"API
+   key is invalid"}`, שורת `email.refused` בלוג הפרודקשן (`vercel logs`,
+   20:23:25 UTC, `request_id 95f87a6c-f8a2-436d-8baf-0c37055a771f`),
+   והמשתמש ראה "השליחה נכשלה". זה לא `skipped` בשקט כפי שנרשם קודם: המפתח
+   קיים ושגוי, ולכן גם צור קשר, קופון, magic link, איפוס סיסמה ו-outbox
+   (72 שורות `dead`) נכשלים. המפתח המקומי ב-`.env.local.bak` נדחה באותה
+   תשובה, כלומר אין מפתח תקף בשום מקום שהסוכן רואה, ואי אפשר לאמת
+   `delivered` ב-API של Resend. **פעולה:** מפתח חדש ב-Resend (חשבון עם
+   הדומיין `kenyonexpress.co.il`), החלפה ב-Vercel Production ובמקומי,
+   ואז `pnpm tsx`-חינם: שליחה אחת מהטופס החי ובדיקת `GET /emails/{id}`.
+   מקור: STATE.md חוסם 6, L08.
 10. **הפעלת R2 בדשבורד Cloudflare.** בלעדיה תמונות המוצר נופלות ל-Supabase
     Storage וגיבויי ה-DB החיצוניים לא נכתבים. מקור: STATE.md חוסם 4,
     LAUNCH-READINESS.md שורה חוסמת 8.
@@ -729,6 +738,35 @@ unchanged. No migration applied, no code change -- verification only.
     מדווח `r2 not_configured` (לא משנה כל עוד R2 לא מופעל, סעיף 4 ב-STATE).
     32 מתוך 42 הערכים הם מסוג `sensitive` ואינם ניתנים לקריאה חזרה על ידי
     אף אחד, כולל דרך ה-API; רק הלוח יכול להחליפם. מקור: STATE.md L04.
+
+20. **PostHog אינרטי בפרודקשן: `NEXT_PUBLIC_POSTHOG_KEY` חסר** (נמדד
+    05.10.2026, L08, `filter_project_envs` קריאה בלבד + grep על ה-bundle
+    החי). הקוד (`src/lib/observability/posthog.ts`,
+    `src/components/analytics/PostHogReplay.tsx`) קורא רק
+    `NEXT_PUBLIC_POSTHOG_KEY` ו-`NEXT_PUBLIC_POSTHOG_HOST`; ב-Production
+    קיים `POSTHOG_API_KEY` שאף קובץ אינו קורא (חמישי לרשימת סעיף 19), ואין
+    מפתח `phc_` ב-JS המוגש. לכן אף אירוע, כולל `purchase` מהשרת, לא מגיע
+    ל-PostHog, ושער 8 לא יכול לשלוח אירוע בדיקה. **פעולה:** להוסיף
+    `NEXT_PUBLIC_POSTHOG_KEY` (ו-`NEXT_PUBLIC_POSTHOG_HOST` אם הפרויקט
+    באזור EU) ל-Production ולפרוס מחדש (נאפה בזמן build), ולהסיר את
+    `POSTHOG_API_KEY` או לתת לו קורא. אימות ב-API דורש מפתח אישי (`phx_`)
+    שאינו קיים בשום מקום שהסוכן רואה. מקור: L08.
+
+21. **אימות Sentry מקצה לקצה דורש שני דברים שאין לסוכן** (נמדד 05.10.2026,
+    L08). (א) זורקי השרת `/api/debug/sentry`, `/debug/sentry/render` והטופס
+    ב-`/debug/sentry` סגורים כי `SENTRY_DEBUG_ROUTES` אינו מוגדר ב-Production
+    (עונים `404`, לפי תכנון; ראו `src/lib/observability/debug-error-gate.ts`),
+    ולכן נמדד רק מסלול הלקוח: שגיאה שנזרקה מ-Chromium על הדף החי עברה
+    במנהרת `/monitoring` ו-ingest של Sentry החזיר `{"id":
+    "c32d5f141b38426aac8c48adc20f17a8"}` (מחרוזת
+    `Sentry client check: L08-sentry-muu9fhwm`, release = commit של הפריסה).
+    (ב) אין טוקן API של Sentry קריא (`SENTRY_AUTH_TOKEN` ב-Vercel הוא
+    sensitive, אין קובץ מקומי) ו-MCP של Sentry דורש הזדהות מחדש, ולכן
+    "appears in Sentry via API" לא נבדק. **פעולה:** לאמת את מזהה האירוע
+    בלוח (`kenyonexpress` / `kenyonexpress-web`, `de.sentry.io`); לפתוח
+    `SENTRY_DEBUG_ROUTES=i-know-what-this-does` לדקה ולסגור, כדי למדוד גם
+    `route`/`render`/`action`; ולהזדהות מחדש ל-MCP של Sentry או לתת לסוכן
+    טוקן קריאה בלבד (`event:read`, `project:read`). מקור: L08.
 
 ## מה לא ברשימה, ולמה
 

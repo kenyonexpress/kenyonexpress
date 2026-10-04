@@ -2,6 +2,49 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## L07 (הועבר מ-STATE.md ב-L08, לשמירה על תקרת 300 שורות)
+
+**L07 - DONE (05.10.2026, 03:03 מקומי): שער 7 parity מול פרודקשן, שלושת
+הרוחבים PASS.** משימת התור: "Gate 7 parity: run node scripts/compare.mjs
+against https://kenyonexpress.co.il at 380 768 1440; all three must be under
+11 percent; if not fix CSS only against refs/ke_live_singlefile.html and
+Electro v7, redeploy, rerun". `pwd` אומת, HEAD בהגעה `6769b256a`, עץ נקי.
+**נמדד לפני הריצה:** `https://kenyonexpress.co.il/` עונה 308 אל
+`https://www.kenyonexpress.co.il/`, שעונה 200 עם `lang="he" dir="rtl"`.
+**ריצה ראשונה (`LOCAL_BASE=https://www.kenyonexpress.co.il`, `--page=home
+--widths=380,768,1440 --baseline='refs/ke_live_{width}.png'`) סורבה ב-380
+עם exit 5** ושורת `REFUSED` בפנקס: `shoot()` גזר את הצד (live/mine) מתוך
+`isExternal(url)`, כלומר לפי hostname, ולכן הצד הנמדד שלנו, שיושב עכשיו על
+`kenyonexpress.co.il`, סווג כ-reference, עבר דרך `enforceReference()` ונדחה
+כ-"our-build". זו מגבלת סקריפט שנכתב כשהצד הימני היה תמיד localhost, לא
+ממצא על האתר. **תיקון (`scripts/compare.mjs`, קוד בלבד, אפס CSS):**
+`shoot(url, out, side)` מקבל את הצד מהקורא (`'live'`/`'mine'`), ושני אתרי
+הקריאה מעבירים אותו במפורש; `isExternal()` נשאר ברירת-מחדל ולשאלה האחת
+שהוא עונה עליה (host ישן או ארכיון). שומר ה-reference, זמן ההתייצבות וכל
+משבצת per-side (`cartEmptiness`, `heroImages`, `pendingImages`,
+`heroStability`, `gridCounts`) נגזרים מהצד ולא מה-hostname. **ריצה שנייה,
+foreground, אותה פקודה: 380 `7.91%` PASS, 768 `8.98%` PASS, 1440 `4.09%`
+PASS, שער 11%**, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`6769b256a-dirty`,
+"live side: frozen capture `refs/ke_live_{width}.png`"; overall 18.26% /
+16% / 15.38%, מהם reference blank 2.77% / 4.31% / 9.88% ו-ours blank 7.58% /
+2.72% / 1.41%). לשם השוואה, המדידה המקומית האחרונה על `e6b6d2073` (04.10)
+הייתה 8.58 / 9.01 / 4.16, כלומר פרודקשן קרוב לבנייה המקומית בתוך פחות
+מנקודה. **אפס שינוי CSS, אפס redeploy נדרש**, הסעיף "if not fix CSS" לא
+הופעל. הערה: `refs/ke_live_singlefile.html` שהמשימה מזכירה אינו קיים בעץ
+(`ls` נכשל), כפי שכבר תועד בהערת `compare.mjs` וב-`docs/PARITY-REFERENCE.md`;
+ה-reference בפועל הוא `refs/ke_live_{380,768,1440}.png` (12.08). שערים,
+כולם תחת `env -u` ל-55 השמות המוזרקים מה-harness (אומת `0` נותרים בסביבת
+הילד): `pnpm type-check` exit 0; `pnpm lint` exit 0 (biome, i18n 627/627,
+docs-index-gate 282, docs-path-audit 155 ללא שינוי); `pnpm test` **615/615
+קבצים, 7342 עברו, 12 דולגו (7354)**, 54.8 שניות; `CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4851 pnpm build` exit 0, 337 דפים
+סטטיים, `BUILD_ID` `axBWZKHs1b9_ayi4ynprl`. **החלטות שהתקבלו לבד:** (א)
+`LOCAL_BASE` הוצב על `www` ולא על הדומיין החשוף, כי החשוף עונה 308 ו-cookie
+ההסכמה נקבע לפי hostname של `LOCAL`; (ב) התיקון בסקריפט הוא תיקון סיווג
+צד ולא עקיפה של השומר: ריצה עם `--live=` על הדומיין עדיין נדחית כ-our-build.
+L06 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `scripts/compare.mjs`,
+`docs/UI-PARITY-REPORT.md`, `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## L06 (הועבר מ-STATE.md ב-L07, לשמירה על תקרת 300 שורות)
 
 **L06 - BLOCKED (05.10.2026, 02:51 מקומי): החלת מיגרציות על פרודקשן דורשת
