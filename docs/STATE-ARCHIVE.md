@@ -2,6 +2,25 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M10-c92 (הועבר מ-STATE.md ב-M11-c92, לשמירה על תקרת 300 שורות)
+
+**M10-c92 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
+applied or file blocker", זהה ל-M10-c91. `pwd` אומת, עץ נקי, HEAD
+`1230b1ebb` (M09-c92). `git log -1 -- migrations/pending` עדיין
+`48c8792dd` (248), אפס קובץ חדש מאז M10-c91 (62 רשומות בתיקייה). בדיקה
+ישירה מול פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה בלבד, אפס
+DDL): **0 מ-13 הטבלאות** של 204/232/234/235/236/239/240/244; **0 מ-11
+העמודות** של 223/232/242/243; `anon` בלי SELECT על `reviews` (247); 0
+מדיניות `*_unified` על `banners` (245); 82 שורות `products` עם `city IS
+NULL` (241). זהה בדיוק ל-M10-c91. **החוסם כבר רשום** (חוסם 3 למטה,
+`docs/BACKLOG.md` סעיף 5, `docs/RUNBOOK.md`), לא הוחלה אף מיגרציה.
+**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול. שערים: `type-check` 0, `lint`
+0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`
+exit 0 (337/337). לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
+M09-c92 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`.
+
 ## M09-c92 (הועבר מ-STATE.md ב-M10-c92, לשמירה על תקרת 300 שורות)
 
 **M09-c92 - DONE (04.10.2026).** משימת התור: "Remove unused deps and

@@ -1,23 +1,24 @@
-RESUME FROM: M11-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M10-c92 DONE: 19 קבצי pending החוסמים עדיין לא הוחלו בפרודקשן, אפס דריפט)
+RESUME FROM: M12-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M11-c92 DONE: sitemap.xml חי 200 עם 79 `<loc>`, תתי-המפות 404 עד ה-deploy, אפס דריפט)
 
 ## המשך מ:
 
-**M10-c92 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
-applied or file blocker", זהה ל-M10-c91. `pwd` אומת, עץ נקי, HEAD
-`1230b1ebb` (M09-c92). `git log -1 -- migrations/pending` עדיין
-`48c8792dd` (248), אפס קובץ חדש מאז M10-c91 (62 רשומות בתיקייה). בדיקה
-ישירה מול פרודקשן (CLI-keychain-token, `SELECT` יחיד, קריאה בלבד, אפס
-DDL): **0 מ-13 הטבלאות** של 204/232/234/235/236/239/240/244; **0 מ-11
-העמודות** של 223/232/242/243; `anon` בלי SELECT על `reviews` (247); 0
-מדיניות `*_unified` על `banners` (245); 82 שורות `products` עם `city IS
-NULL` (241). זהה בדיוק ל-M10-c91. **החוסם כבר רשום** (חוסם 3 למטה,
-`docs/BACKLOG.md` סעיף 5, `docs/RUNBOOK.md`), לא הוחלה אף מיגרציה.
-**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול. שערים: `type-check` 0, `lint`
-0, `test` 615/615 (7340/7352, 12 דולגו), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517 pnpm build`
-exit 0 (337/337). לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
-M09-c92 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
+**M11-c92 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
+and reachable", זהה ל-M11-c91. `pwd` אומת, עץ נקי, HEAD `cb8baacf6`
+(M10-c92). קוד: הקומיט האחרון על `src/app/sitemap*` עדיין `d1adea146`
+(09.09), אפס שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml`
+`200` `application/xml`, `urlset` שטוח, well-formed (`xmllint`), 79
+`<loc>`, etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT, זהים
+ל-M11-c91; ה-apex עונה `308` ל-www. חמשת תתי-המפות (`/sitemap/{content,
+suppliers,regions,categories,products}.xml`) `404` בפרודקשן, כי הוא מגיש
+את `main@18ed044b2` (חוסם DEPLOY-UNBLOCK למטה, ללא שינוי). `robots.txt`
+החי מצביע ל-`https://kenyonexpress.co.il/sitemap.xml`. אפס דריפט.
+**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול; תתי-המפות יעלו עם ה-deploy.
+שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4517
+pnpm build` exit 0 (337/337), ה-manifest מראה `/sitemap.xml` וחמשת
+תתי-המפות כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
+M10-c92 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
