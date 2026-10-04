@@ -2,6 +2,29 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M17-c94 (הועבר מ-STATE.md ב-M18-c94, לשמירה על תקרת 300 שורות)
+
+**M17-c94 - DONE (04.10.2026).** משימת התור: "Verify RTL on / and
+/product sample no LTR leaks", זהה ל-M17-c93. `pwd` אומת, עץ נקי, HEAD
+`79fce7af2` (M16-c94). קוד: `git diff --stat 98debe39b..HEAD -- src apps
+packages next.config.ts` (בסיס: checkpoint M17-c93) **ריק**, אפס שינוי
+מאז M17-c93. בזמן ריצה: `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4994 pnpm build` exit 0, `pnpm
+start -p 4994` (cwd המאזין אומת ב-`lsof`, הריפו הזה). בדיקת Playwright
+על `/` ושלושת סלאגי הדגימה הקודמים
+(`samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g`, `חבילת-גלידה`,
+`חיתולי-האגיס`, כל השלושה אושרו קיימים ב-`supabase/catalogue-snapshot.json`
+לפני הריצה) ב-380/768/1440, 12 טעינות, כולן 200: `<html lang="he"
+dir="rtl">`, `body` מחושב `rtl`, `scrollWidth` שווה ל-`clientWidth`
+בכולן (אפס גלילה צידית), ואפס אלמנט גלוי עם `direction: ltr` מחושב
+שמחזיק טקסט עברי ישיר. שער `rtl-logical` (חלק מ-`pnpm lint`) ירוק
+באותה ריצה. **אפס leak, אפס דריפט, אפס שינוי קוד**, ולכן `compare.mjs`
+לא נדרש (אין שינוי UI). השרת נעצר (SIGINT), הפורט אומת פנוי. שערים:
+`type-check` 0, `lint` 0 (biome + 12 שערי סקריפט), `test` **615/615
+קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט, `build` exit 0 (למעלה).
+M15-c94 הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M15-c94 (הועבר מ-STATE.md ב-M17-c94, לשמירה על תקרת 300 שורות)
 
 **M15-c94 - DONE (04.10.2026).** משימת התור: "Verify no console errors
