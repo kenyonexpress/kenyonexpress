@@ -1,50 +1,35 @@
-RESUME FROM: M13-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c94 DONE: robots.txt חי אומת שוב, אפס דריפט מ-M12-c93)
+RESUME FROM: M14-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c94 DONE: /api/health ו-/api/ready חיים אומתו שוב, אפס דריפט מ-M13-c93)
 
 ## המשך מ:
 
-**M12-c94 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
-production-safe", זהה במהות ל-M12-c93. `pwd` אומת, עץ נקי, HEAD
-`860bc01df` (M11-c94). קוד: הקומיט האחרון על `src/app/robots.ts` עדיין
-`4d3702025` (M12-c67), `git diff --stat 0ca3d4bd5 HEAD -- src/app/robots.ts
-public next.config.ts package.json` ריק — אפס שינוי קוד מאז M12-c93.
-חי: `https://www.kenyonexpress.co.il/robots.txt` `200` `text/plain`,
-etag `48ebf659...`, sha256 `71b8e862...`, זהים ביט ל-M12-c93, 12 שורות
-`Disallow` של גרסת `main` הישנה (גרסת HEAD מכילה 16), `Host:`/`Sitemap:`
-ל-`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-www. `/gift/foo`
-חי `200` בלי `Disallow` (פער ידוע, נסגר רק עם פריסת HEAD, חוסם
-DEPLOY-UNBLOCK); `/order/foo`, `/wishlist/s/foo`, `/debug/foo` `404`.
-אפס דריפט מ-M12-c93. **החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער
-נסגר עם ה-deploy, כבר מתועד ב"חוסמים פתוחים" סעיף 2. שערים: `pnpm
-type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט) נקי; `pnpm test`
-**615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט ל-M11-c94; פורט
-3311 תפוס על ידי סשן מקביל אחר (`lsof`/cwd אישר שהוא הריפו הזה אך
-תהליך אחר, לא לנגיעה), נבחר פורט חלופי 4729 (פנוי), `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4729 pnpm
-build` exit 0, המניפסט מראה `/robots.txt` כ-`○` סטטי. לא פריט חזותי,
-`compare.mjs` לא נדרש (תקדים מ-M12-c92 ואילך). אפס שינוי קוד. M08-c94
-הועבר ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים:
-`STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M13-c94 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps", זהה ל-M13-c93. `pwd` אומת, עץ נקי,
+HEAD `60673bb74` (M12-c94). קוד: `git diff --stat 0ca3d4bd5..HEAD --
+src/app/api/health src/app/api/ready src/lib/health docs/BACKLOG.md`
+נוגע רק ב-`docs/BACKLOG.md` (17 שורות), אפס שינוי בקוד עצמו; הקומיט
+האחרון על שלושת הנתיבים עדיין `64728ff8d` (02.09). חי, מול
+`www.kenyonexpress.co.il`: `/api/health` `200` `application/json`
+`{"ok":true,"database":"ok","latency_ms":247}`, תלות DB אמיתית.
+`/api/ready` `503`
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
+זהה ביט ל-M13-c93: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
+חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. "200 על ready" לא
+מתקיים, והסיבה חיצונית ומתועדת, לא באג קוד. אפס דריפט מ-M13-c93.
+**החלטה שהתקבלה לבד:** DONE כאימות, לא BLOCKED, כמו M13-c77..c93; לא
+נפתח חוסם כפול. שערים: `type-check` נקי; `lint` (biome + 12 שערי
+סקריפט) נקי; `test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה
+ביט לכל סבב קודם; פורט 3311 תפוס על ידי סשן מקביל אחר (`lsof` אישר
+שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט חלופי 4830 (פנוי),
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4830
+pnpm build` exit 0, המניפסט מראה `/api/health` ו-`/api/ready` כ-`ƒ`.
+לא פריט חזותי, `compare.mjs` לא נדרש (תקדים מ-M13-c75 ואילך). אפס
+שינוי קוד. M12-c94 ו-M11-c94 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
-**M11-c94 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
-and reachable", זהה במהות ל-M11-c93. `pwd` אומת, עץ נקי, HEAD `753415981`
-(M10-c94). קוד: הקומיט האחרון על `src/app/sitemap*` עדיין `d1adea146`
-(09.09), אפס שינוי. חי: `https://www.kenyonexpress.co.il/sitemap.xml`
-`200` `application/xml`, well-formed (`xmllint --noout`), **79** `<loc>`,
-etag `427ac6d9...` ו-last-modified 02.10 07:02 GMT — זהים ביט ל-M11-c93.
-ה-apex `kenyonexpress.co.il` עונה `308` ל-`www`. `robots.txt` החי מצביע
-ל-`https://kenyonexpress.co.il/sitemap.xml`. חמשת תתי-המפות
-(`/sitemap/{content,suppliers,regions,categories,products}.xml`) עדיין
-`404` בפרודקשן — כי הוא מגיש את `main@18ed044b2` הישן (חוסם
-DEPLOY-UNBLOCK למטה, ללא שינוי). **אפס דריפט מ-M11-c93.** שערים:
-`pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי סקריפט) נקי; `pnpm
-test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט ל-M10-c94;
-פורט 3311 תפוס על ידי סשן מקביל אחר (`lsof`/cwd אישר שהוא הריפו הזה אך
-תהליך אחר, לא לנגיעה), נבחר פורט חלופי 4728 (פנוי). `rm -rf .next &&
-CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4728 pnpm
-build` exit 0 (`.next/BUILD_ID` נוצר), ה-manifest מראה `/sitemap.xml`
-וחמשת תתי-המפות כ-`ƒ`. לא פריט חזותי, `compare.mjs` לא נדרש (תקדים
-מ-M11-c92 ואילך). אפס שינוי קוד. קובץ: `STATE.md`.
+**M12-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
+(הועבר ב-M13-c94): robots.txt חי אומת שוב, אפס דריפט מ-M12-c93, כל
+ארבעת השערים ירוקים.
 
 **M09-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M12-c94): unused deps/dead exports נבדקו שוב עם knip, זהה
@@ -114,6 +99,7 @@ M02-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M08-c94.
 M05-c94 ו-M07-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M10-c94.
 M06-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M11-c94.
 M08-c94 ו-M09-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M12-c94.
+M11-c94 ו-M12-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M13-c94.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel
