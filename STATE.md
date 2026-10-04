@@ -1,31 +1,46 @@
-RESUME FROM: M14-c94
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M13-c94 DONE: /api/health ו-/api/ready חיים אומתו שוב, אפס דריפט מ-M13-c93)
+RESUME FROM: M15-c94
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M14-c94 DONE: Sentry release עדיין לא תואם HEAD, אך משתני Cardcom שהיו חוסמים את ה-preflight נוספו ל-Production על ידי סשן מקביל)
 
 ## המשך מ:
 
-**M13-c94 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
-/api/ready return 200 with real deps", זהה ל-M13-c93. `pwd` אומת, עץ נקי,
-HEAD `60673bb74` (M12-c94). קוד: `git diff --stat 0ca3d4bd5..HEAD --
-src/app/api/health src/app/api/ready src/lib/health docs/BACKLOG.md`
-נוגע רק ב-`docs/BACKLOG.md` (17 שורות), אפס שינוי בקוד עצמו; הקומיט
-האחרון על שלושת הנתיבים עדיין `64728ff8d` (02.09). חי, מול
-`www.kenyonexpress.co.il`: `/api/health` `200` `application/json`
-`{"ok":true,"database":"ok","latency_ms":247}`, תלות DB אמיתית.
-`/api/ready` `503`
-`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
-זהה ביט ל-M13-c93: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
-חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. "200 על ready" לא
-מתקיים, והסיבה חיצונית ומתועדת, לא באג קוד. אפס דריפט מ-M13-c93.
-**החלטה שהתקבלה לבד:** DONE כאימות, לא BLOCKED, כמו M13-c77..c93; לא
-נפתח חוסם כפול. שערים: `type-check` נקי; `lint` (biome + 12 שערי
-סקריפט) נקי; `test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה
-ביט לכל סבב קודם; פורט 3311 תפוס על ידי סשן מקביל אחר (`lsof` אישר
-שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט חלופי 4830 (פנוי),
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4830
-pnpm build` exit 0, המניפסט מראה `/api/health` ו-`/api/ready` כ-`ƒ`.
-לא פריט חזותי, `compare.mjs` לא נדרש (תקדים מ-M13-c75 ואילך). אפס
-שינוי קוד. M12-c94 ו-M11-c94 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה
-על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M14-c94 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", זהה ל-M14-c93. `pwd` אומת, עץ נקי, HEAD
+`e0f554276`. קוד: release מוגדר ב-`sentry.server.config.ts`/
+`sentry.edge.config.ts` כ-`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA`
+וב-`instrumentation-client.ts` כ-`NEXT_PUBLIC_SENTRY_RELEASE ??
+NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, אפס שינוי מאז `87a459403` (10.09).
+**לא אפס דריפט בסביבה, בניגוד ל-M14-c89..c93:** בין M13-c94 לכאן רץ
+סשן מקביל (commits ריקים `8b914b3a1`/`83849e5e0`, "Claude Haiku"/
+"Claude Opus 4.7", session אחר) שהוסיף בפועל ב-Production את שלושת
+משתני Cardcom שהיו חסרים — `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+`CARDCOM_API_PASSWORD` — ועוד `CARDCOM_SANDBOX` (ערכים לא פוענחו, לפי
+הכלל). Vercel MCP (זמין בסשן הזה, read-only): פריסת production READY
+עדיין `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2` ("Wave 6:
+build success"), ללא שינוי. ניסיון פריסה חדש אחד נכשל בינתיים —
+`dpl_5XpwmnFmmqFYbMnVcjwuCyRSuWz8`, `audit/final-audit@f9e806b3f`
+(M07-c94), `ERROR`, `errorStep=buildStep`, `errorCode=ENOENT`, אותה
+סיבת preflight בדיוק — אך הפריסה הזו קדמה בזמן להוספת המשתנים (לפי
+`createdAt`). **לא רץ ניסיון פריסה חדש אחרי ההוספה**:
+`list_deployments(since=<זמן יצירת CARDCOM_SANDBOX>)` מחזיר 0 תוצאות.
+`ALLOW_INCOMPLETE_ENV` עדיין קיים ב-Production (ערך לא נקרא).
+`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` ללא שינוי מ-M14-c66. **תשובה
+לשאלת התור: לא, ה-release שבפרודקשן אינו HEAD** — עדיין `18ed044b2`.
+`git rev-list --count 18ed044b2..HEAD` = **1144** (היה 1123 ב-M14-c93),
+`HEAD..18ed044b2` = 109 ללא שינוי. אותו חוסם (DEPLOY-UNBLOCK למעלה,
+סעיף 17 ב-`docs/BACKLOG.md`), אך עם מידע חדש: אם תופעל פריסה נוספת
+מ-`audit/final-audit` כרגע, שלושת משתני Cardcom שהיו חוסמים את
+ה-preflight לא יחסמו יותר (בהנחה ש-`CARDCOM_SANDBOX` אינו `"true"`);
+לא נבדק בפועל, ולא בוצעה שום פריסה או שינוי env על ידי הסוכן הזה
+(אסור לפי כללי הפריט). **החלטות שהתקבלו לבד:** (א) DONE כאימות ולא
+BLOCKED, כמו M14-c89..c93; לא נפתח חוסם כפול. (ב) סשן מקביל שני על
+הריפו הזה תועד כעובדה ולא כעצירה (תואם זיכרון `parallel-claude-sessions`;
+פעולותיו היו רק על Vercel דרך MCP, לא על קבצי הריפו, ושתי ה-commits
+שלו ריקות). שערים: `type-check` 0; `lint` 0 (biome + 12 שערי סקריפט);
+`test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט; `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4951
+pnpm build` exit 0. לא פריט חזותי, `compare.mjs` לא נדרש. M13-c94 הועבר
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/BACKLOG.md`.
 
 **M12-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M13-c94): robots.txt חי אומת שוב, אפס דריפט מ-M12-c93, כל
@@ -100,6 +115,7 @@ M05-c94 ו-M07-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M10-c94.
 M06-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M11-c94.
 M08-c94 ו-M09-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M12-c94.
 M11-c94 ו-M12-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M13-c94.
+M13-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M14-c94.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

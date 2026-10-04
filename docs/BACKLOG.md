@@ -670,6 +670,19 @@ unchanged. No migration applied, no code change -- verification only.
     ב-preflight) או לתקן את ה-preflight כדי שפריסה מהענף הנכון תצליח —
     production כרגע מריץ קוד ישן בלי 855 הקומיטים של העבודה המתועדת
     בתור הזה.
+    **נמדד שוב ב-04.10.2026, M14-c94**: `dpl_2zzvvFGMoS5icgrgL94er8USKwsj`
+    (`main@18ed044b2`) עדיין ה-production READY, ללא שינוי. בין M13-c94
+    לM14-c94 הוסיף סשן מקביל (commits ריקים `8b914b3a1`/`83849e5e0`)
+    ל-Production בפועל את שלושת משתני Cardcom שהיו חוסמים את
+    ה-deploy-preflight — `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+    `CARDCOM_API_PASSWORD` — ועוד `CARDCOM_SANDBOX` (ערכים לא פוענחו).
+    ניסיון פריסה אחד בינתיים (`dpl_5XpwmnFmmqFYbMnVcjwuCyRSuWz8`,
+    `audit/final-audit@f9e806b3f`) עדיין נכשל, אבל קדם בזמן להוספה;
+    `list_deployments` מאז ההוספה מחזיר אפס תוצאות — אף פריסה חדשה לא
+    רצה לבדוק אם ה-preflight עובר עכשיו. `ALLOW_INCOMPLETE_ENV` עדיין
+    קיים ב-Production. גם ה-release גם הגומה הזו ממתינים לפריסה חדשה
+    מ-`audit/final-audit`; פעולה של אופיר, לא של הסוכן (push לפרודקשן
+    אסור לפי כללי הפריט).
 18. **`scripts/compare.mjs` נותן PASS נמוך-כוזב כש"שלנו" ריק, לא FAIL גבוה.**
     נמדד 01.10.2026, M01-c67: שרת `pnpm start` ישן על פורט 3311 המשיך
     לרוץ אחרי ש-`.next` נבנה מחדש על ידו (או סשן מקביל), כך שה-HTML שהוא

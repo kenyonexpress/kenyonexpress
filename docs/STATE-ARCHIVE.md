@@ -2,6 +2,32 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M13-c94 (הועבר מ-STATE.md ב-M14-c94, לשמירה על תקרת 300 שורות)
+
+**M13-c94 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps", זהה ל-M13-c93. `pwd` אומת, עץ נקי,
+HEAD `60673bb74` (M12-c94). קוד: `git diff --stat 0ca3d4bd5..HEAD --
+src/app/api/health src/app/api/ready src/lib/health docs/BACKLOG.md`
+נוגע רק ב-`docs/BACKLOG.md` (17 שורות), אפס שינוי בקוד עצמו; הקומיט
+האחרון על שלושת הנתיבים עדיין `64728ff8d` (02.09). חי, מול
+`www.kenyonexpress.co.il`: `/api/health` `200` `application/json`
+`{"ok":true,"database":"ok","latency_ms":247}`, תלות DB אמיתית.
+`/api/ready` `503`
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
+זהה ביט ל-M13-c93: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
+חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. "200 על ready" לא
+מתקיים, והסיבה חיצונית ומתועדת, לא באג קוד. אפס דריפט מ-M13-c93.
+**החלטה שהתקבלה לבד:** DONE כאימות, לא BLOCKED, כמו M13-c77..c93; לא
+נפתח חוסם כפול. שערים: `type-check` נקי; `lint` (biome + 12 שערי
+סקריפט) נקי; `test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה
+ביט לכל סבב קודם; פורט 3311 תפוס על ידי סשן מקביל אחר (`lsof` אישר
+שהוא הריפו הזה אך תהליך אחר, לא לנגיעה), נבחר פורט חלופי 4830 (פנוי),
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4830
+pnpm build` exit 0, המניפסט מראה `/api/health` ו-`/api/ready` כ-`ƒ`.
+לא פריט חזותי, `compare.mjs` לא נדרש (תקדים מ-M13-c75 ואילך). אפס
+שינוי קוד. M12-c94 ו-M11-c94 הועברו ל-`docs/STATE-ARCHIVE.md` לשמירה
+על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M12-c94 (הועבר מ-STATE.md ב-M13-c94, לשמירה על תקרת 300 שורות)
 
 **M12-c94 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
