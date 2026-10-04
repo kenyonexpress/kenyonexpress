@@ -1,7 +1,25 @@
-RESUME FROM: M12-c93
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M11-c93 DONE: sitemap.xml חי, well-formed, 79 כתובות, אפס דריפט)
+RESUME FROM: M13-c93
+Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M12-c93 DONE: robots.txt חי, production-safe, אפס דריפט)
 
 ## המשך מ:
+
+**M12-c93 - DONE (04.10.2026).** משימת התור: "Verify robots.txt
+production-safe", זהה ל-M12-c92. `pwd` אומת, עץ נקי, HEAD `b4681f0cd`
+(M11-c93). קוד: הקומיט האחרון על `src/app/robots.ts` עדיין `4d3702025`
+(M12-c67), אפס שינוי; ה-`disallow` בקוד מכסה 16 נתיבים כולל `/gift/`,
+`/order/`, `/wishlist/s/`, `/debug/`, וה-build הטרי מגיש 16 שורות
+`Disallow`. חי: `https://www.kenyonexpress.co.il/robots.txt` `200`
+`text/plain`, etag `48ebf659...`, sha256 `71b8e862...`, זהים ל-M12-c92,
+12 שורות `Disallow` של גרסת `main` הישנה, `Host:`/`Sitemap:` ל-
+`https://kenyonexpress.co.il`; ה-apex עונה `308` ל-www. `/gift/foo` `200`
+חי בלי `Disallow` (פער ידוע, נסגר רק בפריסת HEAD, חוסם DEPLOY-UNBLOCK);
+`/order/foo`, `/wishlist/s/foo`, `/debug/foo` `404`. אפס דריפט מ-M12-c92.
+**החלטה שהתקבלה לבד:** לא נפתח חוסם כפול, הפער נסגר עם ה-deploy. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו),
+`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311 pnpm
+build` exit 0 (פורט 3311 אומת ב-`lsof`/cwd שהוא הריפו הזה), ה-manifest
+מראה `/robots.txt`. לא פריט חזותי, `compare.mjs` לא נדרש. אפס שינוי קוד.
+קובץ: `STATE.md`.
 
 **M11-c93 - DONE (04.10.2026).** משימת התור: "Verify sitemap.xml fresh
 and reachable", זהה ל-M11-c92. `pwd` אומת, עץ נקי, HEAD `9eb5c341e`
@@ -79,32 +97,8 @@ pnpm build` exit 0 (פורט 3311 כבר מאזין מריצה קודמת, `cwd`
 3311 אומת ב-`lsof`/cwd שהוא הריפו הזה) exit 0. אין שינוי קוד ולכן אין
 שינוי UI ו-`compare.mjs` לא נדרש. קובץ: `STATE.md`.
 
-**M06-c93 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
-commit", זהה במהות ל-M06-c92. `pwd` אומת, עץ נקי, HEAD `19ade0fde`.
-`git diff cd3c5ca4c HEAD -- src public next.config.* package.json` ריק
-(אפס שינוי קוד מאז M06-c92) — אין דריפט לתקן. פורט 3311 כבר מאזין
-מריצה קודמת (cwd אומת ב-`lsof`: הריפו הזה). ארבעת השערים רצו: `pnpm
-build` (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311`)
-exit 0, הרצה כפולה לאישור הקוד; `pnpm type-check` נקי; `pnpm lint`
-(biome + 12 שערי סקריפט) נקי; `pnpm test` 615/615 קבצים, 7340 עברו, 12
-דולגו (7352), זהה ביט ל-M06-c92. אפס שינוי קוד, לכן אין שינוי UI
-ו-`compare.mjs` לא נדרש. `STATE.md` עדיין מתחת לתקרת 300 השורות, אין
-ארכוב נדרש. קובץ: `STATE.md`.
-
-**M05-c93 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
-commit", זהה במהות ל-M05-c92. `pwd` אומת, עץ נקי, HEAD `6695cc57b`.
-`git diff 6d02d0b50 HEAD -- src public next.config.* package.json` ריק
-(אפס שינוי קוד מאז M05-c92) — אין דריפט לתקן. ארבעת השערים רצו: `pnpm
-test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס כשלונות, זהה
-ביט ל-M05-c92; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי
-סקריפט) נקי; `pnpm build` (`CARDCOM_USE_MOCK=true
-NEXT_PUBLIC_APP_URL=http://localhost:3311`, פורט 3311 כבר מאזין מריצה
-קודמת, `cwd` אומת ב-`lsof` שהוא הריפו הזה) exit 0. אפס שינוי קוד, לכן
-אין שינוי UI ו-`compare.mjs` לא נדרש. `STATE.md` עדיין מתחת לתקרת 300
-השורות, אין ארכוב נדרש בפריט הזה. קובץ: `STATE.md`.
-
-M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M11-c93 (ראו למעלה),
-לשמירה על תקרת 300 שורות.
+M06-c93, M05-c93, M04-c93 ו-M03-c93 הועברו ל-`docs/STATE-ARCHIVE.md`
+(M04/M03 ב-M11-c93, M06/M05 ב-M12-c93), לשמירה על תקרת 300 שורות.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

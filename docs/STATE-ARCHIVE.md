@@ -44816,3 +44816,29 @@ pnpm build` (exit 0), `pnpm start -p 4983` (cwd המאזין אומת ב-`lsof`)
 `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build`
 exit 0. לא חזותי, `compare.mjs` לא נדרש. M15-c92 הועבר
 ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M06-c93, M05-c93 (הועברו מ-STATE.md ב-M12-c93, לשמירה על תקרת 300 שורות)
+
+**M06-c93 - DONE (04.10.2026).** משימת התור: "pnpm build fix drift
+commit", זהה במהות ל-M06-c92. `pwd` אומת, עץ נקי, HEAD `19ade0fde`.
+`git diff cd3c5ca4c HEAD -- src public next.config.* package.json` ריק
+(אפס שינוי קוד מאז M06-c92) — אין דריפט לתקן. פורט 3311 כבר מאזין
+מריצה קודמת (cwd אומת ב-`lsof`: הריפו הזה). ארבעת השערים רצו: `pnpm
+build` (`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:3311`)
+exit 0, הרצה כפולה לאישור הקוד; `pnpm type-check` נקי; `pnpm lint`
+(biome + 12 שערי סקריפט) נקי; `pnpm test` 615/615 קבצים, 7340 עברו, 12
+דולגו (7352), זהה ביט ל-M06-c92. אפס שינוי קוד, לכן אין שינוי UI
+ו-`compare.mjs` לא נדרש. `STATE.md` עדיין מתחת לתקרת 300 השורות, אין
+ארכוב נדרש. קובץ: `STATE.md`.
+
+**M05-c93 - DONE (04.10.2026).** משימת התור: "pnpm test fix drift
+commit", זהה במהות ל-M05-c92. `pwd` אומת, עץ נקי, HEAD `6695cc57b`.
+`git diff 6d02d0b50 HEAD -- src public next.config.* package.json` ריק
+(אפס שינוי קוד מאז M05-c92) — אין דריפט לתקן. ארבעת השערים רצו: `pnpm
+test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, אפס כשלונות, זהה
+ביט ל-M05-c92; `pnpm type-check` נקי; `pnpm lint` (biome + 12 שערי
+סקריפט) נקי; `pnpm build` (`CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:3311`, פורט 3311 כבר מאזין מריצה
+קודמת, `cwd` אומת ב-`lsof` שהוא הריפו הזה) exit 0. אפס שינוי קוד, לכן
+אין שינוי UI ו-`compare.mjs` לא נדרש. `STATE.md` עדיין מתחת לתקרת 300
+השורות, אין ארכוב נדרש בפריט הזה. קובץ: `STATE.md`.
