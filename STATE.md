@@ -1,62 +1,50 @@
-RESUME FROM: M03-c95
-Updated: 2026-10-04 (סשן `audit/final-audit`, Sonnet 5, פריט M02-c95 DONE:
-/product נמדד שוב ב-380/768/1440 מול `refs/electro_product_{width}.png`,
-אפס דריפט, כל שלושה PASS, M01-c95 הועבר לארכיון לשמירה על תקרת 300 שורות,
-RESUME FROM מצביע ל-M03-c95)
+RESUME FROM: M04-c95
+Updated: 2026-10-04 (סשן `audit/final-audit`, Fable 5.1, פריט M03-c95 DONE:
+/category נמדד שוב ב-380/768/1440 מול `refs/electro_shop_{width}.png`,
+3.53/2.52/1.69, כל שלושה PASS, אפס דריפט בקוד, M02-c95 הועבר לארכיון
+לשמירה על תקרת 300 שורות, RESUME FROM מצביע ל-M04-c95)
 
 ## המשך מ:
 
-**M02-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
-/product sample", זהה ל-M02-c94. `pwd` אומת, עץ נקי, HEAD `cac5bbbf1`
-(M01-c95). `git diff 44ec205c4 cac5bbbf1 --stat -- src public
-next.config.* package.json scripts/compare.mjs pnpm-lock.yaml` ריק (אפס
-שינוי קוד או בשער מאז M02-c94). **נמצא עם הגעה לפריט**: שרידי WIP
-מסשן קודם שנקטע לפני commit — `docs/UI-PARITY-REPORT.md` כבר הכיל שורה
-לא-מחויבת של `product/380/4.95%` על בסיס `cac5bbbf1-dirty`, ושני
-תהליכי `pnpm start` ישנים (פורטים 3311 ו-4722) עדיין רצים בלי סשן
-`claude` פעיל שמחזיק אותם (`ps aux` אישר: אין תהליך `claude` שני פעיל
-מלבד הסשן הזה עצמו, אלו שרתים יתומים בלבד, לא קולו-אג'נט שני). לא
-נגעתי בהם (לא לנגיעה, לא שלי). השורה הלא-מחויבת זוהה כחלקית/לא-ודאה
-(אין 768/1440 איתה) ונמחקה ב-`git checkout --` לפני ריצה נקייה משלי, כדי
-שהמספרים בדוח יתאימו לריצה אחת שלמה. פורט 3311 ו-4722 תפוסים (אותם
-שרתים יתומים, לא לנגיעה), נבחר פורט חלופי 4819 (`lsof` אישר פנוי
-מראש, ואומת גם שה-`cwd` של המאזין על 4819 הוא הריפו הזה). `rm -rf .next
-&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4819 pnpm
-build` exit 0, `PORT=4819 pnpm start`, השרת אומת חי (`curl` 200,
-`cwd` של המאזין נבדק ב-`lsof`). השער רץ בחזית פר-רוחב על
-`/product/מוצר-לדוגמא` עם `--baseline='refs/electro_product_{width}.png'`
-(אותה דגימה כמו M02-c93/M02-c94). שלוש הריצות (380, 768, 1440) כל אחת
-חרגה מטיימאוט 120 שניות והועברה לרקע **על ידי המערכת עצמה, לא בידי
-הסוכן** (תקדים M02-c94), ונמתן לה עד סיום לפני המשך בכל פעם. **380:
-`4.95%` PASS. 768: `4.55%` PASS. 1440: `3.25%` PASS**, שלושתם מסומנים
-`HEIGHT RATIO` (תמיד היו, לא רגרסיה: צילום קפוא מלא מול דף מרונדר
-חלקי). **זהה בדיוק למספרים שנרשמו ב-M02-c93 ו-M02-c94, אפס דריפט.**
-ארבע השורות (380, 768, 1440, ועוד שורת `home/1440/REFUSED` שנכתבה
-כצד-לוואי של בדיקת `--help` לזיהוי הדגל הנכון, לפני תחילת המדידה
-עצמה — אמת, לא שגיאה: `--help` אינו דגל מוכר והריצה נפלה חזרה ל-home
-ברוחב ברירת המחדל ונתפסה ע"י שומר הרפרנס החי) נכתבו אוטומטית
-ל-`docs/UI-PARITY-REPORT.md` (15:49-16:00, commit
-`cac5bbbf1`/`cac5bbbf1-dirty`). השרת נעצר (`kill`), פורט 4819 אומת
-פנוי. שערים: `type-check` נקי, `lint` נקי (biome + 12 שערי סקריפט),
-`test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט, `build`
-exit 0 (למעלה, לפני ההפעלה). M01-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
-לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
-`docs/UI-PARITY-REPORT.md` (נכתב אוטומטית ע"י השער).
-
-**M18-c94 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
-lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c93. `pwd`
-אומת, עץ נקי, HEAD `089a42252` (M17-c94). `STATE.md` עמד על **299
-שורות** לפני הפריט — כלומר כבר מתחת לתקרה (`<300`), אין צורך לקצץ
-בכוח. **החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c94 המלא
-לארכיון, כדפוס M18-c91/c92/c93, כך שהקובץ ממשיך להחזיק רק את הפריט
-הפעיל האחרון, הטבלה, החוסמים והידני, עם מרווח לפריטי מחזור c95. שום
-שורה לא נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`, לפני
-"## M15-c94"). שורה 1: `RESUME FROM: M01-c95` — מחזור c94 (18 פריטים,
-M01-c94..M18-c94) נסגר. אין שינוי UI, ולכן `compare.mjs` לא נדרש. אפס
-שינוי קוד. שערים: `type-check` 0, `lint` 0 (biome + 12 שערי סקריפט),
-`test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט,
-`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4731
-pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+**M03-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/category sample", זהה ל-M03-c94. `pwd` אומת, HEAD `0d2173157` (M02-c95).
+`git diff 5a10dcce2 HEAD --stat -- src public next.config.* package.json
+scripts/compare.mjs scripts/diff-bands.mjs pnpm-lock.yaml` ריק (אפס
+שינוי קוד או בשער מאז M03-c94). בעץ בהגעה: `.vercelignore` שונה ולא
+מחויב (לא שלי, לא נגעתי, לא נכלל ב-commit). פורטים 3311 ו-4722 תפוסים
+על ידי שרתי `next-server` יתומים מסשנים קודמים (אותו `cwd`, לא לנגיעה),
+נבחר 4830 (`lsof` אישר פנוי, ואומת שה-`cwd` של המאזין הוא הריפו הזה).
+**ממצא סביבה, לתיעוד:** ה-shell של הסשן הזה מייצא כ-30 משתני סביבה עם
+ערך-ממלא-מקום (`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`,
+`NODE_ENV` ועוד) וגם `VERCEL=1`/`VERCEL_ENV=production`, ואלו דורסים את
+`.env.local`. ה-build הראשון נפל ב-`Invalid API key` על 84/337 עמודי
+מוצר (`createAdminClient` מעדיף `SUPABASE_SERVICE_ROLE_KEY` על
+`SUPABASE_SECRET_KEY`), אף שכל שלושת המפתחות ב-`.env.local` נבדקו מול
+REST והחזירו 200 ו-`.env.local` לא השתנה מ-18.09. לא שונה שום קובץ ולא
+שום סוד: הריצות הוזנו דרך `env -u` לכל משתנה ממלא-מקום. `rm -rf .next &&
+CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4830 pnpm
+build` exit 0 (אפס `Invalid API key`), `PORT=4830 pnpm start`, `/` ו-
+`/category/hot-deals` 200. **ריצה ראשונה בטעות עם `--widths=380`** (ערך
+יחיד): הסקריפט נופל ל-`--width` ברירת-מחדל 1440, ולכן נכתבה שורת
+`category/1440/1.69% PASS` (16:17) לפני המדידה המכוונת, אמת ולא שגיאה;
+לריצה ברוחב יחיד הדגל הוא `--width=`. ואז השער רץ **בחזית**, פר-רוחב,
+על `/category/hot-deals` עם `--baseline='refs/electro_shop_{width}.png'`:
+**380: `3.53%` PASS. 768: `2.52%` PASS. 1440: `1.69%` PASS** (16:20,
+16:22, 16:24, `0d2173157-dirty`). 768 ו-1440 זהים בביט ל-M03-c92/c93/c94;
+380 זהה בביט ל-M03-c92/c93 (`3.53%`) ושונה מ-M03-c94 (`2.93%`) באותו
+רעש-תזמון שתועד שם, אפס דריפט בקוד. 380 ו-768 הציגו `HEIGHT RATIO`
+(0.53x/0.59x), אזהרה ידועה ולא exit code. השרת נעצר ב-`INT`, 4830 פנוי.
+שערים: `type-check` 0, `lint` 0 (biome + 12 שערי סקריפט), `test` תחת
+ה-shell הגולמי **נכשל 14/7352 ב-8 קבצים** (כולם טסטים של "המפתח לא
+מוגדר" ב-resend/VAPID/Meilisearch/Twilio/deployed-runtime/invoices,
+וגם `isSuppressed` שפנה ל-Supabase אמיתי כי ה-URL והמפתח מיוצאים
+ב-shell), ו**תחת `env -u` לכל 40 המשתנים המוזרקים: 615/615 קבצים, 7340
+עברו, 12 דולגו (7352)**, זהה ביט ל-M02-c95. ההחלטה: הכשלים הם ארטיפקט
+של סביבת ה-harness ולא של הקוד (אפס שינוי קוד, אותו מספר תחת shell
+נקי), אין תיקון בקוד. `build` exit 0 (למעלה). M02-c95 ו-M18-c94 הועברו
+ל-`docs/STATE-ARCHIVE.md` לשמירה על תקרת 300 שורות. קבצים: `STATE.md`,
+`docs/STATE-ARCHIVE.md`, `docs/UI-PARITY-REPORT.md` (4 שורות, נכתבו
+אוטומטית ע"י השער).
 
 **M17-c94 - DONE (04.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md`
 (הועבר ב-M18-c94): RTL/LTR נבדק מחדש על `/` ושלושת סלאגי הדגימה
@@ -120,6 +108,7 @@ M17-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M18-c94.
 M10-c94 ו-M16-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M01-c95.
 M03-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M02-c95.
 M04-c94 הועבר ל-`docs/STATE-ARCHIVE.md` ב-M02-c95.
+M02-c95 ו-M18-c94 הועברו ל-`docs/STATE-ARCHIVE.md` ב-M03-c95.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
 `VERCEL_TOKEN` לא מוגדר בסביבה; נעשה שימוש בטוקן ה-CLI (רוענן ב-`vercel

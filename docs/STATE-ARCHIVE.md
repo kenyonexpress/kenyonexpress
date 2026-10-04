@@ -2,6 +2,62 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M18-c94 (הועבר מ-STATE.md ב-M03-c95, לשמירה על תקרת 300 שורות)
+
+**M18-c94 - DONE (04.10.2026).** משימת התור: "Trim STATE.md under 300
+lines archive rest to docs/STATE-ARCHIVE.md", זהה ל-M18-c93. `pwd`
+אומת, עץ נקי, HEAD `089a42252` (M17-c94). `STATE.md` עמד על **299
+שורות** לפני הפריט — כלומר כבר מתחת לתקרה (`<300`), אין צורך לקצץ
+בכוח. **החלטה שהתקבלה לבד:** בכל זאת להעביר את סעיף M17-c94 המלא
+לארכיון, כדפוס M18-c91/c92/c93, כך שהקובץ ממשיך להחזיק רק את הפריט
+הפעיל האחרון, הטבלה, החוסמים והידני, עם מרווח לפריטי מחזור c95. שום
+שורה לא נמחקה, רק הוזזה (החדש למעלה ב-`docs/STATE-ARCHIVE.md`, לפני
+"## M15-c94"). שורה 1: `RESUME FROM: M01-c95` — מחזור c94 (18 פריטים,
+M01-c94..M18-c94) נסגר. אין שינוי UI, ולכן `compare.mjs` לא נדרש. אפס
+שינוי קוד. שערים: `type-check` 0, `lint` 0 (biome + 12 שערי סקריפט),
+`test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט,
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4731
+pnpm build` exit 0. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
+## M02-c95 (הועבר מ-STATE.md ב-M03-c95, לשמירה על תקרת 300 שורות)
+
+**M02-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs on
+/product sample", זהה ל-M02-c94. `pwd` אומת, עץ נקי, HEAD `cac5bbbf1`
+(M01-c95). `git diff 44ec205c4 cac5bbbf1 --stat -- src public
+next.config.* package.json scripts/compare.mjs pnpm-lock.yaml` ריק (אפס
+שינוי קוד או בשער מאז M02-c94). **נמצא עם הגעה לפריט**: שרידי WIP
+מסשן קודם שנקטע לפני commit — `docs/UI-PARITY-REPORT.md` כבר הכיל שורה
+לא-מחויבת של `product/380/4.95%` על בסיס `cac5bbbf1-dirty`, ושני
+תהליכי `pnpm start` ישנים (פורטים 3311 ו-4722) עדיין רצים בלי סשן
+`claude` פעיל שמחזיק אותם (`ps aux` אישר: אין תהליך `claude` שני פעיל
+מלבד הסשן הזה עצמו, אלו שרתים יתומים בלבד, לא קולו-אג'נט שני). לא
+נגעתי בהם (לא לנגיעה, לא שלי). השורה הלא-מחויבת זוהה כחלקית/לא-ודאה
+(אין 768/1440 איתה) ונמחקה ב-`git checkout --` לפני ריצה נקייה משלי, כדי
+שהמספרים בדוח יתאימו לריצה אחת שלמה. פורט 3311 ו-4722 תפוסים (אותם
+שרתים יתומים, לא לנגיעה), נבחר פורט חלופי 4819 (`lsof` אישר פנוי
+מראש, ואומת גם שה-`cwd` של המאזין על 4819 הוא הריפו הזה). `rm -rf .next
+&& CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4819 pnpm
+build` exit 0, `PORT=4819 pnpm start`, השרת אומת חי (`curl` 200,
+`cwd` של המאזין נבדק ב-`lsof`). השער רץ בחזית פר-רוחב על
+`/product/מוצר-לדוגמא` עם `--baseline='refs/electro_product_{width}.png'`
+(אותה דגימה כמו M02-c93/M02-c94). שלוש הריצות (380, 768, 1440) כל אחת
+חרגה מטיימאוט 120 שניות והועברה לרקע **על ידי המערכת עצמה, לא בידי
+הסוכן** (תקדים M02-c94), ונמתן לה עד סיום לפני המשך בכל פעם. **380:
+`4.95%` PASS. 768: `4.55%` PASS. 1440: `3.25%` PASS**, שלושתם מסומנים
+`HEIGHT RATIO` (תמיד היו, לא רגרסיה: צילום קפוא מלא מול דף מרונדר
+חלקי). **זהה בדיוק למספרים שנרשמו ב-M02-c93 ו-M02-c94, אפס דריפט.**
+ארבע השורות (380, 768, 1440, ועוד שורת `home/1440/REFUSED` שנכתבה
+כצד-לוואי של בדיקת `--help` לזיהוי הדגל הנכון, לפני תחילת המדידה
+עצמה — אמת, לא שגיאה: `--help` אינו דגל מוכר והריצה נפלה חזרה ל-home
+ברוחב ברירת המחדל ונתפסה ע"י שומר הרפרנס החי) נכתבו אוטומטית
+ל-`docs/UI-PARITY-REPORT.md` (15:49-16:00, commit
+`cac5bbbf1`/`cac5bbbf1-dirty`). השרת נעצר (`kill`), פורט 4819 אומת
+פנוי. שערים: `type-check` נקי, `lint` נקי (biome + 12 שערי סקריפט),
+`test` **615/615 קבצים, 7340 עברו, 12 דולגו (7352)**, זהה ביט, `build`
+exit 0 (למעלה, לפני ההפעלה). M01-c95 הועבר ל-`docs/STATE-ARCHIVE.md`
+לשמירה על תקרת 300 שורות. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`,
+`docs/UI-PARITY-REPORT.md` (נכתב אוטומטית ע"י השער).
+
 ## M01-c95 (הועבר מ-STATE.md ב-M02-c95, לשמירה על תקרת 300 שורות)
 
 **M01-c95 - DONE (04.10.2026).** משימת התור: "Re-measure compare.mjs
