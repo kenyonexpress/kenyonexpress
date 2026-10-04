@@ -1,22 +1,22 @@
-RESUME FROM: M16-c92
-Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M15-c92 DONE: אפס שגיאות קונסול על / ועל דגימת /product, אפס דריפט)
+RESUME FROM: M17-c92
+Updated: 2026-10-04 (סשן `audit/final-audit`, Opus 5.5, פריט M16-c92 DONE: JSON-LD Product+BreadcrumbList על 44/44 מוצרים פעילים, אפס דריפט)
 
 ## המשך מ:
 
-**M15-c92 - DONE (04.10.2026).** משימת התור: "Verify no console errors
-on / and /product sample", זהה ל-M15-c91. `pwd` אומת, עץ נקי, HEAD
-`5c08e0f0e` (M14-c92). בנייה טרייה (`rm -rf .next` ואז
-`CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4976 pnpm
-build`, exit 0), `pnpm start -p 4976` (אומת ב-`lsof` שה-cwd של המאזין הוא
-הצ'קאאוט הזה). `e2e/route-audit.spec.ts` עם `--grep "anon /$|anon dynamic
-catalogue routes"`, `E2E_BASE_URL=http://localhost:4976`,
-`ROUTE_AUDIT_REPORT=/tmp/route-audit-m15c92.jsonl`: **4/4 PASS** (chromium
-+ mobile-chrome, 44.2s). הדוח, 16 שורות: אפס `consoleErrors` ואפס
-`hydrationWarnings`, כל הנתיבים 200, על `/` ועל שבעת הנתיבים הדינמיים,
-כולל `/product/צימר-מאסטר` ו-`/product/צימר-מאסטר/reviews` (דגימת המוצר).
-אפס דריפט מ-M15-c91. השרת נעצר ב-SIGINT, הפורט פנוי. שערים: `type-check`
-0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build` exit 0. פריט
-אימות בלבד, לא חזותי, `compare.mjs` לא נדרש. M14-c92 הועבר
+**M16-c92 - DONE (04.10.2026).** משימת התור: "Verify all product pages
+have JSON-LD Product and BreadcrumbList", זהה ל-M16-c91. `pwd` אומת, עץ
+נקי, HEAD `c4badc836` (M15-c92). קוד: הקומיט האחרון על
+`src/lib/seo/json-ld.ts` ועל `src/app/(store)/product/[slug]/page.tsx` הוא
+עדיין `fd820969f` (30.09); מאז M16-c91 השינוי היחיד תחת `src apps
+packages` הוא `src/styles/product-page.css` (M17-c91, CSS בלבד), והדף עדיין
+מזריק `buildProductJsonLd` ו-`buildBreadcrumbJsonLd`. בזמן ריצה: `rm -rf
+.next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4983
+pnpm build` (exit 0), `pnpm start -p 4983` (cwd המאזין אומת ב-`lsof`). כל
+44 הסלאגים מ-`supabase/catalogue-snapshot.json` נשלפו ונותחו: **44/44
+מחזירים 200 עם בלוק `Product` אחד ובלוק `BreadcrumbList` אחד בדיוק**, אפס
+שגיאות JSON. אפס דריפט מ-M16-c91. השרת נעצר ב-SIGINT, הפורט פנוי. שערים:
+`type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12 דולגו), `build`
+exit 0. לא חזותי, `compare.mjs` לא נדרש. M15-c92 הועבר
 ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
 
 **DEPLOY-UNBLOCK - BLOCKED (04.10.2026).** נמדד, לא נוסה deploy חוזר.
