@@ -2,6 +2,28 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## M14-c91 (הועבר מ-STATE.md ב-M15-c91, לשמירה על תקרת 300 שורות)
+
+**M14-c91 - DONE (04.10.2026).** משימת התור: "Verify Sentry release
+matches HEAD commit", זהה ל-M14-c90. `pwd` אומת, עץ נקי, HEAD `8af3605ba`
+(M13-c91). נבדק מול Vercel REST, קריאה בלבד, טוקן ה-CLI, פרויקט
+`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP`: פריסת הפרודקשן READY האחרונה עדיין
+`dpl_2zzvvFGMoS5icgrgL94er8USKwsj`, `main@18ed044b2`. `SENTRY_DSN`
+ו-`NEXT_PUBLIC_SENTRY_DSN` (production+preview) עדיין עם `createdAt`
+`1790918429743`, `SENTRY_AUTH_TOKEN` (production) `1789566136944`, ללא
+שינוי. **תשובה: ה-release שבפרודקשן אינו HEAD.** `git rev-list --count
+18ed044b2..HEAD` = **1087** (היה 1069 ב-M14-c90), `HEAD..18ed044b2` = 109
+ללא שינוי. אפס דריפט מ-M14-c90; זה אותו חוסם (DEPLOY-UNBLOCK למטה,
+סעיף 17 ב-`docs/BACKLOG.md`), ממתין לתיקון ה-env של אופיר. ה-MCP של
+Sentry לא מאומת בסשן הזה, ולכן רשימת ה-releases בתוך Sentry עצמו לא
+נקראה; ה-release נגזר מה-commit של הפריסה. **החלטה שהתקבלה לבד:** DONE
+כאימות ולא BLOCKED, כמו M14-c89/c90; לא נפתח חוסם כפול, לא נגעו ב-deploy
+או ב-env. שערים: `type-check` 0, `lint` 0, `test` 615/615 (7340/7352, 12
+דולגו), `rm -rf .next && CARDCOM_USE_MOCK=true
+NEXT_PUBLIC_APP_URL=http://localhost:4521 pnpm build` exit 0. לא פריט
+חזותי, `compare.mjs` לא נדרש. M13-c91 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
+
 ## M10-c91 (הועבר מ-STATE.md ב-M11-c91, לשמירה על תקרת 300 שורות)
 
 **M10-c91 - DONE (04.10.2026).** משימת התור: "Verify migrations/pending/
