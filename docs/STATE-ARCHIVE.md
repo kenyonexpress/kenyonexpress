@@ -43551,3 +43551,22 @@ CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4519 pnpm build`
 exit 0, ה-manifest מראה `/robots.txt`. לא פריט חזותי, `compare.mjs` לא
 נדרש. M11-c89 הועבר ל-`docs/STATE-ARCHIVE.md`. קבצים: `STATE.md`,
 `docs/STATE-ARCHIVE.md`.
+
+## M13-c89 (הועבר מ-STATE.md ב-M14-c89, לשמירה על תקרת 300 שורות)
+
+**M13-c89 - DONE (04.10.2026).** משימת התור: "Verify /api/health and
+/api/ready return 200 with real deps", זהה ל-M13-c88. `pwd` אומת, עץ נקי,
+HEAD `bac040477` (M12-c89). קוד: הקומיט האחרון על `src/app/api/health`,
+`src/app/api/ready` ו-`src/lib/health` עדיין `64728ff8d` (02.09), אפס
+שינוי. חי: `https://www.kenyonexpress.co.il/api/health` `200`
+`application/json` `{"ok":true,"database":"ok","latency_ms":123}`, תלות DB
+אמיתית. `/api/ready` `503`
+`{"ok":false,"checks":{"database":"ok","redis":"ok","meilisearch":"down","r2":"not_configured","cardcom":"not_configured"}}`,
+זהה ל-M13-c88: Meilisearch מוגדר ולא נגיש (סעיף 16 ב-`docs/BACKLOG.md`,
+חיצוני, לאופיר), R2 לא מופעל בחשבון, Cardcom ב-mock. כלומר "200 על
+ready" לא מתקיים, והסיבה חיצונית ומתועדת, לא באג קוד. אפס דריפט.
+שערים: `type-check` 0, `lint` 0, `test` 614/614 (7337/7349, 12 דולגו),
+`rm -rf .next && CARDCOM_USE_MOCK=true NEXT_PUBLIC_APP_URL=http://localhost:4521
+pnpm build` exit 0, ה-manifest מראה `/api/health` ו-`/api/ready`. לא פריט
+חזותי, `compare.mjs` לא נדרש. M12-c89 הועבר ל-`docs/STATE-ARCHIVE.md`.
+קבצים: `STATE.md`, `docs/STATE-ARCHIVE.md`.
