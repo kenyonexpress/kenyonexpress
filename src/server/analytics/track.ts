@@ -2,9 +2,16 @@ import { log } from '@/lib/observability/log'
 import 'server-only'
 
 import { ATTRIBUTION_COOKIE, type Attribution, parseAttribution } from '@/lib/analytics/attribution'
+import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
 import type { ServerEventName } from '@/lib/analytics/events'
+import { POSTHOG_IDENTIFY, postHogEventName } from '@/lib/analytics/posthog-names'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
-import { POSTHOG_ID_COOKIE, isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
+import {
+  type EventProperties,
+  POSTHOG_ID_COOKIE,
+  isPostHogEnabled,
+  trackEvent,
+} from '@/lib/observability/posthog'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 
@@ -96,7 +103,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     // returns synchronously and a slow or failing database round trip must not
     // decide whether the funnel event was sent.
     if (isPostHogEnabled()) {
-      trackEvent(input.eventName, postHogProps(input), {
+      trackEvent(postHogEventName(input.eventName), postHogProps(input), {
         distinctId: serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
           anonymousId,
           userId: input.userId,
@@ -199,6 +206,90 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     }
   } catch (error) {
     log.error('analytics.track_failed', { eventName: input.eventName, err: error })
+  }
+}
+
+/**
+ * A server event that goes to PostHog and NOWHERE ELSE.
+ *
+ * For a name the deployed `fn_ingest_analytics_events` whitelist does not
+ * carry (`gift_sent`, see lib/analytics/posthog-names.ts). Sending such a name
+ * through `trackServerEvent` would cost one database round trip per event to
+ * be discarded at the door with HTTP 200 and an `analytics.event_rejected`
+ * error line. Same identity rule as the four money events, same scalars-only
+ * properties, same promise that nothing here reaches the caller. `cookies()`
+ * throws outside a request scope (a webhook replay, a cron), so the id falls
+ * back to the user id there rather than the event being lost.
+ */
+export async function trackPostHogServerEvent(
+  eventName: string,
+  props: EventProperties,
+  userId: string | null,
+): Promise<void> {
+  if (!isPostHogEnabled()) return
+  try {
+    let distinctId: string | undefined = userId ?? undefined
+    try {
+      const cookieStore = await cookies()
+      distinctId = serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
+        anonymousId: parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value),
+        userId,
+      })
+    } catch {
+      // No request scope. The user id is the only identity there is.
+    }
+    trackEvent(
+      postHogEventName(eventName),
+      { source: 'server', user_id: userId, ...props },
+      {
+        distinctId,
+      },
+    )
+  } catch (error) {
+    log.error('analytics.posthog_event_failed', { eventName, err: error })
+  }
+}
+
+/**
+ * PostHog's identify, at login, from the server.
+ *
+ * WHY HERE AND NOT IN THE BROWSER. Every login path in this app ends in a
+ * server redirect (`signInWithEmail`, `verifyPhoneOtp`, `/auth/callback`), so
+ * there is no client moment that knows "a login just happened" without adding
+ * one; and the two ids the merge needs are both readable here: the browser's
+ * PostHog id, which `posthog.ts` mirrors into a cookie for exactly this kind of
+ * read, and the user id the session just produced.
+ *
+ * WHAT IT DOES IN POSTHOG. `$identify` with `distinct_id = user id` and
+ * `$anon_distinct_id = the browser's id` merges the anonymous person into the
+ * known one, so the browsing that led to the login and every later event file
+ * under one person. Without it a shopper who logs in at checkout is two people
+ * in every funnel: the one who browsed and the one who bought.
+ *
+ * CONSENT-GATED, UNLIKE THE MONEY EVENTS. `trackServerEvent` is deliberately
+ * not gated: a purchase is a record of a transaction. An identify is the
+ * opposite: it exists only to attach browsing behaviour to a person, which is
+ * the thing the banner asks permission for. So this reads the same consent
+ * cookie the banner writes, and does nothing without a current grant. The id
+ * is the auth uuid and nothing else: no email, no name, no `$set`.
+ *
+ * Best-effort end to end. A failed identify is one person counted twice; a
+ * thrown one would be a failed login.
+ */
+export async function identifyPostHogUser(userId: string): Promise<void> {
+  if (!isPostHogEnabled()) return
+  try {
+    const cookieStore = await cookies()
+    if (!isTrackingAllowed(cookieStore.get(CONSENT_COOKIE)?.value)) return
+    const anonymousId = serverDistinctId(cookieStore.get(POSTHOG_ID_COOKIE)?.value, {
+      anonymousId: parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value),
+      userId: null,
+    })
+    const props: EventProperties = { distinct_id: userId }
+    if (anonymousId && anonymousId !== userId) props.$anon_distinct_id = anonymousId
+    trackEvent(POSTHOG_IDENTIFY, props, { distinctId: userId })
+  } catch (error) {
+    log.error('analytics.posthog_identify_failed', { err: error })
   }
 }
 

@@ -118,3 +118,41 @@ guest→user לטבלאות הראשוניות, ושם השאלה נענית כ�
 ‏`voucher_redeemed` נשלח עם ‏`userId` של **חבר הצוות בקופה**, לא של הלקוח
 שהשובר שלו נשרף. זו החלטת מודל ולא באג, והיא משפיעה על כל משפך שמנסה לעקוב
 אחרי לקוח יחיד מרכישה למימוש. תועד ולא שונה.
+
+## ‏8. ‏PostHog: השמות שהמשפך בנוי עליהם (05.10.2026, W11)
+
+‏PostHog הוא היעד השלישי, ולו טבלת שמות אחת, ‏`src/lib/analytics/posthog-names.ts`,
+ששני ה-fan-outs עוברים דרכה (`commerce-client.ts` בדפדפן, ‏`track.ts` בשרת).
+הסיבה: שני צינורות אחרים קובעים שמות שאינם שלנו, ‏GA4 דורש ‏`view_item`
+והרשימה הלבנה הפרוסה ב-`fn_ingest_analytics_events` מחזיקה ‏`voucher_redeemed`
+ואינה משתנה בלי מיגרציה. ל-PostHog אין מגבלה כזאת, ומי שקורא את המשפך קיבל את
+ששת השמות שלמטה. **לפני הטבלה שניים מהשישה הגיעו בשם אחר** ולוח שנבנה על
+הרשימה הראה אפס צפיות ואפס מימושים בזמן ששניהם נשלחו.
+
+| שם ב-PostHog | מגיע מ- | הפולט | שער הסכמה |
+| --- | --- | --- | --- |
+| `view_product` | ‏`view_item` של ‏GA4 | ‏`ViewTracker` → ‏`trackCommerce` | ‏`ke_consent` בדפדפן |
+| `add_to_cart` | אותו שם | ‏`AddToCartButton` → ‏`trackCommerce` | ‏`ke_consent` בדפדפן |
+| `begin_checkout` | אותו שם | ‏`CheckoutForm` (דפדפן) **וגם** ‏`beginCheckout` (שרת, עם ‏`order_id`) | דפדפן כן, שרת לא |
+| `purchase` | אותו שם | ‏`finalizeOrder` בלבד, לעולם לא מהדפדפן | אין |
+| `gift_sent` | **‏PostHog בלבד** | ‏`finalizeOrder` כשמייל מתנה נכנס לתור (`channel=purchase`), ‏`transferVoucher` (`channel=transfer`) | אין |
+| `coupon_redeemed` | ‏`voucher_redeemed` של הרשימה הלבנה | מסלול הקופה ‏`/api/supplier/vouchers/redeem` | אין |
+
+- ‏`begin_checkout` מגיע פעמיים לאותו ‏`distinct_id`, פעם מהדפדפן עם הערך ופעם
+  מהשרת עם מזהה ההזמנה. משפך ב-PostHog סופר אנשים ולא אירועים, ולכן זה אינו
+  מכפיל המרות; ספירת אירועים גולמית תראה כפול. תועד ולא שונה.
+- ‏`gift_sent` אינו ברשימה הלבנה הפרוסה ולכן אינו עובר ב-`trackServerEvent`
+  (שהיה מפיל אותו בשקט עם ‏HTTP 200 ושורת ‏`analytics.event_rejected` לכל מתנה);
+  הוא נשלח דרך ‏`trackPostHogServerEvent`. הרשומה הראשונית של מתנה היא שורת
+  האודיט של ‏`recordGiftAudit`.
+- ‏`$identify` נשלח מהשרת בכל אחד משלושת מסלולי הכניסה (`signInWithEmail`,
+  ‏`verifyPhoneOtp`, ‏`/auth/callback`) עם ‏`distinct_id` = מזהה ה-auth
+  ו-`$anon_distinct_id` = עוגיית ה-PostHog של הדפדפן (או מזהה ה-guest session).
+  **מותנה בהסכמה, בניגוד לאירועי הכסף**: הוא קיים רק כדי לחבר גלישה לאדם, וזה
+  בדיוק מה שהבאנר שואל עליו. בלי ‏`ke_consent=granted.<גרסה נוכחית>` לא נשלח
+  דבר. בלי אימייל, בלי שם, בלי ‏`$set`.
+- אימות מקומי בלי מפתח: ‏`scripts/posthog-sink.mjs` מקשיב כ-`/capture/` מקומי,
+  והאפליקציה נבנית ומורצת עם ‏`NEXT_PUBLIC_POSTHOG_KEY` ו-`NEXT_PUBLIC_POSTHOG_HOST`
+  שמצביעים אליו. ההוראות בראש הסקריפט.
+- **בפרודקשן ‏PostHog עדיין אינרטי**: ‏`NEXT_PUBLIC_POSTHOG_KEY` חסר ב-Vercel
+  Production (‏`BACKLOG` סעיף 20). הטבלה והפולטים ממתינים למפתח ולפריסה.

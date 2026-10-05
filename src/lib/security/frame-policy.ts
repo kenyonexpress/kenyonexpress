@@ -169,9 +169,55 @@ export function upgradesInsecureRequests(source: NodeJS.ProcessEnv = process.env
   return !/^http:\/\//i.test(source.NEXT_PUBLIC_APP_URL?.trim() ?? '')
 }
 
+/**
+ * POSTHOG, GATED ON ITS KEY THE SAME WAY, AND MEASURED BLOCKED WITHOUT THIS.
+ *
+ * `lib/observability/posthog.ts` posts every browser event to
+ * `NEXT_PUBLIC_POSTHOG_HOST/capture/` and `PostHogReplay` loads the recorder
+ * from the same host. Neither was in the header. Measured 2026-10-05 (W11) on
+ * a production build pointed at a local capture sink, consent granted:
+ *
+ *   Connecting to 'http://localhost:4871/capture/' violates the following
+ *   Content Security Policy directive: "connect-src 'self' https://*.supabase.co ..."
+ *
+ * Zero events left the browser, with the key set and the fan-out firing. In
+ * production the key has never been set (BACKLOG 20), which is the only reason
+ * this was not already the live state: the day the key lands, the browser half
+ * of the funnel would have been refused by our own header, silently, while the
+ * server half (`purchase`, `coupon_redeemed`) arrived -- a funnel with
+ * conversions and no visitors.
+ *
+ * `script-src` as well as `connect-src`, because the replay SDK fetches its
+ * remote config and the recorder as scripts, and PostHog Cloud serves those
+ * from a sibling assets host (`us-assets.i.posthog.com` for `us.i.posthog.com`,
+ * same for `eu`), which is derived here rather than listed so the EU and US
+ * regions both work off the one variable. Origin only: a path or trailing
+ * slash in the variable would otherwise narrow the grant to a URL prefix.
+ *
+ * Restated rather than imported from `posthog.ts` for the same reason as the
+ * mock-provider check above: `next.config.ts` loads this module before the
+ * path aliases exist.
+ */
+export function postHogCspHosts(source: NodeJS.ProcessEnv = process.env): string[] {
+  if (!source.NEXT_PUBLIC_POSTHOG_KEY?.trim()) return []
+  const raw = source.NEXT_PUBLIC_POSTHOG_HOST?.trim() || 'https://us.i.posthog.com'
+  let origin: string
+  try {
+    origin = new URL(raw).origin
+  } catch {
+    return []
+  }
+  const cloud = /^https:\/\/(us|eu)\.i\.posthog\.com$/.exec(origin)
+  return cloud ? [origin, `https://${cloud[1]}-assets.i.posthog.com`] : [origin]
+}
+
+const postHogHosts = postHogCspHosts()
+const withPostHog = (directive: string): string =>
+  postHogHosts.length > 0 ? `${directive} ${postHogHosts.join(' ')}` : directive
+
 const BASE_DIRECTIVES = [
   "default-src 'self'",
-  withTurnstile("script-src 'self' 'unsafe-inline'"),
+  withPostHog(withTurnstile("script-src 'self' 'unsafe-inline'")),
   "style-src 'self' 'unsafe-inline'",
   IMG_SRC,
   "font-src 'self'",
@@ -180,7 +226,7 @@ const BASE_DIRECTIVES = [
   // connect-src does not treat wss:// as covered by https://. Without the
   // second entry every signed-in page logged one CSP violation per mount and
   // the bell never received a live event (route audit, 25.09).
-  withTurnstile("connect-src 'self' https://*.supabase.co wss://*.supabase.co"),
+  withPostHog(withTurnstile("connect-src 'self' https://*.supabase.co wss://*.supabase.co")),
   withMockFrame(withTurnstile('frame-src https://secure.cardcom.solutions')),
   "base-uri 'self'",
   "form-action 'self' https://secure.cardcom.solutions",

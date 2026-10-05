@@ -1,5 +1,6 @@
 'use server'
 
+import { POSTHOG_GIFT_SENT } from '@/lib/analytics/posthog-names'
 import {
   createGiftClaimToken,
   hashGiftClaimToken,
@@ -16,6 +17,7 @@ import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkUserRateLimit } from '@/lib/utils/rate-limit'
+import { trackPostHogServerEvent } from '@/server/analytics/track'
 import { recordGiftAudit } from '@/server/gifts/audit'
 import { revalidatePath } from 'next/cache'
 
@@ -421,6 +423,13 @@ async function runTransferVoucher(
   })
 
   log.info('gifts.transferred', { voucher_id: voucher.id })
+  // The funnel's gift step, PostHog only (lib/analytics/posthog-names.ts).
+  // After the audit row, so a gift the funnel counts is one the ledger has.
+  await trackPostHogServerEvent(
+    POSTHOG_GIFT_SENT,
+    { voucher_id: voucher.id, channel: 'transfer', has_message: message != null },
+    user.id,
+  )
   revalidatePath('/account/coupons')
   revalidatePath(`/coupon/${voucher.id}`)
   return { ok: true, voucherId: voucher.id }

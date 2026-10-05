@@ -101,7 +101,10 @@ describe('the four money events reach PostHog', () => {
       userId: 'member-1',
       props: { code: 'PRBE00000A' },
     })
-    expect(trackEvent.mock.calls[0]?.[0]).toBe('voucher_redeemed')
+    // Arrives under the funnel's name, not the whitelist's: the first-party
+    // table keeps `voucher_redeemed`, PostHog's dashboards are built on
+    // `coupon_redeemed` (lib/analytics/posthog-names.ts).
+    expect(trackEvent.mock.calls[0]?.[0]).toBe('coupon_redeemed')
     expect(trackEvent.mock.calls[0]?.[1]).toMatchObject({ code: 'PRBE00000A' })
   })
 })

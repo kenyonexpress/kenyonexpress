@@ -31,7 +31,10 @@ vi.mock('next/headers', () => ({
   cookies: async () => ({ get: () => undefined, delete: () => undefined }),
 }))
 vi.mock('@/server/actions/cart', () => ({ mergeGuestCart: vi.fn() }))
-vi.mock('@/server/analytics/track', () => ({ linkAnalyticsIdentity: vi.fn() }))
+vi.mock('@/server/analytics/track', () => ({
+  linkAnalyticsIdentity: vi.fn(),
+  identifyPostHogUser: vi.fn(),
+}))
 
 import { GET } from './route'
 

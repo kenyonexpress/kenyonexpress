@@ -30,6 +30,7 @@ import {
   signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { identifyPostHogUser } from '@/server/analytics/track'
 import { trySendBrandedMagicLink } from '@/server/auth/magic-link-send'
 import { trySendBrandedPasswordReset } from '@/server/auth/password-reset-send'
 import { trySendSecurityAlert } from '@/server/auth/security-alert-send'
@@ -170,6 +171,8 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   if (error) return { error: toHebrew(error.message) }
 
   const sessionId = await getGuestSessionId()
+  // PostHog identify, consent-gated, before the guest cookie goes below.
+  if (signInData.user) await identifyPostHogUser(signInData.user.id)
   if (signInData.user && sessionId) {
     // Only on a merge that actually ran: see the same guard in
     // app/auth/callback/route.ts. A cleared cookie orphans the guest cart.
@@ -428,6 +431,8 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
   if (error) return { error: phoneAuthErrorHebrew(error.message) }
 
   const sessionId = await getGuestSessionId()
+  // PostHog identify, consent-gated, before the guest cookie goes below.
+  if (data.user) await identifyPostHogUser(data.user.id)
   if (data.user && sessionId) {
     // Gated on the return value, same as the other two login paths: clearing
     // the cookie after a merge that did not run orphans the guest cart.

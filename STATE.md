@@ -1,70 +1,85 @@
-RESUME FROM: W11
-Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W10 DONE: שיתוף וקשר;
-ארבע מחמש הרגליים היו קיימות, קישור השאלה בסיכום המוצר קיבל את יעד הספק עם
-הסבר; W09 הועבר לארכיון; RESUME FROM מצביע ל-W11, ואם אין W11 בתור, ההמשך הוא M02-c96)
+RESUME FROM: W12
+Updated: 2026-10-05 (סשן `audit/final-audit`, Fable 5.1, פריט W11 DONE: חיווט
+אנליטיקה; Sentry/PostHog/Axiom אומתו, ארבעה פגמים נמדדו ותוקנו בקוד, שני ערכי env
+נשארו לאופיר; W10 הועבר לארכיון; RESUME FROM מצביע ל-W12, ואם אין W12 בתור,
+ההמשך הוא M02-c96)
 
 ## המשך מ:
 
-**W10 - DONE (05.10.2026): SHARE AND CONTACT. ארבע מחמש הרגליים היו קיימות
-ואומתו בקוד ובשרת בנוי; פער אחד נמדד ונבנה. parity product 4.76% / 4.17% / 2.44%
-PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `6e4edd589`, עץ נקי. W10 לא
-הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד, לא נבנה
-שוב):** (1) שורת שיתוף בדף המוצר בסדר וואטסאפ, שיתוף מקורי (`navigator.share`,
-נפילה לרשימת ערוצים רק אחרי לחיצה שהוכיחה שאין), העתקת קישור (`ProductShareRow`);
-הטקסט העברי מ-`buildShareMessage` לפי ההצעה שהדף מציג, ה-URL עם `?ref=` לשותף
-(`useShareAttribution`), בדיקה קיימת לסדר. (2) כפתור שאלה לבית העסק ב-"פרטי
-הספק" (`AskBusinessButton` + `askBusinessHref`): לספק כשהמוצר מאופשר ויש מספר,
-אחרת לשירות הלקוחות עם שם המוצר בפתיח. (3) וואטסאפ להזמנה ב-`/account/orders/[id]`
-וב-`/checkout/return` עם מזהה קצר, פריטים וסכום (`orderContactLink`,
-`buildOrderInquiryText`). (4) תפריט חמישה ערוצים: שירות לקוחות, הצעות, שיתופי
-פעולה, תקלה באתר, הצטרפות כבית עסק (`DEFAULT_CONTACT_CHANNELS` = seed של 236
-הממתינה, טבלה אם קיימת) ב-`/contact`, בכפתור הצף ובפוטר. **מה חסר ונבנה:**
-`ProductQuestionLink` בסיכום המוצר חייג תמיד לחנות ובלי הסבר, כך שבאותו דף היו
-שני קישורי שאלה לשני יעדים. עכשיו הוא מקבל `ask` (פלט `askBusinessHref`) מהדף
-דרך `ProductInfo`, מוסיף את כתובת העמוד בצד הלקוח אחרי mount (`appendPageUrl`,
-אידמפוטנטי, קידוד כמו `waChatLink`), התווית לפי היעד, ושורת הסבר קצרה מתחת:
-`contact.viaSupplier` (חדש) או `contact.viaStore` (מפתח שהיה מת ב-`he.json`,
-כעת בשימוש, מורחב); סופר `whatsapp_click` עם `surface=product_question`.
-**אין הודעות וואטסאפ ביוזמת האתר, נמדד:** כל המשטחים הם קישורי `wa.me` שהלקוח
-שולח; בדיקת שער חדשה `no-outbound-whatsapp.test.ts` נופלת אם רכיב שיתוף/קשר
-מייבא את `server/whatsapp`. המסלול התפעולי (173 `whatsapp_outbox` + Twilio)
-הוא לעדכוני הזמנה למי שהצטרף במילת מפתח בלבד, ובפרודקשן הוא אינרטי:
-`TWILIO_WHATSAPP_FROM` חסר ב-Vercel Production (שמות בלבד, קריאה בלבד), ולכן
-`loadTwilioEnv` מחזיר null וכל שורה `skipped`; גם ה-cron עונה 401 (חוסם 10).
-לא נמחק (כלל). **הוכחה בשרת (build טרי `41QI5HLRtbUWfgvnw96BP` על 3413, cwd
-אומת; listener זר על 3311 לא נגע):** `/product/מוצר-לדוגמא` 200 עם
-`data-via="customer_service"`, שורת ההסבר, ו-`wa.me/972524635550?text=` שנושא
-את שם המוצר. מסלול הספק אינו ניתן לרינדור חי: `whatsapp_enabled` כבוי בכל
-המוצרים (תוכן, החלטת אדמין פר מוצר). **בדיקות:** +3 `appendPageUrl`, +4
-`product-question-link.test.tsx`, +גיט click-to-chat. **שערים:** `pnpm type-check`
-0; `pnpm lint` נקי (i18n 606/606); `pnpm test` **632/632 קבצים, 7596 עברו, 12
-דולגו** תחת `env -i` (סביבת ההארנס מפילה 8 בדיקות "key unset" ב-`resend.test`
-ו-`invoices.test`, env ולא קוד, הוכח בריצה בסביבה מינימלית); build exit 0 אחרי
-`rm -rf .next`; **השער, בחזית, `--baseline='refs/electro_product_{width}.png'`,
-`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`6e4edd589-dirty`):
-380: 4.76% PASS; 768: 4.17% PASS; 1440: 2.44% PASS** (04.10: 4.95/4.55/3.25).
-**החלטות שהתקבלו לבד:** (א) שני קישורי השאלה חולקים יעד אחד ולא הוסר אחד מהם.
-(ב) ההסבר הוא שורת טקסט 12px מתחת לקישור, לא tooltip. (ג) מסלול Twilio נשאר,
-מתועד כהסכמה-בלבד ואינרטי. (ד) push לענף לפי הוראת הפריט כמו W01..W09.
-**לא נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
+**W11 - DONE (05.10.2026): ANALYTICS WIRING. שלוש הרגליים אומתו בקוד, ב-build
+ובדפדפן; ארבעה פגמים נמדדו ותוקנו בקוד; שני ערכי env חסרים ב-Vercel ונרשמו לאופיר,
+לא נוצרו. parity home 7.92% / 9.03% / 4.16% PASS ב-380 / 768 / 1440.** `pwd` אומת,
+HEAD בהגעה `39c44ebf2`, עץ נקי. W11 לא הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`;
+L08 (ארכיון) מדד את אותן רגליים מול פרודקשן ונחסם על env. **Sentry, מה היה:** init
+בשלושת הזמנים (`sentry.server.config.ts`, `sentry.edge.config.ts`,
+`instrumentation-client.ts`, נטענים מ-`src/instrumentation.ts`), release =
+`SENTRY_RELEASE ?? VERCEL_GIT_COMMIT_SHA` בשרת וב-edge ו-`NEXT_PUBLIC_*` בדפדפן
+(`autoExposeSystemEnvs: true` בפרויקט, נקרא), מנהרת `/monitoring`, scrub, ‏`sendDefaultPii:false`.
+**מה נמדד שבור:** לוג ה-build של הפריסה החיה `dpl_E9PfZCJMGjNH3kjwLKRFb2B4KowM`
+(`vercel inspect --logs`): `No org provided. Will not upload source maps.` ב-Production
+יש `SENTRY_AUTH_TOKEN` ושני DSN אבל לא `SENTRY_ORG`/`SENTRY_PROJECT`, ולכן **אף source
+map לא עלה מעולם** וכל stack trace בפרודקשן נשאר minified עם build ירוק. **תוקן בקוד,
+בלי env:** ה-slugs הציבוריים (`kenyonexpress`/`kenyonexpress-web`, מתועדים
+ב-`SENTRY-SETUP.md`) וה-host האירופי `https://de.sentry.io` כברירת מחדל
+ב-`next.config.ts`, `errorHandler` שהופך כשל העלאה לאזהרה ולא לכשל deploy;
+`src/__tests__/sentry-build-config.test.ts` מצמיד. build מקומי עם
+`SENTRY_KEEP_SOURCEMAPS=1`: 150 קובצי `.map` נוצרו (ההעלאה עצמה דורשת את הטוקן
+שאינו מקומי, נמדד בפריסה הבאה). `pnpm sentry:verify` לא הורץ: אין `SENTRY_DSN`
+ב-`.env.local`; קבלת ingest מפרודקשן נמדדה ב-L08. **PostHog, מה היה:** fan-out
+בדפדפן (`commerce-client.ts`) ובשרת (`track.ts`), ‏`$pageview`, הסכמה בשני המקומות,
+replay מותנה. **מה נמדד שבור ותוקן:** (1) **ה-CSP לא הכיל את מארח PostHog**: build
+מקומי עם מפתח ו-host מקומיים, הסכמה ניתנה, הדפדפן סירב לכל `/capture/` על
+`connect-src` ואפס אירועים יצאו; בפרודקשן זה היה המצב ביום שהמפתח ייכנס (חצי שרת
+מגיע, חצי דפדפן נחסם). ‏`postHogCspHosts` ב-`frame-policy.ts`, מותנה במפתח כמו
+Turnstile, פותח `connect-src`+`script-src` ל-host המוגדר ולמארח ה-assets של
+PostHog Cloud (us/eu), `csp-posthog.test.ts`. (2) **שניים מששת השמות הגיעו בשם
+אחר**: `view_item` (GA4) ו-`voucher_redeemed` (רשימה לבנה פרוסה). טבלת שמות אחת
+`src/lib/analytics/posthog-names.ts` ששני ה-fan-outs עוברים דרכה: `view_product`,
+`coupon_redeemed`. (3) **אין identify**: `identifyPostHogUser` ב-`track.ts`, נקרא
+בשלושת מסלולי הכניסה (`signInWithEmail`, `verifyPhoneOtp`, `/auth/callback`), ‏`$identify`
+עם uuid בלבד ו-`$anon_distinct_id` מעוגיית ה-PostHog, **מותנה בהסכמה** (בניגוד
+לאירועי הכסף; הנימוק בקוד). (4) **אין `gift_sent`**: `trackPostHogServerEvent`
+(PostHog בלבד, כי הרשימה הלבנה הפרוסה תפיל אותו ב-200 שקט) מ-`finalizeOrder`
+כשמייל מתנה נכנס לתור ומ-`transferVoucher`. `add_to_cart`, `begin_checkout`,
+`purchase` היו נכונים. **אומת בדפדפן (dev):** `scripts/posthog-sink.mjs` (חדש,
+מחליף את `/capture/` מקומית; עונה ל-`/array/<key>/config` ול-`/flags/` כי בלעדיהם
+posthog-js לא שולח כלל), build `9_7T9OM6JhDyOQj103gn1` על 3417 (cwd אומת), Chromium
+עם UA רגיל ו-`navigator.webdriver` מוסווה (posthog-js מפיל כל capture מאוטומציה,
+שלוש הדקות שנמדדו): **בלי הסכמה 0 אירועים; עם הסכמה `$pageview` על `/`,
+`$pageview` על המוצר ו-`view_product` (value_agorot 9900) תחת `distinct_id` אחד;
+כניסה אמיתית של משתמש E2E הפיקה `$identify` עם uuid ו-`$anon_distinct_id` זהה
+למזהה הדפדפן** (ארבע כניסות על prod auth במהלך הפריט, מגבלה 10/שעה). ‏`purchase`,
+`gift_sent`, `coupon_redeemed` לא הורצו חיים (כתיבה לפרודקשן); מכוסים ביחידה
+(`track-posthog-identify.test.ts`, ‏`track-posthog-fanout.test.ts`). **Axiom:** אין
+Vercel log drain (`/v1/drains` ו-`/v1/integrations/log-drains` ריקים, קריאה
+בלבד) **ואין צורך**: `log.ts` משגר כל שורה מובנית ל-Axiom ב-fetch כשיש
+`AXIOM_TOKEN`+`AXIOM_DATASET`, **ושניהם קיימים ב-Production** (שמות בלבד);
+`with-request-log.ts` עוטף מסלולי API, `log-coverage.test.ts` שומר. **env:** אפס
+משתנים נוצרו/שונו. **לאופיר:** (א) `NEXT_PUBLIC_POSTHOG_KEY` (+`NEXT_PUBLIC_POSTHOG_HOST`
+אם EU) ב-Vercel Production ופריסה; עד אז PostHog אינרטי (BACKLOG 20). (ב) אחרי
+הפריסה הבאה לקרוא `vercel inspect <dpl> --logs` ולראות העלאת source maps; אם
+הטוקן חסר `project:releases` תהיה אזהרה (BACKLOG 21). **נמדד ולא תוקן:** GA4
+ו-Meta גם הם מחוץ ל-CSP (BACKLOG 22, קוד). `begin_checkout` נשלח פעמיים
+(דפדפן+שרת), משפך סופר אנשים ולא אירועים, תועד ב-`ANALYTICS-EVENTS.md` §8.
+**החלטות שהתקבלו לבד:** (א) slugs של Sentry בקוד ולא env חדש. (ב) `gift_sent`
+PostHog-only, בלי מיגרציה. (ג) identify מהשרת ומותנה בהסכמה. (ד) שמות PostHog
+לפי הבריף, הרשימה הלבנה לא נגעה. (ה) push לענף כמו W01..W10. **שערים:**
+`pnpm type-check` 0; `pnpm lint` 0 (i18n 606/606, docs-index 282); `pnpm test`
+**636/636 קבצים, 7631 עברו, 12 דולגו** תחת `env -i`; build exit 0 פעמיים
+(`rm -rf .next`); **השער בחזית, `--page=home --baseline='refs/ke_live_{width}.png'
+--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`39c44ebf2-dirty`):
+380: 7.92% PASS; 768: 9.03% PASS; 1440: 4.16% PASS** (M01-c96: 8.58/9.01/4.16; נמדד
+על ה-build הראשון, לפני תיקון ה-CSP, שאינו משנה פיקסל). **לא נעשה:** אין מיגרציה,
+אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
 
-**W09 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-W10): צ'יפי סינון בדף הקטגוריה; שלושה מחמישה היו מ-Q14, נבנו "עד ₪99"
-ו"החדשים" על `max`/`sort`; parity 3.72 / 2.88 / 1.71 PASS.
+**W10 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
+ב-W11): שיתוף וקשר; ארבע מחמש הרגליים היו קיימות, קישור השאלה בסיכום המוצר
+קיבל את יעד הספק עם הסבר; parity product 4.76 / 4.17 / 2.44 PASS.
 
-**W08 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר ב-W09):
-תוכנית השותפים; שש מתוך שמונה הרגליים היו מ-Q16, נבנו ספירת קליקים ובקשת
-משיכה (252 ממתינה); parity 7.92 / 9.03 / 4.16 PASS.
-
-**W07 - DONE (05.10.2026).** ארכיון מלא ב-`docs/STATE-ARCHIVE.md` (הועבר
-ב-W08): דרגות המועדון; הכלל והכרטיס היו מ-Q15, נבנו טבלת ספים נערכת באדמין
-(251 ממתינה), הדרגה בתפריט החשבון ותג באזור האישי, וצילום הדרגה על ההזמנה;
-parity 7.92 / 9.03 / 4.16 PASS, ארבעת השערים ירוקים.
-
-**W06, W05, W04, W03, W02, W01, M01-c96, L12, L11, M18-c95, M17-c95** — סגורים
-ב-05.10.2026 (W04 BLOCKED no-dev-database, L11 BLOCKED cardcom-creds, השאר DONE),
-ארכיון מלא ב-`docs/STATE-ARCHIVE.md`; התקצירים שישבו כאן הועברו לשם ב-W06 וב-W08
-(תקרת 300 שורות), שום שורה לא נמחקה.
+**W09, W08, W07, W06, W05, W04, W03, W02, W01, M01-c96, L12, L11, M18-c95, M17-c95** —
+סגורים ב-05.10.2026 (W04 BLOCKED no-dev-database, L11 BLOCKED cardcom-creds, השאר
+DONE), ארכיון מלא ב-`docs/STATE-ARCHIVE.md`; התקצירים שישבו כאן הועברו לשם ב-W06,
+ב-W08 וב-W11 (תקרת 300 שורות), שום שורה לא נמחקה.
 
 **M16-c95, M15-c95, M14-c95, M13-c95, M12-c95, M11-c95, M10-c95, M09-c95, M08-c95, M07-c95, M17-c94, M16-c94, M15-c94, M12-c94, M09-c94, M08-c94,
 M07-c94, M06-c94, M05-c94, M10-c94** וכל מה שקדם להם (M04-c94..M01-c94,

@@ -2,6 +2,51 @@
 
 Everything that used to live in `STATE.md` before it was trimmed to the resume line, the queue table, open blockers and manual items (Q06, 25.09.2026). Newest entries first, exactly as they were written. Nothing here is current by default; `STATE.md` is.
 
+## W10 (הועבר מ-STATE.md ב-W11, לשמירה על תקרת 300 שורות)
+
+**W10 - DONE (05.10.2026): SHARE AND CONTACT. ארבע מחמש הרגליים היו קיימות
+ואומתו בקוד ובשרת בנוי; פער אחד נמדד ונבנה. parity product 4.76% / 4.17% / 2.44%
+PASS ב-380 / 768 / 1440.** `pwd` אומת, HEAD בהגעה `6e4edd589`, עץ נקי. W10 לא
+הופיע ב-STATE.md, ב-BACKLOG או ב-`git log -20`. **מה כבר היה (נמדד, לא נבנה
+שוב):** (1) שורת שיתוף בדף המוצר בסדר וואטסאפ, שיתוף מקורי (`navigator.share`,
+נפילה לרשימת ערוצים רק אחרי לחיצה שהוכיחה שאין), העתקת קישור (`ProductShareRow`);
+הטקסט העברי מ-`buildShareMessage` לפי ההצעה שהדף מציג, ה-URL עם `?ref=` לשותף
+(`useShareAttribution`), בדיקה קיימת לסדר. (2) כפתור שאלה לבית העסק ב-"פרטי
+הספק" (`AskBusinessButton` + `askBusinessHref`): לספק כשהמוצר מאופשר ויש מספר,
+אחרת לשירות הלקוחות עם שם המוצר בפתיח. (3) וואטסאפ להזמנה ב-`/account/orders/[id]`
+וב-`/checkout/return` עם מזהה קצר, פריטים וסכום (`orderContactLink`,
+`buildOrderInquiryText`). (4) תפריט חמישה ערוצים: שירות לקוחות, הצעות, שיתופי
+פעולה, תקלה באתר, הצטרפות כבית עסק (`DEFAULT_CONTACT_CHANNELS` = seed של 236
+הממתינה, טבלה אם קיימת) ב-`/contact`, בכפתור הצף ובפוטר. **מה חסר ונבנה:**
+`ProductQuestionLink` בסיכום המוצר חייג תמיד לחנות ובלי הסבר, כך שבאותו דף היו
+שני קישורי שאלה לשני יעדים. עכשיו הוא מקבל `ask` (פלט `askBusinessHref`) מהדף
+דרך `ProductInfo`, מוסיף את כתובת העמוד בצד הלקוח אחרי mount (`appendPageUrl`,
+אידמפוטנטי, קידוד כמו `waChatLink`), התווית לפי היעד, ושורת הסבר קצרה מתחת:
+`contact.viaSupplier` (חדש) או `contact.viaStore` (מפתח שהיה מת ב-`he.json`,
+כעת בשימוש, מורחב); סופר `whatsapp_click` עם `surface=product_question`.
+**אין הודעות וואטסאפ ביוזמת האתר, נמדד:** כל המשטחים הם קישורי `wa.me` שהלקוח
+שולח; בדיקת שער חדשה `no-outbound-whatsapp.test.ts` נופלת אם רכיב שיתוף/קשר
+מייבא את `server/whatsapp`. המסלול התפעולי (173 `whatsapp_outbox` + Twilio)
+הוא לעדכוני הזמנה למי שהצטרף במילת מפתח בלבד, ובפרודקשן הוא אינרטי:
+`TWILIO_WHATSAPP_FROM` חסר ב-Vercel Production (שמות בלבד, קריאה בלבד), ולכן
+`loadTwilioEnv` מחזיר null וכל שורה `skipped`; גם ה-cron עונה 401 (חוסם 10).
+לא נמחק (כלל). **הוכחה בשרת (build טרי `41QI5HLRtbUWfgvnw96BP` על 3413, cwd
+אומת; listener זר על 3311 לא נגע):** `/product/מוצר-לדוגמא` 200 עם
+`data-via="customer_service"`, שורת ההסבר, ו-`wa.me/972524635550?text=` שנושא
+את שם המוצר. מסלול הספק אינו ניתן לרינדור חי: `whatsapp_enabled` כבוי בכל
+המוצרים (תוכן, החלטת אדמין פר מוצר). **בדיקות:** +3 `appendPageUrl`, +4
+`product-question-link.test.tsx`, +גיט click-to-chat. **שערים:** `pnpm type-check`
+0; `pnpm lint` נקי (i18n 606/606); `pnpm test` **632/632 קבצים, 7596 עברו, 12
+דולגו** תחת `env -i` (סביבת ההארנס מפילה 8 בדיקות "key unset" ב-`resend.test`
+ו-`invoices.test`, env ולא קוד, הוכח בריצה בסביבה מינימלית); build exit 0 אחרי
+`rm -rf .next`; **השער, בחזית, `--baseline='refs/electro_product_{width}.png'`,
+`--widths=380,768,1440`, שלוש שורות ב-`docs/UI-PARITY-REPORT.md` (`6e4edd589-dirty`):
+380: 4.76% PASS; 768: 4.17% PASS; 1440: 2.44% PASS** (04.10: 4.95/4.55/3.25).
+**החלטות שהתקבלו לבד:** (א) שני קישורי השאלה חולקים יעד אחד ולא הוסר אחד מהם.
+(ב) ההסבר הוא שורת טקסט 12px מתחת לקישור, לא tooltip. (ג) מסלול Twilio נשאר,
+מתועד כהסכמה-בלבד ואינרטי. (ד) push לענף לפי הוראת הפריט כמו W01..W09.
+**לא נעשה:** אין מיגרציה, אין שינוי DB/env/DNS/Vercel, אין מחיקה, אין שדה חיפוש.
+
 ## W09 (הועבר מ-STATE.md ב-W10, לשמירה על תקרת 300 שורות)
 
 **W09 - DONE (05.10.2026): FILTER CHIPS. שלושה מחמשת הצ'יפים היו קיימים מ-Q14

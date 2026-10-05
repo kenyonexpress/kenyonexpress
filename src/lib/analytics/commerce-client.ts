@@ -9,6 +9,7 @@ import {
   metaEventFor,
   toCurrencyAmount,
 } from '@/lib/analytics/ecommerce'
+import { postHogEventName } from '@/lib/analytics/posthog-names'
 import { isPostHogEnabled, trackEvent } from '@/lib/observability/posthog'
 
 /**
@@ -134,8 +135,10 @@ export function trackCommerce(name: GaEventName, input: CommerceEventInput): voi
   }
 
   // Last, and behind its own gate. Fire and forget by construction: trackEvent
-  // never throws and never rejects.
+  // never throws and never rejects. The name goes through the PostHog table:
+  // GA4's `view_item` is PostHog's `view_product`, the first step of the funnel
+  // its dashboards are built on (lib/analytics/posthog-names.ts).
   if (isPostHogEnabled() && trackingAllowed()) {
-    trackEvent(name, postHogProperties(input))
+    trackEvent(postHogEventName(name), postHogProperties(input))
   }
 }

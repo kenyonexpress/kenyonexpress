@@ -4,7 +4,7 @@ import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { mergeGuestCart } from '@/server/actions/cart'
-import { linkAnalyticsIdentity } from '@/server/analytics/track'
+import { identifyPostHogUser, linkAnalyticsIdentity } from '@/server/analytics/track'
 import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -102,6 +102,10 @@ export async function GET(request: NextRequest) {
       // mean inventing a "is this a new account" test that the database already
       // owns. Best-effort throughout: it cannot fail a sign-in.
       await claimReferralOnce(session.user.id, sessionId)
+
+      // PostHog identify, consent-gated, before the guest cookie goes: it is
+      // one of the two ids the merge can fall back to.
+      await identifyPostHogUser(session.user.id)
 
       if (sessionId) {
         const merged = await mergeGuestCart(supabase, session.user.id, sessionId)

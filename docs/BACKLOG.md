@@ -774,7 +774,10 @@ unchanged. No migration applied, no code change -- verification only.
     `NEXT_PUBLIC_POSTHOG_KEY` (ו-`NEXT_PUBLIC_POSTHOG_HOST` אם הפרויקט
     באזור EU) ל-Production ולפרוס מחדש (נאפה בזמן build), ולהסיר את
     `POSTHOG_API_KEY` או לתת לו קורא. אימות ב-API דורש מפתח אישי (`phx_`)
-    שאינו קיים בשום מקום שהסוכן רואה. מקור: L08.
+    שאינו קיים בשום מקום שהסוכן רואה. מקור: L08. **W11 (05.10):** הצד של
+    הקוד הושלם ונמדד מקומית מול ‏`scripts/posthog-sink.mjs` (ששת שמות המשפך,
+    ‏`$identify` בכניסה מותנה בהסכמה, ‏`docs/ANALYTICS-EVENTS.md` סעיף 8);
+    הפעולה כאן נשארת זהה: המפתח ב-Vercel ופריסה.
 
 21. **אימות Sentry מקצה לקצה דורש שני דברים שאין לסוכן** (נמדד 05.10.2026,
     L08). (א) זורקי השרת `/api/debug/sentry`, `/debug/sentry/render` והטופס
@@ -790,7 +793,24 @@ unchanged. No migration applied, no code change -- verification only.
     בלוח (`kenyonexpress` / `kenyonexpress-web`, `de.sentry.io`); לפתוח
     `SENTRY_DEBUG_ROUTES=i-know-what-this-does` לדקה ולסגור, כדי למדוד גם
     `route`/`render`/`action`; ולהזדהות מחדש ל-MCP של Sentry או לתת לסוכן
-    טוקן קריאה בלבד (`event:read`, `project:read`). מקור: L08.
+    טוקן קריאה בלבד (`event:read`, `project:read`). מקור: L08. **W11 (05.10):**
+    נמדד בלוג ה-build של הפריסה האחרונה ‏`No org provided. Will not upload
+    source maps`: ‏`SENTRY_ORG`/`SENTRY_PROJECT` לא היו ב-Production ולכן אף
+    source map לא עלה מעולם. ה-slugs הציבוריים וה-host האירופי הוגדרו כברירת
+    מחדל ב-`next.config.ts`; הפריסה הבאה היא הראשונה שמעלה. **לאופיר:**
+    לקרוא ‏`vercel inspect <dpl> --logs` של הפריסה הבאה ולראות
+    ‏`Successfully uploaded source maps`; אם הטוקן חסר היקף ‏`project:releases`,
+    השורה תהיה אזהרה (לא כשל build) והתיקון הוא היקף הטוקן.
+
+22. **ה-CSP אינו מכיל את מארחי GA4 ו-Meta Pixel** (נמדד 05.10.2026, W11,
+    `src/lib/security/frame-policy.ts`). `ThirdPartyTags` טוען את
+    `googletagmanager.com/gtag/js` ואת `connect.facebook.net/.../fbevents.js`
+    אחרי הסכמה, אבל `script-src`/`connect-src` לא מכילים אף אחד מהם, כך שביום
+    שיוגדרו `NEXT_PUBLIC_GA4_MEASUREMENT_ID`/`NEXT_PUBLIC_META_PIXEL_ID`
+    הדפדפן יחסום את שני הסקריפטים בשקט (אותו כשל שנמדד ל-PostHog ב-W11 ותוקן
+    שם). לא תוקן ב-W11 כי הפריט נקב ב-PostHog בלבד. **פעולה (קוד):** `withGa`/
+    `withMeta` באותו דפוס של `withTurnstile`/`withPostHog`, מותנים במזהים,
+    ובדיקת CSP לכל אחד. מקור: W11.
 
 ## מה לא ברשימה, ולמה
 

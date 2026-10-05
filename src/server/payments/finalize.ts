@@ -1,3 +1,4 @@
+import { POSTHOG_GIFT_SENT } from '@/lib/analytics/posthog-names'
 import { sendServerPurchase } from '@/lib/analytics/server-events'
 import { orFail } from '@/lib/catalogue-read'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
@@ -17,7 +18,7 @@ import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { recordAffiliateConversionForOrder } from '@/server/affiliates/convert'
-import { trackServerEvent } from '@/server/analytics/track'
+import { trackPostHogServerEvent, trackServerEvent } from '@/server/analytics/track'
 import { awardOrderCountBonus } from '@/server/cashback/bonus'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import { readGiftIntent, sendOrderGifts } from '@/server/payments/gift-vouchers'
@@ -930,13 +931,23 @@ export async function finalizeOrder(input: {
         .select('full_name')
         .eq('id', order.user_id)
         .maybeSingle()
-      await sendOrderGifts(admin, {
+      const gifts = await sendOrderGifts(admin, {
         orderId: order.id,
         buyerUserId: order.user_id,
         intent,
         buyerName: (buyer as { full_name: string | null } | null)?.full_name ?? null,
         now,
       })
+      // The funnel's gift step, PostHog only, and only for a gift that was
+      // actually queued: a scheduled or failed one is not sent yet. Best-effort
+      // like everything after the `paid_at` stamp.
+      if (gifts.sent > 0) {
+        await trackPostHogServerEvent(
+          POSTHOG_GIFT_SENT,
+          { order_id: order.id, channel: 'purchase', gifts: gifts.sent },
+          order.user_id,
+        )
+      }
     }
 
     // The tax document, queued and attempted at once. Before the email on

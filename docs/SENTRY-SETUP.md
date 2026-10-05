@@ -169,11 +169,25 @@ Vercel dashboard, Project → Settings → Environment Variables.
 |---|---|---|
 | `SENTRY_DSN` | the EU DSN | Production, Preview |
 | `NEXT_PUBLIC_SENTRY_DSN` | the same DSN | Production, Preview |
-| `SENTRY_ORG` | `kenyonexpress` | all |
-| `SENTRY_PROJECT` | `kenyonexpress-web` | all |
+| `SENTRY_ORG` | `kenyonexpress` | optional since W11 (05.10.2026): defaults in `next.config.ts` |
+| `SENTRY_PROJECT` | `kenyonexpress-web` | optional since W11: defaults in `next.config.ts` |
+| `SENTRY_URL` | `https://de.sentry.io` | optional since W11: defaults in `next.config.ts` |
 | `SENTRY_AUTH_TOKEN` | org token, scopes `project:releases` + `org:read` | all |
 | `SENTRY_ENVIRONMENT` | *(unnecessary on Vercel)* | see section 10 |
 | `NEXT_PUBLIC_SENTRY_ENVIRONMENT` | *(unnecessary on Vercel)* | see section 10 |
+
+**Measured 05.10.2026 (W11), on the production build log of
+`dpl_E9PfZCJMGjNH3kjwLKRFb2B4KowM`:** `No org provided. Will not upload source
+maps.` Vercel Production held `SENTRY_AUTH_TOKEN` and both DSNs and neither
+slug, so every deploy since this file was written shipped a token to a plugin
+with nowhere to send the maps, and every production stack trace stayed
+minified with a green build. The two slugs and the EU host are not secrets, so
+they now default in `next.config.ts` (`org`, `project`, `sentryUrl`), the env
+names stay as overrides, and an upload failure is a build warning
+(`errorHandler`) rather than a failed deploy. `src/__tests__/sentry-build-config.test.ts`
+pins all of it. The release needs nothing set, see below; the next production
+build after this change is the first one whose maps upload, and
+`vercel inspect <dpl> --logs` is where to read whether it did.
 
 Two traps in that table.
 

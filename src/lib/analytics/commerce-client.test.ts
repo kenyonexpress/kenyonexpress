@@ -105,4 +105,17 @@ describe('trackCommerce -> PostHog', () => {
     grantConsent()
     expect(() => trackCommerce('view_item', INPUT)).not.toThrow()
   })
+
+  it("sends GA4's view_item to PostHog as view_product, the funnel's first step", () => {
+    grantConsent()
+    trackCommerce('view_item', INPUT)
+    expect(trackEvent).toHaveBeenCalledTimes(1)
+    expect(trackEvent.mock.calls[0]?.[0]).toBe('view_product')
+  })
+
+  it('leaves the other funnel names as they are', () => {
+    grantConsent()
+    trackCommerce('begin_checkout', INPUT)
+    expect(trackEvent.mock.calls[0]?.[0]).toBe('begin_checkout')
+  })
 })

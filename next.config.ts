@@ -337,9 +337,29 @@ const nextConfig: NextConfig = {
 const withMDX = createMDX({})
 
 export default withSentryConfig(withMDX(withNextIntl(nextConfig)), {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  // THE SLUGS ARE IN THE CODE BECAUSE THE UPLOAD NEVER RAN WITHOUT THEM.
+  //
+  // Measured on the production build of 2026-10-05 (`vercel inspect --logs`):
+  // "No org provided. Will not upload source maps." Vercel Production holds
+  // SENTRY_AUTH_TOKEN and both DSNs but neither SENTRY_ORG nor SENTRY_PROJECT,
+  // so every deploy since the project was wired has shipped an auth token to a
+  // plugin with nowhere to send the maps, and every production stack trace has
+  // stayed minified. Neither slug is a secret (both are in the dashboard URL
+  // and in docs/SENTRY-SETUP.md), so they default here and the variables stay
+  // as overrides for a fork pointed at its own project.
+  org: process.env.SENTRY_ORG ?? 'kenyonexpress',
+  project: process.env.SENTRY_PROJECT ?? 'kenyonexpress-web',
+  // EU org. Against the default `https://sentry.io` the org does not resolve
+  // and the upload 404s in a way that reads like a bad token (SENTRY-SETUP.md).
+  sentryUrl: process.env.SENTRY_URL ?? 'https://de.sentry.io',
   authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // A failed upload is a warning, never a failed deploy. Without this the
+  // plugin throws and a revoked token or a Sentry outage takes the shop down
+  // with it; the same posture every other observability leg here takes.
+  errorHandler(error) {
+    console.warn(`[sentry] source-map upload skipped: ${error.message}`)
+  },
 
   // Absent auth token means no upload attempt at all, so a local build and a
   // fork's CI both work with no credential rather than failing at the last step.
