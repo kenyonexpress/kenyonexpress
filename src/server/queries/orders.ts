@@ -17,6 +17,8 @@ import {
   type SettlementState,
   deriveOrderStatus,
 } from '@/server/domain/orders/state-machine'
+import { isGiftedAway } from '@/server/payments/voucher-email'
+import type { VoucherGiftState } from '@/server/queries/vouchers'
 
 export interface OrderSummary {
   id: string
@@ -31,6 +33,15 @@ export interface OrderSummary {
 }
 
 export interface OrderVoucher {
+  /** The voucher row, for the per-coupon pages (`/coupon/[id]`, `/account/coupons/[id]/gift`). */
+  id: string
+  /**
+   * WITHHELD, empty string, while this is a gift its recipient has not
+   * collected, and `qrDataUrl` is null with it. The order page is the fifth
+   * surface that prints a code, and until it went through the same rule as
+   * `getCustomerVouchers` it was the one place a buyer could still read, and
+   * present at a counter, a coupon they had promised to somebody else.
+   */
   code: string
   status: string
   expiresAt: string | null
@@ -39,6 +50,8 @@ export interface OrderVoucher {
   faceValueAgorot: Agorot | null
   qrDataUrl: string | null
   usedAt: string | null
+  /** Set only when the code above has been withheld; what the page shows in its place. */
+  gift: VoucherGiftState | null
 }
 
 export interface OrderLineSupplier {
@@ -288,16 +301,22 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     // `vouchers`, not `coupon_codes`. The latter is the pre-voucher instance
     // table and nothing has written it since finalize.ts moved to issueVoucher,
     // so an order detail page showed no coupon for any coupon actually bought.
+    //
+    // The gift columns are from 108, which is applied (measured, see the header
+    // of migrations/pending/226). `gift_deliver_at` is deliberately NOT named:
+    // it is pending, and naming it is a 42703 that would blank every order page.
     itemIds.length > 0
       ? admin
           .from('vouchers')
           .select(
-            'code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
+            `id, code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id,
+             gift_claim_token_hash, gift_claimed_at, gift_sent_at, gift_recipient_name, gift_recipient_email`,
           )
           .in('order_item_id', itemIds)
           .order('issued_at', { ascending: true })
       : Promise.resolve({
           data: [] as {
+            id: string
             code: string
             status: string
             expires_at: string | null
@@ -306,6 +325,11 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
             qr_payload: string | null
             redeemed_at: string | null
             order_item_id: string | null
+            gift_claim_token_hash: string | null
+            gift_claimed_at: string | null
+            gift_sent_at: string | null
+            gift_recipient_name: string | null
+            gift_recipient_email: string | null
           }[],
           error: null,
         }),
@@ -331,11 +355,17 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
 
     const vouchers: OrderVoucher[] = []
     for (const coupon of itemCoupons) {
+      // Same rule as `withholdGiftedCode` in queries/vouchers.ts: a coupon that
+      // is on its way to somebody else leaves this file with no code and no QR,
+      // so the page cannot print what it was not given. The QR is not even
+      // rendered for it - the QR IS the code.
+      const held = isGiftedAway(coupon)
       // A QR that will not render must not take the order page down; the short
       // code below it is enough to redeem at a counter.
-      const qrDataUrl = await voucherQrDataUrl(coupon.qr_payload, { width: 240 })
+      const qrDataUrl = held ? null : await voucherQrDataUrl(coupon.qr_payload, { width: 240 })
       vouchers.push({
-        code: coupon.code,
+        id: coupon.id,
+        code: held ? '' : coupon.code,
         status: coupon.status,
         expiresAt: coupon.expires_at,
         collectAmountAgorot:
@@ -346,6 +376,16 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
           coupon.face_value_agorot === null ? null : agorot(coupon.face_value_agorot),
         qrDataUrl,
         usedAt: coupon.redeemed_at,
+        gift: held
+          ? {
+              recipientName: coupon.gift_recipient_name ?? null,
+              recipientEmail: coupon.gift_recipient_email ?? null,
+              // 226 is pending, so the schedule column is not selected here.
+              // Absent reads as "no schedule", which is what it means.
+              deliverAt: null,
+              queuedAt: coupon.gift_sent_at ?? null,
+            }
+          : null,
       })
     }
 

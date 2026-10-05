@@ -300,7 +300,19 @@ export async function raiseInstallBanner(page: Page): Promise<Locator> {
  * is filled when its fields are on screen and skipped otherwise, which is the
  * form's own rule (`needsAddress`) rather than a guess about the cart.
  */
-export async function walkCheckoutToPayment(page: Page, email: string): Promise<void> {
+export async function walkCheckoutToPayment(
+  page: Page,
+  email: string,
+  options: {
+    /**
+     * Runs on every step before its "next" is pressed, after the standard
+     * fields are filled. The gift block lives on the address step and its
+     * inputs are only interactable while that step is active, so a spec that
+     * wants to gift fills it from here rather than before or after the walk.
+     */
+    onStep?: (page: Page) => Promise<void>
+  } = {},
+): Promise<void> {
   await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
 
   // Steps: details, address (only for a physical cart), review, confirm. A
@@ -323,6 +335,7 @@ export async function walkCheckoutToPayment(page: Page, email: string): Promise<
       await page.locator('#co-street').fill('אלנבי')
       await page.locator('#co-number').fill('1')
     }
+    if (options.onStep) await options.onStep(page)
     const next = page.getByRole('button', { name: 'המשך', exact: true })
     if (!(await next.isVisible().catch(() => false))) break
     await next.click()

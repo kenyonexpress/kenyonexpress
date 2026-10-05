@@ -16,6 +16,7 @@ import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkUserRateLimit } from '@/lib/utils/rate-limit'
+import { recordGiftAudit } from '@/server/gifts/audit'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -116,6 +117,15 @@ async function runClaimGift(token: string): Promise<ClaimGiftResult> {
     return { ok: false, error: 'המתנה כבר נאספה', code: 'CLAIMED' }
   }
 
+  // The one ownership change a voucher ever has, on the record: who paid, who
+  // now holds it, and that it came through a claim link rather than an admin.
+  await recordGiftAudit({
+    actorId: user.id,
+    voucherId: voucher.id,
+    source: 'gift_claim',
+    changes: { user_id: { from: voucher.user_id, to: user.id } },
+  })
+
   log.info('gifts.claimed', { voucher_id: voucher.id })
   revalidatePath('/account/coupons')
   return { ok: true, voucherId: voucher.id, alreadyMine: false }
@@ -150,13 +160,26 @@ export async function loadGiftPreview(token: string): Promise<GiftPreview | null
 async function runLoadGiftPreview(token: string): Promise<GiftPreview | null> {
   if (!isWellFormedGiftToken(token)) return null
   const admin = createAdminClient()
-  const { data } = await admin
+  // `suppliers!vouchers_supplier_id_fkey`, NOT `suppliers`. `vouchers` points at
+  // `suppliers` twice (`supplier_id` and `redeemed_by_supplier_id`), and the
+  // bare embed is PGRST201 "more than one relationship" on every row. The
+  // error was then discarded below, so a valid claim link rendered the
+  // not-found page - measured 2026-10-05 against this database with three
+  // freshly minted gifts, and reproduced with one curl. Same hint
+  // `queries/vouchers.ts` has always used.
+  const { data, error } = await admin
     .from('vouchers')
     .select(
-      'status, expires_at, gift_recipient_name, gift_message, gift_claimed_at, products(name_he), suppliers(name)',
+      'status, expires_at, gift_recipient_name, gift_message, gift_claimed_at, products(name_he), suppliers!vouchers_supplier_id_fkey(name)',
     )
     .eq('gift_claim_token_hash', hashGiftClaimToken(token))
     .maybeSingle()
+  if (error) {
+    // A failed read is not "no such gift". Say so in the log; the page still
+    // shows not-found because it has nothing else it can honestly show.
+    log.error('gifts.preview_read_failed', { err: error.message, code: error.code })
+    return null
+  }
   if (!data) return null
 
   const row = data as unknown as {
@@ -380,6 +403,23 @@ async function runTransferVoucher(
     return { ok: false, error: 'שליחת המייל נכשלה, נסו שוב', code: 'FAILED' }
   }
 
+  // Written only once the link exists AND the mail is queued: a transfer that
+  // was rolled back above never happened, and must not be audited as if it had.
+  await recordGiftAudit({
+    actorId: user.id,
+    voucherId: voucher.id,
+    source: 'voucher_transfer',
+    changes: {
+      gift_recipient_email: { from: voucher.gift_recipient_email, to: parsed.data.recipientEmail },
+      gift_claim_token_hash: { from: voucher.gift_claim_token_hash, to: hash },
+    },
+    metadata: {
+      recipient_name: recipientName,
+      has_message: message != null,
+      dedupe_key: transferDedupeKey(voucher.id, hash),
+    },
+  })
+
   log.info('gifts.transferred', { voucher_id: voucher.id })
   revalidatePath('/account/coupons')
   revalidatePath(`/coupon/${voucher.id}`)
@@ -419,7 +459,7 @@ async function runRevokeVoucherTransfer(voucherId: string): Promise<RevokeTransf
   const admin = createAdminClient()
   const { data: row, error: readError } = await admin
     .from('vouchers')
-    .select('id, gift_claim_token_hash, gift_claimed_at')
+    .select('id, gift_claim_token_hash, gift_claimed_at, gift_recipient_email')
     .eq('id', voucherId)
     .eq('user_id', user.id)
     .maybeSingle()
@@ -431,6 +471,7 @@ async function runRevokeVoucherTransfer(voucherId: string): Promise<RevokeTransf
     id: string
     gift_claim_token_hash: string | null
     gift_claimed_at: string | null
+    gift_recipient_email?: string | null
   } | null
   if (!voucher || !voucher.gift_claim_token_hash) {
     return { ok: false, error: 'אין שליחה לבטל', code: 'NOT_FOUND' }
@@ -469,6 +510,16 @@ async function runRevokeVoucherTransfer(voucherId: string): Promise<RevokeTransf
     .update({ status: 'dead', last_error: 'gift revoked by the sender' } as never)
     .in('dedupe_key', [`gift:${voucher.id}`, transferDedupeKey(voucher.id, hash)])
     .eq('status', 'pending')
+
+  await recordGiftAudit({
+    actorId: user.id,
+    voucherId: voucher.id,
+    source: 'voucher_transfer_revoke',
+    changes: {
+      gift_claim_token_hash: { from: hash, to: null },
+      gift_recipient_email: { from: voucher.gift_recipient_email ?? null, to: null },
+    },
+  })
 
   log.info('gifts.revoked', { voucher_id: voucher.id })
   revalidatePath('/account/coupons')

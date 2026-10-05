@@ -379,16 +379,122 @@ credit and does not touch the voucher row.
 
 ---
 
-## 7. Gift vouchers
+## 7. Gift vouchers and transfers
 
 `vouchers` carries a gift block: `gift_recipient_name`, `gift_recipient_email`,
 `gift_message`, `gift_claim_token_hash`, `gift_sent_at`, `gift_claimed_at`,
 `gifted_by_user_id`. `orders` carries the matching intent fields captured at
-checkout.
+checkout. Migration `108_gift_vouchers` (applied); `226_gift_scheduling_and_wrap`
+(pending) adds `gift_deliver_at` and the wrapping fee.
 
 The claim token is stored **hashed**, not in plain text, so a database read does
-not hand over the ability to claim outstanding gifts. Implementation:
-`src/server/payments/gift-vouchers.ts`. Migration `108_gift_vouchers`.
+not hand over the ability to claim outstanding gifts.
+
+### 7.1 The gift sub-state
+
+Gifting does not add a `voucher_status`. It is a second, smaller machine that
+runs **only while the voucher is `issued`**, on top of §1, and is read off two
+columns:
+
+| gift state | `gift_claim_token_hash` | `gift_claimed_at` | what the owner sees |
+|---|---|---|---|
+| `none` | NULL | NULL | code and QR |
+| `pending` | set | NULL | the recipient's name, no code, no QR |
+| `claimed` | set | set | the coupon is now somebody else's; the buyer stays on `gifted_by_user_id` |
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    none --> pending : checkout gift (sendOrderGifts)\nor transferVoucher()
+    pending --> none : revokeVoucherTransfer()\nby the sender
+    pending --> claimed : claimGift() by the recipient
+    claimed --> pending : transferVoucher() by the NEW owner\n(a coupon can be sent on again)
+```
+
+`issued → redeemed | expired | cancelled | refunded` (§1) wins over all of
+this: a voucher that leaves `issued` cannot be transferred or claimed, whatever
+its gift columns say, and a pending gift on it simply stops being collectable.
+
+### 7.2 The three transitions and their guards
+
+All three live in `src/server/actions/gifts.ts` and all three put their guards
+**in the UPDATE, not only in the read before it**, so two requests racing on
+one coupon end with one row changed and one no-op, decided by Postgres.
+
+**`none → pending`, transfer** (`transferVoucher`, and `sendOrderGifts` at
+finalize for a gift bought at checkout):
+
+- caller is signed in, and `user_id = caller` (ownership);
+- `status = 'issued'`, and `expires_at` is in the future
+  (`transferEligibility`, shared with the page so the form and the action agree);
+- **no unclaimed link exists**: `gift_claim_token_hash IS NULL OR
+  gift_claimed_at IS NOT NULL`. A pending link blocks a second one, because two
+  people holding links to one coupon is the failure. The sender revokes first;
+- the finalize-time variant guards on `gift_sent_at IS NULL` instead, so a
+  replayed finalize mints nothing twice;
+- rate limit: 20 transfers an hour per user (`gift_transfer`);
+- the raw token is written **once**, into the `voucher_gifted` outbox row, keyed
+  `gift:<voucher>` (checkout) or `gift:<voucher>:<hash prefix>` (transfer). If
+  the outbox insert fails the voucher row is put back as it was: a link nobody
+  will receive is worse than no link.
+
+Nothing moves on this transition. The coupon stays the sender's, the code is
+withheld from every surface the sender has (`withholdGiftedCode`,
+`getOrderDetail`), and no money or wallet column is touched.
+
+**`pending → none`, revoke** (`revokeVoucherTransfer`):
+
+- ownership, and `gift_claimed_at IS NULL`, and the hash still equals the one
+  read, in the one UPDATE;
+- the token hash, recipient and greeting are cleared; **`gift_sent_at` is left
+  set** on purpose: it is the idempotency guard finalize replays against, and
+  clearing it would let a replayed finalize re-mint the original gift;
+- the waiting outbox row (either dedupe key) is marked `dead` so no mail goes
+  out for a link that is already void.
+
+**`pending → claimed`, claim** (`claimGift`):
+
+- caller is signed in (the recipient, under whatever account they choose);
+- token is well-formed (40 to 64 base64url chars) and its SHA-256 matches a row;
+- `status = 'issued'` and not expired, else `UNUSABLE`: a claim of a used coupon
+  reads as a broken gift rather than a used one;
+- `gift_claimed_at IS NULL` and the hash still matches, in the UPDATE. The loser
+  of a double claim gets `CLAIMED`, not a second transfer;
+- `user_id` moves to the claimant and `gifted_by_user_id` keeps the buyer, who
+  is still who a refund and the receipt belong to. **This is the one place
+  `vouchers.user_id` ever changes.** A second path would be a second set of
+  guards to keep in step.
+
+The claim is a button on `/gift/[token]`, never a side effect of the GET: a
+link preview bot or a mail scanner must not be able to move a coupon.
+
+### 7.3 Audit rows
+
+Each successful transition writes one `audit_log` row through
+`recordGiftAudit` (`src/server/gifts/audit.ts`): `entity_type = 'voucher'`,
+`action = 'updated'`, `actor_id` the signed-in customer,
+`metadata.source` one of `voucher_transfer`, `voucher_transfer_revoke`,
+`gift_claim`, and `changes` the from/to of the columns that moved
+(`gift_recipient_email` and `gift_claim_token_hash` for a transfer and a
+revoke, `user_id` for a claim). Written **after** the guarded UPDATE and after
+the outbox insert; a refused or rolled-back transfer leaves no row, and a failed
+audit write is logged and does not fail the transition. The table is admin-read
+only (§8 of 011), so the trail is reconstructable from `/admin/audit-log` and
+nowhere else.
+
+### 7.4 Timing and the email
+
+The `voucher_gifted` mail is Hebrew, RTL, sent through Resend by the outbox
+drain, and carries the sender's name, the product, the greeting and the **claim
+link**. It carries no code and no QR, deliberately: the voucher belongs to the
+buyer until it is claimed, and a code in a mail to an address that never
+registered is redeemable by whoever forwards it. The code and the QR appear to
+the recipient in their account the moment they claim. A scheduled send (226) is
+the outbox row's `next_attempt_at` set to the chosen date; the drain selects on
+`next_attempt_at <= now()`, so no second queue exists. A date past the coupon's
+`expires_at` is dropped to "now" rather than honoured. Transfers from the
+account are immediate; the schedule exists at checkout only, because
+`vouchers.gift_deliver_at` is pending.
 
 ---
 

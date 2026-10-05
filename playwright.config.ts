@@ -98,7 +98,7 @@ export default defineConfig({
       // desktop chromium only (tagged via grep invert) so CI time stays bounded.
       name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
-      testIgnore: [/full-purchase-redeem\.spec\.ts/],
+      testIgnore: [/full-purchase-redeem\.spec\.ts/, /gift-transfer\.spec\.ts/],
     },
   ],
   // An externally supplied base URL means the app is already running somewhere

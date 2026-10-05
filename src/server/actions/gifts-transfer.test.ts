@@ -66,7 +66,7 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({ from: (table: string) => builder(table) }),
 }))
 
-import { revokeVoucherTransfer, transferVoucher } from './gifts'
+import { claimGift, loadGiftPreview, revokeVoucherTransfer, transferVoucher } from './gifts'
 
 const VOUCHER = '123e4567-e89b-12d3-a456-426614174000'
 const liveRow = {
@@ -240,5 +240,237 @@ describe('revokeVoucherTransfer', () => {
       error: null,
     })
     expect(await revokeVoucherTransfer(VOUCHER)).toMatchObject({ ok: false, code: 'NOT_FOUND' })
+  })
+
+  it('writes one audit row that names the link it took back and whose it was', async () => {
+    answer('vouchers.select', {
+      data: {
+        id: VOUCHER,
+        gift_claim_token_hash: 'old-hash',
+        gift_claimed_at: null,
+        gift_recipient_email: 'to@x.co',
+      },
+      error: null,
+    })
+    answer('vouchers.update', { data: { id: VOUCHER }, error: null })
+
+    expect(await revokeVoucherTransfer(VOUCHER)).toEqual({ ok: true })
+    const audit = calls.find((c) => c.table === 'audit_log' && c.verb === 'insert')
+    expect(audit?.args[0]).toMatchObject({
+      actor_id: 'owner',
+      action: 'updated',
+      entity_type: 'voucher',
+      entity_id: VOUCHER,
+      changes: {
+        gift_claim_token_hash: { from: 'old-hash', to: null },
+        gift_recipient_email: { from: 'to@x.co', to: null },
+      },
+      metadata: { source: 'voucher_transfer_revoke' },
+    })
+  })
+})
+
+/**
+ * The audit trail. Every transition that moves a coupon or promises it to
+ * somebody leaves a row in `audit_log`, written by the customer's own user id,
+ * and ONLY on the success path: a refused or rolled-back transfer has nothing
+ * to record.
+ */
+describe('audit rows', () => {
+  it('a transfer is audited after the mail is queued, with the recipient and the new hash', async () => {
+    answer('vouchers.select', { data: liveRow, error: null })
+    answer('vouchers.update', { data: { id: VOUCHER }, error: null })
+    answer('notification_outbox.insert', { data: null, error: null })
+
+    expect(
+      await transferVoucher(VOUCHER, { recipientEmail: 'to@x.co', recipientName: 'רון' }),
+    ).toEqual({ ok: true, voucherId: VOUCHER })
+
+    const audit = calls.find((c) => c.table === 'audit_log' && c.verb === 'insert')
+    expect(audit?.args[0]).toMatchObject({
+      actor_id: 'owner',
+      actor_role: 'customer',
+      action: 'updated',
+      entity_type: 'voucher',
+      entity_id: VOUCHER,
+      changes: {
+        gift_recipient_email: { from: null, to: 'to@x.co' },
+        gift_claim_token_hash: { from: null, to: 'h'.repeat(64) },
+      },
+      metadata: {
+        source: 'voucher_transfer',
+        recipient_name: 'רון',
+        has_message: false,
+        dedupe_key: `gift:${VOUCHER}:${'h'.repeat(16)}`,
+      },
+    })
+    // Ordering is the guarantee: the row is written after the outbox insert.
+    const order = calls.map((c) => `${c.table}.${c.verb}`)
+    expect(order.indexOf('audit_log.insert')).toBeGreaterThan(
+      order.indexOf('notification_outbox.insert'),
+    )
+  })
+
+  it('a refused transfer and a rolled-back transfer leave no audit row', async () => {
+    answer('vouchers.select', {
+      data: { ...liveRow, gift_claim_token_hash: 'old', gift_sent_at: '2026-09-01T00:00:00Z' },
+      error: null,
+    })
+    await transferVoucher(VOUCHER, { recipientEmail: 'to@x.co' })
+    expect(calls.some((c) => c.table === 'audit_log')).toBe(false)
+
+    calls.length = 0
+    answer('vouchers.select', { data: liveRow, error: null })
+    answer('vouchers.update', { data: { id: VOUCHER }, error: null })
+    answer('notification_outbox.insert', { data: null, error: { message: 'outbox down' } })
+    answer('vouchers.update', { data: null, error: null })
+    await transferVoucher(VOUCHER, { recipientEmail: 'to@x.co' })
+    expect(calls.some((c) => c.table === 'audit_log')).toBe(false)
+  })
+
+  it('an audit write that fails does not fail the transfer', async () => {
+    answer('vouchers.select', { data: liveRow, error: null })
+    answer('vouchers.update', { data: { id: VOUCHER }, error: null })
+    answer('notification_outbox.insert', { data: null, error: null })
+    answer('audit_log.insert', { data: null, error: { message: 'audit down' } })
+
+    expect(await transferVoucher(VOUCHER, { recipientEmail: 'to@x.co' })).toEqual({
+      ok: true,
+      voucherId: VOUCHER,
+    })
+  })
+})
+
+describe('claimGift', () => {
+  const TOKEN = 'a'.repeat(43)
+
+  it('moves ownership once, keeps the buyer on gifted_by_user_id, and audits the change of hands', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'recipient' } } })
+    answer('vouchers.select', {
+      data: {
+        id: VOUCHER,
+        user_id: 'owner',
+        status: 'issued',
+        expires_at: '2099-01-01T00:00:00Z',
+        gift_claimed_at: null,
+      },
+      error: null,
+    })
+    answer('vouchers.update', { data: { id: VOUCHER }, error: null })
+
+    expect(await claimGift(TOKEN)).toEqual({ ok: true, voucherId: VOUCHER, alreadyMine: false })
+
+    const update = calls.find((c) => c.table === 'vouchers' && c.verb === 'update')
+    expect(update?.args[0]).toMatchObject({ user_id: 'recipient', gifted_by_user_id: 'owner' })
+    const guards = calls
+      .filter((c) => c.table === 'vouchers')
+      .slice(calls.findIndex((c) => c.verb === 'update'))
+      .map((c) => `${c.verb}:${String(c.args[0])}`)
+    expect(guards).toContain('eq:gift_claim_token_hash')
+    expect(guards).toContain('is:gift_claimed_at')
+
+    const audit = calls.find((c) => c.table === 'audit_log' && c.verb === 'insert')
+    expect(audit?.args[0]).toMatchObject({
+      actor_id: 'recipient',
+      action: 'updated',
+      entity_type: 'voucher',
+      entity_id: VOUCHER,
+      changes: { user_id: { from: 'owner', to: 'recipient' } },
+      metadata: { source: 'gift_claim' },
+    })
+  })
+
+  it('a lost race writes no audit row', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'recipient' } } })
+    answer('vouchers.select', {
+      data: {
+        id: VOUCHER,
+        user_id: 'owner',
+        status: 'issued',
+        expires_at: '2099-01-01T00:00:00Z',
+        gift_claimed_at: null,
+      },
+      error: null,
+    })
+    answer('vouchers.update', { data: null, error: null })
+    expect(await claimGift(TOKEN)).toMatchObject({ ok: false, code: 'CLAIMED' })
+    expect(calls.some((c) => c.table === 'audit_log')).toBe(false)
+  })
+
+  it('refuses a redeemed coupon, an expired one, and a malformed token, without writing', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'recipient' } } })
+    expect(await claimGift('short')).toMatchObject({ ok: false, code: 'BAD_TOKEN' })
+
+    answer('vouchers.select', {
+      data: {
+        id: VOUCHER,
+        user_id: 'owner',
+        status: 'redeemed',
+        expires_at: null,
+        gift_claimed_at: null,
+      },
+      error: null,
+    })
+    expect(await claimGift(TOKEN)).toMatchObject({ ok: false, code: 'UNUSABLE' })
+
+    answer('vouchers.select', {
+      data: {
+        id: VOUCHER,
+        user_id: 'owner',
+        status: 'issued',
+        expires_at: '2000-01-01T00:00:00Z',
+        gift_claimed_at: null,
+      },
+      error: null,
+    })
+    expect(await claimGift(TOKEN)).toMatchObject({ ok: false, code: 'UNUSABLE' })
+    expect(calls.some((c) => c.verb === 'update' || c.verb === 'insert')).toBe(false)
+  })
+})
+
+describe('loadGiftPreview', () => {
+  const TOKEN = 'b'.repeat(43)
+
+  it('names the supplier relationship, because the bare embed is ambiguous on vouchers', async () => {
+    answer('vouchers.select', {
+      data: {
+        status: 'issued',
+        expires_at: '2099-01-01T00:00:00Z',
+        gift_recipient_name: 'רון',
+        gift_message: 'מזל טוב',
+        gift_claimed_at: null,
+        products: { name_he: 'עיסוי' },
+        suppliers: { name: 'ספא' },
+      },
+      error: null,
+    })
+    const preview = await loadGiftPreview(TOKEN)
+    expect(preview).toMatchObject({
+      productName: 'עיסוי',
+      supplierName: 'ספא',
+      recipientName: 'רון',
+      message: 'מזל טוב',
+      claimed: false,
+      usable: true,
+    })
+    const select = calls.find((c) => c.table === 'vouchers' && c.verb === 'select')
+    const columns = String(select?.args[0])
+    // `vouchers` has two foreign keys to `suppliers`; PostgREST answers PGRST201
+    // to `suppliers(name)` and the claim page then 404s every real link.
+    expect(columns).toContain('suppliers!vouchers_supplier_id_fkey(name)')
+    expect(columns).not.toMatch(/[^!]suppliers\(name\)/)
+  })
+
+  it('treats a read error as not-found and does not throw', async () => {
+    answer('vouchers.select', {
+      data: null,
+      error: { code: 'PGRST201', message: 'Could not embed because more than one relationship' },
+    })
+    expect(await loadGiftPreview(TOKEN)).toBeNull()
+  })
+
+  it('refuses a malformed token before touching the database', async () => {
+    expect(await loadGiftPreview('nope')).toBeNull()
+    expect(calls).toEqual([])
   })
 })

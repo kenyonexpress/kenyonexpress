@@ -3,6 +3,7 @@ import RefundRequestForm from '@/components/account/RefundRequestForm'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { orderContactLink } from '@/lib/contact/inquiry-links'
+import { giftHeldCopy } from '@/lib/gifts/held-copy'
 import { t } from '@/lib/i18n/messages'
 import { REVIEWABLE_ORDER_STATUSES } from '@/lib/reviews/eligibility'
 import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
@@ -198,8 +199,18 @@ export default async function OrderDetailPage({ params }: Props) {
                         expires_at: voucher.expiresAt ?? '',
                         redeemed_at: voucher.usedAt,
                       })
+                      // A gift the recipient has not collected shows where it
+                      // went instead of the code. `getOrderDetail` blanks the
+                      // code and skips the QR for it, so the alternative here
+                      // is not "a code the buyer should not have" but an
+                      // empty card.
+                      const held = voucher.gift ? giftHeldCopy(voucher.gift) : null
                       return (
-                        <div className="coupon-card" key={voucher.code}>
+                        <div
+                          className="coupon-card"
+                          key={voucher.id}
+                          data-testid={held ? 'order-voucher-gift' : 'order-voucher'}
+                        >
                           {voucher.qrDataUrl && (
                             <img
                               src={voucher.qrDataUrl}
@@ -209,23 +220,58 @@ export default async function OrderDetailPage({ params }: Props) {
                             />
                           )}
                           <div>
-                            <p className="coupon-card__code">{voucher.code}</p>
+                            {held ? (
+                              <p className="account-row__title">{held.headline}</p>
+                            ) : (
+                              <p className="coupon-card__code">{voucher.code}</p>
+                            )}
                             <p className="account-row__meta">
                               <span
                                 className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}
                               >
-                                {status.label}
+                                {held ? held.badge : status.label}
                               </span>
                               {voucher.expiresAt
                                 ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}`
                                 : ''}
                             </p>
+                            {held && <p className="account-row__meta">{held.explanation}</p>}
                             {voucher.collectAmountAgorot != null &&
                               voucher.collectAmountAgorot > 0 && (
                                 <p className="account-row__meta">
                                   לתשלום בבית העסק: {formatIls(voucher.collectAmountAgorot)}
                                 </p>
                               )}
+                            {/*
+                              Gifting FROM THE ORDER. The same page the transfer
+                              CTA on /account/coupons opens, so there is one form
+                              and one set of guards (`transferEligibility`): a
+                              usable coupon can be sent on from here; one already
+                              on its way links to where the only action is
+                              taking it back. Nothing for a redeemed, expired or
+                              refunded coupon.
+                            */}
+                            {held ? (
+                              <p style={{ marginTop: 8 }}>
+                                <Link
+                                  className="account-btn"
+                                  href={`/account/coupons/${voucher.id}/gift`}
+                                  data-testid="order-voucher-gift-manage"
+                                >
+                                  {t('giftTransfer.manage')}
+                                </Link>
+                              </p>
+                            ) : status.presentable ? (
+                              <p style={{ marginTop: 8 }}>
+                                <Link
+                                  className="account-btn"
+                                  href={`/account/coupons/${voucher.id}/gift`}
+                                  data-testid="order-voucher-gift-transfer"
+                                >
+                                  {t('giftTransfer.cta')}
+                                </Link>
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                       )
